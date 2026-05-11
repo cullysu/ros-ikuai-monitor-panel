@@ -1,0 +1,18 @@
+﻿[Unit]
+Description=RouterOS iKuai-style monitoring panel
+After=network-online.target ros-panel-ip.service
+Wants=network-online.target ros-panel-ip.service
+
+[Service]
+Type=simple
+User=root
+Group=root
+WorkingDirectory=/opt/ros-ikuai-monitor-panel
+EnvironmentFile=-/etc/default/routeros-panel
+ExecStart=/opt/ros-ikuai-monitor-panel/.venv/bin/python /opt/ros-ikuai-monitor-panel/app.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+
