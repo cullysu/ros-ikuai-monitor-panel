@@ -1,4 +1,4 @@
-﻿param(
+param(
   [Parameter(Mandatory = $true)]
   [string]$Section,
 
@@ -259,4 +259,3 @@ JSON.stringify((() => {
     Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue
   }
 }
-

@@ -1,4 +1,4 @@
-﻿param(
+param(
   [Parameter(Mandatory = $true)]
   [string]$Url,
 
@@ -96,4 +96,3 @@ if (!$captured -or !(Test-Path $resolvedOutput)) {
 }
 
 Get-Item $resolvedOutput | Select-Object FullName, Length, LastWriteTime
-

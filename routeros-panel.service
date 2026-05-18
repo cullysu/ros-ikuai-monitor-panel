@@ -1,4 +1,4 @@
-﻿[Unit]
+[Unit]
 Description=RouterOS iKuai-style monitoring panel
 After=network-online.target ros-panel-ip.service
 Wants=network-online.target ros-panel-ip.service
@@ -15,4 +15,3 @@ RestartSec=5
 
 [Install]
 WantedBy=multi-user.target
-

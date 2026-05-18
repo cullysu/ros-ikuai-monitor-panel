@@ -1,4 +1,4 @@
-﻿param(
+param(
   [Parameter(Mandatory = $true)]
   [string]$Url,
 
@@ -147,4 +147,3 @@ try {
     Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
   }
 }
-

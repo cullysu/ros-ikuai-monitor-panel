@@ -1,3 +1,2 @@
-﻿paramiko>=3.4,<4
+paramiko>=3.4,<4
 requests>=2.32,<3
-

@@ -1,4 +1,4 @@
-﻿import copy
+import copy
 import ipaddress
 import json
 import mimetypes
@@ -21,7 +21,8 @@ BASE_DIR = Path(__file__).resolve().parent
 PUBLIC_DIR = BASE_DIR / "public"
 ROUTER_HOST = os.getenv("ROS_MONITOR_ROUTER_HOST", "192.168.3.1")
 ROUTER_USER = os.getenv("ROS_MONITOR_ROUTER_USER", "admin")
-ROUTER_PASSWORD = os.getenv("ROS_MONITOR_ROUTER_PASSWORD", "<REDACTED_ROUTER_PASSWORD>")
+ROUTER_PASSWORD = os.getenv("ROS_MONITOR_ROUTER_PASSWORD", "CHANGE_ME")
+PANEL_PROFILE_RAW = os.getenv("ROS_PANEL_PROFILE", "private_ops")
 PANEL_BIND = os.getenv("ROS_PANEL_BIND", "0.0.0.0")
 PANEL_PORT = int(os.getenv("ROS_PANEL_PORT", "80"))
 PANEL_TARGET = os.getenv("ROS_PANEL_TARGET_IP", "192.168.3.5")
@@ -34,8 +35,36 @@ STATIC_POLL_SECONDS = max(300, int(os.getenv("ROS_MONITOR_STATIC_POLL_SECONDS", 
 STATIC_REST_WORKERS = max(1, min(3, int(os.getenv("ROS_MONITOR_STATIC_REST_WORKERS", "1"))))
 SLOW_REST_POLL_SECONDS = max(60, int(os.getenv("ROS_MONITOR_SLOW_REST_POLL_SECONDS", "60")))
 SLOW_REST_WORKERS = max(1, min(3, int(os.getenv("ROS_MONITOR_SLOW_REST_WORKERS", "2"))))
-CONNECTION_DETAIL_POLL_SECONDS = max(30, int(os.getenv("ROS_MONITOR_CONNECTION_DETAIL_POLL_SECONDS", "30")))
+CONNECTION_DETAIL_POLL_SECONDS = max(4, int(os.getenv("ROS_MONITOR_CONNECTION_DETAIL_POLL_SECONDS", "4")))
+DETAIL_REST_WORKERS = max(1, min(2, int(os.getenv("ROS_MONITOR_DETAIL_REST_WORKERS", "1"))))
 CONNECTION_PROTOCOL_POLL_SECONDS = max(30, int(os.getenv("ROS_MONITOR_CONNECTION_PROTOCOL_POLL_SECONDS", "30")))
+CONNECTION_DETAIL_CAPTURE_SECONDS = max(4, int(os.getenv("ROS_MONITOR_CONNECTION_DETAIL_CAPTURE_SECONDS", "4")))
+CONNECTION_DETAIL_SAMPLE_LIMIT = max(
+    ACTIVE_CONNECTION_LIMIT,
+    int(os.getenv("ROS_MONITOR_CONNECTION_DETAIL_SAMPLE_LIMIT", str(max(ACTIVE_CONNECTION_LIMIT * 4, 160)))),
+)
+CONNECTION_DETAIL_STREAM_MAX_BYTES = max(
+    65536,
+    int(os.getenv("ROS_MONITOR_CONNECTION_DETAIL_STREAM_MAX_BYTES", "131072")),
+)
+CONNECTION_DETAIL_OVERRUN_BACKOFF_SECONDS = max(
+    CONNECTION_DETAIL_POLL_SECONDS,
+    int(os.getenv("ROS_MONITOR_CONNECTION_DETAIL_OVERRUN_BACKOFF_SECONDS", "6")),
+)
+CONNECTION_DETAIL_OVERRUN_BACKOFF_CAP_SECONDS = max(
+    CONNECTION_DETAIL_OVERRUN_BACKOFF_SECONDS,
+    int(os.getenv("ROS_MONITOR_CONNECTION_DETAIL_OVERRUN_BACKOFF_CAP_SECONDS", "15")),
+)
+CONNECTION_DETAIL_OVERRUN_MULTIPLIER = max(
+    1.0,
+    float(os.getenv("ROS_MONITOR_CONNECTION_DETAIL_OVERRUN_MULTIPLIER", "1.5")),
+)
+CONNECTION_PROTOCOL_BREAKDOWN_INTERVAL_SECONDS = max(
+    CONNECTION_PROTOCOL_POLL_SECONDS,
+    int(os.getenv("ROS_MONITOR_CONNECTION_PROTOCOL_BREAKDOWN_INTERVAL_SECONDS", "300")),
+)
+CONNECTION_PROTOCOL_SCAN_TIMEOUT = max(120, int(os.getenv("ROS_MONITOR_CONNECTION_PROTOCOL_SCAN_TIMEOUT", "300")))
+CONNECTION_TRACKING_TIMEOUT = max(12, int(os.getenv("ROS_MONITOR_CONNECTION_TRACKING_TIMEOUT", "30")))
 DNS_STATIC_PREVIEW_LIMIT = int(os.getenv("ROS_MONITOR_DNS_STATIC_PREVIEW_LIMIT", "12"))
 DNS_STATIC_PAGE_LIMIT = int(os.getenv("ROS_MONITOR_DNS_STATIC_PAGE_LIMIT", "100"))
 DNS_STATIC_MAX_PAGE_LIMIT = int(os.getenv("ROS_MONITOR_DNS_STATIC_MAX_PAGE_LIMIT", "300"))
@@ -146,6 +175,11 @@ STATIC_REST_ENDPOINTS = {
     ),
     "dhcp_servers": endpoint("ip/dhcp-server", fields="name,interface,address-pool,lease-time,disabled"),
     "dhcp_leases": endpoint("ip/dhcp-server/lease", fields="address,host-name,mac-address,server,status,last-seen,dynamic"),
+    "dhcp_clients": endpoint(
+        "ip/dhcp-client",
+        fields="interface,status,use-peer-dns,add-default-route,default-route-distance,dhcp-options,disabled",
+        optional=True,
+    ),
     "pools": endpoint("ip/pool", fields="name,ranges"),
     "pool_used": endpoint("ip/pool/used", fields="pool,address,owner,info", optional=True),
     "filters": endpoint("ip/firewall/filter", fields="chain,action,comment,packets,bytes,disabled"),
@@ -180,7 +214,10 @@ SLOW_REST_ENDPOINTS["ipv6_neighbors"] = endpoint(
 )
 
 
-DETAIL_REST_ENDPOINTS = {}
+DETAIL_REST_ENDPOINTS = {
+    "ipv6_addresses": SLOW_REST_ENDPOINTS.pop("ipv6_addresses"),
+    "ipv6_neighbors": SLOW_REST_ENDPOINTS.pop("ipv6_neighbors"),
+}
 
 
 EMPTY_REST_BUNDLE = {
@@ -201,6 +238,7 @@ EMPTY_REST_BUNDLE = {
     "dns_static_meta": {},
     "ipv6_nd": [],
     "ipv6_dhcp_clients": [],
+    "dhcp_clients": [],
     "dhcp_servers": [],
     "dhcp_leases": [],
     "pools": [],
@@ -212,6 +250,10 @@ EMPTY_REST_BUNDLE = {
     "logs": [],
 }
 
+TRACKING_FIELD_PATTERN = re.compile(r"^\s*([A-Za-z0-9-]+):\s*(.*?)\s*$")
+TERSE_FIELD_PATTERN = re.compile(r"([A-Za-z0-9-]+)=(.*?)(?=\s+[A-Za-z0-9-]+=|$)")
+CGNAT_NETWORK = ipaddress.ip_network("100.64.0.0/10")
+
 
 def to_int(value, default=0):
     try:
@@ -219,28 +261,35 @@ def to_int(value, default=0):
             return default
         if isinstance(value, (int, float)):
             return int(value)
-        text = str(value).strip()
+        text = str(value).strip().replace(" ", "")
+        if not text:
+            return default
         match = re.fullmatch(r"(-?\d+(?:\.\d+)?)([A-Za-z]+)?", text)
         if match:
             number = float(match.group(1))
             unit = (match.group(2) or "").upper()
             factors = {
+                "BPS": 1,
                 "K": 1024,
                 "KB": 1000,
                 "KIB": 1024,
+                "KBPS": 1000,
                 "M": 1024**2,
                 "MB": 1000**2,
                 "MIB": 1024**2,
+                "MBPS": 1000**2,
                 "G": 1024**3,
                 "GB": 1000**3,
                 "GIB": 1024**3,
+                "GBPS": 1000**3,
                 "T": 1024**4,
                 "TB": 1000**4,
                 "TIB": 1024**4,
+                "TBPS": 1000**4,
             }
             if unit in factors:
                 return int(number * factors[unit])
-        return int(float(value))
+        return int(float(text))
     except Exception:
         return default
 
@@ -251,6 +300,26 @@ def to_bool(value):
     if value is None:
         return False
     return str(value).lower() in {"true", "yes", "on", "running", "bound", "active", "enabled"}
+
+
+def env_bool(name, default=False):
+    raw = os.getenv(name)
+    if raw is None:
+        return default
+    text = str(raw).strip().lower()
+    if text in {"1", "true", "yes", "on", "enabled"}:
+        return True
+    if text in {"0", "false", "no", "off", "disabled"}:
+        return False
+    return default
+
+
+def connection_detail_sleep_seconds(elapsed):
+    if elapsed < CONNECTION_DETAIL_POLL_SECONDS:
+        return max(0, CONNECTION_DETAIL_POLL_SECONDS - elapsed)
+    adaptive = int(elapsed * CONNECTION_DETAIL_OVERRUN_MULTIPLIER)
+    adaptive = max(CONNECTION_DETAIL_OVERRUN_BACKOFF_SECONDS, adaptive)
+    return min(CONNECTION_DETAIL_OVERRUN_BACKOFF_CAP_SECONDS, adaptive)
 
 
 def format_iso_now():
@@ -270,6 +339,148 @@ def rate_level(value):
     if value >= 0.65:
         return "warning"
     return "ok"
+
+
+def normalize_panel_profile(value):
+    text = re.sub(r"[^a-z0-9]+", "_", str(value or "").strip().lower()).strip("_")
+    return text or "private_ops"
+
+
+PANEL_PROFILE = normalize_panel_profile(PANEL_PROFILE_RAW)
+
+
+def is_public_routeros_profile(profile=None):
+    normalized = normalize_panel_profile(profile if profile is not None else PANEL_PROFILE)
+    return normalized in {
+        # Common/operator-friendly aliases.
+        "public",
+        "routeros_public",
+        "routeros_only",
+        "public_routeros",
+        "routeros_public_preview",
+    }
+
+
+PUBLIC_ROUTEROS_PROFILE = is_public_routeros_profile(PANEL_PROFILE)
+READONLY_DIAGNOSTICS_ENABLED = not PUBLIC_ROUTEROS_PROFILE
+
+# Public RouterOS-only profile is intended to be safe to share on a LAN.
+# Keep any mutating endpoints opt-in (and default-off) for that profile.
+IP_ALIAS_WRITE_ENABLED = env_bool("ROS_PANEL_IP_ALIAS_WRITE_ENABLED", default=not PUBLIC_ROUTEROS_PROFILE)
+
+# Active admin sessions can be sensitive; default-off for public profile.
+EXPOSE_ADMIN_SESSIONS = env_bool("ROS_PANEL_EXPOSE_ADMIN_SESSIONS", default=not PUBLIC_ROUTEROS_PROFILE)
+
+
+def line_layout_tier(count):
+    count = max(0, to_int(count))
+    if count <= 0:
+        return "none"
+    if count == 1:
+        return "single"
+    if count <= 3:
+        return "few"
+    if count <= 6:
+        return "multi"
+    return "dense"
+
+
+def build_panel_capabilities(wan_lines, pppoe_count):
+    wan_count = len(wan_lines or [])
+    return {
+        "readonlyDiagnostics": READONLY_DIAGNOSTICS_ENABLED,
+        "privateDiagnostics": READONLY_DIAGNOSTICS_ENABLED,
+        "openwrtDiagnostics": READONLY_DIAGNOSTICS_ENABLED,
+        "nikkiDiagnostics": READONLY_DIAGNOSTICS_ENABLED,
+        "publicRouterosProfile": PUBLIC_ROUTEROS_PROFILE,
+        "ipAliasWrite": IP_ALIAS_WRITE_ENABLED,
+        "adminSessions": EXPOSE_ADMIN_SESSIONS,
+        "wanFallback": wan_count > 0 and to_int(pppoe_count) == 0,
+        "singleWan": wan_count == 1,
+        "multiWan": wan_count > 1,
+    }
+
+
+def address_is_globalish(address_text):
+    try:
+        text = str(address_text or "").strip()
+        if not text:
+            return False
+        ip_obj = ipaddress.ip_interface(text).ip if "/" in text else ipaddress.ip_address(text)
+        if ip_obj.version == 4:
+            if (
+                ip_obj.is_private
+                or ip_obj in CGNAT_NETWORK
+                or ip_obj.is_loopback
+                or ip_obj.is_link_local
+                or ip_obj.is_multicast
+                or ip_obj.is_unspecified
+                or ip_obj.is_reserved
+            ):
+                return False
+            return True
+        if (
+            ip_obj.is_private
+            or ip_obj.is_loopback
+            or ip_obj.is_link_local
+            or ip_obj.is_multicast
+            or ip_obj.is_unspecified
+            or ip_obj.is_reserved
+        ):
+            return False
+        return True
+    except Exception:
+        return False
+
+
+def infer_wan_interface_names(rest, addresses_by_interface):
+    interface_types = {row.get("name"): str(row.get("type", "")).lower() for row in rest.get("interfaces", [])}
+    wan_names = {row.get("name") for row in rest.get("pppoe", []) if row.get("name")}
+    wan_names.update(
+        item.get("interface")
+        for item in rest.get("dhcp_clients", [])
+        if item.get("interface") and not to_bool(item.get("disabled"))
+    )
+    defaults = [
+        row for row in rest.get("routes", [])
+        if row.get("dst-address") == "0.0.0.0/0" and not to_bool(row.get("disabled"))
+    ]
+    for route in defaults:
+        gateway = str(route.get("gateway") or "").strip()
+        if not gateway:
+            continue
+        gateway_name = gateway.split("%", 1)[1] if "%" in gateway else gateway
+        if gateway_name in interface_types:
+            wan_names.add(gateway_name)
+    for iface_name, address_rows in addresses_by_interface.items():
+        if not iface_name or iface_name in wan_names:
+            continue
+        iface_type = interface_types.get(iface_name, "")
+        low_name = str(iface_name).lower()
+        if iface_type in {"bridge", "loopback", "wireguard"}:
+            continue
+        if low_name.startswith(("bridge", "docker", "veth", "lo", "tailscale", "zerotier")):
+            continue
+        if any(address_is_globalish(item.get("address")) for item in address_rows):
+            wan_names.add(iface_name)
+    return {name for name in wan_names if name}
+
+
+def build_distribution_from_lines(lines):
+    rows = list(lines or [])
+    total_rate = sum(max(0, to_int(row.get("upRate"))) + max(0, to_int(row.get("downRate"))) for row in rows)
+    return [
+        {
+            "name": row.get("name", "-"),
+            "share": round((((to_int(row.get("upRate")) + to_int(row.get("downRate"))) / total_rate) * 100), 2)
+            if total_rate
+            else 0,
+            "upRate": to_int(row.get("upRate")),
+            "downRate": to_int(row.get("downRate")),
+            "status": row.get("status", "-"),
+        }
+        for row in rows
+    ]
 
 
 def count_pool_addresses(ranges):
@@ -640,7 +851,8 @@ class Collector:
                 "staticPollSeconds": STATIC_POLL_SECONDS,
                 "slowRestPollSeconds": SLOW_REST_POLL_SECONDS,
                 "connectionDetailPollSeconds": CONNECTION_DETAIL_POLL_SECONDS,
-                "connectionProtocolPollSeconds": CONNECTION_PROTOCOL_POLL_SECONDS,
+                "detailRestWorkers": DETAIL_REST_WORKERS,
+                "connectionProtocolPollSeconds": CONNECTION_PROTOCOL_BREAKDOWN_INTERVAL_SECONDS,
             },
         }
         self.lock = threading.Lock()
@@ -691,6 +903,7 @@ class Collector:
         self.line_history = {}
         self.ip_aliases = self.load_ip_aliases()
         self.readonly_diagnostics_cache = {"fetched_at": 0.0, "payload": None}
+        self.connection_protocol_last_scan_at = 0.0
 
     def load_ip_aliases(self):
         try:
@@ -759,7 +972,7 @@ class Collector:
     def update_ip_alias(self, ip_value, name_value):
         ip_key = normalize_ip_key(ip_value)
         if not ip_key:
-            raise ValueError("IP 鍦板潃涓嶈兘涓虹┖")
+            raise ValueError("IP 地址不能为空")
         custom_name = normalize_custom_name(name_value)
         with self.lock:
             next_aliases = dict(self.ip_aliases)
@@ -788,12 +1001,13 @@ class Collector:
             return payload[0] if isinstance(payload, list) and payload else payload or {}
         return payload if isinstance(payload, list) else ([payload] if payload else [])
 
-    def ssh_exec(self, client, command):
-        stdin, stdout, stderr = client.exec_command(command, timeout=SSH_TIMEOUT)
+    def ssh_exec(self, client, command, timeout=None):
+        timeout = max(1, to_int(timeout, SSH_TIMEOUT))
+        stdin, stdout, stderr = client.exec_command(command, timeout=timeout)
         channel = stdout.channel
         try:
-            channel.settimeout(SSH_TIMEOUT)
-            stderr.channel.settimeout(SSH_TIMEOUT)
+            channel.settimeout(timeout)
+            stderr.channel.settimeout(timeout)
             output = stdout.read().decode("utf-8", errors="replace").strip()
             error = stderr.read().decode("utf-8", errors="replace").strip()
             exit_status = channel.recv_exit_status()
@@ -802,7 +1016,7 @@ class Collector:
                 channel.close()
             except Exception:
                 pass
-            raise RuntimeError(f"SSH command timed out after {SSH_TIMEOUT}s: {command}") from exc
+            raise RuntimeError(f"SSH command timed out after {timeout}s: {command}") from exc
         except Exception as exc:
             try:
                 channel.close()
@@ -818,6 +1032,71 @@ class Collector:
     def ssh_json(self, client, expression):
         payload = self.ssh_exec(client, f":put [:serialize to=json value={expression}]")
         return json.loads(payload) if payload else []
+
+    def ssh_capture(self, client, command, capture_seconds, max_bytes=None, quiet_window=0.75, timeout=None):
+        timeout = max(1, to_int(timeout, SSH_TIMEOUT))
+        capture_seconds = max(1.0, float(capture_seconds or 0))
+        stdin, stdout, stderr = client.exec_command(command, timeout=timeout)
+        channel = stdout.channel
+        stdout_chunks = []
+        stderr_chunks = []
+        total_bytes = 0
+        started_at = time.time()
+        first_output_at = None
+        last_output_at = None
+        try:
+            channel.settimeout(1.0)
+            while time.time() - started_at < capture_seconds:
+                received = False
+                while channel.recv_ready():
+                    data = channel.recv(65535)
+                    if not data:
+                        break
+                    received = True
+                    now = time.time()
+                    if first_output_at is None:
+                        first_output_at = now
+                    last_output_at = now
+                    stdout_chunks.append(data)
+                    total_bytes += len(data)
+                    if max_bytes and total_bytes >= max_bytes:
+                        break
+                while channel.recv_stderr_ready():
+                    data = channel.recv_stderr(65535)
+                    if not data:
+                        break
+                    stderr_chunks.append(data)
+                if max_bytes and total_bytes >= max_bytes:
+                    break
+                if channel.exit_status_ready():
+                    break
+                if first_output_at and last_output_at and (time.time() - last_output_at) >= quiet_window:
+                    break
+                if not received:
+                    time.sleep(0.1)
+            error = b"".join(stderr_chunks).decode("utf-8", errors="replace").strip()
+            text = b"".join(stdout_chunks).decode("utf-8", errors="replace")
+            complete = channel.exit_status_ready()
+            if not text and complete:
+                exit_status = channel.recv_exit_status()
+                if exit_status != 0:
+                    raise RuntimeError(error or f"SSH command exited with status {exit_status}: {command}")
+            if not text and not complete:
+                raise RuntimeError(
+                    error or f"SSH stream capture produced no rows within {round(capture_seconds, 1)}s: {command}"
+                )
+            return {
+                "text": text,
+                "stderr": error,
+                "complete": complete,
+                "capturedBytes": total_bytes,
+                "firstOutputSeconds": round((first_output_at - started_at), 2) if first_output_at else None,
+            }
+        finally:
+            try:
+                channel.close()
+            except Exception:
+                pass
 
     def fetch_rest_item(self, key, endpoint_config):
         session = requests.Session()
@@ -878,48 +1157,106 @@ class Collector:
         finally:
             session.close()
 
-    def open_ssh_client(self):
+    def open_ssh_client(self, timeout=None):
+        timeout = max(1, to_int(timeout, SSH_TIMEOUT))
         client = paramiko.SSHClient()
         client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         client.connect(
             ROUTER_HOST,
             username=ROUTER_USER,
             password=ROUTER_PASSWORD,
-            timeout=SSH_TIMEOUT,
-            banner_timeout=SSH_TIMEOUT,
-            auth_timeout=SSH_TIMEOUT,
+            timeout=timeout,
+            banner_timeout=timeout,
+            auth_timeout=timeout,
             allow_agent=False,
             look_for_keys=False,
         )
         return client
 
     def fetch_connection_total_count(self):
-        client = self.open_ssh_client()
+        return self.fetch_connection_tracking_summary()["total"]
+
+    def fetch_connection_tracking_summary(self):
+        client = self.open_ssh_client(timeout=CONNECTION_TRACKING_TIMEOUT)
         try:
-            return to_int(self.ssh_exec(client, "/ip/firewall/connection print count-only"))
+            output = self.ssh_exec(
+                client,
+                "/ip/firewall/connection/tracking print without-paging",
+                timeout=CONNECTION_TRACKING_TIMEOUT,
+            )
+            fields = {}
+            for raw_line in output.splitlines():
+                match = TRACKING_FIELD_PATTERN.match(raw_line)
+                if match:
+                    fields[match.group(1).lower()] = match.group(2).strip()
+            total = to_int(fields.get("total-entries"), -1)
+            if total < 0:
+                raise RuntimeError("SSH connection tracking summary missing total-entries")
+            return {
+                "total": total,
+                "ipv4": to_int(fields.get("total-ip4-entries"), 0),
+                "ipv6": to_int(fields.get("total-ip6-entries"), 0),
+            }
         finally:
             client.close()
 
     def fetch_connection_protocol_counts(self):
-        client = self.open_ssh_client()
-        counts = {"tcp": 0, "udp": 0, "icmp": 0}
-        try:
-            counts["tcp"] = to_int(self.ssh_exec(client, "/ip/firewall/connection print count-only where protocol=tcp"))
-            counts["udp"] = to_int(self.ssh_exec(client, "/ip/firewall/connection print count-only where protocol=udp"))
-            counts["icmp"] = to_int(self.ssh_exec(client, "/ip/firewall/connection print count-only where protocol=icmp"))
-            counts["all"] = counts["tcp"] + counts["udp"] + counts["icmp"]
-            return counts
-        finally:
-            client.close()
+        tracking = self.fetch_connection_tracking_summary()
+        return {
+            "tcp": None,
+            "udp": None,
+            "icmp": None,
+            "all": tracking["total"],
+        }
+
+    def parse_connection_terse_line(self, line):
+        row = {}
+        for match in TERSE_FIELD_PATTERN.finditer(line):
+            key = match.group(1)
+            value = match.group(2).strip()
+            if re.fullmatch(r"[\d.\s]+", value):
+                value = value.replace(" ", "")
+            row[key] = value
+        return row
 
     def fetch_connection_detail(self):
         client = self.open_ssh_client()
         try:
-            return {
-                "active_connections": self.ssh_json(
-                    client,
-                    "[/ip/firewall/connection/print as-value where (orig-rate>0 || repl-rate>0)]",
+            capture = self.ssh_capture(
+                client,
+                "/ip/firewall/connection print terse without-paging "
+                "proplist=src-address,dst-address,reply-src-address,reply-dst-address,protocol,timeout,connection-mark,orig-rate,repl-rate,orig-bytes,repl-bytes "
+                "where (orig-rate>0 || repl-rate>0)",
+                capture_seconds=CONNECTION_DETAIL_CAPTURE_SECONDS,
+                max_bytes=CONNECTION_DETAIL_STREAM_MAX_BYTES,
+                timeout=max(SSH_TIMEOUT, int(CONNECTION_DETAIL_CAPTURE_SECONDS) + 8),
+            )
+            rows = []
+            seen = set()
+            for raw_line in capture["text"].splitlines():
+                line = raw_line.strip()
+                if not line or "src-address=" not in line:
+                    continue
+                row = self.parse_connection_terse_line(line)
+                if not row:
+                    continue
+                identity = (
+                    row.get("src-address", ""),
+                    row.get("dst-address", ""),
+                    row.get("reply-src-address", ""),
+                    row.get("reply-dst-address", ""),
+                    row.get("protocol", ""),
+                    row.get("timeout", ""),
+                    row.get("connection-mark", ""),
                 )
+                if identity in seen:
+                    continue
+                seen.add(identity)
+                rows.append(row)
+                if len(rows) >= CONNECTION_DETAIL_SAMPLE_LIMIT:
+                    break
+            return {
+                "active_connections": rows,
             }
         finally:
             client.close()
@@ -1121,20 +1458,21 @@ class Collector:
         total_disk = to_int(resource.get("total-hdd-space"))
         used_disk = max(total_disk - to_int(resource.get("free-hdd-space")), 0)
         admins = []
-        seen = set()
-        for user in rest["active_users"]:
-            key = (user.get("name"), user.get("address"), user.get("via"))
-            if key in seen:
-                continue
-            seen.add(key)
-            admins.append(
-                {
-                    "name": user.get("name", "-"),
-                    "address": user.get("address", "-"),
-                    "via": user.get("via", "-"),
-                    "when": user.get("when", "-"),
-                }
-            )
+        if EXPOSE_ADMIN_SESSIONS:
+            seen = set()
+            for user in rest["active_users"]:
+                key = (user.get("name"), user.get("address"), user.get("via"))
+                if key in seen:
+                    continue
+                seen.add(key)
+                admins.append(
+                    {
+                        "name": user.get("name", "-"),
+                        "address": user.get("address", "-"),
+                        "via": user.get("via", "-"),
+                        "when": user.get("when", "-"),
+                    }
+                )
         return {
             "identity": rest["identity"].get("name", "RouterOS"),
             "version": resource.get("version", "-"),
@@ -1163,7 +1501,7 @@ class Collector:
         }
 
     def build_interfaces(self, rest, rates, addresses_by_interface):
-        pppoe_names = {row.get("name") for row in rest["pppoe"]}
+        wan_names = infer_wan_interface_names(rest, addresses_by_interface)
         gateway_rows = defaultdict(list)
         for route in rest["routes"]:
             gateway_rows[route.get("gateway")].append(route)
@@ -1173,7 +1511,7 @@ class Collector:
             items.append(
                 {
                     "name": name,
-                    "role": "WAN" if name in pppoe_names else "LAN",
+                    "role": "WAN" if name in wan_names else "LAN",
                     "type": item.get("type", "-"),
                     "running": to_bool(item.get("running")),
                     "disabled": to_bool(item.get("disabled")),
@@ -1213,7 +1551,7 @@ class Collector:
             rows.append(
                 {
                     "name": name,
-                    "status": "鍦ㄧ嚎" if to_bool(item.get("running")) else "绂荤嚎",
+                    "status": "在线" if to_bool(item.get("running")) else "离线",
                     "running": to_bool(item.get("running")),
                     "parent": item.get("interface", "-"),
                     "addresses": [row.get("address", "-") for row in addresses_by_interface.get(name, [])],
@@ -1244,6 +1582,76 @@ class Collector:
             for row in rows
         ]
         return rows, distribution
+
+    def build_wan_lines(self, rest, pppoe_rows, interfaces):
+        if pppoe_rows:
+            return [
+                {
+                    **copy.deepcopy(row),
+                    "kind": "pppoe",
+                    "lineId": row.get("name", "-"),
+                    "access": "PPPoE",
+                }
+                for row in pppoe_rows
+            ]
+
+        active_defaults = [
+            row for row in rest.get("routes", [])
+            if row.get("dst-address") == "0.0.0.0/0" and to_bool(row.get("active")) and not to_bool(row.get("disabled"))
+        ]
+        dhcp_clients_by_interface = {
+            item.get("interface"): item
+            for item in rest.get("dhcp_clients", [])
+            if item.get("interface")
+        }
+        wan_interfaces = [row for row in interfaces if row.get("role") == "WAN"]
+        rows = []
+        for iface in wan_interfaces:
+            name = iface.get("name", "-")
+            history = self.line_history.setdefault(name, {"up": deque(maxlen=HISTORY_LIMIT), "down": deque(maxlen=HISTORY_LIMIT)})
+            history["up"].append(to_int(iface.get("txRate")))
+            history["down"].append(to_int(iface.get("rxRate")))
+            dhcp_client = dhcp_clients_by_interface.get(name, {})
+            running = bool(iface.get("running")) and not bool(iface.get("disabled"))
+            route_rows = []
+            if dhcp_client:
+                route_rows.append(
+                    {
+                        "active": running and to_bool(dhcp_client.get("add-default-route", True)),
+                        "distance": dhcp_client.get("default-route-distance", "-"),
+                        "table": "main",
+                        "comment": "DHCP client default route",
+                    }
+                )
+            elif len(wan_interfaces) == 1:
+                route_rows = [
+                    {
+                        "active": to_bool(route.get("active")),
+                        "distance": route.get("distance", "-"),
+                        "table": route.get("routing-table", "-"),
+                        "comment": route.get("comment", ""),
+                    }
+                    for route in active_defaults[:4]
+                ]
+            rows.append(
+                {
+                    "name": name,
+                    "status": "在线" if running else "离线",
+                    "running": running,
+                    "parent": iface.get("type", "-"),
+                    "addresses": list(iface.get("ips") or []),
+                    "upRate": to_int(iface.get("txRate")),
+                    "downRate": to_int(iface.get("rxRate")),
+                    "rxBytes": to_int(iface.get("rxBytes")),
+                    "txBytes": to_int(iface.get("txBytes")),
+                    "history": {"up": list(history["up"]), "down": list(history["down"])},
+                    "routes": route_rows,
+                    "kind": "interface",
+                    "lineId": name,
+                    "access": "DHCP" if dhcp_client else iface.get("type", "-"),
+                }
+            )
+        return rows
 
     def extract_local_ip(self, conn, local_networks, router_ips):
         candidates = [
@@ -1290,17 +1698,17 @@ class Collector:
                     "mac": mac,
                     "hostname": (lease or {}).get("host-name", "-"),
                     "status": item.get("status", "-"),
-                    "type": "闈欐€? if not to_bool(item.get("dynamic", True)) else "鍔ㄦ€?,
+                    "type": "静态" if not to_bool(item.get("dynamic", True)) else "动态",
                     "lastSeen": (lease or {}).get("last-seen", "-"),
                 }
             )
         alerts = []
         for ip_addr, macs in ip_to_macs.items():
             if len(macs) > 1:
-                alerts.append({"kind": "IP鍐茬獊", "value": ip_addr, "detail": ", ".join(sorted(macs))})
+                alerts.append({"kind": "IP冲突", "value": ip_addr, "detail": ", ".join(sorted(macs))})
         for mac, ips in mac_to_ips.items():
             if len(ips) > 1:
-                alerts.append({"kind": "MAC婕傜Щ", "value": mac, "detail": ", ".join(sorted(ips, key=ip_sort_key))})
+                alerts.append({"kind": "MAC漂移", "value": mac, "detail": ", ".join(sorted(ips, key=ip_sort_key))})
 
         terminal_stats = defaultdict(lambda: {"up": 0.0, "down": 0.0, "connections": 0, "sessionBytes": 0})
         active_rows = []
@@ -1590,7 +1998,7 @@ class Collector:
         address_lists = []
         for item in rest["address_lists"][:100]:
             list_name = item.get("list", "-")
-            category = "榛戝悕鍗? if "black" in list_name.lower() else "鐧藉悕鍗? if "white" in list_name.lower() else "鍦板潃闆?
+            category = "黑名单" if "black" in list_name.lower() else "白名单" if "white" in list_name.lower() else "地址集"
             address_lists.append(
                 {
                     "list": list_name,
@@ -1629,11 +2037,11 @@ class Collector:
                     }
                 )
         if len(active_defaults) > 1 and pcc_detected:
-            mode = "澶氱嚎鍒嗘祦 / 绛栫暐璺敱"
+            mode = "多线分流 / 策略路由"
         elif len(active_defaults) > 1:
-            mode = "澶氱嚎璺鐏?/ 浼樺厛绾у垏鎹?
+            mode = "多线路容灾 / 优先级切换"
         else:
-            mode = "鍗曠嚎璺?
+            mode = "单线路"
         return {
             "mode": mode,
             "activeLines": len(active_defaults),
@@ -1738,15 +2146,24 @@ class Collector:
         rates = self.compute_rates(rest["interfaces"])
         addresses_by_interface, local_networks, router_ips = self.build_maps(rest)
         pppoe, distribution = self.build_pppoe(rest, rates, addresses_by_interface)
-        wan_totals = {"up": sum(row["upRate"] for row in pppoe if row["running"]), "down": sum(row["downRate"] for row in pppoe if row["running"])}
-        terminals = self.build_terminals_and_connections(rest, ssh, local_networks, router_ips)
         interfaces = self.build_interfaces(rest, rates, addresses_by_interface)
+        wan_lines = self.build_wan_lines(rest, pppoe, interfaces)
+        if not distribution and wan_lines:
+            distribution = build_distribution_from_lines(wan_lines)
+        wan_source = [row for row in wan_lines if row.get("running")] or list(wan_lines)
+        wan_totals = {
+            "up": sum(to_int(row.get("upRate")) for row in wan_source),
+            "down": sum(to_int(row.get("downRate")) for row in wan_source),
+        }
+        terminals = self.build_terminals_and_connections(rest, ssh, local_networks, router_ips)
         ipv6_interface_count = sum(
             1 for row in interfaces if any(":" in str(ip_addr) for ip_addr in row.get("ips", []))
         )
         ipv6_terminal_count = sum(
             1 for row in terminals["terminals"] if ":" in str(row.get("ip", ""))
         )
+        capabilities = build_panel_capabilities(wan_lines, len(pppoe))
+        wan_line_count = len(wan_lines)
         resource = rest["resource"]
         total_memory = to_int(resource.get("total-memory"))
         used_memory = max(total_memory - to_int(resource.get("free-memory")), 0)
@@ -1779,7 +2196,8 @@ class Collector:
                 "slowRestLastErrorAt": self.slow_last_error_at,
                 "slowRestDurationSeconds": self.slow_duration_seconds,
                 "connectionDetailPollSeconds": CONNECTION_DETAIL_POLL_SECONDS,
-                "connectionProtocolPollSeconds": CONNECTION_PROTOCOL_POLL_SECONDS,
+                "detailRestWorkers": DETAIL_REST_WORKERS,
+                "connectionProtocolPollSeconds": CONNECTION_PROTOCOL_BREAKDOWN_INTERVAL_SECONDS,
                 "staticUpdatedAt": self.static_updated_at,
                 "staticError": self.static_error,
                 "staticLastErrorAt": self.static_last_error_at,
@@ -1800,10 +2218,17 @@ class Collector:
                 "ipv6NeighborCount": len(rest.get("ipv6_neighbors", [])),
                 "ipv6InterfaceCount": ipv6_interface_count,
                 "ipv6TerminalCount": ipv6_terminal_count,
+                "profile": PANEL_PROFILE,
+                "capabilities": capabilities,
+                "pppoeCount": len(pppoe),
+                "wanCount": wan_line_count,
+                "lineCount": wan_line_count,
+                "lineLayoutTier": line_layout_tier(wan_line_count),
             },
             "overview": self.build_overview(rest, ssh, terminals["terminalCount"], wan_totals),
             "interfaces": interfaces,
             "pppoe": pppoe,
+            "wan": wan_lines,
             "terminals": terminals["terminals"],
             "arp": {"items": terminals["arp"], "alerts": terminals["arpAlerts"]},
             "dhcp": self.build_dhcp(rest),
@@ -1895,11 +2320,14 @@ class Collector:
         while True:
             started_at = time.time()
             try:
-                protocol_counts = self.fetch_connection_protocol_counts()
+                tracking = self.fetch_connection_tracking_summary()
                 duration = round(time.time() - started_at, 2)
                 now = format_iso_now()
                 with self.lock:
-                    self.connection_summary["counts"].update(protocol_counts)
+                    self.connection_summary["counts"]["all"] = tracking["total"]
+                    self.connection_summary["counts"]["tcp"] = None
+                    self.connection_summary["counts"]["udp"] = None
+                    self.connection_summary["counts"]["icmp"] = None
                     self.connection_summary["protocolUpdatedAt"] = now
                     self.connection_summary["protocolError"] = None
                     self.connection_summary["protocolLastErrorAt"] = None
@@ -1911,6 +2339,7 @@ class Collector:
                     self.connection_summary["protocolError"] = str(exc)
                     self.connection_summary["protocolLastErrorAt"] = format_iso_now()
                     self.connection_summary["protocolDurationSeconds"] = duration
+                self.update_state()
             elapsed = time.time() - started_at
             time.sleep(max(0, CONNECTION_PROTOCOL_POLL_SECONDS - elapsed))
 
@@ -1967,8 +2396,15 @@ class Collector:
         while True:
             started_at = time.time()
             try:
-                detail = self.fetch_connection_detail()
-                detail_rest = self.fetch_rest_bundle(DETAIL_REST_ENDPOINTS)
+                with ThreadPoolExecutor(max_workers=2) as executor:
+                    detail_future = executor.submit(self.fetch_connection_detail)
+                    detail_rest_future = executor.submit(
+                        self.fetch_rest_bundle,
+                        DETAIL_REST_ENDPOINTS,
+                        DETAIL_REST_WORKERS,
+                    )
+                    detail = detail_future.result()
+                    detail_rest = detail_rest_future.result()
                 detail_failures = detail_rest.pop("_failures", {})
                 duration = round(time.time() - started_at, 2)
                 now = format_iso_now()
@@ -1991,8 +2427,9 @@ class Collector:
                     self.connection_detail["detailError"] = str(exc)
                     self.connection_detail["detailLastErrorAt"] = format_iso_now()
                     self.connection_detail["detailDurationSeconds"] = duration
+                self.update_state()
             elapsed = time.time() - started_at
-            time.sleep(max(0, CONNECTION_DETAIL_POLL_SECONDS - elapsed))
+            time.sleep(connection_detail_sleep_seconds(elapsed))
 
     def start(self):
         for target in (self.slow_rest_loop, self.static_loop, self.connection_detail_loop, self.realtime_loop, self.connection_protocol_loop):
@@ -2144,6 +2581,23 @@ class Collector:
         }
 
     def get_readonly_diagnostics(self, force_refresh=False):
+        if not READONLY_DIAGNOSTICS_ENABLED:
+            return {
+                "status": "disabled",
+                "readOnly": True,
+                "hidden": True,
+                "profile": PANEL_PROFILE,
+                "generatedAt": format_iso_now(),
+                "cached": False,
+                "cacheAgeSeconds": 0,
+                "reason": "readonly diagnostics disabled for current panel profile",
+                "dnsMatrix": [],
+                "serviceReachability": [],
+                "tcpReachability": [],
+                "exitChecks": [],
+                "panelFiles": [],
+                "nikki": {"ok": False, "disabled": True, "providers": []},
+            }
         now = time.time()
         with self.lock:
             cached_payload = copy.deepcopy(self.readonly_diagnostics_cache.get("payload"))
@@ -2217,7 +2671,14 @@ class Handler(BaseHTTPRequestHandler):
             )
         if parsed.path == "/api/health":
             state = collector.get_state()
-            return self.send_json({"status": state.get("status"), "updatedAt": state.get("updatedAt")})
+            return self.send_json(
+                {
+                    "status": state.get("status"),
+                    "updatedAt": state.get("updatedAt"),
+                    "profile": PANEL_PROFILE,
+                    "target": PANEL_TARGET,
+                }
+            )
         if parsed.path == "/api/readonly-diagnostics":
             params = parse_qs(parsed.query)
             force_refresh = (params.get("refresh") or ["0"])[0] in {"1", "true", "yes"}
@@ -2227,6 +2688,8 @@ class Handler(BaseHTTPRequestHandler):
     def do_POST(self):
         parsed = urlparse(self.path)
         if parsed.path == "/api/ip-alias":
+            if not IP_ALIAS_WRITE_ENABLED:
+                return self.send_json({"ok": False, "error": "ip alias write disabled"}, status=403)
             try:
                 payload = self.read_json_body()
                 result = collector.update_ip_alias(payload.get("ip"), payload.get("name"))
@@ -2251,7 +2714,7 @@ class Handler(BaseHTTPRequestHandler):
         try:
             return json.loads(body.decode("utf-8"))
         except Exception as exc:
-            raise ValueError("璇锋眰浣撲笉鏄悎娉?JSON") from exc
+            raise ValueError("请求体不是合法 JSON") from exc
 
     def send_json(self, payload, status=200):
         body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
@@ -2291,4 +2754,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

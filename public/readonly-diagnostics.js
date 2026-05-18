@@ -1,4 +1,4 @@
-﻿(() => {
+(() => {
   if (window.__readonlyDiagnosticsPanelV2) return;
   window.__readonlyDiagnosticsPanelV2 = true;
 
@@ -15,6 +15,25 @@
     },
   };
   const DIAG_TTL_MS = 45 * 1000;
+
+  // Public RouterOS-only build: keep this script from force-registering private diagnostics
+  // navigation or injecting any private summary blocks into the overview page.
+  // Private build can override via `window.__readonlyDiagnosticsPrivateNav = true/false`.
+  const READONLY_DIAGNOSTICS_PRIVATE_NAV = (() => {
+    if (window.__readonlyDiagnosticsPrivateNav === true) return true;
+    if (window.__readonlyDiagnosticsPrivateNav === false) return false;
+
+    const host = String(window.location?.hostname || "");
+    if (host === "192.168.3.50") return false;
+
+    const appShell = String(document.body?.getAttribute("data-app-shell") || "").toLowerCase();
+    if (appShell && !appShell.includes("ikuai")) return false;
+
+    const deployChannel = String(document.body?.getAttribute("data-deploy-channel") || "").toLowerCase();
+    if (deployChannel.includes("public")) return false;
+
+    return true;
+  })();
   const FRESH = {
     rest: { warn: 8, danger: 20 },
     static: { warn: 120, danger: 300 },
@@ -210,6 +229,36 @@
       white-space: nowrap !important;
       overflow: hidden !important;
       text-overflow: ellipsis !important;
+    }
+    #readonlyDiagnostics .readonly-summary-sticky,
+    .readonly-diagnostics-section > .readonly-summary-sticky {
+      margin-bottom: 10px;
+      padding: 0;
+      overflow: visible;
+    }
+    .readonly-summary-sticky > .readonly-summary-grid,
+    .section-summary-fixed-host > .readonly-summary-sticky > .readonly-summary-grid {
+      display: grid !important;
+      grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+      gap: 10px !important;
+      margin-top: 8px !important;
+      min-width: 0 !important;
+      align-items: stretch !important;
+    }
+    .readonly-summary-sticky .metric-card {
+      min-width: 0 !important;
+      min-height: 90px !important;
+      box-shadow: none;
+    }
+    .section-summary-fixed-host > .readonly-summary-sticky {
+      padding: 0 !important;
+      border: 0 !important;
+      background: rgba(255, 255, 255, 0.98) !important;
+      box-shadow: none !important;
+      backdrop-filter: blur(12px);
+    }
+    .section-summary-fixed-host > .readonly-summary-sticky .metric-card {
+      pointer-events: none;
     }
     .readonly-overview-health {
       margin: 0 0 10px;
@@ -1114,9 +1163,359 @@
     body.readonly-diagnostics-page #readonlyDiagnostics .readonly-uneven-grid {
       grid-template-columns: minmax(0, 1fr);
     }
+    body.readonly-diagnostics-page #readonlyDiagnostics .readonly-grid-2,
+    body.readonly-diagnostics-page #readonlyDiagnostics .readonly-grid-wide,
+    body.readonly-diagnostics-page #readonlyDiagnostics .readonly-support-grid,
+    body.readonly-diagnostics-page #readonlyDiagnostics .readonly-compact-grid,
+    body.readonly-diagnostics-page #readonlyDiagnostics .readonly-density-columns,
+    body.readonly-diagnostics-page #readonlyDiagnostics .readonly-terminal-priority-grid,
+    body.readonly-diagnostics-page #readonlyDiagnostics .readonly-wan-density-grid,
+    body.readonly-diagnostics-page #readonlyDiagnostics .readonly-wan-two-col,
+    body.readonly-diagnostics-page #readonlyDiagnostics .readonly-feature-brief {
+      grid-template-columns: minmax(0, 1fr) !important;
+    }
     body.readonly-diagnostics-page #readonlyDiagnostics .readonly-support-grid > .card,
     body.readonly-diagnostics-page #readonlyDiagnostics .readonly-compact-grid > .card {
       min-height: 0;
+    }
+    #readonlyDiagnostics,
+    .readonly-diagnostics-root {
+      --rd-surface: var(--panel, #ffffff);
+      --rd-surface-alt: var(--panel-soft, #fbfdff);
+      --rd-surface-muted: var(--surface-soft, #f4f8fd);
+      --rd-line: var(--line, #d7e3f4);
+      --rd-line-soft: var(--border, #e7eef8);
+      --rd-text: var(--text, #253246);
+      --rd-muted: var(--text-soft, #6d7b8e);
+      --rd-dim: var(--text-dim, #7f8da1);
+      --rd-accent: var(--blue, #2f7df6);
+      --rd-accent-soft: var(--accent-soft, #eef6ff);
+      --rd-ok: var(--green, #16c67a);
+      --rd-warn: var(--amber, #ffb020);
+      --rd-danger: var(--red, #ff5a5a);
+      --rd-shadow: 0 18px 32px rgba(15, 23, 42, 0.06);
+      --rd-shadow-soft: 0 10px 20px rgba(15, 23, 42, 0.04);
+    }
+    .readonly-diagnostics-section {
+      position: relative;
+    }
+    .readonly-diagnostics-root,
+    #readonlyDiagnostics {
+      min-width: 0;
+    }
+    .readonly-diagnostics-shell {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .readonly-diagnostics-shell > .ops-page-stack {
+      gap: 12px;
+    }
+    #readonlyDiagnostics .readonly-feature-sticky,
+    .readonly-diagnostics-root .readonly-feature-sticky {
+      margin-bottom: 0;
+      padding: 12px;
+      border: 1px solid var(--rd-line-soft);
+      border-radius: 16px;
+      background: linear-gradient(180deg, var(--rd-surface) 0%, var(--rd-surface-alt) 100%);
+      box-shadow: var(--rd-shadow-soft);
+    }
+    #readonlyDiagnostics .readonly-feature-nav,
+    .readonly-diagnostics-root .readonly-feature-nav {
+      gap: 10px;
+      margin: 0 0 12px;
+    }
+    #readonlyDiagnostics .readonly-feature-link,
+    .readonly-diagnostics-root .readonly-feature-link {
+      position: relative;
+      padding: 12px 13px 11px;
+      border-color: var(--rd-line-soft);
+      border-radius: 13px;
+      background: linear-gradient(180deg, var(--rd-surface) 0%, var(--rd-surface-alt) 100%);
+      color: var(--rd-text);
+      box-shadow: none;
+      transition: border-color .18s ease, background .18s ease, transform .18s ease;
+    }
+    #readonlyDiagnostics .readonly-feature-link::after,
+    .readonly-diagnostics-root .readonly-feature-link::after {
+      content: "";
+      position: absolute;
+      left: 12px;
+      right: 12px;
+      bottom: 0;
+      height: 3px;
+      border-radius: 999px;
+      background: transparent;
+    }
+    #readonlyDiagnostics .readonly-feature-link:hover,
+    .readonly-diagnostics-root .readonly-feature-link:hover {
+      border-color: var(--rd-line);
+      transform: translateY(-1px);
+    }
+    #readonlyDiagnostics .readonly-feature-link.is-active,
+    .readonly-diagnostics-root .readonly-feature-link.is-active {
+      border-color: rgba(47, 125, 246, 0.24);
+      background: linear-gradient(180deg, var(--rd-surface) 0%, var(--rd-accent-soft) 100%);
+      color: var(--rd-accent);
+      box-shadow: inset 0 0 0 1px rgba(47, 125, 246, 0.08);
+    }
+    #readonlyDiagnostics .readonly-feature-link.is-active::after,
+    .readonly-diagnostics-root .readonly-feature-link.is-active::after {
+      background: var(--rd-accent);
+    }
+    #readonlyDiagnostics .readonly-feature-link strong,
+    .readonly-diagnostics-root .readonly-feature-link strong,
+    #readonlyDiagnostics .readonly-brief-title,
+    .readonly-diagnostics-root .readonly-brief-title,
+    #readonlyDiagnostics .card-title,
+    .readonly-diagnostics-root .card-title {
+      color: var(--rd-text);
+    }
+    #readonlyDiagnostics .readonly-feature-link span,
+    .readonly-diagnostics-root .readonly-feature-link span,
+    #readonlyDiagnostics .subtle,
+    .readonly-diagnostics-root .subtle,
+    #readonlyDiagnostics .readonly-brief-text,
+    .readonly-diagnostics-root .readonly-brief-text {
+      color: var(--rd-muted);
+    }
+    #readonlyDiagnostics .readonly-feature-brief,
+    .readonly-diagnostics-root .readonly-feature-brief {
+      margin: 0;
+    }
+    #readonlyDiagnostics .readonly-brief-copy,
+    .readonly-diagnostics-root .readonly-brief-copy {
+      border-color: var(--rd-line-soft);
+      background: linear-gradient(135deg, var(--rd-surface) 0%, var(--rd-accent-soft) 100%);
+      box-shadow: inset 4px 0 0 var(--rd-accent);
+    }
+    #readonlyDiagnostics .readonly-summary-sticky,
+    .readonly-diagnostics-root .readonly-summary-sticky {
+      margin-bottom: 0;
+      padding: 10px 12px;
+      border: 1px solid var(--rd-line-soft);
+      border-radius: 15px;
+      background: linear-gradient(180deg, var(--rd-surface) 0%, var(--rd-surface-alt) 100%);
+      box-shadow: var(--rd-shadow-soft);
+    }
+    #readonlyDiagnostics .readonly-summary-sticky > .readonly-summary-grid,
+    .readonly-diagnostics-root .readonly-summary-sticky > .readonly-summary-grid {
+      gap: 12px !important;
+      margin-top: 0 !important;
+    }
+    #readonlyDiagnostics .readonly-summary-sticky .metric-card,
+    .readonly-diagnostics-root .readonly-summary-sticky .metric-card {
+      min-height: 96px !important;
+      border: 1px solid var(--rd-line-soft);
+      border-radius: 13px;
+      background: linear-gradient(180deg, var(--rd-surface) 0%, var(--rd-surface-alt) 100%);
+      box-shadow: none;
+    }
+    #readonlyDiagnostics .readonly-summary-sticky .metric-label,
+    .readonly-diagnostics-root .readonly-summary-sticky .metric-label {
+      color: var(--rd-muted) !important;
+      font-size: 11px;
+      font-weight: 800;
+    }
+    #readonlyDiagnostics .readonly-summary-sticky .metric-value,
+    .readonly-diagnostics-root .readonly-summary-sticky .metric-value {
+      color: var(--rd-text) !important;
+      font-size: 18px;
+      font-weight: 900;
+    }
+    #readonlyDiagnostics .readonly-summary-sticky .metric-foot,
+    .readonly-diagnostics-root .readonly-summary-sticky .metric-foot {
+      color: var(--rd-dim) !important;
+    }
+    #readonlyDiagnostics .readonly-section-band,
+    .readonly-diagnostics-root .readonly-section-band {
+      position: relative;
+      overflow: hidden;
+      padding: 14px;
+      border: 1px solid var(--rd-line-soft);
+      border-radius: 18px;
+      background: linear-gradient(180deg, var(--rd-surface) 0%, var(--rd-surface-alt) 100%);
+      box-shadow: var(--rd-shadow-soft);
+    }
+    #readonlyDiagnostics .readonly-section-band::before,
+    .readonly-diagnostics-root .readonly-section-band::before {
+      content: "";
+      display: block;
+      width: 72px;
+      height: 3px;
+      margin-bottom: 12px;
+      border-radius: 999px;
+      background: var(--rd-accent);
+      opacity: 0.9;
+    }
+    #readonlyDiagnostics .readonly-section-band.is-ok::before,
+    .readonly-diagnostics-root .readonly-section-band.is-ok::before {
+      background: var(--rd-ok);
+    }
+    #readonlyDiagnostics .readonly-section-band.is-warn::before,
+    .readonly-diagnostics-root .readonly-section-band.is-warn::before {
+      background: var(--rd-warn);
+    }
+    #readonlyDiagnostics .readonly-section-band.is-danger::before,
+    .readonly-diagnostics-root .readonly-section-band.is-danger::before {
+      background: var(--rd-danger);
+    }
+    #readonlyDiagnostics .readonly-band-head,
+    .readonly-diagnostics-root .readonly-band-head {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 12px;
+      margin-bottom: 12px;
+      align-items: start;
+    }
+    #readonlyDiagnostics .readonly-band-copy,
+    .readonly-diagnostics-root .readonly-band-copy {
+      min-width: 0;
+    }
+    #readonlyDiagnostics .readonly-band-eyebrow,
+    .readonly-diagnostics-root .readonly-band-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      min-height: 22px;
+      padding: 0 8px;
+      border: 1px solid var(--rd-line-soft);
+      border-radius: 999px;
+      background: var(--rd-surface-muted);
+      color: var(--rd-accent);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+    }
+    #readonlyDiagnostics .readonly-band-title,
+    .readonly-diagnostics-root .readonly-band-title {
+      margin-top: 8px;
+      color: var(--rd-text);
+      font-size: 17px;
+      font-weight: 900;
+      line-height: 1.25;
+    }
+    #readonlyDiagnostics .readonly-band-desc,
+    .readonly-diagnostics-root .readonly-band-desc {
+      max-width: 78ch;
+      margin-top: 4px;
+      color: var(--rd-muted);
+      font-size: 12px;
+      line-height: 1.55;
+    }
+    #readonlyDiagnostics .readonly-band-signal,
+    .readonly-diagnostics-root .readonly-band-signal {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      justify-content: flex-end;
+      align-content: flex-start;
+    }
+    #readonlyDiagnostics .readonly-band-body,
+    .readonly-diagnostics-root .readonly-band-body {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    #readonlyDiagnostics .readonly-band-body > .readonly-density-columns,
+    #readonlyDiagnostics .readonly-band-body > .readonly-support-grid,
+    #readonlyDiagnostics .readonly-band-body > .readonly-compact-grid,
+    #readonlyDiagnostics .readonly-band-body > .readonly-wan-density-grid,
+    #readonlyDiagnostics .readonly-band-body > .readonly-terminal-priority-grid,
+    #readonlyDiagnostics .readonly-band-body > .readonly-grid-2,
+    #readonlyDiagnostics .readonly-band-body > .readonly-grid-3,
+    #readonlyDiagnostics .readonly-band-body > .readonly-grid-wide,
+    .readonly-diagnostics-root .readonly-band-body > .readonly-density-columns,
+    .readonly-diagnostics-root .readonly-band-body > .readonly-support-grid,
+    .readonly-diagnostics-root .readonly-band-body > .readonly-compact-grid,
+    .readonly-diagnostics-root .readonly-band-body > .readonly-wan-density-grid,
+    .readonly-diagnostics-root .readonly-band-body > .readonly-terminal-priority-grid,
+    .readonly-diagnostics-root .readonly-band-body > .readonly-grid-2,
+    .readonly-diagnostics-root .readonly-band-body > .readonly-grid-3,
+    .readonly-diagnostics-root .readonly-band-body > .readonly-grid-wide {
+      gap: 12px;
+    }
+    #readonlyDiagnostics .readonly-global-strip,
+    .readonly-diagnostics-root .readonly-global-strip {
+      gap: 10px;
+      margin: 0;
+    }
+    #readonlyDiagnostics .readonly-global-chip,
+    .readonly-diagnostics-root .readonly-global-chip,
+    #readonlyDiagnostics .readonly-kpi,
+    .readonly-diagnostics-root .readonly-kpi,
+    #readonlyDiagnostics .readonly-selfcheck-item,
+    .readonly-diagnostics-root .readonly-selfcheck-item,
+    #readonlyDiagnostics .readonly-selfcheck-detail,
+    .readonly-diagnostics-root .readonly-selfcheck-detail,
+    #readonlyDiagnostics .readonly-selfcheck-metric,
+    .readonly-diagnostics-root .readonly-selfcheck-metric,
+    #readonlyDiagnostics .readonly-mini-item,
+    .readonly-diagnostics-root .readonly-mini-item,
+    #readonlyDiagnostics .readonly-wan-line-tile,
+    .readonly-diagnostics-root .readonly-wan-line-tile,
+    #readonlyDiagnostics .readonly-wan-mini-kpi,
+    .readonly-diagnostics-root .readonly-wan-mini-kpi,
+    #readonlyDiagnostics .readonly-protocol-chip,
+    .readonly-diagnostics-root .readonly-protocol-chip,
+    #readonlyDiagnostics .readonly-rule-group,
+    .readonly-diagnostics-root .readonly-rule-group {
+      border-color: var(--rd-line-soft);
+      background: linear-gradient(180deg, var(--rd-surface) 0%, var(--rd-surface-alt) 100%);
+      box-shadow: none;
+    }
+    #readonlyDiagnostics .card,
+    .readonly-diagnostics-root .card {
+      border: 1px solid var(--rd-line-soft);
+      border-radius: 14px;
+      background: linear-gradient(180deg, var(--rd-surface) 0%, var(--rd-surface-alt) 100%);
+      box-shadow: var(--rd-shadow-soft);
+    }
+    #readonlyDiagnostics .readonly-section-band .card,
+    .readonly-diagnostics-root .readonly-section-band .card {
+      box-shadow: none;
+    }
+    #readonlyDiagnostics .card-head,
+    .readonly-diagnostics-root .card-head {
+      padding: 12px 14px 0;
+    }
+    #readonlyDiagnostics .card-body,
+    .readonly-diagnostics-root .card-body {
+      padding: 10px 14px 14px;
+    }
+    #readonlyDiagnostics .readonly-note,
+    .readonly-diagnostics-root .readonly-note {
+      border-color: rgba(47, 125, 246, 0.16);
+      background: var(--rd-surface-muted);
+      color: var(--rd-accent);
+    }
+    #readonlyDiagnostics .readonly-pill,
+    .readonly-diagnostics-root .readonly-pill {
+      border-color: var(--rd-line-soft);
+      background: var(--rd-surface-muted);
+    }
+    #readonlyDiagnostics .ops-table-wrap,
+    .readonly-diagnostics-root .ops-table-wrap {
+      border-color: var(--rd-line-soft);
+      border-radius: 12px;
+      background: var(--rd-surface);
+    }
+    #readonlyDiagnostics .readonly-table,
+    .readonly-diagnostics-root .readonly-table {
+      background: transparent;
+    }
+    #readonlyDiagnostics .readonly-table th,
+    .readonly-diagnostics-root .readonly-table th {
+      background: var(--rd-surface-muted);
+      color: var(--rd-dim);
+      box-shadow: 0 1px 0 var(--rd-line-soft);
+    }
+    #readonlyDiagnostics .readonly-table td,
+    .readonly-diagnostics-root .readonly-table td {
+      border-bottom-color: var(--rd-line-soft);
+    }
+    #readonlyDiagnostics .readonly-table tbody tr:nth-child(even),
+    .readonly-diagnostics-root .readonly-table tbody tr:nth-child(even) {
+      background: rgba(240, 247, 255, 0.68);
     }
   `;
   document.head.appendChild(style);
@@ -1167,7 +1566,7 @@
       </div>`;
   }
 
-  function table(headers, rows, emptyText = "鏆傛棤鍙鏁版嵁", scrollClass = "readonly-scroll") {
+  function table(headers, rows, emptyText = "暂无只读数据", scrollClass = "readonly-scroll") {
     if (!rows.length) {
       return `<div class="empty">${html(emptyText)}</div>`;
     }
@@ -1214,10 +1613,10 @@
 
   function ageText(value) {
     const age = ageSeconds(value);
-    if (age === null) return "鏈噰闆?;
-    if (age < 60) return `${age}s 鍓峘;
-    if (age < 3600) return `${Math.round(age / 60)}m 鍓峘;
-    return `${Math.round(age / 3600)}h 鍓峘;
+    if (age === null) return "未采集";
+    if (age < 60) return `${age}s 前`;
+    if (age < 3600) return `${Math.round(age / 60)}m 前`;
+    return `${Math.round(age / 3600)}h 前`;
   }
 
   function levelByAge(value, thresholds) {
@@ -1240,7 +1639,7 @@
   }
 
   function levelText(level) {
-    return level === "danger" ? "寮傚父" : level === "warn" ? "鍏虫敞" : "姝ｅ父";
+    return level === "danger" ? "异常" : level === "warn" ? "关注" : level === "info" ? "说明" : "正常";
   }
 
   function canonicalName(name) {
@@ -1299,42 +1698,101 @@
     const staticThreshold = collectionThreshold(FRESH.static, meta.staticPollSeconds, meta.staticDurationSeconds);
     return [
       {
-        key: "REST 瀹炴椂閲囬泦",
+        key: "REST 实时采集",
         value: meta.realtimeUpdatedAt || snapshot.updatedAt,
         level: meta.realtimeError ? "danger" : levelByAge(meta.realtimeUpdatedAt || snapshot.updatedAt, restThreshold),
-        detail: meta.realtimeError || `璧勬簮 / 鏃堕挓 / 鎺ュ彛蹇噰 路 鏈€杩戣€楁椂 ${number(meta.realtimeDurationSeconds || 0)}s 路 绔偣閲嶈瘯 ${number(failureCount(meta.realtimeEndpointFailures))}`,
+        detail: meta.realtimeError || `资源 / 时钟 / 接口快采 · 最近耗时 ${number(meta.realtimeDurationSeconds || 0)}s · 端点重试 ${number(failureCount(meta.realtimeEndpointFailures))}`,
       },
       {
-        key: "REST 鎷撴墤鍒楄〃",
+        key: "REST 拓扑列表",
         value: meta.slowRestUpdatedAt,
         level: meta.slowRestError ? "danger" : levelByAge(meta.slowRestUpdatedAt, slowThreshold),
-        detail: meta.slowRestError || `PPPoE / 鍦板潃 / 璺敱 / ARP 鎱㈤噰 路 鏈€杩戣€楁椂 ${number(meta.slowRestDurationSeconds || 0)}s 路 绔偣閲嶈瘯 ${number(failureCount(meta.slowRestEndpointFailures))}`,
+        detail: meta.slowRestError || `PPPoE / 地址 / 路由 / ARP 慢采 · 最近耗时 ${number(meta.slowRestDurationSeconds || 0)}s · 端点重试 ${number(failureCount(meta.slowRestEndpointFailures))}`,
       },
       {
-        key: "SSH 杩炴帴璇︽儏",
+        key: "SSH 连接详情",
         value: meta.connectionDetailUpdatedAt || connections.detailUpdatedAt,
         level: meta.connectionDetailError ? "danger" : levelByAge(meta.connectionDetailUpdatedAt || connections.detailUpdatedAt, detailThreshold),
-        detail: meta.connectionDetailError || `缁堢娴侀噺鎺掕渚濊禆姝ら噰闆?路 鏈€杩戣€楁椂 ${number(meta.connectionDetailDurationSeconds || connections.detailDurationSeconds || 0)}s`,
+        detail: meta.connectionDetailError || `终端流量排行依赖此采集 · 最近耗时 ${number(meta.connectionDetailDurationSeconds || connections.detailDurationSeconds || 0)}s`,
       },
       {
-        key: "杩炴帴鍗忚缁熻",
+        key: "连接协议统计",
         value: meta.connectionProtocolUpdatedAt || connections.protocolUpdatedAt,
         level: meta.connectionProtocolError ? "danger" : levelByAge(meta.connectionProtocolUpdatedAt || connections.protocolUpdatedAt, protocolThreshold),
-        detail: meta.connectionProtocolError || `TCP / UDP / ICMP 缁熻 路 鏈€杩戣€楁椂 ${number(meta.connectionProtocolDurationSeconds || connections.protocolDurationSeconds || 0)}s`,
+        detail: meta.connectionProtocolError || `TCP / UDP / ICMP 统计 · 最近耗时 ${number(meta.connectionProtocolDurationSeconds || connections.protocolDurationSeconds || 0)}s`,
       },
       {
-        key: "DNS 闈欐€佽〃",
+        key: "DNS 静态表",
         value: meta.staticUpdatedAt,
         level: meta.staticError ? "danger" : levelByAge(meta.staticUpdatedAt, staticThreshold),
-        detail: meta.staticError || `DNS FWD / 闈欐€佽鍒欏揩鐓?路 鏈€杩戣€楁椂 ${number(meta.staticDurationSeconds || 0)}s`,
+        detail: meta.staticError || `DNS FWD / 静态规则快照 · 最近耗时 ${number(meta.staticDurationSeconds || 0)}s`,
       },
       {
-        key: "鍙浣撴鎺㈡祴",
+        key: "只读体检探测",
         value: diagTime,
         level: STATE.error ? "danger" : levelByAge(diagTime, FRESH.diag),
-        detail: STATE.error || (diag?.cached ? `缂撳瓨 ${diag.cacheAgeSeconds || 0}s` : "DNS / HTTP / 鍑哄彛鎺㈡祴"),
+        detail: STATE.error || (diag?.cached ? `缓存 ${diag.cacheAgeSeconds || 0}s` : "DNS / HTTP / 出口探测"),
       },
     ];
+  }
+
+  function summarizeDnsRows(dnsRows) {
+    const rows = list(dnsRows);
+    const answerRows = rows.filter((row) => list(row.answers).length);
+    const fakeRows = answerRows.filter((row) => row.fakeIp);
+    const realRows = answerRows.filter((row) => !row.fakeIp);
+    const dnsErrors = answerRows.length ? [] : rows.filter(isDnsErrorRow);
+    const answers = [...new Set(answerRows.flatMap((row) => list(row.answers)).filter(Boolean))];
+    const dnsMode = !rows.length
+      ? "none"
+      : fakeRows.length && realRows.length
+        ? "mixed"
+        : fakeRows.length
+          ? "fake"
+          : realRows.length
+            ? "real"
+            : dnsErrors.length
+              ? "error"
+              : "unknown";
+    const dnsState = dnsMode === "fake"
+      ? "Fake-IP"
+      : dnsMode === "mixed"
+        ? "混合策略"
+        : dnsMode === "real"
+          ? "真实IP"
+          : dnsMode === "error"
+            ? "DNS异常"
+            : "未采集";
+    const policy = dnsMode === "fake"
+      ? "代理/Fake-IP"
+      : dnsMode === "mixed"
+        ? "多 DNS 结果不一致"
+        : dnsMode === "real"
+          ? "真实IP/DIRECT倾向"
+          : "未判断";
+    return { rows, answers, dnsErrors, fakeRows, realRows, dnsMode, dnsState, policy };
+  }
+
+  function httpProbeState(http, tcpOk) {
+    if (!http) return { state: "missing", label: "未采集", level: "warn", reachable: false };
+    if (http.ok) return { state: "ok", label: `HTTP ${http.status || 200}`, level: "ok", reachable: true };
+    const error = String(http.error || "").toLowerCase();
+    if (tcpOk && (error.includes("timed out") || error.includes("timeout"))) {
+      return { state: "soft-timeout", label: "HTTP 超时", level: "info", reachable: true };
+    }
+    return { state: "hard-fail", label: "HTTP 异常", level: "warn", reachable: false };
+  }
+
+  function dnsModePill(mode) {
+    if (mode === "fake") return pill("Fake-IP", "info");
+    if (mode === "mixed") return pill("混合", "info");
+    if (mode === "real") return pill("真实IP", "ok");
+    if (mode === "error") return pill("DNS异常", "warn");
+    return pill("未采集", "warn");
+  }
+
+  function httpStatePill(state, label) {
+    return pill(label, state === "ok" ? "ok" : state === "soft-timeout" ? "info" : "warn");
   }
 
   function buildSiteMatrix(diag) {
@@ -1346,48 +1804,117 @@
       const http = list(httpGroups[name])[0] || null;
       const tcp = list(tcpGroups[name])[0] || null;
       const expected = dnsRows[0]?.expected || http?.expected || tcp?.expected || "-";
-      const fake = dnsRows.some((row) => row.fakeIp);
-      const answers = dnsRows.flatMap((row) => list(row.answers)).filter(Boolean);
-      const dnsErrors = answers.length ? [] : dnsRows.filter(isDnsErrorRow);
-      const dnsState = !dnsRows.length ? "鏈噰闆? : dnsErrors.length ? "DNS寮傚父" : fake ? "Fake-IP" : "鐪熷疄IP";
-      const policy = fake ? "浠ｇ悊/Fake-IP" : answers.length ? "鐪熷疄IP/DIRECT鍊惧悜" : "鏈垽鏂?;
+      const dnsSummary = summarizeDnsRows(dnsRows);
+      const httpSummary = httpProbeState(http, tcp?.ok);
+      const fake = dnsSummary.dnsMode === "fake";
+      const answers = dnsSummary.answers;
+      const dnsErrors = dnsSummary.dnsErrors;
+      const dnsState = dnsSummary.dnsState;
+      const policy = dnsSummary.policy;
       let level = "ok";
-      let verdict = "绗﹀悎棰勬湡";
+      let verdict = expected === "mixed" ? "混合策略" : "符合预期";
       if (!dnsRows.length) {
         level = "warn";
-        verdict = "鏈噰闆?DNS";
+        verdict = "未采集 DNS";
       } else if (dnsErrors.length) {
         level = "warn";
-        verdict = "DNS 瑙ｆ瀽寮傚父";
-      } else if (expected === "direct" && fake) {
+        verdict = "DNS 解析异常";
+      } else if (expected === "direct" && dnsSummary.dnsMode === "fake") {
         level = "danger";
-        verdict = "鐤戜技鍥藉唴璇唬鐞?;
-      } else if (expected === "proxy" && !fake) {
+        verdict = "疑似国内误代理";
+      } else if (expected === "proxy" && dnsSummary.dnsMode === "real") {
         level = "warn";
-        verdict = "鐤戜技娴峰鏈繘浠ｇ悊";
-      } else if (http && !http.ok) {
-        level = "warn";
-        verdict = "HTTP 鍙揪寮傚父";
-      } else if (tcp && !tcp.ok) {
-        level = "warn";
-        verdict = "TCP 443 寮傚父";
+        verdict = "疑似海外未进代理";
       } else if (expected === "mixed") {
         level = "info";
-        verdict = "娣峰悎绛栫暐";
+        verdict = "混合策略";
+        if (tcp && !tcp.ok) {
+          level = "warn";
+          verdict = "TCP 443 异常";
+        } else if (httpSummary.state === "soft-timeout") {
+          level = "info";
+          verdict = "TCP 可达，HTTP 探测超时";
+        } else if (httpSummary.state === "hard-fail") {
+          level = "warn";
+          verdict = "HTTP 可达异常";
+        }
+      } else if (dnsSummary.dnsMode === "mixed") {
+        level = "info";
+        verdict = "多 DNS 结果不一致";
+      } else if (tcp && !tcp.ok) {
+        level = "warn";
+        verdict = "TCP 443 异常";
+      } else if (httpSummary.state === "soft-timeout") {
+        level = "info";
+        verdict = "TCP 可达，HTTP 探测超时";
+      } else if (httpSummary.state === "hard-fail") {
+        level = "warn";
+        verdict = "HTTP 可达异常";
       }
       return {
         name,
         expected,
+        dnsMode: dnsSummary.dnsMode,
         dnsState,
         fake,
         answers,
         policy,
         http,
+        httpState: httpSummary.state,
+        httpLabel: httpSummary.label,
+        httpReachable: httpSummary.reachable,
         tcp,
         level,
         verdict,
       };
     });
+  }
+
+  function splitPolicySummary(siteRows) {
+    const rows = list(siteRows);
+    const directMisproxy = rows.filter((row) => row.expected === "direct" && row.dnsMode === "fake");
+    const proxyBypass = rows.filter((row) => row.expected === "proxy" && row.dnsMode === "real");
+    const directMixed = rows.filter((row) => row.expected === "direct" && row.dnsMode === "mixed");
+    const proxyMixed = rows.filter((row) => row.expected === "proxy" && row.dnsMode === "mixed");
+    return {
+      directMisproxy,
+      proxyBypass,
+      directMixed,
+      proxyMixed,
+      policyProblemCount: directMisproxy.length + proxyBypass.length,
+      mixedCount: directMixed.length + proxyMixed.length,
+    };
+  }
+
+  function interfaceErrorTotal(row) {
+    return num(row.rxDrop) + num(row.txDrop) + num(row.rxError) + num(row.txError);
+  }
+
+  function logicalInterfaceIssueKey(row) {
+    const name = String(row?.name || "");
+    return /^macvlan/i.test(name) ? name.replace(/^macvlan/i, "vlan") : name;
+  }
+
+  function pickInterfaceIssueRow(current, candidate) {
+    if (!current) return candidate;
+    const currentMacvlan = /^macvlan/i.test(String(current.name || "")) || String(current.type || "").toLowerCase() === "macvlan";
+    const candidateMacvlan = /^macvlan/i.test(String(candidate.name || "")) || String(candidate.type || "").toLowerCase() === "macvlan";
+    if (currentMacvlan !== candidateMacvlan) return currentMacvlan ? candidate : current;
+    const currentScore = interfaceErrorTotal(current) + num(current.txRate) + num(current.rxRate);
+    const candidateScore = interfaceErrorTotal(candidate) + num(candidate.txRate) + num(candidate.rxRate);
+    return candidateScore > currentScore ? candidate : current;
+  }
+
+  function interfaceIssueRows(snapshot) {
+    const grouped = new Map();
+    list(snapshot.interfaces).forEach((row) => {
+      const errorTotal = interfaceErrorTotal(row);
+      if (!errorTotal) return;
+      const normalized = { ...row, errorTotal };
+      const key = logicalInterfaceIssueKey(normalized);
+      grouped.set(key, pickInterfaceIssueRow(grouped.get(key), normalized));
+    });
+    return [...grouped.values()].sort((a, b) => b.errorTotal - a.errorTotal || (num(b.txRate) + num(b.rxRate)) - (num(a.txRate) + num(a.rxRate)));
   }
 
   function worstLevel(rows) {
@@ -1399,7 +1926,7 @@
   }
 
   function selfCheckStatus(level) {
-    return level === "danger" ? "寮傚父" : level === "warn" ? "闇€鍏虫敞" : level === "info" ? "璇存槑" : "姝ｅ父";
+    return level === "danger" ? "异常" : level === "warn" ? "需关注" : level === "info" ? "说明" : "正常";
   }
 
   function selfCheckSiteRows(diag, names) {
@@ -1407,24 +1934,28 @@
     return names.map((name) => matrix.find((row) => row.name === name) || {
       name,
       expected: "-",
-      dnsState: "鏈噰闆?,
+      dnsState: "未采集",
+      dnsMode: "none",
       fake: false,
       answers: [],
-      policy: "鏈垽鏂?,
+      policy: "未判断",
       http: null,
+      httpState: "missing",
+      httpLabel: "未采集",
+      httpReachable: false,
       tcp: null,
       level: "warn",
-      verdict: "绛夊緟鍙鎺㈡祴",
+      verdict: "等待只读探测",
     });
   }
 
   function selfCheckSiteDetailRows(rows) {
     return rows.map((row) => `
       <tr>
-        <td>${cell(html(row.name), html(row.expected === "direct" ? "DIRECT 棰勬湡" : row.expected === "proxy" ? "浠ｇ悊棰勬湡" : row.expected))}</td>
+        <td>${cell(html(row.name), html(row.expected === "direct" ? "DIRECT 预期" : row.expected === "proxy" ? "代理预期" : row.expected))}</td>
         <td>${cell(html(row.dnsState), html(list(row.answers).slice(0, 2).join(", ") || "-"), "readonly-mono")}</td>
-        <td>${row.tcp ? pill(row.tcp.ok ? "TCP 閫? : "TCP 寮傚父", row.tcp.ok ? "ok" : "warn") : pill("鏈噰闆?, "warn")}</td>
-        <td>${row.http ? (row.http.ok ? pill(`HTTP ${row.http.status || 200}`, "ok") : pill("HTTP 寮傚父", "warn")) : pill("鏈噰闆?, "warn")}</td>
+        <td>${row.tcp ? pill(row.tcp.ok ? "TCP 通" : "TCP 异常", row.tcp.ok ? "ok" : "warn") : pill("未采集", "warn")}</td>
+        <td>${httpStatePill(row.httpState, row.httpLabel)}</td>
         <td>${pill(row.verdict, row.level)}</td>
       </tr>`);
   }
@@ -1435,20 +1966,21 @@
       const rows = selfCheckSiteRows(diag, names);
       const level = diag ? worstLevel(rows) : "warn";
       const tcpOk = rows.filter((row) => row.tcp?.ok).length;
-      const httpOk = rows.filter((row) => row.http?.ok).length;
-      const fakeCount = rows.filter((row) => row.fake).length;
+      const httpReachable = rows.filter((row) => row.httpReachable).length;
+      const fakeCount = rows.filter((row) => row.dnsMode === "fake").length;
+      const mixedCount = rows.filter((row) => row.dnsMode === "mixed").length;
       return {
         key,
         title,
         button,
         level,
-        headers: ["绔欑偣", "DNS", "TCP443", "HTTP", "鍒ゆ柇"],
-        summary: diag ? goal : "杩樻病鏈夊彧璇绘帰娴嬬粨鏋滐紝鐐瑰嚮鍚庝細鍒锋柊 DNS / TCP / HTTP / 鍑哄彛妫€娴嬨€?,
+        headers: ["站点", "DNS", "TCP443", "HTTP", "判断"],
+        summary: diag ? goal : "还没有只读探测结果，点击后会刷新 DNS / TCP / HTTP / 出口检测。",
         metrics: [
-          ["绔欑偣", `${rows.length} 涓猔],
-          ["DNS", `${fakeCount} Fake-IP`],
-          ["TCP443", `${tcpOk}/${rows.length} 閫歚],
-          ["HTTP", `${httpOk}/${rows.length} 閫歚],
+          ["站点", `${rows.length} 个`],
+          ["DNS", `${fakeCount} Fake / ${mixedCount} 混合`],
+          ["TCP443", `${tcpOk}/${rows.length} 通`],
+          ["HTTP", `${httpReachable}/${rows.length} 可达`],
         ],
         rows: selfCheckSiteDetailRows(rows),
       };
@@ -1456,50 +1988,54 @@
     const siteRows = buildSiteMatrix(diag);
     const directRows = siteRows.filter((row) => row.expected === "direct");
     const proxyRows = siteRows.filter((row) => row.expected === "proxy");
-    const directFake = directRows.filter((row) => row.fake);
-    const proxyReal = proxyRows.filter((row) => !row.fake);
-    const dnsLevel = !diag ? "warn" : directFake.length ? "danger" : proxyReal.length ? "warn" : "ok";
+    const directFake = directRows.filter((row) => row.dnsMode === "fake");
+    const directMixed = directRows.filter((row) => row.dnsMode === "mixed");
+    const directRealCount = directRows.filter((row) => row.dnsMode === "real").length;
+    const proxyReal = proxyRows.filter((row) => row.dnsMode === "real");
+    const proxyMixed = proxyRows.filter((row) => row.dnsMode === "mixed");
+    const proxyFakeCount = proxyRows.filter((row) => row.dnsMode === "fake").length;
+    const dnsLevel = !diag ? "warn" : directFake.length ? "danger" : proxyReal.length ? "warn" : (directMixed.length || proxyMixed.length) ? "info" : "ok";
     const dnsRows = [
-      `<tr><td>鐩磋繛绔欑偣鐪熷疄 IP</td><td>${directRows.length - directFake.length}/${directRows.length}</td><td>${directFake.length ? pill("瀛樺湪璇唬鐞?, "danger") : pill("姝ｅ父", "ok")}</td><td>${html(directFake.map((row) => row.name).join(", ") || "鍥藉唴/鐩磋繛绔欑偣鏈惤 Fake-IP")}</td></tr>`,
-      `<tr><td>浠ｇ悊绔欑偣 Fake-IP</td><td>${proxyRows.filter((row) => row.fake).length}/${proxyRows.length}</td><td>${proxyReal.length ? pill("闇€鍏虫敞", "warn") : pill("姝ｅ父", "ok")}</td><td>${html(proxyReal.map((row) => row.name).join(", ") || "娴峰浠ｇ悊绔欑偣宸茶繘鍏?Fake-IP/浠ｇ悊閾捐矾")}</td></tr>`,
-      `<tr><td>鍑哄彛鏍锋湰</td><td>${html(exitIp)}</td><td>${pill(exitIp === "-" ? "鏈繑鍥? : "鍙", exitIp === "-" ? "warn" : "info")}</td><td>浠呬唬琛ㄩ潰鏉垮涓诲綋鍓嶅嚭鍙ｏ紝涓嶈嚜鍔ㄦ敼鍒嗘祦瑙勫垯</td></tr>`,
+      `<tr><td>直连站点真实 IP</td><td>${directRealCount}/${directRows.length}</td><td>${directFake.length ? pill("存在误代理", "danger") : directMixed.length ? pill("有混合", "info") : pill("正常", "ok")}</td><td>${html(directFake.map((row) => row.name).join(", ") || directMixed.map((row) => `${row.name}（多 DNS 不一致）`).join(", ") || "国内/直连站点未落 Fake-IP")}</td></tr>`,
+      `<tr><td>代理站点 Fake-IP</td><td>${proxyFakeCount}/${proxyRows.length}</td><td>${proxyReal.length ? pill("需关注", "warn") : proxyMixed.length ? pill("有混合", "info") : pill("正常", "ok")}</td><td>${html(proxyReal.map((row) => row.name).join(", ") || proxyMixed.map((row) => `${row.name}（多 DNS 不一致）`).join(", ") || "海外代理站点已进入 Fake-IP/代理链路")}</td></tr>`,
+      `<tr><td>出口样本</td><td>${html(exitIp)}</td><td>${pill(exitIp === "-" ? "未返回" : "只读", exitIp === "-" ? "warn" : "info")}</td><td>仅代表面板宿主当前出口，不自动改分流规则</td></tr>`,
     ];
     return [
-      groupCheck("github", "GitHub / YouTube 澶栫綉", "妫€娴?GitHub / YouTube 澶栫綉", ["GitHub", "YouTube", "Google"], "妫€鏌ュ缃戠珯鐐规槸鍚﹁蛋 Fake-IP/浠ｇ悊鍊惧悜锛屽苟楠岃瘉 TCP 443 涓?HTTP 鎺㈡祴銆?),
-      groupCheck("apple", "Apple 璁㈤槄閾捐矾", "妫€娴?Apple 璁㈤槄閾捐矾", ["Apple", "PayPal"], "妫€鏌?Apple/鏀粯绫婚摼璺槸鍚︿繚鎸佺湡瀹?IP / DIRECT 鍊惧悜锛屽苟楠岃瘉 HTTPS 鍙揪銆?),
-      groupCheck("douyin", "鎶栭煶鐩磋繛 CDN", "妫€娴嬫姈闊崇洿杩?CDN", ["Douyin", "Bilibili"], "妫€鏌ュ浗鍐呰棰戠珯鏄惁瑙ｆ瀽鍒扮湡瀹?IP锛岄伩鍏嶈璧版捣澶栦唬鐞嗗鑷村崱椤裤€?),
+      groupCheck("github", "GitHub / YouTube 外网", "检测 GitHub / YouTube 外网", ["GitHub", "YouTube", "Google"], "检查外网站点是否走 Fake-IP/代理倾向，并验证 TCP 443 与 HTTP 探测。"),
+      groupCheck("apple", "Apple 订阅链路", "检测 Apple 订阅链路", ["Apple", "PayPal"], "检查 Apple/支付类链路是否保持真实 IP / DIRECT 倾向，并验证 HTTPS 可达。"),
+      groupCheck("douyin", "抖音直连 CDN", "检测抖音直连 CDN", ["Douyin", "Bilibili"], "检查国内视频站是否解析到真实 IP，避免误走海外代理导致卡顿。"),
       {
         key: "dns",
-        title: "DNS 娉勬紡 / 鍒嗘祦椋庨櫓",
-        button: "妫€娴?DNS 娉勬紡椋庨櫓",
+        title: "DNS 泄漏 / 分流风险",
+        button: "检测 DNS 泄漏风险",
         level: dnsLevel,
-        headers: ["妫€鏌ラ」", "缁撴灉", "鐘舵€?, "璇存槑"],
-        summary: diag ? "瀵规瘮鐩磋繛绔欑偣鍜屼唬鐞嗙珯鐐圭殑瑙ｆ瀽缁撴灉锛屽垽鏂槸鍚﹀嚭鐜板浗鍐呰浠ｇ悊鎴栨捣澶栨湭杩涗唬鐞嗐€? : "杩樻病鏈夊彧璇绘帰娴嬬粨鏋滐紝鐐瑰嚮鍚庝細鍒锋柊 DNS 鐭╅樀涓庡嚭鍙ｆ牱鏈€?,
+        headers: ["检查项", "结果", "状态", "说明"],
+        summary: diag ? "对比直连站点和代理站点的解析结果，判断是否出现国内误代理或海外未进代理。" : "还没有只读探测结果，点击后会刷新 DNS 矩阵与出口样本。",
         metrics: [
-          ["DNS 璁板綍", `${number(list(diag?.dnsMatrix).length)} 鏉],
-          ["鐩磋繛璇唬鐞?, `${directFake.length} 涓猔],
-          ["浠ｇ悊鏈繘", `${proxyReal.length} 涓猔],
-          ["鍑哄彛", exitIp],
+          ["DNS 记录", `${number(list(diag?.dnsMatrix).length)} 条`],
+          ["直连误代理", `${directFake.length} 个`],
+          ["代理未进", `${proxyReal.length} 个`],
+          ["出口", exitIp],
         ],
         rows: dnsRows,
       },
       {
         key: "webrtc",
-        title: "WebRTC / STUN 椋庨櫓",
-        button: "鏌ョ湅 WebRTC / STUN 璇存槑",
+        title: "WebRTC / STUN 风险",
+        button: "查看 WebRTC / STUN 说明",
         level: "info",
-        headers: ["椤圭洰", "缁撴灉", "鐘舵€?, "璇存槑"],
-        summary: "WebRTC 鐪熷疄娉勬紡蹇呴』鍦ㄦ祻瑙堝櫒渚ф巿鏉冨悗娴嬭瘯銆傞潰鏉夸笉浼氱敵璇锋憚鍍忓ご/楹﹀厠椋庢潈闄愶紝涔熶笉浼氳嚜鍔ㄥ彂璧?STUN 濯掍綋鎺㈡祴銆?,
+        headers: ["项目", "结果", "状态", "说明"],
+        summary: "WebRTC 真实泄漏必须在浏览器侧授权后测试。面板不会申请摄像头/麦克风权限，也不会自动发起 STUN 媒体探测。",
         metrics: [
-          ["闈㈡澘鏉冮檺", "涓嶇敵璇峰獟浣撴潈闄?],
-          ["STUN 鎺㈡祴", "涓嶈嚜鍔ㄥ彂璧?],
-          ["缃戠粶渚?, "鍙樉绀烘彁绀?],
-          ["澶勭悊鏂瑰紡", "娴忚鍣ㄤ晶娴嬭瘯"],
+          ["面板权限", "不申请媒体权限"],
+          ["STUN 探测", "不自动发起"],
+          ["网络侧", "只显示提示"],
+          ["处理方式", "浏览器侧测试"],
         ],
         rows: [
-          `<tr><td>涓轰粈涔堜笉鑳借嚜鍔ㄦ祴</td><td>娴忚鍣?WebRTC 娉勬紡渚濊禆椤甸潰 JS 涓庡獟浣撴潈闄愶紝鏈嶅姟鍣ㄧ闈㈡澘鏃犳硶浠ｆ浛娴忚鍣ㄦ巿鏉冦€?/td><td>${pill("璇存槑", "info")}</td><td>閬垮厤闈㈡澘璇敵璇烽殣绉佹潈闄?/td></tr>`,
-          `<tr><td>闈㈡澘鑳藉仛浠€涔?/td><td>灞曠ず DNS銆乀CP銆丠TTP銆佸嚭鍙?IP 涓庡垎娴侀闄┿€?/td><td>${pill("鍙", "ok")}</td><td>涓嶅啓閰嶇疆銆佷笉鏀规祻瑙堝櫒鏉冮檺</td></tr>`,
-          `<tr><td>闇€瑕佷綘鐪嬪摢閲?/td><td>娴忚鍣?WebRTC 娴嬭瘯椤垫槸鍚︽毚闇茶繍钀ュ晢鍏綉 IP 鎴栧唴缃?IPv6銆?/td><td>${pill("浜哄伐纭", "warn")}</td><td>杩欑被缁撴灉鍙兘鍦ㄥ鎴风渚х‘璁?/td></tr>`,
+          `<tr><td>为什么不能自动测</td><td>浏览器 WebRTC 泄漏依赖页面 JS 与媒体权限，服务器端面板无法代替浏览器授权。</td><td>${pill("说明", "info")}</td><td>避免面板误申请隐私权限</td></tr>`,
+          `<tr><td>面板能做什么</td><td>展示 DNS、TCP、HTTP、出口 IP 与分流风险。</td><td>${pill("只读", "ok")}</td><td>不写配置、不改浏览器权限</td></tr>`,
+          `<tr><td>需要你看哪里</td><td>浏览器 WebRTC 测试页是否暴露运营商公网 IP 或内网 IPv6。</td><td>${pill("人工确认", "warn")}</td><td>这类结果只能在客户端侧确认</td></tr>`,
         ],
       },
     ];
@@ -1521,18 +2057,18 @@
   function terminalRiskTags(row) {
     const tags = [];
     const totalRate = num(row.upRate) + num(row.downRate);
-    if (num(row.connections) > 200) tags.push("杩炴帴鏆存定");
-    if (num(row.upRate) > 2 * 1024 * 1024) tags.push("涓婁紶寮傚父");
-    if (totalRate > 5 * 1024 * 1024) tags.push("澶ф祦閲?);
+    if (num(row.connections) > 200) tags.push("连接暴涨");
+    if (num(row.upRate) > 2 * 1024 * 1024) tags.push("上传异常");
+    if (totalRate > 5 * 1024 * 1024) tags.push("大流量");
     if (String(row.ip || "").includes(":")) tags.push("IPv6");
-    if (!tags.length) tags.push("瑙傚療");
+    if (!tags.length) tags.push("观察");
     return tags;
   }
 
   function riskItems(snapshot, diag) {
     const items = [];
     const pppoe = list(snapshot.pppoe);
-    const interfaces = list(snapshot.interfaces);
+    const interfaces = interfaceIssueRows(snapshot);
     const dns = snapshot.dns || {};
     const connections = snapshot.connections || {};
     const dhcp = snapshot.dhcp || {};
@@ -1540,49 +2076,49 @@
     const health = buildCollectionHealth(snapshot, diag);
     const stale = health.filter((row) => row.level !== "ok");
     const siteRows = buildSiteMatrix(diag);
-    const siteProblems = siteRows.filter((row) => row.level === "warn" || row.level === "danger");
+    const splitSummary = splitPolicySummary(siteRows);
 
-    if (snapshot.status !== "ok") items.push({ level: "danger", text: "閲囬泦鏈嶅姟寮傚父" });
-    if (stale.length) items.push({ level: stale.some((row) => row.level === "danger") ? "danger" : "warn", text: `閲囬泦鏂伴矞搴?${stale.length} 椤筦 });
-    if (!dns.running) items.push({ level: "warn", text: "RouterOS DNS 鏈惎鐢ㄨ繙绋嬭姹? });
-    if (connections.protocolError) items.push({ level: "warn", text: "杩炴帴鍗忚缁熻寮傚父" });
-    if (connections.detailError) items.push({ level: "danger", text: "杩炴帴璇︽儏閲囬泦寮傚父" });
-    if (pppoe.some((row) => !row.running)) items.push({ level: "danger", text: "瀛樺湪绂荤嚎瀹藉甫" });
-    const errorIfaces = interfaces.filter((row) => num(row.rxDrop) + num(row.txDrop) + num(row.rxError) + num(row.txError) > 0);
-    if (errorIfaces.length) items.push({ level: "warn", text: `鎺ュ彛閿欒 ${errorIfaces.length} 椤筦 });
+    if (snapshot.status !== "ok") items.push({ level: "danger", text: "采集服务异常" });
+    if (stale.length) items.push({ level: stale.some((row) => row.level === "danger") ? "danger" : "warn", text: `采集新鲜度 ${stale.length} 项` });
+    if (!dns.running) items.push({ level: "warn", text: "RouterOS DNS 未启用远程请求" });
+    if (connections.protocolError) items.push({ level: "warn", text: "连接协议统计异常" });
+    if (connections.detailError) items.push({ level: "danger", text: "连接详情采集异常" });
+    if (pppoe.some((row) => !row.running)) items.push({ level: "danger", text: "存在离线宽带" });
+    if (interfaces.length) items.push({ level: "warn", text: `接口错误 ${interfaces.length} 组` });
     const skew = distribution.some((row) => num(row.share) > 55 && distribution.length > 1);
-    if (skew) items.push({ level: "warn", text: "绾胯矾璐熻浇鏄庢樉鍋忔枩" });
-    if (list(dhcp.servers).length && !list(dhcp.servers).some((row) => row.running)) items.push({ level: "warn", text: "DHCP 鏈嶅姟鏈繍琛? });
-    if (siteProblems.length) items.push({ level: siteProblems.some((row) => row.level === "danger") ? "danger" : "warn", text: `鍒嗘祦妫€娴?${siteProblems.length} 椤筦 });
-    if (diag?.status === "error") items.push({ level: "warn", text: "鍙澶栭儴鎺㈡祴寮傚父" });
+    if (skew) items.push({ level: "warn", text: "线路负载明显偏斜" });
+    if (list(dhcp.servers).length && !list(dhcp.servers).some((row) => row.running)) items.push({ level: "warn", text: "DHCP 服务未运行" });
+    if (splitSummary.policyProblemCount) items.push({ level: "danger", text: `分流策略 ${splitSummary.policyProblemCount} 项` });
+    if (diag?.status === "error") items.push({ level: "warn", text: "只读外部探测异常" });
     return items;
   }
 
   function globalRiskChips(snapshot, diag) {
     const health = buildCollectionHealth(snapshot, diag);
     const siteRows = buildSiteMatrix(diag);
+    const splitSummary = splitPolicySummary(siteRows);
     const pppoe = list(snapshot.pppoe);
-    const interfaces = list(snapshot.interfaces);
+    const interfaces = interfaceIssueRows(snapshot);
     const dhcp = snapshot.dhcp || {};
     const distribution = list(snapshot.loadBalance?.distribution);
     const terminals = list(snapshot.terminals);
     const staleCount = health.filter((row) => row.level !== "ok").length;
     const dnsBad = list(diag?.dnsMatrix).filter(isDnsErrorRow).length;
-    const proxyBad = siteRows.filter((row) => row.level === "warn" || row.level === "danger").length;
+    const proxyBad = splitSummary.policyProblemCount;
     const wanBad = pppoe.filter((row) => !row.running).length + distribution.filter((row) => num(row.share) > 55 && distribution.length > 1).length;
     const dhcpBad = list(dhcp.servers).length && !list(dhcp.servers).some((row) => row.running) ? 1 : 0;
     const highTerminals = terminals.filter((row) => terminalRiskScore(row) >= 45).length;
     const ipv6Risk = num(snapshot.meta?.ipv6TerminalCount) > 0 ? 1 : 0;
-    const ifaceErrors = interfaces.filter((row) => num(row.rxDrop) + num(row.txDrop) + num(row.rxError) + num(row.txError) > 0).length;
+    const ifaceErrors = interfaces.length;
     return [
-      { label: "閲囬泦寤惰繜", value: staleCount, level: staleCount ? "danger" : "ok" },
-      { label: "DNS 寮傚父", value: dnsBad, level: dnsBad ? "warn" : "ok" },
-      { label: "浠ｇ悊鍒嗘祦", value: proxyBad, level: proxyBad ? "warn" : "ok" },
-      { label: "WAN 寮傚父", value: wanBad, level: wanBad ? "warn" : "ok" },
-      { label: "DHCP 寮傚父", value: dhcpBad, level: dhcpBad ? "warn" : "ok" },
-      { label: "楂樺嵄缁堢", value: highTerminals, level: highTerminals ? "danger" : "ok" },
-      { label: "IPv6 椋庨櫓", value: ipv6Risk, level: ipv6Risk ? "warn" : "ok" },
-      { label: "鎺ュ彛閿欒", value: ifaceErrors, level: ifaceErrors ? "warn" : "ok" },
+      { label: "采集延迟", value: staleCount, level: staleCount ? "danger" : "ok" },
+      { label: "DNS 异常", value: dnsBad, level: dnsBad ? "warn" : "ok" },
+      { label: "代理分流", value: proxyBad, level: proxyBad ? "warn" : "ok" },
+      { label: "WAN 异常", value: wanBad, level: wanBad ? "warn" : "ok" },
+      { label: "DHCP 异常", value: dhcpBad, level: dhcpBad ? "warn" : "ok" },
+      { label: "高危终端", value: highTerminals, level: highTerminals ? "danger" : "ok" },
+      { label: "IPv6 风险", value: ipv6Risk, level: ipv6Risk ? "warn" : "ok" },
+      { label: "接口错误", value: ifaceErrors, level: ifaceErrors ? "warn" : "ok" },
     ];
   }
 
@@ -1601,22 +2137,22 @@
     const dnsRows = list(diag?.dnsMatrix);
     const services = list(diag?.serviceReachability);
     const exits = list(diag?.exitChecks);
-    const status = danger ? "楂橀闄? : warn ? "闇€鍏虫敞" : "姝ｅ父";
+    const status = danger ? "高风险" : warn ? "需关注" : "正常";
     const statusLevel = danger ? "danger" : warn ? "warn" : "ok";
     return `
       <div class="readonly-banner">
         <div class="readonly-hero">
-          <div class="readonly-hero-title">鍙杩愯浣撴 路 ${pill(status, statusLevel)}</div>
-          <div class="readonly-hero-copy">鏈〉鍙睍绀轰笌鎺㈡祴锛屼笉鍚?RouterOS / OpenWrt / ESXi 鍐欏叆閰嶇疆锛涚敤浜庡揩閫熷畾浣嶉噰闆嗘柊椴滃害銆丏NS/浠ｇ悊鍒嗘祦銆佸嚭鍙ｃ€佹湇鍔″彲杈俱€佽鍒欏懡涓€佺粓绔闄┿€両Pv6 鍜岀嚎璺亸鏂溿€?/div>
+          <div class="readonly-hero-title">只读运行体检 · ${pill(status, statusLevel)}</div>
+          <div class="readonly-hero-copy">本页只展示与探测，不向 RouterOS / OpenWrt / ESXi 写入配置；用于快速定位采集新鲜度、DNS/代理分流、出口、服务可达、规则命中、终端风险、IPv6 和线路偏斜。</div>
           <div class="readonly-pill-row" style="margin-top:8px">
-            ${risks.length ? risks.slice(0, 10).map((item) => pill(item.text, item.level)).join("") : pill("鏈彂鐜版槑鏄鹃闄?, "ok")}
-            ${risks.length > 10 ? pill(`+${risks.length - 10} 椤筦, "warn") : ""}
+            ${risks.length ? risks.slice(0, 10).map((item) => pill(item.text, item.level)).join("") : pill("未发现明显风险", "ok")}
+            ${risks.length > 10 ? pill(`+${risks.length - 10} 项`, "warn") : ""}
           </div>
         </div>
-        ${kpi("椋庨櫓椤?, `<span style="color:${danger ? "#d63b3b" : warn ? "#ad7200" : "#08a35c"}">${number(risks.length)}</span>`, `${number(danger)} 涓ラ噸 / ${number(warn)} 鍏虫敞`)}
-        ${kpi("DNS 鎺㈡祴", number(dnsRows.length), STATE.loading && !diag ? "鍙鎺㈡祴涓? : diag ? `${diag.cached ? "缂撳瓨" : "瀹炴椂"} 路 ${html(diag.generatedAt || "-")}` : "绛夊緟鎺㈡祴")}
-        ${kpi("鏈嶅姟鎺㈡祴", number(services.length), services.length ? `${number(services.filter((row) => row.ok).length)} 鍙揪` : "鏈畬鎴?)}
-        ${kpi("鍑哄彛鎺㈡祴", number(exits.length), exits.length ? `${number(exits.filter((row) => row.ip).length)} 鏈夌粨鏋渀 : "鏈畬鎴?)}
+        ${kpi("风险项", `<span style="color:${danger ? "#d63b3b" : warn ? "#ad7200" : "#08a35c"}">${number(risks.length)}</span>`, `${number(danger)} 严重 / ${number(warn)} 关注`)}
+        ${kpi("DNS 探测", number(dnsRows.length), STATE.loading && !diag ? "只读探测中" : diag ? `${diag.cached ? "缓存" : "实时"} · ${html(diag.generatedAt || "-")}` : "等待探测")}
+        ${kpi("服务探测", number(services.length), services.length ? `${number(services.filter((row) => row.ok).length)} 可达` : "未完成")}
+        ${kpi("出口探测", number(exits.length), exits.length ? `${number(exits.filter((row) => row.ip).length)} 有结果` : "未完成")}
       </div>`;
   }
 
@@ -1626,10 +2162,10 @@
         <td>${cell(html(row.key), html(row.detail))}</td>
         <td>${pill(levelText(row.level), row.level)}</td>
         <td>${cell(html(ageText(row.value)), html(row.value || "-"), "readonly-mono")}</td>
-        <td>${html(row.level === "ok" ? "椤甸潰/鏁版嵁婧愬悓姝ヤ腑" : "浼樺厛鎺掓煡閲囬泦绾跨▼鎴栨暟鎹簮")}</td>
+        <td>${html(row.level === "ok" ? "页面/数据源同步中" : "优先排查采集线程或数据源")}</td>
       </tr>`);
-    const body = table(["閲囬泦椤?, "鐘舵€?, "鏈€鍚庢洿鏂?, "鍒ゆ柇"], rows, "鏆傛棤閲囬泦鍋ュ悍鏁版嵁", compact ? "readonly-scroll" : "readonly-scroll-tall");
-    return card("閲囬泦鍋ュ悍 / 鏁版嵁鏂伴矞搴?, "闃叉椤甸潰姝ｅ父浣嗗悗绔噰闆嗗崱姝?, body);
+    const body = table(["采集项", "状态", "最后更新", "判断"], rows, "暂无采集健康数据", compact ? "readonly-scroll" : "readonly-scroll-tall");
+    return card("采集健康 / 数据新鲜度", "防止页面正常但后端采集卡死", body);
   }
 
   function renderSelfCheckPanel(diag) {
@@ -1637,8 +2173,8 @@
     const activeKey = STATE.selfCheck.active || items[0]?.key;
     const active = items.find((item) => item.key === activeKey) || items[0];
     const refreshedText = STATE.selfCheck.refreshedAt
-      ? `涓婃鎵嬪姩妫€娴嬶細${new Date(STATE.selfCheck.refreshedAt).toLocaleTimeString()}`
-      : "灏氭湭鎵嬪姩瑙﹀彂锛屾湰鍖哄睍绀烘渶杩戜竴娆″彧璇绘帰娴嬬紦瀛?;
+      ? `上次手动检测：${new Date(STATE.selfCheck.refreshedAt).toLocaleTimeString()}`
+      : "尚未手动触发，本区展示最近一次只读探测缓存";
     const actionButtons = items.map((item) => {
       const busy = STATE.selfCheck.refreshing === item.key;
       return `
@@ -1647,7 +2183,7 @@
             <strong>${html(item.button)}</strong>
             <span class="readonly-selfcheck-item-copy">${html(item.summary)}</span>
           </span>
-          ${pill(busy ? "妫€娴嬩腑" : selfCheckStatus(item.level), busy ? "warn" : item.level)}
+          ${pill(busy ? "检测中" : selfCheckStatus(item.level), busy ? "warn" : item.level)}
         </button>`;
     });
     const metricCards = list(active.metrics).map(([label, value]) => `
@@ -1655,7 +2191,7 @@
         <span>${html(label)}</span>
         <strong>${html(value)}</strong>
       </div>`).join("");
-    return card("鏁呴殰鑷鍏ュ彛", "鐐瑰嚮浼氬埛鏂板彧璇绘帰娴嬪苟鍦ㄥ彸渚ф樉绀哄搴旂粨鏋滐紱涓嶈嚜鍔ㄤ慨澶嶃€佷笉鍐欓厤缃?, `
+    return card("故障自检入口", "点击会刷新只读探测并在右侧显示对应结果；不自动修复、不写配置", `
       <div class="readonly-selfcheck-layout">
         <div class="readonly-selfcheck-list">${actionButtons.join("")}</div>
         <div class="readonly-selfcheck-detail ${active.level}">
@@ -1664,11 +2200,11 @@
               <div class="readonly-selfcheck-title">${html(active.title)}</div>
               <div class="readonly-selfcheck-copy">${html(active.summary)}</div>
             </div>
-            ${pill(STATE.selfCheck.refreshing === active.key ? "妫€娴嬩腑" : selfCheckStatus(active.level), STATE.selfCheck.refreshing === active.key ? "warn" : active.level)}
+            ${pill(STATE.selfCheck.refreshing === active.key ? "检测中" : selfCheckStatus(active.level), STATE.selfCheck.refreshing === active.key ? "warn" : active.level)}
           </div>
           <div class="readonly-selfcheck-metrics">${metricCards}</div>
-          ${table(active.headers || ["椤圭洰", "缁撴灉", "鐘舵€?, "璇存槑"], active.rows, "绛夊緟鍙鎺㈡祴缁撴灉", "readonly-scroll")}
-          <div class="readonly-selfcheck-foot">${html(refreshedText)}锛沇ebRTC/STUN 椤逛粎鍋氳鏄庯紝涓嶇敵璇锋祻瑙堝櫒濯掍綋鏉冮檺銆?/div>
+          ${table(active.headers || ["项目", "结果", "状态", "说明"], active.rows, "等待只读探测结果", "readonly-scroll")}
+          <div class="readonly-selfcheck-foot">${html(refreshedText)}；WebRTC/STUN 项仅做说明，不申请浏览器媒体权限。</div>
         </div>
       </div>`, "readonly-selfcheck-card-wide");
   }
@@ -1679,14 +2215,14 @@
       <tr>
         <td>${cell(html(row.name), html(row.expected))}</td>
         <td>${cell(html(row.dnsState), html(row.answers.slice(0, 2).join(", ") || "-"), "readonly-mono")}</td>
-        <td>${pill(row.fake ? "Fake-IP" : "鐪熷疄IP", row.fake ? "info" : "ok")}</td>
+        <td>${dnsModePill(row.dnsMode)}</td>
         <td>${html(row.policy)}</td>
-        <td>${cell(html(exitIp), "褰撳墠闈㈡澘鍑哄彛锛岄潪閫愮珯鐐瑰嚭鍙?, "readonly-mono")}</td>
-        <td>${row.tcp ? pill(row.tcp.ok ? "TCP閫? : "TCP澶辫触", row.tcp.ok ? "ok" : "warn") : pill("鏈噰闆?, "warn")}</td>
-        <td>${row.http ? `${row.http.status ?? "-"} / ${number(row.http.elapsedMs)}ms` : "-"}</td>
+        <td>${cell(html(exitIp), "当前面板出口，非逐站点出口", "readonly-mono")}</td>
+        <td>${row.tcp ? pill(row.tcp.ok ? "TCP通" : "TCP失败", row.tcp.ok ? "ok" : "warn") : pill("未采集", "warn")}</td>
+        <td>${cell(html(row.httpLabel), html(row.http ? `${number(row.http.elapsedMs)}ms` : "-"), "readonly-mono")}</td>
         <td>${pill(row.verdict, row.level)}</td>
       </tr>`);
-    return card("DNS / 浠ｇ悊鍒嗘祦浣撴鐭╅樀", "甯哥敤绔欑偣锛氳В鏋愩€丗ake-IP銆佺瓥鐣ャ€乀CP/HTTP 涓庡嚭鍙ｆ彁绀?, table(["绔欑偣", "DNS 缁撴灉", "Fake-IP", "绛栫暐鍒ゆ柇", "鍑哄彛 IP", "TCP443", "HTTP/寤惰繜", "鍒ゆ柇"], rows, "绛夊緟鍙鍒嗘祦鎺㈡祴", "readonly-scroll-tall"));
+    return card("DNS / 代理分流体检矩阵", "常用站点：解析、Fake-IP、策略、TCP/HTTP 与出口提示", table(["站点", "DNS 结果", "Fake-IP", "策略判断", "出口 IP", "TCP443", "HTTP/延迟", "判断"], rows, "等待只读分流探测", "readonly-scroll-tall"));
   }
 
   function renderDnsConsistency(diag) {
@@ -1697,11 +2233,11 @@
       const renderLine = (type) => {
         const row = rows.find((item) => item.type === type);
         if (!row) {
-          return `<div class="readonly-dns-line"><span class="readonly-dns-kind">${type}</span><span class="readonly-dns-value warn">鏈噰闆?/span></div>`;
+          return `<div class="readonly-dns-line"><span class="readonly-dns-kind">${type}</span><span class="readonly-dns-value warn">未采集</span></div>`;
         }
         const answers = list(row.answers);
         const level = row.error ? "warn" : row.fakeIp ? "info" : "";
-        const value = row.error || answers.slice(0, 2).join(", ") || "鏃犺繑鍥?;
+        const value = row.error || answers.slice(0, 2).join(", ") || "无返回";
         return `<div class="readonly-dns-line"><span class="readonly-dns-kind">${type}</span><span class="readonly-dns-value ${level}">${html(value)}</span></div>`;
       };
       return `<div class="readonly-dns-pair">${renderLine("A")}${renderLine("AAAA")}</div>`;
@@ -1714,33 +2250,33 @@
       const errorCount = serviceRows.filter(isDnsErrorRow).length;
       const level = errorCount ? "warn" : expected === "proxy" ? (fakeCount ? "ok" : "warn") : (fakeCount ? "warn" : "ok");
       const verdict = errorCount
-        ? `寮傚父 ${number(errorCount)}`
+        ? `异常 ${number(errorCount)}`
         : expected === "proxy"
-          ? (fakeCount ? "绗﹀悎浠ｇ悊" : "鐪熷疄IP")
-          : (fakeCount ? "鐤戜技璇唬鐞? : "鐪熷疄IP");
+          ? (fakeCount ? "符合代理" : "真实IP")
+          : (fakeCount ? "疑似误代理" : "真实IP");
       const elapsed = Math.max(...serviceRows.map((row) => num(row.elapsedMs)), 0);
       return `
         <tr>
           <td>${cell(html(name), html(serviceRows[0]?.domain || "-"))}</td>
           <td>${pill(expected, "info")}</td>
           ${serverOrder.map((serverName) => `<td>${formatDnsCell(serviceRows, serverName)}</td>`).join("")}
-          <td>${cell(`${number(realCount)} 鐪?/ ${number(fakeCount)} 鍋嘸, errorCount ? `${number(errorCount)} 涓紓甯竊 : "鏃犲紓甯?)}</td>
+          <td>${cell(`${number(realCount)} 真 / ${number(fakeCount)} 假`, errorCount ? `${number(errorCount)} 个异常` : "无异常")}</td>
           <td>${pill(verdict, level)}</td>
           <td>${number(elapsed)} ms</td>
         </tr>`;
     });
-    return card("DNS 瑙ｆ瀽涓€鑷存€?, "姣忎釜绔欑偣涓€琛岋紝瀵圭収 OpenWrt / RouterOS / 绯荤粺 DNS 鐨?A 涓?AAAA 缁撴灉", table(["绔欑偣", "棰勬湡", "OpenWrt", "RouterOS", "绯荤粺", "鐪熷疄/Fake", "鍒ゆ柇", "鏈€鎱?], rows, "绛夊緟 DNS 鍙鎺㈡祴", "readonly-scroll-tall"));
+    return card("DNS 解析一致性", "每个站点一行，对照 OpenWrt / RouterOS / 系统 DNS 的 A 与 AAAA 结果", table(["站点", "预期", "OpenWrt", "RouterOS", "系统", "真实/Fake", "判断", "最慢"], rows, "等待 DNS 只读探测", "readonly-scroll-tall"));
   }
 
   function renderExitTable(diag) {
     const rows = list(diag?.exitChecks).map((row) => `
       <tr>
         <td>${cell(html(row.name), html(new URL(row.url || "https://invalid.local").hostname))}</td>
-        <td>${cell(row.ip ? html(row.ip) : "鏈繑鍥?, row.error ? html(row.error) : "ASN / 鍦扮悊浣嶇疆鏈噰闆?, "readonly-mono")}</td>
-        <td>${pill(row.error ? "寮傚父" : "鍙", row.error ? "warn" : "ok")}</td>
+        <td>${cell(row.ip ? html(row.ip) : "未返回", row.error ? html(row.error) : "ASN / 地理位置未采集", "readonly-mono")}</td>
+        <td>${pill(row.error ? "异常" : "只读", row.error ? "warn" : "ok")}</td>
         <td>${number(row.elapsedMs)} ms</td>
       </tr>`);
-    return card("鍑哄彛 IP / ASN 瀵圭収琛?, "鍥藉唴/娴峰/绔欑偣閫愮瓥鐣ュ嚭鍙ｆ殏涓嶆敼璺敱锛屼粎鏄剧ず褰撳墠闈㈡澘鍑哄彛", table(["鎺㈡祴婧?, "鍑哄彛 / ASN", "鐘舵€?, "鑰楁椂"], rows));
+    return card("出口 IP / ASN 对照表", "国内/海外/站点逐策略出口暂不改路由，仅显示当前面板出口", table(["探测源", "出口 / ASN", "状态", "耗时"], rows));
   }
 
   function renderServiceReachability(diag) {
@@ -1749,17 +2285,18 @@
     const rows = SITE_ORDER.map((name) => {
       const http = list(httpRows[name])[0];
       const tcp = list(tcpRows[name])[0];
+      const httpInfo = httpProbeState(http, tcp?.ok);
       return `
         <tr>
           <td>${html(name)}</td>
-          <td>${tcp ? pill(tcp.ok ? "閫? : "澶辫触", tcp.ok ? "ok" : "warn") : pill("鏈噰闆?, "warn")}</td>
+          <td>${tcp ? pill(tcp.ok ? "通" : "失败", tcp.ok ? "ok" : "warn") : pill("未采集", "warn")}</td>
           <td>${http ? (http.status ?? "-") : "-"}</td>
-          <td>${http ? pill(http.ok ? "鍙揪" : "澶辫触", http.ok ? "ok" : "warn") : pill("鏈噰闆?, "warn")}</td>
+          <td>${httpStatePill(httpInfo.state, httpInfo.state === "soft-timeout" ? "超时但 TCP 通" : httpInfo.state === "ok" ? "可达" : httpInfo.label)}</td>
           <td>${number(Math.max(num(http?.elapsedMs), num(tcp?.elapsedMs)))} ms</td>
-          <td>${html(http?.error || tcp?.error || "-")}</td>
+          <td>${html(httpInfo.state === "soft-timeout" ? "HTTP 内容探测超时，TCP 443 已可达" : http?.error || tcp?.error || "-")}</td>
         </tr>`;
     });
-    return card("鏈嶅姟鍙揪鎬х煩闃?, "DNS銆乀CP 443銆丠TTP 鐘舵€併€佸欢杩熴€侀敊璇俊鎭?, table(["鏈嶅姟", "TCP443", "HTTP", "鐘舵€?, "寤惰繜", "閿欒"], rows, "绛夊緟鏈嶅姟鍙鎺㈡祴", "readonly-scroll-tall"));
+    return card("服务可达性矩阵", "DNS、TCP 443、HTTP 状态、延迟、错误信息", table(["服务", "TCP443", "HTTP", "状态", "延迟", "错误"], rows, "等待服务只读探测", "readonly-scroll-tall"));
   }
 
   function pppoeIndex(name) {
@@ -1778,10 +2315,10 @@
   function wanIpKind(row) {
     const raw = wanIpv4(row).split("/")[0];
     const parts = raw.split(".").map((part) => Number(part));
-    if (parts.length !== 4 || parts.some((part) => !Number.isFinite(part))) return "鏈噰闆?;
-    if (parts[0] === 10 || (parts[0] === 192 && parts[1] === 168) || (parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31)) return "绉佺綉";
+    if (parts.length !== 4 || parts.some((part) => !Number.isFinite(part))) return "未采集";
+    if (parts[0] === 10 || (parts[0] === 192 && parts[1] === 168) || (parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31)) return "私网";
     if (parts[0] === 100 && parts[1] >= 64 && parts[1] <= 127) return "CGNAT";
-    return "鍏綉";
+    return "公网";
   }
 
   function miniKpi(label, value, foot = "") {
@@ -1790,26 +2327,27 @@
 
   function clipText(value, max = 42) {
     const text = String(value ?? "-");
-    return text.length > max ? `${text.slice(0, Math.max(0, max - 1))}鈥 : text;
+    return text.length > max ? `${text.slice(0, Math.max(0, max - 1))}…` : text;
   }
 
   function compactIpList(values, limit = 2) {
     const ips = list(values).filter(Boolean);
     if (!ips.length) return "-";
     const shown = ips.slice(0, limit).map((ip) => `<span class="readonly-ip-line" title="${html(ip)}">${html(ip)}</span>`).join("");
-    const more = ips.length > limit ? `<span class="readonly-more-line">+${number(ips.length - limit)} 涓湴鍧€</span>` : "";
+    const more = ips.length > limit ? `<span class="readonly-more-line">+${number(ips.length - limit)} 个地址</span>` : "";
     return `<div class="readonly-ip-stack">${shown}${more}</div>`;
   }
 
   function renderProtocolDistribution(snapshot) {
     const connections = snapshot.connections || {};
     const total = Math.max(num(connections.total), 1);
+    const hasProtocolCounts = [connections.tcp, connections.udp, connections.icmp].every((value) => Number.isFinite(Number(value)));
     const active = list(connections.active);
     const udp443 = active.filter((row) => String(row.protocol || "").toUpperCase().includes("UDP") && String(row.remoteIp || "").includes(":443"));
     const rows = [
-      { label: "TCP", value: num(connections.tcp), color: "#165dff" },
-      { label: "UDP", value: num(connections.udp), color: "#16c67a" },
-      { label: "ICMP", value: num(connections.icmp), color: "#ffb020" },
+      { label: "TCP", value: hasProtocolCounts ? num(connections.tcp) : 0, color: "#165dff", unavailable: !hasProtocolCounts },
+      { label: "UDP", value: hasProtocolCounts ? num(connections.udp) : 0, color: "#16c67a", unavailable: !hasProtocolCounts },
+      { label: "ICMP", value: hasProtocolCounts ? num(connections.icmp) : 0, color: "#ffb020", unavailable: !hasProtocolCounts },
       { label: "UDP 443", value: udp443.length, color: "#7c5cff", sample: true },
     ];
     const hotSamples = active
@@ -1820,28 +2358,28 @@
       .slice()
       .sort((a, b) => (num(b.upRate) + num(b.downRate) + num(b.connections) * 5000) - (num(a.upRate) + num(a.downRate) + num(a.connections) * 5000))
       .slice(0, 6);
-    return card("杩炴帴鍗忚鍒嗗竷 / QUIC / UDP 443", "鍗忚鍗犳瘮 + 娲昏穬鏍锋湰鍚屽睆锛岄伩鍏嶅彧鐪嬬櫨鍒嗘瘮涓嶇煡閬撹皝鍦ㄨ窇", `
+    return card("连接协议分布 / QUIC / UDP 443", "协议占比 + 活跃样本同屏，避免只看百分比不知道谁在跑", `
       <div class="readonly-wan-kpi-strip">
-        ${miniKpi("杩炴帴鎬绘暟", number(connections.total), `${number(connections.tcp)} TCP`)}
-        ${miniKpi("UDP 鍗犳瘮", percent(num(connections.udp) / total * 100), `${number(connections.udp)} 鏉)}
-        ${miniKpi("TCP 鍗犳瘮", percent(num(connections.tcp) / total * 100), `${number(connections.tcp)} 鏉)}
-        ${miniKpi("UDP443 鏍锋湰", number(udp443.length), "QUIC/STUN 瑙傚療")}
+        ${miniKpi("连接总数", number(connections.total), hasProtocolCounts ? `${number(connections.tcp)} TCP` : "协议未采集")}
+        ${miniKpi("UDP 占比", hasProtocolCounts ? percent(num(connections.udp) / total * 100) : "未采集", hasProtocolCounts ? `${number(connections.udp)} 条` : "协议统计已降级")}
+        ${miniKpi("TCP 占比", hasProtocolCounts ? percent(num(connections.tcp) / total * 100) : "未采集", hasProtocolCounts ? `${number(connections.tcp)} 条` : "协议统计已降级")}
+        ${miniKpi("UDP443 样本", number(udp443.length), "QUIC/STUN 观察")}
       </div>
       <div class="readonly-mini-list">
-        ${rows.map((row) => progressRow(row.label, row.sample ? Math.min(100, row.value * 5) : row.value / total * 100, row.sample ? number(row.value) : percent(row.value / total * 100), row.color)).join("")}
+        ${rows.map((row) => progressRow(row.label, row.sample ? Math.min(100, row.value * 5) : (row.unavailable ? 0 : row.value / total * 100), row.sample ? number(row.value) : (row.unavailable ? "未采集" : percent(row.value / total * 100)), row.color)).join("")}
       </div>
       <div class="readonly-protocol-sample">
         ${hotSamples.length ? hotSamples.map((row) => `
           <div class="readonly-protocol-chip">
-            <strong>${html(row.localIp || "-")} 路 ${html(row.protocol || "-")}</strong>
-            <span>${rate(row.upRate)} / ${rate(row.downRate)} 路 ${html(row.timeout || "-")}</span>
+            <strong>${html(row.localIp || "-")} · ${html(row.protocol || "-")}</strong>
+            <span>${rate(row.upRate)} / ${rate(row.downRate)} · ${html(row.timeout || "-")}</span>
           </div>`).join("") : topIpSamples.map((row) => `
           <div class="readonly-protocol-chip">
             <strong>${html(row.displayName || row.hostname || row.ip)}</strong>
-            <span>${html(row.ip || "-")} 路 ${number(row.connections)} 杩炴帴 路 ${rate(row.upRate)} / ${rate(row.downRate)}</span>
-          </div>`).join("") || `<div class="empty">鏆傛棤杩炴帴鏍锋湰</div>`}
+            <span>${html(row.ip || "-")} · ${number(row.connections)} 连接 · ${rate(row.upRate)} / ${rate(row.downRate)}</span>
+          </div>`).join("") || `<div class="empty">暂无连接样本</div>`}
       </div>
-      <div class="readonly-note" style="margin-top:8px">鏄庣粏 ${html(connections.detailUpdatedAt || "鏈噰闆?)} 路 鍗忚 ${html(connections.protocolUpdatedAt || "鏈噰闆?)}</div>`, "readonly-dense-card");
+      <div class="readonly-note" style="margin-top:8px">明细 ${html(connections.detailUpdatedAt || "未采集")} · 协议 ${html(connections.protocolUpdatedAt || "未采集")}</div>`, "readonly-dense-card");
   }
 
   function renderWanLoadPortrait(snapshot) {
@@ -1863,21 +2401,21 @@
           </div>
           <div class="readonly-wan-meter"><span style="--pct:${clamp(share / maxShare * 100, 0, 100)}%"></span></div>
           <div class="readonly-wan-line-meta">
-            <span>涓婅<strong>${rate(row.upRate)}</strong></span>
-            <span>涓嬭<strong>${rate(row.downRate)}</strong></span>
-            <span>IP 绫诲瀷<strong>${html(wanIpKind(row))}</strong></span>
-            <span>璺敱<strong>${number(activeRoutes)} 娲诲姩</strong></span>
+            <span>上行<strong>${rate(row.upRate)}</strong></span>
+            <span>下行<strong>${rate(row.downRate)}</strong></span>
+            <span>IP 类型<strong>${html(wanIpKind(row))}</strong></span>
+            <span>路由<strong>${number(activeRoutes)} 活动</strong></span>
           </div>
         </div>`;
     });
-    return card("WAN 绾胯矾鐢诲儚", "鎸夌嚎璺浐瀹氶『搴忓睍绀哄崰姣斻€佷笂涓嬭銆両P 绫诲瀷鍜屾椿鍔ㄨ矾鐢?, `
+    return card("WAN 线路画像", "按线路固定顺序展示占比、上下行、IP 类型和活动路由", `
       <div class="readonly-wan-kpi-strip">
-        ${miniKpi("鍦ㄧ嚎绾胯矾", `${number(pppoe.filter((row) => row.running).length)} / ${number(pppoe.length)}`, "PPPoE")}
-        ${miniKpi("鍏綉绾胯矾", number(pppoe.filter((row) => wanIpKind(row) === "鍏綉").length), "鐪熷疄鍏綉鍦板潃")}
-        ${miniKpi("绉佺綉/CGNAT", number(pppoe.filter((row) => ["绉佺綉", "CGNAT"].includes(wanIpKind(row))).length), "UPnP/鍏ョ珯闇€鍏虫敞")}
-        ${miniKpi("鐞嗚鍧囧垎", percent(expected), "浠呯敤浜庡亸鏂滃弬鑰?)}
+        ${miniKpi("在线线路", `${number(pppoe.filter((row) => row.running).length)} / ${number(pppoe.length)}`, "PPPoE")}
+        ${miniKpi("公网线路", number(pppoe.filter((row) => wanIpKind(row) === "公网").length), "真实公网地址")}
+        ${miniKpi("私网/CGNAT", number(pppoe.filter((row) => ["私网", "CGNAT"].includes(wanIpKind(row))).length), "UPnP/入站需关注")}
+        ${miniKpi("理论均分", percent(expected), "仅用于偏斜参考")}
       </div>
-      <div class="readonly-wan-line-grid">${tiles.join("") || `<div class="empty">鏆傛棤 WAN 绾胯矾鏁版嵁</div>`}</div>`, "readonly-dense-card");
+      <div class="readonly-wan-line-grid">${tiles.join("") || `<div class="empty">暂无 WAN 线路数据</div>`}</div>`, "readonly-dense-card");
   }
 
   function renderWanQuality(snapshot) {
@@ -1889,22 +2427,22 @@
       const dist = byName[row.name] || {};
       const errorTotal = num(iface.rxDrop) + num(iface.txDrop) + num(iface.rxError) + num(iface.txError);
       const activeDefaults = list(row.routes).filter((route) => route.active).length;
-      const quality = !row.running ? "绂荤嚎" : errorTotal ? "鎺ュ彛閿欒" : num(dist.share) > 55 ? "璐熻浇鍋忔枩" : "姝ｅ父";
+      const quality = !row.running ? "离线" : errorTotal ? "接口错误" : num(dist.share) > 55 ? "负载偏斜" : "正常";
       const level = !row.running ? "danger" : errorTotal || num(dist.share) > 55 ? "warn" : "ok";
       return `
         <tr>
           <td>${cell(html(row.name), html(row.parent || "-"))}</td>
-          <td>${pill(row.running ? "鍦ㄧ嚎" : "绂荤嚎", row.running ? "ok" : "danger")}</td>
-          <td>鏈噰闆?/td>
-          <td>鏈噰闆?/td>
-          <td>鏈噰闆?/td>
-          <td>${number(activeDefaults)} 鏉?/td>
+          <td>${pill(row.running ? "在线" : "离线", row.running ? "ok" : "danger")}</td>
+          <td>未采集</td>
+          <td>未采集</td>
+          <td>未采集</td>
+          <td>${number(activeDefaults)} 条</td>
           <td>${percent(dist.share)}</td>
           <td>${number(errorTotal)}</td>
           <td>${pill(quality, level)}</td>
         </tr>`;
     });
-    return card("澶?WAN 绾胯矾璐ㄩ噺", "鍦ㄧ嚎銆侀粯璁よ矾鐢便€丳CC 鍗犳瘮銆佹帴鍙ｉ敊璇紱寤惰繜/涓㈠寘/鎶栧姩淇濇寔鏈噰闆嗕笉閫犲亣", table(["绾胯矾", "鍦ㄧ嚎", "寤惰繜", "涓㈠寘", "鎶栧姩", "榛樿璺敱", "PCC鍗犳瘮", "閿欒", "5鍒嗛挓鍒ゆ柇"], rows, "鏆傛棤 WAN 绾胯矾鏁版嵁", "readonly-scroll-tall"));
+    return card("多 WAN 线路质量", "在线、默认路由、PCC 占比、接口错误；延迟/丢包/抖动保持未采集不造假", table(["线路", "在线", "延迟", "丢包", "抖动", "默认路由", "PCC占比", "错误", "5分钟判断"], rows, "暂无 WAN 线路数据", "readonly-scroll-tall"));
   }
 
   function renderPccSkew(snapshot) {
@@ -1926,37 +2464,35 @@
           <td>${rate(row.upRate)}</td>
           <td>${rate(row.downRate)}</td>
           <td>${diff >= 0 ? "+" : ""}${diff.toFixed(1)}%</td>
-          <td>${pill(Math.abs(diff) > 20 ? "鍋忔枩" : "鍧囪　", level)}</td>
+          <td>${pill(Math.abs(diff) > 20 ? "偏斜" : "均衡", level)}</td>
         </tr>`;
     });
     const bars = distribution.map((row) => progressRow(row.name, num(row.share), percent(row.share), num(row.share) > 55 ? "#ffb020" : "#165dff")).join("");
-    return card("PCC / 绾胯矾璐熻浇鍋忔枩", "鐞嗚鍧囧垎 vs 瀹為檯娴侀噺鍗犳瘮锛屽彧璇诲垽鏂笉鏀圭瓥鐣?, `
+    return card("PCC / 线路负载偏斜", "理论均分 vs 实际流量占比，只读判断不改策略", `
       <div class="readonly-wan-kpi-strip">
-        ${miniKpi("鏈€蹇欑嚎璺?, html(busiest.name || "-"), percent(busiest.share))}
-        ${miniKpi("鏈€浣庣嚎璺?, html(quietest.name || "-"), percent(quietest.share))}
-        ${miniKpi("鍋忔枩绾胯矾", number(skewCount), `闃堝€?卤20%`)}
-        ${miniKpi("鑱氬悎閫熺巼", rate(totalUp), `涓?${rate(totalDown)}`)}
+        ${miniKpi("最忙线路", html(busiest.name || "-"), percent(busiest.share))}
+        ${miniKpi("最低线路", html(quietest.name || "-"), percent(quietest.share))}
+        ${miniKpi("偏斜线路", number(skewCount), `阈值 ±20%`)}
+        ${miniKpi("聚合速率", rate(totalUp), `下 ${rate(totalDown)}`)}
       </div>
-      <div class="readonly-mini-list">${bars || `<div class="empty">鏆傛棤绾胯矾璐熻浇鍒嗗竷</div>`}</div>
-      <div style="margin-top:8px">${table(["绾胯矾", "鐞嗚", "瀹為檯", "涓婅", "涓嬭", "鍋忕", "鍒ゆ柇"], rows, "鏆傛棤绾胯矾鍒嗗竷", "readonly-table-compact")}</div>`, "readonly-dense-card readonly-pcc-card");
+      <div class="readonly-mini-list">${bars || `<div class="empty">暂无线路负载分布</div>`}</div>
+      <div style="margin-top:8px">${table(["线路", "理论", "实际", "上行", "下行", "偏离", "判断"], rows, "暂无线路分布", "readonly-table-compact")}</div>`, "readonly-dense-card readonly-pcc-card");
   }
 
   function renderInterfaceErrorTable(snapshot) {
-    const rows = list(snapshot.interfaces)
-      .map((row) => ({ ...row, errorTotal: num(row.rxDrop) + num(row.txDrop) + num(row.rxError) + num(row.txError) }))
-      .sort((a, b) => b.errorTotal - a.errorTotal || (num(b.txRate) + num(b.rxRate)) - (num(a.txRate) + num(a.rxRate)))
+    const rows = interfaceIssueRows(snapshot)
       .slice(0, 14)
       .map((row) => `
         <tr>
           <td>${cell(html(row.name), html(row.type || row.role || "-"))}</td>
-          <td>${pill(row.running ? "鍦ㄧ嚎" : "绂荤嚎", row.running ? "ok" : "danger")}</td>
+          <td>${pill(row.running ? "在线" : "离线", row.running ? "ok" : "danger")}</td>
           <td>${rate(row.txRate)}</td>
           <td>${rate(row.rxRate)}</td>
           <td>${number(row.rxDrop)} / ${number(row.txDrop)}</td>
           <td>${number(row.rxError)} / ${number(row.txError)}</td>
-          <td>${pill(row.errorTotal ? "鍏虫敞" : "姝ｅ父", row.errorTotal ? "warn" : "ok")}</td>
+          <td>${pill(row.errorTotal ? "关注" : "正常", row.errorTotal ? "warn" : "ok")}</td>
         </tr>`);
-    return card("鎺ュ彛閿欒鍋ュ悍琛?, "鎸夐敊璇紭鍏堝睍绀?Top 14锛孌rop / Error 涓庡疄鏃跺悶鍚愬悓灞?, table(["鎺ュ彛", "鐘舵€?, "瀹炴椂涓婅", "瀹炴椂涓嬭", "涓㈠寘 RX/TX", "閿欒 RX/TX", "鍒ゆ柇"], rows, "鏆傛棤鎺ュ彛鏁版嵁", "readonly-scroll readonly-table-compact"));
+    return card("接口错误健康表", "按逻辑接口去重展示 Top 14，macvlan / vlan 同源项不再重复计入", table(["接口", "状态", "实时上行", "实时下行", "丢包 RX/TX", "错误 RX/TX", "判断"], rows, "暂无接口数据", "readonly-scroll readonly-table-compact"));
   }
 
   function renderTerminalAnomalies(snapshot) {
@@ -1974,17 +2510,17 @@
           <td>${html(row.lastSeen || "-")}</td>
           <td>${terminalRiskTags(row).map((tagText) => pill(tagText, row.score >= 45 ? "danger" : row.score >= 20 ? "warn" : "info")).join(" ")}</td>
         </tr>`);
-    return card("缁堢寮傚父鎺掕 / 楂橀闄╃煩闃?, `鎸夐闄╀紭鍏堝睍绀?Top ${number(Math.min(terminals.length, 12))} / ${number(terminals.length)} 鍙帮紝鍙繚鐣欑湡瀹為噰闆嗗瓧娈礰, table(["缁堢", "MAC", "涓婅", "涓嬭", "杩炴帴", "鏈€杩戝嚭鐜?, "椋庨櫓鏍囩"], rows, "鏆傛棤缁堢椋庨櫓鏁版嵁", "readonly-scroll readonly-table-compact"));
+    return card("终端异常排行 / 高风险矩阵", `按风险优先展示 Top ${number(Math.min(terminals.length, 12))} / ${number(terminals.length)} 台，只保留真实采集字段`, table(["终端", "MAC", "上行", "下行", "连接", "最近出现", "风险标签"], rows, "暂无终端风险数据", "readonly-scroll readonly-table-compact"));
   }
 
   function renderChangeBoard(snapshot) {
     const history = snapshot.overview?.history || {};
     const changes = [
-      { label: "WAN 涓婅", values: list(history.uplink), unit: "rate" },
-      { label: "WAN 涓嬭", values: list(history.downlink), unit: "rate" },
+      { label: "WAN 上行", values: list(history.uplink), unit: "rate" },
+      { label: "WAN 下行", values: list(history.downlink), unit: "rate" },
       { label: "CPU", values: list(history.cpu), unit: "percent" },
-      { label: "鍐呭瓨", values: list(history.memory), unit: "percent" },
-      { label: "纾佺洏", values: list(history.disk), unit: "percent" },
+      { label: "内存", values: list(history.memory), unit: "percent" },
+      { label: "磁盘", values: list(history.disk), unit: "percent" },
     ].map((item) => {
       const values = item.values.map(num);
       const first = values[0] || 0;
@@ -1995,16 +2531,16 @@
     }).sort((a, b) => b.score - a.score);
 
     const pppoe = list(snapshot.pppoe).slice().sort((a, b) => (num(b.upRate) + num(b.downRate)) - (num(a.upRate) + num(a.downRate))).slice(0, 5);
-    return card("鏈€杩?10 鍒嗛挓鍙樺寲姒?, "褰撳墠浣跨敤闈㈡澘閲囨牱绐楀彛锛屼笉瓒?10 鍒嗛挓鏃舵寜宸叉湁鏍锋湰璁＄畻", `
+    return card("最近 10 分钟变化榜", "当前使用面板采样窗口，不足 10 分钟时按已有样本计算", `
       <div class="readonly-mini-list">
         ${changes.map((row) => `
           <div class="readonly-mini-item">
             <div class="readonly-main">${html(row.label)}</div>
-            <div class="readonly-sub">褰撳墠 ${row.unit === "rate" ? rate(row.last) : `${row.last.toFixed(1)}%`}</div>
+            <div class="readonly-sub">当前 ${row.unit === "rate" ? rate(row.last) : `${row.last.toFixed(1)}%`}</div>
             <div class="readonly-main" style="text-align:right">${row.delta >= 0 ? "+" : "-"}${row.display}</div>
           </div>`).join("")}
       </div>
-      <div class="readonly-note" style="margin-top:8px">褰撳墠鏈€蹇欑嚎璺細${pppoe.length ? pppoe.map((row) => `${html(row.name)} ${rate(num(row.upRate) + num(row.downRate))}`).join(" 路 ") : "鏆傛棤绾胯矾閫熺巼"}</div>`);
+      <div class="readonly-note" style="margin-top:8px">当前最忙线路：${pppoe.length ? pppoe.map((row) => `${html(row.name)} ${rate(num(row.upRate) + num(row.downRate))}`).join(" · ") : "暂无线路速率"}</div>`);
   }
 
   function renderRuleHitTable(snapshot, diag) {
@@ -2024,8 +2560,8 @@
         <td>${html(row.updatedAt || "-")}</td>
       </tr>`);
     return `
-      ${card("RouterOS Mangle 鍛戒腑缁熻", "鎸夊寘鏁?娴侀噺鎺掑簭锛屽彧璇昏鏁?, table(["瑙勫垯", "鍔ㄤ綔", "璺敱鏍囪", "鍖呮暟", "娴侀噺"], mangle, "鏆傛棤 Mangle 鍛戒腑鏁版嵁"))}
-      ${card("Nikki Provider 瑙勫垯瀹归噺", diag?.nikki?.ok ? `Provider ${number(diag.nikki.providerCount)} 涓?路 瑙勫垯 ${number(diag.nikki.ruleCount)} 鏉 : html(diag?.nikki?.error || "Nikki 鎺у埗鍣ㄦ湭閲囬泦"), table(["Provider", "绫诲瀷", "瑙勫垯鏁?, "鏇存柊鏃堕棿"], nikkiRows, "鏆傛棤 Nikki provider 鏁版嵁"))}`;
+      ${card("RouterOS Mangle 命中统计", "按包数/流量排序，只读计数", table(["规则", "动作", "路由标记", "包数", "流量"], mangle, "暂无 Mangle 命中数据"))}
+      ${card("Nikki Provider 规则容量", diag?.nikki?.ok ? `Provider ${number(diag.nikki.providerCount)} 个 · 规则 ${number(diag.nikki.ruleCount)} 条` : html(diag?.nikki?.error || "Nikki 控制器未采集"), table(["Provider", "类型", "规则数", "更新时间"], nikkiRows, "暂无 Nikki provider 数据"))}`;
   }
 
   function renderIpv6Panel(snapshot) {
@@ -2034,23 +2570,23 @@
     const rows = ifaces.slice(0, 8).map((row) => `
       <tr>
         <td>${cell(html(row.name), html(row.type || row.role || "-"))}</td>
-        <td>${pill(row.running ? "鍦ㄧ嚎" : "绂荤嚎", row.running ? "ok" : "danger")}</td>
+        <td>${pill(row.running ? "在线" : "离线", row.running ? "ok" : "danger")}</td>
         <td>${compactIpList(list(row.ips).filter((ip) => String(ip).includes(":")), row.name === "LAN" ? 3 : 2)}</td>
         <td>${rate(row.txRate)} / ${rate(row.rxRate)}</td>
       </tr>`);
     const ndRows = list(snapshot.dns?.ipv6Nd).slice(0, 6).map((row) => `
-      <tr><td>${html(row.interface)}</td><td>${pill(row.advertiseDns ? "骞挎挱 DNS" : "涓嶅箍鎾?, row.advertiseDns ? "ok" : "warn")}</td><td>${html(list(row.dnsServers).join(", ") || "-")}</td><td>${html(row.raLifetime || "-")}</td></tr>`);
+      <tr><td>${html(row.interface)}</td><td>${pill(row.advertiseDns ? "广播 DNS" : "不广播", row.advertiseDns ? "ok" : "warn")}</td><td>${html(list(row.dnsServers).join(", ") || "-")}</td><td>${html(row.raLifetime || "-")}</td></tr>`);
     return `
-      ${card("IPv6 涓撳尯", "鍦板潃銆侀偦灞呫€丷A / DHCPv6銆佹硠婕忛闄╁彧璇诲睍绀?, `
+      ${card("IPv6 专区", "地址、邻居、RA / DHCPv6、泄漏风险只读展示", `
         <div class="ops-stat-grid">
-          ${kpi("IPv6 鍦板潃", number(meta.ipv6AddressCount), "RouterOS 鍦板潃琛?)}
-          ${kpi("IPv6 鎺ュ彛", number(meta.ipv6InterfaceCount), "甯?IPv6 鐨勬帴鍙?)}
-          ${kpi("IPv6 閭诲眳", number(meta.ipv6NeighborCount), "閭诲眳琛?)}
-          ${kpi("IPv6 缁堢", number(meta.ipv6TerminalCount), "瀛樺湪鍒欏叧娉ㄧ粫杩囦唬鐞嗛闄?)}
+          ${kpi("IPv6 地址", number(meta.ipv6AddressCount), "RouterOS 地址表")}
+          ${kpi("IPv6 接口", number(meta.ipv6InterfaceCount), "带 IPv6 的接口")}
+          ${kpi("IPv6 邻居", number(meta.ipv6NeighborCount), "邻居表")}
+          ${kpi("IPv6 终端", number(meta.ipv6TerminalCount), "存在则关注绕过代理风险")}
         </div>
-        <div style="margin-top:8px">${table(["鎺ュ彛", "鐘舵€?, "IPv6 鍦板潃鏍锋湰", "瀹炴椂涓?涓?], rows, "鏆傛棤 IPv6 鎺ュ彛鏁版嵁", "readonly-scroll readonly-table-compact")}</div>
-        <div class="readonly-note" style="margin-top:8px">鎺ュ彛鏄庣粏灞曠ず ${number(Math.min(ifaces.length, 8))} / ${number(ifaces.length)} 椤癸紱LAN 鍦板潃鍙樉绀烘牱鏈紝閬垮厤鏁村垪琚?IPv6 闀垮湴鍧€鎾戠垎銆?/div>`)}
-      ${card("IPv6 RA / DHCPv6", "DNS 骞挎挱鍜屽鎴风鐘舵€?, table(["鎺ュ彛", "DNS 骞挎挱", "DNS 鏈嶅姟鍣?, "RA 鐢熷懡鍛ㄦ湡"], ndRows, "鏆傛棤 RA / DHCPv6 鏁版嵁", "readonly-scroll readonly-table-compact"))}`;
+        <div style="margin-top:8px">${table(["接口", "状态", "IPv6 地址样本", "实时上/下"], rows, "暂无 IPv6 接口数据", "readonly-scroll readonly-table-compact")}</div>
+        <div class="readonly-note" style="margin-top:8px">接口明细展示 ${number(Math.min(ifaces.length, 8))} / ${number(ifaces.length)} 项；LAN 地址只显示样本，避免整列被 IPv6 长地址撑爆。</div>`)}
+      ${card("IPv6 RA / DHCPv6", "DNS 广播和客户端状态", table(["接口", "DNS 广播", "DNS 服务器", "RA 生命周期"], ndRows, "暂无 RA / DHCPv6 数据", "readonly-scroll readonly-table-compact"))}`;
   }
 
   function renderConfigDrift(snapshot, diag) {
@@ -2059,36 +2595,36 @@
     const lb = snapshot.loadBalance || {};
     const health = buildCollectionHealth(snapshot, diag);
     const checks = [
-      { name: "鍙淇濇姢", ok: true, warn: false, detail: "鏈〉娌℃湁鍐欏叆鎺ュ彛銆佹病鏈夐厤缃彁浜ゅ姩浣? },
-      { name: "閲囬泦鏂伴矞搴?, ok: !health.some((row) => row.level === "danger"), warn: health.some((row) => row.level === "warn"), detail: `${health.filter((row) => row.level !== "ok").length} 椤归渶鍏虫敞` },
-      { name: "DNS 杩愯", ok: Boolean(dns.running), detail: dns.running ? "鍏佽杩滅▼璇锋眰宸插紑鍚? : "RouterOS DNS 褰撳墠鏈紑鍚繙绋嬭姹? },
-      { name: "DNS 瑙勫垯瀹归噺", ok: num(dns.forwardRuleCount) > 0, warn: true, detail: `闈欐€佽鍒?${number(dns.forwardRuleCount)} 鏉 },
-      { name: "PCC / 鍒嗘祦璇嗗埆", ok: Boolean(lb.pccDetected), warn: true, detail: lb.pccDetected ? "妫€娴嬪埌 PCC/鍒嗘祦瑙勫垯" : "鏈粠瑙勫垯娉ㄩ噴鎴栧瓧娈典腑璇嗗埆 PCC" },
-      { name: "杩炴帴鍗忚閲囬泦", ok: !meta.connectionProtocolError, warn: true, detail: meta.connectionProtocolError || meta.connectionProtocolUpdatedAt || "鏈噰闆? },
-      { name: "杩炴帴鏄庣粏閲囬泦", ok: !meta.connectionDetailError, warn: true, detail: meta.connectionDetailError || meta.connectionDetailUpdatedAt || "鏈噰闆? },
-      { name: "Nikki Provider", ok: Boolean(diag?.nikki?.ok), warn: true, detail: diag?.nikki?.ok ? `${number(diag.nikki.providerCount)} 缁?/ ${number(diag.nikki.ruleCount)} 鏉 : (diag?.nikki?.error || "鏈噰闆?) },
-      { name: "WebRTC/STUN", ok: true, warn: true, detail: "娴忚鍣ㄤ晶鏉冮檺娴嬭瘯锛屼笉鍦ㄩ潰鏉胯嚜鍔ㄧ敵璇峰獟浣撴潈闄? },
+      { name: "只读保护", ok: true, warn: false, detail: "本页没有写入接口、没有配置提交动作" },
+      { name: "采集新鲜度", ok: !health.some((row) => row.level === "danger"), warn: health.some((row) => row.level === "warn"), detail: `${health.filter((row) => row.level !== "ok").length} 项需关注` },
+      { name: "DNS 运行", ok: Boolean(dns.running), detail: dns.running ? "允许远程请求已开启" : "RouterOS DNS 当前未开启远程请求" },
+      { name: "DNS 规则容量", ok: num(dns.forwardRuleCount) > 0, warn: true, detail: `静态规则 ${number(dns.forwardRuleCount)} 条` },
+      { name: "PCC / 分流识别", ok: Boolean(lb.pccDetected), warn: true, detail: lb.pccDetected ? "检测到 PCC/分流规则" : "未从规则注释或字段中识别 PCC" },
+      { name: "连接协议采集", ok: !meta.connectionProtocolError, warn: true, detail: meta.connectionProtocolError || meta.connectionProtocolUpdatedAt || "未采集" },
+      { name: "连接明细采集", ok: !meta.connectionDetailError, warn: true, detail: meta.connectionDetailError || meta.connectionDetailUpdatedAt || "未采集" },
+      { name: "Nikki Provider", ok: Boolean(diag?.nikki?.ok), warn: true, detail: diag?.nikki?.ok ? `${number(diag.nikki.providerCount)} 组 / ${number(diag.nikki.ruleCount)} 条` : (diag?.nikki?.error || "未采集") },
+      { name: "WebRTC/STUN", ok: true, warn: true, detail: "浏览器侧权限测试，不在面板自动申请媒体权限" },
     ];
     const rows = checks.map((row) => {
       const level = row.ok ? (row.warn ? "warn" : "ok") : "danger";
-      return `<tr><td>${html(row.name)}</td><td>${pill(row.ok ? (row.warn ? "鍏虫敞" : "閫氳繃") : "婕傜Щ", level)}</td><td>${html(row.detail)}</td></tr>`;
+      return `<tr><td>${html(row.name)}</td><td>${pill(row.ok ? (row.warn ? "关注" : "通过") : "漂移", level)}</td><td>${html(row.detail)}</td></tr>`;
     });
-    return card("閰嶇疆婕傜Щ妫€娴?, "鎸夊綋鍓嶅揩鐓т笌鍏抽敭鍩虹嚎鍋氬彧璇诲垽鏂?, table(["妫€鏌ラ」", "鐘舵€?, "璇存槑"], rows));
+    return card("配置漂移检测", "按当前快照与关键基线做只读判断", table(["检查项", "状态", "说明"], rows));
   }
 
   function renderTimeline(snapshot, diag) {
     const rows = [];
-    if (snapshot.updatedAt) rows.push({ time: snapshot.updatedAt, type: "蹇収", msg: "RouterOS 闈㈡澘蹇収鍒锋柊" });
-    if (snapshot.meta?.staticUpdatedAt) rows.push({ time: snapshot.meta.staticUpdatedAt, type: "闈欐€?, msg: "DNS/璺敱/瑙勫垯闈欐€佹暟鎹埛鏂? });
-    if (snapshot.meta?.connectionProtocolUpdatedAt) rows.push({ time: snapshot.meta.connectionProtocolUpdatedAt, type: "杩炴帴", msg: "杩炴帴鍗忚璁℃暟鍒锋柊" });
-    if (snapshot.meta?.connectionDetailUpdatedAt) rows.push({ time: snapshot.meta.connectionDetailUpdatedAt, type: "杩炴帴", msg: "杩炴帴鏄庣粏鍒锋柊" });
-    if (diag?.generatedAt) rows.push({ time: diag.generatedAt, type: "鍙", msg: diag.cached ? "鍙鎺㈡祴缂撳瓨鍛戒腑" : "鍙鎺㈡祴鍒锋柊" });
+    if (snapshot.updatedAt) rows.push({ time: snapshot.updatedAt, type: "快照", msg: "RouterOS 面板快照刷新" });
+    if (snapshot.meta?.staticUpdatedAt) rows.push({ time: snapshot.meta.staticUpdatedAt, type: "静态", msg: "DNS/路由/规则静态数据刷新" });
+    if (snapshot.meta?.connectionProtocolUpdatedAt) rows.push({ time: snapshot.meta.connectionProtocolUpdatedAt, type: "连接", msg: "连接协议计数刷新" });
+    if (snapshot.meta?.connectionDetailUpdatedAt) rows.push({ time: snapshot.meta.connectionDetailUpdatedAt, type: "连接", msg: "连接明细刷新" });
+    if (diag?.generatedAt) rows.push({ time: diag.generatedAt, type: "只读", msg: diag.cached ? "只读探测缓存命中" : "只读探测刷新" });
     list(diag?.panelFiles).forEach((file) => {
-      if (file.mtime) rows.push({ time: file.mtime, type: "闈㈡澘鏂囦欢", msg: `${file.path.split(/[\\/]/).pop()} 鏇存柊 / ${bytes(file.size)}` });
+      if (file.mtime) rows.push({ time: file.mtime, type: "面板文件", msg: `${file.path.split(/[\\/]/).pop()} 更新 / ${bytes(file.size)}` });
     });
     list(snapshot.logs?.all).slice(0, 12).forEach((row) => rows.push({ time: row.time, type: row.topics, msg: row.message }));
     const htmlRows = rows.slice(0, 24).map((row) => `<tr><td>${html(row.time)}</td><td>${pill(row.type || "-", "info")}</td><td>${html(row.msg)}</td></tr>`);
-    return card("杩戞湡浜嬩欢 / 閰嶇疆鍙樻洿鏃堕棿绾?, "閲囬泦鍒锋柊銆侀潰鏉挎枃浠躲€丷outerOS 楂樹环鍊兼棩蹇楀悎骞跺睍绀?, table(["鏃堕棿", "鏉ユ簮", "浜嬩欢"], htmlRows, "鏆傛棤浜嬩欢", "readonly-scroll-tall"));
+    return card("近期事件 / 配置变更时间线", "采集刷新、面板文件、RouterOS 高价值日志合并展示", table(["时间", "来源", "事件"], htmlRows, "暂无事件", "readonly-scroll-tall"));
   }
 
   function renderCapacity(snapshot, diag) {
@@ -2100,17 +2636,17 @@
     const route = snapshot.routes || {};
     const nikki = diag?.nikki || {};
     const items = [
-      { label: "DNS 闈欐€佽鍒?, value: dns.forwardRuleCount, meta: `${number(dns.disabledForwardRuleCount)} 鍋滅敤` },
-      { label: "DNS 缂撳瓨鍗犵敤", value: dns.cacheUsed, meta: `${bytes(dns.cacheUsed)} / ${bytes(dns.cacheSize)}` },
-      { label: "鍦板潃鍚嶅崟", value: list(security.addressLists).length, meta: "褰撳墠棰勮" },
-      { label: "Nikki Provider", value: nikki.providerCount || 0, meta: `${number(nikki.ruleCount)} 鏉¤鍒檂 },
-      { label: "DHCP 绉熺害", value: list(dhcp.leases).length, meta: `${list(dhcp.servers).length} 鏈嶅姟` },
-      { label: "杩炴帴鎬绘暟", value: conn.total, meta: `${number(conn.tcp)} TCP / ${number(conn.udp)} UDP` },
-      { label: "榛樿璺敱", value: list(route.defaultRoutes).length, meta: `${number(route.tableCount)} 璺敱琛╜ },
-      { label: "鍙鍐欏叆", value: 0, meta: "鏈〉绂佹鍐欓厤缃? },
-      { label: "绯荤粺鏃ュ織", value: list(logs.all).length, meta: "褰撳墠缂撳瓨" },
+      { label: "DNS 静态规则", value: dns.forwardRuleCount, meta: `${number(dns.disabledForwardRuleCount)} 停用` },
+      { label: "DNS 缓存占用", value: dns.cacheUsed, meta: `${bytes(dns.cacheUsed)} / ${bytes(dns.cacheSize)}` },
+      { label: "地址名单", value: list(security.addressLists).length, meta: "当前预览" },
+      { label: "Nikki Provider", value: nikki.providerCount || 0, meta: `${number(nikki.ruleCount)} 条规则` },
+      { label: "DHCP 租约", value: list(dhcp.leases).length, meta: `${list(dhcp.servers).length} 服务` },
+      { label: "连接总数", value: conn.total, meta: `${number(conn.tcp)} TCP / ${number(conn.udp)} UDP` },
+      { label: "默认路由", value: list(route.defaultRoutes).length, meta: `${number(route.tableCount)} 路由表` },
+      { label: "只读写入", value: 0, meta: "本页禁止写配置" },
+      { label: "系统日志", value: list(logs.all).length, meta: "当前缓存" },
     ];
-    return card("缂撳瓨 / 瑙勫垯瀹归噺", "闃叉瑙勫垯鎴柇銆佺紦瀛樺紓甯搞€佽繛鎺ヨ窡韪帇鍔涘鍙?, `<div class="ops-stat-grid">${items.map((item) => kpi(item.label, number(item.value), html(item.meta))).join("")}</div>`);
+    return card("缓存 / 规则容量", "防止规则截断、缓存异常、连接跟踪压力复发", `<div class="ops-stat-grid">${items.map((item) => kpi(item.label, number(item.value), html(item.meta))).join("")}</div>`);
   }
 
   function renderFeatureDensityHeader(snapshot, diag, section) {
@@ -2119,31 +2655,55 @@
     const riskCount = riskItems(snapshot, diag).length;
     const staleCount = health.filter((row) => row.level !== "ok").length;
     const pageHints = {
-      readonlyDiagnostics: "鎬昏椤电敤浜庝竴鐪煎垽鏂闄╁叆鍙ｏ紝涓嶆壙杞介椤典俊鎭紝涔熶笉瑙﹀彂浠讳綍淇鍔ㄤ綔銆?,
-      collectionHealthDiagnostics: "杩欓噷涓撻棬鐪嬮噰闆嗛摼璺槸鍚︽柊椴滐紝缁堢鎺掕涓嶅埛鏂版椂浼樺厛鐪?SSH 杩炴帴璇︽儏銆?,
-      dnsProxyDiagnostics: "杩欓噷涓撻棬鐪?DNS銆丗ake-IP銆佸嚭鍙ｄ笌绔欑偣鍙揪鎬э紝鎺掓煡鍥藉唴澶栧垎娴佸拰娉勬紡銆?,
-      wanQualityDiagnostics: "杩欓噷涓撻棬鐪嬪 WAN銆丳CC 鍋忔枩銆佽矾鐢辫〃銆佸崗璁拰鎺ュ彛璁℃暟銆?,
-      terminalRiskDiagnostics: "杩欓噷涓撻棬鐪嬬粓绔紓甯搞€丏HCP 绉熺害銆両Pv6 鏆撮湶鍜岃澶囬闄┿€?,
-      systemAuditDiagnostics: "杩欓噷涓撻棬鐪嬮厤缃紓绉汇€佸閲忋€佹棩蹇椼€侀潰鏉挎枃浠跺拰杩戞湡浜嬩欢銆?,
+      readonlyDiagnostics: "总览页用于一眼判断风险入口，不承载首页信息，也不触发任何修复动作。",
+      collectionHealthDiagnostics: "这里专门看采集链路是否新鲜，终端排行不刷新时优先看 SSH 连接详情。",
+      dnsProxyDiagnostics: "这里专门看 DNS、Fake-IP、出口与站点可达性，排查国内外分流和泄漏。",
+      wanQualityDiagnostics: "这里专门看多 WAN、PCC 偏斜、路由表、协议和接口计数。",
+      terminalRiskDiagnostics: "这里专门看终端异常、DHCP 租约、IPv6 暴露和设备风险。",
+      systemAuditDiagnostics: "这里专门看配置漂移、容量、日志、面板文件和近期事件。",
     };
     return `
       <div class="readonly-feature-brief">
         <div class="readonly-brief-copy">
-          <div class="readonly-brief-title">${html(page.title)} 路 鍙淇℃伅鏉?/div>
+          <div class="readonly-brief-title">${html(page.title)} · 只读信息板</div>
           <div class="readonly-brief-text">${html(pageHints[section] || page.tip)}</div>
           <div class="readonly-pill-row" style="margin-top:7px">
-            ${pill("涓嶅啓閰嶇疆", "ok")}
-            ${pill("涓嶉噸鍚湇鍔?, "ok")}
-            ${pill("涓嶆敼璺敱/闃茬伀澧?, "ok")}
+            ${pill("不写配置", "ok")}
+            ${pill("不重启服务", "ok")}
+            ${pill("不改路由/防火墙", "ok")}
           </div>
         </div>
         <div class="readonly-brief-metrics">
-          ${kpi("椤甸潰椋庨櫓", number(riskCount), riskCount ? "鏈夐」鐩渶鍏虫敞" : "褰撳墠鏃犻泦涓闄?)}
-          ${kpi("閲囬泦寮傚父", number(staleCount), `${number(health.length)} 涓暟鎹簮`)}
-          ${kpi("蹇収鏃堕棿", html(snapshot.updatedAt || "-"), "REST /api/snapshot")}
-          ${kpi("鍙鎺㈡祴", diag ? html(diag.cached ? "缂撳瓨鍛戒腑" : "瀹炴椂瀹屾垚") : html(STATE.loading ? "鎺㈡祴涓? : "鏈繑鍥?), html(diag?.generatedAt || STATE.error || "-"))}
-          ${kpi("鏁版嵁婧?, number(health.length + list(diag?.panelFiles).length), "蹇収 / 鎺㈡祴 / 鏂囦欢")}
+          ${kpi("页面风险", number(riskCount), riskCount ? "有项目需关注" : "当前无集中风险")}
+          ${kpi("采集异常", number(staleCount), `${number(health.length)} 个数据源`)}
+          ${kpi("快照时间", html(snapshot.updatedAt || "-"), "REST /api/snapshot")}
+          ${kpi("只读探测", diag ? html(diag.cached ? "缓存命中" : "实时完成") : html(STATE.loading ? "探测中" : "未返回"), html(diag?.generatedAt || STATE.error || "-"))}
+          ${kpi("数据源", number(health.length + list(diag?.panelFiles).length), "快照 / 探测 / 文件")}
         </div>
+      </div>`;
+  }
+
+  function renderReadonlyBand(eyebrow, title, desc, body, tone = "info", signal = "") {
+    const toneClass = tone === "danger" || tone === "warn" || tone === "ok" ? `is-${tone}` : "is-info";
+    return `
+      <div class="readonly-section-band ${toneClass}">
+        <div class="readonly-band-head">
+          <div class="readonly-band-copy">
+            <div class="readonly-band-eyebrow">${html(eyebrow)}</div>
+            <div class="readonly-band-title">${html(title)}</div>
+            <div class="readonly-band-desc">${html(desc)}</div>
+          </div>
+          ${signal ? `<div class="readonly-band-signal">${signal}</div>` : ""}
+        </div>
+        <div class="readonly-band-body">${body}</div>
+      </div>`;
+  }
+
+  function renderReadonlyFeatureChrome(snapshot, section) {
+    return `
+      <div class="readonly-feature-sticky">
+        ${renderReadonlyFeatureNav(section)}
+        ${renderFeatureDensityHeader(snapshot, STATE.payload, section)}
       </div>`;
   }
 
@@ -2156,15 +2716,15 @@
     const protocolThreshold = collectionThreshold(FRESH.protocol, meta.connectionProtocolPollSeconds || meta.connectionDetailPollSeconds, meta.connectionProtocolDurationSeconds || conn.protocolDurationSeconds);
     const staticThreshold = collectionThreshold(FRESH.static, meta.staticPollSeconds, meta.staticDurationSeconds);
     const rows = [
-      { name: "REST 蹇収", endpoint: "/api/snapshot 路 fast", updated: meta.realtimeUpdatedAt || snapshot.updatedAt, threshold: restThreshold, error: meta.realtimeError, feeds: "璧勬簮銆佹椂閽熴€佹帴鍙ｉ€熺巼銆佺郴缁熻礋杞? },
-      { name: "REST 鎷撴墤鍒楄〃", endpoint: `pppoe/routes/arp 路 ${number(meta.slowRestWorkers || 1)} 骞跺彂`, updated: meta.slowRestUpdatedAt, threshold: slowThreshold, error: meta.slowRestError, feeds: "PPPoE銆佸湴鍧€銆侀粯璁よ矾鐢便€丄RP銆丏NS 鐘舵€? },
-      { name: "SSH 杩炴帴璇︽儏", endpoint: "RouterOS SSH read-only", updated: meta.connectionDetailUpdatedAt || conn.detailUpdatedAt, threshold: detailThreshold, error: meta.connectionDetailError, feeds: "缁堢娴侀噺鎺掕銆佽繛鎺ユ暟銆佹椿璺冧細璇? },
-      { name: "杩炴帴鍗忚缁熻", endpoint: "RouterOS connection print", updated: meta.connectionProtocolUpdatedAt || conn.protocolUpdatedAt, threshold: protocolThreshold, error: meta.connectionProtocolError, feeds: "TCP / UDP / ICMP / UDP443 鍒嗗竷" },
-      { name: "闈欐€侀厤缃揩鐓?, endpoint: `DNS / routes / rules 路 ${number(meta.staticRestWorkers || 1)} 骞跺彂`, updated: meta.staticUpdatedAt, threshold: staticThreshold, error: meta.staticError, feeds: "DNS FWD銆侀粯璁よ矾鐢便€丮angle銆佸湴鍧€鍒楄〃" },
-      { name: "鍙澶栭儴鎺㈡祴", endpoint: "/api/readonly-diagnostics", updated: diag?.generatedAt, threshold: FRESH.diag, feeds: "DNS 鐭╅樀銆乀CP/HTTP銆佸嚭鍙?IP銆侀潰鏉挎枃浠? },
-      { name: "RouterOS 鏃ュ織缂撳瓨", endpoint: "log print", updated: snapshot.updatedAt, threshold: FRESH.rest, feeds: "杩戞湡浜嬩欢銆佹晠闅滄椂闂寸嚎" },
+      { name: "REST 快照", endpoint: "/api/snapshot · fast", updated: meta.realtimeUpdatedAt || snapshot.updatedAt, threshold: restThreshold, error: meta.realtimeError, feeds: "资源、时钟、接口速率、系统负载" },
+      { name: "REST 拓扑列表", endpoint: `pppoe/routes/arp · ${number(meta.slowRestWorkers || 1)} 并发`, updated: meta.slowRestUpdatedAt, threshold: slowThreshold, error: meta.slowRestError, feeds: "PPPoE、地址、默认路由、ARP、DNS 状态" },
+      { name: "SSH 连接详情", endpoint: "RouterOS SSH read-only", updated: meta.connectionDetailUpdatedAt || conn.detailUpdatedAt, threshold: detailThreshold, error: meta.connectionDetailError, feeds: "终端流量排行、连接数、活跃会话" },
+      { name: "连接协议统计", endpoint: "RouterOS connection print", updated: meta.connectionProtocolUpdatedAt || conn.protocolUpdatedAt, threshold: protocolThreshold, error: meta.connectionProtocolError, feeds: "TCP / UDP / ICMP / UDP443 分布" },
+      { name: "静态配置快照", endpoint: `DNS / routes / rules · ${number(meta.staticRestWorkers || 1)} 并发`, updated: meta.staticUpdatedAt, threshold: staticThreshold, error: meta.staticError, feeds: "DNS FWD、默认路由、Mangle、地址列表" },
+      { name: "只读外部探测", endpoint: "/api/readonly-diagnostics", updated: diag?.generatedAt, threshold: FRESH.diag, feeds: "DNS 矩阵、TCP/HTTP、出口 IP、面板文件" },
+      { name: "RouterOS 日志缓存", endpoint: "log print", updated: snapshot.updatedAt, threshold: FRESH.rest, feeds: "近期事件、故障时间线" },
     ].map((row) => {
-      const level = row.error ? "danger" : row.name === "鍙澶栭儴鎺㈡祴" && STATE.error ? "danger" : levelByAge(row.updated, row.threshold);
+      const level = row.error ? "danger" : row.name === "只读外部探测" && STATE.error ? "danger" : levelByAge(row.updated, row.threshold);
       return `
         <tr>
           <td>${cell(html(row.name), html(row.endpoint), "readonly-mono")}</td>
@@ -2172,28 +2732,28 @@
           <td>${cell(html(ageText(row.updated)), `${html(clipText(row.feeds, 34))}<br><span class="readonly-mono">${html(row.updated || "-")}</span>`)}</td>
         </tr>`;
     });
-    return card("鏁版嵁婧愬湴鍥?, "鏁版嵁鏉ユ簮銆佸埛鏂板勾榫勫拰褰卞搷鑼冨洿鍘嬬缉鍦ㄥ悓涓€琛?, table(["鏁版嵁婧?, "鐘舵€?, "鍒锋柊 / 褰卞搷"], rows, "鏆傛棤鏁版嵁婧?, "readonly-scroll readonly-table-compact"), "readonly-dense-card");
+    return card("数据源地图", "数据来源、刷新年龄和影响范围压缩在同一行", table(["数据源", "状态", "刷新 / 影响"], rows, "暂无数据源", "readonly-scroll readonly-table-compact"), "readonly-dense-card");
   }
 
   function renderCollectionImpactMatrix(snapshot, diag) {
     const rows = buildCollectionHealth(snapshot, diag).map((row) => {
       const impact = {
-        "REST 瀹炴椂閲囬泦": "鍏ㄧ珯鍩虹鍗＄墖銆佹帴鍙ｃ€乄AN銆佺粓绔€佺郴缁熻祫婧?,
-        "SSH 杩炴帴璇︽儏": "棣栭〉缁堢娴侀噺鎺掕銆佺粓绔闄┿€佽繛鎺ユ暟鎺掕",
-        "杩炴帴鍗忚缁熻": "QUIC/UDP443銆佹祴閫?瑙嗛/浠ｇ悊闅ч亾瑙傚療",
-        "DNS 闈欐€佽〃": "DNS 瑙勫垯銆佸垎娴佸垽鏂€侀厤缃紓绉诲熀绾?,
-        "鍙浣撴鎺㈡祴": "DNS 娉勬紡銆佸嚭鍙?IP銆佹湇鍔″彲杈炬€с€侀潰鏉挎枃浠?,
-      }[row.key] || "鍏宠仈璇婃柇椤?;
+        "REST 实时采集": "全站基础卡片、接口、WAN、终端、系统资源",
+        "SSH 连接详情": "首页终端流量排行、终端风险、连接数排行",
+        "连接协议统计": "QUIC/UDP443、测速/视频/代理隧道观察",
+        "DNS 静态表": "DNS 规则、分流判断、配置漂移基线",
+        "只读体检探测": "DNS 泄漏、出口 IP、服务可达性、面板文件",
+      }[row.key] || "关联诊断页";
       return `
         <tr>
           <td>${html(row.key)}</td>
           <td>${pill(levelText(row.level), row.level)}</td>
           <td>${html(row.detail)}</td>
           <td>${html(impact)}</td>
-          <td>${html(row.level === "ok" ? "缁х画瑙傚療" : "浼樺厛纭閲囬泦绾跨▼鍜屾暟鎹簮")}</td>
+          <td>${html(row.level === "ok" ? "继续观察" : "优先确认采集线程和数据源")}</td>
         </tr>`;
     });
-    return card("閲囬泦褰卞搷闈㈢煩闃?, "鎶娾€滃摢涓噰闆嗗崱浣忎細褰卞搷鍝噷鈥濈洿鎺ュ垪鍑烘潵", table(["閲囬泦椤?, "鐘舵€?, "璇︽儏", "褰卞搷椤甸潰", "鎺掓煡浼樺厛绾?], rows), "readonly-dense-card");
+    return card("采集影响面矩阵", "把“哪个采集卡住会影响哪里”直接列出来", table(["采集项", "状态", "详情", "影响页面", "排查优先级"], rows), "readonly-dense-card");
   }
 
   function renderDnsProbeCoverage(diag) {
@@ -2214,11 +2774,11 @@
           <td>${number(dnsRows.length)}</td>
           <td>${number(real)} / ${number(fake)}</td>
           <td>${number(errors)}</td>
-          <td>${tcp ? pill(tcp.ok ? "閫? : "澶辫触", tcp.ok ? "ok" : "warn") : pill("鏈噰闆?, "warn")}</td>
+          <td>${tcp ? pill(tcp.ok ? "通" : "失败", tcp.ok ? "ok" : "warn") : pill("未采集", "warn")}</td>
           <td>${http ? `${http.status ?? "-"} / ${number(http.elapsedMs)}ms` : "-"}</td>
         </tr>`;
     });
-    return card("绔欑偣鎺㈡祴瑕嗙洊鏄庣粏", "姣忎釜甯哥敤绔欑偣鍒板簳娴嬩簡鍝簺灞傦細DNS銆佺湡瀹?Fake-IP銆乀CP銆丠TTP", table(["绔欑偣", "棰勬湡", "DNS鏍锋湰", "鐪熷疄/Fake", "DNS寮傚父", "TCP443", "HTTP/寤惰繜"], rows, "绛夊緟鎺㈡祴"), "readonly-dense-card");
+    return card("站点探测覆盖明细", "每个常用站点到底测了哪些层：DNS、真实/Fake-IP、TCP、HTTP", table(["站点", "预期", "DNS样本", "真实/Fake", "DNS异常", "TCP443", "HTTP/延迟"], rows, "等待探测"), "readonly-dense-card");
   }
 
   function renderDnsRuleInventory(snapshot) {
@@ -2228,9 +2788,9 @@
         <td>${cell(html(row.name), html(row.comment || "-"))}</td>
         <td>${html(row.type || "-")}</td>
         <td>${cell(html(row.value || "-"), html(row.ttl || "-"), "readonly-mono")}</td>
-        <td>${pill(row.disabled ? "鍋滅敤" : "鍚敤", row.disabled ? "warn" : "ok")}</td>
+        <td>${pill(row.disabled ? "停用" : "启用", row.disabled ? "warn" : "ok")}</td>
       </tr>`);
-    return card("DNS 闈欐€?/ FWD 瑙勫垯棰勮", `鎬绘暟 ${number(dns.forwardRuleCount)} 路 鍋滅敤 ${number(dns.disabledForwardRuleCount)}`, table(["鍩熷悕/瑙勫垯", "绫诲瀷", "鍊?/ TTL", "鐘舵€?], rows, "鏆傛棤 DNS 瑙勫垯", "readonly-scroll-tall"), "readonly-dense-card");
+    return card("DNS 静态 / FWD 规则预览", `总数 ${number(dns.forwardRuleCount)} · 停用 ${number(dns.disabledForwardRuleCount)}`, table(["域名/规则", "类型", "值 / TTL", "状态"], rows, "暂无 DNS 规则", "readonly-scroll-tall"), "readonly-dense-card");
   }
 
   function renderExitDecisionBoard(diag) {
@@ -2240,16 +2800,16 @@
     const dnsBad = siteRows.filter((row) => row.verdict.includes("DNS")).length;
     const httpBad = siteRows.filter((row) => row.http && !row.http.ok).length;
     const tcpBad = siteRows.filter((row) => row.tcp && !row.tcp.ok).length;
-    return card("鍒嗘祦鍒ゅ畾鎽樿", "鎶婂鏉傜煩闃靛帇鎴愬嚑涓叧閿鏁帮紝鏂逛究鍏堝垽鏂柟鍚?, `
+    return card("分流判定摘要", "把复杂矩阵压成几个关键计数，方便先判断方向", `
       <div class="ops-stat-grid">
-        ${kpi("鐪熷疄 IP 鍊惧悜", number(real), "涓€鑸洿鍋?DIRECT")}
-        ${kpi("Fake-IP 鍊惧悜", number(fake), "涓€鑸洿鍋忎唬鐞?)}
-        ${kpi("DNS 寮傚父绔欑偣", number(dnsBad), "瑙ｆ瀽澶辫触鎴栬繑鍥炲紓甯?)}
-        ${kpi("TCP 寮傚父绔欑偣", number(tcpBad), "443 杩炴帴澶辫触")}
-        ${kpi("HTTP 寮傚父绔欑偣", number(httpBad), "绔欑偣灞傚彲杈惧紓甯?)}
-        ${kpi("褰撳墠鍑哄彛", html(latestExitIp(diag)), "闈㈡澘渚у嚭鍙ｅ弬鑰?)}
+        ${kpi("真实 IP 倾向", number(real), "一般更偏 DIRECT")}
+        ${kpi("Fake-IP 倾向", number(fake), "一般更偏代理")}
+        ${kpi("DNS 异常站点", number(dnsBad), "解析失败或返回异常")}
+        ${kpi("TCP 异常站点", number(tcpBad), "443 连接失败")}
+        ${kpi("HTTP 异常站点", number(httpBad), "站点层可达异常")}
+        ${kpi("当前出口", html(latestExitIp(diag)), "面板侧出口参考")}
       </div>
-      <div class="readonly-note" style="margin-top:8px">杩欓噷鍙仛鍙褰掑洜锛屼笉浼氳嚜鍔ㄦ敼 DNS銆丯ikki 瑙勫垯銆丱penWrt 浠ｇ悊鎴?RouterOS 璺敱銆?/div>`, "readonly-dense-card");
+      <div class="readonly-note" style="margin-top:8px">这里只做只读归因，不会自动改 DNS、Nikki 规则、OpenWrt 代理或 RouterOS 路由。</div>`, "readonly-dense-card");
   }
 
   function renderWanLineInventory(snapshot) {
@@ -2260,7 +2820,7 @@
       return `
         <tr>
           <td>${cell(html(row.name), html(row.parent || "-"))}</td>
-          <td>${pill(row.running ? "鍦ㄧ嚎" : "绂荤嚎", row.running ? "ok" : "danger")}</td>
+          <td>${pill(row.running ? "在线" : "离线", row.running ? "ok" : "danger")}</td>
           <td>${cell(list(row.addresses).slice(0, 2).map(html).join("<br>") || "-", "", "readonly-mono")}</td>
           <td>${rate(row.upRate)}</td>
           <td>${rate(row.downRate)}</td>
@@ -2269,7 +2829,7 @@
           <td>${html(routeText)}</td>
         </tr>`;
     });
-    return card("WAN 绾胯矾娓呭崟", "8 鏉?PPPoE 鐨勫湴鍧€銆佺埗鎺ュ彛銆侀€熺巼銆佺疮璁″拰璺敱琛ㄥ叧绯?, table(["绾胯矾", "鐘舵€?, "鍦板潃", "涓婅", "涓嬭", "绱涓?涓?, "鍗犳瘮", "璺敱琛?], rows, "鏆傛棤 WAN 鏁版嵁", "readonly-scroll-tall"), "readonly-dense-card");
+    return card("WAN 线路清单", "8 条 PPPoE 的地址、父接口、速率、累计和路由表关系", table(["线路", "状态", "地址", "上行", "下行", "累计上/下", "占比", "路由表"], rows, "暂无 WAN 数据", "readonly-scroll-tall"), "readonly-dense-card");
   }
 
   function renderDefaultRouteCompass(snapshot) {
@@ -2284,20 +2844,20 @@
       return `
         <tr>
           <td>${html(row.name)}</td>
-          <td>${pill(row.running ? "鍦ㄧ嚎" : "绂荤嚎", row.running ? "ok" : "danger")}</td>
+          <td>${pill(row.running ? "在线" : "离线", row.running ? "ok" : "danger")}</td>
           <td>${main ? `${html(main.table)} / ${html(main.distance || "-")}` : "-"}</td>
           <td>${own ? `${html(own.table)} / ${html(own.distance || "-")}` : "-"}</td>
-          <td>${pill(main?.active || own?.active ? "娲诲姩" : "鍏虫敞", main?.active || own?.active ? "ok" : "warn")}</td>
+          <td>${pill(main?.active || own?.active ? "活动" : "关注", main?.active || own?.active ? "ok" : "warn")}</td>
         </tr>`;
     });
-    return card("榛樿璺敱缃楃洏", "鎶?main 榛樿銆佸悇绾胯矾琛ㄩ粯璁ゅ拰娲诲姩鐘舵€佸帇缂╁湪涓€灞?, `
+    return card("默认路由罗盘", "把 main 默认、各线路表默认和活动状态压缩在一屏", `
       <div class="readonly-wan-kpi-strip">
-        ${miniKpi("榛樿璺敱", number(defaults.length), `${number(activeDefaults.length)} 娲诲姩`)}
-        ${miniKpi("main 琛?, number(mainDefaults.length), `${number(mainDefaults.filter((row) => row.active).length)} 娲诲姩`)}
-        ${miniKpi("璺敱琛?, number(routes.tableCount), `${number(routes.staticCount)} 闈欐€乣)}
-        ${miniKpi("鍔ㄦ€佽矾鐢?, number(routes.dynamicCount), "鍙缁熻")}
+        ${miniKpi("默认路由", number(defaults.length), `${number(activeDefaults.length)} 活动`)}
+        ${miniKpi("main 表", number(mainDefaults.length), `${number(mainDefaults.filter((row) => row.active).length)} 活动`)}
+        ${miniKpi("路由表", number(routes.tableCount), `${number(routes.staticCount)} 静态`)}
+        ${miniKpi("动态路由", number(routes.dynamicCount), "只读统计")}
       </div>
-      ${table(["绾胯矾", "鎷ㄥ彿", "main / distance", "涓撶敤琛?/ distance", "鍒ゆ柇"], lineRows, "鏆傛棤榛樿璺敱鏁版嵁")}`, "readonly-dense-card");
+      ${table(["线路", "拨号", "main / distance", "专用表 / distance", "判断"], lineRows, "暂无默认路由数据")}`, "readonly-dense-card");
   }
 
   function renderRouteInventory(snapshot) {
@@ -2310,10 +2870,10 @@
         <td>${html(row.table || "-")}</td>
         <td>${html(clipText(row.gateway || "-", 30))}</td>
         <td>${html(row.distance || "-")}</td>
-        <td>${pill(row.active ? "娲诲姩" : "闈炴椿鍔?, row.active ? "ok" : "warn")}</td>
-        <td>${pill(row.disabled ? "鍋滅敤" : "鍚敤", row.disabled ? "warn" : "ok")}</td>
+        <td>${pill(row.active ? "活动" : "非活动", row.active ? "ok" : "warn")}</td>
+        <td>${pill(row.disabled ? "停用" : "启用", row.disabled ? "warn" : "ok")}</td>
       </tr>`);
-    return card("榛樿 / 闈欐€佽矾鐢卞簱瀛?, `灞曠ず榛樿璺敱 + 闈欐€佹牱鏈?${number(rows.length)} 鏉★紱鎬婚潤鎬?${number(routes.staticCount)}`, table(["鐩爣", "琛?, "缃戝叧", "璺濈", "娲诲姩", "鍚敤"], rows, "鏆傛棤璺敱鏁版嵁", "readonly-scroll readonly-table-compact"), "readonly-dense-card");
+    return card("默认 / 静态路由库存", `展示默认路由 + 静态样本 ${number(rows.length)} 条；总静态 ${number(routes.staticCount)}`, table(["目标", "表", "网关", "距离", "活动", "启用"], rows, "暂无路由数据", "readonly-scroll readonly-table-compact"), "readonly-dense-card");
   }
 
   function renderRoutingRuleInventory(snapshot) {
@@ -2333,22 +2893,22 @@
     const groupCards = groups.slice(0, 6).map((row) => `
       <div class="readonly-rule-group">
         <strong><span>${html(row.table)}</span><span>${number(row.active)} / ${number(row.total)}</span></strong>
-        <span>${row.samples.map(html).join(" 路 ") || "鏃犳牱鏈?} 路 IPv6 ${number(row.ipv6)}</span>
+        <span>${row.samples.map(html).join(" · ") || "无样本"} · IPv6 ${number(row.ipv6)}</span>
       </div>`);
     const samples = rules.slice(0, 4).map((row) => `
       <div class="readonly-protocol-chip">
-        <strong>${html(row.table || "-")} 路 ${html(row.action || "-")}</strong>
-        <span>${html(row.comment || row.srcAddress || "-")} 路 ${row.disabled ? "鍋滅敤" : row.inactive ? "鏈椿鍔? : "娲诲姩"}</span>
+        <strong>${html(row.table || "-")} · ${html(row.action || "-")}</strong>
+        <span>${html(row.comment || row.srcAddress || "-")} · ${row.disabled ? "停用" : row.inactive ? "未活动" : "活动"}</span>
       </div>`);
-    return card("Routing Rule 鎽樿", "鍏堢湅鍒嗙粍鍜岀姸鎬侊紝鍐嶇湅鏍锋湰锛涢伩鍏嶉暱琛ㄧ嫭鍗犳暣椤?, `
+    return card("Routing Rule 摘要", "先看分组和状态，再看样本；避免长表独占整页", `
       <div class="readonly-wan-kpi-strip">
-        ${miniKpi("瑙勫垯鎬绘暟", number(rules.length), `${number(lookupOnly)} lookup-only`)}
-        ${miniKpi("娲诲姩瑙勫垯", number(rules.filter((row) => !row.disabled && !row.inactive).length), "disabled/inactive 宸插墧闄?)}
-        ${miniKpi("IPv6 婧愮瓥鐣?, number(rules.filter((row) => String(row.srcAddress || "").includes(":")).length), "婧愬湴鍧€鍒嗘祦")}
-        ${miniKpi("娑夊強琛?, number(groups.length), groups.slice(0, 4).map((row) => row.table).join(" / "))}
+        ${miniKpi("规则总数", number(rules.length), `${number(lookupOnly)} lookup-only`)}
+        ${miniKpi("活动规则", number(rules.filter((row) => !row.disabled && !row.inactive).length), "disabled/inactive 已剔除")}
+        ${miniKpi("IPv6 源策略", number(rules.filter((row) => String(row.srcAddress || "").includes(":")).length), "源地址分流")}
+        ${miniKpi("涉及表", number(groups.length), groups.slice(0, 4).map((row) => row.table).join(" / "))}
       </div>
-      <div class="readonly-rule-group-grid">${groupCards.join("") || `<div class="empty">鏆傛棤 Routing Rule 鍒嗙粍</div>`}</div>
-      <div class="readonly-protocol-sample">${samples.join("") || `<div class="empty">鏆傛棤 Routing Rule 鏍锋湰</div>`}</div>`, "readonly-dense-card");
+      <div class="readonly-rule-group-grid">${groupCards.join("") || `<div class="empty">暂无 Routing Rule 分组</div>`}</div>
+      <div class="readonly-protocol-sample">${samples.join("") || `<div class="empty">暂无 Routing Rule 样本</div>`}</div>`, "readonly-dense-card");
   }
 
   function renderMangleHitDigest(snapshot) {
@@ -2369,14 +2929,14 @@
         <td>${bytes(row.bytes)}</td>
         <td><span class="readonly-clip readonly-mono" title="${html(row.comments.join(" / ") || "-")}">${row.comments.map(html).join(" / ") || "-"}</span></td>
       </tr>`);
-    return card("Mangle 鍛戒腑鎽樿", "鎸夎矾鐢辨爣璁拌仛鍚堝懡涓紝蹇€熺湅鍝被绛栫暐瀹為檯鍦ㄨ窇", `
+    return card("Mangle 命中摘要", "按路由标记聚合命中，快速看哪类策略实际在跑", `
       <div class="readonly-wan-kpi-strip">
-        ${miniKpi("Mangle 瑙勫垯", number(rules.length), "鍙璁℃暟")}
-        ${miniKpi("鍛戒腑鍒嗙粍", number(byMark.length), "鎸?routing mark")}
-        ${miniKpi("鏈€楂樻祦閲?, byMark[0] ? html(byMark[0].mark) : "-", byMark[0] ? bytes(byMark[0].bytes) : "")}
-        ${miniKpi("PCC 璇嗗埆", snapshot.loadBalance?.pccDetected ? "宸叉娴? : "鏈娴?, "鏉ヨ嚜蹇収")}
+        ${miniKpi("Mangle 规则", number(rules.length), "只读计数")}
+        ${miniKpi("命中分组", number(byMark.length), "按 routing mark")}
+        ${miniKpi("最高流量", byMark[0] ? html(byMark[0].mark) : "-", byMark[0] ? bytes(byMark[0].bytes) : "")}
+        ${miniKpi("PCC 识别", snapshot.loadBalance?.pccDetected ? "已检测" : "未检测", "来自快照")}
       </div>
-      ${table(["鏍囪", "瑙勫垯", "娴侀噺", "鏍锋湰娉ㄩ噴"], rows, "鏆傛棤 Mangle 鏁版嵁")}`, "readonly-dense-card");
+      ${table(["标记", "规则", "流量", "样本注释"], rows, "暂无 Mangle 数据")}`, "readonly-dense-card");
   }
 
   function renderTerminalInventory(snapshot) {
@@ -2396,7 +2956,7 @@
           <td>${bytes(row.sessionBytes)}</td>
           <td>${html(row.lastSeen || "-")}</td>
         </tr>`);
-    return card("缁堢瀵嗛泦娓呭崟", `鎸夋椿璺冨害灞曠ず Top ${number(Math.min(terminals.length, 12))} / ${number(terminals.length)} 鍙帮紝閬垮厤闀胯〃鎸ゆ帀 IPv6/DHCP 淇℃伅`, table(["缁堢", "MAC", "鐘舵€?, "涓婅", "涓嬭", "杩炴帴", "浼氳瘽娴侀噺", "鏈€杩戝嚭鐜?], rows, "鏆傛棤缁堢鏁版嵁", "readonly-scroll readonly-table-compact"), "readonly-dense-card");
+    return card("终端密集清单", `按活跃度展示 Top ${number(Math.min(terminals.length, 12))} / ${number(terminals.length)} 台，避免长表挤掉 IPv6/DHCP 信息`, table(["终端", "MAC", "状态", "上行", "下行", "连接", "会话流量", "最近出现"], rows, "暂无终端数据", "readonly-scroll readonly-table-compact"), "readonly-dense-card");
   }
 
   function renderDhcpLeaseMatrix(snapshot) {
@@ -2407,10 +2967,10 @@
         <td>${html(row.mac || "-")}</td>
         <td>${html(row.server || "-")}</td>
         <td>${pill(row.status || "-", String(row.status || "").toLowerCase() === "bound" ? "ok" : "warn")}</td>
-        <td>${pill(row.static ? "闈欐€? : "鍔ㄦ€?, row.static ? "info" : "ok")}</td>
+        <td>${pill(row.static ? "静态" : "动态", row.static ? "info" : "ok")}</td>
         <td>${html(row.lastSeen || "-")}</td>
       </tr>`);
-    return card("DHCP 绉熺害鐭╅樀", `灞曠ず Top ${number(Math.min(leases.length, 12))} / ${number(leases.length)} 鏉?路 鏈嶅姟 ${number(list(snapshot.dhcp?.servers).length)}`, table(["璁惧", "MAC", "鏈嶅姟", "鐘舵€?, "绫诲瀷", "鏈€鍚庡嚭鐜?], rows, "鏆傛棤 DHCP 绉熺害", "readonly-scroll readonly-table-compact"), "readonly-dense-card");
+    return card("DHCP 租约矩阵", `展示 Top ${number(Math.min(leases.length, 12))} / ${number(leases.length)} 条 · 服务 ${number(list(snapshot.dhcp?.servers).length)}`, table(["设备", "MAC", "服务", "状态", "类型", "最后出现"], rows, "暂无 DHCP 租约", "readonly-scroll readonly-table-compact"), "readonly-dense-card");
   }
 
   function renderSecuritySignals(snapshot) {
@@ -2425,25 +2985,25 @@
       </tr>`);
     const alertRows = securityAlerts.concat(arpAlerts).slice(0, 12).map((row) => {
       const text = typeof row === "string" ? row : (row.message || row.text || JSON.stringify(row));
-      return `<tr><td>${pill("鍙鍛婅", "warn")}</td><td>${html(text)}</td></tr>`;
+      return `<tr><td>${pill("只读告警", "warn")}</td><td>${html(text)}</td></tr>`;
     });
     return `
-      ${card("瀹夊叏 / ARP 鍛婅鎽樿", "鍙灞曠ず锛屼笉鍒涘缓灏佺鎴栬鍒?, table(["绫诲瀷", "鍐呭"], alertRows, "褰撳墠娌℃湁瀹夊叏鎴?ARP 鍛婅", "readonly-scroll readonly-wrap-table"))}
-      ${card("鍦板潃鍒楄〃棰勮", "灞曠ず Top 12 鏍锋湰锛屼究浜庤瀵熷叧閿悕鍗曞拰瑙勫垯瀹归噺", table(["鍒楄〃", "鍦板潃", "瓒呮椂", "娉ㄩ噴"], addrRows, "鏆傛棤鍦板潃鍒楄〃", "readonly-scroll readonly-table-compact"))}`;
+      ${card("安全 / ARP 告警摘要", "只读展示，不创建封禁或规则", table(["类型", "内容"], alertRows, "当前没有安全或 ARP 告警", "readonly-scroll readonly-wrap-table"))}
+      ${card("地址列表预览", "展示 Top 12 样本，便于观察关键名单和规则容量", table(["列表", "地址", "超时", "注释"], addrRows, "暂无地址列表", "readonly-scroll readonly-table-compact"))}`;
   }
 
   function renderIpv6ExposureMatrix(snapshot) {
     const ipv6Terminals = list(snapshot.terminals).filter((row) => String(row.ip || "").includes(":"));
     const rows = ipv6Terminals.slice(0, 6).map((row) => `
       <tr>
-        <td>${cell(html(clipText(row.displayName || row.hostname || "IPv6 缁堢", 24)), compactIpList([row.ip], 1))}</td>
+        <td>${cell(html(clipText(row.displayName || row.hostname || "IPv6 终端", 24)), compactIpList([row.ip], 1))}</td>
         <td>${html(row.mac || "-")}</td>
         <td>${pill(row.status || "IPv6", "warn")}</td>
         <td>${rate(row.upRate)} / ${rate(row.downRate)}</td>
         <td>${number(row.connections)}</td>
         <td>${html(row.lastSeen || "-")}</td>
       </tr>`);
-    return card("IPv6 缁堢鏆撮湶娓呭崟", `灞曠ず Top ${number(Math.min(ipv6Terminals.length, 6))} / ${number(ipv6Terminals.length)} 鍙帮紝闀?IPv6 鍦板潃鍋氬崟琛岃鍓猔, table(["缁堢 / IPv6", "MAC", "鐘舵€?, "涓?涓嬭", "杩炴帴", "鏈€杩戝嚭鐜?], rows, "鏆傛棤 IPv6 缁堢", "readonly-scroll readonly-table-compact"), "readonly-dense-card");
+    return card("IPv6 终端暴露清单", `展示 Top ${number(Math.min(ipv6Terminals.length, 6))} / ${number(ipv6Terminals.length)} 台，长 IPv6 地址做单行裁剪`, table(["终端 / IPv6", "MAC", "状态", "上/下行", "连接", "最近出现"], rows, "暂无 IPv6 终端", "readonly-scroll readonly-table-compact"), "readonly-dense-card");
   }
 
   function renderPanelFileInventory(diag) {
@@ -2452,9 +3012,9 @@
         <td>${cell(html(String(file.path || "-").split(/[\\/]/).pop()), html(clipText(file.path || "-", 34)), "readonly-mono")}</td>
         <td>${bytes(file.size)}</td>
         <td>${html(file.mtime || "-")}</td>
-        <td>${pill("鍙", "ok")}</td>
+        <td>${pill("只读", "ok")}</td>
       </tr>`);
-    return card("闈㈡澘鏂囦欢鍙娓呭崟", "鐢ㄤ簬杩借釜鍓嶇閮ㄧ讲涓庢枃浠舵洿鏂版椂闂达紝涓嶆墽琛岃鐩?, table(["鏂囦欢", "澶у皬", "淇敼鏃堕棿", "鐘舵€?], rows, "鏆傛棤闈㈡澘鏂囦欢鏁版嵁", "readonly-scroll readonly-table-compact"), "readonly-dense-card");
+    return card("面板文件只读清单", "用于追踪前端部署与文件更新时间，不执行覆盖", table(["文件", "大小", "修改时间", "状态"], rows, "暂无面板文件数据", "readonly-scroll readonly-table-compact"), "readonly-dense-card");
   }
 
   function renderRouterLogTable(snapshot) {
@@ -2464,7 +3024,7 @@
         <td>${pill(row.topics || "-", "info")}</td>
         <td>${html(row.message || "-")}</td>
       </tr>`);
-    return card("RouterOS 鏃ュ織鍙绐楀彛", "灞曠ず鏈€杩?20 鏉￠珮浠峰€间簨浠讹紝涓嶆竻绌恒€佷笉鍐欏叆銆佷笉璋冩暣鏃ュ織閰嶇疆", table(["鏃堕棿", "涓婚", "娑堟伅"], rows, "鏆傛棤鏃ュ織", "readonly-scroll-tall readonly-wrap-table"), "readonly-dense-card");
+    return card("RouterOS 日志只读窗口", "展示最近 20 条高价值事件，不清空、不写入、不调整日志配置", table(["时间", "主题", "消息"], rows, "暂无日志", "readonly-scroll-tall readonly-wrap-table"), "readonly-dense-card");
   }
 
   function renderCapacityPressureMatrix(snapshot, diag) {
@@ -2472,13 +3032,13 @@
     const conn = snapshot.connections || {};
     const route = snapshot.routes || {};
     const rows = [
-      { label: "DNS 缂撳瓨", value: num(dns.cacheSize) ? num(dns.cacheUsed) / num(dns.cacheSize) * 100 : 0, display: `${bytes(dns.cacheUsed)} / ${bytes(dns.cacheSize)}`, color: "#165dff" },
-      { label: "杩炴帴 TCP", value: num(conn.total) ? num(conn.tcp) / num(conn.total) * 100 : 0, display: `${number(conn.tcp)} / ${number(conn.total)}`, color: "#16c67a" },
-      { label: "杩炴帴 UDP", value: num(conn.total) ? num(conn.udp) / num(conn.total) * 100 : 0, display: `${number(conn.udp)} / ${number(conn.total)}`, color: "#ffb020" },
-      { label: "榛樿璺敱鍗犳瘮", value: num(route.staticCount) ? num(route.defaultCount) / num(route.staticCount) * 100 : 0, display: `${number(route.defaultCount)} / ${number(route.staticCount)}`, color: "#7c5cff" },
-      { label: "Nikki 瑙勫垯", value: Math.min(100, num(diag?.nikki?.ruleCount) / 80), display: `${number(diag?.nikki?.ruleCount)} 鏉, color: "#2f7df6" },
+      { label: "DNS 缓存", value: num(dns.cacheSize) ? num(dns.cacheUsed) / num(dns.cacheSize) * 100 : 0, display: `${bytes(dns.cacheUsed)} / ${bytes(dns.cacheSize)}`, color: "#165dff" },
+      { label: "连接 TCP", value: num(conn.total) ? num(conn.tcp) / num(conn.total) * 100 : 0, display: `${number(conn.tcp)} / ${number(conn.total)}`, color: "#16c67a" },
+      { label: "连接 UDP", value: num(conn.total) ? num(conn.udp) / num(conn.total) * 100 : 0, display: `${number(conn.udp)} / ${number(conn.total)}`, color: "#ffb020" },
+      { label: "默认路由占比", value: num(route.staticCount) ? num(route.defaultCount) / num(route.staticCount) * 100 : 0, display: `${number(route.defaultCount)} / ${number(route.staticCount)}`, color: "#7c5cff" },
+      { label: "Nikki 规则", value: Math.min(100, num(diag?.nikki?.ruleCount) / 80), display: `${number(diag?.nikki?.ruleCount)} 条`, color: "#2f7df6" },
     ];
-    return card("瀹归噺鍘嬪姏鏉?, "鐢ㄨ繘搴︽潯琛ュ厖瀹归噺瑙傚療锛屼笉浠ｈ〃闃堝€煎憡璀︼紝鍙綔瓒嬪娍鍙傝€?, `<div class="readonly-mini-list">${rows.map((row) => progressRow(row.label, row.value, row.display, row.color)).join("")}</div>`, "readonly-dense-card");
+    return card("容量压力条", "用进度条补充容量观察，不代表阈值告警，只作趋势参考", `<div class="readonly-mini-list">${rows.map((row) => progressRow(row.label, row.value, row.display, row.color)).join("")}</div>`, "readonly-dense-card");
   }
 
   function renderDiagnosticsDirectory(snapshot, diag) {
@@ -2488,39 +3048,39 @@
     const terminals = list(snapshot.terminals);
     const routes = snapshot.routes || {};
     const rows = [
-      { page: "閲囬泦鍋ュ悍", owner: "閲囬泦閾捐矾", signal: `${health.filter((row) => row.level !== "ok").length} 椤瑰叧娉╜, link: "collectionHealthDiagnostics", action: "鍏堢湅 SSH / REST / 闈欐€佽〃鏄惁鏂伴矞" },
-      { page: "DNS / 浠ｇ悊", owner: "鍒嗘祦涓庡嚭鍙?, signal: `${siteRows.filter((row) => row.level !== "ok").length} 涓珯鐐瑰紓甯竊, link: "dnsProxyDiagnostics", action: "鏌?DNS銆丗ake-IP銆乀CP銆丠TTP銆佸嚭鍙? },
-      { page: "绾胯矾璐ㄩ噺", owner: "WAN / PCC", signal: `${pppoe.filter((row) => !row.running).length} 鏉＄绾?/ ${number(routes.tableCount)} 寮犺〃`, link: "wanQualityDiagnostics", action: "鏌ョ嚎璺崰姣斻€佽矾鐢卞簱瀛樸€丮angle 鍛戒腑" },
-      { page: "缁堢椋庨櫓", owner: "缁堢韬唤", signal: `${terminals.filter((row) => terminalRiskScore(row) >= 45).length} 鍙伴珮椋庨櫓`, link: "terminalRiskDiagnostics", action: "鏌ョ粓绔€丏HCP銆両Pv6 鏆撮湶" },
-      { page: "绯荤粺瀹¤", owner: "鍩虹嚎涓庝簨浠?, signal: `${list(snapshot.logs?.all).length} 鏉℃棩蹇?/ ${list(diag?.panelFiles).length} 涓枃浠禶, link: "systemAuditDiagnostics", action: "鏌ユ紓绉汇€佸閲忋€佹棩蹇楀拰闈㈡澘鏂囦欢" },
+      { page: "采集健康", owner: "采集链路", signal: `${health.filter((row) => row.level !== "ok").length} 项关注`, link: "collectionHealthDiagnostics", action: "先看 SSH / REST / 静态表是否新鲜" },
+      { page: "DNS / 代理", owner: "分流与出口", signal: `${siteRows.filter((row) => row.level !== "ok").length} 个站点异常`, link: "dnsProxyDiagnostics", action: "查 DNS、Fake-IP、TCP、HTTP、出口" },
+      { page: "线路质量", owner: "WAN / PCC", signal: `${pppoe.filter((row) => !row.running).length} 条离线 / ${number(routes.tableCount)} 张表`, link: "wanQualityDiagnostics", action: "查线路占比、路由库存、Mangle 命中" },
+      { page: "终端风险", owner: "终端身份", signal: `${terminals.filter((row) => terminalRiskScore(row) >= 45).length} 台高风险`, link: "terminalRiskDiagnostics", action: "查终端、DHCP、IPv6 暴露" },
+      { page: "系统审计", owner: "基线与事件", signal: `${list(snapshot.logs?.all).length} 条日志 / ${list(diag?.panelFiles).length} 个文件`, link: "systemAuditDiagnostics", action: "查漂移、容量、日志和面板文件" },
     ].map((row) => `
       <tr>
-        <td><a href="#${row.link}" data-section="${row.link}" data-nav-group="diagnostics">${html(row.page)}</a></td>
+        <td><a href="#${row.link}" data-section="${row.link}" data-nav-group="${html(getReadonlyNavGroup(row.link))}">${html(row.page)}</a></td>
         <td>${html(row.owner)}</td>
         <td>${html(row.signal)}</td>
         <td>${html(row.action)}</td>
       </tr>`);
-    return card("璇婃柇鍔熻兘椤电洰褰?, "鎬昏椤靛彧鍋氳矾鏍囷紝涓嶅鍒跺悇鍔熻兘椤佃鎯呰〃", table(["椤甸潰", "鍞竴鑱岃矗", "褰撳墠淇″彿", "涓嬩竴姝ユ煡鐪?], rows), "readonly-dense-card");
+    return card("诊断功能页目录", "总览页只做路标，不复制各功能页详情表", table(["页面", "唯一职责", "当前信号", "下一步查看"], rows), "readonly-dense-card");
   }
 
   function renderRiskPriorityQueue(snapshot, diag) {
     const rows = riskItems(snapshot, diag).slice(0, 18).map((item, index) => `
       <tr>
         <td>${number(index + 1)}</td>
-        <td>${pill(item.level === "danger" ? "楂? : item.level === "warn" ? "涓? : "浣?, item.level)}</td>
+        <td>${pill(item.level === "danger" ? "高" : item.level === "warn" ? "中" : "低", item.level)}</td>
         <td>${html(item.text)}</td>
-        <td>${html(item.level === "danger" ? "浼樺厛杩涘叆瀵瑰簲鍔熻兘椤垫帓鏌? : "瑙傚療瓒嬪娍鍜屽埛鏂扮姸鎬?)}</td>
+        <td>${html(item.level === "danger" ? "优先进入对应功能页排查" : "观察趋势和刷新状态")}</td>
       </tr>`);
-    return card("椋庨櫓浼樺厛闃熷垪", "鍙垪闂绾跨储锛屼笉閲嶅灞曠ず璇︽儏鏁版嵁", table(["搴忓彿", "绾у埆", "绾跨储", "澶勭悊寤鸿"], rows, "褰撳墠娌℃湁闆嗕腑椋庨櫓"), "readonly-dense-card");
+    return card("风险优先队列", "只列问题线索，不重复展示详情数据", table(["序号", "级别", "线索", "处理建议"], rows, "当前没有集中风险"), "readonly-dense-card");
   }
 
   function renderSignalCoverageMatrix(snapshot, diag) {
     const rows = [
-      { name: "閲囬泦鏂伴矞搴?, source: "REST / SSH / static snapshot", page: "閲囬泦鍋ュ悍", count: buildCollectionHealth(snapshot, diag).length },
-      { name: "绔欑偣鍒嗘祦", source: "DNS / TCP / HTTP probes", page: "DNS / 浠ｇ悊", count: SITE_ORDER.length },
-      { name: "WAN 涓庤矾鐢?, source: "PPPoE / route / mangle", page: "绾胯矾璐ㄩ噺", count: list(snapshot.pppoe).length + list(snapshot.routes?.defaultRoutes).length },
-      { name: "缁堢韬唤", source: "terminal / DHCP / IPv6", page: "缁堢椋庨櫓", count: list(snapshot.terminals).length + list(snapshot.dhcp?.leases).length },
-      { name: "瀹¤鍩虹嚎", source: "logs / files / capacity", page: "绯荤粺瀹¤", count: list(snapshot.logs?.all).length + list(diag?.panelFiles).length },
+      { name: "采集新鲜度", source: "REST / SSH / static snapshot", page: "采集健康", count: buildCollectionHealth(snapshot, diag).length },
+      { name: "站点分流", source: "DNS / TCP / HTTP probes", page: "DNS / 代理", count: SITE_ORDER.length },
+      { name: "WAN 与路由", source: "PPPoE / route / mangle", page: "线路质量", count: list(snapshot.pppoe).length + list(snapshot.routes?.defaultRoutes).length },
+      { name: "终端身份", source: "terminal / DHCP / IPv6", page: "终端风险", count: list(snapshot.terminals).length + list(snapshot.dhcp?.leases).length },
+      { name: "审计基线", source: "logs / files / capacity", page: "系统审计", count: list(snapshot.logs?.all).length + list(diag?.panelFiles).length },
     ].map((row) => `
       <tr>
         <td>${html(row.name)}</td>
@@ -2528,18 +3088,18 @@
         <td>${html(row.page)}</td>
         <td>${number(row.count)}</td>
       </tr>`);
-    return card("淇″彿瑕嗙洊鐭╅樀", "璇存槑姣忕被淇″彿鐨勫敮涓€褰掑睘锛岄伩鍏嶈法椤甸潰閲嶅灞曠ず", table(["淇″彿", "鏉ユ簮", "褰掑睘椤甸潰", "鏍锋湰鏁?], rows), "readonly-dense-card");
+    return card("信号覆盖矩阵", "说明每类信号的唯一归属，避免跨页面重复展示", table(["信号", "来源", "归属页面", "样本数"], rows), "readonly-dense-card");
   }
 
   function renderDedupPolicyCard() {
     const rows = [
-      { rule: "璇︽儏琛ㄥ敮涓€褰掑睘", desc: "閲囬泦銆丏NS銆乄AN銆佺粓绔€佸璁″悇鑷彧鍦ㄥ搴斿姛鑳介〉灞曠ず瀹屾暣琛ㄦ牸" },
-      { rule: "鎬昏鍙仛绱㈠紩", desc: "鎬昏椤靛彧淇濈暀鍏ュ彛銆侀闄╀紭鍏堢骇鍜岃鐩栧叧绯伙紝涓嶅鍒舵槑缁嗚〃" },
-      { rule: "鍚岀被淇℃伅涓嶈法椤甸噸澶?, desc: "瀹归噺銆佹棩蹇椼€佸畨鍏ㄥ悕鍗曞彧褰掔郴缁熷璁★紱DHCP 鍜?IPv6 缁堢鍙綊缁堢椋庨櫓" },
-      { rule: "鏈噰闆嗕笉閫犲亣", desc: "娌℃湁鐪熷疄瀛楁鐨勪綅缃繚鐣欐湭閲囬泦鎴栧彧璇昏鏄庯紝涓嶈ˉ铏氬亣鎸囨爣" },
-      { rule: "鍙杈圭晫鍥哄畾", desc: "鎵€鏈夋ā鍧楀彧灞曠ず鐘舵€侊紝涓嶄笅鍙戦厤缃€佷笉閲嶅惎鏈嶅姟銆佷笉鏀硅矾鐢辫鍒? },
+      { rule: "详情表唯一归属", desc: "采集、DNS、WAN、终端、审计各自只在对应功能页展示完整表格" },
+      { rule: "总览只做索引", desc: "总览页只保留入口、风险优先级和覆盖关系，不复制明细表" },
+      { rule: "同类信息不跨页重复", desc: "容量、日志、安全名单只归系统审计；DHCP 和 IPv6 终端只归终端风险" },
+      { rule: "未采集不造假", desc: "没有真实字段的位置保留未采集或只读说明，不补虚假指标" },
+      { rule: "只读边界固定", desc: "所有模块只展示状态，不下发配置、不重启服务、不改路由规则" },
     ].map((row) => `<tr><td>${html(row.rule)}</td><td>${html(row.desc)}</td></tr>`);
-    return card("鍘婚噸褰掑睘瑙勫垯", "鐢ㄤ簬闃叉鍚庣画鍙堟妸鍚屼竴绫讳俊鎭爢鍥炲涓〉闈?, table(["瑙勫垯", "璇存槑"], rows), "readonly-dense-card");
+    return card("去重归属规则", "用于防止后续又把同一类信息堆回多个页面", table(["规则", "说明"], rows), "readonly-dense-card");
   }
 
   function renderCollectionThresholdMatrix() {
@@ -2548,9 +3108,9 @@
         <td>${html(key)}</td>
         <td>${number(value.warn)}s</td>
         <td>${number(value.danger)}s</td>
-        <td>${html(key === "connection" ? "缁堢鎺掕/杩炴帴鏄庣粏" : key === "static" ? "DNS/璺敱/瑙勫垯闈欐€佸揩鐓? : key === "diag" ? "鍙澶栭儴鎺㈡祴" : "瀹炴椂椤甸潰鏁版嵁")}</td>
+        <td>${html(key === "connection" ? "终端排行/连接明细" : key === "static" ? "DNS/路由/规则静态快照" : key === "diag" ? "只读外部探测" : "实时页面数据")}</td>
       </tr>`);
-    return card("鏂伴矞搴﹂槇鍊艰〃", "鍙В閲婂垽鏂爣鍑嗭紝涓嶉噸澶嶄簨浠舵椂闂寸嚎", table(["绫诲瀷", "鍏虫敞闃堝€?, "寮傚父闃堝€?, "褰卞搷鑼冨洿"], rows, "鏆傛棤闃堝€?, "readonly-scroll readonly-table-compact"), "readonly-dense-card");
+    return card("新鲜度阈值表", "只解释判断标准，不重复事件时间线", table(["类型", "关注阈值", "异常阈值", "影响范围"], rows, "暂无阈值", "readonly-scroll readonly-table-compact"), "readonly-dense-card");
   }
 
   function renderCollectionAgeQueue(snapshot, diag) {
@@ -2563,36 +3123,36 @@
           <td>${pill(levelText(row.level), row.level)}</td>
           <td>${cell(html(ageText(row.value)), html(row.value || "-"), "readonly-mono")}</td>
         </tr>`);
-    return card("閲囬泦寤惰繜鎺掑簭", "鎸夊埛鏂板勾榫勬帓搴忥紝閬垮厤璇存槑鍒楁妸鏁磋鎾戦珮", table(["閲囬泦椤?, "鐘舵€?, "鏈€鍚庢洿鏂?], rows, "鏆傛棤閲囬泦鏁版嵁", "readonly-scroll readonly-table-compact"), "readonly-dense-card");
+    return card("采集延迟排序", "按刷新年龄排序，避免说明列把整行撑高", table(["采集项", "状态", "最后更新"], rows, "暂无采集数据", "readonly-scroll readonly-table-compact"), "readonly-dense-card");
   }
 
   function renderCollectionDependencyMap(snapshot, diag) {
     const health = Object.fromEntries(buildCollectionHealth(snapshot, diag).map((row) => [row.key, row.level]));
     const rows = [
-      { page: "棣栭〉娴侀噺鎺掕", needs: "SSH 杩炴帴璇︽儏", level: health["SSH 杩炴帴璇︽儏"] || "warn" },
-      { page: "杩炴帴鐩戞帶", needs: "杩炴帴鍗忚缁熻 + SSH 杩炴帴璇︽儏", level: (health["杩炴帴鍗忚缁熻"] === "ok" && health["SSH 杩炴帴璇︽儏"] === "ok") ? "ok" : "warn" },
-      { page: "DNS / 浠ｇ悊浣撴", needs: "DNS 闈欐€佽〃 + 鍙浣撴鎺㈡祴", level: (health["DNS 闈欐€佽〃"] === "ok" && health["鍙浣撴鎺㈡祴"] === "ok") ? "ok" : "warn" },
-      { page: "绾胯矾璐ㄩ噺", needs: "REST 瀹炴椂閲囬泦 + 闈欐€侀厤缃揩鐓?, level: (health["REST 瀹炴椂閲囬泦"] === "ok" && health["DNS 闈欐€佽〃"] === "ok") ? "ok" : "warn" },
-      { page: "绯荤粺瀹¤", needs: "REST 瀹炴椂閲囬泦 + 鏃ュ織缂撳瓨", level: health["REST 瀹炴椂閲囬泦"] || "warn" },
+      { page: "首页流量排行", needs: "SSH 连接详情", level: health["SSH 连接详情"] || "warn" },
+      { page: "连接监控", needs: "连接协议统计 + SSH 连接详情", level: (health["连接协议统计"] === "ok" && health["SSH 连接详情"] === "ok") ? "ok" : "warn" },
+      { page: "DNS / 代理体检", needs: "DNS 静态表 + 只读体检探测", level: (health["DNS 静态表"] === "ok" && health["只读体检探测"] === "ok") ? "ok" : "warn" },
+      { page: "线路质量", needs: "REST 实时采集 + 静态配置快照", level: (health["REST 实时采集"] === "ok" && health["DNS 静态表"] === "ok") ? "ok" : "warn" },
+      { page: "系统审计", needs: "REST 实时采集 + 日志缓存", level: health["REST 实时采集"] || "warn" },
     ].map((row) => `
       <tr>
         <td>${html(row.page)}</td>
         <td>${html(row.needs)}</td>
         <td>${pill(levelText(row.level), row.level)}</td>
       </tr>`);
-    return card("椤甸潰渚濊禆鍏崇郴", "鎶婇噰闆嗛」鍜岄〉闈㈡晠闅滃叧鑱旇捣鏉ワ紝閬垮厤閲嶅鏀惧悓涓€寮犺〃", table(["椤甸潰", "渚濊禆鏁版嵁", "褰撳墠鍒ゆ柇"], rows, "鏆傛棤渚濊禆", "readonly-scroll readonly-table-compact"), "readonly-dense-card");
+    return card("页面依赖关系", "把采集项和页面故障关联起来，避免重复放同一张表", table(["页面", "依赖数据", "当前判断"], rows, "暂无依赖", "readonly-scroll readonly-table-compact"), "readonly-dense-card");
   }
 
   function renderTerminalStatusBuckets(snapshot) {
     const terminals = list(snapshot.terminals);
     const buckets = [
-      { label: "楂樿繛鎺?, rows: terminals.filter((row) => num(row.connections) > 200), color: "#ff5a5a" },
-      { label: "鏈変笂浼?, rows: terminals.filter((row) => num(row.upRate) > 0), color: "#165dff" },
-      { label: "鏈変笅杞?, rows: terminals.filter((row) => num(row.downRate) > 0), color: "#16c67a" },
+      { label: "高连接", rows: terminals.filter((row) => num(row.connections) > 200), color: "#ff5a5a" },
+      { label: "有上传", rows: terminals.filter((row) => num(row.upRate) > 0), color: "#165dff" },
+      { label: "有下载", rows: terminals.filter((row) => num(row.downRate) > 0), color: "#16c67a" },
       { label: "IPv6", rows: terminals.filter((row) => String(row.ip || "").includes(":")), color: "#7c5cff" },
-      { label: "绂荤嚎/闄堟棫", rows: terminals.filter((row) => ["stale", "failed", "incomplete"].includes(String(row.status || "").toLowerCase())), color: "#ffb020" },
+      { label: "离线/陈旧", rows: terminals.filter((row) => ["stale", "failed", "incomplete"].includes(String(row.status || "").toLowerCase())), color: "#ffb020" },
     ];
-    return card("缁堢鐘舵€佸垎妗?, "淇濈暀缁堢椤典俊鎭噺锛屼絾涓嶉噸澶嶇郴缁熷璁＄殑瀹夊叏鍚嶅崟", `<div class="readonly-mini-list">${buckets.map((row) => progressRow(row.label, terminals.length ? row.rows.length / terminals.length * 100 : 0, `${number(row.rows.length)} / ${number(terminals.length)}`, row.color)).join("")}</div>`, "readonly-dense-card");
+    return card("终端状态分桶", "保留终端页信息量，但不重复系统审计的安全名单", `<div class="readonly-mini-list">${buckets.map((row) => progressRow(row.label, terminals.length ? row.rows.length / terminals.length * 100 : 0, `${number(row.rows.length)} / ${number(terminals.length)}`, row.color)).join("")}</div>`, "readonly-dense-card");
   }
 
   function renderDhcpServerPoolSummary(snapshot) {
@@ -2609,26 +3169,26 @@
         <td>${html(server.name || "-")}</td>
         <td>${html(server.interface || "-")}</td>
         <td>${html(server.pool || "-")}</td>
-        <td>${pill(server.running ? "杩愯" : "鍋滅敤", server.running ? "ok" : "warn")}</td>
+        <td>${pill(server.running ? "运行" : "停用", server.running ? "ok" : "warn")}</td>
       </tr>`);
     return `
-      ${card("DHCP 鏈嶅姟鎽樿", "缁堢椤典繚鐣?DHCP 瑙嗚锛屼笉閲嶅绯荤粺瀹¤", table(["鏈嶅姟", "鎺ュ彛", "鍦板潃姹?, "鐘舵€?], serverRows, "鏆傛棤 DHCP 鏈嶅姟"))}
-      ${card("DHCP 鍦板潃姹犲崰鐢?, "鍦板潃姹犱娇鐢ㄧ巼鍙瑙傚療", table(["鍦板潃姹?, "宸茬敤", "鎬绘暟", "浣跨敤鐜?], poolRows, "鏆傛棤鍦板潃姹?))}`;
+      ${card("DHCP 服务摘要", "终端页保留 DHCP 视角，不重复系统审计", table(["服务", "接口", "地址池", "状态"], serverRows, "暂无 DHCP 服务"))}
+      ${card("DHCP 地址池占用", "地址池使用率只读观察", table(["地址池", "已用", "总数", "使用率"], poolRows, "暂无地址池"))}`;
   }
 
   function renderAuditSignalSummary(snapshot, diag) {
     const securityAlerts = list(snapshot.security?.alerts).length;
     const arpAlerts = list(snapshot.arp?.alerts).length;
-    const errorIfaces = list(snapshot.interfaces).filter((row) => num(row.rxDrop) + num(row.txDrop) + num(row.rxError) + num(row.txError) > 0).length;
+    const errorIfaces = interfaceIssueRows(snapshot).length;
     const checks = [
-      { label: "瀹夊叏鍛婅", value: securityAlerts, meta: "security.alerts" },
-      { label: "ARP 鍛婅", value: arpAlerts, meta: "arp.alerts" },
-      { label: "鎺ュ彛閿欒", value: errorIfaces, meta: "drop/error > 0" },
-      { label: "闈㈡澘鏂囦欢", value: list(diag?.panelFiles).length, meta: "閮ㄧ讲鍙拷婧? },
-      { label: "鏃ュ織绐楀彛", value: list(snapshot.logs?.all).length, meta: "RouterOS 杩戞湡鏃ュ織" },
-      { label: "鍙鍐欏叆", value: 0, meta: "鏃犻厤缃彁浜ゅ姩浣? },
+      { label: "安全告警", value: securityAlerts, meta: "security.alerts" },
+      { label: "ARP 告警", value: arpAlerts, meta: "arp.alerts" },
+      { label: "接口错误", value: errorIfaces, meta: "逻辑接口去重" },
+      { label: "面板文件", value: list(diag?.panelFiles).length, meta: "部署可追溯" },
+      { label: "日志窗口", value: list(snapshot.logs?.all).length, meta: "RouterOS 近期日志" },
+      { label: "只读写入", value: 0, meta: "无配置提交动作" },
     ];
-    return card("瀹¤淇″彿鎽樿", "绯荤粺瀹¤椤靛彧淇濈暀璺ㄧ郴缁熷熀绾匡紝涓嶉噸澶嶇粓绔〉璁惧鏄庣粏", `<div class="ops-stat-grid">${checks.map((item) => kpi(item.label, number(item.value), html(item.meta))).join("")}</div>`, "readonly-dense-card");
+    return card("审计信号摘要", "系统审计页只保留跨系统基线，不重复终端页设备明细", `<div class="ops-stat-grid">${checks.map((item) => kpi(item.label, number(item.value), html(item.meta))).join("")}</div>`, "readonly-dense-card");
   }
 
   function renderCompressedOverview(snapshot, diag) {
@@ -2636,18 +3196,18 @@
     const onlinePppoe = pppoe.filter((row) => row.running).length;
     const conn = snapshot.connections || {};
     const overview = snapshot.overview || {};
-    return card("涓€灞忓帇缂╃増鎬昏", "蹇€熷贰妫€鍏ュ彛", `
+    return card("一屏压缩版总览", "快速巡检入口", `
       <div class="ops-stat-grid">
-        ${kpi("鍦ㄧ嚎瀹藉甫", `${number(onlinePppoe)} / ${number(pppoe.length)}`, "PPPoE")}
-        ${kpi("鍦ㄧ嚎缁堢", number(overview.onlineTerminals), "ARP / DHCP / IPv6 鍚堝苟")}
-        ${kpi("杩炴帴鎬绘暟", number(conn.total), `${number(conn.tcp)} TCP 路 ${number(conn.udp)} UDP`)}
-        ${kpi("瀹炴椂涓婅", rate(overview.uplinkBps), "鑱氬悎 WAN")}
-        ${kpi("瀹炴椂涓嬭", rate(overview.downlinkBps), "鑱氬悎 WAN")}
+        ${kpi("在线宽带", `${number(onlinePppoe)} / ${number(pppoe.length)}`, "PPPoE")}
+        ${kpi("在线终端", number(overview.onlineTerminals), "ARP / DHCP / IPv6 合并")}
+        ${kpi("连接总数", number(conn.total), `${number(conn.tcp)} TCP · ${number(conn.udp)} UDP`)}
+        ${kpi("实时上行", rate(overview.uplinkBps), "聚合 WAN")}
+        ${kpi("实时下行", rate(overview.downlinkBps), "聚合 WAN")}
         ${kpi("CPU", `${number(overview.cpuLoad)}%`, html(overview.cpuModel || "-"))}
-        ${kpi("鍐呭瓨", percent(overview.memoryUsage), `${bytes(overview.memoryUsedBytes)} / ${bytes(overview.memoryTotalBytes)}`)}
-        ${kpi("纾佺洏", percent(overview.diskUsage), `${bytes(overview.diskUsedBytes)} / ${bytes(overview.diskTotalBytes)}`)}
+        ${kpi("内存", percent(overview.memoryUsage), `${bytes(overview.memoryUsedBytes)} / ${bytes(overview.memoryTotalBytes)}`)}
+        ${kpi("磁盘", percent(overview.diskUsage), `${bytes(overview.diskUsedBytes)} / ${bytes(overview.diskTotalBytes)}`)}
       </div>
-      <div class="readonly-note" style="margin-top:8px">鍙鎺㈡祴锛?{diag ? `${diag.cached ? "缂撳瓨" : "瀹炴椂"} 路 ${html(diag.generatedAt || "-")}` : STATE.loading ? "鎺㈡祴涓? : "绛夊緟鎺㈡祴"}</div>`);
+      <div class="readonly-note" style="margin-top:8px">只读探测：${diag ? `${diag.cached ? "缓存" : "实时"} · ${html(diag.generatedAt || "-")}` : STATE.loading ? "探测中" : "等待探测"}</div>`);
   }
 
   function renderReadonlyDiagnostics(snapshot) {
@@ -2695,17 +3255,27 @@
   }
 
   const READONLY_FEATURE_PAGES = [
-    { section: "readonlyDiagnostics", title: "鍙璇婃柇鎬昏", label: "璇婃柇鎬昏", desc: "鍏ュ彛鍜岄闄╂憳瑕?, tip: "鐙珛鍙璇婃柇鍏ュ彛锛屼笉鍐嶅悜棣栭〉娉ㄥ叆璇婃柇妯″潡", icon: "ik-load", keywords: "鍙 璇婃柇 鎬昏 椋庨櫓 鎽樿" },
-    { section: "collectionHealthDiagnostics", title: "閲囬泦鍋ュ悍", label: "閲囬泦鍋ュ悍", desc: "鏁版嵁鏂伴矞搴?, tip: "REST銆丼SH銆丏NS 闈欐€佽〃銆佽繛鎺ヨ鎯呬笌鍙鎺㈡祴鍒锋柊鐘舵€?, icon: "ik-dns", keywords: "閲囬泦 鍋ュ悍 鏂伴矞搴?REST SSH 杩炴帴璇︽儏 鏁版嵁婧? },
-    { section: "dnsProxyDiagnostics", title: "DNS / 浠ｇ悊浣撴", label: "DNS / 浠ｇ悊", desc: "鍒嗘祦涓庡嚭鍙?, tip: "甯哥敤绔欑偣 DNS銆丗ake-IP銆佸嚭鍙?IP銆乀CP/HTTP 鍙揪鎬ч泦涓彧璇绘娴?, icon: "ik-dns", keywords: "DNS 浠ｇ悊 鍒嗘祦 鍑哄彛 Fake-IP GitHub YouTube Apple 鎶栭煶" },
-    { section: "wanQualityDiagnostics", title: "绾胯矾璐ㄩ噺", label: "绾胯矾璐ㄩ噺", desc: "WAN / PCC", tip: "澶?WAN 璐ㄩ噺銆丳CC 鍋忔枩銆佸崗璁垎甯冨拰瑙勫垯鍛戒腑鍙鍒嗘瀽", icon: "ik-balance", keywords: "WAN 绾胯矾 PCC 鍋忔枩 鍗忚 UDP443 瑙勫垯鍛戒腑" },
-    { section: "terminalRiskDiagnostics", title: "缁堢椋庨櫓", label: "缁堢椋庨櫓", desc: "寮傚父缁堢 / IPv6", tip: "楂樿繛鎺ャ€侀珮娴侀噺銆両Pv6 鏆撮湶涓庣粓绔紓甯稿彧璇绘帓琛?, icon: "ik-terminal", keywords: "缁堢 椋庨櫓 寮傚父 IPv6 杩炴帴 娴侀噺 璁惧" },
-    { section: "systemAuditDiagnostics", title: "绯荤粺瀹¤", label: "绯荤粺瀹¤", desc: "婕傜Щ / 閿欒 / 瀹归噺", tip: "閰嶇疆婕傜Щ銆佽繎鏈熶簨浠躲€佹帴鍙ｉ敊璇€佺紦瀛樺閲忓拰璧勬簮鍙樺寲姒?, icon: "ik-security", keywords: "瀹¤ 婕傜Щ 鍙樻洿 鏃堕棿绾?鎺ュ彛閿欒 瀹归噺 缂撳瓨" },
+    { section: "readonlyDiagnostics", title: "只读诊断总览", label: "诊断总览", desc: "入口和风险摘要", tip: "独立只读诊断入口，不再向首页注入诊断模块", icon: "ik-load", keywords: "只读 诊断 总览 风险 摘要" },
+    { section: "collectionHealthDiagnostics", title: "采集健康", label: "采集健康", desc: "数据新鲜度", tip: "REST、SSH、DNS 静态表、连接详情与只读探测刷新状态", icon: "ik-dns", keywords: "采集 健康 新鲜度 REST SSH 连接详情 数据源" },
+    { section: "dnsProxyDiagnostics", title: "DNS / 代理体检", label: "DNS / 代理", desc: "分流与出口", tip: "常用站点 DNS、Fake-IP、出口 IP、TCP/HTTP 可达性集中只读检测", icon: "ik-dns", keywords: "DNS 代理 分流 出口 Fake-IP GitHub YouTube Apple 抖音" },
+    { section: "wanQualityDiagnostics", title: "线路质量", label: "线路质量", desc: "WAN / PCC", tip: "多 WAN 质量、PCC 偏斜、协议分布和规则命中只读分析", icon: "ik-balance", keywords: "WAN 线路 PCC 偏斜 协议 UDP443 规则命中" },
+    { section: "terminalRiskDiagnostics", title: "终端风险", label: "终端风险", desc: "异常终端 / IPv6", tip: "高连接、高流量、IPv6 暴露与终端异常只读排行", icon: "ik-terminal", keywords: "终端 风险 异常 IPv6 连接 流量 设备" },
+    { section: "systemAuditDiagnostics", title: "系统审计", label: "系统审计", desc: "漂移 / 错误 / 容量", tip: "配置漂移、近期事件、接口错误、缓存容量和资源变化榜", icon: "ik-security", keywords: "审计 漂移 变更 时间线 接口错误 容量 缓存" },
   ];
 
   const READONLY_SECTION_SET = new Set(READONLY_FEATURE_PAGES.map((page) => page.section));
   const isReadonlySection = (section) => READONLY_SECTION_SET.has(section);
   const getReadonlyPage = (section) => READONLY_FEATURE_PAGES.find((page) => page.section === section) || READONLY_FEATURE_PAGES[0];
+  const READONLY_NAV_PLACEMENT = {
+    readonlyDiagnostics: { group: "monitor", label: "只读总览", icon: "ik-load", after: "interfaces", quickGroup: "监控" },
+    terminalRiskDiagnostics: { group: "monitor", label: "终端风险", icon: "ik-terminal", after: "terminals", quickGroup: "监控" },
+    dnsProxyDiagnostics: { group: "monitor", label: "DNS / 代理", icon: "ik-dns", after: "dns6", quickGroup: "监控" },
+    wanQualityDiagnostics: { group: "flow", label: "线路质量", icon: "ik-balance", after: "lineStatus", quickGroup: "流量" },
+    collectionHealthDiagnostics: { group: "logs", label: "采集健康", icon: "ik-dns", after: "serviceLogs", quickGroup: "日志" },
+    systemAuditDiagnostics: { group: "logs", label: "系统审计", icon: "ik-security", after: "collectionHealthDiagnostics", quickGroup: "日志" },
+  };
+  const getReadonlyNavPlacement = (section) => READONLY_NAV_PLACEMENT[section] || READONLY_NAV_PLACEMENT.readonlyDiagnostics;
+  const getReadonlyNavGroup = (section) => getReadonlyNavPlacement(section).group;
   if (typeof compactTopbarSections !== "undefined") {
     READONLY_FEATURE_PAGES.forEach((page) => compactTopbarSections.add(page.section));
   }
@@ -2713,129 +3283,327 @@
   function renderReadonlyFeatureNav(activeSection) {
     return `<div class="readonly-feature-nav">
       ${READONLY_FEATURE_PAGES.map((page) => `
-        <a class="readonly-feature-link ${page.section === activeSection ? "is-active" : ""}" href="#${page.section}" data-section="${page.section}" data-nav-group="diagnostics">
+        <a class="readonly-feature-link ${page.section === activeSection ? "is-active" : ""}" href="#${page.section}" data-section="${page.section}" data-nav-group="${html(getReadonlyNavGroup(page.section))}">
           <strong>${html(page.label)}</strong>
           <span>${html(page.desc)}</span>
         </a>`).join("")}
-    </div>`;
+      </div>`;
+  }
+
+  function renderReadonlyStickySummary(snapshot, section) {
+    const metrics = readonlyPinMetrics(snapshot, STATE.payload, section).slice(0, 5);
+    return `
+      <div class="section-summary-sticky readonly-summary-sticky">
+        <div class="readonly-summary-grid">
+          ${metrics.map(([label, value]) => metricCard(label, html(value), "", "")).join("")}
+        </div>
+      </div>`;
   }
 
   function renderReadonlyFeatureBody(snapshot, diag, section) {
+    const health = buildCollectionHealth(snapshot, diag);
+    const staleCount = health.filter((row) => row.level !== "ok").length;
+    const risks = riskItems(snapshot, diag);
+    const siteRows = buildSiteMatrix(diag);
+    const splitSummary = splitPolicySummary(siteRows);
+    const siteProblemCount = splitSummary.policyProblemCount;
+    const dnsErrorCount = list(diag?.dnsMatrix).filter(isDnsErrorRow).length;
+    const exitResults = list(diag?.exitChecks).filter((row) => row.ip).length;
+    const pppoe = list(snapshot.pppoe);
+    const offlinePppoe = pppoe.filter((row) => !row.running).length;
+    const terminals = list(snapshot.terminals);
+    const highRiskTerminals = terminals.filter((row) => terminalRiskScore(row) >= 45).length;
+    const ipv6TerminalCount = num(snapshot.meta?.ipv6TerminalCount);
+    const panelFileCount = list(diag?.panelFiles).length;
+    const logCount = list(snapshot.logs?.all).length;
+    const interfaceErrorCount = interfaceIssueRows(snapshot).length;
+    const routeTableCount = num(snapshot.routes?.tableCount);
     switch (section) {
       case "collectionHealthDiagnostics":
         return `
           <div class="readonly-readable-flow">
-            ${renderCollectionHealth(snapshot, diag)}
-            <div class="readonly-density-columns readonly-collection-density">
-              <div class="ops-page-stack">
-                ${renderCollectionAgeQueue(snapshot, diag)}
-                ${renderCollectionDependencyMap(snapshot, diag)}
-                ${renderCollectionThresholdMatrix()}
-              </div>
-              <div class="ops-page-stack">
-                ${renderCollectionImpactMatrix(snapshot, diag)}
-                ${renderDataSourceMap(snapshot, diag)}
-              </div>
-            </div>
+            ${renderReadonlyBand(
+              "采集链路",
+              "采集健康与刷新年龄",
+              "先确认快照、SSH、静态表和只读探测是否新鲜，再决定要不要继续深看后面的依赖和影响面。",
+              `${renderCollectionHealth(snapshot, diag)}`,
+              staleCount ? "warn" : "ok",
+              [
+                pill(`${number(staleCount)} 项异常`, staleCount ? "warn" : "ok"),
+                pill(`${number(health.length)} 个数据源`, "info"),
+              ].join("")
+            )}
+            ${renderReadonlyBand(
+              "依赖与阈值",
+              "延迟排序、阈值与影响面",
+              "把“哪个采集卡住会影响哪里”集中放在一个分区里，保留高密度，但不再让说明和表格散落成独立小风格。",
+              `<div class="readonly-density-columns readonly-collection-density">
+                <div class="ops-page-stack">
+                  ${renderCollectionAgeQueue(snapshot, diag)}
+                  ${renderCollectionDependencyMap(snapshot, diag)}
+                  ${renderCollectionThresholdMatrix()}
+                </div>
+                <div class="ops-page-stack">
+                  ${renderCollectionImpactMatrix(snapshot, diag)}
+                  ${renderDataSourceMap(snapshot, diag)}
+                </div>
+              </div>`,
+              staleCount ? "warn" : "info",
+              [
+                pill("SSH / REST / 静态表", "info"),
+                pill("只读不修复", "ok"),
+              ].join("")
+            )}
           </div>`;
       case "dnsProxyDiagnostics":
         return `
           <div class="readonly-readable-flow">
-            <div class="readonly-compact-grid">
-              ${renderExitDecisionBoard(diag)}
-              ${renderExitTable(diag)}
-            </div>
-            ${renderServiceReachability(diag)}
-            ${renderSitePolicyMatrix(diag)}
-            ${renderDnsConsistency(diag)}
-            <div class="readonly-band-stack">
-              ${renderDnsProbeCoverage(diag)}
-              ${renderDnsRuleInventory(snapshot)}
-            </div>
+            ${renderReadonlyBand(
+              "解析与出口",
+              "出口判断与服务可达性",
+              "把出口归因、出口 IP 结果和服务探测先放到同一观察面，优先回答“是不是分流、是不是出口、是不是服务本身”。",
+              `<div class="readonly-compact-grid">
+                ${renderExitDecisionBoard(diag)}
+                ${renderExitTable(diag)}
+              </div>
+              ${renderServiceReachability(diag)}`,
+              siteProblemCount || dnsErrorCount ? "warn" : "ok",
+              [
+                pill(`${number(siteProblemCount)} 个策略违背`, siteProblemCount ? "warn" : "ok"),
+                pill(`${number(splitSummary.mixedCount)} 个混合态`, splitSummary.mixedCount ? "info" : "ok"),
+                pill(`${number(exitResults)} 个出口结果`, exitResults ? "ok" : "warn"),
+              ].join("")
+            )}
+            ${renderReadonlyBand(
+              "站点矩阵",
+              "DNS / 代理体检主矩阵",
+              "保留原来的高信息密度，但把主矩阵提升为这一页的中心模块，让视觉重心更稳定。",
+              `${renderSitePolicyMatrix(diag)}`,
+              siteProblemCount || dnsErrorCount ? "warn" : "ok",
+              [
+                pill(`${number(dnsErrorCount)} 条 DNS 异常`, dnsErrorCount ? "warn" : "ok"),
+                pill(`${number(siteRows.length)} 个站点样本`, "info"),
+              ].join("")
+            )}
+            ${renderReadonlyBand(
+              "一致性与规则",
+              "DNS 一致性、探测覆盖与静态规则",
+              "把规则、探测覆盖和一致性收口到同一节，避免矩阵之外再冒出另一套视觉语言。",
+              `${renderDnsConsistency(diag)}
+              <div class="readonly-band-stack">
+                ${renderDnsProbeCoverage(diag)}
+                ${renderDnsRuleInventory(snapshot)}
+              </div>`,
+              dnsErrorCount ? "warn" : "info",
+              [
+                pill("Fake-IP / TCP / HTTP", "info"),
+                pill("只读不改 DNS/Nikki", "ok"),
+              ].join("")
+            )}
           </div>`;
       case "wanQualityDiagnostics":
         return `
           <div class="readonly-readable-flow">
-            <div class="readonly-wan-density-grid">
-              <div class="ops-page-stack">
-                ${renderPccSkew(snapshot)}
-              </div>
-              <div class="ops-page-stack">
-                ${renderProtocolDistribution(snapshot)}
-              </div>
-              <div class="ops-page-stack">
-                ${renderDefaultRouteCompass(snapshot)}
-              </div>
-            </div>
-            ${renderWanQuality(snapshot)}
-            ${renderWanLoadPortrait(snapshot)}
-            ${renderWanLineInventory(snapshot)}
-            <div class="readonly-wan-density-grid">
-              <div class="ops-page-stack">
-                ${renderRouteInventory(snapshot)}
-              </div>
-              <div class="ops-page-stack">
-                ${renderMangleHitDigest(snapshot)}
-              </div>
-              <div class="ops-page-stack">
-                ${renderRoutingRuleInventory(snapshot)}
-              </div>
-            </div>
+            ${renderReadonlyBand(
+              "多 WAN 摘要",
+              "PCC 偏斜、协议分布与默认路由",
+              "先把多 WAN 的结论层收在最上面，便于值班时一眼区分是线路离线、分流偏斜还是默认路由异常。",
+              `<div class="readonly-wan-density-grid">
+                <div class="ops-page-stack">
+                  ${renderPccSkew(snapshot)}
+                </div>
+                <div class="ops-page-stack">
+                  ${renderProtocolDistribution(snapshot)}
+                </div>
+                <div class="ops-page-stack">
+                  ${renderDefaultRouteCompass(snapshot)}
+                </div>
+              </div>`,
+              offlinePppoe ? "warn" : "ok",
+              [
+                pill(`${number(offlinePppoe)} 条线路离线`, offlinePppoe ? "warn" : "ok"),
+                pill(`${number(routeTableCount)} 张路由表`, "info"),
+              ].join("")
+            )}
+            ${renderReadonlyBand(
+              "线路画像",
+              "线路质量、负载画像与清单",
+              "把质量判断、负载画像和线路明细并成同一节，减少“卡片各自成页”的割裂感。",
+              `${renderWanQuality(snapshot)}
+              ${renderWanLoadPortrait(snapshot)}
+              ${renderWanLineInventory(snapshot)}`,
+              offlinePppoe ? "warn" : "info",
+              [
+                pill("固定宽屏密度布局", "info"),
+                pill("只读不切换线路", "ok"),
+              ].join("")
+            )}
+            ${renderReadonlyBand(
+              "路由证据",
+              "静态路由、Mangle 命中与策略规则",
+              "把会影响多 WAN 归因的底层证据集中起来，方便从现象回钻到规则层。",
+              `<div class="readonly-wan-density-grid">
+                <div class="ops-page-stack">
+                  ${renderRouteInventory(snapshot)}
+                </div>
+                <div class="ops-page-stack">
+                  ${renderMangleHitDigest(snapshot)}
+                </div>
+                <div class="ops-page-stack">
+                  ${renderRoutingRuleInventory(snapshot)}
+                </div>
+              </div>`,
+              offlinePppoe ? "warn" : "info",
+              [
+                pill("PCC / Route / Rule", "info"),
+                pill(`${number(interfaceErrorCount)} 个接口错误`, interfaceErrorCount ? "warn" : "ok"),
+              ].join("")
+            )}
           </div>`;
       case "terminalRiskDiagnostics":
         return `
           <div class="readonly-readable-flow">
-            ${renderTerminalAnomalies(snapshot)}
-            <div class="readonly-terminal-priority-grid">
-              <div class="ops-page-stack">
-                ${renderTerminalStatusBuckets(snapshot)}
-                ${renderDhcpServerPoolSummary(snapshot)}
-                ${renderDhcpLeaseMatrix(snapshot)}
-              </div>
-              <div class="ops-page-stack">
-                ${renderIpv6ExposureMatrix(snapshot)}
-                ${renderTerminalInventory(snapshot)}
-              </div>
-            </div>
-            ${renderIpv6Panel(snapshot)}
+            ${renderReadonlyBand(
+              "风险入口",
+              "终端异常与高风险优先级",
+              "先锁定高连接、高流量和状态异常的终端，再往 DHCP、IPv6 和清单明细下钻。",
+              `${renderTerminalAnomalies(snapshot)}`,
+              highRiskTerminals ? "danger" : ipv6TerminalCount ? "warn" : "ok",
+              [
+                pill(`${number(highRiskTerminals)} 台高风险`, highRiskTerminals ? "danger" : "ok"),
+                pill(`${number(ipv6TerminalCount)} 台 IPv6 终端`, ipv6TerminalCount ? "warn" : "info"),
+              ].join("")
+            )}
+            ${renderReadonlyBand(
+              "身份与暴露",
+              "终端状态、DHCP 与 IPv6 暴露",
+              "把 DHCP、IPv6 暴露和终端密集清单作为同一诊断带，视觉上更像运维工作台，而不是独立散卡。",
+              `<div class="readonly-terminal-priority-grid">
+                <div class="ops-page-stack">
+                  ${renderTerminalStatusBuckets(snapshot)}
+                  ${renderDhcpServerPoolSummary(snapshot)}
+                  ${renderDhcpLeaseMatrix(snapshot)}
+                </div>
+                <div class="ops-page-stack">
+                  ${renderIpv6ExposureMatrix(snapshot)}
+                  ${renderTerminalInventory(snapshot)}
+                </div>
+              </div>`,
+              highRiskTerminals ? "danger" : ipv6TerminalCount ? "warn" : "info",
+              [
+                pill(`${number(list(snapshot.dhcp?.leases).length)} 条 DHCP 租约`, "info"),
+                pill("只读不踢终端", "ok"),
+              ].join("")
+            )}
+            ${renderReadonlyBand(
+              "IPv6 细节",
+              "接口、RA 与 DHCPv6 视角",
+              "把 IPv6 诊断单独沉到底部，既保留完整度，也不抢占高风险终端的第一页节奏。",
+              `${renderIpv6Panel(snapshot)}`,
+              ipv6TerminalCount ? "warn" : "ok",
+              [
+                pill("IPv6 / RA / DHCPv6", "info"),
+                pill("无写入操作", "ok"),
+              ].join("")
+            )}
           </div>`;
       case "systemAuditDiagnostics":
         return `
           <div class="readonly-readable-flow">
-            ${renderConfigDrift(snapshot, diag)}
-            <div class="readonly-density-columns readonly-system-density">
-              <div class="ops-page-stack">
-                ${renderAuditSignalSummary(snapshot, diag)}
-                ${renderCapacityPressureMatrix(snapshot, diag)}
-              </div>
-              <div class="ops-page-stack">
-                ${renderChangeBoard(snapshot)}
-                ${renderCapacity(snapshot, diag)}
-              </div>
-              <div class="ops-page-stack">
-                ${renderPanelFileInventory(diag)}
-              </div>
-            </div>
-            ${renderInterfaceErrorTable(snapshot)}
-            ${renderTimeline(snapshot, diag)}
-            ${renderRouterLogTable(snapshot)}
-            ${renderSecuritySignals(snapshot)}
+            ${renderReadonlyBand(
+              "基线漂移",
+              "配置漂移与审计入口",
+              "先看配置、规则和系统基线是否漂移，再进入资源容量与事件证据，保持审计页的诊断主线清晰。",
+              `${renderConfigDrift(snapshot, diag)}`,
+              interfaceErrorCount ? "warn" : "ok",
+              [
+                pill(`${number(interfaceErrorCount)} 个接口错误`, interfaceErrorCount ? "warn" : "ok"),
+                pill(`${number(logCount)} 条日志窗口`, "info"),
+              ].join("")
+            )}
+            ${renderReadonlyBand(
+              "容量与变更",
+              "审计摘要、容量压力与面板文件",
+              "把容量、变化榜和只读文件清单放在一个证据层里，兼容新的全站主题，同时保留高信息密度。",
+              `<div class="readonly-density-columns readonly-system-density">
+                <div class="ops-page-stack">
+                  ${renderAuditSignalSummary(snapshot, diag)}
+                  ${renderCapacityPressureMatrix(snapshot, diag)}
+                </div>
+                <div class="ops-page-stack">
+                  ${renderChangeBoard(snapshot)}
+                  ${renderCapacity(snapshot, diag)}
+                </div>
+                <div class="ops-page-stack">
+                  ${renderPanelFileInventory(diag)}
+                </div>
+              </div>`,
+              interfaceErrorCount ? "warn" : "info",
+              [
+                pill(`${number(panelFileCount)} 个面板文件`, "info"),
+                pill("只读审计", "ok"),
+              ].join("")
+            )}
+            ${renderReadonlyBand(
+              "事件证据",
+              "接口错误、时间线、日志与安全信号",
+              "把事件流和证据流沉到同一节，方便从摘要直接进入最近变更、日志和安全线索。",
+              `${renderInterfaceErrorTable(snapshot)}
+              ${renderTimeline(snapshot, diag)}
+              ${renderRouterLogTable(snapshot)}
+              ${renderSecuritySignals(snapshot)}`,
+              interfaceErrorCount ? "warn" : "info",
+              [
+                pill(`${number(logCount)} 条近期日志`, "info"),
+                pill("不清日志不改配置", "ok"),
+              ].join("")
+            )}
           </div>`;
       case "readonlyDiagnostics":
       default:
         return `
           <div class="readonly-readable-flow">
-            ${renderGlobalRiskStrip(snapshot, diag)}
-            ${renderRiskPriorityQueue(snapshot, diag)}
-            ${renderCollectionHealth(snapshot, diag, true)}
-            ${renderSelfCheckPanel(diag)}
-            ${renderSitePolicyMatrix(diag)}
-            ${renderCompressedOverview(snapshot, diag)}
-            <div class="readonly-support-grid">
-              ${renderDiagnosticsDirectory(snapshot, diag)}
-              ${renderSignalCoverageMatrix(snapshot, diag)}
-              ${renderDedupPolicyCard()}
-            </div>
+            ${renderReadonlyBand(
+              "总览入口",
+              "全局风险与采集新鲜度",
+              "总览页不复制专项页的所有细节，而是先给值班者风险条、优先队列和采集健康这三个进入动作。",
+              `${renderGlobalRiskStrip(snapshot, diag)}
+              ${renderRiskPriorityQueue(snapshot, diag)}
+              ${renderCollectionHealth(snapshot, diag, true)}`,
+              staleCount || risks.length ? "warn" : "ok",
+              [
+                pill(`${number(risks.length)} 条风险线索`, risks.length ? "warn" : "ok"),
+                pill(`${number(staleCount)} 项采集延迟`, staleCount ? "warn" : "ok"),
+              ].join("")
+            )}
+            ${renderReadonlyBand(
+              "体检视图",
+              "只读自检、站点矩阵与系统快照",
+              "把人工触发自检、站点体检和压缩运行快照整成同一观察带，减少页面之间的样式割裂感。",
+              `${renderSelfCheckPanel(diag)}
+              ${renderSitePolicyMatrix(diag)}
+              ${renderCompressedOverview(snapshot, diag)}`,
+              siteProblemCount ? "warn" : "ok",
+              [
+                pill(`${number(siteProblemCount)} 个站点异常`, siteProblemCount ? "warn" : "ok"),
+                pill(`${number(exitResults)} 个出口结果`, exitResults ? "ok" : "warn"),
+              ].join("")
+            )}
+            ${renderReadonlyBand(
+              "目录与边界",
+              "诊断入口、信号覆盖与去重归属",
+              "保留总览页的导航价值，同时明确哪些内容在哪一页看，避免新设计系统下又重复堆表。",
+              `<div class="readonly-support-grid">
+                ${renderDiagnosticsDirectory(snapshot, diag)}
+                ${renderSignalCoverageMatrix(snapshot, diag)}
+                ${renderDedupPolicyCard()}
+              </div>`,
+              "info",
+              [
+                pill("只读总览", "info"),
+                pill("不覆盖专项页", "ok"),
+              ].join("")
+            )}
           </div>`;
     }
   }
@@ -2843,16 +3611,20 @@
   function renderReadonlyFeaturePage(snapshot, section = "readonlyDiagnostics") {
     const diag = STATE.payload;
     const page = getReadonlyPage(section);
-    const isHub = page.section === "readonlyDiagnostics";
-    const rootOpen = isHub ? "" : `<div id="readonlyDiagnostics" class="readonly-diagnostics-root">`;
-    const rootClose = isHub ? "" : `</div>`;
+    const rootAttrs = page.section === "readonlyDiagnostics"
+      ? `class="readonly-diagnostics-root" data-readonly-page="${html(page.section)}"`
+      : `id="readonlyDiagnostics" class="readonly-diagnostics-root" data-readonly-page="${html(page.section)}"`;
     return `
       <section class="section readonly-diagnostics-section" id="${html(page.section)}">
-        ${rootOpen}
-        <div class="ops-page-stack">
-          ${renderReadonlyFeatureBody(snapshot, diag, page.section)}
+        <div ${rootAttrs}>
+          <div class="readonly-diagnostics-shell">
+            ${renderReadonlyFeatureChrome(snapshot, page.section)}
+            ${renderReadonlyStickySummary(snapshot, page.section)}
+            <div class="ops-page-stack readonly-workbench-body">
+              ${renderReadonlyFeatureBody(snapshot, diag, page.section)}
+            </div>
+          </div>
         </div>
-        ${rootClose}
       </section>`;
   }
 
@@ -2892,13 +3664,12 @@
     const stale = health.filter((row) => row.level !== "ok").length;
     const risks = riskItems(snapshot, diag);
     const siteRows = buildSiteMatrix(diag);
-    const siteProblems = siteRows.filter((row) => row.level === "warn" || row.level === "danger").length;
+    const siteProblems = splitPolicySummary(siteRows).policyProblemCount;
     const pppoe = list(snapshot.pppoe);
     const onlinePppoe = pppoe.filter((row) => row.running).length;
     const terminals = list(snapshot.terminals);
     const highTerminals = terminals.filter((row) => terminalRiskScore(row) >= 45).length;
-    const interfaces = list(snapshot.interfaces);
-    const ifaceErrors = interfaces.filter((row) => num(row.rxDrop) + num(row.txDrop) + num(row.rxError) + num(row.txError) > 0).length;
+    const ifaceErrors = interfaceIssueRows(snapshot).length;
     const connections = snapshot.connections || {};
     const distribution = list(snapshot.loadBalance?.distribution);
     const maxShare = distribution.reduce((max, row) => Math.max(max, num(row.share)), 0);
@@ -2910,52 +3681,57 @@
     const routeTotal = num(snapshot.routes?.total ?? list(snapshot.routes?.items).length);
     const itemsBySection = {
       readonlyDiagnostics: [
-        ["椋庨櫓椤?, number(risks.length), kpiLevel(risks.length, 1, 3)],
-        ["閲囬泦寤惰繜", number(stale), kpiLevel(stale, 1, 2)],
-        ["鍒嗘祦寮傚父", number(siteProblems), kpiLevel(siteProblems, 1, 3)],
-        ["鎺ュ彛閿欒", number(ifaceErrors), kpiLevel(ifaceErrors, 1, 5)],
-        ["ROS 鍐欏叆", "0", "ok"],
+        ["风险项", number(risks.length), kpiLevel(risks.length, 1, 3)],
+        ["采集延迟", number(stale), kpiLevel(stale, 1, 2)],
+        ["分流异常", number(siteProblems), kpiLevel(siteProblems, 1, 3)],
+        ["接口错误", number(ifaceErrors), kpiLevel(ifaceErrors, 1, 5)],
+        ["ROS 写入", "0", "ok"],
       ],
       collectionHealthDiagnostics: [
-        ["寮傚父閲囬泦", number(stale), kpiLevel(stale, 1, 2)],
-        ["REST", ageText(health.find((row) => row.key.includes("REST 瀹炴椂"))?.value), "info"],
-        ["SSH 璇︽儏", ageText(health.find((row) => row.key.includes("SSH"))?.value), "info"],
-        ["DNS 闈欐€?, ageText(health.find((row) => row.key.includes("DNS"))?.value), "info"],
-        ["鍙鎺㈡祴", ageText(health.find((row) => row.key.includes("鍙"))?.value), "info"],
+        ["异常采集", number(stale), kpiLevel(stale, 1, 2)],
+        ["REST", ageText(health.find((row) => row.key.includes("REST 实时"))?.value), "info"],
+        ["SSH 详情", ageText(health.find((row) => row.key.includes("SSH"))?.value), "info"],
+        ["DNS 静态", ageText(health.find((row) => row.key.includes("DNS"))?.value), "info"],
+        ["只读探测", ageText(health.find((row) => row.key.includes("只读"))?.value), "info"],
       ],
       dnsProxyDiagnostics: [
-        ["DNS 寮傚父", number(dnsErrors), kpiLevel(dnsErrors, 1, 3)],
-        ["鍒嗘祦寮傚父", number(siteProblems), kpiLevel(siteProblems, 1, 3)],
-        ["鍑哄彛缁撴灉", number(exitCount), exitCount ? "ok" : "warn"],
-        ["瑙勫垯鏍锋湰", number(staticRules), "info"],
-        ["ROS 鍐欏叆", "0", "ok"],
+        ["DNS 异常", number(dnsErrors), kpiLevel(dnsErrors, 1, 3)],
+        ["分流异常", number(siteProblems), kpiLevel(siteProblems, 1, 3)],
+        ["出口结果", number(exitCount), exitCount ? "ok" : "warn"],
+        ["规则样本", number(staticRules), "info"],
+        ["ROS 写入", "0", "ok"],
       ],
       wanQualityDiagnostics: [
-        ["鍦ㄧ嚎瀹藉甫", `${number(onlinePppoe)} / ${number(pppoe.length)}`, onlinePppoe === pppoe.length ? "ok" : "warn"],
-        ["鏈€澶у崰姣?, percent(maxShare), maxShare > 55 ? "warn" : "ok"],
-        ["UDP 鍗犳瘮", percent(num(connections.udp) / Math.max(num(connections.total), 1) * 100), "info"],
-        ["榛樿璺敱", number(routeTotal), "info"],
-        ["鎺ュ彛閿欒", number(ifaceErrors), kpiLevel(ifaceErrors, 1, 5)],
+        ["在线宽带", `${number(onlinePppoe)} / ${number(pppoe.length)}`, onlinePppoe === pppoe.length ? "ok" : "warn"],
+        ["最大占比", percent(maxShare), maxShare > 55 ? "warn" : "ok"],
+        ["UDP 占比", Number.isFinite(Number(connections.udp)) ? percent(num(connections.udp) / Math.max(num(connections.total), 1) * 100) : "未采集", "info"],
+        ["默认路由", number(routeTotal), "info"],
+        ["接口错误", number(ifaceErrors), kpiLevel(ifaceErrors, 1, 5)],
       ],
       terminalRiskDiagnostics: [
-        ["楂樺嵄缁堢", number(highTerminals), kpiLevel(highTerminals, 1, 3)],
-        ["鍦ㄧ嚎缁堢", number(snapshot.overview?.onlineTerminals ?? terminals.length), "info"],
-        ["IPv6 缁堢", number(ipv6Count), ipv6Count ? "warn" : "ok"],
-        ["DHCP 绉熺害", number(list(snapshot.dhcp?.leases).length), "info"],
-        ["ROS 鍐欏叆", "0", "ok"],
+        ["高危终端", number(highTerminals), kpiLevel(highTerminals, 1, 3)],
+        ["在线终端", number(snapshot.overview?.onlineTerminals ?? terminals.length), "info"],
+        ["IPv6 终端", number(ipv6Count), ipv6Count ? "warn" : "ok"],
+        ["DHCP 租约", number(list(snapshot.dhcp?.leases).length), "info"],
+        ["ROS 写入", "0", "ok"],
       ],
       systemAuditDiagnostics: [
-        ["閰嶇疆婕傜Щ", number(risks.filter((item) => /婕傜Щ|閰嶇疆|瑙勫垯|璺敱/.test(item.text)).length), "info"],
-        ["鎺ュ彛閿欒", number(ifaceErrors), kpiLevel(ifaceErrors, 1, 5)],
-        ["鏃ュ織绐楀彛", number(logsCount), "info"],
-        ["DNS 瑙勫垯", number(staticRules), "info"],
-        ["ROS 鍐欏叆", "0", "ok"],
+        ["配置漂移", number(risks.filter((item) => /漂移|配置|规则|路由/.test(item.text)).length), "info"],
+        ["接口错误", number(ifaceErrors), kpiLevel(ifaceErrors, 1, 5)],
+        ["日志窗口", number(logsCount), "info"],
+        ["DNS 规则", number(staticRules), "info"],
+        ["ROS 写入", "0", "ok"],
       ],
     };
     return itemsBySection[section] || itemsBySection.readonlyDiagnostics;
   }
 
   function syncReadonlyScrollPin(snapshot = displayedSnapshot || latestSnapshot || {}) {
+    hideReadonlyScrollPin();
+    if (typeof syncSectionTopbarState === "function") {
+      syncSectionTopbarState();
+    }
+    return;
     const section = typeof currentSection !== "undefined" ? currentSection : "readonlyDiagnostics";
     const host = ensureReadonlyScrollPinHost();
     if (!isReadonlySection(section) || !document.body.classList.contains("readonly-diagnostics-page")) {
@@ -2985,7 +3761,7 @@
         <div class="readonly-scroll-pin-inner">
           <div class="readonly-scroll-pin-title">
             ${html(page.label)}
-            <span>鍙鍚搁《 路 涓嶅啓閰嶇疆 路 涓嶆仮澶嶉《閮ㄥぇ鍗?/span>
+            <span>只读吸顶 · 不写配置 · 不恢复顶部大卡</span>
           </div>
           <div class="readonly-scroll-pin-metrics">
             ${metrics.map(([label, value, level]) => `
@@ -3039,15 +3815,16 @@
   function renderOverviewSiteSummary(diag) {
     const rows = buildSiteMatrix(diag).slice(0, 8).map((row) => `
       <tr>
-        <td>${cell(html(row.name), html(row.expected === "direct" ? "DIRECT 棰勬湡" : row.expected === "proxy" ? "浠ｇ悊棰勬湡" : row.expected))}</td>
+        <td>${cell(html(row.name), html(row.expected === "direct" ? "DIRECT 预期" : row.expected === "proxy" ? "代理预期" : row.expected))}</td>
         <td>${cell(html(row.dnsState), html(row.policy))}</td>
-        <td>${cell(row.tcp?.ok ? "TCP閫? : "TCP寮傚父", row.http?.ok ? `HTTP ${html(row.http.status || "-")}` : "HTTP寮傚父")}</td>
+        <td>${cell(row.tcp?.ok ? "TCP通" : row.tcp ? "TCP异常" : "TCP未采集", row.httpLabel)}</td>
         <td>${pill(row.verdict, row.level)}</td>
       </tr>`);
-    return card("DNS / 浠ｇ悊鍒嗘祦鎽樿", "棣栭〉鍙斁缁撹锛屽畬鏁寸煩闃佃繘鍏ュ彧璇讳綋妫€椤垫煡鐪?, table(["绔欑偣", "DNS/绛栫暐", "杩為€?, "鍒ゆ柇"], rows, "绛夊緟鍙鍒嗘祦鎺㈡祴", "readonly-scroll"));
+    return card("DNS / 代理分流摘要", "首页只放结论，完整矩阵进入只读体检页查看", table(["站点", "DNS/策略", "连通", "判断"], rows, "等待只读分流探测", "readonly-scroll"));
   }
 
   function enhanceOverview(snapshot) {
+    if (!READONLY_DIAGNOSTICS_PRIVATE_NAV) return;
     return;
     if (!appEl) return;
     const section = appEl.querySelector("#overview");
@@ -3074,28 +3851,47 @@
   }
 
   function registerReadonlyDiagnosticsPage() {
-    const navItems = READONLY_FEATURE_PAGES.map((page) => ({
-      section: page.section,
-      label: page.label,
-      icon: page.icon || "ik-load",
+    if (!READONLY_DIAGNOSTICS_PRIVATE_NAV) return;
+    const pages = READONLY_FEATURE_PAGES.map((page) => ({
+      ...page,
+      placement: getReadonlyNavPlacement(page.section),
     }));
-    if (typeof railGroups !== "undefined" && Array.isArray(railGroups) && !railGroups.some((group) => group.id === "diagnostics")) {
-      const insertAt = Math.max(1, railGroups.findIndex((group) => group.id === "logs"));
-      railGroups.splice(insertAt >= 0 ? insertAt : railGroups.length, 0, {
-        id: "diagnostics",
-        label: "璇婃柇",
-        icon: "ik-load",
-        section: "readonlyDiagnostics",
-      });
-    }
-    if (typeof menuGroups !== "undefined") {
-      menuGroups.diagnostics = navItems;
-      if (Array.isArray(menuGroups.monitor)) {
-        menuGroups.monitor = menuGroups.monitor.filter((item) => !READONLY_SECTION_SET.has(item.section));
+    const stripReadonlyItems = (items = []) => items.filter((item) => !READONLY_SECTION_SET.has(item.section));
+    const insertMenuItem = (group, item, afterSection) => {
+      if (!menuGroups[group]) menuGroups[group] = [];
+      menuGroups[group] = menuGroups[group].filter((candidate) => candidate.section !== item.section);
+      const insertAt = afterSection
+        ? menuGroups[group].findIndex((candidate) => candidate.section === afterSection)
+        : -1;
+      if (insertAt >= 0) {
+        menuGroups[group].splice(insertAt + 1, 0, item);
+      } else {
+        menuGroups[group].push(item);
+      }
+    };
+
+    if (typeof railGroups !== "undefined" && Array.isArray(railGroups)) {
+      for (let index = railGroups.length - 1; index >= 0; index -= 1) {
+        if (railGroups[index]?.id === "diagnostics") {
+          railGroups.splice(index, 1);
+        }
       }
     }
+    if (typeof menuGroups !== "undefined") {
+      Object.keys(menuGroups).forEach((group) => {
+        menuGroups[group] = stripReadonlyItems(menuGroups[group]);
+      });
+      delete menuGroups.diagnostics;
+      pages.forEach((page) => {
+        insertMenuItem(page.placement.group, {
+          section: page.section,
+          label: page.placement.label || page.label,
+          icon: page.placement.icon || page.icon || "ik-load",
+        }, page.placement.after);
+      });
+    }
     if (typeof menuGroupLabel !== "undefined") {
-      menuGroupLabel.diagnostics = "鍙璇婃柇";
+      delete menuGroupLabel.diagnostics;
     }
     if (typeof pageMeta !== "undefined") {
       READONLY_FEATURE_PAGES.forEach((page) => {
@@ -3103,51 +3899,32 @@
       });
     }
     if (typeof sectionToGroup !== "undefined") {
-      READONLY_FEATURE_PAGES.forEach((page) => {
-        sectionToGroup[page.section] = "diagnostics";
+      pages.forEach((page) => {
+        sectionToGroup[page.section] = page.placement.group;
       });
     }
+    if (typeof currentNavGroup !== "undefined" && currentNavGroup === "diagnostics") {
+      currentNavGroup = getReadonlyNavGroup(typeof currentSection !== "undefined" ? currentSection : "readonlyDiagnostics");
+    }
     if (typeof quickSearchItems !== "undefined" && Array.isArray(quickSearchItems)) {
-      READONLY_FEATURE_PAGES.forEach((page) => {
-        if (!quickSearchItems.some((item) => item.section === page.section)) {
-          quickSearchItems.push({
-            section: page.section,
-            title: page.title,
-            group: "鍙璇婃柇",
-            icon: page.icon || "ik-load",
-            desc: page.tip,
-            keywords: page.keywords,
-          });
+      pages.forEach((page) => {
+        const nextItem = {
+          section: page.section,
+          title: page.title,
+          group: page.placement.quickGroup || page.placement.group,
+          icon: page.placement.icon || page.icon || "ik-load",
+          desc: page.tip,
+          keywords: page.keywords,
+        };
+        const existing = quickSearchItems.find((item) => item.section === page.section);
+        if (existing) {
+          Object.assign(existing, nextItem);
+        } else {
+          quickSearchItems.push(nextItem);
         }
       });
     }
     return;
-    if (typeof pageMeta !== "undefined") {
-      pageMeta.readonlyDiagnostics = {
-        title: "鍙浣撴",
-        subtitle: "閲囬泦鍋ュ悍銆丏NS銆佸嚭鍙ｃ€佹湇鍔°€佽鍒欍€佺粓绔€両Pv6 涓庣嚎璺亸鏂滃彧璇昏瘖鏂?,
-      };
-    }
-    if (typeof sectionToGroup !== "undefined") {
-      sectionToGroup.readonlyDiagnostics = "monitor";
-    }
-    if (typeof menuGroups !== "undefined" && Array.isArray(menuGroups.monitor)) {
-      if (!menuGroups.monitor.some((item) => item.section === "readonlyDiagnostics")) {
-        menuGroups.monitor.splice(1, 0, { section: "readonlyDiagnostics", label: "鍙浣撴", icon: "ik-load" });
-      }
-    }
-    if (typeof quickSearchItems !== "undefined" && Array.isArray(quickSearchItems)) {
-      if (!quickSearchItems.some((item) => item.section === "readonlyDiagnostics")) {
-        quickSearchItems.push({
-          section: "readonlyDiagnostics",
-          title: "鍙浣撴",
-          group: "鐩戞帶",
-          icon: "ik-load",
-          desc: "閲囬泦鍋ュ悍銆丏NS銆佸嚭鍙ｃ€佹湇鍔″彲杈俱€佽鍒欏懡涓€佺粓绔闄┿€両Pv6 涓庣嚎璺亸鏂?,
-          keywords: "鍙 浣撴 璇婃柇 閲囬泦 鍋ュ悍 DNS 鍑哄彛 鏈嶅姟 IPv6 缁堢 椋庨櫓 绾胯矾 鍋忔枩",
-        });
-      }
-    }
   }
 
   function patchRenderers() {
@@ -3157,7 +3934,7 @@
       if (typeof currentSection !== "undefined" && isReadonlySection(currentSection)) {
         document.body.classList.add("readonly-diagnostics-page");
         const warning = snapshot.status !== "ok"
-          ? `<div class="notice danger" style="margin-bottom:12px">閲囬泦鐘舵€佸紓甯革細${html(snapshot.error || "鏈煡閿欒")}銆傚綋鍓嶉〉闈㈠睍绀烘渶杩戝彲鐢ㄥ揩鐓с€?/div>`
+          ? `<div class="notice danger" style="margin-bottom:12px">采集状态异常：${html(snapshot.error || "未知错误")}。当前页面展示最近可用快照。</div>`
           : "";
         ensureDiagnosticsFetch(snapshot);
         appEl.innerHTML = `${warning}${renderReadonlyFeaturePage(snapshot, currentSection)}`;
@@ -3219,16 +3996,24 @@
   window.addEventListener("resize", scheduleReadonlyScrollPin, { passive: true });
   window.addEventListener("hashchange", () => setTimeout(scheduleReadonlyScrollPin, 80));
 
-  registerReadonlyDiagnosticsPage();
-  patchRenderers();
-
-  if (typeof renderNavigation === "function") renderNavigation();
   const requestedFromQuery = new URLSearchParams(window.location.search || "").get("section") || "";
   const requested = requestedFromQuery || String(window.location.hash || "").replace(/^#/, "");
-  if (isReadonlySection(requested) && typeof setActiveSection === "function") {
-    setActiveSection(requested, true);
-  } else if (typeof currentSection !== "undefined" && isReadonlySection(currentSection) && typeof renderApp === "function") {
-    renderApp(displayedSnapshot || latestSnapshot || {});
+
+  const shouldBootReadonly = READONLY_DIAGNOSTICS_PRIVATE_NAV
+    || isReadonlySection(requested)
+    || (typeof currentSection !== "undefined" && isReadonlySection(currentSection));
+
+  if (READONLY_DIAGNOSTICS_PRIVATE_NAV) {
+    registerReadonlyDiagnosticsPage();
+    if (typeof renderNavigation === "function") renderNavigation();
+  }
+
+  if (shouldBootReadonly) {
+    patchRenderers();
+    if (isReadonlySection(requested) && typeof setActiveSection === "function") {
+      setActiveSection(requested, true);
+    } else if (typeof currentSection !== "undefined" && isReadonlySection(currentSection) && typeof renderApp === "function") {
+      renderApp(displayedSnapshot || latestSnapshot || {});
+    }
   }
 })();
-
