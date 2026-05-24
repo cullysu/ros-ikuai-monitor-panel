@@ -5,8 +5,10 @@ import mimetypes
 import os
 import re
 import socket
+import sys
 import threading
 import time
+import webbrowser
 from concurrent.futures import ThreadPoolExecutor, wait
 from collections import defaultdict, deque
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -17,11 +19,67 @@ import paramiko
 import requests
 
 
-BASE_DIR = Path(__file__).resolve().parent
-PUBLIC_DIR = BASE_DIR / "public"
+def is_frozen_app():
+    return bool(getattr(sys, "frozen", False))
+
+
+def resolve_base_dir():
+    if is_frozen_app():
+        return Path(sys.executable).resolve().parent
+    return Path(__file__).resolve().parent
+
+
+BASE_DIR = resolve_base_dir()
+BUNDLE_DIR = Path(getattr(sys, "_MEIPASS", BASE_DIR)).resolve()
+
+
+def resolve_runtime_path(value, base_dir=BASE_DIR):
+    path = Path(value).expanduser()
+    if not path.is_absolute():
+        path = base_dir / path
+    return path.resolve()
+
+
+def load_env_file(path):
+    try:
+        content = path.read_text(encoding="utf-8-sig")
+    except FileNotFoundError:
+        return False
+    except UnicodeDecodeError:
+        fallback_encoding = "mbcs" if os.name == "nt" else "utf-8"
+        content = path.read_text(encoding=fallback_encoding, errors="replace")
+
+    for raw_line in content.splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#"):
+            continue
+        if line.startswith("export "):
+            line = line[7:].strip()
+        if "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        key = key.strip()
+        value = value.strip()
+        if not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", key):
+            continue
+        if len(value) >= 2 and value[0] == value[-1] and value[0] in {"'", '"'}:
+            value = value[1:-1]
+        os.environ.setdefault(key, value)
+    return True
+
+
+def load_panel_env():
+    configured = os.getenv("ROS_PANEL_ENV_FILE")
+    env_path = resolve_runtime_path(configured) if configured else BASE_DIR / "routeros-panel.env"
+    return env_path if load_env_file(env_path) else None
+
+
+PANEL_ENV_FILE = load_panel_env()
+PUBLIC_DIR = resolve_runtime_path(os.getenv("ROS_PANEL_PUBLIC_DIR", str(BUNDLE_DIR / "public")))
 ROUTER_HOST = os.getenv("ROS_MONITOR_ROUTER_HOST", "192.168.3.1")
 ROUTER_USER = os.getenv("ROS_MONITOR_ROUTER_USER", "ros-panel-readonly")
 ROUTER_PASSWORD = os.getenv("ROS_MONITOR_ROUTER_PASSWORD", "CHANGE_ME")
+ROUTER_SSH_PORT = int(os.getenv("ROS_MONITOR_ROUTER_SSH_PORT", "22"))
 PANEL_PROFILE_RAW = os.getenv("ROS_PANEL_PROFILE", "routeros_only")
 PANEL_BIND = os.getenv("ROS_PANEL_BIND", "127.0.0.1")
 PANEL_PORT = int(os.getenv("ROS_PANEL_PORT", "8080"))
@@ -315,6 +373,9 @@ def env_bool(name, default=False):
     return default
 
 
+PANEL_OPEN_BROWSER = env_bool("ROS_PANEL_OPEN_BROWSER", default=is_frozen_app())
+
+
 def connection_detail_sleep_seconds(elapsed):
     if elapsed < CONNECTION_DETAIL_POLL_SECONDS:
         return max(0, CONNECTION_DETAIL_POLL_SECONDS - elapsed)
@@ -325,6 +386,184 @@ def connection_detail_sleep_seconds(elapsed):
 
 def format_iso_now():
     return time.strftime("%Y-%m-%d %H:%M:%S")
+
+
+ROUTER_PASSWORD_PLACEHOLDERS = {"", "CHANGE_ME", "changeme", "password"}
+ROUTER_CONFIG_LOCK = threading.RLock()
+ROUTER_CONFIG = {
+    "host": str(ROUTER_HOST or "").strip(),
+    "user": str(ROUTER_USER or "").strip(),
+    "password": str(ROUTER_PASSWORD or ""),
+    "sshPort": max(1, min(65535, to_int(ROUTER_SSH_PORT, 22))),
+    "source": "env",
+    "updatedAt": None,
+    "lastTest": None,
+}
+
+
+def normalize_router_host(value):
+    text = str(value or "").strip()
+    if not text:
+        raise ValueError("RouterOS address is required")
+    if "://" in text:
+        parsed = urlparse(text)
+        text = parsed.hostname or ""
+    text = text.strip().strip("[]")
+    if not text or "/" in text or "\\" in text or any(char.isspace() for char in text):
+        raise ValueError("RouterOS address must be an IP address or hostname")
+    if len(text) > 253:
+        raise ValueError("RouterOS address is too long")
+    return text
+
+
+def normalize_router_ssh_port(value):
+    port = to_int(value, 22)
+    if port < 1 or port > 65535:
+        raise ValueError("SSH port must be between 1 and 65535")
+    return port
+
+
+def router_config_is_ready(config):
+    password = str(config.get("password") or "").strip()
+    return bool(
+        str(config.get("host") or "").strip()
+        and str(config.get("user") or "").strip()
+        and password.strip()
+        and password not in ROUTER_PASSWORD_PLACEHOLDERS
+    )
+
+
+def get_router_config():
+    with ROUTER_CONFIG_LOCK:
+        return copy.deepcopy(ROUTER_CONFIG)
+
+
+def get_ready_router_config():
+    config = get_router_config()
+    if not router_config_is_ready(config):
+        raise RuntimeError("RouterOS SSH connection is not configured")
+    return config
+
+
+def public_router_config(config=None):
+    source = config or get_router_config()
+    password = str(source.get("password") or "").strip()
+    return {
+        "configured": router_config_is_ready(source),
+        "host": source.get("host") or "",
+        "user": source.get("user") or "",
+        "sshPort": to_int(source.get("sshPort"), 22),
+        "source": source.get("source") or "memory",
+        "updatedAt": source.get("updatedAt"),
+        "passwordSet": bool(password.strip()) and password not in ROUTER_PASSWORD_PLACEHOLDERS,
+        "lastTest": copy.deepcopy(source.get("lastTest")),
+    }
+
+
+def set_router_config(host, user, password, ssh_port=22, source="ui", last_test=None):
+    normalized = {
+        "host": normalize_router_host(host),
+        "user": str(user or "").strip(),
+        "password": str(password or ""),
+        "sshPort": normalize_router_ssh_port(ssh_port),
+        "source": source,
+        "updatedAt": format_iso_now(),
+        "lastTest": copy.deepcopy(last_test),
+    }
+    if not normalized["user"]:
+        raise ValueError("RouterOS username is required")
+    if not normalized["password"].strip():
+        raise ValueError("RouterOS password is required")
+    with ROUTER_CONFIG_LOCK:
+        ROUTER_CONFIG.update(normalized)
+    return public_router_config(normalized)
+
+
+def clear_router_config():
+    with ROUTER_CONFIG_LOCK:
+        ROUTER_CONFIG.update(
+            {
+                "password": "",
+                "source": "ui",
+                "updatedAt": format_iso_now(),
+                "lastTest": None,
+            }
+        )
+    return public_router_config()
+
+
+def test_router_credentials(host, user, password, ssh_port=22):
+    config = {
+        "host": normalize_router_host(host),
+        "user": str(user or "").strip(),
+        "password": str(password or ""),
+        "sshPort": normalize_router_ssh_port(ssh_port),
+    }
+    if not config["user"]:
+        raise ValueError("RouterOS username is required")
+    if not config["password"].strip():
+        raise ValueError("RouterOS password is required")
+
+    started_at = time.time()
+    test = {
+        "ssh": {"ok": False, "identity": None, "error": None, "elapsedMs": None},
+        "rest": {"ok": False, "status": None, "error": None, "elapsedMs": None},
+    }
+
+    ssh_started = time.time()
+    client = paramiko.SSHClient()
+    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    try:
+        client.connect(
+            config["host"],
+            port=config["sshPort"],
+            username=config["user"],
+            password=config["password"],
+            timeout=SSH_TIMEOUT,
+            banner_timeout=SSH_TIMEOUT,
+            auth_timeout=SSH_TIMEOUT,
+            allow_agent=False,
+            look_for_keys=False,
+        )
+        stdin, stdout, stderr = client.exec_command(":put [/system/identity/get name]", timeout=SSH_TIMEOUT)
+        stdout.channel.settimeout(SSH_TIMEOUT)
+        stderr.channel.settimeout(SSH_TIMEOUT)
+        identity = stdout.read().decode("utf-8", errors="replace").strip()
+        error = stderr.read().decode("utf-8", errors="replace").strip()
+        exit_status = stdout.channel.recv_exit_status()
+        if exit_status != 0 or error:
+            raise RuntimeError(error or f"SSH command exited with status {exit_status}")
+        test["ssh"].update({"ok": True, "identity": identity or "RouterOS"})
+    except Exception as exc:
+        test["ssh"]["error"] = str(exc)
+    finally:
+        test["ssh"]["elapsedMs"] = round((time.time() - ssh_started) * 1000)
+        try:
+            client.close()
+        except Exception:
+            pass
+
+    if not test["ssh"]["ok"]:
+        test["rest"]["error"] = "Skipped because SSH login failed"
+        test["elapsedMs"] = round((time.time() - started_at) * 1000)
+        return test
+
+    rest_started = time.time()
+    session = requests.Session()
+    session.auth = (config["user"], config["password"])
+    try:
+        response = session.get(f"http://{config['host']}/rest/system/resource", timeout=min(REST_TIMEOUT, 8))
+        test["rest"]["status"] = response.status_code
+        response.raise_for_status()
+        test["rest"]["ok"] = True
+    except Exception as exc:
+        test["rest"]["error"] = str(exc)
+    finally:
+        test["rest"]["elapsedMs"] = round((time.time() - rest_started) * 1000)
+        test["elapsedMs"] = round((time.time() - started_at) * 1000)
+        session.close()
+
+    return test
 
 
 def ip_sort_key(address):
@@ -384,6 +623,39 @@ def line_layout_tier(count):
     if count <= 6:
         return "multi"
     return "dense"
+
+
+def scale_bucket(count):
+    count = max(0, to_int(count))
+    if count <= 0:
+        return "none"
+    if count == 1:
+        return "single"
+    if count <= 6:
+        return "small"
+    if count <= 24:
+        return "medium"
+    if count <= 100:
+        return "large"
+    return "fleet"
+
+
+def list_scale_meta(total_count, shown_count=None, limit=None, sampled=False, sample_method="", sorted_by="", grouped_by=None):
+    total = max(0, to_int(total_count))
+    shown = total if shown_count is None else max(0, to_int(shown_count))
+    effective_limit = limit if limit is not None else shown
+    return {
+        "actualCount": total,
+        "totalCount": total,
+        "shownCount": shown,
+        "limit": max(0, to_int(effective_limit)),
+        "hasMore": shown < total,
+        "sampled": bool(sampled),
+        "sampleMethod": sample_method,
+        "sortedBy": sorted_by,
+        "groupedBy": list(grouped_by or []),
+        "bucket": scale_bucket(total),
+    }
 
 
 def build_panel_capabilities(wan_lines, pppoe_count):
@@ -1214,13 +1486,15 @@ def nikki_probe():
 
 class Collector:
     def __init__(self):
+        router_status = public_router_config()
         self.state = {
-            "status": "starting",
+            "status": "starting" if router_status["configured"] else "needs_config",
             "updatedAt": None,
-            "error": None,
+            "error": None if router_status["configured"] else "RouterOS SSH connection is not configured",
             "meta": {
                 "target": PANEL_TARGET,
-                "routerHost": ROUTER_HOST,
+                "routerHost": router_status["host"],
+                "routerLogin": router_status,
                 "pollSeconds": POLL_SECONDS,
                 "staticPollSeconds": STATIC_POLL_SECONDS,
                 "slowRestPollSeconds": SLOW_REST_POLL_SECONDS,
@@ -1278,6 +1552,96 @@ class Collector:
         self.ip_aliases = self.load_ip_aliases()
         self.readonly_diagnostics_cache = {"fetched_at": 0.0, "payload": None}
         self.connection_protocol_last_scan_at = 0.0
+
+    def reset_collection_state(self, status="starting", error=None):
+        router_status = public_router_config()
+        with self.lock:
+            self.prev_counters = {}
+            self.prev_ts = None
+            self.realtime_rest = {}
+            self.realtime_failures = {}
+            self.realtime_updated_at = None
+            self.realtime_error = None
+            self.realtime_last_error_at = None
+            self.realtime_duration_seconds = None
+            self.slow_rest = {}
+            self.slow_failures = {}
+            self.slow_updated_at = None
+            self.slow_error = None
+            self.slow_last_error_at = None
+            self.slow_duration_seconds = None
+            self.detail_failures = {}
+            self.static_rest = {}
+            self.static_failures = {}
+            self.static_updated_at = None
+            self.static_error = None
+            self.static_last_error_at = None
+            self.static_duration_seconds = None
+            self.dns_static_cache = {"rows": [], "count": 0, "fetched_at": 0.0, "updatedAt": None}
+            self.connection_summary = {
+                "counts": {"all": 0, "tcp": None, "udp": None, "icmp": None},
+                "protocolUpdatedAt": None,
+                "protocolError": None,
+                "protocolLastErrorAt": None,
+                "protocolDurationSeconds": None,
+            }
+            self.connection_detail = {
+                "active_connections": [],
+                "updatedAt": None,
+                "detailError": None,
+                "detailLastErrorAt": None,
+                "detailDurationSeconds": None,
+            }
+            self.history = {
+                "cpu": deque(maxlen=HISTORY_LIMIT),
+                "memory": deque(maxlen=HISTORY_LIMIT),
+                "disk": deque(maxlen=HISTORY_LIMIT),
+                "uplink": deque(maxlen=HISTORY_LIMIT),
+                "downlink": deque(maxlen=HISTORY_LIMIT),
+                "timestamps": deque(maxlen=HISTORY_LIMIT),
+            }
+            self.line_history = {}
+            self.readonly_diagnostics_cache = {"fetched_at": 0.0, "payload": None}
+            self.connection_protocol_last_scan_at = 0.0
+            self.state = {
+                "status": status,
+                "updatedAt": format_iso_now(),
+                "error": error,
+                "meta": {
+                    "target": PANEL_TARGET,
+                    "routerHost": router_status["host"],
+                    "routerLogin": router_status,
+                    "pollSeconds": POLL_SECONDS,
+                    "staticPollSeconds": STATIC_POLL_SECONDS,
+                    "slowRestPollSeconds": SLOW_REST_POLL_SECONDS,
+                    "connectionDetailPollSeconds": CONNECTION_DETAIL_POLL_SECONDS,
+                    "detailRestWorkers": DETAIL_REST_WORKERS,
+                    "connectionProtocolPollSeconds": CONNECTION_PROTOCOL_BREAKDOWN_INTERVAL_SECONDS,
+                },
+            }
+
+    def require_router_config_for_collection(self):
+        if router_config_is_ready(get_router_config()):
+            return True
+        router_status = public_router_config()
+        with self.lock:
+            self.state = {
+                "status": "needs_config",
+                "updatedAt": format_iso_now(),
+                "error": "RouterOS SSH connection is not configured",
+                "meta": {
+                    "target": PANEL_TARGET,
+                    "routerHost": router_status["host"],
+                    "routerLogin": router_status,
+                    "pollSeconds": POLL_SECONDS,
+                    "staticPollSeconds": STATIC_POLL_SECONDS,
+                    "slowRestPollSeconds": SLOW_REST_POLL_SECONDS,
+                    "connectionDetailPollSeconds": CONNECTION_DETAIL_POLL_SECONDS,
+                    "detailRestWorkers": DETAIL_REST_WORKERS,
+                    "connectionProtocolPollSeconds": CONNECTION_PROTOCOL_BREAKDOWN_INTERVAL_SECONDS,
+                },
+            }
+        return False
 
     def load_ip_aliases(self):
         try:
@@ -1362,8 +1726,9 @@ class Collector:
         return {"ip": ip_key, "customName": custom_name, "snapshot": snapshot}
 
     def rest_get(self, session, config):
+        router = get_ready_router_config()
         response = session.get(
-            f"http://{ROUTER_HOST}/rest/{config['path']}",
+            f"http://{router['host']}/rest/{config['path']}",
             params=config.get("params"),
             timeout=config.get("timeout", REST_TIMEOUT),
         )
@@ -1473,8 +1838,9 @@ class Collector:
                 pass
 
     def fetch_rest_item(self, key, endpoint_config):
+        router = get_ready_router_config()
         session = requests.Session()
-        session.auth = (ROUTER_USER, ROUTER_PASSWORD)
+        session.auth = (router["user"], router["password"])
         try:
             return key, self.rest_get(session, endpoint_config), None
         except Exception as exc:
@@ -1509,8 +1875,9 @@ class Collector:
                 raise RuntimeError(joined)
             return payload
 
+        router = get_ready_router_config()
         session = requests.Session()
-        session.auth = (ROUTER_USER, ROUTER_PASSWORD)
+        session.auth = (router["user"], router["password"])
         try:
             payload = {}
             failures = {}
@@ -1532,13 +1899,15 @@ class Collector:
             session.close()
 
     def open_ssh_client(self, timeout=None):
+        router = get_ready_router_config()
         timeout = max(1, to_int(timeout, SSH_TIMEOUT))
         client = paramiko.SSHClient()
         client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         client.connect(
-            ROUTER_HOST,
-            username=ROUTER_USER,
-            password=ROUTER_PASSWORD,
+            router["host"],
+            port=router["sshPort"],
+            username=router["user"],
+            password=router["password"],
             timeout=timeout,
             banner_timeout=timeout,
             auth_timeout=timeout,
@@ -1654,11 +2023,12 @@ class Collector:
         return normalized_rows[:limit]
 
     def fetch_dns_static_full_rest(self):
+        router = get_ready_router_config()
         session = requests.Session()
-        session.auth = (ROUTER_USER, ROUTER_PASSWORD)
+        session.auth = (router["user"], router["password"])
         try:
             response = session.get(
-                f"http://{ROUTER_HOST}/rest/ip/dns/static",
+                f"http://{router['host']}/rest/ip/dns/static",
                 params={
                     ".proplist": "name,regexp,address,cname,text,ttl,comment,disabled,type",
                 },
@@ -2214,12 +2584,26 @@ class Collector:
             )
         terminals.sort(key=lambda row: (row["upRate"] + row["downRate"], row["connections"]), reverse=True)
         active_rows.sort(key=lambda row: row["totalRate"], reverse=True)
+        arp_items = sorted(arp_rows, key=lambda row: ip_sort_key(row["ip"]))[:120]
+        active_connection_items = active_rows[:ACTIVE_CONNECTION_LIMIT]
         return {
             "terminalCount": len(terminals),
             "terminals": terminals,
-            "arp": sorted(arp_rows, key=lambda row: ip_sort_key(row["ip"]))[:120],
+            "arp": arp_items,
             "arpAlerts": alerts[:20],
-            "activeConnections": active_rows[:ACTIVE_CONNECTION_LIMIT],
+            "activeConnections": active_connection_items,
+            "meta": {
+                "terminals": list_scale_meta(len(terminals), len(terminals), sampled=False, sorted_by="traffic/connections"),
+                "arp": list_scale_meta(len(arp_rows), len(arp_items), limit=120, sampled=len(arp_items) < len(arp_rows), sample_method="first 120 sorted by IP", sorted_by="ip"),
+                "activeConnections": list_scale_meta(
+                    len(active_rows),
+                    len(active_connection_items),
+                    limit=ACTIVE_CONNECTION_LIMIT,
+                    sampled=True,
+                    sample_method="SSH connection detail sample, active rate rows first",
+                    sorted_by="totalRate",
+                ),
+            },
             "topIpConnections": [
                 {
                     "ip": row["ip"],
@@ -2289,7 +2673,25 @@ class Collector:
             }
             for item in rest["dhcp_servers"]
         ]
-        return {"pools": pools, "leases": leases[:120], "servers": servers}
+        visible_leases = leases[:120]
+        return {
+            "pools": pools,
+            "leases": visible_leases,
+            "servers": servers,
+            "meta": {
+                "leases": list_scale_meta(
+                    len(leases),
+                    len(visible_leases),
+                    limit=120,
+                    sampled=len(visible_leases) < len(leases),
+                    sample_method="first 120 sorted by status and IP",
+                    sorted_by="status/ip",
+                    grouped_by=["status", "server", "static"],
+                ),
+                "pools": list_scale_meta(len(pools), len(pools), sampled=False),
+                "servers": list_scale_meta(len(servers), len(servers), sampled=False),
+            },
+        }
 
     def build_dns(self, rest):
         dns = rest["dns"]
@@ -2530,6 +2932,7 @@ class Collector:
             "down": sum(to_int(row.get("downRate")) for row in wan_source),
         }
         terminals = self.build_terminals_and_connections(rest, ssh, local_networks, router_ips)
+        dhcp = self.build_dhcp(rest)
         ipv6_interface_count = sum(
             1 for row in interfaces if any(":" in str(ip_addr) for ip_addr in row.get("ips", []))
         )
@@ -2538,6 +2941,29 @@ class Collector:
         )
         capabilities = build_panel_capabilities(wan_lines, len(pppoe))
         wan_line_count = len(wan_lines)
+        active_connection_shown = len(terminals.get("activeConnections", []))
+        scale_meta = {
+            "wan": list_scale_meta(wan_line_count, len(wan_lines), sampled=False, sorted_by="natural interface name", grouped_by=["status", "parent", "routeTable"]),
+            "pppoe": list_scale_meta(len(pppoe), len(pppoe), sampled=False, sorted_by="natural interface name"),
+            "interfaces": list_scale_meta(len(interfaces), len(interfaces), sampled=False, sorted_by="role/name", grouped_by=["role", "type", "status"]),
+            "terminals": terminals.get("meta", {}).get("terminals", list_scale_meta(terminals["terminalCount"], len(terminals["terminals"]))),
+            "arp": terminals.get("meta", {}).get("arp", list_scale_meta(len(terminals["arp"]), len(terminals["arp"]))),
+            "dhcpLeases": dhcp.get("meta", {}).get("leases", list_scale_meta(len(dhcp.get("leases", [])), len(dhcp.get("leases", [])))),
+            "connectionsActive": {
+                **terminals.get("meta", {}).get("activeConnections", list_scale_meta(active_connection_shown, active_connection_shown, sampled=True)),
+                "actualCount": ssh["counts"]["all"],
+                "totalCount": ssh["counts"]["all"],
+                "hasMore": active_connection_shown < ssh["counts"]["all"],
+            },
+            "dnsStatic": list_scale_meta(
+                rest.get("dns_static_meta", {}).get("total_count", DNS_STATIC_PREVIEW_LIMIT),
+                len(rest.get("dns_static", [])),
+                limit=DNS_STATIC_PREVIEW_LIMIT,
+                sampled=True,
+                sample_method="preview rows; full browser uses /api/dns-static pagination",
+                sorted_by="RouterOS order",
+            ),
+        }
         resource = rest["resource"]
         total_memory = to_int(resource.get("total-memory"))
         used_memory = max(total_memory - to_int(resource.get("free-memory")), 0)
@@ -2555,7 +2981,8 @@ class Collector:
             "error": None,
             "meta": {
                 "target": PANEL_TARGET,
-                "routerHost": ROUTER_HOST,
+                "routerHost": public_router_config()["host"],
+                "routerLogin": public_router_config(),
                 "pollSeconds": POLL_SECONDS,
                 "realtimeUpdatedAt": self.realtime_updated_at,
                 "realtimeError": self.realtime_error,
@@ -2598,6 +3025,7 @@ class Collector:
                 "wanCount": wan_line_count,
                 "lineCount": wan_line_count,
                 "lineLayoutTier": line_layout_tier(wan_line_count),
+                "scale": scale_meta,
             },
             "overview": self.build_overview(rest, ssh, terminals["terminalCount"], wan_totals),
             "interfaces": interfaces,
@@ -2605,7 +3033,7 @@ class Collector:
             "wan": wan_lines,
             "terminals": terminals["terminals"],
             "arp": {"items": terminals["arp"], "alerts": terminals["arpAlerts"]},
-            "dhcp": self.build_dhcp(rest),
+            "dhcp": dhcp,
             "connections": {
                 "total": ssh["counts"]["all"],
                 "tcp": ssh["counts"]["tcp"],
@@ -2622,6 +3050,10 @@ class Collector:
                 "detailError": ssh.get("detailError"),
                 "detailLastErrorAt": ssh.get("detailLastErrorAt"),
                 "detailDurationSeconds": ssh.get("detailDurationSeconds"),
+                "meta": {
+                    "active": scale_meta["connectionsActive"],
+                    "topIps": list_scale_meta(len(terminals["topIpConnections"]), len(terminals["topIpConnections"]), sampled=True, sample_method="terminal traffic top list", sorted_by="connections/traffic"),
+                },
             },
             "dns": self.build_dns(rest),
             "security": self.build_security(rest),
@@ -2642,6 +3074,9 @@ class Collector:
 
     def realtime_loop(self):
         while True:
+            if not self.require_router_config_for_collection():
+                time.sleep(1)
+                continue
             started_at = time.time()
             try:
                 realtime_rest = self.fetch_rest_bundle(REALTIME_REST_ENDPOINTS)
@@ -2669,6 +3104,9 @@ class Collector:
 
     def slow_rest_loop(self):
         while True:
+            if not self.require_router_config_for_collection():
+                time.sleep(1)
+                continue
             started_at = time.time()
             try:
                 slow_rest = self.fetch_rest_bundle(SLOW_REST_ENDPOINTS, workers=SLOW_REST_WORKERS)
@@ -2696,6 +3134,9 @@ class Collector:
 
     def connection_protocol_loop(self):
         while True:
+            if not self.require_router_config_for_collection():
+                time.sleep(1)
+                continue
             started_at = time.time()
             try:
                 tracking = self.fetch_connection_tracking_summary()
@@ -2723,6 +3164,9 @@ class Collector:
 
     def static_loop(self):
         while True:
+            if not self.require_router_config_for_collection():
+                time.sleep(1)
+                continue
             started_at = time.time()
             try:
                 dns_static_count = 0
@@ -2772,6 +3216,9 @@ class Collector:
 
     def connection_detail_loop(self):
         while True:
+            if not self.require_router_config_for_collection():
+                time.sleep(1)
+                continue
             started_at = time.time()
             try:
                 with ThreadPoolExecutor(max_workers=2) as executor:
@@ -2816,7 +3263,14 @@ class Collector:
 
     def get_state(self):
         with self.lock:
-            return copy.deepcopy(self.state)
+            snapshot = copy.deepcopy(self.state)
+        meta = snapshot.setdefault("meta", {})
+        meta.setdefault("profile", PANEL_PROFILE)
+        meta.setdefault("capabilities", build_panel_capabilities(snapshot.get("wan") or [], len(snapshot.get("pppoe") or [])))
+        triage = snapshot.get("semanticTriage") or build_semantic_triage(snapshot)
+        snapshot["semanticTriage"] = triage
+        snapshot["actionQueue"] = snapshot.get("actionQueue") or triage.get("queue", [])
+        return snapshot
 
     def get_semantic_triage(self):
         return build_semantic_triage(self.get_state())
@@ -3022,6 +3476,8 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         parsed = urlparse(self.path)
+        if parsed.path == "/api/router-login":
+            return self.send_json({"ok": True, "routerLogin": public_router_config()})
         if parsed.path == "/api/snapshot":
             return self.send_json(collector.get_state())
         if parsed.path == "/api/dns-static":
@@ -3058,6 +3514,7 @@ class Handler(BaseHTTPRequestHandler):
                     "updatedAt": state.get("updatedAt"),
                     "profile": PANEL_PROFILE,
                     "target": PANEL_TARGET,
+                    "routerLogin": public_router_config(),
                 }
             )
         if parsed.path in {"/api/action-queue", "/api/semantic-triage"}:
@@ -3070,6 +3527,44 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         parsed = urlparse(self.path)
+        if parsed.path == "/api/router-login":
+            try:
+                payload = self.read_json_body()
+                host = payload.get("host") or payload.get("ip") or payload.get("address")
+                user = payload.get("user") or payload.get("username")
+                password = payload.get("password")
+                ssh_port = payload.get("sshPort") or payload.get("port") or 22
+                test = test_router_credentials(host, user, password, ssh_port)
+                if not test.get("ssh", {}).get("ok"):
+                    return self.send_json(
+                        {
+                            "ok": False,
+                            "error": test.get("ssh", {}).get("error") or "SSH login failed",
+                            "test": test,
+                        },
+                        status=400,
+                    )
+                router_login = set_router_config(host, user, password, ssh_port, source="ui", last_test=test)
+                collector.reset_collection_state(status="starting", error=None)
+                return self.send_json(
+                    {
+                        "ok": True,
+                        "routerLogin": router_login,
+                        "test": test,
+                        "warning": None if test.get("rest", {}).get("ok") else "SSH connected, but RouterOS REST did not respond. Some dashboard data may be missing.",
+                    }
+                )
+            except ValueError as exc:
+                return self.send_json({"ok": False, "error": str(exc)}, status=400)
+            except Exception as exc:
+                return self.send_json({"ok": False, "error": str(exc)}, status=500)
+        if parsed.path == "/api/router-logout":
+            router_login = clear_router_config()
+            collector.reset_collection_state(
+                status="needs_config",
+                error="RouterOS SSH connection is not configured",
+            )
+            return self.send_json({"ok": True, "routerLogin": router_login})
         if parsed.path == "/api/ip-alias":
             if not IP_ALIAS_WRITE_ENABLED:
                 return self.send_json({"ok": False, "error": "ip alias write disabled"}, status=403)
@@ -3132,7 +3627,23 @@ class Handler(BaseHTTPRequestHandler):
 def main():
     collector.start()
     server = ThreadingHTTPServer((PANEL_BIND, PANEL_PORT), Handler)
-    server.serve_forever()
+    host = PANEL_BIND
+    if host in {"", "0.0.0.0", "::"}:
+        host = "127.0.0.1"
+    if ":" in host and not host.startswith("["):
+        host = f"[{host}]"
+    url = f"http://{host}:{PANEL_PORT}/"
+    print(f"RouterOS Triage Panel listening on {url}", flush=True)
+    if PANEL_ENV_FILE:
+        print(f"Loaded config file: {PANEL_ENV_FILE}", flush=True)
+    if PANEL_OPEN_BROWSER:
+        threading.Timer(1.0, lambda: webbrowser.open(url)).start()
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        server.server_close()
 
 
 if __name__ == "__main__":

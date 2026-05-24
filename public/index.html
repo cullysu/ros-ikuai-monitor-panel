@@ -588,6 +588,86 @@
     .dual { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
     .notice { border-radius: 8px; border: 1px solid #a3caf5; background: #f0f6fd; color: #416180; padding: 12px 14px; font-size: 12px; line-height: 1.7; }
     .notice.danger { border-color: rgba(255, 77, 79, 0.26); background: rgba(255, 77, 79, 0.08); color: #b6383a; }
+    body.router-login-booting .app,
+    body.router-login-required .app { display: none; }
+    body.router-login-ready .router-login-page { display: none; }
+    .router-login-page {
+      position: relative;
+      z-index: 2;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 28px;
+      background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(240, 246, 253, 0.94)),
+        radial-gradient(circle at 18% 16%, rgba(71, 148, 235, 0.16), transparent 26%),
+        radial-gradient(circle at 84% 74%, rgba(36, 194, 113, 0.12), transparent 24%);
+    }
+    .router-login-panel {
+      width: min(520px, 100%);
+      border: 1px solid rgba(71, 148, 235, 0.16);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.96);
+      box-shadow: 0 18px 48px rgba(21, 52, 89, 0.12);
+      overflow: hidden;
+    }
+    .router-login-head {
+      padding: 22px 24px 18px;
+      border-bottom: 1px solid var(--border);
+      background: linear-gradient(180deg, rgba(71, 148, 235, 0.08), rgba(255, 255, 255, 0));
+    }
+    .router-login-title {
+      margin: 0;
+      color: var(--primary-deep);
+      font-size: 24px;
+      line-height: 1.2;
+      font-weight: 800;
+    }
+    .router-login-subtitle {
+      margin: 8px 0 0;
+      color: var(--text-soft);
+      font-size: 13px;
+      line-height: 1.7;
+    }
+    .router-login-form { display: grid; gap: 14px; padding: 20px 24px 24px; }
+    .router-login-grid { display: grid; grid-template-columns: minmax(0, 1fr) 118px; gap: 12px; }
+    .router-login-field { display: grid; gap: 7px; min-width: 0; }
+    .router-login-field label { color: var(--text); font-size: 12px; font-weight: 700; }
+    .router-login-field input {
+      width: 100%;
+      height: 40px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--text);
+      padding: 0 12px;
+      font: 500 14px/1.2 "Microsoft YaHei","Segoe UI",sans-serif;
+      outline: none;
+      transition: border-color .16s ease, box-shadow .16s ease;
+    }
+    .router-login-field input:focus {
+      border-color: rgba(71, 148, 235, 0.62);
+      box-shadow: 0 0 0 3px rgba(71, 148, 235, 0.12);
+    }
+    .router-login-actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 2px; }
+    .router-login-status { color: var(--text-soft); font-size: 12px; line-height: 1.6; min-height: 20px; }
+    .router-login-status.is-error { color: #b6383a; }
+    .router-login-status.is-ok { color: #0d8f56; }
+    .router-login-status.is-warn { color: #9b6800; }
+    .router-login-foot {
+      padding: 12px 24px 18px;
+      border-top: 1px solid var(--border);
+      color: var(--text-dim);
+      font-size: 12px;
+      line-height: 1.6;
+      background: rgba(248, 251, 255, 0.72);
+    }
+    @media (max-width: 640px) {
+      .router-login-page { padding: 16px; place-items: stretch; align-items: center; }
+      .router-login-grid { grid-template-columns: minmax(0, 1fr); }
+      .router-login-actions { align-items: stretch; flex-direction: column; }
+      .router-login-actions .action-btn { width: 100%; justify-content: center; }
+    }
     .empty { padding: 22px 14px; text-align: center; color: var(--text-dim); font-size: 12px; }
     .donut { width: 138px; height: 138px; border-radius: 50%; position: relative; background: conic-gradient(var(--primary) 0 40%, #69aef6 40% 67%, #8ec0f9 67% 85%, #d8eafc 85% 100%); margin: 0 auto; }
     .donut::after { content: ""; position: absolute; inset: 18px; border-radius: 50%; background: #fff; box-shadow: inset 0 0 0 1px #eef2f7; }
@@ -2308,7 +2388,40 @@
     }
   </style>
 </head>
-<body data-app-shell="ros-ikuai-monitor-panel" data-deploy-channel="auto" data-panel-profile="auto" data-public-profile="false">
+<body class="router-login-booting" data-app-shell="ros-ikuai-monitor-panel" data-deploy-channel="auto" data-panel-profile="auto" data-public-profile="false">
+  <section class="router-login-page" id="routerLoginPage" aria-live="polite">
+    <div class="router-login-panel">
+      <div class="router-login-head">
+        <h1 class="router-login-title">连接 RouterOS</h1>
+        <p class="router-login-subtitle">填写 RouterOS 的 SSH 地址、账号和密码。连接成功后，面板会用同一套账号读取 RouterOS 数据。</p>
+      </div>
+      <form class="router-login-form" id="routerLoginForm" autocomplete="on">
+        <div class="router-login-grid">
+          <div class="router-login-field">
+            <label for="routerLoginHost">RouterOS 地址</label>
+            <input id="routerLoginHost" name="host" type="text" inputmode="url" autocomplete="hostname" placeholder="192.168.88.1" required>
+          </div>
+          <div class="router-login-field">
+            <label for="routerLoginPort">SSH 端口</label>
+            <input id="routerLoginPort" name="sshPort" type="number" inputmode="numeric" min="1" max="65535" value="22" required>
+          </div>
+        </div>
+        <div class="router-login-field">
+          <label for="routerLoginUser">账号</label>
+          <input id="routerLoginUser" name="user" type="text" autocomplete="username" placeholder="ros-panel-readonly" required>
+        </div>
+        <div class="router-login-field">
+          <label for="routerLoginPassword">密码</label>
+          <input id="routerLoginPassword" name="password" type="password" autocomplete="current-password" required>
+        </div>
+        <div class="router-login-actions">
+          <div class="router-login-status" id="routerLoginStatus">正在检查连接配置...</div>
+          <button class="action-btn primary" id="routerLoginSubmit" type="submit">连接并进入</button>
+        </div>
+      </form>
+      <div class="router-login-foot">建议使用只读账号。密码只提交给本机面板服务端用于采集，不会在状态接口里回显。</div>
+    </div>
+  </section>
   <div class="app ik-shell app-shell" data-shell-root="true" data-shell-layout="fixed-wide">
     <aside class="ik-rail" id="ikRail" data-shell-region="rail" data-shell-nav="primary">
       <a class="ik-rail-logo is-active" href="#overview" data-section="overview" title="系统首页">首</a>
@@ -2356,6 +2469,7 @@
             </div>
             <div class="refresh-toolbar">
               <button class="action-btn primary" id="manualRefreshBtn" type="button">立即刷新</button>
+              <button class="action-btn" id="routerReconnectBtn" type="button">更换连接</button>
               <div class="refresh-meta">
                 <span id="refreshModeText">实时轮询中</span>
                 <strong id="nextRefreshText">1 秒刷新</strong>
@@ -2379,6 +2493,7 @@
     const healthDotEl = document.getElementById('healthDot');
     const pageSubtitleEl = document.getElementById('pageSubtitle');
     const manualRefreshBtn = document.getElementById('manualRefreshBtn');
+    const routerReconnectBtn = document.getElementById('routerReconnectBtn');
     const refreshModeTextEl = document.getElementById('refreshModeText');
     const nextRefreshTextEl = document.getElementById('nextRefreshText');
     const toolbarLineEl = document.querySelector('.toolbar-line');
@@ -2386,6 +2501,14 @@
     const deployPillEl = document.querySelector('.deploy-pill');
     const ikRailEl = document.getElementById('ikRail');
     const ikMenuPanelEl = document.getElementById('ikMenuPanel');
+    const routerLoginPageEl = document.getElementById('routerLoginPage');
+    const routerLoginFormEl = document.getElementById('routerLoginForm');
+    const routerLoginHostEl = document.getElementById('routerLoginHost');
+    const routerLoginPortEl = document.getElementById('routerLoginPort');
+    const routerLoginUserEl = document.getElementById('routerLoginUser');
+    const routerLoginPasswordEl = document.getElementById('routerLoginPassword');
+    const routerLoginSubmitEl = document.getElementById('routerLoginSubmit');
+    const routerLoginStatusEl = document.getElementById('routerLoginStatus');
     const TEST_SNAPSHOT = window.__PANEL_TEST_SNAPSHOT__ || null;
     const IS_TEST_MODE = Boolean(TEST_SNAPSHOT);
     const REALTIME_REFRESH_SECONDS = 1;
@@ -2407,17 +2530,16 @@
     let currentInterfaceTopology = 'wan';
     let interfaceReadonlyOpen = false;
     let currentTerminalView = 'ipv4';
+    let dashboardBooted = false;
     let topMetricsPinnedHost = null;
     let compactSummaryPinnedHost = null;
     let compactSummaryPinnedSourceState = null;
     let sectionTopbarStateRaf = 0;
     const compactSummaryPinStartBySection = new Map();
 
-    const PANEL_HOSTNAME = String(window.location.hostname || '').trim();
-    const PUBLIC_PANEL_HOSTS = new Set(['192.168.3.50', '192.168.4.50']);
     const PUBLIC_PROFILE_ALIASES = new Set(['public', 'routeros_public', 'routeros_only', 'public_routeros', 'routeros_public_preview']);
-    let panelProfileMode = PUBLIC_PANEL_HOSTS.has(PANEL_HOSTNAME) ? 'public' : 'private';
-    let deployChannelMode = panelProfileMode === 'public' ? 'public-routeros' : '.3.5';
+    let panelProfileMode = 'public';
+    let deployChannelMode = 'public-routeros';
 
     function isPublicPanelSnapshot(snapshot) {
       const meta = snapshot?.meta || {};
@@ -2426,7 +2548,7 @@
       if (meta.publicRouterosProfile === true || meta.publicRouterosProfile === 'true') return true;
       if (capabilities.publicRouterosProfile === true || capabilities.publicRouterosProfile === 'true') return true;
       if (PUBLIC_PROFILE_ALIASES.has(rawProfile)) return true;
-      return PUBLIC_PANEL_HOSTS.has(PANEL_HOSTNAME);
+      return false;
     }
 
     function syncPanelProfileState(snapshot) {
@@ -2437,7 +2559,11 @@
       deployChannelMode = nextDeployChannel;
       document.body.dataset.panelProfile = panelProfileMode;
       document.body.dataset.publicProfile = panelProfileMode === 'public' ? 'true' : 'false';
+      document.body.dataset.profileResolved = 'true';
       document.body.setAttribute('data-deploy-channel', deployChannelMode);
+      document.dispatchEvent(new CustomEvent('panel-profile-sync', {
+        detail: { panelProfile: panelProfileMode, deployChannel: deployChannelMode }
+      }));
       return changed;
     }
 
@@ -2467,6 +2593,9 @@
         return;
       }
       toolbarLineEl.insertBefore(manualRefreshBtn, deployPillEl);
+      if (routerReconnectBtn) {
+        toolbarLineEl.insertBefore(routerReconnectBtn, deployPillEl);
+      }
       const refreshMetaEl = refreshModeTextEl?.parentElement;
       if (refreshMetaEl?.classList?.contains('refresh-meta')) {
         toolbarLineEl.appendChild(refreshMetaEl);
@@ -2475,6 +2604,124 @@
     }
 
     normalizeTopbarActionLayout();
+
+    function setRouterLoginStatus(message, tone = '') {
+      if (!routerLoginStatusEl) return;
+      routerLoginStatusEl.textContent = message || '';
+      routerLoginStatusEl.classList.toggle('is-error', tone === 'error');
+      routerLoginStatusEl.classList.toggle('is-ok', tone === 'ok');
+      routerLoginStatusEl.classList.toggle('is-warn', tone === 'warn');
+    }
+
+    function prefillRouterLogin(routerLogin) {
+      if (!routerLogin) return;
+      if (routerLoginHostEl && routerLogin.host) routerLoginHostEl.value = routerLogin.host;
+      if (routerLoginUserEl && routerLogin.user) routerLoginUserEl.value = routerLogin.user;
+      if (routerLoginPortEl && routerLogin.sshPort) routerLoginPortEl.value = routerLogin.sshPort;
+    }
+
+    function showRouterLogin(routerLogin, message = '请输入 RouterOS SSH 连接信息') {
+      prefillRouterLogin(routerLogin);
+      document.body.classList.remove('router-login-booting', 'router-login-ready');
+      document.body.classList.add('router-login-required');
+      if (routerLoginPageEl) routerLoginPageEl.hidden = false;
+      setRouterLoginStatus(message);
+      setTimeout(() => routerLoginHostEl?.focus(), 0);
+    }
+
+    function showDashboardShell() {
+      document.body.classList.remove('router-login-booting', 'router-login-required');
+      document.body.classList.add('router-login-ready');
+      if (routerLoginPageEl) routerLoginPageEl.hidden = true;
+    }
+
+    function bootDashboard() {
+      showDashboardShell();
+      if (dashboardBooted) {
+        loadSnapshot('manual');
+        return;
+      }
+      dashboardBooted = true;
+      lockPageSubtitleHidden();
+      renderNavigation();
+      setActiveSection(resolveBootstrapSection(), false);
+      loadSnapshot('init');
+    }
+
+    async function fetchRouterLoginState() {
+      const response = await fetch('/api/router-login', { cache: 'no-store' });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      return response.json();
+    }
+
+    async function bootstrapRouterConnection() {
+      if (IS_TEST_MODE) {
+        bootDashboard();
+        return;
+      }
+      try {
+        const payload = await fetchRouterLoginState();
+        const routerLogin = payload.routerLogin || {};
+        if (routerLogin.configured) {
+          bootDashboard();
+        } else {
+          showRouterLogin(routerLogin);
+        }
+      } catch (error) {
+        showRouterLogin(null, `无法读取本机面板状态：${error.message}`);
+      }
+    }
+
+    async function disconnectRouterAndShowLogin(message = '请重新填写 RouterOS SSH 信息') {
+      clearTimeout(pollTimer);
+      clearInterval(countdownTimer);
+      nextRefreshAt = null;
+      latestSnapshot = null;
+      displayedSnapshot = null;
+      pendingSnapshot = null;
+      try {
+        const response = await fetch('/api/router-logout', { method: 'POST', cache: 'no-store' });
+        const payload = await response.json().catch(() => ({}));
+        showRouterLogin(payload.routerLogin || null, message);
+      } catch (error) {
+        showRouterLogin(null, `已停止刷新，但断开连接接口失败：${error.message}`);
+      }
+    }
+
+    routerLoginFormEl?.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const host = routerLoginHostEl?.value?.trim() || '';
+      const user = routerLoginUserEl?.value?.trim() || '';
+      const password = routerLoginPasswordEl?.value || '';
+      const sshPort = Number(routerLoginPortEl?.value || 22);
+      routerLoginSubmitEl.disabled = true;
+      routerLoginSubmitEl.textContent = '连接中...';
+      setRouterLoginStatus('正在用 SSH 验证 RouterOS 凭据...');
+      try {
+        const response = await fetch('/api/router-login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ host, user, password, sshPort })
+        });
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok || !payload.ok) {
+          throw new Error(payload.error || `HTTP ${response.status}`);
+        }
+        const identity = payload.test?.ssh?.identity ? `：${payload.test.ssh.identity}` : '';
+        if (payload.warning) {
+          setRouterLoginStatus(`${payload.warning} 已进入面板${identity}`, 'warn');
+        } else {
+          setRouterLoginStatus(`连接成功${identity}`, 'ok');
+        }
+        routerLoginPasswordEl.value = '';
+        setTimeout(() => bootDashboard(), 350);
+      } catch (error) {
+        setRouterLoginStatus(`连接失败：${error.message}`, 'error');
+      } finally {
+        routerLoginSubmitEl.disabled = false;
+        routerLoginSubmitEl.textContent = '连接并进入';
+      }
+    });
 
     let dnsRuleBrowser = {
       offset: 0,
@@ -3466,7 +3713,7 @@
     }
 
     function getWanScenarioProfile(snapshot) {
-      const count = Math.max(0, Math.min(10, getLogicalWanLines(snapshot).length));
+      const count = Math.max(0, getLogicalWanLines(snapshot).length);
       const tier = getSnapshotLineLayoutTier(snapshot);
       const profiles = {
         0: {
@@ -3580,7 +3827,20 @@
           matrixTip: '十条线路统一进入高密度运营表视图'
         }
       };
-      return { count, tier, ...(profiles[count] || profiles[10]) };
+      if (profiles[count]) return { count, tier, ...profiles[count] };
+      const countLabel = typeof fmtNumber === 'function' ? fmtNumber(count) : String(count);
+      return {
+        count,
+        tier,
+        label: `${countLabel} WAN 规模化视图`,
+        headline: '规模化运营',
+        overviewTip: '首页只保留摘要与异常，线路明细进入可搜索、可分组、可分页的详情页。',
+        balanceTip: '分流页优先看偏斜、活动默认路由和策略规则覆盖，不把 Top-N 当作全量。',
+        trafficTip: '流量页保留聚合趋势、异常摘要和窗口化线路总表。',
+        lineStatusTip: '线路状态按异常优先，再按名称、父接口和路由表下钻。',
+        matrixTitle: '规模化线路窗口',
+        matrixTip: '保留真实总量，按当前窗口展示明细'
+      };
     }
 
     function getLineTrendRows(snapshot) {
@@ -3936,7 +4196,7 @@
           return [
             ['在线接口', `${fmtNumber(activeInterfaces)} / ${fmtNumber(interfaces.length)}`],
             ['在线 WAN', `${fmtNumber(activePppoe)} / ${fmtNumber(pppoe.length)}`],
-            ['当前主线路', busiestLine ? `${escapeHtml(busiestLine.name)} · ${fmtRate((busiestLine.upRate || 0) + (busiestLine.downRate || 0))}` : '-'],
+            ['当前最忙线路', busiestLine ? `${escapeHtml(busiestLine.name)} · ${fmtRate((busiestLine.upRate || 0) + (busiestLine.downRate || 0))}` : '-'],
             ['总上行速率', fmtRate(o.uplinkBps)],
             ['总下行速率', fmtRate(o.downlinkBps)]
           ];
@@ -3972,7 +4232,7 @@
               ['在线 WAN', `${fmtNumber(activePppoe)} / ${fmtNumber(pppoe.length)}`],
               ['总上行速率', fmtRate(o.uplinkBps)],
               ['总下行速率', fmtRate(o.downlinkBps)],
-              ['最繁忙线路', busiestLine ? `${escapeHtml(busiestLine.name)} 路 ${fmtRate((busiestLine.upRate || 0) + (busiestLine.downRate || 0))}` : '-'],
+              ['当前最忙线路', busiestLine ? `${escapeHtml(busiestLine.name)} · ${fmtRate((busiestLine.upRate || 0) + (busiestLine.downRate || 0))}` : '-'],
               ['有流量终端', fmtNumber(activeTrafficTerminals)]
             ];
           }
@@ -4076,7 +4336,7 @@
         const tier = getSnapshotLineLayoutTier(snapshot);
         const lineCount = getLogicalWanLines(snapshot).length;
         document.body.dataset.wanTier = tier;
-        document.body.dataset.wanLines = String(Math.max(0, Math.min(10, Number(lineCount || 0))));
+        document.body.dataset.wanLines = String(Math.max(0, Number(lineCount || 0)));
       } catch (error) {
         // Best effort: UI density hints should never block rendering.
       }
@@ -7013,7 +7273,7 @@
         topMetricsEl.style.display = '';
       }
       syncTopbarOffset();
-      appEl.innerHTML = `<div class="card"><div class="card-body"><div class="notice danger">本地采集服务暂时不可用：${escapeHtml(message)}</div></div></div>`;
+      appEl.innerHTML = `<div class="card"><div class="card-body"><div class="notice danger">本地采集服务暂时不可用：${escapeHtml(message)}</div><div style="margin-top:12px;"><button class="action-btn" type="button" data-router-reconnect="true">更换 RouterOS 连接</button></div></div></div>`;
     }
 
     function setActiveSection(section, updateHash = true) {
@@ -7099,6 +7359,12 @@
     });
 
     document.addEventListener('click', (event) => {
+      const routerReconnectAction = event.target.closest('[data-router-reconnect]');
+      if (routerReconnectAction) {
+        event.preventDefault();
+        disconnectRouterAndShowLogin('请重新填写 RouterOS SSH 信息');
+        return;
+      }
       const quickSearchButton = event.target.closest('[data-quick-search-open]');
       if (quickSearchButton) {
         event.preventDefault();
@@ -7200,7 +7466,7 @@
           return [
             ['在线接口', `${fmtNumber(activeInterfaces)} / ${fmtNumber(interfaces.length)}`],
             ['在线 WAN', `${fmtNumber(activePppoe)} / ${fmtNumber(pppoe.length)}`],
-            ['当前主线路', busiestLine ? `${escapeHtml(busiestLine.name)} 路 ${fmtRate((busiestLine.upRate || 0) + (busiestLine.downRate || 0))}` : '-'],
+            ['当前最忙线路', busiestLine ? `${escapeHtml(busiestLine.name)} · ${fmtRate((busiestLine.upRate || 0) + (busiestLine.downRate || 0))}` : '-'],
             ['总上行速率', fmtRate(o.uplinkBps)],
             ['总下行速率', fmtRate(o.downlinkBps)]
           ];
@@ -7602,6 +7868,9 @@
     window.addEventListener('resize', scheduleSectionTopbarState);
     window.addEventListener('scroll', scheduleSectionTopbarState, { passive: true });
     manualRefreshBtn.addEventListener('click', () => loadSnapshot('manual'));
+    routerReconnectBtn?.addEventListener('click', () => {
+      disconnectRouterAndShowLogin('已断开当前连接，请重新填写 RouterOS SSH 信息');
+    });
     window.addEventListener('hashchange', () => {
       noteInteraction(1600);
       setActiveSection((window.location.hash || '').replace('#', ''), false);
@@ -7624,10 +7893,7 @@
       return nextSection;
     }
 
-    lockPageSubtitleHidden();
-    renderNavigation();
-    setActiveSection(resolveBootstrapSection(), false);
-    loadSnapshot('init');
+    bootstrapRouterConnection();
   </script>
   <script>
     (() => {
@@ -7875,10 +8141,17 @@
     }
 
     try {
-      // Public profile: do not load private diagnostics entrypoints by default.
-      if (document.body?.dataset?.publicProfile === 'true') return;
-      // Keep execution order stable with following parser-inserted scripts.
-      document.write('<script src="/readonly-diagnostics.js?v=20260516012755"><\\/script>');
+      window.__loadReadonlyDiagnosticsIfPrivate = function loadReadonlyDiagnosticsIfPrivate() {
+        if (window.__readonlyDiagnosticsScriptRequested) return;
+        if (document.body?.dataset?.profileResolved !== 'true') return;
+        if (document.body?.dataset?.publicProfile === 'true') return;
+        window.__readonlyDiagnosticsScriptRequested = true;
+        const script = document.createElement('script');
+        script.src = '/readonly-diagnostics.js?v=20260516012755';
+        document.body.appendChild(script);
+      };
+      document.addEventListener('panel-profile-sync', window.__loadReadonlyDiagnosticsIfPrivate);
+      window.__loadReadonlyDiagnosticsIfPrivate();
     } catch (error) {
       // Ignore diagnostics loader failure to avoid breaking main dashboard.
     }
@@ -7897,5 +8170,6 @@
     }
   })();
 </script>
+<script src="/scale-adaptive-patch.js?v=202605242338"></script>
 </body>
 </html>

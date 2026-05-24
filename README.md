@@ -12,14 +12,46 @@ WinBox/WebFig, Grafana, Zabbix, LibreNMS, The Dude, or backup/diff tools.
 
 ## Install Paths
 
+Install paths are deployment choices, not product versions. Capability modes are
+documented separately in [PRODUCT_MODEL.md](./PRODUCT_MODEL.md).
+
 | Path | Best for | Status |
 |------|----------|--------|
-| Local run | Trying the project in a few minutes from a PC | Recommended first trial |
+| Windows EXE | Non-Python Windows users who want unzip, edit config, double-click | Recommended first trial |
 | Docker / Compose | NAS, mini PC, Linux host, OpenWrt Docker, cloud VM | Recommended deployment |
-| RouterOS Container | Advanced RouterOS users who want one-box deployment | Beta / advanced |
+| Local run | Developers or users comfortable with Python | Supported |
 | Linux systemd / VM | Operators who want a managed production service | Professional |
+| RouterOS Container | Advanced RouterOS users who want one-box deployment | Beta / advanced |
 
-## Quick Start: Local
+## Capability Modes
+
+The panel adapts to the observed RouterOS scale instead of assuming a fixed
+number of WAN lines. A small home router, a multi-WAN/PCDN box, and a larger
+professional network should all keep their real counts visible while the UI
+switches from cards to grouped summaries and paged details as lists grow.
+
+| Mode | Best for | Default behavior |
+|------|----------|------------------|
+| Home/simple | Simple LANs and first-time users | Risk/action summary, router health, WAN, DNS/DHCP basics |
+| Multi-WAN/PCDN | Operators with multiple WANs or inbound-readiness concerns | WAN binding, route/PCC evidence, CGNAT/UPnP/readiness evidence |
+| Scale-adaptive | Any deployment with large lists | Search, grouping, paging, sampling labels, export-ready evidence |
+| Private ops | Explicit private environments | Optional OpenWrt/Nikki/private diagnostics |
+
+Public/product-style deployments should use `routeros_only` unless you
+intentionally enable private diagnostics.
+
+## Quick Start: Windows EXE
+
+1. Extract `RouterOS-Triage-Panel-Windows.zip`.
+2. Edit `routeros-panel.env` and set your RouterOS host, read-only user, and
+   password.
+3. Double-click `RouterOS Triage Panel.exe`.
+4. Open `http://127.0.0.1:8080/` if the browser does not open automatically.
+
+Read [DEPLOY_WINDOWS_EXE.md](./DEPLOY_WINDOWS_EXE.md) for build and
+troubleshooting details.
+
+## Quick Start: Local Python
 
 ```powershell
 python -m venv .venv
@@ -67,20 +99,19 @@ The Linux helper remains useful for operators who want an instance managed by
 systemd:
 
 ```bash
-export ROS_PANEL_TARGET_IP="192.168.3.50"
-export ROS_PANEL_BIND="0.0.0.0"
+export ROS_PANEL_TARGET_IP="127.0.0.1"
+export ROS_PANEL_BIND="127.0.0.1"
 export ROS_PANEL_PORT="80"
 export ROS_PANEL_PROFILE="routeros_only"
-export ROS_MONITOR_ROUTER_HOST="192.168.3.1"
+export ROS_MONITOR_ROUTER_HOST="192.168.88.1"
 export ROS_MONITOR_ROUTER_USER="ros-panel-readonly"
 export ROS_MONITOR_ROUTER_PASSWORD="CHANGE_ME"
 
-./deploy_linux.sh --instance public50 --disable-ip-service
+./deploy_linux.sh --instance routeros-panel --disable-ip-service
 ```
 
-Read [DEPLOY_PUBLIC_192.168.3.50.md](./DEPLOY_PUBLIC_192.168.3.50.md) or
-[DEPLOY_PUBLIC_192.168.4.50.md](./DEPLOY_PUBLIC_192.168.4.50.md) before using
-the systemd path on a live LAN host.
+Bind to a LAN address only after you have decided the access boundary. Older
+`.3.50/.4.50` deployment notes remain historical examples, not product defaults.
 
 ## What It Does
 
@@ -95,6 +126,8 @@ the systemd path on a live LAN host.
   - RouterOS resource and connection pressure
   - security-log hints
 - Keeps public-profile write paths disabled by default.
+- Exposes scale metadata so large lists can show actual totals, visible rows,
+  `hasMore`, and sampled-data labels instead of silently truncating data.
 
 ## What It Does Not Do
 
@@ -111,9 +144,12 @@ the systemd path on a live LAN host.
 - `Dockerfile`: container image build.
 - `compose.yml`: recommended Docker Compose deployment.
 - `.env.docker.example`: non-secret Docker environment template.
+- `routeros-panel.env.example`: non-secret Windows EXE sidecar config template.
+- `routeros-triage-panel.spec`: PyInstaller build spec.
 - `deploy_linux.sh`: Linux systemd deployment helper.
 - `routeros-panel*.service`: systemd units.
 - `tools/`: local smoke and browser verification helpers.
+- `DEPLOY_WINDOWS_EXE.md`: Windows EXE deployment and build path.
 - `DEPLOY_LOCAL.md`: local trial path.
 - `DEPLOY_DOCKER.md`: Docker deployment path.
 - `DEPLOY_ROUTEROS_CONTAINER.md`: RouterOS Container Beta path.
@@ -150,6 +186,7 @@ as non-secret templates.
 
 ```bash
 python -m py_compile app.py
+powershell -ExecutionPolicy Bypass -File .\tools\build-windows-exe.ps1
 docker compose --env-file .env.docker.example config --quiet
 curl -fsS http://127.0.0.1:8080/api/health
 curl -fsS http://127.0.0.1:8080/api/semantic-triage

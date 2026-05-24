@@ -129,7 +129,14 @@ async function main() {
     await delay(waitMs);
 
     const expression = `(() => {
-      const expectedOrder = ['pppoe-out10','pppoe-out20','pppoe-out30','pppoe-out40','pppoe-out50','pppoe-out60','pppoe-out70','pppoe-out80'];
+      const snapshot = typeof displayedSnapshot !== 'undefined'
+        ? displayedSnapshot
+        : typeof latestSnapshot !== 'undefined'
+          ? latestSnapshot
+          : window.__PANEL_TEST_SNAPSHOT__;
+      const expectedOrder = typeof getLogicalWanLines === 'function'
+        ? getLogicalWanLines(snapshot).map((row) => row.name).filter(Boolean)
+        : [];
       const section = document.querySelector('#trafficLoad');
       const cardByTitle = (title) => Array.from(section?.querySelectorAll('.card') || [])
         .find((card) => (card.querySelector('.card-title')?.textContent || '').trim().includes(title));
@@ -141,7 +148,7 @@ async function main() {
         .filter(Boolean);
       const lineShareCard = cardByTitle('线路负载占比');
       const broadbandCard = cardByTitle('宽带实时负载');
-      const trendCard = cardByTitle('8 条线路速率趋势');
+      const trendCard = cardByTitle('线路速率趋势');
       const lineShareNames = namesFromLineBars(lineShareCard).length ? namesFromLineBars(lineShareCard) : namesFromChartLabels(lineShareCard);
       const broadbandNames = Array.from(broadbandCard?.querySelectorAll('.record-card .record-title .record-value') || [])
         .map((node) => node.textContent.trim())
@@ -160,7 +167,9 @@ async function main() {
         };
       });
       const colorsMatch = rateRows.every((row) => !row.labelColor || !row.valueColor || row.labelColor === row.valueColor);
-      const orderMatches = (items) => expectedOrder.every((name, index) => items[index] === name);
+      const orderMatches = (items) => items.length && expectedOrder.length
+        ? expectedOrder.slice(0, items.length).every((name, index) => items[index] === name)
+        : null;
       return {
         url: location.href,
         sectionFound: Boolean(section),

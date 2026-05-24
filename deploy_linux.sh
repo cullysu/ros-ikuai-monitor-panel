@@ -2,23 +2,23 @@
 set -euo pipefail
 
 # This deploy script supports two modes:
-# - Legacy mode (default): installs routeros-panel.service + ros-panel-ip.service and /etc/default/routeros-panel
-# - Instance mode: installs template units routeros-panel@.service (+ optional ros-panel-ip@.service)
-#   and writes /etc/default/routeros-panel-<instance> so multiple instances can coexist.
-#
-# Backward-compat: running with no args keeps the legacy behavior (private 192.168.3.5 instance).
+# - Instance mode (default): installs template units routeros-panel@.service
+#   (+ optional ros-panel-ip@.service), writes /etc/default/routeros-panel-<instance>,
+#   and keeps host IP changes opt-in.
+# - Legacy/private mode: available only through --legacy-private for existing private installs.
 
 usage() {
   cat <<'EOF'
 Usage:
-  ./deploy_linux.sh [--instance <name>] [--enable-ip-service|--disable-ip-service] [--app-dir <dir>]
+  ./deploy_linux.sh --instance <name> [--enable-ip-service|--disable-ip-service] [--app-dir <dir>]
+  ./deploy_linux.sh --legacy-private [--enable-ip-service|--disable-ip-service] [--app-dir <dir>]
 
 Examples:
-  # Legacy/private (keeps existing names: routeros-panel.service, ros-panel-ip.service)
-  sudo ./deploy_linux.sh
+  # RouterOS-only instance (separate names via template units)
+  sudo ./deploy_linux.sh --instance routeros-panel --disable-ip-service
 
-  # Public/RouterOS-only instance (separate names via template units)
-  sudo ./deploy_linux.sh --instance public50 --disable-ip-service
+  # Existing private installs only; preserves legacy unit names and IP helper.
+  sudo ./deploy_linux.sh --legacy-private
 
 Environment overrides:
   APP_DIR, SRC_DIR, ROS_PANEL_BIND, ROS_PANEL_PORT, ROS_PANEL_TARGET_IP, ROS_PANEL_IFACE, ...
@@ -28,6 +28,7 @@ EOF
 
 INSTANCE="${ROS_PANEL_INSTANCE:-}"
 ENABLE_IP_SERVICE="${ROS_PANEL_ENABLE_IP_SERVICE:-}"
+LEGACY_PRIVATE="${ROS_PANEL_LEGACY_PRIVATE:-0}"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -57,6 +58,10 @@ while [[ $# -gt 0 ]]; do
       APP_DIR="$2"
       shift 2
       ;;
+    --legacy-private)
+      LEGACY_PRIVATE="1"
+      shift
+      ;;
     -h|--help)
       usage
       exit 0
@@ -69,9 +74,16 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-MODE="legacy"
-if [[ -n "${INSTANCE}" ]]; then
-  MODE="instance"
+MODE="instance"
+if [[ "${LEGACY_PRIVATE}" == "1" ]]; then
+  MODE="legacy"
+fi
+
+if [[ "${MODE}" == "instance" && -z "${INSTANCE}" ]]; then
+  echo "--instance is required for public/product-style systemd deployment." >&2
+  echo "Use --legacy-private only for an existing private install that intentionally needs legacy unit names." >&2
+  usage >&2
+  exit 2
 fi
 
 if [[ -z "${APP_DIR:-}" ]]; then
@@ -123,7 +135,7 @@ ROS_PANEL_PROFILE="${ROS_PANEL_PROFILE:-${DEFAULT_PANEL_PROFILE}}"
 ROS_PANEL_IFACE="${ROS_PANEL_IFACE:-ens192}"
 ROS_PANEL_BIND_CIDR="${ROS_PANEL_BIND_CIDR:-24}"
 ROS_PANEL_IP_HEAL_SECONDS="${ROS_PANEL_IP_HEAL_SECONDS:-3}"
-ROS_MONITOR_ROUTER_HOST="${ROS_MONITOR_ROUTER_HOST:-192.168.3.1}"
+ROS_MONITOR_ROUTER_HOST="${ROS_MONITOR_ROUTER_HOST:-192.168.88.1}"
 ROS_MONITOR_ROUTER_USER="${ROS_MONITOR_ROUTER_USER:-${DEFAULT_ROUTER_USER}}"
 ROS_MONITOR_ROUTER_PASSWORD="${ROS_MONITOR_ROUTER_PASSWORD:-CHANGE_ME}"
 ROS_MONITOR_POLL_SECONDS="${ROS_MONITOR_POLL_SECONDS:-1}"
@@ -131,7 +143,7 @@ ROS_MONITOR_STATIC_POLL_SECONDS="${ROS_MONITOR_STATIC_POLL_SECONDS:-300}"
 ROS_MONITOR_STATIC_REST_WORKERS="${ROS_MONITOR_STATIC_REST_WORKERS:-1}"
 ROS_MONITOR_SLOW_REST_POLL_SECONDS="${ROS_MONITOR_SLOW_REST_POLL_SECONDS:-60}"
 ROS_MONITOR_SLOW_REST_WORKERS="${ROS_MONITOR_SLOW_REST_WORKERS:-2}"
-ROS_MONITOR_CONNECTION_DETAIL_POLL_SECONDS="${ROS_MONITOR_CONNECTION_DETAIL_POLL_SECONDS:-2}"
+ROS_MONITOR_CONNECTION_DETAIL_POLL_SECONDS="${ROS_MONITOR_CONNECTION_DETAIL_POLL_SECONDS:-4}"
 ROS_MONITOR_DETAIL_REST_WORKERS="${ROS_MONITOR_DETAIL_REST_WORKERS:-2}"
 ROS_MONITOR_CONNECTION_PROTOCOL_POLL_SECONDS="${ROS_MONITOR_CONNECTION_PROTOCOL_POLL_SECONDS:-30}"
 

@@ -1796,16 +1796,10 @@
     return opsTwoLineCell(escapeHtml(primary), secondary ? escapeHtml(secondary) : '');
   }
 
-  const OPS_FIXED_PPPOE_LINE_ORDER = ['pppoe-out10', 'pppoe-out20', 'pppoe-out30', 'pppoe-out40', 'pppoe-out50', 'pppoe-out60', 'pppoe-out70', 'pppoe-out80'];
-  const OPS_FIXED_PPPOE_LINE_ORDER_MAP = new Map(OPS_FIXED_PPPOE_LINE_ORDER.map((name, index) => [name, index]));
-
   function opsGetPppoeDisplayOrder(name) {
     const normalized = String(name || '').trim().toLowerCase();
-    if (OPS_FIXED_PPPOE_LINE_ORDER_MAP.has(normalized)) {
-      return OPS_FIXED_PPPOE_LINE_ORDER_MAP.get(normalized);
-    }
-    const suffixMatch = normalized.match(/pppoe-out(\d+)$/i);
-    return suffixMatch ? OPS_FIXED_PPPOE_LINE_ORDER.length + Number(suffixMatch[1]) : Number.POSITIVE_INFINITY;
+    const suffixMatch = normalized.match(/pppoe[-_\s]*out(\d+)$/i) || normalized.match(/(\d+)$/);
+    return suffixMatch ? Number(suffixMatch[1]) : Number.POSITIVE_INFINITY;
   }
 
   function opsSortPppoeNamedRows(rows) {
@@ -1961,7 +1955,7 @@
             { label: '离线线路', value: fmtNumber(pppoe.filter((row) => !row.running).length), meta: '拨号状态未就绪' }
           ]), 'ops-info-card')}
           ${opsDenseTableCard('线路状态检测', `${fmtNumber(sortedPppoe.length)} 条线路`, ['线路', '拨号状态', '地址状态', '父接口 / 活动路由', '实时上行速率', '实时下行速率', '丢包 / 错误'], detectRows, '当前未读取到线路状态检测数据')}
-          ${opsCard('8 条线路速率趋势', `${fmtNumber(lineTrendRows.length)} 条线路同步展示`, renderLineTrendGrid(lineTrendRows, { emptyText: '当前未采集到可展示的线路趋势' }), 'ops-info-card')}
+          ${opsCard('线路速率趋势', `${fmtNumber(lineTrendRows.length)} 条线路同步展示`, renderLineTrendGrid(lineTrendRows, { emptyText: '当前未采集到可展示的线路趋势' }), 'ops-info-card')}
         </div>`;
     } else if (currentInterfaceView === 'ipv6') {
       body = `
@@ -2004,7 +1998,7 @@
           ${opsDenseTableCard('宽带实时流量', `${fmtNumber(sortedPppoe.length)} 条宽带`, ['线路', '状态', '父接口 / 活动路由', 'IP 地址', '实时上行速率', '实时下行速率', '累计上行流量', '累计下行流量', '拨号状态'], lineRows, '当前未读取到宽带线路数据')}
           <div class="ops-double">
             ${opsCard('线路负载分布', loadDistributionRows.length ? `${fmtNumber(loadDistributionRows.length)} 条线路占比` : '当前按实时吞吐自动排序', loadDistributionBlock, 'ops-info-card')}
-            ${opsCard('8 条线路速率趋势', `${fmtNumber(lineTrendRows.length)} 条线路同步展示`, renderLineTrendGrid(lineTrendRows, { emptyText: '当前未采集到可展示的线路趋势' }), 'ops-info-card')}
+            ${opsCard('线路速率趋势', `${fmtNumber(lineTrendRows.length)} 条线路同步展示`, renderLineTrendGrid(lineTrendRows, { emptyText: '当前未采集到可展示的线路趋势' }), 'ops-info-card')}
           </div>
           ${opsDenseTableCard('接口吞吐明细', `${fmtNumber(sortedInterfaces.length)} 个接口`, ['接口', '角色', '状态', 'IP 地址', '实时上行速率', '实时下行速率', '累计上行流量', '累计下行流量', 'MAC / 丢包错误'], ifaceRows, '当前未读取到接口数据')}
         </div>`;
@@ -2369,7 +2363,7 @@
         ${opsCard('线路负载占比', busiestLine ? `${escapeHtml(busiestLine.name)} 当前最繁忙` : '等待采集', opsBarStack(lineShareRows, { percentMode: true, emptyText: '当前未形成可读的线路占比' }), 'ops-info-card')}
       </div>
       <div class="ops-page-stack" style="margin-top:12px">
-        ${opsCard('8 条线路速率趋势', `${fmtNumber(getLineTrendRows(pppoe).length)} 条线路同步展示`, renderLineTrendGrid(getLineTrendRows(pppoe), { emptyText: '当前未采集到可展示的线路趋势' }), 'ops-info-card')}
+        ${opsCard('线路速率趋势', `${fmtNumber(getLineTrendRows(pppoe).length)} 条线路同步展示`, renderLineTrendGrid(getLineTrendRows(pppoe), { emptyText: '当前未采集到可展示的线路趋势' }), 'ops-info-card')}
       </div>
       <div class="ops-double" style="margin-top:12px">
         ${opsTableCard('宽带实时负载', '按 PPPoE 名称固定排序', ['线路', '状态', '父接口', '实时上行速率', '实时下行速率', '累计上行流量', '累计下行流量'], lineRows, '当前未读取到宽带实时负载')}
@@ -3190,7 +3184,7 @@
                       <div class="interfaces-inline-subtle">把默认路由、地址和关注级别压成二次判断层</div>
                     </div>
                     ${opsStatTiles([
-                      { label: '最繁忙线路', value: busiestLine ? escapeHtml(busiestLine.name) : '-', meta: busiestLine ? fmtRate(totalTrafficRate(busiestLine)) : '暂无实时吞吐' },
+                      { label: '当前最忙线路', value: busiestLine ? escapeHtml(busiestLine.name) : '-', meta: busiestLine ? fmtRate(totalTrafficRate(busiestLine)) : '暂无实时吞吐' },
                       { label: '带地址线路', value: fmtNumber(linesWithAddress), meta: `${fmtNumber(pppoe.length)} 条宽带中已拿到地址` },
                       { label: '活动默认路由', value: fmtNumber(linesWithActiveRoute), meta: activeRouteTables.length ? activeRouteTables.slice(0, 3).map(escapeHtml).join(' / ') : '当前无活动表' },
                       { label: '待重点关注', value: fmtNumber(watchLines + dangerousLines), meta: `warn ${fmtNumber(watchLines)} / danger ${fmtNumber(dangerousLines)}` }
@@ -4380,7 +4374,7 @@
           ${opsCard('流量主屏', '固定宽屏下先看 WAN 聚合、线路占比与采样节奏，再往下钻接口和终端明细', `
             ${opsKpiStrip([
               { label: 'WAN 上 / 下', value: `${fmtRate(overview.uplinkBps)} / ${fmtRate(overview.downlinkBps)}`, meta: '总上行 / 总下行' },
-              { label: '最繁忙线路', value: busiestLine ? fmtRate(totalTrafficRate(busiestLine)) : '-', meta: busiestLine ? escapeHtml(busiestLine.name) : '暂无实时吞吐' },
+              { label: '当前最忙线路', value: busiestLine ? fmtRate(totalTrafficRate(busiestLine)) : '-', meta: busiestLine ? escapeHtml(busiestLine.name) : '暂无实时吞吐' },
               { label: '采样节奏', value: `${escapeHtml(String(pollSeconds))}s / 点`, meta: `${fmtNumber(aggregateHistoryPoints)} 个聚合采样点` }
             ])}
             <div class="ops-section-grid" style="margin-top:8px">

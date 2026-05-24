@@ -23,9 +23,6 @@
     if (window.__readonlyDiagnosticsPrivateNav === true) return true;
     if (window.__readonlyDiagnosticsPrivateNav === false) return false;
 
-    const host = String(window.location?.hostname || "");
-    if (host === "192.168.3.50" || host === "192.168.4.50") return false;
-
     const appShell = String(document.body?.getAttribute("data-app-shell") || "").toLowerCase();
     if (appShell && !appShell.includes("ikuai")) return false;
 

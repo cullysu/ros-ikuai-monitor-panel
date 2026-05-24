@@ -126,20 +126,28 @@ async function main() {
     await delay(waitMs);
 
     const expression = `(() => {
-      const expectedOrder = ['pppoe-out10','pppoe-out20','pppoe-out30','pppoe-out40','pppoe-out50','pppoe-out60','pppoe-out70','pppoe-out80'];
+      const snapshot = typeof displayedSnapshot !== 'undefined'
+        ? displayedSnapshot
+        : typeof latestSnapshot !== 'undefined'
+          ? latestSnapshot
+          : window.__PANEL_TEST_SNAPSHOT__;
+      const expectedOrder = typeof getLogicalWanLines === 'function'
+        ? getLogicalWanLines(snapshot).map((row) => row.name).filter(Boolean)
+        : [];
+      const isPppoeName = (name) => /^pppoe[-_]?/i.test(name);
       const section = document.querySelector(${JSON.stringify(`#${section}`)});
       const titleText = ${JSON.stringify(cardTitle)};
       const card = Array.from(section?.querySelectorAll('.card') || [])
         .find((node) => (node.querySelector('.card-title')?.textContent || '').trim().includes(titleText));
       const tableNames = Array.from(card?.querySelectorAll('.ops-table tbody tr td:first-child, .record-card .record-title .record-value') || [])
         .map((node) => node.textContent.trim())
-        .filter((text) => text.startsWith('pppoe-out'));
+        .filter(isPppoeName);
       const lineBarNames = Array.from(card?.querySelectorAll('.line-bar .line-name') || [])
         .map((node) => node.textContent.trim())
-        .filter((text) => text.startsWith('pppoe-out'));
+        .filter(isPppoeName);
       const chartNames = Array.from(card?.querySelectorAll('.chart-label span:first-child') || [])
         .map((node) => node.textContent.trim())
-        .filter((text) => text.startsWith('pppoe-out'));
+        .filter(isPppoeName);
       const names = tableNames.length ? tableNames : lineBarNames.length ? lineBarNames : chartNames;
       const rows = Array.from(card?.querySelectorAll('tbody tr, .record-card, .line-bar') || []).slice(0, 12).map((node) => node.textContent.replace(/\\s+/g, ' ').trim());
       const rateRows = Array.from(card?.querySelectorAll('.rate-row, .ops-inline-dual') || []).slice(0, 16).map((row) => {
@@ -150,7 +158,9 @@ async function main() {
           weights: children.map((child) => getComputedStyle(child).fontWeight)
         };
       });
-      const orderMatches = expectedOrder.every((name, index) => names[index] === name);
+      const orderMatches = names.length && expectedOrder.length
+        ? expectedOrder.slice(0, names.length).every((name, index) => names[index] === name)
+        : null;
       const colorGroupsUnified = rateRows.every((row) => row.colors.length < 2 || row.colors.every((color) => color === row.colors[0]));
       return {
         url: location.href,

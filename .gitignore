@@ -1,10 +1,14 @@
 .venv/
+.venv-build/
 __pycache__/
 *.py[cod]
 .env
 .env.*
 !.env.docker.example
+routeros-panel.env
 docker.env
+build/
+dist/
 *.log
 *.out.log
 *.err.log

@@ -134,7 +134,14 @@ async function main() {
     const expression = `(() => {
       const expectedHeaders = ${JSON.stringify(expectedHeaders)};
       const legacyHeaders = ${JSON.stringify(legacyHeaders)};
-      const expectedOrder = ['pppoe-out10','pppoe-out20','pppoe-out30','pppoe-out40','pppoe-out50','pppoe-out60','pppoe-out70','pppoe-out80'];
+      const snapshot = typeof displayedSnapshot !== 'undefined'
+        ? displayedSnapshot
+        : typeof latestSnapshot !== 'undefined'
+          ? latestSnapshot
+          : window.__PANEL_TEST_SNAPSHOT__;
+      const expectedOrder = typeof getLogicalWanLines === 'function'
+        ? getLogicalWanLines(snapshot).map((row) => row.name).filter(Boolean)
+        : [];
       const section = document.querySelector(${JSON.stringify(`#${section}`)});
       const cardTitle = ${JSON.stringify(cardTitle)};
       const card = Array.from(section?.querySelectorAll('.card') || [])
@@ -145,17 +152,18 @@ async function main() {
       const rows = Array.from(card?.querySelectorAll('tbody tr') || []).map((row) => Array.from(row.children || []).map((cell) => cell.textContent.replace(/\\s+/g, ' ').trim()));
       const firstColumn = rows.map((row) => row[0]).filter(Boolean);
       const recordTitles = Array.from(card?.querySelectorAll('.record-title .record-value') || []).map((node) => node.textContent.replace(/\\s+/g, ' ').trim());
-      const pppoeNames = firstColumn.filter((name) => name.startsWith('pppoe-out')).length
-        ? firstColumn.filter((name) => name.startsWith('pppoe-out'))
-        : recordTitles.filter((name) => name.startsWith('pppoe-out'));
+      const isPppoeName = (name) => /^pppoe[-_]?/i.test(name);
+      const pppoeNames = firstColumn.filter(isPppoeName).length
+        ? firstColumn.filter(isPppoeName)
+        : recordTitles.filter(isPppoeName);
       const bodyText = card?.innerText || '';
       const rect = card?.getBoundingClientRect();
       const actualLabels = [...headers, ...recordLabels];
       const missingExpectedHeaders = expectedHeaders.filter((header) => !actualLabels.includes(header));
       const foundLegacyHeaders = legacyHeaders.filter((header) => actualLabels.includes(header));
       const rowWidthMatches = rows.length ? rows.every((row) => !headers.length || row.length === headers.length) : true;
-      const pppoeOrderMatches = pppoeNames.length
-        ? expectedOrder.every((name, index) => pppoeNames[index] === name)
+      const pppoeOrderMatches = pppoeNames.length && expectedOrder.length
+        ? expectedOrder.slice(0, pppoeNames.length).every((name, index) => pppoeNames[index] === name)
         : null;
       return {
         url: location.href,

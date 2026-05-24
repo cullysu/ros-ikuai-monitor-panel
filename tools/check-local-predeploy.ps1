@@ -7,6 +7,7 @@ param(
   [string]$Profile = "both",
   [string]$Viewports = "",
   [string]$Sections = "",
+  [string]$ScaleScenarios = "",
   [switch]$SkipBrowser,
   [switch]$SkipBackend,
   [switch]$KeepServer,
@@ -30,6 +31,7 @@ if ($Port -gt 0) { $argsList += @("--port", [string]$Port) }
 if ($Out) { $argsList += @("--out", $Out) }
 if ($Viewports) { $argsList += @("--viewports", $Viewports) }
 if ($Sections) { $argsList += @("--sections", $Sections) }
+if ($ScaleScenarios) { $argsList += @("--scale-scenarios", $ScaleScenarios) }
 if ($SkipBrowser) { $argsList += "--skip-browser" }
 if ($SkipBackend) { $argsList += "--skip-backend" }
 if ($KeepServer) { $argsList += "--keep-server" }

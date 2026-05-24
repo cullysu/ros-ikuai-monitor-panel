@@ -33,6 +33,8 @@ const DEFAULT_PRIVATE_SECTIONS = [
   'collectionHealthDiagnostics',
   'dnsProxyDiagnostics',
 ];
+const DEFAULT_SCALE_SCENARIOS = ['multi'];
+const SCALE_SCENARIOS = new Set(['single', 'multi', 'fleet']);
 
 function usage() {
   return `
@@ -50,6 +52,7 @@ Options:
                               Browser fixture profile. Default: both.
   --viewports <list>          Comma list like desktop=1600x1000,narrow=390x844.
   --sections <list>           Comma list of sections to visit.
+  --scale-scenarios <list>    Comma list: single,multi,fleet. Default: multi.
   --skip-browser              Run backend/static/API checks only.
   --skip-backend              Run browser checks only.
   --keep-server               Leave the spawned app server running.
@@ -76,6 +79,7 @@ function parseArgs(argv) {
     skipBackend: false,
     keepServer: false,
     strictResponsive: false,
+    scaleScenarios: DEFAULT_SCALE_SCENARIOS,
     help: false,
   };
   for (let i = 2; i < argv.length; i += 1) {
@@ -99,10 +103,14 @@ function parseArgs(argv) {
     else if (item === '--profile' || item.startsWith('--profile=')) args.profile = readValue('--profile');
     else if (item === '--viewports' || item.startsWith('--viewports=')) args.viewports = parseViewports(readValue('--viewports'));
     else if (item === '--sections' || item.startsWith('--sections=')) args.sections = readValue('--sections').split(',').map((part) => part.trim()).filter(Boolean);
+    else if (item === '--scale-scenarios' || item.startsWith('--scale-scenarios=')) args.scaleScenarios = readValue('--scale-scenarios').split(',').map((part) => part.trim()).filter(Boolean);
     else throw new Error(`Unknown argument: ${item}`);
   }
   if (!['public', 'private', 'both'].includes(args.profile)) {
     throw new Error('--profile must be public, private, or both');
+  }
+  if (!args.scaleScenarios.length || args.scaleScenarios.some((item) => !SCALE_SCENARIOS.has(item))) {
+    throw new Error('--scale-scenarios must use one or more of: single,multi,fleet');
   }
   if (!args.out) {
     args.out = path.join(ROOT, '_acceptance', `local-predeploy-${timestamp()}`);
@@ -691,8 +699,8 @@ async function collectBootDiagnostics(cdp) {
   }
 }
 
-async function navigateWithFixture(cdp, baseUrl, profile, viewport, report) {
-  const snapshot = buildSnapshot(profile);
+async function navigateWithFixture(cdp, baseUrl, profile, viewport, report, scaleScenario) {
+  const snapshot = buildSnapshot(profile, scaleScenario);
   const fixtureSource = `window.__PANEL_TEST_SNAPSHOT__ = ${JSON.stringify(snapshot)};`;
   await cdp.send('Runtime.enable');
   await cdp.send('Page.enable');
@@ -708,9 +716,10 @@ async function navigateWithFixture(cdp, baseUrl, profile, viewport, report) {
     url: `${baseUrl}?section=overview&predeploy=${Date.now()}#overview`,
   });
   await waitForApp(cdp);
-  record(report, `browser boot ${profile}/${viewport.name}`, true, {
+  record(report, `browser boot ${profile}/${scaleScenario}/${viewport.name}`, true, {
     viewport,
     profile,
+    scaleScenario,
   });
 }
 
@@ -729,7 +738,7 @@ async function setSection(cdp, section) {
   await delay(450);
 }
 
-async function inspectSection(cdp, profile, viewport, section, args) {
+async function inspectSection(cdp, profile, viewport, section, args, scaleScenario) {
   const expression = `(() => {
     const sectionName = ${JSON.stringify(section)};
     const normalize = (value) => String(value || '').replace(/\\s+/g, ' ').trim();
@@ -758,6 +767,24 @@ async function inspectSection(cdp, profile, viewport, section, args) {
     const overflowX = Math.max(root.scrollWidth, body.scrollWidth) - window.innerWidth;
     const text = normalize((requested || active || app || body).innerText);
     const hasBadLiteral = /\\bNaN\\b|\\bundefined\\b|\\[object Object\\]/.test(text);
+    const scaleMeta = window.__PANEL_TEST_SNAPSHOT__?.meta?.scale || {};
+    const scenario = ${JSON.stringify(scaleScenario)};
+    const scaleDisclosureCount = document.querySelectorAll('.scale-meta, .scale-pager, .scale-toolbar, [data-scale-meta]').length;
+    const scaleMetaOk = Boolean(scaleMeta.wan && Number(scaleMeta.wan.actualCount || 0) >= 0 && Number(scaleMeta.wan.shownCount || 0) >= 0);
+    const scaleRequiredSections = new Set(['overview', 'interfaces', 'terminals', 'dhcp', 'trafficLoad']);
+    const scaleDisclosureOk = scenario !== 'fleet' || !scaleRequiredSections.has(sectionName) || scaleDisclosureCount > 0;
+    const sectionRoot = requested || active;
+    const detailSections = new Set(['interfaces', 'terminals', 'dhcp', 'trafficLoad']);
+    const overviewActionOk = sectionName !== 'overview' || Boolean(sectionRoot?.querySelector('[data-overview-action-panel]') && sectionRoot?.querySelector('[data-overview-drilldown]'));
+    const overviewMinimalOk = sectionName !== 'overview' || !/WAN 摘要|线路总表|线路窗口/.test(text);
+    const detailFeedbackOk = !detailSections.has(sectionName) || Boolean(sectionRoot?.querySelector('[data-scale-filter-summary]') && sectionRoot?.querySelector('[data-scale-clear]'));
+    const humanScaleCopyOk = !scaleRequiredSections.has(sectionName) || !/\\bbucket\\b|\\bhasMore\\b|\\bsampled\\b|\\bsort\\b/i.test(text);
+    const scrollHeight = Math.max(root.scrollHeight, body.scrollHeight);
+    const scaleHeightOk = scenario !== 'fleet' || (
+      sectionName === 'overview' ? scrollHeight <= 3000 :
+      sectionName === 'trafficLoad' ? scrollHeight <= 10000 :
+      !detailSections.has(sectionName) || scrollHeight <= 6200
+    );
     const rail = rectOf('.ik-rail');
     const sidebar = rectOf('.sidebar');
     const frame = rectOf('.frame');
@@ -787,6 +814,13 @@ async function inspectSection(cdp, profile, viewport, section, args) {
       (requested || active.id === sectionName) &&
       text.length > 20 &&
       !hasBadLiteral &&
+      scaleMetaOk &&
+      scaleDisclosureOk &&
+      overviewActionOk &&
+      overviewMinimalOk &&
+      detailFeedbackOk &&
+      humanScaleCopyOk &&
+      scaleHeightOk &&
       !shellOverlap &&
       !desktopOverflow &&
       !strictNarrowOverflow
@@ -816,6 +850,14 @@ async function inspectSection(cdp, profile, viewport, section, args) {
       smallTargets,
       sidebarVisible,
       hasBadLiteral,
+      scaleMetaOk,
+      scaleDisclosureOk,
+      scaleDisclosureCount,
+      overviewActionOk,
+      overviewMinimalOk,
+      detailFeedbackOk,
+      humanScaleCopyOk,
+      scaleHeightOk,
       shellOverlap,
       desktopOverflow,
       strictNarrowOverflow,
@@ -855,6 +897,7 @@ async function runBrowserChecks(args, report, baseUrl) {
   try {
     for (const profile of profiles) {
       const sections = args.sections || (profile === 'private' ? DEFAULT_PRIVATE_SECTIONS : DEFAULT_PUBLIC_SECTIONS);
+      for (const scaleScenario of args.scaleScenarios) {
       for (const viewport of args.viewports) {
         const cdp = await browser.connect();
         const runtimeErrors = [];
@@ -870,11 +913,12 @@ async function runBrowserChecks(args, report, baseUrl) {
         });
         try {
           try {
-            await navigateWithFixture(cdp, baseUrl, profile, viewport, report);
+            await navigateWithFixture(cdp, baseUrl, profile, viewport, report, scaleScenario);
           } catch (error) {
             const bootDiag = await collectBootDiagnostics(cdp);
             const detail = {
               profile,
+              scaleScenario,
               viewport,
               error: error.stack || error.message || String(error),
               runtimeErrorCount: runtimeErrors.length,
@@ -883,18 +927,18 @@ async function runBrowserChecks(args, report, baseUrl) {
               consoleErrors: consoleErrors.slice(0, 3),
               bootDiag,
             };
-            record(report, `browser boot ${profile}/${viewport.name}`, false, detail);
-            await captureScreenshot(cdp, path.join(args.out, `${profile}-${viewport.name}-boot-failure.png`)).catch(() => {});
+            record(report, `browser boot ${profile}/${scaleScenario}/${viewport.name}`, false, detail);
+            await captureScreenshot(cdp, path.join(args.out, `${profile}-${scaleScenario}-${viewport.name}-boot-failure.png`)).catch(() => {});
             continue;
           }
           for (const section of sections) {
             await setSection(cdp, section);
-            const inspection = await inspectSection(cdp, profile, viewport, section, args);
+            const inspection = await inspectSection(cdp, profile, viewport, section, args, scaleScenario);
             inspection.runtimeErrorCount = runtimeErrors.length;
             inspection.consoleErrorCount = consoleErrors.length;
             const hardPass = inspection.pass && runtimeErrors.length === 0 && consoleErrors.length === 0;
             report.browserChecks.push(inspection);
-            record(report, `responsive ${profile}/${viewport.name}/${section}`, hardPass, inspection);
+            record(report, `responsive ${profile}/${scaleScenario}/${viewport.name}/${section}`, hardPass, inspection);
             if (inspection.overflowX > 24 && viewport.width < 768 && !args.strictResponsive) {
               warn(report, `narrow overflow observed ${profile}/${viewport.name}/${section}`, {
                 overflowX: inspection.overflowX,
@@ -902,7 +946,7 @@ async function runBrowserChecks(args, report, baseUrl) {
               });
             }
             if (section === 'overview' || !hardPass) {
-              const fileName = `${profile}-${viewport.name}-${section}.png`.replace(/[^A-Za-z0-9_.-]+/g, '-');
+              const fileName = `${profile}-${scaleScenario}-${viewport.name}-${section}.png`.replace(/[^A-Za-z0-9_.-]+/g, '-');
               await captureScreenshot(cdp, path.join(args.out, fileName)).catch((error) => {
                 warn(report, `screenshot failed ${profile}/${viewport.name}/${section}`, { error: error.message });
               });
@@ -913,13 +957,14 @@ async function runBrowserChecks(args, report, baseUrl) {
           if (typeof cdp.closeTarget === 'function') await cdp.closeTarget();
         }
       }
+      }
     }
   } finally {
     await browser.stop();
   }
 }
 
-function buildSnapshot(profile) {
+function buildSnapshot(profile, scaleScenario = 'multi') {
   const publicProfile = profile === 'public';
   const now = '2026-05-24 12:00:00';
   const capabilities = {
@@ -1298,9 +1343,248 @@ function buildSnapshot(profile) {
       },
     },
   };
+  applyScaleScenario(snapshot, scaleScenario);
   snapshot.actionQueue = snapshot.semanticTriage.queue;
   snapshot.semanticTriage.actionQueue = snapshot.semanticTriage.queue;
   return snapshot;
+}
+
+function lineLayoutTier(count) {
+  if (count <= 0) return 'none';
+  if (count === 1) return 'single';
+  if (count <= 3) return 'few';
+  if (count <= 6) return 'multi';
+  return 'dense';
+}
+
+function scaleBucket(count) {
+  if (count <= 0) return 'none';
+  if (count === 1) return 'single';
+  if (count <= 6) return 'small';
+  if (count <= 24) return 'medium';
+  if (count <= 100) return 'large';
+  return 'fleet';
+}
+
+function listScaleMeta(totalCount, shownCount = totalCount, limit = shownCount, sampled = false, sampleMethod = '', sortedBy = '', groupedBy = []) {
+  return {
+    actualCount: totalCount,
+    totalCount,
+    shownCount,
+    limit,
+    hasMore: shownCount < totalCount,
+    sampled,
+    sampleMethod,
+    sortedBy,
+    groupedBy,
+    bucket: scaleBucket(totalCount),
+  };
+}
+
+function makeWan(index) {
+  const n = index + 1;
+  const name = `pppoe-wan${n}`;
+  const running = n % 17 !== 0;
+  const upRate = running ? (8_000_000 + n * 750_000) : 0;
+  const downRate = running ? (30_000_000 + n * 1_250_000) : 0;
+  const parent = `ether${((n - 1) % 8) + 1}`;
+  return {
+    name,
+    interface: name,
+    type: 'pppoe',
+    running,
+    disabled: false,
+    status: running ? 'online' : 'offline',
+    role: n === 1 ? 'primary' : 'member',
+    address: `198.51.${Math.floor(n / 250)}.${10 + (n % 200)}`,
+    addresses: [`198.51.${Math.floor(n / 250)}.${10 + (n % 200)}/32`],
+    upRate,
+    downRate,
+    txBytes: 400_000_000 + n * 2_000_000,
+    rxBytes: 700_000_000 + n * 3_000_000,
+    parent,
+    access: `WAN-${n}`,
+    history: {
+      up: [upRate * 0.45, upRate * 0.62, upRate * 0.74, upRate].map(Math.round),
+      down: [downRate * 0.5, downRate * 0.66, downRate * 0.8, downRate].map(Math.round),
+    },
+    routes: [{ dst: '0.0.0.0/0', gateway: name, distance: n, active: running, table: n === 1 ? 'main' : `wan-${n}` }],
+  };
+}
+
+function makeTerminal(index) {
+  const n = index + 1;
+  return {
+    ip: `192.168.${Math.floor(n / 240)}.${10 + (n % 240)}`,
+    mac: `AA:BB:CC:${String((n >> 8) & 255).padStart(2, '0')}:${String(n & 255).padStart(2, '0')}:01`,
+    hostname: `client-${n}`,
+    displayName: `client-${n}`,
+    source: n % 2 ? 'dhcp' : 'arp',
+    connectionCount: 5 + (n % 90),
+    connections: 5 + (n % 90),
+    upRate: 100_000 + n * 8_000,
+    downRate: 500_000 + n * 11_000,
+    sessionBytes: 50_000_000 + n * 100_000,
+    lastSeen: `${n % 30}s`,
+    status: n % 13 === 0 ? 'stale' : 'bound',
+  };
+}
+
+function applyScaleScenario(snapshot, scaleScenario) {
+  const counts = scaleScenario === 'single'
+    ? { wan: 1, terminals: 8 }
+    : scaleScenario === 'fleet'
+      ? { wan: 64, terminals: 180 }
+      : { wan: 4, terminals: 24 };
+  const wan = Array.from({ length: counts.wan }, (_, index) => makeWan(index));
+  const terminals = Array.from({ length: counts.terminals }, (_, index) => makeTerminal(index));
+  const lan = {
+    name: 'bridge-lan',
+    type: 'bridge',
+    running: true,
+    disabled: false,
+    mac: '02:00:00:00:10:01',
+    ips: ['192.168.88.1/24', 'fd00:88::1/64'],
+    rxRate: terminals.reduce((sum, row) => sum + row.downRate, 0),
+    txRate: terminals.reduce((sum, row) => sum + row.upRate, 0),
+    rxBytes: 1_900_000_000,
+    txBytes: 900_000_000,
+    rxPacket: 2_400_000,
+    txPacket: 1_720_000,
+    rxDrop: scaleScenario === 'fleet' ? 3 : 0,
+    txDrop: 0,
+    rxError: 0,
+    txError: 0,
+  };
+  snapshot.interfaces = [
+    ...wan.map((row, index) => ({
+      name: row.name,
+      type: 'pppoe-out',
+      running: row.running,
+      disabled: false,
+      mac: `02:00:00:00:01:${String(index + 1).padStart(2, '0')}`,
+      ips: row.addresses,
+      rxRate: row.downRate,
+      txRate: row.upRate,
+      rxBytes: row.rxBytes,
+      txBytes: row.txBytes,
+      rxPacket: 900_000 + index,
+      txPacket: 700_000 + index,
+      rxDrop: index % 19 === 0 && index > 0 ? 1 : 0,
+      txDrop: 0,
+      rxError: 0,
+      txError: 0,
+      role: 'WAN',
+    })),
+    lan,
+  ];
+  snapshot.wan = wan;
+  snapshot.pppoe = wan.map((row) => ({ ...row, name: row.name }));
+  snapshot.terminals = terminals;
+  snapshot.arp.items = terminals.slice(0, 120).map((row) => ({
+    address: row.ip,
+    ip: row.ip,
+    mac: row.mac,
+    hostname: row.hostname,
+    displayName: row.displayName,
+    status: row.status === 'bound' ? 'reachable' : 'stale',
+    dynamic: true,
+  }));
+  snapshot.dhcp.leases = terminals.slice(0, 120).map((row) => ({
+    address: row.ip,
+    mac: row.mac,
+    hostname: row.hostname,
+    displayName: row.displayName,
+    server: 'dhcp-lan',
+    status: row.status === 'bound' ? 'bound' : 'waiting',
+    static: false,
+    dynamic: true,
+    lastSeen: row.lastSeen,
+  }));
+  snapshot.connections.total = scaleScenario === 'fleet' ? 125000 : scaleScenario === 'single' ? 180 : 2400;
+  snapshot.connections.active = terminals.slice(0, 80).map((row, index) => ({
+    src: row.ip,
+    localIp: row.ip,
+    dst: `203.0.113.${20 + (index % 120)}`,
+    remoteIp: `203.0.113.${20 + (index % 120)}`,
+    protocol: index % 3 === 0 ? 'udp' : 'tcp',
+    dstPort: index % 3 === 0 ? 443 : 80,
+    timeout: `${20 + index}s`,
+    upRate: row.upRate,
+    downRate: row.downRate,
+    mark: index % 2 ? 'wan-even' : 'wan-odd',
+  }));
+  snapshot.connections.topIps = terminals.slice(0, 40).map((row) => ({
+    ip: row.ip,
+    displayName: row.displayName,
+    count: row.connectionCount,
+    connections: row.connectionCount,
+    upRate: row.upRate,
+    downRate: row.downRate,
+  }));
+  snapshot.loadBalance.distribution = wan.map((row) => ({
+    name: row.name,
+    share: wan.length ? Number((100 / wan.length).toFixed(2)) : 0,
+    active: row.running,
+    upRate: row.upRate,
+    downRate: row.downRate,
+  }));
+  snapshot.routes.defaultRoutes = wan.map((row, index) => ({
+    dst: '0.0.0.0/0',
+    gateway: row.name,
+    distance: index + 1,
+    active: row.running,
+    static: true,
+    disabled: false,
+    table: index === 0 ? 'main' : `wan-${index + 1}`,
+  }));
+  const upTotal = wan.reduce((sum, row) => sum + row.upRate, 0);
+  const downTotal = wan.reduce((sum, row) => sum + row.downRate, 0);
+  snapshot.overview.uplinkBps = upTotal;
+  snapshot.overview.downlinkBps = downTotal;
+  snapshot.overview.wanUpRate = upTotal;
+  snapshot.overview.wanDownRate = downTotal;
+  snapshot.overview.onlineTerminals = terminals.length;
+  snapshot.overview.terminalCount = terminals.length;
+  snapshot.overview.interfaceCount = snapshot.interfaces.length;
+  snapshot.overview.connectionTotal = snapshot.connections.total;
+  snapshot.meta.pppoeCount = wan.length;
+  snapshot.meta.wanCount = wan.length;
+  snapshot.meta.lineCount = wan.length;
+  snapshot.meta.lineLayoutTier = lineLayoutTier(wan.length);
+  snapshot.meta.scaleScenario = scaleScenario;
+  snapshot.meta.scale = {
+    wan: listScaleMeta(wan.length, wan.length, wan.length, false, '', 'natural name', ['status', 'parent', 'routeTable']),
+    pppoe: listScaleMeta(wan.length, wan.length, wan.length, false, '', 'natural name'),
+    interfaces: listScaleMeta(snapshot.interfaces.length, snapshot.interfaces.length, snapshot.interfaces.length, false, '', 'role/name', ['role', 'type', 'status']),
+    terminals: listScaleMeta(terminals.length, terminals.length, terminals.length, false, '', 'traffic/connections', ['status', 'source']),
+    arp: listScaleMeta(terminals.length, snapshot.arp.items.length, 120, terminals.length > snapshot.arp.items.length, 'first 120 sorted by IP', 'ip'),
+    dhcpLeases: listScaleMeta(terminals.length, snapshot.dhcp.leases.length, 120, terminals.length > snapshot.dhcp.leases.length, 'first 120 sorted by status and IP', 'status/ip', ['status', 'server', 'static']),
+    connectionsActive: listScaleMeta(snapshot.connections.total, snapshot.connections.active.length, 80, true, 'active connection sample', 'rate'),
+    dnsStatic: listScaleMeta(snapshot.dns.forwardRuleCount || 4, snapshot.dns.forwardRuleRows.length, 100, true, 'preview rows; /api/dns-static is paged', 'RouterOS order'),
+  };
+  snapshot.connections.meta = {
+    active: snapshot.meta.scale.connectionsActive,
+    topIps: listScaleMeta(terminals.length, snapshot.connections.topIps.length, 40, true, 'terminal top list', 'connections/traffic'),
+  };
+  snapshot.dhcp.meta = {
+    leases: snapshot.meta.scale.dhcpLeases,
+    pools: listScaleMeta(snapshot.dhcp.pools.length, snapshot.dhcp.pools.length),
+    servers: listScaleMeta(snapshot.dhcp.servers.length, snapshot.dhcp.servers.length),
+  };
+  snapshot.semanticTriage.queue.unshift({
+    id: `scale.${scaleScenario}`,
+    severity: scaleScenario === 'fleet' ? 'warning' : 'info',
+    domain: 'scale',
+    title: `Scale fixture: ${scaleScenario}`,
+    summary: `${wan.length} WAN lines and ${terminals.length} terminals are loaded in this fixture.`,
+    nextStep: 'Verify overview stays risk/action-first and detail pages disclose total vs shown rows.',
+    source: 'fixture.meta.scale',
+    readOnly: true,
+    actionType: 'manual_review',
+    priority: 0,
+    evidence: [{ label: 'wan', value: String(wan.length) }, { label: 'terminals', value: String(terminals.length) }],
+  });
 }
 
 async function main() {
