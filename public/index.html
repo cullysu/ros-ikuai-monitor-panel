@@ -492,6 +492,44 @@
     /* Keep compact data text at one weight so hierarchy comes from layout and color. */
     .info-v { margin-top: 2px; font-size: 11px; font-weight: 500; line-height: 1.2; word-break: break-all; }
     .table-wrap { overflow: visible; border-radius: 8px; border: 1px solid var(--border); background: #fff; }
+    #terminals .card,
+    #terminals .card-body,
+    #terminals .table-wrap {
+      min-width: 0;
+      max-width: 100%;
+    }
+    #terminals .table-wrap {
+      overflow-x: auto;
+      overscroll-behavior-x: contain;
+    }
+    #terminals table {
+      table-layout: fixed;
+    }
+    #terminals th,
+    #terminals td {
+      min-width: 0;
+      white-space: normal;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+    #terminals td:nth-child(4),
+    #terminals td:nth-child(5),
+    #terminals td:nth-child(6),
+    #terminals td:nth-child(8),
+    #terminals td:nth-child(9) {
+      white-space: nowrap;
+    }
+    #terminals .alias-cell,
+    #terminals .alias-main,
+    #terminals .alias-name {
+      min-width: 0;
+      max-width: 100%;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+    #terminals .alias-cell {
+      align-items: flex-start;
+    }
     .rate-stack { display: flex; flex-direction: column; gap: 4px; min-width: 118px; }
     .rate-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; color: var(--text-soft); }
     .rate-label { flex: none; color: inherit; font-size: 12px; font-weight: 500; line-height: 1; }
@@ -649,6 +687,114 @@
       border-color: rgba(71, 148, 235, 0.62);
       box-shadow: 0 0 0 3px rgba(71, 148, 235, 0.12);
     }
+    .router-login-saved {
+      display: grid;
+      gap: 10px;
+      padding: 16px 24px 0;
+    }
+    .router-login-saved-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .router-login-saved-count {
+      color: var(--text-dim);
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .router-login-saved-list {
+      display: grid;
+      gap: 8px;
+      max-height: 188px;
+      overflow: auto;
+      padding-right: 2px;
+    }
+    .router-login-saved-item {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #fff;
+      padding: 9px 10px;
+      text-align: left;
+    }
+    .router-login-saved-item.is-active {
+      border-color: rgba(71, 148, 235, 0.58);
+      background: rgba(71, 148, 235, 0.07);
+    }
+    .router-login-saved-main {
+      min-width: 0;
+      border: 0;
+      background: transparent;
+      color: inherit;
+      padding: 0;
+      text-align: left;
+      cursor: pointer;
+    }
+    .router-login-saved-name {
+      display: block;
+      overflow: hidden;
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 800;
+      line-height: 1.25;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .router-login-saved-meta {
+      display: block;
+      margin-top: 3px;
+      overflow: hidden;
+      color: var(--text-dim);
+      font-size: 11px;
+      line-height: 1.35;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .router-login-saved-remove {
+      min-width: 44px;
+      min-height: 34px;
+      border: 1px solid rgba(255, 77, 79, 0.2);
+      border-radius: 8px;
+      background: rgba(255, 77, 79, 0.07);
+      color: #b6383a;
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .router-login-options {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .router-login-check {
+      display: grid;
+      grid-template-columns: 18px minmax(0, 1fr);
+      gap: 8px;
+      color: var(--text-soft);
+      font-size: 12px;
+      line-height: 1.55;
+      cursor: pointer;
+    }
+    .router-login-check input {
+      width: 16px;
+      height: 16px;
+      margin: 2px 0 0;
+      accent-color: var(--primary);
+    }
+    .router-login-check strong {
+      display: block;
+      color: var(--text);
+      font-size: 12px;
+    }
     .router-login-actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 2px; }
     .router-login-status { color: var(--text-soft); font-size: 12px; line-height: 1.6; min-height: 20px; }
     .router-login-status.is-error { color: #b6383a; }
@@ -665,6 +811,11 @@
     @media (max-width: 640px) {
       .router-login-page { padding: 16px; place-items: stretch; align-items: center; }
       .router-login-grid { grid-template-columns: minmax(0, 1fr); }
+      .router-login-saved { padding: 14px 16px 0; }
+      .router-login-form { padding: 18px 16px 20px; }
+      .router-login-saved-item { grid-template-columns: minmax(0, 1fr); }
+      .router-login-saved-remove { width: 100%; }
+      .router-login-options { display: grid; }
       .router-login-actions { align-items: stretch; flex-direction: column; }
       .router-login-actions .action-btn { width: 100%; justify-content: center; }
     }
@@ -2395,7 +2546,15 @@
         <h1 class="router-login-title">连接 RouterOS</h1>
         <p class="router-login-subtitle">填写 RouterOS 的 SSH 地址、账号和密码。连接成功后，面板会用同一套账号读取 RouterOS 数据。</p>
       </div>
+      <div class="router-login-saved" id="routerLoginSavedWrap" hidden>
+        <div class="router-login-saved-head">
+          <span>已保存主机</span>
+          <span class="router-login-saved-count" id="routerLoginSavedCount"></span>
+        </div>
+        <div class="router-login-saved-list" id="routerLoginSavedList" aria-label="已保存的 RouterOS 登录"></div>
+      </div>
       <form class="router-login-form" id="routerLoginForm" autocomplete="on">
+        <input id="routerLoginSavedId" name="savedId" type="hidden">
         <div class="router-login-grid">
           <div class="router-login-field">
             <label for="routerLoginHost">RouterOS 地址</label>
@@ -2413,6 +2572,12 @@
         <div class="router-login-field">
           <label for="routerLoginPassword">密码</label>
           <input id="routerLoginPassword" name="password" type="password" autocomplete="current-password" required>
+        </div>
+        <div class="router-login-options">
+          <label class="router-login-check" for="routerLoginRememberPassword">
+            <input id="routerLoginRememberPassword" name="rememberPassword" type="checkbox" checked>
+            <span><strong>保存密码并记住这台主机</strong>密码会保存在本机面板的 data 目录，不会通过状态接口回显。</span>
+          </label>
         </div>
         <div class="router-login-actions">
           <div class="router-login-status" id="routerLoginStatus">正在检查连接配置...</div>
@@ -2507,6 +2672,11 @@
     const routerLoginPortEl = document.getElementById('routerLoginPort');
     const routerLoginUserEl = document.getElementById('routerLoginUser');
     const routerLoginPasswordEl = document.getElementById('routerLoginPassword');
+    const routerLoginSavedIdEl = document.getElementById('routerLoginSavedId');
+    const routerLoginRememberPasswordEl = document.getElementById('routerLoginRememberPassword');
+    const routerLoginSavedWrapEl = document.getElementById('routerLoginSavedWrap');
+    const routerLoginSavedListEl = document.getElementById('routerLoginSavedList');
+    const routerLoginSavedCountEl = document.getElementById('routerLoginSavedCount');
     const routerLoginSubmitEl = document.getElementById('routerLoginSubmit');
     const routerLoginStatusEl = document.getElementById('routerLoginStatus');
     const TEST_SNAPSHOT = window.__PANEL_TEST_SNAPSHOT__ || null;
@@ -2531,6 +2701,8 @@
     let interfaceReadonlyOpen = false;
     let currentTerminalView = 'ipv4';
     let dashboardBooted = false;
+    let savedRouterLogins = [];
+    let selectedRouterLoginId = '';
     let topMetricsPinnedHost = null;
     let compactSummaryPinnedHost = null;
     let compactSummaryPinnedSourceState = null;
@@ -2613,14 +2785,112 @@
       routerLoginStatusEl.classList.toggle('is-warn', tone === 'warn');
     }
 
+    function setSelectedRouterLoginId(savedId = '') {
+      selectedRouterLoginId = String(savedId || '');
+      if (routerLoginSavedIdEl) routerLoginSavedIdEl.value = selectedRouterLoginId;
+      updateRouterPasswordRequirement();
+      renderSavedRouterLogins();
+    }
+
+    function savedLoginLabel(entry) {
+      const host = entry?.host || 'RouterOS';
+      const port = entry?.sshPort || 22;
+      return `${host}:${port}`;
+    }
+
+    function savedLoginMeta(entry) {
+      const parts = [];
+      if (entry?.user) parts.push(entry.user);
+      parts.push(entry?.passwordSaved ? '已保存密码' : '未保存密码');
+      if (entry?.lastUsedAt) parts.push(entry.lastUsedAt);
+      return parts.join(' · ');
+    }
+
+    function findSavedRouterLogin(savedId) {
+      return savedRouterLogins.find((entry) => entry.id === savedId) || null;
+    }
+
+    function updateRouterPasswordRequirement() {
+      const selected = findSavedRouterLogin(selectedRouterLoginId);
+      const canUseSavedPassword = Boolean(selected?.passwordSaved && !routerLoginPasswordEl?.value);
+      if (routerLoginPasswordEl) {
+        routerLoginPasswordEl.required = !canUseSavedPassword;
+        routerLoginPasswordEl.placeholder = canUseSavedPassword ? '已保存密码，留空直接连接' : '';
+      }
+    }
+
+    function renderSavedRouterLogins() {
+      if (!routerLoginSavedWrapEl || !routerLoginSavedListEl) return;
+      const entries = Array.isArray(savedRouterLogins) ? savedRouterLogins : [];
+      routerLoginSavedWrapEl.hidden = entries.length === 0;
+      if (routerLoginSavedCountEl) {
+        routerLoginSavedCountEl.textContent = entries.length ? `${entries.length} 台` : '';
+      }
+      routerLoginSavedListEl.replaceChildren();
+      entries.forEach((entry) => {
+        const row = document.createElement('div');
+        row.className = `router-login-saved-item${entry.id === selectedRouterLoginId ? ' is-active' : ''}`;
+
+        const selectBtn = document.createElement('button');
+        selectBtn.className = 'router-login-saved-main';
+        selectBtn.type = 'button';
+        selectBtn.dataset.routerLoginSelect = entry.id;
+
+        const nameEl = document.createElement('span');
+        nameEl.className = 'router-login-saved-name';
+        nameEl.textContent = savedLoginLabel(entry);
+        const metaEl = document.createElement('span');
+        metaEl.className = 'router-login-saved-meta';
+        metaEl.textContent = savedLoginMeta(entry);
+        selectBtn.append(nameEl, metaEl);
+
+        const removeBtn = document.createElement('button');
+        removeBtn.className = 'router-login-saved-remove';
+        removeBtn.type = 'button';
+        removeBtn.dataset.routerLoginDelete = entry.id;
+        removeBtn.setAttribute('aria-label', `删除 ${savedLoginLabel(entry)}`);
+        removeBtn.textContent = '删除';
+
+        row.append(selectBtn, removeBtn);
+        routerLoginSavedListEl.appendChild(row);
+      });
+    }
+
+    function applySavedRouterLogin(entry) {
+      if (!entry) return;
+      if (routerLoginHostEl) routerLoginHostEl.value = entry.host || '';
+      if (routerLoginUserEl) routerLoginUserEl.value = entry.user || '';
+      if (routerLoginPortEl) routerLoginPortEl.value = entry.sshPort || 22;
+      if (routerLoginPasswordEl) routerLoginPasswordEl.value = '';
+      setSelectedRouterLoginId(entry.id);
+      setRouterLoginStatus(entry.passwordSaved ? '已选择保存的主机，留空密码可直接连接。' : '这台主机没有保存密码，请输入密码。');
+      setTimeout(() => (entry.passwordSaved ? routerLoginSubmitEl : routerLoginPasswordEl)?.focus(), 0);
+    }
+
+    function setSavedRouterLogins(entries) {
+      if (Array.isArray(entries)) {
+        savedRouterLogins = entries;
+      }
+      if (selectedRouterLoginId && !findSavedRouterLogin(selectedRouterLoginId)) {
+        selectedRouterLoginId = '';
+        if (routerLoginSavedIdEl) routerLoginSavedIdEl.value = '';
+      }
+      renderSavedRouterLogins();
+      updateRouterPasswordRequirement();
+    }
+
     function prefillRouterLogin(routerLogin) {
       if (!routerLogin) return;
       if (routerLoginHostEl && routerLogin.host) routerLoginHostEl.value = routerLogin.host;
       if (routerLoginUserEl && routerLogin.user) routerLoginUserEl.value = routerLogin.user;
       if (routerLoginPortEl && routerLogin.sshPort) routerLoginPortEl.value = routerLogin.sshPort;
+      if (routerLogin.savedId) {
+        setSelectedRouterLoginId(routerLogin.savedId);
+      }
     }
 
-    function showRouterLogin(routerLogin, message = '请输入 RouterOS SSH 连接信息') {
+    function showRouterLogin(routerLogin, message = '请输入 RouterOS SSH 连接信息', savedLogins = null) {
+      setSavedRouterLogins(savedLogins);
       prefillRouterLogin(routerLogin);
       document.body.classList.remove('router-login-booting', 'router-login-ready');
       document.body.classList.add('router-login-required');
@@ -2662,10 +2932,11 @@
       try {
         const payload = await fetchRouterLoginState();
         const routerLogin = payload.routerLogin || {};
+        setSavedRouterLogins(payload.savedLogins || []);
         if (routerLogin.configured) {
           bootDashboard();
         } else {
-          showRouterLogin(routerLogin);
+          showRouterLogin(routerLogin, '请输入 RouterOS SSH 连接信息', payload.savedLogins || []);
         }
       } catch (error) {
         showRouterLogin(null, `无法读取本机面板状态：${error.message}`);
@@ -2682,11 +2953,54 @@
       try {
         const response = await fetch('/api/router-logout', { method: 'POST', cache: 'no-store' });
         const payload = await response.json().catch(() => ({}));
-        showRouterLogin(payload.routerLogin || null, message);
+        showRouterLogin(payload.routerLogin || null, message, payload.savedLogins || []);
       } catch (error) {
         showRouterLogin(null, `已停止刷新，但断开连接接口失败：${error.message}`);
       }
     }
+
+    routerLoginSavedListEl?.addEventListener('click', async (event) => {
+      const deleteBtn = event.target.closest('[data-router-login-delete]');
+      if (deleteBtn) {
+        const savedId = deleteBtn.dataset.routerLoginDelete;
+        deleteBtn.disabled = true;
+        try {
+          const response = await fetch('/api/router-login-forget', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            cache: 'no-store',
+            body: JSON.stringify({ id: savedId })
+          });
+          const payload = await response.json().catch(() => ({}));
+          if (!response.ok || !payload.ok) {
+            throw new Error(payload.error || `HTTP ${response.status}`);
+          }
+          setSavedRouterLogins(payload.savedLogins || []);
+          if (selectedRouterLoginId === savedId) {
+            setSelectedRouterLoginId('');
+          }
+          setRouterLoginStatus(payload.removed ? '已删除保存的主机。' : '没有找到这条保存记录。', payload.removed ? 'ok' : 'warn');
+        } catch (error) {
+          setRouterLoginStatus(`删除失败：${error.message}`, 'error');
+          deleteBtn.disabled = false;
+        }
+        return;
+      }
+      const selectBtn = event.target.closest('[data-router-login-select]');
+      if (selectBtn) {
+        applySavedRouterLogin(findSavedRouterLogin(selectBtn.dataset.routerLoginSelect));
+      }
+    });
+
+    [routerLoginHostEl, routerLoginUserEl, routerLoginPortEl].forEach((inputEl) => {
+      inputEl?.addEventListener('input', () => {
+        if (selectedRouterLoginId) {
+          setSelectedRouterLoginId('');
+        }
+      });
+    });
+
+    routerLoginPasswordEl?.addEventListener('input', updateRouterPasswordRequirement);
 
     routerLoginFormEl?.addEventListener('submit', async (event) => {
       event.preventDefault();
@@ -2694,6 +3008,8 @@
       const user = routerLoginUserEl?.value?.trim() || '';
       const password = routerLoginPasswordEl?.value || '';
       const sshPort = Number(routerLoginPortEl?.value || 22);
+      const savedId = routerLoginSavedIdEl?.value || '';
+      const rememberPassword = routerLoginRememberPasswordEl ? routerLoginRememberPasswordEl.checked : true;
       routerLoginSubmitEl.disabled = true;
       routerLoginSubmitEl.textContent = '连接中...';
       setRouterLoginStatus('正在用 SSH 验证 RouterOS 凭据...');
@@ -2701,7 +3017,7 @@
         const response = await fetch('/api/router-login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ host, user, password, sshPort })
+          body: JSON.stringify({ host, user, password, sshPort, savedId, rememberPassword })
         });
         const payload = await response.json().catch(() => ({}));
         if (!response.ok || !payload.ok) {
@@ -2713,7 +3029,9 @@
         } else {
           setRouterLoginStatus(`连接成功${identity}`, 'ok');
         }
+        setSavedRouterLogins(payload.savedLogins || savedRouterLogins);
         routerLoginPasswordEl.value = '';
+        setSelectedRouterLoginId(payload.routerLogin?.savedId || '');
         setTimeout(() => bootDashboard(), 350);
       } catch (error) {
         setRouterLoginStatus(`连接失败：${error.message}`, 'error');
@@ -2735,7 +3053,7 @@
     };
 
     const pageMeta = {
-      overview: { title: '只读排障首页', subtitle: '首页按 RouterOS 语义汇总链路闭环、风险与下一步检查' },
+      overview: { title: '首页', subtitle: '首页按 RouterOS 语义汇总链路闭环、风险与下一步检查' },
       interfaces: { title: '接口总览', subtitle: '接口状态、WAN 线路、聚合速率与拓扑关系集中查看' },
       dhcp: { title: 'DHCP 服务', subtitle: 'DHCP 服务器、地址池与租约按 RouterOS 实读数据展示' },
       dns: { title: 'DNS 服务', subtitle: 'DNS 运行状态、上游参数与静态规则只读展示' },
@@ -5765,7 +6083,7 @@
           <strong>${item.value}</strong>
           <em>${item.meta}</em>
         </div>`).join('');
-      return section('只读排障首页', 'overview', `RouterOS 只读语义排障台 · ${wanScenario.label} · ${wanScenario.headline}`, `
+      return section('首页', 'overview', `RouterOS 只读语义排障台 · ${wanScenario.label} · ${wanScenario.headline}`, `
         <div class="public-home-pro" data-public-home-pro="true">
           ${triagePanel}
           <div class="ik-home-status-grid public-home-status-grid">${statusTiles}</div>

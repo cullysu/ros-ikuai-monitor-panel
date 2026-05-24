@@ -1,10 +1,12 @@
 import copy
+import hashlib
 import ipaddress
 import json
 import mimetypes
 import os
 import re
 import socket
+import subprocess
 import sys
 import threading
 import time
@@ -129,6 +131,8 @@ DNS_STATIC_MAX_PAGE_LIMIT = int(os.getenv("ROS_MONITOR_DNS_STATIC_MAX_PAGE_LIMIT
 DNS_STATIC_CACHE_TTL = int(os.getenv("ROS_MONITOR_DNS_STATIC_CACHE_TTL", "60"))
 DNS_STATIC_FULL_REST_TIMEOUT = int(os.getenv("ROS_MONITOR_DNS_STATIC_FULL_REST_TIMEOUT", "35"))
 IP_ALIAS_FILE = Path(os.getenv("ROS_PANEL_IP_ALIAS_FILE", str(BASE_DIR / "data" / "ip_aliases.json"))).expanduser()
+ROUTER_LOGIN_STORE_FILE = Path(os.getenv("ROS_PANEL_ROUTER_LOGIN_STORE_FILE", str(BASE_DIR / "data" / "router_logins.json"))).expanduser()
+ROUTER_LOGIN_HISTORY_LIMIT = max(1, int(os.getenv("ROS_PANEL_ROUTER_LOGIN_HISTORY_LIMIT", "32")))
 CUSTOM_NAME_MAX_LENGTH = int(os.getenv("ROS_PANEL_CUSTOM_NAME_MAX_LENGTH", "48"))
 READONLY_DIAGNOSTIC_CACHE_TTL = int(os.getenv("ROS_PANEL_READONLY_DIAGNOSTIC_CACHE_TTL", "45"))
 READONLY_DIAGNOSTIC_DNS_TIMEOUT = float(os.getenv("ROS_PANEL_READONLY_DIAGNOSTIC_DNS_TIMEOUT", "1.2"))
@@ -136,6 +140,9 @@ READONLY_DIAGNOSTIC_HTTP_TIMEOUT = float(os.getenv("ROS_PANEL_READONLY_DIAGNOSTI
 READONLY_DIAGNOSTIC_WORKERS = int(os.getenv("ROS_PANEL_READONLY_DIAGNOSTIC_WORKERS", "24"))
 READONLY_DIAGNOSTIC_TOTAL_TIMEOUT = float(os.getenv("ROS_PANEL_READONLY_DIAGNOSTIC_TOTAL_TIMEOUT", "8"))
 ACTION_QUEUE_LIMIT = max(1, int(os.getenv("ROS_PANEL_ACTION_QUEUE_LIMIT", "24")))
+WAN_LATENCY_TARGET = os.getenv("ROS_PANEL_WAN_LATENCY_TARGET", "www.baidu.com").strip() or "www.baidu.com"
+WAN_LATENCY_POLL_SECONDS = max(1, int(os.getenv("ROS_PANEL_WAN_LATENCY_POLL_SECONDS", "10")))
+WAN_LATENCY_TIMEOUT_MS = max(200, int(os.getenv("ROS_PANEL_WAN_LATENCY_TIMEOUT_MS", "1200")))
 
 READONLY_DNS_SERVERS = [
     {"name": "RouterOS DNS", "address": "192.168.3.1"},
@@ -388,6 +395,60 @@ def format_iso_now():
     return time.strftime("%Y-%m-%d %H:%M:%S")
 
 
+def parse_ping_latency_ms(output):
+    text = str(output or "")
+    patterns = [
+        r"(?:time|时间)\s*[=<]\s*<?\s*(\d+(?:\.\d+)?)\s*ms",
+        r"(?:Average|平均)[^\d=]*(?:=)?\s*<?\s*(\d+(?:\.\d+)?)\s*ms",
+    ]
+    for pattern in patterns:
+        match = re.search(pattern, text, flags=re.IGNORECASE)
+        if match:
+            return max(1, int(round(float(match.group(1)))))
+    return None
+
+
+def ping_latency_target(target=WAN_LATENCY_TARGET, timeout_ms=WAN_LATENCY_TIMEOUT_MS):
+    safe_target = str(target or WAN_LATENCY_TARGET).strip() or WAN_LATENCY_TARGET
+    safe_timeout_ms = max(200, to_int(timeout_ms, WAN_LATENCY_TIMEOUT_MS))
+    timeout_seconds = max(1.0, safe_timeout_ms / 1000.0 + 0.8)
+    if os.name == "nt":
+        command = ["ping", "-n", "1", "-w", str(safe_timeout_ms), safe_target]
+    else:
+        command = ["ping", "-c", "1", "-W", str(max(1, int(round(safe_timeout_ms / 1000.0)))), safe_target]
+    started_at = time.time()
+    try:
+        proc = subprocess.run(
+            command,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=timeout_seconds,
+        )
+        output = f"{proc.stdout}\n{proc.stderr}"
+        latency_ms = parse_ping_latency_ms(output)
+        if latency_ms is None and proc.returncode == 0:
+            latency_ms = max(1, int(round((time.time() - started_at) * 1000)))
+        return {
+            "ok": proc.returncode == 0 and latency_ms is not None,
+            "target": safe_target,
+            "latencyMs": latency_ms,
+            "updatedAt": format_iso_now(),
+            "method": "icmp-ping",
+            "error": None if proc.returncode == 0 and latency_ms is not None else (output.strip()[-240:] or f"ping exited {proc.returncode}"),
+        }
+    except Exception as exc:
+        return {
+            "ok": False,
+            "target": safe_target,
+            "latencyMs": None,
+            "updatedAt": format_iso_now(),
+            "method": "icmp-ping",
+            "error": str(exc),
+        }
+
+
 ROUTER_PASSWORD_PLACEHOLDERS = {"", "CHANGE_ME", "changeme", "password"}
 ROUTER_CONFIG_LOCK = threading.RLock()
 ROUTER_CONFIG = {
@@ -396,9 +457,11 @@ ROUTER_CONFIG = {
     "password": str(ROUTER_PASSWORD or ""),
     "sshPort": max(1, min(65535, to_int(ROUTER_SSH_PORT, 22))),
     "source": "env",
+    "savedId": None,
     "updatedAt": None,
     "lastTest": None,
 }
+ROUTER_LOGIN_STORE_LOCK = threading.RLock()
 
 
 def normalize_router_host(value):
@@ -454,19 +517,21 @@ def public_router_config(config=None):
         "user": source.get("user") or "",
         "sshPort": to_int(source.get("sshPort"), 22),
         "source": source.get("source") or "memory",
+        "savedId": source.get("savedId"),
         "updatedAt": source.get("updatedAt"),
         "passwordSet": bool(password.strip()) and password not in ROUTER_PASSWORD_PLACEHOLDERS,
         "lastTest": copy.deepcopy(source.get("lastTest")),
     }
 
 
-def set_router_config(host, user, password, ssh_port=22, source="ui", last_test=None):
+def set_router_config(host, user, password, ssh_port=22, source="ui", last_test=None, saved_id=None):
     normalized = {
         "host": normalize_router_host(host),
         "user": str(user or "").strip(),
         "password": str(password or ""),
         "sshPort": normalize_router_ssh_port(ssh_port),
         "source": source,
+        "savedId": saved_id,
         "updatedAt": format_iso_now(),
         "lastTest": copy.deepcopy(last_test),
     }
@@ -485,11 +550,200 @@ def clear_router_config():
             {
                 "password": "",
                 "source": "ui",
+                "savedId": None,
                 "updatedAt": format_iso_now(),
                 "lastTest": None,
             }
         )
     return public_router_config()
+
+
+def router_login_entry_id(host, user, ssh_port):
+    raw = f"{normalize_router_host(host).lower()}|{str(user or '').strip()}|{normalize_router_ssh_port(ssh_port)}"
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()[:16]
+
+
+def normalize_saved_router_entry(raw):
+    if not isinstance(raw, dict):
+        return None
+    try:
+        host = normalize_router_host(raw.get("host"))
+        user = str(raw.get("user") or "").strip()
+        ssh_port = normalize_router_ssh_port(raw.get("sshPort") or raw.get("port") or 22)
+    except Exception:
+        return None
+    if not user:
+        return None
+    entry_id = str(raw.get("id") or router_login_entry_id(host, user, ssh_port)).strip()
+    password = str(raw.get("password") or "")
+    return {
+        "id": entry_id,
+        "host": host,
+        "user": user,
+        "password": password,
+        "sshPort": ssh_port,
+        "label": str(raw.get("label") or host).strip()[:80],
+        "source": str(raw.get("source") or "saved").strip() or "saved",
+        "createdAt": raw.get("createdAt") or raw.get("updatedAt") or format_iso_now(),
+        "updatedAt": raw.get("updatedAt") or format_iso_now(),
+        "lastUsedAt": raw.get("lastUsedAt") or raw.get("updatedAt") or format_iso_now(),
+        "lastTest": copy.deepcopy(raw.get("lastTest")),
+    }
+
+
+def load_router_login_store_unlocked():
+    try:
+        if not ROUTER_LOGIN_STORE_FILE.exists():
+            return []
+        payload = json.loads(ROUTER_LOGIN_STORE_FILE.read_text(encoding="utf-8-sig"))
+        source = payload.get("entries", []) if isinstance(payload, dict) else []
+        entries = []
+        seen = set()
+        for raw in source:
+            entry = normalize_saved_router_entry(raw)
+            if not entry or entry["id"] in seen:
+                continue
+            seen.add(entry["id"])
+            entries.append(entry)
+        entries.sort(key=lambda row: str(row.get("lastUsedAt") or row.get("updatedAt") or ""), reverse=True)
+        return entries[:ROUTER_LOGIN_HISTORY_LIMIT]
+    except Exception:
+        return []
+
+
+def persist_router_login_store_unlocked(entries):
+    ROUTER_LOGIN_STORE_FILE.parent.mkdir(parents=True, exist_ok=True)
+    normalized = []
+    seen = set()
+    for raw in entries:
+        entry = normalize_saved_router_entry(raw)
+        if not entry or entry["id"] in seen:
+            continue
+        seen.add(entry["id"])
+        normalized.append(entry)
+    normalized.sort(key=lambda row: str(row.get("lastUsedAt") or row.get("updatedAt") or ""), reverse=True)
+    payload = {
+        "version": 1,
+        "updatedAt": format_iso_now(),
+        "warning": "This local file stores RouterOS SSH passwords in clear text for this panel instance. Keep it private.",
+        "entries": normalized[:ROUTER_LOGIN_HISTORY_LIMIT],
+    }
+    tmp_path = ROUTER_LOGIN_STORE_FILE.with_suffix(".json.tmp")
+    tmp_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+    try:
+        os.chmod(tmp_path, 0o600)
+    except Exception:
+        pass
+    tmp_path.replace(ROUTER_LOGIN_STORE_FILE)
+    try:
+        os.chmod(ROUTER_LOGIN_STORE_FILE, 0o600)
+    except Exception:
+        pass
+
+
+def public_saved_router_entry(entry):
+    password = str(entry.get("password") or "").strip()
+    return {
+        "id": entry.get("id"),
+        "host": entry.get("host") or "",
+        "user": entry.get("user") or "",
+        "sshPort": to_int(entry.get("sshPort"), 22),
+        "label": entry.get("label") or entry.get("host") or "",
+        "source": entry.get("source") or "saved",
+        "createdAt": entry.get("createdAt"),
+        "updatedAt": entry.get("updatedAt"),
+        "lastUsedAt": entry.get("lastUsedAt"),
+        "passwordSaved": bool(password) and password not in ROUTER_PASSWORD_PLACEHOLDERS,
+        "lastTest": copy.deepcopy(entry.get("lastTest")),
+    }
+
+
+def public_saved_router_logins():
+    with ROUTER_LOGIN_STORE_LOCK:
+        return [public_saved_router_entry(entry) for entry in load_router_login_store_unlocked()]
+
+
+def find_saved_router_login(saved_id):
+    saved_id = str(saved_id or "").strip()
+    if not saved_id:
+        return None
+    with ROUTER_LOGIN_STORE_LOCK:
+        for entry in load_router_login_store_unlocked():
+            if entry.get("id") == saved_id:
+                return copy.deepcopy(entry)
+    return None
+
+
+def remember_router_login(host, user, password, ssh_port=22, last_test=None, source="ui"):
+    now = format_iso_now()
+    entry = normalize_saved_router_entry(
+        {
+            "id": router_login_entry_id(host, user, ssh_port),
+            "host": host,
+            "user": user,
+            "password": password,
+            "sshPort": ssh_port,
+            "label": host,
+            "source": source,
+            "updatedAt": now,
+            "lastUsedAt": now,
+            "lastTest": copy.deepcopy(last_test),
+        }
+    )
+    if not entry:
+        raise ValueError("Saved RouterOS login is invalid")
+    with ROUTER_LOGIN_STORE_LOCK:
+        stored_entries = load_router_login_store_unlocked()
+        existing = next((row for row in stored_entries if row.get("id") == entry["id"]), None)
+        if existing:
+            entry["createdAt"] = existing.get("createdAt") or entry["createdAt"]
+        entries = [row for row in stored_entries if row.get("id") != entry["id"]]
+        entries.insert(0, entry)
+        persist_router_login_store_unlocked(entries)
+    return copy.deepcopy(entry)
+
+
+def forget_router_login(saved_id):
+    saved_id = str(saved_id or "").strip()
+    removed = False
+    with ROUTER_LOGIN_STORE_LOCK:
+        entries = []
+        for entry in load_router_login_store_unlocked():
+            if entry.get("id") == saved_id:
+                removed = True
+                continue
+            entries.append(entry)
+        persist_router_login_store_unlocked(entries)
+    with ROUTER_CONFIG_LOCK:
+        if ROUTER_CONFIG.get("savedId") == saved_id:
+            ROUTER_CONFIG["savedId"] = None
+            ROUTER_CONFIG["source"] = "ui"
+    return removed
+
+
+def restore_last_saved_router_login():
+    current = get_router_config()
+    if router_config_is_ready(current):
+        return public_router_config(current)
+    with ROUTER_LOGIN_STORE_LOCK:
+        entries = load_router_login_store_unlocked()
+    for entry in entries:
+        if router_config_is_ready(entry):
+            with ROUTER_CONFIG_LOCK:
+                ROUTER_CONFIG.update(
+                    {
+                        "host": entry["host"],
+                        "user": entry["user"],
+                        "password": entry["password"],
+                        "sshPort": entry["sshPort"],
+                        "source": "saved",
+                        "savedId": entry["id"],
+                        "updatedAt": entry.get("lastUsedAt") or entry.get("updatedAt"),
+                        "lastTest": copy.deepcopy(entry.get("lastTest")),
+                    }
+                )
+            return public_router_config()
+    return public_router_config(current)
 
 
 def test_router_credentials(host, user, password, ssh_port=22):
@@ -1552,6 +1806,15 @@ class Collector:
         self.ip_aliases = self.load_ip_aliases()
         self.readonly_diagnostics_cache = {"fetched_at": 0.0, "payload": None}
         self.connection_protocol_last_scan_at = 0.0
+        self.wan_latency = {
+            "ok": False,
+            "target": WAN_LATENCY_TARGET,
+            "latencyMs": None,
+            "updatedAt": None,
+            "method": "icmp-ping",
+            "error": None,
+        }
+        self.wan_latency_last_probe_at = 0.0
 
     def reset_collection_state(self, status="starting", error=None):
         router_status = public_router_config()
@@ -1603,6 +1866,15 @@ class Collector:
             self.line_history = {}
             self.readonly_diagnostics_cache = {"fetched_at": 0.0, "payload": None}
             self.connection_protocol_last_scan_at = 0.0
+            self.wan_latency = {
+                "ok": False,
+                "target": WAN_LATENCY_TARGET,
+                "latencyMs": None,
+                "updatedAt": None,
+                "method": "icmp-ping",
+                "error": None,
+            }
+            self.wan_latency_last_probe_at = 0.0
             self.state = {
                 "status": status,
                 "updatedAt": format_iso_now(),
@@ -2172,6 +2444,33 @@ class Collector:
         self.prev_ts = ts
         return rates
 
+    def get_wan_latency(self, force=False):
+        now = time.time()
+        with self.lock:
+            cached = copy.deepcopy(self.wan_latency)
+            last_probe_at = float(self.wan_latency_last_probe_at or 0.0)
+        if not force and cached.get("updatedAt") and (now - last_probe_at) < WAN_LATENCY_POLL_SECONDS:
+            return cached
+        result = ping_latency_target(WAN_LATENCY_TARGET, WAN_LATENCY_TIMEOUT_MS)
+        with self.lock:
+            self.wan_latency = copy.deepcopy(result)
+            self.wan_latency_last_probe_at = now
+        return result
+
+    def attach_wan_latency(self, rows, latency):
+        latency_ms = to_int((latency or {}).get("latencyMs"), 0)
+        return [
+            {
+                **copy.deepcopy(row),
+                "latencyMs": latency_ms or None,
+                "latencyTarget": (latency or {}).get("target") or WAN_LATENCY_TARGET,
+                "latencyUpdatedAt": (latency or {}).get("updatedAt"),
+                "latencyOk": bool((latency or {}).get("ok")),
+                "latencyError": (latency or {}).get("error"),
+            }
+            for row in rows
+        ]
+
     def build_maps(self, rest):
         interface_types = {row.get("name"): row.get("type", "") for row in rest["interfaces"]}
         addresses_by_interface = defaultdict(list)
@@ -2195,8 +2494,10 @@ class Collector:
                 pass
         return addresses_by_interface, local_networks, router_ips
 
-    def build_overview(self, rest, ssh, terminal_count, wan_totals):
+    def build_overview(self, rest, ssh, terminal_count, wan_totals, wan_latency=None):
         resource = rest["resource"]
+        latency = wan_latency or {}
+        latency_ms = to_int(latency.get("latencyMs"), 0)
         total_memory = to_int(resource.get("total-memory"))
         used_memory = max(total_memory - to_int(resource.get("free-memory")), 0)
         total_disk = to_int(resource.get("total-hdd-space"))
@@ -2238,6 +2539,12 @@ class Collector:
             "diskUsage": round((used_disk / total_disk) * 100, 2) if total_disk else 0,
             "uplinkBps": wan_totals["up"],
             "downlinkBps": wan_totals["down"],
+            "wanLatencyMs": latency_ms or None,
+            "latencyMs": latency_ms or None,
+            "wanLatencyTarget": latency.get("target") or WAN_LATENCY_TARGET,
+            "wanLatencyUpdatedAt": latency.get("updatedAt"),
+            "wanLatencyOk": bool(latency.get("ok")),
+            "wanLatencyError": latency.get("error"),
             "onlineTerminals": terminal_count,
             "connectionTotal": ssh["counts"]["all"],
             "systemLoadLevel": rate_level(max(to_int(resource.get("cpu-load")) / 100, used_memory / total_memory if total_memory else 0)),
@@ -2924,6 +3231,9 @@ class Collector:
         pppoe, distribution = self.build_pppoe(rest, rates, addresses_by_interface)
         interfaces = self.build_interfaces(rest, rates, addresses_by_interface)
         wan_lines = self.build_wan_lines(rest, pppoe, interfaces)
+        wan_latency = self.get_wan_latency()
+        pppoe = self.attach_wan_latency(pppoe, wan_latency)
+        wan_lines = self.attach_wan_latency(wan_lines, wan_latency)
         if not distribution and wan_lines:
             distribution = build_distribution_from_lines(wan_lines)
         wan_source = [row for row in wan_lines if row.get("running")] or list(wan_lines)
@@ -3025,9 +3335,10 @@ class Collector:
                 "wanCount": wan_line_count,
                 "lineCount": wan_line_count,
                 "lineLayoutTier": line_layout_tier(wan_line_count),
+                "wanLatency": copy.deepcopy(wan_latency),
                 "scale": scale_meta,
             },
-            "overview": self.build_overview(rest, ssh, terminals["terminalCount"], wan_totals),
+            "overview": self.build_overview(rest, ssh, terminals["terminalCount"], wan_totals, wan_latency),
             "interfaces": interfaces,
             "pppoe": pppoe,
             "wan": wan_lines,
@@ -3468,6 +3779,7 @@ class Collector:
         return payload
 
 
+restore_last_saved_router_login()
 collector = Collector()
 
 
@@ -3477,7 +3789,14 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         parsed = urlparse(self.path)
         if parsed.path == "/api/router-login":
-            return self.send_json({"ok": True, "routerLogin": public_router_config()})
+            return self.send_json(
+                {
+                    "ok": True,
+                    "routerLogin": public_router_config(),
+                    "savedLogins": public_saved_router_logins(),
+                    "savePasswordAvailable": True,
+                }
+            )
         if parsed.path == "/api/snapshot":
             return self.send_json(collector.get_state())
         if parsed.path == "/api/dns-static":
@@ -3515,6 +3834,7 @@ class Handler(BaseHTTPRequestHandler):
                     "profile": PANEL_PROFILE,
                     "target": PANEL_TARGET,
                     "routerLogin": public_router_config(),
+                    "savedLoginCount": len(public_saved_router_logins()),
                 }
             )
         if parsed.path in {"/api/action-queue", "/api/semantic-triage"}:
@@ -3530,10 +3850,27 @@ class Handler(BaseHTTPRequestHandler):
         if parsed.path == "/api/router-login":
             try:
                 payload = self.read_json_body()
-                host = payload.get("host") or payload.get("ip") or payload.get("address")
-                user = payload.get("user") or payload.get("username")
+                saved_id = str(payload.get("savedId") or "").strip()
+                saved_entry = find_saved_router_login(saved_id) if saved_id else None
                 password = payload.get("password")
-                ssh_port = payload.get("sshPort") or payload.get("port") or 22
+                using_saved_password = False
+                if saved_id and not saved_entry:
+                    return self.send_json({"ok": False, "error": "Saved RouterOS login was not found"}, status=404)
+                if saved_entry and not str(password or "").strip():
+                    host = saved_entry.get("host")
+                    user = saved_entry.get("user")
+                    password = saved_entry.get("password")
+                    ssh_port = saved_entry.get("sshPort") or 22
+                    using_saved_password = True
+                else:
+                    host = payload.get("host") or payload.get("ip") or payload.get("address")
+                    user = payload.get("user") or payload.get("username")
+                    ssh_port = payload.get("sshPort") or payload.get("port") or 22
+                if saved_entry and not str(password or "").strip():
+                    return self.send_json(
+                        {"ok": False, "error": "Saved RouterOS login does not contain a password"},
+                        status=400,
+                    )
                 test = test_router_credentials(host, user, password, ssh_port)
                 if not test.get("ssh", {}).get("ok"):
                     return self.send_json(
@@ -3544,12 +3881,34 @@ class Handler(BaseHTTPRequestHandler):
                         },
                         status=400,
                     )
-                router_login = set_router_config(host, user, password, ssh_port, source="ui", last_test=test)
+                remember_raw = payload.get("rememberPassword", True)
+                remember_password = True if remember_raw is None else to_bool(remember_raw)
+                remembered_entry = None
+                if remember_password:
+                    remembered_entry = remember_router_login(
+                        host,
+                        user,
+                        password,
+                        ssh_port,
+                        last_test=test,
+                        source="saved" if using_saved_password else "ui",
+                    )
+                    saved_id = remembered_entry.get("id")
+                router_login = set_router_config(
+                    host,
+                    user,
+                    password,
+                    ssh_port,
+                    source="saved" if using_saved_password else "ui",
+                    last_test=test,
+                    saved_id=(saved_id if using_saved_password or remembered_entry else None),
+                )
                 collector.reset_collection_state(status="starting", error=None)
                 return self.send_json(
                     {
                         "ok": True,
                         "routerLogin": router_login,
+                        "savedLogins": public_saved_router_logins(),
                         "test": test,
                         "warning": None if test.get("rest", {}).get("ok") else "SSH connected, but RouterOS REST did not respond. Some dashboard data may be missing.",
                     }
@@ -3564,7 +3923,24 @@ class Handler(BaseHTTPRequestHandler):
                 status="needs_config",
                 error="RouterOS SSH connection is not configured",
             )
-            return self.send_json({"ok": True, "routerLogin": router_login})
+            return self.send_json({"ok": True, "routerLogin": router_login, "savedLogins": public_saved_router_logins()})
+        if parsed.path == "/api/router-login-forget":
+            try:
+                payload = self.read_json_body()
+                saved_id = payload.get("id") or payload.get("savedId")
+                removed = forget_router_login(saved_id)
+                return self.send_json(
+                    {
+                        "ok": True,
+                        "removed": removed,
+                        "routerLogin": public_router_config(),
+                        "savedLogins": public_saved_router_logins(),
+                    }
+                )
+            except ValueError as exc:
+                return self.send_json({"ok": False, "error": str(exc)}, status=400)
+            except Exception as exc:
+                return self.send_json({"ok": False, "error": str(exc)}, status=500)
         if parsed.path == "/api/ip-alias":
             if not IP_ALIAS_WRITE_ENABLED:
                 return self.send_json({"ok": False, "error": "ip alias write disabled"}, status=403)

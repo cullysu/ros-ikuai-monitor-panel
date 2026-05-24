@@ -66,6 +66,77 @@
     .scale-table td { padding: 8px 10px; color: #253247; border-top: 1px solid #edf3fa; vertical-align: top; }
     .scale-table tr:first-child td { border-top: 0; }
     .scale-table td:first-child { font-weight: 800; color: #152238; }
+    .scale-shell,
+    .scale-detail-card,
+    .scale-detail-card .card-body {
+      min-width: 0;
+      max-width: 100%;
+    }
+    #terminals .scale-detail-card,
+    #terminals .scale-detail-card .card-body,
+    #trafficLoad .scale-detail-card,
+    #trafficLoad .scale-detail-card .card-body {
+      overflow: hidden;
+    }
+    #terminals .scale-table-wrap,
+    #trafficLoad .scale-table-wrap {
+      width: 100%;
+      max-width: 100%;
+      overflow-x: auto;
+      overscroll-behavior-x: contain;
+    }
+    #terminals .scale-table,
+    #trafficLoad .scale-table {
+      table-layout: fixed;
+    }
+    #terminals .scale-table th,
+    #terminals .scale-table td,
+    #trafficLoad .scale-table th,
+    #trafficLoad .scale-table td {
+      min-width: 0;
+      white-space: normal;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+    #terminals .scale-table td:nth-child(5),
+    #terminals .scale-table td:nth-child(6),
+    #terminals .scale-table td:nth-child(7),
+    #terminals .scale-table td:nth-child(8),
+    #trafficLoad .scale-table td:nth-child(3),
+    #trafficLoad .scale-table td:nth-child(4),
+    #trafficLoad .scale-table td:nth-child(5),
+    #trafficLoad .scale-table td:nth-child(6) {
+      white-space: nowrap;
+    }
+    .scale-terminal-name,
+    .scale-terminal-ip,
+    .scale-terminal-mac {
+      min-width: 0;
+      max-width: 100%;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+    .scale-terminal-ip,
+    .scale-terminal-mac {
+      font-family: "Cascadia Mono","Consolas","Microsoft YaHei",monospace;
+      font-size: 11.5px;
+      line-height: 1.35;
+    }
+    #terminals .alias-cell,
+    #trafficLoad .alias-cell,
+    #terminals .alias-main,
+    #trafficLoad .alias-main,
+    #terminals .alias-name,
+    #trafficLoad .alias-name {
+      min-width: 0;
+      max-width: 100%;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+    #terminals .alias-cell,
+    #trafficLoad .alias-cell {
+      align-items: flex-start;
+    }
     .scale-empty { padding: 18px; color: #69788d; text-align: center; }
     .scale-pager { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: flex-end; margin-top: 8px; color: #69788d; font-size: 12px; }
     .scale-pager button { min-height: 34px; min-width: 44px; border: 1px solid #d8e2ef; border-radius: 8px; background: #fff; color: #243246; font-weight: 800; cursor: pointer; }
@@ -158,10 +229,27 @@
     .pm-iface-name span { color: #68788d; font-size: 11px; line-height: 1.25; }
     .pm-iface-detail summary { color: #245bff; cursor: pointer; font-weight: 800; }
     .pm-iface-detail div { margin-top: 6px; color: #536377; font-size: 12px; line-height: 1.45; }
+    html,
+    body {
+      overflow-x: clip !important;
+    }
+    .app.ik-shell .frame {
+      overflow-x: clip !important;
+      overflow-y: visible !important;
+    }
     #overview.ikuai-overview-section { margin-top: 0; }
     #overview.ikuai-overview-section > .section-head { display: none; }
     .ikuai-home { display: grid; gap: 14px; min-width: 0; }
     .ikuai-home-grid { display: grid; grid-template-columns: minmax(340px, 430px) minmax(0, 1fr); gap: 14px; align-items: start; }
+    .ikuai-home-grid > .ikuai-wan-card {
+      position: sticky;
+      top: 14px;
+      align-self: start;
+      max-height: calc(100vh - 28px);
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      scrollbar-gutter: stable;
+    }
     .ikuai-card {
       min-width: 0;
       border: 1px solid #e7edf5;
@@ -173,7 +261,11 @@
     .ikuai-card-title { color: #121826; font-size: 15px; font-weight: 900; line-height: 1.25; }
     .ikuai-card-subtle { color: #7b8797; font-size: 12px; line-height: 1.45; }
     .ikuai-wan-card { min-height: 680px; padding: 20px; }
-    .ikuai-wan-select { display: flex; min-height: 32px; align-items: center; justify-content: center; margin: 14px 0 18px; border-radius: 6px; background: #f3f5f7; color: #3b4351; font-size: 13px; }
+    .ikuai-wan-switch { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 8px; align-items: center; margin: 14px 0 18px; }
+    .ikuai-wan-switch span { color: #5f6b7a; font-size: 12px; font-weight: 800; white-space: nowrap; }
+    .ikuai-wan-select { width: 100%; min-height: 34px; border: 1px solid transparent; border-radius: 6px; background: #f3f5f7; color: #1f2937; font-size: 13px; font-weight: 700; text-align: center; text-align-last: center; padding: 0 32px 0 12px; cursor: pointer; }
+    .ikuai-wan-select:hover { border-color: #d8e2ef; background: #eef3f8; }
+    .ikuai-wan-select:focus { outline: 2px solid rgba(72, 145, 232, .22); border-color: #4891e8; background: #fff; }
     .ikuai-info-list { display: grid; gap: 0; }
     .ikuai-info-row { display: grid; grid-template-columns: 128px minmax(0, 1fr); gap: 10px; align-items: start; min-height: 38px; color: #101828; font-size: 13px; }
     .ikuai-info-row span { color: #111827; }
@@ -244,6 +336,11 @@
       .pm-interface-summary,
       .ikuai-home-grid,
       .ikuai-system-strip { grid-template-columns: 1fr; }
+      .ikuai-home-grid > .ikuai-wan-card {
+        position: static;
+        max-height: none;
+        overflow: visible;
+      }
       .ikuai-card-grid { grid-template-columns: 1fr; }
       .pm-proof-grid,
       .pm-interface-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -629,6 +726,34 @@
     return rows.slice().sort((a, b) => totalRate(b) - totalRate(a))[0] || rows[0] || null;
   }
 
+  function wanLineKey(line, index = 0) {
+    return String(line?.name || line?.id || line?.access || `wan-${index}`);
+  }
+
+  function selectedWanLine(lines) {
+    const rows = Array.isArray(lines) ? lines : [];
+    const selectedKey = String(state.ikuaiWanLine || '');
+    if (selectedKey) {
+      const selected = rows.find((line, index) => wanLineKey(line, index) === selectedKey);
+      if (selected) return selected;
+      state.ikuaiWanLine = '';
+    }
+    return bestWanLine(rows);
+  }
+
+  function renderWanLineOptions(lines, selectedWan) {
+    const rows = Array.isArray(lines) ? lines : [];
+    if (!rows.length) return '<option value="">wan1</option>';
+    const selectedKey = selectedWan ? wanLineKey(selectedWan, rows.indexOf(selectedWan)) : '';
+    return rows.map((line, index) => {
+      const key = wanLineKey(line, index);
+      const status = line?.running ? '在线' : '离线';
+      const traffic = totalRate(line) > 0 ? ` · ${rate(line.upRate)}/${rate(line.downRate)}` : '';
+      const label = `${line?.name || key} · ${status}${traffic}`;
+      return `<option value="${html(key)}" ${key === selectedKey ? 'selected' : ''}>${html(label)}</option>`;
+    }).join('');
+  }
+
   function wanAddressText(line) {
     return shortList(line?.addresses || line?.ips || line?.address, 2);
   }
@@ -706,7 +831,8 @@
     const issues = overviewIssues(snapshot, lines, interfaces);
     const topIssue = issues[0] || issue('ok', '当前没有高优先级风险', '线路、接口、连接和系统负载未发现需要立刻处理的信号。', '保持观察；需要细节时进入接口、流量、终端或 DHCP 页面下钻。', 'interfaces');
     const onlineLines = lines.filter((row) => row.running).length;
-    const selectedWan = bestWanLine(lines);
+    const selectedWan = selectedWanLine(lines);
+    const wanOptions = renderWanLineOptions(lines, selectedWan);
     const history = overview.history || {};
     const wanHistory = selectedWan?.history || {};
     const wanChart = typeof lineChart === 'function'
@@ -723,6 +849,9 @@
     const offlineLines = Math.max(0, lines.length - onlineLines);
     const errorInterfaces = interfaces.filter((row) => interfaceErrors(row) > 0).length;
     const connectionRing = Math.min(99, Math.max(1, Math.round(connectionTotal / 1000)));
+    const latencyMs = Number(selectedWan?.latencyMs || overview.wanLatencyMs || overview.latencyMs || 0);
+    const latencyTarget = selectedWan?.latencyTarget || overview.wanLatencyTarget || snapshot.meta?.wanLatency?.target || 'www.baidu.com';
+    const latencyText = latencyMs > 0 ? `${number(latencyMs)}ms` : '未采集';
     return `<section class="section ikuai-overview-section" id="overview">
       <div class="ikuai-home" data-pm-overview="true" data-ikuai-reference-home="true">
         <div class="ikuai-card ikuai-system-strip">
@@ -751,7 +880,10 @@
         <div class="ikuai-home-grid">
           <aside class="ikuai-card ikuai-wan-card">
             <div class="ikuai-card-title">WAN信息</div>
-            <div class="ikuai-wan-select">${html(selectedWan?.name || 'wan1')}</div>
+            <label class="ikuai-wan-switch">
+              <span>线路</span>
+              <select class="ikuai-wan-select" data-ikuai-wan-select aria-label="切换 WAN 线路">${wanOptions}</select>
+            </label>
             <div class="ikuai-info-list">
               <div class="ikuai-info-row"><span>运营商</span><strong>${pill(selectedWan?.running ? '已连接' : '未知', selectedWan?.running ? 'ok' : 'warn')}</strong></div>
               <div class="ikuai-info-row"><span>WAN IP</span><strong>${html(wanAddressText(selectedWan))}</strong></div>
@@ -762,7 +894,7 @@
             <div class="ikuai-info-row"><span>上下行速率</span><strong></strong></div>
             <div class="ikuai-rate-row"><span>↑ <b>${rate(selectedWan?.upRate)}</b></span><span>↓ <b>${rate(selectedWan?.downRate)}</b></span></div>
             <div class="ikuai-wan-chart">${wanChart}</div>
-            <div class="ikuai-latency"><span>延迟</span><strong>${selectedWan?.latencyMs ? `${number(selectedWan.latencyMs)}ms` : '未采集'}</strong></div>
+            <div class="ikuai-latency"><span>延迟</span><strong title="ping ${html(latencyTarget)}">${latencyText}</strong></div>
             <div class="ikuai-quick-head"><div class="ikuai-card-title">快捷入口</div><a href="#interfaces" data-section="interfaces" class="ikuai-card-subtle">自定义</a></div>
             <div class="ikuai-quick-grid" data-overview-drilldown="true">${renderIkuaiQuickGrid()}</div>
           </aside>
@@ -799,20 +931,6 @@
               ${renderResourceCard('内存使用率', safePercent(overview.memoryUsage), '平均值', history.memory || [], '#4891e8')}
               ${renderResourceCard('CPU负载', safePercent(overview.cpuLoad), '使用率 / 趋势', history.cpu || [], '#78c679')}
               ${renderResourceCard('磁盘使用率', safePercent(overview.diskUsage), '系统盘占用', history.disk || [], '#f5b84b')}
-            </div>
-
-            <div class="ikuai-card-grid">
-              <div class="ikuai-card">
-                <div class="ikuai-card-head"><div><div class="ikuai-card-title">无线网络评分</div><div class="ikuai-card-subtle">RouterOS 当前未采集 AP 控制器数据</div></div></div>
-                <div class="ikuai-empty"><div><div class="ikuai-empty-art"></div>近24小时无 AP 在线数据</div></div>
-              </div>
-              <div class="ikuai-card">
-                <div class="ikuai-card-head"><div><div class="ikuai-card-title">线路统计</div><div class="ikuai-card-subtle">绿色表示在线，灰色表示离线或未采集</div></div></div>
-                <div class="ikuai-channel-list">
-                  <div class="ikuai-channel-row"><span>WAN</span><div class="ikuai-channel-pills">${renderLinePills(lines)}</div></div>
-                  <div class="ikuai-channel-row"><span>异常</span><div class="ikuai-card-subtle">离线 ${number(offlineLines)} · 接口丢错 ${number(errorInterfaces)}</div></div>
-                </div>
-              </div>
             </div>
 
             <div>
@@ -984,9 +1102,9 @@
             groupFn: (row) => String(row.ip || '').includes(':') ? 'ipv6' : totalRate(row) > 0 ? 'active' : 'quiet',
             headers: ['名称', 'IP', 'MAC', '状态', '上行', '下行', '连接', '累计'],
             rowHtml: (row) => `<tr>
-              <td>${typeof renderEditableNameCell === 'function' ? renderEditableNameCell(row, row.ip, row.displayName || row.hostname || row.ip || '-') : html(row.displayName || row.hostname || row.ip || '-')}</td>
-              <td>${html(row.ip || '-')}</td>
-              <td>${html(row.mac || '-')}</td>
+              <td class="scale-terminal-name">${typeof renderEditableNameCell === 'function' ? renderEditableNameCell(row, row.ip, row.displayName || row.hostname || row.ip || '-') : html(row.displayName || row.hostname || row.ip || '-')}</td>
+              <td class="scale-terminal-ip">${html(row.ip || '-')}</td>
+              <td class="scale-terminal-mac">${html(row.mac || '-')}</td>
               <td>${pill(row.status || row.source || '-', row.status === 'failed' ? 'danger' : 'info')}</td>
               <td>${rate(row.upRate)}</td>
               <td>${rate(row.downRate)}</td>
@@ -1118,7 +1236,7 @@
               groupOptions: [{ value: 'all', label: '全部' }, { value: 'active', label: '有流量' }, { value: 'quiet', label: '低流量' }],
               groupFn: (row) => totalRate(row) > 0 ? 'active' : 'quiet',
               headers: ['终端', 'IP', '上行', '下行', '连接', '累计'],
-              rowHtml: (row) => `<tr><td>${html(row.displayName || row.hostname || row.ip || '-')}</td><td>${html(row.ip || '-')}</td><td>${rate(row.upRate)}</td><td>${rate(row.downRate)}</td><td>${number(row.connections || row.connectionCount || 0)}</td><td>${bytes(row.sessionBytes || 0)}</td></tr>`,
+              rowHtml: (row) => `<tr><td class="scale-terminal-name">${html(row.displayName || row.hostname || row.ip || '-')}</td><td class="scale-terminal-ip">${html(row.ip || '-')}</td><td>${rate(row.upRate)}</td><td>${rate(row.downRate)}</td><td>${number(row.connections || row.connectionCount || 0)}</td><td>${bytes(row.sessionBytes || 0)}</td></tr>`,
             })}
           </div></div>
         </div>
@@ -1168,6 +1286,13 @@
   });
 
   document.addEventListener('change', (event) => {
+    const wanSelect = event.target?.closest?.('[data-ikuai-wan-select]');
+    if (wanSelect) {
+      state.ikuaiWanLine = wanSelect.value || '';
+      if (typeof noteInteraction === 'function') noteInteraction(2400);
+      if (typeof renderApp === 'function') renderApp(displayedSnapshot || latestSnapshot);
+      return;
+    }
     const target = event.target?.closest?.('[data-scale-group]');
     if (!target) return;
     state.group[target.dataset.scaleGroup] = target.value;
