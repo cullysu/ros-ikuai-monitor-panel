@@ -3,6 +3,8 @@ __pycache__/
 *.py[cod]
 .env
 .env.*
+!.env.docker.example
+docker.env
 *.log
 *.out.log
 *.err.log

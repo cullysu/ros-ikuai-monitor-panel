@@ -1,4 +1,4 @@
-# ROS iKuai 风监控面板设计规范
+# RouterOS Read-only Triage Panel Design Notes
 
 本文件用于约束 `ros-ikuai-monitor-panel` 项目的界面设计方向，供后续页面改造、模块新增、样式收敛和 AI 代理执行时统一遵循。
 

@@ -1306,6 +1306,202 @@
     #trafficLoad .ops-workbench-side {
       min-width: 0;
     }
+    html {
+      width: 100% !important;
+      overflow-x: hidden !important;
+    }
+    body {
+      width: 100% !important;
+      min-width: 0 !important;
+      overflow-x: hidden !important;
+    }
+    .app,
+    .app.ik-shell,
+    .app.ik-shell.home-sidebar-hidden,
+    .app.horizontal-shell {
+      width: 100% !important;
+      min-width: 0 !important;
+      max-width: 100vw !important;
+    }
+    .app.ik-shell .frame {
+      min-width: 0 !important;
+      max-width: 100% !important;
+      overflow-x: hidden !important;
+    }
+    .content,
+    .card,
+    .card-body,
+    .ops-page-stack,
+    .ops-workbench,
+    .ops-workbench-grid,
+    .ops-workbench-side,
+    .ops-info-card,
+    .ops-density-table,
+    .ops-home-panel,
+    .ik-home-main,
+    .ik-home-layout,
+    .public-home-grid,
+    .ops-public-home-grid {
+      min-width: 0 !important;
+      max-width: 100% !important;
+    }
+    .table-wrap,
+    .ops-table-wrap {
+      max-width: 100% !important;
+      overflow-x: auto !important;
+      overscroll-behavior-x: contain;
+    }
+    .ops-table {
+      min-width: min(760px, 100%);
+    }
+    @media (max-width: 1280px) {
+      #overview .ik-home-layout,
+      #overview .ik-home-main,
+      #overview .ik-home-monitor-grid,
+      #overview .ik-home-rank-grid,
+      #overview .ops-overview-banner,
+      #overview .ops-overview-banner-grid,
+      #overview .ops-public-home-grid,
+      #overview .public-home-grid,
+      #overview .public-home-split-grid,
+      #overview .public-home-rank-wrap .ik-home-rank-grid,
+      .ops-workbench-grid,
+      .ops-section-grid,
+      .ops-split,
+      .ops-double {
+        grid-template-columns: minmax(0, 1fr) !important;
+      }
+      .grid-6,
+      .grid-4,
+      .grid-3 {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+      }
+      #overview .public-home-status-grid,
+      #overview .public-home-fact-grid,
+      #overview .public-home-quick-grid,
+      #overview .ops-home-stream-grid,
+      #overview .public-home-terminal-grid,
+      #overview .ops-resource-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+      }
+    }
+    @media (max-width: 960px) {
+      .app.ik-shell,
+      .app.ik-shell.home-sidebar-hidden {
+        grid-template-columns: 52px minmax(0, 1fr) !important;
+        background: linear-gradient(90deg, #fbfcff 0 52px, #ffffff 52px 100%) !important;
+      }
+      .app.ik-shell .sidebar {
+        display: none !important;
+      }
+      .app.ik-shell .frame,
+      .app.ik-shell.home-sidebar-hidden .frame {
+        grid-column: 2 !important;
+      }
+      .topbar-header {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 10px !important;
+      }
+      .topbar-actions {
+        align-items: flex-start !important;
+        width: 100% !important;
+        min-width: 0 !important;
+      }
+      .toolbar-line,
+      .refresh-toolbar {
+        justify-content: flex-start !important;
+        width: 100% !important;
+      }
+      .content {
+        padding: 14px 14px 24px !important;
+      }
+    }
+    @media (max-width: 640px) {
+      .app.ik-shell,
+      .app.ik-shell.home-sidebar-hidden {
+        grid-template-columns: 48px minmax(0, 1fr) !important;
+        background: linear-gradient(90deg, #fbfcff 0 48px, #ffffff 48px 100%) !important;
+      }
+      .app.ik-shell .ik-rail {
+        width: 48px !important;
+      }
+      .app.ik-shell .content,
+      .app.ik-shell .frame .content {
+        padding: 10px 8px 18px !important;
+      }
+      .topbar {
+        padding: 8px 10px 0 !important;
+      }
+      .page-title {
+        font-size: 17px !important;
+      }
+      .status-strip,
+      .grid-6,
+      .grid-4,
+      .grid-3,
+      .grid-2,
+      .dual,
+      .line-trend-grid,
+      .ops-stat-grid,
+      .ops-kpi-strip,
+      .ops-resource-grid,
+      #overview .public-home-status-grid,
+      #overview .public-home-fact-grid,
+      #overview .public-home-quick-grid,
+      #overview .ops-home-stream-grid,
+      #overview .public-home-terminal-grid,
+      #overview .public-home-terminal-summary-grid,
+      #overview .public-home-line-matrix-summary {
+        grid-template-columns: minmax(0, 1fr) !important;
+      }
+      #overview .public-home-hero,
+      #overview .ik-wan-rate-chart,
+      #overview .ops-home-stream-grid .ik-wan-rate-chart,
+      .line-bar,
+      .ops-bar-stack .line-bar,
+      #overview .ik-home-line-bars .line-bar {
+        grid-template-columns: minmax(0, 1fr) !important;
+      }
+      .refresh-toolbar {
+        align-items: flex-start !important;
+      }
+      .refresh-meta {
+        flex-wrap: wrap !important;
+        white-space: normal !important;
+      }
+      .card-head,
+      .section-head,
+      .chart-label {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+      }
+      #interfaces .interfaces-monitor-grid,
+      #interfaces .interfaces-monitor-main,
+      .ops-workbench-grid,
+      .ops-section-grid {
+        grid-template-columns: minmax(0, 1fr) !important;
+      }
+      .ops-axis-chart,
+      .ik-wan-rate-chart {
+        grid-template-columns: minmax(0, 1fr) !important;
+      }
+      .ops-signal-row {
+        grid-template-columns: minmax(0, 1fr) !important;
+      }
+      .ops-signal-side {
+        align-items: flex-start !important;
+        min-width: 0 !important;
+      }
+      .ik-readonly-popover {
+        left: 56px !important;
+        right: 8px !important;
+        width: auto !important;
+      }
+      .ops-table {
+        min-width: 640px;
+      }
+    }
   `;
   document.head.appendChild(whitespaceStyle);
 
@@ -3545,6 +3741,57 @@
     .ops-signal-value { color: var(--text); font-size: 13px; font-weight: 700; line-height: 1.15; text-align: right; white-space: nowrap; }
     .ops-signal-hint { color: var(--text-dim); font-size: 11px; line-height: 1.2; text-align: right; white-space: nowrap; }
     .ops-stack-note { color: var(--text-dim); font-size: 11px; line-height: 1.35; }
+    @media (max-width: 960px) {
+      #interfaces .interfaces-monitor-grid,
+      #interfaces .interfaces-monitor-main,
+      .ops-workbench-grid,
+      .ops-section-grid {
+        grid-template-columns: minmax(0, 1fr) !important;
+      }
+      #interfaces .interfaces-monitor-side,
+      .ops-workbench-side,
+      .ops-panel-stack {
+        min-width: 0 !important;
+        max-width: 100% !important;
+      }
+      #interfaces .interfaces-monitor-facts .ops-stat-grid,
+      #interfaces .ops-stat-grid,
+      #trafficLoad .ops-stat-grid,
+      .ops-kpi-strip {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+      }
+      .ops-axis-chart,
+      .ik-wan-rate-chart {
+        grid-template-columns: minmax(0, 1fr) !important;
+      }
+      .ops-signal-row {
+        grid-template-columns: minmax(0, 1fr) !important;
+      }
+      .ops-signal-side {
+        align-items: flex-start !important;
+        min-width: 0 !important;
+      }
+      .chart-label,
+      #interfaces .interfaces-inline-head {
+        align-items: flex-start !important;
+        flex-direction: column !important;
+        gap: 4px !important;
+      }
+      #interfaces .interfaces-inline-subtle {
+        text-align: left !important;
+      }
+    }
+    @media (max-width: 520px) {
+      #interfaces .interfaces-monitor-facts .ops-stat-grid,
+      #interfaces .ops-stat-grid,
+      #trafficLoad .ops-stat-grid,
+      .ops-kpi-strip {
+        grid-template-columns: minmax(0, 1fr) !important;
+      }
+      .ops-table {
+        min-width: 640px;
+      }
+    }
   `;
   document.head.appendChild(ipDensityStyle);
 

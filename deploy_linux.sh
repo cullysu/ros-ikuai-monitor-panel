@@ -104,15 +104,27 @@ else
   IP_UNIT="ros-panel-ip.service"
 fi
 
-ROS_PANEL_BIND="${ROS_PANEL_BIND:-0.0.0.0}"
+if [[ "${MODE}" == "instance" ]]; then
+  DEFAULT_PANEL_BIND="127.0.0.1"
+  DEFAULT_PANEL_TARGET_IP="127.0.0.1"
+  DEFAULT_PANEL_PROFILE="routeros_only"
+  DEFAULT_ROUTER_USER="ros-panel-readonly"
+else
+  DEFAULT_PANEL_BIND="0.0.0.0"
+  DEFAULT_PANEL_TARGET_IP="192.168.3.5"
+  DEFAULT_PANEL_PROFILE="private_ops"
+  DEFAULT_ROUTER_USER="admin"
+fi
+
+ROS_PANEL_BIND="${ROS_PANEL_BIND:-${DEFAULT_PANEL_BIND}}"
 ROS_PANEL_PORT="${ROS_PANEL_PORT:-80}"
-ROS_PANEL_TARGET_IP="${ROS_PANEL_TARGET_IP:-192.168.3.5}"
-ROS_PANEL_PROFILE="${ROS_PANEL_PROFILE:-private_ops}"
+ROS_PANEL_TARGET_IP="${ROS_PANEL_TARGET_IP:-${DEFAULT_PANEL_TARGET_IP}}"
+ROS_PANEL_PROFILE="${ROS_PANEL_PROFILE:-${DEFAULT_PANEL_PROFILE}}"
 ROS_PANEL_IFACE="${ROS_PANEL_IFACE:-ens192}"
 ROS_PANEL_BIND_CIDR="${ROS_PANEL_BIND_CIDR:-24}"
 ROS_PANEL_IP_HEAL_SECONDS="${ROS_PANEL_IP_HEAL_SECONDS:-3}"
 ROS_MONITOR_ROUTER_HOST="${ROS_MONITOR_ROUTER_HOST:-192.168.3.1}"
-ROS_MONITOR_ROUTER_USER="${ROS_MONITOR_ROUTER_USER:-admin}"
+ROS_MONITOR_ROUTER_USER="${ROS_MONITOR_ROUTER_USER:-${DEFAULT_ROUTER_USER}}"
 ROS_MONITOR_ROUTER_PASSWORD="${ROS_MONITOR_ROUTER_PASSWORD:-CHANGE_ME}"
 ROS_MONITOR_POLL_SECONDS="${ROS_MONITOR_POLL_SECONDS:-1}"
 ROS_MONITOR_STATIC_POLL_SECONDS="${ROS_MONITOR_STATIC_POLL_SECONDS:-300}"
@@ -128,11 +140,15 @@ sudo DEBIAN_FRONTEND=noninteractive apt-get install -y python3-venv python3-pip 
 
 sudo mkdir -p "${APP_DIR}"
 sudo rsync -a --delete \
+  --exclude '.git' \
+  --exclude '.gitignore' \
+  --exclude '.env' \
   --exclude '.venv' \
   --exclude '__pycache__' \
   --exclude '*.pyc' \
   --exclude '*.log' \
-  --exclude '_sample*.json' \
+  --exclude 'data/' \
+  --exclude '_*' \
   "${SRC_DIR}/" "${APP_DIR}/"
 
 sudo python3 -m venv "${VENV_DIR}"
@@ -147,7 +163,8 @@ else
   sudo install -m 0644 "${APP_DIR}/ros-panel-ip.service" "${IP_SERVICE_FILE}"
 fi
 
-sudo tee "${ENV_FILE}" >/dev/null <<EOF
+ENV_TMP="$(mktemp)"
+cat > "${ENV_TMP}" <<EOF
 PYTHONUNBUFFERED=1
 ROS_PANEL_BIND=${ROS_PANEL_BIND}
 ROS_PANEL_PORT=${ROS_PANEL_PORT}
@@ -168,6 +185,8 @@ ROS_MONITOR_CONNECTION_DETAIL_POLL_SECONDS=${ROS_MONITOR_CONNECTION_DETAIL_POLL_
 ROS_MONITOR_DETAIL_REST_WORKERS=${ROS_MONITOR_DETAIL_REST_WORKERS}
 ROS_MONITOR_CONNECTION_PROTOCOL_POLL_SECONDS=${ROS_MONITOR_CONNECTION_PROTOCOL_POLL_SECONDS}
 EOF
+sudo install -m 0600 -o root -g root "${ENV_TMP}" "${ENV_FILE}"
+rm -f "${ENV_TMP}"
 
 if [[ "${MODE}" == "instance" ]]; then
   # If the operator overrides APP_DIR, ensure the instance unit points at the right path.

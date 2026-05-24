@@ -20,12 +20,12 @@ import requests
 BASE_DIR = Path(__file__).resolve().parent
 PUBLIC_DIR = BASE_DIR / "public"
 ROUTER_HOST = os.getenv("ROS_MONITOR_ROUTER_HOST", "192.168.3.1")
-ROUTER_USER = os.getenv("ROS_MONITOR_ROUTER_USER", "admin")
+ROUTER_USER = os.getenv("ROS_MONITOR_ROUTER_USER", "ros-panel-readonly")
 ROUTER_PASSWORD = os.getenv("ROS_MONITOR_ROUTER_PASSWORD", "CHANGE_ME")
-PANEL_PROFILE_RAW = os.getenv("ROS_PANEL_PROFILE", "private_ops")
-PANEL_BIND = os.getenv("ROS_PANEL_BIND", "0.0.0.0")
-PANEL_PORT = int(os.getenv("ROS_PANEL_PORT", "80"))
-PANEL_TARGET = os.getenv("ROS_PANEL_TARGET_IP", "192.168.3.5")
+PANEL_PROFILE_RAW = os.getenv("ROS_PANEL_PROFILE", "routeros_only")
+PANEL_BIND = os.getenv("ROS_PANEL_BIND", "127.0.0.1")
+PANEL_PORT = int(os.getenv("ROS_PANEL_PORT", "8080"))
+PANEL_TARGET = os.getenv("ROS_PANEL_TARGET_IP", "127.0.0.1")
 POLL_SECONDS = max(1, int(os.getenv("ROS_MONITOR_POLL_SECONDS", "1")))
 HISTORY_LIMIT = int(os.getenv("ROS_MONITOR_HISTORY_LIMIT", "60"))
 ACTIVE_CONNECTION_LIMIT = int(os.getenv("ROS_MONITOR_ACTIVE_CONNECTION_LIMIT", "80"))
@@ -77,6 +77,7 @@ READONLY_DIAGNOSTIC_DNS_TIMEOUT = float(os.getenv("ROS_PANEL_READONLY_DIAGNOSTIC
 READONLY_DIAGNOSTIC_HTTP_TIMEOUT = float(os.getenv("ROS_PANEL_READONLY_DIAGNOSTIC_HTTP_TIMEOUT", "2.5"))
 READONLY_DIAGNOSTIC_WORKERS = int(os.getenv("ROS_PANEL_READONLY_DIAGNOSTIC_WORKERS", "24"))
 READONLY_DIAGNOSTIC_TOTAL_TIMEOUT = float(os.getenv("ROS_PANEL_READONLY_DIAGNOSTIC_TOTAL_TIMEOUT", "8"))
+ACTION_QUEUE_LIMIT = max(1, int(os.getenv("ROS_PANEL_ACTION_QUEUE_LIMIT", "24")))
 
 READONLY_DNS_SERVERS = [
     {"name": "RouterOS DNS", "address": "192.168.3.1"},
@@ -392,12 +393,385 @@ def build_panel_capabilities(wan_lines, pppoe_count):
         "privateDiagnostics": READONLY_DIAGNOSTICS_ENABLED,
         "openwrtDiagnostics": READONLY_DIAGNOSTICS_ENABLED,
         "nikkiDiagnostics": READONLY_DIAGNOSTICS_ENABLED,
+        "semanticTriage": True,
+        "actionQueue": True,
         "publicRouterosProfile": PUBLIC_ROUTEROS_PROFILE,
         "ipAliasWrite": IP_ALIAS_WRITE_ENABLED,
         "adminSessions": EXPOSE_ADMIN_SESSIONS,
         "wanFallback": wan_count > 0 and to_int(pppoe_count) == 0,
         "singleWan": wan_count == 1,
         "multiWan": wan_count > 1,
+    }
+
+
+ACTION_SEVERITY_RANK = {"critical": 0, "warning": 1, "info": 2}
+
+
+def as_list(value):
+    return value if isinstance(value, list) else []
+
+
+def as_dict(value):
+    return value if isinstance(value, dict) else {}
+
+
+def compact_text(value, limit=180):
+    text = str(value or "").strip()
+    if len(text) <= limit:
+        return text
+    return text[: max(0, limit - 3)] + "..."
+
+
+def build_semantic_triage(snapshot):
+    snapshot = as_dict(snapshot)
+    meta = as_dict(snapshot.get("meta"))
+    overview = as_dict(snapshot.get("overview"))
+    connections = as_dict(snapshot.get("connections"))
+    dns = as_dict(snapshot.get("dns"))
+    routes = as_dict(snapshot.get("routes"))
+    load_balance = as_dict(snapshot.get("loadBalance"))
+    arp = as_dict(snapshot.get("arp"))
+    dhcp = as_dict(snapshot.get("dhcp"))
+    security = as_dict(snapshot.get("security"))
+    actions = []
+    seen_ids = set()
+
+    def add_action(action_id, severity, domain, title, summary, next_step, source, evidence=None):
+        if action_id in seen_ids:
+            return
+        seen_ids.add(action_id)
+        actions.append(
+            {
+                "id": action_id,
+                "severity": severity,
+                "domain": domain,
+                "title": title,
+                "summary": compact_text(summary, 240),
+                "nextStep": compact_text(next_step, 240),
+                "source": source,
+                "readOnly": True,
+                "actionType": "manual_review",
+                "priority": len(actions) + 1,
+                "evidence": evidence or [],
+            }
+        )
+
+    snapshot_status = snapshot.get("status")
+    if snapshot_status and snapshot_status != "ok":
+        add_action(
+            "collector.snapshot_status",
+            "warning" if snapshot_status == "starting" else "critical",
+            "collector",
+            "Snapshot collection is not healthy",
+            f"Current snapshot status is {snapshot_status}.",
+            "Check collection errors first; this queue does not attempt an automatic repair.",
+            "snapshot.status",
+            [{"label": "status", "value": snapshot_status}, {"label": "error", "value": compact_text(snapshot.get("error"))}],
+        )
+
+    collection_sources = [
+        ("meta.realtimeError", meta.get("realtimeError"), meta.get("realtimeLastErrorAt"), "critical", "Realtime REST collection has errors"),
+        ("meta.slowRestError", meta.get("slowRestError"), meta.get("slowRestLastErrorAt"), "warning", "Slow REST collection has errors"),
+        ("meta.staticError", meta.get("staticError"), meta.get("staticLastErrorAt"), "warning", "Static REST collection has errors"),
+        ("connections.protocolError", connections.get("protocolError"), connections.get("protocolLastErrorAt"), "warning", "Connection protocol summary has errors"),
+        ("connections.detailError", connections.get("detailError"), connections.get("detailLastErrorAt"), "warning", "Connection detail collection has errors"),
+    ]
+    for source, error, last_error_at, severity, title in collection_sources:
+        if error:
+            add_action(
+                source.replace(".", "_").lower(),
+                severity,
+                "collector",
+                title,
+                compact_text(error),
+                "Verify the read-only collection path and credentials before trusting dependent widgets.",
+                source,
+                [{"label": "lastErrorAt", "value": last_error_at or "-"}, {"label": "error", "value": compact_text(error)}],
+            )
+
+    endpoint_failure_sources = [
+        ("meta.realtimeEndpointFailures", "Realtime REST endpoint failures"),
+        ("meta.slowRestEndpointFailures", "Slow REST endpoint failures"),
+        ("meta.staticEndpointFailures", "Static REST endpoint failures"),
+        ("meta.detailEndpointFailures", "Detail REST endpoint failures"),
+    ]
+    for source, title in endpoint_failure_sources:
+        failures = as_dict(meta.get(source.split(".")[-1]))
+        if failures:
+            failed_names = sorted(str(name) for name in failures.keys())
+            add_action(
+                source.replace(".", "_").lower(),
+                "warning",
+                "collector",
+                title,
+                f"{len(failed_names)} endpoint(s) reported collection failures.",
+                "Open the collector logs or endpoint failure details; keep remediation manual.",
+                source,
+                [{"label": "count", "value": len(failed_names)}, {"label": "sample", "value": ", ".join(failed_names[:5])}],
+            )
+
+    wan_lines = as_list(snapshot.get("wan")) or as_list(snapshot.get("pppoe"))
+    running_wan = [row for row in wan_lines if as_dict(row).get("running")]
+    offline_wan = [as_dict(row) for row in wan_lines if not as_dict(row).get("running")]
+    if wan_lines and not running_wan:
+        add_action(
+            "wan.no_running_lines",
+            "critical",
+            "wan",
+            "No WAN line is running",
+            "All known WAN lines are currently reported offline.",
+            "Confirm upstream link state and routing from the read-only WAN and route views.",
+            "snapshot.wan",
+            [{"label": "wanCount", "value": len(wan_lines)}],
+        )
+    elif offline_wan:
+        add_action(
+            "wan.offline_lines",
+            "warning",
+            "wan",
+            "Some WAN lines are offline",
+            f"{len(offline_wan)} of {len(wan_lines)} WAN line(s) are not running.",
+            "Review the affected line inventory and upstream access before changing policy.",
+            "snapshot.wan",
+            [{"label": "offline", "value": ", ".join(compact_text(row.get("name") or row.get("lineId") or "-") for row in offline_wan[:5])}],
+        )
+
+    default_routes = as_list(routes.get("defaultRoutes"))
+    active_defaults = [row for row in default_routes if as_dict(row).get("active") and not as_dict(row).get("disabled")]
+    if default_routes and not active_defaults:
+        add_action(
+            "routes.no_active_default",
+            "critical",
+            "routes",
+            "No active default route",
+            "Default routes exist, but none are active and enabled.",
+            "Use the route inventory to identify inactive gateways; do not auto-edit routes from this panel.",
+            "snapshot.routes.defaultRoutes",
+            [{"label": "defaultRoutes", "value": len(default_routes)}],
+        )
+    elif wan_lines and not default_routes:
+        add_action(
+            "routes.no_default_visible",
+            "warning",
+            "routes",
+            "No default route is visible",
+            "WAN lines are present but the snapshot does not include a default route.",
+            "Check route collection freshness and the RouterOS route table manually.",
+            "snapshot.routes.defaultRoutes",
+            [{"label": "wanCount", "value": len(wan_lines)}],
+        )
+
+    distribution = [as_dict(row) for row in as_list(load_balance.get("distribution"))]
+    if len(distribution) > 1 and any(to_int(row.get("share")) >= 70 for row in distribution):
+        dominant = max(distribution, key=lambda row: to_int(row.get("share")))
+        add_action(
+            "wan.traffic_skew",
+            "info",
+            "wan",
+            "WAN traffic distribution is skewed",
+            f"{dominant.get('name', '-')} is carrying about {dominant.get('share', 0)}% of observed WAN traffic.",
+            "Treat this as an observation unless it persists under representative traffic.",
+            "snapshot.loadBalance.distribution",
+            [{"label": "line", "value": dominant.get("name", "-")}, {"label": "share", "value": dominant.get("share", 0)}],
+        )
+
+    if dns and not dns.get("running"):
+        add_action(
+            "dns.remote_requests_disabled",
+            "warning",
+            "dns",
+            "RouterOS DNS remote requests are disabled",
+            "The RouterOS DNS service is not accepting remote requests according to the snapshot.",
+            "Confirm whether this is intentional for the current topology before changing DNS settings.",
+            "snapshot.dns.running",
+            [{"label": "running", "value": dns.get("running")}],
+        )
+    if dns and not as_list(dns.get("servers")):
+        add_action(
+            "dns.no_servers",
+            "warning",
+            "dns",
+            "No upstream DNS servers are visible",
+            "The DNS snapshot does not list upstream servers.",
+            "Verify DNS configuration through the normal RouterOS console if clients report resolution failures.",
+            "snapshot.dns.servers",
+            [],
+        )
+    cache_size = to_int(dns.get("cacheSize"))
+    cache_used = to_int(dns.get("cacheUsed"))
+    if cache_size and cache_used:
+        cache_usage = (cache_used / cache_size) * 100
+        if cache_usage >= 90:
+            add_action(
+                "dns.cache_pressure",
+                "warning",
+                "dns",
+                "DNS cache usage is high",
+                f"DNS cache usage is about {round(cache_usage, 1)}%.",
+                "Observe whether resolution latency or cache evictions correlate before tuning cache size.",
+                "snapshot.dns.cacheUsed",
+                [{"label": "cacheUsed", "value": cache_used}, {"label": "cacheSize", "value": cache_size}],
+            )
+
+    ipv6_dhcp_unbound = [
+        row for row in as_list(dns.get("ipv6DhcpClients"))
+        if str(as_dict(row).get("status", "")).lower() not in {"bound", "running"}
+    ]
+    if ipv6_dhcp_unbound:
+        add_action(
+            "ipv6.dhcp_clients_unbound",
+            "warning",
+            "ipv6",
+            "Some DHCPv6 clients are not bound",
+            f"{len(ipv6_dhcp_unbound)} DHCPv6 client(s) are not bound.",
+            "Review IPv6 prefix delegation and upstream state from the IPv6 diagnostics view.",
+            "snapshot.dns.ipv6DhcpClients",
+            [{"label": "interfaces", "value": ", ".join(str(as_dict(row).get("interface", "-")) for row in ipv6_dhcp_unbound[:5])}],
+        )
+
+    high_pools = []
+    for pool in as_list(dhcp.get("pools")):
+        pool = as_dict(pool)
+        usage = float(pool.get("usage") or 0)
+        if usage >= 85:
+            high_pools.append(pool)
+    if high_pools:
+        max_usage = max(float(pool.get("usage") or 0) for pool in high_pools)
+        add_action(
+            "dhcp.pool_pressure",
+            "critical" if max_usage >= 95 else "warning",
+            "dhcp",
+            "DHCP pool capacity is tight",
+            f"{len(high_pools)} DHCP pool(s) are at or above 85% usage.",
+            "Review lease inventory and pool sizing manually before making address-plan changes.",
+            "snapshot.dhcp.pools",
+            [{"label": "pools", "value": ", ".join(str(pool.get("name", "-")) for pool in high_pools[:5])}],
+        )
+
+    arp_alerts = as_list(arp.get("alerts"))
+    if arp_alerts:
+        add_action(
+            "arp.identity_conflicts",
+            "critical",
+            "terminals",
+            "ARP identity conflicts detected",
+            f"{len(arp_alerts)} ARP alert(s) were found in the snapshot.",
+            "Investigate duplicate IP or MAC movement from terminal and switch-side evidence.",
+            "snapshot.arp.alerts",
+            [{"label": "sample", "value": compact_text(as_dict(arp_alerts[0]).get("detail") or as_dict(arp_alerts[0]).get("value"))}],
+        )
+
+    interface_issues = []
+    for row in as_list(snapshot.get("interfaces")):
+        row = as_dict(row)
+        issue_total = sum(to_int(row.get(key)) for key in ("rxDrop", "txDrop", "rxError", "txError"))
+        if issue_total > 0:
+            interface_issues.append((row, issue_total))
+    if interface_issues:
+        interface_issues.sort(key=lambda item: item[1], reverse=True)
+        add_action(
+            "interfaces.error_counters",
+            "warning",
+            "interfaces",
+            "Interface error or drop counters are non-zero",
+            f"{len(interface_issues)} interface(s) have drop/error counters.",
+            "Inspect cabling, duplex, and upstream devices before changing RouterOS interface settings.",
+            "snapshot.interfaces",
+            [{"label": "topInterface", "value": interface_issues[0][0].get("name", "-")}, {"label": "events", "value": interface_issues[0][1]}],
+        )
+
+    cpu_load = to_int(overview.get("cpuLoad"))
+    memory_usage = float(overview.get("memoryUsage") or 0)
+    disk_usage = float(overview.get("diskUsage") or 0)
+    resource_pressure = []
+    if cpu_load >= 90:
+        resource_pressure.append(("cpu", "critical", cpu_load))
+    elif cpu_load >= 75:
+        resource_pressure.append(("cpu", "warning", cpu_load))
+    if memory_usage >= 90:
+        resource_pressure.append(("memory", "critical", round(memory_usage, 1)))
+    elif memory_usage >= 80:
+        resource_pressure.append(("memory", "warning", round(memory_usage, 1)))
+    if disk_usage >= 90:
+        resource_pressure.append(("disk", "critical", round(disk_usage, 1)))
+    elif disk_usage >= 80:
+        resource_pressure.append(("disk", "warning", round(disk_usage, 1)))
+    if resource_pressure:
+        severity = "critical" if any(item[1] == "critical" for item in resource_pressure) else "warning"
+        add_action(
+            "system.resource_pressure",
+            severity,
+            "system",
+            "Router resource pressure is elevated",
+            ", ".join(f"{name}={value}%" for name, _, value in resource_pressure),
+            "Correlate with traffic and logs before scheduling maintenance or tuning.",
+            "snapshot.overview",
+            [{"label": name, "value": value} for name, _, value in resource_pressure],
+        )
+
+    threshold_level = connections.get("thresholdLevel")
+    if threshold_level in {"danger", "warning"}:
+        add_action(
+            "connections.tracking_pressure",
+            "critical" if threshold_level == "danger" else "warning",
+            "connections",
+            "Connection tracking pressure is elevated",
+            f"Connection total is {connections.get('total', 0)} with threshold level {threshold_level}.",
+            "Use top IP and active connection views to identify heavy clients before changing limits.",
+            "snapshot.connections",
+            [{"label": "total", "value": connections.get("total", 0)}, {"label": "tcp", "value": connections.get("tcp")}],
+        )
+
+    top_terminal = next((as_dict(row) for row in as_list(snapshot.get("terminals")) if to_int(as_dict(row).get("connections")) >= 1000), None)
+    if top_terminal:
+        add_action(
+            "terminals.high_connection_client",
+            "info",
+            "terminals",
+            "A terminal has a high connection count",
+            f"{top_terminal.get('displayName') or top_terminal.get('hostname') or top_terminal.get('ip')} has {top_terminal.get('connections')} tracked connection(s).",
+            "Review whether this is expected workload, download software, P2P, or a noisy client.",
+            "snapshot.terminals",
+            [{"label": "ip", "value": top_terminal.get("ip", "-")}, {"label": "connections", "value": top_terminal.get("connections", 0)}],
+        )
+
+    security_alerts = as_list(security.get("alerts"))
+    if security_alerts:
+        add_action(
+            "security.log_alerts",
+            "warning" if len(security_alerts) >= 10 else "info",
+            "security",
+            "Security-related log alerts are present",
+            f"{len(security_alerts)} firewall/warning/error log item(s) are visible.",
+            "Review log context and rule hit counters; this endpoint only queues investigation hints.",
+            "snapshot.security.alerts",
+            [{"label": "sample", "value": compact_text(as_dict(security_alerts[0]).get("message"))}],
+        )
+
+    actions.sort(key=lambda row: (ACTION_SEVERITY_RANK.get(row["severity"], 99), row["priority"]))
+    actions = actions[:ACTION_QUEUE_LIMIT]
+    for index, action in enumerate(actions, start=1):
+        action["priority"] = index
+    counts = {severity: 0 for severity in ACTION_SEVERITY_RANK}
+    for action in actions:
+        counts[action["severity"]] = counts.get(action["severity"], 0) + 1
+    status = "critical" if counts.get("critical") else "warning" if counts.get("warning") else "ok"
+    return {
+        "status": status,
+        "readOnly": True,
+        "generatedAt": format_iso_now(),
+        "sourceUpdatedAt": snapshot.get("updatedAt"),
+        "sourceStatus": snapshot.get("status"),
+        "limit": ACTION_QUEUE_LIMIT,
+        "counts": counts,
+        "topPriority": actions[0] if actions else None,
+        "queue": actions,
+        "actionQueue": actions,
+        "guardrails": {
+            "routerosWrites": False,
+            "usesCachedSnapshot": True,
+            "mutatingEndpoints": False,
+        },
     }
 
 
@@ -698,7 +1072,7 @@ def http_probe(target):
             timeout=READONLY_DIAGNOSTIC_HTTP_TIMEOUT,
             allow_redirects=True,
             stream=True,
-            headers={"User-Agent": "ROSiKuaiPanel-Readonly-Diagnostics/1.0"},
+            headers={"User-Agent": "RouterOSTriagePanel-Readonly-Diagnostics/1.0"},
         )
         result["status"] = response.status_code
         result["ok"] = response.status_code < 500
@@ -747,7 +1121,7 @@ def exit_probe(target):
         response = requests.get(
             target["url"],
             timeout=READONLY_DIAGNOSTIC_HTTP_TIMEOUT,
-            headers={"User-Agent": "ROSiKuaiPanel-Readonly-Diagnostics/1.0"},
+            headers={"User-Agent": "RouterOSTriagePanel-Readonly-Diagnostics/1.0"},
         )
         text = response.text.strip()
         result["raw"] = text[:500]
@@ -2255,7 +2629,11 @@ class Collector:
             "routes": self.build_routes(rest),
             "logs": self.build_logs(rest),
         }
-        return self.apply_ip_aliases_to_snapshot(snapshot, dict(self.ip_aliases))
+        snapshot = self.apply_ip_aliases_to_snapshot(snapshot, dict(self.ip_aliases))
+        triage = build_semantic_triage(snapshot)
+        snapshot["semanticTriage"] = triage
+        snapshot["actionQueue"] = triage["queue"]
+        return snapshot
 
     def update_state(self):
         snapshot = self.build_snapshot(self.merge_rest_bundle(), self.merge_connection_bundle())
@@ -2439,6 +2817,9 @@ class Collector:
     def get_state(self):
         with self.lock:
             return copy.deepcopy(self.state)
+
+    def get_semantic_triage(self):
+        return build_semantic_triage(self.get_state())
 
     def build_readonly_diagnostics(self):
         def dns_job(server_config, domain_config, qtype):
@@ -2637,7 +3018,7 @@ collector = Collector()
 
 
 class Handler(BaseHTTPRequestHandler):
-    server_version = "ROSiKuaiPanel/1.0"
+    server_version = "RouterOSTriagePanel/1.0"
 
     def do_GET(self):
         parsed = urlparse(self.path)
@@ -2679,6 +3060,8 @@ class Handler(BaseHTTPRequestHandler):
                     "target": PANEL_TARGET,
                 }
             )
+        if parsed.path in {"/api/action-queue", "/api/semantic-triage"}:
+            return self.send_json(collector.get_semantic_triage())
         if parsed.path == "/api/readonly-diagnostics":
             params = parse_qs(parsed.query)
             force_refresh = (params.get("refresh") or ["0"])[0] in {"1", "true", "yes"}

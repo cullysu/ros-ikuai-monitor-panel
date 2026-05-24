@@ -1,5 +1,5 @@
 [Unit]
-Description=RouterOS iKuai-style monitoring panel (%i)
+Description=RouterOS read-only triage panel (%i)
 After=network-online.target
 Wants=network-online.target
 
@@ -12,7 +12,9 @@ EnvironmentFile=-/etc/default/routeros-panel-%i
 ExecStart=/opt/ros-ikuai-monitor-panel-%i/.venv/bin/python /opt/ros-ikuai-monitor-panel-%i/app.py
 Restart=always
 RestartSec=5
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
 
 [Install]
 WantedBy=multi-user.target
-

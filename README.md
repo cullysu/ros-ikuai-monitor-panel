@@ -1,57 +1,123 @@
-# RouterOS iKuai Monitor Panel
+# RouterOS Read-only Semantic Triage Console
 
-Private source repository for the RouterOS read-only monitoring panel.
+[English](./README.md) | [简体中文](./README.zh-CN.md)
 
-## What It Is
+Read-only RouterOS operations panel for people who need fast triage of WAN,
+routing, DNS, DHCP, firewall, interface, traffic, and log state without giving a
+dashboard write access to the router.
 
-- Python backend for RouterOS data collection
-- static Web panel under `public/`
-- Linux deployment via `deploy_linux.sh` and systemd units
-- read-only operations UI; it is not meant to push RouterOS/OpenWrt changes
+The product wedge is semantic triage: turn RouterOS state into risk summaries,
+evidence entry points, and next manual review steps. It is not a replacement for
+WinBox/WebFig, Grafana, Zabbix, LibreNMS, The Dude, or backup/diff tools.
 
-## What It Is Not
+## Install Paths
 
-- not a RouterOS/OpenWrt backup store
-- not a firewall/routing automation repo
-- not a place for browser profiles, screenshots, logs, or local debug captures
+| Path | Best for | Status |
+|------|----------|--------|
+| Local run | Trying the project in a few minutes from a PC | Recommended first trial |
+| Docker / Compose | NAS, mini PC, Linux host, OpenWrt Docker, cloud VM | Recommended deployment |
+| RouterOS Container | Advanced RouterOS users who want one-box deployment | Beta / advanced |
+| Linux systemd / VM | Operators who want a managed production service | Professional |
 
-## Repository Layout
-
-- `app.py` backend entrypoint
-- `public/` static frontend
-- `tools/` browser verification and capture helpers
-- `deploy_linux.sh` Linux deployment helper
-- `routeros-panel*.service` / `ros-panel-ip*.service` systemd units
-- `DEPLOY_PUBLIC_192.168.3.50.md` public RouterOS-only instance example
-- `DESIGN.md` UI design rules
-
-## Profiles
-
-Common profiles in use:
-
-- `private_ops`
-  - full private environment flavor
-- `routeros_only`
-  - RouterOS-only / public-style flavor without assuming OpenWrt-private diagnostics
-
-## Quick Start
-
-### Local Development
+## Quick Start: Local
 
 ```powershell
-Set-Location "D:\cully\Documents\ros-ikuai-monitor-panel"
 python -m venv .venv
 .\.venv\Scripts\pip install -r requirements.txt
-$env:ROS_MONITOR_ROUTER_HOST="192.168.3.1"
-$env:ROS_MONITOR_ROUTER_USER="admin"
+$env:ROS_MONITOR_ROUTER_HOST="192.168.88.1"
+$env:ROS_MONITOR_ROUTER_USER="ros-panel-readonly"
 $env:ROS_MONITOR_ROUTER_PASSWORD="CHANGE_ME"
+$env:ROS_PANEL_BIND="127.0.0.1"
 $env:ROS_PANEL_PORT="8080"
+$env:ROS_PANEL_TARGET_IP="127.0.0.1"
+$env:ROS_PANEL_PROFILE="routeros_only"
 .\.venv\Scripts\python app.py
 ```
 
-Then open:
+Open `http://127.0.0.1:8080/`.
 
-- `http://127.0.0.1:8080/`
+Read [DEPLOY_LOCAL.md](./DEPLOY_LOCAL.md) for Windows, macOS, and Linux details.
+
+## Quick Start: Docker
+
+```bash
+cp .env.docker.example .env.docker
+# edit .env.docker and set ROS_MONITOR_ROUTER_HOST / USER / PASSWORD
+docker compose --env-file .env.docker up -d --build
+```
+
+Open `http://127.0.0.1:8080/`.
+
+Docker is the default public deployment recommendation because it does not
+require ESXi or a dedicated VM, and it keeps the panel isolated from RouterOS.
+Read [DEPLOY_DOCKER.md](./DEPLOY_DOCKER.md) before exposing it beyond localhost.
+
+## RouterOS Container
+
+RouterOS Container is supported as an advanced/Beta deployment route. It is not
+the default path because it changes RouterOS container, storage, veth, and
+possibly API/firewall access state.
+
+Read [DEPLOY_ROUTEROS_CONTAINER.md](./DEPLOY_ROUTEROS_CONTAINER.md) and make a
+RouterOS backup before trying it.
+
+## Linux systemd / VM
+
+The Linux helper remains useful for operators who want an instance managed by
+systemd:
+
+```bash
+export ROS_PANEL_TARGET_IP="192.168.3.50"
+export ROS_PANEL_BIND="0.0.0.0"
+export ROS_PANEL_PORT="80"
+export ROS_PANEL_PROFILE="routeros_only"
+export ROS_MONITOR_ROUTER_HOST="192.168.3.1"
+export ROS_MONITOR_ROUTER_USER="ros-panel-readonly"
+export ROS_MONITOR_ROUTER_PASSWORD="CHANGE_ME"
+
+./deploy_linux.sh --instance public50 --disable-ip-service
+```
+
+Read [DEPLOY_PUBLIC_192.168.3.50.md](./DEPLOY_PUBLIC_192.168.3.50.md) or
+[DEPLOY_PUBLIC_192.168.4.50.md](./DEPLOY_PUBLIC_192.168.4.50.md) before using
+the systemd path on a live LAN host.
+
+## What It Does
+
+- Collects RouterOS data through read-only API/SSH paths.
+- Serves a static web UI from `public/`.
+- Builds semantic triage from the latest snapshot:
+  - collector errors
+  - WAN and default-route risks
+  - DNS/DHCP pressure
+  - ARP conflicts
+  - interface drops/errors
+  - RouterOS resource and connection pressure
+  - security-log hints
+- Keeps public-profile write paths disabled by default.
+
+## What It Does Not Do
+
+- It does not change RouterOS configuration.
+- It does not change OpenWrt, Nikki/Mihomo, ESXi, DNS, DHCP, NAT, firewall,
+  routing, UPnP, or port forwards.
+- It does not include built-in user authentication or TLS termination.
+- It does not replace RouterOS backups or config diff tooling.
+
+## Repository Layout
+
+- `app.py`: backend entrypoint and RouterOS snapshot collector.
+- `public/`: static frontend.
+- `Dockerfile`: container image build.
+- `compose.yml`: recommended Docker Compose deployment.
+- `.env.docker.example`: non-secret Docker environment template.
+- `deploy_linux.sh`: Linux systemd deployment helper.
+- `routeros-panel*.service`: systemd units.
+- `tools/`: local smoke and browser verification helpers.
+- `DEPLOY_LOCAL.md`: local trial path.
+- `DEPLOY_DOCKER.md`: Docker deployment path.
+- `DEPLOY_ROUTEROS_CONTAINER.md`: RouterOS Container Beta path.
+- `docs/local-predeploy-checks.md`: local-only predeployment checks.
 
 ## Required Environment
 
@@ -60,59 +126,50 @@ At minimum, set:
 - `ROS_MONITOR_ROUTER_HOST`
 - `ROS_MONITOR_ROUTER_USER`
 - `ROS_MONITOR_ROUTER_PASSWORD`
-- `ROS_PANEL_TARGET_IP`
+- `ROS_PANEL_BIND`
 - `ROS_PANEL_PORT`
+- `ROS_PANEL_TARGET_IP`
 - `ROS_PANEL_PROFILE`
 
-Use [env.example](./env.example) as the non-secret template.
+Use [env.example](./env.example) or [.env.docker.example](./.env.docker.example)
+as non-secret templates.
 
-## Linux Deployment
+## Security Baseline
 
-Two deployment modes exist:
-
-1. legacy single-instance mode
-   - units: `routeros-panel.service` + `ros-panel-ip.service`
-2. instance mode
-   - units: `routeros-panel@<name>.service`
-   - optional: `ros-panel-ip@<name>.service`
-
-Important behavior:
-
-- `deploy_linux.sh` uses `rsync --delete`, so do not store persistent data inside `/opt/ros-ikuai-monitor-panel*`.
-- instance mode is the safer default when you want a second panel without disturbing the main deployment.
-- the IP-heal service is optional and should not be enabled casually.
-
-For the public RouterOS-only deployment example, read:
-
-- [DEPLOY_PUBLIC_192.168.3.50.md](./DEPLOY_PUBLIC_192.168.3.50.md)
+- Create a dedicated least-privilege RouterOS user for the panel.
+- Do not use the RouterOS `admin` account.
+- Keep `ROS_PANEL_BIND=127.0.0.1` for local runs.
+- Keep Docker publishing on `127.0.0.1` until LAN access is intentional.
+- Do not expose the panel directly to the public internet.
+- Put HTTPS and authentication in front of the panel if it leaves a trusted LAN.
+- Use `routeros_only` for public/product-style deployments.
+- In public profile, private OpenWrt/Nikki diagnostics are disabled and
+  IP-alias writes should remain off unless explicitly reviewed.
 
 ## Validation
 
-Typical checks:
-
 ```bash
-systemctl --no-pager --full status routeros-panel.service
-systemctl --no-pager --full status "routeros-panel@public50.service"
-curl -fsS "http://127.0.0.1:8080/api/health"
-journalctl -u routeros-panel.service -n 100 --no-pager
+python -m py_compile app.py
+docker compose --env-file .env.docker.example config --quiet
+curl -fsS http://127.0.0.1:8080/api/health
+curl -fsS http://127.0.0.1:8080/api/semantic-triage
 ```
 
-## Security Notes
+Expected public-profile guardrails:
 
-- Do not commit real RouterOS credentials.
-- The repository now uses `CHANGE_ME` as the default password placeholder; production deployments must provide the real value through environment or `/etc/default/routeros-panel*`.
-- Keep the panel inside LAN or behind a controlled access layer.
-- Treat this as a read-only observability service, not a management plane.
+- `profile=routeros_only`
+- `publicRouterosProfile=true`
+- `readonlyDiagnostics=false`
+- `ipAliasWrite=false`
+- `POST /api/ip-alias` returns `403`
 
-## Recovery / Rebuild
+## Current Status
 
-To rebuild the panel service from scratch:
+This is an early public MVP / packaging draft. It is useful for controlled LAN
+testing and read-only operations review, but it should not be exposed directly
+to the public internet.
 
-1. restore this repository
-2. restore environment variables or `/etc/default/routeros-panel*`
-3. redeploy with `deploy_linux.sh`
-4. verify `/api/health`
+## License
 
-If the broader network itself is down, recover RouterOS/OpenWrt/ESXi first from:
-
-- `cully-network-device-backups`
+No open-source license has been selected yet. Until a license is added, all
+rights are reserved.

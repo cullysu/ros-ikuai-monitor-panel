@@ -1,102 +1,144 @@
-# Deploy (Public RouterOS-only) to 192.168.3.50
+# Public RouterOS-only MVP Deployment: 192.168.3.50
 
-This repo currently ships a legacy single-instance deployment (`routeros-panel.service` + `ros-panel-ip.service`)
-that targets `192.168.3.5` by default.
+[English](./DEPLOY_PUBLIC_192.168.3.50.md) | [简体中文](./DEPLOY_PUBLIC_192.168.3.50.zh-CN.md)
 
-To avoid impacting the existing private `.3.5` install, use the new systemd template instance mode.
+This document describes the public MVP deployment path for the read-only RouterOS semantic triage console. It is written for a separate RouterOS-only instance on `192.168.3.50`; it is not a private `.3.5` panel clone and it does not deploy or change RouterOS/OpenWrt configuration.
 
-## Goals
+## Scope
 
-- Run a separate instance on `192.168.3.50`
-- Do not overwrite `/etc/default/routeros-panel`, `routeros-panel.service`, `ros-panel-ip.service`
-- Default to NOT adding/holding secondary IPs on the host (prevents accidental IP conflicts)
+Use this path when you want:
 
-## 0) Preflight on the 192.168.3.50 host
+- a public-product style RouterOS-only console
+- read-only RouterOS state collection and semantic triage
+- a separate systemd instance that avoids overwriting the existing legacy deployment
+- no automatic host secondary-IP management by default
 
-1. Confirm the host already owns `192.168.3.50/24` on the intended NIC (example):
+Do not use this path as:
+
+- a RouterOS configuration editor
+- an OpenWrt/Nikki/private diagnostics bundle
+- an internet-facing service without external access control
+- a replacement for backups, NMS, alerting, or recovery tooling
+
+## Read-only Safety
+
+- Run with `ROS_PANEL_PROFILE=routeros_only`.
+- Use a RouterOS user with the least read permissions needed for API/SSH collection.
+- Public profile disables private OpenWrt/Nikki diagnostics and defaults IP alias writes off.
+- The panel has no RouterOS config mutation endpoint. Local-only conveniences, such as IP alias naming, must be explicitly enabled and do not write to RouterOS.
+- Keep credentials out of git; provide them through environment variables or `/etc/default/routeros-panel-public50`.
+
+## Demo / Verification Path
+
+Before touching a deployment host, use local fixture checks if you only need a demo or review artifact:
+
+```powershell
+.\tools\check-local-predeploy.ps1 -Profile public -SkipBackend
+```
+
+For a local smoke check that starts the safe local backend:
+
+```powershell
+.\tools\check-local-predeploy.ps1 -Profile public
+```
+
+When the script starts the backend itself, it forces `ROS_MONITOR_ROUTER_HOST=127.0.0.1` and `ROS_PANEL_PROFILE=routeros_only`, so it does not call network devices.
+
+## 0) Preflight on the 192.168.3.50 Host
+
+1. Confirm the host already owns `192.168.3.50/24` on the intended NIC:
    - `ip addr`
-2. Confirm port `80` is free (if you plan to use `ROS_PANEL_PORT=80`):
+2. Confirm port `80` is free if you plan to use `ROS_PANEL_PORT=80`:
    - `ss -lntp | grep ':80 ' || true`
+3. Confirm you have RouterOS read-only credentials available outside git.
 
-## 1) Deploy (instance mode)
+## 1) Deploy as a Separate Instance
 
 From the project directory on the target Linux host:
 
 ```bash
-# Choose an instance name (ASCII only, avoid spaces/slashes)
+# Choose an instance name. Use ASCII only; avoid spaces and slashes.
 INSTANCE="public50"
 
-# Minimal required config for the panel
+# Public MVP console config.
 export ROS_PANEL_TARGET_IP="192.168.3.50"
 export ROS_PANEL_BIND="0.0.0.0"
 export ROS_PANEL_PORT="80"
-# Important: enable the public RouterOS-only backend profile (disables OpenWrt/Nikki/private diagnostics).
-# Accepted aliases: routeros_only, routeros_public, public_routeros, public
 export ROS_PANEL_PROFILE="routeros_only"
+export ROS_PANEL_IP_ALIAS_WRITE_ENABLED="0"
 
-# RouterOS connection (adjust for your public/RouterOS-only config)
+# RouterOS read-only connection. Replace placeholders outside git.
 export ROS_MONITOR_ROUTER_HOST="192.168.3.1"
-export ROS_MONITOR_ROUTER_USER="admin"
-export ROS_MONITOR_ROUTER_PASSWORD="change-me"
+export ROS_MONITOR_ROUTER_USER="readonly-user"
+export ROS_MONITOR_ROUTER_PASSWORD="CHANGE_ME"
 
-# Deploy without IP-heal service (recommended for .3.50)
+# Deploy without IP-heal. Recommended for the public .3.50 instance.
 ./deploy_linux.sh --instance "${INSTANCE}" --disable-ip-service
 ```
 
-What gets installed on the host:
+Installed host artifacts:
 
 - App dir: `/opt/ros-ikuai-monitor-panel-${INSTANCE}`
 - Env file: `/etc/default/routeros-panel-${INSTANCE}`
-- Units:
+- Template units:
   - `/etc/systemd/system/routeros-panel@.service`
   - `/etc/systemd/system/ros-panel-ip@.service`
-  - Enabled instance: `routeros-panel@${INSTANCE}.service`
+- Enabled panel instance: `routeros-panel@${INSTANCE}.service`
+- Disabled by default: `ros-panel-ip@${INSTANCE}.service`
 
 ## 2) Verify
 
 ```bash
 systemctl --no-pager --full status "routeros-panel@${INSTANCE}.service"
 curl -fsS "http://192.168.3.50/api/health"
+journalctl -u "routeros-panel@${INSTANCE}.service" -n 100 --no-pager
 ```
 
-## 3) Optional: enable IP-heal (only if you really need a virtual IP)
+Expected health response includes:
 
-If you intentionally want the host to add/hold a secondary panel IP on an interface, enable:
+- `profile` matching `routeros_only`
+- `target` matching `192.168.3.50`
+- `status` moving from `starting` to `ok` after collection succeeds
+
+## 3) Optional IP-heal
+
+Keep IP-heal disabled unless you intentionally need the host to add or hold a secondary panel IP on an interface.
+
+If you explicitly choose that model:
 
 ```bash
 systemctl enable --now "ros-panel-ip@${INSTANCE}.service"
 ```
 
-Warning: enabling IP-heal with an IP that is already used elsewhere will cause a network conflict.
+Warning: enabling IP-heal for an address already used elsewhere can create an IP conflict.
 
-## 4) 1~10 WAN adaptive behavior
+## 4) RouterOS-only WAN Adaptation
 
-The public RouterOS-only profile no longer assumes `8x PPPoE`.
-It auto-detects logical WAN lines from:
+The public `routeros_only` profile does not assume `8x PPPoE`. It auto-detects logical WAN lines from:
 
 - `interface/pppoe-client`
 - `ip/dhcp-client`
 - active default-route gateways
 - global/public-ish addresses on WAN-like interfaces
 
-The UI behavior is intentionally different by line count:
+The UI adapts by line count:
 
-- `1 WAN`: single-line focus. Overview shows a single WAN profile card instead of fake load-balance cards. Balance focuses on default route and policy visibility.
-- `2 WAN`: dual-line compare. Overview and traffic pages keep side-by-side comparison cards.
-- `3 WAN`: tri-line compare. Three lines stay in card form so each line keeps enough readable context.
-- `4 WAN`: 2x2 matrix. Avoids a thin 4-across strip and keeps readability.
-- `5~6 WAN`: high-density card matrix. Keeps per-line cards but compresses secondary copy.
-- `7~8 WAN`: dispatch mode. Overview and balance switch to denser tables for line summaries.
-- `9~10 WAN`: operations mode. Home page keeps only key summaries; dense tables carry most line details.
+- `1 WAN`: single-line focus; no fake load-balance cards
+- `2 WAN`: side-by-side comparison
+- `3 WAN`: card-based tri-line comparison
+- `4 WAN`: 2x2 matrix
+- `5~6 WAN`: high-density card matrix
+- `7~8 WAN`: denser table dispatch mode
+- `9~10 WAN`: operations mode with key summaries and dense tables
 
-Layout tiers exposed by the backend:
+Backend layout tiers:
 
 - `single`: `1`
 - `few`: `2~3`
 - `multi`: `4~6`
 - `dense`: `7~10`
 
-Relevant snapshot fields for the frontend:
+Relevant snapshot fields:
 
 - `meta.profile`
 - `meta.capabilities`
@@ -104,5 +146,11 @@ Relevant snapshot fields for the frontend:
 - `meta.lineCount`
 - `meta.lineLayoutTier`
 - top-level `wan`
+- `semanticTriage`
+- `actionQueue`
 
-This means the same public build can be deployed for most RouterOS users without hardcoding PPPoE names or requiring OpenWrt/Nikki.
+## Public MVP Notes
+
+- This is a public-product packaging draft, not a final hosted demo.
+- Use instance mode for public RouterOS-only review so legacy private deployment files are not overwritten.
+- Keep deployment and rollback under the operator's normal Linux/service-management process; this repo does not deploy to network devices.
