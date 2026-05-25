@@ -60,6 +60,11 @@ Client devices do not need the localhost alias helper for normal LAN access.
 The helper is kept only as an optional vanity address for users who insist on
 typing `127.0.0.1:28646` on every client.
 
+When the panel is opened in a browser, the backend reports the actual URL from
+the HTTP `Host` header. That means manual Docker Compose no longer depends on a
+container guessing the host LAN IP correctly; `ROS_PANEL_TARGET_IP` is only a
+configured fallback for logs and address settings.
+
 ## Quick Start: Docker One-command
 
 Install:
@@ -252,6 +257,9 @@ from the panel UI after the container starts.
   `http://<panel-host-ip>:28646/`.
 - `http://127.0.0.1:28646/` is only same-machine access unless the optional
   localhost alias helper is installed on that client.
+- If another LAN device cannot connect, allow inbound TCP `28646` on the panel
+  host firewall. The installer prints common `ufw`/`firewalld` examples but does
+  not silently change firewall rules.
 - The panel address can be changed inside the UI; restart the panel service for
   bind/port changes to take effect.
 - Do not expose the panel directly to the public internet.

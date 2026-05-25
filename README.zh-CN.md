@@ -16,6 +16,8 @@ http://<panel-host-ip>:28646/
 
 在运行面板的那台机器上，也可以打开 `http://127.0.0.1:28646/`。面板跑在别的局域网主机上时，客户端不需要安装本机别名 helper，直接打开 `http://<panel-host-ip>:28646/`。本机别名只保留为可选方案，给坚持在每台客户端都输入 `127.0.0.1:28646` 的用户使用，见 [docs/LOCALHOST_ALIAS.md](./docs/LOCALHOST_ALIAS.md)。
 
+面板 API 会优先根据浏览器请求里的 HTTP `Host` 头显示真实访问地址，所以手动 Docker Compose 不再依赖容器自己猜宿主机 LAN IP。`ROS_PANEL_TARGET_IP` 只是日志和地址设置里的兜底值。
+
 ```bash
 curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/main/install.sh | bash
 ```
@@ -178,6 +180,7 @@ docker compose logs -f --tail=100 routeros-triage
 - 为面板创建专用只读 RouterOS 用户。
 - 远程客户端使用面板主机的局域网地址，通常是 `http://<panel-host-ip>:28646/`。
 - `http://127.0.0.1:28646/` 只代表当前这台客户端自己，除非在该客户端上安装了可选的本机别名 helper。
+- 如果其他局域网设备打不开，检查面板主机防火墙是否放行 TCP `28646`；安装器会打印常见 `ufw`/`firewalld` 示例，但不会静默修改防火墙。
 - 不要把面板直接暴露到公网。
 - 跨网段、远程访问或多人使用时，先加 HTTPS 和认证。
 - 面向公开/产品化部署时使用 `routeros_only`。

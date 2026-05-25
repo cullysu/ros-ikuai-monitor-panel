@@ -53,11 +53,18 @@ function main() {
 
   assertContains('app.py', 'DEFAULT_PANEL_BIND = "0.0.0.0"');
   assertContains('app.py', 'DEFAULT_PANEL_TARGET = detect_panel_lan_ip()');
+  assertContains('app.py', 'def panel_request_access_url(headers, fallback_port=None):');
+  assertContains('app.py', 'PANEL_TRUST_PROXY_HEADERS');
+  assertContains('app.py', 'headers.get("Host")');
+  assertContains('app.py', 'headers.get("X-Forwarded-Host")');
+  assertContains('app.py', '"browserUrl": browser_url');
+  assertContains('app.py', '"configuredUrl": configured_url');
 
   assertContains('install.sh', 'PUBLISHED_ADDR="0.0.0.0"');
   assertContains('install.sh', 'TARGET_IP="$(detect_lan_ip)"');
   assertContains('install.sh', 'Open from other LAN devices: http://$TARGET_IP:$PUBLISHED_PORT/');
   assertContains('install.sh', 'No client localhost alias helper is required for normal LAN access.');
+  assertContains('install.sh', 'allow inbound TCP $PUBLISHED_PORT');
   assertNotContains('install.sh', 'alias-to:');
 
   assertContains('env.example', 'ROS_PANEL_BIND=0.0.0.0');
@@ -71,10 +78,13 @@ function main() {
   assertContains('.env.docker.example', 'ROS_PANEL_PUBLISHED_ADDR=0.0.0.0');
   assertContains('.env.docker.example', 'ROS_PANEL_PUBLISHED_PORT=28646');
   assertContains('.env.docker.example', 'ROS_PANEL_TARGET_IP=auto');
+  assertContains('.env.docker.example', 'ROS_PANEL_TRUST_PROXY_HEADERS=0');
   assertContains('Dockerfile', 'ROS_PANEL_TARGET_IP=auto');
+  assertContains('Dockerfile', 'ROS_PANEL_TRUST_PROXY_HEADERS=0');
   assertContains('compose.yml', '${ROS_PANEL_PUBLISHED_ADDR:-0.0.0.0}:${ROS_PANEL_PUBLISHED_PORT:-28646}:${ROS_PANEL_PORT:-28646}');
   assertContains('compose.yml', 'ROS_PANEL_BIND: "${ROS_PANEL_BIND:-0.0.0.0}"');
   assertContains('compose.yml', 'ROS_PANEL_TARGET_IP: "${ROS_PANEL_TARGET_IP:-auto}"');
+  assertContains('compose.yml', 'ROS_PANEL_TRUST_PROXY_HEADERS: "${ROS_PANEL_TRUST_PROXY_HEADERS:-0}"');
 
   assertContains('deploy_linux.sh', 'DEFAULT_PANEL_BIND="0.0.0.0"');
   assertContains('deploy_linux.sh', 'DEFAULT_PANEL_TARGET_IP="$(detect_lan_ip)"');

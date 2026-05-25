@@ -34,6 +34,11 @@ First run:
   On the panel host itself, http://127.0.0.1:28646/ also works. Enter the
   RouterOS SSH host, user, and password in the panel UI. You do not need to put
   RouterOS credentials in .env.docker.
+
+If another LAN device cannot connect:
+  The panel is listening, but the host firewall may still need to allow TCP
+  28646 on the trusted LAN. The installer prints commands to check this; it does
+  not silently change firewall rules.
 EOF
 }
 
@@ -397,6 +402,7 @@ Install plan:
   target-ip:  $TARGET_IP
   local-url:  http://127.0.0.1:$PUBLISHED_PORT/
   lan-url:    http://$TARGET_IP:$PUBLISHED_PORT/
+  firewall:   allow inbound TCP $PUBLISHED_PORT on the panel host if LAN clients cannot connect
   upgrade:    $UPGRADE
   uninstall:  $UNINSTALL
   purge:      $PURGE
@@ -444,5 +450,9 @@ else
   log "LAN URL was not detected. Set --target-ip <panel-host-ip> if clients need remote access."
 fi
 log "No client localhost alias helper is required for normal LAN access."
+log "If LAN devices cannot connect, allow inbound TCP $PUBLISHED_PORT on this host firewall:"
+log "  Linux ufw: sudo ufw allow $PUBLISHED_PORT/tcp"
+log "  Linux firewalld: sudo firewall-cmd --add-port=$PUBLISHED_PORT/tcp --permanent && sudo firewall-cmd --reload"
+log "  Windows: create an inbound firewall allow rule for TCP $PUBLISHED_PORT on the trusted LAN profile"
 log "Enter the RouterOS SSH host, user, and password in the panel login page."
 log "Upgrade later: curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/main/install.sh | bash -s -- --upgrade --dir '$INSTALL_DIR'"

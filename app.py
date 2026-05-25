@@ -145,6 +145,7 @@ DEFAULT_PANEL_BIND = "0.0.0.0"
 DEFAULT_PANEL_PORT = 28646
 DEFAULT_PANEL_TARGET = detect_panel_lan_ip()
 PANEL_NETWORK_ENV_KEYS = ("ROS_PANEL_BIND", "ROS_PANEL_PORT", "ROS_PANEL_TARGET_IP")
+PANEL_TRUST_PROXY_HEADERS = str(os.getenv("ROS_PANEL_TRUST_PROXY_HEADERS", "0")).strip().lower() in {"1", "true", "yes", "on"}
 PANEL_ENV_ASSIGNMENT_RE = re.compile(r"^(\s*(?:export\s+)?)([A-Za-z_][A-Za-z0-9_]*)(\s*=\s*)(.*)$")
 
 
@@ -210,16 +211,53 @@ def panel_access_url(bind, port, target=None):
     return f"http://{format_url_host(access_host)}:{normalize_panel_port(port)}/"
 
 
-def panel_network_payload(bind=None, port=None, target=None, restart_required=False):
+def first_header_value(value):
+    return str(value or "").split(",", 1)[0].strip()
+
+
+def panel_request_access_url(headers, fallback_port=None):
+    if not headers:
+        return None
+    host_header = first_header_value(headers.get("Host"))
+    if PANEL_TRUST_PROXY_HEADERS:
+        host_header = first_header_value(headers.get("X-Forwarded-Host")) or host_header
+    if not host_header or "@" in host_header or any(part in host_header for part in ("://", "/", "\\", "?", "#")):
+        return None
+    try:
+        parsed = urlparse(f"//{host_header}")
+        host = normalize_panel_host(parsed.hostname or "", "request host")
+        port = parsed.port
+    except (TypeError, ValueError):
+        return None
+    forwarded_port = first_header_value(headers.get("X-Forwarded-Port"))
+    if port is None and forwarded_port:
+        try:
+            port = normalize_panel_port(forwarded_port)
+        except ValueError:
+            port = None
+    if port is None:
+        port = normalize_panel_port(fallback_port if fallback_port is not None else PANEL_PORT)
+    scheme = first_header_value(headers.get("X-Forwarded-Proto")).lower() if PANEL_TRUST_PROXY_HEADERS else ""
+    if scheme not in {"http", "https"}:
+        scheme = "http"
+    return f"{scheme}://{format_url_host(host)}:{normalize_panel_port(port)}/"
+
+
+def panel_network_payload(bind=None, port=None, target=None, restart_required=False, request_url=None):
     bind = normalize_panel_host(bind if bind is not None else PANEL_BIND, "bind")
     port = normalize_panel_port(port if port is not None else PANEL_PORT)
     target = resolve_panel_access_host(target if target is not None else PANEL_TARGET)
     env_path = panel_env_write_path()
+    configured_url = panel_access_url(bind, port, target)
+    browser_url = str(request_url or "").strip() or configured_url
     return {
         "bind": bind,
         "port": port,
         "target": target,
-        "currentUrl": panel_access_url(bind, port, target),
+        "currentUrl": browser_url,
+        "browserUrl": browser_url,
+        "configuredUrl": configured_url,
+        "detectedFromRequest": bool(request_url),
         "envFile": str(env_path),
         "loadedEnvFile": str(PANEL_ENV_FILE) if PANEL_ENV_FILE else None,
         "restartRequired": bool(restart_required),
@@ -4572,6 +4610,12 @@ collector = Collector()
 class Handler(BaseHTTPRequestHandler):
     server_version = "RouterOSTriagePanel/1.0"
 
+    def panel_network_payload(self, **kwargs):
+        return panel_network_payload(
+            request_url=panel_request_access_url(self.headers, fallback_port=PANEL_PORT),
+            **kwargs,
+        )
+
     def do_GET(self):
         parsed = urlparse(self.path)
         if parsed.path == "/api/router-login":
@@ -4584,7 +4628,7 @@ class Handler(BaseHTTPRequestHandler):
                 }
             )
         if parsed.path == "/api/panel-network":
-            return self.send_json({"ok": True, "panelNetwork": panel_network_payload()})
+            return self.send_json({"ok": True, "panelNetwork": self.panel_network_payload()})
         if parsed.path == "/api/snapshot":
             return self.send_json(collector.get_state())
         if parsed.path == "/api/dns-static":
@@ -4621,7 +4665,7 @@ class Handler(BaseHTTPRequestHandler):
                     "updatedAt": state.get("updatedAt"),
                     "profile": PANEL_PROFILE,
                     "target": PANEL_TARGET,
-                    "panelNetwork": panel_network_payload(),
+                    "panelNetwork": self.panel_network_payload(),
                     "routerLogin": public_router_config(),
                     "savedLoginCount": len(public_saved_router_logins()),
                 }

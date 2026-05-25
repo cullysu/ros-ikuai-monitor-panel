@@ -282,6 +282,22 @@ def assert_panel_network_config_helpers():
     assert app.normalize_panel_port("28646") == 28646
     assert app.panel_access_url("127.0.0.1", 28646, "127.0.0.1") == "http://127.0.0.1:28646/"
     assert app.panel_access_url("::", 28646, "::1") == "http://[::1]:28646/"
+    assert app.panel_request_access_url({"Host": "192.168.3.50:28646"}, 28646) == "http://192.168.3.50:28646/"
+    original_trust_proxy = app.PANEL_TRUST_PROXY_HEADERS
+    try:
+        app.PANEL_TRUST_PROXY_HEADERS = True
+        assert app.panel_request_access_url(
+            {"X-Forwarded-Host": "panel.lan", "X-Forwarded-Proto": "https", "X-Forwarded-Port": "443"},
+            28646,
+        ) == "https://panel.lan:443/"
+    finally:
+        app.PANEL_TRUST_PROXY_HEADERS = original_trust_proxy
+    assert app.panel_request_access_url({"Host": "http://bad.example"}, 28646) is None
+    request_payload = app.panel_network_payload(request_url="http://192.168.3.50:28646/")
+    assert request_payload["currentUrl"] == "http://192.168.3.50:28646/"
+    assert request_payload["browserUrl"] == "http://192.168.3.50:28646/"
+    assert request_payload["configuredUrl"] == app.panel_access_url(app.PANEL_BIND, app.PANEL_PORT, app.PANEL_TARGET)
+    assert request_payload["detectedFromRequest"] is True
     for bad_port in ("0", "65536", "abc", ""):
         try:
             app.normalize_panel_port(bad_port)

@@ -3356,7 +3356,17 @@
       const dialog = ensurePanelNetworkDialog();
       dialog.querySelector('[name="bind"]').value = panelNetwork.bind || panelNetwork.defaults?.bind || '127.0.0.1';
       dialog.querySelector('[name="port"]').value = String(panelNetwork.port || panelNetwork.defaults?.port || 28646);
-      dialog.querySelector('[name="target"]').value = panelNetwork.target || panelNetwork.defaults?.target || '127.0.0.1';
+      dialog.querySelector('[name="target"]').value = panelNetwork.target || 'auto';
+    }
+
+    function panelNetworkUrlStatus(panelNetwork = {}) {
+      const browserUrl = panelNetwork.browserUrl || panelNetwork.currentUrl || '-';
+      const configuredUrl = panelNetwork.configuredUrl || panelNetwork.defaults?.url || '-';
+      const source = panelNetwork.detectedFromRequest ? '浏览器实际访问地址' : '配置推导地址';
+      const note = configuredUrl && configuredUrl !== browserUrl
+        ? `<br><span class="subtle">配置兜底：${escapeHtml(configuredUrl)}</span>`
+        : '';
+      return `${source}：${escapeHtml(browserUrl)}${note}`;
     }
 
     async function fetchPanelNetworkSettings() {
@@ -3375,7 +3385,7 @@
       try {
         const panelNetwork = await fetchPanelNetworkSettings();
         fillPanelNetworkForm(panelNetwork);
-        setPanelNetworkStatus(`当前访问地址：${escapeHtml(panelNetwork.currentUrl || '-')}`, 'ok');
+        setPanelNetworkStatus(panelNetworkUrlStatus(panelNetwork), 'ok');
       } catch (error) {
         fillPanelNetworkForm();
         setPanelNetworkStatus(`读取失败：${escapeHtml(error.message)}`, 'error');
@@ -3408,7 +3418,7 @@
         if (!response.ok || !payload.ok) {
           throw new Error(payload.error || `HTTP ${response.status}`);
         }
-        const nextUrl = payload.nextUrl || payload.panelNetwork?.currentUrl || '';
+        const nextUrl = payload.nextUrl || payload.panelNetwork?.configuredUrl || payload.panelNetwork?.currentUrl || '';
         const envFile = payload.panelNetwork?.envFile || '';
         const restartText = payload.restartRequired ? '重启面板服务后生效。' : '当前运行配置已经一致。';
         setPanelNetworkStatus(

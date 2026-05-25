@@ -176,7 +176,8 @@ try {
                 $dryRunResult.Output -match "port:\s+28646" -and
                 $dryRunResult.Output -match "target-ip:\s+\S+" -and
                 $dryRunResult.Output -match "local-url:\s+http://127\.0\.0\.1:28646/" -and
-                $dryRunResult.Output -match "lan-url:\s+http://\S+:28646/") {
+                $dryRunResult.Output -match "lan-url:\s+http://\S+:28646/" -and
+                $dryRunResult.Output -match "firewall:\s+allow inbound TCP 28646") {
               Add-Check "PASS" "LAN install defaults" "install dry-run resolved 0.0.0.0:28646 with LAN URL and same-host localhost URL."
             }
             else {

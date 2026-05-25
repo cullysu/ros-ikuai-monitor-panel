@@ -15,6 +15,14 @@ On the Docker host itself, `http://127.0.0.1:28646/` also works. The localhost
 alias helper is optional and only for users who insist on the same local vanity
 URL on every client.
 
+The panel reports the browser URL from the incoming HTTP `Host` header. This
+avoids the common Docker bridge problem where a container can only detect its
+own bridge/container address instead of the host LAN IP.
+
+If you put the panel behind a trusted reverse proxy and want it to honor
+`X-Forwarded-Host` / `X-Forwarded-Proto`, set
+`ROS_PANEL_TRUST_PROXY_HEADERS=1` only on that trusted deployment.
+
 ## One-command Install
 
 Default install:
@@ -109,10 +117,13 @@ ROS_PANEL_PUBLISHED_PORT=28646
 ROS_PANEL_TARGET_IP=auto
 ```
 
-Set `ROS_PANEL_TARGET_IP=<panel-host-ip>` if automatic LAN detection picks the
-wrong interface. Use [docs/LOCALHOST_ALIAS.md](./docs/LOCALHOST_ALIAS.md) only
-when a client must open `http://127.0.0.1:28646/` while the Docker host is
-elsewhere on the LAN.
+`ROS_PANEL_TARGET_IP` is now a configured fallback for startup logs and saved
+address settings. Normal browser/API status uses the request `Host` header, so
+manual Compose can usually leave it as `auto`. Set
+`ROS_PANEL_TARGET_IP=<panel-host-ip>` only when you want the fallback URL to be
+fixed too. Use [docs/LOCALHOST_ALIAS.md](./docs/LOCALHOST_ALIAS.md) only when a
+client must open `http://127.0.0.1:28646/` while the Docker host is elsewhere on
+the LAN.
 
 ## Configure RouterOS Login In The UI
 
@@ -267,6 +278,9 @@ curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/mai
   `127.0.0.1`.
 - Confirm the Docker host is reachable from that client on TCP `28646`.
 - Confirm the host OS firewall allows TCP `28646` on the trusted LAN profile.
+- Common Linux examples:
+  `sudo ufw allow 28646/tcp`, or
+  `sudo firewall-cmd --add-port=28646/tcp --permanent && sudo firewall-cmd --reload`.
 - If the client must use `http://127.0.0.1:28646/` anyway, install the optional
   localhost alias on that client device:
   [docs/LOCALHOST_ALIAS.md](./docs/LOCALHOST_ALIAS.md).

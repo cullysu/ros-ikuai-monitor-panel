@@ -17,6 +17,7 @@ printf '%s\n' "$dry_run_output" | grep -F "port:       28646" >/dev/null
 printf '%s\n' "$dry_run_output" | grep -E "target-ip:  ([0-9]{1,3}\.){3}[0-9]{1,3}|target-ip:  [A-Za-z0-9._-]+" >/dev/null
 printf '%s\n' "$dry_run_output" | grep -F "local-url:  http://127.0.0.1:28646/" >/dev/null
 printf '%s\n' "$dry_run_output" | grep -E "lan-url:    http://[^[:space:]]+:28646/" >/dev/null
+printf '%s\n' "$dry_run_output" | grep -F "firewall:   allow inbound TCP 28646" >/dev/null
 
 if command -v node >/dev/null 2>&1; then
   echo "[check] LAN access defaults"
