@@ -1016,6 +1016,75 @@
     }).join('');
   }
 
+  function formatProtocolStatus(row) {
+    const parts = [];
+    if (Number(row?.connections || 0) > 0) parts.push(`${number(row.connections)} 连接`);
+    if (Number(row?.sessionBytes || 0) > 0) parts.push(bytes(row.sessionBytes));
+    return parts.join(' · ') || row?.status || '';
+  }
+
+  function buildProtocolRankRows(connections) {
+    connections = connections || {};
+    const provided = Array.isArray(connections.protocolTop) ? connections.protocolTop : [];
+    if (provided.length) {
+      return provided.map((row) => ({
+        ...row,
+        name: row.name || [row.protocol, row.mark && row.mark !== '-' ? row.mark : ''].filter(Boolean).join(' / ') || '-',
+        upRate: Number(row.upRate || 0),
+        downRate: Number(row.downRate || 0),
+        connections: Number(row.connections || 0),
+        sessionBytes: Number(row.sessionBytes || 0),
+        status: row.status || formatProtocolStatus(row),
+      })).sort((a, b) => totalRate(b) - totalRate(a) || Number(b.connections || 0) - Number(a.connections || 0) || Number(b.sessionBytes || 0) - Number(a.sessionBytes || 0));
+    }
+
+    const active = Array.isArray(connections.active) ? connections.active : [];
+    if (active.length) {
+      const buckets = new Map();
+      active.forEach((row) => {
+        const protocol = String(row.protocol || row.proto || '-').toUpperCase();
+        const markValue = row.mark ?? row.connectionMark ?? row['connection-mark'] ?? '';
+        const mark = String(markValue || '').trim();
+        const normalizedMark = mark && mark !== '-' ? mark : '';
+        const key = `${protocol}|${normalizedMark}`;
+        if (!buckets.has(key)) {
+          buckets.set(key, {
+            name: normalizedMark ? `${protocol} / ${normalizedMark}` : `${protocol} 活跃流量`,
+            protocol,
+            mark: normalizedMark || '-',
+            connections: 0,
+            upRate: 0,
+            downRate: 0,
+            sessionBytes: 0,
+            source: 'active-connection-sample',
+          });
+        }
+        const bucket = buckets.get(key);
+        bucket.connections += 1;
+        bucket.upRate += Number(row.upRate || 0);
+        bucket.downRate += Number(row.downRate || 0);
+        bucket.sessionBytes += Number(row.sessionBytes || 0);
+      });
+      return Array.from(buckets.values()).map((row) => ({
+        ...row,
+        status: formatProtocolStatus(row),
+      })).sort((a, b) => totalRate(b) - totalRate(a) || Number(b.connections || 0) - Number(a.connections || 0) || Number(b.sessionBytes || 0) - Number(a.sessionBytes || 0));
+    }
+
+    return [
+      ['TCP', connections.tcp],
+      ['UDP', connections.udp],
+      ['ICMP', connections.icmp],
+    ].filter(([, count]) => Number(count || 0) > 0).map(([name, count]) => ({
+      name,
+      upRate: 0,
+      downRate: 0,
+      connections: Number(count || 0),
+      status: `${number(count)} 连接`,
+      source: 'connection-protocol-count',
+    }));
+  }
+
   function renderLinePills(rows) {
     const items = rows.slice(0, 18);
     if (!items.length) return '<span class="ikuai-card-subtle">暂无线路数据</span>';
@@ -1080,6 +1149,7 @@
     const terminals = (snapshot.terminals || []).slice();
     const activeTerminals = terminals.filter((row) => totalRate(row) > 0).length;
     const rankedTerminals = terminals.slice().sort((a, b) => totalRate(b) - totalRate(a));
+    const protocolRows = buildProtocolRankRows(connections);
     const connectionTotal = Number(overview.connectionTotal || connections.total || 0);
     const routerHost = snapshot.meta?.routerHost || snapshot.meta?.target || '-';
     const offlineLines = Math.max(0, lines.length - onlineLines);
@@ -1164,13 +1234,9 @@
                   <div class="ikuai-card-head"><div><div class="ikuai-card-title">终端流量排行榜（TOP20）</div><div class="ikuai-card-subtle">按实时上下行合计排序</div></div></div>
                   <div class="ikuai-rank-body">${renderRankRows(rankedTerminals, '当前暂无终端流量')}</div>
                 </div>
-                <div class="ikuai-card ikuai-rank-card">
-                  <div class="ikuai-card-head"><div><div class="ikuai-card-title">应用/协议流量排行榜（TOP20）</div><div class="ikuai-card-subtle">RouterOS 协议明细未采集时显示空状态</div></div></div>
-                  <div class="ikuai-rank-body">${connections.tcp || connections.udp || connections.icmp ? renderRankRows([
-                    { name: 'TCP', upRate: Number(connections.tcp || 0), downRate: 0, status: '连接数' },
-                    { name: 'UDP', upRate: Number(connections.udp || 0), downRate: 0, status: '连接数' },
-                    { name: 'ICMP', upRate: Number(connections.icmp || 0), downRate: 0, status: '连接数' },
-                  ], '当前暂无协议数据') : '<div class="ikuai-empty"><div><div class="ikuai-empty-art"></div>当前暂无数据</div></div>'}</div>
+                <div class="ikuai-card ikuai-rank-card" data-protocol-rank-card="true">
+                  <div class="ikuai-card-head"><div><div class="ikuai-card-title">应用/协议流量排行榜（TOP20）</div><div class="ikuai-card-subtle">按活跃连接样本聚合协议和连接标记</div></div></div>
+                  <div class="ikuai-rank-body" data-protocol-rank="true">${renderRankRows(protocolRows, '当前暂无协议/应用流量')}</div>
                 </div>
               </div>
             </div>

@@ -3570,7 +3570,8 @@ class Collector:
             terminal_stats[local_ip]["up"] += up_rate
             terminal_stats[local_ip]["down"] += down_rate
             terminal_stats[local_ip]["connections"] += 1
-            terminal_stats[local_ip]["sessionBytes"] += to_int(conn.get("orig-bytes")) + to_int(conn.get("repl-bytes"))
+            session_bytes = to_int(conn.get("orig-bytes")) + to_int(conn.get("repl-bytes"))
+            terminal_stats[local_ip]["sessionBytes"] += session_bytes
             active_rows.append(
                 {
                     "localIp": local_ip,
@@ -3581,6 +3582,7 @@ class Collector:
                     "timeout": conn.get("timeout", "-"),
                     "mark": conn.get("connection-mark", "-"),
                     "totalRate": up_rate + down_rate,
+                    "sessionBytes": session_bytes,
                 }
             )
 
@@ -3685,6 +3687,35 @@ class Collector:
             )
         terminals.sort(key=lambda row: (row["upRate"] + row["downRate"], row["connections"]), reverse=True)
         active_rows.sort(key=lambda row: row["totalRate"], reverse=True)
+        protocol_buckets = {}
+        for row in active_rows:
+            protocol = str(row.get("protocol") or "-").upper()
+            mark = str(row.get("mark") or "").strip()
+            mark = "" if mark in {"", "-"} else mark
+            bucket_key = f"{protocol}|{mark}"
+            if bucket_key not in protocol_buckets:
+                protocol_buckets[bucket_key] = {
+                    "name": f"{protocol} / {mark}" if mark else f"{protocol} 活跃流量",
+                    "protocol": protocol,
+                    "mark": mark or "-",
+                    "connections": 0,
+                    "upRate": 0.0,
+                    "downRate": 0.0,
+                    "totalRate": 0.0,
+                    "sessionBytes": 0,
+                    "source": "active-connection-sample",
+                }
+            bucket = protocol_buckets[bucket_key]
+            bucket["connections"] += 1
+            bucket["upRate"] += to_int(row.get("upRate"))
+            bucket["downRate"] += to_int(row.get("downRate"))
+            bucket["totalRate"] += to_int(row.get("totalRate"))
+            bucket["sessionBytes"] += to_int(row.get("sessionBytes"))
+        protocol_top_rows = sorted(
+            protocol_buckets.values(),
+            key=lambda row: (row["totalRate"], row["connections"], row["sessionBytes"]),
+            reverse=True,
+        )[:20]
         arp_items = sorted(arp_rows, key=lambda row: ip_sort_key(row["ip"]))[:120]
         active_connection_items = active_rows[:ACTIVE_CONNECTION_LIMIT]
         return {
@@ -3704,7 +3735,16 @@ class Collector:
                     sample_method="SSH connection detail sample, active rate rows first",
                     sorted_by="totalRate",
                 ),
+                "protocolTop": list_scale_meta(
+                    len(protocol_buckets),
+                    len(protocol_top_rows),
+                    limit=20,
+                    sampled=bool(active_rows),
+                    sample_method="active connection detail sample grouped by protocol/connection mark",
+                    sorted_by="traffic/connections",
+                ),
             },
+            "protocolTop": protocol_top_rows,
             "topIpConnections": [
                 {
                     "ip": row["ip"],
@@ -4168,6 +4208,7 @@ class Collector:
                 "tcp": ssh["counts"]["tcp"],
                 "udp": ssh["counts"]["udp"],
                 "icmp": ssh["counts"]["icmp"],
+                "protocolTop": terminals["protocolTop"],
                 "topIps": terminals["topIpConnections"],
                 "active": terminals["activeConnections"],
                 "thresholdLevel": rate_level(min(ssh["counts"]["all"] / 120000, 1)),
@@ -4182,6 +4223,7 @@ class Collector:
                 "meta": {
                     "active": scale_meta["connectionsActive"],
                     "topIps": list_scale_meta(len(terminals["topIpConnections"]), len(terminals["topIpConnections"]), sampled=True, sample_method="terminal traffic top list", sorted_by="connections/traffic"),
+                    "protocolTop": terminals.get("meta", {}).get("protocolTop", list_scale_meta(0, 0, sampled=True, sample_method="active connection detail sample", sorted_by="traffic/connections")),
                 },
             },
             "dns": self.build_dns(rest),

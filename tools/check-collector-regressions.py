@@ -546,6 +546,12 @@ def assert_arbitrary_scale_snapshot_contract():
     assert scale["connectionsActive"]["shownCount"] == app.ACTIVE_CONNECTION_LIMIT, scale["connectionsActive"]
     assert scale["connectionsActive"]["hasMore"] is True, scale["connectionsActive"]
     assert scale["connectionsActive"]["sampled"] is True, scale["connectionsActive"]
+    protocol_top = snapshot["connections"]["protocolTop"]
+    assert protocol_top, snapshot["connections"]
+    assert protocol_top[0]["protocol"] == "TCP", protocol_top[0]
+    assert protocol_top[0]["connections"] == 120, protocol_top[0]
+    assert protocol_top[0]["upRate"] > 0 and protocol_top[0]["downRate"] > 0, protocol_top[0]
+    assert snapshot["connections"]["meta"]["protocolTop"]["shownCount"] == 1, snapshot["connections"]["meta"]["protocolTop"]
     assert all(not str(row.get("name", "")).startswith("pppoe-out") for row in snapshot["wan"]), snapshot["wan"]
 
 
@@ -672,7 +678,7 @@ def main():
                     "rate history advances only on fresh interface counter samples and preserves true fresh zero samples",
                     "interface quality metrics expose cumulative totals, fresh deltas, stale reuse, and VLAN down-ranking",
                     "ARP alerts classify active conflicts separately from stale identity movement",
-                    "arbitrary-scale non-PPPoE fixtures preserve scale metadata and WAN fallback semantics",
+                    "arbitrary-scale non-PPPoE fixtures preserve scale metadata, protocol ranking, and WAN fallback semantics",
                     "deploy defaults avoid private IP/admin assumptions unless explicitly configured",
                     "frontend chart helpers skip missing values instead of drawing zeros",
                     "frontend WAN selector defaults to an all-line aggregate traffic option",

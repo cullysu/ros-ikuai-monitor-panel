@@ -853,6 +853,14 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       resourceText.includes('内存使用率') &&
       resourceText.includes('磁盘使用率')
     );
+    const protocolRank = sectionRoot?.querySelector('[data-protocol-rank]');
+    const protocolRankText = normalize(protocolRank?.textContent || '');
+    const overviewProtocolRankOk = sectionName !== 'overview' || Boolean(
+      protocolRank &&
+      /TCP|UDP|ICMP/.test(protocolRankText) &&
+      !protocolRankText.includes('当前暂无协议/应用流量') &&
+      !protocolRankText.includes('当前暂无数据')
+    );
     const detailFeedbackOk = !detailSections.has(sectionName) || Boolean(sectionRoot?.querySelector('[data-scale-filter-summary]') && sectionRoot?.querySelector('[data-scale-clear]'));
     const humanScaleCopyOk = !scaleRequiredSections.has(sectionName) || !/\\bbucket\\b|\\bhasMore\\b|\\bsampled\\b|\\bsort\\b/i.test(text);
     const scaleHeightOk = scenario !== 'fleet' || (
@@ -898,6 +906,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewAxesOk &&
       overviewStickyOk &&
       overviewResourceRowOk &&
+      overviewProtocolRankOk &&
       detailFeedbackOk &&
       humanScaleCopyOk &&
       scaleHeightOk &&
@@ -946,6 +955,8 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewStickyOk,
       overviewStickyProbe,
       overviewResourceRowOk,
+      overviewProtocolRankOk,
+      protocolRankText,
       resourceCardCount: resourceCards.length,
       resourceColumns,
       detailFeedbackOk,
@@ -1523,6 +1534,38 @@ function makeTerminal(index) {
   };
 }
 
+function buildProtocolTop(activeRows) {
+  const buckets = new Map();
+  for (const row of activeRows || []) {
+    const protocol = String(row.protocol || '-').toUpperCase();
+    const mark = String(row.mark || '').trim();
+    const normalizedMark = mark && mark !== '-' ? mark : '';
+    const key = `${protocol}|${normalizedMark}`;
+    if (!buckets.has(key)) {
+      buckets.set(key, {
+        name: normalizedMark ? `${protocol} / ${normalizedMark}` : `${protocol} 活跃流量`,
+        protocol,
+        mark: normalizedMark || '-',
+        connections: 0,
+        upRate: 0,
+        downRate: 0,
+        totalRate: 0,
+        sessionBytes: 0,
+        source: 'active-connection-sample',
+      });
+    }
+    const bucket = buckets.get(key);
+    bucket.connections += 1;
+    bucket.upRate += Number(row.upRate || 0);
+    bucket.downRate += Number(row.downRate || 0);
+    bucket.totalRate += Number(row.upRate || 0) + Number(row.downRate || 0);
+    bucket.sessionBytes += Number(row.sessionBytes || 0);
+  }
+  return Array.from(buckets.values())
+    .sort((a, b) => b.totalRate - a.totalRate || b.connections - a.connections || b.sessionBytes - a.sessionBytes)
+    .slice(0, 20);
+}
+
 function applyScaleScenario(snapshot, scaleScenario) {
   const counts = scaleScenario === 'single'
     ? { wan: 1, terminals: 8 }
@@ -1605,8 +1648,22 @@ function applyScaleScenario(snapshot, scaleScenario) {
     timeout: `${20 + index}s`,
     upRate: row.upRate,
     downRate: row.downRate,
+    sessionBytes: row.sessionBytes,
     mark: index % 2 ? 'wan-even' : 'wan-odd',
   }));
+  snapshot.connections.protocolTop = buildProtocolTop(snapshot.connections.active);
+  snapshot.connections.meta = {
+    ...(snapshot.connections.meta || {}),
+    protocolTop: {
+      actualCount: snapshot.connections.protocolTop.length,
+      totalCount: snapshot.connections.protocolTop.length,
+      shownCount: snapshot.connections.protocolTop.length,
+      hasMore: false,
+      sampled: true,
+      sampleMethod: 'active connection detail sample grouped by protocol/connection mark',
+      sortedBy: 'traffic/connections',
+    },
+  };
   snapshot.connections.topIps = terminals.slice(0, 40).map((row) => ({
     ip: row.ip,
     displayName: row.displayName,
