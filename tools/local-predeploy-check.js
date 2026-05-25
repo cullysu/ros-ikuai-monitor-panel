@@ -879,6 +879,23 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       !protocolRankText.includes('当前暂无数据')
     );
     const detailFeedbackOk = !detailSections.has(sectionName) || Boolean(sectionRoot?.querySelector('[data-scale-filter-summary]') && sectionRoot?.querySelector('[data-scale-clear]'));
+    const broadbandTable = sectionRoot?.querySelector('[data-broadband-realtime-table]');
+    const broadbandText = normalize(broadbandTable?.textContent || '');
+    const broadbandHeaders = Array.from(broadbandTable?.querySelectorAll('th') || []).map((node) => normalize(node.textContent));
+    const interfaceBroadbandTableOk = sectionName !== 'interfaces' || Boolean(
+      broadbandTable &&
+      broadbandHeaders.includes('线路') &&
+      broadbandHeaders.includes('状态') &&
+      broadbandHeaders.includes('IP 地址') &&
+      broadbandHeaders.includes('实时上行速率') &&
+      broadbandHeaders.includes('实时下行速率') &&
+      broadbandHeaders.includes('累计上行流量') &&
+      broadbandHeaders.includes('累计下行流量') &&
+      broadbandHeaders.includes('活动路由') &&
+      broadbandHeaders.includes('父接口') &&
+      broadbandText.includes('宽带实时流量') &&
+      broadbandTable.querySelectorAll('tbody tr').length > 0
+    );
     const humanScaleCopyOk = !scaleRequiredSections.has(sectionName) || !/\\bbucket\\b|\\bhasMore\\b|\\bsampled\\b|\\bsort\\b/i.test(text);
     const scaleHeightOk = scenario !== 'fleet' || (
       sectionName === 'overview' ? scrollHeight <= 3000 :
@@ -927,6 +944,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewResourceAxisOk &&
       overviewProtocolRankOk &&
       detailFeedbackOk &&
+      interfaceBroadbandTableOk &&
       humanScaleCopyOk &&
       scaleHeightOk &&
       !shellOverlap &&
@@ -984,6 +1002,8 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       resourceCardCount: resourceCards.length,
       resourceColumns,
       detailFeedbackOk,
+      interfaceBroadbandTableOk,
+      broadbandHeaders,
       humanScaleCopyOk,
       scaleHeightOk,
       shellOverlap,

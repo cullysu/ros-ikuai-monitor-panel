@@ -13,6 +13,7 @@
     .scale-primary,
     .pm-action-panel,
     .pm-drilldown-panel,
+    .pm-broadband-table-card,
     .scale-detail-card {
       border: 1px solid #dbe7f6;
       border-radius: 8px;
@@ -156,6 +157,7 @@
     .pm-risk-hero,
     .pm-home-panel,
     .pm-proof-panel,
+    .pm-broadband-table-card,
     .pm-interface-summary,
     .pm-interface-workbench {
       border: 1px solid #dbe7f6;
@@ -171,6 +173,7 @@
     .pm-risk-hero,
     .pm-home-panel,
     .pm-proof-panel,
+    .pm-broadband-table-card,
     .pm-interface-summary,
     .pm-interface-workbench { width: 100%; max-width: 100%; min-width: 0; box-sizing: border-box; }
     .pm-risk-hero { display: grid; gap: 12px; min-height: 260px; padding: 16px; border-left: 5px solid #245bff; }
@@ -247,6 +250,21 @@
     .pm-interface-focus-title { color: #64748b; font-size: 12px; font-weight: 900; }
     .pm-interface-focus b { color: #172033; font-size: 16px; line-height: 1.2; }
     .pm-interface-focus span { color: #536377; font-size: 12px; line-height: 1.4; }
+    .pm-broadband-table-card { padding: 12px 10px 10px; overflow: hidden; }
+    .pm-broadband-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 0 0 10px; }
+    .pm-broadband-title { color: #111827; font-size: 14px; font-weight: 900; line-height: 1.25; }
+    .pm-broadband-count { color: #64748b; font-size: 12px; white-space: nowrap; }
+    .pm-broadband-wrap { width: 100%; max-height: 420px; overflow: auto; border: 1px solid #e3ecf7; border-radius: 8px; background: #fff; }
+    .pm-broadband-table { width: 100%; min-width: 1080px; border-collapse: collapse; font-size: 12px; }
+    .pm-broadband-table th { position: sticky; top: 0; z-index: 1; padding: 8px 10px; background: #f5f8fc; color: #66758a; text-align: left; font-weight: 900; white-space: nowrap; border-bottom: 1px solid #e3ecf7; }
+    .pm-broadband-table td { padding: 8px 10px; color: #111827; border-top: 1px solid #edf3fa; vertical-align: top; font-variant-numeric: tabular-nums; }
+    .pm-broadband-table tr:first-child td { border-top: 0; }
+    .pm-broadband-line { font-weight: 900; white-space: nowrap; }
+    .pm-broadband-address { color: #334155; font-size: 12px; line-height: 1.35; overflow-wrap: anywhere; }
+    .pm-broadband-address span { display: block; }
+    .pm-broadband-rate { white-space: nowrap; }
+    .pm-broadband-route { min-width: 150px; line-height: 1.35; }
+    .pm-broadband-parent { white-space: nowrap; }
     .pm-interface-workbench { padding: 14px; }
     .scale-group-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
     .scale-group-tab { min-height: 40px; padding: 6px 10px; border: 1px solid #d8e2ef; border-radius: 8px; background: #fff; color: #243246; cursor: pointer; text-align: left; }
@@ -700,6 +718,71 @@
     if (!rows.length) return '-';
     const shown = rows.slice(0, limit).join(', ');
     return rows.length > limit ? `${shown} +${rows.length - limit}` : shown;
+  }
+
+  function addressLines(value, limit = 2) {
+    const rows = valueList(value).map((item) => String(item)).filter(Boolean);
+    if (!rows.length) return '<span>-</span>';
+    const shown = rows.slice(0, limit).map((item) => `<span>${html(item)}</span>`).join('');
+    const extra = rows.length > limit ? `<span>+${number(rows.length - limit)} 个地址</span>` : '';
+    return `${shown}${extra}`;
+  }
+
+  function activeRouteSummary(line) {
+    const routes = Array.isArray(line?.routes) ? line.routes : [];
+    const active = routes.filter((route) => route?.active);
+    if (!active.length) return '-';
+    const route = active[0] || {};
+    const table = route.table || route.routingTable || route.gateway || route.dst || '-';
+    const distance = route.distance ?? route['distance'] ?? '-';
+    const summary = `${html(table)} / distance ${html(distance)}`;
+    return active.length > 1 ? `${summary}<br><span>共 ${number(active.length)} 条活动路由</span>` : summary;
+  }
+
+  function renderBroadbandRealtimeTable(lines) {
+    const rows = (Array.isArray(lines) ? lines : [])
+      .filter((line) => line && !line.isAggregateWan)
+      .slice()
+      .sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), 'zh-CN', { numeric: true }));
+    const body = rows.map((line) => {
+      const running = Boolean(line.running);
+      const statusText = running ? '在线' : (line.disabled ? '禁用' : '离线');
+      const statusTone = running ? 'ok' : 'danger';
+      const addresses = line.addresses || line.ips || line.address;
+      return `<tr>
+        <td class="pm-broadband-line">${html(line.name || line.interface || '-')}</td>
+        <td>${pill(statusText, statusTone)}</td>
+        <td><div class="pm-broadband-address">${addressLines(addresses, 2)}</div></td>
+        <td class="pm-broadband-rate">${rate(line.upRate)}</td>
+        <td class="pm-broadband-rate">${rate(line.downRate)}</td>
+        <td class="pm-broadband-rate">${bytes(line.txBytes || 0)}</td>
+        <td class="pm-broadband-rate">${bytes(line.rxBytes || 0)}</td>
+        <td class="pm-broadband-route">${activeRouteSummary(line)}</td>
+        <td class="pm-broadband-parent">${html(line.parent || line.parentInterface || line.access || '-')}</td>
+      </tr>`;
+    }).join('');
+    return `<div class="pm-broadband-table-card" data-broadband-realtime-table="true">
+      <div class="pm-broadband-head">
+        <div class="pm-broadband-title">宽带实时流量</div>
+        <div class="pm-broadband-count">${number(rows.length)} 条宽带</div>
+      </div>
+      <div class="pm-broadband-wrap">
+        <table class="pm-broadband-table">
+          <thead><tr>
+            <th>线路</th>
+            <th>状态</th>
+            <th>IP 地址</th>
+            <th>实时上行速率</th>
+            <th>实时下行速率</th>
+            <th>累计上行流量</th>
+            <th>累计下行流量</th>
+            <th>活动路由</th>
+            <th>父接口</th>
+          </tr></thead>
+          <tbody>${body || '<tr><td colspan="9">当前暂无宽带线路数据</td></tr>'}</tbody>
+        </table>
+      </div>
+    </div>`;
   }
 
   function scaleFor(snapshot, key, fallbackRows = []) {
@@ -1267,6 +1350,7 @@
 
   function renderInterfacesScaleAdaptive(snapshot) {
     snapshot = snapshot || {};
+    const wanLines = typeof getLogicalWanLines === 'function' ? getLogicalWanLines(snapshot) : (snapshot.wan || snapshot.pppoe || []);
     const rows = (snapshot.interfaces || []).slice().sort((a, b) => {
       const problem = interfaceScore(b) - interfaceScore(a);
       if (problem) return problem;
@@ -1334,6 +1418,7 @@
             <span>建议先看“最近新增”和“最近丢包率”；VLAN/macvlan 逻辑接口已降权展示。</span>
           </div>
         </div>
+        ${renderBroadbandRealtimeTable(wanLines)}
         <div class="pm-interface-workbench">
           ${detailHeader(meta, '接口明细窗口', '异常优先排序；搜索支持接口名、类型、地址和 MAC。详情列保留证据，不把长地址直接铺满首页。', [
             { label: '实际总量', value: number(meta.actualCount) },
