@@ -150,6 +150,30 @@ async function main() {
       const wanAxisLabels = visibleAxisLabels('.ikuai-wan-card .axis-tick-label');
       const monitorAxisLabels = visibleAxisLabels('.ikuai-monitor-card .axis-tick-label');
       const overviewAxesOk = wanAxisLabels.length >= 3 && monitorAxisLabels.length >= 3;
+      let overviewStickyOk = innerWidth < 1024;
+      let overviewStickyProbe = null;
+      if (innerWidth >= 1024) {
+        const originalScrollY = scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
+        const wanCard = sectionEl?.querySelector('.ikuai-wan-card');
+        const titleNode = wanCard?.querySelector('.ikuai-card-title');
+        const maxProbeY = Math.max(0, document.documentElement.scrollHeight - innerHeight - 1);
+        const probeY = Math.min(520, maxProbeY);
+        if (wanCard && titleNode && probeY >= 120) {
+          scrollTo(0, probeY);
+          const cardRect = wanCard.getBoundingClientRect();
+          const titleRect = titleNode.getBoundingClientRect();
+          const cardStyle = getComputedStyle(wanCard);
+          overviewStickyOk = cardStyle.position === 'sticky' && cardRect.top >= 0 && cardRect.top <= 24 && titleRect.top >= cardRect.top && titleRect.top < innerHeight / 2;
+          overviewStickyProbe = {
+            probeY,
+            cardTop: Math.round(cardRect.top),
+            titleTop: Math.round(titleRect.top),
+            position: cardStyle.position,
+            internalScrollTop: Math.round(wanCard.scrollTop || 0)
+          };
+          scrollTo(0, originalScrollY);
+        }
+      }
       const resourceGrid = sectionEl?.querySelector('.ikuai-resource-grid');
       const resourceCards = Array.from(resourceGrid?.querySelectorAll('.ikuai-resource-card') || []);
       const resourceText = normalize(resourceGrid?.textContent || '');
@@ -158,7 +182,7 @@ async function main() {
         .filter((node) => node.scrollWidth > node.clientWidth + 2);
       const horizontalOverflow = sectionEl ? sectionEl.scrollWidth > sectionEl.clientWidth + 2 : true;
       return {
-        pass: Boolean(sectionEl && missing.length === 0 && statusTiles.length >= 3 && quickLinks.length >= 9 && terminalAfterLatency && terminalBeforeQuick && duplicateTerminalCards.length === 0 && overviewAxesOk && resourceCards.length === 3 && resourceColumns >= 3 && resourceText.includes('CPU负载') && resourceText.includes('内存使用率') && resourceText.includes('磁盘使用率') && !horizontalOverflow && overflowingMetricNodes.length === 0),
+        pass: Boolean(sectionEl && missing.length === 0 && statusTiles.length >= 3 && quickLinks.length >= 9 && terminalAfterLatency && terminalBeforeQuick && duplicateTerminalCards.length === 0 && overviewAxesOk && overviewStickyOk && resourceCards.length === 3 && resourceColumns >= 3 && resourceText.includes('CPU负载') && resourceText.includes('内存使用率') && resourceText.includes('磁盘使用率') && !horizontalOverflow && overflowingMetricNodes.length === 0),
         url: location.href,
         missing,
         statusTileCount: statusTiles.length,
@@ -171,6 +195,8 @@ async function main() {
         monitorAxisLabelCount: monitorAxisLabels.length,
         monitorAxisLabels: monitorAxisLabels.map((node) => normalize(node.textContent)).slice(0, 3),
         overviewAxesOk,
+        overviewStickyOk,
+        overviewStickyProbe,
         resourceCardCount: resourceCards.length,
         resourceColumns,
         horizontalOverflow,

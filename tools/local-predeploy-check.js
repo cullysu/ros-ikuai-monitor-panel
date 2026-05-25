@@ -799,6 +799,37 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const wanAxisLabels = visibleAxisLabels('.ikuai-wan-card .axis-tick-label');
     const monitorAxisLabels = visibleAxisLabels('.ikuai-monitor-card .axis-tick-label');
     const overviewAxesOk = sectionName !== 'overview' || (wanAxisLabels.length >= 3 && monitorAxisLabels.length >= 3);
+    const scrollHeight = Math.max(root.scrollHeight, body.scrollHeight);
+    let overviewStickyOk = sectionName !== 'overview' || window.innerWidth < 1024;
+    let overviewStickyProbe = null;
+    if (sectionName === 'overview' && window.innerWidth >= 1024) {
+      const originalScrollY = window.scrollY || root.scrollTop || body.scrollTop || 0;
+      const wanCard = sectionRoot?.querySelector('.ikuai-wan-card');
+      const titleNode = wanCard?.querySelector('.ikuai-card-title');
+      const maxProbeY = Math.max(0, scrollHeight - window.innerHeight - 1);
+      const probeY = Math.min(520, maxProbeY);
+      if (wanCard && titleNode && probeY >= 120) {
+        window.scrollTo(0, probeY);
+        const cardRect = wanCard.getBoundingClientRect();
+        const titleRect = titleNode.getBoundingClientRect();
+        const cardStyle = getComputedStyle(wanCard);
+        overviewStickyOk = (
+          cardStyle.position === 'sticky' &&
+          cardRect.top >= 0 &&
+          cardRect.top <= 24 &&
+          titleRect.top >= cardRect.top &&
+          titleRect.top < window.innerHeight / 2
+        );
+        overviewStickyProbe = {
+          probeY,
+          cardTop: Math.round(cardRect.top),
+          titleTop: Math.round(titleRect.top),
+          position: cardStyle.position,
+          internalScrollTop: Math.round(wanCard.scrollTop || 0),
+        };
+        window.scrollTo(0, originalScrollY);
+      }
+    }
     const resourceGrid = sectionRoot?.querySelector('.ikuai-resource-grid');
     const resourceCards = Array.from(resourceGrid?.querySelectorAll('.ikuai-resource-card') || []);
     const resourceText = normalize(resourceGrid?.textContent || '');
@@ -812,7 +843,6 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     );
     const detailFeedbackOk = !detailSections.has(sectionName) || Boolean(sectionRoot?.querySelector('[data-scale-filter-summary]') && sectionRoot?.querySelector('[data-scale-clear]'));
     const humanScaleCopyOk = !scaleRequiredSections.has(sectionName) || !/\\bbucket\\b|\\bhasMore\\b|\\bsampled\\b|\\bsort\\b/i.test(text);
-    const scrollHeight = Math.max(root.scrollHeight, body.scrollHeight);
     const scaleHeightOk = scenario !== 'fleet' || (
       sectionName === 'overview' ? scrollHeight <= 3000 :
       sectionName === 'trafficLoad' ? scrollHeight <= 10000 :
@@ -854,6 +884,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewTerminalPlacementOk &&
       overviewNoDuplicateTerminalOk &&
       overviewAxesOk &&
+      overviewStickyOk &&
       overviewResourceRowOk &&
       detailFeedbackOk &&
       humanScaleCopyOk &&
@@ -900,6 +931,8 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       wanAxisLabels: wanAxisLabels.map((node) => normalize(node.textContent)).slice(0, 3),
       monitorAxisLabelCount: monitorAxisLabels.length,
       monitorAxisLabels: monitorAxisLabels.map((node) => normalize(node.textContent)).slice(0, 3),
+      overviewStickyOk,
+      overviewStickyProbe,
       overviewResourceRowOk,
       resourceCardCount: resourceCards.length,
       resourceColumns,

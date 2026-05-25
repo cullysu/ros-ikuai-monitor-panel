@@ -263,8 +263,7 @@
       overflow-x: clip !important;
     }
     .app.ik-shell .frame {
-      overflow-x: clip !important;
-      overflow-y: visible !important;
+      overflow: visible !important;
     }
     #overview.ikuai-overview-section { margin-top: 0; }
     #overview.ikuai-overview-section > .section-head { display: none; }
@@ -274,7 +273,8 @@
       position: sticky;
       top: 14px;
       align-self: start;
-      max-height: calc(100vh - 28px);
+      min-height: 0;
+      max-height: calc(100vh - 64px);
       overflow-y: auto;
       overscroll-behavior: contain;
       scrollbar-gutter: stable;
@@ -389,7 +389,7 @@
     .ikuai-rank-sub { margin-top: 3px; color: #7b8797; font-size: 12px; }
     .ikuai-rank-rate { color: #0f5132; font-size: 12px; text-align: right; white-space: nowrap; }
     #overview.ikuai-overview-section {
-      overflow: hidden;
+      overflow: visible;
     }
     #overview.ikuai-overview-section.is-ikuai-scaled {
       height: var(--ikuai-scaled-height, auto);
@@ -417,7 +417,8 @@
     #overview.ikuai-overview-section .ikuai-home.is-viewport-scaled .ikuai-home-grid > .ikuai-wan-card {
       position: sticky;
       top: 14px;
-      max-height: calc(100vh - 28px);
+      min-height: 0;
+      max-height: calc(100vh - 64px);
       overflow-y: auto;
     }
     @media (max-width: 960px) {
@@ -1519,7 +1520,8 @@
     if (!section || !home) return;
     observeIkuaiSection(section);
     const availableWidth = Math.max(1, Math.floor(section.clientWidth || section.getBoundingClientRect().width || 0));
-    const scale = Math.min(1, availableWidth / IKUAI_HOME_DESIGN_WIDTH);
+    const allowViewportScale = window.innerWidth < 1024;
+    const scale = allowViewportScale ? Math.min(1, availableWidth / IKUAI_HOME_DESIGN_WIDTH) : 1;
     const shouldScale = scale < 0.995;
     home.classList.toggle('is-viewport-scaled', shouldScale);
     section.classList.toggle('is-ikuai-scaled', shouldScale);
