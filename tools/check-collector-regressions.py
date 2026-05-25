@@ -565,6 +565,7 @@ def assert_frontend_charts_skip_missing_values():
     assert "class=\"axis-tick-label\"" in index_source
     assert "font-variant-numeric: tabular-nums" in index_source
     assert "axis:'rate'" in index_source
+    assert "Number(value || 0)" not in index_source[index_source.find("function smoothNumericSeries") : index_source.find("function chartSegmentElements")]
     assert "if (value === null || value === undefined || value === '') return null;" in index_source
     assert "return Number.isFinite(numeric) ? numeric : null;" in index_source
 
