@@ -4107,6 +4107,27 @@
       return smoothed;
     }
 
+    function roundTo(value, digits = 2) {
+      const factor = 10 ** Math.max(0, Number(digits || 0));
+      return Math.round(Number(value || 0) * factor) / factor;
+    }
+
+    function smoothSvgPath(points = []) {
+      if (!points.length) return '';
+      if (points.length === 1) return `M ${points[0].x} ${points[0].y}`;
+      let path = `M ${points[0].x} ${points[0].y}`;
+      for (let index = 1; index < points.length; index += 1) {
+        const prev = points[index - 1];
+        const current = points[index];
+        const midX = (prev.x + current.x) / 2;
+        const midY = (prev.y + current.y) / 2;
+        path += ` Q ${prev.x} ${prev.y} ${midX} ${midY}`;
+      }
+      const last = points[points.length - 1];
+      path += ` T ${last.x} ${last.y}`;
+      return path;
+    }
+
     function chartSegmentElements(values, mapper, color, options = {}) {
       const strokeWidth = options.strokeWidth || 2.4;
       const pointRadius = options.pointRadius || 2.4;
@@ -4243,13 +4264,16 @@
       }).join('');
       if (!finitePoints.length) return `<svg class="ops-resource-svg" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none">${grid}</svg>`;
       const step = points.length > 1 ? (width - padX * 2) / (points.length - 1) : 0;
-      const polyline = chartSegmentElements(rawValues, (value, index) => {
+      const trendValues = smoothNumericSeries(rawValues, 4);
+      const pathPoints = trendValues.map((value, index) => {
+        if (value === null) return null;
         const clamped = Math.max(0, Math.min(100, value));
         const x = padX + step * index;
         const y = padY + ((100 - clamped) / 100) * chartHeight;
-        return `${x},${y}`;
-      }, color);
-      return `<svg class="ops-resource-svg" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none">${grid}${polyline}</svg>`;
+        return { x: roundTo(x, 2), y: roundTo(y, 2) };
+      }).filter(Boolean);
+      const path = smoothSvgPath(pathPoints);
+      return `<svg class="ops-resource-svg" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none">${grid}<path fill="none" stroke="${color}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="${path}"/></svg>`;
     }
 
     function resourceTrendCard(title, currentValue, values, color, meta) {
