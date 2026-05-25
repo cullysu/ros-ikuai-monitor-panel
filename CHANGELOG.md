@@ -23,3 +23,5 @@
 - Tightened the scale-adaptive UI after product review: overview is now
   risk/action-first, detail pages use labeled search/filter feedback, compact
   window tables, clear-filter controls, and human-readable scale copy.
+- Defaulted the homepage WAN monitor to an all-line aggregate view while keeping
+  per-line switching available.
