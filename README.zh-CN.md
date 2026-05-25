@@ -17,12 +17,12 @@ curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/mai
 打开：
 
 ```text
-http://127.0.0.1:28646/
+http://<panel-host-ip>:28646/
 ```
 
 首次进入面板后，在网页里的 RouterOS 登录页填写 SSH 地址、端口、账号和密码。公开安装不要求把真实 RouterOS 密码写进 `.env.docker`。
 
-所有安装路径的首选默认地址都是 `127.0.0.1:28646`。需要内网访问时，等进入面板后再通过面板地址设置来开放，不要把 LAN 地址作为第一步默认配置。
+默认安装会监听 `0.0.0.0:28646`，同网段设备用面板主机 IP 访问，例如 `http://<panel-host-ip>:28646/`。`127.0.0.1` 只代表浏览器所在设备自己，不能从另一台设备访问面板主机。
 
 自定义安装目录或端口：
 
@@ -75,7 +75,7 @@ docker compose --env-file .env.docker up -d --build
 首次运行仍然打开：
 
 ```text
-http://127.0.0.1:28646/
+http://<panel-host-ip>:28646/
 ```
 
 `.env.docker` 里的 RouterOS 凭据可以保持示例值，然后在网页登录页填写真实 SSH 信息。
@@ -85,15 +85,15 @@ http://127.0.0.1:28646/
 解压 Windows ZIP 后，默认仍使用：
 
 ```text
-http://127.0.0.1:28646/
+http://<panel-host-ip>:28646/
 ```
 
 `routeros-panel.env` 里的面板默认值应保持：
 
 ```dotenv
-ROS_PANEL_BIND=127.0.0.1
+ROS_PANEL_BIND=0.0.0.0
 ROS_PANEL_PORT=28646
-ROS_PANEL_TARGET_IP=127.0.0.1
+ROS_PANEL_TARGET_IP=auto
 ```
 
 ## Linux systemd / VM
@@ -101,16 +101,16 @@ ROS_PANEL_TARGET_IP=127.0.0.1
 systemd/VM 部署默认也使用：
 
 ```bash
-export ROS_PANEL_BIND="127.0.0.1"
+export ROS_PANEL_BIND="0.0.0.0"
 export ROS_PANEL_PORT="28646"
-export ROS_PANEL_TARGET_IP="127.0.0.1"
+export ROS_PANEL_TARGET_IP="auto"
 ```
 
 ## RouterOS Container
 
 RouterOS Container 是高级/Beta 路径。它会涉及 RouterOS container、storage、veth、可能还有 firewall/API 访问边界，不适合当作默认安装方式。
 
-该路径的文档默认仍以 `127.0.0.1:28646` 为首选面板端点。不要把 `172.18.x.x` veth 地址或 LAN 地址当作公开默认入口；需要开放时必须单独规划、备份、回滚和验证。
+该路径的面板进程默认监听 `0.0.0.0:28646`，但 RouterOS Container 是否能被 LAN 直接访问取决于容器网络、路由和防火墙。不要直接复制通用 NAT/防火墙规则到生产路由器。
 
 ## RouterOS 凭据
 
@@ -128,8 +128,8 @@ RouterOS Container 是高级/Beta 路径。它会涉及 RouterOS container、sto
 
 ```bash
 docker compose ps
-curl -fsS http://127.0.0.1:28646/api/health
-curl -fsS http://127.0.0.1:28646/api/semantic-triage
+curl -fsS http://<panel-host-ip>:28646/api/health
+curl -fsS http://<panel-host-ip>:28646/api/semantic-triage
 docker compose logs -f --tail=100 routeros-triage
 ```
 
@@ -166,7 +166,7 @@ docker compose logs -f --tail=100 routeros-triage
 ## 安全基线
 
 - 为面板创建专用只读 RouterOS 用户。
-- 默认保持 `127.0.0.1:28646`。
+- 默认同网段直连：监听 `0.0.0.0:28646`，从其他设备访问 `http://<panel-host-ip>:28646/`。
 - 不要把面板直接暴露到公网。
 - 跨网段、远程访问或多人使用时，先加 HTTPS 和认证。
 - 面向公开/产品化部署时使用 `routeros_only`。

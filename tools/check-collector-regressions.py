@@ -269,8 +269,10 @@ def assert_latency_tcp_fallback_probe():
 
 def assert_panel_network_config_helpers():
     assert app.DEFAULT_ROUTER_HOST == "192.168.88.1"
-    assert app.DEFAULT_PANEL_BIND == "127.0.0.1"
+    assert app.DEFAULT_PANEL_BIND == "0.0.0.0"
     assert app.DEFAULT_PANEL_PORT == 28646
+    assert app.normalize_panel_host(app.DEFAULT_PANEL_TARGET, "access host") == app.DEFAULT_PANEL_TARGET
+    assert app.resolve_panel_access_host("auto") == app.DEFAULT_PANEL_TARGET
     assert app.READONLY_NIKKI_CONTROLLER == ""
     assert app.nikki_probe()["disabled"] is True
     assert all(row["address"] != "192.168.3.2" for row in app.READONLY_DNS_SERVERS)
@@ -303,13 +305,13 @@ def assert_panel_network_config_helpers():
             "export ROS_PANEL_BIND=0.0.0.0\n",
             encoding="utf-8",
         )
-        app.write_panel_network_env("127.0.0.1", 28646, "127.0.0.1", env_path=env_path)
+        app.write_panel_network_env("0.0.0.0", 28646, "192.168.50.10", env_path=env_path)
         content = env_path.read_text(encoding="utf-8")
         assert "# keep this comment" in content
         assert "OTHER_SETTING=keep-me" in content
         assert "ROS_PANEL_PORT=28646" in content
-        assert "export ROS_PANEL_BIND=127.0.0.1" in content
-        assert "ROS_PANEL_TARGET_IP=127.0.0.1" in content
+        assert "export ROS_PANEL_BIND=0.0.0.0" in content
+        assert "ROS_PANEL_TARGET_IP=192.168.50.10" in content
 
 
 def assert_rate_history_only_advances_on_fresh_counter_samples():
@@ -538,7 +540,8 @@ def assert_deploy_defaults_are_project_safe():
     assert "192.168.3.5" not in template_text
     assert 'PANEL_IP="$${ROS_PANEL_TARGET_IP:-}"' in service_text
     assert 'PANEL_IP="$${ROS_PANEL_TARGET_IP:-}"' in template_text
-    assert 'DEFAULT_PANEL_TARGET_IP="127.0.0.1"' in deploy_text
+    assert 'DEFAULT_PANEL_BIND="0.0.0.0"' in deploy_text
+    assert 'DEFAULT_PANEL_TARGET_IP="$(detect_lan_ip)"' in deploy_text
     assert 'DEFAULT_ROUTER_USER="admin"' not in deploy_text
 
 

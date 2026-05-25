@@ -172,13 +172,13 @@ try {
           $dryRunResult = Invoke-CapturedCommand $bash.Source @($InstallScript, "--dry-run")
           if ($dryRunResult.ExitCode -eq 0) {
             Add-Check "PASS" "install dry-run" "bash $InstallScript --dry-run completed."
-            if ($dryRunResult.Output -match "bind:\s+127\.0\.0\.1" -and
+            if ($dryRunResult.Output -match "bind:\s+0\.0\.0\.0" -and
                 $dryRunResult.Output -match "port:\s+28646" -and
-                $dryRunResult.Output -match "target-ip:\s+127\.0\.0\.1") {
-              Add-Check "PASS" "localhost install defaults" "install dry-run resolved 127.0.0.1:28646."
+                $dryRunResult.Output -match "target-ip:\s+\S+") {
+              Add-Check "PASS" "LAN install defaults" "install dry-run resolved 0.0.0.0:28646 with a printable access host."
             }
             else {
-              Add-Check "FAIL" "localhost install defaults" "install dry-run did not resolve 127.0.0.1:28646."
+              Add-Check "FAIL" "LAN install defaults" "install dry-run did not resolve 0.0.0.0:28646 with a printable access host."
             }
           }
           else {
@@ -191,24 +191,24 @@ try {
         }
 
         $node = Get-Command node -ErrorAction SilentlyContinue
-        $localhostCheckPath = Join-Path $repoRoot "tools/check-localhost-defaults.js"
-        if (-not (Test-Path -LiteralPath $localhostCheckPath)) {
-          Add-Check "FAIL" "localhost defaults" "tools/check-localhost-defaults.js was not found."
+        $lanCheckPath = Join-Path $repoRoot "tools/check-lan-defaults.js"
+        if (-not (Test-Path -LiteralPath $lanCheckPath)) {
+          Add-Check "FAIL" "LAN defaults" "tools/check-lan-defaults.js was not found."
         }
         elseif (-not $node) {
-          Add-Check "SKIP" "localhost defaults" "node was not found on PATH."
+          Add-Check "SKIP" "LAN defaults" "node was not found on PATH."
         }
         else {
-          $localhostResult = Invoke-CapturedCommand $node.Source @("tools/check-localhost-defaults.js")
-          if ($localhostResult.ExitCode -eq 0) {
-            Add-Check "PASS" "localhost defaults" "tools/check-localhost-defaults.js passed."
+          $lanResult = Invoke-CapturedCommand $node.Source @("tools/check-lan-defaults.js")
+          if ($lanResult.ExitCode -eq 0) {
+            Add-Check "PASS" "LAN defaults" "tools/check-lan-defaults.js passed."
           }
           else {
-            $detail = $localhostResult.Output.Trim()
+            $detail = $lanResult.Output.Trim()
             if ([string]::IsNullOrWhiteSpace($detail)) {
-              $detail = "exit code $($localhostResult.ExitCode)"
+              $detail = "exit code $($lanResult.ExitCode)"
             }
-            Add-Check "FAIL" "localhost defaults" $detail
+            Add-Check "FAIL" "LAN defaults" $detail
           }
         }
       }

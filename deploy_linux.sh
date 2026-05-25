@@ -26,6 +26,17 @@ Environment overrides:
 EOF
 }
 
+detect_lan_ip() {
+  local candidate=""
+  if command -v ip >/dev/null 2>&1; then
+    candidate="$(ip -4 route get 1.1.1.1 2>/dev/null | awk '{for (i=1; i<=NF; i++) if ($i=="src") {print $(i+1); exit}}' || true)"
+  fi
+  if [[ -z "$candidate" ]] && command -v hostname >/dev/null 2>&1; then
+    candidate="$(hostname -I 2>/dev/null | awk '{print $1}' || true)"
+  fi
+  printf '%s\n' "${candidate:-127.0.0.1}"
+}
+
 INSTANCE="${ROS_PANEL_INSTANCE:-}"
 ENABLE_IP_SERVICE="${ROS_PANEL_ENABLE_IP_SERVICE:-}"
 LEGACY_PRIVATE="${ROS_PANEL_LEGACY_PRIVATE:-0}"
@@ -120,15 +131,15 @@ else
 fi
 
 if [[ "${MODE}" == "instance" ]]; then
-  DEFAULT_PANEL_BIND="127.0.0.1"
+  DEFAULT_PANEL_BIND="0.0.0.0"
   DEFAULT_PANEL_PORT="28646"
-  DEFAULT_PANEL_TARGET_IP="127.0.0.1"
+  DEFAULT_PANEL_TARGET_IP="$(detect_lan_ip)"
   DEFAULT_PANEL_PROFILE="routeros_only"
   DEFAULT_ROUTER_USER="ros-panel-readonly"
 else
-  DEFAULT_PANEL_BIND="127.0.0.1"
+  DEFAULT_PANEL_BIND="0.0.0.0"
   DEFAULT_PANEL_PORT="28646"
-  DEFAULT_PANEL_TARGET_IP="127.0.0.1"
+  DEFAULT_PANEL_TARGET_IP="$(detect_lan_ip)"
   DEFAULT_PANEL_PROFILE="private_ops"
   DEFAULT_ROUTER_USER="ros-panel-readonly"
 fi

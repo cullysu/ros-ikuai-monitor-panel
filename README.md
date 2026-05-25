@@ -43,19 +43,19 @@ intentionally enable private diagnostics.
 
 ## Quick Start: Docker One-command
 
-Safe localhost install:
+Same-subnet LAN install:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/main/install.sh | bash
 ```
 
-Open `http://127.0.0.1:28646/`, then enter the RouterOS SSH host, SSH port,
-read-only user, and password in the panel login page. The panel tests SSH
-first, then checks RouterOS REST reachability. The installer does not require
-real RouterOS credentials in `.env.docker` for first run.
-
-All install paths start local-only at `127.0.0.1:28646`. Change the panel
-address only after the UI has opened and you have decided the access boundary.
+Open the URL printed by the installer, usually
+`http://<panel-host-ip>:28646/`. Other devices on the same subnet must use the
+panel host IP, not `127.0.0.1`; loopback only reaches the browser's own device.
+Then enter the RouterOS SSH host, SSH port, read-only user, and password in the
+panel login page. The panel tests SSH first, then checks RouterOS REST
+reachability. The installer does not require real RouterOS credentials in
+`.env.docker` for first run.
 
 Custom directory or port:
 
@@ -75,7 +75,7 @@ Stop the installed service while keeping local panel data:
 curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/main/install.sh | bash -s -- --uninstall
 ```
 
-Read [DEPLOY_DOCKER.md](./DEPLOY_DOCKER.md) for manual Compose, local address
+Read [DEPLOY_DOCKER.md](./DEPLOY_DOCKER.md) for manual Compose, LAN address
 defaults, upgrade, uninstall, and RouterOS SSH `allowed-address`
 troubleshooting.
 
@@ -85,7 +85,8 @@ troubleshooting.
 2. Edit `routeros-panel.env` and set your RouterOS host, read-only user, and
    password.
 3. Double-click `RouterOS Triage Panel.exe`.
-4. Open `http://127.0.0.1:28646/` if the browser does not open automatically.
+4. Open `http://<windows-host-ip>:28646/` if another same-subnet device should
+   reach the panel, or `http://127.0.0.1:28646/` on the Windows machine itself.
 
 Read [DEPLOY_WINDOWS_EXE.md](./DEPLOY_WINDOWS_EXE.md) for build and
 troubleshooting details.
@@ -98,14 +99,15 @@ python -m venv .venv
 $env:ROS_MONITOR_ROUTER_HOST="<routeros-host-or-dns>"
 $env:ROS_MONITOR_ROUTER_USER="ros-panel-readonly"
 $env:ROS_MONITOR_ROUTER_PASSWORD="CHANGE_ME"
-$env:ROS_PANEL_BIND="127.0.0.1"
+$env:ROS_PANEL_BIND="0.0.0.0"
 $env:ROS_PANEL_PORT="28646"
-$env:ROS_PANEL_TARGET_IP="127.0.0.1"
+$env:ROS_PANEL_TARGET_IP="auto"
 $env:ROS_PANEL_PROFILE="routeros_only"
 .\.venv\Scripts\python app.py
 ```
 
-Open `http://127.0.0.1:28646/`.
+Open `http://<panel-host-ip>:28646/` from another same-subnet device, or
+`http://127.0.0.1:28646/` on the same machine.
 
 Read [DEPLOY_LOCAL.md](./DEPLOY_LOCAL.md) for Windows, macOS, and Linux details.
 
@@ -115,12 +117,12 @@ Read [DEPLOY_LOCAL.md](./DEPLOY_LOCAL.md) for Windows, macOS, and Linux details.
 docker compose up -d --build
 ```
 
-Open `http://127.0.0.1:28646/`.
+Open `http://<panel-host-ip>:28646/`.
 
 Docker is the default public deployment recommendation because it does not
 require ESXi or a dedicated VM, and it keeps the panel isolated from RouterOS.
 Read [DEPLOY_DOCKER.md](./DEPLOY_DOCKER.md) for UI-based RouterOS login,
-localhost defaults, upgrade, uninstall, env-file settings, and RouterOS SSH
+LAN defaults, upgrade, uninstall, env-file settings, and RouterOS SSH
 `allowed-address` troubleshooting.
 
 ## RouterOS Container
@@ -129,9 +131,9 @@ RouterOS Container is supported as an advanced/Beta deployment route. It is not
 the default path because it changes RouterOS container, storage, veth, and
 possibly API/firewall access state.
 
-Even in this path, the documented first-run panel endpoint stays
-`127.0.0.1:28646`; do not publish it to a veth/LAN address until that access
-boundary is deliberately configured.
+In this path the process should still bind `0.0.0.0:28646`, but RouterOS
+container networking must provide a LAN-reachable address or route before other
+devices can open it. Do not paste generic firewall/NAT rules into RouterOS.
 
 Read [DEPLOY_ROUTEROS_CONTAINER.md](./DEPLOY_ROUTEROS_CONTAINER.md) and make a
 RouterOS backup before trying it.
@@ -142,8 +144,8 @@ The Linux helper remains useful for operators who want an instance managed by
 systemd:
 
 ```bash
-export ROS_PANEL_TARGET_IP="127.0.0.1"
-export ROS_PANEL_BIND="127.0.0.1"
+export ROS_PANEL_TARGET_IP="auto"
+export ROS_PANEL_BIND="0.0.0.0"
 export ROS_PANEL_PORT="28646"
 export ROS_PANEL_PROFILE="routeros_only"
 export ROS_MONITOR_ROUTER_HOST="<routeros-host-or-dns>"
@@ -153,8 +155,8 @@ export ROS_MONITOR_ROUTER_PASSWORD="CHANGE_ME"
 ./deploy_linux.sh --instance routeros-panel --disable-ip-service
 ```
 
-Bind to a LAN address only after you have decided the access boundary. Older
-`.3.50/.4.50` deployment notes remain historical examples, not product defaults.
+The helper detects the host LAN IP for the printed URL. Older `.3.50/.4.50`
+deployment notes remain historical examples, not product defaults.
 
 ## What It Does
 
@@ -222,8 +224,9 @@ from the panel UI after the container starts.
 
 - Create a dedicated least-privilege RouterOS user for the panel.
 - Do not use the RouterOS `admin` account.
-- Keep `ROS_PANEL_BIND=127.0.0.1` for local runs.
-- Keep Docker publishing on `127.0.0.1` until LAN access is intentional.
+- Default first-run access is same-subnet LAN: `0.0.0.0:28646` listener and
+  `http://<panel-host-ip>:28646/` for other devices.
+- Use `127.0.0.1` only when you intentionally want same-machine-only access.
 - The panel address can be changed inside the UI; restart the panel service for
   bind/port changes to take effect.
 - Do not expose the panel directly to the public internet.
@@ -241,8 +244,8 @@ bash tools/validate-public-install.sh
 python -m py_compile app.py
 powershell -ExecutionPolicy Bypass -File .\tools\build-windows-exe.ps1
 docker compose --env-file .env.docker.example config --quiet
-curl -fsS http://127.0.0.1:28646/api/health
-curl -fsS http://127.0.0.1:28646/api/semantic-triage
+curl -fsS http://<panel-host-ip>:28646/api/health
+curl -fsS http://<panel-host-ip>:28646/api/semantic-triage
 ```
 
 Expected public-profile guardrails:

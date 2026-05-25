@@ -14,11 +14,11 @@ Usage:
   curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/main/install.sh | bash -s -- --port 28647
 
 Options:
-  --lan                 Advanced: publish the panel on all host interfaces.
-  --bind <addr>         Advanced host publish address. Default: 127.0.0.1.
+  --lan                 Keep the default: publish the panel on all host interfaces.
+  --bind <addr>         Host publish address. Default: 0.0.0.0.
   --port <port>         Host and in-container panel port. Default: 28646.
   --name <name>         Docker container name. Default: routeros-triage-panel.
-  --target-ip <addr>    URL host printed by the panel. Default: 127.0.0.1.
+  --target-ip <addr>    URL host printed by the panel. Default: detected LAN IP.
   --dir <path>          Install directory. Default: ~/.local/share/routeros-triage-panel, or /opt/routeros-triage-panel as root.
   --repo <url>          Git repository URL. Default: https://github.com/cullysu/ros-ikuai-monitor-panel.git
   --branch <name>       Git branch or tag to install. Default: main.
@@ -30,9 +30,10 @@ Options:
   -h, --help            Show this help.
 
 First run:
-  Open http://127.0.0.1:28646/ and enter the RouterOS SSH host, user, and
-  password in the panel UI. You do not need to put RouterOS credentials in
-  .env.docker.
+  Open the LAN URL printed after install, for example
+  http://192.168.88.10:28646/. 127.0.0.1 only works from the panel host itself.
+  Enter the RouterOS SSH host, user, and password in the panel UI. You do not
+  need to put RouterOS credentials in .env.docker.
 EOF
 }
 
@@ -70,6 +71,14 @@ detect_lan_ip() {
   fi
   if [[ -z "$candidate" ]] && command -v hostname >/dev/null 2>&1; then
     candidate="$(hostname -I 2>/dev/null | awk '{print $1}' || true)"
+  fi
+  if [[ -z "$candidate" ]] && command -v ipconfig.exe >/dev/null 2>&1; then
+    candidate="$(
+      ipconfig.exe 2>/dev/null |
+        tr -d '\r' |
+        awk -F: '/IPv4/ {gsub(/^[ \t]+|[ \t]+$/, "", $2); if ($2 != "" && $2 !~ /^127\./) {print $2; exit}}' ||
+        true
+    )"
   fi
   printf '%s\n' "${candidate:-127.0.0.1}"
 }
@@ -274,10 +283,10 @@ remove_install_dir() {
 REPO_URL="${ROS_PANEL_INSTALL_REPO:-$DEFAULT_REPO_URL}"
 BRANCH="${ROS_PANEL_INSTALL_BRANCH:-$DEFAULT_BRANCH}"
 INSTALL_DIR="${ROS_PANEL_INSTALL_DIR:-$(default_install_dir)}"
-PUBLISHED_ADDR="127.0.0.1"
+PUBLISHED_ADDR="0.0.0.0"
 PUBLISHED_PORT="$DEFAULT_PORT"
 CONTAINER_NAME="${ROS_PANEL_CONTAINER_NAME:-routeros-triage-panel}"
-TARGET_IP="127.0.0.1"
+TARGET_IP="$(detect_lan_ip)"
 TARGET_IP_EXPLICIT="0"
 SOURCE_DIR="${ROS_PANEL_INSTALL_SOURCE_DIR:-}"
 UPGRADE="0"
@@ -369,6 +378,8 @@ fi
 
 if [[ "$PUBLISHED_ADDR" == "0.0.0.0" && "$TARGET_IP_EXPLICIT" == "0" ]]; then
   TARGET_IP="$(detect_lan_ip)"
+elif [[ "$PUBLISHED_ADDR" == "127.0.0.1" && "$TARGET_IP_EXPLICIT" == "0" ]]; then
+  TARGET_IP="127.0.0.1"
 elif [[ "$PUBLISHED_ADDR" != "0.0.0.0" && "$PUBLISHED_ADDR" != "127.0.0.1" && "$TARGET_IP_EXPLICIT" == "0" ]]; then
   TARGET_IP="$PUBLISHED_ADDR"
 fi

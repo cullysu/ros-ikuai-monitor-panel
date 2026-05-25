@@ -116,9 +116,34 @@ def compact_config_rows(rows, *, address_key="address"):
     return compacted
 
 
-DEFAULT_PANEL_BIND = "127.0.0.1"
+def detect_panel_lan_ip():
+    candidates = []
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
+            sock.settimeout(0.2)
+            sock.connect(("1.1.1.1", 80))
+            candidates.append(sock.getsockname()[0])
+    except OSError:
+        pass
+    try:
+        hostname = socket.gethostname()
+        for info in socket.getaddrinfo(hostname, None, socket.AF_INET, socket.SOCK_DGRAM):
+            candidates.append(info[4][0])
+    except OSError:
+        pass
+    for candidate in candidates:
+        try:
+            address = ipaddress.ip_address(candidate)
+        except ValueError:
+            continue
+        if not (address.is_loopback or address.is_unspecified or address.is_link_local):
+            return str(address)
+    return "127.0.0.1"
+
+
+DEFAULT_PANEL_BIND = "0.0.0.0"
 DEFAULT_PANEL_PORT = 28646
-DEFAULT_PANEL_TARGET = "127.0.0.1"
+DEFAULT_PANEL_TARGET = detect_panel_lan_ip()
 PANEL_NETWORK_ENV_KEYS = ("ROS_PANEL_BIND", "ROS_PANEL_PORT", "ROS_PANEL_TARGET_IP")
 PANEL_ENV_ASSIGNMENT_RE = re.compile(r"^(\s*(?:export\s+)?)([A-Za-z_][A-Za-z0-9_]*)(\s*=\s*)(.*)$")
 
@@ -164,16 +189,23 @@ def normalize_panel_port(value):
 
 def format_url_host(host):
     raw = str(host or "").strip()
-    if raw in {"", "0.0.0.0", "::"}:
+    if raw.lower() == "auto" or raw in {"", "0.0.0.0", "::"}:
         raw = DEFAULT_PANEL_TARGET
     if ":" in raw and not raw.startswith("["):
         return f"[{raw}]"
     return raw
 
 
+def resolve_panel_access_host(value):
+    raw = str(value or "").strip()
+    if not raw or raw.lower() == "auto":
+        return DEFAULT_PANEL_TARGET
+    return normalize_panel_host(raw, "access host")
+
+
 def panel_access_url(bind, port, target=None):
     access_host = str(target or "").strip() or str(bind or "").strip() or DEFAULT_PANEL_TARGET
-    if access_host in {"0.0.0.0", "::"}:
+    if access_host.lower() == "auto" or access_host in {"0.0.0.0", "::"}:
         access_host = DEFAULT_PANEL_TARGET
     return f"http://{format_url_host(access_host)}:{normalize_panel_port(port)}/"
 
@@ -181,7 +213,7 @@ def panel_access_url(bind, port, target=None):
 def panel_network_payload(bind=None, port=None, target=None, restart_required=False):
     bind = normalize_panel_host(bind if bind is not None else PANEL_BIND, "bind")
     port = normalize_panel_port(port if port is not None else PANEL_PORT)
-    target = normalize_panel_host(target if target is not None else PANEL_TARGET, "access host")
+    target = resolve_panel_access_host(target if target is not None else PANEL_TARGET)
     env_path = panel_env_write_path()
     return {
         "bind": bind,
@@ -220,7 +252,7 @@ def read_text_with_env_fallback(path):
 def write_panel_network_env(bind, port, target, env_path=None):
     bind = normalize_panel_host(bind, "bind")
     port = normalize_panel_port(port)
-    target = normalize_panel_host(target, "access host")
+    target = resolve_panel_access_host(target)
     path = Path(env_path).resolve() if env_path else panel_env_write_path()
     updates = {
         "ROS_PANEL_BIND": bind,
@@ -259,7 +291,7 @@ ROUTER_SSH_PORT = int(os.getenv("ROS_MONITOR_ROUTER_SSH_PORT", "22"))
 PANEL_PROFILE_RAW = os.getenv("ROS_PANEL_PROFILE", "routeros_only")
 PANEL_BIND = normalize_panel_host(os.getenv("ROS_PANEL_BIND", DEFAULT_PANEL_BIND), "bind")
 PANEL_PORT = normalize_panel_port(os.getenv("ROS_PANEL_PORT", str(DEFAULT_PANEL_PORT)))
-PANEL_TARGET = normalize_panel_host(os.getenv("ROS_PANEL_TARGET_IP", DEFAULT_PANEL_TARGET), "access host")
+PANEL_TARGET = resolve_panel_access_host(os.getenv("ROS_PANEL_TARGET_IP", DEFAULT_PANEL_TARGET))
 POLL_SECONDS = max(1, int(os.getenv("ROS_MONITOR_POLL_SECONDS", "1")))
 HISTORY_LIMIT = int(os.getenv("ROS_MONITOR_HISTORY_LIMIT", "60"))
 ACTIVE_CONNECTION_LIMIT = int(os.getenv("ROS_MONITOR_ACTIVE_CONNECTION_LIMIT", "80"))

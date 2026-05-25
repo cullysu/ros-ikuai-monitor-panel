@@ -10,14 +10,15 @@ This is the simplest path for people who do not want to install Python.
    - `ROS_MONITOR_ROUTER_HOST`
    - `ROS_MONITOR_ROUTER_USER`
    - `ROS_MONITOR_ROUTER_PASSWORD`
-4. Keep these defaults for a first local trial:
-   - `ROS_PANEL_BIND=127.0.0.1`
+4. Keep these defaults for a first LAN trial:
+   - `ROS_PANEL_BIND=0.0.0.0`
    - `ROS_PANEL_PORT=28646`
-   - `ROS_PANEL_TARGET_IP=127.0.0.1`
+   - `ROS_PANEL_TARGET_IP=auto`
    - `ROS_PANEL_PROFILE=routeros_only`
    - `ROS_PANEL_IP_ALIAS_WRITE_ENABLED=0`
 5. Double-click `RouterOS Triage Panel.exe`.
-6. The browser should open `http://127.0.0.1:28646/` automatically.
+6. The browser should open a URL like `http://<windows-host-ip>:28646/`
+   automatically. Other same-subnet devices should use that host IP.
 
 The console window is intentional. It shows startup errors such as a wrong
 RouterOS address, bad password, or a port conflict.
@@ -41,7 +42,8 @@ dependencies there.
 
 ## Troubleshooting
 
-- If the browser does not open, visit `http://127.0.0.1:28646/` manually.
+- If the browser does not open, visit `http://<windows-host-ip>:28646/` from a
+  LAN device, or `http://127.0.0.1:28646/` on the Windows host itself.
 - If port `28646` is already in use, change `ROS_PANEL_PORT` in `routeros-panel.env` or use the panel address setting after opening the UI.
 - If Windows Defender or SmartScreen warns, inspect the folder and run from a
   trusted local path. This project does not yet provide code signing.
@@ -53,7 +55,7 @@ dependencies there.
 - Use a dedicated least-privilege RouterOS user.
 - Do not use the RouterOS `admin` account.
 - Do not expose this EXE directly to the public internet.
-- Keep `ROS_PANEL_BIND=127.0.0.1` and `ROS_PANEL_TARGET_IP=127.0.0.1` for the
-  first run. Change the panel address only after the UI has opened and the
-  access boundary has been reviewed.
+- The default listener is LAN-reachable on `0.0.0.0:28646`. Use
+  `ROS_PANEL_BIND=127.0.0.1` and `ROS_PANEL_TARGET_IP=127.0.0.1` only when you
+  intentionally want same-machine-only access.
 - Do not commit or share your edited `routeros-panel.env` file.
