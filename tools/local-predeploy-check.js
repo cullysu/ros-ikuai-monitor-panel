@@ -798,7 +798,18 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       });
     const wanAxisLabels = visibleAxisLabels('.ikuai-wan-card .axis-tick-label');
     const monitorAxisLabels = visibleAxisLabels('.ikuai-monitor-card .axis-tick-label');
-    const overviewAxesOk = sectionName !== 'overview' || (wanAxisLabels.length >= 3 && monitorAxisLabels.length >= 3);
+    const overviewAxesOk = sectionName !== 'overview' || (wanAxisLabels.length >= 3 && monitorAxisLabels.length >= 6);
+    const monitorSplit = sectionRoot?.querySelector('[data-monitor-split-charts]');
+    const monitorPanels = Array.from(monitorSplit?.querySelectorAll('[data-monitor-chart]') || []);
+    const monitorSplitColumns = monitorSplit ? getComputedStyle(monitorSplit).gridTemplateColumns.split(' ').filter(Boolean).length : 0;
+    const monitorSplitText = normalize(monitorSplit?.textContent || '');
+    const overviewMonitorSplitOk = sectionName !== 'overview' || Boolean(
+      monitorSplit &&
+      monitorPanels.length === 2 &&
+      monitorSplitColumns >= 2 &&
+      monitorSplitText.includes('上行速率') &&
+      monitorSplitText.includes('下行速率')
+    );
     const scrollHeight = Math.max(root.scrollHeight, body.scrollHeight);
     let overviewStickyOk = sectionName !== 'overview' || window.innerWidth < 1024;
     let overviewStickyProbe = null;
@@ -910,6 +921,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewTerminalPlacementOk &&
       overviewNoDuplicateTerminalOk &&
       overviewAxesOk &&
+      overviewMonitorSplitOk &&
       overviewStickyOk &&
       overviewResourceRowOk &&
       overviewResourceAxisOk &&
@@ -955,6 +967,9 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewNoDuplicateTerminalOk,
       duplicateTerminalCardCount: duplicateTerminalCards.length,
       overviewAxesOk,
+      overviewMonitorSplitOk,
+      monitorSplitColumns,
+      monitorPanelCount: monitorPanels.length,
       wanAxisLabelCount: wanAxisLabels.length,
       wanAxisLabels: wanAxisLabels.map((node) => normalize(node.textContent)).slice(0, 3),
       monitorAxisLabelCount: monitorAxisLabels.length,

@@ -362,6 +362,12 @@
     .ikuai-chart-body { padding: 12px 20px 0; }
     .ikuai-chart-box { min-height: 170px; padding: 10px 10px 6px; border-radius: 8px; background: #fff; }
     .ikuai-chart-box svg { width: 100%; height: 150px; display: block; }
+    .ikuai-monitor-split { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; min-width: 0; }
+    .ikuai-monitor-panel { min-width: 0; }
+    .ikuai-monitor-panel-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; min-width: 0; margin: 0 0 6px; color: #64748b; font-size: 12px; }
+    .ikuai-monitor-panel-head b { color: #111827; font-size: 13px; font-weight: 900; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .ikuai-monitor-split .ikuai-chart-box { min-height: 152px; padding: 8px 8px 6px; }
+    .ikuai-monitor-split .ikuai-chart-box svg { height: 132px; }
     .ikuai-line-legend { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 8px; color: #4b5563; font-size: 12px; }
     .ikuai-green-bar { height: 7px; margin-top: 8px; border-radius: 999px; background: linear-gradient(90deg,#6bd485,#8dde95); }
     .ikuai-card-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
@@ -1140,11 +1146,16 @@
     const selectedWan = selectedWanLine(lines, aggregateWan);
     const wanOptions = renderWanLineOptions(lines, selectedWan, aggregateWan);
     const wanHistory = selectedWan?.history || {};
+    const monitorUpSeries = wanHistory.up || history.uplink || [];
+    const monitorDownSeries = wanHistory.down || history.downlink || [];
     const wanChart = typeof lineChart === 'function'
-      ? lineChart([wanHistory.up || history.uplink || [], wanHistory.down || history.downlink || []], { colors: ['#2c3e9f', '#16a34a'], axis: 'rate' })
+      ? lineChart([monitorUpSeries, monitorDownSeries], { colors: ['#2c3e9f', '#16a34a'], axis: 'rate' })
       : '<div class="scale-empty">等待速率趋势采集</div>';
-    const aggregateChart = typeof lineChart === 'function'
-      ? lineChart([history.uplink || [], history.downlink || []], { colors: ['#245bff', '#12b76a'], axis: 'rate' })
+    const monitorUpChart = typeof lineChart === 'function'
+      ? lineChart([monitorUpSeries], { colors: ['#2c3e9f'], axis: 'rate' })
+      : '<div class="scale-empty">等待上行趋势采集</div>';
+    const monitorDownChart = typeof lineChart === 'function'
+      ? lineChart([monitorDownSeries], { colors: ['#16a34a'], axis: 'rate' })
       : '<div class="scale-empty">等待速率趋势采集</div>';
     const terminals = (snapshot.terminals || []).slice();
     const activeTerminals = terminals.filter((row) => totalRate(row) > 0).length;
@@ -1214,8 +1225,16 @@
                 <div class="ikuai-chart-controls"><span class="ikuai-chip">平均值</span><span class="ikuai-chip">全部</span><span class="ikuai-chip is-active">1小时</span><span class="ikuai-chip">24小时</span></div>
               </div>
               <div class="ikuai-chart-body">
-                <div class="ikuai-card-subtle">上下行速率</div>
-                <div class="ikuai-chart-box">${wanChart}</div>
+                <div class="ikuai-monitor-split" data-monitor-split-charts="true">
+                  <div class="ikuai-monitor-panel" data-monitor-chart="up">
+                    <div class="ikuai-monitor-panel-head"><span>上行速率</span><b>↑ ${rate(selectedWan?.upRate)}</b></div>
+                    <div class="ikuai-chart-box">${monitorUpChart}</div>
+                  </div>
+                  <div class="ikuai-monitor-panel" data-monitor-chart="down">
+                    <div class="ikuai-monitor-panel-head"><span>下行速率</span><b>↓ ${rate(selectedWan?.downRate)}</b></div>
+                    <div class="ikuai-chart-box">${monitorDownChart}</div>
+                  </div>
+                </div>
                 <div class="ikuai-line-legend">${pill(collect.title, collect.level === 'critical' ? 'danger' : 'ok')} <span>${html(selectedWan?.name || 'WAN')}</span><span>↑ ${rate(selectedWan?.upRate)}</span><span>↓ ${rate(selectedWan?.downRate)}</span></div>
                 <div class="ikuai-green-bar"></div>
               </div>
