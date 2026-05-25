@@ -17,6 +17,7 @@ documented separately in [PRODUCT_MODEL.md](./PRODUCT_MODEL.md).
 
 | Path | Best for | Status |
 |------|----------|--------|
+| Docker one-command | Most Linux/NAS/VM users who want the fastest public install | Recommended default |
 | Windows EXE | Non-Python Windows users who want unzip, edit config, double-click | Recommended first trial |
 | Docker / Compose | NAS, mini PC, Linux host, OpenWrt Docker, cloud VM | Recommended deployment |
 | Local run | Developers or users comfortable with Python | Supported |
@@ -40,6 +41,49 @@ switches from cards to grouped summaries and paged details as lists grow.
 Public/product-style deployments should use `routeros_only` unless you
 intentionally enable private diagnostics.
 
+## Quick Start: Docker One-command
+
+Safe localhost install:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/main/install.sh | bash
+```
+
+Open `http://127.0.0.1:28646/`, then enter the RouterOS SSH host, SSH port,
+read-only user, and password in the panel login page. The panel tests SSH
+first, then checks RouterOS REST reachability. The installer does not require
+real RouterOS credentials in `.env.docker` for first run.
+
+Trusted-LAN install:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/main/install.sh | bash -s -- --lan
+```
+
+Use LAN publishing only for trusted LAN clients, and do not expose the panel
+directly to the public internet.
+
+Custom directory or port:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/main/install.sh | bash -s -- --dir "$HOME/routeros-panel" --port 28647
+```
+
+Upgrade:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/main/install.sh | bash -s -- --upgrade
+```
+
+Stop the installed service while keeping local panel data:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/main/install.sh | bash -s -- --uninstall
+```
+
+Read [DEPLOY_DOCKER.md](./DEPLOY_DOCKER.md) for manual Compose, LAN exposure,
+upgrade, uninstall, and RouterOS SSH `allowed-address` troubleshooting.
+
 ## Quick Start: Windows EXE
 
 1. Extract `RouterOS-Triage-Panel-Windows.zip`.
@@ -56,7 +100,7 @@ troubleshooting details.
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\pip install -r requirements.txt
-$env:ROS_MONITOR_ROUTER_HOST="192.168.88.1"
+$env:ROS_MONITOR_ROUTER_HOST="<routeros-host-or-dns>"
 $env:ROS_MONITOR_ROUTER_USER="ros-panel-readonly"
 $env:ROS_MONITOR_ROUTER_PASSWORD="CHANGE_ME"
 $env:ROS_PANEL_BIND="127.0.0.1"
@@ -70,19 +114,19 @@ Open `http://127.0.0.1:28646/`.
 
 Read [DEPLOY_LOCAL.md](./DEPLOY_LOCAL.md) for Windows, macOS, and Linux details.
 
-## Quick Start: Docker
+## Manual Docker / Compose
 
 ```bash
-cp .env.docker.example .env.docker
-# edit .env.docker and set ROS_MONITOR_ROUTER_HOST / USER / PASSWORD
-docker compose --env-file .env.docker up -d --build
+docker compose up -d --build
 ```
 
 Open `http://127.0.0.1:28646/`.
 
 Docker is the default public deployment recommendation because it does not
 require ESXi or a dedicated VM, and it keeps the panel isolated from RouterOS.
-Read [DEPLOY_DOCKER.md](./DEPLOY_DOCKER.md) before exposing it beyond localhost.
+Read [DEPLOY_DOCKER.md](./DEPLOY_DOCKER.md) for UI-based RouterOS login, LAN
+exposure, upgrade, uninstall, env-file settings, and RouterOS SSH
+`allowed-address` troubleshooting.
 
 ## RouterOS Container
 
@@ -103,7 +147,7 @@ export ROS_PANEL_TARGET_IP="127.0.0.1"
 export ROS_PANEL_BIND="127.0.0.1"
 export ROS_PANEL_PORT="28646"
 export ROS_PANEL_PROFILE="routeros_only"
-export ROS_MONITOR_ROUTER_HOST="192.168.88.1"
+export ROS_MONITOR_ROUTER_HOST="<routeros-host-or-dns>"
 export ROS_MONITOR_ROUTER_USER="ros-panel-readonly"
 export ROS_MONITOR_ROUTER_PASSWORD="CHANGE_ME"
 
@@ -144,6 +188,7 @@ Bind to a LAN address only after you have decided the access boundary. Older
 - `Dockerfile`: container image build.
 - `compose.yml`: recommended Docker Compose deployment.
 - `.env.docker.example`: non-secret Docker environment template.
+- `install.sh`: public Docker one-command installer.
 - `routeros-panel.env.example`: non-secret Windows EXE sidecar config template.
 - `routeros-triage-panel.spec`: PyInstaller build spec.
 - `deploy_linux.sh`: Linux systemd deployment helper.
@@ -154,10 +199,11 @@ Bind to a LAN address only after you have decided the access boundary. Older
 - `DEPLOY_DOCKER.md`: Docker deployment path.
 - `DEPLOY_ROUTEROS_CONTAINER.md`: RouterOS Container Beta path.
 - `docs/local-predeploy-checks.md`: local-only predeployment checks.
+- `docs/validation/preflight-checks.md`: packaging and installer preflight checks.
 
 ## Required Environment
 
-At minimum, set:
+For manual runs, the main bootstrap variables are:
 
 - `ROS_MONITOR_ROUTER_HOST`
 - `ROS_MONITOR_ROUTER_USER`
@@ -169,6 +215,9 @@ At minimum, set:
 
 Use [env.example](./env.example) or [.env.docker.example](./.env.docker.example)
 as non-secret templates.
+
+For the public Docker installer, real RouterOS credentials can be configured
+from the panel UI after the container starts.
 
 ## Security Baseline
 
@@ -187,6 +236,9 @@ as non-secret templates.
 ## Validation
 
 ```bash
+bash -n install.sh
+bash install.sh --help
+bash tools/validate-public-install.sh
 python -m py_compile app.py
 powershell -ExecutionPolicy Bypass -File .\tools\build-windows-exe.ps1
 docker compose --env-file .env.docker.example config --quiet

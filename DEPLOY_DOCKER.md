@@ -1,30 +1,98 @@
 # Docker Deployment
 
-Docker is the recommended public deployment path for most users. It works well
-on NAS boxes, small Linux hosts, home servers, OpenWrt Docker environments, and
-cloud VMs without requiring a full manual systemd install.
+Docker is the recommended public deployment path for most users. It works on
+NAS boxes, mini PCs, Linux hosts, OpenWrt Docker environments, and cloud VMs
+without requiring Python, ESXi, or a manually managed systemd service.
 
-The default Compose file publishes the panel only on `127.0.0.1:28646`. Change
-that only after you have decided how access, authentication, and TLS will be
-handled.
+The default install publishes the panel only on `127.0.0.1:28646`. Keep that
+localhost-only shape for first run, then expose it to a trusted LAN only after
+you have decided the access boundary.
 
-## 1. Prepare A RouterOS Read-only User
+## One-command Install
+
+Safe localhost install:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/main/install.sh | bash
+```
+
+Open:
+
+```text
+http://127.0.0.1:28646/
+```
+
+Then enter the RouterOS SSH host, SSH port, read-only user, and password in the
+panel login page. The installer creates `.env.docker` for listener/profile
+settings, but it does not require real RouterOS credentials in that file for
+first run.
+
+Trusted-LAN install:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/main/install.sh | bash -s -- --lan
+```
+
+Custom install directory or port:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/main/install.sh | bash -s -- --dir "$HOME/routeros-panel" --port 28647
+```
+
+Install from a branch:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/main/install.sh | bash -s -- --branch main
+```
+
+Default install directory:
+
+- non-root users: `$HOME/.local/share/routeros-triage-panel`
+- root: `/opt/routeros-triage-panel`
+
+## Installer Options
+
+```text
+--lan                 Publish the panel on all host interfaces.
+--bind <addr>         Host publish address. Default: 127.0.0.1.
+--port <port>         Host and in-container panel port. Default: 28646.
+--name <name>         Docker container name. Default: routeros-triage-panel.
+--target-ip <addr>    URL host printed by the panel.
+--dir <path>          Install directory.
+--repo <url>          Git repository URL.
+--branch <name>       Git branch to install.
+--upgrade             Update the installed source before starting.
+--uninstall           Stop and remove the Compose service.
+--purge               With --uninstall, also remove the Docker volume and install directory.
+--dry-run             Print the resolved plan without changing files.
+```
+
+## Prepare A RouterOS Read-only User
 
 Create a dedicated RouterOS user for the panel. Do not use `admin`.
 
 The panel is designed to read state, build risk summaries, and suggest manual
 next steps. It should not be granted write access.
 
-## 2. Create Local Docker Env
+Make sure RouterOS SSH is reachable from the Docker host. If RouterOS restricts
+SSH by `allowed-address` or firewall input rules, allow the source address that
+RouterOS sees for the panel host or container.
+
+## Manual Compose Install
+
+Manual Compose remains useful for developers and operators who want direct file
+control:
 
 ```bash
 cp .env.docker.example .env.docker
+docker compose --env-file .env.docker up -d --build
 ```
 
-Edit `.env.docker`:
+For first run, you can leave these placeholders and configure RouterOS from the
+panel UI:
 
 ```dotenv
-ROS_MONITOR_ROUTER_HOST=192.168.88.1
+ROS_MONITOR_ROUTER_HOST=<routeros-host-or-dns>
 ROS_MONITOR_ROUTER_USER=ros-panel-readonly
 ROS_MONITOR_ROUTER_PASSWORD=CHANGE_ME
 ```
@@ -36,51 +104,67 @@ ROS_PANEL_PUBLISHED_ADDR=127.0.0.1
 ROS_PANEL_PUBLISHED_PORT=28646
 ```
 
-## 3. Run
+## Configure RouterOS Login In The UI
 
-```bash
-docker compose --env-file .env.docker up -d --build
-```
+In the RouterOS login screen, enter:
 
-Open:
+- RouterOS host or DNS name
+- SSH port, usually `22` unless you changed it on RouterOS
+- the dedicated read-only username
+- the matching password
 
-```text
-http://127.0.0.1:28646/
-```
+The panel tests SSH first. If SSH succeeds, it also checks RouterOS REST
+reachability and shows a warning when REST is unavailable. SSH is enough for the
+first connection, but some dashboard data may be missing until REST is
+reachable.
 
-## 4. Verify
+Use password saving only on a trusted panel host. Saved RouterOS logins live in
+the Docker volume `routeros-triage-data`, under the panel data directory, and
+should be treated as local secrets.
+
+## Verify
 
 ```bash
 docker compose ps
-docker compose --env-file .env.docker exec routeros-triage python -c "import os, urllib.request; print(urllib.request.urlopen('http://127.0.0.1:%s/api/health' % os.getenv('ROS_PANEL_PORT', '28646'), timeout=3).read().decode())"
+curl -fsS http://127.0.0.1:28646/api/health
 curl -fsS http://127.0.0.1:28646/api/semantic-triage
+docker compose logs -f --tail=100 routeros-triage
 ```
 
-Expected:
+Expected read-only public shape:
 
 - `profile` is `routeros_only`
 - `publicRouterosProfile` is `true`
 - `readonlyDiagnostics` is `false`
-- `ipAliasWrite` is `false`
-- `POST /api/ip-alias` returns `403`
+- `ipAliasWrite` is disabled
+- RouterOS credentials are not returned by status endpoints
+- write-only operations such as `POST /api/ip-alias` are rejected
 
 ## LAN Exposure
 
-To expose the panel to trusted LAN clients, change:
+With the installer:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/main/install.sh | bash -s -- --lan
+```
+
+With manual Compose:
 
 ```dotenv
 ROS_PANEL_PUBLISHED_ADDR=0.0.0.0
-ROS_PANEL_TARGET_IP=YOUR_PANEL_HOST_LAN_IP
+ROS_PANEL_TARGET_IP=<panel-host-lan-ip>
 ```
 
 Then restart:
 
 ```bash
-docker compose --env-file .env.docker up -d
+docker compose --env-file .env.docker up -d --build
 ```
 
-Do not expose this directly to the public internet. Put HTTPS and authentication
-in front of it if access crosses a trusted LAN boundary.
+Open `http://<panel-host-lan-ip>:28646/` from trusted LAN clients.
+
+Do not expose this directly to the public internet. Put HTTPS and
+authentication in front of it if access crosses a trusted LAN boundary.
 
 ## Security Shape
 
@@ -95,14 +179,55 @@ The included Docker setup:
 
 ## Upgrade
 
+One-command install:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/main/install.sh | bash -s -- --upgrade
+```
+
+Custom install directory:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/main/install.sh | bash -s -- --upgrade --dir "$HOME/routeros-panel"
+```
+
+Manual Compose:
+
 ```bash
 git pull
 docker compose --env-file .env.docker up -d --build
 ```
 
-## Stop / Remove
+Before a large upgrade, keep a copy of `.env.docker` and note the current Git
+commit or tag:
 
-Stop the service:
+```bash
+git rev-parse --short HEAD
+cp .env.docker ".env.docker.backup.$(date +%Y%m%d-%H%M%S)"
+```
+
+Rollback:
+
+```bash
+git checkout <previous-commit-or-tag>
+docker compose --env-file .env.docker up -d --build
+```
+
+## Stop / Uninstall
+
+One-command install:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/main/install.sh | bash -s -- --uninstall
+```
+
+Remove the Docker volume and install directory too:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/main/install.sh | bash -s -- --uninstall --purge
+```
+
+Manual Compose:
 
 ```bash
 docker compose down
@@ -114,5 +239,49 @@ Remove the persistent panel data volume:
 docker compose down -v
 ```
 
-Only remove the volume when you intentionally want to delete local panel data
-such as custom aliases.
+Only remove the volume when you intentionally want to delete saved RouterOS
+logins, custom aliases, and other local panel data.
+
+## Troubleshooting
+
+### Page Does Not Open
+
+```bash
+docker compose ps
+docker compose logs -f --tail=100 routeros-triage
+curl -fsS http://127.0.0.1:28646/api/health
+```
+
+If the port is occupied, reinstall or restart with another port:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/main/install.sh | bash -s -- --port 28647
+```
+
+### LAN Clients Cannot Reach The Panel
+
+- Confirm you installed with `--lan` or set `ROS_PANEL_PUBLISHED_ADDR=0.0.0.0`.
+- Confirm the host firewall allows the selected port.
+- Use the Docker host LAN IP in the browser, not `127.0.0.1`.
+
+### RouterOS Login Fails
+
+- Confirm the RouterOS SSH service is enabled.
+- Confirm RouterOS firewall input rules allow the Docker host.
+- If RouterOS SSH uses `allowed-address`, include the source address that
+  RouterOS sees for the panel host or container.
+- Confirm the user/password are real values and not `CHANGE_ME`.
+- Do not use the RouterOS `admin` account for this panel.
+
+If the UI reports "TCP connected but no SSH banner", the TCP port accepted a
+connection but RouterOS did not complete an SSH login banner. In practice, this
+usually means an SSH service restriction, firewall rule, connection limit, or a
+non-SSH service on that port.
+
+## Validate Local Files
+
+```bash
+bash -n install.sh
+bash tools/validate-public-install.sh
+docker compose --env-file .env.docker.example config --quiet
+```

@@ -16,6 +16,11 @@ _*
 *.bak-*
 *.png
 *.html
+!public/index.html
+public/*.bak-*
+public/_preview*.html
+public/*.pre-*.js
+public/index.extracted.js
 *.zip
 Dockerfile
 compose.yml

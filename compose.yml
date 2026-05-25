@@ -4,10 +4,10 @@ services:
       context: .
       dockerfile: Dockerfile
     image: routeros-triage-panel:local
-    container_name: routeros-triage-panel
+    container_name: "${ROS_PANEL_CONTAINER_NAME:-routeros-triage-panel}"
     restart: unless-stopped
     ports:
-      - "${ROS_PANEL_PUBLISHED_ADDR:-127.0.0.1}:${ROS_PANEL_PUBLISHED_PORT:-28646}:28646"
+      - "${ROS_PANEL_PUBLISHED_ADDR:-127.0.0.1}:${ROS_PANEL_PUBLISHED_PORT:-28646}:${ROS_PANEL_PORT:-28646}"
     environment:
       ROS_PANEL_BIND: "${ROS_PANEL_BIND:-0.0.0.0}"
       ROS_PANEL_PORT: "${ROS_PANEL_PORT:-28646}"

@@ -1,155 +1,119 @@
-# RouterOS 只读语义排障控制台
+# RouterOS 只读语义排障台
 
-[English](./README.md) | [简体中文](./README.zh-CN.md)
+[English](./README.md) | 简体中文
 
-这是一个面向 RouterOS 运维的只读面板，用来快速理解 WAN、路由、DNS、DHCP、防火墙、接口、流量和日志状态。
+这是一个面向 RouterOS 的只读运维面板，用来快速查看 WAN、路由、DNS、DHCP、终端、接口、流量和日志状态，并把原始状态整理成风险摘要、证据入口和下一步人工排查建议。
 
-它的定位不是替代 WinBox/WebFig，也不是重新做一套 Grafana、Zabbix、LibreNMS 或 The Dude。它真正要解决的是：把 RouterOS 的原始状态翻译成风险摘要、证据入口和下一步人工检查动作。
+它不是 WinBox/WebFig、Grafana、Zabbix、LibreNMS、The Dude 或备份/配置 diff 工具的替代品。它的核心定位是：让普通用户和运维人员更快知道“现在该先看哪里”，同时不给面板 RouterOS 写配置的能力。
+
+## 推荐安装：Docker 一条命令
+
+默认安全安装，只允许本机访问：
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/main/install.sh | bash
+```
+
+打开：
+
+```text
+http://127.0.0.1:28646/
+```
+
+首次进入面板后，在网页里的 RouterOS 登录页填写 SSH 地址、账号和密码。公开安装不要求你把真实 RouterOS 密码写进 `.env.docker`。
+
+如果确认只在可信局域网内使用，可以显式开放 LAN 访问：
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/main/install.sh | bash -s -- --lan
+```
+
+自定义安装目录或端口：
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/main/install.sh | bash -s -- --dir "$HOME/routeros-panel" --port 28647
+```
+
+升级：
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/main/install.sh | bash -s -- --upgrade
+```
+
+停止服务但保留本地数据：
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/main/install.sh | bash -s -- --uninstall
+```
+
+彻底删除容器数据卷和安装目录：
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/main/install.sh | bash -s -- --uninstall --purge
+```
+
+更多 Docker 细节见 [DEPLOY_DOCKER.md](./DEPLOY_DOCKER.md)。
 
 ## 安装路径
 
+安装路径是部署方式，不是产品版本。面板能力模式见 [PRODUCT_MODEL.md](./PRODUCT_MODEL.md)。
+
 | 路径 | 适合谁 | 状态 |
-|------|--------|------|
-| 本地运行 | 想几分钟内从电脑上试一下 | 推荐先试 |
-| Docker / Compose | NAS、小主机、Linux 主机、OpenWrt Docker、云主机 | 推荐部署方式 |
-| RouterOS Container | 想一体化跑在 RouterOS 附近的高级用户 | Beta / 高级 |
-| Linux systemd / VM | 需要服务化和生产运维的用户 | 专业部署 |
+| --- | --- | --- |
+| Docker 一条命令 | 大多数 Linux/NAS/虚拟机用户 | 默认推荐 |
+| Windows EXE | 不想安装 Python 的 Windows 用户 | 推荐首次试用 |
+| Docker / Compose | NAS、小主机、Linux 主机、OpenWrt Docker、云主机 | 推荐部署 |
+| 本地 Python | 开发者或调试者 | 支持 |
+| Linux systemd / VM | 需要 systemd 托管的运维环境 | 专业部署 |
+| RouterOS Container | 熟悉 RouterOS Container 的高级用户 | Beta / 高级 |
 
-## 快速开始：本地运行
+## 手动 Docker / Compose
 
-```powershell
-python -m venv .venv
-.\.venv\Scripts\pip install -r requirements.txt
-$env:ROS_MONITOR_ROUTER_HOST="192.168.88.1"
-$env:ROS_MONITOR_ROUTER_USER="ros-panel-readonly"
-$env:ROS_MONITOR_ROUTER_PASSWORD="CHANGE_ME"
-$env:ROS_PANEL_BIND="127.0.0.1"
-$env:ROS_PANEL_PORT="28646"
-$env:ROS_PANEL_TARGET_IP="127.0.0.1"
-$env:ROS_PANEL_PROFILE="routeros_only"
-.\.venv\Scripts\python app.py
-```
-
-打开：
-
-```text
-http://127.0.0.1:28646/
-```
-
-Windows、macOS、Linux 细节见 [DEPLOY_LOCAL.md](./DEPLOY_LOCAL.md)。
-
-## 快速开始：Docker
+如果你想自己管理 `.env.docker`：
 
 ```bash
 cp .env.docker.example .env.docker
-# 编辑 .env.docker，设置 ROS_MONITOR_ROUTER_HOST / USER / PASSWORD
 docker compose --env-file .env.docker up -d --build
 ```
 
-打开：
+首次运行仍然可以在网页里填写 RouterOS 登录信息；`.env.docker` 里的 RouterOS 凭据可以保持示例值。
+
+手动开放 LAN：
+
+```bash
+ROS_PANEL_PUBLISHED_ADDR=0.0.0.0 docker compose --env-file .env.docker up -d --build
+```
+
+然后从局域网客户端打开：
 
 ```text
-http://127.0.0.1:28646/
+http://<面板宿主机LAN地址>:28646/
 ```
 
-Docker 是公开项目的默认推荐部署方式，因为它不要求用户有 ESXi 或单独的虚拟机，也能把面板和 RouterOS 本体隔离开。对局域网开放之前，先读 [DEPLOY_DOCKER.md](./DEPLOY_DOCKER.md)。
+不要把面板直接暴露到公网。跨网段、远程访问或多人使用时，请先加反向代理、HTTPS 和认证。
 
-## RouterOS Container
+## RouterOS 凭据
 
-RouterOS Container 作为高级/Beta 路径支持。它不是默认路径，因为它会涉及 RouterOS container、存储、veth，以及可能的 API/firewall 访问边界。
+建议在 RouterOS 上创建专用只读用户：
 
-尝试前先读 [DEPLOY_ROUTEROS_CONTAINER.md](./DEPLOY_ROUTEROS_CONTAINER.md)，并先做 RouterOS 备份。
+- 不要使用 `admin`。
+- 只授予采集所需的只读权限。
+- 确认 RouterOS SSH 对运行面板的 Docker 宿主机可达。
+- 如果 RouterOS 的 SSH 服务设置了 `allowed-address`，把面板宿主机地址加入允许范围。
+- 不要把真实密码提交到 Git、截图或 issue。
 
-## Linux systemd / VM
+保存密码时请理解：密码会写入面板所在机器/容器的数据卷，只适合你信任的单机或受控环境。
 
-Linux 部署脚本保留给需要 systemd 托管实例的专业用户：
-
-```bash
-export ROS_PANEL_TARGET_IP="127.0.0.1"
-export ROS_PANEL_BIND="127.0.0.1"
-export ROS_PANEL_PORT="28646"
-export ROS_PANEL_PROFILE="routeros_only"
-export ROS_MONITOR_ROUTER_HOST="192.168.88.1"
-export ROS_MONITOR_ROUTER_USER="ros-panel-readonly"
-export ROS_MONITOR_ROUTER_PASSWORD="CHANGE_ME"
-
-./deploy_linux.sh --instance routeros-panel --disable-ip-service
-```
-
-在真实局域网主机上使用 systemd 路径前，先读 [DEPLOY_PUBLIC_192.168.3.50.md](./DEPLOY_PUBLIC_192.168.3.50.md) 或 [DEPLOY_PUBLIC_192.168.4.50.md](./DEPLOY_PUBLIC_192.168.4.50.md)。
-
-## 它会做什么
-
-- 通过只读 API/SSH 路径采集 RouterOS 状态。
-- 从 `public/` 提供静态 Web UI。
-- 从当前快照生成语义排障信息：
-  - 采集异常
-  - WAN 和默认路由风险
-  - DNS/DHCP 压力
-  - ARP 冲突
-  - 接口丢包/错误
-  - RouterOS 资源和连接压力
-  - 安全日志线索
-- 公开 profile 默认关闭写入类能力。
-
-## 它不会做什么
-
-- 不修改 RouterOS 配置。
-- 不修改 OpenWrt、Nikki/Mihomo、ESXi、DNS、DHCP、NAT、防火墙、路由、UPnP 或端口转发。
-- 不内置用户登录和 TLS 终止。
-- 不替代 RouterOS 备份或配置 diff 工具。
-
-## 仓库结构
-
-- `app.py`：后端入口和 RouterOS 快照采集器。
-- `public/`：静态前端。
-- `Dockerfile`：容器镜像构建。
-- `compose.yml`：推荐 Docker Compose 部署。
-- `.env.docker.example`：不含真实秘密的 Docker 环境变量模板。
-- `deploy_linux.sh`：Linux systemd 部署脚本。
-- `routeros-panel*.service`：systemd 单元。
-- `tools/`：本地 smoke 和浏览器验证工具。
-- `DEPLOY_LOCAL.md`：本地试用路径。
-- `DEPLOY_DOCKER.md`：Docker 部署路径。
-- `DEPLOY_ROUTEROS_CONTAINER.md`：RouterOS Container Beta 路径。
-- `docs/local-predeploy-checks.md`：本地预部署检查说明。
-
-## 必要环境变量
-
-至少需要设置：
-
-- `ROS_MONITOR_ROUTER_HOST`
-- `ROS_MONITOR_ROUTER_USER`
-- `ROS_MONITOR_ROUTER_PASSWORD`
-- `ROS_PANEL_BIND`
-- `ROS_PANEL_PORT`
-- `ROS_PANEL_TARGET_IP`
-- `ROS_PANEL_PROFILE`
-
-可以参考 [env.example](./env.example) 或 [.env.docker.example](./.env.docker.example)。不要把真实密码提交进 Git。
-
-## 安全基线
-
-- 给面板创建专用的 RouterOS 最小权限只读用户。
-- 不要使用 RouterOS 的 `admin` 账号。
-- 本地运行时保持 `ROS_PANEL_BIND=127.0.0.1`。
-- Docker 默认只发布到 `127.0.0.1:28646`，确认访问边界后再开放到局域网。
-- 面板内可以修改面板地址；监听 IP/端口保存后需要重启面板服务生效。
-- 不要把面板直接暴露到公网。
-- 如果访问跨出可信局域网，先加 HTTPS 和认证。
-- 面向公开/产品化部署时使用 `routeros_only`。
-- 公开 profile 会禁用私有 OpenWrt/Nikki 诊断；IP 别名写入应保持关闭，除非经过单独评审。
-
-## 验证
+## 常用验证
 
 ```bash
-python -m py_compile app.py
-docker compose --env-file .env.docker.example config --quiet
+docker compose ps
 curl -fsS http://127.0.0.1:28646/api/health
 curl -fsS http://127.0.0.1:28646/api/semantic-triage
+docker compose logs -f --tail=100 routeros-triage
 ```
 
-公开 profile 预期：
+公开只读模式预期：
 
 - `profile=routeros_only`
 - `publicRouterosProfile=true`
@@ -157,10 +121,62 @@ curl -fsS http://127.0.0.1:28646/api/semantic-triage
 - `ipAliasWrite=false`
 - `POST /api/ip-alias` 返回 `403`
 
+## 排障
+
+页面打不开：
+
+- 确认 Docker 正在运行。
+- 查看 `docker compose ps` 和 `docker compose logs -f --tail=100 routeros-triage`。
+- 如果端口被占用，用 `--port 28647` 换端口重新安装或启动。
+
+局域网访问不到：
+
+- 确认使用了 `--lan`，或设置了 `ROS_PANEL_PUBLISHED_ADDR=0.0.0.0`。
+- 确认宿主机防火墙允许访问面板端口。
+- 从其他设备访问时使用面板宿主机 LAN 地址，不是 `127.0.0.1`。
+
+RouterOS 登录失败：
+
+- 确认 RouterOS SSH 服务已启用。
+- 确认账号密码不是示例值 `CHANGE_ME`。
+- 确认 RouterOS 防火墙 input 规则允许面板宿主机。
+- 如果提示 “TCP connected but no SSH banner”，通常是 RouterOS SSH 服务限制、服务 `allowed-address`、防火墙、连接限制或端口上不是 SSH 服务导致。
+
+## 它会做什么
+
+- 通过只读 API/SSH 路径采集 RouterOS 状态。
+- 展示 WAN、接口、终端、DNS、DHCP、路由、分流、日志等信息。
+- 根据当前快照生成语义排障队列。
+- 默认保持公开部署的写入能力关闭。
+- 对不同规模的 RouterOS 环境保留真实数量、可见数量、分页和采样提示。
+
+## 它不会做什么
+
+- 不修改 RouterOS 配置。
+- 不修改 OpenWrt、Nikki/Mihomo、ESXi、DNS、DHCP、NAT、防火墙、路由、UPnP 或端口转发。
+- 不内置用户登录系统，也不负责 TLS 终止。
+- 不替代 RouterOS 备份、配置审计或专业监控告警系统。
+
+## 其他安装路径
+
+- [DEPLOY_WINDOWS_EXE.md](./DEPLOY_WINDOWS_EXE.md)
+- [DEPLOY_LOCAL.md](./DEPLOY_LOCAL.md)
+- [DEPLOY_DOCKER.md](./DEPLOY_DOCKER.md)
+- [DEPLOY_ROUTEROS_CONTAINER.md](./DEPLOY_ROUTEROS_CONTAINER.md)
+
+## 安全基线
+
+- 为面板创建专用只读 RouterOS 用户。
+- 默认保持 `127.0.0.1:28646`，确认访问边界后再做 LAN 暴露。
+- 不要把面板直接暴露到公网。
+- 跨网段或远程访问时，先加 HTTPS 和认证。
+- 面向公开/产品化部署时使用 `routeros_only`。
+- 公开模式下保持私有诊断和本地写入能力关闭，除非经过单独评估。
+
 ## 当前状态
 
-这是早期公开 MVP / 包装草案，适合受控局域网测试和只读运维观察。不要直接暴露到公网。
+这是早期公开 MVP / 打包草案，适合受控局域网测试和只读运维观察。生产环境使用前，请先确认访问控制、日志、备份、升级和回滚流程。
 
 ## 许可证
 
-目前尚未选择开源许可证。在加入许可证之前，保留所有权利。
+当前尚未选择开源许可证。加入许可证之前，保留所有权利。
