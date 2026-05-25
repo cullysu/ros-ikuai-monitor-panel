@@ -1502,8 +1502,299 @@
         min-width: 640px;
       }
     }
+    /* Legacy home fallback: keep the WAN/shortcut column visible on desktop
+       widths even when this older renderer is active on a live host. */
+    #overview .ik-home-layout {
+      grid-template-columns: minmax(330px, 420px) minmax(0, 1fr) !important;
+      align-items: start !important;
+    }
+    #overview .ik-home-layout > .stack:first-child {
+      position: sticky !important;
+      top: 12px;
+      align-self: start !important;
+      max-height: calc(100vh - 24px);
+      overflow-y: auto;
+      overflow-x: hidden;
+      overscroll-behavior: contain;
+      scrollbar-gutter: stable;
+    }
+    #overview .ik-home-layout > .stack:first-child > .card {
+      width: 100%;
+    }
+    #overview .ik-home-layout > .legacy-home-side-placeholder {
+      display: block !important;
+      visibility: hidden !important;
+      pointer-events: none !important;
+      grid-column: 1 !important;
+      grid-row: 1 !important;
+      min-width: 0 !important;
+    }
+    #overview .ik-home-layout > .legacy-home-side {
+      grid-column: 1 !important;
+      grid-row: 1 !important;
+      display: flex !important;
+      flex-direction: column !important;
+      min-width: 0 !important;
+      align-self: start !important;
+      max-height: calc(100vh - 24px) !important;
+      overflow-y: auto !important;
+      overflow-x: hidden !important;
+      overscroll-behavior: contain !important;
+      scrollbar-gutter: stable !important;
+    }
+    #overview .ik-home-layout > .legacy-home-main {
+      grid-column: 2 !important;
+      grid-row: 1 !important;
+      min-width: 0 !important;
+    }
+    #overview .ik-home-layout > .legacy-home-side.is-legacy-home-fixed {
+      position: fixed !important;
+      top: var(--legacy-home-fixed-top, 12px) !important;
+      left: var(--legacy-home-fixed-left, 0px) !important;
+      width: var(--legacy-home-fixed-width, 420px) !important;
+      z-index: 20 !important;
+    }
+    #overview .ikuai-home-grid > .ikuai-home-sticky-placeholder {
+      display: block !important;
+      visibility: hidden !important;
+      pointer-events: none !important;
+      grid-column: 1 !important;
+      grid-row: 1 !important;
+      min-width: 0 !important;
+    }
+    #overview .ikuai-home-grid > .ikuai-home-sticky-side {
+      grid-column: 1 !important;
+      grid-row: 1 !important;
+      align-self: start !important;
+      max-height: calc(100vh - 24px) !important;
+      overflow-y: auto !important;
+      overflow-x: hidden !important;
+      overscroll-behavior: contain !important;
+      scrollbar-gutter: stable !important;
+    }
+    #overview .ikuai-home-grid > .ikuai-home-sticky-main {
+      grid-column: 2 !important;
+      grid-row: 1 !important;
+      min-width: 0 !important;
+    }
+    #overview .ikuai-home-grid > .ikuai-home-sticky-side.is-ikuai-home-fixed {
+      position: fixed !important;
+      top: var(--ikuai-home-fixed-top, 12px) !important;
+      left: var(--ikuai-home-fixed-left, 0px) !important;
+      width: var(--ikuai-home-fixed-width, 430px) !important;
+      z-index: 20 !important;
+    }
+    @media (max-width: 1280px) and (min-width: 761px) {
+      #overview .ik-home-layout {
+        grid-template-columns: minmax(320px, 38vw) minmax(0, 1fr) !important;
+      }
+      #overview .ik-home-layout > .stack:first-child {
+        top: 10px;
+        max-height: calc(100vh - 20px);
+      }
+      #overview .ik-home-main,
+      #overview .ik-home-monitor-grid,
+      #overview .ik-home-rank-grid {
+        grid-template-columns: minmax(0, 1fr) !important;
+      }
+    }
+    @media (max-width: 760px) {
+      #overview .ik-home-layout {
+        grid-template-columns: minmax(0, 1fr) !important;
+      }
+      #overview .ik-home-layout > .stack:first-child {
+        position: static !important;
+        max-height: none;
+        overflow: visible;
+      }
+      #overview .ik-home-layout > .legacy-home-side,
+      #overview .ik-home-layout > .legacy-home-main {
+        grid-column: auto !important;
+        grid-row: auto !important;
+      }
+      #overview .ik-home-layout > .legacy-home-side-placeholder {
+        display: none !important;
+      }
+      #overview .ik-home-layout > .legacy-home-side.is-legacy-home-fixed {
+        position: static !important;
+        width: auto !important;
+      }
+      #overview .ikuai-home-grid > .ikuai-home-sticky-side,
+      #overview .ikuai-home-grid > .ikuai-home-sticky-main {
+        grid-column: auto !important;
+        grid-row: auto !important;
+      }
+      #overview .ikuai-home-grid > .ikuai-home-sticky-placeholder {
+        display: none !important;
+      }
+      #overview .ikuai-home-grid > .ikuai-home-sticky-side.is-ikuai-home-fixed {
+        position: static !important;
+        width: auto !important;
+      }
+    }
   `;
   document.head.appendChild(whitespaceStyle);
+
+  let legacyHomeStickyFrame = 0;
+
+  function resetLegacyHomeStickyFallback(layout) {
+    const root = layout || document.querySelector('#overview .ik-home-layout');
+    if (!root) return;
+    root.querySelector(':scope > .legacy-home-side-placeholder')?.remove();
+    const side = root.querySelector(':scope > .legacy-home-side');
+    const main = root.querySelector(':scope > .legacy-home-main');
+    if (side) {
+      side.classList.remove('is-legacy-home-fixed');
+      side.style.removeProperty('--legacy-home-fixed-left');
+      side.style.removeProperty('--legacy-home-fixed-width');
+      side.style.removeProperty('--legacy-home-fixed-top');
+    }
+    if (window.innerWidth <= 760) {
+      side?.classList.remove('legacy-home-side');
+      main?.classList.remove('legacy-home-main');
+    }
+  }
+
+  function syncLegacyHomeStickyFallback() {
+    const overview = document.querySelector('#overview');
+    const layout = overview?.querySelector('.ik-home-layout');
+    if (!overview || !layout || window.innerWidth <= 760 || getComputedStyle(overview).display === 'none') {
+      resetLegacyHomeStickyFallback(layout);
+      return;
+    }
+
+    const children = Array.from(layout.children || []);
+    const side = layout.querySelector(':scope > .legacy-home-side')
+      || children.find((node) => node.classList?.contains('stack') && !node.classList.contains('ik-home-main'));
+    const main = layout.querySelector(':scope > .legacy-home-main')
+      || children.find((node) => node !== side && !node.classList?.contains('legacy-home-side-placeholder'));
+    if (!side || !main) return;
+
+    side.classList.add('legacy-home-side');
+    main.classList.add('legacy-home-main');
+
+    let placeholder = layout.querySelector(':scope > .legacy-home-side-placeholder');
+    if (!placeholder) {
+      placeholder = document.createElement('div');
+      placeholder.className = 'legacy-home-side-placeholder';
+      layout.insertBefore(placeholder, side);
+    }
+
+    const stickyTop = window.innerWidth <= 1280 ? 10 : 12;
+    const layoutRect = layout.getBoundingClientRect();
+    const placeholderRect = placeholder.getBoundingClientRect();
+    const sideRect = side.getBoundingClientRect();
+    const sideHeight = Math.max(side.scrollHeight || 0, sideRect.height || 0, 1);
+    const sideWidth = Math.max(placeholderRect.width || sideRect.width || 0, 1);
+
+    placeholder.style.width = `${Math.round(sideWidth)}px`;
+    placeholder.style.height = `${Math.round(sideHeight)}px`;
+
+    const shouldFix = layoutRect.top <= stickyTop && layoutRect.bottom > stickyTop + 140;
+    if (shouldFix) {
+      side.style.setProperty('--legacy-home-fixed-left', `${Math.round(placeholderRect.left)}px`);
+      side.style.setProperty('--legacy-home-fixed-width', `${Math.round(sideWidth)}px`);
+      side.style.setProperty('--legacy-home-fixed-top', `${stickyTop}px`);
+      side.classList.add('is-legacy-home-fixed');
+    } else {
+      side.classList.remove('is-legacy-home-fixed');
+      side.style.removeProperty('--legacy-home-fixed-left');
+      side.style.removeProperty('--legacy-home-fixed-width');
+      side.style.removeProperty('--legacy-home-fixed-top');
+    }
+  }
+
+  function resetIkuaiHomeStickyFallback(layout) {
+    const root = layout || document.querySelector('#overview .ikuai-home-grid');
+    if (!root) return;
+    root.querySelector(':scope > .ikuai-home-sticky-placeholder')?.remove();
+    const side = root.querySelector(':scope > .ikuai-home-sticky-side');
+    const main = root.querySelector(':scope > .ikuai-home-sticky-main');
+    if (side) {
+      side.classList.remove('is-ikuai-home-fixed');
+      side.style.removeProperty('--ikuai-home-fixed-left');
+      side.style.removeProperty('--ikuai-home-fixed-width');
+      side.style.removeProperty('--ikuai-home-fixed-top');
+    }
+    if (window.innerWidth <= 760) {
+      side?.classList.remove('ikuai-home-sticky-side');
+      main?.classList.remove('ikuai-home-sticky-main');
+    }
+  }
+
+  function syncIkuaiHomeStickyFallback() {
+    const overview = document.querySelector('#overview');
+    const layout = overview?.querySelector('.ikuai-home-grid');
+    if (!overview || !layout || window.innerWidth <= 960 || getComputedStyle(overview).display === 'none') {
+      resetIkuaiHomeStickyFallback(layout);
+      return;
+    }
+
+    const home = overview.querySelector('.ikuai-home');
+    const homeStyle = home ? getComputedStyle(home) : null;
+    if (homeStyle && homeStyle.transform && homeStyle.transform !== 'none') {
+      resetIkuaiHomeStickyFallback(layout);
+      return;
+    }
+
+    const children = Array.from(layout.children || []);
+    const side = layout.querySelector(':scope > .ikuai-home-sticky-side')
+      || layout.querySelector(':scope > .ikuai-wan-card')
+      || children.find((node) => node.classList?.contains('ikuai-wan-card'));
+    const main = layout.querySelector(':scope > .ikuai-home-sticky-main')
+      || layout.querySelector(':scope > .ikuai-right')
+      || children.find((node) => node !== side && !node.classList?.contains('ikuai-home-sticky-placeholder'));
+    if (!side || !main) return;
+
+    side.classList.add('ikuai-home-sticky-side');
+    main.classList.add('ikuai-home-sticky-main');
+
+    let placeholder = layout.querySelector(':scope > .ikuai-home-sticky-placeholder');
+    if (!placeholder) {
+      placeholder = document.createElement('div');
+      placeholder.className = 'ikuai-home-sticky-placeholder';
+      layout.insertBefore(placeholder, side);
+    }
+
+    const stickyTop = window.innerWidth <= 1280 ? 10 : 12;
+    const layoutRect = layout.getBoundingClientRect();
+    const placeholderRect = placeholder.getBoundingClientRect();
+    const sideRect = side.getBoundingClientRect();
+    const sideHeight = Math.max(side.scrollHeight || 0, sideRect.height || 0, 1);
+    const sideWidth = Math.max(placeholderRect.width || sideRect.width || 0, 1);
+
+    placeholder.style.width = `${Math.round(sideWidth)}px`;
+    placeholder.style.height = `${Math.round(sideHeight)}px`;
+
+    const shouldFix = layoutRect.top <= stickyTop && layoutRect.bottom > stickyTop + 160;
+    if (shouldFix) {
+      side.style.setProperty('--ikuai-home-fixed-left', `${Math.round(placeholderRect.left)}px`);
+      side.style.setProperty('--ikuai-home-fixed-width', `${Math.round(sideWidth)}px`);
+      side.style.setProperty('--ikuai-home-fixed-top', `${stickyTop}px`);
+      side.classList.add('is-ikuai-home-fixed');
+    } else {
+      side.classList.remove('is-ikuai-home-fixed');
+      side.style.removeProperty('--ikuai-home-fixed-left');
+      side.style.removeProperty('--ikuai-home-fixed-width');
+      side.style.removeProperty('--ikuai-home-fixed-top');
+    }
+  }
+
+  function syncHomeStickyFallbacks() {
+    legacyHomeStickyFrame = 0;
+    syncLegacyHomeStickyFallback();
+    syncIkuaiHomeStickyFallback();
+  }
+  window.__syncHomeStickyFallbacks = syncHomeStickyFallbacks;
+
+  function requestLegacyHomeStickyFallbackSync() {
+    if (legacyHomeStickyFrame) return;
+    legacyHomeStickyFrame = window.requestAnimationFrame(syncHomeStickyFallbacks);
+  }
+
+  window.addEventListener('scroll', requestLegacyHomeStickyFallbackSync, { passive: true });
+  window.addEventListener('resize', requestLegacyHomeStickyFallbackSync);
+  window.addEventListener('load', () => setTimeout(requestLegacyHomeStickyFallbackSync, 250), { once: true });
 
   function forceHidePageSubtitle() {
     document.querySelectorAll('.page-subtitle').forEach((node) => {
@@ -4505,6 +4796,7 @@
   renderApp = function patchedRenderAppForWhitespacePatch(snapshot) {
     const result = originalRenderAppForWhitespacePatch(snapshot);
     rebalancePublicOverviewColumns();
+    requestLegacyHomeStickyFallbackSync();
     return result;
   };
   window.renderApp = renderApp;
@@ -4516,4 +4808,5 @@
       ensureDnsRuleBrowserLoaded(snapshotToRender);
     }
   }
+  requestLegacyHomeStickyFallbackSync();
 })();

@@ -1062,6 +1062,7 @@
     const overview = snapshot.overview || {};
     const connections = snapshot.connections || {};
     const collect = collectionState(snapshot);
+    const overviewWanMeta = scaleFor(snapshot, 'wan', lines);
     const issues = overviewIssues(snapshot, lines, interfaces);
     const topIssue = issues[0] || issue('ok', '当前没有高优先级风险', '线路、接口、连接和系统负载未发现需要立刻处理的信号。', '保持观察；需要细节时进入接口、流量、终端或 DHCP 页面下钻。', 'interfaces');
     const onlineLines = lines.filter((row) => row.running).length;
@@ -1096,6 +1097,7 @@
               <div class="ikuai-device-name">${html(overview.identity || 'RouterOS')}</div>
               <div class="ikuai-device-meta">${html(overview.version || '-')} · IP:${html(routerHost)}</div>
               <div class="ikuai-card-subtle">系统运行时间：${html(overview.uptime || '-')} · ${html(collect.title)}</div>
+              ${scaleMeta(overviewWanMeta, '线路')}
             </div>
           </div>
           <div class="ikuai-stat-tile">
@@ -1570,6 +1572,19 @@
     };
     window.renderApp = renderApp;
   }
+
+  function rerenderCurrentSnapshotForIkuaiHome() {
+    if (window.__ikuaiScaleAdaptiveInitialRenderDone) return;
+    const snapshot = (typeof displayedSnapshot !== 'undefined' && displayedSnapshot)
+      || (typeof latestSnapshot !== 'undefined' && latestSnapshot);
+    if (!snapshot || typeof renderApp !== 'function') return;
+    window.__ikuaiScaleAdaptiveInitialRenderDone = true;
+    renderApp(snapshot);
+    requestIkuaiViewportFitBurst();
+  }
+
+  setTimeout(rerenderCurrentSnapshotForIkuaiHome, 0);
+  setTimeout(rerenderCurrentSnapshotForIkuaiHome, 120);
 
   document.addEventListener('input', (event) => {
     const target = event.target?.closest?.('[data-scale-search]');

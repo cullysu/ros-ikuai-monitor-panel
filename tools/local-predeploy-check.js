@@ -810,16 +810,28 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       const probeY = Math.min(520, maxProbeY);
       if (wanCard && titleNode && probeY >= 120) {
         window.scrollTo(0, probeY);
+        if (typeof window.__syncHomeStickyFallbacks === 'function') {
+          window.__syncHomeStickyFallbacks();
+        }
         const cardRect = wanCard.getBoundingClientRect();
         const titleRect = titleNode.getBoundingClientRect();
         const cardStyle = getComputedStyle(wanCard);
-        overviewStickyOk = (
+        const nativeStickyOk = (
           cardStyle.position === 'sticky' &&
           cardRect.top >= 0 &&
           cardRect.top <= 24 &&
           titleRect.top >= cardRect.top &&
           titleRect.top < window.innerHeight / 2
         );
+        const fixedFallbackOk = (
+          cardStyle.position === 'fixed' &&
+          wanCard.classList.contains('is-ikuai-home-fixed') &&
+          cardRect.top >= 0 &&
+          cardRect.top <= 24 &&
+          titleRect.top >= cardRect.top &&
+          titleRect.top < window.innerHeight / 2
+        );
+        overviewStickyOk = nativeStickyOk || fixedFallbackOk;
         overviewStickyProbe = {
           probeY,
           cardTop: Math.round(cardRect.top),
