@@ -25,3 +25,10 @@
   window tables, clear-filter controls, and human-readable scale copy.
 - Defaulted the homepage WAN monitor to an all-line aggregate view while keeping
   per-line switching available.
+- Added readable chart Y-axis tick labels for rate and percentage trends.
+- Preserved missing-data gaps while smoothing chart lines, avoiding false
+  zero-value spikes.
+- Changed Docker/manual Compose address reporting to derive the active panel URL
+  from the browser `Host` header, with proxy headers opt-in.
+- Added explicit installer guidance for host firewall TCP `28646` checks without
+  silently changing firewall rules.

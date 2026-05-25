@@ -70,10 +70,12 @@ function main() {
   assertContains('env.example', 'ROS_PANEL_BIND=0.0.0.0');
   assertContains('env.example', 'ROS_PANEL_PORT=28646');
   assertContains('env.example', 'ROS_PANEL_TARGET_IP=auto');
+  assertContains('env.example', 'ROS_PANEL_TRUST_PROXY_HEADERS=0');
 
   assertContains('routeros-panel.env.example', 'ROS_PANEL_BIND=0.0.0.0');
   assertContains('routeros-panel.env.example', 'ROS_PANEL_PORT=28646');
   assertContains('routeros-panel.env.example', 'ROS_PANEL_TARGET_IP=auto');
+  assertContains('routeros-panel.env.example', 'ROS_PANEL_TRUST_PROXY_HEADERS=0');
 
   assertContains('.env.docker.example', 'ROS_PANEL_PUBLISHED_ADDR=0.0.0.0');
   assertContains('.env.docker.example', 'ROS_PANEL_PUBLISHED_PORT=28646');
@@ -88,6 +90,7 @@ function main() {
 
   assertContains('deploy_linux.sh', 'DEFAULT_PANEL_BIND="0.0.0.0"');
   assertContains('deploy_linux.sh', 'DEFAULT_PANEL_TARGET_IP="$(detect_lan_ip)"');
+  assertContains('deploy_linux.sh', 'ROS_PANEL_TRUST_PROXY_HEADERS="${ROS_PANEL_TRUST_PROXY_HEADERS:-0}"');
 
   for (const relPath of browserDocs) {
     assertContains(relPath, '127.0.0.1');
