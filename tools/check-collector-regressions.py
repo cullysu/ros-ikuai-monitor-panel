@@ -587,8 +587,12 @@ def assert_frontend_charts_skip_missing_values():
     assert "class=\"axis-tick-label\"" in index_source
     assert "font-variant-numeric: tabular-nums" in index_source
     assert "axis:'rate'" in index_source
+    assert "options.yMax" in index_source and "options.yMin" in index_source
     assert "Number(value || 0)" not in index_source[index_source.find("function smoothNumericSeries") : index_source.find("function chartSegmentElements")]
     assert "if (value === null || value === undefined || value === '') return null;" in index_source
+    scale_patch = (ROOT / "public" / "scale-adaptive-patch.js").read_text(encoding="utf-8")
+    assert "axis: 'percent', yMin: 0, yMax: 100" in scale_patch
+    assert "smoothPasses: 4" in scale_patch
     assert "return Number.isFinite(numeric) ? numeric : null;" in index_source
     layout_patch_source = (ROOT / "public" / "layout-whitespace-patch.js").read_text(encoding="utf-8")
     ops_chart_start = layout_patch_source.find("function opsPercentMiniChart")

@@ -1093,7 +1093,7 @@
 
   function renderResourceCard(title, value, sub, series, color = '#4891e8') {
     const chart = typeof lineChart === 'function'
-      ? lineChart([Array.isArray(series) ? series : []], { colors: [color], axis: 'percent' })
+      ? lineChart([Array.isArray(series) ? series : []], { colors: [color], axis: 'percent', yMin: 0, yMax: 100, smoothPasses: 4 })
       : '<div class="scale-empty">等待趋势采集</div>';
     return `<div class="ikuai-card ikuai-resource-card">
       <div class="ikuai-card-head">

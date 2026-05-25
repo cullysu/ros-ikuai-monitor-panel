@@ -4172,9 +4172,11 @@
       const plotHeight = height - padTop - padBottom;
       const seriesList = Array.isArray(series[0]) ? series : [series];
       const all = seriesList.flat().map(chartValue).filter((item) => item !== null);
-      const max = Math.max(...all, 1);
-      const min = 0;
-      const marks = [max, max / 2, 0];
+      const requestedMin = chartValue(options.yMin);
+      const requestedMax = chartValue(options.yMax);
+      const min = requestedMin !== null ? requestedMin : 0;
+      const max = Math.max(requestedMax !== null ? requestedMax : Math.max(...all, 1), min + 1);
+      const marks = [max, min + (max - min) / 2, min];
       const grid = marks.map((mark) => {
         const y = padTop + ((max - mark) / (max - min || 1)) * plotHeight;
         return `<line x1="${padX}" y1="${y}" x2="${width - padX}" y2="${y}" stroke="rgba(22,93,255,0.10)" stroke-width="1"/>`;
@@ -4185,8 +4187,9 @@
         const values = smoothNumericSeries(Array.isArray(arr) ? arr : [], options.smoothPasses ?? 2);
         const step = values.length > 1 ? (width - padX * 2) / (values.length - 1) : 0;
         return chartSegmentElements(values, (value, index) => {
+          const bounded = Math.min(max, Math.max(min, value));
           const x = padX + step * index;
-          const y = padTop + ((max - Math.max(0, value)) / (max - min || 1)) * plotHeight;
+          const y = padTop + ((max - bounded) / (max - min || 1)) * plotHeight;
           return `${x},${y}`;
         }, colors[idx % colors.length]);
       }).join('');

@@ -846,12 +846,18 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const resourceCards = Array.from(resourceGrid?.querySelectorAll('.ikuai-resource-card') || []);
     const resourceText = normalize(resourceGrid?.textContent || '');
     const resourceColumns = resourceGrid ? getComputedStyle(resourceGrid).gridTemplateColumns.split(' ').filter(Boolean).length : 0;
+    const resourceAxisLabels = Array.from(resourceGrid?.querySelectorAll('.axis-tick-label') || []).map((node) => normalize(node.textContent));
     const overviewResourceRowOk = sectionName !== 'overview' || Boolean(
       resourceCards.length === 3 &&
       resourceColumns >= 3 &&
       resourceText.includes('CPU负载') &&
       resourceText.includes('内存使用率') &&
       resourceText.includes('磁盘使用率')
+    );
+    const overviewResourceAxisOk = sectionName !== 'overview' || Boolean(
+      resourceAxisLabels.filter((label) => label === '100.0%').length >= 3 &&
+      resourceAxisLabels.filter((label) => label === '50.0%').length >= 3 &&
+      resourceAxisLabels.filter((label) => label === '0.0%').length >= 3
     );
     const protocolRank = sectionRoot?.querySelector('[data-protocol-rank]');
     const protocolRankText = normalize(protocolRank?.textContent || '');
@@ -906,6 +912,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewAxesOk &&
       overviewStickyOk &&
       overviewResourceRowOk &&
+      overviewResourceAxisOk &&
       overviewProtocolRankOk &&
       detailFeedbackOk &&
       humanScaleCopyOk &&
@@ -955,6 +962,8 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewStickyOk,
       overviewStickyProbe,
       overviewResourceRowOk,
+      overviewResourceAxisOk,
+      resourceAxisLabels,
       overviewProtocolRankOk,
       protocolRankText,
       resourceCardCount: resourceCards.length,
