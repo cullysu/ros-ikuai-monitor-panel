@@ -559,6 +559,21 @@ def assert_frontend_charts_skip_missing_values():
     assert "return Number.isFinite(numeric) ? numeric : null;" in index_source
 
 
+def assert_frontend_wan_aggregate_default():
+    source = (ROOT / "public" / "scale-adaptive-patch.js").read_text(encoding="utf-8")
+    assert "const AGGREGATE_WAN_KEY = '__all_wan__';" in source
+    assert "function wanAggregateLine(lines, overview = {})" in source
+    assert "isAggregateWan: true" in source
+    assert "const aggregateWan = wanAggregateLine(lines, overview);" in source
+    assert "const selectedWan = selectedWanLine(lines, aggregateWan);" in source
+    assert "renderWanLineOptions(lines, selectedWan, aggregateWan)" in source
+    assert '<option value="${AGGREGATE_WAN_KEY}"' in source
+    assert '<div class="ikuai-chart-box">${wanChart}</div>' in source
+    assert "rate(selectedWan?.upRate)" in source
+    assert "rate(selectedWan?.downRate)" in source
+    assert "const selectedWan = selectedWanLine(lines);" not in source
+
+
 def assert_semantic_triage_formats_loss_rate_once():
     triage = app.build_semantic_triage(
         {
@@ -597,6 +612,7 @@ def main():
     assert_arbitrary_scale_snapshot_contract()
     assert_deploy_defaults_are_project_safe()
     assert_frontend_charts_skip_missing_values()
+    assert_frontend_wan_aggregate_default()
     assert_semantic_triage_formats_loss_rate_once()
     print(
         json.dumps(
@@ -613,6 +629,7 @@ def main():
                     "arbitrary-scale non-PPPoE fixtures preserve scale metadata and WAN fallback semantics",
                     "deploy defaults avoid private IP/admin assumptions unless explicitly configured",
                     "frontend chart helpers skip missing values instead of drawing zeros",
+                    "frontend WAN selector defaults to an all-line aggregate traffic option",
                     "semantic triage formats recent loss-rate percentages once",
                 ],
             },

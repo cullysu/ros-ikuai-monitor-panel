@@ -4,6 +4,7 @@
 
   const state = window.__scaleAdaptiveState || { page: {}, query: {}, group: {} };
   window.__scaleAdaptiveState = state;
+  const AGGREGATE_WAN_KEY = '__all_wan__';
 
   const style = document.createElement('style');
   style.textContent = `
@@ -862,31 +863,70 @@
   }
 
   function wanLineKey(line, index = 0) {
+    if (line?.isAggregateWan) return AGGREGATE_WAN_KEY;
     return String(line?.name || line?.id || line?.access || `wan-${index}`);
   }
 
-  function selectedWanLine(lines) {
+  function wanAggregateLine(lines, overview = {}) {
+    const rows = Array.isArray(lines) ? lines : [];
+    const history = overview.history || {};
+    const online = rows.filter((row) => row?.running).length;
+    const summedUp = rows.reduce((sum, row) => sum + Number(row?.upRate || 0), 0);
+    const summedDown = rows.reduce((sum, row) => sum + Number(row?.downRate || 0), 0);
+    const overviewUp = Number(overview.uplinkBps);
+    const overviewDown = Number(overview.downlinkBps);
+    const upRate = Number.isFinite(overviewUp) ? overviewUp : summedUp;
+    const downRate = Number.isFinite(overviewDown) ? overviewDown : summedDown;
+    return {
+      name: '全部线路汇总',
+      lineId: AGGREGATE_WAN_KEY,
+      access: '汇总',
+      parent: `${number(rows.length)} 条 WAN`,
+      type: 'aggregate',
+      running: online > 0,
+      isAggregateWan: true,
+      upRate,
+      downRate,
+      txBytes: rows.reduce((sum, row) => sum + Number(row?.txBytes || 0), 0),
+      rxBytes: rows.reduce((sum, row) => sum + Number(row?.rxBytes || 0), 0),
+      addresses: [`在线 ${number(online)} / ${number(rows.length)} 条`],
+      history: {
+        up: Array.isArray(history.uplink) ? history.uplink : [],
+        down: Array.isArray(history.downlink) ? history.downlink : [],
+      },
+      latencyMs: overview.wanLatencyMs || overview.latencyMs,
+      latencyTarget: overview.wanLatencyTarget,
+    };
+  }
+
+  function selectedWanLine(lines, aggregateLine = null) {
     const rows = Array.isArray(lines) ? lines : [];
     const selectedKey = String(state.ikuaiWanLine || '');
+    if (!selectedKey || selectedKey === AGGREGATE_WAN_KEY) return aggregateLine || bestWanLine(rows);
     if (selectedKey) {
       const selected = rows.find((line, index) => wanLineKey(line, index) === selectedKey);
       if (selected) return selected;
       state.ikuaiWanLine = '';
     }
-    return bestWanLine(rows);
+    return aggregateLine || bestWanLine(rows);
   }
 
-  function renderWanLineOptions(lines, selectedWan) {
+  function renderWanLineOptions(lines, selectedWan, aggregateLine = null) {
     const rows = Array.isArray(lines) ? lines : [];
-    if (!rows.length) return '<option value="">wan1</option>';
+    if (!rows.length) return '<option value="">暂无 WAN 线路</option>';
     const selectedKey = selectedWan ? wanLineKey(selectedWan, rows.indexOf(selectedWan)) : '';
-    return rows.map((line, index) => {
+    const aggregate = aggregateLine || wanAggregateLine(rows, {});
+    const aggregateSelected = selectedKey === AGGREGATE_WAN_KEY || !selectedKey;
+    const aggregateLabel = `全部线路 · ${rate(aggregate.upRate)}/${rate(aggregate.downRate)}`;
+    const options = [`<option value="${AGGREGATE_WAN_KEY}" ${aggregateSelected ? 'selected' : ''}>${html(aggregateLabel)}</option>`];
+    options.push(...rows.map((line, index) => {
       const key = wanLineKey(line, index);
       const status = line?.running ? '在线' : '离线';
       const traffic = totalRate(line) > 0 ? ` · ${rate(line.upRate)}/${rate(line.downRate)}` : '';
       const label = `${line?.name || key} · ${status}${traffic}`;
       return `<option value="${html(key)}" ${key === selectedKey ? 'selected' : ''}>${html(label)}</option>`;
-    }).join('');
+    }));
+    return options.join('');
   }
 
   function wanAddressText(line) {
@@ -966,9 +1006,10 @@
     const issues = overviewIssues(snapshot, lines, interfaces);
     const topIssue = issues[0] || issue('ok', '当前没有高优先级风险', '线路、接口、连接和系统负载未发现需要立刻处理的信号。', '保持观察；需要细节时进入接口、流量、终端或 DHCP 页面下钻。', 'interfaces');
     const onlineLines = lines.filter((row) => row.running).length;
-    const selectedWan = selectedWanLine(lines);
-    const wanOptions = renderWanLineOptions(lines, selectedWan);
     const history = overview.history || {};
+    const aggregateWan = wanAggregateLine(lines, overview);
+    const selectedWan = selectedWanLine(lines, aggregateWan);
+    const wanOptions = renderWanLineOptions(lines, selectedWan, aggregateWan);
     const wanHistory = selectedWan?.history || {};
     const wanChart = typeof lineChart === 'function'
       ? lineChart([wanHistory.up || history.uplink || [], wanHistory.down || history.downlink || []], { colors: ['#2c3e9f', '#16a34a'] })
@@ -1042,8 +1083,8 @@
               </div>
               <div class="ikuai-chart-body">
                 <div class="ikuai-card-subtle">上下行速率</div>
-                <div class="ikuai-chart-box">${aggregateChart}</div>
-                <div class="ikuai-line-legend">${pill(collect.title, collect.level === 'critical' ? 'danger' : 'ok')} <span>${html(selectedWan?.name || 'WAN')}</span><span>↑ ${rate(overview.uplinkBps)}</span><span>↓ ${rate(overview.downlinkBps)}</span></div>
+                <div class="ikuai-chart-box">${wanChart}</div>
+                <div class="ikuai-line-legend">${pill(collect.title, collect.level === 'critical' ? 'danger' : 'ok')} <span>${html(selectedWan?.name || 'WAN')}</span><span>↑ ${rate(selectedWan?.upRate)}</span><span>↓ ${rate(selectedWan?.downRate)}</span></div>
                 <div class="ikuai-green-bar"></div>
               </div>
             </div>
