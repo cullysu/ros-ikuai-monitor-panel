@@ -1,0 +1,94 @@
+name: Bug report
+description: Report a reproducible panel, collector, packaging, or UI problem.
+title: "[Bug]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve the panel. Redact secrets before posting:
+        passwords, tokens, public IPs, MAC addresses, PPPoE credentials, private hostnames, and full RouterOS exports.
+  - type: dropdown
+    id: deployment
+    attributes:
+      label: Deployment path
+      options:
+        - Docker one-command installer
+        - Manual Docker / Compose
+        - Windows EXE
+        - Local Python
+        - Linux systemd / VM
+        - RouterOS Container
+        - Not sure
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version or commit
+      description: Paste the release tag, ZIP version, or `git rev-parse --short HEAD`.
+      placeholder: "main@f65497a or v0.x.x"
+    validations:
+      required: true
+  - type: input
+    id: routeros
+    attributes:
+      label: RouterOS version and device model
+      description: Leave out serial numbers and sensitive inventory details.
+      placeholder: "RouterOS 7.x on RB/CCR/CHR..."
+  - type: dropdown
+    id: area
+    attributes:
+      label: Problem area
+      options:
+        - Install / upgrade
+        - Panel does not open
+        - RouterOS login / SSH
+        - Missing or wrong data
+        - UI layout / charts
+        - Windows EXE packaging
+        - Docker / Compose
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What did you expect to happen?
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: What happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Reproduction steps
+      description: List the smallest steps that reproduce the problem.
+      placeholder: |
+        1. Install with ...
+        2. Open ...
+        3. Click ...
+        4. See ...
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Redacted logs or screenshots
+      description: Paste only redacted output. Do not include RouterOS passwords or full config exports.
+      render: text
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Safety checklist
+      options:
+        - label: I removed passwords, tokens, public IPs, MAC addresses, PPPoE credentials, and private hostnames.
+          required: true
+        - label: I am not asking the maintainer to change my live RouterOS/firewall/routing configuration without a backup and rollback path.
+          required: true

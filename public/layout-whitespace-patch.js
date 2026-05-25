@@ -1553,26 +1553,90 @@
     }).join('')}</div>`;
   }
 
+  function opsChartNumber(value) {
+    if (value === null || value === undefined || value === '') return null;
+    const numeric = Number(value);
+    return Number.isFinite(numeric) ? numeric : null;
+  }
+
+  function opsRound(value, digits = 2) {
+    const factor = 10 ** Math.max(0, Number(digits || 0));
+    const numeric = Number(value);
+    return Number.isFinite(numeric) ? Math.round(numeric * factor) / factor : 0;
+  }
+
+  function opsSmoothPercentValues(values = []) {
+    const raw = (values || []).map(opsChartNumber);
+    const finiteCount = raw.filter((value) => value !== null).length;
+    if (finiteCount < 4) return raw;
+
+    // Resource collection is intentionally fast, so draw a rolling trend instead
+    // of every instantaneous CPU tick. Numeric values above the chart stay raw.
+    let last = null;
+    const ema = raw.map((value) => {
+      if (value === null) return null;
+      if (last === null) {
+        last = value;
+      } else {
+        last = last * 0.72 + value * 0.28;
+      }
+      return last;
+    });
+
+    let smoothed = ema;
+    for (let pass = 0; pass < 5; pass += 1) {
+      smoothed = smoothed.map((value, index, arr) => {
+        if (value === null) return null;
+        const prev2 = arr[index - 2] ?? arr[index - 1] ?? value;
+        const prev1 = arr[index - 1] ?? value;
+        const next1 = arr[index + 1] ?? value;
+        const next2 = arr[index + 2] ?? arr[index + 1] ?? value;
+        return (prev2 + prev1 * 2 + value * 4 + next1 * 2 + next2) / 10;
+      });
+    }
+    return smoothed;
+  }
+
+  function opsSmoothPath(points = []) {
+    if (!points.length) return '';
+    if (points.length === 1) return `M ${points[0].x} ${points[0].y}`;
+    let path = `M ${points[0].x} ${points[0].y}`;
+    for (let index = 1; index < points.length; index += 1) {
+      const previous = points[index - 1];
+      const current = points[index];
+      const midX = opsRound((previous.x + current.x) / 2, 2);
+      const midY = opsRound((previous.y + current.y) / 2, 2);
+      path += ` Q ${previous.x} ${previous.y} ${midX} ${midY}`;
+    }
+    const last = points[points.length - 1];
+    path += ` T ${last.x} ${last.y}`;
+    return path;
+  }
+
   function opsPercentMiniChart(values = [], color = '#165dff') {
     const width = 360;
     const height = 96;
     const padX = 8;
     const padY = 8;
-    const points = (values || []).map((value) => Number(value || 0));
+    const rawPoints = (values || []).map(opsChartNumber);
+    const finitePoints = rawPoints.filter((value) => value !== null);
     const chartHeight = height - padY * 2;
     const grid = [100, 50, 0].map((mark) => {
       const y = padY + ((100 - mark) / 100) * chartHeight;
       return `<line x1="${padX}" y1="${y}" x2="${width - padX}" y2="${y}" stroke="rgba(22,93,255,0.09)" stroke-width="1"/>`;
     }).join('');
-    if (!points.length) return `<svg class="ops-resource-svg" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none">${grid}</svg>`;
-    const step = points.length > 1 ? (width - padX * 2) / (points.length - 1) : 0;
-    const polyline = points.map((value, index) => {
-      const clamped = Math.max(0, Math.min(100, Number(value || 0)));
+    if (!finitePoints.length) return `<svg class="ops-resource-svg" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none">${grid}</svg>`;
+    const smoothed = opsSmoothPercentValues(values);
+    const step = rawPoints.length > 1 ? (width - padX * 2) / (rawPoints.length - 1) : 0;
+    const pathPoints = smoothed.map((value, index) => {
+      if (value === null) return null;
+      const clamped = Math.max(0, Math.min(100, Number(value)));
       const x = padX + step * index;
       const y = padY + ((100 - clamped) / 100) * chartHeight;
-      return `${x},${y}`;
-    }).join(' ');
-    return `<svg class="ops-resource-svg" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none">${grid}<polyline fill="none" stroke="${color}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" points="${polyline}"/></svg>`;
+      return { x: opsRound(x, 2), y: opsRound(y, 2) };
+    }).filter(Boolean);
+    const path = opsSmoothPath(pathPoints);
+    return `<svg class="ops-resource-svg" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none">${grid}<path fill="none" stroke="${color}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="${path}"/></svg>`;
   }
 
   function opsResourceTrendCard(title, currentValue, values, color, meta) {

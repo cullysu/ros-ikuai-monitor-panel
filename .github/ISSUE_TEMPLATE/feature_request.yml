@@ -1,0 +1,55 @@
+name: Feature request
+description: Suggest a public-project feature, UI improvement, deployment improvement, or diagnostic.
+title: "[Feature]: "
+labels: ["enhancement", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Good feature requests explain the operator problem first. This project stays read-only by default.
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Semantic triage / action queue
+        - UI / information architecture
+        - Scale handling
+        - RouterOS collector
+        - Docker / installer
+        - Windows EXE
+        - Linux systemd / VM
+        - RouterOS Container
+        - Documentation
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What operator question or deployment problem should this solve?
+      placeholder: "When I am trying to..., I cannot tell..."
+    validations:
+      required: true
+  - type: textarea
+    id: proposed
+    attributes:
+      label: Proposed solution
+      description: What would a good solution look like?
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: What workaround or existing tool do you use today?
+  - type: checkboxes
+    id: boundary
+    attributes:
+      label: Boundary check
+      options:
+        - label: This can work without granting RouterOS write permissions.
+          required: true
+        - label: This does not require publishing secrets or private network details.
+          required: true

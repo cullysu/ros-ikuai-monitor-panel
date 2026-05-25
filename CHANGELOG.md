@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- No unreleased changes yet.
+
+## 0.1.0 - 2026-05-25
+
 - Repositioned the project as a read-only RouterOS semantic triage panel.
 - Added backend semantic triage/action queue data.
 - Added `/api/action-queue` and `/api/semantic-triage`.
@@ -32,3 +36,11 @@
   from the browser `Host` header, with proxy headers opt-in.
 - Added explicit installer guidance for host firewall TCP `28646` checks without
   silently changing firewall rules.
+- Added public-project foundation files: MIT license, support guide, code of
+  conduct, GitHub issue forms, pull request template, and CI workflow.
+- Rewrote the Chinese README in valid UTF-8 and aligned security/contribution
+  docs with the current LAN deployment defaults.
+- Added privacy, credential-handling, threat-model, read-only-permission,
+  disclaimer, roadmap, and legacy-deployment documentation.
+- Added local CI entrypoints for maintainers.
+- Made RouterOS password saving opt-in by default for public deployments.

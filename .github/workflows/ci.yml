@@ -1,0 +1,89 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  linux-validation:
+    name: Linux validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install Python dependencies
+        run: python -m pip install -r requirements.txt
+
+      - name: Python syntax and collector regressions
+        run: |
+          python -m py_compile app.py tools/check-collector-regressions.py
+          python tools/check-collector-regressions.py
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: LAN/default documentation checks
+        run: node tools/check-lan-access-defaults.js
+
+      - name: Docker Compose config
+        run: docker compose --env-file .env.docker.example config --quiet
+
+      - name: Installer shell checks
+        run: |
+          bash -n install.sh
+          bash -n deploy_linux.sh
+          bash tools/validate-public-install.sh
+
+      - name: Docker image build
+        run: docker build -t routeros-triage-panel:ci .
+
+  windows-packaging:
+    name: Windows packaging
+    runs-on: windows-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Packaging preflight
+        shell: pwsh
+        run: .\tools\check-packaging-preflight.ps1 -StrictInstall -SkipDocker
+
+      - name: Build Windows EXE directory
+        shell: pwsh
+        run: .\tools\build-windows-exe.ps1 -NoZip
+
+      - name: Verify bundled public assets and env defaults
+        shell: pwsh
+        run: |
+          $index = Get-ChildItem -Recurse .\dist\routeros-triage-panel -Filter index.html | Select-Object -First 1
+          if (-not $index) { throw "Bundled public/index.html was not found." }
+          Select-String -Path $index.FullName -Pattern "axis-tick-label" -Quiet | ForEach-Object {
+            if (-not $_) { throw "Bundled frontend is missing axis tick labels." }
+          }
+          $envFile = ".\dist\routeros-triage-panel\routeros-panel.env"
+          Select-String -Path $envFile -Pattern "ROS_PANEL_BIND=0.0.0.0" -Quiet | ForEach-Object {
+            if (-not $_) { throw "Windows env is missing LAN bind default." }
+          }
+          Select-String -Path $envFile -Pattern "ROS_PANEL_TRUST_PROXY_HEADERS=0" -Quiet | ForEach-Object {
+            if (-not $_) { throw "Windows env is missing proxy header default." }
+          }

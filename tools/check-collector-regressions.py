@@ -584,6 +584,13 @@ def assert_frontend_charts_skip_missing_values():
     assert "Number(value || 0)" not in index_source[index_source.find("function smoothNumericSeries") : index_source.find("function chartSegmentElements")]
     assert "if (value === null || value === undefined || value === '') return null;" in index_source
     assert "return Number.isFinite(numeric) ? numeric : null;" in index_source
+    layout_patch_source = (ROOT / "public" / "layout-whitespace-patch.js").read_text(encoding="utf-8")
+    ops_chart_start = layout_patch_source.find("function opsPercentMiniChart")
+    ops_chart_body = layout_patch_source[ops_chart_start : ops_chart_start + 2200]
+    assert "function opsChartNumber" in layout_patch_source
+    assert "function opsSmoothPercentValues" in layout_patch_source
+    assert "function opsSmoothPath" in layout_patch_source
+    assert "Number(value || 0)" not in ops_chart_body
 
 
 def assert_frontend_wan_aggregate_default():
@@ -599,6 +606,17 @@ def assert_frontend_wan_aggregate_default():
     assert "rate(selectedWan?.upRate)" in source
     assert "rate(selectedWan?.downRate)" in source
     assert "const selectedWan = selectedWanLine(lines);" not in source
+
+
+def assert_router_login_password_save_is_opt_in():
+    index_source = (ROOT / "public" / "index.html").read_text(encoding="utf-8")
+    app_source = (ROOT / "app.py").read_text(encoding="utf-8")
+    checkbox_marker = '<input id="routerLoginRememberPassword" name="rememberPassword" type="checkbox">'
+    assert checkbox_marker in index_source
+    assert '<input id="routerLoginRememberPassword" name="rememberPassword" type="checkbox" checked>' not in index_source
+    assert "routerLoginRememberPasswordEl ? routerLoginRememberPasswordEl.checked : false" in index_source
+    assert 'payload.get("rememberPassword", False)' in app_source
+    assert 'payload.get("rememberPassword", True)' not in app_source
 
 
 def assert_semantic_triage_formats_loss_rate_once():
@@ -640,6 +658,7 @@ def main():
     assert_deploy_defaults_are_project_safe()
     assert_frontend_charts_skip_missing_values()
     assert_frontend_wan_aggregate_default()
+    assert_router_login_password_save_is_opt_in()
     assert_semantic_triage_formats_loss_rate_once()
     print(
         json.dumps(
@@ -657,6 +676,7 @@ def main():
                     "deploy defaults avoid private IP/admin assumptions unless explicitly configured",
                     "frontend chart helpers skip missing values instead of drawing zeros",
                     "frontend WAN selector defaults to an all-line aggregate traffic option",
+                    "RouterOS login password saving is opt-in for public deployments",
                     "semantic triage formats recent loss-rate percentages once",
                 ],
             },

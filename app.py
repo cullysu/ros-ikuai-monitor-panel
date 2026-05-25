@@ -4714,7 +4714,7 @@ class Handler(BaseHTTPRequestHandler):
                         },
                         status=400,
                     )
-                remember_raw = payload.get("rememberPassword", True)
+                remember_raw = payload.get("rememberPassword", False)
                 remember_password = True if remember_raw is None else to_bool(remember_raw)
                 remembered_entry = None
                 if remember_password:

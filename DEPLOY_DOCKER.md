@@ -25,7 +25,15 @@ If you put the panel behind a trusted reverse proxy and want it to honor
 
 ## One-command Install
 
-Default install:
+Safest first run: download, review, dry-run, then install.
+
+```bash
+curl -fsSLO https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/main/install.sh
+bash install.sh --dry-run
+bash install.sh
+```
+
+Short form:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/main/install.sh | bash
@@ -141,7 +149,8 @@ reachable.
 
 Use password saving only on a trusted panel host. Saved RouterOS logins live in
 the Docker volume `routeros-triage-data`, under the panel data directory, and
-should be treated as local secrets.
+should be treated as local secrets. Do not use password saving on shared or
+untrusted hosts.
 
 ## Verify
 

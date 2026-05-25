@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security-sensitive report
+    url: https://github.com/cullysu/ros-ikuai-monitor-panel/security/policy
+    about: Do not post vulnerabilities, passwords, tokens, or private network details in public issues.
+  - name: Support guide
+    url: https://github.com/cullysu/ros-ikuai-monitor-panel/blob/main/SUPPORT.md
+    about: Read this before filing installation or RouterOS login questions.

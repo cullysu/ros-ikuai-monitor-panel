@@ -35,9 +35,9 @@ function main() {
     'DEPLOY_WINDOWS_EXE.md',
     'DEPLOY_ROUTEROS_CONTAINER.md',
     'DEPLOY_LOCAL.md',
-    'DEPLOY_PUBLIC_192.168.3.50.md',
-    'DEPLOY_PUBLIC_192.168.3.50.zh-CN.md',
-    'DEPLOY_PUBLIC_192.168.4.50.md',
+    'docs/legacy/DEPLOY_PUBLIC_192.168.3.50.md',
+    'docs/legacy/DEPLOY_PUBLIC_192.168.3.50.zh-CN.md',
+    'docs/legacy/DEPLOY_PUBLIC_192.168.4.50.md',
     'docs/LOCALHOST_ALIAS.md',
     'docs/superpowers/specs/2026-04-18-ros-monitor-panel-ikuai-1to1-design.md',
   ];

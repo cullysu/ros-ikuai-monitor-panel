@@ -3,24 +3,32 @@
 [English](./README.md) | [简体中文](./README.zh-CN.md)
 
 Read-only RouterOS operations panel for people who need fast triage of WAN,
-routing, DNS, DHCP, firewall, interface, traffic, and log state without giving a
-dashboard write access to the router.
+routing, DNS, DHCP, firewall, interface, traffic, resource, and log state
+without granting a dashboard write access to the router.
 
 The product wedge is semantic triage: turn RouterOS state into risk summaries,
 evidence entry points, and next manual review steps. It is not a replacement for
-WinBox/WebFig, Grafana, Zabbix, LibreNMS, The Dude, or backup/diff tools.
+WinBox/WebFig, Grafana, Zabbix, LibreNMS, The Dude, backups, or config diff
+tools.
+
+## Status
+
+This is an early public MVP. It is suitable for controlled trusted-LAN trials
+and read-only operational review. Do not expose it directly to the public
+internet. If access leaves a trusted LAN, put authentication and HTTPS in front
+of it.
 
 ## Install Paths
 
-Install paths are deployment choices, not product versions. Capability modes are
-documented separately in [PRODUCT_MODEL.md](./PRODUCT_MODEL.md).
+Install paths are deployment choices, not product versions. Capability modes
+are documented separately in [PRODUCT_MODEL.md](./PRODUCT_MODEL.md).
 
 | Path | Best for | Status |
 |------|----------|--------|
-| Docker one-command | Most Linux/NAS/VM users who want the fastest public install | Recommended default |
+| Docker one-command | Most Linux/NAS/VM users who want the fastest install | Recommended default |
 | Windows EXE | Non-Python Windows users who want unzip, edit config, double-click | Recommended first trial |
 | Docker / Compose | NAS, mini PC, Linux host, OpenWrt Docker, cloud VM | Recommended deployment |
-| Local run | Developers or users comfortable with Python | Supported |
+| Local Python | Developers or users comfortable with Python | Supported |
 | Linux systemd / VM | Operators who want a managed production service | Professional |
 | RouterOS Container | Advanced RouterOS users who want one-box deployment | Beta / advanced |
 
@@ -38,13 +46,12 @@ switches from cards to grouped summaries and paged details as lists grow.
 | Scale-adaptive | Any deployment with large lists | Search, grouping, paging, sampling labels, export-ready evidence |
 | Private ops | Explicit private environments | Optional OpenWrt/Nikki/private diagnostics |
 
-Public/product-style deployments should use `routeros_only` unless you
-intentionally enable private diagnostics.
+Public deployments should use `routeros_only` unless you intentionally enable
+private diagnostics.
 
 ## Access URL
 
-For a public project, the normal remote-access path is the panel host's LAN
-address. The installer prints it after startup:
+The normal remote-access path is the panel host's LAN address:
 
 ```text
 http://<panel-host-ip>:28646/
@@ -61,13 +68,21 @@ The helper is kept only as an optional vanity address for users who insist on
 typing `127.0.0.1:28646` on every client.
 
 When the panel is opened in a browser, the backend reports the actual URL from
-the HTTP `Host` header. That means manual Docker Compose no longer depends on a
-container guessing the host LAN IP correctly; `ROS_PANEL_TARGET_IP` is only a
-configured fallback for logs and address settings.
+the HTTP `Host` header. Manual Docker Compose no longer depends on a container
+guessing the host LAN IP correctly; `ROS_PANEL_TARGET_IP` is only a configured
+fallback for logs and address settings.
 
 ## Quick Start: Docker One-command
 
-Install:
+Safest first run: download, review, dry-run, then install.
+
+```bash
+curl -fsSLO https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/main/install.sh
+bash install.sh --dry-run
+bash install.sh
+```
+
+Short form:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/main/install.sh | bash
@@ -75,10 +90,12 @@ curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/mai
 
 Open the LAN URL printed by the installer, usually
 `http://<panel-host-ip>:28646/`. On the panel host itself,
-`http://127.0.0.1:28646/` also works. Then enter the RouterOS SSH host, SSH
-port, read-only user, and password in the panel login page. The panel tests SSH
-first, then checks RouterOS REST reachability. The installer does not require
-real RouterOS credentials in `.env.docker` for first run.
+`http://127.0.0.1:28646/` also works.
+
+Then enter the RouterOS SSH host, SSH port, read-only user, and password in the
+panel login page. The panel tests SSH first, then checks RouterOS REST
+reachability. The installer does not require real RouterOS credentials in
+`.env.docker` for first run.
 
 Custom directory or port:
 
@@ -104,15 +121,22 @@ troubleshooting.
 
 ## Quick Start: Windows EXE
 
-1. Extract `RouterOS-Triage-Panel-Windows.zip`.
-2. Edit `routeros-panel.env` and set your RouterOS host, read-only user, and
-   password.
-3. Double-click `RouterOS Triage Panel.exe`.
-4. The EXE opens the detected panel URL. On the Windows host,
-   `http://127.0.0.1:28646/` also works; from another LAN device, open
-   `http://<panel-host-ip>:28646/`.
+No official signed binary is published yet. Until releases are cut, build the
+EXE from source on Windows:
 
-Read [DEPLOY_WINDOWS_EXE.md](./DEPLOY_WINDOWS_EXE.md) for build and
+```powershell
+powershell -ExecutionPolicy Bypass -File .\tools\build-windows-exe.ps1
+```
+
+Outputs:
+
+- `dist\routeros-triage-panel\RouterOS Triage Panel.exe`
+- `dist\routeros-triage-panel\routeros-panel.env`
+- `dist\RouterOS-Triage-Panel-Windows.zip`
+
+Run from a trusted local folder. The project does not yet provide code signing.
+
+Read [DEPLOY_WINDOWS_EXE.md](./DEPLOY_WINDOWS_EXE.md) for EXE usage, build, and
 troubleshooting details.
 
 ## Quick Start: Local Python
@@ -138,28 +162,22 @@ Read [DEPLOY_LOCAL.md](./DEPLOY_LOCAL.md) for Windows, macOS, and Linux details.
 ## Manual Docker / Compose
 
 ```bash
-docker compose up -d --build
+cp .env.docker.example .env.docker
+docker compose --env-file .env.docker up -d --build
 ```
 
 Open `http://127.0.0.1:28646/` on the Docker host, or
 `http://<panel-host-ip>:28646/` from another LAN device.
 
-Docker is the default public deployment recommendation because it does not
-require ESXi or a dedicated VM, and it keeps the panel isolated from RouterOS.
 Read [DEPLOY_DOCKER.md](./DEPLOY_DOCKER.md) for UI-based RouterOS login,
-LAN access defaults, upgrade, uninstall, env-file settings, and RouterOS
-SSH `allowed-address` troubleshooting.
+LAN access defaults, upgrade, uninstall, env-file settings, and RouterOS SSH
+`allowed-address` troubleshooting.
 
 ## RouterOS Container
 
 RouterOS Container is supported as an advanced/Beta deployment route. It is not
 the default path because it changes RouterOS container, storage, veth, and
 possibly API/firewall access state.
-
-In this path the process still listens on `0.0.0.0:28646` inside the container.
-Client access depends on the RouterOS container network you choose; use
-`http://<panel-host-ip>:28646/` only after you have intentionally exposed that
-service to the LAN. Do not paste generic firewall/NAT rules into RouterOS.
 
 Read [DEPLOY_ROUTEROS_CONTAINER.md](./DEPLOY_ROUTEROS_CONTAINER.md) and make a
 RouterOS backup before trying it.
@@ -183,7 +201,7 @@ export ROS_MONITOR_ROUTER_PASSWORD="CHANGE_ME"
 
 Open `http://127.0.0.1:28646/` on the systemd host, or
 `http://<panel-host-ip>:28646/` from another LAN device. Older `.3.50/.4.50`
-deployment notes remain historical examples, not product defaults.
+deployment notes are historical examples, not product defaults.
 
 ## What It Does
 
@@ -209,8 +227,22 @@ deployment notes remain historical examples, not product defaults.
 - It does not include built-in user authentication or TLS termination.
 - It does not replace RouterOS backups or config diff tooling.
 
+## Security Baseline
+
+- Create a dedicated least-privilege RouterOS user for the panel.
+- Do not use the RouterOS `admin` account.
+- The default public install listens on `0.0.0.0:28646` for trusted LAN access.
+- Do not expose the panel directly to the public internet.
+- Put HTTPS and authentication in front of the panel if it leaves a trusted LAN.
+- Saved RouterOS logins are local secrets on the panel host or container data
+  volume. Treat that host as trusted.
+- Use `routeros_only` for public deployments.
+- In public profile, private OpenWrt/Nikki diagnostics are disabled and
+  IP-alias writes should remain off unless explicitly reviewed.
+
 ## Repository Layout
 
+- `.github/`: public issue forms, pull request template, and CI workflow.
 - `app.py`: backend entrypoint and RouterOS snapshot collector.
 - `public/`: static frontend.
 - `Dockerfile`: container image build.
@@ -222,14 +254,12 @@ deployment notes remain historical examples, not product defaults.
 - `deploy_linux.sh`: Linux systemd deployment helper.
 - `routeros-panel*.service`: systemd units.
 - `tools/`: local smoke and browser verification helpers.
-- `tools/install-localhost-alias.*`: optional client-side localhost alias helpers.
+- `docs/README.md`: documentation index.
 - `docs/LOCALHOST_ALIAS.md`: optional fixed `127.0.0.1:28646` client alias guide.
 - `DEPLOY_WINDOWS_EXE.md`: Windows EXE deployment and build path.
 - `DEPLOY_LOCAL.md`: local trial path.
 - `DEPLOY_DOCKER.md`: Docker deployment path.
 - `DEPLOY_ROUTEROS_CONTAINER.md`: RouterOS Container Beta path.
-- `docs/local-predeploy-checks.md`: local-only predeployment checks.
-- `docs/validation/preflight-checks.md`: packaging and installer preflight checks.
 
 ## Required Environment
 
@@ -249,24 +279,21 @@ as non-secret templates.
 For the public Docker installer, real RouterOS credentials can be configured
 from the panel UI after the container starts.
 
-## Security Baseline
+## Community And Support
 
-- Create a dedicated least-privilege RouterOS user for the panel.
-- Do not use the RouterOS `admin` account.
-- For remote clients, use the panel host's LAN URL, usually
-  `http://<panel-host-ip>:28646/`.
-- `http://127.0.0.1:28646/` is only same-machine access unless the optional
-  localhost alias helper is installed on that client.
-- If another LAN device cannot connect, allow inbound TCP `28646` on the panel
-  host firewall. The installer prints common `ufw`/`firewalld` examples but does
-  not silently change firewall rules.
-- The panel address can be changed inside the UI; restart the panel service for
-  bind/port changes to take effect.
-- Do not expose the panel directly to the public internet.
-- Put HTTPS and authentication in front of the panel if it leaves a trusted LAN.
-- Use `routeros_only` for public/product-style deployments.
-- In public profile, private OpenWrt/Nikki diagnostics are disabled and
-  IP-alias writes should remain off unless explicitly reviewed.
+- Read [SUPPORT.md](./SUPPORT.md) before filing install, login, or data-quality
+  issues.
+- Read [PRIVACY.md](./PRIVACY.md) and
+  [docs/security/CREDENTIALS.md](./docs/security/CREDENTIALS.md) before sharing
+  logs, screenshots, or saved-login environments.
+- Read [DISCLAIMER.md](./DISCLAIMER.md) for the project boundary and
+  [ROADMAP.md](./ROADMAP.md) for direction.
+- Use GitHub issue forms for redacted bug reports and feature requests.
+- Follow [CONTRIBUTING.md](./CONTRIBUTING.md) for local checks and the
+  read-only product boundary.
+- Follow [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md) in project discussions.
+- Security-sensitive reports should follow [SECURITY.md](./SECURITY.md), not
+  public issues.
 
 ## Validation
 
@@ -274,8 +301,9 @@ from the panel UI after the container starts.
 bash -n install.sh
 bash install.sh --help
 bash tools/validate-public-install.sh
+python tools/check-collector-regressions.py
+node tools/check-lan-access-defaults.js
 python -m py_compile app.py
-powershell -ExecutionPolicy Bypass -File .\tools\build-windows-exe.ps1
 docker compose --env-file .env.docker.example config --quiet
 curl -fsS http://127.0.0.1:28646/api/health
 curl -fsS http://127.0.0.1:28646/api/semantic-triage
@@ -289,13 +317,6 @@ Expected public-profile guardrails:
 - `ipAliasWrite=false`
 - `POST /api/ip-alias` returns `403`
 
-## Current Status
-
-This is an early public MVP / packaging draft. It is useful for controlled LAN
-testing and read-only operations review, but it should not be exposed directly
-to the public internet.
-
 ## License
 
-No open-source license has been selected yet. Until a license is added, all
-rights are reserved.
+MIT. See [LICENSE](./LICENSE).

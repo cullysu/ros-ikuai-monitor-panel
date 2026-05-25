@@ -2682,7 +2682,7 @@
         </div>
         <div class="router-login-options">
           <label class="router-login-check" for="routerLoginRememberPassword">
-            <input id="routerLoginRememberPassword" name="rememberPassword" type="checkbox" checked>
+            <input id="routerLoginRememberPassword" name="rememberPassword" type="checkbox">
             <span><strong>保存密码并记住这台主机</strong>密码会保存在本机面板的 data 目录，不会通过状态接口回显。</span>
           </label>
         </div>
@@ -3118,7 +3118,7 @@
       const password = routerLoginPasswordEl?.value || '';
       const sshPort = Number(routerLoginPortEl?.value || 22);
       const savedId = routerLoginSavedIdEl?.value || '';
-      const rememberPassword = routerLoginRememberPasswordEl ? routerLoginRememberPasswordEl.checked : true;
+      const rememberPassword = routerLoginRememberPasswordEl ? routerLoginRememberPasswordEl.checked : false;
       routerLoginSubmitEl.disabled = true;
       routerLoginSubmitEl.textContent = '连接中...';
       setRouterLoginStatus('正在用 SSH 验证 RouterOS 凭据...');
@@ -4109,7 +4109,8 @@
 
     function roundTo(value, digits = 2) {
       const factor = 10 ** Math.max(0, Number(digits || 0));
-      return Math.round(Number(value || 0) * factor) / factor;
+      const numeric = Number(value);
+      return Number.isFinite(numeric) ? Math.round(numeric * factor) / factor : 0;
     }
 
     function smoothSvgPath(points = []) {
@@ -8834,7 +8835,7 @@
       }
     })();
   </script>
-<script src="/layout-whitespace-patch.js?v=202605241254"></script>
+<script src="/layout-whitespace-patch.js?v=202605252124"></script>
 <script>
   (function publicAdaptivePatch() {
     try {
