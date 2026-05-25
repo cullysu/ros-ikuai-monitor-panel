@@ -29,7 +29,7 @@ $env:ROS_MONITOR_ROUTER_USER="ros-panel-readonly"
 $env:ROS_MONITOR_ROUTER_PASSWORD="CHANGE_ME"
 $env:ROS_PANEL_BIND="0.0.0.0"
 $env:ROS_PANEL_PORT="28646"
-$env:ROS_PANEL_TARGET_IP="auto"
+$env:ROS_PANEL_TARGET_IP="127.0.0.1"
 $env:ROS_PANEL_PROFILE="routeros_only"
 $env:ROS_PANEL_IP_ALIAS_WRITE_ENABLED="0"
 $env:ROS_PANEL_EXPOSE_ADMIN_SESSIONS="0"
@@ -40,11 +40,11 @@ $env:ROS_PANEL_EXPOSE_ADMIN_SESSIONS="0"
 Open:
 
 ```text
-http://<panel-host-ip>:28646/
+http://127.0.0.1:28646/
 ```
 
-Use `127.0.0.1` only from the same machine that is running `app.py`; another
-device must use the panel host's LAN IP.
+If another device needs the same fixed URL, install the client localhost alias
+on that device.
 
 ## macOS / Linux
 
@@ -57,7 +57,7 @@ export ROS_MONITOR_ROUTER_USER="ros-panel-readonly"
 export ROS_MONITOR_ROUTER_PASSWORD="CHANGE_ME"
 export ROS_PANEL_BIND="0.0.0.0"
 export ROS_PANEL_PORT="28646"
-export ROS_PANEL_TARGET_IP="auto"
+export ROS_PANEL_TARGET_IP="127.0.0.1"
 export ROS_PANEL_PROFILE="routeros_only"
 export ROS_PANEL_IP_ALIAS_WRITE_ENABLED="0"
 export ROS_PANEL_EXPOSE_ADMIN_SESSIONS="0"
@@ -68,14 +68,14 @@ export ROS_PANEL_EXPOSE_ADMIN_SESSIONS="0"
 Open:
 
 ```text
-http://<panel-host-ip>:28646/
+http://127.0.0.1:28646/
 ```
 
 ## Verify
 
 ```bash
-curl -fsS http://<panel-host-ip>:28646/api/health
-curl -fsS http://<panel-host-ip>:28646/api/semantic-triage
+curl -fsS http://127.0.0.1:28646/api/health
+curl -fsS http://127.0.0.1:28646/api/semantic-triage
 ```
 
 Expected:

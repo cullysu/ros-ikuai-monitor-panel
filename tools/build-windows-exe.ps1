@@ -37,6 +37,12 @@ Copy-Item -LiteralPath (Join-Path $RepoRoot "README.md") -Destination (Join-Path
 Copy-Item -LiteralPath (Join-Path $RepoRoot "DEPLOY_WINDOWS_EXE.md") -Destination (Join-Path $DistDir "DEPLOY_WINDOWS_EXE.md") -Force
 Copy-Item -LiteralPath (Join-Path $RepoRoot "SECURITY.md") -Destination (Join-Path $DistDir "SECURITY.md") -Force
 
+$AliasDir = Join-Path $DistDir "localhost-alias"
+New-Item -ItemType Directory -Force -Path $AliasDir | Out-Null
+Copy-Item -LiteralPath (Join-Path $RepoRoot "tools\install-localhost-alias.ps1") -Destination (Join-Path $AliasDir "install-localhost-alias.ps1") -Force
+Copy-Item -LiteralPath (Join-Path $RepoRoot "tools\uninstall-localhost-alias.ps1") -Destination (Join-Path $AliasDir "uninstall-localhost-alias.ps1") -Force
+Copy-Item -LiteralPath (Join-Path $RepoRoot "docs\LOCALHOST_ALIAS.md") -Destination (Join-Path $AliasDir "README.md") -Force
+
 if (-not $NoZip) {
     if (Test-Path -LiteralPath $ZipPath) {
         Remove-Item -LiteralPath $ZipPath -Force

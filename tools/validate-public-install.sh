@@ -14,11 +14,12 @@ echo "[check] install.sh dry-run"
 dry_run_output="$(bash install.sh --dry-run --source-dir "$ROOT_DIR" --dir "${TMPDIR:-/tmp}/routeros-panel-install-check")"
 printf '%s\n' "$dry_run_output" | grep -F "bind:       0.0.0.0" >/dev/null
 printf '%s\n' "$dry_run_output" | grep -F "port:       28646" >/dev/null
-printf '%s\n' "$dry_run_output" | grep -E "target-ip:  ([0-9]{1,3}\.){3}[0-9]{1,3}|target-ip:  [A-Za-z0-9._-]+" >/dev/null
+printf '%s\n' "$dry_run_output" | grep -F "target-ip:  127.0.0.1" >/dev/null
+printf '%s\n' "$dry_run_output" | grep -E "alias-to:   ([0-9]{1,3}\.){3}[0-9]{1,3}|alias-to:   [A-Za-z0-9._-]+" >/dev/null
 
 if command -v node >/dev/null 2>&1; then
-  echo "[check] LAN-direct defaults"
-  node tools/check-lan-defaults.js
+  echo "[check] fixed localhost access defaults"
+  node tools/check-localhost-access-defaults.js
 else
   echo "[skip] node is not available"
 fi

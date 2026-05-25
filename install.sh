@@ -18,7 +18,7 @@ Options:
   --bind <addr>         Host publish address. Default: 0.0.0.0.
   --port <port>         Host and in-container panel port. Default: 28646.
   --name <name>         Docker container name. Default: routeros-triage-panel.
-  --target-ip <addr>    URL host printed by the panel. Default: detected LAN IP.
+  --target-ip <addr>    URL host printed by the panel. Default: 127.0.0.1.
   --dir <path>          Install directory. Default: ~/.local/share/routeros-triage-panel, or /opt/routeros-triage-panel as root.
   --repo <url>          Git repository URL. Default: https://github.com/cullysu/ros-ikuai-monitor-panel.git
   --branch <name>       Git branch or tag to install. Default: main.
@@ -30,10 +30,10 @@ Options:
   -h, --help            Show this help.
 
 First run:
-  Open the LAN URL printed after install, for example
-  http://192.168.88.10:28646/. 127.0.0.1 only works from the panel host itself.
-  Enter the RouterOS SSH host, user, and password in the panel UI. You do not
-  need to put RouterOS credentials in .env.docker.
+  Open http://127.0.0.1:28646/. For another device to use the same URL,
+  install the client localhost alias printed after install. Enter the RouterOS
+  SSH host, user, and password in the panel UI. You do not need to put RouterOS
+  credentials in .env.docker.
 EOF
 }
 
@@ -286,8 +286,9 @@ INSTALL_DIR="${ROS_PANEL_INSTALL_DIR:-$(default_install_dir)}"
 PUBLISHED_ADDR="0.0.0.0"
 PUBLISHED_PORT="$DEFAULT_PORT"
 CONTAINER_NAME="${ROS_PANEL_CONTAINER_NAME:-routeros-triage-panel}"
-TARGET_IP="$(detect_lan_ip)"
+TARGET_IP="127.0.0.1"
 TARGET_IP_EXPLICIT="0"
+ALIAS_TARGET_IP="$(detect_lan_ip)"
 SOURCE_DIR="${ROS_PANEL_INSTALL_SOURCE_DIR:-}"
 UPGRADE="0"
 UNINSTALL="0"
@@ -377,11 +378,13 @@ if [[ -n "$SOURCE_DIR" ]]; then
 fi
 
 if [[ "$PUBLISHED_ADDR" == "0.0.0.0" && "$TARGET_IP_EXPLICIT" == "0" ]]; then
-  TARGET_IP="$(detect_lan_ip)"
+  TARGET_IP="127.0.0.1"
+  ALIAS_TARGET_IP="$(detect_lan_ip)"
 elif [[ "$PUBLISHED_ADDR" == "127.0.0.1" && "$TARGET_IP_EXPLICIT" == "0" ]]; then
   TARGET_IP="127.0.0.1"
 elif [[ "$PUBLISHED_ADDR" != "0.0.0.0" && "$PUBLISHED_ADDR" != "127.0.0.1" && "$TARGET_IP_EXPLICIT" == "0" ]]; then
-  TARGET_IP="$PUBLISHED_ADDR"
+  TARGET_IP="127.0.0.1"
+  ALIAS_TARGET_IP="$PUBLISHED_ADDR"
 fi
 
 if [[ "$DRY_RUN" == "1" ]]; then
@@ -395,6 +398,7 @@ Install plan:
   port:       $PUBLISHED_PORT
   name:       $CONTAINER_NAME
   target-ip:  $TARGET_IP
+  alias-to:   $ALIAS_TARGET_IP
   upgrade:    $UPGRADE
   uninstall:  $UNINSTALL
   purge:      $PURGE
@@ -435,6 +439,9 @@ configure_env "$INSTALL_DIR"
 compose_up "$INSTALL_DIR"
 
 log "Installed in: $INSTALL_DIR"
-log "Open: http://$TARGET_IP:$PUBLISHED_PORT/"
+log "Open: http://127.0.0.1:$PUBLISHED_PORT/"
+log "Other devices can use the same URL after installing a local alias:"
+log "  Windows: powershell -NoProfile -ExecutionPolicy Bypass -File .\\tools\\install-localhost-alias.ps1 -PanelHost $ALIAS_TARGET_IP"
+log "  Linux/macOS: bash tools/install-localhost-alias.sh --panel-host $ALIAS_TARGET_IP"
 log "Enter the RouterOS SSH host, user, and password in the panel login page."
 log "Upgrade later: curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/main/install.sh | bash -s -- --upgrade --dir '$INSTALL_DIR'"

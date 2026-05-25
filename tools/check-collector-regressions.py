@@ -271,6 +271,7 @@ def assert_panel_network_config_helpers():
     assert app.DEFAULT_ROUTER_HOST == "192.168.88.1"
     assert app.DEFAULT_PANEL_BIND == "0.0.0.0"
     assert app.DEFAULT_PANEL_PORT == 28646
+    assert app.DEFAULT_PANEL_TARGET == "127.0.0.1"
     assert app.normalize_panel_host(app.DEFAULT_PANEL_TARGET, "access host") == app.DEFAULT_PANEL_TARGET
     assert app.resolve_panel_access_host("auto") == app.DEFAULT_PANEL_TARGET
     assert app.READONLY_NIKKI_CONTROLLER == ""
@@ -541,7 +542,7 @@ def assert_deploy_defaults_are_project_safe():
     assert 'PANEL_IP="$${ROS_PANEL_TARGET_IP:-}"' in service_text
     assert 'PANEL_IP="$${ROS_PANEL_TARGET_IP:-}"' in template_text
     assert 'DEFAULT_PANEL_BIND="0.0.0.0"' in deploy_text
-    assert 'DEFAULT_PANEL_TARGET_IP="$(detect_lan_ip)"' in deploy_text
+    assert 'DEFAULT_PANEL_TARGET_IP="127.0.0.1"' in deploy_text
     assert 'DEFAULT_ROUTER_USER="admin"' not in deploy_text
 
 

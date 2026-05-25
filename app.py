@@ -143,7 +143,7 @@ def detect_panel_lan_ip():
 
 DEFAULT_PANEL_BIND = "0.0.0.0"
 DEFAULT_PANEL_PORT = 28646
-DEFAULT_PANEL_TARGET = detect_panel_lan_ip()
+DEFAULT_PANEL_TARGET = "127.0.0.1"
 PANEL_NETWORK_ENV_KEYS = ("ROS_PANEL_BIND", "ROS_PANEL_PORT", "ROS_PANEL_TARGET_IP")
 PANEL_ENV_ASSIGNMENT_RE = re.compile(r"^(\s*(?:export\s+)?)([A-Za-z_][A-Za-z0-9_]*)(\s*=\s*)(.*)$")
 
@@ -331,6 +331,7 @@ CONNECTION_PROTOCOL_BREAKDOWN_INTERVAL_SECONDS = max(
 )
 CONNECTION_PROTOCOL_SCAN_TIMEOUT = max(120, int(os.getenv("ROS_MONITOR_CONNECTION_PROTOCOL_SCAN_TIMEOUT", "300")))
 CONNECTION_TRACKING_TIMEOUT = max(12, int(os.getenv("ROS_MONITOR_CONNECTION_TRACKING_TIMEOUT", "30")))
+CONNECTION_DETAIL_REST_TIMEOUT = max(8, int(os.getenv("ROS_MONITOR_CONNECTION_DETAIL_REST_TIMEOUT", "12")))
 DNS_STATIC_PREVIEW_LIMIT = int(os.getenv("ROS_MONITOR_DNS_STATIC_PREVIEW_LIMIT", "12"))
 DNS_STATIC_PAGE_LIMIT = int(os.getenv("ROS_MONITOR_DNS_STATIC_PAGE_LIMIT", "100"))
 DNS_STATIC_MAX_PAGE_LIMIT = int(os.getenv("ROS_MONITOR_DNS_STATIC_MAX_PAGE_LIMIT", "300"))
@@ -2254,6 +2255,7 @@ class Collector:
             },
         }
         self.lock = threading.Lock()
+        self.ssh_lock = threading.Lock()
         self.prev_counters = {}
         self.prev_ts = None
         self.current_rates = {}
@@ -2522,6 +2524,33 @@ class Collector:
             return payload[0] if isinstance(payload, list) and payload else payload or {}
         return payload if isinstance(payload, list) else ([payload] if payload else [])
 
+    def rest_post(self, session, path, payload=None, timeout=None):
+        router = get_ready_router_config()
+        response = session.post(
+            f"http://{router['host']}/rest/{path.strip('/')}",
+            json=payload or {},
+            timeout=timeout or REST_TIMEOUT,
+        )
+        response.raise_for_status()
+        if not response.content:
+            return {}
+        return response.json()
+
+    def rest_print(self, path, proplist=None, query=None, timeout=None):
+        router = get_ready_router_config()
+        session = requests.Session()
+        session.auth = (router["user"], router["password"])
+        try:
+            payload = {}
+            if proplist:
+                payload[".proplist"] = proplist
+            if query:
+                payload[".query"] = query
+            result = self.rest_post(session, f"{path.strip('/')}/print", payload, timeout=timeout)
+            return result if isinstance(result, list) else ([result] if result else [])
+        finally:
+            session.close()
+
     def ssh_exec(self, client, command, timeout=None):
         timeout = max(1, to_int(timeout, SSH_TIMEOUT))
         stdin, stdout, stderr = client.exec_command(command, timeout=timeout)
@@ -2708,29 +2737,53 @@ class Collector:
     def fetch_connection_total_count(self):
         return self.fetch_connection_tracking_summary()["total"]
 
+    def parse_connection_tracking_summary(self, fields, source="RouterOS connection tracking"):
+        fields = {str(key).lower(): value for key, value in (fields or {}).items()}
+        total = to_int(fields.get("total-entries"), -1)
+        if total < 0:
+            raise RuntimeError(f"{source} missing total-entries")
+        return {
+            "total": total,
+            "ipv4": to_int(fields.get("total-ip4-entries"), 0),
+            "ipv6": to_int(fields.get("total-ip6-entries"), 0),
+        }
+
+    def fetch_connection_tracking_summary_rest(self):
+        rows = self.rest_print(
+            "ip/firewall/connection/tracking",
+            proplist=["total-entries", "total-ip4-entries", "total-ip6-entries"],
+            timeout=CONNECTION_DETAIL_REST_TIMEOUT,
+        )
+        return self.parse_connection_tracking_summary(rows[0] if rows else {}, source="REST connection tracking summary")
+
+    def fetch_connection_tracking_summary_ssh(self):
+        with self.ssh_lock:
+            client = self.open_ssh_client(timeout=CONNECTION_TRACKING_TIMEOUT)
+            try:
+                output = self.ssh_exec(
+                    client,
+                    "/ip/firewall/connection/tracking print without-paging",
+                    timeout=CONNECTION_TRACKING_TIMEOUT,
+                )
+                fields = {}
+                for raw_line in output.splitlines():
+                    match = TRACKING_FIELD_PATTERN.match(raw_line)
+                    if match:
+                        fields[match.group(1).lower()] = match.group(2).strip()
+                return self.parse_connection_tracking_summary(fields, source="SSH connection tracking summary")
+            finally:
+                client.close()
+
     def fetch_connection_tracking_summary(self):
-        client = self.open_ssh_client(timeout=CONNECTION_TRACKING_TIMEOUT)
         try:
-            output = self.ssh_exec(
-                client,
-                "/ip/firewall/connection/tracking print without-paging",
-                timeout=CONNECTION_TRACKING_TIMEOUT,
-            )
-            fields = {}
-            for raw_line in output.splitlines():
-                match = TRACKING_FIELD_PATTERN.match(raw_line)
-                if match:
-                    fields[match.group(1).lower()] = match.group(2).strip()
-            total = to_int(fields.get("total-entries"), -1)
-            if total < 0:
-                raise RuntimeError("SSH connection tracking summary missing total-entries")
-            return {
-                "total": total,
-                "ipv4": to_int(fields.get("total-ip4-entries"), 0),
-                "ipv6": to_int(fields.get("total-ip6-entries"), 0),
-            }
-        finally:
-            client.close()
+            return self.fetch_connection_tracking_summary_rest()
+        except Exception as rest_exc:
+            try:
+                return self.fetch_connection_tracking_summary_ssh()
+            except Exception as ssh_exc:
+                raise RuntimeError(
+                    f"REST connection tracking summary failed: {rest_exc}; SSH fallback failed: {ssh_exc}"
+                ) from ssh_exc
 
     def fetch_connection_protocol_counts(self):
         tracking = self.fetch_connection_tracking_summary()
@@ -2751,54 +2804,103 @@ class Collector:
             row[key] = value
         return row
 
-    def fetch_connection_detail(self):
-        client = self.open_ssh_client()
-        try:
-            capture = self.ssh_capture(
-                client,
-                "/ip/firewall/connection print terse without-paging "
-                "proplist=src-address,dst-address,reply-src-address,reply-dst-address,protocol,timeout,connection-mark,orig-rate,repl-rate,orig-bytes,repl-bytes "
-                "where (orig-rate>0 || repl-rate>0)",
-                capture_seconds=CONNECTION_DETAIL_CAPTURE_SECONDS,
-                max_bytes=CONNECTION_DETAIL_STREAM_MAX_BYTES,
-                timeout=max(SSH_TIMEOUT, int(CONNECTION_DETAIL_CAPTURE_SECONDS) + 8),
+    def dedupe_connection_rows(self, source_rows):
+        rows = []
+        seen = set()
+        for raw_row in source_rows or []:
+            row = raw_row if isinstance(raw_row, dict) else {}
+            if not row:
+                continue
+            identity = (
+                row.get("src-address", ""),
+                row.get("dst-address", ""),
+                row.get("reply-src-address", ""),
+                row.get("reply-dst-address", ""),
+                row.get("protocol", ""),
+                row.get("timeout", ""),
+                row.get("connection-mark", ""),
             )
-            rows = []
-            seen = set()
-            for raw_line in capture["text"].splitlines():
-                line = raw_line.strip()
-                if not line or "src-address=" not in line:
-                    continue
-                row = self.parse_connection_terse_line(line)
-                if not row:
-                    continue
-                identity = (
-                    row.get("src-address", ""),
-                    row.get("dst-address", ""),
-                    row.get("reply-src-address", ""),
-                    row.get("reply-dst-address", ""),
-                    row.get("protocol", ""),
-                    row.get("timeout", ""),
-                    row.get("connection-mark", ""),
+            if identity in seen:
+                continue
+            seen.add(identity)
+            rows.append(row)
+            if len(rows) >= CONNECTION_DETAIL_SAMPLE_LIMIT:
+                break
+        return rows
+
+    def fetch_connection_detail_rest(self):
+        proplist = [
+            "src-address",
+            "dst-address",
+            "reply-src-address",
+            "reply-dst-address",
+            "protocol",
+            "timeout",
+            "connection-mark",
+            "orig-rate",
+            "repl-rate",
+            "orig-bytes",
+            "repl-bytes",
+        ]
+        rows = self.rest_print(
+            "ip/firewall/connection",
+            proplist=proplist,
+            query=[">orig-rate=0", ">repl-rate=0", "#|"],
+            timeout=CONNECTION_DETAIL_REST_TIMEOUT,
+        )
+        return {
+            "active_connections": self.dedupe_connection_rows(rows),
+            "detailTransport": "rest",
+        }
+
+    def fetch_connection_detail_ssh(self):
+        with self.ssh_lock:
+            client = self.open_ssh_client()
+            try:
+                capture = self.ssh_capture(
+                    client,
+                    "/ip/firewall/connection print terse without-paging "
+                    "proplist=src-address,dst-address,reply-src-address,reply-dst-address,protocol,timeout,connection-mark,orig-rate,repl-rate,orig-bytes,repl-bytes "
+                    "where (orig-rate>0 || repl-rate>0)",
+                    capture_seconds=CONNECTION_DETAIL_CAPTURE_SECONDS,
+                    max_bytes=CONNECTION_DETAIL_STREAM_MAX_BYTES,
+                    timeout=max(SSH_TIMEOUT, int(CONNECTION_DETAIL_CAPTURE_SECONDS) + 8),
                 )
-                if identity in seen:
-                    continue
-                seen.add(identity)
-                rows.append(row)
-                if len(rows) >= CONNECTION_DETAIL_SAMPLE_LIMIT:
-                    break
-            return {
-                "active_connections": rows,
-            }
-        finally:
-            client.close()
+                parsed_rows = []
+                for raw_line in capture["text"].splitlines():
+                    line = raw_line.strip()
+                    if not line or "src-address=" not in line:
+                        continue
+                    row = self.parse_connection_terse_line(line)
+                    if row:
+                        parsed_rows.append(row)
+                return {
+                    "active_connections": self.dedupe_connection_rows(parsed_rows),
+                    "detailTransport": "ssh",
+                }
+            finally:
+                client.close()
+
+    def fetch_connection_detail(self):
+        try:
+            return self.fetch_connection_detail_rest()
+        except Exception as rest_exc:
+            try:
+                detail = self.fetch_connection_detail_ssh()
+                detail["detailTransport"] = "ssh-fallback"
+                return detail
+            except Exception as ssh_exc:
+                raise RuntimeError(
+                    f"REST connection detail failed: {rest_exc}; SSH fallback failed: {ssh_exc}"
+                ) from ssh_exc
 
     def fetch_dns_static_count(self):
-        client = self.open_ssh_client()
-        try:
-            return to_int(self.ssh_exec(client, "/ip/dns/static print count-only"))
-        finally:
-            client.close()
+        with self.ssh_lock:
+            client = self.open_ssh_client()
+            try:
+                return to_int(self.ssh_exec(client, "/ip/dns/static print count-only"))
+            finally:
+                client.close()
 
     def normalize_dns_static_rows(self, rows, limit=None):
         normalized_rows = []
@@ -2863,28 +2965,29 @@ class Collector:
         return cached_rows
 
     def fetch_dns_static_preview(self, total_count=0):
-        client = self.open_ssh_client()
-        try:
-            last_index = max(min(total_count, DNS_STATIC_PREVIEW_LIMIT) - 1, -1)
-            if last_index < 0:
-                return []
-            preview_script = (
-                ':local ids [/ip/dns/static/find]; '
-                ':local out [:toarray ""]; '
-                f':local last ([:len $ids] - 1); :if ($last > {last_index}) do={{ :set last {last_index} }}; '
-                ':if ($last >= 0) do={ '
-                ':for idx from=0 to=$last do={ '
-                ':local i [:pick $ids $idx]; '
-                ':set out ($out, [/ip/dns/static/print as-value where .id=$i]); '
-                '} '
-                '}; '
-                ':put [:serialize to=json value=$out]'
-            )
-            preview = self.ssh_exec(client, preview_script)
-            rows = json.loads(preview) if preview else []
-            return self.normalize_dns_static_rows(rows, DNS_STATIC_PREVIEW_LIMIT)
-        finally:
-            client.close()
+        with self.ssh_lock:
+            client = self.open_ssh_client()
+            try:
+                last_index = max(min(total_count, DNS_STATIC_PREVIEW_LIMIT) - 1, -1)
+                if last_index < 0:
+                    return []
+                preview_script = (
+                    ':local ids [/ip/dns/static/find]; '
+                    ':local out [:toarray ""]; '
+                    f':local last ([:len $ids] - 1); :if ($last > {last_index}) do={{ :set last {last_index} }}; '
+                    ':if ($last >= 0) do={ '
+                    ':for idx from=0 to=$last do={ '
+                    ':local i [:pick $ids $idx]; '
+                    ':set out ($out, [/ip/dns/static/print as-value where .id=$i]); '
+                    '} '
+                    '}; '
+                    ':put [:serialize to=json value=$out]'
+                )
+                preview = self.ssh_exec(client, preview_script)
+                rows = json.loads(preview) if preview else []
+                return self.normalize_dns_static_rows(rows, DNS_STATIC_PREVIEW_LIMIT)
+            finally:
+                client.close()
 
     def fetch_dns_static_page(self, offset=0, limit=DNS_STATIC_PAGE_LIMIT):
         safe_offset = max(to_int(offset, 0), 0)
