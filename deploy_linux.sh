@@ -133,13 +133,13 @@ fi
 if [[ "${MODE}" == "instance" ]]; then
   DEFAULT_PANEL_BIND="0.0.0.0"
   DEFAULT_PANEL_PORT="28646"
-  DEFAULT_PANEL_TARGET_IP="127.0.0.1"
+  DEFAULT_PANEL_TARGET_IP="$(detect_lan_ip)"
   DEFAULT_PANEL_PROFILE="routeros_only"
   DEFAULT_ROUTER_USER="ros-panel-readonly"
 else
   DEFAULT_PANEL_BIND="0.0.0.0"
   DEFAULT_PANEL_PORT="28646"
-  DEFAULT_PANEL_TARGET_IP="127.0.0.1"
+  DEFAULT_PANEL_TARGET_IP="$(detect_lan_ip)"
   DEFAULT_PANEL_PROFILE="private_ops"
   DEFAULT_ROUTER_USER="ros-panel-readonly"
 fi

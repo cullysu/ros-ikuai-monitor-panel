@@ -174,12 +174,13 @@ try {
             Add-Check "PASS" "install dry-run" "bash $InstallScript --dry-run completed."
             if ($dryRunResult.Output -match "bind:\s+0\.0\.0\.0" -and
                 $dryRunResult.Output -match "port:\s+28646" -and
-                $dryRunResult.Output -match "target-ip:\s+127\.0\.0\.1" -and
-                $dryRunResult.Output -match "alias-to:\s+\S+") {
-              Add-Check "PASS" "fixed localhost install defaults" "install dry-run resolved 0.0.0.0:28646 with fixed 127.0.0.1 access and alias target."
+                $dryRunResult.Output -match "target-ip:\s+\S+" -and
+                $dryRunResult.Output -match "local-url:\s+http://127\.0\.0\.1:28646/" -and
+                $dryRunResult.Output -match "lan-url:\s+http://\S+:28646/") {
+              Add-Check "PASS" "LAN install defaults" "install dry-run resolved 0.0.0.0:28646 with LAN URL and same-host localhost URL."
             }
             else {
-              Add-Check "FAIL" "fixed localhost install defaults" "install dry-run did not resolve fixed 127.0.0.1 access with an alias target."
+              Add-Check "FAIL" "LAN install defaults" "install dry-run did not resolve LAN URL plus same-host localhost URL."
             }
           }
           else {
@@ -192,24 +193,24 @@ try {
         }
 
         $node = Get-Command node -ErrorAction SilentlyContinue
-        $localhostCheckPath = Join-Path $repoRoot "tools/check-localhost-access-defaults.js"
-        if (-not (Test-Path -LiteralPath $localhostCheckPath)) {
-          Add-Check "FAIL" "fixed localhost defaults" "tools/check-localhost-access-defaults.js was not found."
+        $lanCheckPath = Join-Path $repoRoot "tools/check-lan-access-defaults.js"
+        if (-not (Test-Path -LiteralPath $lanCheckPath)) {
+          Add-Check "FAIL" "LAN access defaults" "tools/check-lan-access-defaults.js was not found."
         }
         elseif (-not $node) {
-          Add-Check "SKIP" "fixed localhost defaults" "node was not found on PATH."
+          Add-Check "SKIP" "LAN access defaults" "node was not found on PATH."
         }
         else {
-          $localhostResult = Invoke-CapturedCommand $node.Source @("tools/check-localhost-access-defaults.js")
-          if ($localhostResult.ExitCode -eq 0) {
-            Add-Check "PASS" "fixed localhost defaults" "tools/check-localhost-access-defaults.js passed."
+          $lanResult = Invoke-CapturedCommand $node.Source @("tools/check-lan-access-defaults.js")
+          if ($lanResult.ExitCode -eq 0) {
+            Add-Check "PASS" "LAN access defaults" "tools/check-lan-access-defaults.js passed."
           }
           else {
-            $detail = $localhostResult.Output.Trim()
+            $detail = $lanResult.Output.Trim()
             if ([string]::IsNullOrWhiteSpace($detail)) {
-              $detail = "exit code $($localhostResult.ExitCode)"
+              $detail = "exit code $($lanResult.ExitCode)"
             }
-            Add-Check "FAIL" "fixed localhost defaults" $detail
+            Add-Check "FAIL" "LAN access defaults" $detail
           }
         }
       }

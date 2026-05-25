@@ -41,17 +41,24 @@ switches from cards to grouped summaries and paged details as lists grow.
 Public/product-style deployments should use `routeros_only` unless you
 intentionally enable private diagnostics.
 
-## Fixed Access URL
+## Access URL
 
-The browser-facing address is always:
+For a public project, the normal remote-access path is the panel host's LAN
+address. The installer prints it after startup:
+
+```text
+http://<panel-host-ip>:28646/
+```
+
+On the same machine that runs the panel, this also works:
 
 ```text
 http://127.0.0.1:28646/
 ```
 
-If the panel runs on another LAN host, install the client localhost alias on
-each device that should use this fixed address. See
-[docs/LOCALHOST_ALIAS.md](./docs/LOCALHOST_ALIAS.md).
+Client devices do not need the localhost alias helper for normal LAN access.
+The helper is kept only as an optional vanity address for users who insist on
+typing `127.0.0.1:28646` on every client.
 
 ## Quick Start: Docker One-command
 
@@ -61,8 +68,10 @@ Install:
 curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/main/install.sh | bash
 ```
 
-Open `http://127.0.0.1:28646/`, then enter the RouterOS SSH host, SSH port,
-read-only user, and password in the panel login page. The panel tests SSH
+Open the LAN URL printed by the installer, usually
+`http://<panel-host-ip>:28646/`. On the panel host itself,
+`http://127.0.0.1:28646/` also works. Then enter the RouterOS SSH host, SSH
+port, read-only user, and password in the panel login page. The panel tests SSH
 first, then checks RouterOS REST reachability. The installer does not require
 real RouterOS credentials in `.env.docker` for first run.
 
@@ -84,8 +93,8 @@ Stop the installed service while keeping local panel data:
 curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/main/install.sh | bash -s -- --uninstall
 ```
 
-Read [DEPLOY_DOCKER.md](./DEPLOY_DOCKER.md) for manual Compose, fixed access
-URL defaults, upgrade, uninstall, and RouterOS SSH `allowed-address`
+Read [DEPLOY_DOCKER.md](./DEPLOY_DOCKER.md) for manual Compose, LAN access
+defaults, upgrade, uninstall, and RouterOS SSH `allowed-address`
 troubleshooting.
 
 ## Quick Start: Windows EXE
@@ -94,7 +103,9 @@ troubleshooting.
 2. Edit `routeros-panel.env` and set your RouterOS host, read-only user, and
    password.
 3. Double-click `RouterOS Triage Panel.exe`.
-4. Open `http://127.0.0.1:28646/`.
+4. The EXE opens the detected panel URL. On the Windows host,
+   `http://127.0.0.1:28646/` also works; from another LAN device, open
+   `http://<panel-host-ip>:28646/`.
 
 Read [DEPLOY_WINDOWS_EXE.md](./DEPLOY_WINDOWS_EXE.md) for build and
 troubleshooting details.
@@ -109,12 +120,13 @@ $env:ROS_MONITOR_ROUTER_USER="ros-panel-readonly"
 $env:ROS_MONITOR_ROUTER_PASSWORD="CHANGE_ME"
 $env:ROS_PANEL_BIND="0.0.0.0"
 $env:ROS_PANEL_PORT="28646"
-$env:ROS_PANEL_TARGET_IP="127.0.0.1"
+$env:ROS_PANEL_TARGET_IP="auto"
 $env:ROS_PANEL_PROFILE="routeros_only"
 .\.venv\Scripts\python app.py
 ```
 
-Open `http://127.0.0.1:28646/`.
+Open `http://127.0.0.1:28646/` on the same machine, or
+`http://<panel-host-ip>:28646/` from another LAN device.
 
 Read [DEPLOY_LOCAL.md](./DEPLOY_LOCAL.md) for Windows, macOS, and Linux details.
 
@@ -124,12 +136,13 @@ Read [DEPLOY_LOCAL.md](./DEPLOY_LOCAL.md) for Windows, macOS, and Linux details.
 docker compose up -d --build
 ```
 
-Open `http://127.0.0.1:28646/`.
+Open `http://127.0.0.1:28646/` on the Docker host, or
+`http://<panel-host-ip>:28646/` from another LAN device.
 
 Docker is the default public deployment recommendation because it does not
 require ESXi or a dedicated VM, and it keeps the panel isolated from RouterOS.
 Read [DEPLOY_DOCKER.md](./DEPLOY_DOCKER.md) for UI-based RouterOS login,
-fixed access URL defaults, upgrade, uninstall, env-file settings, and RouterOS
+LAN access defaults, upgrade, uninstall, env-file settings, and RouterOS
 SSH `allowed-address` troubleshooting.
 
 ## RouterOS Container
@@ -138,10 +151,10 @@ RouterOS Container is supported as an advanced/Beta deployment route. It is not
 the default path because it changes RouterOS container, storage, veth, and
 possibly API/firewall access state.
 
-In this path the process still listens on `0.0.0.0:28646` inside the container,
-but client devices should install the localhost alias and still open
-`http://127.0.0.1:28646/`. Do not paste generic firewall/NAT rules into
-RouterOS.
+In this path the process still listens on `0.0.0.0:28646` inside the container.
+Client access depends on the RouterOS container network you choose; use
+`http://<panel-host-ip>:28646/` only after you have intentionally exposed that
+service to the LAN. Do not paste generic firewall/NAT rules into RouterOS.
 
 Read [DEPLOY_ROUTEROS_CONTAINER.md](./DEPLOY_ROUTEROS_CONTAINER.md) and make a
 RouterOS backup before trying it.
@@ -152,7 +165,7 @@ The Linux helper remains useful for operators who want an instance managed by
 systemd:
 
 ```bash
-export ROS_PANEL_TARGET_IP="127.0.0.1"
+export ROS_PANEL_TARGET_IP="auto"
 export ROS_PANEL_BIND="0.0.0.0"
 export ROS_PANEL_PORT="28646"
 export ROS_PANEL_PROFILE="routeros_only"
@@ -163,8 +176,8 @@ export ROS_MONITOR_ROUTER_PASSWORD="CHANGE_ME"
 ./deploy_linux.sh --instance routeros-panel --disable-ip-service
 ```
 
-Open `http://127.0.0.1:28646/` on the client after installing the localhost
-alias if the systemd service is on another host. Older `.3.50/.4.50`
+Open `http://127.0.0.1:28646/` on the systemd host, or
+`http://<panel-host-ip>:28646/` from another LAN device. Older `.3.50/.4.50`
 deployment notes remain historical examples, not product defaults.
 
 ## What It Does
@@ -204,8 +217,8 @@ deployment notes remain historical examples, not product defaults.
 - `deploy_linux.sh`: Linux systemd deployment helper.
 - `routeros-panel*.service`: systemd units.
 - `tools/`: local smoke and browser verification helpers.
-- `tools/install-localhost-alias.*`: client-side fixed localhost access helpers.
-- `docs/LOCALHOST_ALIAS.md`: fixed `127.0.0.1:28646` client alias guide.
+- `tools/install-localhost-alias.*`: optional client-side localhost alias helpers.
+- `docs/LOCALHOST_ALIAS.md`: optional fixed `127.0.0.1:28646` client alias guide.
 - `DEPLOY_WINDOWS_EXE.md`: Windows EXE deployment and build path.
 - `DEPLOY_LOCAL.md`: local trial path.
 - `DEPLOY_DOCKER.md`: Docker deployment path.
@@ -235,9 +248,10 @@ from the panel UI after the container starts.
 
 - Create a dedicated least-privilege RouterOS user for the panel.
 - Do not use the RouterOS `admin` account.
-- The documented browser-facing address is always `http://127.0.0.1:28646/`.
-- When the panel runs on another LAN host, use the localhost alias installer on
-  each client device instead of asking users to type the panel host IP.
+- For remote clients, use the panel host's LAN URL, usually
+  `http://<panel-host-ip>:28646/`.
+- `http://127.0.0.1:28646/` is only same-machine access unless the optional
+  localhost alias helper is installed on that client.
 - The panel address can be changed inside the UI; restart the panel service for
   bind/port changes to take effect.
 - Do not expose the panel directly to the public internet.

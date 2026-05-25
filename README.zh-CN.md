@@ -8,23 +8,25 @@
 
 ## 推荐安装：Docker 一条命令
 
-默认公开入口固定为：
+默认远程入口使用面板主机的局域网地址，安装器会打印类似：
 
 ```text
-http://127.0.0.1:28646/
+http://<panel-host-ip>:28646/
 ```
 
-Docker 服务本身会监听 `0.0.0.0:28646`，这样面板主机、Docker 映射和本机别名转发都能工作；用户在浏览器里始终打开上面的固定地址。如果面板跑在另一台局域网主机上，需要在每台客户端安装本机别名，见 [docs/LOCALHOST_ALIAS.md](./docs/LOCALHOST_ALIAS.md)。
+在运行面板的那台机器上，也可以打开 `http://127.0.0.1:28646/`。面板跑在别的局域网主机上时，客户端不需要安装本机别名 helper，直接打开 `http://<panel-host-ip>:28646/`。本机别名只保留为可选方案，给坚持在每台客户端都输入 `127.0.0.1:28646` 的用户使用，见 [docs/LOCALHOST_ALIAS.md](./docs/LOCALHOST_ALIAS.md)。
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/main/install.sh | bash
 ```
 
-打开：
+打开安装器打印的局域网地址：
 
 ```text
-http://127.0.0.1:28646/
+http://<panel-host-ip>:28646/
 ```
+
+如果就在面板主机本机访问，也可以打开 `http://127.0.0.1:28646/`。
 
 首次进入面板后，在网页里的 RouterOS 登录页填写 SSH 地址、端口、账号和密码。公开安装不要求把真实 RouterOS 密码写进 `.env.docker`。
 
@@ -76,17 +78,17 @@ cp .env.docker.example .env.docker
 docker compose --env-file .env.docker up -d --build
 ```
 
-首次运行仍然打开：
+首次运行打开：
 
 ```text
-http://127.0.0.1:28646/
+http://<panel-host-ip>:28646/
 ```
 
 `.env.docker` 里的 RouterOS 凭据可以保持示例值，然后在网页登录页填写真实 SSH 信息。
 
 ## Windows EXE
 
-解压 Windows ZIP 后，默认仍使用：
+解压 Windows ZIP 后，EXE 会自动打开检测到的面板地址；在 Windows 主机本机也可以使用：
 
 ```text
 http://127.0.0.1:28646/
@@ -97,8 +99,10 @@ http://127.0.0.1:28646/
 ```dotenv
 ROS_PANEL_BIND=0.0.0.0
 ROS_PANEL_PORT=28646
-ROS_PANEL_TARGET_IP=127.0.0.1
+ROS_PANEL_TARGET_IP=auto
 ```
+
+其他局域网设备访问 Windows 主机上的面板时，打开 `http://<panel-host-ip>:28646/`。
 
 ## Linux systemd / VM
 
@@ -107,14 +111,14 @@ systemd/VM 部署默认也使用：
 ```bash
 export ROS_PANEL_BIND="0.0.0.0"
 export ROS_PANEL_PORT="28646"
-export ROS_PANEL_TARGET_IP="127.0.0.1"
+export ROS_PANEL_TARGET_IP="auto"
 ```
 
 ## RouterOS Container
 
 RouterOS Container 是高级/Beta 路径。它会涉及 RouterOS container、storage、veth、可能还有 firewall/API 访问边界，不适合当作默认安装方式。
 
-该路径的面板进程默认监听 `0.0.0.0:28646`，但客户端浏览器仍打开 `http://127.0.0.1:28646/`。如果容器不在当前客户端设备上运行，需要先安装本机别名。不要直接复制通用 NAT/防火墙规则到生产路由器。
+该路径的面板进程默认监听 `0.0.0.0:28646`，客户端应在你明确暴露服务后打开 `http://<panel-host-ip>:28646/`。`http://127.0.0.1:28646/` 只适合同机访问；本机别名是可选方案，不是默认要求。不要直接复制通用 NAT/防火墙规则到生产路由器。
 
 ## RouterOS 凭据
 
@@ -136,6 +140,8 @@ curl -fsS http://127.0.0.1:28646/api/health
 curl -fsS http://127.0.0.1:28646/api/semantic-triage
 docker compose logs -f --tail=100 routeros-triage
 ```
+
+从其他局域网设备验证时，把 `127.0.0.1` 换成面板主机 IP。
 
 公开只读模式预期：
 
@@ -170,8 +176,8 @@ docker compose logs -f --tail=100 routeros-triage
 ## 安全基线
 
 - 为面板创建专用只读 RouterOS 用户。
-- 文档化的浏览器入口固定为 `http://127.0.0.1:28646/`。
-- 如果面板跑在另一台局域网主机上，在客户端安装本机别名，不要求用户记住面板主机 IP。
+- 远程客户端使用面板主机的局域网地址，通常是 `http://<panel-host-ip>:28646/`。
+- `http://127.0.0.1:28646/` 只代表当前这台客户端自己，除非在该客户端上安装了可选的本机别名 helper。
 - 不要把面板直接暴露到公网。
 - 跨网段、远程访问或多人使用时，先加 HTTPS 和认证。
 - 面向公开/产品化部署时使用 `routeros_only`。

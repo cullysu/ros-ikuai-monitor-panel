@@ -30,10 +30,10 @@ docker compose --env-file .env.docker.example config --quiet
 - `install.sh` Bash syntax with `bash -n install.sh`, when `install.sh` exists.
 - `install.sh --help` output, when the script advertises help support.
 - `install.sh --dry-run`, only when the script advertises dry-run support.
-- Fixed localhost access defaults through `tools/check-localhost-access-defaults.js`:
-  deployment docs and templates should keep the browser-facing URL at
-  `127.0.0.1:28646`, while remote-client access is handled by the localhost
-  alias installer.
+- LAN access defaults through `tools/check-lan-access-defaults.js`: deployment
+  docs and templates should publish a normal LAN URL for remote clients, while
+  `127.0.0.1:28646` remains documented only for same-machine access or the
+  optional localhost alias helper.
 
 ## Current repository state
 

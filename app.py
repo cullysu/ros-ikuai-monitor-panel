@@ -143,7 +143,7 @@ def detect_panel_lan_ip():
 
 DEFAULT_PANEL_BIND = "0.0.0.0"
 DEFAULT_PANEL_PORT = 28646
-DEFAULT_PANEL_TARGET = "127.0.0.1"
+DEFAULT_PANEL_TARGET = detect_panel_lan_ip()
 PANEL_NETWORK_ENV_KEYS = ("ROS_PANEL_BIND", "ROS_PANEL_PORT", "ROS_PANEL_TARGET_IP")
 PANEL_ENV_ASSIGNMENT_RE = re.compile(r"^(\s*(?:export\s+)?)([A-Za-z_][A-Za-z0-9_]*)(\s*=\s*)(.*)$")
 

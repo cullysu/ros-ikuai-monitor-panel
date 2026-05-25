@@ -25,7 +25,8 @@ function assertNotContains(relPath, needle, label = needle) {
 }
 
 function main() {
-  const fixedUrl = 'http://127.0.0.1:28646/';
+  const lanUrl = 'http://<panel-host-ip>:28646/';
+  const localUrl = 'http://127.0.0.1:28646/';
 
   const browserDocs = [
     'README.md',
@@ -51,48 +52,57 @@ function main() {
   }
 
   assertContains('app.py', 'DEFAULT_PANEL_BIND = "0.0.0.0"');
-  assertContains('app.py', 'DEFAULT_PANEL_TARGET = "127.0.0.1"');
+  assertContains('app.py', 'DEFAULT_PANEL_TARGET = detect_panel_lan_ip()');
 
   assertContains('install.sh', 'PUBLISHED_ADDR="0.0.0.0"');
-  assertContains('install.sh', 'TARGET_IP="127.0.0.1"');
-  assertContains('install.sh', 'ALIAS_TARGET_IP="$(detect_lan_ip)"');
-  assertContains('install.sh', 'Open: http://127.0.0.1:$PUBLISHED_PORT/');
+  assertContains('install.sh', 'TARGET_IP="$(detect_lan_ip)"');
+  assertContains('install.sh', 'Open from other LAN devices: http://$TARGET_IP:$PUBLISHED_PORT/');
+  assertContains('install.sh', 'No client localhost alias helper is required for normal LAN access.');
+  assertNotContains('install.sh', 'alias-to:');
 
   assertContains('env.example', 'ROS_PANEL_BIND=0.0.0.0');
   assertContains('env.example', 'ROS_PANEL_PORT=28646');
-  assertContains('env.example', 'ROS_PANEL_TARGET_IP=127.0.0.1');
+  assertContains('env.example', 'ROS_PANEL_TARGET_IP=auto');
 
   assertContains('routeros-panel.env.example', 'ROS_PANEL_BIND=0.0.0.0');
   assertContains('routeros-panel.env.example', 'ROS_PANEL_PORT=28646');
-  assertContains('routeros-panel.env.example', 'ROS_PANEL_TARGET_IP=127.0.0.1');
+  assertContains('routeros-panel.env.example', 'ROS_PANEL_TARGET_IP=auto');
 
   assertContains('.env.docker.example', 'ROS_PANEL_PUBLISHED_ADDR=0.0.0.0');
   assertContains('.env.docker.example', 'ROS_PANEL_PUBLISHED_PORT=28646');
-  assertContains('.env.docker.example', 'ROS_PANEL_TARGET_IP=127.0.0.1');
+  assertContains('.env.docker.example', 'ROS_PANEL_TARGET_IP=auto');
+  assertContains('Dockerfile', 'ROS_PANEL_TARGET_IP=auto');
   assertContains('compose.yml', '${ROS_PANEL_PUBLISHED_ADDR:-0.0.0.0}:${ROS_PANEL_PUBLISHED_PORT:-28646}:${ROS_PANEL_PORT:-28646}');
   assertContains('compose.yml', 'ROS_PANEL_BIND: "${ROS_PANEL_BIND:-0.0.0.0}"');
-  assertContains('compose.yml', 'ROS_PANEL_TARGET_IP: "${ROS_PANEL_TARGET_IP:-127.0.0.1}"');
+  assertContains('compose.yml', 'ROS_PANEL_TARGET_IP: "${ROS_PANEL_TARGET_IP:-auto}"');
 
   assertContains('deploy_linux.sh', 'DEFAULT_PANEL_BIND="0.0.0.0"');
-  assertContains('deploy_linux.sh', 'DEFAULT_PANEL_TARGET_IP="127.0.0.1"');
+  assertContains('deploy_linux.sh', 'DEFAULT_PANEL_TARGET_IP="$(detect_lan_ip)"');
 
   for (const relPath of browserDocs) {
-    assertContains(relPath, fixedUrl);
-    assertNotContains(relPath, 'http://<panel-host-ip>:28646/');
-    assertNotContains(relPath, 'http://<windows-host-ip>:28646/');
-    assertNotContains(relPath, 'ROS_PANEL_TARGET_IP=auto');
-    assertNotContains(relPath, 'Default: detected LAN IP');
-    assertNotContains(relPath, 'http://172.18.0.2:28646/');
-    assertNotContains(relPath, 'http://192.168.3.5');
-    assertNotContains(relPath, 'http://192.168.3.50');
-    assertNotContains(relPath, 'http://192.168.4.50');
+    assertContains(relPath, '127.0.0.1');
+    if (relPath !== 'docs/LOCALHOST_ALIAS.md') {
+      assertContains(relPath, '<panel-host-ip>');
+    }
+    assertNotContains(relPath, 'browser-facing address is always');
+    assertNotContains(relPath, 'documented browser-facing address is fixed');
+    assertNotContains(relPath, 'same fixed URL while the Docker host is elsewhere');
+    assertNotContains(relPath, 'client devices should install the localhost alias');
   }
 
+  assertContains('README.md', lanUrl);
+  assertContains('DEPLOY_DOCKER.md', lanUrl);
+  assertContains('DEPLOY_WINDOWS_EXE.md', lanUrl);
+  assertContains('DEPLOY_LOCAL.md', lanUrl);
+  assertContains('DEPLOY_ROUTEROS_CONTAINER.md', lanUrl);
+  assertContains('docs/LOCALHOST_ALIAS.md', localUrl);
+  assertContains('docs/LOCALHOST_ALIAS.md', 'optional');
+
   assertContains('tools/install-localhost-alias.ps1', 'RouterOS panel localhost alias installed.');
-  assertContains('tools/install-localhost-alias.sh', 'http://127.0.0.1:28646/');
+  assertContains('tools/install-localhost-alias.sh', localUrl);
   assertContains('tools/build-windows-exe.ps1', 'localhost-alias');
 
-  console.log('[ok] fixed localhost access defaults are documented and templated');
+  console.log('[ok] LAN access defaults are documented and templated; localhost alias is optional');
 }
 
 main();

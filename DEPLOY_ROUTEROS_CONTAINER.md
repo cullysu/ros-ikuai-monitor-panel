@@ -97,7 +97,7 @@ must be allowed to read RouterOS. Do not broaden API access to the whole LAN.
 ```routeros
 /container/envs/add name=routeros-triage-env key=ROS_PANEL_BIND value=0.0.0.0
 /container/envs/add name=routeros-triage-env key=ROS_PANEL_PORT value=28646
-/container/envs/add name=routeros-triage-env key=ROS_PANEL_TARGET_IP value=127.0.0.1
+/container/envs/add name=routeros-triage-env key=ROS_PANEL_TARGET_IP value=auto
 /container/envs/add name=routeros-triage-env key=ROS_PANEL_PROFILE value=routeros_only
 /container/envs/add name=routeros-triage-env key=ROS_PANEL_IP_ALIAS_WRITE_ENABLED value=0
 /container/envs/add name=routeros-triage-env key=ROS_PANEL_EXPOSE_ADMIN_SESSIONS value=0
@@ -138,20 +138,22 @@ Confirm the container is running first:
 Expected:
 
 - environment contains `ROS_PANEL_BIND=0.0.0.0`
-- environment contains `ROS_PANEL_TARGET_IP=127.0.0.1`
+- environment contains `ROS_PANEL_TARGET_IP=auto` or the explicit LAN host/IP
+  you selected
 - public read-only guardrails are enabled
 
 ## Client Access
 
-The documented browser-facing URL remains:
+When you intentionally expose the containerized panel to the LAN, clients
+should open the RouterOS/container host address:
 
 ```text
-http://127.0.0.1:28646/
+http://<panel-host-ip>:28646/
 ```
 
-If the client is not the router/container host, install the localhost alias on
-that client and point it at whatever host address can reach the containerized
-panel in your topology.
+`http://127.0.0.1:28646/` only works from the same host that is running or
+forwarding the panel. If a different client must use that exact address, the
+localhost alias helper is optional, not required for normal LAN access.
 
 Do not paste generic firewall/NAT rules into a production router. Record current
 state, define the target state, create a rollback path, then add the minimum

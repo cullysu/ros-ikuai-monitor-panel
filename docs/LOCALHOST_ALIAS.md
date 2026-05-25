@@ -1,8 +1,13 @@
-# Localhost Alias For Client Devices
+# Optional Localhost Alias For Client Devices
+
+This helper is optional. Normal remote access should use the panel host's LAN
+URL, for example `http://<panel-host-ip>:28646/`, and requires no client-side
+install. Use this guide only if a client device must type the vanity address
+`http://127.0.0.1:28646/` while the real panel server runs somewhere else.
 
 The panel server can run on Docker, Windows EXE, Linux systemd/VM, or RouterOS
-Container. Client devices that should always type the same address can install
-a local alias:
+Container. Client devices that should always type the same local address can
+install a local alias:
 
 ```text
 http://127.0.0.1:28646/

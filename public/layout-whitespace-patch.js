@@ -2359,7 +2359,7 @@
         ${metricCard('接口吞吐对象', fmtNumber(interfaces.length), `WAN / LAN ${fmtNumber(interfaces.filter((row) => row.role === 'WAN').length)} / ${fmtNumber(interfaces.filter((row) => row.role !== 'WAN').length)}`, `终端排行 ${fmtNumber(trafficTerminals.length)} 台`)}
       </div>
       <div class="ops-split" style="margin-top:12px">
-        ${opsCard('WAN 聚合吞吐趋势', `${fmtRate(overview.uplinkBps)} / ${fmtRate(overview.downlinkBps)}`, `<div class="chart-box"><div class="chart-label"><span>总上 / 总下</span><span>${escapeHtml(snapshot.meta.pollSeconds)}s / 点</span></div>${lineChart([overview.history.uplink, overview.history.downlink], { colors: ['#165dff', '#f53f3f'] })}</div>`, 'ops-info-card')}
+        ${opsCard('WAN 聚合吞吐趋势', `${fmtRate(overview.uplinkBps)} / ${fmtRate(overview.downlinkBps)}`, `<div class="chart-box"><div class="chart-label"><span>总上 / 总下</span><span>${escapeHtml(snapshot.meta.pollSeconds)}s / 点</span></div>${lineChart([overview.history.uplink, overview.history.downlink], { colors: ['#165dff', '#f53f3f'], axis: 'rate' })}</div>`, 'ops-info-card')}
         ${opsCard('线路负载占比', busiestLine ? `${escapeHtml(busiestLine.name)} 当前最繁忙` : '等待采集', opsBarStack(lineShareRows, { percentMode: true, emptyText: '当前未形成可读的线路占比' }), 'ops-info-card')}
       </div>
       <div class="ops-page-stack" style="margin-top:12px">
@@ -4303,7 +4303,7 @@
       ? opsBarStack(lineShareRows, { percentMode: true, emptyText: '当前未形成可读的线路占比' })
       : emptyBlock('当前未形成可读的线路占比');
     const aggregateTrendBlock = aggregateHistoryPoints
-      ? `<div class="chart-box"><div class="chart-label"><span>总上 / 总下</span><span>${escapeHtml(String(pollSeconds))}s / 点</span></div>${lineChart([history.uplink || [], history.downlink || []], { colors: ['#165dff', '#f53f3f'] })}</div>`
+      ? `<div class="chart-box"><div class="chart-label"><span>总上 / 总下</span><span>${escapeHtml(String(pollSeconds))}s / 点</span></div>${lineChart([history.uplink || [], history.downlink || []], { colors: ['#165dff', '#f53f3f'], axis: 'rate' })}</div>`
       : emptyBlock('当前未读取到 WAN 聚合历史');
     const lineRows = pppoe.map((row) => `
       <tr>

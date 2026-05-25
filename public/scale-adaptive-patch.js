@@ -982,7 +982,7 @@
 
   function renderResourceCard(title, value, sub, series, color = '#4891e8') {
     const chart = typeof lineChart === 'function'
-      ? lineChart([Array.isArray(series) ? series : []], { colors: [color] })
+      ? lineChart([Array.isArray(series) ? series : []], { colors: [color], axis: 'percent' })
       : '<div class="scale-empty">等待趋势采集</div>';
     return `<div class="ikuai-card ikuai-resource-card">
       <div class="ikuai-card-head">
@@ -1012,10 +1012,10 @@
     const wanOptions = renderWanLineOptions(lines, selectedWan, aggregateWan);
     const wanHistory = selectedWan?.history || {};
     const wanChart = typeof lineChart === 'function'
-      ? lineChart([wanHistory.up || history.uplink || [], wanHistory.down || history.downlink || []], { colors: ['#2c3e9f', '#16a34a'] })
+      ? lineChart([wanHistory.up || history.uplink || [], wanHistory.down || history.downlink || []], { colors: ['#2c3e9f', '#16a34a'], axis: 'rate' })
       : '<div class="scale-empty">等待速率趋势采集</div>';
     const aggregateChart = typeof lineChart === 'function'
-      ? lineChart([history.uplink || [], history.downlink || []], { colors: ['#245bff', '#12b76a'] })
+      ? lineChart([history.uplink || [], history.downlink || []], { colors: ['#245bff', '#12b76a'], axis: 'rate' })
       : '<div class="scale-empty">等待速率趋势采集</div>';
     const terminals = (snapshot.terminals || []).slice();
     const activeTerminals = terminals.filter((row) => totalRate(row) > 0).length;

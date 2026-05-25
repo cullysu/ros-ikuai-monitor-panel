@@ -484,6 +484,9 @@
     .metric-foot { margin-top: 8px; color: var(--text-soft); font-size: 12px; display: flex; justify-content: space-between; gap: 8px; }
     .chart-box { background: linear-gradient(180deg, #fbfdff 0%, #f7fbff 100%); border: 1px solid #e9f1fb; border-radius: 8px; padding: 8px; }
     .chart-label { display: flex; justify-content: space-between; align-items: center; color: var(--text-soft); font-size: 11px; margin-bottom: 5px; }
+    .axis-line-chart { display: grid; grid-template-columns: 54px minmax(0, 1fr); gap: 8px; align-items: stretch; width: 100%; min-width: 0; }
+    .axis-line-chart-y { display: flex; flex-direction: column; justify-content: space-between; align-items: flex-end; padding: 10px 0 12px; color: #718096; font-size: 10px; line-height: 1; white-space: nowrap; }
+    .axis-line-chart-y span { max-width: 54px; overflow: hidden; text-overflow: ellipsis; }
     .mini-chart { width: 100%; height: 140px; display: block; }
     .line-trend-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
     .info-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px 8px; }
@@ -2613,6 +2616,16 @@
       .ik-wan-rate-chart {
         grid-template-columns: minmax(0, 1fr) !important;
       }
+      .axis-line-chart {
+        grid-template-columns: 44px minmax(0, 1fr);
+        gap: 6px;
+      }
+      .axis-line-chart-y {
+        font-size: 9px;
+      }
+      .axis-line-chart-y span {
+        max-width: 44px;
+      }
       .ops-signal-row {
         grid-template-columns: minmax(0, 1fr) !important;
       }
@@ -4091,30 +4104,47 @@
       }).join('');
     }
 
+    function chartAxisLabel(value, options = {}) {
+      const numeric = chartValue(value);
+      if (numeric === null) return '-';
+      if (typeof options.formatY === 'function') return options.formatY(numeric);
+      if (options.axis === 'rate') return fmtRate(numeric);
+      if (options.axis === 'percent') return fmtPercent(numeric);
+      return fmtCompact(numeric);
+    }
+
     function lineChart(series, options = {}) {
       const width = options.width || 620;
       const height = options.height || 140;
-      const padding = 18;
+      const padX = 8;
+      const padTop = 10;
+      const padBottom = 12;
+      const plotHeight = height - padTop - padBottom;
       const seriesList = Array.isArray(series[0]) ? series : [series];
       const all = seriesList.flat().map(chartValue).filter((item) => item !== null);
       const max = Math.max(...all, 1);
       const min = 0;
-      const grid = [];
-      for (let i = 0; i < 4; i += 1) {
-        const y = padding + ((height - padding * 2) / 3) * i;
-        grid.push(`<line x1="${padding}" y1="${y}" x2="${width - padding}" y2="${y}" stroke="rgba(22,93,255,0.08)" stroke-width="1"/>`);
-      }
+      const marks = [max, max / 2, 0];
+      const grid = marks.map((mark) => {
+        const y = padTop + ((max - mark) / (max - min || 1)) * plotHeight;
+        return `<line x1="${padX}" y1="${y}" x2="${width - padX}" y2="${y}" stroke="rgba(22,93,255,0.10)" stroke-width="1"/>`;
+      });
+      const axis = `<line x1="${padX}" y1="${padTop}" x2="${padX}" y2="${height - padBottom}" stroke="rgba(113,128,150,0.28)" stroke-width="1"/>`;
       const colors = options.colors || ['#165dff', '#16c67a', '#ffb020'];
       const paths = seriesList.map((arr, idx) => {
         const values = Array.isArray(arr) ? arr : [];
-        const step = values.length > 1 ? (width - padding * 2) / (values.length - 1) : 0;
+        const step = values.length > 1 ? (width - padX * 2) / (values.length - 1) : 0;
         return chartSegmentElements(values, (value, index) => {
-          const x = padding + step * index;
-          const y = height - padding - ((Math.max(0, value) - min) / (max - min || 1)) * (height - padding * 2);
+          const x = padX + step * index;
+          const y = padTop + ((max - Math.max(0, value)) / (max - min || 1)) * plotHeight;
           return `${x},${y}`;
         }, colors[idx % colors.length]);
       }).join('');
-      return `<svg class="mini-chart" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none">${grid.join('')}${paths}</svg>`;
+      const labels = marks.map((mark) => `<span>${escapeHtml(chartAxisLabel(mark, options))}</span>`).join('');
+      return `<div class="axis-line-chart">
+        <div class="axis-line-chart-y" aria-hidden="true">${labels}</div>
+        <svg class="mini-chart" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none">${grid.join('')}${axis}${paths}</svg>
+      </div>`;
     }
 
     function rateAxisLineChart(values = [], color = '#165dff', options = {}) {
@@ -4439,7 +4469,7 @@
       return `<div class="line-trend-grid" style="grid-template-columns:repeat(${columnCount}, minmax(0, 1fr))">${rows.map((item) => `
         <div class="chart-box">
           <div class="chart-label"><span>${escapeHtml(item.name)}</span><span>TX / RX</span></div>
-          ${lineChart([item.history.up, item.history.down], {colors})}
+          ${lineChart([item.history.up, item.history.down], {colors, axis:'rate'})}
         </div>`).join('')}</div>`;
     }
 
@@ -4978,7 +5008,7 @@
               <div class="card-body">
                 <div class="chart-box">
                   <div class="chart-label"><span>实时上行速率 ${fmtRate(o.uplinkBps)}</span><span>实时下行速率 ${fmtRate(o.downlinkBps)}</span></div>
-                  ${lineChart([o.history.uplink, o.history.downlink], {colors:['#4a95ef','#30c36b']})}
+                  ${lineChart([o.history.uplink, o.history.downlink], {colors:['#4a95ef','#30c36b'], axis:'rate'})}
                 </div>
               </div>
             </div>
@@ -6931,7 +6961,7 @@
       const loadCharts = `
         <div class="grid-3" style="margin-top:12px">
           <div class="card" style="grid-column: span 2"><div class="card-head"><div class="card-title">资源趋势</div><div class="subtle">CPU / 内存 / 磁盘分图</div></div><div class="card-body">${resourceTrendGrid(o, `${Math.max(o.history?.cpu?.length || 0, o.history?.memory?.length || 0, o.history?.disk?.length || 0)} 点 · ${escapeHtml(snapshot.meta.pollSeconds)}s / 点`)}</div></div>
-          <div class="card"><div class="card-head"><div class="card-title">实时速率趋势</div><div class="subtle">WAN 聚合速率</div></div><div class="card-body"><div class="chart-box"><div class="chart-label"><span>实时上行速率 ${fmtRate(o.uplinkBps)}</span><span>实时下行速率 ${fmtRate(o.downlinkBps)}</span></div>${lineChart([o.history.uplink, o.history.downlink], {colors:['#165dff','#f53f3f']})}</div></div></div>
+          <div class="card"><div class="card-head"><div class="card-title">实时速率趋势</div><div class="subtle">WAN 聚合速率</div></div><div class="card-body"><div class="chart-box"><div class="chart-label"><span>实时上行速率 ${fmtRate(o.uplinkBps)}</span><span>实时下行速率 ${fmtRate(o.downlinkBps)}</span></div>${lineChart([o.history.uplink, o.history.downlink], {colors:['#165dff','#f53f3f'], axis:'rate'})}</div></div></div>
         </div>`;
       const hasProtocolBreakdown = [snapshot.connections.tcp, snapshot.connections.udp, snapshot.connections.icmp].every((value) => Number.isFinite(Number(value)));
       const protocolCards = hasProtocolBreakdown ? `
@@ -7568,7 +7598,7 @@
           ${metricCard('接口吞吐对象', fmtNumber(interfaces.length), `WAN / LAN ${fmtNumber(interfaces.filter((row) => row.role === 'WAN').length)} / ${fmtNumber(interfaces.filter((row) => row.role !== 'WAN').length)}`, `终端排行 ${fmtNumber(trafficTerminals.length)} 个`)}
         </div>
         <div class="grid-2" style="margin-top:12px">
-          <div class="card"><div class="card-head"><div class="card-title">${wanScenario.count <= 1 ? '默认出口吞吐趋势' : 'WAN 聚合吞吐趋势'}</div><div class="subtle">${fmtRate(overview.uplinkBps)} / ${fmtRate(overview.downlinkBps)}</div></div><div class="card-body"><div class="chart-box"><div class="chart-label"><span>总上 / 总下</span><span>${escapeHtml(snapshot.meta.pollSeconds)}s / 点</span></div>${lineChart([overview.history.uplink, overview.history.downlink], {colors:['#165dff','#f53f3f']})}</div></div></div>
+          <div class="card"><div class="card-head"><div class="card-title">${wanScenario.count <= 1 ? '默认出口吞吐趋势' : 'WAN 聚合吞吐趋势'}</div><div class="subtle">${fmtRate(overview.uplinkBps)} / ${fmtRate(overview.downlinkBps)}</div></div><div class="card-body"><div class="chart-box"><div class="chart-label"><span>总上 / 总下</span><span>${escapeHtml(snapshot.meta.pollSeconds)}s / 点</span></div>${lineChart([overview.history.uplink, overview.history.downlink], {colors:['#165dff','#f53f3f'], axis:'rate'})}</div></div></div>
           <div class="card"><div class="card-head"><div class="card-title">${wanScenario.count <= 1 ? '默认出口利用' : lineTier === 'dense' ? '线路负载表' : '线路负载占比'}</div><div class="subtle">${busiestLine ? `${escapeHtml(busiestLine.name)} 当前最繁忙` : '等待采集'}</div></div><div class="card-body"><div class="stack">${lineShareContent}</div></div></div>
         </div>
         <div class="card" style="margin-top:12px"><div class="card-head"><div class="card-title">线路速率趋势</div><div class="subtle">${wanScenario.count <= 1 ? '单 WAN 历史趋势' : `${fmtNumber(getLineTrendRows(snapshot).length)} 条线路同步展示`}</div></div><div class="card-body">${renderLineTrendGrid(getLineTrendRows(snapshot), {emptyText:'当前未采集到可展示的线路趋势'})}</div></div>
