@@ -612,7 +612,12 @@ def assert_frontend_wan_aggregate_default():
     assert "const selectedWan = selectedWanLine(lines, aggregateWan);" in source
     assert "renderWanLineOptions(lines, selectedWan, aggregateWan)" in source
     assert '<option value="${AGGREGATE_WAN_KEY}"' in source
-    assert '<div class="ikuai-chart-box">${wanChart}</div>' in source
+    assert '<div class="ikuai-wan-chart">${wanChart}</div>' in source
+    assert 'data-monitor-split-charts="true"' in source
+    assert 'data-monitor-chart="up"' in source
+    assert 'data-monitor-chart="down"' in source
+    assert '<div class="ikuai-chart-box">${monitorUpChart}</div>' in source
+    assert '<div class="ikuai-chart-box">${monitorDownChart}</div>' in source
     assert "rate(selectedWan?.upRate)" in source
     assert "rate(selectedWan?.downRate)" in source
     assert "const selectedWan = selectedWanLine(lines);" not in source
