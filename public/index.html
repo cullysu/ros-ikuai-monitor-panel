@@ -484,9 +484,10 @@
     .metric-foot { margin-top: 8px; color: var(--text-soft); font-size: 12px; display: flex; justify-content: space-between; gap: 8px; }
     .chart-box { background: linear-gradient(180deg, #fbfdff 0%, #f7fbff 100%); border: 1px solid #e9f1fb; border-radius: 8px; padding: 8px; }
     .chart-label { display: flex; justify-content: space-between; align-items: center; color: var(--text-soft); font-size: 11px; margin-bottom: 5px; }
-    .axis-line-chart { display: grid; grid-template-columns: 54px minmax(0, 1fr); gap: 8px; align-items: stretch; width: 100%; min-width: 0; }
-    .axis-line-chart-y { display: flex; flex-direction: column; justify-content: space-between; align-items: flex-end; padding: 10px 0 12px; color: #718096; font-size: 10px; line-height: 1; white-space: nowrap; }
-    .axis-line-chart-y span { max-width: 54px; overflow: hidden; text-overflow: ellipsis; }
+    .axis-line-chart { display: grid; grid-template-columns: 72px minmax(0, 1fr); gap: 8px; align-items: stretch; width: 100%; min-width: 0; }
+    .axis-line-chart-y { display: flex; flex-direction: column; justify-content: space-between; align-items: flex-end; padding: 10px 0 12px; color: #334155; font-size: 11px; font-weight: 600; line-height: 1; white-space: nowrap; font-variant-numeric: tabular-nums; }
+    .axis-line-chart-y span { width: 100%; max-width: 72px; min-width: 0; overflow: hidden; text-align: right; text-overflow: ellipsis; padding-right: 5px; border-right: 1px solid rgba(100, 116, 139, 0.24); }
+    .axis-line-chart .mini-chart { min-width: 0; }
     .mini-chart { width: 100%; height: 140px; display: block; }
     .line-trend-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
     .info-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px 8px; }
@@ -2617,14 +2618,15 @@
         grid-template-columns: minmax(0, 1fr) !important;
       }
       .axis-line-chart {
-        grid-template-columns: 44px minmax(0, 1fr);
+        grid-template-columns: 62px minmax(0, 1fr);
         gap: 6px;
       }
       .axis-line-chart-y {
-        font-size: 9px;
+        font-size: 9.5px;
       }
       .axis-line-chart-y span {
-        max-width: 44px;
+        max-width: 62px;
+        padding-right: 4px;
       }
       .ops-signal-row {
         grid-template-columns: minmax(0, 1fr) !important;
@@ -4079,6 +4081,23 @@
       return Number.isFinite(numeric) ? numeric : null;
     }
 
+    function smoothNumericSeries(values = [], passes = 2) {
+      const original = (values || []).map((value) => Number(value || 0)).filter((value) => Number.isFinite(value));
+      if (original.length < 4) return original;
+      let smoothed = original.slice();
+      const runCount = Math.max(1, Number(passes || 1));
+      for (let pass = 0; pass < runCount; pass += 1) {
+        smoothed = smoothed.map((value, index, arr) => {
+          if (index === 0) return (value * 2 + arr[index + 1]) / 3;
+          if (index === arr.length - 1) return (arr[index - 1] + value * 2) / 3;
+          const prev = arr[index - 1];
+          const next = arr[index + 1];
+          return (prev + value * 2 + next) / 4;
+        });
+      }
+      return smoothed;
+    }
+
     function chartSegmentElements(values, mapper, color, options = {}) {
       const strokeWidth = options.strokeWidth || 2.4;
       const pointRadius = options.pointRadius || 2.4;
@@ -4140,7 +4159,10 @@
           return `${x},${y}`;
         }, colors[idx % colors.length]);
       }).join('');
-      const labels = marks.map((mark) => `<span>${escapeHtml(chartAxisLabel(mark, options))}</span>`).join('');
+      const labels = marks.map((mark) => {
+        const tickLabel = chartAxisLabel(mark, options);
+        return `<span class="axis-tick-label" title="${escapeHtml(tickLabel)}">${escapeHtml(tickLabel)}</span>`;
+      }).join('');
       return `<div class="axis-line-chart">
         <div class="axis-line-chart-y" aria-hidden="true">${labels}</div>
         <svg class="mini-chart" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none">${grid.join('')}${axis}${paths}</svg>
