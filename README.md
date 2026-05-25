@@ -54,14 +54,8 @@ read-only user, and password in the panel login page. The panel tests SSH
 first, then checks RouterOS REST reachability. The installer does not require
 real RouterOS credentials in `.env.docker` for first run.
 
-Trusted-LAN install:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/main/install.sh | bash -s -- --lan
-```
-
-Use LAN publishing only for trusted LAN clients, and do not expose the panel
-directly to the public internet.
+All install paths start local-only at `127.0.0.1:28646`. Change the panel
+address only after the UI has opened and you have decided the access boundary.
 
 Custom directory or port:
 
@@ -81,8 +75,9 @@ Stop the installed service while keeping local panel data:
 curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/main/install.sh | bash -s -- --uninstall
 ```
 
-Read [DEPLOY_DOCKER.md](./DEPLOY_DOCKER.md) for manual Compose, LAN exposure,
-upgrade, uninstall, and RouterOS SSH `allowed-address` troubleshooting.
+Read [DEPLOY_DOCKER.md](./DEPLOY_DOCKER.md) for manual Compose, local address
+defaults, upgrade, uninstall, and RouterOS SSH `allowed-address`
+troubleshooting.
 
 ## Quick Start: Windows EXE
 
@@ -124,8 +119,8 @@ Open `http://127.0.0.1:28646/`.
 
 Docker is the default public deployment recommendation because it does not
 require ESXi or a dedicated VM, and it keeps the panel isolated from RouterOS.
-Read [DEPLOY_DOCKER.md](./DEPLOY_DOCKER.md) for UI-based RouterOS login, LAN
-exposure, upgrade, uninstall, env-file settings, and RouterOS SSH
+Read [DEPLOY_DOCKER.md](./DEPLOY_DOCKER.md) for UI-based RouterOS login,
+localhost defaults, upgrade, uninstall, env-file settings, and RouterOS SSH
 `allowed-address` troubleshooting.
 
 ## RouterOS Container
@@ -133,6 +128,10 @@ exposure, upgrade, uninstall, env-file settings, and RouterOS SSH
 RouterOS Container is supported as an advanced/Beta deployment route. It is not
 the default path because it changes RouterOS container, storage, veth, and
 possibly API/firewall access state.
+
+Even in this path, the documented first-run panel endpoint stays
+`127.0.0.1:28646`; do not publish it to a veth/LAN address until that access
+boundary is deliberately configured.
 
 Read [DEPLOY_ROUTEROS_CONTAINER.md](./DEPLOY_ROUTEROS_CONTAINER.md) and make a
 RouterOS backup before trying it.

@@ -11,14 +11,14 @@ RouterOS Triage Panel public Docker installer
 
 Usage:
   curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/main/install.sh | bash
-  curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/main/install.sh | bash -s -- --lan
+  curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/main/install.sh | bash -s -- --port 28647
 
 Options:
-  --lan                 Publish the panel on all host interfaces.
-  --bind <addr>         Host publish address. Default: 127.0.0.1.
+  --lan                 Advanced: publish the panel on all host interfaces.
+  --bind <addr>         Advanced host publish address. Default: 127.0.0.1.
   --port <port>         Host and in-container panel port. Default: 28646.
   --name <name>         Docker container name. Default: routeros-triage-panel.
-  --target-ip <addr>    URL host printed by the panel. Default: 127.0.0.1, or auto-detected with --lan.
+  --target-ip <addr>    URL host printed by the panel. Default: 127.0.0.1.
   --dir <path>          Install directory. Default: ~/.local/share/routeros-triage-panel, or /opt/routeros-triage-panel as root.
   --repo <url>          Git repository URL. Default: https://github.com/cullysu/ros-ikuai-monitor-panel.git
   --branch <name>       Git branch or tag to install. Default: main.
@@ -30,8 +30,9 @@ Options:
   -h, --help            Show this help.
 
 First run:
-  Open the printed URL and enter the RouterOS SSH host, user, and password in
-  the panel UI. You do not need to put RouterOS credentials in .env.docker.
+  Open http://127.0.0.1:28646/ and enter the RouterOS SSH host, user, and
+  password in the panel UI. You do not need to put RouterOS credentials in
+  .env.docker.
 EOF
 }
 

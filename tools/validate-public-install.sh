@@ -11,7 +11,17 @@ echo "[check] install.sh help"
 bash install.sh --help >/dev/null
 
 echo "[check] install.sh dry-run"
-bash install.sh --dry-run --source-dir "$ROOT_DIR" --dir "${TMPDIR:-/tmp}/routeros-panel-install-check" --lan --port 28647 >/dev/null
+dry_run_output="$(bash install.sh --dry-run --source-dir "$ROOT_DIR" --dir "${TMPDIR:-/tmp}/routeros-panel-install-check")"
+printf '%s\n' "$dry_run_output" | grep -F "bind:       127.0.0.1" >/dev/null
+printf '%s\n' "$dry_run_output" | grep -F "port:       28646" >/dev/null
+printf '%s\n' "$dry_run_output" | grep -F "target-ip:  127.0.0.1" >/dev/null
+
+if command -v node >/dev/null 2>&1; then
+  echo "[check] localhost defaults"
+  node tools/check-localhost-defaults.js
+else
+  echo "[skip] node is not available"
+fi
 
 if docker compose version >/dev/null 2>&1; then
   echo "[check] docker compose config"

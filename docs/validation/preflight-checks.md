@@ -30,6 +30,9 @@ docker compose --env-file .env.docker.example config --quiet
 - `install.sh` Bash syntax with `bash -n install.sh`, when `install.sh` exists.
 - `install.sh --help` output, when the script advertises help support.
 - `install.sh --dry-run`, only when the script advertises dry-run support.
+- Localhost-first packaging defaults through `tools/check-localhost-defaults.js`:
+  deployment docs and templates should keep the first-run panel endpoint at
+  `127.0.0.1:28646`.
 
 ## Current repository state
 

@@ -13,6 +13,7 @@ This is the simplest path for people who do not want to install Python.
 4. Keep these defaults for a first local trial:
    - `ROS_PANEL_BIND=127.0.0.1`
    - `ROS_PANEL_PORT=28646`
+   - `ROS_PANEL_TARGET_IP=127.0.0.1`
    - `ROS_PANEL_PROFILE=routeros_only`
    - `ROS_PANEL_IP_ALIAS_WRITE_ENABLED=0`
 5. Double-click `RouterOS Triage Panel.exe`.
@@ -52,5 +53,7 @@ dependencies there.
 - Use a dedicated least-privilege RouterOS user.
 - Do not use the RouterOS `admin` account.
 - Do not expose this EXE directly to the public internet.
-- Keep `ROS_PANEL_BIND=127.0.0.1` unless LAN exposure has been reviewed.
+- Keep `ROS_PANEL_BIND=127.0.0.1` and `ROS_PANEL_TARGET_IP=127.0.0.1` for the
+  first run. Change the panel address only after the UI has opened and the
+  access boundary has been reviewed.
 - Do not commit or share your edited `routeros-panel.env` file.

@@ -172,6 +172,14 @@ try {
           $dryRunResult = Invoke-CapturedCommand $bash.Source @($InstallScript, "--dry-run")
           if ($dryRunResult.ExitCode -eq 0) {
             Add-Check "PASS" "install dry-run" "bash $InstallScript --dry-run completed."
+            if ($dryRunResult.Output -match "bind:\s+127\.0\.0\.1" -and
+                $dryRunResult.Output -match "port:\s+28646" -and
+                $dryRunResult.Output -match "target-ip:\s+127\.0\.0\.1") {
+              Add-Check "PASS" "localhost install defaults" "install dry-run resolved 127.0.0.1:28646."
+            }
+            else {
+              Add-Check "FAIL" "localhost install defaults" "install dry-run did not resolve 127.0.0.1:28646."
+            }
           }
           else {
             $detail = $dryRunResult.Output.Trim()
@@ -179,6 +187,28 @@ try {
               $detail = "exit code $($dryRunResult.ExitCode)"
             }
             Add-Check "FAIL" "install dry-run" $detail
+          }
+        }
+
+        $node = Get-Command node -ErrorAction SilentlyContinue
+        $localhostCheckPath = Join-Path $repoRoot "tools/check-localhost-defaults.js"
+        if (-not (Test-Path -LiteralPath $localhostCheckPath)) {
+          Add-Check "FAIL" "localhost defaults" "tools/check-localhost-defaults.js was not found."
+        }
+        elseif (-not $node) {
+          Add-Check "SKIP" "localhost defaults" "node was not found on PATH."
+        }
+        else {
+          $localhostResult = Invoke-CapturedCommand $node.Source @("tools/check-localhost-defaults.js")
+          if ($localhostResult.ExitCode -eq 0) {
+            Add-Check "PASS" "localhost defaults" "tools/check-localhost-defaults.js passed."
+          }
+          else {
+            $detail = $localhostResult.Output.Trim()
+            if ([string]::IsNullOrWhiteSpace($detail)) {
+              $detail = "exit code $($localhostResult.ExitCode)"
+            }
+            Add-Check "FAIL" "localhost defaults" $detail
           }
         }
       }

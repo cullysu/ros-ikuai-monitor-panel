@@ -5,8 +5,8 @@ NAS boxes, mini PCs, Linux hosts, OpenWrt Docker environments, and cloud VMs
 without requiring Python, ESXi, or a manually managed systemd service.
 
 The default install publishes the panel only on `127.0.0.1:28646`. Keep that
-localhost-only shape for first run, then expose it to a trusted LAN only after
-you have decided the access boundary.
+localhost-only shape for first run. Use the in-panel address setting or a
+separately reviewed deployment change when you intentionally want LAN access.
 
 ## One-command Install
 
@@ -26,12 +26,6 @@ Then enter the RouterOS SSH host, SSH port, read-only user, and password in the
 panel login page. The installer creates `.env.docker` for listener/profile
 settings, but it does not require real RouterOS credentials in that file for
 first run.
-
-Trusted-LAN install:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/main/install.sh | bash -s -- --lan
-```
 
 Custom install directory or port:
 
@@ -53,11 +47,11 @@ Default install directory:
 ## Installer Options
 
 ```text
---lan                 Publish the panel on all host interfaces.
---bind <addr>         Host publish address. Default: 127.0.0.1.
+--lan                 Advanced: publish the panel on all host interfaces.
+--bind <addr>         Advanced host publish address. Default: 127.0.0.1.
 --port <port>         Host and in-container panel port. Default: 28646.
 --name <name>         Docker container name. Default: routeros-triage-panel.
---target-ip <addr>    URL host printed by the panel.
+--target-ip <addr>    URL host printed by the panel. Default: 127.0.0.1.
 --dir <path>          Install directory.
 --repo <url>          Git repository URL.
 --branch <name>       Git branch to install.
@@ -140,31 +134,21 @@ Expected read-only public shape:
 - RouterOS credentials are not returned by status endpoints
 - write-only operations such as `POST /api/ip-alias` are rejected
 
-## LAN Exposure
+## Address Changes
 
-With the installer:
+First run is always documented as:
 
-```bash
-curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/main/install.sh | bash -s -- --lan
+```text
+http://127.0.0.1:28646/
 ```
 
-With manual Compose:
-
-```dotenv
-ROS_PANEL_PUBLISHED_ADDR=0.0.0.0
-ROS_PANEL_TARGET_IP=<panel-host-lan-ip>
-```
-
-Then restart:
-
-```bash
-docker compose --env-file .env.docker up -d --build
-```
-
-Open `http://<panel-host-lan-ip>:28646/` from trusted LAN clients.
+The container still listens on `0.0.0.0` internally so Docker can publish the
+service, but the host-side published address remains `127.0.0.1` by default.
+Treat LAN publishing as an explicit post-install decision, preferably through
+the panel address setting once available.
 
 Do not expose this directly to the public internet. Put HTTPS and
-authentication in front of it if access crosses a trusted LAN boundary.
+authentication in front of it if access leaves a single trusted machine.
 
 ## Security Shape
 
@@ -260,9 +244,10 @@ curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/mai
 
 ### LAN Clients Cannot Reach The Panel
 
-- Confirm you installed with `--lan` or set `ROS_PANEL_PUBLISHED_ADDR=0.0.0.0`.
-- Confirm the host firewall allows the selected port.
-- Use the Docker host LAN IP in the browser, not `127.0.0.1`.
+- This is expected with the default install. The default published endpoint is
+  intentionally `127.0.0.1:28646`.
+- Configure a deliberate address change only after you have decided the access
+  boundary.
 
 ### RouterOS Login Fails
 

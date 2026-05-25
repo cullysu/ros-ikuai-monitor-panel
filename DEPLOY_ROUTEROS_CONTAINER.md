@@ -73,11 +73,12 @@ Stop here if:
 
 ## Template Network Shape
 
-This example keeps the container in a small dedicated subnet:
+This example keeps the container in a small dedicated subnet for RouterOS-side
+container networking, but the panel process itself still starts local-only:
 
 - RouterOS container bridge: `172.18.0.1/24`
 - Container veth: `172.18.0.2/24`
-- Panel port inside container: `28646`
+- First-run panel endpoint inside the container: `127.0.0.1:28646`
 
 Adapt names and subnets to your router. Do not reuse an existing subnet.
 
@@ -94,9 +95,9 @@ must be allowed to read RouterOS. Do not broaden API access to the whole LAN.
 ## Environment Template
 
 ```routeros
-/container/envs/add name=routeros-triage-env key=ROS_PANEL_BIND value=0.0.0.0
+/container/envs/add name=routeros-triage-env key=ROS_PANEL_BIND value=127.0.0.1
 /container/envs/add name=routeros-triage-env key=ROS_PANEL_PORT value=28646
-/container/envs/add name=routeros-triage-env key=ROS_PANEL_TARGET_IP value=172.18.0.2
+/container/envs/add name=routeros-triage-env key=ROS_PANEL_TARGET_IP value=127.0.0.1
 /container/envs/add name=routeros-triage-env key=ROS_PANEL_PROFILE value=routeros_only
 /container/envs/add name=routeros-triage-env key=ROS_PANEL_IP_ALIAS_WRITE_ENABLED value=0
 /container/envs/add name=routeros-triage-env key=ROS_PANEL_EXPOSE_ADMIN_SESSIONS value=0
@@ -128,23 +129,25 @@ The exact `src=` path depends on your RouterOS storage layout.
 
 ## Verify From RouterOS
 
+With the localhost-only default, the panel is not published on the container
+veth address. Confirm the container is running first:
+
 ```routeros
 /container/print detail
-/tool/fetch url=http://172.18.0.2:28646/api/health output=user
-/tool/fetch url=http://172.18.0.2:28646/api/semantic-triage output=user
 ```
 
 Expected:
 
-- health returns `status=ok`
-- profile is `routeros_only`
+- environment contains `ROS_PANEL_BIND=127.0.0.1`
+- environment contains `ROS_PANEL_TARGET_IP=127.0.0.1`
 - public read-only guardrails are enabled
 
 ## LAN Access
 
-The safest first test is from RouterOS itself. Exposing the container to LAN
-clients may require routing, DNS, firewall, or NAT decisions specific to your
-router.
+The default template does not expose `172.18.0.2:28646` or any LAN address.
+Exposing the container to RouterOS itself or to LAN clients requires a separate
+address decision and may require routing, DNS, firewall, or NAT changes
+specific to your router.
 
 Do not paste generic firewall/NAT rules into a production router. Record current
 state, define the target state, create a rollback path, then add the minimum
