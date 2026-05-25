@@ -1267,6 +1267,98 @@
       font-size: 12px;
       line-height: 1.6;
     }
+    .panel-network-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 13000;
+      place-items: center;
+      padding: 18px;
+      background: rgba(16, 28, 43, .28);
+    }
+    .panel-network-overlay.is-open { display: grid; }
+    .panel-network-dialog {
+      width: min(520px, 100%);
+      overflow: hidden;
+      border: 1px solid #dce8f7;
+      border-radius: 14px;
+      background: #fff;
+      box-shadow: 0 24px 72px rgba(24, 49, 83, .24);
+    }
+    .panel-network-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 16px 18px 14px;
+      border-bottom: 1px solid #edf1f7;
+      background: linear-gradient(180deg, #fbfdff 0%, #ffffff 100%);
+    }
+    .panel-network-title { color: #253246; font-size: 15px; font-weight: 800; }
+    .panel-network-desc { margin-top: 5px; color: #6a788b; font-size: 12px; line-height: 1.55; }
+    .panel-network-close {
+      appearance: none;
+      width: 30px;
+      height: 30px;
+      border: 1px solid #edf1f7;
+      border-radius: 8px;
+      background: #fff;
+      color: #91a0b5;
+      cursor: pointer;
+    }
+    .panel-network-close:hover { background: #f5f9ff; color: #2f7fe6; }
+    .panel-network-form { display: grid; gap: 14px; padding: 16px 18px 18px; }
+    .panel-network-grid { display: grid; grid-template-columns: minmax(0, 1fr) 118px; gap: 12px; }
+    .panel-network-field { display: grid; gap: 7px; min-width: 0; }
+    .panel-network-field label { color: #253246; font-size: 12px; font-weight: 700; }
+    .panel-network-field input {
+      width: 100%;
+      height: 36px;
+      min-width: 0;
+      border: 1px solid #dfe8f4;
+      border-radius: 8px;
+      background: #fff;
+      color: #253246;
+      padding: 0 10px;
+      font: 600 13px/1.2 "Bahnschrift","Microsoft YaHei",sans-serif;
+      outline: none;
+    }
+    .panel-network-field input:focus {
+      border-color: #4a95ef;
+      box-shadow: 0 0 0 3px rgba(74,149,239,.14);
+    }
+    .panel-network-status {
+      min-height: 20px;
+      color: #6a788b;
+      font-size: 12px;
+      line-height: 1.55;
+    }
+    .panel-network-status.is-error { color: #b6383a; }
+    .panel-network-status.is-ok { color: #0d8f56; }
+    .panel-network-status.is-warn { color: #9b6800; }
+    .panel-network-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .panel-network-note {
+      padding: 10px 11px;
+      border: 1px solid #dbeafe;
+      border-radius: 10px;
+      background: #f5f9ff;
+      color: #526276;
+      font-size: 12px;
+      line-height: 1.6;
+    }
+    @media (max-width: 640px) {
+      .panel-network-overlay { padding: 12px; align-items: end; }
+      .panel-network-dialog { width: 100%; }
+      .panel-network-grid { grid-template-columns: minmax(0, 1fr); }
+      .panel-network-actions { align-items: stretch; flex-direction: column; }
+      .panel-network-actions .action-btn { width: 100%; justify-content: center; }
+    }
     .ik-menu-stack {
       display: flex;
       flex-direction: column;
@@ -2607,6 +2699,7 @@
       <div class="ik-rail-spacer"></div>
       <div class="ik-rail-group">
         <button class="ik-rail-button ik-readonly-btn" type="button" title="只读状态" data-readonly-info-open aria-label="只读状态">只</button>
+        <button class="ik-rail-button ik-readonly-btn" type="button" title="面板地址" data-panel-network-open aria-label="面板地址">IP</button>
       </div>
     </aside>
     <aside class="sidebar shell-nav" data-shell-region="navigation" data-shell-nav="secondary">
@@ -2629,6 +2722,7 @@
           </div>
           <div class="topbar-actions">
             <div class="toolbar-line">
+              <button class="action-btn" id="panelNetworkBtn" type="button" data-panel-network-open>面板地址</button>
               <div class="deploy-pill">只读面板</div>
               <div class="update-pill"><span class="dot" id="healthDot"></span><span id="updateText">初始化中</span></div>
             </div>
@@ -3183,6 +3277,136 @@
       .replaceAll('>', '&gt;')
       .replaceAll('"', '&quot;')
       .replaceAll("'", '&#39;');
+
+    let panelNetworkDialogEl = null;
+
+    function setPanelNetworkStatus(message = '', tone = '') {
+      const statusEl = panelNetworkDialogEl?.querySelector('[data-panel-network-status]');
+      if (!statusEl) return;
+      statusEl.innerHTML = message || '';
+      statusEl.classList.toggle('is-error', tone === 'error');
+      statusEl.classList.toggle('is-ok', tone === 'ok');
+      statusEl.classList.toggle('is-warn', tone === 'warn');
+    }
+
+    function ensurePanelNetworkDialog() {
+      if (panelNetworkDialogEl && document.body.contains(panelNetworkDialogEl)) return panelNetworkDialogEl;
+      panelNetworkDialogEl = document.createElement('div');
+      panelNetworkDialogEl.className = 'panel-network-overlay';
+      panelNetworkDialogEl.innerHTML = `
+        <div class="panel-network-dialog" role="dialog" aria-modal="true" aria-label="面板地址设置">
+          <div class="panel-network-head">
+            <div>
+              <div class="panel-network-title">面板地址</div>
+              <div class="panel-network-desc">修改面板监听 IP、端口和浏览器访问地址。保存后重启面板服务生效。</div>
+            </div>
+            <button class="panel-network-close" type="button" data-panel-network-close aria-label="关闭">×</button>
+          </div>
+          <form class="panel-network-form" data-panel-network-form>
+            <div class="panel-network-grid">
+              <div class="panel-network-field">
+                <label for="panelNetworkBind">监听 IP</label>
+                <input id="panelNetworkBind" name="bind" type="text" autocomplete="off" placeholder="127.0.0.1" required>
+              </div>
+              <div class="panel-network-field">
+                <label for="panelNetworkPort">端口</label>
+                <input id="panelNetworkPort" name="port" type="number" inputmode="numeric" min="1" max="65535" placeholder="28646" required>
+              </div>
+            </div>
+            <div class="panel-network-field">
+              <label for="panelNetworkTarget">浏览器访问地址</label>
+              <input id="panelNetworkTarget" name="target" type="text" autocomplete="off" placeholder="127.0.0.1" required>
+            </div>
+            <div class="panel-network-note">
+              Docker 内部监听通常应保持 0.0.0.0，宿主机发布地址再限制到 127.0.0.1。普通本机运行建议保持 127.0.0.1。
+            </div>
+            <div class="panel-network-status" data-panel-network-status></div>
+            <div class="panel-network-actions">
+              <button class="action-btn" type="button" data-panel-network-close>取消</button>
+              <button class="action-btn primary" type="submit" data-panel-network-save>保存</button>
+            </div>
+          </form>
+        </div>`;
+      document.body.appendChild(panelNetworkDialogEl);
+      panelNetworkDialogEl.addEventListener('click', (event) => {
+        if (event.target === panelNetworkDialogEl || event.target.closest('[data-panel-network-close]')) {
+          closePanelNetworkSettings();
+        }
+      });
+      panelNetworkDialogEl.querySelector('[data-panel-network-form]')?.addEventListener('submit', savePanelNetworkSettings);
+      return panelNetworkDialogEl;
+    }
+
+    function fillPanelNetworkForm(panelNetwork = {}) {
+      const dialog = ensurePanelNetworkDialog();
+      dialog.querySelector('[name="bind"]').value = panelNetwork.bind || panelNetwork.defaults?.bind || '127.0.0.1';
+      dialog.querySelector('[name="port"]').value = String(panelNetwork.port || panelNetwork.defaults?.port || 28646);
+      dialog.querySelector('[name="target"]').value = panelNetwork.target || panelNetwork.defaults?.target || '127.0.0.1';
+    }
+
+    async function fetchPanelNetworkSettings() {
+      const response = await fetch('/api/panel-network', { cache: 'no-store' });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok || !payload.ok) {
+        throw new Error(payload.error || `HTTP ${response.status}`);
+      }
+      return payload.panelNetwork || {};
+    }
+
+    async function openPanelNetworkSettings() {
+      const dialog = ensurePanelNetworkDialog();
+      dialog.classList.add('is-open');
+      setPanelNetworkStatus('正在读取当前面板地址...');
+      try {
+        const panelNetwork = await fetchPanelNetworkSettings();
+        fillPanelNetworkForm(panelNetwork);
+        setPanelNetworkStatus(`当前访问地址：${escapeHtml(panelNetwork.currentUrl || '-')}`, 'ok');
+      } catch (error) {
+        fillPanelNetworkForm();
+        setPanelNetworkStatus(`读取失败：${escapeHtml(error.message)}`, 'error');
+      }
+      setTimeout(() => dialog.querySelector('[name="bind"]')?.focus(), 0);
+    }
+
+    function closePanelNetworkSettings() {
+      panelNetworkDialogEl?.classList.remove('is-open');
+    }
+
+    async function savePanelNetworkSettings(event) {
+      event.preventDefault();
+      const form = event.currentTarget;
+      const saveBtn = form.querySelector('[data-panel-network-save]');
+      const bind = form.elements.namedItem('bind').value.trim();
+      const port = Number(form.elements.namedItem('port').value || 0);
+      const target = form.elements.namedItem('target').value.trim();
+      saveBtn.disabled = true;
+      saveBtn.textContent = '保存中...';
+      setPanelNetworkStatus('正在保存面板地址...');
+      try {
+        const response = await fetch('/api/panel-network', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          cache: 'no-store',
+          body: JSON.stringify({ bind, port, target })
+        });
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok || !payload.ok) {
+          throw new Error(payload.error || `HTTP ${response.status}`);
+        }
+        const nextUrl = payload.nextUrl || payload.panelNetwork?.currentUrl || '';
+        const envFile = payload.panelNetwork?.envFile || '';
+        const restartText = payload.restartRequired ? '重启面板服务后生效。' : '当前运行配置已经一致。';
+        setPanelNetworkStatus(
+          `已保存到 ${escapeHtml(envFile || '配置文件')}。${restartText}${nextUrl ? ` 下次访问：<a href="${escapeHtml(nextUrl)}">${escapeHtml(nextUrl)}</a>` : ''}`,
+          payload.restartRequired ? 'warn' : 'ok'
+        );
+      } catch (error) {
+        setPanelNetworkStatus(`保存失败：${escapeHtml(error.message)}`, 'error');
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = '保存';
+      }
+    }
 
     const fmtNumber = (value) => new Intl.NumberFormat('zh-CN').format(Number(value || 0));
     const fmtPercent = (value) => `${Number(value || 0).toFixed(1)}%`;
@@ -3807,8 +4031,12 @@
         ? railGroups
         : railGroups.filter((group) => group.id !== 'diagnostics');
       const readonlyStatusButton = hasCapability('readonlyDiagnostics', snapshot)
-        ? '<div class="ik-rail-group"><button class="ik-rail-button ik-readonly-btn" type="button" title="只读状态" data-readonly-info-open aria-label="只读状态">只</button></div>'
+        ? '<button class="ik-rail-button ik-readonly-btn" type="button" title="只读状态" data-readonly-info-open aria-label="只读状态">只</button>'
         : '';
+      const panelTools = `<div class="ik-rail-group">
+        <button class="ik-rail-button ik-readonly-btn" type="button" title="面板地址" data-panel-network-open aria-label="面板地址">IP</button>
+        ${readonlyStatusButton}
+      </div>`;
       if (ikRailEl) {
         ikRailEl.innerHTML = `
           <a class="ik-rail-logo ${currentNavGroup === 'home' ? 'is-active' : ''}" href="#overview" data-section="overview" data-nav-group="home" title="系统首页">首</a>
@@ -3819,7 +4047,7 @@
               <span class="ik-rail-label">${group.label}</span>
             </a>`).join('')}</div>
           <div class="ik-rail-spacer"></div>
-          ${readonlyStatusButton}`;
+          ${panelTools}`;
       }
       if (ikMenuPanelEl) {
         const items = navItemsFor(currentNavGroup, snapshot);
@@ -3832,12 +4060,43 @@
       }
     }
 
+    function chartValue(value) {
+      if (value === null || value === undefined || value === '') return null;
+      const numeric = Number(value);
+      return Number.isFinite(numeric) ? numeric : null;
+    }
+
+    function chartSegmentElements(values, mapper, color, options = {}) {
+      const strokeWidth = options.strokeWidth || 2.4;
+      const pointRadius = options.pointRadius || 2.4;
+      const className = options.className ? ` class="${options.className}"` : '';
+      const segments = [];
+      let current = [];
+      (Array.isArray(values) ? values : []).forEach((value, index) => {
+        const numeric = chartValue(value);
+        if (numeric === null) {
+          if (current.length) segments.push(current);
+          current = [];
+          return;
+        }
+        current.push(mapper(numeric, index));
+      });
+      if (current.length) segments.push(current);
+      return segments.map((points) => {
+        if (points.length === 1) {
+          const [cx, cy] = points[0].split(',');
+          return `<circle${className} cx="${cx}" cy="${cy}" r="${pointRadius}" fill="${color}"/>`;
+        }
+        return `<polyline${className} fill="none" stroke="${color}" stroke-width="${strokeWidth}" stroke-linecap="round" stroke-linejoin="round" points="${points.join(' ')}"/>`;
+      }).join('');
+    }
+
     function lineChart(series, options = {}) {
       const width = options.width || 620;
       const height = options.height || 140;
       const padding = 18;
       const seriesList = Array.isArray(series[0]) ? series : [series];
-      const all = seriesList.flat().map((item) => Number(item || 0));
+      const all = seriesList.flat().map(chartValue).filter((item) => item !== null);
       const max = Math.max(...all, 1);
       const min = 0;
       const grid = [];
@@ -3847,13 +4106,13 @@
       }
       const colors = options.colors || ['#165dff', '#16c67a', '#ffb020'];
       const paths = seriesList.map((arr, idx) => {
-        const step = arr.length > 1 ? (width - padding * 2) / (arr.length - 1) : 0;
-        const points = arr.map((value, index) => {
+        const values = Array.isArray(arr) ? arr : [];
+        const step = values.length > 1 ? (width - padding * 2) / (values.length - 1) : 0;
+        return chartSegmentElements(values, (value, index) => {
           const x = padding + step * index;
-          const y = height - padding - ((Number(value || 0) - min) / (max - min || 1)) * (height - padding * 2);
+          const y = height - padding - ((Math.max(0, value) - min) / (max - min || 1)) * (height - padding * 2);
           return `${x},${y}`;
-        }).join(' ');
-        return `<polyline fill="none" stroke="${colors[idx % colors.length]}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" points="${points}"/>`;
+        }, colors[idx % colors.length]);
       }).join('');
       return `<svg class="mini-chart" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none">${grid.join('')}${paths}</svg>`;
     }
@@ -3863,28 +4122,30 @@
       const height = options.height || 82;
       const padX = 8;
       const padY = 8;
-      const points = (values || []).map((value) => Number(value || 0)).filter((value) => Number.isFinite(value));
-      const current = Number(options.current || 0);
-      const max = Math.max(...points, Number.isFinite(current) ? current : 0, 1);
+      const rawValues = Array.isArray(values) ? values : [];
+      const points = rawValues.map(chartValue);
+      const finitePoints = points.filter((value) => value !== null);
+      const current = chartValue(options.current);
+      const max = Math.max(...finitePoints, current !== null ? current : 0, 1);
       const plotHeight = height - padY * 2;
       const marks = [max, max / 2, 0];
       const grid = marks.map((mark) => {
         const y = padY + ((max - mark) / max) * plotHeight;
         return `<line x1="${padX}" y1="${y}" x2="${width - padX}" y2="${y}" stroke="rgba(22,93,255,0.10)" stroke-width="1"/>`;
       }).join('');
-      const polyline = points.length
-        ? `<polyline fill="none" stroke="${color}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" points="${points.map((value, index) => {
-            const step = points.length > 1 ? (width - padX * 2) / (points.length - 1) : 0;
+      const step = points.length > 1 ? (width - padX * 2) / (points.length - 1) : 0;
+      const polyline = finitePoints.length
+        ? chartSegmentElements(rawValues, (value, index) => {
             const x = padX + step * index;
             const y = padY + ((max - Math.max(0, value)) / max) * plotHeight;
             return `${x},${y}`;
-          }).join(' ')}"/>`
+          }, color)
         : '';
       return {
         svg: `<svg class="ik-wan-rate-svg" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none">${grid}${polyline}</svg>`,
         max,
         mid: max / 2,
-        count: points.length
+        count: finitePoints.length
       };
     }
 
@@ -3911,21 +4172,23 @@
       const height = 96;
       const padX = 8;
       const padY = 8;
-      const points = (values || []).map((value) => Number(value || 0));
+      const rawValues = Array.isArray(values) ? values : [];
+      const points = rawValues.map(chartValue);
+      const finitePoints = points.filter((value) => value !== null);
       const chartHeight = height - padY * 2;
       const grid = [100, 50, 0].map((mark) => {
         const y = padY + ((100 - mark) / 100) * chartHeight;
         return `<line x1="${padX}" y1="${y}" x2="${width - padX}" y2="${y}" stroke="rgba(22,93,255,0.09)" stroke-width="1"/>`;
       }).join('');
-      if (!points.length) return `<svg class="ops-resource-svg" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none">${grid}</svg>`;
+      if (!finitePoints.length) return `<svg class="ops-resource-svg" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none">${grid}</svg>`;
       const step = points.length > 1 ? (width - padX * 2) / (points.length - 1) : 0;
-      const polyline = points.map((value, index) => {
-        const clamped = Math.max(0, Math.min(100, Number(value || 0)));
+      const polyline = chartSegmentElements(rawValues, (value, index) => {
+        const clamped = Math.max(0, Math.min(100, value));
         const x = padX + step * index;
         const y = padY + ((100 - clamped) / 100) * chartHeight;
         return `${x},${y}`;
-      }).join(' ');
-      return `<svg class="ops-resource-svg" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none">${grid}<polyline fill="none" stroke="${color}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" points="${polyline}"/></svg>`;
+      }, color);
+      return `<svg class="ops-resource-svg" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none">${grid}${polyline}</svg>`;
     }
 
     function resourceTrendCard(title, currentValue, values, color, meta) {
@@ -5695,13 +5958,16 @@
         const activeRoutes = (row.routes || []).filter((route) => route && route.active);
         const addressCount = (row.addresses || []).length;
         const parent = interfaceByName[row.parent] || {};
-        const dropTotal = Number(parent.txDrop || 0) + Number(parent.rxDrop || 0);
-        const errorTotal = Number(parent.txError || 0) + Number(parent.rxError || 0);
+        const dropTotal = interfaceDropTotal(parent);
+        const errorTotal = interfaceErrorTotal(parent);
+        const dropDelta = interfaceDropDelta(parent);
+        const errorDelta = interfaceErrorDelta(parent);
         if (!row.running) return { label: '拨号中断', tone: 'danger', summary: '线路未进入可用状态', action: '检查拨号链路' };
         if (!addressCount) return { label: '缺地址', tone: 'warn', summary: '线路在线但未读到出口地址', action: '核对地址获取' };
         if (!activeRoutes.length) return { label: '无活动默认', tone: 'warn', summary: '未读到活动默认路由', action: '核对默认路由' };
-        if (errorTotal > 0) return { label: '接口错误', tone: 'warn', summary: '父接口存在错误计数', action: '检查父接口错误' };
-        if (dropTotal > 0) return { label: '丢包观察', tone: 'warn', summary: '父接口存在累计丢包', action: '观察父接口丢包' };
+        if (errorDelta > 0) return { label: '接口错包', tone: 'warn', summary: `最近错包新增 +${fmtNumber(errorDelta)}，累计 ${fmtNumber(errorTotal)}`, action: '检查父接口错包' };
+        if (dropDelta > 0) return { label: '丢包观察', tone: 'warn', summary: `最近丢包新增 +${fmtNumber(dropDelta)}，丢包率 ${fmtLossRate(parent)}`, action: '观察父接口丢包' };
+        if (dropTotal > 0 || errorTotal > 0) return { label: '历史累计', tone: 'ok', summary: `历史累计丢/错 ${fmtNumber(dropTotal)} / ${fmtNumber(errorTotal)}，最近未新增`, action: '保持观察' };
         return { label: '出口闭环', tone: 'ok', summary: '拨号、地址与活动默认路由均就绪', action: '保持观察' };
       };
       const lineStates = wanLines.map((row) => ({ row, state: lineOperationalState(row) }));
@@ -5874,7 +6140,7 @@
         'ipv6.dhcp_clients_unbound': '部分 DHCPv6 客户端未绑定',
         'dhcp.pool_pressure': 'DHCP 地址池紧张',
         'arp.identity_conflicts': 'ARP 身份冲突',
-        'interfaces.error_counters': '接口丢包/错误计数非零',
+        'interfaces.error_counters': '接口丢包/错误证据',
         'system.resource_pressure': 'RouterOS 资源压力偏高',
         'connections.tracking_pressure': '连接跟踪压力偏高',
         'terminals.high_connection_client': '终端连接数偏高',
@@ -5896,7 +6162,7 @@
         'dns.no_servers': '如果客户端解析异常，优先复核 RouterOS DNS 上游配置。',
         'dhcp.pool_pressure': '先看租约和地址池容量，再规划地址段调整。',
         'arp.identity_conflicts': '从终端和交换侧证据确认 IP 冲突或 MAC 漂移。',
-        'interfaces.error_counters': '先检查线缆、光猫/交换机、双工和物理层。',
+        'interfaces.error_counters': '先看最近新增和丢包率；VLAN/macvlan 逻辑接口证据已降权。',
         'system.resource_pressure': '把资源压力和流量、连接、日志放在一起看。',
         'connections.tracking_pressure': '先看 Top IP 和活跃连接，定位重连接终端。',
         'security.log_alerts': '先看日志上下文和规则命中，不要直接改防火墙。'
@@ -6181,7 +6447,7 @@
       const detectedHealthy = pppoe.filter((row) => row.running && row.addresses.length && row.routes.some((route) => route.active)).length;
       const abnormalLines = pppoe.filter((row) => {
         const parent = interfaceByName[row.parent] || {};
-        return !row.running || !row.addresses.length || ((parent.rxDrop || 0) + (parent.txDrop || 0) + (parent.rxError || 0) + (parent.txError || 0)) > 0;
+        return !row.running || !row.addresses.length || interfaceRecentQualityScore(parent) > 0;
       }).length;
       const ipv6Interfaces = interfaces.filter((row) => row.ips.some((ip) => String(ip).includes(':')));
       const virtualInterfaceTypes = new Set(['wg', 'loopback', 'l2tp-out', 'vlan', 'macvlan']);
@@ -6195,18 +6461,20 @@
       };
       const wanTopologyItems = pppoe.map((row) => {
         const parent = interfaceByName[row.parent] || {};
-        const dropTotal = Number(parent.txDrop || 0) + Number(parent.rxDrop || 0);
-        const errorTotal = Number(parent.txError || 0) + Number(parent.rxError || 0);
+        const dropTotal = interfaceDropTotal(parent);
+        const errorTotal = interfaceErrorTotal(parent);
+        const dropDelta = interfaceDropDelta(parent);
+        const errorDelta = interfaceErrorDelta(parent);
         const hasActiveRoute = (row.routes || []).some((route) => route.active);
         const hasIp = (row.addresses || []).length > 0;
         const isOnline = Boolean(row.running);
-        const isWarn = isOnline && (!hasIp || !hasActiveRoute || dropTotal > 0 || errorTotal > 0);
+        const isWarn = isOnline && (!hasIp || !hasActiveRoute || dropDelta > 0 || errorDelta > 0);
         const level = !isOnline ? 'danger' : isWarn ? 'warn' : 'ok';
         const issueParts = [];
         if (!hasIp) issueParts.push('未分配地址');
         if (!hasActiveRoute) issueParts.push('无活动默认路由');
-        if (dropTotal > 0) issueParts.push(`丢包 ${fmtNumber(dropTotal)}`);
-        if (errorTotal > 0) issueParts.push(`错误 ${fmtNumber(errorTotal)}`);
+        if (dropDelta > 0 || errorDelta > 0) issueParts.push(`新增丢/错 +${fmtNumber(dropDelta)} / +${fmtNumber(errorDelta)}，丢包率 ${fmtLossRate(parent)}`);
+        else if (dropTotal > 0 || errorTotal > 0) issueParts.push(`历史累计丢/错 ${fmtNumber(dropTotal)} / ${fmtNumber(errorTotal)}`);
         return {
           name: row.name,
           type: row.access || 'WAN',
@@ -6223,16 +6491,19 @@
         };
       });
       const interfaceTopologyItems = (rows, label) => rows.map((row) => {
-        const dropTotal = Number(row.txDrop || 0) + Number(row.rxDrop || 0);
-        const errorTotal = Number(row.txError || 0) + Number(row.rxError || 0);
+        const dropTotal = interfaceDropTotal(row);
+        const errorTotal = interfaceErrorTotal(row);
+        const dropDelta = interfaceDropDelta(row);
+        const errorDelta = interfaceErrorDelta(row);
         const hasIp = (row.ips || []).length > 0;
         const isOnline = Boolean(row.running);
-        const isWarn = isOnline && (dropTotal > 0 || errorTotal > 0 || (!hasIp && label !== 'VNET'));
+        const isWarn = isOnline && (dropDelta > 0 || errorDelta > 0 || (!hasIp && label !== 'VNET'));
         const level = !isOnline ? 'danger' : isWarn ? 'warn' : 'ok';
         const issueParts = [];
         if (!hasIp && label !== 'VNET') issueParts.push('无地址');
-        if (dropTotal > 0) issueParts.push(`丢包 ${fmtNumber(dropTotal)}`);
-        if (errorTotal > 0) issueParts.push(`错误 ${fmtNumber(errorTotal)}`);
+        if (dropDelta > 0 || errorDelta > 0) issueParts.push(`新增丢/错 +${fmtNumber(dropDelta)} / +${fmtNumber(errorDelta)}，丢包率 ${fmtLossRate(row)}`);
+        else if (dropTotal > 0 || errorTotal > 0) issueParts.push(`历史累计丢/错 ${fmtNumber(dropTotal)} / ${fmtNumber(errorTotal)}`);
+        if (isDerivedInterface(row)) issueParts.push('逻辑接口降权');
         return {
           name: row.name,
           type: row.type || label,
@@ -6306,12 +6577,12 @@
           <td>${fmtBytes(row.txBytes)}</td>
           <td>${fmtBytes(row.rxBytes)}</td>
           <td>${escapeHtml(row.mac)}</td>
-          <td>${fmtNumber(row.txDrop + row.rxDrop)} / ${fmtNumber(row.txError + row.rxError)}</td>
+          <td>${interfaceQualityEvidence(row)}</td>
         </tr>`).join('');
       const detectRows = pppoe.map((row) => {
         const parent = interfaceByName[row.parent] || {};
-        const dropTotal = (parent.txDrop || 0) + (parent.rxDrop || 0);
-        const errorTotal = (parent.txError || 0) + (parent.rxError || 0);
+        const dropTotal = interfaceDropTotal(parent);
+        const errorTotal = interfaceErrorTotal(parent);
         const activeRoutes = row.routes.filter((route) => route.active);
         const routeState = activeRoutes.length
           ? activeRoutes.map((route) => `${escapeHtml(route.table || '-')}/distance ${escapeHtml(route.distance || '-')}`).join('<br>')
@@ -6325,7 +6596,7 @@
             <td>${routeState}</td>
             <td>${fmtRate(row.upRate)}</td>
             <td>${fmtRate(row.downRate)}</td>
-            <td>${fmtNumber(dropTotal)} / ${fmtNumber(errorTotal)}</td>
+            <td>${interfaceQualityEvidence(parent)}</td>
           </tr>`;
       }).join('');
       const ipv6Rows = ipv6Interfaces.map((row) => {
@@ -6453,7 +6724,7 @@
           </div>
           <div class="card" style="margin-top:12px">
             <div class="card-head"><div class="card-title">线路状态检测</div><div class="subtle">按当前实时状态检测</div></div>
-            <div class="card-body">${table(['线路', '拨号状态', 'IP 检测', '父接口', '默认路由', '实时上行速率', '实时下行速率', '丢包/错误'], detectRows, '暂无线路状态检测数据')}</div>
+            <div class="card-body">${table(['线路', '拨号状态', 'IP 检测', '父接口', '默认路由', '实时上行速率', '实时下行速率', '丢包证据'], detectRows, '暂无线路状态检测数据')}</div>
           </div>`;
       } else if (currentInterfaceView === 'ipv6') {
         body = `
@@ -6503,7 +6774,7 @@
           <div class="grid-2" style="margin-top:12px">
             <div class="card">
               <div class="card-head"><div class="card-title">接口流量详情</div><div class="subtle">${fmtNumber(interfaces.length)} 项</div></div>
-              <div class="card-body">${table(['接口', '角色', '状态', 'IP 地址', '实时上行速率', '实时下行速率', '累计上行流量', '累计下行流量', 'MAC', '丢包/错误'], ifaceRows, '暂无接口数据')}</div>
+              <div class="card-body">${table(['接口', '角色', '状态', 'IP 地址', '实时上行速率', '实时下行速率', '累计上行流量', '累计下行流量', 'MAC', '丢包证据'], ifaceRows, '暂无接口数据')}</div>
             </div>
             <div class="stack">
               <div class="card">
@@ -7080,6 +7351,67 @@
       return Number((row || {})[upKey] || 0) + Number((row || {})[downKey] || 0);
     }
 
+    function interfaceDropTotal(row) {
+      row = row || {};
+      return Number((row.dropTotal ?? (Number(row.txDrop || 0) + Number(row.rxDrop || 0))) || 0);
+    }
+
+    function interfaceErrorTotal(row) {
+      row = row || {};
+      return Number((row.errorTotal ?? (Number(row.txError || 0) + Number(row.rxError || 0))) || 0);
+    }
+
+    function interfaceDropDelta(row) {
+      return Number((row || {}).dropDelta || 0);
+    }
+
+    function interfaceErrorDelta(row) {
+      return Number((row || {}).errorDelta || 0);
+    }
+
+    function interfacePacketDelta(row) {
+      return Number((row || {}).packetDelta || 0);
+    }
+
+    function interfaceLossRate(row) {
+      const value = Number((row || {}).lossRate);
+      return Number.isFinite(value) ? value : null;
+    }
+
+    function fmtLossRate(row) {
+      const value = interfaceLossRate(row);
+      if (value === null) return '-';
+      const percent = value * 100;
+      const digits = percent > 0 && percent < 0.01 ? 4 : percent < 1 ? 3 : 2;
+      return `${percent.toFixed(digits)}%`;
+    }
+
+    function isDerivedInterface(row) {
+      row = row || {};
+      const type = String(row.type || '').toLowerCase();
+      const name = String(row.name || '').toLowerCase();
+      return Boolean(row.isDerivedInterface || row.qualityEvidenceLevel === 'logical' || ['vlan', 'macvlan'].includes(type) || name.startsWith('vlan') || name.startsWith('macvlan'));
+    }
+
+    function interfaceRecentQualityScore(row) {
+      return interfaceDropDelta(row) + interfaceErrorDelta(row) + (interfaceLossRate(row) || 0) * 1000;
+    }
+
+    function interfaceQualitySortScore(row) {
+      const weight = isDerivedInterface(row) ? 0.35 : 1;
+      return interfaceRecentQualityScore(row) * 100000 + weight * (interfaceDropTotal(row) + interfaceErrorTotal(row));
+    }
+
+    function interfaceQualityEvidence(row) {
+      const totalText = `${fmtNumber(interfaceDropTotal(row))} / ${fmtNumber(interfaceErrorTotal(row))}`;
+      const deltaText = `+${fmtNumber(interfaceDropDelta(row))} / +${fmtNumber(interfaceErrorDelta(row))}`;
+      const rateText = fmtLossRate(row);
+      const packetDelta = interfacePacketDelta(row);
+      const pairText = row?.logicalPairKey ? ` · ${escapeHtml(String(row.logicalPairKey).replace('logical-pair:', '成对 '))}` : '';
+      const logicalText = isDerivedInterface(row) ? ` · 逻辑接口降权${pairText}` : '';
+      return `累计 ${totalText}<br>新增 ${deltaText}<br>丢包率 ${rateText}${packetDelta ? ` / ${fmtNumber(packetDelta)} 包` : ''}${logicalText}`;
+    }
+
     function hasProtocolBreakdown(connections) {
       return [connections?.tcp, connections?.udp, connections?.icmp].every((value) => Number.isFinite(Number(value)));
     }
@@ -7096,7 +7428,7 @@
 
     function interfaceAuditScore(row) {
       row = row || {};
-      return Number(row.txDrop || 0) + Number(row.rxDrop || 0) + Number(row.txError || 0) + Number(row.rxError || 0);
+      return interfaceQualitySortScore(row);
     }
 
     function collectLoadAuditEvents(snapshot) {
@@ -7261,8 +7593,9 @@
           <td>${escapeHtml(row.name)}</td>
           <td>${tag(row.role, row.role === 'WAN' ? 'info' : 'ok')}</td>
           <td>${row.running ? tag('在线', 'ok') : tag('离线', 'danger')}</td>
-          <td>${fmtNumber(Number(row.txDrop || 0) + Number(row.rxDrop || 0))}</td>
-          <td>${fmtNumber(Number(row.txError || 0) + Number(row.rxError || 0))}</td>
+          <td>${fmtNumber(interfaceDropTotal(row))} / ${fmtNumber(interfaceErrorTotal(row))}</td>
+          <td>+${fmtNumber(interfaceDropDelta(row))} / +${fmtNumber(interfaceErrorDelta(row))}</td>
+          <td>${fmtLossRate(row)}</td>
           <td>${fmtRate(row.txRate)}</td>
           <td>${fmtRate(row.rxRate)}</td>
           <td>${row.ips.length ? row.ips.map(escapeHtml).join('<br>') : '-'}</td>
@@ -7311,7 +7644,7 @@
           <div class="card"><div class="card-head"><div class="card-title">当前登录管理员</div><div class="subtle">${fmtNumber((overview.admins || []).length)} 个会话</div></div><div class="card-body">${table(['用户', '方式', '来源地址', '登录时间'], adminRows, '当前未读取到管理员会话')}</div></div>
         </div>
         <div class="grid-2" style="margin-top:12px">
-          <div class="card"><div class="card-head"><div class="card-title">接口异常审计</div><div class="subtle">按丢包 / 错包优先排序</div></div><div class="card-body">${table(['接口', '角色', '状态', '丢包', '错包', '实时上行速率', '实时下行速率', '地址'], interfaceRows, '当前未读取到接口异常审计数据')}</div></div>
+          <div class="card"><div class="card-head"><div class="card-title">接口异常审计</div><div class="subtle">按最近新增 / 丢包率优先排序，逻辑接口降权</div></div><div class="card-body">${table(['接口', '角色', '状态', '累计丢/错', '最近新增', '最近丢包率', '实时上行速率', '实时下行速率', '地址'], interfaceRows, '当前未读取到接口异常审计数据')}</div></div>
           <div class="card"><div class="card-head"><div class="card-title">健康事件摘要</div><div class="subtle">系统 / DNS / 日志预警线索</div></div><div class="card-body">${table(['时间', '来源', '级别', '内容'], eventRows, '当前未发现明显的资源与服务预警')}</div></div>
         </div>`);
     }
@@ -7339,16 +7672,20 @@
                 ? { label: '备选未激活', level: 'warn' }
                 : { label: '无默认路由', level: 'danger' };
         const hasAddress = (row.addresses || []).length > 0;
-        const dropTotal = Number(parent.txDrop || 0) + Number(parent.rxDrop || 0);
-        const errorTotal = Number(parent.txError || 0) + Number(parent.rxError || 0);
+        const dropTotal = interfaceDropTotal(parent);
+        const errorTotal = interfaceErrorTotal(parent);
+        const dropDelta = interfaceDropDelta(parent);
+        const errorDelta = interfaceErrorDelta(parent);
+        const lossRate = interfaceLossRate(parent);
         const blockers = [];
         const observations = [];
         let score = 100;
         if (!row.running) { blockers.push('拨号离线'); score -= 45; }
         if (!hasAddress) { blockers.push('未拿到地址'); score -= 25; }
         if (!activeRoutes.length) { blockers.push('无活动默认路由'); score -= 35; }
-        if (errorTotal > 0) { blockers.push('父接口错误'); score -= 25; }
-        if (dropTotal > 0) { observations.push('父接口累计丢包'); score -= 5; }
+        if (errorDelta > 0) { blockers.push('父接口最近错包'); score -= 25; }
+        if (dropDelta > 0) { observations.push('父接口最近丢包'); score -= 10; }
+        else if (dropTotal > 0 || errorTotal > 0) { observations.push('父接口历史累计丢/错'); }
         score = Math.max(0, Math.min(100, score));
         const level = blockers.some((item) => ['拨号离线', '无活动默认路由'].includes(item))
           ? 'danger'
@@ -7359,8 +7696,8 @@
         const action = !row.running ? '检查拨号链路'
           : !hasAddress ? '检查地址获取'
             : !activeRoutes.length ? '检查默认路由'
-              : errorTotal > 0 ? '检查父接口错误' : '保持观察';
-        return { row, role, activeRoutes, activeTables, hasAddress, dropTotal, errorTotal, blockers, observations, score, level, stateLabel, action };
+              : errorDelta > 0 ? '检查父接口错包' : '保持观察';
+        return { row, role, activeRoutes, activeTables, hasAddress, dropTotal, errorTotal, dropDelta, errorDelta, lossRate, blockers, observations, score, level, stateLabel, action };
       };
       const diagnostics = pppoe.map(buildDiagnostic);
       const diagnosticQueue = diagnostics.slice().sort((a, b) => {
@@ -7381,7 +7718,7 @@
             <td>${escapeHtml(reasonText)}</td>
             <td>${escapeHtml(item.action)}</td>
             <td>${inlinePair(`拨号 ${item.row.running ? '是' : '否'} / 地址 ${item.hasAddress ? '是' : '否'}`, `路由 ${item.activeRoutes.length ? '是' : '否'}`)}</td>
-            <td>${fmtNumber(item.dropTotal)} / ${fmtNumber(item.errorTotal)}</td>
+            <td>${interfaceQualityEvidence(interfaceByName[item.row.parent] || {})}</td>
             <td>上 ${fmtRate(item.row.upRate)} / 下 ${fmtRate(item.row.downRate)}</td>
           </tr>`;
       }).join('');
@@ -7393,7 +7730,7 @@
           <td>${item.activeRoutes.length ? item.activeRoutes.map((route) => escapeHtml(route.distance || '-')).join('<br>') : '-'}</td>
           <td>${escapeHtml(item.row.parent || '-')}</td>
           <td>${item.hasAddress ? tag('已拿到', 'ok') : tag('未拿到', 'warn')}</td>
-          <td>${fmtNumber(item.dropTotal)} / ${fmtNumber(item.errorTotal)}</td>
+          <td>${interfaceQualityEvidence(interfaceByName[item.row.parent] || {})}</td>
         </tr>`).join('');
       const lineTrendRows = getLineTrendRows(snapshot);
       const primaryMetricLabel = wanScenario.count <= 1 ? '当前出口' : '可用出口';
@@ -7403,12 +7740,12 @@
       return section('线路状态', 'lineStatus', wanScenario.lineStatusTip, `
         <div class="grid-4">
           ${metricCard(primaryMetricLabel, fmtNumber(diagnostics.filter((item) => item.level === 'ok').length), `总线路 ${fmtNumber(pppoe.length)} 条`, '健康闭环完整')}
-          ${metricCard('待观察', fmtNumber(diagnostics.filter((item) => item.level === 'warn').length), '有累计丢包或轻微异常', '先观察趋势')}
+          ${metricCard('待观察', fmtNumber(diagnostics.filter((item) => item.level === 'warn').length), '有最近新增丢错或轻微异常', '先观察趋势')}
           ${metricCard('故障优先', fmtNumber(diagnostics.filter((item) => item.level === 'danger').length), '离线或无活动默认路由', '需要优先处理')}
           ${metricCard('路由覆盖', fmtNumber(activeRouteTables.length), activeRouteTables.length ? activeRouteTables.slice(0, 4).map(escapeHtml).join(' / ') : '无活动表', '按活动默认路由统计')}
         </div>
-        <div class="card" style="margin-top:12px"><div class="card-head"><div class="card-title">${queueTitle}</div><div class="subtle">${queueTip}</div></div><div class="card-body">${compactTable(['#', '状态', '线路 / 父接口', '分', '出口角色', '原因', '动作', '闭环', '丢 / 错', '上 / 下'], diagnosticRows, '当前未读取到线路诊断数据')}</div></div>
-        <div class="card" style="margin-top:12px"><div class="card-head"><div class="card-title">${roleTitle}</div><div class="subtle">查看每条 WAN 在线路体系里的角色，不重复接口吞吐清单</div></div><div class="card-body">${compactTable(['线路', '出口角色', '活动表', '距离', '父接口', '地址', '丢 / 错'], roleRows, '当前未读取到线路角色数据')}</div></div>
+        <div class="card" style="margin-top:12px"><div class="card-head"><div class="card-title">${queueTitle}</div><div class="subtle">${queueTip}</div></div><div class="card-body">${compactTable(['#', '状态', '线路 / 父接口', '分', '出口角色', '原因', '动作', '闭环', '丢包证据', '上 / 下'], diagnosticRows, '当前未读取到线路诊断数据')}</div></div>
+        <div class="card" style="margin-top:12px"><div class="card-head"><div class="card-title">${roleTitle}</div><div class="subtle">查看每条 WAN 在线路体系里的角色，不重复接口吞吐清单</div></div><div class="card-body">${compactTable(['线路', '出口角色', '活动表', '距离', '父接口', '地址', '丢包证据'], roleRows, '当前未读取到线路角色数据')}</div></div>
         <div class="card" style="margin-top:12px"><div class="card-head"><div class="card-title">线路速率趋势</div><div class="subtle">${wanScenario.count <= 1 ? '单 WAN 历史趋势，作为诊断辅助信息' : `${fmtNumber(lineTrendRows.length)} 条线路同步展示，作为诊断辅助信息`}</div></div><div class="card-body">${renderLineTrendGrid(lineTrendRows, {emptyText:'当前未读取到可展示的线路趋势'})}</div></div>`);
     }
 
@@ -7695,6 +8032,13 @@
         event.preventDefault();
         noteInteraction(2400);
         openReadonlyInfo();
+        return;
+      }
+      const panelNetworkButton = event.target.closest('[data-panel-network-open]');
+      if (panelNetworkButton) {
+        event.preventDefault();
+        noteInteraction(2400);
+        openPanelNetworkSettings();
         return;
       }
       const interfaceViewButton = event.target.closest('[data-interface-view]');
@@ -8265,7 +8609,7 @@
           downRate: Number(row.rxRate || 0),
           level: !row.running
             ? 'danger'
-            : (Number(row.txDrop || 0) + Number(row.rxDrop || 0) + Number(row.txError || 0) + Number(row.rxError || 0)) > 0
+            : interfaceRecentQualityScore(row) > 0
               ? 'warn'
               : 'ok'
         }));

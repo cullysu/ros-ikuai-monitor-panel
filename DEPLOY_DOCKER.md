@@ -4,7 +4,7 @@ Docker is the recommended public deployment path for most users. It works well
 on NAS boxes, small Linux hosts, home servers, OpenWrt Docker environments, and
 cloud VMs without requiring a full manual systemd install.
 
-The default Compose file publishes the panel only on `127.0.0.1:8080`. Change
+The default Compose file publishes the panel only on `127.0.0.1:28646`. Change
 that only after you have decided how access, authentication, and TLS will be
 handled.
 
@@ -33,7 +33,7 @@ Keep the default listener for first run:
 
 ```dotenv
 ROS_PANEL_PUBLISHED_ADDR=127.0.0.1
-ROS_PANEL_PUBLISHED_PORT=8080
+ROS_PANEL_PUBLISHED_PORT=28646
 ```
 
 ## 3. Run
@@ -45,15 +45,15 @@ docker compose --env-file .env.docker up -d --build
 Open:
 
 ```text
-http://127.0.0.1:8080/
+http://127.0.0.1:28646/
 ```
 
 ## 4. Verify
 
 ```bash
 docker compose ps
-docker compose --env-file .env.docker exec routeros-triage python -c "import urllib.request; print(urllib.request.urlopen('http://127.0.0.1:8080/api/health', timeout=3).read().decode())"
-curl -fsS http://127.0.0.1:8080/api/semantic-triage
+docker compose --env-file .env.docker exec routeros-triage python -c "import os, urllib.request; print(urllib.request.urlopen('http://127.0.0.1:%s/api/health' % os.getenv('ROS_PANEL_PORT', '28646'), timeout=3).read().decode())"
+curl -fsS http://127.0.0.1:28646/api/semantic-triage
 ```
 
 Expected:

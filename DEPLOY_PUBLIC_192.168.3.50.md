@@ -2,7 +2,7 @@
 
 [English](./DEPLOY_PUBLIC_192.168.3.50.md) | [简体中文](./DEPLOY_PUBLIC_192.168.3.50.zh-CN.md)
 
-This document describes the public MVP deployment path for the read-only RouterOS semantic triage console. It is written for a separate RouterOS-only instance on `192.168.3.50`; it is not a private `.3.5` panel clone and it does not deploy or change RouterOS/OpenWrt configuration.
+This historical document describes an older public MVP deployment path for the read-only RouterOS semantic triage console. It is written for a separate RouterOS-only instance on `192.168.3.50`; it is not a private `.3.5` panel clone and it does not deploy or change RouterOS/OpenWrt configuration. New installs should start from the Docker or instance-mode systemd guides and then choose their own listener address.
 
 ## Scope
 
@@ -68,7 +68,7 @@ export ROS_PANEL_PROFILE="routeros_only"
 export ROS_PANEL_IP_ALIAS_WRITE_ENABLED="0"
 
 # RouterOS read-only connection. Replace placeholders outside git.
-export ROS_MONITOR_ROUTER_HOST="192.168.3.1"
+export ROS_MONITOR_ROUTER_HOST="192.168.88.1"
 export ROS_MONITOR_ROUTER_USER="readonly-user"
 export ROS_MONITOR_ROUTER_PASSWORD="CHANGE_ME"
 

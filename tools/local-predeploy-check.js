@@ -1022,7 +1022,7 @@ function buildSnapshot(profile, scaleScenario = 'multi') {
       running: true,
       disabled: false,
       mac: '02:00:00:00:10:01',
-      ips: ['192.168.3.1/24', 'fd00:3::1/64'],
+      ips: ['10.88.0.1/24', 'fd00:88::1/64'],
       rxRate: 204000000,
       txRate: 79000000,
       rxBytes: 1912337203,
@@ -1083,7 +1083,7 @@ function buildSnapshot(profile, scaleScenario = 'multi') {
   ];
   const terminals = [
     {
-      ip: '192.168.3.21',
+      ip: '10.88.0.21',
       mac: 'AA:BB:CC:00:00:21',
       hostname: 'workstation',
       displayName: 'workstation',
@@ -1094,7 +1094,7 @@ function buildSnapshot(profile, scaleScenario = 'multi') {
       lastSeen: '1m',
     },
     {
-      ip: '192.168.3.31',
+      ip: '10.88.0.31',
       mac: 'AA:BB:CC:00:00:31',
       hostname: 'nas',
       displayName: 'nas',
@@ -1105,7 +1105,7 @@ function buildSnapshot(profile, scaleScenario = 'multi') {
       lastSeen: '30s',
     },
     {
-      ip: 'fd00:3::31',
+      ip: 'fd00:88::31',
       mac: 'AA:BB:CC:00:00:31',
       hostname: 'nas-ipv6',
       displayName: 'nas-ipv6',
@@ -1202,7 +1202,7 @@ function buildSnapshot(profile, scaleScenario = 'multi') {
     },
     dhcp: {
       servers: [{ name: 'dhcp-lan', interface: 'bridge-lan', pool: 'lan-pool', disabled: false, leaseTime: '1d' }],
-      pools: [{ name: 'lan-pool', ranges: '192.168.3.100-192.168.3.199', used: 34, total: 100 }],
+      pools: [{ name: 'lan-pool', ranges: '10.88.0.100-10.88.0.199', used: 34, total: 100 }],
       leases: terminals.slice(0, 2).map((row) => ({
         address: row.ip,
         mac: row.mac,
@@ -1226,15 +1226,15 @@ function buildSnapshot(profile, scaleScenario = 'multi') {
         downRate: row.downRate,
       })),
       active: [
-        { src: '192.168.3.21', dst: '93.184.216.34', protocol: 'tcp', dstPort: 443, timeout: '58s' },
-        { src: '192.168.3.31', dst: '198.51.100.53', protocol: 'udp', dstPort: 53, timeout: '12s' },
+        { src: '10.88.0.21', dst: '93.184.216.34', protocol: 'tcp', dstPort: 443, timeout: '58s' },
+        { src: '10.88.0.31', dst: '198.51.100.53', protocol: 'udp', dstPort: 53, timeout: '12s' },
       ],
       thresholdLevel: 'ok',
     },
     dns: {
       running: true,
       allowRemoteRequests: true,
-      servers: ['192.168.3.1', '1.1.1.1'],
+      servers: ['10.88.0.1', '1.1.1.1'],
       cacheSize: 33554432,
       cacheUsed: 7340032,
       dohServer: '',
@@ -1244,8 +1244,8 @@ function buildSnapshot(profile, scaleScenario = 'multi') {
       disabledForwardRuleCount: 0,
       forwardRuleSample: false,
       forwardRuleRows: [
-        { name: 'lan.local', type: 'A', value: '192.168.3.10', ttl: '1h', disabled: false },
-        { name: 'nas.local', type: 'A', value: '192.168.3.31', ttl: '1h', disabled: false },
+        { name: 'lan.local', type: 'A', value: '10.88.0.10', ttl: '1h', disabled: false },
+        { name: 'nas.local', type: 'A', value: '10.88.0.31', ttl: '1h', disabled: false },
       ],
     },
     security: {
@@ -1253,9 +1253,9 @@ function buildSnapshot(profile, scaleScenario = 'multi') {
         { chain: 'input', action: 'accept', comment: 'allow established', packets: 12000, bytes: 9000000, disabled: false },
         { chain: 'input', action: 'drop', comment: 'drop invalid', packets: 4, bytes: 240, disabled: false },
       ],
-      addressLists: [{ list: 'lan', address: '192.168.3.0/24', timeout: '', comment: 'LAN' }],
+      addressLists: [{ list: 'lan', address: '10.88.0.0/24', timeout: '', comment: 'LAN' }],
       mangle: [{ chain: 'prerouting', action: 'mark-routing', comment: 'wan balance', packets: 3300, bytes: 880000 }],
-      routingRules: [{ action: 'lookup-only-in-table', table: 'wan1', src: '192.168.3.0/24', disabled: false }],
+      routingRules: [{ action: 'lookup-only-in-table', table: 'wan1', src: '10.88.0.0/24', disabled: false }],
     },
     loadBalance: {
       distribution: [

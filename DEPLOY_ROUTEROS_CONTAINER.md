@@ -77,7 +77,7 @@ This example keeps the container in a small dedicated subnet:
 
 - RouterOS container bridge: `172.18.0.1/24`
 - Container veth: `172.18.0.2/24`
-- Panel port inside container: `8080`
+- Panel port inside container: `28646`
 
 Adapt names and subnets to your router. Do not reuse an existing subnet.
 
@@ -95,7 +95,7 @@ must be allowed to read RouterOS. Do not broaden API access to the whole LAN.
 
 ```routeros
 /container/envs/add name=routeros-triage-env key=ROS_PANEL_BIND value=0.0.0.0
-/container/envs/add name=routeros-triage-env key=ROS_PANEL_PORT value=8080
+/container/envs/add name=routeros-triage-env key=ROS_PANEL_PORT value=28646
 /container/envs/add name=routeros-triage-env key=ROS_PANEL_TARGET_IP value=172.18.0.2
 /container/envs/add name=routeros-triage-env key=ROS_PANEL_PROFILE value=routeros_only
 /container/envs/add name=routeros-triage-env key=ROS_PANEL_IP_ALIAS_WRITE_ENABLED value=0
@@ -130,8 +130,8 @@ The exact `src=` path depends on your RouterOS storage layout.
 
 ```routeros
 /container/print detail
-/tool/fetch url=http://172.18.0.2:8080/api/health output=user
-/tool/fetch url=http://172.18.0.2:8080/api/semantic-triage output=user
+/tool/fetch url=http://172.18.0.2:28646/api/health output=user
+/tool/fetch url=http://172.18.0.2:28646/api/semantic-triage output=user
 ```
 
 Expected:

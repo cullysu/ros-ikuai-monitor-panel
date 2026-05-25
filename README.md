@@ -46,7 +46,7 @@ intentionally enable private diagnostics.
 2. Edit `routeros-panel.env` and set your RouterOS host, read-only user, and
    password.
 3. Double-click `RouterOS Triage Panel.exe`.
-4. Open `http://127.0.0.1:8080/` if the browser does not open automatically.
+4. Open `http://127.0.0.1:28646/` if the browser does not open automatically.
 
 Read [DEPLOY_WINDOWS_EXE.md](./DEPLOY_WINDOWS_EXE.md) for build and
 troubleshooting details.
@@ -60,13 +60,13 @@ $env:ROS_MONITOR_ROUTER_HOST="192.168.88.1"
 $env:ROS_MONITOR_ROUTER_USER="ros-panel-readonly"
 $env:ROS_MONITOR_ROUTER_PASSWORD="CHANGE_ME"
 $env:ROS_PANEL_BIND="127.0.0.1"
-$env:ROS_PANEL_PORT="8080"
+$env:ROS_PANEL_PORT="28646"
 $env:ROS_PANEL_TARGET_IP="127.0.0.1"
 $env:ROS_PANEL_PROFILE="routeros_only"
 .\.venv\Scripts\python app.py
 ```
 
-Open `http://127.0.0.1:8080/`.
+Open `http://127.0.0.1:28646/`.
 
 Read [DEPLOY_LOCAL.md](./DEPLOY_LOCAL.md) for Windows, macOS, and Linux details.
 
@@ -78,7 +78,7 @@ cp .env.docker.example .env.docker
 docker compose --env-file .env.docker up -d --build
 ```
 
-Open `http://127.0.0.1:8080/`.
+Open `http://127.0.0.1:28646/`.
 
 Docker is the default public deployment recommendation because it does not
 require ESXi or a dedicated VM, and it keeps the panel isolated from RouterOS.
@@ -101,7 +101,7 @@ systemd:
 ```bash
 export ROS_PANEL_TARGET_IP="127.0.0.1"
 export ROS_PANEL_BIND="127.0.0.1"
-export ROS_PANEL_PORT="80"
+export ROS_PANEL_PORT="28646"
 export ROS_PANEL_PROFILE="routeros_only"
 export ROS_MONITOR_ROUTER_HOST="192.168.88.1"
 export ROS_MONITOR_ROUTER_USER="ros-panel-readonly"
@@ -176,6 +176,8 @@ as non-secret templates.
 - Do not use the RouterOS `admin` account.
 - Keep `ROS_PANEL_BIND=127.0.0.1` for local runs.
 - Keep Docker publishing on `127.0.0.1` until LAN access is intentional.
+- The panel address can be changed inside the UI; restart the panel service for
+  bind/port changes to take effect.
 - Do not expose the panel directly to the public internet.
 - Put HTTPS and authentication in front of the panel if it leaves a trusted LAN.
 - Use `routeros_only` for public/product-style deployments.
@@ -188,8 +190,8 @@ as non-secret templates.
 python -m py_compile app.py
 powershell -ExecutionPolicy Bypass -File .\tools\build-windows-exe.ps1
 docker compose --env-file .env.docker.example config --quiet
-curl -fsS http://127.0.0.1:8080/api/health
-curl -fsS http://127.0.0.1:8080/api/semantic-triage
+curl -fsS http://127.0.0.1:28646/api/health
+curl -fsS http://127.0.0.1:28646/api/semantic-triage
 ```
 
 Expected public-profile guardrails:

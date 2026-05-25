@@ -2,7 +2,7 @@
 
 [English](./DEPLOY_PUBLIC_192.168.3.50.md) | [简体中文](./DEPLOY_PUBLIC_192.168.3.50.zh-CN.md)
 
-本文档描述只读 RouterOS 语义排障控制台的公开 MVP 部署路径。目标是在 `192.168.3.50` 上运行一套独立的 RouterOS-only 实例；它不是私有 `.3.5` 面板的克隆，也不会部署或修改 RouterOS/OpenWrt 配置。
+本文档是较早的公开 MVP 部署历史样例，描述只读 RouterOS 语义排障控制台在 `192.168.3.50` 上运行一套独立 RouterOS-only 实例的方式；它不是私有 `.3.5` 面板的克隆，也不会部署或修改 RouterOS/OpenWrt 配置。新安装应优先从 Docker 或 instance-mode systemd 文档开始，再选择自己的监听地址。
 
 ## 范围
 
@@ -68,7 +68,7 @@ export ROS_PANEL_PROFILE="routeros_only"
 export ROS_PANEL_IP_ALIAS_WRITE_ENABLED="0"
 
 # RouterOS 只读连接信息。占位值请在 git 之外替换。
-export ROS_MONITOR_ROUTER_HOST="192.168.3.1"
+export ROS_MONITOR_ROUTER_HOST="192.168.88.1"
 export ROS_MONITOR_ROUTER_USER="readonly-user"
 export ROS_MONITOR_ROUTER_PASSWORD="CHANGE_ME"
 

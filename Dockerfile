@@ -18,7 +18,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
     PIP_NO_CACHE_DIR=1 \
     ROS_PANEL_BIND=0.0.0.0 \
-    ROS_PANEL_PORT=8080 \
+    ROS_PANEL_PORT=28646 \
     ROS_PANEL_TARGET_IP=127.0.0.1 \
     ROS_PANEL_PROFILE=routeros_only \
     ROS_PANEL_IP_ALIAS_WRITE_ENABLED=0 \
@@ -41,9 +41,9 @@ RUN mkdir -p /app/data \
     && chown -R panel:panel /app
 
 USER panel
-EXPOSE 8080
+EXPOSE 28646
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
-  CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/api/health', timeout=3).read()"
+  CMD python -c "import os, urllib.request; urllib.request.urlopen('http://127.0.0.1:%s/api/health' % os.getenv('ROS_PANEL_PORT', '28646'), timeout=3).read()"
 
 CMD ["python", "app.py"]

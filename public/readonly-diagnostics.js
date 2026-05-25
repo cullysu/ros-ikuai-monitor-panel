@@ -2826,7 +2826,7 @@
           <td>${html(routeText)}</td>
         </tr>`;
     });
-    return card("WAN 线路清单", "8 条 PPPoE 的地址、父接口、速率、累计和路由表关系", table(["线路", "状态", "地址", "上行", "下行", "累计上/下", "占比", "路由表"], rows, "暂无 WAN 数据", "readonly-scroll-tall"), "readonly-dense-card");
+    return card("WAN 线路清单", `${number(rows.length)} 条 WAN/PPPoE 的地址、父接口、速率、累计和路由表关系`, table(["线路", "状态", "地址", "上行", "下行", "累计上/下", "占比", "路由表"], rows, "暂无 WAN 数据", "readonly-scroll-tall"), "readonly-dense-card");
   }
 
   function renderDefaultRouteCompass(snapshot) {

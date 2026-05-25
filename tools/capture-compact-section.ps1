@@ -12,7 +12,7 @@ param(
   [int]$Port = 9233,
   [int]$WaitMs = 3000,
   [int]$SettleMs = 1200,
-  [string]$BaseUrl = 'http://192.168.3.5/',
+  [string]$BaseUrl = 'http://127.0.0.1:28646/',
   [string]$EdgePath = 'C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe',
   [string]$UserDataDir = "D:\cully\Documents\ros-ikuai-monitor-panel\_edge_headless_compact_capture_$Section"
 )
@@ -124,7 +124,7 @@ try {
     throw 'CDP targets not available'
   }
 
-  $target = $targets | Where-Object { $_.type -eq 'page' -and $_.url -like 'http://192.168.3.5/*' } | Select-Object -First 1
+  $target = $targets | Where-Object { $_.type -eq 'page' -and $_.url -like "$BaseUrl*" } | Select-Object -First 1
   if (-not $target) {
     $target = $targets | Where-Object { $_.type -eq 'page' } | Select-Object -First 1
   }

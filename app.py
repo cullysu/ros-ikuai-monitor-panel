@@ -76,16 +76,190 @@ def load_panel_env():
     return env_path if load_env_file(env_path) else None
 
 
+def env_config_rows(name):
+    raw = str(os.getenv(name, "") or "").strip()
+    if not raw:
+        return []
+    try:
+        parsed = json.loads(raw)
+    except Exception:
+        parsed = None
+    if isinstance(parsed, dict):
+        parsed = [parsed]
+    if isinstance(parsed, list):
+        return [item for item in parsed if isinstance(item, dict)]
+
+    rows = []
+    for index, part in enumerate(raw.split(","), start=1):
+        item = part.strip()
+        if not item:
+            continue
+        if "=" in item:
+            label, address = item.split("=", 1)
+        else:
+            label, address = f"DNS {index}", item
+        rows.append({"name": label.strip(), "address": address.strip()})
+    return rows
+
+
+def compact_config_rows(rows, *, address_key="address"):
+    compacted = []
+    seen = set()
+    for raw in rows:
+        row = raw if isinstance(raw, dict) else {}
+        address = str(row.get(address_key) or row.get("url") or "").strip()
+        if not address or address in seen:
+            continue
+        seen.add(address)
+        name = str(row.get("name") or row.get("label") or address).strip() or address
+        compacted.append({"name": name[:80], address_key: address})
+    return compacted
+
+
+DEFAULT_PANEL_BIND = "127.0.0.1"
+DEFAULT_PANEL_PORT = 28646
+DEFAULT_PANEL_TARGET = "127.0.0.1"
+PANEL_NETWORK_ENV_KEYS = ("ROS_PANEL_BIND", "ROS_PANEL_PORT", "ROS_PANEL_TARGET_IP")
+PANEL_ENV_ASSIGNMENT_RE = re.compile(r"^(\s*(?:export\s+)?)([A-Za-z_][A-Za-z0-9_]*)(\s*=\s*)(.*)$")
+
+
+def panel_env_write_path():
+    configured = os.getenv("ROS_PANEL_ENV_FILE")
+    return resolve_runtime_path(configured) if configured else BASE_DIR / "routeros-panel.env"
+
+
+def normalize_panel_host(value, label="host"):
+    raw = str(value or "").strip()
+    if not raw:
+        raise ValueError(f"Panel {label} is required")
+    if raw.startswith("[") and raw.endswith("]"):
+        raw = raw[1:-1].strip()
+    if any(part in raw for part in ("://", "/", "\\", "?", "#")):
+        raise ValueError(f"Panel {label} must be a host or IP, not a URL")
+    if any(ch.isspace() for ch in raw):
+        raise ValueError(f"Panel {label} must not contain spaces")
+    try:
+        ipaddress.ip_address(raw)
+        return raw
+    except ValueError:
+        pass
+    if ":" in raw:
+        raise ValueError(f"Panel {label} has an invalid IPv6 address")
+    if len(raw) > 253 or ".." in raw:
+        raise ValueError(f"Panel {label} is not a valid host name")
+    if not re.fullmatch(r"[A-Za-z0-9](?:[A-Za-z0-9._-]{0,251}[A-Za-z0-9])?", raw):
+        raise ValueError(f"Panel {label} is not a valid host name")
+    return raw
+
+
+def normalize_panel_port(value):
+    raw = str(value or "").strip()
+    if not re.fullmatch(r"\d{1,5}", raw):
+        raise ValueError("Panel port must be a number")
+    port = int(raw)
+    if port < 1 or port > 65535:
+        raise ValueError("Panel port must be between 1 and 65535")
+    return port
+
+
+def format_url_host(host):
+    raw = str(host or "").strip()
+    if raw in {"", "0.0.0.0", "::"}:
+        raw = DEFAULT_PANEL_TARGET
+    if ":" in raw and not raw.startswith("["):
+        return f"[{raw}]"
+    return raw
+
+
+def panel_access_url(bind, port, target=None):
+    access_host = str(target or "").strip() or str(bind or "").strip() or DEFAULT_PANEL_TARGET
+    if access_host in {"0.0.0.0", "::"}:
+        access_host = DEFAULT_PANEL_TARGET
+    return f"http://{format_url_host(access_host)}:{normalize_panel_port(port)}/"
+
+
+def panel_network_payload(bind=None, port=None, target=None, restart_required=False):
+    bind = normalize_panel_host(bind if bind is not None else PANEL_BIND, "bind")
+    port = normalize_panel_port(port if port is not None else PANEL_PORT)
+    target = normalize_panel_host(target if target is not None else PANEL_TARGET, "access host")
+    env_path = panel_env_write_path()
+    return {
+        "bind": bind,
+        "port": port,
+        "target": target,
+        "currentUrl": panel_access_url(bind, port, target),
+        "envFile": str(env_path),
+        "loadedEnvFile": str(PANEL_ENV_FILE) if PANEL_ENV_FILE else None,
+        "restartRequired": bool(restart_required),
+        "defaults": {
+            "bind": DEFAULT_PANEL_BIND,
+            "port": DEFAULT_PANEL_PORT,
+            "target": DEFAULT_PANEL_TARGET,
+            "url": panel_access_url(DEFAULT_PANEL_BIND, DEFAULT_PANEL_PORT, DEFAULT_PANEL_TARGET),
+        },
+    }
+
+
+def quote_env_value(value):
+    raw = str(value)
+    if re.fullmatch(r"[A-Za-z0-9_./:@-]+", raw):
+        return raw
+    return json.dumps(raw, ensure_ascii=False)
+
+
+def read_text_with_env_fallback(path):
+    try:
+        return path.read_text(encoding="utf-8-sig")
+    except FileNotFoundError:
+        return ""
+    except UnicodeDecodeError:
+        fallback_encoding = "mbcs" if os.name == "nt" else "utf-8"
+        return path.read_text(encoding=fallback_encoding, errors="replace")
+
+
+def write_panel_network_env(bind, port, target, env_path=None):
+    bind = normalize_panel_host(bind, "bind")
+    port = normalize_panel_port(port)
+    target = normalize_panel_host(target, "access host")
+    path = Path(env_path).resolve() if env_path else panel_env_write_path()
+    updates = {
+        "ROS_PANEL_BIND": bind,
+        "ROS_PANEL_PORT": str(port),
+        "ROS_PANEL_TARGET_IP": target,
+    }
+    content = read_text_with_env_fallback(path)
+    lines = content.splitlines()
+    found = set()
+    next_lines = []
+    for line in lines:
+        match = PANEL_ENV_ASSIGNMENT_RE.match(line)
+        if match and match.group(2) in updates:
+            prefix, key, sep = match.group(1), match.group(2), match.group(3)
+            next_lines.append(f"{prefix}{key}{sep}{quote_env_value(updates[key])}")
+            found.add(key)
+        else:
+            next_lines.append(line)
+    if next_lines and next_lines[-1].strip():
+        next_lines.append("")
+    for key in PANEL_NETWORK_ENV_KEYS:
+        if key not in found:
+            next_lines.append(f"{key}={quote_env_value(updates[key])}")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text("\n".join(next_lines).rstrip() + "\n", encoding="utf-8")
+    return path
+
+
 PANEL_ENV_FILE = load_panel_env()
 PUBLIC_DIR = resolve_runtime_path(os.getenv("ROS_PANEL_PUBLIC_DIR", str(BUNDLE_DIR / "public")))
-ROUTER_HOST = os.getenv("ROS_MONITOR_ROUTER_HOST", "192.168.3.1")
+DEFAULT_ROUTER_HOST = "192.168.88.1"
+ROUTER_HOST = os.getenv("ROS_MONITOR_ROUTER_HOST", DEFAULT_ROUTER_HOST)
 ROUTER_USER = os.getenv("ROS_MONITOR_ROUTER_USER", "ros-panel-readonly")
 ROUTER_PASSWORD = os.getenv("ROS_MONITOR_ROUTER_PASSWORD", "CHANGE_ME")
 ROUTER_SSH_PORT = int(os.getenv("ROS_MONITOR_ROUTER_SSH_PORT", "22"))
 PANEL_PROFILE_RAW = os.getenv("ROS_PANEL_PROFILE", "routeros_only")
-PANEL_BIND = os.getenv("ROS_PANEL_BIND", "127.0.0.1")
-PANEL_PORT = int(os.getenv("ROS_PANEL_PORT", "8080"))
-PANEL_TARGET = os.getenv("ROS_PANEL_TARGET_IP", "127.0.0.1")
+PANEL_BIND = normalize_panel_host(os.getenv("ROS_PANEL_BIND", DEFAULT_PANEL_BIND), "bind")
+PANEL_PORT = normalize_panel_port(os.getenv("ROS_PANEL_PORT", str(DEFAULT_PANEL_PORT)))
+PANEL_TARGET = normalize_panel_host(os.getenv("ROS_PANEL_TARGET_IP", DEFAULT_PANEL_TARGET), "access host")
 POLL_SECONDS = max(1, int(os.getenv("ROS_MONITOR_POLL_SECONDS", "1")))
 HISTORY_LIMIT = int(os.getenv("ROS_MONITOR_HISTORY_LIMIT", "60"))
 ACTIVE_CONNECTION_LIMIT = int(os.getenv("ROS_MONITOR_ACTIVE_CONNECTION_LIMIT", "80"))
@@ -130,6 +304,7 @@ DNS_STATIC_PAGE_LIMIT = int(os.getenv("ROS_MONITOR_DNS_STATIC_PAGE_LIMIT", "100"
 DNS_STATIC_MAX_PAGE_LIMIT = int(os.getenv("ROS_MONITOR_DNS_STATIC_MAX_PAGE_LIMIT", "300"))
 DNS_STATIC_CACHE_TTL = int(os.getenv("ROS_MONITOR_DNS_STATIC_CACHE_TTL", "60"))
 DNS_STATIC_FULL_REST_TIMEOUT = int(os.getenv("ROS_MONITOR_DNS_STATIC_FULL_REST_TIMEOUT", "35"))
+SSH_BANNER_PROBE_TIMEOUT = max(0.5, min(3.0, float(os.getenv("ROS_MONITOR_SSH_BANNER_PROBE_TIMEOUT", "1.5"))))
 IP_ALIAS_FILE = Path(os.getenv("ROS_PANEL_IP_ALIAS_FILE", str(BASE_DIR / "data" / "ip_aliases.json"))).expanduser()
 ROUTER_LOGIN_STORE_FILE = Path(os.getenv("ROS_PANEL_ROUTER_LOGIN_STORE_FILE", str(BASE_DIR / "data" / "router_logins.json"))).expanduser()
 ROUTER_LOGIN_HISTORY_LIMIT = max(1, int(os.getenv("ROS_PANEL_ROUTER_LOGIN_HISTORY_LIMIT", "32")))
@@ -144,10 +319,19 @@ WAN_LATENCY_TARGET = os.getenv("ROS_PANEL_WAN_LATENCY_TARGET", "www.baidu.com").
 WAN_LATENCY_POLL_SECONDS = max(1, int(os.getenv("ROS_PANEL_WAN_LATENCY_POLL_SECONDS", "10")))
 WAN_LATENCY_TIMEOUT_MS = max(200, int(os.getenv("ROS_PANEL_WAN_LATENCY_TIMEOUT_MS", "1200")))
 
-READONLY_DNS_SERVERS = [
-    {"name": "RouterOS DNS", "address": "192.168.3.1"},
-    {"name": "OpenWrt DNS", "address": "192.168.3.2"},
-]
+READONLY_DNS_SERVERS = compact_config_rows(
+    env_config_rows("ROS_PANEL_READONLY_DNS_SERVERS")
+    or [
+        {
+            "name": os.getenv("ROS_PANEL_READONLY_ROUTER_DNS_NAME", "RouterOS DNS"),
+            "address": os.getenv("ROS_PANEL_READONLY_ROUTER_DNS", ROUTER_HOST),
+        },
+        {
+            "name": os.getenv("ROS_PANEL_READONLY_OPENWRT_DNS_NAME", "OpenWrt DNS"),
+            "address": os.getenv("ROS_PANEL_READONLY_OPENWRT_DNS", ""),
+        },
+    ]
+)
 
 READONLY_DNS_DOMAINS = [
     {"name": "GitHub", "domain": "github.com", "expected": "proxy"},
@@ -180,7 +364,7 @@ READONLY_EXIT_TARGETS = [
     {"name": "ifconfig.me", "url": "https://ifconfig.me/ip", "type": "text_ip"},
     {"name": "Cloudflare Trace", "url": "https://www.cloudflare.com/cdn-cgi/trace", "type": "cloudflare_trace"},
 ]
-READONLY_NIKKI_CONTROLLER = os.getenv("ROS_PANEL_READONLY_NIKKI_CONTROLLER", "http://192.168.3.2:9090")
+READONLY_NIKKI_CONTROLLER = os.getenv("ROS_PANEL_READONLY_NIKKI_CONTROLLER", "").strip()
 
 def endpoint(path, kind="list", fields=None, optional=False, timeout=None):
     params = {".proplist": fields} if fields else None
@@ -207,7 +391,7 @@ REALTIME_REST_ENDPOINTS = {
     "active_users": endpoint("user/active", fields="name,address,via,when"),
     "interfaces": endpoint(
         "interface",
-        fields="name,type,running,disabled,mac-address,rx-packet,tx-packet,rx-drop,tx-drop,rx-error,tx-error,rx-byte,tx-byte",
+        fields="name,type,running,disabled,mac-address,interface,master-interface,vlan-id,rx-packet,tx-packet,rx-drop,tx-drop,rx-error,tx-error,rx-byte,tx-byte",
         timeout=8,
     ),
     "pppoe": endpoint("interface/pppoe-client", fields="name,running,interface,disabled"),
@@ -368,6 +552,112 @@ def to_bool(value):
     return str(value).lower() in {"true", "yes", "on", "running", "bound", "active", "enabled"}
 
 
+ARP_ACTIVE_STATUSES = {
+    "active",
+    "complete",
+    "delay",
+    "permanent",
+    "probe",
+    "published",
+    "reachable",
+    "static",
+}
+ARP_STALE_STATUSES = {"expired", "failed", "incomplete", "stale", "unreachable"}
+
+
+def arp_evidence_state(status):
+    text = str(status or "").strip().lower()
+    if text in ARP_ACTIVE_STATUSES:
+        return "active"
+    if text in ARP_STALE_STATUSES:
+        return "stale"
+    return "unknown"
+
+
+def arp_status_summary(entries):
+    counts = defaultdict(int)
+    for entry in entries:
+        counts[str(entry.get("status") or "unknown").strip().lower() or "unknown"] += 1
+    return ", ".join(f"{key}:{counts[key]}" for key in sorted(counts))
+
+
+def make_arp_alert(kind, value, entries, unique_key):
+    rows = [entry for entry in entries if entry.get(unique_key)]
+    unique_values = sorted({str(entry.get(unique_key)) for entry in rows}, key=ip_sort_key if unique_key == "ip" else None)
+    active_values = sorted(
+        {str(entry.get(unique_key)) for entry in rows if entry.get("evidenceState") == "active"},
+        key=ip_sort_key if unique_key == "ip" else None,
+    )
+    stale_count = sum(1 for entry in rows if entry.get("evidenceState") == "stale")
+    unknown_count = sum(1 for entry in rows if entry.get("evidenceState") == "unknown")
+    if kind == "IP conflict":
+        if len(active_values) > 1:
+            severity, confidence, active_conflict = "critical", "high", True
+        elif active_values:
+            severity, confidence, active_conflict = "warning", "medium", False
+        else:
+            severity, confidence, active_conflict = "info", "low", False
+    else:
+        if len(active_values) > 1:
+            severity, confidence, active_conflict = "warning", "medium", False
+        elif active_values:
+            severity, confidence, active_conflict = "info", "low", False
+        else:
+            severity, confidence, active_conflict = "info", "low", False
+    return {
+        "kind": kind,
+        "value": value,
+        "detail": ", ".join(unique_values),
+        "severity": severity,
+        "confidence": confidence,
+        "activeConflict": active_conflict,
+        "activeEvidenceCount": len(active_values),
+        "staleEvidenceCount": stale_count,
+        "unknownEvidenceCount": unknown_count,
+        "statusSummary": arp_status_summary(rows),
+        "interpretation": "active duplicate evidence" if active_conflict else "historical or lower-confidence identity movement",
+    }
+
+
+def interface_is_derived(name, iface_type):
+    type_text = str(iface_type or "").strip().lower()
+    name_text = str(name or "").strip().lower()
+    return type_text in {"vlan", "macvlan"} or name_text.startswith(("vlan", "macvlan"))
+
+
+def interface_parent_hint(item):
+    item = item if isinstance(item, dict) else {}
+    own_name = str(item.get("name") or "").strip()
+    for key in ("interface", "master-interface", "actual-interface", "parent"):
+        value = str(item.get(key) or "").strip()
+        if value and value != own_name:
+            return value
+    return None
+
+
+def interface_logical_pair_key(item):
+    item = item if isinstance(item, dict) else {}
+    name = str(item.get("name") or "").strip().lower()
+    match = re.fullmatch(r"(?:vlan|macvlan)(.+)", name)
+    if match and match.group(1):
+        return f"logical-pair:{match.group(1)}"
+    return None
+
+
+def interface_quality_group_key(item):
+    item = item if isinstance(item, dict) else {}
+    parent = interface_parent_hint(item)
+    logical_pair = interface_logical_pair_key(item)
+    iface_type = str(item.get("type") or "").strip().lower() or "interface"
+    vlan_id = str(item.get("vlan-id") or "").strip()
+    own_name = str(item.get("name") or "").strip()
+    if parent:
+        return ":".join(part for part in (parent, iface_type, vlan_id or own_name) if part)
+    if logical_pair:
+        return logical_pair
+    return own_name or iface_type
+
+
 def env_bool(name, default=False):
     raw = os.getenv(name)
     if raw is None:
@@ -408,6 +698,35 @@ def parse_ping_latency_ms(output):
     return None
 
 
+def tcp_latency_target(target=WAN_LATENCY_TARGET, timeout_ms=WAN_LATENCY_TIMEOUT_MS):
+    safe_target = str(target or WAN_LATENCY_TARGET).strip() or WAN_LATENCY_TARGET
+    parsed = urlparse(safe_target if "://" in safe_target else f"https://{safe_target}")
+    host = parsed.hostname or safe_target
+    port = parsed.port or (443 if parsed.scheme == "https" else 80)
+    safe_timeout_ms = max(200, to_int(timeout_ms, WAN_LATENCY_TIMEOUT_MS))
+    started_at = time.time()
+    try:
+        with socket.create_connection((host, port), timeout=max(0.2, safe_timeout_ms / 1000.0)):
+            pass
+        return {
+            "ok": True,
+            "target": safe_target,
+            "latencyMs": max(1, int(round((time.time() - started_at) * 1000))),
+            "updatedAt": format_iso_now(),
+            "method": "tcp-connect-fallback",
+            "error": None,
+        }
+    except Exception as exc:
+        return {
+            "ok": False,
+            "target": safe_target,
+            "latencyMs": None,
+            "updatedAt": format_iso_now(),
+            "method": "tcp-connect-fallback",
+            "error": str(exc),
+        }
+
+
 def ping_latency_target(target=WAN_LATENCY_TARGET, timeout_ms=WAN_LATENCY_TIMEOUT_MS):
     safe_target = str(target or WAN_LATENCY_TARGET).strip() or WAN_LATENCY_TARGET
     safe_timeout_ms = max(200, to_int(timeout_ms, WAN_LATENCY_TIMEOUT_MS))
@@ -430,6 +749,12 @@ def ping_latency_target(target=WAN_LATENCY_TARGET, timeout_ms=WAN_LATENCY_TIMEOU
         latency_ms = parse_ping_latency_ms(output)
         if latency_ms is None and proc.returncode == 0:
             latency_ms = max(1, int(round((time.time() - started_at) * 1000)))
+        if latency_ms is None and proc.returncode != 0:
+            lowered = output.lower()
+            if "operation not permitted" in lowered or "permission denied" in lowered:
+                fallback = tcp_latency_target(safe_target, safe_timeout_ms)
+                fallback["error"] = None if fallback.get("ok") else f"ICMP ping unavailable; {fallback.get('error') or 'TCP fallback failed'}"
+                return fallback
         return {
             "ok": proc.returncode == 0 and latency_ms is not None,
             "target": safe_target,
@@ -438,6 +763,10 @@ def ping_latency_target(target=WAN_LATENCY_TARGET, timeout_ms=WAN_LATENCY_TIMEOU
             "method": "icmp-ping",
             "error": None if proc.returncode == 0 and latency_ms is not None else (output.strip()[-240:] or f"ping exited {proc.returncode}"),
         }
+    except FileNotFoundError:
+        fallback = tcp_latency_target(safe_target, safe_timeout_ms)
+        fallback["error"] = None if fallback.get("ok") else f"ICMP ping command not found; {fallback.get('error') or 'TCP fallback failed'}"
+        return fallback
     except Exception as exc:
         return {
             "ok": False,
@@ -522,6 +851,65 @@ def public_router_config(config=None):
         "passwordSet": bool(password.strip()) and password not in ROUTER_PASSWORD_PLACEHOLDERS,
         "lastTest": copy.deepcopy(source.get("lastTest")),
     }
+
+
+def dns_static_total_count_from_meta(dns_static_meta, fallback=DNS_STATIC_PREVIEW_LIMIT):
+    meta = dns_static_meta if isinstance(dns_static_meta, dict) else {}
+    for key in ("total_count", "totalCount", "count"):
+        if key in meta:
+            return to_int(meta.get(key), fallback)
+    return to_int(fallback, DNS_STATIC_PREVIEW_LIMIT)
+
+
+def safe_ascii_preview(raw_bytes, limit=48):
+    preview = bytes(raw_bytes or b"")[:limit]
+    return "".join(chr(byte) if 32 <= byte < 127 else "." for byte in preview)
+
+
+def describe_ssh_endpoint_probe(host, port, timeout=SSH_BANNER_PROBE_TIMEOUT):
+    safe_host = str(host or "").strip() or "<empty-host>"
+    safe_port = to_int(port, 22)
+    safe_timeout = max(0.5, min(float(timeout or SSH_BANNER_PROBE_TIMEOUT), 3.0))
+    try:
+        with socket.create_connection((safe_host, safe_port), timeout=safe_timeout) as sock:
+            sock.settimeout(safe_timeout)
+            try:
+                banner = sock.recv(64)
+            except socket.timeout:
+                banner = b""
+    except socket.timeout:
+        return f"TCP connect to {safe_host}:{safe_port} timed out before SSH banner check"
+    except OSError as exc:
+        return f"TCP connect to {safe_host}:{safe_port} failed before SSH banner check: {exc}"
+
+    if banner.startswith(b"SSH-"):
+        return f"TCP connected to {safe_host}:{safe_port} and an SSH banner was visible"
+    if not banner:
+        return f"TCP connected to {safe_host}:{safe_port}, but no SSH banner arrived within {safe_timeout:.1f}s"
+
+    lowered = banner.lower()
+    if banner.startswith(b"HTTP/") or b"<html" in lowered:
+        detected = "HTTP"
+    elif banner.startswith(b"\x16\x03"):
+        detected = "TLS/HTTPS"
+    else:
+        detected = "non-SSH"
+    return (
+        f"TCP connected to {safe_host}:{safe_port}, but the endpoint did not speak SSH "
+        f"(detected {detected} banner: {safe_ascii_preview(banner)!r})"
+    )
+
+
+def format_ssh_connect_error(config, exc, timeout=SSH_TIMEOUT):
+    host = str((config or {}).get("host") or "").strip() or "<empty-host>"
+    port = to_int((config or {}).get("sshPort"), 22)
+    message = str(exc)
+    banner_error = "Error reading SSH protocol banner" in message
+    session_error = "No existing session" in message
+    if banner_error or session_error:
+        probe = describe_ssh_endpoint_probe(host, port, timeout=min(float(timeout or SSH_TIMEOUT), SSH_BANNER_PROBE_TIMEOUT))
+        return f"RouterOS SSH connect failed for {host}:{port}: {probe}. Original error: {message}"
+    return f"RouterOS SSH connect failed for {host}:{port}: {message}"
 
 
 def set_router_config(host, user, password, ssh_port=22, source="ui", last_test=None, saved_id=None):
@@ -789,7 +1177,7 @@ def test_router_credentials(host, user, password, ssh_port=22):
             raise RuntimeError(error or f"SSH command exited with status {exit_status}")
         test["ssh"].update({"ok": True, "identity": identity or "RouterOS"})
     except Exception as exc:
-        test["ssh"]["error"] = str(exc)
+        test["ssh"]["error"] = format_ssh_connect_error(config, exc, timeout=SSH_TIMEOUT)
     finally:
         test["ssh"]["elapsedMs"] = round((time.time() - ssh_started) * 1000)
         try:
@@ -1176,34 +1564,105 @@ def build_semantic_triage(snapshot):
 
     arp_alerts = as_list(arp.get("alerts"))
     if arp_alerts:
+        severity_counts = defaultdict(int)
+        confidence_counts = defaultdict(int)
+        for alert in arp_alerts:
+            alert = as_dict(alert)
+            severity_counts[alert.get("severity") or "critical"] += 1
+            confidence_counts[alert.get("confidence") or "unknown"] += 1
+        top_severity = min(
+            (str(as_dict(alert).get("severity") or "critical") for alert in arp_alerts),
+            key=lambda value: ACTION_SEVERITY_RANK.get(value, 3),
+        )
+        critical_count = severity_counts.get("critical", 0)
+        warning_count = severity_counts.get("warning", 0)
+        info_count = severity_counts.get("info", 0)
+        if critical_count:
+            title = "Active ARP identity conflict evidence detected"
+            next_step = "Investigate active duplicate-IP evidence first; confirm with switch/AP and terminal evidence before changing address plans."
+        else:
+            title = "ARP identity movement needs review"
+            next_step = "Treat stale or failed ARP movement as lower-confidence history; look for fresh duplicate-IP evidence before declaring an active conflict."
         add_action(
             "arp.identity_conflicts",
-            "critical",
+            top_severity,
             "terminals",
-            "ARP identity conflicts detected",
-            f"{len(arp_alerts)} ARP alert(s) were found in the snapshot.",
-            "Investigate duplicate IP or MAC movement from terminal and switch-side evidence.",
+            title,
+            (
+                f"{len(arp_alerts)} ARP alert(s): critical={critical_count}, "
+                f"warning={warning_count}, info={info_count}."
+            ),
+            next_step,
             "snapshot.arp.alerts",
-            [{"label": "sample", "value": compact_text(as_dict(arp_alerts[0]).get("detail") or as_dict(arp_alerts[0]).get("value"))}],
+            [
+                {"label": "sample", "value": compact_text(as_dict(arp_alerts[0]).get("detail") or as_dict(arp_alerts[0]).get("value"))},
+                {"label": "sampleSeverity", "value": as_dict(arp_alerts[0]).get("severity", "-")},
+                {"label": "sampleConfidence", "value": as_dict(arp_alerts[0]).get("confidence", "-")},
+                {"label": "confidenceSummary", "value": ", ".join(f"{key}:{confidence_counts[key]}" for key in sorted(confidence_counts))},
+            ],
         )
 
     interface_issues = []
     for row in as_list(snapshot.get("interfaces")):
         row = as_dict(row)
-        issue_total = sum(to_int(row.get(key)) for key in ("rxDrop", "txDrop", "rxError", "txError"))
-        if issue_total > 0:
-            interface_issues.append((row, issue_total))
+        drop_total = to_int(row.get("dropTotal"), to_int(row.get("rxDrop")) + to_int(row.get("txDrop")))
+        error_total = to_int(row.get("errorTotal"), to_int(row.get("rxError")) + to_int(row.get("txError")))
+        drop_delta = to_int(row.get("dropDelta"))
+        error_delta = to_int(row.get("errorDelta"))
+        packet_delta = to_int(row.get("packetDelta"))
+        try:
+            loss_rate = float(row.get("lossRate")) if row.get("lossRate") is not None else 0.0
+        except Exception:
+            loss_rate = 0.0
+        issue_total = drop_total + error_total
+        recent_total = drop_delta + error_delta
+        if issue_total > 0 or recent_total > 0:
+            is_derived = bool(row.get("isDerivedInterface") or row.get("qualityEvidenceLevel") == "logical")
+            weighted_recent = recent_total * (0.35 if is_derived else 1.0)
+            weighted_total = issue_total * (0.35 if is_derived else 1.0)
+            interface_issues.append(
+                {
+                    "row": row,
+                    "issueTotal": issue_total,
+                    "dropTotal": drop_total,
+                    "errorTotal": error_total,
+                    "recentTotal": recent_total,
+                    "dropDelta": drop_delta,
+                    "errorDelta": error_delta,
+                    "packetDelta": packet_delta,
+                    "lossRate": loss_rate,
+                    "isDerived": is_derived,
+                    "sortKey": (weighted_recent, loss_rate, weighted_total),
+                }
+            )
     if interface_issues:
-        interface_issues.sort(key=lambda item: item[1], reverse=True)
+        interface_issues.sort(key=lambda item: item["sortKey"], reverse=True)
+        top_issue = interface_issues[0]
+        primary_count = sum(1 for item in interface_issues if not item["isDerived"])
+        logical_count = len(interface_issues) - primary_count
+        loss_value_text = f"{top_issue['lossRate'] * 100:.4f}".rstrip("0").rstrip(".")
+        loss_text = f"{loss_value_text}%"
         add_action(
             "interfaces.error_counters",
             "warning",
             "interfaces",
-            "Interface error or drop counters are non-zero",
-            f"{len(interface_issues)} interface(s) have drop/error counters.",
-            "Inspect cabling, duplex, and upstream devices before changing RouterOS interface settings.",
+            "Interface drop/error evidence needs review",
+            (
+                f"{primary_count} primary interface(s) and {logical_count} logical/down-ranked interface(s) "
+                f"have drop/error evidence. Top {top_issue['row'].get('name', '-')}: "
+                f"cumulative drop/error={top_issue['dropTotal']}/{top_issue['errorTotal']}, "
+                f"latest +{top_issue['dropDelta']}/+{top_issue['errorDelta']}, "
+                f"recent loss rate={loss_text}."
+            ),
+            "Review recent delta and loss-rate evidence first; treat VLAN/macvlan logical pairs as lower-confidence evidence unless their parent also shows fresh deltas.",
             "snapshot.interfaces",
-            [{"label": "topInterface", "value": interface_issues[0][0].get("name", "-")}, {"label": "events", "value": interface_issues[0][1]}],
+            [
+                {"label": "topInterface", "value": top_issue["row"].get("name", "-")},
+                {"label": "cumulativeDropError", "value": f"{top_issue['dropTotal']}/{top_issue['errorTotal']}"},
+                {"label": "latestDropErrorDelta", "value": f"+{top_issue['dropDelta']}/+{top_issue['errorDelta']}"},
+                {"label": "recentLossRate", "value": loss_text},
+                {"label": "logicalDownranked", "value": logical_count},
+            ],
         )
 
     cpu_load = to_int(overview.get("cpuLoad"))
@@ -1690,12 +2149,17 @@ def nikki_probe():
     result = {
         "controller": READONLY_NIKKI_CONTROLLER,
         "ok": False,
+        "disabled": False,
         "version": None,
         "providers": [],
         "providerCount": 0,
         "ruleCount": 0,
         "error": None,
     }
+    if not READONLY_NIKKI_CONTROLLER:
+        result["disabled"] = True
+        result["error"] = "Nikki controller is not configured"
+        return result
     try:
         version_response = requests.get(
             f"{READONLY_NIKKI_CONTROLLER.rstrip('/')}/version",
@@ -1760,6 +2224,13 @@ class Collector:
         self.lock = threading.Lock()
         self.prev_counters = {}
         self.prev_ts = None
+        self.current_rates = {}
+        self.last_counter_sample_at = None
+        self.rate_history_sample_count = 0
+        self.prev_quality_counters = {}
+        self.current_interface_quality = {}
+        self.last_quality_sample_at = None
+        self.interface_quality_sample_count = 0
         self.realtime_rest = {}
         self.realtime_failures = {}
         self.realtime_updated_at = None
@@ -1821,6 +2292,13 @@ class Collector:
         with self.lock:
             self.prev_counters = {}
             self.prev_ts = None
+            self.current_rates = {}
+            self.last_counter_sample_at = None
+            self.rate_history_sample_count = 0
+            self.prev_quality_counters = {}
+            self.current_interface_quality = {}
+            self.last_quality_sample_at = None
+            self.interface_quality_sample_count = 0
             self.realtime_rest = {}
             self.realtime_failures = {}
             self.realtime_updated_at = None
@@ -2175,17 +2653,24 @@ class Collector:
         timeout = max(1, to_int(timeout, SSH_TIMEOUT))
         client = paramiko.SSHClient()
         client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        client.connect(
-            router["host"],
-            port=router["sshPort"],
-            username=router["user"],
-            password=router["password"],
-            timeout=timeout,
-            banner_timeout=timeout,
-            auth_timeout=timeout,
-            allow_agent=False,
-            look_for_keys=False,
-        )
+        try:
+            client.connect(
+                router["host"],
+                port=router["sshPort"],
+                username=router["user"],
+                password=router["password"],
+                timeout=timeout,
+                banner_timeout=timeout,
+                auth_timeout=timeout,
+                allow_agent=False,
+                look_for_keys=False,
+            )
+        except Exception as exc:
+            try:
+                client.close()
+            except Exception:
+                pass
+            raise RuntimeError(format_ssh_connect_error(router, exc, timeout=timeout)) from exc
         return client
 
     def fetch_connection_total_count(self):
@@ -2321,6 +2806,7 @@ class Collector:
                 self.static_rest["dns_static_meta"] = {
                     **copy.deepcopy(self.static_rest.get("dns_static_meta", {})),
                     "count": len(normalized_rows),
+                    "total_count": len(normalized_rows),
                     "sample": len(normalized_rows) > len(self.static_rest.get("dns_static", [])),
                     "cacheTtlSeconds": DNS_STATIC_CACHE_TTL,
                     "cachedAt": self.dns_static_cache["updatedAt"],
@@ -2384,7 +2870,7 @@ class Collector:
             meta = copy.deepcopy(self.static_rest.get("dns_static_meta", {}))
             preview_rows = copy.deepcopy(self.static_rest.get("dns_static", []))
             cached_count = to_int(self.dns_static_cache.get("count"), 0)
-        return to_int(meta.get("count"), cached_count or len(preview_rows))
+        return dns_static_total_count_from_meta(meta, cached_count or len(preview_rows))
 
     def merge_rest_bundle(self):
         with self.lock:
@@ -2425,13 +2911,18 @@ class Collector:
             "detailDurationSeconds": detail_duration_seconds,
         }
 
-    def compute_rates(self, interfaces):
+    def compute_rates(self, interfaces, fresh_counter_sample=False):
+        if not fresh_counter_sample:
+            with self.lock:
+                return copy.deepcopy(self.current_rates)
         ts = time.time()
         interval = max(ts - self.prev_ts, 1) if self.prev_ts else 1
         rates = {}
         current = {}
         for item in interfaces:
             name = item.get("name")
+            if not name:
+                continue
             rx = to_int(item.get("rx-byte"))
             tx = to_int(item.get("tx-byte"))
             current[name] = (rx, tx)
@@ -2440,9 +2931,86 @@ class Collector:
                 "rxBps": max(rx - prev_rx, 0) / interval,
                 "txBps": max(tx - prev_tx, 0) / interval,
             }
-        self.prev_counters = current
-        self.prev_ts = ts
+        with self.lock:
+            self.prev_counters = current
+            self.prev_ts = ts
+            self.current_rates = copy.deepcopy(rates)
+            self.last_counter_sample_at = format_iso_now()
+            self.rate_history_sample_count += 1
         return rates
+
+    def compute_interface_quality(self, interfaces, fresh_counter_sample=False):
+        if not fresh_counter_sample:
+            with self.lock:
+                return copy.deepcopy(self.current_interface_quality)
+
+        updated_at = format_iso_now()
+        with self.lock:
+            previous = copy.deepcopy(self.prev_quality_counters)
+            sample_count = self.interface_quality_sample_count + 1
+
+        current = {}
+        quality = {}
+        for item in interfaces:
+            name = item.get("name")
+            if not name:
+                continue
+            counters = {
+                "rxPackets": to_int(item.get("rx-packet")),
+                "txPackets": to_int(item.get("tx-packet")),
+                "rxDrop": to_int(item.get("rx-drop")),
+                "txDrop": to_int(item.get("tx-drop")),
+                "rxError": to_int(item.get("rx-error")),
+                "txError": to_int(item.get("tx-error")),
+            }
+            current[name] = counters
+            prev = previous.get(name)
+            has_baseline = isinstance(prev, dict)
+            if has_baseline:
+                delta = {key: max(counters[key] - to_int(prev.get(key)), 0) for key in counters}
+            else:
+                delta = {key: 0 for key in counters}
+
+            packet_total = counters["rxPackets"] + counters["txPackets"]
+            packet_delta = delta["rxPackets"] + delta["txPackets"]
+            drop_total = counters["rxDrop"] + counters["txDrop"]
+            error_total = counters["rxError"] + counters["txError"]
+            drop_delta = delta["rxDrop"] + delta["txDrop"]
+            error_delta = delta["rxError"] + delta["txError"]
+            loss_rate = (drop_delta / packet_delta) if packet_delta > 0 else None
+            error_rate = (error_delta / packet_delta) if packet_delta > 0 else None
+            is_derived = interface_is_derived(name, item.get("type"))
+            quality[name] = {
+                "packetTotal": packet_total,
+                "packetDelta": packet_delta,
+                "dropTotal": drop_total,
+                "errorTotal": error_total,
+                "dropDelta": drop_delta,
+                "errorDelta": error_delta,
+                "rxDropDelta": delta["rxDrop"],
+                "txDropDelta": delta["txDrop"],
+                "rxErrorDelta": delta["rxError"],
+                "txErrorDelta": delta["txError"],
+                "lossRate": loss_rate,
+                "errorRate": error_rate,
+                "qualityUpdatedAt": updated_at,
+                "qualitySampleCount": sample_count,
+                "qualitySampleReady": has_baseline,
+                "isDerivedInterface": is_derived,
+                "isLogicalInterface": is_derived,
+                "qualityDisplayWeight": 0.35 if is_derived else 1.0,
+                "qualityEvidenceLevel": "logical" if is_derived else "primary",
+                "qualityParent": interface_parent_hint(item),
+                "logicalPairKey": interface_logical_pair_key(item),
+                "qualityGroupKey": interface_quality_group_key(item),
+            }
+
+        with self.lock:
+            self.prev_quality_counters = current
+            self.current_interface_quality = copy.deepcopy(quality)
+            self.last_quality_sample_at = updated_at
+            self.interface_quality_sample_count = sample_count
+        return quality
 
     def get_wan_latency(self, force=False):
         now = time.time()
@@ -2551,7 +3119,7 @@ class Collector:
             "history": {key: list(values) for key, values in self.history.items()},
         }
 
-    def build_interfaces(self, rest, rates, addresses_by_interface):
+    def build_interfaces(self, rest, rates, addresses_by_interface, quality):
         wan_names = infer_wan_interface_names(rest, addresses_by_interface)
         gateway_rows = defaultdict(list)
         for route in rest["routes"]:
@@ -2559,14 +3127,46 @@ class Collector:
         items = []
         for item in rest["interfaces"]:
             name = item.get("name")
+            iface_type = item.get("type", "-")
+            parent_hint = interface_parent_hint(item)
+            group_key = interface_quality_group_key(item)
+            is_derived = interface_is_derived(name, iface_type)
+            drop_total = to_int(item.get("rx-drop")) + to_int(item.get("tx-drop"))
+            error_total = to_int(item.get("rx-error")) + to_int(item.get("tx-error"))
+            packet_total = to_int(item.get("rx-packet")) + to_int(item.get("tx-packet"))
+            quality_row = copy.deepcopy(quality.get(name, {}))
+            quality_row.setdefault("packetTotal", packet_total)
+            quality_row.setdefault("packetDelta", 0)
+            quality_row.setdefault("dropTotal", drop_total)
+            quality_row.setdefault("errorTotal", error_total)
+            quality_row.setdefault("dropDelta", 0)
+            quality_row.setdefault("errorDelta", 0)
+            quality_row.setdefault("rxDropDelta", 0)
+            quality_row.setdefault("txDropDelta", 0)
+            quality_row.setdefault("rxErrorDelta", 0)
+            quality_row.setdefault("txErrorDelta", 0)
+            quality_row.setdefault("lossRate", None)
+            quality_row.setdefault("errorRate", None)
+            quality_row.setdefault("qualityUpdatedAt", None)
+            quality_row.setdefault("qualitySampleCount", 0)
+            quality_row.setdefault("qualitySampleReady", False)
+            quality_row["isDerivedInterface"] = bool(quality_row.get("isDerivedInterface", is_derived) or is_derived)
+            quality_row["isLogicalInterface"] = bool(quality_row.get("isLogicalInterface", is_derived) or is_derived)
+            quality_row["qualityDisplayWeight"] = 0.35 if quality_row["isDerivedInterface"] else 1.0
+            quality_row["qualityEvidenceLevel"] = "logical" if quality_row["isDerivedInterface"] else "primary"
+            quality_row["qualityParent"] = quality_row.get("qualityParent") or parent_hint
+            quality_row["logicalPairKey"] = quality_row.get("logicalPairKey") or interface_logical_pair_key(item)
+            quality_row["qualityGroupKey"] = quality_row.get("qualityGroupKey") or group_key
             items.append(
                 {
                     "name": name,
                     "role": "WAN" if name in wan_names else "LAN",
-                    "type": item.get("type", "-"),
+                    "type": iface_type,
                     "running": to_bool(item.get("running")),
                     "disabled": to_bool(item.get("disabled")),
                     "mac": item.get("mac-address", "-"),
+                    "parentInterface": parent_hint,
+                    "vlanId": item.get("vlan-id"),
                     "ips": [row.get("address", "-") for row in addresses_by_interface.get(name, [])],
                     "networks": [row.get("network", "-") for row in addresses_by_interface.get(name, [])],
                     "gateways": [row.get("dst-address", "-") for row in gateway_rows.get(name, [])[:4]],
@@ -2580,12 +3180,13 @@ class Collector:
                     "txError": to_int(item.get("tx-error")),
                     "rxRate": rates.get(name, {}).get("rxBps", 0),
                     "txRate": rates.get(name, {}).get("txBps", 0),
+                    **quality_row,
                 }
             )
-        items.sort(key=lambda row: (row["role"] != "WAN", row["name"]))
+        items.sort(key=lambda row: (row["role"] != "WAN", row.get("isDerivedInterface", False), row["name"]))
         return items
 
-    def build_pppoe(self, rest, rates, addresses_by_interface):
+    def build_pppoe(self, rest, rates, addresses_by_interface, update_rate_history=False):
         defaults = [row for row in rest["routes"] if row.get("dst-address") == "0.0.0.0/0"]
         route_by_gateway = defaultdict(list)
         for route in defaults:
@@ -2597,8 +3198,9 @@ class Collector:
             metric = rates.get(name, {"rxBps": 0, "txBps": 0})
             total_rate += metric["rxBps"] + metric["txBps"]
             history = self.line_history.setdefault(name, {"up": deque(maxlen=HISTORY_LIMIT), "down": deque(maxlen=HISTORY_LIMIT)})
-            history["up"].append(metric["txBps"])
-            history["down"].append(metric["rxBps"])
+            if update_rate_history:
+                history["up"].append(metric["txBps"])
+                history["down"].append(metric["rxBps"])
             rows.append(
                 {
                     "name": name,
@@ -2634,7 +3236,7 @@ class Collector:
         ]
         return rows, distribution
 
-    def build_wan_lines(self, rest, pppoe_rows, interfaces):
+    def build_wan_lines(self, rest, pppoe_rows, interfaces, update_rate_history=False):
         if pppoe_rows:
             return [
                 {
@@ -2660,8 +3262,9 @@ class Collector:
         for iface in wan_interfaces:
             name = iface.get("name", "-")
             history = self.line_history.setdefault(name, {"up": deque(maxlen=HISTORY_LIMIT), "down": deque(maxlen=HISTORY_LIMIT)})
-            history["up"].append(to_int(iface.get("txRate")))
-            history["down"].append(to_int(iface.get("rxRate")))
+            if update_rate_history:
+                history["up"].append(to_int(iface.get("txRate")))
+                history["down"].append(to_int(iface.get("rxRate")))
             dhcp_client = dhcp_clients_by_interface.get(name, {})
             running = bool(iface.get("running")) and not bool(iface.get("disabled"))
             route_rows = []
@@ -2729,6 +3332,8 @@ class Collector:
         arp_rows = []
         ip_to_macs = defaultdict(set)
         mac_to_ips = defaultdict(set)
+        ip_to_entries = defaultdict(list)
+        mac_to_entries = defaultdict(list)
         for item in rest["arp"]:
             address = item.get("address")
             mac = item.get("mac-address")
@@ -2742,6 +3347,9 @@ class Collector:
                 continue
             ip_to_macs[address].add(mac)
             mac_to_ips[mac].add(address)
+            arp_entry = {"ip": address, "mac": mac, "status": item.get("status", "-"), "evidenceState": arp_evidence_state(item.get("status"))}
+            ip_to_entries[address].append(arp_entry)
+            mac_to_entries[mac].append(arp_entry)
             lease = leases_by_ip.get(address) or leases_by_mac.get(mac)
             arp_rows.append(
                 {
@@ -2753,6 +3361,8 @@ class Collector:
                     "lastSeen": (lease or {}).get("last-seen", "-"),
                 }
             )
+        for row in arp_rows:
+            row.setdefault("evidenceState", arp_evidence_state(row.get("status")))
         alerts = []
         for ip_addr, macs in ip_to_macs.items():
             if len(macs) > 1:
@@ -2760,6 +3370,17 @@ class Collector:
         for mac, ips in mac_to_ips.items():
             if len(ips) > 1:
                 alerts.append({"kind": "MAC漂移", "value": mac, "detail": ", ".join(sorted(ips, key=ip_sort_key))})
+
+        refined_alerts = []
+        for ip_addr, entries in ip_to_entries.items():
+            if len({entry["mac"] for entry in entries}) > 1:
+                refined_alerts.append(make_arp_alert("IP conflict", ip_addr, entries, "mac"))
+        for mac, entries in mac_to_entries.items():
+            if len({entry["ip"] for entry in entries}) > 1:
+                refined_alerts.append(make_arp_alert("MAC drift", mac, entries, "ip"))
+        if refined_alerts:
+            refined_alerts.sort(key=lambda row: (ACTION_SEVERITY_RANK.get(row.get("severity"), 3), row.get("kind", ""), str(row.get("value", ""))))
+            alerts = refined_alerts
 
         terminal_stats = defaultdict(lambda: {"up": 0.0, "down": 0.0, "connections": 0, "sessionBytes": 0})
         active_rows = []
@@ -3054,7 +3675,7 @@ class Collector:
             "cacheSize": to_int(dns.get("cache-size")),
             "cacheUsed": to_int(dns.get("cache-used")),
             "cacheEntries": 0,
-            "forwardRuleCount": to_int(dns_static_meta.get("count"), len(dns_static_rows)),
+            "forwardRuleCount": dns_static_total_count_from_meta(dns_static_meta, len(dns_static_rows)),
             "visibleRuleCount": len(forward_rules),
             "disabledForwardRuleCount": sum(1 for item in dns_static_rows if to_bool(item.get("disabled"))),
             "forwardRuleSample": to_bool(dns_static_meta.get("sample")),
@@ -3221,16 +3842,29 @@ class Collector:
                 groups["system"].append(row)
         return {key: value[:60] for key, value in groups.items()}
 
-    def build_snapshot(self, rest, ssh):
+    def build_snapshot(self, rest, ssh, fresh_counter_sample=False):
         connection_counts = copy.deepcopy(ssh.get("counts", {}))
         counted_total = to_int(connection_counts.get("tcp")) + to_int(connection_counts.get("udp")) + to_int(connection_counts.get("icmp"))
         connection_counts["all"] = max(to_int(connection_counts.get("all")), counted_total)
         ssh = {**ssh, "counts": connection_counts}
-        rates = self.compute_rates(rest["interfaces"])
+        has_counter_sample = bool(
+            fresh_counter_sample
+            and any(
+                item.get("name") and ("rx-byte" in item or "tx-byte" in item)
+                for item in rest.get("interfaces", [])
+            )
+        )
+        rates = self.compute_rates(rest["interfaces"], fresh_counter_sample=has_counter_sample)
+        quality = self.compute_interface_quality(rest["interfaces"], fresh_counter_sample=has_counter_sample)
         addresses_by_interface, local_networks, router_ips = self.build_maps(rest)
-        pppoe, distribution = self.build_pppoe(rest, rates, addresses_by_interface)
-        interfaces = self.build_interfaces(rest, rates, addresses_by_interface)
-        wan_lines = self.build_wan_lines(rest, pppoe, interfaces)
+        pppoe, distribution = self.build_pppoe(
+            rest,
+            rates,
+            addresses_by_interface,
+            update_rate_history=has_counter_sample,
+        )
+        interfaces = self.build_interfaces(rest, rates, addresses_by_interface, quality)
+        wan_lines = self.build_wan_lines(rest, pppoe, interfaces, update_rate_history=has_counter_sample)
         wan_latency = self.get_wan_latency()
         pppoe = self.attach_wan_latency(pppoe, wan_latency)
         wan_lines = self.attach_wan_latency(wan_lines, wan_latency)
@@ -3255,7 +3889,7 @@ class Collector:
         scale_meta = {
             "wan": list_scale_meta(wan_line_count, len(wan_lines), sampled=False, sorted_by="natural interface name", grouped_by=["status", "parent", "routeTable"]),
             "pppoe": list_scale_meta(len(pppoe), len(pppoe), sampled=False, sorted_by="natural interface name"),
-            "interfaces": list_scale_meta(len(interfaces), len(interfaces), sampled=False, sorted_by="role/name", grouped_by=["role", "type", "status"]),
+            "interfaces": list_scale_meta(len(interfaces), len(interfaces), sampled=False, sorted_by="role/name/quality", grouped_by=["role", "type", "status", "qualityEvidenceLevel"]),
             "terminals": terminals.get("meta", {}).get("terminals", list_scale_meta(terminals["terminalCount"], len(terminals["terminals"]))),
             "arp": terminals.get("meta", {}).get("arp", list_scale_meta(len(terminals["arp"]), len(terminals["arp"]))),
             "dhcpLeases": dhcp.get("meta", {}).get("leases", list_scale_meta(len(dhcp.get("leases", [])), len(dhcp.get("leases", [])))),
@@ -3266,7 +3900,7 @@ class Collector:
                 "hasMore": active_connection_shown < ssh["counts"]["all"],
             },
             "dnsStatic": list_scale_meta(
-                rest.get("dns_static_meta", {}).get("total_count", DNS_STATIC_PREVIEW_LIMIT),
+                dns_static_total_count_from_meta(rest.get("dns_static_meta", {}), DNS_STATIC_PREVIEW_LIMIT),
                 len(rest.get("dns_static", [])),
                 limit=DNS_STATIC_PREVIEW_LIMIT,
                 sampled=True,
@@ -3279,12 +3913,18 @@ class Collector:
         used_memory = max(total_memory - to_int(resource.get("free-memory")), 0)
         total_disk = to_int(resource.get("total-hdd-space"))
         used_disk = max(total_disk - to_int(resource.get("free-hdd-space")), 0)
-        self.history["cpu"].append(to_int(resource.get("cpu-load")))
-        self.history["memory"].append(round((used_memory / total_memory) * 100, 2) if total_memory else 0)
-        self.history["disk"].append(round((used_disk / total_disk) * 100, 2) if total_disk else 0)
-        self.history["uplink"].append(wan_totals["up"])
-        self.history["downlink"].append(wan_totals["down"])
-        self.history["timestamps"].append(int(time.time()))
+        if has_counter_sample:
+            self.history["cpu"].append(to_int(resource.get("cpu-load")))
+            self.history["memory"].append(round((used_memory / total_memory) * 100, 2) if total_memory else 0)
+            self.history["disk"].append(round((used_disk / total_disk) * 100, 2) if total_disk else 0)
+            self.history["uplink"].append(wan_totals["up"])
+            self.history["downlink"].append(wan_totals["down"])
+            self.history["timestamps"].append(int(time.time()))
+        with self.lock:
+            rate_history_updated_at = self.last_counter_sample_at
+            rate_history_sample_count = self.rate_history_sample_count
+            quality_updated_at = self.last_quality_sample_at
+            quality_sample_count = self.interface_quality_sample_count
         snapshot = {
             "status": "ok",
             "updatedAt": format_iso_now(),
@@ -3336,6 +3976,11 @@ class Collector:
                 "lineCount": wan_line_count,
                 "lineLayoutTier": line_layout_tier(wan_line_count),
                 "wanLatency": copy.deepcopy(wan_latency),
+                "freshCounterSample": bool(has_counter_sample),
+                "rateHistoryUpdatedAt": rate_history_updated_at,
+                "rateHistorySampleCount": rate_history_sample_count,
+                "qualityUpdatedAt": quality_updated_at,
+                "qualitySampleCount": quality_sample_count,
                 "scale": scale_meta,
             },
             "overview": self.build_overview(rest, ssh, terminals["terminalCount"], wan_totals, wan_latency),
@@ -3378,8 +4023,12 @@ class Collector:
         snapshot["actionQueue"] = triage["queue"]
         return snapshot
 
-    def update_state(self):
-        snapshot = self.build_snapshot(self.merge_rest_bundle(), self.merge_connection_bundle())
+    def update_state(self, fresh_counter_sample=False):
+        snapshot = self.build_snapshot(
+            self.merge_rest_bundle(),
+            self.merge_connection_bundle(),
+            fresh_counter_sample=fresh_counter_sample,
+        )
         with self.lock:
             self.state = snapshot
 
@@ -3403,7 +4052,7 @@ class Collector:
                     self.realtime_error = None
                     self.realtime_last_error_at = None
                     self.realtime_duration_seconds = duration
-                self.update_state()
+                self.update_state(fresh_counter_sample=True)
             except Exception as exc:
                 with self.lock:
                     self.realtime_error = str(exc)
@@ -3498,6 +4147,7 @@ class Collector:
                     with self.lock:
                         self.static_rest["dns_static_meta"] = {
                             "count": dns_static_count,
+                            "total_count": dns_static_count,
                             "sample": dns_static_count > len(self.static_rest.get("dns_static", [])),
                         }
                 except Exception:
@@ -3508,6 +4158,7 @@ class Collector:
                         self.static_rest["dns_static"] = dns_static_preview
                         self.static_rest["dns_static_meta"] = {
                             "count": dns_static_count or len(dns_static_preview),
+                            "total_count": dns_static_count or len(dns_static_preview),
                             "sample": (dns_static_count or len(dns_static_preview)) > len(dns_static_preview),
                         }
                 except Exception:
@@ -3797,6 +4448,8 @@ class Handler(BaseHTTPRequestHandler):
                     "savePasswordAvailable": True,
                 }
             )
+        if parsed.path == "/api/panel-network":
+            return self.send_json({"ok": True, "panelNetwork": panel_network_payload()})
         if parsed.path == "/api/snapshot":
             return self.send_json(collector.get_state())
         if parsed.path == "/api/dns-static":
@@ -3833,6 +4486,7 @@ class Handler(BaseHTTPRequestHandler):
                     "updatedAt": state.get("updatedAt"),
                     "profile": PANEL_PROFILE,
                     "target": PANEL_TARGET,
+                    "panelNetwork": panel_network_payload(),
                     "routerLogin": public_router_config(),
                     "savedLoginCount": len(public_saved_router_logins()),
                 }
@@ -3911,6 +4565,34 @@ class Handler(BaseHTTPRequestHandler):
                         "savedLogins": public_saved_router_logins(),
                         "test": test,
                         "warning": None if test.get("rest", {}).get("ok") else "SSH connected, but RouterOS REST did not respond. Some dashboard data may be missing.",
+                    }
+                )
+            except ValueError as exc:
+                return self.send_json({"ok": False, "error": str(exc)}, status=400)
+            except Exception as exc:
+                return self.send_json({"ok": False, "error": str(exc)}, status=500)
+        if parsed.path == "/api/panel-network":
+            try:
+                payload = self.read_json_body()
+                bind = normalize_panel_host(payload.get("bind") or payload.get("listenHost"), "bind")
+                port = normalize_panel_port(payload.get("port"))
+                target = normalize_panel_host(
+                    payload.get("target") or payload.get("accessHost") or bind,
+                    "access host",
+                )
+                saved_env_path = write_panel_network_env(bind, port, target)
+                restart_required = bind != PANEL_BIND or port != PANEL_PORT or target != PANEL_TARGET
+                active = panel_network_payload(restart_required=False)
+                saved = panel_network_payload(bind=bind, port=port, target=target, restart_required=restart_required)
+                saved["envFile"] = str(saved_env_path)
+                return self.send_json(
+                    {
+                        "ok": True,
+                        "panelNetwork": saved,
+                        "activePanelNetwork": active,
+                        "restartRequired": restart_required,
+                        "nextUrl": saved["currentUrl"],
+                        "message": "Saved. Restart the panel service for bind/port changes to take effect.",
                     }
                 )
             except ValueError as exc:
@@ -4003,12 +4685,7 @@ class Handler(BaseHTTPRequestHandler):
 def main():
     collector.start()
     server = ThreadingHTTPServer((PANEL_BIND, PANEL_PORT), Handler)
-    host = PANEL_BIND
-    if host in {"", "0.0.0.0", "::"}:
-        host = "127.0.0.1"
-    if ":" in host and not host.startswith("["):
-        host = f"[{host}]"
-    url = f"http://{host}:{PANEL_PORT}/"
+    url = panel_access_url(PANEL_BIND, PANEL_PORT, PANEL_TARGET)
     print(f"RouterOS Triage Panel listening on {url}", flush=True)
     if PANEL_ENV_FILE:
         print(f"Loaded config file: {PANEL_ENV_FILE}", flush=True)

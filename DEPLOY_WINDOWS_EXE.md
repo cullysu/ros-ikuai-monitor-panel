@@ -12,11 +12,11 @@ This is the simplest path for people who do not want to install Python.
    - `ROS_MONITOR_ROUTER_PASSWORD`
 4. Keep these defaults for a first local trial:
    - `ROS_PANEL_BIND=127.0.0.1`
-   - `ROS_PANEL_PORT=8080`
+   - `ROS_PANEL_PORT=28646`
    - `ROS_PANEL_PROFILE=routeros_only`
    - `ROS_PANEL_IP_ALIAS_WRITE_ENABLED=0`
 5. Double-click `RouterOS Triage Panel.exe`.
-6. The browser should open `http://127.0.0.1:8080/` automatically.
+6. The browser should open `http://127.0.0.1:28646/` automatically.
 
 The console window is intentional. It shows startup errors such as a wrong
 RouterOS address, bad password, or a port conflict.
@@ -40,8 +40,8 @@ dependencies there.
 
 ## Troubleshooting
 
-- If the browser does not open, visit `http://127.0.0.1:8080/` manually.
-- If port `8080` is already in use, change `ROS_PANEL_PORT` in `routeros-panel.env`.
+- If the browser does not open, visit `http://127.0.0.1:28646/` manually.
+- If port `28646` is already in use, change `ROS_PANEL_PORT` in `routeros-panel.env` or use the panel address setting after opening the UI.
 - If Windows Defender or SmartScreen warns, inspect the folder and run from a
   trusted local path. This project does not yet provide code signing.
 - If the EXE starts but data is empty, confirm the RouterOS read-only user can

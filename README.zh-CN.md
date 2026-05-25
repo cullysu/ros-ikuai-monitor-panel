@@ -24,7 +24,7 @@ $env:ROS_MONITOR_ROUTER_HOST="192.168.88.1"
 $env:ROS_MONITOR_ROUTER_USER="ros-panel-readonly"
 $env:ROS_MONITOR_ROUTER_PASSWORD="CHANGE_ME"
 $env:ROS_PANEL_BIND="127.0.0.1"
-$env:ROS_PANEL_PORT="8080"
+$env:ROS_PANEL_PORT="28646"
 $env:ROS_PANEL_TARGET_IP="127.0.0.1"
 $env:ROS_PANEL_PROFILE="routeros_only"
 .\.venv\Scripts\python app.py
@@ -33,7 +33,7 @@ $env:ROS_PANEL_PROFILE="routeros_only"
 打开：
 
 ```text
-http://127.0.0.1:8080/
+http://127.0.0.1:28646/
 ```
 
 Windows、macOS、Linux 细节见 [DEPLOY_LOCAL.md](./DEPLOY_LOCAL.md)。
@@ -49,7 +49,7 @@ docker compose --env-file .env.docker up -d --build
 打开：
 
 ```text
-http://127.0.0.1:8080/
+http://127.0.0.1:28646/
 ```
 
 Docker 是公开项目的默认推荐部署方式，因为它不要求用户有 ESXi 或单独的虚拟机，也能把面板和 RouterOS 本体隔离开。对局域网开放之前，先读 [DEPLOY_DOCKER.md](./DEPLOY_DOCKER.md)。
@@ -65,15 +65,15 @@ RouterOS Container 作为高级/Beta 路径支持。它不是默认路径，因�
 Linux 部署脚本保留给需要 systemd 托管实例的专业用户：
 
 ```bash
-export ROS_PANEL_TARGET_IP="192.168.3.50"
-export ROS_PANEL_BIND="0.0.0.0"
-export ROS_PANEL_PORT="80"
+export ROS_PANEL_TARGET_IP="127.0.0.1"
+export ROS_PANEL_BIND="127.0.0.1"
+export ROS_PANEL_PORT="28646"
 export ROS_PANEL_PROFILE="routeros_only"
-export ROS_MONITOR_ROUTER_HOST="192.168.3.1"
+export ROS_MONITOR_ROUTER_HOST="192.168.88.1"
 export ROS_MONITOR_ROUTER_USER="ros-panel-readonly"
 export ROS_MONITOR_ROUTER_PASSWORD="CHANGE_ME"
 
-./deploy_linux.sh --instance public50 --disable-ip-service
+./deploy_linux.sh --instance routeros-panel --disable-ip-service
 ```
 
 在真实局域网主机上使用 systemd 路径前，先读 [DEPLOY_PUBLIC_192.168.3.50.md](./DEPLOY_PUBLIC_192.168.3.50.md) 或 [DEPLOY_PUBLIC_192.168.4.50.md](./DEPLOY_PUBLIC_192.168.4.50.md)。
@@ -133,7 +133,8 @@ export ROS_MONITOR_ROUTER_PASSWORD="CHANGE_ME"
 - 给面板创建专用的 RouterOS 最小权限只读用户。
 - 不要使用 RouterOS 的 `admin` 账号。
 - 本地运行时保持 `ROS_PANEL_BIND=127.0.0.1`。
-- Docker 默认只发布到 `127.0.0.1`，确认访问边界后再开放到局域网。
+- Docker 默认只发布到 `127.0.0.1:28646`，确认访问边界后再开放到局域网。
+- 面板内可以修改面板地址；监听 IP/端口保存后需要重启面板服务生效。
 - 不要把面板直接暴露到公网。
 - 如果访问跨出可信局域网，先加 HTTPS 和认证。
 - 面向公开/产品化部署时使用 `routeros_only`。
@@ -144,8 +145,8 @@ export ROS_MONITOR_ROUTER_PASSWORD="CHANGE_ME"
 ```bash
 python -m py_compile app.py
 docker compose --env-file .env.docker.example config --quiet
-curl -fsS http://127.0.0.1:8080/api/health
-curl -fsS http://127.0.0.1:8080/api/semantic-triage
+curl -fsS http://127.0.0.1:28646/api/health
+curl -fsS http://127.0.0.1:28646/api/semantic-triage
 ```
 
 公开 profile 预期：

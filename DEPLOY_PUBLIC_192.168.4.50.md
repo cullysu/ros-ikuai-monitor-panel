@@ -1,6 +1,8 @@
-# Deploy Public RouterOS-only Instance To 192.168.4.50
+# Historical Public RouterOS-only Instance: 192.168.4.50
 
-This guide deploys an isolated read-only panel instance at `192.168.4.50`.
+This historical guide deploys an isolated read-only panel instance at `192.168.4.50`.
+New installs should start from the Docker or instance-mode systemd guides and
+then choose their own listener address.
 
 It does not change RouterOS, OpenWrt, ESXi, Nikki/Mihomo, DNS, DHCP, NAT,
 firewall, routing, UPnP, or port forwards.
@@ -62,7 +64,7 @@ export ROS_PANEL_PROFILE="routeros_only"
 export ROS_PANEL_IP_ALIAS_WRITE_ENABLED="0"
 export ROS_PANEL_EXPOSE_ADMIN_SESSIONS="0"
 
-export ROS_MONITOR_ROUTER_HOST="192.168.3.1"
+export ROS_MONITOR_ROUTER_HOST="192.168.88.1"
 export ROS_MONITOR_ROUTER_USER="ros-panel-readonly"
 export ROS_MONITOR_ROUTER_PASSWORD="CHANGE_ME"
 

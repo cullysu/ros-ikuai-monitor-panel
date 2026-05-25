@@ -7,15 +7,18 @@ services:
     container_name: routeros-triage-panel
     restart: unless-stopped
     ports:
-      - "${ROS_PANEL_PUBLISHED_ADDR:-127.0.0.1}:${ROS_PANEL_PUBLISHED_PORT:-8080}:8080"
+      - "${ROS_PANEL_PUBLISHED_ADDR:-127.0.0.1}:${ROS_PANEL_PUBLISHED_PORT:-28646}:28646"
     environment:
       ROS_PANEL_BIND: "${ROS_PANEL_BIND:-0.0.0.0}"
-      ROS_PANEL_PORT: "${ROS_PANEL_PORT:-8080}"
+      ROS_PANEL_PORT: "${ROS_PANEL_PORT:-28646}"
       ROS_PANEL_TARGET_IP: "${ROS_PANEL_TARGET_IP:-127.0.0.1}"
       ROS_PANEL_PROFILE: "${ROS_PANEL_PROFILE:-routeros_only}"
       ROS_PANEL_IP_ALIAS_WRITE_ENABLED: "${ROS_PANEL_IP_ALIAS_WRITE_ENABLED:-0}"
       ROS_PANEL_EXPOSE_ADMIN_SESSIONS: "${ROS_PANEL_EXPOSE_ADMIN_SESSIONS:-0}"
       ROS_PANEL_ACTION_QUEUE_LIMIT: "${ROS_PANEL_ACTION_QUEUE_LIMIT:-24}"
+      ROS_PANEL_READONLY_DNS_SERVERS: "${ROS_PANEL_READONLY_DNS_SERVERS:-}"
+      ROS_PANEL_READONLY_OPENWRT_DNS: "${ROS_PANEL_READONLY_OPENWRT_DNS:-}"
+      ROS_PANEL_READONLY_NIKKI_CONTROLLER: "${ROS_PANEL_READONLY_NIKKI_CONTROLLER:-}"
       ROS_MONITOR_ROUTER_HOST: "${ROS_MONITOR_ROUTER_HOST:-192.168.88.1}"
       ROS_MONITOR_ROUTER_USER: "${ROS_MONITOR_ROUTER_USER:-ros-panel-readonly}"
       ROS_MONITOR_ROUTER_PASSWORD: "${ROS_MONITOR_ROUTER_PASSWORD:-CHANGE_ME}"
@@ -39,7 +42,7 @@ services:
     healthcheck:
       test:
         - CMD-SHELL
-        - python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/api/health', timeout=3).read()"
+        - python -c "import os, urllib.request; urllib.request.urlopen('http://127.0.0.1:%s/api/health' % os.getenv('ROS_PANEL_PORT', '28646'), timeout=3).read()"
       interval: 30s
       timeout: 5s
       start_period: 15s

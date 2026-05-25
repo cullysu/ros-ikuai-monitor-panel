@@ -6,7 +6,7 @@ Wants=network-online.target
 [Service]
 Type=simple
 EnvironmentFile=-/etc/default/routeros-panel
-ExecStart=/bin/bash -lc 'IFACE="$${ROS_PANEL_IFACE:-ens192}"; PANEL_IP="$${ROS_PANEL_TARGET_IP:-$${ROS_PANEL_BIND:-192.168.3.5}}"; PREFIX="$${ROS_PANEL_BIND_CIDR:-24}"; INTERVAL="$${ROS_PANEL_IP_HEAL_SECONDS:-3}"; while true; do if /usr/sbin/ip link show dev "$$IFACE" >/dev/null 2>&1; then if ! /usr/sbin/ip addr show dev "$$IFACE" | /bin/grep -q "inet $$PANEL_IP/$$PREFIX"; then /usr/sbin/ip addr add "$$PANEL_IP/$$PREFIX" dev "$$IFACE" 2>/dev/null || true; fi; fi; sleep "$$INTERVAL"; done'
+ExecStart=/bin/bash -lc 'IFACE="$${ROS_PANEL_IFACE:-ens192}"; PANEL_IP="$${ROS_PANEL_TARGET_IP:-}"; PREFIX="$${ROS_PANEL_BIND_CIDR:-24}"; INTERVAL="$${ROS_PANEL_IP_HEAL_SECONDS:-3}"; while true; do case "$$PANEL_IP" in ""|127.*|localhost|::1) sleep "$$INTERVAL"; continue;; esac; if /usr/sbin/ip link show dev "$$IFACE" >/dev/null 2>&1; then if ! /usr/sbin/ip addr show dev "$$IFACE" | /bin/grep -q "inet $$PANEL_IP/$$PREFIX"; then /usr/sbin/ip addr add "$$PANEL_IP/$$PREFIX" dev "$$IFACE" 2>/dev/null || true; fi; fi; sleep "$$INTERVAL"; done'
 Restart=always
 RestartSec=2
 

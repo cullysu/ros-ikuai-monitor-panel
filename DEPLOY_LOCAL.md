@@ -28,7 +28,7 @@ $env:ROS_MONITOR_ROUTER_HOST="192.168.88.1"
 $env:ROS_MONITOR_ROUTER_USER="ros-panel-readonly"
 $env:ROS_MONITOR_ROUTER_PASSWORD="CHANGE_ME"
 $env:ROS_PANEL_BIND="127.0.0.1"
-$env:ROS_PANEL_PORT="8080"
+$env:ROS_PANEL_PORT="28646"
 $env:ROS_PANEL_TARGET_IP="127.0.0.1"
 $env:ROS_PANEL_PROFILE="routeros_only"
 $env:ROS_PANEL_IP_ALIAS_WRITE_ENABLED="0"
@@ -40,7 +40,7 @@ $env:ROS_PANEL_EXPOSE_ADMIN_SESSIONS="0"
 Open:
 
 ```text
-http://127.0.0.1:8080/
+http://127.0.0.1:28646/
 ```
 
 ## macOS / Linux
@@ -53,7 +53,7 @@ export ROS_MONITOR_ROUTER_HOST="192.168.88.1"
 export ROS_MONITOR_ROUTER_USER="ros-panel-readonly"
 export ROS_MONITOR_ROUTER_PASSWORD="CHANGE_ME"
 export ROS_PANEL_BIND="127.0.0.1"
-export ROS_PANEL_PORT="8080"
+export ROS_PANEL_PORT="28646"
 export ROS_PANEL_TARGET_IP="127.0.0.1"
 export ROS_PANEL_PROFILE="routeros_only"
 export ROS_PANEL_IP_ALIAS_WRITE_ENABLED="0"
@@ -65,14 +65,14 @@ export ROS_PANEL_EXPOSE_ADMIN_SESSIONS="0"
 Open:
 
 ```text
-http://127.0.0.1:8080/
+http://127.0.0.1:28646/
 ```
 
 ## Verify
 
 ```bash
-curl -fsS http://127.0.0.1:8080/api/health
-curl -fsS http://127.0.0.1:8080/api/semantic-triage
+curl -fsS http://127.0.0.1:28646/api/health
+curl -fsS http://127.0.0.1:28646/api/semantic-triage
 ```
 
 Expected:

@@ -201,10 +201,38 @@
     .pm-status-row strong { color: #172033; font-size: 13px; }
     .pm-proof-panel { padding: 14px; }
     .pm-proof-chart { margin-top: 10px; border: 1px solid #e3ecf7; border-radius: 8px; background: #f8fbff; padding: 10px; }
-    .pm-proof-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-top: 10px; }
-    .pm-proof-item { min-height: 56px; padding: 9px 10px; border: 1px solid #e3ecf7; border-radius: 8px; background: #fff; }
-    .pm-proof-item span { display: block; color: #64748b; font-size: 12px; line-height: 1.25; }
-    .pm-proof-item b { display: block; margin-top: 5px; color: #172033; font-size: 16px; line-height: 1.2; }
+    .pm-proof-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-top: 10px; min-width: 0; }
+    .pm-proof-item {
+      min-width: 0;
+      min-height: 56px;
+      padding: 9px 8px;
+      overflow: hidden;
+      border: 1px solid #e3ecf7;
+      border-radius: 8px;
+      background: #fff;
+      box-sizing: border-box;
+    }
+    .pm-proof-item span {
+      display: block;
+      min-width: 0;
+      color: #64748b;
+      font-size: 12px;
+      line-height: 1.25;
+      overflow-wrap: anywhere;
+    }
+    .pm-proof-item b {
+      display: block;
+      min-width: 0;
+      max-width: 100%;
+      margin-top: 5px;
+      color: #172033;
+      font-size: clamp(11px, 1.05vw, 16px);
+      line-height: 1.15;
+      white-space: normal;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+      font-variant-numeric: tabular-nums;
+    }
     .pm-interface-page { display: grid; gap: 12px; min-width: 0; }
     .pm-interface-summary { display: grid; grid-template-columns: minmax(0, 1fr) minmax(260px, .45fr); gap: 12px; padding: 14px; }
     .pm-interface-head { display: grid; gap: 8px; }
@@ -330,6 +358,35 @@
     .ikuai-rank-name { color: #111827; font-size: 13px; font-weight: 800; overflow-wrap: anywhere; }
     .ikuai-rank-sub { margin-top: 3px; color: #7b8797; font-size: 12px; }
     .ikuai-rank-rate { color: #0f5132; font-size: 12px; text-align: right; white-space: nowrap; }
+    #overview.ikuai-overview-section {
+      overflow: hidden;
+    }
+    #overview.ikuai-overview-section.is-ikuai-scaled {
+      height: var(--ikuai-scaled-height, auto);
+      min-height: var(--ikuai-scaled-height, auto);
+    }
+    #overview.ikuai-overview-section .ikuai-home.is-viewport-scaled {
+      width: var(--ikuai-home-design-width, 1180px);
+      max-width: none;
+      transform: scale(var(--ikuai-home-scale, 1));
+      transform-origin: 0 0;
+      will-change: transform;
+    }
+    #overview.ikuai-overview-section .ikuai-home.is-viewport-scaled .ikuai-home-grid {
+      grid-template-columns: minmax(340px, 430px) minmax(0, 1fr) !important;
+    }
+    #overview.ikuai-overview-section .ikuai-home.is-viewport-scaled .ikuai-system-strip {
+      grid-template-columns: minmax(0, 1.3fr) repeat(3, minmax(140px, .55fr)) !important;
+    }
+    #overview.ikuai-overview-section .ikuai-home.is-viewport-scaled .ikuai-card-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+    #overview.ikuai-overview-section .ikuai-home.is-viewport-scaled .ikuai-home-grid > .ikuai-wan-card {
+      position: sticky;
+      top: 14px;
+      max-height: calc(100vh - 28px);
+      overflow-y: auto;
+    }
     @media (max-width: 960px) {
       .pm-overview-main { grid-template-columns: 1fr; }
       .pm-home-grid,
@@ -364,6 +421,19 @@
       .scale-detail-kpis { display: grid; grid-template-columns: 1fr; }
       .scale-table { min-width: 680px; font-size: 11px; }
       .scale-table th, .scale-table td { padding: 7px 8px; }
+    }
+    #overview.ikuai-overview-section .ikuai-home.is-viewport-scaled .ikuai-wan-card {
+      min-height: 680px !important;
+      padding: 20px !important;
+    }
+    #overview.ikuai-overview-section .ikuai-home.is-viewport-scaled .ikuai-info-row {
+      grid-template-columns: 128px minmax(0, 1fr) !important;
+    }
+    #overview.ikuai-overview-section .ikuai-home.is-viewport-scaled .ikuai-quick-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    }
+    #overview.ikuai-overview-section .ikuai-home.is-viewport-scaled .ikuai-device {
+      grid-template-columns: 122px minmax(0, 1fr) !important;
     }
   `;
   document.head.appendChild(style);
@@ -401,6 +471,59 @@
     return Number(row?.[upKey] || 0) + Number(row?.[downKey] || 0);
   }
 
+  function interfaceDropTotal(row) {
+    row = row || {};
+    return Number((row.dropTotal ?? (Number(row.txDrop || 0) + Number(row.rxDrop || 0))) || 0);
+  }
+
+  function interfaceErrorTotal(row) {
+    row = row || {};
+    return Number((row.errorTotal ?? (Number(row.txError || 0) + Number(row.rxError || 0))) || 0);
+  }
+
+  function interfaceDropDelta(row) {
+    return Number((row || {}).dropDelta || 0);
+  }
+
+  function interfaceErrorDelta(row) {
+    return Number((row || {}).errorDelta || 0);
+  }
+
+  function interfacePacketDelta(row) {
+    return Number((row || {}).packetDelta || 0);
+  }
+
+  function interfaceLossRate(row) {
+    const value = Number((row || {}).lossRate);
+    return Number.isFinite(value) ? value : null;
+  }
+
+  function lossRateText(row) {
+    const value = interfaceLossRate(row);
+    if (value === null) return '-';
+    const percent = value * 100;
+    const digits = percent > 0 && percent < 0.01 ? 4 : percent < 1 ? 3 : 2;
+    return `${percent.toFixed(digits)}%`;
+  }
+
+  function isDerivedInterface(row) {
+    row = row || {};
+    const type = String(row.type || '').toLowerCase();
+    const name = String(row.name || '').toLowerCase();
+    return Boolean(row.isDerivedInterface || row.qualityEvidenceLevel === 'logical' || ['vlan', 'macvlan'].includes(type) || name.startsWith('vlan') || name.startsWith('macvlan'));
+  }
+
+  function interfaceRecentQualityScore(row) {
+    return interfaceDropDelta(row) + interfaceErrorDelta(row) + (interfaceLossRate(row) || 0) * 1000;
+  }
+
+  function interfaceQualityEvidence(row) {
+    const packetDelta = interfacePacketDelta(row);
+    const pairText = row?.logicalPairKey ? ` · ${String(row.logicalPairKey).replace('logical-pair:', '成对 ')}` : '';
+    const logicalText = isDerivedInterface(row) ? ` · 逻辑接口降权${pairText}` : '';
+    return `累计 ${number(interfaceDropTotal(row))}/${number(interfaceErrorTotal(row))} · 新增 +${number(interfaceDropDelta(row))}/+${number(interfaceErrorDelta(row))} · 丢包率 ${lossRateText(row)}${packetDelta ? ` / ${number(packetDelta)} 包` : ''}${logicalText}`;
+  }
+
   function levelRank(level) {
     return { ok: 0, info: 1, warning: 2, critical: 3 }[level] ?? 1;
   }
@@ -428,7 +551,11 @@
   }
 
   function interfaceErrors(row) {
-    return Number(row?.txDrop || 0) + Number(row?.rxDrop || 0) + Number(row?.txError || 0) + Number(row?.rxError || 0);
+    return interfaceDropTotal(row) + interfaceErrorTotal(row);
+  }
+
+  function interfaceNeedsAttention(row) {
+    return interfaceRecentQualityScore(row) > 0;
   }
 
   function isInterfaceDown(row) {
@@ -448,8 +575,10 @@
   }
 
   function interfaceScore(row) {
+    const weight = isDerivedInterface(row) ? 0.35 : 1;
     return (isInterfaceDown(row) ? 1000000 : 0)
-      + interfaceErrors(row) * 100
+      + interfaceRecentQualityScore(row) * 100000
+      + interfaceErrors(row) * 100 * weight
       + Math.round(totalRate(row, 'txRate', 'rxRate') / 1024);
   }
 
@@ -473,7 +602,10 @@
     const onlineLines = lines.filter((row) => row.running).length;
     const offlineLines = Math.max(0, lines.length - onlineLines);
     const downInterfaces = interfaces.filter(isInterfaceDown).length;
-    const errorInterfaces = interfaces.filter((row) => interfaceErrors(row) > 0).length;
+    const recentQualityInterfaces = interfaces.filter((row) => interfaceNeedsAttention(row));
+    const primaryQualityInterfaces = recentQualityInterfaces.filter((row) => !isDerivedInterface(row)).length;
+    const logicalQualityInterfaces = recentQualityInterfaces.length - primaryQualityInterfaces;
+    const historicalQualityInterfaces = interfaces.filter((row) => interfaceErrors(row) > 0 && !interfaceNeedsAttention(row)).length;
     const connectionTotal = Number(overview.connectionTotal || connections.total || 0);
     const issues = [];
 
@@ -485,8 +617,11 @@
     } else if (offlineLines > 0) {
       issues.push(issue('warning', '存在离线 WAN', `${offlineLines} / ${lines.length} 条 WAN 离线或未运行。`, '进入接口总览筛选离线/禁用，优先确认拨号和父接口。', 'interfaces'));
     }
-    if (errorInterfaces > 0) {
-      issues.push(issue('warning', '接口存在丢包或错误', `${errorInterfaces} 个接口出现丢包/错包计数。`, '进入接口总览筛选丢包/错误，按接口证据逐条处理。', 'interfaces'));
+    if (primaryQualityInterfaces > 0 || logicalQualityInterfaces > 0) {
+      const topQuality = recentQualityInterfaces.slice().sort((a, b) => interfaceScore(b) - interfaceScore(a))[0] || {};
+      issues.push(issue('warning', '接口最近出现丢包或错包', `主接口 ${primaryQualityInterfaces} 个，逻辑接口 ${logicalQualityInterfaces} 个；${topQuality.name || '-'} ${interfaceQualityEvidence(topQuality)}。`, '进入接口总览查看“累计 / 新增 / 丢包率”，VLAN/macvlan 证据按逻辑接口降权。', 'interfaces'));
+    } else if (historicalQualityInterfaces > 0) {
+      issues.push(issue('info', '接口只有历史累计丢错', `${historicalQualityInterfaces} 个接口存在历史累计，但最近采样未新增。`, '继续观察最近新增和丢包率，不把历史累计当成当前故障。', 'interfaces'));
     }
     if (downInterfaces > 0 && !offlineLines) {
       issues.push(issue('warning', '存在离线或禁用接口', `${downInterfaces} 个接口未运行或被禁用。`, '进入接口总览筛选离线/禁用，确认是否符合预期。', 'interfaces'));
@@ -975,21 +1110,23 @@
     }).length;
     const downCount = countFor('down');
     const errorCount = countFor('error');
-    const abnormalCount = rows.filter((row) => isInterfaceDown(row) || interfaceErrors(row) > 0).length;
+    const abnormalCount = rows.filter((row) => isInterfaceDown(row) || interfaceNeedsAttention(row)).length;
     const wanCount = countFor('WAN');
     const lanCount = countFor('LAN');
     const vnetCount = countFor('VNET');
     const busiest = rows.slice().sort((a, b) => totalRate(b, 'txRate', 'rxRate') - totalRate(a, 'txRate', 'rxRate'))[0];
-    const focus = rows.find((row) => isInterfaceDown(row) || interfaceErrors(row) > 0) || busiest;
+    const focus = rows.find((row) => isInterfaceDown(row) || interfaceNeedsAttention(row))
+      || rows.find((row) => interfaceErrors(row) > 0)
+      || busiest;
     const focusTitle = focus
-      ? (isInterfaceDown(focus) ? '优先处理：离线/禁用接口' : interfaceErrors(focus) > 0 ? '优先处理：丢包/错误接口' : '当前最忙接口')
+      ? (isInterfaceDown(focus) ? '优先处理：离线/禁用接口' : interfaceNeedsAttention(focus) ? '优先处理：最近新增丢错接口' : interfaceErrors(focus) > 0 ? '观察：历史累计丢错接口' : '当前最忙接口')
       : '等待接口数据';
     const focusDetail = focus
-      ? `${focus.name || '-'} · ${interfaceRole(focus)} · ${rate(totalRate(focus, 'txRate', 'rxRate'))} · 丢/错 ${number(interfaceErrors(focus))}`
+      ? `${focus.name || '-'} · ${interfaceRole(focus)} · ${rate(totalRate(focus, 'txRate', 'rxRate'))} · ${interfaceQualityEvidence(focus)}`
       : '当前没有可展示的接口。';
     const groupOptions = [
       { value: 'all', label: '全部', meta: `${number(rows.length)} 个` },
-      { value: 'error', label: '丢包/错误', meta: `${number(errorCount)} 个` },
+      { value: 'error', label: '丢包证据', meta: `${number(errorCount)} 个` },
       { value: 'down', label: '离线/禁用', meta: `${number(downCount)} 个` },
       { value: 'WAN', label: 'WAN 接口', meta: `${number(wanCount)} 个` },
       { value: 'LAN', label: 'LAN', meta: `${number(lanCount)} 个` },
@@ -1020,7 +1157,7 @@
             <div class="pm-interface-focus-title">${html(focusTitle)}</div>
             <b>${html(focus?.name || '-')}</b>
             <span>${html(focusDetail)}</span>
-            <span>建议先筛选“丢包/错误”或“离线/禁用”，确认异常是否符合预期。</span>
+            <span>建议先看“最近新增”和“最近丢包率”；VLAN/macvlan 逻辑接口已降权展示。</span>
           </div>
         </div>
         <div class="pm-interface-workbench">
@@ -1048,8 +1185,9 @@
               const role = interfaceRole(row);
               const errors = interfaceErrors(row);
               const down = isInterfaceDown(row);
-              const statusText = down ? '离线/禁用' : errors > 0 ? '有丢错' : '在线';
-              const statusTone = down ? 'danger' : errors > 0 ? 'warn' : 'ok';
+              const recentQuality = interfaceNeedsAttention(row);
+              const statusText = down ? '离线/禁用' : recentQuality ? '最近新增丢错' : errors > 0 ? '历史累计丢错' : '在线';
+              const statusTone = down ? 'danger' : recentQuality ? 'warn' : errors > 0 ? 'info' : 'ok';
               const traffic = `${rate(row.txRate)} / ${rate(row.rxRate)}`;
               const totalBytes = bytes(Number(row.txBytes || 0) + Number(row.rxBytes || 0));
               const evidence = [
@@ -1065,7 +1203,7 @@
                 <td>${html(shortList(row.ips || row.addresses, 2))}</td>
                 <td>${traffic}</td>
                 <td>${totalBytes}</td>
-                <td>丢 ${number(Number(row.txDrop || 0) + Number(row.rxDrop || 0))} / 错 ${number(Number(row.txError || 0) + Number(row.rxError || 0))}</td>
+                <td>${html(interfaceQualityEvidence(row))}</td>
                 <td><details class="pm-iface-detail"><summary>查看</summary><div>${html(evidence)}</div></details></td>
               </tr>`;
             },
@@ -1275,6 +1413,75 @@
   window.renderTerminals = renderTerminals;
   window.renderDhcp = renderDhcp;
   window.renderTrafficLoad = renderTrafficLoad;
+
+  const IKUAI_HOME_DESIGN_WIDTH = 1180;
+  let ikuaiFitRaf = 0;
+  let ikuaiFitObserver = null;
+  let ikuaiObservedSection = null;
+
+  function observeIkuaiSection(section) {
+    if (typeof ResizeObserver !== 'function' || ikuaiObservedSection === section) return;
+    if (ikuaiFitObserver) ikuaiFitObserver.disconnect();
+    ikuaiObservedSection = section;
+    ikuaiFitObserver = new ResizeObserver(() => requestIkuaiViewportFit());
+    ikuaiFitObserver.observe(section);
+  }
+
+  function fitIkuaiHomeToViewport() {
+    const section = document.querySelector('#overview.ikuai-overview-section');
+    const home = section?.querySelector?.('.ikuai-home');
+    if (!section || !home) return;
+    observeIkuaiSection(section);
+    const availableWidth = Math.max(1, Math.floor(section.clientWidth || section.getBoundingClientRect().width || 0));
+    const scale = Math.min(1, availableWidth / IKUAI_HOME_DESIGN_WIDTH);
+    const shouldScale = scale < 0.995;
+    home.classList.toggle('is-viewport-scaled', shouldScale);
+    section.classList.toggle('is-ikuai-scaled', shouldScale);
+    if (!shouldScale) {
+      home.style.removeProperty('--ikuai-home-scale');
+      home.style.removeProperty('--ikuai-home-design-width');
+      section.style.removeProperty('--ikuai-scaled-height');
+      return;
+    }
+    home.style.setProperty('--ikuai-home-scale', scale.toFixed(5));
+    home.style.setProperty('--ikuai-home-design-width', `${IKUAI_HOME_DESIGN_WIDTH}px`);
+    const scaledHeight = Math.ceil(home.scrollHeight * scale);
+    section.style.setProperty('--ikuai-scaled-height', `${scaledHeight}px`);
+  }
+
+  function requestIkuaiViewportFit() {
+    if (ikuaiFitRaf) cancelAnimationFrame(ikuaiFitRaf);
+    ikuaiFitRaf = requestAnimationFrame(() => {
+      ikuaiFitRaf = 0;
+      fitIkuaiHomeToViewport();
+    });
+  }
+
+  function requestIkuaiViewportFitBurst() {
+    requestIkuaiViewportFit();
+    setTimeout(requestIkuaiViewportFit, 80);
+    setTimeout(requestIkuaiViewportFit, 240);
+  }
+
+  window.addEventListener('resize', requestIkuaiViewportFit);
+  window.addEventListener('load', requestIkuaiViewportFitBurst);
+  document.addEventListener('DOMContentLoaded', requestIkuaiViewportFitBurst);
+  const ikuaiDomObserverTarget = document.getElementById('app') || document.body;
+  if (ikuaiDomObserverTarget && typeof MutationObserver === 'function') {
+    const ikuaiDomObserver = new MutationObserver(() => requestIkuaiViewportFit());
+    ikuaiDomObserver.observe(ikuaiDomObserverTarget, { childList: true, subtree: true });
+  }
+  requestIkuaiViewportFitBurst();
+  const baseRenderAppForIkuaiFit = typeof renderApp === 'function' ? renderApp : null;
+  if (baseRenderAppForIkuaiFit && !window.__ikuaiViewportFitRenderWrap) {
+    window.__ikuaiViewportFitRenderWrap = true;
+    renderApp = function renderAppWithIkuaiViewportFit(...args) {
+      const result = baseRenderAppForIkuaiFit.apply(this, args);
+      requestIkuaiViewportFitBurst();
+      return result;
+    };
+    window.renderApp = renderApp;
+  }
 
   document.addEventListener('input', (event) => {
     const target = event.target?.closest?.('[data-scale-search]');

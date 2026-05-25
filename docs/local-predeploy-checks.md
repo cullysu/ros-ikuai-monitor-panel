@@ -34,7 +34,7 @@ network devices.
 .\tools\check-local-predeploy.ps1 -Profile private
 .\tools\check-local-predeploy.ps1 -SkipBrowser
 .\tools\check-local-predeploy.ps1 -StrictResponsive
-.\tools\check-local-predeploy.ps1 -Url http://127.0.0.1:8080/
+.\tools\check-local-predeploy.ps1 -Url http://127.0.0.1:28646/
 ```
 
 `-Url` is intentionally local-only. The runner refuses non-local hosts.

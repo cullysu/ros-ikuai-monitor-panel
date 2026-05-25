@@ -17,7 +17,7 @@ Examples:
   # RouterOS-only instance (separate names via template units)
   sudo ./deploy_linux.sh --instance routeros-panel --disable-ip-service
 
-  # Existing private installs only; preserves legacy unit names and IP helper.
+  # Existing private installs only; preserves legacy unit names.
   sudo ./deploy_linux.sh --legacy-private
 
 Environment overrides:
@@ -104,7 +104,7 @@ if [[ "${MODE}" == "instance" ]]; then
   PANEL_UNIT="routeros-panel@${INSTANCE}.service"
   IP_UNIT="ros-panel-ip@${INSTANCE}.service"
 
-  # In instance mode, default to NOT touching host IPs unless explicitly enabled.
+  # Default to NOT touching host IPs unless explicitly enabled.
   if [[ -z "${ENABLE_IP_SERVICE}" ]]; then
     ENABLE_IP_SERVICE="0"
   fi
@@ -114,27 +114,35 @@ else
   IP_SERVICE_FILE="/etc/systemd/system/ros-panel-ip.service"
   PANEL_UNIT="routeros-panel.service"
   IP_UNIT="ros-panel-ip.service"
+  if [[ -z "${ENABLE_IP_SERVICE}" ]]; then
+    ENABLE_IP_SERVICE="0"
+  fi
 fi
 
 if [[ "${MODE}" == "instance" ]]; then
   DEFAULT_PANEL_BIND="127.0.0.1"
+  DEFAULT_PANEL_PORT="28646"
   DEFAULT_PANEL_TARGET_IP="127.0.0.1"
   DEFAULT_PANEL_PROFILE="routeros_only"
   DEFAULT_ROUTER_USER="ros-panel-readonly"
 else
-  DEFAULT_PANEL_BIND="0.0.0.0"
-  DEFAULT_PANEL_TARGET_IP="192.168.3.5"
+  DEFAULT_PANEL_BIND="127.0.0.1"
+  DEFAULT_PANEL_PORT="28646"
+  DEFAULT_PANEL_TARGET_IP="127.0.0.1"
   DEFAULT_PANEL_PROFILE="private_ops"
-  DEFAULT_ROUTER_USER="admin"
+  DEFAULT_ROUTER_USER="ros-panel-readonly"
 fi
 
 ROS_PANEL_BIND="${ROS_PANEL_BIND:-${DEFAULT_PANEL_BIND}}"
-ROS_PANEL_PORT="${ROS_PANEL_PORT:-80}"
+ROS_PANEL_PORT="${ROS_PANEL_PORT:-${DEFAULT_PANEL_PORT}}"
 ROS_PANEL_TARGET_IP="${ROS_PANEL_TARGET_IP:-${DEFAULT_PANEL_TARGET_IP}}"
 ROS_PANEL_PROFILE="${ROS_PANEL_PROFILE:-${DEFAULT_PANEL_PROFILE}}"
 ROS_PANEL_IFACE="${ROS_PANEL_IFACE:-ens192}"
 ROS_PANEL_BIND_CIDR="${ROS_PANEL_BIND_CIDR:-24}"
 ROS_PANEL_IP_HEAL_SECONDS="${ROS_PANEL_IP_HEAL_SECONDS:-3}"
+ROS_PANEL_READONLY_DNS_SERVERS="${ROS_PANEL_READONLY_DNS_SERVERS:-}"
+ROS_PANEL_READONLY_OPENWRT_DNS="${ROS_PANEL_READONLY_OPENWRT_DNS:-}"
+ROS_PANEL_READONLY_NIKKI_CONTROLLER="${ROS_PANEL_READONLY_NIKKI_CONTROLLER:-}"
 ROS_MONITOR_ROUTER_HOST="${ROS_MONITOR_ROUTER_HOST:-192.168.88.1}"
 ROS_MONITOR_ROUTER_USER="${ROS_MONITOR_ROUTER_USER:-${DEFAULT_ROUTER_USER}}"
 ROS_MONITOR_ROUTER_PASSWORD="${ROS_MONITOR_ROUTER_PASSWORD:-CHANGE_ME}"
@@ -185,6 +193,9 @@ ROS_PANEL_PROFILE=${ROS_PANEL_PROFILE}
 ROS_PANEL_IFACE=${ROS_PANEL_IFACE}
 ROS_PANEL_BIND_CIDR=${ROS_PANEL_BIND_CIDR}
 ROS_PANEL_IP_HEAL_SECONDS=${ROS_PANEL_IP_HEAL_SECONDS}
+ROS_PANEL_READONLY_DNS_SERVERS=${ROS_PANEL_READONLY_DNS_SERVERS}
+ROS_PANEL_READONLY_OPENWRT_DNS=${ROS_PANEL_READONLY_OPENWRT_DNS}
+ROS_PANEL_READONLY_NIKKI_CONTROLLER=${ROS_PANEL_READONLY_NIKKI_CONTROLLER}
 ROS_MONITOR_ROUTER_HOST=${ROS_MONITOR_ROUTER_HOST}
 ROS_MONITOR_ROUTER_USER=${ROS_MONITOR_ROUTER_USER}
 ROS_MONITOR_ROUTER_PASSWORD=${ROS_MONITOR_ROUTER_PASSWORD}
@@ -227,11 +238,17 @@ if [[ "${MODE}" == "instance" ]]; then
     sudo systemctl disable "${IP_UNIT}" >/dev/null 2>&1 || true
   fi
 else
-  sudo systemctl enable "${IP_UNIT}" "${PANEL_UNIT}"
-  sudo systemctl restart "${IP_UNIT}"
+  sudo systemctl enable "${PANEL_UNIT}"
+  if [[ "${ENABLE_IP_SERVICE}" == "1" ]]; then
+    sudo systemctl enable "${IP_UNIT}"
+    sudo systemctl restart "${IP_UNIT}"
+  else
+    sudo systemctl stop "${IP_UNIT}" >/dev/null 2>&1 || true
+    sudo systemctl disable "${IP_UNIT}" >/dev/null 2>&1 || true
+  fi
   sudo systemctl restart "${PANEL_UNIT}"
 fi
 
 sleep 5
 sudo systemctl --no-pager --full status "${IP_UNIT}" "${PANEL_UNIT}" || true
-curl -fsS "http://${ROS_PANEL_TARGET_IP}/api/health"
+curl -fsS "http://${ROS_PANEL_TARGET_IP}:${ROS_PANEL_PORT}/api/health"
