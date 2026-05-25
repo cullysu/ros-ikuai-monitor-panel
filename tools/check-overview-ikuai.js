@@ -130,23 +130,52 @@ async function main() {
       const normalize = (text) => String(text || '').replace(/\\s+/g, ' ').trim();
       const sectionEl = document.querySelector('#overview');
       const text = normalize(sectionEl?.textContent || '');
-      const required = ['WAN 信息', '快速入口', '实时速率趋势', '系统负载', '终端数量', '流量排行', '宽带状态摘要'];
+      const required = ['WAN 信息', '快捷入口', '监控信息', '终端数量', '流量排行榜', 'CPU负载', '内存使用率', '磁盘使用率'];
       const missing = required.filter((item) => !text.includes(item));
-      const statusTiles = Array.from(sectionEl?.querySelectorAll('.ik-home-status-tile') || []);
-      const quickLinks = Array.from(sectionEl?.querySelectorAll('.ik-quick-link') || []);
-      const resourceCards = Array.from(sectionEl?.querySelectorAll('.ops-resource-card') || []);
-      const legends = normalize(Array.from(sectionEl?.querySelectorAll('.ik-home-legend') || []).map((node) => node.textContent).join(' '));
-      const layout = sectionEl?.querySelector('.ik-home-layout');
-      const layoutStyle = layout ? getComputedStyle(layout).gridTemplateColumns : '';
+      const statusTiles = Array.from(sectionEl?.querySelectorAll('.ikuai-stat-tile') || []);
+      const quickLinks = Array.from(sectionEl?.querySelectorAll('.ikuai-quick') || []);
+      const terminalSummary = sectionEl?.querySelector('[data-ikuai-terminal-summary]');
+      const latency = sectionEl?.querySelector('.ikuai-latency');
+      const quickHead = sectionEl?.querySelector('.ikuai-quick-head');
+      const terminalAfterLatency = Boolean(latency && terminalSummary && (latency.compareDocumentPosition(terminalSummary) & Node.DOCUMENT_POSITION_FOLLOWING));
+      const terminalBeforeQuick = Boolean(terminalSummary && quickHead && (terminalSummary.compareDocumentPosition(quickHead) & Node.DOCUMENT_POSITION_FOLLOWING));
+      const duplicateTerminalCards = Array.from(sectionEl?.querySelectorAll('.ikuai-right .ikuai-card-title') || [])
+        .filter((node) => normalize(node.textContent) === '终端数量');
+      const visibleAxisLabels = (selector) => Array.from(sectionEl?.querySelectorAll(selector) || [])
+        .filter((node) => {
+          const rect = node.getBoundingClientRect();
+          const style = getComputedStyle(node);
+          return rect.width > 0 && rect.height > 0 && style.visibility !== 'hidden' && style.display !== 'none' && style.opacity !== '0' && normalize(node.textContent);
+        });
+      const wanAxisLabels = visibleAxisLabels('.ikuai-wan-card .axis-tick-label');
+      const monitorAxisLabels = visibleAxisLabels('.ikuai-monitor-card .axis-tick-label');
+      const overviewAxesOk = wanAxisLabels.length >= 3 && monitorAxisLabels.length >= 3;
+      const resourceGrid = sectionEl?.querySelector('.ikuai-resource-grid');
+      const resourceCards = Array.from(resourceGrid?.querySelectorAll('.ikuai-resource-card') || []);
+      const resourceText = normalize(resourceGrid?.textContent || '');
+      const resourceColumns = resourceGrid ? getComputedStyle(resourceGrid).gridTemplateColumns.split(' ').filter(Boolean).length : 0;
+      const overflowingMetricNodes = Array.from(sectionEl?.querySelectorAll('.ikuai-terminal-item b, .ikuai-stat-main, .ikuai-resource-card .ikuai-card-title') || [])
+        .filter((node) => node.scrollWidth > node.clientWidth + 2);
+      const horizontalOverflow = sectionEl ? sectionEl.scrollWidth > sectionEl.clientWidth + 2 : true;
       return {
-        pass: Boolean(sectionEl && missing.length === 0 && statusTiles.length >= 8 && quickLinks.length >= 9 && resourceCards.length >= 3 && legends.includes('蓝色 上行') && legends.includes('绿色 下行')),
+        pass: Boolean(sectionEl && missing.length === 0 && statusTiles.length >= 3 && quickLinks.length >= 9 && terminalAfterLatency && terminalBeforeQuick && duplicateTerminalCards.length === 0 && overviewAxesOk && resourceCards.length === 3 && resourceColumns >= 3 && resourceText.includes('CPU负载') && resourceText.includes('内存使用率') && resourceText.includes('磁盘使用率') && !horizontalOverflow && overflowingMetricNodes.length === 0),
         url: location.href,
         missing,
         statusTileCount: statusTiles.length,
         quickLinkCount: quickLinks.length,
+        terminalAfterLatency,
+        terminalBeforeQuick,
+        duplicateTerminalCardCount: duplicateTerminalCards.length,
+        wanAxisLabelCount: wanAxisLabels.length,
+        wanAxisLabels: wanAxisLabels.map((node) => normalize(node.textContent)).slice(0, 3),
+        monitorAxisLabelCount: monitorAxisLabels.length,
+        monitorAxisLabels: monitorAxisLabels.map((node) => normalize(node.textContent)).slice(0, 3),
+        overviewAxesOk,
         resourceCardCount: resourceCards.length,
-        legendText: legends,
-        layoutColumns: layoutStyle,
+        resourceColumns,
+        horizontalOverflow,
+        overflowingMetricCount: overflowingMetricNodes.length,
+        overflowingMetrics: overflowingMetricNodes.map((node) => normalize(node.textContent)).slice(0, 8),
         viewport: { width: innerWidth, height: innerHeight },
         scrollHeight: document.documentElement.scrollHeight
       };

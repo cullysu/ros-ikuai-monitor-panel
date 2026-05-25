@@ -304,7 +304,35 @@
     .ikuai-rate-row span:last-child { color: #0f7a3a; text-align: right; }
     .ikuai-wan-chart { margin: 8px 0 12px; padding: 8px 0 0; border-bottom: 1px solid #eef2f7; }
     .ikuai-wan-chart svg { width: 100%; height: 96px; display: block; }
+    .ikuai-wan-chart .axis-line-chart,
+    .ikuai-chart-box .axis-line-chart {
+      grid-template-columns: minmax(62px, 74px) minmax(0, 1fr);
+      gap: 8px;
+    }
+    .ikuai-wan-chart .axis-line-chart-y,
+    .ikuai-chart-box .axis-line-chart-y {
+      display: flex !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+      color: #1f2937;
+      font-size: 11px;
+      font-weight: 800;
+    }
+    .ikuai-wan-chart .axis-tick-label,
+    .ikuai-chart-box .axis-tick-label {
+      display: block !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+    }
     .ikuai-latency { display: flex; align-items: center; justify-content: space-between; min-height: 38px; color: #111827; font-size: 13px; border-bottom: 1px solid #eef2f7; }
+    .ikuai-terminal-summary { margin: 10px 0 0; padding: 0 0 10px; border-bottom: 1px solid #eef2f7; }
+    .ikuai-terminal-summary-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; min-width: 0; }
+    .ikuai-terminal-summary-head .ikuai-chip { flex: 0 0 auto; }
+    .ikuai-terminal-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin-top: 8px; min-width: 0; }
+    .ikuai-terminal-item { min-width: 0; min-height: 48px; padding: 7px 6px; border: 1px solid #e3ecf7; border-radius: 8px; background: #fbfdff; box-sizing: border-box; overflow: hidden; }
+    .ikuai-terminal-item.is-wide { grid-column: 1 / -1; }
+    .ikuai-terminal-item span { display: block; min-width: 0; color: #64748b; font-size: 10px; font-weight: 800; line-height: 1.2; overflow-wrap: anywhere; }
+    .ikuai-terminal-item b { display: block; min-width: 0; max-width: 100%; margin-top: 4px; color: #172033; font-size: clamp(12px, 1vw, 15px); font-weight: 900; line-height: 1.08; white-space: normal; overflow-wrap: anywhere; word-break: break-word; font-variant-numeric: tabular-nums; }
     .ikuai-quick-head { display: flex; align-items: center; justify-content: space-between; margin: 16px 0 12px; }
     .ikuai-quick-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px 14px; }
     .ikuai-quick { display: grid; place-items: center; gap: 7px; min-height: 58px; color: #6b7280; text-decoration: none; font-size: 12px; }
@@ -337,6 +365,7 @@
     .ikuai-line-legend { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 8px; color: #4b5563; font-size: 12px; }
     .ikuai-green-bar { height: 7px; margin-top: 8px; border-radius: 999px; background: linear-gradient(90deg,#6bd485,#8dde95); }
     .ikuai-card-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+    .ikuai-resource-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: stretch; }
     .ikuai-resource-card { min-height: 220px; padding-bottom: 14px; }
     .ikuai-resource-body { padding: 10px 20px 0; }
     .ikuai-resource-chart { min-height: 130px; }
@@ -382,6 +411,9 @@
     #overview.ikuai-overview-section .ikuai-home.is-viewport-scaled .ikuai-card-grid {
       grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
     }
+    #overview.ikuai-overview-section .ikuai-home.is-viewport-scaled .ikuai-resource-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    }
     #overview.ikuai-overview-section .ikuai-home.is-viewport-scaled .ikuai-home-grid > .ikuai-wan-card {
       position: sticky;
       top: 14px;
@@ -400,6 +432,9 @@
         overflow: visible;
       }
       .ikuai-card-grid { grid-template-columns: 1fr; }
+      .ikuai-resource-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .ikuai-resource-grid .ikuai-card-head { padding: 14px 14px 0; }
+      .ikuai-resource-grid .ikuai-resource-body { padding: 10px 14px 0; }
       .pm-proof-grid,
       .pm-interface-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .scale-toolbar { grid-template-columns: 1fr; align-items: stretch; }
@@ -416,6 +451,12 @@
       .pm-interface-kpis { grid-template-columns: 1fr; }
       .ikuai-wan-card { min-height: 0; padding: 16px; }
       .ikuai-info-row { grid-template-columns: 104px minmax(0, 1fr); }
+      .ikuai-wan-chart .axis-line-chart,
+      .ikuai-chart-box .axis-line-chart { grid-template-columns: minmax(54px, 58px) minmax(0, 1fr); gap: 6px; }
+      .ikuai-wan-chart .axis-line-chart-y,
+      .ikuai-chart-box .axis-line-chart-y { font-size: 9.5px; }
+      .ikuai-terminal-grid,
+      .ikuai-resource-grid { grid-template-columns: 1fr; }
       .ikuai-quick-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .ikuai-device { grid-template-columns: 1fr; }
       .scale-group-tabs { display: grid; grid-template-columns: 1fr 1fr; }
@@ -996,6 +1037,23 @@
     </div>`;
   }
 
+  function renderTerminalSummary(overview, terminals, activeTerminals, connectionTotal) {
+    const online = Number(overview.onlineTerminals || terminals.length || 0);
+    const inactive = Math.max(0, online - activeTerminals);
+    return `<div class="ikuai-terminal-summary" data-ikuai-terminal-summary="true">
+      <div class="ikuai-terminal-summary-head">
+        <div><div class="ikuai-card-title">终端数量</div><div class="ikuai-card-subtle">在线状态、连接压力与活跃终端</div></div>
+        <span class="ikuai-chip">有线</span>
+      </div>
+      <div class="ikuai-terminal-grid">
+        <div class="ikuai-terminal-item"><span>在线终端</span><b>${number(online)}</b></div>
+        <div class="ikuai-terminal-item"><span>有流量</span><b>${number(activeTerminals)}</b></div>
+        <div class="ikuai-terminal-item"><span>离线/低流量</span><b>${number(inactive)}</b></div>
+        <div class="ikuai-terminal-item"><span>连接数</span><b>${compact(connectionTotal)}</b></div>
+      </div>
+    </div>`;
+  }
+
   function renderOverviewScaleAdaptive(snapshot) {
     snapshot = snapshot || {};
     const lines = typeof getLogicalWanLines === 'function' ? getLogicalWanLines(snapshot) : (snapshot.wan || snapshot.pppoe || []);
@@ -1071,6 +1129,7 @@
             <div class="ikuai-rate-row"><span>↑ <b>${rate(selectedWan?.upRate)}</b></span><span>↓ <b>${rate(selectedWan?.downRate)}</b></span></div>
             <div class="ikuai-wan-chart">${wanChart}</div>
             <div class="ikuai-latency"><span>延迟</span><strong title="ping ${html(latencyTarget)}">${latencyText}</strong></div>
+            ${renderTerminalSummary(overview, terminals, activeTerminals, connectionTotal)}
             <div class="ikuai-quick-head"><div class="ikuai-card-title">快捷入口</div><a href="#interfaces" data-section="interfaces" class="ikuai-card-subtle">自定义</a></div>
             <div class="ikuai-quick-grid" data-overview-drilldown="true">${renderIkuaiQuickGrid()}</div>
           </aside>
@@ -1089,23 +1148,9 @@
               </div>
             </div>
 
-            <div class="ikuai-card-grid">
-              <div class="ikuai-card ikuai-resource-card">
-                <div class="ikuai-card-head">
-                  <div><div class="ikuai-card-title">终端数量</div><div class="ikuai-card-subtle">当前在线状态</div></div>
-                  <div class="ikuai-chart-controls"><span class="ikuai-chip">平均值</span><span class="ikuai-chip is-active">有线</span></div>
-                </div>
-                <div class="ikuai-resource-body">
-                  <div class="pm-proof-grid">
-                    <div class="pm-proof-item"><span>在线终端</span><b>${number(overview.onlineTerminals || terminals.length || 0)}</b></div>
-                    <div class="pm-proof-item"><span>有流量</span><b>${number(activeTerminals)}</b></div>
-                    <div class="pm-proof-item"><span>离线/低流量</span><b>${number(Math.max(0, (overview.onlineTerminals || terminals.length || 0) - activeTerminals))}</b></div>
-                    <div class="pm-proof-item"><span>Top 终端</span><b>${html(rankedTerminals[0]?.ip || '-')}</b></div>
-                  </div>
-                </div>
-              </div>
-              ${renderResourceCard('内存使用率', safePercent(overview.memoryUsage), '平均值', history.memory || [], '#4891e8')}
+            <div class="ikuai-card-grid ikuai-resource-grid">
               ${renderResourceCard('CPU负载', safePercent(overview.cpuLoad), '使用率 / 趋势', history.cpu || [], '#78c679')}
+              ${renderResourceCard('内存使用率', safePercent(overview.memoryUsage), '平均值', history.memory || [], '#4891e8')}
               ${renderResourceCard('磁盘使用率', safePercent(overview.diskUsage), '系统盘占用', history.disk || [], '#f5b84b')}
             </div>
 

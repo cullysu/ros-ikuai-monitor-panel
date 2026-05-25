@@ -777,6 +777,39 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const detailSections = new Set(['interfaces', 'terminals', 'dhcp', 'trafficLoad']);
     const overviewActionOk = sectionName !== 'overview' || Boolean(sectionRoot?.querySelector('[data-overview-action-panel]') && sectionRoot?.querySelector('[data-overview-drilldown]'));
     const overviewMinimalOk = sectionName !== 'overview' || !/WAN 摘要|线路总表|线路窗口/.test(text);
+    const terminalSummary = sectionRoot?.querySelector('[data-ikuai-terminal-summary]');
+    const latencyRow = sectionRoot?.querySelector('.ikuai-latency');
+    const quickHead = sectionRoot?.querySelector('.ikuai-quick-head');
+    const overviewTerminalPlacementOk = sectionName !== 'overview' || Boolean(
+      terminalSummary &&
+      latencyRow &&
+      quickHead &&
+      (latencyRow.compareDocumentPosition(terminalSummary) & Node.DOCUMENT_POSITION_FOLLOWING) &&
+      (terminalSummary.compareDocumentPosition(quickHead) & Node.DOCUMENT_POSITION_FOLLOWING)
+    );
+    const duplicateTerminalCards = Array.from(sectionRoot?.querySelectorAll('.ikuai-right .ikuai-card-title') || [])
+      .filter((node) => normalize(node.textContent) === '终端数量');
+    const overviewNoDuplicateTerminalOk = sectionName !== 'overview' || duplicateTerminalCards.length === 0;
+    const visibleAxisLabels = (selector) => Array.from(sectionRoot?.querySelectorAll(selector) || [])
+      .filter((node) => {
+        const rect = node.getBoundingClientRect();
+        const style = getComputedStyle(node);
+        return rect.width > 0 && rect.height > 0 && style.visibility !== 'hidden' && style.display !== 'none' && style.opacity !== '0' && normalize(node.textContent);
+      });
+    const wanAxisLabels = visibleAxisLabels('.ikuai-wan-card .axis-tick-label');
+    const monitorAxisLabels = visibleAxisLabels('.ikuai-monitor-card .axis-tick-label');
+    const overviewAxesOk = sectionName !== 'overview' || (wanAxisLabels.length >= 3 && monitorAxisLabels.length >= 3);
+    const resourceGrid = sectionRoot?.querySelector('.ikuai-resource-grid');
+    const resourceCards = Array.from(resourceGrid?.querySelectorAll('.ikuai-resource-card') || []);
+    const resourceText = normalize(resourceGrid?.textContent || '');
+    const resourceColumns = resourceGrid ? getComputedStyle(resourceGrid).gridTemplateColumns.split(' ').filter(Boolean).length : 0;
+    const overviewResourceRowOk = sectionName !== 'overview' || Boolean(
+      resourceCards.length === 3 &&
+      resourceColumns >= 3 &&
+      resourceText.includes('CPU负载') &&
+      resourceText.includes('内存使用率') &&
+      resourceText.includes('磁盘使用率')
+    );
     const detailFeedbackOk = !detailSections.has(sectionName) || Boolean(sectionRoot?.querySelector('[data-scale-filter-summary]') && sectionRoot?.querySelector('[data-scale-clear]'));
     const humanScaleCopyOk = !scaleRequiredSections.has(sectionName) || !/\\bbucket\\b|\\bhasMore\\b|\\bsampled\\b|\\bsort\\b/i.test(text);
     const scrollHeight = Math.max(root.scrollHeight, body.scrollHeight);
@@ -818,6 +851,10 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       scaleDisclosureOk &&
       overviewActionOk &&
       overviewMinimalOk &&
+      overviewTerminalPlacementOk &&
+      overviewNoDuplicateTerminalOk &&
+      overviewAxesOk &&
+      overviewResourceRowOk &&
       detailFeedbackOk &&
       humanScaleCopyOk &&
       scaleHeightOk &&
@@ -855,6 +892,17 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       scaleDisclosureCount,
       overviewActionOk,
       overviewMinimalOk,
+      overviewTerminalPlacementOk,
+      overviewNoDuplicateTerminalOk,
+      duplicateTerminalCardCount: duplicateTerminalCards.length,
+      overviewAxesOk,
+      wanAxisLabelCount: wanAxisLabels.length,
+      wanAxisLabels: wanAxisLabels.map((node) => normalize(node.textContent)).slice(0, 3),
+      monitorAxisLabelCount: monitorAxisLabels.length,
+      monitorAxisLabels: monitorAxisLabels.map((node) => normalize(node.textContent)).slice(0, 3),
+      overviewResourceRowOk,
+      resourceCardCount: resourceCards.length,
+      resourceColumns,
       detailFeedbackOk,
       humanScaleCopyOk,
       scaleHeightOk,

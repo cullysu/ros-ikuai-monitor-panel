@@ -84,6 +84,42 @@ try {
   Write-Host "Local-only: no container start, deployment, or network-device access."
   Write-Host ""
 
+  $indexPath = Join-Path $repoRoot "public/index.html"
+  $scalePatchPath = Join-Path $repoRoot "public/scale-adaptive-patch.js"
+  if (-not (Test-Path -LiteralPath $indexPath) -or -not (Test-Path -LiteralPath $scalePatchPath)) {
+    Add-Check "FAIL" "frontend axis assets" "public/index.html or public/scale-adaptive-patch.js was not found."
+  }
+  else {
+    $indexText = Get-Content -Raw -LiteralPath $indexPath
+    $scalePatchText = Get-Content -Raw -LiteralPath $scalePatchPath
+    if ($indexText -match "axis-tick-label" -and
+        $scalePatchText -match "ikuai-wan-chart \.axis-line-chart" -and
+        $scalePatchText -match "ikuai-chart-box \.axis-line-chart" -and
+        $scalePatchText -match "data-ikuai-terminal-summary") {
+      Add-Check "PASS" "frontend axis assets" "Overview WAN/monitor axis labels and terminal placement markers are present."
+    }
+    else {
+      Add-Check "FAIL" "frontend axis assets" "Overview axis or terminal-placement markers are missing from public assets."
+    }
+  }
+
+  $specPath = Join-Path $repoRoot "routeros-triage-panel.spec"
+  $dockerfilePath = Join-Path $repoRoot "Dockerfile"
+  $composePath = Join-Path $repoRoot "compose.yml"
+  $linuxDeployPath = Join-Path $repoRoot "deploy_linux.sh"
+  $sharedChecks = @(
+    (Test-Path -LiteralPath $specPath) -and ((Get-Content -Raw -LiteralPath $specPath) -match 'public"\),\s*"public"'),
+    (Test-Path -LiteralPath $dockerfilePath) -and ((Get-Content -Raw -LiteralPath $dockerfilePath) -match '(?m)^COPY\s+public\s+\./public'),
+    (Test-Path -LiteralPath $composePath) -and ((Get-Content -Raw -LiteralPath $composePath) -match 'dockerfile:\s*Dockerfile'),
+    (Test-Path -LiteralPath $linuxDeployPath) -and ((Get-Content -Raw -LiteralPath $linuxDeployPath) -match 'rsync -a --delete')
+  )
+  if (($sharedChecks | Where-Object { -not $_ }).Count -eq 0) {
+    Add-Check "PASS" "shared public deployment paths" "Windows EXE, Docker/Compose, RouterOS Container image, and Linux/systemd paths all use the repository public assets."
+  }
+  else {
+    Add-Check "FAIL" "shared public deployment paths" "One or more deployment paths no longer prove they use the repository public assets."
+  }
+
   if ($SkipDocker) {
     Add-Check "SKIP" "docker compose config" "Skipped by -SkipDocker."
   }
