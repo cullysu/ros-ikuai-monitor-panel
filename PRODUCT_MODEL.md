@@ -13,7 +13,7 @@ run from Windows EXE, Docker, local Python, systemd, or RouterOS Container.
 | Path | Purpose | Default stance |
 |------|---------|----------------|
 | Windows EXE | First trial for non-Python Windows users | Recommended first trial |
-| Docker / Compose | Normal LAN deployment on NAS, mini PC, Linux, or OpenWrt Docker | Recommended deployment |
+| Docker / Compose | Normal localhost deployment on NAS, mini PC, Linux, or OpenWrt Docker | Recommended deployment |
 | Local Python | Development and operator debugging | Supported |
 | Linux systemd / VM | Managed service when Docker is not allowed | Professional / explicit |
 | RouterOS Container | One-box advanced deployment near RouterOS | Beta / advanced |
@@ -74,5 +74,6 @@ The public UI optimizes for practical triage rather than decorative dashboards:
 - The current server is still a single-process snapshot collector. Large-scale
   use should rely on summaries and samples until section APIs and storage are
   split out.
-- Built-in auth/TLS/RBAC is not implemented yet. Use trusted LAN access or an
-  authenticated reverse proxy.
+- Built-in auth/TLS/RBAC is not implemented yet. Keep the public deployment on
+  `127.0.0.1:28646` unless a future reviewed design adds authenticated remote
+  access.

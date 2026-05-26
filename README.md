@@ -13,10 +13,9 @@ tools.
 
 ## Status
 
-This is an early public MVP. It is suitable for controlled trusted-LAN trials
-and read-only operational review. Do not expose it directly to the public
-internet. If access leaves a trusted LAN, put authentication and HTTPS in front
-of it.
+This is an early public MVP. It is suitable for controlled localhost trials and
+read-only operational review. Do not expose it directly to a LAN or the public
+internet.
 
 ## Install Paths
 
@@ -51,21 +50,20 @@ private diagnostics.
 
 ## Access URL
 
-The normal remote-access path is the panel host's LAN address:
-
-```text
-http://<panel-host-ip>:28646/
-```
-
-On the same machine that runs the panel, this also works:
+The public default first-run URL is localhost:
 
 ```text
 http://127.0.0.1:28646/
 ```
 
-Client devices do not need the localhost alias helper for normal LAN access.
-The helper is kept only as an optional vanity address for users who insist on
-typing `127.0.0.1:28646` on every client.
+Docker, Windows EXE, local Python, and Linux systemd/VM installs default to
+localhost-only access. Other IP browser entrypoints are not part of the public
+deployment contract.
+
+RouterOS Container is different because the panel runs inside RouterOS. The
+browser still opens `http://127.0.0.1:28646/`, but that requires a local
+forwarder on the client. Do not treat the container veth address as a browser
+URL.
 
 When the panel is opened in a browser, the backend reports the actual URL from
 the HTTP `Host` header. Manual Docker Compose no longer depends on a container
@@ -96,19 +94,17 @@ Short form:
 curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/main/install.sh | bash
 ```
 
-Open the LAN URL printed by the installer, usually
-`http://<panel-host-ip>:28646/`. On the panel host itself,
-`http://127.0.0.1:28646/` also works.
+Open `http://127.0.0.1:28646/` on the panel host.
 
 Then enter the RouterOS SSH host, SSH port, read-only user, and password in the
 panel login page. The panel tests SSH first, then checks RouterOS REST
 reachability. The installer does not require real RouterOS credentials in
 `.env.docker` for first run.
 
-Custom directory or port:
+Custom directory:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/main/install.sh | bash -s -- --dir "$HOME/routeros-panel" --port 28647
+curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/main/install.sh | bash -s -- --dir "$HOME/routeros-panel"
 ```
 
 Force a local build from the checked-out source:
@@ -135,7 +131,7 @@ Stop the installed service while keeping local panel data:
 curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/main/install.sh | bash -s -- --uninstall
 ```
 
-Read [DEPLOY_DOCKER.md](./DEPLOY_DOCKER.md) for manual Compose, LAN access
+Read [DEPLOY_DOCKER.md](./DEPLOY_DOCKER.md) for manual Compose, localhost-only
 defaults, upgrade, uninstall, and RouterOS SSH `allowed-address`
 troubleshooting.
 
@@ -167,15 +163,14 @@ python -m venv .venv
 $env:ROS_MONITOR_ROUTER_HOST="<routeros-host-or-dns>"
 $env:ROS_MONITOR_ROUTER_USER="ros-panel-readonly"
 $env:ROS_MONITOR_ROUTER_PASSWORD="CHANGE_ME"
-$env:ROS_PANEL_BIND="0.0.0.0"
+$env:ROS_PANEL_BIND="127.0.0.1"
 $env:ROS_PANEL_PORT="28646"
-$env:ROS_PANEL_TARGET_IP="auto"
+$env:ROS_PANEL_TARGET_IP="127.0.0.1"
 $env:ROS_PANEL_PROFILE="routeros_only"
 .\.venv\Scripts\python app.py
 ```
 
-Open `http://127.0.0.1:28646/` on the same machine, or
-`http://<panel-host-ip>:28646/` from another LAN device.
+Open `http://127.0.0.1:28646/` on the same machine.
 
 Read [DEPLOY_LOCAL.md](./DEPLOY_LOCAL.md) for Windows, macOS, and Linux details.
 
@@ -186,11 +181,11 @@ cp .env.docker.example .env.docker
 docker compose --env-file .env.docker up -d --build
 ```
 
-Open `http://127.0.0.1:28646/` on the Docker host, or
-`http://<panel-host-ip>:28646/` from another LAN device.
+Open `http://127.0.0.1:28646/` on the Docker host. Other IP browser entrypoints
+are not enabled by the public Compose defaults.
 
 Read [DEPLOY_DOCKER.md](./DEPLOY_DOCKER.md) for UI-based RouterOS login,
-LAN access defaults, upgrade, uninstall, env-file settings, and RouterOS SSH
+localhost-only defaults, upgrade, uninstall, env-file settings, and RouterOS SSH
 `allowed-address` troubleshooting.
 
 ## RouterOS Container
@@ -213,8 +208,8 @@ ghcr.io/cullysu/ros-ikuai-monitor-panel:main
 ```
 
 Read [DEPLOY_ROUTEROS_CONTAINER.md](./DEPLOY_ROUTEROS_CONTAINER.md) and make a
-RouterOS backup before trying it. Do not call the deployment complete until
-the RouterOS-side health check and the intended LAN access URL both pass.
+RouterOS backup before trying it. Do not call the deployment complete until the
+local forwarder URL `http://127.0.0.1:28646/` passes.
 
 ## Linux systemd / VM
 
@@ -222,8 +217,8 @@ The Linux helper remains useful for operators who want an instance managed by
 systemd:
 
 ```bash
-export ROS_PANEL_TARGET_IP="auto"
-export ROS_PANEL_BIND="0.0.0.0"
+export ROS_PANEL_TARGET_IP="127.0.0.1"
+export ROS_PANEL_BIND="127.0.0.1"
 export ROS_PANEL_PORT="28646"
 export ROS_PANEL_PROFILE="routeros_only"
 export ROS_MONITOR_ROUTER_HOST="<routeros-host-or-dns>"
@@ -233,8 +228,7 @@ export ROS_MONITOR_ROUTER_PASSWORD="CHANGE_ME"
 ./deploy_linux.sh --instance routeros-panel --disable-ip-service
 ```
 
-Open `http://127.0.0.1:28646/` on the systemd host, or
-`http://<panel-host-ip>:28646/` from another LAN device. Older `.3.50/.4.50`
+Open `http://127.0.0.1:28646/` on the systemd host. Older `.3.50/.4.50`
 deployment notes are historical examples, not product defaults.
 
 ## What It Does
@@ -265,9 +259,8 @@ deployment notes are historical examples, not product defaults.
 
 - Create a dedicated least-privilege RouterOS user for the panel.
 - Do not use the RouterOS `admin` account.
-- The default public install listens on `0.0.0.0:28646` for trusted LAN access.
-- Do not expose the panel directly to the public internet.
-- Put HTTPS and authentication in front of the panel if it leaves a trusted LAN.
+- The default public install listens on `127.0.0.1:28646` only.
+- Do not expose the panel directly to a LAN or the public internet.
 - Saved RouterOS logins are local secrets on the panel host or container data
   volume. Treat that host as trusted.
 - Use `routeros_only` for public deployments.

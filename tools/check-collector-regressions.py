@@ -269,9 +269,9 @@ def assert_latency_tcp_fallback_probe():
 
 def assert_panel_network_config_helpers():
     assert app.DEFAULT_ROUTER_HOST == "192.168.88.1"
-    assert app.DEFAULT_PANEL_BIND == "0.0.0.0"
+    assert app.DEFAULT_PANEL_BIND == "127.0.0.1"
     assert app.DEFAULT_PANEL_PORT == 28646
-    assert app.DEFAULT_PANEL_TARGET
+    assert app.DEFAULT_PANEL_TARGET == "127.0.0.1"
     assert app.normalize_panel_host(app.DEFAULT_PANEL_TARGET, "access host") == app.DEFAULT_PANEL_TARGET
     assert app.resolve_panel_access_host("auto") == app.DEFAULT_PANEL_TARGET
     assert app.READONLY_NIKKI_CONTROLLER == ""
@@ -282,20 +282,23 @@ def assert_panel_network_config_helpers():
     assert app.normalize_panel_port("28646") == 28646
     assert app.panel_access_url("127.0.0.1", 28646, "127.0.0.1") == "http://127.0.0.1:28646/"
     assert app.panel_access_url("::", 28646, "::1") == "http://[::1]:28646/"
-    assert app.panel_request_access_url({"Host": "192.168.3.50:28646"}, 28646) == "http://192.168.3.50:28646/"
+    assert app.panel_request_access_url({"Host": "127.0.0.1:28646"}, 28646) == "http://127.0.0.1:28646/"
+    assert app.panel_request_access_url({"Host": "192.168.3.50:28646"}, 28646) is None
+    assert app.panel_host_header_is_allowed({"Host": "127.0.0.1:28646"}) is True
+    assert app.panel_host_header_is_allowed({"Host": "192.168.3.50:28646"}) is False
     original_trust_proxy = app.PANEL_TRUST_PROXY_HEADERS
     try:
         app.PANEL_TRUST_PROXY_HEADERS = True
         assert app.panel_request_access_url(
             {"X-Forwarded-Host": "panel.lan", "X-Forwarded-Proto": "https", "X-Forwarded-Port": "443"},
             28646,
-        ) == "https://panel.lan:443/"
+        ) is None
     finally:
         app.PANEL_TRUST_PROXY_HEADERS = original_trust_proxy
     assert app.panel_request_access_url({"Host": "http://bad.example"}, 28646) is None
-    request_payload = app.panel_network_payload(request_url="http://192.168.3.50:28646/")
-    assert request_payload["currentUrl"] == "http://192.168.3.50:28646/"
-    assert request_payload["browserUrl"] == "http://192.168.3.50:28646/"
+    request_payload = app.panel_network_payload(request_url="http://127.0.0.1:28646/")
+    assert request_payload["currentUrl"] == "http://127.0.0.1:28646/"
+    assert request_payload["browserUrl"] == "http://127.0.0.1:28646/"
     assert request_payload["configuredUrl"] == app.panel_access_url(app.PANEL_BIND, app.PANEL_PORT, app.PANEL_TARGET)
     assert request_payload["detectedFromRequest"] is True
     for bad_port in ("0", "65536", "abc", ""):
@@ -322,13 +325,13 @@ def assert_panel_network_config_helpers():
             "export ROS_PANEL_BIND=0.0.0.0\n",
             encoding="utf-8",
         )
-        app.write_panel_network_env("0.0.0.0", 28646, "192.168.50.10", env_path=env_path)
+        app.write_panel_network_env("0.0.0.0", 28646, "127.0.0.1", env_path=env_path)
         content = env_path.read_text(encoding="utf-8")
         assert "# keep this comment" in content
         assert "OTHER_SETTING=keep-me" in content
         assert "ROS_PANEL_PORT=28646" in content
         assert "export ROS_PANEL_BIND=0.0.0.0" in content
-        assert "ROS_PANEL_TARGET_IP=192.168.50.10" in content
+        assert "ROS_PANEL_TARGET_IP=127.0.0.1" in content
 
 
 def assert_rate_history_only_advances_on_fresh_counter_samples():
@@ -565,8 +568,8 @@ def assert_deploy_defaults_are_project_safe():
     assert "192.168.3.5" not in template_text
     assert 'PANEL_IP="$${ROS_PANEL_TARGET_IP:-}"' in service_text
     assert 'PANEL_IP="$${ROS_PANEL_TARGET_IP:-}"' in template_text
-    assert 'DEFAULT_PANEL_BIND="0.0.0.0"' in deploy_text
-    assert 'DEFAULT_PANEL_TARGET_IP="$(detect_lan_ip)"' in deploy_text
+    assert 'DEFAULT_PANEL_BIND="127.0.0.1"' in deploy_text
+    assert 'DEFAULT_PANEL_TARGET_IP="127.0.0.1"' in deploy_text
     assert 'DEFAULT_ROUTER_USER="admin"' not in deploy_text
     for stale_public_pattern in (
         "public/*.bak-*",

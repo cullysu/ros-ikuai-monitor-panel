@@ -30,10 +30,9 @@ docker compose --env-file .env.docker.example config --quiet
 - `install.sh` Bash syntax with `bash -n install.sh`, when `install.sh` exists.
 - `install.sh --help` output, when the script advertises help support.
 - `install.sh --dry-run`, only when the script advertises dry-run support.
-- LAN access defaults through `tools/check-lan-access-defaults.js`: deployment
-  docs and templates should publish a normal LAN URL for remote clients, while
-  `127.0.0.1:28646` remains documented only for same-machine access or the
-  optional localhost alias helper.
+- Localhost-only defaults through `tools/check-lan-access-defaults.js`:
+  deployment docs and templates should publish `127.0.0.1:28646` as the default
+  first-run URL, while non-loopback browser entrypoints remain rejected.
 - RouterOS Container install guidance: env examples must use RouterOS
   `/container/envs/add list=...` syntax, not stale `name=...` syntax.
 - RouterOS Container archive guidance: offline imports must document the
@@ -41,7 +40,7 @@ docker compose --env-file .env.docker.example config --quiet
   `tools/convert-oci-to-routeros-docker-archive.py`.
 - Public release readiness through `tools/check-public-release-readiness.js`:
   GHCR publishing workflow, installer image pull/build fallback, local-only
-  bind messaging, and RouterOS Container LAN exposure rollback markers.
+  bind messaging, and RouterOS Container localhost-forwarder markers.
 
 ## Current repository state
 

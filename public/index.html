@@ -3397,6 +3397,16 @@
       panelNetworkDialogEl?.classList.remove('is-open');
     }
 
+    function isPanelNetworkLoopbackHost(value) {
+      const raw = String(value || '').trim().toLowerCase();
+      return raw === '127.0.0.1' || raw === 'localhost' || raw === '::1' || raw === '[::1]';
+    }
+
+    function isPanelNetworkInternalBind(value) {
+      const raw = String(value || '').trim().toLowerCase();
+      return raw === '0.0.0.0' || raw === '::';
+    }
+
     async function savePanelNetworkSettings(event) {
       event.preventDefault();
       const form = event.currentTarget;
@@ -3404,6 +3414,14 @@
       const bind = form.elements.namedItem('bind').value.trim();
       const port = Number(form.elements.namedItem('port').value || 0);
       const target = form.elements.namedItem('target').value.trim();
+      if (!isPanelNetworkLoopbackHost(bind) && !isPanelNetworkInternalBind(bind)) {
+        setPanelNetworkStatus('公开项目只允许 127.0.0.1 / localhost 作为面板入口。', 'error');
+        return;
+      }
+      if (!isPanelNetworkLoopbackHost(target)) {
+        setPanelNetworkStatus('浏览器访问地址必须保持 127.0.0.1 / localhost。', 'error');
+        return;
+      }
       saveBtn.disabled = true;
       saveBtn.textContent = '保存中...';
       setPanelNetworkStatus('正在保存面板地址...');

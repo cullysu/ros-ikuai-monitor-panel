@@ -12,8 +12,8 @@ The Dude、备份工具或配置 diff 工具的替代品。
 
 ## 当前状态
 
-这是早期公开 MVP，适合在受信任的局域网里试用和做只读观察。不要把面板
-直接暴露到公网。如果访问范围离开受信任 LAN，请先加认证和 HTTPS。
+这是早期公开 MVP，适合在本机 localhost 场景里试用和做只读观察。不要把面板
+直接暴露到局域网或公网。
 
 ## 安装路径
 
@@ -31,10 +31,10 @@ The Dude、备份工具或配置 diff 工具的替代品。
 
 ## 访问地址
 
-正常的局域网访问地址是面板主机 IP：
+公开项目的浏览器入口固定为：
 
 ```text
-http://<panel-host-ip>:28646/
+http://127.0.0.1:28646/
 ```
 
 在运行面板的同一台机器上，也可以打开：
@@ -43,8 +43,8 @@ http://<panel-host-ip>:28646/
 http://127.0.0.1:28646/
 ```
 
-普通局域网客户端不需要安装 localhost alias helper。那个 helper 只是给
-坚持在每台客户端都输入 `127.0.0.1:28646` 的用户准备的可选方案。
+普通局域网客户端不应直接打开面板主机 IP。需要跨设备时，应在客户端本机做转发，
+让浏览器入口仍保持 `127.0.0.1:28646`。
 
 面板 API 会优先根据浏览器请求里的 HTTP `Host` 头显示真实访问地址，所以
 手动 Docker Compose 不再依赖容器自己猜宿主机 LAN IP。`ROS_PANEL_TARGET_IP`
@@ -72,10 +72,10 @@ bash install.sh
 curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/main/install.sh | bash
 ```
 
-打开安装器打印的局域网地址，通常是：
+打开安装器打印的本机地址：
 
 ```text
-http://<panel-host-ip>:28646/
+http://127.0.0.1:28646/
 ```
 
 如果就在面板主机本机访问，也可以打开 `http://127.0.0.1:28646/`。
@@ -83,10 +83,10 @@ http://<panel-host-ip>:28646/
 首次进入面板后，在网页里的 RouterOS 登录页填写 SSH 地址、端口、账号和
 密码。公开 Docker 安装不要求把真实 RouterOS 密码写进 `.env.docker`。
 
-自定义安装目录或端口：
+自定义安装目录：
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/main/install.sh | bash -s -- --dir "$HOME/routeros-panel" --port 28647
+curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/main/install.sh | bash -s -- --dir "$HOME/routeros-panel"
 ```
 
 强制本地构建：
@@ -150,7 +150,7 @@ docker compose --env-file .env.docker up -d --build
 首次运行时打开：
 
 ```text
-http://<panel-host-ip>:28646/
+http://127.0.0.1:28646/
 ```
 
 `.env.docker` 里的 RouterOS 凭据可以保持示例值，然后在网页登录页填写真实
@@ -164,22 +164,21 @@ python -m venv .venv
 $env:ROS_MONITOR_ROUTER_HOST="<routeros-host-or-dns>"
 $env:ROS_MONITOR_ROUTER_USER="ros-panel-readonly"
 $env:ROS_MONITOR_ROUTER_PASSWORD="CHANGE_ME"
-$env:ROS_PANEL_BIND="0.0.0.0"
+$env:ROS_PANEL_BIND="127.0.0.1"
 $env:ROS_PANEL_PORT="28646"
-$env:ROS_PANEL_TARGET_IP="auto"
+$env:ROS_PANEL_TARGET_IP="127.0.0.1"
 $env:ROS_PANEL_PROFILE="routeros_only"
 .\.venv\Scripts\python app.py
 ```
 
-同机打开 `http://127.0.0.1:28646/`，其他局域网设备打开
-`http://<panel-host-ip>:28646/`。
+同机打开 `http://127.0.0.1:28646/`，其他局域网 IP 入口不作为公开项目部署目标。
 
 ## Linux systemd / VM
 
 ```bash
-export ROS_PANEL_BIND="0.0.0.0"
+export ROS_PANEL_BIND="127.0.0.1"
 export ROS_PANEL_PORT="28646"
-export ROS_PANEL_TARGET_IP="auto"
+export ROS_PANEL_TARGET_IP="127.0.0.1"
 export ROS_PANEL_PROFILE="routeros_only"
 export ROS_MONITOR_ROUTER_HOST="<routeros-host-or-dns>"
 export ROS_MONITOR_ROUTER_USER="ros-panel-readonly"
@@ -262,7 +261,7 @@ curl -fsS http://127.0.0.1:28646/api/semantic-triage
 docker compose logs -f --tail=100 routeros-triage
 ```
 
-从其他局域网设备验证时，把 `127.0.0.1` 换成面板主机 IP。
+从其他局域网设备验证时不要把 `127.0.0.1` 换成面板主机 IP；公开项目入口固定为本机 loopback。
 
 公开只读模式预期：
 

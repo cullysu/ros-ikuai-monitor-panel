@@ -4,30 +4,27 @@ This document describes the security assumptions for the public MVP.
 
 ## In Scope
 
-- Trusted LAN use.
 - Local host use.
-- Reverse-proxy use where the proxy provides authentication and HTTPS.
 - Read-only RouterOS state collection.
 
 ## Out Of Scope For The Current MVP
 
 - Direct public-internet exposure.
+- Direct LAN browser exposure.
 - Built-in multi-user authentication.
 - Built-in TLS termination.
 - RBAC.
+- Reverse-proxy/cross-network publication.
 - Automatic RouterOS configuration repair.
 - Hosted telemetry or cloud sync.
 
 ## Main Risks
 
-### LAN Exposure
+### Localhost-only Default
 
-The default public install publishes the panel on `0.0.0.0:28646` so trusted
-LAN devices can open `http://<panel-host-ip>:28646/`. This is convenient, but it
-means other devices on that LAN may be able to reach the panel unless your host
-firewall or network segmentation blocks them.
-
-Do not use this default on untrusted networks.
+The default public install publishes the panel only on `127.0.0.1:28646`. Other
+IP browser entrypoints should not be able to reach the panel. The backend also
+rejects non-loopback `Host` headers.
 
 ### Credential Storage
 
@@ -40,17 +37,11 @@ and keep the panel host trusted.
 RouterOS state can reveal IPs, MAC addresses, hostnames, routes, WAN details,
 and traffic patterns. Redact snapshots and screenshots before sharing them.
 
-### Reverse Proxy Headers
-
-`ROS_PANEL_TRUST_PROXY_HEADERS=0` is the default. Set it to `1` only behind a
-trusted reverse proxy that controls `X-Forwarded-Host` and
-`X-Forwarded-Proto`.
-
 ## Safe Deployment Checklist
 
 - Dedicated read-only RouterOS user.
-- Panel reachable only from trusted hosts.
-- HTTPS/authentication added before cross-network access.
+- Panel reachable at `http://127.0.0.1:28646/`.
+- Non-loopback browser URLs fail or return `403`.
 - Password saving disabled unless the panel host is trusted.
 - Logs and screenshots redacted before sharing.
 - RouterOS backup made before trying RouterOS Container.

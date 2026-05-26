@@ -141,9 +141,9 @@ def detect_panel_lan_ip():
     return "127.0.0.1"
 
 
-DEFAULT_PANEL_BIND = "0.0.0.0"
+DEFAULT_PANEL_BIND = "127.0.0.1"
 DEFAULT_PANEL_PORT = 28646
-DEFAULT_PANEL_TARGET = detect_panel_lan_ip()
+DEFAULT_PANEL_TARGET = "127.0.0.1"
 PANEL_NETWORK_ENV_KEYS = ("ROS_PANEL_BIND", "ROS_PANEL_PORT", "ROS_PANEL_TARGET_IP")
 PANEL_TRUST_PROXY_HEADERS = str(os.getenv("ROS_PANEL_TRUST_PROXY_HEADERS", "0")).strip().lower() in {"1", "true", "yes", "on"}
 PANEL_ENV_ASSIGNMENT_RE = re.compile(r"^(\s*(?:export\s+)?)([A-Za-z_][A-Za-z0-9_]*)(\s*=\s*)(.*)$")
@@ -204,6 +204,38 @@ def resolve_panel_access_host(value):
     return normalize_panel_host(raw, "access host")
 
 
+def is_loopback_panel_host(value):
+    raw = str(value or "").strip()
+    if raw.startswith("[") and raw.endswith("]"):
+        raw = raw[1:-1].strip()
+    if raw.lower() == "localhost":
+        return True
+    try:
+        return ipaddress.ip_address(raw).is_loopback
+    except ValueError:
+        return False
+
+
+def is_unspecified_panel_host(value):
+    raw = str(value or "").strip()
+    if raw.startswith("[") and raw.endswith("]"):
+        raw = raw[1:-1].strip()
+    try:
+        return ipaddress.ip_address(raw).is_unspecified
+    except ValueError:
+        return False
+
+
+def validate_panel_public_contract(bind, target):
+    bind = normalize_panel_host(bind, "bind")
+    target = resolve_panel_access_host(target)
+    if not (is_loopback_panel_host(bind) or is_unspecified_panel_host(bind)):
+        raise ValueError("Panel bind must stay on 127.0.0.1/localhost; non-loopback IPs are not allowed")
+    if not is_loopback_panel_host(target):
+        raise ValueError("Panel browser URL must stay on 127.0.0.1/localhost")
+    return bind, target
+
+
 def panel_access_url(bind, port, target=None):
     access_host = str(target or "").strip() or str(bind or "").strip() or DEFAULT_PANEL_TARGET
     if access_host.lower() == "auto" or access_host in {"0.0.0.0", "::"}:
@@ -213,6 +245,24 @@ def panel_access_url(bind, port, target=None):
 
 def first_header_value(value):
     return str(value or "").split(",", 1)[0].strip()
+
+
+def panel_host_header_is_allowed(headers):
+    if not headers:
+        return True
+    host_header = first_header_value(headers.get("Host"))
+    if PANEL_TRUST_PROXY_HEADERS:
+        host_header = first_header_value(headers.get("X-Forwarded-Host")) or host_header
+    if not host_header:
+        return True
+    if "@" in host_header or any(part in host_header for part in ("://", "/", "\\", "?", "#")):
+        return False
+    try:
+        parsed = urlparse(f"//{host_header}")
+        host = normalize_panel_host(parsed.hostname or "", "request host")
+    except (TypeError, ValueError):
+        return False
+    return is_loopback_panel_host(host)
 
 
 def panel_request_access_url(headers, fallback_port=None):
@@ -228,6 +278,8 @@ def panel_request_access_url(headers, fallback_port=None):
         host = normalize_panel_host(parsed.hostname or "", "request host")
         port = parsed.port
     except (TypeError, ValueError):
+        return None
+    if not is_loopback_panel_host(host):
         return None
     forwarded_port = first_header_value(headers.get("X-Forwarded-Port"))
     if port is None and forwarded_port:
@@ -291,6 +343,7 @@ def write_panel_network_env(bind, port, target, env_path=None):
     bind = normalize_panel_host(bind, "bind")
     port = normalize_panel_port(port)
     target = resolve_panel_access_host(target)
+    bind, target = validate_panel_public_contract(bind, target)
     path = Path(env_path).resolve() if env_path else panel_env_write_path()
     updates = {
         "ROS_PANEL_BIND": bind,
@@ -330,6 +383,7 @@ PANEL_PROFILE_RAW = os.getenv("ROS_PANEL_PROFILE", "routeros_only")
 PANEL_BIND = normalize_panel_host(os.getenv("ROS_PANEL_BIND", DEFAULT_PANEL_BIND), "bind")
 PANEL_PORT = normalize_panel_port(os.getenv("ROS_PANEL_PORT", str(DEFAULT_PANEL_PORT)))
 PANEL_TARGET = resolve_panel_access_host(os.getenv("ROS_PANEL_TARGET_IP", DEFAULT_PANEL_TARGET))
+PANEL_BIND, PANEL_TARGET = validate_panel_public_contract(PANEL_BIND, PANEL_TARGET)
 POLL_SECONDS = max(1, int(os.getenv("ROS_MONITOR_POLL_SECONDS", "1")))
 HISTORY_LIMIT = int(os.getenv("ROS_MONITOR_HISTORY_LIMIT", "60"))
 ACTIVE_CONNECTION_LIMIT = int(os.getenv("ROS_MONITOR_ACTIVE_CONNECTION_LIMIT", "80"))
@@ -4658,8 +4712,35 @@ class Handler(BaseHTTPRequestHandler):
             **kwargs,
         )
 
+    def reject_non_localhost_request(self, parsed):
+        if panel_host_header_is_allowed(self.headers):
+            return False
+        if parsed.path.startswith("/api/"):
+            self.send_json(
+                {
+                    "ok": False,
+                    "error": "Panel is localhost-only. Open http://127.0.0.1:28646/.",
+                },
+                status=403,
+            )
+            return True
+        body = (
+            "<!doctype html><meta charset=\"utf-8\">"
+            "<title>localhost only</title>"
+            "<body>Panel is localhost-only. Open http://127.0.0.1:28646/.</body>"
+        ).encode("utf-8")
+        self.send_response(403)
+        self.send_header("Content-Type", "text/html; charset=utf-8")
+        self.send_header("Content-Length", str(len(body)))
+        self.send_header("Cache-Control", "no-store")
+        self.end_headers()
+        self.wfile.write(body)
+        return True
+
     def do_GET(self):
         parsed = urlparse(self.path)
+        if self.reject_non_localhost_request(parsed):
+            return
         if parsed.path == "/api/router-login":
             return self.send_json(
                 {
@@ -4722,6 +4803,8 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         parsed = urlparse(self.path)
+        if self.reject_non_localhost_request(parsed):
+            return
         if parsed.path == "/api/router-login":
             try:
                 payload = self.read_json_body()

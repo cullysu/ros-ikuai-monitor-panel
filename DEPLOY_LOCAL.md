@@ -27,9 +27,9 @@ python -m venv .venv
 $env:ROS_MONITOR_ROUTER_HOST="192.168.88.1"
 $env:ROS_MONITOR_ROUTER_USER="ros-panel-readonly"
 $env:ROS_MONITOR_ROUTER_PASSWORD="CHANGE_ME"
-$env:ROS_PANEL_BIND="0.0.0.0"
+$env:ROS_PANEL_BIND="127.0.0.1"
 $env:ROS_PANEL_PORT="28646"
-$env:ROS_PANEL_TARGET_IP="auto"
+$env:ROS_PANEL_TARGET_IP="127.0.0.1"
 $env:ROS_PANEL_PROFILE="routeros_only"
 $env:ROS_PANEL_IP_ALIAS_WRITE_ENABLED="0"
 $env:ROS_PANEL_EXPOSE_ADMIN_SESSIONS="0"
@@ -43,14 +43,7 @@ Open:
 http://127.0.0.1:28646/
 ```
 
-From another LAN device, open:
-
-```text
-http://<panel-host-ip>:28646/
-```
-
-The localhost alias helper is optional and only for users who insist on typing
-`127.0.0.1:28646` on a different client.
+Other IP browser entrypoints are rejected by the public localhost-only guard.
 
 ## macOS / Linux
 
@@ -61,9 +54,9 @@ python3 -m venv .venv
 export ROS_MONITOR_ROUTER_HOST="192.168.88.1"
 export ROS_MONITOR_ROUTER_USER="ros-panel-readonly"
 export ROS_MONITOR_ROUTER_PASSWORD="CHANGE_ME"
-export ROS_PANEL_BIND="0.0.0.0"
+export ROS_PANEL_BIND="127.0.0.1"
 export ROS_PANEL_PORT="28646"
-export ROS_PANEL_TARGET_IP="auto"
+export ROS_PANEL_TARGET_IP="127.0.0.1"
 export ROS_PANEL_PROFILE="routeros_only"
 export ROS_PANEL_IP_ALIAS_WRITE_ENABLED="0"
 export ROS_PANEL_EXPOSE_ADMIN_SESSIONS="0"
@@ -77,7 +70,7 @@ Open:
 http://127.0.0.1:28646/
 ```
 
-From another LAN device, use `http://<panel-host-ip>:28646/`.
+Other IP browser entrypoints are rejected by the public localhost-only guard.
 
 ## Verify
 
@@ -86,7 +79,7 @@ curl -fsS http://127.0.0.1:28646/api/health
 curl -fsS http://127.0.0.1:28646/api/semantic-triage
 ```
 
-From another LAN device, replace `127.0.0.1` with the panel host IP.
+From another device or non-loopback browser URL this should fail.
 
 Expected:
 

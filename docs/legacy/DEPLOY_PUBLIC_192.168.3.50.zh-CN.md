@@ -12,10 +12,10 @@
 - [DEPLOY_WINDOWS_EXE.md](./DEPLOY_WINDOWS_EXE.md)
 - [DEPLOY_ROUTEROS_CONTAINER.md](./DEPLOY_ROUTEROS_CONTAINER.md)
 
-当前文档化的远程浏览器入口是面板主机的局域网地址：
+当前公开项目浏览器入口固定为：
 
 ```text
-http://<panel-host-ip>:28646/
+http://127.0.0.1:28646/
 ```
 
 在面板主机本机，也可以打开 `http://127.0.0.1:28646/`。
@@ -23,8 +23,8 @@ http://<panel-host-ip>:28646/
 Linux/systemd 实例部署使用：
 
 ```bash
-export ROS_PANEL_TARGET_IP="auto"
-export ROS_PANEL_BIND="0.0.0.0"
+export ROS_PANEL_TARGET_IP="127.0.0.1"
+export ROS_PANEL_BIND="127.0.0.1"
 export ROS_PANEL_PORT="28646"
 export ROS_PANEL_PROFILE="routeros_only"
 export ROS_PANEL_IP_ALIAS_WRITE_ENABLED="0"
@@ -44,7 +44,7 @@ curl -fsS "http://127.0.0.1:28646/api/health"
 curl -fsS "http://127.0.0.1:28646/api/semantic-triage"
 ```
 
-从其他局域网客户端验证时，把 `127.0.0.1` 换成面板主机 IP。
+从其他局域网客户端验证时不应改成面板主机 IP；公开项目入口仍是 `127.0.0.1:28646`。
 
 公开模式预期：
 
@@ -54,6 +54,5 @@ curl -fsS "http://127.0.0.1:28646/api/semantic-triage"
 - `meta.capabilities.readonlyDiagnostics` 为 `false`。
 - `meta.capabilities.ipAliasWrite` 为 `false`。
 
-旧的主机固定地址不再是公开项目默认值。如果面板运行在另一台局域网主机上，客户端直接打开
-`http://<panel-host-ip>:28646/`。[docs/LOCALHOST_ALIAS.md](./docs/LOCALHOST_ALIAS.md)
+旧的主机固定地址不再是公开项目默认值。公开项目不要把面板主机局域网 IP 作为浏览器入口。
 里的本机别名只是可选方案。

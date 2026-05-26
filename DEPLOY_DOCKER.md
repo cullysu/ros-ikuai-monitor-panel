@@ -12,24 +12,21 @@ used as an optional acceleration path:
 ghcr.io/cullysu/ros-ikuai-monitor-panel:main
 ```
 
-The default install publishes the panel on `0.0.0.0:28646` and prints a LAN
-URL that other devices can open without installing anything:
+The default install publishes the panel only on `127.0.0.1:28646`:
 
 ```text
-http://<panel-host-ip>:28646/
+http://127.0.0.1:28646/
 ```
 
-On the Docker host itself, `http://127.0.0.1:28646/` also works. The localhost
-alias helper is optional and only for users who insist on the same local vanity
-URL on every client.
+Other IP browser entrypoints are not allowed by the public installer.
 
 The panel reports the browser URL from the incoming HTTP `Host` header. This
 avoids the common Docker bridge problem where a container can only detect its
 own bridge/container address instead of the host LAN IP.
 
-If you put the panel behind a trusted reverse proxy and want it to honor
-`X-Forwarded-Host` / `X-Forwarded-Proto`, set
-`ROS_PANEL_TRUST_PROXY_HEADERS=1` only on that trusted deployment.
+The backend also guards the HTTP `Host` header so direct browser access by a
+non-loopback IP is rejected even if the service is accidentally published more
+broadly.
 
 ## One-command Install
 
@@ -50,20 +47,18 @@ curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/mai
 Open:
 
 ```text
-http://<panel-host-ip>:28646/
+http://127.0.0.1:28646/
 ```
-
-For same-machine testing on the Docker host, open `http://127.0.0.1:28646/`.
 
 Then enter the RouterOS SSH host, SSH port, read-only user, and password in the
 panel login page. The installer creates `.env.docker` for listener/profile
 settings, but it does not require real RouterOS credentials in that file for
 first run.
 
-Custom install directory or port:
+Custom install directory:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/main/install.sh | bash -s -- --dir "$HOME/routeros-panel" --port 28647
+curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/main/install.sh | bash -s -- --dir "$HOME/routeros-panel"
 ```
 
 Install from a branch:
@@ -80,14 +75,14 @@ Default install directory:
 ## Installer Options
 
 ```text
---lan                 Keep the default: publish the panel on all host interfaces.
---bind <addr>         Host publish address. Default: 0.0.0.0.
+--local-only          Publish only on 127.0.0.1. This is the default.
+--bind <addr>         Host publish address. Only 127.0.0.1/localhost is allowed.
 --port <port>         Host and in-container panel port. Default: 28646.
 --name <name>         Docker container name. Default: routeros-triage-panel.
 --prebuilt            Pull the prebuilt GHCR image first, then fall back to local build.
 --image <image>       Image tag to use. Default: routeros-triage-panel:local.
 --build-local         Build from source. This is the default public install mode.
---target-ip <addr>    URL host printed by the panel. Default: detected LAN IP.
+--target-ip <addr>    URL host printed by the panel. Only 127.0.0.1/localhost is allowed.
 --dir <path>          Install directory.
 --repo <url>          Git repository URL.
 --branch <name>       Git branch to install.
@@ -136,23 +131,18 @@ ROS_MONITOR_ROUTER_USER=ros-panel-readonly
 ROS_MONITOR_ROUTER_PASSWORD=CHANGE_ME
 ```
 
-The default browser-facing target is automatic while the Docker listener remains
-publishable:
+The default browser-facing target is localhost-only:
 
 ```dotenv
-ROS_PANEL_PUBLISHED_ADDR=0.0.0.0
+ROS_PANEL_PUBLISHED_ADDR=127.0.0.1
 ROS_PANEL_PUBLISHED_PORT=28646
 ROS_PANEL_IMAGE=routeros-triage-panel:local
-ROS_PANEL_TARGET_IP=auto
+ROS_PANEL_TARGET_IP=127.0.0.1
 ```
 
 `ROS_PANEL_TARGET_IP` is now a configured fallback for startup logs and saved
 address settings. Normal browser/API status uses the request `Host` header, so
-manual Compose can usually leave it as `auto`. Set
-`ROS_PANEL_TARGET_IP=<panel-host-ip>` only when you want the fallback URL to be
-fixed too. Use [docs/LOCALHOST_ALIAS.md](./docs/LOCALHOST_ALIAS.md) only when a
-client must open `http://127.0.0.1:28646/` while the Docker host is elsewhere on
-the LAN.
+manual Compose should leave it as `127.0.0.1`.
 
 ## Configure RouterOS Login In The UI
 
@@ -182,7 +172,7 @@ curl -fsS http://127.0.0.1:28646/api/semantic-triage
 docker compose logs -f --tail=100 routeros-triage
 ```
 
-From another LAN device, replace `127.0.0.1` with the panel host IP.
+From another device or any non-loopback browser URL, access should fail.
 
 Expected read-only public shape:
 
@@ -195,20 +185,18 @@ Expected read-only public shape:
 
 ## Address Changes
 
-First run is documented as the LAN URL printed by the installer:
+First run is documented as the local URL:
 
 ```text
-http://<panel-host-ip>:28646/
+http://127.0.0.1:28646/
 ```
 
 The container still listens on `0.0.0.0` internally so Docker can publish the
-service, and the host-side published address is `0.0.0.0` by default. Client
-devices that are not the Docker host should use the LAN URL. They do not need
-the localhost alias helper unless you specifically want a local vanity address
-on each client.
+service, but the host-side published address is `127.0.0.1` by default. Client
+devices that are not the Docker host do not get a public LAN URL from this
+project.
 
-Do not expose this directly to the public internet. Put HTTPS and
-authentication in front of it if access leaves a single trusted machine.
+Do not expose this directly to a LAN or the public internet.
 
 ## Security Shape
 
@@ -296,28 +284,14 @@ docker compose logs -f --tail=100 routeros-triage
 curl -fsS http://127.0.0.1:28646/api/health
 ```
 
-If the port is occupied, reinstall or restart with another port:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/main/install.sh | bash -s -- --port 28647
-```
-
-If you intentionally install with `--local-only` or `--bind 127.0.0.1`, LAN
-access is disabled by design. Reinstall with `--lan` or `--bind 0.0.0.0` for
-trusted LAN access.
+If the port is occupied, stop the conflicting local service first, then restart
+the panel so `http://127.0.0.1:28646/` remains the public entrypoint.
 
 ### Another Device Cannot Open The Panel
 
-- Use `http://<panel-host-ip>:28646/`, not that client device's own
-  `127.0.0.1`.
-- Confirm the Docker host is reachable from that client on TCP `28646`.
-- Confirm the host OS firewall allows TCP `28646` on the trusted LAN profile.
-- Common Linux examples:
-  `sudo ufw allow 28646/tcp`, or
-  `sudo firewall-cmd --add-port=28646/tcp --permanent && sudo firewall-cmd --reload`.
-- If the client must use `http://127.0.0.1:28646/` anyway, install the optional
-  localhost alias on that client device:
-  [docs/LOCALHOST_ALIAS.md](./docs/LOCALHOST_ALIAS.md).
+That is expected. The public Docker path is localhost-only. Run the browser on
+the Docker host, or use a local forwarder on the client so the browser still
+opens `http://127.0.0.1:28646/`.
 
 ### RouterOS Login Fails
 

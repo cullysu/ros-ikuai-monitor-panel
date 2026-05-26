@@ -1,9 +1,9 @@
 # Optional Localhost Alias For Client Devices
 
-This helper is optional. Normal remote access should use the panel host's LAN
-URL, for example `http://<panel-host-ip>:28646/`, and requires no client-side
-install. Use this guide only if a client device must type the vanity address
-`http://127.0.0.1:28646/` while the real panel server runs somewhere else.
+This helper is optional for Docker, Windows EXE, and Linux systemd/VM installs
+because those paths default to running on the same host that opens the browser.
+Use this guide when a client device must type `http://127.0.0.1:28646/` while
+the real panel server runs somewhere else.
 
 The panel server can run on Docker, Windows EXE, Linux systemd/VM, or RouterOS
 Container. Client devices that should always type the same local address can
@@ -95,5 +95,4 @@ bash tools/install-localhost-alias.sh --panel-host <new-panel-host-ip>
   this alias on another local port.
 - Phones and tablets need an OS-supported local proxy/VPN/client app to do the
   same thing. The project scripts cover Windows, Linux, and macOS clients.
-- Do not expose the panel directly to the public internet without HTTPS and
-  authentication.
+- Do not expose the panel directly to a LAN or the public internet.

@@ -262,16 +262,16 @@ try {
           $dryRunResult = Invoke-CapturedCommand $bash.Source @($InstallScript, "--dry-run")
           if ($dryRunResult.ExitCode -eq 0) {
             Add-Check "PASS" "install dry-run" "bash $InstallScript --dry-run completed."
-            if ($dryRunResult.Output -match "bind:\s+0\.0\.0\.0" -and
+            if ($dryRunResult.Output -match "bind:\s+127\.0\.0\.1" -and
                 $dryRunResult.Output -match "port:\s+28646" -and
-                $dryRunResult.Output -match "target-ip:\s+\S+" -and
+                $dryRunResult.Output -match "target-ip:\s+127\.0\.0\.1" -and
                 $dryRunResult.Output -match "local-url:\s+http://127\.0\.0\.1:28646/" -and
-                $dryRunResult.Output -match "lan-url:\s+http://\S+:28646/" -and
-                $dryRunResult.Output -match "firewall:\s+allow inbound TCP 28646") {
-              Add-Check "PASS" "LAN install defaults" "install dry-run resolved 0.0.0.0:28646 with LAN URL and same-host localhost URL."
+                $dryRunResult.Output -match "browser-url:\s+http://127\.0\.0\.1:28646/" -and
+                $dryRunResult.Output -match "exposure:\s+localhost-only") {
+              Add-Check "PASS" "localhost install defaults" "install dry-run resolved strict 127.0.0.1:28646 exposure."
             }
             else {
-              Add-Check "FAIL" "LAN install defaults" "install dry-run did not resolve LAN URL plus same-host localhost URL."
+              Add-Check "FAIL" "localhost install defaults" "install dry-run did not resolve localhost-only defaults."
             }
           }
           else {
@@ -286,22 +286,22 @@ try {
         $node = Get-Command node -ErrorAction SilentlyContinue
         $lanCheckPath = Join-Path $repoRoot "tools/check-lan-access-defaults.js"
         if (-not (Test-Path -LiteralPath $lanCheckPath)) {
-          Add-Check "FAIL" "LAN access defaults" "tools/check-lan-access-defaults.js was not found."
+          Add-Check "FAIL" "localhost access defaults" "tools/check-lan-access-defaults.js was not found."
         }
         elseif (-not $node) {
-          Add-Check "SKIP" "LAN access defaults" "node was not found on PATH."
+          Add-Check "SKIP" "localhost access defaults" "node was not found on PATH."
         }
         else {
           $lanResult = Invoke-CapturedCommand $node.Source @("tools/check-lan-access-defaults.js")
           if ($lanResult.ExitCode -eq 0) {
-            Add-Check "PASS" "LAN access defaults" "tools/check-lan-access-defaults.js passed."
+            Add-Check "PASS" "localhost access defaults" "tools/check-lan-access-defaults.js passed."
           }
           else {
             $detail = $lanResult.Output.Trim()
             if ([string]::IsNullOrWhiteSpace($detail)) {
               $detail = "exit code $($lanResult.ExitCode)"
             }
-            Add-Check "FAIL" "LAN access defaults" $detail
+            Add-Check "FAIL" "localhost access defaults" $detail
           }
 
           $releaseCheckPath = Join-Path $repoRoot "tools/check-public-release-readiness.js"

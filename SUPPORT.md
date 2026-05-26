@@ -13,8 +13,8 @@ real networks.
    - [RouterOS Container](./DEPLOY_ROUTEROS_CONTAINER.md)
 2. Confirm the panel opens on the panel host:
    `http://127.0.0.1:28646/`
-3. Confirm another LAN device uses the panel host IP, not its own localhost:
-   `http://<panel-host-ip>:28646/`
+3. Confirm you are opening the panel as `http://127.0.0.1:28646/`; other IP
+   browser entrypoints are outside the public deployment contract.
 4. Confirm RouterOS SSH is reachable from the panel host and that you are using
    a dedicated read-only RouterOS user.
 5. For RouterOS Container installs, confirm whether you used a registry image

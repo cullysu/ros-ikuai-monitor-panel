@@ -13,18 +13,17 @@ RouterOS Triage Panel public Docker installer
 
 Usage:
   curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/main/install.sh | bash
-  curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/main/install.sh | bash -s -- --port 28647
+  curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/main/install.sh | bash -s -- --dir "$HOME/routeros-panel"
 
 Options:
-  --lan                 Keep the default: publish the panel on all host interfaces.
-  --local-only          Publish only on 127.0.0.1. Other LAN devices will not be able to connect.
-  --bind <addr>         Host publish address. Default: 0.0.0.0.
+  --local-only          Publish only on 127.0.0.1. This is the default.
+  --bind <addr>         Host publish address. Only 127.0.0.1/localhost is allowed.
   --port <port>         Host and in-container panel port. Default: 28646.
   --name <name>         Docker container name. Default: routeros-triage-panel.
   --prebuilt            Pull the prebuilt GHCR image first, then fall back to local build.
   --image <image>       Image tag to use. Default: routeros-triage-panel:local; with --prebuilt: ghcr.io/cullysu/ros-ikuai-monitor-panel:main.
   --build-local         Build from the checked-out source. This is the default public install mode.
-  --target-ip <addr>    URL host printed by the panel. Default: detected LAN IP.
+  --target-ip <addr>    URL host printed by the panel. Only 127.0.0.1/localhost is allowed.
   --dir <path>          Install directory. Default: ~/.local/share/routeros-triage-panel, or /opt/routeros-triage-panel as root.
   --repo <url>          Git repository URL. Default: https://github.com/cullysu/ros-ikuai-monitor-panel.git
   --branch <name>       Git branch or tag to install. Default: main.
@@ -36,15 +35,13 @@ Options:
   -h, --help            Show this help.
 
 First run:
-  Open the LAN URL printed after install, usually http://<panel-host-ip>:28646/.
-  On the panel host itself, http://127.0.0.1:28646/ also works. Enter the
-  RouterOS SSH host, user, and password in the panel UI. You do not need to put
-  RouterOS credentials in .env.docker.
+  Open http://127.0.0.1:28646/ on the panel host. Enter the RouterOS SSH host,
+  user, and password in the panel UI. You do not need to put RouterOS
+  credentials in .env.docker.
 
 If another LAN device cannot connect:
-  The panel is listening, but the host firewall may still need to allow TCP
-  28646 on the trusted LAN. The installer prints commands to check this; it does
-  not silently change firewall rules.
+  That is expected. The public installer is localhost-only and does not publish
+  a LAN browser URL.
 EOF
 }
 
@@ -104,6 +101,18 @@ validate_bind() {
   local bind_addr="$1"
   [[ -n "$bind_addr" ]] || die "--bind must not be empty"
   [[ ! "$bind_addr" =~ [[:space:]/] ]] || die "--bind must be a host or IP address, not a URL or CIDR"
+}
+
+normalize_loopback_host() {
+  local host="$1"
+  case "$host" in
+    127.0.0.1|localhost|::1|'[::1]')
+      printf '127.0.0.1\n'
+      ;;
+    *)
+      return 1
+      ;;
+  esac
 }
 
 validate_container_name() {
@@ -319,12 +328,12 @@ remove_install_dir() {
 REPO_URL="${ROS_PANEL_INSTALL_REPO:-$DEFAULT_REPO_URL}"
 BRANCH="${ROS_PANEL_INSTALL_BRANCH:-$DEFAULT_BRANCH}"
 INSTALL_DIR="${ROS_PANEL_INSTALL_DIR:-$(default_install_dir)}"
-PUBLISHED_ADDR="0.0.0.0"
+PUBLISHED_ADDR="127.0.0.1"
 PUBLISHED_PORT="$DEFAULT_PORT"
 CONTAINER_NAME="${ROS_PANEL_CONTAINER_NAME:-routeros-triage-panel}"
 PANEL_IMAGE="${ROS_PANEL_IMAGE:-$DEFAULT_LOCAL_IMAGE}"
 PANEL_IMAGE_EXPLICIT="0"
-TARGET_IP="$(detect_lan_ip)"
+TARGET_IP="127.0.0.1"
 TARGET_IP_EXPLICIT="0"
 SOURCE_DIR="${ROS_PANEL_INSTALL_SOURCE_DIR:-}"
 BUILD_LOCAL="${ROS_PANEL_BUILD_LOCAL:-1}"
@@ -337,8 +346,7 @@ DRY_RUN="0"
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --lan)
-      PUBLISHED_ADDR="0.0.0.0"
-      shift
+      die "--lan is not supported by the public installer. Open http://127.0.0.1:28646/."
       ;;
     --local-only)
       PUBLISHED_ADDR="127.0.0.1"
@@ -346,7 +354,8 @@ while [[ $# -gt 0 ]]; do
       ;;
     --bind)
       [[ $# -ge 2 && -n "${2:-}" ]] || die "--bind requires an address"
-      PUBLISHED_ADDR="$2"
+      validate_bind "$2"
+      PUBLISHED_ADDR="$(normalize_loopback_host "$2")" || die "--bind must be 127.0.0.1 or localhost for the public installer"
       shift 2
       ;;
     --port)
@@ -377,7 +386,7 @@ while [[ $# -gt 0 ]]; do
       ;;
     --target-ip)
       [[ $# -ge 2 && -n "${2:-}" ]] || die "--target-ip requires an address"
-      TARGET_IP="$2"
+      TARGET_IP="$(normalize_loopback_host "$2")" || die "--target-ip must be 127.0.0.1 or localhost for the public installer"
       TARGET_IP_EXPLICIT="1"
       shift 2
       ;;
@@ -439,12 +448,8 @@ if [[ -n "$SOURCE_DIR" ]]; then
   SOURCE_DIR="${SOURCE_DIR/#\~/$HOME}"
 fi
 
-if [[ "$PUBLISHED_ADDR" == "0.0.0.0" && "$TARGET_IP_EXPLICIT" == "0" ]]; then
-  TARGET_IP="$(detect_lan_ip)"
-elif [[ "$PUBLISHED_ADDR" == "127.0.0.1" && "$TARGET_IP_EXPLICIT" == "0" ]]; then
+if [[ "$PUBLISHED_ADDR" == "127.0.0.1" && "$TARGET_IP_EXPLICIT" == "0" ]]; then
   TARGET_IP="127.0.0.1"
-elif [[ "$PUBLISHED_ADDR" != "0.0.0.0" && "$PUBLISHED_ADDR" != "127.0.0.1" && "$TARGET_IP_EXPLICIT" == "0" ]]; then
-  TARGET_IP="$PUBLISHED_ADDR"
 fi
 
 if [[ "$DRY_RUN" == "1" ]]; then
@@ -461,8 +466,8 @@ Install plan:
   name:       $CONTAINER_NAME
   target-ip:  $TARGET_IP
   local-url:  http://127.0.0.1:$PUBLISHED_PORT/
-  lan-url:    $([[ "$PUBLISHED_ADDR" == "127.0.0.1" ]] && printf '<disabled: bind is 127.0.0.1>' || printf 'http://%s:%s/' "$TARGET_IP" "$PUBLISHED_PORT")
-  firewall:   $([[ "$PUBLISHED_ADDR" == "127.0.0.1" ]] && printf 'not applicable until --bind 0.0.0.0 or --lan is used' || printf 'allow inbound TCP %s on the panel host if LAN clients cannot connect' "$PUBLISHED_PORT")
+  browser-url: http://127.0.0.1:$PUBLISHED_PORT/
+  exposure:   localhost-only
   upgrade:    $UPGRADE
   uninstall:  $UNINSTALL
   purge:      $PURGE
@@ -503,19 +508,7 @@ configure_env "$INSTALL_DIR"
 compose_up "$INSTALL_DIR"
 
 log "Installed in: $INSTALL_DIR"
-log "Open on this host: http://127.0.0.1:$PUBLISHED_PORT/"
-if [[ "$PUBLISHED_ADDR" == "127.0.0.1" ]]; then
-  log "LAN access is disabled because the host publish address is 127.0.0.1."
-  log "Reinstall with --lan or --bind 0.0.0.0 when trusted LAN clients should connect."
-elif [[ "$TARGET_IP" != "127.0.0.1" ]]; then
-  log "Open from other LAN devices: http://$TARGET_IP:$PUBLISHED_PORT/"
-else
-  log "LAN URL was not detected. Set --target-ip <panel-host-ip> if clients need remote access."
-fi
-log "No client localhost alias helper is required for normal LAN access."
-log "If LAN devices cannot connect, allow inbound TCP $PUBLISHED_PORT on this host firewall:"
-log "  Linux ufw: sudo ufw allow $PUBLISHED_PORT/tcp"
-log "  Linux firewalld: sudo firewall-cmd --add-port=$PUBLISHED_PORT/tcp --permanent && sudo firewall-cmd --reload"
-log "  Windows: create an inbound firewall allow rule for TCP $PUBLISHED_PORT on the trusted LAN profile"
+log "Open: http://127.0.0.1:$PUBLISHED_PORT/"
+log "Network exposure: localhost-only. Other IP browser entrypoints are not enabled by this installer."
 log "Enter the RouterOS SSH host, user, and password in the panel login page."
 log "Upgrade later: curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/main/install.sh | bash -s -- --upgrade --dir '$INSTALL_DIR'"
