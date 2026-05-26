@@ -6533,12 +6533,12 @@
       const runningWan = pppoe.filter((row) => row.running).length;
       const runningLan = interfaces.filter((row) => row.role === 'LAN' && row.running).length;
       const virtualCount = interfaces.filter((row) => ['wg', 'loopback', 'l2tp-out'].includes(row.type)).length;
-      const detectedHealthy = pppoe.filter((row) => row.running && row.addresses.length && row.routes.some((route) => route.active)).length;
+      const detectedHealthy = pppoe.filter((row) => row.running && (row.addresses || []).length && (row.routes || []).some((route) => route.active)).length;
       const abnormalLines = pppoe.filter((row) => {
         const parent = interfaceByName[row.parent] || {};
-        return !row.running || !row.addresses.length || interfaceRecentQualityScore(parent) > 0;
+        return !row.running || !(row.addresses || []).length || interfaceRecentQualityScore(parent) > 0;
       }).length;
-      const ipv6Interfaces = interfaces.filter((row) => row.ips.some((ip) => String(ip).includes(':')));
+      const ipv6Interfaces = interfaces.filter((row) => (row.ips || []).some((ip) => String(ip).includes(':')));
       const virtualInterfaceTypes = new Set(['wg', 'loopback', 'l2tp-out', 'vlan', 'macvlan']);
       const physicalLanInterfaces = interfaces.filter((row) => row.role === 'LAN' && !virtualInterfaceTypes.has(String(row.type || '').toLowerCase()));
       const virtualInterfaces = interfaces.filter((row) => virtualInterfaceTypes.has(String(row.type || '').toLowerCase()));
@@ -6649,7 +6649,7 @@
         <tr>
           <td>${escapeHtml(row.name)}</td>
           <td>${row.running ? tag('在线', 'ok') : tag('离线', 'danger')}</td>
-          <td>${row.addresses.length ? row.addresses.map(escapeHtml).join('<br>') : '-'}</td>
+          <td>${(row.addresses || []).length ? (row.addresses || []).map(escapeHtml).join('<br>') : '-'}</td>
           <td>${fmtRate(row.upRate)}</td>
           <td>${fmtRate(row.downRate)}</td>
           <td>${fmtBytes(row.txBytes)}</td>
@@ -6660,7 +6660,7 @@
           <td>${escapeHtml(row.name)}</td>
           <td>${tag(row.role, row.role === 'WAN' ? 'info' : 'ok')}</td>
           <td>${tag(row.running ? '在线' : '离线', row.running ? 'ok' : 'danger')}</td>
-          <td>${row.ips.length ? row.ips.map(escapeHtml).join('<br>') : '-'}</td>
+          <td>${(row.ips || []).length ? (row.ips || []).map(escapeHtml).join('<br>') : '-'}</td>
           <td>${fmtRate(row.txRate)}</td>
           <td>${fmtRate(row.rxRate)}</td>
           <td>${fmtBytes(row.txBytes)}</td>
@@ -6672,7 +6672,7 @@
         const parent = interfaceByName[row.parent] || {};
         const dropTotal = interfaceDropTotal(parent);
         const errorTotal = interfaceErrorTotal(parent);
-        const activeRoutes = row.routes.filter((route) => route.active);
+        const activeRoutes = (row.routes || []).filter((route) => route.active);
         const routeState = activeRoutes.length
           ? activeRoutes.map((route) => `${escapeHtml(route.table || '-')}/distance ${escapeHtml(route.distance || '-')}`).join('<br>')
           : '未检测到活动默认路由';
@@ -6680,7 +6680,7 @@
           <tr>
             <td>${escapeHtml(row.name)}</td>
             <td>${tag(row.running ? '在线' : '离线', row.running ? 'ok' : 'danger')}</td>
-            <td>${row.addresses.length ? tag('已分配', 'ok') : tag('未分配', 'warn')}</td>
+            <td>${(row.addresses || []).length ? tag('已分配', 'ok') : tag('未分配', 'warn')}</td>
             <td>${escapeHtml(row.parent || '-')}</td>
             <td>${routeState}</td>
             <td>${fmtRate(row.upRate)}</td>
@@ -6689,14 +6689,14 @@
           </tr>`;
       }).join('');
       const ipv6Rows = ipv6Interfaces.map((row) => {
-        const addresses = row.ips.filter((ip) => String(ip).includes(':'));
+        const addresses = (row.ips || []).filter((ip) => String(ip).includes(':'));
         return `
           <tr>
             <td>${escapeHtml(row.name)}</td>
             <td>${tag(row.role, row.role === 'WAN' ? 'info' : 'ok')}</td>
             <td>${tag(row.running ? '在线' : '离线', row.running ? 'ok' : 'danger')}</td>
             <td>${addresses.map(escapeHtml).join('<br>')}</td>
-            <td>${row.gateways.length ? row.gateways.map(escapeHtml).join('<br>') : '-'}</td>
+            <td>${(row.gateways || []).length ? (row.gateways || []).map(escapeHtml).join('<br>') : '-'}</td>
             <td>${fmtRate(row.txRate)}</td>
             <td>${fmtRate(row.rxRate)}</td>
           </tr>`;
@@ -7687,7 +7687,7 @@
           <td>${fmtLossRate(row)}</td>
           <td>${fmtRate(row.txRate)}</td>
           <td>${fmtRate(row.rxRate)}</td>
-          <td>${row.ips.length ? row.ips.map(escapeHtml).join('<br>') : '-'}</td>
+          <td>${(row.ips || []).length ? (row.ips || []).map(escapeHtml).join('<br>') : '-'}</td>
         </tr>`);
       const adminRows = (overview.admins || []).map((item) => `
         <tr>
@@ -8838,7 +8838,7 @@
       }
     })();
   </script>
-<script src="/layout-whitespace-patch.js?v=202605252345"></script>
+<script src="/layout-whitespace-patch.js?v=202605261020"></script>
 <script>
   (function publicAdaptivePatch() {
     try {
@@ -8898,7 +8898,7 @@
         if (document.body?.dataset?.publicProfile === 'true') return;
         window.__readonlyDiagnosticsScriptRequested = true;
         const script = document.createElement('script');
-        script.src = '/readonly-diagnostics.js?v=20260516012755';
+        script.src = '/readonly-diagnostics.js?v=202605261020';
         document.body.appendChild(script);
       };
       document.addEventListener('panel-profile-sync', window.__loadReadonlyDiagnosticsIfPrivate);
@@ -8921,6 +8921,6 @@
     }
   })();
 </script>
-<script src="/scale-adaptive-patch.js?v=202605252359"></script>
+<script src="/scale-adaptive-patch.js?v=202605261020"></script>
 </body>
 </html>

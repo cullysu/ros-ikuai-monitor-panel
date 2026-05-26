@@ -1139,12 +1139,10 @@
     #readonlyDiagnostics .readonly-ip-line {
       display: block;
       max-width: 100%;
-      overflow: hidden;
       color: #253246;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      word-break: normal;
-      overflow-wrap: normal;
+      white-space: normal;
+      word-break: break-word;
+      overflow-wrap: anywhere;
     }
     #readonlyDiagnostics .readonly-more-line {
       color: #7f8da1;
@@ -3000,7 +2998,7 @@
         <td>${number(row.connections)}</td>
         <td>${html(row.lastSeen || "-")}</td>
       </tr>`);
-    return card("IPv6 终端暴露清单", `展示 Top ${number(Math.min(ipv6Terminals.length, 6))} / ${number(ipv6Terminals.length)} 台，长 IPv6 地址做单行裁剪`, table(["终端 / IPv6", "MAC", "状态", "上/下行", "连接", "最近出现"], rows, "暂无 IPv6 终端", "readonly-scroll readonly-table-compact"), "readonly-dense-card");
+    return card("IPv6 终端暴露清单", `展示 Top ${number(Math.min(ipv6Terminals.length, 6))} / ${number(ipv6Terminals.length)} 台，长 IPv6 地址改为分行展示`, table(["终端 / IPv6", "MAC", "状态", "上/下行", "连接", "最近出现"], rows, "暂无 IPv6 终端", "readonly-scroll readonly-table-compact"), "readonly-dense-card");
   }
 
   function renderPanelFileInventory(diag) {

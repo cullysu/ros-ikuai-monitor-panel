@@ -1993,8 +1993,14 @@
     return `<div class="ops-inline-dual"><div class="ops-inline-main">${main || '-'}</div>${sub ? `<div class="ops-inline-sub">${sub}</div>` : ''}</div>`;
   }
 
+  function addressValues(values = []) {
+    if (Array.isArray(values)) return values;
+    if (values === undefined || values === null || values === '') return [];
+    return [values];
+  }
+
   function splitIpFamilies(values = []) {
-    return (values || []).reduce((acc, value) => {
+    return addressValues(values).reduce((acc, value) => {
       const text = String(value || '').trim();
       if (!text) return acc;
       if (text.includes(':')) acc.ipv6.push(text);
@@ -2011,14 +2017,18 @@
     return `${shown}<br><span class="ops-inline-sub">+${fmtNumber(items.length - limit)} 项</span>`;
   }
 
-  function addressCell(values = []) {
+  function addressCell(values = [], limit = 3) {
     const families = splitIpFamilies(values);
-    const primary = families.ipv4[0] || families.ipv6[0] || '-';
+    const ordered = [...families.ipv4, ...families.ipv6];
+    if (!ordered.length) return '<div class="ops-address-stack"><span>-</span></div>';
     const total = families.ipv4.length + families.ipv6.length;
-    let secondary = '';
-    if (families.ipv4.length && families.ipv6.length) secondary = families.ipv6[0];
-    else if (total > 1) secondary = `共 ${fmtNumber(total)} 个地址`;
-    return opsTwoLineCell(escapeHtml(primary), secondary ? escapeHtml(secondary) : '');
+    const shown = ordered.slice(0, limit);
+    const extra = total > shown.length ? [`+${fmtNumber(total - shown.length)} 个地址`] : [];
+    return `<div class="ops-address-stack">${[...shown, ...extra].map((item) => `<span>${escapeHtml(item)}</span>`).join('')}</div>`;
+  }
+
+  function addressMetaCell(values = [], meta = '') {
+    return `<div class="ops-address-with-meta">${addressCell(values)}${meta ? `<span class="ops-address-meta">${meta}</span>` : ''}</div>`;
   }
 
   function gatewayCell(values = []) {
@@ -2232,7 +2242,7 @@
           <td>${escapeHtml(row.name)}</td>
           <td>${statusTag(row.running)}</td>
           <td>${opsTwoLineCell(escapeHtml(row.parent || '-'), activeRoutes.length ? escapeHtml(`${activeRoutes[0].table || '-'} / distance ${activeRoutes[0].distance || '-'}`) : '无活动默认')}</td>
-          <td>${addressCell(row.addresses || [])}</td>
+          <td class="ops-address-cell">${addressCell(row.addresses || [])}</td>
           <td>${fmtRate(row.upRate)}</td>
           <td>${fmtRate(row.downRate)}</td>
           <td>${fmtBytes(row.txBytes)}</td>
@@ -2245,7 +2255,7 @@
         <td>${escapeHtml(row.name)}</td>
         <td>${tag(row.role || '-', row.role === 'WAN' ? 'info' : 'ok')}</td>
         <td>${statusTag(row.running, row.disabled)}</td>
-        <td>${addressCell(row.ips || [])}</td>
+        <td class="ops-address-cell">${addressCell(row.ips || [])}</td>
         <td>${fmtRate(row.txRate)}</td>
         <td>${fmtRate(row.rxRate)}</td>
         <td>${fmtBytes(row.txBytes)}</td>
@@ -2282,7 +2292,7 @@
             <td>${escapeHtml(row.name)}</td>
             <td>${tag(row.role || '-', row.role === 'WAN' ? 'info' : 'ok')}</td>
             <td>${statusTag(row.running, row.disabled)}</td>
-            <td>${addressCell(ipv6Addresses)}</td>
+            <td class="ops-address-cell">${addressCell(ipv6Addresses)}</td>
             <td>${gatewayCell((row.gateways || []).filter((value) => String(value || '').includes(':')))}</td>
             <td>${fmtRate(row.txRate)}</td>
             <td>${fmtRate(row.rxRate)}</td>
@@ -2700,7 +2710,7 @@
     const terminalRows = trafficTerminals.slice(0, 20).map((row) => `
       <tr>
         <td>${renderEditableNameCell(row, row.ip, row.ip || '-')}</td>
-        <td>${escapeHtml(row.ip)}</td>
+        <td class="ops-address-cell">${addressCell(row.ip || '-')}</td>
         <td>${fmtRate(row.upRate)}</td>
         <td>${fmtRate(row.downRate)}</td>
         <td>${fmtNumber(row.connections)}</td>
@@ -3276,7 +3286,7 @@
       <tr>
         <td>${escapeHtml(row.name)}</td>
         <td>${statusTag(row.running)}</td>
-        <td>${addressCell(row.addresses || [])}</td>
+        <td class="ops-address-cell">${addressCell(row.addresses || [])}</td>
         <td>${fmtRate(row.upRate)}</td>
         <td>${fmtRate(row.downRate)}</td>
         <td>${fmtBytes(row.txBytes)}</td>
@@ -3300,7 +3310,7 @@
           <td>${fmtRate(row.rxRate)}</td>
           <td>${fmtBytes(row.txBytes)}</td>
           <td>${fmtBytes(row.rxBytes)}</td>
-          <td>${addressSummary}</td>
+          <td class="ops-address-cell">${addressSummary}</td>
           <td>${opsTwoLineCell(escapeHtml(row.mac || '-'), `丢 ${fmtNumber(Number(row.txDrop || 0) + Number(row.rxDrop || 0))} / 错 ${fmtNumber(Number(row.txError || 0) + Number(row.rxError || 0))}`)}</td>
         </tr>`;
     });
@@ -3404,7 +3414,7 @@
             <td>${escapeHtml(row.name)}</td>
             <td>${tag(row.role || '-', row.role === 'WAN' ? 'info' : 'ok')}</td>
             <td>${statusTag(row.running, row.disabled)}</td>
-            <td>${addressCell(ipv6Addresses)}</td>
+            <td class="ops-address-cell">${addressCell(ipv6Addresses)}</td>
             <td>${gatewayCell(ipv6Gateways)}</td>
             <td>${fmtRate(row.txRate)}</td>
             <td>${fmtRate(row.rxRate)}</td>
@@ -3999,7 +4009,7 @@
         <td>${fmtRate(row.txRate)}</td>
         <td>${fmtRate(row.rxRate)}</td>
         <td>${packetSummaryCell(Number(row.txDrop || 0) + Number(row.rxDrop || 0), Number(row.txError || 0) + Number(row.rxError || 0))}</td>
-        <td>${addressCell(row.ips || [])}</td>
+        <td class="ops-address-cell">${addressCell(row.ips || [])}</td>
         <td>${escapeHtml(row.mac || '-')}</td>
       </tr>`);
     const adminRows = (overview.admins || []).map((item) => `
@@ -4053,6 +4063,57 @@
     #trafficAudit .ops-compact-table td,
     #trafficLoad .ops-compact-table td,
     #terminals .ops-compact-table td { white-space: nowrap; }
+    .ops-table td.ops-address-cell,
+    .ops-compact-table td.ops-address-cell,
+    #interfaces .ops-table td.ops-address-cell,
+    #trafficLoad .ops-table td.ops-address-cell,
+    #lineStatus .ops-table td.ops-address-cell,
+    #arp .ops-table td.ops-address-cell,
+    #trafficAudit .ops-table td.ops-address-cell,
+    #terminals .ops-table td.ops-address-cell {
+      white-space: normal;
+      min-width: 0;
+      max-width: 100%;
+    }
+    .ops-address-stack {
+      display: grid;
+      gap: 2px;
+      min-width: 0;
+      max-width: 100%;
+      color: inherit;
+      font-family: "Cascadia Mono","Consolas","Microsoft YaHei",monospace;
+      font-size: 11px;
+      font-weight: 500;
+      line-height: 1.22;
+      white-space: normal;
+      font-variant-numeric: tabular-nums;
+    }
+    .ops-address-stack span {
+      display: block;
+      min-width: 0;
+      max-width: 100%;
+      white-space: normal;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+    .ops-address-with-meta {
+      display: grid;
+      gap: 2px;
+      min-width: 0;
+      max-width: 100%;
+    }
+    .ops-address-meta {
+      display: block;
+      min-width: 0;
+      max-width: 100%;
+      color: var(--text-dim);
+      font-family: "Cascadia Mono","Consolas","Microsoft YaHei",monospace;
+      font-size: 10.5px;
+      line-height: 1.18;
+      white-space: normal;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
     .ops-chip-line { display: flex; gap: 5px; flex-wrap: wrap; align-items: center; }
     .ops-family-badge { display: inline-flex; align-items: center; min-height: 18px; padding: 0 7px; border-radius: 999px; background: #edf5ff; color: #165dff; font-size: 11px; font-weight: 500; }
     .ops-family-badge.is-v6 { background: #eefbf5; color: #087c4a; }
@@ -4270,8 +4331,8 @@
   }
 
   function groupAddressCell(group, family) {
-    if (family === 'ipv4') return compactSetCell(group.ipv4, 2);
-    if (family === 'ipv6') return compactSetCell(group.ipv6, 2);
+    if (family === 'ipv4') return addressCell(arrayFromSet(group.ipv4), 2);
+    if (family === 'ipv6') return addressCell(arrayFromSet(group.ipv6), 2);
     return addressFamilyBadge([...arrayFromSet(group.ipv4), ...arrayFromSet(group.ipv6)]);
   }
 
@@ -4279,8 +4340,8 @@
     return groups.slice(0, limit).map((group) => `
       <tr>
         <td>${groupNameCell(group)}</td>
-        <td>${groupAddressCell(group, 'ipv4')}</td>
-        <td>${groupAddressCell(group, 'ipv6')}</td>
+        <td class="ops-address-cell">${groupAddressCell(group, 'ipv4')}</td>
+        <td class="ops-address-cell">${groupAddressCell(group, 'ipv6')}</td>
         <td>${compactSetCell(group.macs, 2)}</td>
         <td>${statusSummaryCell(group)}</td>
         <td class="ops-rate-cell">${fmtRate(group.upRate)}</td>
@@ -4351,7 +4412,7 @@
       </tr>`);
     const arpRows = (arp.items || []).map((row) => `
       <tr>
-        <td>${escapeHtml(row.ip)}</td>
+        <td class="ops-address-cell">${addressCell(row.ip || '-')}</td>
         <td>${renderEditableNameCell(row, row.ip, row.ip || '-')}</td>
         <td>${escapeHtml(row.mac)}</td>
         <td>${tag(row.type, row.type === '静态' ? 'info' : 'ok')}</td>
@@ -4410,8 +4471,8 @@
         <tr>
           <td>${renderEditableNameCell(row, row.ip, terminalLabel(row))}</td>
           <td>${addressFamilyBadge([row.ip])}</td>
-          <td>${escapeHtml(row.ip || '-')}</td>
-          <td>${compactListHtml(paired, 2)}</td>
+          <td class="ops-address-cell">${addressCell(row.ip || '-')}</td>
+          <td class="ops-address-cell">${addressCell(paired, 2)}</td>
           <td>${escapeHtml(row.mac || '-')}</td>
           <td>${terminalStatusTag(row.status)}</td>
           <td>${escapeHtml(toDisplayText(row.lastSeen || '-'))}</td>
@@ -4431,8 +4492,8 @@
         <tr>
           <td>${renderEditableNameCell(row, row.ip, terminalLabel(row))}</td>
           <td>${terminalStatusTag(row.status)}</td>
-          <td>${escapeHtml(row.ip || '-')}</td>
-          <td>${compactListHtml(paired, 1)}</td>
+          <td class="ops-address-cell">${addressCell(row.ip || '-')}</td>
+          <td class="ops-address-cell">${addressCell(paired, 1)}</td>
           <td>${fmtRate(row.upRate)}</td>
           <td>${fmtRate(row.downRate)}</td>
           <td>${fmtNumber(row.connections)}</td>
@@ -4445,8 +4506,8 @@
         return `
           <tr>
             <td>${escapeHtml(terminalLabel(terminal) || row.localIp || '-')}</td>
-            <td>${escapeHtml(row.localIp)}</td>
-            <td>${escapeHtml(row.remoteIp || '-')}</td>
+            <td class="ops-address-cell">${addressCell(row.localIp || '-')}</td>
+            <td class="ops-address-cell">${addressCell(row.remoteIp || '-')}</td>
             <td>${tag(row.protocol || '-', 'info')}</td>
             <td>${fmtRate(row.upRate)}</td>
             <td>${fmtRate(row.downRate)}</td>
@@ -4545,7 +4606,7 @@
         <tr>
           <td>${renderEditableNameCell(terminal, row.ip, terminalLabel(terminal) || row.ip || '-')}</td>
           <td>${addressFamilyBadge([row.ip])}</td>
-          <td>${escapeHtml(row.ip || '-')}</td>
+          <td class="ops-address-cell">${addressCell(row.ip || '-')}</td>
           <td>${escapeHtml(terminal.mac || '-')}</td>
           <td>${fmtNumber(row.connections)}</td>
           <td>${fmtRate(row.upRate)}</td>
@@ -4558,8 +4619,8 @@
         <tr>
           <td>${escapeHtml(terminalLabel(terminal) || row.localIp || '-')}</td>
           <td>${addressFamilyBadge([row.localIp, row.remoteIp])}</td>
-          <td>${escapeHtml(row.localIp)}</td>
-          <td>${escapeHtml(row.remoteIp || '-')}</td>
+          <td class="ops-address-cell">${addressCell(row.localIp || '-')}</td>
+          <td class="ops-address-cell">${addressCell(row.remoteIp || '-')}</td>
           <td>${tag(row.protocol || '-', 'info')}</td>
           <td>${fmtRate(row.upRate)}</td>
           <td>${fmtRate(row.downRate)}</td>
@@ -4575,7 +4636,7 @@
         <tr>
           <td>${renderEditableNameCell(row, row.ip, terminalLabel(row))}</td>
           <td>${addressFamilyBadge([row.ip])}</td>
-          <td>${escapeHtml(row.ip || '-')}</td>
+          <td class="ops-address-cell">${addressCell(row.ip || '-')}</td>
           <td>${escapeHtml(row.mac || '-')}</td>
           <td>${terminalStatusTag(row.status)}</td>
           <td>${fmtRate(row.upRate)}</td>
@@ -4664,7 +4725,7 @@
       <tr>
         <td>${escapeHtml(row.name)}</td>
         <td>${statusTag(row.running)}</td>
-        <td>${addressCell(row.addresses || [])}</td>
+        <td class="ops-address-cell">${addressCell(row.addresses || [])}</td>
         <td>${fmtRate(row.upRate)}</td>
         <td>${fmtRate(row.downRate)}</td>
         <td>${fmtBytes(row.txBytes)}</td>
@@ -4678,7 +4739,7 @@
         <td>${tag(row.role || '-', row.role === 'WAN' ? 'info' : 'ok')}</td>
         <td>${statusTag(row.running, row.disabled)}</td>
         <td>${addressFamilyBadge(row.ips || [])}</td>
-        <td>${addressCell(row.ips || [])}</td>
+        <td class="ops-address-cell">${addressCell(row.ips || [])}</td>
         <td>${fmtRate(row.txRate)}</td>
         <td>${fmtRate(row.rxRate)}</td>
         <td>${packetSummaryCell(Number(row.txDrop || 0) + Number(row.rxDrop || 0), Number(row.txError || 0) + Number(row.rxError || 0))}</td>
@@ -4688,7 +4749,7 @@
       <tr>
         <td>${renderEditableNameCell(row, row.ip, terminalLabel(row))}</td>
         <td>${addressFamilyBadge([row.ip])}</td>
-        <td>${escapeHtml(row.ip || '-')}</td>
+        <td class="ops-address-cell">${addressCell(row.ip || '-')}</td>
         <td>${escapeHtml(row.mac || '-')}</td>
         <td>${fmtRate(row.upRate)}</td>
         <td>${fmtRate(row.downRate)}</td>
@@ -4698,7 +4759,7 @@
     const terminalHotRows = trafficTerminals.slice(0, 8).map((row) => `
       <tr>
         <td>${escapeHtml(terminalLabel(row))}</td>
-        <td>${opsTwoLineCell(escapeHtml(row.ip || '-'), isRealMac(row.mac) ? escapeHtml(row.mac) : '无 MAC')}</td>
+        <td class="ops-address-cell">${addressMetaCell(row.ip || '-', isRealMac(row.mac) ? escapeHtml(row.mac) : '无 MAC')}</td>
         <td>${opsTwoLineCell(fmtRate(row.upRate), fmtRate(row.downRate))}</td>
         <td>${opsTwoLineCell(`连接 ${fmtNumber(row.connections)}`, fmtBytes(row.sessionBytes))}</td>
       </tr>`);

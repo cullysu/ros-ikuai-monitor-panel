@@ -110,6 +110,33 @@
     #trafficLoad .scale-table td:nth-child(6) {
       white-space: nowrap;
     }
+    .scale-table td.scale-address-cell,
+    #trafficLoad .scale-table td.scale-address-cell {
+      white-space: normal;
+      min-width: 0;
+      max-width: 100%;
+    }
+    .scale-address-stack {
+      display: grid;
+      gap: 2px;
+      min-width: 0;
+      max-width: 100%;
+      color: #253247;
+      font-family: "Cascadia Mono","Consolas","Microsoft YaHei",monospace;
+      font-size: 11.5px;
+      font-weight: 600;
+      line-height: 1.28;
+      white-space: normal;
+      font-variant-numeric: tabular-nums;
+    }
+    .scale-address-stack span {
+      display: block;
+      min-width: 0;
+      max-width: 100%;
+      white-space: normal;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
     .scale-terminal-name,
     .scale-terminal-ip,
     .scale-terminal-mac {
@@ -720,12 +747,27 @@
     return rows.length > limit ? `${shown} +${rows.length - limit}` : shown;
   }
 
+  function orderAddressRows(rows) {
+    const clean = rows.map((item) => String(item).trim()).filter(Boolean);
+    const ipv4 = clean.filter((item) => !item.includes(':'));
+    const ipv6 = clean.filter((item) => item.includes(':'));
+    return [...ipv4, ...ipv6];
+  }
+
   function addressLines(value, limit = 2) {
-    const rows = valueList(value).map((item) => String(item)).filter(Boolean);
+    const rows = orderAddressRows(valueList(value));
     if (!rows.length) return '<span>-</span>';
     const shown = rows.slice(0, limit).map((item) => `<span>${html(item)}</span>`).join('');
     const extra = rows.length > limit ? `<span>+${number(rows.length - limit)} 个地址</span>` : '';
     return `${shown}${extra}`;
+  }
+
+  function addressStack(value, limit = 3) {
+    const rows = orderAddressRows(valueList(value));
+    if (!rows.length) return '<div class="scale-address-stack"><span>-</span></div>';
+    const shown = rows.slice(0, limit);
+    const extra = rows.length > limit ? [`+${number(rows.length - limit)} 个地址`] : [];
+    return `<div class="scale-address-stack">${[...shown, ...extra].map((item) => `<span>${html(item)}</span>`).join('')}</div>`;
   }
 
   function activeRouteSummary(line) {
@@ -1459,7 +1501,7 @@
                 <td><div class="pm-iface-name"><b>${html(row.name || '-')}</b><span>${html(row.type || '-')}</span></div></td>
                 <td>${pill(role, role === 'WAN' ? 'info' : role === 'VNET' ? 'warn' : 'ok')}</td>
                 <td>${pill(statusText, statusTone)}</td>
-                <td>${html(shortList(row.ips || row.addresses, 2))}</td>
+                <td class="scale-address-cell">${addressStack(row.ips || row.addresses || [], 3)}</td>
                 <td>${traffic}</td>
                 <td>${totalBytes}</td>
                 <td>${html(interfaceQualityEvidence(row))}</td>
@@ -1595,7 +1637,7 @@
               <td>${html(row.name)}</td>
               <td>${row.running ? pill('在线', 'ok') : pill('离线', 'danger')}</td>
               <td>${html(row.parent || row.access || '-')}</td>
-              <td>${html((row.addresses || []).join(', ') || row.address || '-')}</td>
+              <td class="scale-address-cell">${addressStack(row.addresses || row.address || [])}</td>
               <td>${rate(row.upRate)}</td>
               <td>${rate(row.downRate)}</td>
               <td>${bytes(Number(row.txBytes || 0) + Number(row.rxBytes || 0))}</td>
