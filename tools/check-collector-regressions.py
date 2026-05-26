@@ -559,6 +559,8 @@ def assert_deploy_defaults_are_project_safe():
     service_text = (ROOT / "ros-panel-ip.service").read_text(encoding="utf-8")
     template_text = (ROOT / "ros-panel-ip@.service").read_text(encoding="utf-8")
     deploy_text = (ROOT / "deploy_linux.sh").read_text(encoding="utf-8")
+    install_text = (ROOT / "install.sh").read_text(encoding="utf-8")
+    windows_spec = (ROOT / "routeros-triage-panel.spec").read_text(encoding="utf-8")
     assert "192.168.3.5" not in service_text
     assert "192.168.3.5" not in template_text
     assert 'PANEL_IP="$${ROS_PANEL_TARGET_IP:-}"' in service_text
@@ -566,6 +568,18 @@ def assert_deploy_defaults_are_project_safe():
     assert 'DEFAULT_PANEL_BIND="0.0.0.0"' in deploy_text
     assert 'DEFAULT_PANEL_TARGET_IP="$(detect_lan_ip)"' in deploy_text
     assert 'DEFAULT_ROUTER_USER="admin"' not in deploy_text
+    for stale_public_pattern in (
+        "public/*.bak-*",
+        "public/_preview*.html",
+        "public/*.pre-*.js",
+        "public/index.extracted.js",
+    ):
+        assert stale_public_pattern in deploy_text
+        assert stale_public_pattern in install_text
+    assert "def public_datas()" in windows_spec
+    assert "index.extracted.js" in windows_spec
+    assert '".bak-"' in windows_spec
+    assert '".pre-"' in windows_spec
 
 
 def assert_frontend_charts_skip_missing_values():

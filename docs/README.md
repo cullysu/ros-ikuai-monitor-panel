@@ -8,6 +8,7 @@ your task.
 - [Docker](../DEPLOY_DOCKER.md)
 - [Windows EXE](../DEPLOY_WINDOWS_EXE.md)
 - [Local Python](../DEPLOY_LOCAL.md)
+- [Linux systemd / VM](../README.md#linux-systemd--vm)
 - [RouterOS Container](../DEPLOY_ROUTEROS_CONTAINER.md)
 - [Optional localhost alias](./LOCALHOST_ALIAS.md)
 

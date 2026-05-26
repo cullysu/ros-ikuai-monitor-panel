@@ -181,6 +181,10 @@ sudo rsync -a --delete \
   --exclude '*.log' \
   --exclude 'data/' \
   --exclude '_*' \
+  --exclude 'public/*.bak-*' \
+  --exclude 'public/_preview*.html' \
+  --exclude 'public/*.pre-*.js' \
+  --exclude 'public/index.extracted.js' \
   "${SRC_DIR}/" "${APP_DIR}/"
 
 sudo python3 -m venv "${VENV_DIR}"

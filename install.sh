@@ -143,6 +143,10 @@ copy_source_tree() {
       --exclude '*.log' \
       --exclude '*.out.log' \
       --exclude '*.err.log' \
+      --exclude 'public/*.bak-*' \
+      --exclude 'public/_preview*.html' \
+      --exclude 'public/*.pre-*.js' \
+      --exclude 'public/index.extracted.js' \
       "$src/" "$dest/"
   else
     command -v tar >/dev/null 2>&1 || die "rsync or tar is required to copy from --source-dir."
@@ -163,6 +167,10 @@ copy_source_tree() {
         --exclude='*.log' \
         --exclude='*.out.log' \
         --exclude='*.err.log' \
+        --exclude='public/*.bak-*' \
+        --exclude='public/_preview*.html' \
+        --exclude='public/*.pre-*.js' \
+        --exclude='public/index.extracted.js' \
         -cf - .
     ) | (
       cd "$dest"

@@ -45,6 +45,10 @@ Download the `.rsc` and `.backup` files before continuing.
 ## Image Build
 
 Build and push an image that matches your RouterOS CPU architecture.
+Build from the repository root so the Dockerfile copies the current `app.py`
+and `public/` assets into the image. Do not build from an unpacked `dist/`,
+`_staging_*`, or other static snapshot; recent public UI fixes ship through the
+repository `public/` directory and `COPY public ./public`.
 
 Example for a registry you control:
 
@@ -57,6 +61,17 @@ docker buildx build \
 
 RouterOS devices vary by architecture. Publish only the platforms you have
 tested.
+
+Before publishing a release image, run the local packaging preflight from a
+workstation:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\check-packaging-preflight.ps1 -SkipDocker -SkipInstall
+```
+
+The preflight is local-only. It checks that public UI fix markers are present
+and that shared deployment paths, including the RouterOS Container image path,
+use the repository `public/` assets.
 
 ## RouterOS Safety Gates
 
