@@ -74,6 +74,13 @@ fallback for logs and address settings.
 
 ## Quick Start: Docker One-command
 
+The installer prefers the published GHCR image and falls back to a local Docker
+build if the image is unavailable:
+
+```text
+ghcr.io/cullysu/ros-ikuai-monitor-panel:main
+```
+
 Safest first run: download, review, dry-run, then install.
 
 ```bash
@@ -101,6 +108,12 @@ Custom directory or port:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/main/install.sh | bash -s -- --dir "$HOME/routeros-panel" --port 28647
+```
+
+Force a local build from the checked-out source:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/main/install.sh | bash -s -- --build-local
 ```
 
 Upgrade:
@@ -179,8 +192,15 @@ RouterOS Container is supported as an advanced/Beta deployment route. It is not
 the default path because it changes RouterOS container, storage, veth, and
 possibly API/firewall access state.
 
+Registry image:
+
+```text
+ghcr.io/cullysu/ros-ikuai-monitor-panel:main
+```
+
 Read [DEPLOY_ROUTEROS_CONTAINER.md](./DEPLOY_ROUTEROS_CONTAINER.md) and make a
-RouterOS backup before trying it.
+RouterOS backup before trying it. Do not call the deployment complete until
+the RouterOS-side health check and the intended LAN access URL both pass.
 
 ## Linux systemd / VM
 

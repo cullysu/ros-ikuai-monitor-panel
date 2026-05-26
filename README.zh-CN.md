@@ -52,6 +52,12 @@ http://127.0.0.1:28646/
 
 ## Docker 一条命令
 
+安装脚本会优先拉取公开 GHCR 镜像，拉取失败时再回退到本地 Docker 构建：
+
+```text
+ghcr.io/cullysu/ros-ikuai-monitor-panel:main
+```
+
 更稳妥的首次安装方式是先下载、审阅、dry-run，再执行：
 
 ```bash

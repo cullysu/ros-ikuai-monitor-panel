@@ -15,9 +15,12 @@ Usage:
 
 Options:
   --lan                 Keep the default: publish the panel on all host interfaces.
+  --local-only          Publish only on 127.0.0.1. Other LAN devices will not be able to connect.
   --bind <addr>         Host publish address. Default: 0.0.0.0.
   --port <port>         Host and in-container panel port. Default: 28646.
   --name <name>         Docker container name. Default: routeros-triage-panel.
+  --image <image>       Container image to pull. Default: ghcr.io/cullysu/ros-ikuai-monitor-panel:main.
+  --build-local         Build from the checked-out source instead of pulling the prebuilt image first.
   --target-ip <addr>    URL host printed by the panel. Default: detected LAN IP.
   --dir <path>          Install directory. Default: ~/.local/share/routeros-triage-panel, or /opt/routeros-triage-panel as root.
   --repo <url>          Git repository URL. Default: https://github.com/cullysu/ros-ikuai-monitor-panel.git
@@ -202,6 +205,12 @@ clone_or_download() {
   rm -rf "$tmp"
 }
 
+compose_service_image() {
+  local image="$1"
+  [[ -n "$image" ]] || die "--image must not be empty"
+  [[ ! "$image" =~ [[:space:]] ]] || die "--image must not contain whitespace"
+}
+
 update_existing_repo() {
   local dir="$1"
   local branch="$2"
@@ -246,6 +255,7 @@ configure_env() {
   set_env_value "$env_file" "ROS_PANEL_PUBLISHED_ADDR" "$PUBLISHED_ADDR"
   set_env_value "$env_file" "ROS_PANEL_PUBLISHED_PORT" "$PUBLISHED_PORT"
   set_env_value "$env_file" "ROS_PANEL_CONTAINER_NAME" "$CONTAINER_NAME"
+  set_env_value "$env_file" "ROS_PANEL_IMAGE" "$PANEL_IMAGE"
   set_env_value "$env_file" "ROS_PANEL_BIND" "0.0.0.0"
   set_env_value "$env_file" "ROS_PANEL_PORT" "$PUBLISHED_PORT"
   set_env_value "$env_file" "ROS_PANEL_TARGET_IP" "$TARGET_IP"
@@ -256,7 +266,17 @@ configure_env() {
 
 compose_up() {
   local dir="$1"
-  (cd "$dir" && "${COMPOSE_CMD[@]}" --env-file .env.docker up -d --build)
+  if [[ "$BUILD_LOCAL" == "1" || -n "$SOURCE_DIR" ]]; then
+    (cd "$dir" && "${COMPOSE_CMD[@]}" --env-file .env.docker up -d --build)
+    return
+  fi
+
+  if (cd "$dir" && "${COMPOSE_CMD[@]}" --env-file .env.docker pull routeros-triage); then
+    (cd "$dir" && "${COMPOSE_CMD[@]}" --env-file .env.docker up -d)
+  else
+    log "Prebuilt image pull failed; falling back to local Docker build."
+    (cd "$dir" && "${COMPOSE_CMD[@]}" --env-file .env.docker up -d --build)
+  fi
 }
 
 compose_down() {
@@ -299,9 +319,11 @@ INSTALL_DIR="${ROS_PANEL_INSTALL_DIR:-$(default_install_dir)}"
 PUBLISHED_ADDR="0.0.0.0"
 PUBLISHED_PORT="$DEFAULT_PORT"
 CONTAINER_NAME="${ROS_PANEL_CONTAINER_NAME:-routeros-triage-panel}"
+PANEL_IMAGE="${ROS_PANEL_IMAGE:-ghcr.io/cullysu/ros-ikuai-monitor-panel:main}"
 TARGET_IP="$(detect_lan_ip)"
 TARGET_IP_EXPLICIT="0"
 SOURCE_DIR="${ROS_PANEL_INSTALL_SOURCE_DIR:-}"
+BUILD_LOCAL="${ROS_PANEL_BUILD_LOCAL:-0}"
 UPGRADE="0"
 UNINSTALL="0"
 PURGE="0"
@@ -311,6 +333,10 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
     --lan)
       PUBLISHED_ADDR="0.0.0.0"
+      shift
+      ;;
+    --local-only)
+      PUBLISHED_ADDR="127.0.0.1"
       shift
       ;;
     --bind)
@@ -328,6 +354,15 @@ while [[ $# -gt 0 ]]; do
       [[ $# -ge 2 && -n "${2:-}" ]] || die "--name requires a container name"
       CONTAINER_NAME="$2"
       shift 2
+      ;;
+    --image)
+      [[ $# -ge 2 && -n "${2:-}" ]] || die "--image requires an image reference"
+      PANEL_IMAGE="$2"
+      shift 2
+      ;;
+    --build-local)
+      BUILD_LOCAL="1"
+      shift
       ;;
     --target-ip)
       [[ $# -ge 2 && -n "${2:-}" ]] || die "--target-ip requires an address"
@@ -384,6 +419,7 @@ done
 validate_port "$PUBLISHED_PORT"
 validate_bind "$PUBLISHED_ADDR"
 validate_container_name "$CONTAINER_NAME"
+compose_service_image "$PANEL_IMAGE"
 INSTALL_DIR="${INSTALL_DIR/#\~/$HOME}"
 if [[ -n "$SOURCE_DIR" ]]; then
   SOURCE_DIR="${SOURCE_DIR/#\~/$HOME}"
@@ -404,13 +440,15 @@ Install plan:
   branch:     $BRANCH
   source-dir: ${SOURCE_DIR:-<clone/download>}
   dir:        $INSTALL_DIR
+  image:      $PANEL_IMAGE
+  mode:       $([[ "$BUILD_LOCAL" == "1" || -n "$SOURCE_DIR" ]] && printf 'local-build' || printf 'pull-then-build-fallback')
   bind:       $PUBLISHED_ADDR
   port:       $PUBLISHED_PORT
   name:       $CONTAINER_NAME
   target-ip:  $TARGET_IP
   local-url:  http://127.0.0.1:$PUBLISHED_PORT/
-  lan-url:    http://$TARGET_IP:$PUBLISHED_PORT/
-  firewall:   allow inbound TCP $PUBLISHED_PORT on the panel host if LAN clients cannot connect
+  lan-url:    $([[ "$PUBLISHED_ADDR" == "127.0.0.1" ]] && printf '<disabled: bind is 127.0.0.1>' || printf 'http://%s:%s/' "$TARGET_IP" "$PUBLISHED_PORT")
+  firewall:   $([[ "$PUBLISHED_ADDR" == "127.0.0.1" ]] && printf 'not applicable until --bind 0.0.0.0 or --lan is used' || printf 'allow inbound TCP %s on the panel host if LAN clients cannot connect' "$PUBLISHED_PORT")
   upgrade:    $UPGRADE
   uninstall:  $UNINSTALL
   purge:      $PURGE
@@ -452,7 +490,10 @@ compose_up "$INSTALL_DIR"
 
 log "Installed in: $INSTALL_DIR"
 log "Open on this host: http://127.0.0.1:$PUBLISHED_PORT/"
-if [[ "$TARGET_IP" != "127.0.0.1" ]]; then
+if [[ "$PUBLISHED_ADDR" == "127.0.0.1" ]]; then
+  log "LAN access is disabled because the host publish address is 127.0.0.1."
+  log "Reinstall with --lan or --bind 0.0.0.0 when trusted LAN clients should connect."
+elif [[ "$TARGET_IP" != "127.0.0.1" ]]; then
   log "Open from other LAN devices: http://$TARGET_IP:$PUBLISHED_PORT/"
 else
   log "LAN URL was not detected. Set --target-ip <panel-host-ip> if clients need remote access."

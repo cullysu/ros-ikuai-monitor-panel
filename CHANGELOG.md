@@ -8,6 +8,10 @@
   added preflight checks that catch stale env/archive guidance before release.
 - Filtered stale/duplicate health log rows from the homepage load-audit summary
   so old RouterOS log events do not look like current failures.
+- Added GHCR container publishing workflow and made Docker installs prefer the
+  published image with local-build fallback.
+- Added public-release readiness checks and explicit RouterOS Container LAN
+  exposure/rollback guidance.
 
 ## 0.1.0 - 2026-05-25
 

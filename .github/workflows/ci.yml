@@ -28,7 +28,7 @@ jobs:
 
       - name: Python syntax and collector regressions
         run: |
-          python -m py_compile app.py tools/check-collector-regressions.py
+          python -m py_compile app.py tools/check-collector-regressions.py tools/convert-oci-to-routeros-docker-archive.py
           python tools/check-collector-regressions.py
 
       - name: Set up Node.js
@@ -37,7 +37,9 @@ jobs:
           node-version: "22"
 
       - name: LAN/default documentation checks
-        run: node tools/check-lan-access-defaults.js
+        run: |
+          node tools/check-lan-access-defaults.js
+          node tools/check-public-release-readiness.js
 
       - name: Docker Compose config
         run: docker compose --env-file .env.docker.example config --quiet

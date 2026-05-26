@@ -21,6 +21,8 @@ real networks.
    or an uploaded tar archive. If an uploaded tar contains `oci-layout`, use the
    converter documented in [DEPLOY_ROUTEROS_CONTAINER.md](./DEPLOY_ROUTEROS_CONTAINER.md)
    before reporting an import failure.
+6. If Docker install is slow or building locally, note whether the GHCR image
+   pull failed and whether the installer fell back to local build.
 
 ## Good Public Issues Include
 

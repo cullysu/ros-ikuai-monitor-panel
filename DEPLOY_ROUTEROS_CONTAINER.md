@@ -50,12 +50,18 @@ and `public/` assets into the image. Do not build from an unpacked `dist/`,
 `_staging_*`, or other static snapshot; recent public UI fixes ship through the
 repository `public/` directory and `COPY public ./public`.
 
-Example for a registry you control:
+Project registry image:
+
+```text
+ghcr.io/cullysu/ros-ikuai-monitor-panel:main
+```
+
+Example for your own registry or fork:
 
 ```bash
 docker buildx build \
   --platform linux/amd64,linux/arm64 \
-  -t ghcr.io/YOUR_ORG/routeros-triage-panel:TAG \
+  -t ghcr.io/YOUR_ORG/ros-ikuai-monitor-panel:TAG \
   --push .
 ```
 
@@ -169,8 +175,8 @@ Registry image:
 
 ```routeros
 /container/config/set registry-url=https://ghcr.io tmpdir=disk1/container-tmp
-/container/add remote-image=ghcr.io/YOUR_ORG/routeros-triage-panel:TAG interface=veth-routeros-triage root-dir=disk1/routeros-triage mounts=routeros-triage-data envlist=routeros-triage-env logging=yes
-/container/start [find where remote-image~"routeros-triage-panel"]
+/container/add remote-image=ghcr.io/cullysu/ros-ikuai-monitor-panel:main interface=veth-routeros-triage root-dir=disk1/routeros-triage mounts=routeros-triage-data envlist=routeros-triage-env logging=yes
+/container/start [find where root-dir="disk1/routeros-triage"]
 ```
 
 Offline/local archive:
@@ -188,6 +194,12 @@ Confirm the container is running first:
 /container/print detail
 ```
 
+Verify the panel from RouterOS before exposing it to users:
+
+```routeros
+/tool/fetch url="http://172.18.0.2:28646/api/health" output=user
+```
+
 Expected:
 
 - environment contains `ROS_PANEL_BIND=0.0.0.0`
@@ -197,28 +209,69 @@ Expected:
 
 ## Client Access
 
-When you intentionally expose the containerized panel to the LAN, clients
-should open the RouterOS/container host address:
+There are two supported access modes. Pick one and verify it; do not assume LAN
+reachability merely because the container is running.
+
+### Mode A: Routed Container Address
+
+If your management host can route to the container subnet, open:
+
+```text
+http://172.18.0.2:28646/
+```
+
+Verify from that host:
+
+```bash
+curl -fsS http://172.18.0.2:28646/api/health
+```
+
+### Mode B: Router LAN Address Exposure
+
+If ordinary LAN clients should open the router's LAN address, add one explicit
+LAN exposure rule set after recording current firewall/NAT state. Replace
+`<router-lan-ip>` and `<trusted-lan-cidr>` before running:
+
+```routeros
+/ip/firewall/nat/add chain=dstnat action=dst-nat protocol=tcp dst-address=<router-lan-ip> dst-port=28646 to-addresses=172.18.0.2 to-ports=28646 comment="routeros-triage container panel LAN exposure"
+/ip/firewall/filter/add chain=forward action=accept protocol=tcp src-address=<trusted-lan-cidr> dst-address=172.18.0.2 dst-port=28646 comment="routeros-triage container panel LAN exposure"
+```
+
+Then clients open:
 
 ```text
 http://<panel-host-ip>:28646/
 ```
 
+where `<panel-host-ip>` is normally the RouterOS LAN IP you used in
+`dst-address=`.
+
 `http://127.0.0.1:28646/` only works from the same host that is running or
 forwarding the panel. If a different client must use that exact address, the
 localhost alias helper is optional, not required for normal LAN access.
 
-Do not paste generic firewall/NAT rules into a production router. Record current
-state, define the target state, create a rollback path, then add the minimum
-rule needed for your topology.
+Rollback the optional LAN exposure:
+
+```routeros
+/ip/firewall/nat/remove [find where comment="routeros-triage container panel LAN exposure"]
+/ip/firewall/filter/remove [find where comment="routeros-triage container panel LAN exposure"]
+```
+
+Do not paste generic firewall/NAT rules into a production router without
+checking current state. Record current NAT/filter rules first, define the target
+state, keep the comments above unchanged for rollback, then verify:
+
+```bash
+curl -fsS http://<panel-host-ip>:28646/api/health
+```
 
 ## Rollback
 
 Stop and remove only the pieces created for this deployment:
 
 ```routeros
-/container/stop [find where remote-image~"routeros-triage-panel"]
-/container/remove [find where remote-image~"routeros-triage-panel"]
+/container/stop [find where root-dir="disk1/routeros-triage"]
+/container/remove [find where root-dir="disk1/routeros-triage"]
 /container/envs/remove [find where list=routeros-triage-env]
 /container/mounts/remove [find where name=routeros-triage-data]
 /interface/bridge/port/remove [find where interface=veth-routeros-triage]

@@ -3,7 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: routeros-triage-panel:local
+    image: "${ROS_PANEL_IMAGE:-ghcr.io/cullysu/ros-ikuai-monitor-panel:main}"
     container_name: "${ROS_PANEL_CONTAINER_NAME:-routeros-triage-panel}"
     restart: unless-stopped
     ports:

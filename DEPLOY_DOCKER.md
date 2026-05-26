@@ -4,6 +4,13 @@ Docker is the recommended public deployment path for most users. It works on
 NAS boxes, mini PCs, Linux hosts, OpenWrt Docker environments, and cloud VMs
 without requiring Python, ESXi, or a manually managed systemd service.
 
+The one-command installer prefers the published GHCR image and falls back to a
+local Docker build if the image cannot be pulled:
+
+```text
+ghcr.io/cullysu/ros-ikuai-monitor-panel:main
+```
+
 The default install publishes the panel on `0.0.0.0:28646` and prints a LAN
 URL that other devices can open without installing anything:
 
@@ -76,6 +83,8 @@ Default install directory:
 --bind <addr>         Host publish address. Default: 0.0.0.0.
 --port <port>         Host and in-container panel port. Default: 28646.
 --name <name>         Docker container name. Default: routeros-triage-panel.
+--image <image>       Container image to pull. Default: ghcr.io/cullysu/ros-ikuai-monitor-panel:main.
+--build-local         Build from source instead of pulling the prebuilt image first.
 --target-ip <addr>    URL host printed by the panel. Default: detected LAN IP.
 --dir <path>          Install directory.
 --repo <url>          Git repository URL.
@@ -107,6 +116,13 @@ cp .env.docker.example .env.docker
 docker compose --env-file .env.docker up -d --build
 ```
 
+For a no-build manual run, keep `ROS_PANEL_IMAGE` in `.env.docker` and run:
+
+```bash
+docker compose --env-file .env.docker pull routeros-triage
+docker compose --env-file .env.docker up -d
+```
+
 For first run, you can leave these placeholders and configure RouterOS from the
 panel UI:
 
@@ -122,6 +138,7 @@ publishable:
 ```dotenv
 ROS_PANEL_PUBLISHED_ADDR=0.0.0.0
 ROS_PANEL_PUBLISHED_PORT=28646
+ROS_PANEL_IMAGE=ghcr.io/cullysu/ros-ikuai-monitor-panel:main
 ROS_PANEL_TARGET_IP=auto
 ```
 
@@ -280,6 +297,10 @@ If the port is occupied, reinstall or restart with another port:
 ```bash
 curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/main/install.sh | bash -s -- --port 28647
 ```
+
+If you intentionally install with `--local-only` or `--bind 127.0.0.1`, LAN
+access is disabled by design. Reinstall with `--lan` or `--bind 0.0.0.0` for
+trusted LAN access.
 
 ### Another Device Cannot Open The Panel
 

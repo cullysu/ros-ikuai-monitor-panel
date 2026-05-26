@@ -284,6 +284,24 @@ try {
             }
             Add-Check "FAIL" "LAN access defaults" $detail
           }
+
+          $releaseCheckPath = Join-Path $repoRoot "tools/check-public-release-readiness.js"
+          if (-not (Test-Path -LiteralPath $releaseCheckPath)) {
+            Add-Check "FAIL" "public release readiness" "tools/check-public-release-readiness.js was not found."
+          }
+          else {
+            $releaseResult = Invoke-CapturedCommand $node.Source @("tools/check-public-release-readiness.js")
+            if ($releaseResult.ExitCode -eq 0) {
+              Add-Check "PASS" "public release readiness" "tools/check-public-release-readiness.js passed."
+            }
+            else {
+              $detail = $releaseResult.Output.Trim()
+              if ([string]::IsNullOrWhiteSpace($detail)) {
+                $detail = "exit code $($releaseResult.ExitCode)"
+              }
+              Add-Check "FAIL" "public release readiness" $detail
+            }
+          }
         }
       }
     }

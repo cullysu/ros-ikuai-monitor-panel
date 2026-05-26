@@ -39,6 +39,9 @@ docker compose --env-file .env.docker.example config --quiet
 - RouterOS Container archive guidance: offline imports must document the
   legacy Docker archive shape and the OCI conversion helper:
   `tools/convert-oci-to-routeros-docker-archive.py`.
+- Public release readiness through `tools/check-public-release-readiness.js`:
+  GHCR publishing workflow, installer image pull/build fallback, local-only
+  bind messaging, and RouterOS Container LAN exposure rollback markers.
 
 ## Current repository state
 
@@ -58,3 +61,5 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\check-packaging-pref
   that mode, reducing accidental side-effect risk.
 - Catches RouterOS Container release-doc drift before users hit known
   import/env failures on real routers.
+- Catches missing public image publishing or access-mode documentation before a
+  release tells users to run commands that cannot be validated.
