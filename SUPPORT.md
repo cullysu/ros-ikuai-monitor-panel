@@ -17,6 +17,10 @@ real networks.
    `http://<panel-host-ip>:28646/`
 4. Confirm RouterOS SSH is reachable from the panel host and that you are using
    a dedicated read-only RouterOS user.
+5. For RouterOS Container installs, confirm whether you used a registry image
+   or an uploaded tar archive. If an uploaded tar contains `oci-layout`, use the
+   converter documented in [DEPLOY_ROUTEROS_CONTAINER.md](./DEPLOY_ROUTEROS_CONTAINER.md)
+   before reporting an import failure.
 
 ## Good Public Issues Include
 

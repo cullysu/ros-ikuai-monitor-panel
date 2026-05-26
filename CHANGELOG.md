@@ -2,7 +2,12 @@
 
 ## Unreleased
 
-- No unreleased changes yet.
+- Added a RouterOS Container archive converter for Docker/BuildKit OCI layout
+  tarballs so offline imports can be rewritten to legacy Docker archive shape.
+- Fixed RouterOS Container env examples to use RouterOS `list=` syntax and
+  added preflight checks that catch stale env/archive guidance before release.
+- Filtered stale/duplicate health log rows from the homepage load-audit summary
+  so old RouterOS log events do not look like current failures.
 
 ## 0.1.0 - 2026-05-25
 

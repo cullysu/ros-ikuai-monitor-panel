@@ -62,6 +62,35 @@ docker buildx build \
 RouterOS devices vary by architecture. Publish only the platforms you have
 tested.
 
+### Archive Compatibility
+
+RouterOS Container import is stricter than many desktop Docker tools. When you
+use `/container/add file=...`, the archive should look like a legacy Docker
+archive:
+
+- top-level `manifest.json`
+- top-level `repositories`
+- one directory per layer, each containing `layer.tar`
+
+If the tar instead contains `oci-layout`, `index.json`, and `blobs/sha256/...`,
+it is an OCI layout archive. On RouterOS 7.20.x this shape can fail during
+import with an error like `failed to load next entry`.
+
+Preferred release path: publish a registry image and use `remote-image=...`.
+If you need offline/local import, verify or convert the archive first:
+
+```bash
+python tools/convert-oci-to-routeros-docker-archive.py \
+  routeros-triage-panel-oci.tar \
+  routeros-triage-panel-routeros.tar \
+  --tag routeros-triage-panel:routeros \
+  --platform linux/amd64
+```
+
+Then upload the converted tar to RouterOS storage and import it with `file=`.
+Use `--platform linux/arm64` or another matching platform for non-amd64
+RouterOS devices.
+
 Before publishing a release image, run the local packaging preflight from a
 workstation:
 
@@ -110,15 +139,15 @@ must be allowed to read RouterOS. Do not broaden API access to the whole LAN.
 ## Environment Template
 
 ```routeros
-/container/envs/add name=routeros-triage-env key=ROS_PANEL_BIND value=0.0.0.0
-/container/envs/add name=routeros-triage-env key=ROS_PANEL_PORT value=28646
-/container/envs/add name=routeros-triage-env key=ROS_PANEL_TARGET_IP value=auto
-/container/envs/add name=routeros-triage-env key=ROS_PANEL_PROFILE value=routeros_only
-/container/envs/add name=routeros-triage-env key=ROS_PANEL_IP_ALIAS_WRITE_ENABLED value=0
-/container/envs/add name=routeros-triage-env key=ROS_PANEL_EXPOSE_ADMIN_SESSIONS value=0
-/container/envs/add name=routeros-triage-env key=ROS_MONITOR_ROUTER_HOST value=172.18.0.1
-/container/envs/add name=routeros-triage-env key=ROS_MONITOR_ROUTER_USER value=ros-panel-readonly
-/container/envs/add name=routeros-triage-env key=ROS_MONITOR_ROUTER_PASSWORD value=CHANGE_ME
+/container/envs/add list=routeros-triage-env key=ROS_PANEL_BIND value=0.0.0.0
+/container/envs/add list=routeros-triage-env key=ROS_PANEL_PORT value=28646
+/container/envs/add list=routeros-triage-env key=ROS_PANEL_TARGET_IP value=auto
+/container/envs/add list=routeros-triage-env key=ROS_PANEL_PROFILE value=routeros_only
+/container/envs/add list=routeros-triage-env key=ROS_PANEL_IP_ALIAS_WRITE_ENABLED value=0
+/container/envs/add list=routeros-triage-env key=ROS_PANEL_EXPOSE_ADMIN_SESSIONS value=0
+/container/envs/add list=routeros-triage-env key=ROS_MONITOR_ROUTER_HOST value=172.18.0.1
+/container/envs/add list=routeros-triage-env key=ROS_MONITOR_ROUTER_USER value=ros-panel-readonly
+/container/envs/add list=routeros-triage-env key=ROS_MONITOR_ROUTER_PASSWORD value=CHANGE_ME
 ```
 
 The password above is a placeholder. Do not store a privileged RouterOS password
@@ -136,10 +165,19 @@ The exact `src=` path depends on your RouterOS storage layout.
 
 ## Add And Start Container
 
+Registry image:
+
 ```routeros
 /container/config/set registry-url=https://ghcr.io tmpdir=disk1/container-tmp
 /container/add remote-image=ghcr.io/YOUR_ORG/routeros-triage-panel:TAG interface=veth-routeros-triage root-dir=disk1/routeros-triage mounts=routeros-triage-data envlist=routeros-triage-env logging=yes
 /container/start [find where remote-image~"routeros-triage-panel"]
+```
+
+Offline/local archive:
+
+```routeros
+/container/add file=routeros-triage-panel-routeros.tar interface=veth-routeros-triage root-dir=disk1/routeros-triage mounts=routeros-triage-data envlist=routeros-triage-env logging=yes
+/container/start [find where root-dir="disk1/routeros-triage"]
 ```
 
 ## Verify From RouterOS
@@ -181,7 +219,7 @@ Stop and remove only the pieces created for this deployment:
 ```routeros
 /container/stop [find where remote-image~"routeros-triage-panel"]
 /container/remove [find where remote-image~"routeros-triage-panel"]
-/container/envs/remove [find where name=routeros-triage-env]
+/container/envs/remove [find where list=routeros-triage-env]
 /container/mounts/remove [find where name=routeros-triage-data]
 /interface/bridge/port/remove [find where interface=veth-routeros-triage]
 /interface/veth/remove [find where name=veth-routeros-triage]

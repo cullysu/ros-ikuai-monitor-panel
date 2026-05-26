@@ -120,6 +120,41 @@ try {
     Add-Check "FAIL" "shared public deployment paths" "One or more deployment paths no longer prove they use the repository public assets."
   }
 
+  $routerosDocPath = Join-Path $repoRoot "DEPLOY_ROUTEROS_CONTAINER.md"
+  $converterPath = Join-Path $repoRoot "tools/convert-oci-to-routeros-docker-archive.py"
+  if (-not (Test-Path -LiteralPath $routerosDocPath)) {
+    Add-Check "FAIL" "RouterOS Container install guidance" "DEPLOY_ROUTEROS_CONTAINER.md was not found."
+  }
+  else {
+    $routerosDocText = Get-Content -Raw -LiteralPath $routerosDocPath
+    if ($routerosDocText -match "/container/envs/add\s+list=" -and
+        $routerosDocText -notmatch "/container/envs/add\s+name=" -and
+        $routerosDocText -match "oci-layout" -and
+        $routerosDocText -match "manifest\.json" -and
+        $routerosDocText -match "convert-oci-to-routeros-docker-archive\.py") {
+      Add-Check "PASS" "RouterOS Container install guidance" "RouterOS env syntax and Docker/OCI archive guidance are documented."
+    }
+    else {
+      Add-Check "FAIL" "RouterOS Container install guidance" "RouterOS env syntax or Docker/OCI archive guidance is missing or stale."
+    }
+  }
+
+  if (-not (Test-Path -LiteralPath $converterPath)) {
+    Add-Check "FAIL" "RouterOS archive converter" "tools/convert-oci-to-routeros-docker-archive.py was not found."
+  }
+  else {
+    $converterText = Get-Content -Raw -LiteralPath $converterPath
+    if ($converterText -match "oci-layout" -and
+        $converterText -match "manifest\.json" -and
+        $converterText -match "layer\.tar" -and
+        $converterText -match "gzip") {
+      Add-Check "PASS" "RouterOS archive converter" "Converter contains OCI, legacy Docker archive, and gzip layer handling markers."
+    }
+    else {
+      Add-Check "FAIL" "RouterOS archive converter" "Converter is missing expected archive compatibility markers."
+    }
+  }
+
   if ($SkipDocker) {
     Add-Check "SKIP" "docker compose config" "Skipped by -SkipDocker."
   }

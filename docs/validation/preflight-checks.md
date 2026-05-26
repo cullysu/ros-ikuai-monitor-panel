@@ -34,6 +34,11 @@ docker compose --env-file .env.docker.example config --quiet
   docs and templates should publish a normal LAN URL for remote clients, while
   `127.0.0.1:28646` remains documented only for same-machine access or the
   optional localhost alias helper.
+- RouterOS Container install guidance: env examples must use RouterOS
+  `/container/envs/add list=...` syntax, not stale `name=...` syntax.
+- RouterOS Container archive guidance: offline imports must document the
+  legacy Docker archive shape and the OCI conversion helper:
+  `tools/convert-oci-to-routeros-docker-archive.py`.
 
 ## Current repository state
 
@@ -51,3 +56,5 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\check-packaging-pref
 - Catches Bash parse errors before an installer is published.
 - Avoids executing a dry-run or help command unless the install script advertises
   that mode, reducing accidental side-effect risk.
+- Catches RouterOS Container release-doc drift before users hit known
+  import/env failures on real routers.

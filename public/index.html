@@ -7520,6 +7520,45 @@
       return interfaceQualitySortScore(row);
     }
 
+    const HEALTH_EVENT_LOG_WINDOW_MS = 30 * 60 * 1000;
+    const HEALTH_EVENT_CLOCK_SKEW_MS = 2 * 60 * 1000;
+
+    function parseHealthEventTime(value, referenceMs = Date.now()) {
+      const text = String(value || '').trim();
+      if (!text || text === '-') return null;
+      const normalized = text.replace(/\//g, '-').replace(' ', 'T');
+      if (/^\d{4}-\d{1,2}-\d{1,2}T\d{1,2}:\d{2}(?::\d{2})?$/.test(normalized)) {
+        const parsed = new Date(normalized);
+        return Number.isNaN(parsed.getTime()) ? null : parsed.getTime();
+      }
+      const timeMatch = text.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
+      if (timeMatch) {
+        const reference = new Date(referenceMs);
+        reference.setHours(Number(timeMatch[1]), Number(timeMatch[2]), Number(timeMatch[3] || 0), 0);
+        return reference.getTime();
+      }
+      const parsed = new Date(text);
+      return Number.isNaN(parsed.getTime()) ? null : parsed.getTime();
+    }
+
+    function isFreshHealthLog(row, snapshot) {
+      const eventMs = parseHealthEventTime(row?.time, parseHealthEventTime(snapshot?.updatedAt) || Date.now());
+      if (eventMs === null) return true;
+      const referenceMs = parseHealthEventTime(snapshot?.updatedAt, Date.now()) || Date.now();
+      return eventMs <= referenceMs + HEALTH_EVENT_CLOCK_SKEW_MS
+        && referenceMs - eventMs <= HEALTH_EVENT_LOG_WINDOW_MS;
+    }
+
+    function dedupeHealthLogs(rows) {
+      const seen = new Set();
+      return (rows || []).filter((row) => {
+        const key = [row?.time || '', row?.topics || '', row?.message || ''].join('|');
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+    }
+
     function collectLoadAuditEvents(snapshot) {
       const overview = snapshot.overview || {};
       const connections = snapshot.connections || {};
@@ -7547,8 +7586,9 @@
         events.push({time: '实时', source: '连接压力', level: 'warn', message: `全局连接数 ${fmtCompact(connections.total)}，持续关注连接压力`});
       }
 
-      const logRows = [...(logs.system || []), ...(logs.dns || [])]
+      const logRows = dedupeHealthLogs([...(logs.system || []), ...(logs.dns || [])])
         .filter((row) => /error|warning|critical|fail|down|timeout|cache full/i.test(`${row.topics || ''} ${row.message || ''}`))
+        .filter((row) => isFreshHealthLog(row, snapshot))
         .slice(0, 8)
         .map((row) => ({
           time: row.time || '-',
