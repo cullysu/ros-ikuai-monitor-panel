@@ -74,8 +74,9 @@ fallback for logs and address settings.
 
 ## Quick Start: Docker One-command
 
-The installer prefers the published GHCR image and falls back to a local Docker
-build if the image is unavailable:
+The installer builds locally by default so the public one-command path does not
+depend on registry visibility. CI also publishes an optional GHCR image for
+prebuilt installs:
 
 ```text
 ghcr.io/cullysu/ros-ikuai-monitor-panel:main
@@ -114,6 +115,12 @@ Force a local build from the checked-out source:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/main/install.sh | bash -s -- --build-local
+```
+
+Use the prebuilt GHCR image when package visibility allows anonymous pulls:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/main/install.sh | bash -s -- --prebuilt
 ```
 
 Upgrade:
@@ -192,7 +199,14 @@ RouterOS Container is supported as an advanced/Beta deployment route. It is not
 the default path because it changes RouterOS container, storage, veth, and
 possibly API/firewall access state.
 
-Registry image:
+Default public path: build a RouterOS-friendly archive locally, upload it to
+RouterOS storage, and import it with `/container/add file=...`:
+
+```bash
+bash tools/build-routeros-container-archive.sh --platform linux/amd64
+```
+
+The GHCR image is an optional fast path only after anonymous pulls work:
 
 ```text
 ghcr.io/cullysu/ros-ikuai-monitor-panel:main

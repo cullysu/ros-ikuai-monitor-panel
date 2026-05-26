@@ -79,12 +79,12 @@ function main() {
 
   assertContains('.env.docker.example', 'ROS_PANEL_PUBLISHED_ADDR=0.0.0.0');
   assertContains('.env.docker.example', 'ROS_PANEL_PUBLISHED_PORT=28646');
-  assertContains('.env.docker.example', 'ROS_PANEL_IMAGE=ghcr.io/cullysu/ros-ikuai-monitor-panel:main');
+  assertContains('.env.docker.example', 'ROS_PANEL_IMAGE=routeros-triage-panel:local');
   assertContains('.env.docker.example', 'ROS_PANEL_TARGET_IP=auto');
   assertContains('.env.docker.example', 'ROS_PANEL_TRUST_PROXY_HEADERS=0');
   assertContains('Dockerfile', 'ROS_PANEL_TARGET_IP=auto');
   assertContains('Dockerfile', 'ROS_PANEL_TRUST_PROXY_HEADERS=0');
-  assertContains('compose.yml', '${ROS_PANEL_IMAGE:-ghcr.io/cullysu/ros-ikuai-monitor-panel:main}');
+  assertContains('compose.yml', '${ROS_PANEL_IMAGE:-routeros-triage-panel:local}');
   assertContains('compose.yml', '${ROS_PANEL_PUBLISHED_ADDR:-0.0.0.0}:${ROS_PANEL_PUBLISHED_PORT:-28646}:${ROS_PANEL_PORT:-28646}');
   assertContains('compose.yml', 'ROS_PANEL_BIND: "${ROS_PANEL_BIND:-0.0.0.0}"');
   assertContains('compose.yml', 'ROS_PANEL_TARGET_IP: "${ROS_PANEL_TARGET_IP:-auto}"');

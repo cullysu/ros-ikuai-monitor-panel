@@ -52,7 +52,7 @@ http://127.0.0.1:28646/
 
 ## Docker 一条命令
 
-安装脚本会优先拉取公开 GHCR 镜像，拉取失败时再回退到本地 Docker 构建：
+安装脚本默认本地构建，避免公开安装依赖包可见性。CI 也会发布可选 GHCR 镜像：
 
 ```text
 ghcr.io/cullysu/ros-ikuai-monitor-panel:main
@@ -87,6 +87,18 @@ http://<panel-host-ip>:28646/
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/main/install.sh | bash -s -- --dir "$HOME/routeros-panel" --port 28647
+```
+
+强制本地构建：
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/main/install.sh | bash -s -- --build-local
+```
+
+只有在 GHCR 包已经允许匿名拉取时，才使用预构建镜像：
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/main/install.sh | bash -s -- --prebuilt
 ```
 
 升级：
@@ -180,6 +192,15 @@ export ROS_MONITOR_ROUTER_PASSWORD="CHANGE_ME"
 
 RouterOS Container 是高级 Beta 路径。它会涉及 RouterOS container、storage、
 veth，以及可能的 firewall/API 访问边界，不适合作为默认安装方式。
+
+公开项目的默认路径是本地构建 RouterOS 可导入归档，再上传到 RouterOS：
+
+```bash
+bash tools/build-routeros-container-archive.sh --platform linux/amd64
+```
+
+GHCR 镜像只作为可选快速路径；只有确认匿名 `docker pull` 成功后，才在
+RouterOS 里使用 `remote-image=`。
 
 尝试前请阅读 [DEPLOY_ROUTEROS_CONTAINER.md](./DEPLOY_ROUTEROS_CONTAINER.md)
 并先做 RouterOS 备份。

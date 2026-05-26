@@ -25,6 +25,14 @@ from typing import Any
 
 DOCKER_ARCHIVE_MARKER = "manifest.json"
 OCI_LAYOUT_MARKER = "oci-layout"
+IMAGE_MANIFEST_MEDIA_TYPES = {
+    "application/vnd.oci.image.manifest.v1+json",
+    "application/vnd.docker.distribution.manifest.v2+json",
+}
+IMAGE_INDEX_MEDIA_TYPES = {
+    "application/vnd.oci.image.index.v1+json",
+    "application/vnd.docker.distribution.manifest.list.v2+json",
+}
 
 
 def normalize_tar_name(name: str) -> str:
@@ -68,23 +76,52 @@ def descriptor_matches_platform(descriptor: dict[str, Any], platform: str) -> bo
     return True
 
 
-def select_manifest_descriptor(index: dict[str, Any], platform: str | None) -> dict[str, Any]:
+def try_select_manifest_descriptor(
+    source: tarfile.TarFile,
+    members: dict[str, tarfile.TarInfo],
+    index: dict[str, Any],
+    platform: str | None,
+) -> dict[str, Any] | None:
     descriptors = index.get("manifests") or []
     if not descriptors:
-        raise SystemExit("OCI index does not contain any manifests")
+        return None
 
-    manifest_media = {
-        "application/vnd.oci.image.manifest.v1+json",
-        "application/vnd.docker.distribution.manifest.v2+json",
-    }
-    direct = [item for item in descriptors if item.get("mediaType") in manifest_media]
+    direct = [item for item in descriptors if item.get("mediaType") in IMAGE_MANIFEST_MEDIA_TYPES]
     if platform:
         matched = [item for item in direct if descriptor_matches_platform(item, platform)]
         if matched:
             return matched[0]
-        raise SystemExit(f"no image manifest matched platform {platform!r}")
-    if len(direct) == 1:
+        if len(direct) == 1 and not direct[0].get("platform"):
+            return direct[0]
+    elif len(direct) == 1:
         return direct[0]
+
+    for nested_descriptor in [item for item in descriptors if item.get("mediaType") in IMAGE_INDEX_MEDIA_TYPES]:
+        nested_index = json.loads(read_member_bytes(source, members, descriptor_digest_path(nested_descriptor)))
+        selected = try_select_manifest_descriptor(source, members, nested_index, platform)
+        if selected is not None:
+            return selected
+
+    if not platform and len(direct) > 1:
+        raise SystemExit("multiple image manifests found; pass --platform linux/amd64 or similar")
+    return None
+
+
+def select_manifest_descriptor(
+    source: tarfile.TarFile,
+    members: dict[str, tarfile.TarInfo],
+    index: dict[str, Any],
+    platform: str | None,
+) -> dict[str, Any]:
+    descriptors = index.get("manifests") or []
+    if not descriptors:
+        raise SystemExit("OCI index does not contain any manifests")
+
+    selected = try_select_manifest_descriptor(source, members, index, platform)
+    if selected is not None:
+        return selected
+    if platform:
+        raise SystemExit(f"no image manifest matched platform {platform!r}")
     raise SystemExit("multiple image manifests found; pass --platform linux/amd64 or similar")
 
 
@@ -157,7 +194,7 @@ def convert_oci_archive(input_path: Path, output_path: Path, tag: str, platform:
             raise SystemExit("input is neither an OCI layout tar nor a legacy Docker archive")
 
         index = json.loads(read_member_bytes(source, members, "index.json"))
-        descriptor = select_manifest_descriptor(index, platform)
+        descriptor = select_manifest_descriptor(source, members, index, platform)
         manifest = json.loads(read_member_bytes(source, members, descriptor_digest_path(descriptor)))
         config_descriptor = manifest.get("config")
         if not config_descriptor:

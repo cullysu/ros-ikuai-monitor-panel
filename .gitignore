@@ -39,3 +39,6 @@ dist/
 /*.png
 /*.html
 /*.zip
+/*.tar
+/*.tar.gz
+/*.tgz

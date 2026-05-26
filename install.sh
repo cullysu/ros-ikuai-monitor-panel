@@ -4,6 +4,8 @@ set -euo pipefail
 DEFAULT_REPO_URL="https://github.com/cullysu/ros-ikuai-monitor-panel.git"
 DEFAULT_BRANCH="main"
 DEFAULT_PORT="28646"
+DEFAULT_LOCAL_IMAGE="routeros-triage-panel:local"
+DEFAULT_PREBUILT_IMAGE="ghcr.io/cullysu/ros-ikuai-monitor-panel:main"
 
 usage() {
   cat <<'EOF'
@@ -19,8 +21,9 @@ Options:
   --bind <addr>         Host publish address. Default: 0.0.0.0.
   --port <port>         Host and in-container panel port. Default: 28646.
   --name <name>         Docker container name. Default: routeros-triage-panel.
-  --image <image>       Container image to pull. Default: ghcr.io/cullysu/ros-ikuai-monitor-panel:main.
-  --build-local         Build from the checked-out source instead of pulling the prebuilt image first.
+  --prebuilt            Pull the prebuilt GHCR image first, then fall back to local build.
+  --image <image>       Image tag to use. Default: routeros-triage-panel:local; with --prebuilt: ghcr.io/cullysu/ros-ikuai-monitor-panel:main.
+  --build-local         Build from the checked-out source. This is the default public install mode.
   --target-ip <addr>    URL host printed by the panel. Default: detected LAN IP.
   --dir <path>          Install directory. Default: ~/.local/share/routeros-triage-panel, or /opt/routeros-triage-panel as root.
   --repo <url>          Git repository URL. Default: https://github.com/cullysu/ros-ikuai-monitor-panel.git
@@ -319,11 +322,13 @@ INSTALL_DIR="${ROS_PANEL_INSTALL_DIR:-$(default_install_dir)}"
 PUBLISHED_ADDR="0.0.0.0"
 PUBLISHED_PORT="$DEFAULT_PORT"
 CONTAINER_NAME="${ROS_PANEL_CONTAINER_NAME:-routeros-triage-panel}"
-PANEL_IMAGE="${ROS_PANEL_IMAGE:-ghcr.io/cullysu/ros-ikuai-monitor-panel:main}"
+PANEL_IMAGE="${ROS_PANEL_IMAGE:-$DEFAULT_LOCAL_IMAGE}"
+PANEL_IMAGE_EXPLICIT="0"
 TARGET_IP="$(detect_lan_ip)"
 TARGET_IP_EXPLICIT="0"
 SOURCE_DIR="${ROS_PANEL_INSTALL_SOURCE_DIR:-}"
-BUILD_LOCAL="${ROS_PANEL_BUILD_LOCAL:-0}"
+BUILD_LOCAL="${ROS_PANEL_BUILD_LOCAL:-1}"
+PREBUILT_REQUESTED="0"
 UPGRADE="0"
 UNINSTALL="0"
 PURGE="0"
@@ -358,7 +363,13 @@ while [[ $# -gt 0 ]]; do
     --image)
       [[ $# -ge 2 && -n "${2:-}" ]] || die "--image requires an image reference"
       PANEL_IMAGE="$2"
+      PANEL_IMAGE_EXPLICIT="1"
       shift 2
+      ;;
+    --prebuilt)
+      PREBUILT_REQUESTED="1"
+      BUILD_LOCAL="0"
+      shift
       ;;
     --build-local)
       BUILD_LOCAL="1"
@@ -419,6 +430,9 @@ done
 validate_port "$PUBLISHED_PORT"
 validate_bind "$PUBLISHED_ADDR"
 validate_container_name "$CONTAINER_NAME"
+if [[ "$PREBUILT_REQUESTED" == "1" && "$PANEL_IMAGE_EXPLICIT" == "0" ]]; then
+  PANEL_IMAGE="$DEFAULT_PREBUILT_IMAGE"
+fi
 compose_service_image "$PANEL_IMAGE"
 INSTALL_DIR="${INSTALL_DIR/#\~/$HOME}"
 if [[ -n "$SOURCE_DIR" ]]; then

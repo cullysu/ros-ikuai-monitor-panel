@@ -4,8 +4,9 @@ Docker is the recommended public deployment path for most users. It works on
 NAS boxes, mini PCs, Linux hosts, OpenWrt Docker environments, and cloud VMs
 without requiring Python, ESXi, or a manually managed systemd service.
 
-The one-command installer prefers the published GHCR image and falls back to a
-local Docker build if the image cannot be pulled:
+The one-command installer builds locally by default so it works even before a
+prebuilt registry image is public. A GHCR image is published by CI and can be
+used as an optional acceleration path:
 
 ```text
 ghcr.io/cullysu/ros-ikuai-monitor-panel:main
@@ -83,8 +84,9 @@ Default install directory:
 --bind <addr>         Host publish address. Default: 0.0.0.0.
 --port <port>         Host and in-container panel port. Default: 28646.
 --name <name>         Docker container name. Default: routeros-triage-panel.
---image <image>       Container image to pull. Default: ghcr.io/cullysu/ros-ikuai-monitor-panel:main.
---build-local         Build from source instead of pulling the prebuilt image first.
+--prebuilt            Pull the prebuilt GHCR image first, then fall back to local build.
+--image <image>       Image tag to use. Default: routeros-triage-panel:local.
+--build-local         Build from source. This is the default public install mode.
 --target-ip <addr>    URL host printed by the panel. Default: detected LAN IP.
 --dir <path>          Install directory.
 --repo <url>          Git repository URL.
@@ -116,7 +118,9 @@ cp .env.docker.example .env.docker
 docker compose --env-file .env.docker up -d --build
 ```
 
-For a no-build manual run, keep `ROS_PANEL_IMAGE` in `.env.docker` and run:
+For a no-build manual run after the GHCR package is public, set
+`ROS_PANEL_IMAGE=ghcr.io/cullysu/ros-ikuai-monitor-panel:main` in `.env.docker`
+and run:
 
 ```bash
 docker compose --env-file .env.docker pull routeros-triage
@@ -138,7 +142,7 @@ publishable:
 ```dotenv
 ROS_PANEL_PUBLISHED_ADDR=0.0.0.0
 ROS_PANEL_PUBLISHED_PORT=28646
-ROS_PANEL_IMAGE=ghcr.io/cullysu/ros-ikuai-monitor-panel:main
+ROS_PANEL_IMAGE=routeros-triage-panel:local
 ROS_PANEL_TARGET_IP=auto
 ```
 

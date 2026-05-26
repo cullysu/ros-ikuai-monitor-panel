@@ -44,19 +44,39 @@ Download the `.rsc` and `.backup` files before continuing.
 
 ## Image Build
 
-Build and push an image that matches your RouterOS CPU architecture.
+The default public path is to build a RouterOS-friendly archive locally from
+the source tree, then upload that tar to RouterOS storage. This avoids making
+RouterOS Container installs depend on any registry package visibility.
+
+Build an archive that matches your RouterOS CPU architecture:
+
+```bash
+bash tools/build-routeros-container-archive.sh \
+  --platform linux/amd64 \
+  --output routeros-triage-panel-routeros.tar
+```
+
+Use `--platform linux/arm64` or `--platform linux/arm/v7` when that matches
+your RouterOS device.
+
 Build from the repository root so the Dockerfile copies the current `app.py`
 and `public/` assets into the image. Do not build from an unpacked `dist/`,
 `_staging_*`, or other static snapshot; recent public UI fixes ship through the
 repository `public/` directory and `COPY public ./public`.
 
-Project registry image:
+Optional registry image, only after anonymous pulls are confirmed to work:
 
 ```text
 ghcr.io/cullysu/ros-ikuai-monitor-panel:main
 ```
 
-Example for your own registry or fork:
+Verify before using `remote-image=`:
+
+```bash
+docker pull ghcr.io/cullysu/ros-ikuai-monitor-panel:main
+```
+
+Example for your own public registry or fork:
 
 ```bash
 docker buildx build \
@@ -66,7 +86,8 @@ docker buildx build \
 ```
 
 RouterOS devices vary by architecture. Publish only the platforms you have
-tested.
+tested. If the registry pull fails or requires authentication, use the local
+archive path above instead of `remote-image=`.
 
 ### Archive Compatibility
 
@@ -82,8 +103,9 @@ If the tar instead contains `oci-layout`, `index.json`, and `blobs/sha256/...`,
 it is an OCI layout archive. On RouterOS 7.20.x this shape can fail during
 import with an error like `failed to load next entry`.
 
-Preferred release path: publish a registry image and use `remote-image=...`.
-If you need offline/local import, verify or convert the archive first:
+The helper script above already emits a Docker archive through `docker save`.
+If you produce an archive through another tool and need offline/local import,
+verify or convert the archive first:
 
 ```bash
 python tools/convert-oci-to-routeros-docker-archive.py \
@@ -171,18 +193,21 @@ The exact `src=` path depends on your RouterOS storage layout.
 
 ## Add And Start Container
 
-Registry image:
+Local archive, default public path:
+
+Upload `routeros-triage-panel-routeros.tar` to RouterOS storage, then run:
+
+```routeros
+/container/add file=routeros-triage-panel-routeros.tar interface=veth-routeros-triage root-dir=disk1/routeros-triage mounts=routeros-triage-data envlist=routeros-triage-env logging=yes
+/container/start [find where root-dir="disk1/routeros-triage"]
+```
+
+Optional registry image, only after the GHCR package is public and anonymous
+pulls work:
 
 ```routeros
 /container/config/set registry-url=https://ghcr.io tmpdir=disk1/container-tmp
 /container/add remote-image=ghcr.io/cullysu/ros-ikuai-monitor-panel:main interface=veth-routeros-triage root-dir=disk1/routeros-triage mounts=routeros-triage-data envlist=routeros-triage-env logging=yes
-/container/start [find where root-dir="disk1/routeros-triage"]
-```
-
-Offline/local archive:
-
-```routeros
-/container/add file=routeros-triage-panel-routeros.tar interface=veth-routeros-triage root-dir=disk1/routeros-triage mounts=routeros-triage-data envlist=routeros-triage-env logging=yes
 /container/start [find where root-dir="disk1/routeros-triage"]
 ```
 

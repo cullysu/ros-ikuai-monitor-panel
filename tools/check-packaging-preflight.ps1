@@ -121,6 +121,7 @@ try {
   }
 
   $routerosDocPath = Join-Path $repoRoot "DEPLOY_ROUTEROS_CONTAINER.md"
+  $routerosArchiveBuildPath = Join-Path $repoRoot "tools/build-routeros-container-archive.sh"
   $converterPath = Join-Path $repoRoot "tools/convert-oci-to-routeros-docker-archive.py"
   if (-not (Test-Path -LiteralPath $routerosDocPath)) {
     Add-Check "FAIL" "RouterOS Container install guidance" "DEPLOY_ROUTEROS_CONTAINER.md was not found."
@@ -131,11 +132,29 @@ try {
         $routerosDocText -notmatch "/container/envs/add\s+name=" -and
         $routerosDocText -match "oci-layout" -and
         $routerosDocText -match "manifest\.json" -and
+        $routerosDocText -match "Local archive, default public path" -and
         $routerosDocText -match "convert-oci-to-routeros-docker-archive\.py") {
       Add-Check "PASS" "RouterOS Container install guidance" "RouterOS env syntax and Docker/OCI archive guidance are documented."
     }
     else {
       Add-Check "FAIL" "RouterOS Container install guidance" "RouterOS env syntax or Docker/OCI archive guidance is missing or stale."
+    }
+  }
+
+  if (-not (Test-Path -LiteralPath $routerosArchiveBuildPath)) {
+    Add-Check "FAIL" "RouterOS archive builder" "tools/build-routeros-container-archive.sh was not found."
+  }
+  else {
+    $archiveBuilderText = Get-Content -Raw -LiteralPath $routerosArchiveBuildPath
+    if ($archiveBuilderText -match "docker buildx build" -and
+        $archiveBuilderText -match "docker save" -and
+        $archiveBuilderText -match "--provenance=false" -and
+        $archiveBuilderText -match "convert-oci-to-routeros-docker-archive\.py" -and
+        $archiveBuilderText -match "does not push to any registry") {
+      Add-Check "PASS" "RouterOS archive builder" "Local RouterOS Container archive build path avoids registry dependency."
+    }
+    else {
+      Add-Check "FAIL" "RouterOS archive builder" "Archive builder is missing local build/save/conversion markers."
     }
   }
 

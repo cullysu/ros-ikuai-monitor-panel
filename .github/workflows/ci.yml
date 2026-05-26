@@ -47,11 +47,19 @@ jobs:
       - name: Installer shell checks
         run: |
           bash -n install.sh
+          bash -n tools/build-routeros-container-archive.sh
           bash -n deploy_linux.sh
           bash tools/validate-public-install.sh
 
-      - name: Docker image build
-        run: docker build -t routeros-triage-panel:ci .
+      - name: Docker image and RouterOS archive build
+        run: |
+          bash tools/build-routeros-container-archive.sh \
+            --platform linux/amd64 \
+            --tag routeros-triage-panel:routeros-ci \
+            --output /tmp/routeros-triage-panel-routeros-ci.tar
+          tar -tf /tmp/routeros-triage-panel-routeros-ci.tar | grep -Fx manifest.json
+          tar -tf /tmp/routeros-triage-panel-routeros-ci.tar | grep -Fx repositories
+          tar -tf /tmp/routeros-triage-panel-routeros-ci.tar | grep -E '/layer\.tar$'
 
   windows-packaging:
     name: Windows packaging
