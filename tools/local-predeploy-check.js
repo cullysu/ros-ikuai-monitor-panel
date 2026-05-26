@@ -471,6 +471,7 @@ async function findBrowser() {
     '/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge',
     '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
     '/usr/bin/microsoft-edge',
+    '/usr/bin/google-chrome-stable',
     '/usr/bin/google-chrome',
     '/usr/bin/chromium',
     '/usr/bin/chromium-browser',
@@ -1080,10 +1081,20 @@ async function runBrowserChecks(args, report, baseUrl) {
             continue;
           }
           for (const section of sections) {
+            const runtimeErrorStart = runtimeErrors.length;
+            const consoleErrorStart = consoleErrors.length;
             await setSection(cdp, section);
             const inspection = await inspectSection(cdp, profile, viewport, section, args, scaleScenario);
             inspection.runtimeErrorCount = runtimeErrors.length;
             inspection.consoleErrorCount = consoleErrors.length;
+            inspection.newRuntimeErrorCount = runtimeErrors.length - runtimeErrorStart;
+            inspection.newConsoleErrorCount = consoleErrors.length - consoleErrorStart;
+            if (inspection.newRuntimeErrorCount || inspection.newConsoleErrorCount || !inspection.pass) {
+              inspection.runtimeErrors = runtimeErrors.slice(Math.max(0, runtimeErrorStart), runtimeErrorStart + 3);
+              inspection.consoleErrors = consoleErrors.slice(Math.max(0, consoleErrorStart), consoleErrorStart + 3);
+              inspection.firstRuntimeError = runtimeErrors[0] || null;
+              inspection.firstConsoleError = consoleErrors[0] || null;
+            }
             const hardPass = inspection.pass && runtimeErrors.length === 0 && consoleErrors.length === 0;
             report.browserChecks.push(inspection);
             record(report, `responsive ${profile}/${scaleScenario}/${viewport.name}/${section}`, hardPass, inspection);

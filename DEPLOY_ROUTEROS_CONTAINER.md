@@ -24,6 +24,19 @@ Use this path only if:
 
 For most users, Docker on a NAS/Linux host is the safer deployment path.
 
+## Public Delivery Contract
+
+RouterOS Container is one of the four public delivery modes, but it differs
+from Docker, Windows EXE, and Linux systemd/VM because the panel process runs
+inside RouterOS container networking. The container may listen on
+`0.0.0.0:28646` internally, but the public browser contract remains
+`http://127.0.0.1:28646/` through a client-local forwarder.
+
+Do not document or verify the container veth address, a RouterOS bridge
+address, or a router LAN address as the browser URL. A browser's `127.0.0.1` is
+always the client machine itself, so every client that uses the public URL needs
+its own explicit forwarder or tunnel.
+
 ## Current State To Record First
 
 Before changing RouterOS, export and save:
@@ -170,6 +183,8 @@ must be allowed to read RouterOS. Do not broaden API access to the whole LAN.
 /container/envs/add list=routeros-triage-env key=ROS_PANEL_BIND value=0.0.0.0
 /container/envs/add list=routeros-triage-env key=ROS_PANEL_PORT value=28646
 /container/envs/add list=routeros-triage-env key=ROS_PANEL_TARGET_IP value=127.0.0.1
+/container/envs/add list=routeros-triage-env key=ROS_PANEL_ALLOW_LOCALHOST_HOST_FORWARD value=1
+/container/envs/add list=routeros-triage-env key=ROS_PANEL_LOCALHOST_FORWARD_TOKEN value=CHANGE_ME_RANDOM_FORWARD_TOKEN
 /container/envs/add list=routeros-triage-env key=ROS_PANEL_PROFILE value=routeros_only
 /container/envs/add list=routeros-triage-env key=ROS_PANEL_IP_ALIAS_WRITE_ENABLED value=0
 /container/envs/add list=routeros-triage-env key=ROS_PANEL_EXPOSE_ADMIN_SESSIONS value=0
@@ -178,8 +193,9 @@ must be allowed to read RouterOS. Do not broaden API access to the whole LAN.
 /container/envs/add list=routeros-triage-env key=ROS_MONITOR_ROUTER_PASSWORD value=CHANGE_ME
 ```
 
-The password above is a placeholder. Do not store a privileged RouterOS password
-here.
+The password and forward token above are placeholders. Use a long random token
+for `ROS_PANEL_LOCALHOST_FORWARD_TOKEN`, pass the same value to the local
+forwarder helper, and do not store a privileged RouterOS password here.
 
 ## Persistent Data Mount
 
@@ -219,14 +235,18 @@ Confirm the container is running first:
 /container/print detail
 ```
 
-The container-side address is not a browser URL. The backend includes a
-`Host header guard`, so direct access by `172.18.0.2` or a router LAN address
-is not the public verification path.
+The container-side address is not a browser URL. The backend keeps the
+`Host header guard`: direct access by `172.18.0.2` or a router LAN address is
+rejected. RouterOS Container accepts non-loopback peers only when both are true:
+the HTTP `Host: 127.0.0.1:28646` header is preserved and the request carries the random
+`ROS_PANEL_LOCALHOST_FORWARD_TOKEN` injected by the local forwarder helper.
 
 Expected:
 
 - environment contains `ROS_PANEL_BIND=0.0.0.0`
 - environment contains `ROS_PANEL_TARGET_IP=127.0.0.1`
+- environment contains `ROS_PANEL_ALLOW_LOCALHOST_HOST_FORWARD=1`
+- environment contains a non-placeholder `ROS_PANEL_LOCALHOST_FORWARD_TOKEN`
 - public read-only guardrails are enabled
 
 ## Client Access
@@ -249,14 +269,16 @@ Use one of these patterns from the client:
 powershell -ExecutionPolicy Bypass -File .\tools\connect-routeros-container-localhost.ps1 `
   -TargetHost 172.18.0.2 `
   -TargetPort 28646 `
-  -ListenPort 28646
+  -ListenPort 28646 `
+  -ForwardToken "CHANGE_ME_RANDOM_FORWARD_TOKEN"
 ```
 
 ```bash
 python3 tools/connect-routeros-container-localhost.py \
   --target-host 172.18.0.2 \
   --target-port 28646 \
-  --listen-port 28646
+  --listen-port 28646 \
+  --forward-token "CHANGE_ME_RANDOM_FORWARD_TOKEN"
 ```
 
 Then open:
@@ -289,6 +311,11 @@ Rollback:
 
 Do not add NAT or firewall rules that turn the RouterOS LAN address into a
 panel browser URL. The public project contract stays localhost-only.
+
+The in-panel address dialog is read-only for RouterOS Container installs. Keep
+the browser entrypoint as the client-local forwarder URL and change container
+environment values through RouterOS `/container/envs` only after reviewing the
+rollback path.
 
 ## Rollback
 

@@ -8,7 +8,6 @@
 
   const style = document.createElement('style');
   style.textContent = `
-    #app[aria-live] { }
     .scale-shell { display: grid; gap: 12px; }
     .scale-primary,
     .pm-action-panel,
@@ -136,6 +135,19 @@
       white-space: normal;
       overflow-wrap: anywhere;
       word-break: break-word;
+    }
+    .scale-address-family {
+      display: grid;
+      gap: 1px;
+      min-width: 0;
+      max-width: 100%;
+    }
+    .scale-address-family-label {
+      color: #64748b;
+      font-family: "Microsoft YaHei","Segoe UI",sans-serif;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0;
     }
     .scale-terminal-name,
     .scale-terminal-ip,
@@ -757,17 +769,25 @@
   function addressLines(value, limit = 2) {
     const rows = orderAddressRows(valueList(value));
     if (!rows.length) return '<span>-</span>';
-    const shown = rows.slice(0, limit).map((item) => `<span>${html(item)}</span>`).join('');
-    const extra = rows.length > limit ? `<span>+${number(rows.length - limit)} 个地址</span>` : '';
-    return `${shown}${extra}`;
+    return addressStack(rows, limit);
   }
 
   function addressStack(value, limit = 3) {
     const rows = orderAddressRows(valueList(value));
     if (!rows.length) return '<div class="scale-address-stack"><span>-</span></div>';
-    const shown = rows.slice(0, limit);
-    const extra = rows.length > limit ? [`+${number(rows.length - limit)} 个地址`] : [];
-    return `<div class="scale-address-stack">${[...shown, ...extra].map((item) => `<span>${html(item)}</span>`).join('')}</div>`;
+    const ipv4 = rows.filter((item) => !String(item).includes(':'));
+    const ipv6 = rows.filter((item) => String(item).includes(':'));
+    const hasBoth = ipv4.length && ipv6.length;
+    const perFamilyLimit = hasBoth ? Math.max(1, Math.ceil(limit / 2)) : limit;
+    const renderFamily = (label, items) => {
+      if (!items.length) return '';
+      const shown = items.slice(0, perFamilyLimit);
+      const extraCount = Math.max(0, items.length - shown.length);
+      const body = shown.map((item) => `<span>${html(item)}</span>`).join('');
+      const extra = extraCount ? `<span>+${number(extraCount)} 个地址</span>` : '';
+      return `<span class="scale-address-family"><span class="scale-address-family-label">${label}</span>${body}${extra}</span>`;
+    };
+    return `<div class="scale-address-stack">${renderFamily('IPv4', ipv4)}${renderFamily('IPv6', ipv6)}</div>`;
   }
 
   function activeRouteSummary(line) {
@@ -1044,6 +1064,7 @@
     const rows = Array.isArray(lines) ? lines : [];
     const history = overview.history || {};
     const online = rows.filter((row) => row?.running).length;
+    const aggregateAddresses = rows.flatMap((row) => valueList(row?.addresses || row?.ips || row?.address));
     const summedUp = rows.reduce((sum, row) => sum + Number(row?.upRate || 0), 0);
     const summedDown = rows.reduce((sum, row) => sum + Number(row?.downRate || 0), 0);
     const overviewUp = Number(overview.uplinkBps);
@@ -1062,7 +1083,7 @@
       downRate,
       txBytes: rows.reduce((sum, row) => sum + Number(row?.txBytes || 0), 0),
       rxBytes: rows.reduce((sum, row) => sum + Number(row?.rxBytes || 0), 0),
-      addresses: [`在线 ${number(online)} / ${number(rows.length)} 条`],
+      addresses: aggregateAddresses.length ? aggregateAddresses : [`在线 ${number(online)} / ${number(rows.length)} 条`],
       history: {
         up: Array.isArray(history.uplink) ? history.uplink : [],
         down: Array.isArray(history.downlink) ? history.downlink : [],
@@ -1103,7 +1124,11 @@
   }
 
   function wanAddressText(line) {
-    return shortList(line?.addresses || line?.ips || line?.address, 2);
+    const values = valueList(line?.addresses || line?.ips || line?.address);
+    if (!values.some((item) => /(?:\d+\.){3}\d+|:/.test(String(item)))) {
+      return html(shortList(values, 2));
+    }
+    return addressStack(values, 3);
   }
 
   function wanUsageText(line) {
@@ -1329,7 +1354,7 @@
             </label>
             <div class="ikuai-info-list">
               <div class="ikuai-info-row"><span>运营商</span><strong>${pill(selectedWan?.running ? '已连接' : '未知', selectedWan?.running ? 'ok' : 'warn')}</strong></div>
-              <div class="ikuai-info-row"><span>WAN IP</span><strong>${html(wanAddressText(selectedWan))}</strong></div>
+              <div class="ikuai-info-row"><span>WAN IP</span><strong>${wanAddressText(selectedWan)}</strong></div>
               <div class="ikuai-info-row"><span>接入方式</span><strong>${html(selectedWan?.parent || selectedWan?.type || 'PPPoE')}</strong></div>
               <div class="ikuai-info-row"><span>运行时间</span><strong>${html(overview.uptime || '-')}</strong></div>
               <div class="ikuai-info-row"><span>本月数据使用情况</span><strong>${html(wanUsageText(selectedWan))}</strong></div>

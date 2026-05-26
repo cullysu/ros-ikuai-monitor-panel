@@ -30,6 +30,9 @@ def make_rate_rest(
     *,
     name="pppoe-out1",
     iface_type="pppoe-out",
+    cpu_load=12,
+    free_memory=600000,
+    free_hdd=800000,
     rx_packets=10,
     tx_packets=20,
     rx_drop=0,
@@ -46,11 +49,11 @@ def make_rate_rest(
         "cpu": "fixture-cpu",
         "cpu-count": "2",
         "cpu-frequency": "2000",
-        "cpu-load": "12",
+        "cpu-load": str(cpu_load),
         "total-memory": "1000000",
-        "free-memory": "600000",
+        "free-memory": str(free_memory),
         "total-hdd-space": "1000000",
-        "free-hdd-space": "800000",
+        "free-hdd-space": str(free_hdd),
         "uptime": "1d",
     }
     rest["clock"] = {"date": "2026-05-25", "time": "11:00:00"}
@@ -334,7 +337,7 @@ def assert_panel_network_config_helpers():
         assert "ROS_PANEL_TARGET_IP=127.0.0.1" in content
 
 
-def assert_rate_history_only_advances_on_fresh_counter_samples():
+def assert_counter_rate_history_semantics():
     collector = app.Collector()
     collector.get_wan_latency = lambda force=False: {
         "ok": True,
@@ -346,31 +349,64 @@ def assert_rate_history_only_advances_on_fresh_counter_samples():
     }
 
     first = collector.build_snapshot(make_rate_rest(1000, 2000), make_empty_ssh(), fresh_counter_sample=True)
-    assert first["overview"]["history"]["uplink"] == [0], first["overview"]["history"]
-    assert first["wan"][0]["history"]["up"] == [0], first["wan"][0]["history"]
+    assert first["meta"]["freshCounterSample"] is True, first["meta"]
+    assert first["overview"]["history"]["uplink"] == [], first["overview"]["history"]
+    assert first["overview"]["history"]["downlink"] == [], first["overview"]["history"]
+    assert first["wan"][0]["history"]["up"] == [], first["wan"][0]["history"]
+    assert first["wan"][0]["history"]["down"] == [], first["wan"][0]["history"]
+    assert first["overview"]["history"]["cpu"] == [12], first["overview"]["history"]
+    assert first["overview"]["history"]["memory"] == [40.0], first["overview"]["history"]
+    assert first["overview"]["history"]["disk"] == [20.0], first["overview"]["history"]
 
     collector.prev_ts = time.time() - 1
-    second = collector.build_snapshot(make_rate_rest(1800, 3200), make_empty_ssh(), fresh_counter_sample=True)
+    second = collector.build_snapshot(
+        make_rate_rest(1800, 3200, cpu_load=18, free_memory=550000, free_hdd=760000),
+        make_empty_ssh(),
+        fresh_counter_sample=True,
+    )
     second_rate = second["wan"][0]["upRate"]
     assert second_rate > 0, second["wan"][0]
     second_overview_history = second["overview"]["history"]["uplink"][:]
+    second_overview_down_history = second["overview"]["history"]["downlink"][:]
     second_line_history = second["wan"][0]["history"]["up"][:]
+    second_line_down_history = second["wan"][0]["history"]["down"][:]
+    assert len(second_overview_history) == 1, second["overview"]["history"]
+    assert second_overview_history[-1] > 0, second["overview"]["history"]
+    assert second_line_history[-1] == second_rate, second["wan"][0]["history"]
+    assert second["overview"]["history"]["cpu"] == [12, 18], second["overview"]["history"]
+    assert second["overview"]["history"]["memory"] == [40.0, 45.0], second["overview"]["history"]
+    assert second["overview"]["history"]["disk"] == [20.0, 24.0], second["overview"]["history"]
 
-    stale_refresh = collector.build_snapshot(make_rate_rest(1800, 3200), make_empty_ssh(), fresh_counter_sample=False)
+    stale_refresh = collector.build_snapshot(
+        make_rate_rest(1800, 3200, cpu_load=33, free_memory=500000, free_hdd=700000),
+        make_empty_ssh(),
+        fresh_counter_sample=False,
+    )
     assert stale_refresh["wan"][0]["upRate"] == second_rate, stale_refresh["wan"][0]
     assert stale_refresh["overview"]["history"]["uplink"] == second_overview_history, stale_refresh["overview"]["history"]
+    assert stale_refresh["overview"]["history"]["downlink"] == second_overview_down_history, stale_refresh["overview"]["history"]
     assert stale_refresh["wan"][0]["history"]["up"] == second_line_history, stale_refresh["wan"][0]["history"]
+    assert stale_refresh["wan"][0]["history"]["down"] == second_line_down_history, stale_refresh["wan"][0]["history"]
     assert stale_refresh["meta"]["freshCounterSample"] is False, stale_refresh["meta"]
+    assert stale_refresh["overview"]["history"]["cpu"] == [12, 18, 33], stale_refresh["overview"]["history"]
+    assert stale_refresh["overview"]["history"]["memory"] == [40.0, 45.0, 50.0], stale_refresh["overview"]["history"]
+    assert stale_refresh["overview"]["history"]["disk"] == [20.0, 24.0, 30.0], stale_refresh["overview"]["history"]
 
-    empty_counter_rest = make_rate_rest(1800, 3200)
+    empty_counter_rest = make_rate_rest(1800, 3200, cpu_load=44, free_memory=450000, free_hdd=660000)
     empty_counter_rest["interfaces"] = []
     empty_counter_rest["pppoe"] = []
     empty_counter = collector.build_snapshot(empty_counter_rest, make_empty_ssh(), fresh_counter_sample=True)
     assert empty_counter["meta"]["freshCounterSample"] is False, empty_counter["meta"]
     assert empty_counter["overview"]["history"]["uplink"] == second_overview_history, empty_counter["overview"]["history"]
+    assert empty_counter["wan"] == [], empty_counter["wan"]
+    assert empty_counter["overview"]["history"]["cpu"] == [12, 18, 33, 44], empty_counter["overview"]["history"]
 
     collector.prev_ts = time.time() - 1
-    true_zero = collector.build_snapshot(make_rate_rest(1800, 3200), make_empty_ssh(), fresh_counter_sample=True)
+    true_zero = collector.build_snapshot(
+        make_rate_rest(1800, 3200, cpu_load=21, free_memory=580000, free_hdd=790000),
+        make_empty_ssh(),
+        fresh_counter_sample=True,
+    )
     assert true_zero["meta"]["freshCounterSample"] is True, true_zero["meta"]
     assert true_zero["wan"][0]["upRate"] == 0, true_zero["wan"][0]
     assert true_zero["wan"][0]["downRate"] == 0, true_zero["wan"][0]
@@ -380,6 +416,28 @@ def assert_rate_history_only_advances_on_fresh_counter_samples():
     assert true_zero["wan"][0]["history"]["down"][-1] == 0, true_zero["wan"][0]["history"]
     assert len(true_zero["overview"]["history"]["uplink"]) == len(second_overview_history) + 1
     assert len(true_zero["wan"][0]["history"]["up"]) == len(second_line_history) + 1
+    true_zero_uplink_history = true_zero["overview"]["history"]["uplink"][:]
+    true_zero_line_history = true_zero["wan"][0]["history"]["up"][:]
+
+    collector.prev_ts = time.time() - 1
+    rollback = collector.build_snapshot(
+        make_rate_rest(900, 1700, cpu_load=25, free_memory=560000, free_hdd=780000),
+        make_empty_ssh(),
+        fresh_counter_sample=True,
+    )
+    assert rollback["meta"]["freshCounterSample"] is True, rollback["meta"]
+    assert rollback["overview"]["history"]["uplink"][-1] is None, rollback["overview"]["history"]
+    assert rollback["overview"]["history"]["downlink"][-1] is None, rollback["overview"]["history"]
+    assert rollback["wan"][0]["history"]["up"][-1] is None, rollback["wan"][0]["history"]
+    assert rollback["wan"][0]["history"]["down"][-1] is None, rollback["wan"][0]["history"]
+    assert rollback["pppoe"][0]["upRate"] is None, rollback["pppoe"][0]
+    assert rollback["pppoe"][0]["downRate"] is None, rollback["pppoe"][0]
+    assert rollback["loadBalance"]["distribution"][0]["share"] == 0, rollback["loadBalance"]["distribution"]
+    assert rollback["loadBalance"]["distribution"][0]["upRate"] is None, rollback["loadBalance"]["distribution"]
+    assert rollback["loadBalance"]["distribution"][0]["downRate"] is None, rollback["loadBalance"]["distribution"]
+    assert rollback["overview"]["history"]["uplink"][:-1] == true_zero_uplink_history, rollback["overview"]["history"]
+    assert rollback["wan"][0]["history"]["up"][:-1] == true_zero_line_history, rollback["wan"][0]["history"]
+    assert rollback["overview"]["history"]["cpu"][-1] == 25, rollback["overview"]["history"]
 
 
 def assert_interface_quality_metrics_track_recent_samples():
@@ -436,6 +494,7 @@ def assert_interface_quality_metrics_track_recent_samples():
     assert second_iface["dropDelta"] == 3, second_iface
     assert second_iface["errorDelta"] == 1, second_iface
     assert abs(second_iface["lossRate"] - 0.01) < 0.000001, second_iface
+    assert abs(second_iface["errorRate"] - (1 / 300)) < 0.000001, second_iface
     assert second_iface["qualitySampleReady"] is True, second_iface
 
     stale = collector.build_snapshot(
@@ -457,6 +516,7 @@ def assert_interface_quality_metrics_track_recent_samples():
     assert stale_iface["dropDelta"] == 3, stale_iface
     assert stale_iface["errorDelta"] == 1, stale_iface
     assert abs(stale_iface["lossRate"] - 0.01) < 0.000001, stale_iface
+    assert abs(stale_iface["errorRate"] - (1 / 300)) < 0.000001, stale_iface
 
     vlan_rest = make_rate_rest(1000, 1000, name="vlan10", iface_type="vlan")
     vlan_snapshot = collector.build_snapshot(vlan_rest, make_empty_ssh(), fresh_counter_sample=True)
@@ -648,10 +708,24 @@ def assert_router_login_password_save_is_opt_in():
     assert '<input id="routerLoginRememberPassword" name="rememberPassword" type="checkbox" checked>' not in index_source
     assert "routerLoginRememberPasswordEl ? routerLoginRememberPasswordEl.checked : false" in index_source
     assert 'payload.get("rememberPassword", False)' in app_source
+    assert "remember_password = remember_raw is True" in app_source
+    assert "True if remember_raw is None else to_bool(remember_raw)" not in app_source
     assert 'payload.get("rememberPassword", True)' not in app_source
 
 
-def assert_semantic_triage_formats_loss_rate_once():
+def assert_frontend_handles_partial_snapshots():
+    index_source = (ROOT / "public" / "index.html").read_text(encoding="utf-8")
+    assert "const o = snapshot.overview || {};" in index_source
+    assert "const history = o.history || {};" in index_source
+    assert "const history = overview.history || {};" in index_source
+    assert "const meta = snapshot.meta || {};" in index_source
+    assert "const arpItems = Array.isArray(arp.items) ? arp.items : [];" in index_source
+    assert "const dhcpLeases = Array.isArray(dhcp.leases) ? dhcp.leases : [];" in index_source
+    assert "const activeConnections = Array.isArray(connections.active) ? connections.active : [];" in index_source
+    assert "lineChart([history.uplink || [], history.downlink || []]" in index_source
+
+
+def assert_semantic_triage_distinguishes_quality_display_values():
     triage = app.build_semantic_triage(
         {
             "status": "ok",
@@ -660,11 +734,12 @@ def assert_semantic_triage_formats_loss_rate_once():
                 {
                     "name": "vlan40",
                     "dropTotal": 395361,
-                    "errorTotal": 0,
+                    "errorTotal": 2,
                     "dropDelta": 4,
-                    "errorDelta": 0,
+                    "errorDelta": 1,
                     "packetDelta": 6801,
                     "lossRate": 0.000588,
+                    "errorRate": 1 / 6801,
                     "isDerivedInterface": True,
                     "qualityEvidenceLevel": "logical",
                 }
@@ -673,9 +748,64 @@ def assert_semantic_triage_formats_loss_rate_once():
     )
     issue = next(row for row in triage["queue"] if row["id"] == "interfaces.error_counters")
     assert "%%" not in issue["summary"], issue["summary"]
+    assert "cumulative drop/error=395361/2" in issue["summary"], issue["summary"]
+    assert "latest +4/+1" in issue["summary"], issue["summary"]
     assert "recent loss rate=0.0588%." in issue["summary"], issue["summary"]
+    cumulative = next(row for row in issue["evidence"] if row["label"] == "cumulativeDropError")
+    assert cumulative["value"] == "395361/2", cumulative
+    latest = next(row for row in issue["evidence"] if row["label"] == "latestDropErrorDelta")
+    assert latest["value"] == "+4/+1", latest
     recent_loss = next(row for row in issue["evidence"] if row["label"] == "recentLossRate")
     assert recent_loss["value"] == "0.0588%", recent_loss
+
+    unknown_triage = app.build_semantic_triage(
+        {
+            "status": "ok",
+            "updatedAt": "2026-05-25 12:16:00",
+            "interfaces": [
+                {
+                    "name": "ether1",
+                    "dropTotal": 8,
+                    "errorTotal": 2,
+                    "dropDelta": 0,
+                    "errorDelta": 0,
+                    "packetDelta": 0,
+                    "lossRate": None,
+                    "errorRate": None,
+                    "isDerivedInterface": False,
+                    "qualityEvidenceLevel": "primary",
+                }
+            ],
+        }
+    )
+    unknown_issue = next(row for row in unknown_triage["queue"] if row["id"] == "interfaces.error_counters")
+    assert "cumulative drop/error=8/2" in unknown_issue["summary"], unknown_issue["summary"]
+    assert "latest +0/+0" in unknown_issue["summary"], unknown_issue["summary"]
+    assert "recent loss rate=unknown." in unknown_issue["summary"], unknown_issue["summary"]
+    unknown_loss = next(row for row in unknown_issue["evidence"] if row["label"] == "recentLossRate")
+    assert unknown_loss["value"] == "unknown", unknown_loss
+
+
+def assert_localhost_host_forward_guard_supports_routeros_container():
+    loopback_headers = {"Host": "127.0.0.1:28646"}
+    token_headers = {"Host": "127.0.0.1:28646", app.PANEL_LOCALHOST_FORWARD_HEADER: "fixture-forward-token"}
+    direct_ip_headers = {"Host": "172.18.0.2:28646"}
+    remote_peer = ("192.0.2.10", 52344)
+    assert app.panel_host_header_is_allowed(loopback_headers)
+    assert not app.panel_host_header_is_allowed(direct_ip_headers)
+    assert app.panel_client_address_is_allowed(("127.0.0.1", 52344), direct_ip_headers)
+    assert not app.panel_client_address_is_allowed(remote_peer, loopback_headers)
+    original = app.PANEL_ALLOW_LOCALHOST_HOST_FORWARD
+    original_token = app.PANEL_LOCALHOST_FORWARD_TOKEN
+    try:
+        app.PANEL_ALLOW_LOCALHOST_HOST_FORWARD = True
+        app.PANEL_LOCALHOST_FORWARD_TOKEN = "fixture-forward-token"
+        assert not app.panel_client_address_is_allowed(remote_peer, loopback_headers)
+        assert app.panel_client_address_is_allowed(remote_peer, token_headers)
+        assert not app.panel_client_address_is_allowed(remote_peer, direct_ip_headers)
+    finally:
+        app.PANEL_ALLOW_LOCALHOST_HOST_FORWARD = original
+        app.PANEL_LOCALHOST_FORWARD_TOKEN = original_token
 
 
 def main():
@@ -683,7 +813,7 @@ def main():
     assert_ssh_banner_diagnostic()
     assert_latency_tcp_fallback_probe()
     assert_panel_network_config_helpers()
-    assert_rate_history_only_advances_on_fresh_counter_samples()
+    assert_counter_rate_history_semantics()
     assert_interface_quality_metrics_track_recent_samples()
     assert_arp_alerts_are_confidence_classified()
     assert_arbitrary_scale_snapshot_contract()
@@ -691,7 +821,9 @@ def main():
     assert_frontend_charts_skip_missing_values()
     assert_frontend_wan_aggregate_default()
     assert_router_login_password_save_is_opt_in()
-    assert_semantic_triage_formats_loss_rate_once()
+    assert_frontend_handles_partial_snapshots()
+    assert_semantic_triage_distinguishes_quality_display_values()
+    assert_localhost_host_forward_guard_supports_routeros_container()
     print(
         json.dumps(
             {
@@ -701,15 +833,17 @@ def main():
                     "ssh banner diagnostic classifies HTTP endpoint as non-SSH",
                     "latency probing has a TCP fallback for Docker/minimal runtimes without ping",
                     "panel network defaults, validation, URL formatting, and env updates are safe",
-                    "rate history advances only on fresh interface counter samples and preserves true fresh zero samples",
-                    "interface quality metrics expose cumulative totals, fresh deltas, stale reuse, and VLAN down-ranking",
+                    "counter rate history skips first baselines, preserves stale rates, marks counter rollback as chart breaks, and keeps resource history independent",
+                    "interface quality metrics expose cumulative totals, fresh deltas, loss/error rates, stale reuse, and VLAN down-ranking",
                     "ARP alerts classify active conflicts separately from stale identity movement",
                     "arbitrary-scale non-PPPoE fixtures preserve scale metadata, protocol ranking, and WAN fallback semantics",
                     "deploy defaults avoid private IP/admin assumptions unless explicitly configured",
                     "frontend chart helpers skip missing values instead of drawing zeros",
                     "frontend WAN selector defaults to an all-line aggregate traffic option",
                     "RouterOS login password saving is opt-in for public deployments",
-                    "semantic triage formats recent loss-rate percentages once",
+                    "frontend renderers tolerate partial snapshots and missing history collections",
+                    "semantic triage distinguishes cumulative totals, latest deltas, numeric loss rates, and unknown loss-rate displays",
+                    "RouterOS Container localhost Host-forward guard allows client-local tunnels without allowing direct veth/LAN browser hosts",
                 ],
             },
             ensure_ascii=False,

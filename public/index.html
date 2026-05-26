@@ -495,6 +495,35 @@
     .info-k { color: var(--text-dim); font-size: 10px; line-height: 1.05; }
     /* Keep compact data text at one weight so hierarchy comes from layout and color. */
     .info-v { margin-top: 2px; font-size: 11px; font-weight: 500; line-height: 1.2; word-break: break-all; }
+    .address-stack {
+      display: grid;
+      gap: 3px;
+      min-width: 0;
+      max-width: 100%;
+      font-family: "Cascadia Mono","Consolas","Microsoft YaHei",monospace;
+      font-size: 11px;
+      line-height: 1.28;
+      font-variant-numeric: tabular-nums;
+    }
+    .address-family {
+      display: grid;
+      gap: 1px;
+      min-width: 0;
+      max-width: 100%;
+    }
+    .address-family-label {
+      color: #64748b;
+      font-family: "Microsoft YaHei","Segoe UI",sans-serif;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0;
+    }
+    .address-stack span {
+      min-width: 0;
+      max-width: 100%;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
     .table-wrap { overflow: visible; border-radius: 8px; border: 1px solid var(--border); background: #fff; }
     #terminals .card,
     #terminals .card-body,
@@ -829,6 +858,17 @@
     .donut-center { position: absolute; inset: 0; display: grid; place-items: center; z-index: 1; text-align: center; }
     .donut-center strong { display: block; font: 700 22px/1 "Bahnschrift","Microsoft YaHei",sans-serif; }
     .subtle { color: var(--text-dim); font-size: 11px; }
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
     .footer { color: var(--text-dim); font-size: 12px; padding: 2px 4px 10px; }
     /* Responsive layout breakpoints are intentionally disabled here.
        The panel must stay in the fixed wide-screen desktop arrangement. */
@@ -838,21 +878,22 @@
     }
     .app.ik-shell.home-sidebar-hidden {
       display: grid !important;
-      grid-template-columns: 52px minmax(0, 1fr) !important;
-      background: linear-gradient(90deg, #fbfcff 0 52px, #ffffff 52px 100%) !important;
+      grid-template-columns: 52px 142px 1fr !important;
+      background: linear-gradient(90deg, #fbfcff 0 194px, #ffffff 194px 100%) !important;
     }
     .app.ik-shell.home-sidebar-hidden .sidebar {
-      display: none !important;
-      width: 0 !important;
+      display: block !important;
+      width: 142px !important;
       min-width: 0 !important;
-      max-width: 0 !important;
-      overflow: hidden !important;
-      border-right: 0 !important;
-      padding: 0 !important;
+      max-width: 142px !important;
+      overflow-x: hidden !important;
+      overflow-y: auto !important;
+      border-right: 1px solid #edf1f7 !important;
+      padding: 10px 6px 12px !important;
       margin: 0 !important;
     }
     .app.ik-shell.home-sidebar-hidden .frame {
-      grid-column: 2;
+      grid-column: 3;
       min-width: 0;
     }
     .ik-rail {
@@ -2367,10 +2408,10 @@
       overflow-x: hidden;
     }
     .app.ik-shell.home-sidebar-hidden .frame {
-      grid-column: 2;
+      grid-column: 3;
     }
     .app.ik-shell.home-sidebar-hidden .sidebar {
-      display: none !important;
+      display: block !important;
     }
     .ops-compact-table th {
       padding: 5px 7px;
@@ -2587,12 +2628,14 @@
         grid-template-columns: minmax(0, 1fr) !important;
       }
       #overview .public-home-hero,
-      #overview .ik-wan-rate-chart,
-      #overview .ops-home-stream-grid .ik-wan-rate-chart,
       .line-bar,
       .ops-bar-stack .line-bar,
       #overview .ik-home-line-bars .line-bar {
         grid-template-columns: minmax(0, 1fr) !important;
+      }
+      #overview .ik-wan-rate-chart,
+      #overview .ops-home-stream-grid .ik-wan-rate-chart {
+        grid-template-columns: minmax(0, 1fr) minmax(54px, 62px) !important;
       }
       .refresh-toolbar {
         align-items: flex-start;
@@ -2615,7 +2658,7 @@
       }
       .ops-axis-chart,
       .ik-wan-rate-chart {
-        grid-template-columns: minmax(0, 1fr) !important;
+        grid-template-columns: minmax(0, 1fr) minmax(54px, 62px) !important;
       }
       .axis-line-chart {
         grid-template-columns: 62px minmax(0, 1fr);
@@ -2647,7 +2690,7 @@
   </style>
 </head>
 <body class="router-login-booting" data-app-shell="ros-ikuai-monitor-panel" data-deploy-channel="auto" data-panel-profile="auto" data-public-profile="false">
-  <section class="router-login-page" id="routerLoginPage" aria-live="polite">
+  <section class="router-login-page" id="routerLoginPage">
     <div class="router-login-panel">
       <div class="router-login-head">
         <h1 class="router-login-title">连接 RouterOS</h1>
@@ -2687,7 +2730,7 @@
           </label>
         </div>
         <div class="router-login-actions">
-          <div class="router-login-status" id="routerLoginStatus">正在检查连接配置...</div>
+          <div class="router-login-status" id="routerLoginStatus" role="status" aria-live="polite" aria-atomic="true">正在检查连接配置...</div>
           <button class="action-btn primary" id="routerLoginSubmit" type="submit">连接并进入</button>
         </div>
       </form>
@@ -2696,10 +2739,10 @@
   </section>
   <div class="app ik-shell app-shell" data-shell-root="true" data-shell-layout="fixed-wide">
     <aside class="ik-rail" id="ikRail" data-shell-region="rail" data-shell-nav="primary">
-      <a class="ik-rail-logo is-active" href="#overview" data-section="overview" title="系统首页">首</a>
+      <a class="ik-rail-logo is-active" href="#overview" data-section="overview" title="系统首页" aria-current="page">首</a>
       <button class="ik-rail-button ik-rail-search-btn" type="button" title="搜索页面 Ctrl+K" data-quick-search-open aria-label="搜索页面">⌕</button>
       <div class="ik-rail-group">
-        <a class="ik-rail-button is-active" href="#overview" data-section="overview" title="系统首页"><span class="ik-rail-glyph ik-home"></span></a>
+        <a class="ik-rail-button is-active" href="#overview" data-section="overview" title="系统首页" aria-current="page"><span class="ik-rail-glyph ik-home"></span></a>
         <a class="ik-rail-button" href="#interfaces" data-section="interfaces" title="接口总览"><span class="ik-rail-glyph ik-line"></span></a>
         <a class="ik-rail-button" href="#balance" data-section="balance" title="分流监控"><span class="ik-rail-glyph ik-balance"></span></a>
         <a class="ik-rail-button" href="#security" data-section="security" title="ACL 规则"><span class="ik-rail-glyph ik-security"></span></a>
@@ -2739,7 +2782,7 @@
             <div class="toolbar-line">
               <button class="action-btn" id="panelNetworkBtn" type="button" data-panel-network-open>面板地址</button>
               <div class="deploy-pill">只读面板</div>
-              <div class="update-pill"><span class="dot" id="healthDot"></span><span id="updateText">初始化中</span></div>
+              <div class="update-pill" role="status" aria-live="polite" aria-atomic="true"><span class="dot" id="healthDot"></span><span id="updateText">初始化中</span></div>
             </div>
             <div class="refresh-toolbar">
               <button class="action-btn primary" id="manualRefreshBtn" type="button">立即刷新</button>
@@ -2753,9 +2796,10 @@
         </div>
         <div class="status-strip" id="topMetrics"></div>
       </header>
-      <main class="content shell-content" id="app" data-shell-region="content" data-shell-main="true" role="main" aria-live="polite"></main>
+      <main class="content shell-content" id="app" data-shell-region="content" data-shell-main="true" role="main"></main>
     </div>
   </div>
+  <span class="sr-only" id="panelStatusLive" role="status" aria-live="polite" aria-atomic="true">初始化中</span>
   <script>
     const appEl = document.getElementById('app');
     const topMetricsEl = document.getElementById('topMetrics');
@@ -2764,6 +2808,7 @@
     const appShellEl = document.querySelector('.app');
     const pageTitleEl = document.getElementById('pageTitle');
     const updateTextEl = document.getElementById('updateText');
+    const panelStatusLiveEl = document.getElementById('panelStatusLive');
     const healthDotEl = document.getElementById('healthDot');
     const pageSubtitleEl = document.getElementById('pageSubtitle');
     const manualRefreshBtn = document.getElementById('manualRefreshBtn');
@@ -2805,6 +2850,7 @@
     let currentSection = 'overview';
     let currentNavGroup = 'home';
     let currentOverviewWanLine = 'aggregate';
+    let panelCsrfToken = '';
     let currentInterfaceView = 'monitor';
     let currentInterfaceTopology = 'wan';
     let interfaceReadonlyOpen = false;
@@ -2822,6 +2868,14 @@
     let panelProfileMode = 'public';
     let deployChannelMode = 'public-routeros';
 
+    function setPanelStatusText(text) {
+      const statusText = String(text || '初始化中');
+      if (updateTextEl) updateTextEl.textContent = statusText;
+      if (panelStatusLiveEl && panelStatusLiveEl.textContent !== statusText) {
+        panelStatusLiveEl.textContent = statusText;
+      }
+    }
+
     function isPublicPanelSnapshot(snapshot) {
       const meta = snapshot?.meta || {};
       const capabilities = meta.capabilities || {};
@@ -2834,7 +2888,7 @@
 
     function syncPanelProfileState(snapshot) {
       const nextProfileMode = isPublicPanelSnapshot(snapshot) ? 'public' : 'private';
-      const nextDeployChannel = nextProfileMode === 'public' ? 'public-routeros' : '.3.5';
+      const nextDeployChannel = nextProfileMode === 'public' ? 'public-routeros' : 'legacy-private';
       const changed = nextProfileMode !== panelProfileMode || nextDeployChannel !== deployChannelMode;
       panelProfileMode = nextProfileMode;
       deployChannelMode = nextDeployChannel;
@@ -2892,6 +2946,35 @@
       routerLoginStatusEl.classList.toggle('is-error', tone === 'error');
       routerLoginStatusEl.classList.toggle('is-ok', tone === 'ok');
       routerLoginStatusEl.classList.toggle('is-warn', tone === 'warn');
+    }
+
+    function readPanelCookie(name) {
+      return document.cookie
+        .split(';')
+        .map((part) => part.trim())
+        .find((part) => part.startsWith(`${name}=`))
+        ?.slice(name.length + 1) || '';
+    }
+
+    function updatePanelCsrfToken(payload = null) {
+      const token = payload?.csrfToken || readPanelCookie('ros_panel_csrf');
+      if (token) panelCsrfToken = token;
+      return panelCsrfToken;
+    }
+
+    function panelFetch(url, options = {}) {
+      const method = String(options.method || 'GET').toUpperCase();
+      const headers = new Headers(options.headers || {});
+      if (!['GET', 'HEAD', 'OPTIONS'].includes(method)) {
+        const token = updatePanelCsrfToken();
+        if (token) headers.set('X-CSRF-Token', token);
+      }
+      return fetch(url, {
+        ...options,
+        cache: 'no-store',
+        credentials: 'same-origin',
+        headers
+      });
     }
 
     function setSelectedRouterLoginId(savedId = '') {
@@ -3028,9 +3111,11 @@
     }
 
     async function fetchRouterLoginState() {
-      const response = await fetch('/api/router-login', { cache: 'no-store' });
+      const response = await panelFetch('/api/router-login');
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      return response.json();
+      const payload = await response.json();
+      updatePanelCsrfToken(payload);
+      return payload;
     }
 
     async function bootstrapRouterConnection() {
@@ -3060,7 +3145,7 @@
       displayedSnapshot = null;
       pendingSnapshot = null;
       try {
-        const response = await fetch('/api/router-logout', { method: 'POST', cache: 'no-store' });
+        const response = await panelFetch('/api/router-logout', { method: 'POST' });
         const payload = await response.json().catch(() => ({}));
         showRouterLogin(payload.routerLogin || null, message, payload.savedLogins || []);
       } catch (error) {
@@ -3074,10 +3159,9 @@
         const savedId = deleteBtn.dataset.routerLoginDelete;
         deleteBtn.disabled = true;
         try {
-          const response = await fetch('/api/router-login-forget', {
+          const response = await panelFetch('/api/router-login-forget', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            cache: 'no-store',
             body: JSON.stringify({ id: savedId })
           });
           const payload = await response.json().catch(() => ({}));
@@ -3123,7 +3207,7 @@
       routerLoginSubmitEl.textContent = '连接中...';
       setRouterLoginStatus('正在用 SSH 验证 RouterOS 凭据...');
       try {
-        const response = await fetch('/api/router-login', {
+        const response = await panelFetch('/api/router-login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ host, user, password, sshPort, savedId, rememberPassword })
@@ -3196,7 +3280,14 @@
     ];
 
     const menuGroups = {
-      home: [],
+      home: [
+        { section: 'overview', label: '首页总览', icon: 'ik-home' },
+        { section: 'lineStatus', label: '线路状态', icon: 'ik-line' },
+        { section: 'interfaces', label: '接口总览', icon: 'ik-line' },
+        { section: 'terminals', label: '终端监控', icon: 'ik-terminal' },
+        { section: 'dns4', label: 'DNS IPv4', icon: 'ik-dns' },
+        { section: 'logs', label: '日志中心', icon: 'ik-log' }
+      ],
       monitor: [
         { section: 'interfaces', label: '接口总览', icon: 'ik-line' },
         { section: 'terminals', label: '终端监控', icon: 'ik-terminal' },
@@ -3293,6 +3384,39 @@
       .replaceAll('"', '&quot;')
       .replaceAll("'", '&#39;');
 
+    function addressList(value) {
+      if (Array.isArray(value)) return value;
+      if (value === undefined || value === null || value === '') return [];
+      return [value];
+    }
+
+    function splitAddressFamilies(value) {
+      return addressList(value).reduce((acc, item) => {
+        const text = String(item || '').trim();
+        if (!text) return acc;
+        if (text.includes(':')) acc.ipv6.push(text);
+        else acc.ipv4.push(text);
+        return acc;
+      }, { ipv4: [], ipv6: [] });
+    }
+
+    function addressStackHtml(value, limit = 3) {
+      const families = splitAddressFamilies(value);
+      const hasIpv4 = families.ipv4.length > 0;
+      const hasIpv6 = families.ipv6.length > 0;
+      if (!hasIpv4 && !hasIpv6) return '-';
+      const perFamilyLimit = hasIpv4 && hasIpv6 ? Math.max(1, Math.ceil(limit / 2)) : limit;
+      const renderFamily = (label, items) => {
+        if (!items.length) return '';
+        const shown = items.slice(0, perFamilyLimit);
+        const extraCount = Math.max(0, items.length - shown.length);
+        const lines = shown.map((item) => `<span>${escapeHtml(item)}</span>`).join('');
+        const extra = extraCount ? `<span>+${fmtNumber(extraCount)} 个地址</span>` : '';
+        return `<span class="address-family"><span class="address-family-label">${label}</span>${lines}${extra}</span>`;
+      };
+      return `<span class="address-stack">${renderFamily('IPv4', families.ipv4)}${renderFamily('IPv6', families.ipv6)}</span>`;
+    }
+
     let panelNetworkDialogEl = null;
 
     function setPanelNetworkStatus(message = '', tone = '') {
@@ -3313,7 +3437,7 @@
           <div class="panel-network-head">
             <div>
               <div class="panel-network-title">面板地址</div>
-              <div class="panel-network-desc">修改面板监听 IP、端口和浏览器访问地址。保存后重启面板服务生效。</div>
+              <div class="panel-network-desc">查看面板监听 IP、端口和浏览器访问地址；只有可写 env 的本地版本允许保存。</div>
             </div>
             <button class="panel-network-close" type="button" data-panel-network-close aria-label="关闭">×</button>
           </div>
@@ -3333,7 +3457,7 @@
               <input id="panelNetworkTarget" name="target" type="text" autocomplete="off" placeholder="127.0.0.1" required>
             </div>
             <div class="panel-network-note">
-              Docker 内部监听通常应保持 0.0.0.0，宿主机发布地址再限制到 127.0.0.1。普通本机运行建议保持 127.0.0.1。
+              公开默认入口固定为 127.0.0.1:28646。Docker、systemd 和 RouterOS Container 的地址由部署层管理，面板内只读展示。
             </div>
             <div class="panel-network-status" data-panel-network-status></div>
             <div class="panel-network-actions">
@@ -3357,6 +3481,19 @@
       dialog.querySelector('[name="bind"]').value = panelNetwork.bind || panelNetwork.defaults?.bind || '127.0.0.1';
       dialog.querySelector('[name="port"]').value = String(panelNetwork.port || panelNetwork.defaults?.port || 28646);
       dialog.querySelector('[name="target"]').value = panelNetwork.target || 'auto';
+      syncPanelNetworkSaveState(panelNetwork);
+    }
+
+    function syncPanelNetworkSaveState(panelNetwork = {}) {
+      const dialog = ensurePanelNetworkDialog();
+      const form = dialog.querySelector('[data-panel-network-form]');
+      const saveBtn = form?.querySelector('[data-panel-network-save]');
+      const supported = panelNetwork.saveSupported !== false && panelNetwork.envWritable !== false;
+      if (form) form.dataset.saveSupported = supported ? 'true' : 'false';
+      if (saveBtn) {
+        saveBtn.disabled = !supported;
+        saveBtn.title = supported ? '' : '当前交付方式不支持在面板内保存监听地址';
+      }
     }
 
     function panelNetworkUrlStatus(panelNetwork = {}) {
@@ -3370,8 +3507,9 @@
     }
 
     async function fetchPanelNetworkSettings() {
-      const response = await fetch('/api/panel-network', { cache: 'no-store' });
+      const response = await panelFetch('/api/panel-network');
       const payload = await response.json().catch(() => ({}));
+      updatePanelCsrfToken(payload);
       if (!response.ok || !payload.ok) {
         throw new Error(payload.error || `HTTP ${response.status}`);
       }
@@ -3385,9 +3523,12 @@
       try {
         const panelNetwork = await fetchPanelNetworkSettings();
         fillPanelNetworkForm(panelNetwork);
-        setPanelNetworkStatus(panelNetworkUrlStatus(panelNetwork), 'ok');
+        const writeMessage = panelNetwork.writeStatus?.message || '当前交付方式不支持在面板内保存监听地址。';
+        const tone = panelNetwork.saveSupported === false || panelNetwork.envWritable === false ? 'warn' : 'ok';
+        const suffix = tone === 'warn' ? `<br><span class="subtle">${escapeHtml(writeMessage)}</span>` : '';
+        setPanelNetworkStatus(`${panelNetworkUrlStatus(panelNetwork)}${suffix}`, tone);
       } catch (error) {
-        fillPanelNetworkForm();
+        fillPanelNetworkForm({ saveSupported: false, envWritable: false });
         setPanelNetworkStatus(`读取失败：${escapeHtml(error.message)}`, 'error');
       }
       setTimeout(() => dialog.querySelector('[name="bind"]')?.focus(), 0);
@@ -3414,6 +3555,10 @@
       const bind = form.elements.namedItem('bind').value.trim();
       const port = Number(form.elements.namedItem('port').value || 0);
       const target = form.elements.namedItem('target').value.trim();
+      if (form.dataset.saveSupported === 'false') {
+        setPanelNetworkStatus('当前交付方式不支持在面板内保存监听地址；请修改安装目录的 env 文件或重新运行安装命令。', 'warn');
+        return;
+      }
       if (!isPanelNetworkLoopbackHost(bind) && !isPanelNetworkInternalBind(bind)) {
         setPanelNetworkStatus('公开项目只允许 127.0.0.1 / localhost 作为面板入口。', 'error');
         return;
@@ -3426,10 +3571,9 @@
       saveBtn.textContent = '保存中...';
       setPanelNetworkStatus('正在保存面板地址...');
       try {
-        const response = await fetch('/api/panel-network', {
+        const response = await panelFetch('/api/panel-network', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          cache: 'no-store',
           body: JSON.stringify({ bind, port, target })
         });
         const payload = await response.json().catch(() => ({}));
@@ -3615,6 +3759,7 @@
     let quickSearchOverlayEl = null;
     let quickSearchInputEl = null;
     let quickSearchResultsEl = null;
+    let quickSearchRenderTimer = 0;
     let readonlyInfoEl = null;
 
     function quickSearchMatches(query = '') {
@@ -3664,6 +3809,11 @@
         </button>`).join('');
     }
 
+    function scheduleQuickSearchResults(query = '') {
+      clearTimeout(quickSearchRenderTimer);
+      quickSearchRenderTimer = setTimeout(() => renderQuickSearchResults(query), 80);
+    }
+
     function ensureQuickSearchPanel() {
       if (quickSearchOverlayEl && document.body.contains(quickSearchOverlayEl)) return quickSearchOverlayEl;
       quickSearchOverlayEl = document.createElement('div');
@@ -3698,7 +3848,10 @@
         event.preventDefault();
         jumpQuickSearchSection(itemButton.dataset.quickSearchSection);
       });
-      quickSearchInputEl.addEventListener('input', () => renderQuickSearchResults(quickSearchInputEl.value));
+      quickSearchInputEl.addEventListener('input', () => {
+        noteInteraction(1600);
+        scheduleQuickSearchResults(quickSearchInputEl.value);
+      });
       quickSearchInputEl.addEventListener('keydown', (event) => {
         if (event.key === 'Escape') {
           event.preventDefault();
@@ -3729,7 +3882,10 @@
     function closeQuickSearch() {
       if (!quickSearchOverlayEl) return;
       quickSearchOverlayEl.classList.remove('is-open');
+      applyPendingSnapshotIfIdle();
     }
+
+    const hasQuickSearchOpen = () => Boolean(quickSearchOverlayEl?.classList?.contains('is-open'));
 
     function jumpQuickSearchSection(section) {
       const nextSection = normalizeSection(section);
@@ -3858,7 +4014,7 @@
       const node = selectionContainer();
       return Boolean(node && appEl.contains(node));
     };
-    const hasInteractionLock = () => document.visibilityState === 'hidden' || Date.now() < interactionPauseUntil || hasSelectionInsideApp();
+    const hasInteractionLock = () => document.visibilityState === 'hidden' || hasQuickSearchOpen() || Date.now() < interactionPauseUntil || hasSelectionInsideApp();
     function armInteractionResume() {
       clearTimeout(interactionResumeTimer);
       const waitMs = Math.max(300, interactionPauseUntil - Date.now() + 120);
@@ -3893,7 +4049,7 @@
         return;
       }
       try {
-        const response = await fetch('/api/ip-alias', {
+        const response = await panelFetch('/api/ip-alias', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ ip, name: nextName })
@@ -4006,7 +4162,7 @@
         renderApp(baseSnapshot);
       }
       try {
-        const response = await fetch(`/api/dns-static?offset=${offset}&limit=${limit}`, { cache: 'no-store' });
+        const response = await panelFetch(`/api/dns-static?offset=${offset}&limit=${limit}`);
         if (!response.ok) {
           throw new Error(`HTTP ${response.status}`);
         }
@@ -4065,7 +4221,8 @@
     };
     const groupHasSection = (groupId, section, snapshot = activeSnapshotRef()) => navItemsFor(groupId, snapshot).some((item) => item.section === section);
     const resolveGroup = (section, groupHint, snapshot = activeSnapshotRef()) => {
-      if (groupHint && groupHasSection(groupHint, section, snapshot)) return groupHint;
+      if (section === 'overview') return 'home';
+      if (groupHint && groupHint !== 'home' && groupHasSection(groupHint, section, snapshot)) return groupHint;
       return sectionToGroup[section] || 'monitor';
     };
     function renderNavigation() {
@@ -4082,10 +4239,10 @@
       </div>`;
       if (ikRailEl) {
         ikRailEl.innerHTML = `
-          <a class="ik-rail-logo ${currentNavGroup === 'home' ? 'is-active' : ''}" href="#overview" data-section="overview" data-nav-group="home" title="系统首页">首</a>
+          <a class="ik-rail-logo ${currentSection === 'overview' ? 'is-active' : ''}" href="#overview" data-section="overview" data-nav-group="home" title="系统首页"${currentSection === 'overview' ? ' aria-current="page"' : ''}>首</a>
           <button class="ik-rail-button ik-rail-search-btn" type="button" title="搜索页面 Ctrl+K" data-quick-search-open aria-label="搜索页面">⌕</button>
           <div class="ik-rail-group">${visibleRailGroups.map((group) => `
-            <a class="ik-rail-button ${currentNavGroup === group.id ? 'is-active' : ''}" href="#${group.section}" data-section="${group.section}" data-nav-group="${group.id}" title="${group.label}">
+            <a class="ik-rail-button ${currentNavGroup === group.id ? 'is-active' : ''}" href="#${group.section}" data-section="${group.section}" data-nav-group="${group.id}" title="${group.label}"${currentNavGroup === group.id ? ' aria-current="page"' : ''}>
               <span class="ik-rail-glyph ${group.icon}"></span>
               <span class="ik-rail-label">${group.label}</span>
             </a>`).join('')}</div>
@@ -4096,7 +4253,7 @@
         const items = navItemsFor(currentNavGroup, snapshot);
         ikMenuPanelEl.classList.toggle('is-empty', items.length === 0);
         ikMenuPanelEl.innerHTML = items.length ? `<div class="nav-label">${menuGroupLabel[currentNavGroup] || '监控中心'}</div>${items.map((item) => `
-          <a class="ik-menu-item ${item.section === currentSection ? 'is-active' : ''}" href="#${item.section}" data-section="${item.section}" data-nav-group="${currentNavGroup}">
+          <a class="ik-menu-item ${item.section === currentSection ? 'is-active' : ''}" href="#${item.section}" data-section="${item.section}" data-nav-group="${currentNavGroup}"${item.section === currentSection ? ' aria-current="page"' : ''}>
             <span class="ik-menu-icon ${item.icon}"></span>
             <span class="ik-menu-copy">${item.label}</span>
           </a>`).join('')}` : '';
@@ -4862,139 +5019,6 @@
       });
     }
 
-    function buildTopMetrics(snapshot) {
-      const o = snapshot.overview || {};
-      const interfaces = snapshot.interfaces || [];
-      const pppoe = getLogicalWanLines(snapshot);
-      const terminals = snapshot.terminals || [];
-      const arp = snapshot.arp || { items: [] };
-      const dhcp = snapshot.dhcp || { leases: [], pools: [] };
-      const connections = snapshot.connections || {};
-      const dns = snapshot.dns || {};
-      const security = snapshot.security || {};
-      const lb = snapshot.loadBalance || {};
-      const routes = snapshot.routes || {};
-      const logs = snapshot.logs || {};
-      const activePppoe = pppoe.filter((row) => row.running).length;
-      const activeInterfaces = interfaces.filter((row) => row.running).length;
-      const busiestLine = pppoe.slice().sort((a, b) => ((b.upRate + b.downRate) - (a.upRate + a.downRate)))[0];
-
-      switch (currentSection) {
-        case 'interfaces':
-          return [
-            ['在线接口', `${fmtNumber(activeInterfaces)} / ${fmtNumber(interfaces.length)}`],
-            ['在线 WAN', `${fmtNumber(activePppoe)} / ${fmtNumber(pppoe.length)}`],
-            ['当前最忙线路', busiestLine ? `${escapeHtml(busiestLine.name)} · ${fmtRate((busiestLine.upRate || 0) + (busiestLine.downRate || 0))}` : '-'],
-            ['总上行速率', fmtRate(o.uplinkBps)],
-            ['总下行速率', fmtRate(o.downlinkBps)]
-          ];
-        case 'dhcp':
-          return [
-            ['DHCP 服务器', fmtNumber((dhcp.servers || []).length)],
-            ['地址池', fmtNumber((dhcp.pools || []).length)],
-            ['绑定租约', fmtNumber((dhcp.leases || []).filter((row) => row.status === 'bound').length)],
-            ['静态分配', fmtNumber((dhcp.leases || []).filter((row) => row.static).length)]
-          ];
-        case 'terminals':
-          return [
-            ['在线终端', fmtNumber(terminals.length)],
-            ['ARP 条目', fmtNumber((arp.items || []).length)],
-            ['DHCP 地址池', fmtNumber((dhcp.pools || []).length)],
-            ['DHCP 租约', fmtNumber((dhcp.leases || []).length)]
-          ];
-        case 'connections':
-          {
-            const hasProtocolTopMetrics = [connections.tcp, connections.udp].every((value) => Number.isFinite(Number(value)));
-            return [
-              ['连接总数', fmtCompact(connections.total)],
-              ['活跃会话', fmtNumber((connections.active || []).length)],
-              ['单 IP 排行', fmtNumber((connections.topIps || []).length)],
-              ['明细刷新', connections.detailUpdatedAt ? escapeHtml(connections.detailUpdatedAt) : '等待采集'],
-              ['协议拆分', hasProtocolTopMetrics ? `${fmtCompact(connections.tcp)} / ${fmtCompact(connections.udp)}` : '当前未采集']
-            ];
-          }
-        case 'trafficLoad':
-          {
-            const activeTrafficTerminals = (terminals || []).filter((row) => Number(row.upRate || 0) + Number(row.downRate || 0) > 0).length;
-            return [
-              ['在线 WAN', `${fmtNumber(activePppoe)} / ${fmtNumber(pppoe.length)}`],
-              ['总上行速率', fmtRate(o.uplinkBps)],
-              ['总下行速率', fmtRate(o.downlinkBps)],
-              ['当前最忙线路', busiestLine ? `${escapeHtml(busiestLine.name)} · ${fmtRate((busiestLine.upRate || 0) + (busiestLine.downRate || 0))}` : '-'],
-              ['有流量终端', fmtNumber(activeTrafficTerminals)]
-            ];
-          }
-        case 'loadAudit':
-          return [
-            ['CPU 使用率', fmtPercent(o.cpuLoad)],
-            ['内存占用率', fmtPercent(o.memoryUsage)],
-            ['磁盘占用率', fmtPercent(o.diskUsage)],
-            ['系统状态', tag(o.systemLoadLevel === 'danger' ? '高压' : o.systemLoadLevel === 'warning' ? '预警' : '正常', o.systemLoadLevel)],
-            ['连接总数', fmtCompact(connections.total)]
-          ];
-        case 'lineStatus':
-          return [
-            ['在线 WAN', `${fmtNumber(activePppoe)} / ${fmtNumber(pppoe.length)}`],
-            ['在线接口', `${fmtNumber(activeInterfaces)} / ${fmtNumber(interfaces.length)}`],
-            ['异常线路', fmtNumber(pppoe.filter((row) => !row.running || !(row.addresses || []).length).length)],
-            ['IPv6 接口', fmtNumber(interfaces.filter((row) => (row.ips || []).some((ip) => String(ip).includes(':'))).length)]
-          ];
-        case 'dns':
-          return [
-            ['DNS 状态', dns.running ? '启用' : '未启用'],
-            ['上游 DNS', fmtNumber((dns.servers || []).length)],
-            ['缓存已用', dns.cacheUsed ? fmtBytes(dns.cacheUsed) : '未提供'],
-            ['静态规则', fmtNumber((dns.forwardRules || []).length)]
-          ];
-        case 'routes':
-          return [
-            ['静态路由', fmtNumber(routes.staticCount)],
-            ['活动静态路由', fmtNumber(routes.activeStaticCount)],
-            ['默认路由', fmtNumber(routes.defaultCount)],
-            ['路由表', fmtNumber(routes.tableCount)]
-          ];
-        case 'security':
-          return [
-            ['Filter 规则', fmtNumber((security.filters || []).length)],
-            ['地址名单', fmtNumber((security.addressLists || []).length)],
-            ['异常告警', fmtNumber((security.alerts || []).length)],
-            ['ACL 状态', (security.filters || []).length ? '已读取' : '未读取']
-          ];
-        case 'arp':
-          return [
-            ['ARP 条目', fmtNumber((arp.items || []).length)],
-            ['ARP 告警', fmtNumber((arp.alerts || []).length)],
-            ['在线终端', fmtNumber(terminals.length)],
-            ['实时流量终端', fmtNumber((terminals || []).filter((row) => Number(row.upRate || 0) + Number(row.downRate || 0) > 0).length)]
-          ];
-        case 'trafficAudit':
-          return [
-            ['连接总数', fmtCompact(connections.total)],
-            ['活跃会话', fmtNumber((connections.active || []).length)],
-            ['单 IP 排行', fmtNumber((connections.topIps || []).length)],
-            ['审计刷新', connections.detailUpdatedAt ? escapeHtml(connections.detailUpdatedAt) : '等待采集']
-          ];
-        case 'balance':
-          return [
-            ['活动线路', fmtNumber(lb.activeLines)],
-            ['默认路由', fmtNumber((lb.defaultRoutes || []).length)],
-            ['Mangle 规则', fmtNumber((lb.mangleRules || []).length)],
-            ['策略路由', fmtNumber((lb.routingRules || []).length)]
-          ];
-        case 'logs':
-        case 'serviceLogs':
-          return [
-            ['全部日志', fmtNumber((logs.all || []).length)],
-            ['系统日志', fmtNumber((logs.system || []).length)],
-            ['Firewall', fmtNumber((logs.firewall || []).length)],
-            ['DHCP / DNS', `${fmtNumber((logs.dhcp || []).length)} / ${fmtNumber((logs.dns || []).length)}`]
-          ];
-        case 'overview':
-        default:
-          return [];
-      }
-    }
-
     function updateRefreshMeta() {
       if (!refreshModeTextEl || !nextRefreshTextEl) return;
       if (IS_TEST_MODE) {
@@ -5031,14 +5055,16 @@
       topMetricsEl.innerHTML = metrics.length ? metrics.map(([k, v]) => `<div class="status-pill"><div class="status-k">${k}</div><div class="status-v">${v}</div></div>`).join('') : '';
       pageTitleEl.textContent = meta.title;
       setPageSubtitle('');
-      updateTextEl.textContent = snapshot.status === 'ok' ? `最后更新 ${snapshot.updatedAt}` : `采集异常 ${snapshot.updatedAt || ''}`;
+      setPanelStatusText(snapshot.status === 'ok' ? `最后更新 ${snapshot.updatedAt}` : `采集异常 ${snapshot.updatedAt || ''}`);
       healthDotEl.className = `dot ${snapshot.status === 'ok' ? '' : 'danger'}`;
       updateRefreshMeta();
       syncSectionTopbarState();
     }
 
     function renderOverview(snapshot) {
-      const o = snapshot.overview;
+      const o = snapshot.overview || {};
+      const history = o.history || {};
+      const meta = snapshot.meta || {};
       const pppoe = snapshot.pppoe || [];
       const activePppoe = pppoe.filter((row) => row.running).length;
       const firstLine = pppoe.find((row) => row.running) || pppoe[0];
@@ -5058,7 +5084,7 @@
               <div class="card-body">
                 ${infoGrid([
                   {k:'在线宽带', v:`${fmtNumber(activePppoe)} / ${fmtNumber(pppoe.length)}`},
-                  {k:'WAN IP', v: firstLine?.addresses?.length ? firstLine.addresses.map(escapeHtml).join('<br>') : '-'},
+                  {k:'WAN IP', v: firstLine?.addresses?.length ? addressStackHtml(firstLine.addresses) : '-'},
                   {k:'接入方式', v: pppoe.length > 1 ? '多线 PPPoE' : firstLine ? 'PPPoE' : '-'},
                   {k:'运行时间', v: escapeHtml(o.uptime || '-')},
                   {k:'累计上行流量', v:fmtBytes(totalWanUpBytes)},
@@ -5085,7 +5111,7 @@
               <div class="card-body">
                 <div class="chart-box">
                   <div class="chart-label"><span>实时上行速率 ${fmtRate(o.uplinkBps)}</span><span>实时下行速率 ${fmtRate(o.downlinkBps)}</span></div>
-                  ${lineChart([o.history.uplink, o.history.downlink], {colors:['#4a95ef','#30c36b'], axis:'rate'})}
+                  ${lineChart([history.uplink || [], history.downlink || []], {colors:['#4a95ef','#30c36b'], axis:'rate'})}
                 </div>
               </div>
             </div>
@@ -5103,7 +5129,7 @@
               <div class="card">
                 <div class="card-head"><div class="card-title">系统负载</div><div class="subtle">CPU / 内存 / 磁盘</div></div>
                 <div class="card-body">
-                  ${resourceTrendGrid(o, `${Math.max(o.history?.cpu?.length || 0, o.history?.memory?.length || 0, o.history?.disk?.length || 0)} 点 · ${escapeHtml(String(snapshot.meta.pollSeconds))}s / 点`)}
+                  ${resourceTrendGrid(o, `${Math.max(history.cpu?.length || 0, history.memory?.length || 0, history.disk?.length || 0)} 点 · ${escapeHtml(String(meta.pollSeconds ?? '-'))}s / 点`)}
                 </div>
               </div>
             </div>
@@ -5318,7 +5344,7 @@
       const pollText = pollSeconds ? `${pollSeconds}s / 点` : '未采集';
       const resourceMeta = `${fmtNumber(sampleCount)} 点 · ${pollText}`;
       const wanAddressText = firstLine?.addresses?.length
-        ? firstLine.addresses.map(escapeHtml).join('<br>')
+        ? addressStackHtml(firstLine.addresses)
         : '未采集';
       const wanSelection = resolveOverviewWanSelection(wanLines);
       const selectedWanLine = wanSelection.line;
@@ -5330,7 +5356,7 @@
       const wanPanelUpHistory = selectedWanLine ? (selectedWanLine.history?.up || []) : (history.uplink || []);
       const wanPanelDownHistory = selectedWanLine ? (selectedWanLine.history?.down || []) : (history.downlink || []);
       const wanPanelAddressText = selectedWanLine?.addresses?.length
-        ? selectedWanLine.addresses.map(escapeHtml).join('<br>')
+        ? addressStackHtml(selectedWanLine.addresses)
         : wanAddressText;
       const wanPanelTitle = selectedWanLine ? '单线聚焦' : '聚合总览';
       const wanPanelMain = selectedWanLine ? escapeHtml(selectedWanLine.name) : `${fmtNumber(activePppoe)} / ${fmtNumber(wanLines.length)}`;
@@ -5430,7 +5456,7 @@
             </div>
             ${infoGrid([
               { k: '状态', v: singleLineItem.row.running ? '在线' : '离线' },
-              { k: 'WAN IP', v: singleLineItem.row.addresses?.length ? singleLineItem.row.addresses.map(escapeHtml).join('<br>') : '未采集' },
+              { k: 'WAN IP', v: singleLineItem.row.addresses?.length ? addressStackHtml(singleLineItem.row.addresses) : '未采集' },
               { k: '实时上行', v: fmtRate(singleLineItem.row.upRate) },
               { k: '实时下行', v: fmtRate(singleLineItem.row.downRate) },
               { k: '累计流量', v: fmtBytes(singleLineItem.totalBytes) },
@@ -5624,7 +5650,7 @@
       const pollSeconds = Number(snapshot.meta?.pollSeconds || 0);
       const pollText = pollSeconds ? `${pollSeconds}s / 点` : '未采集';
       const resourceMeta = `${fmtNumber(sampleCount)} 点 · ${pollText}`;
-      const wanAddressText = firstLine?.addresses?.length ? firstLine.addresses.map(escapeHtml).join('<br>') : '未采集';
+      const wanAddressText = firstLine?.addresses?.length ? addressStackHtml(firstLine.addresses) : '未采集';
       const wanSelection = resolveOverviewWanSelection(wanLines);
       const selectedWanLine = wanSelection.line;
       const wanPanelRates = selectedWanLine ? { up: Number(selectedWanLine.upRate || 0), down: Number(selectedWanLine.downRate || 0) } : wanRates;
@@ -5632,7 +5658,7 @@
       const wanPanelDownBytes = selectedWanLine ? Number(selectedWanLine.rxBytes || 0) : totalWanDownBytes;
       const wanPanelUpHistory = selectedWanLine ? (selectedWanLine.history?.up || []) : (history.uplink || []);
       const wanPanelDownHistory = selectedWanLine ? (selectedWanLine.history?.down || []) : (history.downlink || []);
-      const wanPanelAddressText = selectedWanLine?.addresses?.length ? selectedWanLine.addresses.map(escapeHtml).join('<br>') : wanAddressText;
+      const wanPanelAddressText = selectedWanLine?.addresses?.length ? addressStackHtml(selectedWanLine.addresses) : wanAddressText;
       const wanPanelTitle = selectedWanLine ? '单线聚焦' : '聚合总览';
       const wanPanelMain = selectedWanLine ? escapeHtml(selectedWanLine.name) : `${fmtNumber(activePppoe)} / ${fmtNumber(wanLines.length)}`;
       const wanPanelSub = selectedWanLine ? `${selectedWanLine.running ? '在线' : '离线'} · ${escapeHtml(selectedWanLine.parent || '未采集')} · ${fmtRate(totalTrafficRate(selectedWanLine))}` : (firstLine ? `首条在线 ${escapeHtml(firstLine.name)} · ${fmtRate(totalTrafficRate(firstLine))}` : '当前未采集到在线宽带');
@@ -5822,7 +5848,7 @@
       const pollSeconds = Number(snapshot.meta?.pollSeconds || 0);
       const pollText = pollSeconds ? `${pollSeconds}s / 点` : '未采集';
       const resourceMeta = `${fmtNumber(sampleCount)} 点 · ${pollText}`;
-      const wanAddressText = firstLine?.addresses?.length ? firstLine.addresses.map(escapeHtml).join('<br>') : '未采集';
+      const wanAddressText = firstLine?.addresses?.length ? addressStackHtml(firstLine.addresses) : '未采集';
       const wanSelection = resolveOverviewWanSelection(wanLines);
       const selectedWanLine = wanSelection.line;
       const wanPanelRates = selectedWanLine ? { up: Number(selectedWanLine.upRate || 0), down: Number(selectedWanLine.downRate || 0) } : wanRates;
@@ -5830,7 +5856,7 @@
       const wanPanelDownBytes = selectedWanLine ? Number(selectedWanLine.rxBytes || 0) : totalWanDownBytes;
       const wanPanelUpHistory = selectedWanLine ? (selectedWanLine.history?.up || []) : (history.uplink || []);
       const wanPanelDownHistory = selectedWanLine ? (selectedWanLine.history?.down || []) : (history.downlink || []);
-      const wanPanelAddressText = selectedWanLine?.addresses?.length ? selectedWanLine.addresses.map(escapeHtml).join('<br>') : wanAddressText;
+      const wanPanelAddressText = selectedWanLine?.addresses?.length ? addressStackHtml(selectedWanLine.addresses) : wanAddressText;
       const wanPanelTitle = selectedWanLine ? '单线聚焦' : '聚合总览';
       const wanPanelMain = selectedWanLine ? escapeHtml(selectedWanLine.name) : `${fmtNumber(activePppoe)} / ${fmtNumber(wanLines.length)}`;
       const wanPanelSub = selectedWanLine
@@ -5949,7 +5975,7 @@
                 </div>
               </div>
               <div class="card ops-home-panel ops-home-stream-panel">
-                <div class="card-head"><div class="card-title">瀹炴椂閫熺巼瓒嬪娍</div><div class="subtle">鑱氬悎涓庡綋鍓嶉€変腑绾胯矾鐨勪笂涓嬭閫熺巼</div></div>
+                <div class="card-head"><div class="card-title">实时速率趋势</div><div class="subtle">聚合与当前选中线路的上下行速率</div></div>
                 <div class="card-body">
                   <div class="ops-home-stream-grid">
                     ${wanRateSplitCard(wanUpChartLabel, wanPanelRates.up, wanPanelUpHistory, '#165dff', pollText)}
@@ -6035,7 +6061,7 @@
       const pollSeconds = Number(snapshot.meta?.pollSeconds || 0);
       const pollText = pollSeconds ? `${pollSeconds}s / 点` : '未采集';
       const resourceMeta = `${fmtNumber(sampleCount)} 点 · ${pollText}`;
-      const wanAddressText = firstLine?.addresses?.length ? firstLine.addresses.map(escapeHtml).join('<br>') : '未采集';
+      const wanAddressText = firstLine?.addresses?.length ? addressStackHtml(firstLine.addresses) : '未采集';
       const wanSelection = resolveOverviewWanSelection(wanLines);
       const selectedWanLine = wanSelection.line;
       const wanPanelRates = selectedWanLine ? { up: Number(selectedWanLine.upRate || 0), down: Number(selectedWanLine.downRate || 0) } : wanRates;
@@ -6043,7 +6069,7 @@
       const wanPanelDownBytes = selectedWanLine ? Number(selectedWanLine.rxBytes || 0) : totalWanDownBytes;
       const wanPanelUpHistory = selectedWanLine ? (selectedWanLine.history?.up || []) : (history.uplink || []);
       const wanPanelDownHistory = selectedWanLine ? (selectedWanLine.history?.down || []) : (history.downlink || []);
-      const wanPanelAddressText = selectedWanLine?.addresses?.length ? selectedWanLine.addresses.map(escapeHtml).join('<br>') : wanAddressText;
+      const wanPanelAddressText = selectedWanLine?.addresses?.length ? addressStackHtml(selectedWanLine.addresses) : wanAddressText;
       const wanPanelTitle = selectedWanLine ? '单线聚焦' : '聚合总览';
       const wanPanelMain = selectedWanLine ? escapeHtml(selectedWanLine.name) : `${fmtNumber(activePppoe)} / ${fmtNumber(wanLines.length)}`;
       const wanPanelSub = selectedWanLine
@@ -6667,7 +6693,7 @@
         <tr>
           <td>${escapeHtml(row.name)}</td>
           <td>${row.running ? tag('在线', 'ok') : tag('离线', 'danger')}</td>
-          <td>${(row.addresses || []).length ? (row.addresses || []).map(escapeHtml).join('<br>') : '-'}</td>
+          <td>${(row.addresses || []).length ? addressStackHtml(row.addresses) : '-'}</td>
           <td>${fmtRate(row.upRate)}</td>
           <td>${fmtRate(row.downRate)}</td>
           <td>${fmtBytes(row.txBytes)}</td>
@@ -6678,7 +6704,7 @@
           <td>${escapeHtml(row.name)}</td>
           <td>${tag(row.role, row.role === 'WAN' ? 'info' : 'ok')}</td>
           <td>${tag(row.running ? '在线' : '离线', row.running ? 'ok' : 'danger')}</td>
-          <td>${(row.ips || []).length ? (row.ips || []).map(escapeHtml).join('<br>') : '-'}</td>
+          <td>${(row.ips || []).length ? addressStackHtml(row.ips) : '-'}</td>
           <td>${fmtRate(row.txRate)}</td>
           <td>${fmtRate(row.rxRate)}</td>
           <td>${fmtBytes(row.txBytes)}</td>
@@ -6713,8 +6739,8 @@
             <td>${escapeHtml(row.name)}</td>
             <td>${tag(row.role, row.role === 'WAN' ? 'info' : 'ok')}</td>
             <td>${tag(row.running ? '在线' : '离线', row.running ? 'ok' : 'danger')}</td>
-            <td>${addresses.map(escapeHtml).join('<br>')}</td>
-            <td>${(row.gateways || []).length ? (row.gateways || []).map(escapeHtml).join('<br>') : '-'}</td>
+            <td>${addressStackHtml(addresses)}</td>
+            <td>${(row.gateways || []).length ? addressStackHtml(row.gateways) : '-'}</td>
             <td>${fmtRate(row.txRate)}</td>
             <td>${fmtRate(row.rxRate)}</td>
           </tr>`;
@@ -6736,7 +6762,7 @@
               <tr>
                 <td>${escapeHtml(item.name)}</td>
                 <td>${tag(item.running ? '在线' : '离线', item.level === 'danger' ? 'danger' : item.level === 'warn' ? 'warn' : 'ok')}</td>
-                <td>${item.addresses.length ? item.addresses.map(escapeHtml).join('<br>') : '-'}</td>
+                <td>${item.addresses.length ? addressStackHtml(item.addresses) : '-'}</td>
                 <td>${escapeHtml(item.extra)}</td>
                 <td>${fmtRate(item.upRate)}</td>
                 <td>${fmtRate(item.downRate)}</td>
@@ -6750,7 +6776,7 @@
               <tr>
                 <td>${escapeHtml(item.name)}</td>
                 <td>${tag(item.running ? '在线' : '离线', item.level === 'danger' ? 'danger' : item.level === 'warn' ? 'warn' : 'ok')}</td>
-                <td>${item.addresses.length ? item.addresses.map(escapeHtml).join('<br>') : '-'}</td>
+                <td>${item.addresses.length ? addressStackHtml(item.addresses) : '-'}</td>
                 <td>${escapeHtml(item.mac)}</td>
                 <td>${fmtRate(item.upRate)}</td>
                 <td>${fmtRate(item.downRate)}</td>
@@ -6764,7 +6790,7 @@
               <td>${escapeHtml(item.name)}</td>
               <td>${escapeHtml(item.type)}</td>
               <td>${tag(item.running ? '在线' : '离线', item.level === 'danger' ? 'danger' : item.level === 'warn' ? 'warn' : 'ok')}</td>
-              <td>${item.addresses.length ? item.addresses.map(escapeHtml).join('<br>') : '-'}</td>
+              <td>${item.addresses.length ? addressStackHtml(item.addresses) : '-'}</td>
               <td>${fmtRate(item.upRate)}</td>
               <td>${fmtRate(item.downRate)}</td>
               <td>${fmtBytes(item.txBytes)}</td>
@@ -6908,7 +6934,15 @@
 
     function renderTerminals(snapshot) {
       currentTerminalView = normalizeTerminalView(currentTerminalView);
-      const allTerminals = snapshot.terminals || [];
+      const allTerminals = Array.isArray(snapshot.terminals) ? snapshot.terminals : [];
+      const arp = snapshot.arp || {};
+      const dhcp = snapshot.dhcp || {};
+      const connections = snapshot.connections || {};
+      const arpItems = Array.isArray(arp.items) ? arp.items : [];
+      const arpAlerts = Array.isArray(arp.alerts) ? arp.alerts : [];
+      const dhcpLeases = Array.isArray(dhcp.leases) ? dhcp.leases : [];
+      const dhcpPools = Array.isArray(dhcp.pools) ? dhcp.pools : [];
+      const activeConnections = Array.isArray(connections.active) ? connections.active : [];
       const ipv4Terminals = allTerminals.filter((row) => !String(row.ip || '').includes(':'));
       const ipv6Terminals = allTerminals.filter((row) => String(row.ip || '').includes(':'));
       const renderTerminalRows = (rows) => rows.map((row) => `
@@ -6923,7 +6957,7 @@
           <td>${fmtNumber(row.connections)}</td>
           <td>${fmtBytes(row.sessionBytes)}</td>
         </tr>`).join('');
-      const arpRows = snapshot.arp.items.map((row) => `
+      const arpRows = arpItems.map((row) => `
         <tr>
           <td>${escapeHtml(row.ip)}</td>
           <td>${renderEditableNameCell(row, row.ip, row.ip || '-')}</td>
@@ -6932,7 +6966,7 @@
           <td>${tag(row.status)}</td>
           <td>${escapeHtml(toDisplayText(row.lastSeen || '-'))}</td>
         </tr>`).join('');
-      const leaseRows = snapshot.dhcp.leases.map((row) => `
+      const leaseRows = dhcpLeases.map((row) => `
         <tr>
           <td>${escapeHtml(row.address)}</td>
           <td>${renderEditableNameCell(row, row.address, row.address || '-')}</td>
@@ -6942,7 +6976,7 @@
           <td>${escapeHtml(toDisplayText(row.lastSeen || '-'))}</td>
           <td>${row.static ? tag('静态', 'info') : tag('动态', 'ok')}</td>
         </tr>`).join('');
-      const ipv6ActiveRows = (snapshot.connections.active || [])
+      const ipv6ActiveRows = activeConnections
         .filter((row) => String(row.localIp || '').includes(':'))
         .map((row) => `
           <tr>
@@ -6994,12 +7028,12 @@
         body = `
           ${toolbar}
           ${table(['名称', 'IP', '状态', '最后出现', '实时上行速率', '实时下行速率', 'MAC', '连接数', '累计流量'], renderTerminalRows(ipv4Terminals), '暂无在线终端监控数据')}
-          ${snapshot.arp.alerts.length ? `<div style="margin-top:12px" class="notice">${snapshot.arp.alerts.map((item) => `${escapeHtml(item.kind)}：${escapeHtml(item.value)} (${escapeHtml(item.detail)})`).join('；')}</div>` : ''}
+          ${arpAlerts.length ? `<div style="margin-top:12px" class="notice">${arpAlerts.map((item) => `${escapeHtml(item.kind)}：${escapeHtml(item.value)} (${escapeHtml(item.detail)})`).join('；')}</div>` : ''}
           <div class="grid-2" style="margin-top:12px">
-            <div class="card"><div class="card-head"><div class="card-title">ARP 列表</div><div class="subtle">${fmtNumber(snapshot.arp.items.length)} 条</div></div><div class="card-body">${table(['IP', '主机名', 'MAC', '类型', '状态', '最后出现'], arpRows, '暂无 ARP 数据')}</div></div>
-            <div class="card"><div class="card-head"><div class="card-title">DHCP 地址池</div><div class="subtle">${fmtNumber(snapshot.dhcp.pools.length)} 组</div></div><div class="card-body"><div class="stack">${snapshot.dhcp.pools.map((pool) => `<div><div class="chart-label"><span>${escapeHtml(pool.name)}</span><span>${fmtNumber(pool.used)} / ${fmtNumber(pool.total)}</span></div>${progress(pool.usage)}</div>`).join('') || emptyBlock('暂无 DHCP 地址池')}</div></div></div>
+            <div class="card"><div class="card-head"><div class="card-title">ARP 列表</div><div class="subtle">${fmtNumber(arpItems.length)} 条</div></div><div class="card-body">${table(['IP', '主机名', 'MAC', '类型', '状态', '最后出现'], arpRows, '暂无 ARP 数据')}</div></div>
+            <div class="card"><div class="card-head"><div class="card-title">DHCP 地址池</div><div class="subtle">${fmtNumber(dhcpPools.length)} 组</div></div><div class="card-body"><div class="stack">${dhcpPools.map((pool) => `<div><div class="chart-label"><span>${escapeHtml(pool.name)}</span><span>${fmtNumber(pool.used)} / ${fmtNumber(pool.total)}</span></div>${progress(pool.usage)}</div>`).join('') || emptyBlock('暂无 DHCP 地址池')}</div></div></div>
           </div>
-          <div class="card" style="margin-top:12px"><div class="card-head"><div class="card-title">DHCP 租约与静态分配</div><div class="subtle">${fmtNumber(snapshot.dhcp.leases.length)} 条</div></div><div class="card-body">${table(['IP', '主机名', 'MAC', '服务', '状态', '最后出现', '分配方式'], leaseRows, '暂无 DHCP 数据')}</div></div>`;
+          <div class="card" style="margin-top:12px"><div class="card-head"><div class="card-title">DHCP 租约与静态分配</div><div class="subtle">${fmtNumber(dhcpLeases.length)} 条</div></div><div class="card-body">${table(['IP', '主机名', 'MAC', '服务', '状态', '最后出现', '分配方式'], leaseRows, '暂无 DHCP 数据')}</div></div>`;
       }
       return section('终端监控', 'terminals', terminalViews[currentTerminalView].tip, `
         <div class="card">
@@ -7011,7 +7045,13 @@
     }
 
     function renderConnections(snapshot, config = {}) {
-      const o = snapshot.overview;
+      const o = snapshot.overview || {};
+      const connections = snapshot.connections || {};
+      const admins = Array.isArray(o.admins) ? o.admins : [];
+      const connectionActive = Array.isArray(connections.active) ? connections.active : [];
+      const connectionTopIps = Array.isArray(connections.topIps) ? connections.topIps : [];
+      const history = o.history || {};
+      const pollSeconds = snapshot.meta?.pollSeconds ?? '-';
       const sectionTitle = config.title || '负载监控中心';
       const sectionId = config.id || 'connections';
       const sectionTip = config.tip || '系统负载、硬件状态、管理员会话与连接数都归入负载监控中心';
@@ -7031,48 +7071,48 @@
             {k:'架构', v: escapeHtml(o.architecture)},
             {k:'系统时间', v: escapeHtml(o.systemTime)},
             {k:'运行时长', v: escapeHtml(o.uptime)},
-            {k:'在线管理员会话', v: fmtNumber(o.admins.length)}
+            {k:'在线管理员会话', v: fmtNumber(admins.length)}
           ])}</div></div>
-          <div class="card"><div class="card-head"><div class="card-title">当前登录管理员</div><div class="subtle">${fmtNumber(o.admins.length)} 会话</div></div><div class="card-body">${o.admins.length ? infoGrid(o.admins.slice(0, 6).map((item) => ({k:`${item.name} / ${item.via}`, v:`${escapeHtml(item.address)} · ${escapeHtml(item.when)}`}))) : emptyBlock('暂无在线管理会话')}</div></div>
+          <div class="card"><div class="card-head"><div class="card-title">当前登录管理员</div><div class="subtle">${fmtNumber(admins.length)} 会话</div></div><div class="card-body">${admins.length ? infoGrid(admins.slice(0, 6).map((item) => ({k:`${item.name} / ${item.via}`, v:`${escapeHtml(item.address)} · ${escapeHtml(item.when)}`}))) : emptyBlock('暂无在线管理会话')}</div></div>
         </div>`;
       const loadCharts = `
         <div class="grid-3" style="margin-top:12px">
-          <div class="card" style="grid-column: span 2"><div class="card-head"><div class="card-title">资源趋势</div><div class="subtle">CPU / 内存 / 磁盘分图</div></div><div class="card-body">${resourceTrendGrid(o, `${Math.max(o.history?.cpu?.length || 0, o.history?.memory?.length || 0, o.history?.disk?.length || 0)} 点 · ${escapeHtml(snapshot.meta.pollSeconds)}s / 点`)}</div></div>
-          <div class="card"><div class="card-head"><div class="card-title">实时速率趋势</div><div class="subtle">WAN 聚合速率</div></div><div class="card-body"><div class="chart-box"><div class="chart-label"><span>实时上行速率 ${fmtRate(o.uplinkBps)}</span><span>实时下行速率 ${fmtRate(o.downlinkBps)}</span></div>${lineChart([o.history.uplink, o.history.downlink], {colors:['#165dff','#f53f3f'], axis:'rate'})}</div></div></div>
+          <div class="card" style="grid-column: span 2"><div class="card-head"><div class="card-title">资源趋势</div><div class="subtle">CPU / 内存 / 磁盘分图</div></div><div class="card-body">${resourceTrendGrid(o, `${Math.max(history.cpu?.length || 0, history.memory?.length || 0, history.disk?.length || 0)} 点 · ${escapeHtml(pollSeconds)}s / 点`)}</div></div>
+          <div class="card"><div class="card-head"><div class="card-title">实时速率趋势</div><div class="subtle">WAN 聚合速率</div></div><div class="card-body"><div class="chart-box"><div class="chart-label"><span>实时上行速率 ${fmtRate(o.uplinkBps)}</span><span>实时下行速率 ${fmtRate(o.downlinkBps)}</span></div>${lineChart([history.uplink || [], history.downlink || []], {colors:['#165dff','#f53f3f'], axis:'rate'})}</div></div></div>
         </div>`;
-      const hasProtocolBreakdown = [snapshot.connections.tcp, snapshot.connections.udp, snapshot.connections.icmp].every((value) => Number.isFinite(Number(value)));
+      const hasProtocolBreakdown = [connections.tcp, connections.udp, connections.icmp].every((value) => Number.isFinite(Number(value)));
       const protocolCards = hasProtocolBreakdown ? `
         <div class="grid-4">
-          ${metricCard('全局连接总数', fmtCompact(snapshot.connections.total), '连接跟踪总量', tag(snapshot.connections.thresholdLevel === 'danger' ? '高压' : snapshot.connections.thresholdLevel === 'warning' ? '预警' : '正常', snapshot.connections.thresholdLevel))}
-          ${metricCard('TCP 连接数', fmtCompact(snapshot.connections.tcp), '协议统计', '')}
-          ${metricCard('UDP 连接数', fmtCompact(snapshot.connections.udp), '协议统计', '')}
-          ${metricCard('ICMP 连接数', fmtCompact(snapshot.connections.icmp), '协议统计', '')}
+          ${metricCard('全局连接总数', fmtCompact(connections.total), '连接跟踪总量', tag(connections.thresholdLevel === 'danger' ? '高压' : connections.thresholdLevel === 'warning' ? '预警' : '正常', connections.thresholdLevel))}
+          ${metricCard('TCP 连接数', fmtCompact(connections.tcp), '协议统计', '')}
+          ${metricCard('UDP 连接数', fmtCompact(connections.udp), '协议统计', '')}
+          ${metricCard('ICMP 连接数', fmtCompact(connections.icmp), '协议统计', '')}
         </div>` : `
         <div class="grid-4">
-          ${metricCard('全局连接总数', fmtCompact(snapshot.connections.total), '连接跟踪总量', tag(snapshot.connections.thresholdLevel === 'danger' ? '高压' : snapshot.connections.thresholdLevel === 'warning' ? '预警' : '正常', snapshot.connections.thresholdLevel))}
-          ${metricCard('活跃会话数', fmtCompact((snapshot.connections.active || []).length), '按实时有流量会话统计', '')}
-          ${metricCard('连接明细刷新', snapshot.connections.detailUpdatedAt ? escapeHtml(snapshot.connections.detailUpdatedAt) : '等待采集', '明细采集较慢时延后更新', '')}
+          ${metricCard('全局连接总数', fmtCompact(connections.total), '连接跟踪总量', tag(connections.thresholdLevel === 'danger' ? '高压' : connections.thresholdLevel === 'warning' ? '预警' : '正常', connections.thresholdLevel))}
+          ${metricCard('活跃会话数', fmtCompact(connectionActive.length), '按实时有流量会话统计', '')}
+          ${metricCard('连接明细刷新', connections.detailUpdatedAt ? escapeHtml(connections.detailUpdatedAt) : '等待采集', '明细采集较慢时延后更新', '')}
           ${metricCard('协议分布', '未展示', '当前未保留秒级真实协议拆分', '')}
         </div>`;
-      const topIpRows = snapshot.connections.topIps.map((row) => `
+      const topIpRows = connectionTopIps.map((row) => `
         <tr>
           <td>${escapeHtml(row.ip)}</td>
           <td>${renderEditableNameCell(row, row.ip, row.ip || '-')}</td>
-          <td>${fmtNumber(row.connections)}</td>
+          <td>${fmtNumber(row.connections ?? row.count)}</td>
           <td>${fmtRate(row.upRate)}</td>
           <td>${fmtRate(row.downRate)}</td>
         </tr>`);
-      const activeRows = snapshot.connections.active.map((row) => `
+      const activeRows = connectionActive.map((row) => `
         <tr>
-          <td>${escapeHtml(row.localIp)}</td>
-          <td>${escapeHtml(row.remoteIp)}</td>
+          <td>${escapeHtml(row.localIp || row.src || row.srcAddress)}</td>
+          <td>${escapeHtml(row.remoteIp || row.dst || row.dstAddress)}</td>
           <td>${tag(row.protocol, 'info')}</td>
           <td>${fmtRate(row.upRate)}</td>
           <td>${fmtRate(row.downRate)}</td>
           <td>${escapeHtml(row.timeout)}</td>
           <td>${escapeHtml(row.mark || '-')}</td>
         </tr>`);
-      const adminRows = (o.admins || []).map((item) => `
+      const adminRows = admins.map((item) => `
         <tr>
           <td>${escapeHtml(item.name)}</td>
           <td>${escapeHtml(item.via)}</td>
@@ -7081,11 +7121,11 @@
         </tr>`);
       const auditPanels = `
         <div class="grid-2" style="margin-top:12px">
-          <div class="card"><div class="card-head"><div class="card-title">管理会话审计</div><div class="subtle">${fmtNumber((o.admins || []).length)} 会话</div></div><div class="card-body">${table(['用户', '方式', '来源地址', '登录时间'], adminRows, '暂无在线管理会话')}</div></div>
+          <div class="card"><div class="card-head"><div class="card-title">管理会话审计</div><div class="subtle">${fmtNumber(admins.length)} 会话</div></div><div class="card-body">${table(['用户', '方式', '来源地址', '登录时间'], adminRows, '暂无在线管理会话')}</div></div>
           <div class="card"><div class="card-head"><div class="card-title">负载状态说明</div><div class="subtle">仅展示 RouterOS 可读状态</div></div><div class="card-body">${infoGrid([
             {k:'系统状态', v: tag(o.systemLoadLevel === 'danger' ? '高压' : o.systemLoadLevel === 'warning' ? '预警' : '正常', o.systemLoadLevel)},
-            {k:'连接总数', v: fmtCompact(snapshot.connections.total)},
-            {k:'明细更新时间', v: snapshot.connections.detailUpdatedAt ? escapeHtml(snapshot.connections.detailUpdatedAt) : '等待采集'},
+            {k:'连接总数', v: fmtCompact(connections.total)},
+            {k:'明细更新时间', v: connections.detailUpdatedAt ? escapeHtml(connections.detailUpdatedAt) : '等待采集'},
             {k:'NTP 状态', v: tag(o.ntpStatus || '-', o.ntpStatus === 'synchronized' ? 'ok' : 'warn')}
           ])}</div></div>
         </div>
@@ -7093,7 +7133,7 @@
       const trafficPanels = `
         <div class="grid-2" style="margin-top:12px">
           <div class="card"><div class="card-head"><div class="card-title">单 IP 活跃连接排行</div><div class="subtle">按当前活跃会话聚合</div></div><div class="card-body">${table(['本地 IP', '主机名', '活跃连接', '实时上行速率', '实时下行速率'], topIpRows, '暂无活跃连接排行')}</div></div>
-          <div class="card"><div class="card-head"><div class="card-title">当前活跃连接列表</div><div class="subtle">限前 ${fmtNumber(snapshot.connections.active.length)} 条</div></div><div class="card-body">${table(['本地 IP', '远端地址', '协议', '实时上行速率', '实时下行速率', '超时', '连接标记'], activeRows, '暂无活跃连接')}</div></div>
+          <div class="card"><div class="card-head"><div class="card-title">当前活跃连接列表</div><div class="subtle">限前 ${fmtNumber(connectionActive.length)} 条</div></div><div class="card-body">${table(['本地 IP', '远端地址', '协议', '实时上行速率', '实时下行速率', '超时', '连接标记'], activeRows, '暂无活跃连接')}</div></div>
         </div>`;
       return section(sectionTitle, sectionId, sectionTip, `
         ${loadCards}
@@ -7115,7 +7155,7 @@
         : '暂无 DNS 静态规则';
       const enabledNdCount = (dns.ipv6Nd || []).filter((row) => row.advertiseDns).length;
       const boundPrefixClients = (dns.ipv6DhcpClients || []).filter((row) => row.status === 'bound').length;
-      const listText = (values, fallback = '-') => (values && values.length ? values.map(escapeHtml).join('<br>') : fallback);
+      const listText = (values, fallback = '-') => (values && values.length ? addressStackHtml(values) : fallback);
       const ndRows = (dns.ipv6Nd || []).map((row) => `
         <tr>
           <td>${escapeHtml(row.interface)}</td>
@@ -7620,6 +7660,8 @@
 
     function renderTrafficLoad(snapshot) {
       const overview = snapshot.overview || {};
+      const history = overview.history || {};
+      const meta = snapshot.meta || {};
       const pppoe = getLogicalWanLines(snapshot);
       const lineTier = getSnapshotLineLayoutTier(snapshot);
       const wanScenario = getWanScenarioProfile(snapshot);
@@ -7715,7 +7757,7 @@
           ${metricCard('接口吞吐对象', fmtNumber(interfaces.length), `WAN / LAN ${fmtNumber(interfaces.filter((row) => row.role === 'WAN').length)} / ${fmtNumber(interfaces.filter((row) => row.role !== 'WAN').length)}`, `终端排行 ${fmtNumber(trafficTerminals.length)} 个`)}
         </div>
         <div class="grid-2" style="margin-top:12px">
-          <div class="card"><div class="card-head"><div class="card-title">${wanScenario.count <= 1 ? '默认出口吞吐趋势' : 'WAN 聚合吞吐趋势'}</div><div class="subtle">${fmtRate(overview.uplinkBps)} / ${fmtRate(overview.downlinkBps)}</div></div><div class="card-body"><div class="chart-box"><div class="chart-label"><span>总上 / 总下</span><span>${escapeHtml(snapshot.meta.pollSeconds)}s / 点</span></div>${lineChart([overview.history.uplink, overview.history.downlink], {colors:['#165dff','#f53f3f'], axis:'rate'})}</div></div></div>
+          <div class="card"><div class="card-head"><div class="card-title">${wanScenario.count <= 1 ? '默认出口吞吐趋势' : 'WAN 聚合吞吐趋势'}</div><div class="subtle">${fmtRate(overview.uplinkBps)} / ${fmtRate(overview.downlinkBps)}</div></div><div class="card-body"><div class="chart-box"><div class="chart-label"><span>总上 / 总下</span><span>${escapeHtml(String(meta.pollSeconds ?? '-'))}s / 点</span></div>${lineChart([history.uplink || [], history.downlink || []], {colors:['#165dff','#f53f3f'], axis:'rate'})}</div></div></div>
           <div class="card"><div class="card-head"><div class="card-title">${wanScenario.count <= 1 ? '默认出口利用' : lineTier === 'dense' ? '线路负载表' : '线路负载占比'}</div><div class="subtle">${busiestLine ? `${escapeHtml(busiestLine.name)} 当前最繁忙` : '等待采集'}</div></div><div class="card-body"><div class="stack">${lineShareContent}</div></div></div>
         </div>
         <div class="card" style="margin-top:12px"><div class="card-head"><div class="card-title">线路速率趋势</div><div class="subtle">${wanScenario.count <= 1 ? '单 WAN 历史趋势' : `${fmtNumber(getLineTrendRows(snapshot).length)} 条线路同步展示`}</div></div><div class="card-body">${renderLineTrendGrid(getLineTrendRows(snapshot), {emptyText:'当前未采集到可展示的线路趋势'})}</div></div>
@@ -7728,6 +7770,8 @@
 
     function renderLoadAudit(snapshot) {
       const overview = snapshot.overview || {};
+      const history = overview.history || {};
+      const meta = snapshot.meta || {};
       const connections = snapshot.connections || {};
       const dns = snapshot.dns || {};
       const interfaces = (snapshot.interfaces || []).slice().sort((a, b) => {
@@ -7745,7 +7789,7 @@
           <td>${fmtLossRate(row)}</td>
           <td>${fmtRate(row.txRate)}</td>
           <td>${fmtRate(row.rxRate)}</td>
-          <td>${(row.ips || []).length ? (row.ips || []).map(escapeHtml).join('<br>') : '-'}</td>
+          <td>${(row.ips || []).length ? addressStackHtml(row.ips) : '-'}</td>
         </tr>`);
       const adminRows = (overview.admins || []).map((item) => `
         <tr>
@@ -7769,7 +7813,7 @@
           ${metricCard('系统状态', tag(overview.systemLoadLevel === 'danger' ? '高压' : overview.systemLoadLevel === 'warning' ? '预警' : '正常', overview.systemLoadLevel), `NTP ${escapeHtml(overview.ntpStatus)}`, `运行时长 ${escapeHtml(overview.uptime)}`)}
         </div>
         <div class="grid-3" style="margin-top:12px">
-          <div class="card" style="grid-column: span 2"><div class="card-head"><div class="card-title">资源趋势</div><div class="subtle">CPU / 内存 / 磁盘分图</div></div><div class="card-body">${resourceTrendGrid(overview, `${Math.max(overview.history?.cpu?.length || 0, overview.history?.memory?.length || 0, overview.history?.disk?.length || 0)} 点 · ${escapeHtml(snapshot.meta.pollSeconds)}s / 点`)}</div></div>
+          <div class="card" style="grid-column: span 2"><div class="card-head"><div class="card-title">资源趋势</div><div class="subtle">CPU / 内存 / 磁盘分图</div></div><div class="card-body">${resourceTrendGrid(overview, `${Math.max(history.cpu?.length || 0, history.memory?.length || 0, history.disk?.length || 0)} 点 · ${escapeHtml(String(meta.pollSeconds ?? '-'))}s / 点`)}</div></div>
           <div class="card"><div class="card-head"><div class="card-title">运行健康摘要</div><div class="subtle">系统资源 / 连接压力 / DNS 缓存</div></div><div class="card-body">${infoGrid([
             {k:'连接总数', v: fmtCompact(connections.total)},
             {k:'活跃会话', v: fmtNumber((connections.active || []).length)},
@@ -7986,43 +8030,6 @@
         <div class="card" style="margin-top:12px"><div class="card-head"><div class="card-title">终端流量审计</div><div class="subtle">按终端流量排序</div></div><div class="card-body">${table(['名称', 'IP', '实时上行速率', '实时下行速率', '连接数', '累计流量'], terminalRows, '当前未读取到终端流量审计数据')}</div></div>`);
     }
 
-    function renderServiceLogs(snapshot) {
-      const logs = snapshot.logs || {};
-      const dhcp = snapshot.dhcp || {};
-      const dns = snapshot.dns || {};
-      const renderRows = (rows) => (rows || []).slice(0, 20).map((row) => `
-        <tr>
-          <td>${escapeHtml(row.time)}</td>
-          <td>${escapeHtml(row.topics)}</td>
-          <td>${escapeHtml(row.message)}</td>
-        </tr>`);
-      return section('服务日志', 'serviceLogs', 'DHCP 与 DNS 服务日志、服务状态和静态规则集中展示', `
-        <div class="grid-4">
-          ${metricCard('DHCP 日志', fmtNumber((logs.dhcp || []).length), `DHCP 服务器 ${fmtNumber((dhcp.servers || []).length)} 个`, '')}
-          ${metricCard('DNS 日志', fmtNumber((logs.dns || []).length), `静态规则 ${fmtNumber((dns.forwardRules || []).length)} 条`, '')}
-          ${metricCard('DNS 状态', dns.running ? tag('启用', 'ok') : tag('未启用', 'danger'), '来自 RouterOS ip/dns', '')}
-          ${metricCard('服务总览', `${fmtNumber((dhcp.servers || []).length)} / ${fmtNumber((dns.servers || []).length)}`, 'DHCP 服务 / DNS 上游', '')}
-        </div>
-        <div class="grid-2" style="margin-top:12px">
-          <div class="card"><div class="card-head"><div class="card-title">DHCP 服务日志</div><div class="subtle">最近 20 条</div></div><div class="card-body">${table(['时间', '主题', '消息'], renderRows(logs.dhcp), '当前未读取到 DHCP 服务日志')}</div></div>
-          <div class="card"><div class="card-head"><div class="card-title">DNS 服务日志</div><div class="subtle">最近 20 条</div></div><div class="card-body">${table(['时间', '主题', '消息'], renderRows(logs.dns), '当前未读取到 DNS 服务日志')}</div></div>
-        </div>
-        <div class="grid-2" style="margin-top:12px">
-          <div class="card"><div class="card-head"><div class="card-title">DHCP 服务状态</div><div class="subtle">RouterOS 可读参数</div></div><div class="card-body">${infoGrid([
-            {k:'DHCP 服务器', v: fmtNumber((dhcp.servers || []).length)},
-            {k:'地址池', v: fmtNumber((dhcp.pools || []).length)},
-            {k:'租约', v: fmtNumber((dhcp.leases || []).length)},
-            {k:'运行中', v: fmtNumber((dhcp.servers || []).filter((row) => row.running).length)}
-          ])}</div></div>
-          <div class="card"><div class="card-head"><div class="card-title">DNS 服务状态</div><div class="subtle">RouterOS 可读参数</div></div><div class="card-body">${infoGrid([
-            {k:'DNS 状态', v: dns.running ? '启用' : '未启用'},
-            {k:'上游 DNS', v: fmtNumber((dns.servers || []).length)},
-            {k:'DoH', v: dns.dohServer ? escapeHtml(dns.dohServer) : '未配置'},
-            {k:'静态规则', v: fmtNumber((dns.forwardRules || []).length)}
-          ])}</div></div>
-        </div>`);
-    }
-
     function renderApp(snapshot) {
       if (!isSectionAvailable(currentSection, snapshot)) {
         currentSection = 'overview';
@@ -8066,7 +8073,7 @@
       pageTitleEl.textContent = meta.title;
       setPageSubtitle(`${meta.subtitle} · 当前仅显示故障提示`);
       healthDotEl.className = 'dot danger';
-      updateTextEl.textContent = '采集失败';
+      setPanelStatusText('采集失败');
       updateRefreshMeta();
       if (frameEl) {
         frameEl.classList.remove('page-compact-topbar', 'arp-compact');
@@ -8076,30 +8083,6 @@
       }
       syncTopbarOffset();
       appEl.innerHTML = `<div class="card"><div class="card-body"><div class="notice danger">本地采集服务暂时不可用：${escapeHtml(message)}</div><div style="margin-top:12px;"><button class="action-btn" type="button" data-router-reconnect="true">更换 RouterOS 连接</button></div></div></div>`;
-    }
-
-    function setActiveSection(section, updateHash = true) {
-      const snapshot = activeSnapshotRef();
-      const requestedSection = normalizeSection(section);
-      currentSection = isSectionAvailable(requestedSection, snapshot) ? requestedSection : 'overview';
-      if (appShellEl) {
-        appShellEl.classList.toggle('home-sidebar-hidden', currentSection === 'overview');
-      }
-      currentNavGroup = resolveGroup(currentSection, currentNavGroup, snapshot);
-      renderNavigation();
-      if (updateHash && window.location.hash !== `#${currentSection}`) {
-        window.location.hash = currentSection;
-      }
-      const meta = pageMeta[currentSection];
-      pageTitleEl.textContent = meta.title;
-      const snapshotToRender = displayedSnapshot || latestSnapshot;
-      if (snapshotToRender) {
-        renderTopMetrics(snapshotToRender);
-        renderApp(snapshotToRender);
-      } else {
-        setPageSubtitle(meta.subtitle);
-        updateRefreshMeta();
-      }
     }
 
     function scheduleNext() {
@@ -8128,7 +8111,7 @@
         if (TEST_SNAPSHOT) {
           snapshot = TEST_SNAPSHOT;
         } else {
-          const response = await fetch('/api/snapshot', { cache: 'no-store' });
+          const response = await panelFetch('/api/snapshot');
           if (!response.ok) throw new Error(`HTTP ${response.status}`);
           snapshot = await response.json();
         }
@@ -8438,7 +8421,7 @@
         : dnsRuleBrowser.loading
           ? `<div class="notice" style="margin-bottom:12px">正在读取 DNS 静态规则第 ${fmtNumber(currentPage)} 页数据，加载完成后会自动更新。</div>`
           : '';
-      const listText = (values, fallback = '-') => (values && values.length ? values.map(escapeHtml).join('<br>') : fallback);
+      const listText = (values, fallback = '-') => (values && values.length ? addressStackHtml(values) : fallback);
       const ruleRows = browserRows.map((row) => `
         <tr>
           <td>${escapeHtml(row.name)}</td>
@@ -8491,7 +8474,7 @@
       const dhcpClientCount = (dns.ipv6DhcpClients || []).length;
       const boundPrefixClients = (dns.ipv6DhcpClients || []).filter((row) => row.status === 'bound').length;
       const peerDnsClients = (dns.ipv6DhcpClients || []).filter((row) => row.usePeerDns).length;
-      const listText = (values, fallback = '-') => (values && values.length ? values.map(escapeHtml).join('<br>') : fallback);
+      const listText = (values, fallback = '-') => (values && values.length ? addressStackHtml(values) : fallback);
       const ndRows = (dns.ipv6Nd || []).map((row) => `
         <tr>
           <td>${escapeHtml(row.interface)}</td>
@@ -8612,7 +8595,7 @@
         if (TEST_SNAPSHOT) {
           snapshot = TEST_SNAPSHOT;
         } else {
-          const response = await fetch('/api/snapshot', { cache: 'no-store' });
+          const response = await panelFetch('/api/snapshot');
           if (!response.ok) throw new Error(`HTTP ${response.status}`);
           snapshot = await response.json();
         }
@@ -8969,7 +8952,7 @@
 <script>
   (() => {
     try {
-      // Public profile: keep .3.5 stable look and avoid experimental redesign side effects.
+      // Public profile: keep the legacy-private look stable and avoid experimental redesign side effects.
       if (document.body?.dataset?.publicProfile === 'true') return;
       if (document.body?.dataset?.deployChannel !== '.3.7-preview') return;
       // Keep execution order stable with following parser-inserted scripts.

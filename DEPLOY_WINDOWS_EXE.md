@@ -12,6 +12,16 @@ path.
 If you receive a ZIP from another source, verify that you trust the source. The
 project does not yet provide code signing.
 
+## Public Delivery Contract
+
+Windows EXE is one of the four public delivery modes. It should match the
+Docker, Linux systemd/VM, and RouterOS Container public defaults: RouterOS-only
+profile, loopback browser entrypoint, proxy-header trust off, IP-alias writes
+off, and admin-session exposure off.
+
+The EXE listens on the Windows host only. `http://127.0.0.1:28646/` means the
+Windows machine running the browser; it is not a LAN URL for other devices.
+
 ## Build From Source
 
 Run this from the repository root on Windows:
@@ -51,6 +61,11 @@ dependencies there.
 
 The console window is intentional. It shows startup errors such as a wrong
 RouterOS address, bad password, or a port conflict.
+
+The in-panel address dialog can save loopback-only settings to
+`routeros-panel.env` when the ZIP is extracted to a user-writable folder. Restart
+the EXE after saving. Non-loopback addresses remain blocked by the public
+profile.
 
 ## Troubleshooting
 

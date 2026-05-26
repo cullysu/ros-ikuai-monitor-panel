@@ -5,8 +5,8 @@ Wants=network-online.target
 
 [Service]
 Type=simple
-User=root
-Group=root
+User=routeros-panel
+Group=routeros-panel
 WorkingDirectory=/opt/ros-ikuai-monitor-panel-%i
 EnvironmentFile=-/etc/default/routeros-panel-%i
 ExecStart=/opt/ros-ikuai-monitor-panel-%i/.venv/bin/python /opt/ros-ikuai-monitor-panel-%i/app.py
@@ -15,6 +15,14 @@ RestartSec=5
 UMask=0077
 NoNewPrivileges=true
 PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=full
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+CapabilityBoundingSet=
+AmbientCapabilities=
 
 [Install]
 WantedBy=multi-user.target

@@ -41,8 +41,35 @@ jobs:
           node tools/check-lan-access-defaults.js
           node tools/check-public-release-readiness.js
 
+      - name: Frontend and tool JavaScript syntax
+        run: |
+          for file in public/*.js tools/*.js; do
+            node --check "$file"
+          done
+          node <<'NODE'
+          const fs = require('fs');
+          const vm = require('vm');
+          const html = fs.readFileSync('public/index.html', 'utf8');
+          const scripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)]
+            .map((match) => match[1])
+            .filter((source) => source.trim());
+          scripts.forEach((source, index) => {
+            new vm.Script(source, { filename: `public/index.html#inline-${index + 1}.js` });
+          });
+          NODE
+
       - name: Docker Compose config
         run: docker compose --env-file .env.docker.example config --quiet
+
+      - name: Public browser predeploy smoke
+        run: |
+          node tools/local-predeploy-check.js \
+            --profile public \
+            --viewports desktop=1366x900,narrow=390x844 \
+            --sections overview,interfaces,trafficLoad,terminals,connections \
+            --scale-scenarios single,fleet \
+            --strict-responsive \
+            --out _acceptance/ci-public-predeploy
 
       - name: Installer shell checks
         run: |
@@ -91,9 +118,21 @@ jobs:
             if (-not $_) { throw "Bundled frontend is missing axis tick labels." }
           }
           $envFile = ".\dist\routeros-triage-panel\routeros-panel.env"
-          Select-String -Path $envFile -Pattern "ROS_PANEL_BIND=0.0.0.0" -Quiet | ForEach-Object {
-            if (-not $_) { throw "Windows env is missing LAN bind default." }
+          Select-String -Path $envFile -Pattern "ROS_PANEL_BIND=127.0.0.1" -Quiet | ForEach-Object {
+            if (-not $_) { throw "Windows env is missing loopback bind default." }
           }
           Select-String -Path $envFile -Pattern "ROS_PANEL_TRUST_PROXY_HEADERS=0" -Quiet | ForEach-Object {
             if (-not $_) { throw "Windows env is missing proxy header default." }
+          }
+          Select-String -Path $envFile -Pattern "ROS_PANEL_ALLOW_LOCALHOST_HOST_FORWARD=0" -Quiet | ForEach-Object {
+            if (-not $_) { throw "Windows env is missing localhost host-forward default." }
+          }
+          Select-String -Path $envFile -Pattern "ROS_PANEL_LOCALHOST_FORWARD_TOKEN=" -Quiet | ForEach-Object {
+            if (-not $_) { throw "Windows env is missing localhost forward token default." }
+          }
+          Select-String -Path $envFile -Pattern "ROS_PANEL_PROFILE=routeros_only" -Quiet | ForEach-Object {
+            if (-not $_) { throw "Windows env is missing RouterOS-only profile default." }
+          }
+          Select-String -Path $envFile -Pattern "ROS_PANEL_NETWORK_WRITE_ENABLED=1" -Quiet | ForEach-Object {
+            if (-not $_) { throw "Windows env is missing panel address write default." }
           }

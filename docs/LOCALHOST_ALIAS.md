@@ -2,8 +2,10 @@
 
 This helper is optional for Docker, Windows EXE, and Linux systemd/VM installs
 because those paths default to running on the same host that opens the browser.
-Use this guide when a client device must type `http://127.0.0.1:28646/` while
-the real panel server runs somewhere else.
+Use this guide only when a client device must type `http://127.0.0.1:28646/`
+and you have also provided an explicit TCP path to the real panel endpoint,
+such as an SSH tunnel, a local forwarder, or a RouterOS Container forwarding
+path.
 
 The panel server can run on Docker, Windows EXE, Linux systemd/VM, or RouterOS
 Container. Client devices that should always type the same local address can
@@ -14,8 +16,9 @@ http://127.0.0.1:28646/
 ```
 
 Install the alias on each client device that should use that address. The alias
-listens on the client device and forwards traffic to the real panel host on the
-LAN.
+listens on the client device and forwards traffic to the configured upstream.
+It does not make another machine's `127.0.0.1` reachable by itself, and it does
+not turn a Docker/Windows/systemd localhost-only install into a LAN service.
 
 ## Windows Client
 

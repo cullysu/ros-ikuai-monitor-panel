@@ -21,6 +21,34 @@ run from Windows EXE, Docker, local Python, systemd, or RouterOS Container.
 RouterOS Container is not the default because it changes RouterOS container,
 storage, veth, and possibly API/firewall access state.
 
+## Public Delivery Contract
+
+The public product has four delivery modes. They must expose the same read-only
+RouterOS-only behavior even though their packaging differs:
+
+| Delivery mode | Runtime default | Browser access contract | Validation |
+|---------------|-----------------|-------------------------|------------|
+| Docker / Compose | Container binds `0.0.0.0`; host publishes `127.0.0.1:28646` | Open `http://127.0.0.1:28646/` on the Docker host | `docker compose --env-file .env.docker.example config --quiet` |
+| Windows EXE | EXE binds `127.0.0.1:28646` | Open `http://127.0.0.1:28646/` on the Windows host | `tools/build-windows-exe.ps1` packaging check |
+| Linux systemd / VM | Managed service binds `127.0.0.1:28646` as a non-root service user | Open `http://127.0.0.1:28646/` on the systemd host | `bash -n deploy_linux.sh` and unit marker checks |
+| RouterOS Container | Container process binds `0.0.0.0:28646` inside RouterOS container networking and enables localhost Host-forward mode | Open `http://127.0.0.1:28646/` only through a client-local forwarder | `tools/build-routeros-container-archive.sh` archive build |
+
+In all four modes, public defaults are `routeros_only`,
+`ROS_PANEL_TRUST_PROXY_HEADERS=0`, local IP-alias writes disabled, admin-session
+exposure disabled, no built-in auth/TLS, and no RouterOS configuration writes.
+Panel address writes are deployment-owned: Docker, Linux systemd/VM, and
+RouterOS Container keep `ROS_PANEL_NETWORK_WRITE_ENABLED=0`; Windows EXE uses a
+user-writable sidecar env file and may save loopback-only address settings.
+
+`127.0.0.1` is always the machine running the browser. A different client device
+cannot use its own `127.0.0.1` to reach a panel running elsewhere unless that
+client also runs an explicit local forwarder or tunnel.
+RouterOS Container is the only public mode that enables
+`ROS_PANEL_ALLOW_LOCALHOST_HOST_FORWARD=1`; this keeps direct LAN/veth browser
+URLs rejected while allowing a client-local forwarder that preserves
+`Host: 127.0.0.1:28646` and injects the matching
+`ROS_PANEL_LOCALHOST_FORWARD_TOKEN`.
+
 ## Capability Modes
 
 | Mode | Audience | UI behavior |

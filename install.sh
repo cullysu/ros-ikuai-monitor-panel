@@ -72,25 +72,6 @@ repo_archive_url() {
   return 1
 }
 
-detect_lan_ip() {
-  local candidate=""
-  if command -v ip >/dev/null 2>&1; then
-    candidate="$(ip -4 route get 1.1.1.1 2>/dev/null | awk '{for (i=1; i<=NF; i++) if ($i=="src") {print $(i+1); exit}}' || true)"
-  fi
-  if [[ -z "$candidate" ]] && command -v hostname >/dev/null 2>&1; then
-    candidate="$(hostname -I 2>/dev/null | awk '{print $1}' || true)"
-  fi
-  if [[ -z "$candidate" ]] && command -v ipconfig.exe >/dev/null 2>&1; then
-    candidate="$(
-      ipconfig.exe 2>/dev/null |
-        tr -d '\r' |
-        awk -F: '/IPv4/ {gsub(/^[ \t]+|[ \t]+$/, "", $2); if ($2 != "" && $2 !~ /^127\./) {print $2; exit}}' ||
-        true
-    )"
-  fi
-  printf '%s\n' "${candidate:-127.0.0.1}"
-}
-
 validate_port() {
   local port="$1"
   [[ "$port" =~ ^[0-9]+$ ]] || die "--port must be a number"
@@ -271,9 +252,14 @@ configure_env() {
   set_env_value "$env_file" "ROS_PANEL_BIND" "0.0.0.0"
   set_env_value "$env_file" "ROS_PANEL_PORT" "$PUBLISHED_PORT"
   set_env_value "$env_file" "ROS_PANEL_TARGET_IP" "$TARGET_IP"
+  set_env_value "$env_file" "ROS_PANEL_TRUST_PROXY_HEADERS" "0"
+  set_env_value "$env_file" "ROS_PANEL_ALLOW_LOCALHOST_HOST_FORWARD" "0"
+  set_env_value "$env_file" "ROS_PANEL_LOCALHOST_FORWARD_TOKEN" ""
   set_env_value "$env_file" "ROS_PANEL_PROFILE" "routeros_only"
   set_env_value "$env_file" "ROS_PANEL_IP_ALIAS_WRITE_ENABLED" "0"
   set_env_value "$env_file" "ROS_PANEL_EXPOSE_ADMIN_SESSIONS" "0"
+  set_env_value "$env_file" "ROS_PANEL_NETWORK_WRITE_ENABLED" "0"
+  set_env_value "$env_file" "ROS_PANEL_ACTION_QUEUE_LIMIT" "24"
 }
 
 compose_up() {
@@ -465,6 +451,8 @@ Install plan:
   port:       $PUBLISHED_PORT
   name:       $CONTAINER_NAME
   target-ip:  $TARGET_IP
+  profile:    routeros_only
+  guards:     proxy-headers=0 localhost-host-forward=0 ip-alias-write=0 admin-sessions=0 panel-network-write=0
   local-url:  http://127.0.0.1:$PUBLISHED_PORT/
   browser-url: http://127.0.0.1:$PUBLISHED_PORT/
   exposure:   localhost-only

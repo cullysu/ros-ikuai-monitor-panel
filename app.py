@@ -5,6 +5,7 @@ import json
 import mimetypes
 import os
 import re
+import secrets
 import socket
 import subprocess
 import sys
@@ -13,6 +14,7 @@ import time
 import webbrowser
 from concurrent.futures import ThreadPoolExecutor, wait
 from collections import defaultdict, deque
+from http import cookies
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, unquote, urlparse
@@ -145,7 +147,16 @@ DEFAULT_PANEL_BIND = "127.0.0.1"
 DEFAULT_PANEL_PORT = 28646
 DEFAULT_PANEL_TARGET = "127.0.0.1"
 PANEL_NETWORK_ENV_KEYS = ("ROS_PANEL_BIND", "ROS_PANEL_PORT", "ROS_PANEL_TARGET_IP")
+PANEL_NETWORK_WRITE_ENABLED_RAW = str(os.getenv("ROS_PANEL_NETWORK_WRITE_ENABLED", "auto")).strip().lower()
 PANEL_TRUST_PROXY_HEADERS = str(os.getenv("ROS_PANEL_TRUST_PROXY_HEADERS", "0")).strip().lower() in {"1", "true", "yes", "on"}
+PANEL_ALLOW_LOCALHOST_HOST_FORWARD = str(os.getenv("ROS_PANEL_ALLOW_LOCALHOST_HOST_FORWARD", "0")).strip().lower() in {"1", "true", "yes", "on"}
+PANEL_LOCALHOST_FORWARD_HEADER = "X-Ros-Panel-Localhost-Forward"
+PANEL_LOCALHOST_FORWARD_TOKEN = str(os.getenv("ROS_PANEL_LOCALHOST_FORWARD_TOKEN", "")).strip()
+PANEL_SESSION_COOKIE = "ros_panel_session"
+PANEL_CSRF_COOKIE = "ros_panel_csrf"
+PANEL_SESSION_TTL_SECONDS = 8 * 60 * 60
+PANEL_SESSIONS = {}
+PANEL_SESSION_LOCK = threading.RLock()
 PANEL_ENV_ASSIGNMENT_RE = re.compile(r"^(\s*(?:export\s+)?)([A-Za-z_][A-Za-z0-9_]*)(\s*=\s*)(.*)$")
 
 
@@ -211,7 +222,7 @@ def is_loopback_panel_host(value):
     if raw.lower() == "localhost":
         return True
     try:
-        return ipaddress.ip_address(raw).is_loopback
+        return ip_address_is_loopback(ipaddress.ip_address(raw))
     except ValueError:
         return False
 
@@ -245,6 +256,171 @@ def panel_access_url(bind, port, target=None):
 
 def first_header_value(value):
     return str(value or "").split(",", 1)[0].strip()
+
+
+def parse_ip_literal(value):
+    raw = str(value or "").strip()
+    if raw.startswith("[") and raw.endswith("]"):
+        raw = raw[1:-1].strip()
+    if "%" in raw:
+        raw = raw.split("%", 1)[0]
+    return ipaddress.ip_address(raw)
+
+
+def ip_address_is_loopback(address):
+    if getattr(address, "ipv4_mapped", None):
+        return address.ipv4_mapped.is_loopback
+    return address.is_loopback
+
+
+def client_host_is_loopback(value):
+    try:
+        return ip_address_is_loopback(parse_ip_literal(value))
+    except ValueError:
+        return False
+
+
+def panel_client_address_is_allowed(client_address, headers=None):
+    peer_host = client_address[0] if client_address else ""
+    if not client_host_is_loopback(peer_host):
+        if PANEL_ALLOW_LOCALHOST_HOST_FORWARD:
+            request_host = parse_panel_request_host(headers, fallback_port=PANEL_PORT)
+            supplied_token = first_header_value((headers or {}).get(PANEL_LOCALHOST_FORWARD_HEADER))
+            token_ok = bool(
+                PANEL_LOCALHOST_FORWARD_TOKEN
+                and supplied_token
+                and secrets.compare_digest(PANEL_LOCALHOST_FORWARD_TOKEN, supplied_token)
+            )
+            if token_ok and request_host and is_loopback_panel_host(request_host[0]):
+                return True
+        return False
+    if not PANEL_TRUST_PROXY_HEADERS:
+        return True
+    for header_name in ("X-Forwarded-For", "X-Real-IP"):
+        forwarded_host = first_header_value((headers or {}).get(header_name))
+        if forwarded_host and not client_host_is_loopback(forwarded_host):
+            return False
+    return True
+
+
+def parse_panel_request_host(headers, fallback_port=None):
+    if not headers:
+        return None
+    host_header = first_header_value(headers.get("Host"))
+    if PANEL_TRUST_PROXY_HEADERS:
+        host_header = first_header_value(headers.get("X-Forwarded-Host")) or host_header
+    if not host_header or "@" in host_header or any(part in host_header for part in ("://", "/", "\\", "?", "#")):
+        return None
+    try:
+        parsed = urlparse(f"//{host_header}")
+        host = normalize_panel_host(parsed.hostname or "", "request host")
+        port = parsed.port
+    except (TypeError, ValueError):
+        return None
+    forwarded_port = first_header_value(headers.get("X-Forwarded-Port")) if PANEL_TRUST_PROXY_HEADERS else ""
+    if port is None and forwarded_port:
+        try:
+            port = normalize_panel_port(forwarded_port)
+        except ValueError:
+            port = None
+    if port is None:
+        port = normalize_panel_port(fallback_port if fallback_port is not None else PANEL_PORT)
+    return host, port
+
+
+def parse_panel_origin(value):
+    raw = str(value or "").strip()
+    if not raw:
+        return None
+    try:
+        parsed = urlparse(raw)
+        if parsed.scheme not in {"http", "https"}:
+            return None
+        host = normalize_panel_host(parsed.hostname or "", "origin host")
+        port = parsed.port or (443 if parsed.scheme == "https" else 80)
+    except (TypeError, ValueError):
+        return None
+    return host, normalize_panel_port(port)
+
+
+def panel_origin_is_allowed(headers, value):
+    origin = parse_panel_origin(value)
+    request_host = parse_panel_request_host(headers, fallback_port=PANEL_PORT)
+    if not origin or not request_host:
+        return False
+    origin_host, origin_port = origin
+    request_host_name, request_port = request_host
+    return (
+        is_loopback_panel_host(origin_host)
+        and is_loopback_panel_host(request_host_name)
+        and origin_port == request_port
+    )
+
+
+def parse_request_cookies(cookie_header):
+    jar = cookies.SimpleCookie()
+    try:
+        jar.load(str(cookie_header or ""))
+    except cookies.CookieError:
+        return {}
+    return {name: morsel.value for name, morsel in jar.items()}
+
+
+def prune_panel_sessions(now=None):
+    now = time.time() if now is None else now
+    expired = [
+        token
+        for token, session in PANEL_SESSIONS.items()
+        if now - float(session.get("lastSeen") or session.get("created") or 0) > PANEL_SESSION_TTL_SECONDS
+    ]
+    for token in expired:
+        PANEL_SESSIONS.pop(token, None)
+
+
+def create_panel_session():
+    now = time.time()
+    token = secrets.token_urlsafe(32)
+    session = {
+        "id": token,
+        "csrf": secrets.token_urlsafe(32),
+        "created": now,
+        "lastSeen": now,
+    }
+    with PANEL_SESSION_LOCK:
+        prune_panel_sessions(now)
+        PANEL_SESSIONS[token] = session
+    return copy.deepcopy(session)
+
+
+def get_panel_session(token):
+    if not token:
+        return None
+    now = time.time()
+    with PANEL_SESSION_LOCK:
+        prune_panel_sessions(now)
+        session = PANEL_SESSIONS.get(str(token))
+        if not session:
+            return None
+        session["lastSeen"] = now
+        return copy.deepcopy(session)
+
+
+def build_panel_cookie(name, value, max_age=PANEL_SESSION_TTL_SECONDS, http_only=True):
+    parts = [
+        f"{name}={value}",
+        "Path=/",
+        f"Max-Age={int(max_age)}",
+        "SameSite=Strict",
+    ]
+    if http_only:
+        parts.append("HttpOnly")
+    return "; ".join(parts)
+
+
+def csrf_token_matches(session, token):
+    expected = str((session or {}).get("csrf") or "")
+    supplied = str(token or "")
+    return bool(expected and supplied and secrets.compare_digest(expected, supplied))
 
 
 def panel_host_header_is_allowed(headers):
@@ -300,6 +476,7 @@ def panel_network_payload(bind=None, port=None, target=None, restart_required=Fa
     port = normalize_panel_port(port if port is not None else PANEL_PORT)
     target = resolve_panel_access_host(target if target is not None else PANEL_TARGET)
     env_path = panel_env_write_path()
+    write_status = panel_env_write_status(env_path)
     configured_url = panel_access_url(bind, port, target)
     browser_url = str(request_url or "").strip() or configured_url
     return {
@@ -312,6 +489,9 @@ def panel_network_payload(bind=None, port=None, target=None, restart_required=Fa
         "detectedFromRequest": bool(request_url),
         "envFile": str(env_path),
         "loadedEnvFile": str(PANEL_ENV_FILE) if PANEL_ENV_FILE else None,
+        "saveSupported": write_status["writable"],
+        "envWritable": write_status["writable"],
+        "writeStatus": write_status,
         "restartRequired": bool(restart_required),
         "defaults": {
             "bind": DEFAULT_PANEL_BIND,
@@ -339,12 +519,46 @@ def read_text_with_env_fallback(path):
         return path.read_text(encoding=fallback_encoding, errors="replace")
 
 
+def panel_env_write_status(path=None):
+    path = Path(path).resolve() if path else panel_env_write_path()
+    if PANEL_NETWORK_WRITE_ENABLED_RAW in {"0", "false", "no", "off", "disabled", "read_only", "readonly"}:
+        return {
+            "envFile": str(path),
+            "exists": path.exists(),
+            "parent": str(path.parent),
+            "writable": False,
+            "mode": "disabled",
+            "message": "Panel address settings are read-only in this delivery mode. Edit the installer/env file and restart the panel instead.",
+        }
+    parent = path.parent
+    probe_parent = parent
+    while not probe_parent.exists() and probe_parent != probe_parent.parent:
+        probe_parent = probe_parent.parent
+    writable = os.access(path, os.W_OK) if path.exists() else os.access(probe_parent, os.W_OK)
+    message = (
+        "Panel address settings can be saved to the local env file."
+        if writable
+        else "Panel address settings are read-only in this delivery mode. Edit the installer/env file and restart the panel instead."
+    )
+    return {
+        "envFile": str(path),
+        "exists": path.exists(),
+        "parent": str(parent),
+        "writable": bool(writable),
+        "mode": "auto",
+        "message": message,
+    }
+
+
 def write_panel_network_env(bind, port, target, env_path=None):
     bind = normalize_panel_host(bind, "bind")
     port = normalize_panel_port(port)
     target = resolve_panel_access_host(target)
     bind, target = validate_panel_public_contract(bind, target)
     path = Path(env_path).resolve() if env_path else panel_env_write_path()
+    write_status = panel_env_write_status(path)
+    if not write_status["writable"]:
+        raise PermissionError(write_status["message"])
     updates = {
         "ROS_PANEL_BIND": bind,
         "ROS_PANEL_PORT": str(port),
@@ -1350,28 +1564,41 @@ def rate_level(value):
 
 def normalize_panel_profile(value):
     text = re.sub(r"[^a-z0-9]+", "_", str(value or "").strip().lower()).strip("_")
-    return text or "private_ops"
+    return text
 
 
-PANEL_PROFILE = normalize_panel_profile(PANEL_PROFILE_RAW)
+PANEL_PROFILE_ALIASES = {
+    "public": "routeros_only",
+    "routeros_public": "routeros_only",
+    "routeros_only": "routeros_only",
+    "public_routeros": "routeros_only",
+    "routeros_public_preview": "routeros_only",
+    "private": "private_ops",
+    "private_ops": "private_ops",
+}
+
+
+def resolve_panel_profile(value):
+    normalized = normalize_panel_profile(value)
+    canonical = PANEL_PROFILE_ALIASES.get(normalized)
+    if not canonical:
+        allowed = ", ".join(sorted(PANEL_PROFILE_ALIASES))
+        raise ValueError(f"Unknown ROS_PANEL_PROFILE {value!r}; allowed values: {allowed}")
+    return canonical
+
+
+PANEL_PROFILE = resolve_panel_profile(PANEL_PROFILE_RAW)
 
 
 def is_public_routeros_profile(profile=None):
     normalized = normalize_panel_profile(profile if profile is not None else PANEL_PROFILE)
-    return normalized in {
-        # Common/operator-friendly aliases.
-        "public",
-        "routeros_public",
-        "routeros_only",
-        "public_routeros",
-        "routeros_public_preview",
-    }
+    return PANEL_PROFILE_ALIASES.get(normalized, normalized) == "routeros_only"
 
 
 PUBLIC_ROUTEROS_PROFILE = is_public_routeros_profile(PANEL_PROFILE)
 READONLY_DIAGNOSTICS_ENABLED = not PUBLIC_ROUTEROS_PROFILE
 
-# Public RouterOS-only profile is intended to be safe to share on a LAN.
+# Public RouterOS-only profile is intended for localhost-only public trials.
 # Keep any mutating endpoints opt-in (and default-off) for that profile.
 IP_ALIAS_WRITE_ENABLED = env_bool("ROS_PANEL_IP_ALIAS_WRITE_ENABLED", default=not PUBLIC_ROUTEROS_PROFILE)
 
@@ -1736,9 +1963,9 @@ def build_semantic_triage(snapshot):
         error_delta = to_int(row.get("errorDelta"))
         packet_delta = to_int(row.get("packetDelta"))
         try:
-            loss_rate = float(row.get("lossRate")) if row.get("lossRate") is not None else 0.0
+            loss_rate = float(row.get("lossRate")) if row.get("lossRate") is not None else None
         except Exception:
-            loss_rate = 0.0
+            loss_rate = None
         issue_total = drop_total + error_total
         recent_total = drop_delta + error_delta
         if issue_total > 0 or recent_total > 0:
@@ -1757,7 +1984,7 @@ def build_semantic_triage(snapshot):
                     "packetDelta": packet_delta,
                     "lossRate": loss_rate,
                     "isDerived": is_derived,
-                    "sortKey": (weighted_recent, loss_rate, weighted_total),
+                    "sortKey": (weighted_recent, loss_rate if loss_rate is not None else -1, weighted_total),
                 }
             )
     if interface_issues:
@@ -1765,8 +1992,11 @@ def build_semantic_triage(snapshot):
         top_issue = interface_issues[0]
         primary_count = sum(1 for item in interface_issues if not item["isDerived"])
         logical_count = len(interface_issues) - primary_count
-        loss_value_text = f"{top_issue['lossRate'] * 100:.4f}".rstrip("0").rstrip(".")
-        loss_text = f"{loss_value_text}%"
+        if top_issue["lossRate"] is None:
+            loss_text = "unknown"
+        else:
+            loss_value_text = f"{top_issue['lossRate'] * 100:.4f}".rstrip("0").rstrip(".")
+            loss_text = f"{loss_value_text}%"
         add_action(
             "interfaces.error_counters",
             "warning",
@@ -2353,6 +2583,8 @@ class Collector:
         self.current_rates = {}
         self.last_counter_sample_at = None
         self.rate_history_sample_count = 0
+        self.last_rate_sample_ready = False
+        self.last_counter_reset = False
         self.prev_quality_counters = {}
         self.current_interface_quality = {}
         self.last_quality_sample_at = None
@@ -2421,6 +2653,8 @@ class Collector:
             self.current_rates = {}
             self.last_counter_sample_at = None
             self.rate_history_sample_count = 0
+            self.last_rate_sample_ready = False
+            self.last_counter_reset = False
             self.prev_quality_counters = {}
             self.current_interface_quality = {}
             self.last_quality_sample_at = None
@@ -3143,9 +3377,14 @@ class Collector:
             with self.lock:
                 return copy.deepcopy(self.current_rates)
         ts = time.time()
-        interval = max(ts - self.prev_ts, 1) if self.prev_ts else 1
+        with self.lock:
+            previous = copy.deepcopy(self.prev_counters)
+            previous_ts = self.prev_ts
+        interval = max(ts - previous_ts, 1) if previous_ts else 1
         rates = {}
         current = {}
+        sample_ready = False
+        counter_reset = False
         for item in interfaces:
             name = item.get("name")
             if not name:
@@ -3153,17 +3392,26 @@ class Collector:
             rx = to_int(item.get("rx-byte"))
             tx = to_int(item.get("tx-byte"))
             current[name] = (rx, tx)
-            prev_rx, prev_tx = self.prev_counters.get(name, (rx, tx))
+            has_baseline = name in previous
+            prev_rx, prev_tx = previous.get(name, (rx, tx))
+            reset = has_baseline and (rx < prev_rx or tx < prev_tx)
+            counter_reset = counter_reset or reset
+            sample_ready = sample_ready or (has_baseline and not reset)
             rates[name] = {
-                "rxBps": max(rx - prev_rx, 0) / interval,
-                "txBps": max(tx - prev_tx, 0) / interval,
+                "rxBps": None if reset else max(rx - prev_rx, 0) / interval,
+                "txBps": None if reset else max(tx - prev_tx, 0) / interval,
+                "rateSampleReady": has_baseline and not reset,
+                "counterReset": reset,
             }
         with self.lock:
             self.prev_counters = current
             self.prev_ts = ts
             self.current_rates = copy.deepcopy(rates)
             self.last_counter_sample_at = format_iso_now()
-            self.rate_history_sample_count += 1
+            self.last_rate_sample_ready = sample_ready
+            self.last_counter_reset = counter_reset
+            if sample_ready:
+                self.rate_history_sample_count += 1
         return rates
 
     def compute_interface_quality(self, interfaces, fresh_counter_sample=False):
@@ -3193,7 +3441,11 @@ class Collector:
             current[name] = counters
             prev = previous.get(name)
             has_baseline = isinstance(prev, dict)
-            if has_baseline:
+            counter_reset = bool(
+                has_baseline
+                and any(counters[key] < to_int(prev.get(key)) for key in counters)
+            )
+            if has_baseline and not counter_reset:
                 delta = {key: max(counters[key] - to_int(prev.get(key)), 0) for key in counters}
             else:
                 delta = {key: 0 for key in counters}
@@ -3222,7 +3474,8 @@ class Collector:
                 "errorRate": error_rate,
                 "qualityUpdatedAt": updated_at,
                 "qualitySampleCount": sample_count,
-                "qualitySampleReady": has_baseline,
+                "qualitySampleReady": has_baseline and not counter_reset,
+                "qualityCounterReset": counter_reset,
                 "isDerivedInterface": is_derived,
                 "isLogicalInterface": is_derived,
                 "qualityDisplayWeight": 0.35 if is_derived else 1.0,
@@ -3413,7 +3666,7 @@ class Collector:
         items.sort(key=lambda row: (row["role"] != "WAN", row.get("isDerivedInterface", False), row["name"]))
         return items
 
-    def build_pppoe(self, rest, rates, addresses_by_interface, update_rate_history=False):
+    def build_pppoe(self, rest, rates, addresses_by_interface, update_rate_history=False, rate_history_break=False):
         defaults = [row for row in rest["routes"] if row.get("dst-address") == "0.0.0.0/0"]
         route_by_gateway = defaultdict(list)
         for route in defaults:
@@ -3423,11 +3676,15 @@ class Collector:
         for item in rest["pppoe"]:
             name = item.get("name")
             metric = rates.get(name, {"rxBps": 0, "txBps": 0})
-            total_rate += metric["rxBps"] + metric["txBps"]
+            rx_bps = metric.get("rxBps")
+            tx_bps = metric.get("txBps")
+            rx_bps_numeric = to_int(rx_bps)
+            tx_bps_numeric = to_int(tx_bps)
+            total_rate += rx_bps_numeric + tx_bps_numeric
             history = self.line_history.setdefault(name, {"up": deque(maxlen=HISTORY_LIMIT), "down": deque(maxlen=HISTORY_LIMIT)})
             if update_rate_history:
-                history["up"].append(metric["txBps"])
-                history["down"].append(metric["rxBps"])
+                history["up"].append(None if rate_history_break else metric.get("txBps"))
+                history["down"].append(None if rate_history_break else metric.get("rxBps"))
             rows.append(
                 {
                     "name": name,
@@ -3435,8 +3692,8 @@ class Collector:
                     "running": to_bool(item.get("running")),
                     "parent": item.get("interface", "-"),
                     "addresses": [row.get("address", "-") for row in addresses_by_interface.get(name, [])],
-                    "upRate": metric["txBps"],
-                    "downRate": metric["rxBps"],
+                    "upRate": tx_bps,
+                    "downRate": rx_bps,
                     "rxBytes": to_int(next((iface.get("rx-byte") for iface in rest["interfaces"] if iface.get("name") == name), 0)),
                     "txBytes": to_int(next((iface.get("tx-byte") for iface in rest["interfaces"] if iface.get("name") == name), 0)),
                     "history": {"up": list(history["up"]), "down": list(history["down"])},
@@ -3454,7 +3711,7 @@ class Collector:
         distribution = [
             {
                 "name": row["name"],
-                "share": round(((row["upRate"] + row["downRate"]) / total_rate) * 100, 2) if total_rate else 0,
+                "share": round(((to_int(row.get("upRate")) + to_int(row.get("downRate"))) / total_rate) * 100, 2) if total_rate else 0,
                 "upRate": row["upRate"],
                 "downRate": row["downRate"],
                 "status": row["status"],
@@ -3463,7 +3720,7 @@ class Collector:
         ]
         return rows, distribution
 
-    def build_wan_lines(self, rest, pppoe_rows, interfaces, update_rate_history=False):
+    def build_wan_lines(self, rest, pppoe_rows, interfaces, update_rate_history=False, rate_history_break=False):
         if pppoe_rows:
             return [
                 {
@@ -3490,8 +3747,8 @@ class Collector:
             name = iface.get("name", "-")
             history = self.line_history.setdefault(name, {"up": deque(maxlen=HISTORY_LIMIT), "down": deque(maxlen=HISTORY_LIMIT)})
             if update_rate_history:
-                history["up"].append(to_int(iface.get("txRate")))
-                history["down"].append(to_int(iface.get("rxRate")))
+                history["up"].append(None if rate_history_break else to_int(iface.get("txRate")))
+                history["down"].append(None if rate_history_break else to_int(iface.get("rxRate")))
             dhcp_client = dhcp_clients_by_interface.get(name, {})
             running = bool(iface.get("running")) and not bool(iface.get("disabled"))
             route_rows = []
@@ -4123,15 +4380,27 @@ class Collector:
         )
         rates = self.compute_rates(rest["interfaces"], fresh_counter_sample=has_counter_sample)
         quality = self.compute_interface_quality(rest["interfaces"], fresh_counter_sample=has_counter_sample)
+        with self.lock:
+            rate_sample_ready = bool(self.last_rate_sample_ready)
+            counter_reset = bool(self.last_counter_reset)
+        update_rate_history = bool(has_counter_sample and (rate_sample_ready or counter_reset))
+        rate_history_break = bool(has_counter_sample and counter_reset)
         addresses_by_interface, local_networks, router_ips = self.build_maps(rest)
         pppoe, distribution = self.build_pppoe(
             rest,
             rates,
             addresses_by_interface,
-            update_rate_history=has_counter_sample,
+            update_rate_history=update_rate_history,
+            rate_history_break=rate_history_break,
         )
         interfaces = self.build_interfaces(rest, rates, addresses_by_interface, quality)
-        wan_lines = self.build_wan_lines(rest, pppoe, interfaces, update_rate_history=has_counter_sample)
+        wan_lines = self.build_wan_lines(
+            rest,
+            pppoe,
+            interfaces,
+            update_rate_history=update_rate_history,
+            rate_history_break=rate_history_break,
+        )
         wan_latency = self.get_wan_latency()
         pppoe = self.attach_wan_latency(pppoe, wan_latency)
         wan_lines = self.attach_wan_latency(wan_lines, wan_latency)
@@ -4180,13 +4449,15 @@ class Collector:
         used_memory = max(total_memory - to_int(resource.get("free-memory")), 0)
         total_disk = to_int(resource.get("total-hdd-space"))
         used_disk = max(total_disk - to_int(resource.get("free-hdd-space")), 0)
-        if has_counter_sample:
-            self.history["cpu"].append(to_int(resource.get("cpu-load")))
-            self.history["memory"].append(round((used_memory / total_memory) * 100, 2) if total_memory else 0)
-            self.history["disk"].append(round((used_disk / total_disk) * 100, 2) if total_disk else 0)
-            self.history["uplink"].append(wan_totals["up"])
-            self.history["downlink"].append(wan_totals["down"])
-            self.history["timestamps"].append(int(time.time()))
+        self.history["cpu"].append(to_int(resource.get("cpu-load")))
+        self.history["memory"].append(round((used_memory / total_memory) * 100, 2) if total_memory else 0)
+        self.history["disk"].append(round((used_disk / total_disk) * 100, 2) if total_disk else 0)
+        self.history["timestamps"].append(int(time.time()))
+        if update_rate_history:
+            rate_up = None if rate_history_break else wan_totals["up"]
+            rate_down = None if rate_history_break else wan_totals["down"]
+            self.history["uplink"].append(rate_up)
+            self.history["downlink"].append(rate_down)
         with self.lock:
             rate_history_updated_at = self.last_counter_sample_at
             rate_history_sample_count = self.rate_history_sample_count
@@ -4244,6 +4515,9 @@ class Collector:
                 "lineLayoutTier": line_layout_tier(wan_line_count),
                 "wanLatency": copy.deepcopy(wan_latency),
                 "freshCounterSample": bool(has_counter_sample),
+                "rateSampleReady": bool(rate_sample_ready),
+                "counterReset": bool(counter_reset),
+                "rateHistoryBreak": bool(rate_history_break),
                 "rateHistoryUpdatedAt": rate_history_updated_at,
                 "rateHistorySampleCount": rate_history_sample_count,
                 "qualityUpdatedAt": quality_updated_at,
@@ -4705,6 +4979,24 @@ collector = Collector()
 
 class Handler(BaseHTTPRequestHandler):
     server_version = "RouterOSTriagePanel/1.0"
+    read_only_api_paths = {
+        "/api/action-queue",
+        "/api/dns-static",
+        "/api/health",
+        "/api/panel-network",
+        "/api/readonly-diagnostics",
+        "/api/router-login",
+        "/api/semantic-triage",
+        "/api/snapshot",
+    }
+    write_api_paths = {
+        "/api/ip-alias",
+        "/api/panel-network",
+        "/api/router-login",
+        "/api/router-login-forget",
+        "/api/router-logout",
+    }
+    bootstrap_write_api_paths = {"/api/router-login"}
 
     def panel_network_payload(self, **kwargs):
         return panel_network_payload(
@@ -4712,16 +5004,67 @@ class Handler(BaseHTTPRequestHandler):
             **kwargs,
         )
 
+    def queue_cookie_header(self, value):
+        pending = getattr(self, "_pending_cookie_headers", [])
+        pending.append(value)
+        self._pending_cookie_headers = pending
+
+    def consume_cookie_headers(self):
+        pending = getattr(self, "_pending_cookie_headers", [])
+        self._pending_cookie_headers = []
+        return pending
+
+    def request_cookies(self):
+        return parse_request_cookies(self.headers.get("Cookie"))
+
+    def current_panel_session(self):
+        return get_panel_session(self.request_cookies().get(PANEL_SESSION_COOKIE))
+
+    def issue_panel_session(self):
+        session = create_panel_session()
+        self.queue_cookie_header(build_panel_cookie(PANEL_SESSION_COOKIE, session["id"], http_only=True))
+        self.queue_cookie_header(build_panel_cookie(PANEL_CSRF_COOKIE, session["csrf"], http_only=False))
+        return session
+
+    def ensure_panel_session(self, create=False):
+        session = self.current_panel_session()
+        if session:
+            return session
+        if not create:
+            return None
+        return self.issue_panel_session()
+
+    def write_request_guard_is_valid(self, session):
+        for header_name in ("X-CSRF-Token", "X-Ros-Panel-CSRF"):
+            if csrf_token_matches(session, self.headers.get(header_name)):
+                return True
+        origin = first_header_value(self.headers.get("Origin"))
+        if origin:
+            return panel_origin_is_allowed(self.headers, origin)
+        referer = first_header_value(self.headers.get("Referer"))
+        if referer:
+            return panel_origin_is_allowed(self.headers, referer)
+        return False
+
+    def require_write_authorization(self, parsed):
+        allow_bootstrap = parsed.path in self.bootstrap_write_api_paths
+        session = self.ensure_panel_session(create=allow_bootstrap)
+        if not session:
+            self.send_json_error("Local panel session is required", status=403, code="local_session_required")
+            return False
+        if not self.write_request_guard_is_valid(session):
+            self.send_json_error("CSRF, Origin, or Referer validation failed", status=403, code="csrf_validation_failed")
+            return False
+        return True
+
     def reject_non_localhost_request(self, parsed):
-        if panel_host_header_is_allowed(self.headers):
+        if panel_client_address_is_allowed(self.client_address, self.headers) and panel_host_header_is_allowed(self.headers):
             return False
         if parsed.path.startswith("/api/"):
-            self.send_json(
-                {
-                    "ok": False,
-                    "error": "Panel is localhost-only. Open http://127.0.0.1:28646/.",
-                },
+            self.send_json_error(
+                "Panel is localhost-only. Open http://127.0.0.1:28646/.",
                 status=403,
+                code="localhost_required",
             )
             return True
         body = (
@@ -4733,6 +5076,8 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Content-Type", "text/html; charset=utf-8")
         self.send_header("Content-Length", str(len(body)))
         self.send_header("Cache-Control", "no-store")
+        for cookie_header in self.consume_cookie_headers():
+            self.send_header("Set-Cookie", cookie_header)
         self.end_headers()
         self.wfile.write(body)
         return True
@@ -4741,6 +5086,7 @@ class Handler(BaseHTTPRequestHandler):
         parsed = urlparse(self.path)
         if self.reject_non_localhost_request(parsed):
             return
+        session = self.ensure_panel_session(create=True)
         if parsed.path == "/api/router-login":
             return self.send_json(
                 {
@@ -4748,10 +5094,17 @@ class Handler(BaseHTTPRequestHandler):
                     "routerLogin": public_router_config(),
                     "savedLogins": public_saved_router_logins(),
                     "savePasswordAvailable": True,
+                    "csrfToken": session.get("csrf"),
                 }
             )
         if parsed.path == "/api/panel-network":
-            return self.send_json({"ok": True, "panelNetwork": self.panel_network_payload()})
+            return self.send_json(
+                {
+                    "ok": True,
+                    "panelNetwork": self.panel_network_payload(),
+                    "csrfToken": session.get("csrf"),
+                }
+            )
         if parsed.path == "/api/snapshot":
             return self.send_json(collector.get_state())
         if parsed.path == "/api/dns-static":
@@ -4799,11 +5152,17 @@ class Handler(BaseHTTPRequestHandler):
             params = parse_qs(parsed.query)
             force_refresh = (params.get("refresh") or ["0"])[0] in {"1", "true", "yes"}
             return self.send_json(collector.get_readonly_diagnostics(force_refresh=force_refresh))
+        if parsed.path.startswith("/api/"):
+            return self.send_json_error("API route not found", status=404, code="not_found")
         self.serve_static(parsed.path)
 
     def do_POST(self):
         parsed = urlparse(self.path)
         if self.reject_non_localhost_request(parsed):
+            return
+        if parsed.path not in self.write_api_paths:
+            return self.send_json_error("API route not found", status=404, code="not_found")
+        if not self.require_write_authorization(parsed):
             return
         if parsed.path == "/api/router-login":
             try:
@@ -4813,7 +5172,7 @@ class Handler(BaseHTTPRequestHandler):
                 password = payload.get("password")
                 using_saved_password = False
                 if saved_id and not saved_entry:
-                    return self.send_json({"ok": False, "error": "Saved RouterOS login was not found"}, status=404)
+                    return self.send_json_error("Saved RouterOS login was not found", status=404, code="saved_login_not_found")
                 if saved_entry and not str(password or "").strip():
                     host = saved_entry.get("host")
                     user = saved_entry.get("user")
@@ -4825,22 +5184,21 @@ class Handler(BaseHTTPRequestHandler):
                     user = payload.get("user") or payload.get("username")
                     ssh_port = payload.get("sshPort") or payload.get("port") or 22
                 if saved_entry and not str(password or "").strip():
-                    return self.send_json(
-                        {"ok": False, "error": "Saved RouterOS login does not contain a password"},
+                    return self.send_json_error(
+                        "Saved RouterOS login does not contain a password",
                         status=400,
+                        code="saved_login_missing_password",
                     )
                 test = test_router_credentials(host, user, password, ssh_port)
                 if not test.get("ssh", {}).get("ok"):
-                    return self.send_json(
-                        {
-                            "ok": False,
-                            "error": test.get("ssh", {}).get("error") or "SSH login failed",
-                            "test": test,
-                        },
+                    return self.send_json_error(
+                        test.get("ssh", {}).get("error") or "SSH login failed",
                         status=400,
+                        code="router_login_failed",
+                        test=test,
                     )
                 remember_raw = payload.get("rememberPassword", False)
-                remember_password = True if remember_raw is None else to_bool(remember_raw)
+                remember_password = remember_raw is True
                 remembered_entry = None
                 if remember_password:
                     remembered_entry = remember_router_login(
@@ -4872,9 +5230,9 @@ class Handler(BaseHTTPRequestHandler):
                     }
                 )
             except ValueError as exc:
-                return self.send_json({"ok": False, "error": str(exc)}, status=400)
+                return self.send_json_error(str(exc), status=400, code="bad_request")
             except Exception as exc:
-                return self.send_json({"ok": False, "error": str(exc)}, status=500)
+                return self.send_internal_error(exc)
         if parsed.path == "/api/panel-network":
             try:
                 payload = self.read_json_body()
@@ -4899,10 +5257,17 @@ class Handler(BaseHTTPRequestHandler):
                         "message": "Saved. Restart the panel service for bind/port changes to take effect.",
                     }
                 )
+            except PermissionError as exc:
+                return self.send_json_error(
+                    str(exc),
+                    status=409,
+                    code="panel_network_read_only",
+                    panelNetwork=self.panel_network_payload(),
+                )
             except ValueError as exc:
-                return self.send_json({"ok": False, "error": str(exc)}, status=400)
+                return self.send_json_error(str(exc), status=400, code="bad_request")
             except Exception as exc:
-                return self.send_json({"ok": False, "error": str(exc)}, status=500)
+                return self.send_internal_error(exc)
         if parsed.path == "/api/router-logout":
             router_login = clear_router_config()
             collector.reset_collection_state(
@@ -4924,28 +5289,30 @@ class Handler(BaseHTTPRequestHandler):
                     }
                 )
             except ValueError as exc:
-                return self.send_json({"ok": False, "error": str(exc)}, status=400)
+                return self.send_json_error(str(exc), status=400, code="bad_request")
             except Exception as exc:
-                return self.send_json({"ok": False, "error": str(exc)}, status=500)
+                return self.send_internal_error(exc)
         if parsed.path == "/api/ip-alias":
             if not IP_ALIAS_WRITE_ENABLED:
-                return self.send_json({"ok": False, "error": "ip alias write disabled"}, status=403)
+                return self.send_json_error("ip alias write disabled", status=403, code="write_disabled")
             try:
                 payload = self.read_json_body()
                 result = collector.update_ip_alias(payload.get("ip"), payload.get("name"))
                 return self.send_json({"ok": True, **result})
             except ValueError as exc:
-                return self.send_json({"ok": False, "error": str(exc)}, status=400)
+                return self.send_json_error(str(exc), status=400, code="bad_request")
             except Exception as exc:
-                return self.send_json({"ok": False, "error": str(exc)}, status=500)
-        self.send_response(404)
-        self.end_headers()
+                return self.send_internal_error(exc)
+        return self.send_json_error("API route not found", status=404, code="not_found")
 
     def log_message(self, format, *args):
         return
 
     def read_json_body(self):
-        content_length = min(to_int(self.headers.get("Content-Length"), 0), 16384)
+        declared_length = to_int(self.headers.get("Content-Length"), 0)
+        if declared_length > 16384:
+            raise ValueError("Request body exceeds 16 KB")
+        content_length = max(declared_length, 0)
         if content_length <= 0:
             return {}
         body = self.rfile.read(content_length)
@@ -4954,7 +5321,21 @@ class Handler(BaseHTTPRequestHandler):
         try:
             return json.loads(body.decode("utf-8"))
         except Exception as exc:
-            raise ValueError("请求体不是合法 JSON") from exc
+            raise ValueError("Request body is not valid JSON") from exc
+
+    def send_json_error(self, message, status=400, code="error", **extra):
+        payload = {
+            "ok": False,
+            "error": str(message or "Request failed"),
+            "code": str(code or "error"),
+            "status": int(status),
+        }
+        payload.update(extra)
+        return self.send_json(payload, status=status)
+
+    def send_internal_error(self, exc):
+        print(f"[panel] internal API error: {type(exc).__name__}", file=sys.stderr)
+        return self.send_json_error("Internal panel error", status=500, code="internal_error")
 
     def send_json(self, payload, status=200):
         body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
@@ -4962,6 +5343,8 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Content-Length", str(len(body)))
         self.send_header("Cache-Control", "no-store")
+        for cookie_header in self.consume_cookie_headers():
+            self.send_header("Set-Cookie", cookie_header)
         self.end_headers()
         self.wfile.write(body)
 
@@ -4979,10 +5362,14 @@ class Handler(BaseHTTPRequestHandler):
             self.send_header("Content-Type", f"{mime}; charset=utf-8" if mime.startswith("text/") else mime)
             self.send_header("Content-Length", str(len(body)))
             self.send_header("Cache-Control", "no-store")
+            for cookie_header in self.consume_cookie_headers():
+                self.send_header("Set-Cookie", cookie_header)
             self.end_headers()
             self.wfile.write(body)
         except FileNotFoundError:
             self.send_response(404)
+            for cookie_header in self.consume_cookie_headers():
+                self.send_header("Set-Cookie", cookie_header)
             self.end_headers()
 
 

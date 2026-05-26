@@ -10,6 +10,11 @@ configuration.
 - You have a desktop or laptop that can reach RouterOS.
 - You accept that history is only collected while the local process is running.
 
+Local Python is a development and trial path, not a separate public product
+version. Keep the same public defaults used by the four delivery modes:
+`routeros_only`, `127.0.0.1:28646`, proxy-header trust off, IP-alias writes off,
+and admin-session exposure off.
+
 ## RouterOS Requirement
 
 Create a dedicated least-privilege RouterOS user for the panel. Do not use
@@ -71,6 +76,12 @@ http://127.0.0.1:28646/
 ```
 
 Other IP browser entrypoints are rejected by the public localhost-only guard.
+
+For local trials, the in-panel address dialog may save loopback-only settings to
+`routeros-panel.env` if the working directory is writable. Restart the local
+process after saving. Docker, systemd, and RouterOS Container deployments keep
+this dialog read-only because their port binding is owned by the deployment
+layer.
 
 ## Verify
 

@@ -22,24 +22,14 @@ Examples:
 
 Environment overrides:
   APP_DIR, SRC_DIR, ROS_PANEL_BIND, ROS_PANEL_PORT, ROS_PANEL_TARGET_IP, ROS_PANEL_IFACE, ...
-  ROS_PANEL_INSTANCE, ROS_PANEL_ENABLE_IP_SERVICE
+  ROS_PANEL_INSTANCE, ROS_PANEL_ENABLE_IP_SERVICE, ROS_PANEL_RUNTIME_USER
 EOF
-}
-
-detect_lan_ip() {
-  local candidate=""
-  if command -v ip >/dev/null 2>&1; then
-    candidate="$(ip -4 route get 1.1.1.1 2>/dev/null | awk '{for (i=1; i<=NF; i++) if ($i=="src") {print $(i+1); exit}}' || true)"
-  fi
-  if [[ -z "$candidate" ]] && command -v hostname >/dev/null 2>&1; then
-    candidate="$(hostname -I 2>/dev/null | awk '{print $1}' || true)"
-  fi
-  printf '%s\n' "${candidate:-127.0.0.1}"
 }
 
 INSTANCE="${ROS_PANEL_INSTANCE:-}"
 ENABLE_IP_SERVICE="${ROS_PANEL_ENABLE_IP_SERVICE:-}"
 LEGACY_PRIVATE="${ROS_PANEL_LEGACY_PRIVATE:-0}"
+PANEL_RUNTIME_USER="${ROS_PANEL_RUNTIME_USER:-routeros-panel}"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -148,10 +138,16 @@ ROS_PANEL_BIND="${ROS_PANEL_BIND:-${DEFAULT_PANEL_BIND}}"
 ROS_PANEL_PORT="${ROS_PANEL_PORT:-${DEFAULT_PANEL_PORT}}"
 ROS_PANEL_TARGET_IP="${ROS_PANEL_TARGET_IP:-${DEFAULT_PANEL_TARGET_IP}}"
 ROS_PANEL_TRUST_PROXY_HEADERS="${ROS_PANEL_TRUST_PROXY_HEADERS:-0}"
+ROS_PANEL_ALLOW_LOCALHOST_HOST_FORWARD="${ROS_PANEL_ALLOW_LOCALHOST_HOST_FORWARD:-0}"
+ROS_PANEL_LOCALHOST_FORWARD_TOKEN="${ROS_PANEL_LOCALHOST_FORWARD_TOKEN:-}"
 ROS_PANEL_PROFILE="${ROS_PANEL_PROFILE:-${DEFAULT_PANEL_PROFILE}}"
 ROS_PANEL_IFACE="${ROS_PANEL_IFACE:-ens192}"
 ROS_PANEL_BIND_CIDR="${ROS_PANEL_BIND_CIDR:-24}"
 ROS_PANEL_IP_HEAL_SECONDS="${ROS_PANEL_IP_HEAL_SECONDS:-3}"
+ROS_PANEL_IP_ALIAS_WRITE_ENABLED="${ROS_PANEL_IP_ALIAS_WRITE_ENABLED:-0}"
+ROS_PANEL_EXPOSE_ADMIN_SESSIONS="${ROS_PANEL_EXPOSE_ADMIN_SESSIONS:-0}"
+ROS_PANEL_NETWORK_WRITE_ENABLED="${ROS_PANEL_NETWORK_WRITE_ENABLED:-0}"
+ROS_PANEL_ACTION_QUEUE_LIMIT="${ROS_PANEL_ACTION_QUEUE_LIMIT:-24}"
 ROS_PANEL_READONLY_DNS_SERVERS="${ROS_PANEL_READONLY_DNS_SERVERS:-}"
 ROS_PANEL_READONLY_OPENWRT_DNS="${ROS_PANEL_READONLY_OPENWRT_DNS:-}"
 ROS_PANEL_READONLY_NIKKI_CONTROLLER="${ROS_PANEL_READONLY_NIKKI_CONTROLLER:-}"
@@ -169,6 +165,11 @@ ROS_MONITOR_CONNECTION_PROTOCOL_POLL_SECONDS="${ROS_MONITOR_CONNECTION_PROTOCOL_
 
 sudo apt-get update
 sudo DEBIAN_FRONTEND=noninteractive apt-get install -y python3-venv python3-pip rsync curl
+
+if ! id -u "${PANEL_RUNTIME_USER}" >/dev/null 2>&1; then
+  sudo useradd --system --user-group --home-dir /nonexistent --shell /usr/sbin/nologin "${PANEL_RUNTIME_USER}"
+fi
+PANEL_RUNTIME_GROUP="$(id -gn "${PANEL_RUNTIME_USER}")"
 
 sudo mkdir -p "${APP_DIR}"
 sudo rsync -a --delete \
@@ -190,6 +191,11 @@ sudo rsync -a --delete \
 sudo python3 -m venv "${VENV_DIR}"
 sudo PIP_DISABLE_PIP_VERSION_CHECK=1 "${VENV_DIR}/bin/pip" install --progress-bar off --upgrade pip
 sudo PIP_DISABLE_PIP_VERSION_CHECK=1 "${VENV_DIR}/bin/pip" install --progress-bar off -r "${APP_DIR}/requirements.txt"
+sudo chown -R root:root "${APP_DIR}"
+sudo find "${APP_DIR}" -type d -exec chmod 0755 {} +
+sudo find "${APP_DIR}" -type f -exec chmod go-w {} +
+sudo install -d -m 0750 -o "${PANEL_RUNTIME_USER}" -g "${PANEL_RUNTIME_GROUP}" "${APP_DIR}/data"
+sudo chown -R "${PANEL_RUNTIME_USER}:${PANEL_RUNTIME_GROUP}" "${APP_DIR}/data"
 
 if [[ "${MODE}" == "instance" ]]; then
   sudo install -m 0644 "${APP_DIR}/routeros-panel@.service" "${SERVICE_FILE}"
@@ -206,10 +212,16 @@ ROS_PANEL_BIND=${ROS_PANEL_BIND}
 ROS_PANEL_PORT=${ROS_PANEL_PORT}
 ROS_PANEL_TARGET_IP=${ROS_PANEL_TARGET_IP}
 ROS_PANEL_TRUST_PROXY_HEADERS=${ROS_PANEL_TRUST_PROXY_HEADERS}
+ROS_PANEL_ALLOW_LOCALHOST_HOST_FORWARD=${ROS_PANEL_ALLOW_LOCALHOST_HOST_FORWARD}
+ROS_PANEL_LOCALHOST_FORWARD_TOKEN=${ROS_PANEL_LOCALHOST_FORWARD_TOKEN}
 ROS_PANEL_PROFILE=${ROS_PANEL_PROFILE}
 ROS_PANEL_IFACE=${ROS_PANEL_IFACE}
 ROS_PANEL_BIND_CIDR=${ROS_PANEL_BIND_CIDR}
 ROS_PANEL_IP_HEAL_SECONDS=${ROS_PANEL_IP_HEAL_SECONDS}
+ROS_PANEL_IP_ALIAS_WRITE_ENABLED=${ROS_PANEL_IP_ALIAS_WRITE_ENABLED}
+ROS_PANEL_EXPOSE_ADMIN_SESSIONS=${ROS_PANEL_EXPOSE_ADMIN_SESSIONS}
+ROS_PANEL_NETWORK_WRITE_ENABLED=${ROS_PANEL_NETWORK_WRITE_ENABLED}
+ROS_PANEL_ACTION_QUEUE_LIMIT=${ROS_PANEL_ACTION_QUEUE_LIMIT}
 ROS_PANEL_READONLY_DNS_SERVERS=${ROS_PANEL_READONLY_DNS_SERVERS}
 ROS_PANEL_READONLY_OPENWRT_DNS=${ROS_PANEL_READONLY_OPENWRT_DNS}
 ROS_PANEL_READONLY_NIKKI_CONTROLLER=${ROS_PANEL_READONLY_NIKKI_CONTROLLER}
@@ -228,18 +240,18 @@ EOF
 sudo install -m 0600 -o root -g root "${ENV_TMP}" "${ENV_FILE}"
 rm -f "${ENV_TMP}"
 
-if [[ "${MODE}" == "instance" ]]; then
-  # If the operator overrides APP_DIR, ensure the instance unit points at the right path.
-  # Using a drop-in also isolates per-instance customizations.
-  UNIT_OVERRIDE_DIR="/etc/systemd/system/${PANEL_UNIT}.d"
-  sudo mkdir -p "${UNIT_OVERRIDE_DIR}"
-  sudo tee "${UNIT_OVERRIDE_DIR}/override.conf" >/dev/null <<EOF
+# Keep per-install paths and runtime identity in a drop-in so the shared unit
+# template stays reusable and existing private installs can still override APP_DIR.
+UNIT_OVERRIDE_DIR="/etc/systemd/system/${PANEL_UNIT}.d"
+sudo mkdir -p "${UNIT_OVERRIDE_DIR}"
+sudo tee "${UNIT_OVERRIDE_DIR}/override.conf" >/dev/null <<EOF
 [Service]
+User=${PANEL_RUNTIME_USER}
+Group=${PANEL_RUNTIME_GROUP}
 WorkingDirectory=${APP_DIR}
 ExecStart=
 ExecStart=${VENV_DIR}/bin/python ${APP_DIR}/app.py
 EOF
-fi
 
 sudo systemctl daemon-reload
 if [[ "${MODE}" == "instance" ]]; then
@@ -268,4 +280,5 @@ fi
 
 sleep 5
 sudo systemctl --no-pager --full status "${IP_UNIT}" "${PANEL_UNIT}" || true
-curl -fsS "http://${ROS_PANEL_TARGET_IP}:${ROS_PANEL_PORT}/api/health"
+curl -fsS "http://127.0.0.1:${ROS_PANEL_PORT}/api/health"
+echo "Open http://127.0.0.1:${ROS_PANEL_PORT}/ on the systemd host."

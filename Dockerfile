@@ -21,9 +21,11 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     ROS_PANEL_PORT=28646 \
     ROS_PANEL_TARGET_IP=127.0.0.1 \
     ROS_PANEL_TRUST_PROXY_HEADERS=0 \
+    ROS_PANEL_ALLOW_LOCALHOST_HOST_FORWARD=0 \
     ROS_PANEL_PROFILE=routeros_only \
     ROS_PANEL_IP_ALIAS_WRITE_ENABLED=0 \
-    ROS_PANEL_EXPOSE_ADMIN_SESSIONS=0
+    ROS_PANEL_EXPOSE_ADMIN_SESSIONS=0 \
+    ROS_PANEL_NETWORK_WRITE_ENABLED=0
 
 WORKDIR /app
 
@@ -39,7 +41,10 @@ COPY app.py ./
 COPY public ./public
 
 RUN mkdir -p /app/data \
-    && chown -R panel:panel /app
+    && chown -R root:root /app \
+    && chmod -R go-w /app/app.py /app/public \
+    && chown panel:panel /app/data \
+    && chmod 0750 /app/data
 
 USER panel
 EXPOSE 28646

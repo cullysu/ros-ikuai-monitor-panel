@@ -25,6 +25,17 @@ screenshots, JSON snapshots, or issue reports.
 The panel keeps local state under its data directory or container volume. Saved
 RouterOS logins are local secrets and should be used only on trusted hosts.
 
+Storage location depends on the delivery mode:
+
+- Docker / Compose stores mutable panel data in the `routeros-triage-data`
+  volume.
+- Windows EXE stores local files next to the extracted EXE unless configured
+  otherwise.
+- Linux systemd / VM stores mutable panel data under the deployed app `data/`
+  directory owned by the non-root service user.
+- RouterOS Container stores mutable panel data in the configured container
+  mount.
+
 ## Network Access
 
 The public profile is RouterOS-only by default. Optional private diagnostics for

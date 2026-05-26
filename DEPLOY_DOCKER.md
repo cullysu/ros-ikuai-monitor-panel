@@ -28,6 +28,18 @@ The backend also guards the HTTP `Host` header so direct browser access by a
 non-loopback IP is rejected even if the service is accidentally published more
 broadly.
 
+## Public Delivery Contract
+
+Docker / Compose is one of the four public delivery modes. Its public contract
+matches Windows EXE, Linux systemd/VM, and RouterOS Container at the browser
+layer: use `routeros_only`, keep write guardrails disabled, and open the UI as
+`http://127.0.0.1:28646/`.
+
+In Docker specifically, `ROS_PANEL_BIND=0.0.0.0` is only the in-container
+listener required for Docker port publishing. The host-side published address
+stays `127.0.0.1` by default, so another device cannot browse the Docker host's
+LAN IP and get a supported public panel URL.
+
 ## One-command Install
 
 Safest first run: download, review, dry-run, then install.
@@ -144,6 +156,11 @@ ROS_PANEL_TARGET_IP=127.0.0.1
 address settings. Normal browser/API status uses the request `Host` header, so
 manual Compose should leave it as `127.0.0.1`.
 
+The in-panel address dialog is read-only for Docker installs
+(`ROS_PANEL_NETWORK_WRITE_ENABLED=0`). This avoids writing settings that cannot
+update Docker's host port mapping. Change `.env.docker`, then restart the
+Compose service, if you intentionally need a different loopback port.
+
 ## Configure RouterOS Login In The UI
 
 In the RouterOS login screen, enter:
@@ -197,6 +214,10 @@ devices that are not the Docker host do not get a public LAN URL from this
 project.
 
 Do not expose this directly to a LAN or the public internet.
+
+Do not use the UI address dialog to change Docker publishing. Docker publishing
+is owned by `.env.docker` plus `compose.yml`, not by a file inside the running
+container.
 
 ## Security Shape
 
@@ -290,8 +311,12 @@ the panel so `http://127.0.0.1:28646/` remains the public entrypoint.
 ### Another Device Cannot Open The Panel
 
 That is expected. The public Docker path is localhost-only. Run the browser on
-the Docker host, or use a local forwarder on the client so the browser still
-opens `http://127.0.0.1:28646/`.
+the Docker host.
+
+If a different management client must open the UI, use an explicit client-local
+forwarder or tunnel that connects back to the Docker host's loopback endpoint,
+then still open `http://127.0.0.1:28646/` on that client. Do not replace
+`127.0.0.1` with the Docker host LAN IP as a public product URL.
 
 ### RouterOS Login Fails
 

@@ -64,11 +64,35 @@ RouterOS Container is different because the panel runs inside RouterOS. The
 browser still opens `http://127.0.0.1:28646/`, but that requires a local
 forwarder on the client. Do not treat the container veth address as a browser
 URL.
+The RouterOS Container env template enables a localhost Host-forward guard with
+a random forward token. The client-local forwarder injects that token; direct
+browser entry by container/veth/LAN IP continues to be rejected.
 
 When the panel is opened in a browser, the backend reports the actual URL from
 the HTTP `Host` header. Manual Docker Compose no longer depends on a container
 guessing the host LAN IP correctly; `ROS_PANEL_TARGET_IP` is only a configured
 fallback for logs and address settings.
+
+## Public Delivery Matrix
+
+The public product is released through four delivery modes with the same
+RouterOS-only, localhost-only security stance:
+
+| Delivery mode | Runtime default | Browser entrypoint |
+|---------------|-----------------|--------------------|
+| Docker / Compose | container listens on `0.0.0.0`; host publishes `127.0.0.1:28646` | Docker host opens `http://127.0.0.1:28646/` |
+| Windows EXE | EXE listens on `127.0.0.1:28646` | Windows host opens `http://127.0.0.1:28646/` |
+| Linux systemd / VM | non-root systemd service listens on `127.0.0.1:28646` | systemd host opens `http://127.0.0.1:28646/` |
+| RouterOS Container | container listens inside RouterOS container networking | client opens `http://127.0.0.1:28646/` through a client-local forwarder |
+
+Across all four modes, keep `routeros_only`, proxy-header trust off unless a
+trusted reverse proxy design is reviewed, IP-alias writes off, and admin-session
+exposure off. Remember that `127.0.0.1` belongs to the browser machine; it does
+not cross devices without an explicit local forwarder or tunnel on that device.
+The in-panel address dialog is a status view in Docker, Linux systemd/VM, and
+RouterOS Container installs; edit the installer/env file and restart for those
+modes. The Windows EXE sidecar env file is user-writable, so the dialog may save
+loopback-only address settings there.
 
 ## Quick Start: Docker One-command
 
@@ -228,7 +252,7 @@ export ROS_MONITOR_ROUTER_PASSWORD="CHANGE_ME"
 ./deploy_linux.sh --instance routeros-panel --disable-ip-service
 ```
 
-Open `http://127.0.0.1:28646/` on the systemd host. Older `.3.50/.4.50`
+Open `http://127.0.0.1:28646/` on the systemd host. Older LAN-bound
 deployment notes are historical examples, not product defaults.
 
 ## What It Does

@@ -8,6 +8,8 @@ public_root = project_root / "public"
 
 
 def public_datas():
+    # The Windows delivery zip copies env/docs in tools/build-windows-exe.ps1.
+    # The PyInstaller spec only bundles the app entrypoint and public UI assets.
     excluded_names = {"index.extracted.js"}
     excluded_prefixes = ("_preview",)
     excluded_fragments = (".bak-", ".pre-")

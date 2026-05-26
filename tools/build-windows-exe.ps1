@@ -31,11 +31,30 @@ if (-not (Test-Path -LiteralPath $DistDir)) {
     throw "Build output not found: $DistDir"
 }
 
-Copy-Item -LiteralPath (Join-Path $RepoRoot "routeros-panel.env.example") -Destination (Join-Path $DistDir "routeros-panel.env") -Force
-Copy-Item -LiteralPath (Join-Path $RepoRoot "routeros-panel.env.example") -Destination (Join-Path $DistDir "routeros-panel.env.example") -Force
+$EnvTemplate = Join-Path $RepoRoot "routeros-panel.env.example"
+$EnvRuntime = Join-Path $DistDir "routeros-panel.env"
+Copy-Item -LiteralPath $EnvTemplate -Destination $EnvRuntime -Force
+Copy-Item -LiteralPath $EnvTemplate -Destination (Join-Path $DistDir "routeros-panel.env.example") -Force
 Copy-Item -LiteralPath (Join-Path $RepoRoot "README.md") -Destination (Join-Path $DistDir "README.md") -Force
 Copy-Item -LiteralPath (Join-Path $RepoRoot "DEPLOY_WINDOWS_EXE.md") -Destination (Join-Path $DistDir "DEPLOY_WINDOWS_EXE.md") -Force
 Copy-Item -LiteralPath (Join-Path $RepoRoot "SECURITY.md") -Destination (Join-Path $DistDir "SECURITY.md") -Force
+
+$EnvText = Get-Content -LiteralPath $EnvRuntime -Raw
+foreach ($Marker in @(
+    "ROS_PANEL_BIND=127.0.0.1",
+    "ROS_PANEL_TARGET_IP=127.0.0.1",
+    "ROS_PANEL_TRUST_PROXY_HEADERS=0",
+    "ROS_PANEL_ALLOW_LOCALHOST_HOST_FORWARD=0",
+    "ROS_PANEL_LOCALHOST_FORWARD_TOKEN=",
+    "ROS_PANEL_PROFILE=routeros_only",
+    "ROS_PANEL_IP_ALIAS_WRITE_ENABLED=0",
+    "ROS_PANEL_EXPOSE_ADMIN_SESSIONS=0",
+    "ROS_PANEL_NETWORK_WRITE_ENABLED=1"
+)) {
+    if (-not $EnvText.Contains($Marker)) {
+        throw "Windows EXE env default is missing $Marker"
+    }
+}
 
 $AliasDir = Join-Path $DistDir "localhost-alias"
 New-Item -ItemType Directory -Force -Path $AliasDir | Out-Null

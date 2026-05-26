@@ -15,6 +15,7 @@ dist/
 /_backup/
 /_staging_*/
 /_acceptance/
+/test-results/
 /_npm_cache/
 /_pwtemp/
 /_wv2_profile*/

@@ -1456,12 +1456,14 @@
         grid-template-columns: minmax(0, 1fr) !important;
       }
       #overview .public-home-hero,
-      #overview .ik-wan-rate-chart,
-      #overview .ops-home-stream-grid .ik-wan-rate-chart,
       .line-bar,
       .ops-bar-stack .line-bar,
       #overview .ik-home-line-bars .line-bar {
         grid-template-columns: minmax(0, 1fr) !important;
+      }
+      #overview .ik-wan-rate-chart,
+      #overview .ops-home-stream-grid .ik-wan-rate-chart {
+        grid-template-columns: minmax(0, 1fr) minmax(54px, 62px) !important;
       }
       .refresh-toolbar {
         align-items: flex-start !important;
@@ -1484,7 +1486,7 @@
       }
       .ops-axis-chart,
       .ik-wan-rate-chart {
-        grid-template-columns: minmax(0, 1fr) !important;
+        grid-template-columns: minmax(0, 1fr) minmax(54px, 62px) !important;
       }
       .ops-signal-row {
         grid-template-columns: minmax(0, 1fr) !important;
@@ -2019,12 +2021,18 @@
 
   function addressCell(values = [], limit = 3) {
     const families = splitIpFamilies(values);
-    const ordered = [...families.ipv4, ...families.ipv6];
-    if (!ordered.length) return '<div class="ops-address-stack"><span>-</span></div>';
-    const total = families.ipv4.length + families.ipv6.length;
-    const shown = ordered.slice(0, limit);
-    const extra = total > shown.length ? [`+${fmtNumber(total - shown.length)} 个地址`] : [];
-    return `<div class="ops-address-stack">${[...shown, ...extra].map((item) => `<span>${escapeHtml(item)}</span>`).join('')}</div>`;
+    if (!families.ipv4.length && !families.ipv6.length) return '<div class="ops-address-stack"><span>-</span></div>';
+    const hasBoth = families.ipv4.length && families.ipv6.length;
+    const perFamilyLimit = hasBoth ? Math.max(1, Math.ceil(limit / 2)) : limit;
+    const renderFamily = (label, items) => {
+      if (!items.length) return '';
+      const shown = items.slice(0, perFamilyLimit);
+      const extraCount = Math.max(0, items.length - shown.length);
+      const rows = shown.map((item) => `<span>${escapeHtml(item)}</span>`).join('');
+      const extra = extraCount ? `<span>+${fmtNumber(extraCount)} 个地址</span>` : '';
+      return `<span class="ops-address-family"><span class="ops-address-family-label">${label}</span>${rows}${extra}</span>`;
+    };
+    return `<div class="ops-address-stack">${renderFamily('IPv4', families.ipv4)}${renderFamily('IPv6', families.ipv6)}</div>`;
   }
 
   function addressMetaCell(values = [], meta = '') {
@@ -4096,6 +4104,19 @@
       overflow-wrap: anywhere;
       word-break: break-word;
     }
+    .ops-address-family {
+      display: grid;
+      gap: 1px;
+      min-width: 0;
+      max-width: 100%;
+    }
+    .ops-address-family-label {
+      color: #6b7b8f;
+      font-family: "Microsoft YaHei","Segoe UI",sans-serif;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0;
+    }
     .ops-address-with-meta {
       display: grid;
       gap: 2px;
@@ -4172,7 +4193,7 @@
       }
       .ops-axis-chart,
       .ik-wan-rate-chart {
-        grid-template-columns: minmax(0, 1fr) !important;
+        grid-template-columns: minmax(0, 1fr) minmax(54px, 62px) !important;
       }
       .ops-signal-row {
         grid-template-columns: minmax(0, 1fr) !important;

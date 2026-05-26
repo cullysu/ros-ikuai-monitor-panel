@@ -50,6 +50,26 @@ http://127.0.0.1:28646/
 手动 Docker Compose 不再依赖容器自己猜宿主机 LAN IP。`ROS_PANEL_TARGET_IP`
 只作为日志和地址设置里的兜底值。
 
+## 公开交付矩阵
+
+公开产品按四种交付方式保持同一套 RouterOS-only、本机 loopback 默认边界：
+
+| 交付方式 | 运行时默认值 | 浏览器入口 |
+| --- | --- | --- |
+| RouterOS Container 补充 | 唯一默认开启 `ROS_PANEL_ALLOW_LOCALHOST_HOST_FORWARD=1` 的交付方式，只接受保留 `Host: 127.0.0.1:28646` 且带匹配 `ROS_PANEL_LOCALHOST_FORWARD_TOKEN` 的客户端本机转发访问 | 直接用容器/veth/LAN IP 打开仍会被 Host/token 守卫拒绝 |
+| Docker / Compose | 容器内监听 `0.0.0.0`，宿主机只发布 `127.0.0.1:28646` | 在 Docker 宿主机打开 `http://127.0.0.1:28646/` |
+| Windows EXE | EXE 监听 `127.0.0.1:28646` | 在 Windows 主机打开 `http://127.0.0.1:28646/` |
+| Linux systemd / VM | 非 root systemd 服务监听 `127.0.0.1:28646` | 在 systemd 主机打开 `http://127.0.0.1:28646/` |
+| RouterOS Container | 容器进程监听 RouterOS container 网络内部地址 | 客户端通过本机转发器打开 `http://127.0.0.1:28646/` |
+
+四种方式都应保持 `routeros_only`、不信任代理头、关闭 IP alias 写入、关闭
+admin session 暴露。`127.0.0.1` 永远是当前浏览器所在设备；跨设备访问必须先在
+该客户端本机建立明确的转发或隧道。
+
+面板里的“面板地址”对 Docker、Linux systemd/VM、RouterOS Container 是只读状态
+视图；这些方式要改地址必须改安装 env/部署层后重启。Windows EXE 的 sidecar
+`routeros-panel.env` 在普通可写目录下可以由面板保存，但仍只允许 loopback 地址。
+
 ## Docker 一条命令
 
 安装脚本默认本地构建，避免公开安装依赖包可见性。CI 也会发布可选 GHCR 镜像：

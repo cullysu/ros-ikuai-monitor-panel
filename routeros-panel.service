@@ -1,12 +1,12 @@
 [Unit]
 Description=RouterOS read-only triage panel
-After=network-online.target ros-panel-ip.service
-Wants=network-online.target ros-panel-ip.service
+After=network-online.target
+Wants=network-online.target
 
 [Service]
 Type=simple
-User=root
-Group=root
+User=routeros-panel
+Group=routeros-panel
 WorkingDirectory=/opt/ros-ikuai-monitor-panel
 EnvironmentFile=-/etc/default/routeros-panel
 ExecStart=/opt/ros-ikuai-monitor-panel/.venv/bin/python /opt/ros-ikuai-monitor-panel/app.py
@@ -15,6 +15,14 @@ RestartSec=5
 UMask=0077
 NoNewPrivileges=true
 PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=full
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+CapabilityBoundingSet=
+AmbientCapabilities=
 
 [Install]
 WantedBy=multi-user.target
