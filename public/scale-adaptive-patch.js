@@ -61,6 +61,7 @@
     .scale-clear { min-height: 38px; min-width: 74px; border: 1px solid #d8e2ef; border-radius: 8px; background: #fff; color: #243246; font-weight: 800; cursor: pointer; }
     .scale-clear:disabled { opacity: .45; cursor: not-allowed; }
     .scale-filter-summary { margin: 0 0 8px; color: #5e6f84; font-size: 12px; line-height: 1.45; }
+    .scale-window { min-width: 0; max-width: 100%; }
     .scale-table-wrap { width: 100%; max-width: 100%; overflow: auto; border: 1px solid #e3ecf7; border-radius: 8px; background: #fff; }
     .scale-table { width: 100%; min-width: 760px; border-collapse: collapse; font-size: 12px; }
     .scale-table th { position: sticky; top: 0; z-index: 1; padding: 8px 10px; background: #f5f8fc; color: #5c6d84; text-align: left; font-weight: 800; white-space: nowrap; border-bottom: 1px solid #e4edf7; }
@@ -83,11 +84,13 @@
     #trafficLoad .scale-table-wrap {
       width: 100%;
       max-width: 100%;
-      overflow-x: auto;
+      overflow-x: hidden;
+      overflow-y: auto;
       overscroll-behavior-x: contain;
     }
     #terminals .scale-table,
     #trafficLoad .scale-table {
+      min-width: 0;
       table-layout: fixed;
     }
     #terminals .scale-table th,
@@ -990,7 +993,7 @@
     const groupTabs = options.showGroupTabs ? `<div class="scale-group-tabs" role="tablist" aria-label="${html(options.groupLabel || '分组')}">
       ${groupOptions.map((item) => `<button type="button" role="tab" class="scale-group-tab ${group === item.value ? 'is-active' : ''}" data-scale-group-set="${html(key)}" data-scale-group-value="${html(item.value)}" aria-selected="${group === item.value ? 'true' : 'false'}"><b>${html(item.label)}</b>${item.meta ? `<span>${html(item.meta)}</span>` : ''}</button>`).join('')}
     </div>` : '';
-    return `
+    return `<div class="scale-window" data-scale-key="${html(key)}">
       ${groupTabs}
       <div class="scale-toolbar" data-scale-toolbar="${html(key)}">
         <div class="scale-field">
@@ -1014,7 +1017,8 @@
         <button type="button" data-scale-page="${html(key)}" data-scale-page-dir="-1" ${page <= 0 ? 'disabled' : ''}>上一页</button>
         <button type="button" data-scale-page="${html(key)}" data-scale-page-dir="1" ${start + pageSize >= filtered.length ? 'disabled' : ''}>下一页</button>
       </div>
-      <div class="scale-window-note">${html(options.note || '明细按窗口渲染；需要定位时先搜索或切换分组。')}</div>`;
+      <div class="scale-window-note">${html(options.note || '明细按窗口渲染；需要定位时先搜索或切换分组。')}</div>
+    </div>`;
   }
 
   function severityTone(item) {

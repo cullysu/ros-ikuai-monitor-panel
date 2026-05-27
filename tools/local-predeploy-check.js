@@ -880,6 +880,22 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       !protocolRankText.includes('当前暂无数据')
     );
     const detailFeedbackOk = !detailSections.has(sectionName) || Boolean(sectionRoot?.querySelector('[data-scale-filter-summary]') && sectionRoot?.querySelector('[data-scale-clear]'));
+    const scaleWindowScrollers = Array.from(sectionRoot?.querySelectorAll('.scale-window .scale-table-wrap') || []);
+    const scaleWindowHorizontalOverflow = scaleWindowScrollers
+      .map((node) => {
+        const rect = node.getBoundingClientRect();
+        const windowNode = node.closest('.scale-window');
+        const key = windowNode?.dataset?.scaleKey || '';
+        return {
+          key,
+          width: Math.round(rect.width),
+          scrollWidth: Math.round(node.scrollWidth),
+          clientWidth: Math.round(node.clientWidth),
+          overflowX: Math.round(node.scrollWidth - node.clientWidth),
+        };
+      })
+      .filter((row) => row.width > 0 && row.overflowX > 2);
+    const scaleWindowHorizontalOk = !detailSections.has(sectionName) || scaleWindowHorizontalOverflow.length === 0;
     const broadbandTable = sectionRoot?.querySelector('[data-broadband-realtime-table]');
     const broadbandText = normalize(broadbandTable?.textContent || '');
     const broadbandHeaders = Array.from(broadbandTable?.querySelectorAll('th') || []).map((node) => normalize(node.textContent));
@@ -945,6 +961,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewResourceAxisOk &&
       overviewProtocolRankOk &&
       detailFeedbackOk &&
+      scaleWindowHorizontalOk &&
       interfaceBroadbandTableOk &&
       humanScaleCopyOk &&
       scaleHeightOk &&
@@ -1003,6 +1020,8 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       resourceCardCount: resourceCards.length,
       resourceColumns,
       detailFeedbackOk,
+      scaleWindowHorizontalOk,
+      scaleWindowHorizontalOverflow,
       interfaceBroadbandTableOk,
       broadbandHeaders,
       humanScaleCopyOk,
