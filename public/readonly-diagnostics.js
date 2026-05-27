@@ -1130,11 +1130,11 @@
     #readonlyDiagnostics .readonly-ip-stack {
       display: flex;
       flex-direction: column;
-      gap: 3px;
+      gap: 1px;
       min-width: 0;
       font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
-      font-size: 11px;
-      line-height: 1.25;
+      font-size: 10.5px;
+      line-height: 1.18;
     }
     #readonlyDiagnostics .readonly-ip-line {
       display: block;
@@ -1146,16 +1146,9 @@
     }
     #readonlyDiagnostics .readonly-ip-family {
       display: grid;
-      gap: 1px;
+      gap: 0;
       min-width: 0;
       max-width: 100%;
-    }
-    #readonlyDiagnostics .readonly-ip-family-label {
-      color: #64748b;
-      font-family: "Microsoft YaHei","Segoe UI",sans-serif;
-      font-size: 10px;
-      font-weight: 800;
-      letter-spacing: 0;
     }
     #readonlyDiagnostics .readonly-more-line {
       color: #7f8da1;
@@ -2338,20 +2331,20 @@
     return text.length > max ? `${text.slice(0, Math.max(0, max - 1))}…` : text;
   }
 
-  function compactIpList(values, limit = 2) {
+  function compactIpList(values, limit = Infinity) {
     const ips = list(values).map((ip) => String(ip || "").trim()).filter(Boolean);
     if (!ips.length) return "-";
     const ipv4 = ips.filter((ip) => !ip.includes(":"));
     const ipv6 = ips.filter((ip) => ip.includes(":"));
     const hasBoth = ipv4.length && ipv6.length;
     const perFamilyLimit = hasBoth ? Math.max(1, Math.ceil(limit / 2)) : limit;
-    const family = (label, items) => {
+    const family = (items) => {
       if (!items.length) return "";
       const shown = items.slice(0, perFamilyLimit).map((ip) => `<span class="readonly-ip-line" title="${html(ip)}">${html(ip)}</span>`).join("");
       const more = items.length > perFamilyLimit ? `<span class="readonly-more-line">+${number(items.length - perFamilyLimit)} 个地址</span>` : "";
-      return `<span class="readonly-ip-family"><span class="readonly-ip-family-label">${label}</span>${shown}${more}</span>`;
+      return `<span class="readonly-ip-family">${shown}${more}</span>`;
     };
-    return `<div class="readonly-ip-stack">${family("IPv4", ipv4)}${family("IPv6", ipv6)}</div>`;
+    return `<div class="readonly-ip-stack">${family(ipv4)}${family(ipv6)}</div>`;
   }
 
   function renderProtocolDistribution(snapshot) {
@@ -2837,7 +2830,7 @@
         <tr>
           <td>${cell(html(row.name), html(row.parent || "-"))}</td>
           <td>${pill(row.running ? "在线" : "离线", row.running ? "ok" : "danger")}</td>
-          <td>${cell(compactIpList(row.addresses, 2), "", "readonly-mono")}</td>
+          <td>${cell(compactIpList(row.addresses), "", "readonly-mono")}</td>
           <td>${rate(row.upRate)}</td>
           <td>${rate(row.downRate)}</td>
           <td>${bytes(row.txBytes)} / ${bytes(row.rxBytes)}</td>

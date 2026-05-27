@@ -72,6 +72,25 @@ def load_env_file(path):
     return True
 
 
+def env_value(name, default=None):
+    value = os.environ.get(name)
+    if os.name == "posix":
+        try:
+            environ = Path("/proc/self/environ").read_bytes()
+        except OSError:
+            environ = b""
+        if environ:
+            prefix = f"{name}=".encode()
+            matches = [entry[len(prefix):] for entry in environ.split(b"\0") if entry.startswith(prefix)]
+            if matches:
+                value = matches[-1].decode(errors="replace")
+    return default if value is None else value
+
+
+class ReusableThreadingHTTPServer(ThreadingHTTPServer):
+    allow_reuse_address = True
+
+
 def load_panel_env():
     configured = os.getenv("ROS_PANEL_ENV_FILE")
     env_path = resolve_runtime_path(configured) if configured else BASE_DIR / "routeros-panel.env"
@@ -147,11 +166,11 @@ DEFAULT_PANEL_BIND = "127.0.0.1"
 DEFAULT_PANEL_PORT = 28646
 DEFAULT_PANEL_TARGET = "127.0.0.1"
 PANEL_NETWORK_ENV_KEYS = ("ROS_PANEL_BIND", "ROS_PANEL_PORT", "ROS_PANEL_TARGET_IP")
-PANEL_NETWORK_WRITE_ENABLED_RAW = str(os.getenv("ROS_PANEL_NETWORK_WRITE_ENABLED", "auto")).strip().lower()
-PANEL_TRUST_PROXY_HEADERS = str(os.getenv("ROS_PANEL_TRUST_PROXY_HEADERS", "0")).strip().lower() in {"1", "true", "yes", "on"}
-PANEL_ALLOW_LOCALHOST_HOST_FORWARD = str(os.getenv("ROS_PANEL_ALLOW_LOCALHOST_HOST_FORWARD", "0")).strip().lower() in {"1", "true", "yes", "on"}
+PANEL_NETWORK_WRITE_ENABLED_RAW = str(env_value("ROS_PANEL_NETWORK_WRITE_ENABLED", "auto")).strip().lower()
+PANEL_TRUST_PROXY_HEADERS = str(env_value("ROS_PANEL_TRUST_PROXY_HEADERS", "0")).strip().lower() in {"1", "true", "yes", "on"}
+PANEL_ALLOW_LOCALHOST_HOST_FORWARD = str(env_value("ROS_PANEL_ALLOW_LOCALHOST_HOST_FORWARD", "0")).strip().lower() in {"1", "true", "yes", "on"}
 PANEL_LOCALHOST_FORWARD_HEADER = "X-Ros-Panel-Localhost-Forward"
-PANEL_LOCALHOST_FORWARD_TOKEN = str(os.getenv("ROS_PANEL_LOCALHOST_FORWARD_TOKEN", "")).strip()
+PANEL_LOCALHOST_FORWARD_TOKEN = str(env_value("ROS_PANEL_LOCALHOST_FORWARD_TOKEN", "")).strip()
 PANEL_SESSION_COOKIE = "ros_panel_session"
 PANEL_CSRF_COOKIE = "ros_panel_csrf"
 PANEL_SESSION_TTL_SECONDS = 8 * 60 * 60
@@ -589,14 +608,14 @@ def write_panel_network_env(bind, port, target, env_path=None):
 PANEL_ENV_FILE = load_panel_env()
 PUBLIC_DIR = resolve_runtime_path(os.getenv("ROS_PANEL_PUBLIC_DIR", str(BUNDLE_DIR / "public")))
 DEFAULT_ROUTER_HOST = "192.168.88.1"
-ROUTER_HOST = os.getenv("ROS_MONITOR_ROUTER_HOST", DEFAULT_ROUTER_HOST)
+ROUTER_HOST = env_value("ROS_MONITOR_ROUTER_HOST", DEFAULT_ROUTER_HOST)
 ROUTER_USER = os.getenv("ROS_MONITOR_ROUTER_USER", "ros-panel-readonly")
 ROUTER_PASSWORD = os.getenv("ROS_MONITOR_ROUTER_PASSWORD", "CHANGE_ME")
 ROUTER_SSH_PORT = int(os.getenv("ROS_MONITOR_ROUTER_SSH_PORT", "22"))
-PANEL_PROFILE_RAW = os.getenv("ROS_PANEL_PROFILE", "routeros_only")
-PANEL_BIND = normalize_panel_host(os.getenv("ROS_PANEL_BIND", DEFAULT_PANEL_BIND), "bind")
-PANEL_PORT = normalize_panel_port(os.getenv("ROS_PANEL_PORT", str(DEFAULT_PANEL_PORT)))
-PANEL_TARGET = resolve_panel_access_host(os.getenv("ROS_PANEL_TARGET_IP", DEFAULT_PANEL_TARGET))
+PANEL_PROFILE_RAW = env_value("ROS_PANEL_PROFILE", "routeros_only")
+PANEL_BIND = normalize_panel_host(env_value("ROS_PANEL_BIND", DEFAULT_PANEL_BIND), "bind")
+PANEL_PORT = normalize_panel_port(env_value("ROS_PANEL_PORT", str(DEFAULT_PANEL_PORT)))
+PANEL_TARGET = resolve_panel_access_host(env_value("ROS_PANEL_TARGET_IP", DEFAULT_PANEL_TARGET))
 PANEL_BIND, PANEL_TARGET = validate_panel_public_contract(PANEL_BIND, PANEL_TARGET)
 POLL_SECONDS = max(1, int(os.getenv("ROS_MONITOR_POLL_SECONDS", "1")))
 HISTORY_LIMIT = int(os.getenv("ROS_MONITOR_HISTORY_LIMIT", "60"))
@@ -5416,7 +5435,7 @@ class Handler(BaseHTTPRequestHandler):
 
 def main():
     collector.start()
-    server = ThreadingHTTPServer((PANEL_BIND, PANEL_PORT), Handler)
+    server = ReusableThreadingHTTPServer((PANEL_BIND, PANEL_PORT), Handler)
     url = panel_access_url(PANEL_BIND, PANEL_PORT, PANEL_TARGET)
     print(f"RouterOS Triage Panel listening on {url}", flush=True)
     if PANEL_ENV_FILE:

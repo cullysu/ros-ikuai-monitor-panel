@@ -66,7 +66,7 @@
       width: 100%;
       max-width: 100%;
       overflow-x: hidden;
-      overflow-y: auto;
+      overflow-y: visible;
       overscroll-behavior-x: contain;
       border: 1px solid #e3ecf7;
       border-radius: 8px;
@@ -115,14 +115,14 @@
     }
     .scale-address-stack {
       display: grid;
-      gap: 2px;
+      gap: 1px;
       min-width: 0;
       max-width: 100%;
       color: #253247;
       font-family: "Cascadia Mono","Consolas","Microsoft YaHei",monospace;
-      font-size: 11.5px;
+      font-size: 10.5px;
       font-weight: 600;
-      line-height: 1.28;
+      line-height: 1.18;
       white-space: normal;
       font-variant-numeric: tabular-nums;
     }
@@ -136,16 +136,9 @@
     }
     .scale-address-family {
       display: grid;
-      gap: 1px;
+      gap: 0;
       min-width: 0;
       max-width: 100%;
-    }
-    .scale-address-family-label {
-      color: #64748b;
-      font-family: "Microsoft YaHei","Segoe UI",sans-serif;
-      font-size: 10px;
-      font-weight: 800;
-      letter-spacing: 0;
     }
     .scale-terminal-name,
     .scale-terminal-ip,
@@ -293,13 +286,13 @@
     .pm-broadband-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 0 0 10px; }
     .pm-broadband-title { color: #111827; font-size: 14px; font-weight: 900; line-height: 1.25; }
     .pm-broadband-count { color: #64748b; font-size: 12px; white-space: nowrap; }
-    .pm-broadband-wrap { width: 100%; max-height: 420px; overflow: auto; border: 1px solid #e3ecf7; border-radius: 8px; background: #fff; }
-    .pm-broadband-table { width: 100%; min-width: 1080px; border-collapse: collapse; font-size: 12px; }
+    .pm-broadband-wrap { width: 100%; max-height: none; overflow: visible; border: 1px solid #e3ecf7; border-radius: 8px; background: #fff; }
+    .pm-broadband-table { width: 100%; min-width: 0; border-collapse: collapse; table-layout: fixed; font-size: 11px; }
     .pm-broadband-table th { position: sticky; top: 0; z-index: 1; padding: 8px 10px; background: #f5f8fc; color: #66758a; text-align: left; font-weight: 900; white-space: nowrap; border-bottom: 1px solid #e3ecf7; }
-    .pm-broadband-table td { padding: 8px 10px; color: #111827; border-top: 1px solid #edf3fa; vertical-align: top; font-variant-numeric: tabular-nums; }
+    .pm-broadband-table td { padding: 6px 8px; color: #111827; border-top: 1px solid #edf3fa; vertical-align: top; font-variant-numeric: tabular-nums; }
     .pm-broadband-table tr:first-child td { border-top: 0; }
     .pm-broadband-line { font-weight: 900; white-space: nowrap; }
-    .pm-broadband-address { color: #334155; font-size: 12px; line-height: 1.35; overflow-wrap: anywhere; }
+    .pm-broadband-address { color: #334155; font-size: 10.5px; line-height: 1.18; overflow-wrap: anywhere; }
     .pm-broadband-address span { display: block; }
     .pm-broadband-rate { white-space: nowrap; }
     .pm-broadband-route { min-width: 150px; line-height: 1.35; }
@@ -795,22 +788,22 @@
     return addressStack(rows, limit);
   }
 
-  function addressStack(value, limit = 3) {
+  function addressStack(value, limit = Infinity) {
     const rows = orderAddressRows(valueList(value));
     if (!rows.length) return '<div class="scale-address-stack"><span>-</span></div>';
     const ipv4 = rows.filter((item) => !String(item).includes(':'));
     const ipv6 = rows.filter((item) => String(item).includes(':'));
     const hasBoth = ipv4.length && ipv6.length;
     const perFamilyLimit = hasBoth ? Math.max(1, Math.ceil(limit / 2)) : limit;
-    const renderFamily = (label, items) => {
+    const renderFamily = (items) => {
       if (!items.length) return '';
       const shown = items.slice(0, perFamilyLimit);
       const extraCount = Math.max(0, items.length - shown.length);
       const body = shown.map((item) => `<span>${html(item)}</span>`).join('');
       const extra = extraCount ? `<span>+${number(extraCount)} 个地址</span>` : '';
-      return `<span class="scale-address-family"><span class="scale-address-family-label">${label}</span>${body}${extra}</span>`;
+      return `<span class="scale-address-family">${body}${extra}</span>`;
     };
-    return `<div class="scale-address-stack">${renderFamily('IPv4', ipv4)}${renderFamily('IPv6', ipv6)}</div>`;
+    return `<div class="scale-address-stack">${renderFamily(ipv4)}${renderFamily(ipv6)}</div>`;
   }
 
   function activeRouteSummary(line) {
@@ -829,7 +822,8 @@
       .filter((line) => line && !line.isAggregateWan)
       .slice()
       .sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), 'zh-CN', { numeric: true }));
-    const body = rows.map((line) => {
+    const visibleRows = rows.length > 16 ? rows.slice(0, 16) : rows;
+    const body = visibleRows.map((line) => {
       const running = Boolean(line.running);
       const statusText = running ? '在线' : (line.disabled ? '禁用' : '离线');
       const statusTone = running ? 'ok' : 'danger';
@@ -837,7 +831,7 @@
       return `<tr>
         <td class="pm-broadband-line">${html(line.name || line.interface || '-')}</td>
         <td>${pill(statusText, statusTone)}</td>
-        <td><div class="pm-broadband-address">${addressLines(addresses, 2)}</div></td>
+        <td><div class="pm-broadband-address">${addressLines(addresses)}</div></td>
         <td class="pm-broadband-rate">${rate(line.upRate)}</td>
         <td class="pm-broadband-rate">${rate(line.downRate)}</td>
         <td class="pm-broadband-rate">${bytes(line.txBytes || 0)}</td>
@@ -1152,7 +1146,7 @@
     if (!values.some((item) => /(?:\d+\.){3}\d+|:/.test(String(item)))) {
       return html(shortList(values, 2));
     }
-    return addressStack(values, 3);
+    return addressStack(values);
   }
 
   function wanUsageText(line) {
@@ -1550,7 +1544,7 @@
                 <td><div class="pm-iface-name"><b>${html(row.name || '-')}</b><span>${html(row.type || '-')}</span></div></td>
                 <td>${pill(role, role === 'WAN' ? 'info' : role === 'VNET' ? 'warn' : 'ok')}</td>
                 <td>${pill(statusText, statusTone)}</td>
-                <td class="scale-address-cell">${addressStack(row.ips || row.addresses || [], 3)}</td>
+                <td class="scale-address-cell">${addressStack(row.ips || row.addresses || [])}</td>
                 <td>${traffic}</td>
                 <td>${totalBytes}</td>
                 <td>${html(interfaceQualityEvidence(row))}</td>

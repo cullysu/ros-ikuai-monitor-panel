@@ -84,6 +84,8 @@ function main() {
   assertContains('DEPLOY_ROUTEROS_CONTAINER.md', 'ROS_PANEL_LOCALHOST_FORWARD_TOKEN');
   assertContains('DEPLOY_ROUTEROS_CONTAINER.md', '--forward-token');
   assertContains('DEPLOY_ROUTEROS_CONTAINER.md', 'Host: 127.0.0.1:28646');
+  assertContains('DEPLOY_ROUTEROS_CONTAINER.md', 'and running');
+  assertContains('tools/build-routeros-container-archive.sh', 'wait until it is not running');
   assertContains('DEPLOY_ROUTEROS_CONTAINER.md', '/container/start [find where root-dir="disk1/routeros-triage"]');
   assertNotContains('DEPLOY_ROUTEROS_CONTAINER.md', 'YOUR_ORG/routeros-triage-panel:TAG');
   assertNotContains('DEPLOY_ROUTEROS_CONTAINER.md', 'remote-image~"routeros-triage-panel"');

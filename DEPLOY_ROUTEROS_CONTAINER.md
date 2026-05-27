@@ -218,6 +218,17 @@ Upload `routeros-triage-panel-routeros.tar` to RouterOS storage, then run:
 /container/start [find where root-dir="disk1/routeros-triage"]
 ```
 
+When replacing an existing RouterOS Container, do not start the new container
+immediately after `stop`. RouterOS may return from `stop` before the old process
+has released TCP 28646. Wait until the old container is no longer `running`
+before removing it or starting a replacement:
+
+```routeros
+/container/stop [find where root-dir="disk1/routeros-triage"]
+:for i from=1 to=30 do={:if ([:len [/container/find where root-dir="disk1/routeros-triage" and running]] = 0) do={:set i 30} else={:delay 1}}
+/container/remove [find where root-dir="disk1/routeros-triage"]
+```
+
 Optional registry image, only after the GHCR package is public and anonymous
 pulls work:
 

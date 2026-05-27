@@ -43,7 +43,7 @@
     #overview .ik-home-summary-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
     #overview .ik-home-rank-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; align-items: stretch; }
     #overview .ik-home-rank-card { display: flex; min-height: 0; flex-direction: column; }
-    #overview .ik-home-rank-card .ops-table-wrap { border: 0; border-radius: 0; flex: 1 1 auto; height: 430px; max-height: 430px; overflow-y: auto; overscroll-behavior: contain; }
+    #overview .ik-home-rank-card .ops-table-wrap { border: 0; border-radius: 0; flex: 1 1 auto; height: auto; max-height: none; overflow-y: visible; overscroll-behavior: contain; }
     #overview .ik-home-rank-card-head { padding: 8px 10px; }
     #overview .ik-home-rank-card .ops-table thead th { position: sticky; top: 0; z-index: 2; background: #f8fbff; box-shadow: 0 1px 0 #edf1f7; }
     #overview .wide-card .info-list { gap: 6px 10px; }
@@ -2019,20 +2019,20 @@
     return `${shown}<br><span class="ops-inline-sub">+${fmtNumber(items.length - limit)} 项</span>`;
   }
 
-  function addressCell(values = [], limit = 3) {
+  function addressCell(values = [], limit = Infinity) {
     const families = splitIpFamilies(values);
     if (!families.ipv4.length && !families.ipv6.length) return '<div class="ops-address-stack"><span>-</span></div>';
     const hasBoth = families.ipv4.length && families.ipv6.length;
     const perFamilyLimit = hasBoth ? Math.max(1, Math.ceil(limit / 2)) : limit;
-    const renderFamily = (label, items) => {
+    const renderFamily = (items) => {
       if (!items.length) return '';
       const shown = items.slice(0, perFamilyLimit);
       const extraCount = Math.max(0, items.length - shown.length);
       const rows = shown.map((item) => `<span>${escapeHtml(item)}</span>`).join('');
       const extra = extraCount ? `<span>+${fmtNumber(extraCount)} 个地址</span>` : '';
-      return `<span class="ops-address-family"><span class="ops-address-family-label">${label}</span>${rows}${extra}</span>`;
+      return `<span class="ops-address-family">${rows}${extra}</span>`;
     };
-    return `<div class="ops-address-stack">${renderFamily('IPv4', families.ipv4)}${renderFamily('IPv6', families.ipv6)}</div>`;
+    return `<div class="ops-address-stack">${renderFamily(families.ipv4)}${renderFamily(families.ipv6)}</div>`;
   }
 
   function addressMetaCell(values = [], meta = '') {
@@ -4085,14 +4085,14 @@
     }
     .ops-address-stack {
       display: grid;
-      gap: 2px;
+      gap: 1px;
       min-width: 0;
       max-width: 100%;
       color: inherit;
       font-family: "Cascadia Mono","Consolas","Microsoft YaHei",monospace;
-      font-size: 11px;
+      font-size: 10.5px;
       font-weight: 500;
-      line-height: 1.22;
+      line-height: 1.18;
       white-space: normal;
       font-variant-numeric: tabular-nums;
     }
@@ -4106,16 +4106,9 @@
     }
     .ops-address-family {
       display: grid;
-      gap: 1px;
+      gap: 0;
       min-width: 0;
       max-width: 100%;
-    }
-    .ops-address-family-label {
-      color: #6b7b8f;
-      font-family: "Microsoft YaHei","Segoe UI",sans-serif;
-      font-size: 10px;
-      font-weight: 800;
-      letter-spacing: 0;
     }
     .ops-address-with-meta {
       display: grid;
