@@ -607,25 +607,48 @@ async function launchBrowser(args, report) {
   }
   const port = await getFreePort();
   const userDataDir = path.join(os.tmpdir(), `ros-panel-predeploy-${process.pid}-${Date.now()}`);
-  const child = spawn(browserPath, [
+  const browserArgs = [
     '--headless=new',
     '--disable-gpu',
     '--disable-background-networking',
+    '--disable-dev-shm-usage',
     '--disable-sync',
     '--disable-extensions',
     '--no-first-run',
     '--no-default-browser-check',
     '--metrics-recording-only',
+    '--remote-debugging-address=127.0.0.1',
     `--remote-debugging-port=${port}`,
     `--user-data-dir=${userDataDir}`,
     'about:blank',
-  ], { windowsHide: true, stdio: 'ignore' });
+  ];
+  if (process.platform !== 'win32') {
+    browserArgs.splice(1, 0, '--no-sandbox');
+  }
+  const child = spawn(browserPath, browserArgs, {
+    windowsHide: true,
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
+  let stdout = '';
+  let stderr = '';
+  let exit = null;
+  child.stdout.on('data', (chunk) => { stdout += chunk.toString(); });
+  child.stderr.on('data', (chunk) => { stderr += chunk.toString(); });
+  child.on('exit', (code, signal) => { exit = { code, signal }; });
+  report.browser = { path: browserPath, port, userDataDir };
 
   try {
     await waitForJson(`http://127.0.0.1:${port}/json/version`, 15000);
   } catch (error) {
     child.kill('SIGKILL');
-    throw error;
+    report.browser = {
+      ...report.browser,
+      launchError: error.message,
+      exit,
+      stdout: tail(stdout, 2000),
+      stderr: tail(stderr, 4000),
+    };
+    throw new Error(`Browser CDP endpoint did not become ready: ${error.message}`);
   }
 
   async function connect() {
