@@ -256,9 +256,22 @@ def is_unspecified_panel_host(value):
         return False
 
 
-def validate_panel_public_contract(bind, target):
+def panel_profile_requires_localhost_contract(profile):
+    normalized = re.sub(r"[^a-z0-9]+", "_", str(profile or "").strip().lower()).strip("_")
+    return normalized in {
+        "public",
+        "routeros_public",
+        "routeros_only",
+        "public_routeros",
+        "routeros_public_preview",
+    }
+
+
+def validate_panel_public_contract(bind, target, profile="routeros_only"):
     bind = normalize_panel_host(bind, "bind")
     target = resolve_panel_access_host(target)
+    if not panel_profile_requires_localhost_contract(profile):
+        return bind, target
     if not (is_loopback_panel_host(bind) or is_unspecified_panel_host(bind)):
         raise ValueError("Panel bind must stay on 127.0.0.1/localhost; non-loopback IPs are not allowed")
     if not is_loopback_panel_host(target):
@@ -300,6 +313,8 @@ def client_host_is_loopback(value):
 
 
 def panel_client_address_is_allowed(client_address, headers=None):
+    if not globals().get("PUBLIC_ROUTEROS_PROFILE", True):
+        return True
     peer_host = client_address[0] if client_address else ""
     if not client_host_is_loopback(peer_host):
         if PANEL_ALLOW_LOCALHOST_HOST_FORWARD:
@@ -443,6 +458,8 @@ def csrf_token_matches(session, token):
 
 
 def panel_host_header_is_allowed(headers):
+    if not globals().get("PUBLIC_ROUTEROS_PROFILE", True):
+        return True
     if not headers:
         return True
     host_header = first_header_value(headers.get("Host"))
@@ -573,7 +590,7 @@ def write_panel_network_env(bind, port, target, env_path=None):
     bind = normalize_panel_host(bind, "bind")
     port = normalize_panel_port(port)
     target = resolve_panel_access_host(target)
-    bind, target = validate_panel_public_contract(bind, target)
+    bind, target = validate_panel_public_contract(bind, target, globals().get("PANEL_PROFILE_RAW", "routeros_only"))
     path = Path(env_path).resolve() if env_path else panel_env_write_path()
     write_status = panel_env_write_status(path)
     if not write_status["writable"]:
@@ -616,9 +633,10 @@ PANEL_PROFILE_RAW = env_value("ROS_PANEL_PROFILE", "routeros_only")
 PANEL_BIND = normalize_panel_host(env_value("ROS_PANEL_BIND", DEFAULT_PANEL_BIND), "bind")
 PANEL_PORT = normalize_panel_port(env_value("ROS_PANEL_PORT", str(DEFAULT_PANEL_PORT)))
 PANEL_TARGET = resolve_panel_access_host(env_value("ROS_PANEL_TARGET_IP", DEFAULT_PANEL_TARGET))
-PANEL_BIND, PANEL_TARGET = validate_panel_public_contract(PANEL_BIND, PANEL_TARGET)
+PANEL_BIND, PANEL_TARGET = validate_panel_public_contract(PANEL_BIND, PANEL_TARGET, PANEL_PROFILE_RAW)
 POLL_SECONDS = max(1, int(os.getenv("ROS_MONITOR_POLL_SECONDS", "1")))
 HISTORY_LIMIT = int(os.getenv("ROS_MONITOR_HISTORY_LIMIT", "60"))
+RATE_ZERO_CONFIRM_SAMPLES = max(1, int(os.getenv("ROS_MONITOR_RATE_ZERO_CONFIRM_SAMPLES", "2")))
 ACTIVE_CONNECTION_LIMIT = int(os.getenv("ROS_MONITOR_ACTIVE_CONNECTION_LIMIT", "80"))
 REST_TIMEOUT = max(8, int(os.getenv("ROS_MONITOR_REST_TIMEOUT", "12")))
 SSH_TIMEOUT = max(8, int(os.getenv("ROS_MONITOR_SSH_TIMEOUT", "12")))
@@ -2637,6 +2655,7 @@ class Collector:
         self.prev_counters = {}
         self.prev_ts = None
         self.current_rates = {}
+        self.zero_rate_candidates = {}
         self.last_counter_sample_at = None
         self.rate_history_sample_count = 0
         self.last_rate_sample_ready = False
@@ -2707,6 +2726,7 @@ class Collector:
             self.prev_counters = {}
             self.prev_ts = None
             self.current_rates = {}
+            self.zero_rate_candidates = {}
             self.last_counter_sample_at = None
             self.rate_history_sample_count = 0
             self.last_rate_sample_ready = False
@@ -3438,11 +3458,35 @@ class Collector:
         with self.lock:
             previous = copy.deepcopy(self.prev_counters)
             previous_ts = self.prev_ts
+            previous_rates = copy.deepcopy(self.current_rates)
+            zero_candidates = copy.deepcopy(self.zero_rate_candidates)
         interval = max(ts - previous_ts, 1) if previous_ts else 1
         rates = {}
         current = {}
         sample_ready = False
         counter_reset = False
+
+        def previous_direction_rate(interface_name, direction):
+            value = previous_rates.get(interface_name, {}).get(f"{direction}Bps")
+            try:
+                return float(value)
+            except (TypeError, ValueError):
+                return 0.0
+
+        def confirm_zero_rate(interface_name, direction, raw_rate, has_baseline, reset):
+            if reset:
+                zero_candidates.setdefault(interface_name, {})[direction] = 0
+                return None
+            previous_rate = previous_direction_rate(interface_name, direction)
+            if has_baseline and raw_rate == 0 and previous_rate > 0:
+                direction_counts = zero_candidates.setdefault(interface_name, {})
+                direction_counts[direction] = to_int(direction_counts.get(direction), 0) + 1
+                if direction_counts[direction] < RATE_ZERO_CONFIRM_SAMPLES:
+                    return previous_rate
+                return 0
+            zero_candidates.setdefault(interface_name, {})[direction] = 0
+            return raw_rate
+
         for item in interfaces:
             name = item.get("name")
             if not name:
@@ -3455,9 +3499,11 @@ class Collector:
             reset = has_baseline and (rx < prev_rx or tx < prev_tx)
             counter_reset = counter_reset or reset
             sample_ready = sample_ready or (has_baseline and not reset)
+            raw_rx_bps = max(rx - prev_rx, 0) / interval if has_baseline and not reset else 0
+            raw_tx_bps = max(tx - prev_tx, 0) / interval if has_baseline and not reset else 0
             rates[name] = {
-                "rxBps": None if reset else max(rx - prev_rx, 0) / interval,
-                "txBps": None if reset else max(tx - prev_tx, 0) / interval,
+                "rxBps": confirm_zero_rate(name, "rx", raw_rx_bps, has_baseline, reset),
+                "txBps": confirm_zero_rate(name, "tx", raw_tx_bps, has_baseline, reset),
                 "rateSampleReady": has_baseline and not reset,
                 "counterReset": reset,
             }
@@ -3465,6 +3511,7 @@ class Collector:
             self.prev_counters = current
             self.prev_ts = ts
             self.current_rates = copy.deepcopy(rates)
+            self.zero_rate_candidates = zero_candidates
             self.last_counter_sample_at = format_iso_now()
             self.last_rate_sample_ready = sample_ready
             self.last_counter_reset = counter_reset
