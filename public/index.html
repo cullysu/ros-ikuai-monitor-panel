@@ -3274,7 +3274,6 @@
 
     const menuGroups = {
       home: [
-        { section: 'overview', label: '首页总览', icon: 'ik-home' },
         { section: 'lineStatus', label: '线路状态', icon: 'ik-line' },
         { section: 'interfaces', label: '接口总览', icon: 'ik-line' },
         { section: 'terminals', label: '终端监控', icon: 'ik-terminal' },
@@ -4223,6 +4222,7 @@
       const visibleRailGroups = hasCapability('readonlyDiagnostics', snapshot)
         ? railGroups
         : railGroups.filter((group) => group.id !== 'diagnostics');
+      const sectionRailGroups = visibleRailGroups.filter((group) => group.id !== 'home');
       const readonlyStatusButton = hasCapability('readonlyDiagnostics', snapshot)
         ? '<button class="ik-rail-button ik-readonly-btn" type="button" title="只读状态" data-readonly-info-open aria-label="只读状态">只</button>'
         : '';
@@ -4234,7 +4234,7 @@
         ikRailEl.innerHTML = `
           <a class="ik-rail-logo ${currentSection === 'overview' ? 'is-active' : ''}" href="#overview" data-section="overview" data-nav-group="home" title="系统首页"${currentSection === 'overview' ? ' aria-current="page"' : ''}>首</a>
           <button class="ik-rail-button ik-rail-search-btn" type="button" title="搜索页面 Ctrl+K" data-quick-search-open aria-label="搜索页面">⌕</button>
-          <div class="ik-rail-group">${visibleRailGroups.map((group) => `
+          <div class="ik-rail-group">${sectionRailGroups.map((group) => `
             <a class="ik-rail-button ${currentNavGroup === group.id ? 'is-active' : ''}" href="#${group.section}" data-section="${group.section}" data-nav-group="${group.id}" title="${group.label}"${currentNavGroup === group.id ? ' aria-current="page"' : ''}>
               <span class="ik-rail-glyph ${group.icon}"></span>
               <span class="ik-rail-label">${group.label}</span>
