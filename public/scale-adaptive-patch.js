@@ -62,12 +62,29 @@
     .scale-clear:disabled { opacity: .45; cursor: not-allowed; }
     .scale-filter-summary { margin: 0 0 8px; color: #5e6f84; font-size: 12px; line-height: 1.45; }
     .scale-window { min-width: 0; max-width: 100%; }
-    .scale-table-wrap { width: 100%; max-width: 100%; overflow: auto; border: 1px solid #e3ecf7; border-radius: 8px; background: #fff; }
-    .scale-table { width: 100%; min-width: 760px; border-collapse: collapse; font-size: 12px; }
+    .scale-table-wrap {
+      width: 100%;
+      max-width: 100%;
+      overflow-x: hidden;
+      overflow-y: auto;
+      overscroll-behavior-x: contain;
+      border: 1px solid #e3ecf7;
+      border-radius: 8px;
+      background: #fff;
+    }
+    .scale-table { width: 100%; max-width: 100%; min-width: 0; border-collapse: collapse; table-layout: fixed; box-sizing: border-box; font-size: 12px; }
     .scale-table th { position: sticky; top: 0; z-index: 1; padding: 8px 10px; background: #f5f8fc; color: #5c6d84; text-align: left; font-weight: 800; white-space: nowrap; border-bottom: 1px solid #e4edf7; }
     .scale-table td { padding: 8px 10px; color: #253247; border-top: 1px solid #edf3fa; vertical-align: top; }
     .scale-table tr:first-child td { border-top: 0; }
     .scale-table td:first-child { font-weight: 800; color: #152238; }
+    .scale-table th,
+    .scale-table td {
+      min-width: 0;
+      max-width: 100%;
+      white-space: normal;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
     .scale-shell,
     .scale-detail-card,
     .scale-detail-card .card-body {
@@ -79,28 +96,6 @@
     #trafficLoad .scale-detail-card,
     #trafficLoad .scale-detail-card .card-body {
       overflow: hidden;
-    }
-    #terminals .scale-table-wrap,
-    #trafficLoad .scale-table-wrap {
-      width: 100%;
-      max-width: 100%;
-      overflow-x: hidden;
-      overflow-y: auto;
-      overscroll-behavior-x: contain;
-    }
-    #terminals .scale-table,
-    #trafficLoad .scale-table {
-      min-width: 0;
-      table-layout: fixed;
-    }
-    #terminals .scale-table th,
-    #terminals .scale-table td,
-    #trafficLoad .scale-table th,
-    #trafficLoad .scale-table td {
-      min-width: 0;
-      white-space: normal;
-      overflow-wrap: anywhere;
-      word-break: break-word;
     }
     #terminals .scale-table td:nth-child(5),
     #terminals .scale-table td:nth-child(6),
@@ -180,6 +175,8 @@
     #terminals .alias-cell,
     #trafficLoad .alias-cell {
       align-items: flex-start;
+      width: auto;
+      box-sizing: border-box;
     }
     .scale-empty { padding: 18px; color: #69788d; text-align: center; }
     .scale-pager { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: flex-end; margin-top: 8px; color: #69788d; font-size: 12px; }
@@ -528,8 +525,31 @@
       .ikuai-device { grid-template-columns: 1fr; }
       .scale-group-tabs { display: grid; grid-template-columns: 1fr 1fr; }
       .scale-detail-kpis { display: grid; grid-template-columns: 1fr; }
-      .scale-table { min-width: 680px; font-size: 11px; }
-      .scale-table th, .scale-table td { padding: 7px 8px; }
+      .scale-table { min-width: 0; font-size: 10.5px; }
+      .scale-table th, .scale-table td { padding: 6px 6px; }
+      .scale-table .tag {
+        display: inline;
+        max-width: 100%;
+        padding: 0;
+        border-radius: 0;
+        background: transparent;
+        font-size: 10px;
+        line-height: 1.12;
+        white-space: normal;
+        text-align: center;
+      }
+      #terminals .scale-table td,
+      #terminals .scale-table td:nth-child(5),
+      #terminals .scale-table td:nth-child(6),
+      #terminals .scale-table td:nth-child(7),
+      #terminals .scale-table td:nth-child(8),
+      #trafficLoad .scale-table td,
+      #trafficLoad .scale-table td:nth-child(3),
+      #trafficLoad .scale-table td:nth-child(4),
+      #trafficLoad .scale-table td:nth-child(5),
+      #trafficLoad .scale-table td:nth-child(6) {
+        white-space: normal;
+      }
     }
     #overview.ikuai-overview-section .ikuai-home.is-viewport-scaled .ikuai-wan-card {
       min-height: 680px !important;
