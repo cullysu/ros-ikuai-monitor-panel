@@ -478,20 +478,29 @@ async function findBrowser() {
   const envCandidates = ['BROWSER', 'CHROME_PATH', 'EDGE_PATH']
     .map((key) => process.env[key])
     .filter(Boolean);
-  const candidates = [
-    ...envCandidates,
+  const winCandidates = [
     'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',
     'C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe',
     'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
     'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
-    '/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge',
+  ];
+  const macCandidates = [
     '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
-    '/usr/bin/microsoft-edge',
+    '/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge',
+  ];
+  const linuxCandidates = [
     '/usr/bin/google-chrome-stable',
     '/usr/bin/google-chrome',
     '/usr/bin/chromium',
     '/usr/bin/chromium-browser',
+    '/usr/bin/microsoft-edge',
   ];
+  const platformCandidates = process.platform === 'win32'
+    ? winCandidates
+    : process.platform === 'darwin'
+      ? macCandidates
+      : linuxCandidates;
+  const candidates = [...envCandidates, ...platformCandidates];
   for (const candidate of candidates) {
     if (!candidate) continue;
     if (path.isAbsolute(candidate) && await pathExists(candidate)) return candidate;
