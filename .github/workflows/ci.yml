@@ -122,8 +122,14 @@ jobs:
         run: |
           $index = Get-ChildItem -Recurse .\dist\routeros-triage-panel -Filter index.html | Select-Object -First 1
           if (-not $index) { throw "Bundled public/index.html was not found." }
-          Select-String -Path $index.FullName -Pattern "axis-tick-label" -Quiet | ForEach-Object {
-            if (-not $_) { throw "Bundled frontend is missing axis tick labels." }
+          Select-String -Path $index.FullName -Pattern "smoothRateNeedleZeros" -Quiet | ForEach-Object {
+            if (-not $_) { throw "Bundled frontend is missing WAN chart smoothing helpers." }
+          }
+          Select-String -Path $index.FullName -Pattern "ik-wan-rate-axis" -Quiet | ForEach-Object {
+            if (-not $_) { throw "Bundled frontend is missing WAN chart axis labels." }
+          }
+          Select-String -Path $index.FullName -Pattern "ops-axis-labels" -Quiet | ForEach-Object {
+            if (-not $_) { throw "Bundled frontend is missing resource chart axis labels." }
           }
           $envFile = ".\dist\routeros-triage-panel\routeros-panel.env"
           Select-String -Path $envFile -Pattern "ROS_PANEL_BIND=127.0.0.1" -Quiet | ForEach-Object {

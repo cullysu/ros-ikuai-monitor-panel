@@ -86,20 +86,30 @@ try {
 
   $indexPath = Join-Path $repoRoot "public/index.html"
   $scalePatchPath = Join-Path $repoRoot "public/scale-adaptive-patch.js"
-  if (-not (Test-Path -LiteralPath $indexPath) -or -not (Test-Path -LiteralPath $scalePatchPath)) {
-    Add-Check "FAIL" "frontend axis assets" "public/index.html or public/scale-adaptive-patch.js was not found."
+  if (-not (Test-Path -LiteralPath $indexPath)) {
+    Add-Check "FAIL" "frontend axis assets" "public/index.html was not found."
   }
   else {
     $indexText = Get-Content -Raw -LiteralPath $indexPath
-    $scalePatchText = Get-Content -Raw -LiteralPath $scalePatchPath
-    if ($indexText -match "axis-tick-label" -and
-        $scalePatchText -match "ikuai-wan-chart \.axis-line-chart" -and
-        $scalePatchText -match "ikuai-chart-box \.axis-line-chart" -and
-        $scalePatchText -match "data-ikuai-terminal-summary") {
-      Add-Check "PASS" "frontend axis assets" "Overview WAN/monitor axis labels and terminal placement markers are present."
+    $scalePatchText = if (Test-Path -LiteralPath $scalePatchPath) { Get-Content -Raw -LiteralPath $scalePatchPath } else { "" }
+    $legacyAxisAssets = (
+      $indexText -match "axis-tick-label" -and
+      $scalePatchText -match "ikuai-wan-chart \.axis-line-chart" -and
+      $scalePatchText -match "ikuai-chart-box \.axis-line-chart" -and
+      $scalePatchText -match "data-ikuai-terminal-summary"
+    )
+    $current35Assets = (
+      $indexText -match "smoothRateNeedleZeros" -and
+      $indexText -match "ik-wan-rate-axis" -and
+      $indexText -match "ops-axis-labels" -and
+      $indexText -match "data-overview-wan-switch" -and
+      $indexText -match "data-overview-rank-grid"
+    )
+    if ($legacyAxisAssets -or $current35Assets) {
+      Add-Check "PASS" "frontend axis assets" "Overview WAN/resource chart axes and terminal/ranking placement markers are present."
     }
     else {
-      Add-Check "FAIL" "frontend axis assets" "Overview axis or terminal-placement markers are missing from public assets."
+      Add-Check "FAIL" "frontend axis assets" "Overview chart axes or terminal/ranking placement markers are missing from public assets."
     }
   }
 

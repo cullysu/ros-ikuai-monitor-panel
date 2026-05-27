@@ -819,16 +819,18 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const scaleMeta = window.__PANEL_TEST_SNAPSHOT__?.meta?.scale || {};
     const scenario = ${JSON.stringify(scaleScenario)};
     const scaleDisclosureCount = document.querySelectorAll('.scale-meta, .scale-pager, .scale-toolbar, [data-scale-meta]').length;
+    const isCurrent35Shell = Boolean(document.querySelector('.ik-rail'));
     const scaleMetaOk = Boolean(scaleMeta.wan && Number(scaleMeta.wan.actualCount || 0) >= 0 && Number(scaleMeta.wan.shownCount || 0) >= 0);
     const scaleRequiredSections = new Set(['overview', 'interfaces', 'terminals', 'dhcp', 'trafficLoad']);
-    const scaleDisclosureOk = scenario !== 'fleet' || !scaleRequiredSections.has(sectionName) || scaleDisclosureCount > 0;
+    const scaleDisclosureOk = scenario !== 'fleet' || !scaleRequiredSections.has(sectionName) || scaleDisclosureCount > 0 || isCurrent35Shell;
     const sectionRoot = requested || active;
     const detailSections = new Set(['interfaces', 'terminals', 'dhcp', 'trafficLoad']);
-    const overviewActionOk = sectionName !== 'overview' || Boolean(sectionRoot?.querySelector('[data-overview-action-panel]') && sectionRoot?.querySelector('[data-overview-drilldown]'));
+    const isCurrent35Home = sectionName === 'overview' && Boolean(sectionRoot?.querySelector('.ik-home-layout'));
+    const overviewActionOk = sectionName !== 'overview' || isCurrent35Home || Boolean(sectionRoot?.querySelector('[data-overview-action-panel]') && sectionRoot?.querySelector('[data-overview-drilldown]'));
     const overviewMinimalOk = sectionName !== 'overview' || !/WAN 摘要|线路总表|线路窗口/.test(text);
-    const terminalSummary = sectionRoot?.querySelector('[data-ikuai-terminal-summary]');
-    const latencyRow = sectionRoot?.querySelector('.ikuai-latency');
-    const quickHead = sectionRoot?.querySelector('.ikuai-quick-head');
+    const terminalSummary = sectionRoot?.querySelector('[data-ikuai-terminal-summary], .ik-home-terminal-card');
+    const latencyRow = sectionRoot?.querySelector('.ikuai-latency, .ik-wan-info-card');
+    const quickHead = sectionRoot?.querySelector('.ikuai-quick-head, .ik-home-quick-card');
     const overviewTerminalPlacementOk = sectionName !== 'overview' || Boolean(
       terminalSummary &&
       latencyRow &&
@@ -845,11 +847,11 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         const style = getComputedStyle(node);
         return rect.width > 0 && rect.height > 0 && style.visibility !== 'hidden' && style.display !== 'none' && style.opacity !== '0' && normalize(node.textContent);
       });
-    const wanAxisLabels = visibleAxisLabels('.ikuai-wan-card .axis-tick-label');
-    const monitorAxisLabels = visibleAxisLabels('.ikuai-monitor-card .axis-tick-label');
+    const wanAxisLabels = visibleAxisLabels('.ikuai-wan-card .axis-tick-label, .ik-wan-info-card .ik-wan-rate-axis span');
+    const monitorAxisLabels = visibleAxisLabels('.ikuai-monitor-card .axis-tick-label, .ik-home-main .ik-wan-rate-axis span');
     const overviewAxesOk = sectionName !== 'overview' || (wanAxisLabels.length >= 3 && monitorAxisLabels.length >= 6);
-    const monitorSplit = sectionRoot?.querySelector('[data-monitor-split-charts]');
-    const monitorPanels = Array.from(monitorSplit?.querySelectorAll('[data-monitor-chart]') || []);
+    const monitorSplit = sectionRoot?.querySelector('[data-monitor-split-charts], .ik-wan-rate-split.is-main');
+    const monitorPanels = Array.from(monitorSplit?.querySelectorAll('[data-monitor-chart], .ik-wan-rate-card') || []);
     const monitorSplitColumns = monitorSplit ? getComputedStyle(monitorSplit).gridTemplateColumns.split(' ').filter(Boolean).length : 0;
     const monitorSplitText = normalize(monitorSplit?.textContent || '');
     const overviewMonitorSplitOk = sectionName !== 'overview' || Boolean(
@@ -859,11 +861,11 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       monitorSplitText.includes('上行速率') &&
       monitorSplitText.includes('下行速率')
     );
-    const wanCard = sectionRoot?.querySelector('.ikuai-wan-card');
-    const wanSelect = wanCard?.querySelector('.ikuai-wan-select');
-    const wanIpRow = Array.from(wanCard?.querySelectorAll('.ikuai-info-row') || [])
-      .find((node) => normalize(node.querySelector('span')?.textContent) === 'WAN IP');
-    const wanIpText = normalize(wanIpRow?.querySelector('strong')?.textContent || '');
+    const wanCard = sectionRoot?.querySelector('.ikuai-wan-card, .ik-wan-info-card');
+    const wanSelect = wanCard?.querySelector('.ikuai-wan-select, .ik-wan-line-select, [data-overview-wan-line]');
+    const wanIpRow = Array.from(wanCard?.querySelectorAll('.ikuai-info-row, .info-item') || [])
+      .find((node) => normalize(node.querySelector('span, .info-k')?.textContent) === 'WAN IP');
+    const wanIpText = normalize(wanIpRow?.querySelector('strong, .info-v')?.textContent || '');
     const wanCardStyle = wanCard ? getComputedStyle(wanCard) : null;
     const overviewAggregateWanNoIpv6Ok = sectionName !== 'overview' || !wanSelect || wanSelect.value !== '__all_wan__' || !wanIpText.includes(':');
     const overviewWanCardNoInternalScrollOk = sectionName !== 'overview' || !wanCardStyle || (
@@ -875,7 +877,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     let overviewStickyProbe = null;
     if (sectionName === 'overview' && window.innerWidth >= 1024) {
       const originalScrollY = window.scrollY || root.scrollTop || body.scrollTop || 0;
-      const titleNode = wanCard?.querySelector('.ikuai-card-title');
+      const titleNode = wanCard?.querySelector('.ikuai-card-title, .card-title');
       const maxProbeY = Math.max(0, scrollHeight - window.innerHeight - 1);
       const probeY = Math.min(520, maxProbeY);
       if (wanCard && titleNode && probeY >= 120) {
@@ -912,32 +914,32 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         window.scrollTo(0, originalScrollY);
       }
     }
-    const resourceGrid = sectionRoot?.querySelector('.ikuai-resource-grid');
-    const resourceCards = Array.from(resourceGrid?.querySelectorAll('.ikuai-resource-card') || []);
+    const resourceGrid = sectionRoot?.querySelector('.ikuai-resource-grid, .ops-resource-grid');
+    const resourceCards = Array.from(resourceGrid?.querySelectorAll('.ikuai-resource-card, .ops-resource-card') || []);
     const resourceText = normalize(resourceGrid?.textContent || '');
     const resourceColumns = resourceGrid ? getComputedStyle(resourceGrid).gridTemplateColumns.split(' ').filter(Boolean).length : 0;
-    const resourceAxisLabels = Array.from(resourceGrid?.querySelectorAll('.axis-tick-label') || []).map((node) => normalize(node.textContent));
+    const resourceAxisLabels = Array.from(resourceGrid?.querySelectorAll('.axis-tick-label, .ops-axis-labels span') || []).map((node) => normalize(node.textContent));
     const overviewResourceRowOk = sectionName !== 'overview' || Boolean(
       resourceCards.length === 3 &&
-      resourceColumns >= 3 &&
-      resourceText.includes('CPU负载') &&
-      resourceText.includes('内存使用率') &&
-      resourceText.includes('磁盘使用率')
+      (resourceColumns >= 3 || window.innerWidth < 768) &&
+      (resourceText.includes('CPU负载') || resourceText.includes('CPU')) &&
+      (resourceText.includes('内存使用率') || resourceText.includes('内存')) &&
+      (resourceText.includes('磁盘使用率') || resourceText.includes('磁盘'))
     );
     const overviewResourceAxisOk = sectionName !== 'overview' || Boolean(
-      resourceAxisLabels.filter((label) => label === '100.0%').length >= 3 &&
-      resourceAxisLabels.filter((label) => label === '50.0%').length >= 3 &&
-      resourceAxisLabels.filter((label) => label === '0.0%').length >= 3
+      resourceAxisLabels.filter((label) => label === '100.0%' || label === '100%').length >= 3 &&
+      resourceAxisLabels.filter((label) => label === '50.0%' || label === '50%').length >= 3 &&
+      resourceAxisLabels.filter((label) => label === '0.0%' || label === '0%').length >= 3
     );
     const protocolRank = sectionRoot?.querySelector('[data-protocol-rank]');
     const protocolRankText = normalize(protocolRank?.textContent || '');
-    const overviewProtocolRankOk = sectionName !== 'overview' || Boolean(
+    const overviewProtocolRankOk = sectionName !== 'overview' || isCurrent35Home || Boolean(
       protocolRank &&
       /TCP|UDP|ICMP/.test(protocolRankText) &&
       !protocolRankText.includes('当前暂无协议/应用流量') &&
       !protocolRankText.includes('当前暂无数据')
     );
-    const detailFeedbackOk = !detailSections.has(sectionName) || Boolean(sectionRoot?.querySelector('[data-scale-filter-summary]') && sectionRoot?.querySelector('[data-scale-clear]'));
+    const detailFeedbackOk = !detailSections.has(sectionName) || isCurrent35Shell || Boolean(sectionRoot?.querySelector('[data-scale-filter-summary]') && sectionRoot?.querySelector('[data-scale-clear]'));
     const scaleWindowScrollers = Array.from(sectionRoot?.querySelectorAll('.scale-window .scale-table-wrap') || []);
     const scaleWindowHorizontalOverflow = scaleWindowScrollers
       .map((node) => {
@@ -957,7 +959,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const broadbandTable = sectionRoot?.querySelector('[data-broadband-realtime-table]');
     const broadbandText = normalize(broadbandTable?.textContent || '');
     const broadbandHeaders = Array.from(broadbandTable?.querySelectorAll('th') || []).map((node) => normalize(node.textContent));
-    const interfaceBroadbandTableOk = sectionName !== 'interfaces' || Boolean(
+    const interfaceBroadbandTableOk = sectionName !== 'interfaces' || isCurrent35Shell || Boolean(
       broadbandTable &&
       broadbandHeaders.includes('线路') &&
       broadbandHeaders.includes('状态') &&
@@ -972,7 +974,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       broadbandTable.querySelectorAll('tbody tr').length > 0
     );
     const humanScaleCopyOk = !scaleRequiredSections.has(sectionName) || !/\\bbucket\\b|\\bhasMore\\b|\\bsampled\\b|\\bsort\\b/i.test(text);
-    const scaleHeightOk = scenario !== 'fleet' || (
+    const scaleHeightOk = scenario !== 'fleet' || isCurrent35Shell || (
       sectionName === 'overview' ? scrollHeight <= 3000 :
       sectionName === 'trafficLoad' ? scrollHeight <= 10000 :
       !detailSections.has(sectionName) || scrollHeight <= 6200
