@@ -8030,13 +8030,35 @@
         <div class="card" style="margin-top:12px"><div class="card-head"><div class="card-title">终端流量审计</div><div class="subtle">按终端流量排序</div></div><div class="card-body">${table(['名称', 'IP', '实时上行速率', '实时下行速率', '连接数', '累计流量'], terminalRows, '当前未读取到终端流量审计数据')}</div></div>`);
     }
 
+    function collectorStatusMessage(snapshot = {}) {
+      const meta = snapshot.meta || {};
+      const explicit = String(snapshot.statusMessage || meta.collectorStatusMessage || snapshot.error || '').trim();
+      if (explicit) return explicit;
+      const status = String(snapshot.status || '').trim().toLowerCase();
+      if (status === 'ok') return '采集正常。';
+      if (status === 'starting') return '采集服务正在启动，正在等待首次 RouterOS 数据。';
+      if (status === 'needs_config') return 'RouterOS SSH 连接未配置，请在登录页填写 RouterOS 主机、账号和密码。';
+      if (status === 'error') return '采集服务返回异常，但没有提供错误详情；请刷新页面或重新测试 RouterOS 连接。';
+      return `采集状态为 ${status || 'unknown'}，但未提供错误详情；请刷新页面或重新测试 RouterOS 连接。`;
+    }
+
+    function collectorStatusNoticeClass(snapshot = {}) {
+      const status = String(snapshot.status || '').trim().toLowerCase();
+      return status === 'starting' ? 'notice' : 'notice danger';
+    }
+
+    function collectorStatusNoticeTitle(snapshot = {}) {
+      const status = String(snapshot.status || '').trim().toLowerCase();
+      return status === 'starting' ? '采集状态' : '采集状态异常';
+    }
+
     function renderApp(snapshot) {
       if (!isSectionAvailable(currentSection, snapshot)) {
         currentSection = 'overview';
         currentNavGroup = resolveGroup(currentSection, currentNavGroup, snapshot);
       }
       const warning = snapshot.status !== 'ok'
-        ? `<div class="notice danger" style="margin-bottom:12px">采集状态异常：${escapeHtml(snapshot.error || '未知错误')}。当前页面展示的是最近一次可用数据快照。</div>`
+        ? `<div class="${collectorStatusNoticeClass(snapshot)}" style="margin-bottom:12px">${escapeHtml(collectorStatusNoticeTitle(snapshot))}：${escapeHtml(collectorStatusMessage(snapshot))} 当前页面展示的是最近一次可用数据快照。</div>`
         : '';
       const renderers = {
         overview: renderOverview,

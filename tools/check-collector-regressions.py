@@ -725,6 +725,35 @@ def assert_frontend_handles_partial_snapshots():
     assert "lineChart([history.uplink || [], history.downlink || []]" in index_source
 
 
+def assert_collector_status_messages_are_specific():
+    starting = app.normalize_collector_snapshot_status({"status": "starting", "updatedAt": None, "error": None, "meta": {}})
+    assert "正在启动" in starting["statusMessage"], starting
+    assert "未知错误" not in starting["statusMessage"], starting
+    assert starting["meta"]["collectorStatusMessage"] == starting["statusMessage"], starting
+
+    needs_config = app.normalize_collector_snapshot_status({"status": "needs_config", "error": None, "meta": {}})
+    assert "RouterOS SSH 连接未配置" in needs_config["statusMessage"], needs_config
+    assert "未知错误" not in needs_config["statusMessage"], needs_config
+
+    real_error = app.normalize_collector_snapshot_status({"status": "error", "error": "REST timeout from RouterOS", "meta": {}})
+    assert real_error["statusMessage"] == "REST timeout from RouterOS", real_error
+
+    ok = app.normalize_collector_snapshot_status({"status": "ok", "error": None, "meta": {}})
+    assert ok["statusMessage"] == "采集正常。", ok
+
+    triage = app.build_semantic_triage(starting)
+    issue = next(row for row in triage["queue"] if row["id"] == "collector.snapshot_status")
+    assert "正在启动" in issue["summary"], issue
+    assert "未知错误" not in issue["summary"], issue
+
+    index_source = (ROOT / "public" / "index.html").read_text(encoding="utf-8")
+    render_start = index_source.find("function renderApp")
+    render_body = index_source[render_start : render_start + 1200]
+    assert "function collectorStatusMessage" in index_source
+    assert "collectorStatusMessage(snapshot)" in render_body
+    assert "snapshot.error || '未知错误'" not in render_body
+
+
 def assert_semantic_triage_distinguishes_quality_display_values():
     triage = app.build_semantic_triage(
         {
@@ -822,6 +851,7 @@ def main():
     assert_frontend_wan_aggregate_default()
     assert_router_login_password_save_is_opt_in()
     assert_frontend_handles_partial_snapshots()
+    assert_collector_status_messages_are_specific()
     assert_semantic_triage_distinguishes_quality_display_values()
     assert_localhost_host_forward_guard_supports_routeros_container()
     print(
@@ -842,6 +872,7 @@ def main():
                     "frontend WAN selector defaults to an all-line aggregate traffic option",
                     "RouterOS login password saving is opt-in for public deployments",
                     "frontend renderers tolerate partial snapshots and missing history collections",
+                    "collector startup/config/error states expose specific status messages instead of unknown-error banners",
                     "semantic triage distinguishes cumulative totals, latest deltas, numeric loss rates, and unknown loss-rate displays",
                     "RouterOS Container localhost Host-forward guard allows client-local tunnels without allowing direct veth/LAN browser hosts",
                 ],

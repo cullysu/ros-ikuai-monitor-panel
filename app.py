@@ -1688,6 +1688,37 @@ def compact_text(value, limit=180):
     return text[: max(0, limit - 3)] + "..."
 
 
+def collector_status_message(status, error=None):
+    error_text = compact_text(error, 240)
+    if error_text:
+        return error_text
+    normalized = str(status or "").strip().lower()
+    if normalized == "ok":
+        return "采集正常。"
+    if normalized == "starting":
+        return "采集服务正在启动，正在等待首次 RouterOS 数据。"
+    if normalized == "needs_config":
+        return "RouterOS SSH 连接未配置，请在登录页填写 RouterOS 主机、账号和密码。"
+    if normalized == "error":
+        return "采集服务返回异常，但没有提供错误详情；请刷新页面或重新测试 RouterOS 连接。"
+    status_label = normalized or "unknown"
+    return f"采集状态为 {status_label}，但未提供错误详情；请刷新页面或重新测试 RouterOS 连接。"
+
+
+def normalize_collector_snapshot_status(snapshot):
+    if not isinstance(snapshot, dict):
+        return snapshot
+    status = str(snapshot.get("status") or "unknown").strip() or "unknown"
+    message = collector_status_message(status, snapshot.get("error"))
+    snapshot["status"] = status
+    snapshot["statusMessage"] = message
+    meta = snapshot.setdefault("meta", {})
+    if isinstance(meta, dict):
+        meta["collectorStatus"] = status
+        meta["collectorStatusMessage"] = message
+    return snapshot
+
+
 def build_semantic_triage(snapshot):
     snapshot = as_dict(snapshot)
     meta = as_dict(snapshot.get("meta"))
@@ -1724,15 +1755,20 @@ def build_semantic_triage(snapshot):
 
     snapshot_status = snapshot.get("status")
     if snapshot_status and snapshot_status != "ok":
+        status_message = collector_status_message(snapshot_status, snapshot.get("error"))
         add_action(
             "collector.snapshot_status",
             "warning" if snapshot_status == "starting" else "critical",
             "collector",
             "Snapshot collection is not healthy",
-            f"Current snapshot status is {snapshot_status}.",
+            status_message,
             "Check collection errors first; this queue does not attempt an automatic repair.",
             "snapshot.status",
-            [{"label": "status", "value": snapshot_status}, {"label": "error", "value": compact_text(snapshot.get("error"))}],
+            [
+                {"label": "status", "value": snapshot_status},
+                {"label": "message", "value": status_message},
+                {"label": "error", "value": compact_text(snapshot.get("error"))},
+            ],
         )
 
     collection_sources = [
@@ -2576,6 +2612,7 @@ class Collector:
                 "connectionProtocolPollSeconds": CONNECTION_PROTOCOL_BREAKDOWN_INTERVAL_SECONDS,
             },
         }
+        self.state = normalize_collector_snapshot_status(self.state)
         self.lock = threading.Lock()
         self.ssh_lock = threading.Lock()
         self.prev_counters = {}
@@ -2729,6 +2766,7 @@ class Collector:
                     "connectionProtocolPollSeconds": CONNECTION_PROTOCOL_BREAKDOWN_INTERVAL_SECONDS,
                 },
             }
+            self.state = normalize_collector_snapshot_status(self.state)
 
     def require_router_config_for_collection(self):
         if router_config_is_ready(get_router_config()):
@@ -2751,6 +2789,7 @@ class Collector:
                     "connectionProtocolPollSeconds": CONNECTION_PROTOCOL_BREAKDOWN_INTERVAL_SECONDS,
                 },
             }
+            self.state = normalize_collector_snapshot_status(self.state)
         return False
 
     def load_ip_aliases(self):
@@ -4560,6 +4599,7 @@ class Collector:
             "routes": self.build_routes(rest),
             "logs": self.build_logs(rest),
         }
+        snapshot = normalize_collector_snapshot_status(snapshot)
         snapshot = self.apply_ip_aliases_to_snapshot(snapshot, dict(self.ip_aliases))
         triage = build_semantic_triage(snapshot)
         snapshot["semanticTriage"] = triage
@@ -4769,6 +4809,7 @@ class Collector:
     def get_state(self):
         with self.lock:
             snapshot = copy.deepcopy(self.state)
+        snapshot = normalize_collector_snapshot_status(snapshot)
         meta = snapshot.setdefault("meta", {})
         meta.setdefault("profile", PANEL_PROFILE)
         meta.setdefault("capabilities", build_panel_capabilities(snapshot.get("wan") or [], len(snapshot.get("pppoe") or [])))
