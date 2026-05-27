@@ -1727,59 +1727,7 @@
   function syncIkuaiHomeStickyFallback() {
     const overview = document.querySelector('#overview');
     const layout = overview?.querySelector('.ikuai-home-grid');
-    if (!overview || !layout || window.innerWidth <= 960 || getComputedStyle(overview).display === 'none') {
-      resetIkuaiHomeStickyFallback(layout);
-      return;
-    }
-
-    const home = overview.querySelector('.ikuai-home');
-    const homeStyle = home ? getComputedStyle(home) : null;
-    if (homeStyle && homeStyle.transform && homeStyle.transform !== 'none') {
-      resetIkuaiHomeStickyFallback(layout);
-      return;
-    }
-
-    const children = Array.from(layout.children || []);
-    const side = layout.querySelector(':scope > .ikuai-home-sticky-side')
-      || layout.querySelector(':scope > .ikuai-wan-card')
-      || children.find((node) => node.classList?.contains('ikuai-wan-card'));
-    const main = layout.querySelector(':scope > .ikuai-home-sticky-main')
-      || layout.querySelector(':scope > .ikuai-right')
-      || children.find((node) => node !== side && !node.classList?.contains('ikuai-home-sticky-placeholder'));
-    if (!side || !main) return;
-
-    side.classList.add('ikuai-home-sticky-side');
-    main.classList.add('ikuai-home-sticky-main');
-
-    let placeholder = layout.querySelector(':scope > .ikuai-home-sticky-placeholder');
-    if (!placeholder) {
-      placeholder = document.createElement('div');
-      placeholder.className = 'ikuai-home-sticky-placeholder';
-      layout.insertBefore(placeholder, side);
-    }
-
-    const stickyTop = window.innerWidth <= 1280 ? 10 : 12;
-    const layoutRect = layout.getBoundingClientRect();
-    const placeholderRect = placeholder.getBoundingClientRect();
-    const sideRect = side.getBoundingClientRect();
-    const sideHeight = Math.max(side.scrollHeight || 0, sideRect.height || 0, 1);
-    const sideWidth = Math.max(placeholderRect.width || sideRect.width || 0, 1);
-
-    placeholder.style.width = `${Math.round(sideWidth)}px`;
-    placeholder.style.height = `${Math.round(sideHeight)}px`;
-
-    const shouldFix = layoutRect.top <= stickyTop && layoutRect.bottom > stickyTop + 160;
-    if (shouldFix) {
-      side.style.setProperty('--ikuai-home-fixed-left', `${Math.round(placeholderRect.left)}px`);
-      side.style.setProperty('--ikuai-home-fixed-width', `${Math.round(sideWidth)}px`);
-      side.style.setProperty('--ikuai-home-fixed-top', `${stickyTop}px`);
-      side.classList.add('is-ikuai-home-fixed');
-    } else {
-      side.classList.remove('is-ikuai-home-fixed');
-      side.style.removeProperty('--ikuai-home-fixed-left');
-      side.style.removeProperty('--ikuai-home-fixed-width');
-      side.style.removeProperty('--ikuai-home-fixed-top');
-    }
+    resetIkuaiHomeStickyFallback(layout);
   }
 
   function syncHomeStickyFallbacks() {

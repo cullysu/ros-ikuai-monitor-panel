@@ -320,14 +320,11 @@
     .ikuai-home { display: grid; gap: 14px; min-width: 0; }
     .ikuai-home-grid { display: grid; grid-template-columns: minmax(340px, 430px) minmax(0, 1fr); gap: 14px; align-items: start; }
     .ikuai-home-grid > .ikuai-wan-card {
-      position: sticky;
-      top: 14px;
+      position: static;
       align-self: start;
       min-height: 0;
-      max-height: calc(100vh - 64px);
-      overflow-y: auto;
-      overscroll-behavior: contain;
-      scrollbar-gutter: stable;
+      max-height: none;
+      overflow: visible;
     }
     .ikuai-card {
       min-width: 0;
@@ -471,11 +468,10 @@
       grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
     }
     #overview.ikuai-overview-section .ikuai-home.is-viewport-scaled .ikuai-home-grid > .ikuai-wan-card {
-      position: sticky;
-      top: 14px;
+      position: static;
       min-height: 0;
-      max-height: calc(100vh - 64px);
-      overflow-y: auto;
+      max-height: none;
+      overflow: visible;
     }
     @media (max-width: 960px) {
       .pm-overview-main { grid-template-columns: 1fr; }
@@ -782,6 +778,15 @@
     return [...ipv4, ...ipv6];
   }
 
+  function isIpv4AddressLike(value) {
+    return /(?:\d{1,3}\.){3}\d{1,3}/.test(String(value || ''));
+  }
+
+  function isIpAddressLike(value) {
+    const text = String(value || '');
+    return isIpv4AddressLike(text) || text.includes(':');
+  }
+
   function addressLines(value, limit = 2) {
     const rows = orderAddressRows(valueList(value));
     if (!rows.length) return '<span>-</span>';
@@ -1083,6 +1088,7 @@
     const history = overview.history || {};
     const online = rows.filter((row) => row?.running).length;
     const aggregateAddresses = rows.flatMap((row) => valueList(row?.addresses || row?.ips || row?.address));
+    const aggregateIpv4Addresses = aggregateAddresses.filter(isIpv4AddressLike);
     const summedUp = rows.reduce((sum, row) => sum + Number(row?.upRate || 0), 0);
     const summedDown = rows.reduce((sum, row) => sum + Number(row?.downRate || 0), 0);
     const overviewUp = Number(overview.uplinkBps);
@@ -1101,7 +1107,7 @@
       downRate,
       txBytes: rows.reduce((sum, row) => sum + Number(row?.txBytes || 0), 0),
       rxBytes: rows.reduce((sum, row) => sum + Number(row?.rxBytes || 0), 0),
-      addresses: aggregateAddresses.length ? aggregateAddresses : [`在线 ${number(online)} / ${number(rows.length)} 条`],
+      addresses: aggregateIpv4Addresses.length ? aggregateIpv4Addresses : [`在线 ${number(online)} / ${number(rows.length)} 条`],
       history: {
         up: Array.isArray(history.uplink) ? history.uplink : [],
         down: Array.isArray(history.downlink) ? history.downlink : [],
@@ -1142,7 +1148,11 @@
   }
 
   function wanAddressText(line) {
-    const values = valueList(line?.addresses || line?.ips || line?.address);
+    const rawValues = valueList(line?.addresses || line?.ips || line?.address);
+    const aggregateIpv4 = rawValues.filter(isIpv4AddressLike);
+    const values = line?.isAggregateWan
+      ? (aggregateIpv4.length ? aggregateIpv4 : rawValues.filter((item) => !isIpAddressLike(item)))
+      : rawValues;
     if (!values.some((item) => /(?:\d+\.){3}\d+|:/.test(String(item)))) {
       return html(shortList(values, 2));
     }

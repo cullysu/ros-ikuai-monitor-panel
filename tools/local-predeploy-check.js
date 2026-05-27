@@ -859,12 +859,22 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       monitorSplitText.includes('上行速率') &&
       monitorSplitText.includes('下行速率')
     );
+    const wanCard = sectionRoot?.querySelector('.ikuai-wan-card');
+    const wanSelect = wanCard?.querySelector('.ikuai-wan-select');
+    const wanIpRow = Array.from(wanCard?.querySelectorAll('.ikuai-info-row') || [])
+      .find((node) => normalize(node.querySelector('span')?.textContent) === 'WAN IP');
+    const wanIpText = normalize(wanIpRow?.querySelector('strong')?.textContent || '');
+    const wanCardStyle = wanCard ? getComputedStyle(wanCard) : null;
+    const overviewAggregateWanNoIpv6Ok = sectionName !== 'overview' || !wanSelect || wanSelect.value !== '__all_wan__' || !wanIpText.includes(':');
+    const overviewWanCardNoInternalScrollOk = sectionName !== 'overview' || !wanCardStyle || (
+      !['auto', 'scroll'].includes(wanCardStyle.overflowY) &&
+      Math.round(wanCard.scrollHeight - wanCard.clientHeight) <= 2
+    );
     const scrollHeight = Math.max(root.scrollHeight, body.scrollHeight);
-    let overviewStickyOk = sectionName !== 'overview' || window.innerWidth < 1024;
+    let overviewStickyOk = true;
     let overviewStickyProbe = null;
     if (sectionName === 'overview' && window.innerWidth >= 1024) {
       const originalScrollY = window.scrollY || root.scrollTop || body.scrollTop || 0;
-      const wanCard = sectionRoot?.querySelector('.ikuai-wan-card');
       const titleNode = wanCard?.querySelector('.ikuai-card-title');
       const maxProbeY = Math.max(0, scrollHeight - window.innerHeight - 1);
       const probeY = Math.min(520, maxProbeY);
@@ -891,7 +901,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
           titleRect.top >= cardRect.top &&
           titleRect.top < window.innerHeight / 2
         );
-        overviewStickyOk = nativeStickyOk || fixedFallbackOk;
+        overviewStickyOk = cardStyle.position === 'static' ? true : (nativeStickyOk || fixedFallbackOk);
         overviewStickyProbe = {
           probeY,
           cardTop: Math.round(cardRect.top),
@@ -1004,7 +1014,8 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewNoDuplicateTerminalOk &&
       overviewAxesOk &&
       overviewMonitorSplitOk &&
-      overviewStickyOk &&
+      overviewAggregateWanNoIpv6Ok &&
+      overviewWanCardNoInternalScrollOk &&
       overviewResourceRowOk &&
       overviewResourceAxisOk &&
       overviewProtocolRankOk &&
@@ -1054,6 +1065,11 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewMonitorSplitOk,
       monitorSplitColumns,
       monitorPanelCount: monitorPanels.length,
+      overviewAggregateWanNoIpv6Ok,
+      overviewWanCardNoInternalScrollOk,
+      wanIpText,
+      wanCardOverflowY: wanCardStyle?.overflowY || '',
+      wanCardScrollDelta: wanCard ? Math.round(wanCard.scrollHeight - wanCard.clientHeight) : 0,
       wanAxisLabelCount: wanAxisLabels.length,
       wanAxisLabels: wanAxisLabels.map((node) => normalize(node.textContent)).slice(0, 3),
       monitorAxisLabelCount: monitorAxisLabels.length,
@@ -1623,7 +1639,7 @@ function makeWan(index) {
     status: running ? 'online' : 'offline',
     role: n === 1 ? 'primary' : 'member',
     address: `198.51.${Math.floor(n / 250)}.${10 + (n % 200)}`,
-    addresses: [`198.51.${Math.floor(n / 250)}.${10 + (n % 200)}/32`],
+    addresses: [`198.51.${Math.floor(n / 250)}.${10 + (n % 200)}/32`, `fe80::${n.toString(16).padStart(2, '0')}/64`],
     upRate,
     downRate,
     txBytes: 400_000_000 + n * 2_000_000,
