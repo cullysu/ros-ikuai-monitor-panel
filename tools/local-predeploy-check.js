@@ -343,12 +343,26 @@ function tail(text, max = 6000) {
   return text.length <= max ? text : text.slice(text.length - max);
 }
 
+function summarizeDetail(detail, max = 3000) {
+  if (!detail || typeof detail !== 'object') return '';
+  try {
+    const text = JSON.stringify(detail, null, 2);
+    return text.length <= max ? text : `${text.slice(0, max)}\n... truncated ...`;
+  } catch {
+    return String(detail);
+  }
+}
+
 function record(report, name, pass, detail = {}) {
   const check = { name, pass: Boolean(pass), detail };
   report.checks.push(check);
   if (!check.pass) report.failures.push(check);
   const mark = check.pass ? 'PASS' : 'FAIL';
   console.log(`[${mark}] ${name}`);
+  if (!check.pass) {
+    const summary = summarizeDetail(detail);
+    if (summary) console.log(`[DETAIL] ${name}: ${summary}`);
+  }
   return check;
 }
 
@@ -356,6 +370,8 @@ function warn(report, name, detail = {}) {
   const item = { name, detail };
   report.warnings.push(item);
   console.log(`[WARN] ${name}`);
+  const summary = summarizeDetail(detail, 1200);
+  if (summary) console.log(`[DETAIL] ${name}: ${summary}`);
   return item;
 }
 

@@ -71,6 +71,14 @@ jobs:
             --strict-responsive \
             --out _acceptance/ci-public-predeploy
 
+      - name: Upload public browser predeploy report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-public-predeploy
+          path: _acceptance/ci-public-predeploy
+          if-no-files-found: ignore
+
       - name: Installer shell checks
         run: |
           bash -n install.sh
