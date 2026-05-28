@@ -1384,6 +1384,10 @@
       #overview .ops-resource-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
       }
+      #overview .ik-system-load-card .ops-resource-grid,
+      #overview .public-home-load-card .ops-resource-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+      }
     }
     @media (max-width: 960px) {
       .app.ik-shell,
