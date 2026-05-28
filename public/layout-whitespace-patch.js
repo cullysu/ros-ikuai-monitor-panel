@@ -13,72 +13,69 @@
       margin: 0 !important;
       overflow: hidden !important;
     }
-    #overview { --home-panel-gap: 10px; }
-    #overview .section-head { margin-bottom: 8px; }
-    #overview .ik-home-status-grid { grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 7px; margin-bottom: 8px; }
-    #overview .ik-home-status-tile { padding: 8px 10px; border-radius: 10px; box-shadow: 0 6px 18px rgba(26, 58, 102, .035); }
-    #overview .ik-home-status-tile strong { margin-top: 4px; font-size: 16px; line-height: 1.1; }
-    #overview .ik-home-status-tile em { margin-top: 4px; font-size: 10.5px; }
-    #overview .ik-home-layout { grid-template-columns: 420px minmax(0, 1fr); gap: var(--home-panel-gap); align-items: start; }
-    #overview .ik-home-layout > .stack,
-    #overview .ik-home-main { gap: var(--home-panel-gap); height: auto; }
-    #overview .ik-home-layout > .stack { display: flex; flex-direction: column; min-width: 0; }
-    #overview .ik-home-main { display: grid; grid-template-columns: minmax(0, .92fr) minmax(0, 1.08fr); align-items: stretch; }
-    #overview .ik-home-main > .card { min-width: 0; }
-    #overview .ik-home-main > .card:nth-child(1),
-    #overview .ik-home-main > .card:nth-child(4) { grid-column: 1 / -1; }
+    #overview { --home-panel-gap: 14px; }
+    #overview .section-head { margin-bottom: 10px; }
+    #overview .ik-home-status-grid { grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 10px; margin-bottom: 12px; }
+    #overview .ik-home-status-tile { padding: 12px 14px; border-radius: 12px; box-shadow: 0 8px 24px rgba(26, 58, 102, .04); }
+    #overview .ik-home-status-tile strong { margin-top: 6px; font-size: 18px; line-height: 1.15; }
+    #overview .ik-home-status-tile em { margin-top: 6px; font-size: 11px; }
+    #overview .ik-home-layout { grid-template-columns: 430px minmax(0, 1fr); gap: var(--home-panel-gap); align-items: stretch; }
+    #overview .ik-home-layout > .stack { display: flex; flex-direction: column; gap: var(--home-panel-gap); min-width: 0; height: 100%; }
+    #overview .ik-home-main { display: flex; flex-direction: column; gap: var(--home-panel-gap); min-width: 0; height: 100%; }
     #overview .card-head { padding: 7px 10px 0; }
     #overview .card-body { padding: 8px 10px 10px; }
-    #overview .ik-wan-hero { gap: 10px; padding: 10px; margin-bottom: 8px; border-radius: 10px; }
-    #overview .ik-wan-main { margin-top: 5px; font-size: 22px; }
-    #overview .ik-wan-sub { margin-top: 5px; line-height: 1.35; }
+    #overview .ik-wan-hero { gap: 12px; padding: 14px; margin-bottom: 12px; border-radius: 12px; }
+    #overview .ik-wan-main { margin-top: 8px; font-size: 26px; }
+    #overview .ik-wan-sub { margin-top: 7px; color: #6a788b; font-size: 11px; line-height: 1.4; }
     #overview .ik-wan-chipline { gap: 5px; }
-    #overview .ik-wan-chip { min-height: 22px; padding: 0 8px; font-size: 10.5px; }
+    #overview .ik-wan-chip { min-height: 22px; padding: 0 8px; font-size: 10px; }
     #overview .ik-home-quick-card { display: flex; flex: 0 0 auto; flex-direction: column; min-height: 0; overflow: visible; }
-    #overview .ik-home-quick-card .card-body { display: flex; flex: 0 0 auto; flex-direction: column; min-height: 0; height: auto; padding: 9px 10px 10px; overflow: visible; }
-    #overview .ik-home-quick-card .ik-quick-grid { flex: 0 0 auto; grid-template-rows: repeat(3, 78px); gap: 8px; margin-top: 0; min-height: 0; }
-    #overview .ik-home-quick-card .ik-quick-link { align-content: center; padding: 10px 9px; border-radius: 10px; font-size: 12px; font-weight: 700; }
+    #overview .ik-home-quick-card .card-body { display: flex; flex: 0 0 auto; flex-direction: column; min-height: 0; height: auto; padding: 10px 10px 12px; overflow: visible; }
+    #overview .ik-home-quick-card .ik-quick-grid { flex: 0 0 auto; grid-template-rows: repeat(3, 104px); gap: 12px; margin-top: 0; min-height: 0; }
+    #overview .ik-home-quick-card .ik-quick-link { align-content: center; padding: 18px 12px; border-radius: 12px; font-size: 13px; font-weight: 700; }
     #overview .ik-home-quick-card .ik-quick-link span:first-child { width: 24px; height: 24px; border-radius: 8px; }
     #overview .ik-home-monitor-grid { grid-template-columns: minmax(0, .78fr) minmax(0, 1.22fr); gap: 10px; }
-    #overview .ik-home-summary-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+    #overview .ik-home-summary-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
     #overview .ik-home-rank-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; align-items: stretch; }
     #overview .ik-home-rank-card { display: flex; min-height: 0; flex-direction: column; }
-    #overview .ik-home-rank-card .ops-table-wrap { border: 0; border-radius: 0; flex: 1 1 auto; height: auto; max-height: none; overflow-y: visible; overscroll-behavior: contain; }
-    #overview .ik-home-rank-card-head { padding: 8px 10px; }
+    #overview .ik-home-rank-card .ops-table-wrap { border: 0; border-radius: 0; flex: 1 1 auto; height: 440px; max-height: 440px; overflow-y: auto; overscroll-behavior: contain; }
+    #overview .ik-home-rank-card-head { padding: 10px 12px; }
     #overview .ik-home-rank-card .ops-table thead th { position: sticky; top: 0; z-index: 2; background: #f8fbff; box-shadow: 0 1px 0 #edf1f7; }
-    #overview .wide-card .info-list { gap: 6px 10px; }
-    #overview .wide-card .info-item { padding-bottom: 6px; }
-    #overview .ik-wan-info-card .info-list { gap: 6px 10px; margin-top: 3px; }
-    #overview .ik-wan-info-card .info-item { padding-bottom: 5px; }
+    #overview .wide-card .info-list { gap: 8px 14px; }
+    #overview .wide-card .info-item { padding-bottom: 8px; }
+    #overview .ik-wan-info-card .info-list { gap: 8px 14px; margin-top: 4px; }
+    #overview .ik-wan-info-card .info-item { padding-bottom: 8px; }
     #overview .ik-wan-info-card .info-k { color: #7f8da1; font-size: 11px; font-weight: 700; line-height: 1.2; }
     #overview .ik-wan-info-card .info-v { margin-top: 3px; color: #253246; font-size: 12px; font-weight: 700; line-height: 1.35; }
-    #overview .ik-wan-switch { margin-top: 7px; padding: 6px 8px; border-radius: 9px; }
+    #overview .ik-wan-switch { margin-top: 8px; padding: 8px 10px; border-radius: 10px; }
     #overview .ik-wan-line-select { height: 28px; font-size: 12px; font-weight: 700; }
-    #overview .ik-summary-split { gap: 8px; align-items: start; }
-    #overview .ik-summary-box { min-height: 0; padding: 7px 9px; }
-    #overview .ik-summary-box b { margin-top: 5px; font-size: 16px; line-height: 1.05; }
-    #overview .ik-wan-rate-split:not(.is-main) { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 8px; }
-    #overview .ik-wan-rate-split:not(.is-main) .ik-wan-rate-head { display: block; margin-bottom: 5px; }
-    #overview .ik-wan-rate-split:not(.is-main) .ik-wan-rate-value { min-width: 0; margin-top: 5px; text-align: left; }
-    #overview .ik-wan-rate-split:not(.is-main) .ik-wan-rate-chart { grid-template-columns: minmax(0, 1fr) 54px; gap: 6px; }
-    #overview .ik-wan-rate-split:not(.is-main) .ik-wan-rate-svg { height: 82px; }
-    #overview .ik-wan-rate-split.is-main .ik-wan-rate-svg { height: 124px; }
-    #overview .ik-wan-rate-axis { font-size: 9.5px; }
+    #overview .ik-summary-split { gap: 10px; align-items: start; }
+    #overview .ik-summary-box { min-height: 0; padding: 9px 10px; }
+    #overview .ik-summary-box b { margin-top: 6px; font-size: 18px; line-height: 1.1; }
+    #overview .ik-wan-info-card .ik-wan-rate-split:not(.is-main) { display: block !important; margin-top: 12px; }
+    #overview .ik-wan-info-card .ik-wan-rate-split:not(.is-main) .ik-wan-rate-card { width: 100%; padding: 10px 12px 12px; }
+    #overview .ik-wan-info-card .ik-wan-rate-split:not(.is-main) .ik-wan-rate-card + .ik-wan-rate-card { margin-top: 12px; }
+    #overview .ik-wan-info-card .ik-wan-rate-split:not(.is-main) .ik-wan-rate-head { display: grid; margin-bottom: 8px; }
+    #overview .ik-wan-info-card .ik-wan-rate-split:not(.is-main) .ik-wan-rate-value { min-width: 128px; margin-top: 0; text-align: right; }
+    #overview .ik-wan-info-card .ik-wan-rate-split:not(.is-main) .ik-wan-rate-chart { grid-template-columns: minmax(0, 1fr) 78px; gap: 8px; }
+    #overview .ik-wan-info-card .ik-wan-rate-split:not(.is-main) .ik-wan-rate-svg { height: 88px; }
+    #overview .ik-wan-rate-split.is-main .ik-wan-rate-svg { height: 150px; }
+    #overview .ik-wan-rate-axis { font-size: 10px; }
     #overview .chart-box { padding: 7px; }
     #overview .mini-chart { height: 112px; }
     #overview .ik-system-load-card .ops-resource-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
-    #overview .ik-system-load-card .ops-resource-card { padding: 9px 10px 10px; }
+    #overview .ik-system-load-card .ops-resource-card { padding: 10px 12px 12px; }
     #overview .ops-resource-grid { gap: 10px; }
-    #overview .ops-resource-card { padding: 9px 10px; }
+    #overview .ops-resource-card { padding: 10px 12px 12px; }
     #overview .ops-resource-plot,
-    #overview .ops-resource-svg { height: 88px; }
+    #overview .ops-resource-svg { height: 112px; }
     #overview .ik-system-load-card .ops-resource-plot,
-    #overview .ik-system-load-card .ops-resource-svg { height: 88px; }
-    #overview .ik-home-terminal-grid { gap: 7px; }
-    #overview .ik-home-terminal-tile { min-height: 62px; padding: 9px 10px; border-radius: 9px; }
-    #overview .ik-home-terminal-tile b { margin-top: 6px; font-size: 20px; }
-    #overview .ik-home-line-bars { gap: 4px; margin-top: 8px; }
-    #overview .ik-home-line-bars .line-bar { grid-template-columns: 104px minmax(0, 1fr) 58px; min-height: 18px; gap: 8px; }
+    #overview .ik-system-load-card .ops-resource-svg { height: 112px; }
+    #overview .ik-home-terminal-grid { gap: 8px; }
+    #overview .ik-home-terminal-tile { min-height: 76px; padding: 12px; border-radius: 10px; }
+    #overview .ik-home-terminal-tile b { margin-top: 8px; font-size: 22px; }
+    #overview .ik-home-line-bars { gap: 7px; margin-top: 12px; }
+    #overview .ik-home-line-bars .line-bar { grid-template-columns: 116px minmax(0, 1fr) 72px; min-height: 22px; gap: 10px; }
     #overview .ik-home-line-bars .line-name { font-size: 11px; }
     #overview .ik-home-line-bars .line-share { font-size: 12px; }
     #overview .ik-home-line-bars .progress { height: 6px; }
@@ -1515,20 +1512,20 @@
       align-items: start !important;
     }
     #overview .ik-home-layout > .stack:first-child {
-      position: sticky !important;
-      top: 12px;
-      align-self: start !important;
-      max-height: calc(100vh - 24px);
-      overflow-y: auto;
-      overflow-x: hidden;
-      overscroll-behavior: contain;
-      scrollbar-gutter: stable;
+      position: static !important;
+      top: auto !important;
+      align-self: stretch !important;
+      max-height: none !important;
+      overflow: visible !important;
+      overscroll-behavior: auto !important;
+      scrollbar-gutter: auto !important;
+      scrollbar-width: auto !important;
     }
     #overview .ik-home-layout > .stack:first-child > .card {
       width: 100%;
     }
     #overview .ik-home-layout > .legacy-home-side-placeholder {
-      display: block !important;
+      display: none !important;
       visibility: hidden !important;
       pointer-events: none !important;
       grid-column: 1 !important;
@@ -1541,12 +1538,15 @@
       display: flex !important;
       flex-direction: column !important;
       min-width: 0 !important;
-      align-self: start !important;
-      max-height: calc(100vh - 24px) !important;
-      overflow-y: auto !important;
-      overflow-x: hidden !important;
-      overscroll-behavior: contain !important;
-      scrollbar-gutter: stable !important;
+      align-self: stretch !important;
+      position: static !important;
+      top: auto !important;
+      left: auto !important;
+      width: auto !important;
+      max-height: none !important;
+      overflow: visible !important;
+      overscroll-behavior: auto !important;
+      scrollbar-gutter: auto !important;
     }
     #overview .ik-home-layout > .legacy-home-main {
       grid-column: 2 !important;
@@ -1554,14 +1554,14 @@
       min-width: 0 !important;
     }
     #overview .ik-home-layout > .legacy-home-side.is-legacy-home-fixed {
-      position: fixed !important;
-      top: var(--legacy-home-fixed-top, 12px) !important;
-      left: var(--legacy-home-fixed-left, 0px) !important;
-      width: var(--legacy-home-fixed-width, 420px) !important;
-      z-index: 20 !important;
+      position: static !important;
+      top: auto !important;
+      left: auto !important;
+      width: auto !important;
+      z-index: auto !important;
     }
     #overview .ikuai-home-grid > .ikuai-home-sticky-placeholder {
-      display: block !important;
+      display: none !important;
       visibility: hidden !important;
       pointer-events: none !important;
       grid-column: 1 !important;
@@ -1571,12 +1571,15 @@
     #overview .ikuai-home-grid > .ikuai-home-sticky-side {
       grid-column: 1 !important;
       grid-row: 1 !important;
-      align-self: start !important;
-      max-height: calc(100vh - 24px) !important;
-      overflow-y: auto !important;
-      overflow-x: hidden !important;
-      overscroll-behavior: contain !important;
-      scrollbar-gutter: stable !important;
+      align-self: stretch !important;
+      position: static !important;
+      top: auto !important;
+      left: auto !important;
+      width: auto !important;
+      max-height: none !important;
+      overflow: visible !important;
+      overscroll-behavior: auto !important;
+      scrollbar-gutter: auto !important;
     }
     #overview .ikuai-home-grid > .ikuai-home-sticky-main {
       grid-column: 2 !important;
@@ -1584,19 +1587,20 @@
       min-width: 0 !important;
     }
     #overview .ikuai-home-grid > .ikuai-home-sticky-side.is-ikuai-home-fixed {
-      position: fixed !important;
-      top: var(--ikuai-home-fixed-top, 12px) !important;
-      left: var(--ikuai-home-fixed-left, 0px) !important;
-      width: var(--ikuai-home-fixed-width, 430px) !important;
-      z-index: 20 !important;
+      position: static !important;
+      top: auto !important;
+      left: auto !important;
+      width: auto !important;
+      z-index: auto !important;
     }
     @media (max-width: 1280px) and (min-width: 761px) {
       #overview .ik-home-layout {
         grid-template-columns: minmax(320px, 38vw) minmax(0, 1fr) !important;
       }
       #overview .ik-home-layout > .stack:first-child {
-        top: 10px;
-        max-height: calc(100vh - 20px);
+        position: static !important;
+        top: auto !important;
+        max-height: none !important;
       }
       #overview .ik-home-main,
       #overview .ik-home-monitor-grid,
@@ -1651,63 +1655,17 @@
     const main = root.querySelector(':scope > .legacy-home-main');
     if (side) {
       side.classList.remove('is-legacy-home-fixed');
+      side.classList.remove('legacy-home-side');
       side.style.removeProperty('--legacy-home-fixed-left');
       side.style.removeProperty('--legacy-home-fixed-width');
       side.style.removeProperty('--legacy-home-fixed-top');
     }
-    if (window.innerWidth <= 760) {
-      side?.classList.remove('legacy-home-side');
-      main?.classList.remove('legacy-home-main');
-    }
+    main?.classList.remove('legacy-home-main');
   }
 
   function syncLegacyHomeStickyFallback() {
-    const overview = document.querySelector('#overview');
-    const layout = overview?.querySelector('.ik-home-layout');
-    if (!overview || !layout || window.innerWidth <= 760 || getComputedStyle(overview).display === 'none') {
-      resetLegacyHomeStickyFallback(layout);
-      return;
-    }
-
-    const children = Array.from(layout.children || []);
-    const side = layout.querySelector(':scope > .legacy-home-side')
-      || children.find((node) => node.classList?.contains('stack') && !node.classList.contains('ik-home-main'));
-    const main = layout.querySelector(':scope > .legacy-home-main')
-      || children.find((node) => node !== side && !node.classList?.contains('legacy-home-side-placeholder'));
-    if (!side || !main) return;
-
-    side.classList.add('legacy-home-side');
-    main.classList.add('legacy-home-main');
-
-    let placeholder = layout.querySelector(':scope > .legacy-home-side-placeholder');
-    if (!placeholder) {
-      placeholder = document.createElement('div');
-      placeholder.className = 'legacy-home-side-placeholder';
-      layout.insertBefore(placeholder, side);
-    }
-
-    const stickyTop = window.innerWidth <= 1280 ? 10 : 12;
-    const layoutRect = layout.getBoundingClientRect();
-    const placeholderRect = placeholder.getBoundingClientRect();
-    const sideRect = side.getBoundingClientRect();
-    const sideHeight = Math.max(side.scrollHeight || 0, sideRect.height || 0, 1);
-    const sideWidth = Math.max(placeholderRect.width || sideRect.width || 0, 1);
-
-    placeholder.style.width = `${Math.round(sideWidth)}px`;
-    placeholder.style.height = `${Math.round(sideHeight)}px`;
-
-    const shouldFix = layoutRect.top <= stickyTop && layoutRect.bottom > stickyTop + 140;
-    if (shouldFix) {
-      side.style.setProperty('--legacy-home-fixed-left', `${Math.round(placeholderRect.left)}px`);
-      side.style.setProperty('--legacy-home-fixed-width', `${Math.round(sideWidth)}px`);
-      side.style.setProperty('--legacy-home-fixed-top', `${stickyTop}px`);
-      side.classList.add('is-legacy-home-fixed');
-    } else {
-      side.classList.remove('is-legacy-home-fixed');
-      side.style.removeProperty('--legacy-home-fixed-left');
-      side.style.removeProperty('--legacy-home-fixed-width');
-      side.style.removeProperty('--legacy-home-fixed-top');
-    }
+    const layout = document.querySelector('#overview .ik-home-layout');
+    resetLegacyHomeStickyFallback(layout);
   }
 
   function resetIkuaiHomeStickyFallback(layout) {
@@ -1718,14 +1676,12 @@
     const main = root.querySelector(':scope > .ikuai-home-sticky-main');
     if (side) {
       side.classList.remove('is-ikuai-home-fixed');
+      side.classList.remove('ikuai-home-sticky-side');
       side.style.removeProperty('--ikuai-home-fixed-left');
       side.style.removeProperty('--ikuai-home-fixed-width');
       side.style.removeProperty('--ikuai-home-fixed-top');
     }
-    if (window.innerWidth <= 760) {
-      side?.classList.remove('ikuai-home-sticky-side');
-      main?.classList.remove('ikuai-home-sticky-main');
-    }
+    main?.classList.remove('ikuai-home-sticky-main');
   }
 
   function syncIkuaiHomeStickyFallback() {
@@ -1746,7 +1702,6 @@
     legacyHomeStickyFrame = window.requestAnimationFrame(syncHomeStickyFallbacks);
   }
 
-  window.addEventListener('scroll', requestLegacyHomeStickyFallbackSync, { passive: true });
   window.addEventListener('resize', requestLegacyHomeStickyFallbackSync);
   window.addEventListener('load', () => setTimeout(requestLegacyHomeStickyFallbackSync, 250), { once: true });
 

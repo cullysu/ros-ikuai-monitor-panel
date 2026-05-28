@@ -3694,6 +3694,9 @@
       return `每 ${escapeHtml(String(seconds))}s 自动刷新`;
     }
 
+    const OVERVIEW_TERMINAL_RANK_LIMIT = 8;
+    const OVERVIEW_INTERFACE_RANK_LIMIT = 8;
+
     function buildOverviewRankData(snapshot) {
       const connections = snapshot?.connections || {};
       const terminals = snapshot?.terminals || [];
@@ -3701,7 +3704,13 @@
       const terminalSource = terminals.length ? terminals : (connections.topIps || []);
       const rankedTerminals = terminalSource
         .slice()
-        .sort((a, b) => totalTrafficRate(b) - totalTrafficRate(a));
+        .filter((row) => totalTrafficRate(row) > 0 || Number(row.connections || 0) > 0)
+        .sort((a, b) => {
+          const trafficDiff = totalTrafficRate(b) - totalTrafficRate(a);
+          if (trafficDiff !== 0) return trafficDiff;
+          return Number(b.connections || 0) - Number(a.connections || 0);
+        })
+        .slice(0, OVERVIEW_TERMINAL_RANK_LIMIT);
       const terminalRows = rankedTerminals.map((row) => {
         const name = displayNameFor(row, row.ip || '-').displayName;
         return `<tr>
@@ -3713,7 +3722,8 @@
       }).join('');
       const rankedInterfaces = interfaces
         .slice()
-        .sort((a, b) => totalTrafficRate(b, 'txRate', 'rxRate') - totalTrafficRate(a, 'txRate', 'rxRate'));
+        .sort((a, b) => totalTrafficRate(b, 'txRate', 'rxRate') - totalTrafficRate(a, 'txRate', 'rxRate'))
+        .slice(0, OVERVIEW_INTERFACE_RANK_LIMIT);
       const interfaceRows = rankedInterfaces.map((row) => `<tr>
         <td><b>${escapeHtml(row.name)}</b><div class="subtle">${escapeHtml(row.type || '-')}</div></td>
         <td>${tag(row.role || '-', row.role === 'WAN' ? 'info' : 'ok')}</td>
@@ -6109,7 +6119,7 @@
       }
     })();
   </script>
-  <script src="/layout-whitespace-patch.js?v=202604260235"></script>
+  <script src="/layout-whitespace-patch.js?v=202605282033"></script>
   <script src="/readonly-diagnostics.js?v=202605131022"></script>
 </body>
 </html>
