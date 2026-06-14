@@ -43,21 +43,23 @@ dependencies there.
 
 1. Extract `RouterOS-Triage-Panel-Windows.zip` to a normal user-writable folder,
    for example `C:\RouterOS-Triage-Panel`.
-2. Open `routeros-panel.env` in Notepad.
-3. Set:
+2. Double-click `RouterOS Triage Panel.exe`.
+3. The browser should open `http://127.0.0.1:28646/` automatically. Other IP
+   browser entrypoints are not allowed by the public defaults.
+4. Enter the RouterOS SSH host, SSH port, read-only user, and password on the
+   login page. The panel tests SSH before entering the dashboard.
+5. Optional: prefill credentials in `routeros-panel.env` before starting the
+   EXE if you prefer file-based configuration:
    - `ROS_MONITOR_ROUTER_HOST`
    - `ROS_MONITOR_ROUTER_USER`
    - `ROS_MONITOR_ROUTER_PASSWORD`
-4. Keep these defaults for a first local trial:
+6. Keep these defaults for a first local trial:
    - `ROS_PANEL_BIND=127.0.0.1`
    - `ROS_PANEL_PORT=28646`
    - `ROS_PANEL_TARGET_IP=127.0.0.1`
    - `ROS_PANEL_TRUST_PROXY_HEADERS=0`
    - `ROS_PANEL_PROFILE=routeros_only`
    - `ROS_PANEL_IP_ALIAS_WRITE_ENABLED=0`
-5. Double-click `RouterOS Triage Panel.exe`.
-6. The browser should open `http://127.0.0.1:28646/` automatically. Other IP
-   browser entrypoints are not allowed by the public defaults.
 
 The console window is intentional. It shows startup errors such as a wrong
 RouterOS address, bad password, or a port conflict.

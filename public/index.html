@@ -1987,6 +1987,218 @@
       color: var(--text-dim);
       font-size: 10.5px;
     }
+    .app.ik-shell.router-login-mode {
+      grid-template-columns: 52px minmax(0, 1fr);
+      background: linear-gradient(90deg, #fbfcff 0 52px, #ffffff 52px 100%);
+    }
+    .app.ik-shell.router-login-mode .sidebar {
+      display: none !important;
+    }
+    .app.ik-shell.router-login-mode .frame {
+      grid-column: 2;
+    }
+    .app.ik-shell.router-login-mode .topbar {
+      position: static;
+      max-height: none;
+      opacity: 1;
+      pointer-events: auto;
+      padding: 14px 22px 12px !important;
+      border-bottom: 1px solid #edf1f7;
+      background: rgba(255,255,255,.98);
+    }
+    .app.ik-shell.router-login-mode .topbar-header {
+      display: flex;
+    }
+    .app.ik-shell.router-login-mode .topbar-actions {
+      display: flex;
+    }
+    .app.ik-shell.router-login-mode .content {
+      min-height: calc(100vh - 68px);
+      padding: 22px 28px 30px;
+      background: linear-gradient(180deg, #f8fbff 0%, #ffffff 42%, #ffffff 100%);
+    }
+    .app.ik-shell.router-login-mode #topMetrics {
+      display: none !important;
+    }
+    .router-login-section {
+      max-width: 980px;
+      margin: 4px auto 0;
+    }
+    .router-login-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 300px;
+      gap: 12px;
+      align-items: start;
+    }
+    .router-login-card,
+    .router-login-side {
+      border: 1px solid #dfeaf7;
+      border-radius: 8px;
+      background: #fff;
+      box-shadow: 0 10px 26px rgba(48, 82, 120, .06);
+    }
+    .router-login-card {
+      padding: 18px;
+    }
+    .router-login-side {
+      padding: 14px;
+    }
+    .router-login-form-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+      margin-bottom: 14px;
+    }
+    .router-login-title {
+      color: #24384f;
+      font: 700 20px/1.2 "Bahnschrift","Microsoft YaHei",sans-serif;
+    }
+    .router-login-subtitle,
+    .router-login-note,
+    .router-login-small {
+      color: #71839a;
+      font-size: 12px;
+      line-height: 1.7;
+    }
+    .router-login-badge {
+      display: inline-flex;
+      align-items: center;
+      height: 24px;
+      padding: 0 8px;
+      border-radius: 999px;
+      background: #ecf5ff;
+      color: #2f7fe6;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .router-login-fields {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .router-login-field {
+      display: grid;
+      gap: 6px;
+      min-width: 0;
+    }
+    .router-login-field.is-wide {
+      grid-column: 1 / -1;
+    }
+    .router-login-label {
+      color: #51657d;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .router-login-input {
+      width: 100%;
+      height: 36px;
+      border: 1px solid #d9e6f5;
+      border-radius: 8px;
+      background: #fbfdff;
+      color: #23364b;
+      font: 600 13px/1.2 "Microsoft YaHei","Segoe UI",sans-serif;
+      outline: none;
+      padding: 0 10px;
+    }
+    .router-login-input:focus {
+      border-color: #4794eb;
+      box-shadow: 0 0 0 3px rgba(71, 148, 235, .12);
+      background: #fff;
+    }
+    .router-login-options {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+    .router-login-check {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #51657d;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .router-login-check input {
+      width: 15px;
+      height: 15px;
+      accent-color: #4794eb;
+    }
+    .router-login-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+    }
+    .router-login-submit {
+      min-width: 150px;
+    }
+    .router-login-inline-btn {
+      height: 32px;
+      padding: 0 10px;
+      border: 1px solid #d9e6f5;
+      border-radius: 8px;
+      background: #fff;
+      color: #3f7fd2;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .router-login-inline-btn:hover {
+      background: #f3f8ff;
+    }
+    .router-login-status {
+      min-height: 22px;
+      margin-top: 12px;
+      font-size: 12px;
+      line-height: 1.7;
+      color: #51657d;
+    }
+    .router-login-status.is-error {
+      color: #b6383a;
+    }
+    .router-login-status.is-ok {
+      color: #1f8c55;
+    }
+    .router-login-side-title {
+      color: #33475f;
+      font-size: 13px;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+    .router-login-facts {
+      display: grid;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .router-login-fact {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 8px 0;
+      border-top: 1px solid #edf2f7;
+      color: #6b7e94;
+      font-size: 12px;
+    }
+    .router-login-fact b {
+      color: #2a3b50;
+      font-weight: 800;
+      text-align: right;
+      word-break: break-all;
+    }
+    @media (max-width: 980px) {
+      .router-login-grid {
+        grid-template-columns: 1fr;
+      }
+      .router-login-fields {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
 </head>
 <body>
@@ -2087,6 +2299,16 @@
     let currentInterfaceView = 'monitor';
     let currentInterfaceTopology = 'wan';
     let interfaceReadonlyOpen = false;
+    let routerLoginState = null;
+    let savedRouterLogins = [];
+    let routerLoginCsrfToken = '';
+    let routerLoginSavePasswordAvailable = true;
+    let routerLoginLoadingPromise = null;
+    let routerLoginSubmitting = false;
+    let routerLoginError = '';
+    let routerLoginStatus = '';
+    let selectedSavedRouterLoginId = '';
+    let routerLoginDraft = null;
     let currentTerminalView = 'ipv4';
     let topMetricsPinnedHost = null;
     let compactSummaryPinnedHost = null;
@@ -2714,6 +2936,381 @@
       pendingSnapshot = null;
       pendingTriggerMode = 'auto';
       applySnapshot(snapshot, triggerMode);
+    }
+
+    function snapshotRouterLogin(snapshot) {
+      return snapshot?.meta?.routerLogin || snapshot?.routerLogin || null;
+    }
+
+    function normalizeRouterLoginPayload(payload = {}) {
+      const login = payload?.routerLogin || payload || {};
+      routerLoginState = {
+        configured: login.configured === true,
+        host: String(login.host || '').trim(),
+        user: String(login.user || '').trim(),
+        sshPort: Number(login.sshPort || 22) || 22,
+        source: login.source || '',
+        savedId: login.savedId || '',
+        updatedAt: login.updatedAt || '',
+        passwordSet: login.passwordSet === true,
+        lastTest: login.lastTest || null
+      };
+      if (Array.isArray(payload?.savedLogins)) {
+        savedRouterLogins = payload.savedLogins;
+      }
+      if (typeof payload?.savePasswordAvailable === 'boolean') {
+        routerLoginSavePasswordAvailable = payload.savePasswordAvailable;
+      }
+      if (payload?.csrfToken) {
+        routerLoginCsrfToken = payload.csrfToken;
+      }
+      if (!selectedSavedRouterLoginId && routerLoginState.savedId) {
+        selectedSavedRouterLoginId = routerLoginState.savedId;
+      }
+      return routerLoginState;
+    }
+
+    function snapshotNeedsRouterLogin(snapshot) {
+      const login = snapshotRouterLogin(snapshot) || routerLoginState;
+      if (login && login.configured === false) return true;
+      if (snapshot?.status === 'needs_config') return true;
+      const lastSshOk = login?.lastTest?.ssh?.ok === true;
+      return !lastSshOk && snapshotHasRouterSshLoginError(snapshot);
+    }
+
+    function snapshotHasRouterSshLoginError(snapshot) {
+      const metaErrors = Object.entries(snapshot?.meta || {})
+        .filter(([key, value]) => /error$/i.test(key) && value)
+        .map(([, value]) => value);
+      const text = [
+        snapshot?.error,
+        snapshot?.statusMessage,
+        snapshot?.meta?.collectorStatusMessage,
+        snapshot?.meta?.collectorError,
+        snapshot?.meta?.routerLogin?.lastTest?.ssh?.error,
+        ...metaErrors
+      ].filter(Boolean).join(' ');
+      return /RouterOS SSH|SSH login|SSH connect|authentication failed|protocol banner|connection is not configured/i.test(text);
+    }
+
+    async function loadRouterLoginState(force = false) {
+      if (IS_TEST_MODE) {
+        return { routerLogin: routerLoginState, savedLogins: savedRouterLogins };
+      }
+      if (routerLoginLoadingPromise && !force) {
+        return routerLoginLoadingPromise;
+      }
+      routerLoginLoadingPromise = fetch('/api/router-login', { cache: 'no-store' })
+        .then(async (response) => {
+          const payload = await response.json().catch(() => ({}));
+          if (!response.ok || payload?.ok === false) {
+            throw new Error(payload?.error || `HTTP ${response.status}`);
+          }
+          normalizeRouterLoginPayload(payload);
+          return payload;
+        })
+        .catch((error) => {
+          routerLoginError = `登录状态读取失败：${error?.message || '未知错误'}`;
+          throw error;
+        })
+        .finally(() => {
+          routerLoginLoadingPromise = null;
+        });
+      return routerLoginLoadingPromise;
+    }
+
+    function selectedSavedRouterLogin() {
+      return savedRouterLogins.find((row) => row?.id && row.id === selectedSavedRouterLoginId) || null;
+    }
+
+    function captureRouterLoginDraftFromForm(form = null) {
+      const targetForm = form || appEl?.querySelector('[data-router-login-form]');
+      if (!targetForm) return routerLoginDraft;
+      const formData = new FormData(targetForm);
+      routerLoginDraft = {
+        savedId: String(formData.get('savedId') || '').trim(),
+        host: String(formData.get('host') || ''),
+        user: String(formData.get('user') || ''),
+        sshPort: String(formData.get('sshPort') || '22'),
+        password: String(formData.get('password') || ''),
+        rememberPassword: formData.get('rememberPassword') === 'on'
+      };
+      selectedSavedRouterLoginId = routerLoginDraft.savedId;
+      return routerLoginDraft;
+    }
+
+    function routerLoginDraftValue(key, fallback = '') {
+      if (routerLoginDraft && Object.prototype.hasOwnProperty.call(routerLoginDraft, key)) {
+        return routerLoginDraft[key];
+      }
+      return fallback;
+    }
+
+    function applySavedRouterLoginDraft(savedId) {
+      selectedSavedRouterLoginId = String(savedId || '').trim();
+      const savedEntry = selectedSavedRouterLogin();
+      if (savedEntry) {
+        routerLoginDraft = {
+          savedId: selectedSavedRouterLoginId,
+          host: savedEntry.host || '',
+          user: savedEntry.user || '',
+          sshPort: String(savedEntry.sshPort || 22),
+          password: '',
+          rememberPassword: false
+        };
+        return;
+      }
+      routerLoginDraft = {
+        ...(routerLoginDraft || {}),
+        savedId: ''
+      };
+    }
+
+    function renderSavedRouterLoginSelect() {
+      const entries = savedRouterLogins.filter((row) => row?.id);
+      if (!entries.length) return '';
+      if (selectedSavedRouterLoginId && !entries.some((row) => row.id === selectedSavedRouterLoginId)) {
+        selectedSavedRouterLoginId = '';
+      }
+      const options = entries.map((row) => {
+        const label = `${row.label || row.host || 'RouterOS'} · ${row.user || '-'} · SSH ${row.sshPort || 22}${row.passwordSaved ? ' · 已保存密码' : ''}`;
+        return `<option value="${escapeHtml(row.id)}"${row.id === selectedSavedRouterLoginId ? ' selected' : ''}>${escapeHtml(label)}</option>`;
+      }).join('');
+      return `
+        <div class="router-login-field is-wide">
+          <label class="router-login-label" for="routerSavedLogin">本机保存的 RouterOS 登录</label>
+          <select class="router-login-input" id="routerSavedLogin" name="savedId" data-router-login-saved-select>
+            <option value="">手动输入</option>
+            ${options}
+          </select>
+        </div>`;
+    }
+
+    function renderRouterLogin(snapshot = null) {
+      const activeForm = appEl?.querySelector('[data-router-login-form]');
+      if (activeForm && activeForm.contains(document.activeElement)) {
+        captureRouterLoginDraftFromForm(activeForm);
+      }
+      const snapshotLogin = snapshotRouterLogin(snapshot);
+      if (!routerLoginState && snapshotLogin) {
+        normalizeRouterLoginPayload({ routerLogin: snapshotLogin });
+      }
+      if (!routerLoginState && !IS_TEST_MODE && !routerLoginLoadingPromise) {
+        void loadRouterLoginState().then(() => {
+          if (snapshotNeedsRouterLogin(displayedSnapshot || latestSnapshot || snapshot)) {
+            renderRouterLogin(displayedSnapshot || latestSnapshot || snapshot);
+          }
+        }).catch(() => {
+          if (snapshotNeedsRouterLogin(displayedSnapshot || latestSnapshot || snapshot)) {
+            renderRouterLogin(displayedSnapshot || latestSnapshot || snapshot);
+          }
+        });
+      }
+
+      const draftSavedId = String(routerLoginDraftValue('savedId', selectedSavedRouterLoginId || '') || '').trim();
+      if (draftSavedId !== selectedSavedRouterLoginId) {
+        selectedSavedRouterLoginId = draftSavedId;
+      }
+      const savedEntry = selectedSavedRouterLogin();
+      const login = routerLoginState || snapshotLogin || {};
+      const host = routerLoginDraftValue('host', savedEntry?.host || login.host || '');
+      const user = routerLoginDraftValue('user', savedEntry?.user || login.user || '');
+      const sshPort = routerLoginDraftValue('sshPort', String(savedEntry?.sshPort || login.sshPort || 22));
+      const password = routerLoginDraftValue('password', '');
+      const rememberPassword = routerLoginDraftValue('rememberPassword', false) === true;
+      const passwordPlaceholder = savedEntry?.passwordSaved
+        ? '已保存密码，可留空'
+        : 'RouterOS SSH 密码';
+      const statusText = routerLoginError
+        || routerLoginStatus
+        || (snapshot?.error ? `当前状态：${snapshot.error}` : '请输入 RouterOS 只读 SSH 登录。');
+      const statusClass = routerLoginError ? ' is-error' : routerLoginStatus ? ' is-ok' : '';
+      const forgetButton = savedEntry
+        ? `<button class="router-login-inline-btn" type="button" data-router-login-forget="${escapeHtml(savedEntry.id)}">忘记此登录</button>`
+        : '';
+      const savePasswordControl = routerLoginSavePasswordAvailable
+        ? `<label class="router-login-check"><input type="checkbox" name="rememberPassword">保存到本机</label>`
+        : `<span class="router-login-small">当前运行环境不支持保存密码</span>`;
+
+      appShellEl?.classList.add('router-login-mode');
+      frameEl?.classList.remove('overview-title-only', 'page-compact-topbar', 'arp-compact', 'topmetrics-fixed', 'topmetrics-pin-ready', 'section-summary-fixed', 'section-summary-pinned', 'scroll-snap-free');
+      pageTitleEl.textContent = '连接 RouterOS';
+      setPageSubtitle('');
+      healthDotEl.className = 'dot warn';
+      updateTextEl.textContent = routerLoginSubmitting ? '正在验证 SSH' : '等待登录';
+      if (topMetricsEl) {
+        topMetricsEl.innerHTML = '';
+        topMetricsEl.style.display = 'none';
+      }
+      updateRefreshMeta();
+
+      appEl.innerHTML = `
+        <section class="section router-login-section" id="routerLogin">
+          <div class="router-login-grid">
+            <form class="router-login-card" data-router-login-form autocomplete="off">
+              <div class="router-login-form-head">
+                <div>
+                  <div class="router-login-title">连接 RouterOS</div>
+                  <div class="router-login-subtitle">使用只读 SSH 账号验证后进入面板。</div>
+                </div>
+                <span class="router-login-badge">localhost-only</span>
+              </div>
+              <div class="router-login-fields">
+                ${renderSavedRouterLoginSelect()}
+                <div class="router-login-field">
+                  <label class="router-login-label" for="routerHost">RouterOS 地址</label>
+                  <input class="router-login-input" id="routerHost" name="host" value="${escapeHtml(host)}" placeholder="192.168.88.1" inputmode="url">
+                </div>
+                <div class="router-login-field">
+                  <label class="router-login-label" for="routerPort">SSH 端口</label>
+                  <input class="router-login-input" id="routerPort" name="sshPort" value="${escapeHtml(sshPort)}" placeholder="22" inputmode="numeric">
+                </div>
+                <div class="router-login-field">
+                  <label class="router-login-label" for="routerUser">SSH 用户</label>
+                  <input class="router-login-input" id="routerUser" name="user" value="${escapeHtml(user)}" placeholder="read-only" autocomplete="username">
+                </div>
+                <div class="router-login-field">
+                  <label class="router-login-label" for="routerPassword">SSH 密码</label>
+                  <input class="router-login-input" id="routerPassword" name="password" type="password" value="${escapeHtml(password)}" placeholder="${escapeHtml(passwordPlaceholder)}" autocomplete="current-password">
+                </div>
+              </div>
+              <div class="router-login-options">
+                ${routerLoginSavePasswordAvailable
+                  ? `<label class="router-login-check"><input type="checkbox" name="rememberPassword"${rememberPassword ? ' checked' : ''}>保存到本机</label>`
+                  : savePasswordControl}
+                <span class="router-login-note">默认不保存密码。</span>
+              </div>
+              <div class="router-login-actions">
+                <button class="action-btn primary router-login-submit" type="submit" ${routerLoginSubmitting ? 'disabled' : ''}>${routerLoginSubmitting ? '连接中...' : '连接并进入面板'}</button>
+                ${forgetButton}
+              </div>
+              <div class="router-login-status${statusClass}" data-router-login-status>${escapeHtml(statusText)}</div>
+            </form>
+            <aside class="router-login-side">
+              <div class="router-login-side-title">当前入口</div>
+              <div class="router-login-note">浏览器入口固定为本机回环地址；这不是 LAN 管理地址。</div>
+              <div class="router-login-facts">
+                <div class="router-login-fact"><span>面板地址</span><b>127.0.0.1:28646</b></div>
+                <div class="router-login-fact"><span>运行模式</span><b>routeros_only</b></div>
+                <div class="router-login-fact"><span>采集状态</span><b>${escapeHtml(snapshot?.status || 'needs_config')}</b></div>
+                <div class="router-login-fact"><span>保存项</span><b>${fmtNumber(savedRouterLogins.length)}</b></div>
+              </div>
+            </aside>
+          </div>
+        </section>`;
+    }
+
+    async function handleRouterLoginSubmit(form) {
+      if (routerLoginSubmitting) return;
+      const formData = new FormData(form);
+      const savedId = String(formData.get('savedId') || '').trim();
+      const host = String(formData.get('host') || '').trim();
+      const user = String(formData.get('user') || '').trim();
+      const password = String(formData.get('password') || '');
+      const sshPort = Number(formData.get('sshPort') || 22) || 22;
+      const savedEntry = selectedSavedRouterLogin();
+      routerLoginDraft = {
+        savedId,
+        host,
+        user,
+        sshPort: String(sshPort),
+        password,
+        rememberPassword: formData.get('rememberPassword') === 'on'
+      };
+      selectedSavedRouterLoginId = savedId;
+
+      if (!savedId && (!host || !user || !password.trim())) {
+        routerLoginError = '请填写 RouterOS 地址、SSH 用户和密码。';
+        routerLoginStatus = '';
+        renderRouterLogin(displayedSnapshot || latestSnapshot);
+        return;
+      }
+      if (savedId && !password.trim() && savedEntry && !savedEntry.passwordSaved) {
+        routerLoginError = '这个保存项没有保存密码，请输入 SSH 密码。';
+        routerLoginStatus = '';
+        renderRouterLogin(displayedSnapshot || latestSnapshot);
+        return;
+      }
+
+      routerLoginSubmitting = true;
+      routerLoginError = '';
+      routerLoginStatus = '正在验证 RouterOS SSH 登录...';
+      renderRouterLogin(displayedSnapshot || latestSnapshot);
+      let success = false;
+      try {
+        if (!routerLoginCsrfToken) {
+          await loadRouterLoginState(true).catch(() => null);
+        }
+        const response = await fetch('/api/router-login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': routerLoginCsrfToken
+          },
+          body: JSON.stringify({
+            savedId,
+            host,
+            user,
+            password,
+            sshPort,
+            rememberPassword: formData.get('rememberPassword') === 'on'
+          })
+        });
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok || payload?.ok === false) {
+          throw new Error(payload?.error || `HTTP ${response.status}`);
+        }
+        normalizeRouterLoginPayload(payload);
+        routerLoginDraft = null;
+        routerLoginError = '';
+        routerLoginStatus = payload?.warning || '连接成功，正在进入面板...';
+        success = true;
+        await loadSnapshot('manual');
+      } catch (error) {
+        routerLoginError = error?.message || 'RouterOS 登录失败';
+        routerLoginStatus = '';
+      } finally {
+        routerLoginSubmitting = false;
+        if (!success) {
+          renderRouterLogin(displayedSnapshot || latestSnapshot);
+        }
+      }
+    }
+
+    async function handleRouterLoginForget(savedId) {
+      const id = String(savedId || '').trim();
+      if (!id || !window.confirm('确认忘记这个本机保存项？')) return;
+      routerLoginError = '';
+      routerLoginStatus = '正在删除本机保存项...';
+      renderRouterLogin(displayedSnapshot || latestSnapshot);
+      try {
+        if (!routerLoginCsrfToken) {
+          await loadRouterLoginState(true).catch(() => null);
+        }
+        const response = await fetch('/api/router-login-forget', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': routerLoginCsrfToken
+          },
+          body: JSON.stringify({ savedId: id })
+        });
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok || payload?.ok === false) {
+          throw new Error(payload?.error || `HTTP ${response.status}`);
+        }
+        normalizeRouterLoginPayload(payload);
+        selectedSavedRouterLoginId = '';
+        if (routerLoginDraft) {
+          routerLoginDraft.savedId = '';
+        }
+        routerLoginStatus = '已删除本机保存项。';
+        routerLoginError = '';
+      } catch (error) {
+        routerLoginError = error?.message || '删除保存项失败';
+        routerLoginStatus = '';
+      }
+      renderRouterLogin(displayedSnapshot || latestSnapshot);
     }
 
     function syncDnsRuleBrowserWithSnapshot(snapshot) {
@@ -5272,6 +5869,11 @@
     }
 
     function renderApp(snapshot) {
+      if (snapshotNeedsRouterLogin(snapshot)) {
+        renderRouterLogin(snapshot);
+        return;
+      }
+      appShellEl?.classList.remove('router-login-mode');
       const warning = snapshot.status !== 'ok'
         ? `<div class="notice danger" style="margin-bottom:12px">采集状态异常：${escapeHtml(snapshot.error || '未知错误')}。当前页面展示的是最近一次可用数据快照。</div>`
         : '';
@@ -5814,7 +6416,9 @@
       pageTitleEl.textContent = meta.title;
       const snapshotToRender = displayedSnapshot || latestSnapshot;
       if (snapshotToRender) {
-        renderTopMetrics(snapshotToRender);
+        if (!snapshotNeedsRouterLogin(snapshotToRender)) {
+          renderTopMetrics(snapshotToRender);
+        }
         renderApp(snapshotToRender);
         ensureDnsRuleBrowserLoaded(snapshotToRender);
       } else {
@@ -5838,6 +6442,9 @@
           const response = await fetch('/api/snapshot', { cache: 'no-store' });
           if (!response.ok) throw new Error(`HTTP ${response.status}`);
           snapshot = await response.json();
+        }
+        if (snapshotNeedsRouterLogin(snapshot)) {
+          await loadRouterLoginState().catch(() => null);
         }
         queueSnapshot(snapshot, triggerMode);
         if (isDnsRuleBrowserSection() && triggerMode === 'manual' && !TEST_SNAPSHOT && (dnsRuleBrowser.loaded || dnsRuleBrowser.error)) {
@@ -5878,6 +6485,38 @@
         ? Math.max(0, Number(dnsRuleBrowser.offset || 0) - step)
         : Math.min(maxOffset, Number(dnsRuleBrowser.offset || 0) + step);
       void loadDnsRuleBrowser({ force: true, offset: nextOffset, limit: step });
+    });
+
+    document.addEventListener('submit', (event) => {
+      const form = event.target?.closest?.('[data-router-login-form]');
+      if (!form) return;
+      event.preventDefault();
+      void handleRouterLoginSubmit(form);
+    });
+
+    document.addEventListener('input', (event) => {
+      const field = event.target?.closest?.('[data-router-login-form] input');
+      if (!field) return;
+      captureRouterLoginDraftFromForm(field.form);
+      noteInteraction(4200);
+    });
+
+    document.addEventListener('change', (event) => {
+      const savedLoginSelect = event.target?.closest?.('[data-router-login-saved-select]');
+      if (!savedLoginSelect) return;
+      captureRouterLoginDraftFromForm(savedLoginSelect.form);
+      applySavedRouterLoginDraft(savedLoginSelect.value || '');
+      routerLoginError = '';
+      routerLoginStatus = '';
+      noteInteraction(4200);
+      renderRouterLogin(displayedSnapshot || latestSnapshot);
+    });
+
+    document.addEventListener('click', (event) => {
+      const forgetButton = event.target?.closest?.('[data-router-login-forget]');
+      if (!forgetButton) return;
+      event.preventDefault();
+      void handleRouterLoginForget(forgetButton.dataset.routerLoginForget);
     });
 
     appEl.addEventListener('pointerdown', () => noteInteraction(3600), true);

@@ -117,6 +117,14 @@ function main() {
   assertContains('tools/build-windows-exe.ps1', 'ROS_PANEL_NETWORK_WRITE_ENABLED=1');
   assertContains('.github/workflows/ci.yml', 'Windows env is missing loopback bind default');
   assertContains('.github/workflows/ci.yml', 'Windows env is missing panel address write default');
+  assertContains('public/index.html', 'snapshotNeedsRouterLogin');
+  assertContains('public/index.html', 'snapshotHasRouterSshLoginError');
+  assertContains('public/index.html', 'routerLoginDraft');
+  assertContains('public/index.html', 'captureRouterLoginDraftFromForm');
+  assertContains('public/index.html', 'data-router-login-form');
+  assertContains('public/index.html', '/api/router-login');
+  assertContains('public/index.html', 'rememberPassword');
+  assertContains('public/index.html', '连接并进入面板');
 
   console.log('[ok] public release readiness markers are present');
 }

@@ -4,6 +4,15 @@
 
 - Nothing yet.
 
+## 0.2.1 - 2026-06-14
+
+- Fixed the public first-run flow so an unconfigured or SSH-failing RouterOS
+  connection shows the RouterOS login page instead of rendering the dashboard
+  homepage.
+- Kept RouterOS login form edits stable across background refreshes and failed
+  login attempts.
+- Added a release-readiness marker check for the RouterOS login gate.
+
 ## 0.2.0 - 2026-06-14
 
 - Added a RouterOS Container archive converter for Docker/BuildKit OCI layout
