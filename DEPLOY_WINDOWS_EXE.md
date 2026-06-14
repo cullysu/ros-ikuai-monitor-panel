@@ -5,12 +5,12 @@ runs the panel.
 
 ## Release Status
 
-No official signed binary is published yet. Until a release ZIP exists in
-GitHub Releases with a checksum, treat the Windows EXE as a build-from-source
-path.
+Official Windows ZIP packages are published from tagged GitHub Releases with a
+SHA-256 checksum asset.
 
-If you receive a ZIP from another source, verify that you trust the source. The
-project does not yet provide code signing.
+The project does not yet provide code signing. If Windows Defender or
+SmartScreen warns, verify the ZIP checksum against the GitHub Release before
+running it.
 
 ## Public Delivery Contract
 

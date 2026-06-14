@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Nothing yet.
+
+## 0.2.0 - 2026-06-14
+
 - Added a RouterOS Container archive converter for Docker/BuildKit OCI layout
   tarballs so offline imports can be rewritten to legacy Docker archive shape.
 - Fixed RouterOS Container env examples to use RouterOS `list=` syntax and
@@ -12,6 +16,8 @@
   published image with local-build fallback.
 - Added public-release readiness checks and explicit RouterOS Container LAN
   exposure/rollback guidance.
+- Fixed collector duration measurements to use a monotonic clock so wall-clock
+  changes cannot skew poll timing, rate smoothing, or timeout reporting.
 
 ## 0.1.0 - 2026-05-25
 

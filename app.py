@@ -1080,14 +1080,14 @@ def tcp_latency_target(target=WAN_LATENCY_TARGET, timeout_ms=WAN_LATENCY_TIMEOUT
     host = parsed.hostname or safe_target
     port = parsed.port or (443 if parsed.scheme == "https" else 80)
     safe_timeout_ms = max(200, to_int(timeout_ms, WAN_LATENCY_TIMEOUT_MS))
-    started_at = time.time()
+    started_at = time.monotonic()
     try:
         with socket.create_connection((host, port), timeout=max(0.2, safe_timeout_ms / 1000.0)):
             pass
         return {
             "ok": True,
             "target": safe_target,
-            "latencyMs": max(1, int(round((time.time() - started_at) * 1000))),
+            "latencyMs": max(1, int(round((time.monotonic() - started_at) * 1000))),
             "updatedAt": format_iso_now(),
             "method": "tcp-connect-fallback",
             "error": None,
@@ -1111,7 +1111,7 @@ def ping_latency_target(target=WAN_LATENCY_TARGET, timeout_ms=WAN_LATENCY_TIMEOU
         command = ["ping", "-n", "1", "-w", str(safe_timeout_ms), safe_target]
     else:
         command = ["ping", "-c", "1", "-W", str(max(1, int(round(safe_timeout_ms / 1000.0)))), safe_target]
-    started_at = time.time()
+    started_at = time.monotonic()
     try:
         proc = subprocess.run(
             command,
@@ -1124,7 +1124,7 @@ def ping_latency_target(target=WAN_LATENCY_TARGET, timeout_ms=WAN_LATENCY_TIMEOU
         output = f"{proc.stdout}\n{proc.stderr}"
         latency_ms = parse_ping_latency_ms(output)
         if latency_ms is None and proc.returncode == 0:
-            latency_ms = max(1, int(round((time.time() - started_at) * 1000)))
+            latency_ms = max(1, int(round((time.monotonic() - started_at) * 1000)))
         if latency_ms is None and proc.returncode != 0:
             lowered = output.lower()
             if "operation not permitted" in lowered or "permission denied" in lowered:
@@ -3598,7 +3598,7 @@ class Collector:
         return quality
 
     def get_wan_latency(self, force=False):
-        now = time.time()
+        now = time.monotonic()
         with self.lock:
             cached = copy.deepcopy(self.wan_latency)
             last_probe_at = float(self.wan_latency_last_probe_at or 0.0)
@@ -4686,10 +4686,10 @@ class Collector:
             if not self.require_router_config_for_collection():
                 time.sleep(1)
                 continue
-            started_at = time.time()
+            started_at = time.monotonic()
             try:
                 realtime_rest = self.fetch_rest_bundle(REALTIME_REST_ENDPOINTS)
-                duration = round(time.time() - started_at, 2)
+                duration = round(time.monotonic() - started_at, 2)
                 now = format_iso_now()
                 with self.lock:
                     failures = realtime_rest.pop("_failures", {})
@@ -4706,9 +4706,9 @@ class Collector:
                 with self.lock:
                     self.realtime_error = str(exc)
                     self.realtime_last_error_at = format_iso_now()
-                    self.realtime_duration_seconds = round(time.time() - started_at, 2)
+                    self.realtime_duration_seconds = round(time.monotonic() - started_at, 2)
                     self.state = {**copy.deepcopy(self.state), "status": "error", "updatedAt": format_iso_now(), "error": str(exc)}
-            elapsed = time.time() - started_at
+            elapsed = time.monotonic() - started_at
             time.sleep(max(0, POLL_SECONDS - elapsed))
 
     def slow_rest_loop(self):
@@ -4716,10 +4716,10 @@ class Collector:
             if not self.require_router_config_for_collection():
                 time.sleep(1)
                 continue
-            started_at = time.time()
+            started_at = time.monotonic()
             try:
                 slow_rest = self.fetch_rest_bundle(SLOW_REST_ENDPOINTS, workers=SLOW_REST_WORKERS)
-                duration = round(time.time() - started_at, 2)
+                duration = round(time.monotonic() - started_at, 2)
                 now = format_iso_now()
                 with self.lock:
                     failures = slow_rest.pop("_failures", {})
@@ -4736,9 +4736,9 @@ class Collector:
                 with self.lock:
                     self.slow_error = str(exc)
                     self.slow_last_error_at = format_iso_now()
-                    self.slow_duration_seconds = round(time.time() - started_at, 2)
+                    self.slow_duration_seconds = round(time.monotonic() - started_at, 2)
                 self.update_state()
-            elapsed = time.time() - started_at
+            elapsed = time.monotonic() - started_at
             time.sleep(max(0, SLOW_REST_POLL_SECONDS - elapsed))
 
     def connection_protocol_loop(self):
@@ -4746,10 +4746,10 @@ class Collector:
             if not self.require_router_config_for_collection():
                 time.sleep(1)
                 continue
-            started_at = time.time()
+            started_at = time.monotonic()
             try:
                 tracking = self.fetch_connection_tracking_summary()
-                duration = round(time.time() - started_at, 2)
+                duration = round(time.monotonic() - started_at, 2)
                 now = format_iso_now()
                 with self.lock:
                     self.connection_summary["counts"]["all"] = tracking["total"]
@@ -4762,13 +4762,13 @@ class Collector:
                     self.connection_summary["protocolDurationSeconds"] = duration
                 self.update_state()
             except Exception as exc:
-                duration = round(time.time() - started_at, 2)
+                duration = round(time.monotonic() - started_at, 2)
                 with self.lock:
                     self.connection_summary["protocolError"] = str(exc)
                     self.connection_summary["protocolLastErrorAt"] = format_iso_now()
                     self.connection_summary["protocolDurationSeconds"] = duration
                 self.update_state()
-            elapsed = time.time() - started_at
+            elapsed = time.monotonic() - started_at
             time.sleep(max(0, CONNECTION_PROTOCOL_POLL_SECONDS - elapsed))
 
     def static_loop(self):
@@ -4776,7 +4776,7 @@ class Collector:
             if not self.require_router_config_for_collection():
                 time.sleep(1)
                 continue
-            started_at = time.time()
+            started_at = time.monotonic()
             try:
                 dns_static_count = 0
                 static_rest = self.fetch_rest_bundle(STATIC_REST_ENDPOINTS, workers=STATIC_REST_WORKERS)
@@ -4813,16 +4813,16 @@ class Collector:
                 except Exception:
                     pass
                 with self.lock:
-                    self.static_duration_seconds = round(time.time() - started_at, 2)
+                    self.static_duration_seconds = round(time.monotonic() - started_at, 2)
                     self.static_updated_at = format_iso_now()
                 self.update_state()
             except Exception as exc:
                 with self.lock:
                     self.static_error = str(exc)
                     self.static_last_error_at = format_iso_now()
-                    self.static_duration_seconds = round(time.time() - started_at, 2)
+                    self.static_duration_seconds = round(time.monotonic() - started_at, 2)
                 self.update_state()
-            elapsed = time.time() - started_at
+            elapsed = time.monotonic() - started_at
             time.sleep(max(0, STATIC_POLL_SECONDS - elapsed))
 
     def connection_detail_loop(self):
@@ -4830,7 +4830,7 @@ class Collector:
             if not self.require_router_config_for_collection():
                 time.sleep(1)
                 continue
-            started_at = time.time()
+            started_at = time.monotonic()
             try:
                 with ThreadPoolExecutor(max_workers=2) as executor:
                     detail_future = executor.submit(self.fetch_connection_detail)
@@ -4842,7 +4842,7 @@ class Collector:
                     detail = detail_future.result()
                     detail_rest = detail_rest_future.result()
                 detail_failures = detail_rest.pop("_failures", {})
-                duration = round(time.time() - started_at, 2)
+                duration = round(time.monotonic() - started_at, 2)
                 now = format_iso_now()
                 with self.lock:
                     self.connection_detail = {
@@ -4858,13 +4858,13 @@ class Collector:
                     self.detail_failures = detail_failures
                 self.update_state()
             except Exception as exc:
-                duration = round(time.time() - started_at, 2)
+                duration = round(time.monotonic() - started_at, 2)
                 with self.lock:
                     self.connection_detail["detailError"] = str(exc)
                     self.connection_detail["detailLastErrorAt"] = format_iso_now()
                     self.connection_detail["detailDurationSeconds"] = duration
                 self.update_state()
-            elapsed = time.time() - started_at
+            elapsed = time.monotonic() - started_at
             time.sleep(connection_detail_sleep_seconds(elapsed))
 
     def start(self):
