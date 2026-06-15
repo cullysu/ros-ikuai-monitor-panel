@@ -66,7 +66,7 @@ jobs:
           node tools/local-predeploy-check.js \
             --profile public \
             --viewports desktop=1366x900,narrow=390x844 \
-            --sections overview,interfaces,trafficLoad,terminals,connections \
+            --sections main-menu \
             --scale-scenarios single,fleet \
             --strict-responsive \
             --out _acceptance/ci-public-predeploy

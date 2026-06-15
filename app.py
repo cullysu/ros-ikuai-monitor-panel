@@ -710,7 +710,7 @@ READONLY_DIAGNOSTIC_DNS_TIMEOUT = float(os.getenv("ROS_PANEL_READONLY_DIAGNOSTIC
 READONLY_DIAGNOSTIC_HTTP_TIMEOUT = float(os.getenv("ROS_PANEL_READONLY_DIAGNOSTIC_HTTP_TIMEOUT", "2.5"))
 READONLY_DIAGNOSTIC_WORKERS = int(os.getenv("ROS_PANEL_READONLY_DIAGNOSTIC_WORKERS", "24"))
 READONLY_DIAGNOSTIC_TOTAL_TIMEOUT = float(os.getenv("ROS_PANEL_READONLY_DIAGNOSTIC_TOTAL_TIMEOUT", "8"))
-ACTION_QUEUE_LIMIT = max(1, int(os.getenv("ROS_PANEL_ACTION_QUEUE_LIMIT", "24")))
+STATUS_FINDINGS_LIMIT = max(1, int(os.getenv("ROS_PANEL_STATUS_FINDINGS_LIMIT", "24")))
 WAN_LATENCY_TARGET = os.getenv("ROS_PANEL_WAN_LATENCY_TARGET", "www.baidu.com").strip() or "www.baidu.com"
 WAN_LATENCY_POLL_SECONDS = max(1, int(os.getenv("ROS_PANEL_WAN_LATENCY_POLL_SECONDS", "10")))
 WAN_LATENCY_TIMEOUT_MS = max(200, int(os.getenv("ROS_PANEL_WAN_LATENCY_TIMEOUT_MS", "1200")))
@@ -1758,8 +1758,8 @@ def build_panel_capabilities(wan_lines, pppoe_count):
         "privateDiagnostics": READONLY_DIAGNOSTICS_ENABLED,
         "openwrtDiagnostics": READONLY_DIAGNOSTICS_ENABLED,
         "nikkiDiagnostics": READONLY_DIAGNOSTICS_ENABLED,
-        "semanticTriage": True,
-        "actionQueue": True,
+        "statusFindings": True,
+        "healthFindings": True,
         "publicRouterosProfile": PUBLIC_ROUTEROS_PROFILE,
         "ipAliasWrite": IP_ALIAS_WRITE_ENABLED,
         "adminSessions": EXPOSE_ADMIN_SESSIONS,
@@ -1818,7 +1818,7 @@ def normalize_collector_snapshot_status(snapshot):
     return snapshot
 
 
-def build_semantic_triage(snapshot):
+def build_health_findings(snapshot):
     snapshot = as_dict(snapshot)
     meta = as_dict(snapshot.get("meta"))
     overview = as_dict(snapshot.get("overview"))
@@ -1843,10 +1843,8 @@ def build_semantic_triage(snapshot):
                 "domain": domain,
                 "title": title,
                 "summary": compact_text(summary, 240),
-                "nextStep": compact_text(next_step, 240),
                 "source": source,
                 "readOnly": True,
-                "actionType": "manual_review",
                 "priority": len(actions) + 1,
                 "evidence": evidence or [],
             }
@@ -1861,7 +1859,7 @@ def build_semantic_triage(snapshot):
             "collector",
             "Snapshot collection is not healthy",
             status_message,
-            "Check collection errors first; this queue does not attempt an automatic repair.",
+            "Confirm collection state before trusting dependent widgets.",
             "snapshot.status",
             [
                 {"label": "status", "value": snapshot_status},
@@ -2218,13 +2216,13 @@ def build_semantic_triage(snapshot):
             "security",
             "Security-related log alerts are present",
             f"{len(security_alerts)} firewall/warning/error log item(s) are visible.",
-            "Review log context and rule hit counters; this endpoint only queues investigation hints.",
+            "Review log context and rule hit counters as read-only evidence.",
             "snapshot.security.alerts",
             [{"label": "sample", "value": compact_text(as_dict(security_alerts[0]).get("message"))}],
         )
 
     actions.sort(key=lambda row: (ACTION_SEVERITY_RANK.get(row["severity"], 99), row["priority"]))
-    actions = actions[:ACTION_QUEUE_LIMIT]
+    actions = actions[:STATUS_FINDINGS_LIMIT]
     for index, action in enumerate(actions, start=1):
         action["priority"] = index
     counts = {severity: 0 for severity in ACTION_SEVERITY_RANK}
@@ -2237,11 +2235,10 @@ def build_semantic_triage(snapshot):
         "generatedAt": format_iso_now(),
         "sourceUpdatedAt": snapshot.get("updatedAt"),
         "sourceStatus": snapshot.get("status"),
-        "limit": ACTION_QUEUE_LIMIT,
+        "limit": STATUS_FINDINGS_LIMIT,
         "counts": counts,
-        "topPriority": actions[0] if actions else None,
-        "queue": actions,
-        "actionQueue": actions,
+        "topFinding": actions[0] if actions else None,
+        "findings": actions,
         "guardrails": {
             "routerosWrites": False,
             "usesCachedSnapshot": True,
@@ -2318,18 +2315,21 @@ def infer_wan_interface_names(rest, addresses_by_interface):
 def build_distribution_from_lines(lines):
     rows = list(lines or [])
     total_rate = sum(max(0, to_int(row.get("upRate"))) + max(0, to_int(row.get("downRate"))) for row in rows)
-    return [
-        {
-            "name": row.get("name", "-"),
-            "share": round((((to_int(row.get("upRate")) + to_int(row.get("downRate"))) / total_rate) * 100), 2)
-            if total_rate
-            else 0,
-            "upRate": to_int(row.get("upRate")),
-            "downRate": to_int(row.get("downRate")),
-            "status": row.get("status", "-"),
-        }
-        for row in rows
-    ]
+    distribution = []
+    for row in rows:
+        up_rate = row.get("upRate")
+        down_rate = row.get("downRate")
+        numeric_total = to_int(up_rate) + to_int(down_rate)
+        distribution.append(
+            {
+                "name": row.get("name", "-"),
+                "share": round(((numeric_total / total_rate) * 100), 2) if total_rate else 0,
+                "upRate": up_rate,
+                "downRate": down_rate,
+                "status": row.get("status", "-"),
+            }
+        )
+    return distribution
 
 
 def count_pool_addresses(ranges):
@@ -4004,20 +4004,13 @@ class Collector:
         return rows, distribution
 
     def build_wan_lines(self, rest, pppoe_rows, interfaces, update_rate_history=False, rate_history_break=False):
-        if pppoe_rows:
-            return [
-                {
-                    **copy.deepcopy(row),
-                    "kind": "pppoe",
-                    "lineId": row.get("name", "-"),
-                    "access": "PPPoE",
-                }
-                for row in pppoe_rows
-            ]
-
         active_defaults = [
             row for row in rest.get("routes", [])
             if row.get("dst-address") == "0.0.0.0/0" and to_bool(row.get("active")) and not to_bool(row.get("disabled"))
+        ]
+        default_routes = [
+            row for row in rest.get("routes", [])
+            if row.get("dst-address") == "0.0.0.0/0" and not to_bool(row.get("disabled"))
         ]
         dhcp_clients_by_interface = {
             item.get("interface"): item
@@ -4025,8 +4018,55 @@ class Collector:
             if item.get("interface")
         }
         wan_interfaces = [row for row in interfaces if row.get("role") == "WAN"]
-        rows = []
-        for iface in wan_interfaces:
+        pppoe_names = {row.get("name") for row in pppoe_rows if row.get("name")}
+        rows = [
+            {
+                **copy.deepcopy(row),
+                "kind": "pppoe",
+                "lineId": row.get("name", "-"),
+                "access": "PPPoE",
+            }
+            for row in pppoe_rows
+        ]
+
+        def route_matches_interface(route, iface_name):
+            gateway = str(route.get("gateway") or "").strip()
+            if not gateway or not iface_name:
+                return False
+            if gateway == iface_name:
+                return True
+            if "%" in gateway and gateway.rsplit("%", 1)[-1] == iface_name:
+                return True
+            return False
+
+        non_pppoe_wan_interfaces = [iface for iface in wan_interfaces if iface.get("name") not in pppoe_names]
+
+        def route_rows_for_interface(iface_name):
+            matched = [route for route in default_routes if route_matches_interface(route, iface_name)]
+            if not matched and len(non_pppoe_wan_interfaces) == 1:
+                matched = active_defaults
+            return [
+                {
+                    "active": to_bool(route.get("active")),
+                    "distance": route.get("distance", "-"),
+                    "table": route.get("routing-table", "-"),
+                    "comment": route.get("comment", ""),
+                }
+                for route in matched[:4]
+            ]
+
+        def interface_access(iface, dhcp_client):
+            iface_type = str(iface.get("type") or "").lower()
+            name = str(iface.get("name") or "").lower()
+            if dhcp_client:
+                return "DHCP"
+            if iface_type == "vlan" or iface.get("vlanId") or "vlan" in name:
+                return "VLAN"
+            if iface.get("ips"):
+                return "Static"
+            return "Unknown"
+
+        for iface in non_pppoe_wan_interfaces:
             name = iface.get("name", "-")
             history = self.line_history.setdefault(name, {"up": deque(maxlen=HISTORY_LIMIT), "down": deque(maxlen=HISTORY_LIMIT)})
             if update_rate_history:
@@ -4034,9 +4074,10 @@ class Collector:
                 history["down"].append(None if rate_history_break else to_int(iface.get("rxRate")))
             dhcp_client = dhcp_clients_by_interface.get(name, {})
             running = bool(iface.get("running")) and not bool(iface.get("disabled"))
-            route_rows = []
+            route_rows = route_rows_for_interface(name)
             if dhcp_client:
-                route_rows.append(
+                route_rows.insert(
+                    0,
                     {
                         "active": running and to_bool(dhcp_client.get("add-default-route", True)),
                         "distance": dhcp_client.get("default-route-distance", "-"),
@@ -4044,16 +4085,7 @@ class Collector:
                         "comment": "DHCP client default route",
                     }
                 )
-            elif len(wan_interfaces) == 1:
-                route_rows = [
-                    {
-                        "active": to_bool(route.get("active")),
-                        "distance": route.get("distance", "-"),
-                        "table": route.get("routing-table", "-"),
-                        "comment": route.get("comment", ""),
-                    }
-                    for route in active_defaults[:4]
-                ]
+            access = interface_access(iface, dhcp_client)
             rows.append(
                 {
                     "name": name,
@@ -4069,7 +4101,7 @@ class Collector:
                     "routes": route_rows,
                     "kind": "interface",
                     "lineId": name,
-                    "access": "DHCP" if dhcp_client else iface.get("type", "-"),
+                    "access": access,
                 }
             )
         return rows
@@ -4726,7 +4758,7 @@ class Collector:
         wan_latency = self.get_wan_latency()
         pppoe = self.attach_wan_latency(pppoe, wan_latency)
         wan_lines = self.attach_wan_latency(wan_lines, wan_latency)
-        if not distribution and wan_lines:
+        if wan_lines:
             distribution = build_distribution_from_lines(wan_lines)
         wan_source = [row for row in wan_lines if row.get("running")] or list(wan_lines)
         wan_totals = {
@@ -4916,9 +4948,9 @@ class Collector:
         }
         snapshot = normalize_collector_snapshot_status(snapshot)
         snapshot = self.apply_ip_aliases_to_snapshot(snapshot, dict(self.ip_aliases))
-        triage = build_semantic_triage(snapshot)
-        snapshot["semanticTriage"] = triage
-        snapshot["actionQueue"] = triage["queue"]
+        findings = build_health_findings(snapshot)
+        snapshot["statusFindings"] = findings
+        snapshot["healthFindings"] = findings
         return snapshot
 
     def update_state(self, fresh_counter_sample=False):
@@ -5128,13 +5160,13 @@ class Collector:
         meta = snapshot.setdefault("meta", {})
         meta.setdefault("profile", PANEL_PROFILE)
         meta.setdefault("capabilities", build_panel_capabilities(snapshot.get("wan") or [], len(snapshot.get("pppoe") or [])))
-        triage = snapshot.get("semanticTriage") or build_semantic_triage(snapshot)
-        snapshot["semanticTriage"] = triage
-        snapshot["actionQueue"] = snapshot.get("actionQueue") or triage.get("queue", [])
+        findings = snapshot.get("healthFindings") or snapshot.get("statusFindings") or build_health_findings(snapshot)
+        snapshot["statusFindings"] = findings
+        snapshot["healthFindings"] = findings
         return snapshot
 
-    def get_semantic_triage(self):
-        return build_semantic_triage(self.get_state())
+    def get_status_findings(self):
+        return build_health_findings(self.get_state())
 
     def build_readonly_diagnostics(self):
         def dns_job(server_config, domain_config, qtype):
@@ -5336,15 +5368,15 @@ collector = Collector()
 class Handler(BaseHTTPRequestHandler):
     server_version = "RouterOSTriagePanel/1.0"
     read_only_api_paths = {
-        "/api/action-queue",
         "/api/connection-search",
         "/api/dns-static",
         "/api/health",
+        "/api/health-findings",
         "/api/panel-network",
         "/api/readonly-diagnostics",
         "/api/router-login",
-        "/api/semantic-triage",
         "/api/snapshot",
+        "/api/status-findings",
     }
     write_api_paths = {
         "/api/ip-alias",
@@ -5516,8 +5548,8 @@ class Handler(BaseHTTPRequestHandler):
                     "savedLoginCount": len(public_saved_router_logins()),
                 }
             )
-        if parsed.path in {"/api/action-queue", "/api/semantic-triage"}:
-            return self.send_json(collector.get_semantic_triage())
+        if parsed.path in {"/api/status-findings", "/api/health-findings"}:
+            return self.send_json(collector.get_status_findings())
         if parsed.path == "/api/readonly-diagnostics":
             params = parse_qs(parsed.query)
             force_refresh = (params.get("refresh") or ["0"])[0] in {"1", "true", "yes"}

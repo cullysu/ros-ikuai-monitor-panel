@@ -16,22 +16,31 @@ const DEFAULT_VIEWPORTS = [
   { name: 'tablet', width: 1024, height: 900 },
   { name: 'narrow', width: 390, height: 844 },
 ];
-const DEFAULT_PUBLIC_SECTIONS = [
+const MAIN_MENU_SECTIONS = [
   'overview',
   'interfaces',
   'terminals',
   'dhcp',
   'dns4',
+  'dns6',
   'routes',
   'lineStatus',
   'balance',
   'trafficLoad',
+  'loadAudit',
+  'security',
+  'arp',
+  'trafficAudit',
+  'readonlyDiagnostics',
   'logs',
+  'serviceLogs',
+];
+const DEFAULT_PUBLIC_SECTIONS = [
+  ...MAIN_MENU_SECTIONS,
+  'connections',
 ];
 const DEFAULT_PRIVATE_SECTIONS = [
   ...DEFAULT_PUBLIC_SECTIONS,
-  'collectionHealthDiagnostics',
-  'dnsProxyDiagnostics',
 ];
 const DEFAULT_SCALE_SCENARIOS = ['multi'];
 const SCALE_SCENARIOS = new Set(['single', 'multi', 'fleet']);
@@ -51,7 +60,7 @@ Options:
   --profile <public|private|both>
                               Browser fixture profile. Default: both.
   --viewports <list>          Comma list like desktop=1600x1000,narrow=390x844.
-  --sections <list>           Comma list of sections to visit.
+  --sections <list>           Comma list of sections to visit, or main-menu/public-release.
   --scale-scenarios <list>    Comma list: single,multi,fleet. Default: multi.
   --skip-browser              Run backend/static/API checks only.
   --skip-backend              Run browser checks only.
@@ -102,7 +111,7 @@ function parseArgs(argv) {
     else if (item === '--out' || item.startsWith('--out=')) args.out = readValue('--out');
     else if (item === '--profile' || item.startsWith('--profile=')) args.profile = readValue('--profile');
     else if (item === '--viewports' || item.startsWith('--viewports=')) args.viewports = parseViewports(readValue('--viewports'));
-    else if (item === '--sections' || item.startsWith('--sections=')) args.sections = readValue('--sections').split(',').map((part) => part.trim()).filter(Boolean);
+    else if (item === '--sections' || item.startsWith('--sections=')) args.sections = parseSections(readValue('--sections'));
     else if (item === '--scale-scenarios' || item.startsWith('--scale-scenarios=')) args.scaleScenarios = readValue('--scale-scenarios').split(',').map((part) => part.trim()).filter(Boolean);
     else throw new Error(`Unknown argument: ${item}`);
   }
@@ -122,6 +131,20 @@ function parseArgs(argv) {
     args.url = normalizeBaseUrl(args.url);
   }
   return args;
+}
+
+function parseSections(value) {
+  const parts = String(value || '').split(',').map((part) => part.trim()).filter(Boolean);
+  if (!parts.length) return [];
+  const expanded = [];
+  for (const part of parts) {
+    if (['main-menu', 'public-release', 'all-main'].includes(part)) {
+      expanded.push(...DEFAULT_PUBLIC_SECTIONS);
+    } else {
+      expanded.push(part);
+    }
+  }
+  return [...new Set(expanded)];
 }
 
 function parseViewports(value) {
@@ -427,34 +450,36 @@ async function runBackendChecks(args, report, baseUrl, startedByScript) {
     status: snapshot.json && snapshot.json.status,
     profile: snapshot.json && snapshot.json.meta && snapshot.json.meta.profile,
   });
-  record(report, 'GET /api/snapshot includes semantic triage guardrails', Boolean(
+  record(report, 'GET /api/snapshot includes read-only status findings', Boolean(
     snapshot.response.ok &&
     snapshot.json &&
-    snapshot.json.semanticTriage &&
-    snapshot.json.semanticTriage.readOnly === true &&
-    snapshot.json.semanticTriage.guardrails &&
-    snapshot.json.semanticTriage.guardrails.routerosWrites === false &&
+    snapshot.json.statusFindings &&
+    snapshot.json.statusFindings.readOnly === true &&
+    Array.isArray(snapshot.json.statusFindings.findings) &&
+    snapshot.json.healthFindings &&
+    snapshot.json.healthFindings.guardrails &&
+    snapshot.json.healthFindings.guardrails.routerosWrites === false &&
     snapshot.json.meta &&
     snapshot.json.meta.capabilities &&
     snapshot.json.meta.capabilities.publicRouterosProfile === true
   ), {
     statusCode: snapshot.response.status,
-    readOnly: snapshot.json && snapshot.json.semanticTriage && snapshot.json.semanticTriage.readOnly,
+    readOnly: snapshot.json && snapshot.json.statusFindings && snapshot.json.statusFindings.readOnly,
     publicRouterosProfile: snapshot.json && snapshot.json.meta && snapshot.json.meta.capabilities && snapshot.json.meta.capabilities.publicRouterosProfile,
   });
 
-  const triage = await fetchJson(`${baseUrl}api/semantic-triage`, { timeoutMs: 5000 });
-  record(report, 'GET /api/semantic-triage returns read-only action queue', Boolean(
-    triage.response.ok &&
-    triage.json &&
-    triage.json.readOnly === true &&
-    Array.isArray(triage.json.queue) &&
-    triage.json.guardrails &&
-    triage.json.guardrails.routerosWrites === false
+  const findings = await fetchJson(`${baseUrl}api/status-findings`, { timeoutMs: 5000 });
+  record(report, 'GET /api/status-findings returns read-only findings', Boolean(
+    findings.response.ok &&
+    findings.json &&
+    findings.json.readOnly === true &&
+    Array.isArray(findings.json.findings) &&
+    findings.json.guardrails &&
+    findings.json.guardrails.routerosWrites === false
   ), {
-    statusCode: triage.response.status,
-    status: triage.json && triage.json.status,
-    queueLength: triage.json && Array.isArray(triage.json.queue) ? triage.json.queue.length : null,
+    statusCode: findings.response.status,
+    status: findings.json && findings.json.status,
+    findingCount: findings.json && Array.isArray(findings.json.findings) ? findings.json.findings.length : null,
   });
 
   if (startedByScript) {
@@ -1303,7 +1328,7 @@ function buildSnapshot(profile, scaleScenario = 'multi') {
       txBytes: 512337203,
       rxBytes: 922337203,
       parent: 'pppoe-wan1',
-      access: 'WAN-1',
+      access: 'PPPoE',
       history: {
         up: [16000000, 21000000, 30000000, 42000000],
         down: [92000000, 120000000, 150000000, 185000000],
@@ -1325,7 +1350,7 @@ function buildSnapshot(profile, scaleScenario = 'multi') {
       txBytes: 412337203,
       rxBytes: 812337203,
       parent: 'pppoe-wan2',
-      access: 'WAN-2',
+      access: 'PPPoE',
       history: {
         up: [15000000, 20000000, 26000000, 37000000],
         down: [88000000, 100000000, 120000000, 138000000],
@@ -1539,7 +1564,7 @@ function buildSnapshot(profile, scaleScenario = 'multi') {
       dhcp: [{ time: '12:02:01', topics: 'dhcp,info', message: 'lease bound' }],
       dns: [{ time: '12:03:01', topics: 'dns,info', message: 'cache hit' }],
     },
-    semanticTriage: {
+    statusFindings: {
       status: 'warning',
       readOnly: true,
       generatedAt: now,
@@ -1547,30 +1572,26 @@ function buildSnapshot(profile, scaleScenario = 'multi') {
       sourceStatus: 'ok',
       limit: 24,
       counts: { critical: 0, warning: 1, info: 1 },
-      topPriority: {
+      topFinding: {
         id: 'interfaces.error_counters',
         severity: 'warning',
         domain: 'interfaces',
         title: 'Interface error or drop counters are non-zero',
         summary: 'WAN-2 has one observed receive drop in the fixture.',
-        nextStep: 'Inspect interface counters before changing RouterOS settings.',
         source: 'snapshot.interfaces',
         readOnly: true,
-        actionType: 'manual_review',
         priority: 1,
         evidence: [{ label: 'topInterface', value: 'pppoe-wan2' }],
       },
-      queue: [
+      findings: [
         {
           id: 'interfaces.error_counters',
           severity: 'warning',
           domain: 'interfaces',
           title: 'Interface error or drop counters are non-zero',
           summary: 'WAN-2 has one observed receive drop in the fixture.',
-          nextStep: 'Inspect interface counters before changing RouterOS settings.',
           source: 'snapshot.interfaces',
           readOnly: true,
-          actionType: 'manual_review',
           priority: 1,
           evidence: [{ label: 'topInterface', value: 'pppoe-wan2' }],
         },
@@ -1580,10 +1601,8 @@ function buildSnapshot(profile, scaleScenario = 'multi') {
           domain: 'wan',
           title: 'WAN traffic distribution is skewed',
           summary: 'WAN-1 is carrying more traffic in the fixture.',
-          nextStep: 'Observe whether the skew persists under representative traffic.',
           source: 'snapshot.loadBalance.distribution',
           readOnly: true,
-          actionType: 'manual_review',
           priority: 2,
           evidence: [{ label: 'line', value: 'WAN-1' }],
         },
@@ -1595,9 +1614,8 @@ function buildSnapshot(profile, scaleScenario = 'multi') {
       },
     },
   };
+  snapshot.healthFindings = snapshot.statusFindings;
   applyScaleScenario(snapshot, scaleScenario);
-  snapshot.actionQueue = snapshot.semanticTriage.queue;
-  snapshot.semanticTriage.actionQueue = snapshot.semanticTriage.queue;
   return snapshot;
 }
 
@@ -1655,7 +1673,7 @@ function makeWan(index) {
     txBytes: 400_000_000 + n * 2_000_000,
     rxBytes: 700_000_000 + n * 3_000_000,
     parent,
-    access: `WAN-${n}`,
+    access: n % 5 === 0 ? 'Static' : n % 4 === 0 ? 'VLAN' : n % 3 === 0 ? 'DHCP' : 'PPPoE',
     history: {
       up: [upRate * 0.45, upRate * 0.62, upRate * 0.74, upRate].map(Math.round),
       down: [downRate * 0.5, downRate * 0.66, downRate * 0.8, downRate].map(Math.round),
@@ -1870,19 +1888,19 @@ function applyScaleScenario(snapshot, scaleScenario) {
     pools: listScaleMeta(snapshot.dhcp.pools.length, snapshot.dhcp.pools.length),
     servers: listScaleMeta(snapshot.dhcp.servers.length, snapshot.dhcp.servers.length),
   };
-  snapshot.semanticTriage.queue.unshift({
+  snapshot.statusFindings.findings.unshift({
     id: `scale.${scaleScenario}`,
     severity: scaleScenario === 'fleet' ? 'warning' : 'info',
     domain: 'scale',
     title: `Scale fixture: ${scaleScenario}`,
     summary: `${wan.length} WAN lines and ${terminals.length} terminals are loaded in this fixture.`,
-    nextStep: 'Verify overview stays risk/action-first and detail pages disclose total vs shown rows.',
     source: 'fixture.meta.scale',
     readOnly: true,
-    actionType: 'manual_review',
     priority: 0,
     evidence: [{ label: 'wan', value: String(wan.length) }, { label: 'terminals', value: String(terminals.length) }],
   });
+  snapshot.statusFindings.topFinding = snapshot.statusFindings.findings[0] || null;
+  snapshot.healthFindings = snapshot.statusFindings;
 }
 
 async function main() {

@@ -99,6 +99,53 @@ def make_rate_rest(
     return rest
 
 
+def assert_wan_model_combines_pppoe_and_dhcp_lines():
+    collector = app.Collector()
+    collector.get_wan_latency = lambda force=False: {"ok": True, "latencyMs": 1, "updatedAt": "fixture"}
+    rest = make_rate_rest(1000000, 2000000, name="pppoe-out1", iface_type="pppoe-out")
+    rest["interfaces"].append(
+        {
+            "name": "ether-dhcp-wan",
+            "type": "ether",
+            "running": "true",
+            "disabled": "false",
+            "mac-address": "00:11:22:33:44:66",
+            "rx-packet": "100",
+            "tx-packet": "80",
+            "rx-drop": "0",
+            "tx-drop": "0",
+            "rx-error": "0",
+            "tx-error": "0",
+            "rx-byte": "3000000",
+            "tx-byte": "4000000",
+        }
+    )
+    rest["dhcp_clients"] = [
+        {"interface": "ether-dhcp-wan", "status": "bound", "disabled": "false", "add-default-route": "true", "default-route-distance": "5"}
+    ]
+    rest["ip_addresses"].append(
+        {"interface": "ether-dhcp-wan", "actual-interface": "ether-dhcp-wan", "address": "203.0.113.10/24", "network": "203.0.113.0"}
+    )
+    rest["routes"].append(
+        {
+            "dst-address": "0.0.0.0/0",
+            "gateway": "ether-dhcp-wan",
+            "distance": "5",
+            "routing-table": "main",
+            "active": "true",
+            "static": "false",
+            "dynamic": "true",
+            "disabled": "false",
+        }
+    )
+    snapshot = collector.build_snapshot(rest, make_empty_ssh(), fresh_counter_sample=True)
+    access_by_name = {row["name"]: row.get("access") for row in snapshot["wan"]}
+    assert access_by_name.get("pppoe-out1") == "PPPoE", snapshot["wan"]
+    assert access_by_name.get("ether-dhcp-wan") == "DHCP", snapshot["wan"]
+    assert len(snapshot["wan"]) == 2, snapshot["wan"]
+    assert snapshot["meta"]["wanCount"] == 2, snapshot["meta"]
+
+
 def make_empty_ssh():
     return {
         "counts": {"all": 0, "tcp": 0, "udp": 0, "icmp": 0},
@@ -596,8 +643,8 @@ def assert_arp_alerts_are_confidence_classified():
     stale_alert = stale_snapshot["arp"]["alerts"][0]
     assert stale_alert["kind"] == "MAC drift", stale_alert
     assert stale_alert["severity"] == "info", stale_alert
-    stale_queue_item = next(row for row in stale_snapshot["semanticTriage"]["queue"] if row["id"] == "arp.identity_conflicts")
-    assert stale_queue_item["severity"] != "critical", stale_queue_item
+    stale_finding = next(row for row in stale_snapshot["healthFindings"]["findings"] if row["id"] == "arp.identity_conflicts")
+    assert stale_finding["severity"] != "critical", stale_finding
 
     active_rest = copy.deepcopy(stale_rest)
     active_rest["arp"] = [
@@ -609,8 +656,8 @@ def assert_arp_alerts_are_confidence_classified():
     assert active_alert["kind"] == "IP conflict", active_alert
     assert active_alert["severity"] == "critical", active_alert
     assert active_alert["activeConflict"] is True, active_alert
-    active_queue_item = next(row for row in active_snapshot["semanticTriage"]["queue"] if row["id"] == "arp.identity_conflicts")
-    assert active_queue_item["severity"] == "critical", active_queue_item
+    active_finding = next(row for row in active_snapshot["healthFindings"]["findings"] if row["id"] == "arp.identity_conflicts")
+    assert active_finding["severity"] == "critical", active_finding
 
 
 def assert_arbitrary_scale_snapshot_contract():
@@ -763,8 +810,8 @@ def assert_collector_status_messages_are_specific():
     ok = app.normalize_collector_snapshot_status({"status": "ok", "error": None, "meta": {}})
     assert ok["statusMessage"] == "采集正常。", ok
 
-    triage = app.build_semantic_triage(starting)
-    issue = next(row for row in triage["queue"] if row["id"] == "collector.snapshot_status")
+    findings = app.build_health_findings(starting)
+    issue = next(row for row in findings["findings"] if row["id"] == "collector.snapshot_status")
     assert "正在启动" in issue["summary"], issue
     assert "未知错误" not in issue["summary"], issue
 
@@ -776,8 +823,8 @@ def assert_collector_status_messages_are_specific():
         assert "snapshot.error || '未知错误'" not in render_body
 
 
-def assert_semantic_triage_distinguishes_quality_display_values():
-    triage = app.build_semantic_triage(
+def assert_health_findings_distinguishes_quality_display_values():
+    findings = app.build_health_findings(
         {
             "status": "ok",
             "updatedAt": "2026-05-25 12:15:00",
@@ -797,7 +844,7 @@ def assert_semantic_triage_distinguishes_quality_display_values():
             ],
         }
     )
-    issue = next(row for row in triage["queue"] if row["id"] == "interfaces.error_counters")
+    issue = next(row for row in findings["findings"] if row["id"] == "interfaces.error_counters")
     assert "%%" not in issue["summary"], issue["summary"]
     assert "cumulative drop/error=395361/2" in issue["summary"], issue["summary"]
     assert "latest +4/+1" in issue["summary"], issue["summary"]
@@ -809,7 +856,7 @@ def assert_semantic_triage_distinguishes_quality_display_values():
     recent_loss = next(row for row in issue["evidence"] if row["label"] == "recentLossRate")
     assert recent_loss["value"] == "0.0588%", recent_loss
 
-    unknown_triage = app.build_semantic_triage(
+    unknown_findings = app.build_health_findings(
         {
             "status": "ok",
             "updatedAt": "2026-05-25 12:16:00",
@@ -829,7 +876,7 @@ def assert_semantic_triage_distinguishes_quality_display_values():
             ],
         }
     )
-    unknown_issue = next(row for row in unknown_triage["queue"] if row["id"] == "interfaces.error_counters")
+    unknown_issue = next(row for row in unknown_findings["findings"] if row["id"] == "interfaces.error_counters")
     assert "cumulative drop/error=8/2" in unknown_issue["summary"], unknown_issue["summary"]
     assert "latest +0/+0" in unknown_issue["summary"], unknown_issue["summary"]
     assert "recent loss rate=unknown." in unknown_issue["summary"], unknown_issue["summary"]
@@ -860,6 +907,7 @@ def assert_localhost_host_forward_guard_supports_routeros_container():
 
 
 def main():
+    assert_wan_model_combines_pppoe_and_dhcp_lines()
     assert_dns_static_count_meta()
     assert_ssh_banner_diagnostic()
     assert_latency_tcp_fallback_probe()
@@ -874,7 +922,7 @@ def main():
     assert_router_login_password_save_is_opt_in()
     assert_frontend_handles_partial_snapshots()
     assert_collector_status_messages_are_specific()
-    assert_semantic_triage_distinguishes_quality_display_values()
+    assert_health_findings_distinguishes_quality_display_values()
     assert_localhost_host_forward_guard_supports_routeros_container()
     print(
         json.dumps(
@@ -882,6 +930,7 @@ def main():
                 "status": "pass",
                 "checks": [
                     "dns_static_total_count_from_meta supports count/total_count/totalCount",
+                    "WAN model combines PPPoE and DHCP lines into snapshot.wan with access types",
                     "ssh banner diagnostic classifies HTTP endpoint as non-SSH",
                     "latency probing has a TCP fallback for Docker/minimal runtimes without ping",
                     "panel network defaults, validation, URL formatting, and env updates are safe",
@@ -895,7 +944,7 @@ def main():
                     "RouterOS login password saving is opt-in for public deployments",
                     "frontend renderers tolerate partial snapshots and missing history collections",
                     "collector startup/config/error states expose specific status messages instead of unknown-error banners",
-                    "semantic triage distinguishes cumulative totals, latest deltas, numeric loss rates, and unknown loss-rate displays",
+                    "health findings distinguish cumulative totals, latest deltas, numeric loss rates, and unknown loss-rate displays",
                     "RouterOS Container localhost Host-forward guard allows client-local tunnels without allowing direct veth/LAN browser hosts",
                 ],
             },

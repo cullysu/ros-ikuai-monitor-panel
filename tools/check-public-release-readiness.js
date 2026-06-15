@@ -136,12 +136,15 @@ function main() {
   assertContains('PRODUCT_MODEL.md', 'Public UI should not imply automatic repair, configuration management, or');
 
   assertContains('public/index.html', 'renderReadonlyStatusBus');
-  assertContains('public/index.html', '采集状态');
-  assertContains('public/index.html', '最后采集时间');
-  assertContains('public/index.html', 'RouterOS 连接');
-  assertContains('public/index.html', 'WAN 在线数');
-  assertContains('public/index.html', '最高风险指标');
-  assertContains('public/index.html', '数据完整度');
+  assertContains('public/index.html', '面板健康');
+  assertContains('public/index.html', 'RouterOS 健康');
+  assertContains('public/index.html', '数据年龄');
+  assertContains('public/index.html', 'WAN 在线');
+  assertContains('public/index.html', 'CPU / 内存');
+  assertContains('public/index.html', '最高异常');
+  assertContains('public/index.html', 'mobileSectionSelect');
+  assertContains('public/index.html', '采样不足');
+  assertContains('public/index.html', 'ops-threshold-line');
   assertContains('public/index.html', 'renderFreshnessStrip');
   assertContains('public/index.html', '实时采集');
   assertContains('public/index.html', '慢速采集');
@@ -150,8 +153,16 @@ function main() {
   assertContains('public/index.html', '当前为只读模式：仅通过 RouterOS API/SSH 读取状态，不写入配置。');
   assertContains('public/index.html', 'RouterOS 写入');
   assertContains('public/index.html', '本地别名写入');
-  assertContains('public/index.html', '诊断探测');
+  assertContains('public/index.html', '只读健康检查');
   assertContains('public/index.html', '外部访问');
+  assertContains('app.py', 'statusFindings');
+  assertContains('app.py', 'healthFindings');
+  assertContains('tools/local-predeploy-check.js', 'main-menu');
+  assertContains('tools/local-predeploy-check.js', 'loadAudit');
+  assertContains('tools/local-predeploy-check.js', 'readonlyDiagnostics');
+  assertNotContains('app.py', 'semanticTriage');
+  assertNotContains('app.py', 'actionQueue');
+  assertNotContains('public/index.html', 'events.length');
 
   assertContains('public/index.html', '路由与分流状态');
   assertContains('public/index.html', '防火墙规则');
