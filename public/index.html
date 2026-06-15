@@ -33,7 +33,7 @@
       --shadow-soft: 0 6px 16px 0 rgba(0, 0, 0, 0.04);
       --radius: 8px;
       --topbar-height: 0px;
-      --app-wide-min-width: 1440px;
+      --app-wide-min-width: min(1440px, 100vw);
     }
     * { box-sizing: border-box; }
     html, body { margin: 0; min-height: 100%; background: linear-gradient(180deg, #f6f9fd 0%, #f8fafc 52%, #fbfcfd 100%); color: var(--text); font-family: "Microsoft YaHei","PingFang SC","Segoe UI",sans-serif; }
@@ -5509,7 +5509,7 @@
           <div class="notice" style="margin-top:12px">IPv6 终端不依赖 ARP / DHCP 展示，当前页按真实本地 IPv6 活跃会话和实时流量汇总。</div>
           <div class="card" style="margin-top:12px">
             <div class="card-head"><div class="card-title">IPv6 终端列表</div><div class="subtle">${fmtNumber(ipv6Terminals.length)} 项</div></div>
-            <div class="card-body">${scaleDisclosure(snapshot, 'terminalIpv6', ipv6Terminals.length, terminals.length, 'snapshot.terminals', 'IPv6 地址优先')}${table(['名称', 'IP', '状态', '最后出现', '实时上行速率', '实时下行速率', 'MAC', '连接数', '累计流量'], renderTerminalRows(ipv6Terminals), '当前未读取到 IPv6 终端数据')}</div>
+            <div class="card-body">${scaleDisclosure(snapshot, 'terminalIpv6', ipv6Terminals.length, allTerminals.length, 'snapshot.terminals', 'IPv6 地址优先')}${table(['名称', 'IP', '状态', '最后出现', '实时上行速率', '实时下行速率', 'MAC', '连接数', '累计流量'], renderTerminalRows(ipv6Terminals), '当前未读取到 IPv6 终端数据')}</div>
           </div>
           <div class="card" style="margin-top:12px">
             <div class="card-head"><div class="card-title">IPv6 活跃会话</div><div class="subtle">仅展示当前真实会话</div></div>
@@ -5518,7 +5518,7 @@
       } else {
         body = `
           ${toolbar}
-          ${scaleDisclosure(snapshot, 'terminals', ipv4Terminals.length, terminals.length, 'snapshot.terminals', 'IPv4 终端优先 / 当前筛选')}
+          ${scaleDisclosure(snapshot, 'terminals', ipv4Terminals.length, allTerminals.length, 'snapshot.terminals', 'IPv4 终端优先 / 当前筛选')}
           ${table(['名称', 'IP', '状态', '最后出现', '实时上行速率', '实时下行速率', 'MAC', '连接数', '累计流量'], renderTerminalRows(ipv4Terminals), '暂无在线终端状态数据')}
           ${snapshot.arp.alerts.length ? `<div style="margin-top:12px" class="notice">${snapshot.arp.alerts.map((item) => `${escapeHtml(item.kind)}：${escapeHtml(item.value)} (${escapeHtml(item.detail)})`).join('；')}</div>` : ''}
           <div class="grid-2" style="margin-top:12px">
