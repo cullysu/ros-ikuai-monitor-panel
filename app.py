@@ -675,6 +675,26 @@ CONNECTION_PROTOCOL_BREAKDOWN_INTERVAL_SECONDS = max(
 CONNECTION_PROTOCOL_SCAN_TIMEOUT = max(120, int(os.getenv("ROS_MONITOR_CONNECTION_PROTOCOL_SCAN_TIMEOUT", "300")))
 CONNECTION_TRACKING_TIMEOUT = max(12, int(os.getenv("ROS_MONITOR_CONNECTION_TRACKING_TIMEOUT", "30")))
 CONNECTION_DETAIL_REST_TIMEOUT = max(8, int(os.getenv("ROS_MONITOR_CONNECTION_DETAIL_REST_TIMEOUT", "12")))
+CONNECTION_SEARCH_MAX_LIMIT = max(20, int(os.getenv("ROS_MONITOR_CONNECTION_SEARCH_MAX_LIMIT", "200")))
+CONNECTION_SEARCH_CAPTURE_SECONDS = max(2, int(os.getenv("ROS_MONITOR_CONNECTION_SEARCH_CAPTURE_SECONDS", "4")))
+CONNECTION_SEARCH_STREAM_MAX_BYTES = max(
+    32768,
+    int(os.getenv("ROS_MONITOR_CONNECTION_SEARCH_STREAM_MAX_BYTES", "262144")),
+)
+CONNECTION_SEARCH_TIMEOUT = max(8, int(os.getenv("ROS_MONITOR_CONNECTION_SEARCH_TIMEOUT", "12")))
+CONNECTION_SEARCH_FIELDS = [
+    "src-address",
+    "dst-address",
+    "reply-src-address",
+    "reply-dst-address",
+    "protocol",
+    "timeout",
+    "connection-mark",
+    "orig-rate",
+    "repl-rate",
+    "orig-bytes",
+    "repl-bytes",
+]
 DNS_STATIC_PREVIEW_LIMIT = int(os.getenv("ROS_MONITOR_DNS_STATIC_PREVIEW_LIMIT", "12"))
 DNS_STATIC_PAGE_LIMIT = int(os.getenv("ROS_MONITOR_DNS_STATIC_PAGE_LIMIT", "100"))
 DNS_STATIC_MAX_PAGE_LIMIT = int(os.getenv("ROS_MONITOR_DNS_STATIC_MAX_PAGE_LIMIT", "300"))
@@ -808,10 +828,19 @@ STATIC_REST_ENDPOINTS = {
     ),
     "pools": endpoint("ip/pool", fields="name,ranges"),
     "pool_used": endpoint("ip/pool/used", fields="pool,address,owner,info", optional=True),
-    "filters": endpoint("ip/firewall/filter", fields="chain,action,comment,packets,bytes,disabled"),
+    "filters": endpoint(
+        "ip/firewall/filter",
+        fields=".id,chain,action,comment,packets,bytes,disabled,passthrough,connection-mark,packet-mark,routing-mark,in-interface,out-interface,src-address,dst-address",
+    ),
     "address_lists": endpoint("ip/firewall/address-list", fields="list,address,timeout,comment"),
-    "mangle": endpoint("ip/firewall/mangle", fields="chain,action,comment,new-routing-mark,packets,bytes,per-connection-classifier"),
-    "routing_rules": endpoint("routing/rule", fields="action,table,src-address,dst-address,comment,disabled,inactive"),
+    "mangle": endpoint(
+        "ip/firewall/mangle",
+        fields=".id,chain,action,comment,passthrough,connection-mark,new-connection-mark,packet-mark,new-packet-mark,routing-mark,new-routing-mark,in-interface,out-interface,src-address,dst-address,packets,bytes,per-connection-classifier,disabled",
+    ),
+    "routing_rules": endpoint(
+        "routing/rule",
+        fields=".id,action,table,routing-mark,src-address,dst-address,interface,comment,disabled,inactive",
+    ),
     "logs": endpoint("log", fields="time,topics,message"),
 }
 
@@ -1252,7 +1281,7 @@ def describe_ssh_endpoint_probe(host, port, timeout=SSH_BANNER_PROBE_TIMEOUT):
             try:
                 banner = sock.recv(64)
             except socket.timeout:
-                banner = b""
+                return f"TCP connected to {safe_host}:{safe_port}, but no SSH banner arrived within {safe_timeout:.1f}s"
     except socket.timeout:
         return f"TCP connect to {safe_host}:{safe_port} timed out before SSH banner check"
     except OSError as exc:
@@ -1261,7 +1290,7 @@ def describe_ssh_endpoint_probe(host, port, timeout=SSH_BANNER_PROBE_TIMEOUT):
     if banner.startswith(b"SSH-"):
         return f"TCP connected to {safe_host}:{safe_port} and an SSH banner was visible"
     if not banner:
-        return f"TCP connected to {safe_host}:{safe_port}, but no SSH banner arrived within {safe_timeout:.1f}s"
+        return f"TCP connected to {safe_host}:{safe_port}, but the remote side closed before sending an SSH banner"
 
     lowered = banner.lower()
     if banner.startswith(b"HTTP/") or b"<html" in lowered:
@@ -1284,7 +1313,11 @@ def format_ssh_connect_error(config, exc, timeout=SSH_TIMEOUT):
     session_error = "No existing session" in message
     if banner_error or session_error:
         probe = describe_ssh_endpoint_probe(host, port, timeout=min(float(timeout or SSH_TIMEOUT), SSH_BANNER_PROBE_TIMEOUT))
-        return f"RouterOS SSH connect failed for {host}:{port}: {probe}. Original error: {message}"
+        return (
+            f"RouterOS SSH connect failed for {host}:{port}: {probe}. "
+            f"The configured SSH port is still {port}; the failure happened before password authentication. "
+            f"Original error: {message}"
+        )
     return f"RouterOS SSH connect failed for {host}:{port}: {message}"
 
 
@@ -1561,11 +1594,6 @@ def test_router_credentials(host, user, password, ssh_port=22):
         except Exception:
             pass
 
-    if not test["ssh"]["ok"]:
-        test["rest"]["error"] = "Skipped because SSH login failed"
-        test["elapsedMs"] = round((time.time() - started_at) * 1000)
-        return test
-
     rest_started = time.time()
     session = requests.Session()
     session.auth = (config["user"], config["password"])
@@ -1582,6 +1610,36 @@ def test_router_credentials(host, user, password, ssh_port=22):
         session.close()
 
     return test
+
+
+def router_login_warning(test):
+    ssh_ok = (test or {}).get("ssh", {}).get("ok") is True
+    rest_ok = (test or {}).get("rest", {}).get("ok") is True
+    if rest_ok and not ssh_ok:
+        return (
+            "RouterOS REST verified, but SSH did not complete. "
+            "The panel will enter read-only REST mode; SSH-only widgets may be degraded."
+        )
+    if ssh_ok and not rest_ok:
+        return "SSH connected, but RouterOS REST did not respond. Some dashboard data may be missing."
+    return None
+
+
+def router_login_failure_message(test):
+    test = test or {}
+    ssh = test.get("ssh", {}) if isinstance(test.get("ssh"), dict) else {}
+    rest = test.get("rest", {}) if isinstance(test.get("rest"), dict) else {}
+    ssh_error = str(ssh.get("error") or "").strip()
+    rest_error = str(rest.get("error") or "").strip()
+    rest_status = rest.get("status")
+    parts = []
+    if rest_status == 401:
+        parts.append("RouterOS REST login was rejected with HTTP 401 Unauthorized.")
+    elif rest_error:
+        parts.append(f"RouterOS REST check failed: {rest_error}")
+    if ssh_error:
+        parts.append(f"SSH check failed: {ssh_error}")
+    return " ".join(parts).strip() or "RouterOS login failed"
 
 
 def ip_sort_key(address):
@@ -1692,6 +1750,10 @@ def list_scale_meta(total_count, shown_count=None, limit=None, sampled=False, sa
 def build_panel_capabilities(wan_lines, pppoe_count):
     wan_count = len(wan_lines or [])
     return {
+        "routerosWrite": False,
+        "localAliasWrite": IP_ALIAS_WRITE_ENABLED,
+        "diagnosticProbing": READONLY_DIAGNOSTICS_ENABLED,
+        "externalAccess": "localhost-only" if PUBLIC_ROUTEROS_PROFILE else "configured",
         "readonlyDiagnostics": READONLY_DIAGNOSTICS_ENABLED,
         "privateDiagnostics": READONLY_DIAGNOSTICS_ENABLED,
         "openwrtDiagnostics": READONLY_DIAGNOSTICS_ENABLED,
@@ -3232,6 +3294,122 @@ class Collector:
                 break
         return rows
 
+    def split_connection_endpoint(self, value):
+        text = str(value or "").strip()
+        if not text:
+            return "", ""
+        if text.startswith("["):
+            end = text.find("]")
+            if end > 0:
+                port = text[end + 2 :] if text[end + 1 : end + 2] == ":" else ""
+                return text[1:end], port
+        match = re.fullmatch(r"(\d{1,3}(?:\.\d{1,3}){3})(?::(\d+))?", text)
+        if match:
+            ip_text = match.group(1)
+            try:
+                ip_text = str(ipaddress.ip_address(ip_text))
+            except ValueError:
+                pass
+            return ip_text, match.group(2) or ""
+        try:
+            return str(ipaddress.ip_address(text)), ""
+        except ValueError:
+            return text, ""
+
+    def connection_row_matches_ip(self, row, ip_text):
+        for field in ("src-address", "dst-address", "reply-src-address", "reply-dst-address"):
+            endpoint_ip, _port = self.split_connection_endpoint(row.get(field))
+            if endpoint_ip == ip_text:
+                return True
+        return False
+
+    def normalize_connection_search_row(self, row):
+        src_ip, src_port = self.split_connection_endpoint(row.get("src-address"))
+        dst_ip, dst_port = self.split_connection_endpoint(row.get("dst-address"))
+        reply_src_ip, reply_src_port = self.split_connection_endpoint(row.get("reply-src-address"))
+        reply_dst_ip, reply_dst_port = self.split_connection_endpoint(row.get("reply-dst-address"))
+        return {
+            "srcAddress": row.get("src-address", ""),
+            "dstAddress": row.get("dst-address", ""),
+            "replySrcAddress": row.get("reply-src-address", ""),
+            "replyDstAddress": row.get("reply-dst-address", ""),
+            "srcIp": src_ip,
+            "srcPort": src_port,
+            "dstIp": dst_ip,
+            "dstPort": dst_port,
+            "replySrcIp": reply_src_ip,
+            "replySrcPort": reply_src_port,
+            "replyDstIp": reply_dst_ip,
+            "replyDstPort": reply_dst_port,
+            "protocol": row.get("protocol", ""),
+            "timeout": row.get("timeout", ""),
+            "mark": row.get("connection-mark", "-") or "-",
+            "origRate": to_int(row.get("orig-rate")),
+            "replRate": to_int(row.get("repl-rate")),
+            "origBytes": to_int(row.get("orig-bytes")),
+            "replBytes": to_int(row.get("repl-bytes")),
+            "raw": {key: row.get(key, "") for key in CONNECTION_SEARCH_FIELDS},
+        }
+
+    def fetch_connection_search(self, target_ip, source_ip=None, limit=80):
+        target = str(ipaddress.ip_address(str(target_ip or "").strip()))
+        source = str(ipaddress.ip_address(str(source_ip or "").strip())) if source_ip else None
+        safe_limit = max(1, min(to_int(limit, 80), CONNECTION_SEARCH_MAX_LIMIT))
+
+        def ip_clause(ip_text):
+            pattern = re.escape(ip_text)
+            fields = ("src-address", "dst-address", "reply-src-address", "reply-dst-address")
+            return "(" + " || ".join(f'{field}~"{pattern}"' for field in fields) + ")"
+
+        where_clause = ip_clause(target)
+        if source:
+            where_clause = f"({where_clause} && {ip_clause(source)})"
+        command = (
+            "/ip/firewall/connection print terse without-paging "
+            f"proplist={','.join(CONNECTION_SEARCH_FIELDS)} where {where_clause}"
+        )
+        with self.ssh_lock:
+            client = self.open_ssh_client()
+            try:
+                capture = self.ssh_capture(
+                    client,
+                    command,
+                    capture_seconds=CONNECTION_SEARCH_CAPTURE_SECONDS,
+                    max_bytes=CONNECTION_SEARCH_STREAM_MAX_BYTES,
+                    timeout=CONNECTION_SEARCH_TIMEOUT,
+                )
+            finally:
+                client.close()
+
+        rows = []
+        for raw_line in capture.get("text", "").splitlines():
+            line = raw_line.strip()
+            if not line or "address=" not in line:
+                continue
+            row = self.parse_connection_terse_line(line)
+            if not row or not self.connection_row_matches_ip(row, target):
+                continue
+            if source and not self.connection_row_matches_ip(row, source):
+                continue
+            rows.append(self.normalize_connection_search_row(row))
+            if len(rows) >= safe_limit:
+                break
+        return {
+            "targetIp": target,
+            "sourceIp": source,
+            "limit": safe_limit,
+            "matchCount": len(rows),
+            "rows": rows,
+            "transport": "ssh",
+            "readOnly": True,
+            "capture": {
+                "complete": capture.get("complete"),
+                "capturedBytes": capture.get("capturedBytes"),
+                "firstOutputSeconds": capture.get("firstOutputSeconds"),
+                "truncatedByLimit": len(rows) >= safe_limit,
+            },
+        }
+
     def fetch_connection_detail_rest(self):
         proplist = [
             "src-address",
@@ -4318,16 +4496,25 @@ class Collector:
     def build_security(self, rest):
         filters = [
             {
+                "rawOrder": index + 1,
+                "id": item.get(".id", ""),
                 "chain": item.get("chain", "-"),
                 "action": item.get("action", "-"),
                 "comment": item.get("comment", ""),
                 "packets": to_int(item.get("packets")),
                 "bytes": to_int(item.get("bytes")),
                 "disabled": to_bool(item.get("disabled")),
+                "passthrough": item.get("passthrough", ""),
+                "connectionMark": item.get("connection-mark", ""),
+                "packetMark": item.get("packet-mark", ""),
+                "routingMark": item.get("routing-mark", ""),
+                "inInterface": item.get("in-interface", ""),
+                "outInterface": item.get("out-interface", ""),
+                "srcAddress": item.get("src-address", ""),
+                "dstAddress": item.get("dst-address", ""),
             }
-            for item in rest["filters"]
+            for index, item in enumerate(rest["filters"])
         ]
-        filters.sort(key=lambda row: (row["packets"], row["bytes"]), reverse=True)
         address_lists = []
         for item in rest["address_lists"][:100]:
             list_name = item.get("list", "-")
@@ -4346,25 +4533,51 @@ class Collector:
             topics = str(item.get("topics", ""))
             message = str(item.get("message", ""))
             if any(word in topics for word in ["firewall", "warning", "error", "critical"]) or "drop" in message.lower():
-                alerts.append({"time": item.get("time", "-"), "topics": topics, "message": message})
-        return {"filters": filters[:80], "addressLists": address_lists, "alerts": alerts[:40]}
+                affected = topics or "firewall"
+                alerts.append(
+                    {
+                        "abnormal": message or topics or "Firewall log event",
+                        "affected": affected,
+                        "firstSeen": item.get("time", "-"),
+                        "lastConfirmed": item.get("time", "-"),
+                        "recovered": False,
+                        "time": item.get("time", "-"),
+                        "topics": topics,
+                        "message": message,
+                    }
+                )
+        return {"filters": filters[:120], "addressLists": address_lists, "alerts": alerts[:40]}
 
     def build_load_balance(self, rest, distribution):
         defaults = [item for item in rest["routes"] if item.get("dst-address") == "0.0.0.0/0"]
         active_defaults = [item for item in defaults if to_bool(item.get("active"))]
         pcc_detected = False
         mangle_rules = []
-        for item in rest["mangle"]:
+        for index, item in enumerate(rest["mangle"]):
             comment = str(item.get("comment", ""))
             if item.get("per-connection-classifier") or "pcc" in comment.lower():
                 pcc_detected = True
             if item.get("action") in {"mark-routing", "mark-connection", "accept"}:
                 mangle_rules.append(
                     {
+                        "rawOrder": index + 1,
+                        "id": item.get(".id", ""),
                         "chain": item.get("chain", "-"),
                         "action": item.get("action", "-"),
                         "comment": comment,
                         "newRoutingMark": item.get("new-routing-mark", "-"),
+                        "passthrough": item.get("passthrough", ""),
+                        "connectionMark": item.get("connection-mark", ""),
+                        "newConnectionMark": item.get("new-connection-mark", ""),
+                        "packetMark": item.get("packet-mark", ""),
+                        "newPacketMark": item.get("new-packet-mark", ""),
+                        "routingMark": item.get("routing-mark", ""),
+                        "inInterface": item.get("in-interface", ""),
+                        "outInterface": item.get("out-interface", ""),
+                        "srcAddress": item.get("src-address", ""),
+                        "dstAddress": item.get("dst-address", ""),
+                        "pcc": item.get("per-connection-classifier", ""),
+                        "disabled": to_bool(item.get("disabled")),
                         "packets": to_int(item.get("packets")),
                         "bytes": to_int(item.get("bytes")),
                     }
@@ -4389,18 +4602,22 @@ class Collector:
                 }
                 for item in defaults
             ],
-            "mangleRules": sorted(mangle_rules, key=lambda row: (row["packets"], row["bytes"]), reverse=True)[:80],
+            "mangleRules": mangle_rules[:120],
             "routingRules": [
                 {
+                    "rawOrder": index + 1,
+                    "id": item.get(".id", ""),
                     "action": item.get("action", "-"),
                     "table": item.get("table", "-"),
+                    "routingMark": item.get("routing-mark", "-"),
                     "srcAddress": item.get("src-address", "-"),
                     "dstAddress": item.get("dst-address", "-"),
+                    "interface": item.get("interface", "-"),
                     "comment": item.get("comment", ""),
                     "disabled": to_bool(item.get("disabled")),
                     "inactive": to_bool(item.get("inactive")),
                 }
-                for item in rest["routing_rules"][:80]
+                for index, item in enumerate(rest["routing_rules"][:120])
             ],
             "pccDetected": pcc_detected,
         }
@@ -4547,6 +4764,38 @@ class Collector:
                 sampled=True,
                 sample_method="preview rows; full browser uses /api/dns-static pagination",
                 sorted_by="RouterOS order",
+            ),
+            "firewallFilters": list_scale_meta(
+                len(rest.get("filters", [])),
+                min(len(rest.get("filters", [])), 120),
+                limit=120,
+                sampled=len(rest.get("filters", [])) > 120,
+                sample_method="first 120 RouterOS filter rules",
+                sorted_by="RouterOS raw order",
+            ),
+            "addressLists": list_scale_meta(
+                len(rest.get("address_lists", [])),
+                min(len(rest.get("address_lists", [])), 100),
+                limit=100,
+                sampled=len(rest.get("address_lists", [])) > 100,
+                sample_method="first 100 RouterOS address-list rows",
+                sorted_by="RouterOS raw order",
+            ),
+            "mangleRules": list_scale_meta(
+                len(rest.get("mangle", [])),
+                min(len(rest.get("mangle", [])), 120),
+                limit=120,
+                sampled=len(rest.get("mangle", [])) > 120,
+                sample_method="first 120 RouterOS mangle rules",
+                sorted_by="RouterOS raw order",
+            ),
+            "routingRules": list_scale_meta(
+                len(rest.get("routing_rules", [])),
+                min(len(rest.get("routing_rules", [])), 120),
+                limit=120,
+                sampled=len(rest.get("routing_rules", [])) > 120,
+                sample_method="first 120 RouterOS routing rules",
+                sorted_by="RouterOS raw order",
             ),
         }
         resource = rest["resource"]
@@ -5088,6 +5337,7 @@ class Handler(BaseHTTPRequestHandler):
     server_version = "RouterOSTriagePanel/1.0"
     read_only_api_paths = {
         "/api/action-queue",
+        "/api/connection-search",
         "/api/dns-static",
         "/api/health",
         "/api/panel-network",
@@ -5214,6 +5464,19 @@ class Handler(BaseHTTPRequestHandler):
             )
         if parsed.path == "/api/snapshot":
             return self.send_json(collector.get_state())
+        if parsed.path == "/api/connection-search":
+            params = parse_qs(parsed.query)
+            target_ip = (params.get("target") or params.get("ip") or [""])[0].strip()
+            source_ip = (params.get("source") or params.get("src") or [""])[0].strip() or None
+            limit = to_int((params.get("limit") or [80])[0], 80)
+            if not target_ip:
+                return self.send_json_error("target IP is required", status=400, code="bad_request")
+            try:
+                return self.send_json(collector.fetch_connection_search(target_ip, source_ip=source_ip, limit=limit))
+            except ValueError as exc:
+                return self.send_json_error(str(exc), status=400, code="bad_request")
+            except Exception as exc:
+                return self.send_json_error(str(exc), status=502, code="connection_search_failed")
         if parsed.path == "/api/dns-static":
             params = parse_qs(parsed.query)
             offset = to_int((params.get("offset") or [0])[0], 0)
@@ -5297,9 +5560,11 @@ class Handler(BaseHTTPRequestHandler):
                         code="saved_login_missing_password",
                     )
                 test = test_router_credentials(host, user, password, ssh_port)
-                if not test.get("ssh", {}).get("ok"):
+                ssh_ok = test.get("ssh", {}).get("ok") is True
+                rest_ok = test.get("rest", {}).get("ok") is True
+                if not ssh_ok and not rest_ok:
                     return self.send_json_error(
-                        test.get("ssh", {}).get("error") or "SSH login failed",
+                        router_login_failure_message(test),
                         status=400,
                         code="router_login_failed",
                         test=test,
@@ -5333,7 +5598,7 @@ class Handler(BaseHTTPRequestHandler):
                         "routerLogin": router_login,
                         "savedLogins": public_saved_router_logins(),
                         "test": test,
-                        "warning": None if test.get("rest", {}).get("ok") else "SSH connected, but RouterOS REST did not respond. Some dashboard data may be missing.",
+                        "warning": router_login_warning(test),
                     }
                 )
             except ValueError as exc:

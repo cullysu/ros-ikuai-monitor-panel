@@ -1,15 +1,15 @@
-# RouterOS Read-only Semantic Triage Console
+# RouterOS Read-only Status Panel
 
 [English](./README.md) | [简体中文](./README.zh-CN.md)
 
-Read-only RouterOS operations panel for people who need fast triage of WAN,
-routing, DNS, DHCP, firewall, interface, traffic, resource, and log state
-without granting a dashboard write access to the router.
+Read-only RouterOS status panel for people who need to quickly confirm whether
+the router is online, WAN lines are healthy, traffic or resources are abnormal,
+and the displayed data is fresh, complete, and trustworthy.
 
-The product wedge is semantic triage: turn RouterOS state into risk summaries,
-evidence entry points, and next manual review steps. It is not a replacement for
-WinBox/WebFig, Grafana, Zabbix, LibreNMS, The Dude, backups, or config diff
-tools.
+The product focus is status visibility, not configuration management or
+troubleshooting automation. It reads RouterOS state through API/SSH and presents
+the current facts clearly. It is not a replacement for WinBox/WebFig, Grafana,
+Zabbix, LibreNMS, The Dude, backups, or config diff tools.
 
 ## Status
 
@@ -40,13 +40,13 @@ switches from cards to grouped summaries and paged details as lists grow.
 
 | Mode | Best for | Default behavior |
 |------|----------|------------------|
-| Home/simple | Simple LANs and first-time users | Risk/action summary, router health, WAN, DNS/DHCP basics |
-| Multi-WAN/PCDN | Operators with multiple WANs or inbound-readiness concerns | WAN binding, route/PCC evidence, CGNAT/UPnP/readiness evidence |
+| Home/simple | Simple LANs and first-time users | Device state, WAN state, resource state, DNS/DHCP basics |
+| Multi-WAN/PCDN | Operators with multiple WANs or inbound-readiness concerns | WAN binding, route/PCC state, CGNAT/UPnP/readiness facts |
 | Scale-adaptive | Any deployment with large lists | Search, grouping, paging, sampling labels, export-ready evidence |
-| Private ops | Explicit private environments | Optional OpenWrt/Nikki/private diagnostics |
+| Private ops | Explicit private environments | Optional OpenWrt/Nikki/private probes, not public defaults |
 
 Public deployments should use `routeros_only` unless you intentionally enable
-private diagnostics.
+private probes.
 
 ## Access URL
 
@@ -156,8 +156,7 @@ curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/mai
 ```
 
 Read [DEPLOY_DOCKER.md](./DEPLOY_DOCKER.md) for manual Compose, localhost-only
-defaults, upgrade, uninstall, and RouterOS SSH `allowed-address`
-troubleshooting.
+defaults, upgrade, uninstall, and RouterOS SSH `allowed-address` notes.
 
 ## Quick Start: Windows EXE
 
@@ -177,7 +176,7 @@ Outputs:
 Run from a trusted local folder. The project does not yet provide code signing.
 
 Read [DEPLOY_WINDOWS_EXE.md](./DEPLOY_WINDOWS_EXE.md) for EXE usage, build, and
-troubleshooting details.
+status/error details.
 
 ## Quick Start: Local Python
 
@@ -210,7 +209,7 @@ are not enabled by the public Compose defaults.
 
 Read [DEPLOY_DOCKER.md](./DEPLOY_DOCKER.md) for UI-based RouterOS login,
 localhost-only defaults, upgrade, uninstall, env-file settings, and RouterOS SSH
-`allowed-address` troubleshooting.
+`allowed-address` notes.
 
 ## RouterOS Container
 
@@ -259,14 +258,11 @@ deployment notes are historical examples, not product defaults.
 
 - Collects RouterOS data through read-only API/SSH paths.
 - Serves a static web UI from `public/`.
-- Builds semantic triage from the latest snapshot:
-  - collector errors
-  - WAN and default-route risks
-  - DNS/DHCP pressure
-  - ARP conflicts
-  - interface drops/errors
-  - RouterOS resource and connection pressure
-  - security-log hints
+- Shows a read-only status bus with collection state, last refresh time,
+  RouterOS connection state, WAN online count, highest current risk indicator,
+  and data completeness.
+- Preserves RouterOS rule semantics with summary views plus raw-field expansion
+  for rule-heavy pages.
 - Keeps public-profile write paths disabled by default.
 - Exposes scale metadata so large lists can show actual totals, visible rows,
   `hasMore`, and sampled-data labels instead of silently truncating data.
@@ -288,7 +284,7 @@ deployment notes are historical examples, not product defaults.
 - Saved RouterOS logins are local secrets on the panel host or container data
   volume. Treat that host as trusted.
 - Use `routeros_only` for public deployments.
-- In public profile, private OpenWrt/Nikki diagnostics are disabled and
+- In public profile, private OpenWrt/Nikki probes are disabled and
   IP-alias writes should remain off unless explicitly reviewed.
 
 ## Repository Layout
@@ -357,7 +353,7 @@ node tools/check-lan-access-defaults.js
 python -m py_compile app.py
 docker compose --env-file .env.docker.example config --quiet
 curl -fsS http://127.0.0.1:28646/api/health
-curl -fsS http://127.0.0.1:28646/api/semantic-triage
+curl -fsS http://127.0.0.1:28646/api/snapshot
 ```
 
 Expected public-profile guardrails:

@@ -1,8 +1,48 @@
 # Changelog
 
-## Unreleased
+## 0.2.7 - 2026-06-15
 
-- Nothing yet.
+- Tightened the public shell title and connection section language around the
+  read-only status-panel positioning.
+- Added scale/source disclosure to remaining connection, route, DNS legacy, and
+  DHCP preview lists so visible rows, totals, ordering, and source paths stay
+  explicit.
+
+## 0.2.6 - 2026-06-15
+
+- Fixed collection failure endpoint rendering so the collection status page
+  shows source layer, endpoint, and state instead of losing structured details.
+- Added list disclosure notes for alert and log previews, including visible
+  count, total count, truncation state, ordering basis, and source path.
+
+## 0.2.5 - 2026-06-15
+
+- Allowed first-run RouterOS login to succeed when the REST read-only endpoint
+  verifies successfully but SSH closes before authentication.
+- Kept SSH port handling unchanged and surfaced SSH as a degraded optional
+  channel instead of blocking the whole read-only panel.
+- Reported REST 401 and SSH handshake failures together so bad credentials are
+  not hidden behind an SSH banner message.
+- Kept the mobile overview focused on read-only status while preserving compact
+  dual-axis WAN rate charts for quick traffic checks.
+
+## 0.2.3 - 2026-06-15
+
+- Reframed the public UI and documentation as a read-only RouterOS status panel
+  rather than a semantic triage or troubleshooting console.
+- Added release-readiness checks for the read-only status bus, data freshness,
+  data completeness, raw RouterOS rule fields, and tightened public menu names.
+- Removed the legacy runtime layout/diagnostics script hooks from the public
+  page so stale "diagnosis/audit" copy cannot override the main UI.
+
+## 0.2.2 - 2026-06-15
+
+- Clarified RouterOS login failures in the Windows/public UI so backend SSH
+  probe errors are shown instead of collapsing to a generic fetch failure.
+- Distinguished SSH banner timeouts from remote-side closes before password
+  authentication while keeping the submitted SSH port unchanged.
+- Made the Windows EXE build script fail fast when pip or PyInstaller fails so
+  stale build output cannot be repackaged as a new release.
 
 ## 0.2.1 - 2026-06-14
 

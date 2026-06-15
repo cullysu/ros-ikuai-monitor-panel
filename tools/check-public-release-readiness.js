@@ -126,6 +126,70 @@ function main() {
   assertContains('public/index.html', 'rememberPassword');
   assertContains('public/index.html', '连接并进入面板');
 
+  assertContains('README.md', '# RouterOS Read-only Status Panel');
+  assertContains('README.zh-CN.md', '# RouterOS 只读状态面板');
+  assertContains('README.md', 'status visibility');
+  assertContains('README.md', 'not configuration management');
+  assertContains('README.md', 'troubleshooting automation');
+  assertContains('README.zh-CN.md', '不做配置管理');
+  assertContains('README.zh-CN.md', '暂时不做排障工具');
+  assertContains('PRODUCT_MODEL.md', 'Public UI should not imply automatic repair, configuration management, or');
+
+  assertContains('public/index.html', 'renderReadonlyStatusBus');
+  assertContains('public/index.html', '采集状态');
+  assertContains('public/index.html', '最后采集时间');
+  assertContains('public/index.html', 'RouterOS 连接');
+  assertContains('public/index.html', 'WAN 在线数');
+  assertContains('public/index.html', '最高风险指标');
+  assertContains('public/index.html', '数据完整度');
+  assertContains('public/index.html', 'renderFreshnessStrip');
+  assertContains('public/index.html', '实时采集');
+  assertContains('public/index.html', '慢速采集');
+  assertContains('public/index.html', '静态配置采集');
+  assertContains('public/index.html', '失败端点');
+  assertContains('public/index.html', '当前为只读模式：仅通过 RouterOS API/SSH 读取状态，不写入配置。');
+  assertContains('public/index.html', 'RouterOS 写入');
+  assertContains('public/index.html', '本地别名写入');
+  assertContains('public/index.html', '诊断探测');
+  assertContains('public/index.html', '外部访问');
+
+  assertContains('public/index.html', '路由与分流状态');
+  assertContains('public/index.html', '防火墙规则');
+  assertContains('public/index.html', '资源状态');
+  assertContains('public/index.html', '流量状态');
+  assertContains('public/index.html', '终端状态');
+  assertContains('public/index.html', '采集状态');
+  assertNotContains('public/index.html', '诊断总览');
+  assertNotContains('public/index.html', '负载审计');
+  assertNotContains('public/index.html', 'ACL 规则');
+  assertNotContains('public/index.html', '分流监控');
+  assertNotContains('public/index.html', '终端风险');
+  assertNotContains('public/index.html', '线路状态检测');
+  assertNotContains('public/index.html', '请检查');
+  assertNotContains('public/index.html', '下一步');
+  assertNotContains('public/index.html', 'layout-whitespace-patch.js');
+  assertNotContains('public/index.html', 'readonly-diagnostics.js');
+  assertNotContains('public/index.html', 'collectionHealthDiagnostics');
+  assertNotContains('public/index.html', 'dnsProxyDiagnostics');
+  assertNotContains('public/index.html', 'wanQualityDiagnostics');
+  assertNotContains('public/index.html', 'terminalRiskDiagnostics');
+  assertNotContains('public/index.html', 'systemAuditDiagnostics');
+
+  assertContains('public/index.html', '展开 RouterOS 原始字段');
+  assertContains('public/index.html', 'connection-mark');
+  assertContains('public/index.html', 'packet-mark');
+  assertContains('public/index.html', 'routing-mark');
+  assertContains('public/index.html', 'passthrough');
+  assertContains('public/index.html', 'in-interface');
+  assertContains('public/index.html', 'out-interface');
+  assertContains('public/index.html', 'src-address');
+  assertContains('public/index.html', 'dst-address');
+  assertContains('app.py', 'rawOrder');
+  assertContains('app.py', 'connection-mark');
+  assertContains('app.py', 'packet-mark');
+  assertContains('app.py', 'routing-mark');
+  assertContains('app.py', 'passthrough');
+
   console.log('[ok] public release readiness markers are present');
 }
 

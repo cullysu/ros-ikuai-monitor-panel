@@ -1,14 +1,15 @@
-# RouterOS 只读语义排障面板
+# RouterOS 只读状态面板
 
 [English](./README.md) | [简体中文](./README.zh-CN.md)
 
-这是一个面向 RouterOS 的只读运维面板，用来快速查看 WAN、路由、DNS、
-DHCP、防火墙、接口、流量、资源和日志状态，并把原始状态整理成风险摘要、
-证据入口和下一步人工排查建议。
+这是一个面向 RouterOS 的只读状态面板，用来快速确认设备是否在线、线路
+是否正常、流量是否异常、资源是否吃紧，以及当前展示的数据是否新鲜、完整、
+可信。
 
-它的定位是“语义排障”：告诉用户现在最该看哪里、为什么值得看、下一步应
-该人工核对什么。它不是 WinBox/WebFig、Grafana、Zabbix、LibreNMS、
-The Dude、备份工具或配置 diff 工具的替代品。
+它的定位是“只读状态”：通过 RouterOS API/SSH 读取当前事实，并把状态、字段、
+刷新时间和采集完整度讲清楚。它不做配置管理，也暂时不做排障工具；不是
+WinBox/WebFig、Grafana、Zabbix、LibreNMS、The Dude、备份工具或配置
+diff 工具的替代品。
 
 ## 当前状态
 
@@ -241,7 +242,9 @@ RouterOS 里使用 `remote-image=`。
 
 - 通过只读 API/SSH 路径采集 RouterOS 状态。
 - 展示 WAN、接口、终端、DNS、DHCP、路由、连接和日志等信息。
-- 根据当前快照生成语义排障队列。
+- 在首页和采集状态页展示采集状态、最后刷新时间、RouterOS 连接状态、
+  WAN 在线数、最高风险指标和数据完整度。
+- 在规则类页面提供摘要视图，并保留 RouterOS 原始字段展开。
 - 默认保持公开部署的写入能力关闭。
 - 对不同规模的 RouterOS 环境保留真实数量、可见数量、分页和采样提示。
 
@@ -259,7 +262,7 @@ RouterOS 里使用 `remote-image=`。
 - 不要直接暴露到公网。
 - 跨网段、远程访问或多人使用时，先加 HTTPS 和认证。
 - 面向公开/产品化部署时使用 `routeros_only`。
-- 公开模式下保持私有诊断和本地写入能力关闭，除非经过单独评估。
+- 公开模式下保持私有探测和本地写入能力关闭，除非经过单独评估。
 
 ## 支持和贡献
 
@@ -277,7 +280,7 @@ RouterOS 里使用 `remote-image=`。
 ```bash
 docker compose ps
 curl -fsS http://127.0.0.1:28646/api/health
-curl -fsS http://127.0.0.1:28646/api/semantic-triage
+curl -fsS http://127.0.0.1:28646/api/snapshot
 docker compose logs -f --tail=100 routeros-triage
 ```
 

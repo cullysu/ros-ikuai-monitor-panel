@@ -14,14 +14,26 @@ $ZipPath = Join-Path $RepoRoot ("dist\{0}.zip" -f $PackageName)
 
 if (-not (Test-Path -LiteralPath $BuildPython)) {
     & $Python -m venv $BuildVenv
+    if ($LASTEXITCODE -ne 0) {
+        throw "Failed to create build venv with exit code ${LASTEXITCODE}"
+    }
 }
 
-& $BuildPython -m pip install --upgrade pip
+& $BuildPython -m pip --version
+if ($LASTEXITCODE -ne 0) {
+    throw "pip is unavailable in build venv; exit code ${LASTEXITCODE}"
+}
 & $BuildPython -m pip install -r (Join-Path $RepoRoot "requirements.txt") -r (Join-Path $RepoRoot "requirements-build.txt")
+if ($LASTEXITCODE -ne 0) {
+    throw "dependency install failed with exit code ${LASTEXITCODE}"
+}
 
 Push-Location $RepoRoot
 try {
     & $BuildPython -m PyInstaller (Join-Path $RepoRoot "routeros-triage-panel.spec") --noconfirm --clean
+    if ($LASTEXITCODE -ne 0) {
+        throw "PyInstaller failed with exit code ${LASTEXITCODE}"
+    }
 }
 finally {
     Pop-Location

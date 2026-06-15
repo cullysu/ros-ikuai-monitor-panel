@@ -395,10 +395,18 @@ async function runBackendChecks(args, report, baseUrl, startedByScript) {
   }
 
   const index = await fetchText(baseUrl, { timeoutMs: 5000 });
-  record(report, 'GET / serves panel shell', index.response.ok && index.text.includes('id="app"') && index.text.includes('/layout-whitespace-patch.js'), {
+  record(
+    report,
+    'GET / serves panel shell',
+    index.response.ok &&
+      index.text.includes('id="app"') &&
+      !index.text.includes('src="/layout-whitespace-patch.js"') &&
+      !index.text.includes('src="/readonly-diagnostics.js"'),
+    {
     statusCode: index.response.status,
     bytes: index.text.length,
-  });
+    }
+  );
 
   const assets = [
     'layout-whitespace-patch.js',

@@ -77,6 +77,10 @@ profile.
   localhost-only configuration.
 - If port `28646` is already in use, stop the conflicting local service first,
   then restart the EXE so the public entrypoint remains fixed.
+- If login reports that TCP connected but no SSH banner was received, keep the
+  SSH port you entered and verify the RouterOS SSH service allows this Windows
+  host to complete an SSH handshake. The failure happens before password
+  authentication.
 - If Windows Defender or SmartScreen warns, inspect the folder and run from a
   trusted local path. This project does not yet provide code signing.
 - If the EXE starts but data is empty, confirm the RouterOS read-only user can

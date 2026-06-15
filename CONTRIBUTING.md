@@ -1,20 +1,21 @@
 # Contributing
 
 This project is still being productized. Keep changes scoped and preserve the
-core boundary: read-only RouterOS triage.
+core boundary: read-only RouterOS status.
 
 By contributing, you agree that your contribution is provided under the project
 license in [LICENSE](./LICENSE).
 
 ## Before A Change
 
-- Decide whether the change helps semantic triage, onboarding, safety, or
+- Decide whether the change helps status clarity, data freshness, field
+  completeness, onboarding, safety, or
   verification.
 - Avoid adding another raw table or page unless it supports a clear operator
   question.
 - Do not add RouterOS write behavior without a documented backup and rollback
   path.
-- Do not add private OpenWrt/Nikki/local-lab diagnostics to the public default
+- Do not add private OpenWrt/Nikki/local-lab probes to the public default
   profile.
 
 ## Local Checks
@@ -48,9 +49,10 @@ network data redacted.
 
 Good changes answer at least one of these:
 
-- What is risky right now?
-- What changed or failed to collect?
-- What evidence should the operator inspect next?
+- Is the device online and readable?
+- Are WAN, traffic, and resource states normal?
+- What data changed, failed to collect, or may be stale?
+- Is the displayed list complete, sampled, or truncated?
 - How can a new user deploy this safely?
 
 Avoid:
@@ -58,7 +60,7 @@ Avoid:
 - Clone-style branding.
 - Hardcoded private LAN assumptions.
 - Public deployment recipes without authentication and HTTPS guidance.
-- New diagnostics that cannot be explained in one operator sentence.
+- New repair/configuration/troubleshooting flows in the public UI.
 
 ## Public Issue Hygiene
 
