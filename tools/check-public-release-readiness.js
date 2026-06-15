@@ -28,7 +28,7 @@ function main() {
   const ghcrImage = 'ghcr.io/cullysu/ros-ikuai-monitor-panel:main';
 
   assertContains('.github/workflows/container-image.yml', 'packages: write');
-  assertContains('.github/workflows/container-image.yml', 'docker/build-push-action@v6');
+  assertContains('.github/workflows/container-image.yml', 'docker/build-push-action@v7');
   assertContains('.github/workflows/container-image.yml', 'platforms: linux/amd64,linux/arm64');
   assertContains('.github/workflows/container-image.yml', 'ghcr.io/${{ github.repository }}');
 
