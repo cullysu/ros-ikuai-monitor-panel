@@ -1586,6 +1586,36 @@
       color: #91a0b5;
       font: 500 10px/1.2 "Microsoft YaHei",sans-serif;
     }
+    .ik-wan-rate-kpis {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 6px;
+      margin: 6px 0 8px;
+    }
+    .ik-wan-rate-kpis div {
+      min-width: 0;
+      border: 1px solid #edf3fb;
+      border-radius: 6px;
+      background: #fff;
+      padding: 5px 6px;
+    }
+    .ik-wan-rate-kpis span {
+      display: block;
+      color: #7c899c;
+      font-size: 10px;
+      line-height: 1.1;
+      white-space: nowrap;
+    }
+    .ik-wan-rate-kpis b {
+      display: block;
+      margin-top: 2px;
+      color: #253246;
+      font-size: 11px;
+      line-height: 1.15;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
     .ik-wan-rate-chart {
       display: grid;
       grid-template-columns: minmax(0, 1fr) 78px;
@@ -4222,25 +4252,64 @@
         svg: `<svg class="ik-wan-rate-svg" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none">${grid}${polyline}</svg>`,
         max,
         mid: max / 2,
-        count: finitePoints.length
+        count: finitePoints.length,
+        peak: finitePoints.length ? Math.max(...finitePoints) : null
+      };
+    }
+
+    function rateSeriesStats(series) {
+      const safeSeries = Array.isArray(series) ? series : [];
+      const seriesList = Array.isArray(safeSeries[0]) ? safeSeries : [safeSeries];
+      const values = seriesList.flatMap((arr) => (Array.isArray(arr) ? arr : [])
+        .map(chartValue)
+        .filter((value) => value !== null));
+      return {
+        count: values.length,
+        peak: values.length ? Math.max(...values) : null
       };
     }
 
     function wanRateSplitCard(label, current, values = [], color = '#165dff', pollText = '') {
       const chart = rateAxisLineChart(values, color, { current });
+      const hasEnoughValues = chart.count >= 2;
       return `<div class="ik-wan-rate-card" style="--wan-rate-color:${color}">
         <div class="ik-wan-rate-head">
           <div class="ik-wan-rate-title"><i class="ik-wan-rate-dot"></i>${escapeHtml(label)}</div>
           <div class="ik-wan-rate-value">${fmtRate(current)}<span>${escapeHtml(pollText)} · ${fmtNumber(chart.count)} 点</span></div>
         </div>
-        <div class="ik-wan-rate-chart">
+        <div class="ik-wan-rate-kpis">
+          <div><span>当前</span><b>${fmtRate(current)}</b></div>
+          <div><span>峰值</span><b>${chart.peak === null ? '-' : fmtRate(chart.peak)}</b></div>
+          <div><span>数据点</span><b>${fmtNumber(chart.count)}</b></div>
+        </div>
+        ${hasEnoughValues ? `<div class="ik-wan-rate-chart">
           ${chart.svg}
           <div class="ik-wan-rate-axis">
             <span>${fmtRate(chart.max)}</span>
             <span>${fmtRate(chart.mid)}</span>
             <span>0 B/s</span>
           </div>
+        </div>` : emptyBlock(`${label} 采样不足`)}
+      </div>`;
+    }
+
+    function aggregateRateTrendBody(title, series, options = {}) {
+      const stats = rateSeriesStats(series);
+      const hasEnoughValues = stats.count >= 2;
+      const current = options.current || '';
+      return `<div class="ik-wan-rate-kpis">
+          <div><span>当前</span><b>${escapeHtml(current || '-')}</b></div>
+          <div><span>峰值</span><b>${stats.peak === null ? '-' : fmtRate(stats.peak)}</b></div>
+          <div><span>数据点</span><b>${fmtNumber(stats.count)}</b></div>
         </div>
+        ${hasEnoughValues ? lineChart(series, options) : emptyBlock(`${title} 采样不足`)}`;
+    }
+
+    function aggregateRateTrendCard(title, series, options = {}) {
+      const meta = options.meta || '';
+      return `<div class="chart-box ik-traffic-trend-card">
+        <div class="chart-label"><span>${escapeHtml(title)}</span><span>${escapeHtml(meta)}</span></div>
+        ${aggregateRateTrendBody(title, series, options)}
       </div>`;
     }
 
@@ -4351,7 +4420,11 @@
 
     function getLineTrendRows(pppoe) {
       return sortPppoeNamedRows(
-        (pppoe || []).filter((item) => item.history?.up?.length && item.history?.down?.length)
+        (pppoe || []).filter((item) => {
+          const upCount = rateSeriesStats(item.history?.up || []).count;
+          const downCount = rateSeriesStats(item.history?.down || []).count;
+          return upCount >= 2 || downCount >= 2;
+        })
       ).slice(0, 8);
     }
 
@@ -4360,10 +4433,11 @@
       const emptyText = options.emptyText || '当前未读取到可展示的线路趋势';
       if (!rows.length) return emptyBlock(emptyText);
       return `<div class="line-trend-grid">${rows.map((item) => `
-        <div class="chart-box">
-          <div class="chart-label"><span>${escapeHtml(item.name)}</span><span>TX / RX</span></div>
-          ${lineChart([item.history.up, item.history.down], {colors})}
-        </div>`).join('')}</div>`;
+        ${aggregateRateTrendCard(item.name, [item.history.up, item.history.down], {
+          colors,
+          current: [fmtRate(item.upRate), fmtRate(item.downRate)].join(' / '),
+          meta: 'TX / RX'
+        })}`).join('')}</div>`;
     }
 
     function recordItem(label, value) {
@@ -4901,7 +4975,7 @@
               <div class="card-body">
                 <div class="chart-box">
                   <div class="chart-label"><span>实时上行速率 ${fmtRate(o.uplinkBps)}</span><span>实时下行速率 ${fmtRate(o.downlinkBps)}</span></div>
-                  ${lineChart([o.history.uplink, o.history.downlink], {colors:['#4a95ef','#30c36b']})}
+                  ${aggregateRateTrendBody('实时速率趋势', [o.history.uplink, o.history.downlink], {colors:['#4a95ef','#30c36b'], current:[fmtRate(o.uplinkBps), fmtRate(o.downlinkBps)].join(' / ')})}
                 </div>
               </div>
             </div>
@@ -5740,7 +5814,7 @@
       const loadCharts = `
         <div class="grid-3" style="margin-top:12px">
           <div class="card" style="grid-column: span 2"><div class="card-head"><div class="card-title">资源趋势</div><div class="subtle">CPU / 内存 / 磁盘分图</div></div><div class="card-body">${resourceTrendGrid(o, `${Math.max(o.history?.cpu?.length || 0, o.history?.memory?.length || 0, o.history?.disk?.length || 0)} 点 · ${escapeHtml(snapshot.meta.pollSeconds)}s / 点`)}</div></div>
-          <div class="card"><div class="card-head"><div class="card-title">实时速率趋势</div><div class="subtle">WAN 聚合速率</div></div><div class="card-body"><div class="chart-box"><div class="chart-label"><span>实时上行速率 ${fmtRate(o.uplinkBps)}</span><span>实时下行速率 ${fmtRate(o.downlinkBps)}</span></div>${lineChart([o.history.uplink, o.history.downlink], {colors:['#165dff','#f53f3f']})}</div></div></div>
+          <div class="card"><div class="card-head"><div class="card-title">实时速率趋势</div><div class="subtle">WAN 聚合速率</div></div><div class="card-body"><div class="chart-box"><div class="chart-label"><span>实时上行速率 ${fmtRate(o.uplinkBps)}</span><span>实时下行速率 ${fmtRate(o.downlinkBps)}</span></div>${aggregateRateTrendBody('实时速率趋势', [o.history.uplink, o.history.downlink], {colors:['#165dff','#f53f3f'], current:[fmtRate(o.uplinkBps), fmtRate(o.downlinkBps)].join(' / ')})}</div></div></div>
         </div>`;
       const hasProtocolBreakdown = [snapshot.connections.tcp, snapshot.connections.udp, snapshot.connections.icmp].every((value) => Number.isFinite(Number(value)));
       const protocolCards = hasProtocolBreakdown ? `
@@ -6317,7 +6391,7 @@
           ${metricCard('接口吞吐对象', fmtNumber(interfaces.length), `WAN / LAN ${fmtNumber(interfaces.filter((row) => row.role === 'WAN').length)} / ${fmtNumber(interfaces.filter((row) => row.role !== 'WAN').length)}`, `终端排行 ${fmtNumber(trafficTerminals.length)} 个`)}
         </div>
         <div class="grid-2" style="margin-top:12px">
-          <div class="card"><div class="card-head"><div class="card-title">WAN 聚合吞吐趋势</div><div class="subtle">${fmtRate(overview.uplinkBps)} / ${fmtRate(overview.downlinkBps)}</div></div><div class="card-body"><div class="chart-box"><div class="chart-label"><span>总上 / 总下</span><span>${escapeHtml(snapshot.meta.pollSeconds)}s / 点</span></div>${lineChart([overview.history.uplink, overview.history.downlink], {colors:['#165dff','#f53f3f']})}</div></div></div>
+          <div class="card"><div class="card-head"><div class="card-title">WAN 聚合吞吐趋势</div><div class="subtle">${fmtRate(overview.uplinkBps)} / ${fmtRate(overview.downlinkBps)}</div></div><div class="card-body"><div class="chart-box"><div class="chart-label"><span>总上 / 总下</span><span>${escapeHtml(snapshot.meta.pollSeconds)}s / 点</span></div>${aggregateRateTrendBody('WAN 聚合吞吐趋势', [overview.history.uplink, overview.history.downlink], {colors:['#165dff','#f53f3f'], current:[fmtRate(overview.uplinkBps), fmtRate(overview.downlinkBps)].join(' / ')})}</div></div></div>
           <div class="card"><div class="card-head"><div class="card-title">线路负载占比</div><div class="subtle">${busiestLine ? `${escapeHtml(busiestLine.name)} 当前最繁忙` : '等待采集'}</div></div><div class="card-body"><div class="stack">${lineShareRows || emptyBlock('当前未形成可读的线路占比')}</div></div></div>
         </div>
         <div class="card" style="margin-top:12px"><div class="card-head"><div class="card-title">8 条线路速率趋势</div><div class="subtle">${fmtNumber(getLineTrendRows(pppoe).length)} 条线路同步展示</div></div><div class="card-body">${renderLineTrendGrid(getLineTrendRows(pppoe), {emptyText:'当前未采集到可展示的线路趋势'})}</div></div>

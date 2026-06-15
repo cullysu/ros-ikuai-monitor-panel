@@ -882,7 +882,11 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       });
     const wanAxisLabels = visibleAxisLabels('.ikuai-wan-card .axis-tick-label, .ik-wan-info-card .ik-wan-rate-axis span');
     const monitorAxisLabels = visibleAxisLabels('.ikuai-monitor-card .axis-tick-label, .ik-home-main .ik-wan-rate-axis span');
-    const overviewAxesOk = sectionName !== 'overview' || (wanAxisLabels.length >= 3 && monitorAxisLabels.length >= 6);
+    const overviewSamplingFallbackOk = sectionName === 'overview' && /采样不足/.test(text);
+    const overviewAxesOk = sectionName !== 'overview' || (
+      (wanAxisLabels.length >= 3 && monitorAxisLabels.length >= 6) ||
+      overviewSamplingFallbackOk
+    );
     const monitorSplit = sectionRoot?.querySelector('[data-monitor-split-charts], .ik-wan-rate-split.is-main');
     const monitorPanels = Array.from(monitorSplit?.querySelectorAll('[data-monitor-chart], .ik-wan-rate-card') || []);
     const monitorSplitColumns = monitorSplit ? getComputedStyle(monitorSplit).gridTemplateColumns.split(' ').filter(Boolean).length : 0;
@@ -1097,6 +1101,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewNoDuplicateTerminalOk,
       duplicateTerminalCardCount: duplicateTerminalCards.length,
       overviewAxesOk,
+      overviewSamplingFallbackOk,
       overviewMonitorSplitOk,
       monitorSplitColumns,
       monitorPanelCount: monitorPanels.length,
