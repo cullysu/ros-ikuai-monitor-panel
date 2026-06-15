@@ -680,7 +680,7 @@ async function launchBrowser(args, report) {
   report.browser = { path: browserPath, port, userDataDir };
 
   try {
-    await waitForJson(`http://127.0.0.1:${port}/json/version`, 15000);
+    await waitForJson(`http://127.0.0.1:${port}/json/version`, 45000);
   } catch (error) {
     child.kill('SIGKILL');
     report.browser = {
