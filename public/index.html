@@ -6216,8 +6216,8 @@
       const online = (wanRows || []).filter((row) => row?.running).length;
       const offline = Math.max(0, total - online);
       if (!total) return { label: '未采集', level: 'warn', online, total, offline, text: '未采集到 WAN 线路' };
-      if (routeHealth.level === 'danger') return { label: '默认路由异常', level: 'danger', online, total, offline, text: routeHealth.text || '默认路由异常' };
       if (online === 0) return { label: '全部离线', level: 'danger', online, total, offline, text: `${fmtNumber(total)} 条 WAN 线路全部离线` };
+      if (routeHealth.level === 'danger') return { label: '默认路由异常', level: 'danger', online, total, offline, text: routeHealth.text || '默认路由异常' };
       if (offline > 0) return { label: '部分离线', level: 'warn', online, total, offline, text: `离线 ${fmtNumber(offline)} 条` };
       if (routeHealth.level === 'warn') return { label: '路由待确认', level: 'warn', online, total, offline, text: routeHealth.text || '默认路由待确认' };
       return { label: '全部在线', level: 'ok', online, total, offline, text: `${fmtNumber(total)} 条 WAN 线路在线` };
@@ -6514,9 +6514,29 @@
       const wanPart = ctx.wanHealth.offline > 0
         ? `WAN ${ctx.wanHealth.label}，需关注 ${fmtNumber(ctx.wanHealth.offline)} 条线路`
         : `WAN ${ctx.wanHealth.label}`;
+      const routerIssue = ctx.snapshot.error || ctx.routerState.label || '路由不可达或无可用快照';
+      const routePart = `默认路由异常：${ctx.routeHealth.text || ctx.routeHealth.label || '未发现活动默认路由'}${ctx.wanHealth.offline > 0 ? `；${wanPart}` : ''}`;
+      const resourcePart = `资源高负载：CPU ${fmtPercent(ctx.o.cpuLoad)} / 内存 ${fmtPercent(ctx.o.memoryUsage)} / 磁盘 ${fmtPercent(ctx.o.diskUsage)}`;
+      const stalePart = `${stalePrefix}，业务数字仅代表上次采样`;
+      const highestRiskText = top.key === 'router-down'
+        ? `最高业务风险：断网 / 路由不可达：${routerIssue}`
+        : top.key === 'route-danger'
+          ? `最高业务风险：${routePart}`
+          : top.key === 'wan-offline'
+            ? `最高业务风险：${wanPart}`
+            : top.key === 'data-stale'
+              ? `最高业务风险：${stalePart}`
+              : top.key === 'collection-degraded'
+                ? `最高业务风险：采集降级：${collection.text}`
+                : top.key === 'resource-load'
+                  ? `最高业务风险：${resourcePart}`
+                  : '面板未发现核心异常';
+      const dataAgeLead = (ctx.freshness.stale || history) && top.key !== 'data-stale'
+        ? `${stalePrefix}；`
+        : '';
       const conclusion = top.key === 'ok'
         ? `当前状态：${history ? `历史快照，${ctx.freshness.text || '-'} 未刷新` : '面板未发现核心异常'}`
-        : `当前状态：${stalePrefix}；最高业务风险：${wanPart}`;
+        : `当前状态：${dataAgeLead}${highestRiskText}`;
       const nextAction = top.key === 'route-danger'
         ? '优先查看：路由表快照'
         : top.key === 'wan-offline'

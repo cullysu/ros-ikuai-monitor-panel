@@ -43,7 +43,8 @@ const DEFAULT_PRIVATE_SECTIONS = [
   ...DEFAULT_PUBLIC_SECTIONS,
 ];
 const DEFAULT_SCALE_SCENARIOS = ['multi'];
-const SCALE_SCENARIOS = new Set(['single', 'multi', 'fleet']);
+const EDGE_SCALE_SCENARIOS = ['all-offline', 'no-snapshot', 'collection-down', 'resource-full', 'interfaces-down'];
+const SCALE_SCENARIOS = new Set(['single', 'multi', 'fleet', ...EDGE_SCALE_SCENARIOS]);
 
 function usage() {
   return `
@@ -61,7 +62,7 @@ Options:
                               Browser fixture profile. Default: both.
   --viewports <list>          Comma list like desktop=1600x1000,narrow=390x844.
   --sections <list>           Comma list of sections to visit, or main-menu/public-release.
-  --scale-scenarios <list>    Comma list: single,multi,fleet. Default: multi.
+  --scale-scenarios <list>    Comma list: single,multi,fleet,all-offline,no-snapshot,collection-down,resource-full,interfaces-down. Default: multi.
   --skip-browser              Run backend/static/API checks only.
   --skip-backend              Run browser checks only.
   --keep-server               Leave the spawned app server running.
@@ -119,7 +120,7 @@ function parseArgs(argv) {
     throw new Error('--profile must be public, private, or both');
   }
   if (!args.scaleScenarios.length || args.scaleScenarios.some((item) => !SCALE_SCENARIOS.has(item))) {
-    throw new Error('--scale-scenarios must use one or more of: single,multi,fleet');
+    throw new Error('--scale-scenarios must use one or more of: single,multi,fleet,all-offline,no-snapshot,collection-down,resource-full,interfaces-down');
   }
   if (!args.out) {
     args.out = path.join(ROOT, '_acceptance', `local-predeploy-${timestamp()}`);
@@ -140,6 +141,8 @@ function parseSections(value) {
   for (const part of parts) {
     if (['main-menu', 'public-release', 'all-main'].includes(part)) {
       expanded.push(...DEFAULT_PUBLIC_SECTIONS);
+    } else if (part === 'overview-edge-cases') {
+      expanded.push('overview');
     } else {
       expanded.push(part);
     }
@@ -879,6 +882,7 @@ async function setSection(cdp, section) {
 async function inspectSection(cdp, profile, viewport, section, args, scaleScenario) {
   const expression = `(() => {
     const sectionName = ${JSON.stringify(section)};
+    const scaleScenario = ${JSON.stringify(scaleScenario)};
     const normalize = (value) => String(value || '').replace(/\\s+/g, ' ').trim();
     const rectOf = (selector) => {
       const node = document.querySelector(selector);
@@ -904,6 +908,13 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const body = document.body;
     const overflowX = Math.max(root.scrollWidth, body.scrollWidth) - window.innerWidth;
     const text = normalize((requested || active || app || body).innerText);
+    const edgeScenarios = new Set(['all-offline', 'no-snapshot', 'collection-down', 'resource-full', 'interfaces-down']);
+    const isEdgeScenario = edgeScenarios.has(scaleScenario);
+    const noSnapshotEdge = scaleScenario === 'no-snapshot';
+    const topErrorNotice = (requested || active || app || body).querySelector?.('.notice.danger');
+    const topErrorNoticeRect = topErrorNotice?.getBoundingClientRect();
+    const topErrorNoticeText = normalize(topErrorNotice?.textContent || '');
+    const topErrorNoticeVisible = Boolean(topErrorNoticeRect && topErrorNoticeRect.width > 0 && topErrorNoticeRect.height > 0 && topErrorNoticeRect.top < 90);
     const hasBadLiteral = /\\bNaN\\b|\\bundefined\\b|\\[object Object\\]/.test(text);
     const scaleMeta = window.__PANEL_TEST_SNAPSHOT__?.meta?.scale || {};
     const scenario = ${JSON.stringify(scaleScenario)};
@@ -951,7 +962,10 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       });
     const wanAxisLabels = visibleAxisLabels('.ikuai-wan-card .axis-tick-label, .ik-wan-info-card .ik-wan-rate-axis span, [data-overview-density-module="wan-trend"] .ik-wan-rate-axis span');
     const monitorAxisLabels = visibleAxisLabels('.ikuai-monitor-card .axis-tick-label, .ik-home-main .ik-wan-rate-axis span, [data-overview-density-module="wan-trend"] .ik-wan-rate-axis span');
-    const overviewSamplingFallbackOk = sectionName === 'overview' && /采样不足/.test(text);
+    const overviewSamplingFallbackOk = sectionName === 'overview' && (
+      /采样不足/.test(text) ||
+      (isEdgeScenario && /无可用快照|采集状态异常|采集降级|SSH 采集不可用|接口全 Down|全部接口离线/.test(text))
+    );
     const overviewAxesOk = sectionName !== 'overview' || !isDesktopOverview || (
       (wanAxisLabels.length >= 3 && monitorAxisLabels.length >= 6) ||
       overviewSamplingFallbackOk
@@ -1139,12 +1153,19 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       !/异常\\s*\\d/.test(mobileAlertText) &&
       !mobileAlertText.includes('WAN 离线 0') &&
       (!historyModeActive || /数据陈旧\\s*\\S+/.test(mobileAlertText)) &&
-      (!/(部分离线|全部离线|默认路由异常|WAN 离线\\s*[1-9]\\d*\\s*条|离线\\s*[1-9]\\d*\\s*条)/.test(text) || /WAN 离线\\s*[1-9]\\d*\\s*条|默认路由异常|全部离线|部分离线/.test(mobileAlertText))
+      (!/(部分离线|全部离线|默认路由异常|WAN 离线\\s*[1-9]\\d*\\s*条|离线\\s*[1-9]\\d*\\s*条)/.test(text) || /WAN 离线\\s*[1-9]\\d*\\s*条|默认路由异常|全部离线|部分离线|断网\\s*\\/\\s*路由不可达|WAN\\s*0\\/\\d+/.test(mobileAlertText))
     );
     const overviewTerminologyOk = sectionName !== 'overview' || !/在线宽带|宽带状态|宽带聚合/.test(text);
     const historySnapshotTextCount = (text.match(/历史快照/g) || []).length;
     const overviewTrustCopyOk = sectionName !== 'overview' || (
-      isMobileOverview
+      isEdgeScenario
+        ? Boolean(
+          text.includes('数据') &&
+          text.includes('REST') &&
+          text.includes('SSH') &&
+          /数据新鲜|数据陈旧|未采集|当前不是实时数据|当前数据新鲜|无可用快照|采集状态异常|接口全 Down|全部接口离线/.test(text)
+        )
+      : isMobileOverview
         ? Boolean(
           mobileConsole &&
           text.includes('数据') &&
@@ -1189,14 +1210,16 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const rankScrollerOverflow = Array.from(rankGrid?.querySelectorAll('.ops-table-wrap') || [])
       .map((node) => Math.round(node.scrollWidth - node.clientWidth))
       .filter((delta) => delta > 2);
-    const overviewRankCompactOk = sectionName !== 'overview' || Boolean(
-      rankGrid &&
+    const overviewRankCompactOk = sectionName !== 'overview' || (
+      noSnapshotEdge
+        ? /未采集|无可用快照|RouterOS 当前不可达/.test(text)
+        : Boolean(rankGrid &&
       rankHeaders.length === 6 &&
       rankRows.length <= 10 &&
       rankHeaders.filter((label) => label === '速率').length === 2 &&
       rankHeaders.filter((label) => label === '状态').length === 2 &&
       !rankHeaders.some((label) => /实时上行|实时下行|连接|角色/.test(label)) &&
-      rankScrollerOverflow.length === 0
+      rankScrollerOverflow.length === 0)
     );
     const overviewWanDecisionOk = sectionName !== 'overview' || (
       isMobileOverview
@@ -1220,12 +1243,15 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         )
     );
     const overviewCapabilityDegradeOk = sectionName !== 'overview' || (
-      isMobileOverview
-        ? Boolean(text.includes('REST') && text.includes('SSH') && /SSH (可用|上次可用|依赖缺失|当前缺依赖|当前不可用|不可用)/.test(text))
+      noSnapshotEdge
+        ? /REST 待确认|SSH 采集不可用|无可用快照|RouterOS 当前不可达/.test(text)
+      : isMobileOverview
+        ? Boolean(text.includes('REST') && text.includes('SSH') && /SSH (可用|上次可用|依赖缺失|当前缺依赖|当前不可用|不可用|采集不可用)/.test(text))
         : Boolean(
-          text.includes('REST 状态') &&
-          text.includes('SSH 状态') &&
-          /SSH (可用|上次可用|依赖缺失|当前缺依赖|当前不可用|不可用)/.test(text)
+          ((text.includes('REST 状态') && text.includes('SSH 状态')) || text.includes('采集可信') || text.includes('数据可信条')) &&
+          text.includes('REST') &&
+          text.includes('SSH') &&
+          /SSH (可用|上次可用|依赖缺失|当前缺依赖|当前不可用|不可用|采集不可用)/.test(text)
         )
     );
     const readonlyNav = sectionRoot?.querySelector('.readonly-feature-nav');
@@ -1303,6 +1329,8 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       ? 0
       : window.innerWidth < 768
         ? 45
+        : noSnapshotEdge
+          ? 100
         : scenario === 'fleet'
           ? 180
           : 140;
@@ -1311,6 +1339,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       '[data-overview-field]',
       '[data-overview-mobile-alert]',
       '[data-overview-incident-line]',
+      '.notice.danger',
       '.ik-home-operator-card'
     ].join(',')) || [])
       .filter(nodeVisibleInFirstScreen)
@@ -1325,7 +1354,8 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const mobileTop120Text = Array.from(sectionRoot?.querySelectorAll([
       '[data-overview-field]',
       '[data-overview-mobile-alert]',
-      '[data-overview-mobile-incident]'
+      '[data-overview-mobile-incident]',
+      '.notice.danger'
     ].join(',')) || [])
       .filter((node) => {
         const rect = node.getBoundingClientRect();
@@ -1376,39 +1406,80 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       /采样/.test(text) &&
       (/WAN 证据链/.test(text) || sectionRoot?.querySelector('[data-overview-anomaly-evidence]'))
     );
-    const overviewMobileProductVerdictOk = sectionName !== 'overview' || window.innerWidth >= 768 || Boolean(
-      mobileTop120Text.includes('当前状态') &&
-      /数据陈旧|数据新鲜|历史快照/.test(mobileTop120Text) &&
-      /最高业务风险|面板未发现核心异常/.test(mobileTop120Text) &&
-      /采集可信/.test(mobileTop120Text) &&
-      /影响/.test(mobileTop120Text) &&
-      mobileAlarmRect &&
-      mobileAlarmRect.height <= 52 &&
-      mobileIncidentRect &&
-      mobileIncidentRect.top < 90
+    const overviewMobileProductVerdictOk = sectionName !== 'overview' || window.innerWidth >= 768 || (
+      isEdgeScenario
+        ? Boolean(
+          /断网|默认路由异常|WAN 离线|采集降级|资源高负载/.test(mobileTop120Text + ' ' + topErrorNoticeText) &&
+          /数据陈旧|数据新鲜|未采集|无可用快照/.test(mobileTop120Text + ' ' + topErrorNoticeText) &&
+          /REST|SSH|采集/.test(mobileTop120Text + ' ' + topErrorNoticeText) &&
+          (mobileAlarmRect || topErrorNoticeVisible)
+        )
+        : Boolean(
+          mobileTop120Text.includes('当前状态') &&
+          /数据陈旧|数据新鲜|历史快照/.test(mobileTop120Text) &&
+          /最高业务风险|面板未发现核心异常/.test(mobileTop120Text) &&
+          /采集可信/.test(mobileTop120Text) &&
+          /影响/.test(mobileTop120Text) &&
+          mobileAlarmRect &&
+          mobileAlarmRect.height <= 52 &&
+          mobileIncidentRect &&
+          mobileIncidentRect.top < 90
+        )
+    );
+    const overviewEdgeScenarioOk = sectionName !== 'overview' || !edgeScenarios.has(scaleScenario) || Boolean(
+      scaleScenario === 'all-offline'
+        ? activePriorityLabels.includes('WAN 离线') &&
+          activePriorityLabels.includes('默认路由异常') &&
+          /全部离线/.test(overviewVerdictText) &&
+          /未承载默认路由|影响低|未见线路影响/.test(overviewVerdictText)
+        : scaleScenario === 'no-snapshot'
+          ? activePriorityLabels.includes('断网 / 路由不可达') &&
+            /无可用快照|路由不可达|未采集/.test(overviewVerdictText) &&
+            /接口全 Down|全部接口离线/.test(overviewVerdictText) === false
+          : scaleScenario === 'collection-down'
+            ? activePriorityLabels.includes('采集降级') &&
+              /采集降级|采集失败|SSH 采集不可用|REST/.test(overviewVerdictText) &&
+              /当前不是实时数据|当前数据新鲜/.test(overviewVerdictText)
+            : scaleScenario === 'resource-full'
+              ? activePriorityLabels.includes('资源高负载') &&
+                /资源高负载|CPU 96|内存 92|磁盘 97/.test(overviewVerdictText)
+              : activePriorityLabels.includes('断网 / 路由不可达') &&
+                /接口全 Down|全部接口离线|路由不可达/.test(overviewVerdictText)
     );
     const overviewMobileArchitectureOk = sectionName !== 'overview' || window.innerWidth >= 768 || Boolean(
       mobileConsole &&
-      mobileAlarm &&
-      mobileIncident &&
       mobileMetrics &&
       mobileWanTable &&
-      mobileAlertStyle?.display !== 'none' &&
-      mobileAlarmRect &&
-      mobileIncidentRect &&
-      mobileMetricsRect &&
-      mobileWanTableRect &&
-      mobileAlarmRect.top < 120 &&
-      mobileAlarmRect.height <= 52 &&
-      mobileIncidentRect.top >= mobileAlarmRect.top &&
-      mobileIncidentRect.top < mobileMetricsRect.top &&
-      mobileMetricsRect.top < mobileWanTableRect.top &&
-      /当前状态/.test(firstScreenOverviewText) &&
-      /WAN/.test(mobileTop120Text) &&
-      /数据陈旧|历史快照|当前正常|默认路由异常|部分离线|全部离线/.test(mobileTop120Text) &&
-      /REST/.test(firstScreenOverviewText) &&
-      /SSH/.test(firstScreenOverviewText) &&
-      (!trustNoticeStyle || trustNoticeStyle.display === 'none')
+      (
+        isEdgeScenario
+          ? Boolean(
+            (mobileAlarm || topErrorNotice) &&
+            (mobileAlertStyle?.display !== 'none' || topErrorNoticeVisible || mobileAlarmRect) &&
+            (mobileAlarmRect || topErrorNoticeRect) &&
+            /当前状态|无可用快照|采集状态异常|接口全 Down|全部接口离线|资源高负载|采集降级/.test(firstScreenOverviewText + ' ' + topErrorNoticeText + ' ' + mobileTop120Text) &&
+            /WAN/.test(mobileTop120Text)
+          )
+          : Boolean(
+            mobileAlarm &&
+            mobileIncident &&
+            mobileAlertStyle?.display !== 'none' &&
+            mobileAlarmRect &&
+            mobileIncidentRect &&
+            mobileMetricsRect &&
+            mobileWanTableRect &&
+            mobileAlarmRect.top < 120 &&
+            mobileAlarmRect.height <= 52 &&
+            mobileIncidentRect.top >= mobileAlarmRect.top &&
+            mobileIncidentRect.top < mobileMetricsRect.top &&
+            mobileMetricsRect.top < mobileWanTableRect.top &&
+            /当前状态/.test(firstScreenOverviewText) &&
+            /WAN/.test(mobileTop120Text) &&
+            /数据陈旧|历史快照|当前正常|默认路由异常|部分离线|全部离线/.test(mobileTop120Text) &&
+            /REST/.test(firstScreenOverviewText) &&
+            /SSH/.test(firstScreenOverviewText) &&
+            (!trustNoticeStyle || trustNoticeStyle.display === 'none')
+          )
+      )
     );
     const snapshotForEvidence = window.__PANEL_TEST_SNAPSHOT__ || {};
     const evidenceWanRows = Array.isArray(snapshotForEvidence.wan) && snapshotForEvidence.wan.length
@@ -1540,6 +1611,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewCapabilityDegradeOk &&
       overviewProductVerdictOk &&
       overviewEvidenceChainOk &&
+      overviewEdgeScenarioOk &&
       overviewUsableWidthOk &&
       overviewFirstScreenFieldsOk &&
       overviewMobileCoreOk &&
@@ -1617,6 +1689,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewCapabilityDegradeOk,
       overviewProductVerdictOk,
       overviewEvidenceChainOk,
+      overviewEdgeScenarioOk,
       overviewPriorityLabels: priorityLabels,
       overviewActivePriorityLabels: activePriorityLabels,
       overviewUsableWidthOk,
@@ -2283,12 +2356,223 @@ function buildProtocolTop(activeRows) {
     .slice(0, 20);
 }
 
+function setFixtureFinding(snapshot, severity, title, summary, evidence = []) {
+  const finding = {
+    id: `edge.${String(title || 'fixture').toLowerCase().replace(/[^a-z0-9]+/g, '_')}`,
+    severity,
+    domain: 'overview',
+    title,
+    summary,
+    source: 'fixture.edge',
+    readOnly: true,
+    priority: 0,
+    evidence,
+  };
+  snapshot.statusFindings.status = severity === 'critical' ? 'critical' : 'warning';
+  snapshot.statusFindings.counts = {
+    critical: severity === 'critical' ? 1 : 0,
+    warning: severity === 'warning' ? 1 : 0,
+    info: 0,
+  };
+  snapshot.statusFindings.findings = [finding, ...(snapshot.statusFindings.findings || [])];
+  snapshot.statusFindings.topFinding = finding;
+  snapshot.healthFindings = snapshot.statusFindings;
+}
+
+function setSnapshotFresh(snapshot) {
+  const now = new Date().toISOString();
+  snapshot.updatedAt = now;
+  snapshot.meta.realtimeUpdatedAt = now;
+  snapshot.meta.slowRestUpdatedAt = now;
+  snapshot.meta.staticUpdatedAt = now;
+  snapshot.meta.connectionDetailUpdatedAt = now;
+  snapshot.meta.connectionProtocolUpdatedAt = now;
+  return now;
+}
+
+function setCollectionHealthy(snapshot) {
+  snapshot.meta.realtimeError = null;
+  snapshot.meta.slowRestError = null;
+  snapshot.meta.staticError = null;
+  snapshot.meta.connectionDetailError = null;
+  snapshot.meta.connectionProtocolError = null;
+  snapshot.meta.capabilities.restTrusted = true;
+  snapshot.meta.capabilities.sshRead = true;
+  snapshot.meta.capabilities.sshLabel = 'SSH 可用';
+}
+
+function refreshOverviewWanRates(snapshot) {
+  const wan = Array.isArray(snapshot.wan) ? snapshot.wan : [];
+  const upTotal = wan.reduce((sum, row) => sum + Number(row.upRate || 0), 0);
+  const downTotal = wan.reduce((sum, row) => sum + Number(row.downRate || 0), 0);
+  snapshot.overview.uplinkBps = upTotal;
+  snapshot.overview.downlinkBps = downTotal;
+  snapshot.overview.wanUpRate = upTotal;
+  snapshot.overview.wanDownRate = downTotal;
+}
+
+function refreshFixtureCounts(snapshot, scaleScenario) {
+  const wanCount = Array.isArray(snapshot.wan) ? snapshot.wan.length : 0;
+  const pppoeCount = Array.isArray(snapshot.pppoe) ? snapshot.pppoe.length : wanCount;
+  const interfaceCount = Array.isArray(snapshot.interfaces) ? snapshot.interfaces.length : 0;
+  const terminalCount = Array.isArray(snapshot.terminals) ? snapshot.terminals.length : 0;
+  snapshot.meta.pppoeCount = pppoeCount;
+  snapshot.meta.wanCount = wanCount;
+  snapshot.meta.lineCount = wanCount;
+  snapshot.meta.lineLayoutTier = lineLayoutTier(wanCount);
+  snapshot.meta.scaleScenario = scaleScenario;
+  snapshot.overview.interfaceCount = interfaceCount;
+  snapshot.overview.terminalCount = terminalCount;
+  snapshot.overview.onlineTerminals = terminalCount;
+  if (!snapshot.meta.scale) snapshot.meta.scale = {};
+  snapshot.meta.scale.wan = listScaleMeta(wanCount, wanCount, wanCount, false, '', 'edge fixture', ['status', 'routeTable']);
+  snapshot.meta.scale.pppoe = listScaleMeta(pppoeCount, pppoeCount, pppoeCount, false, '', 'edge fixture');
+  snapshot.meta.scale.interfaces = listScaleMeta(interfaceCount, interfaceCount, interfaceCount, false, '', 'edge fixture', ['status']);
+  snapshot.meta.scale.terminals = listScaleMeta(terminalCount, Math.min(terminalCount, (snapshot.terminals || []).length), terminalCount, false, '', 'edge fixture');
+}
+
+function markWanOffline(snapshot, { includeLan = false } = {}) {
+  for (const rows of [snapshot.wan, snapshot.pppoe]) {
+    for (const row of rows || []) {
+      row.running = false;
+      row.status = 'offline';
+      row.upRate = 0;
+      row.downRate = 0;
+      if (row.history) row.history = { up: [0, 0, 0, 0], down: [0, 0, 0, 0] };
+      if (Array.isArray(row.routes)) {
+        row.routes = row.routes.map((route) => ({ ...route, active: false }));
+      }
+    }
+  }
+  for (const row of snapshot.interfaces || []) {
+    const isWan = row.role === 'WAN' || /^pppoe-|^wan/i.test(String(row.name || '')) || /pppoe/i.test(String(row.type || ''));
+    if (includeLan || isWan) {
+      row.running = false;
+      row.rxRate = 0;
+      row.txRate = 0;
+    }
+  }
+  if (snapshot.routes?.defaultRoutes) {
+    snapshot.routes.defaultRoutes = snapshot.routes.defaultRoutes.map((route) => ({ ...route, active: false }));
+  }
+  if (snapshot.loadBalance?.distribution) {
+    snapshot.loadBalance.distribution = snapshot.loadBalance.distribution.map((row) => ({ ...row, active: false, upRate: 0, downRate: 0 }));
+  }
+  snapshot.connections.active = [];
+  snapshot.connections.topIps = [];
+  snapshot.connections.protocolTop = [];
+  snapshot.connections.total = 0;
+  refreshOverviewWanRates(snapshot);
+}
+
+function applyNoSnapshotScenario(snapshot) {
+  snapshot.status = 'error';
+  snapshot.error = '无可用快照，RouterOS 当前不可达';
+  snapshot.updatedAt = '';
+  snapshot.meta.realtimeUpdatedAt = '';
+  snapshot.meta.slowRestUpdatedAt = '';
+  snapshot.meta.staticUpdatedAt = '';
+  snapshot.meta.connectionDetailUpdatedAt = '';
+  snapshot.meta.connectionProtocolUpdatedAt = '';
+  snapshot.meta.realtimeError = 'RouterOS 当前不可达';
+  snapshot.meta.slowRestError = '无可用快照';
+  snapshot.meta.staticError = '无可用快照';
+  snapshot.meta.connectionDetailError = '无可用快照';
+  snapshot.meta.connectionProtocolError = '无可用快照';
+  snapshot.meta.capabilities.restTrusted = false;
+  snapshot.meta.capabilities.sshRead = false;
+  snapshot.meta.capabilities.sshLabel = 'SSH 采集不可用';
+  snapshot.wan = [];
+  snapshot.pppoe = [];
+  snapshot.interfaces = [];
+  snapshot.terminals = [];
+  snapshot.arp.items = [];
+  snapshot.dhcp.leases = [];
+  snapshot.routes.defaultRoutes = [];
+  snapshot.routes.staticRoutes = [];
+  snapshot.connections.active = [];
+  snapshot.connections.topIps = [];
+  snapshot.connections.protocolTop = [];
+  snapshot.connections.total = 0;
+  snapshot.overview.identity = '未采集';
+  snapshot.overview.version = '';
+  snapshot.overview.uptime = '';
+  snapshot.overview.cpuLoad = 0;
+  snapshot.overview.memoryUsage = 0;
+  snapshot.overview.memoryUsedPercent = 0;
+  snapshot.overview.diskUsage = 0;
+  snapshot.overview.diskUsedPercent = 0;
+  snapshot.overview.systemLoadLevel = 'warning';
+  refreshOverviewWanRates(snapshot);
+  setFixtureFinding(snapshot, 'critical', 'No snapshot', 'RouterOS is unreachable and no usable snapshot is available.', [
+    { label: 'state', value: 'no-snapshot' },
+  ]);
+}
+
+function applyEdgeScenario(snapshot, scaleScenario) {
+  if (!EDGE_SCALE_SCENARIOS.includes(scaleScenario)) return;
+  if (scaleScenario === 'no-snapshot') {
+    applyNoSnapshotScenario(snapshot);
+    refreshFixtureCounts(snapshot, scaleScenario);
+    return;
+  }
+  setSnapshotFresh(snapshot);
+  setCollectionHealthy(snapshot);
+  if (scaleScenario === 'all-offline') {
+    markWanOffline(snapshot);
+    setFixtureFinding(snapshot, 'critical', 'All WAN offline', 'All WAN lines are offline in the edge fixture.', [
+      { label: 'wanOffline', value: String((snapshot.wan || []).length) },
+    ]);
+  } else if (scaleScenario === 'collection-down') {
+    snapshot.meta.realtimeError = '实时采集失败';
+    snapshot.meta.slowRestError = '慢速采集失败';
+    snapshot.meta.staticError = '静态配置采集失败';
+    snapshot.meta.connectionDetailError = '连接明细采集失败';
+    snapshot.meta.connectionProtocolError = '连接协议采集失败';
+    snapshot.meta.capabilities.restTrusted = false;
+    snapshot.meta.capabilities.sshRead = false;
+    snapshot.meta.capabilities.sshLabel = 'SSH 采集不可用';
+    setFixtureFinding(snapshot, 'warning', 'Collection down', 'REST/SSH collection is degraded while the last snapshot is still readable.', [
+      { label: 'collector', value: 'down' },
+    ]);
+  } else if (scaleScenario === 'resource-full') {
+    snapshot.overview.cpuLoad = 96;
+    snapshot.overview.memoryUsage = 92;
+    snapshot.overview.memoryUsedPercent = 92;
+    snapshot.overview.diskUsage = 97;
+    snapshot.overview.diskUsedPercent = 97;
+    snapshot.overview.systemLoadLevel = 'danger';
+    snapshot.connections.total = 98000;
+    snapshot.connections.thresholdLevel = 'danger';
+    setFixtureFinding(snapshot, 'critical', 'Resource full', 'CPU, memory, disk, and connection pressure are high.', [
+      { label: 'cpu', value: '96%' },
+      { label: 'memory', value: '92%' },
+      { label: 'disk', value: '97%' },
+    ]);
+  } else if (scaleScenario === 'interfaces-down') {
+    snapshot.status = 'error';
+    snapshot.error = '接口全 Down，RouterOS 转发面不可用';
+    markWanOffline(snapshot, { includeLan: true });
+    setFixtureFinding(snapshot, 'critical', 'Interfaces down', 'All interfaces are down in the edge fixture.', [
+      { label: 'interfacesDown', value: String((snapshot.interfaces || []).length) },
+    ]);
+  }
+  refreshFixtureCounts(snapshot, scaleScenario);
+}
+
 function applyScaleScenario(snapshot, scaleScenario) {
-  const counts = scaleScenario === 'single'
+  const edgeCounts = {
+    'all-offline': { wan: 8, terminals: 24 },
+    'no-snapshot': { wan: 0, terminals: 0 },
+    'collection-down': { wan: 4, terminals: 24 },
+    'resource-full': { wan: 4, terminals: 24 },
+    'interfaces-down': { wan: 4, terminals: 24 },
+  };
+  const counts = edgeCounts[scaleScenario] || (scaleScenario === 'single'
     ? { wan: 1, terminals: 8 }
     : scaleScenario === 'fleet'
       ? { wan: 64, terminals: 180 }
-      : { wan: 4, terminals: 24 };
+      : { wan: 4, terminals: 24 });
   const wan = Array.from({ length: counts.wan }, (_, index) => makeWan(index));
   const terminals = Array.from({ length: counts.terminals }, (_, index) => makeTerminal(index));
   const lan = {
@@ -2452,6 +2736,7 @@ function applyScaleScenario(snapshot, scaleScenario) {
   });
   snapshot.statusFindings.topFinding = snapshot.statusFindings.findings[0] || null;
   snapshot.healthFindings = snapshot.statusFindings;
+  applyEdgeScenario(snapshot, scaleScenario);
 }
 
 async function main() {
