@@ -6518,14 +6518,14 @@
         ? `当前状态：${history ? `历史快照，${ctx.freshness.text || '-'} 未刷新` : '面板未发现核心异常'}`
         : `当前状态：${stalePrefix}；最高业务风险：${wanPart}`;
       const nextAction = top.key === 'route-danger'
-        ? '下一步：查看路由表快照'
+        ? '优先查看：路由表快照'
         : top.key === 'wan-offline'
-          ? '下一步：查看 WAN 状态'
+          ? '优先查看：WAN 状态'
           : top.key === 'data-stale' || top.key === 'collection-degraded'
-            ? '下一步：查看采集状态'
+            ? '优先查看：采集状态'
             : top.key === 'resource-load'
-              ? '下一步：查看资源状态'
-              : '下一步：查看状态明细';
+              ? '优先查看：资源状态'
+              : '优先查看：状态明细';
       return {
         level: top.level,
         topKey: top.key,
@@ -6560,7 +6560,7 @@
             <div data-overview-field>采集可信 <b>${escapeHtml(v.collection.text)}</b></div>
             <div data-overview-field>WAN 分组 <b>${escapeHtml(v.accessText)}</b></div>
             <div data-overview-field>总吞吐 <b>${fmtRate(totalRate)}</b></div>
-            <div data-overview-field>下一步 <b>${escapeHtml(v.nextAction)}</b></div>
+            <div data-overview-field>优先查看 <b>${escapeHtml(v.nextAction)}</b></div>
           </div>
           <div class="ik-home-action-links" data-overview-next-actions>
             <a class="ik-home-action-link" href="#lineStatus" data-section="lineStatus">查看 WAN 状态</a>

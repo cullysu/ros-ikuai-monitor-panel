@@ -1361,7 +1361,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       /WAN 分组/.test(overviewVerdictText) &&
       /默认路由/.test(overviewVerdictText) &&
       /影响范围/.test(overviewVerdictText) &&
-      /下一步/.test(overviewVerdictText) &&
+      /优先查看/.test(overviewVerdictText) &&
       overviewNextActions &&
       normalize(overviewNextActions.textContent).includes('查看 WAN 状态') &&
       normalize(overviewNextActions.textContent).includes('查看采集状态') &&
