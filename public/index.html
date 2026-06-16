@@ -6107,6 +6107,7 @@
             </div>
           </div>
           ${renderOverviewSessionSnapshot(ctx)}
+          ${renderOverviewSignalCoverage(ctx)}
         </div>
         <div class="ik-home-side-stack">
           <div class="card ik-home-density-card ik-home-freshness-card" data-overview-density-module="freshness">
@@ -6115,7 +6116,6 @@
               ${renderOverviewFreshnessCompact(ctx)}
             </div>
           </div>
-          ${renderOverviewSignalCoverage(ctx)}
           <div class="card ik-home-density-card" data-overview-density-module="rank">
             <div class="card-head"><div class="card-title">接口 / 终端排行</div><div class="subtle">${escapeHtml(rankSubtitle)}</div></div>
             <div class="card-body">
