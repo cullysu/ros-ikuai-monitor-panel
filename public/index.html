@@ -1208,23 +1208,29 @@
     }
     .ik-home-operator-grid {
       display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 6px;
+      grid-template-columns: 1.18fr 1fr 1fr .92fr;
+      gap: 4px;
       align-items: stretch;
-      margin-bottom: 6px;
+      margin-bottom: 4px;
+      border: 1px solid #dfe7f1;
+      border-radius: 6px;
+      background: #fff;
+      overflow: hidden;
     }
     .ik-home-operator-card {
       min-width: 0;
-      border: 1px solid #e7eef8;
-      border-radius: 8px;
+      border: 0;
+      border-right: 1px solid #e7edf5;
+      border-radius: 0;
       background: #fff;
-      box-shadow: 0 8px 20px rgba(18, 45, 75, 0.04);
-      padding: 7px;
+      box-shadow: none;
+      padding: 5px 6px;
       display: flex;
       flex-direction: column;
-      gap: 5px;
-      min-height: 158px;
+      gap: 4px;
+      min-height: 96px;
     }
+    .ik-home-operator-card:last-child { border-right: 0; }
     .ik-home-operator-head {
       display: flex;
       align-items: center;
@@ -1240,7 +1246,7 @@
     }
     .ik-home-operator-main {
       color: #172033;
-      font: 800 19px/1 "Bahnschrift","Microsoft YaHei",sans-serif;
+      font: 800 17px/1 "Bahnschrift","Microsoft YaHei",sans-serif;
       letter-spacing: 0;
       overflow-wrap: anywhere;
     }
@@ -1253,16 +1259,17 @@
     }
     .ik-home-operator-kpis {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 4px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 2px 4px;
       margin-top: auto;
     }
     .ik-home-operator-kpis div {
       min-width: 0;
-      border: 1px solid #edf3fb;
-      border-radius: 6px;
-      background: #f8fbff;
-      padding: 4px 5px;
+      border: 0;
+      border-top: 1px solid #edf2f7;
+      border-radius: 0;
+      background: transparent;
+      padding: 3px 1px 2px;
     }
     .ik-home-operator-kpis span {
       display: block;
@@ -1346,10 +1353,39 @@
       background: #fff5f6;
       color: #b6383a;
     }
+    .ik-home-incident-line {
+      display: grid;
+      grid-template-columns: minmax(260px, 1.28fr) repeat(4, minmax(96px, .72fr));
+      align-items: center;
+      gap: 0;
+      margin-bottom: 4px;
+      border: 1px solid #dfe7f1;
+      border-radius: 6px;
+      background: #fff;
+      overflow: hidden;
+      min-height: 34px;
+      color: #263547;
+      font-size: 11px;
+      font-weight: 800;
+      line-height: 1.2;
+    }
+    .ik-home-incident-line.is-warn { border-color: #ffd8a8; background: #fffaf3; }
+    .ik-home-incident-line.is-danger { border-color: #ffd0d4; background: #fff6f6; }
+    .ik-home-incident-main,
+    .ik-home-incident-item {
+      min-width: 0;
+      padding: 6px 8px;
+      border-left: 1px solid rgba(126, 144, 166, .16);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .ik-home-incident-main { border-left: 0; font-size: 12px; }
+    .ik-home-incident-item span { color: #7b899b; margin-right: 4px; }
     .ik-home-desktop-detail {
       display: grid;
       grid-template-columns: minmax(0, 1.14fr) minmax(360px, .86fr);
-      gap: 8px;
+      gap: 4px;
       align-items: stretch;
       min-width: 0;
     }
@@ -1358,10 +1394,42 @@
       min-width: 0;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 4px;
     }
     .ik-home-density-card {
       min-width: 0;
+    }
+    .section#overview .card,
+    .section#overview .ik-home-rank-card,
+    .section#overview .ik-wan-rate-card,
+    .section#overview .ik-summary-box,
+    .section#overview .freshness-item,
+    .section#overview .ik-home-mini-table-wrap,
+    .section#overview .ik-home-evidence-row,
+    .section#overview .ik-home-evidence-empty {
+      border-radius: 6px;
+      box-shadow: none;
+      background-image: none;
+    }
+    .section#overview .card {
+      border-color: #dfe7f1;
+      background: #fff;
+    }
+    .section#overview .tag {
+      min-height: 16px;
+      padding: 1px 5px;
+      border-radius: 3px;
+      font-size: 10px;
+      font-weight: 800;
+      line-height: 1.2;
+      border: 1px solid currentColor;
+      background: transparent;
+    }
+    .ik-home-trust-mode.is-history-snapshot .tag.ok,
+    .ik-home-trust-mode.is-history-snapshot .tag.trust {
+      color: #687386;
+      background: transparent;
+      border-color: #c8d0da;
     }
     .ik-home-side-stack {
       height: 100%;
@@ -1378,9 +1446,9 @@
       align-items: center;
       gap: 0;
       min-height: 32px;
-      margin-bottom: 8px;
+      margin-bottom: 4px;
       border: 1px solid #ded8ee;
-      border-radius: 8px;
+      border-radius: 6px;
       background: #f8f6fd;
       color: #5f5478;
       overflow: hidden;
@@ -1395,7 +1463,7 @@
     }
     .ik-home-ops-item {
       min-width: 0;
-      padding: 7px 9px;
+      padding: 5px 8px;
       border-left: 1px solid rgba(116, 99, 148, .13);
       white-space: nowrap;
       overflow: hidden;
@@ -1425,14 +1493,29 @@
     .ik-home-trust-mode.is-history-snapshot .ik-wan-rate-card,
     .ik-home-trust-mode.is-history-snapshot .ik-home-rank-card,
     .ik-home-trust-mode.is-history-snapshot .ik-summary-box {
-      background: #fbfcfe;
+      background: #f6f7f9;
     }
     .ik-home-trust-mode.is-history-snapshot .ik-home-operator-card {
-      border-color: #e6e1f2;
-      background: linear-gradient(180deg, #fff 0%, #fbfafd 100%);
+      border-color: #e1e6ed;
+      background: #f7f8fa;
+    }
+    .ik-home-trust-mode.is-history-snapshot {
+      position: relative;
+      background:
+        repeating-linear-gradient(-45deg, rgba(91, 105, 122, .035) 0, rgba(91, 105, 122, .035) 1px, transparent 1px, transparent 10px);
+    }
+    .ik-home-trust-mode.is-history-snapshot::before {
+      content: "历史快照";
+      position: fixed;
+      right: 18px;
+      bottom: 12px;
+      z-index: 2;
+      color: rgba(65, 75, 88, .18);
+      font: 800 28px/1 "Microsoft YaHei", sans-serif;
+      pointer-events: none;
     }
     .ik-home-density-card .card-body {
-      padding: 8px;
+      padding: 6px;
     }
     .ik-home-freshness-card .freshness-strip {
       margin-bottom: 0;
@@ -1442,45 +1525,45 @@
     .ik-home-line-risk-grid {
       display: grid;
       grid-template-columns: repeat(5, minmax(0, 1fr));
-      gap: 6px;
-      margin-top: 8px;
+      gap: 4px;
+      margin-top: 4px;
     }
     .ik-home-line-risk-grid .ik-summary-box {
-      min-height: 50px;
-      padding: 8px;
+      min-height: 42px;
+      padding: 5px 6px;
     }
     .ik-home-session-grid {
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 6px;
+      gap: 4px;
       min-width: 0;
     }
     .ik-home-session-grid .ik-summary-box {
-      min-height: 50px;
-      padding: 8px;
+      min-height: 40px;
+      padding: 5px 6px;
     }
     .ik-home-signal-grid {
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 6px;
+      gap: 4px;
       min-width: 0;
     }
     .ik-home-signal-card .ik-summary-box {
-      min-height: 46px;
-      padding: 7px 8px;
+      min-height: 38px;
+      padding: 5px 6px;
     }
     .ik-home-evidence-split {
       display: grid;
       grid-template-columns: minmax(0, 1fr) minmax(260px, .8fr);
-      gap: 8px;
-      margin-top: 8px;
+      gap: 4px;
+      margin-top: 4px;
       min-width: 0;
     }
     .ik-home-mini-table-wrap {
       min-width: 0;
       overflow: hidden;
       border: 1px solid #edf1f7;
-      border-radius: 8px;
+      border-radius: 6px;
       background: #fff;
     }
     .ik-home-mini-table {
@@ -1491,7 +1574,7 @@
     }
     .ik-home-mini-table th,
     .ik-home-mini-table td {
-      padding: 6px 7px;
+      padding: 4px 6px;
       border-bottom: 1px solid #edf1f7;
       text-align: left;
       white-space: nowrap;
@@ -1508,7 +1591,7 @@
     }
     .ik-home-evidence-list {
       display: grid;
-      gap: 6px;
+      gap: 4px;
       min-width: 0;
     }
     .ik-home-evidence-row {
@@ -1517,9 +1600,9 @@
       gap: 6px;
       align-items: center;
       min-width: 0;
-      padding: 7px 8px;
+      padding: 5px 6px;
       border: 1px solid #edf1f7;
-      border-radius: 8px;
+      border-radius: 6px;
       background: #fff;
       font-size: 11px;
     }
@@ -1535,9 +1618,9 @@
       font-weight: 700;
     }
     .ik-home-evidence-empty {
-      padding: 8px;
+      padding: 6px;
       border: 1px solid #edf1f7;
-      border-radius: 8px;
+      border-radius: 6px;
       background: #fff;
       color: #69798d;
       font-size: 11px;
@@ -2990,15 +3073,10 @@
       .ik-mobile-alert-strip {
         display: block;
       }
-      .ik-home-operator-grid .ik-home-operator-card:nth-child(4) {
-        order: -3;
-      }
-      .ik-home-operator-grid .ik-home-operator-card:nth-child(2) {
-        order: -2;
-      }
-      .ik-home-operator-grid .ik-home-operator-card:nth-child(1) {
-        order: -1;
-      }
+      .ik-home-operator-grid .ik-home-operator-card:nth-child(1) { order: -4; }
+      .ik-home-operator-grid .ik-home-operator-card:nth-child(2) { order: -3; }
+      .ik-home-operator-grid .ik-home-operator-card:nth-child(3) { order: -2; }
+      .ik-home-operator-grid .ik-home-operator-card:nth-child(4) { order: -1; }
       .ik-home-operator-card {
         min-height: 0;
         padding: 6px;
@@ -3030,11 +3108,23 @@
       .ik-home-ops-item {
         border-left: 0;
         border-top: 1px solid rgba(116, 99, 148, .13);
-        padding: 5px 7px;
+        padding: 4px 6px;
       }
       .ik-home-ops-item:first-child {
-        grid-column: 1 / -1;
         border-top: 0;
+      }
+      .ik-home-ops-item:nth-child(n+5) {
+        display: none;
+      }
+      .ik-home-incident-line {
+        grid-template-columns: 1fr 1fr;
+        min-height: 0;
+      }
+      .ik-home-incident-main {
+        grid-column: 1 / -1;
+      }
+      .ik-home-incident-item {
+        padding: 4px 6px;
       }
       .ik-home-evidence-split {
         grid-template-columns: 1fr;
@@ -5781,18 +5871,26 @@
           return totalTrafficRate(b) - totalTrafficRate(a);
         })
         .slice(0, 5)
-        .map((row) => `<tr data-overview-field>
-          <td>${escapeHtml(row.name || row.interface || '-')}</td>
+        .map((row) => {
+          const activeRoute = (row.routes || []).find((route) => route.active && !route.disabled) || null;
+          const routeText = activeRoute
+            ? `${activeRoute.gateway || activeRoute.gatewayStatus || '-'} / ${activeRoute.distance ?? '-'}`
+            : (row.running ? '未关联' : '离线');
+          return `<tr data-overview-field>
+          <td><span data-overview-anomaly-object="${row.running ? '' : escapeHtml(row.name || row.interface || '')}">${escapeHtml(row.name || row.interface || '-')}</span></td>
           <td>${escapeHtml(row.access || row.kind || 'Unknown')}</td>
-          <td>${row.running ? snapshotOkTag('在线', ctx.freshness) : tag(history ? '上次离线' : '离线', 'danger')}</td>
           <td>${escapeHtml(row.parent || '-')}</td>
+          <td>${row.running ? snapshotOkTag('在线', ctx.freshness) : tag(history ? '上次离线' : '离线', 'danger')}</td>
+          <td>${escapeHtml(routeText)}</td>
           <td>${fmtRate(Number(row.upRate || 0))}</td>
           <td>${fmtRate(Number(row.downRate || 0))}</td>
-        </tr>`).join('');
+          <td>${escapeHtml(ctx.freshness.source || '-')}</td>
+        </tr>`;
+        }).join('');
       return `<div class="ik-home-mini-table-wrap" data-overview-wan-mini-table>
         <table class="ik-home-mini-table">
-          <thead><tr><th>线路</th><th>接入</th><th>状态</th><th>父接口</th><th>上行</th><th>下行</th></tr></thead>
-          <tbody>${rows || `<tr><td colspan="6">未采集到 WAN 线路</td></tr>`}</tbody>
+          <thead><tr><th>线路</th><th>接入</th><th>父接口</th><th>状态</th><th>默认路由</th><th>上行</th><th>下行</th><th>最后采样</th></tr></thead>
+          <tbody>${rows || `<tr><td colspan="8">未采集到 WAN 线路</td></tr>`}</tbody>
         </table>
       </div>`;
     }
@@ -5831,8 +5929,8 @@
         ['有流量终端', fmtNumber(trafficTerminals.length)],
         ['待机终端', fmtNumber(terminalStandby)],
         ['离线终端', fmtNumber(terminalOffline)],
-        ['活动会话', fmtNumber(activeSessions)],
-        ['连接总数', fmtCompact(ctx.connectionTotal)],
+        ['PPP 活动会话', fmtNumber(activeSessions)],
+        ['ConnTrack 连接数', fmtCompact(ctx.connectionTotal)],
         ['最忙终端', escapeHtml(topName)],
         ['终端速率', topTerminal ? fmtRate(totalTrafficRate(topTerminal)) : '-']
       ];
@@ -5879,25 +5977,50 @@
     function renderOverviewStatusBar(ctx) {
       const history = isHistorySnapshot(ctx.freshness);
       const labels = historyAwareCapabilityLabels(ctx.capabilities, ctx.freshness);
-      const modeLabel = history ? '历史快照' : '实时状态';
-      const modeDetail = history ? '仅代表快照' : '只读监控';
+      const modeLabel = history ? '数据' : '数据';
+      const modeDetail = history ? `历史快照 ${ctx.freshness.text || ''} · 仅代表上次采样` : '实时只读';
       const highest = ctx.wanHealth.level !== 'ok'
         ? ctx.wanHealth.label
         : ctx.collectionRisk.level !== 'ok'
           ? ctx.collectionRisk.label
           : ctx.risk.label || (history ? '上次正常' : '正常');
       const items = [
-        ['位置', '首页 / 线路 / 终端 / 流量'],
+        ['异常', highest],
+        ['WAN', `${fmtNumber(ctx.wanHealth.online)} / ${fmtNumber(ctx.wanHealth.total)} · ${ctx.wanHealth.label}`],
+        ['资源', `CPU ${fmtPercent(ctx.o.cpuLoad)} · MEM ${fmtPercent(ctx.o.memoryUsage)}`],
         [modeLabel, modeDetail],
+        ['采集', `REST ${labels.restLabel} · SSH ${labels.sshLabel}`],
         ['快照时间', ctx.freshness.source || '未采集'],
         ['年龄', ctx.freshness.text || '未采集'],
-        ['WAN', `${fmtNumber(ctx.wanHealth.online)} / ${fmtNumber(ctx.wanHealth.total)} · ${ctx.wanHealth.label}`],
-        ['最高异常', highest],
-        ['REST 状态', labels.restLabel],
-        ['SSH 状态', labels.sshLabel]
+        ['位置', '首页 / 线路 / 终端 / 流量']
       ];
       return `<div class="ik-home-ops-bar${history ? '' : ' is-live'}" data-overview-trust-notice data-overview-status-bar>
         ${items.map(([label, value]) => `<div class="ik-home-ops-item" data-overview-field><span>${escapeHtml(label)}</span><b>${escapeHtml(value)}</b></div>`).join('')}
+      </div>`;
+    }
+
+    function renderOverviewIncidentLine(ctx) {
+      const labels = historyAwareCapabilityLabels(ctx.capabilities, ctx.freshness);
+      const offlineNames = (ctx.offlineWanRows || [])
+        .slice(0, 3)
+        .map((row) => row.name || row.interface || '')
+        .filter(Boolean);
+      const throughput = fmtRate(Number(ctx.wanRates.up || 0) + Number(ctx.wanRates.down || 0));
+      const history = isHistorySnapshot(ctx.freshness);
+      const level = ctx.wanHealth.level !== 'ok' ? ctx.wanHealth.level : ctx.collectionRisk.level !== 'ok' ? ctx.collectionRisk.level : 'ok';
+      const main = ctx.wanHealth.offline > 0
+        ? `WAN 离线 ${fmtNumber(ctx.wanHealth.offline)}/${fmtNumber(ctx.wanHealth.total)}：${offlineNames.join('、') || '未列出'}`
+        : ctx.wanHealth.level !== 'ok'
+          ? ctx.wanHealth.text
+          : history
+            ? `仅历史快照：${ctx.freshness.text || '-'} 未刷新`
+            : '当前无线路异常';
+      return `<div class="ik-home-incident-line is-${escapeHtml(level)}" data-overview-incident-line>
+        <div class="ik-home-incident-main" data-overview-field>${escapeHtml(main)}</div>
+        <div class="ik-home-incident-item" data-overview-field><span>默认路由</span>${escapeHtml(snapshotStatusText(ctx.routeHealth.label, ctx.freshness))}</div>
+        <div class="ik-home-incident-item" data-overview-field><span>总吞吐</span>${escapeHtml(throughput)}</div>
+        <div class="ik-home-incident-item" data-overview-field><span>REST</span>${escapeHtml(labels.restLabel)}</div>
+        <div class="ik-home-incident-item" data-overview-field><span>SSH</span>${escapeHtml(labels.sshLabel)}</div>
       </div>`;
     }
 
@@ -5909,18 +6032,18 @@
     function operatorCard(title, main, level, sub, kpis, stateLabel = '') {
       return `<div class="ik-home-operator-card">
         <div class="ik-home-operator-head">
-          <div class="ik-home-operator-title">${escapeHtml(title)}</div>
+          <div class="ik-home-operator-title" data-overview-field>${escapeHtml(title)}</div>
           ${tag(stateLabel || (level === 'danger' ? '异常' : level === 'warn' ? '关注' : '正常'), level)}
         </div>
-        <div class="ik-home-operator-main">${main}</div>
-        <div class="ik-home-operator-sub">${sub}</div>
+        <div class="ik-home-operator-main" data-overview-field>${main}</div>
+        <div class="ik-home-operator-sub" data-overview-field>${sub}</div>
         ${operatorKpis(kpis)}
       </div>`;
     }
 
     function renderOverviewMobileAlert(ctx) {
       const chips = [];
-      const chip = (label, detail, level = 'trust') => `<span class="ik-mobile-alert-chip is-${escapeHtml(level)}" title="${escapeHtml(detail || label)}"><b>${escapeHtml(label)}</b>${detail ? `<span>${escapeHtml(detail)}</span>` : ''}</span>`;
+      const chip = (label, detail, level = 'trust') => `<span class="ik-mobile-alert-chip is-${escapeHtml(level)}" data-overview-field title="${escapeHtml(detail || label)}"><b>${escapeHtml(label)}</b>${detail ? `<span>${escapeHtml(detail)}</span>` : ''}</span>`;
       if (ctx.wanHealth.level !== 'ok') {
         const label = ctx.wanHealth.offline > 0 ? `WAN 离线 ${fmtNumber(ctx.wanHealth.offline)} 条` : ctx.wanHealth.label;
         const detail = (ctx.offlineWanRows || []).slice(0, 3).map((row) => row.name).join(' / ') || ctx.wanHealth.text;
@@ -5963,7 +6086,7 @@
           ? snapshotStatusText(ctx.collectionRisk.label || '采集异常', ctx.freshness)
           : history ? '上次采样正常' : (ctx.risk.label || '未发现异常');
       const riskSub = history
-        ? `${snapshotStatusText(ctx.wanHealth.text || ctx.wanHealth.label, ctx.freshness)} · ${ctx.collectionRisk.label} · ${ctx.freshness.text}`
+        ? `${snapshotStatusText(ctx.wanHealth.text || ctx.wanHealth.label, ctx.freshness)} · ${ctx.freshness.text} 未刷新`
         : `线路 ${ctx.wanHealth.label} · 采集 ${ctx.collectionRisk.label}`;
       const collectionTagLevel = history ? 'trust' : ctx.collectionRisk.level;
       const offlineKpiValue = (row) => {
@@ -6003,21 +6126,21 @@
       ];
       const riskKpis = [
         ['线路风险', lineRiskTag],
-        ['采集风险', tag(ctx.collectionRisk.label, collectionTagLevel)],
+        ['数据状态', tag(history ? '仅历史快照' : ctx.collectionRisk.label, collectionTagLevel)],
         ['最高异常', trustAwareTag(ctx.risk.level || 'ok', ctx.freshness, { ok: ctx.risk.label || '正常' })],
-        ['活动会话', fmtNumber(ctx.activeSessions)],
+        ['PPP会话', fmtNumber(ctx.activeSessions)],
         ['离线 1', offlineKpiValue(offlineRows[0])],
         ['离线 2', offlineKpiValue(offlineRows[1])],
         ['离线 3', offlineKpiValue(offlineRows[2])]
       ];
       return `<div class="ik-home-operator-grid" data-overview-summary>
         ${operatorCard(
-          '设备',
-          deviceMain,
-          deviceLevel,
-          deviceSub,
-          deviceKpis,
-          history ? '上次采样' : (ctx.freshness.stale ? ctx.freshness.label : '')
+          '风险',
+          escapeHtml(riskMain),
+          riskLevel,
+          escapeHtml(riskSub),
+          riskKpis,
+          history ? (ctx.wanHealth.level !== 'ok' ? ctx.wanHealth.label : '仅历史快照') : (riskLevel === 'ok' && ctx.freshness.stale ? '上次采样正常' : '')
         )}
         ${operatorCard(
           'WAN 线路',
@@ -6036,12 +6159,12 @@
           ctx.resourceLevel === 'ok' && ctx.freshness.stale ? '上次采样正常' : ''
         )}
         ${operatorCard(
-          '风险',
-          escapeHtml(riskMain),
-          riskLevel,
-          escapeHtml(riskSub),
-          riskKpis,
-          history ? (ctx.wanHealth.level !== 'ok' ? ctx.wanHealth.label : '采集可信度') : (riskLevel === 'ok' && ctx.freshness.stale ? '上次采样正常' : '')
+          '设备',
+          deviceMain,
+          deviceLevel,
+          deviceSub,
+          deviceKpis,
+          history ? '上次采样' : (ctx.freshness.stale ? ctx.freshness.label : '')
         )}
       </div>`;
     }
@@ -6054,7 +6177,7 @@
       if (!enough) {
         const labels = historyAwareCapabilityLabels(ctx.capabilities, ctx.freshness);
         return `<div class="card ik-home-density-card is-trend-strip" data-overview-density-module="wan-trend" data-overview-trend-compact>
-          <div class="card-head"><div class="card-title">WAN 线路速率快照</div><div class="subtle">${escapeHtml(prefix)} · 采样不足 · 最近 ${escapeHtml(ctx.freshness.source || '未采集')}</div></div>
+          <div class="card-head"><div class="card-title">WAN 速率 / 采样</div><div class="subtle">${escapeHtml(prefix)} · 采样不足 · ${escapeHtml(ctx.freshness.source || '未采集')}</div></div>
           <div class="card-body">
             <div class="ik-home-trend-compact is-bar">
               <div class="ik-summary-box"><div class="subtle">${escapeHtml(prefix)}上行</div><b>${fmtRate(ctx.wanRates.up)}</b></div>
@@ -6063,7 +6186,6 @@
               <div class="ik-summary-box"><div class="subtle">默认路由</div><b>${escapeHtml(ctx.routeHealth.label)}</b></div>
               <div class="ik-summary-box"><div class="subtle">采集能力</div><b>${escapeHtml(labels.sshLabel)}</b></div>
             </div>
-            <div class="ik-home-trend-compact-note">采样不足，首页暂不展开趋势图；有足够历史点后自动切换为小趋势。</div>
           </div>
         </div>`;
       }
@@ -6089,13 +6211,13 @@
         <div class="stack">
           ${renderOverviewTrendCard(ctx)}
           <div class="card ik-home-density-card" data-overview-density-module="wan-health">
-            <div class="card-head"><div class="card-title">WAN 线路状态</div><div class="subtle">${escapeHtml(wanHealthText)}</div></div>
+            <div class="card-head"><div class="card-title">WAN 状态表</div><div class="subtle">${escapeHtml(wanHealthText)}</div></div>
             <div class="card-body">
               <div class="ik-home-line-risk-grid">
                 ${accessRows}
                 <div class="ik-summary-box"><div class="subtle">默认路由</div><b>${ctx.routeHealth.level === 'ok' ? snapshotOkTag('正常', ctx.freshness) : tag(ctx.routeHealth.label, ctx.routeHealth.level)}</b></div>
                 <div class="ik-summary-box"><div class="subtle">离线线路</div><b>${fmtNumber(ctx.wanHealth.offline)}</b></div>
-                <div class="ik-summary-box"><div class="subtle">活动会话</div><b>${fmtNumber(ctx.activeSessions)}</b></div>
+                <div class="ik-summary-box"><div class="subtle">PPP 活动会话</div><b>${fmtNumber(ctx.activeSessions)}</b></div>
               </div>
               <div class="ik-home-evidence-split">
                 <div class="stack">
@@ -6238,6 +6360,7 @@
       return section('只读状态首页', 'overview', '', `
         <div class="ik-home-trust-mode${trustModeClass}" data-overview-trust-mode="${isHistorySnapshot(freshness) ? 'history' : 'live'}">
           ${renderOverviewStatusBar(ctx)}
+          ${renderOverviewIncidentLine(ctx)}
           ${renderOverviewMobileAlert(ctx)}
           ${renderOverviewSummary(ctx)}
           ${renderOverviewDesktopDetail(snapshot, ctx)}

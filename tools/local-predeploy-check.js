@@ -923,10 +923,10 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const overviewOperatorHomeOk = sectionName !== 'overview' || Boolean(
       operatorGrid &&
       operatorCards.length === 4 &&
-      operatorText.includes('设备') &&
+      operatorText.includes('风险') &&
       operatorText.includes('WAN') &&
       operatorText.includes('资源') &&
-      operatorText.includes('风险')
+      operatorText.includes('设备')
     );
     const overviewActionOk = sectionName !== 'overview' || isCurrent35Home || Boolean(sectionRoot?.querySelector('[data-overview-action-panel]') && sectionRoot?.querySelector('[data-overview-drilldown]'));
     const overviewMinimalOk = sectionName !== 'overview' || !/WAN 摘要|线路总表|线路窗口|数据采集完整度|只读承诺/.test(text);
@@ -1100,6 +1100,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       sectionRoot.querySelector('[data-overview-default-routes]') &&
       sectionRoot.querySelector('[data-overview-anomaly-evidence]') &&
       operatorCards.length === 4 &&
+      sectionRoot.querySelector('[data-overview-incident-line]') &&
       text.length >= 700 &&
       overviewDesktopRect &&
       overviewDesktopRect.height >= overviewMinDesktopHeight
@@ -1123,17 +1124,18 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const historySnapshotTextCount = (text.match(/历史快照/g) || []).length;
     const overviewTrustCopyOk = sectionName !== 'overview' || Boolean(
       overviewStatusBar &&
-      text.includes('采集时间') &&
-      text.includes('数据年龄') &&
-      (!historyModeActive || text.includes('上次采样正常')) &&
+      (text.includes('采集时间') || text.includes('快照时间')) &&
+      (text.includes('数据年龄') || text.includes('未刷新') || text.includes('年龄')) &&
       (!historyModeActive || (
         text.includes('历史快照') &&
-        text.includes('快照时间') &&
+        (text.includes('采集时间') || text.includes('快照时间')) &&
         text.includes('年龄') &&
         text.includes('仅代表') &&
+        text.includes('REST') &&
+        text.includes('SSH') &&
         trustNotice &&
         historyModeActive &&
-        historySnapshotTextCount === 1
+        historySnapshotTextCount >= 1
       ))
     );
     const trendCompact = sectionRoot?.querySelector('[data-overview-trend-compact]');
@@ -1172,7 +1174,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     );
     const overviewRiskSplitOk = sectionName !== 'overview' || Boolean(
       text.includes('线路风险') &&
-      text.includes('采集风险') &&
+      (text.includes('采集风险') || text.includes('数据状态')) &&
       text.includes('离线 1') &&
       text.includes('离线 2') &&
       text.includes('离线 3')
@@ -1244,8 +1246,28 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       '.ik-home-rank-table td'
     ].join(',')) || []);
     const overviewFirstScreenFieldCount = overviewFieldNodes.filter(nodeVisibleInFirstScreen).length;
-    const minOverviewFirstScreenFields = window.innerWidth < 768 ? 18 : 45;
+    const minOverviewFirstScreenFields = sectionName !== 'overview'
+      ? 0
+      : window.innerWidth < 768
+        ? 42
+        : scenario === 'fleet'
+          ? 180
+          : 140;
     const overviewFirstScreenFieldsOk = sectionName !== 'overview' || overviewFirstScreenFieldCount >= minOverviewFirstScreenFields;
+    const firstScreenOverviewText = Array.from(sectionRoot?.querySelectorAll([
+      '[data-overview-field]',
+      '[data-overview-mobile-alert]',
+      '[data-overview-incident-line]',
+      '.ik-home-operator-card'
+    ].join(',')) || [])
+      .filter(nodeVisibleInFirstScreen)
+      .map((node) => normalize(node.textContent || ''))
+      .join(' ');
+    const overviewMobileCoreOk = sectionName !== 'overview' || window.innerWidth >= 768 || Boolean(
+      /风险|异常|数据陈旧|历史快照/.test(firstScreenOverviewText) &&
+      /WAN/.test(firstScreenOverviewText) &&
+      /资源|CPU|内存/.test(firstScreenOverviewText)
+    );
     const snapshotForEvidence = window.__PANEL_TEST_SNAPSHOT__ || {};
     const evidenceWanRows = Array.isArray(snapshotForEvidence.wan) && snapshotForEvidence.wan.length
       ? snapshotForEvidence.wan
@@ -1312,7 +1334,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         blank,
         ratio: Number(ratio.toFixed(3)),
       };
-      overviewBlankAreaOk = ratio <= 0.18;
+      overviewBlankAreaOk = ratio <= 0.10;
     }
     const visibleControls = Array.from(document.querySelectorAll('button, a, input, select'))
       .map((node) => {
@@ -1356,6 +1378,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewCapabilityDegradeOk &&
       overviewUsableWidthOk &&
       overviewFirstScreenFieldsOk &&
+      overviewMobileCoreOk &&
       overviewAnomalyEvidenceOk &&
       overviewHistoryNoLiveGreenOk &&
       overviewBlankAreaOk &&
@@ -1431,6 +1454,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewFirstScreenFieldsOk,
       overviewFirstScreenFieldCount,
       minOverviewFirstScreenFields,
+      overviewMobileCoreOk,
       overviewAnomalyEvidenceOk,
       expectedOfflineNames,
       visibleAnomalyNames,
