@@ -1085,15 +1085,20 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const humanScaleCopyOk = !scaleRequiredSections.has(sectionName) || !/\\bbucket\\b|\\bhasMore\\b|\\bsampled\\b|\\bsort\\b/i.test(text);
     const overviewDensityModules = Array.from(sectionRoot?.querySelectorAll('[data-overview-density-module]') || []);
     const overviewDesktopDetail = sectionRoot?.querySelector('[data-overview-desktop-detail]');
+    const overviewStatusBar = sectionRoot?.querySelector('[data-overview-status-bar]');
     const overviewDesktopRect = sectionRoot?.getBoundingClientRect();
     const overviewMinDesktopHeight = Math.min(620, window.innerHeight * 0.68);
     const overviewDesktopDensityOk = sectionName !== 'overview' || !isDesktopOverview || Boolean(
+      overviewStatusBar &&
       overviewDesktopDetail &&
       overviewDensityModules.length >= 4 &&
       sectionRoot.querySelector('[data-overview-density-module="wan-trend"]') &&
       sectionRoot.querySelector('[data-overview-density-module="wan-health"]') &&
       sectionRoot.querySelector('[data-overview-density-module="freshness"]') &&
       sectionRoot.querySelector('[data-overview-density-module="rank"]') &&
+      sectionRoot.querySelector('[data-overview-wan-mini-table]') &&
+      sectionRoot.querySelector('[data-overview-default-routes]') &&
+      sectionRoot.querySelector('[data-overview-anomaly-evidence]') &&
       operatorCards.length === 4 &&
       text.length >= 700 &&
       overviewDesktopRect &&
@@ -1109,19 +1114,22 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       mobileAlert &&
       mobileAlertStyle &&
       mobileAlertStyle.display !== 'none' &&
-      !/异常\s*\d/.test(mobileAlertText) &&
+      !/异常\\s*\\d/.test(mobileAlertText) &&
       !mobileAlertText.includes('WAN 离线 0') &&
-      (!historyModeActive || mobileAlertText.includes('采集可信度')) &&
-      (!/(部分离线|全部离线|默认路由异常|离线\s*[1-9])/.test(text) || mobileAlertText.includes('线路异常'))
+      (!historyModeActive || /数据陈旧\\s*\\S+/.test(mobileAlertText)) &&
+      (!/(部分离线|全部离线|默认路由异常|WAN 离线\\s*[1-9]\\d*\\s*条|离线\\s*[1-9]\\d*\\s*条)/.test(text) || /WAN 离线\\s*[1-9]\\d*\\s*条|默认路由异常|全部离线/.test(mobileAlertText))
     );
     const overviewTerminologyOk = sectionName !== 'overview' || !/在线宽带|宽带状态|宽带聚合/.test(text);
     const historySnapshotTextCount = (text.match(/历史快照/g) || []).length;
     const overviewTrustCopyOk = sectionName !== 'overview' || Boolean(
+      overviewStatusBar &&
       text.includes('采集时间') &&
       text.includes('数据年龄') &&
-      text.includes('上次采样正常') &&
-      (!text.includes('历史快照') || (
+      (!historyModeActive || text.includes('上次采样正常')) &&
+      (!historyModeActive || (
         text.includes('历史快照') &&
+        text.includes('快照时间') &&
+        text.includes('年龄') &&
         text.includes('仅代表') &&
         trustNotice &&
         historyModeActive &&
@@ -1143,12 +1151,14 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     );
     const rankGrid = sectionRoot?.querySelector('[data-overview-rank-grid]');
     const rankHeaders = Array.from(rankGrid?.querySelectorAll('th') || []).map((node) => normalize(node.textContent));
+    const rankRows = Array.from(rankGrid?.querySelectorAll('tbody tr') || []);
     const rankScrollerOverflow = Array.from(rankGrid?.querySelectorAll('.ops-table-wrap') || [])
       .map((node) => Math.round(node.scrollWidth - node.clientWidth))
       .filter((delta) => delta > 2);
     const overviewRankCompactOk = sectionName !== 'overview' || Boolean(
       rankGrid &&
       rankHeaders.length === 6 &&
+      rankRows.length <= 10 &&
       rankHeaders.filter((label) => label === '速率').length === 2 &&
       rankHeaders.filter((label) => label === '状态').length === 2 &&
       !rankHeaders.some((label) => /实时上行|实时下行|连接|角色/.test(label)) &&
@@ -1162,7 +1172,10 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     );
     const overviewRiskSplitOk = sectionName !== 'overview' || Boolean(
       text.includes('线路风险') &&
-      text.includes('采集风险')
+      text.includes('采集风险') &&
+      text.includes('离线 1') &&
+      text.includes('离线 2') &&
+      text.includes('离线 3')
     );
     const overviewCapabilityDegradeOk = sectionName !== 'overview' || Boolean(
       text.includes('REST 状态') &&
@@ -1209,6 +1222,98 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       content.width >= minOverviewUsableWidth &&
       sectionRect.width >= minOverviewUsableWidth
     );
+    const nodeVisibleInFirstScreen = (node) => {
+      if (!node) return false;
+      const rect = node.getBoundingClientRect();
+      const style = getComputedStyle(node);
+      return rect.width > 0 &&
+        rect.height > 0 &&
+        rect.bottom > 0 &&
+        rect.top < window.innerHeight &&
+        style.display !== 'none' &&
+        style.visibility !== 'hidden' &&
+        style.opacity !== '0';
+    };
+    const overviewFieldNodes = Array.from(sectionRoot?.querySelectorAll([
+      '[data-overview-field]',
+      '.ik-summary-box',
+      '.freshness-item',
+      '.ik-home-mini-table th',
+      '.ik-home-mini-table td',
+      '.ik-home-rank-table th',
+      '.ik-home-rank-table td'
+    ].join(',')) || []);
+    const overviewFirstScreenFieldCount = overviewFieldNodes.filter(nodeVisibleInFirstScreen).length;
+    const minOverviewFirstScreenFields = window.innerWidth < 768 ? 18 : 45;
+    const overviewFirstScreenFieldsOk = sectionName !== 'overview' || overviewFirstScreenFieldCount >= minOverviewFirstScreenFields;
+    const snapshotForEvidence = window.__PANEL_TEST_SNAPSHOT__ || {};
+    const evidenceWanRows = Array.isArray(snapshotForEvidence.wan) && snapshotForEvidence.wan.length
+      ? snapshotForEvidence.wan
+      : (Array.isArray(snapshotForEvidence.pppoe) ? snapshotForEvidence.pppoe : []);
+    const expectedOfflineNames = evidenceWanRows
+      .filter((row) => row && row.running === false)
+      .slice(0, 3)
+      .map((row) => String(row.name || row.interface || '').trim())
+      .filter(Boolean);
+    const visibleAnomalyNames = Array.from(sectionRoot?.querySelectorAll('[data-overview-anomaly-object]') || [])
+      .filter(nodeVisibleInFirstScreen)
+      .map((node) => String(node.getAttribute('data-overview-anomaly-object') || '').trim())
+      .filter(Boolean);
+    const overviewAnomalyEvidenceOk = sectionName !== 'overview' || expectedOfflineNames.length < 3 || Boolean(
+      expectedOfflineNames.every((name) => text.includes(name)) &&
+      visibleAnomalyNames.length >= 3
+    );
+    const historyLiveGreenTags = Array.from(sectionRoot?.querySelectorAll('.tag.ok') || [])
+      .filter(nodeVisibleInFirstScreen)
+      .map((node) => normalize(node.textContent))
+      .filter((label) => /在线|正常|实时|活动/.test(label));
+    const overviewHistoryNoLiveGreenOk = sectionName !== 'overview' || !historyModeActive || historyLiveGreenTags.length === 0;
+    let overviewBlankProbe = null;
+    let overviewBlankAreaOk = true;
+    if (sectionName === 'overview' && isDesktopOverview && sectionRoot) {
+      const rect = sectionRoot.getBoundingClientRect();
+      const left = Math.max(0, rect.left);
+      const right = Math.min(window.innerWidth, rect.right);
+      const top = Math.max(0, rect.top);
+      const bottom = Math.min(window.innerHeight, Math.max(top, rect.bottom));
+      const contentSelector = [
+        '.ik-home-ops-bar',
+        '.ik-home-operator-card',
+        '.card',
+        '.ik-summary-box',
+        '.ik-home-evidence-row',
+        '.ik-home-evidence-empty',
+        '.ik-home-mini-table-wrap',
+        '.ops-table-wrap',
+        '.tag',
+        'table',
+        'th',
+        'td'
+      ].join(',');
+      let filled = 0;
+      let total = 0;
+      const columns = 18;
+      const rows = 12;
+      for (let yi = 0; yi < rows; yi += 1) {
+        const y = top + ((bottom - top) * (yi + 0.5) / rows);
+        for (let xi = 0; xi < columns; xi += 1) {
+          const x = left + ((right - left) * (xi + 0.5) / columns);
+          const el = document.elementFromPoint(x, y);
+          if (!el || !sectionRoot.contains(el)) continue;
+          total += 1;
+          if (el.closest(contentSelector)) filled += 1;
+        }
+      }
+      const blank = Math.max(0, total - filled);
+      const ratio = total ? blank / total : 1;
+      overviewBlankProbe = {
+        filled,
+        total,
+        blank,
+        ratio: Number(ratio.toFixed(3)),
+      };
+      overviewBlankAreaOk = ratio <= 0.18;
+    }
     const visibleControls = Array.from(document.querySelectorAll('button, a, input, select'))
       .map((node) => {
         const rect = node.getBoundingClientRect();
@@ -1250,6 +1355,10 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewRiskSplitOk &&
       overviewCapabilityDegradeOk &&
       overviewUsableWidthOk &&
+      overviewFirstScreenFieldsOk &&
+      overviewAnomalyEvidenceOk &&
+      overviewHistoryNoLiveGreenOk &&
+      overviewBlankAreaOk &&
       overviewTerminalPlacementOk &&
       overviewNoDuplicateTerminalOk &&
       overviewAxesOk &&
@@ -1319,6 +1428,16 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewCapabilityDegradeOk,
       overviewUsableWidthOk,
       minOverviewUsableWidth,
+      overviewFirstScreenFieldsOk,
+      overviewFirstScreenFieldCount,
+      minOverviewFirstScreenFields,
+      overviewAnomalyEvidenceOk,
+      expectedOfflineNames,
+      visibleAnomalyNames,
+      overviewHistoryNoLiveGreenOk,
+      historyLiveGreenTags,
+      overviewBlankAreaOk,
+      overviewBlankProbe,
       overviewTerminalPlacementOk,
       overviewNoDuplicateTerminalOk,
       duplicateTerminalCardCount: duplicateTerminalCards.length,
