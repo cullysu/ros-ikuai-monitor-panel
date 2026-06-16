@@ -410,6 +410,7 @@ async function runBackendChecks(args, report, baseUrl, startedByScript) {
     statusCode: health.response.status,
     payload: health.json,
   });
+  const publicRouterosProfile = health.json.profile === 'routeros_only';
   if (startedByScript) {
     record(report, '/api/health uses safe local profile', health.json.profile === 'routeros_only' && health.json.target === '127.0.0.1', {
       profile: health.json.profile,
@@ -438,9 +439,11 @@ async function runBackendChecks(args, report, baseUrl, startedByScript) {
   ];
   for (const asset of assets) {
     const result = await fetchText(`${baseUrl}${asset}`, { timeoutMs: 5000 });
-    record(report, `GET /${asset}`, result.response.ok && result.text.length > 1000, {
+    const privatePublicAsset = publicRouterosProfile && asset === 'readonly-diagnostics.js';
+    record(report, `GET /${asset}`, privatePublicAsset ? result.response.status === 403 : result.response.ok && result.text.length > 1000, {
       statusCode: result.response.status,
       bytes: result.text.length,
+      privatePublicAsset,
     });
   }
 
@@ -484,10 +487,10 @@ async function runBackendChecks(args, report, baseUrl, startedByScript) {
 
   if (startedByScript) {
     const diag = await fetchJson(`${baseUrl}api/readonly-diagnostics`, { timeoutMs: 5000 });
-    record(report, 'public profile disables external readonly diagnostics', diag.response.ok && diag.json.status === 'disabled', {
+    record(report, 'public profile forbids external readonly diagnostics', diag.response.status === 403 && diag.json.code === 'private_diagnostics_disabled', {
       statusCode: diag.response.status,
       status: diag.json.status,
-      hidden: diag.json.hidden,
+      code: diag.json.code,
     });
 
     const alias = await fetchText(`${baseUrl}api/ip-alias`, {
@@ -862,6 +865,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const operatorCards = Array.from(operatorGrid?.querySelectorAll('.ik-home-operator-card') || []);
     const operatorText = normalize(operatorGrid?.textContent || '');
     const isOperatorHome = sectionName === 'overview' && Boolean(operatorGrid);
+    const isDesktopOverview = sectionName === 'overview' && window.innerWidth >= 1024;
     const isCurrent35Home = sectionName === 'overview' && Boolean(operatorGrid || sectionRoot?.querySelector('.ik-home-layout'));
     const overviewOperatorHomeOk = sectionName !== 'overview' || Boolean(
       operatorGrid &&
@@ -872,7 +876,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       operatorText.includes('风险')
     );
     const overviewActionOk = sectionName !== 'overview' || isCurrent35Home || Boolean(sectionRoot?.querySelector('[data-overview-action-panel]') && sectionRoot?.querySelector('[data-overview-drilldown]'));
-    const overviewMinimalOk = sectionName !== 'overview' || !/WAN 摘要|线路总表|线路窗口|数据采集完整度|流量排行|只读承诺/.test(text);
+    const overviewMinimalOk = sectionName !== 'overview' || !/WAN 摘要|线路总表|线路窗口|数据采集完整度|只读承诺/.test(text);
     const terminalSummary = sectionRoot?.querySelector('[data-ikuai-terminal-summary], .ik-home-terminal-card');
     const latencyRow = sectionRoot?.querySelector('.ikuai-latency, .ik-wan-info-card');
     const quickHead = sectionRoot?.querySelector('.ikuai-quick-head, .ik-home-quick-card');
@@ -892,10 +896,10 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         const style = getComputedStyle(node);
         return rect.width > 0 && rect.height > 0 && style.visibility !== 'hidden' && style.display !== 'none' && style.opacity !== '0' && normalize(node.textContent);
       });
-    const wanAxisLabels = visibleAxisLabels('.ikuai-wan-card .axis-tick-label, .ik-wan-info-card .ik-wan-rate-axis span');
-    const monitorAxisLabels = visibleAxisLabels('.ikuai-monitor-card .axis-tick-label, .ik-home-main .ik-wan-rate-axis span');
+    const wanAxisLabels = visibleAxisLabels('.ikuai-wan-card .axis-tick-label, .ik-wan-info-card .ik-wan-rate-axis span, [data-overview-density-module="wan-trend"] .ik-wan-rate-axis span');
+    const monitorAxisLabels = visibleAxisLabels('.ikuai-monitor-card .axis-tick-label, .ik-home-main .ik-wan-rate-axis span, [data-overview-density-module="wan-trend"] .ik-wan-rate-axis span');
     const overviewSamplingFallbackOk = sectionName === 'overview' && /采样不足/.test(text);
-    const overviewAxesOk = sectionName !== 'overview' || isOperatorHome || (
+    const overviewAxesOk = sectionName !== 'overview' || !isDesktopOverview || (
       (wanAxisLabels.length >= 3 && monitorAxisLabels.length >= 6) ||
       overviewSamplingFallbackOk
     );
@@ -903,7 +907,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const monitorPanels = Array.from(monitorSplit?.querySelectorAll('[data-monitor-chart], .ik-wan-rate-card') || []);
     const monitorSplitColumns = monitorSplit ? getComputedStyle(monitorSplit).gridTemplateColumns.split(' ').filter(Boolean).length : 0;
     const monitorSplitText = normalize(monitorSplit?.textContent || '');
-    const overviewMonitorSplitOk = sectionName !== 'overview' || isOperatorHome || Boolean(
+    const overviewMonitorSplitOk = sectionName !== 'overview' || !isDesktopOverview || Boolean(
       monitorSplit &&
       monitorPanels.length === 2 &&
       monitorSplitColumns >= 2 &&
@@ -1023,6 +1027,48 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       broadbandTable.querySelectorAll('tbody tr').length > 0
     );
     const humanScaleCopyOk = !scaleRequiredSections.has(sectionName) || !/\\bbucket\\b|\\bhasMore\\b|\\bsampled\\b|\\bsort\\b/i.test(text);
+    const overviewDensityModules = Array.from(sectionRoot?.querySelectorAll('[data-overview-density-module]') || []);
+    const overviewDesktopDetail = sectionRoot?.querySelector('[data-overview-desktop-detail]');
+    const overviewDesktopRect = sectionRoot?.getBoundingClientRect();
+    const overviewMinDesktopHeight = Math.min(620, window.innerHeight * 0.68);
+    const overviewDesktopDensityOk = sectionName !== 'overview' || !isDesktopOverview || Boolean(
+      overviewDesktopDetail &&
+      overviewDensityModules.length >= 4 &&
+      sectionRoot.querySelector('[data-overview-density-module="wan-trend"]') &&
+      sectionRoot.querySelector('[data-overview-density-module="wan-health"]') &&
+      sectionRoot.querySelector('[data-overview-density-module="freshness"]') &&
+      sectionRoot.querySelector('[data-overview-density-module="rank"]') &&
+      operatorCards.length === 4 &&
+      text.length >= 700 &&
+      overviewDesktopRect &&
+      overviewDesktopRect.height >= overviewMinDesktopHeight
+    );
+    const mobileAlert = sectionRoot?.querySelector('[data-overview-mobile-alert]');
+    const mobileAlertStyle = mobileAlert ? getComputedStyle(mobileAlert) : null;
+    const overviewMobileAlertOk = sectionName !== 'overview' || window.innerWidth >= 768 || Boolean(
+      mobileAlert &&
+      mobileAlertStyle &&
+      mobileAlertStyle.display !== 'none' &&
+      normalize(mobileAlert.textContent).includes('WAN 离线') &&
+      normalize(mobileAlert.textContent).includes('数据年龄')
+    );
+    const overviewTerminologyOk = sectionName !== 'overview' || !/在线宽带|宽带状态|宽带聚合/.test(text);
+    const overviewTrustCopyOk = sectionName !== 'overview' || Boolean(
+      text.includes('采集时间') &&
+      text.includes('数据年龄') &&
+      text.includes('数据陈旧') &&
+      text.includes('上次采样正常')
+    );
+    const overviewWanDecisionOk = sectionName !== 'overview' || Boolean(
+      text.includes('WAN 线路') &&
+      text.includes('PPPoE') &&
+      text.includes('DHCP') &&
+      text.includes('默认路由')
+    );
+    const overviewRiskSplitOk = sectionName !== 'overview' || Boolean(
+      text.includes('线路风险') &&
+      text.includes('采集风险')
+    );
     const readonlyNav = sectionRoot?.querySelector('.readonly-feature-nav');
     const readonlyDefaultLinks = Array.from(readonlyNav?.querySelectorAll(':scope > .readonly-feature-link') || []);
     const readonlyDefaultLabels = readonlyDefaultLinks.map((node) => normalize(node.textContent));
@@ -1092,6 +1138,12 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewActionOk &&
       overviewOperatorHomeOk &&
       overviewMinimalOk &&
+      overviewDesktopDensityOk &&
+      overviewMobileAlertOk &&
+      overviewTerminologyOk &&
+      overviewTrustCopyOk &&
+      overviewWanDecisionOk &&
+      overviewRiskSplitOk &&
       overviewUsableWidthOk &&
       overviewTerminalPlacementOk &&
       overviewNoDuplicateTerminalOk &&
@@ -1145,6 +1197,15 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewActionOk,
       overviewOperatorHomeOk,
       overviewMinimalOk,
+      overviewDesktopDensityOk,
+      overviewDensityModuleCount: overviewDensityModules.length,
+      overviewDesktopHeight: overviewDesktopRect ? Math.round(overviewDesktopRect.height) : null,
+      overviewMinDesktopHeight: Math.round(overviewMinDesktopHeight),
+      overviewMobileAlertOk,
+      overviewTerminologyOk,
+      overviewTrustCopyOk,
+      overviewWanDecisionOk,
+      overviewRiskSplitOk,
       overviewUsableWidthOk,
       minOverviewUsableWidth,
       overviewTerminalPlacementOk,

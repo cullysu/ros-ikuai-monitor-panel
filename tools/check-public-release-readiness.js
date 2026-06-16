@@ -139,7 +139,7 @@ function main() {
   assertContains('public/index.html', '面板健康');
   assertContains('public/index.html', 'RouterOS 健康');
   assertContains('public/index.html', '数据年龄');
-  assertContains('public/index.html', 'WAN 在线');
+  assertContains('public/index.html', 'WAN 线路');
   assertContains('public/index.html', 'CPU / 内存');
   assertContains('public/index.html', '最高异常');
   assertContains('public/index.html', 'mobileSectionSelect');

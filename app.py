@@ -5367,6 +5367,7 @@ collector = Collector()
 
 class Handler(BaseHTTPRequestHandler):
     server_version = "RouterOSTriagePanel/1.0"
+    private_public_assets = {"readonly-diagnostics.js"}
     read_only_api_paths = {
         "/api/connection-search",
         "/api/dns-static",
@@ -5386,6 +5387,18 @@ class Handler(BaseHTTPRequestHandler):
         "/api/router-logout",
     }
     bootstrap_write_api_paths = {"/api/router-login"}
+
+    def handle(self):
+        try:
+            return super().handle()
+        except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError):
+            return None
+
+    def finish(self):
+        try:
+            return super().finish()
+        except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError):
+            return None
 
     def panel_network_payload(self, **kwargs):
         return panel_network_payload(
@@ -5551,6 +5564,12 @@ class Handler(BaseHTTPRequestHandler):
         if parsed.path in {"/api/status-findings", "/api/health-findings"}:
             return self.send_json(collector.get_status_findings())
         if parsed.path == "/api/readonly-diagnostics":
+            if PUBLIC_ROUTEROS_PROFILE:
+                return self.send_json_error(
+                    "readonly diagnostics are private in the public RouterOS profile",
+                    status=403,
+                    code="private_diagnostics_disabled",
+                )
             params = parse_qs(parsed.query)
             force_refresh = (params.get("refresh") or ["0"])[0] in {"1", "true", "yes"}
             return self.send_json(collector.get_readonly_diagnostics(force_refresh=force_refresh))
@@ -5743,17 +5762,28 @@ class Handler(BaseHTTPRequestHandler):
 
     def send_json(self, payload, status=200):
         body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
-        self.send_response(status)
-        self.send_header("Content-Type", "application/json; charset=utf-8")
-        self.send_header("Content-Length", str(len(body)))
-        self.send_header("Cache-Control", "no-store")
-        for cookie_header in self.consume_cookie_headers():
-            self.send_header("Set-Cookie", cookie_header)
-        self.end_headers()
-        self.wfile.write(body)
+        try:
+            self.send_response(status)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Content-Length", str(len(body)))
+            self.send_header("Cache-Control", "no-store")
+            for cookie_header in self.consume_cookie_headers():
+                self.send_header("Set-Cookie", cookie_header)
+            self.end_headers()
+            self.wfile.write(body)
+        except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError):
+            return None
 
     def serve_static(self, path):
         clean = unquote(path)
+        asset_name = clean.lstrip("/")
+        if PUBLIC_ROUTEROS_PROFILE and asset_name in self.private_public_assets:
+            self.send_response(403)
+            self.send_header("Cache-Control", "no-store")
+            for cookie_header in self.consume_cookie_headers():
+                self.send_header("Set-Cookie", cookie_header)
+            self.end_headers()
+            return
         file_path = (PUBLIC_DIR / clean.lstrip("/")).resolve() if clean not in {"", "/"} else (PUBLIC_DIR / "index.html").resolve()
         try:
             if PUBLIC_DIR.resolve() not in file_path.parents and file_path != (PUBLIC_DIR / "index.html").resolve():
@@ -5775,6 +5805,8 @@ class Handler(BaseHTTPRequestHandler):
             for cookie_header in self.consume_cookie_headers():
                 self.send_header("Set-Cookie", cookie_header)
             self.end_headers()
+        except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError):
+            return None
 
 
 def main():
