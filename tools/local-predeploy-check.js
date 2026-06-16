@@ -1106,37 +1106,63 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewDesktopRect.height >= overviewMinDesktopHeight
     );
     const mobileAlert = sectionRoot?.querySelector('[data-overview-mobile-alert]');
+    const mobileConsole = sectionRoot?.querySelector('[data-overview-mobile-console]');
+    const mobileAlarm = sectionRoot?.querySelector('[data-overview-mobile-alarm]');
+    const mobileIncident = sectionRoot?.querySelector('[data-overview-mobile-incident]');
+    const mobileMetrics = sectionRoot?.querySelector('[data-overview-mobile-metrics]');
+    const mobileWanTable = sectionRoot?.querySelector('[data-overview-mobile-wan-table]');
     const mobileAlertStyle = mobileAlert ? getComputedStyle(mobileAlert) : null;
     const mobileAlertText = normalize(mobileAlert?.textContent || '');
+    const mobileAlarmRect = mobileAlarm?.getBoundingClientRect();
+    const mobileIncidentRect = mobileIncident?.getBoundingClientRect();
+    const mobileMetricsRect = mobileMetrics?.getBoundingClientRect();
+    const mobileWanTableRect = mobileWanTable?.getBoundingClientRect();
     const trustNotice = sectionRoot?.querySelector('[data-overview-trust-notice]');
+    const trustNoticeStyle = trustNotice ? getComputedStyle(trustNotice) : null;
     const trustMode = sectionRoot?.querySelector('[data-overview-trust-mode]');
     const historyModeActive = trustMode?.getAttribute('data-overview-trust-mode') === 'history';
+    const isMobileOverview = sectionName === 'overview' && window.innerWidth < 768;
     const overviewMobileAlertOk = sectionName !== 'overview' || window.innerWidth >= 768 || Boolean(
       mobileAlert &&
       mobileAlertStyle &&
       mobileAlertStyle.display !== 'none' &&
+      mobileAlarmRect &&
+      mobileAlarmRect.top < 120 &&
+      mobileAlarmRect.height >= 36 &&
+      mobileAlarmRect.height <= 52 &&
       !/异常\\s*\\d/.test(mobileAlertText) &&
       !mobileAlertText.includes('WAN 离线 0') &&
       (!historyModeActive || /数据陈旧\\s*\\S+/.test(mobileAlertText)) &&
-      (!/(部分离线|全部离线|默认路由异常|WAN 离线\\s*[1-9]\\d*\\s*条|离线\\s*[1-9]\\d*\\s*条)/.test(text) || /WAN 离线\\s*[1-9]\\d*\\s*条|默认路由异常|全部离线/.test(mobileAlertText))
+      (!/(部分离线|全部离线|默认路由异常|WAN 离线\\s*[1-9]\\d*\\s*条|离线\\s*[1-9]\\d*\\s*条)/.test(text) || /WAN 离线\\s*[1-9]\\d*\\s*条|默认路由异常|全部离线|部分离线/.test(mobileAlertText))
     );
     const overviewTerminologyOk = sectionName !== 'overview' || !/在线宽带|宽带状态|宽带聚合/.test(text);
     const historySnapshotTextCount = (text.match(/历史快照/g) || []).length;
-    const overviewTrustCopyOk = sectionName !== 'overview' || Boolean(
-      overviewStatusBar &&
-      (text.includes('采集时间') || text.includes('快照时间')) &&
-      (text.includes('数据年龄') || text.includes('未刷新') || text.includes('年龄')) &&
-      (!historyModeActive || (
-        text.includes('历史快照') &&
-        (text.includes('采集时间') || text.includes('快照时间')) &&
-        text.includes('年龄') &&
-        text.includes('仅代表') &&
-        text.includes('REST') &&
-        text.includes('SSH') &&
-        trustNotice &&
-        historyModeActive &&
-        historySnapshotTextCount >= 1
-      ))
+    const overviewTrustCopyOk = sectionName !== 'overview' || (
+      isMobileOverview
+        ? Boolean(
+          mobileConsole &&
+          text.includes('数据') &&
+          (text.includes('未刷新') || text.includes('年龄') || text.includes('数据陈旧')) &&
+          text.includes('REST') &&
+          text.includes('SSH') &&
+          (!historyModeActive || (text.includes('历史快照') && text.includes('数据陈旧')))
+        )
+        : Boolean(
+          overviewStatusBar &&
+          (text.includes('采集时间') || text.includes('快照时间')) &&
+          (text.includes('数据年龄') || text.includes('未刷新') || text.includes('年龄')) &&
+          (!historyModeActive || (
+            text.includes('历史快照') &&
+            (text.includes('采集时间') || text.includes('快照时间')) &&
+            text.includes('年龄') &&
+            text.includes('仅代表') &&
+            text.includes('REST') &&
+            text.includes('SSH') &&
+            trustNotice &&
+            historyModeActive &&
+            historySnapshotTextCount >= 1
+          ))
+        )
     );
     const trendCompact = sectionRoot?.querySelector('[data-overview-trend-compact]');
     const overviewTrendCompactOk = sectionName !== 'overview' || Boolean(
@@ -1166,23 +1192,35 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       !rankHeaders.some((label) => /实时上行|实时下行|连接|角色/.test(label)) &&
       rankScrollerOverflow.length === 0
     );
-    const overviewWanDecisionOk = sectionName !== 'overview' || Boolean(
-      text.includes('WAN 线路') &&
-      text.includes('PPPoE') &&
-      text.includes('DHCP') &&
-      text.includes('默认路由')
+    const overviewWanDecisionOk = sectionName !== 'overview' || (
+      isMobileOverview
+        ? Boolean(text.includes('WAN') && text.includes('默认路由') && text.includes('离线'))
+        : Boolean(
+          text.includes('WAN 线路') &&
+          text.includes('PPPoE') &&
+          text.includes('DHCP') &&
+          text.includes('默认路由')
+        )
     );
-    const overviewRiskSplitOk = sectionName !== 'overview' || Boolean(
-      text.includes('线路风险') &&
-      (text.includes('采集风险') || text.includes('数据状态')) &&
-      text.includes('离线 1') &&
-      text.includes('离线 2') &&
-      text.includes('离线 3')
+    const overviewRiskSplitOk = sectionName !== 'overview' || (
+      isMobileOverview
+        ? Boolean(text.includes('当前状态') && text.includes('影响') && text.includes('数据') && text.includes('WAN'))
+        : Boolean(
+          text.includes('线路风险') &&
+          (text.includes('采集风险') || text.includes('数据状态')) &&
+          text.includes('离线 1') &&
+          text.includes('离线 2') &&
+          text.includes('离线 3')
+        )
     );
-    const overviewCapabilityDegradeOk = sectionName !== 'overview' || Boolean(
-      text.includes('REST 状态') &&
-      text.includes('SSH 状态') &&
-      /SSH (可用|上次可用|依赖缺失|当前缺依赖|当前不可用|不可用)/.test(text)
+    const overviewCapabilityDegradeOk = sectionName !== 'overview' || (
+      isMobileOverview
+        ? Boolean(text.includes('REST') && text.includes('SSH') && /SSH (可用|上次可用|依赖缺失|当前缺依赖|当前不可用|不可用)/.test(text))
+        : Boolean(
+          text.includes('REST 状态') &&
+          text.includes('SSH 状态') &&
+          /SSH (可用|上次可用|依赖缺失|当前缺依赖|当前不可用|不可用)/.test(text)
+        )
     );
     const readonlyNav = sectionRoot?.querySelector('.readonly-feature-nav');
     const readonlyDefaultLinks = Array.from(readonlyNav?.querySelectorAll(':scope > .readonly-feature-link') || []);
@@ -1216,11 +1254,11 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const minOverviewUsableWidth = window.innerWidth < 768 ? Math.min(320, window.innerWidth - 24) : 640;
     const overviewUsableWidthOk = sectionName !== 'overview' || Boolean(
       frame &&
-      topbar &&
+      (topbar || isMobileOverview) &&
       content &&
       sectionRect &&
       frame.width >= minOverviewUsableWidth &&
-      topbar.width >= minOverviewUsableWidth &&
+      (isMobileOverview && topbar?.display === 'none' ? true : topbar.width >= minOverviewUsableWidth) &&
       content.width >= minOverviewUsableWidth &&
       sectionRect.width >= minOverviewUsableWidth
     );
@@ -1243,13 +1281,22 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       '.ik-home-mini-table th',
       '.ik-home-mini-table td',
       '.ik-home-rank-table th',
-      '.ik-home-rank-table td'
+      '.ik-home-rank-table td',
+      '.ik-mobile-head-item',
+      '.ik-mobile-incident-title',
+      '.ik-mobile-incident-evidence div',
+      '.ik-mobile-metric-title',
+      '.ik-mobile-metric-main',
+      '.ik-mobile-metric-sub',
+      '.ik-mobile-section-head',
+      '.ik-mobile-wan-row > *',
+      '.ik-mobile-device-line'
     ].join(',')) || []);
     const overviewFirstScreenFieldCount = overviewFieldNodes.filter(nodeVisibleInFirstScreen).length;
     const minOverviewFirstScreenFields = sectionName !== 'overview'
       ? 0
       : window.innerWidth < 768
-        ? 42
+        ? 45
         : scenario === 'fleet'
           ? 180
           : 140;
@@ -1266,7 +1313,49 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const overviewMobileCoreOk = sectionName !== 'overview' || window.innerWidth >= 768 || Boolean(
       /风险|异常|数据陈旧|历史快照/.test(firstScreenOverviewText) &&
       /WAN/.test(firstScreenOverviewText) &&
-      /资源|CPU|内存/.test(firstScreenOverviewText)
+      /资源|CPU|内存/.test(firstScreenOverviewText) &&
+      /采集|REST|SSH/.test(firstScreenOverviewText)
+    );
+    const mobileTop120Text = Array.from(sectionRoot?.querySelectorAll([
+      '[data-overview-field]',
+      '[data-overview-mobile-alert]',
+      '[data-overview-mobile-incident]'
+    ].join(',')) || [])
+      .filter((node) => {
+        const rect = node.getBoundingClientRect();
+        const style = getComputedStyle(node);
+        return rect.width > 0 &&
+          rect.height > 0 &&
+          rect.bottom > 0 &&
+          rect.top < 120 &&
+          style.display !== 'none' &&
+          style.visibility !== 'hidden' &&
+          style.opacity !== '0';
+      })
+      .map((node) => normalize(node.textContent || ''))
+      .join(' ');
+    const overviewMobileArchitectureOk = sectionName !== 'overview' || window.innerWidth >= 768 || Boolean(
+      mobileConsole &&
+      mobileAlarm &&
+      mobileIncident &&
+      mobileMetrics &&
+      mobileWanTable &&
+      mobileAlertStyle?.display !== 'none' &&
+      mobileAlarmRect &&
+      mobileIncidentRect &&
+      mobileMetricsRect &&
+      mobileWanTableRect &&
+      mobileAlarmRect.top < 120 &&
+      mobileAlarmRect.height <= 52 &&
+      mobileIncidentRect.top >= mobileAlarmRect.top &&
+      mobileIncidentRect.top < mobileMetricsRect.top &&
+      mobileMetricsRect.top < mobileWanTableRect.top &&
+      /当前状态/.test(firstScreenOverviewText) &&
+      /WAN/.test(mobileTop120Text) &&
+      /数据陈旧|历史快照|当前正常|默认路由异常|部分离线|全部离线/.test(mobileTop120Text) &&
+      /REST/.test(firstScreenOverviewText) &&
+      /SSH/.test(firstScreenOverviewText) &&
+      (!trustNoticeStyle || trustNoticeStyle.display === 'none')
     );
     const snapshotForEvidence = window.__PANEL_TEST_SNAPSHOT__ || {};
     const evidenceWanRows = Array.isArray(snapshotForEvidence.wan) && snapshotForEvidence.wan.length
@@ -1379,6 +1468,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewUsableWidthOk &&
       overviewFirstScreenFieldsOk &&
       overviewMobileCoreOk &&
+      overviewMobileArchitectureOk &&
       overviewAnomalyEvidenceOk &&
       overviewHistoryNoLiveGreenOk &&
       overviewBlankAreaOk &&
@@ -1455,6 +1545,13 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewFirstScreenFieldCount,
       minOverviewFirstScreenFields,
       overviewMobileCoreOk,
+      overviewMobileArchitectureOk,
+      mobileAlarmProbe: mobileAlarmRect ? {
+        top: Math.round(mobileAlarmRect.top),
+        height: Math.round(mobileAlarmRect.height),
+        text: mobileAlertText,
+      } : null,
+      mobileTop120Text,
       overviewAnomalyEvidenceOk,
       expectedOfflineNames,
       visibleAnomalyNames,
