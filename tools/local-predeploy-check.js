@@ -858,13 +858,25 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const scaleDisclosureOk = scenario !== 'fleet' || !scaleRequiredSections.has(sectionName) || scaleDisclosureCount > 0 || isCurrent35Shell;
     const sectionRoot = requested || active;
     const detailSections = new Set(['interfaces', 'terminals', 'dhcp', 'trafficLoad']);
-    const isCurrent35Home = sectionName === 'overview' && Boolean(sectionRoot?.querySelector('.ik-home-layout'));
+    const operatorGrid = sectionRoot?.querySelector('.ik-home-operator-grid');
+    const operatorCards = Array.from(operatorGrid?.querySelectorAll('.ik-home-operator-card') || []);
+    const operatorText = normalize(operatorGrid?.textContent || '');
+    const isOperatorHome = sectionName === 'overview' && Boolean(operatorGrid);
+    const isCurrent35Home = sectionName === 'overview' && Boolean(operatorGrid || sectionRoot?.querySelector('.ik-home-layout'));
+    const overviewOperatorHomeOk = sectionName !== 'overview' || Boolean(
+      operatorGrid &&
+      operatorCards.length === 4 &&
+      operatorText.includes('设备') &&
+      operatorText.includes('WAN') &&
+      operatorText.includes('资源') &&
+      operatorText.includes('风险')
+    );
     const overviewActionOk = sectionName !== 'overview' || isCurrent35Home || Boolean(sectionRoot?.querySelector('[data-overview-action-panel]') && sectionRoot?.querySelector('[data-overview-drilldown]'));
-    const overviewMinimalOk = sectionName !== 'overview' || !/WAN 摘要|线路总表|线路窗口/.test(text);
+    const overviewMinimalOk = sectionName !== 'overview' || !/WAN 摘要|线路总表|线路窗口|数据采集完整度|流量排行|只读承诺/.test(text);
     const terminalSummary = sectionRoot?.querySelector('[data-ikuai-terminal-summary], .ik-home-terminal-card');
     const latencyRow = sectionRoot?.querySelector('.ikuai-latency, .ik-wan-info-card');
     const quickHead = sectionRoot?.querySelector('.ikuai-quick-head, .ik-home-quick-card');
-    const overviewTerminalPlacementOk = sectionName !== 'overview' || Boolean(
+    const overviewTerminalPlacementOk = sectionName !== 'overview' || isOperatorHome || Boolean(
       terminalSummary &&
       latencyRow &&
       quickHead &&
@@ -883,7 +895,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const wanAxisLabels = visibleAxisLabels('.ikuai-wan-card .axis-tick-label, .ik-wan-info-card .ik-wan-rate-axis span');
     const monitorAxisLabels = visibleAxisLabels('.ikuai-monitor-card .axis-tick-label, .ik-home-main .ik-wan-rate-axis span');
     const overviewSamplingFallbackOk = sectionName === 'overview' && /采样不足/.test(text);
-    const overviewAxesOk = sectionName !== 'overview' || (
+    const overviewAxesOk = sectionName !== 'overview' || isOperatorHome || (
       (wanAxisLabels.length >= 3 && monitorAxisLabels.length >= 6) ||
       overviewSamplingFallbackOk
     );
@@ -891,7 +903,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const monitorPanels = Array.from(monitorSplit?.querySelectorAll('[data-monitor-chart], .ik-wan-rate-card') || []);
     const monitorSplitColumns = monitorSplit ? getComputedStyle(monitorSplit).gridTemplateColumns.split(' ').filter(Boolean).length : 0;
     const monitorSplitText = normalize(monitorSplit?.textContent || '');
-    const overviewMonitorSplitOk = sectionName !== 'overview' || Boolean(
+    const overviewMonitorSplitOk = sectionName !== 'overview' || isOperatorHome || Boolean(
       monitorSplit &&
       monitorPanels.length === 2 &&
       monitorSplitColumns >= 2 &&
@@ -956,14 +968,14 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const resourceText = normalize(resourceGrid?.textContent || '');
     const resourceColumns = resourceGrid ? getComputedStyle(resourceGrid).gridTemplateColumns.split(' ').filter(Boolean).length : 0;
     const resourceAxisLabels = Array.from(resourceGrid?.querySelectorAll('.axis-tick-label, .ops-axis-labels span') || []).map((node) => normalize(node.textContent));
-    const overviewResourceRowOk = sectionName !== 'overview' || Boolean(
+    const overviewResourceRowOk = sectionName !== 'overview' || isOperatorHome || Boolean(
       resourceCards.length === 3 &&
       (resourceColumns >= 3 || window.innerWidth < 768) &&
       (resourceText.includes('CPU负载') || resourceText.includes('CPU')) &&
       (resourceText.includes('内存使用率') || resourceText.includes('内存')) &&
       (resourceText.includes('磁盘使用率') || resourceText.includes('磁盘'))
     );
-    const overviewResourceAxisOk = sectionName !== 'overview' || Boolean(
+    const overviewResourceAxisOk = sectionName !== 'overview' || isOperatorHome || Boolean(
       resourceAxisLabels.filter((label) => label === '100.0%' || label === '100%').length >= 3 &&
       resourceAxisLabels.filter((label) => label === '50.0%' || label === '50%').length >= 3 &&
       resourceAxisLabels.filter((label) => label === '0.0%' || label === '0%').length >= 3
@@ -1011,6 +1023,20 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       broadbandTable.querySelectorAll('tbody tr').length > 0
     );
     const humanScaleCopyOk = !scaleRequiredSections.has(sectionName) || !/\\bbucket\\b|\\bhasMore\\b|\\bsampled\\b|\\bsort\\b/i.test(text);
+    const readonlyNav = sectionRoot?.querySelector('.readonly-feature-nav');
+    const readonlyDefaultLinks = Array.from(readonlyNav?.querySelectorAll(':scope > .readonly-feature-link') || []);
+    const readonlyDefaultLabels = readonlyDefaultLinks.map((node) => normalize(node.textContent));
+    const readonlyAdvancedNav = readonlyNav?.querySelector('details.readonly-advanced-nav');
+    const readonlyPublicNavOk = sectionName !== 'readonlyDiagnostics' || Boolean(
+      readonlyNav &&
+      readonlyDefaultLinks.length === 5 &&
+      readonlyDefaultLabels.some((label) => label.includes('采集')) &&
+      readonlyDefaultLabels.some((label) => label.includes('DNS')) &&
+      readonlyDefaultLabels.some((label) => label.includes('线路')) &&
+      readonlyDefaultLabels.some((label) => label.includes('终端')) &&
+      readonlyDefaultLabels.some((label) => label.includes('日志')) &&
+      readonlyAdvancedNav
+    );
     const scaleHeightOk = scenario !== 'fleet' || isCurrent35Shell || (
       sectionName === 'overview' ? scrollHeight <= 3000 :
       sectionName === 'trafficLoad' ? scrollHeight <= 10000 :
@@ -1020,6 +1046,22 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const sidebar = rectOf('.sidebar');
     const frame = rectOf('.frame');
     const topbar = rectOf('.topbar');
+    const content = rectOf('.content');
+    const sectionRect = sectionRoot ? (() => {
+      const rect = sectionRoot.getBoundingClientRect();
+      return { width: Math.round(rect.width), left: Math.round(rect.left), right: Math.round(rect.right) };
+    })() : null;
+    const minOverviewUsableWidth = window.innerWidth < 768 ? Math.min(320, window.innerWidth - 24) : 640;
+    const overviewUsableWidthOk = sectionName !== 'overview' || Boolean(
+      frame &&
+      topbar &&
+      content &&
+      sectionRect &&
+      frame.width >= minOverviewUsableWidth &&
+      topbar.width >= minOverviewUsableWidth &&
+      content.width >= minOverviewUsableWidth &&
+      sectionRect.width >= minOverviewUsableWidth
+    );
     const visibleControls = Array.from(document.querySelectorAll('button, a, input, select'))
       .map((node) => {
         const rect = node.getBoundingClientRect();
@@ -1048,7 +1090,9 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       scaleMetaOk &&
       scaleDisclosureOk &&
       overviewActionOk &&
+      overviewOperatorHomeOk &&
       overviewMinimalOk &&
+      overviewUsableWidthOk &&
       overviewTerminalPlacementOk &&
       overviewNoDuplicateTerminalOk &&
       overviewAxesOk &&
@@ -1062,6 +1106,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       scaleWindowHorizontalOk &&
       interfaceBroadbandTableOk &&
       humanScaleCopyOk &&
+      readonlyPublicNavOk &&
       scaleHeightOk &&
       !shellOverlap &&
       !desktopOverflow &&
@@ -1089,6 +1134,8 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       sidebar,
       frame,
       topbar,
+      content,
+      sectionRect,
       smallTargets,
       sidebarVisible,
       hasBadLiteral,
@@ -1096,7 +1143,10 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       scaleDisclosureOk,
       scaleDisclosureCount,
       overviewActionOk,
+      overviewOperatorHomeOk,
       overviewMinimalOk,
+      overviewUsableWidthOk,
+      minOverviewUsableWidth,
       overviewTerminalPlacementOk,
       overviewNoDuplicateTerminalOk,
       duplicateTerminalCardCount: duplicateTerminalCards.length,
@@ -1129,6 +1179,9 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       interfaceBroadbandTableOk,
       broadbandHeaders,
       humanScaleCopyOk,
+      readonlyPublicNavOk,
+      readonlyDefaultLabels,
+      readonlyAdvancedNavPresent: Boolean(readonlyAdvancedNav),
       scaleHeightOk,
       shellOverlap,
       desktopOverflow,

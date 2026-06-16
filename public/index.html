@@ -296,6 +296,20 @@
       padding: 6px 9px;
       font: 700 13px/1.2 "Microsoft YaHei","Segoe UI",sans-serif;
     }
+    .mobile-readonly-button {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      min-height: 32px;
+      margin-top: 8px;
+      border: 1px solid #dbe8f7;
+      border-radius: 6px;
+      background: #f8fbff;
+      color: #2d6fb8;
+      padding: 6px 10px;
+      font: 800 12px/1.2 "Microsoft YaHei","Segoe UI",sans-serif;
+      cursor: pointer;
+    }
     .frame.overview-title-only .topbar { padding: 6px 18px 0 !important; border-bottom-width: 0; }
     .frame.overview-title-only .topbar-header { position: relative; display: block; min-height: auto; }
     .frame.overview-title-only .topbar-actions { display: none; position: absolute; top: 0; right: 0; min-width: 0; width: auto; gap: 8px; }
@@ -1191,6 +1205,79 @@
       gap: 10px;
       margin-bottom: 12px;
     }
+    .ik-home-operator-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      align-items: stretch;
+    }
+    .ik-home-operator-card {
+      min-width: 0;
+      border: 1px solid #e7eef8;
+      border-radius: 8px;
+      background: #fff;
+      box-shadow: 0 8px 20px rgba(18, 45, 75, 0.04);
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .ik-home-operator-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      min-width: 0;
+    }
+    .ik-home-operator-title {
+      color: #253246;
+      font-size: 13px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+    .ik-home-operator-main {
+      color: #172033;
+      font: 800 24px/1.05 "Bahnschrift","Microsoft YaHei",sans-serif;
+      letter-spacing: 0;
+      overflow-wrap: anywhere;
+    }
+    .ik-home-operator-sub {
+      min-height: 30px;
+      color: #6b7a90;
+      font-size: 11px;
+      line-height: 1.35;
+      overflow-wrap: anywhere;
+    }
+    .ik-home-operator-kpis {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 6px;
+      margin-top: auto;
+    }
+    .ik-home-operator-kpis div {
+      min-width: 0;
+      border: 1px solid #edf3fb;
+      border-radius: 6px;
+      background: #f8fbff;
+      padding: 6px;
+    }
+    .ik-home-operator-kpis span {
+      display: block;
+      color: #7b8a9e;
+      font-size: 10px;
+      line-height: 1.1;
+      white-space: nowrap;
+    }
+    .ik-home-operator-kpis b {
+      display: block;
+      margin-top: 3px;
+      color: #233247;
+      font-size: 12px;
+      line-height: 1.2;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
     .readonly-status-bus {
       display: grid;
       grid-template-columns: repeat(6, minmax(0, 1fr));
@@ -1231,6 +1318,64 @@
       font-size: 13px;
       line-height: 1.25;
       word-break: break-word;
+    }
+    .readonly-feature-nav {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 8px;
+      margin-bottom: 12px;
+      align-items: stretch;
+    }
+    .readonly-feature-link {
+      min-width: 0;
+      border: 1px solid #dce8f6;
+      border-radius: 8px;
+      background: #fff;
+      color: #31435a;
+      padding: 8px 9px;
+      text-decoration: none;
+    }
+    .readonly-feature-link.is-active {
+      border-color: #6aa5e8;
+      background: #f1f7ff;
+      color: #175fa8;
+    }
+    .readonly-feature-link strong,
+    .readonly-feature-link span {
+      display: block;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .readonly-feature-link strong {
+      font-size: 12px;
+      line-height: 1.25;
+    }
+    .readonly-feature-link span {
+      margin-top: 3px;
+      color: #728197;
+      font-size: 10px;
+      line-height: 1.2;
+    }
+    .readonly-advanced-nav {
+      min-width: 0;
+      border: 1px dashed #d6e4f5;
+      border-radius: 8px;
+      background: #fbfdff;
+      padding: 8px;
+    }
+    .readonly-advanced-nav summary {
+      cursor: pointer;
+      color: #6d7f95;
+      font-size: 12px;
+      font-weight: 800;
+      list-style-position: inside;
+    }
+    .readonly-advanced-nav-links {
+      display: grid;
+      gap: 6px;
+      margin-top: 8px;
     }
     .readonly-promise {
       margin-bottom: 12px;
@@ -2438,19 +2583,23 @@
       }
     }
     @media (max-width: 760px) {
+      html {
+        min-width: 0 !important;
+        overflow-x: hidden !important;
+      }
       body {
-        min-width: 0;
-        overflow-x: hidden;
+        min-width: 0 !important;
+        overflow-x: hidden !important;
       }
       .app.ik-shell,
       .app.ik-shell.home-sidebar-hidden,
       .app.ik-shell.router-login-mode {
-        width: 100vw;
-        max-width: 100vw;
-        min-width: 0;
-        grid-template-columns: minmax(0, 1fr);
-        background: #fff;
-        overflow-x: hidden;
+        width: 100vw !important;
+        max-width: 100vw !important;
+        min-width: 0 !important;
+        grid-template-columns: minmax(0, 1fr) !important;
+        background: #fff !important;
+        overflow-x: hidden !important;
       }
       .app.ik-shell .ik-rail,
       .app.ik-shell .sidebar {
@@ -2459,11 +2608,12 @@
       .app.ik-shell .frame,
       .app.ik-shell.home-sidebar-hidden .frame,
       .app.ik-shell.router-login-mode .frame {
-        grid-column: 1;
-        width: 100%;
-        max-width: 100vw;
-        min-width: 0;
-        overflow-x: hidden;
+        grid-column: 1 / -1 !important;
+        width: 100vw !important;
+        max-width: 100vw !important;
+        min-width: 0 !important;
+        justify-self: stretch !important;
+        overflow-x: hidden !important;
       }
       .app.ik-shell .topbar {
         width: 100%;
@@ -2500,7 +2650,12 @@
       .mobile-section-select {
         display: block;
       }
+      .mobile-readonly-button {
+        display: inline-flex;
+        width: 100%;
+      }
       .readonly-status-bus,
+      .readonly-feature-nav,
       .ik-home-status-grid,
       .freshness-strip,
       .data-completeness-grid {
@@ -2509,6 +2664,7 @@
       .ik-home-layout,
       .ik-home-layout > .stack,
       .ik-home-main,
+      .ik-home-operator-grid,
       .grid-2,
       .grid-3,
       .grid-4 {
@@ -2630,6 +2786,7 @@
             <div class="page-title" id="pageTitle">宽带总览</div>
             <div class="page-subtitle is-hidden" id="pageSubtitle"></div>
             <select class="mobile-section-select" id="mobileSectionSelect" aria-label="切换页面"></select>
+            <button class="mobile-readonly-button" type="button" data-readonly-info-open>只读边界</button>
           </div>
           <div class="topbar-actions">
             <div class="toolbar-line">
@@ -3101,6 +3258,33 @@
         </div>
       </div>`;
     }
+    function renderReadonlyPublicNav(activeSection = 'readonlyDiagnostics') {
+      const publicLinks = [
+        { section: 'readonlyDiagnostics', label: '采集健康', desc: '新鲜度 / 失败端点' },
+        { section: 'dns4', label: 'DNS', desc: 'IPv4 / IPv6' },
+        { section: 'lineStatus', label: '线路', desc: 'WAN / 默认路由' },
+        { section: 'terminals', label: '终端', desc: '在线 / 地址身份' },
+        { section: 'logs', label: '日志', desc: '事件 / 服务日志' }
+      ];
+      const advancedLinks = [
+        { section: 'readonlyDiagnostics', label: '内部目录', desc: '状态视图索引' },
+        { section: 'readonlyDiagnostics', label: '关注排序', desc: '状态等级说明' },
+        { section: 'readonlyDiagnostics', label: '证据来源', desc: '数据来源说明' },
+        { section: 'readonlyDiagnostics', label: '归属规则', desc: '信息聚合规则' }
+      ];
+      const navLink = (item, isAdvanced = false) => `
+        <a class="readonly-feature-link ${!isAdvanced && item.section === activeSection ? 'is-active' : ''}" href="#${escapeHtml(item.section)}" data-section="${escapeHtml(item.section)}">
+          <strong>${escapeHtml(item.label)}</strong>
+          <span>${escapeHtml(item.desc)}</span>
+        </a>`;
+      return `<div class="readonly-feature-nav">
+        ${publicLinks.map((item) => navLink(item)).join('')}
+        <details class="readonly-advanced-nav">
+          <summary>内部说明</summary>
+          <div class="readonly-advanced-nav-links">${advancedLinks.map((item) => navLink(item, true)).join('')}</div>
+        </details>
+      </div>`;
+    }
     function renderCollectionStatus(snapshot = {}) {
       const failures = endpointFailureEntries(snapshot.meta || {});
       const failureRows = failures.map((row) => `
@@ -3115,6 +3299,7 @@
           <td>${escapeHtml(value)}</td>
         </tr>`);
       return section('采集状态', 'readonlyDiagnostics', '只读采集、刷新、端点失败与数据可信度状态', `
+        ${renderReadonlyPublicNav('readonlyDiagnostics')}
         ${renderReadonlyStatusBus(snapshot)}
         ${renderFreshnessStrip(snapshot)}
         ${renderReadonlyPromise(snapshot)}
@@ -3198,6 +3383,11 @@
       if (value === 'dns') return 'dns4';
       return pageMeta[value] ? value : 'overview';
     };
+    const isNarrowViewport = () => {
+      if (typeof window === 'undefined') return false;
+      return Boolean(window.matchMedia?.('(max-width: 760px)').matches || window.innerWidth <= 760);
+    };
+    const shouldUseHomeSidebarHidden = (section = currentSection) => normalizeSection(section) === 'overview' && !isNarrowViewport();
     const quickSearchItems = [
       { section: 'overview', title: '系统首页', group: '首页', icon: 'ik-home', desc: 'WAN、终端、连接、资源与排行总览', keywords: '首页 总览 系统 WAN 宽带 资源' },
       { section: 'interfaces', title: '接口总览', group: '监控', icon: 'ik-line', desc: '接口、WAN、IP、实时速率与累计流量', keywords: '接口 pppoe macvlan 速率 流量 WAN LAN' },
@@ -4383,7 +4573,7 @@
         frameEl.classList.toggle('overview-title-only', hidden);
       }
       if (appShellEl) {
-        appShellEl.classList.toggle('home-sidebar-hidden', hidden);
+        appShellEl.classList.toggle('home-sidebar-hidden', shouldUseHomeSidebarHidden());
       }
     }
 
@@ -5120,6 +5310,51 @@
       </div>`;
     }
 
+    function wanAccessBuckets(wanRows = []) {
+      const labels = ['PPPoE', 'DHCP', 'VLAN', 'Static', 'Unknown'];
+      const buckets = Object.fromEntries(labels.map((label) => [label, { total: 0, online: 0 }]));
+      (wanRows || []).forEach((row) => {
+        const key = labels.includes(row?.access) ? row.access : 'Unknown';
+        buckets[key].total += 1;
+        if (row?.running) buckets[key].online += 1;
+      });
+      return buckets;
+    }
+
+    function wanAccessSummaryText(wanRows = []) {
+      const buckets = wanAccessBuckets(wanRows);
+      return ['PPPoE', 'DHCP', 'VLAN', 'Static', 'Unknown']
+        .filter((key) => buckets[key].total)
+        .map((key) => `${key} ${fmtNumber(buckets[key].online)}/${fmtNumber(buckets[key].total)}`)
+        .join(' · ') || '未采集';
+    }
+
+    function defaultRouteHealth(snapshot = {}, wanRows = []) {
+      const defaults = snapshot.routes?.defaultRoutes || [];
+      const rowRouteCount = (wanRows || []).reduce((sum, row) => sum + (row.routes || []).filter((route) => route.active).length, 0);
+      const activeDefaults = defaults.filter((row) => row.active && !row.disabled).length || rowRouteCount;
+      if (!defaults.length && !rowRouteCount) return { label: '未采集', level: 'warn', text: '默认路由未进入快照' };
+      if (activeDefaults > 0) return { label: '正常', level: 'ok', text: `${fmtNumber(activeDefaults)} 条活动默认路由` };
+      return { label: '异常', level: 'danger', text: '未发现活动默认路由' };
+    }
+
+    function operatorKpis(items) {
+      return `<div class="ik-home-operator-kpis">${items.map(([label, value]) => `
+        <div><span>${escapeHtml(label)}</span><b>${value}</b></div>`).join('')}</div>`;
+    }
+
+    function operatorCard(title, main, level, sub, kpis) {
+      return `<div class="ik-home-operator-card">
+        <div class="ik-home-operator-head">
+          <div class="ik-home-operator-title">${escapeHtml(title)}</div>
+          ${tag(level === 'danger' ? '异常' : level === 'warn' ? '关注' : '正常', level)}
+        </div>
+        <div class="ik-home-operator-main">${main}</div>
+        <div class="ik-home-operator-sub">${sub}</div>
+        ${operatorKpis(kpis)}
+      </div>`;
+    }
+
     renderOverview = function renderOverviewIkuai(snapshot) {
       const o = snapshot.overview || {};
       const history = o.history || {};
@@ -5184,6 +5419,70 @@
           ? tag(o.ntpStatus, 'warn')
           : '未采集';
       const accessSummary = [...new Set(pppoe.map((row) => row.access || row.kind).filter(Boolean))].join(' / ') || '未采集';
+      const accessBuckets = wanAccessBuckets(pppoe);
+      const routeHealth = defaultRouteHealth(snapshot, pppoe);
+      const panelState = panelHealthState(snapshot);
+      const routerState = routerosConnectionState(snapshot);
+      const risk = highestRiskMetric(snapshot);
+      const failures = failedEndpointSummary(snapshot);
+      const resourceLevel = Number(o.cpuLoad || 0) >= 85 || Number(o.memoryUsage || 0) >= 85 || Number(o.diskUsage || 0) >= 90
+        ? 'danger'
+        : Number(o.cpuLoad || 0) >= 70 || Number(o.memoryUsage || 0) >= 70 || Number(o.diskUsage || 0) >= 80
+          ? 'warn'
+          : 'ok';
+      const operatorCards = [
+        operatorCard(
+          '设备',
+          escapeHtml(o.identity || snapshot.meta?.routerHost || snapshot.meta?.target || '未采集'),
+          routerState.level,
+          `${escapeHtml(o.version || 'RouterOS 未采集')} · ${escapeHtml(o.boardName || '-')}`,
+          [
+            ['RouterOS', tag(routerState.label, routerState.level)],
+            ['面板', tag(panelState.label, panelState.level)],
+            ['数据年龄', formatSnapshotAge(snapshot)],
+            ['在线终端', fmtNumber(onlineTerminals)]
+          ]
+        ),
+        operatorCard(
+          'WAN',
+          `${fmtNumber(activePppoe)} / ${fmtNumber(pppoe.length)}`,
+          activePppoe ? routeHealth.level : 'danger',
+          `${escapeHtml(wanAccessSummaryText(pppoe))} · ${escapeHtml(routeHealth.text)}`,
+          [
+            ['PPPoE', `${fmtNumber(accessBuckets.PPPoE.online)}/${fmtNumber(accessBuckets.PPPoE.total)}`],
+            ['DHCP', `${fmtNumber(accessBuckets.DHCP.online)}/${fmtNumber(accessBuckets.DHCP.total)}`],
+            ['VLAN', `${fmtNumber(accessBuckets.VLAN.online)}/${fmtNumber(accessBuckets.VLAN.total)}`],
+            ['Static', `${fmtNumber(accessBuckets.Static.online)}/${fmtNumber(accessBuckets.Static.total)}`],
+            ['默认路由', tag(routeHealth.label, routeHealth.level)]
+          ]
+        ),
+        operatorCard(
+          '资源',
+          `${fmtPercent(o.cpuLoad)} / ${fmtPercent(o.memoryUsage)}`,
+          resourceLevel,
+          `磁盘 ${fmtPercent(o.diskUsage)} · ${fmtNumber(sampleCount)} 点`,
+          [
+            ['CPU', fmtPercent(o.cpuLoad)],
+            ['内存', fmtPercent(o.memoryUsage)],
+            ['磁盘', fmtPercent(o.diskUsage)],
+            ['连接', fmtCompact(connectionTotal)]
+          ]
+        ),
+        operatorCard(
+          '风险',
+          escapeHtml(risk.label || '未发现异常'),
+          risk.level || 'ok',
+          failures.count ? `采集失败端点 ${fmtNumber(failures.count)}` : '当前无失败端点',
+          [
+            ['最高异常', tag(risk.label || '正常', risk.level || 'ok')],
+            ['活动会话', fmtNumber(activeSessions)],
+            ['上行', fmtRate(wanRates.up)],
+            ['下行', fmtRate(wanRates.down)]
+          ]
+        )
+      ].join('');
+      return section('只读状态首页', 'overview', '', `
+        <div class="ik-home-operator-grid">${operatorCards}</div>`);
       const statusTiles = [
         { label: '设备', value: escapeHtml(o.identity || snapshot.meta?.target || '未采集'), meta: `${escapeHtml(o.version || 'RouterOS 未采集')} · ${escapeHtml(o.boardName || snapshot.meta?.routerHost || '-')}` },
         { label: 'WAN', value: `${fmtNumber(activePppoe)} / ${fmtNumber(pppoe.length)}`, meta: escapeHtml(accessSummary) },
@@ -6755,7 +7054,7 @@
       currentSection = normalizeSection(section);
       syncMobileSectionSelect();
       if (appShellEl) {
-        appShellEl.classList.toggle('home-sidebar-hidden', currentSection === 'overview');
+        appShellEl.classList.toggle('home-sidebar-hidden', shouldUseHomeSidebarHidden());
       }
       currentNavGroup = resolveGroup(currentSection, currentNavGroup);
       renderNavigation();
@@ -7241,7 +7540,7 @@
     function setActiveSection(section, updateHash = true) {
       currentSection = normalizeSection(section);
       if (appShellEl) {
-        appShellEl.classList.toggle('home-sidebar-hidden', currentSection === 'overview');
+        appShellEl.classList.toggle('home-sidebar-hidden', shouldUseHomeSidebarHidden());
       }
       currentNavGroup = resolveGroup(currentSection, currentNavGroup);
       renderNavigation();
@@ -7372,7 +7671,12 @@
       }
       updateRefreshMeta();
     });
-    window.addEventListener('resize', scheduleSectionTopbarState);
+    window.addEventListener('resize', () => {
+      if (appShellEl) {
+        appShellEl.classList.toggle('home-sidebar-hidden', shouldUseHomeSidebarHidden());
+      }
+      scheduleSectionTopbarState();
+    });
     window.addEventListener('scroll', scheduleSectionTopbarState, { passive: true });
     manualRefreshBtn.addEventListener('click', () => loadSnapshot('manual'));
     window.addEventListener('hashchange', () => {

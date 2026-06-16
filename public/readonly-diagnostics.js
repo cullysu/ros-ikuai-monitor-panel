@@ -135,6 +135,25 @@
       font-size: 10px;
       line-height: 1.25;
     }
+    #readonlyDiagnostics .readonly-advanced-nav {
+      min-width: 0;
+      border: 1px dashed #d6e4f5;
+      border-radius: 12px;
+      background: #fbfdff;
+      padding: 8px;
+    }
+    #readonlyDiagnostics .readonly-advanced-nav summary {
+      cursor: pointer;
+      color: #6d7f95;
+      font-size: 12px;
+      font-weight: 800;
+      list-style-position: inside;
+    }
+    #readonlyDiagnostics .readonly-advanced-nav-links {
+      display: grid;
+      gap: 6px;
+      margin-top: 8px;
+    }
     #readonlyDiagnostics .readonly-feature-sticky {
       margin-bottom: 10px;
       padding: 0 0 2px;
@@ -3057,19 +3076,19 @@
     const terminals = list(snapshot.terminals);
     const routes = snapshot.routes || {};
     const rows = [
-      { page: "采集健康", owner: "采集链路", signal: `${health.filter((row) => row.level !== "ok").length} 项关注`, link: "collectionHealthDiagnostics", action: "先看 SSH / REST / 静态表是否新鲜" },
-      { page: "DNS / 代理", owner: "分流与出口", signal: `${siteRows.filter((row) => row.level !== "ok").length} 个站点异常`, link: "dnsProxyDiagnostics", action: "查 DNS、Fake-IP、TCP、HTTP、出口" },
-      { page: "线路质量", owner: "WAN / PCC", signal: `${pppoe.filter((row) => !row.running).length} 条离线 / ${number(routes.tableCount)} 张表`, link: "wanQualityDiagnostics", action: "查线路占比、路由库存、Mangle 命中" },
-      { page: "终端风险", owner: "终端身份", signal: `${terminals.filter((row) => terminalRiskScore(row) >= 45).length} 台高风险`, link: "terminalRiskDiagnostics", action: "查终端、DHCP、IPv6 暴露" },
-      { page: "系统审计", owner: "基线与事件", signal: `${list(snapshot.logs?.all).length} 条日志 / ${list(diag?.panelFiles).length} 个文件`, link: "systemAuditDiagnostics", action: "查漂移、容量、日志和面板文件" },
+      { page: "采集健康", owner: "采集链路", signal: `${health.filter((row) => row.level !== "ok").length} 项关注`, link: "collectionHealthDiagnostics", focus: "SSH / REST / 静态表新鲜度" },
+      { page: "DNS / 代理", owner: "分流与出口", signal: `${siteRows.filter((row) => row.level !== "ok").length} 个站点异常`, link: "dnsProxyDiagnostics", focus: "DNS、Fake-IP、TCP、HTTP、出口" },
+      { page: "线路质量", owner: "WAN / PCC", signal: `${pppoe.filter((row) => !row.running).length} 条离线 / ${number(routes.tableCount)} 张表`, link: "wanQualityDiagnostics", focus: "线路占比、路由库存、Mangle 命中" },
+      { page: "终端风险", owner: "终端身份", signal: `${terminals.filter((row) => terminalRiskScore(row) >= 45).length} 台高风险`, link: "terminalRiskDiagnostics", focus: "终端、DHCP、IPv6 暴露" },
+      { page: "系统审计", owner: "基线与事件", signal: `${list(snapshot.logs?.all).length} 条日志 / ${list(diag?.panelFiles).length} 个文件`, link: "systemAuditDiagnostics", focus: "漂移、容量、日志和面板文件" },
     ].map((row) => `
       <tr>
         <td><a href="#${row.link}" data-section="${row.link}" data-nav-group="${html(getReadonlyNavGroup(row.link))}">${html(row.page)}</a></td>
         <td>${html(row.owner)}</td>
         <td>${html(row.signal)}</td>
-        <td>${html(row.action)}</td>
+        <td>${html(row.focus)}</td>
       </tr>`);
-    return card("诊断功能页目录", "总览页只做路标，不复制各功能页详情表", table(["页面", "唯一职责", "当前信号", "下一步查看"], rows), "readonly-dense-card");
+    return card("状态功能页目录", "总览页只做路标，不复制各功能页详情表", table(["页面", "唯一职责", "当前信号", "查看范围"], rows), "readonly-dense-card");
   }
 
   function renderRiskPriorityQueue(snapshot, diag) {
@@ -3078,9 +3097,9 @@
         <td>${number(index + 1)}</td>
         <td>${pill(item.level === "danger" ? "高" : item.level === "warn" ? "中" : "低", item.level)}</td>
         <td>${html(item.text)}</td>
-        <td>${html(item.level === "danger" ? "优先进入对应功能页排查" : "观察趋势和刷新状态")}</td>
+        <td>${html(item.level === "danger" ? "对应功能页有高等级状态" : "观察趋势和刷新状态")}</td>
       </tr>`);
-    return card("风险优先队列", "只列问题线索，不重复展示详情数据", table(["序号", "级别", "线索", "处理建议"], rows, "当前没有集中风险"), "readonly-dense-card");
+    return card("状态关注清单", "只列状态事实，不重复展示详情数据", table(["序号", "级别", "状态事实", "状态说明"], rows, "当前没有集中关注项"), "readonly-dense-card");
   }
 
   function renderSignalCoverageMatrix(snapshot, diag) {
@@ -3097,7 +3116,7 @@
         <td>${html(row.page)}</td>
         <td>${number(row.count)}</td>
       </tr>`);
-    return card("信号覆盖矩阵", "说明每类信号的唯一归属，避免跨页面重复展示", table(["信号", "来源", "归属页面", "样本数"], rows), "readonly-dense-card");
+    return card("证据来源表", "说明每类状态数据的页面归属，避免跨页面重复展示", table(["状态数据", "来源", "归属页面", "样本数"], rows), "readonly-dense-card");
   }
 
   function renderDedupPolicyCard() {
@@ -3108,7 +3127,7 @@
       { rule: "未采集不造假", desc: "没有真实字段的位置保留未采集或只读说明，不补虚假指标" },
       { rule: "只读边界固定", desc: "所有模块只展示状态，不下发配置、不重启服务、不改路由规则" },
     ].map((row) => `<tr><td>${html(row.rule)}</td><td>${html(row.desc)}</td></tr>`);
-    return card("去重归属规则", "用于防止后续又把同一类信息堆回多个页面", table(["规则", "说明"], rows), "readonly-dense-card");
+    return card("信息归属规则", "用于防止后续又把同一类信息堆回多个页面", table(["规则", "说明"], rows), "readonly-dense-card");
   }
 
   function renderCollectionThresholdMatrix() {
@@ -3274,7 +3293,25 @@
 
   const READONLY_SECTION_SET = new Set(READONLY_FEATURE_PAGES.map((page) => page.section));
   const isReadonlySection = (section) => READONLY_SECTION_SET.has(section);
-  const getReadonlyPage = (section) => READONLY_FEATURE_PAGES.find((page) => page.section === section) || READONLY_FEATURE_PAGES[0];
+  const READONLY_PUBLIC_NAV_SECTIONS = new Set([
+    "collectionHealthDiagnostics",
+    "dnsProxyDiagnostics",
+    "wanQualityDiagnostics",
+    "terminalRiskDiagnostics",
+    "systemAuditDiagnostics",
+  ]);
+  const readonlyLogsPage = READONLY_FEATURE_PAGES.find((page) => page.section === "systemAuditDiagnostics");
+  if (readonlyLogsPage) {
+    readonlyLogsPage.title = "日志 / 审计";
+    readonlyLogsPage.label = "日志";
+    readonlyLogsPage.desc = "事件 / 错误 / 容量";
+    readonlyLogsPage.tip = "近期事件、接口错误、缓存容量和资源变化概要";
+  }
+  const getReadonlyPage = (section) => (
+    READONLY_FEATURE_PAGES.find((page) => page.section === section) ||
+    READONLY_FEATURE_PAGES.find((page) => page.section === "collectionHealthDiagnostics") ||
+    READONLY_FEATURE_PAGES[0]
+  );
   const READONLY_NAV_PLACEMENT = {
     readonlyDiagnostics: { group: "monitor", label: "只读总览", icon: "ik-load", after: "interfaces", quickGroup: "监控" },
     terminalRiskDiagnostics: { group: "monitor", label: "终端风险", icon: "ik-terminal", after: "terminals", quickGroup: "监控" },
@@ -3290,12 +3327,23 @@
   }
 
   function renderReadonlyFeatureNav(activeSection) {
-    return `<div class="readonly-feature-nav">
-      ${READONLY_FEATURE_PAGES.map((page) => `
+    const defaultPages = READONLY_DIAGNOSTICS_PRIVATE_NAV
+      ? READONLY_FEATURE_PAGES
+      : READONLY_FEATURE_PAGES.filter((page) => READONLY_PUBLIC_NAV_SECTIONS.has(page.section));
+    const advancedPages = READONLY_DIAGNOSTICS_PRIVATE_NAV
+      ? []
+      : READONLY_FEATURE_PAGES.filter((page) => !READONLY_PUBLIC_NAV_SECTIONS.has(page.section));
+    const navLink = (page) => `
         <a class="readonly-feature-link ${page.section === activeSection ? "is-active" : ""}" href="#${page.section}" data-section="${page.section}" data-nav-group="${html(getReadonlyNavGroup(page.section))}">
           <strong>${html(page.label)}</strong>
           <span>${html(page.desc)}</span>
-        </a>`).join("")}
+        </a>`;
+    return `<div class="readonly-feature-nav">
+      ${defaultPages.map(navLink).join("")}
+      ${advancedPages.length ? `<details class="readonly-advanced-nav"${advancedPages.some((page) => page.section === activeSection) ? " open" : ""}>
+        <summary>内部说明</summary>
+        <div class="readonly-advanced-nav-links">${advancedPages.map(navLink).join("")}</div>
+      </details>` : ""}
       </div>`;
   }
 
@@ -3522,7 +3570,7 @@
             ${renderReadonlyBand(
               "基线漂移",
               "配置漂移与审计入口",
-              "先看配置、规则和系统基线是否漂移，再进入资源容量与事件证据，保持审计页的诊断主线清晰。",
+              "先看配置、规则和系统基线是否漂移，再进入资源容量与事件证据，保持审计页的证据层级清晰。",
               `${renderConfigDrift(snapshot, diag)}`,
               interfaceErrorCount ? "warn" : "ok",
               [
