@@ -1443,6 +1443,16 @@
       min-height: 50px;
       padding: 8px;
     }
+    .ik-home-session-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 6px;
+      min-width: 0;
+    }
+    .ik-home-session-grid .ik-summary-box {
+      min-height: 50px;
+      padding: 8px;
+    }
     .ik-home-evidence-split {
       display: grid;
       grid-template-columns: minmax(0, 1fr) minmax(260px, .8fr);
@@ -3015,6 +3025,9 @@
       }
       .ik-home-evidence-row {
         grid-template-columns: minmax(0, 1fr) 62px minmax(0, .8fr) 64px;
+      }
+      .ik-home-session-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
       }
       .ik-wan-rate-split.is-main {
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -5781,6 +5794,39 @@
         <div class="freshness-item" data-overview-field><span>${escapeHtml(label)}</span><b>${escapeHtml(value)}</b></div>`).join('')}</div>`;
     }
 
+    function renderOverviewSessionSnapshot(ctx) {
+      const terminals = ctx.terminals || [];
+      const connections = ctx.connections || {};
+      const trafficTerminals = terminals.filter((row) => totalTrafficRate(row) > 0);
+      const topTerminal = trafficTerminals
+        .slice()
+        .sort((a, b) => totalTrafficRate(b) - totalTrafficRate(a))[0] || null;
+      const terminalOnline = Number(ctx.onlineTerminals || 0) || terminals.filter((row) => !['failed', 'incomplete'].includes(row.status)).length;
+      const terminalStandby = terminals.filter((row) => ['stale', 'waiting'].includes(row.status)).length;
+      const terminalOffline = terminals.filter((row) => ['failed', 'incomplete'].includes(row.status)).length;
+      const activeSessions = Number(ctx.activeSessions || 0);
+      const topName = topTerminal ? (topTerminal.displayName || topTerminal.hostname || topTerminal.ip || '-') : '-';
+      const prefix = samplePrefix(ctx.freshness);
+      const boxes = [
+        ['在线终端', fmtNumber(terminalOnline)],
+        ['有流量终端', fmtNumber(trafficTerminals.length)],
+        ['待机终端', fmtNumber(terminalStandby)],
+        ['离线终端', fmtNumber(terminalOffline)],
+        ['活动会话', fmtNumber(activeSessions)],
+        ['连接总数', fmtCompact(ctx.connectionTotal)],
+        ['最忙终端', escapeHtml(topName)],
+        ['终端速率', topTerminal ? fmtRate(totalTrafficRate(topTerminal)) : '-']
+      ];
+      return `<div class="card ik-home-density-card" data-overview-density-module="session-snapshot">
+        <div class="card-head"><div class="card-title">会话 / 终端概览</div><div class="subtle">${escapeHtml(prefix)} · TCP ${fmtNumber(connections.tcp || 0)} / UDP ${fmtNumber(connections.udp || 0)}</div></div>
+        <div class="card-body">
+          <div class="ik-home-session-grid">
+            ${boxes.map(([label, value]) => `<div class="ik-summary-box" data-overview-field><div class="subtle">${escapeHtml(label)}</div><b>${value}</b></div>`).join('')}
+          </div>
+        </div>
+      </div>`;
+    }
+
     function renderOverviewStatusBar(ctx) {
       const history = isHistorySnapshot(ctx.freshness);
       const labels = historyAwareCapabilityLabels(ctx.capabilities, ctx.freshness);
@@ -6011,6 +6057,7 @@
               </div>
             </div>
           </div>
+          ${renderOverviewSessionSnapshot(ctx)}
         </div>
         <div class="ik-home-side-stack">
           <div class="card ik-home-density-card ik-home-freshness-card" data-overview-density-module="freshness">
@@ -6131,7 +6178,11 @@
         pollText,
         resourceMeta,
         connectionTotal,
-        activeSessions
+        activeSessions,
+        onlineTerminals,
+        terminalGroups,
+        terminals,
+        connections
       };
       const trustModeClass = isHistorySnapshot(freshness) ? ' is-history-snapshot' : '';
       return section('只读状态首页', 'overview', '', `
