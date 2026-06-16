@@ -1363,6 +1363,12 @@
     .ik-home-density-card {
       min-width: 0;
     }
+    .ik-home-side-stack {
+      height: 100%;
+    }
+    .ik-home-side-stack [data-overview-density-module="rank"] {
+      flex: 1 1 auto;
+    }
     .section#overview > .section-head {
       display: none;
     }
@@ -1452,6 +1458,16 @@
     .ik-home-session-grid .ik-summary-box {
       min-height: 50px;
       padding: 8px;
+    }
+    .ik-home-signal-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 6px;
+      min-width: 0;
+    }
+    .ik-home-signal-card .ik-summary-box {
+      min-height: 46px;
+      padding: 7px 8px;
     }
     .ik-home-evidence-split {
       display: grid;
@@ -3027,6 +3043,9 @@
         grid-template-columns: minmax(0, 1fr) 62px minmax(0, .8fr) 64px;
       }
       .ik-home-session-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .ik-home-signal-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
       .ik-wan-rate-split.is-main {
@@ -5827,6 +5846,36 @@
       </div>`;
     }
 
+    function renderOverviewSignalCoverage(ctx) {
+      const labels = historyAwareCapabilityLabels(ctx.capabilities, ctx.freshness);
+      const interfaceCount = Array.isArray(ctx.snapshot.interfaces) ? ctx.snapshot.interfaces.length : 0;
+      const terminalCount = Array.isArray(ctx.terminals) ? ctx.terminals.length : 0;
+      const wanTypeCount = ['PPPoE', 'DHCP', 'VLAN', 'Static', 'Unknown']
+        .filter((key) => ctx.accessBuckets[key]?.total)
+        .length;
+      const writeClosed = ctx.capabilities.routerosWrite || ctx.capabilities.localAliasWrite || ctx.capabilities.ipAliasWrite
+        ? '开启'
+        : '关闭';
+      const boxes = [
+        ['REST', labels.restLabel],
+        ['SSH', labels.sshLabel],
+        ['默认路由', ctx.routeHealth.label],
+        ['失败端点', ctx.failures.count ? fmtNumber(ctx.failures.count) : '0'],
+        ['WAN 类型', wanTypeCount ? fmtNumber(wanTypeCount) : '0'],
+        ['接口数', fmtNumber(interfaceCount)],
+        ['终端数', fmtNumber(terminalCount)],
+        ['写入能力', writeClosed]
+      ];
+      return `<div class="card ik-home-density-card ik-home-signal-card" data-overview-density-module="signal-coverage">
+        <div class="card-head"><div class="card-title">采集 / 信号覆盖</div><div class="subtle">${escapeHtml(samplePrefix(ctx.freshness))} · ${fmtNumber(ctx.sampleCount)} 点 · ${escapeHtml(ctx.pollText)}</div></div>
+        <div class="card-body">
+          <div class="ik-home-signal-grid">
+            ${boxes.map(([label, value]) => `<div class="ik-summary-box" data-overview-field><div class="subtle">${escapeHtml(label)}</div><b>${escapeHtml(String(value))}</b></div>`).join('')}
+          </div>
+        </div>
+      </div>`;
+    }
+
     function renderOverviewStatusBar(ctx) {
       const history = isHistorySnapshot(ctx.freshness);
       const labels = historyAwareCapabilityLabels(ctx.capabilities, ctx.freshness);
@@ -6066,6 +6115,7 @@
               ${renderOverviewFreshnessCompact(ctx)}
             </div>
           </div>
+          ${renderOverviewSignalCoverage(ctx)}
           <div class="card ik-home-density-card" data-overview-density-module="rank">
             <div class="card-head"><div class="card-title">接口 / 终端排行</div><div class="subtle">${escapeHtml(rankSubtitle)}</div></div>
             <div class="card-body">
