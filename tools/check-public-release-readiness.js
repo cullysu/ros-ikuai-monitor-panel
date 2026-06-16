@@ -153,7 +153,8 @@ function main() {
   assertContains('public/index.html', '当前为只读模式：仅通过 RouterOS API/SSH 读取状态，不写入配置。');
   assertContains('public/index.html', 'RouterOS 写入');
   assertContains('public/index.html', '本地别名写入');
-  assertContains('public/index.html', '只读健康检查');
+  assertContains('public/index.html', 'REST 状态');
+  assertContains('public/index.html', 'SSH 状态');
   assertContains('public/index.html', '外部访问');
   assertContains('app.py', 'statusFindings');
   assertContains('app.py', 'healthFindings');

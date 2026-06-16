@@ -1337,6 +1337,24 @@ def require_paramiko():
     return paramiko
 
 
+def ssh_capability_status():
+    available = paramiko is not None
+    return {
+        "available": available,
+        "state": "available" if available else "dependency_missing",
+        "label": "SSH 可用" if available else "SSH 依赖缺失",
+        "transport": "ssh" if available else "rest-degraded",
+        "restTrusted": True,
+        "degradedModules": [] if available else [
+            "连接明细",
+            "会话采样",
+            "连接协议统计 SSH fallback",
+            "DNS 静态计数 SSH fallback",
+        ],
+        "message": "" if available else "paramiko 未安装；REST 采集继续可用，依赖 SSH 的明细会降级或不可用。",
+    }
+
+
 def set_router_config(host, user, password, ssh_port=22, source="ui", last_test=None, saved_id=None):
     normalized = {
         "host": normalize_router_host(host),
@@ -1768,6 +1786,7 @@ def list_scale_meta(total_count, shown_count=None, limit=None, sampled=False, sa
 
 def build_panel_capabilities(wan_lines, pppoe_count):
     wan_count = len(wan_lines or [])
+    ssh_status = ssh_capability_status()
     return {
         "routerosWrite": False,
         "localAliasWrite": IP_ALIAS_WRITE_ENABLED,
@@ -1785,6 +1804,14 @@ def build_panel_capabilities(wan_lines, pppoe_count):
         "wanFallback": wan_count > 0 and to_int(pppoe_count) == 0,
         "singleWan": wan_count == 1,
         "multiWan": wan_count > 1,
+        "restRead": True,
+        "sshRead": ssh_status["available"],
+        "sshState": ssh_status["state"],
+        "sshLabel": ssh_status["label"],
+        "sshTransport": ssh_status["transport"],
+        "restTrusted": ssh_status["restTrusted"],
+        "degradedModules": ssh_status["degradedModules"],
+        "sshMessage": ssh_status["message"],
     }
 
 

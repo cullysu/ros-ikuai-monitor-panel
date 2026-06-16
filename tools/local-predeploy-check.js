@@ -205,9 +205,14 @@ async function pathExists(filePath) {
   }
 }
 
+function jsonStringifyAscii(payload, space = 2) {
+  return JSON.stringify(payload, null, space)
+    .replace(/[^\x20-\x7E\n\r\t]/g, (char) => `\\u${char.charCodeAt(0).toString(16).padStart(4, '0')}`);
+}
+
 async function writeJson(filePath, payload) {
   await fs.mkdir(path.dirname(filePath), { recursive: true });
-  await fs.writeFile(filePath, `${JSON.stringify(payload, null, 2)}\n`, 'utf8');
+  await fs.writeFile(filePath, `${jsonStringifyAscii(payload, 2)}\n`, 'utf8');
 }
 
 async function fetchText(url, options = {}) {
@@ -321,7 +326,7 @@ async function startSafeAppServer(args, report) {
   child.stderr.on('data', (chunk) => { stderr += chunk.toString(); });
   child.on('exit', (code) => {
     if (code !== null && code !== 0) {
-      report.serverExit = { code, stderr: tail(stderr), stdout: tail(stdout) };
+      report.serverExit = { code, stderrTail: tail(stderr, 400), stdoutTail: tail(stdout, 400) };
     }
   });
 
@@ -329,10 +334,12 @@ async function startSafeAppServer(args, report) {
     await waitForJson(`${baseUrl}api/health`, 16000);
   } catch (error) {
     child.kill('SIGKILL');
+    const stdoutArtifact = await writeLogArtifact(args.out, 'server-start-failure.stdout.log', stdout);
+    const stderrArtifact = await writeLogArtifact(args.out, 'server-start-failure.stderr.log', stderr);
     await writeJson(path.join(args.out, 'server-start-failure.json'), {
       error: error.message,
-      stdout: tail(stdout),
-      stderr: tail(stderr),
+      stdout: summarizeTextArtifact(stdout, stdoutArtifact),
+      stderr: summarizeTextArtifact(stderr, stderrArtifact),
     });
     throw error;
   }
@@ -341,8 +348,12 @@ async function startSafeAppServer(args, report) {
     baseUrl,
     child,
     stop: async () => {
-      await writeTextIfAny(path.join(args.out, 'server.stdout.log'), stdout);
-      await writeTextIfAny(path.join(args.out, 'server.stderr.log'), stderr);
+      const stdoutArtifact = await writeLogArtifact(args.out, 'server.stdout.log', stdout);
+      const stderrArtifact = await writeLogArtifact(args.out, 'server.stderr.log', stderr);
+      report.serverLogs = {
+        stdout: summarizeTextArtifact(stdout, stdoutArtifact),
+        stderr: summarizeTextArtifact(stderr, stderrArtifact),
+      };
       if (args.keepServer && child && !child.killed) {
         child.stdout.destroy();
         child.stderr.destroy();
@@ -359,6 +370,46 @@ async function writeTextIfAny(filePath, text) {
   if (!text) return;
   await fs.mkdir(path.dirname(filePath), { recursive: true });
   await fs.writeFile(filePath, text, 'utf8');
+}
+
+async function writeLogArtifact(outDir, name, text) {
+  if (!text) return null;
+  const filePath = path.join(outDir, name);
+  await writeTextIfAny(filePath, text);
+  return {
+    path: filePath,
+    bytes: Buffer.byteLength(text, 'utf8'),
+    tail: tail(text, 400),
+  };
+}
+
+function summarizeTextArtifact(text, artifact) {
+  if (!text) return '';
+  if (artifact) return { path: artifact.path, bytes: artifact.bytes, tail: artifact.tail };
+  return tail(text, 400);
+}
+
+async function prepareReportForJson(value, outDir, breadcrumb = 'report') {
+  if (Array.isArray(value)) {
+    const rows = [];
+    for (let i = 0; i < value.length; i += 1) {
+      rows.push(await prepareReportForJson(value[i], outDir, `${breadcrumb}-${i}`));
+    }
+    return rows;
+  }
+  if (!value || typeof value !== 'object') return value;
+  const result = {};
+  for (const [key, item] of Object.entries(value)) {
+    const safeKey = String(key).replace(/[^a-zA-Z0-9_-]+/g, '-').slice(0, 48) || 'field';
+    const nextCrumb = `${breadcrumb}-${safeKey}`;
+    if (['body', 'stdout', 'stderr'].includes(key) && typeof item === 'string') {
+      const artifact = await writeLogArtifact(outDir, `${nextCrumb}.log`, item);
+      result[key] = summarizeTextArtifact(item, artifact);
+    } else {
+      result[key] = await prepareReportForJson(item, outDir, nextCrumb);
+    }
+  }
+  return result;
 }
 
 function tail(text, max = 6000) {
@@ -686,12 +737,14 @@ async function launchBrowser(args, report) {
     await waitForJson(`http://127.0.0.1:${port}/json/version`, 45000);
   } catch (error) {
     child.kill('SIGKILL');
+    const stdoutArtifact = await writeLogArtifact(args.out, 'browser-launch.stdout.log', stdout);
+    const stderrArtifact = await writeLogArtifact(args.out, 'browser-launch.stderr.log', stderr);
     report.browser = {
       ...report.browser,
       launchError: error.message,
       exit,
-      stdout: tail(stdout, 2000),
-      stderr: tail(stderr, 4000),
+      stdout: summarizeTextArtifact(stdout, stdoutArtifact),
+      stderr: summarizeTextArtifact(stderr, stderrArtifact),
     };
     throw new Error(`Browser CDP endpoint did not become ready: ${error.message}`);
   }
@@ -908,11 +961,14 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const monitorSplitColumns = monitorSplit ? getComputedStyle(monitorSplit).gridTemplateColumns.split(' ').filter(Boolean).length : 0;
     const monitorSplitText = normalize(monitorSplit?.textContent || '');
     const overviewMonitorSplitOk = sectionName !== 'overview' || !isDesktopOverview || Boolean(
-      monitorSplit &&
-      monitorPanels.length === 2 &&
-      monitorSplitColumns >= 2 &&
-      monitorSplitText.includes('上行速率') &&
-      monitorSplitText.includes('下行速率')
+      sectionRoot?.querySelector('[data-overview-trend-compact]') ||
+      (
+        monitorSplit &&
+        monitorPanels.length === 2 &&
+        monitorSplitColumns >= 2 &&
+        monitorSplitText.includes('上行速率') &&
+        monitorSplitText.includes('下行速率')
+      )
     );
     const wanCard = sectionRoot?.querySelector('.ikuai-wan-card, .ik-wan-info-card');
     const wanSelect = wanCard?.querySelector('.ikuai-wan-select, .ik-wan-line-select, [data-overview-wan-line]');
@@ -1045,19 +1101,50 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     );
     const mobileAlert = sectionRoot?.querySelector('[data-overview-mobile-alert]');
     const mobileAlertStyle = mobileAlert ? getComputedStyle(mobileAlert) : null;
+    const mobileAlertText = normalize(mobileAlert?.textContent || '');
     const overviewMobileAlertOk = sectionName !== 'overview' || window.innerWidth >= 768 || Boolean(
       mobileAlert &&
       mobileAlertStyle &&
       mobileAlertStyle.display !== 'none' &&
-      normalize(mobileAlert.textContent).includes('WAN 离线') &&
-      normalize(mobileAlert.textContent).includes('数据年龄')
+      mobileAlertText.includes('异常') &&
+      !mobileAlertText.includes('WAN 离线 0') &&
+      (!mobileAlertText.includes('历史快照') || mobileAlertText.includes('数据陈旧'))
     );
     const overviewTerminologyOk = sectionName !== 'overview' || !/在线宽带|宽带状态|宽带聚合/.test(text);
+    const trustNotice = sectionRoot?.querySelector('[data-overview-trust-notice]');
+    const trustMode = sectionRoot?.querySelector('[data-overview-trust-mode]');
     const overviewTrustCopyOk = sectionName !== 'overview' || Boolean(
       text.includes('采集时间') &&
       text.includes('数据年龄') &&
-      text.includes('数据陈旧') &&
-      text.includes('上次采样正常')
+      text.includes('上次采样正常') &&
+      (!text.includes('历史快照') || (
+        text.includes('历史快照') &&
+        text.includes('仅代表') &&
+        trustNotice &&
+        trustMode?.getAttribute('data-overview-trust-mode') === 'history'
+      ))
+    );
+    const trendCompact = sectionRoot?.querySelector('[data-overview-trend-compact]');
+    const overviewTrendCompactOk = sectionName !== 'overview' || Boolean(
+      !text.includes('采样不足') || (
+        trendCompact &&
+        normalize(trendCompact.textContent).includes('采样不足') &&
+        normalize(trendCompact.textContent).includes('最近采样') &&
+        !trendCompact.querySelector('.ik-wan-rate-chart')
+      )
+    );
+    const rankGrid = sectionRoot?.querySelector('[data-overview-rank-grid]');
+    const rankHeaders = Array.from(rankGrid?.querySelectorAll('th') || []).map((node) => normalize(node.textContent));
+    const rankScrollerOverflow = Array.from(rankGrid?.querySelectorAll('.ops-table-wrap') || [])
+      .map((node) => Math.round(node.scrollWidth - node.clientWidth))
+      .filter((delta) => delta > 2);
+    const overviewRankCompactOk = sectionName !== 'overview' || Boolean(
+      rankGrid &&
+      rankHeaders.length === 6 &&
+      rankHeaders.filter((label) => label === '速率').length === 2 &&
+      rankHeaders.filter((label) => label === '状态').length === 2 &&
+      !rankHeaders.some((label) => /实时上行|实时下行|连接|角色/.test(label)) &&
+      rankScrollerOverflow.length === 0
     );
     const overviewWanDecisionOk = sectionName !== 'overview' || Boolean(
       text.includes('WAN 线路') &&
@@ -1069,6 +1156,11 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       text.includes('线路风险') &&
       text.includes('采集风险')
     );
+    const overviewCapabilityDegradeOk = sectionName !== 'overview' || Boolean(
+      text.includes('REST 状态') &&
+      text.includes('SSH 状态') &&
+      /SSH (可用|依赖缺失|不可用)/.test(text)
+    );
     const readonlyNav = sectionRoot?.querySelector('.readonly-feature-nav');
     const readonlyDefaultLinks = Array.from(readonlyNav?.querySelectorAll(':scope > .readonly-feature-link') || []);
     const readonlyDefaultLabels = readonlyDefaultLinks.map((node) => normalize(node.textContent));
@@ -1076,12 +1168,13 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const readonlyPublicNavOk = sectionName !== 'readonlyDiagnostics' || Boolean(
       readonlyNav &&
       readonlyDefaultLinks.length === 5 &&
-      readonlyDefaultLabels.some((label) => label.includes('采集')) &&
-      readonlyDefaultLabels.some((label) => label.includes('DNS')) &&
-      readonlyDefaultLabels.some((label) => label.includes('线路')) &&
-      readonlyDefaultLabels.some((label) => label.includes('终端')) &&
-      readonlyDefaultLabels.some((label) => label.includes('日志')) &&
-      readonlyAdvancedNav
+      readonlyDefaultLabels.some((label) => label.includes('采集状态')) &&
+      readonlyDefaultLabels.some((label) => label.includes('DNS 状态')) &&
+      readonlyDefaultLabels.some((label) => label.includes('线路状态')) &&
+      readonlyDefaultLabels.some((label) => label.includes('终端状态')) &&
+      readonlyDefaultLabels.some((label) => label.includes('日志状态')) &&
+      !readonlyAdvancedNav &&
+      !/内部目录|关注排序|证据来源|归属规则|诊断/.test(normalize(readonlyNav.textContent))
     );
     const scaleHeightOk = scenario !== 'fleet' || isCurrent35Shell || (
       sectionName === 'overview' ? scrollHeight <= 3000 :
@@ -1142,8 +1235,11 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewMobileAlertOk &&
       overviewTerminologyOk &&
       overviewTrustCopyOk &&
+      overviewTrendCompactOk &&
+      overviewRankCompactOk &&
       overviewWanDecisionOk &&
       overviewRiskSplitOk &&
+      overviewCapabilityDegradeOk &&
       overviewUsableWidthOk &&
       overviewTerminalPlacementOk &&
       overviewNoDuplicateTerminalOk &&
@@ -1204,8 +1300,13 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewMobileAlertOk,
       overviewTerminologyOk,
       overviewTrustCopyOk,
+      overviewTrendCompactOk,
+      overviewRankCompactOk,
+      overviewRankHeaders: rankHeaders,
+      overviewRankScrollerOverflow: rankScrollerOverflow,
       overviewWanDecisionOk,
       overviewRiskSplitOk,
+      overviewCapabilityDegradeOk,
       overviewUsableWidthOk,
       minOverviewUsableWidth,
       overviewTerminalPlacementOk,
@@ -2072,7 +2173,8 @@ async function main() {
     if (server) await server.stop();
     report.finishedAt = new Date().toISOString();
     report.pass = report.failures.length === 0;
-    await writeJson(path.join(args.out, 'report.json'), report);
+    const safeReport = await prepareReportForJson(report, args.out);
+    await writeJson(path.join(args.out, 'report.json'), safeReport);
   }
 
   console.log(`[INFO] report: ${path.join(args.out, 'report.json')}`);
