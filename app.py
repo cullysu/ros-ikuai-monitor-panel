@@ -19,8 +19,15 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, unquote, urlparse
 
-import paramiko
 import requests
+
+try:
+    import paramiko
+except ModuleNotFoundError as exc:
+    paramiko = None
+    PARAMIKO_IMPORT_ERROR = exc
+else:
+    PARAMIKO_IMPORT_ERROR = None
 
 
 def is_frozen_app():
@@ -1321,6 +1328,15 @@ def format_ssh_connect_error(config, exc, timeout=SSH_TIMEOUT):
     return f"RouterOS SSH connect failed for {host}:{port}: {message}"
 
 
+def require_paramiko():
+    if paramiko is None:
+        raise RuntimeError(
+            "Python dependency 'paramiko' is not installed; run `python -m pip install -r requirements.txt` "
+            "before using RouterOS SSH features."
+        ) from PARAMIKO_IMPORT_ERROR
+    return paramiko
+
+
 def set_router_config(host, user, password, ssh_port=22, source="ui", last_test=None, saved_id=None):
     normalized = {
         "host": normalize_router_host(host),
@@ -1562,9 +1578,11 @@ def test_router_credentials(host, user, password, ssh_port=22):
     }
 
     ssh_started = time.time()
-    client = paramiko.SSHClient()
-    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    client = None
     try:
+        ssh = require_paramiko()
+        client = ssh.SSHClient()
+        client.set_missing_host_key_policy(ssh.AutoAddPolicy())
         client.connect(
             config["host"],
             port=config["sshPort"],
@@ -1590,7 +1608,8 @@ def test_router_credentials(host, user, password, ssh_port=22):
     finally:
         test["ssh"]["elapsedMs"] = round((time.time() - ssh_started) * 1000)
         try:
-            client.close()
+            if client:
+                client.close()
         except Exception:
             pass
 
@@ -3178,9 +3197,11 @@ class Collector:
     def open_ssh_client(self, timeout=None):
         router = get_ready_router_config()
         timeout = max(1, to_int(timeout, SSH_TIMEOUT))
-        client = paramiko.SSHClient()
-        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        client = None
         try:
+            ssh = require_paramiko()
+            client = ssh.SSHClient()
+            client.set_missing_host_key_policy(ssh.AutoAddPolicy())
             client.connect(
                 router["host"],
                 port=router["sshPort"],
@@ -3194,7 +3215,8 @@ class Collector:
             )
         except Exception as exc:
             try:
-                client.close()
+                if client:
+                    client.close()
             except Exception:
                 pass
             raise RuntimeError(format_ssh_connect_error(router, exc, timeout=timeout)) from exc
