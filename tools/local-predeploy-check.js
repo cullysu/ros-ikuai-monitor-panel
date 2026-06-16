@@ -1102,17 +1102,20 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const mobileAlert = sectionRoot?.querySelector('[data-overview-mobile-alert]');
     const mobileAlertStyle = mobileAlert ? getComputedStyle(mobileAlert) : null;
     const mobileAlertText = normalize(mobileAlert?.textContent || '');
+    const trustNotice = sectionRoot?.querySelector('[data-overview-trust-notice]');
+    const trustMode = sectionRoot?.querySelector('[data-overview-trust-mode]');
+    const historyModeActive = trustMode?.getAttribute('data-overview-trust-mode') === 'history';
     const overviewMobileAlertOk = sectionName !== 'overview' || window.innerWidth >= 768 || Boolean(
       mobileAlert &&
       mobileAlertStyle &&
       mobileAlertStyle.display !== 'none' &&
-      mobileAlertText.includes('异常') &&
+      !/异常\s*\d/.test(mobileAlertText) &&
       !mobileAlertText.includes('WAN 离线 0') &&
-      (!mobileAlertText.includes('历史快照') || mobileAlertText.includes('数据陈旧'))
+      (!historyModeActive || mobileAlertText.includes('采集可信度')) &&
+      (!/(部分离线|全部离线|默认路由异常|离线\s*[1-9])/.test(text) || mobileAlertText.includes('线路异常'))
     );
     const overviewTerminologyOk = sectionName !== 'overview' || !/在线宽带|宽带状态|宽带聚合/.test(text);
-    const trustNotice = sectionRoot?.querySelector('[data-overview-trust-notice]');
-    const trustMode = sectionRoot?.querySelector('[data-overview-trust-mode]');
+    const historySnapshotTextCount = (text.match(/历史快照/g) || []).length;
     const overviewTrustCopyOk = sectionName !== 'overview' || Boolean(
       text.includes('采集时间') &&
       text.includes('数据年龄') &&
@@ -1121,7 +1124,8 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         text.includes('历史快照') &&
         text.includes('仅代表') &&
         trustNotice &&
-        trustMode?.getAttribute('data-overview-trust-mode') === 'history'
+        historyModeActive &&
+        historySnapshotTextCount === 1
       ))
     );
     const trendCompact = sectionRoot?.querySelector('[data-overview-trend-compact]');
@@ -1129,9 +1133,13 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       !text.includes('采样不足') || (
         trendCompact &&
         normalize(trendCompact.textContent).includes('采样不足') &&
-        normalize(trendCompact.textContent).includes('最近采样') &&
+        normalize(trendCompact.textContent).includes('默认路由') &&
+        normalize(trendCompact.textContent).includes('采集能力') &&
         !trendCompact.querySelector('.ik-wan-rate-chart')
       )
+    );
+    const overviewHistoryRealtimeCopyOk = sectionName !== 'overview' || !historyModeActive || !(
+      /实时流量排行|实时上行|实时下行|当前在线|实时采集/.test(text)
     );
     const rankGrid = sectionRoot?.querySelector('[data-overview-rank-grid]');
     const rankHeaders = Array.from(rankGrid?.querySelectorAll('th') || []).map((node) => normalize(node.textContent));
@@ -1159,7 +1167,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const overviewCapabilityDegradeOk = sectionName !== 'overview' || Boolean(
       text.includes('REST 状态') &&
       text.includes('SSH 状态') &&
-      /SSH (可用|依赖缺失|不可用)/.test(text)
+      /SSH (可用|上次可用|依赖缺失|当前缺依赖|当前不可用|不可用)/.test(text)
     );
     const readonlyNav = sectionRoot?.querySelector('.readonly-feature-nav');
     const readonlyDefaultLinks = Array.from(readonlyNav?.querySelectorAll(':scope > .readonly-feature-link') || []);
@@ -1236,6 +1244,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewTerminologyOk &&
       overviewTrustCopyOk &&
       overviewTrendCompactOk &&
+      overviewHistoryRealtimeCopyOk &&
       overviewRankCompactOk &&
       overviewWanDecisionOk &&
       overviewRiskSplitOk &&
@@ -1301,6 +1310,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewTerminologyOk,
       overviewTrustCopyOk,
       overviewTrendCompactOk,
+      overviewHistoryRealtimeCopyOk,
       overviewRankCompactOk,
       overviewRankHeaders: rankHeaders,
       overviewRankScrollerOverflow: rankScrollerOverflow,
