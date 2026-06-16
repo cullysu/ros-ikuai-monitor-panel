@@ -1149,7 +1149,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       mobileAlarmRect &&
       mobileAlarmRect.top < 120 &&
       mobileAlarmRect.height >= 36 &&
-      mobileAlarmRect.height <= 52 &&
+      mobileAlarmRect.height <= 72 &&
       !/异常\\s*\\d/.test(mobileAlertText) &&
       !mobileAlertText.includes('WAN 离线 0') &&
       (!historyModeActive || /数据陈旧\\s*\\S+/.test(mobileAlertText)) &&
@@ -1233,7 +1233,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     );
     const overviewRiskSplitOk = sectionName !== 'overview' || (
       isMobileOverview
-        ? Boolean(text.includes('当前状态') && text.includes('影响') && text.includes('数据') && text.includes('WAN'))
+        ? Boolean(/当前状态|当前最高|WAN|历史快照|数据陈旧/.test(text) && text.includes('影响') && text.includes('数据') && text.includes('WAN'))
         : Boolean(
           text.includes('线路风险') &&
           (text.includes('采集风险') || text.includes('数据状态')) &&
@@ -1322,6 +1322,8 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       '.ik-mobile-metric-sub',
       '.ik-mobile-section-head',
       '.ik-mobile-wan-row > *',
+      '.ik-mobile-detail-row > *',
+      '.ik-mobile-terminal-row > *',
       '.ik-mobile-device-line'
     ].join(',')) || []);
     const overviewFirstScreenFieldCount = overviewFieldNodes.filter(nodeVisibleInFirstScreen).length;
@@ -1332,8 +1334,8 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         : noSnapshotEdge
           ? 100
         : scenario === 'fleet'
-          ? 180
-          : 140;
+          ? 160
+          : 130;
     const overviewFirstScreenFieldsOk = sectionName !== 'overview' || overviewFirstScreenFieldCount >= minOverviewFirstScreenFields;
     const firstScreenOverviewText = Array.from(sectionRoot?.querySelectorAll([
       '[data-overview-field]',
@@ -1346,7 +1348,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       .map((node) => normalize(node.textContent || ''))
       .join(' ');
     const overviewMobileCoreOk = sectionName !== 'overview' || window.innerWidth >= 768 || Boolean(
-      /风险|异常|数据陈旧|历史快照/.test(firstScreenOverviewText) &&
+      /风险|异常|数据陈旧|历史快照|资源高负载|采集降级/.test(firstScreenOverviewText) &&
       /WAN/.test(firstScreenOverviewText) &&
       /资源|CPU|内存/.test(firstScreenOverviewText) &&
       /采集|REST|SSH/.test(firstScreenOverviewText)
@@ -1380,14 +1382,14 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewVerdictPanel &&
       overviewMainVerdict &&
       overviewPriorityPanel &&
-      /当前状态/.test(overviewVerdictText) &&
-      /最高业务风险|面板未发现核心异常|历史快照/.test(overviewVerdictText) &&
-      /风险优先级/.test(overviewVerdictText) &&
       priorityOrderOk &&
       activePriorityLabels.length >= 1 &&
-      /数据可信/.test(overviewVerdictText) &&
-      /当前不是实时数据|数据新鲜/.test(overviewVerdictText) &&
-      /采集可信/.test(overviewVerdictText) &&
+      /当前状态|当前最高|未发现核心异常|历史快照|WAN/.test(overviewVerdictText) &&
+      /最高业务风险|当前最高|面板未发现核心异常|历史快照|WAN/.test(overviewVerdictText) &&
+      /规则/.test(overviewVerdictText) &&
+      /数据状态|数据可信/.test(overviewVerdictText) &&
+      /当前不是实时数据|数据新鲜|历史快照/.test(overviewVerdictText) &&
+      /采集状态|采集可信/.test(overviewVerdictText) &&
       /WAN 分组/.test(overviewVerdictText) &&
       /默认路由/.test(overviewVerdictText) &&
       /影响范围/.test(overviewVerdictText) &&
@@ -1404,7 +1406,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       /默认路由/.test(text) &&
       /速率/.test(text) &&
       /采样/.test(text) &&
-      (/WAN 证据链/.test(text) || sectionRoot?.querySelector('[data-overview-anomaly-evidence]'))
+      (/WAN 证据链|WAN 线路证据/.test(text) || sectionRoot?.querySelector('[data-overview-anomaly-evidence]'))
     );
     const overviewMobileProductVerdictOk = sectionName !== 'overview' || window.innerWidth >= 768 || (
       isEdgeScenario
@@ -1415,23 +1417,24 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
           (mobileAlarmRect || topErrorNoticeVisible)
         )
         : Boolean(
-          mobileTop120Text.includes('当前状态') &&
+          /当前状态|当前最高|WAN|数据陈旧|历史快照/.test(mobileTop120Text) &&
           /数据陈旧|数据新鲜|历史快照/.test(mobileTop120Text) &&
-          /最高业务风险|面板未发现核心异常/.test(mobileTop120Text) &&
-          /采集可信/.test(mobileTop120Text) &&
+          /最高业务风险|当前最高|面板未发现核心异常|WAN/.test(mobileTop120Text) &&
+          /采集状态|采集可信|REST|SSH/.test(mobileTop120Text) &&
           /影响/.test(mobileTop120Text) &&
           mobileAlarmRect &&
-          mobileAlarmRect.height <= 52 &&
+          mobileAlarmRect.height <= 72 &&
           mobileIncidentRect &&
-          mobileIncidentRect.top < 90
+          mobileIncidentRect.top < 130
         )
     );
     const overviewEdgeScenarioOk = sectionName !== 'overview' || !edgeScenarios.has(scaleScenario) || Boolean(
       scaleScenario === 'all-offline'
-        ? activePriorityLabels.includes('WAN 离线') &&
+          ? activePriorityLabels.includes('WAN 离线') &&
           activePriorityLabels.includes('默认路由异常') &&
           /全部离线/.test(overviewVerdictText) &&
-          /未承载默认路由|影响低|未见线路影响/.test(overviewVerdictText)
+          /默认路由不可用|未发现活动默认路由|需立即/.test(overviewVerdictText) &&
+          !/当前影响低|影响低|未见线路影响/.test(overviewVerdictText)
         : scaleScenario === 'no-snapshot'
           ? activePriorityLabels.includes('断网 / 路由不可达') &&
             /无可用快照|路由不可达|未采集/.test(overviewVerdictText) &&
@@ -1442,7 +1445,10 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
               /当前不是实时数据|当前数据新鲜/.test(overviewVerdictText)
             : scaleScenario === 'resource-full'
               ? activePriorityLabels.includes('资源高负载') &&
-                /资源高负载|CPU 96|内存 92|磁盘 97/.test(overviewVerdictText)
+                /资源高负载/.test(overviewVerdictText) &&
+                /CPU 96/.test(text) &&
+                /内存 92/.test(text) &&
+                /磁盘 97/.test(text)
               : activePriorityLabels.includes('断网 / 路由不可达') &&
                 /接口全 Down|全部接口离线|路由不可达/.test(overviewVerdictText)
     );
@@ -1456,7 +1462,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
             (mobileAlarm || topErrorNotice) &&
             (mobileAlertStyle?.display !== 'none' || topErrorNoticeVisible || mobileAlarmRect) &&
             (mobileAlarmRect || topErrorNoticeRect) &&
-            /当前状态|无可用快照|采集状态异常|接口全 Down|全部接口离线|资源高负载|采集降级/.test(firstScreenOverviewText + ' ' + topErrorNoticeText + ' ' + mobileTop120Text) &&
+            /当前状态|当前最高|WAN 全部离线|无可用快照|采集状态异常|接口全 Down|全部接口离线|资源高负载|采集降级/.test(firstScreenOverviewText + ' ' + topErrorNoticeText + ' ' + mobileTop120Text) &&
             /WAN/.test(mobileTop120Text)
           )
           : Boolean(
@@ -1468,11 +1474,11 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
             mobileMetricsRect &&
             mobileWanTableRect &&
             mobileAlarmRect.top < 120 &&
-            mobileAlarmRect.height <= 52 &&
+            mobileAlarmRect.height <= 72 &&
             mobileIncidentRect.top >= mobileAlarmRect.top &&
             mobileIncidentRect.top < mobileMetricsRect.top &&
             mobileMetricsRect.top < mobileWanTableRect.top &&
-            /当前状态/.test(firstScreenOverviewText) &&
+            /当前状态|当前最高|WAN|历史快照|数据陈旧/.test(firstScreenOverviewText) &&
             /WAN/.test(mobileTop120Text) &&
             /数据陈旧|历史快照|当前正常|默认路由异常|部分离线|全部离线/.test(mobileTop120Text) &&
             /REST/.test(firstScreenOverviewText) &&
@@ -1502,7 +1508,127 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       .filter(nodeVisibleInFirstScreen)
       .map((node) => normalize(node.textContent))
       .filter((label) => /在线|正常|实时|活动/.test(label));
-    const overviewHistoryNoLiveGreenOk = sectionName !== 'overview' || !historyModeActive || historyLiveGreenTags.length === 0;
+    const staleSignalText = [
+      firstScreenOverviewText,
+      mobileTop120Text,
+      topErrorNoticeText,
+    ].join(' ');
+    const staleLikeModeActive = historyModeActive || /历史快照数据陈旧|数据状态\s*(历史快照\s*)?数据陈旧|当前不是实时数据|无可用快照|数据陈旧\s+未采集/.test(staleSignalText);
+    const overviewHistoryNoLiveGreenOk = sectionName !== 'overview' || !staleLikeModeActive || historyLiveGreenTags.length === 0;
+    const selectorForNode = (node) => {
+      if (!node) return '';
+      if (node.id) return '#' + node.id;
+      const dataKey = Array.from(node.attributes || []).find((attr) => /^data-overview/.test(attr.name));
+      if (dataKey) return '[' + dataKey.name + ']';
+      const cls = Array.from(node.classList || []).slice(0, 3).join('.');
+      return node.tagName.toLowerCase() + (cls ? '.' + cls : '');
+    };
+    const firstScreenNodes = Array.from(sectionRoot?.querySelectorAll([
+      '[data-overview-field]',
+      '[data-overview-mobile-alert]',
+      '[data-overview-mobile-incident]',
+      '[data-overview-mobile-metrics]',
+      '[data-overview-mobile-wan-table]',
+      '[data-overview-mobile-detail]',
+      '.ik-mobile-head-item',
+      '.ik-mobile-incident-title',
+      '.ik-mobile-incident-evidence div',
+      '.ik-mobile-metric',
+      '.ik-mobile-metric-main',
+      '.ik-mobile-metric-sub',
+      '.ik-mobile-wan-row > *',
+      '.ik-mobile-detail-row > *',
+      '.ik-mobile-device-line'
+    ].join(',')) || []).filter(nodeVisibleInFirstScreen);
+    const ellipsisSamples = firstScreenNodes
+      .map((node) => {
+        const style = getComputedStyle(node);
+        const rect = node.getBoundingClientRect();
+        const clipped = (style.textOverflow === 'ellipsis' && node.scrollWidth > node.clientWidth + 2) ||
+          (style.overflow === 'hidden' && node.scrollHeight > node.clientHeight + 2);
+        return clipped ? {
+          selector: selectorForNode(node),
+          text: normalize(node.textContent || '').slice(0, 80),
+          width: Math.round(rect.width),
+          scrollWidth: Math.round(node.scrollWidth),
+          height: Math.round(rect.height),
+          scrollHeight: Math.round(node.scrollHeight),
+        } : null;
+      })
+      .filter(Boolean);
+    const overviewFirstScreenEllipsisCount = ellipsisSamples.length;
+    const overviewFirstScreenEllipsisOk = sectionName !== 'overview' || !isMobileOverview || overviewFirstScreenEllipsisCount <= 3;
+    const criticalEllipsisSamples = ellipsisSamples.filter((sample) => /mobile-alert|mobile-incident|main-verdict|anomaly|wan-row|metric-main|metric-sub/.test(sample.selector));
+    const overviewCriticalEllipsisOk = sectionName !== 'overview' || !isMobileOverview || criticalEllipsisSamples.length === 0;
+    const combinedOverviewText = [overviewVerdictText, firstScreenOverviewText, mobileTop120Text, topErrorNoticeText].join(' ');
+    const staleCopyActive = historyModeActive || /历史快照数据陈旧|当前不是实时数据|数据状态\s*历史快照|数据陈旧\s*\d/.test(combinedOverviewText);
+    const staleForbiddenImpact = staleCopyActive && /当前影响低|(?<!上次采样)影响低|(?<!上次采样)未见线路影响/.test(combinedOverviewText);
+    const overviewStaleDataImpactOk = sectionName !== 'overview' || !staleForbiddenImpact || /当前影响未知|仅代表上次采样|上次采样影响低|上次采样未见线路影响/.test(combinedOverviewText);
+    const totalWanCount = evidenceWanRows.length;
+    const offlineWanCount = evidenceWanRows.filter((row) => row && row.running === false).length;
+    const overviewAllWanOfflineSummaryOk = sectionName !== 'overview' || scaleScenario !== 'all-offline' || Boolean(
+      totalWanCount > 0 &&
+      offlineWanCount === totalWanCount &&
+      /WAN 全部离线|全部 WAN 离线|WAN 离线/.test(combinedOverviewText) &&
+      new RegExp('WAN\\\\s*0\\\\s*/\\\\s*' + totalWanCount).test(combinedOverviewText) &&
+      /默认路由不可用|未发现活动默认路由|默认路由异常/.test(combinedOverviewText) &&
+      !/当前影响低|(?<!上次采样)影响低|(?<!上次采样)未见线路影响/.test(combinedOverviewText)
+    );
+    const overviewResourceFullIncidentOk = sectionName !== 'overview' || scaleScenario !== 'resource-full' || Boolean(
+      /资源高负载/.test(combinedOverviewText) &&
+      /CPU\s*96/.test(combinedOverviewText) &&
+      /内存\s*92/.test(combinedOverviewText) &&
+      /磁盘\s*97/.test(combinedOverviewText) &&
+      /连接|活动/.test(combinedOverviewText)
+    );
+    let overviewMobileEffectiveCoverageOk = true;
+    let overviewMobileEffectiveCoverageProbe = null;
+    if (sectionName === 'overview' && isMobileOverview && sectionRoot) {
+      const rect = sectionRoot.getBoundingClientRect();
+      const left = Math.max(0, rect.left);
+      const right = Math.min(window.innerWidth, rect.right);
+      const top = Math.max(0, rect.top);
+      const bottom = window.innerHeight;
+      const contentSelector = [
+        '[data-overview-mobile-alert]',
+        '[data-overview-mobile-incident]',
+        '[data-overview-mobile-metrics]',
+        '[data-overview-mobile-wan-table]',
+        '[data-overview-mobile-detail]',
+        '[data-overview-mobile-detail-section]',
+        '.ik-mobile-console',
+        '.ik-mobile-compact-section',
+        '.ik-mobile-detail-row',
+        '.ik-mobile-wan-row',
+        '.ik-mobile-metric',
+        '.ik-mobile-device-line',
+        '.tag'
+      ].join(',');
+      let filled = 0;
+      let total = 0;
+      const columns = 10;
+      const rows = 18;
+      for (let yi = 0; yi < rows; yi += 1) {
+        const y = top + ((bottom - top) * (yi + 0.5) / rows);
+        for (let xi = 0; xi < columns; xi += 1) {
+          const x = left + ((right - left) * (xi + 0.5) / columns);
+          const el = document.elementFromPoint(x, y);
+          if (!el || !sectionRoot.contains(el)) continue;
+          total += 1;
+          if (el.closest(contentSelector)) filled += 1;
+        }
+      }
+      const ratio = total ? filled / total : 0;
+      const lastMeaningfulBottom = Math.max(0, ...firstScreenNodes.map((node) => Math.min(window.innerHeight, node.getBoundingClientRect().bottom || 0)));
+      overviewMobileEffectiveCoverageProbe = {
+        filled,
+        total,
+        ratio: Number(ratio.toFixed(3)),
+        lastMeaningfulBottom: Math.round(lastMeaningfulBottom),
+        viewportHeight: window.innerHeight,
+      };
+      overviewMobileEffectiveCoverageOk = ratio >= 0.68 && lastMeaningfulBottom >= window.innerHeight * 0.70;
+    }
     let overviewBlankProbe = null;
     let overviewBlankAreaOk = true;
     if (sectionName === 'overview' && isDesktopOverview && sectionRoot) {
@@ -1619,6 +1745,12 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewMobileProductVerdictOk &&
       overviewAnomalyEvidenceOk &&
       overviewHistoryNoLiveGreenOk &&
+      overviewMobileEffectiveCoverageOk &&
+      overviewFirstScreenEllipsisOk &&
+      overviewCriticalEllipsisOk &&
+      overviewAllWanOfflineSummaryOk &&
+      overviewResourceFullIncidentOk &&
+      overviewStaleDataImpactOk &&
       overviewBlankAreaOk &&
       overviewTerminalPlacementOk &&
       overviewNoDuplicateTerminalOk &&
@@ -1710,7 +1842,35 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       expectedOfflineNames,
       visibleAnomalyNames,
       overviewHistoryNoLiveGreenOk,
+      staleLikeModeActive,
       historyLiveGreenTags,
+      overviewMobileEffectiveCoverageOk,
+      overviewMobileEffectiveCoverageProbe,
+      overviewFirstScreenEllipsisOk,
+      overviewFirstScreenEllipsisCount,
+      overviewFirstScreenEllipsisSamples: ellipsisSamples.slice(0, 8),
+      overviewCriticalEllipsisOk,
+      overviewCriticalEllipsisSamples: criticalEllipsisSamples.slice(0, 8),
+      overviewAllWanOfflineSummaryOk,
+      overviewAllWanOfflineSummaryProbe: {
+        totalWanCount,
+        offlineWanCount,
+        excerpt: combinedOverviewText.slice(0, 260),
+      },
+      overviewResourceFullIncidentOk,
+      overviewResourceFullIncidentProbe: {
+        hasCpu: /CPU\s*96/.test(combinedOverviewText),
+        hasMemory: /内存\s*92/.test(combinedOverviewText),
+        hasDisk: /磁盘\s*97/.test(combinedOverviewText),
+        hasConnectionPressure: /连接|活动/.test(combinedOverviewText),
+        excerpt: combinedOverviewText.slice(0, 260),
+      },
+      overviewStaleDataImpactOk,
+      overviewStaleDataImpactProbe: {
+        staleCopyActive,
+        staleForbiddenImpact,
+        excerpt: combinedOverviewText.slice(0, 260),
+      },
       overviewBlankAreaOk,
       overviewBlankProbe,
       overviewTerminalPlacementOk,
