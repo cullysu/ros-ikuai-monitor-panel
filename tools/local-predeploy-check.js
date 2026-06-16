@@ -1086,10 +1086,16 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const overviewDensityModules = Array.from(sectionRoot?.querySelectorAll('[data-overview-density-module]') || []);
     const overviewDesktopDetail = sectionRoot?.querySelector('[data-overview-desktop-detail]');
     const overviewStatusBar = sectionRoot?.querySelector('[data-overview-status-bar]');
+    const overviewVerdictPanel = sectionRoot?.querySelector('[data-overview-verdict-panel]');
+    const overviewMainVerdict = sectionRoot?.querySelector('[data-overview-main-verdict]');
+    const overviewPriorityPanel = sectionRoot?.querySelector('[data-overview-priority-panel]');
+    const overviewNextActions = sectionRoot?.querySelector('[data-overview-next-actions]');
+    const overviewVerdictText = normalize(overviewVerdictPanel?.textContent || '');
     const overviewDesktopRect = sectionRoot?.getBoundingClientRect();
     const overviewMinDesktopHeight = Math.min(620, window.innerHeight * 0.68);
     const overviewDesktopDensityOk = sectionName !== 'overview' || !isDesktopOverview || Boolean(
       overviewStatusBar &&
+      overviewVerdictPanel &&
       overviewDesktopDetail &&
       overviewDensityModules.length >= 4 &&
       sectionRoot.querySelector('[data-overview-density-module="wan-trend"]') &&
@@ -1334,6 +1340,53 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       })
       .map((node) => normalize(node.textContent || ''))
       .join(' ');
+    const priorityLabels = Array.from(sectionRoot?.querySelectorAll('[data-overview-priority]') || [])
+      .map((node) => normalize(node.textContent || ''));
+    const activePriorityLabels = Array.from(sectionRoot?.querySelectorAll('[data-overview-priority].is-active') || [])
+      .map((node) => normalize(node.textContent || ''));
+    const expectedPriorityOrder = ['断网 / 路由不可达', '默认路由异常', 'WAN 离线', '数据陈旧', '采集降级', '资源高负载'];
+    const priorityOrderOk = expectedPriorityOrder.every((label, index) => priorityLabels[index] === label);
+    const overviewProductVerdictOk = sectionName !== 'overview' || Boolean(
+      overviewVerdictPanel &&
+      overviewMainVerdict &&
+      overviewPriorityPanel &&
+      /当前状态/.test(overviewVerdictText) &&
+      /最高业务风险|面板未发现核心异常|历史快照/.test(overviewVerdictText) &&
+      /风险优先级/.test(overviewVerdictText) &&
+      priorityOrderOk &&
+      activePriorityLabels.length >= 1 &&
+      /数据可信/.test(overviewVerdictText) &&
+      /当前不是实时数据|数据新鲜/.test(overviewVerdictText) &&
+      /采集可信/.test(overviewVerdictText) &&
+      /WAN 分组/.test(overviewVerdictText) &&
+      /默认路由/.test(overviewVerdictText) &&
+      /影响范围/.test(overviewVerdictText) &&
+      /下一步/.test(overviewVerdictText) &&
+      overviewNextActions &&
+      normalize(overviewNextActions.textContent).includes('查看 WAN 状态') &&
+      normalize(overviewNextActions.textContent).includes('查看采集状态') &&
+      normalize(overviewNextActions.textContent).includes('查看路由表快照')
+    );
+    const overviewEvidenceChainOk = sectionName !== 'overview' || Boolean(
+      /对象/.test(text) &&
+      /状态/.test(text) &&
+      /父接口/.test(text) &&
+      /默认路由/.test(text) &&
+      /速率/.test(text) &&
+      /采样/.test(text) &&
+      (/WAN 证据链/.test(text) || sectionRoot?.querySelector('[data-overview-anomaly-evidence]'))
+    );
+    const overviewMobileProductVerdictOk = sectionName !== 'overview' || window.innerWidth >= 768 || Boolean(
+      mobileTop120Text.includes('当前状态') &&
+      /数据陈旧|数据新鲜|历史快照/.test(mobileTop120Text) &&
+      /最高业务风险|面板未发现核心异常/.test(mobileTop120Text) &&
+      /采集可信/.test(mobileTop120Text) &&
+      /影响/.test(mobileTop120Text) &&
+      mobileAlarmRect &&
+      mobileAlarmRect.height <= 52 &&
+      mobileIncidentRect &&
+      mobileIncidentRect.top < 90
+    );
     const overviewMobileArchitectureOk = sectionName !== 'overview' || window.innerWidth >= 768 || Boolean(
       mobileConsole &&
       mobileAlarm &&
@@ -1389,6 +1442,11 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       const bottom = Math.min(window.innerHeight, Math.max(top, rect.bottom));
       const contentSelector = [
         '.ik-home-ops-bar',
+        '.ik-home-verdict-panel',
+        '.ik-home-verdict-main',
+        '.ik-home-verdict-side',
+        '.ik-home-priority-item',
+        '.ik-home-action-link',
         '.ik-home-operator-card',
         '.card',
         '.ik-summary-box',
@@ -1465,10 +1523,13 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewWanDecisionOk &&
       overviewRiskSplitOk &&
       overviewCapabilityDegradeOk &&
+      overviewProductVerdictOk &&
+      overviewEvidenceChainOk &&
       overviewUsableWidthOk &&
       overviewFirstScreenFieldsOk &&
       overviewMobileCoreOk &&
       overviewMobileArchitectureOk &&
+      overviewMobileProductVerdictOk &&
       overviewAnomalyEvidenceOk &&
       overviewHistoryNoLiveGreenOk &&
       overviewBlankAreaOk &&
@@ -1539,6 +1600,10 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewWanDecisionOk,
       overviewRiskSplitOk,
       overviewCapabilityDegradeOk,
+      overviewProductVerdictOk,
+      overviewEvidenceChainOk,
+      overviewPriorityLabels: priorityLabels,
+      overviewActivePriorityLabels: activePriorityLabels,
       overviewUsableWidthOk,
       minOverviewUsableWidth,
       overviewFirstScreenFieldsOk,
@@ -1546,6 +1611,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       minOverviewFirstScreenFields,
       overviewMobileCoreOk,
       overviewMobileArchitectureOk,
+      overviewMobileProductVerdictOk,
       mobileAlarmProbe: mobileAlarmRect ? {
         top: Math.round(mobileAlarmRect.top),
         height: Math.round(mobileAlarmRect.height),

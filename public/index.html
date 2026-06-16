@@ -1502,7 +1502,8 @@
     .ik-home-trust-mode.is-history-snapshot {
       position: relative;
       background:
-        repeating-linear-gradient(-45deg, rgba(91, 105, 122, .035) 0, rgba(91, 105, 122, .035) 1px, transparent 1px, transparent 10px);
+        linear-gradient(180deg, rgba(255, 247, 235, .82), rgba(246, 247, 249, .92) 120px),
+        repeating-linear-gradient(-45deg, rgba(91, 105, 122, .05) 0, rgba(91, 105, 122, .05) 1px, transparent 1px, transparent 10px);
     }
     .ik-home-trust-mode.is-history-snapshot::before {
       content: "历史快照";
@@ -1596,7 +1597,7 @@
     }
     .ik-home-evidence-row {
       display: grid;
-      grid-template-columns: minmax(86px, 1fr) 70px minmax(72px, .8fr) 70px;
+      grid-template-columns: minmax(86px, 1fr) 68px 96px minmax(72px, .75fr) minmax(72px, .9fr) 74px;
       gap: 6px;
       align-items: center;
       min-width: 0;
@@ -1849,6 +1850,161 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+    }
+    .ik-home-verdict-panel {
+      display: grid;
+      grid-template-columns: minmax(0, 1.24fr) minmax(330px, .76fr);
+      gap: 4px;
+      margin-bottom: 4px;
+      min-width: 0;
+    }
+    .ik-home-verdict-main,
+    .ik-home-verdict-side {
+      min-width: 0;
+      border: 1px solid #ffd2a1;
+      border-left: 4px solid #f08c00;
+      border-radius: 6px;
+      background: #fff7eb;
+      overflow: hidden;
+      box-shadow: none;
+    }
+    .ik-home-verdict-main.is-danger,
+    .ik-home-verdict-side.is-danger {
+      border-color: #ffc8cc;
+      border-left-color: #d93025;
+      background: #fff6f6;
+    }
+    .ik-home-verdict-main.is-ok,
+    .ik-home-verdict-side.is-ok {
+      border-color: #ccebd9;
+      border-left-color: #1b9d59;
+      background: #f5fbf7;
+    }
+    .ik-home-verdict-main.is-trust,
+    .ik-home-verdict-side.is-trust {
+      border-color: #d8dde6;
+      border-left-color: #687386;
+      background: #f6f7f9;
+    }
+    .ik-home-verdict-title {
+      padding: 8px 10px 6px;
+      color: #172033;
+      font-size: 16px;
+      font-weight: 900;
+      line-height: 1.2;
+      overflow-wrap: anywhere;
+    }
+    .ik-home-verdict-sub {
+      padding: 0 10px 8px;
+      color: #5f6d7f;
+      font-size: 11px;
+      font-weight: 800;
+      line-height: 1.35;
+    }
+    .ik-home-verdict-row,
+    .ik-home-next-row {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      border-top: 1px solid rgba(196, 142, 66, .18);
+    }
+    .ik-home-verdict-row div,
+    .ik-home-next-row div {
+      min-width: 0;
+      padding: 6px 8px;
+      border-left: 1px solid rgba(196, 142, 66, .18);
+      color: #657386;
+      font-size: 10px;
+      font-weight: 800;
+      line-height: 1.2;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .ik-home-verdict-row div:first-child,
+    .ik-home-next-row div:first-child {
+      border-left: 0;
+    }
+    .ik-home-verdict-row b,
+    .ik-home-next-row b {
+      color: #1f2d3d;
+      font-size: 11px;
+      margin-left: 4px;
+    }
+    .ik-home-priority-list {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 4px;
+      padding: 8px;
+    }
+    .ik-home-priority-item {
+      min-width: 0;
+      border: 1px solid #e6edf6;
+      border-radius: 4px;
+      background: rgba(255,255,255,.72);
+      padding: 5px 6px;
+      color: #68778a;
+      font-size: 10px;
+      font-weight: 800;
+      line-height: 1.2;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .ik-home-priority-item.is-active {
+      border-color: #f59e0b;
+      background: #fff6e6;
+      color: #8a4d00;
+      box-shadow: inset 3px 0 0 #f08c00;
+    }
+    .ik-home-priority-item.is-danger {
+      border-color: #ffccd1;
+      background: #fff2f3;
+      color: #a42127;
+      box-shadow: inset 3px 0 0 #d93025;
+    }
+    .ik-home-evidence-row.is-danger,
+    .ik-home-evidence-row.is-offline {
+      border-color: #ffd1bf;
+      background: #fff7f0;
+    }
+    .ik-home-evidence-row.is-head {
+      border-color: #e5edf6;
+      background: #f8fbff;
+      color: #7a889a;
+      font-weight: 900;
+    }
+    .ik-home-evidence-row.is-danger b,
+    .ik-home-evidence-row.is-offline b {
+      color: #b54708;
+    }
+    .ik-home-action-links {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 4px;
+      padding: 6px 8px 8px;
+      border-top: 1px solid rgba(196, 142, 66, .18);
+    }
+    .ik-home-action-link {
+      min-width: 0;
+      border: 1px solid #dbe5f1;
+      border-radius: 4px;
+      background: #fff;
+      padding: 5px 6px;
+      color: #274b75;
+      font-size: 10px;
+      font-weight: 900;
+      text-decoration: none;
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .ik-home-trust-mode.is-history-snapshot .ik-home-verdict-main,
+    .ik-home-trust-mode.is-history-snapshot .ik-home-verdict-side,
+    .ik-home-trust-mode.is-history-snapshot .ik-mobile-incident-card,
+    .ik-home-trust-mode.is-history-snapshot .ik-mobile-metric-grid,
+    .ik-home-trust-mode.is-history-snapshot .ik-mobile-compact-section {
+      background-image: repeating-linear-gradient(-45deg, rgba(91,105,122,.04) 0, rgba(91,105,122,.04) 1px, transparent 1px, transparent 9px);
     }
     .readonly-status-bus {
       display: grid;
@@ -3302,6 +3458,7 @@
       }
       .ik-home-ops-bar,
       .ik-home-incident-line,
+      .ik-home-verdict-panel,
       .ik-home-operator-grid {
         display: none;
       }
@@ -6080,12 +6237,22 @@
         return `<div class="ik-home-evidence-empty" data-overview-anomaly-evidence data-overview-field>WAN 离线清单：${history ? '上次采样未见离线线路' : '当前未见离线线路'}</div>`;
       }
       return `<div class="ik-home-evidence-list" data-overview-anomaly-evidence>
-        ${rows.map((row) => `<div class="ik-home-evidence-row" data-overview-anomaly-object="${escapeHtml(row.name || '')}" data-overview-field>
+        <div class="ik-home-evidence-row is-head" data-overview-field><span>对象</span><span>状态</span><span>采样</span><span>父接口</span><span>默认路由</span><span>速率</span></div>
+        ${rows.map((row) => {
+          const activeRoute = (row.routes || []).find((route) => route.active && !route.disabled) || null;
+          const routeText = activeRoute
+            ? `${activeRoute.gateway || activeRoute.gatewayStatus || '-'} d${activeRoute.distance ?? '-'}`
+            : '未承载默认路由';
+          const rateText = fmtRate(totalTrafficRate(row));
+          return `<div class="ik-home-evidence-row is-offline" data-overview-anomaly-object="${escapeHtml(row.name || '')}" data-overview-field>
           <b>${escapeHtml(row.name || row.interface || 'unknown')}</b>
-          <span>${escapeHtml(row.access || row.kind || 'Unknown')}</span>
+          <span>${history ? '上次离线' : '离线'}</span>
+          <span>${escapeHtml(ctx.freshness.source || '-')}</span>
           <span>${escapeHtml(row.parent || row.interface || '-')}</span>
-          ${tag(history ? '上次离线' : '离线', 'danger')}
-        </div>`).join('')}
+          <span>${escapeHtml(routeText)}</span>
+          <span>${escapeHtml(rateText)}</span>
+        </div>`;
+        }).join('')}
       </div>`;
     }
 
@@ -6283,6 +6450,131 @@
       return value.replace(new RegExp(`^${channel}\\s*`, 'i'), '') || '-';
     }
 
+    function overviewRouteSummary(ctx) {
+      const defaults = ctx.snapshot.routes?.defaultRoutes || [];
+      const active = defaults.filter((row) => row.active && !row.disabled);
+      const primary = active.slice().sort((a, b) => Number(a.distance || 0) - Number(b.distance || 0))[0];
+      if (primary) {
+        const table = primary.table || primary.routingTable || 'main';
+        const gateway = primary.gateway || primary.gatewayStatus || '-';
+        return `${table} 表 active ${fmtNumber(active.length)} 条，首选 ${gateway} distance ${primary.distance ?? '-'}`;
+      }
+      if (ctx.routeHealth.active) return `${fmtNumber(ctx.routeHealth.active)} 条 active 默认路由`;
+      return ctx.routeHealth.text || ctx.routeHealth.label || '未采集默认路由';
+    }
+
+    function overviewOfflineImpact(ctx) {
+      const offlineRows = ctx.offlineWanRows || [];
+      if (!offlineRows.length) return ctx.routeHealth.level === 'ok' ? '未见线路影响' : ctx.routeHealth.text;
+      const activeRouteOffline = offlineRows.some((row) => (row.routes || []).some((route) => route.active && !route.disabled));
+      const offlineRate = offlineRows.reduce((sum, row) => sum + totalTrafficRate(row), 0);
+      if (activeRouteOffline) return '影响默认路由，需立即查看路由表快照';
+      if (offlineRate > 0) return `离线线路仍有 ${fmtRate(offlineRate)} 快照速率，需核对线路状态`;
+      return '离线线路当前无流量，未承载默认路由，影响低';
+    }
+
+    function overviewWanAccessImpact(ctx) {
+      return ['PPPoE', 'DHCP', 'VLAN', 'Static', 'Unknown']
+        .filter((key) => ctx.accessBuckets[key]?.total)
+        .map((key) => {
+          const bucket = ctx.accessBuckets[key];
+          const offline = Math.max(0, bucket.total - bucket.online);
+          return `${key} ${offline ? `离线 ${fmtNumber(offline)}` : '正常'} / ${fmtNumber(bucket.online)}/${fmtNumber(bucket.total)}`;
+        })
+        .join(' · ') || 'WAN 类型未采集';
+    }
+
+    function overviewCollectionTrust(ctx) {
+      const labels = historyAwareCapabilityLabels(ctx.capabilities, ctx.freshness);
+      const restLabel = stripChannelPrefix(labels.restLabel, 'REST');
+      const sshLabel = stripChannelPrefix(labels.sshLabel, 'SSH');
+      const degraded = ctx.failures.count > 0 || /缺依赖|不可用|失败|待确认|未配置/.test(`${restLabel} ${sshLabel}`);
+      const level = degraded ? 'warn' : 'ok';
+      const text = `数据可信条：${ctx.freshness.stale ? `当前不是实时数据，${ctx.freshness.text || '-'} 未刷新` : '当前数据新鲜'}；REST ${restLabel}；SSH ${sshLabel}`;
+      return { level, restLabel, sshLabel, text };
+    }
+
+    function buildOverviewVerdict(ctx) {
+      const history = isHistorySnapshot(ctx.freshness);
+      const collection = overviewCollectionTrust(ctx);
+      const offlineNames = (ctx.offlineWanRows || []).slice(0, 3).map((row) => row.name || row.interface || '').filter(Boolean);
+      const routerDown = ctx.routerState.level === 'danger' || ctx.snapshot.status === 'error';
+      const rules = [
+        { key: 'router-down', label: '断网 / 路由不可达', active: routerDown, level: 'danger' },
+        { key: 'route-danger', label: '默认路由异常', active: ctx.routeHealth.level === 'danger', level: 'danger' },
+        { key: 'wan-offline', label: 'WAN 离线', active: ctx.wanHealth.offline > 0 || ctx.wanHealth.level === 'danger', level: ctx.wanHealth.level === 'danger' ? 'danger' : 'warn' },
+        { key: 'data-stale', label: '数据陈旧', active: ctx.freshness.stale || history, level: 'warn' },
+        { key: 'collection-degraded', label: '采集降级', active: collection.level !== 'ok', level: 'warn' },
+        { key: 'resource-load', label: '资源高负载', active: ctx.resourceLevel !== 'ok', level: ctx.resourceLevel || 'warn' }
+      ];
+      const top = rules.find((item) => item.active) || { key: 'ok', label: history ? '历史快照' : '当前正常', level: history ? 'trust' : 'ok' };
+      const stalePrefix = ctx.freshness.stale || history
+        ? `${history ? '历史快照' : ''}数据陈旧 ${ctx.freshness.text || '-'}`
+        : '数据新鲜';
+      const wanPart = ctx.wanHealth.offline > 0
+        ? `WAN ${ctx.wanHealth.label}，需关注 ${fmtNumber(ctx.wanHealth.offline)} 条线路`
+        : `WAN ${ctx.wanHealth.label}`;
+      const conclusion = top.key === 'ok'
+        ? `当前状态：${history ? `历史快照，${ctx.freshness.text || '-'} 未刷新` : '面板未发现核心异常'}`
+        : `当前状态：${stalePrefix}；最高业务风险：${wanPart}`;
+      const nextAction = top.key === 'route-danger'
+        ? '下一步：查看路由表快照'
+        : top.key === 'wan-offline'
+          ? '下一步：查看 WAN 状态'
+          : top.key === 'data-stale' || top.key === 'collection-degraded'
+            ? '下一步：查看采集状态'
+            : top.key === 'resource-load'
+              ? '下一步：查看资源状态'
+              : '下一步：查看状态明细';
+      return {
+        level: top.level,
+        topKey: top.key,
+        topLabel: top.label,
+        priority: rules,
+        conclusion,
+        offlineText: offlineNames.length ? `WAN 离线 ${fmtNumber(ctx.wanHealth.offline)} 条：${offlineNames.join('、')}` : 'WAN 未见离线对象',
+        routeText: overviewRouteSummary(ctx),
+        accessText: overviewWanAccessImpact(ctx),
+        impactText: overviewOfflineImpact(ctx),
+        collection,
+        nextAction,
+        ageFirstText: stalePrefix
+      };
+    }
+
+    function renderOverviewVerdictPanel(ctx) {
+      const v = ctx.verdict || buildOverviewVerdict(ctx);
+      const totalRate = Number(ctx.wanRates.up || 0) + Number(ctx.wanRates.down || 0);
+      const priorityItems = v.priority.map((item) => `<div class="ik-home-priority-item${item.active ? ` is-active is-${escapeHtml(item.level)}` : ''}" data-overview-field data-overview-priority="${escapeHtml(item.key)}">${escapeHtml(item.label)}</div>`).join('');
+      return `<div class="ik-home-verdict-panel" data-overview-verdict-panel>
+        <div class="ik-home-verdict-main is-${escapeHtml(v.level)}" data-overview-main-verdict>
+          <div class="ik-home-verdict-title" data-overview-field>${escapeHtml(v.conclusion)}</div>
+          <div class="ik-home-verdict-sub" data-overview-field>风险优先级：断网 / 路由不可达 &gt; 默认路由异常 &gt; WAN 离线 &gt; 数据陈旧 &gt; 采集降级 &gt; 资源高负载。当前最高：${escapeHtml(v.topLabel)}</div>
+          <div class="ik-home-verdict-row">
+            <div data-overview-field>数据可信 <b>${escapeHtml(v.ageFirstText)}</b></div>
+            <div data-overview-field>线路证据 <b>${escapeHtml(v.offlineText)}</b></div>
+            <div data-overview-field>默认路由 <b>${escapeHtml(v.routeText)}</b></div>
+            <div data-overview-field>影响范围 <b>${escapeHtml(v.impactText)}</b></div>
+          </div>
+          <div class="ik-home-next-row">
+            <div data-overview-field>采集可信 <b>${escapeHtml(v.collection.text)}</b></div>
+            <div data-overview-field>WAN 分组 <b>${escapeHtml(v.accessText)}</b></div>
+            <div data-overview-field>总吞吐 <b>${fmtRate(totalRate)}</b></div>
+            <div data-overview-field>下一步 <b>${escapeHtml(v.nextAction)}</b></div>
+          </div>
+          <div class="ik-home-action-links" data-overview-next-actions>
+            <a class="ik-home-action-link" href="#lineStatus" data-section="lineStatus">查看 WAN 状态</a>
+            <a class="ik-home-action-link" href="#readonlyDiagnostics" data-section="readonlyDiagnostics">查看采集状态</a>
+            <a class="ik-home-action-link" href="#routes" data-section="routes">查看路由表快照</a>
+          </div>
+        </div>
+        <div class="ik-home-verdict-side is-${escapeHtml(v.level)}" data-overview-priority-panel>
+          <div class="ik-home-verdict-title" data-overview-field>最大风险优先级</div>
+          <div class="ik-home-priority-list">${priorityItems}</div>
+        </div>
+      </div>`;
+    }
+
     function operatorKpis(items) {
       return `<div class="ik-home-operator-kpis">${items.map(([label, value]) => `
         <div data-overview-field><span>${escapeHtml(label)}</span><b>${value}</b></div>`).join('')}</div>`;
@@ -6301,65 +6593,29 @@
     }
 
     function renderOverviewMobileAlert(ctx) {
-      const history = isHistorySnapshot(ctx.freshness);
-      const labels = historyAwareCapabilityLabels(ctx.capabilities, ctx.freshness);
-      const restLabel = stripChannelPrefix(labels.restLabel, 'REST');
-      const sshLabel = stripChannelPrefix(labels.sshLabel, 'SSH');
-      const routeDanger = ctx.routeHealth.level === 'danger';
-      const severity = routeDanger || ctx.wanHealth.level === 'danger'
-        ? 'danger'
-        : ctx.wanHealth.level !== 'ok' || ctx.collectionRisk.level !== 'ok' || ctx.resourceLevel !== 'ok'
-          ? 'warn'
-          : history
-            ? 'trust'
-            : 'ok';
-      const stateLabel = routeDanger
-        ? '默认路由异常'
-        : ctx.wanHealth.level !== 'ok'
-          ? ctx.wanHealth.label
-          : ctx.collectionRisk.level !== 'ok'
-            ? (ctx.freshness.stale ? '数据陈旧' : ctx.collectionRisk.label)
-            : ctx.resourceLevel !== 'ok'
-              ? '资源异常'
-              : history ? '历史快照' : '当前正常';
-      const dataLabel = ctx.freshness.stale || history
-        ? `数据陈旧 ${ctx.freshness.text || '-'}`
-        : `数据 ${ctx.freshness.label || '正常'}`;
-      return `<div class="ik-mobile-alert-strip ik-mobile-alarm-head is-${escapeHtml(severity)}${severity === 'ok' ? ' is-empty' : ''}" data-overview-mobile-alert data-overview-mobile-alarm>
-        <div class="ik-mobile-head-item" data-overview-field>${escapeHtml(stateLabel)}</div>
+      const v = ctx.verdict || buildOverviewVerdict(ctx);
+      const sshLabel = v.collection.sshLabel;
+      const alertLabel = v.topKey === 'wan-offline' && ctx.wanHealth.offline > 0
+        ? `WAN 离线 ${fmtNumber(ctx.wanHealth.offline)} 条`
+        : v.topLabel;
+      return `<div class="ik-mobile-alert-strip ik-mobile-alarm-head is-${escapeHtml(v.level)}${v.level === 'ok' ? ' is-empty' : ''}" data-overview-mobile-alert data-overview-mobile-alarm>
+        <div class="ik-mobile-head-item" data-overview-field>${escapeHtml(alertLabel)}</div>
+        <div class="ik-mobile-head-item" data-overview-field>${escapeHtml(v.ageFirstText)}</div>
         <div class="ik-mobile-head-item" data-overview-field>WAN ${fmtNumber(ctx.wanHealth.online)}/${fmtNumber(ctx.wanHealth.total)}</div>
-        <div class="ik-mobile-head-item" data-overview-field>${escapeHtml(dataLabel)}</div>
         <div class="ik-mobile-head-item" data-overview-field>SSH ${escapeHtml(sshLabel)}</div>
       </div>`;
     }
 
     function mobileDecisionLevel(ctx) {
-      if (ctx.routeHealth.level === 'danger' || ctx.wanHealth.level === 'danger') return 'danger';
-      if (ctx.wanHealth.level !== 'ok' || ctx.collectionRisk.level !== 'ok' || ctx.resourceLevel !== 'ok') return 'warn';
-      return isHistorySnapshot(ctx.freshness) ? 'trust' : 'ok';
+      return (ctx.verdict || buildOverviewVerdict(ctx)).level;
     }
 
     function mobileRouteSummary(ctx) {
-      const defaults = ctx.snapshot.routes?.defaultRoutes || [];
-      const active = defaults.filter((row) => row.active && !row.disabled);
-      const primary = active.slice().sort((a, b) => Number(a.distance || 0) - Number(b.distance || 0))[0];
-      if (primary) {
-        const table = primary.table || primary.routingTable || 'main';
-        const gateway = primary.gateway || primary.gatewayStatus || '-';
-        return `${table} 表 active ${fmtNumber(active.length)} 条，首选 ${gateway} distance ${primary.distance ?? '-'}`;
-      }
-      if (ctx.routeHealth.active) return `${fmtNumber(ctx.routeHealth.active)} 条 active 默认路由`;
-      return ctx.routeHealth.text || ctx.routeHealth.label || '未采集默认路由';
+      return overviewRouteSummary(ctx);
     }
 
     function mobileOfflineImpact(ctx) {
-      const offlineRows = ctx.offlineWanRows || [];
-      if (!offlineRows.length) return ctx.routeHealth.level === 'ok' ? '未见线路影响' : ctx.routeHealth.text;
-      const activeRouteOffline = offlineRows.some((row) => (row.routes || []).some((route) => route.active && !route.disabled));
-      const offlineRate = offlineRows.reduce((sum, row) => sum + totalTrafficRate(row), 0);
-      if (activeRouteOffline) return '影响默认路由，需关注';
-      if (offlineRate > 0) return `离线对象仍有 ${fmtRate(offlineRate)} 快照速率`;
-      return '离线线路未承载默认路由，影响低';
+      return overviewOfflineImpact(ctx);
     }
 
     function mobileWanEvidenceRows(ctx) {
@@ -6391,28 +6647,10 @@
 
     function renderOverviewMobileConsole(ctx) {
       const history = isHistorySnapshot(ctx.freshness);
-      const labels = historyAwareCapabilityLabels(ctx.capabilities, ctx.freshness);
-      const restLabel = stripChannelPrefix(labels.restLabel, 'REST');
-      const sshLabel = stripChannelPrefix(labels.sshLabel, 'SSH');
-      const level = mobileDecisionLevel(ctx);
-      const offlineNames = (ctx.offlineWanRows || [])
-        .slice(0, 3)
-        .map((row) => row.name || row.interface || '')
-        .filter(Boolean);
-      const decision = ctx.routeHealth.level === 'danger'
-        ? '当前状态：默认路由异常，需立即确认路由表快照'
-        : ctx.wanHealth.offline > 0
-          ? `当前状态：${history ? `历史快照数据陈旧 ${ctx.freshness.text || ''}，` : ''}WAN ${ctx.wanHealth.label}，需关注 ${fmtNumber(ctx.wanHealth.offline)} 条线路`
-        : ctx.collectionRisk.level !== 'ok'
-            ? `当前状态：${history ? '历史快照' : ''}${ctx.freshness.stale ? `数据陈旧 ${ctx.freshness.text || ''}` : ctx.collectionRisk.label}，业务数字仅供快照参考`
-            : history
-              ? `当前状态：历史快照，${ctx.freshness.text || '-'} 未刷新`
-              : '当前状态：面板未发现核心异常';
-      const offlineText = offlineNames.length
-        ? `WAN 离线 ${fmtNumber(ctx.wanHealth.offline)} 条：${offlineNames.join('、')}`
-        : (ctx.wanHealth.offline ? `WAN 离线 ${fmtNumber(ctx.wanHealth.offline)} 条` : 'WAN 未见离线对象');
-      const routeText = mobileRouteSummary(ctx);
-      const impactText = mobileOfflineImpact(ctx);
+      const v = ctx.verdict || buildOverviewVerdict(ctx);
+      const level = v.level;
+      const routeText = v.routeText;
+      const impactText = v.impactText;
       const prefix = history ? '快照' : '当前';
       const totalRate = Number(ctx.wanRates.up || 0) + Number(ctx.wanRates.down || 0);
       const metric = (title, main, sub, extra) => `<div class="ik-mobile-metric" data-overview-field>
@@ -6425,24 +6663,24 @@
       return `<div class="ik-mobile-console" data-overview-mobile-console>
         ${renderOverviewMobileAlert(ctx)}
         <div class="ik-mobile-incident-card is-${escapeHtml(level)}" data-overview-mobile-incident>
-          <div class="ik-mobile-incident-title" data-overview-field>${escapeHtml(decision)}</div>
+          <div class="ik-mobile-incident-title" data-overview-field>${escapeHtml(v.conclusion)}</div>
           <div class="ik-mobile-incident-evidence">
-            <div data-overview-field>${escapeHtml(offlineText)}</div>
-            <div data-overview-field>数据 <b>${escapeHtml(ctx.freshness.text || '-')}</b></div>
-            <div data-overview-field>采集 <b>REST ${escapeHtml(restLabel)} / SSH ${escapeHtml(sshLabel)}</b></div>
+            <div data-overview-field>${escapeHtml(v.offlineText)}</div>
+            <div data-overview-field>数据可信 <b>${escapeHtml(v.ageFirstText)}</b></div>
+            <div data-overview-field>采集可信 <b>REST ${escapeHtml(v.collection.restLabel)} / SSH ${escapeHtml(v.collection.sshLabel)}</b></div>
             <div data-overview-field>默认路由 <b>${escapeHtml(routeText)}</b></div>
             <div data-overview-field>总吞吐 <b>${fmtRate(totalRate)}</b></div>
             <div data-overview-field>影响 <b>${escapeHtml(impactText)}</b></div>
           </div>
         </div>
         <div class="ik-mobile-metric-grid" data-overview-mobile-metrics>
+          ${metric('可信', v.ageFirstText, `REST ${v.collection.restLabel}`, `SSH ${v.collection.sshLabel}`)}
           ${metric('WAN', `${fmtNumber(ctx.wanHealth.online)}/${fmtNumber(ctx.wanHealth.total)}`, `离线 ${fmtNumber(ctx.wanHealth.offline)}`, ctx.routeHealth.level === 'ok' ? '默认路由 active' : ctx.routeHealth.label)}
-          ${metric('流量', fmtRate(totalRate), `上 ${fmtRate(ctx.wanRates.up)}`, `下 ${fmtRate(ctx.wanRates.down)}`)}
+          ${metric('采集', v.collection.level === 'ok' ? '可用' : '降级', ctx.failures.count ? `失败 ${fmtNumber(ctx.failures.count)}` : '无失败端点', v.nextAction)}
           ${metric('资源', `CPU ${fmtPercent(ctx.o.cpuLoad)}`, `内存 ${fmtPercent(ctx.o.memoryUsage)}`, `磁盘 ${fmtPercent(ctx.o.diskUsage)} / 连接 ${fmtCompact(ctx.connectionTotal)}`)}
-          ${metric('采集', ctx.freshness.stale ? '快照' : '可用', `年龄 ${ctx.freshness.text || '-'}`, `REST ${restLabel} / SSH ${sshLabel}`)}
         </div>
         <div class="ik-mobile-compact-section" data-overview-mobile-wan-table>
-          <div class="ik-mobile-section-head" data-overview-field>WAN 状态紧凑表 <span>${escapeHtml(prefix)} · 离线置顶 · 对象 / 状态 / 父接口 / 默认路由 / 速率 / 采样</span></div>
+          <div class="ik-mobile-section-head" data-overview-field>WAN 证据链 <span>${escapeHtml(prefix)} · 离线置顶 · 对象 / 状态 / 父接口 / 默认路由 / 速率 / 采样</span></div>
           <div class="ik-mobile-wan-row is-head" data-overview-field><span>对象</span><span>状态</span><span>父接口</span><span>默认路由</span><span>速率</span><span>采样</span></div>
           ${mobileWanEvidenceRows(ctx)}
         </div>
@@ -6587,7 +6825,7 @@
         .filter((key) => ctx.accessBuckets[key].total)
         .map((key) => `<div class="ik-summary-box"><div class="subtle">${key}</div><b>${fmtNumber(ctx.accessBuckets[key].online)} / ${fmtNumber(ctx.accessBuckets[key].total)}</b></div>`)
         .join('') || `<div class="ik-summary-box"><div class="subtle">WAN 线路</div><b>未采集</b></div>`;
-      const rankSubtitle = isHistorySnapshot(ctx.freshness) ? '上次采样排行 · Top 5' : '实时流量排行 · Top 5';
+      const rankSubtitle = isHistorySnapshot(ctx.freshness) ? '快照排行 · Top 5' : '实时流量排行 · Top 5';
       const wanHealthText = snapshotStatusText(ctx.wanHealth.text, ctx.freshness);
       return `<div class="ik-home-desktop-detail" data-overview-desktop-detail>
         <div class="stack">
@@ -6738,10 +6976,12 @@
         terminals,
         connections
       };
+      ctx.verdict = buildOverviewVerdict(ctx);
       const trustModeClass = isHistorySnapshot(freshness) ? ' is-history-snapshot' : '';
       return section('只读状态首页', 'overview', '', `
         <div class="ik-home-trust-mode${trustModeClass}" data-overview-trust-mode="${isHistorySnapshot(freshness) ? 'history' : 'live'}">
           ${renderOverviewMobileConsole(ctx)}
+          ${renderOverviewVerdictPanel(ctx)}
           ${renderOverviewStatusBar(ctx)}
           ${renderOverviewIncidentLine(ctx)}
           ${renderOverviewSummary(ctx)}
