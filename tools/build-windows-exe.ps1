@@ -12,11 +12,30 @@ $BuildPython = Join-Path $BuildVenv "Scripts\python.exe"
 $DistDir = Join-Path $RepoRoot "dist\routeros-triage-panel"
 $ZipPath = Join-Path $RepoRoot ("dist\{0}.zip" -f $PackageName)
 
-if (-not (Test-Path -LiteralPath $BuildPython)) {
+function New-BuildVenv {
+    param([switch]$Force)
+
+    if ($Force -and (Test-Path -LiteralPath $BuildVenv)) {
+        Remove-Item -LiteralPath $BuildVenv -Recurse -Force
+    }
     & $Python -m venv $BuildVenv
     if ($LASTEXITCODE -ne 0) {
         throw "Failed to create build venv with exit code ${LASTEXITCODE}"
     }
+}
+
+function Test-BuildPip {
+    & $BuildPython -m pip --version
+    return ($LASTEXITCODE -eq 0)
+}
+
+if (-not (Test-Path -LiteralPath $BuildPython)) {
+    New-BuildVenv
+}
+
+if (-not (Test-BuildPip)) {
+    Write-Warning "Build venv exists but pip is unavailable; recreating $BuildVenv"
+    New-BuildVenv -Force
 }
 
 & $BuildPython -m pip --version

@@ -61,20 +61,58 @@ function Test-UsageOutput {
   return (-not [string]::IsNullOrWhiteSpace($Text)) -and ($Text -match "(?i)(usage|options|help|install|dry-run)")
 }
 
+function ConvertTo-BashSingleQuoted {
+  param([string]$Text)
+  return "'$($Text -replace "'", "'\''")'"
+}
+
+function Invoke-BashLoginCommand {
+  param(
+    [Parameter(Mandatory = $true)]
+    [string]$BashPath,
+    [Parameter(Mandatory = $true)]
+    [string]$Command
+  )
+
+  return Invoke-CapturedCommand $BashPath @("-lc", $Command)
+}
+
 function Get-UsableBash {
   $candidates = @(
-    "C:\Program Files\Git\bin\bash.exe",
     "C:\Program Files\Git\usr\bin\bash.exe",
+    "C:\Program Files\Git\bin\bash.exe",
+    "C:\Program Files (x86)\Git\usr\bin\bash.exe",
     "C:\Program Files (x86)\Git\bin\bash.exe"
   )
 
+  $available = @()
   foreach ($candidate in $candidates) {
     if (Test-Path -LiteralPath $candidate) {
+      $available += $candidate
+    }
+  }
+
+  $pathBash = Get-Command bash -ErrorAction SilentlyContinue | Select-Object -First 1
+  if ($pathBash) {
+    $available += $pathBash.Source
+  }
+  $available = @($available | Select-Object -Unique)
+
+  foreach ($candidate in $available) {
+    $probe = Invoke-CapturedCommand $candidate @("-lc", "command -v id >/dev/null 2>&1 && id -u >/dev/null 2>&1")
+    if ($probe.ExitCode -eq 0) {
       return [pscustomobject]@{ Source = $candidate }
     }
   }
 
-  return Get-Command bash -ErrorAction SilentlyContinue | Select-Object -First 1
+  foreach ($candidate in $available) {
+    $probe = Invoke-CapturedCommand $candidate @("-lc", "true")
+    if ($probe.ExitCode -eq 0) {
+      return [pscustomobject]@{ Source = $candidate }
+    }
+  }
+
+  return $null
 }
 
 Push-Location $repoRoot
@@ -233,7 +271,8 @@ try {
       else {
         $installText = Get-Content -Raw -LiteralPath $installPath
 
-        $syntaxResult = Invoke-CapturedCommand $bash.Source @("-n", $InstallScript)
+        $quotedInstallScript = ConvertTo-BashSingleQuoted $InstallScript
+        $syntaxResult = Invoke-BashLoginCommand $bash.Source "bash -n $quotedInstallScript"
         if ($syntaxResult.ExitCode -eq 0) {
           Add-Check "PASS" "bash syntax" "bash -n $InstallScript completed."
         }
@@ -250,7 +289,7 @@ try {
           Add-Check "FAIL" "install help" "$InstallScript does not advertise --help/-h; help command was not executed to avoid side effects."
         }
         else {
-          $helpResult = Invoke-CapturedCommand $bash.Source @($InstallScript, "--help")
+          $helpResult = Invoke-BashLoginCommand $bash.Source "bash $quotedInstallScript --help"
           if (($helpResult.ExitCode -eq 0) -and (Test-UsageOutput $helpResult.Output)) {
             Add-Check "PASS" "install help" "bash $InstallScript --help returned usage-like output."
           }
@@ -269,7 +308,7 @@ try {
           Add-Check $status "install dry-run" "$InstallScript does not advertise --dry-run; command was not executed."
         }
         else {
-          $dryRunResult = Invoke-CapturedCommand $bash.Source @($InstallScript, "--dry-run")
+          $dryRunResult = Invoke-BashLoginCommand $bash.Source "bash $quotedInstallScript --dry-run"
           if ($dryRunResult.ExitCode -eq 0) {
             Add-Check "PASS" "install dry-run" "bash $InstallScript --dry-run completed."
             if ($dryRunResult.Output -match "bind:\s+127\.0\.0\.1" -and

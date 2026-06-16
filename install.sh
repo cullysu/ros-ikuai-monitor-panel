@@ -55,7 +55,11 @@ die() {
 }
 
 default_install_dir() {
-  if [[ "$(id -u)" -eq 0 ]]; then
+  local uid="${EUID:-}"
+  if [[ -z "$uid" ]] && command -v id >/dev/null 2>&1; then
+    uid="$(id -u)"
+  fi
+  if [[ "$uid" == "0" ]]; then
     printf '/opt/routeros-triage-panel\n'
   else
     printf '%s/routeros-triage-panel\n' "${XDG_DATA_HOME:-${HOME}/.local/share}"
