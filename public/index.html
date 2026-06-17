@@ -1385,7 +1385,7 @@
     .ik-home-desktop-detail {
       display: grid;
       grid-template-columns: minmax(0, 1.14fr) minmax(360px, .86fr);
-      gap: 4px;
+      gap: 2px;
       align-items: stretch;
       min-width: 0;
     }
@@ -1394,7 +1394,7 @@
       min-width: 0;
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 2px;
     }
     .ik-home-density-card {
       min-width: 0;
@@ -1446,7 +1446,7 @@
       align-items: center;
       gap: 0;
       min-height: 32px;
-      margin-bottom: 4px;
+      margin-bottom: 2px;
       border: 1px solid #ded8ee;
       border-radius: 6px;
       background: #f8f6fd;
@@ -1521,13 +1521,16 @@
     .ik-home-freshness-card .freshness-strip {
       margin-bottom: 0;
       grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 6px;
+      gap: 4px;
+    }
+    .ik-home-freshness-card .freshness-item:last-child {
+      grid-column: 1 / -1;
     }
     .ik-home-line-risk-grid {
       display: grid;
       grid-template-columns: repeat(5, minmax(0, 1fr));
-      gap: 4px;
-      margin-top: 4px;
+      gap: 2px;
+      margin-top: 2px;
     }
     .ik-home-line-risk-grid .ik-summary-box {
       min-height: 42px;
@@ -1536,7 +1539,7 @@
     .ik-home-session-grid {
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 4px;
+      gap: 2px;
       min-width: 0;
     }
     .ik-home-session-grid .ik-summary-box {
@@ -1546,7 +1549,7 @@
     .ik-home-signal-grid {
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 4px;
+      gap: 2px;
       min-width: 0;
     }
     .ik-home-signal-card .ik-summary-box {
@@ -1556,8 +1559,8 @@
     .ik-home-evidence-split {
       display: grid;
       grid-template-columns: minmax(0, 1fr) minmax(260px, .8fr);
-      gap: 4px;
-      margin-top: 4px;
+      gap: 2px;
+      margin-top: 2px;
       min-width: 0;
     }
     .ik-home-mini-table-wrap {
@@ -1592,7 +1595,7 @@
     }
     .ik-home-evidence-list {
       display: grid;
-      gap: 4px;
+      gap: 2px;
       min-width: 0;
     }
     .ik-home-evidence-row {
@@ -1679,16 +1682,16 @@
     }
     .ik-mobile-incident-card {
       margin-top: 4px;
-      border: 1px solid #ffd2a1;
-      border-left: 4px solid #f08c00;
+      border: 1px solid #e2e8f1;
+      border-left: 4px solid #9aa8bb;
       border-radius: 4px;
-      background: #fffaf1;
+      background: #fbfcfe;
       overflow: hidden;
     }
     .ik-mobile-incident-card.is-danger {
       border-color: #ffc8cc;
       border-left-color: #d93025;
-      background: #fff6f6;
+      background: #fff8f8;
     }
     .ik-mobile-incident-card.is-ok {
       border-color: #caead9;
@@ -1698,7 +1701,7 @@
     .ik-mobile-incident-title {
       padding: 6px 8px 5px;
       color: #1f2d3d;
-      font-size: 12px;
+      font-size: 11.5px;
       font-weight: 900;
       line-height: 1.22;
       overflow-wrap: anywhere;
@@ -1883,17 +1886,17 @@
       color: #5f3d00;
     }
     .ik-mobile-incident-card.is-danger {
-      background: linear-gradient(180deg, #fff2f3 0%, #fff8f8 100%);
+      background: linear-gradient(180deg, #fff7f8 0%, #fffafa 100%);
     }
     .ik-mobile-incident-title {
-      padding: 7px 8px 6px;
-      font-size: 12.5px;
-      line-height: 1.28;
+      padding: 6px 8px 5px;
+      font-size: 11.5px;
+      line-height: 1.24;
     }
     .ik-mobile-incident-title div + div {
       margin-top: 2px;
       color: #5e6b7f;
-      font-size: 11px;
+      font-size: 10.5px;
       font-weight: 800;
     }
     .ik-mobile-incident-evidence {
@@ -2024,7 +2027,7 @@
       display: grid;
       grid-template-columns: minmax(0, 1fr);
       gap: 4px;
-      margin-bottom: 4px;
+      margin-bottom: 6px;
       min-width: 0;
     }
     .ik-home-verdict-main,
@@ -2036,6 +2039,13 @@
       background: #fff7eb;
       overflow: hidden;
       box-shadow: none;
+    }
+    .ik-home-verdict-main {
+      display: grid;
+      grid-template-columns: minmax(190px, 1.1fr) minmax(180px, .85fr) minmax(0, 2fr) minmax(220px, .82fr);
+      align-items: stretch;
+      min-height: 58px;
+      max-height: 72px;
     }
     .ik-home-verdict-main.is-danger,
     .ik-home-verdict-side.is-danger {
@@ -2056,35 +2066,62 @@
       background: #f6f7f9;
     }
     .ik-home-verdict-title {
-      padding: 8px 10px 6px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-width: 0;
+      padding: 6px 10px;
       color: #172033;
-      font-size: 16px;
+      font-size: 13px;
       font-weight: 900;
-      line-height: 1.2;
-      overflow-wrap: anywhere;
+      line-height: 1.15;
+      overflow: hidden;
+    }
+    .ik-home-verdict-title div {
+      min-width: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .ik-home-verdict-title div + div {
+      margin-top: 3px;
+      color: #5f6d7f;
+      font-size: 10.5px;
+      font-weight: 800;
     }
     .ik-home-verdict-sub {
-      padding: 0 10px 8px;
+      display: flex;
+      align-items: center;
+      min-width: 0;
+      padding: 6px 10px;
+      border-left: 1px solid rgba(196, 142, 66, .18);
       color: #5f6d7f;
-      font-size: 11px;
+      font-size: 10.5px;
       font-weight: 800;
-      line-height: 1.35;
+      line-height: 1.25;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
     .ik-home-verdict-row,
     .ik-home-next-row {
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
-      border-top: 1px solid rgba(196, 142, 66, .18);
+      border-top: 0;
+      border-left: 1px solid rgba(196, 142, 66, .18);
     }
     .ik-home-verdict-row div,
     .ik-home-next-row div {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
       min-width: 0;
-      padding: 6px 8px;
+      padding: 5px 7px;
       border-left: 1px solid rgba(196, 142, 66, .18);
       color: #657386;
-      font-size: 10px;
+      font-size: 9.5px;
       font-weight: 800;
-      line-height: 1.2;
+      line-height: 1.15;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -2096,8 +2133,12 @@
     .ik-home-verdict-row b,
     .ik-home-next-row b {
       color: #1f2d3d;
-      font-size: 11px;
-      margin-left: 4px;
+      font-size: 10.5px;
+      margin-left: 0;
+      margin-top: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .ik-home-priority-list {
       display: grid;
@@ -2148,19 +2189,21 @@
     }
     .ik-home-action-links {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-columns: minmax(0, 1fr);
       gap: 4px;
-      padding: 6px 8px 8px;
-      border-top: 1px solid rgba(196, 142, 66, .18);
+      align-content: center;
+      padding: 5px 7px;
+      border-top: 0;
+      border-left: 1px solid rgba(196, 142, 66, .18);
     }
     .ik-home-action-link {
       min-width: 0;
       border: 1px solid #dbe5f1;
       border-radius: 4px;
       background: #fff;
-      padding: 5px 6px;
+      padding: 3px 6px;
       color: #274b75;
-      font-size: 10px;
+      font-size: 9.5px;
       font-weight: 900;
       text-decoration: none;
       text-align: center;
@@ -6636,16 +6679,16 @@
       const offlineRows = ctx.offlineWanRows || [];
       const history = ctx.freshness?.stale || isHistorySnapshot(ctx.freshness);
       if (!offlineRows.length) return ctx.routeHealth.level === 'ok'
-        ? (history ? '上次采样未见线路影响，当前影响未知' : '未见线路影响')
+        ? (history ? '上次采样未见线路影响；当前不可判定，按降级处理' : '未见线路影响')
         : ctx.routeHealth.text;
       if (ctx.wanHealth?.total > 0 && ctx.wanHealth.online === 0) {
-        return history ? '上次采样全部 WAN 离线，当前影响未知' : '全部 WAN 离线，默认路由不可用';
+        return history ? '上次采样全部 WAN 离线；非实时需复核，按降级处理' : '全部 WAN 离线，默认路由不可用';
       }
       const activeRouteOffline = offlineRows.some((row) => (row.routes || []).some((route) => route.active && !route.disabled));
       const offlineRate = offlineRows.reduce((sum, row) => sum + totalTrafficRate(row), 0);
       if (activeRouteOffline) return '影响默认路由，需立即查看路由表快照';
       if (offlineRate > 0) return `离线线路仍有 ${fmtRate(offlineRate)} 快照速率，需核对线路状态`;
-      if (history) return '上次采样影响低，当前影响未知';
+      if (history) return '上次采样影响低；当前不可判定，按降级处理';
       return '离线线路当前无流量，未承载默认路由，影响低';
     }
 
@@ -6687,6 +6730,7 @@
       const stalePrefix = ctx.freshness.stale || history
         ? `${history ? '历史快照' : ''}数据陈旧 ${ctx.freshness.text || '-'}`
         : '数据新鲜';
+      const staleGuardText = (ctx.freshness.stale || history) ? `${stalePrefix}，非实时需复核，按降级处理` : stalePrefix;
       const wanPart = ctx.wanHealth.offline > 0
         ? `WAN ${ctx.wanHealth.label}，需关注 ${fmtNumber(ctx.wanHealth.offline)} 条线路`
         : `WAN ${ctx.wanHealth.label}`;
@@ -6722,7 +6766,7 @@
           ]
         : [
             allWanOffline ? `WAN 全部离线 0/${fmtNumber(ctx.wanHealth.total)}` : (top.key === 'wan-offline' ? `WAN ${ctx.wanHealth.label} ${fmtNumber(ctx.wanHealth.offline)} 条` : riskDetailText),
-            (ctx.freshness.stale || history) ? `${stalePrefix}，当前影响未知` : (allWanOffline ? '默认路由不可用，需立即查看 WAN 状态' : riskDetailText)
+            (ctx.freshness.stale || history) ? staleGuardText : (allWanOffline ? '默认路由不可用，需立即查看 WAN 状态' : riskDetailText)
           ];
       const nextAction = top.key === 'route-danger'
         ? '优先查看：路由表快照'
@@ -6733,6 +6777,13 @@
             : top.key === 'resource-load'
               ? '优先查看：资源状态'
               : '优先查看：状态明细';
+      const evidenceLead = offlineNames.length
+        ? `离线对象：${offlineNames.join('、')}`
+        : ctx.wanHealth.offline > 0
+          ? `离线对象：${fmtNumber(ctx.wanHealth.offline)} 条待展开`
+          : '离线对象：未见';
+      const actionLead = `${nextAction.replace(/^优先查看：/, '处置：')}`;
+      const supportLine = `${evidenceLead} · 默认路由 ${overviewRouteSummary(ctx)}`;
       return {
         level: top.level,
         topKey: top.key,
@@ -6740,6 +6791,8 @@
         priority: rules,
         conclusion,
         conclusionLines,
+        actionLead,
+        supportLine,
         offlineText: offlineNames.length ? `WAN 离线 ${fmtNumber(ctx.wanHealth.offline)} 条：${offlineNames.join('、')}` : 'WAN 未见离线对象',
         routeText: overviewRouteSummary(ctx),
         accessText: overviewWanAccessImpact(ctx),
@@ -6752,23 +6805,19 @@
 
     function renderOverviewVerdictPanel(ctx) {
       const v = ctx.verdict || buildOverviewVerdict(ctx);
-      const totalRate = Number(ctx.wanRates.up || 0) + Number(ctx.wanRates.down || 0);
       const priorityItems = v.priority.map((item) => `<div class="ik-home-priority-item${item.active ? ` is-active is-${escapeHtml(item.level)}` : ''}" data-overview-field data-overview-priority="${escapeHtml(item.key)}">${escapeHtml(item.label)}</div>`).join('');
+      const conclusionLines = (v.conclusionLines || [v.conclusion]).slice(0, 2);
+      const primaryLine = conclusionLines[0] || v.conclusion || v.topLabel;
+      const secondaryLine = conclusionLines[1] || v.supportLine || v.ageFirstText;
       return `<div class="ik-home-verdict-panel" data-overview-verdict-panel>
         <div class="ik-home-verdict-main is-${escapeHtml(v.level)}" data-overview-main-verdict>
-          <div class="ik-home-verdict-title" data-overview-field>${(v.conclusionLines || [v.conclusion]).slice(0, 2).map((line) => `<div>${escapeHtml(line)}</div>`).join('')}</div>
-          <div class="ik-home-verdict-sub" data-overview-field>当前最高：${escapeHtml(v.topLabel)} · 规则：断网 / 路由不可达 &gt; 默认路由异常 &gt; WAN 离线 &gt; 数据陈旧 &gt; 采集降级 &gt; 资源高负载</div>
+          <div class="ik-home-verdict-title" data-overview-field data-overview-primary-conclusion><div>${escapeHtml(primaryLine)}</div><div>${escapeHtml(secondaryLine)}</div></div>
+          <div class="ik-home-verdict-sub" data-overview-field>当前最高：${escapeHtml(v.topLabel)} · 数据状态 ${escapeHtml(v.ageFirstText)} · 采集状态 REST ${escapeHtml(v.collection.restLabel)} / SSH ${escapeHtml(v.collection.sshLabel)}</div>
           <div class="ik-home-verdict-row">
-            <div data-overview-field>数据状态 <b>${escapeHtml(v.ageFirstText)}</b></div>
-            <div data-overview-field>WAN 线路证据 <b>${escapeHtml(v.offlineText)}</b></div>
+            <div data-overview-field>WAN 证据链 <b>${escapeHtml(v.offlineText)}</b></div>
             <div data-overview-field>默认路由 <b>${escapeHtml(v.routeText)}</b></div>
             <div data-overview-field>影响范围 <b>${escapeHtml(v.impactText)}</b></div>
-          </div>
-          <div class="ik-home-next-row">
-            <div data-overview-field>采集状态 <b>${escapeHtml(v.collection.text)}</b></div>
             <div data-overview-field>WAN 分组 <b>${escapeHtml(v.accessText)}</b></div>
-            <div data-overview-field>总吞吐 <b>${fmtRate(totalRate)}</b></div>
-            <div data-overview-field>优先查看 <b>${escapeHtml(v.nextAction)}</b></div>
           </div>
           <div class="ik-home-action-links" data-overview-next-actions>
             <a class="ik-home-action-link" href="#lineStatus" data-section="lineStatus">查看 WAN 状态</a>
@@ -6812,7 +6861,7 @@
         : v.topLabel;
       const sub = `${v.ageFirstText} · WAN ${fmtNumber(ctx.wanHealth.online)}/${fmtNumber(ctx.wanHealth.total)} · REST ${v.collection.restLabel} · SSH ${v.collection.sshLabel}`;
       return `<div class="ik-mobile-alert-strip ik-mobile-alarm-head is-${escapeHtml(v.level)}${v.level === 'ok' ? ' is-empty' : ''}" data-overview-mobile-alert data-overview-mobile-alarm>
-        <div class="ik-mobile-head-item is-primary" data-overview-field>${escapeHtml(alertLabel)}</div>
+        <div class="ik-mobile-head-item is-primary" data-overview-field data-overview-primary-conclusion>${escapeHtml(alertLabel)}</div>
         <div class="ik-mobile-head-item is-secondary" data-overview-field>${escapeHtml(sub)}</div>
       </div>`;
     }
@@ -6953,7 +7002,7 @@
       return `<div class="ik-mobile-console" data-overview-mobile-console>
         ${renderOverviewMobileAlert(ctx)}
         <div class="ik-mobile-incident-card is-${escapeHtml(level)}" data-overview-mobile-incident>
-          <div class="ik-mobile-incident-title" data-overview-field>${(v.conclusionLines || [v.conclusion]).slice(0, 2).map((line) => `<div>${escapeHtml(line)}</div>`).join('')}</div>
+          <div class="ik-mobile-incident-title" data-overview-field data-overview-evidence-action><div>${escapeHtml(v.actionLead)}</div><div>${escapeHtml(v.supportLine)}</div></div>
           <div class="ik-mobile-incident-evidence">
             <div data-overview-field>${escapeHtml(v.offlineText)}</div>
             <div data-overview-field>数据状态 <b>${escapeHtml(v.ageFirstText)}</b></div>
