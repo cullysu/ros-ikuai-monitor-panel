@@ -2032,15 +2032,15 @@
           : 'warn';
     const stateLabel = level === 'danger' ? '故障' : level === 'warn' ? '注意' : '正常';
     const reasonList = blockers.concat(observations);
-    const action = !row.running
-      ? '检查拨号链路'
+    const statusEvidence = !row.running
+      ? '拨号离线'
       : !hasAddress
-        ? '检查地址获取'
+        ? '地址未取得'
         : !hasActiveRoute
-          ? '检查默认路由'
+          ? '无活动默认路由'
           : errorTotal > 0
-            ? '检查父接口错误'
-            : '保持观察';
+            ? '父接口错误计数'
+            : '状态稳定';
 
     return {
       row,
@@ -2054,7 +2054,7 @@
       blockers,
       observations,
       reasonList,
-      action,
+      statusEvidence,
       hasAddress,
       hasActiveRoute,
       dropTotal,
@@ -3245,7 +3245,7 @@
         <td>${fmtNumber(item.score)}</td>
         <td>${opsTwoLineCell(tag(item.role.label, item.role.level), item.activeTables.length ? item.activeTables.map(escapeHtml).join(' / ') : '无活动表')}</td>
         <td>${diagnosticReasonCell(item)}</td>
-        <td>${escapeHtml(item.action)}</td>
+        <td>${escapeHtml(item.statusEvidence || '-')}</td>
         <td>${opsTwoLineCell(`拨号 ${item.row.running ? '是' : '否'} / 地址 ${item.hasAddress ? '是' : '否'}`, `路由 ${item.hasActiveRoute ? '是' : '否'}`)}</td>
         <td>${packetSummaryCell(item.dropTotal, item.errorTotal)}</td>
         <td>${opsTwoLineCell(fmtRate(item.row.upRate), fmtRate(item.row.downRate))}</td>
@@ -3299,7 +3299,7 @@
       <tr>
         <td>${escapeHtml(item.row.name)}</td>
         <td>${opsTwoLineCell(tag(item.stateLabel, item.level), `${fmtNumber(item.score)} 分`)}</td>
-        <td>${opsTwoLineCell(escapeHtml(item.action || '等待处理建议'), escapeHtml(item.row.parent || '-'))}</td>
+        <td>${opsTwoLineCell(escapeHtml(item.statusEvidence || '等待状态证据'), escapeHtml(item.row.parent || '-'))}</td>
         <td>${opsTwoLineCell(fmtRate(item.row.upRate), fmtRate(item.row.downRate))}</td>
       </tr>`);
     const parentHealthRows = diagnosticQueue.slice(0, 8).map((item) => {

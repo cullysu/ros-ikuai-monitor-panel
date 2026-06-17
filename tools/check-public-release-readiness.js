@@ -24,6 +24,23 @@ function assertNotContains(relPath, needle, label = needle) {
   }
 }
 
+function assertPublicBoundaryClean(relPath) {
+  const banned = [
+    'semanticTriage',
+    'actionQueue',
+    'manual_review',
+    'nextStep',
+    '处理建议',
+    '风险优先队列',
+    '诊断主线',
+    '数据新鲜',
+    '当前数据新鲜',
+  ];
+  for (const needle of banned) {
+    assertNotContains(relPath, needle);
+  }
+}
+
 function main() {
   const ghcrImage = 'ghcr.io/cullysu/ros-ikuai-monitor-panel:main';
 
@@ -163,6 +180,10 @@ function main() {
   assertContains('tools/local-predeploy-check.js', 'readonlyDiagnostics');
   assertNotContains('app.py', 'semanticTriage');
   assertNotContains('app.py', 'actionQueue');
+  assertNotContains('app.py', 'manual_review');
+  assertPublicBoundaryClean('public/index.html');
+  assertPublicBoundaryClean('public/scale-adaptive-patch.js');
+  assertPublicBoundaryClean('public/layout-whitespace-patch.js');
   assertNotContains('public/index.html', 'events.length');
 
   assertContains('public/index.html', '路由与分流状态');

@@ -664,8 +664,8 @@
     return text.length > 90 ? `${text.slice(0, 90)}...` : text;
   }
 
-  function issue(level, title, summary, nextStep, target = 'interfaces') {
-    return { level, title, summary, nextStep, target };
+  function issue(level, title, summary, evidence, target = 'interfaces') {
+    return { level, title, summary, evidence, target };
   }
 
   function interfaceErrors(row) {
@@ -1048,15 +1048,17 @@
   }
 
   function overviewActions(snapshot) {
-    const rows = (snapshot.actionQueue || snapshot.semanticTriage?.queue || []).slice(0, 4);
+    const statusRows = Array.isArray(snapshot.statusFindings?.findings) ? snapshot.statusFindings.findings : [];
+    const healthRows = Array.isArray(snapshot.healthFindings?.findings) ? snapshot.healthFindings.findings : [];
+    const rows = statusRows.concat(healthRows).slice(0, 4);
     if (!rows.length) {
-      return '<div class="pm-action-list"><div class="pm-action-item"><span>状态</span><b>暂无行动项</b><span>保持观察，必要时进入详情页查看证据。</span></div></div>';
+      return '<div class="pm-action-list"><div class="pm-action-item"><span>状态</span><b>暂无状态发现</b><span>当前未见需要前置的异常证据。</span></div></div>';
     }
     return `<div class="pm-action-list">${rows.map((item) => {
       const tone = severityTone(item);
       return `<div class="pm-action-item">
         <span class="pm-action-severity is-${tone}">${html(item.severity || item.level || 'info')}</span>
-        <div><b>${html(item.title || item.id || '-')}</b><span>${html(item.nextStep || item.summary || item.source || '-')}</span></div>
+        <div><b>${html(item.title || item.id || '-')}</b><span>${html(item.evidence || item.summary || item.source || item.detail || '-')}</span></div>
       </div>`;
     }).join('')}</div>`;
   }
@@ -1317,7 +1319,7 @@
     const collect = collectionState(snapshot);
     const overviewWanMeta = scaleFor(snapshot, 'wan', lines);
     const issues = overviewIssues(snapshot, lines, interfaces);
-    const topIssue = issues[0] || issue('ok', '当前没有高优先级风险', '线路、接口、连接和系统负载未发现需要立刻处理的信号。', '保持观察；需要细节时进入接口、流量、终端或 DHCP 页面下钻。', 'interfaces');
+    const topIssue = issues[0] || issue('ok', '当前没有高优先级异常', '线路、接口、连接和系统负载未发现需前置展示的异常信号。', '接口、流量、终端或 DHCP 页面保留明细证据。', 'interfaces');
     const onlineLines = lines.filter((row) => row.running).length;
     const history = overview.history || {};
     const aggregateWan = wanAggregateLine(lines, overview);
@@ -1472,7 +1474,7 @@
       || rows.find((row) => interfaceErrors(row) > 0)
       || busiest;
     const focusTitle = focus
-      ? (isInterfaceDown(focus) ? '优先处理：离线/禁用接口' : interfaceNeedsAttention(focus) ? '优先处理：最近新增丢错接口' : interfaceErrors(focus) > 0 ? '观察：历史累计丢错接口' : '当前最忙接口')
+      ? (isInterfaceDown(focus) ? '状态：离线/禁用接口' : interfaceNeedsAttention(focus) ? '状态：最近新增丢错接口' : interfaceErrors(focus) > 0 ? '观察：历史累计丢错接口' : '当前最忙接口')
       : '等待接口数据';
     const focusDetail = focus
       ? `${focus.name || '-'} · ${interfaceRole(focus)} · ${rate(totalRate(focus, 'txRate', 'rxRate'))} · ${interfaceQualityEvidence(focus)}`
@@ -1510,7 +1512,7 @@
             <div class="pm-interface-focus-title">${html(focusTitle)}</div>
             <b>${html(focus?.name || '-')}</b>
             <span>${html(focusDetail)}</span>
-            <span>建议先看“最近新增”和“最近丢包率”；VLAN/macvlan 逻辑接口已降权展示。</span>
+            <span>默认显示“最近新增”和“最近丢包率”；VLAN/macvlan 逻辑接口已降权展示。</span>
           </div>
         </div>
         ${renderBroadbandRealtimeTable(wanLines)}
