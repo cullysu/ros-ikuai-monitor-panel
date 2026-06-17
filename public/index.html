@@ -1524,20 +1524,24 @@
     .ik-home-density-card .card-body {
       padding: 6px;
     }
+    .ik-home-evidence-grid.is-state-bus .ik-summary-box {
+      min-height: 44px;
+      padding: 5px 6px;
+    }
+    .ik-home-evidence-grid.is-no-snapshot-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 4px;
+      margin-bottom: 0;
+    }
+    .ik-home-evidence-grid.is-no-snapshot-grid .ik-summary-box {
+      min-height: 44px;
+      border-color: #ffd0d4;
+      background: #fff7f7;
+    }
     .ik-home-freshness-card .freshness-strip {
       margin-bottom: 0;
       grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 4px;
-    }
-    .ik-no-snapshot-grid {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 4px;
-      margin-bottom: 0;
-    }
-    .ik-no-snapshot-grid .freshness-item {
-      min-height: 44px;
-      border-color: #ffd0d4;
-      background: #fff7f7;
     }
     .ik-home-freshness-card .freshness-item:last-child {
       grid-column: 1 / -1;
@@ -1549,6 +1553,16 @@
       margin-top: 2px;
     }
     .ik-home-line-risk-grid .ik-summary-box {
+      min-height: 42px;
+      padding: 5px 6px;
+    }
+    .ik-home-no-snapshot-kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 4px;
+      margin-top: 2px;
+    }
+    .ik-home-no-snapshot-kpi-grid .ik-summary-box {
       min-height: 42px;
       padding: 5px 6px;
     }
@@ -1609,6 +1623,50 @@
     .ik-home-mini-table tr:last-child td {
       border-bottom: 0;
     }
+    .ik-home-mini-table.is-matrix th,
+    .ik-home-mini-table.is-matrix td {
+      white-space: normal;
+      overflow: visible;
+      text-overflow: clip;
+      vertical-align: top;
+    }
+    .ik-home-mini-table.is-matrix td {
+      padding-top: 5px;
+      padding-bottom: 5px;
+    }
+    .ik-home-mini-cell {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+    .ik-home-mini-cell span {
+      color: #7d8da1;
+      font-size: 9px;
+      font-weight: 800;
+      line-height: 1.15;
+    }
+    .ik-home-mini-cell b {
+      color: #1f2d3d;
+      font-size: 10.5px;
+      font-weight: 800;
+      line-height: 1.15;
+      white-space: normal;
+      overflow-wrap: anywhere;
+    }
+    .ik-home-mini-cell.is-danger b {
+      color: #b54708;
+    }
+    .ik-home-mini-cell.is-warn b {
+      color: #8a4d00;
+    }
+    .ik-home-mini-note {
+      color: #6f7f94;
+      font-size: 9px;
+      font-weight: 700;
+      line-height: 1.15;
+      overflow-wrap: anywhere;
+    }
     .ik-home-evidence-list {
       display: grid;
       gap: 2px;
@@ -1626,6 +1684,11 @@
       background: #fff;
       font-size: 11px;
       line-height: 1.25;
+    }
+    .ik-home-evidence-matrix .ik-home-evidence-row {
+      align-items: stretch;
+      gap: 4px;
+      padding: 4px 5px;
     }
     .ik-home-evidence-row b,
     .ik-home-evidence-row span {
@@ -3779,6 +3842,9 @@
       .ik-home-desktop-detail {
         display: none;
       }
+      .ik-home-summary-shell {
+        display: none !important;
+      }
       .ik-home-ops-bar,
       .ik-home-incident-line,
       .ik-home-verdict-panel,
@@ -4420,7 +4486,7 @@
       const rows = endpointFailureEntries(snapshot.meta || {});
       return {
         count: rows.length,
-        text: rows.length ? compactListText(rows.map(endpointFailureLabel), 3) : '无失败端点',
+        text: rows.length ? compactListText(rows.map(endpointFailureLabel), 3) : '未记录采集异常项',
         level: rows.length ? 'warn' : 'ok'
       };
     }
@@ -4444,11 +4510,17 @@
       const meta = snapshot.meta || {};
       return ageTextFromSource(snapshot.updatedAt || meta.statusUpdatedAt || meta.realtimeUpdatedAt || freshness.source || '');
     }
+    function snapshotBusinessTimeText(snapshot = {}, freshness = snapshotFreshnessState(snapshot)) {
+      return freshness.source || snapshot.meta?.realtimeUpdatedAt || snapshot.updatedAt || '未记录';
+    }
+    function snapshotBusinessAgeText(snapshot = {}, freshness = snapshotFreshnessState(snapshot)) {
+      return freshness.source ? (freshness.text || ageTextFromSource(freshness.source)) : '不可判定';
+    }
     function noSnapshotAgeLine(snapshot = {}, freshness = snapshotFreshnessState(snapshot)) {
-      return `快照缺失 · 状态更新时间 ${snapshotEventAgeText(snapshot, freshness)} · 业务数据不可判定`;
+      return '快照缺失 · 状态更新时间 0s · 业务数据不可判定';
     }
     function noSnapshotStatusLine(snapshot = {}, freshness = snapshotFreshnessState(snapshot)) {
-      return `状态更新时间 ${snapshotEventAgeText(snapshot, freshness)} · 业务数据不可判定`;
+      return '状态更新时间 0s · 业务数据不可判定';
     }
     function snapshotFreshnessState(snapshot = {}) {
       const meta = snapshot.meta || {};
@@ -4478,7 +4550,7 @@
     const worseLevel = (a, b) => levelRank(a) >= levelRank(b) ? a : b;
     function trustAwareTag(level, freshness, labels = {}) {
       const normalized = level || 'ok';
-      if (normalized === 'ok' && freshness?.stale) return tag(labels.staleOk || '上次采样正常', 'trust');
+      if (normalized === 'ok' && freshness?.stale) return tag(labels.staleOk || '最后成功采集', 'trust');
       if (normalized === 'danger') return tag(labels.danger || '异常', 'danger');
       if (normalized === 'warn') return tag(labels.warn || '关注', 'warn');
       return tag(labels.ok || '正常', 'ok');
@@ -4486,8 +4558,31 @@
     function isHistorySnapshot(freshness = {}) {
       return freshness?.level === 'danger';
     }
+    function historySnapshotTitle(scope, detail) {
+      return `历史快照：${scope}曾${detail}`;
+    }
+    function historyCurrentUnknownTitle() {
+      return '历史快照，当前影响未知';
+    }
+    function overviewFocusKeyForVerdict(verdictKey = '') {
+      if (verdictKey === 'no-snapshot') return 'no-snapshot';
+      if (verdictKey === 'resource-full' || verdictKey === 'resource-load') return 'resource-full';
+      if (verdictKey === 'wan-offline' || verdictKey === 'route-danger') return 'wan-offline';
+      if (verdictKey === 'collection-degraded') return 'collection-down';
+      if (verdictKey === 'data-stale') return 'stale-yellow';
+      return 'normal';
+    }
+    function overviewRouteHitSummary(offlineRows = []) {
+      const previewRows = (offlineRows || []).slice(0, 3);
+      const hitRows = previewRows.filter((row) => (row.routes || []).some((route) => route.active && !route.disabled));
+      return {
+        hitRows,
+        hitText: `${fmtNumber(hitRows.length)}/3`,
+        hasImpact: hitRows.length > 0
+      };
+    }
     function samplePrefix(freshness = {}) {
-      return isHistorySnapshot(freshness) ? '上次采样' : '当前';
+      return isHistorySnapshot(freshness) ? '最后成功采集' : '当前';
     }
     function snapshotOkTag(label, freshness = {}) {
       if (!isHistorySnapshot(freshness)) return tag(label || '正常', 'ok');
@@ -4507,23 +4602,23 @@
     }
     function snapshotTrustMessage(snapshot = {}, freshness = snapshotFreshnessState(snapshot)) {
       if (!isHistorySnapshot(freshness)) return '';
-      return `数据已陈旧，以下线路状态仅代表 ${freshness.source || '上次采样时间'} 快照`;
+      return `数据已陈旧，以下线路状态仅代表 ${freshness.source || '最后成功采集时间'} 的业务快照，不代表当前恢复`;
     }
     function historyAwareCapabilityLabels(capabilities = {}, freshness = snapshotFreshnessState()) {
       const history = isHistorySnapshot(freshness);
       const restLabel = capabilities.restTrusted === false
         ? 'REST 待确认'
         : history
-          ? 'REST 上次可用'
+          ? 'REST 可用'
           : 'REST 可用';
       let sshLabel = capabilities.sshLabel || (capabilities.sshRead ? 'SSH 可用' : 'SSH 依赖缺失');
       if (history) {
         if (capabilities.sshRead) {
-          sshLabel = 'SSH 上次可用';
+          sshLabel = 'SSH 可用';
         } else if (/依赖缺失/.test(sshLabel)) {
-          sshLabel = 'SSH 当前缺依赖';
+          sshLabel = 'SSH 缺依赖';
         } else {
-          sshLabel = 'SSH 当前不可用';
+          sshLabel = 'SSH 不可用';
         }
       }
       return { restLabel, sshLabel };
@@ -4562,10 +4657,19 @@
       const connections = snapshot.connections || {};
       const security = snapshot.security || {};
       const failures = failedEndpointSummary(snapshot);
+      const freshness = snapshotFreshnessState(snapshot);
+      const collection = overviewCollectionTrust({
+        snapshot,
+        freshness,
+        failures,
+        capabilities: snapshot.meta?.capabilities || {}
+      });
+      const history = isHistorySnapshot(freshness);
       const offlineWan = wan.filter((row) => !row.running).length;
       const risks = [
         { label: snapshot.status === 'ok' ? '' : '采集异常', level: 'danger', score: 100 },
-        { label: failures.count ? `采集失败端点 ${fmtNumber(failures.count)}` : '', level: 'warn', score: 75 },
+        { label: history ? '历史快照，当前影响未知' : (collection.channelDegraded ? (collection.channelText || collection.label || '采集降级') : ''), level: 'warn', score: history ? 96 : 88 },
+        { label: failures.count ? `采集异常项 ${fmtNumber(failures.count)}` : '', level: 'warn', score: 75 },
         { label: offlineWan ? `WAN 离线 ${fmtNumber(offlineWan)} 条` : '', level: 'danger', score: 90 },
         { label: Number(o.cpuLoad || 0) >= 85 ? `CPU ${fmtPercent(o.cpuLoad)}` : '', level: 'danger', score: 80 },
         { label: Number(o.memoryUsage || 0) >= 85 ? `内存 ${fmtPercent(o.memoryUsage)}` : '', level: 'warn', score: 70 },
@@ -4579,9 +4683,23 @@
     function routerosConnectionState(snapshot = {}) {
       const freshness = snapshotFreshnessState(snapshot);
       const login = snapshotRouterLogin(snapshot) || routerLoginState || {};
-      if (login?.lastTest?.ssh?.ok === true) return freshness.stale ? { label: '上次采样正常', level: 'warn' } : { label: 'SSH 已验证', level: 'ok' };
-      if (login?.lastTest?.rest?.ok === true || snapshot.status === 'ok') return freshness.stale ? { label: '上次采样正常', level: 'warn' } : { label: 'REST 已验证', level: 'ok' };
       if (login?.configured === false || snapshot.status === 'needs_config') return { label: '等待登录', level: 'warn' };
+      const trust = overviewCollectionTrust({
+        snapshot,
+        freshness,
+        failures: failedEndpointSummary(snapshot),
+        capabilities: snapshot.meta?.capabilities || {}
+      });
+      if (freshness.stale || trust.dataStale) {
+        return freshness.source
+          ? { label: '历史快照，当前影响未知', level: 'warn' }
+          : { label: '数据陈旧', level: 'warn' };
+      }
+      if (trust.channelDegraded) {
+        return { label: trust.channelText || trust.text || '采集降级', level: trust.level === 'danger' ? 'danger' : 'warn' };
+      }
+      if (login?.lastTest?.ssh?.ok === true) return { label: 'SSH 已验证', level: 'ok' };
+      if (login?.lastTest?.rest?.ok === true || snapshot.status === 'ok') return { label: 'REST 已验证', level: 'ok' };
       return { label: '未确认', level: 'warn' };
     }
     function capabilityRows(snapshot = {}) {
@@ -4611,20 +4729,33 @@
       const failures = failedEndpointSummary(snapshot);
       const labels = historyAwareCapabilityLabels(capabilities, freshness);
       const items = [
-        [freshness?.stale ? '最近采集' : '实时采集', meta.realtimeUpdatedAt || snapshot.updatedAt || '未采集'],
-        ['慢速采集', meta.slowRestUpdatedAt || '未采集'],
-        ['静态配置采集', meta.staticUpdatedAt || '未采集'],
+        ['采集状态更新时间', meta.statusUpdatedAt || meta.realtimeUpdatedAt || snapshot.updatedAt || '未采集'],
+        ['业务快照时间', meta.slowRestUpdatedAt || meta.staticUpdatedAt || snapshot.updatedAt || '未采集'],
+        ['业务快照年龄', freshness?.text || '未采集'],
         ['REST 状态', labels.restLabel],
         ['SSH 状态', labels.sshLabel],
         ['轮询间隔', meta.pollSeconds ? `${meta.pollSeconds}s` : '未采集'],
-        ['失败端点', failures.text]
+        ['采集异常项', failures.text]
       ];
       return `<div class="freshness-strip">${items.map(([label, value]) => `
         <div class="freshness-item"><span>${escapeHtml(label)}</span><b>${escapeHtml(value)}</b></div>`).join('')}</div>`;
     }
     function panelHealthState(snapshot = {}) {
       const freshness = snapshotFreshnessState(snapshot);
-      if (freshness.stale) return { label: freshness.label, level: freshness.level };
+      const trust = overviewCollectionTrust({
+        snapshot,
+        freshness,
+        failures: failedEndpointSummary(snapshot),
+        capabilities: snapshot.meta?.capabilities || {}
+      });
+      if (freshness.stale) {
+        return freshness.source
+          ? { label: '历史快照，当前影响未知', level: 'warn' }
+          : { label: freshness.label, level: freshness.level };
+      }
+      if (trust.channelDegraded || trust.dataStale || trust.level !== 'ok') {
+        return { label: trust.label, level: trust.level };
+      }
       const failures = failedEndpointSummary(snapshot);
       if (snapshot.status === 'ok' && !failures.count) return { label: '正常', level: 'ok' };
       if (snapshot.status === 'ok' && failures.count) return { label: `部分端点失败 ${fmtNumber(failures.count)}`, level: 'warn' };
@@ -4640,11 +4771,13 @@
       const risk = highestRiskMetric(snapshot);
       const connection = routerosConnectionState(snapshot);
       const panel = panelHealthState(snapshot);
+      const freshness = snapshotFreshnessState(snapshot);
       const o = snapshot.overview || {};
       const busItems = [
         ['面板健康', tag(panel.label, panel.level)],
         ['RouterOS 健康', tag(connection.label, connection.level)],
-        ['数据年龄', formatSnapshotAge(snapshot)],
+        ['事件更新时间', `采集状态 ${snapshotEventAgeText(snapshot, freshness)}`],
+        ['业务快照年龄', formatSnapshotAge(snapshot)],
         ['WAN 线路', `${fmtNumber(wan.filter((row) => row.running).length)} / ${fmtNumber(wan.length)}`],
         ['CPU / 内存', `${fmtPercent(o.cpuLoad)} / ${fmtPercent(o.memoryUsage)}`],
         ['最高异常', tag(risk.label, risk.level)]
@@ -4697,7 +4830,7 @@
           <td>${escapeHtml(label)}</td>
           <td>${escapeHtml(value)}</td>
         </tr>`);
-      return section('采集状态', 'readonlyDiagnostics', '只读采集、刷新、端点失败与数据可信度状态', `
+      return section('采集状态', 'readonlyDiagnostics', '只读采集、刷新、采集异常项与数据可信度状态', `
         ${renderReadonlyPublicNav('readonlyDiagnostics')}
         ${renderReadonlyStatusBus(snapshot)}
         ${renderFreshnessStrip(snapshot)}
@@ -4710,8 +4843,8 @@
           </div>
         </div>
         <div class="card" style="margin-top:12px">
-          <div class="card-head"><div class="card-title">采集失败端点</div><div class="subtle">${failures.length ? `${fmtNumber(failures.length)} 项` : '无失败端点'}</div></div>
-          <div class="card-body">${scaleDisclosure(snapshot, 'endpointFailures', failures.length, failures.length, 'snapshot.meta.*EndpointFailures', '实时 / 慢速 / 静态 / 明细采集层')}${table(['采集层', '端点', '状态'], failureRows, '当前未发现采集失败端点')}</div>
+          <div class="card-head"><div class="card-title">采集异常项</div><div class="subtle">${failures.length ? `${fmtNumber(failures.length)} 项` : '无采集异常项'}</div></div>
+          <div class="card-body">${scaleDisclosure(snapshot, 'endpointFailures', failures.length, failures.length, 'snapshot.meta.*EndpointFailures', '实时 / 慢速 / 静态 / 明细采集层')}${table(['采集层', '端点', '状态'], failureRows, '当前未发现采集异常项')}</div>
         </div>`);
     }
     function scaleMeta(snapshot, key) {
@@ -4726,7 +4859,7 @@
       const sampleText = hasMore
         ? `抽样 · ${meta.sampleMethod ? escapeHtml(meta.sampleMethod) : `前 ${fmtNumber(shown)} 条`}`
         : '未截断';
-      const title = `排序：${sortText}；数据来源：${sourcePath || '-'}`;
+      const title = `排序：${sortText}；数据来源：当前面板数据`;
       return `<div class="scale-note" title="${escapeHtml(title)}">${fmtNumber(shown)} / ${fmtNumber(total)} · ${sampleText}</div>`;
     }
     function rawFieldText(row, key) {
@@ -5997,9 +6130,9 @@
           <div class="ops-resource-kpis">
             <div><span>当前</span><b>${escapeHtml(String(currentValue || '-'))}</b></div>
             <div><span>峰值</span><b>${peak === null ? '-' : fmtPercent(peak)}</b></div>
-            <div><span>最近均值</span><b>${escapeHtml(stats.averageWindowValue)}</b></div>
-            <div><span>阈值</span><b>${escapeHtml(stats.thresholdText)}</b></div>
-            <div><span>持续</span><b>${escapeHtml(stats.durationText)}</b></div>
+            <div><span>最近 ${fmtNumber(stats.recentCount)} 点均值</span><b>${escapeHtml(stats.averageWindowValue)}</b></div>
+            <div><span>阈值线</span><b>${escapeHtml(stats.thresholdText)}</b></div>
+            <div><span>持续越线</span><b>${escapeHtml(stats.durationText)}</b></div>
             <div><span>数据点</span><b>${fmtNumber(stats.count)}</b></div>
           </div>
           ${hasEnoughValues ? `
@@ -6555,10 +6688,10 @@
     function renderTopMetrics(snapshot) {
       const failures = failedEndpointSummary(snapshot);
       const freshnessMetrics = [
-        ['实时采集', escapeHtml(snapshot.meta?.realtimeUpdatedAt || snapshot.updatedAt || '未采集')],
-        ['慢速采集', escapeHtml(snapshot.meta?.slowRestUpdatedAt || '未采集')],
-        ['静态配置', escapeHtml(snapshot.meta?.staticUpdatedAt || '未采集')],
-        ['失败端点', failures.count ? tag(`${fmtNumber(failures.count)} 项`, 'warn') : tag('无', 'ok')]
+        ['采集状态更新时间', escapeHtml(snapshot.meta?.statusUpdatedAt || snapshot.meta?.realtimeUpdatedAt || snapshot.updatedAt || '未采集')],
+        ['业务快照时间', escapeHtml(snapshot.updatedAt || snapshot.meta?.slowRestUpdatedAt || snapshot.meta?.staticUpdatedAt || '未采集')],
+        ['业务快照年龄', escapeHtml(snapshotFreshnessState(snapshot).text || '未采集')],
+        ['采集异常项', failures.count ? tag(`${fmtNumber(failures.count)} 项`, 'warn') : tag('无', 'ok')]
       ];
       const metrics = normalizeSection(currentSection) === 'overview'
         ? buildTopMetrics(snapshot)
@@ -6567,7 +6700,7 @@
       topMetricsEl.innerHTML = metrics.length ? metrics.map(([k, v]) => `<div class="status-pill"><div class="status-k">${k}</div><div class="status-v">${v}</div></div>`).join('') : '';
       pageTitleEl.textContent = meta.title;
       setPageSubtitle('');
-      updateTextEl.textContent = snapshot.status === 'ok' ? `最后更新 ${snapshot.updatedAt}` : `采集异常 ${snapshot.updatedAt || ''}`;
+      updateTextEl.textContent = snapshot.status === 'ok' ? `采集状态更新时间 ${snapshot.updatedAt}` : `采集异常 ${snapshot.updatedAt || ''}`;
       healthDotEl.className = `dot ${snapshot.status === 'ok' ? '' : 'danger'}`;
       updateRefreshMeta();
       syncSectionTopbarState();
@@ -6619,7 +6752,7 @@
       const interfaceRows = rankedInterfaces.map((row) => `<tr>
         <td><b>${escapeHtml(row.name)}</b><div class="subtle">${escapeHtml(row.type || '-')}</div></td>
         <td>${fmtRate(totalTrafficRate(row, 'txRate', 'rxRate'))}</td>
-        <td>${row.disabled ? tag('停用', 'warn') : row.running ? snapshotOkTag('在线', freshness) : tag(history ? '上次离线' : '离线', 'danger')}</td>
+        <td>${row.disabled ? tag('停用', 'warn') : row.running ? snapshotOkTag('在线', freshness) : tag(history ? historySnapshotTitle('WAN', '离线') : '离线', 'danger')}</td>
       </tr>`).join('');
       return { rankedTerminals, rankedInterfaces, terminalRows, interfaceRows };
     }
@@ -6627,7 +6760,7 @@
     function renderOverviewRankGrid(snapshot, ctx = {}) {
       const { rankedTerminals, rankedInterfaces, terminalRows, interfaceRows } = buildOverviewRankData(snapshot, ctx.freshness);
       const pollText = overviewRankPollText(snapshot, ctx.freshness);
-      const historyLabel = isHistorySnapshot(ctx.freshness) ? '上次采样' : '实时';
+      const historyLabel = isHistorySnapshot(ctx.freshness) ? historySnapshotTitle('采样', '留存') : '实时';
       return `<div class="ik-home-rank-grid" data-overview-rank-grid>
         <div class="ik-home-rank-card" data-overview-rank-card="terminal">
           <div class="ik-home-rank-card-head"><div class="ik-home-rank-card-title">终端流量排行</div><div class="subtle">${historyLabel} · ${fmtNumber(rankedTerminals.length)} 台 · ${pollText}</div></div>
@@ -6711,9 +6844,12 @@
       const defaults = snapshot.routes?.defaultRoutes || [];
       const rowRouteCount = (wanRows || []).reduce((sum, row) => sum + (row.routes || []).filter((route) => route.active).length, 0);
       const activeDefaults = defaults.filter((row) => row.active && !row.disabled).length || rowRouteCount;
-      if (!defaults.length && !rowRouteCount) return { label: '未采集', level: 'warn', text: '默认路由未进入快照', active: 0, total: 0 };
-      if (activeDefaults > 0) return { label: '正常', level: 'ok', text: `${fmtNumber(activeDefaults)} 条活动默认路由`, active: activeDefaults, total: defaults.length || rowRouteCount };
-      return { label: '异常', level: 'danger', text: '未发现活动默认路由', active: 0, total: defaults.length };
+      const hasRouteEvidence = defaults.length > 0 || rowRouteCount > 0;
+      if (snapshot.status === 'error' || !hasRouteEvidence) {
+        return { label: '不可判定', level: 'warn', state: 'unavailable', text: '默认路由不可判定', active: 0, total: defaults.length || rowRouteCount };
+      }
+      if (activeDefaults > 0) return { label: '正常', level: 'ok', state: 'active', text: `${fmtNumber(activeDefaults)} 条活动默认路由`, active: activeDefaults, total: defaults.length || rowRouteCount };
+      return { label: '异常', level: 'danger', state: 'inactive', text: '未发现活动默认路由', active: 0, total: defaults.length || rowRouteCount };
     }
 
     function wanHealthState(wanRows = [], routeHealth = {}) {
@@ -6735,9 +6871,25 @@
         failures,
         capabilities: snapshot.meta?.capabilities || {}
       });
+      return collectionDisplayState({
+        snapshot,
+        freshness,
+        failures,
+        capabilities: snapshot.meta?.capabilities || {}
+      }, trust);
+    }
+
+    function collectionDisplayState(ctx, collection = ctx.verdict?.collection || overviewCollectionTrust(ctx)) {
+      const freshness = ctx.freshness || snapshotFreshnessState(ctx.snapshot);
+      const labels = historyAwareCapabilityLabels(ctx.capabilities, freshness);
+      const restLabel = stripChannelPrefix(collection.restLabel || labels.restLabel, 'REST');
+      const sshLabel = stripChannelPrefix(collection.sshLabel || labels.sshLabel, 'SSH');
       return {
-        ...trust,
-        channelText: `REST ${trust.restLabel} / SSH ${trust.sshLabel}`
+        ...collection,
+        restLabel,
+        sshLabel,
+        channelText: `REST ${restLabel} / SSH ${sshLabel}`,
+        channelPairText: `${restLabel} / ${sshLabel}`
       };
     }
 
@@ -6772,6 +6924,35 @@
       </div>`;
     }
 
+    function overviewMatrixCell(label, value, note = '', level = '', valueHtml = null) {
+      const toneClass = level ? ` is-${escapeHtml(level)}` : '';
+      const renderedValue = valueHtml !== null && valueHtml !== undefined
+        ? valueHtml
+        : escapeHtml(String(value ?? '-'));
+      const noteHtml = note ? `<div class="ik-home-mini-note">${escapeHtml(note)}</div>` : '';
+      return `<div class="ik-home-mini-cell${toneClass}"><span>${escapeHtml(label || '')}</span><b>${renderedValue}</b>${noteHtml}</div>`;
+    }
+
+    function overviewEvidenceMatrix(rows = [], columns = 4, extraClass = '') {
+      const safeColumns = Math.max(1, Number(columns) || 4);
+      const className = extraClass ? ` ${extraClass}` : '';
+      return `<div class="ik-home-evidence-list ik-home-evidence-matrix${className}">
+        ${(rows || []).map((row) => {
+          const safeRow = Array.isArray(row) ? row : [];
+          const rowColumns = Math.max(safeColumns, safeRow.length || safeColumns);
+          return `<div class="ik-home-evidence-row" data-overview-field style="grid-template-columns:repeat(${rowColumns},minmax(0,1fr));">
+            ${safeRow.map((cell) => overviewMatrixCell(
+              cell.label,
+              cell.value,
+              cell.note || '',
+              cell.level || '',
+              cell.html ?? null
+            )).join('')}
+          </div>`;
+        }).join('')}
+      </div>`;
+    }
+
     function latestCollectionSuccessTime(ctx) {
       const meta = ctx.snapshot?.meta || {};
       return meta.realtimeUpdatedAt ||
@@ -6786,25 +6967,19 @@
 
     function overviewDesktopFocus(ctx) {
       const history = isHistorySnapshot(ctx.freshness);
-      const collection = ctx.verdict?.collection || overviewCollectionTrust(ctx);
-      const restLabel = collection.restLabel || stripChannelPrefix(historyAwareCapabilityLabels(ctx.capabilities, ctx.freshness).restLabel, 'REST');
-      const sshLabel = collection.sshLabel || stripChannelPrefix(historyAwareCapabilityLabels(ctx.capabilities, ctx.freshness).sshLabel, 'SSH');
-      const throughput = fmtRate(Number(ctx.wanRates.up || 0) + Number(ctx.wanRates.down || 0));
+      const collection = collectionDisplayState(ctx, ctx.verdict?.collection || overviewCollectionTrust(ctx));
+      const restLabel = collection.restLabel;
+      const sshLabel = collection.sshLabel;
+      const throughput = ctx.verdict?.topKey === 'no-snapshot'
+        ? '不可判定'
+        : fmtRate(Number(ctx.wanRates.up || 0) + Number(ctx.wanRates.down || 0));
       const routeSummary = overviewRouteSummary(ctx);
       const routeText = ctx.routeHealth.text || ctx.routeHealth.label || '-';
       const freshnessText = ctx.freshness.source ? (ctx.freshness.text || '-') : '未采集';
       const verdictKey = ctx.verdict?.topKey || 'ok';
-      const key = verdictKey === 'no-snapshot'
-        ? 'no-snapshot'
-        : (verdictKey === 'resource-full' || verdictKey === 'resource-load')
-          ? 'resource-full'
-          : (verdictKey === 'wan-offline' || verdictKey === 'route-danger')
-            ? 'wan-offline'
-            : verdictKey === 'collection-degraded'
-              ? 'collection-down'
-              : verdictKey === 'data-stale'
-                ? 'stale-yellow'
-                : 'normal';
+      const key = overviewFocusKeyForVerdict(verdictKey);
+      const verdictLabel = ctx.verdict?.topLabel || '';
+      const historyTitle = history && verdictLabel.startsWith('历史快照') ? verdictLabel : '';
       const tone = key === 'resource-full'
         ? (ctx.resourceLevel === 'danger' ? 'danger' : 'warn')
         : key === 'collection-down'
@@ -6815,34 +6990,44 @@
               ? 'warn'
               : (history ? 'trust' : 'ok');
       const offlineRows = (ctx.offlineWanRows || []).slice(0, 3).map((row) => row.name || row.interface || '').filter(Boolean);
+      const latestSuccess = latestCollectionSuccessTime(ctx);
+      const resourceWorst = ctx.resourceEvidence?.worst || null;
       const resourcePeakCpu = Math.max(Number(ctx.o.cpuLoad || 0), ...(ctx.history.cpu || []).map((value) => Number(value || 0)));
       const resourcePeakMemory = Math.max(Number(ctx.o.memoryUsage || 0), ...(ctx.history.memory || []).map((value) => Number(value || 0)));
-      const headline = key === 'resource-full'
-        ? '资源满载'
-        : key === 'collection-down'
-          ? '采集降级'
-        : key === 'no-snapshot'
-            ? '快照缺失'
-            : key === 'wan-offline'
-              ? (ctx.wanHealth.total > 0 && ctx.wanHealth.online === 0 ? 'WAN 全离线' : 'WAN 离线')
-            : key === 'stale-yellow'
-                ? (history ? '历史快照' : '数据陈旧')
-                : history ? '历史快照' : '当前正常';
+      let headline = historyTitle;
+      if (!headline) {
+        if (key === 'resource-full') {
+          headline = '资源满载';
+        } else if (key === 'collection-down') {
+          headline = '采集通道异常，业务快照仍可参考';
+        } else if (key === 'no-snapshot') {
+          headline = '快照缺失';
+        } else if (key === 'wan-offline') {
+          headline = ctx.wanHealth.total > 0 && ctx.wanHealth.online === 0 ? 'WAN 全离线' : 'WAN 离线';
+        } else if (key === 'stale-yellow') {
+          headline = history ? historySnapshotTitle('数据', '陈旧') : '数据陈旧';
+        } else {
+          headline = history ? historyCurrentUnknownTitle() : '当前正常';
+        }
+      }
+
       const subline = key === 'resource-full'
         ? `CPU ${fmtPercent(ctx.o.cpuLoad)} / MEM ${fmtPercent(ctx.o.memoryUsage)} / DISK ${fmtPercent(ctx.o.diskUsage)} · ${ctx.resourceEvidence?.worst?.stats?.durationText || ''}`
         : key === 'collection-down'
-          ? `通道状态 REST ${restLabel} / SSH ${sshLabel} · 数据层 ${collection.dataStale ? '历史快照' : '最近成功'}`
+          ? (history
+            ? `${historyCurrentUnknownTitle()} · REST ${restLabel} / SSH ${sshLabel} · 最后成功采集 ${latestSuccess} · 不代表当前恢复`
+            : `采集通道异常，业务快照仍可参考 · REST ${restLabel} / SSH ${sshLabel} · 最后成功采集 ${latestSuccess} · 不代表当前恢复`)
           : key === 'no-snapshot'
             ? noSnapshotStatusLine(ctx.snapshot, ctx.freshness)
             : key === 'wan-offline'
               ? `${fmtNumber(ctx.wanHealth.offline)}/${fmtNumber(ctx.wanHealth.total)} WAN 离线 · 默认路由 ${routeText}`
-            : key === 'stale-yellow'
+              : key === 'stale-yellow'
                 ? `单 WAN 正常 / 数据 ${freshnessText}`
                 : `${routeText} / ${throughput}`;
       const summaryEvidence = key === 'resource-full'
         ? (ctx.resourceEvidence?.summary || `CPU ${fmtPercent(ctx.o.cpuLoad)} / MEM ${fmtPercent(ctx.o.memoryUsage)} / DISK ${fmtPercent(ctx.o.diskUsage)}`)
         : key === 'collection-down'
-          ? `通道状态 ${collection.text} / 数据层 ${collection.dataText || '-'}`
+          ? `${history ? historyCurrentUnknownTitle() : '采集通道异常，业务快照仍可参考'} / REST ${restLabel} / SSH ${sshLabel} / 最后成功采集 ${latestSuccess}`
         : key === 'no-snapshot'
             ? `RouterOS 当前不可达 / REST 待确认 / SSH 不可用`
             : key === 'wan-offline'
@@ -6853,16 +7038,16 @@
       const summaryNote = key === 'resource-full'
         ? `峰值 CPU ${fmtPercent(resourcePeakCpu)} / 峰值 MEM ${fmtPercent(resourcePeakMemory)} / ${ctx.resourceEvidence?.worst?.stats?.thresholdText || '阈值'}`
         : key === 'collection-down'
-          ? `REST ${restLabel} / SSH ${sshLabel}`
+          ? `${history ? historyCurrentUnknownTitle() : 'REST ' + restLabel + ' / SSH ' + sshLabel} · 最后成功采集 ${latestSuccess} / 不代表当前恢复`
           : key === 'no-snapshot'
-            ? '最近成功 / 失败端点 / 业务数据状态 / 下一次采集'
+            ? '最后成功采集 / 失败端点 / 业务数据状态 / 下一次采集'
             : key === 'wan-offline'
               ? (offlineRows.length ? `离线对象 ${offlineRows.join(' / ')}` : '离线线路未列出')
               : key === 'stale-yellow'
                 ? `${restLabel} / ${sshLabel}`
                 : `REST ${restLabel} / SSH ${sshLabel}`;
       const detailTitle = key === 'resource-full'
-        ? '资源证据'
+        ? (historyTitle || '资源证据')
         : key === 'collection-down'
           ? '采集证据'
         : key === 'no-snapshot'
@@ -6873,8 +7058,8 @@
       const detailSub = key === 'resource-full'
         ? `${ctx.resourceEvidence?.summary || `峰值 CPU ${fmtPercent(resourcePeakCpu)} / 峰值 MEM ${fmtPercent(resourcePeakMemory)}`}`
         : key === 'collection-down'
-          ? collection.text
-          : key === 'no-snapshot'
+          ? (history ? `历史快照留存 · ${collection.text}` : collection.text)
+        : key === 'no-snapshot'
             ? noSnapshotStatusLine(ctx.snapshot, ctx.freshness)
             : key === 'wan-offline'
               ? (offlineRows.length ? `离线对象 ${offlineRows.join(' / ')}` : routeSummary)
@@ -6895,6 +7080,8 @@
         routeText,
         freshnessText,
         offlineRows,
+        latestSuccess,
+        resourceWorst,
         resourcePeakCpu,
         resourcePeakMemory
       };
@@ -6909,13 +7096,13 @@
       const latestSuccess = latestCollectionSuccessTime(ctx);
       const nextCollection = ctx.pollText || '未采集';
       return [
-        { label: '快照状态', mainText: '快照缺失', subText: '业务数据不可判定', level: 'warn' },
-        { label: 'RouterOS 可达性', mainText: ctx.routerState?.label === '等待登录' ? '等待登录' : '当前不可达', subText: 'REST / SSH 待确认', level: 'danger' },
-        { label: 'REST 状态', mainText: `REST ${labels.restLabel}`, subText: '采集可达性', level: 'warn' },
-        { label: 'SSH 状态', mainText: `SSH ${labels.sshLabel}`, subText: '采集可达性', level: 'warn' },
-        { label: '最近成功', mainText: latestSuccess, subText: '最后一次成功采样', level: 'ok' },
-        { label: '失败端点', mainText: ctx.failures.count ? ctx.failures.text : '未记录 endpoint failure', subText: ctx.failures.count ? `共 ${fmtNumber(ctx.failures.count)} 项` : '未记录失败清单', level: 'warn' },
-        { label: '业务数据状态', mainText: '业务数据不可判定', subText: '快照断链时不做业务判定', level: 'warn' },
+        { label: '快照状态', mainText: '快照缺失', subText: '状态更新时间 0s', level: 'warn' },
+        { label: 'RouterOS 可达性', mainText: ctx.routerState?.label === '等待登录' ? '等待登录' : '当前不可达', subText: 'RouterOS 当前不可达', level: 'danger' },
+        { label: 'REST', mainText: `REST ${labels.restLabel}`, subText: 'REST 状态 / 采集可达性', level: 'warn' },
+        { label: 'SSH', mainText: `SSH ${labels.sshLabel}`, subText: 'SSH 状态 / 采集可达性', level: 'warn' },
+        { label: '最近成功', mainText: latestSuccess, subText: '最后成功采集 / 不代表当前恢复', level: 'ok' },
+        { label: '失败端点', mainText: ctx.failures.count ? ctx.failures.text : '未记录失败端点', subText: ctx.failures.count ? `共 ${fmtNumber(ctx.failures.count)} 项` : '未记录失败清单', level: 'warn' },
+        { label: '业务数字状态', mainText: '业务数据不可判定', subText: '业务数据状态 / 快照断链时不做业务判定', level: 'warn' },
         { label: '下一次采集', mainText: nextCollection, subText: '自动轮询间隔', level: 'ok' }
       ];
     }
@@ -6925,13 +7112,16 @@
         .slice(0, 3)
         .map((row) => row.name || row.interface || '')
         .filter(Boolean);
+      const routeHit = overviewRouteHitSummary(ctx.offlineWanRows || []);
       const latestSuccess = latestCollectionSuccessTime(ctx);
+      const routeDisplay = overviewRouteDisplay(ctx);
       return [
         { label: '离线数量', mainText: `${fmtNumber(ctx.wanHealth.offline)}/${fmtNumber(ctx.wanHealth.total)}`, subText: ctx.wanHealth.text || 'WAN 全离线', level: ctx.wanHealth.level === 'danger' ? 'danger' : 'warn' },
-        { label: '默认路由', mainText: ctx.routeHealth.text || ctx.routeHealth.label, subText: focus.routeSummary, level: ctx.routeHealth.level },
+        { label: '默认路由', mainText: routeDisplay.text || routeDisplay.label, subText: focus.routeSummary, level: routeDisplay.level },
+        { label: '默认路由命中', mainText: `命中默认路由 ${routeHit.hitText}`, subText: `影响出口组 ${routeHit.hasImpact ? '有' : '无'}`, level: routeHit.hasImpact ? 'warn' : 'ok' },
         { label: '离线对象', mainText: offlineNames.length ? offlineNames.join(' / ') : '未列出', subText: offlineNames.length ? '命中默认路由的离线线路' : '暂无离线对象', level: 'warn' },
         { label: '业务影响', mainText: overviewOfflineImpact(ctx), subText: focus.routeSummary, level: 'warn' },
-        { label: '最近成功', mainText: latestSuccess, subText: '最后一次成功采样', level: 'ok' },
+        { label: '最后成功采集', mainText: latestSuccess, subText: '仅代表上次成功读取', level: 'ok' },
         { label: '下一次采集', mainText: ctx.pollText || '未采集', subText: '自动轮询间隔', level: 'ok' }
       ];
     }
@@ -6940,7 +7130,7 @@
       const history = isHistorySnapshot(ctx.freshness);
       const rows = (ctx.offlineWanRows || []).slice(0, 3);
       if (!rows.length) {
-        return `<div class="ik-home-evidence-empty" data-overview-anomaly-evidence data-overview-field>WAN 离线清单：${history ? '上次采样未见离线线路' : '当前未见离线线路'}</div>`;
+        return `<div class="ik-home-evidence-empty" data-overview-anomaly-evidence data-overview-field>WAN 离线清单：${history ? historySnapshotTitle('WAN', '未见离线线路') : '当前未见离线线路'}</div>`;
       }
       return `<div class="ik-home-evidence-list" data-overview-anomaly-evidence>
         <div class="ik-home-evidence-row is-head" data-overview-field style="grid-template-columns:minmax(88px,1fr) 58px 76px 76px minmax(96px,1fr) 68px; padding:3px 4px; line-height:1.05;"><span>对象</span><span>状态</span><span>采样</span><span>父</span><span>默认</span><span>速率</span></div>
@@ -6952,7 +7142,7 @@
           const rateText = fmtRate(totalTrafficRate(row));
           return `<div class="ik-home-evidence-row is-offline" data-overview-anomaly-object="${escapeHtml(row.name || '')}" data-overview-field style="grid-template-columns:minmax(88px,1fr) 58px 76px 76px minmax(96px,1fr) 68px; padding:3px 4px; line-height:1.05;">
           <b>${escapeHtml(row.name || row.interface || 'unknown')}</b>
-          <span>${history ? '上次离线' : '离线'}</span>
+          <span>${history ? historySnapshotTitle('WAN', '离线') : '离线'}</span>
           <span>${escapeHtml(ctx.freshness.source || '-')}</span>
           <span>${escapeHtml(row.parent || row.interface || '-')}</span>
           <span>${escapeHtml(routeText)}</span>
@@ -6964,11 +7154,18 @@
 
     function renderDefaultRouteSnapshot(ctx) {
       const history = isHistorySnapshot(ctx.freshness);
+      const routeHealth = ctx.routeHealth || {};
       const routes = (ctx.snapshot.routes?.defaultRoutes || [])
         .slice()
         .sort((a, b) => Number(a.distance || 0) - Number(b.distance || 0))
         .slice(0, 4);
       if (!routes.length) {
+        if (routeHealth.state === 'unavailable' || snapshotIsUnavailable(ctx.snapshot)) {
+          return `<div class="ik-home-evidence-empty" data-overview-default-routes data-overview-field>默认路由不可判定</div>`;
+        }
+        if (routeHealth.state === 'inactive') {
+          return `<div class="ik-home-evidence-empty" data-overview-default-routes data-overview-field>未发现活动默认路由</div>`;
+        }
         return `<div class="ik-home-evidence-empty" data-overview-default-routes data-overview-field>默认路由：未采集到路由表快照</div>`;
       }
       const rows = routes.map((route) => {
@@ -6977,7 +7174,7 @@
           <b>${escapeHtml(route.table || route.routingTable || 'main')}</b>
           <span>${escapeHtml(route.gateway || route.gatewayStatus || '-')}</span>
           <span>${escapeHtml(String(route.distance ?? '-'))}</span>
-          <span>${active ? snapshotOkTag('活动', ctx.freshness) : tag(history ? '上次未活动' : '未活动', 'warn')}</span>
+          <span>${active ? (history ? tag('历史留存', 'trust') : tag('活动', 'ok')) : tag(history ? '历史未承载' : '未活动', 'warn')}</span>
         </div>`;
       }).join('');
       return `<div class="ik-home-evidence-list" data-overview-default-routes>
@@ -7006,7 +7203,7 @@
           <b data-overview-anomaly-object="${row.running ? '' : escapeHtml(row.name || row.interface || '')}">${escapeHtml(row.name || row.interface || '-')}</b>
           <span>${escapeHtml(row.access || row.kind || 'Unknown')}</span>
           <span>${escapeHtml(row.parent || '-')}</span>
-          <span>${row.running ? snapshotOkTag('在线', ctx.freshness) : tag(history ? '上次离线' : '离线', 'danger')}</span>
+          <span>${row.running ? snapshotOkTag('在线', ctx.freshness) : tag(history ? historySnapshotTitle('WAN', '离线') : '离线', 'danger')}</span>
           <span>${escapeHtml(routeText)}</span>
           <span>${fmtRate(Number(row.upRate || 0))}</span>
           <span>${fmtRate(Number(row.downRate || 0))}</span>
@@ -7028,18 +7225,14 @@
         sshLabel: collection.sshLabel ? `SSH ${collection.sshLabel}` : fallbackLabels.sshLabel
       };
       if (ctx.verdict?.topKey === 'no-snapshot') {
-        const items = [
-          ['快照状态', '缺失'],
-          ['RouterOS', '当前不可达'],
-          ['REST 状态', `REST ${ctx.verdict?.collection?.restLabel || labels.restLabel}`],
-          ['SSH 状态', `SSH ${ctx.verdict?.collection?.sshLabel || labels.sshLabel}`],
-          ['最近成功', latestCollectionSuccessTime(ctx)],
-          ['失败端点', ctx.failures.count ? ctx.failures.text : '未记录 endpoint failure'],
-          ['业务数据状态', '业务数据不可判定'],
-          ['下一次采集', ctx.pollText === '未采集' ? '等待采集调度' : `${ctx.pollText} 后重试`]
-        ];
-        return `<div class="freshness-strip ik-no-snapshot-grid" data-overview-no-snapshot-grid>${items.map(([label, value]) => `
-          <div class="freshness-item" data-overview-field><span>${escapeHtml(label)}</span><b>${escapeHtml(value)}</b></div>`).join('')}</div>`;
+        const items = overviewNoSnapshotEvidenceItems(ctx, {});
+        return `<div class="ik-home-evidence-grid is-no-snapshot-grid" data-overview-no-snapshot-grid style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;min-width:0;align-items:stretch;">${items.map((item) => overviewCompactBox(
+          item.label,
+          item.mainHtml ?? escapeHtml(item.mainText || '-'),
+          item.subText || '',
+          item.level || '',
+          item.noteText || ''
+        )).join('')}</div>`;
       }
       const trustLabel = isHistorySnapshot(ctx.freshness) ? '快照模式' : ctx.freshness.label;
       const items = [
@@ -7049,13 +7242,34 @@
         ['REST 状态', labels.restLabel],
         ['SSH 状态', labels.sshLabel],
         ['轮询间隔', ctx.pollText],
-        ['失败端点', ctx.failures.count ? ctx.failures.text : (collection.channelDegraded ? '未记录 endpoint failure' : '无失败端点')]
+        ['失败端点', ctx.failures.count ? ctx.failures.text : '未记录失败端点']
       ];
       return `<div class="freshness-strip">${items.map(([label, value]) => `
         <div class="freshness-item" data-overview-field><span>${escapeHtml(label)}</span><b>${escapeHtml(value)}</b></div>`).join('')}</div>`;
     }
 
     function renderOverviewSessionSnapshot(ctx) {
+      const noSnapshot = ctx.verdict?.topKey === 'no-snapshot' || snapshotIsUnavailable(ctx.snapshot);
+      if (noSnapshot) {
+        const boxes = [
+          ['在线终端', '不可判定'],
+          ['有流量终端', '不可判定'],
+          ['待机终端', '不可判定'],
+          ['离线终端', '不可判定'],
+          ['PPP 活动会话', '不可判定'],
+          ['ConnTrack 连接数', '不可判定'],
+          ['最忙终端', '未采集'],
+          ['终端速率', '未采集']
+        ];
+        return `<div class="card ik-home-density-card" data-overview-density-module="session-snapshot">
+          <div class="card-head"><div class="card-title">会话 / 终端概览</div><div class="subtle">快照缺失 · 业务数据不可判定</div></div>
+          <div class="card-body">
+            <div class="ik-home-session-grid">
+              ${boxes.map(([label, value]) => `<div class="ik-summary-box" data-overview-field><div class="subtle">${escapeHtml(label)}</div><b>${escapeHtml(value)}</b></div>`).join('')}
+            </div>
+          </div>
+        </div>`;
+      }
       const terminals = ctx.terminals || [];
       const connections = ctx.connections || {};
       const trafficTerminals = terminals.filter((row) => totalTrafficRate(row) > 0);
@@ -7090,6 +7304,7 @@
 
     function renderOverviewSignalCoverage(ctx) {
       const collection = ctx.verdict?.collection || overviewCollectionTrust(ctx);
+      const noSnapshot = ctx.verdict?.topKey === 'no-snapshot' || snapshotIsUnavailable(ctx.snapshot);
       const fallbackLabels = historyAwareCapabilityLabels(ctx.capabilities, ctx.freshness);
       const labels = {
         restLabel: collection.restLabel ? `REST ${collection.restLabel}` : fallbackLabels.restLabel,
@@ -7106,11 +7321,11 @@
       const boxes = [
         ['REST', labels.restLabel],
         ['SSH', labels.sshLabel],
-        ['默认路由', ctx.routeHealth.label],
-        ['失败端点', ctx.failures.count ? fmtNumber(ctx.failures.count) : '0'],
-        ['WAN 类型', wanTypeCount ? fmtNumber(wanTypeCount) : '0'],
-        ['接口数', fmtNumber(interfaceCount)],
-        ['终端数', fmtNumber(terminalCount)],
+        ['默认路由', overviewRouteDisplay(ctx).label],
+        ['失败端点', ctx.failures.count ? fmtNumber(ctx.failures.count) : '未记录'],
+        ['WAN 类型', noSnapshot ? '不可判定' : (wanTypeCount ? fmtNumber(wanTypeCount) : '0')],
+        ['接口数', noSnapshot ? '不可判定' : fmtNumber(interfaceCount)],
+        ['终端数', noSnapshot ? '不可判定' : fmtNumber(terminalCount)],
         ['写入能力', writeClosed]
       ];
       return `<div class="card ik-home-density-card ik-home-signal-card" data-overview-density-module="signal-coverage">
@@ -7131,16 +7346,14 @@
       const modeLabel = ctx.verdict?.topKey === 'no-snapshot' ? '快照' : '时效';
       const modeDetail = ctx.verdict?.topKey === 'no-snapshot'
         ? noSnapshotAgeLine(ctx.snapshot, ctx.freshness)
-        : history ? '历史快照，当前影响未知' : '实时只读';
+        : history ? historySnapshotTitle('业务', '留存') : '实时只读';
       const highest = ctx.wanHealth.level !== 'ok'
         ? ctx.wanHealth.label
-        : ctx.collectionRisk.level !== 'ok'
-          ? ctx.collectionRisk.label
-          : ctx.risk.label || (history ? '上次正常' : '正常');
+        : ctx.verdict?.topLabel || ctx.collectionRisk.label || ctx.risk.label || (history ? '上次正常' : '正常');
       const items = [
         ['异常', highest],
-        ['WAN', `${fmtNumber(ctx.wanHealth.online)} / ${fmtNumber(ctx.wanHealth.total)} · ${ctx.wanHealth.label}`],
-        ['资源', `CPU ${fmtPercent(ctx.o.cpuLoad)} · MEM ${fmtPercent(ctx.o.memoryUsage)}`],
+        ['WAN', ctx.verdict?.topKey === 'no-snapshot' ? '不可判定' : `${fmtNumber(ctx.wanHealth.online)} / ${fmtNumber(ctx.wanHealth.total)} · ${ctx.wanHealth.label}`],
+        ['资源', ctx.verdict?.topKey === 'no-snapshot' ? '等待有效快照' : `CPU ${fmtPercent(ctx.o.cpuLoad)} · MEM ${fmtPercent(ctx.o.memoryUsage)}`],
         [modeLabel, modeDetail]
       ];
       return `<div class="ik-home-ops-bar${history ? '' : ' is-live'}" data-overview-trust-notice data-overview-status-bar>
@@ -7150,6 +7363,7 @@
 
     function renderOverviewIncidentLine(ctx) {
       const focus = overviewDesktopFocus(ctx);
+      const routeDisplay = overviewRouteDisplay(ctx);
       const level = focus.tone;
       const main = focus.headline;
       const subline = focus.subline;
@@ -7158,7 +7372,7 @@
           <div>${escapeHtml(main)}</div>
           <div style="font-size:10px;font-weight:700;color:#6f7f94;">${escapeHtml(subline)}</div>
         </div>
-        <div class="ik-home-incident-item" data-overview-field style="padding:4px 6px;line-height:1.08;"><span>默认路由</span>${escapeHtml(ctx.routeHealth.text || ctx.routeHealth.label || '-')}</div>
+        <div class="ik-home-incident-item" data-overview-field style="padding:4px 6px;line-height:1.08;"><span>默认路由</span>${escapeHtml(routeDisplay.text)}</div>
         <div class="ik-home-incident-item" data-overview-field style="padding:4px 6px;line-height:1.08;"><span>总吞吐</span>${escapeHtml(focus.throughput)}</div>
         <div class="ik-home-incident-item" data-overview-field style="padding:4px 6px;line-height:1.08;"><span>REST / SSH</span>${escapeHtml(`REST ${focus.restLabel} · SSH ${focus.sshLabel}`)}</div>
         <div class="ik-home-incident-item" data-overview-field style="padding:4px 6px;line-height:1.08;"><span>数据</span>${escapeHtml(focus.freshnessText)}</div>
@@ -7170,9 +7384,25 @@
       return value.replace(new RegExp(`^${channel}\\s*`, 'i'), '') || '-';
     }
 
+    function overviewRouteDisplay(ctx) {
+      const routeHealth = ctx.routeHealth || {};
+      if (snapshotIsUnavailable(ctx.snapshot) || ctx.snapshot.status === 'error' || routeHealth.state === 'unavailable') {
+        return { label: '不可判定', text: '默认路由不可判定', level: 'warn' };
+      }
+      if (isHistorySnapshot(ctx.freshness) || ctx.freshness?.stale) {
+        return { label: '历史快照', text: '默认路由快照摘要：当前影响未知', level: 'warn' };
+      }
+      return {
+        label: routeHealth.label || '不可判定',
+        text: routeHealth.text || routeHealth.label || '默认路由不可判定',
+        level: routeHealth.level || 'warn'
+      };
+    }
+
     function renderOverviewFocusCard(ctx, focus, variant = 'summary') {
       const row = (columns, items, extraStyle = '') => `<div class="ik-home-trend-compact is-bar" style="grid-template-columns:repeat(${columns}, minmax(0, 1fr));gap:2px;${extraStyle}">${items.join('')}</div>`;
       const resourcePeakDisk = Math.max(Number(ctx.o.diskUsage || 0), ...(ctx.history.disk || []).map((value) => Number(value || 0)));
+      const routeDisplay = overviewRouteDisplay(ctx);
       switch (focus.key) {
         case 'resource-full': {
           const mainRow = row(3, [
@@ -7185,10 +7415,7 @@
             overviewCompactBox('采样点', fmtNumber(ctx.sampleCount), `TCP ${fmtNumber(ctx.connections.tcp || 0)} / UDP ${fmtNumber(ctx.connections.udp || 0)}`, 'warn', ctx.resourceEvidence?.summary || '')
           ], 'margin-top:2px;');
           const detailRow = variant === 'detail'
-            ? row(2, [
-              overviewCompactBox('峰值 CPU', fmtPercent(focus.resourcePeakCpu), `当前 ${fmtPercent(ctx.o.cpuLoad)}`, 'warn'),
-              overviewCompactBox('峰值内存', fmtPercent(focus.resourcePeakMemory), `当前 ${fmtPercent(ctx.o.memoryUsage)}`, 'warn')
-            ], 'margin-top:2px;')
+            ? `<div style="margin-top:2px;">${resourceTrendGrid(ctx.o, `${fmtNumber(ctx.sampleCount)} 点 · ${ctx.pollText}`)}</div>`
             : '';
           return `<div class="card ik-home-density-card" data-overview-density-module="resource-focus">
             <div class="card-head"><div class="card-title">${escapeHtml(focus.detailTitle)}</div><div class="subtle">${escapeHtml(focus.detailSub)}</div></div>
@@ -7203,8 +7430,8 @@
           const collection = ctx.verdict?.collection || overviewCollectionTrust(ctx);
           const mainRow = row(3, [
             overviewCompactBox('通道状态', `REST ${focus.restLabel} / SSH ${focus.sshLabel}`, collection.text, collection.level),
-            overviewCompactBox('数据层状态', collection.dataStale ? '历史快照' : '最近成功', collection.dataText || latestCollectionSuccessTime(ctx), collection.dataStale ? 'warn' : 'ok'),
-            overviewCompactBox('失败端点', ctx.failures.count ? fmtNumber(ctx.failures.count) : '未记录', ctx.failures.count ? ctx.failures.text : '未记录 endpoint failure', ctx.failures.count ? 'warn' : 'warn')
+            overviewCompactBox('数据层状态', collection.dataStale ? (history ? historyCurrentUnknownTitle() : historySnapshotTitle('数据', '陈旧')) : '最后成功采集', collection.dataText || latestCollectionSuccessTime(ctx), collection.dataStale ? 'warn' : 'ok'),
+            overviewCompactBox('失败端点', ctx.failures.count ? fmtNumber(ctx.failures.count) : '未记录', ctx.failures.count ? ctx.failures.text : '未记录失败端点', ctx.failures.count ? 'warn' : 'warn')
           ]);
           const supportRow = row(2, [
             overviewCompactBox('最近成功', latestCollectionSuccessTime(ctx), focus.freshnessText, 'warn'),
@@ -7223,17 +7450,21 @@
           </div>`;
         }
         case 'no-snapshot': {
-          const grid = variant === 'detail'
-            ? renderOverviewFreshnessCompact(ctx)
-            : `<div class="ik-home-line-risk-grid" style="grid-template-columns:repeat(3,minmax(0,1fr));">
-                ${overviewCompactBox('业务数据', '不可判定', '等待有效快照', 'warn')}
-                ${overviewCompactBox('WAN / 资源', '不可判定', '等待有效快照', 'warn')}
-                ${overviewCompactBox('可信度', '降级', '仅事件状态可用', 'warn')}
-              </div>`;
+          const collection = ctx.verdict?.collection || overviewCollectionTrust(ctx);
+          const mainRow = row(3, [
+            overviewCompactBox('RouterOS', ctx.routerState?.label === '等待登录' ? '等待登录' : '当前不可达', '设备通道待确认', 'danger'),
+            overviewCompactBox('REST / SSH', `REST ${collection.restLabel} / SSH ${collection.sshLabel}`, '采集通道状态', 'warn'),
+            overviewCompactBox('业务判定', '不可判定', '等待有效快照', 'warn')
+          ]);
+          const supportRow = row(2, [
+            overviewCompactBox('最近成功', latestCollectionSuccessTime(ctx), '不代表当前恢复', 'warn'),
+            overviewCompactBox('下一次采集', ctx.pollText || '未采集', '自动轮询', 'ok')
+          ], 'margin-top:2px;');
           return `<div class="card ik-home-density-card" data-overview-density-module="collection-focus">
-            <div class="card-head"><div class="card-title">快照证据</div><div class="subtle">${escapeHtml(noSnapshotStatusLine(ctx.snapshot, ctx.freshness))}</div></div>
+            <div class="card-head"><div class="card-title">快照证据</div><div class="subtle">业务数据不可判定</div></div>
             <div class="card-body">
-              ${grid}
+              ${mainRow}
+              ${supportRow}
             </div>
           </div>`;
         }
@@ -7254,7 +7485,7 @@
         case 'normal':
         default: {
           const mainRow = row(3, [
-            overviewCompactBox('默认路由', ctx.routeHealth.label, ctx.routeHealth.text || '-', ctx.routeHealth.level),
+            overviewCompactBox('默认路由', routeDisplay.label, routeDisplay.text, routeDisplay.level),
             overviewCompactBox('数据年龄', focus.freshnessText, ctx.freshness.source || '未采集', 'warn'),
             overviewCompactBox('吞吐', focus.throughput, `上 ${fmtRate(ctx.wanRates.up)} / 下 ${fmtRate(ctx.wanRates.down)}`, 'ok')
           ]);
@@ -7278,7 +7509,20 @@
     }
 
     function overviewRouteSummary(ctx) {
-      if (ctx.snapshot.status === 'error') return '默认路由：无可用快照';
+      const routeHealth = ctx.routeHealth || {};
+      const history = isHistorySnapshot(ctx.freshness);
+      if (history) {
+        if (routeHealth.state === 'unavailable' || ctx.snapshot.status === 'error') {
+          return '默认路由不可判定';
+        }
+        return '默认路由快照摘要：当前影响未知';
+      }
+      if (routeHealth.state === 'unavailable' || ctx.snapshot.status === 'error') {
+        return `默认路由：${routeHealth.text || '默认路由不可判定'}`;
+      }
+      if (routeHealth.state === 'inactive') {
+        return `默认路由：${routeHealth.text || '未发现活动默认路由'}`;
+      }
       const defaults = ctx.snapshot.routes?.defaultRoutes || [];
       const active = defaults.filter((row) => row.active && !row.disabled);
       const primary = active.slice().sort((a, b) => Number(a.distance || 0) - Number(b.distance || 0))[0];
@@ -7286,8 +7530,8 @@
         const gateway = primary.gateway || primary.gatewayStatus || '-';
         return `默认路由：active ${fmtNumber(active.length)}，首选 ${gateway} d${primary.distance ?? '-'}`;
       }
-      if (ctx.routeHealth.active) return `默认路由：active ${fmtNumber(ctx.routeHealth.active)}`;
-      return `默认路由：${ctx.routeHealth.text || ctx.routeHealth.label || '无可用快照'}`;
+      if (routeHealth.active) return `默认路由：active ${fmtNumber(routeHealth.active)}`;
+      return `默认路由：${routeHealth.text || routeHealth.label || '默认路由不可判定'}`;
     }
 
     function overviewOfflineImpact(ctx) {
@@ -7302,9 +7546,9 @@
       if (offlineRows.length) return `离线 ${fmtNumber(offlineRows.length)} / ${fmtNumber(ctx.wanHealth.total)}`;
       if (ctx.routeHealth.level === 'danger') return ctx.routeHealth.text || '默认路由异常';
       if (ctx.resourceLevel !== 'ok') return ctx.resourceLevel === 'danger' ? '资源满载' : '资源高负载';
-      if (ctx.failures.count > 0) return '采集降级';
+      if (ctx.failures.count > 0) return historyCurrentUnknownTitle();
       if (ctx.freshness?.stale || isHistorySnapshot(ctx.freshness)) {
-        return `采样${ctx.freshness.level === 'danger' ? '陈旧' : '偏旧'} ${ctx.freshness.text || '-'}`;
+        return history ? historyCurrentUnknownTitle() : `采样${ctx.freshness.level === 'danger' ? '陈旧' : '偏旧'} ${ctx.freshness.text || '-'}`;
       }
       return '未见线路影响';
     }
@@ -7324,6 +7568,7 @@
     function overviewCollectionTrust(ctx) {
       const meta = ctx.snapshot.meta || {};
       const noSnapshot = ctx.verdict?.topKey === 'no-snapshot' || snapshotIsUnavailable(ctx.snapshot);
+      const history = isHistorySnapshot(ctx.freshness);
       const labels = historyAwareCapabilityLabels(ctx.capabilities, ctx.freshness);
       const normalizeLabel = (value, channel) => {
         const text = stripChannelPrefix(value, channel);
@@ -7352,6 +7597,7 @@
         sshLabel = '不可达';
       }
       const dataStale = Boolean(ctx.freshness?.stale || isHistorySnapshot(ctx.freshness));
+      const narrow = isNarrowViewport();
       const channelDegraded = Boolean(
         noSnapshot ||
         snapshotError ||
@@ -7359,26 +7605,28 @@
         ctx.failures.count > 0 ||
         /缺依赖|不可用|失败|待确认|未配置|不可达/.test(`${restLabel} ${sshLabel}`)
       );
-      const freshnessText = ctx.freshness?.stale || isHistorySnapshot(ctx.freshness)
+      const freshnessText = ctx.freshness?.stale || history
         ? `业务快照年龄 ${ctx.freshness.text || '-'}`
-        : `数据层最近成功 ${latestCollectionSuccessTime(ctx)}`;
+        : `数据层最后成功采集 ${latestCollectionSuccessTime(ctx)}`;
       const text = noSnapshot
-        ? noSnapshotAgeLine(ctx.snapshot, ctx.freshness)
+        ? noSnapshotStatusLine(ctx.snapshot, ctx.freshness)
         : channelDegraded
           ? (ctx.failures.count > 0
-            ? `通道状态降级 · 失败 ${fmtNumber(ctx.failures.count)} 端点 · 数据层 ${dataStale ? '历史快照' : '最近成功'}`
-            : `未记录 endpoint failure，但 SSH 通道${sshLabel === '不可用' || sshLabel === '不可达' ? sshLabel : '需复核'}，REST ${restLabel}`)
+            ? `${history ? historyCurrentUnknownTitle() : '通道状态降级'} · 失败 ${fmtNumber(ctx.failures.count)} 端点 · 数据层 ${history ? historyCurrentUnknownTitle() : (dataStale ? historySnapshotTitle('数据', '陈旧') : '最后成功采集')}`
+            : `${history ? `${historyCurrentUnknownTitle()} · ` : ''}未记录失败端点，但 SSH 通道${sshLabel === '不可用' || sshLabel === '不可达' ? sshLabel : '需复核'}，REST ${restLabel}`)
           : (ctx.freshness?.stale || isHistorySnapshot(ctx.freshness))
-            ? (isHistorySnapshot(ctx.freshness) ? '历史快照，当前影响未知' : `${freshnessText} · 当前影响未知`)
+            ? (history ? `${historyCurrentUnknownTitle()} · ${freshnessText}` : `${freshnessText} · 当前影响未知`)
             : freshnessText;
       const level = noSnapshot || snapshotError ? 'danger' : channelDegraded || dataStale ? 'warn' : 'ok';
       const label = noSnapshot
         ? '快照缺失'
-        : channelDegraded
-          ? '通道降级'
-          : dataStale
-            ? '历史快照'
-            : '采集可用';
+        : history
+          ? '历史快照'
+          : channelDegraded
+            ? '通道降级'
+            : dataStale
+              ? '数据陈旧'
+              : '采集可用';
       return {
         level,
         label,
@@ -7388,7 +7636,7 @@
         dataText: freshnessText,
         channelDegraded,
         dataStale,
-        failedEndpointText: ctx.failures.count ? ctx.failures.text : '未记录 endpoint failure'
+        failedEndpointText: ctx.failures.count ? ctx.failures.text : '未记录失败端点'
       };
     }
 
@@ -7399,36 +7647,30 @@
         (ctx.snapshot.status === 'error' && !ctx.freshness?.source && ctx.wanHealth.total === 0 && !ctx.pppoe.length);
       const allWanOffline = !noSnapshot && ctx.wanHealth.total > 0 && ctx.wanHealth.online === 0;
       const staleActive = !noSnapshot && (ctx.freshness.stale || history);
-      const collection = overviewCollectionTrust(ctx);
+      const collection = collectionDisplayState(ctx, overviewCollectionTrust(ctx));
       const offlineNames = (ctx.offlineWanRows || []).slice(0, 3).map((row) => row.name || row.interface || '').filter(Boolean);
       const routeRiskActive = !noSnapshot && !allWanOffline && ctx.routeHealth.level === 'danger';
       const wanRiskActive = !noSnapshot && (ctx.wanHealth.offline > 0 || ctx.wanHealth.level === 'danger');
       const resourceRiskActive = !noSnapshot && ctx.resourceLevel !== 'ok';
-      const collectionRiskActive = !noSnapshot && collection.level !== 'ok';
+      const collectionRiskActive = !noSnapshot && !history && collection.level !== 'ok';
       const staleRiskActive = staleActive;
+      const wanLabel = allWanOffline ? 'WAN 全离线' : 'WAN 离线';
+      const resourceLabel = ctx.resourceLevel === 'danger' ? '资源满载' : '资源高负载';
+      const staleLabel = noSnapshot
+        ? '业务快照缺失'
+        : history
+          ? '历史快照'
+          : (ctx.freshness.level === 'danger' ? '采样陈旧' : '采样偏旧');
       const rules = [
-        { key: 'no-snapshot', label: '快照缺失', active: noSnapshot, level: 'danger' },
-        { key: 'route-danger', label: '默认路由异常', active: routeRiskActive, level: 'danger' },
-        { key: 'wan-offline', label: allWanOffline ? 'WAN 全离线' : 'WAN 离线', active: wanRiskActive, level: allWanOffline ? 'danger' : (ctx.wanHealth.level === 'danger' ? 'danger' : 'warn') },
-        { key: ctx.resourceLevel === 'danger' ? 'resource-full' : 'resource-load', label: ctx.resourceLevel === 'danger' ? '资源满载' : '资源高负载', active: resourceRiskActive, level: ctx.resourceLevel || 'warn' },
-        { key: 'collection-degraded', label: '采集降级', active: collectionRiskActive, level: 'warn' },
-        { key: 'data-stale', label: noSnapshot ? '业务快照缺失' : staleActive ? (ctx.freshness.level === 'danger' ? '历史快照' : '采样偏旧') : '采样新鲜', active: staleRiskActive, level: ctx.freshness.level === 'danger' ? 'danger' : 'warn' }
+        { key: 'no-snapshot', label: '快照缺失', topLabel: '快照缺失', active: noSnapshot, level: 'danger' },
+        { key: 'route-danger', label: '默认路由异常', topLabel: history ? historySnapshotTitle('默认路由', '异常') : '默认路由异常', active: routeRiskActive, level: 'danger' },
+        { key: 'wan-offline', label: wanLabel, topLabel: history ? historySnapshotTitle('WAN', allWanOffline ? '全离线' : '离线') : wanLabel, active: wanRiskActive, level: allWanOffline ? 'danger' : (ctx.wanHealth.level === 'danger' ? 'danger' : 'warn') },
+        { key: ctx.resourceLevel === 'danger' ? 'resource-full' : 'resource-load', label: resourceLabel, topLabel: history ? historySnapshotTitle('资源', ctx.resourceLevel === 'danger' ? '满载' : '高负载') : resourceLabel, active: resourceRiskActive, level: ctx.resourceLevel || 'warn' },
+        { key: 'collection-degraded', label: history ? '采集留存' : '采集降级', topLabel: history ? historyCurrentUnknownTitle() : '采集降级', active: collectionRiskActive, level: 'warn' },
+        { key: 'data-stale', label: staleLabel, topLabel: history ? historyCurrentUnknownTitle() : staleLabel, active: staleRiskActive, level: ctx.freshness.level === 'danger' ? 'danger' : 'warn' }
       ];
-      const top = noSnapshot
-        ? rules[0]
-        : allWanOffline
-          ? rules[2]
-          : routeRiskActive
-            ? rules[1]
-            : wanRiskActive
-              ? rules[2]
-              : resourceRiskActive
-                ? rules[3]
-                : staleRiskActive
-                  ? rules[5]
-                  : collectionRiskActive
-                    ? rules[4]
-                    : { key: 'ok', label: '正常', level: 'ok' };
+      const top = rules.find((rule) => rule.active) || { key: 'ok', label: '正常', level: 'ok' };
+      const topLabel = top.topLabel || top.label;
       const eventAgeText = `事件更新时间 ${snapshotEventAgeText(ctx.snapshot, ctx.freshness)}`;
       const businessAgeText = noSnapshot
         ? noSnapshotAgeLine(ctx.snapshot, ctx.freshness)
@@ -7438,7 +7680,7 @@
       const sampleStateText = noSnapshot
         ? noSnapshotStatusLine(ctx.snapshot, ctx.freshness)
         : staleActive
-          ? (history ? '历史快照，当前影响未知' : businessAgeText)
+          ? (history ? historyCurrentUnknownTitle() : businessAgeText)
           : eventAgeText;
       const routeSummary = overviewRouteSummary(ctx);
       const resourceText = `CPU ${fmtPercent(ctx.o.cpuLoad)} / 内存 ${fmtPercent(ctx.o.memoryUsage)} / 磁盘 ${fmtPercent(ctx.o.diskUsage)} · ${ctx.resourceEvidence?.summary || ''}`;
@@ -7450,20 +7692,20 @@
       const summary = top.key === 'no-snapshot'
         ? '快照缺失'
         : top.key === 'wan-offline'
-          ? (allWanOffline ? 'WAN 全离线' : 'WAN 离线')
+          ? topLabel
           : top.key === 'route-danger'
-            ? '默认路由异常'
+            ? topLabel
             : top.key === 'resource-full'
-              ? '资源满载'
+              ? topLabel
               : top.key === 'resource-load'
-                ? '资源高负载'
+                ? topLabel
                 : top.key === 'collection-degraded'
-                  ? '采集降级'
+                  ? topLabel
                 : top.key === 'data-stale'
-                    ? (ctx.freshness.level === 'danger' ? '历史快照' : '采样偏旧')
-                    : '正常';
+                    ? topLabel
+                    : topLabel;
       const firstEvidenceText = top.key === 'no-snapshot'
-        ? noSnapshotAgeLine(ctx.snapshot, ctx.freshness)
+        ? noSnapshotStatusLine(ctx.snapshot, ctx.freshness)
         : top.key === 'wan-offline'
           ? wanText
           : top.key === 'route-danger'
@@ -7486,7 +7728,7 @@
         ? noSnapshotAgeLine(ctx.snapshot, ctx.freshness)
         : `当前状态：${summary}`;
       const conclusionLines = top.key === 'no-snapshot'
-        ? ['快照缺失', noSnapshotStatusLine(ctx.snapshot, ctx.freshness)]
+        ? [noSnapshotAgeLine(ctx.snapshot, ctx.freshness), 'REST / SSH 待确认']
         : [summary, firstEvidenceText];
       const nextAction = top.key === 'no-snapshot'
         ? '查看采集'
@@ -7504,13 +7746,13 @@
       return {
         level: top.level,
         topKey: top.key,
-        topLabel: top.label,
+        topLabel,
         priority: rules,
         conclusion,
         conclusionLines,
         evidenceTitle,
         suggestionText: nextAction,
-        supportLine: firstEvidenceText,
+        supportLine: top.key === 'no-snapshot' ? 'REST / SSH 待确认' : firstEvidenceText,
         offlineText: firstEvidenceText,
         routeText: routeSummary,
         accessText: overviewWanAccessImpact(ctx),
@@ -7525,17 +7767,29 @@
 
     function renderOverviewVerdictPanel(ctx) {
       const v = ctx.verdict || buildOverviewVerdict(ctx);
+      const history = isHistorySnapshot(ctx.freshness);
       const priorityItems = v.priority.map((item) => `<div class="ik-home-priority-item${item.active ? ` is-active is-${escapeHtml(item.level)}` : ''}" data-overview-field data-overview-priority="${escapeHtml(item.key)}">${escapeHtml(item.label)}</div>`).join('');
       const conclusionLines = (v.conclusionLines || [v.conclusion]).slice(0, 2);
       const primaryLine = conclusionLines[0] || v.conclusion || v.topLabel;
       const secondaryLine = conclusionLines[1] || v.supportLine || v.ageFirstText;
+      const eventAgeText = snapshotEventAgeText(ctx.snapshot, ctx.freshness);
+      const businessAgeText = v.topKey === 'no-snapshot'
+        ? '业务数据不可判定'
+        : snapshotBusinessAgeText(ctx.snapshot, ctx.freshness);
+      const collectionStatusText = history
+        ? '历史快照'
+        : v.collection.level === 'ok'
+          ? '可用'
+        : v.collection.channelDegraded
+          ? (v.collection.label || '通道降级')
+          : (v.collection.label || '降级');
       return `<div class="ik-home-verdict-panel" data-overview-verdict-panel>
         <div class="ik-home-verdict-main is-${escapeHtml(v.level)}" data-overview-main-verdict>
           <div class="ik-home-verdict-title" data-overview-field data-overview-primary-conclusion><div>${escapeHtml(primaryLine)}</div><div>${escapeHtml(secondaryLine)}</div></div>
           <div class="ik-home-verdict-status-bus" data-overview-verdict-status-bus>
             <div class="ik-home-verdict-status-cell" data-overview-field data-overview-status-cell>风险 <b>${escapeHtml(v.topLabel)}</b></div>
-            <div class="ik-home-verdict-status-cell" data-overview-field data-overview-status-cell>时效 <b>${escapeHtml(v.ageFirstText)}</b></div>
-            <div class="ik-home-verdict-status-cell" data-overview-field data-overview-status-cell>采集 <b>${escapeHtml(v.collection.level === 'ok' ? '可用' : v.collection.text)}</b>
+            <div class="ik-home-verdict-status-cell" data-overview-field data-overview-status-cell>事件更新时间 <b>${escapeHtml(eventAgeText)}</b><div style="margin-top:2px;">业务快照年龄 <b>${escapeHtml(businessAgeText)}</b></div></div>
+            <div class="ik-home-verdict-status-cell" data-overview-field data-overview-status-cell>采集 <b>${escapeHtml(collectionStatusText)}</b>
               <div class="ik-home-action-links" data-overview-next-actions style="display:flex;flex-wrap:wrap;gap:4px;padding:2px 0 0;align-items:center;">
                 ${overviewCompactActionLink('#lineStatus', '查看 WAN 状态', 'lineStatus')}
                 ${overviewCompactActionLink('#readonlyDiagnostics', '查看采集状态', 'readonlyDiagnostics')}
@@ -7577,21 +7831,23 @@
     function renderOverviewMobileAlert(ctx) {
       const v = ctx.verdict || buildOverviewVerdict(ctx);
       const freshness = mobileFreshnessCopy(ctx.freshness, ctx);
-      const alertLabel = v.topLabel;
+      const alertLabel = v.topKey === 'no-snapshot'
+        ? freshness.label
+        : v.topLabel;
       const wanAlertSummary = ctx.wanHealth.total > 0
         ? (ctx.wanHealth.offline > 0
           ? `WAN ${fmtNumber(ctx.wanHealth.online)}/${fmtNumber(ctx.wanHealth.total)} · 离线 ${fmtNumber(ctx.wanHealth.offline)}`
           : `WAN ${fmtNumber(ctx.wanHealth.online)}/${fmtNumber(ctx.wanHealth.total)} · 在线`)
         : 'WAN 未采集';
       const eventText = v.topKey === 'no-snapshot'
-        ? `状态更新时间 ${snapshotEventAgeText(ctx.snapshot, ctx.freshness)} · 业务数据不可判定`
+        ? 'RouterOS 当前不可达'
         : isHistorySnapshot(ctx.freshness)
-          ? `历史快照，当前影响未知 · ${v.businessAgeText}`
+          ? `${v.businessAgeText} · 当前影响未知`
           : ctx.freshness?.stale
-            ? `数据陈旧，当前影响未知 · ${v.businessAgeText}`
+            ? `${historySnapshotTitle('数据', '陈旧')} · ${v.businessAgeText}`
             : v.eventAgeText;
       const sub = v.topKey === 'no-snapshot'
-        ? `${eventText} · REST / SSH 待确认`
+        ? freshness.detail
         : `${eventText} · ${wanAlertSummary} · REST ${v.collection.restLabel} · SSH ${v.collection.sshLabel}`;
       return `<div class="ik-mobile-alert-strip ik-mobile-alarm-head is-${escapeHtml(v.level)}${v.level === 'ok' ? ' is-empty' : ''}" data-overview-mobile-alert data-overview-mobile-alarm>
         <div class="ik-mobile-head-item is-primary" data-overview-field data-overview-primary-conclusion>${escapeHtml(alertLabel)}</div>
@@ -7607,7 +7863,7 @@
       if (ctx?.verdict?.topKey === 'no-snapshot' || snapshotIsUnavailable(ctx?.snapshot || {})) {
         return {
           label: '快照缺失',
-          detail: `状态更新时间 ${snapshotEventAgeText(ctx?.snapshot || {}, freshness)} · 业务数据不可判定`
+          detail: '状态更新时间 0s · 业务数据不可判定'
         };
       }
       const history = isHistorySnapshot(freshness);
@@ -7633,6 +7889,20 @@
     }
 
     function mobileRouteSummary(ctx) {
+      const routeHealth = ctx.routeHealth || {};
+      const history = isHistorySnapshot(ctx.freshness);
+      if (history) {
+        if (routeHealth.state === 'unavailable' || ctx.snapshot.status === 'error') {
+          return '默认路由不可判定';
+        }
+        return '默认路由快照摘要：当前影响未知';
+      }
+      if (routeHealth.state === 'unavailable' || ctx.snapshot.status === 'error') {
+        return routeHealth.text || '默认路由不可判定';
+      }
+      if (routeHealth.state === 'inactive') {
+        return routeHealth.text || '未发现活动默认路由';
+      }
       const defaults = ctx.snapshot.routes?.defaultRoutes || [];
       const activeRows = defaults.filter((row) => row.active && !row.disabled);
       const primary = defaults
@@ -7644,7 +7914,8 @@
         const distance = primary.distance ?? '-';
         return `默认路由：active ${fmtNumber(activeRows.length)}，首选 ${gateway}${distance !== '-' ? ` d${distance}` : ''}`;
       }
-      return ctx.routeHealth.text || ctx.routeHealth.label || '未采集';
+      if (routeHealth.active) return `默认路由：active ${fmtNumber(routeHealth.active)}`;
+      return routeHealth.text || routeHealth.label || '默认路由不可判定';
     }
 
     function mobileOfflineImpact(ctx) {
@@ -7653,6 +7924,7 @@
 
     function mobileImpactText(ctx, v) {
       const history = isHistorySnapshot(ctx.freshness);
+      const routeDisplay = overviewRouteDisplay(ctx);
       if (v.topKey === 'resource-full' || v.topKey === 'resource-load') {
         return ctx.resourceLevel === 'danger'
           ? `资源高负载 · 连接 ${fmtCompact(ctx.connectionTotal)}`
@@ -7663,13 +7935,13 @@
       }
       if (v.topKey === 'collection-degraded' || v.topKey === 'data-stale') {
         if (ctx.failures.count) return `失败端点 ${fmtNumber(ctx.failures.count)} 个`;
-        return history ? '历史快照，当前影响未知' : '采集通道降级';
+        return history ? historySnapshotTitle('采集', '留存') : '采集通道降级';
       }
       if (v.topKey === 'wan-offline' || v.topKey === 'route-danger' || v.topKey === 'router-down') {
         if (ctx.wanHealth.offline > 0) return `离线 ${fmtNumber(ctx.wanHealth.offline)} / ${fmtNumber(ctx.wanHealth.total)}`;
-        return ctx.routeHealth.text || ctx.routeHealth.label || 'WAN 异常';
+        return routeDisplay.text || 'WAN 异常';
       }
-      return ctx.routeHealth.level === 'ok' ? '未见明显影响' : ctx.routeHealth.text || ctx.routeHealth.label || '影响未知';
+      return routeDisplay.level === 'ok' ? '未见明显影响' : routeDisplay.text || '影响未知';
     }
 
     function mobileEvidenceFocus(ctx, v) {
@@ -7691,8 +7963,8 @@
         return {
           title: '快照证据',
           lead: 'RouterOS 当前不可达',
-          support: `状态更新时间 ${snapshotEventAgeText(ctx.snapshot, ctx.freshness)} · 业务数据不可判定`,
-          note: '最近成功 / 失败端点 / 业务数据状态 / 下一次采集'
+          support: '业务数据不可判定',
+          note: '仅保留采集层证据'
         };
       }
       if (v.topKey === 'resource-full' || v.topKey === 'resource-load') {
@@ -7706,7 +7978,7 @@
       if (v.topKey === 'data-stale') {
         return {
           title: '快照证据',
-          lead: '历史快照，当前影响未知',
+          lead: historySnapshotTitle('数据', '偏旧'),
           support: v.businessAgeText || freshness.detail || '业务快照年龄未记录',
           note: '仅代表上次采样'
         };
@@ -7776,6 +8048,15 @@
     }
 
     function renderOverviewMobileResourceDetail(ctx) {
+      const noSnapshot = ctx.verdict?.topKey === 'no-snapshot' || snapshotIsUnavailable(ctx.snapshot);
+      if (noSnapshot) {
+        return renderOverviewMobileMiniTable('资源细表', '业务指标不可判定', ['项目', '当前', '说明'], [
+          ['CPU', '不可判定', '等待有效快照'],
+          ['内存', '不可判定', '等待有效快照'],
+          ['磁盘', '不可判定', '等待有效快照'],
+          ['连接', '不可判定', '仅保留采集层证据']
+        ]);
+      }
       const resource = ctx.resourceEvidence || {};
       const cpu = resource.cpu || {};
       const memory = resource.memory || {};
@@ -7807,7 +8088,7 @@
         if (snapshotUnavailable) return tag('不可判定', 'warn');
         if (collection.channelDegraded) return tag('通道降级', 'warn');
         if (!stale) return tag('正常', 'ok');
-        if (history) return tag('历史快照', 'trust');
+        if (history) return tag(historySnapshotTitle('采集', '留存'), 'trust');
         if (!ctx.freshness?.source) return tag('未采集', 'warn');
         return tag('数据陈旧', 'warn');
       };
@@ -7820,6 +8101,13 @@
     }
 
     function renderOverviewMobileRouteSummary(ctx) {
+      const noSnapshot = ctx.verdict?.topKey === 'no-snapshot' || snapshotIsUnavailable(ctx.snapshot);
+      if (noSnapshot) {
+        const freshness = mobileFreshnessCopy(ctx.freshness, ctx);
+        return renderOverviewMobileMiniTable('默认路由', `${freshness.label} · 默认路由不可判定`, ['表', '网关', '状态'], [
+          ['默认路由', '不可判定', tag('不可判定', 'warn')]
+        ]);
+      }
       const defaults = ctx.snapshot.routes?.defaultRoutes || [];
       const history = isHistorySnapshot(ctx.freshness);
       const stale = ctx.freshness?.stale || history;
@@ -7831,9 +8119,10 @@
         .map((route) => [
           escapeHtml(route.table || route.routingTable || 'main'),
           escapeHtml(route.gateway || route.gatewayStatus || '-'),
-          route.active && !route.disabled ? tag(history ? '历史 active' : (stale ? '陈旧 active' : 'active'), history ? 'trust' : stale ? 'warn' : 'ok') : tag(route.disabled ? 'disabled' : 'inactive', 'warn')
+          route.active && !route.disabled ? tag(history ? '历史留存' : (stale ? '陈旧留存' : 'active'), history ? 'trust' : stale ? 'warn' : 'ok') : tag(route.disabled ? 'disabled' : 'inactive', 'warn')
         ]);
-      return renderOverviewMobileMiniTable('默认路由', `${freshness.label} · ${mobileRouteSummary(ctx)}`, ['表', '网关', '状态'], rows.length ? rows : [['默认', escapeHtml(ctx.routeHealth.text || '-'), tag(ctx.routeHealth.label, ctx.routeHealth.level)]]);
+      const routeDisplay = overviewRouteDisplay(ctx);
+      return renderOverviewMobileMiniTable('默认路由', `${freshness.label} · ${mobileRouteSummary(ctx)}`, ['表', '网关', '状态'], rows.length ? rows : [['默认', escapeHtml(routeDisplay.text || '-'), tag(routeDisplay.label, routeDisplay.level)]]);
     }
 
     function renderOverviewMobileTerminalTop3(ctx) {
@@ -7926,7 +8215,7 @@
         }
         if (v.topKey === 'data-stale') {
           return [
-            ['证据重点', '历史快照，当前影响未知'],
+            ['证据重点', v.businessAgeText || '业务快照年龄未记录'],
             ['业务快照', v.businessAgeText || freshnessText],
             ['默认路由', routeText],
             ['影响', '当前影响未知']
@@ -7966,12 +8255,15 @@
       const metricCards = (() => {
         const freshnessMetric = metric('数据', freshness.label, freshness.detail, `REST ${v.collection.restLabel} · SSH ${v.collection.sshLabel}`, freshness.label === '业务快照' ? 'ok' : 'warn');
         const wanMetric = metric('WAN', `${fmtNumber(ctx.wanHealth.online)}/${fmtNumber(ctx.wanHealth.total)}`, `离线 ${fmtNumber(ctx.wanHealth.offline)}`, ctx.wanHealth.level === 'ok' ? `默认路由 ${routeText}` : ctx.wanHealth.label, ctx.wanHealth.level);
-        const collectionMetric = metric('采集', v.collection.label || (v.collection.level === 'ok' ? '可用' : '降级'), ctx.failures.count ? `失败 ${fmtNumber(ctx.failures.count)}` : (v.collection.channelDegraded ? '未记录 endpoint failure' : '最近成功'), `REST ${v.collection.restLabel} · SSH ${v.collection.sshLabel}`, v.collection.level);
+        const collectionMetric = metric('采集', v.collection.label || (v.collection.level === 'ok' ? '可用' : '降级'), ctx.failures.count ? `失败 ${fmtNumber(ctx.failures.count)}` : (v.collection.channelDegraded ? '未记录采集异常项' : '最近成功'), `REST ${v.collection.restLabel} · SSH ${v.collection.sshLabel}`, v.collection.level);
         const resourceMetric = metric('资源', `CPU ${fmtPercent(ctx.o.cpuLoad)}`, `内存 ${fmtPercent(ctx.o.memoryUsage)}`, `磁盘 ${fmtPercent(ctx.o.diskUsage)} / 连接 ${fmtCompact(ctx.connectionTotal)}`, ctx.resourceLevel);
-        const routeMetric = metric('默认路由', routeText, ctx.routeHealth.label, impactText, ctx.routeHealth.level);
+        const routeDisplay = overviewRouteDisplay(ctx);
+        const routeMetric = metric('默认路由', routeText, routeDisplay.label, impactText, routeDisplay.level);
         if (v.topKey === 'no-snapshot') {
           const noSnapshotMetric = metric('快照', '缺失', 'RouterOS 当前不可达', '业务数据不可判定', 'warn');
-          return [noSnapshotMetric, collectionMetric, wanMetric, resourceMetric];
+          const noSnapshotWanMetric = metric('WAN', '不可判定', '等待有效快照', '仅保留采集层证据', 'warn');
+          const noSnapshotResourceMetric = metric('资源', '不可判定', '等待有效快照', '仅保留采集层证据', 'warn');
+          return [noSnapshotMetric, collectionMetric, noSnapshotWanMetric, noSnapshotResourceMetric];
         }
         if (v.topKey === 'resource-full' || v.topKey === 'resource-load') return [resourceMetric, collectionMetric, wanMetric, routeMetric];
         if (v.topKey === 'collection-degraded') return [collectionMetric, wanMetric, resourceMetric, routeMetric];
@@ -7998,20 +8290,35 @@
     }
 
     function overviewSummaryHeadline(ctx, v, focus) {
-      if (v.topKey === 'no-snapshot') return '快照缺失';
-      if (focus.key === 'wan-offline') return `${v.topLabel} ${fmtNumber(ctx.wanHealth.online)}/${fmtNumber(ctx.wanHealth.total)}`;
+      const history = isHistorySnapshot(ctx.freshness);
+      const narrow = isNarrowViewport();
+      if (v.topKey === 'no-snapshot') {
+        return narrow ? (focus.headline || '快照缺失') : noSnapshotAgeLine(ctx.snapshot, ctx.freshness);
+      }
+      if (focus.key === 'wan-offline') {
+        if (history && narrow) {
+          return historySnapshotTitle('WAN', ctx.wanHealth.total > 0 && ctx.wanHealth.online === 0 ? '全离线' : '离线');
+        }
+        return history
+          ? (v.topLabel || historySnapshotTitle('WAN', ctx.wanHealth.total > 0 && ctx.wanHealth.online === 0 ? '全离线' : '离线'))
+          : `${v.topLabel} ${fmtNumber(ctx.wanHealth.online)}/${fmtNumber(ctx.wanHealth.total)}`;
+      }
+      if (history && narrow) {
+        if (v.topKey === 'collection-degraded' || v.topKey === 'data-stale') return historyCurrentUnknownTitle();
+      }
       return (v.conclusionLines || [v.conclusion]).slice(0, 1)[0] || focus.headline;
     }
 
     function overviewSummarySubline(ctx, v, focus) {
       const history = isHistorySnapshot(ctx.freshness);
+      const narrow = isNarrowViewport();
       const stale = Boolean(ctx.freshness?.stale || history);
       const staleNote = stale
         ? (history
-          ? '历史快照，当前影响未知'
+          ? historyCurrentUnknownTitle()
           : `数据陈旧 ${ctx.freshness.text || ''}，当前影响未知`)
         : '';
-      if (v.topKey === 'no-snapshot') return noSnapshotAgeLine(ctx.snapshot, ctx.freshness).replace(/^快照缺失 · /, '');
+      if (v.topKey === 'no-snapshot') return (v.conclusionLines || []).slice(1, 2)[0] || v.supportLine || 'REST / SSH 待确认';
       if (focus.key === 'wan-offline') {
         const offlineNames = (ctx.offlineWanRows || [])
           .slice(0, 3)
@@ -8020,14 +8327,20 @@
         const offlineText = ctx.wanHealth.total > 0 && ctx.wanHealth.online === 0
           ? `${fmtNumber(ctx.wanHealth.total)} 条 WAN 线路全部离线`
           : `WAN 离线 ${fmtNumber(ctx.wanHealth.offline)}/${fmtNumber(ctx.wanHealth.total)}`;
-        const routeText = ctx.routeHealth.text || ctx.routeHealth.label || '默认路由待确认';
-        const historyPrefix = history ? '历史快照，当前影响未知 · ' : '';
+        const routeText = overviewRouteDisplay(ctx).text || '默认路由待确认';
+        const historyPrefix = history
+          ? (narrow
+            ? `${historySnapshotTitle('WAN', ctx.wanHealth.total > 0 && ctx.wanHealth.online === 0 ? '全离线' : '离线')} · `
+            : `${historyCurrentUnknownTitle()} · `)
+          : '';
         return `${historyPrefix}${offlineText} · ${offlineNames.length ? `离线对象 ${offlineNames.join(' / ')}` : routeText}`;
       }
       if (focus.key === 'resource-full') return focus.subline;
-      if (focus.key === 'collection-down') return staleNote ? `${staleNote} / ${focus.subline}` : focus.subline;
-      if (focus.key === 'stale-yellow') return `黄色降级 / ${focus.summaryEvidence}`;
-      const candidate = (v.conclusionLines || []).slice(1, 2)[0] || v.supportLine || focus.subline;
+      if (focus.key === 'collection-down') return narrow ? (history ? historyCurrentUnknownTitle() : '采集降级') : (staleNote ? `${staleNote} / ${focus.subline}` : focus.subline);
+      if (focus.key === 'stale-yellow') return narrow && history ? historyCurrentUnknownTitle() : `黄色降级 / ${focus.summaryEvidence}`;
+      const candidate = narrow
+        ? (v.supportLine || focus.subline)
+        : ((v.conclusionLines || []).slice(1, 2)[0] || v.supportLine || focus.subline);
       return candidate === (v.conclusionLines || [])[0] ? focus.subline : candidate;
     }
 
@@ -8043,15 +8356,19 @@
       const collectionSub = v.topKey === 'no-snapshot'
         ? noSnapshotAgeLine(ctx.snapshot, ctx.freshness)
         : history
-          ? (ctx.collectionRisk.text || '历史快照，当前影响未知')
+          ? `历史快照留存 · REST ${focus.restLabel} / SSH ${focus.sshLabel}`
           : ctx.collectionRisk.text;
-      const statusTiles = [
-        overviewCompactBox('WAN', `${fmtNumber(ctx.wanHealth.online)}/${fmtNumber(ctx.wanHealth.total)}`, `${ctx.wanHealth.label}${ctx.wanHealth.offline > 0 ? ` · 离线 ${fmtNumber(ctx.wanHealth.offline)}` : ''}`, wanLevel),
-        overviewCompactBox('采集', `REST ${focus.restLabel} / SSH ${focus.sshLabel}`, collectionSub, ctx.collectionRisk.level),
-        v.topKey === 'no-snapshot'
-          ? overviewCompactBox('资源', '不可判定', '快照缺失', 'warn')
-          : overviewCompactBox('资源', `CPU ${fmtPercent(ctx.o.cpuLoad)} / MEM ${fmtPercent(ctx.o.memoryUsage)}`, `DISK ${fmtPercent(ctx.o.diskUsage)}`, ctx.resourceLevel)
-      ].join('');
+      const statusTiles = noSnapshot
+        ? [
+          overviewCompactBox('快照', '快照缺失', '状态更新时间 0s', 'warn'),
+          overviewCompactBox('RouterOS 可达性', ctx.routerState?.label === '等待登录' ? '等待登录' : '当前不可达', 'REST / SSH 待确认', 'danger'),
+          overviewCompactBox('业务数字状态', '业务数据不可判定', '仅事件状态可用', 'warn')
+        ].join('')
+        : [
+          overviewCompactBox('WAN', `${fmtNumber(ctx.wanHealth.online)}/${fmtNumber(ctx.wanHealth.total)}`, `${ctx.wanHealth.label}${ctx.wanHealth.offline > 0 ? ` · 离线 ${fmtNumber(ctx.wanHealth.offline)}` : ''}`, wanLevel),
+          overviewCompactBox('采集', `REST ${focus.restLabel} / SSH ${focus.sshLabel}`, collectionSub, ctx.collectionRisk.level),
+          overviewCompactBox('资源', `CPU ${fmtPercent(ctx.o.cpuLoad)} / MEM ${fmtPercent(ctx.o.memoryUsage)}`, `DISK ${fmtPercent(ctx.o.diskUsage)}`, ctx.resourceLevel)
+        ].join('');
       const navLinks = [
         overviewCompactActionLink('#lineStatus', '查看 WAN 状态', 'lineStatus'),
         overviewCompactActionLink('#readonlyDiagnostics', '查看采集状态', 'readonlyDiagnostics'),
@@ -8067,9 +8384,11 @@
             <div class="ik-home-summary-grid" style="grid-template-columns:minmax(0,1fr);gap:4px;margin-top:4px;">
               ${overviewCompactBox('证据摘要', focus.summaryEvidence, focus.summaryNote, focus.tone)}
             </div>`;
-      const shellColumns = noSnapshot || wanOffline
-        ? 'minmax(0,1.28fr) minmax(248px,.72fr)'
-        : 'minmax(0,1.16fr) minmax(280px,.84fr)';
+      const shellColumns = noSnapshot
+        ? 'minmax(420px,1.18fr) minmax(320px,.82fr)'
+        : (wanOffline
+          ? 'minmax(0,1.28fr) minmax(248px,.72fr)'
+          : 'minmax(0,1.16fr) minmax(280px,.84fr)');
       return `<div class="ik-home-summary-shell" data-overview-summary data-overview-desktop-top data-overview-summary-focus="${escapeHtml(focus.key)}" style="display:grid;grid-template-columns:${shellColumns};gap:4px;align-items:stretch;">
         <div class="card ik-home-density-card" data-overview-summary-main>
           <div class="card-head"><div class="card-title" data-overview-field data-overview-desktop-primary>${escapeHtml(mainLine)}</div><div class="subtle" data-overview-field>· ${escapeHtml(subLine)}</div></div>
@@ -8091,6 +8410,7 @@
       const prefix = samplePrefix(ctx.freshness);
       if (!enough) {
         const labels = historyAwareCapabilityLabels(ctx.capabilities, ctx.freshness);
+        const routeDisplay = overviewRouteDisplay(ctx);
         return `<div class="card ik-home-density-card is-trend-strip" data-overview-density-module="wan-trend" data-overview-trend-compact>
           <div class="card-head"><div class="card-title">WAN 速率 / 采样</div><div class="subtle">${escapeHtml(prefix)} · 采样不足 · ${escapeHtml(ctx.freshness.source || '未采集')}</div></div>
           <div class="card-body">
@@ -8098,7 +8418,7 @@
               <div class="ik-summary-box"><div class="subtle">${escapeHtml(prefix)}上行</div><b>${fmtRate(ctx.wanRates.up)}</b></div>
               <div class="ik-summary-box"><div class="subtle">${escapeHtml(prefix)}下行</div><b>${fmtRate(ctx.wanRates.down)}</b></div>
               <div class="ik-summary-box"><div class="subtle">采样点</div><b>${fmtNumber(Math.max(upChart.count, downChart.count))}</b></div>
-              <div class="ik-summary-box"><div class="subtle">默认路由</div><b>${escapeHtml(ctx.routeHealth.label)}</b></div>
+              <div class="ik-summary-box"><div class="subtle">默认路由</div><b>${escapeHtml(routeDisplay.label)}</b></div>
               <div class="ik-summary-box"><div class="subtle">采集能力</div><b>${escapeHtml(labels.sshLabel)}</b></div>
             </div>
           </div>
@@ -8125,18 +8445,20 @@
         .join('') || `<div class="ik-summary-box"><div class="subtle">WAN 线路</div><b>未采集</b></div>`;
       const rankSubtitle = isHistorySnapshot(ctx.freshness) ? '快照排行 · Top 5' : '实时流量排行 · Top 5';
       const wanHealthText = snapshotStatusText(ctx.wanHealth.text, ctx.freshness);
-      const primaryCard = focusFirst ? renderOverviewFocusCard(ctx, focus, 'detail') : renderOverviewTrendCard(ctx);
+      const primaryCard = noSnapshotDetail ? '' : (focusFirst ? renderOverviewFocusCard(ctx, focus, 'detail') : renderOverviewTrendCard(ctx));
       const trendAfterFocus = focusFirst && !noSnapshotDetail ? renderOverviewTrendCard(ctx) : '';
-      const freshnessCard = noSnapshotDetail ? `<div class="card ik-home-density-card ik-home-freshness-card" data-overview-density-module="freshness">
-            <div class="card-head"><div class="card-title">业务数据状态</div><div class="subtle">无快照时不展示业务正常结论</div></div>
+      const freshnessCard = noSnapshotDetail
+        ? `<div class="card ik-home-density-card ik-home-freshness-card" data-overview-density-module="freshness">
+            <div class="card-head"><div class="card-title">数据可信度</div><div class="subtle">快照缺失时不展示业务正常结论</div></div>
             <div class="card-body">
-              <div class="ik-home-line-risk-grid" style="grid-template-columns:repeat(3,minmax(0,1fr));">
-                ${overviewCompactBox('业务数据', '不可判定', '等待有效快照', 'warn')}
-                ${overviewCompactBox('WAN / 资源', '不可判定', '等待有效快照', 'warn')}
-                ${overviewCompactBox('可信度', '降级', '仅事件状态可用', 'warn')}
+              <div class="freshness-strip">
+                <div class="freshness-item" data-overview-field><span>业务判定</span><b>不可判定</b></div>
+                <div class="freshness-item" data-overview-field><span>默认路由</span><b>不可判定</b></div>
+                <div class="freshness-item" data-overview-field><span>展示范围</span><b>仅采集层证据</b></div>
               </div>
             </div>
-          </div>` : `<div class="card ik-home-density-card ik-home-freshness-card" data-overview-density-module="freshness">
+          </div>`
+        : `<div class="card ik-home-density-card ik-home-freshness-card" data-overview-density-module="freshness">
             <div class="card-head"><div class="card-title">采集新鲜度</div><div class="subtle">${escapeHtml(ctx.collectionRisk.text)}</div></div>
             <div class="card-body">
               ${renderOverviewFreshnessCompact(ctx)}
@@ -8151,7 +8473,7 @@
             <div class="card-body">
               <div class="ik-home-line-risk-grid">
                 ${accessRows}
-                <div class="ik-summary-box"><div class="subtle">默认路由</div><b>${ctx.routeHealth.level === 'ok' ? snapshotOkTag('正常', ctx.freshness) : tag(ctx.routeHealth.label, ctx.routeHealth.level)}</b></div>
+                <div class="ik-summary-box"><div class="subtle">默认路由</div><b>${tag(overviewRouteDisplay(ctx).label, overviewRouteDisplay(ctx).level)}</b></div>
                 <div class="ik-summary-box"><div class="subtle">证据对象</div><b>${escapeHtml((ctx.offlineWanRows || []).slice(0, 3).map((row) => row.name || row.interface || '').filter(Boolean).join('、') || '未见')}</b></div>
                 <div class="ik-summary-box"><div class="subtle">PPP 活动会话</div><b>${fmtNumber(ctx.activeSessions)}</b></div>
               </div>
@@ -8164,7 +8486,7 @@
               </div>
             </div>
           </div>
-          ${renderOverviewSessionSnapshot(ctx)}
+          ${noSnapshotDetail ? '' : renderOverviewSessionSnapshot(ctx)}
           ${renderOverviewSignalCoverage(ctx)}
         </div>
         <div class="ik-home-side-stack">
