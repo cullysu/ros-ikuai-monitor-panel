@@ -1724,7 +1724,8 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       mobileIncidentTitleSupportText &&
       !mobileIncidentTitleSupportText.startsWith('\u5904\u7f6e\uff1a') &&
       /(\u79bb\u7ebf\u5bf9\u8c61|\u9ed8\u8ba4\u8def\u7531\u5feb\u7167\u6458\u8981)/.test(mobileIncidentTitleSupportText) &&
-      /\u5efa\u8bae\u67e5\u770b\uff1a/.test(normalize(mobileIncident?.textContent || ''))
+      /\u5efa\u8bae\u67e5\u770b\uff1a/.test(normalize(mobileIncident?.textContent || '')) &&
+      !/\u5efa\u8bae\u67e5\u770b\s+\u5efa\u8bae\u67e5\u770b\uff1a/.test(normalize(mobileIncident?.textContent || ''))
     );
     const overviewMobileEvidenceUniqueOk = sectionName !== 'overview' || !isMobileOverview || Boolean(
       mobileIncidentEvidenceRows.length >= 5 &&

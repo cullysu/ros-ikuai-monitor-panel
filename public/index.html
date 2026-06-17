@@ -7143,7 +7143,7 @@
           <div class="ik-mobile-incident-title" data-overview-field data-overview-evidence-action><div>${escapeHtml(v.evidenceTitle)}</div><div>${escapeHtml(v.supportLine)}</div></div>
           <div class="ik-mobile-incident-evidence">
             <div data-overview-field data-overview-evidence-object>${escapeHtml(v.evidenceTitle)} <b>${escapeHtml(v.offlineText)}</b></div>
-            <div data-overview-field>建议查看 <b>${escapeHtml(v.suggestionText)}</b></div>
+            <div data-overview-field>${escapeHtml(v.suggestionText)}</div>
             <div data-overview-field>数据状态 <b>${escapeHtml(v.ageFirstText)}</b></div>
             <div data-overview-field>采集状态 <b>REST ${escapeHtml(v.collection.restLabel)} / SSH ${escapeHtml(v.collection.sshLabel)}</b></div>
             <div data-overview-field>默认路由 <b>${escapeHtml(routeText)}</b></div>
