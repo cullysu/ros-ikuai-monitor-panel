@@ -865,18 +865,36 @@ async function navigateWithFixture(cdp, baseUrl, profile, viewport, report, scal
 }
 
 async function setSection(cdp, section) {
-  await cdp.send('Runtime.evaluate', {
+  const result = await cdp.send('Runtime.evaluate', {
     expression: `(() => {
       const section = ${JSON.stringify(section)};
-      const link = document.querySelector('[data-section="' + CSS.escape(section) + '"]');
+      const normalize = (value) => String(value || '').replace(/\\s+/g, ' ').trim();
+      const candidates = Array.from(document.querySelectorAll('[data-section="' + CSS.escape(section) + '"]'));
+      const visible = candidates.find((node) => {
+        const rect = node.getBoundingClientRect();
+        const style = getComputedStyle(node);
+        return rect.width > 0 && rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden' && style.opacity !== '0';
+      }) || null;
+      const link = visible || candidates[0] || null;
       if (link) link.click();
       else location.hash = '#' + section;
-      return true;
+      return {
+        linkFound: candidates.length > 0,
+        linkVisible: Boolean(visible),
+        linkCount: candidates.length,
+        linkText: normalize((visible || link)?.textContent || ''),
+      };
     })()`,
     awaitPromise: true,
     returnByValue: true,
   });
   await delay(450);
+  return result.result && result.result.value ? result.result.value : {
+    linkFound: false,
+    linkVisible: false,
+    linkCount: 0,
+    linkText: '',
+  };
 }
 
 async function inspectSection(cdp, profile, viewport, section, args, scaleScenario) {
@@ -1331,7 +1349,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       const rect = sectionRoot.getBoundingClientRect();
       return { width: Math.round(rect.width), left: Math.round(rect.left), right: Math.round(rect.right) };
     })() : null;
-    const minOverviewUsableWidth = window.innerWidth < 768 ? Math.min(320, window.innerWidth - 24) : 640;
+    const minOverviewUsableWidth = window.innerWidth < 768 ? Math.max(320, window.innerWidth - 24) : 640;
     const overviewUsableWidthOk = sectionName !== 'overview' || Boolean(
       frame &&
       (topbar || isMobileOverview) &&
@@ -2201,19 +2219,29 @@ async function runBrowserChecks(args, report, baseUrl) {
           for (const section of sections) {
             const runtimeErrorStart = runtimeErrors.length;
             const consoleErrorStart = consoleErrors.length;
-            await setSection(cdp, section);
+            const sectionActivation = await setSection(cdp, section);
             const inspection = await inspectSection(cdp, profile, viewport, section, args, scaleScenario);
             inspection.runtimeErrorCount = runtimeErrors.length;
             inspection.consoleErrorCount = consoleErrors.length;
             inspection.newRuntimeErrorCount = runtimeErrors.length - runtimeErrorStart;
             inspection.newConsoleErrorCount = consoleErrors.length - consoleErrorStart;
+            const structurePass = inspection.pass;
+            const openErrorsOk = inspection.newRuntimeErrorCount === 0 && inspection.newConsoleErrorCount === 0;
+            const sectionEntryRequired = MAIN_MENU_SECTIONS.includes(section);
+            const sectionEntryOk = !sectionEntryRequired || Boolean(sectionActivation && sectionActivation.linkFound);
+            inspection.structurePass = structurePass;
+            inspection.openErrorsOk = openErrorsOk;
+            inspection.sectionEntryOk = sectionEntryOk;
+            inspection.sectionEntryRequired = sectionEntryRequired;
+            inspection.sectionActivation = sectionActivation;
+            inspection.pass = Boolean(structurePass && openErrorsOk && sectionEntryOk);
             if (inspection.newRuntimeErrorCount || inspection.newConsoleErrorCount || !inspection.pass) {
               inspection.runtimeErrors = runtimeErrors.slice(Math.max(0, runtimeErrorStart), runtimeErrorStart + 3);
               inspection.consoleErrors = consoleErrors.slice(Math.max(0, consoleErrorStart), consoleErrorStart + 3);
               inspection.firstRuntimeError = runtimeErrors[0] || null;
               inspection.firstConsoleError = consoleErrors[0] || null;
             }
-            const hardPass = inspection.pass && runtimeErrors.length === 0 && consoleErrors.length === 0;
+            const hardPass = inspection.pass;
             report.browserChecks.push(inspection);
             record(report, `responsive ${profile}/${scaleScenario}/${viewport.name}/${section}`, hardPass, inspection);
             if (inspection.overflowX > 24 && viewport.width < 768 && !args.strictResponsive) {

@@ -2325,6 +2325,33 @@ def address_is_globalish(address_text):
         return False
 
 
+def gateway_matches_address_rows(gateway, address_rows):
+    gateway_text = str(gateway or "").strip()
+    if not gateway_text:
+        return False
+    if "%" in gateway_text:
+        gateway_text = gateway_text.rsplit("%", 1)[0].strip()
+    try:
+        gateway_ip = ipaddress.ip_address(gateway_text)
+    except ValueError:
+        return False
+    for row in address_rows or []:
+        row = row if isinstance(row, dict) else {}
+        address_text = str(row.get("address") or row.get("network") or "").strip()
+        if not address_text:
+            continue
+        try:
+            network = ipaddress.ip_interface(address_text).network
+        except ValueError:
+            try:
+                network = ipaddress.ip_network(address_text, strict=False)
+            except ValueError:
+                continue
+        if gateway_ip in network:
+            return True
+    return False
+
+
 def infer_wan_interface_names(rest, addresses_by_interface):
     interface_types = {row.get("name"): str(row.get("type", "")).lower() for row in rest.get("interfaces", [])}
     wan_names = {row.get("name") for row in rest.get("pppoe", []) if row.get("name")}
@@ -2335,7 +2362,7 @@ def infer_wan_interface_names(rest, addresses_by_interface):
     )
     defaults = [
         row for row in rest.get("routes", [])
-        if row.get("dst-address") == "0.0.0.0/0" and not to_bool(row.get("disabled"))
+        if row.get("dst-address") in {"0.0.0.0/0", "::/0"} and not to_bool(row.get("disabled"))
     ]
     for route in defaults:
         gateway = str(route.get("gateway") or "").strip()
@@ -2344,6 +2371,22 @@ def infer_wan_interface_names(rest, addresses_by_interface):
         gateway_name = gateway.split("%", 1)[1] if "%" in gateway else gateway
         if gateway_name in interface_types:
             wan_names.add(gateway_name)
+            continue
+        if gateway_matches_address_rows(gateway, addresses_by_interface.get(gateway_name, [])):
+            wan_names.add(gateway_name)
+            continue
+        for iface_name, address_rows in addresses_by_interface.items():
+            if not iface_name or iface_name in wan_names:
+                continue
+            iface_type = interface_types.get(iface_name, "")
+            low_name = str(iface_name).lower()
+            if iface_type in {"bridge", "loopback", "wireguard"}:
+                continue
+            if low_name.startswith(("bridge", "docker", "veth", "lo", "tailscale", "zerotier")):
+                continue
+            if gateway_matches_address_rows(gateway, address_rows):
+                wan_names.add(iface_name)
+                break
     for iface_name, address_rows in addresses_by_interface.items():
         if not iface_name or iface_name in wan_names:
             continue
@@ -4055,11 +4098,11 @@ class Collector:
     def build_wan_lines(self, rest, pppoe_rows, interfaces, update_rate_history=False, rate_history_break=False):
         active_defaults = [
             row for row in rest.get("routes", [])
-            if row.get("dst-address") == "0.0.0.0/0" and to_bool(row.get("active")) and not to_bool(row.get("disabled"))
+            if row.get("dst-address") in {"0.0.0.0/0", "::/0"} and to_bool(row.get("active")) and not to_bool(row.get("disabled"))
         ]
         default_routes = [
             row for row in rest.get("routes", [])
-            if row.get("dst-address") == "0.0.0.0/0" and not to_bool(row.get("disabled"))
+            if row.get("dst-address") in {"0.0.0.0/0", "::/0"} and not to_bool(row.get("disabled"))
         ]
         dhcp_clients_by_interface = {
             item.get("interface"): item
@@ -4068,6 +4111,11 @@ class Collector:
         }
         wan_interfaces = [row for row in interfaces if row.get("role") == "WAN"]
         pppoe_names = {row.get("name") for row in pppoe_rows if row.get("name")}
+        interface_networks = {
+            row.get("name"): [value for value in (row.get("ips") or []) if value and value != "-"]
+            for row in interfaces
+            if row.get("name")
+        }
         rows = [
             {
                 **copy.deepcopy(row),
@@ -4086,7 +4134,7 @@ class Collector:
                 return True
             if "%" in gateway and gateway.rsplit("%", 1)[-1] == iface_name:
                 return True
-            return False
+            return gateway_matches_address_rows(gateway, [{"address": value} for value in interface_networks.get(iface_name, [])])
 
         non_pppoe_wan_interfaces = [iface for iface in wan_interfaces if iface.get("name") not in pppoe_names]
 
@@ -4107,10 +4155,10 @@ class Collector:
         def interface_access(iface, dhcp_client):
             iface_type = str(iface.get("type") or "").lower()
             name = str(iface.get("name") or "").lower()
-            if dhcp_client:
-                return "DHCP"
             if iface_type == "vlan" or iface.get("vlanId") or "vlan" in name:
                 return "VLAN"
+            if dhcp_client:
+                return "DHCP"
             if iface.get("ips"):
                 return "Static"
             return "Unknown"
@@ -4140,7 +4188,7 @@ class Collector:
                     "name": name,
                     "status": "在线" if running else "离线",
                     "running": running,
-                    "parent": iface.get("type", "-"),
+                    "parent": iface.get("parentInterface") or iface.get("type", "-"),
                     "addresses": list(iface.get("ips") or []),
                     "upRate": to_int(iface.get("txRate")),
                     "downRate": to_int(iface.get("rxRate")),

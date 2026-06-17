@@ -2030,7 +2030,7 @@
         button: "检测 DNS 泄漏风险",
         level: dnsLevel,
         headers: ["检查项", "结果", "状态", "说明"],
-        summary: diag ? "对比直连站点和代理站点的解析结果，判断是否出现国内误代理或海外未进代理。" : "还没有只读探测结果，点击后会刷新 DNS 矩阵与出口样本。",
+        summary: diag ? "对比直连站点和代理站点的解析结果，判断是否出现国内误代理或海外未进代理。" : "还没有只读探测结果，点击后会刷新 DNS 覆盖与出口样本。",
         metrics: [
           ["DNS 记录", `${number(list(diag?.dnsMatrix).length)} 条`],
           ["直连误代理", `${directFake.length} 个`],
@@ -2157,19 +2157,19 @@
     const dnsRows = list(diag?.dnsMatrix);
     const services = list(diag?.serviceReachability);
     const exits = list(diag?.exitChecks);
-    const status = danger ? "高风险" : warn ? "需关注" : "正常";
+    const status = danger ? "异常较多" : warn ? "需关注" : "正常";
     const statusLevel = danger ? "danger" : warn ? "warn" : "ok";
     return `
       <div class="readonly-banner">
         <div class="readonly-hero">
           <div class="readonly-hero-title">只读运行体检 · ${pill(status, statusLevel)}</div>
-          <div class="readonly-hero-copy">本页只展示与探测，不向 RouterOS / OpenWrt / ESXi 写入配置；用于快速定位采集新鲜度、DNS/代理分流、出口、服务可达、规则命中、终端风险、IPv6 和线路偏斜。</div>
+          <div class="readonly-hero-copy">本页只展示探测状态，不向 RouterOS / OpenWrt / ESXi 写入配置；用于快速定位采集新鲜度、DNS/代理分流、出口、服务可达、规则命中、终端状态、IPv6 和线路偏斜。</div>
           <div class="readonly-pill-row" style="margin-top:8px">
             ${risks.length ? risks.slice(0, 10).map((item) => pill(item.text, item.level)).join("") : pill("未发现明显风险", "ok")}
             ${risks.length > 10 ? pill(`+${risks.length - 10} 项`, "warn") : ""}
           </div>
         </div>
-        ${kpi("风险项", `<span style="color:${danger ? "#d63b3b" : warn ? "#ad7200" : "#08a35c"}">${number(risks.length)}</span>`, `${number(danger)} 严重 / ${number(warn)} 关注`)}
+        ${kpi("异常项", `<span style="color:${danger ? "#d63b3b" : warn ? "#ad7200" : "#08a35c"}">${number(risks.length)}</span>`, `${number(danger)} 严重 / ${number(warn)} 关注`)}
         ${kpi("DNS 探测", number(dnsRows.length), STATE.loading && !diag ? "只读探测中" : diag ? `${diag.cached ? "缓存" : "实时"} · ${html(diag.generatedAt || "-")}` : "等待探测")}
         ${kpi("服务探测", number(services.length), services.length ? `${number(services.filter((row) => row.ok).length)} 可达` : "未完成")}
         ${kpi("出口探测", number(exits.length), exits.length ? `${number(exits.filter((row) => row.ip).length)} 有结果` : "未完成")}
@@ -2242,7 +2242,7 @@
         <td>${cell(html(row.httpLabel), html(row.http ? `${number(row.http.elapsedMs)}ms` : "-"), "readonly-mono")}</td>
         <td>${pill(row.verdict, row.level)}</td>
       </tr>`);
-    return card("DNS / 代理分流体检矩阵", "常用站点：解析、Fake-IP、策略、TCP/HTTP 与出口提示", table(["站点", "DNS 结果", "Fake-IP", "策略判断", "出口 IP", "TCP443", "HTTP/延迟", "判断"], rows, "等待只读分流探测", "readonly-scroll-tall"));
+    return card("DNS / 代理分流摘要", "常用站点：解析、Fake-IP、策略、TCP/HTTP 与出口状态", table(["站点", "DNS 结果", "Fake-IP", "策略判断", "出口 IP", "TCP443", "HTTP/延迟", "判断"], rows, "等待只读分流探测", "readonly-scroll-tall"));
   }
 
   function renderDnsConsistency(diag) {
@@ -2316,7 +2316,7 @@
           <td>${html(httpInfo.state === "soft-timeout" ? "HTTP 内容探测超时，TCP 443 已可达" : http?.error || tcp?.error || "-")}</td>
         </tr>`;
     });
-    return card("服务可达性矩阵", "DNS、TCP 443、HTTP 状态、延迟、错误信息", table(["服务", "TCP443", "HTTP", "状态", "延迟", "错误"], rows, "等待服务只读探测", "readonly-scroll-tall"));
+    return card("服务可达性清单", "DNS、TCP 443、HTTP 状态、延迟、错误信息", table(["服务", "TCP443", "HTTP", "状态", "延迟", "错误"], rows, "等待服务只读探测", "readonly-scroll-tall"));
   }
 
   function pppoeIndex(name) {
@@ -2538,7 +2538,7 @@
           <td>${html(row.lastSeen || "-")}</td>
           <td>${terminalRiskTags(row).map((tagText) => pill(tagText, row.score >= 45 ? "danger" : row.score >= 20 ? "warn" : "info")).join(" ")}</td>
         </tr>`);
-    return card("终端异常排行 / 高风险矩阵", `按风险优先展示 Top ${number(Math.min(terminals.length, 12))} / ${number(terminals.length)} 台，只保留真实采集字段`, table(["终端", "MAC", "上行", "下行", "连接", "最近出现", "风险标签"], rows, "暂无终端风险数据", "readonly-scroll readonly-table-compact"));
+    return card("终端状态清单", `按连接、流量和 IPv6 状态展示 Top ${number(Math.min(terminals.length, 12))} / ${number(terminals.length)} 台，只保留真实采集字段`, table(["终端", "MAC", "上行", "下行", "连接", "最近出现", "状态标签"], rows, "暂无终端状态数据", "readonly-scroll readonly-table-compact"));
   }
 
   function renderChangeBoard(snapshot) {
@@ -2683,11 +2683,11 @@
     const riskCount = riskItems(snapshot, diag).length;
     const staleCount = health.filter((row) => row.level !== "ok").length;
     const pageHints = {
-      readonlyDiagnostics: "总览页用于一眼判断风险入口，不承载首页信息，也不触发任何修复动作。",
-      collectionHealthDiagnostics: "这里专门看采集链路是否新鲜，终端排行不刷新时优先看 SSH 连接详情。",
+      readonlyDiagnostics: "总览页只看采集健康、DNS、线路、终端和日志状态，不承载专项页明细，也不触发任何写入。",
+      collectionHealthDiagnostics: "这里专门看采集链路是否新鲜，终端列表不刷新时先看 SSH 连接详情。",
       dnsProxyDiagnostics: "这里专门看 DNS、Fake-IP、出口与站点可达性，排查国内外分流和泄漏。",
       wanQualityDiagnostics: "这里专门看多 WAN、PCC 偏斜、路由表、协议和接口计数。",
-      terminalRiskDiagnostics: "这里专门看终端异常、DHCP 租约、IPv6 暴露和设备风险。",
+      terminalRiskDiagnostics: "这里专门看终端状态、DHCP 租约、IPv6 暴露和设备连接。",
       systemAuditDiagnostics: "这里专门看配置漂移、容量、日志、面板文件和近期事件。",
     };
     return `
@@ -2749,7 +2749,7 @@
       { name: "SSH 连接详情", endpoint: "RouterOS SSH read-only", updated: meta.connectionDetailUpdatedAt || conn.detailUpdatedAt, threshold: detailThreshold, error: meta.connectionDetailError, feeds: "终端流量排行、连接数、活跃会话" },
       { name: "连接协议统计", endpoint: "RouterOS connection print", updated: meta.connectionProtocolUpdatedAt || conn.protocolUpdatedAt, threshold: protocolThreshold, error: meta.connectionProtocolError, feeds: "TCP / UDP / ICMP / UDP443 分布" },
       { name: "静态配置快照", endpoint: `DNS / routes / rules · ${number(meta.staticRestWorkers || 1)} 并发`, updated: meta.staticUpdatedAt, threshold: staticThreshold, error: meta.staticError, feeds: "DNS FWD、默认路由、Mangle、地址列表" },
-      { name: "只读外部探测", endpoint: "/api/readonly-diagnostics", updated: diag?.generatedAt, threshold: FRESH.diag, feeds: "DNS 矩阵、TCP/HTTP、出口 IP、面板文件" },
+      { name: "只读外部探测", endpoint: "/api/readonly-diagnostics", updated: diag?.generatedAt, threshold: FRESH.diag, feeds: "DNS 覆盖、TCP/HTTP、出口 IP、面板文件" },
       { name: "RouterOS 日志缓存", endpoint: "log print", updated: snapshot.updatedAt, threshold: FRESH.rest, feeds: "近期事件、故障时间线" },
     ].map((row) => {
       const level = row.error ? "danger" : row.name === "只读外部探测" && STATE.error ? "danger" : levelByAge(row.updated, row.threshold);
@@ -2767,7 +2767,7 @@
     const rows = buildCollectionHealth(snapshot, diag).map((row) => {
       const impact = {
         "REST 实时采集": "全站基础卡片、接口、WAN、终端、系统资源",
-        "SSH 连接详情": "首页终端流量排行、终端风险、连接数排行",
+        "SSH 连接详情": "首页终端流量排行、终端状态、连接数排行",
         "连接协议统计": "QUIC/UDP443、测速/视频/代理隧道观察",
         "DNS 静态表": "DNS 规则、分流判断、配置漂移基线",
         "只读体检探测": "DNS 泄漏、出口 IP、服务可达性、面板文件",
@@ -2778,10 +2778,10 @@
           <td>${pill(levelText(row.level), row.level)}</td>
           <td>${html(row.detail)}</td>
           <td>${html(impact)}</td>
-          <td>${html(row.level === "ok" ? "继续观察" : "优先确认采集线程和数据源")}</td>
+          <td>${html(row.level === "ok" ? "继续观察" : "先确认采集线程和数据源")}</td>
         </tr>`;
     });
-    return card("采集影响面矩阵", "把“哪个采集卡住会影响哪里”直接列出来", table(["采集项", "状态", "详情", "影响页面", "排查优先级"], rows), "readonly-dense-card");
+    return card("采集影响表", "把“哪个采集卡住会影响哪里”直接列出来", table(["采集项", "状态", "详情", "影响页面", "查看顺序"], rows), "readonly-dense-card");
   }
 
   function renderDnsProbeCoverage(diag) {
@@ -2828,7 +2828,7 @@
     const dnsBad = siteRows.filter((row) => row.verdict.includes("DNS")).length;
     const httpBad = siteRows.filter((row) => row.http && !row.http.ok).length;
     const tcpBad = siteRows.filter((row) => row.tcp && !row.tcp.ok).length;
-    return card("分流判定摘要", "把复杂矩阵压成几个关键计数，方便先判断方向", `
+    return card("分流判定摘要", "把复杂状态压成几个关键计数，方便先判断方向", `
       <div class="ops-stat-grid">
         ${kpi("真实 IP 倾向", number(real), "一般更偏 DIRECT")}
         ${kpi("Fake-IP 倾向", number(fake), "一般更偏代理")}
@@ -2998,7 +2998,7 @@
         <td>${pill(row.static ? "静态" : "动态", row.static ? "info" : "ok")}</td>
         <td>${html(row.lastSeen || "-")}</td>
       </tr>`);
-    return card("DHCP 租约矩阵", `展示 Top ${number(Math.min(leases.length, 12))} / ${number(leases.length)} 条 · 服务 ${number(list(snapshot.dhcp?.servers).length)}`, table(["设备", "MAC", "服务", "状态", "类型", "最后出现"], rows, "暂无 DHCP 租约", "readonly-scroll readonly-table-compact"), "readonly-dense-card");
+    return card("DHCP 租约清单", `展示 Top ${number(Math.min(leases.length, 12))} / ${number(leases.length)} 条 · 服务 ${number(list(snapshot.dhcp?.servers).length)}`, table(["设备", "MAC", "服务", "状态", "类型", "最后出现"], rows, "暂无 DHCP 租约", "readonly-scroll readonly-table-compact"), "readonly-dense-card");
   }
 
   function renderSecuritySignals(snapshot) {
@@ -3076,11 +3076,11 @@
     const terminals = list(snapshot.terminals);
     const routes = snapshot.routes || {};
     const rows = [
-      { page: "采集健康", owner: "采集链路", signal: `${health.filter((row) => row.level !== "ok").length} 项关注`, link: "collectionHealthDiagnostics", focus: "SSH / REST / 静态表新鲜度" },
-      { page: "DNS / 代理", owner: "分流与出口", signal: `${siteRows.filter((row) => row.level !== "ok").length} 个站点异常`, link: "dnsProxyDiagnostics", focus: "DNS、Fake-IP、TCP、HTTP、出口" },
-      { page: "线路质量", owner: "WAN / PCC", signal: `${pppoe.filter((row) => !row.running).length} 条离线 / ${number(routes.tableCount)} 张表`, link: "wanQualityDiagnostics", focus: "线路占比、路由库存、Mangle 命中" },
-      { page: "终端风险", owner: "终端身份", signal: `${terminals.filter((row) => terminalRiskScore(row) >= 45).length} 台高风险`, link: "terminalRiskDiagnostics", focus: "终端、DHCP、IPv6 暴露" },
-      { page: "系统审计", owner: "基线与事件", signal: `${list(snapshot.logs?.all).length} 条日志 / ${list(diag?.panelFiles).length} 个文件`, link: "systemAuditDiagnostics", focus: "漂移、容量、日志和面板文件" },
+      { page: "采集健康", owner: "采集链路", signal: `${health.filter((row) => row.level !== "ok").length} 项需要关注`, link: "collectionHealthDiagnostics", focus: "SSH / REST / 静态表新鲜度" },
+      { page: "DNS / 代理", owner: "分流与出口", signal: `${siteRows.filter((row) => row.level !== "ok").length} 个站点异常`, link: "dnsProxyDiagnostics", focus: "DNS / Fake-IP / TCP / HTTP / 出口" },
+      { page: "线路质量", owner: "WAN / PCC", signal: `${pppoe.filter((row) => !row.running).length} 条离线 / ${number(routes.tableCount)} 张表`, link: "wanQualityDiagnostics", focus: "线路占比 / 路由表 / Mangle 命中" },
+      { page: "终端状态", owner: "终端身份", signal: `${terminals.filter((row) => terminalRiskScore(row) >= 45).length} 台异常`, link: "terminalRiskDiagnostics", focus: "终端、DHCP、IPv6 暴露" },
+      { page: "日志 / 审计", owner: "基线与事件", signal: `${list(snapshot.logs?.all).length} 条日志 / ${list(diag?.panelFiles).length} 个文件`, link: "systemAuditDiagnostics", focus: "漂移、容量、日志和面板文件" },
     ].map((row) => `
       <tr>
         <td><a href="#${row.link}" data-section="${row.link}" data-nav-group="${html(getReadonlyNavGroup(row.link))}">${html(row.page)}</a></td>
@@ -3088,7 +3088,7 @@
         <td>${html(row.signal)}</td>
         <td>${html(row.focus)}</td>
       </tr>`);
-    return card("状态功能页目录", "总览页只做路标，不复制各功能页详情表", table(["页面", "唯一职责", "当前信号", "查看范围"], rows), "readonly-dense-card");
+    return card("页面目录 / 归属", "总览页只做路标，不复制各功能页明细", table(["页面", "唯一职责", "当前信号", "查看范围"], rows), "readonly-dense-card");
   }
 
   function renderRiskPriorityQueue(snapshot, diag) {
@@ -3107,7 +3107,7 @@
       { name: "采集新鲜度", source: "REST / SSH / static snapshot", page: "采集健康", count: buildCollectionHealth(snapshot, diag).length },
       { name: "站点分流", source: "DNS / TCP / HTTP probes", page: "DNS / 代理", count: SITE_ORDER.length },
       { name: "WAN 与路由", source: "PPPoE / route / mangle", page: "线路质量", count: list(snapshot.pppoe).length + list(snapshot.routes?.defaultRoutes).length },
-      { name: "终端身份", source: "terminal / DHCP / IPv6", page: "终端风险", count: list(snapshot.terminals).length + list(snapshot.dhcp?.leases).length },
+      { name: "终端身份", source: "terminal / DHCP / IPv6", page: "终端状态", count: list(snapshot.terminals).length + list(snapshot.dhcp?.leases).length },
       { name: "审计基线", source: "logs / files / capacity", page: "系统审计", count: list(snapshot.logs?.all).length + list(diag?.panelFiles).length },
     ].map((row) => `
       <tr>
@@ -3116,18 +3116,18 @@
         <td>${html(row.page)}</td>
         <td>${number(row.count)}</td>
       </tr>`);
-    return card("证据来源表", "说明每类状态数据的页面归属，避免跨页面重复展示", table(["状态数据", "来源", "归属页面", "样本数"], rows), "readonly-dense-card");
+    return card("状态覆盖表", "说明每类状态数据来自哪里、落在哪一页", table(["状态数据", "来源", "归属页面", "样本数"], rows), "readonly-dense-card");
   }
 
   function renderDedupPolicyCard() {
     const rows = [
-      { rule: "详情表唯一归属", desc: "采集、DNS、WAN、终端、审计各自只在对应功能页展示完整表格" },
-      { rule: "总览只做索引", desc: "总览页只保留入口、风险优先级和覆盖关系，不复制明细表" },
-      { rule: "同类信息不跨页重复", desc: "容量、日志、安全名单只归系统审计；DHCP 和 IPv6 终端只归终端风险" },
+      { rule: "明细只在对应页展示", desc: "采集、DNS、WAN、终端、审计各自只在对应功能页展示完整表格" },
+      { rule: "总览只保留摘要", desc: "总览页只保留入口、状态摘要和覆盖关系，不复制明细表" },
+      { rule: "同类信息不跨页重复", desc: "容量、日志、安全名单只归系统审计；DHCP 和 IPv6 终端只归终端状态" },
       { rule: "未采集不造假", desc: "没有真实字段的位置保留未采集或只读说明，不补虚假指标" },
       { rule: "只读边界固定", desc: "所有模块只展示状态，不下发配置、不重启服务、不改路由规则" },
     ].map((row) => `<tr><td>${html(row.rule)}</td><td>${html(row.desc)}</td></tr>`);
-    return card("信息归属规则", "用于防止后续又把同一类信息堆回多个页面", table(["规则", "说明"], rows), "readonly-dense-card");
+    return card("只读展示规则", "用于防止后续又把同一类信息堆回多个页面", table(["规则", "说明"], rows), "readonly-dense-card");
   }
 
   function renderCollectionThresholdMatrix() {
@@ -3283,11 +3283,11 @@
   }
 
   const READONLY_FEATURE_PAGES = [
-    { section: "readonlyDiagnostics", title: "只读诊断总览", label: "诊断总览", desc: "入口和风险摘要", tip: "独立只读诊断入口，不再向首页注入诊断模块", icon: "ik-load", keywords: "只读 诊断 总览 风险 摘要" },
+    { section: "readonlyDiagnostics", title: "只读总览", label: "只读总览", desc: "采集健康 / DNS / 线路 / 终端 / 日志", tip: "只看状态摘要，不复制专项页细节", icon: "ik-load", keywords: "只读 总览 采集健康 DNS 线路 终端 日志 状态" },
     { section: "collectionHealthDiagnostics", title: "采集健康", label: "采集健康", desc: "数据新鲜度", tip: "REST、SSH、DNS 静态表、连接详情与只读探测刷新状态", icon: "ik-dns", keywords: "采集 健康 新鲜度 REST SSH 连接详情 数据源" },
     { section: "dnsProxyDiagnostics", title: "DNS / 代理体检", label: "DNS / 代理", desc: "分流与出口", tip: "常用站点 DNS、Fake-IP、出口 IP、TCP/HTTP 可达性集中只读检测", icon: "ik-dns", keywords: "DNS 代理 分流 出口 Fake-IP GitHub YouTube Apple 抖音" },
     { section: "wanQualityDiagnostics", title: "线路质量", label: "线路质量", desc: "WAN / PCC", tip: "多 WAN 质量、PCC 偏斜、协议分布和规则命中只读分析", icon: "ik-balance", keywords: "WAN 线路 PCC 偏斜 协议 UDP443 规则命中" },
-    { section: "terminalRiskDiagnostics", title: "终端风险", label: "终端风险", desc: "异常终端 / IPv6", tip: "高连接、高流量、IPv6 暴露与终端异常只读排行", icon: "ik-terminal", keywords: "终端 风险 异常 IPv6 连接 流量 设备" },
+    { section: "terminalRiskDiagnostics", title: "终端状态", label: "终端", desc: "设备状态 / IPv6", tip: "高连接、高流量、IPv6 暴露与终端异常只读查看", icon: "ik-terminal", keywords: "终端 状态 异常 IPv6 连接 流量 设备" },
     { section: "systemAuditDiagnostics", title: "系统审计", label: "系统审计", desc: "漂移 / 错误 / 容量", tip: "配置漂移、近期事件、接口错误、缓存容量和资源变化榜", icon: "ik-security", keywords: "审计 漂移 变更 时间线 接口错误 容量 缓存" },
   ];
 
@@ -3314,7 +3314,7 @@
   );
   const READONLY_NAV_PLACEMENT = {
     readonlyDiagnostics: { group: "monitor", label: "只读总览", icon: "ik-load", after: "interfaces", quickGroup: "监控" },
-    terminalRiskDiagnostics: { group: "monitor", label: "终端风险", icon: "ik-terminal", after: "terminals", quickGroup: "监控" },
+    terminalRiskDiagnostics: { group: "monitor", label: "终端", icon: "ik-terminal", after: "terminals", quickGroup: "监控" },
     dnsProxyDiagnostics: { group: "monitor", label: "DNS / 代理", icon: "ik-dns", after: "dns6", quickGroup: "监控" },
     wanQualityDiagnostics: { group: "flow", label: "线路质量", icon: "ik-balance", after: "lineStatus", quickGroup: "流量" },
     collectionHealthDiagnostics: { group: "logs", label: "采集健康", icon: "ik-dns", after: "serviceLogs", quickGroup: "日志" },
@@ -3341,7 +3341,7 @@
     return `<div class="readonly-feature-nav">
       ${defaultPages.map(navLink).join("")}
       ${advancedPages.length ? `<details class="readonly-advanced-nav"${advancedPages.some((page) => page.section === activeSection) ? " open" : ""}>
-        <summary>内部说明</summary>
+        <summary>更多只读说明</summary>
         <div class="readonly-advanced-nav-links">${advancedPages.map(navLink).join("")}</div>
       </details>` : ""}
       </div>`;
@@ -3418,7 +3418,7 @@
             ${renderReadonlyBand(
               "解析与出口",
               "出口判断与服务可达性",
-              "把出口归因、出口 IP 结果和服务探测先放到同一观察面，优先回答“是不是分流、是不是出口、是不是服务本身”。",
+              "把出口归因、出口 IP 结果和服务探测放到同一观察面，先回答“是不是分流、是不是出口、是不是服务本身”。",
               `<div class="readonly-compact-grid">
                 ${renderExitDecisionBoard(diag)}
                 ${renderExitTable(diag)}
@@ -3432,9 +3432,9 @@
               ].join("")
             )}
             ${renderReadonlyBand(
-              "站点矩阵",
-              "DNS / 代理体检主矩阵",
-              "保留原来的高信息密度，但把主矩阵提升为这一页的中心模块，让视觉重心更稳定。",
+              "站点状态",
+              "DNS / 代理分流主视图",
+              "保留信息密度，但把站点状态放在这一页的中心，便于先看 DNS、Fake-IP、出口和可达性。",
               `${renderSitePolicyMatrix(diag)}`,
               siteProblemCount || dnsErrorCount ? "warn" : "ok",
               [
@@ -3445,7 +3445,7 @@
             ${renderReadonlyBand(
               "一致性与规则",
               "DNS 一致性、探测覆盖与静态规则",
-              "把规则、探测覆盖和一致性收口到同一节，避免矩阵之外再冒出另一套视觉语言。",
+              "把规则、探测覆盖和一致性收口到同一节，避免在说明区外重复明细。",
               `${renderDnsConsistency(diag)}
               <div class="readonly-band-stack">
                 ${renderDnsProbeCoverage(diag)}
@@ -3521,20 +3521,20 @@
         return `
           <div class="readonly-readable-flow">
             ${renderReadonlyBand(
-              "风险入口",
-              "终端异常与高风险优先级",
-              "先锁定高连接、高流量和状态异常的终端，再往 DHCP、IPv6 和清单明细下钻。",
+              "终端状态",
+              "终端异常与状态摘要",
+              "先看高连接、高流量和状态异常的终端，再往 DHCP、IPv6 和清单明细下钻。",
               `${renderTerminalAnomalies(snapshot)}`,
               highRiskTerminals ? "danger" : ipv6TerminalCount ? "warn" : "ok",
               [
-                pill(`${number(highRiskTerminals)} 台高风险`, highRiskTerminals ? "danger" : "ok"),
+                pill(`${number(highRiskTerminals)} 台异常`, highRiskTerminals ? "danger" : "ok"),
                 pill(`${number(ipv6TerminalCount)} 台 IPv6 终端`, ipv6TerminalCount ? "warn" : "info"),
               ].join("")
             )}
             ${renderReadonlyBand(
-              "身份与暴露",
+              "DHCP / IPv6 状态",
               "终端状态、DHCP 与 IPv6 暴露",
-              "把 DHCP、IPv6 暴露和终端密集清单作为同一诊断带，视觉上更像运维工作台，而不是独立散卡。",
+              "把 DHCP、IPv6 暴露和终端清单放在同一诊断带，视觉上更像运维工作台，而不是独立散卡。",
               `<div class="readonly-terminal-priority-grid">
                 <div class="ops-page-stack">
                   ${renderTerminalStatusBuckets(snapshot)}
@@ -3621,22 +3621,22 @@
         return `
           <div class="readonly-readable-flow">
             ${renderReadonlyBand(
-              "总览入口",
-              "全局风险与采集新鲜度",
-              "总览页不复制专项页的所有细节，而是先给值班者风险条、优先队列和采集健康这三个进入动作。",
+              "状态摘要",
+              "采集健康、DNS、线路、终端和日志",
+              "总览页只放状态摘要和各页入口，不复制专项页的明细。",
               `${renderGlobalRiskStrip(snapshot, diag)}
               ${renderRiskPriorityQueue(snapshot, diag)}
               ${renderCollectionHealth(snapshot, diag, true)}`,
               staleCount || risks.length ? "warn" : "ok",
               [
-                pill(`${number(risks.length)} 条风险线索`, risks.length ? "warn" : "ok"),
+                pill(`${number(risks.length)} 条异常线索`, risks.length ? "warn" : "ok"),
                 pill(`${number(staleCount)} 项采集延迟`, staleCount ? "warn" : "ok"),
               ].join("")
             )}
             ${renderReadonlyBand(
-              "体检视图",
-              "只读自检、站点矩阵与系统快照",
-              "把人工触发自检、站点体检和压缩运行快照整成同一观察带，减少页面之间的样式割裂感。",
+              "状态视图",
+              "只读自检、站点状态与系统快照",
+              "把人工触发自检、站点状态和压缩运行快照整成同一观察带，减少页面之间的样式割裂感。",
               `${renderSelfCheckPanel(diag)}
               ${renderSitePolicyMatrix(diag)}
               ${renderCompressedOverview(snapshot, diag)}`,
@@ -3647,18 +3647,21 @@
               ].join("")
             )}
             ${renderReadonlyBand(
-              "目录与边界",
-              "诊断入口、信号覆盖与去重归属",
-              "保留总览页的导航价值，同时明确哪些内容在哪一页看，避免新设计系统下又重复堆表。",
-              `<div class="readonly-support-grid">
-                ${renderDiagnosticsDirectory(snapshot, diag)}
-                ${renderSignalCoverageMatrix(snapshot, diag)}
-                ${renderDedupPolicyCard()}
-              </div>`,
+              "更多只读说明",
+              "页面入口、状态覆盖与展示规则",
+              "折叠查看页面目录、信号覆盖和展示规则，避免总览页继续堆出额外明细表。",
+              `<details class="readonly-advanced-nav">
+                <summary>展开页面说明</summary>
+                <div class="readonly-support-grid">
+                  ${renderDiagnosticsDirectory(snapshot, diag)}
+                  ${renderSignalCoverageMatrix(snapshot, diag)}
+                  ${renderDedupPolicyCard()}
+                </div>
+              </details>`,
               "info",
               [
                 pill("只读总览", "info"),
-                pill("不覆盖专项页", "ok"),
+                pill("不复制专项页", "ok"),
               ].join("")
             )}
           </div>`;
@@ -3738,7 +3741,7 @@
     const routeTotal = num(snapshot.routes?.total ?? list(snapshot.routes?.items).length);
     const itemsBySection = {
       readonlyDiagnostics: [
-        ["风险项", number(risks.length), kpiLevel(risks.length, 1, 3)],
+        ["异常项", number(risks.length), kpiLevel(risks.length, 1, 3)],
         ["采集延迟", number(stale), kpiLevel(stale, 1, 2)],
         ["分流异常", number(siteProblems), kpiLevel(siteProblems, 1, 3)],
         ["接口错误", number(ifaceErrors), kpiLevel(ifaceErrors, 1, 5)],
@@ -3877,7 +3880,7 @@
         <td>${cell(row.tcp?.ok ? "TCP通" : row.tcp ? "TCP异常" : "TCP未采集", row.httpLabel)}</td>
         <td>${pill(row.verdict, row.level)}</td>
       </tr>`);
-    return card("DNS / 代理分流摘要", "首页只放结论，完整矩阵进入只读体检页查看", table(["站点", "DNS/策略", "连通", "判断"], rows, "等待只读分流探测", "readonly-scroll"));
+    return card("DNS / 代理分流摘要", "首页只放结论，完整明细进入只读体检页查看", table(["站点", "DNS/策略", "连通", "判断"], rows, "等待只读分流探测", "readonly-scroll"));
   }
 
   function enhanceOverview(snapshot) {

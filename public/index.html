@@ -1643,6 +1643,30 @@
     .ik-mobile-console {
       display: none;
     }
+    .ik-mobile-boundary-entry {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      margin-top: 4px;
+      padding: 6px 8px;
+      border: 1px solid #dfe7f1;
+      border-radius: 4px;
+      background: #f8fbff;
+      color: #5f6f82;
+    }
+    .ik-mobile-boundary-entry .mobile-readonly-button {
+      width: auto;
+      min-height: 28px;
+      padding: 4px 10px;
+      flex: none;
+      white-space: nowrap;
+    }
+    .ik-mobile-boundary-copy {
+      min-width: 0;
+      color: #6a788b;
+      font-size: 10px;
+      line-height: 1.3;
+    }
     .ik-mobile-alarm-head {
       display: grid;
       grid-template-columns: 1.05fr .86fr 1.08fr .94fr;
@@ -3750,6 +3774,10 @@
       }
       .ik-mobile-alert-strip {
         display: grid;
+      }
+      .ik-mobile-boundary-entry {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
       }
       .ik-home-operator-grid .ik-home-operator-card:nth-child(1) { order: -4; }
       .ik-home-operator-grid .ik-home-operator-card:nth-child(2) { order: -3; }
@@ -7107,6 +7135,10 @@
       const deviceLine = `${ctx.o.identity || ctx.snapshot.meta?.routerHost || ctx.snapshot.meta?.target || '未采集'} | ${ctx.o.version || 'RouterOS 未采集'} | 运行 ${ctx.o.uptime || '-'} | ${history ? '快照' : '数据'} ${ctx.freshness.text || '-'}`;
       return `<div class="ik-mobile-console" data-overview-mobile-console>
         ${renderOverviewMobileAlert(ctx)}
+        <div class="ik-mobile-boundary-entry" data-overview-mobile-boundary>
+          <button class="mobile-readonly-button" type="button" data-readonly-info-open>只读边界</button>
+          <div class="ik-mobile-boundary-copy">说明：仅查看状态，不写入配置。</div>
+        </div>
         <div class="ik-mobile-incident-card is-${escapeHtml(level)}" data-overview-mobile-incident>
           <div class="ik-mobile-incident-title" data-overview-field data-overview-evidence-action><div>${escapeHtml(v.evidenceTitle)}</div><div>${escapeHtml(v.supportLine)}</div></div>
           <div class="ik-mobile-incident-evidence">
