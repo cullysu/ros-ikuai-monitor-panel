@@ -189,13 +189,18 @@ function main() {
   assertContains('tools/local-predeploy-check.js', 'commit: gitShortHead(),');
   assertContains('tools/local-predeploy-check.js', 'aggregateComplete: matrixAggregate.complete,');
   assertContains('tools/local-predeploy-check.js', 'overviewDesktopSamplingStateUniqueOk');
+  assertContains('tools/local-predeploy-check.js', 'overviewDesktopTopConclusionUniqueOk');
   assertContains('tools/local-predeploy-check.js', 'overviewMobileSamplingStateUniqueOk');
   assertContains('tools/local-predeploy-check.js', 'overviewMobileActionLinksUniqueOk');
   assertContains('tools/local-predeploy-check.js', 'overviewMobilePrimaryConclusionUniqueOk');
   assertContains('tools/local-predeploy-check.js', 'overviewChineseUiNoEngineeringEnglishOk');
   assertContains('tools/local-predeploy-check.js', 'overviewFirstScreenCoverageOk');
+  assertContains('tools/local-predeploy-check.js', 'overviewDesktopDensityOk');
   assertContains('tools/local-predeploy-check.js', 'overviewDesktopTopBandOk');
   assertContains('tools/local-predeploy-check.js', 'overviewBlankAreaOk');
+  assertContains('tools/local-predeploy-check.js', 'overviewMobileEffectiveCoverageOk');
+  assertContains('tools/local-predeploy-check.js', 'overviewMobileFirstScreenContractOk');
+  assertContains('tools/local-predeploy-check.js', 'overviewMobileWanIncidentPriorityOk');
   assertContains('tools/local-predeploy-check.js', 'overviewResourceTrendOk');
   assertContains('tools/local-predeploy-check.js', 'overviewNoSnapshotFreshnessForbiddenOk');
   assertContains('tools/local-predeploy-check.js', 'overviewNoSnapshotTrustedMetricsForbiddenOk');
