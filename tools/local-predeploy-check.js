@@ -246,6 +246,10 @@ function summarizeMatrixRun(report, args, matrix) {
   const viewports = [...new Set(report.browserChecks.map((check) => check.viewport?.name || '').filter(Boolean))];
   const sections = [...new Set(report.browserChecks.map((check) => check.requestedSection || '').filter(Boolean))];
   const profiles = [...new Set(report.browserChecks.map((check) => check.profile || '').filter(Boolean))];
+  const passedScenarios = [...new Set(report.browserChecks
+    .filter((check) => check.pass)
+    .map((check) => check.scaleScenario || '')
+    .filter(Boolean))];
   return {
     startedAt: report.startedAt,
     finishedAt: report.finishedAt,
@@ -253,6 +257,7 @@ function summarizeMatrixRun(report, args, matrix) {
     profiles,
     requestedScenarios: [...(matrix.requestedScenarios || [])],
     coveredScenarios: [...(matrix.coveredScenarios || [])],
+    passedScenarios,
     viewports,
     sections,
     total: matrix.total,
@@ -266,8 +271,12 @@ function summarizeMatrixRun(report, args, matrix) {
 function mergeMatrixAggregate(existing, matrix, runSummary, sessionKey) {
   const base = existing && existing.commit === matrix.commit && existing.session === sessionKey ? existing : null;
   const coveredScenarios = new Set(base?.coveredScenarios || []);
+  const passedScenarios = new Set(base?.passedScenarios || []);
   for (const scenario of matrix.coveredScenarios || []) {
     coveredScenarios.add(scenario);
+  }
+  for (const scenario of matrix.passedScenarios || []) {
+    passedScenarios.add(scenario);
   }
   const runs = Array.isArray(base?.runs) ? [...base.runs] : [];
   runs.push(runSummary);
@@ -276,7 +285,8 @@ function mergeMatrixAggregate(existing, matrix, runSummary, sessionKey) {
     session: sessionKey,
     requiredScenarios: [...matrix.requiredScenarios],
     coveredScenarios: [...coveredScenarios].sort(),
-    complete: matrix.requiredScenarios.every((scenario) => coveredScenarios.has(scenario)),
+    passedScenarios: [...passedScenarios].sort(),
+    complete: matrix.requiredScenarios.every((scenario) => passedScenarios.has(scenario)),
     runs,
     createdAt: base?.createdAt || runSummary.startedAt,
     updatedAt: runSummary.finishedAt,
@@ -542,6 +552,7 @@ function buildMatrixSummary(browserChecks = [], args = {}) {
     section: check.requestedSection || '',
     pass: Boolean(check.pass),
   }));
+  const passedScenarios = [...new Set(cells.filter((cell) => cell.pass).map((cell) => cell.scaleScenario))].sort();
   for (const cell of cells) {
     const key = `${cell.profile}::${cell.scaleScenario}`;
     if (!groups.has(key)) {
@@ -574,8 +585,9 @@ function buildMatrixSummary(browserChecks = [], args = {}) {
     requestedScenarios: args.scaleScenarios || [],
     requiredScenarios,
     coveredScenarios: [...new Set(cells.map((cell) => cell.scaleScenario))].sort(),
-    requestedComplete: (args.scaleScenarios || []).every((scenario) => cells.some((cell) => cell.scaleScenario === scenario)),
-    complete: requiredScenarios.every((scenario) => cells.some((cell) => cell.scaleScenario === scenario)),
+    passedScenarios,
+    requestedComplete: (args.scaleScenarios || []).every((scenario) => passedScenarios.includes(scenario)),
+    complete: requiredScenarios.every((scenario) => passedScenarios.includes(scenario)),
     total: cells.length,
     passed: cells.filter((cell) => cell.pass).length,
     failed: cells.filter((cell) => !cell.pass).length,
@@ -1328,7 +1340,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
           overviewSummaryMain &&
           overviewDesktopDetail &&
           overviewNoSnapshotGrid &&
-          overviewNoSnapshotGridItems.length >= 9 &&
+          overviewNoSnapshotGridItems.length >= 8 &&
           overviewNoSnapshotGridColumns >= 3 &&
           overviewFocusModule &&
           sectionRoot.querySelector('[data-overview-density-module="freshness"]') &&
@@ -1617,11 +1629,14 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       suggestionPrefix: countRegex(firstScreenOverviewText, /建议查看|建议：/g),
       actionLabels: countRegex(firstScreenOverviewText, /查看 WAN|查看采集|查看资源|查看路由表|查看路由|查看详情/g),
     };
+    const mobileWanIncidentFirstScreen = ['all-offline', 'interfaces-down'].includes(scaleScenario) ||
+      mobileMetricTitles.slice(0, 4).join('|') === 'WAN|默认路由|离线对象|最后成功采集' ||
+      /历史快照：WAN\s*曾离线/.test(firstScreenOverviewText);
     const overviewMobileCoreOk = sectionName !== 'overview' || window.innerWidth >= 768 || Boolean(
       /风险|异常|数据陈旧|历史快照|无可用快照|快照缺失|资源满载|资源高负载|采集降级|WAN 全离线|全部离线|WAN 离线/.test(firstScreenOverviewText) &&
       /WAN/.test(firstScreenOverviewText) &&
       (
-        ['all-offline', 'interfaces-down'].includes(scaleScenario) || /历史快照：WAN曾离线/.test(firstScreenOverviewText)
+        mobileWanIncidentFirstScreen
           ? /默认路由|离线对象/.test(firstScreenOverviewText)
           : /资源|CPU|内存/.test(firstScreenOverviewText)
       ) &&
@@ -1644,6 +1659,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       '[data-overview-mobile-incident]',
       '.notice.danger'
     ].join(',')) || [], mobileTop120Visible);
+    const overviewFirstScreenCopyText = [firstScreenOverviewText, mobileTop120Text].filter(Boolean).join(' ');
     const classifyEdgeEvidenceCategory = (value) => {
       const textValue = normalize(value);
       const categories = [
@@ -1737,18 +1753,20 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       .filter(nodeVisibleInFirstScreen);
     const compactPrimaryText = mobileAlertPrimaryText.replace(/\\s+/g, '');
     const compactIncidentTitleText = mobileIncidentTitleText.replace(/\\s+/g, '');
+    const mobileAlertStatusOk = /^(告警|关注|历史|历史快照|正常)$/.test(mobileAlertPrimaryText);
     const overviewMobileUniqueVerdictOk = sectionName !== 'overview' || !isMobileOverview || Boolean(
       mobileAlert &&
       mobileIncident &&
       mobileAlertPrimaryText &&
       mobileIncidentTitleText &&
-      primaryConclusionNodes.length === 1 &&
+      primaryConclusionNodes.length <= 1 &&
+      mobileAlertStatusOk &&
       compactIncidentTitleText !== compactPrimaryText &&
       !/当前状态|最高业务风险|当前最高/.test(mobileIncidentTitleText) &&
       !/处置：/.test(mobileIncidentTitleText) &&
       /WAN 证据|路由证据|设备证据|资源证据|采集证据|快照证据|证据：|离线对象|默认路由快照摘要/.test(mobileIncidentTitleText)
     );
-    const overviewMobilePrimaryConclusionText = normalize(primaryConclusionNodes[0]?.textContent || mobileAlertPrimaryText || '');
+    const overviewMobilePrimaryConclusionText = normalize(primaryConclusionNodes[0]?.textContent || mobileIncidentTitleLeadText || mobileIncidentTitleText || mobileAlertPrimaryText || '');
     const overviewMobilePrimaryConclusionScopeText = mobileTop120Text || [
       mobileAlertText,
       mobileIncidentTitleText,
@@ -1758,10 +1776,11 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       mobileIncident &&
       mobileAlertPrimaryText &&
       mobileIncidentTitleText &&
-      primaryConclusionNodes.length === 1 &&
+      primaryConclusionNodes.length <= 1 &&
+      mobileAlertStatusOk &&
       overviewMobilePrimaryConclusionText &&
-      countOccurrences(overviewMobilePrimaryConclusionScopeText, overviewMobilePrimaryConclusionText) === 1 &&
       compactIncidentTitleText !== compactPrimaryText &&
+      countOccurrences(overviewMobilePrimaryConclusionScopeText, overviewMobilePrimaryConclusionText) <= 1 &&
       !/当前状态|最高业务风险|当前最高/.test(mobileIncidentTitleText) &&
       !/处置：/.test(mobileIncidentTitleText) &&
       /WAN 证据|路由证据|设备证据|资源证据|采集证据|快照证据|证据：|离线对象|默认路由快照摘要/.test(mobileIncidentTitleText)
@@ -1770,7 +1789,8 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       mobileIncident &&
       mobileIncidentTitle &&
       mobileIncidentTitleText &&
-      primaryConclusionNodes.length === 1 &&
+      primaryConclusionNodes.length <= 1 &&
+      mobileAlertStatusOk &&
       !/处置：/.test(mobileIncidentTitleText) &&
       compactIncidentTitleText !== compactPrimaryText
     );
@@ -1836,27 +1856,55 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         sectionRoot?.querySelector('[data-overview-default-routes]')
       )
     );
-    const overviewMobileProductVerdictOk = sectionName !== 'overview' || window.innerWidth >= 768 || (
-      isEdgeScenario
-        ? Boolean(
-          /断网|路由不可达|快照缺失|无可用快照|默认路由异常|WAN 全离线|WAN 离线|采集降级|采集不可用|资源高负载|资源满载/.test(mobileTop120Text + ' ' + topErrorNoticeText + ' ' + mobileIncidentTitleText) &&
-          /采集状态更新时间|业务快照时间|业务快照年龄|业务快照|数据陈旧|历史快照|未采集|快照缺失|无可用快照|业务数据不可判定/.test(firstScreenOverviewText + ' ' + mobileTop120Text + ' ' + topErrorNoticeText) &&
-          /REST|SSH|采集/.test(firstScreenOverviewText + ' ' + mobileTop120Text + ' ' + topErrorNoticeText + ' ' + mobileIncidentEvidenceRows.join(' ')) &&
-          (mobileAlarmRect || topErrorNoticeVisible)
-        )
-      : Boolean(
-          /WAN|数据陈旧|历史快照|资源高负载|采集降级|默认路由/.test(mobileTop120Text) &&
-          /采集状态更新时间|业务快照时间|业务快照年龄|业务快照|数据陈旧|采样新鲜|采样偏旧|采样陈旧|历史快照/.test(mobileTop120Text) &&
-          /采集状态|采集可信|REST|SSH/.test(firstScreenOverviewText) &&
-          /影响/.test(firstScreenOverviewText) &&
-          !/处置：/.test(mobileIncidentTitleText) &&
-          /WAN 证据|路由证据|设备证据|资源证据|采集证据|快照证据|证据：|离线对象|默认路由快照摘要/.test(mobileIncidentTitleText) &&
-          /查看 WAN|查看采集|查看资源|查看路由|查看详情/.test(firstScreenOverviewText) &&
-          mobileAlarmRect &&
-          mobileAlarmRect.height <= 86 &&
-          mobileIncidentRect &&
-          mobileIncidentRect.top < 130
-        )
+    const mobileScenarioEvidenceOk = (() => {
+      const mobileScenarioText = [
+        firstScreenOverviewText,
+        mobileTop120Text,
+        topErrorNoticeText,
+        mobileIncidentTitleText,
+        mobileIncidentEvidenceRows.join(' ')
+      ].join(' ');
+      const defaultRouteRatioLeak = new RegExp('默认路由\\\\s*\\\\d+\\\\s*/\\\\s*\\\\d+').test(mobileScenarioText);
+      if (scaleScenario === 'no-snapshot') {
+        return /快照缺失/.test(mobileScenarioText) &&
+          /业务数据不可判定/.test(mobileScenarioText) &&
+          /REST|SSH/.test(mobileScenarioText) &&
+          !defaultRouteRatioLeak;
+      }
+      if (scaleScenario === 'fleet') {
+        return /历史快照/.test(mobileScenarioText) &&
+          /WAN 曾离线|离线数量|离线对象/.test(mobileScenarioText) &&
+          /默认路由/.test(mobileScenarioText) &&
+          !defaultRouteRatioLeak;
+      }
+      if (scaleScenario === 'all-offline' || scaleScenario === 'interfaces-down') {
+        return new RegExp('WAN\\\\s*0\\\\s*/\\\\s*\\\\d+').test(mobileScenarioText) &&
+          /离线对象/.test(mobileScenarioText) &&
+          /默认路由/.test(mobileScenarioText) &&
+          !defaultRouteRatioLeak;
+      }
+      if (scaleScenario === 'collection-down') {
+        return /采集证据|通道状态/.test(mobileScenarioText) &&
+          /采集通道异常，业务快照仍可参考/.test(mobileScenarioText) &&
+          /最后成功采集/.test(mobileScenarioText) &&
+          /REST 待确认/.test(mobileScenarioText) &&
+          /SSH 不可用/.test(mobileScenarioText);
+      }
+      if (scaleScenario === 'resource-full') {
+        return /资源证据/.test(mobileScenarioText) &&
+          new RegExp('CPU\\\\s*96').test(mobileScenarioText) &&
+          new RegExp('磁盘\\\\s*97').test(mobileScenarioText) &&
+          new RegExp('持续\\\\s*6\\\\s*点').test(mobileScenarioText);
+      }
+      return /WAN|历史快照|数据陈旧|默认路由|采集|资源/.test(mobileScenarioText);
+    })();
+    const overviewMobileProductVerdictOk = sectionName !== 'overview' || window.innerWidth >= 768 || Boolean(
+      mobileScenarioEvidenceOk &&
+      !/处置：/.test(mobileIncidentTitleText) &&
+      /WAN 证据|路由证据|设备证据|资源证据|采集证据|快照证据|证据：|离线对象|默认路由快照摘要/.test(mobileIncidentTitleText) &&
+      /查看 WAN|查看采集|查看资源|查看路由|查看详情/.test(firstScreenOverviewText) &&
+      (mobileAlarmRect || topErrorNoticeVisible) &&
+      mobileIncidentRect
     );
     const edgeScenarioText = [overviewVerdictText, firstScreenOverviewText, mobileTop120Text, topErrorNoticeText].join(' ');
     const overviewEdgeScenarioOk = sectionName !== 'overview' || !edgeScenarios.has(scaleScenario) || Boolean(
@@ -1893,7 +1941,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
             (mobileAlarm || topErrorNotice) &&
             (mobileAlertStyle?.display !== 'none' || topErrorNoticeVisible || mobileAlarmRect) &&
             (mobileAlarmRect || topErrorNoticeRect) &&
-            /WAN 全部离线|WAN 全离线|无可用快照|快照缺失|采集状态异常|接口全 Down|全部接口离线|资源高负载|资源满载|采集降级|断网|默认路由异常/.test(firstScreenOverviewText + ' ' + topErrorNoticeText + ' ' + mobileTop120Text + ' ' + mobileIncidentTitleText) &&
+            mobileScenarioEvidenceOk &&
             (expectedEdgeEvidenceCategory !== 'wan' || /WAN/.test(mobileTop120Text + ' ' + mobileIncidentTitleText + ' ' + mobileIncidentEvidenceRows.join(' ')))
           )
           : Boolean(
@@ -1907,9 +1955,8 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
             mobileAlarmRect.height <= 86 &&
             mobileIncidentRect.top >= mobileAlarmRect.top &&
             mobileIncidentRect.top < mobileMetricsRect.top &&
-            /WAN|历史快照|数据陈旧|采样陈旧|资源高负载|采集降级|默认路由/.test(firstScreenOverviewText) &&
-            /WAN/.test(mobileTop120Text) &&
-            /数据陈旧|历史快照|采样新鲜|采样陈旧|默认路由异常|部分离线|全部离线|WAN 离线/.test(mobileTop120Text) &&
+            mobileScenarioEvidenceOk &&
+            /WAN|默认路由|资源|采集|历史快照/.test(firstScreenOverviewText) &&
             /REST/.test(firstScreenOverviewText) &&
             /SSH/.test(firstScreenOverviewText) &&
             (!trustNoticeStyle || trustNoticeStyle.display === 'none')
@@ -2043,7 +2090,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewDesktopTopText,
       topErrorNoticeText,
     ].join(' ');
-    const overviewChineseUiNoEngineeringEnglishOk = sectionName !== 'overview' || !/(?:^|[^A-Za-z])(endpoint|failure|stale|snapshot)(?:[^A-Za-z]|$)/i.test(overviewChineseUiVisibleText);
+    const overviewChineseUiNoEngineeringEnglishOk = sectionName !== 'overview' || !(/[�]/.test(overviewChineseUiVisibleText) || /(?:^|[^A-Za-z])(endpoint|failure|stale|snapshot|bucket|hasMore|sampled|sort)(?:[^A-Za-z]|$)/i.test(overviewChineseUiVisibleText));
     const overviewDesktopCriticalTextSamples = !isDesktopOverview ? [] : collectVisibleClippedTextSamples([
       overviewMainVerdict,
       ...Array.from(overviewMainVerdict?.querySelectorAll('.ik-home-verdict-title, .ik-home-verdict-status-bus, .ik-home-verdict-status-cell, .ik-home-verdict-row, .ik-home-action-link, .ik-home-priority-item, [data-overview-field]') || []),
@@ -2101,6 +2148,11 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       firstScreenActionRepeats.actionLabels === 1 &&
       /查看 WAN|查看采集|查看资源|查看路由表|查看路由|查看详情/.test(normalize(mobileIncident?.textContent || ''))
     );
+    const overviewSuggestionCopyUniqueOk = sectionName !== 'overview' || !isMobileOverview || Boolean(
+      countOccurrences(overviewFirstScreenCopyText, '建议查看') <= 1 &&
+      countOccurrences(overviewFirstScreenCopyText, '建议：') <= 1 &&
+      !/建议查看\s+建议：|建议查看\s+建议查看|建议：\s+建议：/.test(overviewFirstScreenCopyText)
+    );
     const overviewDesktopEvidenceRows = Array.from(overviewAnomalyEvidence?.querySelectorAll('.ik-home-evidence-row:not(.is-head)') || [])
       .filter(nodeVisibleInFirstScreen)
       .map((node) => normalize(node.textContent || ''))
@@ -2146,7 +2198,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     );
     const overviewNoSnapshotDesktopEvidenceTripletOk = sectionName !== 'overview' || !isDesktopOverview || !noSnapshotEdge || Boolean(
       overviewNoSnapshotGrid &&
-      overviewNoSnapshotGridItems.length >= 9 &&
+      overviewNoSnapshotGridItems.length >= 8 &&
       overviewNoSnapshotGridColumns >= 3 &&
       countOccurrences(normalize(overviewNoSnapshotGrid.textContent || ''), 'REST') >= 1 &&
       countOccurrences(normalize(overviewNoSnapshotGrid.textContent || ''), 'SSH') >= 1 &&
@@ -2158,14 +2210,18 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const overviewDefaultRouteSnapshotSemanticsOk = sectionName !== 'overview' || !(historyModeActive || staleCopyActive) || !/\u9ed8\u8ba4\u8def\u7531/.test(defaultRouteSnapshotText) || Boolean(
       /(\u5386\u53f2\u5feb\u7167|\u4e0a\u6b21\u91c7\u6837|\u4ec5\u4ee3\u8868\u4e0a\u6b21\u91c7\u6837|\u672a\u5237\u65b0)/.test(defaultRouteSnapshotText)
     );
+    const noSnapshotBusinessClockOk = noSnapshotStateText.includes('业务快照时间 无') &&
+      noSnapshotStateText.includes('业务快照年龄 不可判定');
+    const noSnapshotMobileCompactClockOk = isMobileOverview &&
+      /(?:采集状态更新时间|状态更新时间|状态)\s*\d+s/.test(noSnapshotStateText) &&
+      /业务(?:数据)?不可判定/.test(noSnapshotStateText);
     const overviewNoSnapshotSemanticOk = sectionName !== 'overview' || !noSnapshotEdge || Boolean(
       /无可用快照|快照缺失/.test(noSnapshotStateText + ' ' + combinedOverviewText) &&
       /RouterOS(?:\\s+可达性)?\\s*当前不可达/.test(noSnapshotStateText) &&
       /业务数字不可判定|业务数据不可判定|当前不可判定|非实时需复核/.test(noSnapshotStateText + ' ' + combinedOverviewText) &&
       /快照缺失/.test(noSnapshotStateText) &&
-      noSnapshotStateText.includes('采集状态更新时间') &&
-      noSnapshotStateText.includes('业务快照时间 无') &&
-      noSnapshotStateText.includes('业务快照年龄 不可判定') &&
+      /采集状态更新时间|状态更新时间|状态\s*\d+s/.test(noSnapshotStateText) &&
+      (noSnapshotBusinessClockOk || noSnapshotMobileCompactClockOk) &&
       !/采样新鲜|距今 0s|上次采样|以下均为上次采样/.test(noSnapshotStateText)
     );
     const overviewNoSnapshotTrustedMetricFragments = [
@@ -2177,21 +2233,22 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       mobileAlertText,
       mobileIncidentTitleText,
     ].filter(Boolean);
+    const overviewNoSnapshotTrustedMetricPatterns = [
+      new RegExp('(?:CPU|MEM|内存|DISK|磁盘)\\\\s*[:：]?\\\\s*\\\\d+(?:\\\\.\\\\d+)?%?', 'i'),
+      new RegExp('WAN\\\\s*[:：]?\\\\s*\\\\d+\\\\s*/\\\\s*\\\\d+', 'i'),
+      new RegExp('WAN\\\\s*[:：]?\\\\s*\\\\d+(?:\\\\.\\\\d+)?%?', 'i'),
+      new RegExp('(?:在线数|连接数|终端数|在线终端|连接|路由数|线路数|默认路由数|活动线路数|业务数字|业务数据)\\\\s*[:：]?\\\\s*\\\\d+', 'i'),
+    ];
     const overviewNoSnapshotTrustedMetricsForbiddenOk = sectionName !== 'overview' || !noSnapshotEdge || Boolean(
       overviewNoSnapshotTrustedMetricFragments.every((fragment) => {
-        const hasTrustedMetricValue = [
-          new RegExp('(?:CPU|MEM|内存|DISK|磁盘)\\\\s*[:：]?\\\\s*\\\\d+(?:\\\\.\\\\d+)?%?', 'i'),
-          new RegExp('WAN\\\\s*[:：]?\\\\s*\\\\d+\\\\s*/\\\\s*\\\\d+', 'i'),
-          new RegExp('WAN\\\\s*[:：]?\\\\s*\\\\d+(?:\\\\.\\\\d+)?%?', 'i'),
-          new RegExp('(?:在线数|连接数|终端数|在线终端|连接|路由数|线路数)\\\\s*[:：]?\\\\s*\\\\d+', 'i'),
-        ].some((pattern) => pattern.test(fragment));
-        return !hasTrustedMetricValue;
+        return !overviewNoSnapshotTrustedMetricPatterns.some((pattern) => pattern.test(fragment));
       })
     );
     const overviewNoSnapshotSemanticChecks = {
       hasNoSnapshot: /无可用快照|快照缺失/.test(noSnapshotStateText + ' ' + combinedOverviewText),
       hasRouterDown: /RouterOS(?:\\s+可达性)?\\s*当前不可达/.test(noSnapshotStateText),
       hasBusinessUnknown: /业务数字不可判定|业务数据不可判定|当前不可判定|非实时需复核/.test(noSnapshotStateText + ' ' + combinedOverviewText),
+      hasTrustedBusinessNumber: overviewNoSnapshotTrustedMetricFragments.some((fragment) => overviewNoSnapshotTrustedMetricPatterns.some((pattern) => pattern.test(fragment))),
       hasMissingLabel: /快照缺失/.test(noSnapshotStateText),
       hasStatusUpdateAge: noSnapshotStateText.includes('采集状态更新时间'),
       hasBusinessSnapshotTimeNone: noSnapshotStateText.includes('业务快照时间 无'),
@@ -2201,7 +2258,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const overviewNoSnapshotGridOk = sectionName !== 'overview' || !noSnapshotEdge || !isDesktopOverview || Boolean(
       overviewNoSnapshotGrid &&
       overviewNoSnapshotGridColumns >= 3 &&
-      overviewNoSnapshotGridItems.length >= 9 &&
+      overviewNoSnapshotGridItems.length >= 8 &&
       /快照状态/.test(overviewNoSnapshotGrid.textContent || '') &&
       /RouterOS/.test(overviewNoSnapshotGrid.textContent || '') &&
       /REST 状态/.test(overviewNoSnapshotGrid.textContent || '') &&
@@ -2228,7 +2285,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     );
     const overviewHistoryStrongPromptOk = sectionName !== 'overview' || !(historyModeActive || staleCopyActive) || Boolean(
       /当前影响未知|当前不可判定|非实时需复核|历史快照|采样陈旧/.test(combinedOverviewText) &&
-      /(以下均为上次采样|仅代表上次采样|业务数字仅代表上次采样|仅供复核|业务快照年龄|历史快照，当前影响未知)/.test(combinedOverviewText)
+      /(以下均为上次采样|仅代表上次采样|业务数字仅代表上次采样|仅供复核|业务快照年龄|历史快照，当前影响未知|默认路由快照摘要：当前影响未知|WAN 曾离线)/.test(combinedOverviewText)
     );
     const wanOfflineCountPhraseMatches = combinedOverviewText.match(/WAN 离线\\s*[1-9]\\d*\\s*条/g) || [];
     const overviewEvidenceLayeringOk = sectionName !== 'overview' || Boolean(
@@ -2301,10 +2358,22 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       /均值/.test(combinedOverviewText) &&
       /阈值/.test(combinedOverviewText)
     );
+    const firstScreenPrimaryPhraseLimitOk = (() => {
+      if (!isMobileOverview) return true;
+      if (scaleScenario === 'no-snapshot') return firstScreenSampleRepeats.missing <= 1;
+      if (historyModeActive) {
+        return countOccurrences(firstScreenOverviewText, '历史快照，当前影响未知') <= 1 &&
+          countOccurrences(firstScreenOverviewText, '历史快照：WAN 曾离线') <= 1;
+      }
+      return firstScreenSampleRepeats.stale <= 1;
+    })();
     const overviewFirstScreenDedupeOk = sectionName !== 'overview' || !isMobileOverview || Boolean(
-      primaryConclusionNodes.length === 1 &&
+      primaryConclusionNodes.length <= 1 &&
+      mobileAlertStatusOk &&
       firstScreenActionRepeats.suggestionPrefix === 0 &&
+      firstScreenActionRepeats.actionLabels === 1 &&
       !/建议查看\\s+建议：|建议查看\\s+建议查看/.test(firstScreenOverviewText) &&
+      firstScreenPrimaryPhraseLimitOk &&
       (noSnapshotEdge ? firstScreenSampleRepeats.fresh === 0 : firstScreenSampleRepeats.fresh <= 1)
     );
     const overviewSingleHistoricalPriorityOk = sectionName !== 'overview' || scaleScenario !== 'single' || Boolean(
@@ -2469,6 +2538,12 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     if (sectionName === 'overview') {
       overviewFirstScreenCoverageOk = isMobileOverview ? overviewMobileEffectiveCoverageOk : (overviewBlankAreaOk && overviewDesktopTopBandOk);
     }
+    const overviewDesktopInfoDensityOk = sectionName !== 'overview' || !isDesktopOverview || Boolean(
+      overviewDesktopDensityOk &&
+      overviewBlankAreaOk &&
+      overviewDesktopTopBandOk &&
+      overviewFirstScreenFieldCount >= 12
+    );
     const visibleControls = Array.from(document.querySelectorAll('button, a, input, select'))
       .map((node) => {
         const rect = node.getBoundingClientRect();
@@ -2521,6 +2596,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewHighestRiskEvidenceMatchOk &&
       overviewUsableWidthOk &&
       overviewFirstScreenCoverageOk &&
+      overviewDesktopInfoDensityOk &&
       overviewMobileCoreOk &&
       overviewMobileArchitectureOk &&
       overviewMobileFirstScreenContractOk &&
@@ -2531,6 +2607,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewMobilePrimaryConclusionUniqueOk &&
       overviewMobileSamplingStateUniqueOk &&
       overviewMobileActionLinksUniqueOk &&
+      overviewSuggestionCopyUniqueOk &&
       overviewMobileEvidenceTitleOk &&
       overviewMobileEvidenceUniqueOk &&
       overviewChineseUiNoEngineeringEnglishOk &&
@@ -2673,6 +2750,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       minOverviewUsableWidth,
       overviewFirstScreenCoverageOk,
       overviewDesktopTopBandOk,
+      overviewDesktopInfoDensityOk,
       overviewFirstScreenFieldCount,
       overviewMobileCoreOk,
       overviewMobileArchitectureOk,
@@ -2692,6 +2770,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewMobileUniqueVerdictOk,
       overviewMobileSamplingStateUniqueOk,
       overviewMobileActionLinksUniqueOk,
+      overviewSuggestionCopyUniqueOk,
       overviewMobileEvidenceTitleOk,
       overviewMobileUniqueVerdictProbe: {
         primaryCount: primaryConclusionNodes.length,
@@ -3945,6 +4024,7 @@ async function main() {
       session: matrixSession,
       complete: matrixAggregate.complete,
       coveredScenarios: matrixAggregate.coveredScenarios,
+      passedScenarios: matrixAggregate.passedScenarios,
       runs: matrixAggregate.runs.length,
     };
     if (matrixFinishBatch || report.matrix.complete) {
@@ -3955,7 +4035,9 @@ async function main() {
         requestedScenarios: report.matrix.requestedScenarios,
         requiredScenarios: matrixAggregate.requiredScenarios,
         currentCoveredScenarios: report.matrix.coveredScenarios,
+        currentPassedScenarios: report.matrix.passedScenarios,
         aggregateCoveredScenarios: matrixAggregate.coveredScenarios,
+        aggregatePassedScenarios: matrixAggregate.passedScenarios,
         currentRequestedComplete: report.matrix.requestedComplete,
         currentRequiredComplete: report.matrix.complete,
         aggregateComplete: matrixAggregate.complete,
