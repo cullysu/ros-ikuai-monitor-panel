@@ -167,7 +167,7 @@ function main() {
   assertContains('public/index.html', '采样不足');
   assertContains('public/index.html', 'ops-threshold-line');
   assertContains('public/index.html', 'renderFreshnessStrip');
-  assertContains('public/index.html', '采集状态更新时间');
+  assertContains('public/index.html', '事件更新时间');
   assertContains('public/index.html', '业务快照时间');
   assertContains('public/index.html', '业务快照年龄');
   assertContains('public/index.html', '失败端点');
