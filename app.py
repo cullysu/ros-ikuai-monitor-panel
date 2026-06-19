@@ -97,6 +97,12 @@ def env_value(name, default=None):
 class ReusableThreadingHTTPServer(ThreadingHTTPServer):
     allow_reuse_address = True
 
+    def handle_error(self, request, client_address):
+        exc = sys.exc_info()[1]
+        if isinstance(exc, (BrokenPipeError, ConnectionResetError, ConnectionAbortedError)):
+            return
+        super().handle_error(request, client_address)
+
 
 def load_panel_env():
     configured = os.getenv("ROS_PANEL_ENV_FILE")
@@ -5853,8 +5859,19 @@ class Handler(BaseHTTPRequestHandler):
         payload.update(extra)
         return self.send_json(payload, status=status)
 
+    def is_expected_disconnect_error(self, exc):
+        return isinstance(exc, (BrokenPipeError, ConnectionResetError, ConnectionAbortedError))
+
+    def log_service_error(self, exc, context):
+        if getattr(self, "_service_error_logged", False):
+            return
+        self._service_error_logged = True
+        print(f"[panel] {context}: {type(exc).__name__}: {exc}", file=sys.stderr)
+
     def send_internal_error(self, exc):
-        print(f"[panel] internal API error: {type(exc).__name__}", file=sys.stderr)
+        if self.is_expected_disconnect_error(exc):
+            return None
+        self.log_service_error(exc, "internal API error")
         return self.send_json_error("Internal panel error", status=500, code="internal_error")
 
     def send_json(self, payload, status=200):
@@ -5868,7 +5885,9 @@ class Handler(BaseHTTPRequestHandler):
                 self.send_header("Set-Cookie", cookie_header)
             self.end_headers()
             self.wfile.write(body)
-        except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError):
+        except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError) as exc:
+            if not self.is_expected_disconnect_error(exc):
+                self.log_service_error(exc, "unexpected response disconnect")
             return None
 
     def serve_static(self, path):
@@ -5902,7 +5921,9 @@ class Handler(BaseHTTPRequestHandler):
             for cookie_header in self.consume_cookie_headers():
                 self.send_header("Set-Cookie", cookie_header)
             self.end_headers()
-        except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError):
+        except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError) as exc:
+            if not self.is_expected_disconnect_error(exc):
+                self.log_service_error(exc, "unexpected static response disconnect")
             return None
 
 
