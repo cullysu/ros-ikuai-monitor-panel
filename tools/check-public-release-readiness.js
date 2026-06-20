@@ -19,6 +19,38 @@ const FULL_MATRIX_VIEWPORT_KEYS = ['desktop', 'narrow'];
 const FULL_MATRIX_CELLS = FULL_MATRIX_SCENARIOS.flatMap((scenario) =>
   FULL_MATRIX_VIEWPORT_KEYS.map((viewport) => `public::${scenario}::overview::${viewport}`));
 
+function parseArgs(argv = process.argv.slice(2)) {
+  const args = {
+    staticOnly: false,
+    help: false,
+  };
+  for (const item of argv) {
+    if (item === '--static-only' || item === '--skip-matrix') {
+      args.staticOnly = true;
+    } else if (item === '--require-matrix' || item === '--full-matrix') {
+      args.staticOnly = false;
+    } else if (item === '--help' || item === '-h') {
+      args.help = true;
+    } else {
+      throw new Error(`Unknown argument: ${item}`);
+    }
+  }
+  return args;
+}
+
+function usage() {
+  return `
+Usage:
+  node tools/check-public-release-readiness.js [--static-only|--require-matrix]
+
+Options:
+  --static-only     Check static release markers only; skip local browser matrix evidence.
+  --skip-matrix     Alias for --static-only.
+  --require-matrix   Force the full release-matrix evidence check, even in CI.
+  --full-matrix     Alias for --require-matrix.
+`.trim();
+}
+
 function normalizeMatrixCell(cell) {
   return String(cell || '').replace(/::(desktop|narrow)=\d+x\d+$/u, '::$1');
 }
@@ -316,7 +348,13 @@ function assertPublicBoundaryClean(relPath) {
   }
 }
 
-function main() {
+function main(argv = process.argv.slice(2)) {
+  const args = parseArgs(argv);
+  if (args.help) {
+    console.log(usage());
+    return;
+  }
+
   const ghcrImage = 'ghcr.io/cullysu/ros-ikuai-monitor-panel:main';
 
   assertContains('.github/workflows/container-image.yml', 'packages: write');
@@ -639,8 +677,12 @@ function main() {
   assertContains('app.py', 'routing-mark');
   assertContains('app.py', 'passthrough');
 
-  const latestFullMatrixReport = assertLatestFullMatrixReport();
-  console.log(`[ok] latest full matrix report is 7x2 all green: ${path.relative(ROOT, latestFullMatrixReport.reportPath)}`);
+  if (args.staticOnly) {
+    console.log('[ok] static public release readiness markers are present');
+  } else {
+    const latestFullMatrixReport = assertLatestFullMatrixReport();
+    console.log(`[ok] latest full matrix report is 7x2 all green: ${path.relative(ROOT, latestFullMatrixReport.reportPath)}`);
+  }
 
   console.log('[ok] public release readiness markers are present');
 }
@@ -652,6 +694,7 @@ if (require.main === module) {
 module.exports = {
   assertLatestFullMatrixReport,
   findLatestFullMatrixReport,
+  parseArgs,
   FULL_MATRIX_CELLS,
   FULL_MATRIX_SCENARIOS,
   FULL_MATRIX_VIEWPORT_KEYS,

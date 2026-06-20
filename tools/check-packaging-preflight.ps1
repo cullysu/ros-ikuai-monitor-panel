@@ -358,9 +358,9 @@ try {
             Add-Check "FAIL" "public release readiness" "tools/check-public-release-readiness.js was not found."
           }
           else {
-            $releaseResult = Invoke-CapturedCommand $node.Source @("tools/check-public-release-readiness.js")
+            $releaseResult = Invoke-CapturedCommand $node.Source @("tools/check-public-release-readiness.js", "--static-only")
             if ($releaseResult.ExitCode -eq 0) {
-              Add-Check "PASS" "public release readiness" "tools/check-public-release-readiness.js passed."
+              Add-Check "PASS" "public release readiness" "tools/check-public-release-readiness.js --static-only passed."
             }
             else {
               $detail = $releaseResult.Output.Trim()

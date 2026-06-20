@@ -39,7 +39,7 @@ jobs:
       - name: LAN/default documentation checks
         run: |
           node tools/check-lan-access-defaults.js
-          node tools/check-public-release-readiness.js
+          node tools/check-public-release-readiness.js --static-only
 
       - name: Frontend and tool JavaScript syntax
         run: |
@@ -81,6 +81,19 @@ jobs:
             --strict-responsive \
             --out _acceptance/ci-public-overview-edge-cases
 
+      - name: Public overview release matrix
+        run: |
+          node tools/local-predeploy-check.js \
+            --profile public \
+            --viewports desktop=1366x900,narrow=390x844 \
+            --sections overview \
+            --scale-scenarios single,fleet,all-offline,no-snapshot,collection-down,resource-full,interfaces-down \
+            --strict-responsive \
+            --out _acceptance/release-matrix-${{ github.sha }}
+
+      - name: Public release readiness
+        run: node tools/check-public-release-readiness.js
+
       - name: Upload public browser predeploy report
         if: always()
         uses: actions/upload-artifact@v7
@@ -89,6 +102,7 @@ jobs:
           path: |
             _acceptance/ci-public-predeploy
             _acceptance/ci-public-overview-edge-cases
+            _acceptance/release-matrix-${{ github.sha }}
           if-no-files-found: ignore
 
       - name: Installer shell checks
