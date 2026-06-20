@@ -5389,10 +5389,10 @@
       return !ageText || ageText === '未记录' ? '不可判定' : ageText;
     }
     function noSnapshotBusinessStateText() {
-      return '业务快照不可判定';
+      return '业务数据待确认';
     }
     function noSnapshotBusinessTimeText() {
-      return '无业务快照';
+      return '业务数据待确认';
     }
     function noSnapshotBusinessAgeText() {
       return '不可判定';
@@ -8040,13 +8040,13 @@
         row('数据层状态', dataStateText, `最后成功 ${shortTimestamp(latestSuccess)}`, collection.dataStale || collection.channelDegraded ? 'warn' : history ? 'trust' : 'ok')
       ];
       const rows = [
-        row('WAN 线路', noSnapshot ? '不可判定' : `${fmtNumber(ctx.wanHealth.online)}/${fmtNumber(ctx.wanHealth.total)}`, noSnapshot ? '无业务快照' : overviewWanAccessImpact(ctx), noSnapshot ? 'warn' : ctx.wanHealth.level),
-        row('默认路由', noSnapshot ? '不可判定' : (routeDisplay.label || '-'), noSnapshot ? '默认路由不可判定' : (routeRawSummary || routeDisplay.text || focus.routeSummary || '-'), noSnapshot ? 'warn' : routeDisplay.level),
+        row('WAN 线路', noSnapshot ? '缺快照' : `${fmtNumber(ctx.wanHealth.online)}/${fmtNumber(ctx.wanHealth.total)}`, noSnapshot ? '业务数据待确认' : overviewWanAccessImpact(ctx), noSnapshot ? 'warn' : ctx.wanHealth.level),
+        row('默认路由', noSnapshot ? '待判定' : (routeDisplay.label || '-'), noSnapshot ? '路由快照缺失' : (routeRawSummary || routeDisplay.text || focus.routeSummary || '-'), noSnapshot ? 'warn' : routeDisplay.level),
         ...collectionRows,
-        row(noSnapshot ? '数据可信度' : '业务快照年龄', noSnapshot ? '不可判定' : snapshotBusinessAgeText(ctx.snapshot, ctx.freshness), noSnapshot ? noSnapshotBusinessTimeText() : snapshotBusinessTimeText(ctx.snapshot, ctx.freshness), noSnapshot || ctx.freshness?.stale ? 'warn' : history ? 'trust' : 'ok'),
-        row('资源', resourceText, noSnapshot ? '业务指标不可判定' : (ctx.resourceEvidence?.summary || `${fmtNumber(ctx.sampleCount)} 点`), noSnapshot ? 'warn' : ctx.resourceLevel),
-        row('流量', trafficText, noSnapshot ? 'WAN 速率不可判定' : `${fmtNumber(ctx.sampleCount)} 点 · ${ctx.pollText}`, noSnapshot ? 'warn' : 'trust'),
-        row('终端 / 连接', terminalText, noSnapshot ? '无业务快照' : `PPP ${fmtNumber(ctx.activeSessions || 0)} / 最近成功 ${shortTimestamp(latestCollectionSuccessTime(ctx))}`, noSnapshot ? 'warn' : 'trust')
+        row(noSnapshot ? '业务快照' : '业务快照年龄', noSnapshot ? '无' : snapshotBusinessAgeText(ctx.snapshot, ctx.freshness), noSnapshot ? noSnapshotBusinessStateText() : snapshotBusinessTimeText(ctx.snapshot, ctx.freshness), noSnapshot || ctx.freshness?.stale ? 'warn' : history ? 'trust' : 'ok'),
+        row('资源', resourceText, noSnapshot ? '业务数据待确认，资源阈值不可用' : (ctx.resourceEvidence?.summary || `${fmtNumber(ctx.sampleCount)} 点`), noSnapshot ? 'warn' : ctx.resourceLevel),
+        row('流量', trafficText, noSnapshot ? '业务数据待确认，WAN 速率不展示' : `${fmtNumber(ctx.sampleCount)} 点 · ${ctx.pollText}`, noSnapshot ? 'warn' : 'trust'),
+        row('终端 / 连接', terminalText, noSnapshot ? '业务数据待确认，终端排行不可用' : `PPP ${fmtNumber(ctx.activeSessions || 0)} / 最近成功 ${shortTimestamp(latestCollectionSuccessTime(ctx))}`, noSnapshot ? 'warn' : 'trust')
       ];
       return overviewFlatModule(
         'status-summary',
@@ -8694,7 +8694,7 @@
       const snapshotTrust = overviewSnapshotTrustLabel(ctx);
       const deviceName = ctx.o.identity || ctx.snapshot.meta?.routerHost || ctx.snapshot.meta?.target || '未采集设备';
       const deviceNote = noSnapshot
-        ? `${ctx.routerState?.label === '等待登录' ? '等待登录' : 'RouterOS 当前不可达'} / 无业务快照`
+        ? `${ctx.routerState?.label === '等待登录' ? '等待登录' : 'RouterOS 当前不可达'} / 业务数据待确认`
         : [ctx.o.version, ctx.o.uptime ? `运行 ${ctx.o.uptime}` : ''].filter(Boolean).join(' / ');
       const objectText = noSnapshot
         ? 'RouterOS'
@@ -8711,7 +8711,7 @@
         ? '影响待判定'
         : '';
       const impactText = noSnapshot
-        ? '无业务快照'
+        ? '业务数据不展示'
         : history || ctx.freshness?.stale
           ? historyCurrentUnknownTitle()
           : focus.key === 'resource-full'
@@ -8726,7 +8726,7 @@
       const collectionStateText = collection.label || '采集状态';
       const collectionText = mobileChannelPair(labels.restLabel, labels.sshLabel);
       const businessAgeText = noSnapshot
-        ? '无业务快照'
+        ? '业务数据待确认'
         : snapshotBusinessAgeText(ctx.snapshot, ctx.freshness);
       const businessTimeText = noSnapshot
         ? '业务数据不展示'
@@ -9438,9 +9438,15 @@
           ? '不可判定'
           : (routeHit.hitText || '0/3');
       const drillLink = (section) => `<a class="ik-mobile-flat-link" href="#${escapeHtml(section)}" data-section="${escapeHtml(section)}" data-overview-action-label>${escapeHtml(mobileOverviewActionLabel(section))}</a>`;
-      const deviceName = ctx.o.identity || ctx.snapshot.meta?.routerHost || ctx.snapshot.meta?.target || '未采集';
-      const deviceVersion = ctx.o.version || 'RouterOS 未采集';
-      const deviceUptime = ctx.o.uptime || '-';
+      const deviceName = noSnapshot
+        ? 'RouterOS'
+        : (ctx.o.identity || ctx.snapshot.meta?.routerHost || ctx.snapshot.meta?.target || '未采集');
+      const deviceVersion = noSnapshot
+        ? 'RouterOS 当前不可达'
+        : (ctx.o.version || 'RouterOS 未采集');
+      const deviceUptime = noSnapshot
+        ? '运行时长不可判定'
+        : (ctx.o.uptime || '-');
       const deviceUpdateText = noSnapshot
         ? noSnapshotUpdateAgeText(ctx.snapshot, ctx.freshness)
         : shortTimestamp(snapshotBusinessTimeText(ctx.snapshot, ctx.freshness) || latestSuccessValue);
@@ -9501,7 +9507,7 @@
       const statusRow = [
         `<div><span>结论</span> <b>状态</b></div>`,
         `<div><span>主结论</span> <b data-overview-primary-conclusion>${escapeHtml(statusValue)}</b></div>`,
-        `<div><span>快照/采集</span> <b>${escapeHtml(statusSide)}</b></div>`
+        `<div><span>采集/路由</span> <b>${escapeHtml(statusSide)}</b></div>`
       ];
       const deviceRow = [
         `<div><span>设备</span> <b>${escapeHtml(deviceName)}</b></div>`,
@@ -9605,17 +9611,18 @@
             : '未承载';
           const state = row.running ? (history ? '上次在线' : '在线') : (history ? '曾离线' : '离线');
           const anomalyAttr = row.running ? '' : ` data-overview-anomaly-object="${escapeHtml(row.name || row.interface || '')}"`;
-          return `<div class="ik-mobile-wan-row is-flat-wan-row${row.running ? '' : ' is-offline'}" data-overview-mobile-wan-row data-overview-field>
+          return `<div class="ik-mobile-wan-row is-flat-wan-row${row.running ? '' : ' is-offline'}" data-overview-mobile-wan-row data-overview-wan-detail-row data-overview-field>
             <b${anomalyAttr}>${escapeHtml(row.name || row.interface || '-')}<small>${escapeHtml(row.parent || row.interface || '-')}</small></b>
             <span class="ik-mobile-wan-state">${escapeHtml(state)}</span>
             <span>${escapeHtml(routeText)} · ${fmtRate(totalTrafficRate(row))}</span>
           </div>`;
-        }).join('') || `<div class="ik-mobile-wan-row is-flat-wan-row" data-overview-field><b>未采集 WAN</b><span>-</span><span>-</span></div>`;
+        }).join('') || `<div class="ik-mobile-wan-row is-flat-wan-row" data-overview-wan-detail-row data-overview-field><b>未采集 WAN</b><span>-</span><span>-</span></div>`;
     }
 
     function renderOverviewMobileMiniTable(title, subtitle, headers, rows, rowClass = '', sectionClass = '') {
       const cls = `ik-mobile-detail-row${rowClass ? ` ${rowClass}` : ''}`;
       const visibleTitle = title || '明细';
+      const routeRowAttr = /默认路由/.test(String(title || '')) ? ' data-overview-default-route-row' : '';
       const actionLabel = (() => {
         if (/WAN/.test(title)) return '线路';
         if (/采集/.test(title)) return '通道';
@@ -9640,8 +9647,8 @@
         return normalized.slice(0, 3);
       };
       const body = rows.length
-        ? rows.map((row) => `<div class="${cls}" data-overview-field>${normalizeCells(row).map((cell) => `<span>${cell}</span>`).join('')}</div>`).join('')
-        : `<div class="${cls}" data-overview-field><span>未采集</span><span>-</span><span>-</span></div>`;
+        ? rows.map((row) => `<div class="${cls}" data-overview-field${routeRowAttr}>${normalizeCells(row).map((cell) => `<span>${cell}</span>`).join('')}</div>`).join('')
+        : `<div class="${cls}" data-overview-field${routeRowAttr}><span>未采集</span><span>-</span><span>-</span></div>`;
       return `<div class="ik-mobile-compact-section${sectionClass ? ` ${sectionClass}` : ''}" data-overview-mobile-detail-section>
         <div class="ik-mobile-section-head" data-overview-field title="${escapeHtml(title)}">${escapeHtml(visibleTitle)}<span title="${escapeHtml(subtitle || '')}">${escapeHtml(actionLabel)}</span></div>
         <div class="${cls} is-head" data-overview-field>${ledgerHeaders.map((item) => `<span>${escapeHtml(item)}</span>`).join('')}</div>
@@ -10048,13 +10055,13 @@
         row('RouterOS', ctx.routerState?.label === '等待登录' ? '等待登录' : '当前不可达', `状态更新时间 ${statusUpdateText}`, '不可达'),
         row('REST', labels.restLabel || '待确认', restFailure?.message || '未记录 REST 端点失败', '待确认'),
         row('SSH', labels.sshLabel || '不可用', sshFailure?.message || 'SSH 通道不可用', '不可用'),
-        row('业务快照', '无', '业务快照缺失', '缺快照'),
+        row('业务快照', '无', '无业务快照，业务数据不展示', '缺快照'),
         row('数据可信度', '不可判定', '仅展示采集链路事实', '缺快照')
       ];
       const lastSuccessRows = [
         row('最近成功', latestSuccessShort, '上次成功采集'),
         row('事件更新', statusUpdateText, '状态更新时间'),
-        row('业务快照时间', '无', '当前无业务快照时间'),
+        row('业务快照时间', '无', '当前无业务数据时间'),
         row('下次尝试', ctx.pollText || '未采集', '等待下一次采集'),
         row('轮询状态', '轮询中', '等待下一次采集结果')
       ];
