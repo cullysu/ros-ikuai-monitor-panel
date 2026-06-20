@@ -86,33 +86,31 @@ function listReleaseMatrixReports(rootDir = ROOT) {
 
 function summarizeMatrixReport(reportPath) {
   const report = readJson(reportPath);
-  const matrix = report && report.matrix;
-  if (!matrix || typeof matrix !== 'object') {
-    return null;
-  }
-  const requiredCells = Array.isArray(matrix.requiredCells) ? matrix.requiredCells.map(normalizeMatrixCell) : [];
-  const passedCells = Array.isArray(matrix.passedCells) ? matrix.passedCells.map(normalizeMatrixCell) : [];
-  const requiredScenarios = Array.isArray(matrix.requiredScenarios) ? matrix.requiredScenarios : [];
-  const passedScenarios = Array.isArray(matrix.passedScenarios) ? matrix.passedScenarios : [];
-  const scenarios = Array.isArray(matrix.scenarios) ? matrix.scenarios : [];
+  const matrix = report && report.matrix && typeof report.matrix === 'object' ? report.matrix : null;
+  const checks = Array.isArray(report && report.checks) ? report.checks.filter(Boolean) : [];
+  const requiredCells = Array.isArray(matrix?.requiredCells) ? matrix.requiredCells.map(normalizeMatrixCell) : [];
+  const passedCells = Array.isArray(matrix?.passedCells) ? matrix.passedCells.map(normalizeMatrixCell) : [];
+  const requiredScenarios = Array.isArray(matrix?.requiredScenarios) ? matrix.requiredScenarios : [];
+  const passedScenarios = Array.isArray(matrix?.passedScenarios) ? matrix.passedScenarios : [];
+  const scenarios = Array.isArray(matrix?.scenarios) ? matrix.scenarios : [];
   return {
     reportPath,
     mtimeMs: fs.statSync(reportPath).mtimeMs,
     report,
     matrix,
+    checks,
     requiredCells,
     passedCells,
     requiredScenarios,
     passedScenarios,
     scenarios,
-    total: Number.isFinite(matrix.total) ? matrix.total : null,
-    passed: Number.isFinite(matrix.passed) ? matrix.passed : null,
-    failed: Number.isFinite(matrix.failed) ? matrix.failed : null,
-    complete: Boolean(matrix.complete),
+    total: Number.isFinite(matrix?.total) ? matrix.total : null,
+    passed: Number.isFinite(matrix?.passed) ? matrix.passed : null,
+    failed: Number.isFinite(matrix?.failed) ? matrix.failed : null,
+    complete: Boolean(matrix?.complete),
     reportPass: Boolean(report.pass),
-    failedChecks: Array.isArray(report.checks)
-      ? report.checks.filter((check) => check && !check.pass).map((check) => check.name)
-      : [],
+    failedChecks: checks.filter((check) => check && !check.pass).map((check) => check.name),
+    passedChecks: checks.filter((check) => check && check.pass).map((check) => check.name),
   };
 }
 
@@ -121,15 +119,88 @@ function summaryMatchesHead(summary, head) {
   return Boolean(head && reportCommit && head.startsWith(reportCommit));
 }
 
+function parseResponsiveCheckName(name) {
+  const match = /^responsive public\/([^/]+)\/(desktop|narrow)\/overview$/u.exec(String(name || '').trim());
+  return match ? { scenario: match[1], viewport: match[2] } : null;
+}
+
+function collectGateDetailFailures(latest) {
+  const gateFailures = {
+    desktopDensity: [],
+    noSnapshotSemantic: [],
+    mobileActionCopy: [],
+  };
+  for (const check of Array.isArray(latest && latest.checks) ? latest.checks : []) {
+    if (!check) {
+      continue;
+    }
+    const parsed = parseResponsiveCheckName(check.name);
+    if (!parsed) {
+      continue;
+    }
+    const detail = check.detail && typeof check.detail === 'object' ? check.detail : {};
+    const pushMissing = (bucket, field) => {
+      if (detail[field] !== true) {
+        gateFailures[bucket].push({
+          check: String(check.name || '').trim(),
+          field,
+          value: detail[field],
+        });
+      }
+    };
+    const recordCheckFailure = (bucket) => {
+      if (check.pass !== true) {
+        gateFailures[bucket].push({
+          check: String(check.name || '').trim(),
+          field: 'check.pass',
+          value: check.pass,
+        });
+      }
+    };
+    if (parsed.viewport === 'desktop') {
+      recordCheckFailure('desktopDensity');
+      pushMissing('desktopDensity', 'overviewDesktopDensityOk');
+      pushMissing('desktopDensity', 'overviewDesktopTableDensityOk');
+      pushMissing('desktopDensity', 'overviewDesktopInfoDensityOk');
+      pushMissing('desktopDensity', 'overviewStatusBusFixedGrammarOk');
+      pushMissing('desktopDensity', 'overviewResourceFirstScreenPriorityOk');
+      pushMissing('desktopDensity', 'overviewCollectionContradictionOk');
+      pushMissing('desktopDensity', 'overviewInterfacesForwardingFirstOk');
+    }
+    if (parsed.scenario === 'no-snapshot') {
+      recordCheckFailure('noSnapshotSemantic');
+      pushMissing('noSnapshotSemantic', 'overviewNoSnapshotSemanticOk');
+      pushMissing('noSnapshotSemantic', 'overviewNoSnapshotFreshnessForbiddenOk');
+      pushMissing('noSnapshotSemantic', 'overviewNoSnapshotSamplingStateUniqueOk');
+      pushMissing('noSnapshotSemantic', 'overviewNoSnapshotDesktopEvidenceTripletOk');
+      pushMissing('noSnapshotSemantic', 'overviewNoSnapshotTrustedMetricsForbiddenOk');
+      pushMissing('noSnapshotSemantic', 'overviewNoSnapshotGridOk');
+      pushMissing('noSnapshotSemantic', 'overviewNoSnapshotDowngradeReasonsOk');
+      pushMissing('noSnapshotSemantic', 'overviewNoSnapshotRepetitionBudgetOk');
+    }
+    if (parsed.viewport === 'narrow') {
+      recordCheckFailure('mobileActionCopy');
+      pushMissing('mobileActionCopy', 'overviewMobileActionLinksUniqueOk');
+      pushMissing('mobileActionCopy', 'overviewMobileCopyAssemblyOk');
+      pushMissing('mobileActionCopy', 'overviewMobilePrimaryConclusionUniqueOk');
+      pushMissing('mobileActionCopy', 'overviewPrimaryConclusionNoEllipsisOk');
+      pushMissing('mobileActionCopy', 'overviewSuggestionCopyUniqueOk');
+    }
+  }
+  return gateFailures;
+}
+
 function isFullMatrixShape(summary) {
   if (!summary) {
     return false;
   }
   const requiredCells = [...new Set(summary.requiredCells)];
   const requiredScenarios = [...new Set(summary.requiredScenarios)];
+  const checksPass = Array.isArray(summary.failedChecks) && summary.failedChecks.length === 0;
   return requiredCells.length === FULL_MATRIX_CELLS.length &&
     requiredScenarios.length === FULL_MATRIX_SCENARIOS.length &&
     summary.complete &&
+    checksPass &&
     summary.reportPass &&
     summary.total === FULL_MATRIX_CELLS.length &&
     summary.passed === FULL_MATRIX_CELLS.length &&
@@ -142,9 +213,9 @@ function findLatestFullMatrixReport(rootDir = ROOT) {
   const head = currentHead(rootDir);
   const summaries = listReleaseMatrixReports(rootDir)
     .map((item) => summarizeMatrixReport(item.reportPath))
-    .filter((summary) => isFullMatrixShape(summary) && summaryMatchesHead(summary, head));
+    .filter((summary) => summaryMatchesHead(summary, head));
   if (!summaries.length) {
-    throw new Error(`No 7x2 all-green full matrix report.json for current HEAD ${head || '(unknown)'} was found under _acceptance/release-matrix-*/report.json`);
+    throw new Error(`No release matrix report.json for current HEAD ${head || '(unknown)'} was found under _acceptance/release-matrix-*/report.json`);
   }
   summaries.sort((a, b) => b.mtimeMs - a.mtimeMs || b.reportPath.localeCompare(a.reportPath));
   return summaries[0];
@@ -153,23 +224,69 @@ function findLatestFullMatrixReport(rootDir = ROOT) {
 function assertLatestFullMatrixReport(rootDir = ROOT) {
   const latest = findLatestFullMatrixReport(rootDir);
   const head = currentHead(rootDir);
+  const checkNames = new Set(latest.checks.map((check) => String(check.name || '').trim()).filter(Boolean));
+  const expectedCheckNames = FULL_MATRIX_SCENARIOS.flatMap((scenario) =>
+    FULL_MATRIX_VIEWPORT_KEYS.flatMap((viewport) => [
+      `browser boot public/${scenario}/${viewport}`,
+      `responsive public/${scenario}/${viewport}/overview`,
+    ]));
+  const missingChecks = expectedCheckNames.filter((checkName) => !checkNames.has(checkName));
   const passedCells = new Set(latest.passedCells);
   const missingCells = FULL_MATRIX_CELLS.filter((cell) => !passedCells.has(cell));
   const reportCommit = String(latest.matrix.commit || '').trim();
   const commitMatchesHead = Boolean(head && reportCommit && head.startsWith(reportCommit));
-  if (!commitMatchesHead || !latest.complete || latest.total !== FULL_MATRIX_CELLS.length || latest.passed !== FULL_MATRIX_CELLS.length || latest.failed !== 0 || missingCells.length) {
+  const aggregate = latest.matrix && latest.matrix.aggregate && typeof latest.matrix.aggregate === 'object'
+    ? latest.matrix.aggregate
+    : {};
+  const releaseEvidenceOk = Boolean(
+    String(aggregate.commit || latest.matrix.commit || '').trim() &&
+    (head ? head.startsWith(String(aggregate.commit || latest.matrix.commit || '').trim()) || String(aggregate.commit || latest.matrix.commit || '').trim().startsWith(head) : true) &&
+    String(aggregate.screenshotDir || '').trim() &&
+    Array.isArray(aggregate.screenshots) &&
+    aggregate.screenshots.length >= FULL_MATRIX_CELLS.length &&
+    Array.isArray(aggregate.scenarioMatrix) &&
+    aggregate.scenarioMatrix.length >= FULL_MATRIX_SCENARIOS.length &&
+    Array.isArray(aggregate.requiredCells) &&
+    Array.isArray(aggregate.passedCells)
+  );
+  const failedChecks = latest.failedChecks;
+  const gateFailures = collectGateDetailFailures(latest);
+  const failedCheckBuckets = {
+    desktopDensity: gateFailures.desktopDensity.map((item) => item.check),
+    noSnapshotSemantic: gateFailures.noSnapshotSemantic.map((item) => item.check),
+    mobileActionCopy: gateFailures.mobileActionCopy.map((item) => item.check),
+  };
+  const checksPass = failedChecks.length === 0 && gateFailures.desktopDensity.length === 0 && gateFailures.noSnapshotSemantic.length === 0 && gateFailures.mobileActionCopy.length === 0 && missingChecks.length === 0 && releaseEvidenceOk;
+  const reportPassMatchesChecks = Boolean(latest.reportPass) === checksPass;
+  if (!commitMatchesHead || !latest.matrix || !checksPass || !reportPassMatchesChecks || !latest.complete || latest.total !== FULL_MATRIX_CELLS.length || latest.passed !== FULL_MATRIX_CELLS.length || latest.failed !== 0 || missingCells.length || missingChecks.length) {
     throw new Error(`Latest full matrix report is not 7x2 all green: ${JSON.stringify({
       reportPath: path.relative(rootDir, latest.reportPath),
       head,
       reportCommit,
       commitMatchesHead,
+      releaseEvidenceOk,
+      releaseEvidence: {
+        aggregateCommit: aggregate.commit || '',
+        screenshotDir: aggregate.screenshotDir || '',
+        screenshotCount: Array.isArray(aggregate.screenshots) ? aggregate.screenshots.length : null,
+        scenarioMatrixCount: Array.isArray(aggregate.scenarioMatrix) ? aggregate.scenarioMatrix.length : null,
+        requiredCellCount: Array.isArray(aggregate.requiredCells) ? aggregate.requiredCells.length : null,
+        passedCellCount: Array.isArray(aggregate.passedCells) ? aggregate.passedCells.length : null,
+      },
+      reportPass: latest.reportPass,
+      reportPassMatchesChecks,
       complete: latest.complete,
       total: latest.total,
       passed: latest.passed,
       failed: latest.failed,
+      checksPass,
+      failedChecks,
+      missingChecks,
       requiredCells: latest.requiredCells.length,
       passedCells: latest.passedCells.length,
       missingCells,
+      failedCheckBuckets,
+      gateFailures,
       failedScenarios: latest.scenarios.filter((scenario) => scenario && scenario.failed).map((scenario) => `${scenario.scaleScenario}:${scenario.failed}`),
     })}`);
   }
@@ -319,19 +436,25 @@ function main() {
   assertContains('public/index.html', 'mobileSectionSelect');
   assertContains('public/index.html', 'data-overview-mobile-flat-status');
   assertContains('public/index.html', 'data-overview-mobile-status-table');
+  assertContains('public/index.html', 'data-overview-mobile-alert');
+  assertContains('public/index.html', 'data-overview-mobile-alarm');
+  assertContains('public/index.html', 'data-overview-action-label');
   assertContains('public/index.html', 'ik-mobile-flat-link');
-  assertContains('public/index.html', "lineStatus: 'WAN'");
-  assertContains('public/index.html', "readonlyDiagnostics: '采集'");
-  assertContains('public/index.html', "loadAudit: '资源'");
-  assertContains('public/index.html', "routes: '路由'");
+  assertContains('public/index.html', 'mobileOverviewActionLabels');
   assertContains('public/index.html', "lineStatus: 'WAN明细'");
-  assertContains('public/index.html', "readonlyDiagnostics: '采集明细'");
-  assertContains('public/index.html', "loadAudit: '资源细表'");
+  assertContains('public/index.html', "readonlyDiagnostics: '采集状态'");
+  assertContains('public/index.html', "loadAudit: '资源阈值'");
   assertContains('public/index.html', "routes: '路由快照'");
+  assertContains('public/index.html', '快照缺失');
+  assertContains('public/index.html', '快照证据');
+  assertContains('public/index.html', 'RouterOS 当前不可达');
+  assertContains('public/index.html', '数据可信度不可判定');
+  assertContains('public/index.html', 'RouterOS 当前不可达 / 业务快照无');
+  assertContains('public/index.html', '快照缺失 · 状态更新时间');
   assertNotContains('public/index.html', '建议查看');
   assertNotContains('public/index.html', '建议：');
   assertNotContains('public/index.html', 'endpoint failure');
-  assertContains('public/index.html', '采样不足');
+  assertContains('public/index.html', '样本不足，趋势暂不可用');
   assertContains('public/index.html', 'ops-threshold-line');
   assertContains('tools/local-predeploy-check.js', "loadAuditResourceText.includes('持续')");
   assertContains('public/index.html', 'renderFreshnessStrip');
@@ -364,12 +487,22 @@ function main() {
   assertContains('tools/check-public-release-readiness.js', 'normalizeMatrixCell');
   assertContains('tools/local-predeploy-check.js', '--viewports <list>          Comma list like desktop=1366x900,narrow=390x844.');
   assertContains('tools/local-predeploy-check.js', 'aggregateComplete: matrixAggregate.complete,');
+  assertContains('tools/local-predeploy-check.js', 'screenshotDir: args.out');
+  assertContains('tools/local-predeploy-check.js', 'scenarioMatrix:');
+  assertContains('tools/local-predeploy-check.js', 'screenshots: listScreenshotFiles(args.out)');
   assertContains('tools/local-predeploy-check.js', 'overviewDesktopSamplingStateUniqueOk');
   assertContains('tools/local-predeploy-check.js', 'overviewDesktopTopConclusionUniqueOk');
   assertContains('tools/local-predeploy-check.js', 'overviewMobileSamplingStateUniqueOk');
   assertContains('tools/local-predeploy-check.js', 'overviewMobileActionLinksUniqueOk');
   assertContains('tools/local-predeploy-check.js', 'overviewDesktopActionLinksUniqueOk');
   assertContains('tools/local-predeploy-check.js', 'overviewMobilePrimaryConclusionUniqueOk');
+  assertContains('tools/local-predeploy-check.js', "const mobileAllowedActionLabels = new Set(['WAN明细', '采集状态', '资源阈值', '路由快照']);");
+  assertContains('tools/local-predeploy-check.js', 'overviewPrimaryConclusionNoEllipsisOk');
+  assertContains('tools/local-predeploy-check.js', 'overviewCollectionContradictionOk');
+  assertContains('tools/local-predeploy-check.js', 'overviewInterfacesForwardingFirstOk');
+  assertContains('tools/local-predeploy-check.js', 'overviewStatusBusFixedGrammarOk');
+  assertContains('tools/local-predeploy-check.js', 'overviewResourceFirstScreenPriorityOk');
+  assertContains('tools/local-predeploy-check.js', 'overviewNoSnapshotDowngradeReasonsOk');
   assertContains('tools/local-predeploy-check.js', 'overviewChineseUiNoEngineeringEnglishOk');
   assertContains('tools/local-predeploy-check.js', 'overviewFirstScreenCoverageOk');
   assertContains('tools/local-predeploy-check.js', 'overviewDesktopDensityOk');
@@ -378,6 +511,8 @@ function main() {
   assertContains('tools/local-predeploy-check.js', 'overviewDesktopTableDensityOk');
   assertContains('tools/local-predeploy-check.js', "const overviewFlatDesktopContractOk = sectionName === 'overview' && isDesktopOverview && Boolean(");
   assertContains('tools/local-predeploy-check.js', "const overviewFlatMobileContractOk = sectionName === 'overview' && isMobileOverview && Boolean(");
+  assertContains('tools/local-predeploy-check.js', 'overviewDesktopDetailFirstTwoRowsVisibleOk');
+  assertContains('tools/local-predeploy-check.js', 'overviewDesktopModuleSpreadOk');
   assertContains('tools/local-predeploy-check.js', 'overviewBlankAreaOk');
   assertContains('tools/local-predeploy-check.js', 'overviewDesktopNo72vhBlankOk');
   assertContains('tools/local-predeploy-check.js', 'overviewMobileNo72vhBlankOk');
@@ -442,6 +577,9 @@ function main() {
   assertPublicBoundaryClean('public/scale-adaptive-patch.js');
   assertPublicBoundaryClean('public/layout-whitespace-patch.js');
   assertNotContains('public/index.html', 'events.length');
+  assertContains('public/index.html', 'data-overview-desktop-workspace');
+  assertContains('public/index.html', 'data-overview-density-module="wan-trend"');
+  assertContains('public/index.html', 'data-overview-rank-grid');
 
   assertContains('public/index.html', '路由与分流状态');
   assertContains('public/index.html', '防火墙规则');
