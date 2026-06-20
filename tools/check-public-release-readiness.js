@@ -165,7 +165,9 @@ function collectGateDetailFailures(latest) {
       pushMissing('desktopDensity', 'overviewStatusBusFixedGrammarOk');
       pushMissing('desktopDensity', 'overviewResourceFirstScreenPriorityOk');
       pushMissing('desktopDensity', 'overviewCollectionContradictionOk');
+      pushMissing('desktopDensity', 'overviewCollectionTrustMarkersOk');
       pushMissing('desktopDensity', 'overviewInterfacesForwardingFirstOk');
+      pushMissing('desktopDensity', 'overviewDefaultRouteRawFactsOk');
     }
     if (parsed.scenario === 'no-snapshot') {
       recordCheckFailure('noSnapshotSemantic');
@@ -174,7 +176,10 @@ function collectGateDetailFailures(latest) {
       pushMissing('noSnapshotSemantic', 'overviewNoSnapshotSamplingStateUniqueOk');
       pushMissing('noSnapshotSemantic', 'overviewNoSnapshotDesktopEvidenceTripletOk');
       pushMissing('noSnapshotSemantic', 'overviewNoSnapshotTrustedMetricsForbiddenOk');
-      pushMissing('noSnapshotSemantic', 'overviewNoSnapshotGridOk');
+      if (detail.overviewNoSnapshotGridOk !== true && detail.overviewNoSnapshotFiveBlocksOk !== true) {
+        pushMissing('noSnapshotSemantic', 'overviewNoSnapshotGridOk');
+        pushMissing('noSnapshotSemantic', 'overviewNoSnapshotFiveBlocksOk');
+      }
       pushMissing('noSnapshotSemantic', 'overviewNoSnapshotDowngradeReasonsOk');
       pushMissing('noSnapshotSemantic', 'overviewNoSnapshotRepetitionBudgetOk');
     }
@@ -183,6 +188,7 @@ function collectGateDetailFailures(latest) {
       pushMissing('mobileActionCopy', 'overviewMobileActionLinksUniqueOk');
       pushMissing('mobileActionCopy', 'overviewMobileCopyAssemblyOk');
       pushMissing('mobileActionCopy', 'overviewMobilePrimaryConclusionUniqueOk');
+      pushMissing('mobileActionCopy', 'overviewMobileLedgerHeightOk');
       pushMissing('mobileActionCopy', 'overviewPrimaryConclusionNoEllipsisOk');
       pushMissing('mobileActionCopy', 'overviewSuggestionCopyUniqueOk');
     }
@@ -449,7 +455,7 @@ function main() {
   assertContains('public/index.html', '快照证据');
   assertContains('public/index.html', 'RouterOS 当前不可达');
   assertContains('public/index.html', '数据可信度不可判定');
-  assertContains('public/index.html', 'RouterOS 当前不可达 / 业务快照无');
+  assertContains('public/index.html', '无业务快照，业务数据不展示');
   assertContains('public/index.html', '快照缺失 · 状态更新时间');
   assertNotContains('public/index.html', '建议查看');
   assertNotContains('public/index.html', '建议：');
@@ -499,10 +505,13 @@ function main() {
   assertContains('tools/local-predeploy-check.js', "const mobileAllowedActionLabels = new Set(['WAN明细', '采集状态', '资源阈值', '路由快照']);");
   assertContains('tools/local-predeploy-check.js', 'overviewPrimaryConclusionNoEllipsisOk');
   assertContains('tools/local-predeploy-check.js', 'overviewCollectionContradictionOk');
+  assertContains('tools/local-predeploy-check.js', 'overviewCollectionTrustMarkersOk');
   assertContains('tools/local-predeploy-check.js', 'overviewInterfacesForwardingFirstOk');
   assertContains('tools/local-predeploy-check.js', 'overviewStatusBusFixedGrammarOk');
   assertContains('tools/local-predeploy-check.js', 'overviewResourceFirstScreenPriorityOk');
+  assertContains('tools/local-predeploy-check.js', 'overviewDefaultRouteRawFactsOk');
   assertContains('tools/local-predeploy-check.js', 'overviewNoSnapshotDowngradeReasonsOk');
+  assertContains('tools/local-predeploy-check.js', 'overviewNoSnapshotFiveBlocksOk');
   assertContains('tools/local-predeploy-check.js', 'overviewChineseUiNoEngineeringEnglishOk');
   assertContains('tools/local-predeploy-check.js', 'overviewFirstScreenCoverageOk');
   assertContains('tools/local-predeploy-check.js', 'overviewDesktopDensityOk');
@@ -527,6 +536,7 @@ function main() {
   assertContains('tools/local-predeploy-check.js', 'overviewActionLinksLowChromeOk');
   assertContains('tools/local-predeploy-check.js', 'overviewMobileCoreOk');
   assertContains('tools/local-predeploy-check.js', 'overviewMobileFlatStatusTableOk');
+  assertContains('tools/local-predeploy-check.js', 'overviewMobileLedgerHeightOk');
   assertContains('tools/local-predeploy-check.js', 'overviewMobileAlertCardCompactOk');
   assertContains('tools/local-predeploy-check.js', 'overviewMobileDetailFirstTwoRowsVisibleOk');
   assertContains('tools/local-predeploy-check.js', 'overviewProductVerdictOk');
