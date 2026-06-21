@@ -11028,7 +11028,8 @@
         return [
           renderOverviewPressureFactsPanelDense(ctx),
           renderOverviewInterfaceThroughputImpactPanelDense(ctx),
-          renderOverviewProcessServicePressurePanelDense(ctx)
+          renderOverviewProcessServicePressurePanelDense(ctx),
+          renderOverviewResourceSamplingWindowPanelDense(ctx)
         ].join('');
       }
       if (focus.key === 'interfaces-down') {
