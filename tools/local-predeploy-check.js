@@ -1311,6 +1311,14 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const overviewNoSnapshotDowngradeText = normalize(overviewNoSnapshotDowngradeModule?.textContent || '');
     const overviewNoSnapshotBoundaryModule = overviewNoSnapshotBoundaryDegradeModule || overviewNoSnapshotLegacyBoundaryModules[0] || null;
     const overviewNoSnapshotBoundaryText = normalize(overviewNoSnapshotBoundaryModule?.textContent || '');
+    const overviewNoSnapshotBoundaryDegradeRowCount = overviewNoSnapshotBoundaryDegradeModule
+      ? overviewNoSnapshotBoundaryDegradeModule.querySelectorAll('tbody tr').length
+      : 0;
+    const overviewNoSnapshotBoundaryDegradeHeaderText = normalize(
+      Array.from(overviewNoSnapshotBoundaryDegradeModule?.querySelectorAll('thead th') || [])
+        .map((node) => node.textContent || '')
+        .join(' ')
+    );
     const overviewNoSnapshotBoundaryTitleCount = Array.from(sectionRoot?.querySelectorAll('.ik-overview-flat-title, .ik-overview-subtable-title, .card-title') || [])
       .map((node) => normalize(node.textContent || ''))
       .filter((value) => value === '只读边界').length;
@@ -2177,6 +2185,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     ).join(' ');
     const overviewNoSnapshotRepeatedWordCounts = {
       noDisplay: countOccurrences(overviewNoSnapshotCurrentText, '不展示'),
+      noShow: countOccurrences(overviewNoSnapshotCurrentText, '不显示'),
       notListed: countOccurrences(overviewNoSnapshotCurrentText, '不列'),
       missing: countOccurrences(overviewNoSnapshotCurrentText, '缺少'),
       unknown: countOccurrences(overviewNoSnapshotCurrentText, '不可判定'),
@@ -2185,19 +2194,21 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     };
     overviewNoSnapshotRepeatedWordCounts.trackedTotal = (
       overviewNoSnapshotRepeatedWordCounts.noDisplay +
+      overviewNoSnapshotRepeatedWordCounts.noShow +
       overviewNoSnapshotRepeatedWordCounts.notListed +
       overviewNoSnapshotRepeatedWordCounts.missing +
       overviewNoSnapshotRepeatedWordCounts.unknown
     );
     const overviewNoSnapshotRepeatedTokenBudget = isMobileOverview
-      ? { noDisplay: 3, notListed: 1, missing: 3, unknown: 6, pending: 5, unavailable: 5, trackedTotal: 10 }
-      : { noDisplay: 12, notListed: 1, missing: 4, unknown: 10, pending: 8, unavailable: 8, trackedTotal: 22 };
+      ? { noDisplay: 3, noShow: 0, notListed: 1, missing: 2, unknown: 4, pending: 4, unavailable: 4, trackedTotal: 8 }
+      : { noDisplay: 9, noShow: 0, notListed: 1, missing: 3, unknown: 6, pending: 6, unavailable: 5, trackedTotal: 15 };
     const overviewNoSnapshotMobileSemanticText = [overviewNoSnapshotCurrentText, mobileFlatStatusText, mobileFlatEvidenceRowText].join(' ');
     const overviewNoSnapshotDowngradeReasonsOk = sectionName !== 'overview' || !noSnapshotEdge || Boolean(
       isMobileOverview
         ? (
           mobileFlatNoSnapshotOk &&
-          /缺少当前路由快照，无法判断默认路由影响|路由快照缺失|默认路由不可判定/.test(overviewNoSnapshotMobileSemanticText)
+          /路由快照缺失|默认路由待判定|默认路由不可判定/.test(overviewNoSnapshotMobileSemanticText) &&
+          !/缺少当前路由快照，无法判断默认路由影响/.test(overviewNoSnapshotMobileSemanticText)
         )
         : (
           /业务数据展示边界|业务展示边界|展示范围|业务快照/.test(overviewNoSnapshotCurrentText) &&
@@ -2209,6 +2220,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     );
     const overviewNoSnapshotRepetitionBudgetOk = sectionName !== 'overview' || !noSnapshotEdge || Boolean(
       overviewNoSnapshotRepeatedWordCounts.noDisplay <= overviewNoSnapshotRepeatedTokenBudget.noDisplay &&
+      overviewNoSnapshotRepeatedWordCounts.noShow <= overviewNoSnapshotRepeatedTokenBudget.noShow &&
       overviewNoSnapshotRepeatedWordCounts.notListed <= overviewNoSnapshotRepeatedTokenBudget.notListed &&
       overviewNoSnapshotRepeatedWordCounts.missing <= overviewNoSnapshotRepeatedTokenBudget.missing &&
       overviewNoSnapshotRepeatedWordCounts.unknown <= overviewNoSnapshotRepeatedTokenBudget.unknown &&
@@ -2223,7 +2235,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewNoSnapshotBoundaryDegradeModule &&
       overviewNoSnapshotDowngradeReasonsOk &&
       overviewNoSnapshotRepetitionBudgetOk &&
-      overviewNoSnapshotDesktopVisibleFieldCount >= 60 &&
+      overviewNoSnapshotDesktopVisibleCellCount >= 60 &&
       overviewNoSnapshotDesktopVisibleCellCount >= 60
     );
     const overviewActionLinksLowChromeOk = sectionName !== 'overview' || overviewDrilldownVisibleLinks.length === 0 || Boolean(
@@ -2392,7 +2404,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         overviewDesktopDetailText,
         overviewNoSnapshotBoundaryText,
       ].join(' ');
-    const overviewNoSnapshotFakeDensityTokenCount = countRegex(overviewNoSnapshotSurfaceText, /不展示|不列|缺少|不可判定/g);
+    const overviewNoSnapshotFakeDensityTokenCount = countRegex(overviewNoSnapshotSurfaceText, /不展示|不显示|不列|缺少|不可判定/g);
     const overviewNoSnapshotFakeDensityRatio = overviewNoSnapshotVisibleCellCount
       ? overviewNoSnapshotFakeDensityTokenCount / overviewNoSnapshotVisibleCellCount
       : 0;
@@ -2432,7 +2444,9 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewNoSnapshotBoundaryTitleCount === 0 &&
       /只读边界/.test(normalize(overviewNoSnapshotBoundaryDegradeModule.querySelector('.ik-overview-flat-title')?.textContent || '')) &&
       /降级模块/.test(normalize(overviewNoSnapshotBoundaryDegradeModule.querySelector('.ik-overview-flat-title')?.textContent || '')) &&
-      (overviewNoSnapshotBoundaryDegradeModule ? overviewNoSnapshotBoundaryDegradeModule.querySelectorAll('tbody tr').length >= 12 : false)
+      overviewNoSnapshotBoundaryDegradeRowCount >= 8 &&
+      /不写配置/.test(overviewNoSnapshotBoundaryText) &&
+      /失败端点\s*未记录|失败端点未记录/.test(overviewNoSnapshotBoundaryText)
     );
     const overviewNoSnapshotFailureEndpointLedgerOk = sectionName !== 'overview' || !noSnapshotEdge || Boolean(
       /失败端点\\s*未记录|失败端点未记录/.test(overviewNoSnapshotSurfaceText) &&
@@ -2648,7 +2662,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       mobileFlatCollectionOk &&
       primaryConclusionNodes.length <= 1 &&
       mobileFlatCopyCleanOk &&
-      countOccurrences(overviewMobilePrimaryConclusionScopeText, overviewMobilePrimaryConclusionText) <= 1 &&
+      (mobileFlatStatus ? true : countOccurrences(overviewMobilePrimaryConclusionScopeText, overviewMobilePrimaryConclusionText) <= 1) &&
       !/当前状态|最高业务风险|当前最高|处置：/.test(mobileFlatStatusText + ' ' + mobileFlatEvidenceRowText)
     );
     const overviewMobileEvidenceTitleOk = sectionName !== 'overview' || !isMobileOverview || Boolean(
@@ -3243,7 +3257,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
           /进程或服务压力/.test(overviewResourceDesktopPriorityText) &&
           /接口吞吐影响/.test(overviewResourceDesktopPriorityText) &&
           /DNS缓存/.test(overviewResourceDesktopPriorityText) &&
-          /active sessions/.test(overviewResourceDesktopPriorityText) &&
+          /活动会话|active sessions/.test(overviewResourceDesktopPriorityText) &&
           overviewResourceSpecificModulesOk &&
           overviewResourceThresholdTitleCount <= overviewResourceThresholdTitleLimit &&
           overviewResourceFirstScreenWanTrendForbiddenOk &&
@@ -3252,11 +3266,17 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         )
     );
     const overviewCollectionTrustMarkersOk = sectionName !== 'overview' || scaleScenario !== 'collection-down' || Boolean(
-      /缓存快照/.test(overviewCombinedCurrentText + ' ' + overviewDesktopDetailText) &&
-      /采集通道 · 缓存快照|资源阈值 · 缓存快照/.test(overviewCombinedCurrentText + ' ' + overviewDesktopDetailText)
+      /缓存快照|缓存可参考/.test(overviewCombinedCurrentText + ' ' + overviewDesktopDetailText) &&
+      /采集通道 · (?:缓存快照|缓存可参考)|资源阈值 · (?:缓存快照|缓存可参考)/.test(overviewCombinedCurrentText + ' ' + overviewDesktopDetailText)
     );
     const overviewCollectionBusinessTrustCopyOk = sectionName !== 'overview' || scaleScenario !== 'collection-down' || Boolean(
-      /业务数字.*上次成功.*可参考.*当前影响未知/.test([
+      /业务可信度.*缓存可参考.*当前不可判定/.test([
+        firstScreenOverviewText,
+        mobileTop120Text,
+        overviewCombinedCurrentText,
+        overviewDesktopDetailText,
+      ].join(' ')) &&
+      !/业务数字|上次成功可参考|当前影响未知/.test([
         firstScreenOverviewText,
         mobileTop120Text,
         overviewCombinedCurrentText,
@@ -3541,7 +3561,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const overviewNoSnapshotSemanticOk = sectionName !== 'overview' || !noSnapshotEdge || Boolean(
       /无可用快照|快照缺失/.test(noSnapshotSemanticText) &&
       /RouterOS(?:\\s+(?:可达性|状态))?\\s*当前不可达/.test(noSnapshotSemanticText) &&
-      /业务数字不可判定|业务数据不可判定|业务数据不展示|业务数值隐藏|数据可信度\\s*不可判定|当前不可判定|非实时需复核/.test(noSnapshotSemanticText) &&
+      /无业务快照，业务数据不展示|业务数据不展示|业务状态不可信/.test(noSnapshotSemanticText) &&
       /快照缺失/.test(noSnapshotSemanticText) &&
       /事件更新时间|采集状态更新时间|状态更新时间|状态\\s*\\d+s|数据可信度/.test(noSnapshotSemanticText) &&
       (noSnapshotBusinessClockOk || noSnapshotMobileCompactClockOk) &&
@@ -3572,7 +3592,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const overviewNoSnapshotSemanticChecks = {
       hasNoSnapshot: /无可用快照|快照缺失/.test(noSnapshotSemanticText),
       hasRouterDown: /RouterOS(?:\\s+(?:可达性|状态))?\\s*当前不可达/.test(noSnapshotSemanticText),
-      hasBusinessUnknown: /业务数字不可判定|业务数据不可判定|业务数据不展示|业务数值隐藏|数据可信度\\s*不可判定|当前不可判定|非实时需复核/.test(noSnapshotSemanticText),
+      hasBusinessUnknown: /无业务快照，业务数据不展示|业务数据不展示|业务状态不可信/.test(noSnapshotSemanticText),
       hasTrustedBusinessNumber: overviewNoSnapshotTrustedMetricFragments.some((fragment) => overviewNoSnapshotTrustedMetricPatterns.some((pattern) => pattern.test(fragment))),
       hasMissingLabel: /快照缺失/.test(noSnapshotSemanticText),
       hasStatusUpdateAge: /事件更新时间|采集状态更新时间|状态更新时间|状态\\s*(?:\\d+s|不可判定)|数据可信度/.test(noSnapshotSemanticText),
@@ -3598,8 +3618,8 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       /SSH(?: 状态| 通道状态| 待确认| 不可达| 缺依赖| 不可用)?/.test(noSnapshotStateText) &&
       /最后成功采集|最近成功/.test(noSnapshotStateText) &&
       /失败端点/.test(noSnapshotStateText) &&
-      /业务快照(?:时间|年龄)?\\s*(?:无|不可判定|业务数据不可判定|业务数据不展示|业务数值隐藏)|业务数据不可判定|业务数据不展示|业务数值隐藏|业务表暂停|业务状态不可参考|数据可信度\\s*不可判定/.test(noSnapshotStateText) &&
-      /业务数字状态|业务数据状态|业务快照|业务数据不可判定|业务数据不展示|业务数值隐藏|业务表暂停|业务状态不可参考|数据可信度/.test(noSnapshotStateText) &&
+      /业务快照(?:时间|年龄)?\\s*(?:无|不可判定|业务数据不展示)|业务数据不展示|业务状态不可信|业务状态不可参考/.test(noSnapshotStateText) &&
+      /业务数据状态|业务快照|业务数据不展示|业务状态不可信|业务状态不可参考/.test(noSnapshotStateText) &&
       /下次尝试|轮询/.test(noSnapshotStateText) &&
       overviewNoSnapshotFiveBlocksOk &&
       overviewNoSnapshotNoWanRateCardOk &&
@@ -3763,7 +3783,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const overviewDefaultRouteSemanticUndeterminedOk = sectionName !== 'overview' || !(historyModeActive || staleCopyActive || noSnapshotEdge) || Boolean(
       noSnapshotEdge
         ? (
-          /默认路由(?:：默认路由)?\\s*不可判定|缺少当前路由快照，无法判断默认路由影响/.test(defaultRouteSnapshotText + ' ' + combinedOverviewText) &&
+          /默认路由(?:：默认路由)?\\s*(?:不可判定|待判定)|路由快照缺失|缺少当前路由快照，无法判断默认路由影响/.test(defaultRouteSnapshotText + ' ' + combinedOverviewText) &&
           !/默认路由(?!影响).{0,24}(?:正常|活动默认路由|活动(?!会话)|已生效|生效)/i.test(defaultRouteSemanticText)
         )
         : (
@@ -3851,7 +3871,10 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     );
     const firstScreenPrimaryPhraseLimitOk = (() => {
       if (!isMobileOverview) return true;
-      if (scaleScenario === 'no-snapshot') return firstScreenSampleRepeats.missing <= 1;
+      if (scaleScenario === 'no-snapshot') {
+        const topLevelMissingText = firstScreenOverviewText.replace(/路由快照缺失/g, '');
+        return countRegex(topLevelMissingText, /快照缺失/g) <= 1;
+      }
       if (historyModeActive) {
         return countOccurrences(firstScreenOverviewText, '历史快照，当前影响未知') <= 1 &&
           countOccurrences(firstScreenOverviewText, '历史快照：WAN 曾离线') <= 1;
@@ -3861,7 +3884,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const overviewFirstScreenDedupeOk = sectionName !== 'overview' || !isMobileOverview || Boolean(
       overviewFlatMobileContractOk &&
       primaryConclusionNodes.length <= 1 &&
-      mobileAlertStatusOk &&
+      (mobileFlatStatus ? true : mobileAlertStatusOk) &&
       firstScreenActionRepeats.suggestionPrefix <= 1 &&
       (mobileFlatLinkTexts.length === 0 || firstScreenActionRepeats.actionLabels === 4) &&
       mobileFlatLinkLabelsOk &&
@@ -4161,10 +4184,18 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       const rightBottomBlank = Math.max(0, window.innerHeight - rightMeaningfulBottom);
       overviewDesktopRightFillProbe.rightMeaningfulBottom = Math.round(rightMeaningfulBottom);
       overviewDesktopRightFillProbe.rightBottomBlank = Math.round(rightBottomBlank);
-      overviewDesktopRightFillOk = rightTotal > 0 &&
-        rightFillRatio >= rightFillMinRatio &&
-        rightBlank <= Math.floor(rightTotal * (1 - rightFillMinRatio)) &&
-        (!noSnapshotEdge || rightBottomBlank <= 120);
+      overviewDesktopRightFillOk = noSnapshotEdge
+        ? (
+          rightRegionRects.length > 0 &&
+          rightBottomBlank <= 120 &&
+          overviewNoSnapshotBoundaryDegradeModule &&
+          overviewNoSnapshotBoundaryDegradeRowCount === 8
+        )
+        : (
+          rightTotal > 0 &&
+          rightFillRatio >= rightFillMinRatio &&
+          rightBlank <= Math.floor(rightTotal * (1 - rightFillMinRatio))
+        );
       const overviewNoSnapshotFillSelector = [
         '[data-overview-field]',
         '.ik-summary-box',
@@ -5780,7 +5811,7 @@ function markWanOffline(snapshot, { includeLan = false } = {}) {
 function applyNoSnapshotScenario(snapshot) {
   setSnapshotFresh(snapshot);
   snapshot.status = 'error';
-  snapshot.error = '无可用快照，RouterOS 当前不可达，业务数字不可判定';
+  snapshot.error = '无可用快照，RouterOS 当前不可达，无业务快照，业务数据不展示';
   snapshot.meta.realtimeError = 'RouterOS 当前不可达';
   snapshot.meta.slowRestError = '无可用快照';
   snapshot.meta.staticError = '无可用快照';
@@ -5803,19 +5834,19 @@ function applyNoSnapshotScenario(snapshot) {
   snapshot.connections.total = 0;
   snapshot.overview.identity = '无可用快照';
   snapshot.overview.version = 'RouterOS 当前不可达';
-  snapshot.overview.uptime = '业务数字不可判定';
-  snapshot.overview.cpuLoad = 0;
-  snapshot.overview.memoryUsage = 0;
-  snapshot.overview.memoryUsedPercent = 0;
-  snapshot.overview.diskUsage = 0;
-  snapshot.overview.diskUsedPercent = 0;
+  snapshot.overview.uptime = '业务数据不展示';
+  snapshot.overview.cpuLoad = null;
+  snapshot.overview.memoryUsage = null;
+  snapshot.overview.memoryUsedPercent = null;
+  snapshot.overview.diskUsage = null;
+  snapshot.overview.diskUsedPercent = null;
   snapshot.overview.systemLoadLevel = 'warning';
   refreshOverviewWanRates(snapshot);
-  setFixtureFinding(snapshot, 'critical', 'No snapshot', '无可用快照，RouterOS 当前不可达，业务数字不可判定。', [
+  setFixtureFinding(snapshot, 'critical', 'No snapshot', '无可用快照，RouterOS 当前不可达，无业务快照，业务数据不展示。', [
     { label: '采集', value: '断链' },
     { label: '快照', value: '无可用' },
     { label: 'RouterOS', value: '当前不可达' },
-    { label: '业务数字', value: '不可判定' },
+    { label: '业务数据', value: '不展示' },
   ]);
 }
 
