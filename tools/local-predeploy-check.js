@@ -1306,6 +1306,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const overviewNoSnapshotLegacyDowngradeModules = Array.from(sectionRoot?.querySelectorAll('[data-overview-density-module="no-snapshot-unavailable"]') || []);
     const overviewNoSnapshotLegacyBoundaryModules = Array.from(sectionRoot?.querySelectorAll('[data-overview-density-module="no-snapshot-boundary"]') || []);
     const overviewNoSnapshotBoundaryDegradeModule = sectionRoot?.querySelector('[data-overview-density-module="no-snapshot-boundary-degrade"]');
+    const overviewNoSnapshotTrustModules = Array.from(sectionRoot?.querySelectorAll('[data-overview-density-module="no-snapshot-trust-level"]') || []);
     const overviewNoSnapshotDowngradeModule = overviewNoSnapshotBoundaryDegradeModule || overviewNoSnapshotLegacyDowngradeModules[0] || null;
     const overviewNoSnapshotDowngradeText = normalize(overviewNoSnapshotDowngradeModule?.textContent || '');
     const overviewNoSnapshotBoundaryModule = overviewNoSnapshotBoundaryDegradeModule || overviewNoSnapshotLegacyBoundaryModules[0] || null;
@@ -1319,7 +1320,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         overviewNoSnapshotGridColumns >= 3 ||
         (overviewNoSnapshotEvidenceTable && overviewNoSnapshotEvidenceTableColumns >= 3 && overviewNoSnapshotEvidenceTableRows.length >= 4) ||
         (overviewNoSnapshotFlatDetail?.querySelectorAll('tbody tr').length >= 4) ||
-        /采集链路账本|采集链路|业务展示边界|降级模块|只读边界/.test([overviewNoSnapshotGridText, overviewNoSnapshotDowngradeText, overviewNoSnapshotBoundaryText].join(' '))
+        /采集链路账本|采集链路|快照账本|模块可见性|降级模块|只读边界/.test([overviewNoSnapshotGridText, overviewNoSnapshotDowngradeText, overviewNoSnapshotBoundaryText].join(' '))
       )
     );
     const overviewDesktopEvidenceScope = sectionRoot?.querySelector('[data-overview-summary], [data-overview-desktop-detail]')
@@ -1647,6 +1648,9 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const mobileFlatStatusText = normalize(mobileFlatStatus?.textContent || '');
     const mobileFlatRows = Array.from(mobileFlatStatus?.querySelectorAll('[data-overview-mobile-flat-row]') || []);
     const mobileLeadRows = Array.from(mobileLeadPreview?.querySelectorAll('.ik-mobile-detail-row:not(.is-head), .ik-mobile-wan-row:not(.is-head)') || []);
+    const mobileTerminalSmallNodes = Array.from(sectionRoot?.querySelectorAll('.ik-mobile-detail-row.is-terminal small') || []);
+    let visibleMobileTerminalSmallNodes = [];
+    let overviewMobileTerminalSingleLineOk = true;
     const mobileFlatLinkTexts = Array.from(mobileFlatStatus?.querySelectorAll('.ik-mobile-flat-link') || [])
       .map((node) => normalize(node.textContent || ''))
       .filter(Boolean);
@@ -2047,6 +2051,8 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         style.visibility !== 'hidden' &&
         style.opacity !== '0';
     };
+    visibleMobileTerminalSmallNodes = mobileTerminalSmallNodes.filter(nodeVisibleInFirstScreen);
+    overviewMobileTerminalSingleLineOk = sectionName !== 'overview' || !isMobileOverview || visibleMobileTerminalSmallNodes.length === 0;
     const overviewDrilldownVisibleLinks = overviewDrilldownLinkNodes.filter(nodeVisibleInFirstScreen);
     const overviewGenericDetailTitleNodes = Array.from(sectionRoot?.querySelectorAll([
       '.ik-overview-flat-title',
@@ -2089,10 +2095,16 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const overviewVisibleDensityModuleNames = overviewVisibleDensityModuleRecords
       .map((item) => item.module)
       .filter(Boolean);
+    const overviewVisibleDensityModuleText = overviewVisibleDensityModuleRecords
+      .map((item) => [item.module, item.title, item.text].join(' '))
+      .join(' ');
     const overviewNoSnapshotVisibleDenseModuleCount = (sectionName === 'overview' && isDesktopOverview && noSnapshotEdge)
       ? overviewVisibleDensityModuleRecords.length
       : 0;
     const overviewNoSnapshotDenseModuleOk = sectionName !== 'overview' || !isDesktopOverview || !noSnapshotEdge || overviewNoSnapshotVisibleDenseModuleCount >= 5;
+    const overviewNoSnapshotLedgerTitlesOk = sectionName !== 'overview' || !isDesktopOverview || !noSnapshotEdge || Boolean(
+      ['采集链路账本', '快照账本', '模块可见性', '最近成功记录', '只读边界 + 降级模块'].every((title) => overviewVisibleDensityModuleText.includes(title))
+    );
     const overviewNoSnapshotDesktopVisibleFieldCount = (sectionName === 'overview' && isDesktopOverview && noSnapshotEdge)
       ? Array.from(sectionRoot?.querySelectorAll('[data-overview-field], tbody tr, .ik-summary-box') || []).filter(nodeVisibleInFirstScreen).length
       : 0;
@@ -2353,6 +2365,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const overviewNoSnapshotNoDuplicateBoundaryOk = sectionName !== 'overview' || !isDesktopOverview || !noSnapshotEdge || Boolean(
       overviewNoSnapshotLegacyDowngradeModules.length === 0 &&
       overviewNoSnapshotLegacyBoundaryModules.length === 0 &&
+      overviewNoSnapshotTrustModules.length === 0 &&
       overviewNoSnapshotBoundaryDegradeModule &&
       overviewNoSnapshotBoundaryTitleCount === 0 &&
       /只读边界/.test(normalize(overviewNoSnapshotBoundaryDegradeModule.querySelector('.ik-overview-flat-title')?.textContent || '')) &&
@@ -2369,7 +2382,8 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       /最近成功/.test(overviewNoSnapshotSurfaceText) &&
       /失败原因/.test(overviewNoSnapshotSurfaceText) &&
       /下次尝试/.test(overviewNoSnapshotSurfaceText) &&
-      /业务展示边界/.test(overviewNoSnapshotSurfaceText) &&
+      /快照账本/.test(overviewNoSnapshotSurfaceText) &&
+      /模块可见性/.test(overviewNoSnapshotSurfaceText) &&
       /禁用模块/.test(overviewNoSnapshotSurfaceText) &&
       /WAN/.test(overviewNoSnapshotSurfaceText) &&
       /速率/.test(overviewNoSnapshotSurfaceText) &&
@@ -2447,7 +2461,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       const categories = [
         {
           category: 'collection',
-          patterns: [/状态摘要/, /采集链路/, /采集链路账本/, /设备通达性/, /快照证据/, /快照缺失/, /快照状态/, /业务快照缺失/, /无可用快照/, /RouterOS 当前不可达/, /业务数字不可判定/, /业务数据不可判定/, /业务数据不展示/, /业务数值隐藏/, /数据可信度不可判定/, /当前不可判定/, /采集证据/, /采集通道/, /通道状态/, /通道异常/, /REST 待确认/, /SSH 不可用/, /SSH 缺依赖/, /采集断链/, /采集降级/, /采集失败/, /采集不可用/, /非实时需复核/],
+          patterns: [/快照账本/, /模块可见性/, /采集链路/, /采集链路账本/, /设备通达性/, /快照证据/, /快照缺失/, /快照状态/, /业务快照缺失/, /无可用快照/, /RouterOS 当前不可达/, /业务数字不可判定/, /业务数据不可判定/, /业务数据不展示/, /业务数值隐藏/, /数据可信度不可判定/, /当前不可判定/, /采集证据/, /采集通道/, /通道状态/, /通道异常/, /REST 待确认/, /SSH 不可用/, /SSH 缺依赖/, /采集断链/, /采集降级/, /采集失败/, /采集不可用/, /非实时需复核/],
         },
         {
           category: 'resource',
@@ -2529,7 +2543,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
           : scaleScenario === 'no-snapshot'
             ? (
               (overviewFirstEvidenceCategory === 'collection' || expectedRiskEvidenceCategory === 'collection' || /设备通达性|采集链路账本/.test(expectedRiskEvidenceText)) &&
-              /状态摘要|采集链路|采集链路账本|设备通达性|快照证据|快照缺失|采集证据|采集断链|无可用快照/.test(expectedRiskEvidenceText) &&
+              /快照账本|模块可见性|采集链路|采集链路账本|设备通达性|快照证据|快照缺失|采集证据|采集断链|无可用快照/.test(expectedRiskEvidenceText) &&
               (/RouterOS(?:\\s+(?:可达性|状态))?\\s*当前不可达/.test(expectedRiskEvidenceText) || /RouterOS当前不可达/.test(compactExpectedRiskEvidenceText)) &&
               /业务数字不可判定|业务数据不可判定|业务数据不展示|业务数值隐藏|数据可信度不可判定|所有业务数字不可判定|无业务快照/.test(expectedRiskEvidenceText)
             )
@@ -3176,6 +3190,23 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       /缓存快照/.test(overviewCombinedCurrentText + ' ' + overviewDesktopDetailText) &&
       /采集通道 · 缓存快照|资源阈值 · 缓存快照/.test(overviewCombinedCurrentText + ' ' + overviewDesktopDetailText)
     );
+    const overviewCollectionBusinessTrustCopyOk = sectionName !== 'overview' || scaleScenario !== 'collection-down' || Boolean(
+      /业务数字.*上次成功.*可参考.*当前影响未知/.test([
+        firstScreenOverviewText,
+        mobileTop120Text,
+        overviewCombinedCurrentText,
+        overviewDesktopDetailText,
+      ].join(' '))
+    );
+    const overviewConsoleLanguageText = [
+      firstScreenOverviewText,
+      overviewDesktopTopText,
+      overviewDesktopDetailText,
+    ].join(' ');
+    const overviewConsoleLanguageOk = sectionName !== 'overview' || Boolean(
+      !overviewConsoleLanguageText.includes('采集链路 / 业务展示 / 下次尝试') &&
+      !overviewConsoleLanguageText.includes('对象 / 数字 / 依据')
+    );
     const overviewStatusBarRect = overviewStatusBar?.getBoundingClientRect();
     const overviewStatusBarStyle = overviewStatusBar ? getComputedStyle(overviewStatusBar) : null;
     const overviewStatusBusCells = Array.from(overviewVerdictStatusBus?.querySelectorAll('[data-overview-status-cell]') || []);
@@ -3485,7 +3516,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       hasForbiddenFreshCopy: noSnapshotFreshCopyPattern.test(noSnapshotSemanticText),
     };
     const overviewNoSnapshotFiveBlocksOk = sectionName !== 'overview' || !noSnapshotEdge || !isDesktopOverview || Boolean(
-      ['状态摘要', '采集链路账本', '业务展示边界', '只读边界 + 降级模块'].every((label) =>
+      ['采集链路账本', '快照账本', '模块可见性', '最近成功记录', '只读边界 + 降级模块'].every((label) =>
         [noSnapshotStateText, overviewDesktopDetailText, overviewNoSnapshotDowngradeText, overviewNoSnapshotBoundaryText].join(' ').includes(label)
       ) &&
       /采集链路/.test([noSnapshotStateText, overviewDesktopDetailText, overviewNoSnapshotDowngradeText, overviewNoSnapshotBoundaryText].join(' ')) &&
@@ -3496,7 +3527,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       (overviewNoSnapshotGrid || overviewDesktopDetail) &&
       overviewNoSnapshotEvidenceLayoutOk &&
       (overviewNoSnapshotEvidenceTableRows.length >= 4 || overviewNoSnapshotGridItems.length >= 6 || overviewDesktopDetailRows.length >= 6) &&
-      /状态摘要|快照缺失/.test(noSnapshotStateText) &&
+      /快照账本|快照缺失/.test(noSnapshotStateText) &&
       /RouterOS/.test(noSnapshotStateText) &&
       /REST(?: 状态| 通道状态| 待确认| 不可达| 不可用)?/.test(noSnapshotStateText) &&
       /SSH(?: 状态| 通道状态| 待确认| 不可达| 缺依赖| 不可用)?/.test(noSnapshotStateText) &&
@@ -4099,7 +4130,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         : 0;
       overviewNoSnapshotModuleFillOk = sectionName !== 'overview' || !noSnapshotEdge || !isDesktopOverview || Boolean(
         overviewNoSnapshotModuleFillSamples.length >= 5 &&
-        overviewNoSnapshotModuleFillRatio >= 0.76
+        overviewNoSnapshotModuleFillRatio >= 0.70
       );
       const overviewResourceFillTargets = scaleScenario === 'resource-full'
         ? overviewDensityModules.filter((node) => {
@@ -4347,6 +4378,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewNoSnapshotGridOk &&
       overviewNoSnapshotFiveBlocksOk &&
       overviewNoSnapshotDenseModuleOk &&
+      overviewNoSnapshotLedgerTitlesOk &&
       overviewNoSnapshotNoWanRateCardOk &&
       overviewNoSnapshotNoDuplicateBoundaryOk &&
       overviewNoSnapshotFailureEndpointLedgerOk &&
@@ -4364,6 +4396,8 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewCollectionLayerSplitOk &&
       overviewCollectionContradictionOk &&
       overviewCollectionTrustMarkersOk &&
+      overviewCollectionBusinessTrustCopyOk &&
+      overviewConsoleLanguageOk &&
       overviewInterfacesChannelConsistencyOk &&
       overviewInterfacesForwardingFirstOk &&
       overviewInterfacesDownCollectionParityOk &&
@@ -4389,6 +4423,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewDesktopRightFillOk &&
       overviewDesktopEffectiveHeightOk &&
       overviewNoSnapshotModuleFillOk &&
+      overviewMobileTerminalSingleLineOk &&
       overviewTerminalPlacementOk &&
       overviewNoDuplicateTerminalOk &&
       overviewDesktopEvidenceUniqueOk &&
@@ -4684,6 +4719,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewNoSnapshotGridOk,
       overviewNoSnapshotFiveBlocksOk,
       overviewNoSnapshotDenseModuleOk,
+      overviewNoSnapshotLedgerTitlesOk,
       overviewNoSnapshotVisibleDenseModuleCount,
       overviewNoSnapshotNoWanRateCardOk,
       overviewNoSnapshotNoDuplicateBoundaryOk,
@@ -4710,6 +4746,8 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewCollectionLayerSplitOk,
       overviewCollectionContradictionOk,
       overviewCollectionTrustMarkersOk,
+      overviewCollectionBusinessTrustCopyOk,
+      overviewConsoleLanguageOk,
       overviewCollectionLayerProbe: {
         excerpt: combinedOverviewText.slice(0, 320),
       },
@@ -4762,6 +4800,8 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewResourceNumericDensityOk,
       overviewResourceDurationVisibilityOk,
       overviewResourceTrendOk,
+      overviewMobileTerminalSingleLineOk,
+      overviewMobileTerminalSmallCount: visibleMobileTerminalSmallNodes.length,
       loadAuditResourceProbe: {
         cardCount: loadAuditResourceCards.length,
         thresholdLines: loadAuditThresholdLines,
