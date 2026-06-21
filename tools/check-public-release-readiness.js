@@ -492,8 +492,11 @@ function main(argv = process.argv.slice(2)) {
   assertContains('public/index.html', '快照缺失');
   assertContains('public/index.html', '快照证据');
   assertContains('public/index.html', 'RouterOS 当前不可达');
-  assertContains('public/index.html', '数据可信度不可判定');
   assertContains('public/index.html', '无业务快照，业务数据不展示');
+  assertContains('public/index.html', '链路可参考 / 业务状态不可参考');
+  assertNotContains('public/index.html', '数据可信度不可判定');
+  assertNotContains('public/index.html', '业务数据不可判定');
+  assertNotContains('public/index.html', '业务数值隐藏');
   assertContains('public/index.html', '快照缺失 · 状态更新时间');
   assertNotContains('public/index.html', '建议查看');
   assertNotContains('public/index.html', '建议：');

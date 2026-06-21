@@ -5658,7 +5658,7 @@
         meta.connectionDetailUpdatedAt ||
         meta.connectionProtocolUpdatedAt
       );
-      return snapshot.status === 'error' && (/无可用快照|RouterOS 当前不可达|业务数据不可判定/.test(error) || !hasAnyTimestamp);
+      return snapshot.status === 'error' && (/无可用快照|RouterOS 当前不可达|无业务快照|业务数据不展示/.test(error) || !hasAnyTimestamp);
     }
     function formatDurationCompact(seconds = 0) {
       const safeSeconds = Math.max(0, Math.round(Number(seconds || 0)));
