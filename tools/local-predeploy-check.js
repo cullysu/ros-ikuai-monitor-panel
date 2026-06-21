@@ -1815,7 +1815,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       ))
     );
     const trendCompact = sectionRoot?.querySelector('[data-overview-trend-compact]');
-    const overviewTrendCompactOk = sectionName !== 'overview' || Boolean(
+    const overviewTrendCompactOk = sectionName !== 'overview' || noSnapshotEdge || Boolean(
       !/采样不足|样本不足|趋势暂不可用/.test(text) || (
         trendCompact &&
         /样本不足|趋势暂不可用/.test(normalize(trendCompact.textContent)) &&
@@ -2154,7 +2154,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const overviewNoSnapshotDowngradeReasonsOk = sectionName !== 'overview' || !noSnapshotEdge || Boolean(
       isMobileOverview
         ? (
-          /无业务快照，(?:业务数据不展示|业务数值隐藏)/.test(overviewNoSnapshotCurrentText) &&
+          /无业务快照(?:，(?:业务数据不展示|业务数值隐藏))?|业务表暂停|业务状态不可参考/.test(overviewNoSnapshotCurrentText) &&
           /路由快照缺失|默认路由不可判定/.test(overviewNoSnapshotCurrentText) &&
           /RouterOS\s*当前不可达|REST\s*待确认|SSH\s*(?:缺依赖|不可达)/.test(overviewNoSnapshotCurrentText)
         )
@@ -2163,7 +2163,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
           /WAN/.test(overviewNoSnapshotCurrentText) &&
           /速率/.test(overviewNoSnapshotCurrentText) &&
           /缺少当前路由快照|路由快照缺失/.test(overviewNoSnapshotCurrentText) &&
-          /无业务快照，(?:业务数据不展示|业务数值隐藏)/.test(overviewNoSnapshotCurrentText)
+          /无业务快照(?:，(?:业务数据不展示|业务数值隐藏))?|业务表暂停|业务状态不可参考/.test(overviewNoSnapshotCurrentText)
         )
     );
     const overviewNoSnapshotRepetitionBudgetOk = sectionName !== 'overview' || !noSnapshotEdge || Boolean(
@@ -3532,8 +3532,8 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         [noSnapshotStateText, overviewDesktopDetailText, overviewNoSnapshotDowngradeText, overviewNoSnapshotBoundaryText].join(' ').includes(label)
       ) &&
       /采集链路/.test([noSnapshotStateText, overviewDesktopDetailText, overviewNoSnapshotDowngradeText, overviewNoSnapshotBoundaryText].join(' ')) &&
-      /无业务快照，(?:业务数据不展示|业务数值隐藏)/.test([noSnapshotStateText, overviewNoSnapshotBoundaryText, overviewNoSnapshotDowngradeText].join(' ')) &&
-      /轮询中，不承诺可达/.test([noSnapshotStateText, overviewNoSnapshotBoundaryText].join(' '))
+      /无业务快照(?:，(?:业务数据不展示|业务数值隐藏))?|业务表暂停|业务状态不可参考/.test([noSnapshotStateText, overviewNoSnapshotBoundaryText, overviewNoSnapshotDowngradeText].join(' ')) &&
+      /轮询中|下次轮询|不承诺可达/.test([noSnapshotStateText, overviewNoSnapshotBoundaryText].join(' '))
     );
     const overviewNoSnapshotGridOk = sectionName !== 'overview' || !noSnapshotEdge || !isDesktopOverview || Boolean(
       (overviewNoSnapshotGrid || overviewDesktopDetail) &&
@@ -3545,8 +3545,8 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       /SSH(?: 状态| 通道状态| 待确认| 不可达| 缺依赖| 不可用)?/.test(noSnapshotStateText) &&
       /最后成功采集|最近成功/.test(noSnapshotStateText) &&
       /失败端点/.test(noSnapshotStateText) &&
-      /业务快照(?:时间|年龄)?\\s*(?:无|不可判定|业务数据不可判定|业务数据不展示|业务数值隐藏)|业务数据不可判定|业务数据不展示|业务数值隐藏|数据可信度\\s*不可判定/.test(noSnapshotStateText) &&
-      /业务数字状态|业务数据状态|业务快照|业务数据不可判定|业务数据不展示|业务数值隐藏|数据可信度/.test(noSnapshotStateText) &&
+      /业务快照(?:时间|年龄)?\\s*(?:无|不可判定|业务数据不可判定|业务数据不展示|业务数值隐藏)|业务数据不可判定|业务数据不展示|业务数值隐藏|业务表暂停|业务状态不可参考|数据可信度\\s*不可判定/.test(noSnapshotStateText) &&
+      /业务数字状态|业务数据状态|业务快照|业务数据不可判定|业务数据不展示|业务数值隐藏|业务表暂停|业务状态不可参考|数据可信度/.test(noSnapshotStateText) &&
       /下次尝试|轮询/.test(noSnapshotStateText) &&
       overviewNoSnapshotFiveBlocksOk &&
       overviewNoSnapshotNoWanRateCardOk &&
@@ -4069,7 +4069,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       }
       const rightBlank = Math.max(0, rightTotal - rightFilled);
       const rightFillRatio = rightTotal ? rightFilled / rightTotal : 0;
-      const rightFillMinRatio = scaleScenario === 'resource-full' ? 0.64 : (noSnapshotEdge ? 0.58 : 0.50);
+      const rightFillMinRatio = scaleScenario === 'resource-full' ? 0.64 : (noSnapshotEdge ? 0.72 : 0.50);
       overviewDesktopRightFillProbe = {
         filled: rightFilled,
         total: rightTotal,
@@ -4079,9 +4079,39 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         left: Math.round(rightStart),
         right: Math.round(right),
       };
+      const rightRegionRects = Array.from(sectionRoot.querySelectorAll([
+        '[data-overview-density-module="no-snapshot-boundary-degrade"]',
+        '[data-overview-density-module="resource-pressure"]',
+        '[data-overview-density-module="connection-pressure"]',
+        '[data-overview-density-module="interface-throughput-impact"]',
+        '[data-overview-density-module="process-service-pressure"]',
+        '[data-overview-density-module="resource-sampling-window"]',
+        '[data-overview-density-module="interface-forwarding"]',
+        '[data-overview-density-module="freshness"]',
+        '[data-overview-density-module="rank"]',
+        '[data-overview-rank-grid]'
+      ].join(',')))
+        .filter((node) => {
+          const item = node.getBoundingClientRect();
+          const style = getComputedStyle(node);
+          return item.width > 0 &&
+            item.height > 0 &&
+            item.right > rightStart &&
+            item.bottom > 0 &&
+            item.top < window.innerHeight &&
+            style.display !== 'none' &&
+            style.visibility !== 'hidden' &&
+            style.opacity !== '0';
+        })
+        .map((node) => node.getBoundingClientRect());
+      const rightMeaningfulBottom = rightRegionRects.length ? Math.max(...rightRegionRects.map((item) => Math.min(window.innerHeight, item.bottom || 0))) : 0;
+      const rightBottomBlank = Math.max(0, window.innerHeight - rightMeaningfulBottom);
+      overviewDesktopRightFillProbe.rightMeaningfulBottom = Math.round(rightMeaningfulBottom);
+      overviewDesktopRightFillProbe.rightBottomBlank = Math.round(rightBottomBlank);
       overviewDesktopRightFillOk = rightTotal > 0 &&
         rightFillRatio >= rightFillMinRatio &&
-        rightBlank <= Math.floor(rightTotal * (1 - rightFillMinRatio));
+        rightBlank <= Math.floor(rightTotal * (1 - rightFillMinRatio)) &&
+        (!noSnapshotEdge || rightBottomBlank <= 120);
       const overviewNoSnapshotFillSelector = [
         '[data-overview-field]',
         '.ik-summary-box',

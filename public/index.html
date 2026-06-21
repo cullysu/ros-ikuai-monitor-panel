@@ -8574,24 +8574,37 @@
       const sshValue = stripChannelPrefix(labels.sshLabel || 'SSH 缺依赖', 'SSH') || '缺依赖';
       const statusUpdateText = noSnapshotUpdateAgeText(ctx.snapshot, ctx.freshness);
       const routeReason = '路由快照缺失，影响待判定';
+      const statusUpdatedShort = shortTimestamp(ctx.snapshot?.meta?.statusUpdatedAt || ctx.snapshot?.updatedAt || latestCollectionSuccessTime(ctx));
       const boundaryRows = [
         `<tr data-overview-field><td><b>只读状态</b></td><td>只读 / 不下发</td><td>无业务快照</td><td>仅显示采集链路</td></tr>`,
-        `<tr data-overview-field><td><b>可信等级</b></td><td>链路可参考</td><td>业务状态不可参考</td><td>当前页面边界</td></tr>`,
-        `<tr data-overview-field><td><b>业务快照</b></td><td>无业务快照</td><td>无业务快照，业务数据不展示</td><td>业务表暂停</td></tr>`,
-        `<tr data-overview-field><td><b>RouterOS</b></td><td>${escapeHtml(routerValue)}</td><td>状态更新时间 ${escapeHtml(statusUpdateText)}</td><td>最近成功 ${escapeHtml(latestSuccess)}</td></tr>`,
+        `<tr data-overview-field><td><b>可信等级</b></td><td>链路可参考</td><td>业务状态不可参考</td><td>当前页边界</td></tr>`,
+        `<tr data-overview-field><td><b>业务快照</b></td><td>无业务快照</td><td>业务数据不展示</td><td>业务表暂停</td></tr>`,
+        `<tr data-overview-field><td><b>当前状态</b></td><td>${escapeHtml(routerValue)}</td><td>RouterOS 管理面</td><td>状态 ${escapeHtml(statusUpdateText)}</td></tr>`,
+        `<tr data-overview-field><td><b>最近成功</b></td><td>${escapeHtml(latestSuccess)}</td><td>采集元数据</td><td>链路参考</td></tr>`,
+        `<tr data-overview-field><td><b>状态事件</b></td><td>${escapeHtml(statusUpdatedShort)}</td><td>面板采集事件</td><td>${escapeHtml(statusUpdateText)}</td></tr>`,
         `<tr data-overview-field><td><b>REST</b></td><td>${escapeHtml(restValue === '待确认' ? '待确认' : restValue)}</td><td>采集端点未确认</td><td>下次 ${escapeHtml(nextCollection)}</td></tr>`,
         `<tr data-overview-field><td><b>SSH</b></td><td>${escapeHtml(sshValue)}</td><td>通道缺依赖</td><td>下次 ${escapeHtml(nextCollection)}</td></tr>`,
         `<tr data-overview-field><td><b>默认路由</b></td><td>待判定</td><td>路由快照缺失</td><td>${escapeHtml(routeReason)}</td></tr>`,
         `<tr data-overview-field><td><b>失败端点</b></td><td>${escapeHtml(ctx.failures.count ? fmtNumber(ctx.failures.count) : '未记录')}</td><td>${escapeHtml(failureText)}</td><td>未记录不是无失败</td></tr>`,
-        `<tr data-overview-field><td><b>禁用模块</b></td><td>WAN / 路由 / 资源</td><td>业务快照缺失</td><td>仅保留缺失状态表</td></tr>`,
-        `<tr data-overview-field><td><b>WAN</b></td><td>暂停</td><td>业务快照缺失</td><td>线路状态不造数</td></tr>`,
-        `<tr data-overview-field><td><b>速率</b></td><td>隐藏</td><td>业务快照缺失</td><td>禁止零速率占位</td></tr>`,
-        `<tr data-overview-field><td><b>资源</b></td><td>暂停</td><td>无资源快照</td><td>CPU/MEM/DISK 不造数</td></tr>`,
+        `<tr data-overview-field><td><b>端点明细</b></td><td>${escapeHtml(ctx.failures.count ? fmtNumber(ctx.failures.count) : '未记录')}</td><td>${escapeHtml(failureText)}</td><td>无记录不等于无失败</td></tr>`,
+        `<tr data-overview-field><td><b>禁用模块</b></td><td>WAN / 路由 / 资源</td><td>业务快照缺失</td><td>缺失状态表保留</td></tr>`,
+        `<tr data-overview-field><td><b>WAN 清单</b></td><td>暂停</td><td>无线路快照</td><td>不造在线数</td></tr>`,
+        `<tr data-overview-field><td><b>路由快照</b></td><td>待判定</td><td>无路由表</td><td>默认路由影响待判</td></tr>`,
+        `<tr data-overview-field><td><b>速率账本</b></td><td>隐藏</td><td>业务快照缺失</td><td>禁止零速率占位</td></tr>`,
+        `<tr data-overview-field><td><b>资源阈值</b></td><td>暂停</td><td>无资源快照</td><td>CPU/MEM/DISK 不造数</td></tr>`,
         `<tr data-overview-field><td><b>终端排行</b></td><td>关闭</td><td>无终端快照</td><td>排行不可用</td></tr>`,
         `<tr data-overview-field><td><b>连接表</b></td><td>关闭</td><td>无连接快照</td><td>Conn 不造数</td></tr>`,
-        `<tr data-overview-field><td><b>最近成功</b></td><td>${escapeHtml(latestSuccess)}</td><td>采集元数据</td><td>链路参考</td></tr>`,
-        `<tr data-overview-field><td><b>端点记录</b></td><td>${escapeHtml(ctx.failures.count ? fmtNumber(ctx.failures.count) : '未记录')}</td><td>${escapeHtml(failureText)}</td><td>未记录不是无失败</td></tr>`,
-        `<tr data-overview-field><td><b>下次尝试</b></td><td>${escapeHtml(nextCollection)}</td><td>轮询中，不承诺可达</td><td>设备不可达时不作承诺</td></tr>`
+        `<tr data-overview-field><td><b>会话明细</b></td><td>暂停</td><td>无连接明细</td><td>active sessions 不造数</td></tr>`,
+        `<tr data-overview-field><td><b>接口吞吐</b></td><td>暂停</td><td>无接口快照</td><td>吞吐排行隐藏</td></tr>`,
+        `<tr data-overview-field><td><b>DNS 缓存</b></td><td>暂停</td><td>无业务快照</td><td>缓存统计隐藏</td></tr>`,
+        `<tr data-overview-field><td><b>ARP 表</b></td><td>暂停</td><td>无业务快照</td><td>邻居状态隐藏</td></tr>`,
+        `<tr data-overview-field><td><b>采样窗口</b></td><td>无业务样本</td><td>采集链路优先</td><td>窗口暂停</td></tr>`,
+        `<tr data-overview-field><td><b>下次轮询</b></td><td>${escapeHtml(nextCollection)}</td><td>轮询中</td><td>不承诺可达</td></tr>`,
+        `<tr data-overview-field><td><b>展示范围</b></td><td>采集链路</td><td>RouterOS / REST / SSH</td><td>业务表暂停</td></tr>`,
+        `<tr data-overview-field><td><b>可信范围</b></td><td>采集元数据</td><td>最近成功 / 端点 / 边界</td><td>业务状态不可参考</td></tr>`,
+        `<tr data-overview-field><td><b>值班动作</b></td><td>等待采集</td><td>下次轮询</td><td>保持只读</td></tr>`,
+        `<tr data-overview-field><td><b>恢复条件</b></td><td>拿到新快照</td><td>RouterOS / REST / SSH</td><td>再展示业务表</td></tr>`,
+        `<tr data-overview-field><td><b>页面口径</b></td><td>状态账本</td><td>当前 / 时间 / 依据 / 影响</td><td>不写报告句</td></tr>`
       ];
       return overviewFlatModule(
         'no-snapshot-boundary-degrade',
