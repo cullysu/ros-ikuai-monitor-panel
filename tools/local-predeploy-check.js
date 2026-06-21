@@ -1722,14 +1722,17 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const mobileFlatEntryRowText = normalize(mobileFlatEntryRow?.textContent || '');
     const mobileFlatLedgerText = [mobileFlatStatusRowText, mobileFlatDeviceRowText, mobileFlatObjectRowText, mobileFlatEvidenceRowText, mobileFlatTrustRowText, mobileFlatEntryRowText].join(' ');
     const mobileFlatRowKeys = mobileFlatRows.map((node) => node.getAttribute('data-overview-mobile-flat-row') || '');
-    const mobileFlatRowCountOk = mobileFlatRows.length >= 5 &&
+    const requiredMobileFlatKeys = noSnapshotEdge
+      ? ['status', 'object', 'evidence']
+      : ['status', 'object', 'evidence', 'trust'];
+    const mobileFlatRowCountOk = mobileFlatRows.length >= requiredMobileFlatKeys.length &&
       mobileFlatStatusRow &&
       mobileFlatObjectRow &&
       mobileFlatEvidenceRow &&
-      mobileFlatTrustRow &&
-      mobileFlatEntryRow &&
-      ['status', 'object', 'evidence', 'trust', 'entry'].every((key) => mobileFlatRowKeys.includes(key));
-    const mobileFlatEntryOk = mobileFlatLinkTexts.length === 0 || /入口|动作|下钻/.test(mobileFlatStatusText);
+      (noSnapshotEdge || mobileFlatTrustRow) &&
+      requiredMobileFlatKeys.every((key) => mobileFlatRowKeys.includes(key));
+    const mobileFlatEntryOk = mobileFlatLinkTexts.length === 0 &&
+      !/入口：|WAN明细|采集状态|资源阈值/.test(mobileFlatStatusText);
     const mobileIncidentTitleLeadText = normalize(
       mobileIncident?.querySelector('.ik-mobile-incident-copy > div:first-child')?.textContent ||
       mobileIncident?.querySelector('.ik-mobile-incident-title > div:first-child')?.textContent ||
@@ -1965,6 +1968,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       mobileFlatEvidenceOk &&
       /快照缺失/.test(mobileFlatStatusRowText) &&
       /无业务快照|业务数据不展示|业务数值隐藏/.test(mobileFlatObjectRowText + ' ' + mobileFlatStatusRowText) &&
+      /默认路由|路由快照缺失/.test(mobileFlatObjectRowText + ' ' + mobileFlatStatusText) &&
       /RouterOS\\s*当前不可达/.test(mobileFlatEvidenceRowText) &&
       /采集.*REST.*SSH|REST.*SSH/.test(mobileFlatEvidenceRowText) &&
       /业务快照|业务数据不展示|业务数值隐藏|无业务快照/.test(mobileFlatLedgerText) &&
@@ -2375,9 +2379,21 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         '.ik-mobile-section-head'
       ].join(',')) || []).filter(nodeVisibleInFirstScreen).length
       : 0;
+    const overviewNoSnapshotMobileLedgerSemanticFactsOk = !isMobileOverview || Boolean(
+      /快照缺失/.test(mobileFlatStatusText) &&
+      /无业务快照，业务数据不展示|无业务快照|业务数据不展示/.test(mobileFlatStatusText) &&
+      /默认路由|路由快照缺失/.test(mobileFlatStatusText) &&
+      /WAN/.test(mobileFlatStatusText) &&
+      /资源/.test(mobileFlatStatusText) &&
+      /RouterOS\\s*当前不可达/.test(mobileFlatStatusText) &&
+      /REST.*SSH/.test(mobileFlatStatusText) &&
+      /失败端点\\s*未记录|失败端点未记录/.test(mobileFlatStatusText) &&
+      /最近成功/.test(mobileFlatStatusText)
+    );
     const overviewNoSnapshotEffectiveFactsOk = sectionName !== 'overview' || !noSnapshotEdge || (
       overviewVisibleFactCount >= 60 ||
-      overviewNoSnapshotVisibleCellCount >= 60
+      overviewNoSnapshotVisibleCellCount >= 60 ||
+      overviewNoSnapshotMobileLedgerSemanticFactsOk
     );
     let overviewFirstScreenCoverageOk = sectionName !== 'overview';
     const firstScreenTextRoot = isMobileOverview && mobileFirstScreen ? mobileFirstScreen : sectionRoot;
@@ -3275,12 +3291,14 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         mobileTop120Text,
         overviewCombinedCurrentText,
         overviewDesktopDetailText,
+        overviewVisibleDensityModuleText,
       ].join(' ')) &&
       !/业务数字|上次成功可参考|当前影响未知/.test([
         firstScreenOverviewText,
         mobileTop120Text,
         overviewCombinedCurrentText,
         overviewDesktopDetailText,
+        overviewVisibleDensityModuleText,
       ].join(' '))
     );
     const overviewConsoleLanguageText = [
@@ -3994,6 +4012,8 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     let overviewResourceModuleFillOk = true;
     let overviewDesktopRightFillProbe = null;
     let overviewDesktopRightFillOk = true;
+    let overviewDesktopColumnContinuityProbe = null;
+    let overviewDesktopColumnContinuityOk = true;
     let overviewDesktopTopBandProbe = null;
     let overviewDesktopTopBandOk = true;
     let overviewDesktopEffectiveHeightProbe = null;
@@ -4189,13 +4209,74 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
           rightRegionRects.length > 0 &&
           rightBottomBlank <= 120 &&
           overviewNoSnapshotBoundaryDegradeModule &&
-          overviewNoSnapshotBoundaryDegradeRowCount === 8
+          overviewNoSnapshotBoundaryDegradeRowCount >= 16
         )
         : (
           rightTotal > 0 &&
           rightFillRatio >= rightFillMinRatio &&
           rightBlank <= Math.floor(rightTotal * (1 - rightFillMinRatio))
         );
+      const analyzeDesktopStackContinuity = (stackNode) => {
+        if (!stackNode) {
+          return { maxGap: 999, bottomGap: 999, itemCount: 0 };
+        }
+        const stackRect = stackNode.getBoundingClientRect();
+        const visibleBottom = Math.min(window.innerHeight, Math.max(0, stackRect.bottom || window.innerHeight));
+        const visibleTop = Math.max(0, stackRect.top || 0);
+        const rects = Array.from(stackNode.children || [])
+          .filter((node) => {
+            const item = node.getBoundingClientRect();
+            const style = getComputedStyle(node);
+            return item.width > 0 &&
+              item.height > 0 &&
+              item.bottom > 0 &&
+              item.top < window.innerHeight &&
+              style.display !== 'none' &&
+              style.visibility !== 'hidden' &&
+              style.opacity !== '0';
+          })
+          .map((node) => {
+            const item = node.getBoundingClientRect();
+            return {
+              top: Math.max(visibleTop, item.top),
+              bottom: Math.min(visibleBottom, window.innerHeight, item.bottom),
+              height: Math.max(0, Math.min(visibleBottom, window.innerHeight, item.bottom) - Math.max(visibleTop, item.top)),
+              module: node.getAttribute('data-overview-density-module') || normalize(node.textContent || '').slice(0, 24),
+            };
+          })
+          .filter((item) => item.height > 0)
+          .sort((a, b) => a.top - b.top);
+        let maxGap = 0;
+        if (rects.length) {
+          maxGap = Math.max(maxGap, Math.max(0, rects[0].top - visibleTop));
+          for (let index = 1; index < rects.length; index += 1) {
+            maxGap = Math.max(maxGap, Math.max(0, rects[index].top - rects[index - 1].bottom));
+          }
+          maxGap = Math.max(maxGap, Math.max(0, Math.min(window.innerHeight, visibleBottom) - rects[rects.length - 1].bottom));
+        }
+        const bottomGap = rects.length ? Math.max(0, Math.min(window.innerHeight, visibleBottom) - rects[rects.length - 1].bottom) : 999;
+        return {
+          maxGap: Math.round(maxGap),
+          bottomGap: Math.round(bottomGap),
+          itemCount: rects.length,
+          modules: rects.map((item) => item.module).slice(0, 6),
+        };
+      };
+      const continuityRequired = ['all-offline', 'collection-down', 'resource-full', 'interfaces-down', 'no-snapshot'].includes(scaleScenario);
+      const leftStackNode = sectionRoot.querySelector('.ik-home-layout > .stack:not(.ik-home-side-stack)');
+      const rightStackNode = sectionRoot.querySelector('.ik-home-layout > .ik-home-side-stack');
+      const leftContinuity = analyzeDesktopStackContinuity(leftStackNode);
+      const rightContinuity = analyzeDesktopStackContinuity(rightStackNode);
+      overviewDesktopColumnContinuityProbe = {
+        threshold: 120,
+        required: continuityRequired,
+        left: leftContinuity,
+        right: rightContinuity,
+      };
+      overviewDesktopColumnContinuityOk = !continuityRequired || Boolean(
+        leftContinuity.maxGap <= 120 &&
+        rightContinuity.maxGap <= 120
+      );
       const overviewNoSnapshotFillSelector = [
         '[data-overview-field]',
         '.ik-summary-box',
@@ -4346,7 +4427,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     if (sectionName === 'overview') {
       overviewFirstScreenCoverageOk = isMobileOverview
         ? (overviewMobileEffectiveCoverageOk && overviewMobileNo72vhBlankOk && overviewMobileFirstScreenHardCompressionOk)
-        : (overviewBlankAreaOk && overviewDesktopRightFillOk && overviewDesktopTopBandOk && overviewDesktopEffectiveHeightOk);
+        : (overviewBlankAreaOk && overviewDesktopRightFillOk && overviewDesktopTopBandOk && overviewDesktopEffectiveHeightOk && overviewDesktopColumnContinuityOk);
     }
     const overviewDesktopInfoDensityOk = sectionName !== 'overview' || !isDesktopOverview || Boolean(
       overviewDesktopDensityOk &&
@@ -5015,6 +5096,8 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewBlankProbe,
       overviewDesktopRightFillOk,
       overviewDesktopRightFillProbe,
+      overviewDesktopColumnContinuityOk,
+      overviewDesktopColumnContinuityProbe,
       overviewDesktopTopBandOk,
       overviewDesktopTopBandProbe,
       overviewDesktopFlatStatusBarOk,
