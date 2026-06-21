@@ -2202,7 +2202,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         : (
           /业务数据展示边界|业务展示边界|展示范围|业务快照/.test(overviewNoSnapshotCurrentText) &&
           /WAN/.test(overviewNoSnapshotCurrentText) &&
-          /速率\s*不展示/.test(overviewNoSnapshotCurrentText) &&
+          /速率\s*不展示|速率不展示/.test(overviewNoSnapshotCurrentText) &&
           /缺少当前路由快照|路由快照缺失/.test(overviewNoSnapshotCurrentText) &&
           /无业务快照(?:，(?:业务数据不展示|业务数值隐藏))?|业务数据不展示|业务状态不可参考/.test(overviewNoSnapshotCurrentText)
         )
@@ -2223,6 +2223,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewNoSnapshotBoundaryDegradeModule &&
       overviewNoSnapshotDowngradeReasonsOk &&
       overviewNoSnapshotRepetitionBudgetOk &&
+      overviewNoSnapshotDesktopVisibleFieldCount >= 60 &&
       overviewNoSnapshotDesktopVisibleCellCount >= 60
     );
     const overviewActionLinksLowChromeOk = sectionName !== 'overview' || overviewDrilldownVisibleLinks.length === 0 || Boolean(
@@ -2404,12 +2405,24 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       /页面可信等级\\s*(?:采集链路可参考|链路可参考)|可信等级\\s*链路可参考|页面可信\\s*链路可参考/.test(overviewNoSnapshotSurfaceText) &&
       /只读边界[\\s\\S]{0,120}不写配置|只读\\s*不写配置/.test(overviewNoSnapshotSurfaceText) &&
       /业务数据展示边界|业务展示边界|展示范围/.test(overviewNoSnapshotSurfaceText) &&
-      /速率\s*不展示/.test(overviewNoSnapshotSurfaceText) &&
+      /速率\s*不展示|速率不展示/.test(overviewNoSnapshotSurfaceText) &&
       /下次尝试/.test(overviewNoSnapshotSurfaceText) &&
       !/值班动作|恢复条件|页面口径|暂停|隐藏|关闭|不造数|不造/.test(overviewNoSnapshotSurfaceText)
     );
     const overviewNoSnapshotNoWanRateCardOk = sectionName !== 'overview' || !noSnapshotEdge || Boolean(
       !/WAN\\s*速率|WAN速率|0\\s*B\\/s|样本\\s*0\\s*\\/\\s*6|采样\\s*0\\s*\\/\\s*6/.test(overviewNoSnapshotSurfaceText)
+    );
+    const overviewIncidentWanRateFillerForbiddenOk = sectionName !== 'overview' || !['all-offline', 'interfaces-down'].includes(scaleScenario) || Boolean(
+      !/WAN\\s*速率|WAN速率|\\b0\\s*B\\/s\\b|\\d{4}-\\d{2}-\\d{2}T/.test([
+        firstScreenOverviewText,
+        overviewDesktopTopText,
+        overviewDesktopDetailText,
+      ].join(' '))
+    );
+    const overviewNoSnapshotUnifiedBusinessCopyOk = sectionName !== 'overview' || !isDesktopOverview || !noSnapshotEdge || Boolean(
+      /无业务快照，业务数据不展示/.test(overviewNoSnapshotSurfaceText) &&
+      /可信等级|页面可信/.test(overviewNoSnapshotSurfaceText) &&
+      !/业务表隐藏|业务表无|业务数据待确认|数据可信度不可判定/.test(overviewNoSnapshotSurfaceText)
     );
     const overviewNoSnapshotNoDuplicateBoundaryOk = sectionName !== 'overview' || !isDesktopOverview || !noSnapshotEdge || Boolean(
       overviewNoSnapshotLegacyDowngradeModules.length === 0 &&
@@ -2450,7 +2463,8 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewNoSnapshotEffectiveVisibleFactCount >= 60 &&
       overviewNoSnapshotRepetitionBudgetOk &&
       overviewNoSnapshotFakeDensityOk &&
-      overviewNoSnapshotOpsLedgerCopyOk
+      overviewNoSnapshotOpsLedgerCopyOk &&
+      overviewNoSnapshotUnifiedBusinessCopyOk
     );
     const firstScreenActionRepeats = {
       suggestionPrefix: countRegex(firstScreenOverviewText, /建议查看|建议：/g),
@@ -4465,6 +4479,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewNoSnapshotDenseModuleOk &&
       overviewNoSnapshotLedgerTitlesOk &&
       overviewNoSnapshotNoWanRateCardOk &&
+      overviewNoSnapshotUnifiedBusinessCopyOk &&
       overviewNoSnapshotNoDuplicateBoundaryOk &&
       overviewNoSnapshotFailureEndpointLedgerOk &&
       overviewNoSnapshotLedgerStructureOk &&
@@ -4479,6 +4494,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewNoSnapshotDowngradeReasonsOk &&
       overviewNoSnapshotRepetitionBudgetOk &&
       overviewAllWanOfflineSummaryOk &&
+      overviewIncidentWanRateFillerForbiddenOk &&
       overviewCollectionLayerSplitOk &&
       overviewCollectionContradictionOk &&
       overviewCollectionTrustMarkersOk &&
@@ -4650,6 +4666,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewNoSnapshotEffectiveFactCountOk,
       overviewVisibleFactCount,
       overviewNoSnapshotNoWanRateCardOk,
+      overviewNoSnapshotUnifiedBusinessCopyOk,
       overviewNoSnapshotNoDuplicateBoundaryOk,
       overviewNoSnapshotFailureEndpointLedgerOk,
       overviewNoSnapshotLedgerStructureOk,
@@ -4673,6 +4690,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewNoSnapshotRepeatedWordCounts,
       overviewNoSnapshotOpsLedgerCopyOk,
       overviewNoSnapshotAuditCopyCount,
+      overviewIncidentWanRateFillerForbiddenOk,
       overviewCardBudgetOk,
       overviewCardBudgetProbe: {
         oldCardCount: overviewOldCardNodes.length,
@@ -4945,6 +4963,8 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         downgradeReasonsOk: overviewNoSnapshotDowngradeReasonsOk,
         repetitionBudgetOk: overviewNoSnapshotRepetitionBudgetOk,
         noWanRateCardOk: overviewNoSnapshotNoWanRateCardOk,
+        unifiedBusinessCopyOk: overviewNoSnapshotUnifiedBusinessCopyOk,
+        incidentWanRateFillerForbiddenOk: overviewIncidentWanRateFillerForbiddenOk,
         firstScreenRateForbiddenOk: overviewNoSnapshotFirstScreenRateForbiddenOk,
         noDuplicateBoundaryOk: overviewNoSnapshotNoDuplicateBoundaryOk,
         failureEndpointLedgerOk: overviewNoSnapshotFailureEndpointLedgerOk,
