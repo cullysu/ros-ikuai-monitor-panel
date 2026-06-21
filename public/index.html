@@ -8324,13 +8324,13 @@
       const channelStateText = overviewChannelPair(collection.restLabel, collection.sshLabel);
       const dataStateText = shortTimestampText(collection.dataStateText || collection.dataText || latestSuccess);
       const resourceText = noSnapshot
-        ? '不可判定'
+        ? '无当前值'
         : `CPU ${fmtPercent(ctx.o.cpuLoad)} / MEM ${fmtPercent(ctx.o.memoryUsage)} / DISK ${fmtPercent(ctx.o.diskUsage)}`;
       const trafficText = noSnapshot
         ? '不可判定'
         : (overviewIncidentSuppressRateEvidence(ctx) ? '速率不作证据' : `${fmtRate(ctx.wanRates.up)} / ${fmtRate(ctx.wanRates.down)}`);
       const terminalText = noSnapshot
-        ? '不可判定'
+        ? '无当前值'
         : `${fmtNumber(ctx.onlineTerminals || 0)} 在线 / ${fmtCompact(ctx.connectionTotal)} 连接`;
       const stateTag = (level) => {
         if (!level) return '';
@@ -8353,9 +8353,9 @@
         row('默认路由', noSnapshot ? '待判定' : (routeDisplay.label || '-'), noSnapshot ? '路由快照缺失' : (routeRawSummary || routeDisplay.text || focus.routeSummary || '-'), noSnapshot ? 'warn' : routeDisplay.level),
         ...collectionRows,
         row(noSnapshot ? '业务快照' : '业务快照年龄', noSnapshot ? '无' : snapshotBusinessAgeText(ctx.snapshot, ctx.freshness), noSnapshot ? noSnapshotBusinessStateText() : shortTimestampText(snapshotBusinessTimeText(ctx.snapshot, ctx.freshness)), noSnapshot || ctx.freshness?.stale ? 'warn' : history ? 'trust' : 'ok'),
-        row('资源', resourceText, noSnapshot ? '只读边界，资源阈值隐藏' : (ctx.resourceEvidence?.summary || `${fmtNumber(ctx.sampleCount)} 点`), noSnapshot ? 'warn' : ctx.resourceLevel),
+        row('资源', resourceText, noSnapshot ? '只读边界，资源阈值不展示' : (ctx.resourceEvidence?.summary || `${fmtNumber(ctx.sampleCount)} 点`), noSnapshot ? 'warn' : ctx.resourceLevel),
         row('流量', trafficText, noSnapshot ? '只读边界，速率账本不生成' : overviewIncidentSuppressRateEvidence(ctx) ? '事故对象优先，速率不作证据' : `${fmtNumber(ctx.sampleCount)} 点 · ${ctx.pollText}`, noSnapshot || overviewIncidentSuppressRateEvidence(ctx) ? 'warn' : 'trust'),
-        row('终端 / 连接', terminalText, noSnapshot ? '只读边界，终端排行隐藏' : `PPP ${fmtNumber(ctx.activeSessions || 0)} / 最近成功 ${shortTimestamp(latestCollectionSuccessTime(ctx))}`, noSnapshot ? 'warn' : 'trust')
+        row('终端 / 连接', terminalText, noSnapshot ? '只读边界，终端排行不展示' : `PPP ${fmtNumber(ctx.activeSessions || 0)} / 最近成功 ${shortTimestamp(latestCollectionSuccessTime(ctx))}`, noSnapshot ? 'warn' : 'trust')
       ];
       return overviewFlatModule(
         'status-summary',
@@ -8678,7 +8678,7 @@
         `<tr data-overview-field><td><b>采集链路</b></td><td>${escapeHtml(routerValue)}</td><td>REST ${escapeHtml(restValue)} / SSH ${escapeHtml(sshValue === '不可用' ? '缺依赖' : sshValue)}</td><td>链路可参考</td></tr>`,
         `<tr data-overview-field><td><b>设备通达性</b></td><td>RouterOS ${escapeHtml(routerValue)}</td><td>管理面当前不可达</td><td>核心失败</td></tr>`,
         `<tr data-overview-field><td><b>采集通道</b></td><td>REST ${escapeHtml(restValue)}</td><td>SSH ${escapeHtml(sshValue === '不可用' ? '缺依赖' : sshValue)}</td><td>通道能力</td></tr>`,
-        `<tr data-overview-field><td><b>当前失败</b></td><td>RouterOS ${escapeHtml(routerValue)}</td><td>最近成功 ${escapeHtml(latestSuccess)}</td><td>业务停用</td></tr>`,
+        `<tr data-overview-field><td><b>当前失败</b></td><td>RouterOS ${escapeHtml(routerValue)}</td><td>最近成功 ${escapeHtml(latestSuccess)}</td><td>业务数据不展示</td></tr>`,
         `<tr data-overview-field><td><b>最近成功</b></td><td>${escapeHtml(latestSuccess)}</td><td>上次成功采集</td><td>失败对照</td></tr>`,
         `<tr data-overview-field><td><b>业务数据</b></td><td>无业务快照</td><td>无业务快照，业务数据不展示</td><td>不可信</td></tr>`,
         `<tr data-overview-field><td><b>展示范围</b></td><td>仅链路</td><td>最近成功 / 端点 / 边界</td><td>业务数据不展示</td></tr>`,
@@ -8687,7 +8687,7 @@
         `<tr data-overview-field><td><b>只读策略</b></td><td>不写配置</td><td>不推断业务数值 / 仅展示采集链路</td><td>只读</td></tr>`,
         `<tr data-overview-field><td><b>失败端点</b></td><td>${escapeHtml(ctx.failures.count ? fmtNumber(ctx.failures.count) : '未记录')}</td><td>${escapeHtml(failureText)}</td><td>未记录不是无失败</td></tr>`,
         `<tr data-overview-field><td><b>采集时间</b></td><td>状态 ${escapeHtml(statusUpdatedShort)}</td><td>下次尝试 ${escapeHtml(nextCollection)}</td><td>最近成功 ${escapeHtml(latestSuccess)}</td></tr>`,
-        `<tr data-overview-field><td><b>下次尝试</b></td><td>${escapeHtml(nextCollection)}</td><td>轮询中，不承诺可达</td><td>采集动作</td></tr>`,
+        `<tr data-overview-field><td><b>下次尝试</b></td><td>${escapeHtml(nextCollection)}</td><td>轮询中，不承诺可达</td><td>轮询状态</td></tr>`,
         `<tr data-overview-field><td><b>页面可信等级</b></td><td>链路可参考</td><td>采集链路事实</td><td>业务状态不可参考</td></tr>`
       ];
       return overviewFlatModule(
@@ -8841,7 +8841,7 @@
         { label: '活动会话', mainText: fmtNumber(ctx.activeSessions), subText: `连接总数 ${fmtCompact(ctx.connectionTotal)}`, noteText: '资源压力旁证', level: 'warn' },
         { label: '最忙接口', mainText: topInterfaceName, subText: `总 ${topInterfaceRate}`, noteText: `tx ${topInterfaceTx} / rx ${topInterfaceRx}`, level: topInterface ? 'warn' : 'trust' },
         { label: '吞吐影响', mainText: fmtRate(Number(ctx.wanRates.up || 0) + Number(ctx.wanRates.down || 0)), subText: `上行 ${fmtRate(ctx.wanRates.up)} / 下行 ${fmtRate(ctx.wanRates.down)}`, noteText: '接口吞吐仅作资源旁证', level: 'warn' },
-        { label: 'DNS缓存缺口', mainText: '未采集', subText: '快照未包含 DNS cache / hit / miss', noteText: '不伪造缓存压力', level: 'trust' },
+        { label: 'DNS缓存缺口', mainText: '未采集', subText: '快照未包含 DNS 命中/未命中字段', noteText: '不伪造缓存压力', level: 'trust' },
         { label: '进程/服务压力', mainText: '未采集', subText: '快照未包含进程表 / 服务队列', noteText: '不推断服务压力', level: 'trust' },
         { label: '采样点', mainText: fmtNumber(ctx.sampleCount), subText: ctx.pollText || '未采集', noteText: resource.summary || '', level: 'trust' }
       ];
@@ -9093,7 +9093,7 @@
           ['终端速率', '未采集']
         ];
         return `<div class="card ik-home-density-card" data-overview-density-module="session-snapshot">
-          <div class="card-head"><div class="card-title">会话 / 终端概览</div><div class="subtle">快照缺失 · 数据可信度不可判定</div></div>
+          <div class="card-head"><div class="card-title">会话 / 终端概览</div><div class="subtle">快照缺失 · 业务数据不展示</div></div>
           <div class="card-body">
             <div class="ik-home-session-grid">
               ${boxes.map(([label, value]) => `<div class="ik-summary-box" data-overview-field><div class="subtle">${escapeHtml(label)}</div><b>${escapeHtml(value)}</b></div>`).join('')}
@@ -9285,7 +9285,7 @@
             ['状态', '快照缺失'],
             ['状态更新时间', noSnapshotUpdateAgeText(ctx.snapshot, ctx.freshness)],
             ['业务快照时间', '快照缺失'],
-            ['数据可信度', '不可判定'],
+            ['可信等级', '链路可参考 / 业务状态不可参考'],
             ['业务快照', '无'],
             ['通道', `REST ${focus.restLabel} / SSH ${focus.sshLabel}`]
           ]
@@ -9601,7 +9601,7 @@
           ? `业务快照年龄 ${ctx.freshness.text || '-'}`
           : `数据层最后成功采集 ${shortTimestamp(latestCollectionSuccessTime(ctx))}`;
       const dataText = noSnapshot
-        ? '数据可信度不可判定'
+        ? noSnapshotBusinessStateText()
         : history
           ? historyCurrentUnknownTitle()
           : freshnessText;
@@ -9680,7 +9680,7 @@
         ? `状态更新时间 ${noSnapshotUpdateAgeText(ctx.snapshot, ctx.freshness)}`
         : `事件更新时间 ${snapshotEventAgeText(ctx.snapshot, ctx.freshness)}`;
       const businessAgeText = noSnapshot
-        ? '数据可信度不可判定'
+        ? noSnapshotBusinessStateText()
         : staleActive
           ? `业务快照年龄 ${ctx.freshness.text || '-'}`
           : `业务快照年龄 ${ctx.freshness.text || '0s'}`;
@@ -10017,7 +10017,7 @@
                 ? `默认路由 ${hitDefaultValue} / 离线对象`
                 : `采集 ${collectionCell}`;
       const evidenceSide = resourceIncident
-        ? `${mobileCompactDurationText(resourceDurationValue)} 峰${resourcePeakValue} ${collectionCell.replace(/\s*\/\s*/g, '/').replace(/\s+/g, '')}`
+        ? `持续${mobileCompactDurationText(resourceDurationValue)} 峰${resourcePeakValue} ${collectionCell.replace(/\s*\/\s*/g, '/').replace(/\s+/g, '')}`
         : noSnapshot
           ? `最近成功 ${latestSuccessShort}`
         : collectionIncident
@@ -10060,7 +10060,7 @@
         ]
         : [
           ledgerCell('证据', evidenceMain, evidenceSide, { level: collectionIncident || routeIncident ? 'warn' : '' }),
-          ledgerCell('采集', resourceIncident ? collectionCell : collectionCell, resourceIncident ? `${mobileCompactDurationText(resourceDurationValue)} / 阈${resourceThresholdValue} / 峰${resourcePeakValue}` : `最近 ${latestSuccessShort}`, { level: resourceIncident ? v.level : '' })
+          ledgerCell('采集', resourceIncident ? collectionCell : collectionCell, resourceIncident ? `持续${mobileCompactDurationText(resourceDurationValue)} / 阈${resourceThresholdValue} / 峰${resourcePeakValue}` : `最近 ${latestSuccessShort}`, { level: resourceIncident ? v.level : '' })
         ];
       const trustValue = noSnapshot
         ? '采集链路可参考'
@@ -10264,14 +10264,11 @@
       const cpuStat = compactStat(cpu, ctx.o.cpuLoad, ctx.history.cpu);
       const memoryStat = compactStat(memory, ctx.o.memoryUsage, ctx.history.memory);
       const diskStat = compactStat(disk, ctx.o.diskUsage, ctx.history.disk);
-      return renderOverviewMobileMiniTable('资源阈值', ctx.resourceMeta, ['项目', '当前', '阈值'], visibleRows([
-        ['CPU 当前', escapeHtml(fmtPercent(ctx.o.cpuLoad)), escapeHtml(`${cpuStat.thresholdText} · ${cpuStat.sampleText}`)],
-        ['CPU 持续', escapeHtml(cpuStat.durationText), escapeHtml(`均${cpuStat.meanText} / 峰${cpuStat.peakText}`)],
-        ['MEM 当前', escapeHtml(fmtPercent(ctx.o.memoryUsage)), escapeHtml(`${memoryStat.thresholdText} · ${memoryStat.sampleText}`)],
-        ['MEM 持续', escapeHtml(memoryStat.durationText), escapeHtml(`均${memoryStat.meanText} / 峰${memoryStat.peakText}`)],
-        ['DISK 当前', escapeHtml(fmtPercent(ctx.o.diskUsage)), escapeHtml(`${diskStat.thresholdText} · ${diskStat.sampleText}`)],
-        ['DISK 持续', escapeHtml(diskStat.durationText), escapeHtml(`均${diskStat.meanText} / 峰${diskStat.peakText}`)],
-        ['连接总数', escapeHtml(fmtCompact(ctx.connectionTotal)), escapeHtml(`活动会话 ${fmtNumber(ctx.activeSessions)} / 在线 ${fmtNumber(ctx.onlineTerminals || 0)}`)]
+      return renderOverviewMobileMiniTable('资源阈值', ctx.resourceMeta, ['指标', '当前', '依据'], visibleRows([
+        ['CPU', escapeHtml(fmtPercent(ctx.o.cpuLoad)), escapeHtml(`${cpuStat.thresholdText} · 持续${cpuStat.durationText} · 均${cpuStat.meanText} / 峰${cpuStat.peakText}`)],
+        ['MEM', escapeHtml(fmtPercent(ctx.o.memoryUsage)), escapeHtml(`${memoryStat.thresholdText} · 持续${memoryStat.durationText} · 均${memoryStat.meanText} / 峰${memoryStat.peakText}`)],
+        ['DISK', escapeHtml(fmtPercent(ctx.o.diskUsage)), escapeHtml(`${diskStat.thresholdText} · 持续${diskStat.durationText} · 均${diskStat.meanText} / 峰${diskStat.peakText}`)],
+        ['连接', escapeHtml(fmtCompact(ctx.connectionTotal)), escapeHtml(`活动 ${fmtNumber(ctx.activeSessions)} / 在线 ${fmtNumber(ctx.onlineTerminals || 0)}`)]
       ]), 'is-resource-row', 'is-resource-table');
     }
 
@@ -10295,7 +10292,7 @@
         ['最忙接口', escapeHtml(topInterfaceName), escapeHtml(topInterfaceRate)],
         ['接口 tx/rx', escapeHtml(`${topInterfaceTx} / ${topInterfaceRx}`), escapeHtml('吞吐热点旁证')],
         ['接口吞吐影响', escapeHtml(fmtRate(Number(ctx.wanRates.up || 0) + Number(ctx.wanRates.down || 0))), escapeHtml(`${fmtRate(ctx.wanRates.up)} / ${fmtRate(ctx.wanRates.down)}`)],
-        ['DNS缓存缺口', '未采集', '缺 DNS cache / hit / miss'],
+        ['DNS缓存缺口', '未采集', '缺 DNS 命中/未命中字段'],
         ['进程压力', '未采集', '未采集进程列表'],
         ['服务压力', '未采集', '未采集服务队列'],
         ['终端上下文', escapeHtml(fmtNumber(ctx.onlineTerminals || 0)), escapeHtml(`有流量 ${fmtNumber(trafficTerminals.length)}，非排行优先`)],
@@ -10326,7 +10323,7 @@
           ['默认路由', routeDisplay.label || '不可判定', routeDisplay.text || '默认路由待判定'],
           ['失败端点', ctx.failures.count ? fmtNumber(ctx.failures.count) : '未记录', ctx.failures.count ? ctx.failures.text : '未记录'],
           ['业务快照', '无', '无业务快照，业务数据不展示'],
-          ['业务边界', '只读展示', 'WAN / 路由 / 资源 / 终端隐藏业务数值']
+          ['业务边界', '只读展示', 'WAN / 路由 / 资源 / 终端无当前值']
         ]), '', 'is-collection-table');
       }
       const channelState = noSnapshot
@@ -10786,13 +10783,13 @@
         row4('REST', restValue, timeCell(meta.realtimeUpdatedAt || meta.slowRestUpdatedAt), restFailure?.message || 'REST 端点未记录'),
         row4('SSH', sshValue === '不可用' ? '缺依赖' : sshValue, timeCell(meta.staticUpdatedAt), sshFailure?.message || 'SSH 通道缺依赖'),
         row4('业务快照', '无', '无业务快照，业务数据不展示', '业务状态不可参考'),
-        row4('WAN', '停用', '无业务快照', '线路状态停用'),
+        row4('WAN', '无当前值', '无业务快照', '线路状态不参考'),
         row4('路由', '待判定', '缺路由快照', routeMissingReason),
         row4('默认路由', '待判定', '路由快照缺失', '核心影响待判'),
-        row4('资源', '停用', '无业务快照', 'CPU/MEM/DISK 停用'),
-        row4('终端', '停用', '无业务快照', '终端排行停用'),
+        row4('资源', '无当前值', '无业务快照', 'CPU/MEM/DISK 不参考'),
+        row4('终端', '无当前值', '无业务快照', '终端排行不生成'),
         row4('速率', '不展示', '无业务快照', '禁止零速率占位'),
-        row4('连接', '停用', '无业务快照', '连接明细停用'),
+        row4('连接', '无当前值', '无业务快照', '连接明细不生成'),
         row4('展示范围', '仅链路', '最近成功 / 端点 / 边界', '业务数据不展示'),
         row4('可信等级', '链路可参考', '采集链路证据', '业务状态不可参考'),
         row4('失败端点', failureValue, failureReason, '未记录不是无失败'),
@@ -10944,7 +10941,7 @@
         factRow('会话', fmtNumber(ctx.activeSessions), `PPP ${fmtNumber(ctx.activeSessions)}`, routeDisplay.label || routeDisplay.text || '默认路由待判定'),
         factRow('最忙接口', topInterface ? (topInterface.name || '-') : '未采集', topInterface ? fmtRate(totalTrafficRate(topInterface, 'txRate', 'rxRate')) : '未采集', topInterface ? `tx ${fmtRate(topInterface.txRate || 0)} / rx ${fmtRate(topInterface.rxRate || 0)}` : '接口吞吐缺口'),
         factRow('接口吞吐影响', incidentRateCurrent, incidentRateDetail, rateSuppressed ? '速率不作为首屏证据' : '仅作资源压力旁证'),
-        factRow('DNS缓存缺口', '未采集', '缺 DNS cache / hit / miss', '不伪造缓存压力'),
+        factRow('DNS缓存缺口', '未采集', '缺 DNS 命中/未命中字段', '不伪造缓存压力'),
         factRow('进程/服务压力', '未采集', '未采集进程表 / 服务队列', '不推断服务压力'),
         factRow('采样窗口', fmtNumber(ctx.sampleCount), ctx.pollText || '未采集', collection.dataStale ? '缓存快照' : '实时')
       ];
@@ -11024,8 +11021,8 @@
         row('服务压力', '未采集', '未采集服务队列', '服务背压未知'),
         row('活动会话', fmtNumber(ctx.activeSessions), `连接 ${fmtCompact(ctx.connectionTotal)}`, '会话旁证'),
         row('DNS缓存', '未采集', 'DNS缓存缺口', '缓存压力未知'),
-        row('DNS缓存缺口', '无字段', '缺 hit / miss / resolver', '保持缺口可见'),
-        row('缓存缺口', '未采集', 'DNS cache / resolver 缺字段', '不伪造命中率'),
+        row('DNS缓存缺口', '无字段', '缺命中/未命中/解析器字段', '保持缺口可见'),
+        row('缓存缺口', '未采集', 'DNS 解析器缺字段', '不伪造命中率'),
         row('业务影响', '资源满载', `采样 ${fmtNumber(ctx.sampleCount)} 点`, ctx.resourceEvidence?.summary || '阈值越线')
       ];
       return overviewFlatModule(
@@ -11091,7 +11088,7 @@
         `<tr data-overview-field><td>连接压力</td><td><b>${escapeHtml(fmtCompact(ctx.connectionTotal))}</b></td><td>连接总数</td></tr>`,
         `<tr data-overview-field><td>活动会话</td><td><b>${escapeHtml(fmtNumber(ctx.activeSessions))}</b></td><td>当前活动会话</td></tr>`,
         `<tr data-overview-field><td>接口吞吐</td><td><b>${fmtRate(ctx.wanRates.up)} / ${fmtRate(ctx.wanRates.down)}</b></td><td>上行 / 下行</td></tr>`,
-        `<tr data-overview-field><td>DNS缓存</td><td><b>未采集</b></td><td>当前快照未包含 DNS cache</td></tr>`,
+        `<tr data-overview-field><td>DNS缓存</td><td><b>未采集</b></td><td>当前快照未包含 DNS 缓存字段</td></tr>`,
         `<tr data-overview-field><td>在线终端</td><td><b>${escapeHtml(fmtNumber(ctx.onlineTerminals || 0))}</b></td><td>资源压力辅助观察</td></tr>`
       ];
       return overviewFlatModule(

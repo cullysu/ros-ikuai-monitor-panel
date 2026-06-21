@@ -1849,17 +1849,14 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     );
     const overviewTerminologyOk = sectionName !== 'overview' || !/在线宽带|宽带状态|宽带聚合/.test(text);
     const overviewTrustCopyOk = sectionName !== 'overview' || Boolean(
-      /事件更新时间|采集状态更新时间|业务快照时间|业务快照年龄|业务快照|快照缺失|历史快照|业务数据不可判定|业务数值隐藏|数据可信度/.test(text) &&
+      /事件更新时间|采集状态更新时间|业务快照时间|业务快照年龄|业务快照|快照缺失|历史快照|业务数据不展示|数据可信度/.test(text) &&
       restSshPairPattern.test(text) &&
       (!noSnapshotEdge || (
         /快照缺失/.test(text) &&
         /(?:采集)?状态更新时间/.test(text) &&
         (
-          text.includes('业务数据不可判定') ||
           text.includes('业务数据不展示') ||
-          text.includes('业务数值隐藏') ||
-          /数据可信度\\s*不可判定/.test(text) ||
-          (text.includes('业务快照时间 无') && text.includes('业务快照年龄 不可判定'))
+          text.includes('无业务快照')
         ) &&
         !noSnapshotFreshCopyPattern.test(text)
       ))
@@ -1888,7 +1885,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         ? Boolean((mobileLeadPreview && mobileLeadRows.length >= 2) || (mobileFlatStatus && mobileFlatRowCountOk && mobileFlatLinkLabelsOk))
         : (
       noSnapshotEdge
-        ? /未采集|无可用快照|快照缺失|RouterOS 当前不可达|业务数据不可判定|业务数据不展示|业务数值隐藏|数据可信度\\s*不可判定|业务快照无/.test(text)
+        ? /未采集|无可用快照|快照缺失|RouterOS 当前不可达|业务数据不展示|无业务快照/.test(text)
         : Boolean(
           (
             overviewSummaryShell &&
@@ -1977,12 +1974,12 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       mobileFlatStatusVerdictOk &&
       mobileFlatEvidenceOk &&
       /快照缺失/.test(mobileFlatStatusRowText) &&
-      /无业务快照|业务数据不展示|业务数值隐藏/.test(mobileFlatObjectRowText + ' ' + mobileFlatStatusRowText) &&
+      /无业务快照|业务数据不展示/.test(mobileFlatObjectRowText + ' ' + mobileFlatStatusRowText) &&
       /默认路由|路由快照缺失/.test(mobileFlatObjectRowText + ' ' + mobileFlatStatusText) &&
       /RouterOS\\s*当前不可达/.test(mobileFlatEvidenceRowText) &&
       /采集.*REST.*SSH|REST.*SSH/.test(mobileFlatEvidenceRowText) &&
-      /业务快照|业务数据不展示|业务数值隐藏|无业务快照/.test(mobileFlatLedgerText) &&
-      /数据可信度不可判定|业务数据不可判定|业务数据不展示|业务数值隐藏|无业务快照/.test(mobileFlatLedgerText) &&
+      /业务快照|业务数据不展示|无业务快照/.test(mobileFlatLedgerText) &&
+      /业务数据不展示|无业务快照|业务状态不可信/.test(mobileFlatLedgerText) &&
       !noSnapshotFreshCopyPattern.test(mobileFlatStatusText)
     );
     const mobileFlatCollectionOk = scaleScenario !== 'collection-down' || Boolean(
@@ -1994,7 +1991,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     );
     const overviewWanDecisionOk = sectionName !== 'overview' || (
       noSnapshotEdge
-        ? Boolean(/WAN\\s*不可判定|WAN 分组不可判定|无可用快照|RouterOS(?:\\s+可达性)?\\s*当前不可达|业务数据不可判定|业务数据不展示|业务数值隐藏|数据可信度\\s*不可判定|业务快照无/.test(text))
+        ? Boolean(/WAN\\s*不可判定|WAN 分组不可判定|无可用快照|RouterOS(?:\\s+可达性)?\\s*当前不可达|业务数据不展示|无业务快照/.test(text))
         : isMobileOverview
         ? Boolean(
           scaleScenario === 'resource-full'
@@ -2015,20 +2012,20 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       isMobileOverview
         ? Boolean(
           noSnapshotEdge
-            ? /状态|证据|快照缺失/.test(text) && /业务数据不可判定|业务不可判定|数据可信度不可判定|业务快照/.test(text) && restSshPairPattern.test(text)
+            ? /状态|证据|快照缺失/.test(text) && /业务数据不展示|无业务快照|业务快照/.test(text) && restSshPairPattern.test(text)
             : scaleScenario === 'resource-full'
               ? /状态|证据|资源满载|资源证据|CPU|内存|磁盘/.test(text) && restSshPairPattern.test(text)
               : scaleScenario === 'collection-down'
                 ? /状态|证据|采集降级|采集证据|通道状态|数据层/.test(text) && restSshPairPattern.test(text)
-              : /状态|证据|风险|WAN|历史快照|数据陈旧|资源满载|采集降级/.test(text) && /数据|采样|快照|业务数字|业务数据不可判定|数据可信度/.test(text) && restSshPairPattern.test(text) && text.includes('WAN')
+              : /状态|证据|风险|WAN|历史快照|数据陈旧|资源满载|采集降级/.test(text) && /数据|采样|快照|业务数据不展示|数据可信度/.test(text) && restSshPairPattern.test(text) && text.includes('WAN')
         )
         : noSnapshotEdge
         ? Boolean(
           (overviewStatusBar || overviewSummaryShell) &&
           overviewVerdictText.includes('采集') &&
-          /业务数据不可判定|数据可信度不可判定|业务快照年龄 不可判定/.test(overviewVerdictText) &&
+          /业务数据不展示|无业务快照/.test(overviewVerdictText) &&
           /WAN\\s*不可判定|WAN 不可判定/.test(overviewVerdictText) &&
-          (sectionRoot?.querySelector('[data-overview-no-snapshot-grid]') || /业务数据不可判定|数据可信度不可判定|业务快照无/.test(text))
+          (sectionRoot?.querySelector('[data-overview-no-snapshot-grid]') || /业务数据不展示|无业务快照/.test(text))
         )
         : Boolean(
           (overviewVerdictStatusBus || overviewStatusBar) &&
@@ -2230,7 +2227,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
           /WAN/.test(overviewNoSnapshotCurrentText) &&
           /速率\s*不展示|速率不展示/.test(overviewNoSnapshotCurrentText) &&
           /缺少当前路由快照|路由快照缺失/.test(overviewNoSnapshotCurrentText) &&
-          /无业务快照(?:，(?:业务数据不展示|业务数值隐藏))?|业务数据不展示|业务状态不可参考/.test(overviewNoSnapshotCurrentText)
+          /无业务快照(?:，业务数据不展示)?|业务数据不展示|业务状态不可参考/.test(overviewNoSnapshotCurrentText)
         )
     );
     const overviewNoSnapshotRepetitionBudgetOk = sectionName !== 'overview' || !noSnapshotEdge || Boolean(
@@ -2446,7 +2443,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       /业务数据展示边界|业务展示边界|展示范围/.test(overviewNoSnapshotSurfaceText) &&
       /速率\s*不展示|速率不展示/.test(overviewNoSnapshotSurfaceText) &&
       /下次尝试/.test(overviewNoSnapshotSurfaceText) &&
-      !/值班动作|恢复条件|页面口径|暂停|隐藏|关闭|不造数|不造/.test(overviewNoSnapshotSurfaceText)
+      !/值班动作|恢复条件|页面口径|暂停|隐藏|关闭|停用|业务停用|采集动作|不造数|不造/.test(overviewNoSnapshotSurfaceText)
     );
     const overviewNoSnapshotNoWanRateCardOk = sectionName !== 'overview' || !noSnapshotEdge || Boolean(
       !/WAN\\s*速率|WAN速率|0\\s*B\\/s|样本\\s*0\\s*\\/\\s*6|采样\\s*0\\s*\\/\\s*6|\\d{4}-\\d{2}-\\d{2}T/.test(overviewNoSnapshotSurfaceText)
@@ -2461,7 +2458,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const overviewNoSnapshotUnifiedBusinessCopyOk = sectionName !== 'overview' || !isDesktopOverview || !noSnapshotEdge || Boolean(
       /无业务快照，业务数据不展示/.test(overviewNoSnapshotSurfaceText) &&
       /可信等级|页面可信/.test(overviewNoSnapshotSurfaceText) &&
-      !/业务表隐藏|业务表无|业务数据待确认|数据可信度不可判定/.test(overviewNoSnapshotSurfaceText)
+      !/业务表隐藏|业务表无|业务数据待确认|业务数据不可判定|数据可信度不可判定|业务数值隐藏/.test(overviewNoSnapshotSurfaceText)
     );
     const overviewNoSnapshotNoDuplicateBoundaryOk = sectionName !== 'overview' || !isDesktopOverview || !noSnapshotEdge || Boolean(
       overviewNoSnapshotLegacyDowngradeModules.length === 0 &&
@@ -2532,7 +2529,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       /风险|异常|数据陈旧|历史快照|无可用快照|快照缺失|资源满载|资源高负载|采集降级|接口全\\s*Down|WAN 全离线|全部离线|WAN 离线|正常|关注|告警/.test(firstScreenOverviewText) &&
       (
         noSnapshotEdge
-          ? (/业务数据不可判定|业务不可判定|业务数据不展示|业务数值隐藏|数据可信度不可判定|业务快照/.test(firstScreenOverviewText) && restSshPairPattern.test(firstScreenOverviewText))
+          ? (/业务数据不展示|无业务快照|业务快照/.test(firstScreenOverviewText) && restSshPairPattern.test(firstScreenOverviewText))
           : mobileWanIncidentFirstScreen
             ? /WAN/.test(firstScreenOverviewText) && /默认路由|离线对象/.test(firstScreenOverviewText)
             : (scaleScenario === 'single' || historyModeActive || /历史快照|数据陈旧|当前不是实时数据/.test(firstScreenOverviewText))
@@ -2587,7 +2584,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       const categories = [
         {
           category: 'collection',
-          patterns: [/快照账本/, /模块可见性/, /采集链路/, /采集链路账本/, /设备通达性/, /快照证据/, /快照缺失/, /快照状态/, /业务快照缺失/, /无可用快照/, /RouterOS 当前不可达/, /业务数字不可判定/, /业务数据不可判定/, /业务数据不展示/, /业务数值隐藏/, /数据可信度不可判定/, /当前不可判定/, /采集证据/, /采集通道/, /通道状态/, /通道异常/, /REST 待确认/, /SSH 不可用/, /SSH 缺依赖/, /采集断链/, /采集降级/, /采集失败/, /采集不可用/, /非实时需复核/],
+          patterns: [/快照账本/, /模块可见性/, /采集链路/, /采集链路账本/, /设备通达性/, /快照证据/, /快照缺失/, /快照状态/, /业务快照缺失/, /无可用快照/, /RouterOS 当前不可达/, /业务数据不展示/, /无业务快照/, /当前不可判定/, /采集证据/, /采集通道/, /通道状态/, /通道异常/, /REST 待确认/, /SSH 不可用/, /SSH 缺依赖/, /采集断链/, /采集降级/, /采集失败/, /采集不可用/, /非实时需复核/],
         },
         {
           category: 'resource',
@@ -2671,7 +2668,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
               (overviewFirstEvidenceCategory === 'collection' || expectedRiskEvidenceCategory === 'collection' || /设备通达性|采集链路账本/.test(expectedRiskEvidenceText)) &&
               /快照账本|模块可见性|采集链路|采集链路账本|设备通达性|快照证据|快照缺失|采集证据|采集断链|无可用快照/.test(expectedRiskEvidenceText) &&
               (/RouterOS(?:\\s+(?:可达性|状态))?\\s*当前不可达/.test(expectedRiskEvidenceText) || /RouterOS当前不可达/.test(compactExpectedRiskEvidenceText)) &&
-              /业务数字不可判定|业务数据不可判定|业务数据不展示|业务数值隐藏|数据可信度不可判定|所有业务数字不可判定|无业务快照/.test(expectedRiskEvidenceText)
+              /业务数据不展示|无业务快照|业务状态不可信|业务状态不可参考/.test(expectedRiskEvidenceText)
             )
             : scaleScenario === 'all-offline'
               ? (
@@ -2762,7 +2759,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewStatusBar &&
       /快照缺失|无可用快照/.test(overviewVerdictText) &&
       /RouterOS|REST|SSH/.test(overviewVerdictText) &&
-      /业务快照|数据可信度|业务数字不可判定|不可判定/.test(overviewVerdictText)
+      /业务快照|数据可信度|业务数据不展示|不可判定/.test(overviewVerdictText)
     ) || Boolean(
       overviewSummaryShell &&
       overviewMainVerdict &&
@@ -2770,14 +2767,14 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       (priorityLabels.length ? priorityOrderOk && activePriorityLabels.length >= 1 : true) &&
       /正常|WAN|快照缺失|无可用快照|资源满载|资源高负载|采集降级|采集通道异常|默认路由异常|业务快照|采样/.test(overviewVerdictText) &&
       /风险|异常|快照缺失|WAN|资源满载|采集降级|采集通道/.test(overviewVerdictText) &&
-      /事件更新时间|采集状态更新时间|业务快照时间|业务快照年龄|业务快照|业务数据不可判定|数据可信度|默认路由不可判定|快照缺失|最后成功采集|历史快照|数据年龄/.test(overviewVerdictText) &&
-      /当前不是实时数据|事件更新时间|采集状态更新时间|业务快照|采样新鲜|采样偏旧|采样陈旧|数据陈旧|历史快照|快照缺失|业务数据不可判定|数据可信度不可判定|不可判定|当前影响未知|最后成功采集/.test(overviewVerdictText) &&
+      /事件更新时间|采集状态更新时间|业务快照时间|业务快照年龄|业务快照|业务数据不展示|数据可信度|默认路由不可判定|快照缺失|最后成功采集|历史快照|数据年龄/.test(overviewVerdictText) &&
+      /当前不是实时数据|事件更新时间|采集状态更新时间|业务快照|采样新鲜|采样偏旧|采样陈旧|数据陈旧|历史快照|快照缺失|业务数据不展示|不可判定|当前影响未知|最后成功采集/.test(overviewVerdictText) &&
       /采集/.test(overviewVerdictText) &&
       (overviewVerdictStatusBus || overviewStatusBar) &&
       (/证据|快照状态|WAN(?:线路| 线路)|资源状态|离线对象|持续|均值|阈值/.test(overviewVerdictText) || overviewEvidenceModule) &&
       /WAN/.test(overviewVerdictText) &&
       /默认路由|RouterOS|REST|SSH/.test(overviewVerdictText) &&
-      /影响|业务数据不可判定|数据可信度不可判定|不可判定|资源|采集|WAN/.test(overviewVerdictText) &&
+      /影响|业务数据不展示|不可判定|资源|采集|WAN/.test(overviewVerdictText) &&
       overviewActionCueOk &&
       (overviewNextActions || overviewStatusBar) &&
       (overviewNoSnapshotGrid || overviewFocusModule || overviewDensityModules.length >= 3)
@@ -2785,8 +2782,8 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const overviewEvidenceChainOk = sectionName !== 'overview' || Boolean(
       (/证据|快照状态|WAN(?:线路| 线路)|资源状态|离线对象|持续|均值|阈值/.test(overviewVerdictText) || overviewEvidenceModule) &&
       (/默认路由|RouterOS|REST|SSH/.test(overviewVerdictText) || overviewEvidenceModule) &&
-      /影响|业务数据不可判定|数据可信度不可判定|不可判定|资源|采集|WAN/.test(overviewVerdictText) &&
-      (noSnapshotEdge ? /快照缺失|RouterOS|REST|SSH|业务数据不可判定|数据可信度不可判定|业务快照/.test(overviewVerdictText) : /WAN/.test(overviewVerdictText)) &&
+      /影响|业务数据不展示|不可判定|资源|采集|WAN/.test(overviewVerdictText) &&
+      (noSnapshotEdge ? /快照缺失|RouterOS|REST|SSH|业务数据不展示|业务快照/.test(overviewVerdictText) : /WAN/.test(overviewVerdictText)) &&
       /采样|快照|RouterOS 当前不可达|CPU|WAN|REST|SSH|资源/.test(overviewFirstEvidenceText + ' ' + text) &&
       (
         sectionRoot?.querySelector('[data-overview-anomaly-evidence]') ||
@@ -2807,7 +2804,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       const defaultRouteRatioLeak = new RegExp('(?:^|[^命中])默认路由\\\\s*\\\\d+\\\\s*/\\\\s*(?:[1-9]\\\\d{1,}|[4-9])').test(mobileScenarioText);
       if (scaleScenario === 'no-snapshot') {
         return /快照缺失|无可用快照/.test(mobileScenarioText) &&
-          /业务数据不可判定|业务不可判定|业务数据不展示|业务数值隐藏|数据可信度不可判定|业务快照/.test(mobileScenarioText) &&
+          /业务数据不展示|无业务快照|业务快照/.test(mobileScenarioText) &&
           restSshPairPattern.test(mobileScenarioText) &&
           !defaultRouteRatioLeak;
       }
@@ -2883,7 +2880,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
           !/当前影响低|影响低|未见线路影响/.test(edgeScenarioText)
         : scaleScenario === 'no-snapshot'
           ? (!activePriorityLabels.length || activePriorityLabels.includes('无可用快照') || activePriorityLabels.includes('快照缺失')) &&
-            /快照缺失|无可用快照|RouterOS(?:\\s+可达性)?\\s*当前不可达|业务数字不可判定|业务数据不可判定|业务数值隐藏|数据可信度不可判定|业务快照无/.test(overviewVerdictText + ' ' + edgeScenarioText) &&
+            /快照缺失|无可用快照|RouterOS(?:\\s+可达性)?\\s*当前不可达|业务数据不展示|无业务快照/.test(overviewVerdictText + ' ' + edgeScenarioText) &&
             !/上次采样|以下均为上次采样/.test(firstScreenOverviewText + ' ' + mobileTop120Text) &&
             /接口全 Down|全部接口离线/.test(overviewVerdictText) === false
           : scaleScenario === 'collection-down'
@@ -3580,7 +3577,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       countOccurrences(noSnapshotStateText, 'SSH') >= 1 &&
       (countOccurrences(noSnapshotStateText, '最后成功采集') + countOccurrences(noSnapshotStateText, '最近成功')) >= 1 &&
       /业务数字状态|业务数据状态|业务快照|数据可信度/.test(noSnapshotStateText) &&
-      /业务快照(?:时间|年龄)?\\s*(?:无|不可判定|业务数据不可判定|业务数据不展示|业务数值隐藏)|业务数据不可判定|业务数据不展示|业务数值隐藏|数据可信度\\s*不可判定/.test(noSnapshotStateText)
+      /业务快照(?:时间|年龄)?\\s*(?:无|业务数据不展示)|无业务快照|业务数据不展示|业务状态不可参考/.test(noSnapshotStateText)
     );
     const defaultRouteSnapshotText = [firstScreenOverviewText, mobileTop120Text, overviewDesktopDetailText].join(' ');
     const overviewDefaultRouteRawFactsVisible = Boolean(
@@ -3599,9 +3596,9 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const noSnapshotBusinessClockOk = (
       noSnapshotStateText.includes('业务快照时间 无') &&
       noSnapshotStateText.includes('业务快照年龄 不可判定')
-    ) || /业务快照(?:时间|年龄)?\\s*(?:不可判定|业务数据不可判定|业务数据不展示|业务数值隐藏|无)|业务快照无|无业务快照，(?:业务数据不展示|业务数值隐藏)|数据可信度\\s*不可判定|数据可信度不可判定/.test(noSnapshotStateText);
+    ) || /业务快照(?:时间|年龄)?\\s*(?:业务数据不展示|无)|无业务快照，业务数据不展示|业务数据不展示|业务状态不可参考/.test(noSnapshotStateText);
     const noSnapshotMobileCompactClockOk = isMobileOverview &&
-      /数据可信度\\s*不可判定|业务数据不展示|业务数值隐藏|业务快照\\s*(?:无|数据可信度不可判定)/.test(noSnapshotStateText);
+      /业务数据不展示|无业务快照|业务快照\\s*无|业务状态不可参考/.test(noSnapshotStateText);
     const noSnapshotSemanticText = [noSnapshotStateText, combinedOverviewText].join(' ');
     const overviewNoSnapshotFailureEndpointUnrecordedOk = sectionName !== 'overview' || !noSnapshotEdge || Boolean(
       /失败端点\\s*未记录|失败端点未记录|未记录端点失败/.test(noSnapshotSemanticText) &&
@@ -3645,8 +3642,8 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       hasTrustedBusinessNumber: overviewNoSnapshotTrustedMetricFragments.some((fragment) => overviewNoSnapshotTrustedMetricPatterns.some((pattern) => pattern.test(fragment))),
       hasMissingLabel: /快照缺失/.test(noSnapshotSemanticText),
       hasStatusUpdateAge: /事件更新时间|采集状态更新时间|状态更新时间|状态\\s*(?:\\d+s|不可判定)|数据可信度/.test(noSnapshotSemanticText),
-      hasBusinessSnapshotTimeNone: /业务快照时间 无|业务快照\\s*(?:业务数据不可判定|业务数据不展示|业务数值隐藏|无|数据可信度\\s*不可判定)|业务快照无|无业务快照，(?:业务数据不展示|业务数值隐藏)/.test(noSnapshotSemanticText),
-      hasBusinessSnapshotAgeUnknown: /业务快照年龄 不可判定|数据可信度\\s*不可判定|数据可信度不可判定|业务快照\\s*(?:业务数据不可判定|业务数据不展示|业务数值隐藏|数据可信度\\s*不可判定)|无业务快照，(?:业务数据不展示|业务数值隐藏)/.test(noSnapshotSemanticText),
+      hasBusinessSnapshotTimeNone: /业务快照时间 无|业务快照\\s*(?:业务数据不展示|无)|无业务快照，业务数据不展示/.test(noSnapshotSemanticText),
+      hasBusinessSnapshotAgeUnknown: /业务快照年龄 不可判定|业务快照\\s*业务数据不展示|无业务快照，业务数据不展示|业务状态不可参考/.test(noSnapshotSemanticText),
       hasForbiddenFreshCopy: noSnapshotFreshCopyPattern.test(noSnapshotSemanticText),
     };
     const overviewNoSnapshotFiveBlocksOk = sectionName !== 'overview' || !noSnapshotEdge || !isDesktopOverview || Boolean(
@@ -3656,7 +3653,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       /最后成功快照摘要/.test([noSnapshotStateText, overviewDesktopDetailText, overviewNoSnapshotDowngradeText, overviewNoSnapshotBoundaryText].join(' ')) &&
       !/采集时间线/.test(overviewVisibleDensityModuleText) &&
       /采集链路/.test([noSnapshotStateText, overviewDesktopDetailText, overviewNoSnapshotDowngradeText, overviewNoSnapshotBoundaryText].join(' ')) &&
-      /无业务快照(?:，(?:业务数据不展示|业务数值隐藏))?|业务数据不展示|业务状态不可参考/.test([noSnapshotStateText, overviewNoSnapshotBoundaryText, overviewNoSnapshotDowngradeText].join(' ')) &&
+      /无业务快照(?:，业务数据不展示)?|业务数据不展示|业务状态不可参考/.test([noSnapshotStateText, overviewNoSnapshotBoundaryText, overviewNoSnapshotDowngradeText].join(' ')) &&
       /轮询中|下次尝试|不承诺可达/.test([noSnapshotStateText, overviewNoSnapshotBoundaryText].join(' '))
     );
     const overviewNoSnapshotGridOk = sectionName !== 'overview' || !noSnapshotEdge || !isDesktopOverview || Boolean(
@@ -3778,7 +3775,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     );
     const overviewRouteSnapshotCopyOk = sectionName !== 'overview' || Boolean(
       noSnapshotEdge
-        ? /默认路由(?:：默认路由)?\\s*不可判定|默认路由影响\\s*不可判定|默认路由影响待判定|未采集到路由表快照|RouterOS(?:\\s+可达性)?\\s*当前不可达|业务数据不可判定|业务数据不展示|业务数值隐藏|数据可信度\\s*不可判定|业务快照无|路由快照缺失/.test(combinedOverviewText)
+        ? /默认路由(?:：默认路由)?\\s*不可判定|默认路由影响\\s*不可判定|默认路由影响待判定|未采集到路由表快照|RouterOS(?:\\s+可达性)?\\s*当前不可达|业务数据不展示|无业务快照|路由快照缺失/.test(combinedOverviewText)
         : (
           (
             /默认路由快照摘要|路由表快照|路由快照摘要|未发现活动默认路由|默认路由不可判定|默认路由影响不可判定|默认路由正常|历史快照|活动默认路由|当前影响未知/.test(combinedOverviewText) ||
@@ -4888,7 +4885,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         noSnapshotChecks: {
           hasMissing: /快照缺失/.test(mobileFlatStatusText),
           hasStatusUpdate: mobileFlatStatusText.includes('状态更新时间') && mobileFlatStatusText.includes('0s'),
-          hasBusinessUnknown: /业务数据不可判定/.test(mobileFlatStatusText),
+          hasBusinessNoDisplay: /业务数据不展示|无业务快照/.test(mobileFlatStatusText),
           hasRouterDown: /RouterOS\\s*当前不可达/.test(mobileFlatStatusText),
           hasForbiddenFreshCopy: noSnapshotFreshCopyPattern.test(mobileFlatStatusText),
         },
