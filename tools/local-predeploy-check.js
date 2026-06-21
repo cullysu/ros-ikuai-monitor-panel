@@ -2756,7 +2756,9 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       mobileFirstScreenChildren.length >= 1 &&
       mobileFirstScreenChildren.length <= 2 &&
       mobileFirstScreenChildren[0] === mobileFlatStatus &&
-      mobileFirstScreenChildren[1]?.hasAttribute('data-overview-mobile-detail-section') &&
+      (noSnapshotEdge
+        ? !mobileFirstScreenChildren[1]
+        : mobileFirstScreenChildren[1]?.hasAttribute('data-overview-mobile-detail-section')) &&
       mobileFirstScreenRect &&
       mobileAlertRect &&
       mobileAlertRect.top < 120 &&
@@ -2770,6 +2772,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       mobileLedgerHeight !== null &&
       mobileLedgerHeight >= 96 &&
       mobileLedgerHeight <= 320 &&
+      (!noSnapshotEdge || (mobileFirstScreenRect && Math.round(mobileFirstScreenRect.bottom - mobileFirstScreenRect.top) <= 340)) &&
       (!mobileLeadPreviewRect || Math.round(mobileLeadPreviewRect.top - mobileFirstScreenRect.top) <= 320)
     );
     const overviewMobileWanIncidentPriorityOk = sectionName !== 'overview' || !isMobileOverview || !['all-offline'].includes(scaleScenario) || Boolean(
@@ -2830,7 +2833,9 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       mobileFirstScreenChildren.length >= 1 &&
       mobileFirstScreenChildren.length <= 2 &&
       mobileFirstScreenChildren[0] === mobileFlatStatus &&
-      mobileFirstScreenChildren[1]?.hasAttribute('data-overview-mobile-detail-section') &&
+      (noSnapshotEdge
+        ? !mobileFirstScreenChildren[1]
+        : mobileFirstScreenChildren[1]?.hasAttribute('data-overview-mobile-detail-section')) &&
       mobileAlertRect &&
       mobileAlertRect.top < 120
     );
@@ -2842,7 +2847,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const overviewMobileDetailFirstTwoRowsVisibleOk = sectionName !== 'overview' || !isMobileOverview || Boolean(
       overviewFlatMobileContractOk &&
       mobileDetailRows.length >= 2 &&
-      mobileDetailRows.slice(0, 2).every(nodeVisibleInFirstScreen)
+      (noSnapshotEdge || mobileDetailRows.slice(0, 2).every(nodeVisibleInFirstScreen))
     );
     const overviewDesktopDetailFirstTwoRowsVisibleOk = sectionName !== 'overview' || !isDesktopOverview || Boolean(
       overviewDesktopDetail &&
@@ -3568,6 +3573,16 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewDesktopDetailText,
       overviewStatusBarText,
     ].join(' ');
+    const overviewVisibleTimestampText = [
+      firstScreenOverviewText,
+      mobileTop120Text,
+      overviewDesktopTopText,
+      overviewDesktopDetailText,
+      overviewStatusBarText,
+    ].join(' ');
+    const overviewLongTimestampForbiddenOk = sectionName !== 'overview' || Boolean(
+      !/\b\d{4}-\d{2}-\d{2}[T\s]\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?(?:Z)?\b/.test(overviewVisibleTimestampText)
+    );
     const overviewRestSshSourceConsistencyOk = sectionName !== 'overview' || Boolean(
       !/REST|SSH/.test(restSshDesktopSourceText + ' ' + restSshMobileSourceText) ||
       (scaleScenario === 'interfaces-down'
@@ -4181,6 +4196,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewRestSshSourceConsistencyOk &&
       overviewRestSshViewportParityOk &&
       overviewStatusBusFixedGrammarOk &&
+      overviewLongTimestampForbiddenOk &&
       overviewResourceFirstScreenPriorityOk &&
       overviewResourceFirstScreenWanTrendForbiddenOk &&
       overviewResourceFirstScreenEffectiveFactsOk &&
@@ -4523,6 +4539,10 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewRestSshSourceConsistencyOk,
       overviewRestSshViewportParityOk,
       overviewStatusBusFixedGrammarOk,
+      overviewLongTimestampForbiddenOk,
+      overviewLongTimestampForbiddenProbe: {
+        excerpt: overviewVisibleTimestampText.slice(0, 260),
+      },
       overviewStatusBusFixedGrammarProbe: {
         labels: overviewStatusBarLabels,
         excerpt: overviewDesktopTopText.slice(0, 260),
