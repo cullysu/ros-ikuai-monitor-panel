@@ -1172,7 +1172,7 @@ async function setSection(cdp, section) {
         linkFound: candidates.length > 0,
         linkVisible: Boolean(visible),
         linkCount: candidates.length,
-        linkText: normalize((visible || link)?.textContent || ''),
+        linkText: normalize((visible || link) ? (visible || link).textContent : ''),
       };
     })()`,
     awaitPromise: true,
@@ -2359,6 +2359,17 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       ? overviewNoSnapshotFakeDensityTokenCount / overviewNoSnapshotVisibleCellCount
       : 0;
     const overviewNoSnapshotFakeDensityOk = sectionName !== 'overview' || !noSnapshotEdge || overviewNoSnapshotFakeDensityRatio <= 0.25;
+    const overviewNoSnapshotAuditCopyCount = noSnapshotEdge
+      ? countRegex(overviewNoSnapshotSurfaceText, /配置写入|API\\s*下发|业务推断|不写\\s*RouterOS|不修改配置|不推断根因/g)
+      : 0;
+    const overviewNoSnapshotOpsLedgerCopyOk = sectionName !== 'overview' || !isDesktopOverview || !noSnapshotEdge || Boolean(
+      overviewNoSnapshotAuditCopyCount === 0 &&
+      /只读状态\\s*只读\\s*\\/\\s*不下发/.test(overviewNoSnapshotSurfaceText) &&
+      /可信等级\\s*(?:采集链路可参考|链路可参考)/.test(overviewNoSnapshotSurfaceText) &&
+      /禁用模块\\s*WAN\\s*\\/\\s*路由\\s*\\/\\s*资源/.test(overviewNoSnapshotSurfaceText) &&
+      /速率\\s*(?:不展示|隐藏)/.test(overviewNoSnapshotSurfaceText) &&
+      /下次尝试|下次轮询/.test(overviewNoSnapshotSurfaceText)
+    );
     const overviewNoSnapshotNoWanRateCardOk = sectionName !== 'overview' || !noSnapshotEdge || Boolean(
       !/WAN\\s*速率|WAN速率|0\\s*B\\/s|样本\\s*0\\s*\\/\\s*6|采样\\s*0\\s*\\/\\s*6/.test(overviewNoSnapshotSurfaceText)
     );
@@ -2399,7 +2410,8 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewNoSnapshotDenseModuleOk &&
       overviewNoSnapshotEffectiveVisibleFactCount >= 60 &&
       overviewNoSnapshotRepetitionBudgetOk &&
-      overviewNoSnapshotFakeDensityOk
+      overviewNoSnapshotFakeDensityOk &&
+      overviewNoSnapshotOpsLedgerCopyOk
     );
     const firstScreenActionRepeats = {
       suggestionPrefix: countRegex(firstScreenOverviewText, /建议查看|建议：/g),
@@ -3546,6 +3558,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewNoSnapshotDowngradeReasonsOk &&
       overviewNoSnapshotRepetitionBudgetOk &&
       overviewNoSnapshotFakeDensityOk &&
+      overviewNoSnapshotOpsLedgerCopyOk &&
       !/采集断链证据/.test(combinedOverviewText)
     );
     const overviewMobileDispositionOk = sectionName !== 'overview' || !isMobileOverview || Boolean(
@@ -4056,7 +4069,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       }
       const rightBlank = Math.max(0, rightTotal - rightFilled);
       const rightFillRatio = rightTotal ? rightFilled / rightTotal : 0;
-      const rightFillMinRatio = (noSnapshotEdge || scaleScenario === 'resource-full') ? 0.58 : 0.50;
+      const rightFillMinRatio = scaleScenario === 'resource-full' ? 0.64 : (noSnapshotEdge ? 0.58 : 0.50);
       overviewDesktopRightFillProbe = {
         filled: rightFilled,
         total: rightTotal,
@@ -4186,7 +4199,9 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         scaleScenario === 'resource-full' &&
         flatConsoleVisible &&
         overviewResourceModuleFillOk &&
-        overviewResourceFirstScreenEffectiveFactsOk
+        overviewResourceFirstScreenEffectiveFactsOk &&
+        (1 - ratio) >= 0.64 &&
+        rightFillRatio >= 0.64
       ));
       const bandHeight = Math.min(52, Math.max(24, Math.round(window.innerHeight * 0.06)));
       const bandBottom = Math.min(window.innerHeight, top + bandHeight);
@@ -4386,6 +4401,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewNoSnapshotTopbarOk &&
       overviewNoSnapshotEffectiveFactCountOk &&
       overviewNoSnapshotFakeDensityOk &&
+      overviewNoSnapshotOpsLedgerCopyOk &&
       overviewNoSnapshotFreshnessForbiddenOk &&
       overviewNoSnapshotSamplingStateUniqueOk &&
       overviewNoSnapshotDesktopEvidenceTripletOk &&
@@ -4578,6 +4594,8 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewNoSnapshotDowngradeReasonsOk,
       overviewNoSnapshotRepetitionBudgetOk,
       overviewNoSnapshotRepeatedWordCounts,
+      overviewNoSnapshotOpsLedgerCopyOk,
+      overviewNoSnapshotAuditCopyCount,
       overviewCardBudgetOk,
       overviewCardBudgetProbe: {
         oldCardCount: overviewOldCardNodes.length,
@@ -4728,6 +4746,8 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewNoSnapshotEffectiveFactCountOk,
       overviewNoSnapshotEffectiveVisibleFactCount,
       overviewNoSnapshotFakeDensityOk,
+      overviewNoSnapshotOpsLedgerCopyOk,
+      overviewNoSnapshotAuditCopyCount,
       overviewNoSnapshotGridProbe: {
         columns: overviewNoSnapshotGridColumns,
         items: overviewNoSnapshotGridItems.length,
@@ -4785,6 +4805,8 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         firstScreenFieldCount: overviewFirstScreenFieldCount,
         visibleFactCount: overviewVisibleFactCount,
         effectiveVisibleFactCount: overviewResourceEffectiveVisibleFactCount,
+        contentFillRatio: overviewBlankProbe ? overviewBlankProbe.contentFillRatio : null,
+        rightFillRatio: overviewDesktopRightFillProbe ? overviewDesktopRightFillProbe.ratio : null,
         text: overviewResourceFirstScreenText.slice(0, 260),
       },
       overviewFirstScreenDedupeOk,

@@ -8543,7 +8543,7 @@
       const failureValue = ctx.failures.count ? fmtNumber(ctx.failures.count) : '未记录';
       const failureReason = ctx.failures.count ? ctx.failures.text : '失败端点未记录';
       const routeDisplay = overviewRouteDisplay(ctx);
-      const routeReason = '缺少当前路由快照，无法判断默认路由影响';
+      const routeReason = '路由快照缺失，影响待判定';
       const row5 = (a, b, c, d, e) => `<tr data-overview-field>
         <td>${escapeHtml(a)}</td>
         <td><b>${escapeHtml(String(b ?? '-'))}</b></td>
@@ -8573,25 +8573,22 @@
       const restValue = stripChannelPrefix(labels.restLabel || 'REST 待确认', 'REST') || '待确认';
       const sshValue = stripChannelPrefix(labels.sshLabel || 'SSH 缺依赖', 'SSH') || '缺依赖';
       const statusUpdateText = noSnapshotUpdateAgeText(ctx.snapshot, ctx.freshness);
-      const routeReason = '缺少当前路由快照，无法判断默认路由影响';
+      const routeReason = '路由快照缺失，影响待判定';
       const boundaryRows = [
-        `<tr data-overview-field><td><b>只读</b></td><td>不写配置 / 不下发</td><td>面板只读</td><td>仅显示采集链路</td></tr>`,
-        `<tr data-overview-field><td><b>展示范围</b></td><td>采集链路</td><td>RouterOS / REST / SSH</td><td>业务表暂停</td></tr>`,
-        `<tr data-overview-field><td><b>业务快照</b></td><td>无业务快照</td><td>当前业务数据暂停</td><td>不推断业务数值</td></tr>`,
+        `<tr data-overview-field><td><b>只读状态</b></td><td>只读 / 不下发</td><td>无业务快照</td><td>仅显示采集链路</td></tr>`,
+        `<tr data-overview-field><td><b>可信等级</b></td><td>链路可参考</td><td>业务状态不可参考</td><td>当前页面边界</td></tr>`,
+        `<tr data-overview-field><td><b>业务快照</b></td><td>无业务快照</td><td>无业务快照，业务数据不展示</td><td>业务表暂停</td></tr>`,
         `<tr data-overview-field><td><b>RouterOS</b></td><td>${escapeHtml(routerValue)}</td><td>状态更新时间 ${escapeHtml(statusUpdateText)}</td><td>最近成功 ${escapeHtml(latestSuccess)}</td></tr>`,
         `<tr data-overview-field><td><b>REST</b></td><td>${escapeHtml(restValue === '待确认' ? '待确认' : restValue)}</td><td>采集端点未确认</td><td>下次 ${escapeHtml(nextCollection)}</td></tr>`,
         `<tr data-overview-field><td><b>SSH</b></td><td>${escapeHtml(sshValue)}</td><td>通道缺依赖</td><td>下次 ${escapeHtml(nextCollection)}</td></tr>`,
-        `<tr data-overview-field><td><b>默认路由</b></td><td>待判定</td><td>路由快照缺失</td><td>影响待判定</td></tr>`,
+        `<tr data-overview-field><td><b>默认路由</b></td><td>待判定</td><td>路由快照缺失</td><td>${escapeHtml(routeReason)}</td></tr>`,
         `<tr data-overview-field><td><b>失败端点</b></td><td>${escapeHtml(ctx.failures.count ? fmtNumber(ctx.failures.count) : '未记录')}</td><td>${escapeHtml(failureText)}</td><td>未记录不是无失败</td></tr>`,
-        `<tr data-overview-field><td><b>页面可信等级</b></td><td>采集链路可参考</td><td>业务状态不可参考</td><td>当前页面边界</td></tr>`,
-        `<tr data-overview-field><td><b>配置写入</b></td><td>关闭</td><td>只读面板</td><td>不写 RouterOS</td></tr>`,
-        `<tr data-overview-field><td><b>API 下发</b></td><td>关闭</td><td>只读边界</td><td>不修改配置</td></tr>`,
-        `<tr data-overview-field><td><b>业务推断</b></td><td>关闭</td><td>无快照</td><td>不推断业务数值</td></tr>`,
-        `<tr data-overview-field><td><b>WAN</b></td><td>暂停</td><td>业务快照缺失</td><td>不造线路状态</td></tr>`,
-        `<tr data-overview-field><td><b>速率</b></td><td>不显示</td><td>业务快照缺失</td><td>禁止零速率占位</td></tr>`,
+        `<tr data-overview-field><td><b>禁用模块</b></td><td>WAN / 路由 / 资源</td><td>业务快照缺失</td><td>仅保留缺失状态表</td></tr>`,
+        `<tr data-overview-field><td><b>WAN</b></td><td>暂停</td><td>业务快照缺失</td><td>线路状态不造数</td></tr>`,
+        `<tr data-overview-field><td><b>速率</b></td><td>隐藏</td><td>业务快照缺失</td><td>禁止零速率占位</td></tr>`,
         `<tr data-overview-field><td><b>资源</b></td><td>暂停</td><td>无资源快照</td><td>CPU/MEM/DISK 不造数</td></tr>`,
-        `<tr data-overview-field><td><b>终端排行</b></td><td>暂停</td><td>无终端快照</td><td>排行不可用</td></tr>`,
-        `<tr data-overview-field><td><b>连接表</b></td><td>暂停</td><td>无连接快照</td><td>Conn 不造数</td></tr>`,
+        `<tr data-overview-field><td><b>终端排行</b></td><td>关闭</td><td>无终端快照</td><td>排行不可用</td></tr>`,
+        `<tr data-overview-field><td><b>连接表</b></td><td>关闭</td><td>无连接快照</td><td>Conn 不造数</td></tr>`,
         `<tr data-overview-field><td><b>最近成功</b></td><td>${escapeHtml(latestSuccess)}</td><td>采集元数据</td><td>链路参考</td></tr>`,
         `<tr data-overview-field><td><b>端点记录</b></td><td>${escapeHtml(ctx.failures.count ? fmtNumber(ctx.failures.count) : '未记录')}</td><td>${escapeHtml(failureText)}</td><td>未记录不是无失败</td></tr>`,
         `<tr data-overview-field><td><b>下次尝试</b></td><td>${escapeHtml(nextCollection)}</td><td>轮询中，不承诺可达</td><td>设备不可达时不作承诺</td></tr>`
@@ -8599,7 +8596,7 @@
       return overviewFlatModule(
         'no-snapshot-boundary-degrade',
         '只读边界 + 降级模块',
-        '只读 / 展示范围 / 暂停项 / 下次尝试',
+        '采集账本 / 业务边界 / 失败端点 / 下次轮询',
         compactTable(['边界', '当前', '依据', '备注'], boundaryRows, '无只读边界信息', 'ik-home-evidence-table'),
         'data-overview-no-snapshot-detail'
       );
@@ -10513,7 +10510,7 @@
       const routerValue = ctx.routerState?.label === '等待登录' ? '等待登录' : '当前不可达';
       const failureValue = ctx.failures.count ? fmtNumber(ctx.failures.count) : '未记录';
       const failureReason = ctx.failures.count ? ctx.failures.text : '失败端点未记录';
-      const routeMissingReason = '缺少当前路由快照，无法判断默认路由影响';
+      const routeMissingReason = '路由快照缺失，影响待判定';
       const row4 = (a, b, c, d) => `<tr data-overview-field>
         <td>${escapeHtml(a)}</td>
         <td><b>${escapeHtml(String(b ?? '-'))}</b></td>
@@ -10523,11 +10520,11 @@
       const row3 = (a, b, c) => `<tr data-overview-field><td>${escapeHtml(a)}</td><td><b>${escapeHtml(String(b ?? '-'))}</b></td><td>${escapeHtml(String(c ?? '-'))}</td></tr>`;
       const timeCell = (value) => value ? shortTimestamp(value) : '未记录';
       const visibilityRows = [
-        row4('禁用模块', 'WAN / 路由 / 资源', '业务快照缺失', '首屏隐藏业务数值'),
-        row4('终端 / 连接', '不显示', '无业务快照', '排行与连接表关闭'),
-        row4('速率', '不显示', '业务快照缺失', '禁止零速率占位'),
+        row4('禁用模块', 'WAN / 路由 / 资源', '快照缺失', '首屏隐藏业务数值'),
+        row4('终端 / 连接', '关闭', '无业务快照', '排行与连接表关闭'),
+        row4('速率', '隐藏', '快照缺失', '禁止零速率占位'),
         row4('默认路由', '待判定', '路由快照缺失', '影响待判定'),
-        row4('资源阈值', '不显示', '无资源快照', 'CPU/MEM/DISK 不造数'),
+        row4('资源阈值', '暂停', '无资源快照', 'CPU/MEM/DISK 不造数'),
         row4('WAN 清单', '暂停展示', '无线路快照', '不造在线/离线数'),
         row4('连接数', '暂停展示', '无连接快照', 'Conn 不造数'),
         row4('当前页面', '采集链路', '链路可参考', '业务状态不可参考')
@@ -10540,7 +10537,7 @@
         row4('连接明细', timeCell(meta.connectionDetailUpdatedAt || meta.connectionProtocolUpdatedAt), '连接采集记录', '当前业务表隐藏')
       ];
       const currentRows = [
-        row4('当前状态', routerValue, 'RouterOS 管理面', '业务快照缺失'),
+        row4('当前状态', routerValue, 'RouterOS 管理面', '快照缺失'),
         row4('当前业务数据', '暂停', '无业务快照，业务数据不展示', 'WAN/资源/终端暂停'),
         row4('默认路由', '待判定', '路由快照缺失', routeMissingReason),
         row4('状态事件', statusUpdateText, meta.statusUpdatedAt || snapshot.updatedAt || '未记录', '采集服务事件时间'),
@@ -10686,8 +10683,11 @@
       const rows = [
         row('连接总数', fmtCompact(ctx.connectionTotal), `active sessions ${fmtNumber(ctx.activeSessions)}`, `${fmtNumber(ctx.sampleCount)} 点`),
         row('active sessions', fmtNumber(ctx.activeSessions), `ConnTrack ${fmtCompact(ctx.connectionTotal)}`, '会话压力'),
+        row('连接密度', `${fmtCompact(ctx.connectionTotal)} / ${fmtNumber(ctx.onlineTerminals || 0)}`, `active ${fmtNumber(ctx.activeSessions)}`, '终端承载压力'),
         row('在线终端', fmtNumber(ctx.onlineTerminals || 0), `有流量 ${fmtNumber(trafficTerminals.length)}`, '连接分布旁证'),
+        row('有流量终端', fmtNumber(trafficTerminals.length), `在线 ${fmtNumber(ctx.onlineTerminals || 0)}`, '排行下沉二屏'),
         row('接口承载', fmtNumber(interfaces.length), `running ${fmtNumber(runningInterfaces)}`, '转发面承载'),
+        row('ConnTrack', fmtCompact(ctx.connectionTotal), `采样 ${fmtNumber(ctx.sampleCount)} 点`, '连接压力窗口'),
         row('采集状态', overviewSnapshotTrustLabel(ctx), ctx.pollText || '未采集', '资源快照可信度'),
         row('排行策略', '降级', '终端 Top 不进首屏', '资源证据优先')
       ];
@@ -10715,6 +10715,8 @@
         row('接口峰值', topInterfaceRate, `${topInterfaceTx} / ${topInterfaceRx}`, '最忙接口 tx/rx'),
         row('上行贡献', topInterfaceTx, topInterfaceName, '吞吐热点'),
         row('下行贡献', topInterfaceRx, topInterfaceName, '吞吐热点'),
+        row('WAN 上行', fmtRate(ctx.wanRates.up), topInterfaceName, '资源旁证'),
+        row('WAN 下行', fmtRate(ctx.wanRates.down), topInterfaceName, '资源旁证'),
         row('接口总数', fmtNumber(interfaces.length), `running ${fmtNumber(runningInterfaces)}`, '转发面样本'),
         row('接口吞吐影响', fmtRate(Number(ctx.wanRates.up || 0) + Number(ctx.wanRates.down || 0)), `${fmtRate(ctx.wanRates.up)} / ${fmtRate(ctx.wanRates.down)}`, '资源压力旁证')
       ];
@@ -10732,8 +10734,10 @@
         row('进程或服务压力', '未采集', '缺 process/service 明细', '不推断根因'),
         row('进程压力', '未采集', '缺 process 列表', 'CPU/MEM 归因未知'),
         row('服务压力', '未采集', '缺 service queue', '服务背压未知'),
+        row('active sessions', fmtNumber(ctx.activeSessions), `Conn ${fmtCompact(ctx.connectionTotal)}`, '会话旁证'),
         row('DNS缓存', '未采集', 'DNS/cache gap', '缓存压力未知'),
         row('DNS cache gap', '无字段', '缺 hit / miss / resolver', '保持缺口可见'),
+        row('缓存缺口', '未采集', 'DNS cache / resolver 缺字段', '不伪造命中率'),
         row('业务影响', '资源满载', `采样 ${fmtNumber(ctx.sampleCount)} 点`, ctx.resourceEvidence?.summary || '阈值越线')
       ];
       return overviewFlatModule(
@@ -10752,6 +10756,8 @@
         row('CPU 样本', fmtNumber(resource.cpu?.count || ctx.sampleCount || 0), resource.cpu?.durationText || '持续待确认', resource.cpu?.thresholdText || '阈值待确认'),
         row('MEM 样本', fmtNumber(resource.memory?.count || ctx.sampleCount || 0), resource.memory?.durationText || '持续待确认', resource.memory?.thresholdText || '阈值待确认'),
         row('DISK 样本', fmtNumber(resource.disk?.count || ctx.sampleCount || 0), resource.disk?.durationText || '持续待确认', resource.disk?.thresholdText || '阈值待确认'),
+        row('持续窗口', resource.cpu?.durationText || resource.memory?.durationText || resource.disk?.durationText || '持续待确认', ctx.pollText || '未采集', '阈值越线窗口'),
+        row('峰值窗口', resource.summary || '资源阈值越线', `${fmtNumber(ctx.sampleCount)} 点`, 'CPU/MEM/DISK 同屏'),
         row('快照可信度', overviewSnapshotTrustLabel(ctx), snapshotBusinessAgeText(ctx.snapshot, ctx.freshness), shortTimestampText(snapshotBusinessTimeText(ctx.snapshot, ctx.freshness))),
         row('阈值来源', '本地规则', resource.summary || '资源阈值越线', '只读判断')
       ];
