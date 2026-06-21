@@ -1503,6 +1503,17 @@
       .section#overview .ik-home-trust-mode.is-overview-no-snapshot .ik-home-layout > .stack > [data-overview-desktop-detail] {
         flex: 0 0 auto;
       }
+      .section#overview .ik-home-trust-mode.is-overview-no-snapshot .ik-home-layout > .stack > [data-overview-desktop-detail].is-no-snapshot-detail {
+        flex: 1 1 auto;
+        display: flex;
+        min-height: 0;
+      }
+      .section#overview .ik-home-trust-mode.is-overview-no-snapshot .ik-home-layout > .stack > [data-overview-desktop-detail].is-no-snapshot-detail > [data-overview-density-module="no-snapshot-ledger"] {
+        flex: 1 1 auto;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+      }
       .section#overview .ik-home-trust-mode.is-overview-no-snapshot [data-overview-density-module="no-snapshot-focus"],
       .section#overview .ik-home-trust-mode.is-overview-no-snapshot [data-overview-density-module="no-snapshot-link-status"],
       .section#overview .ik-home-trust-mode.is-overview-no-snapshot [data-overview-density-module="no-snapshot-ledger"],
@@ -1552,7 +1563,7 @@
         flex: 1 1 auto;
         display: flex;
         flex-direction: column;
-        min-height: min(780px, calc(100vh - 120px));
+        min-height: 0;
       }
       .section#overview .ik-home-trust-mode.is-overview-no-snapshot .ik-home-layout > .ik-home-side-stack > [data-overview-density-module="no-snapshot-boundary-degrade"] .ik-overview-flat-body,
       .section#overview .ik-home-trust-mode.is-overview-no-snapshot .ik-home-layout > .ik-home-side-stack > [data-overview-density-module="no-snapshot-boundary-degrade"] .ops-table-wrap,
@@ -1561,7 +1572,17 @@
         height: 100%;
         min-height: 0;
       }
+      .section#overview .ik-home-trust-mode.is-overview-no-snapshot .ik-home-layout > .stack > [data-overview-desktop-detail].is-no-snapshot-detail > [data-overview-density-module="no-snapshot-ledger"] .ik-overview-flat-body,
+      .section#overview .ik-home-trust-mode.is-overview-no-snapshot .ik-home-layout > .stack > [data-overview-desktop-detail].is-no-snapshot-detail > [data-overview-density-module="no-snapshot-ledger"] .ops-table-wrap,
+      .section#overview .ik-home-trust-mode.is-overview-no-snapshot .ik-home-layout > .stack > [data-overview-desktop-detail].is-no-snapshot-detail > [data-overview-density-module="no-snapshot-ledger"] .ops-table {
+        flex: 1 1 auto;
+        height: 100%;
+        min-height: 0;
+      }
       .section#overview .ik-home-trust-mode.is-overview-no-snapshot .ik-home-layout > .ik-home-side-stack > [data-overview-density-module="no-snapshot-boundary-degrade"] .ops-table tbody tr {
+        height: auto;
+      }
+      .section#overview .ik-home-trust-mode.is-overview-no-snapshot .ik-home-layout > .stack > [data-overview-desktop-detail].is-no-snapshot-detail > [data-overview-density-module="no-snapshot-ledger"] .ops-table tbody tr {
         height: auto;
       }
       .section#overview .ik-home-trust-mode.is-overview-resource-full .ik-home-layout,
@@ -8629,7 +8650,7 @@
         row5('REST', restValue === '待确认' ? '待确认' : restValue, timeCell(meta.realtimeUpdatedAt || meta.slowRestUpdatedAt), restFailure?.message || 'REST 端点未记录', nextCollection),
         row5('SSH', sshLedgerValue, timeCell(meta.staticUpdatedAt), sshFailure?.message || 'SSH 通道缺依赖', nextCollection),
         row5('最近成功快照', latestSuccessShort, latestSuccessShort, '采集链路可参考', nextCollection),
-        row5('展示边界', '仅链路', latestSuccessShort, '无业务快照，业务数据不展示', nextCollection),
+        row5('展示范围', '仅链路', latestSuccessShort, '无业务快照，业务数据不展示', nextCollection),
         row5('默认路由', '待判定', latestSuccessShort, routeReason, nextCollection),
         row5('失败端点', failureValue, latestSuccessShort, failureReason, nextCollection)
       ];
@@ -8646,44 +8667,27 @@
       const routerValue = ctx.routerState?.label === '等待登录' ? '等待登录' : '当前不可达';
       const restValue = stripChannelPrefix(labels.restLabel || 'REST 待确认', 'REST') || '待确认';
       const sshValue = stripChannelPrefix(labels.sshLabel || 'SSH 缺依赖', 'SSH') || '缺依赖';
-      const statusUpdateText = noSnapshotUpdateAgeText(ctx.snapshot, ctx.freshness);
       const routeReason = '缺少当前路由快照，无法判断默认路由影响';
-      const statusUpdatedShort = shortTimestamp(ctx.snapshot?.meta?.statusUpdatedAt || ctx.snapshot?.updatedAt || latestCollectionSuccessTime(ctx));
       const failureEntries = endpointFailureEntries(meta);
       const firstFailure = failureEntries[0] || null;
       const restFailure = failureEntries.find((row) => /rest|api|http|实时|慢速|静态|明细/i.test(`${row.group} ${row.name}`)) || firstFailure;
       const sshFailure = failureEntries.find((row) => /ssh/i.test(`${row.group} ${row.name} ${row.message}`)) || null;
       const timeCell = (value) => value ? shortTimestamp(value) : '未记录';
+      const statusUpdatedShort = timeCell(ctx.snapshot?.meta?.statusUpdatedAt || ctx.snapshot?.updatedAt || latestCollectionSuccessTime(ctx));
       const boundaryRows = [
-        `<tr data-overview-field><td><b>采集链路</b></td><td>${escapeHtml(routerValue)}</td><td>RouterOS 管理面</td><td>链路可参考</td></tr>`,
-        `<tr data-overview-field><td><b>RouterOS</b></td><td>${escapeHtml(routerValue)}</td><td>状态更新时间 ${escapeHtml(statusUpdateText)}</td><td>管理面</td></tr>`,
-        `<tr data-overview-field><td><b>REST</b></td><td>${escapeHtml(restValue)}</td><td>${escapeHtml(restFailure?.message || 'REST 端点未记录')}</td><td>采集通道</td></tr>`,
-        `<tr data-overview-field><td><b>SSH</b></td><td>${escapeHtml(sshValue === '不可用' ? '缺依赖' : sshValue)}</td><td>${escapeHtml(sshFailure?.message || 'SSH 通道缺依赖')}</td><td>采集通道</td></tr>`,
-        `<tr data-overview-field><td><b>最近成功</b></td><td>${escapeHtml(latestSuccess)}</td><td>上次成功采集</td><td>对照时间</td></tr>`,
-        `<tr data-overview-field><td><b>状态更新时间</b></td><td>${escapeHtml(statusUpdatedShort)}</td><td>面板状态事件</td><td>采集事件</td></tr>`,
+        `<tr data-overview-field><td><b>采集链路</b></td><td>${escapeHtml(routerValue)}</td><td>REST ${escapeHtml(restValue)} / SSH ${escapeHtml(sshValue === '不可用' ? '缺依赖' : sshValue)}</td><td>链路可参考</td></tr>`,
+        `<tr data-overview-field><td><b>当前失败</b></td><td>RouterOS ${escapeHtml(routerValue)}</td><td>最近成功 ${escapeHtml(latestSuccess)}</td><td>业务停用</td></tr>`,
         `<tr data-overview-field><td><b>业务数据</b></td><td>无业务快照</td><td>无业务快照，业务数据不展示</td><td>不可信</td></tr>`,
-        `<tr data-overview-field><td><b>WAN</b></td><td>不展示</td><td>业务快照缺失</td><td>无当前值</td></tr>`,
-        `<tr data-overview-field><td><b>默认路由</b></td><td>待判定</td><td>路由快照缺失</td><td>不可信</td></tr>`,
-        `<tr data-overview-field><td><b>资源</b></td><td>停用</td><td>业务快照缺失</td><td>无当前值</td></tr>`,
-        `<tr data-overview-field><td><b>终端</b></td><td>停用</td><td>业务快照缺失</td><td>排行停用</td></tr>`,
-        `<tr data-overview-field><td><b>连接</b></td><td>停用</td><td>业务快照缺失</td><td>明细停用</td></tr>`,
-        `<tr data-overview-field><td><b>DNS缓存</b></td><td>停用</td><td>业务快照缺失</td><td>统计停用</td></tr>`,
-        `<tr data-overview-field><td><b>速率</b></td><td>不展示</td><td>零速率不作证据</td><td>无当前值</td></tr>`,
-        `<tr data-overview-field><td><b>失败端点</b></td><td>${escapeHtml(ctx.failures.count ? fmtNumber(ctx.failures.count) : '未记录')}</td><td>${escapeHtml(failureText)}</td><td>链路证据</td></tr>`,
-        `<tr data-overview-field><td><b>失败记录</b></td><td>${escapeHtml(ctx.failures.count ? fmtNumber(ctx.failures.count) : '未记录')}</td><td>未记录不是无失败</td><td>审计口径</td></tr>`,
-        `<tr data-overview-field><td><b>只读边界</b></td><td>不写配置</td><td>不推断业务数值</td><td>可信</td></tr>`,
-        `<tr data-overview-field><td><b>写入权限</b></td><td>只读</td><td>仅展示只读状态</td><td>安全边界</td></tr>`,
-        `<tr data-overview-field><td><b>推断边界</b></td><td>不推断业务数值</td><td>快照缺失不估算</td><td>安全边界</td></tr>`,
-        `<tr data-overview-field><td><b>展示范围</b></td><td>仅采集链路</td><td>RouterOS / REST / SSH</td><td>链路可参考</td></tr>`,
-        `<tr data-overview-field><td><b>采集目标</b></td><td>${escapeHtml(noSnapshotTargetLabel(meta))}</td><td>RouterOS 目标</td><td>目标标识</td></tr>`,
-        `<tr data-overview-field><td><b>页面可信</b></td><td>链路可参考</td><td>业务状态不可参考</td><td>当前页面</td></tr>`,
-        `<tr data-overview-field><td><b>业务状态</b></td><td>不可参考</td><td>无业务快照</td><td>当前页面</td></tr>`,
-        `<tr data-overview-field><td><b>下次尝试</b></td><td>${escapeHtml(nextCollection)}</td><td>轮询中</td><td>仅采集</td></tr>`
+        `<tr data-overview-field><td><b>模块边界</b></td><td>WAN / 资源 / 终端 / 速率 / 连接</td><td>业务快照缺失，速率不展示</td><td>无当前值</td></tr>`,
+        `<tr data-overview-field><td><b>默认路由</b></td><td>待判定</td><td>${escapeHtml(routeReason)}</td><td>核心影响</td></tr>`,
+        `<tr data-overview-field><td><b>只读策略</b></td><td>不写配置</td><td>不推断业务数值 / 仅展示采集链路</td><td>只读</td></tr>`,
+        `<tr data-overview-field><td><b>失败端点</b></td><td>${escapeHtml(ctx.failures.count ? fmtNumber(ctx.failures.count) : '未记录')}</td><td>${escapeHtml(failureText)}</td><td>未记录不是无失败</td></tr>`,
+        `<tr data-overview-field><td><b>采集时间</b></td><td>状态 ${escapeHtml(statusUpdatedShort)}</td><td>下次尝试 ${escapeHtml(nextCollection)}</td><td>最近成功 ${escapeHtml(latestSuccess)}</td></tr>`
       ];
       return overviewFlatModule(
         'no-snapshot-boundary-degrade',
         '只读边界 + 降级模块',
-        `24项边界 / 失败端点 ${ctx.failures.count ? fmtNumber(ctx.failures.count) : '未记录'} / 最近成功 ${latestSuccess}`,
+        `8项矩阵 / 失败端点 ${ctx.failures.count ? fmtNumber(ctx.failures.count) : '未记录'} / 最近成功 ${latestSuccess}`,
         compactTable(['模块', '当前', '原因', '是否可信'], boundaryRows, '无只读边界信息', 'ik-home-evidence-table'),
         'data-overview-no-snapshot-detail'
       );
@@ -8722,6 +8726,33 @@
         '当前页面可信等级',
         '采集链路可参考 / 业务状态不可参考',
         compactTable(['项目', '当前', '依据', '边界'], rows, '无可信等级信息', 'ik-home-evidence-table'),
+        'data-overview-no-snapshot-detail'
+      );
+    }
+
+    function renderOverviewNoSnapshotCollectionTimelinePanel(ctx) {
+      const meta = ctx.snapshot?.meta || {};
+      const latestSuccess = latestCollectionSuccessTime(ctx);
+      const statusUpdated = ctx.snapshot?.meta?.statusUpdatedAt || ctx.snapshot?.updatedAt || latestSuccess;
+      const nextCollection = ctx.pollText || '未采集';
+      const failureEntries = endpointFailureEntries(meta);
+      const firstFailure = failureEntries[0] || null;
+      const restFailure = failureEntries.find((row) => /rest|api|http|实时|慢速|静态|明细/i.test(`${row.group} ${row.name}`)) || firstFailure;
+      const sshFailure = failureEntries.find((row) => /ssh/i.test(`${row.group} ${row.name} ${row.message}`)) || null;
+      const timeCell = (value) => value ? shortTimestamp(value) : '未记录';
+      const rows = [
+        ['最近成功', timeCell(latestSuccess), '采集元数据', '对照时间'],
+        ['状态更新时间', timeCell(statusUpdated), '面板状态事件', '当前失败对照'],
+        ['实时 REST', timeCell(meta.realtimeUpdatedAt), restFailure?.message || 'REST 端点未记录', '采集通道'],
+        ['慢速 REST', timeCell(meta.slowRestUpdatedAt), restFailure?.message || 'REST 低频采集', '采集通道'],
+        ['静态 SSH', timeCell(meta.staticUpdatedAt), sshFailure?.message || 'SSH 通道缺依赖', '配置类只读'],
+        ['下次尝试', nextCollection, '轮询中', '仅采集']
+      ].map(([a, b, c, d]) => `<tr data-overview-field><td><b>${escapeHtml(a)}</b></td><td>${escapeHtml(b)}</td><td>${escapeHtml(c)}</td><td>${escapeHtml(d)}</td></tr>`);
+      return overviewFlatModule(
+        'no-snapshot-collection-timeline',
+        '采集时间线',
+        '最近成功 / 状态更新时间 / REST / SSH / 下次尝试',
+        compactTable(['记录', '时间', '来源', '边界'], rows, '无采集时间线', 'ik-home-evidence-table'),
         'data-overview-no-snapshot-detail'
       );
     }
@@ -10001,6 +10032,8 @@
       };
       const flatRow = (key, cells, extraClass = '') =>
         `<div class="ik-mobile-flat-table-row is-${escapeHtml(key)}${extraClass ? ` ${escapeHtml(extraClass)}` : ''}" data-overview-mobile-flat-row="${escapeHtml(key)}">${cells.join('')}</div>`;
+      const entryLink = (section, label) =>
+        `<a class="ik-mobile-flat-link" href="#${escapeHtml(section)}" data-section="${escapeHtml(section)}" data-overview-action-label>${escapeHtml(label)}</a>`;
       const statusCells = [
         ledgerCell('结论', noSnapshot ? '快照缺失' : statusValue, statusSide, { primary: true, level: statusTone || v.level || '' }),
         ledgerCell('设备', deviceName, noSnapshot ? deviceVersion : deviceUptime)
@@ -10034,11 +10067,15 @@
         ledgerCell('可信度', trustValue, noSnapshot ? '业务状态不可信' : collectionIncident ? '当前不可判定' : compactValue(freshness.label), { level: noSnapshot || collectionIncident ? 'warn' : '' }),
         ledgerCell('最近', latestSuccessShort, noSnapshot ? '上次成功采集' : `更新 ${deviceUpdateText}`)
       ];
+      const entryCells = [
+        `<div class="is-wide" data-overview-field><span>入口</span><b>${entryLink('lineStatus', 'WAN明细')} / ${entryLink('readonlyDiagnostics', '采集状态')} / ${entryLink('routes', '路由快照')} / ${entryLink('loadAudit', '资源阈值')}</b></div>`
+      ];
       return `<div class="ik-mobile-flat-table ik-mobile-status-panel is-${escapeHtml(v.level)}${history ? ' is-history' : ''}" data-overview-mobile-flat-status data-overview-mobile-alert data-overview-mobile-alarm data-overview-mobile-status-table>
         ${flatRow('status', statusCells)}
         ${flatRow('object', objectCells)}
         ${flatRow('evidence', evidenceCells)}
         ${flatRow('trust', trustCells)}
+        ${flatRow('entry', entryCells)}
       </div>`;
     }
 
@@ -10736,61 +10773,22 @@
         <td>${escapeHtml(String(c ?? '-'))}</td>
         <td>${escapeHtml(String(d ?? '-'))}</td>
       </tr>`;
-      const timeCell = (value) => value ? shortTimestamp(value) : '未记录';
       const boundaryRows = [
-        row4('WAN', '无当前值', '缺快照', '线路状态无当前值'),
+        row4('WAN', '停用', '无业务快照', '线路状态停用'),
         row4('路由', '待判定', '缺路由快照', routeMissingReason),
-        row4('资源', '无当前值', '未采集', 'CPU/MEM/DISK 无当前值'),
-        row4('终端', '无当前值', '未采集', '排行无数据'),
-        row4('速率', '不展示', '缺快照', '零速率不作证据'),
-        row4('连接', '无当前值', '未采集', '连接明细无当前值'),
-        row4('DNS缓存', '无当前值', '未采集', '缓存统计无当前值'),
-        row4('采集链路', '可参考', 'RouterOS / REST / SSH', '业务边界已列明')
-      ];
-      const successRows = [
-        row4('最近成功', latestSuccessShort, '采集元数据', '用于链路判断'),
-        row4('实时采集', timeCell(meta.realtimeUpdatedAt), 'RouterOS 实时通道', restFailure?.message || '端点失败未记录'),
-        row4('慢速 REST', timeCell(meta.slowRestUpdatedAt), '低频状态采集', restFailure?.message || '端点失败未记录'),
-        row4('静态采集', timeCell(meta.staticUpdatedAt), '配置类只读采集', sshFailure?.message || 'SSH 缺依赖'),
-        row4('连接明细', timeCell(meta.connectionDetailUpdatedAt || meta.connectionProtocolUpdatedAt), '连接采集记录', '当前业务表不展示'),
-        row4('状态事件', statusUpdateText, meta.statusUpdatedAt || snapshot.updatedAt || '未记录', '面板采集事件'),
-        row4('采集目标', noSnapshotTargetLabel(meta), 'RouterOS 目标', '内部端点不直出'),
-        row4('失败记录', failureValue, failureReason, '未记录不是无失败')
-      ];
-      const currentRows = [
-        row4('当前状态', routerValue, 'RouterOS 管理面', '快照缺失'),
-        row4('业务快照', '无业务快照', '业务数据不展示', 'WAN/资源/终端无当前值'),
-        row4('REST', restValue === '待确认' ? '待确认' : restValue, timeCell(meta.realtimeUpdatedAt || meta.slowRestUpdatedAt), restFailure?.message || 'REST 端点未记录'),
-        row4('SSH', sshValue === '不可用' ? '缺依赖' : sshValue, timeCell(meta.staticUpdatedAt), sshFailure?.message || 'SSH 通道缺依赖'),
-        row4('默认路由', '待判定', '路由快照缺失', routeMissingReason),
-        row4('最近成功', latestSuccessShort, '采集元数据', '当前失败对照'),
-        row4('下次尝试', nextCollection, '轮询中', '不承诺可达'),
-        row4('失败端点', failureValue, failureReason, '未记录不是无失败'),
-        row4('页面可信', '链路可参考', '采集元数据', '业务状态不可信'),
-        row4('展示范围', '采集链路', 'RouterOS / REST / SSH', '链路证据可参考'),
-        row4('读取权限', '只读', '不写配置', '不推断业务数值'),
-        row4('当前业务数据', '停用', '无业务快照', '业务表不渲染')
+        row4('资源', '停用', '无业务快照', 'CPU/MEM/DISK 停用'),
+        row4('终端', '停用', '无业务快照', '终端排行停用'),
+        row4('速率', '不展示', '无业务快照', '禁止零速率占位'),
+        row4('连接', '停用', '无业务快照', '连接明细停用'),
+        row4('可信等级', '链路可参考', '采集链路证据', '业务状态不可参考'),
+        row4('最后成功快照摘要', latestSuccessShort, '采集元数据', '当前失败对照')
       ];
       return [
-        overviewFlatModule(
-          'no-snapshot-focus',
-          '当前失败对照',
-          'RouterOS / REST / SSH / 最近成功 / 当前失败',
-          compactTable(['项目', '当前', '依据', '边界'], currentRows, '无快照账本', 'ik-home-evidence-table'),
-          'data-overview-no-snapshot-detail'
-        ),
         overviewFlatModule(
           'no-snapshot-ledger',
           '业务数据展示边界',
           'WAN / 路由 / 资源 / 终端 / 速率 / 连接',
           compactTable(['模块', '当前', '原因', '边界'], boundaryRows, '无业务数据展示边界', 'ik-home-evidence-table'),
-          'data-overview-no-snapshot-detail'
-        ),
-        overviewFlatModule(
-          'no-snapshot-recent-success',
-          '最后成功快照摘要',
-          '时间 / 来源 / 可展示范围 / 不展示项',
-          compactTable(['记录', '时间', '来源', '边界'], successRows, '无最近成功记录', 'ik-home-evidence-table'),
           'data-overview-no-snapshot-detail'
         ),
         ''

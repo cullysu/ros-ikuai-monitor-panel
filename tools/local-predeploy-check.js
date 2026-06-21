@@ -1306,13 +1306,20 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const overviewNoSnapshotLegacyDowngradeModules = Array.from(sectionRoot?.querySelectorAll('[data-overview-density-module="no-snapshot-unavailable"]') || []);
     const overviewNoSnapshotLegacyBoundaryModules = Array.from(sectionRoot?.querySelectorAll('[data-overview-density-module="no-snapshot-boundary"]') || []);
     const overviewNoSnapshotBoundaryDegradeModule = sectionRoot?.querySelector('[data-overview-density-module="no-snapshot-boundary-degrade"]');
+    const overviewNoSnapshotTimelineModule = sectionRoot?.querySelector('[data-overview-density-module="no-snapshot-collection-timeline"]');
     const overviewNoSnapshotTrustModules = Array.from(sectionRoot?.querySelectorAll('[data-overview-density-module="no-snapshot-trust-level"]') || []);
     const overviewNoSnapshotDowngradeModule = overviewNoSnapshotBoundaryDegradeModule || overviewNoSnapshotLegacyDowngradeModules[0] || null;
     const overviewNoSnapshotDowngradeText = normalize(overviewNoSnapshotDowngradeModule?.textContent || '');
     const overviewNoSnapshotBoundaryModule = overviewNoSnapshotBoundaryDegradeModule || overviewNoSnapshotLegacyBoundaryModules[0] || null;
-    const overviewNoSnapshotBoundaryText = normalize(overviewNoSnapshotBoundaryModule?.textContent || '');
+    const overviewNoSnapshotBoundaryText = normalize([
+      overviewNoSnapshotBoundaryModule?.textContent || '',
+      overviewNoSnapshotTimelineModule?.textContent || '',
+    ].join(' '));
     const overviewNoSnapshotBoundaryDegradeRowCount = overviewNoSnapshotBoundaryDegradeModule
       ? overviewNoSnapshotBoundaryDegradeModule.querySelectorAll('tbody tr').length
+      : 0;
+    const overviewNoSnapshotTimelineRowCount = overviewNoSnapshotTimelineModule
+      ? overviewNoSnapshotTimelineModule.querySelectorAll('tbody tr').length
       : 0;
     const overviewNoSnapshotBoundaryDegradeHeaderText = normalize(
       Array.from(overviewNoSnapshotBoundaryDegradeModule?.querySelectorAll('thead th') || [])
@@ -1723,16 +1730,19 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const mobileFlatLedgerText = [mobileFlatStatusRowText, mobileFlatDeviceRowText, mobileFlatObjectRowText, mobileFlatEvidenceRowText, mobileFlatTrustRowText, mobileFlatEntryRowText].join(' ');
     const mobileFlatRowKeys = mobileFlatRows.map((node) => node.getAttribute('data-overview-mobile-flat-row') || '');
     const requiredMobileFlatKeys = noSnapshotEdge
-      ? ['status', 'object', 'evidence']
-      : ['status', 'object', 'evidence', 'trust'];
+      ? ['status', 'object', 'evidence', 'trust', 'entry']
+      : ['status', 'object', 'evidence', 'trust', 'entry'];
     const mobileFlatRowCountOk = mobileFlatRows.length >= requiredMobileFlatKeys.length &&
       mobileFlatStatusRow &&
       mobileFlatObjectRow &&
       mobileFlatEvidenceRow &&
-      (noSnapshotEdge || mobileFlatTrustRow) &&
+      mobileFlatTrustRow &&
+      mobileFlatEntryRow &&
       requiredMobileFlatKeys.every((key) => mobileFlatRowKeys.includes(key));
-    const mobileFlatEntryOk = mobileFlatLinkTexts.length === 0 &&
-      !/入口：|WAN明细|采集状态|资源阈值/.test(mobileFlatStatusText);
+    const mobileFlatEntryOk = mobileFlatLinkTexts.length === 4 &&
+      /入口/.test(mobileFlatEntryRowText) &&
+      mobileFlatLinkTexts.every((label) => mobileAllowedActionLabels.has(label)) &&
+      !/建议查看|建议：|动作/.test(mobileFlatEntryRowText);
     const mobileIncidentTitleLeadText = normalize(
       mobileIncident?.querySelector('.ik-mobile-incident-copy > div:first-child')?.textContent ||
       mobileIncident?.querySelector('.ik-mobile-incident-title > div:first-child')?.textContent ||
@@ -2158,9 +2168,10 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const overviewNoSnapshotVisibleDenseModuleCount = (sectionName === 'overview' && isDesktopOverview && noSnapshotEdge)
       ? overviewVisibleDensityModuleRecords.length
       : 0;
-    const overviewNoSnapshotDenseModuleOk = sectionName !== 'overview' || !isDesktopOverview || !noSnapshotEdge || overviewNoSnapshotVisibleDenseModuleCount >= 5;
+    const overviewNoSnapshotDenseModuleOk = sectionName !== 'overview' || !isDesktopOverview || !noSnapshotEdge || overviewNoSnapshotVisibleDenseModuleCount >= 3;
     const overviewNoSnapshotLedgerTitlesOk = sectionName !== 'overview' || !isDesktopOverview || !noSnapshotEdge || Boolean(
-      ['采集链路账本', '当前失败对照', '业务数据展示边界', '最后成功快照摘要', '只读边界 + 降级模块'].every((title) => overviewVisibleDensityModuleText.includes(title))
+      ['采集链路账本', '业务数据展示边界', '只读边界 + 降级模块'].every((title) => overviewVisibleDensityModuleText.includes(title)) &&
+      !['当前失败对照', '采集时间线'].some((title) => overviewVisibleDensityModuleRecords.some((item) => item.title === title))
     );
     const overviewNoSnapshotDesktopVisibleFieldCount = (sectionName === 'overview' && isDesktopOverview && noSnapshotEdge)
       ? Array.from(sectionRoot?.querySelectorAll('[data-overview-field], tbody tr, .ik-summary-box') || []).filter(nodeVisibleInFirstScreen).length
@@ -2431,14 +2442,14 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const overviewNoSnapshotOpsLedgerCopyOk = sectionName !== 'overview' || !isDesktopOverview || !noSnapshotEdge || Boolean(
       overviewNoSnapshotAuditCopyCount === 0 &&
       /页面可信等级\\s*(?:采集链路可参考|链路可参考)|可信等级\\s*链路可参考|页面可信\\s*链路可参考/.test(overviewNoSnapshotSurfaceText) &&
-      /只读边界[\\s\\S]{0,120}不写配置|只读\\s*不写配置/.test(overviewNoSnapshotSurfaceText) &&
+      /只读边界[\\s\\S]{0,180}不写配置|只读策略[\\s\\S]{0,80}不写配置|只读\\s*不写配置/.test(overviewNoSnapshotSurfaceText) &&
       /业务数据展示边界|业务展示边界|展示范围/.test(overviewNoSnapshotSurfaceText) &&
       /速率\s*不展示|速率不展示/.test(overviewNoSnapshotSurfaceText) &&
       /下次尝试/.test(overviewNoSnapshotSurfaceText) &&
       !/值班动作|恢复条件|页面口径|暂停|隐藏|关闭|不造数|不造/.test(overviewNoSnapshotSurfaceText)
     );
     const overviewNoSnapshotNoWanRateCardOk = sectionName !== 'overview' || !noSnapshotEdge || Boolean(
-      !/WAN\\s*速率|WAN速率|0\\s*B\\/s|样本\\s*0\\s*\\/\\s*6|采样\\s*0\\s*\\/\\s*6/.test(overviewNoSnapshotSurfaceText)
+      !/WAN\\s*速率|WAN速率|0\\s*B\\/s|样本\\s*0\\s*\\/\\s*6|采样\\s*0\\s*\\/\\s*6|\\d{4}-\\d{2}-\\d{2}T/.test(overviewNoSnapshotSurfaceText)
     );
     const overviewIncidentWanRateFillerForbiddenOk = sectionName !== 'overview' || !['all-offline', 'interfaces-down'].includes(scaleScenario) || Boolean(
       !/WAN\\s*速率|WAN速率|\\b0\\s*B\\/s\\b|\\d{4}-\\d{2}-\\d{2}T/.test([
@@ -2460,7 +2471,12 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewNoSnapshotBoundaryTitleCount === 0 &&
       /只读边界/.test(normalize(overviewNoSnapshotBoundaryDegradeModule.querySelector('.ik-overview-flat-title')?.textContent || '')) &&
       /降级模块/.test(normalize(overviewNoSnapshotBoundaryDegradeModule.querySelector('.ik-overview-flat-title')?.textContent || '')) &&
-      overviewNoSnapshotBoundaryDegradeRowCount >= 8 &&
+      overviewNoSnapshotBoundaryDegradeRowCount === 8 &&
+      overviewNoSnapshotTimelineRowCount === 0 &&
+      !overviewNoSnapshotTimelineModule &&
+      /8项矩阵/.test(overviewNoSnapshotBoundaryText) &&
+      /模块边界/.test(overviewNoSnapshotBoundaryText) &&
+      /速率\s*不展示|速率不展示/.test(overviewNoSnapshotBoundaryText) &&
       /不写配置/.test(overviewNoSnapshotBoundaryText) &&
       /失败端点\s*未记录|失败端点未记录/.test(overviewNoSnapshotBoundaryText)
     );
@@ -3619,9 +3635,11 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       hasForbiddenFreshCopy: noSnapshotFreshCopyPattern.test(noSnapshotSemanticText),
     };
     const overviewNoSnapshotFiveBlocksOk = sectionName !== 'overview' || !noSnapshotEdge || !isDesktopOverview || Boolean(
-      ['采集链路账本', '当前失败对照', '业务数据展示边界', '最后成功快照摘要', '只读边界 + 降级模块'].every((label) =>
+      ['采集链路账本', '业务数据展示边界', '只读边界 + 降级模块'].every((label) =>
         [noSnapshotStateText, overviewDesktopDetailText, overviewNoSnapshotDowngradeText, overviewNoSnapshotBoundaryText].join(' ').includes(label)
       ) &&
+      /最后成功快照摘要/.test([noSnapshotStateText, overviewDesktopDetailText, overviewNoSnapshotDowngradeText, overviewNoSnapshotBoundaryText].join(' ')) &&
+      !/采集时间线/.test(overviewVisibleDensityModuleText) &&
       /采集链路/.test([noSnapshotStateText, overviewDesktopDetailText, overviewNoSnapshotDowngradeText, overviewNoSnapshotBoundaryText].join(' ')) &&
       /无业务快照(?:，(?:业务数据不展示|业务数值隐藏))?|业务数据不展示|业务状态不可参考/.test([noSnapshotStateText, overviewNoSnapshotBoundaryText, overviewNoSnapshotDowngradeText].join(' ')) &&
       /轮询中|下次尝试|不承诺可达/.test([noSnapshotStateText, overviewNoSnapshotBoundaryText].join(' '))
@@ -4177,6 +4195,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       };
       const rightRegionRects = Array.from(sectionRoot.querySelectorAll([
         '[data-overview-density-module="no-snapshot-boundary-degrade"]',
+        '[data-overview-density-module="no-snapshot-collection-timeline"]',
         '[data-overview-density-module="resource-pressure"]',
         '[data-overview-density-module="connection-pressure"]',
         '[data-overview-density-module="interface-throughput-impact"]',
@@ -4209,7 +4228,9 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
           rightRegionRects.length > 0 &&
           rightBottomBlank <= 120 &&
           overviewNoSnapshotBoundaryDegradeModule &&
-          overviewNoSnapshotBoundaryDegradeRowCount >= 16
+          overviewNoSnapshotBoundaryDegradeRowCount === 8 &&
+          !overviewNoSnapshotTimelineModule &&
+          overviewNoSnapshotTimelineRowCount === 0
         )
         : (
           rightTotal > 0 &&
@@ -4337,7 +4358,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         ? Number(overviewNoSnapshotModuleFillProbe.ratio.toFixed(3))
         : 0;
       overviewNoSnapshotModuleFillOk = sectionName !== 'overview' || !noSnapshotEdge || !isDesktopOverview || Boolean(
-        overviewNoSnapshotModuleFillSamples.length >= 5 &&
+        overviewNoSnapshotModuleFillSamples.length >= 3 &&
         overviewNoSnapshotModuleFillRatio >= 0.70
       );
       const overviewResourceFillTargets = scaleScenario === 'resource-full'
@@ -4967,6 +4988,8 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         fakeDensityRatio: Number(overviewNoSnapshotFakeDensityRatio.toFixed(3)),
         legacyDowngradeModules: overviewNoSnapshotLegacyDowngradeModules.length,
         legacyBoundaryModules: overviewNoSnapshotLegacyBoundaryModules.length,
+        boundaryRows: overviewNoSnapshotBoundaryDegradeRowCount,
+        timelineRows: overviewNoSnapshotTimelineRowCount,
         boundaryTitleCount: overviewNoSnapshotBoundaryTitleCount,
         text: normalize(overviewNoSnapshotGrid?.textContent || '').slice(0, 260),
       },
