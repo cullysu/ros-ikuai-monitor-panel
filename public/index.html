@@ -8676,18 +8676,24 @@
       const statusUpdatedShort = timeCell(ctx.snapshot?.meta?.statusUpdatedAt || ctx.snapshot?.updatedAt || latestCollectionSuccessTime(ctx));
       const boundaryRows = [
         `<tr data-overview-field><td><b>采集链路</b></td><td>${escapeHtml(routerValue)}</td><td>REST ${escapeHtml(restValue)} / SSH ${escapeHtml(sshValue === '不可用' ? '缺依赖' : sshValue)}</td><td>链路可参考</td></tr>`,
+        `<tr data-overview-field><td><b>设备通达性</b></td><td>RouterOS ${escapeHtml(routerValue)}</td><td>管理面当前不可达</td><td>核心失败</td></tr>`,
+        `<tr data-overview-field><td><b>采集通道</b></td><td>REST ${escapeHtml(restValue)}</td><td>SSH ${escapeHtml(sshValue === '不可用' ? '缺依赖' : sshValue)}</td><td>通道能力</td></tr>`,
         `<tr data-overview-field><td><b>当前失败</b></td><td>RouterOS ${escapeHtml(routerValue)}</td><td>最近成功 ${escapeHtml(latestSuccess)}</td><td>业务停用</td></tr>`,
+        `<tr data-overview-field><td><b>最近成功</b></td><td>${escapeHtml(latestSuccess)}</td><td>上次成功采集</td><td>失败对照</td></tr>`,
         `<tr data-overview-field><td><b>业务数据</b></td><td>无业务快照</td><td>无业务快照，业务数据不展示</td><td>不可信</td></tr>`,
+        `<tr data-overview-field><td><b>展示范围</b></td><td>仅链路</td><td>最近成功 / 端点 / 边界</td><td>业务数据不展示</td></tr>`,
         `<tr data-overview-field><td><b>模块边界</b></td><td>WAN / 资源 / 终端 / 速率 / 连接</td><td>业务快照缺失，速率不展示</td><td>无当前值</td></tr>`,
         `<tr data-overview-field><td><b>默认路由</b></td><td>待判定</td><td>${escapeHtml(routeReason)}</td><td>核心影响</td></tr>`,
         `<tr data-overview-field><td><b>只读策略</b></td><td>不写配置</td><td>不推断业务数值 / 仅展示采集链路</td><td>只读</td></tr>`,
         `<tr data-overview-field><td><b>失败端点</b></td><td>${escapeHtml(ctx.failures.count ? fmtNumber(ctx.failures.count) : '未记录')}</td><td>${escapeHtml(failureText)}</td><td>未记录不是无失败</td></tr>`,
-        `<tr data-overview-field><td><b>采集时间</b></td><td>状态 ${escapeHtml(statusUpdatedShort)}</td><td>下次尝试 ${escapeHtml(nextCollection)}</td><td>最近成功 ${escapeHtml(latestSuccess)}</td></tr>`
+        `<tr data-overview-field><td><b>采集时间</b></td><td>状态 ${escapeHtml(statusUpdatedShort)}</td><td>下次尝试 ${escapeHtml(nextCollection)}</td><td>最近成功 ${escapeHtml(latestSuccess)}</td></tr>`,
+        `<tr data-overview-field><td><b>下次尝试</b></td><td>${escapeHtml(nextCollection)}</td><td>轮询中，不承诺可达</td><td>采集动作</td></tr>`,
+        `<tr data-overview-field><td><b>页面可信等级</b></td><td>链路可参考</td><td>采集链路事实</td><td>业务状态不可参考</td></tr>`
       ];
       return overviewFlatModule(
         'no-snapshot-boundary-degrade',
         '只读边界 + 降级模块',
-        `8项矩阵 / 失败端点 ${ctx.failures.count ? fmtNumber(ctx.failures.count) : '未记录'} / 最近成功 ${latestSuccess}`,
+        `${fmtNumber(boundaryRows.length)}项矩阵 / 失败端点 ${ctx.failures.count ? fmtNumber(ctx.failures.count) : '未记录'} / 最近成功 ${latestSuccess}`,
         compactTable(['模块', '当前', '原因', '是否可信'], boundaryRows, '无只读边界信息', 'ik-home-evidence-table'),
         'data-overview-no-snapshot-detail'
       );
@@ -10767,6 +10773,7 @@
       const labels = overviewCollectionChannelLabels(ctx, collection);
       const restValue = stripChannelPrefix(labels.restLabel || 'REST 待确认', 'REST') || '待确认';
       const sshValue = stripChannelPrefix(labels.sshLabel || 'SSH 缺依赖', 'SSH') || '缺依赖';
+      const timeCell = (value) => value ? shortTimestamp(value) : '未记录';
       const row4 = (a, b, c, d) => `<tr data-overview-field>
         <td>${escapeHtml(a)}</td>
         <td><b>${escapeHtml(String(b ?? '-'))}</b></td>
@@ -10774,14 +10781,23 @@
         <td>${escapeHtml(String(d ?? '-'))}</td>
       </tr>`;
       const boundaryRows = [
+        row4('当前失败', routerValue, `最近成功 ${latestSuccessShort}`, '当前失败对照'),
+        row4('RouterOS', routerValue, `状态更新时间 ${statusUpdateText}`, '管理面不可达'),
+        row4('REST', restValue, timeCell(meta.realtimeUpdatedAt || meta.slowRestUpdatedAt), restFailure?.message || 'REST 端点未记录'),
+        row4('SSH', sshValue === '不可用' ? '缺依赖' : sshValue, timeCell(meta.staticUpdatedAt), sshFailure?.message || 'SSH 通道缺依赖'),
+        row4('业务快照', '无', '无业务快照，业务数据不展示', '业务状态不可参考'),
         row4('WAN', '停用', '无业务快照', '线路状态停用'),
         row4('路由', '待判定', '缺路由快照', routeMissingReason),
+        row4('默认路由', '待判定', '路由快照缺失', '核心影响待判'),
         row4('资源', '停用', '无业务快照', 'CPU/MEM/DISK 停用'),
         row4('终端', '停用', '无业务快照', '终端排行停用'),
         row4('速率', '不展示', '无业务快照', '禁止零速率占位'),
         row4('连接', '停用', '无业务快照', '连接明细停用'),
+        row4('展示范围', '仅链路', '最近成功 / 端点 / 边界', '业务数据不展示'),
         row4('可信等级', '链路可参考', '采集链路证据', '业务状态不可参考'),
-        row4('最后成功快照摘要', latestSuccessShort, '采集元数据', '当前失败对照')
+        row4('失败端点', failureValue, failureReason, '未记录不是无失败'),
+        row4('最后成功快照摘要', latestSuccessShort, '采集元数据', '当前失败对照'),
+        row4('下次尝试', nextCollection, '轮询中', '不承诺可达')
       ];
       return [
         overviewFlatModule(
@@ -11015,7 +11031,7 @@
       return overviewFlatModule(
         'process-service-pressure',
         '进程或服务压力',
-        '进程压力 / 服务压力 / DNS缓存 / cache gap',
+        '进程压力 / 服务压力 / DNS缓存 / 缓存缺口',
         compactTable(['项', '当前', '细节', '证据'], rows, '未采集进程或服务压力', 'ik-home-evidence-table')
       );
     }
@@ -11060,7 +11076,7 @@
         row('CPU', ctx.o.cpuLoad, cpu, peakCpu),
         row('MEM', ctx.o.memoryUsage, memory, peakMemory),
         row('DISK', ctx.o.diskUsage, disk, peakDisk),
-        `<tr data-overview-field><td><b>${escapeHtml(`Conn ${fmtCompact(ctx.connectionTotal)}`)}</b></td><td>-</td><td>${escapeHtml(`活动 ${fmtNumber(ctx.activeSessions)}`)}</td><td>${escapeHtml(`采样 ${fmtNumber(ctx.sampleCount)}`)}</td></tr>`
+        `<tr data-overview-field><td><b>${escapeHtml(`连接 ${fmtCompact(ctx.connectionTotal)}`)}</b></td><td>-</td><td>${escapeHtml(`活动 ${fmtNumber(ctx.activeSessions)}`)}</td><td>${escapeHtml(`采样 ${fmtNumber(ctx.sampleCount)}`)}</td></tr>`
       ];
       return overviewFlatModule(
         'resource-threshold',

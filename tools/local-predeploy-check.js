@@ -2471,10 +2471,10 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewNoSnapshotBoundaryTitleCount === 0 &&
       /只读边界/.test(normalize(overviewNoSnapshotBoundaryDegradeModule.querySelector('.ik-overview-flat-title')?.textContent || '')) &&
       /降级模块/.test(normalize(overviewNoSnapshotBoundaryDegradeModule.querySelector('.ik-overview-flat-title')?.textContent || '')) &&
-      overviewNoSnapshotBoundaryDegradeRowCount === 8 &&
+      overviewNoSnapshotBoundaryDegradeRowCount >= 14 &&
       overviewNoSnapshotTimelineRowCount === 0 &&
       !overviewNoSnapshotTimelineModule &&
-      /8项矩阵/.test(overviewNoSnapshotBoundaryText) &&
+      /\\d+项矩阵/.test(overviewNoSnapshotBoundaryText) &&
       /模块边界/.test(overviewNoSnapshotBoundaryText) &&
       /速率\s*不展示|速率不展示/.test(overviewNoSnapshotBoundaryText) &&
       /不写配置/.test(overviewNoSnapshotBoundaryText) &&
@@ -2561,6 +2561,21 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       '[data-overview-mobile-incident]',
       '.notice.danger'
     ].join(',')) || [], mobileTop120Visible);
+    const overviewEffectiveFactScopeText = [
+      firstScreenOverviewText,
+      mobileTop120Text,
+      overviewDesktopTopText,
+      overviewDesktopDetailText,
+      overviewStatusBarText,
+    ].join(' ');
+    const overviewEffectiveFactAxes = {
+      object: /WAN|接口|资源|RouterOS|默认路由|采集|终端|CPU|MEM|DISK|磁盘|内存/.test(overviewEffectiveFactScopeText),
+      state: /正常|异常|不可达|不可判定|离线|满载|可用|待确认|不展示|缓存|缺依赖|全离线/.test(overviewEffectiveFactScopeText),
+      time: /最近成功|业务快照|采样|更新|下次尝试|0s|\\d{2}-\\d{2}\\s+\\d{2}:\\d{2}/.test(overviewEffectiveFactScopeText),
+      evidence: /证据|依据|阈|峰|均值|table|gateway|distance|parent|bridge|vlan|pppoe-out|REST|SSH/.test(overviewEffectiveFactScopeText),
+      trust: /可信|缓存可参考|当前不可判定|业务状态不可信|不展示|只读|展示边界|展示范围/.test(overviewEffectiveFactScopeText),
+    };
+    const overviewEffectiveFactAxesOk = sectionName !== 'overview' || Object.values(overviewEffectiveFactAxes).every(Boolean);
     const overviewNoSnapshotFirstScreenText = [firstScreenOverviewText, mobileTop120Text].join(' ');
     const overviewNoSnapshotFirstScreenRateForbiddenOk = sectionName !== 'overview' || !noSnapshotEdge || Boolean(
       !/(?:WAN\\s*速率|WAN速率)/.test(overviewNoSnapshotFirstScreenText) &&
@@ -3341,7 +3356,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewDesktopTopText,
       topErrorNoticeText,
     ].join(' ');
-    const overviewChineseUiNoEngineeringEnglishOk = sectionName !== 'overview' || !(/[�]/.test(overviewChineseUiVisibleText) || /(?:^|[^A-Za-z])(endpoint|failure|stale|snapshot|bucket|hasMore|sampled|sort)(?:[^A-Za-z]|$)/i.test(overviewChineseUiVisibleText));
+    const overviewChineseUiNoEngineeringEnglishOk = sectionName !== 'overview' || !(/[�]/.test(overviewChineseUiVisibleText) || /(?:^|[^A-Za-z])(endpoint|failure|stale|snapshot|bucket|hasMore|sampled|sort|cache\\s+gap|active\\s+sessions|process\\s*\\/\\s*service|ConnTrack|Conn)(?:[^A-Za-z]|$)/i.test(overviewChineseUiVisibleText));
     const overviewDesktopFlatStatusBarOk = sectionName !== 'overview' || !isDesktopOverview || Boolean(
       overviewStatusBar &&
       overviewStatusBarCells.length >= 6 &&
@@ -3864,6 +3879,9 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const overviewLongTimestampForbiddenOk = sectionName !== 'overview' || Boolean(
       !/\b\d{4}-\d{2}-\d{2}[T\s]\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?(?:Z)?\b/.test(overviewVisibleTimestampText)
     );
+    const overviewReadOnlyFactToneOk = sectionName !== 'overview' || Boolean(
+      !/值班动作|恢复条件|等待采集|保持只读/.test(overviewVisibleTimestampText)
+    );
     const overviewRestSshSourceConsistencyOk = sectionName !== 'overview' || Boolean(
       !/REST|SSH/.test(restSshDesktopSourceText + ' ' + restSshMobileSourceText) ||
       (scaleScenario === 'interfaces-down'
@@ -4228,7 +4246,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
           rightRegionRects.length > 0 &&
           rightBottomBlank <= 120 &&
           overviewNoSnapshotBoundaryDegradeModule &&
-          overviewNoSnapshotBoundaryDegradeRowCount === 8 &&
+          overviewNoSnapshotBoundaryDegradeRowCount >= 14 &&
           !overviewNoSnapshotTimelineModule &&
           overviewNoSnapshotTimelineRowCount === 0
         )
@@ -4595,6 +4613,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewHistoryNoLiveGreenOk &&
       overviewMobileEffectiveCoverageOk &&
       overviewMobileFirstScreenHardCompressionOk &&
+      overviewEffectiveFactAxesOk &&
       overviewFirstScreenEllipsisOk &&
       overviewCriticalEllipsisOk &&
       overviewPrimaryConclusionNoEllipsisOk &&
@@ -4640,6 +4659,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewRestSshViewportParityOk &&
       overviewStatusBusFixedGrammarOk &&
       overviewLongTimestampForbiddenOk &&
+      overviewReadOnlyFactToneOk &&
       overviewResourceFirstScreenPriorityOk &&
       overviewResourceFirstScreenWanTrendForbiddenOk &&
       overviewResourceFirstScreenEffectiveFactsOk &&
@@ -4941,6 +4961,8 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewMobileEffectiveCoverageProbe,
       overviewMobileFirstScreenHardCompressionOk,
       overviewMobileFirstScreenHardCompressionProbe,
+      overviewEffectiveFactAxesOk,
+      overviewEffectiveFactAxes,
       overviewFirstScreenEllipsisOk,
       overviewFirstScreenEllipsisCount,
       overviewFirstScreenEllipsisSamples: ellipsisSamples.slice(0, 8),
@@ -5012,6 +5034,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewRestSshViewportParityOk,
       overviewStatusBusFixedGrammarOk,
       overviewLongTimestampForbiddenOk,
+      overviewReadOnlyFactToneOk,
       overviewLongTimestampForbiddenProbe: {
         excerpt: overviewVisibleTimestampText.slice(0, 260),
       },
