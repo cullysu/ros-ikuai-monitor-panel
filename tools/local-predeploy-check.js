@@ -1797,6 +1797,10 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const mobileWanTable = sectionRoot?.querySelector('[data-overview-mobile-wan-table]');
     const mobileFirstScreen = sectionRoot?.querySelector('[data-overview-mobile-first-screen]');
     const mobileDetail = sectionRoot?.querySelector('[data-overview-mobile-detail]');
+    const mobileDetailSectionTitles = Array.from(mobileDetail?.querySelectorAll('[data-overview-mobile-detail-section] > .ik-mobile-section-head') || [])
+      .map((node) => normalize(node.textContent || ''))
+      .filter(Boolean);
+    const mobileDetailSectionIndex = (pattern) => mobileDetailSectionTitles.findIndex((title) => pattern.test(title));
     const mobileMetricTitles = Array.from(mobileMetrics?.querySelectorAll('.ik-mobile-metric-title') || [])
       .map((node) => normalize(node.textContent || ''))
       .filter(Boolean);
@@ -3100,10 +3104,19 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       (!noSnapshotEdge || (mobileFirstScreenRect && Math.round(mobileFirstScreenRect.bottom - mobileFirstScreenRect.top) <= 340)) &&
       (!mobileLeadPreviewRect || Math.round(mobileLeadPreviewRect.top - mobileFirstScreenRect.top) <= 320)
     );
+    const mobileWanIncidentRouteIndex = mobileDetailSectionIndex(/默认路由|路由/);
+    const mobileWanIncidentCollectionIndex = mobileDetailSectionIndex(/采集|通道/);
+    const mobileWanIncidentResourceIndex = mobileDetailSectionIndex(/资源|阈值/);
     const overviewMobileWanIncidentPriorityOk = sectionName !== 'overview' || !isMobileOverview || !['all-offline'].includes(scaleScenario) || Boolean(
       /WAN/.test(firstScreenOverviewText) &&
       /离线|全离线|全部离线/.test(firstScreenOverviewText) &&
       /默认路由|离线对象/.test(firstScreenOverviewText) &&
+      /^WAN/.test(mobileLeadPreviewTitle) &&
+      mobileWanIncidentRouteIndex >= 0 &&
+      mobileWanIncidentCollectionIndex >= 0 &&
+      mobileWanIncidentResourceIndex >= 0 &&
+      mobileWanIncidentRouteIndex < mobileWanIncidentCollectionIndex &&
+      mobileWanIncidentCollectionIndex < mobileWanIncidentResourceIndex &&
       !/CPU\\s*\\d|内存\\s*\\d|磁盘\\s*\\d|连接\\s*\\d/.test(firstScreenOverviewText)
     );
     const mobileDetailRows = mobileLeadRows.length
@@ -3541,12 +3554,13 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         !isDesktopOverview ||
         (
           overviewDesktopFirstDetailModuleName === 'collection-cache-ledger' &&
+          !overviewVisibleDensityModuleNames.includes('rank') &&
           (!rankGrid || !nodeVisibleInFirstScreen(rankGrid))
         ) ||
         (
           overviewDesktopCollectionLedger &&
-          rankGrid &&
-          (overviewDesktopCollectionLedger.compareDocumentPosition(rankGrid) & Node.DOCUMENT_POSITION_FOLLOWING)
+          !overviewVisibleDensityModuleNames.includes('rank') &&
+          (!rankGrid || !nodeVisibleInFirstScreen(rankGrid))
         )
       ) &&
       (
@@ -3567,11 +3581,8 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const overviewCollectionRankOrderOk = sectionName !== 'overview' || scaleScenario !== 'collection-down' || Boolean(
       overviewCollectionTerminalRankDeprioritizedOk &&
       overviewCollectionRankAnchorIndex >= 0 &&
-      (overviewCollectionRankIndex < 0 || overviewCollectionRankAnchorIndex < overviewCollectionRankIndex) &&
-      (!rankGrid || !nodeVisibleInFirstScreen(rankGrid) || (
-        overviewDesktopCollectionLedger &&
-        (overviewDesktopCollectionLedger.compareDocumentPosition(rankGrid) & Node.DOCUMENT_POSITION_FOLLOWING)
-      ))
+      overviewCollectionRankIndex < 0 &&
+      (!rankGrid || !nodeVisibleInFirstScreen(rankGrid))
     );
     const overviewConsoleLanguageText = [
       firstScreenOverviewText,
@@ -4102,7 +4113,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       (overviewVisibleDensityModuleNames.includes('collection-status') || overviewVisibleDensityModuleNames.includes('freshness')) &&
       !overviewVisibleDensityModuleNames.includes('rank') &&
       !overviewVisibleDensityModuleNames.includes('resource-threshold') &&
-      /速率不展示|速率无有效样本/.test(fleetSceneText + ' ' + overviewDesktopDetailText)
+      /速率[：:]无有效样本|速率无有效样本/.test(fleetSceneText + ' ' + overviewDesktopDetailText)
     );
     const fleetOfflineEvidenceCount = fleetOfflineNames.filter((name) => fleetSceneText.includes(name)).length;
     const overviewFleetSceneEvidenceOk = sectionName !== 'overview' || scaleScenario !== 'fleet' || Boolean(

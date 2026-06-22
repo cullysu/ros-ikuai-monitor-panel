@@ -8479,7 +8479,7 @@
         : `CPU ${fmtPercent(ctx.o.cpuLoad)} / MEM ${fmtPercent(ctx.o.memoryUsage)} / DISK ${fmtPercent(ctx.o.diskUsage)}`;
       const trafficText = noSnapshot
         ? '不可判定'
-        : (overviewIncidentSuppressRateEvidence(ctx) ? '速率不展示' : `${fmtRate(ctx.wanRates.up)} / ${fmtRate(ctx.wanRates.down)}`);
+        : (overviewIncidentSuppressRateEvidence(ctx) ? '速率：无有效样本' : `${fmtRate(ctx.wanRates.up)} / ${fmtRate(ctx.wanRates.down)}`);
       const terminalText = noSnapshot
         ? '无当前值'
         : `${fmtNumber(ctx.onlineTerminals || 0)} 在线 / ${fmtCompact(ctx.connectionTotal)} 连接`;
@@ -8510,7 +8510,7 @@
         ...collectionRows,
         row(noSnapshot ? '业务快照' : '业务快照年龄', noSnapshot ? '无' : snapshotBusinessAgeText(ctx.snapshot, ctx.freshness), noSnapshot ? noSnapshotBusinessStateText() : shortTimestampText(snapshotBusinessTimeText(ctx.snapshot, ctx.freshness)), noSnapshot || ctx.freshness?.stale ? 'warn' : history ? 'trust' : 'ok'),
         row('资源', resourceText, noSnapshot ? '只读边界，资源阈值不展示' : (ctx.resourceEvidence?.summary || `${fmtNumber(ctx.sampleCount)} 点`), noSnapshot ? 'warn' : ctx.resourceLevel),
-        row('流量', trafficText, noSnapshot ? '只读边界，速率账本不生成' : overviewIncidentSuppressRateEvidence(ctx) ? '事故对象优先，速率不展示' : `${fmtNumber(ctx.sampleCount)} 点 · ${ctx.pollText}`, noSnapshot || overviewIncidentSuppressRateEvidence(ctx) ? 'warn' : 'trust'),
+        row('流量', trafficText, noSnapshot ? '只读边界，速率账本不生成' : overviewIncidentSuppressRateEvidence(ctx) ? '事故对象优先，速率不参与判断' : `${fmtNumber(ctx.sampleCount)} 点 · ${ctx.pollText}`, noSnapshot || overviewIncidentSuppressRateEvidence(ctx) ? 'warn' : 'trust'),
         row('终端 / 连接', terminalText, noSnapshot ? '只读边界，终端排行不展示' : `PPP ${fmtNumber(ctx.activeSessions || 0)} / 最近成功 ${shortTimestamp(latestCollectionSuccessTime(ctx))}`, noSnapshot ? 'warn' : 'trust')
       ];
       return overviewFlatModule(
@@ -8571,7 +8571,7 @@
       return overviewIsWanIncidentKey(key) || key === 'interfaces-down';
     }
 
-    function overviewIncidentRateText(ctx, fallback = '速率不展示') {
+    function overviewIncidentRateText(ctx, fallback = '速率：无有效样本') {
       return overviewIncidentSuppressRateEvidence(ctx)
         ? fallback
         : fmtRate(Number(ctx?.wanRates?.up || 0) + Number(ctx?.wanRates?.down || 0));
@@ -10791,6 +10791,11 @@
         pushSection('collection', renderOverviewMobileCollectionDetail(ctx));
         pushSection('resource', renderOverviewMobileResourceDetail(ctx, 3));
         pushSection('wan', renderOverviewMobileWanDetailSection(ctx, 3));
+      } else if (overviewIsWanIncidentKey(v.topKey)) {
+        pushSection('wan', renderOverviewMobileWanDetailSection(ctx));
+        pushSection('route', renderOverviewMobileRouteSummary(ctx));
+        pushSection('collection', renderOverviewMobileCollectionDetail(ctx));
+        pushSection('resource', renderOverviewMobileResourceDetail(ctx, 3));
       } else if (overviewIsRouteIncidentKey(v.topKey)) {
         pushSection('wan', renderOverviewMobileWanDetailSection(ctx));
         pushSection('route', renderOverviewMobileRouteSummary(ctx));
@@ -11220,7 +11225,7 @@
           row('承载关系', routeHit.hitText || '0/3', routeHit.text || '未命中默认路由', '默认路由证据'),
           row('父接口', parents, 'WAN 父接口清单', '接入关系'),
           row('采集可信度', collection.label || '采集可用', channelText, `最近成功 ${latestSuccess}`),
-          row('速率口径', '速率不展示', 'WAN 全离线', '首屏让位给对象'),
+          row('速率口径', '速率：无有效样本', 'WAN 全离线，趋势不参与判断', '首屏让位给对象'),
           row('下次轮询', ctx.pollText || '未采集', '轮询中', '只读状态')
         ];
         return overviewFlatModule(
@@ -11404,7 +11409,7 @@
         `<tr data-overview-field><td><b>父接口</b></td><td>${escapeHtml(parents)}</td><td>${escapeHtml(`${fmtNumber(ctx.wanHealth.offline)} 条离线`)}</td><td>接入关系</td></tr>`,
         ...routes.slice(0, 4).map(routeFact),
         ...(routes.length ? [] : [`<tr data-overview-field><td><b>route #1</b></td><td>未采集</td><td>table / gateway / distance 缺失</td><td>路由快照缺失</td></tr>`]),
-        `<tr data-overview-field><td><b>速率口径</b></td><td>不展示</td><td>速率不展示</td><td>禁止补零占位</td></tr>`,
+        `<tr data-overview-field><td><b>速率口径</b></td><td>速率：无有效样本</td><td>趋势不参与判断</td><td>禁止补零占位</td></tr>`,
         `<tr data-overview-field><td><b>采集口径</b></td><td>${escapeHtml(mobileChannelPair(labels.restLabel, labels.sshLabel))}</td><td>${escapeHtml(`最近成功 ${shortTimestamp(latestCollectionSuccessTime(ctx))}`)}</td><td>只读状态</td></tr>`
       ];
       return overviewFlatModule(
@@ -11470,7 +11475,7 @@
         .sort((a, b) => Number(b.value || 0) - Number(a.value || 0))[0] || null;
       const factRow = (name, current, windowText, evidence) => `<tr data-overview-field><td><b>${escapeHtml(name)}</b></td><td>${escapeHtml(String(current ?? '-'))}</td><td>${escapeHtml(String(windowText ?? '-'))}</td><td>${escapeHtml(String(evidence ?? '-'))}</td></tr>`;
       const rateSuppressed = overviewIncidentSuppressRateEvidence(ctx);
-      const incidentRateCurrent = rateSuppressed ? '速率不展示' : fmtRate(Number(ctx.wanRates.up || 0) + Number(ctx.wanRates.down || 0));
+      const incidentRateCurrent = rateSuppressed ? '速率：无有效样本' : fmtRate(Number(ctx.wanRates.up || 0) + Number(ctx.wanRates.down || 0));
       const incidentRateDetail = rateSuppressed ? '事故对象优先' : `${fmtRate(ctx.wanRates.up)} / ${fmtRate(ctx.wanRates.down)}`;
       const contextRows = [
         factRow('最危险资源', worstMetric ? `${worstMetric.name} ${fmtPercent(worstMetric.value)}` : '未采集', worstMetric?.stats?.durationText || '持续待确认', worstMetric?.stats?.thresholdText || '阈值待确认'),
@@ -11524,7 +11529,7 @@
       const topInterfaceTx = topInterface ? fmtRate(Number(topInterface.txRate || 0)) : '未采集';
       const topInterfaceRx = topInterface ? fmtRate(Number(topInterface.rxRate || 0)) : '未采集';
       const rateSuppressed = overviewIncidentSuppressRateEvidence(ctx);
-      const incidentRateCurrent = rateSuppressed ? '速率不展示' : fmtRate(Number(ctx.wanRates.up || 0) + Number(ctx.wanRates.down || 0));
+      const incidentRateCurrent = rateSuppressed ? '速率：无有效样本' : fmtRate(Number(ctx.wanRates.up || 0) + Number(ctx.wanRates.down || 0));
       const incidentRateDetail = rateSuppressed ? '事故对象优先' : `${fmtRate(ctx.wanRates.up)} / ${fmtRate(ctx.wanRates.down)}`;
       const row = (name, current, detail, evidence) => `<tr data-overview-field><td><b>${escapeHtml(name)}</b></td><td>${escapeHtml(String(current ?? '-'))}</td><td>${escapeHtml(String(detail ?? '-'))}</td><td>${escapeHtml(String(evidence ?? '-'))}</td></tr>`;
       const rows = [
@@ -11534,7 +11539,7 @@
         row('接口总数', fmtNumber(interfaces.length), `running ${fmtNumber(runningInterfaces)}`, '转发面样本'),
         row('接口峰值对象', topInterfaceName, `峰值口径 ${topInterfaceRate}`, '最忙接口'),
         row('吞吐缺口', topInterface ? '已采集接口速率' : '未采集', topInterface ? 'tx/rx 当前值可参考' : '接口吞吐未采集', '不补 0 速率'),
-        row('证据口径', rateSuppressed ? '速率不展示' : '旁证', '不参与最终排序', '资源阈值优先')
+        row('证据口径', rateSuppressed ? '速率：无有效样本' : '旁证', '不参与最终排序', '资源阈值优先')
       ];
       return overviewFlatModule(
         'interface-throughput-impact',
@@ -11815,8 +11820,8 @@
       const trustModeClass = `${isHistorySnapshot(freshness) ? ' is-history-snapshot' : ''}${overviewSceneClass}`;
       const leftContinuityPanel = renderOverviewDesktopLeftContinuityPanel(ctx);
       const leftContinuityFirst = ['wan-offline-all', 'wan-offline', 'data-stale'].includes(ctx.verdict.topKey) || ['wan-offline-all', 'wan-offline', 'stale-yellow'].includes(overviewDesktopFocus(ctx).key);
-      const collectionRankAfterLedger = ['collection-degraded', 'collection-down'].includes(ctx.verdict.topKey);
-      const rankSuppressed = ['resource-full', 'resource-load', 'no-snapshot', 'interfaces-down', 'wan-offline-all', 'wan-offline'].includes(ctx.verdict.topKey);
+      const collectionRankAfterLedger = false;
+      const rankSuppressed = ['resource-full', 'resource-load', 'no-snapshot', 'interfaces-down', 'wan-offline-all', 'wan-offline', 'collection-down', 'collection-degraded'].includes(ctx.verdict.topKey);
       return section('只读状态首页', 'overview', '', `
         <div class="ik-home-trust-mode${trustModeClass}" data-overview-trust-mode="${isHistorySnapshot(freshness) ? 'history' : 'live'}">
           ${renderOverviewMobileConsole(ctx)}
