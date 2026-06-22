@@ -2241,7 +2241,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       '[data-overview-no-snapshot-grid] [data-overview-field]'
     ].join(',')) || [])
       .filter(nodeVisibleInFirstScreen);
-    const overviewNoSnapshotRowHeightLimit = 72;
+    const overviewNoSnapshotRowHeightLimit = 22;
     const overviewNoSnapshotRowHeightSamples = overviewNoSnapshotBoundaryRowNodes
       .map((node) => {
         const rect = node.getBoundingClientRect();
