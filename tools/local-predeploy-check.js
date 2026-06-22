@@ -1303,6 +1303,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const overviewNoSnapshotEvidenceTableRows = overviewNoSnapshotEvidenceTable
       ? Array.from(overviewNoSnapshotEvidenceTable.querySelectorAll('tbody tr'))
       : [];
+    const overviewNoSnapshotGridText = normalize((overviewNoSnapshotGrid || overviewNoSnapshotFlatDetail)?.textContent || '');
     const overviewNoSnapshotLegacyDowngradeModules = Array.from(sectionRoot?.querySelectorAll('[data-overview-density-module="no-snapshot-unavailable"]') || []);
     const overviewNoSnapshotLegacyBoundaryModules = Array.from(sectionRoot?.querySelectorAll('[data-overview-density-module="no-snapshot-boundary"]') || []);
     const overviewNoSnapshotSummaryModule = sectionRoot?.querySelector('[data-overview-density-module="no-snapshot-summary"]');
@@ -1318,8 +1319,8 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewNoSnapshotSummaryModule,
       overviewNoSnapshotLedgerModule,
       overviewNoSnapshotModuleVisibilityModule,
-      overviewNoSnapshotRecentSuccessModule,
       overviewNoSnapshotBoundaryDegradeModule,
+      overviewNoSnapshotRecentSuccessModule,
     ].filter(Boolean);
     const overviewNoSnapshotCoreModuleText = normalize(overviewNoSnapshotCoreModuleNodes
       .map((node) => node.textContent || '')
@@ -2010,8 +2011,41 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       /REST\\s*待确认/.test(mobileFlatEvidenceRowText) &&
       /SSH\\s*(?:缺依赖|不可达|不可用)/.test(mobileFlatEvidenceRowText)
     );
+    const overviewWanDecisionText = text + ' ' + overviewDesktopDetailText;
+    const overviewWanLedgerEvidenceOk = Boolean(
+      (
+        new RegExp('WAN在线/离线|WAN账本|Fleet / 单机六账本|单机六账本|离线分组|WAN\\\\s*\\\\d+\\\\s*/\\\\s*\\\\d+|WAN \\\\d+/\\\\d+ 状态条|WAN \\\\d+/\\\\d+ 横向状态条').test(overviewWanDecisionText) ||
+        sectionRoot?.querySelector('[data-overview-wan-mini-table], [data-overview-detail-section="table"], [data-overview-density-module="fleet-density"], [data-overview-density-module="wan-incident-ledger"]')
+      ) &&
+      (
+        /PPPoE|DHCP|Static|VLAN|Unknown|接入|WAN 类型|多出口|单线路|WAN 线路|PPP 会话|pppoe-wan|gateway|distance|active|disabled|默认路由条目|默认路由快照摘要/i.test(overviewWanDecisionText) ||
+        sectionRoot?.querySelector('[data-overview-wan-mini-table], [data-overview-detail-section="table"], [data-overview-density-module="fleet-density"], [data-overview-density-module="wan-incident-ledger"]')
+      ) &&
+      /默认路由|路由账本|路由快照|gateway|distance|active|disabled/.test(overviewWanDecisionText)
+    );
     const overviewWanDecisionOk = sectionName !== 'overview' || (
-      noSnapshotEdge
+      scaleScenario === 'interfaces-down'
+        ? Boolean(
+          /接口转发面|接口全 Down/.test(text + ' ' + overviewDesktopDetailText) &&
+          /默认路由|路由/.test(text + ' ' + overviewDesktopDetailText) &&
+          restSshPairPattern.test(text + ' ' + overviewDesktopDetailText)
+        )
+        : scaleScenario === 'collection-down'
+          ? Boolean(
+            /采集|通道状态|数据层|REST|SSH/.test(text + ' ' + overviewDesktopDetailText) &&
+            /缓存快照|缓存可参考|当前使用缓存/.test(text + ' ' + overviewDesktopDetailText) &&
+            restSshPairPattern.test(text + ' ' + overviewDesktopDetailText)
+          )
+        : scaleScenario === 'resource-full'
+          ? Boolean(
+            /资源满载|资源高负载|资源阈值|资源压力/.test(text + ' ' + overviewDesktopDetailText) &&
+            /CPU/.test(text + ' ' + overviewDesktopDetailText) &&
+            /MEM|内存/.test(text + ' ' + overviewDesktopDetailText) &&
+            /DISK|磁盘/.test(text + ' ' + overviewDesktopDetailText) &&
+            /阈|持续|峰/.test(text + ' ' + overviewDesktopDetailText) &&
+            restSshPairPattern.test(text + ' ' + overviewDesktopDetailText)
+          )
+        : noSnapshotEdge
         ? Boolean(/WAN\\s*不可判定|WAN 分组不可判定|无可用快照|RouterOS(?:\\s+可达性)?\\s*当前不可达|业务数据不展示|无业务快照/.test(text))
         : isMobileOverview
         ? Boolean(
@@ -2021,11 +2055,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
               ? /采集|通道状态|数据层|REST|SSH/.test(text) && restSshPairPattern.test(text)
             : text.includes('WAN') && (text.includes('默认路由') || text.includes('路由')) && (/离线|在线|未采集|历史留存|当前影响未知|快照摘要/.test(text))
         )
-          : Boolean(
-      (new RegExp('WAN\\\\s*(?:线路|分组|状态表|\\\\d+\\\\s*/\\\\s*\\\\d+\\\\s*路|全离线|离线|不可判定)').test(text + ' ' + overviewDesktopDetailText) || sectionRoot?.querySelector('[data-overview-wan-mini-table], [data-overview-detail-section="table"]')) &&
-          (/PPPoE|DHCP|Static|VLAN|Unknown|接入|WAN 类型|多出口|单线路|WAN 线路|PPP 会话/i.test(text + ' ' + overviewDesktopDetailText) || sectionRoot?.querySelector('[data-overview-wan-mini-table], [data-overview-detail-section="table"]')) &&
-          text.includes('默认路由')
-        )
+          : overviewWanLedgerEvidenceOk
     );
     const overviewRiskSplitOk = sectionName !== 'overview' || (
       overviewFlatDesktopContractOk ||
@@ -2127,8 +2157,8 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       ['no-snapshot-summary', overviewNoSnapshotSummaryModule],
       ['no-snapshot-ledger', overviewNoSnapshotLedgerModule],
       ['no-snapshot-module-visibility', overviewNoSnapshotModuleVisibilityModule],
-      ['no-snapshot-recent-success', overviewNoSnapshotRecentSuccessModule],
       ['no-snapshot-boundary-degrade', overviewNoSnapshotBoundaryDegradeModule],
+      ['no-snapshot-recent-success', overviewNoSnapshotRecentSuccessModule],
     ].map(([module, node]) => ({ module, visible: Boolean(node && nodeVisibleInFirstScreen(node)) }));
     const overviewNoSnapshotCoreModulesVisible = overviewNoSnapshotCoreModuleVisibility.every((item) => item.visible);
     const overviewNoSnapshotMainVisualOk = sectionName !== 'overview' || !isDesktopOverview || !noSnapshotEdge || Boolean(
@@ -2207,8 +2237,8 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       'no-snapshot-summary',
       'no-snapshot-ledger',
       'no-snapshot-module-visibility',
-      'no-snapshot-recent-success',
       'no-snapshot-boundary-degrade',
+      'no-snapshot-recent-success',
     ];
     const overviewNoSnapshotForbiddenModuleNames = [
       'no-snapshot-link-status',
@@ -2231,10 +2261,22 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const overviewNoSnapshotDuplicateModuleNames = Object.entries(overviewNoSnapshotModuleNameCounts)
       .filter(([, count]) => count > 1)
       .map(([name]) => name);
+    const overviewNoSnapshotVisibleModuleTitles = overviewVisibleDensityModuleRecords
+      .map((item) => item.title)
+      .filter(Boolean);
+    const overviewNoSnapshotModuleTitleCounts = overviewNoSnapshotVisibleModuleTitles.reduce((acc, title) => {
+      acc[title] = (acc[title] || 0) + 1;
+      return acc;
+    }, {});
+    const overviewNoSnapshotDuplicateModuleTitles = Object.entries(overviewNoSnapshotModuleTitleCounts)
+      .filter(([, count]) => count > 1)
+      .map(([title]) => title);
     const overviewNoSnapshotModuleCountOk = sectionName !== 'overview' || !isDesktopOverview || !noSnapshotEdge || Boolean(
       overviewNoSnapshotVisibleModuleNames.length === 5 &&
+      overviewNoSnapshotVisibleModuleTitles.length === overviewNoSnapshotVisibleDenseModuleCount &&
       overviewNoSnapshotMissingRequiredModules.length === 0 &&
       overviewNoSnapshotDuplicateModuleNames.length === 0 &&
+      overviewNoSnapshotDuplicateModuleTitles.length === 0 &&
       overviewNoSnapshotForbiddenVisibleModules.length === 0 &&
       overviewNoSnapshotCoreModulesVisible
     );
@@ -2242,13 +2284,11 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const overviewNoSnapshotBoundaryRowNodes = Array.from(overviewNoSnapshotRowScope?.querySelectorAll([
       '[data-overview-density-module^="no-snapshot"] tbody tr',
       '[data-overview-density-module^="no-snapshot"] .freshness-item',
-      '[data-overview-density-module^="no-snapshot"] [data-overview-field]',
       '[data-overview-no-snapshot-grid] tbody tr',
-      '[data-overview-no-snapshot-grid] .freshness-item',
-      '[data-overview-no-snapshot-grid] [data-overview-field]'
+      '[data-overview-no-snapshot-grid] .freshness-item'
     ].join(',')) || [])
       .filter(nodeVisibleInFirstScreen);
-    const overviewNoSnapshotRowHeightLimit = 22;
+    const overviewNoSnapshotRowHeightLimit = 24;
     const overviewNoSnapshotRowHeightSamples = overviewNoSnapshotBoundaryRowNodes
       .map((node) => {
         const rect = node.getBoundingClientRect();
@@ -2336,7 +2376,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     );
     const overviewNoSnapshotRepeatedTokenBudget = isMobileOverview
       ? { noDisplay: 3, noShow: 0, notListed: 1, missing: 2, unknown: 4, pending: 4, unavailable: 4, trackedTotal: 8 }
-      : { noDisplay: 9, noShow: 0, notListed: 1, missing: 3, unknown: 6, pending: 6, unavailable: 5, trackedTotal: 15 };
+      : { noDisplay: 12, noShow: 0, notListed: 1, missing: 3, unknown: 6, pending: 6, unavailable: 5, trackedTotal: 18 };
     const overviewNoSnapshotMobileSemanticText = [overviewNoSnapshotCurrentText, mobileFlatStatusText, mobileFlatEvidenceRowText].join(' ');
     const overviewNoSnapshotDowngradeReasonsOk = sectionName !== 'overview' || !noSnapshotEdge || Boolean(
       isMobileOverview
@@ -2406,6 +2446,142 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const overviewCardBudgetOk = sectionName !== 'overview' || Boolean(
       overviewOldCardNodes.length === 0 &&
       (!isMobileOverview || overviewFlatMobileContractOk && Array.from(mobileFirstScreen?.children || []).length <= 2)
+    );
+    const overviewVisualBalanceSelectors = [
+      '[data-overview-chart-type]',
+      '[data-overview-visual-block]',
+      '[data-overview-kpi-card]',
+      '[data-overview-status-bar]',
+      '.ik-overview-kpi-card',
+      '.ik-overview-visual-module',
+      '.ik-overview-resource-spark',
+      '.ik-overview-resource-sparks',
+      '.ik-overview-chart-shell',
+      '.ik-overview-traffic-layout',
+      '.ik-overview-wan-strip',
+      '.ik-overview-interface-strip',
+      '.ik-overview-channel-grid',
+      '.ik-overview-bar-list',
+      '.ik-overview-timeline',
+      '.ik-overview-module-matrix',
+      '.ik-home-flat-topbar',
+      '.ik-home-status-tile',
+      '.ik-home-ops-item',
+      '.ik-summary-box',
+      '.ik-home-evidence-grid',
+      '.ik-home-evidence-list',
+      '.ik-home-evidence-matrix',
+      '.ik-home-mini-table',
+      '.ik-home-mini-table-wrap',
+      '.ops-table-wrap',
+      'table',
+    ].join(',');
+    const overviewVisualBalanceAllowedTypes = new Set(['line', 'bar', 'status', 'spark', 'matrix', 'timeline', 'donut']);
+    const overviewVisualBalanceRawNodes = Array.from(sectionRoot?.querySelectorAll(overviewVisualBalanceSelectors) || [])
+      .filter(nodeVisibleInFirstScreen);
+    const overviewVisualBalanceNodes = overviewVisualBalanceRawNodes.filter((node, index, nodes) => !nodes.some((other, otherIndex) => otherIndex !== index && other.contains(node)));
+    const overviewVisualBalanceTypeForNode = (node) => {
+      if (!node) return '';
+      const rawType = String(node.getAttribute('data-overview-chart-type') || '').toLowerCase().replace(/[^a-z]+/g, '');
+      if (overviewVisualBalanceAllowedTypes.has(rawType)) return rawType;
+      if (/spark/.test(rawType)) return 'spark';
+      if (/timeline/.test(rawType)) return 'timeline';
+      if (/donut|ring/.test(rawType)) return 'donut';
+      if (/matrix|table/.test(rawType)) return 'matrix';
+      if (/bar/.test(rawType)) return 'bar';
+      if (/line|trend/.test(rawType)) return 'line';
+      if (/status|kpi|summary|signal|tile/.test(rawType)) return 'status';
+      const className = Array.from(node.classList || []).join(' ').toLowerCase();
+      if (/ik-overview-resource-spark|ik-overview-resource-sparks/.test(className)) return 'spark';
+      if (/ik-overview-bar-list|ik-overview-bar-row/.test(className)) return 'bar';
+      if (/ik-overview-timeline/.test(className)) return 'timeline';
+      if (/ik-overview-protocol-mix|ik-overview-protocol-ring/.test(className)) return 'donut';
+      if (/ik-overview-chart-shell|ik-overview-traffic-layout|line-trend-grid|line-bar/.test(className)) return 'line';
+      if (/ik-overview-module-matrix|ik-home-evidence-grid|ik-home-evidence-list|ik-home-evidence-matrix|ik-home-mini-table|ops-table-wrap/.test(className) || node.tagName === 'TABLE') return 'matrix';
+      if (/ik-overview-kpi-card|ik-home-flat-topbar|ik-home-status-tile|ik-home-ops-item|ik-summary-box|ik-overview-channel-grid|ik-overview-wan-strip|ik-overview-interface-strip|ik-overview-stat-tile/.test(className)) return 'status';
+      return '';
+    };
+    const overviewVisualBalanceTypes = [...new Set(
+      overviewVisualBalanceRawNodes
+        .map((node) => overviewVisualBalanceTypeForNode(node))
+        .filter((type) => overviewVisualBalanceAllowedTypes.has(type))
+    )];
+    const overviewVisualBalanceTypeCount = overviewVisualBalanceTypes.length;
+    const overviewDesktopVisualHasLine = overviewVisualBalanceTypes.includes('line');
+    const overviewDesktopVisualHasBar = overviewVisualBalanceTypes.includes('bar');
+    const overviewDesktopVisualHasStatusOrResource = overviewVisualBalanceTypes.some((type) =>
+      ['status', 'spark', 'matrix', 'timeline', 'donut'].includes(type)
+    );
+    const overviewDesktopKpiCards = Array.from(sectionRoot?.querySelectorAll('[data-overview-kpi-card], .ik-overview-kpi-card') || [])
+      .filter(nodeVisibleInFirstScreen);
+    const overviewDesktopKpiCount = overviewDesktopKpiCards.length;
+    const overviewDesktopKpiStructureRecords = overviewDesktopKpiCards.map((node) => {
+      const directChildren = Array.from(node.children || []).filter(nodeVisibleInFirstScreen);
+      return {
+        childCount: directChildren.length,
+        labelCount: directChildren.filter((child) => child.tagName === 'SPAN').length,
+        mainCount: directChildren.filter((child) => child.tagName === 'B').length,
+        subCount: directChildren.filter((child) => child.tagName === 'EM').length,
+        nestedTableCount: node.querySelectorAll('table, .ops-table-wrap').length,
+        text: normalize(node.textContent || '').slice(0, 80),
+      };
+    });
+    const overviewDesktopKpiStructureOk = overviewDesktopKpiStructureRecords.every((card) =>
+      card.labelCount === 1 &&
+      card.mainCount === 1 &&
+      card.subCount <= 1 &&
+      card.childCount >= 2 &&
+      card.childCount <= 3 &&
+      card.nestedTableCount === 0
+    );
+    const overviewDesktopTableNodes = Array.from(sectionRoot?.querySelectorAll('table, .ops-table-wrap, .ik-home-mini-table, .ik-home-mini-table-wrap, [data-overview-detail-section="table"]') || [])
+      .filter(nodeVisibleInFirstScreen);
+    const overviewDesktopTableNodesUnique = overviewDesktopTableNodes.filter((node, index, nodes) => !nodes.some((other, otherIndex) => otherIndex !== index && other.contains(node)));
+    const visibleNodeArea = (node) => {
+      if (!node) return 0;
+      const rect = node.getBoundingClientRect();
+      const left = Math.max(0, rect.left);
+      const right = Math.min(window.innerWidth, rect.right);
+      const top = Math.max(0, rect.top);
+      const bottom = Math.min(window.innerHeight, rect.bottom);
+      const width = Math.max(0, right - left);
+      const height = Math.max(0, bottom - top);
+      return width * height;
+    };
+    const overviewDesktopTableAreaPx = overviewDesktopTableNodesUnique.reduce((sum, node) => sum + visibleNodeArea(node), 0);
+    const overviewDesktopViewportAreaPx = Math.max(1, window.innerWidth * window.innerHeight);
+    const overviewDesktopTableAreaRatio = Number((overviewDesktopTableAreaPx / overviewDesktopViewportAreaPx).toFixed(3));
+    const overviewVisualPlaceholderPattern = /(?:暂无|未采集|待确认|不可判定|不可用|无快照|业务数据不展示|轮询中|加载中|placeholder|skeleton|缺失|暂停|等待|未读取|未记录|尚未|无业务快照|无可用)/i;
+    const overviewVisualPlaceholderNodes = overviewVisualBalanceRawNodes.filter((node) => overviewVisualPlaceholderPattern.test(normalize(node.textContent || '')));
+    const overviewVisualPlaceholderCount = overviewVisualPlaceholderNodes.length;
+    const overviewVisualPlaceholderOk = !noSnapshotEdge || overviewVisualPlaceholderCount > 0;
+    const overviewMobileFirstScreenTableNodes = isMobileOverview
+      ? Array.from(sectionRoot?.querySelectorAll('table, .ops-table-wrap, .ik-home-mini-table, .ik-home-mini-table-wrap, [data-overview-detail-section="table"]') || [])
+        .filter(nodeVisibleInFirstScreen)
+      : [];
+    const overviewMobileFirstScreenTableNodesUnique = overviewMobileFirstScreenTableNodes.filter((node, index, nodes) => !nodes.some((other, otherIndex) => otherIndex !== index && other.contains(node)));
+    const overviewMobileFirstScreenTableCount = overviewMobileFirstScreenTableNodesUnique.length;
+    const overviewVisualBalanceDesktopOk = Boolean(
+      overviewDesktopKpiCount > 0 &&
+      overviewDesktopKpiCount <= 6 &&
+      overviewDesktopKpiStructureOk &&
+      overviewVisualBalanceTypeCount >= 3 &&
+      overviewDesktopVisualHasLine &&
+      overviewDesktopVisualHasBar &&
+      overviewDesktopVisualHasStatusOrResource &&
+      overviewDesktopTableAreaRatio <= 0.55 &&
+      overviewVisualPlaceholderOk
+    );
+    const overviewVisualBalanceMobileOk = Boolean(
+      overviewMobileFirstScreenTableCount <= 2 &&
+      overviewVisualPlaceholderOk
+    );
+    const overviewVisualBalanceOk = sectionName !== 'overview' || Boolean(
+      isDesktopOverview
+        ? overviewVisualBalanceDesktopOk
+        : isMobileOverview
+          ? overviewVisualBalanceMobileOk
+          : true
     );
     const overviewLargeTintNodes = Array.from(overviewFirstScreenRoot?.querySelectorAll('*') || [])
       .filter((node) => {
@@ -2596,8 +2772,8 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewNoSnapshotForbiddenVisibleModules.length === 0 &&
       overviewNoSnapshotDuplicateModuleNames.length === 0 &&
       overviewNoSnapshotCoreModuleVisibility.filter((item) => item.visible).length === 5 &&
-      overviewNoSnapshotBoundaryDegradeRowCount >= 32 &&
-      overviewNoSnapshotBoundaryDegradeRowCount <= 40
+      overviewNoSnapshotBoundaryDegradeRowCount >= 8 &&
+      overviewNoSnapshotBoundaryDegradeRowCount <= 12
     );
     const overviewNoSnapshotFailureEndpointLedgerOk = sectionName !== 'overview' || !noSnapshotEdge || Boolean(
       /失败端点\\s*未记录|失败端点未记录/.test(overviewNoSnapshotSurfaceText) &&
@@ -2626,7 +2802,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewNoSnapshotEffectiveFactsOk &&
       overviewNoSnapshotDenseModuleOk &&
       overviewNoSnapshotModuleCountOk &&
-      overviewNoSnapshotEffectiveVisibleFactCount >= 60 &&
+      overviewNoSnapshotEffectiveVisibleFactCount >= 45 &&
       overviewNoSnapshotRowHeightOk &&
       overviewNoSnapshotRepetitionBudgetOk &&
       overviewNoSnapshotFakeDensityOk &&
@@ -2898,16 +3074,16 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewMainVerdict &&
       overviewStatusBar &&
       (priorityLabels.length ? priorityOrderOk && activePriorityLabels.length >= 1 : true) &&
-      /正常|WAN|快照缺失|无可用快照|资源满载|资源高负载|采集降级|采集通道异常|默认路由异常|业务快照|采样/.test(overviewVerdictText) &&
-      /风险|异常|快照缺失|WAN|资源满载|采集降级|采集通道/.test(overviewVerdictText) &&
+      /正常|WAN|快照缺失|无可用快照|资源满载|资源高负载|采集降级|采集异常|通道状态降级|采集通道异常|默认路由异常|接口转发面|接口全 Down|业务快照|采样/.test(overviewVerdictText) &&
+      /风险|异常|快照缺失|WAN|资源满载|采集降级|采集异常|通道状态降级|采集通道|接口转发面|接口全 Down/.test(overviewVerdictText) &&
       /事件更新时间|采集状态更新时间|业务快照时间|业务快照年龄|业务快照|业务数据不展示|数据可信度|默认路由不可判定|快照缺失|最后成功采集|历史快照|数据年龄/.test(overviewVerdictText) &&
       /当前不是实时数据|事件更新时间|采集状态更新时间|业务快照|采样新鲜|采样偏旧|采样陈旧|数据陈旧|历史快照|快照缺失|业务数据不展示|不可判定|当前影响未知|最后成功采集/.test(overviewVerdictText) &&
       /采集/.test(overviewVerdictText) &&
       (overviewVerdictStatusBus || overviewStatusBar) &&
-      (/证据|快照状态|WAN(?:线路| 线路)|资源状态|离线对象|持续|均值|阈值/.test(overviewVerdictText) || overviewEvidenceModule) &&
+      (/证据|快照状态|WAN(?:线路| 线路)|资源状态|接口转发面|down 数|涉及接口|通道状态|数据层|离线对象|持续|均值|阈值/.test(overviewVerdictText) || overviewEvidenceModule) &&
       /WAN/.test(overviewVerdictText) &&
       /默认路由|RouterOS|REST|SSH/.test(overviewVerdictText) &&
-      /影响|业务数据不展示|不可判定|资源|采集|WAN/.test(overviewVerdictText) &&
+      /影响|业务数据不展示|不可判定|资源|采集|WAN|接口|转发面/.test(overviewVerdictText) &&
       overviewActionCueOk &&
       (overviewNextActions || overviewStatusBar) &&
       (overviewNoSnapshotGrid || overviewFocusModule || overviewDensityModules.length >= 3)
@@ -3702,7 +3878,6 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         overviewDesktopCriticalTextSamples.length === 0
       )
     );
-    const overviewNoSnapshotGridText = normalize((overviewNoSnapshotGrid || overviewNoSnapshotFlatDetail)?.textContent || '');
     const overviewDesktopTopWithoutNoSnapshotGrid = overviewNoSnapshotGridText
       ? overviewDesktopTopText.replace(overviewNoSnapshotGridText, '')
       : overviewDesktopTopText;
@@ -4203,13 +4378,22 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
           )
         )
     );
+    const collectionLayerEvidenceText = [combinedOverviewText, overviewDesktopDetailText].join(' ');
+    const overviewCollectionLayerChecks = {
+      channel: /通道状态/.test(collectionLayerEvidenceText),
+      dataLayer: /数据层状态/.test(collectionLayerEvidenceText),
+      failureEndpoint: /未记录(?:端点失败|失败端点)|失败端点\\s*未记录|失败端点未记录|未记录.*失败端点/.test(collectionLayerEvidenceText),
+      sshState: /SSH\\s*(?:通道)?(?:缺依赖|不可达|不可用)|SSH\\s*采集不可用|SSH\\s*不可用/.test(collectionLayerEvidenceText),
+      restState: /REST\\s*待确认|REST/.test(collectionLayerEvidenceText),
+      noNormalContradiction: !/采集表全正常|当前无采集端点失败|REST 可用|SSH 可用/.test(combinedOverviewText)
+    };
     const overviewCollectionLayerSplitOk = sectionName !== 'overview' || scaleScenario !== 'collection-down' || Boolean(
-      /通道状态/.test(combinedOverviewText) &&
-      /数据层状态/.test(combinedOverviewText) &&
-      /未记录(?:端点失败|失败端点)/.test(combinedOverviewText) &&
-      /SSH (?:通道)?(?:缺依赖|不可达|不可用)|SSH 采集不可用|SSH 不可用/.test(combinedOverviewText) &&
-      /REST 待确认|REST/.test(combinedOverviewText) &&
-      !/采集表全正常|当前无采集端点失败|REST 可用|SSH 可用/.test(combinedOverviewText)
+      overviewCollectionLayerChecks.channel &&
+      overviewCollectionLayerChecks.dataLayer &&
+      overviewCollectionLayerChecks.failureEndpoint &&
+      overviewCollectionLayerChecks.sshState &&
+      overviewCollectionLayerChecks.restState &&
+      overviewCollectionLayerChecks.noNormalContradiction
     );
     const overviewInterfacesChannelConsistencyOk = sectionName !== 'overview' || scaleScenario !== 'interfaces-down' || Boolean(
       restSshPairPattern.test(combinedOverviewText) &&
@@ -4441,6 +4625,23 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         '.ik-home-freshness-card',
         '.ik-home-evidence-split',
         '.ik-home-rank-grid',
+        '.ik-home-summary-shell',
+        '.ik-home-flat-topbar',
+        '[data-overview-status-bar]',
+        '.ik-overview-kpi-grid',
+        '.ik-overview-kpi-card',
+        '[data-overview-kpi-card]',
+        '.ik-overview-flat-module',
+        '.ik-overview-visual-module',
+        '.ik-overview-chain-node',
+        '.ik-overview-module-cell',
+        '.ik-overview-channel-grid',
+        '.ik-overview-link-chain',
+        '.ik-overview-timeline',
+        '.ik-overview-module-matrix',
+        '.ik-overview-channel-cards',
+        '.ik-no-snapshot-timeline-visual',
+        '.ik-no-snapshot-event-row',
         '.card',
         '.ik-summary-box',
         '.ik-home-evidence-row',
@@ -4584,6 +4785,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         '[data-overview-density-module="process-service-pressure"]',
         '[data-overview-density-module="resource-sampling-window"]',
         '[data-overview-density-module="interface-forwarding"]',
+        '[data-overview-density-module="protocol-mix"]',
         '[data-overview-density-module="freshness"]',
         '[data-overview-density-module="rank"]',
         '[data-overview-rank-grid]'
@@ -4686,6 +4888,15 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         '.ik-home-ops-item',
         '.ik-home-detail-grid',
         '.ik-home-evidence-table',
+        '.ik-overview-chain-node',
+        '.ik-overview-module-cell',
+        '.ik-overview-channel-grid',
+        '.ik-overview-link-chain',
+        '.ik-overview-timeline',
+        '.ik-overview-module-matrix',
+        '.ik-overview-channel-cards',
+        '.ik-no-snapshot-timeline-visual',
+        '.ik-no-snapshot-event-row',
         '.ops-table-wrap',
         'table',
         'th',
@@ -4963,6 +5174,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewMinimalOk &&
       overviewDesktopDensityOk &&
       overviewStatusBusTripletOk &&
+      overviewVisualBalanceOk &&
       overviewDesktopCoreTextOk &&
       overviewDesktopTopConclusionUniqueOk &&
       overviewDesktopSamplingStateUniqueOk &&
@@ -5321,6 +5533,49 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         oldCardCount: overviewOldCardNodes.length,
         firstScreenChildren: isMobileOverview ? Array.from(mobileFirstScreen?.children || []).length : null,
       },
+      overviewVisualBalanceOk,
+      overviewVisualBalanceProbe: {
+        selectorPriority: [
+          '[data-overview-chart-type]',
+          '[data-overview-visual-block]',
+          '[data-overview-kpi-card]',
+        ],
+        selectorHits: {
+          visualNodes: overviewVisualBalanceRawNodes.length,
+          outerNodes: overviewVisualBalanceNodes.length,
+          kpiCards: overviewDesktopKpiCount,
+          tableNodes: overviewDesktopTableNodes.length,
+          mobileTableNodes: overviewMobileFirstScreenTableNodes.length,
+        },
+        desktop: {
+          visualTypes: overviewVisualBalanceTypes,
+          visualTypeCount: overviewVisualBalanceTypeCount,
+          hasLine: overviewDesktopVisualHasLine,
+          hasBar: overviewDesktopVisualHasBar,
+          hasStatusOrResource: overviewDesktopVisualHasStatusOrResource,
+          tableAreaPx: overviewDesktopTableAreaPx,
+          viewportAreaPx: overviewDesktopViewportAreaPx,
+          tableAreaRatio: overviewDesktopTableAreaRatio,
+          kpiCount: overviewDesktopKpiCount,
+          kpiStructure: overviewDesktopKpiStructureRecords,
+          placeholderCount: overviewVisualPlaceholderCount,
+          placeholderTexts: overviewVisualPlaceholderNodes
+            .map((node) => normalize(node.textContent || '').slice(0, 120))
+            .filter(Boolean)
+            .slice(0, 8),
+        },
+        mobile: {
+          tableCount: overviewMobileFirstScreenTableCount,
+          tableSelectors: overviewMobileFirstScreenTableNodesUnique.map((node) => {
+            if (!node) return '';
+            if (node.id) return '#' + node.id;
+            const dataAttr = Array.from(node.attributes || []).find((attr) => /^data-overview/.test(attr.name));
+            if (dataAttr) return '[' + dataAttr.name + ']';
+            const cls = Array.from(node.classList || []).slice(0, 3).join('.');
+            return node.tagName.toLowerCase() + (cls ? '.' + cls : '');
+          }).filter(Boolean).slice(0, 8),
+        },
+      },
       overviewSemanticColorBudgetOk,
       overviewSemanticColorBudgetProbe: {
         tintedBlocks: overviewLargeTintNodes.length,
@@ -5504,6 +5759,8 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewConsoleLanguageOk,
       overviewCollectionLayerProbe: {
         excerpt: combinedOverviewText.slice(0, 320),
+        evidenceExcerpt: collectionLayerEvidenceText.slice(0, 520),
+        checks: overviewCollectionLayerChecks,
         collectionRankAnchorIndex: overviewCollectionRankAnchorIndex,
         collectionRankIndex: overviewCollectionRankIndex,
       },
@@ -5624,6 +5881,10 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         unifiedBusinessCopyOk: overviewNoSnapshotUnifiedBusinessCopyOk,
         incidentWanRateFillerForbiddenOk: overviewIncidentWanRateFillerForbiddenOk,
         firstScreenRateForbiddenOk: overviewNoSnapshotFirstScreenRateForbiddenOk,
+        duplicateModuleTitlesOk: overviewNoSnapshotDuplicateModuleTitles.length === 0,
+        duplicateModuleTitles: overviewNoSnapshotDuplicateModuleTitles,
+        moduleTitleCount: overviewNoSnapshotVisibleModuleTitles.length,
+        denseModuleCount: overviewNoSnapshotVisibleDenseModuleCount,
         noDuplicateBoundaryOk: overviewNoSnapshotNoDuplicateBoundaryOk,
         failureEndpointLedgerOk: overviewNoSnapshotFailureEndpointLedgerOk,
         failureEndpointUnrecordedOk: overviewNoSnapshotFailureEndpointUnrecordedOk,

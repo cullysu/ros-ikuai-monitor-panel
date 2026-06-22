@@ -1502,9 +1502,21 @@
         min-height: calc(100vh - 38px) !important;
       }
       .section#overview .ik-home-trust-mode.is-overview-no-snapshot .ik-home-layout {
-        grid-template-columns: minmax(500px, 1.18fr) minmax(320px, .82fr);
+        grid-template-columns: minmax(560px, 1.32fr) minmax(300px, .68fr);
         gap: 8px;
         align-items: start;
+      }
+      .section#overview .ik-home-trust-mode.is-overview-no-snapshot .ik-home-layout > .stack:not(.ik-home-side-stack) {
+        height: auto;
+        min-height: 0;
+        gap: 2px;
+        justify-content: flex-start;
+      }
+      .section#overview .ik-home-trust-mode.is-overview-no-snapshot {
+        min-height: 0 !important;
+      }
+      .section#overview .ik-home-trust-mode.is-overview-no-snapshot .ik-home-layout {
+        min-height: 0;
       }
       .section#overview .ik-home-trust-mode.is-overview-resource-full .ik-home-layout,
       .section#overview .ik-home-trust-mode.is-overview-collection-down .ik-home-layout,
@@ -1517,6 +1529,22 @@
       .section#overview .ik-home-trust-mode.is-overview-collection-degraded .ik-home-layout > .stack {
         min-height: calc(100vh - 38px);
       }
+      .section#overview .ik-home-trust-mode.is-overview-collection-down .ik-home-side-stack [data-overview-density-module="freshness"],
+      .section#overview .ik-home-trust-mode.is-overview-collection-degraded .ik-home-side-stack [data-overview-density-module="freshness"] {
+        flex: 1 1 auto;
+      }
+      .section#overview .ik-home-trust-mode.is-overview-wan-offline-all .ik-home-layout > .stack:not(.ik-home-side-stack) [data-overview-density-module="wan-offline-continuity"],
+      .section#overview .ik-home-trust-mode.is-overview-wan-offline .ik-home-layout > .stack:not(.ik-home-side-stack) [data-overview-density-module="wan-offline-continuity"],
+      .section#overview .ik-home-trust-mode.is-overview-interfaces-down .ik-home-layout > .stack:not(.ik-home-side-stack) [data-overview-density-module="interface-forwarding"] {
+        flex: 1 1 auto;
+      }
+      .section#overview .ik-home-trust-mode.is-overview-wan-offline-all .ik-home-layout > .stack:not(.ik-home-side-stack) > [data-overview-desktop-detail],
+      .section#overview .ik-home-trust-mode.is-overview-wan-offline .ik-home-layout > .stack:not(.ik-home-side-stack) > [data-overview-desktop-detail],
+      .section#overview .ik-home-trust-mode.is-overview-interfaces-down .ik-home-layout > .stack:not(.ik-home-side-stack) > [data-overview-desktop-detail] {
+        flex: 1 1 auto;
+        display: flex;
+        flex-direction: column;
+      }
       .section#overview .ik-home-trust-mode.is-overview-no-snapshot .ik-home-layout > .stack > .ik-home-summary-shell {
         flex: 0 0 auto;
       }
@@ -1525,15 +1553,44 @@
         flex: 0 0 auto;
       }
       .section#overview .ik-home-trust-mode.is-overview-no-snapshot .ik-home-layout > .stack > [data-overview-desktop-detail].is-no-snapshot-detail {
-        flex: 1 1 auto;
-        display: flex;
-        min-height: 0;
-      }
-      .section#overview .ik-home-trust-mode.is-overview-no-snapshot .ik-home-layout > .stack > [data-overview-desktop-detail].is-no-snapshot-detail > [data-overview-density-module="no-snapshot-ledger"] {
-        flex: 1 1 auto;
+        flex: 0 0 auto;
         display: flex;
         flex-direction: column;
         min-height: 0;
+      }
+      .section#overview .ik-home-trust-mode.is-overview-no-snapshot .ik-home-layout > .stack > [data-overview-desktop-detail].is-no-snapshot-detail > [data-overview-density-module="no-snapshot-ledger"] {
+        flex: 0 0 auto;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+      }
+      .section#overview .ik-home-desktop-detail.is-no-snapshot-detail > [data-overview-no-snapshot-detail] {
+        flex: 0 0 auto;
+        align-self: start;
+      }
+      .section#overview .ik-home-trust-mode.is-overview-no-snapshot .ik-overview-nosnapshot-grid {
+        grid-template-columns: minmax(0, 1.08fr) minmax(0, .92fr);
+        grid-template-areas:
+          "matrix timeline"
+          "chain cards";
+        gap: 4px;
+        align-items: start;
+      }
+      .section#overview .ik-home-trust-mode.is-overview-no-snapshot .ik-overview-link-chain { grid-area: chain; }
+      .section#overview .ik-home-trust-mode.is-overview-no-snapshot .ik-overview-timeline { grid-area: timeline; }
+      .section#overview .ik-home-trust-mode.is-overview-no-snapshot .ik-overview-module-matrix { grid-area: matrix; }
+      .section#overview .ik-home-trust-mode.is-overview-no-snapshot .ik-overview-channel-cards { grid-area: cards; }
+      .section#overview .ik-home-trust-mode.is-overview-no-snapshot .ik-overview-link-chain,
+      .section#overview .ik-home-trust-mode.is-overview-no-snapshot .ik-overview-timeline,
+      .section#overview .ik-home-trust-mode.is-overview-no-snapshot .ik-overview-module-matrix,
+      .section#overview .ik-home-trust-mode.is-overview-no-snapshot .ik-overview-channel-cards {
+        align-self: start;
+      }
+      .section#overview .ik-home-trust-mode.is-overview-no-snapshot .ik-overview-visual-title {
+        margin-bottom: 4px;
+      }
+      .section#overview .ik-home-trust-mode.is-overview-no-snapshot .ik-overview-timeline-row {
+        padding: 2px 0;
       }
       .section#overview .ik-home-trust-mode.is-overview-no-snapshot .ik-home-side-stack {
         min-height: 0;
@@ -1549,10 +1606,13 @@
         min-height: 0;
       }
       .section#overview .ik-home-trust-mode.is-overview-no-snapshot .ik-home-detail-grid.is-no-snapshot-ledger {
-        grid-template-columns: minmax(0, 1fr);
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         grid-auto-rows: auto;
         gap: 4px;
         align-content: start;
+      }
+      .section#overview .ik-home-trust-mode.is-overview-no-snapshot .ik-home-detail-grid.is-no-snapshot-ledger [data-overview-density-module="no-snapshot-ledger"] {
+        grid-column: 1 / -1;
       }
       .section#overview .ik-home-trust-mode.is-overview-no-snapshot .ik-overview-flat-module,
       .section#overview .ik-home-trust-mode.is-overview-no-snapshot .ops-table-wrap,
@@ -1596,6 +1656,15 @@
       }
       .section#overview .ik-home-trust-mode.is-overview-no-snapshot .ik-home-side-stack [data-overview-density-module="no-snapshot-boundary-degrade"] {
         flex: 0 0 auto;
+        min-height: 0;
+      }
+      .section#overview .ik-home-trust-mode.is-overview-no-snapshot .ik-home-side-stack [data-overview-density-module="no-snapshot-recent-success"] {
+        flex: 0 0 auto;
+        min-height: 0;
+      }
+      .section#overview .ik-home-trust-mode.is-overview-no-snapshot .ik-home-side-stack [data-overview-density-module="no-snapshot-recent-success"] .ik-overview-flat-body {
+        display: flex;
+        flex-direction: column;
         min-height: 0;
       }
       .section#overview .ik-home-trust-mode.is-overview-no-snapshot [data-overview-density-module^="no-snapshot-"] .ik-overview-flat-body,
@@ -1936,6 +2005,790 @@
       font-size: 11px;
       line-height: 1.08;
     }
+    .ik-overview-visual-module {
+      border-color: #dbe7f4 !important;
+      background: #fff;
+    }
+    .ik-overview-visual-module .ik-overview-flat-body {
+      padding: 6px;
+    }
+    .ik-overview-kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 2px;
+      border: 1px solid #dfe7f1;
+      border-top: 0;
+      background: #fff;
+    }
+    .ik-overview-kpi-card {
+      min-width: 0;
+      padding: 5px 6px;
+      border-left: 1px solid #edf2f8;
+      background: #fff;
+    }
+    .ik-overview-kpi-card:first-child { border-left: 0; }
+    .ik-overview-kpi-card span {
+      display: block;
+      color: #748399;
+      font-size: 9px;
+      font-weight: 800;
+      line-height: 1.1;
+    }
+    .ik-overview-kpi-card b {
+      display: block;
+      margin-top: 3px;
+      color: #1f3148;
+      font-size: 14px;
+      font-weight: 900;
+      line-height: 1.05;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .ik-overview-kpi-card em {
+      display: block;
+      margin-top: 2px;
+      color: #7d8a9c;
+      font-size: 9px;
+      font-style: normal;
+      font-weight: 700;
+      line-height: 1.1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .ik-overview-traffic-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 132px;
+      gap: 6px;
+      align-items: stretch;
+    }
+    .ik-overview-chart-shell {
+      min-width: 0;
+      border: 1px solid #e6eef8;
+      background: #fff;
+      border-radius: 2px;
+      padding: 5px;
+    }
+    .ik-overview-chart-toolbar,
+    .ik-overview-legend {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      min-width: 0;
+      color: #617186;
+      font-size: 9.5px;
+      font-weight: 800;
+      line-height: 1.1;
+      margin-bottom: 4px;
+    }
+    .ik-overview-toggle {
+      display: inline-flex;
+      border: 1px solid #d9e6f4;
+      border-radius: 2px;
+      overflow: hidden;
+      background: #f8fbff;
+    }
+    .ik-overview-toggle span {
+      padding: 1px 5px;
+      border-left: 1px solid #d9e6f4;
+      color: #63748a;
+    }
+    .ik-overview-toggle span:first-child {
+      border-left: 0;
+      color: #165dff;
+      background: #eef6ff;
+    }
+    .ik-overview-chart-shell .mini-chart {
+      height: 126px;
+      border: 1px solid #eef3f9;
+      border-radius: 2px;
+      background: #fff;
+    }
+    .ik-overview-traffic-stats {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 4px;
+    }
+    .ik-overview-stat-tile,
+    .ik-overview-key-fact {
+      min-width: 0;
+      border: 1px solid #e5edf6;
+      border-radius: 2px;
+      background: #fbfdff;
+      padding: 5px;
+    }
+    .ik-overview-stat-tile span,
+    .ik-overview-key-fact span {
+      display: block;
+      color: #748399;
+      font-size: 9px;
+      font-weight: 800;
+      line-height: 1.1;
+    }
+    .ik-overview-stat-tile b,
+    .ik-overview-key-fact b {
+      display: block;
+      margin-top: 3px;
+      color: #20324a;
+      font-size: 12px;
+      font-weight: 900;
+      line-height: 1.08;
+      overflow-wrap: anywhere;
+    }
+    .ik-overview-stat-tile em,
+    .ik-overview-key-fact em {
+      display: block;
+      margin-top: 2px;
+      color: #7e8b9d;
+      font-size: 9px;
+      font-style: normal;
+      font-weight: 700;
+      line-height: 1.1;
+    }
+    .ik-overview-resource-sparks {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 5px;
+    }
+    .ik-overview-resource-sparks.is-compact {
+      gap: 4px;
+    }
+    .ik-overview-resource-spark {
+      position: relative;
+      min-width: 0;
+      border: 1px solid #e1ebf6;
+      border-left: 2px solid var(--resource-color, #165dff);
+      border-radius: 2px;
+      background: #fff;
+      padding: 6px;
+      overflow: hidden;
+    }
+    .ik-overview-resource-spark.is-danger { border-left-color: #d93025; }
+    .ik-overview-resource-spark.is-warn { border-left-color: #f08c00; }
+    .ik-overview-resource-sparks.is-compact .ik-overview-resource-spark {
+      padding: 5px;
+    }
+    .ik-overview-resource-sparks.is-compact .ik-overview-resource-head b {
+      font-size: 16px;
+    }
+    .ik-overview-resource-sparks.is-compact .ik-overview-resource-plot {
+      height: 52px;
+    }
+    .ik-overview-resource-sparks.is-compact .ik-overview-resource-plot .ops-resource-svg {
+      height: 50px;
+    }
+    .ik-overview-resource-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 6px;
+      margin-bottom: 4px;
+    }
+    .ik-overview-resource-head span {
+      color: #65758b;
+      font-size: 9px;
+      font-weight: 800;
+    }
+    .ik-overview-resource-head b {
+      color: #172a42;
+      font-size: 18px;
+      font-weight: 900;
+      line-height: 1;
+    }
+    .ik-overview-resource-meta {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 2px;
+      margin-top: 4px;
+      color: #69798d;
+      font-size: 9px;
+      font-weight: 800;
+      line-height: 1.1;
+    }
+    .ik-overview-resource-plot {
+      position: relative;
+      height: 58px;
+      border: 1px solid #edf3f9;
+      border-radius: 2px;
+      background: #fff;
+    }
+    .ik-overview-resource-plot .ops-resource-svg {
+      width: 100%;
+      height: 56px;
+    }
+    .ik-overview-threshold-line {
+      position: absolute;
+      left: 8px;
+      right: 8px;
+      border-top: 1px dashed rgba(217,48,37,.55);
+      pointer-events: none;
+    }
+    .ik-overview-protocol-mix {
+      display: grid;
+      grid-template-columns: 108px minmax(0, 1fr);
+      gap: 8px;
+      align-items: center;
+      min-height: 106px;
+    }
+    .ik-overview-protocol-ring {
+      position: relative;
+      width: 96px;
+      height: 96px;
+      margin: 0 auto;
+      border: 1px solid #e5eef8;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at center, #fff 0 50%, transparent 51%),
+        conic-gradient(#cfd9e6 0 38%, #e7eef7 38% 68%, #f3f7fb 68% 100%);
+    }
+    .ik-overview-protocol-ring::after {
+      content: "未采集";
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      color: #4c5d73;
+      font-size: 11px;
+      font-weight: 900;
+      line-height: 1;
+      white-space: nowrap;
+    }
+    .ik-overview-protocol-list {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 4px;
+      min-width: 0;
+    }
+    .ik-overview-protocol-row {
+      display: grid;
+      grid-template-columns: 46px minmax(0, 1fr) 54px;
+      gap: 5px;
+      align-items: center;
+      min-width: 0;
+      color: #53647a;
+      font-size: 9.5px;
+      font-weight: 800;
+      line-height: 1.1;
+    }
+    .ik-overview-protocol-track {
+      height: 7px;
+      border: 1px solid #e2ebf5;
+      border-radius: 2px;
+      background: #f6f9fd;
+      overflow: hidden;
+    }
+    .ik-overview-protocol-track span {
+      display: block;
+      height: 100%;
+      width: var(--protocol-width, 0%);
+      background: #8fb4e8;
+    }
+    .ik-overview-protocol-row em {
+      color: #7d8a9c;
+      font-style: normal;
+      text-align: right;
+      white-space: nowrap;
+    }
+    .ik-overview-protocol-trend,
+    .ik-overview-collection-bars,
+    .ik-overview-resource-line {
+      margin-top: 5px;
+      border: 1px solid #edf3f9;
+      border-radius: 2px;
+      background: #fff;
+      overflow: hidden;
+    }
+    .ik-overview-protocol-trend .mini-chart,
+    .ik-overview-resource-line .mini-chart {
+      display: block;
+      width: 100%;
+      height: 34px;
+    }
+    .ik-overview-collection-bars {
+      padding: 4px;
+    }
+    .ik-overview-collection-bars .ik-overview-bar-list {
+      gap: 3px;
+    }
+    .ik-overview-collection-bars .ik-overview-bar-row {
+      grid-template-columns: 46px minmax(0, 1fr) 58px;
+      gap: 5px;
+      font-size: 9.5px;
+      line-height: 1;
+    }
+    .ik-overview-collection-bars .ik-overview-bar-track {
+      height: 6px;
+    }
+    .ik-overview-wan-strip,
+    .ik-overview-interface-strip {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 4px;
+    }
+    .ik-overview-wan-strip.is-horizontal {
+      grid-template-columns: minmax(72px, 84px) minmax(0, 1fr);
+      gap: 6px;
+      align-items: stretch;
+    }
+    .ik-overview-wan-strip.is-horizontal .ik-overview-wan-strip-head {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 2px;
+      min-width: 0;
+      border: 1px solid #e2ebf5;
+      border-radius: 2px;
+      background: #fbfdff;
+      padding: 5px 6px;
+    }
+    .ik-overview-wan-strip.is-horizontal .ik-overview-wan-strip-head b {
+      color: #172a42;
+      font-size: 14px;
+      font-weight: 900;
+      line-height: 1;
+    }
+    .ik-overview-wan-strip.is-horizontal .ik-overview-wan-strip-head span {
+      color: #6f7e91;
+      font-size: 9px;
+      font-weight: 800;
+      line-height: 1.1;
+    }
+    .ik-overview-wan-strip.is-horizontal .ik-overview-wan-strip-track {
+      display: grid;
+      grid-auto-flow: column;
+      grid-auto-columns: minmax(0, 1fr);
+      gap: 4px;
+      min-width: 0;
+    }
+    .ik-overview-wan-strip.is-horizontal .ik-overview-wan-bar {
+      min-width: 0;
+      border: 1px solid #dfe8f2;
+      border-left: 2px solid #8ea0b7;
+      border-radius: 2px;
+      background: #fff;
+      padding: 4px 5px;
+      color: #26384f;
+    }
+    .ik-overview-wan-strip.is-horizontal .ik-overview-wan-bar.is-offline {
+      border-left-color: #d93025;
+    }
+    .ik-overview-wan-strip.is-horizontal .ik-overview-wan-bar.is-online {
+      border-left-color: #1a9f64;
+    }
+    .ik-overview-wan-strip.is-horizontal .ik-overview-wan-bar.is-unbound {
+      border-left-color: #aeb9c8;
+    }
+    .ik-overview-wan-strip.is-horizontal .ik-overview-wan-bar b {
+      display: block;
+      font-size: 10px;
+      font-weight: 900;
+      line-height: 1.05;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .ik-overview-wan-strip.is-horizontal .ik-overview-wan-bar span {
+      display: block;
+      margin-top: 2px;
+      color: #6f7e91;
+      font-size: 9px;
+      font-weight: 800;
+      line-height: 1.1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .ik-overview-wan-node,
+    .ik-overview-interface-node {
+      min-width: 0;
+      border: 1px solid #dfe8f2;
+      border-left: 2px solid #8ea0b7;
+      border-radius: 2px;
+      background: #fff;
+      padding: 5px;
+      color: #26384f;
+    }
+    .ik-overview-wan-node.is-offline,
+    .ik-overview-interface-node.is-down {
+      border-left-color: #d93025;
+    }
+    .ik-overview-wan-node.is-online,
+    .ik-overview-interface-node.is-up {
+      border-left-color: #1a9f64;
+    }
+    .ik-overview-wan-node.is-unbound {
+      border-left-color: #aeb9c8;
+    }
+    .ik-overview-wan-node b,
+    .ik-overview-interface-node b {
+      display: block;
+      font-size: 11px;
+      font-weight: 900;
+      line-height: 1.05;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .ik-overview-wan-node span,
+    .ik-overview-interface-node span {
+      display: block;
+      margin-top: 3px;
+      color: #6f7e91;
+      font-size: 9px;
+      font-weight: 800;
+      line-height: 1.1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .ik-overview-bar-list {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 4px;
+    }
+    .ik-overview-bar-row {
+      display: grid;
+      grid-template-columns: minmax(92px, .78fr) minmax(0, 1fr) 58px;
+      gap: 6px;
+      align-items: center;
+      min-width: 0;
+      color: #2d3e55;
+      font-size: 10px;
+      font-weight: 800;
+      line-height: 1.08;
+    }
+    .ik-overview-bar-label {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .ik-overview-bar-track {
+      height: 8px;
+      border: 1px solid #dce8f4;
+      border-radius: 2px;
+      background: #f6f9fd;
+      overflow: hidden;
+    }
+    .ik-overview-bar-fill {
+      display: block;
+      height: 100%;
+      width: var(--bar-width, 0%);
+      background: var(--bar-color, #2d8cff);
+    }
+    .ik-overview-resource-bars {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 3px;
+      min-height: 420px;
+      align-content: start;
+    }
+    .ik-overview-resource-bars .ik-overview-bar-row {
+      grid-template-columns: minmax(88px, .62fr) minmax(0, 1fr) minmax(92px, .76fr);
+      min-height: 24px;
+      padding: 3px 0;
+      border-top: 1px solid #edf3f8;
+    }
+    .ik-overview-resource-bars .ik-overview-bar-row:first-child {
+      border-top: 0;
+    }
+    .ik-overview-resource-bars .ik-overview-bar-row.is-danger {
+      color: #9d2f2f;
+    }
+    .ik-overview-resource-bars .ik-overview-bar-row.is-warn {
+      color: #8a6200;
+    }
+    .ik-overview-resource-bars .ik-overview-bar-track {
+      height: 7px;
+    }
+    .ik-overview-nosnapshot-grid .ik-no-snapshot-mini-line {
+      margin-top: 4px;
+      border: 1px solid #edf3f9;
+      border-radius: 2px;
+      background: #fff;
+      overflow: hidden;
+    }
+    .ik-overview-nosnapshot-grid .ik-no-snapshot-mini-line .mini-chart {
+      display: block;
+      width: 100%;
+      height: 34px;
+    }
+    .ik-overview-nosnapshot-grid .ik-overview-bar-list {
+      margin-top: 4px;
+      gap: 2px;
+    }
+    .ik-overview-nosnapshot-grid .ik-overview-bar-row {
+      grid-template-columns: 44px minmax(0, 1fr) 48px;
+      gap: 4px;
+      font-size: 9px;
+      line-height: 1;
+    }
+    .ik-overview-nosnapshot-grid .ik-overview-bar-track {
+      height: 6px;
+    }
+    .ik-overview-bar-value {
+      min-width: 0;
+      color: #6d7b8e;
+      font-size: 9px;
+      font-weight: 800;
+      line-height: 1.08;
+      text-align: right;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .ik-overview-nosnapshot-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 5px;
+    }
+    .ik-overview-link-chain,
+    .ik-overview-timeline,
+    .ik-overview-module-matrix,
+    .ik-overview-channel-cards {
+      min-width: 0;
+      border: 1px solid #e2ebf5;
+      border-radius: 2px;
+      background: #fff;
+      padding: 6px;
+    }
+    .ik-overview-visual-title {
+      color: #283a52;
+      font-size: 10px;
+      font-weight: 900;
+      line-height: 1.1;
+      margin-bottom: 5px;
+    }
+    .ik-overview-chain-row {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 4px;
+      align-items: center;
+    }
+    .ik-overview-chain-node,
+    .ik-overview-channel-card,
+    .ik-overview-module-cell {
+      min-width: 0;
+      border: 1px solid #e2ebf5;
+      border-left: 2px solid #9baabd;
+      border-radius: 2px;
+      padding: 4px;
+      background: #fbfdff;
+      color: #293b52;
+      font-size: 9px;
+      font-weight: 800;
+      line-height: 1.08;
+    }
+    .ik-overview-chain-node {
+      min-height: 40px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .ik-overview-chain-node.is-ok,
+    .ik-overview-channel-card.is-ok,
+    .ik-overview-module-cell.is-ok { border-left-color: #1a9f64; }
+    .ik-overview-chain-node.is-warn,
+    .ik-overview-channel-card.is-warn,
+    .ik-overview-module-cell.is-warn { border-left-color: #f08c00; }
+    .ik-overview-chain-node.is-danger,
+    .ik-overview-channel-card.is-danger,
+    .ik-overview-module-cell.is-danger { border-left-color: #d93025; }
+    .ik-overview-timeline-row {
+      display: grid;
+      grid-template-columns: 70px minmax(0, 1fr);
+      gap: 6px;
+      padding: 3px 0;
+      border-top: 1px solid #eef3f8;
+      color: #69798d;
+      font-size: 9px;
+      font-weight: 800;
+      line-height: 1.12;
+    }
+    .ik-overview-timeline-row:first-of-type { border-top: 0; }
+    .ik-overview-timeline-row b {
+      color: #26384f;
+      font-size: 10px;
+    }
+    .ik-no-snapshot-timeline-visual {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 6px;
+      min-height: 100%;
+    }
+    .ik-no-snapshot-event-list {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 2px;
+    }
+    .ik-no-snapshot-event-row {
+      display: grid;
+      grid-template-columns: 72px minmax(0, 1fr) 68px;
+      gap: 6px;
+      align-items: center;
+      min-height: 20px;
+      border-top: 1px solid #edf3f8;
+      color: #65758a;
+      font-size: 9px;
+      font-weight: 800;
+      line-height: 1.05;
+    }
+    .ik-no-snapshot-event-row:first-child {
+      border-top: 0;
+    }
+    .ik-no-snapshot-event-row b {
+      color: #26384f;
+      font-size: 10px;
+      line-height: 1.05;
+    }
+    .ik-overview-module-matrix-grid,
+    .ik-overview-channel-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 4px;
+    }
+    .ik-mobile-visual-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 5px;
+      margin-top: 5px;
+    }
+    .ik-mobile-visual-card,
+    .ik-mobile-keyfacts {
+      min-width: 0;
+      border: 1px solid #dfe8f2;
+      border-radius: 2px;
+      background: #fff;
+      padding: 6px;
+    }
+    .ik-mobile-keyfacts {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 4px;
+      padding: 5px;
+    }
+    .ik-mobile-dense-status {
+      display: grid;
+      gap: 4px;
+      min-width: 0;
+    }
+    .ik-mobile-conclusion-card {
+      border-left-width: 2px;
+      border-left-style: solid;
+    }
+    .ik-mobile-conclusion-card.is-danger { border-left-color: #d93025; }
+    .ik-mobile-conclusion-card.is-warn { border-left-color: #f08c00; }
+    .ik-mobile-conclusion-card.is-ok { border-left-color: #1a9f64; }
+    .ik-mobile-conclusion-card.is-trust { border-left-color: #7d8da1; }
+    .ik-mobile-conclusion-card.is-history { border-left-color: #d49b22; }
+    .ik-mobile-conclusion-card .ik-mobile-visual-main {
+      font-size: 13px;
+      line-height: 1.08;
+    }
+    .ik-mobile-dense-status .ik-mobile-visual-grid {
+      margin-top: 0;
+    }
+    .ik-mobile-flat-table .ik-mobile-visual-grid {
+      margin: 0;
+      padding: 3px;
+      gap: 3px;
+      border-top: 1px solid #edf1f7;
+      background: #fbfdff;
+    }
+    .ik-mobile-flat-table .ik-mobile-visual-card,
+    .ik-mobile-flat-table .ik-mobile-keyfacts {
+      padding: 3px 4px;
+    }
+    .ik-mobile-flat-table .ik-mobile-visual-main,
+    .ik-mobile-flat-table .ik-mobile-keyfact b {
+      margin-top: 1px;
+      font-size: 10.5px;
+    }
+    .ik-mobile-flat-table .ik-mobile-visual-sub,
+    .ik-mobile-flat-table .ik-mobile-keyfact em {
+      margin-top: 1px;
+      font-size: 8px;
+      line-height: 1.02;
+    }
+    .ik-mobile-flat-table .ik-mobile-visual-card .mini-chart,
+    .ik-mobile-flat-table .ik-mobile-visual-card .ops-resource-svg {
+      height: 30px;
+      margin-top: 2px;
+    }
+    .ik-mobile-flat-table .ik-mobile-mini-strip {
+      margin-top: 3px;
+      gap: 2px;
+    }
+    .ik-mobile-flat-table .ik-mobile-mini-node {
+      height: 16px;
+      font-size: 8px;
+      line-height: 14px;
+    }
+    .ik-mobile-flat-table .ik-mobile-keyfacts {
+      gap: 3px;
+    }
+    .ik-mobile-visual-title,
+    .ik-mobile-keyfact span {
+      display: block;
+      color: #6f7e91;
+      font-size: 9px;
+      font-weight: 900;
+      line-height: 1.1;
+    }
+    .ik-mobile-visual-main,
+    .ik-mobile-keyfact b {
+      display: block;
+      margin-top: 3px;
+      color: #1f3148;
+      font-size: 12px;
+      font-weight: 900;
+      line-height: 1.05;
+      overflow-wrap: anywhere;
+    }
+    .ik-mobile-visual-sub,
+    .ik-mobile-keyfact em {
+      display: block;
+      margin-top: 2px;
+      color: #7f8c9d;
+      font-size: 9px;
+      font-style: normal;
+      font-weight: 700;
+      line-height: 1.08;
+    }
+    .ik-mobile-visual-card .mini-chart,
+    .ik-mobile-visual-card .ops-resource-svg {
+      width: 100%;
+      height: 44px;
+      margin-top: 4px;
+      border: 1px solid #eef3f8;
+      border-radius: 2px;
+    }
+    .ik-mobile-mini-strip {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 3px;
+      margin-top: 5px;
+    }
+    .ik-mobile-mini-node {
+      min-width: 0;
+      height: 22px;
+      border: 1px solid #dfe8f2;
+      border-left: 2px solid #aeb9c8;
+      border-radius: 2px;
+      color: #526174;
+      font-size: 8.5px;
+      font-weight: 900;
+      line-height: 20px;
+      text-align: center;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .ik-mobile-mini-node.is-danger { border-left-color: #d93025; color: #8d3f3f; }
+    .ik-mobile-mini-node.is-ok { border-left-color: #1a9f64; color: #256b51; }
     .section#overview .ik-home-trust-mode.is-overview-resource-full [data-overview-density-module="wan-trend"],
     .section#overview .ik-home-trust-mode.is-overview-resource-full [data-overview-density-module="rank"],
     .section#overview .ik-home-trust-mode.is-overview-resource-full [data-overview-rank-grid],
@@ -2433,6 +3286,37 @@
     .ik-mobile-flat-table-row.is-status > div:first-child b {
       font-size: 10.5px;
       line-height: 1.08;
+    }
+    .ik-mobile-console.is-resource-full .ik-mobile-flat-table-row,
+    .ik-mobile-console.is-resource-load .ik-mobile-flat-table-row {
+      min-height: 24px;
+    }
+    .ik-mobile-console.is-resource-full .ik-mobile-flat-table-row > div,
+    .ik-mobile-console.is-resource-load .ik-mobile-flat-table-row > div {
+      padding-top: 1px;
+      padding-bottom: 1px;
+      line-height: 1.02;
+    }
+    .ik-mobile-console.is-resource-full .ik-mobile-flat-table-row b,
+    .ik-mobile-console.is-resource-load .ik-mobile-flat-table-row b {
+      font-size: 10px;
+      line-height: 1.04;
+    }
+    .ik-mobile-console.is-resource-full .ik-mobile-flat-table-row em,
+    .ik-mobile-console.is-resource-load .ik-mobile-flat-table-row em {
+      font-size: 8px;
+      line-height: 1.0;
+    }
+    .ik-mobile-console.is-resource-full .ik-mobile-flat-table .ik-mobile-visual-card .mini-chart,
+    .ik-mobile-console.is-resource-full .ik-mobile-flat-table .ik-mobile-visual-card .ops-resource-svg,
+    .ik-mobile-console.is-resource-load .ik-mobile-flat-table .ik-mobile-visual-card .mini-chart,
+    .ik-mobile-console.is-resource-load .ik-mobile-flat-table .ik-mobile-visual-card .ops-resource-svg {
+      height: 24px;
+    }
+    .ik-mobile-console.is-resource-full .ik-mobile-flat-table .ik-mobile-visual-grid,
+    .ik-mobile-console.is-resource-load .ik-mobile-flat-table .ik-mobile-visual-grid {
+      gap: 2px;
+      padding: 2px;
     }
     .ik-mobile-flat-status .ik-mobile-section-head {
       min-height: 24px;
@@ -4953,6 +5837,8 @@
         display: grid;
         gap: 4px;
         min-height: 0;
+        height: auto;
+        align-content: start;
       }
       .ik-mobile-alarm-head {
         position: sticky;
@@ -5558,6 +6444,11 @@
       .replaceAll('"', '&quot;')
       .replaceAll("'", '&#39;');
 
+    const dataAttrs = (attrs = {}) => Object.entries(attrs).map(([key, value]) => {
+      if (value === false || value === null || value === undefined || value === '') return '';
+      return value === true ? ` data-${key}` : ` data-${key}="${escapeHtml(value)}"`;
+    }).join('');
+
     const fmtNumber = (value) => new Intl.NumberFormat('zh-CN').format(Number(value || 0));
     const fmtPercent = (value) => `${Number(value || 0).toFixed(1)}%`;
     const fmtBytes = (value) => {
@@ -5772,8 +6663,8 @@
       return freshness.source ? (freshness.text || ageTextFromSource(freshness.source)) : '不可判定';
     }
     function noSnapshotUpdateAgeText(snapshot = {}, freshness = snapshotFreshnessState(snapshot)) {
-      if (snapshotIsUnavailable(snapshot)) return '不可判定';
       const ageText = snapshotEventAgeText(snapshot, freshness);
+      if (snapshotIsUnavailable(snapshot)) return !ageText || ageText === '未记录' ? '0s' : ageText;
       return !ageText || ageText === '未记录' ? '不可判定' : ageText;
     }
     function noSnapshotBusinessStateText() {
@@ -6232,8 +7123,8 @@
           ${buttonHtml}
         </div>`;
     };
-    const progress = (value, color) => `<div class="progress"><span style="width:${Math.max(0, Math.min(100, Number(value || 0)))}%;background:${color || 'linear-gradient(90deg,#7da8ff 0%,#165dff 100%)'}"></span></div>`;
-    const emptyBlock = (text = '暂无可展示数据') => `<div class="empty">${escapeHtml(text)}</div>`;
+    const progress = (value, color) => `<div class="progress"${dataAttrs({ 'overview-chart-type': 'bar' })}><span style="width:${Math.max(0, Math.min(100, Number(value || 0)))}%;background:${color || 'linear-gradient(90deg,#7da8ff 0%,#165dff 100%)'}"></span></div>`;
+    const emptyBlock = (text = '暂无可展示数据') => `<div class="empty"${dataAttrs({ 'overview-visual-block': true })}>${escapeHtml(text)}</div>`;
     pageMeta.dns4 = { title: 'DNS IPv4', subtitle: 'IPv4 DNS upstream, cache, DoH and static rules' };
     pageMeta.dns6 = { title: 'DNS IPv6', subtitle: 'IPv6 ND, RA and DHCPv6 prefix information' };
     delete pageMeta.dns;
@@ -7288,7 +8179,7 @@
           return `${x},${y}`;
         }, colors[idx % colors.length]);
       }).join('');
-      return `<svg class="mini-chart" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none">${grid.join('')}${paths}</svg>`;
+      return `<svg class="mini-chart"${dataAttrs({ 'overview-chart-type': 'line' })} viewBox="0 0 ${width} ${height}" preserveAspectRatio="none">${grid.join('')}${paths}</svg>`;
     }
 
     function rateAxisLineChart(values = [], color = '#165dff', options = {}) {
@@ -7317,7 +8208,7 @@
           }, color)
         : '';
       return {
-        svg: `<svg class="ik-wan-rate-svg" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none">${grid}${polyline}</svg>`,
+        svg: `<svg class="ik-wan-rate-svg"${dataAttrs({ 'overview-chart-type': 'line' })} viewBox="0 0 ${width} ${height}" preserveAspectRatio="none">${grid}${polyline}</svg>`,
         max,
         mid: max / 2,
         count: finitePoints.length,
@@ -7340,7 +8231,7 @@
     function wanRateSplitCard(label, current, values = [], color = '#165dff', pollText = '') {
       const chart = rateAxisLineChart(values, color, { current });
       const hasEnoughValues = chart.count >= 2;
-      return `<div class="ik-wan-rate-card" style="--wan-rate-color:${color}">
+      return `<div class="ik-wan-rate-card"${dataAttrs({ 'overview-chart-type': 'line', 'overview-visual-block': true })} style="--wan-rate-color:${color}">
         <div class="ik-wan-rate-head">
           <div class="ik-wan-rate-title"><i class="ik-wan-rate-dot"></i>${escapeHtml(label)}</div>
           <div class="ik-wan-rate-value">${fmtRate(current)}<span>${escapeHtml(pollText)} · ${fmtNumber(chart.count)} 点</span></div>
@@ -7355,7 +8246,7 @@
           <div class="ik-wan-rate-axis">
             <span>${fmtRate(chart.max)}</span>
             <span>${fmtRate(chart.mid)}</span>
-            <span>0 B/s</span>
+            <span>基线</span>
           </div>
         </div>` : emptyBlock(`${label} 样本不足，趋势暂不可用`)}
       </div>`;
@@ -7375,7 +8266,7 @@
 
     function aggregateRateTrendCard(title, series, options = {}) {
       const meta = options.meta || '';
-      return `<div class="chart-box ik-traffic-trend-card">
+      return `<div class="chart-box ik-traffic-trend-card"${dataAttrs({ 'overview-chart-type': 'line', 'overview-visual-block': true })}>
         <div class="chart-label"><span>${escapeHtml(title)}</span><span>${escapeHtml(meta)}</span></div>
         ${aggregateRateTrendBody(title, series, options)}
       </div>`;
@@ -7392,7 +8283,7 @@
         const y = padY + ((100 - mark) / 100) * chartHeight;
         return `<line x1="${padX}" y1="${y}" x2="${width - padX}" y2="${y}" stroke="rgba(22,93,255,0.09)" stroke-width="1"/>`;
       }).join('');
-      if (!points.some((value) => value !== null)) return `<svg class="ops-resource-svg" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none">${grid}</svg>`;
+      if (!points.some((value) => value !== null)) return `<svg class="ops-resource-svg"${dataAttrs({ 'overview-chart-type': 'spark' })} viewBox="0 0 ${width} ${height}" preserveAspectRatio="none">${grid}</svg>`;
       const step = points.length > 1 ? (width - padX * 2) / (points.length - 1) : 0;
       const path = chartSegmentElements(points, (value, index) => {
         const clamped = Math.max(0, Math.min(100, Number(value)));
@@ -7400,7 +8291,7 @@
         const y = padY + ((100 - clamped) / 100) * chartHeight;
         return `${x},${y}`;
       }, color);
-      return `<svg class="ops-resource-svg" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none">${grid}${path}</svg>`;
+      return `<svg class="ops-resource-svg"${dataAttrs({ 'overview-chart-type': 'spark' })} viewBox="0 0 ${width} ${height}" preserveAspectRatio="none">${grid}${path}</svg>`;
     }
 
     function resourceSeriesStats(values = [], current = 0, threshold = 85, pollSeconds = 1) {
@@ -7490,7 +8381,7 @@
       const peak = stats.peak;
       const thresholdTop = Math.max(0, Math.min(100, 100 - Number(threshold || 0)));
       return `
-        <div class="ops-resource-card" style="--resource-color:${color}">
+        <div class="ops-resource-card"${dataAttrs({ 'overview-chart-type': 'spark', 'overview-visual-block': true })} style="--resource-color:${color}">
           <div class="ops-resource-head">
             <div class="ops-resource-title"><span class="ops-resource-dot"></span><span>${escapeHtml(title)}</span></div>
             <div>
@@ -7515,7 +8406,7 @@
     }
 
     function resourceTrendGrid(overview, meta) {
-      return `<div class="ops-resource-grid">
+      return `<div class="ops-resource-grid"${dataAttrs({ 'overview-chart-type': 'spark', 'overview-visual-block': true })}>
         ${resourceTrendCard('CPU 负载', fmtPercent(overview.cpuLoad), overview.history?.cpu || [], '#165dff', meta, 85)}
         ${resourceTrendCard('内存使用率', fmtPercent(overview.memoryUsage), overview.history?.memory || [], '#16c67a', meta, 85)}
         ${resourceTrendCard('磁盘使用率', fmtPercent(overview.diskUsage), overview.history?.disk || [], '#ffb020', meta, 90)}
@@ -7582,7 +8473,7 @@
       const colors = options.colors || ['#165dff', '#16c67a'];
       const emptyText = options.emptyText || '当前未读取到可展示的线路趋势';
       if (!rows.length) return emptyBlock(emptyText);
-      return `<div class="line-trend-grid">${rows.map((item) => `
+      return `<div class="line-trend-grid"${dataAttrs({ 'overview-chart-type': 'line', 'overview-visual-block': true })}>${rows.map((item) => `
         ${aggregateRateTrendCard(item.name, [item.history.up, item.history.down], {
           colors,
           current: [fmtRate(item.upRate), fmtRate(item.downRate)].join(' / '),
@@ -7620,7 +8511,7 @@
             ${rest.length ? `<div class="record-grid">${rest.map((item) => recordItem(item.label, item.value)).join('')}</div>` : ''}
           </article>`;
       }).join('');
-      return cards ? `<div class="record-list">${cards}</div>` : emptyBlock(emptyText);
+      return cards ? `<div class="record-list"${dataAttrs({ 'overview-chart-type': 'matrix', 'overview-visual-block': true })}>${cards}</div>` : emptyBlock(emptyText);
     }
 
     function compactTable(headers, rows, emptyText, className = 'ops-compact-table') {
@@ -7631,11 +8522,11 @@
         .filter((name) => /^[a-z0-9_-]+$/i.test(name))
         .join(' ');
       const headerHtml = headers.map((header) => `<th>${escapeHtml(header)}</th>`).join('');
-      return `<div class="ops-table-wrap"><table class="ops-table ${extraClasses}"><thead><tr>${headerHtml}</tr></thead><tbody>${body}</tbody></table></div>`;
+      return `<div class="ops-table-wrap"${dataAttrs({ 'overview-chart-type': 'matrix', 'overview-visual-block': true })}><table class="ops-table ${extraClasses}"><thead><tr>${headerHtml}</tr></thead><tbody>${body}</tbody></table></div>`;
     }
 
     function infoGrid(items) {
-      return `<div class="info-list">${items.map((item) => `<div class="info-item"><div class="info-k">${escapeHtml(item.k)}</div><div class="info-v">${item.v}</div></div>`).join('')}</div>`;
+      return `<div class="info-list"${dataAttrs({ 'overview-chart-type': 'matrix', 'overview-visual-block': true })}>${items.map((item) => `<div class="info-item"><div class="info-k">${escapeHtml(item.k)}</div><div class="info-v">${item.v}</div></div>`).join('')}</div>`;
     }
 
     function section(title, id, tip, body) {
@@ -7643,7 +8534,7 @@
     }
 
     function metricCard(label, value, footA, footB) {
-      return `<div class="card metric-card"><div class="metric-label">${escapeHtml(label)}</div><div class="metric-value">${value}</div><div class="metric-foot"><span>${footA || ''}</span><span>${footB || ''}</span></div></div>`;
+      return `<div class="card metric-card"${dataAttrs({ 'overview-kpi-card': true, 'overview-chart-type': 'status', 'overview-visual-block': true })}><div class="metric-label">${escapeHtml(label)}</div><div class="metric-value">${value}</div><div class="metric-foot"><span>${footA || ''}</span><span>${footB || ''}</span></div></div>`;
     }
 
     function findCompactSummaryGrid(sectionEl) {
@@ -8068,7 +8959,7 @@
         ? buildTopMetrics(snapshot)
         : [...freshnessMetrics, ...buildTopMetrics(snapshot)];
       const meta = pageMeta[currentSection];
-      topMetricsEl.innerHTML = metrics.length ? metrics.map(([k, v]) => `<div class="status-pill"><div class="status-k">${k}</div><div class="status-v">${v}</div></div>`).join('') : '';
+      topMetricsEl.innerHTML = metrics.length ? metrics.map(([k, v]) => `<div class="status-pill"${dataAttrs({ 'overview-kpi-card': true, 'overview-chart-type': 'status' })}><div class="status-k">${k}</div><div class="status-v">${v}</div></div>`).join('') : '';
       pageTitleEl.textContent = meta.title;
       setPageSubtitle('');
       updateTextEl.textContent = snapshot.status === 'ok' ? `事件更新时间 ${snapshot.updatedAt}` : `采集异常 ${snapshot.updatedAt || ''}`;
@@ -8338,7 +9229,7 @@
 
     function overviewSnapshotTrustLabel(ctx) {
       const verdict = ctx.verdict || buildOverviewVerdict(ctx);
-      if (verdict.topKey === 'no-snapshot' || snapshotIsUnavailable(ctx.snapshot)) return '不展示';
+      if (verdict.topKey === 'no-snapshot' || snapshotIsUnavailable(ctx.snapshot)) return '无快照';
       if (verdict.topKey === 'collection-down' || verdict.topKey === 'collection-degraded' || verdict.collection?.channelDegraded) return '缓存可参考';
       if (isHistorySnapshot(ctx.freshness)) return '历史快照';
       return '可信';
@@ -8385,6 +9276,388 @@
         <div class="ik-overview-flat-head"><div class="ik-overview-flat-title">${escapeHtml(title)}</div><div class="ik-overview-flat-sub">${escapeHtml(subtitle || '')}</div></div>
         <div class="ik-overview-flat-body">${body}</div>
       </div>`;
+    }
+
+    function overviewVisualModule(module, title, subtitle, body, chartType = 'status', extraAttrs = '', extraClass = '') {
+      const attrs = `data-overview-visual-block data-overview-chart-type="${escapeHtml(chartType)}"${extraAttrs ? ` ${String(extraAttrs).trim()}` : ''}`;
+      const className = `ik-overview-visual-module${extraClass ? ` ${extraClass}` : ''}`;
+      return overviewFlatModule(module, title, subtitle, body, attrs, className);
+    }
+
+    function overviewKpiStrip(ctx) {
+      const verdict = ctx.verdict || buildOverviewVerdict(ctx);
+      const routeDisplay = overviewRouteDisplay(ctx);
+      const collection = collectionDisplayState(ctx, verdict.collection || overviewCollectionTrust(ctx));
+      const noSnapshot = verdict.topKey === 'no-snapshot' || snapshotIsUnavailable(ctx.snapshot);
+      const item = (label, value, sub = '', level = '') => `<div class="ik-overview-kpi-card${level ? ` is-${escapeHtml(level)}` : ''}" data-overview-kpi-card data-overview-field>
+        <span>${escapeHtml(label)}</span>
+        <b title="${escapeHtml(String(value ?? '-'))}">${escapeHtml(String(value ?? '-'))}</b>
+        ${sub ? `<em title="${escapeHtml(String(sub))}">${escapeHtml(String(sub))}</em>` : ''}
+      </div>`;
+      const items = [
+        item('WAN', noSnapshot ? '无快照' : `${fmtNumber(ctx.wanHealth.online)}/${fmtNumber(ctx.wanHealth.total)}`, noSnapshot ? '缺业务快照' : `${fmtNumber(ctx.wanHealth.offline)} 离线`, noSnapshot ? 'warn' : ctx.wanHealth.level),
+        item('流量', noSnapshot || overviewIncidentSuppressRateEvidence(ctx) ? '边界内' : `${fmtRate(ctx.wanRates.up)} / ${fmtRate(ctx.wanRates.down)}`, noSnapshot ? '无业务快照' : ctx.pollText, noSnapshot ? 'warn' : ''),
+        item('资源', noSnapshot ? '边界内' : `CPU ${fmtPercent(ctx.o.cpuLoad)}`, noSnapshot ? '缺快照' : `MEM ${fmtPercent(ctx.o.memoryUsage)} / DISK ${fmtPercent(ctx.o.diskUsage)}`, noSnapshot ? 'warn' : ctx.resourceLevel),
+        item('默认路由', noSnapshot ? '待判定' : (routeDisplay.label || '-'), noSnapshot ? '路由快照缺失' : (defaultRouteRawSummary(ctx) || routeDisplay.text || 'RouterOS 路由事实'), noSnapshot ? 'warn' : routeDisplay.level),
+        item('采集', collection.channelPairText || collection.channelText || '待确认', collection.dataStale ? '缓存快照' : overviewSnapshotTrustLabel(ctx), collection.channelDegraded ? 'warn' : ''),
+        item('终端', noSnapshot ? '边界内' : `${fmtNumber(ctx.onlineTerminals || 0)} 在线`, noSnapshot ? '缺业务快照' : `${fmtCompact(ctx.connectionTotal)} 连接`, noSnapshot ? 'warn' : '')
+      ];
+      return `<div class="ik-overview-kpi-grid" data-overview-kpi-strip data-overview-chart-type="status">${items.slice(0, 6).join('')}</div>`;
+    }
+
+    function overviewResourceSparkCards(ctx, options = {}) {
+      const compact = Boolean(options.compact);
+      const metricItems = overviewResourceMetricItems(ctx);
+      const colors = { CPU: '#165dff', MEM: '#16a36f', DISK: '#f08c00' };
+      const seriesFor = (name) => name === 'CPU'
+        ? (ctx.history.cpu || [])
+        : name === 'MEM'
+          ? (ctx.history.memory || [])
+          : (ctx.history.disk || []);
+      return `<div class="ik-overview-resource-sparks${compact ? ' is-compact' : ''}" data-overview-chart-type="spark">
+        ${metricItems.map((item) => {
+          const threshold = item.name === 'DISK' ? 90 : 85;
+          const values = seriesFor(item.name);
+          const stats = item.stats || resourceSeriesStats(values, item.value, threshold, Number(ctx.snapshot?.meta?.pollSeconds || 1));
+          const level = Number(item.value || 0) >= threshold ? 'danger' : Number(item.value || 0) >= threshold - 10 ? 'warn' : '';
+          const thresholdTop = Math.max(0, Math.min(100, 100 - threshold));
+          return `<div class="ik-overview-resource-spark${level ? ` is-${level}` : ''}" data-overview-chart-type="spark" data-overview-visual-block style="--resource-color:${colors[item.name] || '#165dff'}">
+            <div class="ik-overview-resource-head"><span>${escapeHtml(item.name)}</span><b>${escapeHtml(fmtPercent(item.value))}</b></div>
+            <div class="ik-overview-resource-plot">${resourcePercentChart(values, colors[item.name] || '#165dff')}<span class="ik-overview-threshold-line" style="top:${thresholdTop}%"></span></div>
+            <div class="ik-overview-resource-meta">
+              <span>阈${escapeHtml(fmtPercent(threshold))}</span>
+              <span>${escapeHtml(String(stats.durationText || '未持续').replace('持续 ', ''))}</span>
+              <span>峰${escapeHtml(fmtPercent(item.peak ?? stats.peak ?? item.value))}</span>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>`;
+    }
+
+    function renderOverviewTrafficVisual(ctx, module = 'wan-trend') {
+      const noSnapshot = ctx.verdict?.topKey === 'no-snapshot' || snapshotIsUnavailable(ctx.snapshot);
+      if (noSnapshot) {
+        return renderOverviewNoSnapshotVisualPanel(ctx);
+      }
+      const upChart = rateSeriesStats(ctx.history.uplink || []);
+      const downChart = rateSeriesStats(ctx.history.downlink || []);
+      const routeDisplay = overviewRouteDisplay(ctx);
+      const enough = upChart.count >= 2 && downChart.count >= 2;
+      const body = `<div class="ik-overview-traffic-layout">
+        <div class="ik-overview-chart-shell" data-overview-chart-type="line">
+          <div class="ik-overview-chart-toolbar">
+            <span>上下行实时折线</span>
+            <span class="ik-overview-toggle"><span>1小时</span><span>24小时</span></span>
+          </div>
+          ${lineChart([ctx.history.uplink || [], ctx.history.downlink || []], { colors: ['#165dff', '#16a36f'], height: 128, smoothPasses: 2 })}
+          <div class="ik-overview-legend"><span>上行 ${fmtRate(ctx.wanRates.up)}</span><span>下行 ${fmtRate(ctx.wanRates.down)}</span><span>${enough ? `${fmtNumber(Math.max(upChart.count, downChart.count))} 点` : '样本不足，趋势暂不可用'}</span></div>
+        </div>
+        <div class="ik-overview-traffic-stats">
+          <div class="ik-overview-stat-tile"><span>峰值</span><b>${escapeHtml(fmtRate(Math.max(upChart.peak || 0, downChart.peak || 0)))}</b><em>近窗最大</em></div>
+          <div class="ik-overview-stat-tile"><span>默认路由</span><b>${escapeHtml(routeDisplay.label || '-')}</b><em>${escapeHtml(routeDisplay.text || 'RouterOS facts')}</em></div>
+          <div class="ik-overview-stat-tile"><span>协议占比</span><b>未采集</b><em>无 DPI，占位保留</em></div>
+        </div>
+      </div>`;
+      return overviewVisualModule(module, '流量趋势', `1小时 / 24小时 · ${overviewSnapshotTrustLabel(ctx)}`, body, 'line', 'ik-overview-traffic-card');
+    }
+
+    function renderOverviewResourceSparkPanel(ctx, module = 'resource-threshold', title = '璧勬簮鍘嬪姏') {
+      const worst = ctx.resourceEvidence?.worst;
+      const subtitle = module === 'resource-risk-priority' && worst
+        ? `最危险项 ${worst.key} ${fmtPercent(worst.value)} 路 ${overviewSnapshotTrustLabel(ctx)}`
+        : worst ? `${worst.key} ${fmtPercent(worst.value)} 路 ${overviewSnapshotTrustLabel(ctx)}` : `CPU / MEM / DISK 路 ${overviewSnapshotTrustLabel(ctx)}`;
+      const compact = ctx.verdict?.topKey === 'resource-full' || module === 'resource-threshold';
+      const resourceTrend = ctx.verdict?.topKey === 'resource-full' || ctx.verdict?.topKey === 'resource-load'
+        ? `<div class="ik-overview-resource-line" data-overview-chart-type="line" data-overview-visual-block>${lineChart([ctx.history.cpu || [], ctx.history.memory || [], ctx.history.disk || []], { colors: ['#165dff', '#16a36f', '#f08c00'], height: 34, smoothPasses: 1 })}</div>`
+        : '';
+      return overviewVisualModule(module, title, subtitle, `${overviewResourceSparkCards(ctx, compact ? { compact: true } : {})}${resourceTrend}`, 'spark', '', 'ik-overview-resource-panel');
+    }
+    function renderOverviewWanStatusStrip(ctx, module = 'wan-incident-ledger') {
+      const rows = (ctx.pppoe || [])
+        .slice()
+        .sort((a, b) => {
+          if (Boolean(a.running) !== Boolean(b.running)) return a.running ? 1 : -1;
+          return totalTrafficRate(b) - totalTrafficRate(a);
+        })
+        .slice(0, 8);
+      const routeHit = overviewRouteHitSummary(ctx.offlineWanRows || []);
+      const allOffline = Number(ctx.wanHealth.total || 0) > 0 && Number(ctx.wanHealth.online || 0) === 0;
+      if (allOffline) {
+        const bars = rows.length ? rows.map((row) => {
+          const activeRoute = (row.routes || []).find((route) => route.active && !route.disabled);
+          const cls = row.running ? (activeRoute ? 'is-online' : 'is-unbound') : 'is-offline';
+          const status = row.running ? (activeRoute ? '在线承载' : '在线未承载') : '离线';
+          const anomalyAttr = row.running ? '' : ` data-overview-anomaly-object="${escapeHtml(row.name || row.interface || '')}"`;
+          return `<div class="ik-overview-wan-bar ${cls}" data-overview-chart-type="status" data-overview-visual-block data-overview-wan-detail-row${anomalyAttr}>
+            <b title="${escapeHtml(row.name || row.interface || '-')}">${escapeHtml(row.name || row.interface || '-')}</b>
+            <span title="${escapeHtml(row.parent || row.access || '-')}">${escapeHtml(status)}</span>
+          </div>`;
+        }).join('') : `<div class="ik-overview-wan-bar is-offline" data-overview-chart-type="status" data-overview-visual-block><b>WAN</b><span>未采集</span></div>`;
+        const body = `<div class="ik-overview-wan-strip is-horizontal" data-overview-chart-type="status" data-overview-visual-block>
+          <div class="ik-overview-wan-strip-head">
+            <b>${escapeHtml(`${fmtNumber(ctx.wanHealth.online)}/${fmtNumber(ctx.wanHealth.total)}`)}</b>
+            <span>${escapeHtml(`全离线 · ${routeHit.hitText || '默认路由待判定'}`)}</span>
+          </div>
+          <div class="ik-overview-wan-strip-track">${bars}</div>
+        </div>`;
+        return overviewVisualModule(module, `WAN ${fmtNumber(ctx.wanHealth.online)}/${fmtNumber(ctx.wanHealth.total)} 横向状态条`, `${routeHit.hitText || '默认路由待判定'} · ${fmtNumber(ctx.wanHealth.offline)} 离线`, body, 'status', '', 'ik-overview-wan-strip-module');
+      }
+      const nodes = rows.length ? rows.map((row) => {
+        const activeRoute = (row.routes || []).find((route) => route.active && !route.disabled);
+        const running = Boolean(row.running);
+        const cls = running ? (activeRoute ? 'is-online' : 'is-unbound') : 'is-offline';
+        const status = running ? (activeRoute ? '在线承载' : '在线未承载') : '离线';
+        const anomalyAttr = running ? '' : ` data-overview-anomaly-object="${escapeHtml(row.name || row.interface || '')}"`;
+        return `<div class="ik-overview-wan-node ${cls}" data-overview-chart-type="status" data-overview-visual-block data-overview-wan-detail-row${anomalyAttr}>
+          <b title="${escapeHtml(row.name || row.interface || '-')}">${escapeHtml(row.name || row.interface || '-')}</b>
+          <span title="${escapeHtml(row.parent || row.access || '-')}">${escapeHtml(row.parent || row.access || '-')}</span>
+          <span>${escapeHtml(status)} · ${escapeHtml(activeRoute ? `d${activeRoute.distance ?? '-'}` : '未承载')}</span>
+        </div>`;
+      }).join('') : `<div class="ik-overview-wan-node is-unbound"><b>WAN</b><span>未采集</span><span>无线路</span></div>`;
+      const body = `<div class="ik-overview-wan-strip" data-overview-chart-type="status">${nodes}</div>`;
+      return overviewVisualModule(module, `WAN ${fmtNumber(ctx.wanHealth.online)}/${fmtNumber(ctx.wanHealth.total)} 状态条`, `${routeHit.hitText || '默认路由待判定'} · ${fmtNumber(ctx.wanHealth.offline)} 离线`, body, 'status', '', 'ik-overview-wan-strip-module');
+    }
+
+    function renderOverviewInterfaceStatusVisual(ctx) {
+      const interfaces = Array.isArray(ctx.snapshot.interfaces) ? ctx.snapshot.interfaces : [];
+      const downRows = interfaces.filter((row) => row && row.running === false);
+      const visibleRows = downRows.length ? downRows : interfaces.slice(0, 4);
+      const impact = overviewInterfaceImpactParts(ctx, downRows);
+      const routeDisplay = overviewRouteDisplay(ctx);
+      const collection = ctx.verdict?.collection || overviewCollectionTrust(ctx);
+      const labels = overviewCollectionChannelLabels(ctx, collection);
+      const channelPair = mobileChannelPair(labels.restLabel, labels.sshLabel);
+      const nodes = visibleRows.slice(0, 8).map((row) => {
+        const name = row.name || row.interface || 'interface';
+        const parent = row.parent || row.master || row.type || '-';
+        const down = row.running === false;
+        return `<div class="ik-overview-wan-node ${down ? 'is-offline' : 'is-online'}" data-overview-chart-type="status" data-overview-visual-block data-overview-anomaly-object="${escapeHtml(name)}">
+          <b title="${escapeHtml(name)}">${escapeHtml(name)}</b>
+          <span title="${escapeHtml(parent)}">${escapeHtml(parent)}</span>
+          <span>${escapeHtml(down ? 'down' : 'running')}</span>
+        </div>`;
+      }).join('') || `<div class="ik-overview-wan-node is-offline" data-overview-chart-type="status" data-overview-visual-block><b>接口</b><span>未列出</span><span>down</span></div>`;
+      const facts = [
+        ['down 数', `${fmtNumber(downRows.length || ctx.wanHealth.offline || 0)} / ${fmtNumber(interfaces.length || ctx.wanHealth.total || 0)}`],
+        ['涉及接口', compactListText(downRows.map((row) => row.name || row.interface).filter(Boolean), 4) || '未列出'],
+        ['parent', impact.parent],
+        ['bridge', impact.bridge],
+        ['vlan', impact.vlan],
+        ['pppoe-out', impact.pppoeOut],
+        ['默认路由影响', routeDisplay.label || routeDisplay.text || '不可判定'],
+        ['REST SSH 可达性', channelPair]
+      ].map(([label, value]) => `<div class="ik-overview-module-cell is-warn" data-overview-field>
+        <b>${escapeHtml(label)}</b><span>${escapeHtml(value)}</span>
+      </div>`).join('');
+      const body = `<div class="ik-overview-interface-status" data-overview-chart-type="status" data-overview-visual-block>
+        <div class="ik-overview-wan-strip" data-overview-chart-type="status">${nodes}</div>
+        <div class="ik-overview-channel-grid" data-overview-chart-type="matrix">${facts}</div>
+      </div>`;
+      return overviewVisualModule(
+        'interface-forwarding-visual',
+        '接口转发面状态',
+        `接口转发面 · down 数 ${fmtNumber(downRows.length || ctx.wanHealth.offline || 0)} · REST SSH 可达性 ${channelPair}`,
+        body,
+        'status',
+        '',
+        'ik-overview-wan-strip-module'
+      );
+    }
+
+    function overviewBarRows(items = [], options = {}) {
+      const safeItems = (items || []).slice(0, options.limit || 5);
+      const max = Math.max(...safeItems.map((item) => Number(item.value || 0)), 1);
+      if (!safeItems.length) {
+        return `<div class="ik-overview-key-fact"><span>${escapeHtml(options.emptyTitle || '排行')}</span><b>未采集</b><em>${escapeHtml(options.emptySub || '等待快照')}</em></div>`;
+      }
+      return `<div class="ik-overview-bar-list" data-overview-chart-type="bar">
+        ${safeItems.map((item) => {
+          const width = Math.max(4, Math.round((Number(item.value || 0) / max) * 100));
+          return `<div class="ik-overview-bar-row" data-overview-visual-block>
+            <div class="ik-overview-bar-label" title="${escapeHtml(item.label || '-')}">${escapeHtml(item.label || '-')}</div>
+            <div class="ik-overview-bar-track"><span class="ik-overview-bar-fill" style="--bar-width:${width}%"></span></div>
+            <div>${escapeHtml(item.valueText || fmtRate(item.value || 0))}</div>
+          </div>`;
+        }).join('')}
+      </div>`;
+    }
+
+    function renderOverviewBarRankPanel(ctx, module = 'rank') {
+      const rankData = buildOverviewRankData(ctx.snapshot, ctx.freshness);
+      const terminalItems = rankData.rankedTerminals.slice(0, 5).map((row) => {
+        const name = displayNameFor(row, row.ip || '-').displayName;
+        return {
+          label: `${name} ${row.ip || ''}`.trim(),
+          value: totalTrafficRate(row),
+          valueText: `${fmtRate(totalTrafficRate(row))} · ${fmtNumber(row.connections || 0)}`
+        };
+      });
+      const interfaceItems = rankData.rankedInterfaces.slice(0, 5).map((row) => ({
+        label: `${row.name || row.interface || '-'} ${row.type || ''}`.trim(),
+        value: totalTrafficRate(row, 'txRate', 'rxRate'),
+        valueText: fmtRate(totalTrafficRate(row, 'txRate', 'rxRate'))
+      }));
+      const focusResource = ctx.verdict?.topKey === 'resource-full' || ctx.verdict?.topKey === 'resource-load';
+      const items = focusResource ? interfaceItems : (terminalItems.length ? terminalItems : interfaceItems);
+      const title = focusResource ? '接口吞吐 Top5' : '终端 Top5';
+      return overviewVisualModule(module, title, overviewRankPollText(ctx.snapshot, ctx.freshness), overviewBarRows(items, { limit: 5, emptyTitle: title, emptySub: '无业务排行数据' }), 'bar', 'data-overview-rank-grid', 'ik-overview-bar-rank-module');
+    }
+
+    function renderOverviewIncidentObjectBarsPanel(ctx, module = 'incident-object-bars') {
+      const interfaces = Array.isArray(ctx.snapshot.interfaces) ? ctx.snapshot.interfaces : [];
+      const topKey = ctx.verdict?.topKey || '';
+      const interfaceIncident = topKey === 'interfaces-down';
+      const noSnapshot = topKey === 'no-snapshot' || snapshotIsUnavailable(ctx.snapshot);
+      const downRows = interfaces.filter((row) => row && row.running === false);
+      const items = noSnapshot
+        ? [
+          { label: '业务快照', value: 100, valueText: '缺失' },
+          { label: 'RouterOS', value: 88, valueText: '不可达' },
+          { label: 'REST', value: 66, valueText: '待确认' },
+          { label: 'SSH', value: 66, valueText: '缺依赖' },
+          { label: '失败端点', value: ctx.failures.count ? 48 : 22, valueText: ctx.failures.count ? fmtNumber(ctx.failures.count) : '未记录' }
+        ]
+        : interfaceIncident
+          ? (downRows.length ? downRows : interfaces.slice(0, 5)).slice(0, 5).map((row, index) => ({
+            label: row.name || row.interface || `interface-${index + 1}`,
+            value: row.running === false ? 100 - index * 8 : 36,
+            valueText: row.running === false ? 'down' : 'running'
+          }))
+          : (ctx.offlineWanRows || []).slice(0, 5).map((row, index) => ({
+            label: row.name || row.interface || `wan-${index + 1}`,
+            value: 100 - index * 8,
+            valueText: row.running ? '在线' : '离线'
+          }));
+      const title = noSnapshot ? '采集缺口排行' : interfaceIncident ? 'down 接口排行' : '离线 WAN 排行';
+      const subtitle = noSnapshot ? '快照缺失 / 通道状态 / 失败端点' : interfaceIncident ? '接口转发面对象优先' : '离线对象优先，不用终端排行抢主线';
+      return overviewVisualModule(module, title, subtitle, overviewBarRows(items, { limit: 5, emptyTitle: title, emptySub: '无事故对象' }), 'bar', '', 'ik-overview-bar-rank-module');
+    }
+
+    function renderOverviewIncidentTrendPanel(ctx, module = 'incident-trend') {
+      const topKey = ctx.verdict?.topKey || '';
+      const noSnapshot = topKey === 'no-snapshot' || snapshotIsUnavailable(ctx.snapshot);
+      const interfaceIncident = topKey === 'interfaces-down';
+      const wanIncident = overviewIsWanIncidentKey(topKey);
+      const collectionIncident = topKey === 'collection-degraded' || topKey === 'collection-down';
+      const historyValues = noSnapshot
+        ? [1, 1, 0, 0, 0, 0]
+        : interfaceIncident
+          ? [0, 1, 1, Math.max(1, ctx.wanHealth.offline || 1), Math.max(1, ctx.wanHealth.offline || 1), Math.max(1, ctx.wanHealth.offline || 1)]
+          : wanIncident
+            ? [Math.max(0, ctx.wanHealth.offline - 2), Math.max(0, ctx.wanHealth.offline - 1), ctx.wanHealth.offline, ctx.wanHealth.offline, ctx.wanHealth.offline, ctx.wanHealth.offline]
+            : collectionIncident
+              ? [0, 1, 1, 1, 1, 1]
+              : [0, 0, 0, 0, 0, 0];
+      const label = noSnapshot
+        ? '采集链路'
+        : interfaceIncident
+          ? '接口 Down'
+          : wanIncident
+            ? 'WAN 离线'
+            : collectionIncident
+              ? '通道异常'
+              : '事件';
+      const current = noSnapshot
+        ? '无快照'
+        : interfaceIncident
+          ? `${fmtNumber(ctx.wanHealth.offline || 0)} down`
+          : wanIncident
+            ? `${fmtNumber(ctx.wanHealth.offline)} 离线`
+            : collectionIncident
+              ? '缓存快照'
+              : '待确认';
+      const body = `<div class="ik-overview-chart-shell" data-overview-chart-type="line" data-overview-visual-block>
+        <div class="ik-overview-chart-toolbar"><span>${escapeHtml(label)}趋势占位</span><span class="ik-overview-toggle"><span>1小时</span><span>24小时</span></span></div>
+        ${lineChart(historyValues, { colors: ['#d93025'], height: 82, smoothPasses: 1 })}
+        <div class="ik-overview-legend"><span>${escapeHtml(label)} ${escapeHtml(current)}</span><span>${escapeHtml(noSnapshot ? '业务数据不展示' : overviewSnapshotTrustLabel(ctx))}</span></div>
+      </div>`;
+      return overviewVisualModule(module, `${label}趋势`, noSnapshot ? '采集链路可参考，业务状态不可参考' : '对象趋势占位，不伪造速率', body, 'line', '', 'ik-overview-traffic-card');
+    }
+
+    function renderOverviewProtocolMixPanel(ctx, module = 'protocol-mix') {
+      const rows = [
+        ['HTTP', '未采集', 38],
+        ['QUIC', '不支持', 30],
+        ['其他', '无 DPI', 22],
+        ['应用', '待接入', 10]
+      ];
+      const protocolTrend = lineChart([ctx.history.uplink || [], ctx.history.downlink || []], { colors: ['#165dff', '#16a36f'], height: 34, smoothPasses: 1 });
+      const body = `<div class="ik-overview-protocol-mix" data-overview-chart-type="donut" data-overview-visual-block>
+        <div class="ik-overview-protocol-ring" aria-label="协议占比未采集"></div>
+        <div class="ik-overview-protocol-list">
+          ${rows.map(([label, value, width]) => `<div class="ik-overview-protocol-row" data-overview-field>
+            <span>${escapeHtml(label)}</span>
+            <div class="ik-overview-protocol-track"><span style="--protocol-width:${escapeHtml(String(width))}%"></span></div>
+            <em>${escapeHtml(value)}</em>
+          </div>`).join('')}
+        </div>
+        <div class="ik-overview-protocol-trend" data-overview-chart-type="line" data-overview-visual-block>${protocolTrend}</div>
+      </div>`;
+      return overviewVisualModule(module, '协议 / 应用占比', `无 DPI · ${overviewSnapshotTrustLabel(ctx)}`, body, 'donut', '', 'ik-overview-protocol-module');
+    }
+
+    function renderOverviewNoSnapshotVisualPanel(ctx) {
+      const collection = collectionDisplayState(ctx, ctx.verdict?.collection || overviewCollectionTrust(ctx));
+      const labels = overviewCollectionChannelLabels(ctx, collection);
+      const latestSuccess = latestCollectionSuccessTime(ctx);
+      const latestShort = shortTimestamp(latestSuccess);
+      const nextCollection = ctx.pollText || '未采集';
+      const routerValue = ctx.routerState?.label === '等待登录' ? '等待登录' : '当前不可达';
+      const restValue = stripChannelPrefix(labels.restLabel || 'REST 待确认', 'REST') || '待确认';
+      const sshValue = stripChannelPrefix(labels.sshLabel || 'SSH 缺依赖', 'SSH') || '缺依赖';
+      const failureValue = ctx.failures.count ? fmtNumber(ctx.failures.count) : '未记录';
+      const linkTrend = lineChart([1, 1, 0, 0, 0, 0], { colors: ['#d93025'], height: 34, smoothPasses: 1 });
+      const gapBars = overviewBarRows([
+        { label: '业务快照', value: 100, valueText: '缺失' },
+        { label: 'RouterOS', value: 88, valueText: '不可达' },
+        { label: 'REST', value: 66, valueText: '待确认' },
+        { label: 'SSH', value: 66, valueText: '缺依赖' }
+      ], { limit: 4, emptyTitle: '采集缺口', emptySub: '无业务快照' });
+      const chainNode = (label, value, level) => `<div class="ik-overview-chain-node is-${escapeHtml(level)}" data-overview-field><b>${escapeHtml(label)}</b><span>${escapeHtml(value)}</span></div>`;
+      const moduleCell = (label, value, level = 'warn') => `<div class="ik-overview-module-cell is-${escapeHtml(level)}" data-overview-field><b>${escapeHtml(label)}</b><span>${escapeHtml(value)}</span></div>`;
+      const body = `<div class="ik-overview-nosnapshot-grid" data-overview-no-snapshot-grid>
+        <div class="ik-overview-link-chain" data-overview-chart-type="status" data-overview-visual-block>
+          <div class="ik-overview-visual-title">采集链路状态图</div>
+          <div class="ik-overview-chain-row">
+            ${chainNode('浏览器', '可打开', 'ok')}
+            ${chainNode('面板', '只读可达', 'ok')}
+            ${chainNode('RouterOS', routerValue, 'danger')}
+            ${chainNode('REST', restValue, /可用/.test(restValue) ? 'ok' : 'warn')}
+            ${chainNode('SSH', sshValue === '不可用' ? '缺依赖' : sshValue, 'warn')}
+          </div>
+        </div>
+        <div class="ik-overview-timeline" data-overview-chart-type="timeline" data-overview-visual-block>
+          <div class="ik-overview-visual-title">最近成功时间轴</div>
+          <div class="ik-overview-timeline-row"><b>最近成功</b><span>${escapeHtml(latestShort)} · 上次成功采集</span></div>
+          <div class="ik-overview-timeline-row"><b>当前状态</b><span>RouterOS 当前不可达 · 业务状态不可信</span></div>
+          <div class="ik-overview-timeline-row"><b>下次尝试</b><span>${escapeHtml(nextCollection)} · 轮询中</span></div>
+          <div class="ik-no-snapshot-mini-line" data-overview-chart-type="line" data-overview-visual-block>${linkTrend}</div>
+        </div>
+        <div class="ik-overview-module-matrix" data-overview-chart-type="matrix" data-overview-visual-block>
+          <div class="ik-overview-visual-title">可见模块矩阵</div>
+          <div class="ik-overview-module-matrix-grid">
+            ${moduleCell('WAN', '边界内')}
+            ${moduleCell('路由', '待判定')}
+            ${moduleCell('资源', '边界内')}
+            ${moduleCell('终端', '边界内')}
+            ${moduleCell('速率', '不展示')}
+            ${moduleCell('连接', '不生成')}
+          </div>
+        </div>
+        <div class="ik-overview-channel-cards" data-overview-chart-type="status" data-overview-visual-block>
+          <div class="ik-overview-visual-title">RouterOS / REST / SSH</div>
+          <div class="ik-overview-channel-grid">
+            ${moduleCell('RouterOS', routerValue, 'danger')}
+            ${moduleCell('REST', restValue, /可用/.test(restValue) ? 'ok' : 'warn')}
+            ${moduleCell('SSH', sshValue === '不可用' ? '缺依赖' : sshValue, 'warn')}
+            ${moduleCell('失败端点', failureValue, ctx.failures.count ? 'warn' : 'ok')}
+            ${moduleCell('业务快照', '无业务快照', 'warn')}
+            ${moduleCell('默认路由', '待判定', 'warn')}
+          </div>
+          <div class="ik-no-snapshot-gap-bars" data-overview-chart-type="bar" data-overview-visual-block>${gapBars}</div>
+        </div>
+      </div>`;
+      return overviewVisualModule('no-snapshot-summary', '无快照采集视图', `最近成功 ${latestShort} · 无业务快照，业务数据不展示`, body, 'matrix', 'data-overview-no-snapshot-detail', 'ik-overview-nosnapshot-visual');
     }
 
     function overviewSubtable(title, body) {
@@ -8509,9 +9782,9 @@
         ),
         ...collectionRows,
         row(noSnapshot ? '业务快照' : '业务快照年龄', noSnapshot ? '无' : snapshotBusinessAgeText(ctx.snapshot, ctx.freshness), noSnapshot ? noSnapshotBusinessStateText() : shortTimestampText(snapshotBusinessTimeText(ctx.snapshot, ctx.freshness)), noSnapshot || ctx.freshness?.stale ? 'warn' : history ? 'trust' : 'ok'),
-        row('资源', resourceText, noSnapshot ? '只读边界，资源阈值不展示' : (ctx.resourceEvidence?.summary || `${fmtNumber(ctx.sampleCount)} 点`), noSnapshot ? 'warn' : ctx.resourceLevel),
+        row('资源', resourceText, noSnapshot ? '只读边界，资源阈值停用' : (ctx.resourceEvidence?.summary || `${fmtNumber(ctx.sampleCount)} 点`), noSnapshot ? 'warn' : ctx.resourceLevel),
         row('流量', trafficText, noSnapshot ? '只读边界，速率账本不生成' : overviewIncidentSuppressRateEvidence(ctx) ? '事故对象优先，速率不参与判断' : `${fmtNumber(ctx.sampleCount)} 点 · ${ctx.pollText}`, noSnapshot || overviewIncidentSuppressRateEvidence(ctx) ? 'warn' : 'trust'),
-        row('终端 / 连接', terminalText, noSnapshot ? '只读边界，终端排行不展示' : `PPP ${fmtNumber(ctx.activeSessions || 0)} / 最近成功 ${shortTimestamp(latestCollectionSuccessTime(ctx))}`, noSnapshot ? 'warn' : 'trust')
+        row('终端 / 连接', terminalText, noSnapshot ? '只读边界，终端排行停用' : `PPP ${fmtNumber(ctx.activeSessions || 0)} / 最近成功 ${shortTimestamp(latestCollectionSuccessTime(ctx))}`, noSnapshot ? 'warn' : 'trust')
       ];
       return overviewFlatModule(
         'status-summary',
@@ -8683,7 +9956,7 @@
         : key === 'collection-down'
           ? `最后成功采集 ${shortTimestamp(latestSuccess)}`
         : key === 'no-snapshot'
-            ? `状态更新时间 ${noSnapshotUpdateAgeText(ctx.snapshot, ctx.freshness)} / 失败端点未记录 / 只读边界`
+            ? `状态更新时间 ${noSnapshotUpdateAgeText(ctx.snapshot, ctx.freshness)} / 未记录 / 只读边界`
             : overviewIsWanIncidentKey(key)
               ? (offlineRows.length ? `离线对象 ${offlineRows.join(' / ')}` : '离线线路未列出')
               : key === 'interfaces-down' || key === 'route-danger'
@@ -8711,7 +9984,7 @@
         : key === 'collection-down'
           ? (collection.summaryText || collection.text)
         : key === 'no-snapshot'
-            ? '默认路由待判定 / 只读边界 / 失败端点未记录'
+            ? '默认路由待判定 / 只读边界 / 未记录'
             : overviewIsWanIncidentKey(key)
               ? (offlineRows.length ? `离线对象 ${offlineRows.join(' / ')}` : routeSummary)
               : key === 'interfaces-down' || key === 'route-danger'
@@ -8791,7 +10064,7 @@
       const sshValue = stripChannelPrefix(labels.sshLabel || 'SSH 缺依赖', 'SSH') || '缺依赖';
       const sshLedgerValue = sshValue === '不可用' ? '缺依赖' : sshValue;
       const failureValue = ctx.failures.count ? fmtNumber(ctx.failures.count) : '未记录';
-      const failureReason = ctx.failures.count ? ctx.failures.text : '失败端点未记录';
+      const failureReason = ctx.failures.count ? ctx.failures.text : '未记录';
       const routeReason = '路由快照未取回';
       const row5 = (a, b, c, d, e) => `<tr data-overview-field>
         <td>${escapeHtml(a)}</td>
@@ -8804,13 +10077,10 @@
       const rows = [
         row5('浏览器 → 面板', '可打开', latestSuccessShort, '只读状态页可达', nextCollection),
         row5('面板 → RouterOS', routerValue, latestSuccessShort, `状态更新时间 ${statusUpdateText}`, nextCollection),
-        row5('RouterOS 接口', routerValue, latestSuccessShort, '管理面当前失败', nextCollection),
         row5('REST 实时', restLedgerValue, timeCell(meta.realtimeUpdatedAt), restFailure?.message || 'REST 端点未记录', nextCollection),
-        row5('REST 低频', restLedgerValue, timeCell(meta.slowRestUpdatedAt), restFailure?.message || '低频 REST 未取回', nextCollection),
         row5('SSH', sshLedgerValue, timeCell(meta.staticUpdatedAt), sshFailure?.message || 'SSH 通道缺依赖', nextCollection),
         row5('最近成功快照', latestSuccessShort, latestSuccessShort, '链路可参考', nextCollection),
         row5('当前失败对照', 'RouterOS 不可达', latestSuccessShort, '业务值不填', nextCollection),
-        row5('业务展示', '业务状态不可参考', latestSuccessShort, '仅展示采集链路', nextCollection),
         row5('默认路由', '待判定', latestSuccessShort, routeReason, nextCollection),
         row5('失败端点', failureValue, latestSuccessShort, failureReason, nextCollection)
       ];
@@ -8819,7 +10089,7 @@
 
     function renderOverviewNoSnapshotLinkStatusPanel(ctx, focus = overviewDesktopFocus(ctx)) {
       return overviewFlatModule(
-        'no-snapshot-summary',
+        'no-snapshot-ledger',
         '采集链路账本',
         '浏览器 → 面板 → RouterOS / REST / SSH / 最近成功 / 当前失败',
         renderOverviewNoSnapshotCollectionLedger(ctx, focus),
@@ -8840,7 +10110,7 @@
         row('状态更新时间', timeCell(statusUpdated), `年龄 ${noSnapshotUpdateAgeText(ctx.snapshot, ctx.freshness)}`, '失败对照'),
         row('最近成功', timeCell(latestSuccess), '采集元数据', '上次成功'),
         row('默认路由', '待判定', routeDisplay.text && !/不可判定/.test(routeDisplay.text) ? routeDisplay.text : '路由快照缺失', '影响待判定'),
-        row('失败端点', ctx.failures.count ? fmtNumber(ctx.failures.count) : '未记录', ctx.failures.count ? ctx.failures.text : '未记录不是无失败', '端点账本'),
+        row('失败端点', ctx.failures.count ? fmtNumber(ctx.failures.count) : '未记录', ctx.failures.count ? ctx.failures.text : '未记录', '端点账本'),
         row('页面可信等级', '链路可参考', '业务状态不可参考', '只读边界'),
         row('下次轮询', nextCollection, '轮询中', '不承诺可达')
       ];
@@ -8855,7 +10125,7 @@
 
     function renderOverviewNoSnapshotBoundaryDegradePanel(ctx) {
       const latestSuccess = shortTimestamp(latestCollectionSuccessTime(ctx));
-      const failureText = ctx.failures.count ? ctx.failures.text : '失败端点未记录';
+      const failureText = ctx.failures.count ? ctx.failures.text : '未记录';
       const nextCollection = ctx.pollText || '未采集';
       const meta = ctx.snapshot?.meta || {};
       const collection = collectionDisplayState(ctx, ctx.verdict?.collection || overviewCollectionTrust(ctx));
@@ -8875,47 +10145,20 @@
       const boundaryRows = [
         boundaryRow('只读策略', '不写配置', '状态页只读', '只读'),
         boundaryRow('数值策略', '不填业务数值', '缺当前业务快照', '只读'),
-        boundaryRow('展示范围', '采集链路', '最近成功 / 端点 / 边界', '链路可参考'),
         boundaryRow('页面可信等级', '链路可参考', '采集链路事实', '业务状态不可参考'),
         boundaryRow('当前业务数据', '业务状态不可参考', '当前快照缺失', '仅链路事实'),
         boundaryRow('RouterOS', routerValue, `状态更新时间 ${statusUpdatedShort}`, '设备通达性'),
         boundaryRow('REST', restValue, restFailure?.message || 'REST 端点未记录', '采集通道能力'),
         boundaryRow('SSH', sshValue === '不可用' ? '缺依赖' : sshValue, sshFailure?.message || 'SSH 通道缺依赖', '采集通道能力'),
-        boundaryRow('失败端点', ctx.failures.count ? fmtNumber(ctx.failures.count) : '未记录', failureText, '未记录不是无失败'),
-        boundaryRow('最后成功', latestSuccess, '上次成功采集', '失败对照'),
+        boundaryRow('失败端点', ctx.failures.count ? fmtNumber(ctx.failures.count) : '未记录', failureText, '未记录'),
         boundaryRow('默认路由', '待判定', routeReason, '核心影响'),
-        boundaryRow('WAN', '边界内', '业务快照缺失', '线路状态不参考'),
-        boundaryRow('路由表', '待判定', '当前路由表未取回', '默认路由影响待判'),
-        boundaryRow('资源', '边界内', '业务快照缺失', 'CPU/MEM/DISK 不参考'),
-        boundaryRow('终端', '边界内', '业务快照缺失', '终端排行不生成'),
-        boundaryRow('速率', '速率不展示', '业务快照缺失', '禁止零速率占位'),
-        boundaryRow('连接', '边界内', '业务快照缺失', '连接跟踪不参考'),
-        boundaryRow('端点记录', failureEntries.length ? `${fmtNumber(failureEntries.length)} 条` : '未记录', failureEntries.length ? '端点失败明细' : '未记录端点失败', '未记录不是无失败'),
-        boundaryRow('静态读取', timeCell(meta.staticUpdatedAt), 'SSH / 静态类数据', '缺依赖时不可参考'),
-        boundaryRow('实时读取', timeCell(meta.realtimeUpdatedAt), 'REST 实时端点', '待取回'),
-        boundaryRow('低频读取', timeCell(meta.slowRestUpdatedAt), 'REST 低频端点', '待取回'),
-        boundaryRow('恢复触发', '收到新快照', `轮询 ${nextCollection}`, '状态口径'),
-        boundaryRow('下次轮询', nextCollection, '轮询中，不承诺可达', '轮询状态'),
-        boundaryRow('展示口径', '不补零值', '缺数据不补业务数值', '防误导'),
-        boundaryRow('快照来源', latestSuccess, '最后成功快照', '对照基准'),
-        boundaryRow('业务数值策略', '缺失不填', '无当前业务快照', '防误导'),
-        boundaryRow('采集链路状态', '链路可参考', '浏览器到面板可达', '链路事实'),
-        boundaryRow('端点失败口径', '未记录不是无失败', '缺失败端点明细', '端点账本'),
-        boundaryRow('默认路由证据', '路由表未取回', '无法判断默认路由影响', '核心影响'),
-        boundaryRow('RouterOS 接口', routerValue, '管理面当前失败', '设备通达性'),
-        boundaryRow('管理面状态', routerValue, `状态更新时间 ${statusUpdatedShort}`, '当前失败'),
-        boundaryRow('业务模块策略', '待新快照', '收到新快照后恢复', '状态口径'),
-        boundaryRow('资源阈值', '待新快照', '资源快照缺失', '不参考'),
-        boundaryRow('终端排行', '待新快照', '终端快照缺失', '不生成'),
-        boundaryRow('连接排行', '待新快照', '连接快照缺失', '不生成'),
-        boundaryRow('速率表', '待新快照', '速率快照缺失', '不补零值'),
-        boundaryRow('展示安全', '防误导', '缺数据不用 0 值替代', '只读状态页'),
-        boundaryRow('查看方式', '只读查看', '不写配置', '只读')
+        boundaryRow('禁用模块', 'WAN / 资源 / 终端 / 速率 / 连接', '无业务快照', '业务状态不可参考'),
+        boundaryRow('下次轮询', nextCollection, '轮询中，不承诺可达', '轮询状态')
       ];
       return overviewFlatModule(
         'no-snapshot-boundary-degrade',
         '只读边界 + 降级模块',
-        `${fmtNumber(boundaryRows.length)}行矩阵 / 模块范围 / 失败端点 ${ctx.failures.count ? fmtNumber(ctx.failures.count) : '未记录'} / 最近成功 ${latestSuccess}`,
+        `合并边界 / 失败端点 ${ctx.failures.count ? fmtNumber(ctx.failures.count) : '未记录'} / 最近成功 ${latestSuccess}`,
         compactTable(['模块', '当前', '原因', '是否可信'], boundaryRows, '无只读边界信息', 'ik-home-evidence-table'),
         'data-overview-no-snapshot-detail'
       );
@@ -8926,13 +10169,16 @@
         ['WAN', '边界内', '无业务快照', '不补零速率'],
         ['路由', '待判定', '当前路由表未取回', '默认路由影响待判'],
         ['默认路由', '待判定', '路由快照未取回', '核心影响'],
-        ['资源', '边界内', '无业务快照', 'CPU/MEM/DISK 不参考'],
+        ['资源', '边界内', '无业务快照', 'CPU/MEM/DISK 边界内'],
         ['终端', '边界内', '无业务快照', '终端排行不生成'],
-        ['连接', '边界内', '无业务快照', '连接跟踪不参考'],
-        ['速率', '速率不参考', '无业务快照', '禁止零速率占位'],
-        ['业务快照', '无业务快照，业务数据不展示', '当前快照缺失', '业务状态不可参考'],
+        ['连接', '边界内', '无业务快照', '连接跟踪不生成'],
+        ['速率', '速率不展示', '无业务快照', '禁止零速率占位'],
+        ['业务快照', '无业务快照', '当前快照缺失', '业务状态不可参考'],
         ['可信等级', '链路可参考', '采集链路事实', '业务状态不可参考'],
-        ['展示范围', '采集链路', '最近成功 / 端点 / 边界', '业务值不参考']
+        ['展示范围', '采集链路', '最近成功 / 端点 / 边界', '业务值不参考'],
+        ['失败端点', '未记录', '未记录', '端点账本'],
+        ['读取权限', '只读', '不写配置', '权限边界'],
+        ['下次尝试', '轮询中', '收到新快照后恢复业务模块', '不承诺可达']
       ].map(([a, b, c, d]) => `<tr data-overview-field><td><b>${escapeHtml(a)}</b></td><td>${escapeHtml(b)}</td><td>${escapeHtml(c)}</td><td>${escapeHtml(d)}</td></tr>`);
       return overviewFlatModule(
         'no-snapshot-module-visibility',
@@ -8949,7 +10195,7 @@
       const latestSuccess = latestCollectionSuccessTime(ctx);
       const failureRows = failures.slice(0, 4).map((row) => `<tr data-overview-field><td><b>${escapeHtml(row.group || row.name || '端点')}</b></td><td>${escapeHtml(row.name || '未命名')}</td><td>${escapeHtml(row.message || '失败')}</td><td>${escapeHtml(row.time ? shortTimestamp(row.time) : '未记录')}</td></tr>`);
       if (!failureRows.length) {
-        failureRows.push(`<tr data-overview-field><td><b>失败端点</b></td><td>未记录</td><td>未记录不是无失败</td><td>${escapeHtml(shortTimestamp(latestSuccess))}</td></tr>`);
+        failureRows.push(`<tr data-overview-field><td><b>失败端点</b></td><td>未记录</td><td>未记录</td><td>${escapeHtml(shortTimestamp(latestSuccess))}</td></tr>`);
       }
       failureRows.push(`<tr data-overview-field><td><b>当前状态</b></td><td>RouterOS 不可达</td><td>业务值不参考</td><td>当前失败</td></tr>`);
       return overviewFlatModule(
@@ -8968,11 +10214,11 @@
       const failureEntries = endpointFailureEntries(ctx.snapshot?.meta || {});
       const endpointText = failureEntries.length
         ? failureEntries.slice(0, 2).map((row) => `${row.group || row.name}:${row.message || '失败'}`).join(' / ')
-        : (ctx.failures.count ? ctx.failures.text : '失败端点未记录');
+        : (ctx.failures.count ? ctx.failures.text : '未记录');
       const snapshotState = noSnapshotStatusLine(ctx.snapshot, ctx.freshness);
       const rows = [
         ['可信范围', '链路可参考', '采集链路事实', '业务状态不可参考'],
-        ['端点细节', ctx.failures.count ? `${fmtNumber(ctx.failures.count)} 条` : '未记录', endpointText, '未记录不是无失败'],
+        ['端点细节', ctx.failures.count ? `${fmtNumber(ctx.failures.count)} 条` : '未记录', endpointText, '未记录'],
         ['最近成功', latestSuccess, '上次成功采集', '失败对照'],
         ['快照状态', snapshotState, noSnapshotBusinessStateText(), '业务值不参考'],
         ['下次轮询', ctx.pollText || '未采集', '轮询中，不承诺可达', '只读状态页'],
@@ -8997,30 +10243,49 @@
       const restFailure = failureEntries.find((row) => /rest|api|http|实时|慢速|静态|明细/i.test(`${row.group} ${row.name}`)) || firstFailure;
       const sshFailure = failureEntries.find((row) => /ssh/i.test(`${row.group} ${row.name} ${row.message}`)) || null;
       const timeCell = (value) => value ? shortTimestamp(value) : '未记录';
-      const rows = [
-        ['最近成功', timeCell(latestSuccess), '采集元数据', '对照时间'],
-        ['状态更新时间', timeCell(statusUpdated), '面板状态事件', '当前失败对照'],
-        ['当前状态', 'RouterOS 当前不可达', '管理面当前失败', '业务值不填'],
-        ['当前业务数据', '业务状态不可参考', '当前快照缺失', '业务状态不可参考'],
-        ['可展示范围', '采集链路', '最近成功 / 端点 / 边界', '只读状态页'],
-        ['已禁用模块', 'WAN / 资源 / 终端 / 速率 / 连接', '缺业务快照', '不补 0 值'],
-        ['默认路由影响', '待判定', '路由快照未取回', '核心影响'],
-        ['实时 REST', timeCell(meta.realtimeUpdatedAt), restFailure?.message || 'REST 端点未记录', '采集通道'],
-        ['静态 SSH', timeCell(meta.staticUpdatedAt), sshFailure?.message || 'SSH 通道缺依赖', '配置类只读'],
-        ['下次轮询', nextCollection, '轮询中', '仅采集']
-      ].map(([a, b, c, d]) => `<tr data-overview-field><td><b>${escapeHtml(a)}</b></td><td>${escapeHtml(b)}</td><td>${escapeHtml(c)}</td><td>${escapeHtml(d)}</td></tr>`);
+      const eventRow = (name, value, state, detail = '') => `<div class="ik-no-snapshot-event-row" data-overview-field>
+        <b>${escapeHtml(name)}</b><span>${escapeHtml(value)}</span><em>${escapeHtml(state)}</em>${detail ? `<span title="${escapeHtml(detail)}" style="grid-column:2 / -1;color:#7a8899;">${escapeHtml(detail)}</span>` : ''}
+      </div>`;
+      const moduleCell = (label, value, level = 'warn') => `<div class="ik-overview-module-cell is-${escapeHtml(level)}" data-overview-field><b>${escapeHtml(label)}</b><span>${escapeHtml(value)}</span></div>`;
+      const body = `<div class="ik-no-snapshot-timeline-visual" data-overview-chart-type="timeline" data-overview-visual-block>
+        <div class="ik-no-snapshot-event-list">
+          ${eventRow('最近成功', timeCell(latestSuccess), '对照时间', '采集元数据')}
+          ${eventRow('状态更新', timeCell(statusUpdated), '当前失败', '面板状态事件')}
+          ${eventRow('当前状态', 'RouterOS 当前不可达', '业务值不填', '管理面当前失败')}
+          ${eventRow('业务数据', '业务状态不可参考', '快照缺失', '当前快照缺失')}
+          ${eventRow('展示范围', '采集链路可参考', '业务边界', '仅展示采集链路、最近成功、端点状态')}
+          ${eventRow('禁用模块', 'WAN / 资源 / 终端', '业务边界', '无业务快照，不补业务数值')}
+          ${eventRow('速率口径', '速率不展示', '禁止补零', '禁止用零速率伪装不可采集')}
+          ${eventRow('连接口径', '连接不生成', '快照缺失', '连接跟踪不生成业务判断')}
+          ${eventRow('页面可信', '链路可参考', '业务不可参考', '当前页面可信等级')}
+          ${eventRow('默认路由', '待判定', '核心影响', '路由快照未取回')}
+          ${eventRow('实时 REST', timeCell(meta.realtimeUpdatedAt), '待取回', restFailure?.message || 'REST 端点未记录')}
+          ${eventRow('静态 SSH', timeCell(meta.staticUpdatedAt), '缺依赖', sshFailure?.message || 'SSH 通道缺依赖')}
+          ${eventRow('下次轮询', nextCollection, '仅采集', '轮询中，不承诺可达')}
+        </div>
+        <div class="ik-overview-channel-grid" data-overview-chart-type="status">
+          ${moduleCell('恢复触发', '收到新快照', 'ok')}
+          ${moduleCell('可展示范围', '采集链路', 'ok')}
+          ${moduleCell('已禁用模块', 'WAN/资源/终端', 'warn')}
+          ${moduleCell('速率', '不展示', 'warn')}
+          ${moduleCell('连接', '不生成', 'warn')}
+          ${moduleCell('失败端点', failureEntries.length ? `${fmtNumber(failureEntries.length)}条` : '未记录', failureEntries.length ? 'warn' : 'ok')}
+        </div>
+      </div>`;
       return overviewFlatModule(
         'no-snapshot-recent-success',
         '最后成功快照摘要',
         '最近成功 / 当前失败对照 / REST / SSH',
-        compactTable(['记录', '时间', '来源', '边界'], rows, '无采集时间线', 'ik-home-evidence-table'),
-        'data-overview-no-snapshot-detail'
+        body,
+        'data-overview-no-snapshot-detail data-overview-chart-type="timeline" data-overview-visual-block',
+        'ik-overview-nosnapshot-evidence'
       );
     }
 
     function renderOverviewNoSnapshotSidePanels(ctx) {
       return [
-        renderOverviewNoSnapshotBoundaryDegradePanel(ctx)
+        renderOverviewNoSnapshotBoundaryDegradePanel(ctx),
+        renderOverviewNoSnapshotCollectionTimelinePanel(ctx)
       ].join('');
     }
 
@@ -9124,7 +10389,7 @@
         { label: '通道状态', mainText: collection.channelText || `REST ${collection.restLabel} / SSH ${collection.sshLabel}`, subText: collection.summaryText || collection.label || '通道降级', level: collection.level },
         { label: '数据层状态', mainText: shortTimestampText(collection.dataStateText || collection.dataText || (collection.dataStale ? '陈旧' : '可用')), subText: shortTimestamp(latestSuccess), level: collection.dataStale || collection.channelDegraded ? 'warn' : 'trust' },
         ...(offlineNames.length ? [{ label: '离线对象', mainHtml: overviewAnomalyObjectHtml(offlineNames), subText: 'WAN / 接口转发面证据', level: 'warn' }] : []),
-        { label: '失败端点', mainText: ctx.failures.count ? fmtNumber(ctx.failures.count) : '未记录', subText: ctx.failures.count ? ctx.failures.text : (collection.channelDegraded ? '未记录端点失败 · 通道不可用' : '未记录端点失败'), level: ctx.failures.count || collection.channelDegraded ? 'warn' : 'trust' },
+        { label: '失败端点', mainText: ctx.failures.count ? fmtNumber(ctx.failures.count) : '未记录', subText: ctx.failures.count ? ctx.failures.text : '未记录', level: ctx.failures.count || collection.channelDegraded ? 'warn' : 'trust' },
         { label: '最近成功', mainHtml: `<span title="${escapeHtml(latestSuccess)}">${escapeHtml(shortTimestamp(latestSuccess))}</span>`, subText: '留存时间', level: 'trust' },
         { label: '下次轮询', mainText: ctx.pollText || '未采集', subText: '轮询中', level: 'trust' },
         { label: '默认路由', mainText: routeDisplay.label || routeDisplay.text || '-', subText: focus.routeSummary, level: routeDisplay.level }
@@ -9196,7 +10461,7 @@
       const history = isHistorySnapshot(ctx.freshness);
       const rows = (ctx.offlineWanRows || []).slice(0, 3);
       if (!rows.length) {
-        return `<div class="ik-home-evidence-empty" data-overview-anomaly-evidence data-overview-field>WAN 离线清单：${history ? historySnapshotTitle('WAN', '未见离线线路') : '当前未见离线线路'}</div>`;
+        return `<div class="ik-home-evidence-empty"${dataAttrs({ 'overview-chart-type': 'matrix', 'overview-visual-block': true })} data-overview-anomaly-evidence data-overview-field>WAN 离线清单：${history ? historySnapshotTitle('WAN', '未见离线线路') : '当前未见离线线路'}</div>`;
       }
       return `<div class="ik-home-evidence-list" data-overview-anomaly-evidence>
         <div class="ik-home-evidence-row is-head" data-overview-field style="grid-template-columns:minmax(88px,1fr) 58px 76px 76px minmax(96px,1fr) 68px; padding:3px 4px; line-height:1.05;"><span>对象</span><span>状态</span><span>采样</span><span>父</span><span>默认</span><span>速率</span></div>
@@ -9227,12 +10492,12 @@
         .slice(0, 4);
       if (!routes.length) {
         if (routeHealth.state === 'unavailable' || snapshotIsUnavailable(ctx.snapshot)) {
-          return `<div class="ik-home-evidence-empty" data-overview-default-routes data-overview-field>默认路由不可判定</div>`;
+          return `<div class="ik-home-evidence-empty"${dataAttrs({ 'overview-chart-type': 'matrix', 'overview-visual-block': true })} data-overview-default-routes data-overview-field>默认路由不可判定</div>`;
         }
         if (routeHealth.state === 'inactive') {
-          return `<div class="ik-home-evidence-empty" data-overview-default-routes data-overview-field>未发现活动默认路由</div>`;
+          return `<div class="ik-home-evidence-empty"${dataAttrs({ 'overview-chart-type': 'matrix', 'overview-visual-block': true })} data-overview-default-routes data-overview-field>未发现活动默认路由</div>`;
         }
-        return `<div class="ik-home-evidence-empty" data-overview-default-routes data-overview-field>默认路由：未采集到路由表快照</div>`;
+        return `<div class="ik-home-evidence-empty"${dataAttrs({ 'overview-chart-type': 'matrix', 'overview-visual-block': true })} data-overview-default-routes data-overview-field>默认路由：未采集到路由表快照</div>`;
       }
       const rows = routes.map((route) => {
         const active = route.active && !route.disabled;
@@ -9478,6 +10743,9 @@
               : overviewIsWanIncidentKey(focus.key)
                 ? `WAN ${fmtNumber(ctx.wanHealth.online)}/${fmtNumber(ctx.wanHealth.total)}`
                 : '默认路由';
+      const objectNote = overviewIsWanIncidentKey(focus.key)
+        ? `离线对象 ${fmtNumber(ctx.wanHealth.offline)}`
+        : '';
       const impactTitle = history || ctx.freshness?.stale
         ? '影响待判定'
         : '';
@@ -9496,6 +10764,8 @@
                   : overviewRouteMainText(routeDisplay);
       const collectionStateText = collection.label || '采集状态';
       const collectionText = mobileChannelPair(labels.restLabel, labels.sshLabel);
+      const collectionIncident = focus.key === 'collection-down';
+      const collectionFailureText = ctx.failures?.count ? `失败端点 ${fmtNumber(ctx.failures.count)}` : '失败端点未记录';
       const businessAgeText = noSnapshot
         ? '无业务快照，业务数据不展示'
         : snapshotBusinessAgeText(ctx.snapshot, ctx.freshness);
@@ -9513,10 +10783,10 @@
       const items = [
         { label: '设备', value: deviceName, note: deviceNote },
         { label: '结论', value: conclusion, note: conclusionNote, title: verdict.topLabel || '', level: verdict.level },
-        { label: '对象', value: objectText },
+        { label: '对象', value: objectText, note: objectNote },
         { label: '影响', value: impactText, title: impactTitle, level: verdict.level === 'danger' ? 'danger' : verdict.level === 'warn' ? 'warn' : '' },
-        { label: '采集', value: collectionStateText, note: collectionText, title: collectionText },
-        { label: '快照', value: snapshotTrust, note: businessTimeVisibleText || timeText, title: businessTimeText }
+        { label: '采集', value: collectionIncident ? '通道状态降级' : collectionStateText, note: collectionIncident ? `${collectionText} / ${collectionFailureText}` : collectionText, title: collectionText },
+        { label: '快照', value: collectionIncident ? '数据层状态' : snapshotTrust, note: collectionIncident ? `缓存快照 / 最后成功采集 ${businessTimeVisibleText || timeText}` : `业务快照 ${businessTimeVisibleText || timeText}`, title: businessTimeText }
       ];
       return overviewFlatTopbar(items, verdict.level || (history ? 'trust' : 'ok'));
     }
@@ -9592,7 +10862,7 @@
     }
 
     function overviewChannelPair(restLabel, sshLabel) {
-      return `REST${stripChannelPrefix(restLabel, 'REST')} / SSH${stripChannelPrefix(sshLabel, 'SSH')}`;
+      return `REST ${stripChannelPrefix(restLabel, 'REST')} / SSH ${stripChannelPrefix(sshLabel, 'SSH')}`;
     }
 
     function overviewRouteMainText(routeDisplay = {}) {
@@ -9610,9 +10880,9 @@
       const history = isHistorySnapshot(ctx?.freshness);
       if (verdict.topKey === 'no-snapshot' || snapshotIsUnavailable(ctx?.snapshot || {})) return '快照缺失';
       if (verdict.topKey === 'resource-full' || verdict.topKey === 'resource-load') return verdict.topKey === 'resource-full' ? '资源满载' : '资源高负载';
+      if (verdict.topKey === 'interfaces-down') return '接口全 Down';
       if (verdict.topKey === 'wan-offline-all' || (overviewIsWanIncidentKey(verdict.topKey) && ctx?.wanHealth?.total > 0 && ctx.wanHealth.online === 0)) return 'WAN全离线';
       if (overviewIsWanIncidentKey(verdict.topKey)) return 'WAN异常';
-      if (verdict.topKey === 'interfaces-down') return '接口全 Down';
       if (overviewIsRouteIncidentKey(verdict.topKey)) return '路由异常';
       if (verdict.topKey === 'collection-degraded' || verdict.topKey === 'collection-down') return '采集异常';
       if (history || verdict.topKey === 'data-stale') return '缓存快照';
@@ -9655,7 +10925,7 @@
       const section = (title, body) => overviewSubtable(title, body);
       const routeSectionTitle = history ? '默认路由快照摘要：使用缓存快照' : '默认路由';
       const detailCard = (module, title, subtitle, body, extraAttrs = '') => overviewFlatModule(module, title, subtitle, body, extraAttrs);
-      const renderResourcePriority = () => `${renderOverviewResourcePriorityPanel(ctx)}${renderOverviewResourceThresholdPanelDense(ctx)}`;
+      const renderResourcePriority = () => renderOverviewResourceThresholdPanelDense(ctx);
       switch (focus.key) {
         case 'resource-full': {
           return renderResourcePriority();
@@ -9780,11 +11050,11 @@
     }
 
     function overviewOfflineImpact(ctx) {
-      if (ctx.snapshot.status === 'error') return '业务快照缺失';
       const offlineRows = ctx.offlineWanRows || [];
       const history = isHistorySnapshot(ctx.freshness);
       const allWanOffline = ctx.wanHealth?.total > 0 && ctx.wanHealth.online === 0;
       if (allWanOffline) return 'WAN 全离线，默认路由不可用';
+      if (ctx.snapshot.status === 'error') return '业务快照缺失';
       const activeRouteOffline = offlineRows.some((row) => (row.routes || []).some((route) => route.active && !route.disabled));
       const offlineRate = offlineRows.reduce((sum, row) => sum + totalTrafficRate(row), 0);
       if (activeRouteOffline) return '默认路由命中离线线路';
@@ -9912,8 +11182,14 @@
       const snapshotError = String(ctx.snapshot.error || '');
       const noSnapshot = snapshotIsUnavailable(ctx.snapshot) ||
         (ctx.snapshot.status === 'error' && !ctx.freshness?.source && ctx.wanHealth.total === 0 && !ctx.pppoe.length);
-      const allWanOffline = !noSnapshot && ctx.wanHealth.total > 0 && ctx.wanHealth.online === 0;
-      const interfacesDownActive = !noSnapshot && /接口全 Down|全部接口离线|转发面不可用|接口不可达/.test(snapshotError);
+      const interfaceRows = Array.isArray(ctx.snapshot.interfaces) ? ctx.snapshot.interfaces : [];
+      const downInterfaceCount = interfaceRows.filter((row) => row && row.running === false).length;
+      const interfacesDownByRows = ctx.snapshot.status === 'error' && interfaceRows.length > 0 && downInterfaceCount === interfaceRows.length;
+      const interfacesDownActive = !noSnapshot && (
+        /接口全 Down|全部接口离线|转发面不可用|接口不可达/.test(snapshotError) ||
+        interfacesDownByRows
+      );
+      const allWanOffline = !noSnapshot && !interfacesDownActive && ctx.wanHealth.total > 0 && ctx.wanHealth.online === 0;
       const staleActive = !noSnapshot && (ctx.freshness.stale || history);
       const collection = collectionDisplayState(ctx, overviewCollectionTrust(ctx));
       const offlineNames = (ctx.offlineWanRows || []).slice(0, 3).map((row) => row.name || row.interface || '').filter(Boolean);
@@ -10153,6 +11429,28 @@
     }
 
     function renderOverviewMobileDenseStatus(ctx) {
+      const denseSummaryV = ctx.verdict || buildOverviewVerdict(ctx);
+      const denseSummaryNoSnapshot = denseSummaryV.topKey === 'no-snapshot' || snapshotIsUnavailable(ctx.snapshot);
+      const denseSummaryCollectionIncident = denseSummaryV.topKey === 'collection-degraded' || denseSummaryV.topKey === 'collection-down';
+      const denseSummaryCollection = collectionDisplayState(ctx, denseSummaryV.collection || overviewCollectionTrust(ctx));
+      const denseSummaryRouteDisplay = overviewRouteDisplay(ctx);
+      const denseSummaryLines = (denseSummaryV.conclusionLines || [denseSummaryV.conclusion || denseSummaryV.topLabel || '']).slice(0, 2);
+      const denseSummaryPrimary = denseSummaryNoSnapshot
+        ? noSnapshotBusinessStateText()
+        : (denseSummaryLines[0] || denseSummaryV.conclusion || denseSummaryV.topLabel || '结论待判定');
+      const denseSummarySecondary = denseSummaryNoSnapshot
+        ? `状态更新时间 ${noSnapshotUpdateAgeText(ctx.snapshot, ctx.freshness)} / ${denseSummaryV.supportLine || '采集通道待确认'}`
+        : denseSummaryCollectionIncident
+          ? `缓存快照可信边界：REST ${denseSummaryCollection.restLabel} / SSH ${denseSummaryCollection.sshLabel} / 默认路由 ${overviewRouteMainText(denseSummaryRouteDisplay)}`
+          : (denseSummaryLines[1] || denseSummaryV.supportLine || denseSummaryV.ageFirstText || '');
+      const denseSummaryLevel = denseSummaryNoSnapshot ? 'warn' : denseSummaryV.level || 'ok';
+      const denseSummaryAccent = denseSummaryLevel === 'danger'
+        ? '#d93025'
+        : denseSummaryLevel === 'warn'
+          ? '#f08c00'
+          : denseSummaryLevel === 'history'
+            ? '#d49b22'
+            : '#1a9f64';
       const v = ctx.verdict || buildOverviewVerdict(ctx);
       const freshness = mobileFreshnessCopy(ctx.freshness, ctx);
       const history = isHistorySnapshot(ctx.freshness);
@@ -10212,6 +11510,12 @@
       const resourceThresholdValue = (String(resourceWorst?.thresholdText || '阈待确认').replace(/^阈(?:值)?\s*/, '') || '待确认').replace(/\.0%$/, '%');
       const resourceMeanValue = (resourceWorst?.averageWindowText || '均值-').replace(/^最近\s*/, '').replace(/\s*点均值\s*/, '点均').replace(/\s+/g, '');
       const resourcePeakValue = resourceWorst?.peak === null || resourceWorst?.peak === undefined ? '-' : mobilePercent(resourceWorst.peak);
+      const resourceDurationFullText = resourceDurationValue.replace(/^持续\s*/, '持续 ');
+      const resourceDurationShort = resourceDurationFullText
+        .replace(/^持续\s*/, '')
+        .replace(/\s*点\s*\/\s*/g, '/')
+        .replace(/\s+/g, '');
+      const resourceDurationScanText = resourceDurationFullText.replace(/\s*\/\s*/g, ' / ');
       const resourceCpuCompact = compactMobileMetric(ctx.o.cpuLoad);
       const resourceMemCompact = compactMobileMetric(ctx.o.memoryUsage);
       const resourceDiskCompact = compactMobileMetric(ctx.o.diskUsage);
@@ -10278,19 +11582,21 @@
           ? `RouterOS 当前不可达`
           : interfaceIncident
             ? `转发面证据 / 默认路由 ${routeCell}`
-            : (collectionIncident || collection.channelDegraded)
+            : collectionIncident
               ? collectionCell
               : (allOffline || routeIncident || offlineNames.length)
                 ? `默认路由 ${hitDefaultValue} / 离线对象`
                 : `采集 ${collectionCell}`;
       const evidenceSide = resourceIncident
-        ? `持续${mobileCompactDurationText(resourceDurationValue)} 峰${resourcePeakValue} ${collectionCell.replace(/\s*\/\s*/g, '/').replace(/\s+/g, '')}`
+        ? `持续 ${resourceDurationShort} · ${resourceDurationScanText} · 均值${resourceMeanValue} · 峰${resourcePeakValue}`
         : noSnapshot
           ? `最近成功 ${latestSuccessShort}`
         : collectionIncident
-            ? `缓存可参考 / 当前不可判定 / 最近成功 ${latestSuccessShort}`
+            ? `数据层状态缓存快照 / 失败端点未记录 / 最后成功采集 ${latestSuccessShort}`
         : interfaceIncident
               ? `${collectionCell} / 不替代转发面判断 / WAN 0/${fmtNumber(ctx.wanHealth.total)}`
+              : (allOffline || routeIncident || offlineNames.length)
+                ? `WAN 全离线 / 默认路由异常 / 最近成功 ${latestSuccessShort}`
               : `${collectionCell} / 最近成功 ${latestSuccessShort}`;
       const failureMobileValue = ctx.failures.count ? fmtNumber(ctx.failures.count) : '未记录';
       const mobileRestValue = noSnapshot ? (restLabel || '待确认') : restLabel;
@@ -10336,7 +11642,7 @@
         ]
         : [
           ledgerCell('证据', evidenceMain, evidenceSide, { level: collectionIncident || routeIncident ? 'warn' : '' }),
-          ledgerCell('采集', resourceIncident ? collectionCell : collectionCell, resourceIncident ? `持续${mobileCompactDurationText(resourceDurationValue)} / 阈${resourceThresholdValue} / 峰${resourcePeakValue}` : `最近 ${latestSuccessShort}`, { level: resourceIncident ? v.level : '' })
+        ledgerCell('采集', resourceIncident ? collectionCell : collectionCell, resourceIncident ? `阈值${resourceThresholdValue} · 峰${resourcePeakValue}` : `最近 ${latestSuccessShort}`, { level: resourceIncident ? v.level : '' })
         ];
       const trustValue = noSnapshot
         ? '采集链路可参考'
@@ -10358,6 +11664,216 @@
         ${flatRow('evidence', evidenceCells)}
         ${flatRow('trust', trustCells)}
         ${flatRow('entry', entryCells)}
+        ${renderOverviewMobileVisualSummary(ctx)}
+      </div>`;
+    }
+
+    function renderOverviewMobileVisualSummary(ctx) {
+      const summaryV = ctx.verdict || buildOverviewVerdict(ctx);
+      const summaryNoSnapshot = summaryV.topKey === 'no-snapshot' || snapshotIsUnavailable(ctx.snapshot);
+      const summaryResourceIncident = summaryV.topKey === 'resource-full' || summaryV.topKey === 'resource-load';
+      const summaryInterfaceIncident = summaryV.topKey === 'interfaces-down';
+      const summaryWanIncident = overviewIsWanIncidentKey(summaryV.topKey);
+      const summaryCollectionIncident = summaryV.topKey === 'collection-degraded' || summaryV.topKey === 'collection-down';
+      const summaryCollection = collectionDisplayState(ctx, summaryV.collection || overviewCollectionTrust(ctx));
+      const summaryLabels = overviewCollectionChannelLabels(ctx, summaryCollection);
+      const summaryRouteDisplay = overviewRouteDisplay(ctx);
+      const summaryLatestSuccess = shortTimestamp(latestCollectionSuccessTime(ctx));
+      const summaryCompactPercent = (value) => fmtPercent(value).replace(/\.0%$/, '%');
+      const summaryVisualCard = (title, main, sub, body = '', type = 'status') => `<div class="ik-mobile-visual-card" data-overview-mobile-visual-card data-overview-chart-type="${escapeHtml(type)}" data-overview-visual-block>
+        <span class="ik-mobile-visual-title">${escapeHtml(title)}</span>
+        <b class="ik-mobile-visual-main">${escapeHtml(String(main ?? '-'))}</b>
+        <em class="ik-mobile-visual-sub">${escapeHtml(String(sub ?? ''))}</em>
+        ${body}
+      </div>`;
+      const summaryKeyFact = (label, value, note = '') => `<div class="ik-mobile-keyfact" data-overview-kpi-card data-overview-chart-type="status" data-overview-visual-block data-overview-field>
+        <span>${escapeHtml(label)}</span>
+        <b>${escapeHtml(String(value ?? '-'))}</b>
+        <em>${escapeHtml(String(note ?? ''))}</em>
+      </div>`;
+      const summaryMiniStrip = (rows = []) => `<div class="ik-mobile-mini-strip" data-overview-chart-type="status">
+        ${rows.slice(0, 4).map((row) => `<div class="ik-mobile-mini-node ${row.level ? `is-${escapeHtml(row.level)}` : ''}" title="${escapeHtml(row.title || row.label || '')}"${row.anomaly ? ` data-overview-anomaly-object="${escapeHtml(row.anomaly)}"` : ''}>${escapeHtml(row.label || '-')}</div>`).join(' ')}
+      </div>`;
+      const summaryTrafficChart = lineChart([ctx.history.uplink || [], ctx.history.downlink || []], { colors: ['#165dff', '#16a36f'], height: 54, smoothPasses: 1 });
+      const summaryResourceWorst = ctx.resourceEvidence?.worst || { key: 'DISK', value: ctx.o.diskUsage };
+      const summaryResourceSeries = summaryResourceWorst.key === 'CPU'
+        ? (ctx.history.cpu || [])
+        : summaryResourceWorst.key === 'MEM'
+          ? (ctx.history.memory || [])
+          : (ctx.history.disk || []);
+      const summaryResourceChart = resourcePercentChart(summaryResourceSeries, summaryResourceWorst.key === 'DISK' ? '#f08c00' : '#165dff');
+      const summaryWanRows = (ctx.pppoe || []).slice(0, 4).map((row) => ({
+        label: row.name || row.interface || 'WAN',
+        title: `${row.name || row.interface || 'WAN'} 路 ${row.parent || '-'}`,
+        level: row.running ? 'ok' : 'danger',
+        anomaly: row.running ? '' : (row.name || row.interface || '')
+      }));
+      const summaryChannelRows = [
+        { label: 'RouterOS', level: summaryNoSnapshot ? 'danger' : 'ok', title: summaryNoSnapshot ? '当前不可达' : '可达' },
+        { label: 'REST', level: /可用/.test(summaryLabels.restLabel || '') ? 'ok' : 'danger', title: summaryLabels.restLabel || '待确认' },
+        { label: 'SSH', level: /可用/.test(summaryLabels.sshLabel || '') ? 'ok' : 'danger', title: summaryLabels.sshLabel || '缺依赖' },
+        { label: '路由', level: summaryNoSnapshot || summaryRouteDisplay.level === 'warn' || summaryRouteDisplay.level === 'danger' ? 'danger' : 'ok', title: summaryRouteDisplay.text || summaryRouteDisplay.label || '-' }
+      ];
+      let summaryCards = [];
+      if (summaryNoSnapshot) {
+        summaryCards = [
+          summaryVisualCard('采集链路', '链路可参考', `最近成功 ${summaryLatestSuccess}`, summaryMiniStrip(summaryChannelRows), 'status'),
+          summaryVisualCard('模块可见', '模块降级', 'WAN/资源/终端/速率不展示', summaryMiniStrip([
+            { label: 'WAN', level: 'danger', title: '不展示' },
+            { label: '路由', level: 'danger', title: '待判定' },
+            { label: '资源', level: 'danger', title: '不展示' },
+            { label: '终端', level: 'danger', title: '不展示' }
+          ]), 'matrix')
+        ];
+      } else if (summaryCollectionIncident) {
+        summaryCards = [
+          summaryVisualCard('通道状态', summaryCollection.channelText || mobileChannelPair(summaryLabels.restLabel, summaryLabels.sshLabel), summaryCollection.summaryText || '缓存快照可信边界', summaryMiniStrip(summaryChannelRows), 'status'),
+          summaryVisualCard('数据层状态', '缓存快照', `默认路由 ${summaryRouteDisplay.label || summaryRouteDisplay.text || '待判定'}`, summaryMiniStrip([
+            { label: '路由', level: summaryRouteDisplay.level === 'danger' ? 'danger' : 'ok', title: summaryRouteDisplay.text || summaryRouteDisplay.label || '-' },
+            { label: '失败端点', level: ctx.failures.count ? 'warn' : 'ok', title: ctx.failures.count ? `${fmtNumber(ctx.failures.count)} 条` : '失败端点未记录' },
+            { label: '最近成功', level: 'ok', title: summaryLatestSuccess },
+            { label: '可信边界', level: 'warn', title: overviewSnapshotTrustLabel(ctx) }
+          ]), 'matrix')
+        ];
+      } else if (summaryResourceIncident) {
+        summaryCards = [
+          summaryVisualCard('资源趋势', `${summaryResourceWorst.key}${summaryCompactPercent(summaryResourceWorst.value)}`, ctx.resourceEvidence?.summary || '阈值越线', summaryResourceChart, 'spark'),
+          summaryVisualCard('流量折线', `${fmtRate(ctx.wanRates.up)} / ${fmtRate(ctx.wanRates.down)}`, ctx.pollText || '采样窗口', summaryTrafficChart, 'line')
+        ];
+      } else if (summaryInterfaceIncident || summaryWanIncident) {
+        summaryCards = [
+          summaryVisualCard(summaryInterfaceIncident ? '接口状态' : 'WAN状态', summaryInterfaceIncident ? `down ${fmtNumber(ctx.wanHealth.offline)}` : `WAN ${fmtNumber(ctx.wanHealth.online)}/${fmtNumber(ctx.wanHealth.total)}`, '状态块优先，明细下沉', summaryMiniStrip(summaryWanRows.length ? summaryWanRows : summaryChannelRows), 'status'),
+          summaryVisualCard('采集/路由', mobileChannelPair(summaryLabels.restLabel, summaryLabels.sshLabel), summaryRouteDisplay.label || '路由待判定', summaryMiniStrip(summaryChannelRows), 'status')
+        ];
+      } else {
+        summaryCards = [
+          summaryVisualCard('流量折线', `${fmtRate(ctx.wanRates.up)} / ${fmtRate(ctx.wanRates.down)}`, ctx.pollText || '采样窗口', summaryTrafficChart, 'line'),
+          summaryVisualCard('资源趋势', `CPU${summaryCompactPercent(ctx.o.cpuLoad)}`, `MEM${summaryCompactPercent(ctx.o.memoryUsage)} DISK${summaryCompactPercent(ctx.o.diskUsage)}`, summaryResourceChart, 'spark')
+        ];
+      }
+      const summaryFacts = summaryNoSnapshot
+        ? [
+          summaryKeyFact('最近成功', summaryLatestSuccess, '上次快照'),
+          summaryKeyFact('失败端点', ctx.failures.count ? fmtNumber(ctx.failures.count) : '未记录', ctx.failures.count ? ctx.failures.text : '失败端点未记录'),
+          summaryKeyFact('默认路由', '待判定', '路由快照缺失')
+        ]
+        : summaryCollectionIncident
+          ? [
+            summaryKeyFact('最近成功', summaryLatestSuccess, '缓存更新时间'),
+            summaryKeyFact('失败端点', ctx.failures.count ? fmtNumber(ctx.failures.count) : '未记录', ctx.failures.count ? ctx.failures.text : '未记录失败端点'),
+            summaryKeyFact('可信边界', overviewSnapshotTrustLabel(ctx), `默认路由 ${summaryRouteDisplay.label || summaryRouteDisplay.text || '待判定'}`)
+          ]
+          : summaryResourceIncident
+            ? [
+              summaryKeyFact('峰值', `${summaryResourceWorst.key}${summaryCompactPercent(summaryResourceWorst.peak ?? summaryResourceWorst.value)}`, '资源主线'),
+              summaryKeyFact('持续', String(summaryResourceWorst.stats?.durationText || '待确认').replace('持续 ', ''), '阈值窗口'),
+              summaryKeyFact('采集', mobileChannelPair(summaryLabels.restLabel, summaryLabels.sshLabel), summaryLatestSuccess)
+            ]
+            : (summaryInterfaceIncident || summaryWanIncident)
+              ? [
+                summaryKeyFact(summaryInterfaceIncident ? 'down接口' : '离线对象', summaryInterfaceIncident ? `${fmtNumber(ctx.wanHealth.offline)} 个` : `${fmtNumber(ctx.wanHealth.offline)} 条`, summaryInterfaceIncident ? '转发面优先' : 'WAN 全离线'),
+                summaryKeyFact('默认路由', summaryRouteDisplay.label || '不可判定', summaryRouteDisplay.text || '缺少当前路由快照'),
+                summaryKeyFact('最近成功', summaryLatestSuccess, overviewSnapshotTrustLabel(ctx))
+              ]
+            : [
+              summaryKeyFact('默认路由', summaryRouteDisplay.label || '-', summaryRouteDisplay.text || 'RouterOS事实'),
+              summaryKeyFact('最近成功', summaryLatestSuccess, overviewSnapshotTrustLabel(ctx)),
+              summaryKeyFact('连接', fmtCompact(ctx.connectionTotal), `${fmtNumber(ctx.onlineTerminals || 0)} 在线`)
+            ];
+      return `<div class="ik-mobile-visual-grid" data-overview-mobile-visuals>
+        ${summaryCards.join('')}
+        <div class="ik-mobile-keyfacts" data-overview-mobile-keyfacts>${summaryFacts.join('')}</div>
+      </div>`;
+      const v = ctx.verdict || buildOverviewVerdict(ctx);
+      const noSnapshot = v.topKey === 'no-snapshot' || snapshotIsUnavailable(ctx.snapshot);
+      const resourceIncident = v.topKey === 'resource-full' || v.topKey === 'resource-load';
+      const interfaceIncident = v.topKey === 'interfaces-down';
+      const wanIncident = overviewIsWanIncidentKey(v.topKey);
+      const collection = collectionDisplayState(ctx, v.collection || overviewCollectionTrust(ctx));
+      const labels = overviewCollectionChannelLabels(ctx, collection);
+      const routeDisplay = overviewRouteDisplay(ctx);
+      const latestSuccess = shortTimestamp(latestCollectionSuccessTime(ctx));
+      const compactPercent = (value) => fmtPercent(value).replace(/\.0%$/, '%');
+      const visualCard = (title, main, sub, body = '', type = 'status') => `<div class="ik-mobile-visual-card" data-overview-mobile-visual-card data-overview-chart-type="${escapeHtml(type)}" data-overview-visual-block>
+        <span class="ik-mobile-visual-title">${escapeHtml(title)}</span>
+        <b class="ik-mobile-visual-main">${escapeHtml(String(main ?? '-'))}</b>
+        <em class="ik-mobile-visual-sub">${escapeHtml(String(sub ?? ''))}</em>
+        ${body}
+      </div>`;
+      const keyFact = (label, value, note = '') => `<div class="ik-mobile-keyfact"${dataAttrs({ 'overview-kpi-card': true, 'overview-chart-type': 'status', 'overview-visual-block': true })} data-overview-field>
+        <span>${escapeHtml(label)}</span>
+        <b>${escapeHtml(String(value ?? '-'))}</b>
+        <em>${escapeHtml(String(note ?? ''))}</em>
+      </div>`;
+      const miniStrip = (rows = []) => `<div class="ik-mobile-mini-strip" data-overview-chart-type="status">
+        ${rows.slice(0, 4).map((row) => `<div class="ik-mobile-mini-node ${row.level ? `is-${escapeHtml(row.level)}` : ''}" title="${escapeHtml(row.title || row.label || '')}">${escapeHtml(row.label || '-')}</div>`).join('')}
+      </div>`;
+      const trafficChart = lineChart([ctx.history.uplink || [], ctx.history.downlink || []], { colors: ['#165dff', '#16a36f'], height: 54, smoothPasses: 1 });
+      const resourceWorst = ctx.resourceEvidence?.worst || { key: 'DISK', value: ctx.o.diskUsage };
+      const resourceSeries = resourceWorst.key === 'CPU'
+        ? (ctx.history.cpu || [])
+        : resourceWorst.key === 'MEM'
+          ? (ctx.history.memory || [])
+          : (ctx.history.disk || []);
+      const resourceChart = resourcePercentChart(resourceSeries, resourceWorst.key === 'DISK' ? '#f08c00' : '#165dff');
+      const wanRows = (ctx.pppoe || []).slice(0, 4).map((row) => ({
+        label: row.name || row.interface || 'WAN',
+        title: `${row.name || row.interface || 'WAN'} · ${row.parent || '-'}`,
+        level: row.running ? 'ok' : 'danger'
+      }));
+      const channelRows = [
+        { label: 'RouterOS', level: noSnapshot ? 'danger' : 'ok', title: noSnapshot ? '当前不可达' : '可达' },
+        { label: 'REST', level: /可用/.test(labels.restLabel || '') ? 'ok' : 'danger', title: labels.restLabel || '待确认' },
+        { label: 'SSH', level: /可用/.test(labels.sshLabel || '') ? 'ok' : 'danger', title: labels.sshLabel || '缺依赖' },
+        { label: '路由', level: noSnapshot || routeDisplay.level === 'warn' || routeDisplay.level === 'danger' ? 'danger' : 'ok', title: routeDisplay.text || routeDisplay.label || '-' }
+      ];
+      let cards = [];
+      if (noSnapshot) {
+        cards = [
+          visualCard('采集链路', 'RouterOS不可达', `最近成功 ${latestSuccess}`, miniStrip(channelRows), 'status'),
+          visualCard('模块可见', '业务数据不展示', 'WAN/资源/终端/速率不展示', miniStrip([
+            { label: 'WAN', level: 'danger', title: '不展示' },
+            { label: '路由', level: 'danger', title: '待判定' },
+            { label: '资源', level: 'danger', title: '不展示' },
+            { label: '终端', level: 'danger', title: '不展示' }
+          ]), 'matrix')
+        ];
+      } else if (resourceIncident) {
+        cards = [
+          visualCard('资源趋势', `${resourceWorst.key}${compactPercent(resourceWorst.value)}`, ctx.resourceEvidence?.summary || '阈值越线', resourceChart, 'spark'),
+          visualCard('流量折线', `${fmtRate(ctx.wanRates.up)} / ${fmtRate(ctx.wanRates.down)}`, ctx.pollText || '采样窗口', trafficChart, 'line')
+        ];
+      } else if (interfaceIncident || wanIncident) {
+        cards = [
+          visualCard(interfaceIncident ? '接口状态' : 'WAN状态', interfaceIncident ? `down ${fmtNumber(ctx.wanHealth.offline)}` : `WAN ${fmtNumber(ctx.wanHealth.online)}/${fmtNumber(ctx.wanHealth.total)}`, '状态块优先，明细下方', miniStrip(wanRows.length ? wanRows : channelRows), 'status'),
+          visualCard('采集/路由', mobileChannelPair(labels.restLabel, labels.sshLabel), routeDisplay.label || '路由待判定', miniStrip(channelRows), 'status')
+        ];
+      } else {
+        cards = [
+          visualCard('流量折线', `${fmtRate(ctx.wanRates.up)} / ${fmtRate(ctx.wanRates.down)}`, ctx.pollText || '采样窗口', trafficChart, 'line'),
+          visualCard('资源趋势', `CPU${compactPercent(ctx.o.cpuLoad)}`, `MEM${compactPercent(ctx.o.memoryUsage)} DISK${compactPercent(ctx.o.diskUsage)}`, resourceChart, 'spark')
+        ];
+      }
+      const facts = noSnapshot
+        ? [
+          keyFact('最近成功', latestSuccess, '上次快照'),
+          keyFact('失败端点', ctx.failures.count ? fmtNumber(ctx.failures.count) : '未记录', '不是无失败'),
+          keyFact('默认路由', '待判定', '路由快照缺失')
+        ]
+        : resourceIncident
+          ? [
+            keyFact('峰值', `${resourceWorst.key}${compactPercent(resourceWorst.peak ?? resourceWorst.value)}`, '资源主线'),
+            keyFact('持续', String(resourceWorst.stats?.durationText || '待确认').replace('持续 ', ''), '阈值窗口'),
+            keyFact('采集', mobileChannelPair(labels.restLabel, labels.sshLabel), latestSuccess)
+          ]
+          : [
+            keyFact('默认路由', routeDisplay.label || '-', routeDisplay.text || 'RouterOS事实'),
+            keyFact('最近成功', latestSuccess, overviewSnapshotTrustLabel(ctx)),
+            keyFact('连接', fmtCompact(ctx.connectionTotal), `${fmtNumber(ctx.onlineTerminals || 0)} 在线`)
+          ];
+      return `<div class="ik-mobile-visual-grid"${dataAttrs({ 'overview-chart-type': 'matrix', 'overview-visual-block': true })} data-overview-mobile-visuals>
+        ${cards.join('')}
+        <div class="ik-mobile-keyfacts"${dataAttrs({ 'overview-chart-type': 'status' })} data-overview-mobile-keyfacts>${facts.join('')}</div>
       </div>`;
     }
 
@@ -10441,12 +11957,12 @@
             : `默认路由 ${routeText} · 速率 ${fmtRate(totalTrafficRate(row))}`;
           const state = row.running ? (history ? '上次在线' : '在线') : (history ? '曾离线' : '离线');
           const anomalyAttr = row.running ? '' : ` data-overview-anomaly-object="${escapeHtml(row.name || row.interface || '')}"`;
-          return `<div class="ik-mobile-wan-row is-flat-wan-row${row.running ? '' : ' is-offline'}" data-overview-mobile-wan-row data-overview-wan-detail-row data-overview-field>
+          return `<div class="ik-mobile-wan-row is-flat-wan-row${row.running ? '' : ' is-offline'}"${dataAttrs({ 'overview-chart-type': 'status', 'overview-visual-block': true })} data-overview-mobile-wan-row data-overview-wan-detail-row data-overview-field>
             <b${anomalyAttr}>${escapeHtml(row.name || row.interface || '-')}<small>父接口 ${escapeHtml(row.parent || row.interface || '-')}</small></b>
             <span class="ik-mobile-wan-state">${escapeHtml(state)}</span>
             <span>${escapeHtml(carrierEvidence)}</span>
           </div>`;
-        }).join('') || `<div class="ik-mobile-wan-row is-flat-wan-row" data-overview-wan-detail-row data-overview-field><b>未采集 WAN</b><span>-</span><span>-</span></div>`;
+        }).join('') || `<div class="ik-mobile-wan-row is-flat-wan-row"${dataAttrs({ 'overview-chart-type': 'status', 'overview-visual-block': true })} data-overview-wan-detail-row data-overview-field><b>未采集 WAN</b><span>-</span><span>-</span></div>`;
     }
 
     function renderOverviewMobileMiniTable(title, subtitle, headers, rows, rowClass = '', sectionClass = '') {
@@ -10504,7 +12020,7 @@
       const body = rows.length
         ? rows.map((row) => `<div class="${cls}" data-overview-field${routeRowAttr}>${normalizeCells(row).map((cell) => `<span>${cell}</span>`).join('')}</div>`).join('')
         : `<div class="${cls}" data-overview-field${routeRowAttr}>${emptyCells.map((cell) => `<span>${cell}</span>`).join('')}</div>`;
-      return `<div class="ik-mobile-compact-section${sectionClass ? ` ${sectionClass}` : ''}" data-overview-mobile-detail-section>
+      return `<div class="ik-mobile-compact-section${sectionClass ? ` ${sectionClass}` : ''}"${dataAttrs({ 'overview-chart-type': 'matrix', 'overview-visual-block': true })} data-overview-mobile-detail-section>
         <div class="ik-mobile-section-head" data-overview-field title="${escapeHtml(title)}">${escapeHtml(visibleTitle)}${actionHtml}</div>
         <div class="${cls} is-head" data-overview-field>${ledgerHeaders.map((item) => `<span>${escapeHtml(item)}</span>`).join('')}</div>
         ${body}
@@ -10635,10 +12151,11 @@
         : history
           ? '留存'
           : '未记录';
-      return renderOverviewMobileMiniTable('采集通道', `${tableStateText} · ${channelPair}`, ['通道', '当前', '失败端点'], visibleRows([
+      const mobileCollectionTrustMarker = collection.channelDegraded ? '采集通道 · 缓存可参考' : tableStateText;
+      return renderOverviewMobileMiniTable('采集通道', `${mobileCollectionTrustMarker} · ${channelPair}`, ['通道', '当前', '失败端点'], visibleRows([
         ['采集', escapeHtml(collection.channelDegraded ? `缓存快照 / ${channelPair}` : channelPair), channelState],
         ['数据层', escapeHtml(shortTimestampText(collection.dataStateText || collection.dataText || shortTimestamp(latestCollectionSuccessTime(ctx)) || '未采集')), dataState],
-        ['失败端点', escapeHtml(ctx.failures.count ? fmtNumber(ctx.failures.count) : (collection.channelDegraded ? `未记录 · 默认路由 ${routeCell}` : '未记录')), failureState]
+        ['失败端点', escapeHtml(ctx.failures.count ? fmtNumber(ctx.failures.count) : (collection.channelDegraded ? `未记录失败端点 · 默认路由 ${routeCell}` : '未记录')), failureState]
       ]));
     }
 
@@ -10706,7 +12223,7 @@
       const freshness = mobileFreshnessCopy(ctx.freshness, ctx);
       const history = isHistorySnapshot(ctx.freshness);
       const routeSummary = mobileRouteSummary(ctx);
-      return `<div class="ik-mobile-compact-section" data-overview-mobile-detail-section data-overview-mobile-wan-table>
+      return `<div class="ik-mobile-compact-section"${dataAttrs({ 'overview-chart-type': 'status', 'overview-visual-block': true })} data-overview-mobile-detail-section data-overview-mobile-wan-table>
         <div class="ik-mobile-section-head" data-overview-field title="${escapeHtml(history ? routeSummary : `${freshness.label} · ${routeSummary}`)}">WAN线路<a class="ik-mobile-flat-link" href="#lineStatus" data-section="lineStatus" data-overview-action-label title="${escapeHtml(routeSummary)}">线路</a></div>
         <div class="ik-mobile-wan-row is-head" data-overview-field><span>线路</span><span>状态</span><span>承载</span></div>
         ${mobileWanEvidenceRows(ctx, limit)}
@@ -10764,6 +12281,67 @@
     }
 
     function renderOverviewMobileDetail(ctx, deviceLine = '', skipFirstSection = '') {
+      const mobileDetailV = ctx.verdict || buildOverviewVerdict(ctx);
+      const mobileDetailSections = [];
+      const mobileDetailPush = (key, html) => {
+        if (key !== skipFirstSection && html) mobileDetailSections.push(html);
+      };
+      const mobileDetailSection = (key, limit) => renderOverviewMobileDetailByKey(ctx, key, limit);
+      if (mobileDetailV.topKey === 'resource-full' || mobileDetailV.topKey === 'resource-load') {
+        mobileDetailPush('resource', mobileDetailSection('resource'));
+        mobileDetailPush('resource-pressure', mobileDetailSection('resource-pressure'));
+        mobileDetailPush('collection', mobileDetailSection('collection', 3));
+        mobileDetailPush('route', mobileDetailSection('route', 2));
+      } else if (mobileDetailV.topKey === 'collection-degraded' || mobileDetailV.topKey === 'collection-down') {
+        mobileDetailPush('collection', mobileDetailSection('collection'));
+        mobileDetailPush('resource', mobileDetailSection('resource'));
+        mobileDetailPush('route', mobileDetailSection('route'));
+      } else if (mobileDetailV.topKey === 'data-stale') {
+        mobileDetailPush('route', mobileDetailSection('route'));
+        mobileDetailPush('resource', mobileDetailSection('resource'));
+        mobileDetailPush('collection', mobileDetailSection('collection'));
+      } else if (mobileDetailV.topKey === 'no-snapshot') {
+        mobileDetailPush('collection', mobileDetailSection('collection'));
+        mobileDetailPush('no-snapshot-boundary', mobileDetailSection('no-snapshot-boundary'));
+      } else if (mobileDetailV.topKey === 'interfaces-down') {
+        mobileDetailPush('interface', mobileDetailSection('interface'));
+        mobileDetailPush('route', mobileDetailSection('route'));
+        mobileDetailPush('collection', mobileDetailSection('collection'));
+        mobileDetailPush('resource', mobileDetailSection('resource', 3));
+        mobileDetailPush('wan', mobileDetailSection('wan', 3));
+      } else if (overviewIsWanIncidentKey(mobileDetailV.topKey)) {
+        mobileDetailPush('wan', mobileDetailSection('wan'));
+        mobileDetailPush('route', mobileDetailSection('route'));
+        mobileDetailPush('collection', mobileDetailSection('collection'));
+        mobileDetailPush('resource', mobileDetailSection('resource', 3));
+      } else if (overviewIsRouteIncidentKey(mobileDetailV.topKey)) {
+        mobileDetailPush('wan', mobileDetailSection('wan'));
+        mobileDetailPush('route', mobileDetailSection('route'));
+        mobileDetailPush('resource', mobileDetailSection('resource'));
+        mobileDetailPush('collection', mobileDetailSection('collection'));
+      } else {
+        mobileDetailPush('wan', mobileDetailSection('wan'));
+        mobileDetailPush('route', mobileDetailSection('route'));
+        mobileDetailPush('resource', mobileDetailSection('resource'));
+        mobileDetailPush('collection', mobileDetailSection('collection'));
+      }
+      const mobileDetailTerminalSuppressed = [
+        'no-snapshot',
+        'wan-offline-all',
+        'wan-offline',
+        'collection-down',
+        'collection-degraded',
+        'resource-full',
+        'resource-load',
+        'interfaces-down'
+      ].includes(mobileDetailV.topKey);
+      if (!mobileDetailTerminalSuppressed) {
+        mobileDetailSections.push(renderOverviewMobileTerminalTop3(ctx));
+      }
+      return `<div class="ik-mobile-detail-grid" data-overview-mobile-detail>
+        ${mobileDetailSections.join('')}
+        ${deviceLine ? `<div class="ik-mobile-device-line" data-overview-mobile-device-line data-overview-field><b>璁惧</b><span>${escapeHtml(deviceLine)}</span></div>` : ''}
+      </div>`;
       const v = ctx.verdict || buildOverviewVerdict(ctx);
       const sections = [];
       const pushSection = (key, html) => {
@@ -10834,16 +12412,16 @@
         ? noSnapshotTargetLabel(ctx.snapshot.meta || {})
         : (ctx.o.identity || ctx.snapshot.meta?.routerHost || ctx.snapshot.meta?.target || '未采集');
       const deviceLine = `${deviceLineName} | ${ctx.o.version || 'RouterOS 未采集'} | 运行 ${ctx.o.uptime || '-'} | ${mobileFreshnessText}`;
-      const firstDetailKey = overviewMobileLeadSectionKey(ctx, v);
-      const noSnapshotLedgerOnly = v.topKey === 'no-snapshot' || snapshotIsUnavailable(ctx.snapshot);
-      const firstDetail = noSnapshotLedgerOnly ? '' : renderOverviewMobileDetailByKey(ctx, firstDetailKey, firstDetailKey === 'wan' ? 3 : 6);
+      const mobileLeadKey = noSnapshotDeviceLine ? '' : overviewMobileLeadSectionKey(ctx, v);
+      const mobileLeadLimit = overviewIsWanIncidentKey(v.topKey) ? 3 : 2;
+      const mobileLeadPreview = mobileLeadKey ? renderOverviewMobileDetailByKey(ctx, mobileLeadKey, mobileLeadLimit) : '';
       const mobileSceneClass = ` is-${String(v.topKey || 'normal').replace(/[^a-z0-9-]/gi, '-')}`;
       return `<div class="ik-mobile-console${mobileSceneClass}" data-overview-mobile-console data-overview-mobile-mode="flat">
         <div class="ik-mobile-first-screen" data-overview-mobile-first-screen>
           ${renderOverviewMobileDenseStatus(ctx)}
-          ${firstDetail}
+          ${mobileLeadPreview}
         </div>
-        ${renderOverviewMobileDetail(ctx, deviceLine, firstDetail ? firstDetailKey : '')}
+        ${renderOverviewMobileDetail(ctx, deviceLine, mobileLeadKey)}
       </div>`;
     }
 
@@ -10909,23 +12487,9 @@
       const verdict = ctx.verdict || buildOverviewVerdict(ctx);
       const focus = overviewDesktopFocus(ctx);
       const noSnapshot = verdict.topKey === 'no-snapshot';
-      const summaryItems = noSnapshot
-        ? []
-        : focus.key === 'interfaces-down'
-          ? overviewInterfaceForwardingEvidenceItems(ctx, focus)
-          : overviewIsRouteIncidentKey(focus.key)
-            ? overviewWanOfflineEvidenceItems(ctx, focus)
-            : focus.key === 'resource-full'
-              ? overviewResourceFullEvidenceItems(ctx, focus)
-              : focus.key === 'collection-down'
-                ? overviewCollectionDownEvidenceItems(ctx, focus)
-                : overviewNormalEvidenceItems(ctx, focus);
-      return `<div class="ik-home-summary-shell ik-home-desktop" data-overview-summary data-overview-summary-main data-overview-desktop-top data-overview-summary-focus="${escapeHtml(focus.key)}">
+      return `<div class="ik-home-summary-shell" data-overview-summary data-overview-status-bus data-overview-summary-main data-overview-desktop-top data-overview-summary-focus="${escapeHtml(focus.key)}">
         ${renderOverviewStatusBar(ctx)}
-        ${noSnapshot
-          ? renderOverviewNoSnapshotLinkStatusPanel(ctx, focus)
-          : overviewStateSummaryTable(ctx, focus)}
-        ${noSnapshot ? '' : overviewKeyEvidenceTable(ctx, summaryItems, focus)}
+        ${overviewKpiStrip(ctx)}
       </div>`;
     }
 
@@ -10936,25 +12500,7 @@
       const labels = overviewCollectionChannelLabels(ctx, collection);
       const channelText = collection.channelText || overviewChannelPair(labels.restLabel, labels.sshLabel);
       if (noSnapshot) {
-        const latestSuccess = latestCollectionSuccessTime(ctx);
-        const routeDisplay = overviewRouteDisplay(ctx);
-        const failureValue = ctx.failures.count ? fmtNumber(ctx.failures.count) : '未记录';
-        const rows = [
-          ['采集通道', channelText, collection.summaryText || collection.label || '通道状态'],
-          ['默认路由', routeDisplay.label || '不可判定', routeDisplay.text || '默认路由待判定'],
-          ['失败端点', failureValue, ctx.failures.count ? ctx.failures.text : '未记录'],
-          ['业务边界', '只读展示', 'WAN / 路由 / 资源 / 终端不展示'],
-          ['最近成功', shortTimestamp(latestSuccess), '上次成功采集'],
-          ['下次轮询', ctx.pollText || '未采集', '轮询中，不承诺可达']
-        ];
-        return overviewFlatModule(
-          'no-snapshot-trend',
-          '采集账本',
-          `默认路由待判定 · 下次轮询 ${ctx.pollText || '未采集'}`,
-          compactTable(['项', '当前', '说明'], rows.map(([a, b, c]) => `<tr data-overview-field><td>${escapeHtml(a)}</td><td><b>${escapeHtml(String(b))}</b></td><td>${escapeHtml(String(c))}</td></tr>`), '无采集链路账本'),
-          'data-overview-trend-compact',
-          'is-trend-strip'
-        );
+        return renderOverviewNoSnapshotVisualPanel(ctx);
       }
       const topKey = ctx.verdict?.topKey || '';
       const routeDisplay = overviewRouteDisplay(ctx);
@@ -10967,84 +12513,23 @@
         const offlineNames = compactListText((ctx.offlineWanRows || []).map((row) => row.name || row.interface).filter(Boolean), 6) || '未列出';
         const downInterfaces = Array.isArray(ctx.snapshot.interfaces) ? ctx.snapshot.interfaces.filter((row) => row && row.running === false) : [];
         const impact = overviewInterfaceImpactParts(ctx, downInterfaces);
-        const row = (a, b, c) => `<tr data-overview-field><td>${escapeHtml(a)}</td><td><b>${escapeHtml(String(b ?? '-'))}</b></td><td>${escapeHtml(String(c ?? '-'))}</td></tr>`;
-        const rows = collectionIncident
-          ? [
-              row('缓存快照', collection.dataStale ? '缓存可参考' : '当前可参考', `最近成功 ${latestSuccess}`),
-              row('业务可信度', '缓存可参考', '当前不可判定'),
-              row('REST', stripChannelPrefix(labels.restLabel || 'REST 待确认', 'REST') || '待确认', '管理面采集通道'),
-              row('SSH', stripChannelPrefix(labels.sshLabel || 'SSH 缺依赖', 'SSH') || '缺依赖', '只读采集通道'),
-              row('默认路由', routeDisplay.label || '待判定', routeDisplay.text || '缓存快照参考'),
-              row('速率状态', '不展开趋势表', '采集异常时以缓存快照账本为准')
-            ]
-          : interfaceIncident
-            ? [
-                row('接口清单', offlineNames, `down ${fmtNumber(downInterfaces.length || ctx.wanHealth.offline || 0)}`),
-                row('父接口', impact.parent, 'parent 影响面'),
-                row('bridge / vlan', `${impact.bridge} / ${impact.vlan}`, '二层与 VLAN 影响面'),
-                row('pppoe-out', impact.pppoeOut, 'PPPoE 出口关系'),
-                row('默认路由影响', routeDisplay.label || '待判定', routeDisplay.text || '接口转发面优先'),
-                row('速率状态', '不展开趋势表', '接口 Down 时速率不是首屏证据')
-              ]
-            : [
-                row('WAN对象', `${fmtNumber(ctx.wanHealth.online)}/${fmtNumber(ctx.wanHealth.total)} 全离线`, offlineNames),
-                row('默认路由', routeDisplay.label || '未发现活动默认路由', routeDisplay.text || '默认路由失效'),
-                row('承载关系', routeHit.hitText || '未承载', routeHit.text || '离线对象未承载默认路由'),
-                row('离线清单', offlineNames, `${fmtNumber(ctx.wanHealth.offline)} 条离线`),
-                row('采集可信度', collection.label || '采集可用', channelText),
-                row('速率状态', '不展开趋势表', 'WAN 全离线时速率表不占首屏')
-              ];
-        const title = collectionIncident
-          ? '缓存快照账本'
-          : interfaceIncident
-            ? '接口关系账本'
-            : 'WAN对象账本';
-        const subtitle = collectionIncident
-          ? '采集通道 / 缓存快照 / 业务可信度'
-          : interfaceIncident
-            ? '接口 / 父接口 / 默认路由影响 / 采集可信度'
-            : '离线对象 / 默认路由 / 承载关系 / 采集可信度';
-        return overviewFlatModule(
-          collectionIncident ? 'collection-cache-ledger' : interfaceIncident ? 'interface-first-ledger' : 'wan-incident-ledger',
-          title,
-          subtitle,
-          compactTable(['对象', '当前', '依据'], rows, '无异常账本', 'ik-home-evidence-table'),
-          'data-overview-trend-compact',
-          'is-trend-strip'
-        );
+        if (interfaceIncident) {
+          return renderOverviewInterfaceStatusVisual(ctx);
+        }
+        if (wanIncident) {
+          return renderOverviewWanStatusStrip(ctx);
+        }
+        const channelCards = `<div class="ik-overview-channel-grid" data-overview-chart-type="status">
+          <div class="ik-overview-module-cell is-warn"><b>REST</b><span>${escapeHtml(stripChannelPrefix(labels.restLabel || '待确认', 'REST') || '待确认')}</span></div>
+          <div class="ik-overview-module-cell is-warn"><b>SSH</b><span>${escapeHtml(stripChannelPrefix(labels.sshLabel || '缺依赖', 'SSH') || '缺依赖')}</span></div>
+          <div class="ik-overview-module-cell is-warn"><b>数据层状态</b><span>${escapeHtml(collection.dataStale ? '缓存快照' : '当前可参考')}</span></div>
+          <div class="ik-overview-module-cell is-ok"><b>最近成功</b><span>${escapeHtml(latestSuccess)}</span></div>
+          <div class="ik-overview-module-cell is-warn"><b>默认路由</b><span>${escapeHtml(routeDisplay.label || '待判定')}</span></div>
+          <div class="ik-overview-module-cell is-warn"><b>失败端点</b><span>${escapeHtml(ctx.failures.count ? fmtNumber(ctx.failures.count) : '未记录')}</span></div>
+        </div>`;
+        return overviewVisualModule('collection-cache-ledger', '采集通道状态', `${channelText} · 当前展示缓存快照`, channelCards, 'status', 'data-overview-trend-compact');
       }
-      const upChart = rateAxisLineChart(ctx.history.uplink || [], '#165dff', { current: ctx.wanRates.up });
-      const downChart = rateAxisLineChart(ctx.history.downlink || [], '#16c67a', { current: ctx.wanRates.down });
-      const enough = upChart.count >= 2 && downChart.count >= 2;
-      if (!enough) {
-        const routeDisplay = overviewRouteDisplay(ctx);
-        const rows = [
-          ['上行', fmtRate(ctx.wanRates.up), `样本 ${fmtNumber(upChart.count)}/6，趋势暂不可用`],
-          ['下行', fmtRate(ctx.wanRates.down), `样本 ${fmtNumber(downChart.count)}/6，趋势暂不可用`],
-          ['默认路由', routeDisplay.label || '不可判定', routeDisplay.text || '不可判定'],
-          ['采集通道', channelText, collection.summaryText || collection.label || '通道状态'],
-          ['采样点', fmtNumber(Math.max(upChart.count, downChart.count)), ctx.freshness.source || '未采集']
-        ];
-        return overviewFlatModule(
-          'wan-trend',
-          'WAN速率',
-          `WAN 速率 · ${prefix} · ${ctx.freshness.source || '未采集'}`,
-        compactTable(['项', '当前', '说明'], rows.map(([a, b, c]) => `<tr data-overview-field><td>${escapeHtml(a)}</td><td><b>${escapeHtml(String(b))}</b></td><td>${escapeHtml(String(c))}</td></tr>`), '样本 0/6，趋势暂不可用'),
-          'data-overview-trend-compact',
-          'is-trend-strip'
-        );
-      }
-      return overviewFlatModule(
-        'wan-trend',
-        'WAN速率',
-        `WAN 速率 · ${prefix} · ${fmtRate(ctx.wanRates.up)} / ${fmtRate(ctx.wanRates.down)}`,
-        compactTable(['项', '当前', '说明'], [
-          `<tr data-overview-field><td>上行</td><td><b>${fmtRate(ctx.wanRates.up)}</b></td><td>峰 ${fmtRate(upChart.peak || ctx.wanRates.up)}</td></tr>`,
-          `<tr data-overview-field><td>下行</td><td><b>${fmtRate(ctx.wanRates.down)}</b></td><td>峰 ${fmtRate(downChart.peak || ctx.wanRates.down)}</td></tr>`,
-          `<tr data-overview-field><td>采样点</td><td><b>${fmtNumber(Math.max(upChart.count, downChart.count))}</b></td><td>${escapeHtml(ctx.pollText || '未采集')}</td></tr>`
-        ], '暂无 WAN 速率'),
-        'data-overview-trend-compact'
-      );
+      return renderOverviewTrafficVisual(ctx);
     }
 
     function renderOverviewFleetDesktopDensityPanel(ctx) {
@@ -11148,12 +12633,12 @@
       ];
       const routeRows = [
         row(routeLedgerName, routeLedgerCurrent, routeLedgerEvidence, routeLedgerState),
-        row('默认路由条目', fmtNumber((ctx.snapshot.routes?.defaultRoutes || []).length), 'table / gateway / distance / active', plainState('RouterOS')),
+        row('默认路由条目', fmtNumber((ctx.snapshot.routes?.defaultRoutes || []).length), 'table / gateway / distance / active / disabled', plainState('RouterOS')),
         ...((ctx.snapshot.routes?.defaultRoutes || [])
           .slice()
           .sort((a, b) => Number(a.distance || 0) - Number(b.distance || 0))
           .slice(0, 3)
-          .map((route) => row(route.table || route.routingTable || 'main', route.gateway || route.gatewayStatus || '-', `distance ${route.distance ?? '-'} / active ${route.active ? 'true' : 'false'}`, plainState(route.active && !route.disabled ? '活动' : '备用'))))
+          .map((route) => row(route.table || route.routingTable || 'main', route.gateway || route.gatewayStatus || '-', `distance ${route.distance ?? '-'} / active ${route.active ? 'true' : 'false'} / disabled ${route.disabled ? 'true' : 'false'}`, plainState(route.active && !route.disabled ? '活动' : '备用'))))
       ];
       const resourceRows = [
         row('CPU', fmtPercent(ctx.o.cpuLoad), ctx.resourceEvidence?.cpu?.durationText || `${fmtNumber(ctx.sampleCount)} 点`, Number(ctx.o.cpuLoad || 0) >= 85 ? tag('异常', 'danger') : plainState('正常')),
@@ -11260,7 +12745,7 @@
       }
       if (focus.key === 'collection-down') {
         const rows = [
-          row('当前使用', collection.dataStale ? '缓存快照' : '当前快照', `最近成功 ${latestSuccess}`, '业务字段四项'),
+          row('采集通道 · 缓存可参考', collection.dataStale ? '缓存快照' : '当前快照', `最近成功 ${latestSuccess}`, '业务字段四项'),
           row('业务可信度', '缓存可参考', '当前不可判定', '缓存快照边界'),
           row('REST', stripChannelPrefix(labels.restLabel || 'REST 待确认', 'REST') || '待确认', '管理面采集通道', '通道能力'),
           row('SSH', stripChannelPrefix(labels.sshLabel || 'SSH 缺依赖', 'SSH') || '缺依赖', '只读采集通道', '通道能力'),
@@ -11288,9 +12773,8 @@
 
     function renderOverviewNoSnapshotDesktopDetailDense(snapshot, ctx, focus) {
       return `<div class="ik-home-detail-grid is-no-snapshot-ledger">
-        ${renderOverviewNoSnapshotSnapshotLedgerPanel(ctx, focus)}
+        ${renderOverviewNoSnapshotLinkStatusPanel(ctx, focus)}
         ${renderOverviewNoSnapshotModuleVisibilityPanel(ctx)}
-        ${renderOverviewNoSnapshotCollectionTimelinePanel(ctx)}
       </div>`;
     }
 
@@ -11337,11 +12821,19 @@
         row('最近成功', shortTimestamp(latestCollectionSuccessTime(ctx)), '上次成功采集', 'trust'),
         row('下次轮询', ctx.pollText || '未采集', '轮询中', 'trust')
       ];
+      const stateScore = (state) => /正常|可用/.test(state) ? 100 : /待确认/.test(state) ? 56 : /缺依赖|不可用|不可达/.test(state) ? 38 : 48;
+      const snapshotState = stale ? (history ? '缓存/历史' : '缓存') : '当前';
+      const collectionBars = overviewBarRows([
+        { label: 'REST', value: stateScore(restState), valueText: restState },
+        { label: 'SSH', value: stateScore(sshState), valueText: sshState },
+        { label: '快照', value: stale ? 52 : 100, valueText: snapshotState }
+      ], { limit: 3, emptyTitle: '采集状态', emptySub: '未采集' });
       return overviewFlatModule(
         'freshness',
         `采集通道 · ${trustLabel}`,
         `采集通道 / 业务快照 / 最近成功 · ${trustLabel}`,
-        compactTable(['通道', '当前', '失败端点'], rows, '无采集状态'),
+        `${compactTable(['通道', '当前', '失败端点'], rows, '无采集状态')}
+        <div class="ik-overview-collection-bars" data-overview-chart-type="bar" data-overview-visual-block>${collectionBars}</div>`,
         '',
         'ik-home-freshness-card'
       );
@@ -11369,7 +12861,7 @@
         row('当前使用', collection.dataStale ? '缓存快照' : '当前快照', `最近成功 ${latestSuccess}`, '缓存边界'),
         row('REST', stripChannelPrefix(labels.restLabel || 'REST 待确认', 'REST') || '待确认', collection.restFailureText || 'REST 端点待确认', '采集通道'),
         row('SSH', stripChannelPrefix(labels.sshLabel || 'SSH 缺依赖', 'SSH') || '缺依赖', collection.failedEndpointText || 'SSH 通道缺依赖', '采集通道'),
-        row('失败端点', ctx.failures.count ? fmtNumber(ctx.failures.count) : '未记录', ctx.failures.count ? ctx.failures.text : '未记录端点失败', '未记录不是无失败'),
+        row('失败端点', ctx.failures.count ? fmtNumber(ctx.failures.count) : '未记录', ctx.failures.count ? ctx.failures.text : '未记录', '未记录'),
         row('默认路由', routeDisplay.label || '待判定', routeDisplay.text || '缓存快照参考', '业务影响'),
         row('业务快照', collection.dataStale ? '缓存可参考' : '当前可参考', '当前状态需新快照确认', '可信边界'),
         row('下次轮询', ctx.pollText || '未采集', '轮询中', '新快照后更新'),
@@ -11492,6 +12984,76 @@
         `<div class="ik-home-detail-grid is-resource-ledger">
           ${overviewSubtable('资源压力旁证', compactTable(['项', '当前', '窗口', '旁证'], contextRows, '无资源旁证', 'ik-home-evidence-table'))}
         </div>`
+      );
+    }
+
+    function renderOverviewResourcePressureBarsPanel(ctx) {
+      const metricItems = overviewResourceMetricItems(ctx);
+      const interfaces = Array.isArray(ctx.snapshot.interfaces) ? ctx.snapshot.interfaces : [];
+      const topInterface = interfaces
+        .slice()
+        .sort((a, b) => totalTrafficRate(b, 'txRate', 'rxRate') - totalTrafficRate(a, 'txRate', 'rxRate'))[0] || null;
+      const maxConnection = Math.max(1, Number(ctx.connectionTotal || 0), 3000);
+      const barRow = (label, percent, value, note, level = '', color = '#2d8cff') => {
+        const width = Math.max(0, Math.min(100, Number(percent || 0)));
+        return `<div class="ik-overview-bar-row${level ? ` is-${escapeHtml(level)}` : ''}" data-overview-field data-overview-chart-type="bar" data-overview-visual-block>
+          <span class="ik-overview-bar-label" title="${escapeHtml(label)}">${escapeHtml(label)}</span>
+          <span class="ik-overview-bar-track"><i class="ik-overview-bar-fill" style="--bar-width:${width}%;--bar-color:${escapeHtml(color)}"></i></span>
+          <span class="ik-overview-bar-value" title="${escapeHtml(`${value} · ${note}`)}">${escapeHtml(value)} · ${escapeHtml(note)}</span>
+        </div>`;
+      };
+      const metricRows = metricItems.map((item) => {
+        const threshold = item.name === 'DISK' ? 90 : 85;
+        const level = Number(item.value || 0) >= threshold ? 'danger' : Number(item.value || 0) >= threshold - 10 ? 'warn' : '';
+        return barRow(
+          `${item.name} ${fmtPercent(item.value)}`,
+          item.value,
+          String(item.stats?.durationText || '持续待确认').replace('持续 ', ''),
+          `阈${fmtPercent(threshold)}`,
+          level,
+          level === 'danger' ? '#d93025' : item.name === 'MEM' ? '#16a36f' : '#2d8cff'
+        );
+      });
+      const connectionPercent = Math.min(100, Math.round((Number(ctx.connectionTotal || 0) / maxConnection) * 100));
+      const activePercent = Math.min(100, Math.round((Number(ctx.activeSessions || 0) / Math.max(1, Number(ctx.onlineTerminals || 1) * 4)) * 100));
+      const throughputValue = topInterface ? totalTrafficRate(topInterface, 'txRate', 'rxRate') : 0;
+      const throughputPercent = Math.min(100, Math.round((throughputValue / Math.max(1, throughputValue, Number(ctx.wanRates.up || 0) + Number(ctx.wanRates.down || 0))) * 100));
+      const averagePercent = (item) => Number(String(item?.stats?.averageText || '0').replace(/[^\d.]+/g, '')) || 0;
+      const peakPercent = (item) => Number(item?.peak ?? item?.value ?? 0);
+      const averageRows = metricItems.map((item) => barRow(
+        `${item.name} 均值`,
+        averagePercent(item),
+        item.stats?.averageWindowText || item.stats?.averageText || '-',
+        `峰${fmtPercent(item.peak ?? item.value)}`,
+        averagePercent(item) >= (item.name === 'DISK' ? 90 : 85) ? 'danger' : '',
+        '#7d8da1'
+      ));
+      const peakRows = metricItems.map((item) => barRow(
+        `${item.name} 峰值`,
+        peakPercent(item),
+        fmtPercent(item.peak ?? item.value),
+        `当前${fmtPercent(item.value)}`,
+        peakPercent(item) >= (item.name === 'DISK' ? 90 : 85) ? 'danger' : '',
+        item.name === 'DISK' ? '#f08c00' : '#2d8cff'
+      ));
+      const sideRows = [
+        barRow('连接压力', connectionPercent, fmtCompact(ctx.connectionTotal), `活动 ${fmtNumber(ctx.activeSessions)}`, connectionPercent >= 80 ? 'warn' : '', '#2d8cff'),
+        barRow('活动会话', activePercent, fmtNumber(ctx.activeSessions), `${fmtNumber(ctx.onlineTerminals || 0)} 在线`, activePercent >= 80 ? 'warn' : '', '#16a36f'),
+        barRow('接口吞吐', throughputPercent, topInterface ? fmtRate(throughputValue) : '未采集', topInterface ? (topInterface.name || topInterface.interface || '-') : '缺接口速率', '', '#7d8da1'),
+        barRow('采样窗口', Math.min(100, Number(ctx.sampleCount || 0) * 16), `${fmtNumber(ctx.sampleCount)} 点`, ctx.pollText || '未采集', '', '#7d8da1'),
+        barRow('快照可信度', ctx.verdict?.collection?.dataStale ? 55 : 100, overviewSnapshotTrustLabel(ctx), shortTimestampText(snapshotBusinessTimeText(ctx.snapshot, ctx.freshness)), ctx.verdict?.collection?.dataStale ? 'warn' : '', '#16a36f'),
+        barRow('阈值来源', 100, '本地规则', ctx.resourceEvidence?.summary || '资源阈值越线', '', '#7d8da1'),
+        barRow('服务归因', 0, '未采集', '缺进程/服务队列', '', '#aeb9c8'),
+        barRow('DNS缓存', 0, '未采集', '缺字段', '', '#aeb9c8')
+      ];
+      return overviewVisualModule(
+        'resource-pressure-bars',
+        '资源压力条形摘要',
+        'CPU/MEM/DISK 主线 + 连接 / 会话 / 接口 / DNS 旁证',
+        `<div class="ik-overview-resource-bars" data-overview-chart-type="bar">${metricRows.concat(averageRows, peakRows, sideRows).join('')}</div>`,
+        'bar',
+        '',
+        'ik-overview-resource-bars-panel'
       );
     }
 
@@ -11669,66 +13231,48 @@
         return renderOverviewNoSnapshotSidePanels(ctx);
       }
       if (focus.key === 'resource-full') {
-        return [
-          renderOverviewPressureFactsPanelDense(ctx),
-          renderOverviewInterfaceThroughputImpactPanelDense(ctx),
-          renderOverviewProcessServicePressurePanelDense(ctx),
-          renderOverviewResourceSamplingWindowPanelDense(ctx)
-        ].join('');
+        return `${renderOverviewPressureFactsPanelDense(ctx)}${renderOverviewInterfaceThroughputImpactPanelDense(ctx)}${renderOverviewProcessServicePressurePanelDense(ctx)}${renderOverviewResourceSamplingWindowPanelDense(ctx)}`;
       }
       if (focus.key === 'interfaces-down') {
-        return `${renderOverviewDesktopInterfaceImpactPanel(ctx)}${renderOverviewDesktopCollectionPanel(ctx)}`;
+        return `${renderOverviewDesktopInterfaceImpactPanel(ctx)}${renderOverviewIncidentObjectBarsPanel(ctx, 'interface-down-bars')}${renderOverviewTrafficVisual(ctx, 'interface-traffic-trend')}${renderOverviewDesktopCollectionPanel(ctx)}`;
       }
       if (focus.key === 'wan-offline-all') {
-        return `${renderOverviewDesktopCollectionPanel(ctx)}${renderOverviewWanOfflineRouteLedgerPanel(ctx)}`;
+        return `${renderOverviewResourceSparkPanel(ctx, 'resource-spark', '资源趋势')}${renderOverviewIncidentObjectBarsPanel(ctx, 'wan-offline-bars')}${renderOverviewIncidentTrendPanel(ctx, 'wan-offline-trend')}${renderOverviewDesktopCollectionPanel(ctx)}${renderOverviewWanOfflineRouteLedgerPanel(ctx)}`;
+      }
+      if (focus.key === 'wan-offline') {
+        return `${renderOverviewResourceSparkPanel(ctx, 'resource-spark', '资源趋势')}${renderOverviewProtocolMixPanel(ctx)}${renderOverviewBarRankPanel(ctx, 'rank')}${renderOverviewDesktopCollectionPanel(ctx)}`;
+      }
+      if (focus.key === 'stale-yellow') {
+        return `${renderOverviewResourceSparkPanel(ctx, 'resource-spark', '资源趋势')}${renderOverviewBarRankPanel(ctx, 'rank')}`;
       }
       if (focus.key === 'collection-down') {
-        return `${renderOverviewDesktopCollectionPanel(ctx)}${renderOverviewCollectionEndpointLedgerPanel(ctx)}`;
+        return `${renderOverviewDesktopCollectionPanel(ctx)}${renderOverviewResourceSparkPanel(ctx, 'collection-resource-spark', '资源趋势')}${renderOverviewPressureFactsPanelDense(ctx)}`;
       }
-      const panels = [];
-      if (focus.key !== 'collection-down') panels.push(renderOverviewDesktopCollectionPanel(ctx));
-      if (focus.key !== 'resource-full') panels.push(renderOverviewResourceThresholdPanelDense(ctx));
-      return panels.join('');
+      return renderOverviewResourceSparkPanel(ctx, 'resource-spark', '资源趋势');
     }
-
     function renderOverviewDesktopDetail(snapshot, ctx) {
       const verdict = ctx.verdict || buildOverviewVerdict(ctx);
       const focus = overviewDesktopFocus(ctx);
       const detailClass = verdict.topKey === 'no-snapshot' ? ' is-no-snapshot-detail' : '';
       const body = verdict.topKey === 'no-snapshot'
         ? renderOverviewNoSnapshotDesktopDetailDense(snapshot, ctx, focus)
-        : (overviewIsWanIncidentKey(focus.key) || focus.key === 'interfaces-down' || focus.key === 'resource-full' || focus.key === 'collection-down' || focus.key === 'stale-yellow' || focus.key === 'normal')
+        : (focus.key === 'resource-full' || focus.key === 'resource-load')
+          ? `${renderOverviewFocusCard(ctx, focus, 'detail')}${renderOverviewResourcePressureBarsPanel(ctx)}`
+          : (focus.key === 'interfaces-down')
           ? renderOverviewFocusCard(ctx, focus, 'detail')
-          : renderOverviewDesktopCollectionPanel(ctx);
-      return `<div class="ik-home-desktop-detail ik-home-desktop${detailClass}" data-overview-desktop-detail>
-        ${body}
-      </div>`;
+          : (renderOverviewDesktopLeftContinuityPanel(ctx) || renderOverviewFocusCard(ctx, focus, 'detail'));
+      return `<div class="ik-home-desktop-detail${detailClass}" data-overview-desktop-detail>${body}</div>`;
     }
-
     renderOverview = function renderOverviewIkuai(snapshot) {
       const o = snapshot.overview || {};
       const history = o.history || {};
       const pppoe = getWanRows(snapshot);
-      const interfaces = snapshot.interfaces || [];
       const terminals = snapshot.terminals || [];
       const connections = snapshot.connections || {};
-      const activePppoe = pppoe.filter((row) => row.running).length;
-      const firstLine = pppoe.find((row) => row.running) || pppoe[0] || null;
-      const busiestLine = pppoe.slice().sort((a, b) => totalTrafficRate(b) - totalTrafficRate(a))[0] || null;
       const wanRates = {
         up: Number(o.uplinkBps || 0),
         down: Number(o.downlinkBps || 0)
       };
-      const totalWanUpBytes = pppoe.reduce((sum, row) => sum + Number(row?.txBytes || 0), 0);
-      const totalWanDownBytes = pppoe.reduce((sum, row) => sum + Number(row?.rxBytes || 0), 0);
-      const onlineTerminals = Number(o.onlineTerminals || terminals.filter((row) => ['reachable', 'delay'].includes(row.status)).length || 0);
-      const terminalGroups = {
-        active: terminals.filter((row) => ['reachable', 'delay'].includes(row.status)).length,
-        keepAlive: terminals.filter((row) => row.status === 'stale').length,
-        offline: terminals.filter((row) => ['failed', 'incomplete'].includes(row.status)).length
-      };
-      const connectionTotal = Number(o.connectionTotal || connections.total || 0);
-      const activeSessions = (connections.active || []).length;
       const sampleCount = Math.max(
         history.cpu?.length || 0,
         history.memory?.length || 0,
@@ -11737,62 +13281,37 @@
         history.downlink?.length || 0
       );
       const pollText = snapshot.meta?.pollSeconds ? `${escapeHtml(String(snapshot.meta.pollSeconds))}s / 点` : '未采集';
-      const resourceMeta = `${fmtNumber(sampleCount)} 点 · ${pollText}`;
       const resourceEvidence = resourceEvidenceState(o, history, Number(snapshot.meta?.pollSeconds || 1));
-      const wanAddressText = firstLine?.addresses?.length
-        ? firstLine.addresses.map(escapeHtml).join('<br>')
-        : '未采集';
-      const wanSelection = resolveOverviewWanSelection(pppoe);
-      const selectedWanLine = wanSelection.line;
-      const wanPanelRates = selectedWanLine
-        ? { up: Number(selectedWanLine.upRate || 0), down: Number(selectedWanLine.downRate || 0) }
-        : wanRates;
-      const wanPanelUpBytes = selectedWanLine ? Number(selectedWanLine.txBytes || 0) : totalWanUpBytes;
-      const wanPanelDownBytes = selectedWanLine ? Number(selectedWanLine.rxBytes || 0) : totalWanDownBytes;
-      const wanPanelUpHistory = selectedWanLine ? (selectedWanLine.history?.up || []) : (history.uplink || []);
-      const wanPanelDownHistory = selectedWanLine ? (selectedWanLine.history?.down || []) : (history.downlink || []);
-      const wanPanelAddressText = selectedWanLine?.addresses?.length
-        ? selectedWanLine.addresses.map(escapeHtml).join('<br>')
-        : wanAddressText;
-      const wanPanelTitle = selectedWanLine ? '单线路状态' : 'WAN 线路聚合状态';
-      const wanPanelMain = selectedWanLine ? escapeHtml(selectedWanLine.name) : `${fmtNumber(activePppoe)} / ${fmtNumber(pppoe.length)}`;
-      const wanPanelSub = selectedWanLine
-        ? `${selectedWanLine.running ? '在线' : '离线'} · ${escapeHtml(selectedWanLine.parent || '未采集')} · ${fmtRate(totalTrafficRate(selectedWanLine))}`
-        : (firstLine ? `首条在线 ${escapeHtml(firstLine.name)} · ${fmtRate(totalTrafficRate(firstLine))}` : '当前未采集到在线 WAN 线路');
-      const wanPanelAccessText = selectedWanLine
-        ? escapeHtml(selectedWanLine.access || selectedWanLine.kind || 'Unknown')
-        : (pppoe.length > 1 ? escapeHtml([...new Set(pppoe.map((row) => row.access || row.kind).filter(Boolean))].join(' / ') || '多出口') : firstLine ? escapeHtml(firstLine.access || firstLine.kind || 'Unknown') : '未采集');
-      const wanUpChartLabel = selectedWanLine ? `${selectedWanLine.name} 上行速率` : 'WAN 上行速率';
-      const wanDownChartLabel = selectedWanLine ? `${selectedWanLine.name} 下行速率` : 'WAN 下行速率';
-      const syncState = o.ntpStatus === 'synchronized'
-        ? tag('已同步', 'ok')
-        : o.ntpStatus
-          ? tag(o.ntpStatus, 'warn')
-          : '未采集';
-      const accessSummary = [...new Set(pppoe.map((row) => row.access || row.kind).filter(Boolean))].join(' / ') || '未采集';
-      const accessBuckets = wanAccessBuckets(pppoe);
       const routeHealth = defaultRouteHealth(snapshot, pppoe);
       const panelState = panelHealthState(snapshot);
       const routerState = routerosConnectionState(snapshot);
       const risk = highestRiskMetric(snapshot);
       const failures = failedEndpointSummary(snapshot);
-      const resourceLevel = Number(o.cpuLoad || 0) >= 85 || Number(o.memoryUsage || 0) >= 85 || Number(o.diskUsage || 0) >= 90
-        ? 'danger'
-        : Number(o.cpuLoad || 0) >= 70 || Number(o.memoryUsage || 0) >= 70 || Number(o.diskUsage || 0) >= 80
-          ? 'warn'
-          : 'ok';
       const freshness = snapshotFreshnessState(snapshot);
       const wanHealth = wanHealthState(pppoe, routeHealth);
       const collectionRisk = collectionRiskState(snapshot, freshness, failures);
       const capabilities = snapshot.meta?.capabilities || {};
       const offlineWanRows = pppoe.filter((row) => !row?.running);
+      const resourceLevel = Number(o.cpuLoad || 0) >= 85 || Number(o.memoryUsage || 0) >= 85 || Number(o.diskUsage || 0) >= 90
+        ? 'danger'
+        : Number(o.cpuLoad || 0) >= 70 || Number(o.memoryUsage || 0) >= 70 || Number(o.diskUsage || 0) >= 80
+          ? 'warn'
+          : 'ok';
+      const connectionTotal = Number(o.connectionTotal || connections.total || 0);
+      const activeSessions = (connections.active || []).length;
+      const onlineTerminals = Number(o.onlineTerminals || terminals.filter((row) => ['reachable', 'delay'].includes(row.status)).length || 0);
+      const terminalGroups = {
+        active: terminals.filter((row) => ['reachable', 'delay'].includes(row.status)).length,
+        keepAlive: terminals.filter((row) => row.status === 'stale').length,
+        offline: terminals.filter((row) => ['failed', 'incomplete'].includes(row.status)).length
+      };
+      const resourceMeta = `${fmtNumber(sampleCount)} 点 · ${pollText}`;
       const ctx = {
         snapshot,
         o,
         pppoe,
         history,
         wanRates,
-        accessBuckets,
         routeHealth,
         panelState,
         routerState,
@@ -11816,32 +13335,36 @@
         connections
       };
       ctx.verdict = buildOverviewVerdict(ctx);
-      const overviewSceneClass = ` is-overview-${String(ctx.verdict.topKey || 'normal').replace(/[^a-z0-9-]/gi, '-')}`;
-      const trustModeClass = `${isHistorySnapshot(freshness) ? ' is-history-snapshot' : ''}${overviewSceneClass}`;
-      const leftContinuityPanel = renderOverviewDesktopLeftContinuityPanel(ctx);
-      const leftContinuityFirst = ['wan-offline-all', 'wan-offline', 'data-stale'].includes(ctx.verdict.topKey) || ['wan-offline-all', 'wan-offline', 'stale-yellow'].includes(overviewDesktopFocus(ctx).key);
-      const collectionRankAfterLedger = false;
-      const rankSuppressed = ['resource-full', 'resource-load', 'no-snapshot', 'interfaces-down', 'wan-offline-all', 'wan-offline', 'collection-down', 'collection-degraded'].includes(ctx.verdict.topKey);
-      return section('只读状态首页', 'overview', '', `
+      const trustModeClass = `${isHistorySnapshot(freshness) ? ' is-history-snapshot' : ''} is-overview-${String(ctx.verdict.topKey || 'normal').replace(/[^a-z0-9-]/gi, '-')}`;
+      const primaryVisual = ctx.verdict.topKey === 'resource-full' || ctx.verdict.topKey === 'resource-load'
+        ? renderOverviewResourceSparkPanel(ctx, 'resource-risk-priority', '资源满载')
+        : renderOverviewTrendCard(ctx);
+      const rankSuppressed = ['resource-full', 'resource-load', 'no-snapshot', 'interfaces-down', 'wan-offline-all', 'wan-offline', 'collection-down', 'collection-degraded', 'data-stale'].includes(ctx.verdict.topKey);
+      const detailPanel = renderOverviewDesktopDetail(snapshot, ctx);
+      const detailInLeftStack = ['no-snapshot', 'resource-full', 'resource-load', 'wan-offline-all', 'wan-offline', 'collection-degraded', 'collection-down', 'interfaces-down'].includes(ctx.verdict.topKey);
+      const leftStackExtra = ['collection-down', 'collection-degraded'].includes(ctx.verdict.topKey)
+        ? `${renderOverviewTrafficVisual(ctx, 'collection-cache-traffic')}${renderOverviewCollectionEndpointLedgerPanel(ctx)}`
+        : '';
+      return section('只读首页', 'overview', '', `
         <div class="ik-home-trust-mode${trustModeClass}" data-overview-trust-mode="${isHistorySnapshot(freshness) ? 'history' : 'live'}">
           ${renderOverviewMobileConsole(ctx)}
-          <div class="ik-home-layout ik-home-desktop" data-overview-desktop-workspace>
-            <div class="stack">
-              ${renderOverviewSummary(ctx)}
-              ${leftContinuityFirst ? leftContinuityPanel : ''}
-              ${ctx.verdict.topKey === 'resource-full' || ctx.verdict.topKey === 'resource-load' || ctx.verdict.topKey === 'no-snapshot' ? renderOverviewDesktopDetail(snapshot, ctx) : renderOverviewTrendCard(ctx)}
-              ${leftContinuityFirst ? '' : leftContinuityPanel}
-              ${collectionRankAfterLedger ? renderOverviewRankGrid(snapshot, { freshness }) : ''}
+          <div class="ik-home-desktop" data-overview-desktop-workspace>
+            ${renderOverviewSummary(ctx)}
+            <div class="ik-home-layout" data-overview-desktop-scene>
+              <div class="stack">
+                ${primaryVisual}
+                ${detailInLeftStack ? detailPanel : ''}
+                ${leftStackExtra}
+              </div>
+              <div class="stack ik-home-side-stack" data-overview-desktop-supplements>
+                ${renderOverviewDesktopSupplements(ctx)}
+                ${rankSuppressed ? '' : renderOverviewBarRankPanel(ctx)}
+              </div>
             </div>
-            <div class="stack ik-home-side-stack">
-              ${ctx.verdict.topKey === 'no-snapshot' || ctx.verdict.topKey === 'resource-full' || ctx.verdict.topKey === 'resource-load' ? '' : renderOverviewDesktopDetail(snapshot, ctx)}
-              ${renderOverviewDesktopSupplements(ctx)}
-              ${rankSuppressed || collectionRankAfterLedger ? '' : renderOverviewRankGrid(snapshot, { freshness })}
-            </div>
+            ${detailInLeftStack ? '' : detailPanel}
           </div>
         </div>`);
     };
-
     function renderInterfaces(snapshot) {
       currentInterfaceView = normalizeInterfaceView(currentInterfaceView);
       currentInterfaceTopology = normalizeInterfaceTopology(currentInterfaceTopology);
@@ -11953,7 +13476,7 @@
       const selectedTopology = topologyGroups[currentInterfaceTopology];
       const distributionRows = sortPppoeNamedRows(snapshot.loadBalance.distribution || []);
       const distributionBlock = distributionRows.length
-        ? distributionRows.map((row) => `<div class="line-bar"><div class="line-name">${escapeHtml(row.name)}</div>${progress(row.share)}<div class="line-share">${row.share.toFixed(1)}%</div></div>`).join('')
+        ? distributionRows.map((row) => `<div class="line-bar"${dataAttrs({ 'overview-chart-type': 'bar', 'overview-visual-block': true })}><div class="line-name">${escapeHtml(row.name)}</div>${progress(row.share)}<div class="line-share">${row.share.toFixed(1)}%</div></div>`).join('')
         : emptyBlock('当前未形成线路占比');
       const readonlyNotice = interfaceReadonlyOpen
         ? `<div class="notice" style="margin-bottom:12px">当前页为只读实时监控页，所有按钮只用于切换视图或触发当前页刷新，不会提交任何配置变更。</div>`
@@ -12090,7 +13613,7 @@
               : item.level === 'warn'
                 ? 'linear-gradient(90deg,#ffc46b 0%,#ff9f1c 100%)'
                 : 'linear-gradient(90deg,#7da8ff 0%,#165dff 100%)';
-            return `<div class="line-bar"><div class="line-name">${escapeHtml(item.name)}</div>${progress(percent, gradient)}<div class="line-share">${fmtRate(totalRate)}</div></div>`;
+            return `<div class="line-bar"${dataAttrs({ 'overview-chart-type': 'bar', 'overview-visual-block': true })}><div class="line-name">${escapeHtml(item.name)}</div>${progress(percent, gradient)}<div class="line-share">${fmtRate(totalRate)}</div></div>`;
           }).join('')
         : emptyBlock(`暂无 ${selectedTopology.label} 状态对象`);
       const lineTrendRows = getLineTrendRows(pppoe);
@@ -12548,7 +14071,7 @@
       const lb = snapshot.loadBalance || {};
       const distributionRows = sortPppoeNamedRows(lb.distribution || []);
       const distribution = distributionRows.length
-        ? distributionRows.map((row) => `<div class="line-bar"><div class="line-name">${escapeHtml(row.name)}</div>${progress(row.share)}<div class="line-share">${Number(row.share || 0).toFixed(1)}%</div></div>`).join('')
+        ? distributionRows.map((row) => `<div class="line-bar"${dataAttrs({ 'overview-chart-type': 'bar', 'overview-visual-block': true })}><div class="line-name">${escapeHtml(row.name)}</div>${progress(row.share)}<div class="line-share">${Number(row.share || 0).toFixed(1)}%</div></div>`).join('')
         : emptyBlock('当前未形成线路流量分布');
       const routeRows = (lb.defaultRoutes || []).map((row) => `
         <tr>
@@ -14005,7 +15528,7 @@
             : row.level === 'warn'
               ? 'linear-gradient(90deg,#ffc46b 0%,#ff9f1c 100%)'
               : 'linear-gradient(90deg,#7da8ff 0%,#165dff 100%)';
-          return `<div class="line-bar"><div class="line-name">${escapeHtml(row.name)}</div>${progress(percent, gradient)}<div class="line-share">${fmtRate(totalRate)}</div></div>`;
+          return `<div class="line-bar"${dataAttrs({ 'overview-chart-type': 'bar', 'overview-visual-block': true })}><div class="line-name">${escapeHtml(row.name)}</div>${progress(percent, gradient)}<div class="line-share">${fmtRate(totalRate)}</div></div>`;
         }).join('');
       }
 
