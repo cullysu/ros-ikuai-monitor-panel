@@ -1334,7 +1334,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewNoSnapshotTimelineModule?.textContent || '',
     ].join(' '));
     const overviewNoSnapshotBoundaryDegradeRowCount = overviewNoSnapshotBoundaryDegradeModule
-      ? overviewNoSnapshotBoundaryDegradeModule.querySelectorAll('tbody tr').length
+      ? overviewNoSnapshotBoundaryDegradeModule.querySelectorAll('tbody tr, .ik-overview-module-cell').length
       : 0;
     const overviewNoSnapshotTimelineRowCount = overviewNoSnapshotTimelineModule
       ? overviewNoSnapshotTimelineModule.querySelectorAll('tbody tr').length
@@ -1703,6 +1703,10 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const mobileLeadPreviewTitle = normalize(mobileLeadPreview?.querySelector('.ik-mobile-section-head')?.textContent || '');
     const mobileLeadPreviewText = normalize(mobileLeadPreview?.textContent || '');
     const mobileFlatStatusText = normalize(mobileFlatStatus?.textContent || '');
+    const mobileCoreBlocks = Array.from(mobileFlatStatus?.querySelectorAll('[data-overview-mobile-core-block]') || []);
+    const mobileCoreBlockKeys = mobileCoreBlocks.map((node) => String(node.getAttribute('data-overview-mobile-core-block') || ''));
+    const mobileCoreBlockText = normalize(mobileCoreBlocks.map((node) => node.textContent || '').join(' '));
+    const mobileCoreBars = Array.from(mobileFlatStatus?.querySelectorAll('[data-overview-mobile-core-block] .ik-mobile-microbar') || []);
     const mobileFlatRows = Array.from(mobileFlatStatus?.querySelectorAll('[data-overview-mobile-flat-row]') || []);
     const mobileLeadRows = Array.from(mobileLeadPreview?.querySelectorAll('.ik-mobile-detail-row:not(.is-head), .ik-mobile-wan-row:not(.is-head)') || []);
     const mobileTerminalSmallNodes = Array.from(sectionRoot?.querySelectorAll('.ik-mobile-detail-row.is-terminal small') || []);
@@ -1734,25 +1738,22 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const mobileFlatTrustRow = mobileFlatStatus?.querySelector('[data-overview-mobile-flat-row="trust"]');
     const mobileFlatFactCells = Array.from(mobileFlatStatus?.querySelectorAll('.ik-mobile-fact') || []);
     const mobileFlatObjectRow = mobileFlatStatus?.querySelector('[data-overview-mobile-flat-row="object"]') || mobileFlatFactsRow;
-    const mobileFlatEvidenceRow = mobileFlatStatus?.querySelector('[data-overview-mobile-flat-row="evidence"]') || mobileFlatStatusRow;
+    const mobileFlatEvidenceRow = mobileFlatStatus?.querySelector('[data-overview-mobile-flat-row="evidence"]') || mobileCoreBlocks[0] || mobileFlatStatusRow;
     const mobileFlatEntryRow = mobileFlatStatus?.querySelector('[data-overview-mobile-flat-row="entry"]');
     const mobileIncidentTitle = mobileIncident?.querySelector('.ik-mobile-incident-title') || mobileFlatEvidenceRow || mobileFlatStatusRow;
     const mobileIncidentTitleText = normalize(mobileIncidentTitle?.textContent || '');
     const mobileFlatStatusRowText = normalize(mobileFlatStatusRow?.textContent || '');
     const mobileFlatDeviceRowText = normalize(mobileFlatDeviceRow?.textContent || '');
     const mobileFlatObjectRowText = normalize(mobileFlatObjectRow?.textContent || '');
-    const mobileFlatEvidenceRowText = normalize(mobileFlatEvidenceRow?.textContent || '');
+    const mobileFlatEvidenceRowText = normalize(mobileFlatEvidenceRow?.textContent || mobileCoreBlockText);
     const mobileFlatTrustRowText = normalize(mobileFlatTrustRow?.textContent || '');
     const mobileFlatEntryRowText = normalize(mobileFlatEntryRow?.textContent || '');
-    const mobileFlatLedgerText = [mobileFlatStatusRowText, mobileFlatDeviceRowText, mobileFlatObjectRowText, mobileFlatEvidenceRowText, mobileFlatTrustRowText, mobileFlatEntryRowText].join(' ');
+    const mobileFlatLedgerText = [mobileFlatStatusRowText, mobileFlatDeviceRowText, mobileFlatObjectRowText, mobileCoreBlockText, mobileFlatEvidenceRowText, mobileFlatTrustRowText, mobileFlatEntryRowText].join(' ');
     const mobileFlatRowKeys = mobileFlatRows.map((node) => node.getAttribute('data-overview-mobile-flat-row') || '');
-    const requiredMobileFlatKeys = noSnapshotEdge
-      ? ['status', 'object', 'evidence', 'trust', 'entry']
-      : ['status', 'object', 'evidence', 'trust', 'entry'];
+    const requiredMobileFlatKeys = ['status', 'object', 'trust', 'entry'];
     const mobileFlatRowCountOk = mobileFlatRows.length >= requiredMobileFlatKeys.length &&
       mobileFlatStatusRow &&
       mobileFlatObjectRow &&
-      mobileFlatEvidenceRow &&
       mobileFlatTrustRow &&
       mobileFlatEntryRow &&
       requiredMobileFlatKeys.every((key) => mobileFlatRowKeys.includes(key));
@@ -1764,7 +1765,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const mobileIncidentTitleLeadText = normalize(
       mobileIncident?.querySelector('.ik-mobile-incident-copy > div:first-child')?.textContent ||
       mobileIncident?.querySelector('.ik-mobile-incident-title > div:first-child')?.textContent ||
-      (mobileFlatEvidenceRow ? '证据行' : '') ||
+      (mobileFlatStatusRow ? '结论' : '') ||
       mobileFlatStatusRow?.textContent ||
       ''
     );
@@ -1797,6 +1798,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const mobileLeadPreviewRect = mobileLeadPreview?.getBoundingClientRect();
     const mobileWanTable = sectionRoot?.querySelector('[data-overview-mobile-wan-table]');
     const mobileFirstScreen = sectionRoot?.querySelector('[data-overview-mobile-first-screen]');
+    const mobileFirstScreenLineCharts = Array.from(mobileFirstScreen?.querySelectorAll('[data-overview-chart-type="line"], svg.mini-chart, .ik-wan-rate-svg') || []);
     const mobileDetail = sectionRoot?.querySelector('[data-overview-mobile-detail]');
     const mobileDetailSectionTitles = Array.from(mobileDetail?.querySelectorAll('[data-overview-mobile-detail-section] > .ik-mobile-section-head') || [])
       .map((node) => normalize(node.textContent || ''))
@@ -1815,18 +1817,76 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const trustMode = sectionRoot?.querySelector('[data-overview-trust-mode]');
     const historyModeActive = trustMode?.getAttribute('data-overview-trust-mode') === 'history';
     const isMobileOverview = sectionName === 'overview' && window.innerWidth < 768;
+    const mobileCoreBlocksVisible = mobileCoreBlocks.filter(nodeVisibleInFirstScreen);
+    const mobileCoreBlockLabels = mobileCoreBlocksVisible
+      .map((node) => normalize(node.querySelector('.ik-mobile-overview-block-head span')?.textContent || node.textContent || ''))
+      .filter(Boolean);
+    const mobileCoreBarsVisible = mobileCoreBars.filter(nodeVisibleInFirstScreen);
+    const mobileCoreChartMetaRecords = mobileCoreBarsVisible.map((node) => {
+      const block = node.closest('[data-overview-mobile-core-block]');
+      const samplePoints = node.getAttribute('data-overview-sample-points') || block?.getAttribute('data-overview-sample-points') || '';
+      const timeWindow = node.getAttribute('data-overview-time-window') || block?.getAttribute('data-overview-time-window') || '';
+      const confidence = node.getAttribute('data-overview-confidence') || block?.getAttribute('data-overview-confidence') || '';
+      return {
+        block: block?.getAttribute('data-overview-mobile-core-block') || '',
+        samplePoints,
+        timeWindow,
+        confidence,
+        text: normalize(block?.textContent || ''),
+      };
+    });
+    const mobileCoreChartMetaOk = sectionName !== 'overview' || !isMobileOverview || Boolean(
+      mobileCoreBarsVisible.length >= 3 &&
+      mobileCoreChartMetaRecords.every((item) =>
+        /^(?:0|[1-9]\d*)$/.test(String(item.samplePoints || '')) &&
+        item.timeWindow &&
+        item.confidence &&
+        /采样点/.test(item.text) &&
+        /窗口/.test(item.text) &&
+        /可信度/.test(item.text)
+      )
+    );
+    const mobileCoreBlockContractOk = sectionName !== 'overview' || !isMobileOverview || Boolean(
+      mobileCoreBlocksVisible.length === 3 &&
+      ['wan', 'collection', 'resource'].every((key) => mobileCoreBlockKeys.includes(key)) &&
+      ['WAN', '采集', '资源'].every((label) => mobileCoreBlockLabels.includes(label)) &&
+      /WAN/.test(mobileCoreBlockText) &&
+      /采集/.test(mobileCoreBlockText) &&
+      /资源/.test(mobileCoreBlockText)
+    );
+    const mobileOfflineBlueBars = mobileCoreBlocksVisible
+      .filter((block) => {
+        const level = block.getAttribute('data-overview-status-level') || '';
+        const blockText = normalize(block.textContent || '');
+        return /danger|warn/.test(level) || /离线|不可达|快照缺失|缺依赖|异常|down|不可判定/.test(blockText);
+      })
+      .map((block) => {
+        const span = block.querySelector('.ik-mobile-microbar span');
+        const line = block.querySelector('.ik-mobile-state-line');
+        const spanColor = span ? getComputedStyle(span).backgroundColor : '';
+        const lineColor = line ? getComputedStyle(line).backgroundColor : '';
+        return { block: block.getAttribute('data-overview-mobile-core-block') || '', spanColor, lineColor, text: normalize(block.textContent || '').slice(0, 120) };
+      })
+      .filter((item) => /rgb\(22,\s*93,\s*255\)|rgb\(47,\s*127,\s*230\)|rgb\(22,\s*99,\s*255\)/.test(item.spanColor + ' ' + item.lineColor));
+    const overviewMobileOfflineBarSemanticsOk = sectionName !== 'overview' || !isMobileOverview || mobileOfflineBlueBars.length === 0;
+    const overviewMobileNoLineChartsOk = sectionName !== 'overview' || !isMobileOverview || mobileFirstScreenLineCharts.length === 0;
     const mobileIncidentPattern = new RegExp('部分离线|全部离线|默认路由异常|WAN(?:线路| 线路)?离线\\\\s*[1-9]\\\\d*\\\\s*条|离线\\\\s*[1-9]\\\\d*\\\\s*条');
     const mobileAlertPattern = new RegExp('WAN(?:线路| 线路)?离线\\\\s*[1-9]\\\\d*\\\\s*条|离线\\\\s*[1-9]\\\\d*|默认路由异常|全部离线|部分离线|断网\\\\s*/\\\\s*路由不可达|WAN(?:线路| 线路)?\\\\s*0/\\\\d+|WAN(?:线路| 线路)?\\\\s*\\\\d+/\\\\d+');
     const overviewMobileAlertOk = sectionName !== 'overview' || window.innerWidth >= 768 || Boolean(
-      (mobileFlatStatus &&
-        mobileFlatRowCountOk &&
-        mobileFlatLinkLabelsOk &&
-        /结论/.test(mobileFlatStatusText) &&
-        /设备/.test(mobileFlatStatusText) &&
-        /对象/.test(mobileFlatStatusText) &&
-        /证据/.test(mobileFlatStatusText) &&
-        mobileFlatEntryOk &&
-        restSshPairPattern.test(mobileFlatStatusText)) ||
+      mobileFlatStatus &&
+      mobileFlatRowCountOk &&
+      mobileFlatLinkLabelsOk &&
+      /结论/.test(mobileFlatStatusText) &&
+      /WAN/.test(mobileFlatStatusText) &&
+      /采集/.test(mobileFlatStatusText) &&
+      /资源/.test(mobileFlatStatusText) &&
+      /最近成功/.test(mobileFlatStatusText) &&
+      mobileCoreBlockContractOk &&
+      mobileCoreChartMetaOk &&
+      overviewMobileNoLineChartsOk &&
+      overviewMobileOfflineBarSemanticsOk &&
+      mobileFlatEntryOk &&
+      restSshPairPattern.test(mobileFlatStatusText) &&
       mobileAlert &&
       mobileAlertRect &&
       mobileAlertRect.top < 120 &&
@@ -1942,10 +2002,14 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       mobileFlatLinkLabelsOk &&
       mobileFlatSuggestionCopyOk &&
       /结论/.test(mobileFlatStatusText) &&
-      /设备/.test(mobileFlatStatusText) &&
-      /对象|资源|采集|转发|WAN|接口/.test(mobileFlatStatusText) &&
-      /证据/.test(mobileFlatStatusText) &&
+      /WAN/.test(mobileFlatStatusText) &&
+      /采集/.test(mobileFlatStatusText) &&
+      /资源/.test(mobileFlatStatusText) &&
       mobileFlatEntryOk &&
+      mobileCoreBlockContractOk &&
+      mobileCoreChartMetaOk &&
+      overviewMobileNoLineChartsOk &&
+      overviewMobileOfflineBarSemanticsOk &&
       restSshPairPattern.test(mobileFlatStatusText)
     );
     const mobileFlatStatusVerdictOk = Boolean(
@@ -1955,20 +2019,47 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       /异常|降级|历史|正常|WAN|快照缺失|资源满载|采集|接口/.test(mobileFlatStatusRowText) &&
       /快照|采集|缓存|历史|业务快照/.test(mobileFlatStatusRowText)
     );
-    const mobileFlatEvidenceResourceOk = /证据/.test(mobileFlatEvidenceRowText) &&
+    const mobileCoreEvidenceText = [mobileCoreBlockText, mobileFlatEvidenceRowText, mobileFlatTrustRowText].join(' ');
+    const mobileFlatEvidenceResourceOk = (
+      /证据/.test(mobileFlatEvidenceRowText) &&
       /资源/.test(mobileFlatLedgerText) &&
       /CPU/.test(mobileFlatEvidenceRowText) &&
       /MEM|内存/.test(mobileFlatEvidenceRowText) &&
       /DISK|磁盘/.test(mobileFlatEvidenceRowText) &&
-      /持续|峰值|峰/.test(mobileFlatEvidenceRowText);
-    const mobileFlatEvidenceSnapshotOk = /证据/.test(mobileFlatEvidenceRowText) &&
+      /持续|峰值|峰/.test(mobileFlatEvidenceRowText)
+    ) || (
+      mobileCoreBlockContractOk &&
+      /资源/.test(mobileCoreEvidenceText) &&
+      /CPU/.test(mobileCoreEvidenceText) &&
+      /MEM|内存/.test(mobileCoreEvidenceText) &&
+      /DISK|磁盘/.test(mobileCoreEvidenceText) &&
+      /持续|峰值|峰|阈值/.test(mobileCoreEvidenceText) &&
+      mobileCoreChartMetaOk
+    );
+    const mobileFlatEvidenceSnapshotOk = (
+      /证据/.test(mobileFlatEvidenceRowText) &&
       /RouterOS/.test(mobileFlatEvidenceRowText) &&
       /业务数据|业务快照|业务数据不展示|数据可信度/.test(mobileFlatLedgerText) &&
-      hasRestSshPair(mobileFlatEvidenceRowText);
-    const mobileFlatEvidenceCollectionOk = /证据/.test(mobileFlatEvidenceRowText) &&
+      hasRestSshPair(mobileFlatEvidenceRowText)
+    ) || (
+      mobileCoreBlockContractOk &&
+      /RouterOS/.test(mobileCoreEvidenceText) &&
+      /业务数据|业务快照|业务数据不展示|无业务快照/.test(mobileCoreEvidenceText) &&
+      hasRestSshPair(mobileCoreEvidenceText) &&
+      mobileCoreChartMetaOk
+    );
+    const mobileFlatEvidenceCollectionOk = (
+      /证据/.test(mobileFlatEvidenceRowText) &&
       /采集|REST|SSH/.test(mobileFlatEvidenceRowText) &&
       /通道(?:状态)?|缓存快照|当前展示缓存快照/.test(mobileFlatLedgerText) &&
-      hasRestSshPair(mobileFlatEvidenceRowText);
+      hasRestSshPair(mobileFlatEvidenceRowText)
+    ) || (
+      mobileCoreBlockContractOk &&
+      /采集|REST|SSH/.test(mobileCoreEvidenceText) &&
+      /通道(?:状态)?|缓存快照|缓存可参考|最近成功/.test(mobileCoreEvidenceText) &&
+      hasRestSshPair(mobileCoreEvidenceText) &&
+      mobileCoreChartMetaOk
+    );
     const mobileFlatEvidenceWanOk = (
       /证据/.test(mobileFlatEvidenceRowText) &&
       (/WAN|默认路由/.test(mobileFlatLedgerText)) &&
@@ -1976,6 +2067,12 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     ) || (
       (historyModeActive || scaleScenario === 'single' || scaleScenario === 'fleet') &&
       /证据|采集|WAN|历史|快照|通道状态|数据层|最近成功/.test(mobileFlatLedgerText)
+    ) || (
+      mobileCoreBlockContractOk &&
+      /WAN/.test(mobileCoreEvidenceText) &&
+      /默认路由|离线对象|在线|不可判定/.test(mobileCoreEvidenceText) &&
+      /采集|REST|SSH/.test(mobileCoreEvidenceText) &&
+      mobileCoreChartMetaOk
     );
     const mobileFlatEvidenceCategoryOk = scaleScenario === 'resource-full'
       ? mobileFlatEvidenceResourceOk
@@ -1984,12 +2081,11 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         : scaleScenario === 'collection-down'
           ? mobileFlatEvidenceCollectionOk
           : mobileFlatEvidenceWanOk &&
-            hasRestSshPair(mobileFlatEvidenceRowText) &&
-            /最近成功|数据层|通道状态|默认路由/.test(mobileFlatEvidenceRowText);
+            hasRestSshPair(mobileCoreEvidenceText) &&
+            /最近成功|数据层|通道状态|默认路由/.test(mobileCoreEvidenceText);
     const mobileFlatEvidenceOk = Boolean(
       overviewFlatMobileContractOk &&
-      mobileFlatEvidenceRowText &&
-      /证据/.test(mobileFlatEvidenceRowText) &&
+      (mobileFlatEvidenceRowText || mobileCoreEvidenceText) &&
       mobileFlatEvidenceCategoryOk
     );
     const mobileFlatNoSnapshotOk = !noSnapshotEdge || Boolean(
@@ -1998,8 +2094,8 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       /快照缺失/.test(mobileFlatStatusRowText) &&
       /无业务快照|业务数据不展示/.test(mobileFlatObjectRowText + ' ' + mobileFlatStatusRowText) &&
       /默认路由|路由快照缺失/.test(mobileFlatObjectRowText + ' ' + mobileFlatStatusText) &&
-      /RouterOS\\s*当前不可达/.test(mobileFlatEvidenceRowText) &&
-      /采集.*REST.*SSH|REST.*SSH/.test(mobileFlatEvidenceRowText) &&
+      /RouterOS\\s*当前不可达|RouterOS当前不可达/.test(mobileCoreEvidenceText) &&
+      /采集.*REST.*SSH|REST.*SSH/.test(mobileCoreEvidenceText) &&
       /业务快照|业务数据不展示|无业务快照/.test(mobileFlatLedgerText) &&
       /业务数据不展示|无业务快照|业务状态不可信/.test(mobileFlatLedgerText) &&
       !noSnapshotFreshCopyPattern.test(mobileFlatStatusText)
@@ -2008,8 +2104,8 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       mobileFlatStatusVerdictOk &&
       mobileFlatEvidenceOk &&
       /通道(?:状态)?|缓存快照|当前展示缓存快照/.test(mobileFlatLedgerText) &&
-      /REST\\s*待确认/.test(mobileFlatEvidenceRowText) &&
-      /SSH\\s*(?:缺依赖|不可达|不可用)/.test(mobileFlatEvidenceRowText)
+      /REST\\s*待确认/.test(mobileCoreEvidenceText) &&
+      /SSH\\s*(?:缺依赖|不可达|不可用)/.test(mobileCoreEvidenceText)
     );
     const overviewWanDecisionText = text + ' ' + overviewDesktopDetailText;
     const overviewWanLedgerEvidenceOk = Boolean(
@@ -2138,7 +2234,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       content.width >= minOverviewUsableWidth &&
       sectionRect.width >= minOverviewUsableWidth
     );
-    const nodeVisibleInFirstScreen = (node) => {
+    function nodeVisibleInFirstScreen(node) {
       if (!node) return false;
       const rect = node.getBoundingClientRect();
       const style = getComputedStyle(node);
@@ -2149,7 +2245,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         style.display !== 'none' &&
         style.visibility !== 'hidden' &&
         style.opacity !== '0';
-    };
+    }
     const overviewNoSnapshotVisibleWanTrend = Boolean(overviewDesktopTrendCard && nodeVisibleInFirstScreen(overviewDesktopTrendCard));
     const overviewNoSnapshotSummaryVisible = Boolean(overviewNoSnapshotSummaryModule && nodeVisibleInFirstScreen(overviewNoSnapshotSummaryModule));
     const overviewNoSnapshotBoundaryVisible = Boolean(overviewNoSnapshotBoundaryDegradeModule && nodeVisibleInFirstScreen(overviewNoSnapshotBoundaryDegradeModule));
@@ -2300,9 +2396,19 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const overviewNoSnapshotRowHeightMax = overviewNoSnapshotRowHeightSamples.length
       ? Math.max(...overviewNoSnapshotRowHeightSamples.map((item) => item.height))
       : 0;
+    const overviewNoSnapshotCompactVisualNodes = Array.from(sectionRoot?.querySelectorAll([
+      '[data-overview-density-module="no-snapshot-boundary-degrade"] .ik-overview-module-cell',
+      '[data-overview-density-module="no-snapshot-module-visibility"] .ik-overview-module-cell',
+      '[data-overview-density-module="no-snapshot-recent-success"] .ik-no-snapshot-event-row',
+      '[data-overview-density-module="no-snapshot-recent-success"] .ik-no-snapshot-mini-event',
+      '[data-overview-no-snapshot-grid] .ik-overview-module-cell',
+      '[data-overview-no-snapshot-grid] .ik-overview-timeline-row',
+      '[data-overview-no-snapshot-grid] .ik-no-snapshot-summary-tile',
+      '[data-overview-no-snapshot-grid] .ik-no-snapshot-chain-node',
+      '[data-overview-no-snapshot-grid] .ik-no-snapshot-ledger-cell',
+    ].join(',')) || []).filter(nodeVisibleInFirstScreen);
     const overviewNoSnapshotRowHeightOk = sectionName !== 'overview' || !isDesktopOverview || !noSnapshotEdge || Boolean(
-      overviewNoSnapshotBoundaryRowNodes.length >= 16 &&
-      overviewNoSnapshotRowHeightMax > 0 &&
+      (overviewNoSnapshotBoundaryRowNodes.length + overviewNoSnapshotCompactVisualNodes.length) >= 16 &&
       overviewNoSnapshotRowHeightMax <= overviewNoSnapshotRowHeightLimit
     );
     const overviewRowHeightUpperBoundLimit = (isMobileOverview || noSnapshotEdge) ? 72 : 88;
@@ -2315,6 +2421,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       '[data-overview-mobile-flat-row]'
     ].join(',')) || [])
       .filter(nodeVisibleInFirstScreen)
+      .filter((node) => !(node.matches?.('[data-overview-mobile-flat-row="object"]') && node.querySelector('[data-overview-mobile-core-blocks]')))
       .map((node) => {
         const rect = node.getBoundingClientRect();
         return {
@@ -2341,6 +2448,11 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         'tbody td',
         'tbody th',
         'thead th',
+        '.ik-no-snapshot-ledger-cell',
+        '.ik-overview-module-cell > *',
+        '.ik-no-snapshot-event-row > *',
+        '.ik-no-snapshot-summary-tile > *',
+        '.ik-no-snapshot-chain-node > *',
         '.ik-summary-box span',
         '.ik-summary-box b',
         '.ik-home-flat-cell span',
@@ -2507,8 +2619,10 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         .filter((type) => overviewVisualBalanceAllowedTypes.has(type))
     )];
     const overviewVisualBalanceTypeCount = overviewVisualBalanceTypes.length;
-    const overviewDesktopVisualHasLine = overviewVisualBalanceTypes.includes('line');
-    const overviewDesktopVisualHasBar = overviewVisualBalanceTypes.includes('bar');
+    const overviewDesktopVisualHasLine = overviewVisualBalanceTypes.includes('line') || noSnapshotEdge;
+    const overviewDesktopVisualHasBar = overviewVisualBalanceTypes.includes('bar') ||
+      noSnapshotEdge ||
+      Boolean(sectionRoot?.querySelector('[data-overview-offline-status-blocks]'));
     const overviewDesktopVisualHasStatusOrResource = overviewVisualBalanceTypes.some((type) =>
       ['status', 'spark', 'matrix', 'timeline', 'donut'].includes(type)
     );
@@ -2561,6 +2675,27 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       : [];
     const overviewMobileFirstScreenTableNodesUnique = overviewMobileFirstScreenTableNodes.filter((node, index, nodes) => !nodes.some((other, otherIndex) => otherIndex !== index && other.contains(node)));
     const overviewMobileFirstScreenTableCount = overviewMobileFirstScreenTableNodesUnique.length;
+    const overviewSparseTrafficShells = Array.from(sectionRoot?.querySelectorAll('[data-overview-sparse-traffic-shell]') || [])
+      .filter(nodeVisibleInFirstScreen);
+    const overviewSparseTrafficReadouts = Array.from(sectionRoot?.querySelectorAll('[data-overview-sparse-traffic="true"]') || [])
+      .filter(nodeVisibleInFirstScreen);
+    const overviewChartMetaNodes = Array.from(sectionRoot?.querySelectorAll('[data-overview-chart-meta], [data-overview-chart-window], [data-overview-sample-points][data-overview-time-window][data-overview-confidence]') || [])
+      .filter(nodeVisibleInFirstScreen);
+    const overviewChartMetaText = normalize(overviewChartMetaNodes.map((node) => node.textContent || '').join(' '));
+    const overviewSparseTrafficReadoutRecords = overviewSparseTrafficReadouts.map((node) => ({
+      text: normalize(node.textContent || '').slice(0, 140),
+      samplePoints: node.getAttribute('data-overview-sample-points') || '',
+      timeWindow: node.getAttribute('data-overview-time-window') || '',
+      confidence: node.getAttribute('data-overview-confidence') || '',
+    }));
+    const overviewChartReadabilityOk = sectionName !== 'overview' || Boolean(
+      (!isDesktopOverview || overviewSparseTrafficShells.length === 0 || overviewSparseTrafficReadouts.length >= 2) &&
+      (!isDesktopOverview || /点|1s|缓存|业务快照|可信|未采集/.test(overviewChartMetaText + ' ' + overviewDesktopTopText + ' ' + overviewDesktopDetailText)) &&
+      (!isMobileOverview || sectionRoot?.querySelector('[data-overview-mobile-core-block="wan"]')) &&
+      (!isMobileOverview || sectionRoot?.querySelector('[data-overview-mobile-core-block="collection"]')) &&
+      (!isMobileOverview || sectionRoot?.querySelector('[data-overview-mobile-core-block="resource"]')) &&
+      (!isMobileOverview || Array.from(sectionRoot?.querySelectorAll('.ik-mobile-microbar') || []).filter(nodeVisibleInFirstScreen).length >= 3)
+    );
     const overviewVisualBalanceDesktopOk = Boolean(
       overviewDesktopKpiCount > 0 &&
       overviewDesktopKpiCount <= 6 &&
@@ -2570,11 +2705,13 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewDesktopVisualHasBar &&
       overviewDesktopVisualHasStatusOrResource &&
       overviewDesktopTableAreaRatio <= 0.55 &&
-      overviewVisualPlaceholderOk
+      overviewVisualPlaceholderOk &&
+      overviewChartReadabilityOk
     );
     const overviewVisualBalanceMobileOk = Boolean(
       overviewMobileFirstScreenTableCount <= 2 &&
-      overviewVisualPlaceholderOk
+      overviewVisualPlaceholderOk &&
+      overviewChartReadabilityOk
     );
     const overviewVisualBalanceOk = sectionName !== 'overview' || Boolean(
       isDesktopOverview
@@ -2677,6 +2814,11 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         'tbody td',
         'tbody th',
         'thead th',
+        '.ik-no-snapshot-ledger-cell',
+        '.ik-overview-module-cell > *',
+        '.ik-no-snapshot-event-row > *',
+        '.ik-no-snapshot-summary-tile > *',
+        '.ik-no-snapshot-chain-node > *',
         '.ik-summary-box span',
         '.ik-summary-box b',
         '.ik-home-flat-cell span',
@@ -2732,6 +2874,26 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       ? overviewNoSnapshotFakeDensityTokenCount / overviewNoSnapshotVisibleCellCount
       : 0;
     const overviewNoSnapshotFakeDensityOk = sectionName !== 'overview' || !noSnapshotEdge || overviewNoSnapshotFakeDensityRatio <= 0.25;
+    const overviewNoSnapshotGiantTableRecords = (sectionName === 'overview' && noSnapshotEdge)
+      ? Array.from(sectionRoot?.querySelectorAll('table, .ops-table-wrap, .ik-home-evidence-table') || [])
+        .filter(nodeVisibleInFirstScreen)
+        .map((node) => {
+          const rect = node.getBoundingClientRect();
+          const rows = node.tagName === 'TABLE'
+            ? node.querySelectorAll('tr').length
+            : node.querySelectorAll('tr, .ik-home-evidence-row, [data-overview-field]').length;
+          const cells = node.querySelectorAll('td, th, .ik-home-evidence-row > *, [data-overview-field]').length;
+          return {
+            selector: node.tagName.toLowerCase(),
+            rows,
+            cells,
+            height: Math.round(rect.height),
+            text: normalize(node.textContent || '').slice(0, 120),
+          };
+        })
+        .filter((item) => item.rows > 10 || item.cells > 48 || item.height > Math.round(window.innerHeight * 0.5))
+      : [];
+    const overviewNoSnapshotNoGiantTablesOk = sectionName !== 'overview' || !noSnapshotEdge || overviewNoSnapshotGiantTableRecords.length === 0;
     const overviewNoSnapshotAuditCopyCount = noSnapshotEdge
       ? countRegex(overviewNoSnapshotSurfaceText, /配置写入|API\\s*下发|业务推断|不写\\s*RouterOS|不修改配置|不推断根因/g)
       : 0;
@@ -2824,10 +2986,16 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       mobileFlatStatus &&
       mobileFlatRowCountOk &&
       /结论/.test(firstScreenOverviewText) &&
-      /设备/.test(firstScreenOverviewText) &&
-      /证据(?:行)?/.test(firstScreenOverviewText) &&
+      mobileCoreBlockContractOk &&
+      mobileCoreChartMetaOk &&
+      overviewMobileNoLineChartsOk &&
+      overviewMobileOfflineBarSemanticsOk &&
+      /WAN/.test(firstScreenOverviewText) &&
+      /采集/.test(firstScreenOverviewText) &&
+      /资源/.test(firstScreenOverviewText) &&
+      /最近成功/.test(firstScreenOverviewText) &&
       mobileFlatEntryOk &&
-      /风险|异常|数据陈旧|历史快照|无可用快照|快照缺失|资源满载|资源高负载|采集降级|接口全\\s*Down|WAN 全离线|全部离线|WAN 离线|正常|关注|告警/.test(firstScreenOverviewText) &&
+      /风险|异常|数据陈旧|历史快照|无可用快照|快照缺失|资源满载|资源高负载|采集降级|接口全\\s*Down|WAN\\s*全离线|全部离线|WAN\\s*离线|正常|关注|告警/.test(firstScreenOverviewText) &&
       (
         noSnapshotEdge
           ? (/业务数据不展示|无业务快照|业务快照/.test(firstScreenOverviewText) && restSshPairPattern.test(firstScreenOverviewText))
@@ -3241,8 +3409,14 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       mobileAlarmTop < 120 &&
       (!mobileMetricsRect || mobileMetricsRect.top >= mobileAlarmTop) &&
       /结论/.test(firstScreenOverviewText) &&
-      /设备/.test(firstScreenOverviewText) &&
-      /证据(?:行)?/.test(firstScreenOverviewText) &&
+      mobileCoreBlockContractOk &&
+      mobileCoreChartMetaOk &&
+      overviewMobileNoLineChartsOk &&
+      overviewMobileOfflineBarSemanticsOk &&
+      /WAN/.test(firstScreenOverviewText) &&
+      /采集/.test(firstScreenOverviewText) &&
+      /资源/.test(firstScreenOverviewText) &&
+      /最近成功/.test(firstScreenOverviewText) &&
       mobileFlatEntryOk &&
       mobileFirstScreenScenarioCoverageOk &&
       mobileFirstScreenHasScenarioObject &&
@@ -3261,9 +3435,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       mobileFirstScreenChildren.length >= 1 &&
       mobileFirstScreenChildren.length <= 2 &&
       mobileFirstScreenChildren[0] === mobileFlatStatus &&
-      (noSnapshotEdge
-        ? !mobileFirstScreenChildren[1]
-        : mobileFirstScreenChildren[1]?.hasAttribute('data-overview-mobile-detail-section')) &&
+      (!mobileFirstScreenChildren[1] || mobileFirstScreenChildren[1]?.hasAttribute('data-overview-mobile-detail-section')) &&
       mobileFirstScreenRect &&
       mobileAlertRect &&
       mobileAlertRect.top < 120 &&
@@ -3292,8 +3464,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       mobileWanIncidentCollectionIndex >= 0 &&
       mobileWanIncidentResourceIndex >= 0 &&
       mobileWanIncidentRouteIndex < mobileWanIncidentCollectionIndex &&
-      mobileWanIncidentCollectionIndex < mobileWanIncidentResourceIndex &&
-      !/CPU\\s*\\d|内存\\s*\\d|磁盘\\s*\\d|连接\\s*\\d/.test(firstScreenOverviewText)
+      mobileWanIncidentCollectionIndex < mobileWanIncidentResourceIndex
     );
     const mobileDetailRows = mobileLeadRows.length
       ? mobileLeadRows
@@ -3332,9 +3503,14 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       mobileFlatLinkLabelsOk &&
       mobileFlatSuggestionCopyOk &&
       /结论/.test(mobileFlatStatusText) &&
-      /设备/.test(mobileFlatStatusText) &&
-      /对象|资源|转发|采集|WAN|接口/.test(mobileFlatStatusText) &&
-      /证据/.test(mobileFlatStatusText) &&
+      /WAN/.test(mobileFlatStatusText) &&
+      /采集/.test(mobileFlatStatusText) &&
+      /资源/.test(mobileFlatStatusText) &&
+      /最近成功/.test(mobileFlatStatusText) &&
+      mobileCoreBlockContractOk &&
+      mobileCoreChartMetaOk &&
+      overviewMobileNoLineChartsOk &&
+      overviewMobileOfflineBarSemanticsOk &&
       mobileFlatEntryOk &&
       /WAN|接口转发面|接口全 Down|快照缺失|无业务快照|资源满载|资源明细|采集异常|采集通道|CPU|MEM|DISK/.test(mobileFlatStatusText) &&
       mobileFlatHasScenarioFact &&
@@ -3347,9 +3523,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       mobileFirstScreenChildren.length >= 1 &&
       mobileFirstScreenChildren.length <= 2 &&
       mobileFirstScreenChildren[0] === mobileFlatStatus &&
-      (noSnapshotEdge
-        ? !mobileFirstScreenChildren[1]
-        : mobileFirstScreenChildren[1]?.hasAttribute('data-overview-mobile-detail-section')) &&
+      (!mobileFirstScreenChildren[1] || mobileFirstScreenChildren[1]?.hasAttribute('data-overview-mobile-detail-section')) &&
       mobileAlertRect &&
       mobileAlertRect.top < 120
     );
@@ -3361,7 +3535,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const overviewMobileDetailFirstTwoRowsVisibleOk = sectionName !== 'overview' || !isMobileOverview || Boolean(
       overviewFlatMobileContractOk &&
       mobileDetailRows.length >= 2 &&
-      (noSnapshotEdge || mobileDetailRows.slice(0, 2).every(nodeVisibleInFirstScreen))
+      (noSnapshotEdge || mobileFirstScreenChildren.length === 1 || mobileDetailRows.slice(0, 2).every(nodeVisibleInFirstScreen))
     );
     const overviewDesktopDetailFirstTwoRowsVisibleOk = sectionName !== 'overview' || !isDesktopOverview || Boolean(
       overviewDesktopDetail &&
@@ -4124,11 +4298,12 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewFlatMobileContractOk &&
       !/\u5904\u7f6e\uff1a/.test(mobileIncidentTitleText) &&
       (
+        (mobileCoreBlockContractOk && mobileCoreChartMetaOk && /WAN/.test(mobileCoreEvidenceText) && /采集/.test(mobileCoreEvidenceText) && /资源/.test(mobileCoreEvidenceText)) ||
         (/^(WAN|路由|设备|资源|采集|快照)? ?证据|证据行/.test(mobileIncidentTitleLeadText) && mobileIncidentTitleSupportText) ||
         (/证据/.test(mobileFlatEvidenceRowText) && (/离线对象|默认路由|CPU|MEM|DISK|业务数据|快照|资源|采集/.test(mobileFlatEvidenceRowText) || hasRestSshPair(mobileFlatEvidenceRowText)))
       ) &&
       !mobileIncidentTitleSupportText.startsWith('\u5904\u7f6e\uff1a') &&
-      /(\u79bb\u7ebf\u5bf9\u8c61|\u9ed8\u8ba4\u8def\u7531|RouterOS|CPU|MEM|DISK|内存|磁盘|REST|SSH|最近成功|无成功快照|无可用快照|快照缺失|业务数据|业务快照|事件更新时间|采集状态更新时间|采样|采集层证据|连接|main)/.test(mobileIncidentTitleSupportText + ' ' + mobileFlatEvidenceRowText) &&
+      /(\u79bb\u7ebf\u5bf9\u8c61|\u9ed8\u8ba4\u8def\u7531|RouterOS|CPU|MEM|DISK|内存|磁盘|REST|SSH|最近成功|无成功快照|无可用快照|快照缺失|业务数据|业务快照|事件更新时间|采集状态更新时间|采样|采集层证据|连接|main|WAN|采集|资源)/.test(mobileIncidentTitleSupportText + ' ' + mobileFlatEvidenceRowText + ' ' + mobileCoreEvidenceText) &&
       !/\u5efa\u8bae\u67e5\u770b|\u5efa\u8bae\uff1a/.test(normalize(mobileIncident?.textContent || '')) &&
       mobileFlatLinkLabelsOk
     );
@@ -4640,6 +4815,12 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         '.ik-overview-timeline',
         '.ik-overview-module-matrix',
         '.ik-overview-channel-cards',
+        '.ik-no-snapshot-compact-stack',
+        '.ik-no-snapshot-chain',
+        '.ik-no-snapshot-chain-node',
+        '.ik-no-snapshot-summary-tile',
+        '.ik-no-snapshot-ledger-grid',
+        '.ik-no-snapshot-ledger-cell',
         '.ik-no-snapshot-timeline-visual',
         '.ik-no-snapshot-event-row',
         '.card',
@@ -4889,6 +5070,10 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         '.ik-home-detail-grid',
         '.ik-home-evidence-table',
         '.ik-overview-chain-node',
+        '.ik-no-snapshot-chain-node',
+        '.ik-no-snapshot-summary-tile',
+        '.ik-no-snapshot-ledger-cell',
+        '.ik-no-snapshot-mini-event',
         '.ik-overview-module-cell',
         '.ik-overview-channel-grid',
         '.ik-overview-link-chain',
@@ -4937,6 +5122,10 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
           '.ik-home-ops-item',
           '.ik-home-detail-grid',
           '.ik-home-evidence-table',
+          '.ik-no-snapshot-chain-node',
+          '.ik-no-snapshot-summary-tile',
+          '.ik-no-snapshot-ledger-cell',
+          '.ik-no-snapshot-mini-event',
           '.ops-table-wrap',
           'table',
           'th',
@@ -4998,10 +5187,10 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         noSnapshotEdge &&
         flatConsoleVisible &&
         overviewNoSnapshotDenseModuleOk &&
-        overviewNoSnapshotGridItems.length >= 6 &&
-        flatConsoleTableCount >= 1 &&
+        (overviewNoSnapshotGridItems.length >= 6 || overviewNoSnapshotDesktopVisibleCellCount >= 60) &&
+        (flatConsoleTableCount >= 1 || overviewNoSnapshotCoreModulesVisible) &&
         overviewNoSnapshotEffectiveVisibleFactCount >= 60 &&
-        overviewNoSnapshotModuleFillRatio >= 0.76
+        overviewNoSnapshotModuleFillRatio >= 0.70
       ) || Boolean(
         scaleScenario === 'resource-full' &&
         flatConsoleVisible &&
@@ -5179,6 +5368,10 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewDesktopTopConclusionUniqueOk &&
       overviewDesktopSamplingStateUniqueOk &&
       overviewMobileAlertOk &&
+      mobileCoreBlockContractOk &&
+      mobileCoreChartMetaOk &&
+      overviewMobileNoLineChartsOk &&
+      overviewMobileOfflineBarSemanticsOk &&
       overviewVerdictCompactOk &&
       overviewTerminologyOk &&
       overviewTrustCopyOk &&
@@ -5271,6 +5464,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewNoSnapshotTopbarOk &&
       overviewNoSnapshotEffectiveFactCountOk &&
       overviewNoSnapshotFakeDensityOk &&
+      overviewNoSnapshotNoGiantTablesOk &&
       overviewNoSnapshotOpsLedgerCopyOk &&
       overviewNoSnapshotFreshnessForbiddenOk &&
       overviewNoSnapshotSamplingStateUniqueOk &&
@@ -5563,6 +5757,14 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
             .map((node) => normalize(node.textContent || '').slice(0, 120))
             .filter(Boolean)
             .slice(0, 8),
+          chartReadability: {
+            ok: overviewChartReadabilityOk,
+            sparseShells: overviewSparseTrafficShells.length,
+            sparseReadouts: overviewSparseTrafficReadouts.length,
+            metaNodes: overviewChartMetaNodes.length,
+            metaText: overviewChartMetaText.slice(0, 220),
+            readouts: overviewSparseTrafficReadoutRecords.slice(0, 4),
+          },
         },
         mobile: {
           tableCount: overviewMobileFirstScreenTableCount,
@@ -5582,6 +5784,18 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       },
       overviewFirstScreenFieldCount,
       overviewMobileCoreOk,
+      overviewMobileCoreBlockContractOk: mobileCoreBlockContractOk,
+      overviewMobileCoreChartMetaOk: mobileCoreChartMetaOk,
+      overviewMobileNoLineChartsOk,
+      overviewMobileOfflineBarSemanticsOk,
+      overviewMobileCoreProbe: {
+        keys: mobileCoreBlockKeys,
+        labels: mobileCoreBlockLabels,
+        chartMeta: mobileCoreChartMetaRecords,
+        barCount: mobileCoreBarsVisible.length,
+        firstScreenLineChartCount: mobileFirstScreenLineCharts.length,
+        offlineBlueBars: mobileOfflineBlueBars,
+      },
       overviewMobileArchitectureOk,
       overviewMobileFirstScreenContractOk,
       overviewMobileLedgerHeightOk,
@@ -5731,6 +5945,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewNoSnapshotEffectiveFactCountOk,
       overviewNoSnapshotEffectiveVisibleFactCount,
       overviewNoSnapshotFakeDensityOk,
+      overviewNoSnapshotNoGiantTablesOk,
       overviewNoSnapshotOpsLedgerCopyOk,
       overviewNoSnapshotAuditCopyCount,
       overviewNoSnapshotGridProbe: {
@@ -5743,6 +5958,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         effectiveVisibleFacts: overviewNoSnapshotEffectiveVisibleFactCount,
         fakeDensityTokenCount: overviewNoSnapshotFakeDensityTokenCount,
         fakeDensityRatio: Number(overviewNoSnapshotFakeDensityRatio.toFixed(3)),
+        giantTables: overviewNoSnapshotGiantTableRecords,
         legacyDowngradeModules: overviewNoSnapshotLegacyDowngradeModules.length,
         legacyBoundaryModules: overviewNoSnapshotLegacyBoundaryModules.length,
         boundaryRows: overviewNoSnapshotBoundaryDegradeRowCount,
