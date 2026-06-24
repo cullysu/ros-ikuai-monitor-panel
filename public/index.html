@@ -16144,6 +16144,7 @@
         return diff !== 0 ? diff : totalTrafficRate(b, 'txRate', 'rxRate') - totalTrafficRate(a, 'txRate', 'rxRate');
       });
       const auditEvents = collectLoadAuditEvents(snapshot);
+      const loadTrendTrust = snapshot.meta?.dataStale ? '缓存可参考' : '可信';
       const interfaceRows = interfaces.slice(0, 16).map((row) => `
         <tr>
           <td>${escapeHtml(row.name)}</td>
@@ -16177,7 +16178,7 @@
           ${metricCard('系统状态', tag(overview.systemLoadLevel === 'danger' ? '高压' : overview.systemLoadLevel === 'warning' ? '预警' : '正常', overview.systemLoadLevel), `NTP ${escapeHtml(overview.ntpStatus)}`, `运行时长 ${escapeHtml(overview.uptime)}`)}
         </div>
         <div class="grid-3" style="margin-top:12px">
-          <div class="card" style="grid-column: span 2"><div class="card-head"><div class="card-title">资源趋势</div><div class="subtle">CPU / 内存 / 磁盘分图</div></div><div class="card-body">${resourceTrendGrid(overview, `${Math.max(overview.history?.cpu?.length || 0, overview.history?.memory?.length || 0, overview.history?.disk?.length || 0)} 点 · ${escapeHtml(snapshot.meta.pollSeconds)}s / 点`, trafficTrendTrust)}</div></div>
+          <div class="card" style="grid-column: span 2"><div class="card-head"><div class="card-title">资源趋势</div><div class="subtle">CPU / 内存 / 磁盘分图</div></div><div class="card-body">${resourceTrendGrid(overview, `${Math.max(overview.history?.cpu?.length || 0, overview.history?.memory?.length || 0, overview.history?.disk?.length || 0)} 点 · ${escapeHtml(snapshot.meta.pollSeconds)}s / 点`, loadTrendTrust)}</div></div>
           <div class="card"><div class="card-head"><div class="card-title">运行健康摘要</div><div class="subtle">系统资源 / 连接压力 / DNS 缓存</div></div><div class="card-body">${infoGrid([
             {k:'连接总数', v: fmtCompact(connections.total)},
             {k:'活跃会话', v: fmtNumber((connections.active || []).length)},
