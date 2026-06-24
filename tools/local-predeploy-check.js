@@ -44,6 +44,7 @@ const DEFAULT_PRIVATE_SECTIONS = [
 ];
 const DEFAULT_SCALE_SCENARIOS = ['multi'];
 const EDGE_SCALE_SCENARIOS = ['all-offline', 'no-snapshot', 'collection-down', 'resource-full', 'interfaces-down'];
+const OVERVIEW_RELEASE_SCALE_SCENARIOS = ['single', 'fleet', ...EDGE_SCALE_SCENARIOS];
 const OVERVIEW_RELEASE_VIEWPORTS = [
   { name: 'desktop', width: 1366, height: 900 },
   { name: 'narrow', width: 390, height: 844 },
@@ -88,7 +89,7 @@ Options:
                               Browser fixture profile. Default: both.
   --viewports <list>          Comma list like desktop=1366x900,narrow=390x844.
   --sections <list>           Comma list of sections to visit, or main-menu/public-release.
-  --scale-scenarios <list>    Comma list: single,multi,fleet,all-offline,no-snapshot,collection-down,resource-full,interfaces-down. Default: multi.
+  --scale-scenarios <list>    Comma list: single,multi,fleet,all-offline,no-snapshot,collection-down,resource-full,interfaces-down. Default: multi; overview-only runs default to release overview matrix.
   --skip-browser              Run backend/static/API checks only.
   --skip-backend              Run browser checks only.
   --keep-server               Leave the spawned app server running.
@@ -116,6 +117,8 @@ function parseArgs(argv) {
     keepServer: false,
     strictResponsive: false,
     scaleScenarios: DEFAULT_SCALE_SCENARIOS,
+    scaleScenariosExplicit: false,
+    viewportsExplicit: false,
     help: false,
   };
   for (let i = 2; i < argv.length; i += 1) {
@@ -137,10 +140,24 @@ function parseArgs(argv) {
     else if (item === '--python' || item.startsWith('--python=')) args.python = readValue('--python');
     else if (item === '--out' || item.startsWith('--out=')) args.out = readValue('--out');
     else if (item === '--profile' || item.startsWith('--profile=')) args.profile = readValue('--profile');
-    else if (item === '--viewports' || item.startsWith('--viewports=')) args.viewports = parseViewports(readValue('--viewports'));
+    else if (item === '--viewports' || item.startsWith('--viewports=')) {
+      args.viewports = parseViewports(readValue('--viewports'));
+      args.viewportsExplicit = true;
+    }
     else if (item === '--sections' || item.startsWith('--sections=')) args.sections = parseSections(readValue('--sections'));
-    else if (item === '--scale-scenarios' || item.startsWith('--scale-scenarios=')) args.scaleScenarios = readValue('--scale-scenarios').split(',').map((part) => part.trim()).filter(Boolean);
+    else if (item === '--scale-scenarios' || item.startsWith('--scale-scenarios=')) {
+      args.scaleScenarios = readValue('--scale-scenarios').split(',').map((part) => part.trim()).filter(Boolean);
+      args.scaleScenariosExplicit = true;
+    }
     else throw new Error(`Unknown argument: ${item}`);
+  }
+  if (
+    Array.isArray(args.sections) &&
+    args.sections.length === 1 &&
+    args.sections[0] === 'overview'
+  ) {
+    if (!args.scaleScenariosExplicit) args.scaleScenarios = OVERVIEW_RELEASE_SCALE_SCENARIOS;
+    if (!args.viewportsExplicit) args.viewports = OVERVIEW_RELEASE_VIEWPORTS;
   }
   if (!['public', 'private', 'both'].includes(args.profile)) {
     throw new Error('--profile must be public, private, or both');
