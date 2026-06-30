@@ -146,17 +146,17 @@ jobs:
       - name: Verify bundled public assets and env defaults
         shell: pwsh
         run: |
-          $index = Get-ChildItem -Recurse .\dist\routeros-triage-panel -Filter index.html | Select-Object -First 1
+          $bundleRoot = ".\dist\routeros-triage-panel"
+          $index = Get-ChildItem -Recurse $bundleRoot -Filter index.html | Select-Object -First 1
           if (-not $index) { throw "Bundled public/index.html was not found." }
-          Select-String -Path $index.FullName -Pattern "smoothRateNeedleZeros" -Quiet | ForEach-Object {
-            if (-not $_) { throw "Bundled frontend is missing WAN chart smoothing helpers." }
-          }
-          Select-String -Path $index.FullName -Pattern "ik-wan-rate-axis" -Quiet | ForEach-Object {
-            if (-not $_) { throw "Bundled frontend is missing WAN chart axis labels." }
-          }
-          Select-String -Path $index.FullName -Pattern "ops-axis-labels" -Quiet | ForEach-Object {
-            if (-not $_) { throw "Bundled frontend is missing resource chart axis labels." }
-          }
+          $indexText = Get-Content -Raw -LiteralPath $index.FullName
+          if ($indexText -notmatch 'data-app-shell="ikuai"') { throw "Bundled frontend is missing the app shell marker." }
+          if ($indexText -notmatch '<div class="app ik-shell">') { throw "Bundled frontend is missing the framework shell container." }
+          if ($indexText -notmatch 'data-overview-framework-asset="style"') { throw "Bundled frontend is missing the framework style asset marker." }
+          if ($indexText -notmatch 'data-overview-framework-asset="script"') { throw "Bundled frontend is missing the framework script asset marker." }
+          $publicRoot = Split-Path -Parent $index.FullName
+          if (-not (Test-Path -LiteralPath (Join-Path $publicRoot "assets\framework\style.css"))) { throw "Bundled framework style asset was not found." }
+          if (-not (Test-Path -LiteralPath (Join-Path $publicRoot "assets\framework\panel-framework.js"))) { throw "Bundled framework script asset was not found." }
           $envFile = ".\dist\routeros-triage-panel\routeros-panel.env"
           Select-String -Path $envFile -Pattern "ROS_PANEL_BIND=127.0.0.1" -Quiet | ForEach-Object {
             if (-not $_) { throw "Windows env is missing loopback bind default." }

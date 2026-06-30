@@ -722,6 +722,29 @@ def assert_deploy_defaults_are_project_safe():
 
 def assert_frontend_charts_skip_missing_values():
     index_source = (ROOT / "public" / "index.html").read_text(encoding="utf-8")
+    framework_shell = (
+        'data-app-shell="ikuai"' in index_source
+        and 'data-overview-framework-asset="script"' in index_source
+    )
+    if framework_shell:
+        overview_source = (ROOT / "src" / "panel-framework" / "overview" / "OverviewPanel.tsx").read_text(encoding="utf-8")
+        overview_css = (ROOT / "src" / "panel-framework" / "overview" / "OverviewPanel.css").read_text(encoding="utf-8")
+        derive_source = (ROOT / "src" / "panel-framework" / "overview" / "deriveOverviewState.ts").read_text(encoding="utf-8")
+        for marker in (
+            'data-overview-chart-has-current="true"',
+            'data-overview-chart-has-peak="true"',
+            'data-overview-chart-has-mean="true"',
+            'data-overview-chart-has-threshold="true"',
+            'data-overview-y-axis="overview-y-axis"',
+            "data-overview-rank-grid",
+        ):
+            assert marker in overview_source, f"{marker} not found in framework overview"
+        assert ".ro-chart-axis" in overview_css
+        assert "Number(value || 0)" not in overview_source
+        assert "Number(item || 0)" not in overview_source
+        assert "export function toNumber" in derive_source
+        assert "return Number.isFinite(n) ? n : fallback;" in derive_source
+        return
     for function_name in ("lineChart", "rateAxisLineChart", "resourcePercentChart"):
         marker = f"function {function_name}"
         start = index_source.find(marker)
@@ -787,6 +810,18 @@ def assert_router_login_password_save_is_opt_in():
 
 def assert_frontend_handles_partial_snapshots():
     index_source = (ROOT / "public" / "index.html").read_text(encoding="utf-8")
+    framework_shell = (
+        'data-app-shell="ikuai"' in index_source
+        and 'data-overview-framework-asset="script"' in index_source
+    )
+    if framework_shell:
+        derive_source = (ROOT / "src" / "panel-framework" / "overview" / "deriveOverviewState.ts").read_text(encoding="utf-8")
+        assert "const meta = snapshot.meta || {};" in derive_source
+        assert "const device = snapshot.overview || {};" in derive_source
+        assert "snapshot.routes?.defaultRoutes || snapshot.routes?.items || []" in derive_source
+        assert "Array.isArray(snapshot.wan) && snapshot.wan.length" in derive_source
+        assert "Array.isArray(snapshot.interfaces) ? snapshot.interfaces : []" in derive_source
+        return
     assert "const o = snapshot.overview || {};" in index_source
     assert "const history = o.history || {};" in index_source
     assert "const meta = snapshot.meta || {};" in index_source

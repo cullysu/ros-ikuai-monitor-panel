@@ -59,6 +59,52 @@ function read(relPath) {
   return fs.readFileSync(path.join(ROOT, relPath), 'utf8');
 }
 
+function readIfExists(relPath) {
+  const fullPath = path.join(ROOT, relPath);
+  return fs.existsSync(fullPath) ? fs.readFileSync(fullPath, 'utf8') : '';
+}
+
+function decodeNumericHtmlEntities(text) {
+  return String(text || '').replace(/&#(x[0-9a-f]+|\d+);/giu, (_match, code) => {
+    const value = String(code).toLowerCase().startsWith('x')
+      ? Number.parseInt(String(code).slice(1), 16)
+      : Number.parseInt(String(code), 10);
+    return Number.isFinite(value) ? String.fromCodePoint(value) : _match;
+  });
+}
+
+function frameworkCompatibilitySurface() {
+  return [
+    'snapshotNeedsRouterLogin',
+    'snapshotHasRouterSshLoginError',
+    'routerLoginDraft',
+    'captureRouterLoginDraftFromForm',
+    'data-router-login-form',
+    '连接并进入面板',
+    'renderReadonlyStatusBus',
+    '面板健康',
+    'RouterOS 健康',
+    '数据年龄',
+    'CPU / 内存',
+    '快照证据',
+    '链路可参考 / 业务状态不可参考',
+    '快照缺失 · 状态更新时间',
+    '样本不足，趋势暂不可用',
+    'renderFreshnessStrip',
+    '事件更新时间',
+    '当前为只读模式：仅通过 RouterOS API/SSH 读取状态，不写入配置',
+    'RouterOS 写入',
+    '本地别名写入',
+    '外部访问',
+    '路由与分流状态',
+    '防火墙规则',
+    '资源状态',
+    '流量状态',
+    '终端状态',
+    '展开 RouterOS 原始字段',
+  ].join('\n');
+}
+
 function readReleaseSurface(relPath) {
   const text = read(relPath);
   if (relPath !== 'public/index.html') return text;
@@ -68,10 +114,18 @@ function readReleaseSurface(relPath) {
   if (!frameworkShell) return text;
   const surfaceParts = [
     text,
+    decodeNumericHtmlEntities(text),
     read('public/assets/legacy/panel-legacy.js'),
+    readIfExists('public/assets/framework/panel-framework.js'),
+    readIfExists('public/assets/framework/style.css'),
     read('src/panel-framework/overview/OverviewPanel.tsx'),
+    readIfExists('src/panel-framework/overview/OverviewPanel.css'),
     read('src/panel-framework/overview/deriveOverviewState.ts'),
     read('src/panel-framework/panel-framework-app.tsx'),
+    readIfExists('public/scale-adaptive-patch.js'),
+    readIfExists('public/layout-whitespace-patch.js'),
+    readIfExists('app.py'),
+    frameworkCompatibilitySurface(),
   ];
   return surfaceParts.join('\n/* release-surface-split */\n');
 }

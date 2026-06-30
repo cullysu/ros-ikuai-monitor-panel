@@ -42,6 +42,11 @@ docker compose --env-file .env.docker.example config --quiet
   GHCR publishing workflow, installer image pull/build fallback, local-only
   bind messaging, and RouterOS Container localhost-forwarder markers.
 
+Related Edict task:
+
+- `edict-ci-cl-framework-shell-fix-20260630`
+- Verification matrix lives in `_edict_tasks/edict-ci-cl-framework-shell-fix-20260630.md`.
+
 ## Current repository state
 
 This repository includes `install.sh`, so strict mode should pass before a

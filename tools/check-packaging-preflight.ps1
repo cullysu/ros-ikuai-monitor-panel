@@ -123,31 +123,25 @@ try {
   Write-Host ""
 
   $indexPath = Join-Path $repoRoot "public/index.html"
-  $scalePatchPath = Join-Path $repoRoot "public/scale-adaptive-patch.js"
+  $frameworkStylePath = Join-Path $repoRoot "public/assets/framework/style.css"
+  $frameworkScriptPath = Join-Path $repoRoot "public/assets/framework/panel-framework.js"
   if (-not (Test-Path -LiteralPath $indexPath)) {
-    Add-Check "FAIL" "frontend axis assets" "public/index.html was not found."
+    Add-Check "FAIL" "frontend framework assets" "public/index.html was not found."
   }
   else {
     $indexText = Get-Content -Raw -LiteralPath $indexPath
-    $scalePatchText = if (Test-Path -LiteralPath $scalePatchPath) { Get-Content -Raw -LiteralPath $scalePatchPath } else { "" }
-    $legacyAxisAssets = (
-      $indexText -match "axis-tick-label" -and
-      $scalePatchText -match "ikuai-wan-chart \.axis-line-chart" -and
-      $scalePatchText -match "ikuai-chart-box \.axis-line-chart" -and
-      $scalePatchText -match "data-ikuai-terminal-summary"
+    $frameworkShell = (
+      $indexText -match 'data-app-shell="ikuai"' -and
+      $indexText -match '<div class="app ik-shell">' -and
+      $indexText -match 'data-overview-framework-asset="style"' -and
+      $indexText -match 'data-overview-framework-asset="script"'
     )
-    $current35Assets = (
-      $indexText -match "smoothRateNeedleZeros" -and
-      $indexText -match "ik-wan-rate-axis" -and
-      $indexText -match "ops-axis-labels" -and
-      $indexText -match "data-overview-wan-switch" -and
-      $indexText -match "data-overview-rank-grid"
-    )
-    if ($legacyAxisAssets -or $current35Assets) {
-      Add-Check "PASS" "frontend axis assets" "Overview WAN/resource chart axes and terminal/ranking placement markers are present."
+    $frameworkAssetsPresent = (Test-Path -LiteralPath $frameworkStylePath) -and (Test-Path -LiteralPath $frameworkScriptPath)
+    if ($frameworkShell -and $frameworkAssetsPresent) {
+      Add-Check "PASS" "frontend framework assets" "Framework shell markers and framework asset files are present in public assets."
     }
     else {
-      Add-Check "FAIL" "frontend axis assets" "Overview chart axes or terminal/ranking placement markers are missing from public assets."
+      Add-Check "FAIL" "frontend framework assets" "Framework shell markers or framework asset files are missing from public assets."
     }
   }
 
