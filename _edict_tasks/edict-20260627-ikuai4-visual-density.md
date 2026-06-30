@@ -1,0 +1,25 @@
+# Edict Task: edict-20260627-ikuai4-visual-density
+
+- task_id: edict-20260627-ikuai4-visual-density
+- stage: done
+- risk_level: medium-high
+- scope: overview panel iKuai-style semantic density, no-snapshot/resource-full/interfaces-down/collection-down
+- subagents: 2 audit, 4 implementation
+- rollback:
+  - D:\cully\Documents\ros-ikuai-monitor-panel\codex-backups\index-before-20260627-ikuai4-continue-b5d123e.html
+  - D:\cully\Documents\ros-ikuai-monitor-panel\codex-backups\local-predeploy-check-before-20260627-ikuai4-continue-b5d123e.js
+- stages:
+  - intake: complete
+  - planning: complete
+  - plan_review: complete
+  - dispatch: complete
+  - execution: complete
+  - integration: complete
+  - final_review: complete
+  - done: complete
+- final_review:
+  - verdict: pass
+  - commit_under_test: b5d123e3eec860d69e8b452dcb8217842bf98098
+  - report: D:\cully\Documents\ros-ikuai-monitor-panel\_acceptance\local-predeploy-20260627-ikuai4-final-50\report.json
+  - screenshots: D:\cully\Documents\ros-ikuai-monitor-panel\_acceptance\local-predeploy-20260627-ikuai4-final-50
+  - matrix: public overview single/fleet/all-offline/no-snapshot/collection-down/resource-full/interfaces-down desktop+narrow pass

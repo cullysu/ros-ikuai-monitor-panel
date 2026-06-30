@@ -1,5 +1,6 @@
 param(
   [switch]$FullBrowser,
+  [switch]$LiteBrowser,
   [switch]$SkipWindowsBuild
 )
 
@@ -10,6 +11,7 @@ try {
   python -m py_compile app.py tools/check-collector-regressions.py
   python tools/check-collector-regressions.py
   node tools/check-lan-access-defaults.js
+  node tools/check-overview-ikuai-static.js
   docker compose --env-file .env.docker.example config --quiet
   powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\check-packaging-preflight.ps1 -StrictInstall
 
@@ -18,7 +20,11 @@ try {
   }
 
   if ($FullBrowser) {
-    powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\check-local-predeploy.ps1 -Profile public -Sections overview -Viewports desktop=1366x900,narrow=390x844 -ScaleScenarios multi
+    powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\check-local-predeploy.ps1 -Profile public -Sections overview -Viewports desktop=1366x900,narrow=390x844 -ScaleScenarios single,fleet,all-offline,no-snapshot,collection-down,resource-full,interfaces-down
+  }
+
+  if ($LiteBrowser) {
+    powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\check-overview-ikuai-lite.ps1
   }
 }
 finally {

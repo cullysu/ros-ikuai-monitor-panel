@@ -1,0 +1,23 @@
+﻿# Edict Task: edict-20260628-ikuai4-visual-readability
+
+- task_id: edict-20260628-ikuai4-visual-readability
+- stage: execution
+- risk_level: medium-high
+- scope: overview iKuai 4.0 mature visual readability; charts must carry current/peak/mean/window/threshold/trust, scene-specific chart priority, mobile first-screen microchart
+- current_head_observed: b5d123e fix: default overview release matrix checks
+- user_referenced_head: 3f75799 fix: mature overview ikuai visual grammar
+- rollback:
+  - D:\cully\Documents\ros-ikuai-monitor-panel\codex-backups\index-before-ikuai4-visual-readability-20260628-060338-b5d123e.html
+  - D:\cully\Documents\ros-ikuai-monitor-panel\codex-backups\local-predeploy-check-before-ikuai4-visual-readability-20260628-060338-b5d123e.js
+- stages:
+  - intake: complete
+  - planning: complete
+  - plan_review: complete
+  - dispatch: complete
+  - execution: complete
+  - integration: in progress
+  - final_review: pending
+  - done: pending
+- subagents:
+  - audit: dispatched
+  - implementation: dispatched

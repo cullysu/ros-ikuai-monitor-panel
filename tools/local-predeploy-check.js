@@ -1435,7 +1435,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const monitorSplitColumns = monitorSplit ? getComputedStyle(monitorSplit).gridTemplateColumns.split(' ').filter(Boolean).length : 0;
     const monitorSplitText = normalize(monitorSplit?.textContent || '');
     const overviewMonitorSceneBypassOk = Boolean(
-      (noSnapshotEdge && overviewNoSnapshotCoreModuleNodes.length >= 3) ||
+      (noSnapshotEdge && overviewNoSnapshotCoreModuleNodes.length >= 4) ||
       (
         (scaleScenario === 'resource-full' || scaleScenario === 'resource-load') &&
         sectionRoot?.querySelector('[data-overview-density-module="resource-risk-priority"]') &&
@@ -3424,6 +3424,12 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       (!noSnapshotEdge || readonlyBoundaryNodes.length <= 1) &&
       (!noSnapshotEdge || countOccurrences([overviewDesktopTopText, overviewDesktopDetailText, firstScreenOverviewText, mobileTop120Text].join(' '), '只读边界') <= 2)
     );
+    const overviewNoSnapshotReadonlyBoundaryRepeatOk = sectionName !== 'overview' || !noSnapshotEdge || countOccurrences([
+      overviewDesktopTopText,
+      overviewDesktopDetailText,
+      firstScreenOverviewText,
+      mobileTop120Text,
+    ].join(' '), '只读边界') <= 1;
     const priorityLabels = Array.from(sectionRoot?.querySelectorAll('[data-overview-priority]') || [])
       .map((node) => normalize(node.textContent || ''));
     const activePriorityLabels = Array.from(sectionRoot?.querySelectorAll('[data-overview-priority].is-active') || [])
@@ -4236,7 +4242,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewDesktopTopText,
       topErrorNoticeText,
     ].join(' ');
-    const overviewChineseUiNoEngineeringEnglishOk = sectionName !== 'overview' || !(/[�]/.test(overviewChineseUiVisibleText) || /(?:^|[^A-Za-z])(endpoint|failure|stale|snapshot|bucket|hasMore|sampled|sort|cache\\s+gap|active\\s+sessions|process\\s*\\/\\s*service|ConnTrack|Conn)(?:[^A-Za-z]|$)/i.test(overviewChineseUiVisibleText));
+    const overviewChineseUiNoEngineeringEnglishOk = sectionName !== 'overview' || !(/[�]/.test(overviewChineseUiVisibleText) || /(?:^|[^A-Za-z])(endpoint|failure|stale|snapshot|bucket|hasMore|sampled|sort|cache\\s+gap|active\\s+sessions|process\\s*\\/\\s*service|ConnTrack|Conn|module|detail|panel|ledger|chart|window|threshold|confidence|ratio|sample|current|peak|mean)(?:[^A-Za-z]|$)/i.test(overviewChineseUiVisibleText));
     const overviewDesktopFlatStatusBarOk = sectionName !== 'overview' || !isDesktopOverview || Boolean(
       overviewStatusBar &&
       overviewStatusBarCells.length >= 6 &&
@@ -5517,7 +5523,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     );
     overviewNoSnapshotModuleFillOk = sectionName !== 'overview' || !noSnapshotEdge || !isDesktopOverview || Boolean(
         overviewNoSnapshotModuleFillSamples.length >= 4 &&
-        (overviewNoSnapshotModuleFillRatio >= 0.70 || overviewNoSnapshotModuleFactFillOk)
+        (overviewNoSnapshotModuleFillRatio >= 0.72 || overviewNoSnapshotModuleFactFillOk)
       );
       const overviewResourceFillTargets = scaleScenario === 'resource-full'
         ? overviewDensityModules.filter((node) => {
@@ -5569,7 +5575,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         (overviewNoSnapshotGridItems.length >= 6 || overviewNoSnapshotDesktopVisibleCellCount >= 60) &&
         (flatConsoleTableCount >= 1 || overviewNoSnapshotCoreModulesVisible) &&
         overviewNoSnapshotEffectiveVisibleFactCount >= 32 &&
-        (overviewNoSnapshotModuleFillRatio >= 0.70 || overviewNoSnapshotDesktopCoreFactsOk)
+        (overviewNoSnapshotModuleFillRatio >= 0.72 || overviewNoSnapshotDesktopCoreFactsOk)
       ) || Boolean(
         scaleScenario === 'resource-full' &&
         flatConsoleVisible &&
@@ -5834,6 +5840,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewMobileEvidenceUniqueOk &&
       overviewChineseUiNoEngineeringEnglishOk &&
       overviewReadOnlyBoundaryOk &&
+      overviewNoSnapshotReadonlyBoundaryRepeatOk &&
       overviewEvidenceLayeringOk &&
       overviewWanListPriorityOk &&
       overviewWanEvidencePriorityOk &&
@@ -6295,11 +6302,18 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewMobileEvidenceUniqueOk,
       overviewChineseUiNoEngineeringEnglishOk,
       overviewReadOnlyBoundaryOk,
+      overviewNoSnapshotReadonlyBoundaryRepeatOk,
       overviewReadOnlyBoundaryProbe: {
         mainAlertTop: overviewMainAlertRect ? Math.round(overviewMainAlertRect.top) : null,
         firstEvidenceTop: overviewFirstEvidenceRect ? Math.round(overviewFirstEvidenceRect.top) : null,
         boundaryCount: readonlyBoundaryNodes.length,
         boundaryTops: readonlyBoundaryNodes.slice(0, 3).map((node) => Math.round(node.getBoundingClientRect().top)),
+        boundaryRepeatCount: countOccurrences([
+          overviewDesktopTopText,
+          overviewDesktopDetailText,
+          firstScreenOverviewText,
+          mobileTop120Text,
+        ].join(' '), '只读边界'),
       },
       mobileIncidentEvidenceRows,
       mobileAlarmProbe: mobileAlertRect ? {

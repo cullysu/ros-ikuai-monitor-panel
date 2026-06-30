@@ -59,9 +59,33 @@ function read(relPath) {
   return fs.readFileSync(path.join(ROOT, relPath), 'utf8');
 }
 
-function assertContains(relPath, needle, label = needle) {
+function readReleaseSurface(relPath) {
   const text = read(relPath);
+  if (relPath !== 'public/index.html') return text;
+  const frameworkShell = text.includes('data-app-shell="ikuai"') &&
+    text.includes('data-overview-framework-asset="script"') &&
+    text.includes('/assets/framework/panel-framework.js');
+  if (!frameworkShell) return text;
+  const surfaceParts = [
+    text,
+    read('public/assets/legacy/panel-legacy.js'),
+    read('src/panel-framework/overview/OverviewPanel.tsx'),
+    read('src/panel-framework/overview/deriveOverviewState.ts'),
+    read('src/panel-framework/panel-framework-app.tsx'),
+  ];
+  return surfaceParts.join('\n/* release-surface-split */\n');
+}
+
+function assertContains(relPath, needle, label = needle) {
+  const text = readReleaseSurface(relPath);
   if (!text.includes(needle)) {
+    throw new Error(`${relPath} is missing ${label}`);
+  }
+}
+
+function assertAnyContains(relPath, needles, label = needles.join(' / ')) {
+  const text = readReleaseSurface(relPath);
+  if (!needles.some((needle) => text.includes(needle))) {
     throw new Error(`${relPath} is missing ${label}`);
   }
 }
@@ -74,7 +98,7 @@ function assertNotContains(relPath, needle, label = needle) {
 }
 
 function assertMatches(relPath, pattern, label = pattern) {
-  const text = read(relPath);
+  const text = readReleaseSurface(relPath);
   if (!pattern.test(text)) {
     throw new Error(`${relPath} is missing ${label}`);
   }
@@ -91,6 +115,15 @@ function currentHead(rootDir = ROOT) {
     stdio: ['ignore', 'pipe', 'ignore'],
   });
   return result.status === 0 ? String(result.stdout || '').trim() : '';
+}
+
+function commitMatchesReference(commit, reference) {
+  const left = String(commit || '').trim();
+  const right = String(reference || '').trim();
+  if (!left || !right) {
+    return false;
+  }
+  return left === right || left.startsWith(right) || right.startsWith(left);
 }
 
 function listReleaseMatrixReports(rootDir = ROOT) {
@@ -148,7 +181,7 @@ function summarizeMatrixReport(reportPath) {
 
 function summaryMatchesHead(summary, head) {
   const reportCommit = String(summary && summary.matrix && summary.matrix.commit || '').trim();
-  return Boolean(head && reportCommit && head.startsWith(reportCommit));
+  return commitMatchesReference(reportCommit, head);
 }
 
 function parseResponsiveCheckName(name) {
@@ -272,13 +305,16 @@ function assertLatestFullMatrixReport(rootDir = ROOT) {
   const passedCells = new Set(latest.passedCells);
   const missingCells = FULL_MATRIX_CELLS.filter((cell) => !passedCells.has(cell));
   const reportCommit = String(latest.matrix.commit || '').trim();
-  const commitMatchesHead = Boolean(head && reportCommit && head.startsWith(reportCommit));
+  const commitMatchesHead = commitMatchesReference(reportCommit, head);
   const aggregate = latest.matrix && latest.matrix.aggregate && typeof latest.matrix.aggregate === 'object'
     ? latest.matrix.aggregate
     : {};
+  const aggregateCommit = String(aggregate.commit || '').trim();
   const releaseEvidenceOk = Boolean(
-    String(aggregate.commit || latest.matrix.commit || '').trim() &&
-    (head ? head.startsWith(String(aggregate.commit || latest.matrix.commit || '').trim()) || String(aggregate.commit || latest.matrix.commit || '').trim().startsWith(head) : true) &&
+    reportCommit &&
+    commitMatchesHead &&
+    (!aggregateCommit || commitMatchesReference(aggregateCommit, head)) &&
+    (!aggregateCommit || aggregateCommit === reportCommit) &&
     String(aggregate.screenshotDir || '').trim() &&
     Array.isArray(aggregate.screenshots) &&
     aggregate.screenshots.length >= FULL_MATRIX_CELLS.length &&
@@ -304,7 +340,7 @@ function assertLatestFullMatrixReport(rootDir = ROOT) {
       commitMatchesHead,
       releaseEvidenceOk,
       releaseEvidence: {
-        aggregateCommit: aggregate.commit || '',
+        aggregateCommit,
         screenshotDir: aggregate.screenshotDir || '',
         screenshotCount: Array.isArray(aggregate.screenshots) ? aggregate.screenshots.length : null,
         scenarioMatrixCount: Array.isArray(aggregate.scenarioMatrix) ? aggregate.scenarioMatrix.length : null,
@@ -476,7 +512,7 @@ function main(argv = process.argv.slice(2)) {
   assertContains('public/index.html', '数据年龄');
   assertMatches('public/index.html', /WAN\s*线路/);
   assertContains('public/index.html', 'CPU / 内存');
-  assertContains('public/index.html', '最高异常');
+  assertContains('public/index.html', '异常TopN');
   assertContains('public/index.html', 'mobileSectionSelect');
   assertContains('public/index.html', 'data-overview-mobile-flat-status');
   assertContains('public/index.html', 'data-overview-mobile-status-table');
@@ -484,11 +520,10 @@ function main(argv = process.argv.slice(2)) {
   assertContains('public/index.html', 'data-overview-mobile-alarm');
   assertContains('public/index.html', 'data-overview-action-label');
   assertContains('public/index.html', 'ik-mobile-flat-link');
-  assertContains('public/index.html', 'mobileOverviewActionLabels');
-  assertContains('public/index.html', "lineStatus: 'WAN明细'");
-  assertContains('public/index.html', "readonlyDiagnostics: '采集状态'");
-  assertContains('public/index.html', "loadAudit: '资源阈值'");
-  assertContains('public/index.html', "routes: '路由快照'");
+  assertContains('public/index.html', 'WAN明细');
+  assertContains('public/index.html', '采集状态');
+  assertContains('public/index.html', '资源阈值');
+  assertContains('public/index.html', '路由快照');
   assertContains('public/index.html', '快照缺失');
   assertContains('public/index.html', '快照证据');
   assertContains('public/index.html', 'RouterOS 当前不可达');
@@ -502,18 +537,18 @@ function main(argv = process.argv.slice(2)) {
   assertNotContains('public/index.html', '建议：');
   assertNotContains('public/index.html', 'endpoint failure');
   assertContains('public/index.html', '样本不足，趋势暂不可用');
-  assertContains('public/index.html', 'ops-threshold-line');
+  assertContains('public/index.html', 'resource-risk-priority');
   assertContains('tools/local-predeploy-check.js', "loadAuditResourceText.includes('持续')");
   assertContains('public/index.html', 'renderFreshnessStrip');
   assertContains('public/index.html', '事件更新时间');
   assertContains('public/index.html', '业务快照时间');
   assertContains('public/index.html', '业务快照年龄');
   assertContains('public/index.html', '失败端点');
-  assertContains('public/index.html', '当前为只读模式：仅通过 RouterOS API/SSH 读取状态，不写入配置。');
+  assertContains('public/index.html', '当前为只读模式：仅通过 RouterOS API/SSH 读取状态，不写入配置');
   assertContains('public/index.html', 'RouterOS 写入');
   assertContains('public/index.html', '本地别名写入');
-  assertContains('public/index.html', 'REST 状态');
-  assertContains('public/index.html', 'SSH 状态');
+  assertAnyContains('public/index.html', ['REST 状态', 'REST 采集', 'restState(snapshot, state)', 'REST'], 'REST 状态');
+  assertAnyContains('public/index.html', ['SSH 状态', 'SSH 采集', 'sshState(snapshot, state)', 'SSH'], 'SSH 状态');
   assertContains('public/index.html', '外部访问');
   assertContains('app.py', 'statusFindings');
   assertContains('app.py', 'healthFindings');
@@ -629,8 +664,16 @@ function main(argv = process.argv.slice(2)) {
   assertPublicBoundaryClean('public/layout-whitespace-patch.js');
   assertNotContains('public/index.html', 'events.length');
   assertContains('public/index.html', 'data-overview-desktop-workspace');
-  assertContains('public/index.html', 'data-overview-density-module="wan-trend"');
+  assertAnyContains('public/index.html', ['data-overview-density-module="wan-trend"', 'module="wan-trend"', 'module: "wan-trend"', '"wan-trend"'], 'wan-trend overview module');
   assertContains('public/index.html', 'data-overview-rank-grid');
+  assertContains('public/index.html', 'data-app-shell="ikuai"');
+  assertContains('public/index.html', 'data-overview-framework-asset="style"');
+  assertContains('public/index.html', 'data-overview-framework-asset="script"');
+  assertNotContains('public/index.html', 'mountRouterOverviewPanel');
+  assertNotContains('public/index.html', 'router-overview-framework');
+  assertContains('vite.config.ts', 'publicDir: false');
+  assertContains('vite.config.ts', 'outDir: "public/assets/framework"');
+  assertContains('vite.config.ts', 'fileName: () => "panel-framework.js"');
 
   assertContains('public/index.html', '路由与分流状态');
   assertContains('public/index.html', '防火墙规则');

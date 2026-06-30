@@ -1,0 +1,202 @@
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background: #eef2f6;
+  color: #17202b;
+  font-family: "Microsoft YaHei UI", "Microsoft YaHei", "Segoe UI", sans-serif;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+.app.ik-shell {
+  display: grid;
+  grid-template-columns: 40px 168px minmax(0, 1fr);
+  min-height: 100vh;
+  background: #eef2f6;
+}
+
+.ik-rail {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 40px;
+  min-width: 40px;
+  min-height: 100vh;
+  padding: 8px 5px;
+  background: #172536;
+  box-sizing: border-box;
+}
+
+.ik-rail-group {
+  display: grid;
+  gap: 7px;
+}
+
+.ik-rail-spacer {
+  flex: 1 1 auto;
+}
+
+.ik-rail-button,
+.ik-rail-logo {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid #718096;
+  border-radius: 2px;
+  background: transparent;
+  color: #dbe7f5;
+  font-size: 12px;
+  line-height: 1;
+  text-decoration: none;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+.ik-rail-button.is-active,
+.ik-rail-logo.is-active {
+  border-color: #2f80d8;
+  background: #2367b1;
+  color: #fff;
+}
+
+.ik-rail-glyph {
+  display: block;
+  width: 12px;
+  height: 12px;
+  border: 1px solid currentColor;
+  border-radius: 2px;
+  opacity: .9;
+}
+
+.sidebar {
+  width: 168px;
+  min-width: 168px;
+  min-height: 100vh;
+  padding: 6px 8px;
+  border-right: 1px solid #d8dde6;
+  background: #f5f7fa;
+  box-sizing: border-box;
+}
+
+.ik-brand {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 28px;
+  margin-bottom: 6px;
+}
+
+.ik-brand-title {
+  color: #17202b;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.ik-brand-chip {
+  display: inline-block;
+  margin-top: 2px;
+  border: 1px solid #c9d2df;
+  padding: 0 4px;
+  color: #667184;
+  font-size: 10px;
+}
+
+.ik-brand-user {
+  width: 18px;
+  height: 18px;
+  border: 1px solid #c9d2df;
+  background: #fff;
+}
+
+.ik-search-pill {
+  display: block;
+  width: 100%;
+  min-height: 26px;
+  margin: 0 0 8px;
+  border: 1px solid #cad4e2;
+  border-radius: 2px;
+  background: #fff;
+  color: #445166;
+  font-size: 11px;
+  text-align: left;
+}
+
+.ik-menu-stack.is-empty {
+  display: none;
+}
+
+.frame {
+  display: flex;
+  min-width: 0;
+  min-height: 100vh;
+  flex-direction: column;
+}
+
+.topbar {
+  flex: 0 0 40px;
+  min-height: 40px;
+  border-bottom: 1px solid #d8dde6;
+  background: #fff;
+  overflow: hidden;
+}
+
+.topbar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 40px;
+  padding: 0 10px;
+  box-sizing: border-box;
+}
+
+.overview-title-only .topbar-header {
+  display: none;
+}
+
+.page-title {
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.page-subtitle.is-hidden,
+.mobile-section-select,
+.mobile-readonly-button,
+.status-strip,
+.toolbar-line,
+.refresh-toolbar {
+  display: none;
+}
+
+.content {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: visible;
+}
+
+.action-btn,
+.deploy-pill,
+.update-pill,
+.refresh-meta {
+  font: inherit;
+}
+
+@media (max-width: 760px) {
+  .app.ik-shell {
+    display: block;
+    min-height: 100vh;
+  }
+
+  .ik-rail,
+  .sidebar,
+  .topbar {
+    display: none !important;
+  }
+
+  .frame {
+    min-height: 0;
+  }
+}
