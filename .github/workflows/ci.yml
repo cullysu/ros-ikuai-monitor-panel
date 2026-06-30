@@ -61,12 +61,12 @@ jobs:
       - name: Docker Compose config
         run: docker compose --env-file .env.docker.example config --quiet
 
-      - name: Public browser predeploy smoke
+      - name: Public overview predeploy smoke
         run: |
           node tools/local-predeploy-check.js \
             --profile public \
             --viewports desktop=1366x900,narrow=390x844 \
-            --sections main-menu \
+            --sections overview \
             --scale-scenarios single,fleet \
             --strict-responsive \
             --out _acceptance/ci-public-predeploy

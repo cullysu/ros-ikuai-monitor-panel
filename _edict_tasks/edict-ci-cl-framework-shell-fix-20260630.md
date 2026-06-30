@@ -6,6 +6,7 @@
 - objective: Keep the framework-shell split intact while CI/CL and release checks validate the split release surface instead of the old monolithic index.
 - rollback_plan:
   - Restore the pre-task rollback branch or matching backup for any future CI/CL or verification-doc edits.
+  - Follow-up rollback point: `codex-rollback/before-ci-public-smoke-overview-20260630`.
   - Revert only the touched docs/checker/workflow paths if later implementation work expands beyond this record.
 
 ## Stage flow
@@ -36,6 +37,14 @@
 | Windows bundled asset verification | PASS | CI-equivalent PowerShell snippet for framework shell/assets/env defaults |
 | Docker Compose config | PASS | `docker compose --env-file .env.docker.example config --quiet` |
 | Diff check | PASS | `git diff --check` |
+| CI public overview smoke | PASS | `node tools/local-predeploy-check.js --profile public --viewports desktop=1366x900,narrow=390x844 --sections overview --scale-scenarios single,fleet --strict-responsive --out _acceptance/ci-public-predeploy-local` |
+| CI overview edge cases | PASS | `node tools/local-predeploy-check.js --profile public --viewports desktop=1366x900,narrow=390x844 --sections overview-edge-cases --scale-scenarios all-offline,no-snapshot,collection-down,resource-full,interfaces-down --strict-responsive --out _acceptance/ci-public-overview-edge-cases-local` |
+
+## Follow-up: Linux CI framework-shell smoke
+
+- symptom: GitHub Linux `Public browser predeploy smoke` failed after the framework-shell split because `--sections main-menu` expanded to legacy sections that the overview shell no longer renders.
+- fix: CI public smoke now checks `--sections overview`; `overview-edge-cases` no longer expands to the legacy `loadAudit` section; release-matrix completion only treats the full 7-scenario overview run as an explicit release matrix.
+- validation: local CI-equivalent smoke, edge-case matrix, full overview release matrix, release-readiness, collector regression, packaging preflight, overview static gate, TypeScript, build, and diff checks passed.
 
 Notes:
 

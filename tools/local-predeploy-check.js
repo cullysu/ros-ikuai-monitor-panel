@@ -186,7 +186,6 @@ function parseSections(value) {
       expanded.push(...DEFAULT_PUBLIC_SECTIONS);
     } else if (part === 'overview-edge-cases') {
       expanded.push('overview');
-      expanded.push('loadAudit');
     } else {
       expanded.push(part);
     }
@@ -7700,10 +7699,7 @@ async function main() {
     const matrixStateFile = matrixStatePath(report.matrix.commit);
     const matrixStartBatch = report.matrix.requestedScenarios.some((scenario) => ['single', 'fleet'].includes(scenario));
     const matrixFinishBatch = report.matrix.requestedScenarios.some((scenario) => EDGE_SCALE_SCENARIOS.includes(scenario));
-    const explicitOverviewReleaseMatrix = Array.isArray(args.sections) &&
-      args.sections.length === 1 &&
-      args.sections[0] === 'overview' &&
-      args.profile === 'public';
+    const explicitOverviewReleaseMatrix = isOverviewReleaseMatrix(args);
     const currentMatrixRun = summarizeMatrixRun(report, args, {
       ...report.matrix,
       startedAt: report.startedAt,

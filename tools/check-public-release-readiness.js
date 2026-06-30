@@ -453,7 +453,7 @@ function main(argv = process.argv.slice(2)) {
   assertContains('.github/workflows/container-image.yml', 'ghcr.io/${{ github.repository }}');
   assertContains('.github/workflows/ci.yml', '--scale-scenarios single,fleet');
   assertContains('.github/workflows/ci.yml', '--scale-scenarios all-offline,no-snapshot,collection-down,resource-full,interfaces-down');
-  assertContains('.github/workflows/ci.yml', '--sections main-menu');
+  assertContains('.github/workflows/ci.yml', '--sections overview');
   assertContains('.github/workflows/ci.yml', '--sections overview-edge-cases');
   assertContains('.github/workflows/ci.yml', '--viewports desktop=1366x900,narrow=390x844');
 
