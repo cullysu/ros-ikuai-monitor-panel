@@ -2931,6 +2931,11 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         .filter(nodeVisibleInFirstScreen)
       : [];
     const overviewMobile390NoKpi2x2Ok = !mobileOverview390x844 || mobile390Kpi2x2MarkerNodes.length === 0;
+    const mobile390OldFieldStackNodes = mobileOverview390x844
+      ? Array.from((sectionRoot || mobileFirstScreen)?.querySelectorAll('.ik-mobile-metric-grid, .ik-mobile-field-stack, .ik-home-operator-grid, .ik-home-operator-card, .ik-mobile-incident-card, [data-overview-mobile-field-stack], [data-overview-mobile-kpi-grid], [data-overview-mobile-kpi2x2]') || [])
+        .filter(nodeVisibleInFirstScreen)
+      : [];
+    const overviewMobile390NoOldKpiStackOk = !mobileOverview390x844 || mobile390OldFieldStackNodes.length === 0;
     const mobileFirstScreenPortMatrix = Boolean(mobileFirstScreen?.querySelector('.ro-port-matrix-row, .ro-wan-port-visual, [data-overview-wan-offline-bars], .ik-overview-module-matrix, .ik-no-snapshot-matrix-grid, .ik-no-snapshot-matrix-cell'));
     const mobileFirstScreenMiniVisual = Boolean(mobileFirstScreen?.querySelector('[data-overview-mobile-first-microchart], .ik-mobile-channel-line, .ik-mobile-interface-chain, .ik-mobile-channel-rail, .ik-mobile-resource-sparks, .ik-mobile-spark-panel, .ik-no-snapshot-mini-event'));
     const mobileFirstScreenChannelVisual = Boolean(mobileFirstScreen?.querySelector('.ik-mobile-channel-line, .ik-mobile-channel-rail, .ik-overview-channel-grid, .ik-overview-channel-cards, .ik-no-snapshot-channel-grid, .ik-no-snapshot-channel-card'));
@@ -2939,6 +2944,14 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       ? Array.from(mobileFirstScreen?.querySelectorAll('[data-overview-mobile-first-visual], [data-overview-mobile-first-microchart], .ik-mobile-spark-panel, .ik-mobile-resource-sparks, .ro-port-matrix-row, .ro-wan-port-visual, [data-overview-wan-offline-bars], .ik-mobile-channel-line, .ik-mobile-channel-rail, .ik-mobile-interface-chain, .ik-no-snapshot-chain, .ik-no-snapshot-chain-node') || [])
         .filter(nodeVisibleInFirstScreen)
       : [];
+    const mobile390ScenarioVisualNotDecorativeOk = !mobileOverview390x844 || mobileFirstScreenSceneVisualNodes.some((node) => {
+      const text = normalize(node.textContent || '');
+      return text.length >= 4 ||
+        node.hasAttribute('data-overview-chart-type') ||
+        node.hasAttribute('data-overview-scene-chart') ||
+        node.hasAttribute('data-overview-mobile-first-visual') ||
+        node.hasAttribute('data-overview-mobile-first-microchart');
+    });
     const mobile390AppHomeChromeNodes = mobileOverview390x844
       ? Array.from((sectionRoot || mobileFirstScreen)?.querySelectorAll('.ik-ios-top-nav, .ik-ios-hero-card, .ik-mobile-twin-cards, .ik-ios-resource-card, .ik-ios-rank-card, .ik-ios-bottom-tab, [data-overview-mobile-ios-nav="true"], [data-overview-mobile-hero-metrics], [data-overview-mobile-twin-cards], [data-overview-mobile-resource-card], [data-overview-mobile-rank-list], [data-overview-mobile-bottom-tab]') || [])
         .filter((node) => node.classList.contains('ik-ios-bottom-tab') ? nodeVisibleInViewport(node) : nodeVisibleInFirstScreen(node))
@@ -2994,9 +3007,10 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         mobile390FirstDetailRows.slice(0, 2).every(nodeVisibleInFirstScreen)
       )
     );
-    const overviewMobile390AppHomeFirstOk = mobile390AppHomeChromeOk && mobile390AppHomeTwinOk && mobile390AppHomeHeroMetricsOk && mobile390AppHomeResourceCardOk && mobile390AppHomeRankCardOk && mobile390AppHomeBottomTabOk && overviewMobile390FirstScreenNoTableOk;
+    const overviewMobile390AppHomeFirstOk = mobile390AppHomeChromeOk && mobile390AppHomeTwinOk && mobile390AppHomeHeroMetricsOk && mobile390AppHomeResourceCardOk && mobile390AppHomeRankCardOk && mobile390AppHomeBottomTabOk && overviewMobile390FirstScreenNoTableOk && overviewMobile390NoOldKpiStackOk && mobile390ScenarioVisualNotDecorativeOk;
     const overviewMobile390FirstScreenVisualOk = !mobileOverview390x844 || Boolean(
       mobile390AppHomeScenarioVisualOk &&
+      mobile390ScenarioVisualNotDecorativeOk &&
       mobile390AppHomeRingTrafficOk
     );
     const overviewSparseTrafficShells = Array.from(sectionRoot?.querySelectorAll('[data-overview-sparse-traffic-shell]') || [])
@@ -3466,6 +3480,12 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       .some(nodeVisibleInViewport);
     const overviewDesktopNoToyNavLeakOk = sectionName !== 'overview' || !isDesktopOverview || !Array.from(sectionRoot?.querySelectorAll('.ik-ios-top-nav, [data-overview-mobile-ios-nav="true"], .ik-ios-bottom-tab, [data-overview-mobile-bottom-tab]') || [])
       .some(nodeVisibleInViewport);
+    const overviewDesktopHierarchyMarkerOk = sectionName !== 'overview' || !isDesktopOverview || Boolean(
+      sectionRoot?.querySelector('[data-overview-summary]') &&
+      sectionRoot?.querySelector('[data-overview-status-bar]') &&
+      sectionRoot?.querySelector('[data-overview-anomaly-evidence]') &&
+      sectionRoot?.querySelector('[data-overview-desktop-detail]')
+    );
     const overviewMobileIosRouterHomeOk = !mobileOverview390x844 || Boolean(
       mobile390AppHomeChromeOk &&
       mobile390AppHomeTwinOk &&
@@ -6095,6 +6115,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewMobileResourceFullVerticalOk &&
       overviewDesktopNoMobileAppChromeOk &&
       overviewDesktopNoToyNavLeakOk &&
+      overviewDesktopHierarchyMarkerOk &&
       overviewDesktopDensityOk &&
       overviewStatusBusTripletOk &&
       overviewVisualBalanceOk &&
@@ -6550,6 +6571,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewMobile390NoAppHomeTitleClipOk,
       overviewDesktopNoMobileAppChromeOk,
       overviewDesktopNoToyNavLeakOk,
+      overviewDesktopHierarchyMarkerOk,
       overviewMobile390NoCoreTextClipOk,
       mobile390CoreTextClipSamples: mobile390CoreTextClipSamples.slice(0, 8),
       overviewMobileResourceFullVerticalOk,
@@ -6566,13 +6588,15 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         kpi2x2Count: mobile390Kpi2x2MarkerNodes.length,
         hasHeroVisual: mobile390AppHomeChromeNodes.some((node) => node.classList.contains('ik-ios-hero-card')),
         hasIosNav: mobile390AppHomeChromeNodes.some((node) => node.classList.contains('ik-ios-top-nav')),
-        hasHeroMetrics: mobile390AppHomeHeroMetricsOk,
-        hasTwinCards: mobile390AppHomeTwinOk,
-        hasResourceCard: mobile390AppHomeResourceCardOk,
-        hasRankCard: mobile390AppHomeRankCardOk,
-        hasRingTraffic: mobile390AppHomeRingTrafficOk,
-        hasMiniVisual: mobileFirstScreenMiniVisual,
-        hasPortMatrix: mobileFirstScreenPortMatrix,
+      hasHeroMetrics: mobile390AppHomeHeroMetricsOk,
+      hasTwinCards: mobile390AppHomeTwinOk,
+      hasResourceCard: mobile390AppHomeResourceCardOk,
+      hasRankCard: mobile390AppHomeRankCardOk,
+      hasRingTraffic: mobile390AppHomeRingTrafficOk,
+      noOldKpiStack: overviewMobile390NoOldKpiStackOk,
+      scenarioVisualNotDecorative: mobile390ScenarioVisualNotDecorativeOk,
+      hasMiniVisual: mobileFirstScreenMiniVisual,
+      hasPortMatrix: mobileFirstScreenPortMatrix,
         hasChannelVisual: mobileFirstScreenChannelVisual,
         hasChainVisual: mobileFirstScreenChainVisual,
         sceneVisualCount: mobileFirstScreenSceneVisualNodes.length,

@@ -56,6 +56,7 @@ assert(tsx.includes('data-overview-mobile-first-screen-contract="ios-topnav-netw
 assert(tsx.includes('data-overview-mobile-first-screen-no-table="true"'), 'mobile first-screen no-table marker missing');
 assert(tsx.includes('data-overview-mobile-first-screen-uses-microchart="true"'), 'mobile first-screen microchart marker missing');
 assert(tsx.includes('data-overview-mobile-no-desktop-collapse="true"'), 'mobile app-home must not be desktop/table collapse');
+assert(tsx.includes('data-overview-mobile-hero-metrics="download-upload-latency-connections"'), 'mobile hero must expose download/upload/latency/connections metrics');
 assert(!tsx.includes('MobileMetricGrid'), 'mobile app-home must not keep the old KPI grid component');
 assert(!tsx.includes('data-overview-mobile-kpi-grid'), 'mobile app-home must not keep the old 2x2 KPI grid marker');
 assert(!tsx.includes('data-overview-mobile-kpi2x2'), 'mobile app-home must not keep the old kpi2x2 marker');
@@ -73,6 +74,7 @@ assert(tsx.includes('ik-ios-ring-grid'), 'mobile ring metric grid missing');
 assert(tsx.includes('ik-ios-resource-card'), 'mobile thin resource card missing');
 assert(tsx.includes('ik-ios-resource-row'), 'mobile thin resource rows missing');
 assert(tsx.includes('ik-ios-rank-row'), 'mobile app-style traffic/rank rows missing');
+assert(tsx.includes('data-overview-mobile-first-visual="scenario-insight"'), 'mobile scenario visual marker missing');
 ['首页', 'WAN', '接口', '资源', '日志'].forEach((label) => {
   assert(bottomTabsBlock.includes(label), `mobile bottom tabs must include ${label}`);
 });
@@ -120,12 +122,15 @@ assert(predeploy.includes('mobile390AppHomeResourceCardOk'), 'predeploy must req
 assert(predeploy.includes('mobile390AppHomeRankCardOk'), 'predeploy must require app-home rank card');
 assert(predeploy.includes('mobile390AppHomeBottomTabOk'), 'predeploy must require app-home bottom tab');
 assert(predeploy.includes('overviewMobile390NoKpi2x2Ok') && predeploy.includes('mobile390Kpi2x2MarkerNodes'), 'predeploy must reject visible mobile 2x2 KPI markers');
+assert(predeploy.includes('overviewMobile390NoOldKpiStackOk'), 'predeploy must reject old mobile KPI field-stack visuals');
 assert(!predeploy.includes('mobile390AppHomeKpiOk') && !predeploy.includes('hasKpi2x2'), 'predeploy must not keep old kpi2x2 mobile gate names');
 assert(predeploy.includes('overviewDesktopNoMobileAppChromeOk'), 'predeploy must reject mobile app chrome leaking into desktop');
 assert(predeploy.includes('overviewDesktopNoToyNavLeakOk'), 'predeploy must reject mobile toy nav leakage on desktop');
+assert(predeploy.includes('overviewDesktopHierarchyMarkerOk'), 'predeploy must require desktop conclusion/key-metric/evidence hierarchy markers');
 assert(predeploy.includes('nodeVisibleInViewport'), 'predeploy must evaluate fixed/sticky bottom tab as viewport chrome');
 assert(predeploy.includes('overviewMobile390NoAppHomeTitleClipOk'), 'predeploy must reject title overlap risk / ellipsis on app-home core text');
 assert(predeploy.includes('[data-overview-mobile-primary-title]') && predeploy.includes('.ik-ios-nav-title'), 'predeploy must probe app-home titles for clipping risk');
+assert(predeploy.includes('mobile390ScenarioVisualNotDecorativeOk'), 'predeploy must reject purely decorative scenario visuals');
 assert(predeploy.includes('mobile390MainProgressBarRecords') && predeploy.includes('height >= 6'), 'predeploy must reject coarse main progress bars');
 assert(predeploy.includes('requestedMobile390x844') && predeploy.includes('window.innerWidth >= 375') && predeploy.includes('window.innerWidth <= 430'), 'predeploy must target the 390x844 mobile viewport with browser-tolerant bounds');
 

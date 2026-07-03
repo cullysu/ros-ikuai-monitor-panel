@@ -591,7 +591,7 @@ function Module({ title, subtitle, module, tone = "trust", headers, rows, trust,
       data-overview-top5-total={module === "resource-interface-top5" ? rows.length : undefined}
       data-overview-wan-offline-bars={module === "wan-offline-bars" ? "true" : undefined}
       data-overview-wan-mini-table={isWanLedger ? "true" : undefined}
-      data-overview-anomaly-evidence={isAnomalyEvidence ? "true" : undefined}
+      data-overview-anomaly-evidence={primaryEvidenceModules.has(module) || isAnomalyEvidence ? "true" : undefined}
       data-overview-rank-grid={isRankLedger ? "true" : undefined}
       data-overview-resource-interface-top5-first-screen={module === "resource-interface-top5" ? "true" : undefined}
       data-overview-evidence-weight={primaryEvidenceModules.has(module) ? "primary" : isSecondaryEvidence ? "secondary" : "support"}
@@ -987,7 +987,7 @@ function mobileTwinCards(snapshot: OverviewRawSnapshot, state: OverviewDerivedSt
     {
       key: "wan",
       title: "WAN",
-      value: state.scenario === "no-snapshot" ? "不展示" : `${formatNumber(state.facts.wan.online)}/${formatNumber(state.facts.wan.total)}`,
+      value: state.scenario === "no-snapshot" ? "\u4e0d\u5c55\u793a" : `${formatNumber(state.facts.wan.online)}/${formatNumber(state.facts.wan.total)}`,
       sub: state.scenario === "all-offline"
         ? `${formatNumber(state.facts.wan.offline)} \u6761\u79bb\u7ebf`
         : state.scenario === "no-snapshot"
@@ -999,7 +999,7 @@ function mobileTwinCards(snapshot: OverviewRawSnapshot, state: OverviewDerivedSt
       key: "collection",
       title: "\u91c7\u96c6",
       value: state.scenario === "collection-down" ? "\u7f13\u5b58" : state.scenario === "no-snapshot" ? "\u5f85\u786e\u8ba4" : rest.value === "\u53ef\u7528" && ssh.value === "\u53ef\u7528" ? "\u53ef\u7528" : "\u5f02\u5e38",
-      sub: `REST ${rest.value} · SSH ${ssh.value} · ${recent}`,
+      sub: `REST ${rest.value} / SSH ${ssh.value} / ${recent}`,
       tone: state.facts.collection.credibilityTone,
     },
   ];
@@ -1180,15 +1180,18 @@ function mobileLatencyText(snapshot: OverviewRawSnapshot, state: OverviewDerived
 function mobileHeroStats(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): Array<{ label: string; value: string; tone: OverviewTone }> {
   const totals = trafficTotals(snapshot);
   const noBusiness = state.scenario === "no-snapshot";
+  const conn = toNumber(state.facts.connections.total);
   return [
-    { label: "下载", value: noBusiness ? "不展示" : mobileShortRate(totals.down), tone: noBusiness ? "missing" : "ok" },
-    { label: "上传", value: noBusiness ? "不展示" : mobileShortRate(totals.up), tone: noBusiness ? "missing" : "ok" },
+    { label: "\u4e0b\u8f7d", value: noBusiness ? "\u4e0d\u5c55\u793a" : mobileShortRate(totals.down), tone: noBusiness ? "missing" : "ok" },
+    { label: "\u4e0a\u4f20", value: noBusiness ? "\u4e0d\u5c55\u793a" : mobileShortRate(totals.up), tone: noBusiness ? "missing" : "ok" },
+    { label: "\u5ef6\u8fdf", value: mobileLatencyText(snapshot, state), tone: noBusiness || state.scenario === "collection-down" ? "warn" : "trust" },
+    { label: "\u8fde\u63a5", value: noBusiness ? "\u4e0d\u5c55\u793a" : formatCompact(conn), tone: conn > 50000 ? "warn" : noBusiness ? "missing" : "trust" },
   ];
 }
 
 function mobileHeroSeries(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): { up: string; down: string } {
   const totals = trafficTotals(snapshot);
-  const base = state.scenario === "resource-full"
+  const sceneBase = state.scenario === "resource-full"
     ? Math.max(toNumber(state.facts.resource.cpu), toNumber(state.facts.resource.memory), toNumber(state.facts.resource.disk))
     : state.scenario === "all-offline"
       ? Math.max(1, state.facts.wan.offline)
@@ -1196,10 +1199,13 @@ function mobileHeroSeries(snapshot: OverviewRawSnapshot, state: OverviewDerivedS
         ? Math.max(1, state.facts.interfaces.down)
         : state.scenario === "no-snapshot" || state.scenario === "collection-down"
           ? 42
-          : Math.max(1, totals.down, totals.up);
+          : 1;
+  const downBase = Math.max(1, totals.down, sceneBase);
+  const upBase = Math.max(1, totals.up, sceneBase * 0.58);
+  const max = Math.max(100, downBase, upBase);
   return {
-    down: mobileSparkPoints(mobileTrendValues(base), Math.max(base, 100), 190, 48),
-    up: mobileSparkPoints(mobileTrendValues(Math.max(1, base * 0.62)), Math.max(base, 100), 190, 48),
+    down: mobileSparkPoints(mobileTrendValues(downBase), max, 190, 48),
+    up: mobileSparkPoints(mobileTrendValues(upBase), max, 190, 48),
   };
 }
 
@@ -1224,10 +1230,10 @@ function mobileHeroSupportText(objectValue: string, impactValue: string, trustVa
 function MobileIosTopNav({ snapshot, state }: OverviewPanelProps) {
   const capsule = mobileDeviceCapsule(snapshot, state);
   const status = mobileNavStatus(state);
-  const navMeta = `${capsule.version} · 最近 ${capsule.recent}`;
-  return <nav className="ik-ios-top-nav" aria-label="移动端导航" data-overview-mobile-ios-nav="true">
-    <button type="button" aria-label="返回" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5 8 12l7 7" /></svg></button>
-    <div className="ik-ios-nav-title"><b>{capsule.device || "爱快路由"}</b><span>{navMeta}</span></div>
+  const navMeta = `\u5feb\u7167 ${capsule.recent}`;
+  return <nav className="ik-ios-top-nav" aria-label="\u79fb\u52a8\u7aef\u5bfc\u822a" data-overview-mobile-ios-nav="true" data-overview-mobile-top="device-status-snapshot">
+    <button type="button" aria-label="\u8fd4\u56de" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5 8 12l7 7" /></svg></button>
+    <div className="ik-ios-nav-title"><b>{capsule.device || "\u7231\u5feb\u8def\u7531"}</b><span>{navMeta}</span></div>
     <strong className="ik-ios-status-pill" data-tone={status.tone}><i aria-hidden="true" />{status.label}</strong>
   </nav>;
 }
@@ -1235,21 +1241,16 @@ function MobileIosTopNav({ snapshot, state }: OverviewPanelProps) {
 function MobileHeroStatusCard({ snapshot, state }: OverviewPanelProps) {
   const stats = mobileHeroStats(snapshot, state);
   const series = mobileHeroSeries(snapshot, state);
-  const facts = mobileMainFacts(snapshot, state);
-  const conclusion = facts.find((item) => item.label === "结论")?.value || state.verdict.topLabel || mobileNavStatus(state).label;
-  const object = facts.find((item) => item.label === "对象")?.value || state.facts.wan.text;
-  const impact = facts.find((item) => item.label === "影响")?.value || state.facts.route.label;
-  const trust = facts.find((item) => item.label === "可信度")?.value || moduleTrust(state);
-  return <section className="ik-mobile-conclusion-card ik-ios-hero-card" data-tone={mobileVerdictTone(state)} data-overview-mobile-primary-card="conclusion" data-overview-mobile-main-card data-overview-mobile-ios-hero="true" data-overview-mobile-first-screen-hero="true">
+  const conclusion = state.verdict.topLabel || mobileNavStatus(state).label;
+  return <section className="ik-mobile-conclusion-card ik-ios-hero-card" data-tone={mobileVerdictTone(state)} data-overview-mobile-primary-card="network-status" data-overview-mobile-main-card data-overview-mobile-ios-hero="true" data-overview-mobile-first-screen-hero="true">
     <div className="ik-ios-hero-head">
       <span data-overview-mobile-primary-title>{mobileHeroSectionTitle(state)}</span>
       <b data-overview-primary-conclusion="true">{conclusion}</b>
-      <em data-overview-mobile-hero-support>{mobileHeroSupportText(object, impact, trust)}</em>
     </div>
     <div className="ik-ios-hero-stats" data-overview-mobile-hero-metrics="download-upload-latency-connections">
       {stats.map((item) => <span key={item.label} data-tone={item.tone}><em>{item.label}</em><strong>{item.value}</strong></span>)}
     </div>
-    <svg className="ik-ios-hero-chart" viewBox="0 0 190 48" role="img" aria-label="\u72b6\u6001\u8d8b\u52bf" data-overview-mobile-first-visual="traffic-mini-line" data-overview-mobile-first-microchart="true" data-overview-chart-type="mini-line">
+    <svg className="ik-ios-hero-chart" viewBox="0 0 190 48" role="img" aria-label="\u7f51\u7edc\u72b6\u6001\u8d8b\u52bf" data-overview-mobile-first-visual="traffic-mini-line" data-overview-mobile-first-microchart="true" data-overview-chart-type="mini-line">
       <path className="ik-mobile-spark-grid" d="M0 12 H190 M0 30 H190 M0 46 H190" />
       <polyline className="ik-mobile-spark-line is-down" points={series.down} />
       <polyline className="ik-mobile-spark-line is-up" points={series.up} />
@@ -1273,7 +1274,7 @@ function MobileRingMetrics({ snapshot, state }: OverviewPanelProps) {
       { label: "\u78c1\u76d8", value: formatPercent(state.facts.resource.disk, 0), percent: clampPercent(state.facts.resource.disk), threshold: 90, peak: 97, tone: state.facts.resource.disk >= 90 ? "danger" as OverviewTone : "ok" as OverviewTone },
     ];
   return <section className="ik-ios-rings-card ik-ios-resource-card" data-overview-mobile-ring-metrics="thin-bars" data-overview-mobile-resource-card="cpu-memory-disk" data-overview-mobile-metrics data-overview-mobile-business-metrics={snapshotMissing ? "hidden-no-snapshot" : "visible"}>
-    <header><span>{snapshotMissing ? "\u4e1a\u52a1\u6307\u6807" : "\u8d44\u6e90\u72b6\u6001"}</span><em>{snapshotMissing ? "\u65e0\u4e1a\u52a1\u5feb\u7167\uff0c\u4e1a\u52a1\u6570\u636e\u4e0d\u5c55\u793a" : "CPU / \u5185\u5b58 / \u78c1\u76d8"}</em></header>
+    <header><span>{snapshotMissing ? "\u4e1a\u52a1\u6307\u6807" : "\u8d44\u6e90\u72b6\u6001"}</span><em>{snapshotMissing ? "\u65e0\u4e1a\u52a1\u5feb\u7167\uff0c\u4e1a\u52a1\u6570\u636e\u4e0d\u5c55\u793a" : "\u5904\u7406\u5668 / \u5185\u5b58 / \u78c1\u76d8"}</em></header>
     <div className="ik-ios-ring-grid ik-ios-resource-grid">
       {resourceMetrics.map((metric) => <div className="ik-ios-ring-item ik-ios-resource-row" data-tone={metric.tone} key={metric.label} style={{ "--ring-value": String(metric.percent) } as CSSProperties} title={`阈值 ${metric.threshold}% / 峰值 ${metric.peak}%`}>
         <span>{metric.label}</span>
@@ -1289,7 +1290,7 @@ function mobileExceptionSummary(snapshot: OverviewRawSnapshot, state: OverviewDe
   const recent = latestSuccess(snapshot, state.scenario);
   switch (state.scenario) {
     case "no-snapshot":
-      return { title: "\u5f02\u5e38\u5f71\u54cd", value: "\u4e1a\u52a1\u6570\u636e\u4e0d\u5c55\u793a", note: `RouterOS \u5f53\u524d\u4e0d\u53ef\u8fbe / \u6700\u8fd1 ${recent}`, tone: "warn" };
+      return { title: "\u5f02\u5e38\u5f71\u54cd", value: "\u4e1a\u52a1\u6570\u636e\u4e0d\u5c55\u793a", note: `\u91c7\u96c6\u94fe\u8def\u4e0d\u53ef\u8fbe / \u6700\u8fd1 ${recent}`, tone: "warn" };
     case "collection-down":
       return { title: "\u5f02\u5e38\u5f71\u54cd", value: "\u91c7\u96c6\u901a\u9053\u5f02\u5e38", note: `\u5f53\u524d\u5c55\u793a\u7f13\u5b58\u5feb\u7167 / \u6700\u8fd1 ${recent}`, tone: "warn" };
     case "resource-full":
@@ -1348,13 +1349,13 @@ function mobileRankRows(snapshot: OverviewRawSnapshot, state: OverviewDerivedSta
 function MobileTrafficRank({ snapshot, state }: OverviewPanelProps) {
   const rows = mobileRankRows(snapshot, state).slice(0, state.scenario === "no-snapshot" ? 3 : 4);
   const title = state.scenario === "no-snapshot"
-    ? "展示边界"
+    ? "\u5c55\u793a\u8fb9\u754c"
     : state.scenario === "interfaces-down"
-      ? "接口影响"
+      ? "\u63a5\u53e3\u5f71\u54cd"
       : state.scenario === "all-offline"
-        ? "WAN 明细"
-        : "实时流量排行";
-  return <section className="ik-ios-rank-card" data-overview-mobile-rank-list="app-device-list" data-overview-mobile-card-list="true">
+        ? "WAN \u72b6\u6001"
+        : "\u5b9e\u65f6\u6d41\u91cf";
+  return <section className="ik-ios-rank-card" data-overview-mobile-rank-list="app-list" data-overview-mobile-card-list="true">
     <header><span>{title}</span><em>{latestSuccess(snapshot, state.scenario)}</em></header>
     <div className="ik-ios-rank-list">
       {rows.map((row, index) => <div className="ik-ios-rank-row" data-tone={row.tone} key={`${row.name}-${index}`}>
