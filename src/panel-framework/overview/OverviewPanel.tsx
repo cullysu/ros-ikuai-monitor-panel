@@ -1054,39 +1054,36 @@ function mobileTwinCards(snapshot: OverviewRawSnapshot, state: OverviewDerivedSt
   const recent = latestSuccess(snapshot, state.scenario);
   const rest = restState(snapshot, state);
   const ssh = sshState(snapshot, state);
-  return [
-    {
-      key: "wan",
-      title: "WAN",
-      value: state.scenario === "no-snapshot" ? "\u4e0d\u5c55\u793a" : `${formatNumber(state.facts.wan.online)}/${formatNumber(state.facts.wan.total)}`,
-      sub: state.scenario === "all-offline"
-        ? `${formatNumber(state.facts.wan.offline)} \u6761\u79bb\u7ebf`
-        : state.scenario === "no-snapshot"
-          ? "\u65e0\u4e1a\u52a1\u5feb\u7167"
-          : `\u8def\u7531 ${state.facts.route.label}`,
-      tone: state.facts.wan.allOffline ? "danger" as OverviewTone : state.scenario === "no-snapshot" ? "missing" as OverviewTone : "ok" as OverviewTone,
-    },
-    {
-      key: "collection",
-      title: "\u91c7\u96c6",
-      value: state.scenario === "collection-down" ? "\u7f13\u5b58" : state.scenario === "no-snapshot" ? "\u5f85\u786e\u8ba4" : rest.value === "\u53ef\u7528" && ssh.value === "\u53ef\u7528" ? "\u53ef\u7528" : "\u5f02\u5e38",
-      sub: `REST ${rest.value} / SSH ${ssh.value} / ${recent}`,
-      tone: state.facts.collection.credibilityTone,
-    },
-  ];
+  const wanCard = {
+    key: "wan",
+    title: "WAN",
+    value: state.scenario === "no-snapshot" ? "\u4e0d\u5c55\u793a" : `${formatNumber(state.facts.wan.online)}/${formatNumber(state.facts.wan.total)}`,
+    sub: state.scenario === "all-offline"
+      ? `${formatNumber(state.facts.wan.offline)} \u6761\u79bb\u7ebf`
+      : state.scenario === "no-snapshot"
+        ? "\u65e0\u4e1a\u52a1\u5feb\u7167"
+        : `\u8def\u7531 ${state.facts.route.label}`,
+    tone: state.facts.wan.allOffline ? "danger" as OverviewTone : state.scenario === "no-snapshot" ? "missing" as OverviewTone : "ok" as OverviewTone,
+  };
+  const collectionCard = {
+    key: "collection",
+    title: "\u91c7\u96c6",
+    value: state.scenario === "collection-down" ? "\u7f13\u5b58" : state.scenario === "no-snapshot" ? "\u5f85\u786e\u8ba4" : rest.value === "\u53ef\u7528" && ssh.value === "\u53ef\u7528" ? "\u53ef\u7528" : "\u5f02\u5e38",
+    sub: `REST ${rest.value} / SSH ${ssh.value} / ${recent}`,
+    tone: state.facts.collection.credibilityTone,
+  };
+  return state.scenario === "collection-down" || state.scenario === "no-snapshot"
+    ? [collectionCard, wanCard]
+    : [wanCard, collectionCard];
 }
 
 function MobileTwinCards({ snapshot, state }: OverviewPanelProps) {
   const cards = mobileTwinCards(snapshot, state);
-  return <section className="ik-mobile-twin-cards" data-overview-mobile-twin-cards="wan-collection" data-overview-mobile-secondary-cards="wan-collection">
+  return <section className="ik-mobile-twin-cards ik-mobile-duo-panel" data-overview-mobile-twin-cards="wan-collection" data-overview-mobile-secondary-cards="wan-collection" data-overview-mobile-app-duo-panel="wan-collection-no-kpi-grid">
     {cards.map((card) => (
-      <article className="ik-mobile-twin-card" data-tone={card.tone} data-overview-mobile-twin-card={card.key} key={card.key}>
-        <span className="ik-mobile-status-strip">
-          <span>{card.title}</span>
-          <b>{card.value}</b>
-        </span>
-        <i className="ik-mobile-card-hairline" aria-hidden="true" />
-        <em className="ik-mobile-status-subcopy">{card.sub}</em>
+      <article className="ik-mobile-twin-card ik-mobile-duo-card" data-tone={card.tone} data-overview-mobile-core-block={card.key} data-overview-mobile-twin-card={card.key} key={card.key}>
+        <div className="ik-mobile-duo-head ik-mobile-status-strip"><em>{card.title}</em><span>{card.title}</span><b>{card.value}</b></div>
+        <small className="ik-mobile-status-subcopy">{card.sub}</small>
       </article>
     ))}
   </section>;
@@ -1363,22 +1360,22 @@ function MobileRingMetrics({ snapshot, state }: OverviewPanelProps) {
   const snapshotMissing = state.scenario === "no-snapshot";
   const resourceMetrics = snapshotMissing
     ? [
-      { label: "CPU", value: "-", percent: 0, threshold: 85, peak: 96, tone: "missing" as OverviewTone },
-      { label: "\u5185\u5b58", value: "-", percent: 0, threshold: 85, peak: 92, tone: "missing" as OverviewTone },
-      { label: "\u78c1\u76d8", value: "-", percent: 0, threshold: 90, peak: 97, tone: "missing" as OverviewTone },
+      { label: "\u5904\u7406\u5668", value: "\u2014", percent: 0, threshold: 85, peak: 96, tone: "missing" as OverviewTone },
+      { label: "\u5185\u5b58", value: "\u2014", percent: 0, threshold: 85, peak: 92, tone: "missing" as OverviewTone },
+      { label: "\u78c1\u76d8", value: "\u2014", percent: 0, threshold: 90, peak: 97, tone: "missing" as OverviewTone },
     ]
     : [
-      { label: "CPU", value: formatPercent(state.facts.resource.cpu, 0), percent: clampPercent(state.facts.resource.cpu), threshold: 85, peak: 96, tone: state.facts.resource.cpu >= 85 ? "danger" as OverviewTone : "ok" as OverviewTone },
+      { label: "\u5904\u7406\u5668", value: formatPercent(state.facts.resource.cpu, 0), percent: clampPercent(state.facts.resource.cpu), threshold: 85, peak: 96, tone: state.facts.resource.cpu >= 85 ? "danger" as OverviewTone : "ok" as OverviewTone },
       { label: "\u5185\u5b58", value: formatPercent(state.facts.resource.memory, 0), percent: clampPercent(state.facts.resource.memory), threshold: 85, peak: 92, tone: state.facts.resource.memory >= 85 ? "danger" as OverviewTone : "ok" as OverviewTone },
       { label: "\u78c1\u76d8", value: formatPercent(state.facts.resource.disk, 0), percent: clampPercent(state.facts.resource.disk), threshold: 90, peak: 97, tone: state.facts.resource.disk >= 90 ? "danger" as OverviewTone : "ok" as OverviewTone },
     ];
-  return <section className="ik-ios-rings-card ik-ios-resource-card" data-overview-mobile-ring-metrics="thin-bars" data-overview-mobile-resource-card="cpu-memory-disk" data-overview-mobile-resource-emphasis="after-secondary-cards" data-overview-mobile-resource-rows="cpu-memory-disk-only" data-overview-mobile-metrics data-overview-mobile-business-metrics={snapshotMissing ? "hidden-no-snapshot" : "visible"}>
-    <header><span>{snapshotMissing ? "\u4e1a\u52a1\u6307\u6807" : "\u8d44\u6e90\u72b6\u6001"}</span><em>{snapshotMissing ? "\u65e0\u4e1a\u52a1\u5feb\u7167\uff0c\u4e1a\u52a1\u6570\u636e\u4e0d\u5c55\u793a" : "CPU / \u5185\u5b58 / \u78c1\u76d8"}</em></header>
-    <div className="ik-ios-ring-grid ik-ios-resource-grid ik-mobile-resource-sparks is-vertical-ledger" data-overview-scene-chart="mobile-resource-vertical-ledger">
-      {resourceMetrics.map((metric) => <div className="ik-ios-ring-item ik-ios-resource-row ik-mobile-resource-spark" data-tone={metric.tone} key={metric.label} style={{ "--ring-value": String(metric.percent) } as CSSProperties} title={`threshold ${metric.threshold}% / peak ${metric.peak}%`}>
-        <span>{metric.label}</span>
-        <i aria-hidden="true"><em /></i>
-        <b>{metric.value}</b>
+  return <section className="ik-ios-rings-card ik-ios-resource-card" data-overview-mobile-core-block="resource" data-overview-mobile-ring-metrics="thin-bars" data-overview-mobile-resource-card="cpu-memory-disk" data-overview-mobile-resource-emphasis="after-secondary-cards" data-overview-mobile-resource-rows="cpu-memory-disk-only" data-overview-mobile-metrics data-overview-mobile-business-metrics={snapshotMissing ? "hidden-no-snapshot" : "visible"}>
+    <header className="ik-mobile-status-strip"><span>{"\u8d44\u6e90"}</span><em className="ik-mobile-status-subcopy">{snapshotMissing ? "\u65e0\u4e1a\u52a1\u5feb\u7167" : "\u5904\u7406\u5668 / \u5185\u5b58 / \u78c1\u76d8"}</em></header>
+    <div className="ik-ios-ring-grid ik-ios-resource-meters ik-mobile-resource-sparks is-vertical-ledger" data-overview-scene-chart="mobile-resource-vertical-ledger">
+      {resourceMetrics.map((metric) => <div className="ik-ios-resource-meter ik-mobile-resource-spark" data-overview-mobile-resource-row-marker="ik-ios-resource-row" data-tone={metric.tone} key={metric.label} style={{ "--meter-value": `${metric.percent}%` } as CSSProperties} title={`\u9608\u503c ${metric.threshold}% / \u5cf0\u503c ${metric.peak}%`}>
+        <span><em>{metric.label}</em><b>{metric.value}</b></span>
+        <i aria-hidden="true"><strong /></i>
+        <small>{snapshotMissing ? "\u65e0\u5feb\u7167" : `\u9608${metric.threshold} \u5cf0${metric.peak}`}</small>
       </div>)}
     </div>
   </section>;
@@ -1464,8 +1461,8 @@ function mobileRankTitle(state: OverviewDerivedState): string {
 
 function MobileTrafficRank({ snapshot, state }: OverviewPanelProps) {
   const rows = mobileRankRows(snapshot, state).slice(0, state.scenario === "no-snapshot" ? 3 : 4);
-  return <section className="ik-ios-rank-card" data-overview-mobile-rank-list="topn-app-list" data-overview-mobile-card-list="true" data-overview-mobile-topn-app-list="true">
-    <header><span>{mobileRankTitle(state)}</span><em>{latestSuccess(snapshot, state.scenario)}</em></header>
+  return <section className="ik-ios-rank-card" data-overview-mobile-core-block="recent-success" data-overview-mobile-rank-list="topn-app-list" data-overview-mobile-card-list="true" data-overview-mobile-topn-app-list="true">
+    <header className="ik-mobile-status-strip"><span>{"\u6700\u8fd1\u6210\u529f"}</span><b>{latestSuccess(snapshot, state.scenario)}</b><em className="ik-mobile-status-subcopy">{mobileRankTitle(state)}</em></header>
     <div className="ik-ios-rank-list">
       {rows.map((row, index) => <div className="ik-ios-rank-row" data-tone={row.tone} key={`${row.name}-${index}`}>
         <i aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 7h12M8 12h8M10 17h4" /></svg></i>
@@ -1744,6 +1741,7 @@ function MobileFlatCompactLine({ snapshot, state }: OverviewPanelProps) {
 }
 
 function MobileLedger({ snapshot, state }: OverviewPanelProps) {
+  const resourceFirst = state.scenario === "resource-full";
   return (
     <div
       className="ro-mobile-ledger ik-mobile-app-home ik-ios-router-home"
@@ -1752,7 +1750,7 @@ function MobileLedger({ snapshot, state }: OverviewPanelProps) {
       data-overview-mobile-ios-router-home="true"
       data-overview-mobile-app-home="ikuai40-ios-router-home"
       data-overview-mobile-home-mode="ios-app-home"
-      data-overview-mobile-home-layout="ios-topnav-network-hero-twin-cards-resource-exception-rank-tabs"
+      data-overview-mobile-home-layout="ios-topnav-network-hero-twin-cards-resource-exception-rank-tabs" data-overview-mobile-home-layout-v70="ios-topnav-overlapped-hero-duo-resource-rank-tabs"
       data-overview-mobile-first-screen="app-home"
       data-overview-mobile-first-screen-contract="ios-topnav-network-hero-traffic-metrics-twin-cards-resource-exception-rank-bottom-tab"
       data-overview-mobile-first-screen-visual="single-hero-microchart-no-standalone-duplicate"
@@ -1762,13 +1760,14 @@ function MobileLedger({ snapshot, state }: OverviewPanelProps) {
       data-overview-mobile-raw-routeros-policy="hide-before-detail"
       data-overview-mobile-alert={state.verdict.level}
       data-overview-mobile-scene={state.scenario}
-      data-overview-mobile-app-home-acceptance="single-topbar-network-hero-secondary-wan-collection-resource-emphasis"
+      data-overview-mobile-app-home-acceptance="ios-router-app-no-kpi-grid-no-title-collision"
     >
-      <div className="ik-ios-home-stack" data-overview-mobile-home-stack="topbar-hero-secondary-wan-collection-resource-rank">
+      <div className="ik-ios-home-stack" data-overview-mobile-flat-status="app-home-core" data-overview-mobile-home-stack="topbar-hero-secondary-wan-collection-resource-rank">
         <MobileIosTopNav snapshot={snapshot} state={state} />
         <MobileHeroStatusCard snapshot={snapshot} state={state} />
+        {resourceFirst ? <MobileRingMetrics snapshot={snapshot} state={state} /> : null}
         <MobileTwinCards snapshot={snapshot} state={state} />
-        <MobileRingMetrics snapshot={snapshot} state={state} />
+        {!resourceFirst ? <MobileRingMetrics snapshot={snapshot} state={state} /> : null}
         <MobileExceptionCard snapshot={snapshot} state={state} />
         <MobileTrafficRank snapshot={snapshot} state={state} />
         <MobileBottomTabs />

@@ -18175,3 +18175,391 @@
     align-items: start !important;
   }
 }
+
+
+/* Edict v70 product correction: real iOS router app rhythm, no KPI four-grid, no desktop toy tabs. */
+@media (max-width: 760px) {
+  .router-overview-framework .ik-ios-home-stack {
+    gap: 11px !important;
+  }
+
+  .router-overview-framework .ik-ios-hero-card {
+    min-height: 202px !important;
+    max-height: none !important;
+    grid-template-rows: auto 58px 56px !important;
+    margin-bottom: -22px !important;
+    padding: 17px 16px 18px !important;
+    border-radius: 22px !important;
+    box-shadow: 0 14px 32px rgba(30, 80, 130, .075) !important;
+  }
+
+  .router-overview-framework .ik-ios-hero-head span {
+    color: #526579 !important;
+    font-size: 13px !important;
+  }
+
+  .router-overview-framework .ik-ios-hero-head b {
+    font-size: clamp(27px, 7.3vw, 32px) !important;
+    letter-spacing: -.035em !important;
+  }
+
+  .router-overview-framework .ik-ios-hero-stats {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, .8fr) !important;
+    gap: 8px !important;
+  }
+
+  .router-overview-framework .ik-ios-hero-major,
+  .router-overview-framework .ik-ios-hero-minors {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+
+  .router-overview-framework .ik-ios-hero-stats span {
+    min-height: 54px !important;
+    border-radius: 16px !important;
+    background: rgba(255,255,255,.86) !important;
+  }
+
+  .router-overview-framework .ik-ios-hero-stats span.is-primary strong {
+    font-size: clamp(25px, 6.8vw, 33px) !important;
+  }
+
+  .router-overview-framework .ik-ios-hero-stats span.is-chip strong {
+    font-size: clamp(18px, 4.8vw, 22px) !important;
+  }
+
+  .router-overview-framework .ik-ios-hero-chart {
+    height: 54px !important;
+  }
+
+  .router-overview-framework .ik-mobile-duo-panel {
+    position: relative !important;
+    z-index: 2 !important;
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+    padding: 0 8px !important;
+  }
+
+  .router-overview-framework .ik-mobile-duo-card {
+    min-height: 82px !important;
+    display: grid !important;
+    gap: 8px !important;
+    padding: 13px 14px !important;
+    border: 1px solid rgba(229,236,245,.96) !important;
+    border-radius: 18px !important;
+    background: rgba(255,255,255,.98) !important;
+    box-shadow: 0 10px 24px rgba(30, 80, 130, .06) !important;
+  }
+
+  .router-overview-framework .ik-mobile-duo-head {
+    display: flex !important;
+    align-items: flex-start !important;
+    justify-content: space-between !important;
+    gap: 8px !important;
+  }
+
+  .router-overview-framework .ik-mobile-duo-head em {
+    color: #526579 !important;
+    font-size: 13px !important;
+    font-style: normal !important;
+    font-weight: 650 !important;
+    white-space: nowrap !important;
+  }
+
+  .router-overview-framework .ik-mobile-duo-head b {
+    color: #111827 !important;
+    font-size: clamp(23px, 6vw, 29px) !important;
+    font-weight: 780 !important;
+    letter-spacing: -.035em !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+  }
+
+  .router-overview-framework .ik-mobile-duo-card[data-tone="danger"] .ik-mobile-duo-head b { color: var(--ro-ios-red) !important; }
+  .router-overview-framework .ik-mobile-duo-card[data-tone="warn"] .ik-mobile-duo-head b,
+  .router-overview-framework .ik-mobile-duo-card[data-tone="missing"] .ik-mobile-duo-head b { color: var(--ro-ios-orange) !important; }
+
+  .router-overview-framework .ik-mobile-duo-card small {
+    color: #7B8794 !important;
+    font-size: 12px !important;
+    line-height: 1.25 !important;
+    white-space: normal !important;
+  }
+
+  .router-overview-framework .ik-mobile-status-cards,
+  .router-overview-framework .ik-mobile-metric-card {
+    display: none !important;
+  }
+
+  .router-overview-framework .ik-ios-rings-card {
+    padding: 14px 15px !important;
+    border-radius: 20px !important;
+  }
+
+  .router-overview-framework .ik-ios-resource-meters {
+    display: grid !important;
+    gap: 10px !important;
+  }
+
+  .router-overview-framework .ik-ios-resource-meter {
+    min-height: 42px !important;
+    display: grid !important;
+    grid-template-columns: minmax(82px, auto) minmax(0, 1fr) auto !important;
+    align-items: center !important;
+    gap: 10px !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  .router-overview-framework .ik-ios-resource-meter span {
+    display: grid !important;
+    gap: 1px !important;
+  }
+
+  .router-overview-framework .ik-ios-resource-meter span em {
+    color: #526579 !important;
+    font-size: 12px !important;
+    font-style: normal !important;
+    font-weight: 650 !important;
+  }
+
+  .router-overview-framework .ik-ios-resource-meter span b {
+    color: #111827 !important;
+    font-size: 18px !important;
+    font-weight: 760 !important;
+    line-height: 1 !important;
+  }
+
+  .router-overview-framework .ik-ios-resource-meter[data-tone="danger"] span b { color: var(--ro-ios-red) !important; }
+  .router-overview-framework .ik-ios-resource-meter[data-tone="warn"] span b,
+  .router-overview-framework .ik-ios-resource-meter[data-tone="missing"] span b { color: var(--ro-ios-orange) !important; }
+
+  .router-overview-framework .ik-ios-resource-meter i {
+    position: relative !important;
+    height: 4px !important;
+    border-radius: 999px !important;
+    background: #E8F1FA !important;
+    overflow: hidden !important;
+  }
+
+  .router-overview-framework .ik-ios-resource-meter i strong {
+    display: block !important;
+    width: var(--meter-value, 0%) !important;
+    height: 100% !important;
+    border-radius: inherit !important;
+    background: var(--ro-ios-blue) !important;
+  }
+
+  .router-overview-framework .ik-ios-resource-meter[data-tone="danger"] i strong { background: var(--ro-ios-red) !important; }
+  .router-overview-framework .ik-ios-resource-meter[data-tone="warn"] i strong,
+  .router-overview-framework .ik-ios-resource-meter[data-tone="missing"] i strong { background: var(--ro-ios-orange) !important; }
+
+  .router-overview-framework .ik-ios-resource-meter small {
+    color: #7B8794 !important;
+    font-size: 11px !important;
+    white-space: nowrap !important;
+  }
+}
+
+@media (min-width: 761px) {
+  .router-overview-framework .ik-ios-bottom-tab,
+  .router-overview-framework .ik-mobile-bottom-tab,
+  .router-overview-framework .ro-desktop-grid > .ik-ios-bottom-tab,
+  .router-overview-framework .ro-desktop-grid > nav[aria-label="????"] {
+    display: none !important;
+  }
+}
+
+
+/* Edict v70 CL repair: keep iOS app-home semantic blocks readable without reintroducing table/KPI visuals. */
+@media (max-width: 760px) {
+  .router-overview-framework .ik-mobile-status-subcopy {
+    display: -webkit-box !important;
+    -webkit-box-orient: vertical !important;
+    -webkit-line-clamp: 2 !important;
+    line-clamp: 2 !important;
+    overflow: hidden !important;
+    white-space: normal !important;
+    text-overflow: clip !important;
+  }
+
+  .router-overview-framework .ik-mobile-duo-head.ik-mobile-status-strip > span {
+    display: none !important;
+  }
+
+  .router-overview-framework .ik-mobile-duo-head.ik-mobile-status-strip em {
+    color: #526579 !important;
+    font-size: 13px !important;
+    font-style: normal !important;
+    font-weight: 650 !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    white-space: nowrap !important;
+  }
+
+  .router-overview-framework .ik-mobile-duo-head.ik-mobile-status-strip b {
+    color: #111827 !important;
+    font-size: clamp(23px, 6vw, 29px) !important;
+    font-weight: 780 !important;
+    letter-spacing: -.035em !important;
+    line-height: 1 !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    white-space: nowrap !important;
+  }
+
+  .router-overview-framework .ik-ios-resource-meter {
+    grid-template-columns: minmax(78px, .82fr) minmax(92px, 1fr) minmax(74px, max-content) !important;
+  }
+
+  .router-overview-framework .ik-ios-resource-meter span,
+  .router-overview-framework .ik-ios-resource-meter span em,
+  .router-overview-framework .ik-ios-resource-meter span b,
+  .router-overview-framework .ik-ios-resource-meter small {
+    min-width: 0 !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+  }
+
+  .router-overview-framework .ik-ios-resource-meter small {
+    min-width: 74px !important;
+    text-align: right !important;
+    white-space: nowrap !important;
+  }
+
+  .router-overview-framework .ik-ios-rank-card > header.ik-mobile-status-strip {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    grid-template-areas: "title time" "note note" !important;
+    align-items: end !important;
+    gap: 2px 10px !important;
+  }
+
+  .router-overview-framework .ik-ios-rank-card > header.ik-mobile-status-strip span {
+    grid-area: title !important;
+    color: #111827 !important;
+    font-size: 15px !important;
+    font-weight: 720 !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    white-space: nowrap !important;
+  }
+
+  .router-overview-framework .ik-ios-rank-card > header.ik-mobile-status-strip b {
+    grid-area: time !important;
+    color: #111827 !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    font-variant-numeric: tabular-nums !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    white-space: nowrap !important;
+  }
+
+  .router-overview-framework .ik-ios-rank-card > header.ik-mobile-status-strip em {
+    grid-area: note !important;
+    color: #7B8794 !important;
+    font-size: 12px !important;
+    font-style: normal !important;
+    overflow: hidden !important;
+    text-overflow: clip !important;
+  }
+}
+
+
+/* Edict v70 CL repair 2: exact core labels + no clipping in semantic compatibility blocks. */
+@media (max-width: 760px) {
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) [data-overview-mobile-core-block] .ik-mobile-status-subcopy,
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-resource-card header .ik-mobile-status-subcopy,
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-rank-card > header .ik-mobile-status-subcopy {
+    display: -webkit-box !important;
+    -webkit-box-orient: vertical !important;
+    -webkit-line-clamp: 2 !important;
+    line-clamp: 2 !important;
+    overflow: hidden !important;
+    white-space: normal !important;
+    text-overflow: clip !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-resource-meter,
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-resource-meter span,
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-resource-meter span em,
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-resource-meter span b,
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-resource-meter small {
+    overflow: visible !important;
+    text-overflow: clip !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-resource-meter span em,
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-resource-meter small {
+    white-space: nowrap !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger[data-overview-mobile-scene="resource-full"] .ik-mobile-resource-sparks.is-vertical-ledger.ik-ios-resource-meters {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 10px !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger[data-overview-mobile-scene="resource-full"] .ik-mobile-resource-sparks.is-vertical-ledger .ik-mobile-resource-spark.ik-ios-resource-meter {
+    min-height: 42px !important;
+    max-height: none !important;
+    display: grid !important;
+    grid-template-columns: minmax(78px, .82fr) minmax(92px, 1fr) minmax(74px, max-content) !important;
+    align-items: center !important;
+    gap: 10px !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger[data-overview-mobile-scene="resource-full"] .ik-mobile-resource-sparks.is-vertical-ledger .ik-mobile-resource-spark.ik-ios-resource-meter span {
+    display: grid !important;
+    gap: 1px !important;
+    font-size: inherit !important;
+    line-height: normal !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger[data-overview-mobile-scene="resource-full"] .ik-mobile-resource-sparks.is-vertical-ledger .ik-mobile-resource-spark.ik-ios-resource-meter span em {
+    color: #526579 !important;
+    font-size: 12px !important;
+    font-style: normal !important;
+    font-weight: 650 !important;
+    line-height: 1.1 !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger[data-overview-mobile-scene="resource-full"] .ik-mobile-resource-sparks.is-vertical-ledger .ik-mobile-resource-spark.ik-ios-resource-meter span b {
+    color: #111827 !important;
+    font-size: 18px !important;
+    font-weight: 760 !important;
+    line-height: 1 !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger[data-overview-mobile-scene="resource-full"] .ik-mobile-resource-sparks.is-vertical-ledger .ik-mobile-resource-spark.ik-ios-resource-meter[data-tone="danger"] span b {
+    color: var(--ro-ios-red) !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger[data-overview-mobile-scene="resource-full"] .ik-mobile-resource-sparks.is-vertical-ledger .ik-mobile-resource-spark.ik-ios-resource-meter i {
+    position: relative !important;
+    height: 4px !important;
+    border-radius: 999px !important;
+    background: #E8F1FA !important;
+    overflow: hidden !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger[data-overview-mobile-scene="resource-full"] .ik-mobile-resource-sparks.is-vertical-ledger .ik-mobile-resource-spark.ik-ios-resource-meter small {
+    min-width: 74px !important;
+    color: #7B8794 !important;
+    font-size: 11px !important;
+    line-height: 1.15 !important;
+    text-align: right !important;
+    white-space: nowrap !important;
+  }
+}
