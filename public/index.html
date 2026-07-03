@@ -6,45 +6,56 @@
   <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>RouterOS &#x53EA;&#x8BFB;&#x72B6;&#x6001;&#x9762;&#x677F;</title>
+  <title>&#x8BBE;&#x5907;&#x53EA;&#x8BFB;&#x72B6;&#x6001;&#x9762;&#x677F;</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23165dff'/%3E%3Cpath d='M16 36h32M20 26h24M25 18h14' stroke='white' stroke-width='5' stroke-linecap='round'/%3E%3Ccircle cx='20' cy='46' r='4' fill='%237d8da1'/%3E%3Ccircle cx='32' cy='46' r='4' fill='%23f08c00'/%3E%3Ccircle cx='44' cy='46' r='4' fill='%23ffffff'/%3E%3C/svg%3E">
   <link rel="stylesheet" href="/assets/framework/style.css" data-overview-framework-asset="style">
   <link rel="stylesheet" href="/assets/legacy/panel-legacy.css">
   <script src="/assets/framework/panel-framework.js" data-overview-framework-asset="script"></script>
 </head>
 <body data-app-shell="ikuai" data-deploy-channel="public">
-  <div class="app ik-shell">
-    <aside class="ik-rail" id="ikRail">
-      <a class="ik-rail-logo is-active" href="#overview" data-section="overview" title="&#x7CFB;&#x7EDF;&#x9996;&#x9875;">&#x9996;</a>
-      <button class="ik-rail-button ik-rail-search-btn" type="button" title="&#x641C;&#x7D22;&#x9875;&#x9762; Ctrl+K" data-quick-search-open aria-label="&#x641C;&#x7D22;&#x9875;&#x9762;">S</button>
-      <div class="ik-rail-group">
-        <a class="ik-rail-button is-active" href="#overview" data-section="overview" title="&#x7CFB;&#x7EDF;&#x9996;&#x9875;"><span class="ik-rail-glyph ik-home"></span></a>
-        <a class="ik-rail-button" href="#interfaces" data-section="interfaces" title="&#x63A5;&#x53E3;&#x603B;&#x89C8;"><span class="ik-rail-glyph ik-line"></span></a>
-        <a class="ik-rail-button" href="#balance" data-section="balance" title="&#x8DEF;&#x7531;&#x4E0E;&#x5206;&#x6D41;&#x72B6;&#x6001;"><span class="ik-rail-glyph ik-balance"></span></a>
-        <a class="ik-rail-button" href="#security" data-section="security" title="&#x9632;&#x706B;&#x5899;&#x89C4;&#x5219;"><span class="ik-rail-glyph ik-security"></span></a>
-        <a class="ik-rail-button" href="#logs" data-section="logs" title="&#x65E5;&#x5FD7;&#x4E2D;&#x5FC3;"><span class="ik-rail-glyph ik-log"></span></a>
+  <div class="app ik-shell" data-shell-mode="ikuai-thin">
+    <aside class="ik-rail" id="ikRail" aria-label="主导航" data-shell-nav="primary">
+      <div class="ik-rail-logo" aria-hidden="true"><span>监</span></div>
+      <div class="ik-rail-group" aria-label="主要模块">
+        <a class="ik-rail-button is-active" href="#overview" data-section="overview" data-panel-label="首页" title="系统首页" aria-label="首页"><span class="ik-rail-text">首页</span></a>
+        <a class="ik-rail-button" href="#balance" data-section="balance" data-panel-label="WAN" title="WAN 与分流状态" aria-label="WAN"><span class="ik-rail-text">WAN</span></a>
+        <a class="ik-rail-button" href="#interfaces" data-section="interfaces" data-panel-label="接口" title="接口总览" aria-label="接口"><span class="ik-rail-text">接口</span></a>
+        <a class="ik-rail-button" href="#dhcp" data-section="dhcp" data-panel-label="终端" title="终端与 DHCP" aria-label="终端"><span class="ik-rail-text">终端</span></a>
+        <a class="ik-rail-button" href="#trafficLoad" data-section="trafficLoad" data-panel-label="资源" title="资源与负载" aria-label="资源"><span class="ik-rail-text">资源</span></a>
+        <a class="ik-rail-button" href="#logs" data-section="logs" data-panel-label="日志" title="日志中心" aria-label="日志"><span class="ik-rail-text">日志</span></a>
       </div>
-      <div class="ik-rail-group">
-        <a class="ik-rail-button" href="#dhcp" data-section="dhcp" title="DHCP &#x670D;&#x52A1;"><span class="ik-rail-glyph ik-terminal"></span></a>
-        <a class="ik-rail-button" href="#trafficLoad" data-section="trafficLoad" title="&#x6D41;&#x91CF;&#x8D1F;&#x8F7D;"><span class="ik-rail-glyph ik-load"></span></a>
-        <a class="ik-rail-button" href="#dns" data-section="dns" title="DNS &#x670D;&#x52A1;"><span class="ik-rail-glyph ik-dns"></span></a>
-        <a class="ik-rail-button" href="#routes" data-section="routes" title="&#x9759;&#x6001;&#x8DEF;&#x7531;"><span class="ik-rail-glyph ik-route"></span></a>
+      <div class="ik-rail-group" aria-label="辅助模块">
+        <a class="ik-rail-button" href="#dns" data-section="dns" data-panel-label="DNS" title="DNS 服务"><span class="ik-rail-text">DNS</span></a>
+        <a class="ik-rail-button" href="#routes" data-section="routes" data-panel-label="路由" title="静态路由"><span class="ik-rail-text">路由</span></a>
       </div>
       <div class="ik-rail-spacer"></div>
       <div class="ik-rail-group">
-        <button class="ik-rail-button ik-readonly-btn" type="button" title="&#x53EA;&#x8BFB;&#x72B6;&#x6001;" data-readonly-info-open aria-label="&#x53EA;&#x8BFB;&#x72B6;&#x6001;">&#x53EA;</button>
+        <button class="ik-rail-button ik-readonly-btn" type="button" title="只读状态" data-readonly-info-open aria-label="只读状态"><span class="ik-rail-text">只读</span></button>
       </div>
     </aside>
-    <aside class="sidebar">
+    <aside class="sidebar" data-shell-sidebar="legacy">
       <div class="ik-brand">
         <div class="ik-brand-left">
           <div class="ik-brand-title">&#x76D1;&#x63A7;</div>
           <div class="ik-brand-chip">&#x53EA;&#x8BFB;</div>
         </div>
-        <div class="ik-brand-user" aria-hidden="true"></div>
+        <div class="ik-brand-user" aria-hidden="true">监控</div>
       </div>
-      <button class="ik-search-pill" type="button" data-quick-search-open>&#x641C;&#x7D22; <strong>Ctrl + K</strong></button>
-      <div class="nav-group ik-menu-stack is-empty" id="ikMenuPanel"></div>
+      <nav class="nav-group ik-menu-stack" id="ikMenuPanel" aria-label="状态台菜单">
+        <a class="ik-menu-item is-active" href="#overview" data-section="overview"><span>首页</span><em>状态总览 / KPI / 趋势</em></a>
+        <a class="ik-menu-item" href="#balance" data-section="balance"><span>WAN</span><em>多出口 / 默认路由 / 分流</em></a>
+        <a class="ik-menu-item" href="#interfaces" data-section="interfaces"><span>接口</span><em>WAN / LAN / PPPoE</em></a>
+        <a class="ik-menu-item" href="#dhcp" data-section="dhcp"><span>终端</span><em>在线终端 / DHCP / 连接数</em></a>
+        <a class="ik-menu-item" href="#trafficLoad" data-section="trafficLoad"><span>资源</span><em>CPU / 内存 / 吞吐 TopN</em></a>
+        <a class="ik-menu-item" href="#logs" data-section="logs"><span>日志</span><em>REST / SSH / 失败端点</em></a>
+      </nav>
+      <button class="ik-search-pill" type="button" data-quick-search-open data-shell-search="quick">搜索 <strong>Ctrl + K</strong></button>
+      <div class="ik-sidebar-mini-status" data-overview-sidebar-mini-status="readonly">
+        <div><span>只读</span><b>不写配置</b></div>
+        <div><span>快照</span><b>随页面更新</b></div>
+        <div><span>通道</span><b>REST / SSH</b></div>
+        <div><span>场景</span><b>看状态总线</b></div>
+      </div>
     </aside>
     <div class="frame overview-title-only">
       <header class="topbar">

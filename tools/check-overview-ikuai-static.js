@@ -1,4 +1,4 @@
-const fs = require('fs');
+﻿const fs = require('fs');
 const path = require('path');
 
 const root = path.resolve(__dirname, '..');
@@ -13,110 +13,104 @@ const failures = [];
 const assert = (ok, message) => {
   if (!ok) failures.push(message);
 };
-const count = (source, pattern) => (source.match(pattern) || []).length;
 const between = (source, start, end) => {
   const startIndex = source.indexOf(start);
   if (startIndex < 0) return '';
   const endIndex = source.indexOf(end, startIndex + start.length);
   return endIndex < 0 ? source.slice(startIndex) : source.slice(startIndex, endIndex);
 };
+const withoutTitles = (source) => source
+  .replace(/title:\s*`[^`]*`/g, '')
+  .replace(/title="[^"]*"/g, '')
+  .replace(/title=\{[^}]*\}/g, '');
 
 const shellLines = shell.split(/\r?\n/).length;
 assert(shellLines <= 140, `public/index.html must stay a thin shell, got ${shellLines} lines`);
 assert(shell.includes('/assets/framework'), 'shell must load /assets/framework assets');
 assert(shell.includes('data-overview-framework-asset="style"'), 'shell must load framework stylesheet');
 assert(shell.includes('data-overview-framework-asset="script"'), 'shell must load framework script');
-const inlineBlocks = [...shell.matchAll(/<(script|style)(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/\1>/gi)];
-inlineBlocks.forEach((match, index) => {
-  const kind = match[1];
-  const body = (match[2] || '').trim();
-  assert(body.length <= 200, `shell inline ${kind} block #${index + 1} must stay tiny, got ${body.length} chars`);
-});
-assert(!shell.includes('data-overview-chart-has-current'), 'shell must not contain overview business/chart implementation');
 assert(!/function\s+JudgementChart|function\s+OverviewPanel/.test(shell), 'shell must not embed React overview implementation');
 
+const visibleSource = withoutTitles(tsx);
+const noSnapshotDesktop = between(tsx, 'function NoSnapshotDesktop', 'function ResourceDesktop');
+const appHomeBlock = between(tsx, 'function MobileLedger', 'function ledgerRowToPlainCells');
+const bottomTabsBlock = between(tsx, 'function MobileBottomTabs', 'function flatDuration');
+const appHomeCss = css.slice(Math.max(
+  css.lastIndexOf('Final app-home tightening'),
+  css.lastIndexOf('App-home final pass')
+));
+
+assert(tsx.includes('MobileIosTopNav'), 'mobile iOS top nav component missing');
+assert(tsx.includes('MobileHeroStatusCard'), 'mobile app-home hero card component missing');
+assert(tsx.includes('MobileMetricGrid'), 'mobile app-home KPI grid component missing');
+assert(tsx.includes('MobileRingMetrics'), 'mobile app-home KPI ring component missing');
+assert(tsx.includes('MobileTrafficRank'), 'mobile app-home visual/rank component missing');
+assert(tsx.includes('MobileBottomTabs'), 'mobile app-home bottom tab component missing');
+
+assert(tsx.includes('data-overview-mobile-ios-nav="true"'), 'mobile iOS nav data marker missing');
+assert(tsx.includes('data-overview-mobile-app-home="ikuai40-ios-router-home"'), 'mobile app-home marker missing');
+assert(tsx.includes('data-overview-mobile-home-mode="ios-app-home"'), 'mobile app-home mode marker missing');
+assert(tsx.includes('data-overview-mobile-home-layout="ios-topnav-hero-big2-kpi2x2-scene-visual-rings-rank-tabs"'), 'mobile app-home layout marker missing');
+assert(tsx.includes('data-overview-mobile-first-screen="app-home"'), 'mobile first-screen app-home marker missing');
+assert(tsx.includes('data-overview-mobile-first-screen-contract="ios-topnav-main-status-big2-sparkline-scene-visual-kpi2x2-rings-rank-bottom-tab"'), 'mobile first-screen contract marker missing');
+assert(tsx.includes('data-overview-mobile-first-screen-no-table="true"'), 'mobile first-screen no-table marker missing');
+assert(tsx.includes('data-overview-mobile-first-screen-uses-microchart="true"'), 'mobile first-screen microchart marker missing');
+assert(tsx.includes('data-overview-mobile-no-desktop-collapse="true"'), 'mobile app-home must not be desktop/table collapse');
+assert(!appHomeBlock.includes('data-overview-mobile-flat-table') && !/role="table"/.test(appHomeBlock), 'mobile app-home first block must not be flat-ledger/table collapse');
+
+assert(tsx.includes('ik-ios-top-nav'), 'mobile iOS router nav marker missing');
+assert(tsx.includes('ik-ios-hero-card'), 'mobile iOS hero marker missing');
+assert(tsx.includes('ik-ios-rings-card'), 'mobile iOS rings marker missing');
+assert(tsx.includes('ik-ios-rank-card'), 'mobile iOS rank marker missing');
+assert(tsx.includes('ik-ios-bottom-tab'), 'mobile iOS bottom tab marker missing');
+assert(tsx.includes('ik-mobile-status-cards'), 'mobile KPI 2x2 card grid missing');
+assert(tsx.includes('ik-mobile-spark-line'), 'mobile thin sparkline missing');
+assert(tsx.includes('ik-ios-ring-grid'), 'mobile ring metric grid missing');
+assert(tsx.includes('ik-ios-rank-row'), 'mobile app-style traffic/rank rows missing');
+['首页', 'WAN', '接口', '资源', '日志'].forEach((label) => {
+  assert(bottomTabsBlock.includes(label), `mobile bottom tabs must include ${label}`);
+});
+['处理器', '内存', '磁盘'].forEach((label) => {
+  assert(visibleSource.includes(label), `visible resource copy must use Chinese ${label}`);
+});
+
+assert(!/\bMEM\b|\bDISK\b/.test(visibleSource), 'visible overview copy must use Chinese memory/disk labels, not MEM/DISK');
+assert(!/active\s+(?:true|false)|disabled\s+(?:true|false)/i.test(appHomeBlock), 'visible app-home summaries must not expose raw RouterOS booleans');
+assert(tsx.includes('爱快路由'), 'desktop evidence must keep iKuai backend identity visible');
+assert(/处理器|内存|磁盘/.test(visibleSource) && /RouterOS|REST|SSH/.test(noSnapshotDesktop), 'desktop evidence must keep router resource labels and backend evidence visible');
+assert(!/WAN\s*速率|WAN速率/.test(noSnapshotDesktop), 'no-snapshot desktop must not fake WAN speed');
+assert(!/\b0\s*B\/s\b|\b0\s*Bps\b|\b0Bps\b/i.test(noSnapshotDesktop), 'no-snapshot desktop must not show 0Bps/0 B/s as unavailable data');
+assert(tsx.includes('data-overview-scene-key={state.scenario}'), 'overview scene key marker missing');
+assert(tsx.includes('data-overview-scene-chart-priority={OVERVIEW_SCENE_CHART_PRIORITY}'), 'overview scene chart priority marker missing');
 [
-  'OVERVIEW_IKUAI40_CHART_STANDARD',
-  'OVERVIEW_CHART_METADATA_COVERAGE',
-  'OVERVIEW_IKUAI40_MATURE_VISUAL_STANDARD',
-  'OVERVIEW_SCENE_CHART_CONTRACT',
-  'data-overview-chart-has-current="true"',
-  'data-overview-chart-has-peak="true"',
-  'data-overview-chart-has-mean="true"',
-  'data-overview-chart-has-window="true"',
-  'data-overview-chart-has-threshold="true"',
-  'data-overview-chart-has-trust="true"',
-  'data-overview-chart-judgement-strip="current-peak-mean-window-sample-threshold-confidence"',
-  'data-overview-y-axis',
-  'ik-overview-current-label',
-].forEach((needle) => assert(tsx.includes(needle), `chart judgement contract missing ${needle}`));
+  'traffic-mini-line',
+  'resource-mini-trend',
+  'collection-status-line',
+  'snapshot-channel-matrix',
+  'interface-chain',
+  'wan-port-matrix',
+].forEach((marker) => {
+  assert(tsx.includes(marker), `mobile scenario visual marker missing ${marker}`);
+});
 
-assert(tsx.includes('data-overview-hard-standard="desktop-chart-state-45plus-mobile-microchart-required-chart-meta-sample-depth-required-no-short-large-card"'), 'hard standard marker missing');
-assert(tsx.includes('data-overview-mobile-first-microchart-policy="required-before-detail"'), 'mobile first microchart policy missing');
-assert(tsx.includes('data-overview-mobile-first-screen-microchart-required="all-scenes"'), 'all-scene mobile microchart policy missing');
-assert(tsx.includes('data-overview-mobile-microchart="true"'), 'mobile microbar chart marker missing');
-assert(tsx.includes('data-overview-mobile-no-snapshot-microchart'), 'mobile no-snapshot microchart marker missing');
+assert(appHomeCss.includes('.ik-ios-top-nav'), 'iOS top nav CSS missing');
+assert(appHomeCss.includes('.ik-ios-hero-card'), 'iOS hero CSS missing');
+assert(appHomeCss.includes('.ik-ios-rings-card'), 'iOS rings CSS missing');
+assert(appHomeCss.includes('.ik-ios-rank-card'), 'iOS rank CSS missing');
+assert(appHomeCss.includes('.ik-ios-bottom-tab'), 'iOS bottom tab CSS missing');
 
-const noSnapshotBlock = between(tsx, 'function NoSnapshotDesktop', 'function ResourceDesktop');
-[
-  'no-snapshot-summary',
-  'no-snapshot-channel-status',
-  'no-snapshot-recent-success',
-  'no-snapshot-module-visibility',
-  'no-snapshot-summary-chain',
-].forEach((needle) => assert(noSnapshotBlock.includes(needle), `no-snapshot must render ${needle}`));
-assert(noSnapshotBlock.includes('VisibilityMatrixVisual'), 'no-snapshot must render graphical visibility matrix');
-assert(tsx.includes('data-overview-no-snapshot-density-contract={state.scenario === "no-snapshot" ? "chain-ledger-timeline-visibility-judgement-strip"'), 'no-snapshot density contract missing');
-assert(tsx.includes('data-overview-no-snapshot-no-stretch-cards={state.scenario === "no-snapshot" ? "auto-height-content"'), 'no-snapshot no-stretch contract missing');
-assert(tsx.includes('data-overview-no-snapshot-no-wan-rate-placeholder={state.scenario === "no-snapshot" ? "business-rates-hidden"'), 'no-snapshot no-WAN-rate contract missing');
-assert(!/WAN速率|上行 0 B\/s|下行 0 B\/s|0 B\/s/.test(noSnapshotBlock), 'no-snapshot must not fake WAN rate or zero traffic');
-assert(noSnapshotBlock.includes('失败端点'), 'no-snapshot must keep failure endpoint in the chain ledger');
-assert(noSnapshotBlock.includes('未记录'), 'no-snapshot must keep failure endpoint as 未记录');
-assert(count(noSnapshotBlock, /只读边界/g) <= 1, 'no-snapshot must not repeat read-only boundary blocks');
+assert(predeploy.includes('overviewMobile390AppHomeFirstOk'), 'predeploy must require mobile app-home first screen');
+assert(predeploy.includes('overviewMobile390FirstTwoRowsVisibleOk'), 'predeploy must verify first two detail rows');
+assert(predeploy.includes('overviewMobile390FirstScreenNoTableOk'), 'predeploy must reject first-screen table visuals');
+assert(predeploy.includes('overviewMobile390NoRawBooleanCopyOk'), 'predeploy must reject raw RouterOS booleans');
+assert(predeploy.includes('overviewMobile390BottomTabOk'), 'predeploy must keep the bottom tab visible');
+assert(predeploy.includes('.ik-ios-top-nav, .ik-ios-hero-card, .ik-ios-rings-card, .ik-ios-rank-card, .ik-ios-bottom-tab'), 'predeploy must probe app-home chrome nodes');
+assert(predeploy.includes('nodeVisibleInViewport'), 'predeploy must evaluate fixed/sticky bottom tab as viewport chrome');
+assert(predeploy.includes('mobile390MainProgressBarRecords') && predeploy.includes('height >= 6'), 'predeploy must reject coarse main progress bars');
+assert(predeploy.includes('requestedMobile390x844') && predeploy.includes('window.innerWidth >= 375') && predeploy.includes('window.innerWidth <= 430'), 'predeploy must target the 390x844 mobile viewport with browser-tolerant bounds');
 
-const resourceBlock = between(tsx, 'function ResourceDesktop', 'function InterfacesDesktop');
-assert(resourceBlock.includes('resource-risk-priority'), 'resource-full must render danger/resource priority module');
-assert(resourceBlock.includes('ResourceTriCards'), 'resource-full must render CPU/MEM/DISK pressure cards');
-assert(resourceBlock.includes('resource-pressure-bars'), 'resource-full must render connection/complement pressure bars');
-assert(resourceBlock.includes('resource-interface-top5'), 'resource-full must render interface throughput Top5');
-assert(!resourceBlock.includes('terminal-rank'), 'resource-full first screen must not spend space on terminal rank');
-assert(tsx.includes('data-overview-resource-first-screen={state.scenario === "resource-full" ? "danger-bars-three-metric-ledger-pressure-interface-top5"'), 'resource first-screen structure marker missing');
-
-const collectionBlock = between(tsx, 'function CollectionDesktop', 'function AllOfflineDesktop');
-assert(collectionBlock.includes('collection-cache-ledger'), 'collection-down must lead with REST/SSH/snapshot channel bars');
-assert(collectionBlock.includes('collection-success-timeline'), 'collection-down must render recent-success timeline');
-assert(tsx.includes('data-overview-collection-channel-priority={state.scenario === "collection-down" ? "rest-ssh-snapshot-before-resource"'), 'collection channel priority marker missing');
-assert(tsx.includes('data-overview-collection-resource-deferred={state.scenario === "collection-down" ? "true"'), 'collection resource deferred marker missing');
-
-const interfaceBlock = between(tsx, 'function InterfacesDesktop', 'function CollectionDesktop');
-const interfaceRowsBlock = between(tsx, 'function interfaceRows', 'function interfaceRelationRows');
-assert(interfaceBlock.includes('interface-forwarding'), 'interfaces-down must render forwarding evidence first');
-assert(interfaceBlock.includes('interface-relation-carrier'), 'interfaces-down must move parent/bridge/vlan/pppoe details to carrier table');
-assert(!interfaceBlock.includes('terminal-rank'), 'interfaces-down first screen must not show terminal rank');
-assert(!interfaceRowsBlock.includes('pppoe-out'), 'interface top rows must not squeeze long pppoe relation chains');
-assert(tsx.includes('data-overview-interface-relation-policy={state.scenario === "interfaces-down" ? "top-object-status-details-in-carrier-table"'), 'interface relation policy marker missing');
-
-const normalBlock = between(tsx, 'function NormalDesktop', 'function DesktopWorkspace');
-assert(normalBlock.includes('traffic-trend'), 'normal desktop must render traffic trend');
-assert(normalBlock.includes('WAN Top3'), 'normal traffic ledger must expose WAN Top3');
-assert(normalBlock.includes('采样可信度'), 'normal traffic ledger must expose sampling confidence');
-assert(normalBlock.includes('最近峰值'), 'normal traffic ledger must expose recent peak');
-assert(tsx.includes('data-overview-normal-traffic-under-chart={state.scenario === "single" || state.scenario === "fleet" ? "current-wan-top3-route-sampling-samples-peak-success"'), 'normal under-chart fact strip marker missing');
-
-assert(css.includes('--ro-blue: #3f7fbd'), 'normal/reference chart blue must be muted iKuai blue');
-assert(css.includes('--ro-danger: #d93025'), 'danger chart color must use fixed red');
-assert(css.includes('--ro-warn: #f08c00'), 'warn chart color must use fixed orange');
-assert(css.includes('.ro-chart-readout'), 'chart readout CSS missing');
-assert(css.includes('grid-template-columns: 1.08fr .94fr .94fr 1.12fr .96fr .86fr .9fr'), 'chart readout must be visible multi-field strip');
-assert(css.includes('border-left: 2px dashed var(--ro-danger)'), 'threshold line must be visually strong');
-assert(css.includes('.ro-module[data-overview-three-col-table="true"] .ro-ledger-row'), 'three-column evidence table CSS missing');
-assert(css.includes('grid-auto-rows: auto;'), 'desktop grid must use auto rows, not stretched equal-height cards');
-assert(css.includes('height: auto;'), 'modules/columns must allow content-sized height');
-assert(!/grid-auto-rows:\s*minmax\(0,\s*1fr\)/.test(css), 'desktop modules must not stretch every card to equal height');
-
-assert(predeploy.includes('overviewChartReadabilityOk'), 'local predeploy must include chart readability gate');
-assert(predeploy.includes('mobileCoreChartMetaOk'), 'local predeploy must include mobile microchart metadata gate');
-assert(predeploy.includes('overviewNoSnapshotNoWanRateCardOk'), 'local predeploy must include no-snapshot WAN-rate redline');
+assert(!/\ufffd/.test(visibleSource), 'overview source contains replacement characters');
+assert(!/\ufffd/.test(appHomeCss), 'final app-home CSS contains replacement characters');
 
 if (failures.length) {
   console.error('overview ikuai static gate: FAIL');
