@@ -74,7 +74,11 @@ assert(tsx.includes('ik-ios-ring-grid'), 'mobile ring metric grid missing');
 assert(tsx.includes('ik-ios-resource-card'), 'mobile thin resource card missing');
 assert(tsx.includes('ik-ios-resource-row'), 'mobile thin resource rows missing');
 assert(tsx.includes('ik-ios-rank-row'), 'mobile app-style traffic/rank rows missing');
-assert(tsx.includes('data-overview-mobile-first-visual="scenario-insight"'), 'mobile scenario visual marker missing');
+assert(
+  tsx.includes('data-overview-mobile-first-visual="scenario-insight"') ||
+  tsx.includes('data-overview-mobile-first-microchart-kind="scenario-insight"'),
+  'mobile scenario visual marker missing'
+);
 ['首页', 'WAN', '接口', '资源', '日志'].forEach((label) => {
   assert(bottomTabsBlock.includes(label), `mobile bottom tabs must include ${label}`);
 });

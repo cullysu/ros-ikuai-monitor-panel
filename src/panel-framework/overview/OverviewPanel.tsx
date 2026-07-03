@@ -338,6 +338,7 @@ function desktopCoreText(state: OverviewDerivedState): string {
 }
 
 function moduleChartType(module: string): "line" | "bar" | "matrix" | "status" | "timeline" {
+  if (/resource-risk-priority|collection-channel-ledger/i.test(module)) return "line";
   if (/no-snapshot-summary|no-snapshot-recent-success/i.test(module)) return "line";
   if (/traffic-trend|wan-lines|wan-trend|wan-route|route-raw|resource-boundary/i.test(module)) return "line";
   if (/^wan-offline-bars$/i.test(module)) return "line";
@@ -777,7 +778,7 @@ function DesktopKeyMetrics({ snapshot, state }: OverviewPanelProps) {
   return (
     <div className="ro-desktop-key-row" data-overview-desktop-tier="key-metrics" data-overview-desktop-key-row>
       {items.map((item) => (
-        <div className="ro-desktop-key-cell" key={item.label} data-tone={item.tone}>
+        <div className="ro-desktop-key-cell" key={item.label} data-tone={item.tone} data-overview-field>
           <span>{item.label}</span>
           <b>{item.value}</b>
           <em>{item.note}</em>
@@ -1376,22 +1377,21 @@ function mobileHeroInsightRows(snapshot: OverviewRawSnapshot, state: OverviewDer
 function MobileHeroStatusCard({ snapshot, state }: OverviewPanelProps) {
   const stats = mobileHeroStats(snapshot, state);
   const conclusion = mobileHeroConclusion(state);
-  return <section className="ik-mobile-conclusion-card ik-ios-hero-card ik-v74-network-hero" data-tone={mobileVerdictTone(state)} data-overview-mobile-primary-card="network-status-main" data-overview-mobile-network-meter="status-traffic-strip-no-kpi-grid" data-overview-mobile-main-card data-overview-mobile-ios-hero="true" data-overview-mobile-first-screen-hero="true" data-overview-mobile-hero-title-policy="single-network-title-no-collision" data-overview-mobile-hero-metrics="download-upload-latency-connections" data-overview-mobile-hero-metric-layout="inline-strip-not-four-kpi-grid" data-overview-mobile-no-ellipsis="true" data-overview-mobile-no-field-stack="true">
-    <div className="ik-ios-hero-head ik-v74-hero-head">
-      <span data-overview-mobile-primary-title>{mobileHeroPrimaryLabel(state)}</span>
+  return <section className="ik-mobile-conclusion-card ik-ios-hero-card ik-v74-network-hero" data-tone={mobileVerdictTone(state)} data-overview-mobile-primary-card="network-status-main" data-overview-mobile-network-meter="status-traffic-strip" data-overview-mobile-main-card data-overview-mobile-ios-hero="true" data-overview-mobile-first-screen-hero="true" data-overview-mobile-hero-title-policy="single-network-title-no-collision" data-overview-mobile-hero-metrics="download-upload-latency-connections" data-overview-mobile-hero-metric-layout="inline-strip" data-overview-mobile-no-ellipsis="true" data-overview-mobile-no-field-stack="true">
+    <div className="ik-ios-hero-head ik-v74-hero-head" aria-label={mobileHeroPrimaryLabel(state)} data-overview-mobile-hero-heading="network-status-single-title">
       <b data-overview-primary-conclusion="true">{conclusion}</b>
       <em title={mobileHeroSupportLine(snapshot, state)}>{mobileHeroSupportLine(snapshot, state)}</em>
     </div>
     <div className="ik-v74-hero-mainline" data-overview-mobile-hero-summary={mobileHeroSummaryLine(snapshot, state)} data-overview-mobile-first-visual="traffic-thin-line" data-overview-mobile-first-microchart="true">
-      <div className="ik-v75-hero-stat-list" data-overview-mobile-metric-strip="download-upload-latency-connections">
-        {stats.map((item) => <div className="ik-v75-hero-stat" key={item.label} data-tone={item.tone} data-overview-mobile-hero-value={item.label}>
+      <ul className="ik-v75-hero-stat-list" data-overview-mobile-metric-strip="download-upload-latency-connections">
+        {stats.map((item) => <li className="ik-v75-hero-stat" key={item.label} data-tone={item.tone} data-overview-mobile-hero-value={item.label}>
           <em>{item.label}</em>
           <strong>{item.value}</strong>
-        </div>)}
-      </div>
+        </li>)}
+      </ul>
     </div>
-    <div className="ik-ios-hero-chart-wrap ik-v74-hero-visual is-scene-visual" data-overview-mobile-first-visual="scenario-insight" data-overview-chart-type="mini-line" data-overview-chart-trust={moduleTrust(state)}>
-      <MobileTrafficSparkVisual snapshot={snapshot} state={state} />
+    <div className="ik-ios-hero-chart-wrap ik-v74-hero-visual is-scene-visual" data-overview-mobile-first-visual="traffic-thin-line" data-overview-chart-type="mini-line" data-overview-chart-trust={moduleTrust(state)}>
+      {mobileHeroVisual(snapshot, state)}
     </div>
   </section>;
 }
@@ -1805,10 +1805,10 @@ function MobileLedger({ snapshot, state }: OverviewPanelProps) {
           className="ik-ios-first-screen"
           data-overview-mobile-first-screen="app-home"
           data-overview-mobile-first-screen-contract="ios-topnav-network-hero-traffic-metrics-twin-cards-resource-exception-rank-bottom-tab"
-          data-overview-mobile-first-screen-visual="scenario-insight"
+          data-overview-mobile-first-screen-visual="traffic-thin-line"
           data-overview-mobile-first-screen-no-table="true"
           data-overview-mobile-first-screen-uses-microchart="true"
-          data-overview-mobile-removes="title-collision-four-kpi-grid-ellipsis-field-stack"
+          data-overview-mobile-removes="title-collision-kpi-grid-table-feel-ellipsis-field-stack"
         >
           <MobileIosTopNav snapshot={snapshot} state={state} />
           <MobileHeroStatusCard snapshot={snapshot} state={state} />
@@ -2827,7 +2827,7 @@ function NoSnapshotDesktop({ snapshot, state }: OverviewPanelProps) {
 function ResourceDesktop({ snapshot, state }: OverviewPanelProps) {
   const resourceChart = resourceChartRows(state);
   const resourceVisual = <div className="ro-resource-visual">
-    <JudgementChart module="resource-risk-priority" kind="pressure" rows={resourceChart} />
+    <JudgementChart module="resource-risk-priority" kind="trend" rows={resourceChart} />
     <ResourceTriCards rows={resourceChart} />
   </div>;
   const pressureVisual = <JudgementChart module="resource-pressure-bars" kind="pressure" rows={connectionPressureChartRows(snapshot, state)} />;
@@ -2940,7 +2940,7 @@ function desktopPanelGroups(snapshot: OverviewRawSnapshot, state: OverviewDerive
     const resourceChart = resourceChartRows(state);
     return {
       main: [
-        <Module key="res-priority" title="最危险项 / 资源阈值" subtitle="处理器 / 内存 / 磁盘 先读 / 再看连接压力 / 默认路由 / 采集可信度" module="resource-risk-priority" tone="danger" trust={moduleTrust(state)} headers={["指标", "阈值", "持续", "峰值"]} rows={resourceRiskRows(state)} minRows={8} visual={<div className="ro-resource-visual"><JudgementChart module="resource-risk-priority" kind="pressure" rows={resourceChart} /><ResourceTriCards rows={resourceChart} /></div>} />,
+        <Module key="res-priority" title="最危险项 / 资源阈值" subtitle="处理器 / 内存 / 磁盘 先读 / 再看连接压力 / 默认路由 / 采集可信度" module="resource-risk-priority" tone="danger" trust={moduleTrust(state)} headers={["指标", "阈值", "持续", "峰值"]} rows={resourceRiskRows(state)} minRows={8} visual={<div className="ro-resource-visual"><JudgementChart module="resource-risk-priority" kind="trend" rows={resourceChart} /><ResourceTriCards rows={resourceChart} /></div>} />,
         <Module key="res-sustain" title="持续窗口 / 压力旁证" subtitle="最近 6 点 / 均值峰值 / 连接数 / 接口吞吐 / DNS 缓存 / 只读边界" module="resource-sustain-ledger" tone="warn" trust={moduleTrust(state)} headers={["对象", "当前", "依据", "边界"]} rows={resourceSustainRows(snapshot, state)} minRows={10} />,
       ],
       side: [
@@ -3022,14 +3022,14 @@ function desktopPanelGroups(snapshot: OverviewRawSnapshot, state: OverviewDerive
     ],
     side: [
       <Module key="n-resource" title="资源阈值" subtitle="当前 / 阈值 / 持续 / 峰值" module="resource-threshold" tone={state.facts.resource.level} trust={moduleTrust(state)} headers={["指标", "阈值", "持续", "峰值"]} rows={resourceRows(state)} minRows={3} visual={<JudgementChart module="resource-threshold" kind="pressure" rows={resourceChartRows(state)} />} />,
-      <Module key="n-wan" title="WAN Top / 路由 / 采样 / 峰值" subtitle="Top3 / 默认路由 / 采样可信度 / 最近峰值" module="normal-wan-evidence" tone="trust" trust={moduleTrust(state)} headers={["对象", "当前", "依据"]} rows={threeColumnRows(trafficEvidenceRows, "ne-")} minRows={8} visual={<JudgementChart module="normal-wan-evidence" kind="trend" rows={trafficChartRows(snapshot, state)} />} />,
-      <Module key="n-interface" title="Interface Evidence / Forwarding Boundary" subtitle="Down objects / parent interface / default route / REST SSH / read-only boundary" module="normal-interface-boundary" tone="warn" trust={moduleTrust(state)} headers={["Object", "Current", "Recent", "Boundary"]} rows={interfaceBoundaryRows(snapshot, state)} minRows={8} />,
+      <Module key="n-wan" title="WAN证据 / 路由 / 采样 / 峰值" subtitle="Top3 / 默认路由 / 采样可信度 / 最近峰值" module="normal-wan-evidence" tone="trust" trust={moduleTrust(state)} headers={["对象", "当前", "依据"]} rows={threeColumnRows(trafficEvidenceRows, "ne-")} minRows={8} visual={<JudgementChart module="normal-wan-evidence" kind="trend" rows={trafficChartRows(snapshot, state)} />} />,
+      <Module key="n-interface" title="接口证据 / 转发边界" subtitle="Down objects / parent interface / default route / REST SSH / read-only boundary" module="normal-interface-boundary" tone="warn" trust={moduleTrust(state)} headers={["Object", "Current", "Recent", "Boundary"]} rows={interfaceBoundaryRows(snapshot, state)} minRows={8} />,
       <Module key="n-events" title="采集事件" subtitle="REST / SSH / 最近成功 / 只读边界" module="normal-ops-ledger" tone={state.facts.collection.level} trust={moduleTrust(state)} headers={["对象", "当前", "依据"]} rows={normalOpsRows(snapshot, state)} minRows={8} />,
     ],
     bottom: [
       <Module key="n-terminals" title="终端排行" subtitle="Top8 / 在线状态 / 连接数 / 只读边界" module="terminal-ranking" tone="trust" trust={moduleTrust(state)} headers={["终端", "当前", "依据"]} rows={threeColumnRows(terminalRows(snapshot, state), "nt-")} minRows={8} />,
-      <Module key="n-events-bottom" title="事件 TopN" subtitle="RouterOS / REST / SSH / 最近成功 / 失败端点 / 轮询" module="normal-ops-ledger-bottom" tone={state.facts.collection.level} trust={moduleTrust(state)} headers={["对象", "当前", "依据"]} rows={threeColumnRows(normalOpsRows(snapshot, state), "nebt-")} minRows={8} />,
-      <Module key="n-page" title="Interface Page Trust" subtitle="Recent success / default route / collection plane / read-only boundary" module="interface-page-trust" tone="trust" trust={moduleTrust(state)} headers={["Object", "Current", "Evidence"]} rows={interfacePageTrustRows(snapshot, state)} minRows={5} />,
+      <Module key="n-events-bottom" title="采集事件 TopN" subtitle="RouterOS / REST / SSH / 最近成功 / 失败端点 / 轮询" module="normal-ops-ledger-bottom" tone={state.facts.collection.level} trust={moduleTrust(state)} headers={["对象", "当前", "依据"]} rows={threeColumnRows(normalOpsRows(snapshot, state), "nebt-")} minRows={8} />,
+      <Module key="n-page" title="接口页可信度" subtitle="最近成功 / 默认路由 / 采集面 / 只读边界" module="interface-page-trust" tone="trust" trust={moduleTrust(state)} headers={["Object", "Current", "Evidence"]} rows={interfacePageTrustRows(snapshot, state)} minRows={5} />,
     ],
   };
 }
@@ -3227,7 +3227,7 @@ export function OverviewPanel({ snapshot, state }: OverviewPanelProps) {
       data-overview-page-credibility-tone={state.facts.freshness.credibilityTone}
       data-overview-business-display-boundary={state.scenario === "no-snapshot" ? "no-business-data" : "business-data"}
       data-overview-scene-key={state.scenario}
-      data-overview-ikuai40-density="flat-dense-readonly-console"
+      data-overview-ikuai40-density="apple-flat-light-blue-console"
       data-overview-flat-ledger-surface="light-blue-white-thin-lines-low-shadow"
       data-overview-mobile-metrics
       data-overview-mobile-home-mode="ios-app-home"
@@ -3256,6 +3256,7 @@ export function OverviewPanel({ snapshot, state }: OverviewPanelProps) {
     >
       <InfoBand snapshot={snapshot} state={state} />
       <span className="ro-sr-contract" data-overview-verdict-panel>{verdictContractText(snapshot, state)}</span>
+      <DesktopKeyMetrics snapshot={snapshot} state={state} />
       <div className="ro-mobile-first-screen" data-overview-mobile-first-screen data-overview-mobile-alert={state.verdict.level}>
         <MobileLedger snapshot={snapshot} state={state} />
       </div>
