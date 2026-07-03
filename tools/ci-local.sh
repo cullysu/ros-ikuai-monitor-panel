@@ -42,9 +42,20 @@ if [[ "$skip_docker" != "1" ]]; then
 fi
 
 if [[ "$full_browser" == "1" ]]; then
-  powershell -NoProfile -ExecutionPolicy Bypass -File ./tools/check-local-predeploy.ps1 -Profile public -Sections overview -Viewports desktop=1366x900,narrow=390x844 -ScaleScenarios single,fleet,all-offline,no-snapshot,collection-down,resource-full,interfaces-down
+  node tools/local-predeploy-check.js \
+    --profile public \
+    --viewports desktop=1366x900,narrow=390x844 \
+    --sections overview \
+    --scale-scenarios single,fleet,all-offline,no-snapshot,collection-down,resource-full,interfaces-down \
+    --strict-responsive \
+    --out _acceptance/ci-local-full-browser
 fi
 
 if [[ "$lite_browser" == "1" ]]; then
-  powershell -NoProfile -ExecutionPolicy Bypass -File ./tools/check-overview-ikuai-lite.ps1
+  node tools/local-predeploy-check.js \
+    --profile public \
+    --viewports desktop=1366x900,narrow=390x844 \
+    --sections overview \
+    --scale-scenarios single,fleet,all-offline,no-snapshot,collection-down,resource-full,interfaces-down \
+    --out _acceptance/ci-local-lite-browser
 fi
