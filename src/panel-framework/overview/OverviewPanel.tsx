@@ -1237,6 +1237,14 @@ function mobileHeroStats(snapshot: OverviewRawSnapshot, state: OverviewDerivedSt
   const totals = trafficTotals(snapshot);
   const noBusiness = state.scenario === "no-snapshot";
   const conn = toNumber(state.facts.connections.total);
+  if (state.scenario === "resource-full") {
+    return [
+      { label: "\u5904\u7406\u5668", value: formatPercent(state.facts.resource.cpu, 0), tone: "danger" },
+      { label: "\u5185\u5b58", value: formatPercent(state.facts.resource.memory, 0), tone: "danger" },
+      { label: "\u78c1\u76d8", value: formatPercent(state.facts.resource.disk, 0), tone: "danger" },
+      { label: "\u8fde\u63a5", value: formatCompact(conn), tone: conn > 50000 ? "warn" : "trust" },
+    ];
+  }
   return [
     { label: "\u4e0b\u8f7d", value: noBusiness ? "\u4e0d\u5c55\u793a" : mobileShortRate(totals.down), tone: noBusiness ? "missing" : "ok" },
     { label: "\u4e0a\u4f20", value: noBusiness ? "\u4e0d\u5c55\u793a" : mobileShortRate(totals.up), tone: noBusiness ? "missing" : "ok" },
@@ -1307,6 +1315,7 @@ function MobileHeroStatusCard({ snapshot, state }: OverviewPanelProps) {
   const conclusion = mobileHeroConclusion(state);
   const majorStats = stats.slice(0, 2);
   const minorStats = stats.slice(2);
+  const sceneVisual = state.scenario === "single" || state.scenario === "fleet" || state.scenario === "resource-full" ? null : mobileHeroVisual(snapshot, state);
   return <section className="ik-mobile-conclusion-card ik-ios-hero-card" data-tone={mobileVerdictTone(state)} data-overview-mobile-primary-card="network-status" data-overview-mobile-main-card data-overview-mobile-ios-hero="true" data-overview-mobile-first-screen-hero="true">
     <div className="ik-ios-hero-head">
       <span data-overview-mobile-primary-title>{mobileHeroSectionTitle(state)}</span>
@@ -1321,14 +1330,20 @@ function MobileHeroStatusCard({ snapshot, state }: OverviewPanelProps) {
         {minorStats.map((item) => <span className="is-chip" key={item.label} data-tone={item.tone} data-overview-mobile-hero-chip={item.label}><em>{item.label}</em><strong>{item.value}</strong></span>)}
       </div>
     </div>
-    <div className="ik-ios-hero-chart-wrap">
-      <svg className="ik-ios-hero-chart" viewBox="0 0 190 54" role="img" aria-label="\u7f51\u7edc\u72b6\u6001\u8d8b\u52bf" data-overview-mobile-first-visual="traffic-mini-line" data-overview-mobile-first-microchart="true" data-overview-chart-type="mini-line" data-overview-chart-unit="bps" data-overview-chart-window="recent-samples" data-overview-chart-trust={moduleTrust(state)}>
-        <path className="ik-mobile-spark-grid" d="M0 13 H190 M0 31 H190 M0 49 H190" />
-        <polyline className="ik-mobile-spark-line is-down" points={series.down} />
-        <polyline className="ik-mobile-spark-line is-up" points={series.up} />
-        <circle className="ik-ios-chart-dot" cx="152" cy="28" r="3.4" />
-      </svg>
-      <span className="ik-ios-chart-caption"><em>15分钟</em><b>峰值点</b></span>
+    <div className={`ik-ios-hero-chart-wrap${sceneVisual ? " is-scene-visual" : ""}`}>
+      {sceneVisual ? (
+        <div className="ik-ios-scene-visual" data-overview-mobile-first-visual="scenario-insight" data-overview-mobile-first-microchart="true">
+          {sceneVisual}
+        </div>
+      ) : (
+        <svg className="ik-ios-hero-chart" viewBox="0 0 190 54" role="img" aria-label="\u7f51\u7edc\u72b6\u6001\u8d8b\u52bf" data-overview-mobile-first-visual="traffic-mini-line" data-overview-mobile-first-microchart="true" data-overview-chart-type="mini-line" data-overview-chart-unit="bps" data-overview-chart-window="recent-samples" data-overview-chart-trust={moduleTrust(state)}>
+          <path className="ik-mobile-spark-grid" d="M0 13 H190 M0 31 H190 M0 49 H190" />
+          <polyline className="ik-mobile-spark-line is-down" points={series.down} />
+          <polyline className="ik-mobile-spark-line is-up" points={series.up} />
+          <circle className="ik-ios-chart-dot" cx="152" cy="28" r="3.4" />
+        </svg>
+      )}
+      <span className="ik-ios-chart-caption"><em>{"15\u5206\u949f"}</em><b>{"\u5cf0\u503c\u70b9"}</b></span>
     </div>
   </section>;
 }
