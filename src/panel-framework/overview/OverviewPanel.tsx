@@ -1128,7 +1128,7 @@ function MobileResourceTrendVisual({ state }: { state: OverviewDerivedState }) {
       const values = metric.trend.map((value, index) => index === metric.trend.length - 1 ? Math.max(value, metric.value) : value);
       const points = mobileSparkPoints(values, Math.max(100, metric.value, metric.threshold), 96, 20);
       return <div className="ik-mobile-resource-spark" data-tone={metric.value >= metric.threshold ? "danger" : "trust"} key={metric.id}>
-        <span>{metric.label}</span><b>{formatPercent(metric.value, 0)}</b><em>阈{metric.threshold} 6/6 峰{formatPercent(Math.max(metric.value, metric.peak), 0).replace("%", "")}</em>
+        <span>{metric.label}</span><b>{formatPercent(metric.value, 0)}</b><em>{`阈${metric.threshold} · 峰${formatPercent(Math.max(metric.value, metric.peak), 0).replace("%", "")}`}</em>
         <svg viewBox="0 0 96 20" role="img" aria-label={`${metric.label} 最近6点趋势`}><path className="ik-mobile-spark-grid" d="M0 10 H96" /><path className="ik-mobile-threshold-line" d="M0 6 H96" /><polyline className="ik-mobile-spark-line" points={points} /><circle className="ik-mobile-spark-peak" cx="92" cy="5" r="1.9" /></svg>
       </div>;
     })}
@@ -1210,8 +1210,13 @@ function mobileNavStatus(state: OverviewDerivedState): { label: string; tone: Ov
 }
 
 function mobileShortRate(value: number): string {
-  const formatted = formatRate(value);
-  return formatted === "0 B/s" ? "未采集" : formatted.replace(/\s+/g, "").replace("/s", "/秒");
+  const safe = Number(value);
+  if (!Number.isFinite(safe) || safe <= 0) return "未采集";
+  const compact = (next: number, digits: number) => next.toFixed(digits).replace(/\.0+$/, "").replace(/(\.\d*?)0+$/, "$1");
+  if (safe >= 1_000_000_000) return `${compact(safe / 1_000_000_000, safe >= 10_000_000_000 ? 0 : 1)}G`;
+  if (safe >= 1_000_000) return `${compact(safe / 1_000_000, safe >= 100_000_000 ? 0 : safe >= 10_000_000 ? 1 : 2)}M`;
+  if (safe >= 1_000) return `${compact(safe / 1_000, safe >= 100_000 ? 0 : 1)}K`;
+  return `${Math.round(safe)}B`;
 }
 
 function firstPositiveNumber(...values: unknown[]): number | null {
@@ -1427,7 +1432,7 @@ function MobileRingMetrics({ snapshot, state }: OverviewPanelProps) {
   return <section className="ik-ios-rings-card ik-ios-resource-card" data-overview-mobile-core-block="resource" data-overview-mobile-ring-metrics="thin-bars" data-overview-mobile-resource-card="cpu-memory-disk" data-overview-mobile-resource-emphasis="after-secondary-cards" data-overview-mobile-resource-rows="cpu-memory-disk-only" data-overview-mobile-metrics data-overview-mobile-business-metrics={snapshotMissing ? "hidden-no-snapshot" : "visible"}>
     <header className="ik-mobile-status-strip"><span>{"\u8d44\u6e90"}</span><em className="ik-mobile-status-subcopy">{snapshotMissing ? "\u65e0\u4e1a\u52a1\u5feb\u7167" : "\u5904\u7406\u5668 / \u5185\u5b58 / \u78c1\u76d8"}</em></header>
     <div className="ik-ios-ring-grid ik-ios-resource-meters ik-mobile-resource-sparks is-vertical-ledger" data-overview-scene-chart="mobile-resource-vertical-ledger">
-      {resourceMetrics.map((metric) => <div className="ik-ios-resource-meter ik-mobile-resource-spark" data-overview-mobile-resource-row-marker="ik-ios-resource-row" data-tone={metric.tone} key={metric.label} style={{ "--meter-value": `${metric.percent}%` } as CSSProperties} title={`\u9608\u503c ${metric.threshold}% / \u5cf0\u503c ${metric.peak}%`}>
+      {resourceMetrics.map((metric) => <div className="ik-ios-resource-meter" data-overview-mobile-resource-row-marker="ik-ios-resource-row" data-tone={metric.tone} key={metric.label} style={{ "--meter-value": `${metric.percent}%` } as CSSProperties} title={`\u9608\u503c ${metric.threshold}% / \u5cf0\u503c ${metric.peak}%`}>
         <span><em>{metric.label}</em><b>{metric.value}</b></span>
         <i aria-hidden="true"><strong /></i>
         <small>{snapshotMissing ? "\u65e0\u5feb\u7167" : `\u9608${metric.threshold} \u5cf0${metric.peak}`}</small>
@@ -1806,11 +1811,6 @@ function MobileLedger({ snapshot, state }: OverviewPanelProps) {
       data-overview-mobile-app-home="ikuai40-ios-router-home"
       data-overview-mobile-home-mode="ios-app-home"
       data-overview-mobile-home-layout="ios-topnav-network-hero-twin-cards-resource-exception-rank-tabs" data-overview-mobile-home-layout-v70="ios-topnav-overlapped-hero-duo-resource-rank-tabs"
-      data-overview-mobile-first-screen="app-home"
-      data-overview-mobile-first-screen-contract="ios-topnav-network-hero-traffic-metrics-twin-cards-resource-exception-rank-bottom-tab"
-      data-overview-mobile-first-screen-visual="single-hero-microchart-no-standalone-duplicate"
-      data-overview-mobile-first-screen-no-table="true"
-      data-overview-mobile-first-screen-uses-microchart="true"
       data-overview-mobile-no-desktop-collapse="true"
       data-overview-mobile-raw-routeros-policy="hide-before-detail"
       data-overview-mobile-alert={state.verdict.level}
@@ -1818,8 +1818,17 @@ function MobileLedger({ snapshot, state }: OverviewPanelProps) {
       data-overview-mobile-app-home-acceptance="ios-router-app-no-kpi-grid-no-title-collision"
     >
       <div className="ik-ios-home-stack" data-overview-mobile-flat-status="app-home-core" data-overview-mobile-home-stack="topbar-hero-secondary-wan-collection-resource-rank">
-        <MobileIosTopNav snapshot={snapshot} state={state} />
-        <MobileHeroStatusCard snapshot={snapshot} state={state} />
+        <div
+          className="ik-ios-first-screen"
+          data-overview-mobile-first-screen="app-home"
+          data-overview-mobile-first-screen-contract="ios-topnav-network-hero-traffic-metrics-twin-cards-resource-exception-rank-bottom-tab"
+          data-overview-mobile-first-screen-visual="single-hero-microchart-no-standalone-duplicate"
+          data-overview-mobile-first-screen-no-table="true"
+          data-overview-mobile-first-screen-uses-microchart="true"
+        >
+          <MobileIosTopNav snapshot={snapshot} state={state} />
+          <MobileHeroStatusCard snapshot={snapshot} state={state} />
+        </div>
         {resourceFirst ? <MobileRingMetrics snapshot={snapshot} state={state} /> : null}
         <MobileTwinCards snapshot={snapshot} state={state} />
         {!resourceFirst ? <MobileRingMetrics snapshot={snapshot} state={state} /> : null}

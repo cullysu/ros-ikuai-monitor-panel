@@ -19261,3 +19261,449 @@
     white-space: nowrap !important;
   }
 }
+
+/* Edict v72 polish: product-quality iOS router app rhythm and calmer desktop chrome. */
+@media (max-width: 760px) {
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) {
+    padding-bottom: calc(92px + env(safe-area-inset-bottom)) !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-first-screen {
+    display: grid !important;
+    gap: 12px !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-hero-card {
+    min-height: 0 !important;
+    gap: 10px !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-hero-stats {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 8px !important;
+    align-items: stretch !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-hero-major {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-hero-major .is-primary {
+    display: grid !important;
+    align-content: end !important;
+    min-width: 0 !important;
+    padding-right: 2px !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-hero-major .is-primary strong {
+    font-size: clamp(22px, 6.2vw, 30px) !important;
+    letter-spacing: -.045em !important;
+    line-height: .98 !important;
+    max-width: 100% !important;
+    overflow: visible !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-hero-minors {
+    min-width: 0 !important;
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+    align-self: stretch !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-hero-minors .is-chip {
+    min-height: 24px !important;
+    padding: 0 0 4px !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-hero-chart-wrap {
+    min-height: 58px !important;
+    align-items: center !important;
+    background: linear-gradient(180deg, rgba(248, 251, 255, .72), rgba(255,255,255,.2)) !important;
+    border: 1px solid rgba(229,236,245,.78) !important;
+    border-radius: 14px !important;
+    padding: 6px 8px !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-hero-chart-wrap.is-scene-visual {
+    min-height: 82px !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger[data-overview-mobile-scene="resource-full"] .ik-ios-hero-chart-wrap.is-scene-visual {
+    min-height: 88px !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-scene-visual .ik-mobile-resource-sparks.is-vertical-ledger {
+    gap: 9px !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-scene-visual .ik-mobile-resource-spark {
+    grid-template-columns: 44px 46px minmax(0, 1fr) 72px !important;
+    min-height: 26px !important;
+    gap: 8px !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-scene-visual .ik-mobile-resource-spark em {
+    min-width: 0 !important;
+    width: auto !important;
+    font-size: 10.5px !important;
+    color: #7B8794 !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-scene-visual .ik-mobile-resource-spark svg {
+    width: 72px !important;
+    min-width: 72px !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-resource-meter {
+    grid-template-columns: 78px minmax(0, 1fr) 46px !important;
+    min-height: 34px !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-resource-meter span {
+    grid-template-columns: none !important;
+    display: grid !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-resource-meter span em {
+    font-size: 12px !important;
+    line-height: 1.1 !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-resource-meter span b {
+    font-size: 16px !important;
+    line-height: 1.05 !important;
+    margin-top: 1px !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-bottom-tab {
+    position: fixed !important;
+    left: max(12px, env(safe-area-inset-left)) !important;
+    right: max(12px, env(safe-area-inset-right)) !important;
+    bottom: max(10px, env(safe-area-inset-bottom)) !important;
+    max-width: 398px !important;
+    margin: 0 auto !important;
+    min-height: 64px !important;
+    border-radius: 24px !important;
+    z-index: 100 !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-bottom-tab button.is-active {
+    background: linear-gradient(180deg, rgba(22,119,255,.16), rgba(22,119,255,.06)) !important;
+    box-shadow: inset 0 0 0 1px rgba(22,119,255,.10) !important;
+  }
+}
+
+@media (max-width: 390px) {
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-hero-major .is-primary strong {
+    font-size: 22px !important;
+  }
+}
+
+/* Edict v72 CL repair: keep mobile resource visuals readable, not compressed-table-ish. */
+@media (max-width: 760px) {
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-resource-meter {
+    grid-template-columns: minmax(70px, 78px) minmax(0, 1fr) 44px !important;
+    column-gap: 10px !important;
+    min-height: 42px !important;
+    align-items: center !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-resource-meter span {
+    min-width: 0 !important;
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 3px !important;
+    align-content: center !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-resource-meter span em,
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-resource-meter span b,
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-resource-meter small {
+    position: static !important;
+    transform: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    white-space: nowrap !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-resource-meter span em {
+    font-size: 12px !important;
+    line-height: 1 !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-resource-meter span b {
+    font-size: 17px !important;
+    line-height: 1 !important;
+    letter-spacing: -.03em !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-resource-meter i {
+    align-self: center !important;
+    height: 5px !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-resource-meter small {
+    align-self: center !important;
+    justify-self: end !important;
+    color: #6B7280 !important;
+    font-size: 10.5px !important;
+    line-height: 1 !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger[data-overview-mobile-scene="resource-full"] .ik-ios-hero-chart-wrap.is-scene-visual {
+    min-height: 0 !important;
+    padding: 8px 10px !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger[data-overview-mobile-scene="resource-full"] .ik-ios-scene-visual .ik-mobile-resource-sparks.is-vertical-ledger {
+    gap: 8px !important;
+    align-content: center !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger[data-overview-mobile-scene="resource-full"] .ik-ios-scene-visual .ik-mobile-resource-spark {
+    grid-template-columns: 42px 42px minmax(0, 1fr) 58px !important;
+    min-height: 28px !important;
+    gap: 7px !important;
+    align-items: center !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger[data-overview-mobile-scene="resource-full"] .ik-ios-scene-visual .ik-mobile-resource-spark span,
+  .router-overview-framework .ro-mobile-ledger[data-overview-mobile-scene="resource-full"] .ik-ios-scene-visual .ik-mobile-resource-spark b,
+  .router-overview-framework .ro-mobile-ledger[data-overview-mobile-scene="resource-full"] .ik-ios-scene-visual .ik-mobile-resource-spark em {
+    position: static !important;
+    transform: none !important;
+    margin: 0 !important;
+    white-space: nowrap !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger[data-overview-mobile-scene="resource-full"] .ik-ios-scene-visual .ik-mobile-resource-spark b {
+    font-size: 16px !important;
+    line-height: 1 !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger[data-overview-mobile-scene="resource-full"] .ik-ios-scene-visual .ik-mobile-resource-spark em {
+    min-width: 0 !important;
+    font-size: 10px !important;
+    overflow: hidden !important;
+    text-overflow: clip !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger[data-overview-mobile-scene="resource-full"] .ik-ios-scene-visual .ik-mobile-resource-spark svg {
+    width: 58px !important;
+    min-width: 58px !important;
+    height: 18px !important;
+  }
+}
+
+@media (min-width: 761px) {
+  .router-overview-framework .sidebar .ik-meta-pill,
+  .router-overview-framework .sidebar [class*="pill"],
+  .router-overview-framework .sidebar [class*="badge"] {
+    border-radius: 4px !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    border-color: #E2EBF4 !important;
+  }
+
+  .router-overview-framework .sidebar .ik-meta-pill,
+  .router-overview-framework .sidebar [class*="pill"] {
+    min-height: 28px !important;
+    padding: 4px 8px !important;
+  }
+}
+
+/* Edict v72 final visual repair: unclutter iOS mobile resource rows and resource-full hero. */
+@media (max-width: 760px) {
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-resource-card {
+    padding: 14px 14px 16px !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-resource-meters {
+    gap: 12px !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-resource-meter,
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-mobile-resource-spark.ik-ios-resource-meter {
+    position: relative !important;
+    display: grid !important;
+    grid-template-columns: 96px minmax(0, 1fr) 52px !important;
+    min-height: 36px !important;
+    height: auto !important;
+    gap: 10px !important;
+    align-items: center !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-resource-meter span,
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-mobile-resource-spark.ik-ios-resource-meter span {
+    position: static !important;
+    display: grid !important;
+    grid-template-columns: 42px 1fr !important;
+    gap: 4px !important;
+    align-items: baseline !important;
+    min-width: 0 !important;
+    width: auto !important;
+    transform: none !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-resource-meter span em,
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-resource-meter span b,
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-resource-meter small {
+    position: static !important;
+    inset: auto !important;
+    transform: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-resource-meter span em {
+    font-size: 11.5px !important;
+    line-height: 1 !important;
+    color: #536579 !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-resource-meter span b {
+    font-size: 15.5px !important;
+    line-height: 1 !important;
+    color: #111827 !important;
+    letter-spacing: -.025em !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-resource-meter[data-tone="danger"] span b {
+    color: #D93025 !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-resource-meter i {
+    position: static !important;
+    display: block !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    height: 5px !important;
+    align-self: center !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-resource-meter small {
+    justify-self: end !important;
+    align-self: center !important;
+    font-size: 10px !important;
+    line-height: 1 !important;
+    color: #6B7280 !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger[data-overview-mobile-scene="resource-full"] .ik-ios-hero-chart-wrap.is-scene-visual {
+    min-height: auto !important;
+    padding: 8px 10px !important;
+    align-items: center !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger[data-overview-mobile-scene="resource-full"] .ik-ios-scene-visual,
+  .router-overview-framework .ro-mobile-ledger[data-overview-mobile-scene="resource-full"] .ik-ios-scene-visual .ik-mobile-resource-sparks.is-vertical-ledger {
+    min-height: 0 !important;
+    height: auto !important;
+    align-content: center !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger[data-overview-mobile-scene="resource-full"] .ik-ios-scene-visual .ik-mobile-resource-sparks.is-vertical-ledger {
+    gap: 8px !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger[data-overview-mobile-scene="resource-full"] .ik-ios-scene-visual .ik-mobile-resource-spark {
+    display: grid !important;
+    grid-template-columns: 38px 38px minmax(0, 1fr) 54px !important;
+    min-height: 24px !important;
+    gap: 7px !important;
+    align-items: center !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger[data-overview-mobile-scene="resource-full"] .ik-ios-scene-visual .ik-mobile-resource-spark span,
+  .router-overview-framework .ro-mobile-ledger[data-overview-mobile-scene="resource-full"] .ik-ios-scene-visual .ik-mobile-resource-spark b,
+  .router-overview-framework .ro-mobile-ledger[data-overview-mobile-scene="resource-full"] .ik-ios-scene-visual .ik-mobile-resource-spark em,
+  .router-overview-framework .ro-mobile-ledger[data-overview-mobile-scene="resource-full"] .ik-ios-scene-visual .ik-mobile-resource-spark svg {
+    position: static !important;
+    transform: none !important;
+    margin: 0 !important;
+    white-space: nowrap !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger[data-overview-mobile-scene="resource-full"] .ik-ios-scene-visual .ik-mobile-resource-spark span { font-size: 11.5px !important; }
+  .router-overview-framework .ro-mobile-ledger[data-overview-mobile-scene="resource-full"] .ik-ios-scene-visual .ik-mobile-resource-spark b { font-size: 15px !important; line-height: 1 !important; }
+  .router-overview-framework .ro-mobile-ledger[data-overview-mobile-scene="resource-full"] .ik-ios-scene-visual .ik-mobile-resource-spark em { font-size: 9.5px !important; overflow: hidden !important; }
+  .router-overview-framework .ro-mobile-ledger[data-overview-mobile-scene="resource-full"] .ik-ios-scene-visual .ik-mobile-resource-spark svg { width: 54px !important; min-width: 54px !important; height: 16px !important; }
+}
+
+/* Edict v72 final resource-full hero: override old 92px spark cards. */
+@media (max-width: 760px) {
+  .router-overview-framework .ro-mobile-ledger[data-overview-mobile-scene="resource-full"].ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-hero-card {
+    min-height: 0 !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger[data-overview-mobile-scene="resource-full"].ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-hero-card .ik-ios-hero-chart-wrap.is-scene-visual {
+    height: auto !important;
+    min-height: 0 !important;
+    padding: 8px 10px !important;
+    overflow: visible !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger[data-overview-mobile-scene="resource-full"].ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-hero-card .ik-ios-scene-visual,
+  .router-overview-framework .ro-mobile-ledger[data-overview-mobile-scene="resource-full"].ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-hero-card .ik-ios-scene-visual .ik-mobile-resource-sparks.is-vertical-ledger {
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger[data-overview-mobile-scene="resource-full"].ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-hero-card .ik-ios-scene-visual .ik-mobile-resource-sparks.is-vertical-ledger {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 8px !important;
+    align-content: center !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger[data-overview-mobile-scene="resource-full"].ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-hero-card .ik-ios-scene-visual .ik-mobile-resource-sparks.is-vertical-ledger .ik-mobile-resource-spark {
+    display: grid !important;
+    grid-template-columns: 40px 40px minmax(0, 1fr) 54px !important;
+    grid-template-rows: none !important;
+    min-height: 24px !important;
+    height: 24px !important;
+    max-height: 24px !important;
+    gap: 7px !important;
+    align-items: center !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger[data-overview-mobile-scene="resource-full"].ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-hero-card .ik-ios-scene-visual .ik-mobile-resource-sparks.is-vertical-ledger .ik-mobile-resource-spark span,
+  .router-overview-framework .ro-mobile-ledger[data-overview-mobile-scene="resource-full"].ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-hero-card .ik-ios-scene-visual .ik-mobile-resource-sparks.is-vertical-ledger .ik-mobile-resource-spark b,
+  .router-overview-framework .ro-mobile-ledger[data-overview-mobile-scene="resource-full"].ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-hero-card .ik-ios-scene-visual .ik-mobile-resource-sparks.is-vertical-ledger .ik-mobile-resource-spark em,
+  .router-overview-framework .ro-mobile-ledger[data-overview-mobile-scene="resource-full"].ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-hero-card .ik-ios-scene-visual .ik-mobile-resource-sparks.is-vertical-ledger .ik-mobile-resource-spark svg {
+    position: static !important;
+    display: block !important;
+    width: auto !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    transform: none !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger[data-overview-mobile-scene="resource-full"].ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-hero-card .ik-ios-scene-visual .ik-mobile-resource-sparks.is-vertical-ledger .ik-mobile-resource-spark span { font-size: 11px !important; color: #536579 !important; }
+  .router-overview-framework .ro-mobile-ledger[data-overview-mobile-scene="resource-full"].ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-hero-card .ik-ios-scene-visual .ik-mobile-resource-sparks.is-vertical-ledger .ik-mobile-resource-spark b { font-size: 15px !important; line-height: 1 !important; color: #111827 !important; }
+  .router-overview-framework .ro-mobile-ledger[data-overview-mobile-scene="resource-full"].ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-hero-card .ik-ios-scene-visual .ik-mobile-resource-sparks.is-vertical-ledger .ik-mobile-resource-spark em { font-size: 9.5px !important; color: #6B7280 !important; overflow: hidden !important; }
+  .router-overview-framework .ro-mobile-ledger[data-overview-mobile-scene="resource-full"].ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-hero-card .ik-ios-scene-visual .ik-mobile-resource-sparks.is-vertical-ledger .ik-mobile-resource-spark svg { width: 54px !important; min-width: 54px !important; height: 16px !important; }
+}
