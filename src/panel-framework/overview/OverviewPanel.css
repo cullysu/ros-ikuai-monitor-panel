@@ -23207,3 +23207,9 @@
     text-overflow: clip !important;
   }
 }
+
+@media (min-width: 761px) {
+  .router-overview-framework[data-overview-scene-key="resource-full"] [data-overview-density-module="resource-risk-priority"] {
+    min-height: 675px !important;
+  }
+}
