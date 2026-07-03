@@ -2890,6 +2890,12 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       const height = Math.max(0, bottom - top);
       return width * height;
     };
+    const rectsOverlap = (a, b) => {
+      if (!a || !b) return false;
+      const horizontal = Math.max(0, Math.min(a.right, b.right) - Math.max(a.left, b.left));
+      const vertical = Math.max(0, Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top));
+      return horizontal > 1 && vertical > 1;
+    };
     const overviewDesktopTableAreaPx = overviewDesktopTableNodesUnique.reduce((sum, node) => sum + visibleNodeArea(node), 0);
     const overviewDesktopViewportAreaPx = Math.max(1, window.innerWidth * window.innerHeight);
     const overviewDesktopTableAreaRatio = Number((overviewDesktopTableAreaPx / overviewDesktopViewportAreaPx).toFixed(3));
@@ -3026,13 +3032,44 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       timeWindow: node.getAttribute('data-overview-time-window') || '',
       confidence: node.getAttribute('data-overview-confidence') || '',
     }));
+    const overviewTrendReadoutClipSamples = Array.from(new Set([
+      ...overviewTrendReadoutNodes,
+      ...overviewSparseTrafficReadouts,
+    ]))
+      .map((node) => {
+        const style = getComputedStyle(node);
+        const rect = node.getBoundingClientRect();
+        const clipped = (
+          (style.textOverflow === 'ellipsis' && node.scrollWidth > node.clientWidth + 2) ||
+          (['hidden', 'clip'].includes(style.overflow) && node.scrollHeight > node.clientHeight + 2) ||
+          (style.whiteSpace === 'nowrap' && node.scrollWidth > node.clientWidth + 2)
+        );
+        return clipped ? {
+          selector: selectorForNode(node),
+          text: normalize(node.textContent || '').slice(0, 120),
+          width: Math.round(rect.width),
+          height: Math.round(rect.height),
+          scrollWidth: Math.round(node.scrollWidth),
+          scrollHeight: Math.round(node.scrollHeight),
+        } : null;
+      })
+      .filter(Boolean);
+    const overviewTrendReadoutRealHeightOk = sectionName !== 'overview' || !isDesktopOverview || Boolean(
+      overviewTrendReadoutNodes.length === 0 ||
+      overviewTrendReadoutNodes.every((node) => {
+        const rect = node.getBoundingClientRect();
+        return rect.height >= 24 && rect.width >= 120 && node.clientHeight > 0;
+      })
+    );
     const overviewChartReadabilityOk = sectionName !== 'overview' || Boolean(
       (!isDesktopOverview || overviewSparseTrafficShells.length === 0 || overviewSparseTrafficReadouts.length >= 2) &&
-      (!isDesktopOverview || /点|1s|缓存|业务快照|可信|未采集/.test(overviewChartMetaText + ' ' + overviewDesktopTopText + ' ' + overviewDesktopDetailText)) &&
+      (!isDesktopOverview || new RegExp(['\u70b9', '1s', '\u7f13\u5b58', '\u4e1a\u52a1\u5feb\u7167', '\u53ef\u4fe1', '\u672a\u91c7\u96c6'].join('|')).test(overviewChartMetaText + ' ' + overviewDesktopTopText + ' ' + overviewDesktopDetailText)) &&
       (!isMobileOverview || sectionRoot?.querySelector('[data-overview-mobile-core-block="wan"]')) &&
       (!isMobileOverview || sectionRoot?.querySelector('[data-overview-mobile-core-block="collection"]')) &&
       (!isMobileOverview || sectionRoot?.querySelector('[data-overview-mobile-core-block="resource"]')) &&
-      (!isMobileOverview || Array.from(sectionRoot?.querySelectorAll('.ik-mobile-microbar, .ik-mobile-status-strip') || []).filter(nodeVisibleInFirstScreen).length >= 3)
+      (!isMobileOverview || Array.from(sectionRoot?.querySelectorAll('.ik-mobile-microbar, .ik-mobile-status-strip') || []).filter(nodeVisibleInFirstScreen).length >= 3) &&
+      overviewTrendReadoutRealHeightOk &&
+      overviewTrendReadoutClipSamples.length === 0
     );
     const overviewVisualBalanceDesktopOk = Boolean(
       overviewDesktopKpiCount > 0 &&
@@ -3478,7 +3515,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     );
     const overviewDesktopNoMobileAppChromeOk = sectionName !== 'overview' || !isDesktopOverview || !Array.from(sectionRoot?.querySelectorAll('.ik-ios-top-nav, .ik-ios-hero-card, .ik-mobile-twin-cards, .ik-ios-resource-card, .ik-ios-rank-card, .ik-ios-bottom-tab') || [])
       .some(nodeVisibleInViewport);
-    const overviewDesktopNoToyNavLeakOk = sectionName !== 'overview' || !isDesktopOverview || !Array.from(sectionRoot?.querySelectorAll('.ik-ios-top-nav, [data-overview-mobile-ios-nav="true"], .ik-ios-bottom-tab, [data-overview-mobile-bottom-tab]') || [])
+    const overviewDesktopNoToyNavLeakOk = sectionName !== 'overview' || !isDesktopOverview || !Array.from(sectionRoot?.querySelectorAll('.ik-ios-top-nav, .ik-ios-nav-title, [data-overview-mobile-primary-title], [data-overview-mobile-ios-nav="true"], .ik-ios-bottom-tab, [data-overview-mobile-bottom-tab]') || [])
       .some(nodeVisibleInViewport);
     const overviewDesktopHierarchyMarkerOk = sectionName !== 'overview' || !isDesktopOverview || Boolean(
       sectionRoot?.querySelector('[data-overview-summary]') &&
@@ -4153,8 +4190,34 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         })
         .filter(Boolean)
       : [];
+    const mobile390TitleOverlapSamples = mobileOverview390x844
+      ? Array.from(sectionRoot?.querySelectorAll([
+        '[data-overview-mobile-primary-title]',
+        '.ik-ios-nav-title',
+        '.ik-ios-hero-head',
+        '.ik-ios-resource-card header',
+        '.ik-ios-rank-card header',
+      ].join(',')) || [])
+        .filter(nodeVisibleInFirstScreen)
+        .map((node) => {
+          const rect = node.getBoundingClientRect();
+          const overlapSibling = Array.from(node.parentElement?.children || [])
+            .filter((child) => child !== node)
+            .some((sibling) => nodeVisibleInFirstScreen(sibling) && rectsOverlap(rect, sibling.getBoundingClientRect()));
+          return overlapSibling ? {
+            selector: selectorForNode(node),
+            text: normalize(node.textContent || '').slice(0, 80),
+            width: Math.round(rect.width),
+            height: Math.round(rect.height),
+          } : null;
+        })
+        .filter(Boolean)
+      : [];
     const overviewMobile390NoCoreTextClipOk = !mobileOverview390x844 || mobile390CoreTextClipSamples.length === 0;
-    const overviewMobile390NoAppHomeTitleClipOk = overviewMobile390NoCoreTextClipOk;
+    const overviewMobile390NoAppHomeTitleClipOk = !mobileOverview390x844 || (
+      overviewMobile390NoCoreTextClipOk &&
+      mobile390TitleOverlapSamples.length === 0
+    );
     const primaryConclusionEllipsisSamples = ellipsisSamples.filter((sample) =>
       String(sample.selector || '').includes('[data-overview-primary-conclusion]') ||
       /异常：|WAN全离线|快照缺失|资源满载|采集异常|接口全/.test(sample.text)
@@ -6526,6 +6589,18 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
             metaNodes: overviewChartMetaNodes.length,
             metaText: overviewChartMetaText.slice(0, 220),
             readouts: overviewSparseTrafficReadoutRecords.slice(0, 4),
+            trendReadoutCount: overviewTrendReadoutNodes.length,
+            trendReadoutRealHeightOk: overviewTrendReadoutRealHeightOk,
+            trendReadoutRects: overviewTrendReadoutNodes.slice(0, 6).map((node) => {
+              const rect = node.getBoundingClientRect();
+              return {
+                text: normalize(node.textContent || '').slice(0, 80),
+                width: Math.round(rect.width),
+                height: Math.round(rect.height),
+                clientHeight: node.clientHeight,
+              };
+            }),
+            trendReadoutClipSamples: overviewTrendReadoutClipSamples.slice(0, 4),
           },
         },
         mobile: {

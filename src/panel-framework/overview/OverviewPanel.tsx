@@ -1237,14 +1237,6 @@ function mobileHeroStats(snapshot: OverviewRawSnapshot, state: OverviewDerivedSt
   const totals = trafficTotals(snapshot);
   const noBusiness = state.scenario === "no-snapshot";
   const conn = toNumber(state.facts.connections.total);
-  if (state.scenario === "resource-full") {
-    return [
-      { label: "\u5904\u7406\u5668", value: formatPercent(state.facts.resource.cpu, 0), tone: "danger" },
-      { label: "\u5185\u5b58", value: formatPercent(state.facts.resource.memory, 0), tone: "danger" },
-      { label: "\u78c1\u76d8", value: formatPercent(state.facts.resource.disk, 0), tone: "danger" },
-      { label: "\u8fde\u63a5", value: formatCompact(conn), tone: conn > 50000 ? "warn" : "trust" },
-    ];
-  }
   return [
     { label: "\u4e0b\u8f7d", value: noBusiness ? "\u4e0d\u5c55\u793a" : mobileShortRate(totals.down), tone: noBusiness ? "missing" : "ok" },
     { label: "\u4e0a\u4f20", value: noBusiness ? "\u4e0d\u5c55\u793a" : mobileShortRate(totals.up), tone: noBusiness ? "missing" : "ok" },
@@ -1362,7 +1354,7 @@ function MobileRingMetrics({ snapshot, state }: OverviewPanelProps) {
       { label: "\u5185\u5b58", value: formatPercent(state.facts.resource.memory, 0), percent: clampPercent(state.facts.resource.memory), threshold: 85, peak: 92, tone: state.facts.resource.memory >= 85 ? "danger" as OverviewTone : "ok" as OverviewTone },
       { label: "\u78c1\u76d8", value: formatPercent(state.facts.resource.disk, 0), percent: clampPercent(state.facts.resource.disk), threshold: 90, peak: 97, tone: state.facts.resource.disk >= 90 ? "danger" as OverviewTone : "ok" as OverviewTone },
     ];
-  return <section className="ik-ios-rings-card ik-ios-resource-card" data-overview-mobile-ring-metrics="thin-bars" data-overview-mobile-resource-card="cpu-memory-disk" data-overview-mobile-resource-rows="cpu-memory-disk-only" data-overview-mobile-metrics data-overview-mobile-business-metrics={snapshotMissing ? "hidden-no-snapshot" : "visible"}>
+  return <section className="ik-ios-rings-card ik-ios-resource-card" data-overview-mobile-ring-metrics="thin-bars" data-overview-mobile-resource-card="cpu-memory-disk" data-overview-mobile-resource-emphasis="after-secondary-cards" data-overview-mobile-resource-rows="cpu-memory-disk-only" data-overview-mobile-metrics data-overview-mobile-business-metrics={snapshotMissing ? "hidden-no-snapshot" : "visible"}>
     <header><span>{snapshotMissing ? "\u4e1a\u52a1\u6307\u6807" : "\u8d44\u6e90\u72b6\u6001"}</span><em>{snapshotMissing ? "\u65e0\u4e1a\u52a1\u5feb\u7167\uff0c\u4e1a\u52a1\u6570\u636e\u4e0d\u5c55\u793a" : "CPU / \u5185\u5b58 / \u78c1\u76d8"}</em></header>
     <div className="ik-ios-ring-grid ik-ios-resource-grid ik-mobile-resource-sparks is-vertical-ledger" data-overview-scene-chart="mobile-resource-vertical-ledger">
       {resourceMetrics.map((metric) => <div className="ik-ios-ring-item ik-ios-resource-row ik-mobile-resource-spark" data-tone={metric.tone} key={metric.label} style={{ "--ring-value": String(metric.percent) } as CSSProperties} title={`threshold ${metric.threshold}% / peak ${metric.peak}%`}>
@@ -1742,19 +1734,19 @@ function MobileLedger({ snapshot, state }: OverviewPanelProps) {
       data-overview-mobile-ios-router-home="true"
       data-overview-mobile-app-home="ikuai40-ios-router-home"
       data-overview-mobile-home-mode="ios-app-home"
-      data-overview-mobile-home-layout="ios-topnav-hero-scene-twin-resource-exception-rank-tabs"
+      data-overview-mobile-home-layout="ios-topnav-network-hero-twin-cards-resource-exception-rank-tabs"
       data-overview-mobile-first-screen="app-home"
       data-overview-mobile-first-screen-contract="ios-topnav-network-hero-traffic-metrics-twin-cards-resource-exception-rank-bottom-tab"
-      data-overview-mobile-first-screen-visual="scenario-microchart"
+      data-overview-mobile-first-screen-visual="single-hero-microchart-no-standalone-duplicate"
       data-overview-mobile-first-screen-no-table="true"
       data-overview-mobile-first-screen-uses-microchart="true"
       data-overview-mobile-no-desktop-collapse="true"
       data-overview-mobile-raw-routeros-policy="hide-before-detail"
       data-overview-mobile-alert={state.verdict.level}
       data-overview-mobile-scene={state.scenario}
-      data-overview-mobile-app-home-acceptance="true"
+      data-overview-mobile-app-home-acceptance="single-topbar-network-hero-secondary-wan-collection-resource-emphasis"
     >
-      <div className="ik-ios-home-stack" data-overview-mobile-home-stack="topnav-hero-scene-twin-resource-exception-rank">
+      <div className="ik-ios-home-stack" data-overview-mobile-home-stack="topbar-hero-secondary-wan-collection-resource-rank">
         <MobileIosTopNav snapshot={snapshot} state={state} />
         <MobileHeroStatusCard snapshot={snapshot} state={state} />
         <MobileTwinCards snapshot={snapshot} state={state} />

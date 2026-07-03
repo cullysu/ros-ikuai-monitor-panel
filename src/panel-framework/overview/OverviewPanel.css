@@ -15697,6 +15697,9 @@
     color: #5f6f80 !important;
     font-size: 8.5px !important;
     line-height: 1.15 !important;
+    min-height: 24px !important;
+    align-items: center !important;
+    padding: 2px 0 !important;
   }
 
   .router-overview-framework .ro-judgement-row {
@@ -17274,5 +17277,242 @@
 @media (min-width: 761px) {
   .router-overview-framework .ro-desktop-grid[data-overview-desktop-scene="interfaces-down"] [data-overview-density-module="interface-forwarding"][data-overview-anomaly-evidence] {
     overflow: visible !important;
+  }
+}
+
+/* v64: 390x844 iPhone polish pass — tighter title rail, calmer cards, stronger resource values. */
+@media (max-width: 430px) and (min-height: 800px) {
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) {
+    padding-top: 2px !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-home-stack {
+    gap: 8px !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-top-nav {
+    min-height: 64px !important;
+    padding: 0 2px !important;
+    grid-template-columns: 36px minmax(0, 1fr) auto !important;
+    align-items: start !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-nav-title {
+    min-width: 0 !important;
+    padding-top: 2px !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-nav-title b {
+    display: block !important;
+    min-width: 0 !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    white-space: normal !important;
+    font-size: clamp(17px, 4.9vw, 20px) !important;
+    line-height: 1.06 !important;
+    letter-spacing: -.03em !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-nav-title span {
+    display: block !important;
+    min-width: 0 !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    white-space: normal !important;
+    font-size: 10px !important;
+    line-height: 1.15 !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-status-pill {
+    align-self: start !important;
+    min-width: 56px !important;
+    min-height: 26px !important;
+    margin-top: 4px !important;
+    padding: 4px 8px !important;
+    border-radius: 999px !important;
+    font-size: 10px !important;
+    line-height: 1 !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-hero-card {
+    min-height: 172px !important;
+    gap: 8px !important;
+    padding: 12px 13px 11px !important;
+    border-radius: 20px !important;
+    box-shadow: 0 8px 22px rgba(28, 77, 126, .05) !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-hero-head span {
+    font-size: 11px !important;
+    line-height: 1.12 !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-hero-head b {
+    font-size: clamp(24px, 6.1vw, 28px) !important;
+    line-height: 1.02 !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-hero-head em {
+    font-size: 11px !important;
+    line-height: 1.18 !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-hero-stats {
+    gap: 6px !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-hero-major,
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-hero-minors {
+    gap: 6px !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-hero-stats span {
+    min-height: 40px !important;
+    padding: 6px 8px !important;
+    border-radius: 14px !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-hero-stats strong {
+    font-size: clamp(17px, 4.7vw, 20px) !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-hero-chart-wrap {
+    min-height: 38px !important;
+    height: 38px !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-hero-chart {
+    height: 38px !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-mobile-twin-cards {
+    gap: 8px !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-mobile-twin-card {
+    min-height: 80px !important;
+    border-radius: 16px !important;
+    box-shadow: 0 6px 18px rgba(28, 77, 126, .04) !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-mobile-status-strip b {
+    font-size: clamp(20px, 5.6vw, 24px) !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger[data-overview-mobile-scene="resource-full"] .ik-mobile-hero-visual {
+    padding: 10px !important;
+    border-radius: 18px !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger[data-overview-mobile-scene="resource-full"] .ik-mobile-resource-sparks.is-vertical-ledger {
+    gap: 6px !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger[data-overview-mobile-scene="resource-full"] .ik-mobile-resource-sparks.is-vertical-ledger .ik-mobile-resource-spark {
+    min-height: 92px !important;
+    padding: 9px 9px 8px !important;
+    border: 1px solid rgba(225, 235, 247, .92) !important;
+    border-radius: 16px !important;
+    background: rgba(255, 255, 255, .88) !important;
+    box-shadow: 0 6px 16px rgba(28, 77, 126, .04) !important;
+    overflow: hidden !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger[data-overview-mobile-scene="resource-full"] .ik-mobile-resource-spark span,
+  .router-overview-framework .ro-mobile-ledger[data-overview-mobile-scene="resource-full"] .ik-mobile-resource-spark b,
+  .router-overview-framework .ro-mobile-ledger[data-overview-mobile-scene="resource-full"] .ik-mobile-resource-spark em {
+    min-width: 0 !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    white-space: nowrap !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger[data-overview-mobile-scene="resource-full"] .ik-mobile-resource-spark span {
+    font-size: 10px !important;
+    line-height: 1 !important;
+    color: #5e7187 !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger[data-overview-mobile-scene="resource-full"] .ik-mobile-resource-spark b {
+    font-size: clamp(20px, 5.4vw, 24px) !important;
+    line-height: 1 !important;
+    color: #17212c !important;
+    letter-spacing: -.03em !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger[data-overview-mobile-scene="resource-full"] .ik-mobile-resource-spark em {
+    display: block !important;
+    font-size: 9px !important;
+    line-height: 1.1 !important;
+    color: #7a889a !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger[data-overview-mobile-scene="resource-full"] .ik-mobile-resource-spark svg {
+    height: 12px !important;
+    opacity: .95 !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-resource-card {
+    padding: 11px 12px !important;
+    border-radius: 16px !important;
+    box-shadow: 0 6px 18px rgba(28, 77, 126, .04) !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-resource-row {
+    min-height: 32px !important;
+    grid-template-columns: 50px minmax(0, 1fr) 46px !important;
+    gap: 8px !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-resource-row > i {
+    height: 4px !important;
+    background: rgba(150, 175, 201, .18) !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-resource-row > i > em {
+    background: linear-gradient(90deg, var(--v63-blue), rgba(134, 183, 232, .95)) !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-resource-row span {
+    font-size: 11px !important;
+    line-height: 1.1 !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-resource-row b {
+    font-size: 16px !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+  }
+
+  .router-overview-framework .ik-ios-bottom-tab {
+    min-height: 58px !important;
+    padding: 5px 10px calc(6px + env(safe-area-inset-bottom)) !important;
+    border-top: 1px solid rgba(214, 228, 241, .9) !important;
+    background: rgba(255, 255, 255, .88) !important;
+    box-shadow: 0 -8px 20px rgba(28, 77, 126, .06) !important;
+    backdrop-filter: blur(18px) saturate(140%) !important;
+    -webkit-backdrop-filter: blur(18px) saturate(140%) !important;
+  }
+
+  .router-overview-framework .ik-ios-bottom-tab button {
+    min-height: 42px !important;
+    border-radius: 14px !important;
+    gap: 1px !important;
+    color: #7d8ea2 !important;
+    font-size: 10px !important;
+    line-height: 1 !important;
+  }
+
+  .router-overview-framework .ik-ios-bottom-tab button svg {
+    width: 20px !important;
+    height: 20px !important;
+  }
+
+  .router-overview-framework .ik-ios-bottom-tab button.is-active {
+    color: var(--v63-blue) !important;
+    background: linear-gradient(180deg, rgba(22, 119, 255, .13), rgba(22, 119, 255, .06)) !important;
+    box-shadow: inset 0 0 0 1px rgba(22, 119, 255, .08) !important;
   }
 }
