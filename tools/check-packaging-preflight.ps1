@@ -132,7 +132,7 @@ try {
     $indexText = Get-Content -Raw -LiteralPath $indexPath
     $frameworkShell = (
       $indexText -match 'data-app-shell="ikuai"' -and
-      $indexText -match '<div class="app ik-shell">' -and
+      $indexText -match '<div\s+class="app ik-shell"(?:\s|>)' -and
       $indexText -match 'data-overview-framework-asset="style"' -and
       $indexText -match 'data-overview-framework-asset="script"'
     )

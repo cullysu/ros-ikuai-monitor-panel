@@ -151,7 +151,7 @@ jobs:
           if (-not $index) { throw "Bundled public/index.html was not found." }
           $indexText = Get-Content -Raw -LiteralPath $index.FullName
           if ($indexText -notmatch 'data-app-shell="ikuai"') { throw "Bundled frontend is missing the app shell marker." }
-          if ($indexText -notmatch '<div class="app ik-shell">') { throw "Bundled frontend is missing the framework shell container." }
+          if ($indexText -notmatch '<div\s+class="app ik-shell"(?:\s|>)') { throw "Bundled frontend is missing the framework shell container." }
           if ($indexText -notmatch 'data-overview-framework-asset="style"') { throw "Bundled frontend is missing the framework style asset marker." }
           if ($indexText -notmatch 'data-overview-framework-asset="script"') { throw "Bundled frontend is missing the framework script asset marker." }
           $publicRoot = Split-Path -Parent $index.FullName
