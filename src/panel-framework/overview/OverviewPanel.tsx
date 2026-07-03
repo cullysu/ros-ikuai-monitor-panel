@@ -154,32 +154,38 @@ function topbarImpactValue(state: OverviewDerivedState): string {
   if (state.scenario === "no-snapshot") return "链路受限";
   if (state.scenario === "resource-full") return "资源超阈";
   if (state.scenario === "interfaces-down") return "转发异常";
-  if (state.scenario === "all-offline") return "WAN 离线";
+  if (state.scenario === "all-offline") return "出口离线";
   if (state.scenario === "collection-down") return "缓存展示";
   return "可参考";
 }
 
 function topbarObjectValue(state: OverviewDerivedState): { value: string; note: string } {
   if (state.scenario === "resource-full") {
-    return { value: "资源", note: state.facts.resource.summaryText };
+    return { value: "\u8d44\u6e90", note: `WAN 可参考 / ${state.facts.resource.summaryText}` };
   }
   if (state.scenario === "interfaces-down") {
-    return { value: "接口", note: compactListText(state.facts.interfaces.downNames, 4) || "接口转发面异常" };
+    return { value: "WAN 接口", note: `转发面 / ${compactListText(state.facts.interfaces.downNames, 4) || "\u63a5\u53e3\u8f6c\u53d1\u9762\u5f02\u5e38"}` };
   }
   if (state.scenario === "all-offline") {
-    return { value: "WAN", note: state.facts.wan.text };
+    return { value: `WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(state.facts.wan.total)}`, note: `${formatNumber(state.facts.wan.offline)} 条线路离线` };
   }
   if (state.scenario === "collection-down") {
-    return { value: "采集", note: state.facts.collection.channelText };
+    return { value: "\u91c7\u96c6", note: `WAN / 业务快照 / ${state.facts.collection.channelText}` };
   }
-  return { value: "默认路由", note: state.facts.route.rawSummary || state.facts.route.text };
+  return { value: state.facts.route.label || "\u9ed8\u8ba4\u8def\u7531", note: "\u9ed8\u8ba4\u8def\u7531\u8bc1\u636e" };
 }
 
 function topbarCollectionValue(state: OverviewDerivedState): { value: string; note: string } {
+  if (state.scenario === "no-snapshot") {
+    return {
+      value: "\u94fe\u8def\u53d7\u9650",
+      note: "\u91c7\u96c6\u94fe\u8def\u9700\u6838",
+    };
+  }
   if (state.scenario === "interfaces-down") {
     return {
-      value: "采集不可达",
-      note: "REST 不可达 / SSH 不可达",
+      value: "\u91c7\u96c6\u4e0d\u53ef\u8fbe",
+      note: "REST \u4e0d\u53ef\u8fbe / SSH \u4e0d\u53ef\u8fbe",
     };
   }
   return {
@@ -191,8 +197,18 @@ function topbarCollectionValue(state: OverviewDerivedState): { value: string; no
 function topbarSnapshotValue(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): { value: string; note: string } {
   return {
     value: latestSuccess(snapshot, state.scenario),
-    note: state.scenario === "no-snapshot" ? "业务数据不展示" : state.facts.freshness.credibilityLabel,
+    note: state.scenario === "no-snapshot" ? "\u4e1a\u52a1\u6570\u636e\u4e0d\u5c55\u793a" : state.facts.freshness.credibilityLabel,
   };
+}
+
+function topbarConclusionNote(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): string {
+  const recent = latestSuccess(snapshot, state.scenario);
+  if (state.scenario === "no-snapshot") return "\u65e0\u4e1a\u52a1\u5feb\u7167\uff0c\u4e1a\u52a1\u6570\u636e\u4e0d\u5c55\u793a";
+  if (state.scenario === "resource-full") return "\u8d44\u6e90\u8bc1\u636e";
+  if (state.scenario === "interfaces-down") return "\u9ed8\u8ba4\u8def\u7531\u5f71\u54cd";
+  if (state.scenario === "all-offline") return "\u9ed8\u8ba4\u8def\u7531\u5f02\u5e38";
+  if (state.scenario === "collection-down") return `\u6700\u8fd1\u6210\u529f ${recent}`;
+  return state.verdict.summary;
 }
 
 function statusUpdated(snapshot: OverviewRawSnapshot): string {
@@ -225,48 +241,48 @@ function routerosState(snapshot: OverviewRawSnapshot, scenario: OverviewScenario
 }
 
 function restState(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): { value: string; tone: OverviewTone; note: string } {
-  if (state.scenario === "no-snapshot") return { value: "需核", tone: "warn", note: "链路需核" };
-  if (state.scenario === "interfaces-down") return { value: "不可达", tone: "warn", note: "采集通道不可达" };
+  if (state.scenario === "no-snapshot") return { value: "\u9700\u6838", tone: "warn", note: "\u94fe\u8def\u9700\u6838" };
+  if (state.scenario === "interfaces-down") return { value: "\u4e0d\u53ef\u8fbe", tone: "warn", note: "\u91c7\u96c6\u901a\u9053\u4e0d\u53ef\u8fbe" };
   if (snapshot.meta?.realtimeError || snapshot.meta?.slowRestError || state.scenario === "collection-down") {
-    return { value: "待确认", tone: "warn", note: text(snapshot.meta?.realtimeError || snapshot.meta?.slowRestError, "当前使用缓存") };
+    return { value: "\u5f85\u786e\u8ba4", tone: "warn", note: text(snapshot.meta?.realtimeError || snapshot.meta?.slowRestError, "\u5f53\u524d\u4f7f\u7528\u7f13\u5b58") };
   }
-  return { value: stripChannelPrefix(state.facts.collection.restLabel, "REST") || "可用", tone: "ok", note: "实时快照可用" };
+  return { value: stripChannelPrefix(state.facts.collection.restLabel, "REST") || "\u53ef\u7528", tone: "ok", note: "\u5b9e\u65f6\u5feb\u7167\u53ef\u7528" };
 }
 
 function sshState(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): { value: string; tone: OverviewTone; note: string } {
-  if (state.scenario === "no-snapshot") return { value: "断链", tone: "danger", note: "通道断链" };
-  if (state.scenario === "interfaces-down") return { value: "不可达", tone: "warn", note: "采集通道不可达" };
-  if (snapshot.meta?.staticError || state.scenario === "collection-down" || /不可用|缺/.test(state.facts.collection.sshLabel)) {
-    return { value: "不可用", tone: "warn", note: text(snapshot.meta?.staticError, "SSH 缺依赖") };
+  if (state.scenario === "no-snapshot") return { value: "\u65ad\u94fe", tone: "danger", note: "\u901a\u9053\u65ad\u94fe" };
+  if (state.scenario === "interfaces-down") return { value: "\u4e0d\u53ef\u8fbe", tone: "warn", note: "\u91c7\u96c6\u901a\u9053\u4e0d\u53ef\u8fbe" };
+  if (snapshot.meta?.staticError || state.scenario === "collection-down" || /\u4e0d\u53ef\u7528|\u7f3a/.test(state.facts.collection.sshLabel)) {
+    return { value: "\u4e0d\u53ef\u7528", tone: "warn", note: text(snapshot.meta?.staticError, "SSH \u7f3a\u4f9d\u8d56") };
   }
-  return { value: stripChannelPrefix(state.facts.collection.sshLabel, "SSH") || "可用", tone: "ok", note: "静态读取可用" };
+  return { value: stripChannelPrefix(state.facts.collection.sshLabel, "SSH") || "\u53ef\u7528", tone: "ok", note: "\u9759\u6001\u8bfb\u53d6\u53ef\u7528" };
 }
 
 function topbarItems(snapshot: OverviewRawSnapshot, state: OverviewDerivedState) {
-  const router = routerosState(snapshot, state.scenario);
-  const rest = restState(snapshot, state);
-  const ssh = sshState(snapshot, state);
   const object = topbarObjectValue(state);
   const collection = topbarCollectionValue(state);
   const snapshotCell = topbarSnapshotValue(snapshot, state);
   if (state.scenario === "no-snapshot") {
     const updated = statusUpdated(snapshot);
+    const routeros = routerosState(snapshot, state.scenario);
+    const rest = restState(snapshot, state);
+    const ssh = sshState(snapshot, state);
     return [
-      { label: "设备", value: "采集对象", note: "链路异常", role: "device", tone: "trust" as OverviewTone },
-      { label: "结论", value: state.verdict.topLabel, note: "无业务快照，业务数据不展示", role: "conclusion", tone: state.verdict.level },
-      { label: "RouterOS", value: router.value, note: "设备通达性", role: "routeros", tone: router.tone },
+      { label: "\u8bbe\u5907", value: "\u91c7\u96c6\u5bf9\u8c61", note: "\u94fe\u8def\u5f02\u5e38", role: "device", tone: "trust" as OverviewTone },
+      { label: "\u7ed3\u8bba", value: state.verdict.topLabel, note: "\u65e0\u4e1a\u52a1\u5feb\u7167", role: "conclusion", tone: state.verdict.level },
+      { label: "RouterOS", value: routeros.value, note: routeros.note, role: "routeros", tone: routeros.tone },
       { label: "REST", value: rest.value, note: rest.note, role: "rest", tone: rest.tone },
       { label: "SSH", value: ssh.value, note: ssh.note, role: "ssh", tone: ssh.tone },
-      { label: "最近成功", value: snapshotCell.value, note: `状态更新时间 ${updated}`, role: "recent-success", tone: "warn" as OverviewTone },
+      { label: "\u6700\u8fd1\u6210\u529f", value: snapshotCell.value, note: `\u72b6\u6001\u66f4\u65b0 ${updated}`, role: "recent-success", tone: "warn" as OverviewTone },
     ] satisfies TopbarItem[];
   }
   return [
-    { label: "设备", value: state.facts.device.identity, note: `${state.facts.device.version} · ${state.facts.device.uptime}`, role: "device", tone: "trust" as OverviewTone },
-    { label: "结论", value: state.verdict.topLabel, note: state.verdict.summary, role: "conclusion", tone: state.verdict.level },
-    { label: "对象", value: object.value, note: `WAN / ${object.note}`, role: "object", tone: "trust" as OverviewTone },
-    { label: "影响", value: topbarImpactValue(state), note: `WAN / ${state.verdict.detail}`, role: "impact", tone: state.verdict.level },
-    { label: "采集", value: collection.value, note: collection.note, role: "collection", tone: state.facts.collection.credibilityTone },
-    { label: "快照", value: snapshotCell.value, note: snapshotCell.note, role: "snapshot", tone: state.facts.freshness.credibilityTone },
+    { label: "\u8bbe\u5907", value: state.facts.device.identity, note: `${state.facts.device.version} \u00b7 ${state.facts.device.uptime}`, role: "device", tone: "trust" as OverviewTone },
+    { label: "\u7ed3\u8bba", value: state.verdict.topLabel, note: topbarConclusionNote(snapshot, state), role: "conclusion", tone: state.verdict.level },
+    { label: "\u5bf9\u8c61", value: object.value, note: object.note, role: "object", tone: "trust" as OverviewTone },
+    { label: "\u5f71\u54cd", value: topbarImpactValue(state), note: state.verdict.detail, role: "impact", tone: state.verdict.level },
+    { label: "\u91c7\u96c6", value: collection.value, note: collection.note, role: "collection", tone: state.facts.collection.credibilityTone },
+    { label: "\u5feb\u7167", value: snapshotCell.value, note: snapshotCell.note, role: "snapshot", tone: state.facts.freshness.credibilityTone },
   ] satisfies TopbarItem[];
 }
 
@@ -322,6 +338,7 @@ function desktopCoreText(state: OverviewDerivedState): string {
 }
 
 function moduleChartType(module: string): "line" | "bar" | "matrix" | "status" | "timeline" {
+  if (/no-snapshot-summary|no-snapshot-recent-success/i.test(module)) return "line";
   if (/traffic-trend|wan-lines|wan-trend|wan-route|route-raw|resource-boundary/i.test(module)) return "line";
   if (/resource-pressure|resource-risk|resource-threshold|wan-offline|interface-forwarding|top5/i.test(module)) return "bar";
   if (/recent-success|timeline/i.test(module)) return "timeline";
@@ -478,12 +495,13 @@ function JudgementChart({ module, rows, kind = "trend" }: { module: string; rows
 function ChainTimeline({ rows, module }: { rows: LedgerRow[]; module: string }) {
   const lead = rows[0];
   const recent = lead ? String(lead.cells[2] || "") : "未记录";
+  const noSnapshotTimeline = module.startsWith("no-snapshot");
   return (
     <div
       className="ro-chain-timeline ik-no-snapshot-timeline-visual ik-overview-timeline"
       data-overview-judgement-chart="chain-timeline-current-recent-failure-next"
       data-overview-scene-chart={module}
-      data-overview-chart-type="timeline"
+      data-overview-chart-type={noSnapshotTimeline ? "line" : "timeline"}
       data-overview-chart-has-current="true"
       data-overview-chart-has-window="true"
       data-overview-chart-has-trust="true"
@@ -492,9 +510,9 @@ function ChainTimeline({ rows, module }: { rows: LedgerRow[]; module: string }) 
       data-overview-chart-meta
       data-overview-sample-points={rows.length ? `${Math.min(rows.length, 6)}/${rows.length}` : "0/0"}
       data-overview-time-window={recent || "最近成功未记录"}
-      data-overview-no-snapshot-compact-flow={module === "no-snapshot-chain" ? "true" : undefined}
-      data-overview-no-snapshot-success-timeline={module === "no-snapshot-chain" || module === "collection-success-timeline" ? "true" : undefined}
-      data-overview-no-snapshot-collection-timeline-parent-judgement={module === "no-snapshot-chain" ? "true" : undefined}
+      data-overview-no-snapshot-compact-flow={noSnapshotTimeline ? "true" : undefined}
+      data-overview-no-snapshot-success-timeline={noSnapshotTimeline || module === "collection-success-timeline" ? "true" : undefined}
+      data-overview-no-snapshot-collection-timeline-parent-judgement={noSnapshotTimeline ? "true" : undefined}
       data-overview-collection-incident-timeline-parent-judgement={module === "collection-success-timeline" ? "true" : undefined}
     >
       <div className="ro-chain-meta" data-overview-chart-meta data-overview-confidence="链路可参考" data-overview-time-window={recent || "最近成功未记录"} data-overview-sample-points={rows.length ? `${Math.min(rows.length, 6)}/${rows.length}` : "0/0"}>
@@ -728,31 +746,31 @@ function InfoBand({ snapshot, state }: OverviewPanelProps) {
 
 function desktopKeyMetrics(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): DesktopMetricItem[] {
   const object = topbarObjectValue(state);
-  const routeText = state.facts.route.rawSummary || state.facts.route.text || state.facts.route.label;
+  const routeText = state.facts.route.label || "\u9ed8\u8ba4\u8def\u7531";
   const wanValue = state.scenario === "no-snapshot"
-    ? "不展示"
+    ? "\u4e0d\u53ef\u5c55\u793a"
     : state.scenario === "all-offline"
-    ? `${formatNumber(state.facts.wan.offline)}/${formatNumber(state.facts.wan.total)} 离线`
-    : `${formatNumber(state.facts.wan.online)}/${formatNumber(state.facts.wan.total)} 在线`;
+    ? `${formatNumber(state.facts.wan.offline)}/${formatNumber(state.facts.wan.total)} \u79bb\u7ebf`
+    : `${formatNumber(state.facts.wan.online)}/${formatNumber(state.facts.wan.total)} \u5728\u7ebf`;
   const wanNote = state.scenario === "no-snapshot"
-    ? "无业务快照，速率不展示"
+    ? "\u4e1a\u52a1\u5ea6\u91cf\u8bc1\u636e\u4e0d\u5c55\u793a"
     : state.facts.wan.allOffline
-      ? "全部出口离线"
-      : state.facts.wan.label || "WAN 证据";
-  const resourceValue = state.scenario === "no-snapshot" ? "禁显" : state.facts.resource.summaryText;
+      ? "\u5168\u90e8 WAN \u79bb\u7ebf"
+      : state.facts.wan.label || "WAN \u8bc1\u636e";
+  const resourceValue = state.scenario === "no-snapshot" ? "\u4e0d\u53ef\u5c55\u793a" : state.facts.resource.summaryText;
   const resourceNote = state.scenario === "resource-full"
-    ? "处理器 / 内存 / 磁盘"
+    ? "CPU / \u5185\u5b58 / \u78c1\u76d8"
     : state.scenario === "no-snapshot"
-      ? "业务二级证据不展示"
-      : "资源二级证据";
+      ? "\u4e1a\u52a1\u5ea6\u91cf\u8bc1\u636e\u4e0d\u5c55\u793a"
+      : "\u8d44\u6e90\u9608\u503c\u8bc1\u636e";
   const collectionValue = state.facts.collection.credibilityLabel;
   return [
-    { label: "结论", value: state.verdict.topLabel, note: state.verdict.summary, tone: state.verdict.level },
-    { label: "对象", value: object.value, note: object.note, tone: state.verdict.level === "danger" ? "danger" : state.verdict.level === "warn" ? "warn" : "trust" },
-    { label: "路由", value: state.facts.route.label, note: routeText, tone: state.facts.route.level },
+    { label: "\u7ed3\u8bba", value: state.verdict.topLabel, note: topbarConclusionNote(snapshot, state), tone: state.verdict.level },
+    { label: "\u8d44\u6e90", value: resourceValue, note: resourceNote, tone: state.facts.resource.level },
     { label: "WAN", value: wanValue, note: wanNote, tone: state.facts.wan.allOffline ? "danger" : state.scenario === "no-snapshot" ? "missing" : "trust" },
-    { label: "采集", value: collectionValue, note: state.facts.collection.channelText, tone: state.facts.collection.credibilityTone },
-    { label: "资源", value: resourceValue, note: resourceNote, tone: state.facts.resource.level },
+    { label: "\u91c7\u96c6", value: collectionValue, note: state.facts.collection.channelText, tone: state.facts.collection.credibilityTone },
+    { label: "\u5bf9\u8c61", value: object.value, note: object.note, tone: state.verdict.level === "danger" ? "danger" : state.verdict.level === "warn" ? "warn" : "trust" },
+    { label: "\u8def\u7531", value: state.facts.route.label, note: routeText, tone: state.facts.route.level },
   ];
 }
 
@@ -1294,7 +1312,7 @@ function MobileIosTopNav({ snapshot, state }: OverviewPanelProps) {
   const capsule = mobileDeviceCapsule(snapshot, state);
   const status = mobileNavStatus(state);
   const navMeta = `\u5feb\u7167 ${capsule.recent}`;
-  return <nav className="ik-ios-top-nav" aria-label="\u79fb\u52a8\u7aef\u5bfc\u822a" data-overview-mobile-ios-nav="true" data-overview-mobile-top="device-status-snapshot">
+  return <nav className="ik-ios-top-nav" aria-label="\u79fb\u52a8\u7aef\u5bfc\u822a" data-overview-mobile-ios-nav="true" data-overview-mobile-top="device-status-snapshot" data-overview-mobile-topnav-concrete-status="device-snapshot-verdict" data-overview-mobile-topnav-status={status.label} data-overview-mobile-topnav-status-tone={status.tone}>
     <button type="button" aria-label="\u8fd4\u56de" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5 8 12l7 7" /></svg></button>
     <div className="ik-ios-nav-title"><b>{capsule.device || "\u7231\u5feb\u8def\u7531"}</b><span>{navMeta}</span></div>
     <strong className="ik-ios-status-pill" data-tone={status.tone}><i aria-hidden="true" />{status.label}</strong>
@@ -1308,7 +1326,7 @@ function MobileHeroStatusCard({ snapshot, state }: OverviewPanelProps) {
   const majorStats = stats.slice(0, 2);
   const minorStats = stats.slice(2);
   const sceneVisual = state.scenario === "single" || state.scenario === "fleet" || state.scenario === "resource-full" ? null : mobileHeroVisual(snapshot, state);
-  return <section className="ik-mobile-conclusion-card ik-ios-hero-card" data-tone={mobileVerdictTone(state)} data-overview-mobile-primary-card="network-status" data-overview-mobile-main-card data-overview-mobile-ios-hero="true" data-overview-mobile-first-screen-hero="true">
+  return <section className="ik-mobile-conclusion-card ik-ios-hero-card" data-tone={mobileVerdictTone(state)} data-overview-mobile-primary-card="network-meter" data-overview-mobile-network-meter="download-upload-latency-connections-plus-scene" data-overview-mobile-main-card data-overview-mobile-ios-hero="true" data-overview-mobile-first-screen-hero="true" data-overview-mobile-hero-title-policy="meter-label-and-verdict-separated-no-title-collision">
     <div className="ik-ios-hero-head">
       <span data-overview-mobile-primary-title>{mobileHeroSectionTitle(state)}</span>
       <b data-overview-primary-conclusion="true">{conclusion}</b>
@@ -1446,7 +1464,7 @@ function mobileRankTitle(state: OverviewDerivedState): string {
 
 function MobileTrafficRank({ snapshot, state }: OverviewPanelProps) {
   const rows = mobileRankRows(snapshot, state).slice(0, state.scenario === "no-snapshot" ? 3 : 4);
-  return <section className="ik-ios-rank-card" data-overview-mobile-rank-list="app-list" data-overview-mobile-card-list="true">
+  return <section className="ik-ios-rank-card" data-overview-mobile-rank-list="topn-app-list" data-overview-mobile-card-list="true" data-overview-mobile-topn-app-list="true">
     <header><span>{mobileRankTitle(state)}</span><em>{latestSuccess(snapshot, state.scenario)}</em></header>
     <div className="ik-ios-rank-list">
       {rows.map((row, index) => <div className="ik-ios-rank-row" data-tone={row.tone} key={`${row.name}-${index}`}>
@@ -1753,6 +1771,7 @@ function MobileLedger({ snapshot, state }: OverviewPanelProps) {
         <MobileRingMetrics snapshot={snapshot} state={state} />
         <MobileExceptionCard snapshot={snapshot} state={state} />
         <MobileTrafficRank snapshot={snapshot} state={state} />
+        <MobileBottomTabs />
       </div>
     </div>
   );
@@ -2975,6 +2994,7 @@ function DesktopWorkspace({ snapshot, state }: OverviewPanelProps) {
     <div
       className="ro-desktop-grid ik-home-layout"
       data-overview-desktop-layout="fixed-summary-keymetrics-main-side-bottom"
+      data-overview-desktop-hierarchy="conclusion-metrics-evidence"
       data-overview-desktop-detail
       data-overview-desktop-workspace
       data-overview-desktop-core-text={desktopCoreText(state)}
@@ -3192,7 +3212,6 @@ export function OverviewPanel({ snapshot, state }: OverviewPanelProps) {
       <div className="ro-mobile-first-screen" data-overview-mobile-first-screen data-overview-mobile-alert={state.verdict.level}>
         <MobileLedger snapshot={snapshot} state={state} />
       </div>
-      <MobileBottomTabs />
       <div className={`ro-mobile-detail-section ik-mobile-compact-section ${(state.scenario === "interfaces-down" || state.scenario === "resource-full" || state.scenario === "collection-down" || state.scenario === "all-offline" || state.scenario === "single" || state.scenario === "fleet") ? "is-interface-table" : ""}`} data-overview-mobile-detail data-overview-mobile-detail-section data-overview-mobile-metrics>
         <MobileLeadHeads state={state} />
         <MobileDetail snapshot={snapshot} state={state} />

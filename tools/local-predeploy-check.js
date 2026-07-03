@@ -2839,6 +2839,14 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       if (/ik-overview-kpi-card|ik-mobile-status-strip|ik-home-flat-topbar|ik-home-status-tile|ik-home-ops-item|ik-summary-box|ik-overview-channel-grid|ik-overview-wan-strip|ik-overview-interface-strip|ik-overview-stat-tile/.test(className)) return 'status';
       return '';
     };
+    const selectorForNode = (node) => {
+      if (!node) return '';
+      if (node.id) return '#' + node.id;
+      const dataKey = Array.from(node.attributes || []).find((attr) => /^data-overview/.test(attr.name));
+      if (dataKey) return '[' + dataKey.name + ']';
+      const cls = Array.from(node.classList || []).slice(0, 3).join('.');
+      return node.tagName.toLowerCase() + (cls ? '.' + cls : '');
+    };
     const overviewVisualBalanceTypes = [...new Set(
       overviewVisualBalanceRawNodes
         .map((node) => overviewVisualBalanceTypeForNode(node))
@@ -2905,6 +2913,31 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     );
     const overviewDesktopChartMatrixAreaPx = overviewDesktopChartMatrixNodes.reduce((sum, node) => sum + visibleNodeArea(node), 0);
     const overviewDesktopChartMatrixAreaRatio = Number((overviewDesktopChartMatrixAreaPx / overviewDesktopViewportAreaPx).toFixed(3));
+    const overviewDesktopChartReadabilityRecords = isDesktopOverview
+      ? overviewDesktopChartMatrixNodes.map((node) => {
+        const rect = node.getBoundingClientRect();
+        const type = overviewVisualBalanceTypeForNode(node);
+        const text = normalize(node.textContent || '');
+        const graphicMarks = node.querySelectorAll('svg path, svg polyline, svg line, svg rect, svg circle, [data-overview-chart-point], [data-overview-bar], [data-overview-module-cell], .ik-overview-bar-row, .ik-overview-chain-node, .ik-overview-module-cell').length;
+        const hasReadableSize = rect.width >= 140 && rect.height >= 56;
+        const hasMeaningfulMarks = graphicMarks >= (type === 'line' || type === 'bar' ? 2 : 1) || text.length >= 8;
+        return {
+          selector: selectorForNode(node),
+          type,
+          width: Math.round(rect.width),
+          height: Math.round(rect.height),
+          graphicMarks,
+          text: text.slice(0, 80),
+          readable: hasReadableSize && hasMeaningfulMarks,
+        };
+      })
+      : [];
+    const overviewDesktopChartReadabilityOk = sectionName !== 'overview' || !isDesktopOverview || Boolean(
+      overviewDesktopChartReadabilityRecords.length >= (noSnapshotEdge ? 1 : 2) &&
+      overviewDesktopChartReadabilityRecords.some((record) => record.readable && record.type === 'line') &&
+      overviewDesktopChartReadabilityRecords.some((record) => record.readable && ['bar', 'status', 'spark', 'matrix', 'timeline', 'donut'].includes(record.type)) &&
+      overviewDesktopChartReadabilityRecords.filter((record) => record.readable).length >= (noSnapshotEdge ? 1 : 2)
+    );
     const overviewVisualPlaceholderPattern = /(?:暂无|未采集|待确认|不可判定|不可用|无快照|业务数据不展示|轮询中|加载中|placeholder|skeleton|缺失|暂停|等待|未读取|未记录|尚未|无业务快照|无可用)/i;
     const overviewVisualPlaceholderNodes = overviewVisualBalanceRawNodes.filter((node) => overviewVisualPlaceholderPattern.test(normalize(node.textContent || '')));
     const overviewVisualPlaceholderCount = overviewVisualPlaceholderNodes.length;
@@ -2936,7 +2969,34 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       ? Array.from((sectionRoot || mobileFirstScreen)?.querySelectorAll('[data-overview-mobile-kpi-grid], [data-overview-mobile-kpi2x2], .ik-mobile-kpi-grid, .ik-mobile-metric-grid, .MobileMetricGrid') || [])
         .filter(nodeVisibleInFirstScreen)
       : [];
-    const overviewMobile390NoKpi2x2Ok = !mobileOverview390x844 || mobile390Kpi2x2MarkerNodes.length === 0;
+    const mobile390Kpi2x2GeometryRecords = mobileOverview390x844
+      ? Array.from((mobileFirstScreen || sectionRoot)?.querySelectorAll('[class*="kpi" i], [class*="metric" i], [data-overview-kpi-card], [data-overview-mobile-metrics]') || [])
+        .filter(nodeVisibleInFirstScreen)
+        .map((node) => {
+          const children = Array.from(node.children || [])
+            .filter(nodeVisibleInFirstScreen)
+            .map((child) => ({ child, rect: child.getBoundingClientRect(), text: normalize(child.textContent || '') }))
+            .filter((item) => item.rect.width >= 36 && item.rect.height >= 20 && item.text.length > 0);
+          if (children.length !== 4) return null;
+          const centers = children.map((item) => ({
+            x: Math.round(item.rect.left + item.rect.width / 2),
+            y: Math.round(item.rect.top + item.rect.height / 2),
+          }));
+          const columns = new Set(centers.map((point) => Math.round(point.x / 24))).size;
+          const rows = new Set(centers.map((point) => Math.round(point.y / 24))).size;
+          const rect = node.getBoundingClientRect();
+          const text = children.map((item) => item.text).join(' ');
+          const looksLikeKpiCopy = /%|B\/s|bps|ms|wan|cpu|latency|traffic|resource|collection|snapshot|interface|line|bar|spark|matrix|chain|rate|rest|ssh|upload|download|memory|disk|online|offline/i.test(text);
+          return columns === 2 && rows === 2 && looksLikeKpiCopy ? {
+            selector: selectorForNode(node),
+            width: Math.round(rect.width),
+            height: Math.round(rect.height),
+            text: text.slice(0, 120),
+          } : null;
+        })
+        .filter(Boolean)
+      : [];
+    const overviewMobile390NoKpi2x2Ok = !mobileOverview390x844 || (mobile390Kpi2x2MarkerNodes.length === 0 && mobile390Kpi2x2GeometryRecords.length === 0);
     const mobile390OldFieldStackNodes = mobileOverview390x844
       ? Array.from((sectionRoot || mobileFirstScreen)?.querySelectorAll('.ik-mobile-metric-grid, .ik-mobile-field-stack, .ik-home-operator-grid, .ik-home-operator-card, .ik-mobile-incident-card, [data-overview-mobile-field-stack], [data-overview-mobile-kpi-grid], [data-overview-mobile-kpi2x2]') || [])
         .filter(nodeVisibleInFirstScreen)
@@ -2950,14 +3010,31 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       ? Array.from(mobileFirstScreen?.querySelectorAll('[data-overview-mobile-first-visual], [data-overview-mobile-first-microchart], .ik-mobile-spark-panel, .ik-mobile-resource-sparks, .ro-port-matrix-row, .ro-wan-port-visual, [data-overview-wan-offline-bars], .ik-mobile-channel-line, .ik-mobile-channel-rail, .ik-mobile-interface-chain, .ik-no-snapshot-chain, .ik-no-snapshot-chain-node') || [])
         .filter(nodeVisibleInFirstScreen)
       : [];
-    const mobile390ScenarioVisualNotDecorativeOk = !mobileOverview390x844 || mobileFirstScreenSceneVisualNodes.some((node) => {
-      const text = normalize(node.textContent || '');
-      return text.length >= 4 ||
-        node.hasAttribute('data-overview-chart-type') ||
-        node.hasAttribute('data-overview-scene-chart') ||
-        node.hasAttribute('data-overview-mobile-first-visual') ||
-        node.hasAttribute('data-overview-mobile-first-microchart');
-    });
+    const mobile390ScenarioVisualRecords = mobileOverview390x844
+      ? mobileFirstScreenSceneVisualNodes.map((node) => {
+        const rect = node.getBoundingClientRect();
+        const text = normalize(node.textContent || '');
+        const graphicMarks = node.querySelectorAll('svg path, svg polyline, svg line, svg rect, svg circle, [data-overview-chart-point], [data-overview-bar], [data-overview-module-cell], .ro-port-matrix-cell, .ik-mobile-channel-dot, .ik-no-snapshot-chain-node').length;
+        const dataToken = [
+          node.getAttribute('data-overview-chart-type'),
+          node.getAttribute('data-overview-scene-chart'),
+          node.getAttribute('data-overview-mobile-first-visual'),
+          node.getAttribute('data-overview-mobile-first-microchart'),
+        ].filter(Boolean).join(' ');
+        const meaningfulToken = /traffic|wan|resource|collection|snapshot|interface|line|bar|spark|matrix|chain|rate|latency|cpu|memory|disk|status|scenario|insight/i.test(dataToken);
+        const readable = rect.width >= 72 && rect.height >= 16 && (text.length >= 6 || graphicMarks >= 2) && meaningfulToken;
+        return {
+          selector: selectorForNode(node),
+          width: Math.round(rect.width),
+          height: Math.round(rect.height),
+          graphicMarks,
+          dataToken,
+          text: text.slice(0, 80),
+          readable,
+        };
+      })
+      : [];
+    const mobile390ScenarioVisualNotDecorativeOk = !mobileOverview390x844 || mobile390ScenarioVisualRecords.some((record) => record.readable);
     const mobile390AppHomeChromeNodes = mobileOverview390x844
       ? Array.from((sectionRoot || mobileFirstScreen)?.querySelectorAll('.ik-ios-top-nav, .ik-ios-hero-card, .ik-mobile-twin-cards, .ik-ios-resource-card, .ik-ios-rank-card, .ik-ios-bottom-tab, [data-overview-mobile-ios-nav="true"], [data-overview-mobile-hero-metrics], [data-overview-mobile-twin-cards], [data-overview-mobile-resource-card], [data-overview-mobile-rank-list], [data-overview-mobile-bottom-tab]') || [])
         .filter((node) => node.classList.contains('ik-ios-bottom-tab') ? nodeVisibleInViewport(node) : nodeVisibleInFirstScreen(node))
@@ -3069,7 +3146,8 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       (!isMobileOverview || sectionRoot?.querySelector('[data-overview-mobile-core-block="resource"]')) &&
       (!isMobileOverview || Array.from(sectionRoot?.querySelectorAll('.ik-mobile-microbar, .ik-mobile-status-strip') || []).filter(nodeVisibleInFirstScreen).length >= 3) &&
       overviewTrendReadoutRealHeightOk &&
-      overviewTrendReadoutClipSamples.length === 0
+      overviewTrendReadoutClipSamples.length === 0 &&
+      overviewDesktopChartReadabilityOk
     );
     const overviewVisualBalanceDesktopOk = Boolean(
       overviewDesktopKpiCount > 0 &&
@@ -4112,14 +4190,6 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     ].join(' ');
     const staleLikeModeActive = historyModeActive || (noSnapshotEdge && /无可用快照/.test(staleSignalText)) || /历史快照数据陈旧|数据状态\\s*(历史快照\\s*)?数据陈旧|当前不是实时数据|数据陈旧\\s+未采集/.test(staleSignalText);
     const overviewHistoryNoLiveGreenOk = sectionName !== 'overview' || !staleLikeModeActive || historyLiveGreenTags.length === 0;
-    const selectorForNode = (node) => {
-      if (!node) return '';
-      if (node.id) return '#' + node.id;
-      const dataKey = Array.from(node.attributes || []).find((attr) => /^data-overview/.test(attr.name));
-      if (dataKey) return '[' + dataKey.name + ']';
-      const cls = Array.from(node.classList || []).slice(0, 3).join('.');
-      return node.tagName.toLowerCase() + (cls ? '.' + cls : '');
-    };
     const firstScreenNodes = Array.from(sectionRoot?.querySelectorAll([
       '[data-overview-field]',
       '[data-overview-mobile-alert]',
@@ -4177,8 +4247,10 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         .map((node) => {
           const style = getComputedStyle(node);
           const rect = node.getBoundingClientRect();
-          const clipped = (style.textOverflow === 'ellipsis' && node.scrollWidth > node.clientWidth + 2) ||
-            (['hidden', 'clip'].includes(style.overflow) && node.scrollHeight > node.clientHeight + 2);
+          const clipped = style.textOverflow === 'ellipsis' ||
+            (['hidden', 'clip'].includes(style.overflowX) && node.scrollWidth > node.clientWidth + 2) ||
+            (['hidden', 'clip'].includes(style.overflow) && node.scrollHeight > node.clientHeight + 2) ||
+            (style.whiteSpace === 'nowrap' && node.scrollWidth > node.clientWidth + 2);
           return clipped ? {
             selector: selectorForNode(node),
             text: normalize(node.textContent || '').slice(0, 80),
@@ -5996,7 +6068,8 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         overviewNormalTagBudgetOk &&
         overviewH1HeightOk &&
         overviewNoSnapshotDesktopFieldDensityOk &&
-        overviewDesktopEffectiveHeightOk
+        overviewDesktopEffectiveHeightOk &&
+        overviewDesktopChartReadabilityOk
       ) ||
       (
         overviewDesktopDensityOk &&
@@ -6012,7 +6085,8 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         overviewNormalTagBudgetOk &&
         overviewH1HeightOk &&
         overviewNoSnapshotDesktopFieldDensityOk &&
-        overviewDesktopEffectiveHeightOk
+        overviewDesktopEffectiveHeightOk &&
+        overviewDesktopChartReadabilityOk
       )
     );
     const visibleUnionRect = (nodes) => {
@@ -6584,6 +6658,8 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
             .slice(0, 8),
           chartReadability: {
             ok: overviewChartReadabilityOk,
+            desktopOk: overviewDesktopChartReadabilityOk,
+            desktopRecords: overviewDesktopChartReadabilityRecords.slice(0, 8),
             sparseShells: overviewSparseTrafficShells.length,
             sparseReadouts: overviewSparseTrafficReadouts.length,
             metaNodes: overviewChartMetaNodes.length,
@@ -6661,6 +6737,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewMobile390Probe: mobileOverview390x844 ? {
         tableCount: overviewMobileFirstScreenTableCount,
         kpi2x2Count: mobile390Kpi2x2MarkerNodes.length,
+        kpi2x2Geometry: mobile390Kpi2x2GeometryRecords.slice(0, 4),
         hasHeroVisual: mobile390AppHomeChromeNodes.some((node) => node.classList.contains('ik-ios-hero-card')),
         hasIosNav: mobile390AppHomeChromeNodes.some((node) => node.classList.contains('ik-ios-top-nav')),
       hasHeroMetrics: mobile390AppHomeHeroMetricsOk,
@@ -6670,6 +6747,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       hasRingTraffic: mobile390AppHomeRingTrafficOk,
       noOldKpiStack: overviewMobile390NoOldKpiStackOk,
       scenarioVisualNotDecorative: mobile390ScenarioVisualNotDecorativeOk,
+      scenarioVisualRecords: mobile390ScenarioVisualRecords.slice(0, 6),
       hasMiniVisual: mobileFirstScreenMiniVisual,
       hasPortMatrix: mobileFirstScreenPortMatrix,
         hasChannelVisual: mobileFirstScreenChannelVisual,

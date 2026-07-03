@@ -127,11 +127,16 @@ assert(!predeploy.includes('mobile390AppHomeKpiOk') && !predeploy.includes('hasK
 assert(predeploy.includes('overviewDesktopNoMobileAppChromeOk'), 'predeploy must reject mobile app chrome leaking into desktop');
 assert(predeploy.includes('overviewDesktopNoToyNavLeakOk'), 'predeploy must reject mobile toy nav leakage on desktop');
 assert(predeploy.includes('overviewDesktopHierarchyMarkerOk'), 'predeploy must require desktop conclusion/key-metric/evidence hierarchy markers');
+assert(predeploy.includes('overviewDesktopRightFillOk'), 'predeploy must require desktop right-fill coverage');
+assert(predeploy.includes('overviewDesktopTopBandOk'), 'predeploy must require a filled desktop top band');
+assert(predeploy.includes('overviewDesktopChartReadabilityOk'), 'predeploy must require desktop chart readability and meaningful chart sizing');
 assert(predeploy.includes('nodeVisibleInViewport'), 'predeploy must evaluate fixed/sticky bottom tab as viewport chrome');
 assert(predeploy.includes('overviewMobile390NoAppHomeTitleClipOk'), 'predeploy must reject title overlap risk / ellipsis on app-home core text');
 assert(predeploy.includes('[data-overview-mobile-primary-title]') && predeploy.includes('.ik-ios-nav-title'), 'predeploy must probe app-home titles for clipping risk');
 assert(predeploy.includes('mobile390ScenarioVisualNotDecorativeOk'), 'predeploy must reject purely decorative scenario visuals');
+assert(predeploy.includes('mobile390ScenarioVisualRecords'), 'predeploy must record scenario visual evidence');
 assert(predeploy.includes('mobile390MainProgressBarRecords') && predeploy.includes('height >= 6'), 'predeploy must reject coarse main progress bars');
+assert(predeploy.includes('mobile390Kpi2x2GeometryRecords'), 'predeploy must detect visible 2x2 KPI geometry, not just markers');
 assert(predeploy.includes('requestedMobile390x844') && predeploy.includes('window.innerWidth >= 375') && predeploy.includes('window.innerWidth <= 430'), 'predeploy must target the 390x844 mobile viewport with browser-tolerant bounds');
 
 assert(!/\ufffd/.test(visibleSource), 'overview source contains replacement characters');
