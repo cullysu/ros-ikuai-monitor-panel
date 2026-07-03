@@ -73,9 +73,10 @@ function topStatus(state: OverviewDerivedState): { label: string; tone: Overview
   if (state.verdict.level === "ok") return { label: "在线", tone: "ok" };
   if (state.scenario === "resource-full") return { label: "满载", tone: "danger" };
   if (state.scenario === "all-offline") return { label: "断链", tone: "danger" };
-  if (state.scenario === "no-snapshot") return { label: "快照缺", tone: "warn" };
+  if (state.scenario === "no-snapshot") return { label: "快照缺失", tone: "warn" };
   if (state.scenario === "collection-down") return { label: "缓存", tone: "warn" };
-  if (state.scenario === "interfaces-down") return { label: "接口断", tone: "warn" };
+  if (state.scenario === "interfaces-down") return { label: "接口异常", tone: "warn" };
+  if (state.verdict.level === "warn") return { label: "关注", tone: "warn" };
   return { label: "异常", tone: "danger" };
 }
 
@@ -98,12 +99,12 @@ function conclusion(state: OverviewDerivedState): string {
 }
 
 function supportLine(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): string {
-  if (state.scenario === "resource-full") return "处理器、内存、磁盘持续越阈";
+  if (state.scenario === "resource-full") return "处理器 / 内存 / 磁盘持续越阈";
   if (state.scenario === "all-offline") return `${formatNumber(state.facts.wan.offline)} 条 WAN 离线，默认路由异常`;
-  if (state.scenario === "no-snapshot") return `无业务快照，最近成功 ${latestSuccess(snapshot, state)}`;
-  if (state.scenario === "collection-down") return "当前展示缓存快照";
+  if (state.scenario === "no-snapshot") return `无业务快照 · 最近成功 ${latestSuccess(snapshot, state)}`;
+  if (state.scenario === "collection-down") return `当前展示缓存快照 · ${latestSuccess(snapshot, state)}`;
   if (state.scenario === "interfaces-down") return `${formatNumber(state.facts.interfaces.down)} 个转发接口 Down`;
-  return `快照 ${latestSuccess(snapshot, state)}，实时可参考`;
+  return `最近成功 ${latestSuccess(snapshot, state)} · 实时可参考`;
 }
 
 function rateMetric(label: string, value: number, hidden: boolean): AppMetric {
@@ -213,7 +214,7 @@ function TrafficSpark({ snapshot }: { snapshot: OverviewRawSnapshot }) {
         <line className="ik-mobile-spark-threshold" x1="0" x2="236" y1="24" y2="24" />
         <circle className="ik-mobile-spark-dot" cx="202" cy="22" r="3.4" />
       </svg>
-      <footer><span>15 分钟</span><b>峰值 {peak > 0 ? formatRate(peak) : "未采集"}</b></footer>
+      <footer><span>15 分钟 · 蓝=下载 绿=上传</span><b>峰值 {peak > 0 ? formatRate(peak) : "未采集"}</b></footer>
     </div>
   );
 }
@@ -315,19 +316,23 @@ function TopNav({ snapshot, state }: MobileOverviewHomeProps) {
 
 function Hero(props: MobileOverviewHomeProps) {
   const metrics = heroMetrics(props.snapshot, props.state);
-  const primary = metrics.slice(0, 2);
-  const chips = metrics.slice(2);
   return (
-    <section className="ik-ios-hero-card ik-app-hero" data-tone={props.state.scenario === "no-snapshot" ? "missing" : props.state.verdict.level} data-overview-mobile-primary-card="network-status-main" data-overview-mobile-ios-hero="true" data-overview-mobile-hero-metrics="download-upload-latency-connections">
+    <section className="ik-ios-hero-card ik-app-hero ik-v87-hero-card" data-tone={props.state.scenario === "no-snapshot" ? "missing" : props.state.verdict.level} data-overview-mobile-primary-card="network-status-main" data-overview-mobile-ios-hero="true" data-overview-mobile-hero-metrics="download-upload-latency-connections" data-overview-mobile-hero-metric-layout="app-stat-strip">
       <header className="ik-ios-hero-head ik-app-hero-head">
         <span className="ik-app-hero-kicker" data-overview-mobile-primary-title>{heroKicker(props.state)}</span>
         <b className="ik-app-hero-title" data-overview-primary-conclusion="true">{conclusion(props.state)}</b>
         <em className="ik-app-hero-subtitle">{supportLine(props.snapshot, props.state)}</em>
       </header>
-      <div className="ik-app-hero-metrics" data-overview-mobile-hero-summary={metrics.map((item) => `${item.label} ${item.value}${item.unit ? ` ${item.unit}` : ""}`).join(" · ")}>
-        {primary.map((item) => <div className="ik-app-hero-number" data-tone={item.tone} key={item.label}><em>{item.label}</em><strong>{item.value}</strong>{item.unit ? <small>{item.unit}</small> : null}{item.note ? <i>{item.note}</i> : null}</div>)}
-        <div className="ik-app-hero-chips">{chips.map((item) => <span key={item.label} data-tone={item.tone}><em>{item.label}</em><b>{item.value}</b>{item.note ? <i>{item.note}</i> : null}</span>)}</div>
-      </div>
+      <ul className="ik-v87-hero-stat-strip ik-app-hero-metrics" data-overview-mobile-hero-summary={metrics.map((item) => `${item.label} ${item.value}${item.unit ? ` ${item.unit}` : ""}`).join(" · ")}>
+        {metrics.map((item) => (
+          <li className="ik-v87-hero-stat ik-app-hero-number" data-tone={item.tone} key={item.label}>
+            <em>{item.label}</em>
+            <strong>{item.value}</strong>
+            {item.unit ? <small>{item.unit}</small> : null}
+            {item.note ? <i>{item.note}</i> : null}
+          </li>
+        ))}
+      </ul>
       <div className="ik-app-hero-visual" data-overview-mobile-first-visual="scenario-specific">{HeroVisual(props)}</div>
     </section>
   );
@@ -364,7 +369,7 @@ function DuoCards({ snapshot, state }: MobileOverviewHomeProps) {
 function ResourceCard({ state }: { state: OverviewDerivedState }) {
   const metrics = resourceMetrics(state);
   return (
-    <section className={`ik-ios-rings-card ik-ios-resource-card ik-app-resource-card${state.scenario === "resource-full" ? " is-hot" : ""}`} data-overview-mobile-resource-card="cpu-memory-disk" data-overview-mobile-core-block="resource">
+    <section className={`ik-ios-rings-card ik-ios-resource-card ik-app-resource-card${state.scenario === "resource-full" ? " is-hot" : ""}`} data-overview-mobile-resource-card="cpu-memory-disk-horizontal" data-overview-mobile-core-block="resource">
       <header><span>{state.scenario === "resource-full" ? "资源压力" : "资源"}</span><em>{state.scenario === "no-snapshot" ? "无业务快照" : "处理器 / 内存 / 磁盘"}</em></header>
       <div className="ik-app-resource-meters">{metrics.map((metric) => <div className="ik-ios-resource-meter ik-app-resource-meter" data-tone={metric.tone} key={metric.key} style={{ "--meter-value": `${metric.percent}%` } as CSSProperties}><span><em>{metric.label}</em><b>{metric.display}</b></span><i><strong /></i><small>{state.scenario === "no-snapshot" ? "业务不展示" : `阈 ${metric.threshold}%`}</small></div>)}</div>
     </section>
@@ -372,7 +377,7 @@ function ResourceCard({ state }: { state: OverviewDerivedState }) {
 }
 
 function ExceptionCard({ snapshot, state }: MobileOverviewHomeProps) {
-  if (state.verdict.level === "ok") return null;
+  if (state.verdict.level === "ok" || state.scenario === "single" || state.scenario === "fleet") return null;
   const map: Record<string, { value: string; note: string; tone: OverviewTone }> = {
     "no-snapshot": { value: "业务数据不展示", note: `采集链路不可达 / 最近 ${latestSuccess(snapshot, state)}`, tone: "warn" },
     "collection-down": { value: "采集通道异常", note: `当前展示缓存快照 / 最近 ${latestSuccess(snapshot, state)}`, tone: "warn" },
@@ -442,7 +447,7 @@ function DetailList(props: MobileOverviewHomeProps) {
 
 export function MobileOverviewHome(props: MobileOverviewHomeProps) {
   return (
-    <div className="ro-mobile-ledger ik-mobile-app-home ik-ios-router-home ik-app-home-v85 ik-app-home-v86" data-overview-mobile-console data-overview-mobile-app-home="ikuai40-ios-router-home" data-overview-mobile-home-mode="ios-app-home" data-overview-mobile-no-desktop-collapse="true" data-overview-mobile-scene={props.state.scenario}>
+    <div className="ro-mobile-ledger ik-mobile-app-home ik-ios-router-home ik-app-home-v85 ik-app-home-v87" data-overview-mobile-console data-overview-mobile-app-home="ikuai40-ios-router-home" data-overview-mobile-home-mode="ios-app-home" data-overview-mobile-no-desktop-collapse="true" data-overview-mobile-scene={props.state.scenario}>
       <div className="ik-ios-home-stack">
         <div className="ik-ios-first-screen ik-app-first-screen" data-overview-mobile-first-screen="app-home" data-overview-mobile-first-screen-contract="ios-topnav-network-hero-traffic-metrics-twin-cards-resource-exception-rank-bottom-tab" data-overview-mobile-first-screen-no-table="true" data-overview-mobile-first-screen-uses-microchart="true">
           <TopNav {...props} />
