@@ -1980,8 +1980,11 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       )
     );
     const overviewMobileResourceFullVerticalOk = sectionName !== 'overview' || scaleScenario !== 'resource-full' || !isMobileOverview || Boolean(
-      Array.from(mobileFirstScreen?.querySelectorAll('.ik-mobile-resource-sparks.is-vertical-ledger[data-overview-scene-chart="mobile-resource-vertical-ledger"], .ik-mobile-resource-spark') || [])
-        .filter(nodeVisibleInFirstScreen).length >= 3
+      Array.from(mobileFirstScreen?.querySelectorAll('.ik-mobile-resource-sparks.is-vertical-ledger[data-overview-scene-chart="mobile-resource-vertical-ledger"], .ik-mobile-resource-spark, .ik-ios-resource-card .ik-ios-resource-meter') || [])
+        .filter(nodeVisibleInFirstScreen).length >= 3 ||
+      Array.from(mobileFirstScreen?.querySelectorAll('.ik-ios-resource-card[data-overview-mobile-resource-card], [data-overview-mobile-resource-card="cpu-memory-disk-horizontal"]') || [])
+        .filter(nodeVisibleInFirstScreen)
+        .some((node) => /CPU/.test(normalize(node.textContent || '')) && /内存/.test(normalize(node.textContent || '')) && /磁盘/.test(normalize(node.textContent || '')))
     );
     const mobileCoreBarsVisible = mobileCoreBars.filter(nodeVisibleInFirstScreen);
     const mobileCoreChartMetaRecords = mobileCoreBlocksVisible.map((block) => {
@@ -2924,7 +2927,9 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         const text = normalize(node.textContent || '');
         const graphicMarks = node.querySelectorAll('svg path, svg polyline, svg line, svg rect, svg circle, [data-overview-chart-point], [data-overview-bar], [data-overview-module-cell], .ik-overview-bar-row, .ik-overview-chain-node, .ik-overview-module-cell').length;
         const hasReadableSize = rect.width >= 140 && rect.height >= 56;
-        const hasMeaningfulMarks = graphicMarks >= (type === 'line' || type === 'bar' ? 2 : 1) || text.length >= 8;
+        const hasMeaningfulMarks = type === 'line' || type === 'bar'
+          ? graphicMarks >= 2
+          : (graphicMarks >= 1 || text.length >= 8);
         return {
           selector: selectorForNode(node),
           type,
@@ -3612,24 +3617,6 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       sectionRoot?.querySelector('[data-overview-anomaly-evidence]') &&
       sectionRoot?.querySelector('[data-overview-desktop-detail]')
     );
-    const overviewMobileIosRouterHomeOk = !mobileOverview390x844 || Boolean(
-      mobile390AppHomeChromeOk &&
-      mobile390AppHomeTwinOk &&
-      mobile390AppHomeScenarioVisualOk &&
-      mobile390AppHomeRingTrafficOk &&
-      overviewMobile390FirstScreenNoTableOk &&
-      overviewMobile390NoKpi2x2Ok &&
-      overviewMobile390FirstScreenVisualOk &&
-      overviewMobile390FirstTwoRowsVisibleOk &&
-      overviewMobile390NoMemDiskVisibleOk &&
-      overviewMobile390NoRawBooleanCopyOk &&
-      overviewMobile390NoRawRouterOsFieldsOk &&
-      overviewMobile390NoMainProgressBarOk &&
-      overviewMobile390NoHeavyVisualBlocksOk &&
-      overviewMobileResourceFullVerticalOk &&
-      overviewMobile390BottomTabOk
-    );
-    const overviewMobile390AcceptanceOk = overviewMobileIosRouterHomeOk;
     const overviewNoSnapshotFirstScreenRateForbiddenOk = sectionName !== 'overview' || !noSnapshotEdge || Boolean(
       !overviewNoSnapshotFirstScreenText.includes('WAN速率') &&
       !overviewNoSnapshotFirstScreenText.includes('WAN 速率') &&
@@ -4301,6 +4288,26 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewMobile390NoCoreTextClipOk &&
       mobile390TitleOverlapSamples.length === 0
     );
+    const overviewMobileIosRouterHomeOk = !mobileOverview390x844 || Boolean(
+      mobile390AppHomeChromeOk &&
+      mobile390AppHomeTwinOk &&
+      mobile390AppHomeScenarioVisualOk &&
+      mobile390AppHomeRingTrafficOk &&
+      overviewMobile390FirstScreenNoTableOk &&
+      overviewMobile390NoKpi2x2Ok &&
+      overviewMobile390FirstScreenVisualOk &&
+      overviewMobile390NoAppHomeTitleClipOk &&
+      overviewMobile390NoCoreTextClipOk &&
+      overviewMobile390FirstTwoRowsVisibleOk &&
+      overviewMobile390NoMemDiskVisibleOk &&
+      overviewMobile390NoRawBooleanCopyOk &&
+      overviewMobile390NoRawRouterOsFieldsOk &&
+      overviewMobile390NoMainProgressBarOk &&
+      overviewMobile390NoHeavyVisualBlocksOk &&
+      overviewMobileResourceFullVerticalOk &&
+      overviewMobile390BottomTabOk
+    );
+    const overviewMobile390AcceptanceOk = overviewMobileIosRouterHomeOk;
     const primaryConclusionEllipsisSamples = ellipsisSamples.filter((sample) =>
       String(sample.selector || '').includes('[data-overview-primary-conclusion]') ||
       /异常：|WAN全离线|快照缺失|资源满载|采集异常|接口全/.test(sample.text)
@@ -5745,7 +5752,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       }
       const rightBlank = Math.max(0, rightTotal - rightFilled);
       const rightFillRatio = rightTotal ? rightFilled / rightTotal : 0;
-      const rightFillMinRatio = scaleScenario === 'resource-full' ? 0.64 : (noSnapshotEdge ? 0.72 : 0.50);
+      const rightFillMinRatio = scaleScenario === 'resource-full' ? 0.68 : (noSnapshotEdge ? 0.72 : 0.56);
       overviewDesktopRightFillProbe = {
         filled: rightFilled,
         total: rightTotal,
@@ -6058,7 +6065,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         bandHeight,
         viewportHeight: window.innerHeight,
       };
-      overviewDesktopTopBandOk = bandRatio >= 0.10 && bandFilled >= 6;
+      overviewDesktopTopBandOk = bandRatio >= 0.12 && bandFilled >= 8;
     }
     if (sectionName === 'overview') {
       overviewFirstScreenCoverageOk = isMobileOverview
