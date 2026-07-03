@@ -986,15 +986,19 @@ function mobileTwinCards(snapshot: OverviewRawSnapshot, state: OverviewDerivedSt
   return [
     {
       key: "wan",
-      title: "WAN 状态",
+      title: "WAN",
       value: state.scenario === "no-snapshot" ? "不展示" : `${formatNumber(state.facts.wan.online)}/${formatNumber(state.facts.wan.total)}`,
-      sub: state.scenario === "all-offline" ? `${formatNumber(state.facts.wan.offline)}条离线` : state.scenario === "no-snapshot" ? "无业务快照" : `路由 ${state.facts.route.label}`,
+      sub: state.scenario === "all-offline"
+        ? `${formatNumber(state.facts.wan.offline)} \u6761\u79bb\u7ebf`
+        : state.scenario === "no-snapshot"
+          ? "\u65e0\u4e1a\u52a1\u5feb\u7167"
+          : `\u8def\u7531 ${state.facts.route.label}`,
       tone: state.facts.wan.allOffline ? "danger" as OverviewTone : state.scenario === "no-snapshot" ? "missing" as OverviewTone : "ok" as OverviewTone,
     },
     {
       key: "collection",
-      title: "采集状态",
-      value: state.scenario === "collection-down" ? "缓存快照" : state.scenario === "no-snapshot" ? "需核" : rest.value === "可用" && ssh.value === "可用" ? "可用" : "异常",
+      title: "\u91c7\u96c6",
+      value: state.scenario === "collection-down" ? "\u7f13\u5b58" : state.scenario === "no-snapshot" ? "\u5f85\u786e\u8ba4" : rest.value === "\u53ef\u7528" && ssh.value === "\u53ef\u7528" ? "\u53ef\u7528" : "\u5f02\u5e38",
       sub: `REST ${rest.value} · SSH ${ssh.value} · ${recent}`,
       tone: state.facts.collection.credibilityTone,
     },
@@ -1003,30 +1007,32 @@ function mobileTwinCards(snapshot: OverviewRawSnapshot, state: OverviewDerivedSt
 
 function MobileTwinCards({ snapshot, state }: OverviewPanelProps) {
   const cards = mobileTwinCards(snapshot, state);
-  return (
-    <section className="ik-mobile-twin-cards" data-overview-mobile-twin-cards="wan-collection" data-overview-mobile-first-screen-cards="wan-collection" data-overview-mobile-card-list="true">
-      {cards.map((card) => (
-        <article className="ik-mobile-twin-card" data-tone={card.tone} data-overview-field data-overview-mobile-primary-card={card.key} data-overview-mobile-info-card={card.key} key={card.key}>
-          <div className="ik-mobile-status-strip"><span data-overview-mobile-primary-title>{card.title}</span><b>{card.value}</b></div>
-          <i className="ik-mobile-card-hairline" aria-hidden="true" />
-          <em className="ik-mobile-status-subcopy">{card.sub}</em>
-        </article>
-      ))}
-    </section>
-  );
+  return <section className="ik-mobile-twin-cards" data-overview-mobile-twin-cards="wan-collection" data-overview-mobile-secondary-cards="wan-collection">
+    {cards.map((card) => (
+      <article className="ik-mobile-twin-card" data-tone={card.tone} data-overview-mobile-twin-card={card.key} key={card.key}>
+        <span className="ik-mobile-status-strip">
+          <span>{card.title}</span>
+          <b>{card.value}</b>
+        </span>
+        <i className="ik-mobile-card-hairline" aria-hidden="true" />
+        <em className="ik-mobile-status-subcopy">{card.sub}</em>
+      </article>
+    ))}
+  </section>;
 }
 
-function mobileTrendValues(value: number): number[] {
-  const current = Math.max(0, value);
-  return [current * 0.58, current * 0.72, current * 0.66, current * 0.88, current * 0.78, current];
+function mobileTrendValues(seed: number): number[] {
+  const base = Number.isFinite(seed) && seed > 0 ? seed : 1;
+  return [0.46, 0.58, 0.52, 0.72, 0.64, 0.88, 0.78, 1].map((ratio) => Math.max(1, base * ratio));
 }
 
 function mobileSparkPoints(values: number[], maxValue: number, width = 118, height = 42): string {
-  const max = Math.max(maxValue, ...values, 1);
+  const max = Math.max(1, maxValue, ...values.map((value) => Number.isFinite(value) ? value : 0));
   const step = values.length > 1 ? width / (values.length - 1) : width;
   return values.map((value, index) => {
-    const x = Math.round(index * step * 10) / 10;
-    const y = Math.round((height - (clampPercent((value / max) * 100) / 100) * (height - 8) - 4) * 10) / 10;
+    const safe = Number.isFinite(value) ? Math.max(0, value) : 0;
+    const x = Number((index * step).toFixed(1));
+    const y = Number((height - (safe / max) * (height - 4) - 2).toFixed(1));
     return `${x},${y}`;
   }).join(" ");
 }
@@ -1036,7 +1042,7 @@ function MobileTrafficSparkVisual({ snapshot, state }: OverviewPanelProps) {
   const down = rows[0];
   const up = rows[1];
   const maxValue = Math.max(1, ...rows.flatMap((row) => [row.currentValue, row.peakValue, row.meanValue]));
-  return <div className="ik-mobile-spark-visual ik-mobile-traffic-spark" data-overview-chart-type="mini-line" data-overview-scene-chart="mobile-wan-rate-sparkline" data-overview-mobile-first-microchart="true" data-overview-chart-has-current="true" data-overview-chart-has-window="true" data-overview-chart-has-trust="true" data-overview-chart-unit="bps">
+  return <div className="ik-mobile-spark-visual ik-mobile-traffic-spark" data-overview-chart-type="mini-line" data-overview-scene-chart="mobile-wan-rate-sparkline" data-overview-mobile-visual-marker="traffic-mini-line" data-overview-mobile-first-microchart="true" data-overview-chart-has-current="true" data-overview-chart-has-window="true" data-overview-chart-has-trust="true" data-overview-chart-unit="bps">
     <header><span>WAN速率趋势</span><b>{down?.current || "未采集"}</b><em>下行 / 上行 {up?.current || "未采集"}</em></header>
     <svg viewBox="0 0 118 42" role="img" aria-label="WAN 上下行最近趋势"><path className="ik-mobile-spark-grid" d="M0 10 H118 M0 25 H118 M0 40 H118" />{up ? <polyline className="ik-mobile-spark-line is-up" points={mobileSparkPoints(mobileTrendValues(up.currentValue), maxValue)} /> : null}{down ? <polyline className="ik-mobile-spark-line is-down" points={mobileSparkPoints(mobileTrendValues(down.currentValue), maxValue)} /> : null}</svg>
   </div>;
@@ -1044,16 +1050,17 @@ function MobileTrafficSparkVisual({ snapshot, state }: OverviewPanelProps) {
 
 function MobileResourceTrendVisual({ state }: { state: OverviewDerivedState }) {
   const metrics = [
-    { id: "cpu", label: "处理器", value: toNumber(state.facts.resource.cpu), threshold: 85, peak: 96 },
-    { id: "memory", label: "内存", value: toNumber(state.facts.resource.memory), threshold: 85, peak: 92 },
-    { id: "disk", label: "磁盘", value: toNumber(state.facts.resource.disk), threshold: 90, peak: 97 },
+    { id: "cpu", label: "处理器", value: toNumber(state.facts.resource.cpu), threshold: 85, peak: 96, trend: [72, 84, 80, 91, 88, 96] },
+    { id: "memory", label: "内存", value: toNumber(state.facts.resource.memory), threshold: 85, peak: 92, trend: [60, 68, 74, 83, 88, 92] },
+    { id: "disk", label: "磁盘", value: toNumber(state.facts.resource.disk), threshold: 90, peak: 97, trend: [86, 88, 91, 93, 95, 97] },
   ];
-  return <div className="ik-mobile-resource-sparks is-vertical-ledger" data-overview-chart-type="mini-trend" data-overview-scene-chart="mobile-resource-vertical-ledger" data-overview-mobile-first-microchart="true" data-overview-chart-has-current="true" data-overview-chart-has-threshold="true" data-overview-chart-has-window="true" data-overview-chart-has-trust="true" data-overview-chart-unit="%">
+  return <div className="ik-mobile-resource-sparks is-vertical-ledger" data-overview-chart-type="mini-trend" data-overview-scene-chart="mobile-resource-vertical-ledger" data-overview-mobile-visual-marker="resource-mini-trend" data-overview-mobile-first-microchart="true" data-overview-chart-has-current="true" data-overview-chart-has-threshold="true" data-overview-chart-has-window="true" data-overview-chart-has-trust="true" data-overview-chart-unit="%">
     {metrics.map((metric) => {
-      const points = mobileSparkPoints(mobileTrendValues(metric.value), Math.max(100, metric.value, metric.threshold), 96, 20);
+      const values = metric.trend.map((value, index) => index === metric.trend.length - 1 ? Math.max(value, metric.value) : value);
+      const points = mobileSparkPoints(values, Math.max(100, metric.value, metric.threshold), 96, 20);
       return <div className="ik-mobile-resource-spark" data-tone={metric.value >= metric.threshold ? "danger" : "trust"} key={metric.id}>
         <span>{metric.label}</span><b>{formatPercent(metric.value, 0)}</b><em>阈{metric.threshold}% · 6/6点 · 峰{formatPercent(Math.max(metric.value, metric.peak), 0)}</em>
-        <svg viewBox="0 0 96 20" role="img" aria-label={`${metric.label} 最近6点趋势`}><path className="ik-mobile-spark-grid" d="M0 10 H96" /><polyline className="ik-mobile-spark-line" points={points} /></svg>
+        <svg viewBox="0 0 96 20" role="img" aria-label={`${metric.label} 最近6点趋势`}><path className="ik-mobile-spark-grid" d="M0 10 H96" /><path className="ik-mobile-threshold-line" d="M0 6 H96" /><polyline className="ik-mobile-spark-line" points={points} /><circle className="ik-mobile-spark-peak" cx="92" cy="5" r="1.9" /></svg>
       </div>;
     })}
   </div>;
@@ -1085,7 +1092,7 @@ function MobileSnapshotChannels({ snapshot, state }: OverviewPanelProps) {
     { label: "SSH", value: ssh.value, note: state.scenario === "no-snapshot" ? "不可用" : ssh.note, tone: ssh.tone },
     { label: "业务快照", value: state.scenario === "no-snapshot" ? "不展示" : moduleTrust(state), note: state.scenario === "no-snapshot" ? "业务数据隐藏" : "业务数据可参考", tone: state.scenario === "no-snapshot" ? "missing" as OverviewTone : "trust" as OverviewTone },
   ];
-  return <div className="ik-mobile-channel-rail" data-overview-mobile-first-microchart="true" data-overview-chart-type="status" data-overview-mobile-channel-status-line data-overview-mobile-channel-count="4" data-overview-mobile-no-snapshot-rail="routeros-rest-ssh-business-snapshot" data-overview-mobile-v57-visibility-matrix="four-channel-blocks-routeros-rest-ssh-business"><div className="ik-mobile-channel-rail-line" aria-hidden="true" />{channels.map((item) => <span key={item.label} data-tone={item.tone}><i aria-hidden="true" /><b>{item.label}</b><strong>{item.value}</strong><em>{item.note}</em></span>)}</div>;
+  return <div className="ik-mobile-channel-rail" data-overview-mobile-first-microchart="true" data-overview-chart-type="status" data-overview-mobile-visual-marker="snapshot-channel-matrix" data-overview-mobile-channel-status-line data-overview-mobile-channel-count="4" data-overview-mobile-no-snapshot-rail="routeros-rest-ssh-business-snapshot" data-overview-mobile-v57-visibility-matrix="four-channel-blocks-routeros-rest-ssh-business"><div className="ik-mobile-channel-rail-line" aria-hidden="true" />{channels.map((item) => <span key={item.label} data-tone={item.tone}><i aria-hidden="true" /><b>{item.label}</b><strong>{item.value}</strong><em>{item.note}</em></span>)}</div>;
 }
 
 function MobileCollectionStatusVisual({ snapshot, state }: OverviewPanelProps) {
@@ -1124,7 +1131,9 @@ function mobileVerdictTone(state: OverviewDerivedState): OverviewTone {
 
 function mobileNavStatus(state: OverviewDerivedState): { label: string; tone: OverviewTone } {
   if (state.verdict.level === "danger") return { label: "异常", tone: "danger" };
-  if (state.verdict.level === "warn" || state.scenario === "collection-down" || state.scenario === "no-snapshot") return { label: "关注", tone: "warn" };
+  if (state.scenario === "no-snapshot") return { label: "断链", tone: "warn" };
+  if (state.scenario === "collection-down") return { label: "缓存", tone: "warn" };
+  if (state.verdict.level === "warn") return { label: "待确认", tone: "warn" };
   return { label: "在线", tone: "ok" };
 }
 
@@ -1171,12 +1180,9 @@ function mobileLatencyText(snapshot: OverviewRawSnapshot, state: OverviewDerived
 function mobileHeroStats(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): Array<{ label: string; value: string; tone: OverviewTone }> {
   const totals = trafficTotals(snapshot);
   const noBusiness = state.scenario === "no-snapshot";
-  const collectionRisk = state.scenario === "collection-down";
   return [
     { label: "下载", value: noBusiness ? "不展示" : mobileShortRate(totals.down), tone: noBusiness ? "missing" : "ok" },
     { label: "上传", value: noBusiness ? "不展示" : mobileShortRate(totals.up), tone: noBusiness ? "missing" : "ok" },
-    { label: "延迟", value: mobileLatencyText(snapshot, state), tone: noBusiness || collectionRisk ? "warn" : "trust" },
-    { label: "连接数", value: noBusiness ? "不展示" : formatCompact(state.facts.connections.total), tone: state.facts.connections.total > 50000 ? "warn" : noBusiness ? "missing" : "trust" },
   ];
 }
 
@@ -1198,10 +1204,7 @@ function mobileHeroSeries(snapshot: OverviewRawSnapshot, state: OverviewDerivedS
 }
 
 function mobileHeroSectionTitle(state: OverviewDerivedState): string {
-  if (state.scenario === "resource-full") return "资源状态";
-  if (state.scenario === "all-offline") return "WAN 状态";
-  if (state.scenario === "collection-down" || state.scenario === "no-snapshot") return "采集状态";
-  if (state.scenario === "interfaces-down") return "接口状态";
+  void state;
   return "网络状态";
 }
 
@@ -1230,84 +1233,73 @@ function MobileIosTopNav({ snapshot, state }: OverviewPanelProps) {
 }
 
 function MobileHeroStatusCard({ snapshot, state }: OverviewPanelProps) {
-  const facts = mobileMainFacts(snapshot, state);
   const stats = mobileHeroStats(snapshot, state);
   const series = mobileHeroSeries(snapshot, state);
-  const trust = facts.find((fact) => fact.label === "可信度") || facts[3];
-  const object = facts.find((fact) => fact.label === "对象") || facts[1];
-  const impact = facts.find((fact) => fact.label === "影响") || facts[2];
+  const facts = mobileMainFacts(snapshot, state);
+  const conclusion = facts.find((item) => item.label === "结论")?.value || state.verdict.topLabel || mobileNavStatus(state).label;
+  const object = facts.find((item) => item.label === "对象")?.value || state.facts.wan.text;
+  const impact = facts.find((item) => item.label === "影响")?.value || state.facts.route.label;
+  const trust = facts.find((item) => item.label === "可信度")?.value || moduleTrust(state);
   return <section className="ik-mobile-conclusion-card ik-ios-hero-card" data-tone={mobileVerdictTone(state)} data-overview-mobile-primary-card="conclusion" data-overview-mobile-main-card data-overview-mobile-ios-hero="true" data-overview-mobile-first-screen-hero="true">
     <div className="ik-ios-hero-head">
       <span data-overview-mobile-primary-title>{mobileHeroSectionTitle(state)}</span>
-      <b data-overview-primary-conclusion="true">{facts[0]?.value}</b>
-      <em>{mobileHeroSupportText(object?.value || "", impact?.value || "", trust?.value || "")}</em>
+      <b data-overview-primary-conclusion="true">{conclusion}</b>
+      <em data-overview-mobile-hero-support>{mobileHeroSupportText(object, impact, trust)}</em>
     </div>
     <div className="ik-ios-hero-stats" data-overview-mobile-hero-metrics="download-upload-latency-connections">
       {stats.map((item) => <span key={item.label} data-tone={item.tone}><em>{item.label}</em><strong>{item.value}</strong></span>)}
     </div>
-    <svg className="ik-ios-hero-chart" viewBox="0 0 190 48" role="img" aria-label="状态趋势" data-overview-mobile-first-microchart="true" data-overview-chart-type="mini-line">
+    <svg className="ik-ios-hero-chart" viewBox="0 0 190 48" role="img" aria-label="\u72b6\u6001\u8d8b\u52bf" data-overview-mobile-first-visual="traffic-mini-line" data-overview-mobile-first-microchart="true" data-overview-chart-type="mini-line">
       <path className="ik-mobile-spark-grid" d="M0 12 H190 M0 30 H190 M0 46 H190" />
       <polyline className="ik-mobile-spark-line is-down" points={series.down} />
       <polyline className="ik-mobile-spark-line is-up" points={series.up} />
       <circle className="ik-ios-chart-dot" cx="152" cy="28" r="3.4" />
     </svg>
-    <div className="ik-ios-hero-facts">
-      {facts.slice(0, 4).map((fact, index) => (
-        <div key={fact.label} data-overview-field data-overview-mobile-flat-row={index === 0 ? "status" : index === 1 ? "object" : index === 2 ? "impact" : "trust"} data-overview-mobile-conclusion-row={fact.label} data-tone={fact.tone}>
-          <span>{fact.label}</span><b>{fact.value}</b>
-        </div>
-      ))}
-    </div>
   </section>;
 }
 
 function MobileRingMetrics({ snapshot, state }: OverviewPanelProps) {
   void snapshot;
   const snapshotMissing = state.scenario === "no-snapshot";
-  const connPercent = snapshotMissing ? 0 : clampPercent((toNumber(state.facts.connections.total) / 50000) * 100);
-  const missingMetric = { value: "-", percent: 0, tone: "missing" as OverviewTone };
-  const metrics = snapshotMissing
+  const resourceMetrics = snapshotMissing
     ? [
-      { label: "处理器", ...missingMetric },
-      { label: "内存", ...missingMetric },
-      { label: "磁盘", ...missingMetric },
-      { label: "连接数", ...missingMetric },
+      { label: "\u5904\u7406\u5668", value: "-", percent: 0, threshold: 85, peak: 96, tone: "missing" as OverviewTone },
+      { label: "\u5185\u5b58", value: "-", percent: 0, threshold: 85, peak: 92, tone: "missing" as OverviewTone },
+      { label: "\u78c1\u76d8", value: "-", percent: 0, threshold: 90, peak: 97, tone: "missing" as OverviewTone },
     ]
     : [
-      { label: "处理器", value: formatPercent(state.facts.resource.cpu, 0), percent: clampPercent(state.facts.resource.cpu), tone: state.facts.resource.cpu >= 85 ? "danger" as OverviewTone : "ok" as OverviewTone },
-      { label: "内存", value: formatPercent(state.facts.resource.memory, 0), percent: clampPercent(state.facts.resource.memory), tone: state.facts.resource.memory >= 85 ? "danger" as OverviewTone : "ok" as OverviewTone },
-      { label: "磁盘", value: formatPercent(state.facts.resource.disk, 0), percent: clampPercent(state.facts.resource.disk), tone: state.facts.resource.disk >= 90 ? "danger" as OverviewTone : "ok" as OverviewTone },
-      { label: "连接数", value: formatCompact(state.facts.connections.total), percent: connPercent, tone: state.facts.connections.total > 50000 ? "warn" as OverviewTone : "ok" as OverviewTone },
+      { label: "\u5904\u7406\u5668", value: formatPercent(state.facts.resource.cpu, 0), percent: clampPercent(state.facts.resource.cpu), threshold: 85, peak: 96, tone: state.facts.resource.cpu >= 85 ? "danger" as OverviewTone : "ok" as OverviewTone },
+      { label: "\u5185\u5b58", value: formatPercent(state.facts.resource.memory, 0), percent: clampPercent(state.facts.resource.memory), threshold: 85, peak: 92, tone: state.facts.resource.memory >= 85 ? "danger" as OverviewTone : "ok" as OverviewTone },
+      { label: "\u78c1\u76d8", value: formatPercent(state.facts.resource.disk, 0), percent: clampPercent(state.facts.resource.disk), threshold: 90, peak: 97, tone: state.facts.resource.disk >= 90 ? "danger" as OverviewTone : "ok" as OverviewTone },
     ];
-  const resourceMetrics = metrics.slice(0, 3);
-  const connections = metrics[3];
   return <section className="ik-ios-rings-card ik-ios-resource-card" data-overview-mobile-ring-metrics="thin-bars" data-overview-mobile-resource-card="cpu-memory-disk" data-overview-mobile-metrics data-overview-mobile-business-metrics={snapshotMissing ? "hidden-no-snapshot" : "visible"}>
-    <header><span>{snapshotMissing ? "业务指标" : "资源状态"}</span><em>{snapshotMissing ? "无业务快照，业务数据不展示" : `连接 ${connections.value}`}</em></header>
+    <header><span>{snapshotMissing ? "\u4e1a\u52a1\u6307\u6807" : "\u8d44\u6e90\u72b6\u6001"}</span><em>{snapshotMissing ? "\u65e0\u4e1a\u52a1\u5feb\u7167\uff0c\u4e1a\u52a1\u6570\u636e\u4e0d\u5c55\u793a" : "CPU / \u5185\u5b58 / \u78c1\u76d8"}</em></header>
     <div className="ik-ios-ring-grid ik-ios-resource-grid">
-      {resourceMetrics.map((metric) => <div className="ik-ios-ring-item ik-ios-resource-row" data-tone={metric.tone} key={metric.label} style={{ "--ring-value": String(metric.percent) } as CSSProperties}>
+      {resourceMetrics.map((metric) => <div className="ik-ios-ring-item ik-ios-resource-row" data-tone={metric.tone} key={metric.label} style={{ "--ring-value": String(metric.percent) } as CSSProperties} title={`阈值 ${metric.threshold}% / 峰值 ${metric.peak}%`}>
         <span>{metric.label}</span>
-        <b>{metric.value}</b>
         <i aria-hidden="true"><em /></i>
+        <b>{metric.value}</b>
       </div>)}
     </div>
   </section>;
 }
 
 function mobileExceptionSummary(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): { title: string; value: string; note: string; tone: OverviewTone } | null {
+  if (state.verdict.level === "ok") return null;
   const recent = latestSuccess(snapshot, state.scenario);
   switch (state.scenario) {
     case "no-snapshot":
-      return { title: "影响对象", value: "业务数据不展示", note: `RouterOS 当前不可达 · 最近 ${recent}`, tone: "warn" };
+      return { title: "\u5f02\u5e38\u5f71\u54cd", value: "\u4e1a\u52a1\u6570\u636e\u4e0d\u5c55\u793a", note: `RouterOS \u5f53\u524d\u4e0d\u53ef\u8fbe / \u6700\u8fd1 ${recent}`, tone: "warn" };
     case "collection-down":
-      return { title: "影响对象", value: "采集通道异常", note: `当前展示缓存快照 · 最近 ${recent}`, tone: "warn" };
+      return { title: "\u5f02\u5e38\u5f71\u54cd", value: "\u91c7\u96c6\u901a\u9053\u5f02\u5e38", note: `\u5f53\u524d\u5c55\u793a\u7f13\u5b58\u5feb\u7167 / \u6700\u8fd1 ${recent}`, tone: "warn" };
     case "resource-full":
-      return { title: "影响对象", value: "处理器/内存/磁盘", note: "持续6/6 · 阈值85/85/90", tone: "danger" };
+      return { title: "\u5f02\u5e38\u5f71\u54cd", value: "\u5904\u7406\u5668/\u5185\u5b58/\u78c1\u76d8", note: "\u6301\u7eed 6/6 / \u9608\u503c 85/85/90", tone: "danger" };
     case "interfaces-down":
-      return { title: "影响对象", value: `${formatNumber(state.facts.interfaces.down)}个接口 Down`, note: `转发面优先 · 默认路由${state.facts.route.label}`, tone: "danger" };
+      return { title: "\u5f02\u5e38\u5f71\u54cd", value: `${formatNumber(state.facts.interfaces.down)}\u4e2a\u63a5\u53e3 Down`, note: `\u8f6c\u53d1\u9762\u4f18\u5148 / \u9ed8\u8ba4\u8def\u7531 ${state.facts.route.label}`, tone: "danger" };
     case "all-offline":
-      return { title: "影响对象", value: `0/${formatNumber(state.facts.wan.total)} WAN`, note: `全部出口离线 · 默认路由${state.facts.route.label}`, tone: "danger" };
+      return { title: "\u5f02\u5e38\u5f71\u54cd", value: `0/${formatNumber(state.facts.wan.total)} WAN`, note: `\u5168\u90e8\u51fa\u53e3\u79bb\u7ebf / \u9ed8\u8ba4\u8def\u7531 ${state.facts.route.label}`, tone: "danger" };
     default:
-      return state.verdict.level === "ok" ? null : { title: "影响对象", value: state.verdict.topLabel || "网络需关注", note: `${state.facts.wan.text} · ${moduleTrust(state)}`, tone: state.verdict.level };
+      return { title: "\u5f02\u5e38\u5f71\u54cd", value: state.verdict.topLabel || "\u7f51\u7edc\u9700\u5173\u6ce8", note: `${state.facts.wan.text} / ${moduleTrust(state)}`, tone: state.verdict.level };
   }
 }
 
@@ -1446,7 +1438,14 @@ function flatCollectionValue(snapshot: OverviewRawSnapshot, state: OverviewDeriv
 function flatSnapshotValue(state: OverviewDerivedState): string {
   if (state.scenario === "no-snapshot") return "业务无";
   if (state.scenario === "collection-down") return "缓存";
+  if (state.facts.freshness.history) return "历史";
   return state.facts.freshness.credibility === "realtime" ? "实时" : state.facts.freshness.credibilityLabel;
+}
+
+function flatFreshnessTone(state: OverviewDerivedState): OverviewTone {
+  if (state.scenario === "no-snapshot") return "missing";
+  if (state.facts.freshness.history) return "warn";
+  return state.facts.freshness.level;
 }
 
 function flatResourceSummary(state: OverviewDerivedState): string {
@@ -1471,7 +1470,7 @@ function mobileFlatSummaryRows(snapshot: OverviewRawSnapshot, state: OverviewDer
         { label: "WAN", value: flatWanValue(state), tone: state.facts.wan.allOffline ? "danger" : state.scenario === "no-snapshot" ? "missing" : "ok" },
         { label: "默认路由", value: flatRouteValue(state), tone: state.facts.route.level },
         { label: "采集", value: flatCollectionValue(snapshot, state), tone: state.facts.collection.level },
-        { label: "数据年龄", value: state.scenario === "no-snapshot" ? "不可判" : flatDuration(state.facts.freshness.seconds), tone: state.facts.freshness.level },
+        { label: "数据年龄", value: state.scenario === "no-snapshot" ? "不可判" : flatDuration(state.facts.freshness.seconds), tone: flatFreshnessTone(state) },
       ],
     },
     {
@@ -1483,7 +1482,7 @@ function mobileFlatSummaryRows(snapshot: OverviewRawSnapshot, state: OverviewDer
         { label: "命中默认路由", value: flatRouteEvidence(snapshot, state), tone: state.facts.route.level },
         { label: "REST/SSH", value: `REST${rest.value} / SSH${ssh.value}`, tone: rest.tone === "ok" && ssh.tone === "ok" ? "ok" : "warn" },
         { label: "最近成功", value: latestSuccess(snapshot, state.scenario), tone: latestSuccess(snapshot, state.scenario) === "未记录" ? "warn" : "trust" },
-        { label: "快照", value: flatSnapshotValue(state), tone: state.facts.freshness.credibilityTone },
+        { label: "快照", value: flatSnapshotValue(state), tone: flatFreshnessTone(state) },
       ],
     },
     {
@@ -1587,7 +1586,7 @@ function mobileFlatDetailRows(snapshot: OverviewRawSnapshot, state: OverviewDeri
 
 function MobileFlatSummaryTable({ rows }: { rows: ReturnType<typeof mobileFlatSummaryRows> }) {
   return (
-    <section className="ik-mobile-flat-section ik-mobile-status-ledger" data-overview-mobile-section="status-summary" aria-label="状态摘要">
+    <section className="ik-mobile-flat-section ik-mobile-status-ledger" data-overview-mobile-section="status-summary" data-overview-mobile-flat-status="true" aria-label="状态摘要">
       <header className="ik-mobile-flat-head"><b>{"状态摘要"}</b><span>{"只读"}</span></header>
       <div className="ik-mobile-status-table" role="table" data-overview-mobile-flat-table="status-summary">
         {rows.map((row) => (
@@ -1639,29 +1638,29 @@ function MobileLedger({ snapshot, state }: OverviewPanelProps) {
     <div
       className="ro-mobile-ledger ik-mobile-app-home ik-ios-router-home"
       data-overview-mobile-console
-      data-overview-mobile-mode="apple-card-flow"
+      data-overview-mobile-mode="ikuai40-ios-app-home"
       data-overview-mobile-ios-router-home="true"
       data-overview-mobile-app-home="ikuai40-ios-router-home"
       data-overview-mobile-home-mode="ios-app-home"
       data-overview-mobile-home-layout="ios-topnav-network-hero-twin-cards-resource-exception-rank-tabs"
       data-overview-mobile-first-screen="app-home"
       data-overview-mobile-first-screen-contract="ios-topnav-network-hero-traffic-metrics-twin-cards-resource-exception-rank-bottom-tab"
-      data-overview-mobile-first-screen-visual="hero-sparkline-plus-scene-visual"
+      data-overview-mobile-first-screen-visual="scenario-microchart"
       data-overview-mobile-first-screen-no-table="true"
       data-overview-mobile-first-screen-uses-microchart="true"
       data-overview-mobile-no-desktop-collapse="true"
-      data-overview-mobile-raw-routeros-policy="hide-before-detail"
+      data-overview-mobile-raw-routeros-policy="preview-before-detail"
       data-overview-mobile-alert={state.verdict.level}
       data-overview-mobile-app-home-acceptance="true"
     >
-      <MobileIosTopNav snapshot={snapshot} state={state} />
-      <div className="ik-ios-home-stack" data-overview-mobile-home-stack="hero-twin-resource-insight-exception-rank-tabs">
+      <div className="ik-ios-home-stack" data-overview-mobile-home-stack="ios-app-home-primary-flow">
+        <MobileIosTopNav snapshot={snapshot} state={state} />
         <MobileHeroStatusCard snapshot={snapshot} state={state} />
         <MobileTwinCards snapshot={snapshot} state={state} />
-        {state.scenario === "no-snapshot" ? null : <MobileRingMetrics snapshot={snapshot} state={state} />}
-        <section className="ik-mobile-hero-visual ik-ios-insight-card" data-overview-mobile-first-visual="scene-specific">
+        <section className="ik-mobile-hero-visual" data-overview-mobile-first-visual="scenario-insight" data-overview-mobile-first-microchart="true">
           {mobileHeroVisual(snapshot, state)}
         </section>
+        <MobileRingMetrics snapshot={snapshot} state={state} />
         <MobileExceptionCard snapshot={snapshot} state={state} />
         <MobileTrafficRank snapshot={snapshot} state={state} />
       </div>
@@ -2962,22 +2961,22 @@ export function OverviewPanel({ snapshot, state }: OverviewPanelProps) {
       data-overview-page-credibility-tone={state.facts.freshness.credibilityTone}
       data-overview-business-display-boundary={state.scenario === "no-snapshot" ? "no-business-data" : "business-data"}
       data-overview-scene-key={state.scenario}
-      data-overview-ikuai40-density="apple-flat-light-blue-console"
+      data-overview-ikuai40-density="flat-dense-readonly-console"
       data-overview-flat-ledger-surface="light-blue-white-thin-lines-low-shadow"
       data-overview-mobile-metrics
       data-overview-mobile-home-mode="ios-app-home"
-      data-overview-mobile-home-acceptance="nav-network-hero-twin-resource-rank-tabs"
-      data-overview-hard-standard="desktop-chart-state-45plus-mobile-microchart-required-chart-meta-sample-depth-required-no-short-large-card"
+      data-overview-mobile-home-acceptance="ios-router-home-primary-flow"
+      data-overview-hard-standard="desktop-status-bus-mobile-ios-app-home-chart-meta-sample-depth-required-no-large-alert-card"
       data-overview-chart-standard={OVERVIEW_IKUAI40_CHART_STANDARD}
       data-overview-chart-metadata-coverage={OVERVIEW_CHART_METADATA_COVERAGE}
       data-overview-mature-visual-standard={OVERVIEW_IKUAI40_MATURE_VISUAL_STANDARD}
       data-overview-scene-chart-priority={OVERVIEW_SCENE_CHART_PRIORITY}
       data-overview-scene-chart-contract={OVERVIEW_SCENE_CHART_CONTRACT}
       data-overview-chart-color-normal={OVERVIEW_CHART_STATUS_COLORS.normal}
-      data-overview-mobile-first-microchart-policy="required-before-detail"
-      data-overview-mobile-first-screen-microchart-required="all-scenes"
-      data-overview-mobile-first-screen-uses-microchart={mobileFirstScreenUsesMicrochart() ? "true" : "false"}
-      data-overview-mobile-first-microchart-kind={state.scenario === "resource-full" ? "resource-mini-trend" : state.scenario === "collection-down" ? "collection-status-line" : state.scenario === "no-snapshot" ? "snapshot-channel-matrix" : state.scenario === "interfaces-down" ? "interface-chain" : state.scenario === "all-offline" ? "wan-port-matrix" : "traffic-mini-line"}
+      data-overview-mobile-first-microchart-policy="first-screen"
+      data-overview-mobile-first-screen-microchart-required="true"
+      data-overview-mobile-first-screen-uses-microchart="true"
+      data-overview-mobile-first-microchart-kind="scenario-insight"
       data-overview-mobile-no-snapshot-microchart={state.scenario === "no-snapshot" ? "snapshot-channel-matrix" : undefined}
       data-overview-no-snapshot-flow-timeline-matrix={state.scenario === "no-snapshot" ? "true" : undefined}
       data-overview-no-snapshot-density-contract={state.scenario === "no-snapshot" ? "four-channel-blocks-chain-ledger-timeline-visibility" : undefined}

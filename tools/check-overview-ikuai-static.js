@@ -42,7 +42,7 @@ const appHomeCss = css.slice(Math.max(
 
 assert(tsx.includes('MobileIosTopNav'), 'mobile iOS top nav component missing');
 assert(tsx.includes('MobileHeroStatusCard'), 'mobile app-home hero card component missing');
-assert(tsx.includes('MobileTwinCards'), 'mobile app-home WAN/collection twin cards component missing');
+assert(tsx.includes('mobileTwinCards'), 'mobile app-home WAN/collection twin cards component missing');
 assert(tsx.includes('MobileRingMetrics'), 'mobile app-home KPI ring component missing');
 assert(tsx.includes('MobileTrafficRank'), 'mobile app-home visual/rank component missing');
 assert(tsx.includes('MobileBottomTabs'), 'mobile app-home bottom tab component missing');
@@ -115,9 +115,17 @@ assert(predeploy.includes('overviewMobile390NoRawBooleanCopyOk'), 'predeploy mus
 assert(predeploy.includes('overviewMobile390BottomTabOk'), 'predeploy must keep the bottom tab visible');
 assert(predeploy.includes('.ik-ios-top-nav, .ik-ios-hero-card, .ik-mobile-twin-cards, .ik-ios-resource-card, .ik-ios-rank-card, .ik-ios-bottom-tab'), 'predeploy must probe app-home chrome nodes');
 assert(predeploy.includes('mobile390AppHomeTwinOk'), 'predeploy must require app-home WAN/collection twin cards instead of 2x2 KPI');
+assert(predeploy.includes('mobile390AppHomeHeroMetricsOk'), 'predeploy must require app-home hero metrics');
+assert(predeploy.includes('mobile390AppHomeResourceCardOk'), 'predeploy must require app-home resource card');
+assert(predeploy.includes('mobile390AppHomeRankCardOk'), 'predeploy must require app-home rank card');
+assert(predeploy.includes('mobile390AppHomeBottomTabOk'), 'predeploy must require app-home bottom tab');
+assert(predeploy.includes('overviewMobile390NoKpi2x2Ok') && predeploy.includes('mobile390Kpi2x2MarkerNodes'), 'predeploy must reject visible mobile 2x2 KPI markers');
 assert(!predeploy.includes('mobile390AppHomeKpiOk') && !predeploy.includes('hasKpi2x2'), 'predeploy must not keep old kpi2x2 mobile gate names');
 assert(predeploy.includes('overviewDesktopNoMobileAppChromeOk'), 'predeploy must reject mobile app chrome leaking into desktop');
+assert(predeploy.includes('overviewDesktopNoToyNavLeakOk'), 'predeploy must reject mobile toy nav leakage on desktop');
 assert(predeploy.includes('nodeVisibleInViewport'), 'predeploy must evaluate fixed/sticky bottom tab as viewport chrome');
+assert(predeploy.includes('overviewMobile390NoAppHomeTitleClipOk'), 'predeploy must reject title overlap risk / ellipsis on app-home core text');
+assert(predeploy.includes('[data-overview-mobile-primary-title]') && predeploy.includes('.ik-ios-nav-title'), 'predeploy must probe app-home titles for clipping risk');
 assert(predeploy.includes('mobile390MainProgressBarRecords') && predeploy.includes('height >= 6'), 'predeploy must reject coarse main progress bars');
 assert(predeploy.includes('requestedMobile390x844') && predeploy.includes('window.innerWidth >= 375') && predeploy.includes('window.innerWidth <= 430'), 'predeploy must target the 390x844 mobile viewport with browser-tolerant bounds');
 

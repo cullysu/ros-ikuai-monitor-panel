@@ -1796,7 +1796,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     );
     const mobileAlert = sectionRoot?.querySelector('[data-overview-mobile-alert]');
     const mobileConsole = sectionRoot?.querySelector('[data-overview-mobile-console]');
-    const mobileFlatStatus = sectionRoot?.querySelector('[data-overview-mobile-flat-status]');
+    const mobileFlatStatus = sectionRoot?.querySelector('[data-overview-mobile-flat-status], [data-overview-mobile-section="status-summary"], .ik-mobile-status-ledger');
     const mobilePrimaryCardGrid = mobileFlatStatus?.querySelector('[data-overview-mobile-primary-cards]') || sectionRoot?.querySelector('[data-overview-mobile-primary-cards]');
     const mobilePrimaryCards = Array.from(mobilePrimaryCardGrid?.querySelectorAll('[data-overview-mobile-primary-card]') || []);
     const mobilePrimaryCardKeys = mobilePrimaryCards.map((node) => String(node.getAttribute('data-overview-mobile-primary-card') || ''));
@@ -2926,6 +2926,11 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         })
       : [];
     const mobile390VisibleTableVisualCount = mobile390VisibleTableVisualNodes.length;
+    const mobile390Kpi2x2MarkerNodes = mobileOverview390x844
+      ? Array.from((sectionRoot || mobileFirstScreen)?.querySelectorAll('[data-overview-mobile-kpi-grid], [data-overview-mobile-kpi2x2], .ik-mobile-kpi-grid, .ik-mobile-metric-grid, .MobileMetricGrid') || [])
+        .filter(nodeVisibleInFirstScreen)
+      : [];
+    const overviewMobile390NoKpi2x2Ok = !mobileOverview390x844 || mobile390Kpi2x2MarkerNodes.length === 0;
     const mobileFirstScreenPortMatrix = Boolean(mobileFirstScreen?.querySelector('.ro-port-matrix-row, .ro-wan-port-visual, [data-overview-wan-offline-bars], .ik-overview-module-matrix, .ik-no-snapshot-matrix-grid, .ik-no-snapshot-matrix-cell'));
     const mobileFirstScreenMiniVisual = Boolean(mobileFirstScreen?.querySelector('[data-overview-mobile-first-microchart], .ik-mobile-channel-line, .ik-mobile-interface-chain, .ik-mobile-channel-rail, .ik-mobile-resource-sparks, .ik-mobile-spark-panel, .ik-no-snapshot-mini-event'));
     const mobileFirstScreenChannelVisual = Boolean(mobileFirstScreen?.querySelector('.ik-mobile-channel-line, .ik-mobile-channel-rail, .ik-overview-channel-grid, .ik-overview-channel-cards, .ik-no-snapshot-channel-grid, .ik-no-snapshot-channel-card'));
@@ -2935,17 +2940,28 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         .filter(nodeVisibleInFirstScreen)
       : [];
     const mobile390AppHomeChromeNodes = mobileOverview390x844
-      ? Array.from((sectionRoot || mobileFirstScreen)?.querySelectorAll('.ik-ios-top-nav, .ik-ios-hero-card, .ik-mobile-twin-cards, .ik-ios-resource-card, .ik-ios-rank-card, .ik-ios-bottom-tab') || [])
+      ? Array.from((sectionRoot || mobileFirstScreen)?.querySelectorAll('.ik-ios-top-nav, .ik-ios-hero-card, .ik-mobile-twin-cards, .ik-ios-resource-card, .ik-ios-rank-card, .ik-ios-bottom-tab, [data-overview-mobile-ios-nav="true"], [data-overview-mobile-hero-metrics], [data-overview-mobile-twin-cards], [data-overview-mobile-resource-card], [data-overview-mobile-rank-list], [data-overview-mobile-bottom-tab]') || [])
         .filter((node) => node.classList.contains('ik-ios-bottom-tab') ? nodeVisibleInViewport(node) : nodeVisibleInFirstScreen(node))
       : [];
     const mobile390AppHomeRankPresent = !mobileOverview390x844 || Boolean((sectionRoot || mobileFirstScreen)?.querySelector('.ik-ios-rank-card'));
+    const mobile390AppHomeHeroMetricsOk = !mobileOverview390x844 || Boolean((sectionRoot || mobileFirstScreen)?.querySelector('[data-overview-mobile-hero-metrics]'));
+    const mobile390AppHomeResourceCardOk = !mobileOverview390x844 || Boolean((sectionRoot || mobileFirstScreen)?.querySelector('[data-overview-mobile-resource-card="cpu-memory-disk"], .ik-ios-resource-card'));
+    const mobile390AppHomeRankCardOk = !mobileOverview390x844 || Boolean((sectionRoot || mobileFirstScreen)?.querySelector('[data-overview-mobile-rank-list="app-device-list"], .ik-ios-rank-card'));
+    const mobile390AppHomeBottomTabOk = !mobileOverview390x844 || Boolean(
+      Array.from(sectionRoot?.querySelectorAll('.ik-ios-bottom-tab, [data-overview-mobile-bottom-tab]') || [])
+        .some(nodeVisibleInViewport)
+    );
     const mobile390AppHomeChromeOk = !mobileOverview390x844 || Boolean(
       mobile390AppHomeChromeNodes.some((node) => node.classList.contains('ik-ios-top-nav')) &&
       mobile390AppHomeChromeNodes.some((node) => node.classList.contains('ik-ios-hero-card')) &&
       mobile390AppHomeChromeNodes.some((node) => node.classList.contains('ik-mobile-twin-cards')) &&
       (noSnapshotEdge || mobile390AppHomeChromeNodes.some((node) => node.classList.contains('ik-ios-rings-card'))) &&
       mobile390AppHomeRankPresent &&
-      mobile390AppHomeChromeNodes.some((node) => node.classList.contains('ik-ios-bottom-tab'))
+      mobile390AppHomeChromeNodes.some((node) => node.classList.contains('ik-ios-bottom-tab')) &&
+      mobile390AppHomeHeroMetricsOk &&
+      mobile390AppHomeResourceCardOk &&
+      mobile390AppHomeRankCardOk &&
+      mobile390AppHomeBottomTabOk
     );
     const mobile390AppHomeTwinOk = !mobileOverview390x844 || Boolean(
       mobileTwinCardsVisible.length >= 2 &&
@@ -2978,7 +2994,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         mobile390FirstDetailRows.slice(0, 2).every(nodeVisibleInFirstScreen)
       )
     );
-    const overviewMobile390AppHomeFirstOk = mobile390AppHomeChromeOk && mobile390AppHomeTwinOk && overviewMobile390FirstScreenNoTableOk;
+    const overviewMobile390AppHomeFirstOk = mobile390AppHomeChromeOk && mobile390AppHomeTwinOk && mobile390AppHomeHeroMetricsOk && mobile390AppHomeResourceCardOk && mobile390AppHomeRankCardOk && mobile390AppHomeBottomTabOk && overviewMobile390FirstScreenNoTableOk;
     const overviewMobile390FirstScreenVisualOk = !mobileOverview390x844 || Boolean(
       mobile390AppHomeScenarioVisualOk &&
       mobile390AppHomeRingTrafficOk
@@ -3448,12 +3464,15 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     );
     const overviewDesktopNoMobileAppChromeOk = sectionName !== 'overview' || !isDesktopOverview || !Array.from(sectionRoot?.querySelectorAll('.ik-ios-top-nav, .ik-ios-hero-card, .ik-mobile-twin-cards, .ik-ios-resource-card, .ik-ios-rank-card, .ik-ios-bottom-tab') || [])
       .some(nodeVisibleInViewport);
+    const overviewDesktopNoToyNavLeakOk = sectionName !== 'overview' || !isDesktopOverview || !Array.from(sectionRoot?.querySelectorAll('.ik-ios-top-nav, [data-overview-mobile-ios-nav="true"], .ik-ios-bottom-tab, [data-overview-mobile-bottom-tab]') || [])
+      .some(nodeVisibleInViewport);
     const overviewMobileIosRouterHomeOk = !mobileOverview390x844 || Boolean(
       mobile390AppHomeChromeOk &&
       mobile390AppHomeTwinOk &&
       mobile390AppHomeScenarioVisualOk &&
       mobile390AppHomeRingTrafficOk &&
       overviewMobile390FirstScreenNoTableOk &&
+      overviewMobile390NoKpi2x2Ok &&
       overviewMobile390FirstScreenVisualOk &&
       overviewMobile390FirstTwoRowsVisibleOk &&
       overviewMobile390NoMemDiskVisibleOk &&
@@ -4087,6 +4106,13 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         '.ik-ios-hero-card *',
         '.ik-ios-rings-card *',
         '.ik-ios-rank-card *',
+        '[data-overview-mobile-primary-title]',
+        '.ik-ios-nav-title',
+        '.ik-ios-hero-head',
+        '.ik-ios-rings-card header',
+        '.ik-ios-rank-card header',
+        '.ik-ios-rank-row span',
+        '.ik-ios-resource-card header',
       ].join(',')) || [])
         .filter(nodeVisibleInFirstScreen)
         .filter((node) => normalize(node.textContent || '').length > 1)
@@ -4108,6 +4134,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         .filter(Boolean)
       : [];
     const overviewMobile390NoCoreTextClipOk = !mobileOverview390x844 || mobile390CoreTextClipSamples.length === 0;
+    const overviewMobile390NoAppHomeTitleClipOk = overviewMobile390NoCoreTextClipOk;
     const primaryConclusionEllipsisSamples = ellipsisSamples.filter((sample) =>
       String(sample.selector || '').includes('[data-overview-primary-conclusion]') ||
       /异常：|WAN全离线|快照缺失|资源满载|采集异常|接口全/.test(sample.text)
@@ -6041,6 +6068,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewMobile390NoRawRouterOsFieldsOk &&
       overviewMobile390NoMainProgressBarOk &&
       overviewMobile390NoHeavyVisualBlocksOk &&
+      overviewMobile390NoAppHomeTitleClipOk &&
       overviewMobile390NoCoreTextClipOk &&
       overviewMobileResourceFullVerticalOk &&
       overviewMobile390AppHomeFirstOk &&
@@ -6063,8 +6091,10 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewMinimalOk &&
       (!mobileOverview390x844 || overviewMobile390AcceptanceOk) &&
       (!mobileOverview390x844 || overviewMobile390NoCoreTextClipOk) &&
+      (!mobileOverview390x844 || overviewMobile390NoKpi2x2Ok) &&
       overviewMobileResourceFullVerticalOk &&
       overviewDesktopNoMobileAppChromeOk &&
+      overviewDesktopNoToyNavLeakOk &&
       overviewDesktopDensityOk &&
       overviewStatusBusTripletOk &&
       overviewVisualBalanceOk &&
@@ -6509,6 +6539,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewMobile390AcceptanceOk,
       overviewMobileIosRouterHomeOk,
       overviewMobile390FirstScreenNoTableOk,
+      overviewMobile390NoKpi2x2Ok,
       overviewMobile390FirstScreenVisualOk,
       overviewMobile390NoMemDiskVisibleOk,
       overviewMobile390BottomTabOk,
@@ -6516,26 +6547,36 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewMobile390NoRawRouterOsFieldsOk,
       overviewMobile390NoMainProgressBarOk,
       overviewMobile390NoHeavyVisualBlocksOk,
+      overviewMobile390NoAppHomeTitleClipOk,
       overviewDesktopNoMobileAppChromeOk,
+      overviewDesktopNoToyNavLeakOk,
       overviewMobile390NoCoreTextClipOk,
       mobile390CoreTextClipSamples: mobile390CoreTextClipSamples.slice(0, 8),
       overviewMobileResourceFullVerticalOk,
       overviewMobile390AppHomeFirstOk,
       mobile390AppHomeTwinOk,
+      mobile390AppHomeHeroMetricsOk,
+      mobile390AppHomeResourceCardOk,
+      mobile390AppHomeRankCardOk,
+      mobile390AppHomeBottomTabOk,
       mobile390AppHomeScenarioVisualOk,
       mobile390AppHomeRingTrafficOk,
       overviewMobile390Probe: mobileOverview390x844 ? {
         tableCount: overviewMobileFirstScreenTableCount,
+        kpi2x2Count: mobile390Kpi2x2MarkerNodes.length,
         hasHeroVisual: mobile390AppHomeChromeNodes.some((node) => node.classList.contains('ik-ios-hero-card')),
         hasIosNav: mobile390AppHomeChromeNodes.some((node) => node.classList.contains('ik-ios-top-nav')),
+        hasHeroMetrics: mobile390AppHomeHeroMetricsOk,
         hasTwinCards: mobile390AppHomeTwinOk,
+        hasResourceCard: mobile390AppHomeResourceCardOk,
+        hasRankCard: mobile390AppHomeRankCardOk,
         hasRingTraffic: mobile390AppHomeRingTrafficOk,
         hasMiniVisual: mobileFirstScreenMiniVisual,
         hasPortMatrix: mobileFirstScreenPortMatrix,
         hasChannelVisual: mobileFirstScreenChannelVisual,
         hasChainVisual: mobileFirstScreenChainVisual,
         sceneVisualCount: mobileFirstScreenSceneVisualNodes.length,
-        hasBottomTab: overviewMobile390BottomTabOk,
+        hasBottomTab: mobile390AppHomeBottomTabOk,
         firstScreenText: firstScreenOverviewText.slice(0, 260),
         rawRouterOsFields: mobile390RawRouterOsFieldRecords,
         mainProgressBars: mobile390MainProgressBarRecords,
