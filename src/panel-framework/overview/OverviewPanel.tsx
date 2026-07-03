@@ -1076,11 +1076,11 @@ function mobileTwinCards(snapshot: OverviewRawSnapshot, state: OverviewDerivedSt
 
 function MobileTwinCards({ snapshot, state }: OverviewPanelProps) {
   const cards = mobileTwinCards(snapshot, state);
-  return <section className="ik-ios-status-duet ik-mobile-twin-cards ik-mobile-duo-panel" data-overview-mobile-twin-cards="wan-status-collection-status" data-overview-mobile-secondary-cards="wan-left-collection-right" data-overview-mobile-app-duo-panel="wan-collection-two-cards-left-right" data-overview-mobile-secondary-order="wan-left-collection-right">
+  return <section className="ik-ios-status-duet ik-mobile-twin-cards ik-mobile-duo-panel" data-overview-mobile-twin-cards="content-driven-wan-collection" data-overview-mobile-secondary-cards="wan-left-collection-right" data-overview-mobile-app-duo-panel="wan-collection-two-cards-left-right" data-overview-mobile-secondary-order="wan-left-collection-right">
     {cards.map((card) => (
       <article className="ik-ios-status-card ik-mobile-twin-card ik-mobile-duo-card" data-tone={card.tone} data-overview-mobile-core-block={card.key} data-overview-mobile-twin-card={card.key} key={card.key}>
         <header className="ik-mobile-duo-head ik-mobile-status-strip"><em>{card.title}</em><b>{card.value}</b></header>
-        <p className="ik-mobile-status-subcopy" title={card.sub}>{card.sub}</p>
+        <p className="ik-mobile-status-subcopy">{card.sub}</p>
         <i className="ik-ios-status-hairline" aria-hidden="true" />
       </article>
     ))}
@@ -1380,7 +1380,7 @@ function MobileHeroStatusCard({ snapshot, state }: OverviewPanelProps) {
   return <section className="ik-mobile-conclusion-card ik-ios-hero-card ik-v74-network-hero" data-tone={mobileVerdictTone(state)} data-overview-mobile-primary-card="network-status-main" data-overview-mobile-network-meter="status-traffic-strip" data-overview-mobile-main-card data-overview-mobile-ios-hero="true" data-overview-mobile-first-screen-hero="true" data-overview-mobile-hero-title-policy="single-network-title-no-collision" data-overview-mobile-hero-metrics="download-upload-latency-connections" data-overview-mobile-hero-metric-layout="inline-strip" data-overview-mobile-no-ellipsis="true" data-overview-mobile-no-field-stack="true">
     <div className="ik-ios-hero-head ik-v74-hero-head" aria-label={mobileHeroPrimaryLabel(state)} data-overview-mobile-hero-heading="network-status-single-title">
       <b data-overview-primary-conclusion="true">{conclusion}</b>
-      <em title={mobileHeroSupportLine(snapshot, state)}>{mobileHeroSupportLine(snapshot, state)}</em>
+      <em>{mobileHeroSupportLine(snapshot, state)}</em>
     </div>
     <div className="ik-v74-hero-mainline" data-overview-mobile-hero-summary={mobileHeroSummaryLine(snapshot, state)} data-overview-mobile-first-visual="traffic-thin-line" data-overview-mobile-first-microchart="true">
       <ul className="ik-v75-hero-stat-list" data-overview-mobile-metric-strip="download-upload-latency-connections">
@@ -1413,7 +1413,7 @@ function MobileRingMetrics({ snapshot, state }: OverviewPanelProps) {
   return <section className="ik-ios-rings-card ik-ios-resource-card" data-overview-mobile-core-block="resource" data-overview-mobile-ring-metrics="horizontal-thin-bars" data-overview-mobile-resource-card="cpu-memory-disk-horizontal" data-overview-mobile-resource-emphasis="after-secondary-cards" data-overview-mobile-resource-rows="cpu-memory-disk-only" data-overview-mobile-metrics data-overview-mobile-business-metrics={snapshotMissing ? "hidden-no-snapshot" : "visible"}>
     <header className="ik-mobile-status-strip"><span>{"资源"}</span><em className="ik-mobile-status-subcopy">{snapshotMissing ? "无业务快照" : "CPU / 内存 / 磁盘"}</em></header>
     <div className="ik-ios-ring-grid ik-ios-resource-meters ik-ios-resource-meters--horizontal" data-overview-scene-chart="mobile-resource-horizontal-bars">
-      {resourceMetrics.map((metric) => <div className="ik-ios-resource-meter" data-overview-mobile-resource-row-marker="ik-ios-resource-row" data-overview-mobile-resource-metric={metric.key} data-tone={metric.tone} key={metric.key} style={{ "--meter-value": `${metric.percent}%` } as CSSProperties} title={`阈值 ${metric.threshold}% / 峰值 ${metric.peak}%`}>
+      {resourceMetrics.map((metric) => <div className="ik-ios-resource-meter" data-overview-mobile-resource-row-marker="ik-ios-resource-row" data-overview-mobile-resource-metric={metric.key} data-tone={metric.tone} key={metric.key} style={{ "--meter-value": `${metric.percent}%` } as CSSProperties}>
         <span><em>{metric.label}</em><b>{metric.value}</b></span>
         <i aria-hidden="true"><strong /></i>
         <small>{snapshotMissing ? "隐藏" : `阈${metric.threshold}`}</small>
@@ -1505,7 +1505,7 @@ function MobileTrafficRank({ snapshot, state }: OverviewPanelProps) {
   return <section className="ik-ios-rank-card" data-overview-mobile-core-block="topn" data-overview-mobile-rank-list="topn-app-list" data-overview-mobile-card-list="true" data-overview-mobile-topn-app-list="true" data-overview-mobile-rank-card="topn-after-anomaly">
     <header className="ik-mobile-status-strip"><span>{mobileRankTitle(state)}</span><b>TopN</b><em className="ik-mobile-status-subcopy">{`快照 ${latestSuccess(snapshot, state.scenario)}`}</em></header>
     <div className="ik-ios-rank-list">
-      {rows.map((row, index) => <div className="ik-ios-rank-row" data-tone={row.tone} key={`${row.name}-${index}`} title={`${row.name} / ${row.note} / ${row.rate}`}>
+      {rows.map((row, index) => <div className="ik-ios-rank-row" data-tone={row.tone} key={`${row.name}-${index}`}>
         <i aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 7h12M8 12h8M10 17h4" /></svg></i>
         <span><b>{row.name}</b><em>{row.note}</em></span>
         <strong>{row.rate}</strong>
@@ -1791,24 +1791,25 @@ function MobileLedger({ snapshot, state }: OverviewPanelProps) {
       data-overview-mobile-app-home="ikuai40-ios-router-home"
       data-overview-mobile-home-mode="ios-app-home"
       data-overview-mobile-home-layout="ios-topnav-network-hero-twin-cards-resource-exception-rank-tabs"
-      data-overview-mobile-home-layout-v80="device-status-snapshot-network-main-duo-resource-anomaly-topn-tab"
-      data-overview-mobile-home-contract="top-device-status-snapshot-main-network-duo-resource-exception-if-abnormal-topn-bottom-tab"
+      data-overview-mobile-home-layout-v82="ios-topnav-network-hero-content-cards-resource-anomaly-topn-tabs"
+      data-overview-mobile-home-layout-v80="device-status-snapshot-network-main-content-cards-resource-anomaly-topn-tab"
+      data-overview-mobile-home-contract="top-device-status-snapshot-hero-network-metrics-scenario-visual-wan-collection-resource-anomaly-if-abnormal-topn-bottom-tab"
       data-overview-mobile-no-desktop-collapse="true"
       data-overview-mobile-raw-routeros-policy="hide-before-detail"
       data-overview-mobile-alert={state.verdict.level}
       data-overview-mobile-scene={state.scenario}
-      data-overview-mobile-app-home-acceptance="device-top-network-main-duo-resource-anomaly-topn-tab"
-      data-overview-mobile-home-shell="topnav-network-main-duo-resource-anomaly-topn-tab"
+      data-overview-mobile-app-home-acceptance="device-top-network-hero-wan-collection-resource-anomaly-topn-tab"
+      data-overview-mobile-home-shell="topnav-network-hero-content-cards-resource-anomaly-topn-tab"
     >
-      <div className="ik-ios-home-stack" data-overview-mobile-flat-status="app-home-core" data-overview-mobile-home-stack="topnav-network-main-duo-resource-anomaly-topn-tab">
+      <div className="ik-ios-home-stack" data-overview-mobile-flat-status="app-home-core" data-overview-mobile-home-stack="topnav-network-hero-content-cards-resource-anomaly-topn-tab">
         <div
           className="ik-ios-first-screen"
           data-overview-mobile-first-screen="app-home"
           data-overview-mobile-first-screen-contract="ios-topnav-network-hero-traffic-metrics-twin-cards-resource-exception-rank-bottom-tab"
+          data-overview-mobile-first-screen-contract-v82="top-device-status-snapshot-network-hero-metrics-scenario-visual-wan-collection-resource-anomaly-topn-bottom-tab"
           data-overview-mobile-first-screen-visual="traffic-thin-line"
           data-overview-mobile-first-screen-no-table="true"
           data-overview-mobile-first-screen-uses-microchart="true"
-          data-overview-mobile-removes="title-collision-kpi-grid-table-feel-ellipsis-field-stack"
         >
           <MobileIosTopNav snapshot={snapshot} state={state} />
           <MobileHeroStatusCard snapshot={snapshot} state={state} />
