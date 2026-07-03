@@ -340,6 +340,7 @@ function desktopCoreText(state: OverviewDerivedState): string {
 function moduleChartType(module: string): "line" | "bar" | "matrix" | "status" | "timeline" {
   if (/no-snapshot-summary|no-snapshot-recent-success/i.test(module)) return "line";
   if (/traffic-trend|wan-lines|wan-trend|wan-route|route-raw|resource-boundary/i.test(module)) return "line";
+  if (/^wan-offline-bars$/i.test(module)) return "line";
   if (/resource-pressure|resource-risk|resource-threshold|wan-offline|interface-forwarding|top5/i.test(module)) return "bar";
   if (/recent-success|timeline/i.test(module)) return "timeline";
   if (/collection|channel|summary|trust|status/i.test(module)) return "status";
@@ -378,6 +379,7 @@ function JudgementChart({ module, rows, kind = "trend" }: { module: string; rows
   return (
     <div
       className={`ro-judgement-chart ro-judgement-chart--${kind}`}
+      data-overview-visual-block
       data-overview-judgement-chart="current-peak-mean-window-threshold-trust"
       data-overview-chart-grammar="axis-current-peak-mean-window-threshold-unit-trust"
       data-overview-chart-type={kind === "pressure" ? "bar" : "line"}
@@ -1100,30 +1102,33 @@ function mobileSparkPoints(values: number[], maxValue: number, width = 118, heig
   }).join(" ");
 }
 
+function mobileEvidenceProfile(row?: ChartDatum): number[] {
+  if (!row) return [];
+  const current = Number.isFinite(row.currentValue) ? row.currentValue : 0;
+  const mean = Number.isFinite(row.meanValue) ? row.meanValue : current;
+  const peak = Number.isFinite(row.peakValue) ? row.peakValue : current;
+  return [mean, current, peak, current];
+}
+
 function MobileTrafficSparkVisual({ snapshot, state }: OverviewPanelProps) {
   const rows = trafficChartRows(snapshot, state);
   const down = rows[0];
   const up = rows[1];
   const maxValue = Math.max(1, ...rows.flatMap((row) => [row.currentValue, row.peakValue, row.meanValue]));
   return <div className="ik-mobile-spark-visual ik-mobile-traffic-spark" data-overview-chart-type="mini-line" data-overview-scene-chart="mobile-wan-rate-sparkline" data-overview-mobile-visual-marker="traffic-mini-line" data-overview-mobile-first-microchart="true" data-overview-chart-has-current="true" data-overview-chart-has-window="true" data-overview-chart-has-trust="true" data-overview-chart-unit="bps">
-    <header><span>WAN速率趋势</span><b>{down?.current || "未采集"}</b><em>下行 / 上行 {up?.current || "未采集"}</em></header>
-    <svg viewBox="0 0 118 42" role="img" aria-label="WAN 上下行最近趋势"><path className="ik-mobile-spark-grid" d="M0 10 H118 M0 25 H118 M0 40 H118" />{up ? <polyline className="ik-mobile-spark-line is-up" points={mobileSparkPoints(mobileTrendValues(up.currentValue), maxValue)} /> : null}{down ? <polyline className="ik-mobile-spark-line is-down" points={mobileSparkPoints(mobileTrendValues(down.currentValue), maxValue)} /> : null}</svg>
+    <header><span>WAN速率轮廓</span><b>{down?.current || "未采集"}</b><em>当前 / 均值 / 峰值</em></header>
+    <svg viewBox="0 0 118 42" role="img" aria-label="WAN 上下行当前、均值、峰值轮廓"><path className="ik-mobile-spark-grid" d="M0 10 H118 M0 25 H118 M0 40 H118" />{up ? <polyline className="ik-mobile-spark-line is-up" points={mobileSparkPoints(mobileEvidenceProfile(up), maxValue)} /> : null}{down ? <polyline className="ik-mobile-spark-line is-down" points={mobileSparkPoints(mobileEvidenceProfile(down), maxValue)} /> : null}</svg>
   </div>;
 }
 
 function MobileResourceTrendVisual({ state }: { state: OverviewDerivedState }) {
-  const metrics = [
-    { id: "cpu", label: "处理器", value: toNumber(state.facts.resource.cpu), threshold: 85, peak: 96, trend: [72, 84, 80, 91, 88, 96] },
-    { id: "memory", label: "内存", value: toNumber(state.facts.resource.memory), threshold: 85, peak: 92, trend: [60, 68, 74, 83, 88, 92] },
-    { id: "disk", label: "磁盘", value: toNumber(state.facts.resource.disk), threshold: 90, peak: 97, trend: [86, 88, 91, 93, 95, 97] },
-  ];
-  return <div className="ik-mobile-resource-sparks is-vertical-ledger" data-overview-chart-type="mini-trend" data-overview-scene-chart="mobile-resource-vertical-ledger" data-overview-mobile-visual-marker="resource-mini-trend" data-overview-mobile-first-microchart="true" data-overview-chart-has-current="true" data-overview-chart-has-threshold="true" data-overview-chart-has-window="true" data-overview-chart-has-trust="true" data-overview-chart-unit="%">
+  const metrics = resourceChartRows(state);
+  return <div className="ik-mobile-resource-sparks is-vertical-ledger is-pressure-ledger" data-overview-chart-type="pressure" data-overview-scene-chart="mobile-resource-pressure-ledger" data-overview-mobile-visual-marker="resource-mini-trend" data-overview-mobile-resource-pressure-ledger="true" data-overview-mobile-first-microchart="true" data-overview-chart-has-current="true" data-overview-chart-has-threshold="true" data-overview-chart-has-window="true" data-overview-chart-has-trust="true" data-overview-chart-unit="%">
     {metrics.map((metric) => {
-      const values = metric.trend.map((value, index) => index === metric.trend.length - 1 ? Math.max(value, metric.value) : value);
-      const points = mobileSparkPoints(values, Math.max(100, metric.value, metric.threshold), 96, 20);
-      return <div className="ik-mobile-resource-spark" data-tone={metric.value >= metric.threshold ? "danger" : "trust"} key={metric.id}>
-        <span>{metric.label}</span><b>{formatPercent(metric.value, 0)}</b><em>{`阈${metric.threshold} · 峰${formatPercent(Math.max(metric.value, metric.peak), 0).replace("%", "")}`}</em>
-        <svg viewBox="0 0 96 20" role="img" aria-label={`${metric.label} 最近6点趋势`}><path className="ik-mobile-spark-grid" d="M0 10 H96" /><path className="ik-mobile-threshold-line" d="M0 6 H96" /><polyline className="ik-mobile-spark-line" points={points} /><circle className="ik-mobile-spark-peak" cx="92" cy="5" r="1.9" /></svg>
+      const width = `${clampPercent(metric.currentValue)}%`;
+      return <div className="ik-mobile-resource-spark" data-tone={metric.tone || "trust"} key={metric.id} style={{ "--meter-value": width } as CSSProperties}>
+        <span>{metric.label}</span><b>{metric.current}</b><em>{`阈${metric.threshold} · 峰${metric.peak.replace("%", "")}`}</em>
+        <i aria-hidden="true"><strong style={{ width }} /></i>
       </div>;
     })}
   </div>;
@@ -1197,8 +1202,10 @@ function mobileNavStatus(state: OverviewDerivedState): { label: string; tone: Ov
   if (state.scenario === "no-snapshot") return { label: "断链", tone: "warn" };
   if (state.scenario === "collection-down") return { label: "缓存", tone: "warn" };
   if (state.scenario === "interfaces-down") return { label: "接口", tone: "warn" };
-  if (state.scenario === "all-offline" || state.scenario === "resource-full" || state.verdict.level === "danger") return { label: "异常", tone: "danger" };
-  return { label: "关注", tone: "warn" };
+  if (state.scenario === "resource-full") return { label: "满载", tone: "danger" };
+  if (state.scenario === "all-offline") return { label: "断网", tone: "danger" };
+  if (state.verdict.level === "danger") return { label: "异常", tone: "danger" };
+  return { label: "降级", tone: "warn" };
 }
 
 function mobileShortRate(value: number): string {
@@ -1307,8 +1314,12 @@ function mobileHeroStats(snapshot: OverviewRawSnapshot, state: OverviewDerivedSt
 }
 
 function mobileHeroPrimaryLabel(state: OverviewDerivedState): string {
-  void state;
-  return "网络状态";
+  if (state.scenario === "resource-full") return "资源压力";
+  if (state.scenario === "all-offline") return "出口状态";
+  if (state.scenario === "no-snapshot") return "采集链路";
+  if (state.scenario === "collection-down") return "采集状态";
+  if (state.scenario === "interfaces-down") return "接口状态";
+  return "网络概览";
 }
 
 function mobileHeroSupportLine(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): string {
@@ -2699,7 +2710,6 @@ function noSnapshotChainRows(snapshot: OverviewRawSnapshot, state: OverviewDeriv
   const recent = latestSuccess(snapshot, state.scenario);
   const next = pollText(snapshot);
   const age = state.facts.freshness.text;
-  const updated = statusUpdated(snapshot);
   return [
     { id: "chain-browser", cells: ["浏览器", "已加载", recent, "只读界面进入", next], tone: "trust" },
     { id: "chain-panel", cells: ["面板", "只读", recent, "采集链路图 / 账本", next], tone: "trust" },
@@ -2708,7 +2718,7 @@ function noSnapshotChainRows(snapshot: OverviewRawSnapshot, state: OverviewDeriv
     { id: "chain-ssh", cells: ["SSH", "断链", recent, text(snapshot.meta?.staticError, "快照缺失"), next], tone: "warn" },
     { id: "chain-default-route", cells: ["默认路由", "待判定", recent, "默认路由 待判 / 路由快照缺失", next], tone: "warn" },
     { id: "chain-failure", cells: ["失败端点", "未记录", recent, "未记录", next], tone: "trust" },
-    { id: "chain-business", cells: ["业务快照", "禁显", recent, `业务快照时间 无 / 业务快照年龄 不可判定 / 状态更新时间 ${updated}`, next], tone: "missing" },
+    { id: "chain-business", cells: ["业务快照", "禁显", recent, "无业务快照，业务数据不展示", next], title: "业务快照时间 无 / 业务快照年龄 不可判定", tone: "missing" },
     { id: "chain-trust", cells: ["可信等级", "链路可参考", recent, `业务状态不参考 / 事件年龄 ${age}`, next], tone: "warn" },
   ];
 }
@@ -3036,7 +3046,7 @@ function desktopPanelGroups(snapshot: OverviewRawSnapshot, state: OverviewDerive
     };
   }
   if (state.scenario === "all-offline") {
-    const offlineVisual = <JudgementChart module="wan-offline-bars" kind="pressure" rows={offlineWanStatusChartRows(snapshot, state)} />;
+    const offlineVisual = <JudgementChart module="wan-offline-bars" kind="trend" rows={offlineWanStatusChartRows(snapshot, state)} />;
     return {
       main: [
         <Module key="ao-wan" title="WAN线路" subtitle="线路 / 状态 / 父接口 / 默认路由 / 速率：无有效样本" module="wan-offline-bars" tone="danger" trust={moduleTrust(state)} headers={["线路", "状态", "承载"]} rows={wanRows(snapshot, state)} minRows={8} visual={offlineVisual} />,
