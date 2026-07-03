@@ -6443,8 +6443,30 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       !desktopOverflow &&
       !strictNarrowOverflow
     );
+    const mobileOverviewAppHomeGateProbe = mobileOverview390x844 ? {
+      appHomePass: mobileOverviewAppHomePass,
+      acceptance: overviewMobile390AcceptanceOk,
+      iosHome: overviewMobileIosRouterHomeOk,
+      noTable: overviewMobile390FirstScreenNoTableOk,
+      visual: overviewMobile390FirstScreenVisualOk,
+      noMemDisk: overviewMobile390NoMemDiskVisibleOk,
+      bottomTab: overviewMobile390BottomTabOk,
+      noRawBoolean: overviewMobile390NoRawBooleanCopyOk,
+      noRawRouterOs: overviewMobile390NoRawRouterOsFieldsOk,
+      noMainProgressBar: overviewMobile390NoMainProgressBarOk,
+      noHeavyVisual: overviewMobile390NoHeavyVisualBlocksOk,
+      noTitleClip: overviewMobile390NoAppHomeTitleClipOk,
+      noCoreClip: overviewMobile390NoCoreTextClipOk,
+      resourceVertical: overviewMobileResourceFullVerticalOk,
+      appHomeFirst: overviewMobile390AppHomeFirstOk,
+      noSnapshotRateForbidden: overviewNoSnapshotFirstScreenRateForbiddenOk,
+      noLongTimestamp: overviewLongTimestampForbiddenOk,
+      chineseUi: overviewChineseUiNoEngineeringEnglishOk,
+      readOnlyBoundary: overviewReadOnlyBoundaryOk,
+    } : null;
     return {
       pass,
+      mobileOverviewAppHomeGateProbe,
       profile: ${JSON.stringify(profile)},
       viewport: ${JSON.stringify(viewport)},
       scaleScenario: ${JSON.stringify(scaleScenario)},

@@ -1067,7 +1067,7 @@ function mobileTwinCards(snapshot: OverviewRawSnapshot, state: OverviewDerivedSt
     key: "collection",
     title: "采集",
     value: state.scenario === "collection-down" ? "缓存" : state.scenario === "no-snapshot" ? "待确认" : rest.tone === "ok" && ssh.tone === "ok" ? "可用" : "异常",
-    sub: `REST${rest.value} · SSH${ssh.value}`,
+    sub: rest.value === ssh.value ? `REST/SSH${rest.value}` : `REST${rest.value} / SSH${ssh.value}`,
     tone: state.facts.collection.credibilityTone,
   };
   return [wanCard, collectionCard];

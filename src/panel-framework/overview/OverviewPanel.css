@@ -22642,6 +22642,70 @@
 
   .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-resource-meter i,
   .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ro-topn-bar {
-    height: 5px !important;
+    height: 4px !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-rank-row,
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ro-topn-block.is-ranking .ro-topn-row {
+    grid-template-columns: 32px minmax(0, 1fr) minmax(106px, auto) !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-rank-row > strong,
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ro-topn-block.is-ranking .ro-topn-row > b {
+    min-width: 106px !important;
+    justify-self: end !important;
+    text-align: right !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) :is(
+    .ik-ios-nav-title,
+    .ik-ios-nav-title b,
+    .ik-ios-nav-title span,
+    .ik-ios-hero-head,
+    .ik-ios-hero-head b,
+    .ik-ios-hero-head span,
+    .ik-ios-hero-head em,
+    .ik-v74-hero-head,
+    .ik-v74-hero-head b,
+    .ik-v74-hero-head span,
+    .ik-v74-hero-head em,
+    .ik-v75-hero-stat,
+    .ik-v75-hero-stat em,
+    .ik-v75-hero-stat strong,
+    [data-overview-mobile-primary-title],
+    .ik-mobile-duo-head,
+    .ik-mobile-duo-head em,
+    .ik-mobile-duo-head b,
+    .ik-mobile-status-strip,
+    .ik-mobile-status-strip span,
+    .ik-mobile-status-strip b,
+    .ik-mobile-status-subcopy,
+    .ik-ios-resource-card header,
+    .ik-ios-resource-card header b,
+    .ik-ios-resource-card header em,
+    .ik-ios-resource-meter span,
+    .ik-ios-resource-meter span em,
+    .ik-ios-resource-meter span b,
+    .ik-ios-rank-card header,
+    .ik-ios-rank-card header b,
+    .ik-ios-rank-card header em,
+    .ik-ios-rank-row span,
+    .ik-ios-rank-row span b,
+    .ik-ios-rank-row span em,
+    .ik-ios-exception-card b,
+    .ik-ios-exception-card em,
+    .ik-ios-bottom-tab > *,
+    .ik-ios-bottom-tab span
+  ) {
+    max-width: 100% !important;
+    min-width: 0 !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+    word-break: normal !important;
   }
 }
