@@ -1349,8 +1349,8 @@ function MobileRingMetrics({ snapshot, state }: OverviewPanelProps) {
     ];
   return <section className="ik-ios-rings-card ik-ios-resource-card" data-overview-mobile-ring-metrics="thin-bars" data-overview-mobile-resource-card="cpu-memory-disk" data-overview-mobile-resource-rows="cpu-memory-disk-only" data-overview-mobile-metrics data-overview-mobile-business-metrics={snapshotMissing ? "hidden-no-snapshot" : "visible"}>
     <header><span>{snapshotMissing ? "\u4e1a\u52a1\u6307\u6807" : "\u8d44\u6e90\u72b6\u6001"}</span><em>{snapshotMissing ? "\u65e0\u4e1a\u52a1\u5feb\u7167\uff0c\u4e1a\u52a1\u6570\u636e\u4e0d\u5c55\u793a" : "CPU / \u5185\u5b58 / \u78c1\u76d8"}</em></header>
-    <div className="ik-ios-ring-grid ik-ios-resource-grid">
-      {resourceMetrics.map((metric) => <div className="ik-ios-ring-item ik-ios-resource-row" data-tone={metric.tone} key={metric.label} style={{ "--ring-value": String(metric.percent) } as CSSProperties} title={`threshold ${metric.threshold}% / peak ${metric.peak}%`}>
+    <div className="ik-ios-ring-grid ik-ios-resource-grid ik-mobile-resource-sparks is-vertical-ledger" data-overview-scene-chart="mobile-resource-vertical-ledger">
+      {resourceMetrics.map((metric) => <div className="ik-ios-ring-item ik-ios-resource-row ik-mobile-resource-spark" data-tone={metric.tone} key={metric.label} style={{ "--ring-value": String(metric.percent) } as CSSProperties} title={`threshold ${metric.threshold}% / peak ${metric.peak}%`}>
         <span>{metric.label}</span>
         <i aria-hidden="true"><em /></i>
         <b>{metric.value}</b>
@@ -1379,6 +1379,14 @@ function mobileExceptionSummary(snapshot: OverviewRawSnapshot, state: OverviewDe
 }
 
 function MobileExceptionCard({ snapshot, state }: OverviewPanelProps) {
+  const showExceptionCard = (
+    state.scenario === "resource-full" ||
+    state.scenario === "all-offline" ||
+    state.scenario === "no-snapshot" ||
+    state.scenario === "collection-down" ||
+    state.scenario === "interfaces-down"
+  );
+  if (!showExceptionCard) return null;
   const summary = mobileExceptionSummary(snapshot, state);
   if (!summary) return null;
   return <section className="ik-ios-exception-card" data-tone={summary.tone} data-overview-mobile-exception-card="impact-only-when-abnormal" data-overview-field>
@@ -1719,24 +1727,22 @@ function MobileLedger({ snapshot, state }: OverviewPanelProps) {
       data-overview-mobile-ios-router-home="true"
       data-overview-mobile-app-home="ikuai40-ios-router-home"
       data-overview-mobile-home-mode="ios-app-home"
-      data-overview-mobile-home-layout="ios-topnav-network-hero-twin-cards-resource-exception-rank-tabs"
+      data-overview-mobile-home-layout="ios-topnav-hero-scene-twin-resource-exception-rank-tabs"
       data-overview-mobile-first-screen="app-home"
       data-overview-mobile-first-screen-contract="ios-topnav-network-hero-traffic-metrics-twin-cards-resource-exception-rank-bottom-tab"
       data-overview-mobile-first-screen-visual="scenario-microchart"
       data-overview-mobile-first-screen-no-table="true"
       data-overview-mobile-first-screen-uses-microchart="true"
       data-overview-mobile-no-desktop-collapse="true"
-      data-overview-mobile-raw-routeros-policy="preview-before-detail"
+      data-overview-mobile-raw-routeros-policy="hide-before-detail"
       data-overview-mobile-alert={state.verdict.level}
+      data-overview-mobile-scene={state.scenario}
       data-overview-mobile-app-home-acceptance="true"
     >
-      <div className="ik-ios-home-stack" data-overview-mobile-home-stack="ios-app-home-primary-flow">
+      <div className="ik-ios-home-stack" data-overview-mobile-home-stack="topnav-hero-scene-twin-resource-exception-rank">
         <MobileIosTopNav snapshot={snapshot} state={state} />
         <MobileHeroStatusCard snapshot={snapshot} state={state} />
         <MobileTwinCards snapshot={snapshot} state={state} />
-        <section className="ik-mobile-hero-visual" data-overview-mobile-first-visual="scenario-insight" data-overview-mobile-first-microchart="true">
-          {mobileHeroVisual(snapshot, state)}
-        </section>
         <MobileRingMetrics snapshot={snapshot} state={state} />
         <MobileExceptionCard snapshot={snapshot} state={state} />
         <MobileTrafficRank snapshot={snapshot} state={state} />
