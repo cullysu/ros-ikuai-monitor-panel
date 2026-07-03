@@ -1840,7 +1840,6 @@ function MobileFlatCompactLine({ snapshot, state }: OverviewPanelProps) {
 }
 
 function MobileLedger({ snapshot, state }: OverviewPanelProps) {
-  const resourceFirst = state.scenario === "resource-full";
   return (
     <div
       className="ro-mobile-ledger ik-mobile-app-home ik-ios-router-home"
@@ -1849,14 +1848,16 @@ function MobileLedger({ snapshot, state }: OverviewPanelProps) {
       data-overview-mobile-ios-router-home="true"
       data-overview-mobile-app-home="ikuai40-ios-router-home"
       data-overview-mobile-home-mode="ios-app-home"
-      data-overview-mobile-home-layout="ios-topnav-network-hero-twin-cards-resource-exception-rank-tabs" data-overview-mobile-home-layout-v70="ios-topnav-overlapped-hero-duo-resource-rank-tabs"
+      data-overview-mobile-home-layout="ios-topnav-network-hero-twin-cards-resource-exception-rank-tabs"
+      data-overview-mobile-home-layout-v70="ios-topnav-overlapped-hero-duo-resource-exception-rank-tabs"
       data-overview-mobile-no-desktop-collapse="true"
       data-overview-mobile-raw-routeros-policy="hide-before-detail"
       data-overview-mobile-alert={state.verdict.level}
       data-overview-mobile-scene={state.scenario}
-      data-overview-mobile-app-home-acceptance="ios-router-app-no-kpi-grid-no-title-collision"
+      data-overview-mobile-app-home-acceptance="ios-router-app-home-nav-hero-duo-resource-anomaly-topn-tab"
+      data-overview-mobile-home-shell="nav-hero-duo-resource-anomaly-topn-tab"
     >
-      <div className="ik-ios-home-stack" data-overview-mobile-flat-status="app-home-core" data-overview-mobile-home-stack="topbar-hero-secondary-wan-collection-resource-rank">
+      <div className="ik-ios-home-stack" data-overview-mobile-flat-status="app-home-core" data-overview-mobile-home-stack="nav-hero-duo-resource-anomaly-topn-tab">
         <div
           className="ik-ios-first-screen"
           data-overview-mobile-first-screen="app-home"
@@ -1867,13 +1868,12 @@ function MobileLedger({ snapshot, state }: OverviewPanelProps) {
         >
           <MobileIosTopNav snapshot={snapshot} state={state} />
           <MobileHeroStatusCard snapshot={snapshot} state={state} />
+          <MobileTwinCards snapshot={snapshot} state={state} />
+          <MobileRingMetrics snapshot={snapshot} state={state} />
+          <MobileExceptionCard snapshot={snapshot} state={state} />
+          <MobileTrafficRank snapshot={snapshot} state={state} />
+          <MobileBottomTabs />
         </div>
-        {resourceFirst ? <MobileRingMetrics snapshot={snapshot} state={state} /> : null}
-        <MobileTwinCards snapshot={snapshot} state={state} />
-        {!resourceFirst ? <MobileRingMetrics snapshot={snapshot} state={state} /> : null}
-        <MobileExceptionCard snapshot={snapshot} state={state} />
-        <MobileTrafficRank snapshot={snapshot} state={state} />
-        <MobileBottomTabs />
       </div>
     </div>
   );
@@ -3311,16 +3311,10 @@ export function OverviewPanel({ snapshot, state }: OverviewPanelProps) {
       data-overview-no-zero-rate-placeholder="no-0Bps-when-uncollected"
     >
       <InfoBand snapshot={snapshot} state={state} />
-      <DesktopKeyMetrics snapshot={snapshot} state={state} />
       <span className="ro-sr-contract" data-overview-verdict-panel>{verdictContractText(snapshot, state)}</span>
       <div className="ro-mobile-first-screen" data-overview-mobile-first-screen data-overview-mobile-alert={state.verdict.level}>
         <MobileLedger snapshot={snapshot} state={state} />
       </div>
-      <div className={`ro-mobile-detail-section ik-mobile-compact-section ${(state.scenario === "interfaces-down" || state.scenario === "resource-full" || state.scenario === "collection-down" || state.scenario === "all-offline" || state.scenario === "single" || state.scenario === "fleet") ? "is-interface-table" : ""}`} data-overview-mobile-detail data-overview-mobile-detail-section data-overview-mobile-metrics>
-        <MobileLeadHeads state={state} />
-        <MobileDetail snapshot={snapshot} state={state} />
-      </div>
-      <MobileContinuation snapshot={snapshot} state={state} />
       <DesktopWorkspace snapshot={snapshot} state={state} />
     </section>
   );

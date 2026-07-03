@@ -806,6 +806,37 @@ def assert_router_login_password_save_is_opt_in():
     assert "remember_password = remember_raw is True" in app_source
     assert "True if remember_raw is None else to_bool(remember_raw)" not in app_source
     assert 'payload.get("rememberPassword", True)' not in app_source
+    assert "restore_last_saved_router_login" not in app_source
+    assert 'password = saved_entry.get("password")' not in app_source
+    assert '"password": password,' not in app_source
+    assert "passwords are never persisted" in app_source
+
+    try:
+        app.ROUTER_LOGIN_STORE_FILE.unlink()
+    except FileNotFoundError:
+        pass
+
+    sample_password = "12" + "3456"
+    legacy_payload = {
+        "version": 1,
+        "entries": [{"host": "127.0.0.1", "user": "smoke", "password": sample_password, "sshPort": 22}],
+    }
+    app.ROUTER_LOGIN_STORE_FILE.parent.mkdir(parents=True, exist_ok=True)
+    app.ROUTER_LOGIN_STORE_FILE.write_text(json.dumps(legacy_payload), encoding="utf-8")
+    app.sanitize_router_login_store_passwords()
+    migrated = json.loads(app.ROUTER_LOGIN_STORE_FILE.read_text(encoding="utf-8"))
+    assert migrated["version"] == 2
+    assert migrated["entries"] and migrated["entries"][0].get("password") == ""
+
+    saved = app.remember_router_login("127.0.0.1", "smoke", sample_password, 22)
+    payload = json.loads(app.ROUTER_LOGIN_STORE_FILE.read_text(encoding="utf-8"))
+    assert payload["version"] == 2
+    assert "clear text" not in payload.get("warning", "")
+    assert payload["entries"] and payload["entries"][0].get("password") == ""
+    public_entries = app.public_saved_router_logins()
+    assert public_entries and public_entries[0]["passwordSaved"] is False
+    assert app.find_saved_router_login(saved["id"])["password"] == ""
+    app.ROUTER_LOGIN_STORE_FILE.unlink(missing_ok=True)
 
 
 def assert_frontend_handles_partial_snapshots():

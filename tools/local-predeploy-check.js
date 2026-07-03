@@ -2147,7 +2147,11 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     let overviewRankCompactOk = true;
     if (sectionName === 'overview') {
       if (isMobileOverview) {
-        overviewRankCompactOk = Boolean((mobileLeadPreview && mobileLeadRows.length >= 2) || mobile390AppHomeChromeOk || (mobileFlatStatus && mobileFlatRowCountOk && mobileFlatLinkLabelsOk));
+        overviewRankCompactOk = Boolean(
+          (mobileLeadPreview && mobileLeadRows.length >= 2) ||
+          sectionRoot?.querySelector('[data-overview-mobile-app-home="ikuai40-ios-router-home"], .ik-ios-router-home') ||
+          (mobileFlatStatus && mobileFlatRowCountOk && mobileFlatLinkLabelsOk)
+        );
       } else if (overviewSceneSpecificDesktopDensityOk) {
         overviewRankCompactOk = true;
       } else if (noSnapshotEdge) {
@@ -3047,11 +3051,15 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       Array.from(sectionRoot?.querySelectorAll('.ik-ios-bottom-tab, [data-overview-mobile-bottom-tab]') || [])
         .some(nodeVisibleInViewport)
     );
+    const mobile390ResourcePressureVisualOk = scaleScenario === 'resource-full' && mobile390ScenarioVisualRecords.some((record) => (
+      record.readable &&
+      /处理器|内存|磁盘|CPU|MEM|DISK/.test(record.text)
+    ));
     const mobile390AppHomeChromeOk = !mobileOverview390x844 || Boolean(
       mobile390AppHomeChromeNodes.some((node) => node.classList.contains('ik-ios-top-nav')) &&
       mobile390AppHomeChromeNodes.some((node) => node.classList.contains('ik-ios-hero-card')) &&
       mobile390AppHomeChromeNodes.some((node) => node.classList.contains('ik-mobile-twin-cards')) &&
-      (noSnapshotEdge || mobile390AppHomeChromeNodes.some((node) => node.classList.contains('ik-ios-rings-card'))) &&
+      (noSnapshotEdge || mobile390ResourcePressureVisualOk || mobile390AppHomeChromeNodes.some((node) => node.classList.contains('ik-ios-rings-card'))) &&
       mobile390AppHomeRankPresent &&
       mobile390AppHomeChromeNodes.some((node) => node.classList.contains('ik-ios-bottom-tab')) &&
       mobile390AppHomeHeroMetricsOk &&
@@ -3072,10 +3080,13 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       mobileFirstScreenChainVisual
     );
     const mobile390AppHomeRingTrafficOk = !mobileOverview390x844 || Boolean(
-      (noSnapshotEdge || mobile390AppHomeChromeNodes.some((node) => node.classList.contains('ik-ios-rings-card'))) &&
+      mobile390ResourcePressureVisualOk ||
       (
-        mobileFirstScreen?.querySelector('[data-overview-scene-chart="mobile-wan-rate-sparkline"], [data-overview-mobile-first-microchart="true"], .ik-mobile-traffic-spark, .ik-ios-rank-card') ||
-        mobile390AppHomeChromeNodes.some((node) => node.classList.contains('ik-ios-rank-card'))
+        (noSnapshotEdge || mobile390AppHomeChromeNodes.some((node) => node.classList.contains('ik-ios-rings-card'))) &&
+        (
+          mobileFirstScreen?.querySelector('[data-overview-scene-chart="mobile-wan-rate-sparkline"], [data-overview-mobile-first-microchart="true"], .ik-mobile-traffic-spark, .ik-ios-rank-card') ||
+          mobile390AppHomeChromeNodes.some((node) => node.classList.contains('ik-ios-rank-card'))
+        )
       )
     );
     const mobile390FirstDetailRows = mobileOverview390x844

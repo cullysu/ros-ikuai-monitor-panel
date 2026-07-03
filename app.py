@@ -1412,12 +1412,11 @@ def normalize_saved_router_entry(raw):
     if not user:
         return None
     entry_id = str(raw.get("id") or router_login_entry_id(host, user, ssh_port)).strip()
-    password = str(raw.get("password") or "")
     return {
         "id": entry_id,
         "host": host,
         "user": user,
-        "password": password,
+        "password": "",
         "sshPort": ssh_port,
         "label": str(raw.get("label") or host).strip()[:80],
         "source": str(raw.get("source") or "saved").strip() or "saved",
@@ -1460,9 +1459,9 @@ def persist_router_login_store_unlocked(entries):
         normalized.append(entry)
     normalized.sort(key=lambda row: str(row.get("lastUsedAt") or row.get("updatedAt") or ""), reverse=True)
     payload = {
-        "version": 1,
+        "version": 2,
         "updatedAt": format_iso_now(),
-        "warning": "This local file stores RouterOS SSH passwords in clear text for this panel instance. Keep it private.",
+        "warning": "This local file stores RouterOS SSH login profiles only; passwords are never persisted.",
         "entries": normalized[:ROUTER_LOGIN_HISTORY_LIMIT],
     }
     tmp_path = ROUTER_LOGIN_STORE_FILE.with_suffix(".json.tmp")
@@ -1478,8 +1477,13 @@ def persist_router_login_store_unlocked(entries):
         pass
 
 
+def sanitize_router_login_store_passwords():
+    with ROUTER_LOGIN_STORE_LOCK:
+        if ROUTER_LOGIN_STORE_FILE.exists():
+            persist_router_login_store_unlocked(load_router_login_store_unlocked())
+
+
 def public_saved_router_entry(entry):
-    password = str(entry.get("password") or "").strip()
     return {
         "id": entry.get("id"),
         "host": entry.get("host") or "",
@@ -1490,7 +1494,7 @@ def public_saved_router_entry(entry):
         "createdAt": entry.get("createdAt"),
         "updatedAt": entry.get("updatedAt"),
         "lastUsedAt": entry.get("lastUsedAt"),
-        "passwordSaved": bool(password) and password not in ROUTER_PASSWORD_PLACEHOLDERS,
+        "passwordSaved": False,
         "lastTest": copy.deepcopy(entry.get("lastTest")),
     }
 
@@ -1518,7 +1522,7 @@ def remember_router_login(host, user, password, ssh_port=22, last_test=None, sou
             "id": router_login_entry_id(host, user, ssh_port),
             "host": host,
             "user": user,
-            "password": password,
+            "password": "",
             "sshPort": ssh_port,
             "label": host,
             "source": source,
@@ -1557,30 +1561,6 @@ def forget_router_login(saved_id):
             ROUTER_CONFIG["source"] = "ui"
     return removed
 
-
-def restore_last_saved_router_login():
-    current = get_router_config()
-    if router_config_is_ready(current):
-        return public_router_config(current)
-    with ROUTER_LOGIN_STORE_LOCK:
-        entries = load_router_login_store_unlocked()
-    for entry in entries:
-        if router_config_is_ready(entry):
-            with ROUTER_CONFIG_LOCK:
-                ROUTER_CONFIG.update(
-                    {
-                        "host": entry["host"],
-                        "user": entry["user"],
-                        "password": entry["password"],
-                        "sshPort": entry["sshPort"],
-                        "source": "saved",
-                        "savedId": entry["id"],
-                        "updatedAt": entry.get("lastUsedAt") or entry.get("updatedAt"),
-                        "lastTest": copy.deepcopy(entry.get("lastTest")),
-                    }
-                )
-            return public_router_config()
-    return public_router_config(current)
 
 
 def test_router_credentials(host, user, password, ssh_port=22):
@@ -5464,7 +5444,7 @@ class Collector:
         return payload
 
 
-restore_last_saved_router_login()
+sanitize_router_login_store_passwords()
 collector = Collector()
 
 
@@ -5694,24 +5674,23 @@ class Handler(BaseHTTPRequestHandler):
                 saved_id = str(payload.get("savedId") or "").strip()
                 saved_entry = find_saved_router_login(saved_id) if saved_id else None
                 password = payload.get("password")
-                using_saved_password = False
+                using_saved_profile = False
                 if saved_id and not saved_entry:
                     return self.send_json_error("Saved RouterOS login was not found", status=404, code="saved_login_not_found")
-                if saved_entry and not str(password or "").strip():
+                if saved_entry:
                     host = saved_entry.get("host")
                     user = saved_entry.get("user")
-                    password = saved_entry.get("password")
                     ssh_port = saved_entry.get("sshPort") or 22
-                    using_saved_password = True
+                    using_saved_profile = True
                 else:
                     host = payload.get("host") or payload.get("ip") or payload.get("address")
                     user = payload.get("user") or payload.get("username")
                     ssh_port = payload.get("sshPort") or payload.get("port") or 22
                 if saved_entry and not str(password or "").strip():
                     return self.send_json_error(
-                        "Saved RouterOS login does not contain a password",
+                        "Saved RouterOS login profile requires entering the password",
                         status=400,
-                        code="saved_login_missing_password",
+                        code="saved_login_password_required",
                     )
                 test = test_router_credentials(host, user, password, ssh_port)
                 ssh_ok = test.get("ssh", {}).get("ok") is True
@@ -5733,7 +5712,7 @@ class Handler(BaseHTTPRequestHandler):
                         password,
                         ssh_port,
                         last_test=test,
-                        source="saved" if using_saved_password else "ui",
+                        source="saved" if using_saved_profile else "ui",
                     )
                     saved_id = remembered_entry.get("id")
                 router_login = set_router_config(
@@ -5741,9 +5720,9 @@ class Handler(BaseHTTPRequestHandler):
                     user,
                     password,
                     ssh_port,
-                    source="saved" if using_saved_password else "ui",
+                    source="saved" if using_saved_profile else "ui",
                     last_test=test,
-                    saved_id=(saved_id if using_saved_password or remembered_entry else None),
+                    saved_id=(saved_id if using_saved_profile or remembered_entry else None),
                 )
                 collector.reset_collection_state(status="starting", error=None)
                 return self.send_json(
