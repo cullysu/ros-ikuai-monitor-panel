@@ -12585,3 +12585,650 @@
     font-size: 10.5px !important;
   }
 }
+
+/* Goal vNext: real mobile App home + calmer iKuai 4.0 desktop rhythm. */
+@media (max-width: 760px) {
+  .router-overview-framework {
+    --ro-ios-page: #f5f9fc;
+    --ro-ios-card: #ffffff;
+    --ro-ios-blue: #1677ff;
+    --ro-ios-green: #18c37e;
+    --ro-ios-orange: #e66a2c;
+    --ro-ios-red: #d93025;
+    --ro-ios-text: #111827;
+    --ro-ios-muted: #667085;
+    --ro-ios-faint: #7b8794;
+    --ro-ios-line: #e6eef5;
+    padding: 0 !important;
+    background: var(--ro-ios-page) !important;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Microsoft YaHei", sans-serif !important;
+    font-size: 14px !important;
+    line-height: 1.35 !important;
+  }
+
+  .router-overview-framework .ro-mobile-first-screen {
+    min-height: auto !important;
+    height: auto !important;
+    padding: max(10px, env(safe-area-inset-top)) 16px calc(84px + env(safe-area-inset-bottom)) !important;
+    background:
+      radial-gradient(circle at 20% -10%, rgba(22, 119, 255, .10), transparent 28%),
+      linear-gradient(180deg, #f8fbff 0%, #f5f9fc 100%) !important;
+    overflow: visible !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-mobile-app-home.ik-ios-router-home,
+  .router-overview-framework .ik-ios-home-stack {
+    width: 100% !important;
+    max-width: 430px !important;
+    max-height: none !important;
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+    margin: 0 auto !important;
+    overflow: visible !important;
+    background: transparent !important;
+  }
+
+  .router-overview-framework .ik-ios-top-nav {
+    min-height: 56px !important;
+    display: grid !important;
+    grid-template-columns: 44px minmax(0, 1fr) auto !important;
+    gap: 10px !important;
+    align-items: center !important;
+  }
+
+  .router-overview-framework .ik-ios-top-nav button {
+    width: 44px !important;
+    height: 44px !important;
+    border: 1px solid var(--ro-ios-line) !important;
+    border-radius: 15px !important;
+    background: rgba(255, 255, 255, .92) !important;
+    color: #1f2937 !important;
+    box-shadow: none !important;
+  }
+
+  .router-overview-framework .ik-ios-nav-title {
+    min-width: 0 !important;
+    display: grid !important;
+    gap: 2px !important;
+    text-align: left !important;
+  }
+
+  .router-overview-framework .ik-ios-nav-title b {
+    color: #0f172a !important;
+    font-size: 20px !important;
+    font-weight: 720 !important;
+    line-height: 1.08 !important;
+    letter-spacing: -.02em !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: clip !important;
+  }
+
+  .router-overview-framework .ik-ios-nav-title span {
+    color: var(--ro-ios-faint) !important;
+    font-size: 12px !important;
+    line-height: 1.12 !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+  }
+
+  .router-overview-framework .ik-ios-status-pill {
+    min-width: 58px !important;
+    height: 32px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    padding: 0 10px !important;
+    border: 1px solid var(--ro-ios-line) !important;
+    border-radius: 999px !important;
+    background: rgba(255,255,255,.94) !important;
+    color: #0f172a !important;
+    font-size: 13px !important;
+    font-weight: 650 !important;
+    box-shadow: none !important;
+  }
+
+  .router-overview-framework .ik-ios-status-pill i { width: 7px !important; height: 7px !important; border-radius: 99px !important; background: var(--ro-ios-green) !important; }
+  .router-overview-framework .ik-ios-status-pill[data-tone="warn"] i,
+  .router-overview-framework .ik-ios-status-pill[data-tone="missing"] i { background: var(--ro-ios-orange) !important; }
+  .router-overview-framework .ik-ios-status-pill[data-tone="danger"] i { background: var(--ro-ios-red) !important; }
+
+  .router-overview-framework .ik-ios-hero-card,
+  .router-overview-framework .ik-mobile-twin-card,
+  .router-overview-framework .ik-mobile-hero-visual,
+  .router-overview-framework .ik-ios-rings-card,
+  .router-overview-framework .ik-ios-exception-card,
+  .router-overview-framework .ik-ios-rank-card {
+    border: 1px solid var(--ro-ios-line) !important;
+    border-radius: 18px !important;
+    background: rgba(255,255,255,.98) !important;
+    box-shadow: 0 8px 24px rgba(30, 80, 130, .055) !important;
+  }
+
+  .router-overview-framework .ik-ios-hero-card {
+    min-height: 178px !important;
+    max-height: none !important;
+    position: relative !important;
+    display: grid !important;
+    grid-template-areas: "head" "metrics" "chart" !important;
+    grid-template-rows: auto auto 54px !important;
+    gap: 11px !important;
+    padding: 16px 16px 14px !important;
+    border-radius: 21px !important;
+    overflow: hidden !important;
+  }
+
+  .router-overview-framework .ik-ios-hero-card::before {
+    content: "" !important;
+    position: absolute !important;
+    inset: 18px auto auto 0 !important;
+    width: 3px !important;
+    height: 52px !important;
+    border-radius: 0 8px 8px 0 !important;
+    background: var(--ro-ios-blue) !important;
+  }
+  .router-overview-framework .ik-ios-hero-card[data-tone="warn"]::before,
+  .router-overview-framework .ik-ios-hero-card[data-tone="missing"]::before { background: var(--ro-ios-orange) !important; }
+  .router-overview-framework .ik-ios-hero-card[data-tone="danger"]::before { background: var(--ro-ios-red) !important; }
+
+  .router-overview-framework .ik-ios-hero-head {
+    grid-area: head !important;
+    display: grid !important;
+    gap: 4px !important;
+    min-width: 0 !important;
+  }
+
+  .router-overview-framework .ik-ios-hero-head span {
+    color: #4b5a6a !important;
+    font-size: 13px !important;
+    font-weight: 650 !important;
+    line-height: 1.08 !important;
+  }
+
+  .router-overview-framework .ik-ios-hero-head b {
+    color: #0b1220 !important;
+    font-size: clamp(25px, 7vw, 30px) !important;
+    font-weight: 780 !important;
+    line-height: 1.03 !important;
+    letter-spacing: -.03em !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+  }
+
+  .router-overview-framework .ik-ios-hero-head em {
+    max-width: 100% !important;
+    color: var(--ro-ios-muted) !important;
+    font-size: 12.5px !important;
+    font-style: normal !important;
+    line-height: 1.22 !important;
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+  }
+
+  .router-overview-framework .ik-ios-hero-stats {
+    grid-area: metrics !important;
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 1px !important;
+    overflow: hidden !important;
+    border: 1px solid #eaf2fb !important;
+    border-radius: 15px !important;
+    background: #eaf2fb !important;
+  }
+
+  .router-overview-framework .ik-ios-hero-stats span {
+    min-height: 50px !important;
+    display: grid !important;
+    align-content: center !important;
+    gap: 3px !important;
+    padding: 7px 6px !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: #fff !important;
+    box-shadow: none !important;
+  }
+
+  .router-overview-framework .ik-ios-hero-stats em {
+    color: var(--ro-ios-faint) !important;
+    font-size: 11.5px !important;
+    font-style: normal !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+  }
+
+  .router-overview-framework .ik-ios-hero-stats strong {
+    color: var(--ro-ios-text) !important;
+    font-size: clamp(15px, 4.2vw, 20px) !important;
+    font-weight: 760 !important;
+    line-height: 1 !important;
+    letter-spacing: -.025em !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+  }
+
+  .router-overview-framework .ik-ios-hero-chart {
+    grid-area: chart !important;
+    width: 100% !important;
+    height: 54px !important;
+    overflow: visible !important;
+  }
+
+  .router-overview-framework .ik-mobile-spark-grid,
+  .router-overview-framework .ik-ios-hero-chart .ik-mobile-spark-grid { stroke: #e8f0f8 !important; stroke-width: .65px !important; }
+  .router-overview-framework .ik-mobile-spark-line,
+  .router-overview-framework .ik-ios-hero-chart .ik-mobile-spark-line,
+  .router-overview-framework .ro-sparkline { fill: none !important; stroke-width: 1.35px !important; stroke-linecap: round !important; stroke-linejoin: round !important; }
+
+  .router-overview-framework .ik-mobile-twin-cards {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+    margin: 0 !important;
+  }
+
+  .router-overview-framework .ik-mobile-twin-card {
+    position: relative !important;
+    min-height: 82px !important;
+    display: grid !important;
+    gap: 7px !important;
+    padding: 12px 13px !important;
+    overflow: hidden !important;
+  }
+
+  .router-overview-framework .ik-mobile-twin-card::before {
+    content: "" !important;
+    position: absolute !important;
+    inset: 0 0 auto 0 !important;
+    height: 2px !important;
+    background: #d8e9ff !important;
+  }
+  .router-overview-framework .ik-mobile-twin-card[data-tone="danger"]::before { background: rgba(217,48,37,.72) !important; }
+  .router-overview-framework .ik-mobile-twin-card[data-tone="warn"]::before,
+  .router-overview-framework .ik-mobile-twin-card[data-tone="missing"]::before { background: rgba(230,106,44,.70) !important; }
+
+  .router-overview-framework .ik-mobile-status-strip {
+    display: grid !important;
+    gap: 3px !important;
+  }
+
+  .router-overview-framework .ik-mobile-status-strip span {
+    color: #4b5a6a !important;
+    font-size: 12.5px !important;
+    font-weight: 650 !important;
+    line-height: 1.1 !important;
+  }
+
+  .router-overview-framework .ik-mobile-status-strip b {
+    color: var(--ro-ios-text) !important;
+    font-size: clamp(21px, 5.8vw, 27px) !important;
+    font-weight: 760 !important;
+    line-height: 1.02 !important;
+    letter-spacing: -.03em !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+  }
+
+  .router-overview-framework .ik-mobile-card-hairline {
+    display: block !important;
+    width: 100% !important;
+    height: 1px !important;
+    background: #edf3fa !important;
+    border-radius: 99px !important;
+  }
+
+  .router-overview-framework .ik-mobile-status-subcopy {
+    color: var(--ro-ios-faint) !important;
+    font-size: 12px !important;
+    font-style: normal !important;
+    line-height: 1.18 !important;
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+  }
+
+  .router-overview-framework .ik-ios-resource-card {
+    min-height: 118px !important;
+    display: grid !important;
+    gap: 11px !important;
+    padding: 14px !important;
+  }
+
+  .router-overview-framework .ik-ios-resource-card header,
+  .router-overview-framework .ik-ios-rank-card header {
+    display: flex !important;
+    align-items: baseline !important;
+    justify-content: space-between !important;
+    gap: 10px !important;
+  }
+
+  .router-overview-framework .ik-ios-resource-card header span,
+  .router-overview-framework .ik-ios-rank-card header span {
+    color: #4b5a6a !important;
+    font-size: 13px !important;
+    font-weight: 680 !important;
+  }
+
+  .router-overview-framework .ik-ios-resource-card header em,
+  .router-overview-framework .ik-ios-rank-card header em {
+    color: var(--ro-ios-faint) !important;
+    font-size: 12px !important;
+    font-style: normal !important;
+  }
+
+  .router-overview-framework .ik-ios-resource-grid {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 9px !important;
+  }
+
+  .router-overview-framework .ik-ios-resource-row {
+    min-height: 22px !important;
+    display: grid !important;
+    grid-template-columns: 44px minmax(0, 1fr) 48px !important;
+    gap: 9px !important;
+    align-items: center !important;
+  }
+
+  .router-overview-framework .ik-ios-resource-row span {
+    color: #4b5a6a !important;
+    font-size: 12px !important;
+    font-weight: 650 !important;
+  }
+
+  .router-overview-framework .ik-ios-resource-row b {
+    justify-self: end !important;
+    color: var(--ro-ios-text) !important;
+    font-size: 17px !important;
+    font-weight: 760 !important;
+    line-height: 1 !important;
+  }
+
+  .router-overview-framework .ik-ios-resource-row[data-tone="danger"] b { color: var(--ro-ios-red) !important; }
+  .router-overview-framework .ik-ios-resource-row[data-tone="warn"] b { color: var(--ro-ios-orange) !important; }
+
+  .router-overview-framework .ik-ios-resource-row > i {
+    height: 6px !important;
+    border-radius: 999px !important;
+    background: #edf3fa !important;
+    overflow: hidden !important;
+  }
+
+  .router-overview-framework .ik-ios-resource-row > i > em {
+    display: block !important;
+    width: calc(var(--ring-value) * 1%) !important;
+    height: 100% !important;
+    border-radius: inherit !important;
+    background: var(--ro-ios-blue) !important;
+  }
+  .router-overview-framework .ik-ios-resource-row[data-tone="danger"] > i > em { background: var(--ro-ios-red) !important; }
+  .router-overview-framework .ik-ios-resource-row[data-tone="warn"] > i > em { background: var(--ro-ios-orange) !important; }
+
+  .router-overview-framework .ik-mobile-hero-visual {
+    min-height: 96px !important;
+    max-height: 126px !important;
+    display: grid !important;
+    align-content: stretch !important;
+    padding: 12px !important;
+    overflow: hidden !important;
+  }
+
+  .router-overview-framework .ik-ios-exception-card {
+    min-height: 72px !important;
+    position: relative !important;
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 3px !important;
+    padding: 12px 14px 12px 17px !important;
+    overflow: hidden !important;
+  }
+
+  .router-overview-framework .ik-ios-exception-card::before {
+    content: "" !important;
+    position: absolute !important;
+    inset: 12px auto 12px 0 !important;
+    width: 3px !important;
+    border-radius: 0 8px 8px 0 !important;
+    background: var(--ro-ios-orange) !important;
+  }
+  .router-overview-framework .ik-ios-exception-card[data-tone="danger"]::before { background: var(--ro-ios-red) !important; }
+
+  .router-overview-framework .ik-ios-exception-card span {
+    color: #4b5a6a !important;
+    font-size: 12.5px !important;
+    font-weight: 650 !important;
+  }
+
+  .router-overview-framework .ik-ios-exception-card b {
+    color: var(--ro-ios-text) !important;
+    font-size: 18px !important;
+    font-weight: 760 !important;
+    line-height: 1.08 !important;
+  }
+
+  .router-overview-framework .ik-ios-exception-card em {
+    color: var(--ro-ios-faint) !important;
+    font-size: 12px !important;
+    font-style: normal !important;
+    line-height: 1.18 !important;
+    white-space: normal !important;
+  }
+
+  .router-overview-framework .ik-ios-rank-card {
+    display: grid !important;
+    gap: 8px !important;
+    padding: 13px 14px !important;
+  }
+
+  .router-overview-framework .ik-ios-rank-list {
+    display: grid !important;
+    gap: 0 !important;
+  }
+
+  .router-overview-framework .ik-ios-rank-row {
+    min-height: 44px !important;
+    display: grid !important;
+    grid-template-columns: 34px minmax(0, 1fr) auto !important;
+    gap: 9px !important;
+    align-items: center !important;
+    border-top: 1px solid #edf3fa !important;
+  }
+
+  .router-overview-framework .ik-ios-rank-row:first-child { border-top: 0 !important; }
+  .router-overview-framework .ik-ios-rank-row i {
+    width: 28px !important;
+    height: 28px !important;
+    display: grid !important;
+    place-items: center !important;
+    border-radius: 10px !important;
+    background: #f2f7fd !important;
+    color: var(--ro-ios-blue) !important;
+  }
+
+  .router-overview-framework .ik-ios-rank-row span {
+    min-width: 0 !important;
+    display: grid !important;
+    gap: 1px !important;
+  }
+
+  .router-overview-framework .ik-ios-rank-row b {
+    color: var(--ro-ios-text) !important;
+    font-size: 13.5px !important;
+    font-weight: 650 !important;
+    line-height: 1.14 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: clip !important;
+  }
+
+  .router-overview-framework .ik-ios-rank-row em {
+    color: var(--ro-ios-faint) !important;
+    font-size: 11.5px !important;
+    font-style: normal !important;
+    line-height: 1.1 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: clip !important;
+  }
+
+  .router-overview-framework .ik-ios-rank-row strong {
+    color: var(--ro-ios-text) !important;
+    font-size: 13px !important;
+    font-weight: 720 !important;
+    white-space: nowrap !important;
+  }
+
+  .router-overview-framework .ik-ios-bottom-tab {
+    position: fixed !important;
+    z-index: 1000 !important;
+    inset: auto 0 0 0 !important;
+    min-height: 64px !important;
+    display: grid !important;
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+    padding: 6px 14px calc(7px + env(safe-area-inset-bottom)) !important;
+    border-top: 1px solid var(--ro-ios-line) !important;
+    background: rgba(255,255,255,.97) !important;
+    box-shadow: 0 -8px 24px rgba(30,80,130,.05) !important;
+    backdrop-filter: blur(12px) saturate(180%) !important;
+  }
+
+  .router-overview-framework .ik-ios-bottom-tab button {
+    min-width: 44px !important;
+    min-height: 44px !important;
+    display: grid !important;
+    place-items: center !important;
+    gap: 2px !important;
+    border: 0 !important;
+    background: transparent !important;
+    color: var(--ro-ios-faint) !important;
+    font-size: 11px !important;
+    font-weight: 500 !important;
+  }
+
+  .router-overview-framework .ik-ios-bottom-tab button.is-active { color: var(--ro-ios-blue) !important; font-weight: 680 !important; }
+
+  .router-overview-framework .ro-mobile-first-screen table,
+  .router-overview-framework .ro-mobile-first-screen thead,
+  .router-overview-framework .ro-mobile-first-screen tbody,
+  .router-overview-framework .ro-mobile-first-screen tr,
+  .router-overview-framework .ro-mobile-first-screen th,
+  .router-overview-framework .ro-mobile-first-screen td,
+  .router-overview-framework .ro-mobile-first-screen [role="table"],
+  .router-overview-framework .ro-mobile-first-screen [role="rowgroup"],
+  .router-overview-framework .ro-mobile-first-screen .ro-ledger-table {
+    display: none !important;
+  }
+}
+
+@media (max-width: 390px) {
+  .router-overview-framework .ro-mobile-first-screen {
+    padding-inline: 14px !important;
+  }
+
+  .router-overview-framework .ik-ios-home-stack {
+    gap: 8px !important;
+  }
+
+  .router-overview-framework .ik-ios-nav-title b {
+    font-size: 19px !important;
+  }
+
+  .router-overview-framework .ik-ios-hero-card {
+    min-height: 174px !important;
+    padding: 14px 14px 13px !important;
+    gap: 9px !important;
+  }
+
+  .router-overview-framework .ik-ios-hero-stats strong {
+    font-size: clamp(14px, 3.8vw, 18px) !important;
+  }
+
+  .router-overview-framework .ik-mobile-twin-card {
+    min-height: 78px !important;
+    padding: 11px 12px !important;
+  }
+
+  .router-overview-framework .ik-ios-resource-card {
+    min-height: 110px !important;
+  }
+
+  .router-overview-framework .ik-mobile-hero-visual {
+    min-height: 88px !important;
+    max-height: 112px !important;
+  }
+}
+
+@media (min-width: 761px) {
+  .router-overview-framework .ik-ios-bottom-tab,
+  .router-overview-framework .ro-mobile-first-screen,
+  .router-overview-framework .ro-mobile-detail-section,
+  .router-overview-framework .ro-mobile-continuation {
+    display: none !important;
+  }
+
+  .router-overview-framework {
+    background: #f3f7fb !important;
+    color: #17202b !important;
+    font-family: "Microsoft YaHei UI", "Microsoft YaHei", "Segoe UI", sans-serif !important;
+  }
+
+  .router-overview-framework .ro-topbar {
+    border-color: #dfe8f1 !important;
+    background: #dfe8f1 !important;
+    border-radius: 4px !important;
+    overflow: hidden !important;
+    box-shadow: none !important;
+  }
+
+  .router-overview-framework .ro-desktop-grid {
+    grid-template-columns: minmax(560px, 1.5fr) minmax(420px, 1fr) !important;
+    gap: 8px !important;
+    min-height: calc(100vh - 82px) !important;
+    align-items: stretch !important;
+  }
+
+  .router-overview-framework .ro-col {
+    gap: 8px !important;
+    align-content: start !important;
+  }
+
+  .router-overview-framework .ro-module {
+    border-color: #dfe8f1 !important;
+    border-left-width: 2px !important;
+    border-radius: 4px !important;
+    background: #fff !important;
+    box-shadow: none !important;
+  }
+
+  .router-overview-framework .ro-module-head {
+    min-height: 26px !important;
+    padding: 4px 8px !important;
+    border-bottom-color: #e9eff6 !important;
+    background: #fbfdff !important;
+  }
+
+  .router-overview-framework .ro-module-head b {
+    font-size: 12.5px !important;
+    font-weight: 780 !important;
+  }
+
+  .router-overview-framework .ro-ledger-row,
+  .router-overview-framework .ro-ledger-table tr {
+    min-height: 30px !important;
+  }
+
+  .router-overview-framework .ro-ledger-table th,
+  .router-overview-framework .ro-ledger-table td,
+  .router-overview-framework .ro-ledger-cell {
+    font-size: 12px !important;
+    line-height: 1.25 !important;
+  }
+}

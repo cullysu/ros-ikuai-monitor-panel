@@ -42,7 +42,7 @@ const appHomeCss = css.slice(Math.max(
 
 assert(tsx.includes('MobileIosTopNav'), 'mobile iOS top nav component missing');
 assert(tsx.includes('MobileHeroStatusCard'), 'mobile app-home hero card component missing');
-assert(tsx.includes('MobileMetricGrid'), 'mobile app-home KPI grid component missing');
+assert(tsx.includes('MobileTwinCards'), 'mobile app-home WAN/collection twin cards component missing');
 assert(tsx.includes('MobileRingMetrics'), 'mobile app-home KPI ring component missing');
 assert(tsx.includes('MobileTrafficRank'), 'mobile app-home visual/rank component missing');
 assert(tsx.includes('MobileBottomTabs'), 'mobile app-home bottom tab component missing');
@@ -50,12 +50,15 @@ assert(tsx.includes('MobileBottomTabs'), 'mobile app-home bottom tab component m
 assert(tsx.includes('data-overview-mobile-ios-nav="true"'), 'mobile iOS nav data marker missing');
 assert(tsx.includes('data-overview-mobile-app-home="ikuai40-ios-router-home"'), 'mobile app-home marker missing');
 assert(tsx.includes('data-overview-mobile-home-mode="ios-app-home"'), 'mobile app-home mode marker missing');
-assert(tsx.includes('data-overview-mobile-home-layout="ios-topnav-hero-big2-kpi2x2-scene-visual-rings-rank-tabs"'), 'mobile app-home layout marker missing');
+assert(tsx.includes('data-overview-mobile-home-layout="ios-topnav-network-hero-twin-cards-resource-exception-rank-tabs"'), 'mobile app-home layout marker missing');
 assert(tsx.includes('data-overview-mobile-first-screen="app-home"'), 'mobile first-screen app-home marker missing');
-assert(tsx.includes('data-overview-mobile-first-screen-contract="ios-topnav-main-status-big2-sparkline-scene-visual-kpi2x2-rings-rank-bottom-tab"'), 'mobile first-screen contract marker missing');
+assert(tsx.includes('data-overview-mobile-first-screen-contract="ios-topnav-network-hero-traffic-metrics-twin-cards-resource-exception-rank-bottom-tab"'), 'mobile first-screen contract marker missing');
 assert(tsx.includes('data-overview-mobile-first-screen-no-table="true"'), 'mobile first-screen no-table marker missing');
 assert(tsx.includes('data-overview-mobile-first-screen-uses-microchart="true"'), 'mobile first-screen microchart marker missing');
 assert(tsx.includes('data-overview-mobile-no-desktop-collapse="true"'), 'mobile app-home must not be desktop/table collapse');
+assert(!tsx.includes('MobileMetricGrid'), 'mobile app-home must not keep the old KPI grid component');
+assert(!tsx.includes('data-overview-mobile-kpi-grid'), 'mobile app-home must not keep the old 2x2 KPI grid marker');
+assert(!tsx.includes('data-overview-mobile-kpi2x2'), 'mobile app-home must not keep the old kpi2x2 marker');
 assert(!appHomeBlock.includes('data-overview-mobile-flat-table') && !/role="table"/.test(appHomeBlock), 'mobile app-home first block must not be flat-ledger/table collapse');
 
 assert(tsx.includes('ik-ios-top-nav'), 'mobile iOS router nav marker missing');
@@ -63,9 +66,12 @@ assert(tsx.includes('ik-ios-hero-card'), 'mobile iOS hero marker missing');
 assert(tsx.includes('ik-ios-rings-card'), 'mobile iOS rings marker missing');
 assert(tsx.includes('ik-ios-rank-card'), 'mobile iOS rank marker missing');
 assert(tsx.includes('ik-ios-bottom-tab'), 'mobile iOS bottom tab marker missing');
-assert(tsx.includes('ik-mobile-status-cards'), 'mobile KPI 2x2 card grid missing');
+assert(tsx.includes('ik-mobile-twin-cards'), 'mobile WAN/collection twin card group missing');
+assert(tsx.includes('ik-mobile-twin-card'), 'mobile WAN/collection twin card items missing');
 assert(tsx.includes('ik-mobile-spark-line'), 'mobile thin sparkline missing');
 assert(tsx.includes('ik-ios-ring-grid'), 'mobile ring metric grid missing');
+assert(tsx.includes('ik-ios-resource-card'), 'mobile thin resource card missing');
+assert(tsx.includes('ik-ios-resource-row'), 'mobile thin resource rows missing');
 assert(tsx.includes('ik-ios-rank-row'), 'mobile app-style traffic/rank rows missing');
 ['首页', 'WAN', '接口', '资源', '日志'].forEach((label) => {
   assert(bottomTabsBlock.includes(label), `mobile bottom tabs must include ${label}`);
@@ -96,6 +102,9 @@ assert(tsx.includes('data-overview-scene-chart-priority={OVERVIEW_SCENE_CHART_PR
 assert(appHomeCss.includes('.ik-ios-top-nav'), 'iOS top nav CSS missing');
 assert(appHomeCss.includes('.ik-ios-hero-card'), 'iOS hero CSS missing');
 assert(appHomeCss.includes('.ik-ios-rings-card'), 'iOS rings CSS missing');
+assert(appHomeCss.includes('.ik-mobile-twin-cards'), 'iOS twin-card CSS missing');
+assert(appHomeCss.includes('.ik-ios-resource-card'), 'iOS resource-card CSS missing');
+assert(appHomeCss.includes('.ik-ios-resource-row'), 'iOS resource-row CSS missing');
 assert(appHomeCss.includes('.ik-ios-rank-card'), 'iOS rank CSS missing');
 assert(appHomeCss.includes('.ik-ios-bottom-tab'), 'iOS bottom tab CSS missing');
 
@@ -104,7 +113,10 @@ assert(predeploy.includes('overviewMobile390FirstTwoRowsVisibleOk'), 'predeploy 
 assert(predeploy.includes('overviewMobile390FirstScreenNoTableOk'), 'predeploy must reject first-screen table visuals');
 assert(predeploy.includes('overviewMobile390NoRawBooleanCopyOk'), 'predeploy must reject raw RouterOS booleans');
 assert(predeploy.includes('overviewMobile390BottomTabOk'), 'predeploy must keep the bottom tab visible');
-assert(predeploy.includes('.ik-ios-top-nav, .ik-ios-hero-card, .ik-ios-rings-card, .ik-ios-rank-card, .ik-ios-bottom-tab'), 'predeploy must probe app-home chrome nodes');
+assert(predeploy.includes('.ik-ios-top-nav, .ik-ios-hero-card, .ik-mobile-twin-cards, .ik-ios-resource-card, .ik-ios-rank-card, .ik-ios-bottom-tab'), 'predeploy must probe app-home chrome nodes');
+assert(predeploy.includes('mobile390AppHomeTwinOk'), 'predeploy must require app-home WAN/collection twin cards instead of 2x2 KPI');
+assert(!predeploy.includes('mobile390AppHomeKpiOk') && !predeploy.includes('hasKpi2x2'), 'predeploy must not keep old kpi2x2 mobile gate names');
+assert(predeploy.includes('overviewDesktopNoMobileAppChromeOk'), 'predeploy must reject mobile app chrome leaking into desktop');
 assert(predeploy.includes('nodeVisibleInViewport'), 'predeploy must evaluate fixed/sticky bottom tab as viewport chrome');
 assert(predeploy.includes('mobile390MainProgressBarRecords') && predeploy.includes('height >= 6'), 'predeploy must reject coarse main progress bars');
 assert(predeploy.includes('requestedMobile390x844') && predeploy.includes('window.innerWidth >= 375') && predeploy.includes('window.innerWidth <= 430'), 'predeploy must target the 390x844 mobile viewport with browser-tolerant bounds');
