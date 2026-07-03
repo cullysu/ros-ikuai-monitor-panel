@@ -2986,7 +2986,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
           const rows = new Set(centers.map((point) => Math.round(point.y / 24))).size;
           const rect = node.getBoundingClientRect();
           const text = children.map((item) => item.text).join(' ');
-          const looksLikeKpiCopy = /%|B\/s|bps|ms|wan|cpu|latency|traffic|resource|collection|snapshot|interface|line|bar|spark|matrix|chain|rate|rest|ssh|upload|download|memory|disk|online|offline/i.test(text);
+          const looksLikeKpiCopy = /%|B\\/s|bps|ms|wan|cpu|latency|traffic|resource|collection|snapshot|interface|line|bar|spark|matrix|chain|rate|rest|ssh|upload|download|memory|disk|online|offline/i.test(text);
           return columns === 2 && rows === 2 && looksLikeKpiCopy ? {
             selector: selectorForNode(node),
             width: Math.round(rect.width),
