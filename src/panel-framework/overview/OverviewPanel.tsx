@@ -41,6 +41,13 @@ interface TopbarItem {
   tone: OverviewTone;
 }
 
+interface DesktopMetricItem {
+  label: string;
+  value: string;
+  note: string;
+  tone: OverviewTone;
+}
+
 type TopbarRole =
   | "device"
   | "conclusion"
@@ -243,13 +250,14 @@ function topbarItems(snapshot: OverviewRawSnapshot, state: OverviewDerivedState)
   const collection = topbarCollectionValue(state);
   const snapshotCell = topbarSnapshotValue(snapshot, state);
   if (state.scenario === "no-snapshot") {
+    const updated = statusUpdated(snapshot);
     return [
       { label: "设备", value: "采集对象", note: "链路异常", role: "device", tone: "trust" as OverviewTone },
-      { label: "结论", value: state.verdict.topLabel, note: failureEndpointNote(state), role: "conclusion", tone: state.verdict.level },
+      { label: "结论", value: state.verdict.topLabel, note: "无业务快照，业务数据不展示", role: "conclusion", tone: state.verdict.level },
       { label: "RouterOS", value: router.value, note: "设备通达性", role: "routeros", tone: router.tone },
       { label: "REST", value: rest.value, note: rest.note, role: "rest", tone: rest.tone },
       { label: "SSH", value: ssh.value, note: ssh.note, role: "ssh", tone: ssh.tone },
-      { label: "最近成功", value: snapshotCell.value, note: "采集链路", role: "recent-success", tone: "warn" as OverviewTone },
+      { label: "最近成功", value: snapshotCell.value, note: `状态更新时间 ${updated}`, role: "recent-success", tone: "warn" as OverviewTone },
     ] satisfies TopbarItem[];
   }
   return [
@@ -718,6 +726,51 @@ function InfoBand({ snapshot, state }: OverviewPanelProps) {
   );
 }
 
+function desktopKeyMetrics(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): DesktopMetricItem[] {
+  const object = topbarObjectValue(state);
+  const routeText = state.facts.route.rawSummary || state.facts.route.text || state.facts.route.label;
+  const wanValue = state.scenario === "no-snapshot"
+    ? "不展示"
+    : state.scenario === "all-offline"
+    ? `${formatNumber(state.facts.wan.offline)}/${formatNumber(state.facts.wan.total)} 离线`
+    : `${formatNumber(state.facts.wan.online)}/${formatNumber(state.facts.wan.total)} 在线`;
+  const wanNote = state.scenario === "no-snapshot"
+    ? "无业务快照，速率不展示"
+    : state.facts.wan.allOffline
+      ? "全部出口离线"
+      : state.facts.wan.label || "WAN 证据";
+  const resourceValue = state.scenario === "no-snapshot" ? "禁显" : state.facts.resource.summaryText;
+  const resourceNote = state.scenario === "resource-full"
+    ? "处理器 / 内存 / 磁盘"
+    : state.scenario === "no-snapshot"
+      ? "业务二级证据不展示"
+      : "资源二级证据";
+  const collectionValue = state.facts.collection.credibilityLabel;
+  return [
+    { label: "结论", value: state.verdict.topLabel, note: state.verdict.summary, tone: state.verdict.level },
+    { label: "对象", value: object.value, note: object.note, tone: state.verdict.level === "danger" ? "danger" : state.verdict.level === "warn" ? "warn" : "trust" },
+    { label: "路由", value: state.facts.route.label, note: routeText, tone: state.facts.route.level },
+    { label: "WAN", value: wanValue, note: wanNote, tone: state.facts.wan.allOffline ? "danger" : state.scenario === "no-snapshot" ? "missing" : "trust" },
+    { label: "采集", value: collectionValue, note: state.facts.collection.channelText, tone: state.facts.collection.credibilityTone },
+    { label: "资源", value: resourceValue, note: resourceNote, tone: state.facts.resource.level },
+  ];
+}
+
+function DesktopKeyMetrics({ snapshot, state }: OverviewPanelProps) {
+  const items = desktopKeyMetrics(snapshot, state);
+  return (
+    <div className="ro-desktop-key-row" data-overview-desktop-key-row>
+      {items.map((item) => (
+        <div className="ro-desktop-key-cell" key={item.label} data-tone={item.tone}>
+          <span>{item.label}</span>
+          <b>{item.value}</b>
+          <em>{item.note}</em>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function mobileEvidence(snapshot: OverviewRawSnapshot, state: OverviewDerivedState) {
   const recent = latestSuccess(snapshot, state.scenario);
   switch (state.scenario) {
@@ -1130,9 +1183,12 @@ function mobileVerdictTone(state: OverviewDerivedState): OverviewTone {
 
 
 function mobileNavStatus(state: OverviewDerivedState): { label: string; tone: OverviewTone } {
-  if (state.verdict.level === "danger") return { label: "异常", tone: "danger" };
   if (state.scenario === "no-snapshot") return { label: "断链", tone: "warn" };
   if (state.scenario === "collection-down") return { label: "缓存", tone: "warn" };
+  if (state.scenario === "resource-full") return { label: "满载", tone: "danger" };
+  if (state.scenario === "all-offline") return { label: "断网", tone: "danger" };
+  if (state.scenario === "interfaces-down") return { label: "异常", tone: "danger" };
+  if (state.verdict.level === "danger") return { label: "异常", tone: "danger" };
   if (state.verdict.level === "warn") return { label: "待确认", tone: "warn" };
   return { label: "在线", tone: "ok" };
 }
@@ -1214,17 +1270,24 @@ function mobileHeroSectionTitle(state: OverviewDerivedState): string {
   return "网络状态";
 }
 
-function mobileHeroSupportText(objectValue: string, impactValue: string, trustValue: string): string {
-  const impact = impactValue
-    .replace(/^默认路由/, "路由")
-    .replace("活动默认路由", "可用")
-    .replace("历史快照", "历史")
-    .replace("不可判定", "待判定");
-  const trust = trustValue
-    .replace("缓存快照", "缓存")
-    .replace("不可判定", "待判定")
-    .replace("仅链路可参考", "仅链路参考");
-  return `${objectValue} · ${impact} · ${trust}`;
+function mobileHeroConclusion(state: OverviewDerivedState): string {
+  switch (state.scenario) {
+    case "resource-full": return "资源满载";
+    case "all-offline": return "WAN 全离线";
+    case "no-snapshot": return "快照缺失";
+    case "collection-down": return "采集缓存";
+    case "interfaces-down": return "接口异常";
+    default: return state.verdict.level === "warn" ? "网络需关注" : "网络正常";
+  }
+}
+
+function mobileHeroMeta(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): string {
+  if (state.scenario === "resource-full") return `峰值 处理器${formatPercent(state.facts.resource.cpu, 0)} · 最近6点`;
+  if (state.scenario === "all-offline") return `${formatNumber(state.facts.wan.offline)}条WAN离线 · 最近 ${latestSuccess(snapshot, state.scenario)}`;
+  if (state.scenario === "no-snapshot") return `最近成功 ${latestSuccess(snapshot, state.scenario)} · 业务不展示`;
+  if (state.scenario === "collection-down") return `缓存快照 · 最近 ${latestSuccess(snapshot, state.scenario)}`;
+  if (state.scenario === "interfaces-down") return `${formatNumber(state.facts.interfaces.down)}个接口Down · 转发面优先`;
+  return `最近 ${latestSuccess(snapshot, state.scenario)} · 轻量趋势`;
 }
 
 function MobileIosTopNav({ snapshot, state }: OverviewPanelProps) {
@@ -1241,21 +1304,32 @@ function MobileIosTopNav({ snapshot, state }: OverviewPanelProps) {
 function MobileHeroStatusCard({ snapshot, state }: OverviewPanelProps) {
   const stats = mobileHeroStats(snapshot, state);
   const series = mobileHeroSeries(snapshot, state);
-  const conclusion = state.verdict.topLabel || mobileNavStatus(state).label;
+  const conclusion = mobileHeroConclusion(state);
+  const majorStats = stats.slice(0, 2);
+  const minorStats = stats.slice(2);
   return <section className="ik-mobile-conclusion-card ik-ios-hero-card" data-tone={mobileVerdictTone(state)} data-overview-mobile-primary-card="network-status" data-overview-mobile-main-card data-overview-mobile-ios-hero="true" data-overview-mobile-first-screen-hero="true">
     <div className="ik-ios-hero-head">
       <span data-overview-mobile-primary-title>{mobileHeroSectionTitle(state)}</span>
       <b data-overview-primary-conclusion="true">{conclusion}</b>
+      <em>{mobileHeroMeta(snapshot, state)}</em>
     </div>
-    <div className="ik-ios-hero-stats" data-overview-mobile-hero-metrics="download-upload-latency-connections">
-      {stats.map((item) => <span key={item.label} data-tone={item.tone}><em>{item.label}</em><strong>{item.value}</strong></span>)}
+    <div className="ik-ios-hero-stats" data-overview-mobile-hero-metrics="download-upload-latency-connections" data-overview-mobile-hero-values="download-upload" data-overview-mobile-hero-chips="latency-connections">
+      <div className="ik-ios-hero-major">
+        {majorStats.map((item, index) => <span className="is-primary" key={item.label} data-tone={item.tone} data-overview-mobile-hero-value={index === 0 ? "download" : "upload"}><em>{item.label}</em><strong>{item.value}</strong></span>)}
+      </div>
+      <div className="ik-ios-hero-minors">
+        {minorStats.map((item) => <span className="is-chip" key={item.label} data-tone={item.tone} data-overview-mobile-hero-chip={item.label}><em>{item.label}</em><strong>{item.value}</strong></span>)}
+      </div>
     </div>
-    <svg className="ik-ios-hero-chart" viewBox="0 0 190 48" role="img" aria-label="\u7f51\u7edc\u72b6\u6001\u8d8b\u52bf" data-overview-mobile-first-visual="traffic-mini-line" data-overview-mobile-first-microchart="true" data-overview-chart-type="mini-line">
-      <path className="ik-mobile-spark-grid" d="M0 12 H190 M0 30 H190 M0 46 H190" />
-      <polyline className="ik-mobile-spark-line is-down" points={series.down} />
-      <polyline className="ik-mobile-spark-line is-up" points={series.up} />
-      <circle className="ik-ios-chart-dot" cx="152" cy="28" r="3.4" />
-    </svg>
+    <div className="ik-ios-hero-chart-wrap">
+      <svg className="ik-ios-hero-chart" viewBox="0 0 190 54" role="img" aria-label="\u7f51\u7edc\u72b6\u6001\u8d8b\u52bf" data-overview-mobile-first-visual="traffic-mini-line" data-overview-mobile-first-microchart="true" data-overview-chart-type="mini-line" data-overview-chart-unit="bps" data-overview-chart-window="recent-samples" data-overview-chart-trust={moduleTrust(state)}>
+        <path className="ik-mobile-spark-grid" d="M0 13 H190 M0 31 H190 M0 49 H190" />
+        <polyline className="ik-mobile-spark-line is-down" points={series.down} />
+        <polyline className="ik-mobile-spark-line is-up" points={series.up} />
+        <circle className="ik-ios-chart-dot" cx="152" cy="28" r="3.4" />
+      </svg>
+      <span className="ik-ios-chart-caption"><em>15分钟</em><b>峰值点</b></span>
+    </div>
   </section>;
 }
 
@@ -1264,19 +1338,19 @@ function MobileRingMetrics({ snapshot, state }: OverviewPanelProps) {
   const snapshotMissing = state.scenario === "no-snapshot";
   const resourceMetrics = snapshotMissing
     ? [
-      { label: "\u5904\u7406\u5668", value: "-", percent: 0, threshold: 85, peak: 96, tone: "missing" as OverviewTone },
+      { label: "CPU", value: "-", percent: 0, threshold: 85, peak: 96, tone: "missing" as OverviewTone },
       { label: "\u5185\u5b58", value: "-", percent: 0, threshold: 85, peak: 92, tone: "missing" as OverviewTone },
       { label: "\u78c1\u76d8", value: "-", percent: 0, threshold: 90, peak: 97, tone: "missing" as OverviewTone },
     ]
     : [
-      { label: "\u5904\u7406\u5668", value: formatPercent(state.facts.resource.cpu, 0), percent: clampPercent(state.facts.resource.cpu), threshold: 85, peak: 96, tone: state.facts.resource.cpu >= 85 ? "danger" as OverviewTone : "ok" as OverviewTone },
+      { label: "CPU", value: formatPercent(state.facts.resource.cpu, 0), percent: clampPercent(state.facts.resource.cpu), threshold: 85, peak: 96, tone: state.facts.resource.cpu >= 85 ? "danger" as OverviewTone : "ok" as OverviewTone },
       { label: "\u5185\u5b58", value: formatPercent(state.facts.resource.memory, 0), percent: clampPercent(state.facts.resource.memory), threshold: 85, peak: 92, tone: state.facts.resource.memory >= 85 ? "danger" as OverviewTone : "ok" as OverviewTone },
       { label: "\u78c1\u76d8", value: formatPercent(state.facts.resource.disk, 0), percent: clampPercent(state.facts.resource.disk), threshold: 90, peak: 97, tone: state.facts.resource.disk >= 90 ? "danger" as OverviewTone : "ok" as OverviewTone },
     ];
-  return <section className="ik-ios-rings-card ik-ios-resource-card" data-overview-mobile-ring-metrics="thin-bars" data-overview-mobile-resource-card="cpu-memory-disk" data-overview-mobile-metrics data-overview-mobile-business-metrics={snapshotMissing ? "hidden-no-snapshot" : "visible"}>
-    <header><span>{snapshotMissing ? "\u4e1a\u52a1\u6307\u6807" : "\u8d44\u6e90\u72b6\u6001"}</span><em>{snapshotMissing ? "\u65e0\u4e1a\u52a1\u5feb\u7167\uff0c\u4e1a\u52a1\u6570\u636e\u4e0d\u5c55\u793a" : "\u5904\u7406\u5668 / \u5185\u5b58 / \u78c1\u76d8"}</em></header>
+  return <section className="ik-ios-rings-card ik-ios-resource-card" data-overview-mobile-ring-metrics="thin-bars" data-overview-mobile-resource-card="cpu-memory-disk" data-overview-mobile-resource-rows="cpu-memory-disk-only" data-overview-mobile-metrics data-overview-mobile-business-metrics={snapshotMissing ? "hidden-no-snapshot" : "visible"}>
+    <header><span>{snapshotMissing ? "\u4e1a\u52a1\u6307\u6807" : "\u8d44\u6e90\u72b6\u6001"}</span><em>{snapshotMissing ? "\u65e0\u4e1a\u52a1\u5feb\u7167\uff0c\u4e1a\u52a1\u6570\u636e\u4e0d\u5c55\u793a" : "CPU / \u5185\u5b58 / \u78c1\u76d8"}</em></header>
     <div className="ik-ios-ring-grid ik-ios-resource-grid">
-      {resourceMetrics.map((metric) => <div className="ik-ios-ring-item ik-ios-resource-row" data-tone={metric.tone} key={metric.label} style={{ "--ring-value": String(metric.percent) } as CSSProperties} title={`阈值 ${metric.threshold}% / 峰值 ${metric.peak}%`}>
+      {resourceMetrics.map((metric) => <div className="ik-ios-ring-item ik-ios-resource-row" data-tone={metric.tone} key={metric.label} style={{ "--ring-value": String(metric.percent) } as CSSProperties} title={`threshold ${metric.threshold}% / peak ${metric.peak}%`}>
         <span>{metric.label}</span>
         <i aria-hidden="true"><em /></i>
         <b>{metric.value}</b>
@@ -1294,7 +1368,7 @@ function mobileExceptionSummary(snapshot: OverviewRawSnapshot, state: OverviewDe
     case "collection-down":
       return { title: "\u5f02\u5e38\u5f71\u54cd", value: "\u91c7\u96c6\u901a\u9053\u5f02\u5e38", note: `\u5f53\u524d\u5c55\u793a\u7f13\u5b58\u5feb\u7167 / \u6700\u8fd1 ${recent}`, tone: "warn" };
     case "resource-full":
-      return { title: "\u5f02\u5e38\u5f71\u54cd", value: "\u5904\u7406\u5668/\u5185\u5b58/\u78c1\u76d8", note: "\u6301\u7eed 6/6 / \u9608\u503c 85/85/90", tone: "danger" };
+      return { title: "\u5f02\u5e38\u5f71\u54cd", value: `CPU/\u5185\u5b58/\u78c1\u76d8`, note: "\u6301\u7eed 6/6 / \u9608\u503c 85/85/90", tone: "danger" };
     case "interfaces-down":
       return { title: "\u5f02\u5e38\u5f71\u54cd", value: `${formatNumber(state.facts.interfaces.down)}\u4e2a\u63a5\u53e3 Down`, note: `\u8f6c\u53d1\u9762\u4f18\u5148 / \u9ed8\u8ba4\u8def\u7531 ${state.facts.route.label}`, tone: "danger" };
     case "all-offline":
@@ -1348,15 +1422,8 @@ function mobileRankRows(snapshot: OverviewRawSnapshot, state: OverviewDerivedSta
 
 function MobileTrafficRank({ snapshot, state }: OverviewPanelProps) {
   const rows = mobileRankRows(snapshot, state).slice(0, state.scenario === "no-snapshot" ? 3 : 4);
-  const title = state.scenario === "no-snapshot"
-    ? "\u5c55\u793a\u8fb9\u754c"
-    : state.scenario === "interfaces-down"
-      ? "\u63a5\u53e3\u5f71\u54cd"
-      : state.scenario === "all-offline"
-        ? "WAN \u72b6\u6001"
-        : "\u5b9e\u65f6\u6d41\u91cf";
   return <section className="ik-ios-rank-card" data-overview-mobile-rank-list="app-list" data-overview-mobile-card-list="true">
-    <header><span>{title}</span><em>{latestSuccess(snapshot, state.scenario)}</em></header>
+    <header><span>{"\u5e94\u7528\u5217\u8868"}</span><em>{latestSuccess(snapshot, state.scenario)}</em></header>
     <div className="ik-ios-rank-list">
       {rows.map((row, index) => <div className="ik-ios-rank-row" data-tone={row.tone} key={`${row.name}-${index}`}>
         <i aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 7h12M8 12h8M10 17h4" /></svg></i>
@@ -2509,7 +2576,7 @@ function noSnapshotChainRows(snapshot: OverviewRawSnapshot, state: OverviewDeriv
     { id: "chain-ssh", cells: ["SSH", "断链", recent, text(snapshot.meta?.staticError, "快照缺失"), next], tone: "warn" },
     { id: "chain-default-route", cells: ["默认路由", "待判定", recent, "默认路由 待判 / 路由快照缺失", next], tone: "warn" },
     { id: "chain-failure", cells: ["失败端点", "未记录", recent, "未记录", next], tone: "trust" },
-    { id: "chain-business", cells: ["业务快照", "禁显", recent, `业务快照时间 无 / 业务快照年龄 不可判定 / 更新时间 ${updated}`, next], tone: "missing" },
+    { id: "chain-business", cells: ["业务快照", "禁显", recent, `业务快照时间 无 / 业务快照年龄 不可判定 / 状态更新时间 ${updated}`, next], tone: "missing" },
     { id: "chain-trust", cells: ["可信等级", "链路可参考", recent, `业务状态不参考 / 事件年龄 ${age}`, next], tone: "warn" },
   ];
 }
@@ -2989,6 +3056,7 @@ export function OverviewPanel({ snapshot, state }: OverviewPanelProps) {
       data-overview-no-zero-rate-placeholder="no-0Bps-when-uncollected"
     >
       <InfoBand snapshot={snapshot} state={state} />
+      <DesktopKeyMetrics snapshot={snapshot} state={state} />
       <span className="ro-sr-contract" data-overview-verdict-panel>{verdictContractText(snapshot, state)}</span>
       <div className="ro-mobile-first-screen" data-overview-mobile-first-screen data-overview-mobile-alert={state.verdict.level}>
         <MobileLedger snapshot={snapshot} state={state} />
