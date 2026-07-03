@@ -16,6 +16,7 @@ import {
   type OverviewScenarioKey,
   type OverviewTone,
 } from "./index";
+import { MobileOverviewHome } from "./components/MobileOverviewHome";
 import "./OverviewPanel.css";
 
 interface OverviewPanelProps {
@@ -3302,7 +3303,7 @@ export function OverviewPanel({ snapshot, state }: OverviewPanelProps) {
       <span className="ro-sr-contract" data-overview-verdict-panel>{verdictContractText(snapshot, state)}</span>
       <DesktopKeyMetrics snapshot={snapshot} state={state} />
       <div className="ro-mobile-first-screen" data-overview-mobile-first-screen data-overview-mobile-alert={state.verdict.level}>
-        <MobileLedger snapshot={snapshot} state={state} />
+        <MobileOverviewHome snapshot={snapshot} state={state} />
       </div>
       <DesktopWorkspace snapshot={snapshot} state={state} />
     </section>
