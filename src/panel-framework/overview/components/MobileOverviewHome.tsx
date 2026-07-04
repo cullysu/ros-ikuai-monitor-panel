@@ -391,15 +391,41 @@ function TopNav({ snapshot, state }: MobileOverviewHomeProps) {
 function Hero(props: MobileOverviewHomeProps) {
   const metrics = heroMetrics(props.snapshot, props.state);
   const total = trafficTotals(props.snapshot);
+  const primaryMetrics = metrics.slice(0, 2);
+  const compactMetrics = metrics.slice(2);
+  const compactSummary = compactMetrics.map((item) => `${item.label} ${item.value}${item.unit ? ` ${item.unit}` : ""}`).join(" · ");
+  const compactTone: OverviewTone = compactMetrics.some((item) => item.tone === "danger")
+    ? "danger"
+    : compactMetrics.some((item) => item.tone === "warn")
+      ? "warn"
+      : "trust";
+  const footerLabel = props.state.scenario === "no-snapshot"
+    ? "业务数据"
+    : props.state.scenario === "all-offline"
+      ? "出口状态"
+      : props.state.scenario === "interfaces-down"
+        ? "转发面"
+        : props.state.scenario === "collection-down"
+          ? "快照来源"
+          : "出口总览";
+  const footerValue = props.state.scenario === "no-snapshot"
+    ? "不展示"
+    : props.state.scenario === "all-offline"
+      ? `WAN 0/${formatNumber(props.state.facts.wan.total)}`
+      : props.state.scenario === "interfaces-down"
+        ? `${formatNumber(props.state.facts.interfaces.down)} 接口 Down`
+        : props.state.scenario === "collection-down"
+          ? "缓存快照"
+          : formatRate(total.down + total.up);
 
   return (
     <section
-      className="ik-ios-hero-card ik-app-hero ik-v87-hero-card"
+      className="ik-ios-hero-card ik-app-hero ik-app-network-hero ik-v87-hero-card"
       data-tone={props.state.scenario === "no-snapshot" ? "missing" : props.state.verdict.level}
       data-overview-mobile-primary-card="network-status-main"
       data-overview-mobile-ios-hero="true"
       data-overview-mobile-hero-metrics="download-upload-latency-connections"
-      data-overview-mobile-hero-metric-layout="app-stat-strip"
+      data-overview-mobile-hero-metric-layout="app-network-hero"
     >
       <header className="ik-ios-hero-head ik-app-hero-head">
         <span className="ik-app-hero-kicker" data-overview-mobile-primary-title>{heroKicker(props.state)}</span>
@@ -410,21 +436,27 @@ function Hero(props: MobileOverviewHomeProps) {
         className="ik-v87-hero-stat-strip ik-app-hero-metrics"
         data-overview-mobile-hero-summary={metrics.map((item) => `${item.label} ${item.value}${item.unit ? ` ${item.unit}` : ""}`).join(" · ")}
       >
-        {metrics.map((item) => (
-          <li className="ik-v87-hero-stat ik-app-hero-number" data-tone={item.tone} key={item.label}>
+        {primaryMetrics.map((item) => (
+          <li className="ik-v87-hero-stat ik-app-hero-number is-primary" data-tone={item.tone} key={item.label}>
             <em>{item.label}</em>
             <strong>{item.value}</strong>
             {item.unit ? <small>{item.unit}</small> : null}
             {item.note ? <i>{item.note}</i> : null}
           </li>
         ))}
+        {compactSummary ? (
+          <li className="ik-v87-hero-stat ik-app-hero-number is-compact is-summary" data-tone={compactTone}>
+            <em>补充</em>
+            <strong>{compactSummary}</strong>
+          </li>
+        ) : null}
       </ul>
       <div className="ik-app-hero-visual" data-overview-mobile-first-visual="scenario-specific">
         {HeroVisual(props)}
       </div>
       <footer className="ik-app-hero-footer">
-        <span>出口总览</span>
-        <b>{formatRate(total.down + total.up)}</b>
+        <span>{footerLabel}</span>
+        <b>{footerValue}</b>
       </footer>
     </section>
   );
@@ -445,7 +477,7 @@ function DuoCards({ snapshot, state }: MobileOverviewHomeProps) {
     {
       key: "collection",
       title: "采集",
-      value: state.scenario === "collection-down" ? "缓存" : noBusiness ? "待核" : "双通道",
+      value: state.scenario === "collection-down" ? "缓存" : noBusiness ? "待确认" : "双通道",
       sub: `REST ${stripRest(state.facts.collection.restLabel)} · SSH ${stripSsh(state.facts.collection.sshLabel)}`,
       detail: `最近成功 ${latestSuccess(snapshot, state)}`,
       tone: state.facts.collection.credibilityTone,
@@ -471,7 +503,7 @@ function ResourceCard({ state }: { state: OverviewDerivedState }) {
   if (state.scenario === "no-snapshot") {
     return (
       <section
-        className="ik-ios-rings-card ik-ios-resource-card ik-app-resource-card ik-app-boundary-card is-boundary"
+        className="ik-ios-rings-card ik-ios-resource-card ik-app-resource-card ik-app-resource-strip ik-app-boundary-card is-boundary"
         data-overview-mobile-resource-card="cpu-memory-disk-horizontal"
         data-overview-mobile-core-block="resource"
       >
@@ -489,7 +521,7 @@ function ResourceCard({ state }: { state: OverviewDerivedState }) {
 
   return (
     <section
-      className={`ik-ios-rings-card ik-ios-resource-card ik-app-resource-card${state.scenario === "resource-full" ? " is-hot" : ""}`}
+      className={`ik-ios-rings-card ik-ios-resource-card ik-app-resource-card ik-app-resource-strip${state.scenario === "resource-full" ? " is-hot" : ""}`}
       data-overview-mobile-resource-card="cpu-memory-disk-horizontal"
       data-overview-mobile-core-block="resource"
     >
@@ -591,7 +623,7 @@ function RankCard(props: MobileOverviewHomeProps) {
     <section className="ik-ios-rank-card ik-app-rank-card" data-overview-mobile-rank-list="app-device-list" data-overview-mobile-core-block="topn">
       <header>
         <span>{title}</span>
-        <b>TopN</b>
+        <b>{props.state.scenario === "single" || props.state.scenario === "fleet" ? "实时流量" : "影响对象"}</b>
         <em>快照 {latestSuccess(props.snapshot, props.state)}</em>
       </header>
       <div className="ik-app-rank-list">
