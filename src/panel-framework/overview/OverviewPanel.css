@@ -23629,6 +23629,563 @@
   }
 }
 
+/* v88 main-agent mobile product lock: App-home rhythm over legacy v8x cascades. */
+@media (max-width: 760px) {
+  .router-overview-framework .ro-mobile-ledger.ik-app-home-v88:not(.ik-mobile-flat-console) {
+    --ik-v88-page: #f5f9fc;
+    --ik-v88-card: #ffffff;
+    --ik-v88-line: #e5edf6;
+    --ik-v88-blue: #1677ff;
+    --ik-v88-text: #111827;
+    --ik-v88-muted: #64748b;
+    --ik-v88-danger: #d93025;
+    --ik-v88-warn: #d97706;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-app-home-v88:not(.ik-mobile-flat-console) .ik-ios-first-screen {
+    padding: 14px 14px calc(92px + env(safe-area-inset-bottom, 0px)) !important;
+    gap: 12px !important;
+    background:
+      radial-gradient(circle at 18% -8%, rgba(22, 119, 255, .12), transparent 30%),
+      linear-gradient(180deg, #fbfdff 0%, var(--ik-v88-page) 58%, #f4f8fc 100%) !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-app-home-v88:not(.ik-mobile-flat-console) :is(.ik-ios-top-nav, .ik-ios-hero-card, .ik-mobile-twin-card, .ik-ios-resource-card, .ik-ios-exception-card, .ik-ios-rank-card) {
+    border: 1px solid var(--ik-v88-line) !important;
+    border-radius: 18px !important;
+    background: rgba(255, 255, 255, .96) !important;
+    box-shadow: 0 8px 24px rgba(35, 82, 126, .07) !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-app-home-v88:not(.ik-mobile-flat-console) .ik-ios-hero-card {
+    padding: 16px !important;
+    gap: 12px !important;
+    border-radius: 22px !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-app-home-v88:not(.ik-mobile-flat-console) .ik-app-hero-title {
+    font-size: clamp(27px, 7.4vw, 32px) !important;
+    line-height: 1.04 !important;
+    letter-spacing: -.045em !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-app-home-v88:not(.ik-mobile-flat-console) .ik-v87-hero-stat-strip.ik-app-hero-metrics {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    list-style: none !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-app-home-v88:not(.ik-mobile-flat-console) .ik-v87-hero-stat-strip.ik-app-hero-metrics > .ik-v87-hero-stat.ik-app-hero-number {
+    min-height: 62px !important;
+    display: grid !important;
+    align-content: center !important;
+    gap: 3px !important;
+    padding: 10px 11px !important;
+    border: 1px solid #e7f0f8 !important;
+    border-radius: 15px !important;
+    background: #fbfdff !important;
+    box-shadow: none !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-app-home-v88:not(.ik-mobile-flat-console) .ik-v87-hero-stat-strip.ik-app-hero-metrics > .ik-v87-hero-stat:nth-child(n+3) {
+    min-height: 38px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 8px !important;
+    padding: 8px 10px !important;
+    border-radius: 12px !important;
+    background: #f7fbff !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-app-home-v88[data-overview-mobile-scene="resource-full"]:not(.ik-mobile-flat-console) .ik-v87-hero-stat-strip.ik-app-hero-metrics {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-app-home-v88[data-overview-mobile-scene="resource-full"]:not(.ik-mobile-flat-console) .ik-v87-hero-stat-strip.ik-app-hero-metrics > .ik-v87-hero-stat {
+    min-height: 66px !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-app-home-v88[data-overview-mobile-scene="resource-full"]:not(.ik-mobile-flat-console) .ik-v87-hero-stat-strip.ik-app-hero-metrics > .ik-v87-hero-stat:nth-child(4) {
+    grid-column: 1 / -1 !important;
+    min-height: 36px !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-app-home-v88:not(.ik-mobile-flat-console) .ik-app-hero-number em {
+    color: var(--ik-v88-muted) !important;
+    font-size: 11px !important;
+    font-style: normal !important;
+    font-weight: 700 !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-app-home-v88:not(.ik-mobile-flat-console) .ik-app-hero-number strong {
+    color: var(--ik-v88-text) !important;
+    font-size: clamp(22px, 6.2vw, 30px) !important;
+    font-weight: 850 !important;
+    line-height: 1 !important;
+    letter-spacing: -.05em !important;
+    font-variant-numeric: tabular-nums !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-app-home-v88:not(.ik-mobile-flat-console) .ik-app-hero-number[data-tone="danger"] strong {
+    color: var(--ik-v88-danger) !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-app-home-v88:not(.ik-mobile-flat-console) .ik-app-boundary-card {
+    display: grid !important;
+    gap: 9px !important;
+    padding: 14px 16px !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-app-home-v88:not(.ik-mobile-flat-console) .ik-app-boundary-line {
+    display: grid !important;
+    gap: 4px !important;
+    padding: 10px 12px !important;
+    border: 1px solid #e8f0f7 !important;
+    border-radius: 13px !important;
+    background: #f8fbff !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-app-home-v88:not(.ik-mobile-flat-console) .ik-app-boundary-line span {
+    color: #46627c !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-app-home-v88:not(.ik-mobile-flat-console) .ik-app-boundary-line b {
+    color: #111827 !important;
+    font-size: 13px !important;
+    font-weight: 760 !important;
+    line-height: 1.25 !important;
+  }
+}
+
+/* Subagent 2 v88 mobile app-home: iKuai 4.0 light-blue iOS hierarchy.
+   CSS-only lock: no desktop structure changes, no KPI 2x2, no title overlap, no ellipsis. */
+@media (max-width: 760px) {
+  .router-overview-framework {
+    --ik-v88-page: #f5f9fe;
+    --ik-v88-card: rgba(255, 255, 255, .96);
+    --ik-v88-line: #e6f0fa;
+    --ik-v88-blue: #1677ff;
+    --ik-v88-blue-soft: #edf7ff;
+    --ik-v88-text: #111827;
+    --ik-v88-muted: #5d6d80;
+    --ik-v88-faint: #7c8a9a;
+  }
+
+  .router-overview-framework .ro-mobile-first-screen {
+    background:
+      radial-gradient(circle at 16% -10%, rgba(22, 119, 255, .14), transparent 31%),
+      radial-gradient(circle at 96% 4%, rgba(99, 163, 222, .12), transparent 28%),
+      linear-gradient(180deg, #fbfdff 0%, var(--ik-v88-page) 46%, #f3f8fd 100%) !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console),
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-home-stack,
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-first-screen {
+    gap: 12px !important;
+    max-width: 430px !important;
+    overflow: visible !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) *,
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) *::before,
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) *::after {
+    text-overflow: clip !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) :is(
+    .ik-ios-nav-title b,
+    .ik-ios-nav-title span,
+    .ik-ios-hero-head span,
+    .ik-ios-hero-head b,
+    .ik-ios-hero-head em,
+    [data-overview-mobile-primary-title],
+    .ik-v74-hero-head span,
+    .ik-v74-hero-head b,
+    .ik-v74-hero-head em,
+    .ik-v75-hero-head span,
+    .ik-v75-hero-head b,
+    .ik-v75-hero-head em,
+    .ik-v87-hero-stat em,
+    .ik-v87-hero-stat strong,
+    .ik-app-hero-number em,
+    .ik-app-hero-number strong,
+    .ik-ios-resource-meter span em,
+    .ik-ios-resource-meter span b,
+    .ik-mobile-resource-spark span,
+    .ik-mobile-resource-spark b,
+    .ik-mobile-resource-spark em,
+    .ik-ios-bottom-tab span,
+    .ik-mobile-bottom-tab span
+  ) {
+    max-width: none !important;
+    overflow: visible !important;
+    white-space: normal !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-top-nav {
+    display: grid !important;
+    grid-template-columns: 44px minmax(0, 1fr) auto !important;
+    grid-template-areas:
+      "back title pill"
+      "back title pill" !important;
+    gap: 8px !important;
+    align-items: center !important;
+    min-height: 58px !important;
+    padding: 8px 10px !important;
+    border: 1px solid rgba(222, 235, 248, .92) !important;
+    border-radius: 20px !important;
+    background: rgba(255, 255, 255, .74) !important;
+    box-shadow: 0 10px 26px rgba(33, 91, 150, .07), inset 0 1px 0 rgba(255, 255, 255, .9) !important;
+    backdrop-filter: blur(18px) saturate(1.12) !important;
+    -webkit-backdrop-filter: blur(18px) saturate(1.12) !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-top-nav button {
+    grid-area: back !important;
+    width: 42px !important;
+    height: 42px !important;
+    border-color: #dcebf8 !important;
+    background: #ffffff !important;
+    box-shadow: 0 6px 16px rgba(30, 82, 138, .06) !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-nav-title {
+    grid-area: title !important;
+    min-width: 0 !important;
+    display: grid !important;
+    gap: 2px !important;
+    align-content: center !important;
+    padding: 0 !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-nav-title b {
+    color: var(--ik-v88-text) !important;
+    font-size: clamp(20px, 5.6vw, 24px) !important;
+    font-weight: 780 !important;
+    line-height: 1.08 !important;
+    letter-spacing: -.03em !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-nav-title span {
+    color: var(--ik-v88-faint) !important;
+    font-size: 11.5px !important;
+    line-height: 1.15 !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-status-pill {
+    grid-area: pill !important;
+    justify-self: end !important;
+    max-width: 112px !important;
+    min-width: 0 !important;
+    min-height: 31px !important;
+    padding: 0 10px !important;
+    border: 1px solid #dcebf8 !important;
+    border-radius: 999px !important;
+    background: #f7fbff !important;
+    color: #213246 !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    line-height: 1.1 !important;
+    box-shadow: none !important;
+    white-space: normal !important;
+    overflow: visible !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) :is(
+    .ik-ios-hero-card,
+    .ik-v74-network-hero,
+    .ik-mobile-twin-card,
+    .ik-ios-status-card,
+    .ik-ios-resource-card,
+    .ik-ios-rank-card,
+    .ik-ios-exception-card,
+    .ik-mobile-hero-visual
+  ) {
+    border: 1px solid rgba(222, 235, 248, .96) !important;
+    border-radius: 22px !important;
+    background: var(--ik-v88-card) !important;
+    box-shadow: 0 12px 30px rgba(31, 86, 145, .075), inset 0 1px 0 rgba(255, 255, 255, .92) !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) :is(.ik-ios-hero-card, .ik-v74-network-hero) {
+    min-height: 0 !important;
+    padding: 16px 16px 14px !important;
+    gap: 12px !important;
+    overflow: visible !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) :is(.ik-ios-hero-head, .ik-v74-hero-head, .ik-v75-hero-head) {
+    min-width: 0 !important;
+    gap: 4px !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) :is(.ik-ios-hero-head span, .ik-v74-hero-head span, .ik-v75-hero-head span, [data-overview-mobile-primary-title]) {
+    color: var(--ik-v88-muted) !important;
+    font-size: 12.5px !important;
+    font-weight: 680 !important;
+    line-height: 1.18 !important;
+    letter-spacing: 0 !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) :is(.ik-ios-hero-head b, .ik-v74-hero-head b, .ik-v75-hero-head b) {
+    color: #0f172a !important;
+    font-size: clamp(26px, 7.2vw, 32px) !important;
+    font-weight: 820 !important;
+    line-height: 1.06 !important;
+    letter-spacing: -.045em !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) :is(.ik-ios-hero-head em, .ik-v74-hero-head em, .ik-v75-hero-head em) {
+    color: #68778a !important;
+    font-size: 12px !important;
+    line-height: 1.22 !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) :is(
+    .ik-ios-hero-stats,
+    .ik-v75-hero-stat-list,
+    .ik-v87-hero-stat-strip.ik-app-hero-metrics
+  ) {
+    display: flex !important;
+    grid-template-columns: none !important;
+    align-items: stretch !important;
+    gap: 0 !important;
+    min-height: 62px !important;
+    padding: 9px 0 !important;
+    border-top: 1px solid var(--ik-v88-line) !important;
+    border-bottom: 1px solid var(--ik-v88-line) !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) :is(
+    .ik-ios-hero-stats span,
+    .ik-v75-hero-stat,
+    .ik-v87-hero-stat,
+    .ik-app-hero-number
+  ) {
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+    min-height: 54px !important;
+    display: grid !important;
+    align-content: center !important;
+    gap: 3px !important;
+    padding: 0 8px !important;
+    border: 0 !important;
+    border-left: 1px solid var(--ik-v88-line) !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) :is(
+    .ik-ios-hero-stats span:first-child,
+    .ik-v75-hero-stat:first-child,
+    .ik-v87-hero-stat:first-child,
+    .ik-app-hero-number:first-child
+  ) {
+    border-left: 0 !important;
+    padding-left: 0 !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) :is(.ik-ios-hero-stats em, .ik-v75-hero-stat em, .ik-v87-hero-stat em, .ik-app-hero-number em) {
+    color: var(--ik-v88-faint) !important;
+    font-size: 10.5px !important;
+    font-style: normal !important;
+    font-weight: 700 !important;
+    line-height: 1.15 !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) :is(.ik-ios-hero-stats strong, .ik-v75-hero-stat strong, .ik-v87-hero-stat strong, .ik-app-hero-number strong) {
+    color: var(--ik-v88-text) !important;
+    font-size: clamp(18px, 5vw, 22px) !important;
+    font-weight: 820 !important;
+    line-height: 1.08 !important;
+    letter-spacing: -.045em !important;
+    font-variant-numeric: tabular-nums !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) :is(.ik-ios-hero-chart, .ik-ios-hero-chart svg, .ik-v74-hero-visual, .ik-mobile-traffic-spark svg) {
+    height: 62px !important;
+    min-height: 62px !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) :is(.ik-mobile-spark-grid, .ro-spark-grid) {
+    stroke: #e8f2fb !important;
+    stroke-width: .7 !important;
+    opacity: .78 !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) :is(.ik-mobile-spark-line, .ro-spark-line) {
+    fill: none !important;
+    stroke: var(--ik-v88-blue) !important;
+    stroke-width: 1.25 !important;
+    stroke-linecap: round !important;
+    stroke-linejoin: round !important;
+    filter: none !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-mobile-spark-line.is-up {
+    stroke: #5aa6e8 !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) :is(.ik-mobile-spark-threshold, .ro-spark-threshold) {
+    stroke: #b9ccde !important;
+    stroke-width: .7 !important;
+    stroke-dasharray: 3 5 !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) :is(.ik-ios-resource-meters--horizontal, .ik-mobile-resource-sparks, .ik-mobile-resource-sparks.is-pressure-ledger, .ik-mobile-resource-sparks.is-vertical-ledger) {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 10px !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) :is(.ik-ios-resource-meter, .ik-mobile-resource-spark.ik-ios-resource-meter, .ik-mobile-resource-spark) {
+    display: grid !important;
+    grid-template-columns: minmax(58px, auto) minmax(0, 1fr) minmax(54px, auto) !important;
+    gap: 9px !important;
+    align-items: center !important;
+    min-height: 42px !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) :is(.ik-ios-resource-meter span, .ik-mobile-resource-spark span) {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) max-content !important;
+    gap: 2px 8px !important;
+    align-items: baseline !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) :is(.ik-ios-resource-meter span em, .ik-mobile-resource-spark span) {
+    color: #56677a !important;
+    font-size: 12.5px !important;
+    font-style: normal !important;
+    font-weight: 720 !important;
+    line-height: 1.1 !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) :is(.ik-ios-resource-meter span b, .ik-mobile-resource-spark b) {
+    color: #0b1220 !important;
+    font-size: clamp(23px, 6.4vw, 28px) !important;
+    font-weight: 900 !important;
+    line-height: 1 !important;
+    letter-spacing: -.06em !important;
+    font-variant-numeric: tabular-nums !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) :is(.ik-ios-resource-meter[data-tone="danger"] span b, .ik-mobile-resource-spark[data-tone="danger"] b) {
+    color: #c92f28 !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) :is(.ik-ios-resource-meter small, .ik-mobile-resource-spark em) {
+    justify-self: end !important;
+    color: #6f7f91 !important;
+    font-size: 11px !important;
+    font-style: normal !important;
+    font-weight: 650 !important;
+    line-height: 1.1 !important;
+    text-align: right !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) :is(.ik-ios-resource-meter i, .ik-mobile-resource-spark i, .ro-topn-bar) {
+    grid-column: 1 / -1 !important;
+    height: 4px !important;
+    border: 0 !important;
+    border-radius: 999px !important;
+    background: #e8f1fa !important;
+    overflow: hidden !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) :is(.ik-ios-resource-meter i strong, .ik-mobile-resource-spark i strong, .ro-topn-bar strong) {
+    border-radius: inherit !important;
+    background: var(--ik-v88-blue) !important;
+  }
+
+  .router-overview-framework .ik-ios-bottom-tab,
+  .router-overview-framework .ik-mobile-bottom-tab,
+  .router-overview-framework nav[data-overview-mobile-bottom-tab] {
+    left: 13px !important;
+    right: 13px !important;
+    bottom: calc(9px + env(safe-area-inset-bottom, 0px)) !important;
+    min-height: 64px !important;
+    padding: 6px !important;
+    border: 1px solid rgba(209, 225, 241, .88) !important;
+    border-radius: 26px !important;
+    background: rgba(255, 255, 255, .92) !important;
+    box-shadow: 0 18px 44px rgba(20, 55, 92, .18), inset 0 1px 0 rgba(255, 255, 255, .96) !important;
+    backdrop-filter: blur(22px) saturate(1.22) !important;
+    -webkit-backdrop-filter: blur(22px) saturate(1.22) !important;
+  }
+
+  .router-overview-framework .ik-ios-bottom-tab > *,
+  .router-overview-framework .ik-mobile-bottom-tab > *,
+  .router-overview-framework nav[data-overview-mobile-bottom-tab] > * {
+    min-height: 52px !important;
+    border-radius: 18px !important;
+    color: #718197 !important;
+    font-size: 10.5px !important;
+    font-weight: 650 !important;
+    line-height: 1.12 !important;
+  }
+
+  .router-overview-framework .ik-ios-bottom-tab :is(.is-active, [aria-current="page"], [data-active="true"]),
+  .router-overview-framework .ik-mobile-bottom-tab :is(.is-active, [aria-current="page"], [data-active="true"]),
+  .router-overview-framework nav[data-overview-mobile-bottom-tab] :is(.is-active, [aria-current="page"], [data-active="true"]) {
+    background: var(--ik-v88-blue-soft) !important;
+    color: var(--ik-v88-blue) !important;
+    box-shadow: inset 0 0 0 1px #cfe6ff !important;
+  }
+
+  .router-overview-framework .ik-ios-bottom-tab svg,
+  .router-overview-framework .ik-mobile-bottom-tab svg,
+  .router-overview-framework nav[data-overview-mobile-bottom-tab] svg {
+    width: 22px !important;
+    height: 22px !important;
+    stroke-width: 1.85 !important;
+  }
+
+  .router-overview-framework :is([data-overview-gate-marker], [data-gate-marker], .ik-gate-marker, .ro-gate-marker) {
+    display: revert !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+}
+
+@media (max-width: 390px) {
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-top-nav {
+    grid-template-columns: 42px minmax(0, 1fr) minmax(82px, auto) !important;
+    padding-inline: 9px !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) .ik-ios-status-pill {
+    max-width: 96px !important;
+    padding-inline: 8px !important;
+    font-size: 11px !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-ios-router-home:not(.ik-mobile-flat-console) :is(.ik-ios-hero-stats strong, .ik-v75-hero-stat strong, .ik-v87-hero-stat strong, .ik-app-hero-number strong) {
+    font-size: clamp(16px, 4.6vw, 20px) !important;
+  }
+}
+
 /* v87: product correction. Mobile is an app home, desktop is a calm iKuai console. */
 @media (max-width: 760px) {
   .router-overview-framework {
@@ -25255,5 +25812,217 @@
     letter-spacing: -.04em !important;
     text-overflow: clip !important;
     white-space: normal !important;
+  }
+}
+
+/* subagent 3: desktop overview hierarchy + mobile chrome leak guard. */
+@media (min-width: 761px) {
+  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] {
+    --ro-page: #f4f8fc !important;
+    --ro-surface: #ffffff !important;
+    --ro-line: #e5edf5 !important;
+    --ro-border: #d3e0ec !important;
+    --ro-text: #142338 !important;
+    --ro-muted: #66778a !important;
+    --ro-blue: #1f6fa9 !important;
+    color: var(--ro-text) !important;
+  }
+
+  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-mobile-first-screen,
+  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] [data-overview-mobile-app-home],
+  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] [data-overview-mobile-bottom-tab],
+  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ik-ios-bottom-tab,
+  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ik-app-bottom-tab,
+  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ik-mobile-app-home,
+  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ik-ios-router-home {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+
+  .router-overview-framework [data-overview-desktop-hierarchy-tier="1-conclusion"] {
+    order: 1 !important;
+    margin-bottom: 8px !important;
+    border: 1px solid var(--ro-border) !important;
+    border-left: 4px solid var(--ro-blue) !important;
+    border-radius: 3px !important;
+    background: #fff !important;
+    box-shadow: none !important;
+  }
+
+  .router-overview-framework [data-overview-desktop-hierarchy-tier="1-conclusion"] .ro-topbar-cell {
+    min-height: 52px !important;
+    padding: 6px 10px !important;
+    border-right: 1px solid var(--ro-line) !important;
+  }
+
+  .router-overview-framework [data-overview-desktop-hierarchy-tier="1-conclusion"] .ro-topbar-cell[data-overview-status-role="conclusion"] b {
+    font-size: 18px !important;
+    font-weight: 820 !important;
+    letter-spacing: -.02em !important;
+  }
+
+  .router-overview-framework [data-overview-desktop-hierarchy-tier="2-key-metrics"] {
+    order: 2 !important;
+    margin-bottom: 10px !important;
+    border: 1px solid var(--ro-border) !important;
+    border-radius: 3px !important;
+    background: #fff !important;
+    box-shadow: none !important;
+  }
+
+  .router-overview-framework [data-overview-desktop-hierarchy-tier="2-key-metrics"] .ro-desktop-key-cell {
+    min-height: 58px !important;
+    padding: 7px 11px !important;
+    border-right: 1px solid var(--ro-line) !important;
+  }
+
+  .router-overview-framework [data-overview-desktop-hierarchy-tier="2-key-metrics"] .ro-desktop-key-cell b {
+    font-size: 15px !important;
+    font-weight: 780 !important;
+  }
+
+  .router-overview-framework [data-overview-desktop-hierarchy-tier="3-evidence"] {
+    order: 3 !important;
+    gap: 9px !important;
+  }
+
+  .router-overview-framework [data-overview-desktop-hierarchy-tier="3-evidence"] .ro-module.ik-overview-flat-module {
+    border: 1px solid var(--ro-border) !important;
+    border-left: 2px solid #9bb9d3 !important;
+    border-radius: 3px !important;
+    background: var(--ro-surface) !important;
+    box-shadow: none !important;
+  }
+
+  .router-overview-framework [data-overview-desktop-hierarchy-tier="3-evidence"] .ro-module-head {
+    min-height: 31px !important;
+    padding: 5px 9px !important;
+    border-bottom: 1px solid var(--ro-line) !important;
+    background: #f9fbfe !important;
+  }
+
+  .router-overview-framework [data-overview-desktop-hierarchy-tier="3-evidence"] .ro-module-head b {
+    font-size: 13px !important;
+    font-weight: 760 !important;
+  }
+
+  .router-overview-framework [data-overview-desktop-hierarchy-tier="3-evidence"] .ro-ledger-head,
+  .router-overview-framework [data-overview-desktop-hierarchy-tier="3-evidence"] .ro-ledger-row {
+    min-height: 27px !important;
+  }
+
+  .router-overview-framework [data-overview-desktop-hierarchy-tier="3-evidence"] .ro-ledger-cell,
+  .router-overview-framework [data-overview-desktop-hierarchy-tier="3-evidence"] .ro-ledger-head-cell {
+    padding: 5px 8px !important;
+    font-size: 11px !important;
+  }
+}
+
+/* v88 final tail: must stay last, overrides legacy v85/v86/v87 mobile cascades. */
+@media (max-width: 760px) {
+  .router-overview-framework .ro-mobile-ledger.ik-app-home-v88:not(.ik-mobile-flat-console) .ik-ios-first-screen {
+    padding: 14px 14px calc(92px + env(safe-area-inset-bottom, 0px)) !important;
+    gap: 12px !important;
+    background:
+      radial-gradient(circle at 18% -8%, rgba(22, 119, 255, .12), transparent 30%),
+      linear-gradient(180deg, #fbfdff 0%, #f5f9fc 58%, #f4f8fc 100%) !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-app-home-v88:not(.ik-mobile-flat-console) .ik-ios-hero-card {
+    padding: 16px !important;
+    gap: 12px !important;
+    border-radius: 22px !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-app-home-v88:not(.ik-mobile-flat-console) .ik-v87-hero-stat-strip.ik-app-hero-metrics {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    list-style: none !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-app-home-v88:not(.ik-mobile-flat-console) .ik-v87-hero-stat-strip.ik-app-hero-metrics > .ik-v87-hero-stat.ik-app-hero-number {
+    min-height: 62px !important;
+    display: grid !important;
+    align-content: center !important;
+    gap: 3px !important;
+    padding: 10px 11px !important;
+    border: 1px solid #e7f0f8 !important;
+    border-radius: 15px !important;
+    background: #fbfdff !important;
+    box-shadow: none !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-app-home-v88:not(.ik-mobile-flat-console) .ik-v87-hero-stat-strip.ik-app-hero-metrics > .ik-v87-hero-stat:nth-child(n+3) {
+    min-height: 38px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 8px !important;
+    padding: 8px 10px !important;
+    border-radius: 12px !important;
+    background: #f7fbff !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-app-home-v88[data-overview-mobile-scene="resource-full"]:not(.ik-mobile-flat-console) .ik-v87-hero-stat-strip.ik-app-hero-metrics {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-app-home-v88[data-overview-mobile-scene="resource-full"]:not(.ik-mobile-flat-console) .ik-v87-hero-stat-strip.ik-app-hero-metrics > .ik-v87-hero-stat:nth-child(4) {
+    grid-column: 1 / -1 !important;
+    min-height: 36px !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-app-home-v88:not(.ik-mobile-flat-console) .ik-app-hero-number strong {
+    font-size: clamp(22px, 6.2vw, 30px) !important;
+    font-weight: 850 !important;
+    line-height: 1 !important;
+    letter-spacing: -.05em !important;
+    font-variant-numeric: tabular-nums !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-app-home-v88:not([data-overview-mobile-scene="resource-full"]):not([data-overview-mobile-scene="no-snapshot"]):not(.ik-mobile-flat-console) .ik-app-resource-card {
+    padding: 14px 16px !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-app-home-v88:not([data-overview-mobile-scene="resource-full"]):not([data-overview-mobile-scene="no-snapshot"]):not(.ik-mobile-flat-console) .ik-app-resource-meters {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-app-home-v88:not([data-overview-mobile-scene="resource-full"]):not([data-overview-mobile-scene="no-snapshot"]):not(.ik-mobile-flat-console) .ik-app-resource-meter {
+    min-height: 74px !important;
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 5px !important;
+    align-content: center !important;
+    padding: 10px !important;
+    border: 1px solid #e7f0f8 !important;
+    border-radius: 14px !important;
+    background: #fbfdff !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-app-home-v88:not([data-overview-mobile-scene="resource-full"]):not([data-overview-mobile-scene="no-snapshot"]):not(.ik-mobile-flat-console) .ik-app-resource-meter span {
+    display: grid !important;
+    gap: 3px !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-app-home-v88:not([data-overview-mobile-scene="resource-full"]):not([data-overview-mobile-scene="no-snapshot"]):not(.ik-mobile-flat-console) .ik-app-resource-meter span b {
+    font-size: clamp(20px, 5.5vw, 25px) !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-app-home-v88:not([data-overview-mobile-scene="resource-full"]):not([data-overview-mobile-scene="no-snapshot"]):not(.ik-mobile-flat-console) .ik-app-resource-meter small {
+    display: none !important;
+  }
+
+  .router-overview-framework .ro-mobile-ledger.ik-app-home-v88:not([data-overview-mobile-scene="resource-full"]):not([data-overview-mobile-scene="no-snapshot"]):not(.ik-mobile-flat-console) .ik-app-resource-meter i {
+    grid-column: auto !important;
+    height: 4px !important;
   }
 }

@@ -713,6 +713,7 @@ function InfoBand({ snapshot, state }: OverviewPanelProps) {
     <div
       className="ro-topbar ik-home-flat-topbar"
       data-overview-desktop-tier="conclusion"
+      data-overview-desktop-hierarchy-tier="1-conclusion"
       data-overview-summary
       data-overview-status-bus
       data-overview-verdict-status-bus
@@ -779,7 +780,7 @@ function desktopKeyMetrics(snapshot: OverviewRawSnapshot, state: OverviewDerived
 function DesktopKeyMetrics({ snapshot, state }: OverviewPanelProps) {
   const items = desktopKeyMetrics(snapshot, state);
   return (
-    <div className="ro-desktop-key-row" data-overview-desktop-tier="key-metrics" data-overview-desktop-key-row>
+    <div className="ro-desktop-key-row" data-overview-desktop-tier="key-metrics" data-overview-desktop-hierarchy-tier="2-key-metrics" data-overview-desktop-key-row>
       {items.map((item) => (
         <div className="ro-desktop-key-cell" key={item.label} data-tone={item.tone} data-overview-field>
           <span>{item.label}</span>
@@ -3079,7 +3080,8 @@ function DesktopWorkspace({ snapshot, state }: OverviewPanelProps) {
     <div
       className="ro-desktop-grid ik-home-layout"
       data-overview-desktop-layout="fixed-summary-keymetrics-left-right-bottom"
-      data-overview-desktop-hierarchy="conclusion-business-metrics-evidence"
+      data-overview-desktop-hierarchy="conclusion-key-metrics-evidence"
+      data-overview-desktop-hierarchy-tier="3-evidence"
       data-overview-desktop-skeleton="left-network-wan-right-resource-collection-bottom-interface-events"
       data-overview-desktop-left-rail="network-wan"
       data-overview-desktop-right-rail="resource-collection"
@@ -3279,6 +3281,7 @@ export function OverviewPanel({ snapshot, state }: OverviewPanelProps) {
       data-overview-mobile-home-acceptance="ios-router-home-primary-flow"
       data-overview-hard-standard="desktop-status-bus-mobile-ios-app-home-chart-meta-sample-depth-required-no-large-alert-card"
       data-overview-desktop-mobile-leakage-guard="hide-mobile-shell-on-desktop"
+      data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"
       data-overview-chart-standard={OVERVIEW_IKUAI40_CHART_STANDARD}
       data-overview-chart-metadata-coverage={OVERVIEW_CHART_METADATA_COVERAGE}
       data-overview-mature-visual-standard={OVERVIEW_IKUAI40_MATURE_VISUAL_STANDARD}
