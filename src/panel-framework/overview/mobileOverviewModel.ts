@@ -285,7 +285,6 @@ function trendChart(snapshot: OverviewRawSnapshot, state: OverviewDerivedState):
       { label: "当前", value: mobileRate(current), note: "下载", tone: "trust" },
       { label: "峰值", value: mobileRate(peak), note: windowText, tone: "trust" },
       { label: "窗口", value: series.source === "history" ? "12 点" : "实时", note: sampleText, tone: "trust" },
-      { label: "采样", value: series.source === "history" ? "历史" : "实时", note: "可信度", tone: state.facts.collection.credibilityTone },
     ],
   };
 }
@@ -356,25 +355,25 @@ function resourcePeak(state: OverviewDerivedState): MobileMonitorFact {
 }
 
 function titleFor(state: OverviewDerivedState): string {
-  if (state.scenario === "fleet") return "多线路判断";
+  if (state.scenario === "fleet") return "多线路概览";
   const priority = priorityOf(state);
   if (priority === "snapshot-missing") return "业务快照缺失";
   if (priority === "wan-offline") return "WAN 全离线";
   if (priority === "resource-full") return "资源满载";
   if (priority === "interface-down") return "接口 Down";
-  if (priority === "collection-degraded") return "采集可信边界";
-  return state.scenario === "single" || state.verdict.level !== "warn" ? "WAN 实时窗口" : "转发待确认";
+  if (priority === "collection-degraded") return "采集降级";
+  return state.scenario === "single" || state.verdict.level !== "warn" ? "网络状态良好" : "转发待确认";
 }
 
 function subtitleFor(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): string {
   if (state.scenario === "fleet") return `WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(Math.max(state.facts.wan.total || wanRows(snapshot).length, 1))} · 异常 ${formatNumber(Math.max(state.facts.wan.offline, state.facts.interfaces.down, 0))} · 默认路由 ${mobileRouteValue(state)} · 成功 ${latestSuccess(snapshot, state)}`;
   const priority = priorityOf(state);
-  if (priority === "snapshot-missing") return "当前不可达，业务数据不展示。";
-  if (priority === "wan-offline") return "默认路由不可用，出口中断。";
-  if (priority === "resource-full") return "CPU / 内存 / 磁盘连续越阈。";
-  if (priority === "interface-down") return "接口离线，承载影响待确认。";
-  if (priority === "collection-degraded") return "采集通道降级，展示缓存边界。";
-  return "出口在线，默认路由可用。";
+  if (priority === "snapshot-missing") return "当前不可达 · 业务数据不展示";
+  if (priority === "wan-offline") return "默认路由异常 · 出口不可用";
+  if (priority === "resource-full") return "CPU / 内存 / 磁盘连续越阈";
+  if (priority === "interface-down") return "接口离线 · 承载待确认";
+  if (priority === "collection-degraded") return "REST / SSH / 快照边界分开";
+  return "出口在线 · 默认路由可用";
 }
 
 function heroFacts(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): MobileMonitorFact[] {
@@ -514,15 +513,15 @@ function heroPills(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): 
     `异常 ${formatNumber(Math.max(state.facts.wan.offline, state.facts.interfaces.down, 0))}`,
     `成功 ${latestSuccess(snapshot, state)}`,
   ];
-  if (priority === "snapshot-missing") return ["对象 快照", "影响 不展示", "可信 缺失"];
-  if (priority === "wan-offline") return [`对象 WAN 0/${formatNumber(totalWan)}`, "影响 外网不可用", `可信 ${trustText(state)}`];
-  if (priority === "resource-full") return [`对象 ${resourcePeak(state).label} ${resourcePeak(state).value}`, "影响 资源余量", `可信 ${trustText(state)}`];
-  if (priority === "interface-down") return [`对象 接口 ${formatNumber(state.facts.interfaces.down)} Down`, "影响 承载待判", `可信 ${trustText(state)}`];
-  if (priority === "collection-degraded") return ["对象 采集", "影响 缓存", `可信 ${trustText(state)}`];
+  if (priority === "snapshot-missing") return ["对象 快照", "影响 不展示", "可信 无"];
+  if (priority === "wan-offline") return [`对象 WAN 0/${formatNumber(totalWan)}`, "影响 外网不可用", "可信 高"];
+  if (priority === "resource-full") return [`对象 ${resourcePeak(state).label} ${resourcePeak(state).value}`, "影响 资源余量", "可信 高"];
+  if (priority === "interface-down") return [`对象 接口 ${formatNumber(state.facts.interfaces.down)} Down`, "影响 承载待判", "可信 中"];
+  if (priority === "collection-degraded") return ["对象 采集", "影响 缓存边界", "可信 中"];
   return [
     `对象 WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(totalWan || 1)}`,
-    `影响 ${clean(state.facts.route.label, "主出口正常")}`,
-    `可信 ${trustText(state)}`,
+    `影响 ${clean(state.facts.route.label, "出口可用")}`,
+    "可信 高",
   ];
 }
 
@@ -553,7 +552,7 @@ function statusRows(snapshot: OverviewRawSnapshot, state: OverviewDerivedState):
       id: "timeline-route",
       title: "默认路由",
       value: mobileRouteValue(state),
-      note: state.facts.wan.allOffline ? "出口不可用" : state.scenario === "collection-down" ? "可参考" : "出口可用",
+      note: state.facts.wan.allOffline ? "出口不可用" : state.scenario === "collection-down" ? "可参考" : "主出口",
       tone: state.facts.wan.allOffline ? "danger" : state.facts.route.level,
     },
     {
@@ -567,7 +566,7 @@ function statusRows(snapshot: OverviewRawSnapshot, state: OverviewDerivedState):
       id: "timeline-resource",
       title: "资源",
       value: resource.map((item) => item.value.replace(/\.0%$/, "%")).join(" / "),
-      note: state.scenario === "resource-full" ? "阈85/85/90 · 持续6/6" : "CPU / 内存 / 磁盘",
+      note: state.scenario === "resource-full" ? "三项超阈" : "CPU / 内存 / 磁盘",
       tone: resource.some((item) => item.tone === "danger") ? "danger" : "ok",
     },
     {

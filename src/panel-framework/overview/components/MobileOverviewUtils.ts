@@ -71,6 +71,7 @@ export function screenTone(state: OverviewDerivedState): OverviewTone {
 
 export function statusLabel(state: OverviewDerivedState): string {
   if (state.scenario === "no-snapshot") return "缺数";
+  if (state.scenario === "single") return "在线";
   if (state.scenario === "all-offline" || state.facts.wan.allOffline) return "断链";
   if (state.scenario === "resource-full") return "超阈";
   if (state.scenario === "interfaces-down") return "异常";

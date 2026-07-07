@@ -3,7 +3,6 @@ import {
   BottomTabs,
   HomeSurface,
   IncidentHero,
-  JudgementStrip,
   StatusHeader,
   type MobileOverviewHomeProps,
 } from "./MobileOverviewSections";
@@ -42,7 +41,6 @@ export function MobileOverviewHome(props: MobileOverviewHomeProps) {
           data-overview-mobile-v420-visual-contract="single-labelled-wan-sparkline-wan-collection-duo-resource-bars-native-ranking"
         >
           <StatusHeader {...props} />
-          <JudgementStrip {...props} />
           <IncidentHero {...props} />
           <HomeSurface {...props} />
           <BottomTabs />
