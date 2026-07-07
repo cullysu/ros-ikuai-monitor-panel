@@ -10,7 +10,7 @@ export const OVERVIEW_SCENARIO_KEYS: OverviewScenarioKey[] = [
   "interfaces-down",
 ];
 
-const now = "2026-06-30T10:00:00+08:00";
+const now = new Date().toISOString();
 
 const base = (scenario: OverviewScenarioKey): OverviewRawSnapshot => ({
   status: "ok",
@@ -106,6 +106,15 @@ export const OVERVIEW_SCENARIO_FIXTURES: Record<OverviewScenarioKey, OverviewRaw
       realtimeError: "设备当前不可达",
       staticError: "静态采集失败",
       connectionDetailError: "连接详情失败",
+      realtimeEndpointFailures: [
+        { group: "REST", name: "10.0.0.1 /rest/system/resource" },
+      ],
+      staticEndpointFailures: [
+        { group: "SSH", name: "10.0.0.1 /system/resource" },
+      ],
+      detailEndpointFailures: [
+        { group: "连接详情", name: "10.0.0.1 /ip/firewall/connection" },
+      ],
       realtimeUpdatedAt: "2026-06-21T02:51:00+08:00",
       staticUpdatedAt: "2026-06-21T02:51:00+08:00",
       capabilities: { restTrusted: false, sshRead: false },
@@ -126,6 +135,18 @@ export const OVERVIEW_SCENARIO_FIXTURES: Record<OverviewScenarioKey, OverviewRaw
       slowRestError: "REST ???",
       staticError: "SSH ???",
       connectionDetailError: "连接详情不可用",
+      realtimeEndpointFailures: [
+        { group: "REST", name: "10.0.0.1 /rest/interface" },
+      ],
+      slowRestEndpointFailures: [
+        { group: "慢速 REST", name: "10.0.0.1 /rest/ip/route" },
+      ],
+      staticEndpointFailures: [
+        { group: "SSH", name: "10.0.0.1 /system/resource" },
+      ],
+      detailEndpointFailures: [
+        { group: "连接详情", name: "10.0.0.1 /ip/firewall/connection" },
+      ],
       capabilities: { restTrusted: false, sshRead: false },
     },
   },

@@ -296,10 +296,10 @@ function countsOf(wan: ReturnType<typeof wanState>, interfaces: ReturnType<typeo
 function scenarioOf(snapshot: OverviewRawSnapshot, counts: OverviewCounts, resource: OverviewResourceState, collection: OverviewCollectionState, options: DeriveOverviewOptions): OverviewScenarioKey {
   if (options.scenarioHint) return options.scenarioHint;
   if (isSnapshotUnavailable(snapshot)) return "no-snapshot";
-  if (collection.channelDegraded) return "collection-down";
-  if (resource.level === "danger") return "resource-full";
   if (counts.wanTotal > 0 && counts.wanOnline === 0) return "all-offline";
   if (counts.interfacesDown > 0) return "interfaces-down";
+  if (resource.level === "danger") return "resource-full";
+  if (collection.channelDegraded) return "collection-down";
   if (counts.wanTotal >= 4 || counts.interfacesTotal >= 8 || counts.connections >= 5000) return "fleet";
   return "single";
 }

@@ -3011,12 +3011,12 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         .filter(nodeVisibleInFirstScreen)
       : [];
     const overviewMobile390NoOldKpiStackOk = !mobileOverview390x844 || mobile390OldFieldStackNodes.length === 0;
-    const mobileFirstScreenPortMatrix = Boolean(mobileFirstScreen?.querySelector('.ro-port-matrix-row, .ro-wan-port-visual, [data-overview-wan-offline-bars], .ik-overview-module-matrix, .ik-no-snapshot-matrix-grid, .ik-no-snapshot-matrix-cell'));
-    const mobileFirstScreenMiniVisual = Boolean(mobileFirstScreen?.querySelector('[data-overview-mobile-first-microchart], .ik-mobile-channel-line, .ik-mobile-interface-chain, .ik-mobile-channel-rail, .ik-mobile-resource-sparks, .ik-mobile-spark-panel, .ik-no-snapshot-mini-event'));
-    const mobileFirstScreenChannelVisual = Boolean(mobileFirstScreen?.querySelector('.ik-mobile-channel-line, .ik-mobile-channel-rail, .ik-overview-channel-grid, .ik-overview-channel-cards, .ik-no-snapshot-channel-grid, .ik-no-snapshot-channel-card'));
-    const mobileFirstScreenChainVisual = Boolean(mobileFirstScreen?.querySelector('.ik-mobile-interface-chain, .ik-overview-link-chain, .ik-overview-chain-node, .ik-no-snapshot-chain, .ik-no-snapshot-chain-node'));
+    const mobileFirstScreenPortMatrix = Boolean(mobileFirstScreen?.querySelector('.ro-port-matrix-row, .ro-wan-port-visual, [data-overview-wan-offline-bars], .ik-overview-module-matrix, .ik-no-snapshot-matrix-grid, .ik-no-snapshot-matrix-cell, .ik-v240-ports, [data-overview-mobile-v240-visual*="port"], [data-overview-mobile-v240-visual*="matrix"]'));
+    const mobileFirstScreenMiniVisual = Boolean(mobileFirstScreen?.querySelector('[data-overview-mobile-first-microchart], .ik-mobile-channel-line, .ik-mobile-interface-chain, .ik-mobile-channel-rail, .ik-mobile-resource-sparks, .ik-mobile-spark-panel, .ik-no-snapshot-mini-event, .ik-v240-traffic, .ik-v240-resource-trends, .ik-v240-channel-line, .ik-v240-flow, [data-overview-mobile-v240-visual]'));
+    const mobileFirstScreenChannelVisual = Boolean(mobileFirstScreen?.querySelector('.ik-mobile-channel-line, .ik-mobile-channel-rail, .ik-overview-channel-grid, .ik-overview-channel-cards, .ik-no-snapshot-channel-grid, .ik-no-snapshot-channel-card, .ik-v240-channel-line, [data-overview-mobile-v240-visual*="channel"], [data-overview-mobile-v240-visual*="snapshot-status-line"]'));
+    const mobileFirstScreenChainVisual = Boolean(mobileFirstScreen?.querySelector('.ik-mobile-interface-chain, .ik-overview-link-chain, .ik-overview-chain-node, .ik-no-snapshot-chain, .ik-no-snapshot-chain-node, .ik-v240-flow, [data-overview-mobile-v240-visual*="flow"], [data-overview-mobile-v240-visual*="chain"]'));
     const mobileFirstScreenSceneVisualNodes = mobileOverview390x844
-      ? Array.from(mobileFirstScreen?.querySelectorAll('[data-overview-mobile-first-visual], [data-overview-mobile-first-microchart], .ik-mobile-spark-panel, .ik-mobile-resource-sparks, .ro-port-matrix-row, .ro-wan-port-visual, [data-overview-wan-offline-bars], .ik-mobile-channel-line, .ik-mobile-channel-rail, .ik-mobile-interface-chain, .ik-no-snapshot-chain, .ik-no-snapshot-chain-node') || [])
+      ? Array.from(mobileFirstScreen?.querySelectorAll('[data-overview-mobile-first-visual], [data-overview-mobile-first-microchart], [data-overview-mobile-v240-visual], .ik-mobile-spark-panel, .ik-mobile-resource-sparks, .ro-port-matrix-row, .ro-wan-port-visual, [data-overview-wan-offline-bars], .ik-mobile-channel-line, .ik-mobile-channel-rail, .ik-mobile-interface-chain, .ik-no-snapshot-chain, .ik-no-snapshot-chain-node, .ik-v240-traffic, .ik-v240-ports, .ik-v240-channel-line, .ik-v240-flow, .ik-v240-resource-trends') || [])
         .filter(nodeVisibleInFirstScreen)
       : [];
     const mobile390ScenarioVisualRecords = mobileOverview390x844
@@ -3029,6 +3029,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
           node.getAttribute('data-overview-scene-chart'),
           node.getAttribute('data-overview-mobile-first-visual'),
           node.getAttribute('data-overview-mobile-first-microchart'),
+          node.getAttribute('data-overview-mobile-v240-visual'),
         ].filter(Boolean).join(' ');
         const meaningfulToken = /traffic|wan|resource|collection|snapshot|interface|line|bar|spark|matrix|chain|rate|latency|cpu|memory|disk|status|scenario|insight/i.test(dataToken);
         const readable = rect.width >= 72 && rect.height >= 16 && (text.length >= 6 || graphicMarks >= 2) && meaningfulToken;
@@ -3038,6 +3039,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
           height: Math.round(rect.height),
           graphicMarks,
           dataToken,
+          className: String(node.className || ''),
           text: text.slice(0, 80),
           readable,
         };
@@ -3045,13 +3047,13 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       : [];
     const mobile390ScenarioVisualNotDecorativeOk = !mobileOverview390x844 || mobile390ScenarioVisualRecords.some((record) => record.readable);
     const mobile390AppHomeChromeNodes = mobileOverview390x844
-      ? Array.from((sectionRoot || mobileFirstScreen)?.querySelectorAll('.ik-ios-top-nav, .ik-ios-hero-card, .ik-mobile-twin-cards, .ik-ios-resource-card, .ik-ios-rank-card, .ik-ios-bottom-tab, [data-overview-mobile-ios-nav="true"], [data-overview-mobile-hero-metrics], [data-overview-mobile-twin-cards], [data-overview-mobile-resource-card], [data-overview-mobile-rank-list], [data-overview-mobile-bottom-tab]') || [])
+      ? Array.from((sectionRoot || mobileFirstScreen)?.querySelectorAll('.ik-v159-nav, .ik-v159-network-hero, .ik-v159-secondary, .ik-v159-resource-strip, .ik-v159-top-list, .ik-v159-tabbar, .ik-v240-nav, .ik-v240-hero, .ik-v240-facts, .ik-v240-strip, .ik-v240-list, .ik-v240-tabs, [data-overview-mobile-v159-nav], [data-overview-mobile-v159-main-hero], [data-overview-mobile-v159-secondary], [data-overview-mobile-v159-resource], [data-overview-mobile-v159-topn], [data-overview-mobile-v159-tabbar], [data-overview-mobile-v240-nav], [data-overview-mobile-v240-hero], [data-overview-mobile-v240-facts], [data-overview-mobile-v240-status-strip], [data-overview-mobile-v240-list], [data-overview-mobile-hero-metrics], [data-overview-mobile-v240-big-numbers], [data-overview-mobile-bottom-tab]') || [])
         .filter((node) => node.classList.contains('ik-ios-bottom-tab') ? nodeVisibleInViewport(node) : nodeVisibleInFirstScreen(node))
       : [];
-    const mobile390AppHomeRankPresent = !mobileOverview390x844 || Boolean((sectionRoot || mobileFirstScreen)?.querySelector('.ik-ios-rank-card'));
-    const mobile390AppHomeHeroMetricsOk = !mobileOverview390x844 || Boolean((sectionRoot || mobileFirstScreen)?.querySelector('[data-overview-mobile-hero-metrics]'));
-    const mobile390AppHomeResourceCardOk = !mobileOverview390x844 || Boolean((sectionRoot || mobileFirstScreen)?.querySelector('[data-overview-mobile-resource-card="cpu-memory-disk"], .ik-ios-resource-card'));
-    const mobile390AppHomeRankCardOk = !mobileOverview390x844 || Boolean((sectionRoot || mobileFirstScreen)?.querySelector('[data-overview-mobile-rank-list="app-device-list"], .ik-ios-rank-card'));
+    const mobile390AppHomeRankPresent = !mobileOverview390x844 || Boolean((sectionRoot || mobileFirstScreen)?.querySelector('.ik-v159-top-list, [data-overview-mobile-v159-topn], .ik-v240-list, [data-overview-mobile-v240-list]'));
+    const mobile390AppHomeHeroMetricsOk = !mobileOverview390x844 || Boolean((sectionRoot || mobileFirstScreen)?.querySelector('[data-overview-mobile-hero-metrics], [data-overview-mobile-v240-big-numbers]'));
+    const mobile390AppHomeResourceCardOk = !mobileOverview390x844 || Boolean((sectionRoot || mobileFirstScreen)?.querySelector('[data-overview-mobile-v159-secondary="wan-collection-two-cards-not-2x2"], .ik-v159-secondary, .ik-v240-facts, .ik-v240-strip, .ik-v240-resource-trends, [data-overview-mobile-v240-facts], [data-overview-mobile-v240-status-strip]'));
+    const mobile390AppHomeRankCardOk = !mobileOverview390x844 || Boolean((sectionRoot || mobileFirstScreen)?.querySelector('[data-overview-mobile-v159-topn], .ik-v159-top-list, .ik-v240-list, [data-overview-mobile-v240-list]'));
     const mobile390AppHomeBottomTabOk = !mobileOverview390x844 || Boolean(
       Array.from(sectionRoot?.querySelectorAll('.ik-ios-bottom-tab, [data-overview-mobile-bottom-tab]') || [])
         .some(nodeVisibleInViewport)
@@ -3061,21 +3063,18 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       /处理器|内存|磁盘|CPU|MEM|DISK/.test(record.text)
     ));
     const mobile390AppHomeChromeOk = !mobileOverview390x844 || Boolean(
-      mobile390AppHomeChromeNodes.some((node) => node.classList.contains('ik-ios-top-nav')) &&
-      mobile390AppHomeChromeNodes.some((node) => node.classList.contains('ik-ios-hero-card')) &&
-      mobile390AppHomeChromeNodes.some((node) => node.classList.contains('ik-mobile-twin-cards')) &&
-      (noSnapshotEdge || mobile390ResourcePressureVisualOk || mobile390AppHomeChromeNodes.some((node) => node.classList.contains('ik-ios-rings-card'))) &&
+      mobile390AppHomeChromeNodes.some((node) => node.classList.contains('ik-v159-nav') || node.classList.contains('ik-v240-nav') || node.hasAttribute('data-overview-mobile-v159-nav') || node.hasAttribute('data-overview-mobile-v240-nav')) &&
+      mobile390AppHomeChromeNodes.some((node) => node.classList.contains('ik-v159-network-hero') || node.classList.contains('ik-v240-hero') || node.hasAttribute('data-overview-mobile-v159-main-hero') || node.hasAttribute('data-overview-mobile-v240-hero')) &&
+      mobile390AppHomeChromeNodes.some((node) => node.classList.contains('ik-v159-top-list') || node.classList.contains('ik-v240-list') || node.hasAttribute('data-overview-mobile-v159-topn') || node.hasAttribute('data-overview-mobile-v240-list')) &&
       mobile390AppHomeRankPresent &&
-      mobile390AppHomeChromeNodes.some((node) => node.classList.contains('ik-ios-bottom-tab')) &&
+      mobile390AppHomeChromeNodes.some((node) => node.classList.contains('ik-v159-tabbar') || node.classList.contains('ik-v240-tabs') || node.hasAttribute('data-overview-mobile-v159-tabbar') || node.hasAttribute('data-overview-mobile-bottom-tab')) &&
       mobile390AppHomeHeroMetricsOk &&
       mobile390AppHomeResourceCardOk &&
       mobile390AppHomeRankCardOk &&
       mobile390AppHomeBottomTabOk
     );
     const mobile390AppHomeTwinOk = !mobileOverview390x844 || Boolean(
-      mobileTwinCardsVisible.length >= 2 &&
-      (mobileFirstScreen?.querySelector('[data-overview-mobile-twin-cards="wan-collection"], .ik-mobile-twin-cards') ||
-        sectionRoot?.querySelector('[data-overview-mobile-twin-cards="wan-collection"], .ik-mobile-twin-cards'))
+      (mobileFirstScreen || sectionRoot)?.querySelector('[data-overview-mobile-v159-topn], .ik-v159-top-list, .ik-v240-list, [data-overview-mobile-v240-list]')
     );
     const mobile390AppHomeScenarioVisualOk = !mobileOverview390x844 || Boolean(
       mobileFirstScreenSceneVisualNodes.length > 0 ||
@@ -3087,9 +3086,9 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const mobile390AppHomeRingTrafficOk = !mobileOverview390x844 || Boolean(
       mobile390ResourcePressureVisualOk ||
       (
-        (noSnapshotEdge || mobile390AppHomeChromeNodes.some((node) => node.classList.contains('ik-ios-rings-card'))) &&
+        (noSnapshotEdge || mobile390AppHomeChromeNodes.some((node) => node.classList.contains('ik-v159-network-hero') || node.hasAttribute('data-overview-mobile-v159-main-hero') || node.classList.contains('ik-v159-top-list'))) &&
         (
-          mobileFirstScreen?.querySelector('[data-overview-scene-chart="mobile-wan-rate-sparkline"], [data-overview-mobile-first-microchart="true"], .ik-mobile-traffic-spark, .ik-ios-rank-card') ||
+          mobileFirstScreen?.querySelector('[data-overview-scene-chart="mobile-wan-rate-sparkline"], [data-overview-mobile-first-microchart="true"], .ik-mobile-traffic-spark, .ik-v240-traffic, .ik-v240-visual, .ik-ios-rank-card') ||
           mobile390AppHomeChromeNodes.some((node) => node.classList.contains('ik-ios-rank-card'))
         )
       )
@@ -3605,12 +3604,143 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       : [];
     const overviewMobile390NoHeavyVisualBlocksOk = !mobileOverview390x844 || mobile390HeavyVisualBlockRecords.length === 0;
     const overviewMobile390BottomTabOk = !mobileOverview390x844 || Boolean(
-      Array.from(sectionRoot?.querySelectorAll('.ik-ios-bottom-tab') || []).some(nodeVisibleInViewport)
+      Array.from(sectionRoot?.querySelectorAll('.ik-ios-bottom-tab, .ik-v240-tabs, [data-overview-mobile-bottom-tab]') || []).some(nodeVisibleInViewport)
     );
-    const overviewDesktopNoMobileAppChromeOk = sectionName !== 'overview' || !isDesktopOverview || !Array.from(sectionRoot?.querySelectorAll('.ik-ios-top-nav, .ik-ios-hero-card, .ik-mobile-twin-cards, .ik-ios-resource-card, .ik-ios-rank-card, .ik-ios-bottom-tab') || [])
+    const mobile390PrimaryStatusNode = mobileOverview390x844
+      ? sectionRoot?.querySelector('.ik-v240-status, [data-overview-mobile-primary-status], [data-overview-mobile-status], .ik-ios-nav-status')
+      : null;
+    const mobile390PrimaryStatusText = normalize(mobile390PrimaryStatusNode?.textContent || '');
+    const overviewMobile390NoFocusPrimaryStatusOk = !mobileOverview390x844 || mobile390PrimaryStatusText !== '关注';
+    const mobile390EnglishResourceTextHits = mobileOverview390x844
+      ? (firstScreenOverviewText.match(/(?:^|[^A-Za-z])(?:CPU|MEM|DISK)(?:[^A-Za-z]|$)/g) || []).map((item) => item.trim()).filter(Boolean)
+      : [];
+    const overviewMobile390NoCpuMemDiskEnglishOk = !mobileOverview390x844 || mobile390EnglishResourceTextHits.length === 0;
+    const mobile390TitleNode = mobileOverview390x844
+      ? sectionRoot?.querySelector('.ik-v240-title, [data-overview-mobile-primary-title], .ik-ios-nav-title')
+      : null;
+    const mobile390NavNode = mobileOverview390x844
+      ? sectionRoot?.querySelector('.ik-v240-nav, [data-overview-mobile-v240-nav], [data-overview-mobile-v159-nav], .ik-ios-top-nav')
+      : null;
+    const mobile390TitleRect = mobile390TitleNode?.getBoundingClientRect();
+    const mobile390StatusRect = mobile390PrimaryStatusNode?.getBoundingClientRect();
+    const mobile390TitleClipRecords = mobileOverview390x844 && mobile390TitleNode
+      ? Array.from(mobile390TitleNode.querySelectorAll('b, span, strong, [data-overview-mobile-title-line]'))
+        .filter(nodeVisibleInViewport)
+        .map((node) => {
+          const rect = node.getBoundingClientRect();
+          const style = getComputedStyle(node);
+          const clipped = node.scrollWidth > node.clientWidth + 2 ||
+            (style.whiteSpace === 'nowrap' && rect.right > window.innerWidth - 8) ||
+            (['hidden', 'clip'].includes(style.overflow) && node.scrollHeight > node.clientHeight + 2);
+          return clipped ? {
+            selector: selectorForNode(node),
+            text: normalize(node.textContent || '').slice(0, 80),
+            width: Math.round(rect.width),
+            scrollWidth: Math.round(node.scrollWidth),
+          } : null;
+        })
+        .filter(Boolean)
+      : [];
+    const overviewMobile390NoTitleStatusCollisionOk = !mobileOverview390x844 || Boolean(
+      mobile390NavNode &&
+      mobile390TitleNode &&
+      mobile390PrimaryStatusNode &&
+      mobile390TitleRect &&
+      mobile390StatusRect &&
+      !rectsOverlap(mobile390TitleRect, mobile390StatusRect) &&
+      mobile390TitleClipRecords.length === 0
+    );
+    const mobile390ScenarioVisualKindText = mobile390ScenarioVisualRecords
+      .map((record) => [record.dataToken, record.className, record.text].join(' '))
+      .join(' ');
+    const mobile390ExpectedVisualPattern = scaleScenario === 'all-offline'
+      ? /port|matrix|端口|WAN/i
+      : scaleScenario === 'no-snapshot' || scaleScenario === 'collection-down'
+        ? /channel|snapshot-status-line|REST|SSH|快照|采集/i
+        : scaleScenario === 'resource-full'
+          ? /resource|processor|memory|disk|处理器|内存|磁盘/i
+          : scaleScenario === 'interfaces-down'
+            ? /flow|chain|interface|接口|父级|承载/i
+            : /spark|traffic|line|WAN|下载|上传/i;
+    const overviewMobile390ScenarioVisualKindOk = !mobileOverview390x844 || Boolean(
+      mobile390ScenarioVisualRecords.some((record) => record.readable) &&
+      mobile390ExpectedVisualPattern.test(mobile390ScenarioVisualKindText)
+    );
+    const mobile390CardSurfaceItems = mobileOverview390x844
+      ? Array.from((sectionRoot || mobileFirstScreen)?.querySelectorAll('main, section, article, nav, header, div, span') || [])
+        .filter(nodeVisibleInViewport)
+        .map((node) => {
+          const rect = node.getBoundingClientRect();
+          const style = getComputedStyle(node);
+          const area = Math.round(rect.width * rect.height);
+          const borderWidth = ['Top', 'Right', 'Bottom', 'Left']
+            .map((side) => Number.parseFloat(style['border' + side + 'Width']) || 0)
+            .reduce((sum, value) => sum + value, 0);
+          const radius = Math.max(
+            Number.parseFloat(style.borderTopLeftRadius) || 0,
+            Number.parseFloat(style.borderTopRightRadius) || 0,
+            Number.parseFloat(style.borderBottomLeftRadius) || 0,
+            Number.parseFloat(style.borderBottomRightRadius) || 0
+          );
+          const className = String(node.className || '');
+          const hasShadow = style.boxShadow && style.boxShadow !== 'none';
+          const hasBorder = borderWidth > 0;
+          const cardLike = area >= 5000 &&
+            !/(?:^|\\s)(?:ik-v240-app|ik-v240-shell|ik-v240-screen|ik-v240-visual)(?:\\s|$)/.test(className) &&
+            (hasShadow || (hasBorder && radius >= 10));
+          return cardLike ? {
+            node,
+            selector: selectorForNode(node),
+            area,
+            radius: Math.round(radius),
+            borderWidth,
+            hasShadow,
+            text: normalize(node.textContent || '').slice(0, 80),
+          } : null;
+        })
+        .filter(Boolean)
+      : [];
+    const mobile390CardSurfaceRecords = mobile390CardSurfaceItems.map(({ node, ...record }) => record);
+    const mobile390NestedCardSurfaceDepth = mobile390CardSurfaceItems.length
+      ? Math.max(...mobile390CardSurfaceItems.map((item) => mobile390CardSurfaceItems.filter((other) => other !== item && other.node.contains(item.node)).length + 1))
+      : 0;
+    const overviewMobile390NoCardPileOk = !mobileOverview390x844 || Boolean(
+      mobile390CardSurfaceItems.length <= 4 &&
+      mobile390NestedCardSurfaceDepth <= 2
+    );
+    const overviewDesktopNoMobileAppChromeOk = sectionName !== 'overview' || !isDesktopOverview || !Array.from(sectionRoot?.querySelectorAll('.ik-v159-nav, .ik-v159-network-hero, .ik-v159-top-list, .ik-v159-tabbar') || [])
       .some(nodeVisibleInViewport);
     const overviewDesktopNoToyNavLeakOk = sectionName !== 'overview' || !isDesktopOverview || !Array.from(sectionRoot?.querySelectorAll('.ik-ios-top-nav, .ik-ios-nav-title, [data-overview-mobile-primary-title], [data-overview-mobile-ios-nav="true"], .ik-ios-bottom-tab, [data-overview-mobile-bottom-tab]') || [])
       .some(nodeVisibleInViewport);
+    const overviewDesktopContentIconTabRecords = isDesktopOverview
+      ? Array.from(sectionRoot?.querySelectorAll('[role="tab"], [class*="tab" i], button, a') || [])
+        .filter(nodeVisibleInFirstScreen)
+        .map((node) => {
+          const rect = node.getBoundingClientRect();
+          const icon = node.querySelector('svg, img, [class*="icon" i]');
+          const iconRect = icon?.getBoundingClientRect();
+          const className = String(node.className || '');
+          const parentClassName = String(node.parentElement?.className || '');
+          const attrText = Array.from(node.attributes || []).map((attr) => attr.name + '=' + attr.value).join(' ');
+          const siblingControlCount = Array.from(node.parentElement?.children || [])
+            .filter((sibling) => /^(BUTTON|A)$/i.test(sibling.tagName) || sibling.getAttribute('role') === 'tab')
+            .filter(nodeVisibleInFirstScreen)
+            .length;
+          const looksTabby = /tab|tabbar|bottom|segment|pill-nav|icon-tabs/i.test(className + ' ' + parentClassName + ' ' + attrText);
+          const bigIcon = iconRect && iconRect.width >= 24 && iconRect.height >= 24;
+          const bigTarget = rect.width >= 72 && rect.height >= 52;
+          return looksTabby && bigIcon && bigTarget && siblingControlCount >= 3 ? {
+            selector: selectorForNode(node),
+            width: Math.round(rect.width),
+            height: Math.round(rect.height),
+            iconWidth: Math.round(iconRect.width),
+            iconHeight: Math.round(iconRect.height),
+            text: normalize(node.textContent || '').slice(0, 80),
+          } : null;
+        })
+        .filter(Boolean)
+      : [];
+    const overviewDesktopNoContentIconTabsOk = sectionName !== 'overview' || !isDesktopOverview || overviewDesktopContentIconTabRecords.length === 0;
     const overviewDesktopHierarchyMarkerOk = sectionName !== 'overview' || !isDesktopOverview || Boolean(
       sectionRoot?.querySelector('[data-overview-summary]') &&
       sectionRoot?.querySelector('[data-overview-status-bar]') &&
@@ -4300,6 +4430,11 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewMobile390NoCoreTextClipOk &&
       overviewMobile390FirstTwoRowsVisibleOk &&
       overviewMobile390NoMemDiskVisibleOk &&
+      overviewMobile390NoCpuMemDiskEnglishOk &&
+      overviewMobile390NoFocusPrimaryStatusOk &&
+      overviewMobile390NoTitleStatusCollisionOk &&
+      overviewMobile390NoCardPileOk &&
+      overviewMobile390ScenarioVisualKindOk &&
       overviewMobile390NoRawBooleanCopyOk &&
       overviewMobile390NoRawRouterOsFieldsOk &&
       overviewMobile390NoMainProgressBarOk &&
@@ -6238,6 +6373,11 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewMobile390FirstScreenNoTableOk &&
       overviewMobile390FirstScreenVisualOk &&
       overviewMobile390NoMemDiskVisibleOk &&
+      overviewMobile390NoCpuMemDiskEnglishOk &&
+      overviewMobile390NoFocusPrimaryStatusOk &&
+      overviewMobile390NoTitleStatusCollisionOk &&
+      overviewMobile390NoCardPileOk &&
+      overviewMobile390ScenarioVisualKindOk &&
       overviewMobile390BottomTabOk &&
       overviewMobile390NoRawBooleanCopyOk &&
       overviewMobile390NoRawRouterOsFieldsOk &&
@@ -6267,9 +6407,15 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       (!mobileOverview390x844 || overviewMobile390AcceptanceOk) &&
       (!mobileOverview390x844 || overviewMobile390NoCoreTextClipOk) &&
       (!mobileOverview390x844 || overviewMobile390NoKpi2x2Ok) &&
+      (!mobileOverview390x844 || overviewMobile390NoCpuMemDiskEnglishOk) &&
+      (!mobileOverview390x844 || overviewMobile390NoFocusPrimaryStatusOk) &&
+      (!mobileOverview390x844 || overviewMobile390NoTitleStatusCollisionOk) &&
+      (!mobileOverview390x844 || overviewMobile390NoCardPileOk) &&
+      (!mobileOverview390x844 || overviewMobile390ScenarioVisualKindOk) &&
       overviewMobileResourceFullVerticalOk &&
       overviewDesktopNoMobileAppChromeOk &&
       overviewDesktopNoToyNavLeakOk &&
+      overviewDesktopNoContentIconTabsOk &&
       overviewDesktopHierarchyMarkerOk &&
       overviewDesktopDensityOk &&
       overviewStatusBusTripletOk &&
@@ -6450,6 +6596,11 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       noTable: overviewMobile390FirstScreenNoTableOk,
       visual: overviewMobile390FirstScreenVisualOk,
       noMemDisk: overviewMobile390NoMemDiskVisibleOk,
+      noCpuMemDiskEnglish: overviewMobile390NoCpuMemDiskEnglishOk,
+      noFocusPrimaryStatus: overviewMobile390NoFocusPrimaryStatusOk,
+      noTitleStatusCollision: overviewMobile390NoTitleStatusCollisionOk,
+      noCardPile: overviewMobile390NoCardPileOk,
+      sceneVisualKind: overviewMobile390ScenarioVisualKindOk,
       bottomTab: overviewMobile390BottomTabOk,
       noRawBoolean: overviewMobile390NoRawBooleanCopyOk,
       noRawRouterOs: overviewMobile390NoRawRouterOsFieldsOk,
@@ -6754,6 +6905,17 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewMobile390NoKpi2x2Ok,
       overviewMobile390FirstScreenVisualOk,
       overviewMobile390NoMemDiskVisibleOk,
+      overviewMobile390NoCpuMemDiskEnglishOk,
+      mobile390EnglishResourceTextHits,
+      overviewMobile390NoFocusPrimaryStatusOk,
+      mobile390PrimaryStatusText,
+      overviewMobile390NoTitleStatusCollisionOk,
+      mobile390TitleClipRecords,
+      overviewMobile390NoCardPileOk,
+      mobile390CardSurfaceRecords,
+      mobile390NestedCardSurfaceDepth,
+      overviewMobile390ScenarioVisualKindOk,
+      mobile390ScenarioVisualKindText,
       overviewMobile390BottomTabOk,
       overviewMobile390NoRawBooleanCopyOk,
       overviewMobile390NoRawRouterOsFieldsOk,
@@ -6762,6 +6924,8 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewMobile390NoAppHomeTitleClipOk,
       overviewDesktopNoMobileAppChromeOk,
       overviewDesktopNoToyNavLeakOk,
+      overviewDesktopNoContentIconTabsOk,
+      overviewDesktopContentIconTabRecords,
       overviewDesktopHierarchyMarkerOk,
       overviewMobile390NoCoreTextClipOk,
       mobile390CoreTextClipSamples: mobile390CoreTextClipSamples.slice(0, 8),
@@ -6778,11 +6942,11 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         tableCount: overviewMobileFirstScreenTableCount,
         kpi2x2Count: mobile390Kpi2x2MarkerNodes.length,
         kpi2x2Geometry: mobile390Kpi2x2GeometryRecords.slice(0, 4),
-        hasHeroVisual: mobile390AppHomeChromeNodes.some((node) => node.classList.contains('ik-ios-hero-card')),
-        hasIosNav: mobile390AppHomeChromeNodes.some((node) => node.classList.contains('ik-ios-top-nav')),
+        hasHeroVisual: mobile390AppHomeChromeNodes.some((node) => node.classList.contains('ik-v159-network-hero') || node.hasAttribute('data-overview-mobile-v159-main-hero')),
+        hasIosNav: mobile390AppHomeChromeNodes.some((node) => node.classList.contains('ik-v159-nav') || node.hasAttribute('data-overview-mobile-v159-nav')),
       hasHeroMetrics: mobile390AppHomeHeroMetricsOk,
-      hasTwinCards: mobile390AppHomeTwinOk,
-      hasResourceCard: mobile390AppHomeResourceCardOk,
+      hasSecondaryCards: mobile390AppHomeTwinOk,
+      hasResourceDeck: mobile390AppHomeResourceCardOk,
       hasRankCard: mobile390AppHomeRankCardOk,
       hasRingTraffic: mobile390AppHomeRingTrafficOk,
       noOldKpiStack: overviewMobile390NoOldKpiStackOk,
