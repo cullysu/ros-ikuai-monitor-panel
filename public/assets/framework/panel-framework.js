@@ -15023,7 +15023,10 @@ var PanelFramework = function(exports) {
     if (state.scenario === "collection-down") {
       return { value: "采集", note: "WAN 可参考" };
     }
-    return { value: routeLabelText(state), note: "WAN / 默认出口" };
+    return {
+      value: `WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(state.facts.wan.total)}`,
+      note: state.facts.route.level === "danger" ? "默认路由异常" : state.facts.route.level === "missing" ? "默认路由待判" : "默认路由可用"
+    };
   }
   function topbarCollectionValue(state) {
     if (state.scenario === "no-snapshot") {
@@ -15855,7 +15858,6 @@ var PanelFramework = function(exports) {
       }];
     }
     return rows.slice(0, 4).map((route, index) => {
-      const table = text(route.table || route.routingTable, "main");
       const gateway = routeGatewayText(route.gateway || route.gatewayStatus).replace(/^网关\s*/, "");
       const priority = routePriorityText(route.distance).replace(/^优先级\s*/, "");
       const carrying = route.active && !route.disabled ? "可承载" : route.disabled ? "已禁用" : "不可承载";
@@ -15863,36 +15865,10 @@ var PanelFramework = function(exports) {
         id: `route-business-${index}`,
         attrs: { "data-overview-default-route-row": "true", "data-overview-route-copy": "business-main" },
         cells: [
-          /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: index === 0 ? "默认出口" : `备用出口 ${index + 1}` }),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("small", { children: [
-              "table ",
-              table
-            ] })
-          ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: gateway || "网关未记录" }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: "gateway" })
-          ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("b", { children: [
-              "优先级 ",
-              priority
-            ] }),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("small", { children: [
-              "distance ",
-              priority
-            ] })
-          ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: carrying }),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("small", { children: [
-              "active ",
-              route.active ? "true" : "false",
-              " / disabled ",
-              route.disabled ? "true" : "false"
-            ] })
-          ] })
+          index === 0 ? "默认出口" : `备用出口 ${index + 1}`,
+          gateway || "网关未记录",
+          `优先级 ${priority}`,
+          carrying
         ],
         title: defaultRouteTitleContract(text(route.table || route.routingTable, "main"), gateway, priority, route.active, route.disabled).title,
         tone: route.active && !route.disabled ? "trust" : "warn"
@@ -16373,9 +16349,9 @@ var PanelFramework = function(exports) {
   function noSnapshotChannelStatusRows(snapshot, state) {
     const recent = latestSuccess(snapshot, state.scenario);
     return [
-      { id: "channel-routeros", cells: ["RouterOS", "断链", "采集链路主故障"], tone: "danger" },
-      { id: "channel-rest", cells: ["REST", restState(snapshot, state).value, restState(snapshot, state).note], tone: restState(snapshot, state).tone },
-      { id: "channel-ssh", cells: ["SSH", sshState(snapshot, state).value, sshState(snapshot, state).note], tone: sshState(snapshot, state).tone },
+      { id: "channel-routeros", cells: ["RouterOS", "断链", "当前不可达，业务快照无法刷新"], tone: "danger" },
+      { id: "channel-rest", cells: ["REST", restState(snapshot, state).value, `${restState(snapshot, state).note}，仅作链路核验`], tone: restState(snapshot, state).tone },
+      { id: "channel-ssh", cells: ["SSH", sshState(snapshot, state).value, `${sshState(snapshot, state).note}，静态通道不可用`], tone: sshState(snapshot, state).tone },
       { id: "channel-route", cells: ["默认出口", "待判", "默认出口待判 / 路由快照未取回"], tone: "warn" },
       { id: "channel-failure", cells: ["失败端点", "未记录", "失败端点未记录 / 不写零值"], tone: "trust" },
       { id: "channel-data-layer", cells: ["数据层状态", "快照缺失", "业务状态不可信"], tone: "missing" },
@@ -16523,10 +16499,10 @@ var PanelFramework = function(exports) {
   function desktopEvidenceBoundaryRows(snapshot, state) {
     if (state.scenario === "no-snapshot") return compactRows(noSnapshotReadonlyDegradedRows(snapshot, state), 4);
     if (state.scenario === "collection-down") return compactRows(threeColumnRows(collectionReadonlyRows(snapshot, state), "desktop-boundary-"), 4);
-    if (state.scenario === "resource-full") return compactRows([...threeColumnRows(resourceBoundaryRows(snapshot, state), "desktop-res-boundary-"), ...routeRawEvidenceRows(snapshot, state)], 5);
-    if (state.scenario === "interfaces-down") return compactRows([...threeColumnRows(interfaceBoundaryRows(snapshot, state), "desktop-if-boundary-"), ...routeRawEvidenceRows(snapshot, state)], 5);
-    if (state.scenario === "all-offline") return compactRows([...threeColumnRows(allOfflineImpactRows(snapshot, state), "desktop-boundary-"), ...routeRawEvidenceRows(snapshot, state)], 5);
-    return compactRows([...normalOpsRows(snapshot, state), ...routeRawEvidenceRows(snapshot, state)], 6);
+    if (state.scenario === "resource-full") return compactRows([...routeRawEvidenceRows(snapshot, state), ...threeColumnRows(resourceBoundaryRows(snapshot, state), "desktop-res-boundary-")], 5);
+    if (state.scenario === "interfaces-down") return compactRows([...routeRawEvidenceRows(snapshot, state), ...threeColumnRows(interfaceBoundaryRows(snapshot, state), "desktop-if-boundary-")], 5);
+    if (state.scenario === "all-offline") return compactRows([...routeRawEvidenceRows(snapshot, state), ...threeColumnRows(allOfflineImpactRows(snapshot, state), "desktop-boundary-")], 5);
+    return compactRows([...routeRawEvidenceRows(snapshot, state), ...normalOpsRows(snapshot, state)], 6);
   }
   function compactDesktopPanelGroups(snapshot, state) {
     const trust = moduleTrust(state);
@@ -16540,8 +16516,8 @@ var PanelFramework = function(exports) {
       const channelRowsCompact = compactRows(channelRows, 5);
       return {
         main: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "采集链路", subtitle: "RouterOS / REST / SSH / 快照", module: "no-snapshot-summary", tone: "danger", trust, headers: ["链路层", "当前", "最近成功", "主证据", "下次尝试"], rows: chainRowsCompact, minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(ChainTimeline, { rows: chainRowsCompact, module: "no-snapshot-summary-chain" }) }, "ns-summary"),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "三通道状态", subtitle: "失败端点 / 默认出口待判", module: "no-snapshot-channel-status", tone: "warn", trust, headers: ["通道", "当前", "说明"], rows: channelRowsCompact, minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(ChainTimeline, { rows: channelRowsCompact, module: "no-snapshot-channel-status-chain" }) }, "ns-channel")
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "采集链路", subtitle: "RouterOS / REST / SSH / 快照", module: "no-snapshot-summary", tone: "danger", trust, headers: ["链路层", "当前", "最近成功", "主证据", "下次尝试"], rows: chainRowsCompact, minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(ChannelMatrixVisual, { module: "no-snapshot-summary", rows: collectionChannelRows(snapshot, state) }) }, "ns-summary"),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "三通道状态", subtitle: "失败端点 / 默认出口待判", module: "no-snapshot-channel-status", tone: "warn", trust, headers: ["通道", "当前", "说明"], rows: channelRowsCompact, minRows: 0 }, "ns-channel")
         ],
         side: [
           /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "最近成功", subtitle: "时间 / 状态", module: "no-snapshot-recent-success", tone: "trust", trust, headers: ["节点", "当前", "说明"], rows: compactRows(recentRows, 4), minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(ChainTimeline, { rows: compactRows(recentRows, 4), module: "no-snapshot-recent-success-timeline" }) }, "ns-recent"),
@@ -16570,7 +16546,7 @@ var PanelFramework = function(exports) {
         bottom: [
           /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "终端排行", subtitle: "异常置顶 / 总流量", module: "terminal-ranking", tone: "trust", trust, headers: ["设备", "IP", "流量", "状态"], rows: compactRows(desktopTerminalRows(snapshot), 4), minRows: 0 }, "res-terminals"),
           /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "最近事件", subtitle: "采集 / 默认出口", module: "normal-ops-ledger", tone: state.facts.collection.level, trust, headers: ["对象", "当前", "依据"], rows: compactRows(normalOpsRows(snapshot, state), 4), minRows: 0 }, "res-events"),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "原始证据", subtitle: "字段下沉", module: "evidence-boundary", tone: "trust", trust, headers: ["对象", "当前", "依据"], rows: compactRows([...threeColumnRows(resourceBoundaryRows(snapshot, state), "res-boundary-"), ...routeRawEvidenceRows(snapshot, state)], 4), minRows: 0 }, "res-boundary")
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "原始证据", subtitle: "字段下沉", module: "evidence-boundary", tone: "trust", trust, headers: ["对象", "当前", "依据"], rows: compactRows([...routeRawEvidenceRows(snapshot, state), ...threeColumnRows(resourceBoundaryRows(snapshot, state), "res-boundary-")], 4), minRows: 0 }, "res-boundary")
         ]
       };
     }
@@ -16579,7 +16555,7 @@ var PanelFramework = function(exports) {
       return {
         main: [
           /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "通道状态", subtitle: "REST / SSH / 快照", module: "collection-channel-ledger", tone: "warn", trust: "缓存快照", headers: ["对象", "当前", "依据"], rows: threeColumnRows(collectionRows(snapshot, state), "c3-"), minRows: 0, visual: collectionVisual }, "col-channel"),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "最近成功", subtitle: "上次成功 / 边界", module: "collection-recent-failures", tone: "trust", headers: ["节点", "当前", "说明"], rows: lastSuccessRows(snapshot, state), minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(ChainTimeline, { rows: lastSuccessRows(snapshot, state), module: "collection-success-timeline" }) }, "col-recent")
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "最近成功", subtitle: "上次成功 / 边界", module: "collection-recent-failures", tone: "trust", headers: ["节点", "当前", "说明"], rows: lastSuccessRows(snapshot, state), minRows: 0 }, "col-recent")
         ],
         side: [
           /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "展示边界", subtitle: "不写配置 / 不推断", module: "collection-cache-boundary", tone: "warn", headers: ["对象", "当前", "依据"], rows: compactRows(threeColumnRows(collectionBoundaryLedgerRows(snapshot, state), "cbl-"), 6), minRows: 0 }, "col-boundary"),
@@ -16648,7 +16624,7 @@ var PanelFramework = function(exports) {
       ],
       side: [
         /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "接口状态", subtitle: state.scenario === "interfaces-down" ? "Down / 默认出口" : "转发面 / 承载", module: state.scenario === "interfaces-down" ? "interface-forwarding" : "normal-interface-boundary", tone: state.scenario === "interfaces-down" ? "danger" : "trust", trust, headers: state.scenario === "interfaces-down" ? ["对象", "当前", "依据"] : ["对象", "当前", "最近", "边界"], rows: interfaceRowsCompact, minRows: 0, visual: state.scenario === "interfaces-down" ? /* @__PURE__ */ jsxRuntimeExports.jsx(JudgementChart, { module: "interface-forwarding", kind: "pressure", rows: interfaceForwardingChartRows(snapshot, state) }) : void 0 }, "compact-interface"),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: state.scenario === "resource-full" ? "资源满载" : "资源", subtitle: state.scenario === "resource-full" ? "三项超阈" : isFleet ? "接口排行 / 阈值" : "当前 / 阈值", module: state.scenario === "resource-full" ? "resource-risk-priority" : "resource-threshold", tone: state.scenario === "no-snapshot" ? "missing" : state.facts.resource.level, trust, headers: ["项", "阈值", "持续", "峰值"], rows: compactRows(resourceRows(state), 3), minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(JudgementChart, { module: "resource-threshold", kind: "pressure", rows: resourceChartRows(state) }) }, "compact-resource"),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: state.scenario === "resource-full" ? "资源满载" : "资源", subtitle: state.scenario === "resource-full" ? "三项超阈" : isFleet ? "接口排行 / 阈值" : "当前 / 阈值", module: state.scenario === "resource-full" ? "resource-risk-priority" : "resource-threshold", tone: state.scenario === "no-snapshot" ? "missing" : state.facts.resource.level, trust, headers: ["项", "阈值", "持续", "峰值"], rows: compactRows(resourceRows(state), 3), minRows: 0 }, "compact-resource"),
         /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: isFleet ? "采集可信度" : "采集 / 快照", subtitle: state.scenario === "collection-down" ? "REST / SSH / 快照" : "REST / SSH / 成功", module: state.scenario === "collection-down" ? "collection-channel-ledger" : state.scenario === "no-snapshot" ? "no-snapshot-channel-status" : "normal-collection-channel", tone: state.scenario === "collection-down" || state.scenario === "no-snapshot" ? "warn" : state.facts.collection.level, trust, headers: state.scenario === "no-snapshot" ? ["链路层", "当前", "最近成功", "主证据", "下次尝试"] : ["对象", "当前", "依据"], rows: collectionRowsCompact, minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(ChannelMatrixVisual, { module: "collection-status", rows: collectionChannelRows(snapshot, state) }) }, "compact-collection")
       ],
       bottom: [
