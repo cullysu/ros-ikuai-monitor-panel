@@ -316,6 +316,7 @@ function mobileRouteValue(state: OverviewDerivedState): string {
 
 function priorityOf(state: OverviewDerivedState): MobileOverviewModel["priority"] {
   if (state.scenario === "fleet") return "normal";
+  if (state.scenario === "single") return "normal";
   if (state.scenario === "no-snapshot") return "snapshot-missing";
   if (state.scenario === "all-offline" || (state.facts.wan.allOffline && state.scenario !== "interfaces-down")) return "wan-offline";
   if (state.scenario === "resource-full") return "resource-full";
@@ -328,7 +329,7 @@ function heroVisualKind(priority: MobileOverviewModel["priority"]): MobileHeroVi
   if (priority === "wan-offline") return "wan-ports";
   if (priority === "resource-full") return "resource-bars";
   if (priority === "interface-down") return "interface-list";
-  if (priority === "snapshot-missing") return "trust-channels";
+  if (priority === "snapshot-missing" || priority === "collection-degraded") return "trust-channels";
   return "trend";
 }
 
@@ -355,14 +356,14 @@ function resourcePeak(state: OverviewDerivedState): MobileMonitorFact {
 }
 
 function titleFor(state: OverviewDerivedState): string {
-  if (state.scenario === "fleet") return "多线路概览";
+  if (state.scenario === "fleet") return "多线路判断";
   const priority = priorityOf(state);
   if (priority === "snapshot-missing") return "业务快照缺失";
   if (priority === "wan-offline") return "WAN 全离线";
   if (priority === "resource-full") return "资源满载";
   if (priority === "interface-down") return "接口 Down";
-  if (priority === "collection-degraded") return "采集降级";
-  return state.verdict.level === "warn" ? "需确认" : "网络状态良好";
+  if (priority === "collection-degraded") return "采集可信边界";
+  return state.scenario === "single" || state.verdict.level !== "warn" ? "WAN 实时窗口" : "转发待确认";
 }
 
 function subtitleFor(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): string {
@@ -442,6 +443,7 @@ function heroFacts(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): 
 }
 
 function coreStatusValue(priority: MobileOverviewModel["priority"], state: OverviewDerivedState): string {
+  if (state.scenario === "single") return "良好";
   if (priority === "snapshot-missing") return "缺快照";
   if (priority === "wan-offline") return "WAN断链";
   if (priority === "resource-full") return "资源满载";
@@ -475,7 +477,7 @@ function coreMetrics(snapshot: OverviewRawSnapshot, state: OverviewDerivedState)
       label: "状态",
       value: coreStatusValue(priority, state),
       note: priority === "normal" ? "转发可用" : priority === "wan-offline" ? "外网中断" : priority === "snapshot-missing" ? "业务不展示" : "需关注",
-      tone: state.scenario === "no-snapshot" ? "missing" : state.facts.wan.allOffline ? "danger" : state.verdict.level,
+      tone: state.scenario === "single" ? "ok" : state.scenario === "no-snapshot" ? "missing" : state.facts.wan.allOffline ? "danger" : state.verdict.level,
     },
     {
       label: "WAN",
@@ -770,8 +772,8 @@ function terminalRankingRows(snapshot: OverviewRawSnapshot): MobileMonitorListRo
 
 function primaryList(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): MobilePrimaryListModel {
   const priority = priorityOf(state);
-  if (priority === "wan-offline") return { kind: "wan-incident", title: "离线出口", meta: "默认路由不可用", rows: offlineWanRows(snapshot, state) };
-  if (priority === "snapshot-missing") return { kind: "snapshot-boundary", title: "业务边界", meta: "缺失", rows: snapshotBoundaryRows(snapshot, state) };
+  if (priority === "wan-offline") return { kind: "wan-incident", title: "出口状态", meta: "默认路由异常 · 设备排行降级", rows: offlineWanRows(snapshot, state) };
+  if (priority === "snapshot-missing") return { kind: "snapshot-boundary", title: "可信边界", meta: `最近成功 ${latestSuccess(snapshot, state)}`, rows: snapshotBoundaryRows(snapshot, state) };
   if (priority === "interface-down") return { kind: "interface-incident", title: "接口对象", meta: "承载待判", rows: interfaceIncidentRows(snapshot) };
   if (priority === "collection-degraded") return { kind: "terminal-ranking", title: "设备排行", meta: "异常优先 · 总流量", rows: terminalRankingRows(snapshot) };
   if (priority === "resource-full") return { kind: "terminal-ranking", title: "高流量终端", meta: "异常优先 · 总流量", rows: terminalRankingRows(snapshot) };

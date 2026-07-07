@@ -36,13 +36,14 @@ function rankingIconPath(row: AppRankingRow): string {
 function RankingList(props: MobileOverviewHomeProps) {
   const model = buildMobileOverviewModel(props.snapshot, props.state);
   const rows: AppRankingRow[] = model.primaryList.rows;
+  const isTerminalRanking = model.primaryList.kind === "terminal-ranking";
   return (
     <section
       className="ik-v420-list ik-v420-app-list ik-v240-list"
       data-overview-mobile-list-kind={model.primaryList.kind}
-      data-overview-mobile-rank-list="terminal-total-traffic-list"
+      data-overview-mobile-rank-list={isTerminalRanking ? "terminal-total-traffic-list" : undefined}
       data-overview-mobile-v420-list="native-router-list"
-      data-overview-mobile-v240-list="terminal-ranking"
+      data-overview-mobile-v240-list={isTerminalRanking ? "terminal-ranking" : "incident-objects"}
     >
       <header>
         <b>{model.primaryList.title}</b>
