@@ -4,6 +4,7 @@ import type { MobileOverviewHomeProps } from "./MobileOverviewTypes";
 export function StatusHeader({ snapshot, state }: MobileOverviewHomeProps) {
   const name = clean(snapshot.identity || snapshot.name || snapshot.deviceName || state.facts.device.identity || "爱快路由");
   const version = clean(snapshot.version || snapshot.routerosVersion || state.facts.device.version || "RouterOS");
+  const versionText = /^RouterOS\b/i.test(version) ? version : `RouterOS ${version}`;
   const recent = latestSuccess(snapshot, state);
   const stateLabel = statusLabel(state);
   return (
@@ -13,7 +14,7 @@ export function StatusHeader({ snapshot, state }: MobileOverviewHomeProps) {
       </button>
       <div className="ik-v240-title" data-overview-mobile-primary-title="device">
         <b>{name}</b>
-        <span>RouterOS {version} · {recent}</span>
+        <span>{versionText} · {recent}</span>
       </div>
       <strong className={`ik-v240-status ${toneClass(screenTone(state))}`} data-overview-mobile-primary-status="device-state" aria-label={`设备状态 ${stateLabel}`}><i />{stateLabel}</strong>
     </nav>

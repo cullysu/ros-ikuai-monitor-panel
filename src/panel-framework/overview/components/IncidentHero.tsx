@@ -29,12 +29,14 @@ function LineChart({ chart }: { chart: MobileTrendChartModel }) {
   const peakIndex = Math.max(0, down.findIndex((value) => value === peakValue));
   const peakX = down.length > 1 ? Number(((peakIndex * 312) / (down.length - 1)).toFixed(1)) : 156;
   const peakY = Number((52 - (Math.max(0, peakValue) / max) * 40 - 6).toFixed(1));
+  const start = downPoints.trim().split(/\s+/)[0]?.split(",").map((item) => Number(item)) || [0, 52];
+  const referenceY = Number((52 - Math.max(0, Math.min(1, chart.referenceRatio)) * 40 - 6).toFixed(1));
   return (
     <svg
       className="ik-v420-line-chart"
       viewBox="0 0 312 72"
       role="img"
-      aria-label={`${chart.windowText} WAN 下载上传趋势，峰值 ${chart.peakLabel}，采样 ${chart.sampleText}`}
+      aria-label={`${chart.windowText} WAN 下载上传趋势，当前 ${chart.currentLabel}，峰值 ${chart.peakLabel}，${chart.referenceLabel}，采样 ${chart.sampleText}`}
       data-overview-chart-type="mini-line"
       data-overview-scene-chart="mobile-wan-rate-sparkline"
       data-overview-mobile-first-visual="thin-wan-sparkline"
@@ -43,16 +45,22 @@ function LineChart({ chart }: { chart: MobileTrendChartModel }) {
       data-overview-mobile-chart-window={chart.windowText}
       data-overview-mobile-chart-peak={chart.peakLabel}
       data-overview-mobile-chart-sample={chart.sampleText}
+      data-overview-mobile-chart-reference={chart.referenceLabel}
     >
+      <text className="ik-v945-chart-caption" x="0" y="8">采样 {chart.sampleText}</text>
+      <text className="ik-v945-chart-caption" x="312" y="8" textAnchor="end">{chart.referenceLabel}</text>
       <path className="ik-v420-gridline" d="M0 13 H312 M0 31 H312 M0 47 H312" />
+      <path className="ik-v945-reference-line" d={`M0 ${referenceY} H312`} />
+      <path className="ik-v945-current-line" d={`M${focus.x} 10 V54`} />
       <path className="ik-v420-area" d={`M0 52 L${downPoints} L312 52 Z`} />
       <polyline className="ik-v420-curve is-main" points={downPoints} />
       <polyline className="ik-v420-curve is-soft" points={upPoints} />
+      <circle className="ik-v945-start-dot" cx={Number.isFinite(start[0]) ? start[0] : 0} cy={Number.isFinite(start[1]) ? start[1] : 52} r="2.1" />
       <circle className="ik-v420-peak-dot" cx={peakX} cy={peakY} r="2.6" />
       <circle className="ik-v420-focus-dot" cx={focus.x} cy={focus.y} r="2.8" />
-      <text x="0" y="68">{chart.windowText}</text>
+      <text x="0" y="68">{chart.startLabel}</text>
       <text x="156" y="68" textAnchor="middle">峰 {chart.peakLabel}</text>
-      <text x="312" y="68" textAnchor="end">当前 {chart.currentLabel}</text>
+      <text x="312" y="68" textAnchor="end">{chart.endLabel} {chart.currentLabel}</text>
     </svg>
   );
 }

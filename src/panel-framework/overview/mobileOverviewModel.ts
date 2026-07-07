@@ -58,6 +58,10 @@ export interface MobileTrendChartModel {
   source: "history" | "current";
   windowText: string;
   sampleText: string;
+  startLabel: string;
+  endLabel: string;
+  referenceLabel: string;
+  referenceRatio: number;
   currentLabel: string;
   peakLabel: string;
   down: number[];
@@ -269,6 +273,10 @@ function trendChart(snapshot: OverviewRawSnapshot, state: OverviewDerivedState):
     source: series.source,
     windowText,
     sampleText,
+    startLabel: series.source === "history" ? `${down.length} 点前` : "窗口起点",
+    endLabel: "当前",
+    referenceLabel: state.facts.wan.allOffline ? "离线参考" : "高位参考",
+    referenceRatio: state.facts.wan.allOffline ? 0.08 : 0.78,
     currentLabel: mobileRate(current),
     peakLabel: mobileRate(peak),
     down,
