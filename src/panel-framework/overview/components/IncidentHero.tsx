@@ -153,10 +153,6 @@ function ResourceVisual({ state }: { state: OverviewDerivedState }) {
       data-overview-mobile-first-visual="processor-memory-disk"
       data-overview-mobile-v420-visual="processor-memory-disk-thin-bars"
     >
-      <header aria-hidden="true">
-        <b>资源</b>
-        <span>阈值 / 持续</span>
-      </header>
       {metrics.map((item) => {
         const value = Number.isFinite(item.value) ? Math.max(0, Math.min(100, item.value)) : 0;
         const meterStyle = { "--meter": `${value}%` } as CSSProperties;

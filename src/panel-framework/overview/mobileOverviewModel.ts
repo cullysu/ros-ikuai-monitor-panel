@@ -330,7 +330,7 @@ function showHeroMetrics(priority: MobileOverviewModel["priority"]): boolean {
 function resourceFacts(state: OverviewDerivedState): MobileMonitorFact[] {
   const hidden = state.scenario === "no-snapshot";
   return [
-    { label: "处理器", raw: toNumber(state.facts.resource.cpu), threshold: 85 },
+    { label: "CPU", raw: toNumber(state.facts.resource.cpu), threshold: 85 },
     { label: "内存", raw: toNumber(state.facts.resource.memory), threshold: 85 },
     { label: "磁盘", raw: toNumber(state.facts.resource.disk), threshold: 90 },
   ].map((item) => ({
@@ -353,17 +353,17 @@ function titleFor(state: OverviewDerivedState): string {
   if (priority === "resource-full") return "资源满载";
   if (priority === "interface-down") return "接口 Down";
   if (priority === "collection-degraded") return "采集降级";
-  return state.verdict.level === "warn" ? "需确认" : "转发正常";
+  return state.verdict.level === "warn" ? "需确认" : "网络状态良好";
 }
 
 function subtitleFor(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): string {
-  if (state.scenario === "fleet") return `WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(Math.max(state.facts.wan.total || wanRows(snapshot).length, 1))} · 异常 ${formatNumber(Math.max(state.facts.wan.offline, state.facts.interfaces.down, 0))} · 最近 ${latestSuccess(snapshot, state)}`;
+  if (state.scenario === "fleet") return `WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(Math.max(state.facts.wan.total || wanRows(snapshot).length, 1))} · 异常 ${formatNumber(Math.max(state.facts.wan.offline, state.facts.interfaces.down, 0))} · 默认路由 ${mobileRouteValue(state)} · 成功 ${latestSuccess(snapshot, state)}`;
   const priority = priorityOf(state);
-  if (priority === "snapshot-missing") return "当前无可信业务快照。";
-  if (priority === "wan-offline") return `默认路由不可用，最近 ${latestSuccess(snapshot, state)}。`;
-  if (priority === "resource-full") return "处理器 / 内存 / 磁盘连续越阈。";
+  if (priority === "snapshot-missing") return "当前不可达，业务数据不展示。";
+  if (priority === "wan-offline") return "默认路由不可用，出口中断。";
+  if (priority === "resource-full") return "CPU / 内存 / 磁盘连续越阈。";
   if (priority === "interface-down") return "接口离线，承载影响待确认。";
-  if (priority === "collection-degraded") return `显示缓存边界，最近 ${latestSuccess(snapshot, state)}。`;
+  if (priority === "collection-degraded") return "采集通道降级，展示缓存边界。";
   return "出口在线，默认路由可用。";
 }
 
@@ -493,7 +493,7 @@ function statusRows(snapshot: OverviewRawSnapshot, state: OverviewDerivedState):
       id: "timeline-resource",
       title: "资源",
       value: resource.map((item) => item.value.replace(/\.0%$/, "%")).join(" / "),
-      note: state.scenario === "resource-full" ? "阈85/85/90 · 持续6/6" : "处理器 / 内存 / 磁盘",
+      note: state.scenario === "resource-full" ? "阈85/85/90 · 持续6/6" : "CPU / 内存 / 磁盘",
       tone: resource.some((item) => item.tone === "danger") ? "danger" : "ok",
     },
     {

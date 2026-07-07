@@ -12,10 +12,9 @@ export function TrustStrip(props: MobileOverviewHomeProps) {
       data-overview-mobile-core-block="trust-strip"
     >
       {model.trustPlanes.map((item) => (
-        <span className={toneClass(item.tone)} key={item.id}>
+        <span className={toneClass(item.tone)} key={item.id} title={`${item.label} ${item.value} ${item.note}`}>
           <b>{item.label}</b>
           <strong>{item.value}</strong>
-          <em>{item.note}</em>
         </span>
       ))}
     </section>

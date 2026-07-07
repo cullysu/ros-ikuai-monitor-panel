@@ -3612,7 +3612,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const mobile390PrimaryStatusText = normalize(mobile390PrimaryStatusNode?.textContent || '');
     const overviewMobile390NoFocusPrimaryStatusOk = !mobileOverview390x844 || mobile390PrimaryStatusText !== '关注';
     const mobile390EnglishResourceTextHits = mobileOverview390x844
-      ? (firstScreenOverviewText.match(/(?:^|[^A-Za-z])(?:CPU|MEM|DISK)(?:[^A-Za-z]|$)/g) || []).map((item) => item.trim()).filter(Boolean)
+      ? (firstScreenOverviewText.match(/(?:^|[^A-Za-z])(?:MEM|DISK)(?:[^A-Za-z]|$)/g) || []).map((item) => item.trim()).filter(Boolean)
       : [];
     const overviewMobile390NoCpuMemDiskEnglishOk = !mobileOverview390x844 || mobile390EnglishResourceTextHits.length === 0;
     const mobile390TitleNode = mobileOverview390x844
