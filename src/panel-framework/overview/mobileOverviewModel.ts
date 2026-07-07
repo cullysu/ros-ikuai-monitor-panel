@@ -284,8 +284,7 @@ function trendChart(snapshot: OverviewRawSnapshot, state: OverviewDerivedState):
     readouts: [
       { label: "当前", value: mobileRate(current), note: "下载", tone: "trust" },
       { label: "峰值", value: mobileRate(peak), note: windowText, tone: "trust" },
-      { label: "窗口", value: series.source === "history" ? "12 点" : "实时", note: sampleText, tone: "trust" },
-      { label: "采样", value: series.source === "history" ? "历史" : "实时", note: "可信度", tone: state.facts.collection.credibilityTone },
+      { label: "窗口", value: series.source === "history" ? "12 点" : "当前", note: sampleText, tone: state.facts.collection.credibilityTone },
     ],
   };
 }
@@ -356,14 +355,14 @@ function resourcePeak(state: OverviewDerivedState): MobileMonitorFact {
 }
 
 function titleFor(state: OverviewDerivedState): string {
-  if (state.scenario === "fleet") return "多线路概览";
+  if (state.scenario === "fleet") return "多线路可用";
   const priority = priorityOf(state);
   if (priority === "snapshot-missing") return "业务快照缺失";
   if (priority === "wan-offline") return "WAN 全离线";
   if (priority === "resource-full") return "资源满载";
   if (priority === "interface-down") return "接口 Down";
   if (priority === "collection-degraded") return "采集降级";
-  return state.scenario === "single" || state.verdict.level !== "warn" ? "WAN 实时趋势" : "转发待确认";
+  return state.scenario === "single" || state.verdict.level !== "warn" ? "出口正常" : "转发待确认";
 }
 
 function subtitleFor(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): string {
@@ -374,7 +373,7 @@ function subtitleFor(snapshot: OverviewRawSnapshot, state: OverviewDerivedState)
   if (priority === "resource-full") return "CPU / 内存 / 磁盘连续越阈";
   if (priority === "interface-down") return "接口离线 · 承载待确认";
   if (priority === "collection-degraded") return "REST / SSH / 快照边界分开";
-  return "出口在线 · 默认路由可用";
+  return `WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(Math.max(state.facts.wan.total || wanRows(snapshot).length, 1))} · 默认路由可用`;
 }
 
 function heroFacts(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): MobileMonitorFact[] {
@@ -564,7 +563,7 @@ function statusRows(snapshot: OverviewRawSnapshot, state: OverviewDerivedState):
     {
       id: "timeline-collection",
       title: "采集",
-      value: state.scenario === "collection-down" ? "缓存" : "实时",
+      value: state.scenario === "collection-down" ? "历史快照" : "实时",
       note: `最近 ${latestSuccess(snapshot, state)}`,
       tone: state.scenario === "collection-down" ? "warn" : state.facts.collection.credibilityTone,
     },
