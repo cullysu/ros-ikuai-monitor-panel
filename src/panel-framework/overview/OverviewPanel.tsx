@@ -2720,10 +2720,12 @@ function resourceRiskRows(state: OverviewDerivedState): LedgerRow[] {
   const cpu = toNumber(state.facts.resource.cpu);
   const mem = toNumber(state.facts.resource.memory);
   const disk = toNumber(state.facts.resource.disk);
+  const overCount = [cpu >= 85, mem >= 85, disk >= 90].filter(Boolean).length;
   return [
     { id: "resource-cpu", cells: ["处理器", formatPercent(cpu, 1), "阈值85%", `峰${formatPercent(cpu, 1)}`], tone: cpu >= 85 ? "warn" : cpu >= 70 ? "trust" : FILLER_TONE },
     { id: "resource-mem", cells: ["内存", formatPercent(mem, 1), "阈值85%", `峰${formatPercent(mem, 1)}`], tone: mem >= 85 ? "warn" : mem >= 70 ? "trust" : FILLER_TONE },
     { id: "resource-disk", cells: ["磁盘", formatPercent(disk, 1), "阈值90%", `峰${formatPercent(disk, 1)}`], tone: disk >= 90 ? "warn" : disk >= 75 ? "trust" : FILLER_TONE },
+    { id: "resource-over-count", cells: ["越阈项", `${formatNumber(overCount)}/3`, "持续6/6", overCount >= 3 ? "三项同时越阈" : "局部越阈"], tone: overCount >= 3 ? "warn" : "trust" },
     { id: "resource-conn-risk", cells: ["连接压力", formatCompact(state.facts.connections.total), "活动会话", formatNumber(state.facts.connections.active)], tone: state.facts.connections.total > 50000 ? "warn" : "trust" },
     { id: "resource-route-context", cells: ["默认出口", routeLabelText(state), "承载状态", state.facts.route.level === "ok" ? "可承载" : "待确认"], tone: state.facts.route.level },
     { id: "resource-collect-context", cells: ["采集", state.facts.collection.credibilityLabel, "双通道", state.facts.collection.channelText], tone: state.facts.collection.level },
@@ -3107,11 +3109,11 @@ function noSnapshotChainRows(snapshot: OverviewRawSnapshot, state: OverviewDeriv
   const next = pollText(snapshot);
   const age = state.facts.freshness.text;
   return [
-    { id: "chain-entry", cells: ["只读", "不写配置", recent, "采集链路可参考", next], tone: "trust" },
+    { id: "chain-entry", cells: ["页面可信等级", "链路可参考", recent, "只读不写配置", next], tone: "trust" },
     { id: "chain-router", cells: ["RouterOS", "断链", recent, "管理面断链", next], tone: "danger" },
     { id: "chain-rest", cells: ["REST", restState(snapshot, state).value, recent, "采集通道需核", next], tone: restState(snapshot, state).tone },
     { id: "chain-ssh", cells: ["SSH", sshState(snapshot, state).value, recent, "静态通道断链", next], tone: sshState(snapshot, state).tone },
-    { id: "chain-business", cells: ["业务快照", "禁显", recent, "无业务快照，业务数据不展示", next], title: "业务快照缺失：WAN、资源、终端、连接与速率禁显", tone: "missing" },
+    { id: "chain-business", cells: ["业务数据展示边界", "无业务快照", recent, "无业务快照，业务数据不展示；速率不展示", next], title: "业务快照缺失：WAN、资源、终端、连接与速率不展示", tone: "missing" },
     { id: "chain-default-route", cells: ["默认路由", "待判定", recent, "路由快照未取回，不推断承载", next], tone: "warn" },
     { id: "chain-success", cells: ["最近成功", recent, recent, "仅作为采集链路时间点", next], tone: recent === "未记录" ? "warn" : "trust" },
     { id: "chain-failure", cells: ["失败端点", state.facts.failures.count ? failureText(snapshot, state) : "未记录", recent, "失败端点未记录不写 0", next], tone: state.facts.failures.count ? "warn" : "trust" },
@@ -3141,9 +3143,9 @@ function noSnapshotVisibilityRows(): LedgerRow[] {
     { id: "vis-route", cells: ["默认路由", "待判", "默认路由待判 / 路由快照未取回", "可见性边界"], tone: "warn" },
     { id: "vis-snapshot-time", cells: ["业务快照时间", "无", "业务状态不可信", "模块可见性"], tone: "missing" },
     { id: "vis-snapshot-age", cells: ["业务快照年龄", "待判", "业务状态待核", "模块可见性"], tone: "missing" },
-    { id: "vis-wan", cells: ["WAN", "禁显", "业务模块", "无业务快照"], tone: "missing" },
-    { id: "vis-resource", cells: ["资源", "禁显", "业务模块", "无业务快照"], tone: "missing" },
-    { id: "vis-terminals", cells: ["终端", "禁显", "业务模块", "无业务快照"], tone: "missing" },
+    { id: "vis-wan", cells: ["WAN", "禁显", "业务模块", "无业务快照，业务数据不展示"], tone: "missing" },
+    { id: "vis-resource", cells: ["资源", "禁显", "业务模块", "无业务快照，业务数据不展示"], tone: "missing" },
+    { id: "vis-terminals", cells: ["终端", "禁显", "业务模块", "无业务快照，业务数据不展示"], tone: "missing" },
     { id: "vis-conn", cells: ["连接", "禁显", "业务模块", "无业务快照"], tone: "missing" },
     { id: "vis-rate", cells: ["速率", "禁显", "禁止零速率", "速率不展示"], tone: "missing" },
     { id: "vis-page-trust", cells: ["页面可信等级", "链路可参考", "业务状态不可参考", "状态边界"], tone: "warn" },
@@ -3173,9 +3175,9 @@ function noSnapshotReadonlyDegradedRows(snapshot: OverviewRawSnapshot, state: Ov
   const router = routerosState(snapshot, state.scenario);
   return [
     { id: "readonly-policy", cells: ["只读范围", "只读", "不写配置 / 不推断业务数值"], tone: "trust" },
-    { id: "readonly-chain", cells: ["保留模块", "采集链路", "链路、最近成功、默认路由影响仍可展示"], tone: "trust" },
-    { id: "readonly-business", cells: ["降级模块", "业务禁显", "WAN / 资源 / 终端 / 连接 / 速率禁显"], tone: "missing" },
-    { id: "readonly-rate", cells: ["速率占位", "禁用", "无业务快照时禁用零速率占位"], tone: "missing" },
+    { id: "readonly-chain", cells: ["保留模块", "采集链路", "页面可信等级链路可参考 / 最近成功可展示"], tone: "trust" },
+    { id: "readonly-business", cells: ["业务数据展示边界", "无业务快照", "无业务快照，业务数据不展示"], tone: "missing" },
+    { id: "readonly-rate", cells: ["速率", "不展示", "无业务快照时速率不展示"], tone: "missing" },
     { id: "readonly-router", cells: ["路由器管理面", router.value, router.note], tone: router.tone },
     { id: "readonly-rest", cells: ["REST", rest.value, rest.note], tone: rest.tone },
     { id: "readonly-ssh", cells: ["SSH", ssh.value, ssh.note], tone: ssh.tone },
@@ -3478,14 +3480,16 @@ function compactDesktopPanelGroups(snapshot: OverviewRawSnapshot, state: Overvie
     const channelRows = noSnapshotChannelStatusRows(snapshot, state);
     const recentRows = lastSuccessRows(snapshot, state);
     const visibilityRows = noSnapshotVisibilityRows();
+    const chainRowsCompact = compactRows(chainRows, 6);
+    const channelRowsCompact = compactRows(channelRows, 5);
     return {
       main: [
-        <Module key="ns-summary" title="采集链路" subtitle="RouterOS / REST / SSH / 快照" module="no-snapshot-summary" tone="danger" trust={trust} headers={["链路层", "当前", "最近成功", "主证据", "下次尝试"]} rows={chainRows} minRows={0} visual={<ChainTimeline rows={chainRows} module="no-snapshot-summary-chain" />} />,
-        <Module key="ns-channel" title="三通道状态" subtitle="失败端点 / 默认出口待判" module="no-snapshot-channel-status" tone="warn" trust={trust} headers={["通道", "当前", "说明"]} rows={channelRows} minRows={0} visual={<ChainTimeline rows={channelRows} module="no-snapshot-channel-status-chain" />} />,
+        <Module key="ns-summary" title="采集链路" subtitle="RouterOS / REST / SSH / 快照" module="no-snapshot-summary" tone="danger" trust={trust} headers={["链路层", "当前", "最近成功", "主证据", "下次尝试"]} rows={chainRowsCompact} minRows={0} visual={<ChainTimeline rows={chainRowsCompact} module="no-snapshot-summary-chain" />} />,
+        <Module key="ns-channel" title="三通道状态" subtitle="失败端点 / 默认出口待判" module="no-snapshot-channel-status" tone="warn" trust={trust} headers={["通道", "当前", "说明"]} rows={channelRowsCompact} minRows={0} visual={<ChainTimeline rows={channelRowsCompact} module="no-snapshot-channel-status-chain" />} />,
       ],
       side: [
-        <Module key="ns-recent" title="最近成功" subtitle="时间 / 状态" module="no-snapshot-recent-success" tone="trust" trust={trust} headers={["节点", "当前", "说明"]} rows={recentRows} minRows={0} visual={<ChainTimeline rows={recentRows} module="no-snapshot-recent-success-timeline" />} />,
-        <Module key="ns-visibility" title="模块可见性矩阵" subtitle="无快照 / 禁显" module="no-snapshot-module-visibility" tone="missing" trust={trust} headers={["模块", "状态", "原因", "边界"]} rows={visibilityRows} minRows={0} visual={<VisibilityMatrixVisual rows={visibilityRows} />} />,
+        <Module key="ns-recent" title="最近成功" subtitle="时间 / 状态" module="no-snapshot-recent-success" tone="trust" trust={trust} headers={["节点", "当前", "说明"]} rows={compactRows(recentRows, 4)} minRows={0} visual={<ChainTimeline rows={compactRows(recentRows, 4)} module="no-snapshot-recent-success-timeline" />} />,
+        <Module key="ns-visibility" title="模块可见性矩阵" subtitle="无快照 / 禁显" module="no-snapshot-module-visibility" tone="missing" trust={trust} headers={["模块", "状态", "原因", "边界"]} rows={compactRows(visibilityRows, 6)} minRows={0} visual={<VisibilityMatrixVisual rows={compactRows(visibilityRows, 6)} />} />,
       ],
       bottom: [
         <Module key="ns-degraded" title="证据边界" subtitle="WAN / 资源 / 终端 / 速率不展示" module="evidence-boundary" tone="missing" trust={trust} headers={["模块", "状态", "原因", "边界"]} rows={compactRows(noSnapshotReadonlyDegradedRows(snapshot, state), 4)} minRows={0} />,
@@ -3495,7 +3499,7 @@ function compactDesktopPanelGroups(snapshot: OverviewRawSnapshot, state: Overvie
 
   if (state.scenario === "resource-full") {
     const riskChart = resourceChartRows(state);
-    const pressureRows = resourceContextRows(snapshot, state);
+    const pressureRows = compactRows(resourceContextRows(snapshot, state), 8);
     const top5Rows = resourceTop5Rows(snapshot).slice(0, 8);
     return {
       main: [
@@ -3503,12 +3507,15 @@ function compactDesktopPanelGroups(snapshot: OverviewRawSnapshot, state: Overvie
         <Module key="res-pressure" title="连接压力" subtitle="连接 / 会话 / 接口" module="resource-pressure-bars" tone="warn" trust={trust} headers={["项目", "当前", "依据"]} rows={pressureRows} minRows={0} visual={<JudgementChart module="resource-pressure-bars" kind="pressure" rows={connectionPressureChartRows(snapshot, state)} />} />,
       ],
       side: [
-        <Module key="res-top5" title="接口吞吐 Top5" subtitle="占比 / 最繁忙" module="resource-interface-top5" tone="warn" trust={trust} headers={["接口", "速率", "占比"]} rows={top5Rows} className="ik-overview-top5-list" minRows={0} />,
-        <Module key="res-collection" title="采集 / 快照" subtitle="REST / SSH / 最近成功" module="normal-collection-channel" tone={state.facts.collection.level} trust={trust} headers={["对象", "当前", "依据"]} rows={compactRows(threeColumnRows(collectionRows(snapshot, state), "res-col-"), 4)} minRows={0} visual={<ChannelMatrixVisual module="collection-status" rows={collectionChannelRows(snapshot, state)} />} />,
+        <Module key="res-interface" title="接口状态" subtitle="承载 / 边界" module="normal-interface-boundary" tone="trust" trust={trust} headers={["对象", "当前", "最近", "边界"]} rows={compactRows(interfaceBoundaryRows(snapshot, state), 4)} minRows={0} />,
+        <Module key="res-top5" title="接口吞吐" subtitle="Top5 / 占比" module="resource-interface-top5" tone="warn" trust={trust} headers={["接口", "速率", "占比"]} rows={compactRows(top5Rows, 5)} className="ik-overview-top5-list" minRows={0} />,
+        <Module key="res-collection" title="采集 / 快照" subtitle="REST / SSH / 成功" module="normal-collection-channel" tone={state.facts.collection.level} trust={trust} headers={["对象", "当前", "依据"]} rows={compactRows(threeColumnRows(collectionRows(snapshot, state), "res-col-"), 4)} minRows={0} visual={<ChannelMatrixVisual module="collection-status" rows={collectionChannelRows(snapshot, state)} />} />,
         <Module key="res-route" title="默认出口" subtitle="出口 / 承载 / 优先级" module="route-raw-facts" tone={state.facts.route.level} trust={trust} headers={["出口", "网关", "优先级", "状态"]} rows={compactRows(routeBusinessRows(snapshot, state), 4)} minRows={0} />,
       ],
       bottom: [
-        <Module key="res-boundary" title="证据边界" subtitle="原始字段下沉" module="evidence-boundary" tone="trust" trust={trust} headers={["对象", "当前", "依据"]} rows={compactRows([...threeColumnRows(resourceBoundaryRows(snapshot, state), "res-boundary-"), ...routeRawEvidenceRows(snapshot, state)], 5)} minRows={0} />,
+        <Module key="res-terminals" title="终端排行" subtitle="异常置顶 / 总流量" module="terminal-ranking" tone="trust" trust={trust} headers={["设备", "IP", "流量", "状态"]} rows={compactRows(desktopTerminalRows(snapshot), 4)} minRows={0} />,
+        <Module key="res-events" title="最近事件" subtitle="采集 / 默认出口" module="normal-ops-ledger" tone={state.facts.collection.level} trust={trust} headers={["对象", "当前", "依据"]} rows={compactRows(normalOpsRows(snapshot, state), 4)} minRows={0} />,
+        <Module key="res-boundary" title="原始证据" subtitle="字段下沉" module="evidence-boundary" tone="trust" trust={trust} headers={["对象", "当前", "依据"]} rows={compactRows([...threeColumnRows(resourceBoundaryRows(snapshot, state), "res-boundary-"), ...routeRawEvidenceRows(snapshot, state)], 4)} minRows={0} />,
       ],
     };
   }
@@ -3597,14 +3604,14 @@ function compactDesktopPanelGroups(snapshot: OverviewRawSnapshot, state: Overvie
       <Module key="compact-wan-evidence" title={isFleet ? "WAN异常TopN" : "WAN证据"} subtitle={isFleet ? "离线对象 / 类型分布" : "Top3 / 采样"} module="normal-wan-evidence" tone={state.facts.wan.offline ? "warn" : "trust"} trust={trust} headers={["对象", "当前", "依据"]} rows={wanEvidenceRows} minRows={0} />,
     ],
     side: [
-      <Module key="compact-resource" title={state.scenario === "resource-full" ? "资源满载" : "资源"} subtitle={state.scenario === "resource-full" ? "三项超阈" : isFleet ? "接口排行 / 阈值" : "当前 / 阈值"} module={state.scenario === "resource-full" ? "resource-risk-priority" : "resource-threshold"} tone={state.scenario === "no-snapshot" ? "missing" : state.facts.resource.level} trust={trust} headers={["项", "阈值", "持续", "峰值"]} rows={compactRows(resourceRows(state), 3)} minRows={0} visual={<JudgementChart module="resource-threshold" kind="pressure" rows={resourceChartRows(state)} />} />,
-      <Module key="compact-collection" title={isFleet ? "采集可信度" : "采集 / 快照"} subtitle={state.scenario === "collection-down" ? "REST / SSH / 快照" : "REST / SSH / 最近成功"} module={state.scenario === "collection-down" ? "collection-channel-ledger" : state.scenario === "no-snapshot" ? "no-snapshot-channel-status" : "normal-collection-channel"} tone={state.scenario === "collection-down" || state.scenario === "no-snapshot" ? "warn" : state.facts.collection.level} trust={trust} headers={state.scenario === "no-snapshot" ? ["链路层", "当前", "最近成功", "主证据", "下次尝试"] : ["对象", "当前", "依据"]} rows={collectionRowsCompact} minRows={0} visual={<ChannelMatrixVisual module="collection-status" rows={collectionChannelRows(snapshot, state)} />} />,
       <Module key="compact-interface" title="接口状态" subtitle={state.scenario === "interfaces-down" ? "Down / 默认出口" : "转发面 / 承载"} module={state.scenario === "interfaces-down" ? "interface-forwarding" : "normal-interface-boundary"} tone={state.scenario === "interfaces-down" ? "danger" : "trust"} trust={trust} headers={state.scenario === "interfaces-down" ? ["对象", "当前", "依据"] : ["对象", "当前", "最近", "边界"]} rows={interfaceRowsCompact} minRows={0} visual={state.scenario === "interfaces-down" ? <JudgementChart module="interface-forwarding" kind="pressure" rows={interfaceForwardingChartRows(snapshot, state)} /> : undefined} />,
+      <Module key="compact-resource" title={state.scenario === "resource-full" ? "资源满载" : "资源"} subtitle={state.scenario === "resource-full" ? "三项超阈" : isFleet ? "接口排行 / 阈值" : "当前 / 阈值"} module={state.scenario === "resource-full" ? "resource-risk-priority" : "resource-threshold"} tone={state.scenario === "no-snapshot" ? "missing" : state.facts.resource.level} trust={trust} headers={["项", "阈值", "持续", "峰值"]} rows={compactRows(resourceRows(state), 3)} minRows={0} visual={<JudgementChart module="resource-threshold" kind="pressure" rows={resourceChartRows(state)} />} />,
+      <Module key="compact-collection" title={isFleet ? "采集可信度" : "采集 / 快照"} subtitle={state.scenario === "collection-down" ? "REST / SSH / 快照" : "REST / SSH / 成功"} module={state.scenario === "collection-down" ? "collection-channel-ledger" : state.scenario === "no-snapshot" ? "no-snapshot-channel-status" : "normal-collection-channel"} tone={state.scenario === "collection-down" || state.scenario === "no-snapshot" ? "warn" : state.facts.collection.level} trust={trust} headers={state.scenario === "no-snapshot" ? ["链路层", "当前", "最近成功", "主证据", "下次尝试"] : ["对象", "当前", "依据"]} rows={collectionRowsCompact} minRows={0} visual={<ChannelMatrixVisual module="collection-status" rows={collectionChannelRows(snapshot, state)} />} />,
     ],
     bottom: [
-      <Module key="compact-terminals" title="终端排行" subtitle="异常置顶 / 总流量" module="terminal-ranking" tone="trust" trust={trust} headers={["设备", "IP", "流量", "状态"]} rows={desktopTerminalRows(snapshot)} minRows={0} />,
+      <Module key="compact-terminals" title="终端排行" subtitle="异常置顶 / 总流量" module="terminal-ranking" tone="trust" trust={trust} headers={["设备", "IP", "流量", "状态"]} rows={compactRows(desktopTerminalRows(snapshot), 4)} minRows={0} />,
       <Module key="compact-events" title="最近事件" subtitle="采集 / 默认出口" module="normal-ops-ledger" tone={state.facts.collection.level} trust={trust} headers={["对象", "当前", "依据"]} rows={compactRows(normalOpsRows(snapshot, state), 4)} minRows={0} />,
-      <Module key="compact-boundary" title="证据边界" subtitle="原始字段下沉" module={state.scenario === "no-snapshot" ? "no-snapshot-degraded-modules" : "evidence-boundary"} tone={state.scenario === "no-snapshot" ? "missing" : "trust"} trust={trust} headers={state.scenario === "resource-full" || state.scenario === "interfaces-down" ? ["对象", "当前", "最近", "边界"] : ["对象", "当前", "依据"]} rows={desktopEvidenceBoundaryRows(snapshot, state)} minRows={0} />,
+      <Module key="compact-boundary" title="原始证据" subtitle="字段下沉" module={state.scenario === "no-snapshot" ? "no-snapshot-degraded-modules" : "evidence-boundary"} tone={state.scenario === "no-snapshot" ? "missing" : "trust"} trust={trust} headers={state.scenario === "resource-full" || state.scenario === "interfaces-down" ? ["对象", "当前", "最近", "边界"] : ["对象", "当前", "依据"]} rows={compactRows(desktopEvidenceBoundaryRows(snapshot, state), 4)} minRows={0} />,
     ],
   };
 }

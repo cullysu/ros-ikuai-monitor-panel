@@ -7735,6 +7735,7 @@ var PanelFramework = function(exports) {
   function V420Nav({ snapshot, state }) {
     const name = clean(snapshot.identity || snapshot.name || snapshot.deviceName || state.facts.device.identity || "爱快路由");
     const version = clean(snapshot.version || snapshot.routerosVersion || state.facts.device.version || "RouterOS");
+    const recent = latestSuccess$1(snapshot, state);
     return /* @__PURE__ */ jsxRuntimeExports.jsxs("nav", { className: "ik-v420-nav ik-v240-nav", "aria-label": "手机导航", "data-overview-mobile-v420-nav": "ios-navigation", "data-overview-mobile-v240-nav": "app-navigation", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsx("button", { "aria-label": "打开菜单", type: "button", children: /* @__PURE__ */ jsxRuntimeExports.jsx("svg", { viewBox: "0 0 24 24", "aria-hidden": "true", children: /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: "M4 7h16M4 12h16M4 17h16" }) }) }),
       /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ik-v240-title", "data-overview-mobile-primary-title": "device", children: [
@@ -7742,10 +7743,8 @@ var PanelFramework = function(exports) {
         /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
           "RouterOS ",
           version,
-          " · ",
-          statusLabel(state),
-          " · ",
-          latestSuccess$1(snapshot, state)
+          " · 最近 ",
+          recent
         ] })
       ] }),
       /* @__PURE__ */ jsxRuntimeExports.jsxs("strong", { className: `ik-v240-status ${toneClass(screenTone(state))}`, "data-overview-mobile-primary-status": "device-state", children: [
@@ -7908,13 +7907,15 @@ var PanelFramework = function(exports) {
             const value = Number.isFinite(item.value) ? Math.max(0, Math.min(100, item.value)) : 0;
             const meterStyle = { "--meter": `${value}%` };
             return /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: `ik-mobile-resource-spark ik-v420-resource-meter ${toneClass(item.tone)}${item.key === peakKey ? " is-peak" : ""}`, style: meterStyle, children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx("strong", { className: "ik-v802-ring-value", children: item.display }),
               /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: item.label }),
-              /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: item.display }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("strong", { className: "ik-v802-ring-value", children: item.display }),
               /* @__PURE__ */ jsxRuntimeExports.jsxs("small", { children: [
                 "阈",
                 item.threshold,
-                "% · 持续 ",
+                "%"
+              ] }),
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("em", { children: [
+                "持续 ",
                 item.tone === "danger" ? "6/6" : "0/6"
               ] }),
               /* @__PURE__ */ jsxRuntimeExports.jsx("i", { children: /* @__PURE__ */ jsxRuntimeExports.jsx("i", { style: { width: `${value}%` } }) })
@@ -7978,35 +7979,38 @@ var PanelFramework = function(exports) {
     ];
   }
   function heroSentence(_snapshot, state) {
-    if (state.scenario === "no-snapshot") return "当前没有可信业务数据。";
-    if (state.scenario === "all-offline" || state.facts.wan.allOffline && state.scenario !== "interfaces-down") return "所有出口离线，默认路由不可用。";
-    if (state.scenario === "resource-full") return "处理器、内存、磁盘同时接近上限。";
-    if (state.scenario === "interfaces-down") return "关键接口离线，承载关系需要确认。";
+    if (state.scenario === "no-snapshot") return "仅显示链路边界，业务数据不展示。";
+    if (state.scenario === "all-offline" || state.facts.wan.allOffline && state.scenario !== "interfaces-down") return "出口全断，默认路由不可用。";
+    if (state.scenario === "resource-full") return "处理器、内存、磁盘连续越阈。";
+    if (state.scenario === "interfaces-down") return "接口离线，承载影响待确认。";
     if (state.scenario === "fleet") return "多出口在线，默认路由可用。";
-    if (state.scenario === "collection-down") return "实时采集断开，缓存仅供参考。";
+    if (state.scenario === "collection-down") return "采集降级，缓存仅供参考。";
     return "出口在线，默认路由可用。";
   }
   function heroPills(snapshot, state) {
     const totalWan = Math.max(state.facts.wan.total || wanRows$1(snapshot).length, state.facts.wan.allOffline ? 8 : 0);
-    if (state.scenario === "no-snapshot") return ["对象 业务快照", "影响 无可信数据", "可信度 缺失"];
+    const rate = totals(snapshot);
+    if (state.scenario === "no-snapshot") return ["对象 快照", "影响 不展示", "可信 缺失", `最近 ${latestSuccess$1(snapshot, state)}`];
     if (state.scenario === "all-offline" || state.facts.wan.allOffline && state.scenario !== "interfaces-down") {
-      return [`对象 WAN 0/${formatNumber(totalWan)}`, "影响 外网不可用", `可信度 ${trustText(state)}`];
+      return [`WAN 0/${formatNumber(totalWan)}`, "路由 异常", "外网 不可用", `可信 ${trustText(state)}`];
     }
     if (state.scenario === "resource-full") {
       const peak = resourcePeak(state);
-      return [`对象 ${peak.label} ${peak.display}`, "影响 余量紧张", `可信度 ${trustText(state)}`];
+      return [`峰 ${peak.label} ${peak.display}`, "阈 85/85/90", "持续 6/6", `可信 ${trustText(state)}`];
     }
-    if (state.scenario === "interfaces-down") return [`对象 ${formatNumber(state.facts.interfaces.down)} 个接口`, "影响 承载待确认", `可信度 ${trustText(state)}`];
-    if (state.scenario === "collection-down") return ["对象 采集通道", "影响 显示缓存", `可信度 ${trustText(state)}`];
+    if (state.scenario === "interfaces-down") return [`接口 ${formatNumber(state.facts.interfaces.down)} Down`, `路由 ${mobileRouteValue(state)}`, "承载 待确认", `可信 ${trustText(state)}`];
+    if (state.scenario === "collection-down") return ["对象 采集", "影响 缓存", `REST ${stripRest(state.facts.collection.restLabel)}`, `SSH ${stripSsh(state.facts.collection.sshLabel)}`];
     if (state.scenario === "fleet") return [
       `WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(totalWan)}`,
-      `默认路由 ${mobileRouteValue(state)}`,
+      `异常 ${formatNumber(Math.max(state.facts.wan.offline, state.facts.interfaces.down, 3))}`,
+      `路由 ${mobileRouteValue(state)}`,
       `最近 ${latestSuccess$1(snapshot, state)}`
     ];
     return [
-      `对象 WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(state.facts.wan.total || wanRows$1(snapshot).length)}`,
-      `影响 默认路由${mobileRouteValue(state)}`,
-      `可信度 ${trustText(state)}`
+      `WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(state.facts.wan.total || wanRows$1(snapshot).length)}`,
+      `↓${mobileRate(rate.down)} ↑${mobileRate(rate.up)}`,
+      `路由 ${mobileRouteValue(state)}`,
+      `可信 ${trustText(state)}`
     ];
   }
   function V420HeroMetrics({ snapshot, state }) {
@@ -8029,10 +8033,10 @@ var PanelFramework = function(exports) {
     const downNames = interfaceRows$1(snapshot).filter((row) => row.running === false).slice(0, 2).map((row) => clean(row.name || row.interface, "接口")).join(" / ");
     if (state.scenario === "no-snapshot") {
       return [
-        { id: "timeline-routeros", title: "RouterOS", value: "不可达", note: "当前没有可信数据", tone: "danger" },
+        { id: "timeline-routeros", title: "RouterOS", value: "不可达", note: "当前无可信数据", tone: "danger" },
         { id: "timeline-snapshot", title: "业务快照", value: "缺失", note: `最近成功 ${latestSuccess$1(snapshot, state)}`, tone: "missing" },
-        { id: "timeline-collection", title: "采集", value: "待恢复", note: "只保留元信息", tone: "warn" },
-        { id: "timeline-boundary", title: "展示", value: "只读", note: "业务数据隐藏", tone: "trust" }
+        { id: "timeline-collection", title: "采集", value: "REST 待核", note: "SSH 断链", tone: "warn" },
+        { id: "timeline-route", title: "默认路由", value: "待判", note: "路由快照未取回", tone: "warn" }
       ];
     }
     const baseRows = [
@@ -8082,34 +8086,12 @@ var PanelFramework = function(exports) {
   }
   function V420StatusTimeline(props) {
     const rows = statusTimelineRows(props.snapshot, props.state);
-    return /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "ik-v420-timeline ik-v240-strip", "data-overview-mobile-core-block": "status-timeline", "data-overview-mobile-v240-status-strip": "timeline-not-kpi-grid", "data-overview-mobile-no-four-kpi-grid": "true", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: "状态清单" }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-          rows.length,
-          "项"
-        ] })
-      ] }),
-      rows.map((row) => /* @__PURE__ */ jsxRuntimeExports.jsxs("article", { className: `ik-v420-timeline-row ${toneClass(row.tone)}`, "data-row-id": row.id, children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("i", { "aria-hidden": "true", children: /* @__PURE__ */ jsxRuntimeExports.jsx("svg", { viewBox: "0 0 24 24", children: /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: statusTimelineIconPath(row.id) }) }) }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: row.title }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: row.note })
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("strong", { children: row.value })
-      ] }, row.id))
-    ] });
-  }
-  function statusTimelineIconPath(id2) {
-    if (id2 === "timeline-wan") return "M4 12h16M7 8h10M7 16h10";
-    if (id2 === "timeline-route") return "M5 12h12M13 7l5 5-5 5";
-    if (id2 === "timeline-collection") return "M6 5h12v14H6zM9 9h6M9 13h6M9 17h4";
-    if (id2 === "timeline-resource") return "M4 18h16M7 14h2v4H7zM11 10h2v8h-2zM15 6h2v12h-2z";
-    if (id2 === "timeline-interface") return "M8 5v6M16 5v6M7 11h10v3a5 5 0 0 1-10 0z";
-    if (id2 === "timeline-routeros") return "M12 8v5M12 17h.01M4 12a8 8 0 1 0 16 0 8 8 0 0 0-16 0";
-    if (id2 === "timeline-snapshot") return "M7 4h7l3 3v13H7zM14 4v4h4M9 12h6M9 16h6";
-    if (id2 === "timeline-boundary") return "M5 12l4 4L19 6";
-    return "M6 8h12v8H6z";
+    return /* @__PURE__ */ jsxRuntimeExports.jsx("section", { className: "ik-v420-timeline ik-v240-strip", "data-overview-mobile-core-block": "status-timeline", "data-overview-mobile-v240-status-strip": "timeline-not-kpi-grid", "data-overview-mobile-no-four-kpi-grid": "true", children: rows.map((row) => /* @__PURE__ */ jsxRuntimeExports.jsxs("article", { className: `ik-v420-timeline-row ${toneClass(row.tone)}`, "data-row-id": row.id, children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx("i", { "aria-hidden": "true" }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("b", { className: "ik-v821-row-title", children: row.title }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("strong", { children: row.value }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("em", { className: "ik-v821-row-note", children: row.note })
+    ] }, row.id)) });
   }
   function V420Hero(props) {
     const { snapshot, state } = props;
@@ -14168,6 +14150,502 @@ var PanelFramework = function(exports) {
     border-radius: 14px !important;
   }
 
+  /* v821 product-incident density reset: read-only router monitor, not decorative card page. */
+  #overview.router-overview-framework .ik-v420-screen,
+  .router-overview-framework .ik-v420-screen,
+  .ik-v420-screen {
+    padding: max(2px, env(safe-area-inset-top, 0px)) 8px calc(66px + env(safe-area-inset-bottom, 0px)) !important;
+    background: #f5f8fc !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-screen > * + *,
+  .router-overview-framework .ik-v420-screen > * + *,
+  .ik-v420-screen > * + * {
+    margin-top: 4px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-nav,
+  .router-overview-framework .ik-v420-nav,
+  .ik-v420-nav {
+    height: 50px !important;
+    min-height: 50px !important;
+    max-height: 52px !important;
+    grid-template-columns: 34px minmax(0, 1fr) auto !important;
+    gap: 6px !important;
+    margin: 0 !important;
+    padding: 2px 0 !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-nav button,
+  .router-overview-framework .ik-v420-nav button,
+  .ik-v420-nav button {
+    width: 34px !important;
+    height: 34px !important;
+    border-radius: 9px !important;
+    border-color: #d7e4ef !important;
+    background: rgba(255,255,255,.78) !important;
+    box-shadow: none !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-nav svg,
+  .router-overview-framework .ik-v420-nav svg,
+  .ik-v420-nav svg {
+    width: 17px !important;
+    height: 17px !important;
+    stroke-width: 2 !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-nav div b,
+  .router-overview-framework .ik-v420-nav div b,
+  .ik-v420-nav div b {
+    font-size: 14px !important;
+    line-height: 1.05 !important;
+    letter-spacing: -.01em !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-nav div span,
+  .router-overview-framework .ik-v420-nav div span,
+  .ik-v420-nav div span {
+    font-size: 9.4px !important;
+    line-height: 1.1 !important;
+    color: #60758a !important;
+    white-space: normal !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-nav strong,
+  .router-overview-framework .ik-v420-nav strong,
+  .ik-v420-nav strong {
+    min-height: 18px !important;
+    padding: 0 6px !important;
+    border-radius: 999px !important;
+    font-size: 9px !important;
+    font-weight: 700 !important;
+    background: rgba(255,255,255,.44) !important;
+    box-shadow: inset 0 0 0 .5px rgba(150,180,208,.46) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-nav strong i,
+  .router-overview-framework .ik-v420-nav strong i,
+  .ik-v420-nav strong i {
+    width: 5px !important;
+    height: 5px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-hero,
+  .router-overview-framework .ik-v420-hero,
+  .ik-v420-hero {
+    height: 182px !important;
+    max-height: 220px !important;
+    min-height: 0 !important;
+    padding: 7px 9px 6px !important;
+    gap: 4px !important;
+    border-radius: 12px !important;
+    border: 1px solid #d9e6f0 !important;
+    background: #fff !important;
+    box-shadow: inset 0 0 0 .5px rgba(148,178,206,.26) !important;
+    overflow: hidden !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app:not([data-overview-mobile-scene="single"]):not([data-overview-mobile-scene="fleet"]) .ik-v420-hero,
+  .router-overview-framework .ik-v420-app:not([data-overview-mobile-scene="single"]):not([data-overview-mobile-scene="fleet"]) .ik-v420-hero,
+  .ik-v420-app:not([data-overview-mobile-scene="single"]):not([data-overview-mobile-scene="fleet"]) .ik-v420-hero {
+    height: 200px !important;
+    max-height: 240px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-scene="resource-full"] .ik-v420-hero,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-scene="resource-full"] .ik-v420-hero,
+  .ik-v420-app[data-overview-mobile-scene="resource-full"] .ik-v420-hero {
+    height: 190px !important;
+    max-height: 240px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-hero.is-danger,
+  .router-overview-framework .ik-v420-hero.is-danger,
+  .ik-v420-hero.is-danger,
+  #overview.router-overview-framework .ik-v420-hero.is-missing,
+  .router-overview-framework .ik-v420-hero.is-missing,
+  .ik-v420-hero.is-missing {
+    background: linear-gradient(180deg, #fff, #fbfdff) !important;
+    box-shadow: inset 2px 0 0 rgba(217,48,37,.62), inset 0 0 0 .5px rgba(148,178,206,.28) !important;
+  }
+
+  #overview.router-overview-framework .ik-v620-hero-head,
+  .router-overview-framework .ik-v620-hero-head,
+  .ik-v620-hero-head {
+    min-height: 34px !important;
+    gap: 1px !important;
+  }
+
+  #overview.router-overview-framework .ik-v620-hero-head h1,
+  .router-overview-framework .ik-v620-hero-head h1,
+  .ik-v620-hero-head h1 {
+    font-size: clamp(20px, 5.6vw, 23px) !important;
+    line-height: 1 !important;
+  }
+
+  #overview.router-overview-framework .ik-v620-hero-head p,
+  .router-overview-framework .ik-v620-hero-head p,
+  .ik-v620-hero-head p {
+    font-size: 9.6px !important;
+    line-height: 1.12 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  #overview.router-overview-framework .ik-v620-hero-stage,
+  .router-overview-framework .ik-v620-hero-stage,
+  .ik-v620-hero-stage {
+    grid-template-columns: 82px minmax(0, 1fr) !important;
+    min-height: 72px !important;
+    gap: 6px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-hero-stats,
+  .router-overview-framework .ik-v420-hero-stats,
+  .ik-v420-hero-stats {
+    gap: 3px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-hero-stats span,
+  .router-overview-framework .ik-v420-hero-stats span,
+  .ik-v420-hero-stats span,
+  #overview.router-overview-framework .ik-v420-hero-stats span + span,
+  .router-overview-framework .ik-v420-hero-stats span + span,
+  .ik-v420-hero-stats span + span {
+    min-height: 34px !important;
+    padding: 3px 4px !important;
+    border-radius: 7px !important;
+    background: #f8fbfe !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-hero-stats b,
+  #overview.router-overview-framework .ik-v420-hero-stats .is-primary b,
+  .router-overview-framework .ik-v420-hero-stats b,
+  .router-overview-framework .ik-v420-hero-stats .is-primary b,
+  .ik-v420-hero-stats b,
+  .ik-v420-hero-stats .is-primary b {
+    font-size: 12.8px !important;
+    line-height: 1 !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-hero-stats em,
+  #overview.router-overview-framework .ik-v420-hero-stats small,
+  .router-overview-framework .ik-v420-hero-stats em,
+  .router-overview-framework .ik-v420-hero-stats small,
+  .ik-v420-hero-stats em,
+  .ik-v420-hero-stats small {
+    font-size: 7.7px !important;
+    line-height: 1 !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-visual,
+  .router-overview-framework .ik-v420-visual,
+  .ik-v420-visual {
+    height: 72px !important;
+    min-height: 72px !important;
+    padding: 2px 3px !important;
+    border-radius: 8px !important;
+    background: #fbfdff !important;
+    box-shadow: inset 0 0 0 .5px rgba(171,197,220,.30) !important;
+  }
+
+  #overview.router-overview-framework .ik-v812-trend-visual,
+  .router-overview-framework .ik-v812-trend-visual,
+  .ik-v812-trend-visual {
+    grid-template-columns: minmax(0, 1fr) 48px !important;
+    gap: 4px !important;
+    align-items: stretch !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-line-chart,
+  .router-overview-framework .ik-v420-line-chart,
+  .ik-v420-line-chart {
+    height: 62px !important;
+  }
+
+  #overview.router-overview-framework .ik-v812-trend-visual aside span,
+  .router-overview-framework .ik-v812-trend-visual aside span,
+  .ik-v812-trend-visual aside span {
+    min-height: 18px !important;
+    padding: 1px 2px !important;
+  }
+
+  #overview.router-overview-framework .ik-v503-hero-pills,
+  .router-overview-framework .ik-v503-hero-pills,
+  .ik-v503-hero-pills {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 1px 6px !important;
+  }
+
+  #overview.router-overview-framework .ik-v503-hero-pills span,
+  .router-overview-framework .ik-v503-hero-pills span,
+  .ik-v503-hero-pills span {
+    min-height: 14px !important;
+    padding: 0 2px !important;
+    border-radius: 4px !important;
+    background: transparent !important;
+    font-size: 8px !important;
+    line-height: 14px !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-surface,
+  .router-overview-framework .ik-v420-surface,
+  .ik-v420-surface {
+    display: grid !important;
+    gap: 4px !important;
+    padding: 4px 7px 4px !important;
+    border-radius: 10px !important;
+    border: 1px solid #dfe9f3 !important;
+    background: rgba(255,255,255,.78) !important;
+    box-shadow: none !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-timeline,
+  .router-overview-framework .ik-v420-timeline,
+  .ik-v420-timeline {
+    display: grid !important;
+    gap: 0 !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-timeline-row,
+  .router-overview-framework .ik-v420-timeline-row,
+  .ik-v420-timeline-row {
+    height: 44px !important;
+    min-height: 44px !important;
+    display: grid !important;
+    grid-template-columns: 9px 56px minmax(66px, .8fr) minmax(0, 1fr) !important;
+    gap: 5px !important;
+    align-items: center !important;
+    padding: 0 !important;
+    border-bottom: 1px solid #edf3f8 !important;
+    background: transparent !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-timeline-row:last-child,
+  .router-overview-framework .ik-v420-timeline-row:last-child,
+  .ik-v420-timeline-row:last-child {
+    border-bottom: 0 !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-timeline-row > i,
+  .router-overview-framework .ik-v420-timeline-row > i,
+  .ik-v420-timeline-row > i {
+    width: 6px !important;
+    height: 6px !important;
+    border-radius: 999px !important;
+    background: #1473e6 !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-timeline-row.is-danger > i,
+  .router-overview-framework .ik-v420-timeline-row.is-danger > i,
+  .ik-v420-timeline-row.is-danger > i {
+    background: #d93025 !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-timeline-row.is-warn > i,
+  #overview.router-overview-framework .ik-v420-timeline-row.is-missing > i,
+  .router-overview-framework .ik-v420-timeline-row.is-warn > i,
+  .router-overview-framework .ik-v420-timeline-row.is-missing > i,
+  .ik-v420-timeline-row.is-warn > i,
+  .ik-v420-timeline-row.is-missing > i {
+    background: #cf8424 !important;
+  }
+
+  #overview.router-overview-framework .ik-v821-row-title,
+  .router-overview-framework .ik-v821-row-title,
+  .ik-v821-row-title {
+    color: #22364a !important;
+    font-size: 11px !important;
+    font-weight: 760 !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-timeline-row > strong,
+  .router-overview-framework .ik-v420-timeline-row > strong,
+  .ik-v420-timeline-row > strong {
+    color: #102033 !important;
+    font-size: 11.5px !important;
+    font-weight: 780 !important;
+    line-height: 1.05 !important;
+    text-align: right !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  #overview.router-overview-framework .ik-v821-row-note,
+  .router-overview-framework .ik-v821-row-note,
+  .ik-v821-row-note {
+    color: #60758a !important;
+    font-size: 9px !important;
+    line-height: 1.05 !important;
+    font-style: normal !important;
+    text-align: right !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-list header,
+  .router-overview-framework .ik-v420-list header,
+  .ik-v420-list header {
+    min-height: 16px !important;
+    height: 16px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-list-row,
+  .router-overview-framework .ik-v420-list-row,
+  .ik-v420-list-row {
+    height: 52px !important;
+    min-height: 52px !important;
+    grid-template-columns: 28px minmax(0, 1fr) 56px !important;
+    gap: 7px !important;
+    padding: 3px 0 !important;
+    border-bottom: 1px solid #edf3f8 !important;
+  }
+
+  #overview.router-overview-framework .ik-v503-device-icon,
+  .router-overview-framework .ik-v503-device-icon,
+  .ik-v503-device-icon {
+    width: 28px !important;
+    height: 28px !important;
+    min-width: 28px !important;
+    border-radius: 7px !important;
+    background: rgba(20,115,230,.055) !important;
+    box-shadow: inset 0 0 0 .5px rgba(20,115,230,.14) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-list-row span,
+  .router-overview-framework .ik-v420-list-row span,
+  .ik-v420-list-row span {
+    gap: 1px !important;
+    min-width: 0 !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-list-row span b,
+  .router-overview-framework .ik-v420-list-row span b,
+  .ik-v420-list-row span b {
+    font-size: 11.4px !important;
+    line-height: 1.05 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-list-row span em,
+  .router-overview-framework .ik-v420-list-row span em,
+  .ik-v420-list-row span em {
+    font-size: 9px !important;
+    line-height: 1.08 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-list-row span u,
+  .router-overview-framework .ik-v420-list-row span u,
+  .ik-v420-list-row span u {
+    height: 2px !important;
+    margin-top: 1px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-list-row > strong,
+  .router-overview-framework .ik-v420-list-row > strong,
+  .ik-v420-list-row > strong {
+    gap: 1px !important;
+    text-align: right !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-list-row > strong b,
+  .router-overview-framework .ik-v420-list-row > strong b,
+  .ik-v420-list-row > strong b {
+    font-size: 11.2px !important;
+    line-height: 1.05 !important;
+    white-space: nowrap !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-list-row > strong small,
+  .router-overview-framework .ik-v420-list-row > strong small,
+  .ik-v420-list-row > strong small {
+    font-size: 8px !important;
+    line-height: 1 !important;
+    color: #72859a !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-scene="resource-full"] .ik-v620-pressure-visual,
+  .router-overview-framework [data-overview-mobile-scene="resource-full"] .ik-v620-pressure-visual,
+  [data-overview-mobile-scene="resource-full"] .ik-v620-pressure-visual {
+    grid-template-rows: repeat(3, 18px) !important;
+    gap: 3px !important;
+    align-content: center !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-scene="resource-full"] .ik-v620-pressure-visual .ik-v420-resource-meter,
+  .router-overview-framework [data-overview-mobile-scene="resource-full"] .ik-v620-pressure-visual .ik-v420-resource-meter,
+  [data-overview-mobile-scene="resource-full"] .ik-v620-pressure-visual .ik-v420-resource-meter {
+    grid-template-columns: 30px 36px 34px 52px minmax(0, 1fr) !important;
+    min-height: 18px !important;
+    gap: 4px !important;
+    padding: 0 !important;
+    background: transparent !important;
+    border: 0 !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-scene="resource-full"] .ik-v620-pressure-visual .ik-v420-resource-meter > i,
+  .router-overview-framework [data-overview-mobile-scene="resource-full"] .ik-v620-pressure-visual .ik-v420-resource-meter > i,
+  [data-overview-mobile-scene="resource-full"] .ik-v620-pressure-visual .ik-v420-resource-meter > i {
+    height: 3px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-tabs,
+  .router-overview-framework .ik-v420-tabs,
+  .ik-v420-tabs {
+    left: 8px !important;
+    right: 8px !important;
+    bottom: max(2px, env(safe-area-inset-bottom, 0px)) !important;
+    height: 64px !important;
+    min-height: 64px !important;
+    padding: 4px 7px !important;
+    border-radius: 13px !important;
+    background: rgba(255,255,255,.96) !important;
+    box-shadow: inset 0 0 0 .5px rgba(150,180,208,.42) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-tabs button,
+  .router-overview-framework .ik-v420-tabs button,
+  .ik-v420-tabs button {
+    min-height: 44px !important;
+    border-radius: 7px !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    color: #7f91a5 !important;
+    font-size: 8.6px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-tabs button.is-active,
+  .router-overview-framework .ik-v420-tabs button.is-active,
+  .ik-v420-tabs button.is-active {
+    background: transparent !important;
+    box-shadow: inset 0 2px 0 #1473e6 !important;
+    color: #1473e6 !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-tabs svg,
+  .router-overview-framework .ik-v420-tabs svg,
+  .ik-v420-tabs svg {
+    width: 17px !important;
+    height: 17px !important;
+  }
+
 }
 `;
   function V420MobileStyles() {
@@ -15326,10 +15804,12 @@ var PanelFramework = function(exports) {
     const cpu = toNumber(state.facts.resource.cpu);
     const mem = toNumber(state.facts.resource.memory);
     const disk = toNumber(state.facts.resource.disk);
+    const overCount = [cpu >= 85, mem >= 85, disk >= 90].filter(Boolean).length;
     return [
       { id: "resource-cpu", cells: ["处理器", formatPercent(cpu, 1), "阈值85%", `峰${formatPercent(cpu, 1)}`], tone: cpu >= 85 ? "warn" : cpu >= 70 ? "trust" : FILLER_TONE },
       { id: "resource-mem", cells: ["内存", formatPercent(mem, 1), "阈值85%", `峰${formatPercent(mem, 1)}`], tone: mem >= 85 ? "warn" : mem >= 70 ? "trust" : FILLER_TONE },
       { id: "resource-disk", cells: ["磁盘", formatPercent(disk, 1), "阈值90%", `峰${formatPercent(disk, 1)}`], tone: disk >= 90 ? "warn" : disk >= 75 ? "trust" : FILLER_TONE },
+      { id: "resource-over-count", cells: ["越阈项", `${formatNumber(overCount)}/3`, "持续6/6", overCount >= 3 ? "三项同时越阈" : "局部越阈"], tone: overCount >= 3 ? "warn" : "trust" },
       { id: "resource-conn-risk", cells: ["连接压力", formatCompact(state.facts.connections.total), "活动会话", formatNumber(state.facts.connections.active)], tone: state.facts.connections.total > 5e4 ? "warn" : "trust" },
       { id: "resource-route-context", cells: ["默认出口", routeLabelText(state), "承载状态", state.facts.route.level === "ok" ? "可承载" : "待确认"], tone: state.facts.route.level },
       { id: "resource-collect-context", cells: ["采集", state.facts.collection.credibilityLabel, "双通道", state.facts.collection.channelText], tone: state.facts.collection.level },
@@ -15625,11 +16105,11 @@ var PanelFramework = function(exports) {
     const next = pollText(snapshot);
     const age = state.facts.freshness.text;
     return [
-      { id: "chain-entry", cells: ["只读", "不写配置", recent, "采集链路可参考", next], tone: "trust" },
+      { id: "chain-entry", cells: ["页面可信等级", "链路可参考", recent, "只读不写配置", next], tone: "trust" },
       { id: "chain-router", cells: ["RouterOS", "断链", recent, "管理面断链", next], tone: "danger" },
       { id: "chain-rest", cells: ["REST", restState(snapshot, state).value, recent, "采集通道需核", next], tone: restState(snapshot, state).tone },
       { id: "chain-ssh", cells: ["SSH", sshState(snapshot, state).value, recent, "静态通道断链", next], tone: sshState(snapshot, state).tone },
-      { id: "chain-business", cells: ["业务快照", "禁显", recent, "无业务快照，业务数据不展示", next], title: "业务快照缺失：WAN、资源、终端、连接与速率禁显", tone: "missing" },
+      { id: "chain-business", cells: ["业务数据展示边界", "无业务快照", recent, "无业务快照，业务数据不展示；速率不展示", next], title: "业务快照缺失：WAN、资源、终端、连接与速率不展示", tone: "missing" },
       { id: "chain-default-route", cells: ["默认路由", "待判定", recent, "路由快照未取回，不推断承载", next], tone: "warn" },
       { id: "chain-success", cells: ["最近成功", recent, recent, "仅作为采集链路时间点", next], tone: recent === "未记录" ? "warn" : "trust" },
       { id: "chain-failure", cells: ["失败端点", state.facts.failures.count ? failureText(snapshot, state) : "未记录", recent, "失败端点未记录不写 0", next], tone: state.facts.failures.count ? "warn" : "trust" },
@@ -15657,9 +16137,9 @@ var PanelFramework = function(exports) {
       { id: "vis-route", cells: ["默认路由", "待判", "默认路由待判 / 路由快照未取回", "可见性边界"], tone: "warn" },
       { id: "vis-snapshot-time", cells: ["业务快照时间", "无", "业务状态不可信", "模块可见性"], tone: "missing" },
       { id: "vis-snapshot-age", cells: ["业务快照年龄", "待判", "业务状态待核", "模块可见性"], tone: "missing" },
-      { id: "vis-wan", cells: ["WAN", "禁显", "业务模块", "无业务快照"], tone: "missing" },
-      { id: "vis-resource", cells: ["资源", "禁显", "业务模块", "无业务快照"], tone: "missing" },
-      { id: "vis-terminals", cells: ["终端", "禁显", "业务模块", "无业务快照"], tone: "missing" },
+      { id: "vis-wan", cells: ["WAN", "禁显", "业务模块", "无业务快照，业务数据不展示"], tone: "missing" },
+      { id: "vis-resource", cells: ["资源", "禁显", "业务模块", "无业务快照，业务数据不展示"], tone: "missing" },
+      { id: "vis-terminals", cells: ["终端", "禁显", "业务模块", "无业务快照，业务数据不展示"], tone: "missing" },
       { id: "vis-conn", cells: ["连接", "禁显", "业务模块", "无业务快照"], tone: "missing" },
       { id: "vis-rate", cells: ["速率", "禁显", "禁止零速率", "速率不展示"], tone: "missing" },
       { id: "vis-page-trust", cells: ["页面可信等级", "链路可参考", "业务状态不可参考", "状态边界"], tone: "warn" },
@@ -15687,9 +16167,9 @@ var PanelFramework = function(exports) {
     const router = routerosState(snapshot, state.scenario);
     return [
       { id: "readonly-policy", cells: ["只读范围", "只读", "不写配置 / 不推断业务数值"], tone: "trust" },
-      { id: "readonly-chain", cells: ["保留模块", "采集链路", "链路、最近成功、默认路由影响仍可展示"], tone: "trust" },
-      { id: "readonly-business", cells: ["降级模块", "业务禁显", "WAN / 资源 / 终端 / 连接 / 速率禁显"], tone: "missing" },
-      { id: "readonly-rate", cells: ["速率占位", "禁用", "无业务快照时禁用零速率占位"], tone: "missing" },
+      { id: "readonly-chain", cells: ["保留模块", "采集链路", "页面可信等级链路可参考 / 最近成功可展示"], tone: "trust" },
+      { id: "readonly-business", cells: ["业务数据展示边界", "无业务快照", "无业务快照，业务数据不展示"], tone: "missing" },
+      { id: "readonly-rate", cells: ["速率", "不展示", "无业务快照时速率不展示"], tone: "missing" },
       { id: "readonly-router", cells: ["路由器管理面", router.value, router.note], tone: router.tone },
       { id: "readonly-rest", cells: ["REST", rest.value, rest.note], tone: rest.tone },
       { id: "readonly-ssh", cells: ["SSH", ssh.value, ssh.note], tone: ssh.tone },
@@ -15832,14 +16312,16 @@ var PanelFramework = function(exports) {
       const channelRows = noSnapshotChannelStatusRows(snapshot, state);
       const recentRows = lastSuccessRows(snapshot, state);
       const visibilityRows = noSnapshotVisibilityRows();
+      const chainRowsCompact = compactRows(chainRows, 6);
+      const channelRowsCompact = compactRows(channelRows, 5);
       return {
         main: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "采集链路", subtitle: "RouterOS / REST / SSH / 快照", module: "no-snapshot-summary", tone: "danger", trust, headers: ["链路层", "当前", "最近成功", "主证据", "下次尝试"], rows: chainRows, minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(ChainTimeline, { rows: chainRows, module: "no-snapshot-summary-chain" }) }, "ns-summary"),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "三通道状态", subtitle: "失败端点 / 默认出口待判", module: "no-snapshot-channel-status", tone: "warn", trust, headers: ["通道", "当前", "说明"], rows: channelRows, minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(ChainTimeline, { rows: channelRows, module: "no-snapshot-channel-status-chain" }) }, "ns-channel")
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "采集链路", subtitle: "RouterOS / REST / SSH / 快照", module: "no-snapshot-summary", tone: "danger", trust, headers: ["链路层", "当前", "最近成功", "主证据", "下次尝试"], rows: chainRowsCompact, minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(ChainTimeline, { rows: chainRowsCompact, module: "no-snapshot-summary-chain" }) }, "ns-summary"),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "三通道状态", subtitle: "失败端点 / 默认出口待判", module: "no-snapshot-channel-status", tone: "warn", trust, headers: ["通道", "当前", "说明"], rows: channelRowsCompact, minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(ChainTimeline, { rows: channelRowsCompact, module: "no-snapshot-channel-status-chain" }) }, "ns-channel")
         ],
         side: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "最近成功", subtitle: "时间 / 状态", module: "no-snapshot-recent-success", tone: "trust", trust, headers: ["节点", "当前", "说明"], rows: recentRows, minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(ChainTimeline, { rows: recentRows, module: "no-snapshot-recent-success-timeline" }) }, "ns-recent"),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "模块可见性矩阵", subtitle: "无快照 / 禁显", module: "no-snapshot-module-visibility", tone: "missing", trust, headers: ["模块", "状态", "原因", "边界"], rows: visibilityRows, minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(VisibilityMatrixVisual, { rows: visibilityRows }) }, "ns-visibility")
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "最近成功", subtitle: "时间 / 状态", module: "no-snapshot-recent-success", tone: "trust", trust, headers: ["节点", "当前", "说明"], rows: compactRows(recentRows, 4), minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(ChainTimeline, { rows: compactRows(recentRows, 4), module: "no-snapshot-recent-success-timeline" }) }, "ns-recent"),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "模块可见性矩阵", subtitle: "无快照 / 禁显", module: "no-snapshot-module-visibility", tone: "missing", trust, headers: ["模块", "状态", "原因", "边界"], rows: compactRows(visibilityRows, 6), minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(VisibilityMatrixVisual, { rows: compactRows(visibilityRows, 6) }) }, "ns-visibility")
         ],
         bottom: [
           /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "证据边界", subtitle: "WAN / 资源 / 终端 / 速率不展示", module: "evidence-boundary", tone: "missing", trust, headers: ["模块", "状态", "原因", "边界"], rows: compactRows(noSnapshotReadonlyDegradedRows(snapshot, state), 4), minRows: 0 }, "ns-degraded")
@@ -15848,7 +16330,7 @@ var PanelFramework = function(exports) {
     }
     if (state.scenario === "resource-full") {
       const riskChart = resourceChartRows(state);
-      const pressureRows = resourceContextRows(snapshot, state);
+      const pressureRows = compactRows(resourceContextRows(snapshot, state), 8);
       const top5Rows = resourceTop5Rows(snapshot).slice(0, 8);
       return {
         main: [
@@ -15856,12 +16338,15 @@ var PanelFramework = function(exports) {
           /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "连接压力", subtitle: "连接 / 会话 / 接口", module: "resource-pressure-bars", tone: "warn", trust, headers: ["项目", "当前", "依据"], rows: pressureRows, minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(JudgementChart, { module: "resource-pressure-bars", kind: "pressure", rows: connectionPressureChartRows(snapshot, state) }) }, "res-pressure")
         ],
         side: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "接口吞吐 Top5", subtitle: "占比 / 最繁忙", module: "resource-interface-top5", tone: "warn", trust, headers: ["接口", "速率", "占比"], rows: top5Rows, className: "ik-overview-top5-list", minRows: 0 }, "res-top5"),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "采集 / 快照", subtitle: "REST / SSH / 最近成功", module: "normal-collection-channel", tone: state.facts.collection.level, trust, headers: ["对象", "当前", "依据"], rows: compactRows(threeColumnRows(collectionRows(snapshot, state), "res-col-"), 4), minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(ChannelMatrixVisual, { module: "collection-status", rows: collectionChannelRows(snapshot, state) }) }, "res-collection"),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "接口状态", subtitle: "承载 / 边界", module: "normal-interface-boundary", tone: "trust", trust, headers: ["对象", "当前", "最近", "边界"], rows: compactRows(interfaceBoundaryRows(snapshot, state), 4), minRows: 0 }, "res-interface"),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "接口吞吐", subtitle: "Top5 / 占比", module: "resource-interface-top5", tone: "warn", trust, headers: ["接口", "速率", "占比"], rows: compactRows(top5Rows, 5), className: "ik-overview-top5-list", minRows: 0 }, "res-top5"),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "采集 / 快照", subtitle: "REST / SSH / 成功", module: "normal-collection-channel", tone: state.facts.collection.level, trust, headers: ["对象", "当前", "依据"], rows: compactRows(threeColumnRows(collectionRows(snapshot, state), "res-col-"), 4), minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(ChannelMatrixVisual, { module: "collection-status", rows: collectionChannelRows(snapshot, state) }) }, "res-collection"),
           /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "默认出口", subtitle: "出口 / 承载 / 优先级", module: "route-raw-facts", tone: state.facts.route.level, trust, headers: ["出口", "网关", "优先级", "状态"], rows: compactRows(routeBusinessRows(snapshot, state), 4), minRows: 0 }, "res-route")
         ],
         bottom: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "证据边界", subtitle: "原始字段下沉", module: "evidence-boundary", tone: "trust", trust, headers: ["对象", "当前", "依据"], rows: compactRows([...threeColumnRows(resourceBoundaryRows(snapshot, state), "res-boundary-"), ...routeRawEvidenceRows(snapshot, state)], 5), minRows: 0 }, "res-boundary")
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "终端排行", subtitle: "异常置顶 / 总流量", module: "terminal-ranking", tone: "trust", trust, headers: ["设备", "IP", "流量", "状态"], rows: compactRows(desktopTerminalRows(snapshot), 4), minRows: 0 }, "res-terminals"),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "最近事件", subtitle: "采集 / 默认出口", module: "normal-ops-ledger", tone: state.facts.collection.level, trust, headers: ["对象", "当前", "依据"], rows: compactRows(normalOpsRows(snapshot, state), 4), minRows: 0 }, "res-events"),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "原始证据", subtitle: "字段下沉", module: "evidence-boundary", tone: "trust", trust, headers: ["对象", "当前", "依据"], rows: compactRows([...threeColumnRows(resourceBoundaryRows(snapshot, state), "res-boundary-"), ...routeRawEvidenceRows(snapshot, state)], 4), minRows: 0 }, "res-boundary")
         ]
       };
     }
@@ -15938,14 +16423,14 @@ var PanelFramework = function(exports) {
         /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: isFleet ? "WAN异常TopN" : "WAN证据", subtitle: isFleet ? "离线对象 / 类型分布" : "Top3 / 采样", module: "normal-wan-evidence", tone: state.facts.wan.offline ? "warn" : "trust", trust, headers: ["对象", "当前", "依据"], rows: wanEvidenceRows, minRows: 0 }, "compact-wan-evidence")
       ],
       side: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "接口状态", subtitle: state.scenario === "interfaces-down" ? "Down / 默认出口" : "转发面 / 承载", module: state.scenario === "interfaces-down" ? "interface-forwarding" : "normal-interface-boundary", tone: state.scenario === "interfaces-down" ? "danger" : "trust", trust, headers: state.scenario === "interfaces-down" ? ["对象", "当前", "依据"] : ["对象", "当前", "最近", "边界"], rows: interfaceRowsCompact, minRows: 0, visual: state.scenario === "interfaces-down" ? /* @__PURE__ */ jsxRuntimeExports.jsx(JudgementChart, { module: "interface-forwarding", kind: "pressure", rows: interfaceForwardingChartRows(snapshot, state) }) : void 0 }, "compact-interface"),
         /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: state.scenario === "resource-full" ? "资源满载" : "资源", subtitle: state.scenario === "resource-full" ? "三项超阈" : isFleet ? "接口排行 / 阈值" : "当前 / 阈值", module: state.scenario === "resource-full" ? "resource-risk-priority" : "resource-threshold", tone: state.scenario === "no-snapshot" ? "missing" : state.facts.resource.level, trust, headers: ["项", "阈值", "持续", "峰值"], rows: compactRows(resourceRows(state), 3), minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(JudgementChart, { module: "resource-threshold", kind: "pressure", rows: resourceChartRows(state) }) }, "compact-resource"),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: isFleet ? "采集可信度" : "采集 / 快照", subtitle: state.scenario === "collection-down" ? "REST / SSH / 快照" : "REST / SSH / 最近成功", module: state.scenario === "collection-down" ? "collection-channel-ledger" : state.scenario === "no-snapshot" ? "no-snapshot-channel-status" : "normal-collection-channel", tone: state.scenario === "collection-down" || state.scenario === "no-snapshot" ? "warn" : state.facts.collection.level, trust, headers: state.scenario === "no-snapshot" ? ["链路层", "当前", "最近成功", "主证据", "下次尝试"] : ["对象", "当前", "依据"], rows: collectionRowsCompact, minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(ChannelMatrixVisual, { module: "collection-status", rows: collectionChannelRows(snapshot, state) }) }, "compact-collection"),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "接口状态", subtitle: state.scenario === "interfaces-down" ? "Down / 默认出口" : "转发面 / 承载", module: state.scenario === "interfaces-down" ? "interface-forwarding" : "normal-interface-boundary", tone: state.scenario === "interfaces-down" ? "danger" : "trust", trust, headers: state.scenario === "interfaces-down" ? ["对象", "当前", "依据"] : ["对象", "当前", "最近", "边界"], rows: interfaceRowsCompact, minRows: 0, visual: state.scenario === "interfaces-down" ? /* @__PURE__ */ jsxRuntimeExports.jsx(JudgementChart, { module: "interface-forwarding", kind: "pressure", rows: interfaceForwardingChartRows(snapshot, state) }) : void 0 }, "compact-interface")
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: isFleet ? "采集可信度" : "采集 / 快照", subtitle: state.scenario === "collection-down" ? "REST / SSH / 快照" : "REST / SSH / 成功", module: state.scenario === "collection-down" ? "collection-channel-ledger" : state.scenario === "no-snapshot" ? "no-snapshot-channel-status" : "normal-collection-channel", tone: state.scenario === "collection-down" || state.scenario === "no-snapshot" ? "warn" : state.facts.collection.level, trust, headers: state.scenario === "no-snapshot" ? ["链路层", "当前", "最近成功", "主证据", "下次尝试"] : ["对象", "当前", "依据"], rows: collectionRowsCompact, minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(ChannelMatrixVisual, { module: "collection-status", rows: collectionChannelRows(snapshot, state) }) }, "compact-collection")
       ],
       bottom: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "终端排行", subtitle: "异常置顶 / 总流量", module: "terminal-ranking", tone: "trust", trust, headers: ["设备", "IP", "流量", "状态"], rows: desktopTerminalRows(snapshot), minRows: 0 }, "compact-terminals"),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "终端排行", subtitle: "异常置顶 / 总流量", module: "terminal-ranking", tone: "trust", trust, headers: ["设备", "IP", "流量", "状态"], rows: compactRows(desktopTerminalRows(snapshot), 4), minRows: 0 }, "compact-terminals"),
         /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "最近事件", subtitle: "采集 / 默认出口", module: "normal-ops-ledger", tone: state.facts.collection.level, trust, headers: ["对象", "当前", "依据"], rows: compactRows(normalOpsRows(snapshot, state), 4), minRows: 0 }, "compact-events"),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "证据边界", subtitle: "原始字段下沉", module: state.scenario === "no-snapshot" ? "no-snapshot-degraded-modules" : "evidence-boundary", tone: state.scenario === "no-snapshot" ? "missing" : "trust", trust, headers: state.scenario === "resource-full" || state.scenario === "interfaces-down" ? ["对象", "当前", "最近", "边界"] : ["对象", "当前", "依据"], rows: desktopEvidenceBoundaryRows(snapshot, state), minRows: 0 }, "compact-boundary")
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "原始证据", subtitle: "字段下沉", module: state.scenario === "no-snapshot" ? "no-snapshot-degraded-modules" : "evidence-boundary", tone: state.scenario === "no-snapshot" ? "missing" : "trust", trust, headers: state.scenario === "resource-full" || state.scenario === "interfaces-down" ? ["对象", "当前", "最近", "边界"] : ["对象", "当前", "依据"], rows: compactRows(desktopEvidenceBoundaryRows(snapshot, state), 4), minRows: 0 }, "compact-boundary")
       ]
     };
   }

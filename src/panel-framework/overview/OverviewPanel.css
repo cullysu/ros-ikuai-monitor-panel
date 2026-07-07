@@ -52541,3 +52541,268 @@
     text-overflow: ellipsis !important;
   }
 }
+
+/* Codex v820 desktop density pass: iKuai-like console facts, not component chrome. */
+@media (min-width: 761px) {
+  body:has(#overview.router-overview-framework) .sidebar::after {
+    content: "只读\A实时\A REST 可用\A SSH 缺依赖\A快照同步" !important;
+    display: block !important;
+    margin: auto 10px 10px !important;
+    padding: 7px 8px !important;
+    white-space: pre-line !important;
+    color: #64758a !important;
+    font-size: 10px !important;
+    line-height: 1.32 !important;
+    border: 0 !important;
+    border-top: 1px solid #dfe9f4 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] {
+    padding: 3px !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-topbar {
+    height: 48px !important;
+    min-height: 48px !important;
+    max-height: 48px !important;
+    margin-bottom: 2px !important;
+    border: 1px solid #dfe8f2 !important;
+    background: #fff !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-topbar-cell {
+    height: 48px !important;
+    min-height: 48px !important;
+    padding: 3px 7px !important;
+    border: 0 !important;
+    border-right: 1px solid #edf3f8 !important;
+    background: #fff !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-topbar-cell:last-child {
+    border-right: 0 !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-topbar-cell span {
+    font-size: 8px !important;
+    color: #7b8b9e !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-topbar-cell b {
+    font-size: 11.4px !important;
+    font-weight: 780 !important;
+    color: #102033 !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-topbar-cell em {
+    font-size: 7.8px !important;
+    color: #8190a2 !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-desktop-thin-kpis {
+    height: 28px !important;
+    min-height: 28px !important;
+    max-height: 28px !important;
+    gap: 0 !important;
+    margin-bottom: 3px !important;
+    border: 1px solid #e5edf5 !important;
+    background: #fff !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-desktop-thin-kpi {
+    height: 26px !important;
+    min-height: 26px !important;
+    padding: 1px 7px !important;
+    border: 0 !important;
+    border-right: 1px solid #edf3f8 !important;
+    background: #fff !important;
+    box-shadow: none !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-desktop-thin-kpi:last-child {
+    border-right: 0 !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-desktop-grid {
+    grid-template-columns: minmax(0, 1fr) 386px !important;
+    grid-template-rows: 28px minmax(0, 1fr) 154px !important;
+    gap: 4px !important;
+    align-content: start !important;
+    height: calc(100vh - 84px) !important;
+    min-height: calc(100vh - 84px) !important;
+    overflow: hidden !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-desktop-thin-kpis {
+    grid-column: 1 / -1 !important;
+    grid-row: 1 !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-col.is-main,
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-col.is-side {
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: hidden !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-col.is-main {
+    grid-column: 1 !important;
+    grid-row: 2 !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-col.is-side {
+    grid-column: 2 !important;
+    grid-row: 2 !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-col.is-bottom {
+    grid-column: 1 / -1 !important;
+    grid-row: 3 !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-col {
+    gap: 4px !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module {
+    border: 1px solid #dfe8f2 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: #fff !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-tone="danger"] {
+    border-left: 2px solid #d83a32 !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-tone="warn"] {
+    border-left: 2px solid #cf8424 !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module-head {
+    height: 26px !important;
+    min-height: 26px !important;
+    padding: 3px 6px !important;
+    border-bottom: 1px solid #e9f0f7 !important;
+    background: #fff !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module-head b {
+    font-size: 10.6px !important;
+    line-height: 1.05 !important;
+    font-weight: 800 !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module-head span,
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module-head em {
+    font-size: 7.5px !important;
+    line-height: 1 !important;
+    color: #75869a !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-head-cell {
+    height: 18px !important;
+    min-height: 18px !important;
+    padding: 1px 5px !important;
+    border-right: 0 !important;
+    border-bottom: 1px solid #edf3f8 !important;
+    background: #fafcff !important;
+    color: #8795a6 !important;
+    font-size: 7.3px !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row:not(.ro-ledger-head) {
+    min-height: 28px !important;
+    height: 28px !important;
+    border-bottom: 1px solid #f1f5f9 !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-cell {
+    height: 28px !important;
+    min-height: 28px !important;
+    padding: 2px 5px !important;
+    border-right: 0 !important;
+    border-bottom: 0 !important;
+    color: #1a293a !important;
+    font-size: 8.4px !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-cell:first-child,
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-cell:nth-child(2) {
+    font-weight: 760 !important;
+    color: #102033 !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-cell:nth-child(n+3),
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-cell:nth-child(n+3) .ik-overview-cell-text {
+    color: #64758a !important;
+    font-weight: 520 !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-evidence-weight="secondary"] .ro-ledger-row:not(.ro-ledger-head),
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="evidence-boundary"] .ro-ledger-row:not(.ro-ledger-head) {
+    min-height: 24px !important;
+    height: 24px !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-evidence-weight="secondary"] .ro-ledger-cell,
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="evidence-boundary"] .ro-ledger-cell {
+    min-height: 24px !important;
+    height: 24px !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="route-raw-facts"] .ro-ledger-cell small {
+    display: none !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-mini-trend-visual {
+    height: 72px !important;
+    padding: 4px 6px !important;
+    border-bottom: 1px solid #e9f0f7 !important;
+    background: #fff !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-mini-trend-visual svg {
+    height: 48px !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-judgement-chart {
+    margin: 0 !important;
+    padding: 4px 5px !important;
+    background: #fff !important;
+    box-shadow: none !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-channel-matrix-visual {
+    min-height: 44px !important;
+    padding: 3px 4px !important;
+    background: #fff !important;
+    box-shadow: none !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-channel-matrix-visual span,
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-incident-summary span,
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-visibility-cell {
+    border: 0 !important;
+    border-left: 1px solid #e9f0f7 !important;
+    border-radius: 0 !important;
+    background: #fff !important;
+    box-shadow: none !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-incident-summary {
+    min-height: 28px !important;
+    gap: 0 !important;
+    border-bottom: 1px solid #e9f0f7 !important;
+    background: #fff !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-visual-stack {
+    padding: 3px 4px !important;
+    gap: 2px !important;
+    background: #fff !important;
+    box-shadow: none !important;
+  }
+}
