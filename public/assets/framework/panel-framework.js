@@ -16286,7 +16286,7 @@ var PanelFramework = function(exports) {
   function MobileOverviewStyles() {
     return /* @__PURE__ */ jsxRuntimeExports.jsx("style", { children: V420_MOBILE_STYLES });
   }
-  function clean$2(value, fallback = "-") {
+  function clean$3(value, fallback = "-") {
     const normalized = String(value ?? "").replace(/\s+/g, " ").trim();
     return normalized || fallback;
   }
@@ -16317,10 +16317,10 @@ var PanelFramework = function(exports) {
     return mobileTime$2(raw);
   }
   function stripRest$2(label) {
-    return clean$2(label.replace(/^REST\s*/i, ""), "可用");
+    return clean$3(label.replace(/^REST\s*/i, ""), "可用");
   }
   function stripSsh$2(label) {
-    return clean$2(label.replace(/^SSH\s*/i, ""), "可用");
+    return clean$3(label.replace(/^SSH\s*/i, ""), "可用");
   }
   function snapshotTrustText(state) {
     if (state.scenario === "no-snapshot") return "缺失";
@@ -16366,7 +16366,7 @@ var PanelFramework = function(exports) {
       planes: [forwarding, collection, snapshotPlane, business]
     };
   }
-  function clean$1(value, fallback = "-") {
+  function clean$2(value, fallback = "-") {
     const normalized = String(value ?? "").replace(/\s+/g, " ").trim();
     return normalized || fallback;
   }
@@ -16378,7 +16378,7 @@ var PanelFramework = function(exports) {
   }
   function firstText(row, keys, fallback = "-") {
     for (const key of keys) {
-      const value = clean$1(row[key], "");
+      const value = clean$2(row[key], "");
       if (value) return value;
     }
     return fallback;
@@ -16534,10 +16534,10 @@ var PanelFramework = function(exports) {
     };
   }
   function stripRest$1(label) {
-    return clean$1(label.replace(/^REST\s*/i, ""), "可用");
+    return clean$2(label.replace(/^REST\s*/i, ""), "可用");
   }
   function stripSsh$1(label) {
-    return clean$1(label.replace(/^SSH\s*/i, ""), "可用");
+    return clean$2(label.replace(/^SSH\s*/i, ""), "可用");
   }
   function trustText$1(state) {
     if (state.scenario === "no-snapshot") return "缺失";
@@ -16687,7 +16687,7 @@ var PanelFramework = function(exports) {
     if (priority === "collection-degraded") return ["对象 采集", "影响 缓存", `可信 ${trustText$1(state)}`];
     return [
       `对象 WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(totalWan || 1)}`,
-      `影响 ${clean$1(state.facts.route.label, "主出口正常")}`,
+      `影响 ${clean$2(state.facts.route.label, "主出口正常")}`,
       `可信 ${trustText$1(state)}`
     ];
   }
@@ -16754,8 +16754,8 @@ var PanelFramework = function(exports) {
     const rows = Array.from({ length: 8 }, (_, index) => wanRows$1(snapshot)[index] || { name: `WAN${index + 1}`, running: false });
     return rows.map((row, index) => {
       const offline = state.facts.wan.allOffline || row.running === false;
-      const name = clean$1(row.name || row.interface, `WAN${index + 1}`);
-      const carrier = clean$1(row.parent || row.access || row.interface || name, name).replace(/^ether/i, "ether");
+      const name = clean$2(row.name || row.interface, `WAN${index + 1}`);
+      const carrier = clean$2(row.parent || row.access || row.interface || name, name).replace(/^ether/i, "ether");
       return {
         id: `wan-port-${index}`,
         label: `P${index + 1}`,
@@ -16770,8 +16770,8 @@ var PanelFramework = function(exports) {
     const total = Math.max(8, state.facts.wan.total || source.length);
     return Array.from({ length: Math.min(5, total) }, (_, index) => {
       const row = source[index] || { name: `pppoe-wan${index + 1}` };
-      const name = clean$1(row.name || row.interface, `pppoe-wan${index + 1}`);
-      const parent = clean$1(row.parent || row.interface || row.access, "承载待确认");
+      const name = clean$2(row.name || row.interface, `pppoe-wan${index + 1}`);
+      const parent = clean$2(row.parent || row.interface || row.access, "承载待确认");
       return {
         id: `offline-wan-${index}`,
         rank: index + 1,
@@ -16791,9 +16791,9 @@ var PanelFramework = function(exports) {
     return visible.map((row, index) => ({
       id: `interface-down-${index}`,
       rank: index + 1,
-      name: clean$1(row.name || row.interface, `接口${index + 1}`),
+      name: clean$2(row.name || row.interface, `接口${index + 1}`),
       kind: "接口",
-      meta: `${clean$1(row.parent || row.master || row.bridge, "承载待确认")} · 默认路由待判`,
+      meta: `${clean$2(row.parent || row.master || row.bridge, "承载待确认")} · 默认路由待判`,
       value: row.running === false ? "Down" : "待判",
       status: row.running === false ? "Down" : "待判",
       percent: 0,
@@ -16880,7 +16880,7 @@ var PanelFramework = function(exports) {
       const total = firstNumber(row, ["totalRate", "rate", "traffic", "bytes", "total", "value"]) || down + up;
       const status = terminalStatus(row);
       return {
-        id: clean$1(row.id ?? row.mac ?? row.ip ?? `terminal-${index}`, `terminal-${index}`),
+        id: clean$2(row.id ?? row.mac ?? row.ip ?? `terminal-${index}`, `terminal-${index}`),
         rank: index + 1,
         name,
         kind,
@@ -16948,7 +16948,7 @@ var PanelFramework = function(exports) {
       resourceRows: resourceFacts(state)
     };
   }
-  function clean(value, fallback = "-") {
+  function clean$1(value, fallback = "-") {
     const normalized = String(value ?? "").replace(/\s+/g, " ").trim();
     return normalized || fallback;
   }
@@ -17002,10 +17002,10 @@ var PanelFramework = function(exports) {
     return "实时可信";
   }
   function stripRest(label) {
-    return clean(label.replace(/^REST\s*/i, ""), "可用");
+    return clean$1(label.replace(/^REST\s*/i, ""), "可用");
   }
   function stripSsh(label) {
-    return clean(label.replace(/^SSH\s*/i, ""), "可用");
+    return clean$1(label.replace(/^SSH\s*/i, ""), "可用");
   }
   function channelStatus(state) {
     if (state.scenario === "no-snapshot") {
@@ -17050,8 +17050,8 @@ var PanelFramework = function(exports) {
     return { x: Number.isFinite(x2) ? x2 : 0, y: Number.isFinite(y2) ? y2 : 0 };
   }
   function V420Nav({ snapshot, state }) {
-    const name = clean(snapshot.identity || snapshot.name || snapshot.deviceName || state.facts.device.identity || "爱快路由");
-    const version = clean(snapshot.version || snapshot.routerosVersion || state.facts.device.version || "RouterOS");
+    const name = clean$1(snapshot.identity || snapshot.name || snapshot.deviceName || state.facts.device.identity || "爱快路由");
+    const version = clean$1(snapshot.version || snapshot.routerosVersion || state.facts.device.version || "RouterOS");
     const recent = latestSuccess$1(snapshot, state);
     return /* @__PURE__ */ jsxRuntimeExports.jsxs("nav", { className: "ik-v420-nav ik-v240-nav", "aria-label": "手机导航", "data-overview-mobile-v420-nav": "ios-navigation", "data-overview-mobile-v240-nav": "app-navigation", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsx("button", { "aria-label": "打开菜单", type: "button", children: /* @__PURE__ */ jsxRuntimeExports.jsx("svg", { viewBox: "0 0 24 24", "aria-hidden": "true", children: /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: "M4 7h16M4 12h16M4 17h16" }) }) }),
@@ -17178,13 +17178,13 @@ var PanelFramework = function(exports) {
         "data-overview-mobile-v420-visual": "interface-parent-carrier-chain-list",
         children: visible.map((row, index) => /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx("i", {}),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: clean(row.name || row.interface, `接口${index + 1}`) }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: clean$1(row.name || row.interface, `接口${index + 1}`) }),
           /* @__PURE__ */ jsxRuntimeExports.jsxs("em", { children: [
-            clean(row.parent || row.master || row.bridge, "承载待确认"),
+            clean$1(row.parent || row.master || row.bridge, "承载待确认"),
             " · ",
             index === 0 ? `${formatNumber(state.facts.interfaces.down)} Down` : "Down"
           ] })
-        ] }, `${clean(row.name || row.interface, `接口${index + 1}`)}-${index}`))
+        ] }, `${clean$1(row.name || row.interface, `接口${index + 1}`)}-${index}`))
       }
     );
   }
@@ -17432,6 +17432,150 @@ var PanelFramework = function(exports) {
       }
     );
   }
+  const ROUTE_UNKNOWN$1 = "路由快照未取回，无法判断默认出口影响";
+  function clean(value, fallback = "-") {
+    const normalized = String(value ?? "").replace(/\s+/g, " ").trim();
+    return normalized || fallback;
+  }
+  function routeRows(snapshot) {
+    var _a, _b;
+    const rows = ((_a = snapshot.routes) == null ? void 0 : _a.defaultRoutes) || ((_b = snapshot.routes) == null ? void 0 : _b.items) || [];
+    return Array.isArray(rows) ? rows : [];
+  }
+  function routerOsRouteStatusText(active, disabled) {
+    if (disabled) return "已停用";
+    return active ? "当前承载" : "备选未命中";
+  }
+  function routerOsRouteTableText(value) {
+    const table = clean(value, "main");
+    return /^main$/i.test(table) ? "主业务域" : `策略域 ${table}`;
+  }
+  function routerOsRouteGatewayText(value) {
+    return clean(value, "网关未记录");
+  }
+  function routerOsRoutePriorityText(value) {
+    return clean(value, "未记录");
+  }
+  function routerOsRouteBusinessSummary(value, fallback = ROUTE_UNKNOWN$1) {
+    return clean(value, fallback).replace(/active\s*[:=]?\s*true/gi, "当前承载").replace(/active\s*[:=]?\s*false/gi, "备选未命中").replace(/disabled\s*[:=]?\s*false/gi, "允许参与选路").replace(/disabled\s*[:=]?\s*true/gi, "已停用").replace(/\brouting[-_\s]?table\b|\broutingTable\b/gi, "路由域").replace(/\bgatewayStatus\b/gi, "网关状态").replace(/\bdistance\b/gi, "优先级").replace(/\bgateway\b/gi, "网关").replace(/\bactive\b/gi, "承载状态").replace(/\bdisabled\b/gi, "停用状态").replace(/\btable\b/gi, "路由域").replace(/\bmain\b/gi, "主业务域");
+  }
+  function routeTitle(table, gateway, distance, active, disabled) {
+    return `默认出口 ${routerOsRouteGatewayText(gateway)}，选路优先级 ${routerOsRoutePriorityText(distance)}，${routerOsRouteStatusText(active, disabled)}；${routerOsRouteTableText(table)}`;
+  }
+  function routeTone(route) {
+    if (route.active && !route.disabled) return "ok";
+    if (route.disabled) return "warn";
+    return "warn";
+  }
+  function missingTone(state) {
+    return state.scenario === "no-snapshot" ? "missing" : "warn";
+  }
+  function missingModel(state) {
+    const tone = missingTone(state);
+    const summary = {
+      id: "route-summary-missing",
+      label: "业务出口",
+      value: "待判",
+      note: state.scenario === "no-snapshot" ? "当前出口证据未返回，不推断承载" : "默认出口证据未采集，不推断承载",
+      tone,
+      layer: "business",
+      source: "route"
+    };
+    return {
+      summary,
+      businessRows: [{
+        ...summary,
+        id: "route-missing",
+        routeIndex: 0,
+        table: "待判",
+        gateway: "待判",
+        priority: "证据缺失",
+        status: "不推断承载状态",
+        title: "默认出口证据缺失；不展示 RouterOS 原始字段推断"
+      }],
+      rawRows: [{
+        id: "route-raw-missing",
+        label: "RouterOS 原始字段",
+        value: "未采集",
+        note: "table / gateway / distance / active / disabled 缺失",
+        tone,
+        layer: "raw",
+        source: "route",
+        rawFields: {
+          table: "-",
+          gateway: "-",
+          distance: "-",
+          active: "-",
+          disabled: "-"
+        }
+      }]
+    };
+  }
+  function buildRouterOsRouteEvidenceModel(snapshot, state) {
+    var _a;
+    const rows = routeRows(snapshot);
+    if (!rows.length) return missingModel(state);
+    const businessRows = rows.slice(0, 6).map((route, index) => {
+      const rawTable = clean(route.table || route.routingTable, "main");
+      const table = routerOsRouteTableText(rawTable);
+      const gateway = routerOsRouteGatewayText(route.gateway || route.gatewayStatus);
+      const priority = routerOsRoutePriorityText(route.distance);
+      const status = routerOsRouteStatusText(route.active, route.disabled);
+      return {
+        id: `route-${index}`,
+        label: index === 0 ? "默认出口" : `备用出口 ${index + 1}`,
+        value: gateway,
+        note: `${table} / 优先级 ${priority} / ${status}`,
+        tone: routeTone(route),
+        layer: "business",
+        source: "route",
+        routeIndex: index,
+        table,
+        gateway,
+        priority,
+        status,
+        title: routeTitle(rawTable, gateway, priority, route.active, route.disabled),
+        rawFields: {
+          table: rawTable,
+          gateway: clean(route.gateway || route.gatewayStatus, "-"),
+          distance: clean(route.distance, "-"),
+          active: route.active ? "true" : "false",
+          disabled: route.disabled ? "true" : "false"
+        }
+      };
+    });
+    const active = rows.filter((route) => route.active && !route.disabled).length;
+    const summaryTone = active > 0 ? "ok" : state.facts.route.level;
+    const summary = {
+      id: "route-summary",
+      label: "默认出口",
+      value: active > 0 ? `命中 ${active}/${rows.length}` : "未命中",
+      note: ((_a = businessRows[0]) == null ? void 0 : _a.note) || routerOsRouteBusinessSummary(state.facts.route.rawSummary),
+      tone: summaryTone,
+      layer: "business",
+      source: "route"
+    };
+    const rawRows = rows.slice(0, 4).map((route, index) => {
+      const rawFields = {
+        table: clean(route.table || route.routingTable, "main"),
+        gateway: clean(route.gateway || route.gatewayStatus, "未记录"),
+        distance: clean(route.distance, "未记录"),
+        active: route.active ? "true" : "false",
+        disabled: route.disabled ? "true" : "false"
+      };
+      return {
+        id: `route-raw-evidence-${index}`,
+        label: index === 0 ? "RouterOS 原始字段" : `RouterOS 备用 ${index + 1}`,
+        value: `table ${rawFields.table} / gateway ${rawFields.gateway}`,
+        note: `distance ${rawFields.distance} / active ${rawFields.active} / disabled ${rawFields.disabled}`,
+        tone: routeTone(route),
+        layer: "raw",
+        source: "route",
+        rawFields
+      };
+    });
+    return { summary, businessRows, rawRows };
+  }
   const ROUTE_UNKNOWN = "路由快照未取回，无法判断默认出口影响";
   const FILLER_TONE = "trust";
   const OVERVIEW_IKUAI40_CHART_STANDARD = "unit-window-samples-current-peak-mean-threshold-confidence-y-axis";
@@ -17439,22 +17583,8 @@ var PanelFramework = function(exports) {
   const OVERVIEW_IKUAI40_MATURE_VISUAL_STANDARD = "judgement-charts-scene-specific-mobile-microchart-blue-white-flat-no-short-empty-cards";
   const OVERVIEW_SCENE_CHART_PRIORITY = "normal=traffic;resource=pressure;wan=interface-status;interfaces=forwarding;collection=channel-timeline;no-snapshot=chain-visibility";
   const OVERVIEW_SCENE_CHART_CONTRACT = "normal:traffic-trend;resource:resource-pressure;wan:wan-interface-status;interfaces:interface-forwarding-status;collection:collection-channel-timeline;no-snapshot:snapshot-chain-visibility-matrix;stale:snapshot-age-route-context";
-  function routeStatusText(active, disabled) {
-    if (disabled) return "已停用";
-    return active ? "当前承载" : "备选未命中";
-  }
-  function routeTableText(value) {
-    const table = text(value, "main");
-    return /^main$/i.test(table) ? "主业务域" : `策略域 ${table}`;
-  }
-  function routeGatewayText(value) {
-    return text(value, "网关未记录");
-  }
-  function routePriorityText(value) {
-    return text(value, "未记录");
-  }
   function routeBusinessSummary(value, fallback = ROUTE_UNKNOWN) {
-    return text(value, fallback).replace(/active\s*[:=]?\s*true/gi, "当前承载").replace(/active\s*[:=]?\s*false/gi, "备选未命中").replace(/disabled\s*[:=]?\s*false/gi, "允许参与选路").replace(/disabled\s*[:=]?\s*true/gi, "已停用").replace(/\brouting[-_\s]?table\b|\broutingTable\b/gi, "路由域").replace(/\bgatewayStatus\b/gi, "网关状态").replace(/\bdistance\b/gi, "优先级").replace(/\bgateway\b/gi, "网关").replace(/\bactive\b/gi, "承载状态").replace(/\bdisabled\b/gi, "停用状态").replace(/\btable\b/gi, "路由域").replace(/\bmain\b/gi, "主业务域");
+    return routerOsRouteBusinessSummary(value, fallback);
   }
   function routeBusinessText(state, fallback = ROUTE_UNKNOWN) {
     return routeBusinessSummary(state.facts.route.text || state.facts.route.label || state.facts.route.rawSummary, fallback);
@@ -17462,9 +17592,6 @@ var PanelFramework = function(exports) {
   function routeLabelText(state) {
     if (state.scenario === "no-snapshot") return "默认出口待判";
     return routeBusinessSummary(state.facts.route.label || "默认出口待判", "默认出口待判");
-  }
-  function defaultRouteTitleContract(table, gateway, distance, active, disabled) {
-    return { title: `默认出口 ${routeGatewayText(gateway)}，选路优先级 ${routePriorityText(distance)}，${routeStatusText(active, disabled)}；${routeTableText(table)}` };
   }
   const OVERVIEW_CHART_STATUS_COLORS = Object.freeze({
     danger: "#d93025",
@@ -17490,11 +17617,6 @@ var PanelFramework = function(exports) {
   }
   function collectInterfaceRows(snapshot) {
     return Array.isArray(snapshot.interfaces) ? snapshot.interfaces : [];
-  }
-  function routeRows(snapshot) {
-    var _a, _b;
-    const rows = ((_a = snapshot.routes) == null ? void 0 : _a.defaultRoutes) || ((_b = snapshot.routes) == null ? void 0 : _b.items) || [];
-    return Array.isArray(rows) ? rows : [];
   }
   function latestSuccess(snapshot, scenario) {
     const meta = snapshot.meta || {};
@@ -18337,7 +18459,14 @@ var PanelFramework = function(exports) {
     return trafficRows(snapshot, state).filter((row) => /^traffic-top-/.test(row.id));
   }
   function trafficRouteRows(snapshot, state) {
-    return trafficRows(snapshot, state).filter((row) => row.id === "traffic-route");
+    const route = buildRouterOsRouteEvidenceModel(snapshot, state).summary;
+    return [{
+      id: "traffic-route",
+      attrs: { "data-overview-default-route-row": "true", "data-overview-route-evidence-model": "routeros-standard" },
+      cells: ["默认出口", route.value, route.note],
+      tone: route.tone,
+      title: "默认出口已通过 RouterOS evidence item 标准化"
+    }];
   }
   function trafficSamplingRows(snapshot, state) {
     return trafficRows(snapshot, state).filter((row) => row.id === "traffic-sampling");
@@ -18359,51 +18488,50 @@ var PanelFramework = function(exports) {
     ];
   }
   function routeBusinessRows(snapshot, state) {
-    const rows = routeRows(snapshot);
-    if (!rows.length) {
-      return [{
-        id: "route-business-missing",
-        attrs: { "data-overview-default-route-row": "true", "data-overview-route-copy": "business" },
-        cells: ["默认出口", state.scenario === "no-snapshot" ? "待判" : "待判", "-", "当前出口证据未返"],
-        tone: "warn"
-      }];
-    }
-    return rows.slice(0, 4).map((route, index) => {
-      const gateway = routeGatewayText(route.gateway || route.gatewayStatus).replace(/^网关\s*/, "");
-      const priority = routePriorityText(route.distance).replace(/^优先级\s*/, "");
-      const carrying = route.active && !route.disabled ? "可承载" : route.disabled ? "已禁用" : "不可承载";
+    return buildRouterOsRouteEvidenceModel(snapshot, state).businessRows.slice(0, 4).map((route) => {
+      var _a, _b, _c, _d, _e;
       return {
-        id: `route-business-${index}`,
-        attrs: { "data-overview-default-route-row": "true", "data-overview-route-copy": "business-main" },
+        id: `route-business-${route.routeIndex}`,
+        attrs: {
+          "data-overview-default-route-row": "true",
+          "data-overview-route-copy": "business-main",
+          "data-routeros-evidence-item": route.layer,
+          "data-routeros-raw-field-mode": "translated",
+          "data-routeros-raw-table": ((_a = route.rawFields) == null ? void 0 : _a.table) || "",
+          "data-routeros-raw-gateway": ((_b = route.rawFields) == null ? void 0 : _b.gateway) || "",
+          "data-routeros-raw-distance": ((_c = route.rawFields) == null ? void 0 : _c.distance) || "",
+          "data-routeros-raw-active": ((_d = route.rawFields) == null ? void 0 : _d.active) || "",
+          "data-routeros-raw-disabled": ((_e = route.rawFields) == null ? void 0 : _e.disabled) || ""
+        },
         cells: [
-          index === 0 ? "默认出口" : `备用出口 ${index + 1}`,
-          gateway || "网关未记录",
-          `优先级 ${priority}`,
-          carrying
+          route.label,
+          route.gateway,
+          `优先级 ${route.priority}`,
+          route.status
         ],
-        title: defaultRouteTitleContract(text(route.table || route.routingTable, "main"), gateway, priority, route.active, route.disabled).title,
-        tone: route.active && !route.disabled ? "trust" : "warn"
+        title: route.title,
+        tone: route.tone
       };
     });
   }
   function routeRawEvidenceRows(snapshot, state) {
-    const rows = routeRows(snapshot);
-    if (!rows.length) {
-      return [{ id: "route-raw-missing", cells: ["RouterOS 路由证据", "未采集", "table/gateway/distance/active/disabled 缺失"], tone: state.scenario === "no-snapshot" ? "missing" : "warn" }];
-    }
-    return rows.slice(0, 4).map((route, index) => {
-      const table = text(route.table || route.routingTable, "main");
-      const gateway = text(route.gateway || route.gatewayStatus, "未记录");
-      const distance = text(route.distance, "未记录");
+    return buildRouterOsRouteEvidenceModel(snapshot, state).rawRows.map((item) => {
+      var _a, _b, _c, _d, _e;
       return {
-        id: `route-raw-evidence-${index}`,
-        attrs: { "data-overview-default-route-row": "true", "data-routeros-raw-field-mode": "evidence-bottom" },
-        cells: [
-          index === 0 ? "RouterOS 原始字段" : `RouterOS 备用 ${index + 1}`,
-          `table ${table} / gateway ${gateway}`,
-          `distance ${distance} / active ${route.active ? "true" : "false"} / disabled ${route.disabled ? "true" : "false"}`
-        ],
-        tone: route.active && !route.disabled ? "trust" : "warn"
+        id: item.id,
+        attrs: {
+          "data-overview-default-route-row": "true",
+          "data-routeros-evidence-item": item.layer,
+          "data-routeros-raw-field-mode": "evidence-bottom",
+          "data-routeros-raw-table": ((_a = item.rawFields) == null ? void 0 : _a.table) || "",
+          "data-routeros-raw-gateway": ((_b = item.rawFields) == null ? void 0 : _b.gateway) || "",
+          "data-routeros-raw-distance": ((_c = item.rawFields) == null ? void 0 : _c.distance) || "",
+          "data-routeros-raw-active": ((_d = item.rawFields) == null ? void 0 : _d.active) || "",
+          "data-routeros-raw-disabled": ((_e = item.rawFields) == null ? void 0 : _e.disabled) || ""
+        },
+        cells: [item.label, item.value, item.note],
+        title: "RouterOS 原始字段只在证据区展示",
+        tone: item.tone
       };
     });
   }

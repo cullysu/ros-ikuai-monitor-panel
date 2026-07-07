@@ -17,6 +17,7 @@ import {
   type OverviewTone,
 } from "./index";
 import { MobileOverviewHome } from "./components/MobileOverviewHome";
+import { buildRouterOsRouteEvidenceModel, routerOsRouteBusinessSummary } from "./routerosEvidenceModel";
 import "./OverviewPanel.css";
 
 interface OverviewPanelProps {
@@ -107,38 +108,8 @@ const OVERVIEW_CHART_METADATA_COVERAGE = "all-chart-type-elements-unit-current-p
 const OVERVIEW_IKUAI40_MATURE_VISUAL_STANDARD = "judgement-charts-scene-specific-mobile-microchart-blue-white-flat-no-short-empty-cards";
 const OVERVIEW_SCENE_CHART_PRIORITY = "normal=traffic;resource=pressure;wan=interface-status;interfaces=forwarding;collection=channel-timeline;no-snapshot=chain-visibility";
 const OVERVIEW_SCENE_CHART_CONTRACT = "normal:traffic-trend;resource:resource-pressure;wan:wan-interface-status;interfaces:interface-forwarding-status;collection:collection-channel-timeline;no-snapshot:snapshot-chain-visibility-matrix;stale:snapshot-age-route-context";
-function routeStatusText(active?: boolean, disabled?: boolean): "当前承载" | "已停用" | "备选未命中" {
-  if (disabled) return "已停用";
-  return active ? "当前承载" : "备选未命中";
-}
-
-function routeTableText(value: unknown): string {
-  const table = text(value, "main");
-  return /^main$/i.test(table) ? "主业务域" : `策略域 ${table}`;
-}
-
-function routeGatewayText(value: unknown): string {
-  return text(value, "网关未记录");
-}
-
-function routePriorityText(value: unknown): string {
-  return text(value, "未记录");
-}
-
 function routeBusinessSummary(value: unknown, fallback = ROUTE_UNKNOWN): string {
-  return text(value, fallback)
-    .replace(/active\s*[:=]?\s*true/gi, "当前承载")
-    .replace(/active\s*[:=]?\s*false/gi, "备选未命中")
-    .replace(/disabled\s*[:=]?\s*false/gi, "允许参与选路")
-    .replace(/disabled\s*[:=]?\s*true/gi, "已停用")
-    .replace(/\brouting[-_\s]?table\b|\broutingTable\b/gi, "路由域")
-    .replace(/\bgatewayStatus\b/gi, "网关状态")
-    .replace(/\bdistance\b/gi, "优先级")
-    .replace(/\bgateway\b/gi, "网关")
-    .replace(/\bactive\b/gi, "承载状态")
-    .replace(/\bdisabled\b/gi, "停用状态")
-    .replace(/\btable\b/gi, "路由域")
-    .replace(/\bmain\b/gi, "主业务域");
+  return routerOsRouteBusinessSummary(value, fallback);
 }
 
 function routeBusinessText(state: OverviewDerivedState, fallback = ROUTE_UNKNOWN): string {
@@ -148,10 +119,6 @@ function routeBusinessText(state: OverviewDerivedState, fallback = ROUTE_UNKNOWN
 function routeLabelText(state: OverviewDerivedState): string {
   if (state.scenario === "no-snapshot") return "默认出口待判";
   return routeBusinessSummary(state.facts.route.label || "默认出口待判", "默认出口待判");
-}
-
-function defaultRouteTitleContract(table: string, gateway: string, distance: string | number, active?: boolean, disabled?: boolean) {
-  return { title: `默认出口 ${routeGatewayText(gateway)}，选路优先级 ${routePriorityText(distance)}，${routeStatusText(active, disabled)}；${routeTableText(table)}` };
 }
 
 const OVERVIEW_CHART_STATUS_COLORS = Object.freeze({
@@ -2513,7 +2480,14 @@ function trafficTop3Rows(snapshot: OverviewRawSnapshot, state: OverviewDerivedSt
 }
 
 function trafficRouteRows(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): LedgerRow[] {
-  return trafficRows(snapshot, state).filter((row) => row.id === "traffic-route");
+  const route = buildRouterOsRouteEvidenceModel(snapshot, state).summary;
+  return [{
+    id: "traffic-route",
+    attrs: { "data-overview-default-route-row": "true", "data-overview-route-evidence-model": "routeros-standard" },
+    cells: ["默认出口", route.value, route.note],
+    tone: route.tone,
+    title: "默认出口已通过 RouterOS evidence item 标准化",
+  }];
 }
 
 function trafficSamplingRows(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): LedgerRow[] {
@@ -2539,80 +2513,72 @@ function normalOpsRows(snapshot: OverviewRawSnapshot, state: OverviewDerivedStat
 }
 
 function routeFactRows(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): LedgerRow[] {
-  const rows = routeRows(snapshot);
-  if (!rows.length) {
-  return [{ id: "route-missing", attrs: { "data-overview-default-route-row": "true", "data-overview-route-copy": "business", "data-overview-no-empty-first-screen": "true" }, cells: ["业务出口", state.scenario === "no-snapshot" ? "待判" : "待判", state.scenario === "no-snapshot" ? "当前出口证据未返" : "默认出口证据未采集", "不推断承载状态"], tone: "warn" }];
-  }
-  return rows.slice(0, 6).map((route, index) => {
-    const rawTable = route.table || route.routingTable;
-    const table = routeTableText(rawTable);
-    const gateway = routeGatewayText(route.gateway || route.gatewayStatus);
-    const priority = routePriorityText(route.distance);
-    const status = `${route.active ? "活动路由" : "非活动路由"} / ${route.disabled ? "已禁用" : "未禁用"}`;
-    return {
-      id: `route-${index}`,
-      attrs: { "data-overview-default-route-row": "true", "data-overview-route-copy": "business", "data-routeros-raw-field-mode": "translated" },
-      cells: [
-        <><b>默认出口</b><small>路由表 {table}</small></>,
-        `网关 ${gateway}`,
-        `优先级 ${priority}`,
-        status,
-      ],
-      title: defaultRouteTitleContract(text(rawTable, "main"), gateway, priority, route.active, route.disabled).title,
-      tone: route.active && !route.disabled ? "ok" : "warn",
-    };
-  });
+  return buildRouterOsRouteEvidenceModel(snapshot, state).businessRows.map((route) => ({
+    id: route.id,
+    attrs: {
+      "data-overview-default-route-row": "true",
+      "data-overview-route-copy": "business",
+      "data-routeros-evidence-item": route.layer,
+      "data-routeros-raw-field-mode": "translated",
+      "data-routeros-raw-table": route.rawFields?.table || "",
+      "data-routeros-raw-gateway": route.rawFields?.gateway || "",
+      "data-routeros-raw-distance": route.rawFields?.distance || "",
+      "data-routeros-raw-active": route.rawFields?.active || "",
+      "data-routeros-raw-disabled": route.rawFields?.disabled || "",
+    },
+    cells: [
+      route.label,
+      `网关 ${route.gateway}`,
+      `优先级 ${route.priority}`,
+      route.status,
+    ],
+    title: route.title,
+    tone: route.tone,
+  }));
 }
 
 function routeBusinessRows(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): LedgerRow[] {
-  const rows = routeRows(snapshot);
-  if (!rows.length) {
-    return [{
-      id: "route-business-missing",
-      attrs: { "data-overview-default-route-row": "true", "data-overview-route-copy": "business" },
-      cells: ["默认出口", state.scenario === "no-snapshot" ? "待判" : "待判", "-", "当前出口证据未返"],
-      tone: "warn",
-    }];
-  }
-  return rows.slice(0, 4).map((route, index) => {
-    const gateway = routeGatewayText(route.gateway || route.gatewayStatus).replace(/^网关\s*/, "");
-    const priority = routePriorityText(route.distance).replace(/^优先级\s*/, "");
-    const carrying = route.active && !route.disabled ? "可承载" : route.disabled ? "已禁用" : "不可承载";
-    return {
-      id: `route-business-${index}`,
-      attrs: { "data-overview-default-route-row": "true", "data-overview-route-copy": "business-main" },
-      cells: [
-        index === 0 ? "默认出口" : `备用出口 ${index + 1}`,
-        gateway || "网关未记录",
-        `优先级 ${priority}`,
-        carrying,
-      ],
-      title: defaultRouteTitleContract(text(route.table || route.routingTable, "main"), gateway, priority, route.active, route.disabled).title,
-      tone: route.active && !route.disabled ? "trust" : "warn",
-    } satisfies LedgerRow;
-  });
+  return buildRouterOsRouteEvidenceModel(snapshot, state).businessRows.slice(0, 4).map((route) => ({
+    id: `route-business-${route.routeIndex}`,
+    attrs: {
+      "data-overview-default-route-row": "true",
+      "data-overview-route-copy": "business-main",
+      "data-routeros-evidence-item": route.layer,
+      "data-routeros-raw-field-mode": "translated",
+      "data-routeros-raw-table": route.rawFields?.table || "",
+      "data-routeros-raw-gateway": route.rawFields?.gateway || "",
+      "data-routeros-raw-distance": route.rawFields?.distance || "",
+      "data-routeros-raw-active": route.rawFields?.active || "",
+      "data-routeros-raw-disabled": route.rawFields?.disabled || "",
+    },
+    cells: [
+      route.label,
+      route.gateway,
+      `优先级 ${route.priority}`,
+      route.status,
+    ],
+    title: route.title,
+    tone: route.tone,
+  }));
 }
 
 function routeRawEvidenceRows(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): LedgerRow[] {
-  const rows = routeRows(snapshot);
-  if (!rows.length) {
-    return [{ id: "route-raw-missing", cells: ["RouterOS 路由证据", "未采集", "table/gateway/distance/active/disabled 缺失"], tone: state.scenario === "no-snapshot" ? "missing" : "warn" }];
-  }
-  return rows.slice(0, 4).map((route, index) => {
-    const table = text(route.table || route.routingTable, "main");
-    const gateway = text(route.gateway || route.gatewayStatus, "未记录");
-    const distance = text(route.distance, "未记录");
-    return {
-      id: `route-raw-evidence-${index}`,
-      attrs: { "data-overview-default-route-row": "true", "data-routeros-raw-field-mode": "evidence-bottom" },
-      cells: [
-        index === 0 ? "RouterOS 原始字段" : `RouterOS 备用 ${index + 1}`,
-        `table ${table} / gateway ${gateway}`,
-        `distance ${distance} / active ${route.active ? "true" : "false"} / disabled ${route.disabled ? "true" : "false"}`,
-      ],
-      tone: route.active && !route.disabled ? "trust" : "warn",
-    } satisfies LedgerRow;
-  });
+  return buildRouterOsRouteEvidenceModel(snapshot, state).rawRows.map((item) => ({
+    id: item.id,
+    attrs: {
+      "data-overview-default-route-row": "true",
+      "data-routeros-evidence-item": item.layer,
+      "data-routeros-raw-field-mode": "evidence-bottom",
+      "data-routeros-raw-table": item.rawFields?.table || "",
+      "data-routeros-raw-gateway": item.rawFields?.gateway || "",
+      "data-routeros-raw-distance": item.rawFields?.distance || "",
+      "data-routeros-raw-active": item.rawFields?.active || "",
+      "data-routeros-raw-disabled": item.rawFields?.disabled || "",
+    },
+    cells: [item.label, item.value, item.note],
+    title: "RouterOS 原始字段只在证据区展示",
+    tone: item.tone,
+  }));
 }
 
 function wanRows(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): LedgerRow[] {
