@@ -8014,15 +8014,15 @@ const V420_MOBILE_STYLES = `
   #overview.router-overview-framework .ik-v420-timeline-row,
   .router-overview-framework .ik-v420-timeline-row,
   .ik-v420-timeline-row {
-    height: 42px !important;
-    min-height: 42px !important;
+    height: 44px !important;
+    min-height: 44px !important;
   }
 
   #overview.router-overview-framework .ik-v420-list-row,
   .router-overview-framework .ik-v420-list-row,
   .ik-v420-list-row {
-    height: 50px !important;
-    min-height: 50px !important;
+    height: 52px !important;
+    min-height: 52px !important;
   }
 
   #overview.router-overview-framework [data-overview-mobile-scene="resource-full"] .ik-v620-pressure-visual,
@@ -8042,16 +8042,16 @@ const V420_MOBILE_STYLES = `
   #overview.router-overview-framework .ik-v420-tabs,
   .router-overview-framework .ik-v420-tabs,
   .ik-v420-tabs {
-    height: 62px !important;
-    min-height: 62px !important;
-    padding: 3px 7px !important;
+    height: 64px !important;
+    min-height: 64px !important;
+    padding: 4px 7px !important;
     border-radius: 12px !important;
   }
 
   #overview.router-overview-framework .ik-v420-tabs button,
   .router-overview-framework .ik-v420-tabs button,
   .ik-v420-tabs button {
-    min-height: 42px !important;
+    min-height: 44px !important;
     font-size: 8.2px !important;
   }
 

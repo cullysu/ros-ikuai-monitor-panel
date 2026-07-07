@@ -52818,9 +52818,9 @@
   }
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-topbar {
-    height: 46px !important;
-    min-height: 46px !important;
-    max-height: 46px !important;
+    height: 50px !important;
+    min-height: 50px !important;
+    max-height: 50px !important;
     margin-bottom: 2px !important;
     border: 1px solid var(--v825-line-strong) !important;
     border-radius: 0 !important;
@@ -52829,8 +52829,8 @@
   }
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-topbar-cell {
-    height: 46px !important;
-    min-height: 46px !important;
+    height: 50px !important;
+    min-height: 50px !important;
     padding: 2px 7px !important;
     border: 0 !important;
     border-right: 1px solid var(--v825-line) !important;
@@ -52868,9 +52868,9 @@
   }
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-desktop-thin-kpis {
-    height: 26px !important;
-    min-height: 26px !important;
-    max-height: 26px !important;
+    height: 28px !important;
+    min-height: 28px !important;
+    max-height: 28px !important;
     gap: 0 !important;
     margin-bottom: 2px !important;
     border: 1px solid #e5edf5 !important;
@@ -52880,8 +52880,8 @@
   }
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-desktop-thin-kpi {
-    height: 24px !important;
-    min-height: 24px !important;
+    height: 26px !important;
+    min-height: 26px !important;
     padding: 1px 7px !important;
     border: 0 !important;
     border-right: 1px solid var(--v825-line) !important;
@@ -52895,10 +52895,10 @@
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-desktop-grid {
     grid-template-columns: minmax(0, 1fr) 374px !important;
-    grid-template-rows: 26px minmax(0, 1fr) 148px !important;
+    grid-template-rows: 28px minmax(0, 1fr) 148px !important;
     gap: 3px !important;
-    height: calc(100vh - 76px) !important;
-    min-height: calc(100vh - 76px) !important;
+    height: calc(100vh - 82px) !important;
+    min-height: calc(100vh - 82px) !important;
     overflow: hidden !important;
   }
 
@@ -52918,8 +52918,8 @@
   }
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module-head {
-    height: 24px !important;
-    min-height: 24px !important;
+    height: 26px !important;
+    min-height: 26px !important;
     padding: 2px 6px !important;
     border-bottom: 1px solid var(--v825-line) !important;
     background: #fff !important;
@@ -52968,14 +52968,14 @@
   }
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row:not(.ro-ledger-head) {
-    height: 26px !important;
-    min-height: 26px !important;
+    height: 28px !important;
+    min-height: 28px !important;
     border-bottom: 1px solid #f3f7fb !important;
   }
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-cell {
-    height: 26px !important;
-    min-height: 26px !important;
+    height: 28px !important;
+    min-height: 28px !important;
     padding: 1px 5px !important;
     border: 0 !important;
     color: #1b2b3c !important;
@@ -52997,14 +52997,14 @@
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-evidence-weight="secondary"] .ro-ledger-row:not(.ro-ledger-head),
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="evidence-boundary"] .ro-ledger-row:not(.ro-ledger-head) {
-    height: 23px !important;
-    min-height: 23px !important;
+    height: 24px !important;
+    min-height: 24px !important;
   }
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-evidence-weight="secondary"] .ro-ledger-cell,
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="evidence-boundary"] .ro-ledger-cell {
-    height: 23px !important;
-    min-height: 23px !important;
+    height: 24px !important;
+    min-height: 24px !important;
   }
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="resource-threshold"] .ro-judgement-chart {
@@ -106332,9 +106332,9 @@
   }
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-topbar {
-    height: 46px !important;
-    min-height: 46px !important;
-    max-height: 46px !important;
+    height: 50px !important;
+    min-height: 50px !important;
+    max-height: 50px !important;
     margin-bottom: 2px !important;
     border: 1px solid var(--v825-line-strong) !important;
     border-radius: 0 !important;
@@ -106343,8 +106343,8 @@
   }
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-topbar-cell {
-    height: 46px !important;
-    min-height: 46px !important;
+    height: 50px !important;
+    min-height: 50px !important;
     padding: 2px 7px !important;
     border: 0 !important;
     border-right: 1px solid var(--v825-line) !important;
@@ -106382,9 +106382,9 @@
   }
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-desktop-thin-kpis {
-    height: 26px !important;
-    min-height: 26px !important;
-    max-height: 26px !important;
+    height: 28px !important;
+    min-height: 28px !important;
+    max-height: 28px !important;
     gap: 0 !important;
     margin-bottom: 2px !important;
     border: 1px solid #e5edf5 !important;
@@ -106394,8 +106394,8 @@
   }
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-desktop-thin-kpi {
-    height: 24px !important;
-    min-height: 24px !important;
+    height: 26px !important;
+    min-height: 26px !important;
     padding: 1px 7px !important;
     border: 0 !important;
     border-right: 1px solid var(--v825-line) !important;
@@ -106409,10 +106409,10 @@
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-desktop-grid {
     grid-template-columns: minmax(0, 1fr) 374px !important;
-    grid-template-rows: 26px minmax(0, 1fr) 148px !important;
+    grid-template-rows: 28px minmax(0, 1fr) 148px !important;
     gap: 3px !important;
-    height: calc(100vh - 76px) !important;
-    min-height: calc(100vh - 76px) !important;
+    height: calc(100vh - 82px) !important;
+    min-height: calc(100vh - 82px) !important;
     overflow: hidden !important;
   }
 
@@ -106432,8 +106432,8 @@
   }
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module-head {
-    height: 24px !important;
-    min-height: 24px !important;
+    height: 26px !important;
+    min-height: 26px !important;
     padding: 2px 6px !important;
     border-bottom: 1px solid var(--v825-line) !important;
     background: #fff !important;
@@ -106482,14 +106482,14 @@
   }
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row:not(.ro-ledger-head) {
-    height: 26px !important;
-    min-height: 26px !important;
+    height: 28px !important;
+    min-height: 28px !important;
     border-bottom: 1px solid #f3f7fb !important;
   }
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-cell {
-    height: 26px !important;
-    min-height: 26px !important;
+    height: 28px !important;
+    min-height: 28px !important;
     padding: 1px 5px !important;
     border: 0 !important;
     color: #1b2b3c !important;
@@ -106511,14 +106511,14 @@
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-evidence-weight="secondary"] .ro-ledger-row:not(.ro-ledger-head),
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="evidence-boundary"] .ro-ledger-row:not(.ro-ledger-head) {
-    height: 23px !important;
-    min-height: 23px !important;
+    height: 24px !important;
+    min-height: 24px !important;
   }
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-evidence-weight="secondary"] .ro-ledger-cell,
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="evidence-boundary"] .ro-ledger-cell {
-    height: 23px !important;
-    min-height: 23px !important;
+    height: 24px !important;
+    min-height: 24px !important;
   }
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="resource-threshold"] .ro-judgement-chart {
