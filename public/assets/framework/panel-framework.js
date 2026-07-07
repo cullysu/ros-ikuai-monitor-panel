@@ -7448,6 +7448,26 @@ var PanelFramework = function(exports) {
     const normalized = String(value ?? "").replace(/\s+/g, " ").trim();
     return normalized || fallback;
   }
+  function isRecord$1(value) {
+    return typeof value === "object" && value !== null;
+  }
+  function recordArray$1(value) {
+    return Array.isArray(value) ? value.filter(isRecord$1) : [];
+  }
+  function firstText(row, keys, fallback = "-") {
+    for (const key of keys) {
+      const value = clean$1(row[key], "");
+      if (value) return value;
+    }
+    return fallback;
+  }
+  function firstNumber$1(row, keys) {
+    for (const key of keys) {
+      const value = toNumber(row[key]);
+      if (Number.isFinite(value) && value > 0) return value;
+    }
+    return 0;
+  }
   function wanRows$2(snapshot) {
     if (Array.isArray(snapshot.wan) && snapshot.wan.length) return snapshot.wan;
     return Array.isArray(snapshot.pppoe) ? snapshot.pppoe : [];
@@ -7592,12 +7612,15 @@ var PanelFramework = function(exports) {
       ];
     }
     if (priority === "resource-full") {
-      const peak = resourcePeak(state);
+      const resource = resourceFacts(state);
       return [
-        { label: "峰值", value: peak.value, note: peak.label, tone: "danger" },
-        { label: "阈值", value: "85/90", note: "三项", tone: "danger" },
-        { label: "持续", value: "6/6", note: "采样", tone: "danger" },
-        { label: "连接", value: formatCompact(toNumber(state.facts.connections.total)), note: "活动", tone: "warn" }
+        ...resource.map((item) => ({
+          label: item.label,
+          value: item.value.replace(/\.0%$/, "%"),
+          note: item.note,
+          tone: item.tone
+        })),
+        { label: "连接", value: formatCompact(toNumber(state.facts.connections.total)), note: "活动会话", tone: "warn" }
       ];
     }
     if (state.scenario === "fleet") {
@@ -7777,14 +7800,124 @@ var PanelFramework = function(exports) {
       { id: "collection-boundary", rank: 4, name: "业务可信度", kind: "边界", meta: "缓存仅供判断趋势", value: trustText$1(state), status: "边界", percent: 0, tone: state.facts.collection.credibilityTone }
     ];
   }
+  function terminalCandidates(snapshot) {
+    const raw = snapshot;
+    const connections = isRecord$1(raw.connections) ? raw.connections : {};
+    const traffic = isRecord$1(raw.traffic) ? raw.traffic : {};
+    const sources = [
+      raw.terminals,
+      raw.clients,
+      raw.devices,
+      raw.hosts,
+      connections.topTerminals,
+      connections.topClients,
+      connections.topIps,
+      traffic.terminals,
+      traffic.clients,
+      traffic.topTerminals
+    ];
+    for (const source of sources) {
+      const rows = recordArray$1(source);
+      if (rows.length) return rows;
+    }
+    return [];
+  }
+  function terminalName(row, index) {
+    const ip = firstText(row, ["ip", "address", "host", "clientIp", "srcAddress"], "");
+    const rawName = firstText(row, ["name", "deviceName", "hostname", "hostName", "label", "mac"], "");
+    const mockName = /^(?:client|terminal|host|device|终端|设备|主机)[-_\s]*\d+$/i.test(rawName);
+    const pureIp = rawName && (rawName === ip || /^\d{1,3}(?:\.\d{1,3}){3}$/.test(rawName));
+    const fallbackNames = [
+      "客厅 iPhone",
+      "书房 MacBook",
+      "NAS 存储",
+      "客厅 Apple TV",
+      "游戏主机",
+      "卧室 iPad",
+      "门口摄像头",
+      "访客手机",
+      "智能音箱",
+      "工作站 PC"
+    ];
+    return {
+      name: pureIp || mockName || !rawName ? fallbackNames[index % fallbackNames.length] : rawName,
+      ip: ip || "IP 未记录"
+    };
+  }
+  function terminalKind(row, name) {
+    const raw = `${name} ${firstText(row, ["type", "kind", "category", "vendor", "os"], "")}`.toLowerCase();
+    if (/iphone|手机|phone|访客/.test(raw)) return "手机";
+    if (/ipad|平板/.test(raw)) return "平板";
+    if (/mac|book|pc|windows|工作站|电脑/.test(raw)) return "电脑";
+    if (/nas|server|存储/.test(raw)) return "存储";
+    if (/tv|电视|影音/.test(raw)) return "影音";
+    if (/camera|摄像/.test(raw)) return "摄像头";
+    if (/游戏|xbox|playstation|switch/.test(raw)) return "游戏";
+    if (/音箱|speaker/.test(raw)) return "智能家居";
+    return "终端";
+  }
+  function terminalStatus(row) {
+    const raw = firstText(row, ["status", "state", "health", "online"], "online").toLowerCase();
+    const abnormal = /offline|down|error|blocked|abnormal|false|异常|离线|阻断/.test(raw);
+    if (abnormal) return { text: /blocked|阻断/.test(raw) ? "阻断" : "异常", abnormal: true, tone: "danger" };
+    return { text: "在线", abnormal: false, tone: "trust" };
+  }
+  function terminalRankingRows(snapshot) {
+    const rows = terminalCandidates(snapshot).map((row, index) => {
+      const { name, ip } = terminalName(row, index);
+      const kind = terminalKind(row, name);
+      const down = firstNumber$1(row, ["downRate", "downloadRate", "rxRate", "download", "down", "bytesDown", "rxBytes"]);
+      const up = firstNumber$1(row, ["upRate", "uploadRate", "txRate", "upload", "up", "bytesUp", "txBytes"]);
+      const total = firstNumber$1(row, ["totalRate", "rate", "traffic", "bytes", "total", "value"]) || down + up;
+      const status = terminalStatus(row);
+      return {
+        id: clean$1(row.id ?? row.mac ?? row.ip ?? `terminal-${index}`, `terminal-${index}`),
+        rank: index + 1,
+        name,
+        kind,
+        meta: `${ip} · ↓${mobileRate$1(down)} ↑${mobileRate$1(up)}`,
+        value: status.abnormal ? status.text : total ? mobileRate$1(total) : "未采集",
+        status: status.text,
+        percent: total,
+        tone: status.tone,
+        abnormal: status.abnormal,
+        sourceIndex: index
+      };
+    });
+    if (!rows.length) {
+      return [{
+        id: "terminal-empty",
+        rank: 0,
+        name: "未识别设备",
+        kind: "终端",
+        meta: "设备名 / IP / 下载上传等待采集",
+        value: "未采集",
+        status: "等待",
+        percent: 0,
+        tone: "missing"
+      }];
+    }
+    const max = Math.max(1, ...rows.map((row) => row.percent));
+    return rows.sort((a, b) => Number(b.abnormal) - Number(a.abnormal) || b.percent - a.percent || a.sourceIndex - b.sourceIndex).slice(0, 5).map((row, index) => ({
+      id: row.id,
+      rank: index + 1,
+      name: row.name,
+      kind: row.kind,
+      meta: row.meta,
+      value: row.value,
+      status: row.status,
+      percent: Math.max(6, Math.min(100, row.percent / max * 100)),
+      tone: row.tone
+    }));
+  }
   function primaryList(snapshot, state) {
     const priority = priorityOf(state);
     if (priority === "wan-offline") return { kind: "wan-incident", title: "离线出口", meta: "默认路由不可用", rows: offlineWanRows(snapshot, state) };
     if (priority === "snapshot-missing") return { kind: "snapshot-boundary", title: "业务边界", meta: "缺失", rows: snapshotBoundaryRows(snapshot, state) };
     if (priority === "interface-down") return { kind: "interface-incident", title: "接口对象", meta: "承载待判", rows: interfaceIncidentRows(snapshot) };
     if (priority === "collection-degraded") return { kind: "collection-boundary", title: "采集对象", meta: "当前可信边界", rows: collectionBoundaryRows(snapshot, state) };
-    if (priority === "resource-full") return { kind: "terminal-ranking", title: "高流量终端", meta: "异常优先 · 总流量", rows: [] };
-    return { kind: "terminal-ranking", title: "设备排行", meta: "异常优先 · 总流量", rows: [] };
+    if (priority === "resource-full") return { kind: "terminal-ranking", title: "高流量终端", meta: "异常优先 · 总流量", rows: terminalRankingRows(snapshot) };
+    return { kind: "terminal-ranking", title: "设备排行", meta: "异常优先 · 总流量", rows: terminalRankingRows(snapshot) };
   }
   function buildMobileOverviewModel(snapshot, state) {
     return {
@@ -7837,13 +7970,6 @@ var PanelFramework = function(exports) {
   }
   function recordArray(value) {
     return Array.isArray(value) ? value.filter(isRecord) : [];
-  }
-  function firstText(row, keys, fallback = "-") {
-    for (const key of keys) {
-      const value = clean(row[key], "");
-      if (value) return value;
-    }
-    return fallback;
   }
   function firstNumber(row, keys) {
     for (const key of keys) {
@@ -8040,117 +8166,6 @@ var PanelFramework = function(exports) {
     }[variant];
     return pattern.map((ratio) => base2 * ratio);
   }
-  function terminalCandidates(snapshot) {
-    const raw = snapshot;
-    const connections = isRecord(raw.connections) ? raw.connections : {};
-    const traffic = isRecord(raw.traffic) ? raw.traffic : {};
-    const sources = [
-      raw.terminals,
-      raw.clients,
-      raw.devices,
-      raw.hosts,
-      connections.topTerminals,
-      connections.topClients,
-      connections.topIps,
-      traffic.terminals,
-      traffic.clients,
-      traffic.topTerminals
-    ];
-    for (const source of sources) {
-      const rows = recordArray(source);
-      if (rows.length) return rows;
-    }
-    return [];
-  }
-  function terminalName(row, index) {
-    const ip = firstText(row, ["ip", "address", "host", "clientIp", "srcAddress"], "");
-    const rawName = firstText(row, ["name", "deviceName", "hostname", "hostName", "label", "mac"], "");
-    const mockName = /^(?:client|terminal|host|device|终端|设备|主机)[-_\s]*\d+$/i.test(rawName);
-    const pureIp = rawName && (rawName === ip || /^\d{1,3}(?:\.\d{1,3}){3}$/.test(rawName));
-    const fallbackNames = [
-      "客厅 iPhone",
-      "书房 MacBook",
-      "NAS 存储",
-      "客厅 Apple TV",
-      "游戏主机",
-      "卧室 iPad",
-      "门口摄像头",
-      "访客手机",
-      "智能音箱",
-      "工作站 PC"
-    ];
-    return {
-      name: pureIp || mockName || !rawName ? fallbackNames[index % fallbackNames.length] : rawName,
-      ip: ip || "IP 未记录"
-    };
-  }
-  function terminalKind(row, name) {
-    const raw = `${name} ${firstText(row, ["type", "kind", "category", "vendor", "os"], "")}`.toLowerCase();
-    if (/iphone|手机|phone|访客/.test(raw)) return "手机";
-    if (/ipad|平板/.test(raw)) return "平板";
-    if (/mac|book|pc|windows|工作站|电脑/.test(raw)) return "电脑";
-    if (/nas|server|存储/.test(raw)) return "存储";
-    if (/tv|电视/.test(raw)) return "影音";
-    if (/camera|摄像/.test(raw)) return "摄像头";
-    if (/游戏|xbox|playstation|switch/.test(raw)) return "游戏";
-    if (/音箱|speaker/.test(raw)) return "智能家居";
-    return "终端";
-  }
-  function terminalStatus(row) {
-    const raw = firstText(row, ["status", "state", "health", "online"], "online").toLowerCase();
-    const abnormal = /offline|down|error|blocked|abnormal|false|异常|离线|阻断/.test(raw);
-    if (abnormal) return { text: /blocked|阻断/.test(raw) ? "阻断" : "异常", abnormal: true, tone: "danger" };
-    return { text: "在线", abnormal: false, tone: "trust" };
-  }
-  function terminalRankingRows(snapshot) {
-    const rows = terminalCandidates(snapshot).map((row, index) => {
-      const { name, ip } = terminalName(row, index);
-      const kind = terminalKind(row, name);
-      const down = firstNumber(row, ["downRate", "downloadRate", "rxRate", "download", "down", "bytesDown", "rxBytes"]);
-      const up = firstNumber(row, ["upRate", "uploadRate", "txRate", "upload", "up", "bytesUp", "txBytes"]);
-      const total = firstNumber(row, ["totalRate", "rate", "traffic", "bytes", "total", "value"]) || down + up;
-      const status = terminalStatus(row);
-      return {
-        id: clean(row.id ?? row.mac ?? row.ip ?? `terminal-${index}`, `terminal-${index}`),
-        rank: index + 1,
-        name,
-        kind,
-        meta: `${ip} · ↓${mobileRate(down)} ↑${mobileRate(up)}`,
-        value: status.abnormal ? status.text : total ? mobileRate(total) : "未采集",
-        status: status.text,
-        percent: total,
-        tone: status.tone
-      };
-    }).map((row, index) => ({ ...row, abnormal: row.tone === "danger", sourceIndex: index }));
-    if (!rows.length) {
-      return [{
-        id: "terminal-empty",
-        rank: 0,
-        name: "待识别设备",
-        kind: "终端",
-        meta: "终端 · IP 未记录 · 等待流量样本",
-        value: "未采集",
-        status: "等待",
-        percent: 0,
-        tone: "missing"
-      }];
-    }
-    const max = Math.max(1, ...rows.map((row) => row.percent));
-    return rows.sort((a, b) => Number(b.abnormal) - Number(a.abnormal) || b.percent - a.percent || a.sourceIndex - b.sourceIndex).slice(0, 5).map((row, index) => ({
-      id: row.id,
-      rank: index + 1,
-      name: row.name,
-      kind: row.kind,
-      meta: row.meta,
-      value: row.value,
-      status: row.status,
-      percent: Math.max(6, Math.min(100, row.percent / max * 100)),
-      tone: row.tone
-    }));
-  }
-  function listMetaLabel(apps, noSnapshot, statusMode) {
-    return apps.length === 1 && apps[0].id === "terminal-empty" ? "等待数据" : "异常优先 · 总流量";
-  }
   function V420Nav({ snapshot, state }) {
     const name = clean(snapshot.identity || snapshot.name || snapshot.deviceName || state.facts.device.identity || "爱快路由");
     const version = clean(snapshot.version || snapshot.routerosVersion || state.facts.device.version || "RouterOS");
@@ -8319,7 +8334,7 @@ var PanelFramework = function(exports) {
         children: [
           /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { "aria-hidden": "true", children: [
             /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: "资源" }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "阈值 / 持续点" })
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "阈值 / 持续" })
           ] }),
           metrics.map((item) => {
             const value = Number.isFinite(item.value) ? Math.max(0, Math.min(100, item.value)) : 0;
@@ -8330,8 +8345,7 @@ var PanelFramework = function(exports) {
               /* @__PURE__ */ jsxRuntimeExports.jsxs("small", { children: [
                 "阈",
                 item.threshold,
-                " ",
-                item.tone === "danger" ? "6/6" : "0/6"
+                "%"
               ] }),
               /* @__PURE__ */ jsxRuntimeExports.jsxs("em", { children: [
                 "持续",
@@ -8399,6 +8413,7 @@ var PanelFramework = function(exports) {
         "data-overview-mobile-first-visual": "scenario-specific",
         "data-overview-mobile-first-microchart": "true",
         "data-overview-mobile-v620-hero": "conclusion-two-numbers-one-chart",
+        "data-overview-mobile-priority": model.priority,
         children: [
           /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { className: "ik-v620-hero-head", children: [
             /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { "data-overview-primary-conclusion": "true", children: model.hero.title }),
@@ -8415,13 +8430,13 @@ var PanelFramework = function(exports) {
   }
   function V420List(props) {
     const model = buildMobileOverviewModel(props.snapshot, props.state);
-    const apps = model.primaryList.kind === "terminal-ranking" ? terminalRankingRows(props.snapshot) : model.primaryList.rows;
+    const rows = model.primaryList.rows;
     return /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "ik-v420-list ik-v420-app-list ik-v240-list", "data-overview-mobile-rank-list": "terminal-total-traffic-list", "data-overview-mobile-v420-list": "native-router-list", "data-overview-mobile-v240-list": "terminal-ranking", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { children: [
         /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: model.primaryList.title }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: model.primaryList.kind === "terminal-ranking" ? listMetaLabel(apps) : model.primaryList.meta })
+        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: model.primaryList.meta })
       ] }),
-      apps.map((row) => /* @__PURE__ */ jsxRuntimeExports.jsxs("article", { className: `ik-v420-list-row ${toneClass(row.tone)}`, children: [
+      rows.map((row) => /* @__PURE__ */ jsxRuntimeExports.jsxs("article", { className: `ik-v420-list-row ${toneClass(row.tone)}`, children: [
         /* @__PURE__ */ jsxRuntimeExports.jsx("i", { className: "ik-v503-device-icon", "data-rank": row.rank, children: /* @__PURE__ */ jsxRuntimeExports.jsx("svg", { viewBox: "0 0 24 24", "aria-hidden": "true", children: /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: rankingIconPath(row) }) }) }),
         /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
           /* @__PURE__ */ jsxRuntimeExports.jsxs("b", { children: [
@@ -8459,10 +8474,10 @@ var PanelFramework = function(exports) {
       { label: "首页", active: true, path: "M4 11.5 12 5l8 6.5V20a1 1 0 0 1-1 1h-5v-6h-4v6H5a1 1 0 0 1-1-1z" },
       { label: "WAN", active: false, path: "M4 12h16M7 8h10M7 16h10" },
       { label: "接口", active: false, path: "M6 7h12v10H6zM9 17v3M15 17v3M9 4v3M15 4v3" },
-      { label: "资源", active: false, path: "M4 18h16M7 14h2v4H7zM11 10h2v8h-2zM15 6h2v12h-2z" },
+      { label: "终端", active: false, path: "M5 7h14v8H5zM8 19h8M12 15v4M7 10h.01M11 10h.01M15 10h.01" },
       { label: "日志", active: false, path: "M7 5h10v14H7zM10 9h4M10 13h4" }
     ];
-    return /* @__PURE__ */ jsxRuntimeExports.jsx("nav", { className: "ik-v420-tabs ik-v240-tabs", "aria-label": "底部导航", "data-overview-mobile-bottom-tab": "home-wan-interface-resource-log", "data-overview-mobile-v159-tabbar": "bottom-entry", "data-overview-mobile-v240-tabs": "bottom-entry", children: tabs.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs("button", { className: item.active ? "is-active" : "", type: "button", children: [
+    return /* @__PURE__ */ jsxRuntimeExports.jsx("nav", { className: "ik-v420-tabs ik-v240-tabs", "aria-label": "底部导航", "data-overview-mobile-bottom-tab": "home-wan-interface-terminal-log", "data-overview-mobile-v159-tabbar": "bottom-entry", "data-overview-mobile-v240-tabs": "bottom-entry", children: tabs.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs("button", { className: item.active ? "is-active" : "", type: "button", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsx("svg", { viewBox: "0 0 24 24", "aria-hidden": "true", children: /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: item.path }) }),
       item.label
     ] }, item.label)) });
@@ -16179,6 +16194,529 @@ var PanelFramework = function(exports) {
     color: var(--ik-muted) !important;
     font-size: 7.2px !important;
     text-align: right !important;
+  }
+}
+
+@media (max-width: 760px) {
+  /* v840 density contract: read-only router App, no decorative card inflation. */
+  #overview.router-overview-framework .ik-v420-app,
+  .router-overview-framework .ik-v420-app,
+  .ik-v420-app {
+    background: #f4f8fc !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-screen,
+  .router-overview-framework .ik-v420-screen,
+  .ik-v420-screen {
+    padding: max(6px, env(safe-area-inset-top, 0px)) 14px calc(76px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-screen > * + *,
+  .router-overview-framework .ik-v420-screen > * + *,
+  .ik-v420-screen > * + * {
+    margin-top: 6px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-nav,
+  .router-overview-framework .ik-v420-nav,
+  .ik-v420-nav {
+    min-height: 48px !important;
+    height: 50px !important;
+    grid-template-columns: 32px minmax(0, 1fr) auto !important;
+    gap: 8px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-nav button,
+  .router-overview-framework .ik-v420-nav button,
+  .ik-v420-nav button {
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 8px !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-nav div,
+  .router-overview-framework .ik-v420-nav div,
+  .ik-v420-nav div {
+    gap: 0 !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-nav div b,
+  .router-overview-framework .ik-v420-nav div b,
+  .ik-v420-nav div b {
+    font-size: 16px !important;
+    line-height: 1.04 !important;
+    letter-spacing: -.28px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-nav div span,
+  .router-overview-framework .ik-v420-nav div span,
+  .ik-v420-nav div span {
+    font-size: 10.6px !important;
+    line-height: 1.15 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-nav strong,
+  .router-overview-framework .ik-v420-nav strong,
+  .ik-v420-nav strong {
+    min-height: 20px !important;
+    height: 20px !important;
+    padding: 0 7px !important;
+    gap: 4px !important;
+    border-radius: 999px !important;
+    background: transparent !important;
+    box-shadow: inset 0 0 0 .5px rgba(20,115,230,.34) !important;
+    font-size: 10px !important;
+    font-weight: 760 !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-nav strong i,
+  .router-overview-framework .ik-v420-nav strong i,
+  .ik-v420-nav strong i {
+    width: 4px !important;
+    height: 4px !important;
+    box-shadow: none !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-hero,
+  .router-overview-framework .ik-v420-hero,
+  .ik-v420-hero {
+    display: grid !important;
+    grid-template-rows: auto auto auto !important;
+    gap: 7px !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 10px 12px 9px !important;
+    border-radius: 12px !important;
+    overflow: hidden !important;
+    background: linear-gradient(180deg, rgba(255,255,255,.98), rgba(249,252,255,.96)) !important;
+    box-shadow: inset 0 0 0 .5px rgba(155,184,211,.54) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-hero::before,
+  .router-overview-framework .ik-v420-hero::before,
+  .ik-v420-hero::before {
+    width: 2px !important;
+    height: 34px !important;
+    top: 12px !important;
+    left: 0 !important;
+    opacity: .82 !important;
+  }
+
+  #overview.router-overview-framework .ik-v620-hero-head,
+  .router-overview-framework .ik-v620-hero-head,
+  .ik-v620-hero-head {
+    gap: 2px !important;
+    padding-left: 0 !important;
+  }
+
+  #overview.router-overview-framework .ik-v620-hero-head h1,
+  .router-overview-framework .ik-v620-hero-head h1,
+  .ik-v620-hero-head h1 {
+    font-size: 21px !important;
+    line-height: 1.02 !important;
+    letter-spacing: -.42px !important;
+  }
+
+  #overview.router-overview-framework .ik-v620-hero-head p,
+  .router-overview-framework .ik-v620-hero-head p,
+  .ik-v620-hero-head p {
+    max-width: none !important;
+    font-size: 10.8px !important;
+    line-height: 1.18 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  #overview.router-overview-framework .ik-v620-hero-stage,
+  .router-overview-framework .ik-v620-hero-stage,
+  .ik-v620-hero-stage {
+    grid-template-columns: 94px minmax(0, 1fr) !important;
+    gap: 6px !important;
+    min-height: 0 !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-hero-stats,
+  .router-overview-framework .ik-v420-hero-stats,
+  .ik-v420-hero-stats {
+    grid-template-rows: repeat(4, 16px) !important;
+    gap: 2px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-hero-stats span,
+  .router-overview-framework .ik-v420-hero-stats span,
+  .ik-v420-hero-stats span,
+  #overview.router-overview-framework .ik-v420-hero-stats span + span,
+  .router-overview-framework .ik-v420-hero-stats span + span,
+  .ik-v420-hero-stats span + span {
+    grid-template-columns: 34px minmax(0, 1fr) !important;
+    min-height: 16px !important;
+    padding: 1px 3px !important;
+    border-radius: 3px !important;
+    background: transparent !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-hero-stats em,
+  .router-overview-framework .ik-v420-hero-stats em,
+  .ik-v420-hero-stats em {
+    font-size: 7.4px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-hero-stats small,
+  .router-overview-framework .ik-v420-hero-stats small,
+  .ik-v420-hero-stats small {
+    display: none !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-hero-stats b,
+  #overview.router-overview-framework .ik-v420-hero-stats .is-primary b,
+  #overview.router-overview-framework .ik-v420-hero-stats .is-danger b,
+  #overview.router-overview-framework .ik-v420-hero-stats .is-warn b,
+  #overview.router-overview-framework .ik-v420-hero-stats .is-missing b,
+  .router-overview-framework .ik-v420-hero-stats b,
+  .router-overview-framework .ik-v420-hero-stats .is-primary b,
+  .router-overview-framework .ik-v420-hero-stats .is-danger b,
+  .router-overview-framework .ik-v420-hero-stats .is-warn b,
+  .router-overview-framework .ik-v420-hero-stats .is-missing b,
+  .ik-v420-hero-stats b,
+  .ik-v420-hero-stats .is-primary b,
+  .ik-v420-hero-stats .is-danger b,
+  .ik-v420-hero-stats .is-warn b,
+  .ik-v420-hero-stats .is-missing b {
+    font-size: 9.8px !important;
+    line-height: 1 !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-visual,
+  .router-overview-framework .ik-v420-visual,
+  .ik-v420-visual {
+    height: 78px !important;
+    min-height: 78px !important;
+    max-height: 88px !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-hero[data-overview-mobile-priority="wan-offline"] .ik-v620-hero-stage,
+  #overview.router-overview-framework .ik-v420-hero[data-overview-mobile-priority="resource-full"] .ik-v620-hero-stage,
+  #overview.router-overview-framework .ik-v420-hero[data-overview-mobile-priority="snapshot-missing"] .ik-v620-hero-stage,
+  #overview.router-overview-framework .ik-v420-hero[data-overview-mobile-priority="collection-degraded"] .ik-v620-hero-stage,
+  #overview.router-overview-framework .ik-v420-hero[data-overview-mobile-priority="interface-down"] .ik-v620-hero-stage,
+  .router-overview-framework .ik-v420-hero[data-overview-mobile-priority="wan-offline"] .ik-v620-hero-stage,
+  .router-overview-framework .ik-v420-hero[data-overview-mobile-priority="resource-full"] .ik-v620-hero-stage,
+  .router-overview-framework .ik-v420-hero[data-overview-mobile-priority="snapshot-missing"] .ik-v620-hero-stage,
+  .router-overview-framework .ik-v420-hero[data-overview-mobile-priority="collection-degraded"] .ik-v620-hero-stage,
+  .router-overview-framework .ik-v420-hero[data-overview-mobile-priority="interface-down"] .ik-v620-hero-stage,
+  .ik-v420-hero[data-overview-mobile-priority="wan-offline"] .ik-v620-hero-stage,
+  .ik-v420-hero[data-overview-mobile-priority="resource-full"] .ik-v620-hero-stage,
+  .ik-v420-hero[data-overview-mobile-priority="snapshot-missing"] .ik-v620-hero-stage,
+  .ik-v420-hero[data-overview-mobile-priority="collection-degraded"] .ik-v620-hero-stage,
+  .ik-v420-hero[data-overview-mobile-priority="interface-down"] .ik-v620-hero-stage {
+    grid-template-columns: 1fr !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-hero[data-overview-mobile-priority="wan-offline"] .ik-v420-hero-stats,
+  #overview.router-overview-framework .ik-v420-hero[data-overview-mobile-priority="resource-full"] .ik-v420-hero-stats,
+  #overview.router-overview-framework .ik-v420-hero[data-overview-mobile-priority="snapshot-missing"] .ik-v420-hero-stats,
+  #overview.router-overview-framework .ik-v420-hero[data-overview-mobile-priority="collection-degraded"] .ik-v420-hero-stats,
+  #overview.router-overview-framework .ik-v420-hero[data-overview-mobile-priority="interface-down"] .ik-v420-hero-stats,
+  .router-overview-framework .ik-v420-hero[data-overview-mobile-priority="wan-offline"] .ik-v420-hero-stats,
+  .router-overview-framework .ik-v420-hero[data-overview-mobile-priority="resource-full"] .ik-v420-hero-stats,
+  .router-overview-framework .ik-v420-hero[data-overview-mobile-priority="snapshot-missing"] .ik-v420-hero-stats,
+  .router-overview-framework .ik-v420-hero[data-overview-mobile-priority="collection-degraded"] .ik-v420-hero-stats,
+  .router-overview-framework .ik-v420-hero[data-overview-mobile-priority="interface-down"] .ik-v420-hero-stats,
+  .ik-v420-hero[data-overview-mobile-priority="wan-offline"] .ik-v420-hero-stats,
+  .ik-v420-hero[data-overview-mobile-priority="resource-full"] .ik-v420-hero-stats,
+  .ik-v420-hero[data-overview-mobile-priority="snapshot-missing"] .ik-v420-hero-stats,
+  .ik-v420-hero[data-overview-mobile-priority="collection-degraded"] .ik-v420-hero-stats,
+  .ik-v420-hero[data-overview-mobile-priority="interface-down"] .ik-v420-hero-stats {
+    display: none !important;
+  }
+
+  #overview.router-overview-framework .ik-v812-trend-visual,
+  .router-overview-framework .ik-v812-trend-visual,
+  .ik-v812-trend-visual {
+    grid-template-columns: minmax(0, 1fr) 50px !important;
+    gap: 5px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-line-chart,
+  .router-overview-framework .ik-v420-line-chart,
+  .ik-v420-line-chart {
+    height: 72px !important;
+  }
+
+  #overview.router-overview-framework .ik-v812-trend-visual aside span,
+  .router-overview-framework .ik-v812-trend-visual aside span,
+  .ik-v812-trend-visual aside span {
+    min-height: 18px !important;
+  }
+
+  #overview.router-overview-framework .ik-v812-trend-visual aside em,
+  .router-overview-framework .ik-v812-trend-visual aside em,
+  .ik-v812-trend-visual aside em {
+    font-size: 7.6px !important;
+  }
+
+  #overview.router-overview-framework .ik-v812-trend-visual aside b,
+  .router-overview-framework .ik-v812-trend-visual aside b,
+  .ik-v812-trend-visual aside b {
+    font-size: 9px !important;
+  }
+
+  #overview.router-overview-framework .ik-v830-trust-rail,
+  .router-overview-framework .ik-v830-trust-rail,
+  .ik-v830-trust-rail {
+    min-height: 18px !important;
+    padding-top: 4px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-port-matrix,
+  .router-overview-framework .ik-v420-port-matrix,
+  .ik-v420-port-matrix {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 3px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-port-matrix span,
+  .router-overview-framework .ik-v420-port-matrix span,
+  .ik-v420-port-matrix span {
+    min-height: 34px !important;
+    padding: 0 4px !important;
+    border-radius: 4px !important;
+    background: rgba(255,255,255,.72) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-scene="resource-full"] .ik-v420-visual,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-scene="resource-full"] .ik-v420-visual,
+  .ik-v420-app[data-overview-mobile-scene="resource-full"] .ik-v420-visual {
+    height: 78px !important;
+    min-height: 78px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-scene="resource-full"] .ik-v620-pressure-visual,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-scene="resource-full"] .ik-v620-pressure-visual,
+  .ik-v420-app[data-overview-mobile-scene="resource-full"] .ik-v620-pressure-visual {
+    grid-template-rows: repeat(3, 19px) !important;
+    gap: 5px !important;
+    align-content: center !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-scene="resource-full"] .ik-v620-pressure-visual .ik-v420-resource-meter,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-scene="resource-full"] .ik-v620-pressure-visual .ik-v420-resource-meter,
+  .ik-v420-app[data-overview-mobile-scene="resource-full"] .ik-v620-pressure-visual .ik-v420-resource-meter {
+    grid-template-columns: 30px 34px 38px 48px minmax(0, 1fr) !important;
+    gap: 4px !important;
+    min-height: 19px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-scene="resource-full"] .ik-v620-pressure-visual .ik-v420-resource-meter b,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-scene="resource-full"] .ik-v620-pressure-visual .ik-v420-resource-meter b,
+  .ik-v420-app[data-overview-mobile-scene="resource-full"] .ik-v620-pressure-visual .ik-v420-resource-meter b,
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-scene="resource-full"] .ik-v620-pressure-visual .ik-v420-resource-meter small,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-scene="resource-full"] .ik-v620-pressure-visual .ik-v420-resource-meter small,
+  .ik-v420-app[data-overview-mobile-scene="resource-full"] .ik-v620-pressure-visual .ik-v420-resource-meter small,
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-scene="resource-full"] .ik-v620-pressure-visual .ik-v420-resource-meter em,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-scene="resource-full"] .ik-v620-pressure-visual .ik-v420-resource-meter em,
+  .ik-v420-app[data-overview-mobile-scene="resource-full"] .ik-v620-pressure-visual .ik-v420-resource-meter em {
+    display: block !important;
+    font-size: 8px !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-scene="resource-full"] .ik-v620-pressure-visual .ik-v420-resource-meter em,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-scene="resource-full"] .ik-v620-pressure-visual .ik-v420-resource-meter em,
+  .ik-v420-app[data-overview-mobile-scene="resource-full"] .ik-v620-pressure-visual .ik-v420-resource-meter em {
+    grid-column: 4 !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-scene="resource-full"] .ik-v420-resource-visual.ik-v420-resource-meter-set.is-vertical-ledger.ik-v620-pressure-visual .ik-mobile-resource-spark.ik-v420-resource-meter em,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-scene="resource-full"] .ik-v420-resource-visual.ik-v420-resource-meter-set.is-vertical-ledger.ik-v620-pressure-visual .ik-mobile-resource-spark.ik-v420-resource-meter em,
+  .ik-v420-app[data-overview-mobile-scene="resource-full"] .ik-v420-resource-visual.ik-v420-resource-meter-set.is-vertical-ledger.ik-v620-pressure-visual .ik-mobile-resource-spark.ik-v420-resource-meter em {
+    display: block !important;
+    grid-column: 4 !important;
+    color: #687b90 !important;
+    font-size: 8px !important;
+    line-height: 1 !important;
+    font-style: normal !important;
+    text-align: right !important;
+    white-space: nowrap !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-scene="resource-full"] .ik-v620-pressure-visual .ik-v420-resource-meter > i,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-scene="resource-full"] .ik-v620-pressure-visual .ik-v420-resource-meter > i,
+  .ik-v420-app[data-overview-mobile-scene="resource-full"] .ik-v620-pressure-visual .ik-v420-resource-meter > i {
+    grid-column: 5 !important;
+    height: 2px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-surface,
+  .router-overview-framework .ik-v420-surface,
+  .ik-v420-surface {
+    gap: 5px !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-timeline,
+  .router-overview-framework .ik-v420-timeline,
+  .ik-v420-timeline,
+  #overview.router-overview-framework .ik-v420-list,
+  .router-overview-framework .ik-v420-list,
+  .ik-v420-list {
+    padding: 0 12px !important;
+    border-radius: 10px !important;
+    background: rgba(255,255,255,.88) !important;
+    box-shadow: inset 0 0 0 .5px rgba(155,184,211,.44) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-timeline-row,
+  .router-overview-framework .ik-v420-timeline-row,
+  .ik-v420-timeline-row {
+    grid-template-areas: "dot title value" ". note note" !important;
+    grid-template-rows: auto auto !important;
+    grid-template-columns: 14px minmax(0, 1fr) auto !important;
+    gap: 8px !important;
+    min-height: 44px !important;
+    padding: 4px 0 !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-timeline-row > i,
+  .router-overview-framework .ik-v420-timeline-row > i,
+  .ik-v420-timeline-row > i {
+    grid-area: dot !important;
+    width: 6px !important;
+    height: 6px !important;
+    border-radius: 999px !important;
+    background: var(--ik-blue) !important;
+    box-shadow: none !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-timeline-row.is-danger > i,
+  .router-overview-framework .ik-v420-timeline-row.is-danger > i,
+  .ik-v420-timeline-row.is-danger > i {
+    background: var(--ik-danger) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-timeline-row.is-warn > i,
+  #overview.router-overview-framework .ik-v420-timeline-row.is-missing > i,
+  .router-overview-framework .ik-v420-timeline-row.is-warn > i,
+  .router-overview-framework .ik-v420-timeline-row.is-missing > i,
+  .ik-v420-timeline-row.is-warn > i,
+  .ik-v420-timeline-row.is-missing > i {
+    background: var(--ik-warn) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-timeline-row b,
+  .router-overview-framework .ik-v420-timeline-row b,
+  .ik-v420-timeline-row b {
+    grid-area: title !important;
+    font-size: 12px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-timeline-row strong,
+  .router-overview-framework .ik-v420-timeline-row strong,
+  .ik-v420-timeline-row strong {
+    grid-area: value !important;
+    font-size: 11.8px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-timeline-row em,
+  .router-overview-framework .ik-v420-timeline-row em,
+  .ik-v420-timeline-row em {
+    grid-area: note !important;
+    font-size: 10px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    text-align: right !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-list,
+  .router-overview-framework .ik-v420-list,
+  .ik-v420-list {
+    padding-top: 7px !important;
+    padding-bottom: 4px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-list header,
+  .router-overview-framework .ik-v420-list header,
+  .ik-v420-list header {
+    min-height: 20px !important;
+    padding: 0 0 3px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-list-row,
+  .router-overview-framework .ik-v420-list-row,
+  .ik-v420-list-row {
+    grid-template-columns: 28px minmax(0, 1fr) auto !important;
+    gap: 8px !important;
+    min-height: 52px !important;
+    padding: 0 !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-list-row > i,
+  .router-overview-framework .ik-v420-list-row > i,
+  .ik-v420-list-row > i {
+    width: 28px !important;
+    height: 28px !important;
+    border-radius: 6px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-list-row span b,
+  .router-overview-framework .ik-v420-list-row span b,
+  .ik-v420-list-row span b {
+    font-size: 12px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-list-row span em,
+  .router-overview-framework .ik-v420-list-row span em,
+  .ik-v420-list-row span em {
+    font-size: 9.5px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-list-row span u,
+  .router-overview-framework .ik-v420-list-row span u,
+  .ik-v420-list-row span u {
+    height: 2px !important;
+    opacity: .72 !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-list-row > strong,
+  .router-overview-framework .ik-v420-list-row > strong,
+  .ik-v420-list-row > strong {
+    min-width: 56px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-list-row > strong b,
+  .router-overview-framework .ik-v420-list-row > strong b,
+  .ik-v420-list-row > strong b {
+    font-size: 11px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-tabs,
+  .router-overview-framework .ik-v420-tabs,
+  .ik-v420-tabs {
+    left: 8px !important;
+    right: 8px !important;
+    bottom: max(2px, env(safe-area-inset-bottom, 0px)) !important;
+    height: 64px !important;
+    min-height: 64px !important;
+    padding: 4px 7px !important;
+    border-radius: 12px !important;
   }
 }
 

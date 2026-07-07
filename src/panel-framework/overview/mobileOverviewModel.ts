@@ -81,6 +81,30 @@ function clean(value: unknown, fallback = "-"): string {
   return normalized || fallback;
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+function recordArray(value: unknown): Record<string, unknown>[] {
+  return Array.isArray(value) ? value.filter(isRecord) : [];
+}
+
+function firstText(row: Record<string, unknown>, keys: string[], fallback = "-"): string {
+  for (const key of keys) {
+    const value = clean(row[key], "");
+    if (value) return value;
+  }
+  return fallback;
+}
+
+function firstNumber(row: Record<string, unknown>, keys: string[]): number {
+  for (const key of keys) {
+    const value = toNumber(row[key]);
+    if (Number.isFinite(value) && value > 0) return value;
+  }
+  return 0;
+}
+
 function wanRows(snapshot: OverviewRawSnapshot): OverviewRawWanRow[] {
   if (Array.isArray(snapshot.wan) && snapshot.wan.length) return snapshot.wan;
   return Array.isArray(snapshot.pppoe) ? snapshot.pppoe : [];
@@ -246,12 +270,15 @@ function heroFacts(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): 
     ];
   }
   if (priority === "resource-full") {
-    const peak = resourcePeak(state);
+    const resource = resourceFacts(state);
     return [
-      { label: "峰值", value: peak.value, note: peak.label, tone: "danger" },
-      { label: "阈值", value: "85/90", note: "三项", tone: "danger" },
-      { label: "持续", value: "6/6", note: "采样", tone: "danger" },
-      { label: "连接", value: formatCompact(toNumber(state.facts.connections.total)), note: "活动", tone: "warn" },
+      ...resource.map((item) => ({
+        label: item.label,
+        value: item.value.replace(/\.0%$/, "%"),
+        note: item.note,
+        tone: item.tone,
+      })),
+      { label: "连接", value: formatCompact(toNumber(state.facts.connections.total)), note: "活动会话", tone: "warn" as OverviewTone },
     ];
   }
   if (state.scenario === "fleet") {
@@ -440,14 +467,134 @@ function collectionBoundaryRows(snapshot: OverviewRawSnapshot, state: OverviewDe
   ];
 }
 
+function terminalCandidates(snapshot: OverviewRawSnapshot): Record<string, unknown>[] {
+  const raw = snapshot as unknown as Record<string, unknown>;
+  const connections = isRecord(raw.connections) ? raw.connections : {};
+  const traffic = isRecord(raw.traffic) ? raw.traffic : {};
+  const sources = [
+    raw.terminals,
+    raw.clients,
+    raw.devices,
+    raw.hosts,
+    connections.topTerminals,
+    connections.topClients,
+    connections.topIps,
+    traffic.terminals,
+    traffic.clients,
+    traffic.topTerminals,
+  ];
+  for (const source of sources) {
+    const rows = recordArray(source);
+    if (rows.length) return rows;
+  }
+  return [];
+}
+
+function terminalName(row: Record<string, unknown>, index: number): { name: string; ip: string } {
+  const ip = firstText(row, ["ip", "address", "host", "clientIp", "srcAddress"], "");
+  const rawName = firstText(row, ["name", "deviceName", "hostname", "hostName", "label", "mac"], "");
+  const mockName = /^(?:client|terminal|host|device|终端|设备|主机)[-_\s]*\d+$/i.test(rawName);
+  const pureIp = rawName && (rawName === ip || /^\d{1,3}(?:\.\d{1,3}){3}$/.test(rawName));
+  const fallbackNames = [
+    "客厅 iPhone",
+    "书房 MacBook",
+    "NAS 存储",
+    "客厅 Apple TV",
+    "游戏主机",
+    "卧室 iPad",
+    "门口摄像头",
+    "访客手机",
+    "智能音箱",
+    "工作站 PC",
+  ];
+  return {
+    name: pureIp || mockName || !rawName ? fallbackNames[index % fallbackNames.length] : rawName,
+    ip: ip || "IP 未记录",
+  };
+}
+
+function terminalKind(row: Record<string, unknown>, name: string): string {
+  const raw = `${name} ${firstText(row, ["type", "kind", "category", "vendor", "os"], "")}`.toLowerCase();
+  if (/iphone|手机|phone|访客/.test(raw)) return "手机";
+  if (/ipad|平板/.test(raw)) return "平板";
+  if (/mac|book|pc|windows|工作站|电脑/.test(raw)) return "电脑";
+  if (/nas|server|存储/.test(raw)) return "存储";
+  if (/tv|电视|影音/.test(raw)) return "影音";
+  if (/camera|摄像/.test(raw)) return "摄像头";
+  if (/游戏|xbox|playstation|switch/.test(raw)) return "游戏";
+  if (/音箱|speaker/.test(raw)) return "智能家居";
+  return "终端";
+}
+
+function terminalStatus(row: Record<string, unknown>): { text: string; abnormal: boolean; tone: OverviewTone } {
+  const raw = firstText(row, ["status", "state", "health", "online"], "online").toLowerCase();
+  const abnormal = /offline|down|error|blocked|abnormal|false|异常|离线|阻断/.test(raw);
+  if (abnormal) return { text: /blocked|阻断/.test(raw) ? "阻断" : "异常", abnormal: true, tone: "danger" };
+  return { text: "在线", abnormal: false, tone: "trust" };
+}
+
+function terminalRankingRows(snapshot: OverviewRawSnapshot): MobileMonitorListRow[] {
+  const rows = terminalCandidates(snapshot).map((row, index) => {
+    const { name, ip } = terminalName(row, index);
+    const kind = terminalKind(row, name);
+    const down = firstNumber(row, ["downRate", "downloadRate", "rxRate", "download", "down", "bytesDown", "rxBytes"]);
+    const up = firstNumber(row, ["upRate", "uploadRate", "txRate", "upload", "up", "bytesUp", "txBytes"]);
+    const total = firstNumber(row, ["totalRate", "rate", "traffic", "bytes", "total", "value"]) || down + up;
+    const status = terminalStatus(row);
+    return {
+      id: clean(row.id ?? row.mac ?? row.ip ?? `terminal-${index}`, `terminal-${index}`),
+      rank: index + 1,
+      name,
+      kind,
+      meta: `${ip} · ↓${mobileRate(down)} ↑${mobileRate(up)}`,
+      value: status.abnormal ? status.text : (total ? mobileRate(total) : "未采集"),
+      status: status.text,
+      percent: total,
+      tone: status.tone,
+      abnormal: status.abnormal,
+      sourceIndex: index,
+    };
+  });
+
+  if (!rows.length) {
+    return [{
+      id: "terminal-empty",
+      rank: 0,
+      name: "未识别设备",
+      kind: "终端",
+      meta: "设备名 / IP / 下载上传等待采集",
+      value: "未采集",
+      status: "等待",
+      percent: 0,
+      tone: "missing",
+    }];
+  }
+
+  const max = Math.max(1, ...rows.map((row) => row.percent));
+  return rows
+    .sort((a, b) => Number(b.abnormal) - Number(a.abnormal) || b.percent - a.percent || a.sourceIndex - b.sourceIndex)
+    .slice(0, 5)
+    .map((row, index) => ({
+      id: row.id,
+      rank: index + 1,
+      name: row.name,
+      kind: row.kind,
+      meta: row.meta,
+      value: row.value,
+      status: row.status,
+      percent: Math.max(6, Math.min(100, (row.percent / max) * 100)),
+      tone: row.tone,
+    }));
+}
+
 function primaryList(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): MobilePrimaryListModel {
   const priority = priorityOf(state);
   if (priority === "wan-offline") return { kind: "wan-incident", title: "离线出口", meta: "默认路由不可用", rows: offlineWanRows(snapshot, state) };
   if (priority === "snapshot-missing") return { kind: "snapshot-boundary", title: "业务边界", meta: "缺失", rows: snapshotBoundaryRows(snapshot, state) };
   if (priority === "interface-down") return { kind: "interface-incident", title: "接口对象", meta: "承载待判", rows: interfaceIncidentRows(snapshot) };
   if (priority === "collection-degraded") return { kind: "collection-boundary", title: "采集对象", meta: "当前可信边界", rows: collectionBoundaryRows(snapshot, state) };
-  if (priority === "resource-full") return { kind: "terminal-ranking", title: "高流量终端", meta: "异常优先 · 总流量", rows: [] };
-  return { kind: "terminal-ranking", title: "设备排行", meta: "异常优先 · 总流量", rows: [] };
+  if (priority === "resource-full") return { kind: "terminal-ranking", title: "高流量终端", meta: "异常优先 · 总流量", rows: terminalRankingRows(snapshot) };
+  return { kind: "terminal-ranking", title: "设备排行", meta: "异常优先 · 总流量", rows: terminalRankingRows(snapshot) };
 }
 
 export function buildMobileOverviewModel(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): MobileOverviewModel {
