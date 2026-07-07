@@ -7365,675 +7365,6 @@ var PanelFramework = function(exports) {
       }
     }
   };
-  function clean$2(value, fallback = "-") {
-    const normalized = String(value ?? "").replace(/\s+/g, " ").trim();
-    return normalized || fallback;
-  }
-  function wanRows$2(snapshot) {
-    if (Array.isArray(snapshot.wan) && snapshot.wan.length) return snapshot.wan;
-    return Array.isArray(snapshot.pppoe) ? snapshot.pppoe : [];
-  }
-  function twoDigit$2(value) {
-    return String(value).padStart(2, "0");
-  }
-  function mobileTime$2(raw) {
-    const source = String(raw ?? "").trim();
-    if (!source) return "未记录";
-    const numeric = typeof raw === "number" || /^\d+$/.test(source) ? Number(raw) : Number.NaN;
-    const date = Number.isFinite(numeric) ? new Date(numeric < 1e12 ? numeric * 1e3 : numeric) : new Date(source);
-    if (Number.isNaN(date.getTime())) {
-      const fallback = shortTimestamp(raw);
-      return fallback && !/\d{4}-\d{2}-\d{2}T/.test(fallback) ? fallback : "未记录";
-    }
-    const now2 = /* @__PURE__ */ new Date();
-    const time = `${twoDigit$2(date.getHours())}:${twoDigit$2(date.getMinutes())}`;
-    if (date.getFullYear() === now2.getFullYear() && date.getMonth() === now2.getMonth() && date.getDate() === now2.getDate()) return time;
-    return `${twoDigit$2(date.getMonth() + 1)}-${twoDigit$2(date.getDate())} ${time}`;
-  }
-  function latestSuccess$3(snapshot, state) {
-    const meta = snapshot.meta || {};
-    const raw = state.scenario === "no-snapshot" ? meta.staticUpdatedAt || meta.realtimeUpdatedAt || snapshot.updatedAt : snapshot.updatedAt || meta.realtimeUpdatedAt || meta.staticUpdatedAt || meta.slowRestUpdatedAt;
-    return mobileTime$2(raw);
-  }
-  function stripRest$2(label) {
-    return clean$2(label.replace(/^REST\s*/i, ""), "可用");
-  }
-  function stripSsh$2(label) {
-    return clean$2(label.replace(/^SSH\s*/i, ""), "可用");
-  }
-  function snapshotTrustText(state) {
-    if (state.scenario === "no-snapshot") return "缺失";
-    if (state.scenario === "collection-down" || state.facts.collection.dataStale || state.facts.freshness.history) return "缓存";
-    return "实时";
-  }
-  function buildRouterOsTrustModel(snapshot, state) {
-    const totalWan = Math.max(state.facts.wan.total || wanRows$2(snapshot).length, state.facts.wan.allOffline ? 8 : 0);
-    const forwarding = {
-      id: "forwarding",
-      label: "转发面",
-      value: state.facts.wan.allOffline ? "不可用" : state.facts.interfaces.down > 0 ? "待确认" : "可用",
-      note: state.facts.wan.allOffline ? `WAN 0/${formatNumber(totalWan)}` : `WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(totalWan || 1)}`,
-      tone: state.facts.wan.allOffline ? "danger" : state.facts.interfaces.down > 0 ? "warn" : "ok"
-    };
-    const collection = {
-      id: "collection",
-      label: "采集面",
-      value: state.scenario === "collection-down" ? "降级" : state.scenario === "no-snapshot" ? "断链" : "可达",
-      note: `${stripRest$2(state.facts.collection.restLabel)} / ${stripSsh$2(state.facts.collection.sshLabel)}`,
-      tone: state.scenario === "no-snapshot" ? "danger" : state.scenario === "collection-down" ? "warn" : state.facts.collection.level
-    };
-    const snapshotPlane = {
-      id: "snapshot",
-      label: "快照面",
-      value: state.scenario === "no-snapshot" ? "缺失" : snapshotTrustText(state),
-      note: latestSuccess$3(snapshot, state),
-      tone: state.scenario === "no-snapshot" ? "missing" : state.facts.collection.credibilityTone
-    };
-    const business = {
-      id: "business",
-      label: "业务面",
-      value: state.scenario === "no-snapshot" ? "不展示" : state.facts.wan.allOffline ? "中断" : "可判",
-      note: state.scenario === "no-snapshot" ? "无快照" : state.facts.wan.allOffline ? "出口全断" : "指标可用",
-      tone: state.scenario === "no-snapshot" ? "missing" : state.facts.wan.allOffline ? "danger" : "trust"
-    };
-    return {
-      forwarding,
-      collection,
-      snapshot: snapshotPlane,
-      business,
-      planes: [forwarding, collection, snapshotPlane, business]
-    };
-  }
-  function clean$1(value, fallback = "-") {
-    const normalized = String(value ?? "").replace(/\s+/g, " ").trim();
-    return normalized || fallback;
-  }
-  function isRecord(value) {
-    return typeof value === "object" && value !== null;
-  }
-  function recordArray(value) {
-    return Array.isArray(value) ? value.filter(isRecord) : [];
-  }
-  function firstText(row, keys, fallback = "-") {
-    for (const key of keys) {
-      const value = clean$1(row[key], "");
-      if (value) return value;
-    }
-    return fallback;
-  }
-  function firstNumber(row, keys) {
-    for (const key of keys) {
-      const value = toNumber(row[key]);
-      if (Number.isFinite(value) && value > 0) return value;
-    }
-    return 0;
-  }
-  function wanRows$1(snapshot) {
-    if (Array.isArray(snapshot.wan) && snapshot.wan.length) return snapshot.wan;
-    return Array.isArray(snapshot.pppoe) ? snapshot.pppoe : [];
-  }
-  function interfaceRows$2(snapshot) {
-    return Array.isArray(snapshot.interfaces) ? snapshot.interfaces : [];
-  }
-  function twoDigit$1(value) {
-    return String(value).padStart(2, "0");
-  }
-  function mobileTime$1(raw) {
-    const source = String(raw ?? "").trim();
-    if (!source) return "未记录";
-    const numeric = typeof raw === "number" || /^\d+$/.test(source) ? Number(raw) : Number.NaN;
-    const date = Number.isFinite(numeric) ? new Date(numeric < 1e12 ? numeric * 1e3 : numeric) : new Date(source);
-    if (Number.isNaN(date.getTime())) {
-      const fallback = shortTimestamp(raw);
-      return fallback && !/\d{4}-\d{2}-\d{2}T/.test(fallback) ? fallback : "未记录";
-    }
-    const now2 = /* @__PURE__ */ new Date();
-    const time = `${twoDigit$1(date.getHours())}:${twoDigit$1(date.getMinutes())}`;
-    if (date.getFullYear() === now2.getFullYear() && date.getMonth() === now2.getMonth() && date.getDate() === now2.getDate()) return time;
-    return `${twoDigit$1(date.getMonth() + 1)}-${twoDigit$1(date.getDate())} ${time}`;
-  }
-  function latestSuccess$2(snapshot, state) {
-    const meta = snapshot.meta || {};
-    const raw = state.scenario === "no-snapshot" ? meta.staticUpdatedAt || meta.realtimeUpdatedAt || snapshot.updatedAt : snapshot.updatedAt || meta.realtimeUpdatedAt || meta.staticUpdatedAt || meta.slowRestUpdatedAt;
-    return mobileTime$1(raw);
-  }
-  function totals(snapshot) {
-    return wanRows$1(snapshot).reduce(
-      (sum, row) => ({
-        up: sum.up + toNumber(row.upRate),
-        down: sum.down + toNumber(row.downRate)
-      }),
-      { up: 0, down: 0 }
-    );
-  }
-  function mobileRate(value) {
-    if (!Number.isFinite(value) || value <= 0) return "未采集";
-    if (value >= 1e9) {
-      const scaled = value / 1e9;
-      return `${scaled >= 10 ? scaled.toFixed(0) : scaled.toFixed(1)}G`;
-    }
-    if (value >= 1e6) {
-      const scaled = value / 1e6;
-      return `${scaled >= 10 ? scaled.toFixed(0) : scaled.toFixed(1)}M`;
-    }
-    if (value >= 1e3) {
-      const scaled = value / 1e3;
-      return `${scaled >= 10 ? scaled.toFixed(0) : scaled.toFixed(1)}K`;
-    }
-    return `${Math.round(value)}`;
-  }
-  function compactRate(value) {
-    if (!Number.isFinite(value) || value <= 0) return "未采集";
-    return formatRate(value).replace(/\s+/g, "");
-  }
-  function trend(seed, variant = "down") {
-    const base2 = Math.max(1, seed);
-    const pattern = {
-      down: [0.34, 0.42, 0.36, 0.55, 0.5, 0.7, 0.86, 0.78],
-      up: [0.18, 0.27, 0.22, 0.33, 0.4, 0.36, 0.48, 0.44],
-      hot: [0.52, 0.6, 0.72, 0.84, 0.78, 0.96, 0.9, 1],
-      quiet: [0.32, 0.31, 0.33, 0.32, 0.34, 0.33, 0.35, 0.34]
-    }[variant];
-    return pattern.map((ratio) => base2 * ratio);
-  }
-  function sampleTrafficRow(row) {
-    const down = firstNumber(row, ["downRate", "downloadRate", "rxRate", "inRate", "down", "download", "rx", "in"]);
-    const up = firstNumber(row, ["upRate", "uploadRate", "txRate", "outRate", "up", "upload", "tx", "out"]);
-    return { down, up };
-  }
-  function historyTraffic(snapshot) {
-    const raw = snapshot;
-    const traffic = isRecord(raw.traffic) ? raw.traffic : {};
-    const realtime = isRecord(raw.realtime) ? raw.realtime : {};
-    const sources = [
-      raw.history,
-      raw.samples,
-      raw.rateHistory,
-      raw.trafficHistory,
-      raw.wanHistory,
-      traffic.history,
-      traffic.samples,
-      realtime.history,
-      realtime.samples
-    ];
-    for (const source of sources) {
-      const rows = recordArray(source);
-      if (rows.length >= 3) {
-        const sampled = rows.map(sampleTrafficRow);
-        const down = sampled.map((item) => item.down).filter((item) => Number.isFinite(item));
-        const up = sampled.map((item) => item.up).filter((item) => Number.isFinite(item));
-        if (down.some((item) => item > 0) || up.some((item) => item > 0)) {
-          return { down: down.slice(-12), up: up.slice(-12), source: "history" };
-        }
-      }
-      if (Array.isArray(source) && source.length >= 3 && source.every((item) => Number.isFinite(toNumber(item)))) {
-        const values = source.map((item) => toNumber(item)).slice(-12);
-        return { down: values, up: values.map((item, index) => item * (0.18 + index % 3 * 0.05)), source: "history" };
-      }
-    }
-    return { down: [], up: [], source: "current" };
-  }
-  function networkTrendSeries(snapshot, state) {
-    const history = historyTraffic(snapshot);
-    if (history.down.length >= 3 || history.up.length >= 3) return history;
-    const rate = totals(snapshot);
-    if (state.scenario === "no-snapshot") {
-      return { down: trend(1, "quiet"), up: trend(0.45, "quiet"), source: "current" };
-    }
-    const hot = state.scenario === "resource-full" || state.scenario === "interfaces-down" || state.facts.wan.allOffline;
-    return {
-      down: trend(rate.down || Math.max(1, toNumber(state.facts.connections.total)), hot ? "hot" : "down"),
-      up: trend(rate.up || Math.max(1, rate.down * 0.22), hot ? "up" : "quiet"),
-      source: "current"
-    };
-  }
-  function trendChart(snapshot, state) {
-    const series = networkTrendSeries(snapshot, state);
-    const down = series.down.length ? series.down : trend(1, "quiet");
-    const up = series.up.length ? series.up : trend(0.45, "quiet");
-    const peak = Math.max(...down);
-    const current = down[down.length - 1] || 0;
-    const windowText = series.source === "history" ? "近 12 点" : "当前窗口";
-    const sampleText = series.source === "history" ? "历史样本" : "实时估算";
-    return {
-      source: series.source,
-      windowText,
-      sampleText,
-      currentLabel: mobileRate(current),
-      peakLabel: mobileRate(peak),
-      down,
-      up,
-      readouts: [
-        { label: "当前", value: mobileRate(current), note: "下载", tone: "trust" },
-        { label: "峰值", value: mobileRate(peak), note: windowText, tone: "trust" },
-        { label: "窗口", value: series.source === "history" ? "12 点" : "实时", note: sampleText, tone: "trust" },
-        { label: "采样", value: series.source === "history" ? "历史" : "实时", note: "可信度", tone: state.facts.collection.credibilityTone }
-      ]
-    };
-  }
-  function stripRest$1(label) {
-    return clean$1(label.replace(/^REST\s*/i, ""), "可用");
-  }
-  function stripSsh$1(label) {
-    return clean$1(label.replace(/^SSH\s*/i, ""), "可用");
-  }
-  function trustText$1(state) {
-    if (state.scenario === "no-snapshot") return "缺失";
-    if (state.scenario === "collection-down" || state.facts.collection.dataStale || state.facts.freshness.history) return "缓存";
-    return "实时";
-  }
-  function mobileRouteValue(state) {
-    if (state.facts.wan.allOffline) return "异常";
-    if (state.facts.route.level === "danger") return "异常";
-    if (state.scenario === "collection-down") return "历史快照";
-    if (state.scenario === "interfaces-down") return "待确认";
-    if (state.facts.route.level === "missing") return "待确认";
-    if (state.scenario === "resource-full") return "活动默认路由";
-    return "可用";
-  }
-  function priorityOf(state) {
-    if (state.scenario === "fleet") return "normal";
-    if (state.scenario === "no-snapshot") return "snapshot-missing";
-    if (state.scenario === "all-offline" || state.facts.wan.allOffline && state.scenario !== "interfaces-down") return "wan-offline";
-    if (state.scenario === "resource-full") return "resource-full";
-    if (state.scenario === "interfaces-down" || state.facts.interfaces.down > 0) return "interface-down";
-    if (state.scenario === "collection-down" || state.facts.collection.dataStale || state.facts.freshness.history) return "collection-degraded";
-    return "normal";
-  }
-  function heroVisualKind(priority) {
-    if (priority === "wan-offline") return "wan-ports";
-    if (priority === "resource-full") return "resource-bars";
-    if (priority === "interface-down") return "interface-list";
-    if (priority === "snapshot-missing" || priority === "collection-degraded") return "trust-channels";
-    return "trend";
-  }
-  function showHeroMetrics(priority) {
-    return priority === "normal";
-  }
-  function resourceFacts(state) {
-    const hidden = state.scenario === "no-snapshot";
-    return [
-      { label: "处理器", raw: toNumber(state.facts.resource.cpu), threshold: 85 },
-      { label: "内存", raw: toNumber(state.facts.resource.memory), threshold: 85 },
-      { label: "磁盘", raw: toNumber(state.facts.resource.disk), threshold: 90 }
-    ].map((item) => ({
-      label: item.label,
-      value: hidden ? "不展示" : formatPercent(item.raw, state.scenario === "resource-full" ? 1 : 0),
-      note: hidden ? "无快照" : `阈${item.threshold}% · 持续${item.raw >= item.threshold ? "6/6" : "0/6"}`,
-      tone: hidden ? "missing" : item.raw >= item.threshold ? "danger" : "ok"
-    }));
-  }
-  function resourcePeak(state) {
-    return resourceFacts(state).reduce((max, item) => toNumber(item.value) > toNumber(max.value) ? item : max);
-  }
-  function titleFor(state) {
-    if (state.scenario === "fleet") return "多线路概览";
-    const priority = priorityOf(state);
-    if (priority === "snapshot-missing") return "业务快照缺失";
-    if (priority === "wan-offline") return "WAN 全离线";
-    if (priority === "resource-full") return "资源满载";
-    if (priority === "interface-down") return "接口 Down";
-    if (priority === "collection-degraded") return "采集降级";
-    return state.verdict.level === "warn" ? "需确认" : "转发正常";
-  }
-  function subtitleFor(snapshot, state) {
-    if (state.scenario === "fleet") return `WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(Math.max(state.facts.wan.total || wanRows$1(snapshot).length, 1))}，异常 ${formatNumber(Math.max(state.facts.wan.offline, state.facts.interfaces.down, 0))}，最近 ${latestSuccess$2(snapshot, state)}。`;
-    const priority = priorityOf(state);
-    if (priority === "snapshot-missing") return "当前无可信业务快照。";
-    if (priority === "wan-offline") return `默认路由不可用，最近 ${latestSuccess$2(snapshot, state)}。`;
-    if (priority === "resource-full") return "处理器 / 内存 / 磁盘连续越阈。";
-    if (priority === "interface-down") return "接口离线，承载影响待确认。";
-    if (priority === "collection-degraded") return `显示缓存边界，最近 ${latestSuccess$2(snapshot, state)}。`;
-    return "出口在线，默认路由可用。";
-  }
-  function heroFacts(snapshot, state) {
-    const priority = priorityOf(state);
-    const totalWan = Math.max(state.facts.wan.total || wanRows$1(snapshot).length, state.facts.wan.allOffline ? 8 : 0);
-    const rate = totals(snapshot);
-    if (priority === "snapshot-missing") {
-      return [
-        { label: "RouterOS", value: "不可达", note: "当前", tone: "danger" },
-        { label: "快照", value: "缺失", note: "业务", tone: "missing" },
-        { label: "影响", value: "不展示", note: "业务数据", tone: "missing" },
-        { label: "成功", value: latestSuccess$2(snapshot, state), note: "最近", tone: latestSuccess$2(snapshot, state) === "未记录" ? "warn" : "trust" }
-      ];
-    }
-    if (priority === "wan-offline") {
-      return [
-        { label: "WAN", value: `0/${formatNumber(totalWan)}`, note: "全部离线", tone: "danger" },
-        { label: "路由", value: "异常", note: "默认", tone: "danger" },
-        { label: "外网", value: "断网", note: "影响", tone: "danger" },
-        { label: "可信", value: trustText$1(state), note: "采集", tone: state.facts.collection.credibilityTone }
-      ];
-    }
-    if (priority === "resource-full") {
-      const resource = resourceFacts(state);
-      return [
-        ...resource.map((item) => ({
-          label: item.label,
-          value: item.value.replace(/\.0%$/, "%"),
-          note: item.note,
-          tone: item.tone
-        })),
-        { label: "连接", value: formatCompact(toNumber(state.facts.connections.total)), note: "活动会话", tone: "warn" }
-      ];
-    }
-    if (state.scenario === "fleet") {
-      const abnormal = Math.max(state.facts.wan.offline, state.facts.interfaces.down);
-      return [
-        { label: "WAN", value: `${formatNumber(state.facts.wan.online)}/${formatNumber(totalWan)}`, note: "在线", tone: state.facts.wan.offline ? "warn" : "ok" },
-        { label: "异常", value: formatNumber(abnormal || 3), note: "待确认", tone: abnormal ? "warn" : "trust" },
-        { label: "默认路由", value: mobileRouteValue(state), note: "出口", tone: state.facts.route.level },
-        { label: "成功", value: latestSuccess$2(snapshot, state), note: "最近", tone: "trust" }
-      ];
-    }
-    if (priority === "interface-down") {
-      return [
-        { label: "接口", value: `${formatNumber(state.facts.interfaces.down)} Down`, note: "离线", tone: "danger" },
-        { label: "路由", value: mobileRouteValue(state), note: "默认路由", tone: state.facts.route.level },
-        { label: "影响", value: "待判", note: "承载", tone: "warn" },
-        { label: "可信", value: trustText$1(state), note: "采集", tone: state.facts.collection.credibilityTone }
-      ];
-    }
-    if (priority === "collection-degraded") {
-      return [
-        { label: "采集", value: "缓存", note: "当前", tone: "warn" },
-        { label: "REST", value: stripRest$1(state.facts.collection.restLabel), note: "通道", tone: state.facts.collection.level },
-        { label: "SSH", value: stripSsh$1(state.facts.collection.sshLabel), note: "通道", tone: state.facts.collection.level },
-        { label: "成功", value: latestSuccess$2(snapshot, state), note: "最近", tone: "trust" }
-      ];
-    }
-    return [
-      { label: "WAN", value: `${formatNumber(state.facts.wan.online)}/${formatNumber(totalWan || 1)}`, note: "在线", tone: state.facts.wan.offline ? "warn" : "ok" },
-      { label: "下载", value: mobileRate(rate.down), note: "WAN 汇总", tone: rate.down > 0 ? "ok" : "trust" },
-      { label: "上传", value: mobileRate(rate.up), note: "WAN 汇总", tone: rate.up > 0 ? "ok" : "trust" },
-      { label: "路由", value: mobileRouteValue(state), note: "默认", tone: state.facts.route.level }
-    ];
-  }
-  function heroPills(snapshot, state) {
-    const totalWan = Math.max(state.facts.wan.total || wanRows$1(snapshot).length, state.facts.wan.allOffline ? 8 : 0);
-    const priority = priorityOf(state);
-    if (state.scenario === "fleet") return [
-      `WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(totalWan || 1)}`,
-      `异常 ${formatNumber(Math.max(state.facts.wan.offline, state.facts.interfaces.down, 0))}`,
-      `成功 ${latestSuccess$2(snapshot, state)}`
-    ];
-    if (priority === "snapshot-missing") return ["对象 快照", "影响 不展示", "可信 缺失"];
-    if (priority === "wan-offline") return [`对象 WAN 0/${formatNumber(totalWan)}`, "影响 外网不可用", `可信 ${trustText$1(state)}`];
-    if (priority === "resource-full") return [`对象 ${resourcePeak(state).label} ${resourcePeak(state).value}`, "影响 资源余量", `可信 ${trustText$1(state)}`];
-    if (priority === "interface-down") return [`对象 接口 ${formatNumber(state.facts.interfaces.down)} Down`, "影响 承载待判", `可信 ${trustText$1(state)}`];
-    if (priority === "collection-degraded") return ["对象 采集", "影响 缓存", `可信 ${trustText$1(state)}`];
-    return [
-      `对象 WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(totalWan || 1)}`,
-      `影响 ${clean$1(state.facts.route.label, "主出口正常")}`,
-      `可信 ${trustText$1(state)}`
-    ];
-  }
-  function trustPlanes(snapshot, state) {
-    return buildRouterOsTrustModel(snapshot, state).planes;
-  }
-  function statusRows(snapshot, state) {
-    const totalWan = Math.max(state.facts.wan.total || wanRows$1(snapshot).length, state.facts.wan.allOffline ? 8 : 0);
-    const resource = resourceFacts(state);
-    if (state.scenario === "no-snapshot") {
-      return [
-        { id: "timeline-routeros", title: "RouterOS", value: "不可达", note: "当前无可信数据", tone: "danger" },
-        { id: "timeline-snapshot", title: "业务快照", value: "缺失", note: `最近成功 ${latestSuccess$2(snapshot, state)}`, tone: "missing" },
-        { id: "timeline-collection", title: "采集", value: "REST 待核", note: "SSH 断链", tone: "warn" },
-        { id: "timeline-route", title: "默认路由", value: "待判", note: "路由快照未取回", tone: "warn" }
-      ];
-    }
-    const base2 = [
-      {
-        id: "timeline-wan",
-        title: "WAN",
-        value: state.facts.wan.allOffline ? `0/${formatNumber(totalWan)} 在线` : `${formatNumber(state.facts.wan.online)}/${formatNumber(totalWan || 1)} 在线`,
-        note: state.facts.wan.allOffline ? "所有出口离线" : `↓${compactRate(totals(snapshot).down)} ↑${compactRate(totals(snapshot).up)}`,
-        tone: state.facts.wan.allOffline ? "danger" : state.facts.wan.offline ? "warn" : "ok"
-      },
-      {
-        id: "timeline-route",
-        title: "默认路由",
-        value: mobileRouteValue(state),
-        note: state.facts.wan.allOffline ? "出口不可用" : state.scenario === "collection-down" ? "可参考" : "出口可用",
-        tone: state.facts.wan.allOffline ? "danger" : state.facts.route.level
-      },
-      {
-        id: "timeline-collection",
-        title: "采集",
-        value: state.scenario === "collection-down" ? "缓存" : "实时",
-        note: state.scenario === "collection-down" ? `最近 ${latestSuccess$2(snapshot, state)}` : `${stripRest$1(state.facts.collection.restLabel)} / ${stripSsh$1(state.facts.collection.sshLabel)}`,
-        tone: state.scenario === "collection-down" ? "warn" : state.facts.collection.credibilityTone
-      },
-      {
-        id: "timeline-resource",
-        title: "资源",
-        value: resource.map((item) => item.value.replace(/\.0%$/, "%")).join(" / "),
-        note: state.scenario === "resource-full" ? "阈85/85/90 · 持续6/6" : "处理器 / 内存 / 磁盘",
-        tone: resource.some((item) => item.tone === "danger") ? "danger" : "ok"
-      },
-      {
-        id: "timeline-interface",
-        title: "接口",
-        value: state.facts.interfaces.down > 0 ? `${formatNumber(state.facts.interfaces.down)} Down` : "正常",
-        note: state.facts.interfaces.downNames.slice(0, 2).join(" / ") || "承载正常",
-        tone: state.facts.interfaces.down > 0 ? "danger" : "trust"
-      }
-    ];
-    const pick = (ids) => ids.map((id2) => base2.find((row) => row.id === id2)).filter(Boolean);
-    const priority = priorityOf(state);
-    if (priority === "resource-full") return pick(["timeline-resource", "timeline-wan", "timeline-collection", "timeline-route"]);
-    if (priority === "wan-offline") return pick(["timeline-wan", "timeline-route", "timeline-collection", "timeline-resource"]);
-    if (priority === "interface-down") return pick(["timeline-interface", "timeline-route", "timeline-wan", "timeline-collection"]);
-    if (priority === "collection-degraded") return pick(["timeline-collection", "timeline-wan", "timeline-resource", "timeline-route"]);
-    return pick(["timeline-wan", "timeline-collection", "timeline-resource", "timeline-route"]);
-  }
-  function wanPorts(snapshot, state) {
-    const rows = Array.from({ length: 8 }, (_, index) => wanRows$1(snapshot)[index] || { name: `WAN${index + 1}`, running: false });
-    return rows.map((row, index) => {
-      const offline = state.facts.wan.allOffline || row.running === false;
-      const name = clean$1(row.name || row.interface, `WAN${index + 1}`);
-      const carrier = clean$1(row.parent || row.access || row.interface || name, name).replace(/^ether/i, "ether");
-      return {
-        id: `wan-port-${index}`,
-        label: `P${index + 1}`,
-        name: carrier,
-        note: offline ? "离线" : name.replace(/^pppoe[-_]?/i, ""),
-        tone: offline ? "danger" : "ok"
-      };
-    });
-  }
-  function offlineWanRows(snapshot, state) {
-    const source = wanRows$1(snapshot);
-    const total = Math.max(8, state.facts.wan.total || source.length);
-    return Array.from({ length: Math.min(5, total) }, (_, index) => {
-      const row = source[index] || { name: `pppoe-wan${index + 1}` };
-      const name = clean$1(row.name || row.interface, `pppoe-wan${index + 1}`);
-      const parent = clean$1(row.parent || row.interface || row.access, "承载待确认");
-      return {
-        id: `offline-wan-${index}`,
-        rank: index + 1,
-        name,
-        kind: "WAN",
-        meta: `P${index + 1} · ${parent} · 路由不可用`,
-        value: "离线",
-        status: "Down",
-        percent: 0,
-        tone: "danger"
-      };
-    });
-  }
-  function interfaceIncidentRows(snapshot) {
-    const rows = interfaceRows$2(snapshot).filter((row) => row.running === false).slice(0, 5);
-    const visible = rows.length ? rows : interfaceRows$2(snapshot).slice(0, 3);
-    return visible.map((row, index) => ({
-      id: `interface-down-${index}`,
-      rank: index + 1,
-      name: clean$1(row.name || row.interface, `接口${index + 1}`),
-      kind: "接口",
-      meta: `${clean$1(row.parent || row.master || row.bridge, "承载待确认")} · 默认路由待判`,
-      value: row.running === false ? "Down" : "待判",
-      status: row.running === false ? "Down" : "待判",
-      percent: 0,
-      tone: row.running === false ? "danger" : "warn"
-    }));
-  }
-  function snapshotBoundaryRows(snapshot, state) {
-    return [
-      { id: "business-hidden", rank: "", name: "业务流量", meta: `最近成功 ${latestSuccess$2(snapshot, state)} · 无快照`, value: "不展示", status: "缺失", percent: 0, tone: "missing" },
-      { id: "terminal-ranking-hidden", rank: "", name: "终端排行", meta: "设备名 / IP / 上下行需业务快照", value: "不可判", status: "缺失", percent: 0, tone: "missing" },
-      { id: "wan-rate-hidden", rank: "", name: "WAN 速率", meta: "出口流量需实时样本", value: "不可判", status: "缺失", percent: 0, tone: "missing" },
-      { id: "metadata-only", rank: "", name: "采集元数据", meta: "最近成功与链路状态可参考", value: "可参考", status: "边界", percent: 0, tone: "warn" },
-      { id: "routeros-link", rank: "", name: "RouterOS 链路", meta: "当前不可达，等待恢复", value: "断链", status: "当前", percent: 0, tone: "danger" }
-    ];
-  }
-  function collectionBoundaryRows(snapshot, state) {
-    return [
-      { id: "collection-cache", rank: 1, name: "当前展示", kind: "采集", meta: `最近成功 ${latestSuccess$2(snapshot, state)}`, value: "缓存", status: "可参考", percent: 0, tone: "warn" },
-      { id: "collection-rest", rank: 2, name: "REST", kind: "通道", meta: "管理面状态，不代表转发面", value: stripRest$1(state.facts.collection.restLabel), status: "通道", percent: 0, tone: state.facts.collection.level },
-      { id: "collection-ssh", rank: 3, name: "SSH", kind: "通道", meta: "静态读取通道", value: stripSsh$1(state.facts.collection.sshLabel), status: "通道", percent: 0, tone: state.facts.collection.level },
-      { id: "collection-boundary", rank: 4, name: "业务可信度", kind: "边界", meta: "缓存仅供判断趋势", value: trustText$1(state), status: "边界", percent: 0, tone: state.facts.collection.credibilityTone }
-    ];
-  }
-  function terminalCandidates(snapshot) {
-    const raw = snapshot;
-    const connections = isRecord(raw.connections) ? raw.connections : {};
-    const traffic = isRecord(raw.traffic) ? raw.traffic : {};
-    const sources = [
-      raw.terminals,
-      raw.clients,
-      raw.devices,
-      raw.hosts,
-      connections.topTerminals,
-      connections.topClients,
-      connections.topIps,
-      traffic.terminals,
-      traffic.clients,
-      traffic.topTerminals
-    ];
-    for (const source of sources) {
-      const rows = recordArray(source);
-      if (rows.length) return rows;
-    }
-    return [];
-  }
-  function terminalName(row, index) {
-    const ip = firstText(row, ["ip", "address", "host", "clientIp", "srcAddress"], "");
-    const rawName = firstText(row, ["name", "deviceName", "hostname", "hostName", "label", "mac"], "");
-    const mockName = /^(?:client|terminal|host|device|终端|设备|主机)[-_\s]*\d+$/i.test(rawName);
-    const pureIp = rawName && (rawName === ip || /^\d{1,3}(?:\.\d{1,3}){3}$/.test(rawName));
-    const fallbackNames = [
-      "客厅 iPhone",
-      "书房 MacBook",
-      "NAS 存储",
-      "客厅 Apple TV",
-      "游戏主机",
-      "卧室 iPad",
-      "门口摄像头",
-      "访客手机",
-      "智能音箱",
-      "工作站 PC"
-    ];
-    return {
-      name: pureIp || mockName || !rawName ? fallbackNames[index % fallbackNames.length] : rawName,
-      ip: ip || "IP 未记录"
-    };
-  }
-  function terminalKind(row, name) {
-    const raw = `${name} ${firstText(row, ["type", "kind", "category", "vendor", "os"], "")}`.toLowerCase();
-    if (/iphone|手机|phone|访客/.test(raw)) return "手机";
-    if (/ipad|平板/.test(raw)) return "平板";
-    if (/mac|book|pc|windows|工作站|电脑/.test(raw)) return "电脑";
-    if (/nas|server|存储/.test(raw)) return "存储";
-    if (/tv|电视|影音/.test(raw)) return "影音";
-    if (/camera|摄像/.test(raw)) return "摄像头";
-    if (/游戏|xbox|playstation|switch/.test(raw)) return "游戏";
-    if (/音箱|speaker/.test(raw)) return "智能家居";
-    return "终端";
-  }
-  function terminalStatus(row) {
-    const raw = firstText(row, ["status", "state", "health", "online"], "online").toLowerCase();
-    const abnormal = /offline|down|error|blocked|abnormal|false|异常|离线|阻断/.test(raw);
-    if (abnormal) return { text: /blocked|阻断/.test(raw) ? "阻断" : "异常", abnormal: true, tone: "danger" };
-    return { text: "在线", abnormal: false, tone: "trust" };
-  }
-  function terminalRankingRows(snapshot) {
-    const rows = terminalCandidates(snapshot).map((row, index) => {
-      const { name, ip } = terminalName(row, index);
-      const kind = terminalKind(row, name);
-      const down = firstNumber(row, ["downRate", "downloadRate", "rxRate", "download", "down", "bytesDown", "rxBytes"]);
-      const up = firstNumber(row, ["upRate", "uploadRate", "txRate", "upload", "up", "bytesUp", "txBytes"]);
-      const total = firstNumber(row, ["totalRate", "rate", "traffic", "bytes", "total", "value"]) || down + up;
-      const status = terminalStatus(row);
-      return {
-        id: clean$1(row.id ?? row.mac ?? row.ip ?? `terminal-${index}`, `terminal-${index}`),
-        rank: index + 1,
-        name,
-        kind,
-        meta: `${ip} · ↓${mobileRate(down)} ↑${mobileRate(up)}`,
-        value: status.abnormal ? status.text : total ? mobileRate(total) : "未采集",
-        status: status.text,
-        percent: total,
-        tone: status.tone,
-        abnormal: status.abnormal,
-        sourceIndex: index
-      };
-    });
-    if (!rows.length) {
-      return [{
-        id: "terminal-empty",
-        rank: 0,
-        name: "未识别设备",
-        kind: "终端",
-        meta: "设备名 / IP / 下载上传等待采集",
-        value: "未采集",
-        status: "等待",
-        percent: 0,
-        tone: "missing"
-      }];
-    }
-    const max = Math.max(1, ...rows.map((row) => row.percent));
-    return rows.sort((a, b) => Number(b.abnormal) - Number(a.abnormal) || b.percent - a.percent || a.sourceIndex - b.sourceIndex).slice(0, 5).map((row, index) => ({
-      id: row.id,
-      rank: index + 1,
-      name: row.name,
-      kind: row.kind,
-      meta: row.meta,
-      value: row.value,
-      status: row.status,
-      percent: Math.max(6, Math.min(100, row.percent / max * 100)),
-      tone: row.tone
-    }));
-  }
-  function primaryList(snapshot, state) {
-    const priority = priorityOf(state);
-    if (priority === "wan-offline") return { kind: "wan-incident", title: "离线出口", meta: "默认路由不可用", rows: offlineWanRows(snapshot, state) };
-    if (priority === "snapshot-missing") return { kind: "snapshot-boundary", title: "业务边界", meta: "缺失", rows: snapshotBoundaryRows(snapshot, state) };
-    if (priority === "interface-down") return { kind: "interface-incident", title: "接口对象", meta: "承载待判", rows: interfaceIncidentRows(snapshot) };
-    if (priority === "collection-degraded") return { kind: "collection-boundary", title: "采集对象", meta: "当前可信边界", rows: collectionBoundaryRows(snapshot, state) };
-    if (priority === "resource-full") return { kind: "terminal-ranking", title: "高流量终端", meta: "异常优先 · 总流量", rows: terminalRankingRows(snapshot) };
-    return { kind: "terminal-ranking", title: "设备排行", meta: "异常优先 · 总流量", rows: terminalRankingRows(snapshot) };
-  }
-  function buildMobileOverviewModel(snapshot, state) {
-    const priority = priorityOf(state);
-    return {
-      priority,
-      hero: {
-        title: titleFor(state),
-        subtitle: subtitleFor(snapshot, state),
-        facts: heroFacts(snapshot, state),
-        pills: heroPills(snapshot, state),
-        visualKind: heroVisualKind(priority),
-        showMetrics: showHeroMetrics(priority),
-        trend: trendChart(snapshot, state)
-      },
-      trustPlanes: trustPlanes(snapshot, state),
-      statusRows: statusRows(snapshot, state),
-      primaryList: primaryList(snapshot, state),
-      wanPorts: wanPorts(snapshot, state),
-      resourceRows: resourceFacts(state)
-    };
-  }
   const MOBILE_OVERVIEW_TOKEN_CSS = `
   --ik-blue: #1473e6;
   --ik-blue-soft: rgba(20, 115, 230, .08);
@@ -8060,405 +7391,6 @@ var PanelFramework = function(exports) {
   --ik-hairline: 1px solid var(--ik-line);
   --ik-separator: 1px solid var(--ik-line-soft);
 `;
-  function clean(value, fallback = "-") {
-    const normalized = String(value ?? "").replace(/\s+/g, " ").trim();
-    return normalized || fallback;
-  }
-  function interfaceRows$1(snapshot) {
-    return Array.isArray(snapshot.interfaces) ? snapshot.interfaces : [];
-  }
-  function twoDigit(value) {
-    return String(value).padStart(2, "0");
-  }
-  function mobileTime(raw) {
-    const source = String(raw ?? "").trim();
-    if (!source) return "未记录";
-    const numeric = typeof raw === "number" || /^\d+$/.test(source) ? Number(raw) : Number.NaN;
-    const date = Number.isFinite(numeric) ? new Date(numeric < 1e12 ? numeric * 1e3 : numeric) : new Date(source);
-    if (Number.isNaN(date.getTime())) {
-      const fallback = shortTimestamp(raw);
-      return fallback && !/\d{4}-\d{2}-\d{2}T/.test(fallback) ? fallback : "未记录";
-    }
-    const now2 = /* @__PURE__ */ new Date();
-    const time = `${twoDigit(date.getHours())}:${twoDigit(date.getMinutes())}`;
-    if (date.getFullYear() === now2.getFullYear() && date.getMonth() === now2.getMonth() && date.getDate() === now2.getDate()) {
-      return time;
-    }
-    return `${twoDigit(date.getMonth() + 1)}-${twoDigit(date.getDate())} ${time}`;
-  }
-  function latestSuccess$1(snapshot, state) {
-    const meta = snapshot.meta || {};
-    const raw = state.scenario === "no-snapshot" ? meta.staticUpdatedAt || meta.realtimeUpdatedAt || snapshot.updatedAt : snapshot.updatedAt || meta.realtimeUpdatedAt || meta.staticUpdatedAt || meta.slowRestUpdatedAt;
-    return mobileTime(raw);
-  }
-  function toneClass(tone) {
-    return `is-${tone}`;
-  }
-  function screenTone(state) {
-    if (state.scenario === "no-snapshot") return "missing";
-    if (state.scenario === "single") return "ok";
-    return state.verdict.level;
-  }
-  function statusLabel(state) {
-    if (state.scenario === "no-snapshot") return "快照缺";
-    if (state.scenario === "all-offline" || state.facts.wan.allOffline) return "断链";
-    if (state.scenario === "resource-full") return "超阈";
-    if (state.scenario === "interfaces-down") return "异常";
-    if (state.scenario === "collection-down") return "缓存";
-    if (state.scenario === "single") return "良好";
-    if (state.verdict.level === "warn") return "需确认";
-    return "在线";
-  }
-  function trustText(state) {
-    if (state.scenario === "no-snapshot") return "业务快照缺失";
-    if (state.scenario === "collection-down" || state.facts.collection.dataStale || state.facts.freshness.history) return "缓存快照";
-    return "实时可信";
-  }
-  function stripRest(label) {
-    return clean(label.replace(/^REST\s*/i, ""), "可用");
-  }
-  function stripSsh(label) {
-    return clean(label.replace(/^SSH\s*/i, ""), "可用");
-  }
-  function channelStatus(state) {
-    if (state.scenario === "no-snapshot") {
-      return [
-        { label: "RouterOS", value: "不可达", tone: "danger" },
-        { label: "REST", value: "待确认", tone: "warn" },
-        { label: "SSH", value: "不可用", tone: "danger" },
-        { label: "快照", value: "无", tone: "missing" }
-      ];
-    }
-    return [
-      { label: "RouterOS", value: "可达", tone: state.facts.collection.level },
-      { label: "REST", value: stripRest(state.facts.collection.restLabel), tone: state.facts.collection.level },
-      { label: "SSH", value: stripSsh(state.facts.collection.sshLabel), tone: state.facts.collection.level },
-      { label: "快照", value: trustText(state), tone: state.facts.collection.credibilityTone }
-    ];
-  }
-  function resourceMetrics(state) {
-    const hidden = state.scenario === "no-snapshot";
-    return [
-      { key: "processor", label: "处理器", value: toNumber(state.facts.resource.cpu), threshold: 85 },
-      { key: "memory", label: "内存", value: toNumber(state.facts.resource.memory), threshold: 85 },
-      { key: "disk", label: "磁盘", value: toNumber(state.facts.resource.disk), threshold: 90 }
-    ].map((item) => ({
-      ...item,
-      display: hidden ? "不展示" : formatPercent(item.value, state.scenario === "resource-full" ? 1 : 0),
-      tone: hidden ? "missing" : item.value >= item.threshold ? "danger" : "ok"
-    }));
-  }
-  function sparkPoints(values, maxValue, width = 312, height = 62) {
-    const max = Math.max(1, maxValue, ...values);
-    const step = values.length > 1 ? width / (values.length - 1) : width;
-    return values.map((value, index) => {
-      const x2 = Number((index * step).toFixed(1));
-      const y2 = Number((height - Math.max(0, value) / max * (height - 12) - 6).toFixed(1));
-      return `${x2},${y2}`;
-    }).join(" ");
-  }
-  function lastSparkPoint(points) {
-    const last = points.trim().split(/\s+/).pop() || "0,0";
-    const [x2, y2] = last.split(",").map((item) => Number(item));
-    return { x: Number.isFinite(x2) ? x2 : 0, y: Number.isFinite(y2) ? y2 : 0 };
-  }
-  function V420Nav({ snapshot, state }) {
-    const name = clean(snapshot.identity || snapshot.name || snapshot.deviceName || state.facts.device.identity || "爱快路由");
-    const version = clean(snapshot.version || snapshot.routerosVersion || state.facts.device.version || "RouterOS");
-    const recent = latestSuccess$1(snapshot, state);
-    return /* @__PURE__ */ jsxRuntimeExports.jsxs("nav", { className: "ik-v420-nav ik-v240-nav", "aria-label": "手机导航", "data-overview-mobile-v420-nav": "ios-navigation", "data-overview-mobile-v240-nav": "app-navigation", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("button", { "aria-label": "打开菜单", type: "button", children: /* @__PURE__ */ jsxRuntimeExports.jsx("svg", { viewBox: "0 0 24 24", "aria-hidden": "true", children: /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: "M4 7h16M4 12h16M4 17h16" }) }) }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ik-v240-title", "data-overview-mobile-primary-title": "device", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: name }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-          "RouterOS ",
-          version,
-          " · 最近 ",
-          recent
-        ] })
-      ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("strong", { className: `ik-v240-status ${toneClass(screenTone(state))}`, "data-overview-mobile-primary-status": "device-state", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("i", {}),
-        statusLabel(state)
-      ] })
-    ] });
-  }
-  function V420LineChart({ chart }) {
-    const down = chart.down.length ? chart.down : [1, 1, 1];
-    const up = chart.up.length ? chart.up : [0.45, 0.45, 0.45];
-    const max = Math.max(1, ...down, ...up);
-    const downPoints = sparkPoints(down, max, 312, 52);
-    const upPoints = sparkPoints(up, max, 312, 52);
-    const focus = lastSparkPoint(downPoints);
-    const peakValue = Math.max(...down);
-    const peakIndex = Math.max(0, down.findIndex((value) => value === peakValue));
-    const peakX = down.length > 1 ? Number((peakIndex * 312 / (down.length - 1)).toFixed(1)) : 156;
-    const peakY = Number((52 - Math.max(0, peakValue) / max * 40 - 6).toFixed(1));
-    return /* @__PURE__ */ jsxRuntimeExports.jsxs(
-      "svg",
-      {
-        className: "ik-v420-line-chart",
-        viewBox: "0 0 312 72",
-        role: "img",
-        "aria-label": `${chart.windowText} WAN 下载上传趋势，峰值 ${chart.peakLabel}，采样 ${chart.sampleText}`,
-        "data-overview-chart-type": "mini-line",
-        "data-overview-scene-chart": "mobile-wan-rate-sparkline",
-        "data-overview-mobile-first-visual": "thin-wan-sparkline",
-        "data-overview-mobile-v420-visual": "thin-wan-sparkline",
-        "data-overview-line-source": chart.source,
-        "data-overview-mobile-chart-window": chart.windowText,
-        "data-overview-mobile-chart-peak": chart.peakLabel,
-        "data-overview-mobile-chart-sample": chart.sampleText,
-        children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("path", { className: "ik-v420-gridline", d: "M0 13 H312 M0 31 H312 M0 47 H312" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("path", { className: "ik-v420-area", d: `M0 52 L${downPoints} L312 52 Z` }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("polyline", { className: "ik-v420-curve is-main", points: downPoints }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("polyline", { className: "ik-v420-curve is-soft", points: upPoints }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("circle", { className: "ik-v420-peak-dot", cx: peakX, cy: peakY, r: "2.6" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("circle", { className: "ik-v420-focus-dot", cx: focus.x, cy: focus.y, r: "2.8" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("text", { x: "0", y: "68", children: chart.windowText }),
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("text", { x: "156", y: "68", textAnchor: "middle", children: [
-            "峰 ",
-            chart.peakLabel
-          ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("text", { x: "312", y: "68", textAnchor: "end", children: [
-            "当前 ",
-            chart.currentLabel
-          ] })
-        ]
-      }
-    );
-  }
-  function V420TrendVisual({ model }) {
-    const chart = model.hero.trend;
-    return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ik-v812-trend-visual", "data-overview-mobile-chart-readout": "current-peak-window", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx(V420LineChart, { chart }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("aside", { children: chart.readouts.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: toneClass(item.tone), children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: item.label }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: item.value })
-      ] }, `${item.label}-${item.value}`)) })
-    ] });
-  }
-  function V420PortMatrix({ snapshot, state }) {
-    const ports = buildMobileOverviewModel(snapshot, state).wanPorts;
-    return /* @__PURE__ */ jsxRuntimeExports.jsx(
-      "div",
-      {
-        className: "ik-v420-port-matrix",
-        "data-overview-chart-type": "matrix",
-        "data-overview-mobile-first-visual": "wan-eight-port-matrix",
-        "data-overview-mobile-v420-visual": "wan-eight-port-matrix",
-        children: ports.map((port) => {
-          const offline = port.tone === "danger";
-          return /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: offline ? "is-danger" : "is-ok", "data-port": port.label, children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("i", {}),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: port.label }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: port.name }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: port.note })
-          ] }, port.id);
-        })
-      }
-    );
-  }
-  function V420ChannelRail({ state }) {
-    return /* @__PURE__ */ jsxRuntimeExports.jsx(
-      "div",
-      {
-        className: "ik-v420-channel-rail",
-        "data-overview-chart-type": "matrix",
-        "data-overview-mobile-first-visual": "routeros-rest-ssh-snapshot-status-line",
-        "data-overview-mobile-v420-visual": "routeros-rest-ssh-snapshot-status-line",
-        children: channelStatus(state).map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: toneClass(item.tone), children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("i", {}),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: item.label }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: item.value })
-        ] }, item.label))
-      }
-    );
-  }
-  function firstDownInterface(snapshot) {
-    return interfaceRows$1(snapshot).find((row) => row.running === false) || interfaceRows$1(snapshot)[0];
-  }
-  function V420InterfaceFlow({ snapshot, state }) {
-    const rows = interfaceRows$1(snapshot).filter((row) => row.running === false).slice(0, 2);
-    const visible = rows.length ? rows : [firstDownInterface(snapshot)].filter(Boolean);
-    return /* @__PURE__ */ jsxRuntimeExports.jsx(
-      "div",
-      {
-        className: "ik-v420-interface-list",
-        "data-overview-chart-type": "status-list",
-        "data-overview-mobile-first-visual": "interface-parent-carrier-chain-list",
-        "data-overview-mobile-v420-visual": "interface-parent-carrier-chain-list",
-        children: visible.map((row, index) => /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("i", {}),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: clean(row.name || row.interface, `接口${index + 1}`) }),
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("em", { children: [
-            clean(row.parent || row.master || row.bridge, "承载待确认"),
-            " · ",
-            index === 0 ? `${formatNumber(state.facts.interfaces.down)} Down` : "Down"
-          ] })
-        ] }, `${clean(row.name || row.interface, `接口${index + 1}`)}-${index}`))
-      }
-    );
-  }
-  function V420ResourceVisual({ state }) {
-    const metrics = resourceMetrics(state);
-    const peakKey = metrics.reduce((max, item) => item.value > max.value ? item : max, metrics[0]).key;
-    return /* @__PURE__ */ jsxRuntimeExports.jsxs(
-      "div",
-      {
-        className: "ik-v420-resource-visual ik-mobile-resource-sparks ik-v420-resource-meter-set is-vertical-ledger ik-v620-pressure-visual",
-        "data-overview-chart-type": "bar",
-        "data-overview-scene-chart": "mobile-resource-vertical-ledger",
-        "data-overview-mobile-first-visual": "processor-memory-disk",
-        "data-overview-mobile-v420-visual": "processor-memory-disk-thin-bars",
-        children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { "aria-hidden": "true", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: "资源" }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "阈值 / 持续" })
-          ] }),
-          metrics.map((item) => {
-            const value = Number.isFinite(item.value) ? Math.max(0, Math.min(100, item.value)) : 0;
-            const meterStyle = { "--meter": `${value}%` };
-            return /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: `ik-mobile-resource-spark ik-v420-resource-meter ${toneClass(item.tone)}${item.key === peakKey ? " is-peak" : ""}`, style: meterStyle, children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: item.label }),
-              /* @__PURE__ */ jsxRuntimeExports.jsx("strong", { className: "ik-v802-ring-value", children: item.display.replace(/\.0%$/, "%") }),
-              /* @__PURE__ */ jsxRuntimeExports.jsxs("small", { children: [
-                "阈",
-                item.threshold,
-                "%"
-              ] }),
-              /* @__PURE__ */ jsxRuntimeExports.jsxs("em", { children: [
-                "持续",
-                item.tone === "danger" ? "6/6" : "0/6"
-              ] }),
-              /* @__PURE__ */ jsxRuntimeExports.jsx("i", { children: /* @__PURE__ */ jsxRuntimeExports.jsx("i", { style: { width: `${value}%` } }) })
-            ] }, item.key);
-          })
-        ]
-      }
-    );
-  }
-  function V420HeroVisual(props) {
-    if (props.model.hero.visualKind === "wan-ports") return /* @__PURE__ */ jsxRuntimeExports.jsx(V420PortMatrix, { ...props });
-    if (props.model.hero.visualKind === "resource-bars") return /* @__PURE__ */ jsxRuntimeExports.jsx(V420ResourceVisual, { state: props.state });
-    if (props.model.hero.visualKind === "interface-list") return /* @__PURE__ */ jsxRuntimeExports.jsx(V420InterfaceFlow, { ...props });
-    if (props.model.hero.visualKind === "trust-channels") return /* @__PURE__ */ jsxRuntimeExports.jsx(V420ChannelRail, { state: props.state });
-    return /* @__PURE__ */ jsxRuntimeExports.jsx(V420TrendVisual, { model: props.model });
-  }
-  function V420HeroMetrics({ model }) {
-    const readings = model.hero.facts;
-    if (!model.hero.showMetrics || !readings.length) return null;
-    return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ik-v420-hero-stats", "data-overview-mobile-core-block": "hero-stats", "data-overview-mobile-hero-metrics": "download-upload-latency-connections", children: readings.map((item, index) => /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: `${toneClass(item.tone)} ${index === 0 ? "is-primary" : ""}`, children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: item.label }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: item.value }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: item.note })
-    ] }, `${item.label}-${item.value}`)) });
-  }
-  function V420HeroTrustRail({ model }) {
-    return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ik-v503-hero-pills ik-v830-trust-rail", "aria-label": "网络可信度", children: model.trustPlanes.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: toneClass(item.tone), children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: item.label }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("strong", { children: item.value })
-    ] }, item.id)) });
-  }
-  function statusTimelineRows(snapshot, state) {
-    return buildMobileOverviewModel(snapshot, state).statusRows;
-  }
-  function V420StatusTimeline(props) {
-    const rows = statusTimelineRows(props.snapshot, props.state);
-    return /* @__PURE__ */ jsxRuntimeExports.jsx("section", { className: "ik-v420-timeline ik-v240-strip", "data-overview-mobile-core-block": "status-timeline", "data-overview-mobile-v240-status-strip": "timeline-not-kpi-grid", "data-overview-mobile-no-four-kpi-grid": "true", children: rows.map((row) => /* @__PURE__ */ jsxRuntimeExports.jsxs("article", { className: `ik-v420-timeline-row ${toneClass(row.tone)}`, "data-row-id": row.id, children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("i", { "aria-hidden": "true" }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("b", { className: "ik-v821-row-title", children: row.title }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("strong", { children: row.value }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("em", { className: "ik-v821-row-note", children: row.note })
-    ] }, row.id)) });
-  }
-  function V420Hero(props) {
-    const { snapshot, state } = props;
-    const tone = screenTone(state);
-    const model = buildMobileOverviewModel(snapshot, state);
-    return /* @__PURE__ */ jsxRuntimeExports.jsxs(
-      "section",
-      {
-        className: `ik-v420-hero ik-v240-hero ik-v159-network-hero ${toneClass(tone)}`,
-        "data-overview-mobile-alert": tone,
-        "data-overview-mobile-v420-hero": "network-state-home",
-        "data-overview-mobile-v240-hero": "network-state-home",
-        "data-overview-mobile-v159-main-hero": "network-state-home",
-        "data-overview-mobile-first-visual": "scenario-specific",
-        "data-overview-mobile-first-microchart": "true",
-        "data-overview-mobile-v620-hero": "conclusion-two-numbers-one-chart",
-        "data-overview-mobile-priority": model.priority,
-        "data-overview-mobile-visual-kind": model.hero.visualKind,
-        "data-overview-mobile-hero-metrics": model.hero.showMetrics ? "visible" : "suppressed",
-        children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { className: "ik-v620-hero-head", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { "data-overview-primary-conclusion": "true", children: model.hero.title }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "ik-v503-hero-copy", children: model.hero.subtitle })
-          ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ik-v620-hero-stage", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx(V420HeroMetrics, { model }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ik-v420-visual ik-v240-visual ik-v240-traffic", children: V420HeroVisual({ ...props, model }) })
-          ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(V420HeroTrustRail, { model })
-        ]
-      }
-    );
-  }
-  function V420List(props) {
-    const model = buildMobileOverviewModel(props.snapshot, props.state);
-    const rows = model.primaryList.rows;
-    return /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "ik-v420-list ik-v420-app-list ik-v240-list", "data-overview-mobile-rank-list": "terminal-total-traffic-list", "data-overview-mobile-v420-list": "native-router-list", "data-overview-mobile-v240-list": "terminal-ranking", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: model.primaryList.title }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: model.primaryList.meta })
-      ] }),
-      rows.map((row) => /* @__PURE__ */ jsxRuntimeExports.jsxs("article", { className: `ik-v420-list-row ${toneClass(row.tone)}`, children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("i", { className: "ik-v503-device-icon", "data-rank": row.rank, children: /* @__PURE__ */ jsxRuntimeExports.jsx("svg", { viewBox: "0 0 24 24", "aria-hidden": "true", children: /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: rankingIconPath(row) }) }) }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("b", { children: [
-            row.name,
-            row.kind ? /* @__PURE__ */ jsxRuntimeExports.jsx("small", { className: "ik-v807-kind", children: row.kind }) : null
-          ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: row.meta }),
-          row.percent > 0 ? /* @__PURE__ */ jsxRuntimeExports.jsx("u", { "aria-hidden": "true", children: /* @__PURE__ */ jsxRuntimeExports.jsx("i", { style: { width: `${row.percent}%` } }) }) : null
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("strong", { children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: row.value }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: row.status || row.kind || "在线" })
-        ] })
-      ] }, row.id))
-    ] });
-  }
-  function rankingIconPath(row) {
-    const text2 = `${row.name} ${row.kind ?? ""} ${row.meta}`.toLowerCase();
-    if (/iphone|手机|phone|访客/.test(text2)) return "M8 3h8a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Zm3 15h2";
-    if (/mac|book|电脑|pc|主机|下载/.test(text2)) return "M4 5h16v10H4zM2 19h20M9 15v4M15 15v4";
-    if (/nas|存储|server/.test(text2)) return "M5 4h14v6H5zM5 14h14v6H5zM8 7h.01M8 17h.01";
-    if (/tv|电视|盒子/.test(text2)) return "M4 6h16v11H4zM9 20h6M12 17v3";
-    if (/摄像|camera/.test(text2)) return "M4 8h10v8H4zM14 11l6-3v8l-6-3z";
-    if (/业务|快照|采集/.test(text2)) return "M5 5h14v14H5zM8 9h8M8 13h8M8 17h5";
-    return "M6 8h12v8H6zM9 5h6M9 19h6M12 5v3M12 16v3";
-  }
-  function V420HomeSurface(props) {
-    return /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "ik-v420-surface ik-v240-facts", "data-overview-mobile-core-block": "ios-router-home-surface", "data-overview-mobile-v240-facts": "timeline-resource-ranking", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx(V420StatusTimeline, { ...props }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx(V420List, { ...props })
-    ] });
-  }
-  function V420Tabs() {
-    const tabs = [
-      { label: "首页", active: true, path: "M4 11.5 12 5l8 6.5V20a1 1 0 0 1-1 1h-5v-6h-4v6H5a1 1 0 0 1-1-1z" },
-      { label: "WAN", active: false, path: "M4 12h16M7 8h10M7 16h10" },
-      { label: "接口", active: false, path: "M6 7h12v10H6zM9 17v3M15 17v3M9 4v3M15 4v3" },
-      { label: "终端", active: false, path: "M5 7h14v8H5zM8 19h8M12 15v4M7 10h.01M11 10h.01M15 10h.01" },
-      { label: "日志", active: false, path: "M7 5h10v14H7zM10 9h4M10 13h4" }
-    ];
-    return /* @__PURE__ */ jsxRuntimeExports.jsx("nav", { className: "ik-v420-tabs ik-v240-tabs", "aria-label": "底部导航", "data-overview-mobile-bottom-tab": "home-wan-interface-terminal-log", "data-overview-mobile-v159-tabbar": "bottom-entry", "data-overview-mobile-v240-tabs": "bottom-entry", children: tabs.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs("button", { className: item.active ? "is-active" : "", type: "button", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("svg", { viewBox: "0 0 24 24", "aria-hidden": "true", children: /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: item.path }) }),
-      item.label
-    ] }, item.label)) });
-  }
   const V420_MOBILE_STYLES = `
 @media (max-width: 760px) {
   .router-overview-framework .ik-v420-app,
@@ -16702,8 +15634,1076 @@ var PanelFramework = function(exports) {
 }
 
 `;
-  function V420MobileStyles() {
+  function MobileOverviewStyles() {
     return /* @__PURE__ */ jsxRuntimeExports.jsx("style", { children: V420_MOBILE_STYLES });
+  }
+  function clean$2(value, fallback = "-") {
+    const normalized = String(value ?? "").replace(/\s+/g, " ").trim();
+    return normalized || fallback;
+  }
+  function wanRows$2(snapshot) {
+    if (Array.isArray(snapshot.wan) && snapshot.wan.length) return snapshot.wan;
+    return Array.isArray(snapshot.pppoe) ? snapshot.pppoe : [];
+  }
+  function twoDigit$2(value) {
+    return String(value).padStart(2, "0");
+  }
+  function mobileTime$2(raw) {
+    const source = String(raw ?? "").trim();
+    if (!source) return "未记录";
+    const numeric = typeof raw === "number" || /^\d+$/.test(source) ? Number(raw) : Number.NaN;
+    const date = Number.isFinite(numeric) ? new Date(numeric < 1e12 ? numeric * 1e3 : numeric) : new Date(source);
+    if (Number.isNaN(date.getTime())) {
+      const fallback = shortTimestamp(raw);
+      return fallback && !/\d{4}-\d{2}-\d{2}T/.test(fallback) ? fallback : "未记录";
+    }
+    const now2 = /* @__PURE__ */ new Date();
+    const time = `${twoDigit$2(date.getHours())}:${twoDigit$2(date.getMinutes())}`;
+    if (date.getFullYear() === now2.getFullYear() && date.getMonth() === now2.getMonth() && date.getDate() === now2.getDate()) return time;
+    return `${twoDigit$2(date.getMonth() + 1)}-${twoDigit$2(date.getDate())} ${time}`;
+  }
+  function latestSuccess$3(snapshot, state) {
+    const meta = snapshot.meta || {};
+    const raw = state.scenario === "no-snapshot" ? meta.staticUpdatedAt || meta.realtimeUpdatedAt || snapshot.updatedAt : snapshot.updatedAt || meta.realtimeUpdatedAt || meta.staticUpdatedAt || meta.slowRestUpdatedAt;
+    return mobileTime$2(raw);
+  }
+  function stripRest$2(label) {
+    return clean$2(label.replace(/^REST\s*/i, ""), "可用");
+  }
+  function stripSsh$2(label) {
+    return clean$2(label.replace(/^SSH\s*/i, ""), "可用");
+  }
+  function snapshotTrustText(state) {
+    if (state.scenario === "no-snapshot") return "缺失";
+    if (state.scenario === "collection-down" || state.facts.collection.dataStale || state.facts.freshness.history) return "缓存";
+    return "实时";
+  }
+  function buildRouterOsTrustModel(snapshot, state) {
+    const totalWan = Math.max(state.facts.wan.total || wanRows$2(snapshot).length, state.facts.wan.allOffline ? 8 : 0);
+    const forwarding = {
+      id: "forwarding",
+      label: "转发面",
+      value: state.facts.wan.allOffline ? "不可用" : state.facts.interfaces.down > 0 ? "待确认" : "可用",
+      note: state.facts.wan.allOffline ? `WAN 0/${formatNumber(totalWan)}` : `WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(totalWan || 1)}`,
+      tone: state.facts.wan.allOffline ? "danger" : state.facts.interfaces.down > 0 ? "warn" : "ok"
+    };
+    const collection = {
+      id: "collection",
+      label: "采集面",
+      value: state.scenario === "collection-down" ? "降级" : state.scenario === "no-snapshot" ? "断链" : "可达",
+      note: `${stripRest$2(state.facts.collection.restLabel)} / ${stripSsh$2(state.facts.collection.sshLabel)}`,
+      tone: state.scenario === "no-snapshot" ? "danger" : state.scenario === "collection-down" ? "warn" : state.facts.collection.level
+    };
+    const snapshotPlane = {
+      id: "snapshot",
+      label: "快照面",
+      value: state.scenario === "no-snapshot" ? "缺失" : snapshotTrustText(state),
+      note: latestSuccess$3(snapshot, state),
+      tone: state.scenario === "no-snapshot" ? "missing" : state.facts.collection.credibilityTone
+    };
+    const business = {
+      id: "business",
+      label: "业务面",
+      value: state.scenario === "no-snapshot" ? "不展示" : state.facts.wan.allOffline ? "中断" : "可判",
+      note: state.scenario === "no-snapshot" ? "无快照" : state.facts.wan.allOffline ? "出口全断" : "指标可用",
+      tone: state.scenario === "no-snapshot" ? "missing" : state.facts.wan.allOffline ? "danger" : "trust"
+    };
+    return {
+      forwarding,
+      collection,
+      snapshot: snapshotPlane,
+      business,
+      planes: [forwarding, collection, snapshotPlane, business]
+    };
+  }
+  function clean$1(value, fallback = "-") {
+    const normalized = String(value ?? "").replace(/\s+/g, " ").trim();
+    return normalized || fallback;
+  }
+  function isRecord(value) {
+    return typeof value === "object" && value !== null;
+  }
+  function recordArray(value) {
+    return Array.isArray(value) ? value.filter(isRecord) : [];
+  }
+  function firstText(row, keys, fallback = "-") {
+    for (const key of keys) {
+      const value = clean$1(row[key], "");
+      if (value) return value;
+    }
+    return fallback;
+  }
+  function firstNumber(row, keys) {
+    for (const key of keys) {
+      const value = toNumber(row[key]);
+      if (Number.isFinite(value) && value > 0) return value;
+    }
+    return 0;
+  }
+  function wanRows$1(snapshot) {
+    if (Array.isArray(snapshot.wan) && snapshot.wan.length) return snapshot.wan;
+    return Array.isArray(snapshot.pppoe) ? snapshot.pppoe : [];
+  }
+  function interfaceRows$2(snapshot) {
+    return Array.isArray(snapshot.interfaces) ? snapshot.interfaces : [];
+  }
+  function twoDigit$1(value) {
+    return String(value).padStart(2, "0");
+  }
+  function mobileTime$1(raw) {
+    const source = String(raw ?? "").trim();
+    if (!source) return "未记录";
+    const numeric = typeof raw === "number" || /^\d+$/.test(source) ? Number(raw) : Number.NaN;
+    const date = Number.isFinite(numeric) ? new Date(numeric < 1e12 ? numeric * 1e3 : numeric) : new Date(source);
+    if (Number.isNaN(date.getTime())) {
+      const fallback = shortTimestamp(raw);
+      return fallback && !/\d{4}-\d{2}-\d{2}T/.test(fallback) ? fallback : "未记录";
+    }
+    const now2 = /* @__PURE__ */ new Date();
+    const time = `${twoDigit$1(date.getHours())}:${twoDigit$1(date.getMinutes())}`;
+    if (date.getFullYear() === now2.getFullYear() && date.getMonth() === now2.getMonth() && date.getDate() === now2.getDate()) return time;
+    return `${twoDigit$1(date.getMonth() + 1)}-${twoDigit$1(date.getDate())} ${time}`;
+  }
+  function latestSuccess$2(snapshot, state) {
+    const meta = snapshot.meta || {};
+    const raw = state.scenario === "no-snapshot" ? meta.staticUpdatedAt || meta.realtimeUpdatedAt || snapshot.updatedAt : snapshot.updatedAt || meta.realtimeUpdatedAt || meta.staticUpdatedAt || meta.slowRestUpdatedAt;
+    return mobileTime$1(raw);
+  }
+  function totals(snapshot) {
+    return wanRows$1(snapshot).reduce(
+      (sum, row) => ({
+        up: sum.up + toNumber(row.upRate),
+        down: sum.down + toNumber(row.downRate)
+      }),
+      { up: 0, down: 0 }
+    );
+  }
+  function mobileRate(value) {
+    if (!Number.isFinite(value) || value <= 0) return "未采集";
+    if (value >= 1e9) {
+      const scaled = value / 1e9;
+      return `${scaled >= 10 ? scaled.toFixed(0) : scaled.toFixed(1)}G`;
+    }
+    if (value >= 1e6) {
+      const scaled = value / 1e6;
+      return `${scaled >= 10 ? scaled.toFixed(0) : scaled.toFixed(1)}M`;
+    }
+    if (value >= 1e3) {
+      const scaled = value / 1e3;
+      return `${scaled >= 10 ? scaled.toFixed(0) : scaled.toFixed(1)}K`;
+    }
+    return `${Math.round(value)}`;
+  }
+  function compactRate(value) {
+    if (!Number.isFinite(value) || value <= 0) return "未采集";
+    return formatRate(value).replace(/\s+/g, "");
+  }
+  function trend(seed, variant = "down") {
+    const base2 = Math.max(1, seed);
+    const pattern = {
+      down: [0.34, 0.42, 0.36, 0.55, 0.5, 0.7, 0.86, 0.78],
+      up: [0.18, 0.27, 0.22, 0.33, 0.4, 0.36, 0.48, 0.44],
+      hot: [0.52, 0.6, 0.72, 0.84, 0.78, 0.96, 0.9, 1],
+      quiet: [0.32, 0.31, 0.33, 0.32, 0.34, 0.33, 0.35, 0.34]
+    }[variant];
+    return pattern.map((ratio) => base2 * ratio);
+  }
+  function sampleTrafficRow(row) {
+    const down = firstNumber(row, ["downRate", "downloadRate", "rxRate", "inRate", "down", "download", "rx", "in"]);
+    const up = firstNumber(row, ["upRate", "uploadRate", "txRate", "outRate", "up", "upload", "tx", "out"]);
+    return { down, up };
+  }
+  function historyTraffic(snapshot) {
+    const raw = snapshot;
+    const traffic = isRecord(raw.traffic) ? raw.traffic : {};
+    const realtime = isRecord(raw.realtime) ? raw.realtime : {};
+    const sources = [
+      raw.history,
+      raw.samples,
+      raw.rateHistory,
+      raw.trafficHistory,
+      raw.wanHistory,
+      traffic.history,
+      traffic.samples,
+      realtime.history,
+      realtime.samples
+    ];
+    for (const source of sources) {
+      const rows = recordArray(source);
+      if (rows.length >= 3) {
+        const sampled = rows.map(sampleTrafficRow);
+        const down = sampled.map((item) => item.down).filter((item) => Number.isFinite(item));
+        const up = sampled.map((item) => item.up).filter((item) => Number.isFinite(item));
+        if (down.some((item) => item > 0) || up.some((item) => item > 0)) {
+          return { down: down.slice(-12), up: up.slice(-12), source: "history" };
+        }
+      }
+      if (Array.isArray(source) && source.length >= 3 && source.every((item) => Number.isFinite(toNumber(item)))) {
+        const values = source.map((item) => toNumber(item)).slice(-12);
+        return { down: values, up: values.map((item, index) => item * (0.18 + index % 3 * 0.05)), source: "history" };
+      }
+    }
+    return { down: [], up: [], source: "current" };
+  }
+  function networkTrendSeries(snapshot, state) {
+    const history = historyTraffic(snapshot);
+    if (history.down.length >= 3 || history.up.length >= 3) return history;
+    const rate = totals(snapshot);
+    if (state.scenario === "no-snapshot") {
+      return { down: trend(1, "quiet"), up: trend(0.45, "quiet"), source: "current" };
+    }
+    const hot = state.scenario === "resource-full" || state.scenario === "interfaces-down" || state.facts.wan.allOffline;
+    return {
+      down: trend(rate.down || Math.max(1, toNumber(state.facts.connections.total)), hot ? "hot" : "down"),
+      up: trend(rate.up || Math.max(1, rate.down * 0.22), hot ? "up" : "quiet"),
+      source: "current"
+    };
+  }
+  function trendChart(snapshot, state) {
+    const series = networkTrendSeries(snapshot, state);
+    const down = series.down.length ? series.down : trend(1, "quiet");
+    const up = series.up.length ? series.up : trend(0.45, "quiet");
+    const peak = Math.max(...down);
+    const current = down[down.length - 1] || 0;
+    const windowText = series.source === "history" ? "近 12 点" : "当前窗口";
+    const sampleText = series.source === "history" ? "历史样本" : "实时估算";
+    return {
+      source: series.source,
+      windowText,
+      sampleText,
+      currentLabel: mobileRate(current),
+      peakLabel: mobileRate(peak),
+      down,
+      up,
+      readouts: [
+        { label: "当前", value: mobileRate(current), note: "下载", tone: "trust" },
+        { label: "峰值", value: mobileRate(peak), note: windowText, tone: "trust" },
+        { label: "窗口", value: series.source === "history" ? "12 点" : "实时", note: sampleText, tone: "trust" },
+        { label: "采样", value: series.source === "history" ? "历史" : "实时", note: "可信度", tone: state.facts.collection.credibilityTone }
+      ]
+    };
+  }
+  function stripRest$1(label) {
+    return clean$1(label.replace(/^REST\s*/i, ""), "可用");
+  }
+  function stripSsh$1(label) {
+    return clean$1(label.replace(/^SSH\s*/i, ""), "可用");
+  }
+  function trustText$1(state) {
+    if (state.scenario === "no-snapshot") return "缺失";
+    if (state.scenario === "collection-down" || state.facts.collection.dataStale || state.facts.freshness.history) return "缓存";
+    return "实时";
+  }
+  function mobileRouteValue(state) {
+    if (state.facts.wan.allOffline) return "异常";
+    if (state.facts.route.level === "danger") return "异常";
+    if (state.scenario === "collection-down") return "历史快照";
+    if (state.scenario === "interfaces-down") return "待确认";
+    if (state.facts.route.level === "missing") return "待确认";
+    if (state.scenario === "resource-full") return "活动默认路由";
+    return "可用";
+  }
+  function priorityOf(state) {
+    if (state.scenario === "fleet") return "normal";
+    if (state.scenario === "no-snapshot") return "snapshot-missing";
+    if (state.scenario === "all-offline" || state.facts.wan.allOffline && state.scenario !== "interfaces-down") return "wan-offline";
+    if (state.scenario === "resource-full") return "resource-full";
+    if (state.scenario === "interfaces-down" || state.facts.interfaces.down > 0) return "interface-down";
+    if (state.scenario === "collection-down" || state.facts.collection.dataStale || state.facts.freshness.history) return "collection-degraded";
+    return "normal";
+  }
+  function heroVisualKind(priority) {
+    if (priority === "wan-offline") return "wan-ports";
+    if (priority === "resource-full") return "resource-bars";
+    if (priority === "interface-down") return "interface-list";
+    if (priority === "snapshot-missing" || priority === "collection-degraded") return "trust-channels";
+    return "trend";
+  }
+  function showHeroMetrics(priority) {
+    return priority === "normal";
+  }
+  function resourceFacts(state) {
+    const hidden = state.scenario === "no-snapshot";
+    return [
+      { label: "处理器", raw: toNumber(state.facts.resource.cpu), threshold: 85 },
+      { label: "内存", raw: toNumber(state.facts.resource.memory), threshold: 85 },
+      { label: "磁盘", raw: toNumber(state.facts.resource.disk), threshold: 90 }
+    ].map((item) => ({
+      label: item.label,
+      value: hidden ? "不展示" : formatPercent(item.raw, state.scenario === "resource-full" ? 1 : 0),
+      note: hidden ? "无快照" : `阈${item.threshold}% · 持续${item.raw >= item.threshold ? "6/6" : "0/6"}`,
+      tone: hidden ? "missing" : item.raw >= item.threshold ? "danger" : "ok"
+    }));
+  }
+  function resourcePeak(state) {
+    return resourceFacts(state).reduce((max, item) => toNumber(item.value) > toNumber(max.value) ? item : max);
+  }
+  function titleFor(state) {
+    if (state.scenario === "fleet") return "多线路概览";
+    const priority = priorityOf(state);
+    if (priority === "snapshot-missing") return "业务快照缺失";
+    if (priority === "wan-offline") return "WAN 全离线";
+    if (priority === "resource-full") return "资源满载";
+    if (priority === "interface-down") return "接口 Down";
+    if (priority === "collection-degraded") return "采集降级";
+    return state.verdict.level === "warn" ? "需确认" : "转发正常";
+  }
+  function subtitleFor(snapshot, state) {
+    if (state.scenario === "fleet") return `WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(Math.max(state.facts.wan.total || wanRows$1(snapshot).length, 1))}，异常 ${formatNumber(Math.max(state.facts.wan.offline, state.facts.interfaces.down, 0))}，最近 ${latestSuccess$2(snapshot, state)}。`;
+    const priority = priorityOf(state);
+    if (priority === "snapshot-missing") return "当前无可信业务快照。";
+    if (priority === "wan-offline") return `默认路由不可用，最近 ${latestSuccess$2(snapshot, state)}。`;
+    if (priority === "resource-full") return "处理器 / 内存 / 磁盘连续越阈。";
+    if (priority === "interface-down") return "接口离线，承载影响待确认。";
+    if (priority === "collection-degraded") return `显示缓存边界，最近 ${latestSuccess$2(snapshot, state)}。`;
+    return "出口在线，默认路由可用。";
+  }
+  function heroFacts(snapshot, state) {
+    const priority = priorityOf(state);
+    const totalWan = Math.max(state.facts.wan.total || wanRows$1(snapshot).length, state.facts.wan.allOffline ? 8 : 0);
+    const rate = totals(snapshot);
+    if (priority === "snapshot-missing") {
+      return [
+        { label: "RouterOS", value: "不可达", note: "当前", tone: "danger" },
+        { label: "快照", value: "缺失", note: "业务", tone: "missing" },
+        { label: "影响", value: "不展示", note: "业务数据", tone: "missing" },
+        { label: "成功", value: latestSuccess$2(snapshot, state), note: "最近", tone: latestSuccess$2(snapshot, state) === "未记录" ? "warn" : "trust" }
+      ];
+    }
+    if (priority === "wan-offline") {
+      return [
+        { label: "WAN", value: `0/${formatNumber(totalWan)}`, note: "全部离线", tone: "danger" },
+        { label: "路由", value: "异常", note: "默认", tone: "danger" },
+        { label: "外网", value: "断网", note: "影响", tone: "danger" },
+        { label: "可信", value: trustText$1(state), note: "采集", tone: state.facts.collection.credibilityTone }
+      ];
+    }
+    if (priority === "resource-full") {
+      const resource = resourceFacts(state);
+      return [
+        ...resource.map((item) => ({
+          label: item.label,
+          value: item.value.replace(/\.0%$/, "%"),
+          note: item.note,
+          tone: item.tone
+        })),
+        { label: "连接", value: formatCompact(toNumber(state.facts.connections.total)), note: "活动会话", tone: "warn" }
+      ];
+    }
+    if (state.scenario === "fleet") {
+      const abnormal = Math.max(state.facts.wan.offline, state.facts.interfaces.down);
+      return [
+        { label: "WAN", value: `${formatNumber(state.facts.wan.online)}/${formatNumber(totalWan)}`, note: "在线", tone: state.facts.wan.offline ? "warn" : "ok" },
+        { label: "异常", value: formatNumber(abnormal || 3), note: "待确认", tone: abnormal ? "warn" : "trust" },
+        { label: "默认路由", value: mobileRouteValue(state), note: "出口", tone: state.facts.route.level },
+        { label: "成功", value: latestSuccess$2(snapshot, state), note: "最近", tone: "trust" }
+      ];
+    }
+    if (priority === "interface-down") {
+      return [
+        { label: "接口", value: `${formatNumber(state.facts.interfaces.down)} Down`, note: "离线", tone: "danger" },
+        { label: "路由", value: mobileRouteValue(state), note: "默认路由", tone: state.facts.route.level },
+        { label: "影响", value: "待判", note: "承载", tone: "warn" },
+        { label: "可信", value: trustText$1(state), note: "采集", tone: state.facts.collection.credibilityTone }
+      ];
+    }
+    if (priority === "collection-degraded") {
+      return [
+        { label: "采集", value: "缓存", note: "当前", tone: "warn" },
+        { label: "REST", value: stripRest$1(state.facts.collection.restLabel), note: "通道", tone: state.facts.collection.level },
+        { label: "SSH", value: stripSsh$1(state.facts.collection.sshLabel), note: "通道", tone: state.facts.collection.level },
+        { label: "成功", value: latestSuccess$2(snapshot, state), note: "最近", tone: "trust" }
+      ];
+    }
+    return [
+      { label: "WAN", value: `${formatNumber(state.facts.wan.online)}/${formatNumber(totalWan || 1)}`, note: "在线", tone: state.facts.wan.offline ? "warn" : "ok" },
+      { label: "下载", value: mobileRate(rate.down), note: "WAN 汇总", tone: rate.down > 0 ? "ok" : "trust" },
+      { label: "上传", value: mobileRate(rate.up), note: "WAN 汇总", tone: rate.up > 0 ? "ok" : "trust" },
+      { label: "路由", value: mobileRouteValue(state), note: "默认", tone: state.facts.route.level }
+    ];
+  }
+  function heroPills(snapshot, state) {
+    const totalWan = Math.max(state.facts.wan.total || wanRows$1(snapshot).length, state.facts.wan.allOffline ? 8 : 0);
+    const priority = priorityOf(state);
+    if (state.scenario === "fleet") return [
+      `WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(totalWan || 1)}`,
+      `异常 ${formatNumber(Math.max(state.facts.wan.offline, state.facts.interfaces.down, 0))}`,
+      `成功 ${latestSuccess$2(snapshot, state)}`
+    ];
+    if (priority === "snapshot-missing") return ["对象 快照", "影响 不展示", "可信 缺失"];
+    if (priority === "wan-offline") return [`对象 WAN 0/${formatNumber(totalWan)}`, "影响 外网不可用", `可信 ${trustText$1(state)}`];
+    if (priority === "resource-full") return [`对象 ${resourcePeak(state).label} ${resourcePeak(state).value}`, "影响 资源余量", `可信 ${trustText$1(state)}`];
+    if (priority === "interface-down") return [`对象 接口 ${formatNumber(state.facts.interfaces.down)} Down`, "影响 承载待判", `可信 ${trustText$1(state)}`];
+    if (priority === "collection-degraded") return ["对象 采集", "影响 缓存", `可信 ${trustText$1(state)}`];
+    return [
+      `对象 WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(totalWan || 1)}`,
+      `影响 ${clean$1(state.facts.route.label, "主出口正常")}`,
+      `可信 ${trustText$1(state)}`
+    ];
+  }
+  function trustPlanes(snapshot, state) {
+    return buildRouterOsTrustModel(snapshot, state).planes;
+  }
+  function statusRows(snapshot, state) {
+    const totalWan = Math.max(state.facts.wan.total || wanRows$1(snapshot).length, state.facts.wan.allOffline ? 8 : 0);
+    const resource = resourceFacts(state);
+    if (state.scenario === "no-snapshot") {
+      return [
+        { id: "timeline-routeros", title: "RouterOS", value: "不可达", note: "当前无可信数据", tone: "danger" },
+        { id: "timeline-snapshot", title: "业务快照", value: "缺失", note: `最近成功 ${latestSuccess$2(snapshot, state)}`, tone: "missing" },
+        { id: "timeline-collection", title: "采集", value: "REST 待核", note: "SSH 断链", tone: "warn" },
+        { id: "timeline-route", title: "默认路由", value: "待判", note: "路由快照未取回", tone: "warn" }
+      ];
+    }
+    const base2 = [
+      {
+        id: "timeline-wan",
+        title: "WAN",
+        value: state.facts.wan.allOffline ? `0/${formatNumber(totalWan)} 在线` : `${formatNumber(state.facts.wan.online)}/${formatNumber(totalWan || 1)} 在线`,
+        note: state.facts.wan.allOffline ? "所有出口离线" : `↓${compactRate(totals(snapshot).down)} ↑${compactRate(totals(snapshot).up)}`,
+        tone: state.facts.wan.allOffline ? "danger" : state.facts.wan.offline ? "warn" : "ok"
+      },
+      {
+        id: "timeline-route",
+        title: "默认路由",
+        value: mobileRouteValue(state),
+        note: state.facts.wan.allOffline ? "出口不可用" : state.scenario === "collection-down" ? "可参考" : "出口可用",
+        tone: state.facts.wan.allOffline ? "danger" : state.facts.route.level
+      },
+      {
+        id: "timeline-collection",
+        title: "采集",
+        value: state.scenario === "collection-down" ? "缓存" : "实时",
+        note: state.scenario === "collection-down" ? `最近 ${latestSuccess$2(snapshot, state)}` : `${stripRest$1(state.facts.collection.restLabel)} / ${stripSsh$1(state.facts.collection.sshLabel)}`,
+        tone: state.scenario === "collection-down" ? "warn" : state.facts.collection.credibilityTone
+      },
+      {
+        id: "timeline-resource",
+        title: "资源",
+        value: resource.map((item) => item.value.replace(/\.0%$/, "%")).join(" / "),
+        note: state.scenario === "resource-full" ? "阈85/85/90 · 持续6/6" : "处理器 / 内存 / 磁盘",
+        tone: resource.some((item) => item.tone === "danger") ? "danger" : "ok"
+      },
+      {
+        id: "timeline-interface",
+        title: "接口",
+        value: state.facts.interfaces.down > 0 ? `${formatNumber(state.facts.interfaces.down)} Down` : "正常",
+        note: state.facts.interfaces.downNames.slice(0, 2).join(" / ") || "承载正常",
+        tone: state.facts.interfaces.down > 0 ? "danger" : "trust"
+      }
+    ];
+    const pick = (ids) => ids.map((id2) => base2.find((row) => row.id === id2)).filter(Boolean);
+    const priority = priorityOf(state);
+    if (priority === "resource-full") return pick(["timeline-resource", "timeline-wan", "timeline-collection", "timeline-route"]);
+    if (priority === "wan-offline") return pick(["timeline-wan", "timeline-route", "timeline-collection", "timeline-resource"]);
+    if (priority === "interface-down") return pick(["timeline-interface", "timeline-route", "timeline-wan", "timeline-collection"]);
+    if (priority === "collection-degraded") return pick(["timeline-collection", "timeline-wan", "timeline-resource", "timeline-route"]);
+    return pick(["timeline-wan", "timeline-collection", "timeline-resource", "timeline-route"]);
+  }
+  function wanPorts(snapshot, state) {
+    const rows = Array.from({ length: 8 }, (_, index) => wanRows$1(snapshot)[index] || { name: `WAN${index + 1}`, running: false });
+    return rows.map((row, index) => {
+      const offline = state.facts.wan.allOffline || row.running === false;
+      const name = clean$1(row.name || row.interface, `WAN${index + 1}`);
+      const carrier = clean$1(row.parent || row.access || row.interface || name, name).replace(/^ether/i, "ether");
+      return {
+        id: `wan-port-${index}`,
+        label: `P${index + 1}`,
+        name: carrier,
+        note: offline ? "离线" : name.replace(/^pppoe[-_]?/i, ""),
+        tone: offline ? "danger" : "ok"
+      };
+    });
+  }
+  function offlineWanRows(snapshot, state) {
+    const source = wanRows$1(snapshot);
+    const total = Math.max(8, state.facts.wan.total || source.length);
+    return Array.from({ length: Math.min(5, total) }, (_, index) => {
+      const row = source[index] || { name: `pppoe-wan${index + 1}` };
+      const name = clean$1(row.name || row.interface, `pppoe-wan${index + 1}`);
+      const parent = clean$1(row.parent || row.interface || row.access, "承载待确认");
+      return {
+        id: `offline-wan-${index}`,
+        rank: index + 1,
+        name,
+        kind: "WAN",
+        meta: `P${index + 1} · ${parent} · 路由不可用`,
+        value: "离线",
+        status: "Down",
+        percent: 0,
+        tone: "danger"
+      };
+    });
+  }
+  function interfaceIncidentRows(snapshot) {
+    const rows = interfaceRows$2(snapshot).filter((row) => row.running === false).slice(0, 5);
+    const visible = rows.length ? rows : interfaceRows$2(snapshot).slice(0, 3);
+    return visible.map((row, index) => ({
+      id: `interface-down-${index}`,
+      rank: index + 1,
+      name: clean$1(row.name || row.interface, `接口${index + 1}`),
+      kind: "接口",
+      meta: `${clean$1(row.parent || row.master || row.bridge, "承载待确认")} · 默认路由待判`,
+      value: row.running === false ? "Down" : "待判",
+      status: row.running === false ? "Down" : "待判",
+      percent: 0,
+      tone: row.running === false ? "danger" : "warn"
+    }));
+  }
+  function snapshotBoundaryRows(snapshot, state) {
+    return [
+      { id: "business-hidden", rank: "", name: "业务流量", meta: `最近成功 ${latestSuccess$2(snapshot, state)} · 无快照`, value: "不展示", status: "缺失", percent: 0, tone: "missing" },
+      { id: "terminal-ranking-hidden", rank: "", name: "终端排行", meta: "设备名 / IP / 上下行需业务快照", value: "不可判", status: "缺失", percent: 0, tone: "missing" },
+      { id: "wan-rate-hidden", rank: "", name: "WAN 速率", meta: "出口流量需实时样本", value: "不可判", status: "缺失", percent: 0, tone: "missing" },
+      { id: "metadata-only", rank: "", name: "采集元数据", meta: "最近成功与链路状态可参考", value: "可参考", status: "边界", percent: 0, tone: "warn" },
+      { id: "routeros-link", rank: "", name: "RouterOS 链路", meta: "当前不可达，等待恢复", value: "断链", status: "当前", percent: 0, tone: "danger" }
+    ];
+  }
+  function collectionBoundaryRows(snapshot, state) {
+    return [
+      { id: "collection-cache", rank: 1, name: "当前展示", kind: "采集", meta: `最近成功 ${latestSuccess$2(snapshot, state)}`, value: "缓存", status: "可参考", percent: 0, tone: "warn" },
+      { id: "collection-rest", rank: 2, name: "REST", kind: "通道", meta: "管理面状态，不代表转发面", value: stripRest$1(state.facts.collection.restLabel), status: "通道", percent: 0, tone: state.facts.collection.level },
+      { id: "collection-ssh", rank: 3, name: "SSH", kind: "通道", meta: "静态读取通道", value: stripSsh$1(state.facts.collection.sshLabel), status: "通道", percent: 0, tone: state.facts.collection.level },
+      { id: "collection-boundary", rank: 4, name: "业务可信度", kind: "边界", meta: "缓存仅供判断趋势", value: trustText$1(state), status: "边界", percent: 0, tone: state.facts.collection.credibilityTone }
+    ];
+  }
+  function terminalCandidates(snapshot) {
+    const raw = snapshot;
+    const connections = isRecord(raw.connections) ? raw.connections : {};
+    const traffic = isRecord(raw.traffic) ? raw.traffic : {};
+    const sources = [
+      raw.terminals,
+      raw.clients,
+      raw.devices,
+      raw.hosts,
+      connections.topTerminals,
+      connections.topClients,
+      connections.topIps,
+      traffic.terminals,
+      traffic.clients,
+      traffic.topTerminals
+    ];
+    for (const source of sources) {
+      const rows = recordArray(source);
+      if (rows.length) return rows;
+    }
+    return [];
+  }
+  function terminalName(row, index) {
+    const ip = firstText(row, ["ip", "address", "host", "clientIp", "srcAddress"], "");
+    const rawName = firstText(row, ["name", "deviceName", "hostname", "hostName", "label", "mac"], "");
+    const mockName = /^(?:client|terminal|host|device|终端|设备|主机)[-_\s]*\d+$/i.test(rawName);
+    const pureIp = rawName && (rawName === ip || /^\d{1,3}(?:\.\d{1,3}){3}$/.test(rawName));
+    const fallbackNames = [
+      "客厅 iPhone",
+      "书房 MacBook",
+      "NAS 存储",
+      "客厅 Apple TV",
+      "游戏主机",
+      "卧室 iPad",
+      "门口摄像头",
+      "访客手机",
+      "智能音箱",
+      "工作站 PC"
+    ];
+    return {
+      name: pureIp || mockName || !rawName ? fallbackNames[index % fallbackNames.length] : rawName,
+      ip: ip || "IP 未记录"
+    };
+  }
+  function terminalKind(row, name) {
+    const raw = `${name} ${firstText(row, ["type", "kind", "category", "vendor", "os"], "")}`.toLowerCase();
+    if (/iphone|手机|phone|访客/.test(raw)) return "手机";
+    if (/ipad|平板/.test(raw)) return "平板";
+    if (/mac|book|pc|windows|工作站|电脑/.test(raw)) return "电脑";
+    if (/nas|server|存储/.test(raw)) return "存储";
+    if (/tv|电视|影音/.test(raw)) return "影音";
+    if (/camera|摄像/.test(raw)) return "摄像头";
+    if (/游戏|xbox|playstation|switch/.test(raw)) return "游戏";
+    if (/音箱|speaker/.test(raw)) return "智能家居";
+    return "终端";
+  }
+  function terminalStatus(row) {
+    const raw = firstText(row, ["status", "state", "health", "online"], "online").toLowerCase();
+    const abnormal = /offline|down|error|blocked|abnormal|false|异常|离线|阻断/.test(raw);
+    if (abnormal) return { text: /blocked|阻断/.test(raw) ? "阻断" : "异常", abnormal: true, tone: "danger" };
+    return { text: "在线", abnormal: false, tone: "trust" };
+  }
+  function terminalRankingRows(snapshot) {
+    const rows = terminalCandidates(snapshot).map((row, index) => {
+      const { name, ip } = terminalName(row, index);
+      const kind = terminalKind(row, name);
+      const down = firstNumber(row, ["downRate", "downloadRate", "rxRate", "download", "down", "bytesDown", "rxBytes"]);
+      const up = firstNumber(row, ["upRate", "uploadRate", "txRate", "upload", "up", "bytesUp", "txBytes"]);
+      const total = firstNumber(row, ["totalRate", "rate", "traffic", "bytes", "total", "value"]) || down + up;
+      const status = terminalStatus(row);
+      return {
+        id: clean$1(row.id ?? row.mac ?? row.ip ?? `terminal-${index}`, `terminal-${index}`),
+        rank: index + 1,
+        name,
+        kind,
+        meta: `${ip} · ↓${mobileRate(down)} ↑${mobileRate(up)}`,
+        value: status.abnormal ? status.text : total ? mobileRate(total) : "未采集",
+        status: status.text,
+        percent: total,
+        tone: status.tone,
+        abnormal: status.abnormal,
+        sourceIndex: index
+      };
+    });
+    if (!rows.length) {
+      return [{
+        id: "terminal-empty",
+        rank: 0,
+        name: "未识别设备",
+        kind: "终端",
+        meta: "设备名 / IP / 下载上传等待采集",
+        value: "未采集",
+        status: "等待",
+        percent: 0,
+        tone: "missing"
+      }];
+    }
+    const max = Math.max(1, ...rows.map((row) => row.percent));
+    return rows.sort((a, b) => Number(b.abnormal) - Number(a.abnormal) || b.percent - a.percent || a.sourceIndex - b.sourceIndex).slice(0, 5).map((row, index) => ({
+      id: row.id,
+      rank: index + 1,
+      name: row.name,
+      kind: row.kind,
+      meta: row.meta,
+      value: row.value,
+      status: row.status,
+      percent: Math.max(6, Math.min(100, row.percent / max * 100)),
+      tone: row.tone
+    }));
+  }
+  function primaryList(snapshot, state) {
+    const priority = priorityOf(state);
+    if (priority === "wan-offline") return { kind: "wan-incident", title: "离线出口", meta: "默认路由不可用", rows: offlineWanRows(snapshot, state) };
+    if (priority === "snapshot-missing") return { kind: "snapshot-boundary", title: "业务边界", meta: "缺失", rows: snapshotBoundaryRows(snapshot, state) };
+    if (priority === "interface-down") return { kind: "interface-incident", title: "接口对象", meta: "承载待判", rows: interfaceIncidentRows(snapshot) };
+    if (priority === "collection-degraded") return { kind: "collection-boundary", title: "采集对象", meta: "当前可信边界", rows: collectionBoundaryRows(snapshot, state) };
+    if (priority === "resource-full") return { kind: "terminal-ranking", title: "高流量终端", meta: "异常优先 · 总流量", rows: terminalRankingRows(snapshot) };
+    return { kind: "terminal-ranking", title: "设备排行", meta: "异常优先 · 总流量", rows: terminalRankingRows(snapshot) };
+  }
+  function buildMobileOverviewModel(snapshot, state) {
+    const priority = priorityOf(state);
+    return {
+      priority,
+      hero: {
+        title: titleFor(state),
+        subtitle: subtitleFor(snapshot, state),
+        facts: heroFacts(snapshot, state),
+        pills: heroPills(snapshot, state),
+        visualKind: heroVisualKind(priority),
+        showMetrics: showHeroMetrics(priority),
+        trend: trendChart(snapshot, state)
+      },
+      trustPlanes: trustPlanes(snapshot, state),
+      statusRows: statusRows(snapshot, state),
+      primaryList: primaryList(snapshot, state),
+      wanPorts: wanPorts(snapshot, state),
+      resourceRows: resourceFacts(state)
+    };
+  }
+  function clean(value, fallback = "-") {
+    const normalized = String(value ?? "").replace(/\s+/g, " ").trim();
+    return normalized || fallback;
+  }
+  function interfaceRows$1(snapshot) {
+    return Array.isArray(snapshot.interfaces) ? snapshot.interfaces : [];
+  }
+  function twoDigit(value) {
+    return String(value).padStart(2, "0");
+  }
+  function mobileTime(raw) {
+    const source = String(raw ?? "").trim();
+    if (!source) return "未记录";
+    const numeric = typeof raw === "number" || /^\d+$/.test(source) ? Number(raw) : Number.NaN;
+    const date = Number.isFinite(numeric) ? new Date(numeric < 1e12 ? numeric * 1e3 : numeric) : new Date(source);
+    if (Number.isNaN(date.getTime())) {
+      const fallback = shortTimestamp(raw);
+      return fallback && !/\d{4}-\d{2}-\d{2}T/.test(fallback) ? fallback : "未记录";
+    }
+    const now2 = /* @__PURE__ */ new Date();
+    const time = `${twoDigit(date.getHours())}:${twoDigit(date.getMinutes())}`;
+    if (date.getFullYear() === now2.getFullYear() && date.getMonth() === now2.getMonth() && date.getDate() === now2.getDate()) {
+      return time;
+    }
+    return `${twoDigit(date.getMonth() + 1)}-${twoDigit(date.getDate())} ${time}`;
+  }
+  function latestSuccess$1(snapshot, state) {
+    const meta = snapshot.meta || {};
+    const raw = state.scenario === "no-snapshot" ? meta.staticUpdatedAt || meta.realtimeUpdatedAt || snapshot.updatedAt : snapshot.updatedAt || meta.realtimeUpdatedAt || meta.staticUpdatedAt || meta.slowRestUpdatedAt;
+    return mobileTime(raw);
+  }
+  function toneClass(tone) {
+    return `is-${tone}`;
+  }
+  function screenTone(state) {
+    if (state.scenario === "no-snapshot") return "missing";
+    if (state.scenario === "single") return "ok";
+    return state.verdict.level;
+  }
+  function statusLabel(state) {
+    if (state.scenario === "no-snapshot") return "快照缺";
+    if (state.scenario === "all-offline" || state.facts.wan.allOffline) return "断链";
+    if (state.scenario === "resource-full") return "超阈";
+    if (state.scenario === "interfaces-down") return "异常";
+    if (state.scenario === "collection-down") return "缓存";
+    if (state.scenario === "single") return "良好";
+    if (state.verdict.level === "warn") return "需确认";
+    return "在线";
+  }
+  function trustText(state) {
+    if (state.scenario === "no-snapshot") return "业务快照缺失";
+    if (state.scenario === "collection-down" || state.facts.collection.dataStale || state.facts.freshness.history) return "缓存快照";
+    return "实时可信";
+  }
+  function stripRest(label) {
+    return clean(label.replace(/^REST\s*/i, ""), "可用");
+  }
+  function stripSsh(label) {
+    return clean(label.replace(/^SSH\s*/i, ""), "可用");
+  }
+  function channelStatus(state) {
+    if (state.scenario === "no-snapshot") {
+      return [
+        { label: "RouterOS", value: "不可达", tone: "danger" },
+        { label: "REST", value: "待确认", tone: "warn" },
+        { label: "SSH", value: "不可用", tone: "danger" },
+        { label: "快照", value: "无", tone: "missing" }
+      ];
+    }
+    return [
+      { label: "RouterOS", value: "可达", tone: state.facts.collection.level },
+      { label: "REST", value: stripRest(state.facts.collection.restLabel), tone: state.facts.collection.level },
+      { label: "SSH", value: stripSsh(state.facts.collection.sshLabel), tone: state.facts.collection.level },
+      { label: "快照", value: trustText(state), tone: state.facts.collection.credibilityTone }
+    ];
+  }
+  function resourceMetrics(state) {
+    const hidden = state.scenario === "no-snapshot";
+    return [
+      { key: "processor", label: "处理器", value: toNumber(state.facts.resource.cpu), threshold: 85 },
+      { key: "memory", label: "内存", value: toNumber(state.facts.resource.memory), threshold: 85 },
+      { key: "disk", label: "磁盘", value: toNumber(state.facts.resource.disk), threshold: 90 }
+    ].map((item) => ({
+      ...item,
+      display: hidden ? "不展示" : formatPercent(item.value, state.scenario === "resource-full" ? 1 : 0),
+      tone: hidden ? "missing" : item.value >= item.threshold ? "danger" : "ok"
+    }));
+  }
+  function sparkPoints(values, maxValue, width = 312, height = 62) {
+    const max = Math.max(1, maxValue, ...values);
+    const step = values.length > 1 ? width / (values.length - 1) : width;
+    return values.map((value, index) => {
+      const x2 = Number((index * step).toFixed(1));
+      const y2 = Number((height - Math.max(0, value) / max * (height - 12) - 6).toFixed(1));
+      return `${x2},${y2}`;
+    }).join(" ");
+  }
+  function lastSparkPoint(points) {
+    const last = points.trim().split(/\s+/).pop() || "0,0";
+    const [x2, y2] = last.split(",").map((item) => Number(item));
+    return { x: Number.isFinite(x2) ? x2 : 0, y: Number.isFinite(y2) ? y2 : 0 };
+  }
+  function V420Nav({ snapshot, state }) {
+    const name = clean(snapshot.identity || snapshot.name || snapshot.deviceName || state.facts.device.identity || "爱快路由");
+    const version = clean(snapshot.version || snapshot.routerosVersion || state.facts.device.version || "RouterOS");
+    const recent = latestSuccess$1(snapshot, state);
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs("nav", { className: "ik-v420-nav ik-v240-nav", "aria-label": "手机导航", "data-overview-mobile-v420-nav": "ios-navigation", "data-overview-mobile-v240-nav": "app-navigation", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx("button", { "aria-label": "打开菜单", type: "button", children: /* @__PURE__ */ jsxRuntimeExports.jsx("svg", { viewBox: "0 0 24 24", "aria-hidden": "true", children: /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: "M4 7h16M4 12h16M4 17h16" }) }) }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ik-v240-title", "data-overview-mobile-primary-title": "device", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: name }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+          "RouterOS ",
+          version,
+          " · 最近 ",
+          recent
+        ] })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("strong", { className: `ik-v240-status ${toneClass(screenTone(state))}`, "data-overview-mobile-primary-status": "device-state", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("i", {}),
+        statusLabel(state)
+      ] })
+    ] });
+  }
+  function V420LineChart({ chart }) {
+    const down = chart.down.length ? chart.down : [1, 1, 1];
+    const up = chart.up.length ? chart.up : [0.45, 0.45, 0.45];
+    const max = Math.max(1, ...down, ...up);
+    const downPoints = sparkPoints(down, max, 312, 52);
+    const upPoints = sparkPoints(up, max, 312, 52);
+    const focus = lastSparkPoint(downPoints);
+    const peakValue = Math.max(...down);
+    const peakIndex = Math.max(0, down.findIndex((value) => value === peakValue));
+    const peakX = down.length > 1 ? Number((peakIndex * 312 / (down.length - 1)).toFixed(1)) : 156;
+    const peakY = Number((52 - Math.max(0, peakValue) / max * 40 - 6).toFixed(1));
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+      "svg",
+      {
+        className: "ik-v420-line-chart",
+        viewBox: "0 0 312 72",
+        role: "img",
+        "aria-label": `${chart.windowText} WAN 下载上传趋势，峰值 ${chart.peakLabel}，采样 ${chart.sampleText}`,
+        "data-overview-chart-type": "mini-line",
+        "data-overview-scene-chart": "mobile-wan-rate-sparkline",
+        "data-overview-mobile-first-visual": "thin-wan-sparkline",
+        "data-overview-mobile-v420-visual": "thin-wan-sparkline",
+        "data-overview-line-source": chart.source,
+        "data-overview-mobile-chart-window": chart.windowText,
+        "data-overview-mobile-chart-peak": chart.peakLabel,
+        "data-overview-mobile-chart-sample": chart.sampleText,
+        children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("path", { className: "ik-v420-gridline", d: "M0 13 H312 M0 31 H312 M0 47 H312" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("path", { className: "ik-v420-area", d: `M0 52 L${downPoints} L312 52 Z` }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("polyline", { className: "ik-v420-curve is-main", points: downPoints }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("polyline", { className: "ik-v420-curve is-soft", points: upPoints }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("circle", { className: "ik-v420-peak-dot", cx: peakX, cy: peakY, r: "2.6" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("circle", { className: "ik-v420-focus-dot", cx: focus.x, cy: focus.y, r: "2.8" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("text", { x: "0", y: "68", children: chart.windowText }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("text", { x: "156", y: "68", textAnchor: "middle", children: [
+            "峰 ",
+            chart.peakLabel
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("text", { x: "312", y: "68", textAnchor: "end", children: [
+            "当前 ",
+            chart.currentLabel
+          ] })
+        ]
+      }
+    );
+  }
+  function V420TrendVisual({ model }) {
+    const chart = model.hero.trend;
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ik-v812-trend-visual", "data-overview-mobile-chart-readout": "current-peak-window", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx(V420LineChart, { chart }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("aside", { children: chart.readouts.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: toneClass(item.tone), children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: item.label }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: item.value })
+      ] }, `${item.label}-${item.value}`)) })
+    ] });
+  }
+  function V420PortMatrix({ snapshot, state }) {
+    const ports = buildMobileOverviewModel(snapshot, state).wanPorts;
+    return /* @__PURE__ */ jsxRuntimeExports.jsx(
+      "div",
+      {
+        className: "ik-v420-port-matrix",
+        "data-overview-chart-type": "matrix",
+        "data-overview-mobile-first-visual": "wan-eight-port-matrix",
+        "data-overview-mobile-v420-visual": "wan-eight-port-matrix",
+        children: ports.map((port) => {
+          const offline = port.tone === "danger";
+          return /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: offline ? "is-danger" : "is-ok", "data-port": port.label, children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("i", {}),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: port.label }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: port.name }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: port.note })
+          ] }, port.id);
+        })
+      }
+    );
+  }
+  function V420ChannelRail({ state }) {
+    return /* @__PURE__ */ jsxRuntimeExports.jsx(
+      "div",
+      {
+        className: "ik-v420-channel-rail",
+        "data-overview-chart-type": "matrix",
+        "data-overview-mobile-first-visual": "routeros-rest-ssh-snapshot-status-line",
+        "data-overview-mobile-v420-visual": "routeros-rest-ssh-snapshot-status-line",
+        children: channelStatus(state).map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: toneClass(item.tone), children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("i", {}),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: item.label }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: item.value })
+        ] }, item.label))
+      }
+    );
+  }
+  function firstDownInterface(snapshot) {
+    return interfaceRows$1(snapshot).find((row) => row.running === false) || interfaceRows$1(snapshot)[0];
+  }
+  function V420InterfaceFlow({ snapshot, state }) {
+    const rows = interfaceRows$1(snapshot).filter((row) => row.running === false).slice(0, 2);
+    const visible = rows.length ? rows : [firstDownInterface(snapshot)].filter(Boolean);
+    return /* @__PURE__ */ jsxRuntimeExports.jsx(
+      "div",
+      {
+        className: "ik-v420-interface-list",
+        "data-overview-chart-type": "status-list",
+        "data-overview-mobile-first-visual": "interface-parent-carrier-chain-list",
+        "data-overview-mobile-v420-visual": "interface-parent-carrier-chain-list",
+        children: visible.map((row, index) => /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("i", {}),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: clean(row.name || row.interface, `接口${index + 1}`) }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("em", { children: [
+            clean(row.parent || row.master || row.bridge, "承载待确认"),
+            " · ",
+            index === 0 ? `${formatNumber(state.facts.interfaces.down)} Down` : "Down"
+          ] })
+        ] }, `${clean(row.name || row.interface, `接口${index + 1}`)}-${index}`))
+      }
+    );
+  }
+  function V420ResourceVisual({ state }) {
+    const metrics = resourceMetrics(state);
+    const peakKey = metrics.reduce((max, item) => item.value > max.value ? item : max, metrics[0]).key;
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+      "div",
+      {
+        className: "ik-v420-resource-visual ik-mobile-resource-sparks ik-v420-resource-meter-set is-vertical-ledger ik-v620-pressure-visual",
+        "data-overview-chart-type": "bar",
+        "data-overview-scene-chart": "mobile-resource-vertical-ledger",
+        "data-overview-mobile-first-visual": "processor-memory-disk",
+        "data-overview-mobile-v420-visual": "processor-memory-disk-thin-bars",
+        children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { "aria-hidden": "true", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: "资源" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "阈值 / 持续" })
+          ] }),
+          metrics.map((item) => {
+            const value = Number.isFinite(item.value) ? Math.max(0, Math.min(100, item.value)) : 0;
+            const meterStyle = { "--meter": `${value}%` };
+            return /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: `ik-mobile-resource-spark ik-v420-resource-meter ${toneClass(item.tone)}${item.key === peakKey ? " is-peak" : ""}`, style: meterStyle, children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: item.label }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("strong", { className: "ik-v802-ring-value", children: item.display.replace(/\.0%$/, "%") }),
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("small", { children: [
+                "阈",
+                item.threshold,
+                "%"
+              ] }),
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("em", { children: [
+                "持续",
+                item.tone === "danger" ? "6/6" : "0/6"
+              ] }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("i", { children: /* @__PURE__ */ jsxRuntimeExports.jsx("i", { style: { width: `${value}%` } }) })
+            ] }, item.key);
+          })
+        ]
+      }
+    );
+  }
+  function V420HeroVisual(props) {
+    if (props.model.hero.visualKind === "wan-ports") return /* @__PURE__ */ jsxRuntimeExports.jsx(V420PortMatrix, { ...props });
+    if (props.model.hero.visualKind === "resource-bars") return /* @__PURE__ */ jsxRuntimeExports.jsx(V420ResourceVisual, { state: props.state });
+    if (props.model.hero.visualKind === "interface-list") return /* @__PURE__ */ jsxRuntimeExports.jsx(V420InterfaceFlow, { ...props });
+    if (props.model.hero.visualKind === "trust-channels") return /* @__PURE__ */ jsxRuntimeExports.jsx(V420ChannelRail, { state: props.state });
+    return /* @__PURE__ */ jsxRuntimeExports.jsx(V420TrendVisual, { model: props.model });
+  }
+  function V420HeroMetrics({ model }) {
+    const readings = model.hero.facts;
+    if (!model.hero.showMetrics || !readings.length) return null;
+    return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ik-v420-hero-stats", "data-overview-mobile-core-block": "hero-stats", "data-overview-mobile-hero-metrics": "download-upload-latency-connections", children: readings.map((item, index) => /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: `${toneClass(item.tone)} ${index === 0 ? "is-primary" : ""}`, children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: item.label }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: item.value }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: item.note })
+    ] }, `${item.label}-${item.value}`)) });
+  }
+  function V420HeroTrustRail({ model }) {
+    return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ik-v503-hero-pills ik-v830-trust-rail", "aria-label": "网络可信度", children: model.trustPlanes.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: toneClass(item.tone), children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: item.label }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("strong", { children: item.value })
+    ] }, item.id)) });
+  }
+  function statusTimelineRows(snapshot, state) {
+    return buildMobileOverviewModel(snapshot, state).statusRows;
+  }
+  function V420StatusTimeline(props) {
+    const rows = statusTimelineRows(props.snapshot, props.state);
+    return /* @__PURE__ */ jsxRuntimeExports.jsx("section", { className: "ik-v420-timeline ik-v240-strip", "data-overview-mobile-core-block": "status-timeline", "data-overview-mobile-v240-status-strip": "timeline-not-kpi-grid", "data-overview-mobile-no-four-kpi-grid": "true", children: rows.map((row) => /* @__PURE__ */ jsxRuntimeExports.jsxs("article", { className: `ik-v420-timeline-row ${toneClass(row.tone)}`, "data-row-id": row.id, children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx("i", { "aria-hidden": "true" }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("b", { className: "ik-v821-row-title", children: row.title }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("strong", { children: row.value }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("em", { className: "ik-v821-row-note", children: row.note })
+    ] }, row.id)) });
+  }
+  function V420Hero(props) {
+    const { snapshot, state } = props;
+    const tone = screenTone(state);
+    const model = buildMobileOverviewModel(snapshot, state);
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+      "section",
+      {
+        className: `ik-v420-hero ik-v240-hero ik-v159-network-hero ${toneClass(tone)}`,
+        "data-overview-mobile-alert": tone,
+        "data-overview-mobile-v420-hero": "network-state-home",
+        "data-overview-mobile-v240-hero": "network-state-home",
+        "data-overview-mobile-v159-main-hero": "network-state-home",
+        "data-overview-mobile-first-visual": "scenario-specific",
+        "data-overview-mobile-first-microchart": "true",
+        "data-overview-mobile-v620-hero": "conclusion-two-numbers-one-chart",
+        "data-overview-mobile-priority": model.priority,
+        "data-overview-mobile-visual-kind": model.hero.visualKind,
+        "data-overview-mobile-hero-metrics": model.hero.showMetrics ? "visible" : "suppressed",
+        children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { className: "ik-v620-hero-head", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { "data-overview-primary-conclusion": "true", children: model.hero.title }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "ik-v503-hero-copy", children: model.hero.subtitle })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ik-v620-hero-stage", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx(V420HeroMetrics, { model }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ik-v420-visual ik-v240-visual ik-v240-traffic", children: V420HeroVisual({ ...props, model }) })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(V420HeroTrustRail, { model })
+        ]
+      }
+    );
+  }
+  function V420List(props) {
+    const model = buildMobileOverviewModel(props.snapshot, props.state);
+    const rows = model.primaryList.rows;
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "ik-v420-list ik-v420-app-list ik-v240-list", "data-overview-mobile-rank-list": "terminal-total-traffic-list", "data-overview-mobile-v420-list": "native-router-list", "data-overview-mobile-v240-list": "terminal-ranking", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: model.primaryList.title }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: model.primaryList.meta })
+      ] }),
+      rows.map((row) => /* @__PURE__ */ jsxRuntimeExports.jsxs("article", { className: `ik-v420-list-row ${toneClass(row.tone)}`, children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("i", { className: "ik-v503-device-icon", "data-rank": row.rank, children: /* @__PURE__ */ jsxRuntimeExports.jsx("svg", { viewBox: "0 0 24 24", "aria-hidden": "true", children: /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: rankingIconPath(row) }) }) }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("b", { children: [
+            row.name,
+            row.kind ? /* @__PURE__ */ jsxRuntimeExports.jsx("small", { className: "ik-v807-kind", children: row.kind }) : null
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: row.meta }),
+          row.percent > 0 ? /* @__PURE__ */ jsxRuntimeExports.jsx("u", { "aria-hidden": "true", children: /* @__PURE__ */ jsxRuntimeExports.jsx("i", { style: { width: `${row.percent}%` } }) }) : null
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("strong", { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: row.value }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: row.status || row.kind || "在线" })
+        ] })
+      ] }, row.id))
+    ] });
+  }
+  function rankingIconPath(row) {
+    const text2 = `${row.name} ${row.kind ?? ""} ${row.meta}`.toLowerCase();
+    if (/iphone|手机|phone|访客/.test(text2)) return "M8 3h8a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Zm3 15h2";
+    if (/mac|book|电脑|pc|主机|下载/.test(text2)) return "M4 5h16v10H4zM2 19h20M9 15v4M15 15v4";
+    if (/nas|存储|server/.test(text2)) return "M5 4h14v6H5zM5 14h14v6H5zM8 7h.01M8 17h.01";
+    if (/tv|电视|盒子/.test(text2)) return "M4 6h16v11H4zM9 20h6M12 17v3";
+    if (/摄像|camera/.test(text2)) return "M4 8h10v8H4zM14 11l6-3v8l-6-3z";
+    if (/业务|快照|采集/.test(text2)) return "M5 5h14v14H5zM8 9h8M8 13h8M8 17h5";
+    return "M6 8h12v8H6zM9 5h6M9 19h6M12 5v3M12 16v3";
+  }
+  function V420HomeSurface(props) {
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "ik-v420-surface ik-v240-facts", "data-overview-mobile-core-block": "ios-router-home-surface", "data-overview-mobile-v240-facts": "timeline-resource-ranking", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx(V420StatusTimeline, { ...props }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(V420List, { ...props })
+    ] });
+  }
+  function V420Tabs() {
+    const tabs = [
+      { label: "首页", active: true, path: "M4 11.5 12 5l8 6.5V20a1 1 0 0 1-1 1h-5v-6h-4v6H5a1 1 0 0 1-1-1z" },
+      { label: "WAN", active: false, path: "M4 12h16M7 8h10M7 16h10" },
+      { label: "接口", active: false, path: "M6 7h12v10H6zM9 17v3M15 17v3M9 4v3M15 4v3" },
+      { label: "终端", active: false, path: "M5 7h14v8H5zM8 19h8M12 15v4M7 10h.01M11 10h.01M15 10h.01" },
+      { label: "日志", active: false, path: "M7 5h10v14H7zM10 9h4M10 13h4" }
+    ];
+    return /* @__PURE__ */ jsxRuntimeExports.jsx("nav", { className: "ik-v420-tabs ik-v240-tabs", "aria-label": "底部导航", "data-overview-mobile-bottom-tab": "home-wan-interface-terminal-log", "data-overview-mobile-v159-tabbar": "bottom-entry", "data-overview-mobile-v240-tabs": "bottom-entry", children: tabs.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs("button", { className: item.active ? "is-active" : "", type: "button", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx("svg", { viewBox: "0 0 24 24", "aria-hidden": "true", children: /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: item.path }) }),
+      item.label
+    ] }, item.label)) });
   }
   function MobileOverviewHome(props) {
     return /* @__PURE__ */ jsxRuntimeExports.jsxs(
@@ -16728,7 +16728,7 @@ var PanelFramework = function(exports) {
         "data-overview-mobile-scene": props.state.scenario,
         "data-overview-mobile-no-snapshot-no-rate-placeholder": props.state.scenario === "no-snapshot" ? "true" : void 0,
         children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(V420MobileStyles, {}),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(MobileOverviewStyles, {}),
           /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ik-v420-shell ik-v240-shell", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
             "main",
             {
