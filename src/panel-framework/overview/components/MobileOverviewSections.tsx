@@ -1,4 +1,5 @@
 export { BottomTabs } from "./BottomTabs";
+export { CoreMetricRail } from "./CoreMetricRail";
 export { HomeSurface } from "./HomeSurface";
 export { IncidentHero } from "./IncidentHero";
 export { StatusHeader } from "./StatusHeader";

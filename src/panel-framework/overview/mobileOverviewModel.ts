@@ -76,6 +76,7 @@ export interface MobilePrimaryListModel {
 
 export interface MobileOverviewModel {
   priority: "snapshot-missing" | "wan-offline" | "resource-full" | "interface-down" | "collection-degraded" | "normal";
+  coreMetrics: MobileMonitorFact[];
   hero: {
     title: string;
     subtitle: string;
@@ -324,7 +325,7 @@ function heroVisualKind(priority: MobileOverviewModel["priority"]): MobileHeroVi
 }
 
 function showHeroMetrics(priority: MobileOverviewModel["priority"]): boolean {
-  return priority === "normal";
+  return true;
 }
 
 function resourceFacts(state: OverviewDerivedState): MobileMonitorFact[] {
@@ -429,6 +430,69 @@ function heroFacts(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): 
     { label: "下载", value: mobileRate(rate.down), note: "WAN 汇总", tone: rate.down > 0 ? "ok" : "trust" },
     { label: "上传", value: mobileRate(rate.up), note: "WAN 汇总", tone: rate.up > 0 ? "ok" : "trust" },
     { label: "路由", value: mobileRouteValue(state), note: "默认", tone: state.facts.route.level },
+  ];
+}
+
+function coreStatusValue(priority: MobileOverviewModel["priority"], state: OverviewDerivedState): string {
+  if (priority === "snapshot-missing") return "缺快照";
+  if (priority === "wan-offline") return "WAN断链";
+  if (priority === "resource-full") return "资源满载";
+  if (priority === "interface-down") return "接口Down";
+  if (priority === "collection-degraded") return "采集降级";
+  return state.verdict.level === "warn" ? "需确认" : "良好";
+}
+
+function coreResourceValue(resource: MobileMonitorFact[], priority: MobileOverviewModel["priority"]): string {
+  if (priority === "snapshot-missing") return "隐藏";
+  return resource.map((item) => item.value.replace(/\.0%|%/g, "")).join("/");
+}
+
+function coreMetrics(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): MobileMonitorFact[] {
+  const priority = priorityOf(state);
+  const totalWan = Math.max(state.facts.wan.total || wanRows(snapshot).length, state.facts.wan.allOffline ? 8 : 0);
+  const resource = resourceFacts(state);
+  const wanValue = priority === "snapshot-missing"
+    ? "不可判"
+    : state.facts.wan.allOffline
+      ? `0/${formatNumber(totalWan)}`
+      : `${formatNumber(state.facts.wan.online)}/${formatNumber(totalWan || 1)}`;
+  const collectionValue = priority === "snapshot-missing"
+    ? "断链"
+    : priority === "collection-degraded"
+      ? "缓存"
+      : "实时";
+  const snapshotValue = latestSuccess(snapshot, state);
+  return [
+    {
+      label: "状态",
+      value: coreStatusValue(priority, state),
+      note: priority === "normal" ? "转发可用" : priority === "wan-offline" ? "外网中断" : priority === "snapshot-missing" ? "业务不展示" : "需关注",
+      tone: state.scenario === "no-snapshot" ? "missing" : state.facts.wan.allOffline ? "danger" : state.verdict.level,
+    },
+    {
+      label: "WAN",
+      value: wanValue,
+      note: state.facts.wan.allOffline ? "全离线" : priority === "snapshot-missing" ? "无快照" : "在线",
+      tone: priority === "snapshot-missing" ? "missing" : state.facts.wan.allOffline ? "danger" : state.facts.wan.offline ? "warn" : "ok",
+    },
+    {
+      label: "采集",
+      value: collectionValue,
+      note: priority === "snapshot-missing" ? "当前不可达" : priority === "collection-degraded" ? "可参考" : "可信",
+      tone: priority === "snapshot-missing" ? "danger" : priority === "collection-degraded" ? "warn" : state.facts.collection.credibilityTone,
+    },
+    {
+      label: "资源",
+      value: coreResourceValue(resource, priority),
+      note: priority === "resource-full" ? "持续6/6" : "CPU/内存/磁盘",
+      tone: resource.some((item) => item.tone === "danger") ? "danger" : priority === "snapshot-missing" ? "missing" : "ok",
+    },
+    {
+      label: "快照",
+      value: snapshotValue,
+      note: "最近成功",
+      tone: priority === "snapshot-missing" ? "warn" : state.facts.collection.credibilityTone,
+    },
   ];
 }
 
@@ -710,6 +774,7 @@ export function buildMobileOverviewModel(snapshot: OverviewRawSnapshot, state: O
   const priority = priorityOf(state);
   return {
     priority,
+    coreMetrics: coreMetrics(snapshot, state),
     hero: {
       title: titleFor(state),
       subtitle: subtitleFor(snapshot, state),
