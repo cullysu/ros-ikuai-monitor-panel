@@ -144,7 +144,7 @@ function screenTone(state: OverviewDerivedState): OverviewTone {
 }
 
 function statusLabel(state: OverviewDerivedState): string {
-  if (state.scenario === "no-snapshot") return "离线";
+  if (state.scenario === "no-snapshot") return "快照缺";
   if (state.scenario === "all-offline" || state.facts.wan.allOffline) return "断链";
   if (state.scenario === "resource-full") return "超阈";
   if (state.scenario === "interfaces-down") return "异常";
@@ -728,7 +728,7 @@ function terminalRankingRows(snapshot: OverviewRawSnapshot): AppRankingRow[] {
 }
 
 function listTitle(state: OverviewDerivedState, noSnapshot: boolean, statusMode: boolean): string {
-  if (noSnapshot) return "采集元数据";
+  if (noSnapshot) return "业务边界";
   if (!statusMode) return "设备排行";
   if (state.scenario === "resource-full") return "风险对象";
   if (state.scenario === "all-offline" || state.facts.wan.allOffline) return "影响对象";
@@ -738,7 +738,7 @@ function listTitle(state: OverviewDerivedState, noSnapshot: boolean, statusMode:
 }
 
 function listMetaLabel(apps: Array<{ id: string }>, noSnapshot: boolean, statusMode: boolean): string {
-  if (noSnapshot) return "边界";
+  if (noSnapshot) return "缺失";
   if (statusMode) return "当前";
   return apps.length === 1 && apps[0].id === "terminal-empty" ? "等待数据" : "异常优先 · 总流量";
 }
@@ -1297,9 +1297,11 @@ function V420List(props: MobileOverviewHomeProps) {
   const statusMode = false;
   const apps = noSnapshot
     ? [
-      { id: "business-hidden", rank: "", name: "业务流量", meta: "无业务快照，流量不展示", value: "不展示", percent: 0, tone: "missing" as OverviewTone },
-      { id: "metadata-only", rank: "", name: "采集元数据", meta: "最近成功与链路状态可参考", value: "可参考", percent: 0, tone: "warn" as OverviewTone },
-      { id: "routeros-link", rank: "", name: "RouterOS 链路", meta: "当前不可达，等待恢复", value: "断链", percent: 0, tone: "danger" as OverviewTone },
+      { id: "business-hidden", rank: "", name: "业务流量", meta: `最近成功 ${latestSuccess(props.snapshot, props.state)} · 无快照`, value: "不展示", status: "缺失", percent: 0, tone: "missing" as OverviewTone },
+      { id: "terminal-ranking-hidden", rank: "", name: "终端排行", meta: "设备名 / IP / 上下行需业务快照", value: "不可判", status: "缺失", percent: 0, tone: "missing" as OverviewTone },
+      { id: "wan-rate-hidden", rank: "", name: "WAN 速率", meta: "出口流量需实时样本", value: "不可判", status: "缺失", percent: 0, tone: "missing" as OverviewTone },
+      { id: "metadata-only", rank: "", name: "采集元数据", meta: "最近成功与链路状态可参考", value: "可参考", status: "边界", percent: 0, tone: "warn" as OverviewTone },
+      { id: "routeros-link", rank: "", name: "RouterOS 链路", meta: "当前不可达，等待恢复", value: "断链", status: "当前", percent: 0, tone: "danger" as OverviewTone },
     ]
     : terminalRankingRows(props.snapshot);
   return (
@@ -7227,6 +7229,114 @@ const V420_MOBILE_STYLES = `
   [data-overview-mobile-scene="resource-full"] .ik-v620-pressure-visual .ik-v420-resource-meter {
     grid-template-columns: 26px minmax(0, 1fr) 32px 48px !important;
     min-height: 16px !important;
+  }
+
+  /* v818 mobile density lock: read-only monitor density without extra decoration. */
+  #overview.router-overview-framework .ik-v420-app,
+  .router-overview-framework .ik-v420-app,
+  .ik-v420-app {
+    background: #f5f8fc !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-nav,
+  .router-overview-framework .ik-v420-nav,
+  .ik-v420-nav {
+    height: 50px !important;
+    min-height: 50px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-nav strong,
+  .router-overview-framework .ik-v420-nav strong,
+  .ik-v420-nav strong {
+    min-height: 18px !important;
+    padding: 0 6px !important;
+    font-size: 9.2px !important;
+    box-shadow: inset 0 0 0 .5px rgba(150,180,208,.44) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-hero,
+  .router-overview-framework .ik-v420-hero,
+  .ik-v420-hero {
+    height: 178px !important;
+    border-radius: 12px !important;
+    background: #fff !important;
+    box-shadow: inset 0 0 0 .5px rgba(148,178,206,.34) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app:not([data-overview-mobile-scene="single"]):not([data-overview-mobile-scene="fleet"]) .ik-v420-hero,
+  .router-overview-framework .ik-v420-app:not([data-overview-mobile-scene="single"]):not([data-overview-mobile-scene="fleet"]) .ik-v420-hero,
+  .ik-v420-app:not([data-overview-mobile-scene="single"]):not([data-overview-mobile-scene="fleet"]) .ik-v420-hero {
+    height: 194px !important;
+    max-height: 194px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-scene="resource-full"] .ik-v420-hero,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-scene="resource-full"] .ik-v420-hero,
+  .ik-v420-app[data-overview-mobile-scene="resource-full"] .ik-v420-hero {
+    height: 184px !important;
+    max-height: 184px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-visual,
+  .router-overview-framework .ik-v420-visual,
+  .ik-v420-visual {
+    background: #fbfdff !important;
+    box-shadow: inset 0 0 0 .5px rgba(171,197,220,.34) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-timeline-row,
+  .router-overview-framework .ik-v420-timeline-row,
+  .ik-v420-timeline-row {
+    height: 44px !important;
+    min-height: 44px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-list-row,
+  .router-overview-framework .ik-v420-list-row,
+  .ik-v420-list-row {
+    height: 52px !important;
+    min-height: 52px !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-scene="resource-full"] .ik-v620-pressure-visual,
+  .router-overview-framework [data-overview-mobile-scene="resource-full"] .ik-v620-pressure-visual,
+  [data-overview-mobile-scene="resource-full"] .ik-v620-pressure-visual {
+    grid-template-rows: repeat(3, 18px) !important;
+    gap: 4px !important;
+    align-content: center !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-scene="resource-full"] .ik-v620-pressure-visual header,
+  .router-overview-framework [data-overview-mobile-scene="resource-full"] .ik-v620-pressure-visual header,
+  [data-overview-mobile-scene="resource-full"] .ik-v620-pressure-visual header {
+    display: none !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-scene="resource-full"] .ik-v620-pressure-visual .ik-v420-resource-meter,
+  .router-overview-framework [data-overview-mobile-scene="resource-full"] .ik-v620-pressure-visual .ik-v420-resource-meter,
+  [data-overview-mobile-scene="resource-full"] .ik-v620-pressure-visual .ik-v420-resource-meter {
+    grid-template-columns: 32px minmax(0, 1fr) 34px 56px !important;
+    min-height: 18px !important;
+    gap: 5px !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-scene="resource-full"] .ik-v620-pressure-visual .ik-v420-resource-meter small,
+  .router-overview-framework [data-overview-mobile-scene="resource-full"] .ik-v620-pressure-visual .ik-v420-resource-meter small,
+  [data-overview-mobile-scene="resource-full"] .ik-v620-pressure-visual .ik-v420-resource-meter small {
+    display: block !important;
+    color: #60758a !important;
+    font-size: 8px !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-tabs,
+  .router-overview-framework .ik-v420-tabs,
+  .ik-v420-tabs {
+    height: 66px !important;
+    min-height: 66px !important;
+    padding: 5px 7px !important;
+    border-radius: 14px !important;
   }
 
 }
