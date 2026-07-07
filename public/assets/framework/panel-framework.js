@@ -16286,6 +16286,19 @@ var PanelFramework = function(exports) {
   function MobileOverviewStyles() {
     return /* @__PURE__ */ jsxRuntimeExports.jsx("style", { children: V420_MOBILE_STYLES });
   }
+  function BottomTabs() {
+    const tabs = [
+      { label: "首页", active: true, path: "M4 11.5 12 5l8 6.5V20a1 1 0 0 1-1 1h-5v-6h-4v6H5a1 1 0 0 1-1-1z" },
+      { label: "WAN", active: false, path: "M4 12h16M7 8h10M7 16h10" },
+      { label: "接口", active: false, path: "M6 7h12v10H6zM9 17v3M15 17v3M9 4v3M15 4v3" },
+      { label: "终端", active: false, path: "M5 7h14v8H5zM8 19h8M12 15v4M7 10h.01M11 10h.01M15 10h.01" },
+      { label: "日志", active: false, path: "M7 5h10v14H7zM10 9h4M10 13h4" }
+    ];
+    return /* @__PURE__ */ jsxRuntimeExports.jsx("nav", { className: "ik-v420-tabs ik-v240-tabs", "aria-label": "底部导航", "data-overview-mobile-bottom-tab": "home-wan-interface-terminal-log", "data-overview-mobile-v159-tabbar": "bottom-entry", "data-overview-mobile-v240-tabs": "bottom-entry", children: tabs.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs("button", { className: item.active ? "is-active" : "", type: "button", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx("svg", { viewBox: "0 0 24 24", "aria-hidden": "true", children: /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: item.path }) }),
+      item.label
+    ] }, item.label)) });
+  }
   function clean$3(value, fallback = "-") {
     const normalized = String(value ?? "").replace(/\s+/g, " ").trim();
     return normalized || fallback;
@@ -17049,28 +17062,70 @@ var PanelFramework = function(exports) {
     const [x2, y2] = last.split(",").map((item) => Number(item));
     return { x: Number.isFinite(x2) ? x2 : 0, y: Number.isFinite(y2) ? y2 : 0 };
   }
-  function V420Nav({ snapshot, state }) {
-    const name = clean$1(snapshot.identity || snapshot.name || snapshot.deviceName || state.facts.device.identity || "爱快路由");
-    const version = clean$1(snapshot.version || snapshot.routerosVersion || state.facts.device.version || "RouterOS");
-    const recent = latestSuccess$1(snapshot, state);
-    return /* @__PURE__ */ jsxRuntimeExports.jsxs("nav", { className: "ik-v420-nav ik-v240-nav", "aria-label": "手机导航", "data-overview-mobile-v420-nav": "ios-navigation", "data-overview-mobile-v240-nav": "app-navigation", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("button", { "aria-label": "打开菜单", type: "button", children: /* @__PURE__ */ jsxRuntimeExports.jsx("svg", { viewBox: "0 0 24 24", "aria-hidden": "true", children: /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: "M4 7h16M4 12h16M4 17h16" }) }) }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ik-v240-title", "data-overview-mobile-primary-title": "device", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: name }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-          "RouterOS ",
-          version,
-          " · 最近 ",
-          recent
-        ] })
-      ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("strong", { className: `ik-v240-status ${toneClass(screenTone(state))}`, "data-overview-mobile-primary-status": "device-state", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("i", {}),
-        statusLabel(state)
-      ] })
+  function statusTimelineRows(props) {
+    return buildMobileOverviewModel(props.snapshot, props.state).statusRows;
+  }
+  function StatusTimeline(props) {
+    const rows = statusTimelineRows(props);
+    return /* @__PURE__ */ jsxRuntimeExports.jsx("section", { className: "ik-v420-timeline ik-v240-strip", "data-overview-mobile-core-block": "status-timeline", "data-overview-mobile-v240-status-strip": "timeline-not-kpi-grid", "data-overview-mobile-no-four-kpi-grid": "true", children: rows.map((row) => /* @__PURE__ */ jsxRuntimeExports.jsxs("article", { className: `ik-v420-timeline-row ${toneClass(row.tone)}`, "data-row-id": row.id, children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx("i", { "aria-hidden": "true" }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("b", { className: "ik-v821-row-title", children: row.title }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("strong", { children: row.value }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("em", { className: "ik-v821-row-note", children: row.note })
+    ] }, row.id)) });
+  }
+  function rankingIconPath(row) {
+    const text2 = `${row.name} ${row.kind ?? ""} ${row.meta}`.toLowerCase();
+    if (/iphone|手机|phone|访客/.test(text2)) return "M8 3h8a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Zm3 15h2";
+    if (/mac|book|电脑|pc|主机|下载/.test(text2)) return "M4 5h16v10H4zM2 19h20M9 15v4M15 15v4";
+    if (/nas|存储|server/.test(text2)) return "M5 4h14v6H5zM5 14h14v6H5zM8 7h.01M8 17h.01";
+    if (/tv|电视|盒子/.test(text2)) return "M4 6h16v11H4zM9 20h6M12 17v3";
+    if (/摄像|camera/.test(text2)) return "M4 8h10v8H4zM14 11l6-3v8l-6-3z";
+    if (/业务|快照|采集/.test(text2)) return "M5 5h14v14H5zM8 9h8M8 13h8M8 17h5";
+    return "M6 8h12v8H6zM9 5h6M9 19h6M12 5v3M12 16v3";
+  }
+  function RankingList(props) {
+    const model = buildMobileOverviewModel(props.snapshot, props.state);
+    const rows = model.primaryList.rows;
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+      "section",
+      {
+        className: "ik-v420-list ik-v420-app-list ik-v240-list",
+        "data-overview-mobile-list-kind": model.primaryList.kind,
+        "data-overview-mobile-rank-list": "terminal-total-traffic-list",
+        "data-overview-mobile-v420-list": "native-router-list",
+        "data-overview-mobile-v240-list": "terminal-ranking",
+        children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: model.primaryList.title }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: model.primaryList.meta })
+          ] }),
+          rows.map((row) => /* @__PURE__ */ jsxRuntimeExports.jsxs("article", { className: `ik-v420-list-row ${toneClass(row.tone)}`, children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("i", { className: "ik-v503-device-icon", "data-rank": row.rank, children: /* @__PURE__ */ jsxRuntimeExports.jsx("svg", { viewBox: "0 0 24 24", "aria-hidden": "true", children: /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: rankingIconPath(row) }) }) }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("b", { children: [
+                row.name,
+                row.kind ? /* @__PURE__ */ jsxRuntimeExports.jsx("small", { className: "ik-v807-kind", children: row.kind }) : null
+              ] }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: row.meta }),
+              row.percent > 0 ? /* @__PURE__ */ jsxRuntimeExports.jsx("u", { "aria-hidden": "true", children: /* @__PURE__ */ jsxRuntimeExports.jsx("i", { style: { width: `${row.percent}%` } }) }) : null
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("strong", { children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: row.value }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: row.status || row.kind || "在线" })
+            ] })
+          ] }, row.id))
+        ]
+      }
+    );
+  }
+  function HomeSurface(props) {
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "ik-v420-surface ik-v240-facts", "data-overview-mobile-core-block": "ios-router-home-surface", "data-overview-mobile-v240-facts": "timeline-resource-ranking", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx(StatusTimeline, { ...props }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(RankingList, { ...props })
     ] });
   }
-  function V420LineChart({ chart }) {
+  function LineChart({ chart }) {
     const down = chart.down.length ? chart.down : [1, 1, 1];
     const up = chart.up.length ? chart.up : [0.45, 0.45, 0.45];
     const max = Math.max(1, ...down, ...up);
@@ -17116,17 +17171,17 @@ var PanelFramework = function(exports) {
       }
     );
   }
-  function V420TrendVisual({ model }) {
+  function TrendVisual({ model }) {
     const chart = model.hero.trend;
     return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ik-v812-trend-visual", "data-overview-mobile-chart-readout": "current-peak-window", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx(V420LineChart, { chart }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(LineChart, { chart }),
       /* @__PURE__ */ jsxRuntimeExports.jsx("aside", { children: chart.readouts.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: toneClass(item.tone), children: [
         /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: item.label }),
         /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: item.value })
       ] }, `${item.label}-${item.value}`)) })
     ] });
   }
-  function V420PortMatrix({ snapshot, state }) {
+  function PortMatrix({ snapshot, state }) {
     const ports = buildMobileOverviewModel(snapshot, state).wanPorts;
     return /* @__PURE__ */ jsxRuntimeExports.jsx(
       "div",
@@ -17147,7 +17202,7 @@ var PanelFramework = function(exports) {
       }
     );
   }
-  function V420ChannelRail({ state }) {
+  function ChannelRail({ state }) {
     return /* @__PURE__ */ jsxRuntimeExports.jsx(
       "div",
       {
@@ -17166,7 +17221,7 @@ var PanelFramework = function(exports) {
   function firstDownInterface(snapshot) {
     return interfaceRows$1(snapshot).find((row) => row.running === false) || interfaceRows$1(snapshot)[0];
   }
-  function V420InterfaceFlow({ snapshot, state }) {
+  function InterfaceFlow({ snapshot, state }) {
     const rows = interfaceRows$1(snapshot).filter((row) => row.running === false).slice(0, 2);
     const visible = rows.length ? rows : [firstDownInterface(snapshot)].filter(Boolean);
     return /* @__PURE__ */ jsxRuntimeExports.jsx(
@@ -17188,7 +17243,7 @@ var PanelFramework = function(exports) {
       }
     );
   }
-  function V420ResourceVisual({ state }) {
+  function ResourceVisual({ state }) {
     const metrics = resourceMetrics(state);
     const peakKey = metrics.reduce((max, item) => item.value > max.value ? item : max, metrics[0]).key;
     return /* @__PURE__ */ jsxRuntimeExports.jsxs(
@@ -17226,14 +17281,14 @@ var PanelFramework = function(exports) {
       }
     );
   }
-  function V420HeroVisual(props) {
-    if (props.model.hero.visualKind === "wan-ports") return /* @__PURE__ */ jsxRuntimeExports.jsx(V420PortMatrix, { ...props });
-    if (props.model.hero.visualKind === "resource-bars") return /* @__PURE__ */ jsxRuntimeExports.jsx(V420ResourceVisual, { state: props.state });
-    if (props.model.hero.visualKind === "interface-list") return /* @__PURE__ */ jsxRuntimeExports.jsx(V420InterfaceFlow, { ...props });
-    if (props.model.hero.visualKind === "trust-channels") return /* @__PURE__ */ jsxRuntimeExports.jsx(V420ChannelRail, { state: props.state });
-    return /* @__PURE__ */ jsxRuntimeExports.jsx(V420TrendVisual, { model: props.model });
+  function HeroVisual(props) {
+    if (props.model.hero.visualKind === "wan-ports") return /* @__PURE__ */ jsxRuntimeExports.jsx(PortMatrix, { ...props });
+    if (props.model.hero.visualKind === "resource-bars") return /* @__PURE__ */ jsxRuntimeExports.jsx(ResourceVisual, { state: props.state });
+    if (props.model.hero.visualKind === "interface-list") return /* @__PURE__ */ jsxRuntimeExports.jsx(InterfaceFlow, { ...props });
+    if (props.model.hero.visualKind === "trust-channels") return /* @__PURE__ */ jsxRuntimeExports.jsx(ChannelRail, { state: props.state });
+    return /* @__PURE__ */ jsxRuntimeExports.jsx(TrendVisual, { model: props.model });
   }
-  function V420HeroMetrics({ model }) {
+  function HeroMetrics({ model }) {
     const readings = model.hero.facts;
     if (!model.hero.showMetrics || !readings.length) return null;
     return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ik-v420-hero-stats", "data-overview-mobile-core-block": "hero-stats", "data-overview-mobile-hero-metrics": "download-upload-latency-connections", children: readings.map((item, index) => /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: `${toneClass(item.tone)} ${index === 0 ? "is-primary" : ""}`, children: [
@@ -17241,23 +17296,6 @@ var PanelFramework = function(exports) {
       /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: item.value }),
       /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: item.note })
     ] }, `${item.label}-${item.value}`)) });
-  }
-  function V420TrustStrip(props) {
-    const model = buildMobileOverviewModel(props.snapshot, props.state);
-    return /* @__PURE__ */ jsxRuntimeExports.jsx(
-      "section",
-      {
-        className: "ik-v910-trust-strip",
-        "aria-label": "RouterOS 可信度",
-        "data-overview-mobile-trust-strip": "forwarding-collection-snapshot-business",
-        "data-overview-mobile-core-block": "trust-strip",
-        children: model.trustPlanes.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: toneClass(item.tone), children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: item.label }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("strong", { children: item.value }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: item.note })
-        ] }, item.id))
-      }
-    );
   }
   function splitHeroPill(text2) {
     const [label, ...rest] = text2.replace(/\s+/g, " ").trim().split(" ");
@@ -17268,7 +17306,7 @@ var PanelFramework = function(exports) {
     if (/待|缓存|确认|参考|越阈|超/.test(text2)) return "warn";
     return "trust";
   }
-  function V420HeroTrustRail({ model }) {
+  function HeroTrustRail({ model }) {
     return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ik-v503-hero-pills ik-v830-trust-rail", "aria-label": "对象影响可信度", children: model.hero.pills.slice(0, 3).map((text2) => {
       const item = splitHeroPill(text2);
       return /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: toneClass(heroPillTone(text2)), children: [
@@ -17277,19 +17315,7 @@ var PanelFramework = function(exports) {
       ] }, text2);
     }) });
   }
-  function statusTimelineRows(snapshot, state) {
-    return buildMobileOverviewModel(snapshot, state).statusRows;
-  }
-  function V420StatusTimeline(props) {
-    const rows = statusTimelineRows(props.snapshot, props.state);
-    return /* @__PURE__ */ jsxRuntimeExports.jsx("section", { className: "ik-v420-timeline ik-v240-strip", "data-overview-mobile-core-block": "status-timeline", "data-overview-mobile-v240-status-strip": "timeline-not-kpi-grid", "data-overview-mobile-no-four-kpi-grid": "true", children: rows.map((row) => /* @__PURE__ */ jsxRuntimeExports.jsxs("article", { className: `ik-v420-timeline-row ${toneClass(row.tone)}`, "data-row-id": row.id, children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("i", { "aria-hidden": "true" }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("b", { className: "ik-v821-row-title", children: row.title }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("strong", { children: row.value }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("em", { className: "ik-v821-row-note", children: row.note })
-    ] }, row.id)) });
-  }
-  function V420Hero(props) {
+  function IncidentHero(props) {
     const { snapshot, state } = props;
     const tone = screenTone(state);
     const model = buildMobileOverviewModel(snapshot, state);
@@ -17313,77 +17339,51 @@ var PanelFramework = function(exports) {
             /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "ik-v503-hero-copy", children: model.hero.subtitle })
           ] }),
           /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ik-v620-hero-stage", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx(V420HeroMetrics, { model }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ik-v420-visual ik-v240-visual ik-v240-traffic", children: V420HeroVisual({ ...props, model }) })
+            /* @__PURE__ */ jsxRuntimeExports.jsx(HeroMetrics, { model }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ik-v420-visual ik-v240-visual ik-v240-traffic", children: HeroVisual({ ...props, model }) })
           ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(V420HeroTrustRail, { model })
+          /* @__PURE__ */ jsxRuntimeExports.jsx(HeroTrustRail, { model })
         ]
       }
     );
   }
-  function V420List(props) {
-    const model = buildMobileOverviewModel(props.snapshot, props.state);
-    const rows = model.primaryList.rows;
-    return /* @__PURE__ */ jsxRuntimeExports.jsxs(
-      "section",
-      {
-        className: "ik-v420-list ik-v420-app-list ik-v240-list",
-        "data-overview-mobile-list-kind": model.primaryList.kind,
-        "data-overview-mobile-rank-list": "terminal-total-traffic-list",
-        "data-overview-mobile-v420-list": "native-router-list",
-        "data-overview-mobile-v240-list": "terminal-ranking",
-        children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: model.primaryList.title }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: model.primaryList.meta })
-          ] }),
-          rows.map((row) => /* @__PURE__ */ jsxRuntimeExports.jsxs("article", { className: `ik-v420-list-row ${toneClass(row.tone)}`, children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("i", { className: "ik-v503-device-icon", "data-rank": row.rank, children: /* @__PURE__ */ jsxRuntimeExports.jsx("svg", { viewBox: "0 0 24 24", "aria-hidden": "true", children: /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: rankingIconPath(row) }) }) }),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsxs("b", { children: [
-                row.name,
-                row.kind ? /* @__PURE__ */ jsxRuntimeExports.jsx("small", { className: "ik-v807-kind", children: row.kind }) : null
-              ] }),
-              /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: row.meta }),
-              row.percent > 0 ? /* @__PURE__ */ jsxRuntimeExports.jsx("u", { "aria-hidden": "true", children: /* @__PURE__ */ jsxRuntimeExports.jsx("i", { style: { width: `${row.percent}%` } }) }) : null
-            ] }),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("strong", { children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: row.value }),
-              /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: row.status || row.kind || "在线" })
-            ] })
-          ] }, row.id))
-        ]
-      }
-    );
-  }
-  function rankingIconPath(row) {
-    const text2 = `${row.name} ${row.kind ?? ""} ${row.meta}`.toLowerCase();
-    if (/iphone|手机|phone|访客/.test(text2)) return "M8 3h8a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Zm3 15h2";
-    if (/mac|book|电脑|pc|主机|下载/.test(text2)) return "M4 5h16v10H4zM2 19h20M9 15v4M15 15v4";
-    if (/nas|存储|server/.test(text2)) return "M5 4h14v6H5zM5 14h14v6H5zM8 7h.01M8 17h.01";
-    if (/tv|电视|盒子/.test(text2)) return "M4 6h16v11H4zM9 20h6M12 17v3";
-    if (/摄像|camera/.test(text2)) return "M4 8h10v8H4zM14 11l6-3v8l-6-3z";
-    if (/业务|快照|采集/.test(text2)) return "M5 5h14v14H5zM8 9h8M8 13h8M8 17h5";
-    return "M6 8h12v8H6zM9 5h6M9 19h6M12 5v3M12 16v3";
-  }
-  function V420HomeSurface(props) {
-    return /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "ik-v420-surface ik-v240-facts", "data-overview-mobile-core-block": "ios-router-home-surface", "data-overview-mobile-v240-facts": "timeline-resource-ranking", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx(V420StatusTimeline, { ...props }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx(V420List, { ...props })
+  function StatusHeader({ snapshot, state }) {
+    const name = clean$1(snapshot.identity || snapshot.name || snapshot.deviceName || state.facts.device.identity || "爱快路由");
+    const version = clean$1(snapshot.version || snapshot.routerosVersion || state.facts.device.version || "RouterOS");
+    const recent = latestSuccess$1(snapshot, state);
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs("nav", { className: "ik-v420-nav ik-v240-nav", "aria-label": "手机导航", "data-overview-mobile-v420-nav": "ios-navigation", "data-overview-mobile-v240-nav": "app-navigation", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx("button", { "aria-label": "打开菜单", type: "button", children: /* @__PURE__ */ jsxRuntimeExports.jsx("svg", { viewBox: "0 0 24 24", "aria-hidden": "true", children: /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: "M4 7h16M4 12h16M4 17h16" }) }) }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ik-v240-title", "data-overview-mobile-primary-title": "device", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: name }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+          "RouterOS ",
+          version,
+          " · 最近 ",
+          recent
+        ] })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("strong", { className: `ik-v240-status ${toneClass(screenTone(state))}`, "data-overview-mobile-primary-status": "device-state", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("i", {}),
+        statusLabel(state)
+      ] })
     ] });
   }
-  function V420Tabs() {
-    const tabs = [
-      { label: "首页", active: true, path: "M4 11.5 12 5l8 6.5V20a1 1 0 0 1-1 1h-5v-6h-4v6H5a1 1 0 0 1-1-1z" },
-      { label: "WAN", active: false, path: "M4 12h16M7 8h10M7 16h10" },
-      { label: "接口", active: false, path: "M6 7h12v10H6zM9 17v3M15 17v3M9 4v3M15 4v3" },
-      { label: "终端", active: false, path: "M5 7h14v8H5zM8 19h8M12 15v4M7 10h.01M11 10h.01M15 10h.01" },
-      { label: "日志", active: false, path: "M7 5h10v14H7zM10 9h4M10 13h4" }
-    ];
-    return /* @__PURE__ */ jsxRuntimeExports.jsx("nav", { className: "ik-v420-tabs ik-v240-tabs", "aria-label": "底部导航", "data-overview-mobile-bottom-tab": "home-wan-interface-terminal-log", "data-overview-mobile-v159-tabbar": "bottom-entry", "data-overview-mobile-v240-tabs": "bottom-entry", children: tabs.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs("button", { className: item.active ? "is-active" : "", type: "button", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("svg", { viewBox: "0 0 24 24", "aria-hidden": "true", children: /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: item.path }) }),
-      item.label
-    ] }, item.label)) });
+  function TrustStrip(props) {
+    const model = buildMobileOverviewModel(props.snapshot, props.state);
+    return /* @__PURE__ */ jsxRuntimeExports.jsx(
+      "section",
+      {
+        className: "ik-v910-trust-strip",
+        "aria-label": "RouterOS 可信度",
+        "data-overview-mobile-trust-strip": "forwarding-collection-snapshot-business",
+        "data-overview-mobile-core-block": "trust-strip",
+        children: model.trustPlanes.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: toneClass(item.tone), children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: item.label }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("strong", { children: item.value }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: item.note })
+        ] }, item.id))
+      }
+    );
   }
   function MobileOverviewHome(props) {
     return /* @__PURE__ */ jsxRuntimeExports.jsxs(
@@ -17420,11 +17420,11 @@ var PanelFramework = function(exports) {
               "data-overview-mobile-v420-frame-model": "ios-router-app-home-not-desktop-collapse-not-table-not-box-stack",
               "data-overview-mobile-v420-visual-contract": "single-labelled-wan-sparkline-wan-collection-duo-resource-bars-native-ranking",
               children: [
-                /* @__PURE__ */ jsxRuntimeExports.jsx(V420Nav, { ...props }),
-                /* @__PURE__ */ jsxRuntimeExports.jsx(V420TrustStrip, { ...props }),
-                /* @__PURE__ */ jsxRuntimeExports.jsx(V420Hero, { ...props }),
-                /* @__PURE__ */ jsxRuntimeExports.jsx(V420HomeSurface, { ...props }),
-                /* @__PURE__ */ jsxRuntimeExports.jsx(V420Tabs, {})
+                /* @__PURE__ */ jsxRuntimeExports.jsx(StatusHeader, { ...props }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx(TrustStrip, { ...props }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx(IncidentHero, { ...props }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx(HomeSurface, { ...props }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx(BottomTabs, {})
               ]
             }
           ) })
