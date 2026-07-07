@@ -7057,7 +7057,7 @@ var PanelFramework = function(exports) {
     if (meta.realtimeError || meta.slowRestError) return "cache";
     return "realtime";
   }
-  function wanRows$3(snapshot) {
+  function wanRows$4(snapshot) {
     return Array.isArray(snapshot.wan) && snapshot.wan.length ? snapshot.wan : Array.isArray(snapshot.pppoe) ? snapshot.pppoe : [];
   }
   function routeRows$1(snapshot) {
@@ -7187,7 +7187,7 @@ var PanelFramework = function(exports) {
     return { level, available, cpu, memory, disk, summaryText: available ? `处理器 ${formatPercent(cpu)} / 内存 ${formatPercent(memory)} / 磁盘 ${formatPercent(disk)}` : "处理器 未记录 / 内存 未记录 / 磁盘 未记录" };
   }
   function wanState(snapshot) {
-    const rows = wanRows$3(snapshot);
+    const rows = wanRows$4(snapshot);
     const available = !isSnapshotUnavailable(snapshot);
     const online = rows.filter((row) => row.running !== false).length;
     const total = rows.length;
@@ -7365,6 +7365,85 @@ var PanelFramework = function(exports) {
       }
     }
   };
+  function clean$2(value, fallback = "-") {
+    const normalized = String(value ?? "").replace(/\s+/g, " ").trim();
+    return normalized || fallback;
+  }
+  function wanRows$3(snapshot) {
+    if (Array.isArray(snapshot.wan) && snapshot.wan.length) return snapshot.wan;
+    return Array.isArray(snapshot.pppoe) ? snapshot.pppoe : [];
+  }
+  function twoDigit$2(value) {
+    return String(value).padStart(2, "0");
+  }
+  function mobileTime$2(raw) {
+    const source = String(raw ?? "").trim();
+    if (!source) return "未记录";
+    const numeric = typeof raw === "number" || /^\d+$/.test(source) ? Number(raw) : Number.NaN;
+    const date = Number.isFinite(numeric) ? new Date(numeric < 1e12 ? numeric * 1e3 : numeric) : new Date(source);
+    if (Number.isNaN(date.getTime())) {
+      const fallback = shortTimestamp(raw);
+      return fallback && !/\d{4}-\d{2}-\d{2}T/.test(fallback) ? fallback : "未记录";
+    }
+    const now2 = /* @__PURE__ */ new Date();
+    const time = `${twoDigit$2(date.getHours())}:${twoDigit$2(date.getMinutes())}`;
+    if (date.getFullYear() === now2.getFullYear() && date.getMonth() === now2.getMonth() && date.getDate() === now2.getDate()) return time;
+    return `${twoDigit$2(date.getMonth() + 1)}-${twoDigit$2(date.getDate())} ${time}`;
+  }
+  function latestSuccess$3(snapshot, state) {
+    const meta = snapshot.meta || {};
+    const raw = state.scenario === "no-snapshot" ? meta.staticUpdatedAt || meta.realtimeUpdatedAt || snapshot.updatedAt : snapshot.updatedAt || meta.realtimeUpdatedAt || meta.staticUpdatedAt || meta.slowRestUpdatedAt;
+    return mobileTime$2(raw);
+  }
+  function stripRest$2(label) {
+    return clean$2(label.replace(/^REST\s*/i, ""), "可用");
+  }
+  function stripSsh$2(label) {
+    return clean$2(label.replace(/^SSH\s*/i, ""), "可用");
+  }
+  function snapshotTrustText(state) {
+    if (state.scenario === "no-snapshot") return "缺失";
+    if (state.scenario === "collection-down" || state.facts.collection.dataStale || state.facts.freshness.history) return "缓存";
+    return "实时";
+  }
+  function buildRouterOsTrustModel(snapshot, state) {
+    const totalWan = Math.max(state.facts.wan.total || wanRows$3(snapshot).length, state.facts.wan.allOffline ? 8 : 0);
+    const forwarding = {
+      id: "forwarding",
+      label: "转发面",
+      value: state.facts.wan.allOffline ? "不可用" : state.facts.interfaces.down > 0 ? "待确认" : "可用",
+      note: state.facts.wan.allOffline ? `WAN 0/${formatNumber(totalWan)}` : `WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(totalWan || 1)}`,
+      tone: state.facts.wan.allOffline ? "danger" : state.facts.interfaces.down > 0 ? "warn" : "ok"
+    };
+    const collection = {
+      id: "collection",
+      label: "采集面",
+      value: state.scenario === "collection-down" ? "降级" : state.scenario === "no-snapshot" ? "断链" : "可达",
+      note: `${stripRest$2(state.facts.collection.restLabel)} / ${stripSsh$2(state.facts.collection.sshLabel)}`,
+      tone: state.scenario === "no-snapshot" ? "danger" : state.scenario === "collection-down" ? "warn" : state.facts.collection.level
+    };
+    const snapshotPlane = {
+      id: "snapshot",
+      label: "快照面",
+      value: state.scenario === "no-snapshot" ? "缺失" : snapshotTrustText(state),
+      note: latestSuccess$3(snapshot, state),
+      tone: state.scenario === "no-snapshot" ? "missing" : state.facts.collection.credibilityTone
+    };
+    const business = {
+      id: "business",
+      label: "业务面",
+      value: state.scenario === "no-snapshot" ? "不展示" : state.facts.wan.allOffline ? "中断" : "可判",
+      note: state.scenario === "no-snapshot" ? "无快照" : state.facts.wan.allOffline ? "出口全断" : "指标可用",
+      tone: state.scenario === "no-snapshot" ? "missing" : state.facts.wan.allOffline ? "danger" : "trust"
+    };
+    return {
+      forwarding,
+      collection,
+      snapshot: snapshotPlane,
+      business,
+      planes: [forwarding, collection, snapshotPlane, business]
+    };
+  }
   function clean$1(value, fallback = "-") {
     const normalized = String(value ?? "").replace(/\s+/g, " ").trim();
     return normalized || fallback;
@@ -7480,7 +7559,7 @@ var PanelFramework = function(exports) {
     if (priority === "resource-full") return "资源满载";
     if (priority === "interface-down") return "接口 Down";
     if (priority === "collection-degraded") return "采集降级";
-    return state.verdict.level === "warn" ? "网络需确认" : "网络状态良好";
+    return state.verdict.level === "warn" ? "需确认" : "转发正常";
   }
   function subtitleFor(snapshot, state) {
     if (state.scenario === "fleet") return `WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(Math.max(state.facts.wan.total || wanRows$2(snapshot).length, 1))}，异常 ${formatNumber(Math.max(state.facts.wan.offline, state.facts.interfaces.down, 0))}，最近 ${latestSuccess$2(snapshot, state)}。`;
@@ -7553,7 +7632,7 @@ var PanelFramework = function(exports) {
       { label: "路由", value: mobileRouteValue(state), note: "默认", tone: state.facts.route.level }
     ];
   }
-  function heroPills$1(snapshot, state) {
+  function heroPills(snapshot, state) {
     const totalWan = Math.max(state.facts.wan.total || wanRows$2(snapshot).length, state.facts.wan.allOffline ? 8 : 0);
     const priority = priorityOf(state);
     if (state.scenario === "fleet") return [
@@ -7573,37 +7652,7 @@ var PanelFramework = function(exports) {
     ];
   }
   function trustPlanes(snapshot, state) {
-    const totalWan = Math.max(state.facts.wan.total || wanRows$2(snapshot).length, state.facts.wan.allOffline ? 8 : 0);
-    return [
-      {
-        id: "forwarding",
-        label: "转发面",
-        value: state.facts.wan.allOffline ? "不可用" : state.facts.interfaces.down > 0 ? "待确认" : "可用",
-        note: state.facts.wan.allOffline ? `WAN 0/${formatNumber(totalWan)}` : `WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(totalWan || 1)}`,
-        tone: state.facts.wan.allOffline ? "danger" : state.facts.interfaces.down > 0 ? "warn" : "ok"
-      },
-      {
-        id: "collection",
-        label: "采集面",
-        value: state.scenario === "collection-down" ? "降级" : state.scenario === "no-snapshot" ? "断链" : "可达",
-        note: `${stripRest$1(state.facts.collection.restLabel)} / ${stripSsh$1(state.facts.collection.sshLabel)}`,
-        tone: state.scenario === "no-snapshot" ? "danger" : state.scenario === "collection-down" ? "warn" : state.facts.collection.level
-      },
-      {
-        id: "snapshot",
-        label: "快照面",
-        value: state.scenario === "no-snapshot" ? "缺失" : trustText$1(state),
-        note: latestSuccess$2(snapshot, state),
-        tone: state.scenario === "no-snapshot" ? "missing" : state.facts.collection.credibilityTone
-      },
-      {
-        id: "business",
-        label: "业务面",
-        value: state.scenario === "no-snapshot" ? "不展示" : state.facts.wan.allOffline ? "中断" : "可判",
-        note: state.scenario === "no-snapshot" ? "无快照" : state.facts.wan.allOffline ? "出口全断" : "指标可用",
-        tone: state.scenario === "no-snapshot" ? "missing" : state.facts.wan.allOffline ? "danger" : "trust"
-      }
-    ];
+    return buildRouterOsTrustModel(snapshot, state).planes;
   }
   function statusRows(snapshot, state) {
     const totalWan = Math.max(state.facts.wan.total || wanRows$2(snapshot).length, state.facts.wan.allOffline ? 8 : 0);
@@ -7666,10 +7715,11 @@ var PanelFramework = function(exports) {
     return rows.map((row, index) => {
       const offline = state.facts.wan.allOffline || row.running === false;
       const name = clean$1(row.name || row.interface, `WAN${index + 1}`);
+      const carrier = clean$1(row.parent || row.access || row.interface || name, name).replace(/^ether/i, "ether");
       return {
         id: `wan-port-${index}`,
         label: `P${index + 1}`,
-        name,
+        name: carrier,
         note: offline ? "离线" : name.replace(/^pppoe[-_]?/i, ""),
         tone: offline ? "danger" : "ok"
       };
@@ -7743,7 +7793,7 @@ var PanelFramework = function(exports) {
         title: titleFor(state),
         subtitle: subtitleFor(snapshot, state),
         facts: heroFacts(snapshot, state),
-        pills: heroPills$1(snapshot, state)
+        pills: heroPills(snapshot, state)
       },
       trustPlanes: trustPlanes(snapshot, state),
       statusRows: statusRows(snapshot, state),
@@ -7752,6 +7802,32 @@ var PanelFramework = function(exports) {
       resourceRows: resourceFacts(state)
     };
   }
+  const MOBILE_OVERVIEW_TOKEN_CSS = `
+  --ik-blue: #1473e6;
+  --ik-blue-soft: rgba(20, 115, 230, .08);
+  --ik-ink: #102033;
+  --ik-text: #22364a;
+  --ik-muted: #62758a;
+  --ik-quiet: #8090a3;
+  --ik-page: #f5f8fc;
+  --ik-panel: #ffffff;
+  --ik-panel-soft: #f8fbfe;
+  --ik-line: #dce8f2;
+  --ik-line-soft: #edf3f8;
+  --ik-danger: #d93025;
+  --ik-danger-soft: rgba(217, 48, 37, .07);
+  --ik-warn: #c98023;
+  --ik-warn-soft: rgba(201, 128, 35, .08);
+  --ik-ok: #18a66a;
+  --ik-radius-panel: 10px;
+  --ik-radius-row: 6px;
+  --ik-font-xs: 7.8px;
+  --ik-font-sm: 8.8px;
+  --ik-font-md: 10.8px;
+  --ik-font-lg: 13.8px;
+  --ik-hairline: 1px solid var(--ik-line);
+  --ik-separator: 1px solid var(--ik-line-soft);
+`;
   function clean(value, fallback = "-") {
     const normalized = String(value ?? "").replace(/\s+/g, " ").trim();
     return normalized || fallback;
@@ -8181,6 +8257,7 @@ var PanelFramework = function(exports) {
           return /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: offline ? "is-danger" : "is-ok", "data-port": port.label, children: [
             /* @__PURE__ */ jsxRuntimeExports.jsx("i", {}),
             /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: port.label }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: port.name }),
             /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: port.note })
           ] }, port.id);
         })
@@ -8281,9 +8358,6 @@ var PanelFramework = function(exports) {
   function heroSentence(_snapshot, state) {
     return buildMobileOverviewModel(_snapshot, state).hero.subtitle;
   }
-  function heroPills(snapshot, state) {
-    return buildMobileOverviewModel(snapshot, state).hero.pills;
-  }
   function V420HeroMetrics({ snapshot, state }) {
     const readings = V420HeroStats(snapshot, state);
     return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ik-v420-hero-stats", "data-overview-mobile-core-block": "hero-stats", "data-overview-mobile-hero-metrics": "download-upload-latency-connections", children: readings.map((item, index) => /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: `${toneClass(item.tone)} ${index === 0 ? "is-primary" : ""}`, children: [
@@ -8291,6 +8365,12 @@ var PanelFramework = function(exports) {
       /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: item.value }),
       /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: item.note })
     ] }, `${item.label}-${item.value}`)) });
+  }
+  function V420HeroTrustRail({ model }) {
+    return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ik-v503-hero-pills ik-v830-trust-rail", "aria-label": "网络可信度", children: model.trustPlanes.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: toneClass(item.tone), children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: item.label }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("strong", { children: item.value })
+    ] }, item.id)) });
   }
   function statusTimelineRows(snapshot, state) {
     return buildMobileOverviewModel(snapshot, state).statusRows;
@@ -8328,7 +8408,7 @@ var PanelFramework = function(exports) {
             /* @__PURE__ */ jsxRuntimeExports.jsx(V420HeroMetrics, { ...props }),
             /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ik-v420-visual ik-v240-visual ik-v240-traffic", children: V420HeroVisual(props) })
           ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ik-v503-hero-pills", "aria-label": "核心状态", children: heroPills(snapshot, state).map((item) => /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: item }, item)) })
+          /* @__PURE__ */ jsxRuntimeExports.jsx(V420HeroTrustRail, { model })
         ]
       }
     );
@@ -8391,6 +8471,7 @@ var PanelFramework = function(exports) {
 @media (max-width: 760px) {
   .router-overview-framework .ik-v420-app,
   .ik-v420-app {
+    ${MOBILE_OVERVIEW_TOKEN_CSS}
     --blue: #1677ff;
     --blue-2: #6bbcff;
     --bg: #f5f9fc;
@@ -15980,6 +16061,124 @@ var PanelFramework = function(exports) {
   .router-overview-framework .ik-v420-app[data-overview-mobile-scene="resource-full"] .ik-v420-resource-visual.ik-v420-resource-meter-set.is-vertical-ledger.ik-v620-pressure-visual .ik-mobile-resource-spark.ik-v420-resource-meter > i,
   .ik-v420-app[data-overview-mobile-scene="resource-full"] .ik-v420-resource-visual.ik-v420-resource-meter-set.is-vertical-ledger.ik-v620-pressure-visual .ik-mobile-resource-spark.ik-v420-resource-meter > i {
     grid-column: 4 !important;
+  }
+}
+
+@media (max-width: 760px) {
+  /* v830 trust rail: forwarding health, collection reachability, snapshot freshness, business usability stay visually distinct. */
+  #overview.router-overview-framework .ik-v830-trust-rail,
+  .router-overview-framework .ik-v830-trust-rail,
+  .ik-v830-trust-rail {
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 0 !important;
+    min-height: 18px !important;
+    padding-top: 2px !important;
+    border-top: 1px solid var(--ik-line-soft) !important;
+  }
+
+  #overview.router-overview-framework .ik-v830-trust-rail span,
+  .router-overview-framework .ik-v830-trust-rail span,
+  .ik-v830-trust-rail span {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 1px !important;
+    min-width: 0 !important;
+    height: auto !important;
+    min-height: 0 !important;
+    padding: 0 4px !important;
+    border-left: 1px solid var(--ik-line-soft) !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  #overview.router-overview-framework .ik-v830-trust-rail span:first-child,
+  .router-overview-framework .ik-v830-trust-rail span:first-child,
+  .ik-v830-trust-rail span:first-child {
+    border-left: 0 !important;
+    padding-left: 0 !important;
+  }
+
+  #overview.router-overview-framework .ik-v830-trust-rail b,
+  .router-overview-framework .ik-v830-trust-rail b,
+  .ik-v830-trust-rail b {
+    color: var(--ik-muted) !important;
+    font-size: 7.4px !important;
+    line-height: 1 !important;
+    font-weight: 700 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  #overview.router-overview-framework .ik-v830-trust-rail strong,
+  .router-overview-framework .ik-v830-trust-rail strong,
+  .ik-v830-trust-rail strong {
+    color: var(--ik-ink) !important;
+    font-size: 9px !important;
+    line-height: 1 !important;
+    font-weight: 820 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  #overview.router-overview-framework .ik-v830-trust-rail .is-danger strong,
+  .router-overview-framework .ik-v830-trust-rail .is-danger strong,
+  .ik-v830-trust-rail .is-danger strong {
+    color: var(--ik-danger) !important;
+  }
+
+  #overview.router-overview-framework .ik-v830-trust-rail .is-warn strong,
+  #overview.router-overview-framework .ik-v830-trust-rail .is-missing strong,
+  .router-overview-framework .ik-v830-trust-rail .is-warn strong,
+  .router-overview-framework .ik-v830-trust-rail .is-missing strong,
+  .ik-v830-trust-rail .is-warn strong,
+  .ik-v830-trust-rail .is-missing strong {
+    color: var(--ik-warn) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-port-matrix span,
+  .router-overview-framework .ik-v420-port-matrix span,
+  .ik-v420-port-matrix span {
+    grid-template-columns: 5px 17px minmax(0, 1fr) !important;
+    grid-template-areas: "dot port status" "dot carrier carrier" !important;
+    min-height: 34px !important;
+    gap: 2px 3px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-port-matrix i,
+  .router-overview-framework .ik-v420-port-matrix i,
+  .ik-v420-port-matrix i {
+    grid-area: dot !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-port-matrix b,
+  .router-overview-framework .ik-v420-port-matrix b,
+  .ik-v420-port-matrix b {
+    grid-area: port !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-port-matrix small,
+  .router-overview-framework .ik-v420-port-matrix small,
+  .ik-v420-port-matrix small {
+    grid-area: carrier !important;
+    min-width: 0 !important;
+    color: var(--ik-muted) !important;
+    font-size: 7.2px !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-port-matrix em,
+  .router-overview-framework .ik-v420-port-matrix em,
+  .ik-v420-port-matrix em {
+    grid-area: status !important;
+    color: var(--ik-muted) !important;
+    font-size: 7.2px !important;
+    text-align: right !important;
   }
 }
 

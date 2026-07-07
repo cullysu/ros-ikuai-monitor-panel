@@ -11,8 +11,9 @@ import {
   type OverviewRawWanRow,
   type OverviewTone,
 } from "./index";
+import { buildRouterOsTrustModel, type RouterOsTrustPlane } from "./routerosTrustModel";
 
-export type MobileMonitorPlane = "forwarding" | "collection" | "snapshot" | "business";
+export type MobileMonitorPlane = RouterOsTrustPlane["id"];
 
 export interface MobileMonitorFact {
   label: string;
@@ -41,13 +42,7 @@ export interface MobileMonitorListRow {
   tone: OverviewTone;
 }
 
-export interface MobileTrustPlane {
-  id: MobileMonitorPlane;
-  label: string;
-  value: string;
-  note: string;
-  tone: OverviewTone;
-}
+export type MobileTrustPlane = RouterOsTrustPlane;
 
 export interface MobileWanPort {
   id: string;
@@ -216,7 +211,7 @@ function titleFor(state: OverviewDerivedState): string {
   if (priority === "resource-full") return "资源满载";
   if (priority === "interface-down") return "接口 Down";
   if (priority === "collection-degraded") return "采集降级";
-  return state.verdict.level === "warn" ? "网络需确认" : "网络状态良好";
+  return state.verdict.level === "warn" ? "需确认" : "转发正常";
 }
 
 function subtitleFor(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): string {
@@ -313,37 +308,7 @@ function heroPills(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): 
 }
 
 function trustPlanes(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): MobileTrustPlane[] {
-  const totalWan = Math.max(state.facts.wan.total || wanRows(snapshot).length, state.facts.wan.allOffline ? 8 : 0);
-  return [
-    {
-      id: "forwarding",
-      label: "转发面",
-      value: state.facts.wan.allOffline ? "不可用" : state.facts.interfaces.down > 0 ? "待确认" : "可用",
-      note: state.facts.wan.allOffline ? `WAN 0/${formatNumber(totalWan)}` : `WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(totalWan || 1)}`,
-      tone: state.facts.wan.allOffline ? "danger" : state.facts.interfaces.down > 0 ? "warn" : "ok",
-    },
-    {
-      id: "collection",
-      label: "采集面",
-      value: state.scenario === "collection-down" ? "降级" : state.scenario === "no-snapshot" ? "断链" : "可达",
-      note: `${stripRest(state.facts.collection.restLabel)} / ${stripSsh(state.facts.collection.sshLabel)}`,
-      tone: state.scenario === "no-snapshot" ? "danger" : state.scenario === "collection-down" ? "warn" : state.facts.collection.level,
-    },
-    {
-      id: "snapshot",
-      label: "快照面",
-      value: state.scenario === "no-snapshot" ? "缺失" : trustText(state),
-      note: latestSuccess(snapshot, state),
-      tone: state.scenario === "no-snapshot" ? "missing" : state.facts.collection.credibilityTone,
-    },
-    {
-      id: "business",
-      label: "业务面",
-      value: state.scenario === "no-snapshot" ? "不展示" : state.facts.wan.allOffline ? "中断" : "可判",
-      note: state.scenario === "no-snapshot" ? "无快照" : state.facts.wan.allOffline ? "出口全断" : "指标可用",
-      tone: state.scenario === "no-snapshot" ? "missing" : state.facts.wan.allOffline ? "danger" : "trust",
-    },
-  ];
+  return buildRouterOsTrustModel(snapshot, state).planes;
 }
 
 function statusRows(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): MobileMonitorRow[] {
@@ -408,10 +373,11 @@ function wanPorts(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): M
   return rows.map((row, index) => {
     const offline = state.facts.wan.allOffline || row.running === false;
     const name = clean(row.name || row.interface, `WAN${index + 1}`);
+    const carrier = clean(row.parent || row.access || row.interface || name, name).replace(/^ether/i, "ether");
     return {
       id: `wan-port-${index}`,
       label: `P${index + 1}`,
-      name,
+      name: carrier,
       note: offline ? "离线" : name.replace(/^pppoe[-_]?/i, ""),
       tone: offline ? "danger" : "ok",
     };

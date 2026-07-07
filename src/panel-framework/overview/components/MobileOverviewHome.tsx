@@ -12,7 +12,8 @@ import {
   type OverviewRawWanRow,
   type OverviewTone,
 } from "../index";
-import { buildMobileOverviewModel } from "../mobileOverviewModel";
+import { buildMobileOverviewModel, type MobileOverviewModel } from "../mobileOverviewModel";
+import { MOBILE_OVERVIEW_TOKEN_CSS } from "../mobileOverviewTokens";
 
 interface MobileOverviewHomeProps {
   snapshot: OverviewRawSnapshot;
@@ -927,6 +928,7 @@ function V420PortMatrix({ snapshot, state }: MobileOverviewHomeProps) {
           <span className={offline ? "is-danger" : "is-ok"} data-port={port.label} key={port.id}>
             <i />
             <b>{port.label}</b>
+            <small>{port.name}</small>
             <em>{port.note}</em>
           </span>
         );
@@ -1047,6 +1049,19 @@ function V420HeroMetrics({ snapshot, state }: MobileOverviewHomeProps) {
   );
 }
 
+function V420HeroTrustRail({ model }: { model: MobileOverviewModel }) {
+  return (
+    <div className="ik-v503-hero-pills ik-v830-trust-rail" aria-label="网络可信度">
+      {model.trustPlanes.map((item) => (
+        <span className={toneClass(item.tone)} key={item.id}>
+          <b>{item.label}</b>
+          <strong>{item.value}</strong>
+        </span>
+      ))}
+    </div>
+  );
+}
+
 function resourceTimelineValue(resource: ResourceReading[], state: OverviewDerivedState): string {
   if (state.scenario === "resource-full") {
     return resource.map((item) => item.display.replace(/\.0%$/, "%")).join(" / ");
@@ -1109,9 +1124,7 @@ function V420Hero(props: MobileOverviewHomeProps) {
         <V420HeroMetrics {...props} />
         <div className="ik-v420-visual ik-v240-visual ik-v240-traffic">{V420HeroVisual(props)}</div>
       </div>
-      <div className="ik-v503-hero-pills" aria-label="核心状态">
-        {heroPills(snapshot, state).map((item) => <span key={item}>{item}</span>)}
-      </div>
+      <V420HeroTrustRail model={model} />
     </section>
   );
 }
@@ -1257,6 +1270,7 @@ const V420_MOBILE_STYLES = `
 @media (max-width: 760px) {
   .router-overview-framework .ik-v420-app,
   .ik-v420-app {
+    ${MOBILE_OVERVIEW_TOKEN_CSS}
     --blue: #1677ff;
     --blue-2: #6bbcff;
     --bg: #f5f9fc;
@@ -8846,6 +8860,124 @@ const V420_MOBILE_STYLES = `
   .router-overview-framework .ik-v420-app[data-overview-mobile-scene="resource-full"] .ik-v420-resource-visual.ik-v420-resource-meter-set.is-vertical-ledger.ik-v620-pressure-visual .ik-mobile-resource-spark.ik-v420-resource-meter > i,
   .ik-v420-app[data-overview-mobile-scene="resource-full"] .ik-v420-resource-visual.ik-v420-resource-meter-set.is-vertical-ledger.ik-v620-pressure-visual .ik-mobile-resource-spark.ik-v420-resource-meter > i {
     grid-column: 4 !important;
+  }
+}
+
+@media (max-width: 760px) {
+  /* v830 trust rail: forwarding health, collection reachability, snapshot freshness, business usability stay visually distinct. */
+  #overview.router-overview-framework .ik-v830-trust-rail,
+  .router-overview-framework .ik-v830-trust-rail,
+  .ik-v830-trust-rail {
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 0 !important;
+    min-height: 18px !important;
+    padding-top: 2px !important;
+    border-top: 1px solid var(--ik-line-soft) !important;
+  }
+
+  #overview.router-overview-framework .ik-v830-trust-rail span,
+  .router-overview-framework .ik-v830-trust-rail span,
+  .ik-v830-trust-rail span {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 1px !important;
+    min-width: 0 !important;
+    height: auto !important;
+    min-height: 0 !important;
+    padding: 0 4px !important;
+    border-left: 1px solid var(--ik-line-soft) !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  #overview.router-overview-framework .ik-v830-trust-rail span:first-child,
+  .router-overview-framework .ik-v830-trust-rail span:first-child,
+  .ik-v830-trust-rail span:first-child {
+    border-left: 0 !important;
+    padding-left: 0 !important;
+  }
+
+  #overview.router-overview-framework .ik-v830-trust-rail b,
+  .router-overview-framework .ik-v830-trust-rail b,
+  .ik-v830-trust-rail b {
+    color: var(--ik-muted) !important;
+    font-size: 7.4px !important;
+    line-height: 1 !important;
+    font-weight: 700 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  #overview.router-overview-framework .ik-v830-trust-rail strong,
+  .router-overview-framework .ik-v830-trust-rail strong,
+  .ik-v830-trust-rail strong {
+    color: var(--ik-ink) !important;
+    font-size: 9px !important;
+    line-height: 1 !important;
+    font-weight: 820 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  #overview.router-overview-framework .ik-v830-trust-rail .is-danger strong,
+  .router-overview-framework .ik-v830-trust-rail .is-danger strong,
+  .ik-v830-trust-rail .is-danger strong {
+    color: var(--ik-danger) !important;
+  }
+
+  #overview.router-overview-framework .ik-v830-trust-rail .is-warn strong,
+  #overview.router-overview-framework .ik-v830-trust-rail .is-missing strong,
+  .router-overview-framework .ik-v830-trust-rail .is-warn strong,
+  .router-overview-framework .ik-v830-trust-rail .is-missing strong,
+  .ik-v830-trust-rail .is-warn strong,
+  .ik-v830-trust-rail .is-missing strong {
+    color: var(--ik-warn) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-port-matrix span,
+  .router-overview-framework .ik-v420-port-matrix span,
+  .ik-v420-port-matrix span {
+    grid-template-columns: 5px 17px minmax(0, 1fr) !important;
+    grid-template-areas: "dot port status" "dot carrier carrier" !important;
+    min-height: 34px !important;
+    gap: 2px 3px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-port-matrix i,
+  .router-overview-framework .ik-v420-port-matrix i,
+  .ik-v420-port-matrix i {
+    grid-area: dot !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-port-matrix b,
+  .router-overview-framework .ik-v420-port-matrix b,
+  .ik-v420-port-matrix b {
+    grid-area: port !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-port-matrix small,
+  .router-overview-framework .ik-v420-port-matrix small,
+  .ik-v420-port-matrix small {
+    grid-area: carrier !important;
+    min-width: 0 !important;
+    color: var(--ik-muted) !important;
+    font-size: 7.2px !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-port-matrix em,
+  .router-overview-framework .ik-v420-port-matrix em,
+  .ik-v420-port-matrix em {
+    grid-area: status !important;
+    color: var(--ik-muted) !important;
+    font-size: 7.2px !important;
+    text-align: right !important;
   }
 }
 

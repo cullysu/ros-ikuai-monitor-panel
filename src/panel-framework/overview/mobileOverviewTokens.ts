@@ -1,0 +1,26 @@
+export const MOBILE_OVERVIEW_TOKEN_CSS = `
+  --ik-blue: #1473e6;
+  --ik-blue-soft: rgba(20, 115, 230, .08);
+  --ik-ink: #102033;
+  --ik-text: #22364a;
+  --ik-muted: #62758a;
+  --ik-quiet: #8090a3;
+  --ik-page: #f5f8fc;
+  --ik-panel: #ffffff;
+  --ik-panel-soft: #f8fbfe;
+  --ik-line: #dce8f2;
+  --ik-line-soft: #edf3f8;
+  --ik-danger: #d93025;
+  --ik-danger-soft: rgba(217, 48, 37, .07);
+  --ik-warn: #c98023;
+  --ik-warn-soft: rgba(201, 128, 35, .08);
+  --ik-ok: #18a66a;
+  --ik-radius-panel: 10px;
+  --ik-radius-row: 6px;
+  --ik-font-xs: 7.8px;
+  --ik-font-sm: 8.8px;
+  --ik-font-md: 10.8px;
+  --ik-font-lg: 13.8px;
+  --ik-hairline: 1px solid var(--ik-line);
+  --ik-separator: 1px solid var(--ik-line-soft);
+`;
