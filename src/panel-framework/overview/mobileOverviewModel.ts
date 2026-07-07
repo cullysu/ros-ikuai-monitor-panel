@@ -65,7 +65,7 @@ export interface MobileTrendChartModel {
   readouts: MobileMonitorFact[];
 }
 
-export type MobilePrimaryListKind = "terminal-ranking" | "wan-incident" | "interface-incident" | "collection-boundary" | "snapshot-boundary";
+export type MobilePrimaryListKind = "terminal-ranking" | "wan-incident" | "interface-incident" | "snapshot-boundary";
 
 export interface MobilePrimaryListModel {
   kind: MobilePrimaryListKind;
@@ -357,7 +357,7 @@ function titleFor(state: OverviewDerivedState): string {
 }
 
 function subtitleFor(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): string {
-  if (state.scenario === "fleet") return `WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(Math.max(state.facts.wan.total || wanRows(snapshot).length, 1))}，异常 ${formatNumber(Math.max(state.facts.wan.offline, state.facts.interfaces.down, 0))}，最近 ${latestSuccess(snapshot, state)}。`;
+  if (state.scenario === "fleet") return `WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(Math.max(state.facts.wan.total || wanRows(snapshot).length, 1))} · 异常 ${formatNumber(Math.max(state.facts.wan.offline, state.facts.interfaces.down, 0))} · 最近 ${latestSuccess(snapshot, state)}`;
   const priority = priorityOf(state);
   if (priority === "snapshot-missing") return "当前无可信业务快照。";
   if (priority === "wan-offline") return `默认路由不可用，最近 ${latestSuccess(snapshot, state)}。`;
@@ -486,7 +486,7 @@ function statusRows(snapshot: OverviewRawSnapshot, state: OverviewDerivedState):
       id: "timeline-collection",
       title: "采集",
       value: state.scenario === "collection-down" ? "缓存" : "实时",
-      note: state.scenario === "collection-down" ? `最近 ${latestSuccess(snapshot, state)}` : `${stripRest(state.facts.collection.restLabel)} / ${stripSsh(state.facts.collection.sshLabel)}`,
+      note: `最近 ${latestSuccess(snapshot, state)}`,
       tone: state.scenario === "collection-down" ? "warn" : state.facts.collection.credibilityTone,
     },
     {
@@ -573,15 +573,6 @@ function snapshotBoundaryRows(snapshot: OverviewRawSnapshot, state: OverviewDeri
     { id: "wan-rate-hidden", rank: "", name: "WAN 速率", meta: "出口流量需实时样本", value: "不可判", status: "缺失", percent: 0, tone: "missing" },
     { id: "metadata-only", rank: "", name: "采集元数据", meta: "最近成功与链路状态可参考", value: "可参考", status: "边界", percent: 0, tone: "warn" },
     { id: "routeros-link", rank: "", name: "RouterOS 链路", meta: "当前不可达，等待恢复", value: "断链", status: "当前", percent: 0, tone: "danger" },
-  ];
-}
-
-function collectionBoundaryRows(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): MobileMonitorListRow[] {
-  return [
-    { id: "collection-cache", rank: 1, name: "当前展示", kind: "采集", meta: `最近成功 ${latestSuccess(snapshot, state)}`, value: "缓存", status: "可参考", percent: 0, tone: "warn" },
-    { id: "collection-rest", rank: 2, name: "REST", kind: "通道", meta: "管理面状态，不代表转发面", value: stripRest(state.facts.collection.restLabel), status: "通道", percent: 0, tone: state.facts.collection.level },
-    { id: "collection-ssh", rank: 3, name: "SSH", kind: "通道", meta: "静态读取通道", value: stripSsh(state.facts.collection.sshLabel), status: "通道", percent: 0, tone: state.facts.collection.level },
-    { id: "collection-boundary", rank: 4, name: "业务可信度", kind: "边界", meta: "缓存仅供判断趋势", value: trustText(state), status: "边界", percent: 0, tone: state.facts.collection.credibilityTone },
   ];
 }
 
@@ -710,7 +701,7 @@ function primaryList(snapshot: OverviewRawSnapshot, state: OverviewDerivedState)
   if (priority === "wan-offline") return { kind: "wan-incident", title: "离线出口", meta: "默认路由不可用", rows: offlineWanRows(snapshot, state) };
   if (priority === "snapshot-missing") return { kind: "snapshot-boundary", title: "业务边界", meta: "缺失", rows: snapshotBoundaryRows(snapshot, state) };
   if (priority === "interface-down") return { kind: "interface-incident", title: "接口对象", meta: "承载待判", rows: interfaceIncidentRows(snapshot) };
-  if (priority === "collection-degraded") return { kind: "collection-boundary", title: "采集对象", meta: "当前可信边界", rows: collectionBoundaryRows(snapshot, state) };
+  if (priority === "collection-degraded") return { kind: "terminal-ranking", title: "设备排行", meta: "异常优先 · 总流量", rows: terminalRankingRows(snapshot) };
   if (priority === "resource-full") return { kind: "terminal-ranking", title: "高流量终端", meta: "异常优先 · 总流量", rows: terminalRankingRows(snapshot) };
   return { kind: "terminal-ranking", title: "设备排行", meta: "异常优先 · 总流量", rows: terminalRankingRows(snapshot) };
 }

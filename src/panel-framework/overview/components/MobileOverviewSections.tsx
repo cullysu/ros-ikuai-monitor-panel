@@ -112,14 +112,13 @@ function screenTone(state: OverviewDerivedState): OverviewTone {
 }
 
 function statusLabel(state: OverviewDerivedState): string {
-  if (state.scenario === "no-snapshot") return "快照缺";
+  if (state.scenario === "no-snapshot") return "缺数";
   if (state.scenario === "all-offline" || state.facts.wan.allOffline) return "断链";
   if (state.scenario === "resource-full") return "超阈";
   if (state.scenario === "interfaces-down") return "异常";
-  if (state.scenario === "collection-down") return "缓存";
-  if (state.scenario === "single") return "良好";
+  if (state.scenario === "collection-down" || state.facts.collection.dataStale || state.facts.freshness.history) return "需确认";
   if (state.verdict.level === "warn") return "需确认";
-  return "在线";
+  return "良好";
 }
 
 function trustText(state: OverviewDerivedState): string {
@@ -380,15 +379,29 @@ function V420HeroMetrics({ model }: { model: MobileOverviewModel }) {
   );
 }
 
+function splitHeroPill(text: string): { label: string; value: string } {
+  const [label, ...rest] = text.replace(/\s+/g, " ").trim().split(" ");
+  return { label: label || "状态", value: rest.join(" ") || text };
+}
+
+function heroPillTone(text: string): OverviewTone {
+  if (/缺失|不可用|断网|不展示|0\/|异常/.test(text)) return "danger";
+  if (/待|缓存|确认|参考|越阈|超/.test(text)) return "warn";
+  return "trust";
+}
+
 function V420HeroTrustRail({ model }: { model: MobileOverviewModel }) {
   return (
-    <div className="ik-v503-hero-pills ik-v830-trust-rail" aria-label="网络可信度">
-      {model.trustPlanes.map((item) => (
-        <span className={toneClass(item.tone)} key={item.id}>
-          <b>{item.label}</b>
-          <strong>{item.value}</strong>
-        </span>
-      ))}
+    <div className="ik-v503-hero-pills ik-v830-trust-rail" aria-label="对象影响可信度">
+      {model.hero.pills.slice(0, 3).map((text) => {
+        const item = splitHeroPill(text);
+        return (
+          <span className={toneClass(heroPillTone(text))} key={text}>
+            <b>{item.label}</b>
+            <strong>{item.value}</strong>
+          </span>
+        );
+      })}
     </div>
   );
 }
