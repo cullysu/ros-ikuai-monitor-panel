@@ -1,7 +1,6 @@
 import { MobileOverviewStyles } from "./MobileOverviewStyles";
 import {
   BottomTabs,
-  CoreMetricRail,
   HomeSurface,
   IncidentHero,
   StatusHeader,
@@ -42,7 +41,6 @@ export function MobileOverviewHome(props: MobileOverviewHomeProps) {
           data-overview-mobile-v420-visual-contract="single-labelled-wan-sparkline-wan-collection-duo-resource-bars-native-ranking"
         >
           <StatusHeader {...props} />
-          <CoreMetricRail {...props} />
           <IncidentHero {...props} />
           <HomeSurface {...props} />
           <BottomTabs />

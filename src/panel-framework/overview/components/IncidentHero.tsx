@@ -93,12 +93,13 @@ function PortMatrix({ snapshot, state }: MobileOverviewHomeProps) {
     >
       {ports.map((port) => {
         const offline = port.tone === "danger";
+        const [carrier = port.name, stateText = offline ? "离线" : "在线"] = port.note.split("·").map((part) => part.trim()).filter(Boolean);
         return (
           <span className={offline ? "is-danger" : "is-ok"} data-port={port.label} key={port.id}>
             <i />
-            <b>{port.name}</b>
-            <small>{port.label}</small>
-            <em>{port.note}</em>
+            <b>{port.label}</b>
+            <small>{carrier}</small>
+            <em>{stateText}</em>
           </span>
         );
       })}
@@ -155,9 +156,10 @@ function ResourceVisual({ state }: { state: OverviewDerivedState }) {
   const peakKey = metrics.reduce((max, item) => (item.value > max.value ? item : max), metrics[0]).key;
   return (
     <div
-      className="ik-v420-resource-visual ik-mobile-resource-sparks ik-v420-resource-meter-set is-vertical-ledger ik-v620-pressure-visual"
+      className="ik-density-resource-ledger ik-v420-resource-visual ik-mobile-resource-sparks ik-v420-resource-meter-set is-vertical-ledger ik-v620-pressure-visual"
       data-overview-chart-type="bar"
       data-overview-scene-chart="mobile-resource-vertical-ledger"
+      data-overview-mobile-core-block="resource"
       data-overview-mobile-first-visual="processor-memory-disk"
       data-overview-mobile-v420-visual="processor-memory-disk-thin-bars"
     >
@@ -165,7 +167,7 @@ function ResourceVisual({ state }: { state: OverviewDerivedState }) {
         const value = Number.isFinite(item.value) ? Math.max(0, Math.min(100, item.value)) : 0;
         const meterStyle = { "--meter": `${value}%` } as CSSProperties;
         return (
-          <span className={`ik-mobile-resource-spark ik-v420-resource-meter ${toneClass(item.tone)}${item.key === peakKey ? " is-peak" : ""}`} key={item.key} style={meterStyle}>
+          <span className={`ik-density-resource-row ik-mobile-resource-spark ik-v420-resource-meter ${toneClass(item.tone)}${item.key === peakKey ? " is-peak" : ""}`} key={item.key} style={meterStyle}>
             <b>{item.label}</b>
             <strong className="ik-v802-ring-value">{item.display.replace(/\.0%$/, "%")}</strong>
             <small>阈{item.threshold}%</small>
@@ -251,7 +253,7 @@ export function IncidentHero(props: MobileOverviewHomeProps) {
         <h1 data-overview-primary-conclusion="true">{model.hero.title}</h1>
         <p className="ik-v503-hero-copy">{model.hero.subtitle}</p>
       </header>
-      <div className="ik-v620-hero-stage">
+      <div className={`ik-v620-hero-stage ${model.hero.showMetrics ? "has-metrics" : "is-metricless"}`}>
         <HeroMetrics model={model} />
         <div className="ik-v420-visual ik-v240-visual ik-v240-traffic">{HeroVisual({ ...props, model })}</div>
       </div>

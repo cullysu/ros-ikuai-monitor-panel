@@ -341,8 +341,8 @@ function heroVisualKind(priority: MobileOverviewModel["priority"]): MobileHeroVi
   return "trend";
 }
 
-function showHeroMetrics(priority: MobileOverviewModel["priority"]): boolean {
-  return true;
+function showHeroMetrics(state: OverviewDerivedState, priority: MobileOverviewModel["priority"]): boolean {
+  return priority === "normal" && state.scenario === "fleet";
 }
 
 function resourceFacts(state: OverviewDerivedState): MobileMonitorFact[] {
@@ -371,7 +371,7 @@ function titleFor(state: OverviewDerivedState): string {
   if (priority === "resource-full") return "资源满载";
   if (priority === "interface-down") return "接口 Down";
   if (priority === "collection-degraded") return "采集降级";
-  return state.scenario === "single" || state.verdict.level !== "warn" ? "出口正常" : "转发待确认";
+  return state.scenario === "single" || state.verdict.level !== "warn" ? "网络状态良好" : "转发待确认";
 }
 
 function subtitleFor(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): string {
@@ -663,7 +663,6 @@ function snapshotBoundaryRows(snapshot: OverviewRawSnapshot, state: OverviewDeri
   return [
     { id: "business-hidden", rank: "", name: "业务流量", meta: `最近成功 ${latestSuccess(snapshot, state)} · 无快照`, value: "不展示", status: "缺失", percent: 0, tone: "missing" },
     { id: "terminal-ranking-hidden", rank: "", name: "终端排行", meta: "设备名 / IP / 上下行需业务快照", value: "不可判", status: "缺失", percent: 0, tone: "missing" },
-    { id: "wan-rate-hidden", rank: "", name: "WAN 速率", meta: "出口流量需实时样本", value: "不可判", status: "缺失", percent: 0, tone: "missing" },
     { id: "metadata-only", rank: "", name: "采集元数据", meta: "最近成功与链路状态可参考", value: "可参考", status: "边界", percent: 0, tone: "warn" },
     { id: "routeros-link", rank: "", name: "RouterOS 链路", meta: "当前不可达，等待恢复", value: "断链", status: "当前", percent: 0, tone: "danger" },
   ];
@@ -810,7 +809,7 @@ export function buildMobileOverviewModel(snapshot: OverviewRawSnapshot, state: O
       facts: heroFacts(snapshot, state),
       pills: heroPills(snapshot, state),
       visualKind: heroVisualKind(priority),
-      showMetrics: showHeroMetrics(priority),
+      showMetrics: showHeroMetrics(state, priority),
       trend: trendChart(snapshot, state),
     },
     trustPlanes: trustPlanes(snapshot, state),
