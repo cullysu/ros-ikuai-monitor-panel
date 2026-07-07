@@ -15,6 +15,7 @@ export function CoreMetricRail(props: MobileOverviewHomeProps) {
         <span className={toneClass(item.tone)} key={item.label} title={`${item.label} ${item.value} ${item.note}`}>
           <em>{item.label}</em>
           <strong>{item.value}</strong>
+          <small>{item.note}</small>
         </span>
       ))}
     </section>

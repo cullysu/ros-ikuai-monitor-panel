@@ -285,6 +285,7 @@ function trendChart(snapshot: OverviewRawSnapshot, state: OverviewDerivedState):
       { label: "当前", value: mobileRate(current), note: "下载", tone: "trust" },
       { label: "峰值", value: mobileRate(peak), note: windowText, tone: "trust" },
       { label: "窗口", value: series.source === "history" ? "12 点" : "实时", note: sampleText, tone: "trust" },
+      { label: "采样", value: series.source === "history" ? "历史" : "实时", note: "可信度", tone: state.facts.collection.credibilityTone },
     ],
   };
 }
@@ -362,7 +363,7 @@ function titleFor(state: OverviewDerivedState): string {
   if (priority === "resource-full") return "资源满载";
   if (priority === "interface-down") return "接口 Down";
   if (priority === "collection-degraded") return "采集降级";
-  return state.scenario === "single" || state.verdict.level !== "warn" ? "网络状态良好" : "转发待确认";
+  return state.scenario === "single" || state.verdict.level !== "warn" ? "WAN 实时趋势" : "转发待确认";
 }
 
 function subtitleFor(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): string {
@@ -471,23 +472,28 @@ function coreMetrics(snapshot: OverviewRawSnapshot, state: OverviewDerivedState)
       ? "缓存"
       : "实时";
   const snapshotValue = latestSuccess(snapshot, state);
+  const collectionNote = priority === "snapshot-missing"
+    ? "当前不可达"
+    : priority === "collection-degraded"
+      ? `${stripRest(state.facts.collection.restLabel)} / ${stripSsh(state.facts.collection.sshLabel)}`
+      : "REST/SSH 可用";
   return [
     {
       label: "状态",
       value: coreStatusValue(priority, state),
-      note: priority === "normal" ? "转发可用" : priority === "wan-offline" ? "外网中断" : priority === "snapshot-missing" ? "业务不展示" : "需关注",
+      note: priority === "normal" ? "转发可用" : priority === "wan-offline" ? "外网中断" : priority === "snapshot-missing" ? "业务不展示" : "最高优先",
       tone: state.scenario === "single" ? "ok" : state.scenario === "no-snapshot" ? "missing" : state.facts.wan.allOffline ? "danger" : state.verdict.level,
     },
     {
       label: "WAN",
       value: wanValue,
-      note: state.facts.wan.allOffline ? "全离线" : priority === "snapshot-missing" ? "无快照" : "在线",
+      note: state.facts.wan.allOffline ? "全离线" : priority === "snapshot-missing" ? "无快照" : `↓${mobileRate(totals(snapshot).down)}`,
       tone: priority === "snapshot-missing" ? "missing" : state.facts.wan.allOffline ? "danger" : state.facts.wan.offline ? "warn" : "ok",
     },
     {
       label: "采集",
       value: collectionValue,
-      note: priority === "snapshot-missing" ? "当前不可达" : priority === "collection-degraded" ? "可参考" : "可信",
+      note: collectionNote,
       tone: priority === "snapshot-missing" ? "danger" : priority === "collection-degraded" ? "warn" : state.facts.collection.credibilityTone,
     },
     {
@@ -499,7 +505,7 @@ function coreMetrics(snapshot: OverviewRawSnapshot, state: OverviewDerivedState)
     {
       label: "快照",
       value: snapshotValue,
-      note: "最近成功",
+      note: priority === "snapshot-missing" ? "最近成功" : "快照时间",
       tone: priority === "snapshot-missing" ? "warn" : state.facts.collection.credibilityTone,
     },
   ];
@@ -771,9 +777,9 @@ function terminalRankingRows(snapshot: OverviewRawSnapshot): MobileMonitorListRo
 
 function primaryList(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): MobilePrimaryListModel {
   const priority = priorityOf(state);
-  if (priority === "wan-offline") return { kind: "wan-incident", title: "出口状态", meta: "默认路由异常 · 设备排行降级", rows: offlineWanRows(snapshot, state) };
+  if (priority === "wan-offline") return { kind: "wan-incident", title: "离线出口", meta: "默认路由异常 · 最近成功", rows: offlineWanRows(snapshot, state) };
   if (priority === "snapshot-missing") return { kind: "snapshot-boundary", title: "可信边界", meta: `最近成功 ${latestSuccess(snapshot, state)}`, rows: snapshotBoundaryRows(snapshot, state) };
-  if (priority === "interface-down") return { kind: "interface-incident", title: "接口对象", meta: "承载待判", rows: interfaceIncidentRows(snapshot) };
+  if (priority === "interface-down") return { kind: "interface-incident", title: "接口影响", meta: "承载待判 · 默认路由", rows: interfaceIncidentRows(snapshot) };
   if (priority === "collection-degraded") return { kind: "terminal-ranking", title: "设备排行", meta: "异常优先 · 总流量", rows: terminalRankingRows(snapshot) };
   if (priority === "resource-full") return { kind: "terminal-ranking", title: "高流量终端", meta: "异常优先 · 总流量", rows: terminalRankingRows(snapshot) };
   return { kind: "terminal-ranking", title: "设备排行", meta: "异常优先 · 总流量", rows: terminalRankingRows(snapshot) };

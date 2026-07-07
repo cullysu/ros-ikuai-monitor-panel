@@ -1832,5 +1832,342 @@ export const MOBILE_OVERVIEW_PRODUCT_STYLES = `
     border-radius: 0 !important;
     background: transparent !important;
   }
+
+  /* v980: App information architecture pass.
+     The first screen is now a compact judgment rail + one scene visual, not a
+     desktop report squeezed into card blocks.  Colour becomes evidence, not
+     decoration: red is a mark, blue is structure, grey carries hierarchy. */
+  #overview.router-overview-framework .ik-v420-screen,
+  .router-overview-framework .ik-v420-screen,
+  .ik-v420-screen {
+    padding: max(4px, env(safe-area-inset-top, 0px)) 13px calc(66px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-screen > * + *,
+  .router-overview-framework .ik-v420-screen > * + *,
+  .ik-v420-screen > * + * {
+    margin-top: 4px !important;
+  }
+
+  #overview.router-overview-framework .ik-v940-core-rail,
+  .router-overview-framework .ik-v940-core-rail,
+  .ik-v940-core-rail {
+    display: grid !important;
+    grid-template-columns: .82fr .78fr .88fr 1fr 1.02fr !important;
+    height: 38px !important;
+    min-height: 38px !important;
+    overflow: hidden !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: rgba(247,250,253,.68) !important;
+    box-shadow: inset 0 1px 0 rgba(145,169,193,.22), inset 0 -1px 0 rgba(145,169,193,.22) !important;
+  }
+
+  #overview.router-overview-framework .ik-v940-core-rail span,
+  .router-overview-framework .ik-v940-core-rail span,
+  .ik-v940-core-rail span {
+    display: grid !important;
+    grid-template-rows: 10px 13px 10px !important;
+    align-content: center !important;
+    min-width: 0 !important;
+    padding: 2px 5px !important;
+    border-left: 1px solid rgba(164,184,205,.20) !important;
+    background: transparent !important;
+  }
+
+  #overview.router-overview-framework .ik-v940-core-rail span:first-child,
+  .router-overview-framework .ik-v940-core-rail span:first-child,
+  .ik-v940-core-rail span:first-child {
+    border-left: 0 !important;
+  }
+
+  #overview.router-overview-framework .ik-v940-core-rail em,
+  .router-overview-framework .ik-v940-core-rail em,
+  .ik-v940-core-rail em {
+    color: #7a8999 !important;
+    font-size: 7px !important;
+    font-style: normal !important;
+    font-weight: 680 !important;
+    line-height: 10px !important;
+    white-space: nowrap !important;
+  }
+
+  #overview.router-overview-framework .ik-v940-core-rail strong,
+  .router-overview-framework .ik-v940-core-rail strong,
+  .ik-v940-core-rail strong {
+    color: #102033 !important;
+    font-size: 9.6px !important;
+    font-weight: 840 !important;
+    line-height: 12px !important;
+    letter-spacing: -.08px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  #overview.router-overview-framework .ik-v940-core-rail small,
+  .router-overview-framework .ik-v940-core-rail small,
+  .ik-v940-core-rail small {
+    color: #7b8ea3 !important;
+    font-size: 7px !important;
+    font-weight: 620 !important;
+    line-height: 9px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  #overview.router-overview-framework .ik-v940-core-rail .is-danger strong,
+  .router-overview-framework .ik-v940-core-rail .is-danger strong,
+  .ik-v940-core-rail .is-danger strong {
+    color: #a8322b !important;
+  }
+
+  #overview.router-overview-framework .ik-v940-core-rail .is-warn strong,
+  #overview.router-overview-framework .ik-v940-core-rail .is-missing strong,
+  .router-overview-framework .ik-v940-core-rail .is-warn strong,
+  .router-overview-framework .ik-v940-core-rail .is-missing strong,
+  .ik-v940-core-rail .is-warn strong,
+  .ik-v940-core-rail .is-missing strong {
+    color: #8d641e !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-hero,
+  .router-overview-framework .ik-v420-hero,
+  .ik-v420-hero {
+    max-height: 160px !important;
+    grid-template-rows: auto minmax(66px, auto) 16px !important;
+    gap: 3px !important;
+    padding: 6px 9px 5px !important;
+    background: rgba(255,255,255,.62) !important;
+    box-shadow: inset 0 1px 0 rgba(160,181,202,.20), inset 0 -1px 0 rgba(160,181,202,.20) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-hero.is-danger,
+  #overview.router-overview-framework .ik-v420-hero.is-warn,
+  #overview.router-overview-framework .ik-v420-hero.is-missing,
+  .router-overview-framework .ik-v420-hero.is-danger,
+  .router-overview-framework .ik-v420-hero.is-warn,
+  .router-overview-framework .ik-v420-hero.is-missing,
+  .ik-v420-hero.is-danger,
+  .ik-v420-hero.is-warn,
+  .ik-v420-hero.is-missing {
+    background: rgba(255,255,255,.64) !important;
+  }
+
+  #overview.router-overview-framework .ik-v620-hero-head h1,
+  .router-overview-framework .ik-v620-hero-head h1,
+  .ik-v620-hero-head h1 {
+    height: 16px !important;
+    max-height: 16px !important;
+    font-size: 14.2px !important;
+    line-height: 16px !important;
+    letter-spacing: -.12px !important;
+  }
+
+  #overview.router-overview-framework .ik-v620-hero-head p,
+  .router-overview-framework .ik-v620-hero-head p,
+  .ik-v620-hero-head p {
+    font-size: 9px !important;
+    line-height: 10px !important;
+  }
+
+  #overview.router-overview-framework .ik-v620-hero-stage,
+  .router-overview-framework .ik-v620-hero-stage,
+  .ik-v620-hero-stage {
+    grid-template-columns: 78px minmax(0, 1fr) !important;
+    min-height: 66px !important;
+    gap: 6px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-visual,
+  .router-overview-framework .ik-v420-visual,
+  .ik-v420-visual {
+    height: 66px !important;
+    min-height: 66px !important;
+    max-height: 76px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-hero-stats,
+  .router-overview-framework .ik-v420-hero-stats,
+  .ik-v420-hero-stats {
+    grid-template-rows: repeat(4, 12px) !important;
+    gap: 1px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-hero-stats span,
+  .router-overview-framework .ik-v420-hero-stats span,
+  .ik-v420-hero-stats span {
+    grid-template-columns: 26px minmax(0, 1fr) !important;
+    min-height: 12px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-hero-stats em,
+  .router-overview-framework .ik-v420-hero-stats em,
+  .ik-v420-hero-stats em {
+    font-size: 6.9px !important;
+    line-height: 12px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-hero-stats b,
+  .router-overview-framework .ik-v420-hero-stats b,
+  .ik-v420-hero-stats b {
+    font-size: 8.6px !important;
+    line-height: 12px !important;
+  }
+
+  #overview.router-overview-framework .ik-v812-trend-visual,
+  .router-overview-framework .ik-v812-trend-visual,
+  .ik-v812-trend-visual {
+    grid-template-columns: minmax(0, 1fr) 48px !important;
+    min-height: 66px !important;
+    gap: 4px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-line-chart,
+  .router-overview-framework .ik-v420-line-chart,
+  .ik-v420-line-chart {
+    height: 66px !important;
+  }
+
+  #overview.router-overview-framework .ik-v812-trend-visual aside,
+  .router-overview-framework .ik-v812-trend-visual aside,
+  .ik-v812-trend-visual aside {
+    grid-template-rows: repeat(4, 14px) !important;
+    gap: 1px !important;
+  }
+
+  #overview.router-overview-framework .ik-v812-trend-visual aside span,
+  .router-overview-framework .ik-v812-trend-visual aside span,
+  .ik-v812-trend-visual aside span {
+    min-height: 14px !important;
+  }
+
+  #overview.router-overview-framework .ik-v812-trend-visual aside em,
+  .router-overview-framework .ik-v812-trend-visual aside em,
+  .ik-v812-trend-visual aside em {
+    font-size: 6.6px !important;
+    line-height: 6px !important;
+  }
+
+  #overview.router-overview-framework .ik-v812-trend-visual aside b,
+  .router-overview-framework .ik-v812-trend-visual aside b,
+  .ik-v812-trend-visual aside b {
+    font-size: 8px !important;
+    line-height: 8px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-port-matrix,
+  .router-overview-framework .ik-v420-port-matrix,
+  .ik-v420-port-matrix {
+    min-height: 62px !important;
+    border: 1px solid rgba(164,184,205,.34) !important;
+    border-right: 0 !important;
+    border-bottom: 0 !important;
+    background: rgba(248,251,254,.62) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-port-matrix span,
+  .router-overview-framework .ik-v420-port-matrix span,
+  .ik-v420-port-matrix span {
+    min-height: 31px !important;
+    padding: 2px 5px 2px 0 !important;
+    border-radius: 0 !important;
+    border-right: 1px solid rgba(164,184,205,.30) !important;
+    border-bottom: 1px solid rgba(164,184,205,.30) !important;
+    box-shadow: none !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-port-matrix i,
+  .router-overview-framework .ik-v420-port-matrix i,
+  .ik-v420-port-matrix i {
+    width: 2px !important;
+    height: 18px !important;
+    border-radius: 0 !important;
+    background: #18a66a !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-port-matrix .is-danger i,
+  .router-overview-framework .ik-v420-port-matrix .is-danger i,
+  .ik-v420-port-matrix .is-danger i {
+    background: #a8322b !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-port-matrix b,
+  .router-overview-framework .ik-v420-port-matrix b,
+  .ik-v420-port-matrix b {
+    font-size: 9px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-port-matrix small,
+  .router-overview-framework .ik-v420-port-matrix small,
+  .ik-v420-port-matrix small {
+    font-size: 7px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-port-matrix em,
+  .router-overview-framework .ik-v420-port-matrix em,
+  .ik-v420-port-matrix em {
+    font-size: 6.7px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-resource-visual.ik-v620-pressure-visual,
+  .router-overview-framework .ik-v420-resource-visual.ik-v620-pressure-visual,
+  .ik-v420-resource-visual.ik-v620-pressure-visual {
+    min-height: 58px !important;
+    grid-template-rows: repeat(3, 17px) !important;
+    gap: 2px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-resource-visual.ik-v620-pressure-visual .ik-v420-resource-meter,
+  .router-overview-framework .ik-v420-resource-visual.ik-v620-pressure-visual .ik-v420-resource-meter,
+  .ik-v420-resource-visual.ik-v620-pressure-visual .ik-v420-resource-meter {
+    grid-template-columns: 24px 31px 32px 36px minmax(0, 1fr) !important;
+    min-height: 17px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-resource-visual.ik-v620-pressure-visual .ik-v420-resource-meter > i,
+  .router-overview-framework .ik-v420-resource-visual.ik-v620-pressure-visual .ik-v420-resource-meter > i,
+  .ik-v420-resource-visual.ik-v620-pressure-visual .ik-v420-resource-meter > i {
+    height: 1.5px !important;
+    background: rgba(139,164,190,.28) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-resource-visual.ik-v620-pressure-visual .ik-v420-resource-meter > i > i,
+  .router-overview-framework .ik-v420-resource-visual.ik-v620-pressure-visual .ik-v420-resource-meter > i > i,
+  .ik-v420-resource-visual.ik-v620-pressure-visual .ik-v420-resource-meter > i > i {
+    background: rgba(168,50,43,.42) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-timeline,
+  .router-overview-framework .ik-v420-timeline,
+  .ik-v420-timeline,
+  #overview.router-overview-framework .ik-v420-list,
+  .router-overview-framework .ik-v420-list,
+  .ik-v420-list {
+    border-radius: 0 !important;
+    background: rgba(255,255,255,.38) !important;
+    box-shadow: inset 0 1px 0 rgba(145,169,193,.18), inset 0 -1px 0 rgba(145,169,193,.18) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-timeline-row,
+  .router-overview-framework .ik-v420-timeline-row,
+  .ik-v420-timeline-row {
+    min-height: 40px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-list-row,
+  .router-overview-framework .ik-v420-list-row,
+  .ik-v420-list-row {
+    min-height: 50px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-tabs,
+  .router-overview-framework .ik-v420-tabs,
+  .ik-v420-tabs {
+    height: calc(62px + env(safe-area-inset-bottom, 0px)) !important;
+    min-height: calc(62px + env(safe-area-inset-bottom, 0px)) !important;
+    box-shadow: 0 -1px 0 rgba(145,169,193,.28) !important;
+  }
 }
 `;

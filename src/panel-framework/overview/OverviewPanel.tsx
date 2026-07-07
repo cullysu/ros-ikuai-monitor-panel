@@ -3159,6 +3159,16 @@ function noSnapshotReadonlyDegradedRows(snapshot: OverviewRawSnapshot, state: Ov
   ];
 }
 
+function noSnapshotAuxiliaryScopeRows(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): LedgerRow[] {
+  const recent = latestSuccess(snapshot, state.scenario);
+  return [
+    { id: "aux-business-scope", cells: ["业务域", "禁显", "无业务快照 / 等待恢复", "可见性边界"], tone: "missing" },
+    { id: "aux-rate-scope", cells: ["速率", "禁显", "禁止零值占位", "采集恢复后显示"], tone: "missing" },
+    { id: "aux-route-scope", cells: ["默认出口", "待判", "路由快照未取回", "不推断承载"], tone: "warn" },
+    { id: "aux-success-scope", cells: ["最近成功", recent, "采集链路时间点", pollText(snapshot)], tone: recent === "未记录" ? "warn" : "trust" },
+  ];
+}
+
 function lastSuccessRows(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): LedgerRow[] {
   const recent = latestSuccess(snapshot, state.scenario);
   const label = state.scenario === "collection-down" ? "最后成功" : "最近成功";
@@ -3458,13 +3468,17 @@ function compactDesktopPanelGroups(snapshot: OverviewRawSnapshot, state: Overvie
       main: [
         <Module key="ns-summary" title="采集链路" subtitle="RouterOS / REST / SSH / 快照" module="no-snapshot-summary" tone="danger" trust={trust} headers={["链路层", "当前", "最近成功", "主证据", "下次尝试"]} rows={chainRowsCompact} minRows={0} visual={<ChannelMatrixVisual module="no-snapshot-summary" rows={collectionChannelRows(snapshot, state)} />} />,
         <Module key="ns-channel" title="三通道状态" subtitle="失败端点 / 默认出口待判" module="no-snapshot-channel-status" tone="warn" trust={trust} headers={["通道", "当前", "说明"]} rows={channelRowsCompact} minRows={0} />,
+        <Module key="ns-main-scope" title="展示范围" subtitle="业务禁显 / 管理面证据" module="snapshot-main-scope" tone="missing" trust={trust} headers={["模块", "状态", "原因", "边界"]} rows={compactRows(noSnapshotAuxiliaryScopeRows(snapshot, state), 4)} minRows={0} />,
       ],
       side: [
         <Module key="ns-recent" title="最近成功" subtitle="时间 / 状态" module="no-snapshot-recent-success" tone="trust" trust={trust} headers={["节点", "当前", "说明"]} rows={compactRows(recentRows, 4)} minRows={0} visual={<ChainTimeline rows={compactRows(recentRows, 4)} module="no-snapshot-recent-success-timeline" />} />,
         <Module key="ns-visibility" title="模块可见性矩阵" subtitle="无快照 / 禁显" module="no-snapshot-module-visibility" tone="missing" trust={trust} headers={["模块", "状态", "原因", "边界"]} rows={compactRows(visibilityRows, 6)} minRows={0} visual={<VisibilityMatrixVisual rows={compactRows(visibilityRows, 6)} />} />,
+        <Module key="ns-side-degraded" title="降级模块" subtitle="只读边界 / 不推断业务值" module="snapshot-side-degraded" tone="missing" trust={trust} headers={["模块", "状态", "原因", "边界"]} rows={compactRows(noSnapshotAuxiliaryScopeRows(snapshot, state), 4)} minRows={0} />,
       ],
       bottom: [
-        <Module key="ns-degraded" title="证据边界" subtitle="WAN / 资源 / 终端 / 速率不展示" module="evidence-boundary" tone="missing" trust={trust} headers={["模块", "状态", "原因", "边界"]} rows={compactRows(noSnapshotReadonlyDegradedRows(snapshot, state), 4)} minRows={0} />,
+        <Module key="ns-bottom-chain" title="采集边界" subtitle="RouterOS / REST / SSH / 快照" module="snapshot-bottom-chain" tone="warn" trust={trust} headers={["链路层", "当前", "最近成功", "主证据", "下次尝试"]} rows={compactRows(chainRows, 4)} minRows={0} />,
+        <Module key="ns-bottom-visibility" title="不可展示模块" subtitle="WAN / 资源 / 终端 / 连接" module="snapshot-bottom-visibility" tone="missing" trust={trust} headers={["模块", "状态", "原因", "边界"]} rows={compactRows(visibilityRows, 4)} minRows={0} />,
+        <Module key="ns-degraded" title="证据边界" subtitle="速率不展示 / 不用零值撑版" module="evidence-boundary" tone="missing" trust={trust} headers={["模块", "状态", "原因", "边界"]} rows={compactRows(noSnapshotReadonlyDegradedRows(snapshot, state), 4)} minRows={0} />,
       ],
     };
   }
