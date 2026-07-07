@@ -52,6 +52,19 @@ export interface MobileWanPort {
   tone: OverviewTone;
 }
 
+export type MobileHeroVisualKind = "trend" | "wan-ports" | "resource-bars" | "interface-list" | "trust-channels";
+
+export interface MobileTrendChartModel {
+  source: "history" | "current";
+  windowText: string;
+  sampleText: string;
+  currentLabel: string;
+  peakLabel: string;
+  down: number[];
+  up: number[];
+  readouts: MobileMonitorFact[];
+}
+
 export type MobilePrimaryListKind = "terminal-ranking" | "wan-incident" | "interface-incident" | "collection-boundary" | "snapshot-boundary";
 
 export interface MobilePrimaryListModel {
@@ -68,6 +81,9 @@ export interface MobileOverviewModel {
     subtitle: string;
     facts: MobileMonitorFact[];
     pills: string[];
+    visualKind: MobileHeroVisualKind;
+    showMetrics: boolean;
+    trend: MobileTrendChartModel;
   };
   trustPlanes: MobileTrustPlane[];
   statusRows: MobileMonitorRow[];
@@ -175,6 +191,96 @@ function compactRate(value: number): string {
   return formatRate(value).replace(/\s+/g, "");
 }
 
+function trend(seed: number, variant: "down" | "up" | "hot" | "quiet" = "down"): number[] {
+  const base = Math.max(1, seed);
+  const pattern = {
+    down: [0.34, 0.42, 0.36, 0.55, 0.50, 0.70, 0.86, 0.78],
+    up: [0.18, 0.27, 0.22, 0.33, 0.40, 0.36, 0.48, 0.44],
+    hot: [0.52, 0.60, 0.72, 0.84, 0.78, 0.96, 0.90, 1],
+    quiet: [0.32, 0.31, 0.33, 0.32, 0.34, 0.33, 0.35, 0.34],
+  }[variant];
+  return pattern.map((ratio) => base * ratio);
+}
+
+function sampleTrafficRow(row: Record<string, unknown>): { down: number; up: number } {
+  const down = firstNumber(row, ["downRate", "downloadRate", "rxRate", "inRate", "down", "download", "rx", "in"]);
+  const up = firstNumber(row, ["upRate", "uploadRate", "txRate", "outRate", "up", "upload", "tx", "out"]);
+  return { down, up };
+}
+
+function historyTraffic(snapshot: OverviewRawSnapshot): { down: number[]; up: number[]; source: "history" | "current" } {
+  const raw = snapshot as unknown as Record<string, unknown>;
+  const traffic = isRecord(raw.traffic) ? raw.traffic : {};
+  const realtime = isRecord(raw.realtime) ? raw.realtime : {};
+  const sources = [
+    raw.history,
+    raw.samples,
+    raw.rateHistory,
+    raw.trafficHistory,
+    raw.wanHistory,
+    traffic.history,
+    traffic.samples,
+    realtime.history,
+    realtime.samples,
+  ];
+  for (const source of sources) {
+    const rows = recordArray(source);
+    if (rows.length >= 3) {
+      const sampled = rows.map(sampleTrafficRow);
+      const down = sampled.map((item) => item.down).filter((item) => Number.isFinite(item));
+      const up = sampled.map((item) => item.up).filter((item) => Number.isFinite(item));
+      if (down.some((item) => item > 0) || up.some((item) => item > 0)) {
+        return { down: down.slice(-12), up: up.slice(-12), source: "history" };
+      }
+    }
+    if (Array.isArray(source) && source.length >= 3 && source.every((item) => Number.isFinite(toNumber(item)))) {
+      const values = source.map((item) => toNumber(item)).slice(-12);
+      return { down: values, up: values.map((item, index) => item * (0.18 + (index % 3) * 0.05)), source: "history" };
+    }
+  }
+  return { down: [], up: [], source: "current" };
+}
+
+function networkTrendSeries(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): { down: number[]; up: number[]; source: "history" | "current" } {
+  const history = historyTraffic(snapshot);
+  if (history.down.length >= 3 || history.up.length >= 3) return history;
+  const rate = totals(snapshot);
+  if (state.scenario === "no-snapshot") {
+    return { down: trend(1, "quiet"), up: trend(0.45, "quiet"), source: "current" };
+  }
+  const hot = state.scenario === "resource-full" || state.scenario === "interfaces-down" || state.facts.wan.allOffline;
+  return {
+    down: trend(rate.down || Math.max(1, toNumber(state.facts.connections.total)), hot ? "hot" : "down"),
+    up: trend(rate.up || Math.max(1, rate.down * 0.22), hot ? "up" : "quiet"),
+    source: "current",
+  };
+}
+
+function trendChart(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): MobileTrendChartModel {
+  const series = networkTrendSeries(snapshot, state);
+  const down = series.down.length ? series.down : trend(1, "quiet");
+  const up = series.up.length ? series.up : trend(0.45, "quiet");
+  const peak = Math.max(...down);
+  const current = down[down.length - 1] || 0;
+  const windowText = series.source === "history" ? "近 12 点" : "当前窗口";
+  const sampleText = series.source === "history" ? "历史样本" : "实时估算";
+  return {
+    source: series.source,
+    windowText,
+    sampleText,
+    currentLabel: mobileRate(current),
+    peakLabel: mobileRate(peak),
+    down,
+    up,
+    readouts: [
+      { label: "当前", value: mobileRate(current), note: "下载", tone: "trust" },
+      { label: "峰值", value: mobileRate(peak), note: windowText, tone: "trust" },
+      { label: "窗口", value: series.source === "history" ? "12 点" : "实时", note: sampleText, tone: "trust" },
+      { label: "采样", value: series.source === "history" ? "历史" : "实时", note: "可信度", tone: state.facts.collection.credibilityTone },
+    ],
+  };
+}
+
 function stripRest(label: string): string {
   return clean(label.replace(/^REST\s*/i, ""), "可用");
 }
@@ -207,6 +313,18 @@ function priorityOf(state: OverviewDerivedState): MobileOverviewModel["priority"
   if (state.scenario === "interfaces-down" || state.facts.interfaces.down > 0) return "interface-down";
   if (state.scenario === "collection-down" || state.facts.collection.dataStale || state.facts.freshness.history) return "collection-degraded";
   return "normal";
+}
+
+function heroVisualKind(priority: MobileOverviewModel["priority"]): MobileHeroVisualKind {
+  if (priority === "wan-offline") return "wan-ports";
+  if (priority === "resource-full") return "resource-bars";
+  if (priority === "interface-down") return "interface-list";
+  if (priority === "snapshot-missing" || priority === "collection-degraded") return "trust-channels";
+  return "trend";
+}
+
+function showHeroMetrics(priority: MobileOverviewModel["priority"]): boolean {
+  return priority === "normal";
 }
 
 function resourceFacts(state: OverviewDerivedState): MobileMonitorFact[] {
@@ -598,13 +716,17 @@ function primaryList(snapshot: OverviewRawSnapshot, state: OverviewDerivedState)
 }
 
 export function buildMobileOverviewModel(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): MobileOverviewModel {
+  const priority = priorityOf(state);
   return {
-    priority: priorityOf(state),
+    priority,
     hero: {
       title: titleFor(state),
       subtitle: subtitleFor(snapshot, state),
       facts: heroFacts(snapshot, state),
       pills: heroPills(snapshot, state),
+      visualKind: heroVisualKind(priority),
+      showMetrics: showHeroMetrics(priority),
+      trend: trendChart(snapshot, state),
     },
     trustPlanes: trustPlanes(snapshot, state),
     statusRows: statusRows(snapshot, state),

@@ -7057,7 +7057,7 @@ var PanelFramework = function(exports) {
     if (meta.realtimeError || meta.slowRestError) return "cache";
     return "realtime";
   }
-  function wanRows$4(snapshot) {
+  function wanRows$3(snapshot) {
     return Array.isArray(snapshot.wan) && snapshot.wan.length ? snapshot.wan : Array.isArray(snapshot.pppoe) ? snapshot.pppoe : [];
   }
   function routeRows$1(snapshot) {
@@ -7187,7 +7187,7 @@ var PanelFramework = function(exports) {
     return { level, available, cpu, memory, disk, summaryText: available ? `处理器 ${formatPercent(cpu)} / 内存 ${formatPercent(memory)} / 磁盘 ${formatPercent(disk)}` : "处理器 未记录 / 内存 未记录 / 磁盘 未记录" };
   }
   function wanState(snapshot) {
-    const rows = wanRows$4(snapshot);
+    const rows = wanRows$3(snapshot);
     const available = !isSnapshotUnavailable(snapshot);
     const online = rows.filter((row) => row.running !== false).length;
     const total = rows.length;
@@ -7369,7 +7369,7 @@ var PanelFramework = function(exports) {
     const normalized = String(value ?? "").replace(/\s+/g, " ").trim();
     return normalized || fallback;
   }
-  function wanRows$3(snapshot) {
+  function wanRows$2(snapshot) {
     if (Array.isArray(snapshot.wan) && snapshot.wan.length) return snapshot.wan;
     return Array.isArray(snapshot.pppoe) ? snapshot.pppoe : [];
   }
@@ -7407,7 +7407,7 @@ var PanelFramework = function(exports) {
     return "实时";
   }
   function buildRouterOsTrustModel(snapshot, state) {
-    const totalWan = Math.max(state.facts.wan.total || wanRows$3(snapshot).length, state.facts.wan.allOffline ? 8 : 0);
+    const totalWan = Math.max(state.facts.wan.total || wanRows$2(snapshot).length, state.facts.wan.allOffline ? 8 : 0);
     const forwarding = {
       id: "forwarding",
       label: "转发面",
@@ -7448,11 +7448,11 @@ var PanelFramework = function(exports) {
     const normalized = String(value ?? "").replace(/\s+/g, " ").trim();
     return normalized || fallback;
   }
-  function isRecord$1(value) {
+  function isRecord(value) {
     return typeof value === "object" && value !== null;
   }
-  function recordArray$1(value) {
-    return Array.isArray(value) ? value.filter(isRecord$1) : [];
+  function recordArray(value) {
+    return Array.isArray(value) ? value.filter(isRecord) : [];
   }
   function firstText(row, keys, fallback = "-") {
     for (const key of keys) {
@@ -7461,14 +7461,14 @@ var PanelFramework = function(exports) {
     }
     return fallback;
   }
-  function firstNumber$1(row, keys) {
+  function firstNumber(row, keys) {
     for (const key of keys) {
       const value = toNumber(row[key]);
       if (Number.isFinite(value) && value > 0) return value;
     }
     return 0;
   }
-  function wanRows$2(snapshot) {
+  function wanRows$1(snapshot) {
     if (Array.isArray(snapshot.wan) && snapshot.wan.length) return snapshot.wan;
     return Array.isArray(snapshot.pppoe) ? snapshot.pppoe : [];
   }
@@ -7497,8 +7497,8 @@ var PanelFramework = function(exports) {
     const raw = state.scenario === "no-snapshot" ? meta.staticUpdatedAt || meta.realtimeUpdatedAt || snapshot.updatedAt : snapshot.updatedAt || meta.realtimeUpdatedAt || meta.staticUpdatedAt || meta.slowRestUpdatedAt;
     return mobileTime$1(raw);
   }
-  function totals$1(snapshot) {
-    return wanRows$2(snapshot).reduce(
+  function totals(snapshot) {
+    return wanRows$1(snapshot).reduce(
       (sum, row) => ({
         up: sum.up + toNumber(row.upRate),
         down: sum.down + toNumber(row.downRate)
@@ -7506,7 +7506,7 @@ var PanelFramework = function(exports) {
       { up: 0, down: 0 }
     );
   }
-  function mobileRate$1(value) {
+  function mobileRate(value) {
     if (!Number.isFinite(value) || value <= 0) return "未采集";
     if (value >= 1e9) {
       const scaled = value / 1e9;
@@ -7525,6 +7525,91 @@ var PanelFramework = function(exports) {
   function compactRate(value) {
     if (!Number.isFinite(value) || value <= 0) return "未采集";
     return formatRate(value).replace(/\s+/g, "");
+  }
+  function trend(seed, variant = "down") {
+    const base2 = Math.max(1, seed);
+    const pattern = {
+      down: [0.34, 0.42, 0.36, 0.55, 0.5, 0.7, 0.86, 0.78],
+      up: [0.18, 0.27, 0.22, 0.33, 0.4, 0.36, 0.48, 0.44],
+      hot: [0.52, 0.6, 0.72, 0.84, 0.78, 0.96, 0.9, 1],
+      quiet: [0.32, 0.31, 0.33, 0.32, 0.34, 0.33, 0.35, 0.34]
+    }[variant];
+    return pattern.map((ratio) => base2 * ratio);
+  }
+  function sampleTrafficRow(row) {
+    const down = firstNumber(row, ["downRate", "downloadRate", "rxRate", "inRate", "down", "download", "rx", "in"]);
+    const up = firstNumber(row, ["upRate", "uploadRate", "txRate", "outRate", "up", "upload", "tx", "out"]);
+    return { down, up };
+  }
+  function historyTraffic(snapshot) {
+    const raw = snapshot;
+    const traffic = isRecord(raw.traffic) ? raw.traffic : {};
+    const realtime = isRecord(raw.realtime) ? raw.realtime : {};
+    const sources = [
+      raw.history,
+      raw.samples,
+      raw.rateHistory,
+      raw.trafficHistory,
+      raw.wanHistory,
+      traffic.history,
+      traffic.samples,
+      realtime.history,
+      realtime.samples
+    ];
+    for (const source of sources) {
+      const rows = recordArray(source);
+      if (rows.length >= 3) {
+        const sampled = rows.map(sampleTrafficRow);
+        const down = sampled.map((item) => item.down).filter((item) => Number.isFinite(item));
+        const up = sampled.map((item) => item.up).filter((item) => Number.isFinite(item));
+        if (down.some((item) => item > 0) || up.some((item) => item > 0)) {
+          return { down: down.slice(-12), up: up.slice(-12), source: "history" };
+        }
+      }
+      if (Array.isArray(source) && source.length >= 3 && source.every((item) => Number.isFinite(toNumber(item)))) {
+        const values = source.map((item) => toNumber(item)).slice(-12);
+        return { down: values, up: values.map((item, index) => item * (0.18 + index % 3 * 0.05)), source: "history" };
+      }
+    }
+    return { down: [], up: [], source: "current" };
+  }
+  function networkTrendSeries(snapshot, state) {
+    const history = historyTraffic(snapshot);
+    if (history.down.length >= 3 || history.up.length >= 3) return history;
+    const rate = totals(snapshot);
+    if (state.scenario === "no-snapshot") {
+      return { down: trend(1, "quiet"), up: trend(0.45, "quiet"), source: "current" };
+    }
+    const hot = state.scenario === "resource-full" || state.scenario === "interfaces-down" || state.facts.wan.allOffline;
+    return {
+      down: trend(rate.down || Math.max(1, toNumber(state.facts.connections.total)), hot ? "hot" : "down"),
+      up: trend(rate.up || Math.max(1, rate.down * 0.22), hot ? "up" : "quiet"),
+      source: "current"
+    };
+  }
+  function trendChart(snapshot, state) {
+    const series = networkTrendSeries(snapshot, state);
+    const down = series.down.length ? series.down : trend(1, "quiet");
+    const up = series.up.length ? series.up : trend(0.45, "quiet");
+    const peak = Math.max(...down);
+    const current = down[down.length - 1] || 0;
+    const windowText = series.source === "history" ? "近 12 点" : "当前窗口";
+    const sampleText = series.source === "history" ? "历史样本" : "实时估算";
+    return {
+      source: series.source,
+      windowText,
+      sampleText,
+      currentLabel: mobileRate(current),
+      peakLabel: mobileRate(peak),
+      down,
+      up,
+      readouts: [
+        { label: "当前", value: mobileRate(current), note: "下载", tone: "trust" },
+        { label: "峰值", value: mobileRate(peak), note: windowText, tone: "trust" },
+        { label: "窗口", value: series.source === "history" ? "12 点" : "实时", note: sampleText, tone: "trust" },
+        { label: "采样", value: series.source === "history" ? "历史" : "实时", note: "可信度", tone: state.facts.collection.credibilityTone }
+      ]
+    };
   }
   function stripRest$1(label) {
     return clean$1(label.replace(/^REST\s*/i, ""), "可用");
@@ -7555,6 +7640,16 @@ var PanelFramework = function(exports) {
     if (state.scenario === "collection-down" || state.facts.collection.dataStale || state.facts.freshness.history) return "collection-degraded";
     return "normal";
   }
+  function heroVisualKind(priority) {
+    if (priority === "wan-offline") return "wan-ports";
+    if (priority === "resource-full") return "resource-bars";
+    if (priority === "interface-down") return "interface-list";
+    if (priority === "snapshot-missing" || priority === "collection-degraded") return "trust-channels";
+    return "trend";
+  }
+  function showHeroMetrics(priority) {
+    return priority === "normal";
+  }
   function resourceFacts(state) {
     const hidden = state.scenario === "no-snapshot";
     return [
@@ -7582,7 +7677,7 @@ var PanelFramework = function(exports) {
     return state.verdict.level === "warn" ? "需确认" : "转发正常";
   }
   function subtitleFor(snapshot, state) {
-    if (state.scenario === "fleet") return `WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(Math.max(state.facts.wan.total || wanRows$2(snapshot).length, 1))}，异常 ${formatNumber(Math.max(state.facts.wan.offline, state.facts.interfaces.down, 0))}，最近 ${latestSuccess$2(snapshot, state)}。`;
+    if (state.scenario === "fleet") return `WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(Math.max(state.facts.wan.total || wanRows$1(snapshot).length, 1))}，异常 ${formatNumber(Math.max(state.facts.wan.offline, state.facts.interfaces.down, 0))}，最近 ${latestSuccess$2(snapshot, state)}。`;
     const priority = priorityOf(state);
     if (priority === "snapshot-missing") return "当前无可信业务快照。";
     if (priority === "wan-offline") return `默认路由不可用，最近 ${latestSuccess$2(snapshot, state)}。`;
@@ -7593,8 +7688,8 @@ var PanelFramework = function(exports) {
   }
   function heroFacts(snapshot, state) {
     const priority = priorityOf(state);
-    const totalWan = Math.max(state.facts.wan.total || wanRows$2(snapshot).length, state.facts.wan.allOffline ? 8 : 0);
-    const rate = totals$1(snapshot);
+    const totalWan = Math.max(state.facts.wan.total || wanRows$1(snapshot).length, state.facts.wan.allOffline ? 8 : 0);
+    const rate = totals(snapshot);
     if (priority === "snapshot-missing") {
       return [
         { label: "RouterOS", value: "不可达", note: "当前", tone: "danger" },
@@ -7650,13 +7745,13 @@ var PanelFramework = function(exports) {
     }
     return [
       { label: "WAN", value: `${formatNumber(state.facts.wan.online)}/${formatNumber(totalWan || 1)}`, note: "在线", tone: state.facts.wan.offline ? "warn" : "ok" },
-      { label: "下载", value: mobileRate$1(rate.down), note: "WAN 汇总", tone: rate.down > 0 ? "ok" : "trust" },
-      { label: "上传", value: mobileRate$1(rate.up), note: "WAN 汇总", tone: rate.up > 0 ? "ok" : "trust" },
+      { label: "下载", value: mobileRate(rate.down), note: "WAN 汇总", tone: rate.down > 0 ? "ok" : "trust" },
+      { label: "上传", value: mobileRate(rate.up), note: "WAN 汇总", tone: rate.up > 0 ? "ok" : "trust" },
       { label: "路由", value: mobileRouteValue(state), note: "默认", tone: state.facts.route.level }
     ];
   }
   function heroPills(snapshot, state) {
-    const totalWan = Math.max(state.facts.wan.total || wanRows$2(snapshot).length, state.facts.wan.allOffline ? 8 : 0);
+    const totalWan = Math.max(state.facts.wan.total || wanRows$1(snapshot).length, state.facts.wan.allOffline ? 8 : 0);
     const priority = priorityOf(state);
     if (state.scenario === "fleet") return [
       `WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(totalWan || 1)}`,
@@ -7678,7 +7773,7 @@ var PanelFramework = function(exports) {
     return buildRouterOsTrustModel(snapshot, state).planes;
   }
   function statusRows(snapshot, state) {
-    const totalWan = Math.max(state.facts.wan.total || wanRows$2(snapshot).length, state.facts.wan.allOffline ? 8 : 0);
+    const totalWan = Math.max(state.facts.wan.total || wanRows$1(snapshot).length, state.facts.wan.allOffline ? 8 : 0);
     const resource = resourceFacts(state);
     if (state.scenario === "no-snapshot") {
       return [
@@ -7693,7 +7788,7 @@ var PanelFramework = function(exports) {
         id: "timeline-wan",
         title: "WAN",
         value: state.facts.wan.allOffline ? `0/${formatNumber(totalWan)} 在线` : `${formatNumber(state.facts.wan.online)}/${formatNumber(totalWan || 1)} 在线`,
-        note: state.facts.wan.allOffline ? "所有出口离线" : `↓${compactRate(totals$1(snapshot).down)} ↑${compactRate(totals$1(snapshot).up)}`,
+        note: state.facts.wan.allOffline ? "所有出口离线" : `↓${compactRate(totals(snapshot).down)} ↑${compactRate(totals(snapshot).up)}`,
         tone: state.facts.wan.allOffline ? "danger" : state.facts.wan.offline ? "warn" : "ok"
       },
       {
@@ -7734,7 +7829,7 @@ var PanelFramework = function(exports) {
     return pick(["timeline-wan", "timeline-collection", "timeline-resource", "timeline-route"]);
   }
   function wanPorts(snapshot, state) {
-    const rows = Array.from({ length: 8 }, (_, index) => wanRows$2(snapshot)[index] || { name: `WAN${index + 1}`, running: false });
+    const rows = Array.from({ length: 8 }, (_, index) => wanRows$1(snapshot)[index] || { name: `WAN${index + 1}`, running: false });
     return rows.map((row, index) => {
       const offline = state.facts.wan.allOffline || row.running === false;
       const name = clean$1(row.name || row.interface, `WAN${index + 1}`);
@@ -7749,7 +7844,7 @@ var PanelFramework = function(exports) {
     });
   }
   function offlineWanRows(snapshot, state) {
-    const source = wanRows$2(snapshot);
+    const source = wanRows$1(snapshot);
     const total = Math.max(8, state.facts.wan.total || source.length);
     return Array.from({ length: Math.min(5, total) }, (_, index) => {
       const row = source[index] || { name: `pppoe-wan${index + 1}` };
@@ -7802,8 +7897,8 @@ var PanelFramework = function(exports) {
   }
   function terminalCandidates(snapshot) {
     const raw = snapshot;
-    const connections = isRecord$1(raw.connections) ? raw.connections : {};
-    const traffic = isRecord$1(raw.traffic) ? raw.traffic : {};
+    const connections = isRecord(raw.connections) ? raw.connections : {};
+    const traffic = isRecord(raw.traffic) ? raw.traffic : {};
     const sources = [
       raw.terminals,
       raw.clients,
@@ -7817,7 +7912,7 @@ var PanelFramework = function(exports) {
       traffic.topTerminals
     ];
     for (const source of sources) {
-      const rows = recordArray$1(source);
+      const rows = recordArray(source);
       if (rows.length) return rows;
     }
     return [];
@@ -7866,17 +7961,17 @@ var PanelFramework = function(exports) {
     const rows = terminalCandidates(snapshot).map((row, index) => {
       const { name, ip } = terminalName(row, index);
       const kind = terminalKind(row, name);
-      const down = firstNumber$1(row, ["downRate", "downloadRate", "rxRate", "download", "down", "bytesDown", "rxBytes"]);
-      const up = firstNumber$1(row, ["upRate", "uploadRate", "txRate", "upload", "up", "bytesUp", "txBytes"]);
-      const total = firstNumber$1(row, ["totalRate", "rate", "traffic", "bytes", "total", "value"]) || down + up;
+      const down = firstNumber(row, ["downRate", "downloadRate", "rxRate", "download", "down", "bytesDown", "rxBytes"]);
+      const up = firstNumber(row, ["upRate", "uploadRate", "txRate", "upload", "up", "bytesUp", "txBytes"]);
+      const total = firstNumber(row, ["totalRate", "rate", "traffic", "bytes", "total", "value"]) || down + up;
       const status = terminalStatus(row);
       return {
         id: clean$1(row.id ?? row.mac ?? row.ip ?? `terminal-${index}`, `terminal-${index}`),
         rank: index + 1,
         name,
         kind,
-        meta: `${ip} · ↓${mobileRate$1(down)} ↑${mobileRate$1(up)}`,
-        value: status.abnormal ? status.text : total ? mobileRate$1(total) : "未采集",
+        meta: `${ip} · ↓${mobileRate(down)} ↑${mobileRate(up)}`,
+        value: status.abnormal ? status.text : total ? mobileRate(total) : "未采集",
         status: status.text,
         percent: total,
         tone: status.tone,
@@ -7920,13 +8015,17 @@ var PanelFramework = function(exports) {
     return { kind: "terminal-ranking", title: "设备排行", meta: "异常优先 · 总流量", rows: terminalRankingRows(snapshot) };
   }
   function buildMobileOverviewModel(snapshot, state) {
+    const priority = priorityOf(state);
     return {
-      priority: priorityOf(state),
+      priority,
       hero: {
         title: titleFor(state),
         subtitle: subtitleFor(snapshot, state),
         facts: heroFacts(snapshot, state),
-        pills: heroPills(snapshot, state)
+        pills: heroPills(snapshot, state),
+        visualKind: heroVisualKind(priority),
+        showMetrics: showHeroMetrics(priority),
+        trend: trendChart(snapshot, state)
       },
       trustPlanes: trustPlanes(snapshot, state),
       statusRows: statusRows(snapshot, state),
@@ -7964,23 +8063,6 @@ var PanelFramework = function(exports) {
   function clean(value, fallback = "-") {
     const normalized = String(value ?? "").replace(/\s+/g, " ").trim();
     return normalized || fallback;
-  }
-  function isRecord(value) {
-    return typeof value === "object" && value !== null;
-  }
-  function recordArray(value) {
-    return Array.isArray(value) ? value.filter(isRecord) : [];
-  }
-  function firstNumber(row, keys) {
-    for (const key of keys) {
-      const value = toNumber(row[key]);
-      if (Number.isFinite(value) && value > 0) return value;
-    }
-    return 0;
-  }
-  function wanRows$1(snapshot) {
-    if (Array.isArray(snapshot.wan) && snapshot.wan.length) return snapshot.wan;
-    return Array.isArray(snapshot.pppoe) ? snapshot.pppoe : [];
   }
   function interfaceRows$1(snapshot) {
     return Array.isArray(snapshot.interfaces) ? snapshot.interfaces : [];
@@ -8032,31 +8114,6 @@ var PanelFramework = function(exports) {
     if (state.scenario === "collection-down" || state.facts.collection.dataStale || state.facts.freshness.history) return "缓存快照";
     return "实时可信";
   }
-  function totals(snapshot) {
-    return wanRows$1(snapshot).reduce(
-      (sum, row) => ({
-        up: sum.up + toNumber(row.upRate),
-        down: sum.down + toNumber(row.downRate)
-      }),
-      { up: 0, down: 0 }
-    );
-  }
-  function mobileRate(value) {
-    if (!Number.isFinite(value) || value <= 0) return "未采集";
-    if (value >= 1e9) {
-      const scaled = value / 1e9;
-      return `${scaled >= 10 ? scaled.toFixed(0) : scaled.toFixed(1)}G`;
-    }
-    if (value >= 1e6) {
-      const scaled = value / 1e6;
-      return `${scaled >= 10 ? scaled.toFixed(0) : scaled.toFixed(1)}M`;
-    }
-    if (value >= 1e3) {
-      const scaled = value / 1e3;
-      return `${scaled >= 10 ? scaled.toFixed(0) : scaled.toFixed(1)}K`;
-    }
-    return `${Math.round(value)}`;
-  }
   function stripRest(label) {
     return clean(label.replace(/^REST\s*/i, ""), "可用");
   }
@@ -8105,67 +8162,6 @@ var PanelFramework = function(exports) {
     const [x2, y2] = last.split(",").map((item) => Number(item));
     return { x: Number.isFinite(x2) ? x2 : 0, y: Number.isFinite(y2) ? y2 : 0 };
   }
-  function sampleTrafficRow(row) {
-    const down = firstNumber(row, ["downRate", "downloadRate", "rxRate", "inRate", "down", "download", "rx", "in"]);
-    const up = firstNumber(row, ["upRate", "uploadRate", "txRate", "outRate", "up", "upload", "tx", "out"]);
-    return { down, up };
-  }
-  function historyTraffic(snapshot) {
-    const raw = snapshot;
-    const traffic = isRecord(raw.traffic) ? raw.traffic : {};
-    const realtime = isRecord(raw.realtime) ? raw.realtime : {};
-    const sources = [
-      raw.history,
-      raw.samples,
-      raw.rateHistory,
-      raw.trafficHistory,
-      raw.wanHistory,
-      traffic.history,
-      traffic.samples,
-      realtime.history,
-      realtime.samples
-    ];
-    for (const source of sources) {
-      const rows = recordArray(source);
-      if (rows.length >= 3) {
-        const sampled = rows.map(sampleTrafficRow);
-        const down = sampled.map((item) => item.down).filter((item) => Number.isFinite(item));
-        const up = sampled.map((item) => item.up).filter((item) => Number.isFinite(item));
-        if (down.some((item) => item > 0) || up.some((item) => item > 0)) {
-          return { down: down.slice(-12), up: up.slice(-12), source: "history" };
-        }
-      }
-      if (Array.isArray(source) && source.length >= 3 && source.every((item) => Number.isFinite(toNumber(item)))) {
-        const values = source.map((item) => toNumber(item)).slice(-12);
-        return { down: values, up: values.map((item, index) => item * (0.18 + index % 3 * 0.05)), source: "history" };
-      }
-    }
-    return { down: [], up: [], source: "current" };
-  }
-  function networkSparkSeries(snapshot, state) {
-    const history = historyTraffic(snapshot);
-    if (history.down.length >= 3 || history.up.length >= 3) return history;
-    const rate = totals(snapshot);
-    if (state.scenario === "no-snapshot") {
-      return { down: trend(1, "quiet"), up: trend(0.45, "quiet"), source: "current" };
-    }
-    const hot = state.scenario === "resource-full" || state.scenario === "interfaces-down" || state.facts.wan.allOffline;
-    return {
-      down: trend(rate.down || Math.max(1, toNumber(state.facts.connections.total)), hot ? "hot" : "down"),
-      up: trend(rate.up || Math.max(1, rate.down * 0.22), hot ? "up" : "quiet"),
-      source: "current"
-    };
-  }
-  function trend(seed, variant = "down") {
-    const base2 = Math.max(1, seed);
-    const pattern = {
-      down: [0.34, 0.42, 0.36, 0.55, 0.5, 0.7, 0.86, 0.78],
-      up: [0.18, 0.27, 0.22, 0.33, 0.4, 0.36, 0.48, 0.44],
-      hot: [0.52, 0.6, 0.72, 0.84, 0.78, 0.96, 0.9, 1],
-      quiet: [0.32, 0.31, 0.33, 0.32, 0.34, 0.33, 0.35, 0.34]
-    }[variant];
-    return pattern.map((ratio) => base2 * ratio);
-  }
   function V420Nav({ snapshot, state }) {
     const name = clean(snapshot.identity || snapshot.name || snapshot.deviceName || state.facts.device.identity || "爱快路由");
     const version = clean(snapshot.version || snapshot.routerosVersion || state.facts.device.version || "RouterOS");
@@ -8187,10 +8183,9 @@ var PanelFramework = function(exports) {
       ] })
     ] });
   }
-  function V420LineChart({ snapshot, state }) {
-    const series = networkSparkSeries(snapshot, state);
-    const down = series.down.length ? series.down : trend(1, "quiet");
-    const up = series.up.length ? series.up : trend(0.45, "quiet");
+  function V420LineChart({ chart }) {
+    const down = chart.down.length ? chart.down : [1, 1, 1];
+    const up = chart.up.length ? chart.up : [0.45, 0.45, 0.45];
     const max = Math.max(1, ...down, ...up);
     const downPoints = sparkPoints(down, max, 312, 52);
     const upPoints = sparkPoints(up, max, 312, 52);
@@ -8199,21 +8194,21 @@ var PanelFramework = function(exports) {
     const peakIndex = Math.max(0, down.findIndex((value) => value === peakValue));
     const peakX = down.length > 1 ? Number((peakIndex * 312 / (down.length - 1)).toFixed(1)) : 156;
     const peakY = Number((52 - Math.max(0, peakValue) / max * 40 - 6).toFixed(1));
-    const windowText = series.source === "history" ? "最近 12 点" : "当前窗口";
     return /* @__PURE__ */ jsxRuntimeExports.jsxs(
       "svg",
       {
         className: "ik-v420-line-chart",
         viewBox: "0 0 312 72",
         role: "img",
-        "aria-label": `${windowText} WAN 下载上传趋势，峰值 ${mobileRate(peakValue)}`,
+        "aria-label": `${chart.windowText} WAN 下载上传趋势，峰值 ${chart.peakLabel}，采样 ${chart.sampleText}`,
         "data-overview-chart-type": "mini-line",
         "data-overview-scene-chart": "mobile-wan-rate-sparkline",
         "data-overview-mobile-first-visual": "thin-wan-sparkline",
         "data-overview-mobile-v420-visual": "thin-wan-sparkline",
-        "data-overview-line-source": series.source,
-        "data-overview-mobile-chart-window": windowText,
-        "data-overview-mobile-chart-peak": mobileRate(peakValue),
+        "data-overview-line-source": chart.source,
+        "data-overview-mobile-chart-window": chart.windowText,
+        "data-overview-mobile-chart-peak": chart.peakLabel,
+        "data-overview-mobile-chart-sample": chart.sampleText,
         children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx("path", { className: "ik-v420-gridline", d: "M0 13 H312 M0 31 H312 M0 47 H312" }),
           /* @__PURE__ */ jsxRuntimeExports.jsx("path", { className: "ik-v420-area", d: `M0 52 L${downPoints} L312 52 Z` }),
@@ -8221,41 +8216,27 @@ var PanelFramework = function(exports) {
           /* @__PURE__ */ jsxRuntimeExports.jsx("polyline", { className: "ik-v420-curve is-soft", points: upPoints }),
           /* @__PURE__ */ jsxRuntimeExports.jsx("circle", { className: "ik-v420-peak-dot", cx: peakX, cy: peakY, r: "2.6" }),
           /* @__PURE__ */ jsxRuntimeExports.jsx("circle", { className: "ik-v420-focus-dot", cx: focus.x, cy: focus.y, r: "2.8" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("text", { x: "0", y: "68", children: windowText }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("text", { x: "0", y: "68", children: chart.windowText }),
           /* @__PURE__ */ jsxRuntimeExports.jsxs("text", { x: "156", y: "68", textAnchor: "middle", children: [
             "峰 ",
-            mobileRate(peakValue)
+            chart.peakLabel
           ] }),
           /* @__PURE__ */ jsxRuntimeExports.jsxs("text", { x: "312", y: "68", textAnchor: "end", children: [
             "当前 ",
-            mobileRate(down[down.length - 1] || 0)
+            chart.currentLabel
           ] })
         ]
       }
     );
   }
-  function V420TrendVisual({ snapshot, state }) {
-    const series = networkSparkSeries(snapshot, state);
-    const down = series.down.length ? series.down : trend(1, "quiet");
-    const peak = Math.max(...down);
-    const current = down[down.length - 1] || 0;
-    const windowText = series.source === "history" ? "12点" : "当前";
+  function V420TrendVisual({ model }) {
+    const chart = model.hero.trend;
     return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ik-v812-trend-visual", "data-overview-mobile-chart-readout": "current-peak-window", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx(V420LineChart, { snapshot, state }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("aside", { children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: "当前" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: mobileRate(current) })
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: "峰值" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: mobileRate(peak) })
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: "窗口" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: windowText })
-        ] })
-      ] })
+      /* @__PURE__ */ jsxRuntimeExports.jsx(V420LineChart, { chart }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("aside", { children: chart.readouts.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: toneClass(item.tone), children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: item.label }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: item.value })
+      ] }, `${item.label}-${item.value}`)) })
     ] });
   }
   function V420PortMatrix({ snapshot, state }) {
@@ -8359,21 +8340,15 @@ var PanelFramework = function(exports) {
     );
   }
   function V420HeroVisual(props) {
-    const priority = buildMobileOverviewModel(props.snapshot, props.state).priority;
-    if (priority === "wan-offline") return /* @__PURE__ */ jsxRuntimeExports.jsx(V420PortMatrix, { ...props });
-    if (priority === "resource-full") return /* @__PURE__ */ jsxRuntimeExports.jsx(V420ResourceVisual, { state: props.state });
-    if (priority === "interface-down") return /* @__PURE__ */ jsxRuntimeExports.jsx(V420InterfaceFlow, { ...props });
-    if (priority === "snapshot-missing" || priority === "collection-degraded") return /* @__PURE__ */ jsxRuntimeExports.jsx(V420ChannelRail, { state: props.state });
-    return /* @__PURE__ */ jsxRuntimeExports.jsx(V420TrendVisual, { ...props });
+    if (props.model.hero.visualKind === "wan-ports") return /* @__PURE__ */ jsxRuntimeExports.jsx(V420PortMatrix, { ...props });
+    if (props.model.hero.visualKind === "resource-bars") return /* @__PURE__ */ jsxRuntimeExports.jsx(V420ResourceVisual, { state: props.state });
+    if (props.model.hero.visualKind === "interface-list") return /* @__PURE__ */ jsxRuntimeExports.jsx(V420InterfaceFlow, { ...props });
+    if (props.model.hero.visualKind === "trust-channels") return /* @__PURE__ */ jsxRuntimeExports.jsx(V420ChannelRail, { state: props.state });
+    return /* @__PURE__ */ jsxRuntimeExports.jsx(V420TrendVisual, { model: props.model });
   }
-  function V420HeroStats(snapshot, state) {
-    return buildMobileOverviewModel(snapshot, state).hero.facts;
-  }
-  function heroSentence(_snapshot, state) {
-    return buildMobileOverviewModel(_snapshot, state).hero.subtitle;
-  }
-  function V420HeroMetrics({ snapshot, state }) {
-    const readings = V420HeroStats(snapshot, state);
+  function V420HeroMetrics({ model }) {
+    const readings = model.hero.facts;
+    if (!model.hero.showMetrics || !readings.length) return null;
     return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ik-v420-hero-stats", "data-overview-mobile-core-block": "hero-stats", "data-overview-mobile-hero-metrics": "download-upload-latency-connections", children: readings.map((item, index) => /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: `${toneClass(item.tone)} ${index === 0 ? "is-primary" : ""}`, children: [
       /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: item.label }),
       /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: item.value }),
@@ -8414,14 +8389,16 @@ var PanelFramework = function(exports) {
         "data-overview-mobile-first-microchart": "true",
         "data-overview-mobile-v620-hero": "conclusion-two-numbers-one-chart",
         "data-overview-mobile-priority": model.priority,
+        "data-overview-mobile-visual-kind": model.hero.visualKind,
+        "data-overview-mobile-hero-metrics": model.hero.showMetrics ? "visible" : "suppressed",
         children: [
           /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { className: "ik-v620-hero-head", children: [
             /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { "data-overview-primary-conclusion": "true", children: model.hero.title }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "ik-v503-hero-copy", children: heroSentence(snapshot, state) })
+            /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "ik-v503-hero-copy", children: model.hero.subtitle })
           ] }),
           /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ik-v620-hero-stage", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx(V420HeroMetrics, { ...props }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ik-v420-visual ik-v240-visual ik-v240-traffic", children: V420HeroVisual(props) })
+            /* @__PURE__ */ jsxRuntimeExports.jsx(V420HeroMetrics, { model }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ik-v420-visual ik-v240-visual ik-v240-traffic", children: V420HeroVisual({ ...props, model }) })
           ] }),
           /* @__PURE__ */ jsxRuntimeExports.jsx(V420HeroTrustRail, { model })
         ]
@@ -16446,7 +16423,7 @@ var PanelFramework = function(exports) {
   #overview.router-overview-framework .ik-v812-trend-visual,
   .router-overview-framework .ik-v812-trend-visual,
   .ik-v812-trend-visual {
-    grid-template-columns: minmax(0, 1fr) 50px !important;
+    grid-template-columns: minmax(0, 1fr) 62px !important;
     gap: 5px !important;
   }
 
@@ -16459,7 +16436,11 @@ var PanelFramework = function(exports) {
   #overview.router-overview-framework .ik-v812-trend-visual aside span,
   .router-overview-framework .ik-v812-trend-visual aside span,
   .ik-v812-trend-visual aside span {
-    min-height: 18px !important;
+    display: flex !important;
+    align-items: baseline !important;
+    justify-content: space-between !important;
+    gap: 4px !important;
+    min-height: 16px !important;
   }
 
   #overview.router-overview-framework .ik-v812-trend-visual aside em,
@@ -16471,7 +16452,7 @@ var PanelFramework = function(exports) {
   #overview.router-overview-framework .ik-v812-trend-visual aside b,
   .router-overview-framework .ik-v812-trend-visual aside b,
   .ik-v812-trend-visual aside b {
-    font-size: 9px !important;
+    font-size: 8.6px !important;
   }
 
   #overview.router-overview-framework .ik-v830-trust-rail,

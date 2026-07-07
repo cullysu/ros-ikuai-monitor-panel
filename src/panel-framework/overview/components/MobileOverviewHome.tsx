@@ -1,9 +1,7 @@
 import type { CSSProperties } from "react";
 import {
-  formatCompact,
   formatNumber,
   formatPercent,
-  formatRate,
   shortTimestamp,
   toNumber,
   type OverviewDerivedState,
@@ -12,20 +10,13 @@ import {
   type OverviewRawWanRow,
   type OverviewTone,
 } from "../index";
-import { buildMobileOverviewModel, type MobileOverviewModel } from "../mobileOverviewModel";
+import { buildMobileOverviewModel, type MobileOverviewModel, type MobileTrendChartModel } from "../mobileOverviewModel";
 import { MOBILE_OVERVIEW_TOKEN_CSS } from "../mobileOverviewTokens";
 
 interface MobileOverviewHomeProps {
   snapshot: OverviewRawSnapshot;
   state: OverviewDerivedState;
 }
-
-type Reading = {
-  label: string;
-  value: string;
-  note: string;
-  tone: OverviewTone;
-};
 
 type ResourceReading = {
   key: "processor" | "memory" | "disk";
@@ -65,30 +56,6 @@ type ChannelReading = {
 function clean(value: unknown, fallback = "-"): string {
   const normalized = String(value ?? "").replace(/\s+/g, " ").trim();
   return normalized || fallback;
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null;
-}
-
-function recordArray(value: unknown): Record<string, unknown>[] {
-  return Array.isArray(value) ? value.filter(isRecord) : [];
-}
-
-function firstText(row: Record<string, unknown>, keys: string[], fallback = "-"): string {
-  for (const key of keys) {
-    const value = clean(row[key], "");
-    if (value) return value;
-  }
-  return fallback;
-}
-
-function firstNumber(row: Record<string, unknown>, keys: string[]): number {
-  for (const key of keys) {
-    const value = toNumber(row[key]);
-    if (Number.isFinite(value) && value > 0) return value;
-  }
-  return 0;
 }
 
 function wanRows(snapshot: OverviewRawSnapshot): OverviewRawWanRow[] {
@@ -156,124 +123,10 @@ function statusLabel(state: OverviewDerivedState): string {
   return "在线";
 }
 
-function conclusion(state: OverviewDerivedState): string {
-  if (state.scenario === "no-snapshot") return "业务快照缺失";
-  if (state.scenario === "all-offline" || (state.facts.wan.allOffline && state.scenario !== "interfaces-down")) return "WAN 全离线";
-  if (state.scenario === "resource-full") return "资源满载";
-  if (state.scenario === "interfaces-down") return "接口 Down";
-  if (state.scenario === "collection-down") return "采集降级";
-  if (state.scenario === "single") return "状态良好";
-  if (state.verdict.level === "warn") return "网络需确认";
-  return "状态良好";
-}
-
-function objectText(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): string {
-  if (state.scenario === "resource-full") {
-    const peak = resourcePeak(state);
-    return `${peak.label} ${peak.display}`;
-  }
-  if (state.scenario === "all-offline" || (state.facts.wan.allOffline && state.scenario !== "interfaces-down")) {
-    return `WAN 0/${formatNumber(Math.max(8, state.facts.wan.total || wanRows(snapshot).length))}`;
-  }
-  if (state.scenario === "no-snapshot") return "业务快照";
-  if (state.scenario === "interfaces-down") return `${formatNumber(state.facts.interfaces.down)} 个接口`;
-  if (state.scenario === "collection-down") return "采集通道";
-  return `WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(state.facts.wan.total || wanRows(snapshot).length)}`;
-}
-
-function heroObjectText(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): string {
-  return objectText(snapshot, state);
-}
-
-function impactText(state: OverviewDerivedState): string {
-  if (state.scenario === "no-snapshot") return "无可信业务数据";
-  if (state.scenario === "all-offline" || (state.facts.wan.allOffline && state.scenario !== "interfaces-down")) return "主出口不可用";
-  if (state.scenario === "resource-full") return "系统余量紧张";
-  if (state.scenario === "interfaces-down") return "承载接口异常";
-  if (state.scenario === "collection-down") return "当前显示缓存";
-  return clean(state.facts.route.label, "主出口正常");
-}
-
-function mobileRouteValue(state: OverviewDerivedState): string {
-  if (state.facts.wan.allOffline) return "异常";
-  if (state.facts.route.level === "danger") return "异常";
-  if (state.scenario === "collection-down") return "历史快照";
-  if (state.scenario === "interfaces-down") return "待确认";
-  if (state.facts.route.level === "missing") return "待确认";
-  if (state.scenario === "resource-full") return "活动默认路由";
-  return "可用";
-}
-
-function mobileCollectionNote(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): string {
-  if (state.scenario === "collection-down") return `最近 ${latestSuccess(snapshot, state)}`;
-  if (state.facts.collection.dataStale || state.facts.freshness.history) return `${stripRest(state.facts.collection.restLabel)} / ${stripSsh(state.facts.collection.sshLabel)}`;
-  return `${stripRest(state.facts.collection.restLabel)} / ${stripSsh(state.facts.collection.sshLabel)}`;
-}
-
-function mobileTrustLabel(state: OverviewDerivedState): string {
-  if (state.scenario === "no-snapshot") return "业务数据缺失";
-  if (state.scenario === "collection-down") return "数据可参考";
-  return "实时可信";
-}
-
 function trustText(state: OverviewDerivedState): string {
   if (state.scenario === "no-snapshot") return "业务快照缺失";
   if (state.scenario === "collection-down" || state.facts.collection.dataStale || state.facts.freshness.history) return "缓存快照";
   return "实时可信";
-}
-
-function totals(snapshot: OverviewRawSnapshot): { up: number; down: number } {
-  return wanRows(snapshot).reduce<{ up: number; down: number }>(
-    (sum, row) => ({
-      up: sum.up + toNumber(row.upRate),
-      down: sum.down + toNumber(row.downRate),
-    }),
-    { up: 0, down: 0 },
-  );
-}
-
-function compactRate(value: number): string {
-  if (!Number.isFinite(value) || value <= 0) return "未采集";
-  return formatRate(value).replace(/\s+/g, "");
-}
-
-function mobileRate(value: number): string {
-  if (!Number.isFinite(value) || value <= 0) return "未采集";
-  if (value >= 1_000_000_000) {
-    const scaled = value / 1_000_000_000;
-    return `${scaled >= 10 ? scaled.toFixed(0) : scaled.toFixed(1)}G`;
-  }
-  if (value >= 1_000_000) {
-    const scaled = value / 1_000_000;
-    return `${scaled >= 10 ? scaled.toFixed(0) : scaled.toFixed(1)}M`;
-  }
-  if (value >= 1_000) {
-    const scaled = value / 1_000;
-    return `${scaled >= 10 ? scaled.toFixed(0) : scaled.toFixed(1)}K`;
-  }
-  return `${Math.round(value)}`;
-}
-
-function mobileRateUnit(value: number): string {
-  if (!Number.isFinite(value) || value <= 0) return "状态";
-  if (value >= 1_000_000_000) return "Gbps";
-  if (value >= 1_000_000) return "Mbps";
-  if (value >= 1_000) return "Kbps";
-  return "bps";
-}
-
-function latency(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): string {
-  const raw = snapshot as OverviewRawSnapshot & {
-    latencyMs?: unknown;
-    pingMs?: unknown;
-    ping?: { avg?: unknown; ms?: unknown };
-    health?: { latencyMs?: unknown };
-  };
-  const value = [raw.latencyMs, raw.pingMs, raw.ping?.avg, raw.ping?.ms, raw.health?.latencyMs]
-    .map((item) => toNumber(item))
-    .find((item) => Number.isFinite(item) && item > 0);
-  if (value) return `${Math.round(value)}ms`;
-  return state.scenario === "no-snapshot" || state.scenario === "collection-down" ? "待确认" : "未采集";
 }
 
 function stripRest(label: string): string {
@@ -282,14 +135,6 @@ function stripRest(label: string): string {
 
 function stripSsh(label: string): string {
   return clean(label.replace(/^SSH\s*/i, ""), "可用");
-}
-
-function endpointFailureText(state: OverviewDerivedState): string {
-  const value = clean(state.facts.collection.failedEndpointText, "未记录");
-  const compact = value.replace(/[：:\s]/g, "").replace(/^端点失败|^失败端点/i, "");
-  if (/^0(?:个|条|项|次)?$/i.test(compact)) return "未记录";
-  if (/\/(?:system|rest|ip|interface|console)\//i.test(value)) return "已记录";
-  return value;
 }
 
 function channelStatus(state: OverviewDerivedState): ChannelReading[] {
@@ -322,11 +167,6 @@ function resourceMetrics(state: OverviewDerivedState): ResourceReading[] {
   }));
 }
 
-function resourcePeak(state: OverviewDerivedState): ResourceReading {
-  const metrics = resourceMetrics(state);
-  return metrics.reduce((max, item) => (item.value > max.value ? item : max), metrics[0]);
-}
-
 function sparkPoints(values: number[], maxValue: number, width = 312, height = 62): string {
   const max = Math.max(1, maxValue, ...values);
   const step = values.length > 1 ? width / (values.length - 1) : width;
@@ -341,378 +181,6 @@ function lastSparkPoint(points: string): { x: number; y: number } {
   const last = points.trim().split(/\s+/).pop() || "0,0";
   const [x, y] = last.split(",").map((item) => Number(item));
   return { x: Number.isFinite(x) ? x : 0, y: Number.isFinite(y) ? y : 0 };
-}
-
-function sampleTrafficRow(row: Record<string, unknown>): { down: number; up: number } {
-  const down = firstNumber(row, ["downRate", "downloadRate", "rxRate", "inRate", "down", "download", "rx", "in"]);
-  const up = firstNumber(row, ["upRate", "uploadRate", "txRate", "outRate", "up", "upload", "tx", "out"]);
-  return { down, up };
-}
-
-function historyTraffic(snapshot: OverviewRawSnapshot): { down: number[]; up: number[]; source: "history" | "current" } {
-  const raw = snapshot as unknown as Record<string, unknown>;
-  const traffic = isRecord(raw.traffic) ? raw.traffic : {};
-  const realtime = isRecord(raw.realtime) ? raw.realtime : {};
-  const sources = [
-    raw.history,
-    raw.samples,
-    raw.rateHistory,
-    raw.trafficHistory,
-    raw.wanHistory,
-    traffic.history,
-    traffic.samples,
-    realtime.history,
-    realtime.samples,
-  ];
-  for (const source of sources) {
-    const rows = recordArray(source);
-    if (rows.length >= 3) {
-      const sampled = rows.map(sampleTrafficRow);
-      const down = sampled.map((item) => item.down).filter((item) => Number.isFinite(item));
-      const up = sampled.map((item) => item.up).filter((item) => Number.isFinite(item));
-      if (down.some((item) => item > 0) || up.some((item) => item > 0)) {
-        return { down: down.slice(-12), up: up.slice(-12), source: "history" };
-      }
-    }
-    if (Array.isArray(source) && source.length >= 3 && source.every((item) => Number.isFinite(toNumber(item)))) {
-      const values = source.map((item) => toNumber(item)).slice(-12);
-      return { down: values, up: values.map((item, index) => item * (0.18 + (index % 3) * 0.05)), source: "history" };
-    }
-  }
-  return { down: [], up: [], source: "current" };
-}
-
-function networkSparkSeries(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): { down: number[]; up: number[]; source: "history" | "current" } {
-  const history = historyTraffic(snapshot);
-  if (history.down.length >= 3 || history.up.length >= 3) return history;
-  const rate = totals(snapshot);
-  if (state.scenario === "no-snapshot") {
-    return { down: trend(1, "quiet"), up: trend(0.45, "quiet"), source: "current" };
-  }
-  const hot = state.scenario === "resource-full" || state.scenario === "interfaces-down" || state.facts.wan.allOffline;
-  return {
-    down: trend(rate.down || Math.max(1, toNumber(state.facts.connections.total)), hot ? "hot" : "down"),
-    up: trend(rate.up || Math.max(1, rate.down * 0.22), hot ? "up" : "quiet"),
-    source: "current",
-  };
-}
-
-function trend(seed: number, variant: "down" | "up" | "hot" | "quiet" = "down"): number[] {
-  const base = Math.max(1, seed);
-  const pattern = {
-    down: [0.34, 0.42, 0.36, 0.55, 0.50, 0.70, 0.86, 0.78],
-    up: [0.18, 0.27, 0.22, 0.33, 0.40, 0.36, 0.48, 0.44],
-    hot: [0.52, 0.60, 0.72, 0.84, 0.78, 0.96, 0.90, 1],
-    quiet: [0.32, 0.31, 0.33, 0.32, 0.34, 0.33, 0.35, 0.34],
-  }[variant];
-  return pattern.map((ratio) => base * ratio);
-}
-
-function heroReadings(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): Reading[] {
-  const rate = totals(snapshot);
-  if (state.scenario === "no-snapshot") {
-    return [
-      { label: "RouterOS", value: "不可达", note: "当前", tone: "danger" },
-      { label: "业务快照", value: "无", note: "不展示", tone: "missing" },
-    ];
-  }
-  if (state.scenario === "resource-full") {
-    const peak = resourcePeak(state);
-    return [
-      { label: "最高压力", value: peak.display, note: peak.label, tone: "danger" },
-      { label: "连接", value: formatCompact(toNumber(state.facts.connections.total)), note: "活动", tone: "warn" },
-    ];
-  }
-  if (state.scenario === "all-offline" || state.facts.wan.allOffline) {
-    return [
-      { label: "WAN", value: `0/${formatNumber(Math.max(8, state.facts.wan.total || wanRows(snapshot).length))}`, note: "全离线", tone: "danger" },
-      { label: "默认路由", value: "异常", note: "不可承载", tone: "danger" },
-    ];
-  }
-  if (state.scenario === "interfaces-down") {
-    return [
-      { label: "接口", value: `${formatNumber(state.facts.interfaces.down)} Down`, note: "转发面", tone: "danger" },
-      { label: "默认路由", value: clean(state.facts.route.label, "待判"), note: "影响", tone: state.facts.route.level },
-    ];
-  }
-  if (state.scenario === "collection-down") {
-    return [
-      { label: "快照", value: "缓存", note: "非实时", tone: "warn" },
-      { label: "最近成功", value: latestSuccess(snapshot, state), note: "采集", tone: "warn" },
-    ];
-  }
-  return [
-    { label: "下载", value: compactRate(rate.down), note: "WAN 汇总", tone: rate.down > 0 ? "ok" : "trust" },
-    { label: "上传", value: compactRate(rate.up), note: "WAN 汇总", tone: rate.up > 0 ? "ok" : "trust" },
-  ];
-}
-
-function V420StripItems(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): Reading[] {
-  const rate = totals(snapshot);
-  const collectionValue = state.scenario === "no-snapshot"
-    ? "链路"
-    : state.scenario === "collection-down" || state.facts.collection.dataStale || state.facts.freshness.history
-      ? "缓存"
-      : "实时";
-  return [
-    {
-      label: "WAN",
-      value: state.scenario === "no-snapshot"
-        ? "不展示"
-        : state.facts.wan.allOffline
-          ? `0/${formatNumber(Math.max(8, state.facts.wan.total || wanRows(snapshot).length))}`
-          : `${formatNumber(state.facts.wan.online)}/${formatNumber(state.facts.wan.total || wanRows(snapshot).length)}`,
-      note: state.scenario === "no-snapshot" ? "无业务快照" : `↓${compactRate(rate.down)}`,
-      tone: state.scenario === "no-snapshot" ? "missing" : state.facts.wan.allOffline ? "danger" : state.facts.wan.offline ? "warn" : "ok",
-    },
-    {
-      label: "采集",
-      value: collectionValue,
-      note: state.scenario === "no-snapshot" ? "可参考" : `${stripRest(state.facts.collection.restLabel)} / ${stripSsh(state.facts.collection.sshLabel)}`,
-      tone: state.scenario === "no-snapshot" ? "warn" : state.facts.collection.credibilityTone,
-    },
-    {
-      label: "资源",
-      value: state.scenario === "no-snapshot" ? "不展示" : resourcePeak(state).display,
-      note: state.scenario === "resource-full" ? `${resourcePeak(state).label}超阈` : "处理器/内存/磁盘",
-      tone: state.scenario === "no-snapshot" ? "missing" : resourcePeak(state).tone,
-    },
-    {
-      label: "最近成功",
-      value: latestSuccess(snapshot, state),
-      note: state.scenario === "no-snapshot" ? "链路时间" : "采集时间",
-      tone: latestSuccess(snapshot, state) === "未记录" ? "warn" : "trust",
-    },
-  ];
-}
-
-function appListRows(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): NativeRow[] {
-  if (state.scenario === "no-snapshot") {
-    return [
-      { id: "snapshot-boundary", title: "业务数据", value: "不展示", note: "WAN / 资源 / 终端 / 速率不造数", tone: "missing" },
-      { id: "endpoint-failure", title: "端点失败", value: endpointFailureText(state) === "未记录" ? "未记录" : "已记录", note: "未记录不等于 0，详情进日志", tone: "warn" },
-      { id: "readonly", title: "只读边界", value: "不写配置", note: "仅展示采集链路", tone: "trust" },
-    ];
-  }
-  if (state.scenario === "resource-full") {
-    return [
-      { id: "sessions", title: "连接压力", value: formatCompact(toNumber(state.facts.connections.total)), note: "活动连接偏高，资源页可下钻", tone: "warn" },
-      { id: "route", title: "默认路由", value: clean(state.facts.route.label, "可参考"), note: "资源异常不替代路由判断", tone: state.facts.route.level },
-      { id: "collector", title: "采集可信", value: trustText(state), note: `${stripRest(state.facts.collection.restLabel)} / ${stripSsh(state.facts.collection.sshLabel)}`, tone: state.facts.collection.credibilityTone },
-    ];
-  }
-  if (state.scenario === "all-offline" || (state.facts.wan.allOffline && state.scenario !== "interfaces-down")) {
-    return wanRows(snapshot).slice(0, 3).map((row, index) => ({
-      id: `wan-${index}`,
-      title: clean(row.name || row.interface, `WAN${index + 1}`),
-      value: "离线",
-      note: `${clean(row.parent || row.interface, "父级待确认")} · 未承载`,
-      tone: "danger",
-    }));
-  }
-  if (state.scenario === "interfaces-down") {
-    const down = interfaceRows(snapshot).filter((row) => row.running === false).slice(0, 3);
-    const rows = down.length ? down : [interfaceRows(snapshot).find((row) => row.running === false)].filter(Boolean) as OverviewRawInterfaceRow[];
-    return rows.map((row, index) => ({
-      id: `iface-${index}`,
-      title: clean(row.name || row.interface, `接口${index + 1}`),
-      value: "Down",
-      note: `${clean(row.parent || row.master || row.interface, "父级待确认")} · 默认路由待判`,
-      tone: "danger",
-    }));
-  }
-  if (state.scenario === "collection-down") {
-    return [
-      { id: "cache", title: "当前展示", value: "缓存快照", note: `最近成功 ${latestSuccess(snapshot, state)}`, tone: "warn" },
-      { id: "failure", title: "端点失败", value: endpointFailureText(state) === "未记录" ? "未记录" : "已记录", note: "采集面旁证，详情进日志", tone: "warn" },
-      { id: "readonly", title: "只读边界", value: "不写配置", note: "业务状态非实时", tone: "trust" },
-    ];
-  }
-  const rate = totals(snapshot);
-  return [
-    { id: "down", title: "实时下载", value: compactRate(rate.down), note: "WAN 汇总", tone: "ok" },
-    { id: "up", title: "实时上传", value: compactRate(rate.up), note: "WAN 汇总", tone: "ok" },
-    { id: "route", title: "默认路由", value: clean(state.facts.route.label, "正常"), note: "活动出口可用", tone: state.facts.route.level },
-  ];
-}
-
-function appRankingCandidates(snapshot: OverviewRawSnapshot): Record<string, unknown>[] {
-  const raw = snapshot as unknown as Record<string, unknown>;
-  const traffic = isRecord(raw.traffic) ? raw.traffic : {};
-  const app = isRecord(raw.app) ? raw.app : {};
-  const application = isRecord(raw.application) ? raw.application : {};
-  const sources = [
-    raw.apps,
-    raw.applications,
-    raw.appRanking,
-    raw.applicationRanking,
-    raw.topApps,
-    raw.trafficApps,
-    traffic.apps,
-    traffic.applications,
-    traffic.topApps,
-    traffic.ranking,
-    app.ranking,
-    app.rows,
-    application.ranking,
-    application.rows,
-  ];
-  for (const source of sources) {
-    const rows = recordArray(source);
-    if (rows.length) return rows;
-  }
-  return [];
-}
-
-function appRankingRows(snapshot: OverviewRawSnapshot): AppRankingRow[] {
-  const rows = appRankingCandidates(snapshot).map((row, index) => {
-    const down = firstNumber(row, ["downRate", "downloadRate", "rxRate", "download", "down", "bytesDown", "rxBytes"]);
-    const up = firstNumber(row, ["upRate", "uploadRate", "txRate", "upload", "up", "bytesUp", "txBytes"]);
-    const total = firstNumber(row, ["totalRate", "rate", "traffic", "bytes", "total", "value"]) || down + up;
-    return {
-      id: clean(row.id ?? row.key ?? row.name ?? row.app ?? `app-${index}`, `app-${index}`),
-      rank: index + 1,
-      name: firstText(row, ["name", "app", "application", "label", "title", "category"], `App ${index + 1}`),
-      meta: down || up ? `↓${mobileRate(down)} · ↑${mobileRate(up)}` : clean(row.protocol ?? row.category ?? row.type, "实时流量"),
-      value: total ? mobileRate(total) : clean(row.valueLabel ?? row.trafficLabel ?? row.rateLabel, "未采集"),
-      percent: total,
-      tone: "trust" as OverviewTone,
-    };
-  });
-  if (!rows.length) {
-    return [{
-      id: "app-empty",
-      rank: 0,
-      name: "暂无 App 流量",
-      meta: "等待采集样本",
-      value: "未采集",
-      percent: 0,
-      tone: "missing",
-    }];
-  }
-  const max = Math.max(1, ...rows.map((row) => row.percent));
-  return rows
-    .sort((a, b) => b.percent - a.percent)
-    .slice(0, 5)
-    .map((row, index) => ({
-      ...row,
-      rank: index + 1,
-      percent: Math.max(6, Math.min(100, (row.percent / max) * 100)),
-    }));
-}
-
-function nativeRowsAsRankingRows(rows: NativeRow[]): AppRankingRow[] {
-  return rows.slice(0, 5).map((row, index) => ({
-    id: row.id,
-    rank: index + 1,
-    name: row.title,
-    meta: row.note,
-    value: row.value,
-    percent: 0,
-    tone: row.tone,
-  }));
-}
-
-function offlineWanRankingRows(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): AppRankingRow[] {
-  const source = wanRows(snapshot);
-  const total = Math.max(8, state.facts.wan.total || source.length);
-  const rows = Array.from({ length: Math.min(5, total) }, (_, index) => {
-    const row = source[index] || ({ name: `pppoe-wan${index + 1}`, running: false } as OverviewRawWanRow);
-    const name = clean(row.name || row.interface, `pppoe-wan${index + 1}`);
-    const parent = clean(row.parent || row.interface || row.access, "承载待确认");
-    return {
-      id: `offline-wan-${index}`,
-      rank: index + 1,
-      name,
-      kind: "WAN",
-      meta: `P${index + 1} · ${parent} · 路由不可用`,
-      value: "离线",
-      status: "Down",
-      percent: 0,
-      tone: "danger" as OverviewTone,
-    };
-  });
-  return rows;
-}
-
-function listTitle(state: OverviewDerivedState, noSnapshot: boolean, statusMode: boolean): string {
-  if (noSnapshot) return "业务边界";
-  if (state.scenario === "all-offline" || state.facts.wan.allOffline) return statusMode ? "离线出口" : "设备排行";
-  if (!statusMode) return "设备排行";
-  if (state.scenario === "resource-full") return "风险对象";
-  if (state.scenario === "interfaces-down") return "接口对象";
-  if (state.scenario === "collection-down") return "采集对象";
-  return "当前对象";
-}
-
-function exceptionRows(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): NativeRow[] {
-  const rows: NativeRow[] = [];
-  if (state.scenario === "no-snapshot") {
-    rows.push({ id: "no-snapshot", title: "业务快照缺失", value: "无快照", note: `最近成功 ${latestSuccess(snapshot, state)}`, tone: "missing" });
-  }
-  if (state.scenario === "collection-down" || state.facts.collection.dataStale || state.facts.freshness.history) {
-    rows.push({ id: "collection", title: "采集非实时", value: trustText(state), note: `${stripRest(state.facts.collection.restLabel)} / ${stripSsh(state.facts.collection.sshLabel)}`, tone: "warn" });
-  }
-  if (state.scenario === "all-offline" || (state.facts.wan.allOffline && state.scenario !== "interfaces-down")) {
-    rows.push({ id: "wan-all-offline", title: "WAN 全离线", value: `0/${formatNumber(Math.max(8, state.facts.wan.total || wanRows(snapshot).length))}`, note: "默认路由不可承载", tone: "danger" });
-  } else if (state.facts.wan.offline > 0) {
-    rows.push({ id: "wan-offline", title: "WAN 部分异常", value: `${formatNumber(state.facts.wan.offline)} Down`, note: `在线 ${formatNumber(state.facts.wan.online)}/${formatNumber(state.facts.wan.total || wanRows(snapshot).length)}`, tone: "warn" });
-  }
-  if (state.scenario === "interfaces-down" || state.facts.interfaces.down > 0) {
-    rows.push({ id: "interfaces", title: "接口 Down", value: formatNumber(state.facts.interfaces.down), note: "转发面需确认", tone: "danger" });
-  }
-  resourceMetrics(state)
-    .filter((metric) => metric.tone === "danger")
-    .forEach((metric) => {
-      rows.push({ id: `resource-${metric.key}`, title: `${metric.label} 超阈`, value: metric.display, note: `阈值 ${metric.threshold}%`, tone: "danger" });
-    });
-  return rows;
-}
-
-function rateParts(value: number): { value: string; unit: string } {
-  if (!Number.isFinite(value) || value <= 0) return { value: "未采集", unit: "" };
-  if (value >= 1_000_000_000) {
-    const scaled = value / 1_000_000_000;
-    return { value: scaled >= 10 ? scaled.toFixed(0) : scaled.toFixed(1), unit: "Gbps" };
-  }
-  if (value >= 1_000_000) {
-    const scaled = value / 1_000_000;
-    return { value: scaled >= 10 ? scaled.toFixed(0) : scaled.toFixed(1), unit: "Mbps" };
-  }
-  if (value >= 1_000) {
-    const scaled = value / 1_000;
-    return { value: scaled >= 10 ? scaled.toFixed(0) : scaled.toFixed(1), unit: "Kbps" };
-  }
-  return { value: `${Math.round(value)}`, unit: "bps" };
-}
-
-function isIncident(state: OverviewDerivedState): boolean {
-  return state.scenario === "resource-full"
-    || state.scenario === "all-offline"
-    || state.scenario === "no-snapshot"
-    || state.scenario === "collection-down"
-    || state.scenario === "interfaces-down"
-    || state.facts.wan.allOffline
-    || state.facts.interfaces.down > 0;
-}
-
-function incidentTitle(state: OverviewDerivedState): string {
-  if (state.scenario === "resource-full") return "资源压力正在影响余量";
-  if (state.scenario === "all-offline" || (state.facts.wan.allOffline && state.scenario !== "interfaces-down")) return "所有 WAN 均不可承载";
-  if (state.scenario === "no-snapshot") return "无业务快照，业务数据不展示";
-  if (state.scenario === "collection-down") return "采集降级，当前显示缓存";
-  if (state.scenario === "interfaces-down") return "接口转发面异常";
-  if (state.facts.freshness.history) return "历史快照，当前影响需确认";
-  return "状态需确认";
-}
-
-function incidentNote(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): string {
-  if (state.scenario === "resource-full") return `${resourcePeak(state).label} ${resourcePeak(state).display} · 连接 ${formatCompact(toNumber(state.facts.connections.total))}`;
-  if (state.scenario === "all-offline" || (state.facts.wan.allOffline && state.scenario !== "interfaces-down")) return `WAN 0/${formatNumber(Math.max(8, state.facts.wan.total || wanRows(snapshot).length))} · ${impactText(state)}`;
-  if (state.scenario === "no-snapshot") return `最近成功 ${latestSuccess(snapshot, state)} · 端点失败 未记录`;
-  if (state.scenario === "collection-down") return `最近成功 ${latestSuccess(snapshot, state)} · 端点失败 已记录`;
-  if (state.scenario === "interfaces-down") return `${formatNumber(state.facts.interfaces.down)} 个接口 Down · 默认路由待判`;
-  return `${objectText(snapshot, state)} · ${trustText(state)}`;
 }
 
 function V420Nav({ snapshot, state }: MobileOverviewHomeProps) {
@@ -733,10 +201,9 @@ function V420Nav({ snapshot, state }: MobileOverviewHomeProps) {
   );
 }
 
-function V420LineChart({ snapshot, state }: MobileOverviewHomeProps) {
-  const series = networkSparkSeries(snapshot, state);
-  const down = series.down.length ? series.down : trend(1, "quiet");
-  const up = series.up.length ? series.up : trend(0.45, "quiet");
+function V420LineChart({ chart }: { chart: MobileTrendChartModel }) {
+  const down = chart.down.length ? chart.down : [1, 1, 1];
+  const up = chart.up.length ? chart.up : [0.45, 0.45, 0.45];
   const max = Math.max(1, ...down, ...up);
   const downPoints = sparkPoints(down, max, 312, 52);
   const upPoints = sparkPoints(up, max, 312, 52);
@@ -745,20 +212,20 @@ function V420LineChart({ snapshot, state }: MobileOverviewHomeProps) {
   const peakIndex = Math.max(0, down.findIndex((value) => value === peakValue));
   const peakX = down.length > 1 ? Number(((peakIndex * 312) / (down.length - 1)).toFixed(1)) : 156;
   const peakY = Number((52 - (Math.max(0, peakValue) / max) * 40 - 6).toFixed(1));
-  const windowText = series.source === "history" ? "最近 12 点" : "当前窗口";
   return (
     <svg
       className="ik-v420-line-chart"
       viewBox="0 0 312 72"
       role="img"
-      aria-label={`${windowText} WAN 下载上传趋势，峰值 ${mobileRate(peakValue)}`}
+      aria-label={`${chart.windowText} WAN 下载上传趋势，峰值 ${chart.peakLabel}，采样 ${chart.sampleText}`}
       data-overview-chart-type="mini-line"
       data-overview-scene-chart="mobile-wan-rate-sparkline"
       data-overview-mobile-first-visual="thin-wan-sparkline"
       data-overview-mobile-v420-visual="thin-wan-sparkline"
-      data-overview-line-source={series.source}
-      data-overview-mobile-chart-window={windowText}
-      data-overview-mobile-chart-peak={mobileRate(peakValue)}
+      data-overview-line-source={chart.source}
+      data-overview-mobile-chart-window={chart.windowText}
+      data-overview-mobile-chart-peak={chart.peakLabel}
+      data-overview-mobile-chart-sample={chart.sampleText}
     >
       <path className="ik-v420-gridline" d="M0 13 H312 M0 31 H312 M0 47 H312" />
       <path className="ik-v420-area" d={`M0 52 L${downPoints} L312 52 Z`} />
@@ -766,26 +233,25 @@ function V420LineChart({ snapshot, state }: MobileOverviewHomeProps) {
       <polyline className="ik-v420-curve is-soft" points={upPoints} />
       <circle className="ik-v420-peak-dot" cx={peakX} cy={peakY} r="2.6" />
       <circle className="ik-v420-focus-dot" cx={focus.x} cy={focus.y} r="2.8" />
-      <text x="0" y="68">{windowText}</text>
-      <text x="156" y="68" textAnchor="middle">峰 {mobileRate(peakValue)}</text>
-      <text x="312" y="68" textAnchor="end">当前 {mobileRate(down[down.length - 1] || 0)}</text>
+      <text x="0" y="68">{chart.windowText}</text>
+      <text x="156" y="68" textAnchor="middle">峰 {chart.peakLabel}</text>
+      <text x="312" y="68" textAnchor="end">当前 {chart.currentLabel}</text>
     </svg>
   );
 }
 
-function V420TrendVisual({ snapshot, state }: MobileOverviewHomeProps) {
-  const series = networkSparkSeries(snapshot, state);
-  const down = series.down.length ? series.down : trend(1, "quiet");
-  const peak = Math.max(...down);
-  const current = down[down.length - 1] || 0;
-  const windowText = series.source === "history" ? "12点" : "当前";
+function V420TrendVisual({ model }: { model: MobileOverviewModel }) {
+  const chart = model.hero.trend;
   return (
     <div className="ik-v812-trend-visual" data-overview-mobile-chart-readout="current-peak-window">
-      <V420LineChart snapshot={snapshot} state={state} />
+      <V420LineChart chart={chart} />
       <aside>
-        <span><em>当前</em><b>{mobileRate(current)}</b></span>
-        <span><em>峰值</em><b>{mobileRate(peak)}</b></span>
-        <span><em>窗口</em><b>{windowText}</b></span>
+        {chart.readouts.map((item) => (
+          <span className={toneClass(item.tone)} key={`${item.label}-${item.value}`}>
+            <em>{item.label}</em>
+            <b>{item.value}</b>
+          </span>
+        ))}
       </aside>
     </div>
   );
@@ -891,29 +357,17 @@ function V420ResourceVisual({ state }: { state: OverviewDerivedState }) {
   );
 }
 
-function V420HeroVisual(props: MobileOverviewHomeProps) {
-  const priority = buildMobileOverviewModel(props.snapshot, props.state).priority;
-  if (priority === "wan-offline") return <V420PortMatrix {...props} />;
-  if (priority === "resource-full") return <V420ResourceVisual state={props.state} />;
-  if (priority === "interface-down") return <V420InterfaceFlow {...props} />;
-  if (priority === "snapshot-missing" || priority === "collection-degraded") return <V420ChannelRail state={props.state} />;
-  return <V420TrendVisual {...props} />;
+function V420HeroVisual(props: MobileOverviewHomeProps & { model: MobileOverviewModel }) {
+  if (props.model.hero.visualKind === "wan-ports") return <V420PortMatrix {...props} />;
+  if (props.model.hero.visualKind === "resource-bars") return <V420ResourceVisual state={props.state} />;
+  if (props.model.hero.visualKind === "interface-list") return <V420InterfaceFlow {...props} />;
+  if (props.model.hero.visualKind === "trust-channels") return <V420ChannelRail state={props.state} />;
+  return <V420TrendVisual model={props.model} />;
 }
 
-function V420HeroStats(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): Reading[] {
-  return buildMobileOverviewModel(snapshot, state).hero.facts;
-}
-
-function heroSentence(_snapshot: OverviewRawSnapshot, state: OverviewDerivedState): string {
-  return buildMobileOverviewModel(_snapshot, state).hero.subtitle;
-}
-
-function heroPills(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): string[] {
-  return buildMobileOverviewModel(snapshot, state).hero.pills;
-}
-
-function V420HeroMetrics({ snapshot, state }: MobileOverviewHomeProps) {
-  const readings = V420HeroStats(snapshot, state);
+function V420HeroMetrics({ model }: { model: MobileOverviewModel }) {
+  const readings = model.hero.facts;
+  if (!model.hero.showMetrics || !readings.length) return null;
   return (
     <div className="ik-v420-hero-stats" data-overview-mobile-core-block="hero-stats" data-overview-mobile-hero-metrics="download-upload-latency-connections">
       {readings.map((item, index) => (
@@ -940,13 +394,6 @@ function V420HeroTrustRail({ model }: { model: MobileOverviewModel }) {
   );
 }
 
-function resourceTimelineValue(resource: ResourceReading[], state: OverviewDerivedState): string {
-  if (state.scenario === "resource-full") {
-    return resource.map((item) => item.display.replace(/\.0%$/, "%")).join(" / ");
-  }
-  return resource.map((item) => item.display.replace(/\.0%$/, "%")).join(" / ");
-}
-
 function statusTimelineRows(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): NativeRow[] {
   return buildMobileOverviewModel(snapshot, state).statusRows;
 }
@@ -967,18 +414,6 @@ function V420StatusTimeline(props: MobileOverviewHomeProps) {
   );
 }
 
-function statusTimelineIconPath(id: string): string {
-  if (id === "timeline-wan") return "M4 12h16M7 8h10M7 16h10";
-  if (id === "timeline-route") return "M5 12h12M13 7l5 5-5 5";
-  if (id === "timeline-collection") return "M6 5h12v14H6zM9 9h6M9 13h6M9 17h4";
-  if (id === "timeline-resource") return "M4 18h16M7 14h2v4H7zM11 10h2v8h-2zM15 6h2v12h-2z";
-  if (id === "timeline-interface") return "M8 5v6M16 5v6M7 11h10v3a5 5 0 0 1-10 0z";
-  if (id === "timeline-routeros") return "M12 8v5M12 17h.01M4 12a8 8 0 1 0 16 0 8 8 0 0 0-16 0";
-  if (id === "timeline-snapshot") return "M7 4h7l3 3v13H7zM14 4v4h4M9 12h6M9 16h6";
-  if (id === "timeline-boundary") return "M5 12l4 4L19 6";
-  return "M6 8h12v8H6z";
-}
-
 function V420Hero(props: MobileOverviewHomeProps) {
   const { snapshot, state } = props;
   const tone = screenTone(state);
@@ -994,30 +429,18 @@ function V420Hero(props: MobileOverviewHomeProps) {
       data-overview-mobile-first-microchart="true"
       data-overview-mobile-v620-hero="conclusion-two-numbers-one-chart"
       data-overview-mobile-priority={model.priority}
+      data-overview-mobile-visual-kind={model.hero.visualKind}
+      data-overview-mobile-hero-metrics={model.hero.showMetrics ? "visible" : "suppressed"}
     >
       <header className="ik-v620-hero-head">
         <h1 data-overview-primary-conclusion="true">{model.hero.title}</h1>
-        <p className="ik-v503-hero-copy">{heroSentence(snapshot, state)}</p>
+        <p className="ik-v503-hero-copy">{model.hero.subtitle}</p>
       </header>
       <div className="ik-v620-hero-stage">
-        <V420HeroMetrics {...props} />
-        <div className="ik-v420-visual ik-v240-visual ik-v240-traffic">{V420HeroVisual(props)}</div>
+        <V420HeroMetrics model={model} />
+        <div className="ik-v420-visual ik-v240-visual ik-v240-traffic">{V420HeroVisual({ ...props, model })}</div>
       </div>
       <V420HeroTrustRail model={model} />
-    </section>
-  );
-}
-
-function V420Incident(props: MobileOverviewHomeProps) {
-  if (!isIncident(props.state)) return null;
-  return (
-    <section className={`ik-v420-incident ${toneClass(screenTone(props.state))}`} data-overview-mobile-core-block="incident-impact-card">
-      <i />
-      <span>
-        <b>{incidentTitle(props.state)}</b>
-        <em>{incidentNote(props.snapshot, props.state)}</em>
-      </span>
-      <strong>{mobileTrustLabel(props.state)}</strong>
     </section>
   );
 }
@@ -9107,7 +8530,7 @@ const V420_MOBILE_STYLES = `
   #overview.router-overview-framework .ik-v812-trend-visual,
   .router-overview-framework .ik-v812-trend-visual,
   .ik-v812-trend-visual {
-    grid-template-columns: minmax(0, 1fr) 50px !important;
+    grid-template-columns: minmax(0, 1fr) 62px !important;
     gap: 5px !important;
   }
 
@@ -9120,7 +8543,11 @@ const V420_MOBILE_STYLES = `
   #overview.router-overview-framework .ik-v812-trend-visual aside span,
   .router-overview-framework .ik-v812-trend-visual aside span,
   .ik-v812-trend-visual aside span {
-    min-height: 18px !important;
+    display: flex !important;
+    align-items: baseline !important;
+    justify-content: space-between !important;
+    gap: 4px !important;
+    min-height: 16px !important;
   }
 
   #overview.router-overview-framework .ik-v812-trend-visual aside em,
@@ -9132,7 +8559,7 @@ const V420_MOBILE_STYLES = `
   #overview.router-overview-framework .ik-v812-trend-visual aside b,
   .router-overview-framework .ik-v812-trend-visual aside b,
   .ik-v812-trend-visual aside b {
-    font-size: 9px !important;
+    font-size: 8.6px !important;
   }
 
   #overview.router-overview-framework .ik-v830-trust-rail,
