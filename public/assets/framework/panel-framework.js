@@ -7935,8 +7935,8 @@ var PanelFramework = function(exports) {
     const rate = totals(snapshot);
     if (state.scenario === "no-snapshot") {
       return [
-        { label: "RouterOS", value: "不可达", note: "当前状态", tone: "danger" },
-        { label: "最近成功", value: latestSuccess$1(snapshot, state), note: "采集时间", tone: latestSuccess$1(snapshot, state) === "未记录" ? "warn" : "trust" }
+        { label: "RouterOS", value: "不可达", note: "当前", tone: "danger" },
+        { label: "最近成功", value: latestSuccess$1(snapshot, state), note: "时间", tone: latestSuccess$1(snapshot, state) === "未记录" ? "warn" : "trust" }
       ];
     }
     if (state.scenario === "resource-full") {
@@ -7949,27 +7949,27 @@ var PanelFramework = function(exports) {
     if (state.scenario === "all-offline" || state.facts.wan.allOffline && state.scenario !== "interfaces-down") {
       return [
         { label: "WAN", value: `0/${formatNumber(Math.max(8, state.facts.wan.total || wanRows$1(snapshot).length))}`, note: "全部离线", tone: "danger" },
-        { label: "出口", value: "不可用", note: "默认路由", tone: "danger" }
+        { label: "出口", value: "断链", note: "默认路由", tone: "danger" }
+      ];
+    }
+    if (state.scenario === "fleet") {
+      const totalWan = state.facts.wan.total || wanRows$1(snapshot).length;
+      const abnormal = Math.max(state.facts.wan.offline, state.facts.interfaces.down);
+      return [
+        { label: "WAN", value: `${formatNumber(state.facts.wan.online)}/${formatNumber(totalWan)}`, note: "在线", tone: state.facts.wan.offline ? "warn" : "ok" },
+        { label: "异常", value: formatNumber(abnormal || 3), note: "待确认", tone: abnormal ? "warn" : "trust" }
       ];
     }
     if (state.scenario === "interfaces-down" || state.facts.interfaces.down > 0) {
       return [
         { label: "接口", value: `${formatNumber(state.facts.interfaces.down)} Down`, note: "离线", tone: "danger" },
-        { label: "承载", value: clean(state.facts.route.label, "待判"), note: "影响", tone: state.facts.route.level }
+        { label: "路由", value: mobileRouteValue(state), note: "默认路由", tone: state.facts.route.level }
       ];
     }
     if (state.scenario === "collection-down") {
       return [
         { label: "数据", value: "可参考", note: "缓存", tone: "warn" },
         { label: "最近成功", value: latestSuccess$1(snapshot, state), note: "采集", tone: "trust" }
-      ];
-    }
-    if (state.scenario === "fleet") {
-      const totalWan = state.facts.wan.total || wanRows$1(snapshot).length;
-      const abnormal = state.facts.wan.offline + state.facts.interfaces.down;
-      return [
-        { label: "WAN", value: `${formatNumber(state.facts.wan.online)}/${formatNumber(totalWan)}`, note: "在线", tone: state.facts.wan.offline ? "warn" : "ok" },
-        { label: "异常", value: formatNumber(abnormal || 3), note: "待确认", tone: abnormal ? "warn" : "trust" }
       ];
     }
     return [
@@ -7988,7 +7988,7 @@ var PanelFramework = function(exports) {
   }
   function heroPills(snapshot, state) {
     const totalWan = Math.max(state.facts.wan.total || wanRows$1(snapshot).length, state.facts.wan.allOffline ? 8 : 0);
-    if (state.scenario === "no-snapshot") return ["对象 业务快照", "影响 无可信数据", "可信度 不展示"];
+    if (state.scenario === "no-snapshot") return ["对象 业务快照", "影响 无可信数据", "可信度 缺失"];
     if (state.scenario === "all-offline" || state.facts.wan.allOffline && state.scenario !== "interfaces-down") {
       return [`对象 WAN 0/${formatNumber(totalWan)}`, "影响 外网不可用", `可信度 ${trustText(state)}`];
     }
@@ -8073,12 +8073,12 @@ var PanelFramework = function(exports) {
       }
     ].filter((row) => row.id !== "timeline-interface" || state.scenario === "interfaces-down" || !state.facts.wan.allOffline && state.facts.interfaces.down > 0);
     const pick = (ids) => ids.map((id2) => baseRows.find((row) => row.id === id2)).filter(Boolean);
-    if (state.scenario === "resource-full") return pick(["timeline-resource", "timeline-wan", "timeline-route", "timeline-collection"]);
+    if (state.scenario === "resource-full") return pick(["timeline-resource", "timeline-wan", "timeline-collection", "timeline-route"]);
+    if (state.scenario === "all-offline" || state.facts.wan.allOffline) return pick(["timeline-wan", "timeline-route", "timeline-collection", "timeline-resource"]);
     if (state.scenario === "interfaces-down" || state.facts.interfaces.down > 0) return pick(["timeline-interface", "timeline-route", "timeline-wan", "timeline-collection"]);
-    if (state.scenario === "all-offline" || state.facts.wan.allOffline) return pick(["timeline-wan", "timeline-route", "timeline-collection"]);
     if (state.facts.wan.offline > 0) return pick(["timeline-wan", "timeline-route", "timeline-collection", "timeline-resource"]);
-    if (state.scenario === "collection-down") return pick(["timeline-collection", "timeline-wan", "timeline-route", "timeline-resource"]);
-    return pick(["timeline-wan", "timeline-route", "timeline-collection", "timeline-resource"]);
+    if (state.scenario === "collection-down") return pick(["timeline-collection", "timeline-wan", "timeline-resource", "timeline-route"]);
+    return pick(["timeline-wan", "timeline-collection", "timeline-resource", "timeline-route"]);
   }
   function V420StatusTimeline(props) {
     const rows = statusTimelineRows(props.snapshot, props.state);
@@ -13399,6 +13399,665 @@ var PanelFramework = function(exports) {
     filter: none !important;
   }
 
+  /* v815 mobile density correction: read-only monitor first screen, not a decorative card page. */
+  #overview.router-overview-framework .ik-v420-app,
+  .router-overview-framework .ik-v420-app,
+  .ik-v420-app {
+    background: #f5f8fb !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-screen,
+  .router-overview-framework .ik-v420-screen,
+  .ik-v420-screen {
+    padding: max(4px, env(safe-area-inset-top, 0px)) 10px calc(70px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-screen > * + *,
+  .router-overview-framework .ik-v420-screen > * + *,
+  .ik-v420-screen > * + * {
+    margin-top: 4px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-nav,
+  .router-overview-framework .ik-v420-nav,
+  .ik-v420-nav {
+    height: 48px !important;
+    min-height: 48px !important;
+    grid-template-columns: 40px minmax(0, 1fr) auto !important;
+    gap: 6px !important;
+    padding: 0 !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-nav button,
+  .router-overview-framework .ik-v420-nav button,
+  .ik-v420-nav button {
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 10px !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-nav div b,
+  .router-overview-framework .ik-v420-nav div b,
+  .ik-v420-nav div b {
+    font-size: 14.8px !important;
+    line-height: 1.02 !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-nav div span,
+  .router-overview-framework .ik-v420-nav div span,
+  .ik-v420-nav div span {
+    font-size: 9.6px !important;
+    line-height: 1.05 !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-nav strong,
+  .router-overview-framework .ik-v420-nav strong,
+  .ik-v420-nav strong {
+    min-height: 19px !important;
+    padding: 0 6px !important;
+    gap: 3px !important;
+    font-size: 9.5px !important;
+    background: transparent !important;
+    box-shadow: inset 0 0 0 .5px rgba(135,164,192,.32) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-nav strong i,
+  .router-overview-framework .ik-v420-nav strong i,
+  .ik-v420-nav strong i {
+    width: 4px !important;
+    height: 4px !important;
+    box-shadow: none !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-hero,
+  .router-overview-framework .ik-v420-hero,
+  .ik-v420-hero {
+    height: 208px !important;
+    min-height: 0 !important;
+    gap: 5px !important;
+    padding: 9px 11px 8px !important;
+    border-radius: 14px !important;
+    background: linear-gradient(180deg, rgba(255,255,255,.96), rgba(248,251,254,.92)) !important;
+    box-shadow: inset 0 0 0 .5px rgba(150,180,208,.42) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app:not([data-overview-mobile-scene="single"]):not([data-overview-mobile-scene="fleet"]) .ik-v420-hero,
+  .router-overview-framework .ik-v420-app:not([data-overview-mobile-scene="single"]):not([data-overview-mobile-scene="fleet"]) .ik-v420-hero,
+  .ik-v420-app:not([data-overview-mobile-scene="single"]):not([data-overview-mobile-scene="fleet"]) .ik-v420-hero {
+    height: 232px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-hero.is-danger,
+  .router-overview-framework .ik-v420-hero.is-danger,
+  .ik-v420-hero.is-danger,
+  #overview.router-overview-framework .ik-v420-hero.is-missing,
+  .router-overview-framework .ik-v420-hero.is-missing,
+  .ik-v420-hero.is-missing {
+    background: linear-gradient(180deg, rgba(255,255,255,.98), rgba(249,251,254,.94)) !important;
+    box-shadow: inset 2px 0 0 rgba(217,48,37,.72), inset 0 0 0 .5px rgba(150,180,208,.38) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-hero::before,
+  .router-overview-framework .ik-v420-hero::before,
+  .ik-v420-hero::before {
+    display: none !important;
+  }
+
+  #overview.router-overview-framework .ik-v620-hero-head,
+  .router-overview-framework .ik-v620-hero-head,
+  .ik-v620-hero-head {
+    gap: 1px !important;
+  }
+
+  #overview.router-overview-framework .ik-v620-hero-head h1,
+  .router-overview-framework .ik-v620-hero-head h1,
+  .ik-v620-hero-head h1 {
+    font-size: clamp(21px, 5.9vw, 25px) !important;
+    line-height: 1 !important;
+    letter-spacing: -.52px !important;
+  }
+
+  #overview.router-overview-framework .ik-v620-hero-head p,
+  .router-overview-framework .ik-v620-hero-head p,
+  .ik-v620-hero-head p {
+    font-size: 10px !important;
+    line-height: 1.05 !important;
+  }
+
+  #overview.router-overview-framework .ik-v620-hero-stage,
+  .router-overview-framework .ik-v620-hero-stage,
+  .ik-v620-hero-stage {
+    grid-template-columns: 78px minmax(0, 1fr) !important;
+    gap: 7px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-hero-stats,
+  .router-overview-framework .ik-v420-hero-stats,
+  .ik-v420-hero-stats {
+    gap: 3px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-hero-stats span,
+  .router-overview-framework .ik-v420-hero-stats span,
+  .ik-v420-hero-stats span,
+  #overview.router-overview-framework .ik-v420-hero-stats span + span,
+  .router-overview-framework .ik-v420-hero-stats span + span,
+  .ik-v420-hero-stats span + span {
+    padding: 4px 5px !important;
+    border-radius: 8px !important;
+    background: rgba(255,255,255,.30) !important;
+    box-shadow: inset 0 0 0 .5px rgba(150,180,208,.24) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-hero-stats em,
+  #overview.router-overview-framework .ik-v420-hero-stats small,
+  .router-overview-framework .ik-v420-hero-stats em,
+  .router-overview-framework .ik-v420-hero-stats small,
+  .ik-v420-hero-stats em,
+  .ik-v420-hero-stats small {
+    font-size: 8.2px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-hero-stats b,
+  #overview.router-overview-framework .ik-v420-hero-stats .is-primary b,
+  .router-overview-framework .ik-v420-hero-stats b,
+  .router-overview-framework .ik-v420-hero-stats .is-primary b,
+  .ik-v420-hero-stats b,
+  .ik-v420-hero-stats .is-primary b {
+    font-size: 14px !important;
+    letter-spacing: -.18px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-visual,
+  .router-overview-framework .ik-v420-visual,
+  .ik-v420-visual {
+    height: 74px !important;
+    min-height: 0 !important;
+    padding: 4px 0 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: inset 0 .5px 0 rgba(150,180,208,.26) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app:not([data-overview-mobile-scene="single"]):not([data-overview-mobile-scene="fleet"]) .ik-v420-visual,
+  .router-overview-framework .ik-v420-app:not([data-overview-mobile-scene="single"]):not([data-overview-mobile-scene="fleet"]) .ik-v420-visual,
+  .ik-v420-app:not([data-overview-mobile-scene="single"]):not([data-overview-mobile-scene="fleet"]) .ik-v420-visual {
+    height: 82px !important;
+  }
+
+  #overview.router-overview-framework .ik-v812-trend-visual,
+  .router-overview-framework .ik-v812-trend-visual,
+  .ik-v812-trend-visual {
+    grid-template-columns: minmax(0, 1fr) 46px !important;
+    gap: 5px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-line-chart,
+  .router-overview-framework .ik-v420-line-chart,
+  .ik-v420-line-chart {
+    height: 62px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-gridline,
+  .router-overview-framework .ik-v420-gridline,
+  .ik-v420-gridline {
+    stroke: rgba(132,162,190,.24) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-area,
+  .router-overview-framework .ik-v420-area,
+  .ik-v420-area {
+    fill: rgba(20,115,230,.035) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-curve.is-main,
+  .router-overview-framework .ik-v420-curve.is-main,
+  .ik-v420-curve.is-main {
+    stroke-width: 1.7px !important;
+  }
+
+  #overview.router-overview-framework .ik-v812-trend-visual aside em,
+  .router-overview-framework .ik-v812-trend-visual aside em,
+  .ik-v812-trend-visual aside em {
+    font-size: 7.8px !important;
+  }
+
+  #overview.router-overview-framework .ik-v812-trend-visual aside b,
+  .router-overview-framework .ik-v812-trend-visual aside b,
+  .ik-v812-trend-visual aside b {
+    font-size: 9px !important;
+  }
+
+  #overview.router-overview-framework .ik-v503-hero-pills,
+  .router-overview-framework .ik-v503-hero-pills,
+  .ik-v503-hero-pills {
+    gap: 3px !important;
+  }
+
+  #overview.router-overview-framework .ik-v503-hero-pills span,
+  .router-overview-framework .ik-v503-hero-pills span,
+  .ik-v503-hero-pills span {
+    min-height: 14px !important;
+    max-width: 33% !important;
+    padding: 0 3px !important;
+    border-radius: 0 !important;
+    font-size: 8.4px !important;
+    line-height: 14px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-surface,
+  .router-overview-framework .ik-v420-surface,
+  .ik-v420-surface {
+    padding: 5px 9px 4px !important;
+    border-radius: 12px !important;
+    background: rgba(255,255,255,.78) !important;
+    box-shadow: inset 0 0 0 .5px rgba(150,180,208,.36) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-timeline header,
+  #overview.router-overview-framework .ik-v420-list header,
+  .router-overview-framework .ik-v420-timeline header,
+  .router-overview-framework .ik-v420-list header,
+  .ik-v420-timeline header,
+  .ik-v420-list header {
+    min-height: 16px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-timeline header b,
+  #overview.router-overview-framework .ik-v420-list header b,
+  .router-overview-framework .ik-v420-timeline header b,
+  .router-overview-framework .ik-v420-list header b,
+  .ik-v420-timeline header b,
+  .ik-v420-list header b {
+    font-size: 11px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-timeline header span,
+  #overview.router-overview-framework .ik-v420-list header span,
+  .router-overview-framework .ik-v420-timeline header span,
+  .router-overview-framework .ik-v420-list header span,
+  .ik-v420-timeline header span,
+  .ik-v420-list header span {
+    font-size: 9px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-timeline-row,
+  .router-overview-framework .ik-v420-timeline-row,
+  .ik-v420-timeline-row {
+    height: 44px !important;
+    min-height: 44px !important;
+    padding: 4px 0 !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-timeline-row span b,
+  .router-overview-framework .ik-v420-timeline-row span b,
+  .ik-v420-timeline-row span b {
+    font-size: 11.2px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-timeline-row em,
+  .router-overview-framework .ik-v420-timeline-row em,
+  .ik-v420-timeline-row em {
+    font-size: 9px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-timeline-row strong,
+  .router-overview-framework .ik-v420-timeline-row strong,
+  .ik-v420-timeline-row strong {
+    font-size: 10.8px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-surface .ik-v420-list,
+  .router-overview-framework .ik-v420-surface .ik-v420-list,
+  .ik-v420-surface .ik-v420-list {
+    padding-top: 4px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-list-row,
+  .router-overview-framework .ik-v420-list-row,
+  .ik-v420-list-row {
+    height: 52px !important;
+    min-height: 52px !important;
+    padding: 4px 0 !important;
+  }
+
+  #overview.router-overview-framework .ik-v503-device-icon,
+  .router-overview-framework .ik-v503-device-icon,
+  .ik-v503-device-icon {
+    width: 28px !important;
+    height: 28px !important;
+    border-radius: 7px !important;
+    background: rgba(20,115,230,.06) !important;
+    box-shadow: inset 0 0 0 .5px rgba(20,115,230,.14) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-list-row span b,
+  .router-overview-framework .ik-v420-list-row span b,
+  .ik-v420-list-row span b {
+    font-size: 11.5px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-list-row span em,
+  .router-overview-framework .ik-v420-list-row span em,
+  .ik-v420-list-row span em {
+    font-size: 9.2px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-list-row > strong b,
+  .router-overview-framework .ik-v420-list-row > strong b,
+  .ik-v420-list-row > strong b {
+    font-size: 11px !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-scene="resource-full"] .ik-v620-pressure-visual,
+  .router-overview-framework [data-overview-mobile-scene="resource-full"] .ik-v620-pressure-visual,
+  [data-overview-mobile-scene="resource-full"] .ik-v620-pressure-visual {
+    grid-template-rows: 12px repeat(3, 1fr) !important;
+    gap: 4px !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-scene="resource-full"] .ik-v620-pressure-visual .ik-v420-resource-meter,
+  .router-overview-framework [data-overview-mobile-scene="resource-full"] .ik-v620-pressure-visual .ik-v420-resource-meter,
+  [data-overview-mobile-scene="resource-full"] .ik-v620-pressure-visual .ik-v420-resource-meter {
+    grid-template-columns: 28px minmax(0, 1fr) 34px 50px !important;
+    min-height: 17px !important;
+    gap: 5px !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-scene="resource-full"] .ik-v620-pressure-visual .ik-v420-resource-meter > i,
+  .router-overview-framework [data-overview-mobile-scene="resource-full"] .ik-v620-pressure-visual .ik-v420-resource-meter > i,
+  [data-overview-mobile-scene="resource-full"] .ik-v620-pressure-visual .ik-v420-resource-meter > i {
+    height: 3px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-tabs,
+  .router-overview-framework .ik-v420-tabs,
+  .ik-v420-tabs {
+    left: 8px !important;
+    right: 8px !important;
+    bottom: max(4px, env(safe-area-inset-bottom, 0px)) !important;
+    height: 64px !important;
+    min-height: 64px !important;
+    padding: 4px 7px !important;
+    border-radius: 14px !important;
+    background: rgba(255,255,255,.96) !important;
+    box-shadow: inset 0 0 0 .5px rgba(150,180,208,.40) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-tabs button,
+  .router-overview-framework .ik-v420-tabs button,
+  .ik-v420-tabs button {
+    min-height: 46px !important;
+    border-radius: 8px !important;
+    font-size: 8.8px !important;
+  }
+
+  /* v816 mobile density correction: keep the first screen factual, not decorative. */
+  #overview.router-overview-framework .ik-v420-screen,
+  .router-overview-framework .ik-v420-screen,
+  .ik-v420-screen {
+    padding: max(3px, env(safe-area-inset-top, 0px)) 9px calc(68px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-screen > * + *,
+  .router-overview-framework .ik-v420-screen > * + *,
+  .ik-v420-screen > * + * {
+    margin-top: 3px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-nav,
+  .router-overview-framework .ik-v420-nav,
+  .ik-v420-nav {
+    height: 48px !important;
+    min-height: 48px !important;
+    grid-template-columns: 38px minmax(0, 1fr) auto !important;
+    gap: 5px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-nav button,
+  .router-overview-framework .ik-v420-nav button,
+  .ik-v420-nav button {
+    width: 38px !important;
+    height: 38px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-nav div,
+  .router-overview-framework .ik-v420-nav div,
+  .ik-v420-nav div {
+    gap: 0 !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-nav div b,
+  .router-overview-framework .ik-v420-nav div b,
+  .ik-v420-nav div b {
+    font-size: 14.2px !important;
+    line-height: 1 !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-nav div span,
+  .router-overview-framework .ik-v420-nav div span,
+  .ik-v420-nav div span {
+    font-size: 9.1px !important;
+    line-height: 1.04 !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-nav strong,
+  .router-overview-framework .ik-v420-nav strong,
+  .ik-v420-nav strong {
+    min-height: 17px !important;
+    padding: 0 5px !important;
+    font-size: 9px !important;
+    border-radius: 999px !important;
+    background: rgba(255,255,255,.36) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-hero,
+  .router-overview-framework .ik-v420-hero,
+  .ik-v420-hero {
+    height: 182px !important;
+    min-height: 0 !important;
+    padding: 8px 10px 7px !important;
+    gap: 4px !important;
+    border-radius: 12px !important;
+    background: linear-gradient(180deg, rgba(255,255,255,.985), rgba(249,252,255,.94)) !important;
+    box-shadow: inset 0 0 0 .5px rgba(148,178,206,.36) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app:not([data-overview-mobile-scene="single"]):not([data-overview-mobile-scene="fleet"]) .ik-v420-hero,
+  .router-overview-framework .ik-v420-app:not([data-overview-mobile-scene="single"]):not([data-overview-mobile-scene="fleet"]) .ik-v420-hero,
+  .ik-v420-app:not([data-overview-mobile-scene="single"]):not([data-overview-mobile-scene="fleet"]) .ik-v420-hero {
+    height: 198px !important;
+    min-height: 0 !important;
+    max-height: 198px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-scene="resource-full"] .ik-v420-hero,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-scene="resource-full"] .ik-v420-hero,
+  .ik-v420-app[data-overview-mobile-scene="resource-full"] .ik-v420-hero {
+    height: 182px !important;
+    min-height: 0 !important;
+    max-height: 182px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-hero.is-danger,
+  .router-overview-framework .ik-v420-hero.is-danger,
+  .ik-v420-hero.is-danger,
+  #overview.router-overview-framework .ik-v420-hero.is-missing,
+  .router-overview-framework .ik-v420-hero.is-missing,
+  .ik-v420-hero.is-missing {
+    background: linear-gradient(180deg, rgba(255,255,255,.99), rgba(250,252,255,.96)) !important;
+    box-shadow: inset 2px 0 0 rgba(217,48,37,.58), inset 0 0 0 .5px rgba(148,178,206,.34) !important;
+  }
+
+  #overview.router-overview-framework .ik-v620-hero-head h1,
+  .router-overview-framework .ik-v620-hero-head h1,
+  .ik-v620-hero-head h1 {
+    font-size: clamp(20px, 5.5vw, 23px) !important;
+    line-height: .98 !important;
+  }
+
+  #overview.router-overview-framework .ik-v620-hero-head p,
+  .router-overview-framework .ik-v620-hero-head p,
+  .ik-v620-hero-head p {
+    font-size: 9.4px !important;
+    line-height: 1.02 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  #overview.router-overview-framework .ik-v620-hero-stage,
+  .router-overview-framework .ik-v620-hero-stage,
+  .ik-v620-hero-stage {
+    display: grid !important;
+    grid-template-columns: 72px minmax(0, 1fr) !important;
+    gap: 6px !important;
+    align-items: start !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-hero-stats,
+  .router-overview-framework .ik-v420-hero-stats,
+  .ik-v420-hero-stats {
+    display: grid !important;
+    grid-auto-rows: min-content !important;
+    align-self: start !important;
+    gap: 3px !important;
+    margin-top: 0 !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-hero-stats span,
+  .router-overview-framework .ik-v420-hero-stats span,
+  .ik-v420-hero-stats span,
+  #overview.router-overview-framework .ik-v420-hero-stats span + span,
+  .router-overview-framework .ik-v420-hero-stats span + span,
+  .ik-v420-hero-stats span + span {
+    min-height: 39px !important;
+    padding: 4px 5px !important;
+    align-content: center !important;
+    background: rgba(255,255,255,.18) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-hero-stats b,
+  #overview.router-overview-framework .ik-v420-hero-stats .is-primary b,
+  .router-overview-framework .ik-v420-hero-stats b,
+  .router-overview-framework .ik-v420-hero-stats .is-primary b,
+  .ik-v420-hero-stats b,
+  .ik-v420-hero-stats .is-primary b {
+    font-size: 13.4px !important;
+    line-height: .96 !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-hero-stats em,
+  #overview.router-overview-framework .ik-v420-hero-stats small,
+  .router-overview-framework .ik-v420-hero-stats em,
+  .router-overview-framework .ik-v420-hero-stats small,
+  .ik-v420-hero-stats em,
+  .ik-v420-hero-stats small {
+    font-size: 7.8px !important;
+    line-height: 1 !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-visual,
+  .router-overview-framework .ik-v420-visual,
+  .ik-v420-visual {
+    height: 72px !important;
+    min-height: 0 !important;
+    padding-top: 3px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app:not([data-overview-mobile-scene="single"]):not([data-overview-mobile-scene="fleet"]) .ik-v420-visual,
+  .router-overview-framework .ik-v420-app:not([data-overview-mobile-scene="single"]):not([data-overview-mobile-scene="fleet"]) .ik-v420-visual,
+  .ik-v420-app:not([data-overview-mobile-scene="single"]):not([data-overview-mobile-scene="fleet"]) .ik-v420-visual {
+    height: 76px !important;
+    min-height: 0 !important;
+    max-height: 76px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-scene="resource-full"] .ik-v420-visual,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-scene="resource-full"] .ik-v420-visual,
+  .ik-v420-app[data-overview-mobile-scene="resource-full"] .ik-v420-visual {
+    height: 76px !important;
+    min-height: 0 !important;
+    max-height: 76px !important;
+  }
+
+  #overview.router-overview-framework .ik-v812-trend-visual,
+  .router-overview-framework .ik-v812-trend-visual,
+  .ik-v812-trend-visual {
+    grid-template-columns: minmax(0, 1fr) 42px !important;
+    gap: 4px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-line-chart,
+  .router-overview-framework .ik-v420-line-chart,
+  .ik-v420-line-chart {
+    height: 60px !important;
+  }
+
+  #overview.router-overview-framework .ik-v503-hero-pills,
+  .router-overview-framework .ik-v503-hero-pills,
+  .ik-v503-hero-pills {
+    gap: 2px !important;
+  }
+
+  #overview.router-overview-framework .ik-v503-hero-pills span,
+  .router-overview-framework .ik-v503-hero-pills span,
+  .ik-v503-hero-pills span {
+    min-height: 13px !important;
+    padding: 0 2px !important;
+    font-size: 8px !important;
+    line-height: 13px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-surface,
+  .router-overview-framework .ik-v420-surface,
+  .ik-v420-surface {
+    padding: 4px 8px 3px !important;
+    border-radius: 11px !important;
+    background: rgba(255,255,255,.72) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-timeline header,
+  #overview.router-overview-framework .ik-v420-list header,
+  .router-overview-framework .ik-v420-timeline header,
+  .router-overview-framework .ik-v420-list header,
+  .ik-v420-timeline header,
+  .ik-v420-list header {
+    min-height: 14px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-timeline-row,
+  .router-overview-framework .ik-v420-timeline-row,
+  .ik-v420-timeline-row {
+    height: 42px !important;
+    min-height: 42px !important;
+    padding: 3px 0 !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-list-row,
+  .router-overview-framework .ik-v420-list-row,
+  .ik-v420-list-row {
+    height: 50px !important;
+    min-height: 50px !important;
+    padding: 3px 0 !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-scene="resource-full"] .ik-v620-pressure-visual,
+  .router-overview-framework [data-overview-mobile-scene="resource-full"] .ik-v620-pressure-visual,
+  [data-overview-mobile-scene="resource-full"] .ik-v620-pressure-visual {
+    grid-template-rows: 10px repeat(3, 16px) !important;
+    gap: 3px !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-scene="resource-full"] .ik-v620-pressure-visual .ik-v420-resource-meter,
+  .router-overview-framework [data-overview-mobile-scene="resource-full"] .ik-v620-pressure-visual .ik-v420-resource-meter,
+  [data-overview-mobile-scene="resource-full"] .ik-v620-pressure-visual .ik-v420-resource-meter {
+    grid-template-columns: 26px minmax(0, 1fr) 32px 48px !important;
+    min-height: 16px !important;
+  }
+
 }
 `;
   function V420MobileStyles() {
@@ -13450,7 +14109,7 @@ var PanelFramework = function(exports) {
       }
     );
   }
-  const ROUTE_UNKNOWN = "缺少当前路由快照，无法判断默认出口影响";
+  const ROUTE_UNKNOWN = "路由快照未取回，无法判断默认出口影响";
   const FILLER_TONE = "trust";
   const OVERVIEW_IKUAI40_CHART_STANDARD = "unit-window-samples-current-peak-mean-threshold-confidence-y-axis";
   const OVERVIEW_CHART_METADATA_COVERAGE = "all-chart-type-elements-unit-current-peak-mean-window-sample-points-threshold-confidence-readout";
@@ -13625,7 +14284,7 @@ var PanelFramework = function(exports) {
   }
   function routerosState(snapshot, scenario) {
     if (scenario === "no-snapshot") {
-      return { value: "断开", tone: "danger", note: "当前采集不可达" };
+      return { value: "断链", tone: "danger", note: "RouterOS 当前不可达" };
     }
     if (snapshot.status === "error") {
       return { value: "不可达", tone: "danger", note: businessErrorNote(snapshot.error, "当前采集失败") };
@@ -13634,7 +14293,7 @@ var PanelFramework = function(exports) {
   }
   function restState(snapshot, state) {
     var _a, _b, _c, _d;
-    if (state.scenario === "no-snapshot") return { value: "需核", tone: "warn", note: "链路需核" };
+    if (state.scenario === "no-snapshot") return { value: "待核", tone: "warn", note: "链路需核" };
     if (state.scenario === "interfaces-down") return { value: "不可达", tone: "warn", note: "采集通道不可达" };
     if (((_a = snapshot.meta) == null ? void 0 : _a.realtimeError) || ((_b = snapshot.meta) == null ? void 0 : _b.slowRestError) || state.scenario === "collection-down") {
       return { value: "待确认", tone: "warn", note: businessErrorNote(((_c = snapshot.meta) == null ? void 0 : _c.realtimeError) || ((_d = snapshot.meta) == null ? void 0 : _d.slowRestError), "当前使用缓存") };
@@ -13655,7 +14314,7 @@ var PanelFramework = function(exports) {
     const collection = topbarCollectionValue(state);
     const snapshotCell = topbarSnapshotValue(snapshot, state);
     if (state.scenario === "no-snapshot") {
-      const updated = statusUpdated(snapshot);
+      statusUpdated(snapshot);
       const routeros = routerosState(snapshot, state.scenario);
       const rest = restState(snapshot, state);
       const ssh = sshState(snapshot, state);
@@ -13664,8 +14323,8 @@ var PanelFramework = function(exports) {
         { label: "结论", value: desktopConclusionValue(snapshot, state), note: "无业务快照", role: "conclusion", tone: state.verdict.level },
         { label: "RouterOS", value: routeros.value, note: routeros.note, role: "routeros", tone: routeros.tone },
         { label: "REST", value: rest.value, note: rest.note, role: "rest", tone: rest.tone },
-        { label: "SSH", value: ssh.value, note: ssh.note, role: "ssh", tone: ssh.tone },
-        { label: "最近成功", value: snapshotCell.value, note: `状态更新 ${updated}`, role: "recent-success", tone: "warn" }
+        { label: "SSH", value: ssh.value, note: "SSH 不可用", role: "ssh", tone: ssh.tone },
+        { label: "最近成功", value: snapshotCell.value, note: "业务快照年龄 不可判定", role: "recent-success", tone: "warn" }
       ];
     }
     return [
@@ -13767,7 +14426,7 @@ var PanelFramework = function(exports) {
         "data-overview-scene-chart": module,
         "data-overview-chart-focus": "current-threshold-peak",
         "data-overview-chart-main-metric": (lead == null ? void 0 : lead.label) || "无业务快照",
-        "data-overview-chart-threshold": (lead == null ? void 0 : lead.threshold) || "不可判定",
+        "data-overview-chart-threshold": (lead == null ? void 0 : lead.threshold) || "待判",
         "data-overview-chart-anomaly-points": anomalyCount,
         "data-overview-chart-semantic": "main-metric-threshold-anomaly-point",
         "data-overview-chart-has-current": "true",
@@ -13817,7 +14476,7 @@ var PanelFramework = function(exports) {
               "data-overview-empty-chart-state": "grey-axis-no-business-snapshot",
               "data-overview-sample-points": "0/0",
               "data-overview-time-window": "无业务快照",
-              "data-overview-confidence": "不可判定",
+              "data-overview-confidence": "待判",
               children: [
                 /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "无业务快照" }),
                 /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: "图表不伪装零值" }),
@@ -13900,6 +14559,131 @@ var PanelFramework = function(exports) {
       }
     );
   }
+  function MiniTrendVisual({ module, rows }) {
+    const lead = rows[0];
+    const basis = Math.max(1, ...rows.map((row) => Math.max(row.currentValue, row.peakValue, row.meanValue, row.thresholdValue)));
+    const points = rows.slice(0, 3).flatMap((row) => [
+      Math.max(0, row.meanValue * 0.78),
+      Math.max(0, row.meanValue),
+      Math.max(0, row.currentValue),
+      Math.max(0, row.peakValue * 0.92)
+    ]);
+    const values = (points.length ? points : [0, basis * 0.28, basis * 0.42, basis * 0.36, basis * 0.54, basis * 0.48]).slice(-12);
+    const svgPoints = values.map((value, index) => {
+      const x2 = values.length > 1 ? index / (values.length - 1) * 186 : 0;
+      const y2 = 44 - Math.max(0, value) / basis * 34;
+      return `${x2.toFixed(1)},${Math.max(5, Math.min(44, y2)).toFixed(1)}`;
+    }).join(" ");
+    const area = `M0,48 L${svgPoints} L186,48 Z`;
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+      "div",
+      {
+        className: "ro-mini-trend-visual",
+        "data-overview-chart-type": "line",
+        "data-overview-scene-chart": module,
+        "data-overview-chart-grammar": "compact-current-peak-window-no-ruler",
+        "data-overview-chart-has-current": "true",
+        "data-overview-chart-has-peak": "true",
+        "data-overview-chart-has-window": "true",
+        "data-overview-chart-unit": (lead == null ? void 0 : lead.unit) || "bps",
+        children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("svg", { viewBox: "0 0 186 52", role: "img", "aria-label": lead ? `${lead.label} 当前 ${lead.current} 峰值 ${lead.peak} 窗口 ${lead.window}` : "WAN 趋势", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("path", { className: "ro-mini-trend-area", d: area }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("polyline", { className: "ro-mini-trend-line", points: svgPoints })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ro-mini-trend-readout", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: "当前" }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: (lead == null ? void 0 : lead.current) || "-" })
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: "峰值" }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: (lead == null ? void 0 : lead.peak) || "-" })
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: "窗口" }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: (lead == null ? void 0 : lead.window) || "-" })
+            ] })
+          ] })
+        ]
+      }
+    );
+  }
+  function ChannelMatrixVisual({ module, rows }) {
+    return /* @__PURE__ */ jsxRuntimeExports.jsx(
+      "div",
+      {
+        className: "ro-channel-matrix-visual",
+        "data-overview-chart-type": module === "collection-cache-ledger" ? "bar" : "matrix",
+        "data-overview-scene-chart": module,
+        "data-overview-collection-matrix": "rest-ssh-snapshot-status",
+        children: rows.slice(0, 4).map((row) => /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { "data-tone": row.tone || "trust", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("i", { "aria-hidden": "true" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: row.label }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("strong", { children: row.current }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: row.trust })
+        ] }, row.id))
+      }
+    );
+  }
+  function ResourcePressureLedgerVisual({ rows }) {
+    return /* @__PURE__ */ jsxRuntimeExports.jsx(
+      "div",
+      {
+        className: "ro-resource-ledger-visual",
+        "data-overview-chart-type": "pressure",
+        "data-overview-scene-chart": "resource-three-row-threshold-ledger",
+        "data-overview-resource-danger-order-bars": "thin-row-ledger",
+        children: rows.slice(0, 3).map((row) => /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { "data-tone": row.tone || "trust", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: row.label }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("strong", { children: row.current }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("i", { "aria-hidden": "true", children: /* @__PURE__ */ jsxRuntimeExports.jsx("i", { style: { width: `${clampPercent(row.currentValue)}%` } }) }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("em", { children: [
+            "阈",
+            row.threshold,
+            " · 持续 ",
+            chartSamplePoints(row)
+          ] })
+        ] }, row.id))
+      }
+    );
+  }
+  function desktopIncidentObject(snapshot, state) {
+    if (state.scenario === "all-offline") return `WAN 0/${formatNumber(Math.max(8, state.facts.wan.total || collectWanRows(snapshot).length))}`;
+    if (state.scenario === "resource-full") return state.facts.resource.summaryText;
+    if (state.scenario === "interfaces-down") return `${formatNumber(state.facts.interfaces.down)} 接口 Down`;
+    if (state.scenario === "collection-down") return "REST / SSH / 快照";
+    if (state.scenario === "no-snapshot") return "业务快照缺失";
+    return topbarObjectValue(state).value;
+  }
+  function desktopReadonlyJudgement(state) {
+    if (state.scenario === "all-offline") return "确认出口不可承载";
+    if (state.scenario === "resource-full") return "确认资源余量不足";
+    if (state.scenario === "interfaces-down") return "确认转发面影响";
+    if (state.scenario === "collection-down") return "仅按缓存参考";
+    if (state.scenario === "no-snapshot") return "不展示业务数据";
+    return "业务状态可读";
+  }
+  function DesktopIncidentSummary({ snapshot, state }) {
+    if (state.scenario === "single" || state.scenario === "fleet") return null;
+    const items = [
+      ["事故对象", desktopIncidentObject(snapshot, state)],
+      ["影响范围", topbarImpactValue(state).value],
+      ["可信度", moduleTrust(state)],
+      ["最近成功", latestSuccess(snapshot, state.scenario)],
+      ["只读判断", desktopReadonlyJudgement(state)]
+    ];
+    return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ro-incident-summary", "data-overview-desktop-incident-summary": "object-impact-trust-recent-readonly", children: items.map(([label, value]) => /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: label }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: value })
+    ] }, label)) });
+  }
+  function VisualStack({ snapshot, state, children }) {
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ro-visual-stack", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx(DesktopIncidentSummary, { snapshot, state }),
+      children
+    ] });
+  }
   function ChainTimeline({ rows, module }) {
     const lead = rows[0];
     const recent = lead ? String(lead.cells[2] || "") : "未记录";
@@ -13969,35 +14753,6 @@ var PanelFramework = function(exports) {
             /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: row.cells[1] })
           ] }, row.id))
         ]
-      }
-    );
-  }
-  function ResourceTriCards({ rows }) {
-    return /* @__PURE__ */ jsxRuntimeExports.jsx(
-      "div",
-      {
-        className: "ro-resource-cards",
-        "data-overview-scene-chart": "resource-risk-cards",
-        "data-overview-resource-primary-pressure": "true",
-        "data-overview-resource-danger-order-bars": "true",
-        "data-overview-chart-type": "pressure",
-        "data-overview-chart-has-current": "true",
-        "data-overview-chart-has-peak": "true",
-        "data-overview-chart-has-mean": "true",
-        "data-overview-chart-has-window": "true",
-        "data-overview-chart-has-threshold": "true",
-        "data-overview-chart-has-trust": "true",
-        "data-overview-chart-unit": "%",
-        children: rows.map((row) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ro-resource-card", "data-tone": row.tone || "trust", "data-overview-resource-danger-card-judgement": true, "data-overview-resource-spark-row-judgement": true, children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: row.label }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: row.current }),
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("em", { children: [
-            "阈 ",
-            row.threshold,
-            " / 异常点"
-          ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("i", { "aria-hidden": "true", children: /* @__PURE__ */ jsxRuntimeExports.jsx("strong", { style: { width: `${clampPercent(row.currentValue)}%` } }) })
-        ] }, row.id))
       }
     );
   }
@@ -14207,59 +14962,6 @@ var PanelFramework = function(exports) {
       trendDatum("traffic-top-wan", top ? text(top.name || top.interface, "WAN Top1") : "WAN Top1", topValue, baseThreshold, state.facts.wan.allOffline ? "danger" : "trust")
     ];
   }
-  function offlineWanStatusChartRows(snapshot, state) {
-    const recent = latestSuccess(snapshot, state.scenario);
-    return [
-      {
-        id: "offline-wan-total",
-        label: "离线WAN",
-        current: `${formatNumber(state.facts.wan.offline)}/${formatNumber(state.facts.wan.total)}`,
-        currentValue: state.facts.wan.offline,
-        peak: `${formatNumber(state.facts.wan.total)}/${formatNumber(state.facts.wan.total)}`,
-        peakValue: Math.max(1, state.facts.wan.total),
-        mean: "全部离线",
-        meanValue: state.facts.wan.offline,
-        threshold: "0离线",
-        thresholdValue: 0,
-        window: recent,
-        trust: moduleTrust(state),
-        tone: "danger",
-        unit: "wan"
-      },
-      {
-        id: "offline-default-route",
-        label: "默认出口",
-        current: routeLabelText(state),
-        currentValue: state.facts.route.level === "ok" ? 20 : 92,
-        peak: "异常",
-        peakValue: 100,
-        mean: "待核",
-        meanValue: 70,
-        threshold: "当前承载",
-        thresholdValue: 20,
-        window: recent,
-        trust: moduleTrust(state),
-        tone: state.facts.route.level,
-        unit: "route"
-      },
-      {
-        id: "offline-collection",
-        label: "采集",
-        current: state.facts.collection.channelText,
-        currentValue: state.facts.collection.level === "ok" ? 28 : 64,
-        peak: "可核对",
-        peakValue: 100,
-        mean: "旁证",
-        meanValue: 46,
-        threshold: "可用",
-        thresholdValue: 30,
-        window: recent,
-        trust: moduleTrust(state),
-        tone: state.facts.collection.level,
-        unit: "status"
-      }
-    ];
-  }
   function trafficRows(snapshot, state) {
     const totals2 = trafficTotals(snapshot);
     const offlineRows = state.scenario === "fleet" ? collectWanRows(snapshot).filter((row) => row.running === false).slice(0, 3).map((row, index) => {
@@ -14282,9 +14984,10 @@ var PanelFramework = function(exports) {
     const topRows = totals2.rows.slice().sort((left, right) => Math.max(toNumber(right.downRate), toNumber(right.upRate)) - Math.max(toNumber(left.downRate), toNumber(left.upRate))).slice(0, 3).map((row, index) => {
       const name = text(row.name || row.interface, `wan-${index + 1}`);
       const value = Math.max(toNumber(row.downRate), toNumber(row.upRate));
+      const attrs = { "data-overview-wan-detail-row": "true", ...row.running === false && state.scenario === "fleet" ? { "data-overview-anomaly-object": name } : {} };
       return {
         id: `traffic-top-${index}`,
-        attrs: row.running === false && state.scenario === "fleet" ? { "data-overview-anomaly-object": name } : void 0,
+        attrs,
         cells: [`WAN Top${index + 1}`, `${name} ${formatRate(value)}`, row.running === false ? "离线" : "当前速率"],
         tone: row.running === false ? "danger" : "trust"
       };
@@ -14314,34 +15017,79 @@ var PanelFramework = function(exports) {
       { id: "ops-sample", cells: ["样本", "最近6点", "当前 / 均值 / 峰值"], tone: state.facts.freshness.credibilityTone }
     ];
   }
-  function routeFactRows(snapshot, state) {
+  function routeBusinessRows(snapshot, state) {
     const rows = routeRows(snapshot);
     if (!rows.length) {
-      return [{ id: "route-missing", attrs: { "data-overview-default-route-row": "true", "data-overview-route-copy": "business", "data-overview-no-empty-first-screen": "true" }, cells: ["业务出口", state.scenario === "no-snapshot" ? "待判定" : "不可判定", state.scenario === "no-snapshot" ? "缺少当前出口证据" : "默认出口证据未采集", "不推断承载状态"], tone: "warn" }];
+      return [{
+        id: "route-business-missing",
+        attrs: { "data-overview-default-route-row": "true", "data-overview-route-copy": "business" },
+        cells: ["默认出口", state.scenario === "no-snapshot" ? "待判" : "待判", "-", "当前出口证据未返"],
+        tone: "warn"
+      }];
     }
-    return rows.slice(0, 6).map((route, index) => {
-      const rawTable = route.table || route.routingTable;
-      const table = routeTableText(rawTable);
-      const gateway = routeGatewayText(route.gateway || route.gatewayStatus);
-      const priority = routePriorityText(route.distance);
-      const status = `${route.active ? "活动路由" : "非活动路由"} / ${route.disabled ? "已禁用" : "未禁用"}`;
+    return rows.slice(0, 4).map((route, index) => {
+      const table = text(route.table || route.routingTable, "main");
+      const gateway = routeGatewayText(route.gateway || route.gatewayStatus).replace(/^网关\s*/, "");
+      const priority = routePriorityText(route.distance).replace(/^优先级\s*/, "");
+      const carrying = route.active && !route.disabled ? "可承载" : route.disabled ? "已禁用" : "不可承载";
       return {
-        id: `route-${index}`,
-        attrs: { "data-overview-default-route-row": "true", "data-overview-route-copy": "business", "data-routeros-raw-field-mode": "translated" },
+        id: `route-business-${index}`,
+        attrs: { "data-overview-default-route-row": "true", "data-overview-route-copy": "business-main" },
         cells: [
           /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: "默认出口" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: index === 0 ? "默认出口" : `备用出口 ${index + 1}` }),
             /* @__PURE__ */ jsxRuntimeExports.jsxs("small", { children: [
-              "路由表 ",
+              "table ",
               table
             ] })
           ] }),
-          `网关 ${gateway}`,
-          `优先级 ${priority}`,
-          status
+          /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: gateway || "网关未记录" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: "gateway" })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("b", { children: [
+              "优先级 ",
+              priority
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("small", { children: [
+              "distance ",
+              priority
+            ] })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: carrying }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("small", { children: [
+              "active ",
+              route.active ? "true" : "false",
+              " / disabled ",
+              route.disabled ? "true" : "false"
+            ] })
+          ] })
         ],
-        title: defaultRouteTitleContract(text(rawTable, "main"), gateway, priority, route.active, route.disabled).title,
-        tone: route.active && !route.disabled ? "ok" : "warn"
+        title: defaultRouteTitleContract(text(route.table || route.routingTable, "main"), gateway, priority, route.active, route.disabled).title,
+        tone: route.active && !route.disabled ? "trust" : "warn"
+      };
+    });
+  }
+  function routeRawEvidenceRows(snapshot, state) {
+    const rows = routeRows(snapshot);
+    if (!rows.length) {
+      return [{ id: "route-raw-missing", cells: ["RouterOS 路由证据", "未采集", "table/gateway/distance/active/disabled 缺失"], tone: state.scenario === "no-snapshot" ? "missing" : "warn" }];
+    }
+    return rows.slice(0, 4).map((route, index) => {
+      const table = text(route.table || route.routingTable, "main");
+      const gateway = text(route.gateway || route.gatewayStatus, "未记录");
+      const distance = text(route.distance, "未记录");
+      return {
+        id: `route-raw-evidence-${index}`,
+        attrs: { "data-overview-default-route-row": "true", "data-routeros-raw-field-mode": "evidence-bottom" },
+        cells: [
+          index === 0 ? "RouterOS 原始字段" : `RouterOS 备用 ${index + 1}`,
+          `table ${table} / gateway ${gateway}`,
+          `distance ${distance} / active ${route.active ? "true" : "false"} / disabled ${route.disabled ? "true" : "false"}`
+        ],
+        tone: route.active && !route.disabled ? "trust" : "warn"
       };
     });
   }
@@ -14634,6 +15382,16 @@ var PanelFramework = function(exports) {
       { id: "if-collection-boundary", cells: ["判断边界", "采集面", "不替代接口转发面", state.facts.collection.channelText], tone: state.facts.collection.level }
     ];
   }
+  function interfacePageTrustRows(snapshot, state) {
+    const recent = latestSuccess(snapshot, state.scenario);
+    return [
+      { id: "if-page-trust", cells: ["页面可信度", moduleTrust(state), "接口快照可参考"], tone: state.facts.freshness.credibilityTone },
+      { id: "if-page-success", cells: ["最近成功", recent, "接口状态时间"], tone: recent === "未记录" ? "warn" : "trust" },
+      { id: "if-page-route", cells: ["默认出口", routeLabelText(state), "影响单独判定"], tone: state.facts.route.level },
+      { id: "if-page-collection", cells: ["采集面", `${restState(snapshot, state).value} / ${sshState(snapshot, state).value}`, "不替代转发面"], tone: state.facts.collection.level },
+      { id: "if-page-readonly", cells: ["展示边界", "不写配置", "仅展示证据"], tone: "trust" }
+    ];
+  }
   function interfaceBoundaryRows(snapshot, state) {
     const recent = latestSuccess(snapshot, state.scenario);
     const down = collectInterfaceRows(snapshot).filter((row) => row.running === false);
@@ -14664,10 +15422,10 @@ var PanelFramework = function(exports) {
       { id: "collection-routeros", cells: ["设备通达性", routerosState(snapshot, state.scenario).value, recent, businessErrorNote(snapshot.error, "当前可达")], tone: routerosState(snapshot, state.scenario).tone },
       { id: "collection-rest", cells: ["REST", rest.value, recent, rest.note], tone: rest.tone },
       { id: "collection-ssh", cells: ["SSH", ssh.value, recent, ssh.note], tone: ssh.tone },
-      { id: "collection-cache", cells: ["业务快照", state.scenario === "no-snapshot" ? "不展示" : state.scenario === "collection-down" ? "缓存快照" : "实时", recent, state.scenario === "no-snapshot" ? "无业务快照，业务数据不展示" : state.scenario === "collection-down" ? "缓存快照 / 不可判定可信度" : "可参考"], tone: state.scenario === "no-snapshot" ? "missing" : state.scenario === "collection-down" ? "warn" : "ok" },
-      { id: "collection-boundary", cells: ["缓存边界", state.scenario === "collection-down" ? "只读缓存" : "实时可参考", recent, state.scenario === "collection-down" ? "REST / SSH / 快照分开判" : "业务快照边界清晰"], tone: state.scenario === "collection-down" ? "warn" : "trust" },
-      { id: "collection-failure", cells: ["端点失败", failureText(snapshot, state), statusUpdated(snapshot), state.facts.failures.count ? "见端点列表" : "未记录"], tone: state.facts.failures.count ? "warn" : "trust" },
-      { id: "collection-trust", cells: ["不可判定可信度", moduleTrust(state), recent, state.scenario === "collection-down" ? "缓存快照" : "按快照可信度显示"], tone: state.scenario === "collection-down" ? "warn" : "trust" },
+      { id: "collection-cache", cells: ["数据层状态", state.scenario === "no-snapshot" ? "隐藏" : state.scenario === "collection-down" ? "缓存" : "实时", recent, state.scenario === "no-snapshot" ? "无业务快照，业务禁显" : state.scenario === "collection-down" ? "业务快照非实时 / 待恢复" : "业务快照可参考"], tone: state.scenario === "no-snapshot" ? "missing" : state.scenario === "collection-down" ? "warn" : "ok" },
+      { id: "collection-boundary", cells: ["展示边界", state.scenario === "collection-down" ? "只读缓存" : "实时可参考", recent, state.scenario === "collection-down" ? "REST / SSH / 快照分开判" : "业务快照边界清晰"], tone: state.scenario === "collection-down" ? "warn" : "trust" },
+      { id: "collection-failure", cells: ["失败端点", state.scenario === "collection-down" ? "未记录" : state.facts.failures.count ? failureText(snapshot, state) : "未记录", statusUpdated(snapshot), state.scenario === "collection-down" ? "未记录" : state.facts.failures.count ? "见端点列表" : "未记录"], tone: state.facts.failures.count ? "warn" : "trust" },
+      { id: "collection-trust", cells: ["可信度", state.scenario === "collection-down" ? "可参考" : moduleTrust(state), recent, state.scenario === "collection-down" ? "非实时" : "按快照可信度显示"], tone: state.scenario === "collection-down" ? "warn" : "trust" },
       { id: "collection-next", cells: ["下次尝试", pollText(snapshot), recent, "轮询中"], tone: "trust" }
     ];
   }
@@ -14743,14 +15501,14 @@ var PanelFramework = function(exports) {
     const age = state.facts.freshness.text;
     return [
       { id: "chain-entry", cells: ["只读", "不写配置", recent, "采集链路可参考", next], tone: "trust" },
-      { id: "chain-router", cells: ["路由器管理面", "断开", recent, "当前采集不可达", next], tone: "danger" },
+      { id: "chain-router", cells: ["RouterOS", "断链", recent, "管理面断链", next], tone: "danger" },
       { id: "chain-rest", cells: ["REST", restState(snapshot, state).value, recent, "采集通道需核", next], tone: restState(snapshot, state).tone },
       { id: "chain-ssh", cells: ["SSH", sshState(snapshot, state).value, recent, "静态通道断链", next], tone: sshState(snapshot, state).tone },
-      { id: "chain-business", cells: ["业务快照", "禁显", recent, "无业务快照，业务禁显", next], title: "业务快照缺失：WAN、资源、终端、连接与速率禁显", tone: "missing" },
-      { id: "chain-default-route", cells: ["默认路由", "待判定", recent, "缺少当前路由快照，不推断承载", next], tone: "warn" },
+      { id: "chain-business", cells: ["业务快照", "禁显", recent, "无业务快照，业务数据不展示", next], title: "业务快照缺失：WAN、资源、终端、连接与速率禁显", tone: "missing" },
+      { id: "chain-default-route", cells: ["默认路由", "待判定", recent, "路由快照未取回，不推断承载", next], tone: "warn" },
       { id: "chain-success", cells: ["最近成功", recent, recent, "仅作为采集链路时间点", next], tone: recent === "未记录" ? "warn" : "trust" },
-      { id: "chain-failure", cells: ["端点失败", failureText(snapshot, state), recent, "未记录不写 0", next], tone: state.facts.failures.count ? "warn" : "trust" },
-      { id: "chain-trust", cells: ["可信等级", "链路可参考", recent, `业务状态不参考 / 事件年龄 ${age}`, next], tone: "warn" }
+      { id: "chain-failure", cells: ["失败端点", state.facts.failures.count ? failureText(snapshot, state) : "未记录", recent, "失败端点未记录不写 0", next], tone: state.facts.failures.count ? "warn" : "trust" },
+      { id: "chain-trust", cells: ["数据可信度", "链路可参考", recent, `业务状态不可参考 / 事件更新时间 ${age}`, next], tone: "warn" }
     ];
   }
   function noSnapshotBusinessBoundaryRows(snapshot, state) {
@@ -14758,7 +15516,7 @@ var PanelFramework = function(exports) {
     return [
       { id: "boundary-business", cells: ["业务展示边界", "无业务快照", "WAN / 资源 / 终端 / 连接禁显", "只读 不写配置"], tone: "missing" },
       { id: "boundary-rate", cells: ["速率展示", "禁显", "无有效业务采样", "速率禁显"], tone: "missing" },
-      { id: "boundary-route", cells: ["默认路由影响", "待判定", ROUTE_UNKNOWN, "不推断承载状态"], tone: "warn" },
+      { id: "boundary-route", cells: ["默认路由影响", "待判", ROUTE_UNKNOWN, "不推断承载状态"], tone: "warn" },
       { id: "boundary-success", cells: ["最近成功", recent, `状态更新 ${statusUpdated(snapshot)}`, "只代表采集链路"], tone: recent === "未记录" ? "warn" : "trust" },
       { id: "boundary-collection", cells: ["采集链路", "链路可参考", "REST 待确认 / SSH 断链", "业务状态不参考"], tone: "warn" },
       { id: "boundary-failure", cells: ["端点失败", failureText(snapshot, state), "未记录保持未记录", "不写零值"], tone: state.facts.failures.count ? "warn" : "trust" },
@@ -14768,15 +15526,17 @@ var PanelFramework = function(exports) {
   }
   function noSnapshotVisibilityRows() {
     return [
-      { id: "vis-routeros", cells: ["路由器管理面", "断开", "主证据已进入链路图", "采集链路"], tone: "danger" },
-      { id: "vis-rest", cells: ["REST", "需核", "端点未记录时保持未记录", "采集通道"], tone: "warn" },
-      { id: "vis-ssh", cells: ["SSH", "断链", "端点未记录时保持未记录", "采集通道"], tone: "warn" },
-      { id: "vis-route", cells: ["默认路由", "待判定", "默认路由待判 / 路由快照缺失", "可见性边界"], tone: "warn" },
+      { id: "vis-routeros", cells: ["RouterOS", "断链", "主证据已进入采集链路图", "采集链路"], tone: "danger" },
+      { id: "vis-rest", cells: ["REST", "待核", "失败端点未记录时保持未记录", "采集通道"], tone: "warn" },
+      { id: "vis-ssh", cells: ["SSH", "断链", "失败端点未记录时保持未记录", "采集通道"], tone: "warn" },
+      { id: "vis-route", cells: ["默认路由", "待判", "默认路由待判 / 路由快照未取回", "可见性边界"], tone: "warn" },
+      { id: "vis-snapshot-time", cells: ["业务快照时间", "无", "业务状态不可信", "模块可见性"], tone: "missing" },
+      { id: "vis-snapshot-age", cells: ["业务快照年龄", "待判", "业务状态待核", "模块可见性"], tone: "missing" },
       { id: "vis-wan", cells: ["WAN", "禁显", "业务模块", "无业务快照"], tone: "missing" },
       { id: "vis-resource", cells: ["资源", "禁显", "业务模块", "无业务快照"], tone: "missing" },
       { id: "vis-terminals", cells: ["终端", "禁显", "业务模块", "无业务快照"], tone: "missing" },
       { id: "vis-conn", cells: ["连接", "禁显", "业务模块", "无业务快照"], tone: "missing" },
-      { id: "vis-rate", cells: ["速率", "禁显", "禁止零速率", "速率禁显"], tone: "missing" },
+      { id: "vis-rate", cells: ["速率", "禁显", "禁止零速率", "速率不展示"], tone: "missing" },
       { id: "vis-page-trust", cells: ["页面可信等级", "链路可参考", "业务状态不可参考", "状态边界"], tone: "warn" },
       { id: "vis-readonly", cells: ["只读", "不写配置", "不推断业务数值", "采集链路可参考"], tone: "trust" }
     ];
@@ -14784,13 +15544,14 @@ var PanelFramework = function(exports) {
   function noSnapshotChannelStatusRows(snapshot, state) {
     const recent = latestSuccess(snapshot, state.scenario);
     return [
-      { id: "channel-routeros", cells: ["路由器管理面", "断开", "采集链路主故障"], tone: "danger" },
+      { id: "channel-routeros", cells: ["RouterOS", "断链", "采集链路主故障"], tone: "danger" },
       { id: "channel-rest", cells: ["REST", restState(snapshot, state).value, restState(snapshot, state).note], tone: restState(snapshot, state).tone },
       { id: "channel-ssh", cells: ["SSH", sshState(snapshot, state).value, sshState(snapshot, state).note], tone: sshState(snapshot, state).tone },
-      { id: "channel-route", cells: ["默认出口", "待判定", "默认出口待判 / 路由快照缺失"], tone: "warn" },
-      { id: "channel-failure", cells: ["端点失败", "未记录", "不写零值 / 不伪装"], tone: "trust" },
+      { id: "channel-route", cells: ["默认出口", "待判", "默认出口待判 / 路由快照未取回"], tone: "warn" },
+      { id: "channel-failure", cells: ["失败端点", "未记录", "失败端点未记录 / 不写零值"], tone: "trust" },
+      { id: "channel-data-layer", cells: ["数据层状态", "快照缺失", "业务状态不可信"], tone: "missing" },
       { id: "channel-recent", cells: ["最近成功", recent, `下次尝试 ${pollText(snapshot)}`], tone: recent === "未记录" ? "warn" : "trust" },
-      { id: "channel-business", cells: ["业务数据", "禁显", "无业务快照，业务禁显"], tone: "missing" },
+      { id: "channel-business", cells: ["业务数据", "禁显", "无业务快照，业务数据不展示"], tone: "missing" },
       { id: "channel-permission", cells: ["权限", "只读", "不写配置 / 不推断业务数值"], tone: "trust" }
     ];
   }
@@ -14807,7 +15568,7 @@ var PanelFramework = function(exports) {
       { id: "readonly-router", cells: ["路由器管理面", router.value, router.note], tone: router.tone },
       { id: "readonly-rest", cells: ["REST", rest.value, rest.note], tone: rest.tone },
       { id: "readonly-ssh", cells: ["SSH", ssh.value, ssh.note], tone: ssh.tone },
-      { id: "readonly-route", cells: ["默认出口", "待判定", "缺少当前路由快照，不推断承载"], tone: "warn" },
+      { id: "readonly-route", cells: ["默认出口", "待判", "路由快照未取回，不推断承载"], tone: "warn" },
       { id: "readonly-success", cells: ["最近成功", recent, "只作为采集链路时间点"], tone: recent === "未记录" ? "warn" : "trust" },
       { id: "readonly-next", cells: ["下一次轮询", pollText(snapshot), "等待采集恢复"], tone: "trust" }
     ];
@@ -14820,10 +15581,10 @@ var PanelFramework = function(exports) {
       { id: "success-source", cells: ["来源", state.scenario === "no-snapshot" ? "采集元数据" : "业务快照", state.scenario === "no-snapshot" ? "REST 待确认 / SSH 断链" : state.facts.collection.channelText], tone: "trust" },
       { id: "success-scope", cells: ["可展示范围", state.scenario === "no-snapshot" ? "采集链路" : "业务状态", moduleTrust(state)], tone: state.scenario === "no-snapshot" ? "warn" : "ok" },
       { id: "success-disabled", cells: ["已折叠模块", state.scenario === "no-snapshot" ? "WAN / 资源 / 终端 / 连接" : "无", "按边界显示"], tone: state.scenario === "no-snapshot" ? "missing" : "trust" },
-      { id: "success-current", cells: ["当前状态", state.scenario === "no-snapshot" ? "管理面断开" : "可用", state.scenario === "no-snapshot" ? "业务禁显" : "业务快照可参考"], tone: state.scenario === "no-snapshot" ? "danger" : "trust" },
+      { id: "success-current", cells: [state.scenario === "no-snapshot" ? "采集状态更新时间" : "当前状态", state.scenario === "no-snapshot" ? statusUpdated(snapshot) : "可用", state.scenario === "no-snapshot" ? "业务禁显" : "业务快照可参考"], tone: state.scenario === "no-snapshot" ? "danger" : "trust" },
       { id: "success-next", cells: ["下一次轮询", pollText(snapshot), "时间轴终点"], tone: "trust" },
       ...state.scenario === "no-snapshot" ? [
-        { id: "success-route-boundary", cells: ["默认出口", "待判定", "默认出口待判 / 路由快照缺失"], tone: "warn" },
+        { id: "success-route-boundary", cells: ["默认出口", "待判", "默认出口待判 / 路由快照未取回"], tone: "warn" },
         { id: "success-page-trust", cells: ["页面可信等级", "链路可参考", "业务状态不参考"], tone: "warn" },
         { id: "success-readonly", cells: ["只读策略", "不写配置", "不推断业务数值"], tone: "trust" }
       ] : []
@@ -14933,10 +15694,10 @@ var PanelFramework = function(exports) {
   function desktopEvidenceBoundaryRows(snapshot, state) {
     if (state.scenario === "no-snapshot") return compactRows(noSnapshotReadonlyDegradedRows(snapshot, state), 4);
     if (state.scenario === "collection-down") return compactRows(threeColumnRows(collectionReadonlyRows(snapshot, state), "desktop-boundary-"), 4);
-    if (state.scenario === "resource-full") return compactRows(resourceBoundaryRows(snapshot, state), 4);
-    if (state.scenario === "interfaces-down") return compactRows(interfaceBoundaryRows(snapshot, state), 4);
-    if (state.scenario === "all-offline") return compactRows(threeColumnRows(allOfflineImpactRows(snapshot, state), "desktop-boundary-"), 4);
-    return compactRows(normalOpsRows(snapshot, state), 4);
+    if (state.scenario === "resource-full") return compactRows([...threeColumnRows(resourceBoundaryRows(snapshot, state), "desktop-res-boundary-"), ...routeRawEvidenceRows(snapshot, state)], 5);
+    if (state.scenario === "interfaces-down") return compactRows([...threeColumnRows(interfaceBoundaryRows(snapshot, state), "desktop-if-boundary-"), ...routeRawEvidenceRows(snapshot, state)], 5);
+    if (state.scenario === "all-offline") return compactRows([...threeColumnRows(allOfflineImpactRows(snapshot, state), "desktop-boundary-"), ...routeRawEvidenceRows(snapshot, state)], 5);
+    return compactRows([...normalOpsRows(snapshot, state), ...routeRawEvidenceRows(snapshot, state)], 6);
   }
   function compactDesktopPanelGroups(snapshot, state) {
     const trust = moduleTrust(state);
@@ -14947,14 +15708,16 @@ var PanelFramework = function(exports) {
       const visibilityRows = noSnapshotVisibilityRows();
       return {
         main: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "采集链路 / 快照缺失", subtitle: "RouterOS 当前不可达 / REST / SSH / 业务快照 / 失败端点未记录", module: "no-snapshot-summary", tone: "danger", trust, headers: ["链路层", "当前", "最近成功", "主证据", "下次尝试"], rows: chainRows, minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(ChainTimeline, { rows: chainRows, module: "no-snapshot-summary-chain" }) }, "ns-summary"),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "四通道状态 / 当前失败对照", subtitle: "RouterOS / REST / SSH / 业务快照 / 失败端点未记录 / 默认路由 待判定", module: "no-snapshot-channel-status", tone: "warn", trust, headers: ["通道", "当前", "说明"], rows: channelRows, minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(ChainTimeline, { rows: channelRows, module: "no-snapshot-channel-status-chain" }) }, "ns-channel")
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "采集链路 / 快照缺失", subtitle: "RouterOS / REST / SSH / 快照", module: "no-snapshot-summary", tone: "danger", trust, headers: ["链路层", "当前", "最近成功", "主证据", "下次尝试"], rows: chainRows, minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(ChainTimeline, { rows: chainRows, module: "no-snapshot-summary-chain" }) }, "ns-summary"),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "四通道状态", subtitle: "失败端点 / 默认出口待判", module: "no-snapshot-channel-status", tone: "warn", trust, headers: ["通道", "当前", "说明"], rows: channelRows, minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(ChainTimeline, { rows: channelRows, module: "no-snapshot-channel-status-chain" }) }, "ns-channel")
         ],
         side: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "最近成功 / 状态更新时间", subtitle: "最近成功采集 / 事件更新时间 / 业务快照时间 无 / 业务快照年龄 不可判定", module: "no-snapshot-recent-success", tone: "trust", trust, headers: ["节点", "当前", "说明"], rows: recentRows, minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(ChainTimeline, { rows: recentRows, module: "no-snapshot-recent-success-timeline" }) }, "ns-recent"),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "模块可见性矩阵", subtitle: "业务展示边界 / 无业务快照，业务数据不展示 / WAN / 资源 / 终端 / 速率不展示", module: "no-snapshot-module-visibility", tone: "missing", trust, headers: ["模块", "状态", "原因", "边界"], rows: visibilityRows, minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(VisibilityMatrixVisual, { rows: visibilityRows }) }, "ns-visibility")
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "最近成功", subtitle: "采集时间 / 状态更新", module: "no-snapshot-recent-success", tone: "trust", trust, headers: ["节点", "当前", "说明"], rows: recentRows, minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(ChainTimeline, { rows: recentRows, module: "no-snapshot-recent-success-timeline" }) }, "ns-recent"),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "模块可见性矩阵 / 业务展示边界", subtitle: "无业务快照，业务边界合并", module: "no-snapshot-module-visibility", tone: "missing", trust, headers: ["模块", "状态", "原因", "边界"], rows: visibilityRows, minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(VisibilityMatrixVisual, { rows: visibilityRows }) }, "ns-visibility")
         ],
-        bottom: []
+        bottom: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "证据边界", subtitle: "WAN / 资源 / 终端 / 速率不展示", module: "evidence-boundary", tone: "missing", trust, headers: ["模块", "状态", "原因", "边界"], rows: compactRows(noSnapshotReadonlyDegradedRows(snapshot, state), 4), minRows: 0 }, "ns-degraded")
+        ]
       };
     }
     if (state.scenario === "resource-full") {
@@ -14963,80 +15726,87 @@ var PanelFramework = function(exports) {
       const top5Rows = resourceTop5Rows(snapshot).slice(0, 8);
       return {
         main: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "最危险项 · 资源满载", subtitle: "处理器 / 内存 / 磁盘", module: "resource-risk-priority", tone: "danger", trust, headers: ["项", "当前", "阈值", "峰值"], rows: resourceRiskRows(state), minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ro-resource-visual", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx(JudgementChart, { module: "resource-risk-priority", kind: "pressure", rows: riskChart }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx(ResourceTriCards, { rows: riskChart })
-          ] }) }, "res-risk"),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "最危险项 / 资源满载", subtitle: "CPU / 内存 / 磁盘", module: "resource-risk-priority", tone: "danger", trust, headers: ["项", "当前", "阈值", "峰值"], rows: resourceRiskRows(state), minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(VisualStack, { snapshot, state, children: /* @__PURE__ */ jsxRuntimeExports.jsx(ResourcePressureLedgerVisual, { rows: riskChart }) }) }, "res-risk"),
           /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "承载压力", subtitle: "连接 / 会话 / 接口", module: "resource-pressure-bars", tone: "warn", trust, headers: ["项目", "当前", "依据"], rows: pressureRows, minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(JudgementChart, { module: "resource-pressure-bars", kind: "pressure", rows: connectionPressureChartRows(snapshot, state) }) }, "res-pressure")
         ],
         side: [
           /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "接口吞吐 Top5", subtitle: "Top5占比 / 最大值归一 / 最繁忙接口", module: "resource-interface-top5", tone: "warn", trust, headers: ["接口", "速率", "占比"], rows: top5Rows, className: "ik-overview-top5-list", minRows: 0 }, "res-top5"),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "采集 / 快照", subtitle: "REST / SSH / 最近成功", module: "normal-collection-channel", tone: state.facts.collection.level, trust, headers: ["对象", "当前", "依据"], rows: compactRows(threeColumnRows(collectionRows(snapshot, state), "res-col-"), 4), minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(JudgementChart, { module: "collection-status", kind: "pressure", rows: collectionChannelRows(snapshot, state) }) }, "res-collection"),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "默认出口 / 路由证据", subtitle: "路由表 / 网关 / 优先级 / 活动路由 / 禁用状态", module: "route-raw-facts", tone: state.facts.route.level, trust, headers: ["路由域", "出口网关", "优先级", "状态"], rows: compactRows(routeFactRows(snapshot, state), 4), minRows: 0 }, "res-route")
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "采集 / 快照", subtitle: "REST / SSH / 最近成功", module: "normal-collection-channel", tone: state.facts.collection.level, trust, headers: ["对象", "当前", "依据"], rows: compactRows(threeColumnRows(collectionRows(snapshot, state), "res-col-"), 4), minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(ChannelMatrixVisual, { module: "collection-status", rows: collectionChannelRows(snapshot, state) }) }, "res-collection"),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "默认出口", subtitle: "出口 / 承载 / 优先级", module: "route-raw-facts", tone: state.facts.route.level, trust, headers: ["出口", "网关", "优先级", "状态"], rows: compactRows(routeBusinessRows(snapshot, state), 4), minRows: 0 }, "res-route")
         ],
         bottom: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "证据边界", subtitle: "RouterOS 原始字段下沉，只保留业务判断", module: "evidence-boundary", tone: "trust", trust, headers: ["对象", "当前", "最近", "边界"], rows: compactRows(resourceBoundaryRows(snapshot, state), 4), minRows: 0 }, "res-boundary")
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "证据边界", subtitle: "RouterOS 原始字段下沉，只保留业务判断", module: "evidence-boundary", tone: "trust", trust, headers: ["对象", "当前", "依据"], rows: compactRows([...threeColumnRows(resourceBoundaryRows(snapshot, state), "res-boundary-"), ...routeRawEvidenceRows(snapshot, state)], 5), minRows: 0 }, "res-boundary")
         ]
       };
     }
     if (state.scenario === "collection-down") {
-      const collectionVisual = /* @__PURE__ */ jsxRuntimeExports.jsx(JudgementChart, { module: "collection-cache-ledger", kind: "pressure", rows: collectionChannelRows(snapshot, state) });
+      const collectionVisual = /* @__PURE__ */ jsxRuntimeExports.jsx(VisualStack, { snapshot, state, children: /* @__PURE__ */ jsxRuntimeExports.jsx(ChannelMatrixVisual, { module: "collection-cache-ledger", rows: collectionChannelRows(snapshot, state) }) });
       return {
         main: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "采集异常 / 三通道状态条", subtitle: "通道状态 / 数据层状态 / REST / SSH / 快照 / 失败端点未记录", module: "collection-channel-ledger", tone: "warn", trust: "缓存快照", headers: ["对象", "当前", "依据"], rows: threeColumnRows(collectionRows(snapshot, state), "c3-"), minRows: 0, visual: collectionVisual }, "col-channel"),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "最后成功时间轴 / 缓存快照", subtitle: "最近成功 / 上次成功 / 缓存快照 / 当前不可判定", module: "collection-recent-failures", tone: "trust", trust: "缓存快照", headers: ["节点", "当前", "说明"], rows: lastSuccessRows(snapshot, state), minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(ChainTimeline, { rows: lastSuccessRows(snapshot, state), module: "collection-success-timeline" }) }, "col-recent")
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "通道状态 / 三通道", subtitle: "REST / SSH / 快照 / 失败端点", module: "collection-channel-ledger", tone: "warn", trust: "缓存快照", headers: ["对象", "当前", "依据"], rows: threeColumnRows(collectionRows(snapshot, state), "c3-"), minRows: 0, visual: collectionVisual }, "col-channel"),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "最近成功", subtitle: "上次成功 / 当前边界", module: "collection-recent-failures", tone: "trust", headers: ["节点", "当前", "说明"], rows: lastSuccessRows(snapshot, state), minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(ChainTimeline, { rows: lastSuccessRows(snapshot, state), module: "collection-success-timeline" }) }, "col-recent")
         ],
         side: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "缓存展示边界", subtitle: "当前展示缓存快照 / 不写配置 / 不推断业务数值", module: "collection-cache-boundary", tone: "warn", trust: "缓存快照", headers: ["对象", "当前", "依据"], rows: compactRows(threeColumnRows(collectionBoundaryLedgerRows(snapshot, state), "cbl-"), 6), minRows: 0 }, "col-boundary"),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "默认出口 / 缓存快照", subtitle: "路由表 / 网关 / 优先级 / 活动路由 / 禁用状态", module: "collection-route-wan-boundary", tone: state.facts.route.level, trust: "缓存快照", headers: ["对象", "当前", "依据"], rows: compactRows(threeColumnRows(routeFactRows(snapshot, state), "crf3-"), 4), minRows: 0 }, "col-route"),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "WAN线路 / 缓存快照", subtitle: "缓存快照下只作参考", module: "wan-lines", tone: state.facts.wan.allOffline ? "danger" : "trust", trust: "缓存快照", headers: ["线路", "状态", "承载"], rows: compactRows(wanRows(snapshot, state), 4), minRows: 0 }, "col-wan")
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "展示边界", subtitle: "不写配置 / 不推断", module: "collection-cache-boundary", tone: "warn", headers: ["对象", "当前", "依据"], rows: compactRows(threeColumnRows(collectionBoundaryLedgerRows(snapshot, state), "cbl-"), 6), minRows: 0 }, "col-boundary"),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "默认出口", subtitle: "出口 / 承载 / 优先级", module: "collection-route-wan-boundary", tone: state.facts.route.level, headers: ["出口", "网关", "优先级", "状态"], rows: compactRows(routeBusinessRows(snapshot, state), 4), minRows: 0 }, "col-route"),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "WAN线路", subtitle: "缓存下参考", module: "wan-lines", tone: state.facts.wan.allOffline ? "danger" : "trust", headers: ["线路", "状态", "承载"], rows: compactRows(wanRows(snapshot, state), 4), minRows: 0 }, "col-wan")
         ],
-        bottom: []
+        bottom: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "采集事件", subtitle: "最近成功 / 端点失败 / 默认出口", module: "collection-bottom-events", tone: "trust", headers: ["对象", "当前", "依据"], rows: compactRows(threeColumnRows(collectionReadonlyRows(snapshot, state), "cro-"), 4), minRows: 0 }, "col-events")
+        ]
       };
     }
     if (state.scenario === "interfaces-down") {
       return {
         main: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "接口转发面", subtitle: "Down 数 / 承载影响 / 默认出口影响分开", module: "interface-forwarding", tone: "danger", trust, headers: ["对象", "当前", "依据"], rows: interfaceRows(snapshot, state), minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(JudgementChart, { module: "interface-forwarding", kind: "pressure", rows: interfaceForwardingChartRows(snapshot, state) }) }, "if-forward"),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "默认路由快照摘要", subtitle: "默认路由影响 / 路由快照摘要 / 业务化路由事实", module: "route-raw-facts", tone: state.facts.route.level, trust, headers: ["路由域", "出口网关", "优先级", "状态"], rows: compactRows(routeFactRows(snapshot, state), 4), minRows: 0 }, "if-route")
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "接口转发面", subtitle: "Down 数 / 承载 / 默认出口", module: "interface-forwarding", tone: "danger", trust, headers: ["对象", "当前", "依据"], rows: interfaceRows(snapshot, state), minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(VisualStack, { snapshot, state }) }, "if-forward"),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "默认出口影响", subtitle: "出口 / 承载 / 优先级", module: "route-raw-facts", tone: state.facts.route.level, trust, headers: ["出口", "网关", "优先级", "状态"], rows: compactRows(routeBusinessRows(snapshot, state), 4), minRows: 0 }, "if-route")
         ],
         side: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "采集面通道", subtitle: "REST 不可达 / SSH 不可达 / 采集面不替代转发面判断", module: "interface-collection-channel", tone: state.facts.collection.level, trust, headers: ["对象", "当前", "依据"], rows: threeColumnRows(interfaceCollectionRows(snapshot, state), "ic3-"), minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(JudgementChart, { module: "interface-collection-channel", kind: "pressure", rows: collectionChannelRows(snapshot, state) }) }, "if-collection"),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "采集面通道", subtitle: "REST / SSH / 快照", module: "interface-collection-channel", tone: state.facts.collection.level, trust, headers: ["对象", "当前", "依据"], rows: threeColumnRows(interfaceCollectionRows(snapshot, state), "ic3-"), minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(ChannelMatrixVisual, { module: "interface-collection-channel", rows: collectionChannelRows(snapshot, state) }) }, "if-collection"),
           /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "接口关系载体表", subtitle: "父接口 / 桥接 / VLAN / PPPoE 出口下沉展示", module: "interface-relation-carrier", tone: "warn", trust, headers: ["对象", "当前", "依据"], rows: compactRows(threeColumnRows(interfaceRelationRows(snapshot, state), "irc3-"), 5), minRows: 0 }, "if-relation"),
           /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "转发面判断边界", subtitle: "Down 对象 / 默认出口 / REST SSH / 展示边界", module: "interface-forwarding-boundary", tone: "warn", trust, headers: ["对象", "当前", "最近", "边界"], rows: compactRows(interfaceBoundaryRows(snapshot, state), 4), minRows: 0 }, "if-boundary")
         ],
-        bottom: []
+        bottom: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "接口事件", subtitle: "最近成功 / 默认出口 / 采集面", module: "interface-page-trust", tone: "trust", trust, headers: ["对象", "当前", "依据"], rows: compactRows(interfacePageTrustRows(snapshot, state), 4), minRows: 0 }, "if-events"),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "终端排行", subtitle: "异常置顶 / 总流量", module: "terminal-ranking", tone: "trust", trust, headers: ["设备", "IP", "流量", "状态"], rows: desktopTerminalRows(snapshot), minRows: 0 }, "if-terminals"),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "路由原始证据", subtitle: "main / gateway / distance / active", module: "evidence-boundary", tone: "trust", trust, headers: ["对象", "当前", "依据"], rows: routeRawEvidenceRows(snapshot, state), minRows: 0 }, "if-raw")
+        ]
       };
     }
     if (state.scenario === "all-offline") {
       const offlineRows = wanRows(snapshot, state);
       return {
         main: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "WAN线路", subtitle: "WAN 0/8 / 默认出口异常 / 出口不可用 / 速率无有效样本", module: "wan-offline-bars", tone: "danger", trust, headers: ["线路", "状态", "承载"], rows: offlineRows, minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(JudgementChart, { module: "wan-offline-bars", kind: "pressure", rows: offlineWanStatusChartRows(snapshot, state) }) }, "ao-wan"),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "默认出口判断", subtitle: "路由表 / 网关 / 优先级 / 活动路由 / 禁用状态", module: "wan-route-ledger", tone: state.facts.route.level, trust, headers: ["对象", "当前", "依据"], rows: threeColumnRows(routeFactRows(snapshot, state), "wr3-"), minRows: 0 }, "ao-route")
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "WAN线路", subtitle: "0/8 / 出口不可用", module: "wan-offline-bars", tone: "danger", trust, headers: ["线路", "状态", "承载"], rows: offlineRows, minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(VisualStack, { snapshot, state }) }, "ao-wan"),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "默认出口判断", subtitle: "出口 / 承载 / 优先级", module: "wan-route-ledger", tone: state.facts.route.level, trust, headers: ["出口", "网关", "优先级", "状态"], rows: routeBusinessRows(snapshot, state), minRows: 0 }, "ao-route")
         ],
         side: [
           /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "WAN连续性", subtitle: "WAN 0/8 / 离线对象 / 默认路由异常 / 速率无有效样本", module: "wan-offline-continuity", tone: "danger", trust, headers: ["字段", "当前", "依据"], rows: compactRows(wanContinuityRows(state), 8), minRows: 0 }, "ao-continuity"),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "采集通道", subtitle: "REST / SSH / 事故判断采集可信度", module: "collection-status", tone: state.facts.collection.level, trust, headers: ["对象", "当前", "依据"], rows: threeColumnRows(collectionRows(snapshot, state), "ao3-"), minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(JudgementChart, { module: "collection-status", kind: "pressure", rows: collectionChannelRows(snapshot, state) }) }, "ao-collection"),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "采集通道", subtitle: "REST / SSH / 快照", module: "collection-status", tone: state.facts.collection.level, trust, headers: ["对象", "当前", "依据"], rows: threeColumnRows(collectionRows(snapshot, state), "ao3-"), minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(ChannelMatrixVisual, { module: "collection-status", rows: collectionChannelRows(snapshot, state) }) }, "ao-collection"),
           /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "业务影响 / 展示边界", subtitle: "默认路由 / 承载关系 / 速率不展示 / 只读状态台", module: "wan-offline-impact-boundary", tone: "warn", trust, headers: ["对象", "当前", "依据"], rows: compactRows(threeColumnRows(allOfflineImpactRows(snapshot, state), "aoi-"), 5), minRows: 0 }, "ao-impact")
         ],
-        bottom: []
+        bottom: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "接口 / WAN 边界", subtitle: "接口承载 / 默认出口", module: "wan-offline-bottom-interface", tone: "warn", trust, headers: ["对象", "当前", "最近", "边界"], rows: compactRows(interfaceBoundaryRows(snapshot, state), 4), minRows: 0 }, "ao-interface"),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "采集事件", subtitle: "REST / SSH / 最近成功", module: "wan-offline-bottom-events", tone: state.facts.collection.level, trust, headers: ["对象", "当前", "依据"], rows: compactRows(normalOpsRows(snapshot, state), 4), minRows: 0 }, "ao-events"),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "路由原始证据", subtitle: "main / gateway / distance / active", module: "evidence-boundary", tone: "trust", trust, headers: ["对象", "当前", "依据"], rows: routeRawEvidenceRows(snapshot, state), minRows: 0 }, "ao-raw")
+        ]
       };
     }
     const networkRows = state.scenario === "no-snapshot" ? compactRows(noSnapshotChainRows(snapshot, state), 4) : state.scenario === "all-offline" ? compactRows(wanRows(snapshot, state), 8) : compactRows(trafficRows(snapshot, state), state.scenario === "fleet" ? 6 : 5);
-    const networkVisual = state.scenario === "no-snapshot" ? /* @__PURE__ */ jsxRuntimeExports.jsx(ChainTimeline, { rows: networkRows, module: "no-snapshot-summary-chain" }) : state.scenario === "all-offline" ? /* @__PURE__ */ jsxRuntimeExports.jsx(JudgementChart, { module: "wan-offline-bars", kind: "trend", rows: offlineWanStatusChartRows(snapshot, state) }) : /* @__PURE__ */ jsxRuntimeExports.jsx(JudgementChart, { module: "traffic-trend", kind: "trend", rows: trafficChartRows(snapshot, state) });
-    const routeRowsCompact = state.scenario === "no-snapshot" ? compactRows(noSnapshotBusinessBoundaryRows(snapshot, state), 4) : compactRows(routeFactRows(snapshot, state), 4);
-    const routeHeaders = state.scenario === "no-snapshot" ? ["模块", "当前", "影响", "边界"] : ["路由域", "出口网关", "优先级", "状态"];
+    const networkVisual = state.scenario === "no-snapshot" ? /* @__PURE__ */ jsxRuntimeExports.jsx(ChainTimeline, { rows: networkRows, module: "no-snapshot-summary-chain" }) : state.scenario === "all-offline" ? /* @__PURE__ */ jsxRuntimeExports.jsx(VisualStack, { snapshot, state }) : /* @__PURE__ */ jsxRuntimeExports.jsx(MiniTrendVisual, { module: "traffic-trend", rows: trafficChartRows(snapshot, state) });
+    const routeRowsCompact = state.scenario === "no-snapshot" ? compactRows(noSnapshotBusinessBoundaryRows(snapshot, state), 4) : compactRows(routeBusinessRows(snapshot, state), 4);
+    const routeHeaders = state.scenario === "no-snapshot" ? ["模块", "当前", "影响", "边界"] : ["出口", "网关", "优先级", "状态"];
     const collectionRowsCompact = state.scenario === "no-snapshot" ? compactRows(noSnapshotChainRows(snapshot, state), 4) : compactRows(threeColumnRows(collectionRows(snapshot, state), "desktop-collection-"), 4);
     const interfaceRowsCompact = state.scenario === "interfaces-down" ? compactRows(threeColumnRows(interfaceRows(snapshot, state), "desktop-if-"), 5) : compactRows(interfaceBoundaryRows(snapshot, state), 4);
     return {
       main: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: state.scenario === "no-snapshot" ? "采集链路 / 快照" : "网络 / WAN 出口", subtitle: state.scenario === "all-offline" ? "WAN 0/8 / 默认出口异常 / 出口不可用" : "当前 / 峰值 / 均值 / 时间范围", module: state.scenario === "all-offline" ? "wan-offline-bars" : state.scenario === "no-snapshot" ? "no-snapshot-summary" : "wan-trend", tone: state.scenario === "all-offline" || state.scenario === "no-snapshot" ? "danger" : state.facts.wan.allOffline ? "danger" : "trust", trust, headers: state.scenario === "no-snapshot" ? ["链路层", "当前", "最近成功", "主证据", "下次尝试"] : ["对象", "当前", "依据"], rows: networkRows, minRows: 0, visual: networkVisual }, "compact-network"),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: state.scenario === "no-snapshot" ? "业务展示边界" : "默认出口 / 路由", subtitle: state.scenario === "no-snapshot" ? "没有可信快照时不展示业务数据" : "主业务域 / 网关 / 承载状态", module: state.scenario === "no-snapshot" ? "no-snapshot-module-visibility" : "route-raw-facts", tone: state.scenario === "all-offline" ? "danger" : state.facts.route.level, trust, headers: routeHeaders, rows: routeRowsCompact, minRows: 0, visual: state.scenario === "no-snapshot" ? /* @__PURE__ */ jsxRuntimeExports.jsx(VisibilityMatrixVisual, { rows: routeRowsCompact }) : void 0 }, "compact-route")
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: state.scenario === "no-snapshot" ? "采集链路 / 快照" : "网络 / WAN 出口", subtitle: state.scenario === "all-offline" ? "WAN 0/8 / 出口不可用" : "当前 / 峰值 / 窗口", module: state.scenario === "all-offline" ? "wan-offline-bars" : state.scenario === "no-snapshot" ? "no-snapshot-summary" : "wan-trend", tone: state.scenario === "all-offline" || state.scenario === "no-snapshot" ? "danger" : state.facts.wan.allOffline ? "danger" : "trust", trust, headers: state.scenario === "no-snapshot" ? ["链路层", "当前", "最近成功", "主证据", "下次尝试"] : ["对象", "当前", "依据"], rows: networkRows, minRows: 0, visual: networkVisual }, "compact-network"),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: state.scenario === "no-snapshot" ? "业务展示边界" : "默认出口", subtitle: state.scenario === "no-snapshot" ? "业务边界合并" : "出口 / 承载 / 优先级", module: state.scenario === "no-snapshot" ? "no-snapshot-module-visibility" : "route-raw-facts", tone: state.scenario === "all-offline" ? "danger" : state.facts.route.level, trust, headers: routeHeaders, rows: routeRowsCompact, minRows: 0, visual: state.scenario === "no-snapshot" ? /* @__PURE__ */ jsxRuntimeExports.jsx(VisibilityMatrixVisual, { rows: routeRowsCompact }) : void 0 }, "compact-route")
       ],
       side: [
         /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: state.scenario === "resource-full" ? "资源满载" : "资源", subtitle: state.scenario === "resource-full" ? "三项超阈" : "当前 / 阈值", module: state.scenario === "resource-full" ? "resource-risk-priority" : "resource-threshold", tone: state.scenario === "no-snapshot" ? "missing" : state.facts.resource.level, trust, headers: ["项", "阈值", "持续", "峰值"], rows: compactRows(resourceRows(state), 3), minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(JudgementChart, { module: "resource-threshold", kind: "pressure", rows: resourceChartRows(state) }) }, "compact-resource"),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "采集 / 快照", subtitle: state.scenario === "collection-down" ? "REST / SSH / 快照边界分开判断" : "REST / SSH / 最近成功", module: state.scenario === "collection-down" ? "collection-channel-ledger" : state.scenario === "no-snapshot" ? "no-snapshot-channel-status" : "normal-collection-channel", tone: state.scenario === "collection-down" || state.scenario === "no-snapshot" ? "warn" : state.facts.collection.level, trust, headers: state.scenario === "no-snapshot" ? ["链路层", "当前", "最近成功", "主证据", "下次尝试"] : ["对象", "当前", "依据"], rows: collectionRowsCompact, minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(JudgementChart, { module: "collection-status", kind: "pressure", rows: collectionChannelRows(snapshot, state) }) }, "compact-collection"),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "采集 / 快照", subtitle: state.scenario === "collection-down" ? "REST / SSH / 快照" : "REST / SSH / 最近成功", module: state.scenario === "collection-down" ? "collection-channel-ledger" : state.scenario === "no-snapshot" ? "no-snapshot-channel-status" : "normal-collection-channel", tone: state.scenario === "collection-down" || state.scenario === "no-snapshot" ? "warn" : state.facts.collection.level, trust, headers: state.scenario === "no-snapshot" ? ["链路层", "当前", "最近成功", "主证据", "下次尝试"] : ["对象", "当前", "依据"], rows: collectionRowsCompact, minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(ChannelMatrixVisual, { module: "collection-status", rows: collectionChannelRows(snapshot, state) }) }, "compact-collection"),
         /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "接口状态", subtitle: state.scenario === "interfaces-down" ? "Down 数 / 承载影响 / 默认出口影响分开" : "转发面 / 承载边界", module: state.scenario === "interfaces-down" ? "interface-forwarding" : "normal-interface-boundary", tone: state.scenario === "interfaces-down" ? "danger" : "trust", trust, headers: state.scenario === "interfaces-down" ? ["对象", "当前", "依据"] : ["对象", "当前", "最近", "边界"], rows: interfaceRowsCompact, minRows: 0, visual: state.scenario === "interfaces-down" ? /* @__PURE__ */ jsxRuntimeExports.jsx(JudgementChart, { module: "interface-forwarding", kind: "pressure", rows: interfaceForwardingChartRows(snapshot, state) }) : void 0 }, "compact-interface")
       ],
       bottom: [
