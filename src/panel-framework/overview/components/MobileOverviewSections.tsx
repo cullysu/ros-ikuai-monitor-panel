@@ -379,6 +379,26 @@ function V420HeroMetrics({ model }: { model: MobileOverviewModel }) {
   );
 }
 
+function V420TrustStrip(props: MobileOverviewHomeProps) {
+  const model = buildMobileOverviewModel(props.snapshot, props.state);
+  return (
+    <section
+      className="ik-v910-trust-strip"
+      aria-label="RouterOS 可信度"
+      data-overview-mobile-trust-strip="forwarding-collection-snapshot-business"
+      data-overview-mobile-core-block="trust-strip"
+    >
+      {model.trustPlanes.map((item) => (
+        <span className={toneClass(item.tone)} key={item.id}>
+          <b>{item.label}</b>
+          <strong>{item.value}</strong>
+          <em>{item.note}</em>
+        </span>
+      ))}
+    </section>
+  );
+}
+
 function splitHeroPill(text: string): { label: string; value: string } {
   const [label, ...rest] = text.replace(/\s+/g, " ").trim().split(" ");
   return { label: label || "状态", value: rest.join(" ") || text };
@@ -513,7 +533,13 @@ function V420List(props: MobileOverviewHomeProps) {
   const model = buildMobileOverviewModel(props.snapshot, props.state);
   const rows: AppRankingRow[] = model.primaryList.rows;
   return (
-    <section className="ik-v420-list ik-v420-app-list ik-v240-list" data-overview-mobile-rank-list="terminal-total-traffic-list" data-overview-mobile-v420-list="native-router-list" data-overview-mobile-v240-list="terminal-ranking">
+    <section
+      className="ik-v420-list ik-v420-app-list ik-v240-list"
+      data-overview-mobile-list-kind={model.primaryList.kind}
+      data-overview-mobile-rank-list="terminal-total-traffic-list"
+      data-overview-mobile-v420-list="native-router-list"
+      data-overview-mobile-v240-list="terminal-ranking"
+    >
       <header>
         <b>{model.primaryList.title}</b>
         <span>{model.primaryList.meta}</span>
@@ -582,6 +608,7 @@ function V420Tabs() {
 
 export {
   V420Nav as StatusHeader,
+  V420TrustStrip as TrustStrip,
   V420Hero as IncidentHero,
   V420HomeSurface as HomeSurface,
   V420Tabs as BottomTabs,

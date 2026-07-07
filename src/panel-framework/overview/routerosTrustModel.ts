@@ -80,12 +80,13 @@ function snapshotTrustText(state: OverviewDerivedState): string {
 
 export function buildRouterOsTrustModel(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): RouterOsTrustModel {
   const totalWan = Math.max(state.facts.wan.total || wanRows(snapshot).length, state.facts.wan.allOffline ? 8 : 0);
+  const noSnapshot = state.scenario === "no-snapshot";
   const forwarding: RouterOsTrustPlane = {
     id: "forwarding",
     label: "转发面",
-    value: state.facts.wan.allOffline ? "不可用" : state.facts.interfaces.down > 0 ? "待确认" : "可用",
-    note: state.facts.wan.allOffline ? `WAN 0/${formatNumber(totalWan)}` : `WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(totalWan || 1)}`,
-    tone: state.facts.wan.allOffline ? "danger" : state.facts.interfaces.down > 0 ? "warn" : "ok",
+    value: noSnapshot ? "不可判" : state.facts.wan.allOffline ? "不可用" : state.facts.interfaces.down > 0 ? "待确认" : "可用",
+    note: noSnapshot ? "无业务快照" : state.facts.wan.allOffline ? `WAN 0/${formatNumber(totalWan)}` : `WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(totalWan || 1)}`,
+    tone: noSnapshot ? "missing" : state.facts.wan.allOffline ? "danger" : state.facts.interfaces.down > 0 ? "warn" : "ok",
   };
   const collection: RouterOsTrustPlane = {
     id: "collection",

@@ -319,7 +319,7 @@ function heroVisualKind(priority: MobileOverviewModel["priority"]): MobileHeroVi
   if (priority === "wan-offline") return "wan-ports";
   if (priority === "resource-full") return "resource-bars";
   if (priority === "interface-down") return "interface-list";
-  if (priority === "snapshot-missing" || priority === "collection-degraded") return "trust-channels";
+  if (priority === "snapshot-missing") return "trust-channels";
   return "trend";
 }
 
