@@ -11,7 +11,8 @@ import {
   type OverviewRawWanRow,
   type OverviewTone,
 } from "./index";
-import { buildRouterOsTrustModel, type RouterOsTrustPlane } from "./routerosTrustModel";
+import { buildRouterOsEvidenceModel } from "./routerosEvidenceModel";
+import type { RouterOsTrustPlane } from "./routerosTrustModel";
 
 export type MobileMonitorPlane = RouterOsTrustPlane["id"];
 
@@ -58,6 +59,7 @@ export interface MobileTrendChartModel {
   source: "history" | "current";
   windowText: string;
   sampleText: string;
+  sampleLabel: string;
   startLabel: string;
   endLabel: string;
   referenceLabel: string;
@@ -269,10 +271,16 @@ function trendChart(snapshot: OverviewRawSnapshot, state: OverviewDerivedState):
   const current = down[down.length - 1] || 0;
   const windowText = series.source === "history" ? "近 12 点" : "当前窗口";
   const sampleText = series.source === "history" ? "历史样本" : "实时估算";
+  const sampleLabel = series.source === "history"
+    ? "历史"
+    : state.scenario === "collection-down" || state.facts.collection.dataStale || state.facts.freshness.history
+      ? "缓存"
+      : "实时";
   return {
     source: series.source,
     windowText,
     sampleText,
+    sampleLabel,
     startLabel: series.source === "history" ? `${down.length} 点前` : "窗口起点",
     endLabel: "当前",
     referenceLabel: state.facts.wan.allOffline ? "离线参考" : "高位参考",
@@ -285,6 +293,7 @@ function trendChart(snapshot: OverviewRawSnapshot, state: OverviewDerivedState):
       { label: "当前", value: mobileRate(current), note: "下载", tone: "trust" },
       { label: "峰值", value: mobileRate(peak), note: windowText, tone: "trust" },
       { label: "窗口", value: series.source === "history" ? "12 点" : "当前", note: sampleText, tone: state.facts.collection.credibilityTone },
+      { label: "采样", value: sampleLabel, note: state.facts.collection.credibilityLabel, tone: state.facts.collection.credibilityTone },
     ],
   };
 }
@@ -531,7 +540,13 @@ function heroPills(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): 
 }
 
 function trustPlanes(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): MobileTrustPlane[] {
-  return buildRouterOsTrustModel(snapshot, state).planes;
+  return buildRouterOsEvidenceModel(snapshot, state).planes.map((plane) => ({
+    id: plane.id,
+    label: plane.label,
+    value: plane.value,
+    note: plane.note,
+    tone: plane.tone,
+  }));
 }
 
 function statusRows(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): MobileMonitorRow[] {
@@ -595,13 +610,13 @@ function wanPorts(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): M
   const rows = Array.from({ length: 8 }, (_, index) => wanRows(snapshot)[index] || ({ name: `WAN${index + 1}`, running: false } as OverviewRawWanRow));
   return rows.map((row, index) => {
     const offline = state.facts.wan.allOffline || row.running === false;
-    const name = clean(row.name || row.interface, `WAN${index + 1}`);
-    const carrier = clean(row.parent || row.access || row.interface || name, name).replace(/^ether/i, "ether");
+    const name = clean(row.name || row.interface, `pppoe-wan${index + 1}`).replace(/^pppoe[-_]?/i, "");
+    const carrier = clean(row.parent || row.access || row.interface, `P${index + 1}`).replace(/^ether/i, "ether");
     return {
       id: `wan-port-${index}`,
       label: `P${index + 1}`,
-      name: carrier,
-      note: offline ? "离线" : name.replace(/^pppoe[-_]?/i, ""),
+      name,
+      note: offline ? `${carrier} · 离线` : `${carrier} · 在线`,
       tone: offline ? "danger" : "ok",
     };
   });
@@ -610,7 +625,7 @@ function wanPorts(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): M
 function offlineWanRows(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): MobileMonitorListRow[] {
   const source = wanRows(snapshot);
   const total = Math.max(8, state.facts.wan.total || source.length);
-  return Array.from({ length: Math.min(5, total) }, (_, index) => {
+  return Array.from({ length: Math.min(3, total) }, (_, index) => {
     const row = source[index] || ({ name: `pppoe-wan${index + 1}`, running: false } as OverviewRawWanRow);
     const name = clean(row.name || row.interface, `pppoe-wan${index + 1}`);
     const parent = clean(row.parent || row.interface || row.access, "承载待确认");
@@ -629,7 +644,7 @@ function offlineWanRows(snapshot: OverviewRawSnapshot, state: OverviewDerivedSta
 }
 
 function interfaceIncidentRows(snapshot: OverviewRawSnapshot): MobileMonitorListRow[] {
-  const rows = interfaceRows(snapshot).filter((row) => row.running === false).slice(0, 5);
+  const rows = interfaceRows(snapshot).filter((row) => row.running === false).slice(0, 3);
   const visible = rows.length ? rows : interfaceRows(snapshot).slice(0, 3);
   return visible.map((row, index) => ({
     id: `interface-down-${index}`,
@@ -760,7 +775,7 @@ function terminalRankingRows(snapshot: OverviewRawSnapshot): MobileMonitorListRo
   const max = Math.max(1, ...rows.map((row) => row.percent));
   return rows
     .sort((a, b) => Number(b.abnormal) - Number(a.abnormal) || b.percent - a.percent || a.sourceIndex - b.sourceIndex)
-    .slice(0, 5)
+    .slice(0, 4)
     .map((row, index) => ({
       id: row.id,
       rank: index + 1,

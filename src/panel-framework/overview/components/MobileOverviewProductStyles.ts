@@ -2772,5 +2772,263 @@ export const MOBILE_OVERVIEW_PRODUCT_STYLES = `
     overflow: hidden !important;
     text-overflow: ellipsis !important;
   }
+
+  /* v1000: app-grade structure pass.
+     Restore a compact decision strip, demote the hero title, make charts carry
+     current/peak/window/sample, and turn incident lists into the first object
+     ledger instead of a generic ranking block. */
+  #overview.router-overview-framework .ik-v940-core-rail,
+  .router-overview-framework .ik-v940-core-rail,
+  .ik-v940-core-rail {
+    display: grid !important;
+    grid-template-columns: .82fr .86fr .86fr 1fr 1.02fr !important;
+    height: 31px !important;
+    min-height: 31px !important;
+    margin-top: 3px !important;
+    border-top: .5px solid rgba(151,172,195,.30) !important;
+    border-bottom: .5px solid rgba(151,172,195,.30) !important;
+    background: transparent !important;
+    overflow: hidden !important;
+  }
+
+  #overview.router-overview-framework .ik-v940-core-rail span,
+  .router-overview-framework .ik-v940-core-rail span,
+  .ik-v940-core-rail span {
+    display: grid !important;
+    grid-template-rows: 9px 12px 8px !important;
+    align-content: center !important;
+    min-width: 0 !important;
+    padding: 1px 5px !important;
+    border-left: .5px solid rgba(151,172,195,.24) !important;
+    background: transparent !important;
+  }
+
+  #overview.router-overview-framework .ik-v940-core-rail span:first-child,
+  .router-overview-framework .ik-v940-core-rail span:first-child,
+  .ik-v940-core-rail span:first-child {
+    border-left: 0 !important;
+  }
+
+  #overview.router-overview-framework .ik-v940-core-rail em,
+  .router-overview-framework .ik-v940-core-rail em,
+  .ik-v940-core-rail em {
+    color: #718397 !important;
+    font-size: 6.6px !important;
+    font-style: normal !important;
+    font-weight: 650 !important;
+    line-height: 9px !important;
+    white-space: nowrap !important;
+  }
+
+  #overview.router-overview-framework .ik-v940-core-rail strong,
+  .router-overview-framework .ik-v940-core-rail strong,
+  .ik-v940-core-rail strong {
+    color: #102033 !important;
+    font-size: 8.7px !important;
+    font-weight: 820 !important;
+    line-height: 12px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  #overview.router-overview-framework .ik-v940-core-rail small,
+  .router-overview-framework .ik-v940-core-rail small,
+  .ik-v940-core-rail small {
+    color: #8a99aa !important;
+    font-size: 6.3px !important;
+    font-weight: 600 !important;
+    line-height: 8px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-screen,
+  .router-overview-framework .ik-v420-screen,
+  .ik-v420-screen {
+    padding-top: max(3px, env(safe-area-inset-top, 0px)) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-screen > * + *,
+  .router-overview-framework .ik-v420-screen > * + *,
+  .ik-v420-screen > * + * {
+    margin-top: 4px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-hero,
+  .router-overview-framework .ik-v420-hero,
+  .ik-v420-hero {
+    max-height: 164px !important;
+    grid-template-rows: auto 66px 16px !important;
+    padding: 6px 8px 5px !important;
+    gap: 3px !important;
+  }
+
+  #overview.router-overview-framework .ik-v620-hero-head,
+  .router-overview-framework .ik-v620-hero-head,
+  .ik-v620-hero-head {
+    min-height: 22px !important;
+  }
+
+  #overview.router-overview-framework .ik-v620-hero-head h1,
+  .router-overview-framework .ik-v620-hero-head h1,
+  .ik-v620-hero-head h1 {
+    height: 15px !important;
+    max-height: 15px !important;
+    font-size: 13.8px !important;
+    line-height: 15px !important;
+    letter-spacing: -.12px !important;
+  }
+
+  #overview.router-overview-framework .ik-v620-hero-head p,
+  .router-overview-framework .ik-v620-hero-head p,
+  .ik-v620-hero-head p {
+    font-size: 8.8px !important;
+    line-height: 10px !important;
+  }
+
+  #overview.router-overview-framework .ik-v620-hero-stage,
+  .router-overview-framework .ik-v620-hero-stage,
+  .ik-v620-hero-stage {
+    grid-template-columns: 96px minmax(0, 1fr) !important;
+    min-height: 66px !important;
+    gap: 5px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-hero-stats,
+  .router-overview-framework .ik-v420-hero-stats,
+  .ik-v420-hero-stats {
+    grid-template-rows: repeat(4, 15px) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-hero-stats span,
+  .router-overview-framework .ik-v420-hero-stats span,
+  .ik-v420-hero-stats span {
+    grid-template-columns: 23px minmax(0, 1fr) !important;
+    min-height: 15px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-hero-stats em,
+  .router-overview-framework .ik-v420-hero-stats em,
+  .ik-v420-hero-stats em {
+    font-size: 7px !important;
+    line-height: 15px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-hero-stats b,
+  .router-overview-framework .ik-v420-hero-stats b,
+  .ik-v420-hero-stats b {
+    font-size: 8px !important;
+    line-height: 15px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-visual,
+  .router-overview-framework .ik-v420-visual,
+  .ik-v420-visual {
+    height: 66px !important;
+    min-height: 66px !important;
+    max-height: 74px !important;
+  }
+
+  #overview.router-overview-framework .ik-v812-trend-visual,
+  .router-overview-framework .ik-v812-trend-visual,
+  .ik-v812-trend-visual {
+    grid-template-columns: minmax(0, 1fr) 46px !important;
+    min-height: 66px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-line-chart,
+  .router-overview-framework .ik-v420-line-chart,
+  .ik-v420-line-chart {
+    height: 66px !important;
+  }
+
+  #overview.router-overview-framework .ik-v812-trend-visual aside,
+  .router-overview-framework .ik-v812-trend-visual aside,
+  .ik-v812-trend-visual aside {
+    grid-template-rows: repeat(4, 14px) !important;
+    align-content: center !important;
+    gap: 1px !important;
+  }
+
+  #overview.router-overview-framework .ik-v812-trend-visual aside span,
+  .router-overview-framework .ik-v812-trend-visual aside span,
+  .ik-v812-trend-visual aside span {
+    min-height: 14px !important;
+  }
+
+  #overview.router-overview-framework .ik-v812-trend-visual aside b,
+  .router-overview-framework .ik-v812-trend-visual aside b,
+  .ik-v812-trend-visual aside b {
+    font-size: 7.6px !important;
+    line-height: 8px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-port-matrix,
+  .router-overview-framework .ik-v420-port-matrix,
+  .ik-v420-port-matrix {
+    min-height: 64px !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    border-color: rgba(168,184,202,.38) !important;
+    background: rgba(248,251,254,.36) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-port-matrix span,
+  .router-overview-framework .ik-v420-port-matrix span,
+  .ik-v420-port-matrix span {
+    min-height: 32px !important;
+    grid-template-columns: 2px minmax(0, 1fr) auto !important;
+    grid-template-areas: "mark port state" "mark carrier carrier" !important;
+    padding: 2px 4px 2px 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-port-matrix b,
+  .router-overview-framework .ik-v420-port-matrix b,
+  .ik-v420-port-matrix b {
+    font-size: 7.8px !important;
+    line-height: 10px !important;
+    letter-spacing: -.05px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-port-matrix small,
+  .router-overview-framework .ik-v420-port-matrix small,
+  .ik-v420-port-matrix small {
+    font-size: 6.7px !important;
+    line-height: 8px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-port-matrix em,
+  .router-overview-framework .ik-v420-port-matrix em,
+  .ik-v420-port-matrix em {
+    font-size: 6.2px !important;
+    line-height: 10px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-timeline-row,
+  .router-overview-framework .ik-v420-timeline-row,
+  .ik-v420-timeline-row {
+    min-height: 40px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-list-row,
+  .router-overview-framework .ik-v420-list-row,
+  .ik-v420-list-row {
+    min-height: 49px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-surface.is-incident-first .ik-v420-list-row,
+  .router-overview-framework .ik-v420-surface.is-incident-first .ik-v420-list-row,
+  .ik-v420-surface.is-incident-first .ik-v420-list-row {
+    min-height: 47px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-surface.is-incident-first .ik-v420-timeline-row,
+  .router-overview-framework .ik-v420-surface.is-incident-first .ik-v420-timeline-row,
+  .ik-v420-surface.is-incident-first .ik-v420-timeline-row {
+    min-height: 38px !important;
+  }
 }
 `;

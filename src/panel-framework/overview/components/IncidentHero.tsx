@@ -96,8 +96,8 @@ function PortMatrix({ snapshot, state }: MobileOverviewHomeProps) {
         return (
           <span className={offline ? "is-danger" : "is-ok"} data-port={port.label} key={port.id}>
             <i />
-            <b>{port.label}</b>
-            <small>{port.name}</small>
+            <b>{port.name}</b>
+            <small>{port.label}</small>
             <em>{port.note}</em>
           </span>
         );

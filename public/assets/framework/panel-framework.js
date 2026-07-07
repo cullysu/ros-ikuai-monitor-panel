@@ -10177,6 +10177,264 @@ var PanelFramework = function(exports) {
     overflow: hidden !important;
     text-overflow: ellipsis !important;
   }
+
+  /* v1000: app-grade structure pass.
+     Restore a compact decision strip, demote the hero title, make charts carry
+     current/peak/window/sample, and turn incident lists into the first object
+     ledger instead of a generic ranking block. */
+  #overview.router-overview-framework .ik-v940-core-rail,
+  .router-overview-framework .ik-v940-core-rail,
+  .ik-v940-core-rail {
+    display: grid !important;
+    grid-template-columns: .82fr .86fr .86fr 1fr 1.02fr !important;
+    height: 31px !important;
+    min-height: 31px !important;
+    margin-top: 3px !important;
+    border-top: .5px solid rgba(151,172,195,.30) !important;
+    border-bottom: .5px solid rgba(151,172,195,.30) !important;
+    background: transparent !important;
+    overflow: hidden !important;
+  }
+
+  #overview.router-overview-framework .ik-v940-core-rail span,
+  .router-overview-framework .ik-v940-core-rail span,
+  .ik-v940-core-rail span {
+    display: grid !important;
+    grid-template-rows: 9px 12px 8px !important;
+    align-content: center !important;
+    min-width: 0 !important;
+    padding: 1px 5px !important;
+    border-left: .5px solid rgba(151,172,195,.24) !important;
+    background: transparent !important;
+  }
+
+  #overview.router-overview-framework .ik-v940-core-rail span:first-child,
+  .router-overview-framework .ik-v940-core-rail span:first-child,
+  .ik-v940-core-rail span:first-child {
+    border-left: 0 !important;
+  }
+
+  #overview.router-overview-framework .ik-v940-core-rail em,
+  .router-overview-framework .ik-v940-core-rail em,
+  .ik-v940-core-rail em {
+    color: #718397 !important;
+    font-size: 6.6px !important;
+    font-style: normal !important;
+    font-weight: 650 !important;
+    line-height: 9px !important;
+    white-space: nowrap !important;
+  }
+
+  #overview.router-overview-framework .ik-v940-core-rail strong,
+  .router-overview-framework .ik-v940-core-rail strong,
+  .ik-v940-core-rail strong {
+    color: #102033 !important;
+    font-size: 8.7px !important;
+    font-weight: 820 !important;
+    line-height: 12px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  #overview.router-overview-framework .ik-v940-core-rail small,
+  .router-overview-framework .ik-v940-core-rail small,
+  .ik-v940-core-rail small {
+    color: #8a99aa !important;
+    font-size: 6.3px !important;
+    font-weight: 600 !important;
+    line-height: 8px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-screen,
+  .router-overview-framework .ik-v420-screen,
+  .ik-v420-screen {
+    padding-top: max(3px, env(safe-area-inset-top, 0px)) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-screen > * + *,
+  .router-overview-framework .ik-v420-screen > * + *,
+  .ik-v420-screen > * + * {
+    margin-top: 4px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-hero,
+  .router-overview-framework .ik-v420-hero,
+  .ik-v420-hero {
+    max-height: 164px !important;
+    grid-template-rows: auto 66px 16px !important;
+    padding: 6px 8px 5px !important;
+    gap: 3px !important;
+  }
+
+  #overview.router-overview-framework .ik-v620-hero-head,
+  .router-overview-framework .ik-v620-hero-head,
+  .ik-v620-hero-head {
+    min-height: 22px !important;
+  }
+
+  #overview.router-overview-framework .ik-v620-hero-head h1,
+  .router-overview-framework .ik-v620-hero-head h1,
+  .ik-v620-hero-head h1 {
+    height: 15px !important;
+    max-height: 15px !important;
+    font-size: 13.8px !important;
+    line-height: 15px !important;
+    letter-spacing: -.12px !important;
+  }
+
+  #overview.router-overview-framework .ik-v620-hero-head p,
+  .router-overview-framework .ik-v620-hero-head p,
+  .ik-v620-hero-head p {
+    font-size: 8.8px !important;
+    line-height: 10px !important;
+  }
+
+  #overview.router-overview-framework .ik-v620-hero-stage,
+  .router-overview-framework .ik-v620-hero-stage,
+  .ik-v620-hero-stage {
+    grid-template-columns: 96px minmax(0, 1fr) !important;
+    min-height: 66px !important;
+    gap: 5px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-hero-stats,
+  .router-overview-framework .ik-v420-hero-stats,
+  .ik-v420-hero-stats {
+    grid-template-rows: repeat(4, 15px) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-hero-stats span,
+  .router-overview-framework .ik-v420-hero-stats span,
+  .ik-v420-hero-stats span {
+    grid-template-columns: 23px minmax(0, 1fr) !important;
+    min-height: 15px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-hero-stats em,
+  .router-overview-framework .ik-v420-hero-stats em,
+  .ik-v420-hero-stats em {
+    font-size: 7px !important;
+    line-height: 15px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-hero-stats b,
+  .router-overview-framework .ik-v420-hero-stats b,
+  .ik-v420-hero-stats b {
+    font-size: 8px !important;
+    line-height: 15px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-visual,
+  .router-overview-framework .ik-v420-visual,
+  .ik-v420-visual {
+    height: 66px !important;
+    min-height: 66px !important;
+    max-height: 74px !important;
+  }
+
+  #overview.router-overview-framework .ik-v812-trend-visual,
+  .router-overview-framework .ik-v812-trend-visual,
+  .ik-v812-trend-visual {
+    grid-template-columns: minmax(0, 1fr) 46px !important;
+    min-height: 66px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-line-chart,
+  .router-overview-framework .ik-v420-line-chart,
+  .ik-v420-line-chart {
+    height: 66px !important;
+  }
+
+  #overview.router-overview-framework .ik-v812-trend-visual aside,
+  .router-overview-framework .ik-v812-trend-visual aside,
+  .ik-v812-trend-visual aside {
+    grid-template-rows: repeat(4, 14px) !important;
+    align-content: center !important;
+    gap: 1px !important;
+  }
+
+  #overview.router-overview-framework .ik-v812-trend-visual aside span,
+  .router-overview-framework .ik-v812-trend-visual aside span,
+  .ik-v812-trend-visual aside span {
+    min-height: 14px !important;
+  }
+
+  #overview.router-overview-framework .ik-v812-trend-visual aside b,
+  .router-overview-framework .ik-v812-trend-visual aside b,
+  .ik-v812-trend-visual aside b {
+    font-size: 7.6px !important;
+    line-height: 8px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-port-matrix,
+  .router-overview-framework .ik-v420-port-matrix,
+  .ik-v420-port-matrix {
+    min-height: 64px !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    border-color: rgba(168,184,202,.38) !important;
+    background: rgba(248,251,254,.36) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-port-matrix span,
+  .router-overview-framework .ik-v420-port-matrix span,
+  .ik-v420-port-matrix span {
+    min-height: 32px !important;
+    grid-template-columns: 2px minmax(0, 1fr) auto !important;
+    grid-template-areas: "mark port state" "mark carrier carrier" !important;
+    padding: 2px 4px 2px 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-port-matrix b,
+  .router-overview-framework .ik-v420-port-matrix b,
+  .ik-v420-port-matrix b {
+    font-size: 7.8px !important;
+    line-height: 10px !important;
+    letter-spacing: -.05px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-port-matrix small,
+  .router-overview-framework .ik-v420-port-matrix small,
+  .ik-v420-port-matrix small {
+    font-size: 6.7px !important;
+    line-height: 8px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-port-matrix em,
+  .router-overview-framework .ik-v420-port-matrix em,
+  .ik-v420-port-matrix em {
+    font-size: 6.2px !important;
+    line-height: 10px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-timeline-row,
+  .router-overview-framework .ik-v420-timeline-row,
+  .ik-v420-timeline-row {
+    min-height: 40px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-list-row,
+  .router-overview-framework .ik-v420-list-row,
+  .ik-v420-list-row {
+    min-height: 49px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-surface.is-incident-first .ik-v420-list-row,
+  .router-overview-framework .ik-v420-surface.is-incident-first .ik-v420-list-row,
+  .ik-v420-surface.is-incident-first .ik-v420-list-row {
+    min-height: 47px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-surface.is-incident-first .ik-v420-timeline-row,
+  .router-overview-framework .ik-v420-surface.is-incident-first .ik-v420-timeline-row,
+  .ik-v420-surface.is-incident-first .ik-v420-timeline-row {
+    min-height: 38px !important;
+  }
 }
 `;
   const V420_MOBILE_STYLES = `
@@ -19724,7 +19982,206 @@ ${MOBILE_OVERVIEW_PRODUCT_STYLES}
       planes: [forwarding, collection, snapshotPlane, business]
     };
   }
+  const ROUTE_UNKNOWN$1 = "路由快照未取回，无法判断默认出口影响";
   function clean$2(value, fallback = "-") {
+    const normalized = String(value ?? "").replace(/\s+/g, " ").trim();
+    return normalized || fallback;
+  }
+  function routeRows(snapshot) {
+    var _a, _b;
+    const rows = ((_a = snapshot.routes) == null ? void 0 : _a.defaultRoutes) || ((_b = snapshot.routes) == null ? void 0 : _b.items) || [];
+    return Array.isArray(rows) ? rows : [];
+  }
+  function routerOsRouteStatusText(active, disabled) {
+    if (disabled) return "已停用";
+    return active ? "当前承载" : "备选未命中";
+  }
+  function routerOsRouteTableText(value) {
+    const table = clean$2(value, "main");
+    return /^main$/i.test(table) ? "主业务域" : `策略域 ${table}`;
+  }
+  function routerOsRouteGatewayText(value) {
+    return clean$2(value, "网关未记录");
+  }
+  function routerOsRoutePriorityText(value) {
+    return clean$2(value, "未记录");
+  }
+  function routerOsRouteBusinessSummary(value, fallback = ROUTE_UNKNOWN$1) {
+    return clean$2(value, fallback).replace(/active\s*[:=]?\s*true/gi, "当前承载").replace(/active\s*[:=]?\s*false/gi, "备选未命中").replace(/disabled\s*[:=]?\s*false/gi, "允许参与选路").replace(/disabled\s*[:=]?\s*true/gi, "已停用").replace(/\brouting[-_\s]?table\b|\broutingTable\b/gi, "路由域").replace(/\bgatewayStatus\b/gi, "网关状态").replace(/\bdistance\b/gi, "优先级").replace(/\bgateway\b/gi, "网关").replace(/\bactive\b/gi, "承载状态").replace(/\bdisabled\b/gi, "停用状态").replace(/\btable\b/gi, "路由域").replace(/\bmain\b/gi, "主业务域");
+  }
+  function routeTitle(table, gateway, distance, active, disabled) {
+    return `默认出口 ${routerOsRouteGatewayText(gateway)}，选路优先级 ${routerOsRoutePriorityText(distance)}，${routerOsRouteStatusText(active, disabled)}；${routerOsRouteTableText(table)}`;
+  }
+  function routeTone(route) {
+    if (route.active && !route.disabled) return "ok";
+    if (route.disabled) return "warn";
+    return "warn";
+  }
+  function missingTone(state) {
+    return state.scenario === "no-snapshot" ? "missing" : "warn";
+  }
+  function missingModel(state) {
+    const tone = missingTone(state);
+    const summary = {
+      id: "route-summary-missing",
+      label: "业务出口",
+      value: "待判",
+      note: state.scenario === "no-snapshot" ? "当前出口证据未返回，不推断承载" : "默认出口证据未采集，不推断承载",
+      tone,
+      layer: "business",
+      source: "route"
+    };
+    return {
+      summary,
+      businessRows: [{
+        ...summary,
+        id: "route-missing",
+        routeIndex: 0,
+        table: "待判",
+        gateway: "待判",
+        priority: "证据缺失",
+        status: "不推断承载状态",
+        title: "默认出口证据缺失；不展示 RouterOS 原始字段推断"
+      }],
+      rawRows: [{
+        id: "route-raw-missing",
+        label: "RouterOS 原始字段",
+        value: "未采集",
+        note: "table / gateway / distance / active / disabled 缺失",
+        tone,
+        layer: "raw",
+        source: "route",
+        rawFields: {
+          table: "-",
+          gateway: "-",
+          distance: "-",
+          active: "-",
+          disabled: "-"
+        }
+      }]
+    };
+  }
+  function planeSource(plane) {
+    if (plane.id === "collection") return "collection";
+    if (plane.id === "snapshot") return "snapshot";
+    if (plane.id === "business") return "business";
+    return "forwarding";
+  }
+  function planeLayer(plane) {
+    return plane.id === "business" ? "business" : "semantic";
+  }
+  function trustPlaneToEvidencePlane(plane) {
+    const source = planeSource(plane);
+    const layer = planeLayer(plane);
+    const summary = {
+      id: `${plane.id}-summary`,
+      label: plane.label,
+      value: plane.value,
+      note: plane.note,
+      tone: plane.tone,
+      layer,
+      source
+    };
+    return {
+      id: plane.id,
+      label: plane.label,
+      value: plane.value,
+      note: plane.note,
+      tone: plane.tone,
+      layer,
+      source,
+      facts: [summary]
+    };
+  }
+  function buildRouterOsRouteEvidenceModel(snapshot, state) {
+    var _a;
+    const rows = routeRows(snapshot);
+    if (!rows.length) return missingModel(state);
+    const businessRows = rows.slice(0, 6).map((route, index) => {
+      const rawTable = clean$2(route.table || route.routingTable, "main");
+      const table = routerOsRouteTableText(rawTable);
+      const gateway = routerOsRouteGatewayText(route.gateway || route.gatewayStatus);
+      const priority = routerOsRoutePriorityText(route.distance);
+      const status = routerOsRouteStatusText(route.active, route.disabled);
+      return {
+        id: `route-${index}`,
+        label: index === 0 ? "默认出口" : `备用出口 ${index + 1}`,
+        value: gateway,
+        note: `${table} / 优先级 ${priority} / ${status}`,
+        tone: routeTone(route),
+        layer: "business",
+        source: "route",
+        routeIndex: index,
+        table,
+        gateway,
+        priority,
+        status,
+        title: routeTitle(rawTable, gateway, priority, route.active, route.disabled),
+        rawFields: {
+          table: rawTable,
+          gateway: clean$2(route.gateway || route.gatewayStatus, "-"),
+          distance: clean$2(route.distance, "-"),
+          active: route.active ? "true" : "false",
+          disabled: route.disabled ? "true" : "false"
+        }
+      };
+    });
+    const active = rows.filter((route) => route.active && !route.disabled).length;
+    const summaryTone = active > 0 ? "ok" : state.facts.route.level;
+    const summary = {
+      id: "route-summary",
+      label: "默认出口",
+      value: active > 0 ? `命中 ${active}/${rows.length}` : "未命中",
+      note: ((_a = businessRows[0]) == null ? void 0 : _a.note) || routerOsRouteBusinessSummary(state.facts.route.rawSummary),
+      tone: summaryTone,
+      layer: "business",
+      source: "route"
+    };
+    const rawRows = rows.slice(0, 4).map((route, index) => {
+      const rawFields = {
+        table: clean$2(route.table || route.routingTable, "main"),
+        gateway: clean$2(route.gateway || route.gatewayStatus, "未记录"),
+        distance: clean$2(route.distance, "未记录"),
+        active: route.active ? "true" : "false",
+        disabled: route.disabled ? "true" : "false"
+      };
+      return {
+        id: `route-raw-evidence-${index}`,
+        label: index === 0 ? "RouterOS 原始字段" : `RouterOS 备用 ${index + 1}`,
+        value: `table ${rawFields.table} / gateway ${rawFields.gateway}`,
+        note: `distance ${rawFields.distance} / active ${rawFields.active} / disabled ${rawFields.disabled}`,
+        tone: routeTone(route),
+        layer: "raw",
+        source: "route",
+        rawFields
+      };
+    });
+    return { summary, businessRows, rawRows };
+  }
+  function buildRouterOsEvidenceModel(snapshot, state) {
+    const trust = buildRouterOsTrustModel(snapshot, state);
+    const route = buildRouterOsRouteEvidenceModel(snapshot, state);
+    const planes = trust.planes.map(trustPlaneToEvidencePlane);
+    const forwarding = planes.find((plane) => plane.id === "forwarding") || trustPlaneToEvidencePlane(trust.forwarding);
+    forwarding.facts = [
+      ...forwarding.facts,
+      route.summary,
+      ...route.businessRows.slice(0, 2)
+    ];
+    const collection = planes.find((plane) => plane.id === "collection") || trustPlaneToEvidencePlane(trust.collection);
+    const snapshotPlane = planes.find((plane) => plane.id === "snapshot") || trustPlaneToEvidencePlane(trust.snapshot);
+    const business = planes.find((plane) => plane.id === "business") || trustPlaneToEvidencePlane(trust.business);
+    return {
+      planes: [forwarding, collection, snapshotPlane, business],
+      forwarding,
+      collection,
+      snapshot: snapshotPlane,
+      business,
+      route,
+      rawRows: route.rawRows
+    };
+  }
+  function clean$1(value, fallback = "-") {
     const normalized = String(value ?? "").replace(/\s+/g, " ").trim();
     return normalized || fallback;
   }
@@ -19736,7 +20193,7 @@ ${MOBILE_OVERVIEW_PRODUCT_STYLES}
   }
   function firstText(row, keys, fallback = "-") {
     for (const key of keys) {
-      const value = clean$2(row[key], "");
+      const value = clean$1(row[key], "");
       if (value) return value;
     }
     return fallback;
@@ -19875,10 +20332,12 @@ ${MOBILE_OVERVIEW_PRODUCT_STYLES}
     const current = down[down.length - 1] || 0;
     const windowText = series.source === "history" ? "近 12 点" : "当前窗口";
     const sampleText = series.source === "history" ? "历史样本" : "实时估算";
+    const sampleLabel = series.source === "history" ? "历史" : state.scenario === "collection-down" || state.facts.collection.dataStale || state.facts.freshness.history ? "缓存" : "实时";
     return {
       source: series.source,
       windowText,
       sampleText,
+      sampleLabel,
       startLabel: series.source === "history" ? `${down.length} 点前` : "窗口起点",
       endLabel: "当前",
       referenceLabel: state.facts.wan.allOffline ? "离线参考" : "高位参考",
@@ -19890,15 +20349,16 @@ ${MOBILE_OVERVIEW_PRODUCT_STYLES}
       readouts: [
         { label: "当前", value: mobileRate(current), note: "下载", tone: "trust" },
         { label: "峰值", value: mobileRate(peak), note: windowText, tone: "trust" },
-        { label: "窗口", value: series.source === "history" ? "12 点" : "当前", note: sampleText, tone: state.facts.collection.credibilityTone }
+        { label: "窗口", value: series.source === "history" ? "12 点" : "当前", note: sampleText, tone: state.facts.collection.credibilityTone },
+        { label: "采样", value: sampleLabel, note: state.facts.collection.credibilityLabel, tone: state.facts.collection.credibilityTone }
       ]
     };
   }
   function stripRest$1(label) {
-    return clean$2(label.replace(/^REST\s*/i, ""), "可用");
+    return clean$1(label.replace(/^REST\s*/i, ""), "可用");
   }
   function stripSsh$1(label) {
-    return clean$2(label.replace(/^SSH\s*/i, ""), "可用");
+    return clean$1(label.replace(/^SSH\s*/i, ""), "可用");
   }
   function trustText$1(state) {
     if (state.scenario === "no-snapshot") return "缺失";
@@ -20103,12 +20563,18 @@ ${MOBILE_OVERVIEW_PRODUCT_STYLES}
     if (priority === "collection-degraded") return ["对象 采集", "影响 缓存边界", "可信 中"];
     return [
       `对象 WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(totalWan || 1)}`,
-      `影响 ${clean$2(state.facts.route.label, "出口可用")}`,
+      `影响 ${clean$1(state.facts.route.label, "出口可用")}`,
       "可信 高"
     ];
   }
   function trustPlanes(snapshot, state) {
-    return buildRouterOsTrustModel(snapshot, state).planes;
+    return buildRouterOsEvidenceModel(snapshot, state).planes.map((plane) => ({
+      id: plane.id,
+      label: plane.label,
+      value: plane.value,
+      note: plane.note,
+      tone: plane.tone
+    }));
   }
   function statusRows(snapshot, state) {
     const totalWan = Math.max(state.facts.wan.total || wanRows$1(snapshot).length, state.facts.wan.allOffline ? 8 : 0);
@@ -20170,13 +20636,13 @@ ${MOBILE_OVERVIEW_PRODUCT_STYLES}
     const rows = Array.from({ length: 8 }, (_, index) => wanRows$1(snapshot)[index] || { name: `WAN${index + 1}`, running: false });
     return rows.map((row, index) => {
       const offline = state.facts.wan.allOffline || row.running === false;
-      const name = clean$2(row.name || row.interface, `WAN${index + 1}`);
-      const carrier = clean$2(row.parent || row.access || row.interface || name, name).replace(/^ether/i, "ether");
+      const name = clean$1(row.name || row.interface, `pppoe-wan${index + 1}`).replace(/^pppoe[-_]?/i, "");
+      const carrier = clean$1(row.parent || row.access || row.interface, `P${index + 1}`).replace(/^ether/i, "ether");
       return {
         id: `wan-port-${index}`,
         label: `P${index + 1}`,
-        name: carrier,
-        note: offline ? "离线" : name.replace(/^pppoe[-_]?/i, ""),
+        name,
+        note: offline ? `${carrier} · 离线` : `${carrier} · 在线`,
         tone: offline ? "danger" : "ok"
       };
     });
@@ -20184,10 +20650,10 @@ ${MOBILE_OVERVIEW_PRODUCT_STYLES}
   function offlineWanRows(snapshot, state) {
     const source = wanRows$1(snapshot);
     const total = Math.max(8, state.facts.wan.total || source.length);
-    return Array.from({ length: Math.min(5, total) }, (_, index) => {
+    return Array.from({ length: Math.min(3, total) }, (_, index) => {
       const row = source[index] || { name: `pppoe-wan${index + 1}` };
-      const name = clean$2(row.name || row.interface, `pppoe-wan${index + 1}`);
-      const parent = clean$2(row.parent || row.interface || row.access, "承载待确认");
+      const name = clean$1(row.name || row.interface, `pppoe-wan${index + 1}`);
+      const parent = clean$1(row.parent || row.interface || row.access, "承载待确认");
       return {
         id: `offline-wan-${index}`,
         rank: index + 1,
@@ -20202,14 +20668,14 @@ ${MOBILE_OVERVIEW_PRODUCT_STYLES}
     });
   }
   function interfaceIncidentRows(snapshot) {
-    const rows = interfaceRows$2(snapshot).filter((row) => row.running === false).slice(0, 5);
+    const rows = interfaceRows$2(snapshot).filter((row) => row.running === false).slice(0, 3);
     const visible = rows.length ? rows : interfaceRows$2(snapshot).slice(0, 3);
     return visible.map((row, index) => ({
       id: `interface-down-${index}`,
       rank: index + 1,
-      name: clean$2(row.name || row.interface, `接口${index + 1}`),
+      name: clean$1(row.name || row.interface, `接口${index + 1}`),
       kind: "接口",
-      meta: `${clean$2(row.parent || row.master || row.bridge, "承载待确认")} · 默认路由待判`,
+      meta: `${clean$1(row.parent || row.master || row.bridge, "承载待确认")} · 默认路由待判`,
       value: row.running === false ? "Down" : "待判",
       status: row.running === false ? "Down" : "待判",
       percent: 0,
@@ -20296,7 +20762,7 @@ ${MOBILE_OVERVIEW_PRODUCT_STYLES}
       const total = firstNumber(row, ["totalRate", "rate", "traffic", "bytes", "total", "value"]) || down + up;
       const status = terminalStatus(row);
       return {
-        id: clean$2(row.id ?? row.mac ?? row.ip ?? `terminal-${index}`, `terminal-${index}`),
+        id: clean$1(row.id ?? row.mac ?? row.ip ?? `terminal-${index}`, `terminal-${index}`),
         rank: index + 1,
         name,
         kind,
@@ -20323,7 +20789,7 @@ ${MOBILE_OVERVIEW_PRODUCT_STYLES}
       }];
     }
     const max = Math.max(1, ...rows.map((row) => row.percent));
-    return rows.sort((a, b) => Number(b.abnormal) - Number(a.abnormal) || b.percent - a.percent || a.sourceIndex - b.sourceIndex).slice(0, 5).map((row, index) => ({
+    return rows.sort((a, b) => Number(b.abnormal) - Number(a.abnormal) || b.percent - a.percent || a.sourceIndex - b.sourceIndex).slice(0, 4).map((row, index) => ({
       id: row.id,
       rank: index + 1,
       name: row.name,
@@ -20365,7 +20831,7 @@ ${MOBILE_OVERVIEW_PRODUCT_STYLES}
       resourceRows: resourceFacts(state)
     };
   }
-  function clean$1(value, fallback = "-") {
+  function clean(value, fallback = "-") {
     const normalized = String(value ?? "").replace(/\s+/g, " ").trim();
     return normalized || fallback;
   }
@@ -20420,10 +20886,10 @@ ${MOBILE_OVERVIEW_PRODUCT_STYLES}
     return "实时可信";
   }
   function stripRest(label) {
-    return clean$1(label.replace(/^REST\s*/i, ""), "可用");
+    return clean(label.replace(/^REST\s*/i, ""), "可用");
   }
   function stripSsh(label) {
-    return clean$1(label.replace(/^SSH\s*/i, ""), "可用");
+    return clean(label.replace(/^SSH\s*/i, ""), "可用");
   }
   function channelStatus(state) {
     if (state.scenario === "no-snapshot") {
@@ -20466,6 +20932,23 @@ ${MOBILE_OVERVIEW_PRODUCT_STYLES}
     const last = points.trim().split(/\s+/).pop() || "0,0";
     const [x2, y2] = last.split(",").map((item) => Number(item));
     return { x: Number.isFinite(x2) ? x2 : 0, y: Number.isFinite(y2) ? y2 : 0 };
+  }
+  function CoreMetricRail(props) {
+    const model = buildMobileOverviewModel(props.snapshot, props.state);
+    return /* @__PURE__ */ jsxRuntimeExports.jsx(
+      "section",
+      {
+        className: "ik-v940-core-rail",
+        "aria-label": "移动端核心判断",
+        "data-overview-mobile-core-block": "core-metrics",
+        "data-overview-mobile-v940-core": "state-wan-collection-resource-snapshot",
+        children: model.coreMetrics.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: toneClass(item.tone), title: `${item.label} ${item.value} ${item.note}`, children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: item.label }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("strong", { children: item.value }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: item.note })
+        ] }, item.label))
+      }
+    );
   }
   function statusTimelineRows(props) {
     return buildMobileOverviewModel(props.snapshot, props.state).statusRows;
@@ -20526,10 +21009,21 @@ ${MOBILE_OVERVIEW_PRODUCT_STYLES}
     );
   }
   function HomeSurface(props) {
-    return /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "ik-v420-surface ik-v240-facts", "data-overview-mobile-core-block": "ios-router-home-surface", "data-overview-mobile-v240-facts": "timeline-resource-ranking", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx(StatusTimeline, { ...props }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx(RankingList, { ...props })
-    ] });
+    const model = buildMobileOverviewModel(props.snapshot, props.state);
+    const incidentFirst = model.primaryList.kind !== "terminal-ranking";
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+      "section",
+      {
+        className: `ik-v420-surface ik-v240-facts ${incidentFirst ? "is-incident-first" : "is-ranking-first"}`,
+        "data-overview-mobile-core-block": "ios-router-home-surface",
+        "data-overview-mobile-v240-facts": "timeline-resource-ranking",
+        "data-overview-mobile-surface-order": incidentFirst ? "incident-before-status" : "status-before-ranking",
+        children: [
+          incidentFirst ? /* @__PURE__ */ jsxRuntimeExports.jsx(RankingList, { ...props }) : /* @__PURE__ */ jsxRuntimeExports.jsx(StatusTimeline, { ...props }),
+          incidentFirst ? /* @__PURE__ */ jsxRuntimeExports.jsx(StatusTimeline, { ...props }) : /* @__PURE__ */ jsxRuntimeExports.jsx(RankingList, { ...props })
+        ]
+      }
+    );
   }
   function LineChart({ chart }) {
     var _a;
@@ -20613,8 +21107,8 @@ ${MOBILE_OVERVIEW_PRODUCT_STYLES}
           const offline = port.tone === "danger";
           return /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: offline ? "is-danger" : "is-ok", "data-port": port.label, children: [
             /* @__PURE__ */ jsxRuntimeExports.jsx("i", {}),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: port.label }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: port.name }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: port.name }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: port.label }),
             /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: port.note })
           ] }, port.id);
         })
@@ -20652,13 +21146,13 @@ ${MOBILE_OVERVIEW_PRODUCT_STYLES}
         "data-overview-mobile-v420-visual": "interface-parent-carrier-chain-list",
         children: visible.map((row, index) => /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx("i", {}),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: clean$1(row.name || row.interface, `接口${index + 1}`) }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: clean(row.name || row.interface, `接口${index + 1}`) }),
           /* @__PURE__ */ jsxRuntimeExports.jsxs("em", { children: [
-            clean$1(row.parent || row.master || row.bridge, "承载待确认"),
+            clean(row.parent || row.master || row.bridge, "承载待确认"),
             " · ",
             index === 0 ? `${formatNumber(state.facts.interfaces.down)} Down` : "Down"
           ] })
-        ] }, `${clean$1(row.name || row.interface, `接口${index + 1}`)}-${index}`))
+        ] }, `${clean(row.name || row.interface, `接口${index + 1}`)}-${index}`))
       }
     );
   }
@@ -20761,8 +21255,8 @@ ${MOBILE_OVERVIEW_PRODUCT_STYLES}
     );
   }
   function StatusHeader({ snapshot, state }) {
-    const name = clean$1(snapshot.identity || snapshot.name || snapshot.deviceName || state.facts.device.identity || "爱快路由");
-    const version = clean$1(snapshot.version || snapshot.routerosVersion || state.facts.device.version || "RouterOS");
+    const name = clean(snapshot.identity || snapshot.name || snapshot.deviceName || state.facts.device.identity || "爱快路由");
+    const version = clean(snapshot.version || snapshot.routerosVersion || state.facts.device.version || "RouterOS");
     const versionText = /^RouterOS\b/i.test(version) ? version : `RouterOS ${version}`;
     const recent = latestSuccess$1(snapshot, state);
     const stateLabel = statusLabel(state);
@@ -20818,6 +21312,7 @@ ${MOBILE_OVERVIEW_PRODUCT_STYLES}
               "data-overview-mobile-v420-visual-contract": "single-labelled-wan-sparkline-wan-collection-duo-resource-bars-native-ranking",
               children: [
                 /* @__PURE__ */ jsxRuntimeExports.jsx(StatusHeader, { ...props }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx(CoreMetricRail, { ...props }),
                 /* @__PURE__ */ jsxRuntimeExports.jsx(IncidentHero, { ...props }),
                 /* @__PURE__ */ jsxRuntimeExports.jsx(HomeSurface, { ...props }),
                 /* @__PURE__ */ jsxRuntimeExports.jsx(BottomTabs, {})
@@ -20827,150 +21322,6 @@ ${MOBILE_OVERVIEW_PRODUCT_STYLES}
         ]
       }
     );
-  }
-  const ROUTE_UNKNOWN$1 = "路由快照未取回，无法判断默认出口影响";
-  function clean(value, fallback = "-") {
-    const normalized = String(value ?? "").replace(/\s+/g, " ").trim();
-    return normalized || fallback;
-  }
-  function routeRows(snapshot) {
-    var _a, _b;
-    const rows = ((_a = snapshot.routes) == null ? void 0 : _a.defaultRoutes) || ((_b = snapshot.routes) == null ? void 0 : _b.items) || [];
-    return Array.isArray(rows) ? rows : [];
-  }
-  function routerOsRouteStatusText(active, disabled) {
-    if (disabled) return "已停用";
-    return active ? "当前承载" : "备选未命中";
-  }
-  function routerOsRouteTableText(value) {
-    const table = clean(value, "main");
-    return /^main$/i.test(table) ? "主业务域" : `策略域 ${table}`;
-  }
-  function routerOsRouteGatewayText(value) {
-    return clean(value, "网关未记录");
-  }
-  function routerOsRoutePriorityText(value) {
-    return clean(value, "未记录");
-  }
-  function routerOsRouteBusinessSummary(value, fallback = ROUTE_UNKNOWN$1) {
-    return clean(value, fallback).replace(/active\s*[:=]?\s*true/gi, "当前承载").replace(/active\s*[:=]?\s*false/gi, "备选未命中").replace(/disabled\s*[:=]?\s*false/gi, "允许参与选路").replace(/disabled\s*[:=]?\s*true/gi, "已停用").replace(/\brouting[-_\s]?table\b|\broutingTable\b/gi, "路由域").replace(/\bgatewayStatus\b/gi, "网关状态").replace(/\bdistance\b/gi, "优先级").replace(/\bgateway\b/gi, "网关").replace(/\bactive\b/gi, "承载状态").replace(/\bdisabled\b/gi, "停用状态").replace(/\btable\b/gi, "路由域").replace(/\bmain\b/gi, "主业务域");
-  }
-  function routeTitle(table, gateway, distance, active, disabled) {
-    return `默认出口 ${routerOsRouteGatewayText(gateway)}，选路优先级 ${routerOsRoutePriorityText(distance)}，${routerOsRouteStatusText(active, disabled)}；${routerOsRouteTableText(table)}`;
-  }
-  function routeTone(route) {
-    if (route.active && !route.disabled) return "ok";
-    if (route.disabled) return "warn";
-    return "warn";
-  }
-  function missingTone(state) {
-    return state.scenario === "no-snapshot" ? "missing" : "warn";
-  }
-  function missingModel(state) {
-    const tone = missingTone(state);
-    const summary = {
-      id: "route-summary-missing",
-      label: "业务出口",
-      value: "待判",
-      note: state.scenario === "no-snapshot" ? "当前出口证据未返回，不推断承载" : "默认出口证据未采集，不推断承载",
-      tone,
-      layer: "business",
-      source: "route"
-    };
-    return {
-      summary,
-      businessRows: [{
-        ...summary,
-        id: "route-missing",
-        routeIndex: 0,
-        table: "待判",
-        gateway: "待判",
-        priority: "证据缺失",
-        status: "不推断承载状态",
-        title: "默认出口证据缺失；不展示 RouterOS 原始字段推断"
-      }],
-      rawRows: [{
-        id: "route-raw-missing",
-        label: "RouterOS 原始字段",
-        value: "未采集",
-        note: "table / gateway / distance / active / disabled 缺失",
-        tone,
-        layer: "raw",
-        source: "route",
-        rawFields: {
-          table: "-",
-          gateway: "-",
-          distance: "-",
-          active: "-",
-          disabled: "-"
-        }
-      }]
-    };
-  }
-  function buildRouterOsRouteEvidenceModel(snapshot, state) {
-    var _a;
-    const rows = routeRows(snapshot);
-    if (!rows.length) return missingModel(state);
-    const businessRows = rows.slice(0, 6).map((route, index) => {
-      const rawTable = clean(route.table || route.routingTable, "main");
-      const table = routerOsRouteTableText(rawTable);
-      const gateway = routerOsRouteGatewayText(route.gateway || route.gatewayStatus);
-      const priority = routerOsRoutePriorityText(route.distance);
-      const status = routerOsRouteStatusText(route.active, route.disabled);
-      return {
-        id: `route-${index}`,
-        label: index === 0 ? "默认出口" : `备用出口 ${index + 1}`,
-        value: gateway,
-        note: `${table} / 优先级 ${priority} / ${status}`,
-        tone: routeTone(route),
-        layer: "business",
-        source: "route",
-        routeIndex: index,
-        table,
-        gateway,
-        priority,
-        status,
-        title: routeTitle(rawTable, gateway, priority, route.active, route.disabled),
-        rawFields: {
-          table: rawTable,
-          gateway: clean(route.gateway || route.gatewayStatus, "-"),
-          distance: clean(route.distance, "-"),
-          active: route.active ? "true" : "false",
-          disabled: route.disabled ? "true" : "false"
-        }
-      };
-    });
-    const active = rows.filter((route) => route.active && !route.disabled).length;
-    const summaryTone = active > 0 ? "ok" : state.facts.route.level;
-    const summary = {
-      id: "route-summary",
-      label: "默认出口",
-      value: active > 0 ? `命中 ${active}/${rows.length}` : "未命中",
-      note: ((_a = businessRows[0]) == null ? void 0 : _a.note) || routerOsRouteBusinessSummary(state.facts.route.rawSummary),
-      tone: summaryTone,
-      layer: "business",
-      source: "route"
-    };
-    const rawRows = rows.slice(0, 4).map((route, index) => {
-      const rawFields = {
-        table: clean(route.table || route.routingTable, "main"),
-        gateway: clean(route.gateway || route.gatewayStatus, "未记录"),
-        distance: clean(route.distance, "未记录"),
-        active: route.active ? "true" : "false",
-        disabled: route.disabled ? "true" : "false"
-      };
-      return {
-        id: `route-raw-evidence-${index}`,
-        label: index === 0 ? "RouterOS 原始字段" : `RouterOS 备用 ${index + 1}`,
-        value: `table ${rawFields.table} / gateway ${rawFields.gateway}`,
-        note: `distance ${rawFields.distance} / active ${rawFields.active} / disabled ${rawFields.disabled}`,
-        tone: routeTone(route),
-        layer: "raw",
-        source: "route",
-        rawFields
-      };
-    });
-    return { summary, businessRows, rawRows };
   }
   const ROUTE_UNKNOWN = "路由快照未取回，无法判断默认出口影响";
   const FILLER_TONE = "trust";

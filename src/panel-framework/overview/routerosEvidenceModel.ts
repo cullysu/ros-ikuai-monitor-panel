@@ -4,6 +4,7 @@ import {
   type OverviewRawSnapshot,
   type OverviewTone,
 } from "./types";
+import { buildRouterOsTrustModel, type RouterOsTrustPlane, type RouterOsTrustPlaneId } from "./routerosTrustModel";
 
 export type RouterOsEvidenceLayer = "business" | "semantic" | "raw";
 
@@ -14,7 +15,7 @@ export interface RouterOsEvidenceItem {
   note: string;
   tone: OverviewTone;
   layer: RouterOsEvidenceLayer;
-  source: "route" | "collection" | "snapshot";
+  source: "route" | "collection" | "snapshot" | "forwarding" | "business";
   rawFields?: Record<string, string>;
 }
 
@@ -30,6 +31,27 @@ export interface RouterOsRouteEvidenceItem extends RouterOsEvidenceItem {
 export interface RouterOsRouteEvidenceModel {
   summary: RouterOsEvidenceItem;
   businessRows: RouterOsRouteEvidenceItem[];
+  rawRows: RouterOsEvidenceItem[];
+}
+
+export interface RouterOsEvidencePlane {
+  id: RouterOsTrustPlaneId;
+  label: string;
+  value: string;
+  note: string;
+  tone: OverviewTone;
+  layer: RouterOsEvidenceLayer;
+  source: RouterOsEvidenceItem["source"];
+  facts: RouterOsEvidenceItem[];
+}
+
+export interface RouterOsEvidenceModel {
+  planes: RouterOsEvidencePlane[];
+  forwarding: RouterOsEvidencePlane;
+  collection: RouterOsEvidencePlane;
+  snapshot: RouterOsEvidencePlane;
+  business: RouterOsEvidencePlane;
+  route: RouterOsRouteEvidenceModel;
   rawRows: RouterOsEvidenceItem[];
 }
 
@@ -135,6 +157,41 @@ function missingModel(state: OverviewDerivedState): RouterOsRouteEvidenceModel {
   };
 }
 
+function planeSource(plane: RouterOsTrustPlane): RouterOsEvidencePlane["source"] {
+  if (plane.id === "collection") return "collection";
+  if (plane.id === "snapshot") return "snapshot";
+  if (plane.id === "business") return "business";
+  return "forwarding";
+}
+
+function planeLayer(plane: RouterOsTrustPlane): RouterOsEvidenceLayer {
+  return plane.id === "business" ? "business" : "semantic";
+}
+
+function trustPlaneToEvidencePlane(plane: RouterOsTrustPlane): RouterOsEvidencePlane {
+  const source = planeSource(plane);
+  const layer = planeLayer(plane);
+  const summary: RouterOsEvidenceItem = {
+    id: `${plane.id}-summary`,
+    label: plane.label,
+    value: plane.value,
+    note: plane.note,
+    tone: plane.tone,
+    layer,
+    source,
+  };
+  return {
+    id: plane.id,
+    label: plane.label,
+    value: plane.value,
+    note: plane.note,
+    tone: plane.tone,
+    layer,
+    source,
+    facts: [summary],
+  };
+}
+
 export function buildRouterOsRouteEvidenceModel(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): RouterOsRouteEvidenceModel {
   const rows = routeRows(snapshot);
   if (!rows.length) return missingModel(state);
@@ -202,4 +259,30 @@ export function buildRouterOsRouteEvidenceModel(snapshot: OverviewRawSnapshot, s
   });
 
   return { summary, businessRows, rawRows };
+}
+
+export function buildRouterOsEvidenceModel(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): RouterOsEvidenceModel {
+  const trust = buildRouterOsTrustModel(snapshot, state);
+  const route = buildRouterOsRouteEvidenceModel(snapshot, state);
+  const planes = trust.planes.map(trustPlaneToEvidencePlane);
+  const forwarding = planes.find((plane) => plane.id === "forwarding") || trustPlaneToEvidencePlane(trust.forwarding);
+  forwarding.facts = [
+    ...forwarding.facts,
+    route.summary,
+    ...route.businessRows.slice(0, 2),
+  ];
+
+  const collection = planes.find((plane) => plane.id === "collection") || trustPlaneToEvidencePlane(trust.collection);
+  const snapshotPlane = planes.find((plane) => plane.id === "snapshot") || trustPlaneToEvidencePlane(trust.snapshot);
+  const business = planes.find((plane) => plane.id === "business") || trustPlaneToEvidencePlane(trust.business);
+
+  return {
+    planes: [forwarding, collection, snapshotPlane, business],
+    forwarding,
+    collection,
+    snapshot: snapshotPlane,
+    business,
+    route,
+    rawRows: route.rawRows,
+  };
 }

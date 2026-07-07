@@ -70,10 +70,17 @@ function RankingList(props: MobileOverviewHomeProps) {
 }
 
 export function HomeSurface(props: MobileOverviewHomeProps) {
+  const model = buildMobileOverviewModel(props.snapshot, props.state);
+  const incidentFirst = model.primaryList.kind !== "terminal-ranking";
   return (
-    <section className="ik-v420-surface ik-v240-facts" data-overview-mobile-core-block="ios-router-home-surface" data-overview-mobile-v240-facts="timeline-resource-ranking">
-      <StatusTimeline {...props} />
-      <RankingList {...props} />
+    <section
+      className={`ik-v420-surface ik-v240-facts ${incidentFirst ? "is-incident-first" : "is-ranking-first"}`}
+      data-overview-mobile-core-block="ios-router-home-surface"
+      data-overview-mobile-v240-facts="timeline-resource-ranking"
+      data-overview-mobile-surface-order={incidentFirst ? "incident-before-status" : "status-before-ranking"}
+    >
+      {incidentFirst ? <RankingList {...props} /> : <StatusTimeline {...props} />}
+      {incidentFirst ? <StatusTimeline {...props} /> : <RankingList {...props} />}
     </section>
   );
 }
