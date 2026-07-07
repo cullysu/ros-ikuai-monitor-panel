@@ -50788,3 +50788,344 @@
   }
 }
 
+/* Codex v812 desktop density pass: fewer shells, shorter rows, business facts first. */
+@media (min-width: 761px) {
+  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] {
+    padding: 6px !important;
+    background: #f2f6fa !important;
+  }
+
+  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-topbar {
+    grid-template-columns: minmax(112px, .82fr) minmax(160px, 1.18fr) repeat(4, minmax(108px, 1fr)) !important;
+    gap: 2px !important;
+    margin-bottom: 4px !important;
+    border: 0 !important;
+    background: transparent !important;
+  }
+
+  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-topbar-cell {
+    min-height: 52px !important;
+    height: 52px !important;
+    padding: 4px 7px !important;
+    border: 1px solid #dce5ee !important;
+    border-left-width: 2px !important;
+    border-radius: 0 !important;
+    align-content: center !important;
+    box-shadow: none !important;
+  }
+
+  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-topbar-cell span {
+    margin: 0 0 2px !important;
+    font-size: 9px !important;
+    line-height: 1 !important;
+  }
+
+  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-topbar-cell b {
+    font-size: 12px !important;
+    line-height: 1.05 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-topbar-cell[data-overview-status-role="conclusion"] b {
+    font-size: 13px !important;
+  }
+
+  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-topbar-cell em {
+    margin-top: 1px !important;
+    font-size: 8.5px !important;
+    line-height: 1.05 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-desktop-key-row {
+    gap: 2px !important;
+    margin: 0 0 4px !important;
+  }
+
+  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-desktop-key-cell {
+    min-height: 34px !important;
+    height: 34px !important;
+    padding: 3px 6px !important;
+    border: 1px solid #e0e8f1 !important;
+    border-radius: 0 !important;
+    background: #fff !important;
+    box-shadow: none !important;
+  }
+
+  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-desktop-key-cell span,
+  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-desktop-key-cell em {
+    font-size: 8.5px !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-desktop-key-cell b {
+    font-size: 11px !important;
+    line-height: 1.05 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-desktop-thin-kpis {
+    min-height: 30px !important;
+    height: 30px !important;
+    gap: 2px !important;
+    margin: 0 0 5px !important;
+  }
+
+  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-desktop-thin-kpi {
+    min-height: 30px !important;
+    height: 30px !important;
+    display: grid !important;
+    grid-template-columns: max-content minmax(0, 1fr) max-content !important;
+    gap: 6px !important;
+    align-items: center !important;
+    padding: 2px 6px !important;
+    border: 1px solid #e0e8f1 !important;
+    border-radius: 0 !important;
+    background: #fff !important;
+    box-shadow: none !important;
+  }
+
+  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-desktop-thin-kpi span,
+  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-desktop-thin-kpi em {
+    font-size: 9px !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-desktop-thin-kpi b {
+    font-size: 11px !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+  }
+
+  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-desktop-grid {
+    gap: 5px !important;
+    min-height: calc(100vh - 96px) !important;
+  }
+
+  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-col {
+    gap: 5px !important;
+  }
+
+  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module {
+    border: 1px solid #dce5ee !important;
+    border-left-width: 2px !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    overflow: hidden !important;
+  }
+
+  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module-head {
+    min-height: 28px !important;
+    height: 28px !important;
+    padding: 3px 6px !important;
+    border-bottom: 1px solid #e6edf5 !important;
+    background: #fff !important;
+  }
+
+  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module-head b {
+    font-size: 11.5px !important;
+    line-height: 1 !important;
+  }
+
+  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module-head span {
+    display: inline !important;
+    margin-left: 5px !important;
+    font-size: 8.5px !important;
+    line-height: 1 !important;
+    color: #8491a3 !important;
+  }
+
+  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module-head em {
+    padding: 1px 4px !important;
+    border: 0 !important;
+    font-size: 8.5px !important;
+    line-height: 1 !important;
+    background: transparent !important;
+  }
+
+  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-judgement-chart,
+  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-resource-visual,
+  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-traffic-visual,
+  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-interface-visual,
+  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-no-snapshot-link-visual,
+  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-collection-link-visual {
+    padding: 4px 5px !important;
+    gap: 3px !important;
+    background: #fff !important;
+  }
+
+  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-chart-summary {
+    min-height: 16px !important;
+    padding: 0 0 2px !important;
+    font-size: 8px !important;
+  }
+
+  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-sparkline {
+    height: 24px !important;
+  }
+
+  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-judgement-chart > .ro-sparkline {
+    height: 28px !important;
+  }
+
+  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-chart-track {
+    height: 2px !important;
+  }
+
+  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-resource-cards {
+    gap: 3px !important;
+  }
+
+  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-resource-card {
+    min-height: 38px !important;
+    padding: 3px 4px !important;
+    border: 0 !important;
+    border-left: 2px solid #dce5ee !important;
+    background: #fbfdff !important;
+  }
+
+  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-resource-card b {
+    font-size: 13px !important;
+  }
+
+  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-head-cell,
+  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-table th {
+    height: 22px !important;
+    padding: 2px 4px !important;
+    font-size: 8.5px !important;
+    background: #f8fbfe !important;
+  }
+
+  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-cell,
+  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-table td {
+    height: 28px !important;
+    padding: 2px 4px !important;
+    font-size: 9px !important;
+    line-height: 1.1 !important;
+    border-bottom: 1px solid #eef3f8 !important;
+  }
+
+  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-evidence-weight="secondary"] .ro-ledger-cell,
+  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-evidence-weight="secondary"] .ro-ledger-table td {
+    height: 24px !important;
+    color: #6f7e91 !important;
+  }
+
+  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-topn-block {
+    padding: 4px 5px !important;
+    gap: 4px !important;
+  }
+
+  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-topn-block.is-ranking .ro-topn-row {
+    min-height: 24px !important;
+    padding-left: 36px !important;
+  }
+
+  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-topn-block.is-ranking .ro-topn-row .ro-topn-bar {
+    height: 10px !important;
+  }
+
+  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-port-matrix-row {
+    min-height: 30px !important;
+    padding: 2px 3px !important;
+    border-top-width: 2px !important;
+  }
+
+  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-chain-node,
+  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-visibility-cell {
+    min-height: 30px !important;
+    padding: 3px 4px !important;
+    border: 1px solid #e1e8f0 !important;
+  }
+
+  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ik-sidebar-mini-status {
+    gap: 3px !important;
+    padding: 6px !important;
+    background: transparent !important;
+  }
+
+  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ik-sidebar-mini-status div {
+    min-height: 22px !important;
+    padding: 3px 5px !important;
+    border: 0 !important;
+    border-left: 2px solid #dce5ee !important;
+    border-radius: 0 !important;
+    background: #fff !important;
+  }
+
+  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ik-sidebar-mini-status span,
+  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ik-sidebar-mini-status b {
+    font-size: 8.5px !important;
+    line-height: 1 !important;
+  }
+
+  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-desktop-grid:is(
+    [data-overview-desktop-scene="all-offline"],
+    [data-overview-desktop-scene="interfaces-down"],
+    [data-overview-desktop-scene="resource-full"],
+    [data-overview-desktop-scene="collection-down"],
+    [data-overview-desktop-scene="no-snapshot"]
+  ) .ro-col.is-main > .ro-module:first-child .ro-module-head {
+    min-height: 30px !important;
+    height: 30px !important;
+    padding: 4px 7px !important;
+    background: #fff !important;
+  }
+
+  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="route-raw-facts"] .ro-ledger-cell,
+  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="evidence-boundary"] .ro-ledger-cell {
+    height: auto !important;
+    min-height: 24px !important;
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="route-raw-facts"] .ro-ledger-table,
+  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="evidence-boundary"] .ro-ledger-table,
+  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="route-raw-facts"] .ro-ledger-row,
+  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="evidence-boundary"] .ro-ledger-row {
+    height: auto !important;
+    min-height: 24px !important;
+    overflow: visible !important;
+  }
+
+  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="route-raw-facts"] .ro-ledger-cell > .ik-overview-cell-text,
+  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="evidence-boundary"] .ro-ledger-cell > .ik-overview-cell-text {
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="route-raw-facts"] .ro-ledger-table,
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="route-raw-facts"] .ro-ledger-row,
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="route-raw-facts"] .ro-ledger-cell,
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="route-raw-facts"] .ro-ledger-cell > .ik-overview-cell-text,
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="evidence-boundary"] .ro-ledger-table,
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="evidence-boundary"] .ro-ledger-row,
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="evidence-boundary"] .ro-ledger-cell,
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="evidence-boundary"] .ro-ledger-cell > .ik-overview-cell-text {
+    min-width: 0 !important;
+    height: auto !important;
+    min-height: 24px !important;
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    overflow-wrap: anywhere !important;
+    word-break: break-word !important;
+  }
+}

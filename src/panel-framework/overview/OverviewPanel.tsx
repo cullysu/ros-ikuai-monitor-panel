@@ -142,7 +142,7 @@ function routeBusinessSummary(value: unknown, fallback = ROUTE_UNKNOWN): string 
 }
 
 function routeBusinessText(state: OverviewDerivedState, fallback = ROUTE_UNKNOWN): string {
-  return routeBusinessSummary(state.facts.route.rawSummary || state.facts.route.text || state.facts.route.label, fallback);
+  return routeBusinessSummary(state.facts.route.text || state.facts.route.label || state.facts.route.rawSummary, fallback);
 }
 
 function routeLabelText(state: OverviewDerivedState): string {
@@ -2406,8 +2406,7 @@ function routeFactRows(snapshot: OverviewRawSnapshot, state: OverviewDerivedStat
     const table = routeTableText(rawTable);
     const gateway = routeGatewayText(route.gateway || route.gatewayStatus);
     const priority = routePriorityText(route.distance);
-    const status = routeStatusText(route.active, route.disabled);
-    const forwarding = route.disabled ? "不参与业务转发" : route.active ? "当前业务承载" : "备选未命中";
+    const status = `${route.active ? "活动路由" : "非活动路由"} / ${route.disabled ? "已禁用" : "未禁用"}`;
     return {
       id: `route-${index}`,
       attrs: { "data-overview-default-route-row": "true", "data-overview-route-copy": "business", "data-routeros-raw-field-mode": "translated" },
@@ -2415,7 +2414,7 @@ function routeFactRows(snapshot: OverviewRawSnapshot, state: OverviewDerivedStat
         <><b>默认出口</b><small>路由表 {table}</small></>,
         `网关 ${gateway}`,
         `优先级 ${priority}`,
-        `${route.active ? "活动路由" : "非活动路由"} / ${route.disabled ? "已禁用" : "未禁用"} / ${status} / ${forwarding}`,
+        status,
       ],
       title: defaultRouteTitleContract(text(rawTable, "main"), gateway, priority, route.active, route.disabled).title,
       tone: route.active && !route.disabled ? "ok" : "warn",
@@ -2539,7 +2538,7 @@ function resourceRiskRows(state: OverviewDerivedState): LedgerRow[] {
     { id: "resource-mem", cells: ["内存", formatPercent(mem, 1), "阈值85%", `峰${formatPercent(mem, 1)}`], tone: mem >= 85 ? "warn" : mem >= 70 ? "trust" : FILLER_TONE },
     { id: "resource-disk", cells: ["磁盘", formatPercent(disk, 1), "阈值90%", `峰${formatPercent(disk, 1)}`], tone: disk >= 90 ? "warn" : disk >= 75 ? "trust" : FILLER_TONE },
     { id: "resource-conn-risk", cells: ["连接压力", formatCompact(state.facts.connections.total), "活动会话", formatNumber(state.facts.connections.active)], tone: state.facts.connections.total > 50000 ? "warn" : "trust" },
-    { id: "resource-route-context", cells: ["默认出口", routeLabelText(state), "业务口径", routeBusinessText(state)], tone: state.facts.route.level },
+    { id: "resource-route-context", cells: ["默认出口", routeLabelText(state), "承载状态", state.facts.route.level === "ok" ? "可承载" : "待确认"], tone: state.facts.route.level },
     { id: "resource-collect-context", cells: ["采集", state.facts.collection.credibilityLabel, "双通道", state.facts.collection.channelText], tone: state.facts.collection.level },
     { id: "resource-snapshot-context", cells: ["业务快照", state.facts.freshness.text, "可信度", state.facts.freshness.credibilityLabel], tone: state.facts.freshness.level },
   ];
@@ -2553,7 +2552,7 @@ function resourceContextRows(snapshot: OverviewRawSnapshot, state: OverviewDeriv
     { id: "active-sessions", cells: ["活动会话", formatNumber(state.facts.connections.active), "会话保持压力"], tone: "warn" },
     { id: "dns-cache", cells: ["DNS缓存", snapshot.dns ? "已采集" : "未采集", "可作为压力伴随证据"], tone: snapshot.dns ? "trust" : "missing" },
     { id: "interface-throughput", cells: ["接口吞吐", busiest?.name || "未采集", busiest ? `${formatRate(busiest.txRate || busiest.upRate)} 上行` : "未采集"], tone: busiest ? "warn" : "missing" },
-    { id: "route-resource", cells: ["默认出口判断", routeLabelText(state), routeBusinessText(state)], tone: state.facts.route.level },
+    { id: "route-resource", cells: ["默认出口判断", routeLabelText(state), state.facts.route.level === "ok" ? "承载正常" : "待确认"], tone: state.facts.route.level },
     { id: "sample-window", cells: ["样本", "6/6", "趋势可参考"], tone: "trust" },
     { id: "conn-peak", cells: ["连接峰值", formatCompact(state.facts.connections.total), "峰值与当前同向"], tone: state.facts.connections.total > 50000 ? "warn" : "trust" },
     { id: "cache-gap", cells: ["缓存缺口", snapshot.dns ? "可核对" : "未采集", "DNS / 连接压力互证"], tone: snapshot.dns ? "trust" : "missing" },
