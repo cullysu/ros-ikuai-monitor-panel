@@ -71,7 +71,7 @@ export interface MobileTrendChartModel {
   readouts: MobileMonitorFact[];
 }
 
-export type MobilePrimaryListKind = "terminal-ranking" | "wan-incident" | "interface-incident" | "snapshot-boundary";
+export type MobilePrimaryListKind = "terminal-ranking" | "wan-incident" | "interface-incident" | "snapshot-boundary" | "collection-boundary";
 
 export interface MobilePrimaryListModel {
   kind: MobilePrimaryListKind;
@@ -82,6 +82,10 @@ export interface MobilePrimaryListModel {
 
 export interface MobileOverviewModel {
   priority: "snapshot-missing" | "wan-offline" | "resource-full" | "interface-down" | "collection-degraded" | "normal";
+  surface: {
+    order: "status-before-list" | "list-before-status";
+    ranking: "primary" | "supporting" | "suppressed";
+  };
   coreMetrics: MobileMonitorFact[];
   hero: {
     title: string;
@@ -371,7 +375,7 @@ function titleFor(state: OverviewDerivedState): string {
   if (priority === "resource-full") return "资源满载";
   if (priority === "interface-down") return "接口 Down";
   if (priority === "collection-degraded") return "采集降级";
-  return state.scenario === "single" || state.verdict.level !== "warn" ? "网络状态良好" : "转发待确认";
+  return state.scenario === "single" || state.verdict.level !== "warn" ? "WAN 实时趋势" : "转发待确认";
 }
 
 function subtitleFor(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): string {
@@ -668,6 +672,44 @@ function snapshotBoundaryRows(snapshot: OverviewRawSnapshot, state: OverviewDeri
   ];
 }
 
+function collectionBoundaryRows(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): MobileMonitorListRow[] {
+  return [
+    {
+      id: "collection-rest",
+      rank: "",
+      name: "REST",
+      kind: "采集",
+      meta: `最近成功 ${latestSuccess(snapshot, state)} · 管理面状态`,
+      value: stripRest(state.facts.collection.restLabel),
+      status: "通道",
+      percent: 0,
+      tone: state.facts.collection.level,
+    },
+    {
+      id: "collection-ssh",
+      rank: "",
+      name: "SSH",
+      kind: "采集",
+      meta: "辅助读取 · 不等同转发正常",
+      value: stripSsh(state.facts.collection.sshLabel),
+      status: "通道",
+      percent: 0,
+      tone: state.facts.collection.level,
+    },
+    {
+      id: "collection-snapshot",
+      rank: "",
+      name: "业务快照",
+      kind: "可信度",
+      meta: "缓存可参考 · 实时性下降",
+      value: trustText(state),
+      status: "边界",
+      percent: 0,
+      tone: state.facts.collection.credibilityTone,
+    },
+  ];
+}
+
 function terminalCandidates(snapshot: OverviewRawSnapshot): Record<string, unknown>[] {
   const raw = snapshot as unknown as Record<string, unknown>;
   const connections = isRecord(raw.connections) ? raw.connections : {};
@@ -793,15 +835,22 @@ function primaryList(snapshot: OverviewRawSnapshot, state: OverviewDerivedState)
   if (priority === "wan-offline") return { kind: "wan-incident", title: "离线出口", meta: "默认路由异常 · 最近成功", rows: offlineWanRows(snapshot, state) };
   if (priority === "snapshot-missing") return { kind: "snapshot-boundary", title: "可信边界", meta: `最近成功 ${latestSuccess(snapshot, state)}`, rows: snapshotBoundaryRows(snapshot, state) };
   if (priority === "interface-down") return { kind: "interface-incident", title: "接口影响", meta: "承载待判 · 默认路由", rows: interfaceIncidentRows(snapshot) };
-  if (priority === "collection-degraded") return { kind: "terminal-ranking", title: "设备排行", meta: "异常优先 · 总流量", rows: terminalRankingRows(snapshot) };
+  if (priority === "collection-degraded") return { kind: "collection-boundary", title: "采集边界", meta: "REST / SSH / 快照", rows: collectionBoundaryRows(snapshot, state) };
   if (priority === "resource-full") return { kind: "terminal-ranking", title: "高流量终端", meta: "异常优先 · 总流量", rows: terminalRankingRows(snapshot) };
   return { kind: "terminal-ranking", title: "设备排行", meta: "异常优先 · 总流量", rows: terminalRankingRows(snapshot) };
+}
+
+function surfaceModel(priority: MobileOverviewModel["priority"]): MobileOverviewModel["surface"] {
+  if (priority === "normal") return { order: "status-before-list", ranking: "primary" };
+  if (priority === "resource-full") return { order: "status-before-list", ranking: "supporting" };
+  return { order: "list-before-status", ranking: "suppressed" };
 }
 
 export function buildMobileOverviewModel(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): MobileOverviewModel {
   const priority = priorityOf(state);
   return {
     priority,
+    surface: surfaceModel(priority),
     coreMetrics: coreMetrics(snapshot, state),
     hero: {
       title: titleFor(state),

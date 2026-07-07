@@ -1990,6 +1990,274 @@ const V420_MOBILE_STYLES = `
     transform: none !important;
   }
 }
+
+@media (max-width: 760px) {
+  #overview.router-overview-framework .ik-v960-judgement-strip,
+  .router-overview-framework .ik-v960-judgement-strip,
+  .ik-v960-judgement-strip {
+    display: grid !important;
+    grid-template-columns: 82px minmax(0, 1fr) !important;
+    align-items: stretch !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    margin-top: 5px !important;
+    border: 0 !important;
+    border-top: .5px solid rgba(151, 172, 195, .30) !important;
+    border-bottom: .5px solid rgba(151, 172, 195, .30) !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    overflow: hidden !important;
+  }
+
+  #overview.router-overview-framework .ik-v960-judgement-strip > strong,
+  .router-overview-framework .ik-v960-judgement-strip > strong,
+  .ik-v960-judgement-strip > strong {
+    display: grid !important;
+    grid-template-columns: 8px minmax(0, 1fr) !important;
+    grid-template-rows: 18px 12px !important;
+    grid-template-areas: "dot value" ". note" !important;
+    align-content: center !important;
+    min-width: 0 !important;
+    padding: 0 8px 0 0 !important;
+    border-right: .5px solid rgba(151, 172, 195, .28) !important;
+  }
+
+  #overview.router-overview-framework .ik-v960-judgement-strip > strong i,
+  .router-overview-framework .ik-v960-judgement-strip > strong i,
+  .ik-v960-judgement-strip > strong i {
+    grid-area: dot !important;
+    align-self: center !important;
+    width: 5px !important;
+    height: 5px !important;
+  }
+
+  #overview.router-overview-framework .ik-v960-judgement-strip > strong b,
+  .router-overview-framework .ik-v960-judgement-strip > strong b,
+  .ik-v960-judgement-strip > strong b {
+    grid-area: value !important;
+    min-width: 0 !important;
+    color: var(--ik-ink) !important;
+    font-size: 13px !important;
+    font-weight: 820 !important;
+    line-height: 18px !important;
+    letter-spacing: -.12px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  #overview.router-overview-framework .ik-v960-judgement-strip > strong em,
+  .router-overview-framework .ik-v960-judgement-strip > strong em,
+  .ik-v960-judgement-strip > strong em {
+    grid-area: note !important;
+    min-width: 0 !important;
+    color: #718397 !important;
+    font-size: 7.7px !important;
+    font-style: normal !important;
+    font-weight: 620 !important;
+    line-height: 10px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  #overview.router-overview-framework .ik-v960-judgement-strip > div,
+  .router-overview-framework .ik-v960-judgement-strip > div,
+  .ik-v960-judgement-strip > div {
+    display: grid !important;
+    grid-template-columns: .56fr .66fr 1.06fr 1.22fr !important;
+    min-width: 0 !important;
+  }
+
+  #overview.router-overview-framework .ik-v960-judgement-strip span,
+  .router-overview-framework .ik-v960-judgement-strip span,
+  .ik-v960-judgement-strip span {
+    display: grid !important;
+    align-content: center !important;
+    min-width: 0 !important;
+    padding: 0 5px !important;
+    border-left: .5px solid rgba(151, 172, 195, .20) !important;
+  }
+
+  #overview.router-overview-framework .ik-v960-judgement-strip span:first-child,
+  .router-overview-framework .ik-v960-judgement-strip span:first-child,
+  .ik-v960-judgement-strip span:first-child {
+    border-left: 0 !important;
+  }
+
+  #overview.router-overview-framework .ik-v960-judgement-strip span em,
+  .router-overview-framework .ik-v960-judgement-strip span em,
+  .ik-v960-judgement-strip span em {
+    color: #718397 !important;
+    font-size: 7.2px !important;
+    font-style: normal !important;
+    font-weight: 650 !important;
+    line-height: 10px !important;
+    white-space: nowrap !important;
+  }
+
+  #overview.router-overview-framework .ik-v960-judgement-strip span b,
+  .router-overview-framework .ik-v960-judgement-strip span b,
+  .ik-v960-judgement-strip span b {
+    min-width: 0 !important;
+    color: var(--ik-ink) !important;
+    font-size: 9px !important;
+    font-weight: 800 !important;
+    line-height: 12px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-hero,
+  .router-overview-framework .ik-v420-hero,
+  .ik-v420-hero {
+    grid-template-rows: auto 72px 22px !important;
+    min-height: 134px !important;
+    max-height: 154px !important;
+    margin-top: 5px !important;
+    padding: 7px 8px 6px !important;
+    border-color: rgba(142, 169, 196, .26) !important;
+    background: rgba(255, 255, 255, .62) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-hero.is-danger,
+  .router-overview-framework .ik-v420-hero.is-danger,
+  .ik-v420-hero.is-danger {
+    background: linear-gradient(90deg, rgba(184, 58, 50, .032), rgba(255,255,255,.68) 42%, rgba(255,255,255,.58)) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-hero.is-warn,
+  #overview.router-overview-framework .ik-v420-hero.is-missing,
+  .router-overview-framework .ik-v420-hero.is-warn,
+  .router-overview-framework .ik-v420-hero.is-missing,
+  .ik-v420-hero.is-warn,
+  .ik-v420-hero.is-missing {
+    background: linear-gradient(90deg, rgba(168, 111, 35, .032), rgba(255,255,255,.68) 42%, rgba(255,255,255,.58)) !important;
+  }
+
+  #overview.router-overview-framework .ik-v620-hero-head h1,
+  .router-overview-framework .ik-v620-hero-head h1,
+  .ik-v620-hero-head h1 {
+    font-size: 14px !important;
+    line-height: 17px !important;
+    letter-spacing: -.12px !important;
+  }
+
+  #overview.router-overview-framework .ik-v620-hero-head p,
+  .router-overview-framework .ik-v620-hero-head p,
+  .ik-v620-hero-head p {
+    font-size: 9px !important;
+    line-height: 11px !important;
+  }
+
+  #overview.router-overview-framework .ik-v620-hero-stage,
+  .router-overview-framework .ik-v620-hero-stage,
+  .ik-v620-hero-stage,
+  #overview.router-overview-framework .ik-v420-visual,
+  .router-overview-framework .ik-v420-visual,
+  .ik-v420-visual {
+    height: 72px !important;
+    min-height: 72px !important;
+    max-height: 72px !important;
+  }
+
+  #overview.router-overview-framework .ik-v812-trend-visual,
+  .router-overview-framework .ik-v812-trend-visual,
+  .ik-v812-trend-visual {
+    min-height: 72px !important;
+    grid-template-columns: minmax(0, 1fr) 50px !important;
+  }
+
+  #overview.router-overview-framework .ik-v812-trend-visual aside,
+  .router-overview-framework .ik-v812-trend-visual aside,
+  .ik-v812-trend-visual aside {
+    grid-template-rows: repeat(4, 16px) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-line-chart,
+  .router-overview-framework .ik-v420-line-chart,
+  .ik-v420-line-chart,
+  #overview.router-overview-framework .ik-v420-channel-rail,
+  .router-overview-framework .ik-v420-channel-rail,
+  .ik-v420-channel-rail,
+  #overview.router-overview-framework .ik-v420-port-matrix,
+  .router-overview-framework .ik-v420-port-matrix,
+  .ik-v420-port-matrix,
+  #overview.router-overview-framework .ik-density-resource-ledger,
+  .router-overview-framework .ik-density-resource-ledger,
+  .ik-density-resource-ledger,
+  #overview.router-overview-framework .ik-v420-interface-list,
+  .router-overview-framework .ik-v420-interface-list,
+  .ik-v420-interface-list {
+    height: 72px !important;
+    min-height: 72px !important;
+    max-height: 72px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-port-matrix,
+  .router-overview-framework .ik-v420-port-matrix,
+  .ik-v420-port-matrix {
+    border-radius: 0 !important;
+    background: transparent !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-port-matrix span,
+  .router-overview-framework .ik-v420-port-matrix span,
+  .ik-v420-port-matrix span {
+    min-height: 36px !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-resource-visual.ik-density-resource-ledger,
+  .router-overview-framework .ik-v420-resource-visual.ik-density-resource-ledger,
+  .ik-v420-resource-visual.ik-density-resource-ledger {
+    grid-template-rows: repeat(3, 20px) !important;
+    gap: 3px !important;
+    padding: 3px 0 !important;
+  }
+
+  #overview.router-overview-framework .ik-density-resource-ledger .ik-density-resource-row.ik-mobile-resource-spark.ik-v420-resource-meter,
+  .router-overview-framework .ik-density-resource-ledger .ik-density-resource-row.ik-mobile-resource-spark.ik-v420-resource-meter,
+  .ik-density-resource-ledger .ik-density-resource-row.ik-mobile-resource-spark.ik-v420-resource-meter {
+    grid-template-columns: 28px 38px 38px 46px minmax(0, 1fr) !important;
+    min-height: 20px !important;
+    height: 20px !important;
+  }
+
+  #overview.router-overview-framework .ik-v830-trust-rail,
+  .router-overview-framework .ik-v830-trust-rail,
+  .ik-v830-trust-rail {
+    height: 22px !important;
+    min-height: 22px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-timeline,
+  #overview.router-overview-framework .ik-v420-list,
+  .router-overview-framework .ik-v420-timeline,
+  .router-overview-framework .ik-v420-list,
+  .ik-v420-timeline,
+  .ik-v420-list {
+    border-left-color: transparent !important;
+    border-right-color: transparent !important;
+    background: rgba(255, 255, 255, .58) !important;
+    box-shadow: none !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-timeline-row,
+  .router-overview-framework .ik-v420-timeline-row,
+  .ik-v420-timeline-row {
+    min-height: 40px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-list-row,
+  .router-overview-framework .ik-v420-list-row,
+  .ik-v420-list-row {
+    min-height: 50px !important;
+  }
+}
 `;
 
 export function MobileOverviewStyles() {

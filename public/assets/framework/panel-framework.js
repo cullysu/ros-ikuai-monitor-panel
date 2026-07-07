@@ -9393,6 +9393,274 @@ var PanelFramework = function(exports) {
     transform: none !important;
   }
 }
+
+@media (max-width: 760px) {
+  #overview.router-overview-framework .ik-v960-judgement-strip,
+  .router-overview-framework .ik-v960-judgement-strip,
+  .ik-v960-judgement-strip {
+    display: grid !important;
+    grid-template-columns: 82px minmax(0, 1fr) !important;
+    align-items: stretch !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    margin-top: 5px !important;
+    border: 0 !important;
+    border-top: .5px solid rgba(151, 172, 195, .30) !important;
+    border-bottom: .5px solid rgba(151, 172, 195, .30) !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    overflow: hidden !important;
+  }
+
+  #overview.router-overview-framework .ik-v960-judgement-strip > strong,
+  .router-overview-framework .ik-v960-judgement-strip > strong,
+  .ik-v960-judgement-strip > strong {
+    display: grid !important;
+    grid-template-columns: 8px minmax(0, 1fr) !important;
+    grid-template-rows: 18px 12px !important;
+    grid-template-areas: "dot value" ". note" !important;
+    align-content: center !important;
+    min-width: 0 !important;
+    padding: 0 8px 0 0 !important;
+    border-right: .5px solid rgba(151, 172, 195, .28) !important;
+  }
+
+  #overview.router-overview-framework .ik-v960-judgement-strip > strong i,
+  .router-overview-framework .ik-v960-judgement-strip > strong i,
+  .ik-v960-judgement-strip > strong i {
+    grid-area: dot !important;
+    align-self: center !important;
+    width: 5px !important;
+    height: 5px !important;
+  }
+
+  #overview.router-overview-framework .ik-v960-judgement-strip > strong b,
+  .router-overview-framework .ik-v960-judgement-strip > strong b,
+  .ik-v960-judgement-strip > strong b {
+    grid-area: value !important;
+    min-width: 0 !important;
+    color: var(--ik-ink) !important;
+    font-size: 13px !important;
+    font-weight: 820 !important;
+    line-height: 18px !important;
+    letter-spacing: -.12px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  #overview.router-overview-framework .ik-v960-judgement-strip > strong em,
+  .router-overview-framework .ik-v960-judgement-strip > strong em,
+  .ik-v960-judgement-strip > strong em {
+    grid-area: note !important;
+    min-width: 0 !important;
+    color: #718397 !important;
+    font-size: 7.7px !important;
+    font-style: normal !important;
+    font-weight: 620 !important;
+    line-height: 10px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  #overview.router-overview-framework .ik-v960-judgement-strip > div,
+  .router-overview-framework .ik-v960-judgement-strip > div,
+  .ik-v960-judgement-strip > div {
+    display: grid !important;
+    grid-template-columns: .56fr .66fr 1.06fr 1.22fr !important;
+    min-width: 0 !important;
+  }
+
+  #overview.router-overview-framework .ik-v960-judgement-strip span,
+  .router-overview-framework .ik-v960-judgement-strip span,
+  .ik-v960-judgement-strip span {
+    display: grid !important;
+    align-content: center !important;
+    min-width: 0 !important;
+    padding: 0 5px !important;
+    border-left: .5px solid rgba(151, 172, 195, .20) !important;
+  }
+
+  #overview.router-overview-framework .ik-v960-judgement-strip span:first-child,
+  .router-overview-framework .ik-v960-judgement-strip span:first-child,
+  .ik-v960-judgement-strip span:first-child {
+    border-left: 0 !important;
+  }
+
+  #overview.router-overview-framework .ik-v960-judgement-strip span em,
+  .router-overview-framework .ik-v960-judgement-strip span em,
+  .ik-v960-judgement-strip span em {
+    color: #718397 !important;
+    font-size: 7.2px !important;
+    font-style: normal !important;
+    font-weight: 650 !important;
+    line-height: 10px !important;
+    white-space: nowrap !important;
+  }
+
+  #overview.router-overview-framework .ik-v960-judgement-strip span b,
+  .router-overview-framework .ik-v960-judgement-strip span b,
+  .ik-v960-judgement-strip span b {
+    min-width: 0 !important;
+    color: var(--ik-ink) !important;
+    font-size: 9px !important;
+    font-weight: 800 !important;
+    line-height: 12px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-hero,
+  .router-overview-framework .ik-v420-hero,
+  .ik-v420-hero {
+    grid-template-rows: auto 72px 22px !important;
+    min-height: 134px !important;
+    max-height: 154px !important;
+    margin-top: 5px !important;
+    padding: 7px 8px 6px !important;
+    border-color: rgba(142, 169, 196, .26) !important;
+    background: rgba(255, 255, 255, .62) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-hero.is-danger,
+  .router-overview-framework .ik-v420-hero.is-danger,
+  .ik-v420-hero.is-danger {
+    background: linear-gradient(90deg, rgba(184, 58, 50, .032), rgba(255,255,255,.68) 42%, rgba(255,255,255,.58)) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-hero.is-warn,
+  #overview.router-overview-framework .ik-v420-hero.is-missing,
+  .router-overview-framework .ik-v420-hero.is-warn,
+  .router-overview-framework .ik-v420-hero.is-missing,
+  .ik-v420-hero.is-warn,
+  .ik-v420-hero.is-missing {
+    background: linear-gradient(90deg, rgba(168, 111, 35, .032), rgba(255,255,255,.68) 42%, rgba(255,255,255,.58)) !important;
+  }
+
+  #overview.router-overview-framework .ik-v620-hero-head h1,
+  .router-overview-framework .ik-v620-hero-head h1,
+  .ik-v620-hero-head h1 {
+    font-size: 14px !important;
+    line-height: 17px !important;
+    letter-spacing: -.12px !important;
+  }
+
+  #overview.router-overview-framework .ik-v620-hero-head p,
+  .router-overview-framework .ik-v620-hero-head p,
+  .ik-v620-hero-head p {
+    font-size: 9px !important;
+    line-height: 11px !important;
+  }
+
+  #overview.router-overview-framework .ik-v620-hero-stage,
+  .router-overview-framework .ik-v620-hero-stage,
+  .ik-v620-hero-stage,
+  #overview.router-overview-framework .ik-v420-visual,
+  .router-overview-framework .ik-v420-visual,
+  .ik-v420-visual {
+    height: 72px !important;
+    min-height: 72px !important;
+    max-height: 72px !important;
+  }
+
+  #overview.router-overview-framework .ik-v812-trend-visual,
+  .router-overview-framework .ik-v812-trend-visual,
+  .ik-v812-trend-visual {
+    min-height: 72px !important;
+    grid-template-columns: minmax(0, 1fr) 50px !important;
+  }
+
+  #overview.router-overview-framework .ik-v812-trend-visual aside,
+  .router-overview-framework .ik-v812-trend-visual aside,
+  .ik-v812-trend-visual aside {
+    grid-template-rows: repeat(4, 16px) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-line-chart,
+  .router-overview-framework .ik-v420-line-chart,
+  .ik-v420-line-chart,
+  #overview.router-overview-framework .ik-v420-channel-rail,
+  .router-overview-framework .ik-v420-channel-rail,
+  .ik-v420-channel-rail,
+  #overview.router-overview-framework .ik-v420-port-matrix,
+  .router-overview-framework .ik-v420-port-matrix,
+  .ik-v420-port-matrix,
+  #overview.router-overview-framework .ik-density-resource-ledger,
+  .router-overview-framework .ik-density-resource-ledger,
+  .ik-density-resource-ledger,
+  #overview.router-overview-framework .ik-v420-interface-list,
+  .router-overview-framework .ik-v420-interface-list,
+  .ik-v420-interface-list {
+    height: 72px !important;
+    min-height: 72px !important;
+    max-height: 72px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-port-matrix,
+  .router-overview-framework .ik-v420-port-matrix,
+  .ik-v420-port-matrix {
+    border-radius: 0 !important;
+    background: transparent !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-port-matrix span,
+  .router-overview-framework .ik-v420-port-matrix span,
+  .ik-v420-port-matrix span {
+    min-height: 36px !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-resource-visual.ik-density-resource-ledger,
+  .router-overview-framework .ik-v420-resource-visual.ik-density-resource-ledger,
+  .ik-v420-resource-visual.ik-density-resource-ledger {
+    grid-template-rows: repeat(3, 20px) !important;
+    gap: 3px !important;
+    padding: 3px 0 !important;
+  }
+
+  #overview.router-overview-framework .ik-density-resource-ledger .ik-density-resource-row.ik-mobile-resource-spark.ik-v420-resource-meter,
+  .router-overview-framework .ik-density-resource-ledger .ik-density-resource-row.ik-mobile-resource-spark.ik-v420-resource-meter,
+  .ik-density-resource-ledger .ik-density-resource-row.ik-mobile-resource-spark.ik-v420-resource-meter {
+    grid-template-columns: 28px 38px 38px 46px minmax(0, 1fr) !important;
+    min-height: 20px !important;
+    height: 20px !important;
+  }
+
+  #overview.router-overview-framework .ik-v830-trust-rail,
+  .router-overview-framework .ik-v830-trust-rail,
+  .ik-v830-trust-rail {
+    height: 22px !important;
+    min-height: 22px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-timeline,
+  #overview.router-overview-framework .ik-v420-list,
+  .router-overview-framework .ik-v420-timeline,
+  .router-overview-framework .ik-v420-list,
+  .ik-v420-timeline,
+  .ik-v420-list {
+    border-left-color: transparent !important;
+    border-right-color: transparent !important;
+    background: rgba(255, 255, 255, .58) !important;
+    box-shadow: none !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-timeline-row,
+  .router-overview-framework .ik-v420-timeline-row,
+  .ik-v420-timeline-row {
+    min-height: 40px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-list-row,
+  .router-overview-framework .ik-v420-list-row,
+  .ik-v420-list-row {
+    min-height: 50px !important;
+  }
+}
 `;
   function MobileOverviewStyles() {
     return /* @__PURE__ */ jsxRuntimeExports.jsx("style", { children: V420_MOBILE_STYLES });
@@ -9926,7 +10194,7 @@ var PanelFramework = function(exports) {
     if (priority === "resource-full") return "资源满载";
     if (priority === "interface-down") return "接口 Down";
     if (priority === "collection-degraded") return "采集降级";
-    return state.scenario === "single" || state.verdict.level !== "warn" ? "网络状态良好" : "转发待确认";
+    return state.scenario === "single" || state.verdict.level !== "warn" ? "WAN 实时趋势" : "转发待确认";
   }
   function subtitleFor(snapshot, state) {
     if (state.scenario === "fleet") return `WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(Math.max(state.facts.wan.total || wanRows$1(snapshot).length, 1))} · 异常 ${formatNumber(Math.max(state.facts.wan.offline, state.facts.interfaces.down, 0))} · 默认路由 ${mobileRouteValue(state)} · 成功 ${latestSuccess$2(snapshot, state)}`;
@@ -10198,6 +10466,43 @@ var PanelFramework = function(exports) {
       { id: "routeros-link", rank: "", name: "RouterOS 链路", meta: "当前不可达，等待恢复", value: "断链", status: "当前", percent: 0, tone: "danger" }
     ];
   }
+  function collectionBoundaryRows(snapshot, state) {
+    return [
+      {
+        id: "collection-rest",
+        rank: "",
+        name: "REST",
+        kind: "采集",
+        meta: `最近成功 ${latestSuccess$2(snapshot, state)} · 管理面状态`,
+        value: stripRest$1(state.facts.collection.restLabel),
+        status: "通道",
+        percent: 0,
+        tone: state.facts.collection.level
+      },
+      {
+        id: "collection-ssh",
+        rank: "",
+        name: "SSH",
+        kind: "采集",
+        meta: "辅助读取 · 不等同转发正常",
+        value: stripSsh$1(state.facts.collection.sshLabel),
+        status: "通道",
+        percent: 0,
+        tone: state.facts.collection.level
+      },
+      {
+        id: "collection-snapshot",
+        rank: "",
+        name: "业务快照",
+        kind: "可信度",
+        meta: "缓存可参考 · 实时性下降",
+        value: trustText$1(state),
+        status: "边界",
+        percent: 0,
+        tone: state.facts.collection.credibilityTone
+      }
+    ];
+  }
   function terminalCandidates(snapshot) {
     const raw = snapshot;
     const connections = isRecord(raw.connections) ? raw.connections : {};
@@ -10313,14 +10618,20 @@ var PanelFramework = function(exports) {
     if (priority === "wan-offline") return { kind: "wan-incident", title: "离线出口", meta: "默认路由异常 · 最近成功", rows: offlineWanRows(snapshot, state) };
     if (priority === "snapshot-missing") return { kind: "snapshot-boundary", title: "可信边界", meta: `最近成功 ${latestSuccess$2(snapshot, state)}`, rows: snapshotBoundaryRows(snapshot, state) };
     if (priority === "interface-down") return { kind: "interface-incident", title: "接口影响", meta: "承载待判 · 默认路由", rows: interfaceIncidentRows(snapshot) };
-    if (priority === "collection-degraded") return { kind: "terminal-ranking", title: "设备排行", meta: "异常优先 · 总流量", rows: terminalRankingRows(snapshot) };
+    if (priority === "collection-degraded") return { kind: "collection-boundary", title: "采集边界", meta: "REST / SSH / 快照", rows: collectionBoundaryRows(snapshot, state) };
     if (priority === "resource-full") return { kind: "terminal-ranking", title: "高流量终端", meta: "异常优先 · 总流量", rows: terminalRankingRows(snapshot) };
     return { kind: "terminal-ranking", title: "设备排行", meta: "异常优先 · 总流量", rows: terminalRankingRows(snapshot) };
+  }
+  function surfaceModel(priority) {
+    if (priority === "normal") return { order: "status-before-list", ranking: "primary" };
+    if (priority === "resource-full") return { order: "status-before-list", ranking: "supporting" };
+    return { order: "list-before-status", ranking: "suppressed" };
   }
   function buildMobileOverviewModel(snapshot, state) {
     const priority = priorityOf(state);
     return {
       priority,
+      surface: surfaceModel(priority),
       coreMetrics: coreMetrics(snapshot, state),
       hero: {
         title: titleFor(state),
@@ -10500,14 +10811,15 @@ var PanelFramework = function(exports) {
   }
   function HomeSurface(props) {
     const model = buildMobileOverviewModel(props.snapshot, props.state);
-    const incidentFirst = model.primaryList.kind !== "terminal-ranking";
+    const incidentFirst = model.surface.order === "list-before-status";
     return /* @__PURE__ */ jsxRuntimeExports.jsxs(
       "section",
       {
-        className: `ik-v420-surface ik-v240-facts ${incidentFirst ? "is-incident-first" : "is-ranking-first"}`,
+        className: `ik-v420-surface ik-v240-facts ${incidentFirst ? "is-incident-first" : "is-ranking-first"} is-ranking-${model.surface.ranking}`,
         "data-overview-mobile-core-block": "ios-router-home-surface",
         "data-overview-mobile-v240-facts": "timeline-resource-ranking",
         "data-overview-mobile-surface-order": incidentFirst ? "incident-before-status" : "status-before-ranking",
+        "data-overview-mobile-ranking-policy": model.surface.ranking,
         children: [
           incidentFirst ? /* @__PURE__ */ jsxRuntimeExports.jsx(RankingList, { ...props }) : /* @__PURE__ */ jsxRuntimeExports.jsx(StatusTimeline, { ...props }),
           incidentFirst ? /* @__PURE__ */ jsxRuntimeExports.jsx(StatusTimeline, { ...props }) : /* @__PURE__ */ jsxRuntimeExports.jsx(RankingList, { ...props })
@@ -10746,6 +11058,32 @@ var PanelFramework = function(exports) {
       }
     );
   }
+  function JudgementStrip(props) {
+    const model = buildMobileOverviewModel(props.snapshot, props.state);
+    const [status, ...metrics] = model.coreMetrics;
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+      "section",
+      {
+        className: `ik-v940-core-rail ik-v960-judgement-strip ${toneClass(status.tone)}`,
+        "aria-label": "移动端核心判断",
+        "data-overview-mobile-core-block": "core-metrics",
+        "data-overview-mobile-v940-core": "state-wan-collection-resource-snapshot",
+        "data-overview-mobile-v960-judgement": "conclusion-trust-wan-resource-snapshot",
+        "data-overview-mobile-priority": model.priority,
+        children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("strong", { children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("i", { "aria-hidden": "true" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: status.value }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: status.note })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { children: metrics.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: toneClass(item.tone), title: `${item.label} ${item.value} ${item.note}`, children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: item.label }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: item.value })
+          ] }, item.label)) })
+        ]
+      }
+    );
+  }
   function StatusHeader({ snapshot, state }) {
     const name = clean(snapshot.identity || snapshot.name || snapshot.deviceName || state.facts.device.identity || "爱快路由");
     const version = clean(snapshot.version || snapshot.routerosVersion || state.facts.device.version || "RouterOS");
@@ -10804,6 +11142,7 @@ var PanelFramework = function(exports) {
               "data-overview-mobile-v420-visual-contract": "single-labelled-wan-sparkline-wan-collection-duo-resource-bars-native-ranking",
               children: [
                 /* @__PURE__ */ jsxRuntimeExports.jsx(StatusHeader, { ...props }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx(JudgementStrip, { ...props }),
                 /* @__PURE__ */ jsxRuntimeExports.jsx(IncidentHero, { ...props }),
                 /* @__PURE__ */ jsxRuntimeExports.jsx(HomeSurface, { ...props }),
                 /* @__PURE__ */ jsxRuntimeExports.jsx(BottomTabs, {})
