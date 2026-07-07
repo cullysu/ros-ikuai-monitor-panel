@@ -12,6 +12,7 @@ import {
   type OverviewRawWanRow,
   type OverviewTone,
 } from "../index";
+import { buildMobileOverviewModel } from "../mobileOverviewModel";
 
 interface MobileOverviewHomeProps {
   snapshot: OverviewRawSnapshot;
@@ -912,7 +913,7 @@ function V420TrendVisual({ snapshot, state }: MobileOverviewHomeProps) {
 }
 
 function V420PortMatrix({ snapshot, state }: MobileOverviewHomeProps) {
-  const rows = Array.from({ length: 8 }, (_, index) => wanRows(snapshot)[index] || ({ name: `WAN${index + 1}`, running: false } as OverviewRawWanRow));
+  const ports = buildMobileOverviewModel(snapshot, state).wanPorts;
   return (
     <div
       className="ik-v420-port-matrix"
@@ -920,14 +921,13 @@ function V420PortMatrix({ snapshot, state }: MobileOverviewHomeProps) {
       data-overview-mobile-first-visual="wan-eight-port-matrix"
       data-overview-mobile-v420-visual="wan-eight-port-matrix"
     >
-      {rows.map((row, index) => {
-        const offline = state.facts.wan.allOffline || row.running === false;
-        const label = clean(row.name || row.interface, `WAN${index + 1}`).replace(/^pppoe[-_]?/i, "");
+      {ports.map((port) => {
+        const offline = port.tone === "danger";
         return (
-          <span className={offline ? "is-danger" : "is-ok"} data-port={`P${index + 1}`} key={`${clean(row.name || row.interface, `WAN${index + 1}`)}-${index}`}>
+          <span className={offline ? "is-danger" : "is-ok"} data-port={port.label} key={port.id}>
             <i />
-            <b>P{index + 1}</b>
-            <em>{offline ? "离线" : label}</em>
+            <b>{port.label}</b>
+            <em>{port.note}</em>
           </span>
         );
       })}
@@ -1000,9 +1000,9 @@ function V420ResourceVisual({ state }: { state: OverviewDerivedState }) {
         return (
           <span className={`ik-mobile-resource-spark ik-v420-resource-meter ${toneClass(item.tone)}${item.key === peakKey ? " is-peak" : ""}`} key={item.key} style={meterStyle}>
             <b>{item.label}</b>
-            <strong className="ik-v802-ring-value">{item.display}</strong>
-            <small>阈{item.threshold}%</small>
-            <em>持续 {item.tone === "danger" ? "6/6" : "0/6"}</em>
+            <strong className="ik-v802-ring-value">{item.display.replace(/\.0%$/, "%")}</strong>
+            <small>阈{item.threshold} {item.tone === "danger" ? "6/6" : "0/6"}</small>
+            <em>持续{item.tone === "danger" ? "6/6" : "0/6"}</em>
             <i><i style={{ width: `${value}%` }} /></i>
           </span>
         );
@@ -1012,106 +1012,24 @@ function V420ResourceVisual({ state }: { state: OverviewDerivedState }) {
 }
 
 function V420HeroVisual(props: MobileOverviewHomeProps) {
-  if (props.state.scenario === "all-offline" || (props.state.facts.wan.allOffline && props.state.scenario !== "interfaces-down")) return <V420PortMatrix {...props} />;
-  if (props.state.scenario === "resource-full") return <V420ResourceVisual state={props.state} />;
-  if (props.state.scenario === "interfaces-down" || props.state.facts.interfaces.down > 0) return <V420InterfaceFlow {...props} />;
-  if (props.state.scenario === "no-snapshot" || props.state.scenario === "collection-down") return <V420ChannelRail state={props.state} />;
+  const priority = buildMobileOverviewModel(props.snapshot, props.state).priority;
+  if (priority === "wan-offline") return <V420PortMatrix {...props} />;
+  if (priority === "resource-full") return <V420ResourceVisual state={props.state} />;
+  if (priority === "interface-down") return <V420InterfaceFlow {...props} />;
+  if (priority === "snapshot-missing" || priority === "collection-degraded") return <V420ChannelRail state={props.state} />;
   return <V420TrendVisual {...props} />;
 }
 
 function V420HeroStats(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): Reading[] {
-  const rate = totals(snapshot);
-  if (state.scenario === "no-snapshot") {
-    return [
-      { label: "RouterOS", value: "不可达", note: "当前", tone: "danger" },
-      { label: "快照", value: "缺失", note: "业务", tone: "missing" },
-      { label: "影响", value: "不展示", note: "业务数据", tone: "missing" },
-      { label: "成功", value: latestSuccess(snapshot, state), note: "最近", tone: latestSuccess(snapshot, state) === "未记录" ? "warn" : "trust" },
-    ];
-  }
-  if (state.scenario === "resource-full") {
-    const peak = resourcePeak(state);
-    return [
-      { label: "峰值", value: peak.display, note: peak.label, tone: "danger" },
-      { label: "阈值", value: "85/90", note: "三项", tone: "danger" },
-      { label: "持续", value: "6/6", note: "采样", tone: "danger" },
-      { label: "连接", value: formatCompact(toNumber(state.facts.connections.total)), note: "活动", tone: "warn" },
-    ];
-  }
-  if (state.scenario === "all-offline" || (state.facts.wan.allOffline && state.scenario !== "interfaces-down")) {
-    return [
-      { label: "WAN", value: `0/${formatNumber(Math.max(8, state.facts.wan.total || wanRows(snapshot).length))}`, note: "全部离线", tone: "danger" },
-      { label: "路由", value: "异常", note: "默认", tone: "danger" },
-      { label: "外网", value: "断网", note: "影响", tone: "danger" },
-      { label: "可信", value: state.facts.collection.credibility === "realtime" ? "实时" : "缓存", note: "采集", tone: state.facts.collection.credibilityTone },
-    ];
-  }
-  if (state.scenario === "fleet") {
-    const totalWan = state.facts.wan.total || wanRows(snapshot).length;
-    const abnormal = Math.max(state.facts.wan.offline, state.facts.interfaces.down);
-    return [
-      { label: "WAN", value: `${formatNumber(state.facts.wan.online)}/${formatNumber(totalWan)}`, note: "在线", tone: state.facts.wan.offline ? "warn" : "ok" },
-      { label: "异常", value: formatNumber(abnormal || 3), note: "待确认", tone: abnormal ? "warn" : "trust" },
-      { label: "默认路由", value: mobileRouteValue(state), note: "出口", tone: state.facts.route.level },
-      { label: "成功", value: latestSuccess(snapshot, state), note: "最近", tone: "trust" },
-    ];
-  }
-  if (state.scenario === "interfaces-down" || state.facts.interfaces.down > 0) {
-    return [
-      { label: "接口", value: `${formatNumber(state.facts.interfaces.down)} Down`, note: "离线", tone: "danger" },
-      { label: "路由", value: mobileRouteValue(state), note: "默认路由", tone: state.facts.route.level },
-      { label: "影响", value: "待判", note: "承载", tone: "warn" },
-      { label: "可信", value: state.facts.collection.credibility === "realtime" ? "实时" : "缓存", note: "采集", tone: state.facts.collection.credibilityTone },
-    ];
-  }
-  if (state.scenario === "collection-down") {
-    return [
-      { label: "采集", value: "缓存", note: "当前", tone: "warn" },
-      { label: "REST", value: stripRest(state.facts.collection.restLabel), note: "通道", tone: state.facts.collection.level },
-      { label: "SSH", value: stripSsh(state.facts.collection.sshLabel), note: "通道", tone: state.facts.collection.level },
-      { label: "成功", value: latestSuccess(snapshot, state), note: "最近", tone: "trust" },
-    ];
-  }
-  return [
-    { label: "WAN", value: `${formatNumber(state.facts.wan.online)}/${formatNumber(state.facts.wan.total || wanRows(snapshot).length)}`, note: "在线", tone: state.facts.wan.offline ? "warn" : "ok" },
-    { label: "下载", value: mobileRate(rate.down), note: mobileRateUnit(rate.down), tone: rate.down > 0 ? "ok" : "trust" },
-    { label: "上传", value: mobileRate(rate.up), note: mobileRateUnit(rate.up), tone: rate.up > 0 ? "ok" : "trust" },
-    { label: "路由", value: mobileRouteValue(state), note: "默认", tone: state.facts.route.level },
-  ];
+  return buildMobileOverviewModel(snapshot, state).hero.facts;
 }
 
 function heroSentence(_snapshot: OverviewRawSnapshot, state: OverviewDerivedState): string {
-  if (state.scenario === "no-snapshot") return "当前无可信业务快照。";
-  if (state.scenario === "all-offline" || (state.facts.wan.allOffline && state.scenario !== "interfaces-down")) return "默认路由不可用。";
-  if (state.scenario === "resource-full") return "处理器 / 内存 / 磁盘连续越阈。";
-  if (state.scenario === "interfaces-down") return "接口离线，承载影响待确认。";
-  if (state.scenario === "fleet") return "多出口在线，默认路由可用。";
-  if (state.scenario === "collection-down") return "当前显示缓存边界。";
-  return "出口在线，默认路由可用。";
+  return buildMobileOverviewModel(_snapshot, state).hero.subtitle;
 }
 
 function heroPills(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): string[] {
-  const totalWan = Math.max(state.facts.wan.total || wanRows(snapshot).length, state.facts.wan.allOffline ? 8 : 0);
-  if (state.scenario === "no-snapshot") return ["对象 快照", "影响 不展示", "可信 缺失"];
-  if (state.scenario === "all-offline" || (state.facts.wan.allOffline && state.scenario !== "interfaces-down")) {
-    return [`对象 WAN 0/${formatNumber(totalWan)}`, "影响 外网不可用", `可信 ${trustText(state)}`];
-  }
-  if (state.scenario === "resource-full") {
-    const peak = resourcePeak(state);
-    return [`对象 ${peak.label} ${peak.display}`, "影响 资源余量", `可信 ${trustText(state)}`];
-  }
-  if (state.scenario === "interfaces-down") return [`对象 接口 ${formatNumber(state.facts.interfaces.down)} Down`, "影响 承载待判", `可信 ${trustText(state)}`];
-  if (state.scenario === "collection-down") return ["对象 采集", "影响 缓存", `可信 ${trustText(state)}`];
-  if (state.scenario === "fleet") return [
-    `对象 WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(totalWan)}`,
-    `影响 异常 ${formatNumber(Math.max(state.facts.wan.offline, state.facts.interfaces.down, 3))}`,
-    `可信 ${trustText(state)}`,
-  ];
-  return [
-    `对象 WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(state.facts.wan.total || wanRows(snapshot).length)}`,
-    `影响 ${impactText(state)}`,
-    `可信 ${trustText(state)}`,
-  ];
+  return buildMobileOverviewModel(snapshot, state).hero.pills;
 }
 
 function V420HeroMetrics({ snapshot, state }: MobileOverviewHomeProps) {
@@ -1137,67 +1055,7 @@ function resourceTimelineValue(resource: ResourceReading[], state: OverviewDeriv
 }
 
 function statusTimelineRows(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): NativeRow[] {
-  const totalWan = Math.max(state.facts.wan.total || wanRows(snapshot).length, state.facts.wan.allOffline ? 8 : 0);
-  const resource = resourceMetrics(state);
-  const downNames = interfaceRows(snapshot)
-    .filter((row) => row.running === false)
-    .slice(0, 2)
-    .map((row) => clean(row.name || row.interface, "接口"))
-    .join(" / ");
-  if (state.scenario === "no-snapshot") {
-    return [
-      { id: "timeline-routeros", title: "RouterOS", value: "不可达", note: "当前无可信数据", tone: "danger" },
-      { id: "timeline-snapshot", title: "业务快照", value: "缺失", note: `最近成功 ${latestSuccess(snapshot, state)}`, tone: "missing" },
-      { id: "timeline-collection", title: "采集", value: "REST 待核", note: "SSH 断链", tone: "warn" },
-      { id: "timeline-route", title: "默认路由", value: "待判", note: "路由快照未取回", tone: "warn" },
-    ];
-  }
-  const baseRows = [
-      {
-        id: "timeline-wan",
-        title: "WAN",
-        value: state.facts.wan.allOffline ? `0/${formatNumber(totalWan)} 在线` : `${formatNumber(state.facts.wan.online)}/${formatNumber(totalWan || 1)} 在线`,
-        note: state.facts.wan.allOffline ? "所有出口离线" : `↓${compactRate(totals(snapshot).down)} ↑${compactRate(totals(snapshot).up)}`,
-        tone: state.facts.wan.allOffline ? "danger" : state.facts.wan.offline ? "warn" : "ok",
-      },
-      {
-        id: "timeline-route",
-        title: "默认路由",
-        value: mobileRouteValue(state),
-        note: state.facts.wan.allOffline ? "出口不可用" : state.scenario === "collection-down" ? "可参考" : "出口可用",
-        tone: state.facts.wan.allOffline ? "danger" : state.facts.route.level,
-      },
-      {
-        id: "timeline-collection",
-        title: "采集",
-        value: state.scenario === "collection-down" ? "缓存" : "实时",
-        note: mobileCollectionNote(snapshot, state),
-        tone: state.scenario === "collection-down" ? "warn" : state.facts.collection.credibilityTone,
-      },
-      {
-        id: "timeline-resource",
-        title: "资源",
-        value: resourceTimelineValue(resource, state),
-        note: state.scenario === "resource-full" ? "阈85/85/90 · 持续6/6" : "处理器 / 内存 / 磁盘",
-        tone: resource.some((item) => item.tone === "danger") ? "danger" : "ok",
-      },
-      {
-        id: "timeline-interface",
-        title: "接口",
-        value: state.facts.interfaces.down > 0 ? `${formatNumber(state.facts.interfaces.down)} Down` : "正常",
-        note: downNames || "承载正常",
-        tone: state.facts.interfaces.down > 0 ? "danger" : "trust",
-      },
-    ].filter((row) => row.id !== "timeline-interface" || state.scenario === "interfaces-down" || (!state.facts.wan.allOffline && state.facts.interfaces.down > 0));
-  const pick = (ids: string[]) => ids
-    .map((id) => baseRows.find((row) => row.id === id))
-    .filter(Boolean) as NativeRow[];
-  if (state.scenario === "resource-full") return pick(["timeline-resource", "timeline-wan", "timeline-collection", "timeline-route"]);
-  if (state.scenario === "all-offline" || state.facts.wan.allOffline) return pick(["timeline-wan", "timeline-route", "timeline-collection", "timeline-resource"]);
-  if (state.scenario === "interfaces-down" || state.facts.interfaces.down > 0) return pick(["timeline-interface", "timeline-route", "timeline-wan", "timeline-collection"]);
-  if (state.facts.wan.offline > 0) return pick(["timeline-wan", "timeline-route", "timeline-collection", "timeline-resource"]);
-  if (state.scenario === "collection-down") return pick(["timeline-collection", "timeline-wan", "timeline-resource", "timeline-route"]);
-  return pick(["timeline-wan", "timeline-collection", "timeline-resource", "timeline-route"]);
+  return buildMobileOverviewModel(snapshot, state).statusRows;
 }
 
 function V420StatusTimeline(props: MobileOverviewHomeProps) {
@@ -1231,6 +1089,7 @@ function statusTimelineIconPath(id: string): string {
 function V420Hero(props: MobileOverviewHomeProps) {
   const { snapshot, state } = props;
   const tone = screenTone(state);
+  const model = buildMobileOverviewModel(snapshot, state);
   return (
     <section
       className={`ik-v420-hero ik-v240-hero ik-v159-network-hero ${toneClass(tone)}`}
@@ -1243,7 +1102,7 @@ function V420Hero(props: MobileOverviewHomeProps) {
       data-overview-mobile-v620-hero="conclusion-two-numbers-one-chart"
     >
       <header className="ik-v620-hero-head">
-        <h1 data-overview-primary-conclusion="true">{conclusion(state)}</h1>
+        <h1 data-overview-primary-conclusion="true">{model.hero.title}</h1>
         <p className="ik-v503-hero-copy">{heroSentence(snapshot, state)}</p>
       </header>
       <div className="ik-v620-hero-stage">
@@ -1324,25 +1183,15 @@ function V420Resource({ state }: { state: OverviewDerivedState }) {
 }
 
 function V420List(props: MobileOverviewHomeProps) {
-  const noSnapshot = props.state.scenario === "no-snapshot";
-  const allOffline = props.state.scenario === "all-offline" || (props.state.facts.wan.allOffline && props.state.scenario !== "interfaces-down");
-  const statusMode = allOffline;
-  const apps = noSnapshot
-    ? [
-      { id: "business-hidden", rank: "", name: "业务流量", meta: `最近成功 ${latestSuccess(props.snapshot, props.state)} · 无快照`, value: "不展示", status: "缺失", percent: 0, tone: "missing" as OverviewTone },
-      { id: "terminal-ranking-hidden", rank: "", name: "终端排行", meta: "设备名 / IP / 上下行需业务快照", value: "不可判", status: "缺失", percent: 0, tone: "missing" as OverviewTone },
-      { id: "wan-rate-hidden", rank: "", name: "WAN 速率", meta: "出口流量需实时样本", value: "不可判", status: "缺失", percent: 0, tone: "missing" as OverviewTone },
-      { id: "metadata-only", rank: "", name: "采集元数据", meta: "最近成功与链路状态可参考", value: "可参考", status: "边界", percent: 0, tone: "warn" as OverviewTone },
-      { id: "routeros-link", rank: "", name: "RouterOS 链路", meta: "当前不可达，等待恢复", value: "断链", status: "当前", percent: 0, tone: "danger" as OverviewTone },
-    ]
-    : allOffline
-      ? offlineWanRankingRows(props.snapshot, props.state)
-    : terminalRankingRows(props.snapshot);
+  const model = buildMobileOverviewModel(props.snapshot, props.state);
+  const apps: AppRankingRow[] = model.primaryList.kind === "terminal-ranking"
+    ? terminalRankingRows(props.snapshot)
+    : model.primaryList.rows;
   return (
     <section className="ik-v420-list ik-v420-app-list ik-v240-list" data-overview-mobile-rank-list="terminal-total-traffic-list" data-overview-mobile-v420-list="native-router-list" data-overview-mobile-v240-list="terminal-ranking">
       <header>
-        <b>{listTitle(props.state, noSnapshot, statusMode)}</b>
-        <span>{allOffline ? "默认路由不可用" : listMetaLabel(apps, noSnapshot, statusMode)}</span>
+        <b>{model.primaryList.title}</b>
+        <span>{model.primaryList.kind === "terminal-ranking" ? listMetaLabel(apps, false, false) : model.primaryList.meta}</span>
       </header>
       {apps.map((row) => (
         <article className={`ik-v420-list-row ${toneClass(row.tone)}`} key={row.id}>
@@ -8550,9 +8399,9 @@ const V420_MOBILE_STYLES = `
     display: none !important;
   }
 
-  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-scene="resource-full"] .ik-v620-pressure-visual .ik-v420-resource-meter,
-  .router-overview-framework .ik-v420-app[data-overview-mobile-scene="resource-full"] .ik-v620-pressure-visual .ik-v420-resource-meter,
-  .ik-v420-app[data-overview-mobile-scene="resource-full"] .ik-v620-pressure-visual .ik-v420-resource-meter {
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-scene="resource-full"] .ik-v420-resource-visual.ik-v420-resource-meter-set.is-vertical-ledger.ik-v620-pressure-visual .ik-mobile-resource-spark.ik-v420-resource-meter,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-scene="resource-full"] .ik-v420-resource-visual.ik-v420-resource-meter-set.is-vertical-ledger.ik-v620-pressure-visual .ik-mobile-resource-spark.ik-v420-resource-meter,
+  .ik-v420-app[data-overview-mobile-scene="resource-full"] .ik-v420-resource-visual.ik-v420-resource-meter-set.is-vertical-ledger.ik-v620-pressure-visual .ik-mobile-resource-spark.ik-v420-resource-meter {
     display: grid !important;
     grid-template-columns: 30px 36px 33px 48px minmax(0, 1fr) !important;
     grid-template-rows: 1fr !important;
@@ -8575,9 +8424,9 @@ const V420_MOBILE_STYLES = `
     display: none !important;
   }
 
-  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-scene="resource-full"] .ik-v620-pressure-visual .ik-v420-resource-meter b,
-  .router-overview-framework .ik-v420-app[data-overview-mobile-scene="resource-full"] .ik-v620-pressure-visual .ik-v420-resource-meter b,
-  .ik-v420-app[data-overview-mobile-scene="resource-full"] .ik-v620-pressure-visual .ik-v420-resource-meter b {
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-scene="resource-full"] .ik-v420-resource-visual.ik-v420-resource-meter-set.is-vertical-ledger.ik-v620-pressure-visual .ik-mobile-resource-spark.ik-v420-resource-meter b,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-scene="resource-full"] .ik-v420-resource-visual.ik-v420-resource-meter-set.is-vertical-ledger.ik-v620-pressure-visual .ik-mobile-resource-spark.ik-v420-resource-meter b,
+  .ik-v420-app[data-overview-mobile-scene="resource-full"] .ik-v420-resource-visual.ik-v420-resource-meter-set.is-vertical-ledger.ik-v620-pressure-visual .ik-mobile-resource-spark.ik-v420-resource-meter b {
     grid-column: 1 !important;
     color: #435b73 !important;
     font-size: 8.8px !important;
@@ -8586,9 +8435,9 @@ const V420_MOBILE_STYLES = `
     text-align: left !important;
   }
 
-  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-scene="resource-full"] .ik-v620-pressure-visual .ik-v420-resource-meter .ik-v802-ring-value,
-  .router-overview-framework .ik-v420-app[data-overview-mobile-scene="resource-full"] .ik-v620-pressure-visual .ik-v420-resource-meter .ik-v802-ring-value,
-  .ik-v420-app[data-overview-mobile-scene="resource-full"] .ik-v620-pressure-visual .ik-v420-resource-meter .ik-v802-ring-value {
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-scene="resource-full"] .ik-v420-resource-visual.ik-v420-resource-meter-set.is-vertical-ledger.ik-v620-pressure-visual .ik-mobile-resource-spark.ik-v420-resource-meter .ik-v802-ring-value,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-scene="resource-full"] .ik-v420-resource-visual.ik-v420-resource-meter-set.is-vertical-ledger.ik-v620-pressure-visual .ik-mobile-resource-spark.ik-v420-resource-meter .ik-v802-ring-value,
+  .ik-v420-app[data-overview-mobile-scene="resource-full"] .ik-v420-resource-visual.ik-v420-resource-meter-set.is-vertical-ledger.ik-v620-pressure-visual .ik-mobile-resource-spark.ik-v420-resource-meter .ik-v802-ring-value {
     position: static !important;
     grid-column: 2 !important;
     color: #9f3d38 !important;
@@ -8958,7 +8807,48 @@ const V420_MOBILE_STYLES = `
     font-size: 10px !important;
     max-width: none !important;
   }
+
+  /* v829 resource incident rows: CPU/threshold/duration must be readable, not decorative. */
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-scene="resource-full"] .ik-v620-pressure-visual .ik-v420-resource-meter,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-scene="resource-full"] .ik-v620-pressure-visual .ik-v420-resource-meter,
+  .ik-v420-app[data-overview-mobile-scene="resource-full"] .ik-v620-pressure-visual .ik-v420-resource-meter {
+    grid-template-columns: 34px 36px 72px minmax(0, 1fr) !important;
+    gap: 5px !important;
+    min-height: 18px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-scene="resource-full"] .ik-v620-pressure-visual .ik-v420-resource-meter b,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-scene="resource-full"] .ik-v620-pressure-visual .ik-v420-resource-meter b,
+  .ik-v420-app[data-overview-mobile-scene="resource-full"] .ik-v620-pressure-visual .ik-v420-resource-meter b {
+    font-size: 9px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-scene="resource-full"] .ik-v620-pressure-visual .ik-v420-resource-meter .ik-v802-ring-value,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-scene="resource-full"] .ik-v620-pressure-visual .ik-v420-resource-meter .ik-v802-ring-value,
+  .ik-v420-app[data-overview-mobile-scene="resource-full"] .ik-v620-pressure-visual .ik-v420-resource-meter .ik-v802-ring-value {
+    font-size: 10.4px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-scene="resource-full"] .ik-v420-resource-visual.ik-v420-resource-meter-set.is-vertical-ledger.ik-v620-pressure-visual .ik-mobile-resource-spark.ik-v420-resource-meter small,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-scene="resource-full"] .ik-v420-resource-visual.ik-v420-resource-meter-set.is-vertical-ledger.ik-v620-pressure-visual .ik-mobile-resource-spark.ik-v420-resource-meter small,
+  .ik-v420-app[data-overview-mobile-scene="resource-full"] .ik-v420-resource-visual.ik-v420-resource-meter-set.is-vertical-ledger.ik-v620-pressure-visual .ik-mobile-resource-spark.ik-v420-resource-meter small {
+    font-size: 8.4px !important;
+    letter-spacing: -.05px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-scene="resource-full"] .ik-v420-resource-visual.ik-v420-resource-meter-set.is-vertical-ledger.ik-v620-pressure-visual .ik-mobile-resource-spark.ik-v420-resource-meter em,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-scene="resource-full"] .ik-v420-resource-visual.ik-v420-resource-meter-set.is-vertical-ledger.ik-v620-pressure-visual .ik-mobile-resource-spark.ik-v420-resource-meter em,
+  .ik-v420-app[data-overview-mobile-scene="resource-full"] .ik-v420-resource-visual.ik-v420-resource-meter-set.is-vertical-ledger.ik-v620-pressure-visual .ik-mobile-resource-spark.ik-v420-resource-meter em {
+    display: none !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-scene="resource-full"] .ik-v420-resource-visual.ik-v420-resource-meter-set.is-vertical-ledger.ik-v620-pressure-visual .ik-mobile-resource-spark.ik-v420-resource-meter > i,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-scene="resource-full"] .ik-v420-resource-visual.ik-v420-resource-meter-set.is-vertical-ledger.ik-v620-pressure-visual .ik-mobile-resource-spark.ik-v420-resource-meter > i,
+  .ik-v420-app[data-overview-mobile-scene="resource-full"] .ik-v420-resource-visual.ik-v420-resource-meter-set.is-vertical-ledger.ik-v620-pressure-visual .ik-mobile-resource-spark.ik-v420-resource-meter > i {
+    grid-column: 4 !important;
+  }
 }
+
 `;
 
 function V420MobileStyles() {
