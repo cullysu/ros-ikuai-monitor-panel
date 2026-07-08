@@ -602,7 +602,7 @@ function wanPorts(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): M
 function offlineWanRows(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): MobileMonitorListRow[] {
   const source = wanRows(snapshot);
   const total = Math.max(8, state.facts.wan.total || source.length);
-  return Array.from({ length: Math.min(3, total) }, (_, index) => {
+  return Array.from({ length: Math.min(5, total) }, (_, index) => {
     const row = source[index] || ({ name: `pppoe-wan${index + 1}`, running: false } as OverviewRawWanRow);
     const name = clean(row.name || row.interface, `pppoe-wan${index + 1}`);
     const parent = clean(row.parent || row.interface || row.access, "承载待确认");
@@ -621,8 +621,8 @@ function offlineWanRows(snapshot: OverviewRawSnapshot, state: OverviewDerivedSta
 }
 
 function interfaceIncidentRows(snapshot: OverviewRawSnapshot): MobileMonitorListRow[] {
-  const rows = interfaceRows(snapshot).filter((row) => row.running === false).slice(0, 3);
-  const visible = rows.length ? rows : interfaceRows(snapshot).slice(0, 3);
+  const rows = interfaceRows(snapshot).filter((row) => row.running === false).slice(0, 5);
+  const visible = rows.length ? rows : interfaceRows(snapshot).slice(0, 5);
   return visible.map((row, index) => ({
     id: `interface-down-${index}`,
     rank: index + 1,
@@ -783,7 +783,7 @@ function terminalRankingRows(snapshot: OverviewRawSnapshot): MobileMonitorListRo
 
 function primaryList(snapshot: OverviewRawSnapshot, state: OverviewDerivedState, network: RouterOsNetworkViewModel): MobilePrimaryListModel {
   const priority = network.priority;
-  if (priority === "wan-offline") return { kind: "wan-incident", title: "离线出口", meta: "默认路由异常 · 最近成功", rows: offlineWanRows(snapshot, state) };
+  if (priority === "wan-offline") return { kind: "wan-incident", title: "离线出口", meta: `默认路由异常 · 成功 ${latestSuccess(snapshot, state)}`, rows: offlineWanRows(snapshot, state) };
   if (priority === "snapshot-missing") return { kind: "snapshot-boundary", title: "可信边界", meta: `最近成功 ${latestSuccess(snapshot, state)}`, rows: snapshotBoundaryRows(snapshot, state) };
   if (priority === "interface-down") return { kind: "interface-incident", title: "接口影响", meta: "承载待判 · 默认路由", rows: interfaceIncidentRows(snapshot) };
   if (priority === "collection-degraded") return { kind: "collection-boundary", title: "采集边界", meta: "REST / SSH / 快照", rows: collectionBoundaryRows(network) };

@@ -52807,6 +52807,58 @@
   }
 }
 
+/* Codex v826 desktop productization: business route surface, quieter iKuai ledger. */
+@media (min-width: 761px) {
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="route-raw-facts"] .ro-ledger-table,
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="route-raw-facts"] .ro-ledger-row,
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="route-raw-facts"] .ro-ledger-cell,
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="route-raw-facts"] .ro-ledger-cell > .ik-overview-cell-text {
+    min-width: 0 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row:not(.ro-ledger-head) {
+    border-bottom-color: rgba(229, 238, 247, .62) !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-evidence-weight="secondary"] .ro-ledger-row:not(.ro-ledger-head),
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-col.is-bottom .ro-ledger-row:not(.ro-ledger-head),
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="evidence-boundary"] .ro-ledger-row:not(.ro-ledger-head) {
+    border-bottom-color: rgba(233, 240, 247, .48) !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="danger"],
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="warn"] {
+    box-shadow: inset 2px 0 0 rgba(184, 58, 50, .42) !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="warn"] {
+    box-shadow: inset 2px 0 0 rgba(137, 153, 170, .46) !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="danger"] .ro-ledger-cell:nth-child(n+3),
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="warn"] .ro-ledger-cell:nth-child(n+3),
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="danger"] .ro-ledger-cell:nth-child(n+3) .ik-overview-cell-text,
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="warn"] .ro-ledger-cell:nth-child(n+3) .ik-overview-cell-text {
+    color: #6d7f93 !important;
+    font-weight: 500 !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="evidence-boundary"] .ro-ledger-cell,
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="no-snapshot-degraded-modules"] .ro-ledger-cell {
+    color: #596b7f !important;
+    font-size: 7.9px !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="evidence-boundary"] .ro-ledger-cell:first-child,
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="no-snapshot-degraded-modules"] .ro-ledger-cell:first-child {
+    color: #1a293a !important;
+    font-weight: 720 !important;
+  }
+}
+
 /* Codex v825 desktop density: iKuai-like scan console, fewer shells, more business facts. */
 @media (min-width: 761px) {
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] {
@@ -53086,6 +53138,155 @@
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-chain-node b {
     font-size: 8.4px !important;
     line-height: 1 !important;
+  }
+}
+
+@media (min-width: 761px) {
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] {
+    --ik-v950-text: #112238;
+    --ik-v950-muted: #66788d;
+    --ik-v950-line: rgba(214, 226, 238, .82);
+    --ik-v950-soft-line: rgba(229, 238, 247, .66);
+    --ik-v950-blue: #1473e6;
+    --ik-v950-danger: #a4302d;
+    --ik-v950-warn: #80623b;
+    background: #f3f7fb !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-topbar {
+    border: 0 !important;
+    border-bottom: 1px solid var(--ik-v950-line) !important;
+    background: #fbfdff !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-topbar-cell {
+    border-right: 1px solid rgba(214, 226, 238, .62) !important;
+    background: transparent !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-topbar-cell[data-overview-status-role="conclusion"] {
+    box-shadow: inset 3px 0 0 var(--ik-v950-blue) !important;
+    background: linear-gradient(90deg, rgba(20, 115, 230, .035), rgba(255,255,255,0) 42%) !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-topbar-cell span,
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-topbar-cell em {
+    color: var(--ik-v950-muted) !important;
+    font-weight: 560 !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-topbar-cell b {
+    color: var(--ik-v950-text) !important;
+    font-weight: 780 !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-topbar-cell[data-tone="danger"] b {
+    color: var(--ik-v950-danger) !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-topbar-cell[data-tone="warn"] b,
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-topbar-cell[data-tone="missing"] b {
+    color: var(--ik-v950-warn) !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-desktop-thin-kpis {
+    border: 0 !important;
+    border-bottom: 1px solid var(--ik-v950-line) !important;
+    background: #fff !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-desktop-thin-kpi {
+    border-right-color: rgba(214, 226, 238, .54) !important;
+    background: transparent !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module {
+    border-color: var(--ik-v950-line) !important;
+    background: #fff !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-tone="danger"] {
+    border-left-color: rgba(164, 48, 45, .70) !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-tone="warn"],
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-tone="missing"] {
+    border-left-color: rgba(128, 98, 59, .56) !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module-head {
+    border-bottom-color: var(--ik-v950-soft-line) !important;
+    background: linear-gradient(180deg, #fff, #fbfdff) !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module-head b {
+    color: var(--ik-v950-text) !important;
+    letter-spacing: -.04px !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-head-cell {
+    border-bottom-color: var(--ik-v950-soft-line) !important;
+    background: #fbfdff !important;
+    color: #8796a8 !important;
+    font-weight: 680 !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row:not(.ro-ledger-head) {
+    border-bottom-color: rgba(229, 238, 247, .54) !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row:not(.ro-ledger-head):nth-child(odd) {
+    background: rgba(248, 251, 254, .38) !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="danger"],
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="warn"],
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="missing"] {
+    box-shadow: inset 2px 0 0 rgba(164, 48, 45, .34) !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="warn"],
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="missing"] {
+    box-shadow: inset 2px 0 0 rgba(128, 98, 59, .32) !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="danger"] .ro-ledger-cell,
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="danger"] .ik-overview-cell-text,
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="warn"] .ro-ledger-cell,
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="warn"] .ik-overview-cell-text,
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="missing"] .ro-ledger-cell,
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="missing"] .ik-overview-cell-text {
+    color: #23364c !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="danger"] .ro-ledger-cell:first-child .ik-overview-cell-text,
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="danger"] .ro-ledger-cell:nth-child(2) .ik-overview-cell-text {
+    color: var(--ik-v950-danger) !important;
+    font-weight: 800 !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="warn"] .ro-ledger-cell:first-child .ik-overview-cell-text,
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="warn"] .ro-ledger-cell:nth-child(2) .ik-overview-cell-text,
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="missing"] .ro-ledger-cell:first-child .ik-overview-cell-text,
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="missing"] .ro-ledger-cell:nth-child(2) .ik-overview-cell-text {
+    color: var(--ik-v950-warn) !important;
+    font-weight: 760 !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-cell:nth-child(n+3),
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-cell:nth-child(n+3) .ik-overview-cell-text {
+    color: #65778d !important;
+    font-weight: 520 !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="evidence-boundary"] .ro-module-head,
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="no-snapshot-degraded-modules"] .ro-module-head {
+    background: #fbfdff !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="evidence-boundary"] .ro-ledger-cell,
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="no-snapshot-degraded-modules"] .ro-ledger-cell {
+    color: #5e7186 !important;
   }
 }
 .router-overview-framework {
@@ -106320,6 +106521,59 @@
   }
 }
 
+/* Codex v826 desktop productization: business route surface, quieter iKuai ledger. */
+
+@media (min-width: 761px) {
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="route-raw-facts"] .ro-ledger-table,
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="route-raw-facts"] .ro-ledger-row,
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="route-raw-facts"] .ro-ledger-cell,
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="route-raw-facts"] .ro-ledger-cell > .ik-overview-cell-text {
+    min-width: 0 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row:not(.ro-ledger-head) {
+    border-bottom-color: rgba(229, 238, 247, .62) !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-evidence-weight="secondary"] .ro-ledger-row:not(.ro-ledger-head),
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-col.is-bottom .ro-ledger-row:not(.ro-ledger-head),
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="evidence-boundary"] .ro-ledger-row:not(.ro-ledger-head) {
+    border-bottom-color: rgba(233, 240, 247, .48) !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="danger"],
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="warn"] {
+    box-shadow: inset 2px 0 0 rgba(184, 58, 50, .42) !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="warn"] {
+    box-shadow: inset 2px 0 0 rgba(137, 153, 170, .46) !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="danger"] .ro-ledger-cell:nth-child(n+3),
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="warn"] .ro-ledger-cell:nth-child(n+3),
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="danger"] .ro-ledger-cell:nth-child(n+3) .ik-overview-cell-text,
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="warn"] .ro-ledger-cell:nth-child(n+3) .ik-overview-cell-text {
+    color: #6d7f93 !important;
+    font-weight: 500 !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="evidence-boundary"] .ro-ledger-cell,
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="no-snapshot-degraded-modules"] .ro-ledger-cell {
+    color: #596b7f !important;
+    font-size: 7.9px !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="evidence-boundary"] .ro-ledger-cell:first-child,
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="no-snapshot-degraded-modules"] .ro-ledger-cell:first-child {
+    color: #1a293a !important;
+    font-weight: 720 !important;
+  }
+}
+
 /* Codex v825 desktop density: iKuai-like scan console, fewer shells, more business facts. */
 
 @media (min-width: 761px) {
@@ -106600,5 +106854,154 @@
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-chain-node b {
     font-size: 8.4px !important;
     line-height: 1 !important;
+  }
+}
+
+@media (min-width: 761px) {
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] {
+    --ik-v950-text: #112238;
+    --ik-v950-muted: #66788d;
+    --ik-v950-line: rgba(214, 226, 238, .82);
+    --ik-v950-soft-line: rgba(229, 238, 247, .66);
+    --ik-v950-blue: #1473e6;
+    --ik-v950-danger: #a4302d;
+    --ik-v950-warn: #80623b;
+    background: #f3f7fb !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-topbar {
+    border: 0 !important;
+    border-bottom: 1px solid var(--ik-v950-line) !important;
+    background: #fbfdff !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-topbar-cell {
+    border-right: 1px solid rgba(214, 226, 238, .62) !important;
+    background: transparent !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-topbar-cell[data-overview-status-role="conclusion"] {
+    box-shadow: inset 3px 0 0 var(--ik-v950-blue) !important;
+    background: linear-gradient(90deg, rgba(20, 115, 230, .035), rgba(255,255,255,0) 42%) !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-topbar-cell span,
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-topbar-cell em {
+    color: var(--ik-v950-muted) !important;
+    font-weight: 560 !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-topbar-cell b {
+    color: var(--ik-v950-text) !important;
+    font-weight: 780 !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-topbar-cell[data-tone="danger"] b {
+    color: var(--ik-v950-danger) !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-topbar-cell[data-tone="warn"] b,
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-topbar-cell[data-tone="missing"] b {
+    color: var(--ik-v950-warn) !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-desktop-thin-kpis {
+    border: 0 !important;
+    border-bottom: 1px solid var(--ik-v950-line) !important;
+    background: #fff !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-desktop-thin-kpi {
+    border-right-color: rgba(214, 226, 238, .54) !important;
+    background: transparent !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module {
+    border-color: var(--ik-v950-line) !important;
+    background: #fff !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-tone="danger"] {
+    border-left-color: rgba(164, 48, 45, .70) !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-tone="warn"],
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-tone="missing"] {
+    border-left-color: rgba(128, 98, 59, .56) !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module-head {
+    border-bottom-color: var(--ik-v950-soft-line) !important;
+    background: linear-gradient(180deg, #fff, #fbfdff) !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module-head b {
+    color: var(--ik-v950-text) !important;
+    letter-spacing: -.04px !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-head-cell {
+    border-bottom-color: var(--ik-v950-soft-line) !important;
+    background: #fbfdff !important;
+    color: #8796a8 !important;
+    font-weight: 680 !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row:not(.ro-ledger-head) {
+    border-bottom-color: rgba(229, 238, 247, .54) !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row:not(.ro-ledger-head):nth-child(odd) {
+    background: rgba(248, 251, 254, .38) !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="danger"],
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="warn"],
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="missing"] {
+    box-shadow: inset 2px 0 0 rgba(164, 48, 45, .34) !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="warn"],
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="missing"] {
+    box-shadow: inset 2px 0 0 rgba(128, 98, 59, .32) !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="danger"] .ro-ledger-cell,
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="danger"] .ik-overview-cell-text,
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="warn"] .ro-ledger-cell,
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="warn"] .ik-overview-cell-text,
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="missing"] .ro-ledger-cell,
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="missing"] .ik-overview-cell-text {
+    color: #23364c !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="danger"] .ro-ledger-cell:first-child .ik-overview-cell-text,
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="danger"] .ro-ledger-cell:nth-child(2) .ik-overview-cell-text {
+    color: var(--ik-v950-danger) !important;
+    font-weight: 800 !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="warn"] .ro-ledger-cell:first-child .ik-overview-cell-text,
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="warn"] .ro-ledger-cell:nth-child(2) .ik-overview-cell-text,
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="missing"] .ro-ledger-cell:first-child .ik-overview-cell-text,
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="missing"] .ro-ledger-cell:nth-child(2) .ik-overview-cell-text {
+    color: var(--ik-v950-warn) !important;
+    font-weight: 760 !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-cell:nth-child(n+3),
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-cell:nth-child(n+3) .ik-overview-cell-text {
+    color: #65778d !important;
+    font-weight: 520 !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="evidence-boundary"] .ro-module-head,
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="no-snapshot-degraded-modules"] .ro-module-head {
+    background: #fbfdff !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="evidence-boundary"] .ro-ledger-cell,
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="no-snapshot-degraded-modules"] .ro-ledger-cell {
+    color: #5e7186 !important;
   }
 }

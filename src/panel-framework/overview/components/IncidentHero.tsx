@@ -56,6 +56,8 @@ function LineChart({ chart }: { chart: MobileTrendChartModel }) {
       <circle className="ik-v945-start-dot" cx={Number.isFinite(start[0]) ? start[0] : 0} cy={Number.isFinite(start[1]) ? start[1] : 52} r="2.1" />
       <circle className="ik-v420-peak-dot" cx={peakX} cy={peakY} r="2.6" />
       <circle className="ik-v420-focus-dot" cx={focus.x} cy={focus.y} r="2.8" />
+      <text className="ik-v950-axis-label is-start" x="1" y="58">{chart.startLabel}</text>
+      <text className="ik-v950-axis-label is-end" x="311" y="58" textAnchor="end">{chart.endLabel}</text>
     </svg>
   );
 }
@@ -126,7 +128,7 @@ function firstDownInterface(snapshot: MobileOverviewHomeProps["snapshot"]): Over
 }
 
 function InterfaceFlow({ snapshot, state }: MobileOverviewHomeProps) {
-  const rows = interfaceRows(snapshot).filter((row) => row.running === false).slice(0, 2);
+  const rows = interfaceRows(snapshot).filter((row) => row.running === false).slice(0, 3);
   const visible = rows.length ? rows : [firstDownInterface(snapshot)].filter(Boolean) as OverviewRawInterfaceRow[];
   return (
     <div

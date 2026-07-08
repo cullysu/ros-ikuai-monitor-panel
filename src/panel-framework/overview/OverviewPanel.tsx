@@ -17,7 +17,12 @@ import {
   type OverviewTone,
 } from "./index";
 import { MobileOverviewHome } from "./components/MobileOverviewHome";
-import { buildRouterOsRouteEvidenceModel, routerOsRouteBusinessSummary } from "./routerosEvidenceModel";
+import {
+  buildRouterOsRouteEvidenceModel,
+  routerOsRouteBusinessSummary,
+  routerOsRouteStatusText,
+  routerOsRouteTableText,
+} from "./routerosEvidenceModel";
 import "./OverviewPanel.css";
 
 interface OverviewPanelProps {
@@ -2575,8 +2580,14 @@ function routeRawEvidenceRows(snapshot: OverviewRawSnapshot, state: OverviewDeri
       "data-routeros-raw-active": item.rawFields?.active || "",
       "data-routeros-raw-disabled": item.rawFields?.disabled || "",
     },
-    cells: [item.label, item.value, item.note],
-    title: "RouterOS 原始字段只在证据区展示",
+    cells: [
+      item.label,
+      item.rawFields
+        ? `${routerOsRouteTableText(item.rawFields.table)} / ${routerOsRouteStatusText(item.rawFields.active === "true", item.rawFields.disabled === "true")}`
+        : "原始字段已下沉",
+      "table / gateway / distance / active / disabled 仅作证据，不进入主判断",
+    ],
+    title: `${item.value} · ${item.note}`,
     tone: item.tone,
   }));
 }
@@ -3496,7 +3507,7 @@ function compactDesktopPanelGroups(snapshot: OverviewRawSnapshot, state: Overvie
         <Module key="res-interface" title="接口状态" subtitle="承载 / 边界" module="normal-interface-boundary" tone="trust" trust={trust} headers={["对象", "当前", "最近", "边界"]} rows={compactRows(interfaceBoundaryRows(snapshot, state), 4)} minRows={0} />,
         <Module key="res-top5" title="接口吞吐" subtitle="Top5 / 占比" module="resource-interface-top5" tone="warn" trust={trust} headers={["接口", "速率", "占比"]} rows={compactRows(top5Rows, 5)} className="ik-overview-top5-list" minRows={0} />,
         <Module key="res-collection" title="采集 / 快照" subtitle="REST / SSH / 成功" module="normal-collection-channel" tone={state.facts.collection.level} trust={trust} headers={["对象", "当前", "依据"]} rows={compactRows(threeColumnRows(collectionRows(snapshot, state), "res-col-"), 4)} minRows={0} visual={<ChannelMatrixVisual module="collection-status" rows={collectionChannelRows(snapshot, state)} />} />,
-        <Module key="res-route" title="默认出口" subtitle="出口 / 承载 / 优先级" module="route-raw-facts" tone={state.facts.route.level} trust={trust} headers={["出口", "网关", "优先级", "状态"]} rows={compactRows(routeBusinessRows(snapshot, state), 4)} minRows={0} />,
+        <Module key="res-route" title="默认出口" subtitle="出口 / 承载 / 优先级" module="route-raw-facts" tone={state.facts.route.level} trust={trust} headers={["出口", "承载出口", "优先级", "状态"]} rows={compactRows(routeBusinessRows(snapshot, state), 4)} minRows={0} />,
       ],
       bottom: [
         <Module key="res-terminals" title="终端排行" subtitle="异常置顶 / 总流量" module="terminal-ranking" tone="trust" trust={trust} headers={["设备", "IP", "流量", "状态"]} rows={compactRows(desktopTerminalRows(snapshot), 4)} minRows={0} />,
@@ -3528,7 +3539,7 @@ function compactDesktopPanelGroups(snapshot: OverviewRawSnapshot, state: Overvie
     return {
       main: [
         <Module key="if-forward" title="接口转发面" subtitle="Down 数 / 承载 / 默认出口" module="interface-forwarding" tone="danger" trust={trust} headers={["对象", "当前", "依据"]} rows={interfaceRows(snapshot, state)} minRows={0} visual={<VisualStack snapshot={snapshot} state={state} />} />,
-        <Module key="if-route" title="默认出口影响" subtitle="出口 / 承载 / 优先级" module="route-raw-facts" tone={state.facts.route.level} trust={trust} headers={["出口", "网关", "优先级", "状态"]} rows={compactRows(routeBusinessRows(snapshot, state), 4)} minRows={0} />,
+        <Module key="if-route" title="默认出口影响" subtitle="出口 / 承载 / 优先级" module="route-raw-facts" tone={state.facts.route.level} trust={trust} headers={["出口", "承载出口", "优先级", "状态"]} rows={compactRows(routeBusinessRows(snapshot, state), 4)} minRows={0} />,
       ],
       side: [
         <Module key="if-collection" title="采集面通道" subtitle="REST / SSH / 快照" module="interface-collection-channel" tone={state.facts.collection.level} trust={trust} headers={["对象", "当前", "依据"]} rows={threeColumnRows(interfaceCollectionRows(snapshot, state), "ic3-")} minRows={0} visual={<ChannelMatrixVisual module="interface-collection-channel" rows={collectionChannelRows(snapshot, state)} />} />,
@@ -3574,7 +3585,7 @@ function compactDesktopPanelGroups(snapshot: OverviewRawSnapshot, state: Overvie
       ? <VisualStack snapshot={snapshot} state={state} />
       : <MiniTrendVisual module="traffic-trend" rows={trafficChartRows(snapshot, state)} />;
   const routeRowsCompact = state.scenario === "no-snapshot" ? compactRows(noSnapshotBusinessBoundaryRows(snapshot, state), 4) : compactRows(routeBusinessRows(snapshot, state), 4);
-  const routeHeaders = state.scenario === "no-snapshot" ? ["模块", "当前", "影响", "边界"] : ["出口", "网关", "优先级", "状态"];
+  const routeHeaders = state.scenario === "no-snapshot" ? ["模块", "当前", "影响", "边界"] : ["出口", "承载出口", "优先级", "状态"];
   const collectionRowsCompact = state.scenario === "no-snapshot" ? compactRows(noSnapshotChainRows(snapshot, state), 4) : compactRows(threeColumnRows(collectionRows(snapshot, state), "desktop-collection-"), 4);
   const interfaceRowsCompact = state.scenario === "interfaces-down" ? compactRows(threeColumnRows(interfaceRows(snapshot, state), "desktop-if-"), 5) : compactRows(interfaceBoundaryRows(snapshot, state), 4);
   const wanEvidenceRows = compactRows(threeColumnRows([
