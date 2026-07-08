@@ -172,7 +172,7 @@ function ResourceVisual({ state }: { state: OverviewDerivedState }) {
             <strong className="ik-v802-ring-value">{item.display.replace(/\.0%$/, "%")}</strong>
             <small>阈{item.threshold}%</small>
             <em>持续{item.tone === "danger" ? "6/6" : "0/6"}</em>
-            <i><i style={{ width: `${value}%` }} /></i>
+            <span className="ik-density-resource-track" aria-hidden="true"><span style={{ width: `${value}%` }} /></span>
           </span>
         );
       })}

@@ -7057,7 +7057,7 @@ var PanelFramework = function(exports) {
     if (meta.realtimeError || meta.slowRestError) return "cache";
     return "realtime";
   }
-  function wanRows$3(snapshot) {
+  function wanRows$4(snapshot) {
     return Array.isArray(snapshot.wan) && snapshot.wan.length ? snapshot.wan : Array.isArray(snapshot.pppoe) ? snapshot.pppoe : [];
   }
   function routeRows$1(snapshot) {
@@ -7187,7 +7187,7 @@ var PanelFramework = function(exports) {
     return { level, available, cpu, memory, disk, summaryText: available ? `处理器 ${formatPercent(cpu)} / 内存 ${formatPercent(memory)} / 磁盘 ${formatPercent(disk)}` : "处理器 未记录 / 内存 未记录 / 磁盘 未记录" };
   }
   function wanState(snapshot) {
-    const rows = wanRows$3(snapshot);
+    const rows = wanRows$4(snapshot);
     const available = !isSnapshotUnavailable(snapshot);
     const online = rows.filter((row) => row.running !== false).length;
     const total = rows.length;
@@ -8174,7 +8174,7 @@ var PanelFramework = function(exports) {
     display: block;
     height: 2px;
     border-radius: 999px;
-    background: rgba(184, 58, 50, .64);
+    background: rgba(91, 113, 136, .46);
   }
 
   #overview.router-overview-framework .ik-v420-resource-visual.ik-v620-pressure-visual,
@@ -8273,7 +8273,7 @@ var PanelFramework = function(exports) {
     height: 2px;
     margin: 0;
     border-radius: 999px;
-    background: rgba(184, 58, 50, .64);
+    background: rgba(91, 113, 136, .46);
     transform: none;
   }
 
@@ -9029,7 +9029,7 @@ var PanelFramework = function(exports) {
     margin: 0 !important;
     transform: none !important;
     border: 0 !important;
-    background: rgba(184, 58, 50, .64) !important;
+    background: rgba(91, 113, 136, .46) !important;
   }
 
   #overview.router-overview-framework .ik-v830-trust-rail,
@@ -9660,6 +9660,63 @@ var PanelFramework = function(exports) {
   .ik-v420-list-row {
     min-height: 50px !important;
   }
+
+  #overview.router-overview-framework .ik-v420-hero .ik-density-resource-ledger .ik-density-resource-row > i,
+  .router-overview-framework .ik-v420-hero .ik-density-resource-ledger .ik-density-resource-row > i,
+  .ik-v420-hero .ik-density-resource-ledger .ik-density-resource-row > i {
+    background: rgba(139, 164, 190, .22) !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-hero .ik-density-resource-ledger .ik-density-resource-row > i > i,
+  .router-overview-framework .ik-v420-hero .ik-density-resource-ledger .ik-density-resource-row > i > i,
+  .ik-v420-hero .ik-density-resource-ledger .ik-density-resource-row > i > i {
+    background: rgba(86, 108, 132, .50) !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-hero .ik-density-resource-ledger .ik-density-resource-row.is-danger i,
+  .router-overview-framework .ik-v420-hero .ik-density-resource-ledger .ik-density-resource-row.is-danger i,
+  .ik-v420-hero .ik-density-resource-ledger .ik-density-resource-row.is-danger i {
+    background: rgba(86, 108, 132, .50) !important;
+  }
+
+  #overview.router-overview-framework .ik-density-resource-ledger .ik-density-resource-row .ik-density-resource-track,
+  .router-overview-framework .ik-density-resource-ledger .ik-density-resource-row .ik-density-resource-track,
+  .ik-density-resource-ledger .ik-density-resource-row .ik-density-resource-track {
+    grid-column: 5 !important;
+    order: 5 !important;
+    position: relative !important;
+    display: block !important;
+    width: 100% !important;
+    height: 2px !important;
+    min-height: 2px !important;
+    margin: 0 !important;
+    border: 0 !important;
+    border-radius: 999px !important;
+    background: rgba(139, 164, 190, .22) !important;
+    box-shadow: none !important;
+    overflow: hidden !important;
+    text-decoration: none !important;
+  }
+
+  #overview.router-overview-framework .ik-density-resource-ledger .ik-density-resource-row .ik-density-resource-track > span,
+  .router-overview-framework .ik-density-resource-ledger .ik-density-resource-row .ik-density-resource-track > span,
+  .ik-density-resource-ledger .ik-density-resource-row .ik-density-resource-track > span {
+    position: absolute !important;
+    inset: 0 auto 0 0 !important;
+    display: block !important;
+    height: 2px !important;
+    min-height: 2px !important;
+    margin: 0 !important;
+    border: 0 !important;
+    border-radius: 999px !important;
+    background: rgba(86, 108, 132, .50) !important;
+    box-shadow: none !important;
+    text-decoration: none !important;
+  }
 }
 `;
   function MobileOverviewStyles() {
@@ -9678,15 +9735,15 @@ var PanelFramework = function(exports) {
       item.label
     ] }, item.label)) });
   }
-  function clean$3(value, fallback = "-") {
+  function clean$4(value, fallback = "-") {
     const normalized = String(value ?? "").replace(/\s+/g, " ").trim();
     return normalized || fallback;
   }
-  function wanRows$2(snapshot) {
+  function wanRows$3(snapshot) {
     if (Array.isArray(snapshot.wan) && snapshot.wan.length) return snapshot.wan;
     return Array.isArray(snapshot.pppoe) ? snapshot.pppoe : [];
   }
-  function twoDigit$2(value) {
+  function twoDigit$3(value) {
     return String(value).padStart(2, "0");
   }
   function mobileTime$2(raw) {
@@ -9699,47 +9756,47 @@ var PanelFramework = function(exports) {
       return fallback && !/\d{4}-\d{2}-\d{2}T/.test(fallback) ? fallback : "未记录";
     }
     const now2 = /* @__PURE__ */ new Date();
-    const time = `${twoDigit$2(date.getHours())}:${twoDigit$2(date.getMinutes())}`;
+    const time = `${twoDigit$3(date.getHours())}:${twoDigit$3(date.getMinutes())}`;
     if (date.getFullYear() === now2.getFullYear() && date.getMonth() === now2.getMonth() && date.getDate() === now2.getDate()) return time;
-    return `${twoDigit$2(date.getMonth() + 1)}-${twoDigit$2(date.getDate())} ${time}`;
+    return `${twoDigit$3(date.getMonth() + 1)}-${twoDigit$3(date.getDate())} ${time}`;
   }
   function latestSuccess$3(snapshot, state) {
     const meta = snapshot.meta || {};
     const raw = state.scenario === "no-snapshot" ? meta.staticUpdatedAt || meta.realtimeUpdatedAt || snapshot.updatedAt : snapshot.updatedAt || meta.realtimeUpdatedAt || meta.staticUpdatedAt || meta.slowRestUpdatedAt;
     return mobileTime$2(raw);
   }
-  function stripRest$2(label) {
-    return clean$3(label.replace(/^REST\s*/i, ""), "可用");
+  function stripRest$3(label) {
+    return clean$4(label.replace(/^REST\s*/i, ""), "可用");
   }
-  function stripSsh$2(label) {
-    return clean$3(label.replace(/^SSH\s*/i, ""), "可用");
+  function stripSsh$3(label) {
+    return clean$4(label.replace(/^SSH\s*/i, ""), "可用");
   }
-  function snapshotTrustText(state) {
+  function snapshotTrustText$1(state) {
     if (state.scenario === "no-snapshot") return "缺失";
     if (state.scenario === "collection-down" || state.facts.collection.dataStale || state.facts.freshness.history) return "缓存";
     return "实时";
   }
   function buildRouterOsTrustModel(snapshot, state) {
-    const totalWan = Math.max(state.facts.wan.total || wanRows$2(snapshot).length, state.facts.wan.allOffline ? 8 : 0);
+    const totalWan2 = Math.max(state.facts.wan.total || wanRows$3(snapshot).length, state.facts.wan.allOffline ? 8 : 0);
     const noSnapshot = state.scenario === "no-snapshot";
     const forwarding = {
       id: "forwarding",
       label: "转发面",
       value: noSnapshot ? "不可判" : state.facts.wan.allOffline ? "不可用" : state.facts.interfaces.down > 0 ? "待确认" : "可用",
-      note: noSnapshot ? "无业务快照" : state.facts.wan.allOffline ? `WAN 0/${formatNumber(totalWan)}` : `WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(totalWan || 1)}`,
+      note: noSnapshot ? "无业务快照" : state.facts.wan.allOffline ? `WAN 0/${formatNumber(totalWan2)}` : `WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(totalWan2 || 1)}`,
       tone: noSnapshot ? "missing" : state.facts.wan.allOffline ? "danger" : state.facts.interfaces.down > 0 ? "warn" : "ok"
     };
     const collection = {
       id: "collection",
       label: "采集面",
       value: state.scenario === "collection-down" ? "降级" : state.scenario === "no-snapshot" ? "断链" : "可达",
-      note: `${stripRest$2(state.facts.collection.restLabel)} / ${stripSsh$2(state.facts.collection.sshLabel)}`,
+      note: `${stripRest$3(state.facts.collection.restLabel)} / ${stripSsh$3(state.facts.collection.sshLabel)}`,
       tone: state.scenario === "no-snapshot" ? "danger" : state.scenario === "collection-down" ? "warn" : state.facts.collection.level
     };
     const snapshotPlane = {
       id: "snapshot",
       label: "快照面",
-      value: state.scenario === "no-snapshot" ? "缺失" : snapshotTrustText(state),
+      value: state.scenario === "no-snapshot" ? "缺失" : snapshotTrustText$1(state),
       note: latestSuccess$3(snapshot, state),
       tone: state.scenario === "no-snapshot" ? "missing" : state.facts.collection.credibilityTone
     };
@@ -9759,7 +9816,7 @@ var PanelFramework = function(exports) {
     };
   }
   const ROUTE_UNKNOWN$1 = "路由快照未取回，无法判断默认出口影响";
-  function clean$2(value, fallback = "-") {
+  function clean$3(value, fallback = "-") {
     const normalized = String(value ?? "").replace(/\s+/g, " ").trim();
     return normalized || fallback;
   }
@@ -9773,17 +9830,17 @@ var PanelFramework = function(exports) {
     return active ? "当前承载" : "备选未命中";
   }
   function routerOsRouteTableText(value) {
-    const table = clean$2(value, "main");
+    const table = clean$3(value, "main");
     return /^main$/i.test(table) ? "主业务域" : `策略域 ${table}`;
   }
   function routerOsRouteGatewayText(value) {
-    return clean$2(value, "网关未记录");
+    return clean$3(value, "网关未记录");
   }
   function routerOsRoutePriorityText(value) {
-    return clean$2(value, "未记录");
+    return clean$3(value, "未记录");
   }
   function routerOsRouteBusinessSummary(value, fallback = ROUTE_UNKNOWN$1) {
-    return clean$2(value, fallback).replace(/active\s*[:=]?\s*true/gi, "当前承载").replace(/active\s*[:=]?\s*false/gi, "备选未命中").replace(/disabled\s*[:=]?\s*false/gi, "允许参与选路").replace(/disabled\s*[:=]?\s*true/gi, "已停用").replace(/\brouting[-_\s]?table\b|\broutingTable\b/gi, "路由域").replace(/\bgatewayStatus\b/gi, "网关状态").replace(/\bdistance\b/gi, "优先级").replace(/\bgateway\b/gi, "网关").replace(/\bactive\b/gi, "承载状态").replace(/\bdisabled\b/gi, "停用状态").replace(/\btable\b/gi, "路由域").replace(/\bmain\b/gi, "主业务域");
+    return clean$3(value, fallback).replace(/active\s*[:=]?\s*true/gi, "当前承载").replace(/active\s*[:=]?\s*false/gi, "备选未命中").replace(/disabled\s*[:=]?\s*false/gi, "允许参与选路").replace(/disabled\s*[:=]?\s*true/gi, "已停用").replace(/\brouting[-_\s]?table\b|\broutingTable\b/gi, "路由域").replace(/\bgatewayStatus\b/gi, "网关状态").replace(/\bdistance\b/gi, "优先级").replace(/\bgateway\b/gi, "网关").replace(/\bactive\b/gi, "承载状态").replace(/\bdisabled\b/gi, "停用状态").replace(/\btable\b/gi, "路由域").replace(/\bmain\b/gi, "主业务域");
   }
   function routeTitle(table, gateway, distance, active, disabled) {
     return `默认出口 ${routerOsRouteGatewayText(gateway)}，选路优先级 ${routerOsRoutePriorityText(distance)}，${routerOsRouteStatusText(active, disabled)}；${routerOsRouteTableText(table)}`;
@@ -9874,7 +9931,7 @@ var PanelFramework = function(exports) {
     const rows = routeRows(snapshot);
     if (!rows.length) return missingModel(state);
     const businessRows = rows.slice(0, 6).map((route, index) => {
-      const rawTable = clean$2(route.table || route.routingTable, "main");
+      const rawTable = clean$3(route.table || route.routingTable, "main");
       const table = routerOsRouteTableText(rawTable);
       const gateway = routerOsRouteGatewayText(route.gateway || route.gatewayStatus);
       const priority = routerOsRoutePriorityText(route.distance);
@@ -9895,8 +9952,8 @@ var PanelFramework = function(exports) {
         title: routeTitle(rawTable, gateway, priority, route.active, route.disabled),
         rawFields: {
           table: rawTable,
-          gateway: clean$2(route.gateway || route.gatewayStatus, "-"),
-          distance: clean$2(route.distance, "-"),
+          gateway: clean$3(route.gateway || route.gatewayStatus, "-"),
+          distance: clean$3(route.distance, "-"),
           active: route.active ? "true" : "false",
           disabled: route.disabled ? "true" : "false"
         }
@@ -9915,9 +9972,9 @@ var PanelFramework = function(exports) {
     };
     const rawRows = rows.slice(0, 4).map((route, index) => {
       const rawFields = {
-        table: clean$2(route.table || route.routingTable, "main"),
-        gateway: clean$2(route.gateway || route.gatewayStatus, "未记录"),
-        distance: clean$2(route.distance, "未记录"),
+        table: clean$3(route.table || route.routingTable, "main"),
+        gateway: clean$3(route.gateway || route.gatewayStatus, "未记录"),
+        distance: clean$3(route.distance, "未记录"),
         active: route.active ? "true" : "false",
         disabled: route.disabled ? "true" : "false"
       };
@@ -9956,6 +10013,205 @@ var PanelFramework = function(exports) {
       route,
       rawRows: route.rawRows
     };
+  }
+  function clean$2(value, fallback = "-") {
+    const normalized = String(value ?? "").replace(/\s+/g, " ").trim();
+    return normalized || fallback;
+  }
+  function wanRows$2(snapshot) {
+    if (Array.isArray(snapshot.wan) && snapshot.wan.length) return snapshot.wan;
+    return Array.isArray(snapshot.pppoe) ? snapshot.pppoe : [];
+  }
+  function twoDigit$2(value) {
+    return String(value).padStart(2, "0");
+  }
+  function compactTime(raw) {
+    const source = String(raw ?? "").trim();
+    if (!source) return "未记录";
+    const numeric = typeof raw === "number" || /^\d+$/.test(source) ? Number(raw) : Number.NaN;
+    const date = Number.isFinite(numeric) ? new Date(numeric < 1e12 ? numeric * 1e3 : numeric) : new Date(source);
+    if (Number.isNaN(date.getTime())) {
+      const fallback = shortTimestamp(raw);
+      return fallback && !/\d{4}-\d{2}-\d{2}T/.test(fallback) ? fallback : "未记录";
+    }
+    const now2 = /* @__PURE__ */ new Date();
+    const time = `${twoDigit$2(date.getHours())}:${twoDigit$2(date.getMinutes())}`;
+    if (date.getFullYear() === now2.getFullYear() && date.getMonth() === now2.getMonth() && date.getDate() === now2.getDate()) return time;
+    return `${twoDigit$2(date.getMonth() + 1)}-${twoDigit$2(date.getDate())} ${time}`;
+  }
+  function routerOsLatestSuccess(snapshot, state) {
+    const meta = snapshot.meta || {};
+    const raw = state.scenario === "no-snapshot" ? meta.staticUpdatedAt || meta.realtimeUpdatedAt || snapshot.updatedAt : snapshot.updatedAt || meta.realtimeUpdatedAt || meta.staticUpdatedAt || meta.slowRestUpdatedAt;
+    return compactTime(raw);
+  }
+  function stripRest$2(label) {
+    return clean$2(label.replace(/^REST\s*/i, ""), "可用");
+  }
+  function stripSsh$2(label) {
+    return clean$2(label.replace(/^SSH\s*/i, ""), "可用");
+  }
+  function routerOsNetworkPriority(state) {
+    if (state.scenario === "fleet") return "normal";
+    if (state.scenario === "single") return "normal";
+    if (state.scenario === "no-snapshot") return "snapshot-missing";
+    if (state.scenario === "all-offline" || state.facts.wan.allOffline && state.scenario !== "interfaces-down") return "wan-offline";
+    if (state.scenario === "resource-full") return "resource-full";
+    if (state.scenario === "interfaces-down" || state.facts.interfaces.down > 0) return "interface-down";
+    if (state.scenario === "collection-down" || state.facts.collection.dataStale || state.facts.freshness.history) return "collection-degraded";
+    return "normal";
+  }
+  function totalWan(snapshot, state) {
+    return Math.max(state.facts.wan.total || wanRows$2(snapshot).length, state.facts.wan.allOffline ? 8 : 0);
+  }
+  function snapshotTrustText(state) {
+    if (state.scenario === "no-snapshot") return "缺失";
+    if (state.scenario === "collection-down" || state.facts.collection.dataStale || state.facts.freshness.history) return "缓存";
+    return "实时";
+  }
+  function routeValue(state) {
+    if (state.facts.wan.allOffline) return "异常";
+    if (state.facts.route.level === "danger") return "异常";
+    if (state.scenario === "collection-down") return "历史快照";
+    if (state.scenario === "interfaces-down") return "待确认";
+    if (state.facts.route.level === "missing") return "待确认";
+    if (state.scenario === "resource-full") return "活动默认路由";
+    return "可用";
+  }
+  function conclusionFor(snapshot, state, priority) {
+    const total = totalWan(snapshot, state);
+    if (priority === "snapshot-missing") {
+      return { id: "conclusion", label: "结论", value: "缺快照", title: "业务快照缺失", heroTitle: "业务快照缺失", note: "RouterOS 当前不可达，业务数据不展示", tone: "missing", severity: "p0" };
+    }
+    if (priority === "wan-offline") {
+      return { id: "conclusion", label: "结论", value: "WAN断链", title: "WAN 全离线", heroTitle: "WAN 全离线", note: `WAN 0/${formatNumber(total)}，默认路由异常`, tone: "danger", severity: "p0" };
+    }
+    if (priority === "resource-full") {
+      return { id: "conclusion", label: "结论", value: "资源满载", title: "资源满载", heroTitle: "资源满载", note: "CPU / 内存 / 磁盘连续越阈，转发需关注", tone: "danger", severity: "p1" };
+    }
+    if (priority === "interface-down") {
+      return { id: "conclusion", label: "结论", value: "接口Down", title: "接口 Down", heroTitle: "接口 Down", note: `${formatNumber(state.facts.interfaces.down)} 个接口离线，承载关系待确认`, tone: "danger", severity: "p1" };
+    }
+    if (priority === "collection-degraded") {
+      return { id: "conclusion", label: "结论", value: "采集降级", title: "采集降级", heroTitle: "采集降级", note: "管理面降级，缓存可参考；不等同转发异常", tone: "warn", severity: "p2" };
+    }
+    if (state.scenario === "fleet") {
+      return { id: "conclusion", label: "结论", value: "需确认", title: "多线路可用", heroTitle: "多线路可用", note: `WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(total || 1)}，默认路由 ${routeValue(state)}`, tone: "warn", severity: "normal" };
+    }
+    return { id: "conclusion", label: "结论", value: "良好", title: "网络状态良好", heroTitle: "WAN 实时趋势", note: `WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(total || 1)}，默认路由可用`, tone: "ok", severity: "normal" };
+  }
+  function objectFor(snapshot, state, priority) {
+    const total = totalWan(snapshot, state);
+    if (priority === "snapshot-missing") return { id: "object", label: "对象", value: "快照", note: "业务快照缺失", tone: "missing" };
+    if (priority === "wan-offline") return { id: "object", label: "对象", value: `WAN 0/${formatNumber(total)}`, note: "全部出口离线", tone: "danger" };
+    if (priority === "resource-full") return { id: "object", label: "对象", value: "CPU/内存/磁盘", note: "三项连续越阈", tone: "danger" };
+    if (priority === "interface-down") return { id: "object", label: "对象", value: `接口 ${formatNumber(state.facts.interfaces.down)} Down`, note: state.facts.interfaces.downNames.slice(0, 2).join(" / ") || "承载待确认", tone: "danger" };
+    if (priority === "collection-degraded") return { id: "object", label: "对象", value: "采集", note: "REST / SSH / 快照边界", tone: "warn" };
+    return { id: "object", label: "对象", value: `WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(total || 1)}`, note: "转发面可用", tone: state.facts.wan.offline ? "warn" : "ok" };
+  }
+  function impactFor(state, priority) {
+    if (priority === "snapshot-missing") return { id: "impact", label: "影响", value: "不展示", note: "无可信业务数据", tone: "missing" };
+    if (priority === "wan-offline") return { id: "impact", label: "影响", value: "外网不可用", note: "默认出口不可用", tone: "danger" };
+    if (priority === "resource-full") return { id: "impact", label: "影响", value: "资源余量低", note: "业务可能抖动", tone: "warn" };
+    if (priority === "interface-down") return { id: "impact", label: "影响", value: "承载待判", note: "需看默认路由关系", tone: "warn" };
+    if (priority === "collection-degraded") return { id: "impact", label: "影响", value: "可信度下降", note: "采集降级但非断网结论", tone: "warn" };
+    return { id: "impact", label: "影响", value: clean$2(state.facts.route.label, "出口可用"), note: "默认出口可用", tone: state.facts.route.level };
+  }
+  function planeMeaning(plane) {
+    if (plane.id === "forwarding") return "用户业务是否能通过路由器转发";
+    if (plane.id === "collection") return "管理通道是否能读到 RouterOS";
+    if (plane.id === "snapshot") return "页面数据是否来自可信时间窗口";
+    return "业务指标是否允许展示";
+  }
+  function planeBoundary(plane) {
+    if (plane.id === "forwarding") return "转发面不由 REST 可达直接推出";
+    if (plane.id === "collection") return "采集可达不等于外网正常";
+    if (plane.id === "snapshot") return "缓存只能说明历史状态";
+    return "无快照时不展示业务排行/速率";
+  }
+  function toNetworkPlane(plane) {
+    return {
+      id: plane.id,
+      label: plane.label,
+      value: plane.value,
+      note: plane.note,
+      tone: plane.tone,
+      meaning: planeMeaning(plane),
+      boundary: planeBoundary(plane)
+    };
+  }
+  function channelTokens(snapshot, state) {
+    return [
+      {
+        id: "routeros",
+        label: "RouterOS",
+        value: state.scenario === "no-snapshot" ? "不可达" : "可达",
+        note: state.scenario === "no-snapshot" ? "当前无可信数据" : "管理面可读",
+        tone: state.scenario === "no-snapshot" ? "danger" : state.facts.collection.level
+      },
+      {
+        id: "rest",
+        label: "REST",
+        value: state.scenario === "collection-down" || state.scenario === "no-snapshot" ? "待确认" : stripRest$2(state.facts.collection.restLabel),
+        note: "管理通道，不代表转发正常",
+        tone: state.scenario === "no-snapshot" ? "warn" : state.scenario === "collection-down" ? "warn" : state.facts.collection.level
+      },
+      {
+        id: "ssh",
+        label: "SSH",
+        value: state.scenario === "no-snapshot" ? "不可用" : stripSsh$2(state.facts.collection.sshLabel),
+        note: "辅助读取",
+        tone: state.scenario === "no-snapshot" ? "danger" : state.facts.collection.level
+      },
+      {
+        id: "snapshot",
+        label: "快照",
+        value: state.scenario === "no-snapshot" ? "无" : snapshotTrustText(state),
+        note: `最近 ${routerOsLatestSuccess(snapshot, state)}`,
+        tone: state.scenario === "no-snapshot" ? "missing" : state.facts.collection.credibilityTone
+      }
+    ];
+  }
+  function buildRouterOsNetworkViewModel(snapshot, state) {
+    const evidence = buildRouterOsEvidenceModel(snapshot, state);
+    const priority = routerOsNetworkPriority(state);
+    const planes = evidence.planes.map(toNetworkPlane);
+    const fallback = (id2) => planes.find((plane) => plane.id === id2) || toNetworkPlane(evidence[id2]);
+    const forwarding = fallback("forwarding");
+    const collection = fallback("collection");
+    const snapshotPlane = fallback("snapshot");
+    const business = fallback("business");
+    const latest = routerOsLatestSuccess(snapshot, state);
+    const credibility = {
+      id: "credibility",
+      label: "可信",
+      value: priority === "snapshot-missing" ? "无" : priority === "collection-degraded" ? "中" : "高",
+      note: priority === "snapshot-missing" ? "业务快照缺失" : priority === "collection-degraded" ? `缓存边界 · ${latest}` : `最近 ${latest}`,
+      tone: priority === "snapshot-missing" ? "missing" : priority === "collection-degraded" ? "warn" : state.facts.collection.credibilityTone
+    };
+    return {
+      priority,
+      conclusion: conclusionFor(snapshot, state, priority),
+      object: objectFor(snapshot, state, priority),
+      impact: impactFor(state, priority),
+      credibility,
+      route: {
+        id: "route",
+        label: "默认路由",
+        value: routeValue(state),
+        note: evidence.route.summary.note,
+        tone: state.facts.wan.allOffline ? "danger" : state.facts.route.level
+      },
+      planes,
+      forwarding,
+      collection,
+      snapshot: snapshotPlane,
+      business,
+      channels: channelTokens(snapshot, state),
+      evidence
+    };
+  }
+  function routerOsResourceSustainedText(value, threshold) {
+    return toNumber(value) >= threshold ? "持续6/6" : "持续0/6";
   }
   function clean$1(value, fallback = "-") {
     const normalized = String(value ?? "").replace(/\s+/g, " ").trim();
@@ -10151,14 +10407,7 @@ var PanelFramework = function(exports) {
     return "可用";
   }
   function priorityOf(state) {
-    if (state.scenario === "fleet") return "normal";
-    if (state.scenario === "single") return "normal";
-    if (state.scenario === "no-snapshot") return "snapshot-missing";
-    if (state.scenario === "all-offline" || state.facts.wan.allOffline && state.scenario !== "interfaces-down") return "wan-offline";
-    if (state.scenario === "resource-full") return "resource-full";
-    if (state.scenario === "interfaces-down" || state.facts.interfaces.down > 0) return "interface-down";
-    if (state.scenario === "collection-down" || state.facts.collection.dataStale || state.facts.freshness.history) return "collection-degraded";
-    return "normal";
+    return routerOsNetworkPriority(state);
   }
   function heroVisualKind(priority) {
     if (priority === "wan-offline") return "wan-ports";
@@ -10179,36 +10428,20 @@ var PanelFramework = function(exports) {
     ].map((item) => ({
       label: item.label,
       value: hidden ? "不展示" : formatPercent(item.raw, state.scenario === "resource-full" ? 1 : 0),
-      note: hidden ? "无快照" : `阈${item.threshold}% · 持续${item.raw >= item.threshold ? "6/6" : "0/6"}`,
+      note: hidden ? "无快照" : `阈${item.threshold}% · ${routerOsResourceSustainedText(item.raw, item.threshold)}`,
       tone: hidden ? "missing" : item.raw >= item.threshold ? "danger" : "ok"
     }));
   }
-  function resourcePeak(state) {
-    return resourceFacts(state).reduce((max, item) => toNumber(item.value) > toNumber(max.value) ? item : max);
+  function titleFor(network) {
+    return network.conclusion.heroTitle;
   }
-  function titleFor(state) {
-    if (state.scenario === "fleet") return "多线路可用";
-    const priority = priorityOf(state);
-    if (priority === "snapshot-missing") return "业务快照缺失";
-    if (priority === "wan-offline") return "WAN 全离线";
-    if (priority === "resource-full") return "资源满载";
-    if (priority === "interface-down") return "接口 Down";
-    if (priority === "collection-degraded") return "采集降级";
-    return state.scenario === "single" || state.verdict.level !== "warn" ? "WAN 实时趋势" : "转发待确认";
-  }
-  function subtitleFor(snapshot, state) {
+  function subtitleFor(snapshot, state, network) {
     if (state.scenario === "fleet") return `WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(Math.max(state.facts.wan.total || wanRows$1(snapshot).length, 1))} · 异常 ${formatNumber(Math.max(state.facts.wan.offline, state.facts.interfaces.down, 0))} · 默认路由 ${mobileRouteValue(state)} · 成功 ${latestSuccess$2(snapshot, state)}`;
-    const priority = priorityOf(state);
-    if (priority === "snapshot-missing") return "当前不可达 · 业务数据不展示";
-    if (priority === "wan-offline") return "默认路由异常 · 出口不可用";
-    if (priority === "resource-full") return "CPU / 内存 / 磁盘连续越阈";
-    if (priority === "interface-down") return "接口离线 · 承载待确认";
-    if (priority === "collection-degraded") return "REST / SSH / 快照边界分开";
-    return `WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(Math.max(state.facts.wan.total || wanRows$1(snapshot).length, 1))} · 默认路由可用`;
+    return network.conclusion.note;
   }
   function heroFacts(snapshot, state) {
     const priority = priorityOf(state);
-    const totalWan = Math.max(state.facts.wan.total || wanRows$1(snapshot).length, state.facts.wan.allOffline ? 8 : 0);
+    const totalWan2 = Math.max(state.facts.wan.total || wanRows$1(snapshot).length, state.facts.wan.allOffline ? 8 : 0);
     const rate = totals(snapshot);
     if (priority === "snapshot-missing") {
       return [
@@ -10220,7 +10453,7 @@ var PanelFramework = function(exports) {
     }
     if (priority === "wan-offline") {
       return [
-        { label: "WAN", value: `0/${formatNumber(totalWan)}`, note: "全部离线", tone: "danger" },
+        { label: "WAN", value: `0/${formatNumber(totalWan2)}`, note: "全部离线", tone: "danger" },
         { label: "路由", value: "异常", note: "默认", tone: "danger" },
         { label: "外网", value: "断网", note: "影响", tone: "danger" },
         { label: "可信", value: trustText$1(state), note: "采集", tone: state.facts.collection.credibilityTone }
@@ -10241,7 +10474,7 @@ var PanelFramework = function(exports) {
     if (state.scenario === "fleet") {
       const abnormal = Math.max(state.facts.wan.offline, state.facts.interfaces.down);
       return [
-        { label: "WAN", value: `${formatNumber(state.facts.wan.online)}/${formatNumber(totalWan)}`, note: "在线", tone: state.facts.wan.offline ? "warn" : "ok" },
+        { label: "WAN", value: `${formatNumber(state.facts.wan.online)}/${formatNumber(totalWan2)}`, note: "在线", tone: state.facts.wan.offline ? "warn" : "ok" },
         { label: "异常", value: formatNumber(abnormal || 3), note: "待确认", tone: abnormal ? "warn" : "trust" },
         { label: "默认路由", value: mobileRouteValue(state), note: "出口", tone: state.facts.route.level },
         { label: "成功", value: latestSuccess$2(snapshot, state), note: "最近", tone: "trust" }
@@ -10264,39 +10497,30 @@ var PanelFramework = function(exports) {
       ];
     }
     return [
-      { label: "WAN", value: `${formatNumber(state.facts.wan.online)}/${formatNumber(totalWan || 1)}`, note: "在线", tone: state.facts.wan.offline ? "warn" : "ok" },
+      { label: "WAN", value: `${formatNumber(state.facts.wan.online)}/${formatNumber(totalWan2 || 1)}`, note: "在线", tone: state.facts.wan.offline ? "warn" : "ok" },
       { label: "下载", value: mobileRate(rate.down), note: "WAN 汇总", tone: rate.down > 0 ? "ok" : "trust" },
       { label: "上传", value: mobileRate(rate.up), note: "WAN 汇总", tone: rate.up > 0 ? "ok" : "trust" },
       { label: "路由", value: mobileRouteValue(state), note: "默认", tone: state.facts.route.level }
     ];
   }
-  function coreStatusValue(priority, state) {
-    if (state.scenario === "single") return "良好";
-    if (priority === "snapshot-missing") return "缺快照";
-    if (priority === "wan-offline") return "WAN断链";
-    if (priority === "resource-full") return "资源满载";
-    if (priority === "interface-down") return "接口Down";
-    if (priority === "collection-degraded") return "采集降级";
-    return state.verdict.level === "warn" ? "需确认" : "良好";
-  }
   function coreResourceValue(resource, priority) {
     if (priority === "snapshot-missing") return "隐藏";
     return resource.map((item) => item.value.replace(/\.0%|%/g, "")).join("/");
   }
-  function coreMetrics(snapshot, state) {
-    const priority = priorityOf(state);
-    const totalWan = Math.max(state.facts.wan.total || wanRows$1(snapshot).length, state.facts.wan.allOffline ? 8 : 0);
+  function coreMetrics(snapshot, state, network) {
+    const priority = network.priority;
+    const totalWan2 = Math.max(state.facts.wan.total || wanRows$1(snapshot).length, state.facts.wan.allOffline ? 8 : 0);
     const resource = resourceFacts(state);
-    const wanValue = priority === "snapshot-missing" ? "不可判" : state.facts.wan.allOffline ? `0/${formatNumber(totalWan)}` : `${formatNumber(state.facts.wan.online)}/${formatNumber(totalWan || 1)}`;
+    const wanValue = priority === "snapshot-missing" ? "不可判" : state.facts.wan.allOffline ? `0/${formatNumber(totalWan2)}` : `${formatNumber(state.facts.wan.online)}/${formatNumber(totalWan2 || 1)}`;
     const collectionValue = priority === "snapshot-missing" ? "断链" : priority === "collection-degraded" ? "缓存" : "实时";
     const snapshotValue = latestSuccess$2(snapshot, state);
     const collectionNote = priority === "snapshot-missing" ? "当前不可达" : priority === "collection-degraded" ? `${stripRest$1(state.facts.collection.restLabel)} / ${stripSsh$1(state.facts.collection.sshLabel)}` : "REST/SSH 可用";
     return [
       {
         label: "状态",
-        value: coreStatusValue(priority, state),
-        note: priority === "normal" ? "转发可用" : priority === "wan-offline" ? "外网中断" : priority === "snapshot-missing" ? "业务不展示" : "最高优先",
-        tone: state.scenario === "single" ? "ok" : state.scenario === "no-snapshot" ? "missing" : state.facts.wan.allOffline ? "danger" : state.verdict.level
+        value: network.conclusion.value,
+        note: network.forwarding.value === "可用" ? "转发可用" : network.forwarding.value,
+        tone: network.conclusion.tone
       },
       {
         label: "WAN",
@@ -10324,27 +10548,22 @@ var PanelFramework = function(exports) {
       }
     ];
   }
-  function heroPills(snapshot, state) {
-    const totalWan = Math.max(state.facts.wan.total || wanRows$1(snapshot).length, state.facts.wan.allOffline ? 8 : 0);
-    const priority = priorityOf(state);
+  function heroPills(snapshot, state, network) {
+    const totalWan2 = Math.max(state.facts.wan.total || wanRows$1(snapshot).length, state.facts.wan.allOffline ? 8 : 0);
+    network.priority;
     if (state.scenario === "fleet") return [
-      `WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(totalWan || 1)}`,
+      `WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(totalWan2 || 1)}`,
       `异常 ${formatNumber(Math.max(state.facts.wan.offline, state.facts.interfaces.down, 0))}`,
       `成功 ${latestSuccess$2(snapshot, state)}`
     ];
-    if (priority === "snapshot-missing") return ["对象 快照", "影响 不展示", "可信 无"];
-    if (priority === "wan-offline") return [`对象 WAN 0/${formatNumber(totalWan)}`, "影响 外网不可用", "可信 高"];
-    if (priority === "resource-full") return [`对象 ${resourcePeak(state).label} ${resourcePeak(state).value}`, "影响 资源余量", "可信 高"];
-    if (priority === "interface-down") return [`对象 接口 ${formatNumber(state.facts.interfaces.down)} Down`, "影响 承载待判", "可信 中"];
-    if (priority === "collection-degraded") return ["对象 采集", "影响 缓存边界", "可信 中"];
     return [
-      `对象 WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(totalWan || 1)}`,
-      `影响 ${clean$1(state.facts.route.label, "出口可用")}`,
-      "可信 高"
+      `${network.object.label} ${network.object.value}`,
+      `${network.impact.label} ${network.impact.value}`,
+      `${network.credibility.label} ${network.credibility.value}`
     ];
   }
-  function trustPlanes(snapshot, state) {
-    return buildRouterOsEvidenceModel(snapshot, state).planes.map((plane) => ({
+  function trustPlanes(network) {
+    return network.planes.map((plane) => ({
       id: plane.id,
       label: plane.label,
       value: plane.value,
@@ -10353,7 +10572,7 @@ var PanelFramework = function(exports) {
     }));
   }
   function statusRows(snapshot, state) {
-    const totalWan = Math.max(state.facts.wan.total || wanRows$1(snapshot).length, state.facts.wan.allOffline ? 8 : 0);
+    const totalWan2 = Math.max(state.facts.wan.total || wanRows$1(snapshot).length, state.facts.wan.allOffline ? 8 : 0);
     const resource = resourceFacts(state);
     if (state.scenario === "no-snapshot") {
       return [
@@ -10367,7 +10586,7 @@ var PanelFramework = function(exports) {
       {
         id: "timeline-wan",
         title: "WAN",
-        value: state.facts.wan.allOffline ? `0/${formatNumber(totalWan)} 在线` : `${formatNumber(state.facts.wan.online)}/${formatNumber(totalWan || 1)} 在线`,
+        value: state.facts.wan.allOffline ? `0/${formatNumber(totalWan2)} 在线` : `${formatNumber(state.facts.wan.online)}/${formatNumber(totalWan2 || 1)} 在线`,
         note: state.facts.wan.allOffline ? "所有出口离线" : `↓${compactRate(totals(snapshot).down)} ↑${compactRate(totals(snapshot).up)}`,
         tone: state.facts.wan.allOffline ? "danger" : state.facts.wan.offline ? "warn" : "ok"
       },
@@ -10466,42 +10685,18 @@ var PanelFramework = function(exports) {
       { id: "routeros-link", rank: "", name: "RouterOS 链路", meta: "当前不可达，等待恢复", value: "断链", status: "当前", percent: 0, tone: "danger" }
     ];
   }
-  function collectionBoundaryRows(snapshot, state) {
-    return [
-      {
-        id: "collection-rest",
-        rank: "",
-        name: "REST",
-        kind: "采集",
-        meta: `最近成功 ${latestSuccess$2(snapshot, state)} · 管理面状态`,
-        value: stripRest$1(state.facts.collection.restLabel),
-        status: "通道",
-        percent: 0,
-        tone: state.facts.collection.level
-      },
-      {
-        id: "collection-ssh",
-        rank: "",
-        name: "SSH",
-        kind: "采集",
-        meta: "辅助读取 · 不等同转发正常",
-        value: stripSsh$1(state.facts.collection.sshLabel),
-        status: "通道",
-        percent: 0,
-        tone: state.facts.collection.level
-      },
-      {
-        id: "collection-snapshot",
-        rank: "",
-        name: "业务快照",
-        kind: "可信度",
-        meta: "缓存可参考 · 实时性下降",
-        value: trustText$1(state),
-        status: "边界",
-        percent: 0,
-        tone: state.facts.collection.credibilityTone
-      }
-    ];
+  function collectionBoundaryRows(network) {
+    return network.channels.filter((item) => item.id !== "routeros").map((item, index) => ({
+      id: `collection-${item.id}`,
+      rank: "",
+      name: item.label,
+      kind: index === 2 ? "可信度" : "采集",
+      meta: item.note,
+      value: item.value,
+      status: item.id === "snapshot" ? "边界" : "通道",
+      percent: 0,
+      tone: item.tone
+    }));
   }
   function terminalCandidates(snapshot) {
     const raw = snapshot;
@@ -10613,12 +10808,12 @@ var PanelFramework = function(exports) {
       tone: row.tone
     }));
   }
-  function primaryList(snapshot, state) {
-    const priority = priorityOf(state);
+  function primaryList(snapshot, state, network) {
+    const priority = network.priority;
     if (priority === "wan-offline") return { kind: "wan-incident", title: "离线出口", meta: "默认路由异常 · 最近成功", rows: offlineWanRows(snapshot, state) };
     if (priority === "snapshot-missing") return { kind: "snapshot-boundary", title: "可信边界", meta: `最近成功 ${latestSuccess$2(snapshot, state)}`, rows: snapshotBoundaryRows(snapshot, state) };
     if (priority === "interface-down") return { kind: "interface-incident", title: "接口影响", meta: "承载待判 · 默认路由", rows: interfaceIncidentRows(snapshot) };
-    if (priority === "collection-degraded") return { kind: "collection-boundary", title: "采集边界", meta: "REST / SSH / 快照", rows: collectionBoundaryRows(snapshot, state) };
+    if (priority === "collection-degraded") return { kind: "collection-boundary", title: "采集边界", meta: "REST / SSH / 快照", rows: collectionBoundaryRows(network) };
     if (priority === "resource-full") return { kind: "terminal-ranking", title: "高流量终端", meta: "异常优先 · 总流量", rows: terminalRankingRows(snapshot) };
     return { kind: "terminal-ranking", title: "设备排行", meta: "异常优先 · 总流量", rows: terminalRankingRows(snapshot) };
   }
@@ -10628,23 +10823,25 @@ var PanelFramework = function(exports) {
     return { order: "list-before-status", ranking: "suppressed" };
   }
   function buildMobileOverviewModel(snapshot, state) {
-    const priority = priorityOf(state);
+    const network = buildRouterOsNetworkViewModel(snapshot, state);
+    const priority = network.priority;
     return {
       priority,
+      network,
       surface: surfaceModel(priority),
-      coreMetrics: coreMetrics(snapshot, state),
+      coreMetrics: coreMetrics(snapshot, state, network),
       hero: {
-        title: titleFor(state),
-        subtitle: subtitleFor(snapshot, state),
+        title: titleFor(network),
+        subtitle: subtitleFor(snapshot, state, network),
         facts: heroFacts(snapshot, state),
-        pills: heroPills(snapshot, state),
+        pills: heroPills(snapshot, state, network),
         visualKind: heroVisualKind(priority),
         showMetrics: showHeroMetrics(state, priority),
         trend: trendChart(snapshot, state)
       },
-      trustPlanes: trustPlanes(snapshot, state),
+      trustPlanes: trustPlanes(network),
       statusRows: statusRows(snapshot, state),
-      primaryList: primaryList(snapshot, state),
+      primaryList: primaryList(snapshot, state, network),
       wanPorts: wanPorts(snapshot, state),
       resourceRows: resourceFacts(state)
     };
@@ -10986,7 +11183,7 @@ var PanelFramework = function(exports) {
               "持续",
               item.tone === "danger" ? "6/6" : "0/6"
             ] }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("i", { children: /* @__PURE__ */ jsxRuntimeExports.jsx("i", { style: { width: `${value}%` } }) })
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "ik-density-resource-track", "aria-hidden": "true", children: /* @__PURE__ */ jsxRuntimeExports.jsx("span", { style: { width: `${value}%` } }) })
           ] }, item.key);
         })
       }

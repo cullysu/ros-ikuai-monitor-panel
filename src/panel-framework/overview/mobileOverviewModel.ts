@@ -11,7 +11,12 @@ import {
   type OverviewRawWanRow,
   type OverviewTone,
 } from "./index";
-import { buildRouterOsEvidenceModel } from "./routerosEvidenceModel";
+import {
+  buildRouterOsNetworkViewModel,
+  routerOsNetworkPriority,
+  routerOsResourceSustainedText,
+  type RouterOsNetworkViewModel,
+} from "./routerosNetworkViewModel";
 import type { RouterOsTrustPlane } from "./routerosTrustModel";
 
 export type MobileMonitorPlane = RouterOsTrustPlane["id"];
@@ -82,6 +87,7 @@ export interface MobilePrimaryListModel {
 
 export interface MobileOverviewModel {
   priority: "snapshot-missing" | "wan-offline" | "resource-full" | "interface-down" | "collection-degraded" | "normal";
+  network: RouterOsNetworkViewModel;
   surface: {
     order: "status-before-list" | "list-before-status";
     ranking: "primary" | "supporting" | "suppressed";
@@ -327,14 +333,7 @@ function mobileRouteValue(state: OverviewDerivedState): string {
 }
 
 function priorityOf(state: OverviewDerivedState): MobileOverviewModel["priority"] {
-  if (state.scenario === "fleet") return "normal";
-  if (state.scenario === "single") return "normal";
-  if (state.scenario === "no-snapshot") return "snapshot-missing";
-  if (state.scenario === "all-offline" || (state.facts.wan.allOffline && state.scenario !== "interfaces-down")) return "wan-offline";
-  if (state.scenario === "resource-full") return "resource-full";
-  if (state.scenario === "interfaces-down" || state.facts.interfaces.down > 0) return "interface-down";
-  if (state.scenario === "collection-down" || state.facts.collection.dataStale || state.facts.freshness.history) return "collection-degraded";
-  return "normal";
+  return routerOsNetworkPriority(state);
 }
 
 function heroVisualKind(priority: MobileOverviewModel["priority"]): MobileHeroVisualKind {
@@ -358,35 +357,18 @@ function resourceFacts(state: OverviewDerivedState): MobileMonitorFact[] {
   ].map((item) => ({
     label: item.label,
     value: hidden ? "不展示" : formatPercent(item.raw, state.scenario === "resource-full" ? 1 : 0),
-    note: hidden ? "无快照" : `阈${item.threshold}% · 持续${item.raw >= item.threshold ? "6/6" : "0/6"}`,
+    note: hidden ? "无快照" : `阈${item.threshold}% · ${routerOsResourceSustainedText(item.raw, item.threshold)}`,
     tone: hidden ? "missing" : item.raw >= item.threshold ? "danger" : "ok",
   }));
 }
 
-function resourcePeak(state: OverviewDerivedState): MobileMonitorFact {
-  return resourceFacts(state).reduce((max, item) => (toNumber(item.value) > toNumber(max.value) ? item : max));
+function titleFor(network: RouterOsNetworkViewModel): string {
+  return network.conclusion.heroTitle;
 }
 
-function titleFor(state: OverviewDerivedState): string {
-  if (state.scenario === "fleet") return "多线路可用";
-  const priority = priorityOf(state);
-  if (priority === "snapshot-missing") return "业务快照缺失";
-  if (priority === "wan-offline") return "WAN 全离线";
-  if (priority === "resource-full") return "资源满载";
-  if (priority === "interface-down") return "接口 Down";
-  if (priority === "collection-degraded") return "采集降级";
-  return state.scenario === "single" || state.verdict.level !== "warn" ? "WAN 实时趋势" : "转发待确认";
-}
-
-function subtitleFor(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): string {
+function subtitleFor(snapshot: OverviewRawSnapshot, state: OverviewDerivedState, network: RouterOsNetworkViewModel): string {
   if (state.scenario === "fleet") return `WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(Math.max(state.facts.wan.total || wanRows(snapshot).length, 1))} · 异常 ${formatNumber(Math.max(state.facts.wan.offline, state.facts.interfaces.down, 0))} · 默认路由 ${mobileRouteValue(state)} · 成功 ${latestSuccess(snapshot, state)}`;
-  const priority = priorityOf(state);
-  if (priority === "snapshot-missing") return "当前不可达 · 业务数据不展示";
-  if (priority === "wan-offline") return "默认路由异常 · 出口不可用";
-  if (priority === "resource-full") return "CPU / 内存 / 磁盘连续越阈";
-  if (priority === "interface-down") return "接口离线 · 承载待确认";
-  if (priority === "collection-degraded") return "REST / SSH / 快照边界分开";
-  return `WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(Math.max(state.facts.wan.total || wanRows(snapshot).length, 1))} · 默认路由可用`;
+  return network.conclusion.note;
 }
 
 function heroFacts(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): MobileMonitorFact[] {
@@ -454,23 +436,13 @@ function heroFacts(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): 
   ];
 }
 
-function coreStatusValue(priority: MobileOverviewModel["priority"], state: OverviewDerivedState): string {
-  if (state.scenario === "single") return "良好";
-  if (priority === "snapshot-missing") return "缺快照";
-  if (priority === "wan-offline") return "WAN断链";
-  if (priority === "resource-full") return "资源满载";
-  if (priority === "interface-down") return "接口Down";
-  if (priority === "collection-degraded") return "采集降级";
-  return state.verdict.level === "warn" ? "需确认" : "良好";
-}
-
 function coreResourceValue(resource: MobileMonitorFact[], priority: MobileOverviewModel["priority"]): string {
   if (priority === "snapshot-missing") return "隐藏";
   return resource.map((item) => item.value.replace(/\.0%|%/g, "")).join("/");
 }
 
-function coreMetrics(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): MobileMonitorFact[] {
-  const priority = priorityOf(state);
+function coreMetrics(snapshot: OverviewRawSnapshot, state: OverviewDerivedState, network: RouterOsNetworkViewModel): MobileMonitorFact[] {
+  const priority = network.priority;
   const totalWan = Math.max(state.facts.wan.total || wanRows(snapshot).length, state.facts.wan.allOffline ? 8 : 0);
   const resource = resourceFacts(state);
   const wanValue = priority === "snapshot-missing"
@@ -492,9 +464,9 @@ function coreMetrics(snapshot: OverviewRawSnapshot, state: OverviewDerivedState)
   return [
     {
       label: "状态",
-      value: coreStatusValue(priority, state),
-      note: priority === "normal" ? "转发可用" : priority === "wan-offline" ? "外网中断" : priority === "snapshot-missing" ? "业务不展示" : "最高优先",
-      tone: state.scenario === "single" ? "ok" : state.scenario === "no-snapshot" ? "missing" : state.facts.wan.allOffline ? "danger" : state.verdict.level,
+      value: network.conclusion.value,
+      note: network.forwarding.value === "可用" ? "转发可用" : network.forwarding.value,
+      tone: network.conclusion.tone,
     },
     {
       label: "WAN",
@@ -523,28 +495,23 @@ function coreMetrics(snapshot: OverviewRawSnapshot, state: OverviewDerivedState)
   ];
 }
 
-function heroPills(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): string[] {
+function heroPills(snapshot: OverviewRawSnapshot, state: OverviewDerivedState, network: RouterOsNetworkViewModel): string[] {
   const totalWan = Math.max(state.facts.wan.total || wanRows(snapshot).length, state.facts.wan.allOffline ? 8 : 0);
-  const priority = priorityOf(state);
+  const priority = network.priority;
   if (state.scenario === "fleet") return [
     `WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(totalWan || 1)}`,
     `异常 ${formatNumber(Math.max(state.facts.wan.offline, state.facts.interfaces.down, 0))}`,
     `成功 ${latestSuccess(snapshot, state)}`,
   ];
-  if (priority === "snapshot-missing") return ["对象 快照", "影响 不展示", "可信 无"];
-  if (priority === "wan-offline") return [`对象 WAN 0/${formatNumber(totalWan)}`, "影响 外网不可用", "可信 高"];
-  if (priority === "resource-full") return [`对象 ${resourcePeak(state).label} ${resourcePeak(state).value}`, "影响 资源余量", "可信 高"];
-  if (priority === "interface-down") return [`对象 接口 ${formatNumber(state.facts.interfaces.down)} Down`, "影响 承载待判", "可信 中"];
-  if (priority === "collection-degraded") return ["对象 采集", "影响 缓存边界", "可信 中"];
   return [
-    `对象 WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(totalWan || 1)}`,
-    `影响 ${clean(state.facts.route.label, "出口可用")}`,
-    "可信 高",
+    `${network.object.label} ${network.object.value}`,
+    `${network.impact.label} ${network.impact.value}`,
+    `${network.credibility.label} ${network.credibility.value}`,
   ];
 }
 
-function trustPlanes(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): MobileTrustPlane[] {
-  return buildRouterOsEvidenceModel(snapshot, state).planes.map((plane) => ({
+function trustPlanes(network: RouterOsNetworkViewModel): MobileTrustPlane[] {
+  return network.planes.map((plane) => ({
     id: plane.id,
     label: plane.label,
     value: plane.value,
@@ -672,42 +639,20 @@ function snapshotBoundaryRows(snapshot: OverviewRawSnapshot, state: OverviewDeri
   ];
 }
 
-function collectionBoundaryRows(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): MobileMonitorListRow[] {
-  return [
-    {
-      id: "collection-rest",
+function collectionBoundaryRows(network: RouterOsNetworkViewModel): MobileMonitorListRow[] {
+  return network.channels
+    .filter((item) => item.id !== "routeros")
+    .map((item, index) => ({
+      id: `collection-${item.id}`,
       rank: "",
-      name: "REST",
-      kind: "采集",
-      meta: `最近成功 ${latestSuccess(snapshot, state)} · 管理面状态`,
-      value: stripRest(state.facts.collection.restLabel),
-      status: "通道",
+      name: item.label,
+      kind: index === 2 ? "可信度" : "采集",
+      meta: item.note,
+      value: item.value,
+      status: item.id === "snapshot" ? "边界" : "通道",
       percent: 0,
-      tone: state.facts.collection.level,
-    },
-    {
-      id: "collection-ssh",
-      rank: "",
-      name: "SSH",
-      kind: "采集",
-      meta: "辅助读取 · 不等同转发正常",
-      value: stripSsh(state.facts.collection.sshLabel),
-      status: "通道",
-      percent: 0,
-      tone: state.facts.collection.level,
-    },
-    {
-      id: "collection-snapshot",
-      rank: "",
-      name: "业务快照",
-      kind: "可信度",
-      meta: "缓存可参考 · 实时性下降",
-      value: trustText(state),
-      status: "边界",
-      percent: 0,
-      tone: state.facts.collection.credibilityTone,
-    },
-  ];
+      tone: item.tone,
+    }));
 }
 
 function terminalCandidates(snapshot: OverviewRawSnapshot): Record<string, unknown>[] {
@@ -830,12 +775,12 @@ function terminalRankingRows(snapshot: OverviewRawSnapshot): MobileMonitorListRo
     }));
 }
 
-function primaryList(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): MobilePrimaryListModel {
-  const priority = priorityOf(state);
+function primaryList(snapshot: OverviewRawSnapshot, state: OverviewDerivedState, network: RouterOsNetworkViewModel): MobilePrimaryListModel {
+  const priority = network.priority;
   if (priority === "wan-offline") return { kind: "wan-incident", title: "离线出口", meta: "默认路由异常 · 最近成功", rows: offlineWanRows(snapshot, state) };
   if (priority === "snapshot-missing") return { kind: "snapshot-boundary", title: "可信边界", meta: `最近成功 ${latestSuccess(snapshot, state)}`, rows: snapshotBoundaryRows(snapshot, state) };
   if (priority === "interface-down") return { kind: "interface-incident", title: "接口影响", meta: "承载待判 · 默认路由", rows: interfaceIncidentRows(snapshot) };
-  if (priority === "collection-degraded") return { kind: "collection-boundary", title: "采集边界", meta: "REST / SSH / 快照", rows: collectionBoundaryRows(snapshot, state) };
+  if (priority === "collection-degraded") return { kind: "collection-boundary", title: "采集边界", meta: "REST / SSH / 快照", rows: collectionBoundaryRows(network) };
   if (priority === "resource-full") return { kind: "terminal-ranking", title: "高流量终端", meta: "异常优先 · 总流量", rows: terminalRankingRows(snapshot) };
   return { kind: "terminal-ranking", title: "设备排行", meta: "异常优先 · 总流量", rows: terminalRankingRows(snapshot) };
 }
@@ -847,23 +792,25 @@ function surfaceModel(priority: MobileOverviewModel["priority"]): MobileOverview
 }
 
 export function buildMobileOverviewModel(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): MobileOverviewModel {
-  const priority = priorityOf(state);
+  const network = buildRouterOsNetworkViewModel(snapshot, state);
+  const priority = network.priority;
   return {
     priority,
+    network,
     surface: surfaceModel(priority),
-    coreMetrics: coreMetrics(snapshot, state),
+    coreMetrics: coreMetrics(snapshot, state, network),
     hero: {
-      title: titleFor(state),
-      subtitle: subtitleFor(snapshot, state),
+      title: titleFor(network),
+      subtitle: subtitleFor(snapshot, state, network),
       facts: heroFacts(snapshot, state),
-      pills: heroPills(snapshot, state),
+      pills: heroPills(snapshot, state, network),
       visualKind: heroVisualKind(priority),
       showMetrics: showHeroMetrics(state, priority),
       trend: trendChart(snapshot, state),
     },
-    trustPlanes: trustPlanes(snapshot, state),
+    trustPlanes: trustPlanes(network),
     statusRows: statusRows(snapshot, state),
-    primaryList: primaryList(snapshot, state),
+    primaryList: primaryList(snapshot, state, network),
     wanPorts: wanPorts(snapshot, state),
     resourceRows: resourceFacts(state),
   };
