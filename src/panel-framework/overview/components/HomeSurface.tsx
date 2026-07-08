@@ -6,18 +6,33 @@ function statusTimelineRows(props: MobileOverviewHomeProps): NativeRow[] {
   return buildMobileOverviewModel(props.snapshot, props.state).statusRows;
 }
 
+function statusCoreBlock(row: NativeRow): string | undefined {
+  if (row.id === "timeline-wan") return "wan";
+  if (row.id === "timeline-collection") return "collection";
+  if (row.id === "timeline-resource") return "resource";
+  return undefined;
+}
+
 function StatusTimeline(props: MobileOverviewHomeProps) {
   const rows = statusTimelineRows(props);
   return (
     <section className="ik-v420-timeline ik-v240-strip" data-overview-mobile-core-block="status-timeline" data-overview-mobile-v240-status-strip="timeline-not-kpi-grid" data-overview-mobile-no-four-kpi-grid="true">
-      {rows.map((row) => (
-        <article className={`ik-v420-timeline-row ${toneClass(row.tone)}`} data-row-id={row.id} key={row.id}>
+      {rows.map((row) => {
+        const coreBlock = statusCoreBlock(row);
+        return (
+        <article
+          className={`ik-v420-timeline-row ik-mobile-status-strip ${toneClass(row.tone)}`}
+          data-overview-mobile-core-block={coreBlock}
+          data-row-id={row.id}
+          key={row.id}
+        >
           <i aria-hidden="true" />
           <b className="ik-v821-row-title">{row.title}</b>
           <strong>{row.value}</strong>
           <em className="ik-v821-row-note">{row.note}</em>
         </article>
-      ))}
+        );
+      })}
     </section>
   );
 }

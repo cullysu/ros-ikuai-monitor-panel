@@ -34,7 +34,7 @@ function LineChart({ chart }: { chart: MobileTrendChartModel }) {
   return (
     <svg
       className="ik-v420-line-chart"
-      viewBox="0 0 312 72"
+      viewBox="0 0 312 60"
       role="img"
       aria-label={`${chart.windowText} WAN 下载上传趋势，当前 ${chart.currentLabel}，峰值 ${chart.peakLabel}，${chart.referenceLabel}，采样 ${chart.sampleText}`}
       data-overview-chart-type="mini-line"
@@ -47,8 +47,6 @@ function LineChart({ chart }: { chart: MobileTrendChartModel }) {
       data-overview-mobile-chart-sample={chart.sampleText}
       data-overview-mobile-chart-reference={chart.referenceLabel}
     >
-      <text className="ik-v945-chart-caption" x="0" y="8">采样 {chart.sampleText}</text>
-      <text className="ik-v945-chart-caption" x="312" y="8" textAnchor="end">{chart.referenceLabel}</text>
       <path className="ik-v420-gridline" d="M0 13 H312 M0 31 H312 M0 47 H312" />
       <path className="ik-v945-reference-line" d={`M0 ${referenceY} H312`} />
       <path className="ik-v945-current-line" d={`M${focus.x} 10 V54`} />
@@ -58,9 +56,6 @@ function LineChart({ chart }: { chart: MobileTrendChartModel }) {
       <circle className="ik-v945-start-dot" cx={Number.isFinite(start[0]) ? start[0] : 0} cy={Number.isFinite(start[1]) ? start[1] : 52} r="2.1" />
       <circle className="ik-v420-peak-dot" cx={peakX} cy={peakY} r="2.6" />
       <circle className="ik-v420-focus-dot" cx={focus.x} cy={focus.y} r="2.8" />
-      <text x="0" y="68">{chart.startLabel}</text>
-      <text x="156" y="68" textAnchor="middle">峰 {chart.peakLabel}</text>
-      <text x="312" y="68" textAnchor="end">{chart.endLabel} {chart.currentLabel}</text>
     </svg>
   );
 }

@@ -363,6 +363,7 @@ function resourceFacts(state: OverviewDerivedState): MobileMonitorFact[] {
 }
 
 function titleFor(network: RouterOsNetworkViewModel): string {
+  if (network.priority === "normal") return `${network.conclusion.value} · ${network.object.value}`;
   return network.conclusion.heroTitle;
 }
 
@@ -502,6 +503,11 @@ function heroPills(snapshot: OverviewRawSnapshot, state: OverviewDerivedState, n
     `WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(totalWan || 1)}`,
     `异常 ${formatNumber(Math.max(state.facts.wan.offline, state.facts.interfaces.down, 0))}`,
     `成功 ${latestSuccess(snapshot, state)}`,
+  ];
+  if (priority === "normal") return [
+    `${network.object.label} ${network.object.value}`,
+    `${network.impact.label} 出口可用`,
+    `${network.credibility.label} ${network.credibility.value}`,
   ];
   return [
     `${network.object.label} ${network.object.value}`,
@@ -761,7 +767,7 @@ function terminalRankingRows(snapshot: OverviewRawSnapshot): MobileMonitorListRo
   const max = Math.max(1, ...rows.map((row) => row.percent));
   return rows
     .sort((a, b) => Number(b.abnormal) - Number(a.abnormal) || b.percent - a.percent || a.sourceIndex - b.sourceIndex)
-    .slice(0, 4)
+    .slice(0, 5)
     .map((row, index) => ({
       id: row.id,
       rank: index + 1,
