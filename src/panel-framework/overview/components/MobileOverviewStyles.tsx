@@ -4,6 +4,8 @@ import { MOBILE_OVERVIEW_FOUNDATION_STYLES } from "./MobileOverviewBaseStyles";
 import { MOBILE_OVERVIEW_INFORMATION_ARCHITECTURE_STYLES } from "./MobileOverviewRefinementStyles";
 import { MOBILE_OVERVIEW_DECISION_HOME_STYLES } from "./MobileOverviewDecisionStyles";
 import { MOBILE_OVERVIEW_RELEASE_STYLES } from "./MobileOverviewReleaseStyles";
+import { MOBILE_OVERVIEW_PUBLIC_DECISION_STYLES } from "./MobileOverviewPublicDecisionStyles";
+import { MOBILE_OVERVIEW_PUBLIC_DECISION_REPAIR_STYLES } from "./MobileOverviewPublicDecisionRepairStyles";
 
 const MOBILE_OVERVIEW_STYLE_LAYERS = [
   { id: "foundation", css: MOBILE_OVERVIEW_FOUNDATION_STYLES },
@@ -14,6 +16,8 @@ const MOBILE_OVERVIEW_STYLE_LAYERS = [
   { id: "release-contract", css: MOBILE_OVERVIEW_RELEASE_STYLES },
   { id: "native-product", css: MOBILE_OVERVIEW_NATIVE_PRODUCT_STYLES },
   { id: "decision-home", css: MOBILE_OVERVIEW_DECISION_HOME_STYLES },
+  { id: "public-decision-home", css: MOBILE_OVERVIEW_PUBLIC_DECISION_STYLES },
+  { id: "public-decision-repair", css: MOBILE_OVERVIEW_PUBLIC_DECISION_REPAIR_STYLES },
 ] as const;
 const MOBILE_OVERVIEW_STYLE_STACK = MOBILE_OVERVIEW_STYLE_LAYERS.map(
   (layer) => layer.css
