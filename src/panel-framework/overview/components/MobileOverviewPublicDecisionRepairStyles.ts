@@ -393,8 +393,9 @@ export const MOBILE_OVERVIEW_PUBLIC_DECISION_REPAIR_STYLES = `
 
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-mobile-decision-screen {
     display: grid !important;
-    grid-template-rows: 46px auto 64px minmax(132px, 1fr) !important;
+    grid-template-rows: 46px auto 64px auto !important;
     gap: 9px !important;
+    align-content: start !important;
     padding: max(12px, env(safe-area-inset-top)) 12px calc(76px + env(safe-area-inset-bottom)) !important;
     background: #edf2f7 !important;
   }
@@ -442,7 +443,7 @@ export const MOBILE_OVERVIEW_PUBLIC_DECISION_REPAIR_STYLES = `
 
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-mobile-decision-card {
     display: grid !important;
-    grid-template-rows: auto minmax(128px, auto) 34px !important;
+    grid-template-rows: auto minmax(128px, auto) 44px !important;
     gap: 9px !important;
     min-height: 0 !important;
     height: auto !important;
@@ -462,6 +463,15 @@ export const MOBILE_OVERVIEW_PUBLIC_DECISION_REPAIR_STYLES = `
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-mobile-decision-card.is-warn,
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-mobile-decision-card.is-missing {
     border-left-color: #b7791f !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1122-public-home] .ik-mobile-decision-card[data-overview-mobile-visual-kind="trust-channels"],
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1122-public-home] .ik-mobile-decision-card[data-overview-mobile-visual-kind="interface-list"] {
+    grid-template-rows: auto auto !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1122-public-home] .ik-mobile-decision-card:not([data-overview-mobile-priority="normal"]) {
+    grid-template-rows: auto auto !important;
   }
 
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-mobile-decision-head {
@@ -533,9 +543,9 @@ export const MOBILE_OVERVIEW_PUBLIC_DECISION_REPAIR_STYLES = `
 
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-mobile-next-step {
     grid-template-columns: 42px minmax(72px, .8fr) minmax(0, 1fr) !important;
-    min-height: 34px !important;
-    height: 34px !important;
-    max-height: 34px !important;
+    min-height: 44px !important;
+    height: 44px !important;
+    max-height: 44px !important;
     border-radius: 7px !important;
     background: #f8fbff !important;
   }
@@ -555,7 +565,10 @@ export const MOBILE_OVERVIEW_PUBLIC_DECISION_REPAIR_STYLES = `
   }
 
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-mobile-supporting-surface {
-    min-height: 0 !important;
+    min-height: 82px !important;
+    height: 82px !important;
+    max-height: 82px !important;
+    align-self: start !important;
     overflow: hidden !important;
   }
 
@@ -571,7 +584,8 @@ export const MOBILE_OVERVIEW_PUBLIC_DECISION_REPAIR_STYLES = `
 
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1120-public-home] .ik-mobile-supporting-list {
     display: grid !important;
-    grid-template-rows: 34px minmax(48px, 1fr) !important;
+    grid-template-rows: 34px 48px !important;
+    height: auto !important;
   }
 
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1120-public-home] .ik-mobile-detail-entry {
@@ -655,6 +669,31 @@ export const MOBILE_OVERVIEW_PUBLIC_DECISION_REPAIR_STYLES = `
     background: #f6f9fc !important;
   }
 
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1122-public-home] .ik-mobile-channel-incident-stack,
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1122-public-home] .ik-mobile-generic-incident-stack {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-rows: 120px !important;
+    min-height: 132px !important;
+    height: 132px !important;
+    max-height: 132px !important;
+    padding: 6px !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1122-public-home] .ik-mobile-wan-incident-stack {
+    grid-template-rows: 120px 42px 42px !important;
+    min-height: 224px !important;
+    height: 224px !important;
+    max-height: 224px !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1122-public-home] .ik-mobile-resource-incident-stack {
+    grid-template-rows: 120px repeat(3, 34px) !important;
+    min-height: 243px !important;
+    height: 243px !important;
+    max-height: 243px !important;
+  }
+
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-mobile-resource-incident-stack > .ik-mobile-resource-line {
     display: grid !important;
     grid-template-columns: 48px minmax(0, 1fr) 46px !important;
@@ -664,9 +703,9 @@ export const MOBILE_OVERVIEW_PUBLIC_DECISION_REPAIR_STYLES = `
     align-items: center !important;
     column-gap: 8px !important;
     row-gap: 2px !important;
-    min-height: 30px !important;
-    height: 30px !important;
-    max-height: 30px !important;
+    min-height: 34px !important;
+    height: 34px !important;
+    max-height: 34px !important;
     padding: 4px 6px !important;
   }
 
@@ -716,7 +755,7 @@ export const MOBILE_OVERVIEW_PUBLIC_DECISION_REPAIR_STYLES = `
     min-width: 0 !important;
     overflow: hidden !important;
     color: #6b7b8f !important;
-    font-size: 8px !important;
+    font-size: 9px !important;
     font-weight: 640 !important;
     line-height: 1.05 !important;
     text-overflow: ellipsis !important;
@@ -728,7 +767,7 @@ export const MOBILE_OVERVIEW_PUBLIC_DECISION_REPAIR_STYLES = `
     min-width: 0 !important;
     overflow: hidden !important;
     color: #6b7b8f !important;
-    font-size: 8px !important;
+    font-size: 9px !important;
     font-style: normal !important;
     font-weight: 640 !important;
     line-height: 1.05 !important;
@@ -737,15 +776,27 @@ export const MOBILE_OVERVIEW_PUBLIC_DECISION_REPAIR_STYLES = `
   }
 
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-mobile-abnormal-decision-rail {
-    min-height: 44px !important;
-    height: 44px !important;
-    max-height: 44px !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    grid-template-rows: repeat(2, 60px) !important;
+    min-height: 120px !important;
+    height: 120px !important;
+    max-height: 120px !important;
   }
 
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-mobile-abnormal-decision-rail > span {
-    min-height: 44px !important;
-    height: 44px !important;
-    max-height: 44px !important;
+    min-height: 60px !important;
+    height: 60px !important;
+    max-height: 60px !important;
+    padding: 7px 8px !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1122-public-home] .ik-mobile-abnormal-decision-rail em,
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1122-public-home] .ik-mobile-abnormal-decision-rail strong {
+    font-size: 9.5px !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1122-public-home] .ik-mobile-abnormal-decision-rail b {
+    font-size: 12.5px !important;
   }
 
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-v420-tabs,

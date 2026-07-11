@@ -156,7 +156,7 @@ export interface MobileImpactScope {
 }
 
 export interface MobileAbnormalDecisionCell {
-  label: "对象" | "影响" | "证据" | "下一步";
+  label: "对象" | "影响" | "可信度" | "下一步";
   value: string;
   note: string;
   tone: OverviewTone;
@@ -789,7 +789,7 @@ function abnormalDecisionCells(
   return [
     { label: "对象", value: listTitle, note: heroTitle, tone: scope.tone },
     { label: "影响", value: scope.value, note: scope.note, tone: scope.tone },
-    { label: "证据", value: evidenceParts[0] || network.snapshot.value, note: evidenceParts.slice(1).join(" · ") || network.snapshot.label, tone: abnormalDecisionEvidenceTone(priority) },
+    { label: "可信度", value: evidenceParts[0] || network.snapshot.value, note: evidenceParts.slice(1).join(" · ") || network.snapshot.label, tone: abnormalDecisionEvidenceTone(priority) },
     { label: "下一步", value: abnormalDecisionNextAction(priority), note: abnormalDecisionActionNote(priority), tone: contract.severity === "p0" ? "danger" : "warn" },
   ];
 }

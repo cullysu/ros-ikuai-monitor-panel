@@ -111,7 +111,7 @@ function AbnormalDecisionRail({ model }: { model: MobileOverviewModel }) {
   return (
     <div
       className="ik-v1046-abnormal-decision-rail ik-mobile-abnormal-decision-rail"
-      data-overview-mobile-v1046-abnormal-decision-rail="object-impact-evidence-next-action"
+      data-overview-mobile-v1046-abnormal-decision-rail="object-impact-credibility-next-action"
       data-overview-mobile-v1046-abnormal-decision-ia={model.appHomeContract.informationArchitecture}
       data-overview-mobile-v1046-abnormal-decision-priority={model.priority}
       data-overview-mobile-v1046-abnormal-decision-scope={`${model.impactScope.id}:${model.impactScope.plane}`}
@@ -136,26 +136,12 @@ function ChannelDecisionVisual({ model }: { model: MobileOverviewModel }) {
     <div
       className="ik-mobile-decision-visual ik-v240-channel-line ik-mobile-channel-incident-stack"
       data-overview-chart-type="status"
-      data-overview-mobile-first-visual="collection-snapshot-status-line"
+      data-overview-mobile-first-visual="collection-snapshot-verdict"
       data-overview-mobile-first-microchart="true"
-      data-overview-mobile-v240-visual="collection-snapshot-status-line"
-      data-overview-mobile-v1055-channel-rail="view-model-routeros-rest-ssh-snapshot-trust-cells"
+      data-overview-mobile-v240-visual="collection-snapshot-verdict"
+      data-overview-mobile-v1122-channel-verdict="object-impact-credibility-next-action-no-channel-grid"
     >
       <AbnormalDecisionRail model={model} />
-      {model.priority === "snapshot-missing" ? (
-        <span className="is-missing" data-overview-mobile-trust-boundary-label="business-snapshot-missing">
-          <i aria-hidden="true" />
-          <b>可信边界</b>
-          <strong>业务快照缺失</strong>
-        </span>
-      ) : null}
-      {model.hero.channelCells.map((item) => (
-        <span className={toneClass(item.tone)} key={item.label}>
-          <i aria-hidden="true" />
-          <b>{item.label}</b>
-          <strong>{item.value}</strong>
-        </span>
-      ))}
     </div>
   );
 }
@@ -234,6 +220,7 @@ export function PrimaryDecision({ model }: { model: MobileOverviewModel }) {
       data-overview-mobile-hero-ranking-policy={model.appHomeContract.rankingPolicy}
       data-overview-mobile-v1065-normal-hero={model.priority === "normal" ? "chart-first-no-promo-headline" : undefined}
       data-overview-mobile-decision-card="one-conclusion-one-impact-one-next-step"
+      data-overview-mobile-v1122-decision-card="single-verdict-four-decision-facts"
       data-overview-primary-conclusion="true"
     >
       <div className="ik-mobile-decision-head">
@@ -242,11 +229,13 @@ export function PrimaryDecision({ model }: { model: MobileOverviewModel }) {
         <p>{model.hero.subtitle}</p>
       </div>
       <DecisionVisual model={model} />
-      <div className={`ik-mobile-next-step ${action.tone}`} data-overview-mobile-next-step="object-impact-credibility-action">
-        <span>下一步</span>
-        <b>{action.value}</b>
-        <em>{action.note}</em>
-      </div>
+      {model.priority === "normal" ? (
+        <div className={`ik-mobile-next-step ${action.tone}`} data-overview-mobile-next-step="normal-drilldown">
+          <span>下一步</span>
+          <b>{action.value}</b>
+          <em>{action.note}</em>
+        </div>
+      ) : null}
     </section>
   );
 }

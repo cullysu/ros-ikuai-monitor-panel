@@ -44,7 +44,7 @@ export function MobileOverviewHome(props: MobileOverviewHomeProps) {
       data-overview-mobile-v1020-public-product-polish="ios-rhythm-low-noise-grouped-surfaces-router-native-tabs"
       data-overview-mobile-v1030-native-trust-spine="grouped-trust-spine-low-card-noise"
       data-overview-mobile-v1043-native-token-contract="native-console-tokenized-rhythm-low-noise-trust-first"
-      data-overview-mobile-v1046-abnormal-decision-contract="object-impact-evidence-next-action-low-noise-console"
+      data-overview-mobile-v1046-abnormal-decision-contract="object-impact-credibility-next-action-low-noise-console"
       data-overview-mobile-v1058-collection-trust={model.appHomeContract.severity === "normal" ? "normal-hidden" : "routeros-rest-ssh-snapshot-fixed-abnormal-first-screen"}
       data-overview-mobile-v1059-collection-impact-separation={model.collectionTrustSeparation.contract}
       data-overview-mobile-v1059-collection-plane={model.collectionTrustSeparation.collectionPlane}
@@ -63,6 +63,7 @@ export function MobileOverviewHome(props: MobileOverviewHomeProps) {
       data-overview-mobile-v1120-first-screen-order="device-primary-decision-four-facts-detail-entry-tabs"
       data-overview-mobile-v1120-evidence-depth="supporting-rows-deferred-from-first-screen"
       data-overview-mobile-v1121-public-home="device-state-recent-only-no-action-button"
+      data-overview-mobile-v1122-public-home="single-verdict-readable-abnormal-facts-compact-detail"
       data-overview-mobile-no-snapshot-no-rate-placeholder={props.state.scenario === "no-snapshot" ? "true" : undefined}
     >
       <div className="ik-v420-shell ik-v240-shell">

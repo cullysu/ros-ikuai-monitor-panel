@@ -2212,7 +2212,7 @@ const sourceV1046RuntimeProbe = read("tools/check-resource-trend-balance.js");
 
 includesAll(sourceV1046MobileHome, [
   "data-overview-mobile-v1046-abnormal-decision-contract",
-  "object-impact-evidence-next-action-low-noise-console",
+  "object-impact-credibility-next-action-low-noise-console",
 ], "source v1046 mobile abnormal decision root contract");
 
 includesAll(sourceV1046IncidentHero, [
@@ -2221,6 +2221,26 @@ includesAll(sourceV1046IncidentHero, [
   "data-overview-mobile-v1046-abnormal-decision-rail=\"object-impact-evidence-next-action\"",
   "data-overview-mobile-v1046-abnormal-decision-scope",
 ], "source v1046 mobile abnormal decision rail");
+
+const sourceV1122Decision = read("src/panel-framework/overview/components/MobileOverviewDecision.tsx");
+const sourceV1122RepairStyles = read("src/panel-framework/overview/components/MobileOverviewPublicDecisionRepairStyles.ts");
+
+includesAll(`${sourceV1046MobileHome}\n${sourceV1122Decision}`, [
+  "data-overview-mobile-v1122-public-home",
+  "single-verdict-readable-abnormal-facts-compact-detail",
+  "data-overview-mobile-v1122-channel-verdict",
+  "object-impact-credibility-next-action-no-channel-grid",
+  "data-overview-mobile-v1046-abnormal-decision-rail=\"object-impact-credibility-next-action\"",
+  "model.priority === \"normal\"",
+], "source v1122 mobile readable abnormal verdict");
+
+includesAll(sourceV1122RepairStyles, [
+  "grid-template-columns: repeat(2, minmax(0, 1fr))",
+  "grid-template-rows: repeat(2, 60px)",
+  ".ik-mobile-supporting-surface",
+  "height: 82px",
+  "font-size: 12.5px",
+], "source v1122 mobile readable abnormal layout");
 
 includesAll(`${mobileModel}\n${mobileListModel}\n${mobilePolicy}`, [
   "carrier: string;",
@@ -2345,10 +2365,10 @@ includesAll(sourceV1046RuntimeProbe, [
   "channelRailModelBacked",
   "resourceVisualModelBacked",
   "data-overview-mobile-v1054-wan-port-model",
-  "data-overview-mobile-v1055-channel-rail",
+  "data-overview-mobile-v1122-channel-verdict",
   "data-overview-mobile-v1056-resource-visual",
-  "data-overview-mobile-v1046-abnormal-decision-rail=\"object-impact-evidence-next-action\"",
-  "object-impact-evidence-next-action-low-noise-console",
+  "data-overview-mobile-v1046-abnormal-decision-rail=\"object-impact-credibility-next-action\"",
+  "object-impact-credibility-next-action-low-noise-console",
 ], "runtime v1046 abnormal decision rail probe");
 
 includesAll(`${mobileModel}\n${mobilePolicy}\n${sourceV1046MobileHome}\n${read("src/panel-framework/overview/components/HomeSurface.tsx")}\n${read("src/panel-framework/overview/components/TrustStrip.tsx")}\n${sourceV1046AppPolish}\n${sourceV1046RuntimeProbe}`, [

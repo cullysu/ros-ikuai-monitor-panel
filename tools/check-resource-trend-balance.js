@@ -1164,7 +1164,7 @@ async function main() {
             impactScope: 'normal-ops',
             impactPlane: 'business',
             mode: 'normal',
-            requiredText: ['WAN 实时趋势', '网络可用', 'WAN', '采集', '资源', '快照', '运营摘要']
+            requiredText: ['WAN 实时趋势', '网络可用', 'WAN', '采集', '资源', '快照', '运行明细']
           },
           mobileAppHome: {
             ia: 'wan-offline-default-route-collection-success-first',
@@ -1186,7 +1186,7 @@ async function main() {
             impactScope: 'business-hidden',
             impactPlane: 'business',
             mode: 'p0',
-            requiredText: ['业务数据不可判', '可信边界', '不展示', 'REST', 'SSH', '快照']
+            requiredText: ['业务数据不可判', '可信边界', '不展示', '可信度', '下一步', '快照']
           },
           mobileResourceHome: {
             ia: 'resource-pressure-evidence-first',
@@ -1219,7 +1219,7 @@ async function main() {
             impactScope: 'collection-only',
             impactPlane: 'collection',
             mode: 'incident',
-            requiredText: ['采集不完整', '采集可信度下降', 'REST', 'SSH', '缓存']
+            requiredText: ['采集不完整', '采集可信度下降', '可信度', '下一步']
           }
         };
         const expectedConfig = expectedBySection[sectionName];
@@ -1498,13 +1498,14 @@ async function main() {
             )
           )
         );
-        const firstScreenChannelRail = root?.querySelector('[data-overview-mobile-v1055-channel-rail="view-model-routeros-rest-ssh-snapshot-trust-cells"]');
-        const firstScreenChannelCells = Array.from(firstScreenChannelRail?.querySelectorAll('span') || []);
-        const firstScreenChannelLabels = firstScreenChannelCells.map((cell) => normalize(cell.querySelector('b')?.textContent || ''));
+        const firstScreenChannelRail = root?.querySelector('[data-overview-mobile-v1122-channel-verdict="object-impact-credibility-next-action-no-channel-grid"]');
+        const firstScreenChannelCells = Array.from(firstScreenChannelRail?.querySelectorAll('[data-overview-mobile-v1046-abnormal-decision-cell]') || []);
         const firstScreenChannelEvidenceVisible = Boolean(
           firstScreenChannelRail &&
           firstScreenChannelCells.length >= 4 &&
-          ['RouterOS', 'REST', 'SSH', '快照'].every((label) => firstScreenChannelLabels.includes(label))
+          ['对象', '影响', '可信度', '下一步'].every((label) => (
+            firstScreenChannelCells.some((cell) => normalize(cell.querySelector('em')?.textContent || '') === label)
+          ))
         );
         const firstScreenMetricTrustVisible = Boolean(
           metricGrid &&
@@ -1799,9 +1800,9 @@ async function main() {
             cell.quietHairline
           ))
         );
-        const channelRail = hero?.querySelector('[data-overview-mobile-v1055-channel-rail="view-model-routeros-rest-ssh-snapshot-trust-cells"]');
+        const channelRail = hero?.querySelector('[data-overview-mobile-v1122-channel-verdict="object-impact-credibility-next-action-no-channel-grid"]');
         const channelRailModelBacked = (sectionName !== 'mobileNoSnapshotHome' && sectionName !== 'mobileCollectionHome') || Boolean(channelRail);
-        const abnormalDecisionRail = hero?.querySelector('[data-overview-mobile-v1046-abnormal-decision-rail="object-impact-evidence-next-action"]');
+        const abnormalDecisionRail = hero?.querySelector('[data-overview-mobile-v1046-abnormal-decision-rail="object-impact-credibility-next-action"]');
         const abnormalDecisionCells = Array.from(abnormalDecisionRail?.querySelectorAll('[data-overview-mobile-v1046-abnormal-decision-cell]') || []);
         const abnormalDecisionLabels = abnormalDecisionCells.map((cell) => normalize(cell.querySelector('em')?.textContent || ''));
         const abnormalDecisionValues = abnormalDecisionCells.map((cell) => normalize(cell.querySelector('b')?.textContent || ''));
@@ -1842,13 +1843,14 @@ async function main() {
           abnormalDecisionRail.getAttribute('data-overview-mobile-v1046-abnormal-decision-scope') === expectedImpactScope + ':' + expectedImpactPlane &&
           abnormalDecisionRailStyle &&
           abnormalDecisionRailStyle.display === 'grid' &&
-          (abnormalDecisionRailStyle.gridTemplateColumns || '').split(' ').length >= 4 &&
+          (abnormalDecisionRailStyle.gridTemplateColumns || '').split(' ').length === 2 &&
+          (abnormalDecisionRailStyle.gridTemplateRows || '').split(' ').length === 2 &&
           abnormalDecisionCells.length === 4 &&
-          ['对象', '影响', '证据', '下一步'].every((label) => abnormalDecisionLabels.includes(label)) &&
+          ['对象', '影响', '可信度', '下一步'].every((label) => abnormalDecisionLabels.includes(label)) &&
           abnormalDecisionValues.every((value) => value.length > 0) &&
           abnormalDecisionCellNoise.every((cell) => (
             cell.width > 0 &&
-            cell.height >= 20 &&
+            cell.height >= 48 &&
             !cell.strongRedFill &&
             !cell.raisedShadow &&
             Number.parseFloat(cell.borderLeftWidth || '0') <= 1
@@ -1921,7 +1923,7 @@ async function main() {
           rootAttrs.appPolish === 'native-readout-rail-no-ellipsis-subtle-tabbar' &&
           rootAttrs.publicPolish === 'ios-rhythm-low-noise-grouped-surfaces-router-native-tabs' &&
           rootAttrs.nativeTokenContract === 'native-console-tokenized-rhythm-low-noise-trust-first' &&
-          rootAttrs.abnormalDecisionContract === 'object-impact-evidence-next-action-low-noise-console' &&
+          rootAttrs.abnormalDecisionContract === 'object-impact-credibility-next-action-low-noise-console' &&
           nativeTrustSpinePolished &&
           metricGridProductized &&
           mobileGroupedSurfaceLowBorder &&

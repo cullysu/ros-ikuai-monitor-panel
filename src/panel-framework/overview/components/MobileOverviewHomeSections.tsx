@@ -66,10 +66,10 @@ function rowIcon(row: AppRankingRow): string {
 
 export function SupportingList({ model }: { model: MobileOverviewModel }) {
   const rows = model.primaryList.rows.slice(0, model.priority === "normal" ? 3 : 4);
-  const title = model.priority === "normal" ? "运营摘要详情" : "异常证据详情";
+  const title = model.priority === "normal" ? "运行明细" : "处置依据";
   const summary = model.priority === "normal"
-    ? "首屏只保留判断依据，排行进入详情"
-    : "先处理事故对象，证据链进入详情";
+    ? "默认路由 · 采集 · 快照"
+    : "影响对象 · 可信边界 · 最近记录";
   const listStyle = { "--mobile-list-count": rows.length } as CSSProperties;
   return (
     <section

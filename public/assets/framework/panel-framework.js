@@ -13933,8 +13933,9 @@ var PanelFramework = function(exports) {
 
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-mobile-decision-screen {
     display: grid !important;
-    grid-template-rows: 46px auto 64px minmax(132px, 1fr) !important;
+    grid-template-rows: 46px auto 64px auto !important;
     gap: 9px !important;
+    align-content: start !important;
     padding: max(12px, env(safe-area-inset-top)) 12px calc(76px + env(safe-area-inset-bottom)) !important;
     background: #edf2f7 !important;
   }
@@ -13982,7 +13983,7 @@ var PanelFramework = function(exports) {
 
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-mobile-decision-card {
     display: grid !important;
-    grid-template-rows: auto minmax(128px, auto) 34px !important;
+    grid-template-rows: auto minmax(128px, auto) 44px !important;
     gap: 9px !important;
     min-height: 0 !important;
     height: auto !important;
@@ -14002,6 +14003,15 @@ var PanelFramework = function(exports) {
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-mobile-decision-card.is-warn,
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-mobile-decision-card.is-missing {
     border-left-color: #b7791f !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1122-public-home] .ik-mobile-decision-card[data-overview-mobile-visual-kind="trust-channels"],
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1122-public-home] .ik-mobile-decision-card[data-overview-mobile-visual-kind="interface-list"] {
+    grid-template-rows: auto auto !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1122-public-home] .ik-mobile-decision-card:not([data-overview-mobile-priority="normal"]) {
+    grid-template-rows: auto auto !important;
   }
 
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-mobile-decision-head {
@@ -14073,9 +14083,9 @@ var PanelFramework = function(exports) {
 
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-mobile-next-step {
     grid-template-columns: 42px minmax(72px, .8fr) minmax(0, 1fr) !important;
-    min-height: 34px !important;
-    height: 34px !important;
-    max-height: 34px !important;
+    min-height: 44px !important;
+    height: 44px !important;
+    max-height: 44px !important;
     border-radius: 7px !important;
     background: #f8fbff !important;
   }
@@ -14095,7 +14105,10 @@ var PanelFramework = function(exports) {
   }
 
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-mobile-supporting-surface {
-    min-height: 0 !important;
+    min-height: 82px !important;
+    height: 82px !important;
+    max-height: 82px !important;
+    align-self: start !important;
     overflow: hidden !important;
   }
 
@@ -14111,7 +14124,8 @@ var PanelFramework = function(exports) {
 
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1120-public-home] .ik-mobile-supporting-list {
     display: grid !important;
-    grid-template-rows: 34px minmax(48px, 1fr) !important;
+    grid-template-rows: 34px 48px !important;
+    height: auto !important;
   }
 
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1120-public-home] .ik-mobile-detail-entry {
@@ -14195,6 +14209,31 @@ var PanelFramework = function(exports) {
     background: #f6f9fc !important;
   }
 
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1122-public-home] .ik-mobile-channel-incident-stack,
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1122-public-home] .ik-mobile-generic-incident-stack {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-rows: 120px !important;
+    min-height: 132px !important;
+    height: 132px !important;
+    max-height: 132px !important;
+    padding: 6px !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1122-public-home] .ik-mobile-wan-incident-stack {
+    grid-template-rows: 120px 42px 42px !important;
+    min-height: 224px !important;
+    height: 224px !important;
+    max-height: 224px !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1122-public-home] .ik-mobile-resource-incident-stack {
+    grid-template-rows: 120px repeat(3, 34px) !important;
+    min-height: 243px !important;
+    height: 243px !important;
+    max-height: 243px !important;
+  }
+
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-mobile-resource-incident-stack > .ik-mobile-resource-line {
     display: grid !important;
     grid-template-columns: 48px minmax(0, 1fr) 46px !important;
@@ -14204,9 +14243,9 @@ var PanelFramework = function(exports) {
     align-items: center !important;
     column-gap: 8px !important;
     row-gap: 2px !important;
-    min-height: 30px !important;
-    height: 30px !important;
-    max-height: 30px !important;
+    min-height: 34px !important;
+    height: 34px !important;
+    max-height: 34px !important;
     padding: 4px 6px !important;
   }
 
@@ -14256,7 +14295,7 @@ var PanelFramework = function(exports) {
     min-width: 0 !important;
     overflow: hidden !important;
     color: #6b7b8f !important;
-    font-size: 8px !important;
+    font-size: 9px !important;
     font-weight: 640 !important;
     line-height: 1.05 !important;
     text-overflow: ellipsis !important;
@@ -14268,7 +14307,7 @@ var PanelFramework = function(exports) {
     min-width: 0 !important;
     overflow: hidden !important;
     color: #6b7b8f !important;
-    font-size: 8px !important;
+    font-size: 9px !important;
     font-style: normal !important;
     font-weight: 640 !important;
     line-height: 1.05 !important;
@@ -14277,15 +14316,27 @@ var PanelFramework = function(exports) {
   }
 
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-mobile-abnormal-decision-rail {
-    min-height: 44px !important;
-    height: 44px !important;
-    max-height: 44px !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    grid-template-rows: repeat(2, 60px) !important;
+    min-height: 120px !important;
+    height: 120px !important;
+    max-height: 120px !important;
   }
 
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-mobile-abnormal-decision-rail > span {
-    min-height: 44px !important;
-    height: 44px !important;
-    max-height: 44px !important;
+    min-height: 60px !important;
+    height: 60px !important;
+    max-height: 60px !important;
+    padding: 7px 8px !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1122-public-home] .ik-mobile-abnormal-decision-rail em,
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1122-public-home] .ik-mobile-abnormal-decision-rail strong {
+    font-size: 9.5px !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1122-public-home] .ik-mobile-abnormal-decision-rail b {
+    font-size: 12.5px !important;
   }
 
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-v420-tabs,
@@ -16057,7 +16108,7 @@ var PanelFramework = function(exports) {
     return [
       { label: "对象", value: listTitle, note: heroTitle, tone: scope.tone },
       { label: "影响", value: scope.value, note: scope.note, tone: scope.tone },
-      { label: "证据", value: evidenceParts[0] || network.snapshot.value, note: evidenceParts.slice(1).join(" · ") || network.snapshot.label, tone: abnormalDecisionEvidenceTone(priority) },
+      { label: "可信度", value: evidenceParts[0] || network.snapshot.value, note: evidenceParts.slice(1).join(" · ") || network.snapshot.label, tone: abnormalDecisionEvidenceTone(priority) },
       { label: "下一步", value: abnormalDecisionNextAction(priority), note: abnormalDecisionActionNote(priority), tone: contract.severity === "p0" ? "danger" : "warn" }
     ];
   }
@@ -16296,7 +16347,7 @@ var PanelFramework = function(exports) {
       "div",
       {
         className: "ik-v1046-abnormal-decision-rail ik-mobile-abnormal-decision-rail",
-        "data-overview-mobile-v1046-abnormal-decision-rail": "object-impact-evidence-next-action",
+        "data-overview-mobile-v1046-abnormal-decision-rail": "object-impact-credibility-next-action",
         "data-overview-mobile-v1046-abnormal-decision-ia": model.appHomeContract.informationArchitecture,
         "data-overview-mobile-v1046-abnormal-decision-priority": model.priority,
         "data-overview-mobile-v1046-abnormal-decision-scope": `${model.impactScope.id}:${model.impactScope.plane}`,
@@ -16317,28 +16368,16 @@ var PanelFramework = function(exports) {
     );
   }
   function ChannelDecisionVisual({ model }) {
-    return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+    return /* @__PURE__ */ jsxRuntimeExports.jsx(
       "div",
       {
         className: "ik-mobile-decision-visual ik-v240-channel-line ik-mobile-channel-incident-stack",
         "data-overview-chart-type": "status",
-        "data-overview-mobile-first-visual": "collection-snapshot-status-line",
+        "data-overview-mobile-first-visual": "collection-snapshot-verdict",
         "data-overview-mobile-first-microchart": "true",
-        "data-overview-mobile-v240-visual": "collection-snapshot-status-line",
-        "data-overview-mobile-v1055-channel-rail": "view-model-routeros-rest-ssh-snapshot-trust-cells",
-        children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(AbnormalDecisionRail, { model }),
-          model.priority === "snapshot-missing" ? /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "is-missing", "data-overview-mobile-trust-boundary-label": "business-snapshot-missing", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("i", { "aria-hidden": "true" }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: "可信边界" }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("strong", { children: "业务快照缺失" })
-          ] }) : null,
-          model.hero.channelCells.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: toneClass(item.tone), children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("i", { "aria-hidden": "true" }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: item.label }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("strong", { children: item.value })
-          ] }, item.label))
-        ]
+        "data-overview-mobile-v240-visual": "collection-snapshot-verdict",
+        "data-overview-mobile-v1122-channel-verdict": "object-impact-credibility-next-action-no-channel-grid",
+        children: /* @__PURE__ */ jsxRuntimeExports.jsx(AbnormalDecisionRail, { model })
       }
     );
   }
@@ -16418,6 +16457,7 @@ var PanelFramework = function(exports) {
         "data-overview-mobile-hero-ranking-policy": model.appHomeContract.rankingPolicy,
         "data-overview-mobile-v1065-normal-hero": model.priority === "normal" ? "chart-first-no-promo-headline" : void 0,
         "data-overview-mobile-decision-card": "one-conclusion-one-impact-one-next-step",
+        "data-overview-mobile-v1122-decision-card": "single-verdict-four-decision-facts",
         "data-overview-primary-conclusion": "true",
         children: [
           /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ik-mobile-decision-head", children: [
@@ -16426,11 +16466,11 @@ var PanelFramework = function(exports) {
             /* @__PURE__ */ jsxRuntimeExports.jsx("p", { children: model.hero.subtitle })
           ] }),
           /* @__PURE__ */ jsxRuntimeExports.jsx(DecisionVisual, { model }),
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `ik-mobile-next-step ${action.tone}`, "data-overview-mobile-next-step": "object-impact-credibility-action", children: [
+          model.priority === "normal" ? /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `ik-mobile-next-step ${action.tone}`, "data-overview-mobile-next-step": "normal-drilldown", children: [
             /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "下一步" }),
             /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: action.value }),
             /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: action.note })
-          ] })
+          ] }) : null
         ]
       }
     );
@@ -16507,8 +16547,8 @@ var PanelFramework = function(exports) {
   }
   function SupportingList({ model }) {
     const rows = model.primaryList.rows.slice(0, model.priority === "normal" ? 3 : 4);
-    const title = model.priority === "normal" ? "运营摘要详情" : "异常证据详情";
-    const summary = model.priority === "normal" ? "首屏只保留判断依据，排行进入详情" : "先处理事故对象，证据链进入详情";
+    const title = model.priority === "normal" ? "运行明细" : "处置依据";
+    const summary = model.priority === "normal" ? "默认路由 · 采集 · 快照" : "影响对象 · 可信边界 · 最近记录";
     const listStyle = { "--mobile-list-count": rows.length };
     return /* @__PURE__ */ jsxRuntimeExports.jsx(
       "section",
@@ -16645,7 +16685,7 @@ var PanelFramework = function(exports) {
         "data-overview-mobile-v1020-public-product-polish": "ios-rhythm-low-noise-grouped-surfaces-router-native-tabs",
         "data-overview-mobile-v1030-native-trust-spine": "grouped-trust-spine-low-card-noise",
         "data-overview-mobile-v1043-native-token-contract": "native-console-tokenized-rhythm-low-noise-trust-first",
-        "data-overview-mobile-v1046-abnormal-decision-contract": "object-impact-evidence-next-action-low-noise-console",
+        "data-overview-mobile-v1046-abnormal-decision-contract": "object-impact-credibility-next-action-low-noise-console",
         "data-overview-mobile-v1058-collection-trust": model.appHomeContract.severity === "normal" ? "normal-hidden" : "routeros-rest-ssh-snapshot-fixed-abnormal-first-screen",
         "data-overview-mobile-v1059-collection-impact-separation": model.collectionTrustSeparation.contract,
         "data-overview-mobile-v1059-collection-plane": model.collectionTrustSeparation.collectionPlane,
@@ -16664,6 +16704,7 @@ var PanelFramework = function(exports) {
         "data-overview-mobile-v1120-first-screen-order": "device-primary-decision-four-facts-detail-entry-tabs",
         "data-overview-mobile-v1120-evidence-depth": "supporting-rows-deferred-from-first-screen",
         "data-overview-mobile-v1121-public-home": "device-state-recent-only-no-action-button",
+        "data-overview-mobile-v1122-public-home": "single-verdict-readable-abnormal-facts-compact-detail",
         "data-overview-mobile-no-snapshot-no-rate-placeholder": props.state.scenario === "no-snapshot" ? "true" : void 0,
         children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ik-v420-shell ik-v240-shell", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
