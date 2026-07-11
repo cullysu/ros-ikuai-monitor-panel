@@ -13940,14 +13940,16 @@ var PanelFramework = function(exports) {
   }
 
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-mobile-device-bar {
+    grid-template-columns: minmax(0, 1fr) auto !important;
     min-height: 46px !important;
     height: 46px !important;
     padding: 0 1px !important;
   }
 
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-mobile-device-title {
-    justify-items: center !important;
-    text-align: center !important;
+    justify-items: start !important;
+    text-align: left !important;
+    min-width: 0 !important;
   }
 
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-mobile-device-title b {
@@ -13962,6 +13964,7 @@ var PanelFramework = function(exports) {
   }
 
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-mobile-context-button {
+    display: none !important;
     width: 36px !important;
     height: 36px !important;
     border: 0 !important;
@@ -16215,19 +16218,8 @@ var PanelFramework = function(exports) {
         "data-overview-mobile-v420-nav": "ios-navigation",
         "data-overview-mobile-v240-nav": "app-navigation",
         "data-overview-mobile-v1067-status-header": "routeros-device-state-header-context-action-low-noise",
+        "data-overview-mobile-v1121-status-header": "device-name-state-recent-only",
         children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(
-            "button",
-            {
-              className: "ik-mobile-context-button",
-              "aria-label": "打开 RouterOS 采集链路与设备上下文",
-              "data-overview-mobile-v1067-header-action": "router-context",
-              "data-overview-mobile-v1067-header-action-semantic": "device-collection-route-context",
-              "data-overview-mobile-v1067-header-action-tone": "low-noise-outline",
-              type: "button",
-              children: /* @__PURE__ */ jsxRuntimeExports.jsx("svg", { viewBox: "0 0 24 24", "aria-hidden": "true", children: /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: "M5 7h14M7 12h10M9 17h6M6 7l2-3h8l2 3M8 20h8" }) })
-            }
-          ),
           /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ik-mobile-device-title", "data-overview-mobile-primary-title": "device", children: [
             /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: model.header.deviceName }),
             /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
@@ -16725,6 +16717,7 @@ var PanelFramework = function(exports) {
         "data-overview-mobile-v1120-public-home": "single-task-verdict-core-facts-detail-entry",
         "data-overview-mobile-v1120-first-screen-order": "device-primary-decision-four-facts-detail-entry-tabs",
         "data-overview-mobile-v1120-evidence-depth": "supporting-rows-deferred-from-first-screen",
+        "data-overview-mobile-v1121-public-home": "device-state-recent-only-no-action-button",
         "data-overview-mobile-no-snapshot-no-rate-placeholder": props.state.scenario === "no-snapshot" ? "true" : void 0,
         children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ik-v420-shell ik-v240-shell", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(

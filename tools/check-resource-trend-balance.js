@@ -1280,7 +1280,8 @@ async function main() {
           firstScreenOrderV1110: root.getAttribute('data-overview-mobile-v1110-first-screen-order') || '',
           publicHomeV1120: root.getAttribute('data-overview-mobile-v1120-public-home') || '',
           firstScreenOrderV1120: root.getAttribute('data-overview-mobile-v1120-first-screen-order') || '',
-          evidenceDepthV1120: root.getAttribute('data-overview-mobile-v1120-evidence-depth') || ''
+          evidenceDepthV1120: root.getAttribute('data-overview-mobile-v1120-evidence-depth') || '',
+          publicHomeV1121: root.getAttribute('data-overview-mobile-v1121-public-home') || ''
         } : {};
         const surfaceAttrs = surface ? {
           listKind: surface.getAttribute('data-overview-mobile-list-kind') || '',
@@ -1434,6 +1435,7 @@ async function main() {
         const trustStrip = root?.querySelector('.ik-v910-trust-strip');
         const isPublicHomeV1110 = rootAttrs.publicHomeV1110 === 'device-primary-card-four-facts-supporting-no-redundant-strips';
         const isPublicHomeV1120 = rootAttrs.publicHomeV1120 === 'single-task-verdict-core-facts-detail-entry';
+        const isPublicHomeV1121 = rootAttrs.publicHomeV1121 === 'device-state-recent-only-no-action-button';
         const judgementStyle = judgementStrip ? getComputedStyle(judgementStrip) : null;
         const trustStripStyle = trustStrip ? getComputedStyle(trustStrip) : null;
         const metricGrid = root?.querySelector('[data-overview-mobile-v1044-metric-grid="wan-collection-resource-snapshot-four-core-facts"]');
@@ -1607,18 +1609,23 @@ async function main() {
         const statusHeaderAction = statusHeader?.querySelector('[data-overview-mobile-v1067-header-action="router-context"]');
         const statusHeaderActionStyle = statusHeaderAction ? getComputedStyle(statusHeaderAction) : null;
         const statusHeaderActionLabel = statusHeaderAction?.getAttribute('aria-label') || '';
+        const statusHeaderLabel = statusHeader?.getAttribute('aria-label') || '';
         const routerStatusHeaderProductized = Boolean(
           statusHeader &&
-          statusHeader.getAttribute('aria-label') === 'RouterOS 设备状态导航' &&
-          statusHeaderAction &&
-          statusHeaderAction.getAttribute('data-overview-mobile-v1067-header-action-semantic') === 'device-collection-route-context' &&
-          statusHeaderAction.getAttribute('data-overview-mobile-v1067-header-action-tone') === 'low-noise-outline' &&
-          statusHeaderActionLabel.includes('RouterOS') &&
-          statusHeaderActionLabel.includes('采集链路') &&
-          !statusHeaderActionLabel.includes('打开菜单') &&
-          statusHeaderActionStyle &&
-          Number.parseFloat(statusHeaderActionStyle.borderTopWidth || '0') === 0 &&
-          !/rgba?\([^)]*,\s*0\.[2-9][^)]*\)\s+0px\s+0px\s+[4-9]/.test(statusHeaderActionStyle.boxShadow || '')
+          statusHeaderLabel.includes('RouterOS') &&
+          (
+            isPublicHomeV1121
+              ? !statusHeaderAction &&
+                statusHeader.getAttribute('data-overview-mobile-v1121-status-header') === 'device-name-state-recent-only'
+              : statusHeaderAction &&
+                statusHeaderAction.getAttribute('data-overview-mobile-v1067-header-action-semantic') === 'device-collection-route-context' &&
+                statusHeaderAction.getAttribute('data-overview-mobile-v1067-header-action-tone') === 'low-noise-outline' &&
+                statusHeaderActionLabel.includes('RouterOS') &&
+                !statusHeaderActionLabel.toLowerCase().includes('menu') &&
+                statusHeaderActionStyle &&
+                Number.parseFloat(statusHeaderActionStyle.borderTopWidth || '0') === 0 &&
+                !/rgba?\([^)]*,\s*0\.[2-9][^)]*\)\s+0px\s+0px\s+[4-9]/.test(statusHeaderActionStyle.boxShadow || '')
+          )
         );
         const routerBottomTabsProductized = Boolean(
           routerTabs &&

@@ -131,17 +131,8 @@ function DeviceBar({ model }: { model: MobileOverviewModel }) {
       data-overview-mobile-v420-nav="ios-navigation"
       data-overview-mobile-v240-nav="app-navigation"
       data-overview-mobile-v1067-status-header="routeros-device-state-header-context-action-low-noise"
+      data-overview-mobile-v1121-status-header="device-name-state-recent-only"
     >
-      <button
-        className="ik-mobile-context-button"
-        aria-label="打开 RouterOS 采集链路与设备上下文"
-        data-overview-mobile-v1067-header-action="router-context"
-        data-overview-mobile-v1067-header-action-semantic="device-collection-route-context"
-        data-overview-mobile-v1067-header-action-tone="low-noise-outline"
-        type="button"
-      >
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M7 12h10M9 17h6M6 7l2-3h8l2 3M8 20h8" /></svg>
-      </button>
       <div className="ik-mobile-device-title" data-overview-mobile-primary-title="device">
         <b>{model.header.deviceName}</b>
         <span>只读观察 · 最近 {model.header.recent}</span>
@@ -581,6 +572,7 @@ export function MobileOverviewHome(props: MobileOverviewHomeProps) {
       data-overview-mobile-v1120-public-home="single-task-verdict-core-facts-detail-entry"
       data-overview-mobile-v1120-first-screen-order="device-primary-decision-four-facts-detail-entry-tabs"
       data-overview-mobile-v1120-evidence-depth="supporting-rows-deferred-from-first-screen"
+      data-overview-mobile-v1121-public-home="device-state-recent-only-no-action-button"
       data-overview-mobile-no-snapshot-no-rate-placeholder={props.state.scenario === "no-snapshot" ? "true" : undefined}
     >
       <div className="ik-v420-shell ik-v240-shell">

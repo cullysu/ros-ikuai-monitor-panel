@@ -400,14 +400,16 @@ export const MOBILE_OVERVIEW_PUBLIC_DECISION_REPAIR_STYLES = `
   }
 
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-mobile-device-bar {
+    grid-template-columns: minmax(0, 1fr) auto !important;
     min-height: 46px !important;
     height: 46px !important;
     padding: 0 1px !important;
   }
 
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-mobile-device-title {
-    justify-items: center !important;
-    text-align: center !important;
+    justify-items: start !important;
+    text-align: left !important;
+    min-width: 0 !important;
   }
 
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-mobile-device-title b {
@@ -422,6 +424,7 @@ export const MOBILE_OVERVIEW_PUBLIC_DECISION_REPAIR_STYLES = `
   }
 
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-mobile-context-button {
+    display: none !important;
     width: 36px !important;
     height: 36px !important;
     border: 0 !important;
