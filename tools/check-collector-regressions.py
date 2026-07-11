@@ -807,7 +807,7 @@ def assert_frontend_wan_aggregate_default():
     if framework_shell:
         rows_source = (ROOT / "src" / "panel-framework" / "overview" / "desktopOverviewRows.tsx").read_text(encoding="utf-8")
         visuals_source = (ROOT / "src" / "panel-framework" / "overview" / "desktopOverviewVisuals.tsx").read_text(encoding="utf-8")
-        desktop_source = (ROOT / "src" / "panel-framework" / "overview" / "components" / "DesktopConsole.tsx").read_text(encoding="utf-8")
+        desktop_scene_source = (ROOT / "src" / "panel-framework" / "overview" / "desktopOverviewScenes.tsx").read_text(encoding="utf-8")
         artifact_source = (ROOT / "public" / "assets" / "framework" / "panel-framework.js").read_text(encoding="utf-8")
         assert "export function trafficTotals" in rows_source
         assert "const rows = collectWanRows(snapshot);" in rows_source
@@ -815,8 +815,8 @@ def assert_frontend_wan_aggregate_default():
         assert "down: rows.reduce((total, row) => total + toNumber(row.downRate), 0)" in rows_source
         assert 'trendDatum("traffic-down", "总下行", totals.down' in rows_source
         assert 'trendDatum("traffic-up", "总上行", totals.up' in rows_source
-        assert "const trafficChartRowsData = trafficChartRows(snapshot, state);" in desktop_source
-        assert "<DesktopWanIntegratedVisual snapshot={snapshot} state={state} rows={trafficChartRowsData} />" in desktop_source
+        assert "const trafficChartRowsData = trafficChartRows(snapshot, state);" in desktop_scene_source
+        assert "<DesktopWanIntegratedVisual snapshot={snapshot} state={state} rows={trafficChartRowsData} />" in desktop_scene_source
         assert 'data-overview-desktop-v1063-wan-decision-rail="current-peak-top-default-sampling-single-surface"' in visuals_source
         assert "data-overview-desktop-v1063-wan-decision-rail" in artifact_source
         assert "trafficTotals" in artifact_source
