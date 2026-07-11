@@ -5370,7 +5370,6 @@ class Collector:
         panel_files = [
             file_mtime_summary(BASE_DIR / "app.py"),
             file_mtime_summary(PUBLIC_DIR / "index.html"),
-            file_mtime_summary(PUBLIC_DIR / "layout-whitespace-patch.js"),
             file_mtime_summary(PUBLIC_DIR / "readonly-diagnostics.js"),
         ]
         nikki = nikki_probe()

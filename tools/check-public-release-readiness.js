@@ -122,8 +122,6 @@ function readReleaseSurface(relPath) {
     readIfExists('src/panel-framework/overview/OverviewPanel.css'),
     read('src/panel-framework/overview/deriveOverviewState.ts'),
     read('src/panel-framework/panel-framework-app.tsx'),
-    readIfExists('public/scale-adaptive-patch.js'),
-    readIfExists('public/layout-whitespace-patch.js'),
     readIfExists('app.py'),
     frameworkCompatibilitySurface(),
   ];
@@ -148,6 +146,13 @@ function assertNotContains(relPath, needle, label = needle) {
   const text = read(relPath);
   if (text.includes(needle)) {
     throw new Error(`${relPath} still contains ${label}`);
+  }
+}
+
+function assertNotExists(relPath) {
+  const filePath = path.join(ROOT, relPath);
+  if (fs.existsSync(filePath)) {
+    throw new Error(`${relPath} should not exist`);
   }
 }
 
@@ -726,13 +731,13 @@ function main(argv = process.argv.slice(2)) {
   assertContains('tools/local-predeploy-check.js', 'overviewDefaultRouteSemanticUndeterminedOk');
   assertNotContains('tools/local-predeploy-check.js', 'overviewFirstScreenFieldCount >= minOverviewFirstScreenFields');
   assertContains('tools/local-predeploy-check.js', "const requiredScenarios = ['single', 'fleet', 'all-offline', 'no-snapshot', 'collection-down', 'resource-full', 'interfaces-down'];");
-  assertContains('public/scale-adaptive-patch.js', '平均值');
+  assertNotExists('public/scale-adaptive-patch.js');
+  assertNotExists('public/layout-whitespace-patch.js');
+  assertNotExists('public/panel-professional-redesign.js');
   assertNotContains('app.py', 'semanticTriage');
   assertNotContains('app.py', 'actionQueue');
   assertNotContains('app.py', 'manual_review');
   assertPublicBoundaryClean('public/index.html');
-  assertPublicBoundaryClean('public/scale-adaptive-patch.js');
-  assertPublicBoundaryClean('public/layout-whitespace-patch.js');
   assertNotContains('public/index.html', 'events.length');
   assertContains('public/index.html', 'data-overview-desktop-workspace');
   assertAnyContains('public/index.html', ['data-overview-density-module="wan-trend"', 'module="wan-trend"', 'module: "wan-trend"', '"wan-trend"'], 'wan-trend overview module');

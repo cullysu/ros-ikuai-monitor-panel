@@ -789,9 +789,7 @@ async function runBackendChecks(args, report, baseUrl, startedByScript) {
   );
 
   const assets = [
-    'layout-whitespace-patch.js',
     'readonly-diagnostics.js',
-    'panel-professional-redesign.js',
   ];
   for (const asset of assets) {
     const result = await fetchText(`${baseUrl}${asset}`, { timeoutMs: 5000 });
@@ -800,6 +798,18 @@ async function runBackendChecks(args, report, baseUrl, startedByScript) {
       statusCode: result.response.status,
       bytes: result.text.length,
       privatePublicAsset,
+    });
+  }
+  const retiredPatchAssets = [
+    'layout-whitespace-patch.js',
+    'panel-professional-redesign.js',
+    'scale-adaptive-patch.js',
+  ];
+  for (const asset of retiredPatchAssets) {
+    const result = await fetchText(`${baseUrl}${asset}`, { timeoutMs: 5000 });
+    record(report, `retired public patch asset is absent: /${asset}`, result.response.status === 404, {
+      statusCode: result.response.status,
+      bytes: result.text.length,
     });
   }
 

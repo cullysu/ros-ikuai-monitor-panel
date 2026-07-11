@@ -772,17 +772,49 @@ def assert_frontend_charts_skip_missing_values():
     assert "Number(value || 0)" not in index_source[index_source.find("function smoothNumericSeries") : index_source.find("function chartSegmentElements")]
     assert "if (value === null || value === undefined || value === '') return null;" in index_source
     assert "return Number.isFinite(numeric) ? numeric : null;" in index_source
-    layout_patch_source = (ROOT / "public" / "layout-whitespace-patch.js").read_text(encoding="utf-8")
-    ops_chart_start = layout_patch_source.find("function opsPercentMiniChart")
-    ops_chart_body = layout_patch_source[ops_chart_start : ops_chart_start + 2200]
-    assert "function opsChartNumber" in layout_patch_source
-    assert "function opsSmoothPercentValues" in layout_patch_source
-    assert "function opsSmoothPath" in layout_patch_source
-    assert "Number(value || 0)" not in ops_chart_body
+    layout_patch_path = ROOT / "public" / "layout-whitespace-patch.js"
+    if layout_patch_path.exists():
+        layout_patch_source = layout_patch_path.read_text(encoding="utf-8")
+        ops_chart_start = layout_patch_source.find("function opsPercentMiniChart")
+        ops_chart_body = layout_patch_source[ops_chart_start : ops_chart_start + 2200]
+        assert "function opsChartNumber" in layout_patch_source
+        assert "function opsSmoothPercentValues" in layout_patch_source
+        assert "function opsSmoothPath" in layout_patch_source
+        assert "Number(value || 0)" not in ops_chart_body
+    else:
+        assert "layout-whitespace-patch" not in index_source
 
 
 def assert_frontend_wan_aggregate_default():
-    source = (ROOT / "public" / "scale-adaptive-patch.js").read_text(encoding="utf-8")
+    index_source = (ROOT / "public" / "index.html").read_text(encoding="utf-8")
+    framework_shell = (
+        'data-app-shell="ikuai"' in index_source
+        and 'data-overview-framework-asset="script"' in index_source
+    )
+    if framework_shell:
+        rows_source = (ROOT / "src" / "panel-framework" / "overview" / "desktopOverviewRows.tsx").read_text(encoding="utf-8")
+        visuals_source = (ROOT / "src" / "panel-framework" / "overview" / "desktopOverviewVisuals.tsx").read_text(encoding="utf-8")
+        desktop_source = (ROOT / "src" / "panel-framework" / "overview" / "components" / "DesktopConsole.tsx").read_text(encoding="utf-8")
+        artifact_source = (ROOT / "public" / "assets" / "framework" / "panel-framework.js").read_text(encoding="utf-8")
+        assert "export function trafficTotals" in rows_source
+        assert "const rows = collectWanRows(snapshot);" in rows_source
+        assert "up: rows.reduce((total, row) => total + toNumber(row.upRate), 0)" in rows_source
+        assert "down: rows.reduce((total, row) => total + toNumber(row.downRate), 0)" in rows_source
+        assert 'trendDatum("traffic-down", "总下行", totals.down' in rows_source
+        assert 'trendDatum("traffic-up", "总上行", totals.up' in rows_source
+        assert "const trafficChartRowsData = trafficChartRows(snapshot, state);" in desktop_source
+        assert "<DesktopWanIntegratedVisual snapshot={snapshot} state={state} rows={trafficChartRowsData} />" in desktop_source
+        assert 'data-overview-desktop-v1063-wan-decision-rail="current-peak-top-default-sampling-single-surface"' in visuals_source
+        assert "data-overview-desktop-v1063-wan-decision-rail" in artifact_source
+        assert "trafficTotals" in artifact_source
+        assert "scale-adaptive-patch" not in index_source
+        assert "panel-professional-redesign" not in index_source
+        assert "layout-whitespace-patch" not in index_source
+        return
+
+    patch_path = ROOT / "public" / "scale-adaptive-patch.js"
+    assert patch_path.exists(), "legacy WAN aggregate patch is missing outside framework shell"
+    source = patch_path.read_text(encoding="utf-8")
     assert "const AGGREGATE_WAN_KEY = '__all_wan__';" in source
     assert "function wanAggregateLine(lines, overview = {})" in source
     assert "isAggregateWan: true" in source
