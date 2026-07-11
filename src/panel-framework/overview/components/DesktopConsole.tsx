@@ -1,46 +1,13 @@
-import {
-  formatNumber,
-  formatPercent,
-  type OverviewDerivedState,
-  type OverviewTone,
-} from "../index";
+import { formatNumber, type OverviewDerivedState, type OverviewTone } from "../index";
 import { OVERVIEW_LOW_NOISE_CONSOLE_TOKEN_CONTRACT } from "../mobileOverviewTokens";
 import {
   DESKTOP_IKUAI_SHORT_NAV_CONTRACT,
   desktopCoreText,
-  topbarCollectionValue,
-  topbarImpactValue,
-  topbarObjectValue,
   verdictContractText,
   type OverviewPanelProps,
 } from "../desktopOverviewHelpers";
-import { desktopTerminalRows } from "../desktopOverviewRows";
 import { buildDesktopOverviewScene } from "../desktopOverviewScenes";
-
-function DesktopThinKpis({ snapshot, state }: OverviewPanelProps) {
-  const object = topbarObjectValue(snapshot, state);
-  const collection = topbarCollectionValue(state);
-  const terminals = desktopTerminalRows(snapshot);
-  const resource = state.scenario === "no-snapshot" ? "禁显" : formatPercent(state.facts.resource.cpu, 0);
-  const isFleetDensity = state.scenario === "fleet";
-  const items = [
-    { label: "WAN", value: object.value, note: isFleetDensity ? "类型分布" : topbarImpactValue(snapshot, state), tone: state.verdict.level },
-    { label: "资源", value: resource, note: state.scenario === "resource-full" ? "持续超阈" : "阈值", tone: state.scenario === "resource-full" ? "danger" : state.facts.resource.level },
-    { label: "采集", value: collection.value, note: state.scenario === "collection-down" ? "缓存" : state.scenario === "no-snapshot" ? "断链" : "通道可读", tone: state.facts.collection.credibilityTone },
-    { label: "终端", value: terminals.length ? formatNumber(terminals.length) : "无", note: "总流量排序", tone: terminals.length ? "trust" : "missing" },
-  ] satisfies Array<{ label: string; value: string; note: string; tone: OverviewTone }>;
-  return (
-    <div className="ro-desktop-thin-kpis" data-overview-desktop-kpi-row="thin-business-summary">
-      {items.map((item) => (
-        <div className="ro-desktop-thin-kpi ik-overview-kpi-card" data-overview-kpi-card data-tone={item.tone} key={item.label}>
-          <span>{item.label}</span>
-          <b>{item.value}</b>
-          <em>{item.note}</em>
-        </div>
-      ))}
-    </div>
-  );
-}
+import { DesktopDecisionRail } from "./DesktopDecisionRail";
 
 function DesktopShortNav({ state }: { state: OverviewDerivedState }) {
   const items = [
@@ -132,7 +99,7 @@ export function DesktopWorkspace({ snapshot, state }: OverviewPanelProps) {
       data-overview-desktop-ikuai40-console="top-six-left-network-wan-right-resource-collection-bottom-interface-events"
     >
       <DesktopShortNav state={state} />
-      <DesktopThinKpis snapshot={snapshot} state={state} />
+      <DesktopDecisionRail snapshot={snapshot} state={state} />
       <div className="ro-col is-main stack" data-overview-desktop-rail="network-wan" data-overview-desktop-fixed-area="left-main">{sections.main}</div>
       <div className="ro-col is-side stack ik-home-side-stack" data-overview-desktop-rail="resource-collection" data-overview-desktop-fixed-area="right-main">{sections.side}</div>
       {sections.bottom.length > 0 ? <div className={`ro-col is-bottom stack${state.scenario === "no-snapshot" ? " ro-no-snapshot-floor" : ""}`} style={state.scenario === "no-snapshot" ? { gridColumn: "1 / -1", gridAutoRows: "minmax(190px, 1fr)" } : { gridColumn: "1 / -1" }} data-overview-desktop-rail="interface-events" data-overview-desktop-fixed-area="bottom" data-overview-desktop-v1042-no-snapshot-floor-rail={state.scenario === "no-snapshot" ? "visibility-raw-evidence-filled-floor" : undefined}>{sections.bottom}</div> : null}

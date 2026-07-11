@@ -27,6 +27,8 @@ const panelFile = "src/panel-framework/overview/OverviewPanel.tsx";
 const panelCssFile = "src/panel-framework/overview/OverviewPanel.css";
 const desktopConsoleFile =
   "src/panel-framework/overview/components/DesktopConsole.tsx";
+const desktopDecisionRailFile =
+  "src/panel-framework/overview/components/DesktopDecisionRail.tsx";
 const desktopScenesFile =
   "src/panel-framework/overview/desktopOverviewScenes.tsx";
 const desktopHelpersFile =
@@ -50,6 +52,7 @@ const mobileModelFile =
   "src/panel-framework/overview/mobileOverviewModel.ts";
 const panel = read(panelFile);
 const desktopConsole = read(desktopConsoleFile);
+const desktopDecisionRail = read(desktopDecisionRailFile);
 const desktopScenes = read(desktopScenesFile);
 const panelCss = read(panelCssFile);
 const desktopHelpers = read(desktopHelpersFile);
@@ -114,6 +117,10 @@ assert(
   `DesktopConsole.tsx exceeds 800 lines: ${lines(desktopConsole)}`
 );
 assert(
+  lines(desktopDecisionRail) <= 90,
+  `DesktopDecisionRail.tsx exceeds 90 lines: ${lines(desktopDecisionRail)}`
+);
+assert(
   lines(desktopScenes) <= 350,
   `desktopOverviewScenes.tsx exceeds 350 lines: ${lines(desktopScenes)}`
 );
@@ -170,6 +177,11 @@ assert(
   desktopConsole.includes('from "../desktopOverviewScenes"') &&
     desktopConsole.includes("buildDesktopOverviewScene(snapshot, state)"),
   "DesktopConsole.tsx must delegate scenario composition to the desktop scene module"
+);
+assert(
+  desktopConsole.includes('from "./DesktopDecisionRail"') &&
+    desktopConsole.includes("<DesktopDecisionRail"),
+  "DesktopConsole.tsx must compose the desktop object/impact/action/credibility rail"
 );
 assert(
   desktopScenes.includes('from "./desktopOverviewVisuals"'),
@@ -294,5 +306,5 @@ if (failures.length > 0) {
 }
 
 console.log(
-  `overview architecture gate: PASS panel=${lines(panel)} lines desktop=${lines(desktopConsole)} lines scenes=${lines(desktopScenes)} lines helper=${lines(desktopHelpers)} lines rows=${lines(desktopRows)} lines resourceRows=${lines(desktopResourceRows)} lines visuals=${lines(desktopVisuals)} lines mobileHome=${lines(mobileHome)} lines mobileDecision=${lines(mobileDecision)} lines mobileSections=${lines(mobileHomeSections)} lines css=${bytes(panelCssFile)} bytes mobileStyles=${mobileStyleByteTotal} bytes important=${importantShare.toFixed(4)} mobile=${mobileRuleShare.toFixed(4)}`
+  `overview architecture gate: PASS panel=${lines(panel)} lines desktop=${lines(desktopConsole)} lines desktopDecision=${lines(desktopDecisionRail)} lines scenes=${lines(desktopScenes)} lines helper=${lines(desktopHelpers)} lines rows=${lines(desktopRows)} lines resourceRows=${lines(desktopResourceRows)} lines visuals=${lines(desktopVisuals)} lines mobileHome=${lines(mobileHome)} lines mobileDecision=${lines(mobileDecision)} lines mobileSections=${lines(mobileHomeSections)} lines css=${bytes(panelCssFile)} bytes mobileStyles=${mobileStyleByteTotal} bytes important=${importantShare.toFixed(4)} mobile=${mobileRuleShare.toFixed(4)}`
 );

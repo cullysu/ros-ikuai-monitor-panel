@@ -199,7 +199,10 @@ function impactFor(state: OverviewDerivedState, priority: RouterOsNetworkPriorit
   if (priority === "resource-full") return { id: "impact", label: "影响", value: "资源余量低", note: "业务可能抖动", tone: "warn" };
   if (priority === "interface-down") return { id: "impact", label: "影响", value: "承载待判", note: "需看默认路由关系", tone: "warn" };
   if (priority === "collection-degraded") return { id: "impact", label: "影响", value: "可信度下降", note: "采集降级但非断网结论", tone: "warn" };
-  return { id: "impact", label: "影响", value: clean(state.facts.route.label, "出口可用"), note: "默认出口可用", tone: state.facts.route.level };
+  if (state.facts.wan.offline > 0) {
+    return { id: "impact", label: "影响", value: "部分出口异常", note: "默认出口仍可用", tone: "warn" };
+  }
+  return { id: "impact", label: "影响", value: "业务可用", note: "默认出口可用", tone: state.facts.route.level };
 }
 
 function planeMeaning(plane: RouterOsTrustPlane): string {

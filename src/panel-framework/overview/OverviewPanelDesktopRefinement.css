@@ -200,9 +200,9 @@
   }
 
   #overview.router-overview-framework .ro-desktop-thin-kpis {
-    height: 28px !important;
-    min-height: 28px !important;
-    max-height: 28px !important;
+    height: 54px !important;
+    min-height: 54px !important;
+    max-height: 54px !important;
     border-color: #e8f0f8 !important;
   }
 
@@ -1680,17 +1680,17 @@
   }
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-desktop-thin-kpis {
-    height: 27px !important;
-    min-height: 27px !important;
-    max-height: 27px !important;
+    height: 54px !important;
+    min-height: 54px !important;
+    max-height: 54px !important;
     gap: 1px !important;
     margin: 0 0 3px !important;
   }
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-desktop-thin-kpi {
-    height: 27px !important;
-    min-height: 27px !important;
-    padding: 2px 6px !important;
+    height: 52px !important;
+    min-height: 52px !important;
+    padding: 7px 11px 6px !important;
     border: 0 !important;
     border-bottom: 1px solid var(--v817-line-strong) !important;
     border-left: 1px solid var(--v817-line) !important;
@@ -1699,12 +1699,12 @@
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-desktop-thin-kpi span,
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-desktop-thin-kpi em {
-    font-size: 8px !important;
+    font-size: 10px !important;
     color: var(--v817-muted) !important;
   }
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-desktop-thin-kpi b {
-    font-size: 10px !important;
+    font-size: 13.2px !important;
     color: var(--v817-text) !important;
   }
 
@@ -2096,9 +2096,9 @@
   }
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-desktop-thin-kpis {
-    height: 28px !important;
-    min-height: 28px !important;
-    max-height: 28px !important;
+    height: 54px !important;
+    min-height: 54px !important;
+    max-height: 54px !important;
     gap: 0 !important;
     margin-bottom: 3px !important;
     border: 1px solid #e5edf5 !important;
@@ -2106,9 +2106,9 @@
   }
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-desktop-thin-kpi {
-    height: 26px !important;
-    min-height: 26px !important;
-    padding: 1px 7px !important;
+    height: 52px !important;
+    min-height: 52px !important;
+    padding: 7px 11px 6px !important;
     border: 0 !important;
     border-right: 1px solid #edf3f8 !important;
     background: #fff !important;
@@ -2414,9 +2414,9 @@
   }
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-desktop-thin-kpis {
-    height: 28px !important;
-    min-height: 28px !important;
-    max-height: 28px !important;
+    height: 54px !important;
+    min-height: 54px !important;
+    max-height: 54px !important;
     gap: 0 !important;
     margin-bottom: 2px !important;
     border: 1px solid #e5edf5 !important;
@@ -2426,9 +2426,9 @@
   }
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-desktop-thin-kpi {
-    height: 26px !important;
-    min-height: 26px !important;
-    padding: 1px 7px !important;
+    height: 52px !important;
+    min-height: 52px !important;
+    padding: 7px 11px 6px !important;
     border: 0 !important;
     border-right: 1px solid var(--v825-line) !important;
     background: #fff !important;
@@ -2441,7 +2441,7 @@
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-desktop-grid {
     grid-template-columns: minmax(0, 1fr) 374px !important;
-    grid-template-rows: 28px minmax(0, 1fr) 148px !important;
+    grid-template-rows: 54px minmax(0, 1fr) 148px !important;
     gap: 3px !important;
     height: calc(100vh - 82px) !important;
     min-height: calc(100vh - 82px) !important;
@@ -3031,7 +3031,7 @@
 
   #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-desktop-thin-kpis,
   .router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-desktop-thin-kpis {
-    grid-column: 2 / -1 !important;
+    grid-column: 1 / -1 !important;
     border: 0 !important;
     border-bottom: 1px solid rgba(155, 177, 200, .13) !important;
     background: transparent !important;

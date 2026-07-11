@@ -762,6 +762,21 @@ async function main() {
         const coreText = workspace?.getAttribute('data-overview-desktop-core-text') || '';
         const topbar = sectionEl?.querySelector('.ro-topbar');
         const thinKpis = sectionEl?.querySelector('.ro-desktop-thin-kpis');
+        const desktopDecisionRail = sectionEl?.querySelector('[data-overview-desktop-decision-rail="four-user-decisions"]');
+        const desktopDecisionCells = Array.from(desktopDecisionRail?.querySelectorAll('.ro-desktop-thin-kpi') || []);
+        const desktopDecisionLabels = desktopDecisionCells.map((cell) => normalize(cell.querySelector('span')?.textContent || ''));
+        const desktopDecisionRailOk = Boolean(
+          desktopDecisionRail &&
+          desktopDecisionRail.getAttribute('data-overview-desktop-kpi-row') === 'object-impact-next-action-credibility' &&
+          desktopDecisionCells.length === 4 &&
+          ['对象', '影响', '下一步', '可信度'].every((label) => desktopDecisionLabels.includes(label)) &&
+          desktopDecisionCells.every((cell) => {
+            const rect = cell.getBoundingClientRect();
+            return rect.width >= 180 && rect.height >= 48 &&
+              normalize(cell.querySelector('b')?.textContent || '').length > 0 &&
+              normalize(cell.querySelector('em')?.textContent || '').length > 0;
+          })
+        );
         const mainModules = Array.from(sectionEl?.querySelectorAll('[data-overview-density-module]') || []);
         const visibleModules = mainModules.filter((node) => {
           const rect = node.getBoundingClientRect();
@@ -1042,6 +1057,7 @@ async function main() {
           workspaceRect.width > 1200 &&
           topbar &&
           thinKpis &&
+          desktopDecisionRailOk &&
           visibleModules.length >= 6 &&
           hiddenContractNonDisruptive &&
           topbarFlatSummaryBus &&
@@ -1058,6 +1074,8 @@ async function main() {
         );
         return {
           pass,
+          desktopDecisionRailOk,
+          desktopDecisionLabels,
           section: sectionName,
           url: location.href,
           missing,

@@ -14800,7 +14800,10 @@ var PanelFramework = function(exports) {
     if (priority === "resource-full") return { id: "impact", label: "影响", value: "资源余量低", note: "业务可能抖动", tone: "warn" };
     if (priority === "interface-down") return { id: "impact", label: "影响", value: "承载待判", note: "需看默认路由关系", tone: "warn" };
     if (priority === "collection-degraded") return { id: "impact", label: "影响", value: "可信度下降", note: "采集降级但非断网结论", tone: "warn" };
-    return { id: "impact", label: "影响", value: clean$1(state.facts.route.label, "出口可用"), note: "默认出口可用", tone: state.facts.route.level };
+    if (state.facts.wan.offline > 0) {
+      return { id: "impact", label: "影响", value: "部分出口异常", note: "默认出口仍可用", tone: "warn" };
+    }
+    return { id: "impact", label: "影响", value: "业务可用", note: "默认出口可用", tone: state.facts.route.level };
   }
   function planeMeaning(plane) {
     if (plane.id === "forwarding") return "用户业务是否能通过路由器转发";
@@ -18319,23 +18322,51 @@ var PanelFramework = function(exports) {
       ]
     };
   }
-  function DesktopThinKpis({ snapshot, state }) {
-    const object = topbarObjectValue(snapshot, state);
-    const collection = topbarCollectionValue(state);
-    const terminals = desktopTerminalRows(snapshot);
-    const resource = state.scenario === "no-snapshot" ? "禁显" : formatPercent(state.facts.resource.cpu, 0);
-    const isFleetDensity = state.scenario === "fleet";
+  function nextAction(state) {
+    switch (state.scenario) {
+      case "all-offline":
+        return { value: "核对默认出口", note: "线路、网关与承载接口", tone: "danger" };
+      case "no-snapshot":
+        return { value: "恢复采集快照", note: "先核 RouterOS / REST / SSH", tone: "warn" };
+      case "collection-down":
+        return { value: "核对采集通道", note: "业务转发不作异常推断", tone: "warn" };
+      case "resource-full":
+        return { value: "先降低连接压力", note: "再看接口吞吐与活动会话", tone: "danger" };
+      case "interfaces-down":
+        return { value: "核对 Down 接口", note: "确认默认出口承载关系", tone: "warn" };
+      default:
+        return { value: "查看 WAN 趋势", note: "默认出口、峰值与采样窗口", tone: "trust" };
+    }
+  }
+  function DesktopDecisionRail({ snapshot, state }) {
+    const presentation = desktopPresentation(snapshot, state);
+    const credibility = presentation.incidentSummary.find((item) => item.label === "可信度");
+    const action = nextAction(state);
     const items = [
-      { label: "WAN", value: object.value, note: isFleetDensity ? "类型分布" : topbarImpactValue(snapshot, state), tone: state.verdict.level },
-      { label: "资源", value: resource, note: state.scenario === "resource-full" ? "持续超阈" : "阈值", tone: state.scenario === "resource-full" ? "danger" : state.facts.resource.level },
-      { label: "采集", value: collection.value, note: state.scenario === "collection-down" ? "缓存" : state.scenario === "no-snapshot" ? "断链" : "通道可读", tone: state.facts.collection.credibilityTone },
-      { label: "终端", value: terminals.length ? formatNumber(terminals.length) : "无", note: "总流量排序", tone: terminals.length ? "trust" : "missing" }
+      { label: "对象", value: presentation.object.value, note: presentation.object.note, tone: presentation.object.tone },
+      { label: "影响", value: presentation.impact.value, note: presentation.impact.note, tone: presentation.impact.tone },
+      { label: "下一步", value: action.value, note: action.note, tone: action.tone },
+      {
+        label: "可信度",
+        value: (credibility == null ? void 0 : credibility.value) || presentation.readonlyJudgement,
+        note: (credibility == null ? void 0 : credibility.note) || "只读判断，不写入 RouterOS",
+        tone: (credibility == null ? void 0 : credibility.tone) || state.verdict.level
+      }
     ];
-    return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ro-desktop-thin-kpis", "data-overview-desktop-kpi-row": "thin-business-summary", children: items.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ro-desktop-thin-kpi ik-overview-kpi-card", "data-overview-kpi-card": true, "data-tone": item.tone, children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: item.label }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: item.value }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: item.note })
-    ] }, item.label)) });
+    return /* @__PURE__ */ jsxRuntimeExports.jsx(
+      "section",
+      {
+        className: "ro-desktop-thin-kpis ro-desktop-decision-rail",
+        "aria-label": "桌面判断与处置",
+        "data-overview-desktop-kpi-row": "object-impact-next-action-credibility",
+        "data-overview-desktop-decision-rail": "four-user-decisions",
+        children: items.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ro-desktop-thin-kpi ik-overview-kpi-card", "data-tone": item.tone, children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: item.label }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: item.value }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: item.note })
+        ] }, item.label))
+      }
+    );
   }
   function DesktopShortNav({ state }) {
     const items = [
@@ -18424,7 +18455,7 @@ var PanelFramework = function(exports) {
         "data-overview-desktop-ikuai40-console": "top-six-left-network-wan-right-resource-collection-bottom-interface-events",
         children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx(DesktopShortNav, { state }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(DesktopThinKpis, { snapshot, state }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(DesktopDecisionRail, { snapshot, state }),
           /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ro-col is-main stack", "data-overview-desktop-rail": "network-wan", "data-overview-desktop-fixed-area": "left-main", children: sections.main }),
           /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ro-col is-side stack ik-home-side-stack", "data-overview-desktop-rail": "resource-collection", "data-overview-desktop-fixed-area": "right-main", children: sections.side }),
           sections.bottom.length > 0 ? /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: `ro-col is-bottom stack${state.scenario === "no-snapshot" ? " ro-no-snapshot-floor" : ""}`, style: state.scenario === "no-snapshot" ? { gridColumn: "1 / -1", gridAutoRows: "minmax(190px, 1fr)" } : { gridColumn: "1 / -1" }, "data-overview-desktop-rail": "interface-events", "data-overview-desktop-fixed-area": "bottom", "data-overview-desktop-v1042-no-snapshot-floor-rail": state.scenario === "no-snapshot" ? "visibility-raw-evidence-filled-floor" : void 0, children: sections.bottom }) : null

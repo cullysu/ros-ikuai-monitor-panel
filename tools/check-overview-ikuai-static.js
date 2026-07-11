@@ -582,6 +582,7 @@ const buildFrameworkInline = read("tools/build-framework-inline.mjs");
 const overviewPanel = [
   read("src/panel-framework/overview/OverviewPanel.tsx"),
   readIfExists("src/panel-framework/overview/components/DesktopConsole.tsx"),
+  readIfExists("src/panel-framework/overview/components/DesktopDecisionRail.tsx"),
   readIfExists("src/panel-framework/overview/desktopOverviewScenes.tsx"),
   readIfExists("src/panel-framework/overview/desktopOverviewHelpers.tsx"),
   readIfExists("src/panel-framework/overview/desktopOverviewHelpers.ts"),
