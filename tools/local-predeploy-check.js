@@ -8815,10 +8815,12 @@ async function main() {
       screenshotDir: args.out,
       screenshots: listScreenshotFiles(args.out),
       complete: matrixAggregate.complete,
+      releaseMatrixComplete,
       coveredScenarios: matrixAggregate.coveredScenarios,
       passedScenarios: matrixAggregate.passedScenarios,
       requiredCells: matrixAggregate.requiredCells,
       passedCells: matrixAggregate.passedCells,
+      missingCells: (matrixAggregate.requiredCells || []).filter((cell) => !(matrixAggregate.passedCells || []).includes(cell)),
       scenarioMatrix: matrixAggregate.runs.flatMap((run) => run.scenarioMatrix || []),
       runs: matrixAggregate.runs.length,
     };
@@ -8845,13 +8847,24 @@ async function main() {
         releaseMatrixComplete,
       });
     }
-    report.pass = report.failures.length === 0;
+    const matrixBlocksTopLevelPass = report.matrix.requiredCells.length > 0 && !releaseMatrixComplete;
+    if (matrixBlocksTopLevelPass) {
+      warn(report, 'top-level pass suppressed until required release matrix is complete', {
+        explicitOverviewReleaseMatrix,
+        aggregateComplete: matrixAggregate.complete,
+        currentRequiredComplete: report.matrix.complete,
+        requiredCells: matrixAggregate.requiredCells,
+        passedCells: matrixAggregate.passedCells,
+        missingCells: report.matrix.aggregate.missingCells,
+      });
+    }
+    report.pass = report.failures.length === 0 && !matrixBlocksTopLevelPass;
     const safeReport = await prepareReportForJson(report, args.out);
     await writeJson(path.join(args.out, 'report.json'), safeReport);
   }
 
   console.log(`[INFO] report: ${path.join(args.out, 'report.json')}`);
-  console.log(`[INFO] result: ${report.failures.length ? `${report.failures.length} failure(s)` : 'pass'}`);
+  console.log(`[INFO] result: ${report.pass ? 'pass' : report.failures.length ? `${report.failures.length} failure(s)` : 'incomplete release matrix'}`);
   if (report.failures.length) process.exitCode = 1;
 }
 

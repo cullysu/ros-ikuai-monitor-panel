@@ -579,6 +579,7 @@ const desktopReleaseStyles = read("src/panel-framework/overview/OverviewPanelRel
 const buildFrameworkInline = read("tools/build-framework-inline.mjs");
 const overviewPanel = [
   read("src/panel-framework/overview/OverviewPanel.tsx"),
+  readIfExists("src/panel-framework/overview/components/DesktopConsole.tsx"),
   readIfExists("src/panel-framework/overview/desktopOverviewHelpers.tsx"),
   readIfExists("src/panel-framework/overview/desktopOverviewHelpers.ts"),
   readIfExists("src/panel-framework/overview/desktopOverviewRows.tsx"),
@@ -1531,9 +1532,10 @@ includesAll(`${mobileStyleStack}\n${splitMobileSource}`, [
   "decision-home",
 ], `source ${activeMobileVersion} mobile normal app-home visual refinement`);
 includesAll(`${mobileModel}\n${mobileListModel}`, [
-  "WAN 实时趋势",
-  "if (network.priority === \"normal\") return \"WAN 实时趋势\"",
-  "终端摘要",
+  "WAN / 默认路由证据",
+  "if (network.priority === \"normal\") return \"WAN / 默认路由证据\"",
+  "网络证据链",
+  "默认路由 · 采集 · 快照 · 终端辅助",
 ], `source ${activeMobileVersion} mobile normal state must not use oversized good-news headline`);
 
 includesAll(`${mobileStyleStack}\n${splitMobileSource}\n${resourceTrendCheck}`, [

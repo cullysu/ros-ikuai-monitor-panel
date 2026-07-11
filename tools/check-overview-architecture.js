@@ -25,6 +25,8 @@ function assert(condition, message) {
 
 const panelFile = "src/panel-framework/overview/OverviewPanel.tsx";
 const panelCssFile = "src/panel-framework/overview/OverviewPanel.css";
+const desktopConsoleFile =
+  "src/panel-framework/overview/components/DesktopConsole.tsx";
 const desktopHelpersFile =
   "src/panel-framework/overview/desktopOverviewHelpers.tsx";
 const desktopRowsFile =
@@ -39,6 +41,7 @@ const mobileStylesFile =
 const mobileModelFile =
   "src/panel-framework/overview/mobileOverviewModel.ts";
 const panel = read(panelFile);
+const desktopConsole = read(desktopConsoleFile);
 const panelCss = read(panelCssFile);
 const desktopHelpers = read(desktopHelpersFile);
 const desktopRows = read(desktopRowsFile);
@@ -106,6 +109,10 @@ const legacyFunctions = [
 
 assert(lines(panel) <= 800, `OverviewPanel.tsx exceeds 800 lines: ${lines(panel)}`);
 assert(
+  lines(desktopConsole) <= 800,
+  `DesktopConsole.tsx exceeds 800 lines: ${lines(desktopConsole)}`
+);
+assert(
   lines(desktopHelpers) <= 450,
   `desktopOverviewHelpers.tsx exceeds 450 lines: ${lines(desktopHelpers)}`
 );
@@ -135,16 +142,20 @@ assert(
   "OverviewPanel.tsx reintroduced a legacy renderer function"
 );
 assert(
-  panel.includes("buildRouterOsPresentationViewModel"),
-  "OverviewPanel.tsx must consume the RouterOS presentation view model"
+  panel.includes('from "./components/DesktopConsole"'),
+  "OverviewPanel.tsx must compose the extracted desktop console boundary"
 );
 assert(
-  panel.includes('from "./desktopOverviewVisuals"'),
-  "OverviewPanel.tsx must compose the extracted desktop visual layer"
+  desktopConsole.includes("buildRouterOsPresentationViewModel"),
+  "DesktopConsole.tsx must consume the RouterOS presentation view model"
 );
 assert(
-  panel.includes('from "./desktopOverviewRows"'),
-  "OverviewPanel.tsx must consume the extracted desktop row layer"
+  desktopConsole.includes('from "../desktopOverviewVisuals"'),
+  "DesktopConsole.tsx must compose the extracted desktop visual layer"
+);
+assert(
+  desktopConsole.includes('from "../desktopOverviewRows"'),
+  "DesktopConsole.tsx must consume the extracted desktop row layer"
 );
 assert(
   desktopVisuals.includes('from "./desktopOverviewRows"'),

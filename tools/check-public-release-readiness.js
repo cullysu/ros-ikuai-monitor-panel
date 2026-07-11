@@ -617,6 +617,9 @@ function main(argv = process.argv.slice(2)) {
   assertContains('tools/local-predeploy-check.js', 'security');
   assertContains('tools/local-predeploy-check.js', 'buildMatrixSummary');
   assertContains('tools/local-predeploy-check.js', 'report.matrix = buildMatrixSummary(report.browserChecks, args);');
+  assertContains('tools/local-predeploy-check.js', 'matrixBlocksTopLevelPass');
+  assertContains('tools/local-predeploy-check.js', 'top-level pass suppressed until required release matrix is complete');
+  assertContains('tools/local-predeploy-check.js', 'report.pass = report.failures.length === 0 && !matrixBlocksTopLevelPass;');
   assertContains('tools/local-predeploy-check.js', 'unified release scenario matrix covers required scenarios');
   assertContains('tools/local-predeploy-check.js', 'release-matrix-');
   assertContains('tools/local-predeploy-check.js', 'function gitFullHead()');

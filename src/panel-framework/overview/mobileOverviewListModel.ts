@@ -274,7 +274,6 @@ function normalOperationalRows(
   network: RouterOsNetworkViewModel,
 ): MobileMonitorListRow[] {
   const terminals = terminalRankingRows(snapshot);
-  if (terminals.length >= 5) return terminals;
   const totalWan = Math.max(1, wanLineCount(snapshot, state));
   const rates = totals(snapshot);
   const resourceValues = [
@@ -300,8 +299,8 @@ function normalOperationalRows(
       id: "normal-wan-evidence",
       rank: "",
       name: "WAN 汇总",
-      kind: "流量",
-      meta: `↓${mobileRate(rates.down)} ↑${mobileRate(rates.up)} · 当前窗口`,
+      kind: "趋势",
+      meta: `↓${mobileRate(rates.down)} ↑${mobileRate(rates.up)} · 趋势证据`,
       value: `${state.facts.wan.online}/${totalWan}`,
       status: "在线",
       percent: 0,
@@ -312,7 +311,7 @@ function normalOperationalRows(
       id: "normal-collection-evidence",
       rank: "",
       name: "采集证据",
-      kind: "可信度",
+      kind: "采集",
       meta: `REST / SSH · 最近成功 ${latestSuccess(snapshot, state)}`,
       value: network.collection.value,
       status: "当前",
@@ -333,7 +332,7 @@ function normalOperationalRows(
       ...operationalEvidence("resource", "normal-resource-evidence"),
     },
   ];
-  return [...terminals, ...supplements.slice(0, Math.max(0, 5 - terminals.length))];
+  return [...supplements, ...terminals].slice(0, 5);
 }
 
 export function buildMobileImpactScope(network: RouterOsNetworkViewModel): MobileImpactScope {
@@ -360,11 +359,10 @@ export function buildMobilePrimaryList(
   if (priority === "collection-degraded") return { kind: "collection-boundary", title: "采集边界", meta: `${scope.value} · ${scope.note}`, rows: collectionBoundaryRows(network) };
   if (priority === "resource-full") return { kind: "resource-incident", title: "资源余量", meta: `${scope.value} · ${scope.note} · 阈值/持续`, rows: resourceIncidentRows(resourceRows) };
   const normalRows = normalOperationalRows(snapshot, state, network);
-  const terminalOnly = normalRows.every((row) => row.evidenceSource === "terminal");
   return {
     kind: "terminal-ranking",
-    title: terminalOnly ? "终端摘要" : "运营摘要",
-    meta: terminalOnly ? "实时终端 · Top 5" : "终端流量 · 路由与采集证据",
+    title: "网络证据链",
+    meta: "默认路由 · 采集 · 快照 · 终端辅助",
     rows: normalRows,
   };
 }

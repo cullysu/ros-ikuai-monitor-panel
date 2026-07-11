@@ -279,7 +279,7 @@ function stripSsh(label: string): string {
 function trustText(state: OverviewDerivedState): string {
   if (state.scenario === "no-snapshot") return "缺失";
   if (state.scenario === "collection-down" || state.facts.collection.dataStale || state.facts.freshness.history) return "缓存";
-  return "实时";
+  return "快照新鲜";
 }
 
 function mobileRouteValue(state: OverviewDerivedState): string {
@@ -304,13 +304,13 @@ function headerTone(state: OverviewDerivedState): OverviewTone {
 
 function headerStatusLabel(state: OverviewDerivedState): string {
   if (state.scenario === "no-snapshot") return "缺数";
-  if (state.scenario === "single") return "良好";
+  if (state.scenario === "single") return "可用";
   if (state.scenario === "all-offline" || state.facts.wan.allOffline) return "断链";
   if (state.scenario === "resource-full") return "超阈";
   if (state.scenario === "interfaces-down") return "异常";
   if (state.scenario === "collection-down" || state.facts.collection.dataStale || state.facts.freshness.history) return "需确认";
   if (state.verdict.level === "warn") return "需确认";
-  return "良好";
+  return "可用";
 }
 
 function headerModel(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): MobileOverviewModel["header"] {
@@ -352,7 +352,7 @@ function resourceFacts(state: OverviewDerivedState): MobileMonitorFact[] {
 }
 
 function titleFor(network: RouterOsNetworkViewModel): string {
-  if (network.priority === "normal") return "WAN 实时趋势";
+  if (network.priority === "normal") return "WAN / 默认路由证据";
   return network.conclusion.heroTitle;
 }
 
@@ -420,9 +420,9 @@ function heroFacts(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): 
   }
   return [
     { label: "WAN", value: `${formatNumber(state.facts.wan.online)}/${formatNumber(totalWan || 1)}`, note: "在线", tone: state.facts.wan.offline ? "warn" : "ok" },
-    { label: "下载", value: mobileRate(rate.down), note: "WAN 汇总", tone: rate.down > 0 ? "ok" : "trust" },
-    { label: "上传", value: mobileRate(rate.up), note: "WAN 汇总", tone: rate.up > 0 ? "ok" : "trust" },
-    { label: "路由", value: mobileRouteValue(state), note: "默认", tone: state.facts.route.level },
+    { label: "默认路由", value: mobileRouteValue(state), note: "承载出口", tone: state.facts.route.level },
+    { label: "采集", value: trustText(state), note: "REST/SSH", tone: state.facts.collection.credibilityTone },
+    { label: "快照", value: latestSuccess(snapshot, state), note: `↓${mobileRate(rate.down)} ↑${mobileRate(rate.up)}`, tone: state.facts.collection.credibilityTone },
   ];
 }
 
@@ -444,45 +444,52 @@ function coreMetrics(snapshot: OverviewRawSnapshot, state: OverviewDerivedState,
     ? "断链"
     : priority === "collection-degraded"
       ? "缓存"
-      : "实时";
+      : "通道可读";
   const snapshotValue = latestSuccess(snapshot, state);
   const collectionNote = priority === "snapshot-missing"
     ? "当前不可达"
     : priority === "collection-degraded"
       ? `${stripRest(state.facts.collection.restLabel)} / ${stripSsh(state.facts.collection.sshLabel)}`
-      : "REST/SSH 可用";
-  return [
-    {
-      label: "状态",
-      value: network.conclusion.value,
-      note: network.forwarding.value === "可用" ? "转发可用" : network.forwarding.value,
-      tone: network.conclusion.tone,
-    },
-    {
-      label: "WAN",
-      value: wanValue,
-      note: state.facts.wan.allOffline ? "全离线" : priority === "snapshot-missing" ? "无快照" : `↓${mobileRate(totals(snapshot).down)}`,
-      tone: priority === "snapshot-missing" ? "missing" : state.facts.wan.allOffline ? "danger" : state.facts.wan.offline ? "warn" : "ok",
-    },
-    {
-      label: "采集",
-      value: collectionValue,
-      note: collectionNote,
-      tone: priority === "snapshot-missing" ? "danger" : priority === "collection-degraded" ? "warn" : state.facts.collection.credibilityTone,
-    },
-    {
-      label: "资源",
-      value: coreResourceValue(resource, priority),
-      note: priority === "resource-full" ? "持续6/6" : "处理器/内存/磁盘",
-      tone: resource.some((item) => item.tone === "danger") ? "danger" : priority === "snapshot-missing" ? "missing" : "ok",
-    },
-    {
-      label: "快照",
-      value: snapshotValue,
-      note: priority === "snapshot-missing" ? "最近成功" : "快照时间",
-      tone: priority === "snapshot-missing" ? "warn" : state.facts.collection.credibilityTone,
-    },
-  ];
+      : "REST/SSH 可读";
+  const statusFact: MobileMonitorFact = {
+    label: "状态",
+    value: network.conclusion.value,
+    note: network.forwarding.value === "可用" ? "转发可用" : network.forwarding.value,
+    tone: network.conclusion.tone,
+  };
+  const wanFact: MobileMonitorFact = {
+    label: "WAN",
+    value: wanValue,
+    note: state.facts.wan.allOffline ? "全离线" : priority === "snapshot-missing" ? "无快照" : "在线出口",
+    tone: priority === "snapshot-missing" ? "missing" : state.facts.wan.allOffline ? "danger" : state.facts.wan.offline ? "warn" : "ok",
+  };
+  const routeFact: MobileMonitorFact = {
+    label: "默认路由",
+    value: mobileRouteValue(state),
+    note: priority === "snapshot-missing" ? "无业务快照" : state.facts.wan.allOffline ? "出口异常" : "承载出口",
+    tone: priority === "snapshot-missing" ? "missing" : state.facts.wan.allOffline ? "danger" : state.facts.route.level,
+  };
+  const collectionFact: MobileMonitorFact = {
+    label: "采集",
+    value: collectionValue,
+    note: collectionNote,
+    tone: priority === "snapshot-missing" ? "danger" : priority === "collection-degraded" ? "warn" : state.facts.collection.credibilityTone,
+  };
+  const resourceFact: MobileMonitorFact = {
+    label: "资源",
+    value: coreResourceValue(resource, priority),
+    note: priority === "resource-full" ? "持续6/6" : "处理器/内存/磁盘",
+    tone: resource.some((item) => item.tone === "danger") ? "danger" : priority === "snapshot-missing" ? "missing" : "ok",
+  };
+  const snapshotFact: MobileMonitorFact = {
+    label: "快照",
+    value: snapshotValue,
+    note: priority === "snapshot-missing" ? "最近成功" : "可信窗口",
+    tone: priority === "snapshot-missing" ? "warn" : state.facts.collection.credibilityTone,
+  };
+  if (priority === "resource-full") return [statusFact, resourceFact, routeFact, collectionFact, wanFact];
+  if (priority === "snapshot-missing") return [statusFact, collectionFact, snapshotFact, routeFact, wanFact];
+  return [statusFact, wanFact, routeFact, collectionFact, snapshotFact];
 }
 
 function heroPills(snapshot: OverviewRawSnapshot, state: OverviewDerivedState, network: RouterOsNetworkViewModel): string[] {

@@ -730,6 +730,7 @@ def assert_frontend_charts_skip_missing_values():
         overview_source = "\n".join(
             [
                 (ROOT / "src" / "panel-framework" / "overview" / "OverviewPanel.tsx").read_text(encoding="utf-8"),
+                (ROOT / "src" / "panel-framework" / "overview" / "components" / "DesktopConsole.tsx").read_text(encoding="utf-8"),
                 (ROOT / "src" / "panel-framework" / "overview" / "desktopOverviewVisuals.tsx").read_text(encoding="utf-8"),
             ]
         )
