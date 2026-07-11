@@ -1843,18 +1843,18 @@
   }
 
   .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-col {
-    align-content: stretch !important;
+    align-content: var(--ro-col-align-content, stretch) !important;
   }
 
   .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-col.is-side,
   .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-col.is-bottom {
-    height: 100% !important;
-    grid-auto-rows: minmax(0, 1fr) !important;
+    height: var(--ro-col-height, 100%) !important;
+    grid-auto-rows: var(--ro-col-grid-auto-rows, minmax(0, 1fr)) !important;
   }
 
   .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-col.is-side > .ro-module,
   .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-col.is-bottom > .ro-module {
-    height: 100% !important;
+    height: var(--ro-col-module-height, 100%) !important;
   }
 
   .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-time-tabs {

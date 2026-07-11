@@ -674,40 +674,39 @@ async function main() {
       if (sectionName === 'desktopNoSnapshot') {
         const modules = Array.from(sectionEl?.querySelectorAll('[data-overview-density-module]') || []);
         const moduleNames = modules.map((node) => node.getAttribute('data-overview-density-module') || '');
-        const bottomRequired = [
-          'no-snapshot-degraded-modules',
+        const requiredModules = [
+          'no-snapshot-summary',
+          'no-snapshot-module-visibility',
+          'no-snapshot-recent-success',
           'evidence-boundary'
         ];
-        const missingModules = bottomRequired.filter((item) => !moduleNames.includes(item));
-        const forbiddenModules = moduleNames.filter((item) => /terminal-ranking|wan-trend|normal-wan-evidence|traffic-trend|wan-throughput|wan-rate/.test(item));
-        const requiredText = ['不可展示模块矩阵', '最近成功 / 恢复线索', '页面可信度', '无业务快照', '速率不展示', '业务数据不展示'];
+        const missingModules = requiredModules.filter((item) => !moduleNames.includes(item));
+        const forbiddenModules = moduleNames.filter((item) => /terminal-ranking|wan-trend|normal-wan-evidence|traffic-trend|wan-throughput|wan-rate|no-snapshot-readonly-boundary|no-snapshot-degraded-modules/.test(item));
+        const requiredText = ['采集链路', '业务可信边界', '恢复线索', '业务快照', '速率不展示', '只读'];
         const desktopNoSnapshotText = normalize(modules.map((node) => visibleText(node)).join(' '));
         const missing = requiredText.filter((item) => !desktopNoSnapshotText.includes(item));
-        const bottomModules = bottomRequired
+        const primaryModules = requiredModules.slice(0, 3)
           .map((name) => sectionEl?.querySelector('[data-overview-density-module="' + name + '"]'))
           .filter(Boolean);
-        const bottomRects = bottomModules.map((node) => node.getBoundingClientRect());
-        const visibleBottomCount = bottomRects.filter((rect) => rect.width > 0 && rect.height >= 140).length;
+        const primaryRects = primaryModules.map((node) => node.getBoundingClientRect());
+        const visiblePrimaryCount = primaryRects.filter((rect) => rect.width > 0 && rect.height >= 120).length;
         const workspace = sectionEl?.querySelector('[data-overview-desktop-workspace]');
-        const floorRail = workspace?.querySelector('[data-overview-desktop-v1042-no-snapshot-floor-rail="visibility-raw-evidence-filled-floor"]');
+        const floorRail = workspace?.querySelector('[data-overview-desktop-v1042-no-snapshot-floor-rail="single-collapsed-raw-evidence"]');
         const floorRect = floorRail?.getBoundingClientRect();
-        const floorModules = Array.from(floorRail?.querySelectorAll('[data-overview-desktop-v1042-no-snapshot-floor-module="visibility-raw-evidence-filled-floor"]') || []);
-        const floorVisualCount = floorModules.filter((node) => node.querySelector('[data-overview-scene-chart], .ro-visibility-matrix, .ro-chain-timeline')).length;
+        const floorModules = Array.from(floorRail?.querySelectorAll('[data-overview-desktop-v1042-no-snapshot-floor-module="collapsed-raw-evidence-only"]') || []);
         const floorRowCount = floorModules.reduce((sum, node) => sum + node.querySelectorAll('.ro-ledger-row:not(.ro-ledger-head)').length, 0);
         const floorModuleRects = floorModules.map((node) => node.getBoundingClientRect());
         const hasRawEvidenceDisclosure = Boolean(floorRail?.querySelector('[data-overview-desktop-v1074-raw-evidence-disclosure="native-details-collapsed-secondary"]'));
         const noSnapshotFloorProductized = Boolean(
-          workspace?.getAttribute('data-overview-desktop-v1042-no-snapshot-floor') === 'full-width-two-zone-visibility-raw-evidence-no-blank' &&
+          workspace?.getAttribute('data-overview-desktop-v1042-no-snapshot-floor') === 'single-collapsed-raw-evidence' &&
           floorRail &&
           floorRect &&
-          floorRect.height >= 140 &&
-          floorModules.length === bottomRequired.length &&
-          floorVisualCount >= 1 &&
+          floorRect.height >= 48 &&
+          floorModules.length === 1 &&
           floorRowCount >= 4 &&
-          floorModuleRects.every((rect) => rect.width > 300 && rect.height >= 140) &&
+          floorModuleRects.every((rect) => rect.width > 600 && rect.height >= 48) &&
           hasRawEvidenceDisclosure
         );
-        const hasMatrixVisual = Boolean(sectionEl?.querySelector('[data-overview-scene-chart="no-snapshot-visibility-matrix"]'));
         const hasHorizontalOverflow = document.documentElement.scrollWidth > document.documentElement.clientWidth + 1;
         return {
           pass: Boolean(
@@ -715,9 +714,9 @@ async function main() {
             missing.length === 0 &&
             missingModules.length === 0 &&
             forbiddenModules.length === 0 &&
-            visibleBottomCount === bottomRequired.length &&
+            moduleNames.length === requiredModules.length &&
+            visiblePrimaryCount === 3 &&
             noSnapshotFloorProductized &&
-            hasMatrixVisual &&
             hasRawEvidenceDisclosure &&
             !hasHorizontalOverflow
           ),
@@ -726,13 +725,11 @@ async function main() {
           missing,
           missingModules,
           forbiddenModules,
-          visibleBottomCount,
+          visiblePrimaryCount,
           noSnapshotFloorProductized,
           noSnapshotFloorHeight: floorRect ? floorRect.height : 0,
-          noSnapshotFloorVisualCount: floorVisualCount,
           noSnapshotFloorRowCount: floorRowCount,
           noSnapshotFloorModuleRects: floorModuleRects.map((rect) => ({ left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom, width: rect.width, height: rect.height })),
-          hasMatrixVisual,
           hasRawEvidenceDisclosure,
           moduleNames,
           viewport: { width: innerWidth, height: innerHeight, clientWidth: document.documentElement.clientWidth, scrollWidth: document.documentElement.scrollWidth },

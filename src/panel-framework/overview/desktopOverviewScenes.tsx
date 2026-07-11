@@ -18,8 +18,6 @@ import {
   lastSuccessRows,
   noSnapshotBusinessBoundaryRows,
   noSnapshotChainRows,
-  noSnapshotReadonlyDegradedRows,
-  noSnapshotVisibilityRows,
   normalOpsRows,
   routeBusinessRows,
   routeFactRows,
@@ -45,13 +43,11 @@ import {
   resourceTop5Rows,
 } from "./desktopResourceRows";
 import {
-  ChainTimeline,
   ChannelMatrixVisual,
   DesktopWanIntegratedVisual,
   JudgementChart,
   ResourcePressureLedgerVisual,
   ResourceTriCards,
-  VisibilityMatrixVisual,
   VisualStack,
 } from "./desktopOverviewVisuals";
 import { Module } from "./components/DesktopModule";
@@ -72,21 +68,17 @@ export function buildDesktopOverviewScene(snapshot: OverviewRawSnapshot, state: 
   if (state.scenario === "no-snapshot") {
     const businessBoundaryRows = compactRows(noSnapshotBusinessBoundaryRows(snapshot, state), 4);
     const chainRows = compactRows(noSnapshotChainRows(snapshot, state), 4);
-    const successRows = compactRows(lastSuccessRows(snapshot, state), 5);
-    const credibilityRows = compactRows(noSnapshotReadonlyDegradedRows(snapshot, state), 4);
-    const visibilityRows = compactRows(noSnapshotVisibilityRows(), 6);
+    const successRows = compactRows(lastSuccessRows(snapshot, state), 4);
     return {
       main: [
-        <Module key="ns-business-boundary" title="业务可信边界" subtitle="无业务快照 · 业务字段禁显 · 不用零速率占位" module="no-snapshot-module-visibility" tone="missing" trust={trust} headers={["模块", "当前", "影响", "边界"]} rows={businessBoundaryRows} minRows={0} visual={<VisibilityMatrixVisual rows={businessBoundaryRows} />} />,
-        <Module key="ns-collection-chain" title="采集链路" subtitle="RouterOS / REST / SSH / 快照 · 仅作管理面证据" module="no-snapshot-summary" tone="warn" trust={trust} headers={["链路项", "当前", "最近成功", "主证据", "下次尝试"]} rows={chainRows} minRows={0} visual={<ChainTimeline rows={chainRows} module="no-snapshot-summary-chain" />} />,
+        <Module key="ns-collection-chain" title="采集链路" subtitle="管理面证据 · 不代表业务可用" module="no-snapshot-summary" tone="warn" trust={trust} headers={["通道", "当前", "依据"]} rows={chainRows} minRows={0} />,
+        <Module key="ns-business-boundary" title="业务可信边界" subtitle="缺少业务快照 · 不展示不可验证数值" module="no-snapshot-module-visibility" tone="missing" trust={trust} headers={["对象", "当前", "影响", "处理"]} rows={businessBoundaryRows} minRows={0} />,
       ],
       side: [
-        <Module key="ns-recovery" title="最近成功 / 恢复线索" subtitle="时间轴起点 · 当前管理面 · 下次轮询" module="no-snapshot-recent-success" tone="trust" trust={trust} headers={["节点", "当前", "说明"]} rows={successRows} minRows={0} visual={<ChainTimeline rows={successRows} module="no-snapshot-recent-success-timeline" />} />,
-        <Module key="ns-page-credibility" title="页面可信度" subtitle="业务解释优先 · 原始字段下沉" module="no-snapshot-readonly-boundary" tone="warn" trust={trust} headers={["对象", "当前", "原因", "边界"]} rows={credibilityRows} minRows={0} />,
+        <Module key="ns-recovery" title="恢复线索" subtitle="最近成功 · 当前状态 · 下次轮询" module="no-snapshot-recent-success" tone="trust" trust={trust} headers={["节点", "当前", "说明"]} rows={successRows} minRows={0} />,
       ],
       bottom: [
-        <Module key="ns-visibility-floor" className="ro-no-snapshot-floor-module" title="不可展示模块矩阵" subtitle="WAN / 资源 / 终端 / 连接 / 速率 · 按可信边界禁显" module="no-snapshot-degraded-modules" tone="missing" trust={trust} headers={["模块", "状态", "原因", "边界"]} rows={visibilityRows} minRows={0} visual={<VisibilityMatrixVisual rows={visibilityRows} />} />,
-        <Module key="ns-raw-evidence" className="ro-no-snapshot-floor-module" title="证据 / 原始字段" subtitle="默认收起 · 仅用于审计" module="evidence-boundary" tone="trust" trust={trust} headers={["对象", "当前", "依据"]} rows={compactRows(desktopEvidenceBoundaryRows(snapshot, state), 4)} minRows={0} collapsedEvidence />,
+        <Module key="ns-raw-evidence" className="ro-no-snapshot-floor-module" title="原始证据" subtitle="默认收起 · 仅用于审计" module="evidence-boundary" tone="trust" trust={trust} headers={["对象", "当前", "依据"]} rows={compactRows(desktopEvidenceBoundaryRows(snapshot, state), 4)} minRows={0} collapsedEvidence />,
       ],
     };
   }

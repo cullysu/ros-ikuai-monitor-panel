@@ -17382,47 +17382,20 @@ var PanelFramework = function(exports) {
   function noSnapshotChainRows(snapshot, state) {
     const recent = latestSuccess(snapshot, state.scenario);
     const next = pollText(snapshot);
-    const age = state.facts.freshness.text;
     return [
-      { id: "chain-entry", cells: ["页面可信等级", "链路可参考", recent, "只读不写配置", next], tone: "trust" },
-      { id: "chain-router", cells: ["RouterOS", "断链", recent, "管理面断链", next], tone: "danger" },
-      { id: "chain-rest", cells: ["REST", restState(snapshot, state).value, recent, "采集通道需核", next], tone: restState(snapshot, state).tone },
-      { id: "chain-ssh", cells: ["SSH", sshState(snapshot, state).value, recent, "静态通道断链", next], tone: sshState(snapshot, state).tone },
-      { id: "chain-business", cells: ["业务数据展示边界", "无业务快照", recent, "业务快照时间 无 / 业务快照年龄 不可判定 / 业务数据不展示；速率不展示", next], title: "业务快照缺失：WAN、资源、终端、连接与速率不展示", tone: "missing" },
-      { id: "chain-default-route", cells: ["默认路由", "待判定", recent, "路由快照未取回，不推断承载", next], tone: "warn" },
-      { id: "chain-success", cells: ["最近成功", recent, recent, "仅作为采集链路时间点", next], tone: recent === "未记录" ? "warn" : "trust" },
-      { id: "chain-failure", cells: ["失败端点", state.facts.failures.count ? failureText(snapshot, state) : "未记录", recent, "失败端点未记录不写 0", next], tone: state.facts.failures.count ? "warn" : "trust" },
-      { id: "chain-trust", cells: ["数据可信度", "链路可参考", recent, `业务状态不可参考 / 事件更新时间 ${age}`, next], tone: "warn" }
+      { id: "chain-router", cells: ["RouterOS", "不可达", "管理连接未建立"], tone: "danger" },
+      { id: "chain-rest", cells: ["REST", restState(snapshot, state).value, restState(snapshot, state).note], tone: restState(snapshot, state).tone },
+      { id: "chain-ssh", cells: ["SSH", sshState(snapshot, state).value, sshState(snapshot, state).note], tone: sshState(snapshot, state).tone },
+      { id: "chain-next", cells: ["下一次轮询", next, `最近成功 ${recent}`], tone: recent === "未记录" ? "warn" : "trust" }
     ];
   }
   function noSnapshotBusinessBoundaryRows(snapshot, state) {
     const recent = latestSuccess(snapshot, state.scenario);
     return [
-      { id: "boundary-business", cells: ["业务展示边界", "无业务快照", "WAN / 资源 / 终端 / 连接禁显", "只读 不写配置"], tone: "missing" },
-      { id: "boundary-rate", cells: ["速率展示", "禁显", "无有效业务采样", "速率禁显"], tone: "missing" },
-      { id: "boundary-route", cells: ["默认路由影响", "待判", ROUTE_UNKNOWN, "不推断承载状态"], tone: "warn" },
-      { id: "boundary-success", cells: ["最近成功", recent, `状态更新 ${statusUpdated(snapshot)}`, "只代表采集链路"], tone: recent === "未记录" ? "warn" : "trust" },
-      { id: "boundary-collection", cells: ["采集链路", "链路可参考", "REST 待确认 / SSH 断链", "业务状态不参考"], tone: "warn" },
-      { id: "boundary-failure", cells: ["端点失败", failureText(snapshot, state), "未记录保持未记录", "不写零值"], tone: state.facts.failures.count ? "warn" : "trust" },
-      { id: "boundary-next", cells: ["下一次轮询", pollText(snapshot), "继续只读采集", "不写配置"], tone: "trust" },
-      { id: "boundary-page", cells: ["页面可信等级", "链路可参考", moduleTrust(state), "只读状态台"], tone: "warn" }
-    ];
-  }
-  function noSnapshotVisibilityRows() {
-    return [
-      { id: "vis-routeros", cells: ["RouterOS", "断链", "主证据已进入采集链路图", "采集链路"], tone: "danger" },
-      { id: "vis-rest", cells: ["REST", "待核", "失败端点未记录时保持未记录", "采集通道"], tone: "warn" },
-      { id: "vis-ssh", cells: ["SSH", "断链", "失败端点未记录时保持未记录", "采集通道"], tone: "warn" },
-      { id: "vis-route", cells: ["默认路由", "待判", "默认路由待判 / 路由快照未取回", "可见性边界"], tone: "warn" },
-      { id: "vis-snapshot-time", cells: ["业务快照时间", "无", "业务状态不可信", "模块可见性"], tone: "missing" },
-      { id: "vis-snapshot-age", cells: ["业务快照年龄", "不可判定", "业务状态不可参考", "模块可见性"], tone: "missing" },
-      { id: "vis-wan", cells: ["WAN", "禁显", "业务模块", "无业务快照，业务数据不展示"], tone: "missing" },
-      { id: "vis-resource", cells: ["资源", "禁显", "业务模块", "无业务快照，业务数据不展示"], tone: "missing" },
-      { id: "vis-terminals", cells: ["终端", "禁显", "业务模块", "无业务快照，业务数据不展示"], tone: "missing" },
-      { id: "vis-conn", cells: ["连接", "禁显", "业务模块", "无业务快照"], tone: "missing" },
-      { id: "vis-rate", cells: ["速率", "禁显", "禁止零速率", "速率不展示"], tone: "missing" },
-      { id: "vis-page-trust", cells: ["页面可信等级", "链路可参考", "业务状态不可参考", "状态边界"], tone: "warn" },
-      { id: "vis-readonly", cells: ["只读", "不写配置", "不推断业务数值", "采集链路可参考"], tone: "trust" }
+      { id: "boundary-business", cells: ["业务快照", "未取得", "WAN / 资源 / 终端 / 连接 / 速率不展示", "避免把缺失解释为 0"], tone: "missing" },
+      { id: "boundary-route", cells: ["默认路由", "待判定", ROUTE_UNKNOWN, "路由快照取回后判断"], tone: "warn" },
+      { id: "boundary-success", cells: ["最近成功", recent, `状态更新 ${statusUpdated(snapshot)}`, "仅证明采集曾成功"], tone: recent === "未记录" ? "warn" : "trust" },
+      { id: "boundary-mode", cells: ["操作模式", "只读", "不会修改 RouterOS 配置", `等待 ${pollText(snapshot)}`], tone: "trust" }
     ];
   }
   function noSnapshotReadonlyDegradedRows(snapshot, state) {
@@ -17446,18 +17419,21 @@ var PanelFramework = function(exports) {
   function lastSuccessRows(snapshot, state) {
     const recent = latestSuccess(snapshot, state.scenario);
     const label = state.scenario === "collection-down" ? "最后成功" : "最近成功";
+    if (state.scenario === "no-snapshot") {
+      return [
+        { id: "success-time", cells: ["最近成功", recent, "采集时间点"], tone: recent === "未记录" ? "warn" : "trust" },
+        { id: "success-current", cells: ["当前状态", "快照缺失", `状态更新 ${statusUpdated(snapshot)}`], tone: "missing" },
+        { id: "success-next", cells: ["下一次轮询", pollText(snapshot), "继续只读采集"], tone: "trust" },
+        { id: "success-target", cells: ["恢复判据", "取得新快照", "届时重新判断 WAN 与业务状态"], tone: "warn" }
+      ];
+    }
     return [
-      { id: "success-time", cells: [label, recent, state.scenario === "no-snapshot" ? "时间轴起点" : "当前采样"], tone: recent === "未记录" ? "warn" : "trust" },
-      { id: "success-source", cells: ["来源", state.scenario === "no-snapshot" ? "采集元数据" : "业务快照", state.scenario === "no-snapshot" ? "REST 待确认 / SSH 断链" : state.facts.collection.channelText], tone: "trust" },
-      { id: "success-scope", cells: ["可展示范围", state.scenario === "no-snapshot" ? "采集链路" : "业务状态", moduleTrust(state)], tone: state.scenario === "no-snapshot" ? "warn" : "ok" },
-      { id: "success-disabled", cells: ["已折叠模块", state.scenario === "no-snapshot" ? "WAN / 资源 / 终端 / 连接" : "无", "按边界显示"], tone: state.scenario === "no-snapshot" ? "missing" : "trust" },
-      { id: "success-current", cells: [state.scenario === "no-snapshot" ? "采集状态更新时间" : "当前状态", state.scenario === "no-snapshot" ? statusUpdated(snapshot) : "可用", state.scenario === "no-snapshot" ? "业务禁显" : "业务快照可参考"], tone: state.scenario === "no-snapshot" ? "danger" : "trust" },
-      { id: "success-next", cells: ["下一次轮询", pollText(snapshot), "时间轴终点"], tone: "trust" },
-      ...state.scenario === "no-snapshot" ? [
-        { id: "success-route-boundary", cells: ["默认出口", "待判", "默认出口待判 / 路由快照未取回"], tone: "warn" },
-        { id: "success-page-trust", cells: ["页面可信等级", "链路可参考", "业务状态不参考"], tone: "warn" },
-        { id: "success-readonly", cells: ["只读策略", "不写配置", "不推断业务数值"], tone: "trust" }
-      ] : []
+      { id: "success-time", cells: [label, recent, "当前采样"], tone: recent === "未记录" ? "warn" : "trust" },
+      { id: "success-source", cells: ["来源", "业务快照", state.facts.collection.channelText], tone: "trust" },
+      { id: "success-scope", cells: ["可展示范围", "业务状态", moduleTrust(state)], tone: "ok" },
+      { id: "success-disabled", cells: ["已折叠模块", "无", "按边界显示"], tone: "trust" },
+      { id: "success-current", cells: ["当前状态", "可用", "业务快照可参考"], tone: "trust" },
+      { id: "success-next", cells: ["下一次轮询", pollText(snapshot), "时间轴终点"], tone: "trust" }
     ];
   }
   function wanContinuityRows(state) {
@@ -17971,78 +17947,6 @@ var PanelFramework = function(exports) {
       children
     ] });
   }
-  function ChainTimeline({ rows, module }) {
-    const lead = rows[0];
-    const recent = lead ? String(lead.cells[2] || "") : "未记录";
-    const noSnapshotTimeline = module.startsWith("no-snapshot");
-    return /* @__PURE__ */ jsxRuntimeExports.jsxs(
-      "div",
-      {
-        className: "ro-chain-timeline ik-no-snapshot-timeline-visual ik-overview-timeline",
-        "data-overview-judgement-chart": "chain-timeline-current-recent-failure-next",
-        "data-overview-scene-chart": module,
-        "data-overview-chart-type": noSnapshotTimeline ? "line" : "timeline",
-        "data-overview-chart-has-current": "true",
-        "data-overview-chart-has-window": "true",
-        "data-overview-chart-has-trust": "true",
-        "data-overview-chart-unit": "status",
-        "data-overview-confidence": "链路可参考",
-        "data-overview-chart-meta": true,
-        "data-overview-sample-points": rows.length ? `${Math.min(rows.length, 6)}/${rows.length}` : "0/0",
-        "data-overview-time-window": recent || "最近成功未记录",
-        "data-overview-no-snapshot-compact-flow": noSnapshotTimeline ? "true" : void 0,
-        "data-overview-no-snapshot-success-timeline": noSnapshotTimeline || module === "collection-success-timeline" ? "true" : void 0,
-        "data-overview-no-snapshot-collection-timeline-parent-judgement": noSnapshotTimeline ? "true" : void 0,
-        "data-overview-collection-incident-timeline-parent-judgement": module === "collection-success-timeline" ? "true" : void 0,
-        children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ro-chain-meta", "data-overview-chart-meta": true, "data-overview-confidence": "链路可参考", "data-overview-time-window": recent || "最近成功未记录", "data-overview-sample-points": rows.length ? `${Math.min(rows.length, 6)}/${rows.length}` : "0/0", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "当前链路" }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: lead ? lead.cells[1] : "无业务快照" }),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("em", { children: [
-              "最近成功 ",
-              recent || "未记录",
-              " / 链路可参考"
-            ] })
-          ] }),
-          rows.slice(0, 6).map((row, index) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ro-chain-node ik-overview-chain-node ik-no-snapshot-chain-node", "data-tone": row.tone || "trust", "data-overview-chain-step": index + 1, children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: row.cells[0] }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: row.cells[1] }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: row.cells[2] })
-          ] }, row.id))
-        ]
-      }
-    );
-  }
-  function VisibilityMatrixVisual({ rows }) {
-    return /* @__PURE__ */ jsxRuntimeExports.jsxs(
-      "div",
-      {
-        className: "ro-visibility-matrix ik-no-snapshot-matrix-grid ik-overview-module-matrix",
-        "data-overview-judgement-chart": "visibility-matrix-current-reason-trust",
-        "data-overview-scene-chart": "no-snapshot-visibility-matrix",
-        "data-overview-chart-type": "matrix",
-        "data-overview-chart-has-current": "true",
-        "data-overview-chart-has-window": "true",
-        "data-overview-chart-has-trust": "true",
-        "data-overview-chart-unit": "status",
-        "data-overview-empty-chart-state": "no-business-snapshot-grey-axis",
-        "data-overview-chart-meta": true,
-        "data-overview-sample-points": rows.length ? `${Math.min(rows.length, 8)}/${rows.length}` : "0/0",
-        "data-overview-time-window": "模块可见性",
-        "data-overview-no-snapshot-four-col-matrix": "true",
-        "data-overview-confidence": "业务状态不可参考",
-        "data-overview-no-snapshot-module-matrix-parent-judgement": "true",
-        "data-overview-matrix-evidence": "current-commit",
-        children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ro-visibility-axis", "aria-hidden": "true", children: "无业务快照 / 模块可见性 / 灰色为空态轴线" }),
-          rows.slice(0, 8).map((row) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ro-visibility-cell ik-no-snapshot-matrix-cell ik-no-snapshot-ledger-cell", "data-tone": row.tone || "trust", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: row.cells[0] }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: row.cells[1] })
-          ] }, row.id))
-        ]
-      }
-    );
-  }
   function Module({ title, subtitle, module, tone = "trust", headers, rows, trust, className = "", minRows = 0, visual, visualOnly = false, collapsedEvidence = false }) {
     const paddedRows = rows;
     const isWanLedger = /wan/i.test(module);
@@ -18114,7 +18018,7 @@ var PanelFramework = function(exports) {
         "data-overview-no-snapshot-recent-channel-parent-judgement": module === "no-snapshot-recent-success" ? "true" : void 0,
         "data-overview-no-snapshot-collection-channel-parent-judgement": module === "no-snapshot-channel-status" ? "true" : void 0,
         "data-overview-no-snapshot-content-sized": module.startsWith("no-snapshot") ? "true" : void 0,
-        "data-overview-desktop-v1042-no-snapshot-floor-module": isNoSnapshotFloorModule ? "visibility-raw-evidence-filled-floor" : void 0,
+        "data-overview-desktop-v1042-no-snapshot-floor-module": isNoSnapshotFloorModule ? "collapsed-raw-evidence-only" : void 0,
         "data-overview-no-snapshot-floor-zone": isNoSnapshotFloorModule ? module : void 0,
         "data-overview-three-col-table": headers.length === 3 ? "true" : void 0,
         "data-overview-table-evidence-wrap": headers.length === 3 ? "third-column-full-wrap" : void 0,
@@ -18205,21 +18109,17 @@ var PanelFramework = function(exports) {
     if (state.scenario === "no-snapshot") {
       const businessBoundaryRows = compactRows(noSnapshotBusinessBoundaryRows(snapshot, state), 4);
       const chainRows = compactRows(noSnapshotChainRows(snapshot, state), 4);
-      const successRows = compactRows(lastSuccessRows(snapshot, state), 5);
-      const credibilityRows = compactRows(noSnapshotReadonlyDegradedRows(snapshot, state), 4);
-      const visibilityRows = compactRows(noSnapshotVisibilityRows(), 6);
+      const successRows = compactRows(lastSuccessRows(snapshot, state), 4);
       return {
         main: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "业务可信边界", subtitle: "无业务快照 · 业务字段禁显 · 不用零速率占位", module: "no-snapshot-module-visibility", tone: "missing", trust, headers: ["模块", "当前", "影响", "边界"], rows: businessBoundaryRows, minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(VisibilityMatrixVisual, { rows: businessBoundaryRows }) }, "ns-business-boundary"),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "采集链路", subtitle: "RouterOS / REST / SSH / 快照 · 仅作管理面证据", module: "no-snapshot-summary", tone: "warn", trust, headers: ["链路项", "当前", "最近成功", "主证据", "下次尝试"], rows: chainRows, minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(ChainTimeline, { rows: chainRows, module: "no-snapshot-summary-chain" }) }, "ns-collection-chain")
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "采集链路", subtitle: "管理面证据 · 不代表业务可用", module: "no-snapshot-summary", tone: "warn", trust, headers: ["通道", "当前", "依据"], rows: chainRows, minRows: 0 }, "ns-collection-chain"),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "业务可信边界", subtitle: "缺少业务快照 · 不展示不可验证数值", module: "no-snapshot-module-visibility", tone: "missing", trust, headers: ["对象", "当前", "影响", "处理"], rows: businessBoundaryRows, minRows: 0 }, "ns-business-boundary")
         ],
         side: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "最近成功 / 恢复线索", subtitle: "时间轴起点 · 当前管理面 · 下次轮询", module: "no-snapshot-recent-success", tone: "trust", trust, headers: ["节点", "当前", "说明"], rows: successRows, minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(ChainTimeline, { rows: successRows, module: "no-snapshot-recent-success-timeline" }) }, "ns-recovery"),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "页面可信度", subtitle: "业务解释优先 · 原始字段下沉", module: "no-snapshot-readonly-boundary", tone: "warn", trust, headers: ["对象", "当前", "原因", "边界"], rows: credibilityRows, minRows: 0 }, "ns-page-credibility")
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "恢复线索", subtitle: "最近成功 · 当前状态 · 下次轮询", module: "no-snapshot-recent-success", tone: "trust", trust, headers: ["节点", "当前", "说明"], rows: successRows, minRows: 0 }, "ns-recovery")
         ],
         bottom: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { className: "ro-no-snapshot-floor-module", title: "不可展示模块矩阵", subtitle: "WAN / 资源 / 终端 / 连接 / 速率 · 按可信边界禁显", module: "no-snapshot-degraded-modules", tone: "missing", trust, headers: ["模块", "状态", "原因", "边界"], rows: visibilityRows, minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(VisibilityMatrixVisual, { rows: visibilityRows }) }, "ns-visibility-floor"),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { className: "ro-no-snapshot-floor-module", title: "证据 / 原始字段", subtitle: "默认收起 · 仅用于审计", module: "evidence-boundary", tone: "trust", trust, headers: ["对象", "当前", "依据"], rows: compactRows(desktopEvidenceBoundaryRows(snapshot, state), 4), minRows: 0, collapsedEvidence: true }, "ns-raw-evidence")
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { className: "ro-no-snapshot-floor-module", title: "原始证据", subtitle: "默认收起 · 仅用于审计", module: "evidence-boundary", tone: "trust", trust, headers: ["对象", "当前", "依据"], rows: compactRows(desktopEvidenceBoundaryRows(snapshot, state), 4), minRows: 0, collapsedEvidence: true }, "ns-raw-evidence")
         ]
       };
     }
@@ -18418,11 +18318,11 @@ var PanelFramework = function(exports) {
         "data-overview-desktop-content-icon-tabs": "desktop-hides-content-icon-tabs",
         "data-overview-verdict-panel": verdictContractText(snapshot, state),
         "data-overview-trend-compact": "framework-ledger",
-        "data-overview-no-snapshot-grid": state.scenario === "no-snapshot" ? "main-chain-boundary-success-route-side-readonly-degraded" : void 0,
-        "data-overview-no-snapshot-detail": state.scenario === "no-snapshot" ? "left-chain-ledger-business-boundary-recent-success-right-readonly-boundary-degraded-modules" : void 0,
-        "data-overview-desktop-v1042-no-snapshot-floor": state.scenario === "no-snapshot" ? "full-width-two-zone-visibility-raw-evidence-no-blank" : void 0,
-        "data-overview-no-snapshot-left-main": state.scenario === "no-snapshot" ? "collection-chain-ledger-business-boundary-recent-success" : void 0,
-        "data-overview-no-snapshot-right-side": state.scenario === "no-snapshot" ? "readonly-boundary-degraded-modules" : void 0,
+        "data-overview-no-snapshot-grid": state.scenario === "no-snapshot" ? "collection-chain-business-boundary-recovery" : void 0,
+        "data-overview-no-snapshot-detail": state.scenario === "no-snapshot" ? "three-visible-evidence-sections-raw-fields-collapsed" : void 0,
+        "data-overview-desktop-v1042-no-snapshot-floor": state.scenario === "no-snapshot" ? "single-collapsed-raw-evidence" : void 0,
+        "data-overview-no-snapshot-left-main": state.scenario === "no-snapshot" ? "collection-chain-business-boundary" : void 0,
+        "data-overview-no-snapshot-right-side": state.scenario === "no-snapshot" ? "recovery-line" : void 0,
         "data-overview-no-snapshot-wan-rate-layout-guard": state.scenario === "no-snapshot" ? "no-wan-rate-panel-no-zero-rate-no-rate-spacer" : void 0,
         "data-overview-desktop-effective-content-height": "760",
         "data-overview-desktop-redline-markers": "no-empty-left60-no-duplicate-boundary-no-nosnapshot-wan-rate-no-toy-tabs",
@@ -18458,7 +18358,7 @@ var PanelFramework = function(exports) {
           /* @__PURE__ */ jsxRuntimeExports.jsx(DesktopDecisionRail, { snapshot, state }),
           /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ro-col is-main stack", "data-overview-desktop-rail": "network-wan", "data-overview-desktop-fixed-area": "left-main", children: sections.main }),
           /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ro-col is-side stack ik-home-side-stack", "data-overview-desktop-rail": "resource-collection", "data-overview-desktop-fixed-area": "right-main", children: sections.side }),
-          sections.bottom.length > 0 ? /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: `ro-col is-bottom stack${state.scenario === "no-snapshot" ? " ro-no-snapshot-floor" : ""}`, style: state.scenario === "no-snapshot" ? { gridColumn: "1 / -1", gridAutoRows: "minmax(190px, 1fr)" } : { gridColumn: "1 / -1" }, "data-overview-desktop-rail": "interface-events", "data-overview-desktop-fixed-area": "bottom", "data-overview-desktop-v1042-no-snapshot-floor-rail": state.scenario === "no-snapshot" ? "visibility-raw-evidence-filled-floor" : void 0, children: sections.bottom }) : null
+          sections.bottom.length > 0 ? /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: `ro-col is-bottom stack${state.scenario === "no-snapshot" ? " ro-no-snapshot-floor" : ""}`, style: { gridColumn: "1 / -1" }, "data-overview-desktop-rail": "interface-events", "data-overview-desktop-fixed-area": "bottom", "data-overview-desktop-v1042-no-snapshot-floor-rail": state.scenario === "no-snapshot" ? "single-collapsed-raw-evidence" : void 0, children: sections.bottom }) : null
         ]
       }
     );

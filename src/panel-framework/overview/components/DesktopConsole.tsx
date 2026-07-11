@@ -62,11 +62,11 @@ export function DesktopWorkspace({ snapshot, state }: OverviewPanelProps) {
       data-overview-desktop-content-icon-tabs="desktop-hides-content-icon-tabs"
       data-overview-verdict-panel={verdictContractText(snapshot, state)}
       data-overview-trend-compact="framework-ledger"
-      data-overview-no-snapshot-grid={state.scenario === "no-snapshot" ? "main-chain-boundary-success-route-side-readonly-degraded" : undefined}
-      data-overview-no-snapshot-detail={state.scenario === "no-snapshot" ? "left-chain-ledger-business-boundary-recent-success-right-readonly-boundary-degraded-modules" : undefined}
-      data-overview-desktop-v1042-no-snapshot-floor={state.scenario === "no-snapshot" ? "full-width-two-zone-visibility-raw-evidence-no-blank" : undefined}
-      data-overview-no-snapshot-left-main={state.scenario === "no-snapshot" ? "collection-chain-ledger-business-boundary-recent-success" : undefined}
-      data-overview-no-snapshot-right-side={state.scenario === "no-snapshot" ? "readonly-boundary-degraded-modules" : undefined}
+      data-overview-no-snapshot-grid={state.scenario === "no-snapshot" ? "collection-chain-business-boundary-recovery" : undefined}
+      data-overview-no-snapshot-detail={state.scenario === "no-snapshot" ? "three-visible-evidence-sections-raw-fields-collapsed" : undefined}
+      data-overview-desktop-v1042-no-snapshot-floor={state.scenario === "no-snapshot" ? "single-collapsed-raw-evidence" : undefined}
+      data-overview-no-snapshot-left-main={state.scenario === "no-snapshot" ? "collection-chain-business-boundary" : undefined}
+      data-overview-no-snapshot-right-side={state.scenario === "no-snapshot" ? "recovery-line" : undefined}
       data-overview-no-snapshot-wan-rate-layout-guard={state.scenario === "no-snapshot" ? "no-wan-rate-panel-no-zero-rate-no-rate-spacer" : undefined}
       data-overview-desktop-effective-content-height="760"
       data-overview-desktop-redline-markers="no-empty-left60-no-duplicate-boundary-no-nosnapshot-wan-rate-no-toy-tabs"
@@ -102,7 +102,7 @@ export function DesktopWorkspace({ snapshot, state }: OverviewPanelProps) {
       <DesktopDecisionRail snapshot={snapshot} state={state} />
       <div className="ro-col is-main stack" data-overview-desktop-rail="network-wan" data-overview-desktop-fixed-area="left-main">{sections.main}</div>
       <div className="ro-col is-side stack ik-home-side-stack" data-overview-desktop-rail="resource-collection" data-overview-desktop-fixed-area="right-main">{sections.side}</div>
-      {sections.bottom.length > 0 ? <div className={`ro-col is-bottom stack${state.scenario === "no-snapshot" ? " ro-no-snapshot-floor" : ""}`} style={state.scenario === "no-snapshot" ? { gridColumn: "1 / -1", gridAutoRows: "minmax(190px, 1fr)" } : { gridColumn: "1 / -1" }} data-overview-desktop-rail="interface-events" data-overview-desktop-fixed-area="bottom" data-overview-desktop-v1042-no-snapshot-floor-rail={state.scenario === "no-snapshot" ? "visibility-raw-evidence-filled-floor" : undefined}>{sections.bottom}</div> : null}
+      {sections.bottom.length > 0 ? <div className={`ro-col is-bottom stack${state.scenario === "no-snapshot" ? " ro-no-snapshot-floor" : ""}`} style={{ gridColumn: "1 / -1" }} data-overview-desktop-rail="interface-events" data-overview-desktop-fixed-area="bottom" data-overview-desktop-v1042-no-snapshot-floor-rail={state.scenario === "no-snapshot" ? "single-collapsed-raw-evidence" : undefined}>{sections.bottom}</div> : null}
     </div>
   );
 }

@@ -74,7 +74,7 @@ export function Module({ title, subtitle, module, tone = "trust", headers, rows,
       data-overview-no-snapshot-recent-channel-parent-judgement={module === "no-snapshot-recent-success" ? "true" : undefined}
       data-overview-no-snapshot-collection-channel-parent-judgement={module === "no-snapshot-channel-status" ? "true" : undefined}
       data-overview-no-snapshot-content-sized={module.startsWith("no-snapshot") ? "true" : undefined}
-      data-overview-desktop-v1042-no-snapshot-floor-module={isNoSnapshotFloorModule ? "visibility-raw-evidence-filled-floor" : undefined}
+      data-overview-desktop-v1042-no-snapshot-floor-module={isNoSnapshotFloorModule ? "collapsed-raw-evidence-only" : undefined}
       data-overview-no-snapshot-floor-zone={isNoSnapshotFloorModule ? module : undefined}
       data-overview-three-col-table={headers.length === 3 ? "true" : undefined}
       data-overview-table-evidence-wrap={headers.length === 3 ? "third-column-full-wrap" : undefined}

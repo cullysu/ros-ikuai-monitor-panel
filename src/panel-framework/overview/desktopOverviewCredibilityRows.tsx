@@ -120,31 +120,21 @@ export function threeColumnRows(rows: LedgerRow[], prefix = ""): LedgerRow[] {
 export function noSnapshotChainRows(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): LedgerRow[] {
   const recent = latestSuccess(snapshot, state.scenario);
   const next = pollText(snapshot);
-  const age = state.facts.freshness.text;
   return [
-    { id: "chain-entry", cells: ["页面可信等级", "链路可参考", recent, "只读不写配置", next], tone: "trust" },
-    { id: "chain-router", cells: ["RouterOS", "断链", recent, "管理面断链", next], tone: "danger" },
-    { id: "chain-rest", cells: ["REST", restState(snapshot, state).value, recent, "采集通道需核", next], tone: restState(snapshot, state).tone },
-    { id: "chain-ssh", cells: ["SSH", sshState(snapshot, state).value, recent, "静态通道断链", next], tone: sshState(snapshot, state).tone },
-    { id: "chain-business", cells: ["业务数据展示边界", "无业务快照", recent, "业务快照时间 无 / 业务快照年龄 不可判定 / 业务数据不展示；速率不展示", next], title: "业务快照缺失：WAN、资源、终端、连接与速率不展示", tone: "missing" },
-    { id: "chain-default-route", cells: ["默认路由", "待判定", recent, "路由快照未取回，不推断承载", next], tone: "warn" },
-    { id: "chain-success", cells: ["最近成功", recent, recent, "仅作为采集链路时间点", next], tone: recent === "未记录" ? "warn" : "trust" },
-    { id: "chain-failure", cells: ["失败端点", state.facts.failures.count ? failureText(snapshot, state) : "未记录", recent, "失败端点未记录不写 0", next], tone: state.facts.failures.count ? "warn" : "trust" },
-    { id: "chain-trust", cells: ["数据可信度", "链路可参考", recent, `业务状态不可参考 / 事件更新时间 ${age}`, next], tone: "warn" },
+    { id: "chain-router", cells: ["RouterOS", "不可达", "管理连接未建立"], tone: "danger" },
+    { id: "chain-rest", cells: ["REST", restState(snapshot, state).value, restState(snapshot, state).note], tone: restState(snapshot, state).tone },
+    { id: "chain-ssh", cells: ["SSH", sshState(snapshot, state).value, sshState(snapshot, state).note], tone: sshState(snapshot, state).tone },
+    { id: "chain-next", cells: ["下一次轮询", next, `最近成功 ${recent}`], tone: recent === "未记录" ? "warn" : "trust" },
   ];
 }
 
 export function noSnapshotBusinessBoundaryRows(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): LedgerRow[] {
   const recent = latestSuccess(snapshot, state.scenario);
   return [
-    { id: "boundary-business", cells: ["业务展示边界", "无业务快照", "WAN / 资源 / 终端 / 连接禁显", "只读 不写配置"], tone: "missing" },
-    { id: "boundary-rate", cells: ["速率展示", "禁显", "无有效业务采样", "速率禁显"], tone: "missing" },
-    { id: "boundary-route", cells: ["默认路由影响", "待判", ROUTE_UNKNOWN, "不推断承载状态"], tone: "warn" },
-    { id: "boundary-success", cells: ["最近成功", recent, `状态更新 ${statusUpdated(snapshot)}`, "只代表采集链路"], tone: recent === "未记录" ? "warn" : "trust" },
-    { id: "boundary-collection", cells: ["采集链路", "链路可参考", "REST 待确认 / SSH 断链", "业务状态不参考"], tone: "warn" },
-    { id: "boundary-failure", cells: ["端点失败", failureText(snapshot, state), "未记录保持未记录", "不写零值"], tone: state.facts.failures.count ? "warn" : "trust" },
-    { id: "boundary-next", cells: ["下一次轮询", pollText(snapshot), "继续只读采集", "不写配置"], tone: "trust" },
-    { id: "boundary-page", cells: ["页面可信等级", "链路可参考", moduleTrust(state), "只读状态台"], tone: "warn" },
+    { id: "boundary-business", cells: ["业务快照", "未取得", "WAN / 资源 / 终端 / 连接 / 速率不展示", "避免把缺失解释为 0"], tone: "missing" },
+    { id: "boundary-route", cells: ["默认路由", "待判定", ROUTE_UNKNOWN, "路由快照取回后判断"], tone: "warn" },
+    { id: "boundary-success", cells: ["最近成功", recent, `状态更新 ${statusUpdated(snapshot)}`, "仅证明采集曾成功"], tone: recent === "未记录" ? "warn" : "trust" },
+    { id: "boundary-mode", cells: ["操作模式", "只读", "不会修改 RouterOS 配置", `等待 ${pollText(snapshot)}`], tone: "trust" },
   ];
 }
 
@@ -213,18 +203,21 @@ export function noSnapshotAuxiliaryScopeRows(snapshot: OverviewRawSnapshot, stat
 export function lastSuccessRows(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): LedgerRow[] {
   const recent = latestSuccess(snapshot, state.scenario);
   const label = state.scenario === "collection-down" ? "最后成功" : "最近成功";
+  if (state.scenario === "no-snapshot") {
+    return [
+      { id: "success-time", cells: ["最近成功", recent, "采集时间点"], tone: recent === "未记录" ? "warn" : "trust" },
+      { id: "success-current", cells: ["当前状态", "快照缺失", `状态更新 ${statusUpdated(snapshot)}`], tone: "missing" },
+      { id: "success-next", cells: ["下一次轮询", pollText(snapshot), "继续只读采集"], tone: "trust" },
+      { id: "success-target", cells: ["恢复判据", "取得新快照", "届时重新判断 WAN 与业务状态"], tone: "warn" },
+    ];
+  }
   return [
-    { id: "success-time", cells: [label, recent, state.scenario === "no-snapshot" ? "时间轴起点" : "当前采样"], tone: recent === "未记录" ? "warn" : "trust" },
-    { id: "success-source", cells: ["来源", state.scenario === "no-snapshot" ? "采集元数据" : "业务快照", state.scenario === "no-snapshot" ? "REST 待确认 / SSH 断链" : state.facts.collection.channelText], tone: "trust" },
-    { id: "success-scope", cells: ["可展示范围", state.scenario === "no-snapshot" ? "采集链路" : "业务状态", moduleTrust(state)], tone: state.scenario === "no-snapshot" ? "warn" : "ok" },
-    { id: "success-disabled", cells: ["已折叠模块", state.scenario === "no-snapshot" ? "WAN / 资源 / 终端 / 连接" : "无", "按边界显示"], tone: state.scenario === "no-snapshot" ? "missing" : "trust" },
-    { id: "success-current", cells: [state.scenario === "no-snapshot" ? "采集状态更新时间" : "当前状态", state.scenario === "no-snapshot" ? statusUpdated(snapshot) : "可用", state.scenario === "no-snapshot" ? "业务禁显" : "业务快照可参考"], tone: state.scenario === "no-snapshot" ? "danger" : "trust" },
+    { id: "success-time", cells: [label, recent, "当前采样"], tone: recent === "未记录" ? "warn" : "trust" },
+    { id: "success-source", cells: ["来源", "业务快照", state.facts.collection.channelText], tone: "trust" },
+    { id: "success-scope", cells: ["可展示范围", "业务状态", moduleTrust(state)], tone: "ok" },
+    { id: "success-disabled", cells: ["已折叠模块", "无", "按边界显示"], tone: "trust" },
+    { id: "success-current", cells: ["当前状态", "可用", "业务快照可参考"], tone: "trust" },
     { id: "success-next", cells: ["下一次轮询", pollText(snapshot), "时间轴终点"], tone: "trust" },
-    ...(state.scenario === "no-snapshot" ? [
-      { id: "success-route-boundary", cells: ["默认出口", "待判", "默认出口待判 / 路由快照未取回"], tone: "warn" as OverviewTone },
-      { id: "success-page-trust", cells: ["页面可信等级", "链路可参考", "业务状态不参考"], tone: "warn" as OverviewTone },
-      { id: "success-readonly", cells: ["只读策略", "不写配置", "不推断业务数值"], tone: "trust" as OverviewTone },
-    ] : []),
   ];
 }
 

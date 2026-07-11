@@ -1594,13 +1594,21 @@
 @media (min-width: 761px) {
   #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-desktop-grid {
     grid-template-columns: 96px minmax(0, 1.47fr) minmax(360px, .88fr) !important;
-    grid-template-rows: 54px minmax(0, 1fr) 148px !important;
+    grid-template-rows: var(--ro-desktop-grid-rows, 54px minmax(0, 1fr) 148px) !important;
     align-content: start !important;
     align-items: stretch !important;
     gap: 3px !important;
     height: calc(100vh - 82px) !important;
     min-height: calc(100vh - 82px) !important;
     overflow: hidden !important;
+  }
+
+  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-desktop-grid[data-overview-desktop-v1042-no-snapshot-floor] {
+    --ro-desktop-grid-rows: 54px auto auto;
+    --ro-col-align-content: start;
+    --ro-col-height: auto;
+    --ro-col-grid-auto-rows: max-content;
+    --ro-col-module-height: auto;
   }
 
   #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-desktop-nav {

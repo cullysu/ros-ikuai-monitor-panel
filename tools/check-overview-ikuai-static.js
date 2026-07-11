@@ -920,24 +920,22 @@ includesAll(desktopStyleStack, [
   "data-overview-desktop-scene=\"no-snapshot\"",
 ], "v960 desktop status bus and evidence refinement CSS redlines");
 includesAll(`${overviewPanel}\n${desktopReleaseStyles}`, [
-  'module="no-snapshot-degraded-modules"',
   'module="evidence-boundary"',
   "data-overview-desktop-v1042-no-snapshot-floor",
-  "full-width-two-zone-visibility-raw-evidence-no-blank",
-  "Desktop no-snapshot floor: fill the lower rail with visibility and collapsed raw evidence.",
+  "single-collapsed-raw-evidence",
+  "Desktop no-snapshot floor: keep raw fields available without turning absence into another dashboard.",
   "ro-no-snapshot-floor",
-], "desktop no-snapshot bottom visibility/raw-evidence fill contract");
+], "desktop no-snapshot collapsed raw-evidence floor contract");
 includesAll(overviewPanel + "\n" + desktopReleaseStyles + "\n" + resourceTrendCheck, [
-  "Desktop no-snapshot floor: fill the lower rail with visibility and collapsed raw evidence.",
+  "Desktop no-snapshot floor: keep raw fields available without turning absence into another dashboard.",
   "data-overview-desktop-v1042-no-snapshot-floor",
-  "full-width-two-zone-visibility-raw-evidence-no-blank",
+  "single-collapsed-raw-evidence",
   "data-overview-desktop-v1042-no-snapshot-floor-rail",
   "data-overview-desktop-v1042-no-snapshot-floor-module",
-  "visibility-raw-evidence-filled-floor",
+  "collapsed-raw-evidence-only",
   "noSnapshotFloorProductized",
-  "noSnapshotFloorVisualCount",
   "noSnapshotFloorRowCount",
-], "desktop no-snapshot floor must fill lower rail with visibility and raw evidence");
+], "desktop no-snapshot floor keeps one collapsed audit disclosure");
 includesAll(overviewPanel, [
   "DesktopWanIntegratedVisual",
   "data-overview-desktop-wan-integrated=\"trend-current-peak-top-outlet-route-sampling\"",
@@ -1028,13 +1026,15 @@ includesAll(resourceTrendCheck, [
   "visibleText(topbar)",
   "visibleText(workspace)",
   "desktopNoSnapshot",
-  "no-snapshot-degraded-modules",
+  "no-snapshot-summary",
+  "no-snapshot-module-visibility",
+  "no-snapshot-recent-success",
   "evidence-boundary",
-  "visibility-raw-evidence-filled-floor",
-  "full-width-two-zone-visibility-raw-evidence-no-blank",
+  "single-collapsed-raw-evidence",
+  "collapsed-raw-evidence-only",
   "native-details-collapsed-secondary",
   "forbiddenModules",
-  "visibleBottomCount === bottomRequired.length",
+  "visiblePrimaryCount === 3",
 ], "desktop no-snapshot runtime gate contract");
 includesAll(resourceTrendCheck, [
   "desktopV1030",
@@ -2078,11 +2078,17 @@ includesAll(sourceDesktopNoSnapshotBranch, [
   'module="no-snapshot-summary"',
   'module="no-snapshot-module-visibility"',
   'module="no-snapshot-recent-success"',
-  'module="no-snapshot-degraded-modules"',
   'module="evidence-boundary"',
-  'module="no-snapshot-summary-chain"',
-  'module="no-snapshot-recent-success-timeline"',
+  'title="采集链路"',
+  'title="业务可信边界"',
+  'title="恢复线索"',
 ], "desktop no-snapshot must use collection/visibility modules instead of a WAN rate main module");
+excludesPatterns(sourceDesktopNoSnapshotBranch, [
+  /module="no-snapshot-readonly-boundary"/,
+  /module="no-snapshot-degraded-modules"/,
+  /不可展示模块矩阵/,
+  /页面可信度/,
+], "desktop no-snapshot must not duplicate credibility or unavailable-module matrices");
 excludesPatterns(sourceDesktopNoSnapshotBranch, [
   ...desktopNoSnapshotForbiddenWanRatePatterns,
   ...desktopNoSnapshotFailedEndpointZeroPatterns,
