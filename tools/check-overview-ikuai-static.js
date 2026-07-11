@@ -2232,25 +2232,25 @@ includesAll(sourceV1046IncidentHero, [
   "data-overview-mobile-v1046-abnormal-decision-scope",
 ], "source v1046 mobile abnormal decision rail");
 
-const sourceV1122Decision = read("src/panel-framework/overview/components/MobileOverviewDecision.tsx");
-const sourceV1122RepairStyles = read("src/panel-framework/overview/components/MobileOverviewPublicDecisionRepairStyles.ts");
+const mobileDecisionSource = read("src/panel-framework/overview/components/MobileOverviewDecision.tsx");
+const mobileDecisionRepairStyles = read("src/panel-framework/overview/components/MobileOverviewPublicDecisionRepairStyles.ts");
 
-includesAll(`${sourceV1046MobileHome}\n${sourceV1122Decision}`, [
+includesAll(`${sourceV1046MobileHome}\n${mobileDecisionSource}`, [
   "data-overview-mobile-console",
   "ik-mobile-public-home",
-  "data-overview-mobile-v1122-channel-verdict",
+  "data-overview-mobile-channel-verdict",
   "object-impact-credibility-next-action-no-channel-grid",
   "data-overview-mobile-v1046-abnormal-decision-rail=\"object-impact-credibility-next-action\"",
   "model.priority === \"normal\"",
-], "source v1122 mobile readable abnormal verdict");
+], "source mobile readable abnormal verdict");
 
-includesAll(sourceV1122RepairStyles, [
+includesAll(mobileDecisionRepairStyles, [
   "grid-template-columns: repeat(2, minmax(0, 1fr))",
   "grid-template-rows: repeat(2, 60px)",
   ".ik-mobile-supporting-surface",
   "height: 82px",
   "font-size: 12.5px",
-], "source v1122 mobile readable abnormal layout");
+], "source mobile readable abnormal layout");
 
 includesAll(`${mobileModel}\n${mobileListModel}\n${mobilePolicy}`, [
   "carrier: string;",
@@ -2375,7 +2375,7 @@ includesAll(sourceV1046RuntimeProbe, [
   "channelRailModelBacked",
   "resourceVisualModelBacked",
   "data-overview-mobile-v1054-wan-port-model",
-  "data-overview-mobile-v1122-channel-verdict",
+  "data-overview-mobile-channel-verdict",
   "data-overview-mobile-v1056-resource-visual",
   "data-overview-mobile-v1046-abnormal-decision-rail=\"object-impact-credibility-next-action\"",
   "object-impact-credibility-next-action-low-noise-console",

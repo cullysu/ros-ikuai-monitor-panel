@@ -138,7 +138,7 @@ function ChannelDecisionVisual({ model }: { model: MobileOverviewModel }) {
       data-overview-mobile-first-visual="collection-snapshot-verdict"
       data-overview-mobile-first-microchart="true"
       data-overview-mobile-v240-visual="collection-snapshot-verdict"
-      data-overview-mobile-v1122-channel-verdict="object-impact-credibility-next-action-no-channel-grid"
+      data-overview-mobile-channel-verdict="object-impact-credibility-next-action-no-channel-grid"
     >
       <AbnormalDecisionRail model={model} />
     </div>
@@ -219,7 +219,6 @@ export function PrimaryDecision({ model }: { model: MobileOverviewModel }) {
       data-overview-mobile-hero-ranking-policy={model.appHomeContract.rankingPolicy}
       data-overview-mobile-v1065-normal-hero={model.priority === "normal" ? "chart-first-no-promo-headline" : undefined}
       data-overview-mobile-decision-card="one-conclusion-one-impact-one-next-step"
-      data-overview-mobile-v1122-decision-card="single-verdict-four-decision-facts"
       data-overview-primary-conclusion="true"
     >
       <div className="ik-mobile-decision-head">

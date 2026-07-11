@@ -15997,7 +15997,7 @@ var PanelFramework = function(exports) {
         "data-overview-mobile-first-visual": "collection-snapshot-verdict",
         "data-overview-mobile-first-microchart": "true",
         "data-overview-mobile-v240-visual": "collection-snapshot-verdict",
-        "data-overview-mobile-v1122-channel-verdict": "object-impact-credibility-next-action-no-channel-grid",
+        "data-overview-mobile-channel-verdict": "object-impact-credibility-next-action-no-channel-grid",
         children: /* @__PURE__ */ jsxRuntimeExports.jsx(AbnormalDecisionRail, { model })
       }
     );
@@ -16078,7 +16078,6 @@ var PanelFramework = function(exports) {
         "data-overview-mobile-hero-ranking-policy": model.appHomeContract.rankingPolicy,
         "data-overview-mobile-v1065-normal-hero": model.priority === "normal" ? "chart-first-no-promo-headline" : void 0,
         "data-overview-mobile-decision-card": "one-conclusion-one-impact-one-next-step",
-        "data-overview-mobile-v1122-decision-card": "single-verdict-four-decision-facts",
         "data-overview-primary-conclusion": "true",
         children: [
           /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ik-mobile-decision-head", children: [
@@ -16105,7 +16104,7 @@ var PanelFramework = function(exports) {
         "data-overview-mobile-v420-nav": "ios-navigation",
         "data-overview-mobile-v240-nav": "app-navigation",
         "data-overview-mobile-v1067-status-header": "routeros-device-state-header-context-action-low-noise",
-        "data-overview-mobile-v1121-status-header": "device-name-state-recent-only",
+        "data-overview-mobile-status-header": "device-name-state-recent-only",
         children: [
           /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ik-mobile-device-title", "data-overview-mobile-primary-title": "device", children: [
             /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: model.header.deviceName }),
@@ -16188,8 +16187,8 @@ var PanelFramework = function(exports) {
         "data-overview-mobile-normal-ranking": model.surface.normalRanking,
         "data-overview-mobile-v1070-grouped-surface": "separator-only-status-list-no-card-stack",
         "data-overview-mobile-v1080-surface": "one-supporting-list-no-duplicate-status-ledger",
-        "data-overview-mobile-v1120-supporting-surface": "detail-entry-evidence-below-primary-task",
-        "data-overview-mobile-v1120-evidence-policy": "first-screen-summary-only-rows-deferred",
+        "data-overview-mobile-supporting-surface": "detail-entry-evidence-below-primary-task",
+        "data-overview-mobile-evidence-policy": "first-screen-summary-only-rows-deferred",
         style: listStyle,
         children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
           "div",
@@ -16215,8 +16214,8 @@ var PanelFramework = function(exports) {
                 "button",
                 {
                   className: `ik-mobile-detail-entry ${toneClass(model.impactScope.tone)}`,
-                  "data-overview-mobile-v1120-detail-entry": "evidence-ranking-drilldown",
-                  "data-overview-mobile-v1120-detail-count": rows.length,
+                  "data-overview-mobile-detail-entry": "evidence-ranking-drilldown",
+                  "data-overview-mobile-detail-count": rows.length,
                   type: "button",
                   children: [
                     /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
@@ -16234,7 +16233,7 @@ var PanelFramework = function(exports) {
                 "div",
                 {
                   className: "ik-mobile-supporting-detail-rows",
-                  "data-overview-mobile-v1120-deferred-rows": "evidence-below-mobile-home-task",
+                  "data-overview-mobile-deferred-rows": "evidence-below-mobile-home-task",
                   "aria-hidden": "true",
                   children: rows.map((row) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
                     "article",

@@ -11,7 +11,7 @@ export function DeviceBar({ model }: { model: MobileOverviewModel }) {
       data-overview-mobile-v420-nav="ios-navigation"
       data-overview-mobile-v240-nav="app-navigation"
       data-overview-mobile-v1067-status-header="routeros-device-state-header-context-action-low-noise"
-      data-overview-mobile-v1121-status-header="device-name-state-recent-only"
+      data-overview-mobile-status-header="device-name-state-recent-only"
     >
       <div className="ik-mobile-device-title" data-overview-mobile-primary-title="device">
         <b>{model.header.deviceName}</b>
@@ -87,8 +87,8 @@ export function SupportingList({ model }: { model: MobileOverviewModel }) {
       data-overview-mobile-normal-ranking={model.surface.normalRanking}
       data-overview-mobile-v1070-grouped-surface="separator-only-status-list-no-card-stack"
       data-overview-mobile-v1080-surface="one-supporting-list-no-duplicate-status-ledger"
-      data-overview-mobile-v1120-supporting-surface="detail-entry-evidence-below-primary-task"
-      data-overview-mobile-v1120-evidence-policy="first-screen-summary-only-rows-deferred"
+      data-overview-mobile-supporting-surface="detail-entry-evidence-below-primary-task"
+      data-overview-mobile-evidence-policy="first-screen-summary-only-rows-deferred"
       style={listStyle}
     >
       <div
@@ -107,8 +107,8 @@ export function SupportingList({ model }: { model: MobileOverviewModel }) {
         </header>
         <button
           className={`ik-mobile-detail-entry ${toneClass(model.impactScope.tone)}`}
-          data-overview-mobile-v1120-detail-entry="evidence-ranking-drilldown"
-          data-overview-mobile-v1120-detail-count={rows.length}
+          data-overview-mobile-detail-entry="evidence-ranking-drilldown"
+          data-overview-mobile-detail-count={rows.length}
           type="button"
         >
           <span>
@@ -119,7 +119,7 @@ export function SupportingList({ model }: { model: MobileOverviewModel }) {
         </button>
         <div
           className="ik-mobile-supporting-detail-rows"
-          data-overview-mobile-v1120-deferred-rows="evidence-below-mobile-home-task"
+          data-overview-mobile-deferred-rows="evidence-below-mobile-home-task"
           aria-hidden="true"
         >
           {rows.map((row) => (

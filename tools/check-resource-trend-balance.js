@@ -1468,7 +1468,7 @@ async function main() {
             )
           )
         );
-        const firstScreenChannelRail = root?.querySelector('[data-overview-mobile-v1122-channel-verdict="object-impact-credibility-next-action-no-channel-grid"]');
+        const firstScreenChannelRail = root?.querySelector('[data-overview-mobile-channel-verdict="object-impact-credibility-next-action-no-channel-grid"]');
         const firstScreenChannelCells = Array.from(firstScreenChannelRail?.querySelectorAll('[data-overview-mobile-v1046-abnormal-decision-cell]') || []);
         const firstScreenChannelEvidenceVisible = Boolean(
           firstScreenChannelRail &&
@@ -1528,16 +1528,16 @@ async function main() {
             )
           )
         );
-        const detailEntryV1120 = list?.querySelector('[data-overview-mobile-v1120-detail-entry="evidence-ranking-drilldown"]');
-        const deferredRowsV1120 = list?.querySelector('[data-overview-mobile-v1120-deferred-rows="evidence-below-mobile-home-task"]');
-        const detailEntryV1120Visible = Boolean(detailEntryV1120 && (() => {
-          const style = getComputedStyle(detailEntryV1120);
-          const rect = detailEntryV1120.getBoundingClientRect();
+        const detailEntry = list?.querySelector('[data-overview-mobile-detail-entry="evidence-ranking-drilldown"]');
+        const deferredRows = list?.querySelector('[data-overview-mobile-deferred-rows="evidence-below-mobile-home-task"]');
+        const detailEntryVisible = Boolean(detailEntry && (() => {
+          const style = getComputedStyle(detailEntry);
+          const rect = detailEntry.getBoundingClientRect();
           return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height >= 40;
         })());
-        const evidenceDeferredV1120 = Boolean(
-          detailEntryV1120Visible &&
-          deferredRowsV1120
+        const evidenceDeferred = Boolean(
+          detailEntryVisible &&
+          deferredRows
         );
         const listEvidenceRows = Array.from(list?.querySelectorAll('[data-overview-mobile-v1061-evidence-layer]') || []);
         const listEvidence = listEvidenceRows.map((row) => ({
@@ -1582,7 +1582,7 @@ async function main() {
           statusHeader &&
           statusHeaderLabel.includes('RouterOS') &&
           (
-            statusHeader.getAttribute('data-overview-mobile-v1121-status-header') === 'device-name-state-recent-only'
+            statusHeader.getAttribute('data-overview-mobile-status-header') === 'device-name-state-recent-only'
               ? !statusHeaderAction
               : statusHeaderAction &&
                 statusHeaderAction.getAttribute('data-overview-mobile-v1067-header-action-semantic') === 'device-collection-route-context' &&
@@ -1748,7 +1748,7 @@ async function main() {
             cell.quietHairline
           ))
         );
-        const channelRail = hero?.querySelector('[data-overview-mobile-v1122-channel-verdict="object-impact-credibility-next-action-no-channel-grid"]');
+        const channelRail = hero?.querySelector('[data-overview-mobile-channel-verdict="object-impact-credibility-next-action-no-channel-grid"]');
         const channelRailModelBacked = (sectionName !== 'mobileNoSnapshotHome' && sectionName !== 'mobileCollectionHome') || Boolean(channelRail);
         const abnormalDecisionRail = hero?.querySelector('[data-overview-mobile-v1046-abnormal-decision-rail="object-impact-credibility-next-action"]');
         const abnormalDecisionCells = Array.from(abnormalDecisionRail?.querySelectorAll('[data-overview-mobile-v1046-abnormal-decision-cell]') || []);
@@ -1812,8 +1812,8 @@ async function main() {
           abnormalDecisionRailRect.top >= heroRect.top - 1 &&
           abnormalDecisionRailRect.bottom <= heroRect.bottom + 1 &&
           (
-            evidenceDeferredV1120
-              ? detailEntryV1120Visible && abnormalListRowRects.every((rect) => rect.width === 0 || rect.height === 0)
+            evidenceDeferred
+              ? detailEntryVisible && abnormalListRowRects.every((rect) => rect.width === 0 || rect.height === 0)
               : abnormalListRowRects.length > 0 &&
                 abnormalListRowRects.every((rect) => rect.width > 0 && rect.height >= 42)
           )
@@ -1907,7 +1907,7 @@ async function main() {
             : rootAttrs.p0FirstScreen === '') &&
           surfaceAttrs.listKind === expectedListKind &&
           (expectedConfig.mode === 'normal'
-            ? surfaceAttrs.terminalRankingMounted === 'true' && surfaceAttrs.terminalRankingState === 'supporting-evidence' && surfaceAttrs.normalRanking === 'operations-five-rows' && Boolean(terminalList) && !terminalRankingCopyVisible && (evidenceDeferredV1120 ? visibleTerminalRows.length === 0 : (visibleTerminalRows.length >= 1 && visibleTerminalRows.length <= 5))
+            ? surfaceAttrs.terminalRankingMounted === 'true' && surfaceAttrs.terminalRankingState === 'supporting-evidence' && surfaceAttrs.normalRanking === 'operations-five-rows' && Boolean(terminalList) && !terminalRankingCopyVisible && (evidenceDeferred ? visibleTerminalRows.length === 0 : (visibleTerminalRows.length >= 1 && visibleTerminalRows.length <= 5))
             : surfaceAttrs.terminalRankingMounted === 'false' && surfaceAttrs.terminalRankingState === expectedTerminalRanking && !terminalList && !terminalRankingCopyVisible) &&
           !styleTextLeakedIntoOverview &&
           missing.length === 0 &&
@@ -1928,8 +1928,8 @@ async function main() {
           terminalListMounted: Boolean(terminalList),
           terminalRowCount: terminalRows.length,
           visibleTerminalRowCount: visibleTerminalRows.length,
-          evidenceDeferredV1120,
-          detailEntryV1120Visible,
+          evidenceDeferred,
+          detailEntryVisible,
           terminalRankingCopyVisible,
           styleTextLeakedIntoOverview,
           hasHorizontalOverflow,
