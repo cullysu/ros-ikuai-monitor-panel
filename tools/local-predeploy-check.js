@@ -3667,7 +3667,8 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
           const area = Math.round(rect.width * rect.height);
           const heavyColor = /rgb\(2[0-5][0-9],([0-8][0-9]|9[0-9]|1[0-2][0-9]),([0-8][0-9]|9[0-9]|1[0-2][0-9])\)|rgb\(([0-8][0-9]|9[0-9]|1[0-2][0-9]),2[0-5][0-9],([0-8][0-9]|9[0-9]|1[0-2][0-9])\)/.test(bg + ' ' + border.join(' '));
           const classNameText = String(node.className || '');
-          const heavyBar = rect.height >= 8 && rect.width >= 96 && /bar|progress/i.test(classNameText) && !/status-strip|hairline/i.test(classNameText);
+          const nonProgressChromeBar = /(^|\s)(ik-v\d+-nav|ik-mobile-device-bar|ik-v\d+-tabbar|ik-v\d+-tabs|ik-ios-bottom-tab)(\s|$)|device-bar|bottom-tab/i.test(classNameText);
+          const heavyBar = rect.height >= 8 && rect.width >= 96 && /bar|progress/i.test(classNameText) && !/status-strip|hairline/i.test(classNameText) && !nonProgressChromeBar;
           return { area, heavyColor, heavyBar, className: classNameText.slice(0, 80), text: normalize(node.textContent || '').slice(0, 80) };
         })
         .filter((item) => (item.area >= window.innerWidth * window.innerHeight * 0.035 && item.heavyColor) || item.heavyBar)
@@ -7290,8 +7291,8 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         tableCount: overviewMobileFirstScreenTableCount,
         kpi2x2Count: mobile390Kpi2x2MarkerNodes.length,
         kpi2x2Geometry: mobile390Kpi2x2GeometryRecords.slice(0, 4),
-        hasHeroVisual: mobile390AppHomeChromeNodes.some((node) => node.classList.contains('ik-v159-network-hero') || node.hasAttribute('data-overview-mobile-v159-main-hero')),
-        hasIosNav: mobile390AppHomeChromeNodes.some((node) => node.classList.contains('ik-v159-nav') || node.hasAttribute('data-overview-mobile-v159-nav')),
+        hasHeroVisual: mobile390AppHomeChromeNodes.some((node) => node.classList.contains('ik-v159-network-hero') || node.classList.contains('ik-v240-hero') || node.hasAttribute('data-overview-mobile-v159-main-hero') || node.hasAttribute('data-overview-mobile-v240-hero')),
+        hasIosNav: mobile390AppHomeChromeNodes.some((node) => node.classList.contains('ik-v159-nav') || node.classList.contains('ik-v240-nav') || node.classList.contains('ik-v420-nav') || node.hasAttribute('data-overview-mobile-v159-nav') || node.hasAttribute('data-overview-mobile-v240-nav')),
       hasHeroMetrics: mobile390AppHomeHeroMetricsOk,
       hasSecondaryCards: mobile390AppHomeTwinOk,
       hasResourceDeck: mobile390AppHomeResourceCardOk,
@@ -8964,13 +8965,17 @@ async function main() {
       });
     }
     report.pass = report.failures.length === 0 && !matrixBlocksTopLevelPass;
+    report.exitCodeShouldFail = Boolean(
+      report.failures.length ||
+      ((explicitOverviewReleaseMatrix || matrixFinishBatch || report.matrix.complete) && !report.pass)
+    );
     const safeReport = await prepareReportForJson(report, args.out);
     await writeJson(path.join(args.out, 'report.json'), safeReport);
   }
 
   console.log(`[INFO] report: ${path.join(args.out, 'report.json')}`);
   console.log(`[INFO] result: ${report.pass ? 'pass' : report.failures.length ? `${report.failures.length} failure(s)` : 'incomplete release matrix'}`);
-  if (report.failures.length) process.exitCode = 1;
+  if (report.exitCodeShouldFail) process.exitCode = 1;
 }
 
 main().catch((error) => {
