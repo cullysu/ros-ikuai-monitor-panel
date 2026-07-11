@@ -6,6 +6,8 @@ import {
 } from "./types";
 import { buildRouterOsTrustModel, type RouterOsTrustPlane, type RouterOsTrustPlaneId } from "./routerosTrustModel";
 
+export const ROUTEROS_ROUTE_EVIDENCE_CONTRACT = "business-summary-first/raw-route-fields-secondary/table-gateway-distance-active-disabled";
+
 export type RouterOsEvidenceLayer = "business" | "semantic" | "raw";
 
 export interface RouterOsEvidenceItem {
@@ -29,6 +31,7 @@ export interface RouterOsRouteEvidenceItem extends RouterOsEvidenceItem {
 }
 
 export interface RouterOsRouteEvidenceModel {
+  contract: typeof ROUTEROS_ROUTE_EVIDENCE_CONTRACT;
   summary: RouterOsEvidenceItem;
   businessRows: RouterOsRouteEvidenceItem[];
   rawRows: RouterOsEvidenceItem[];
@@ -127,6 +130,7 @@ function missingModel(state: OverviewDerivedState): RouterOsRouteEvidenceModel {
     source: "route",
   };
   return {
+    contract: ROUTEROS_ROUTE_EVIDENCE_CONTRACT,
     summary,
     businessRows: [{
       ...summary,
@@ -258,7 +262,7 @@ export function buildRouterOsRouteEvidenceModel(snapshot: OverviewRawSnapshot, s
     } satisfies RouterOsEvidenceItem;
   });
 
-  return { summary, businessRows, rawRows };
+  return { contract: ROUTEROS_ROUTE_EVIDENCE_CONTRACT, summary, businessRows, rawRows };
 }
 
 export function buildRouterOsEvidenceModel(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): RouterOsEvidenceModel {

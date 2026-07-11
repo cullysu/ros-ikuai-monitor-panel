@@ -1,41 +1,5 @@
-import { buildMobileOverviewModel } from "../mobileOverviewModel";
-import type { AppRankingRow, MobileOverviewHomeProps, NativeRow } from "./MobileOverviewTypes";
+import type { AppRankingRow, MobileOverviewResolvedProps } from "./MobileOverviewTypes";
 import { toneClass } from "./MobileOverviewUtils";
-
-function statusTimelineRows(props: MobileOverviewHomeProps): NativeRow[] {
-  return buildMobileOverviewModel(props.snapshot, props.state).statusRows;
-}
-
-function statusCoreBlock(row: NativeRow): string | undefined {
-  if (row.id === "timeline-wan") return "wan";
-  if (row.id === "timeline-collection") return "collection";
-  if (row.id === "timeline-resource") return "resource";
-  return undefined;
-}
-
-function StatusTimeline(props: MobileOverviewHomeProps) {
-  const rows = statusTimelineRows(props);
-  return (
-    <section className="ik-v420-timeline ik-v240-strip" data-overview-mobile-core-block="status-timeline" data-overview-mobile-v240-status-strip="timeline-not-kpi-grid" data-overview-mobile-no-four-kpi-grid="true">
-      {rows.map((row) => {
-        const coreBlock = statusCoreBlock(row);
-        return (
-        <article
-          className={`ik-v420-timeline-row ik-mobile-status-strip ${toneClass(row.tone)}`}
-          data-overview-mobile-core-block={coreBlock}
-          data-row-id={row.id}
-          key={row.id}
-        >
-          <i aria-hidden="true" />
-          <b className="ik-v821-row-title">{row.title}</b>
-          <strong>{row.value}</strong>
-          <em className="ik-v821-row-note">{row.note}</em>
-        </article>
-        );
-      })}
-    </section>
-  );
-}
 
 function rankingIconPath(row: AppRankingRow): string {
   const text = `${row.name} ${row.kind ?? ""} ${row.meta}`.toLowerCase();
@@ -48,24 +12,35 @@ function rankingIconPath(row: AppRankingRow): string {
   return "M6 8h12v8H6zM9 5h6M9 19h6M12 5v3M12 16v3";
 }
 
-function RankingList(props: MobileOverviewHomeProps) {
-  const model = buildMobileOverviewModel(props.snapshot, props.state);
+function RankingList({ model }: MobileOverviewResolvedProps) {
   const rows: AppRankingRow[] = model.primaryList.rows;
-  const isTerminalRanking = model.primaryList.kind === "terminal-ranking";
   return (
     <section
       className="ik-v420-list ik-v420-app-list ik-v240-list"
-      data-overview-mobile-list-kind={model.primaryList.kind}
-      data-overview-mobile-rank-list={isTerminalRanking ? "terminal-total-traffic-list" : undefined}
+      data-overview-mobile-list-kind={model.surface.listKind}
+      data-overview-mobile-rank-list={model.surface.rankListKind}
       data-overview-mobile-v420-list="native-router-list"
-      data-overview-mobile-v240-list={isTerminalRanking ? "terminal-ranking" : "incident-objects"}
+      data-overview-mobile-v240-list={model.surface.v240ListKind}
     >
       <header>
         <b>{model.primaryList.title}</b>
         <span>{model.primaryList.meta}</span>
+        <em
+          className={`ik-v1020-impact-scope ${toneClass(model.impactScope.tone)}`}
+          data-overview-mobile-impact-scope-line={`${model.impactScope.id}:${model.impactScope.plane}`}
+        >
+          {model.impactScope.label} · {model.impactScope.value} · {model.impactScope.note}
+        </em>
       </header>
       {rows.map((row) => (
-        <article className={`ik-v420-list-row ${toneClass(row.tone)}`} key={row.id}>
+        <article
+          className={`ik-v420-list-row ${toneClass(row.tone)}`}
+          data-overview-mobile-v1061-evidence-layer={row.evidenceLayer}
+          data-overview-mobile-v1061-evidence-source={row.evidenceSource}
+          data-overview-mobile-v1061-evidence-role={row.evidenceRole}
+          data-overview-mobile-v1061-evidence-key={row.evidenceKey}
+          key={row.id}
+        >
           <i className="ik-v503-device-icon" data-rank={row.rank}>
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d={rankingIconPath(row)} /></svg>
           </i>
@@ -84,19 +59,28 @@ function RankingList(props: MobileOverviewHomeProps) {
   );
 }
 
-export function HomeSurface(props: MobileOverviewHomeProps) {
-  const model = buildMobileOverviewModel(props.snapshot, props.state);
-  const incidentFirst = model.surface.order === "list-before-status";
+export function HomeSurface(props: MobileOverviewResolvedProps) {
+  const { model } = props;
   return (
     <section
-      className={`ik-v420-surface ik-v240-facts ${incidentFirst ? "is-incident-first" : "is-ranking-first"} is-ranking-${model.surface.ranking}`}
+      className={`ik-v420-surface ik-v240-facts ${model.surface.className}`}
       data-overview-mobile-core-block="ios-router-home-surface"
       data-overview-mobile-v240-facts="timeline-resource-ranking"
-      data-overview-mobile-surface-order={incidentFirst ? "incident-before-status" : "status-before-ranking"}
+      data-overview-mobile-v1060-surface-policy={model.surface.contract}
+      data-overview-mobile-v1060-surface-slots={model.surface.slots.join("/")}
+      data-overview-mobile-surface-order={model.surface.orderContract}
       data-overview-mobile-ranking-policy={model.surface.ranking}
+      data-overview-mobile-list-kind={model.surface.listKind}
+      data-overview-mobile-impact-scope={model.impactScope.id}
+      data-overview-mobile-impact-plane={model.impactScope.plane}
+      data-overview-mobile-abnormal-ia={model.appHomeContract.informationArchitecture}
+      data-overview-mobile-terminal-ranking-state={model.surface.terminalRankingState}
+      data-overview-mobile-terminal-ranking-mounted={model.surface.terminalRankingMounted}
+      data-overview-mobile-normal-ranking={model.surface.normalRanking}
+      data-overview-mobile-v1070-grouped-surface="separator-only-status-list-no-card-stack"
+      data-overview-mobile-v1080-surface="one-supporting-list-no-duplicate-status-ledger"
     >
-      {incidentFirst ? <RankingList {...props} /> : <StatusTimeline {...props} />}
-      {incidentFirst ? <StatusTimeline {...props} /> : <RankingList {...props} />}
+      <RankingList {...props} />
     </section>
   );
 }

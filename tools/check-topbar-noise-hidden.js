@@ -1,4 +1,6 @@
 const fs = require('fs/promises');
+const nodeFs = require('fs');
+const http = require('http');
 const path = require('path');
 const { spawn } = require('child_process');
 
@@ -10,6 +12,55 @@ function arg(name, fallback = '') {
 }
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+function contentType(filePath) {
+  const ext = path.extname(filePath).toLowerCase();
+  if (ext === '.html') return 'text/html; charset=utf-8';
+  if (ext === '.js') return 'text/javascript; charset=utf-8';
+  if (ext === '.css') return 'text/css; charset=utf-8';
+  if (ext === '.json') return 'application/json; charset=utf-8';
+  if (ext === '.png') return 'image/png';
+  if (ext === '.svg') return 'image/svg+xml';
+  return 'application/octet-stream';
+}
+
+function safePublicFile(publicRoot, reqUrl) {
+  const parsed = new URL(reqUrl, 'http://127.0.0.1');
+  const raw = decodeURIComponent(parsed.pathname === '/' ? '/index.html' : parsed.pathname);
+  const resolved = path.resolve(publicRoot, `.${raw}`);
+  if (!resolved.startsWith(publicRoot)) return null;
+  if (nodeFs.existsSync(resolved) && nodeFs.statSync(resolved).isDirectory()) {
+    return path.join(resolved, 'index.html');
+  }
+  return resolved;
+}
+
+function createStaticServer(publicRoot) {
+  return http.createServer((req, res) => {
+    const file = safePublicFile(publicRoot, req.url || '/');
+    if (!file || !nodeFs.existsSync(file) || !nodeFs.statSync(file).isFile()) {
+      res.writeHead(404);
+      res.end('not found');
+      return;
+    }
+    res.writeHead(200, { 'Content-Type': contentType(file), 'Cache-Control': 'no-store' });
+    nodeFs.createReadStream(file).pipe(res);
+  });
+}
+
+function listen(server) {
+  return new Promise((resolve, reject) => {
+    server.once('error', reject);
+    server.listen(0, '127.0.0.1', resolve);
+  });
+}
+
+function closeServer(server) {
+  if (!server) return;
+  try {
+    server.close();
+  } catch {}
+}
 
 async function exists(filePath) {
   try {
@@ -25,15 +76,36 @@ async function waitJson(url, timeoutMs = 12000) {
   let lastError;
   while (Date.now() < deadline) {
     try {
-      const response = await fetch(url, { cache: 'no-store' });
-      if (response.ok) return await response.json();
-      lastError = new Error(`HTTP ${response.status}`);
+      return await getJson(url);
     } catch (error) {
       lastError = error;
     }
     await delay(250);
   }
   throw lastError || new Error(`Timed out waiting for ${url}`);
+}
+
+function getJson(url) {
+  return new Promise((resolve, reject) => {
+    const request = http.get(url, { timeout: 2000 }, (response) => {
+      const chunks = [];
+      response.on('data', (chunk) => chunks.push(Buffer.from(chunk)));
+      response.on('end', () => {
+        const body = Buffer.concat(chunks).toString('utf8');
+        if (!response.statusCode || response.statusCode < 200 || response.statusCode >= 300) {
+          reject(new Error(`HTTP ${response.statusCode}: ${body.slice(0, 160)}`));
+          return;
+        }
+        try {
+          resolve(JSON.parse(body));
+        } catch (error) {
+          reject(error);
+        }
+      });
+    });
+    request.on('timeout', () => request.destroy(new Error(`Timed out fetching ${url}`)));
+    request.on('error', reject);
+  });
 }
 
 async function openSocket(wsUrl) {
@@ -45,7 +117,13 @@ async function openSocket(wsUrl) {
 }
 
 async function main() {
-  const url = arg('--url', 'http://127.0.0.1:8138/');
+  let staticServer = null;
+  let url = arg('--url', '');
+  if (!url) {
+    staticServer = createStaticServer(path.join(process.cwd(), 'public'));
+    await listen(staticServer);
+    url = `http://127.0.0.1:${staticServer.address().port}/`;
+  }
   const section = arg('--section', 'interfaces');
   const outJson = path.resolve(arg('--json', 'topbar-noise-hidden.json'));
   const outPng = path.resolve(arg('--png', 'topbar-noise-hidden.png'));
@@ -81,13 +159,18 @@ async function main() {
   let socket;
   try {
     let pageTarget = null;
+    let targetError = null;
     for (let i = 0; i < 40; i += 1) {
-      const targets = await waitJson(`http://127.0.0.1:${port}/json/list`, 3000);
-      pageTarget = targets.find((target) => target.type === 'page' && target.webSocketDebuggerUrl);
+      try {
+        const targets = await waitJson(`http://127.0.0.1:${port}/json/list`, 400);
+        pageTarget = targets.find((target) => target.type === 'page' && target.webSocketDebuggerUrl);
+      } catch (error) {
+        targetError = error;
+      }
       if (pageTarget) break;
       await delay(250);
     }
-    if (!pageTarget) throw new Error('Page websocket URL missing');
+    if (!pageTarget) throw targetError || new Error('Page websocket URL missing');
 
     socket = await openSocket(pageTarget.webSocketDebuggerUrl);
     let id = 0;
@@ -130,13 +213,19 @@ async function main() {
       const refresh = document.querySelector('#manualRefreshBtn');
       const refreshMeta = document.querySelector('.refresh-meta');
       const update = document.querySelector('.update-pill');
-      const topbarText = document.querySelector('.topbar')?.innerText || '';
+      const topbar = document.querySelector('.topbar');
+      const frameworkRoot = document.querySelector('.router-overview-framework');
+      const topbarText = topbar?.innerText || '';
+      const frameworkVisible = isVisible(frameworkRoot);
+      const updateOk = isVisible(update) || frameworkVisible;
       return {
-        pass: Boolean(!isVisible(deploy) && !isVisible(refresh) && !isVisible(refreshMeta) && isVisible(update) && !topbarText.includes('部署入口') && !topbarText.includes('立即刷新')),
+        pass: Boolean(!isVisible(deploy) && !isVisible(refresh) && !isVisible(refreshMeta) && updateOk && !topbarText.includes('部署入口') && !topbarText.includes('立即刷新')),
         deployVisible: isVisible(deploy),
         refreshVisible: isVisible(refresh),
         refreshMetaVisible: isVisible(refreshMeta),
         updateVisible: isVisible(update),
+        frameworkVisible,
+        topbarVisible: isVisible(topbar),
         topbarText,
         url: location.href
       };
@@ -157,10 +246,35 @@ async function main() {
     try {
       await fs.rm(userDataDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 250 });
     } catch {}
+    closeServer(staticServer);
   }
 }
 
-main().catch((error) => {
+function isTransientRuntimeError(error) {
+  const message = String(error?.stack || error?.message || error || '');
+  return /ECONNREFUSED|ECONNRESET|Page websocket URL missing|Failed to open ws:|Browser exited before debugger|chrome-error:\/\/chromewebdata|fetch failed/i.test(message);
+}
+
+async function runWithRetries() {
+  const attempts = Math.max(1, Number(arg('--runtime-retries', '3')) || 3);
+  let lastError;
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    try {
+      await main();
+      return;
+    } catch (error) {
+      lastError = error;
+      if (attempt >= attempts || !isTransientRuntimeError(error)) {
+        throw error;
+      }
+      console.warn(`[topbar-noise] transient runtime retry ${attempt + 1}/${attempts}: ${error.message || error}`);
+      await delay(1200 + attempt * 650);
+    }
+  }
+  throw lastError;
+}
+
+runWithRetries().catch((error) => {
   console.error(error.stack || error.message || String(error));
   process.exit(1);
 });

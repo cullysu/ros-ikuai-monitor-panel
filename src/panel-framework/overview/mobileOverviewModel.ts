@@ -2,11 +2,8 @@ import {
   formatCompact,
   formatNumber,
   formatPercent,
-  formatRate,
-  shortTimestamp,
   toNumber,
   type OverviewDerivedState,
-  type OverviewRawInterfaceRow,
   type OverviewRawSnapshot,
   type OverviewRawWanRow,
   type OverviewTone,
@@ -18,8 +15,31 @@ import {
   type RouterOsNetworkViewModel,
 } from "./routerosNetworkViewModel";
 import type { RouterOsTrustPlane } from "./routerosTrustModel";
+import {
+  resolveMobileOverviewPolicy,
+  type MobileAppHomeContract,
+  type MobileHomeSurface,
+  type MobileOverviewPriority,
+  type MobilePrimaryListKind as PolicyMobilePrimaryListKind,
+} from "./mobileOverviewPolicy";
+import { buildMobileTrendChart } from "./mobileOverviewChartModel";
+import {
+  clean,
+  compactRate,
+  interfaceRows,
+  latestSuccess,
+  mobileRate,
+  totals,
+  wanLineCount,
+  wanRows,
+} from "./mobileOverviewData";
+import { buildMobileImpactScope, buildMobilePrimaryList } from "./mobileOverviewListModel";
 
 export type MobileMonitorPlane = RouterOsTrustPlane["id"];
+
+export type MobileEvidenceLayer = "business" | "semantic" | "raw";
+export type MobileEvidenceSource = "route" | "collection" | "snapshot" | "forwarding" | "business" | "resource" | "terminal" | "interface";
+export type MobileEvidenceRole = "primary-impact" | "secondary-evidence" | "operational-context";
 
 export interface MobileMonitorFact {
   label: string;
@@ -34,6 +54,7 @@ export interface MobileMonitorRow {
   value: string;
   note: string;
   tone: OverviewTone;
+  coreBlock?: "wan" | "collection" | "resource";
 }
 
 export interface MobileMonitorListRow {
@@ -46,6 +67,10 @@ export interface MobileMonitorListRow {
   status?: string;
   percent: number;
   tone: OverviewTone;
+  evidenceLayer: MobileEvidenceLayer;
+  evidenceSource: MobileEvidenceSource;
+  evidenceRole: MobileEvidenceRole;
+  evidenceKey: string;
 }
 
 export type MobileTrustPlane = RouterOsTrustPlane;
@@ -55,28 +80,64 @@ export interface MobileWanPort {
   label: string;
   name: string;
   note: string;
+  carrier: string;
+  stateText: string;
+  portState: "up" | "down";
+  role: "default" | "backup" | "member" | "summary";
+  roleLabel: "默认出口" | "备用出口" | "成员出口" | "汇总";
+  impact: "default-route-affected" | "backup-affected" | "member-affected" | "not-affected";
+  businessImpact: "internet-down" | "degraded-backup" | "no-primary-impact";
+  routeBinding: "default-route" | "standby-route" | "member-route" | "unknown-route";
+  layout: "single" | "pair" | "matrix" | "summary";
   tone: OverviewTone;
 }
 
 export type MobileHeroVisualKind = "trend" | "wan-ports" | "resource-bars" | "interface-list" | "trust-channels";
+
+export interface MobileTrendChartPoint {
+  x: number;
+  y: number;
+}
+
+export interface MobileTrendChartPlotModel {
+  viewHeight: number;
+  topY: number;
+  baselineY: number;
+  axisY: number;
+  gridYs: [number, number, number];
+  downPoints: string;
+  upPoints: string;
+  start: MobileTrendChartPoint;
+  focus: MobileTrendChartPoint;
+  peak: MobileTrendChartPoint;
+  referenceY: number;
+  breachX: number | null;
+}
 
 export interface MobileTrendChartModel {
   source: "history" | "current";
   windowText: string;
   sampleText: string;
   sampleLabel: string;
+  decisionContract: "window-current-peak-threshold-sample-anomaly-source";
+  decisionLabel: string;
+  anomalyLabel: string;
+  anomalyTone: OverviewTone;
   startLabel: string;
   endLabel: string;
   referenceLabel: string;
   referenceRatio: number;
+  thresholdLabel: string;
+  breachLabel: string;
   currentLabel: string;
   peakLabel: string;
   down: number[];
   up: number[];
   readouts: MobileMonitorFact[];
+  plot: MobileTrendChartPlotModel;
 }
 
-export type MobilePrimaryListKind = "terminal-ranking" | "wan-incident" | "interface-incident" | "snapshot-boundary" | "collection-boundary";
+export type MobilePrimaryListKind = PolicyMobilePrimaryListKind;
 
 export interface MobilePrimaryListModel {
   kind: MobilePrimaryListKind;
@@ -85,19 +146,97 @@ export interface MobilePrimaryListModel {
   rows: MobileMonitorListRow[];
 }
 
+export interface MobileImpactScope {
+  id: "internet-down" | "business-hidden" | "resource-constrained" | "carrier-unknown" | "collection-only" | "normal-ops";
+  plane: "forwarding" | "collection" | "snapshot" | "business";
+  label: string;
+  value: string;
+  note: string;
+  tone: OverviewTone;
+}
+
+export interface MobileAbnormalDecisionCell {
+  label: "对象" | "影响" | "证据" | "下一步";
+  value: string;
+  note: string;
+  tone: OverviewTone;
+}
+
+export interface MobileHeroTrustCell {
+  label: string;
+  value: string;
+  tone: OverviewTone;
+}
+
+export interface MobileHeroInterfaceCell {
+  id: string;
+  name: string;
+  carrier: string;
+  stateText: string;
+  tone: OverviewTone;
+}
+
+export interface MobileHeroChannelCell {
+  label: "RouterOS" | "REST" | "SSH" | "快照";
+  value: string;
+  tone: OverviewTone;
+}
+
+export interface MobileHeroResourceCell {
+  key: "processor" | "memory" | "disk";
+  label: string;
+  display: string;
+  thresholdText: string;
+  sustainedText: string;
+  meterPercent: string;
+  risk: "primary-risk" | "secondary-risk";
+  tone: OverviewTone;
+}
+
+export interface MobileNormalSummaryCell {
+  id: "status" | "wan" | "collection" | "resource" | "snapshot";
+  label: string;
+  value: string;
+  note: string;
+  tone: OverviewTone;
+}
+
 export interface MobileOverviewModel {
-  priority: "snapshot-missing" | "wan-offline" | "resource-full" | "interface-down" | "collection-degraded" | "normal";
+  priority: MobileOverviewPriority;
   network: RouterOsNetworkViewModel;
-  surface: {
-    order: "status-before-list" | "list-before-status";
-    ranking: "primary" | "supporting" | "suppressed";
+  header: {
+    deviceName: string;
+    versionText: string;
+    recent: string;
+    statusLabel: string;
+    tone: OverviewTone;
   };
+  appHomeContract: MobileAppHomeContract;
+  normalSummary: {
+    mode: "normal-compact" | "incident-hidden";
+    contract: "compact-native-summary-status-wan-collection-resource-snapshot-chart-first";
+    cells: MobileNormalSummaryCell[];
+  };
+  surface: MobileHomeSurface;
+  impactScope: MobileImpactScope;
+  collectionTrustSeparation: {
+    contract: "normal-hidden" | "collection-plane-primary-impact-verdict" | "collection-plane-secondary-impact-verdict-independent";
+    collectionPlane: "collection";
+    impactPlane: MobileImpactScope["plane"];
+    separatedFromImpact: boolean;
+  };
+  abnormalDecision: MobileAbnormalDecisionCell[];
+  collectionTrust: MobileHeroChannelCell[];
   coreMetrics: MobileMonitorFact[];
   hero: {
     title: string;
     subtitle: string;
     facts: MobileMonitorFact[];
     pills: string[];
+    trustRail: MobileHeroTrustCell[];
+    interfaceCells: MobileHeroInterfaceCell[];
+    channelCells: MobileHeroChannelCell[];
+    resourceCells: MobileHeroResourceCell[];
     visualKind: MobileHeroVisualKind;
     showMetrics: boolean;
     trend: MobileTrendChartModel;
@@ -109,204 +248,25 @@ export interface MobileOverviewModel {
   resourceRows: MobileMonitorFact[];
 }
 
-function clean(value: unknown, fallback = "-"): string {
-  const normalized = String(value ?? "").replace(/\s+/g, " ").trim();
-  return normalized || fallback;
+function wanDisplayTotal(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): number {
+  return Math.max(1, wanLineCount(snapshot, state));
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null;
-}
-
-function recordArray(value: unknown): Record<string, unknown>[] {
-  return Array.isArray(value) ? value.filter(isRecord) : [];
-}
-
-function firstText(row: Record<string, unknown>, keys: string[], fallback = "-"): string {
-  for (const key of keys) {
-    const value = clean(row[key], "");
-    if (value) return value;
-  }
-  return fallback;
-}
-
-function firstNumber(row: Record<string, unknown>, keys: string[]): number {
-  for (const key of keys) {
-    const value = toNumber(row[key]);
-    if (Number.isFinite(value) && value > 0) return value;
-  }
-  return 0;
-}
-
-function wanRows(snapshot: OverviewRawSnapshot): OverviewRawWanRow[] {
-  if (Array.isArray(snapshot.wan) && snapshot.wan.length) return snapshot.wan;
-  return Array.isArray(snapshot.pppoe) ? snapshot.pppoe : [];
-}
-
-function interfaceRows(snapshot: OverviewRawSnapshot): OverviewRawInterfaceRow[] {
-  return Array.isArray(snapshot.interfaces) ? snapshot.interfaces : [];
-}
-
-function twoDigit(value: number): string {
-  return String(value).padStart(2, "0");
-}
-
-function mobileTime(raw: unknown): string {
-  const source = String(raw ?? "").trim();
-  if (!source) return "未记录";
-  const numeric = typeof raw === "number" || /^\d+$/.test(source) ? Number(raw) : Number.NaN;
-  const date = Number.isFinite(numeric)
-    ? new Date(numeric < 1_000_000_000_000 ? numeric * 1000 : numeric)
-    : new Date(source);
-  if (Number.isNaN(date.getTime())) {
-    const fallback = shortTimestamp(raw);
-    return fallback && !/\d{4}-\d{2}-\d{2}T/.test(fallback) ? fallback : "未记录";
-  }
-  const now = new Date();
-  const time = `${twoDigit(date.getHours())}:${twoDigit(date.getMinutes())}`;
-  if (date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth() && date.getDate() === now.getDate()) return time;
-  return `${twoDigit(date.getMonth() + 1)}-${twoDigit(date.getDate())} ${time}`;
-}
-
-function latestSuccess(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): string {
-  const meta = snapshot.meta || {};
-  const raw = state.scenario === "no-snapshot"
-    ? meta.staticUpdatedAt || meta.realtimeUpdatedAt || snapshot.updatedAt
-    : snapshot.updatedAt || meta.realtimeUpdatedAt || meta.staticUpdatedAt || meta.slowRestUpdatedAt;
-  return mobileTime(raw);
-}
-
-function totals(snapshot: OverviewRawSnapshot): { up: number; down: number } {
-  return wanRows(snapshot).reduce<{ up: number; down: number }>(
-    (sum, row) => ({
-      up: sum.up + toNumber(row.upRate),
-      down: sum.down + toNumber(row.downRate),
-    }),
-    { up: 0, down: 0 },
-  );
-}
-
-function mobileRate(value: number): string {
-  if (!Number.isFinite(value) || value <= 0) return "未采集";
-  if (value >= 1_000_000_000) {
-    const scaled = value / 1_000_000_000;
-    return `${scaled >= 10 ? scaled.toFixed(0) : scaled.toFixed(1)}G`;
-  }
-  if (value >= 1_000_000) {
-    const scaled = value / 1_000_000;
-    return `${scaled >= 10 ? scaled.toFixed(0) : scaled.toFixed(1)}M`;
-  }
-  if (value >= 1_000) {
-    const scaled = value / 1_000;
-    return `${scaled >= 10 ? scaled.toFixed(0) : scaled.toFixed(1)}K`;
-  }
-  return `${Math.round(value)}`;
-}
-
-function compactRate(value: number): string {
-  if (!Number.isFinite(value) || value <= 0) return "未采集";
-  return formatRate(value).replace(/\s+/g, "");
-}
-
-function trend(seed: number, variant: "down" | "up" | "hot" | "quiet" = "down"): number[] {
-  const base = Math.max(1, seed);
-  const pattern = {
-    down: [0.34, 0.42, 0.36, 0.55, 0.50, 0.70, 0.86, 0.78],
-    up: [0.18, 0.27, 0.22, 0.33, 0.40, 0.36, 0.48, 0.44],
-    hot: [0.52, 0.60, 0.72, 0.84, 0.78, 0.96, 0.90, 1],
-    quiet: [0.32, 0.31, 0.33, 0.32, 0.34, 0.33, 0.35, 0.34],
-  }[variant];
-  return pattern.map((ratio) => base * ratio);
-}
-
-function sampleTrafficRow(row: Record<string, unknown>): { down: number; up: number } {
-  const down = firstNumber(row, ["downRate", "downloadRate", "rxRate", "inRate", "down", "download", "rx", "in"]);
-  const up = firstNumber(row, ["upRate", "uploadRate", "txRate", "outRate", "up", "upload", "tx", "out"]);
-  return { down, up };
-}
-
-function historyTraffic(snapshot: OverviewRawSnapshot): { down: number[]; up: number[]; source: "history" | "current" } {
-  const raw = snapshot as unknown as Record<string, unknown>;
-  const traffic = isRecord(raw.traffic) ? raw.traffic : {};
-  const realtime = isRecord(raw.realtime) ? raw.realtime : {};
-  const sources = [
-    raw.history,
-    raw.samples,
-    raw.rateHistory,
-    raw.trafficHistory,
-    raw.wanHistory,
-    traffic.history,
-    traffic.samples,
-    realtime.history,
-    realtime.samples,
-  ];
-  for (const source of sources) {
-    const rows = recordArray(source);
-    if (rows.length >= 3) {
-      const sampled = rows.map(sampleTrafficRow);
-      const down = sampled.map((item) => item.down).filter((item) => Number.isFinite(item));
-      const up = sampled.map((item) => item.up).filter((item) => Number.isFinite(item));
-      if (down.some((item) => item > 0) || up.some((item) => item > 0)) {
-        return { down: down.slice(-12), up: up.slice(-12), source: "history" };
-      }
-    }
-    if (Array.isArray(source) && source.length >= 3 && source.every((item) => Number.isFinite(toNumber(item)))) {
-      const values = source.map((item) => toNumber(item)).slice(-12);
-      return { down: values, up: values.map((item, index) => item * (0.18 + (index % 3) * 0.05)), source: "history" };
-    }
-  }
-  return { down: [], up: [], source: "current" };
-}
-
-function networkTrendSeries(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): { down: number[]; up: number[]; source: "history" | "current" } {
-  const history = historyTraffic(snapshot);
-  if (history.down.length >= 3 || history.up.length >= 3) return history;
-  const rate = totals(snapshot);
-  if (state.scenario === "no-snapshot") {
-    return { down: trend(1, "quiet"), up: trend(0.45, "quiet"), source: "current" };
-  }
-  const hot = state.scenario === "resource-full" || state.scenario === "interfaces-down" || state.facts.wan.allOffline;
+function syntheticWanRow(index: number, state: OverviewDerivedState): OverviewRawWanRow {
   return {
-    down: trend(rate.down || Math.max(1, toNumber(state.facts.connections.total)), hot ? "hot" : "down"),
-    up: trend(rate.up || Math.max(1, rate.down * 0.22), hot ? "up" : "quiet"),
-    source: "current",
-  };
+    name: `wan-${index + 1}`,
+    interface: `wan-${index + 1}`,
+    running: !state.facts.wan.allOffline,
+  } as OverviewRawWanRow;
 }
 
-function trendChart(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): MobileTrendChartModel {
-  const series = networkTrendSeries(snapshot, state);
-  const down = series.down.length ? series.down : trend(1, "quiet");
-  const up = series.up.length ? series.up : trend(0.45, "quiet");
-  const peak = Math.max(...down);
-  const current = down[down.length - 1] || 0;
-  const windowText = series.source === "history" ? "近 12 点" : "当前窗口";
-  const sampleText = series.source === "history" ? "历史样本" : "实时估算";
-  const sampleLabel = series.source === "history"
-    ? "历史"
-    : state.scenario === "collection-down" || state.facts.collection.dataStale || state.facts.freshness.history
-      ? "缓存"
-      : "实时";
-  return {
-    source: series.source,
-    windowText,
-    sampleText,
-    sampleLabel,
-    startLabel: series.source === "history" ? `${down.length} 点前` : "窗口起点",
-    endLabel: "当前",
-    referenceLabel: state.facts.wan.allOffline ? "离线参考" : "高位参考",
-    referenceRatio: state.facts.wan.allOffline ? 0.08 : 0.78,
-    currentLabel: mobileRate(current),
-    peakLabel: mobileRate(peak),
-    down,
-    up,
-    readouts: [
-      { label: "当前", value: mobileRate(current), note: "下载", tone: "trust" },
-      { label: "峰值", value: mobileRate(peak), note: windowText, tone: "trust" },
-      { label: "窗口", value: series.source === "history" ? "12 点" : "当前", note: sampleText, tone: state.facts.collection.credibilityTone },
-      { label: "采样", value: sampleLabel, note: state.facts.collection.credibilityLabel, tone: state.facts.collection.credibilityTone },
-    ],
-  };
+function wanRoleLabel(index: number, total: number): string {
+  if (total <= 1) return "主出口";
+  if (total === 2) return index === 0 ? "主出口" : "备用出口";
+  return `线路 ${index + 1}`;
 }
+
+
 
 function stripRest(label: string): string {
   return clean(label.replace(/^REST\s*/i, ""), "可用");
@@ -336,6 +296,35 @@ function priorityOf(state: OverviewDerivedState): MobileOverviewModel["priority"
   return routerOsNetworkPriority(state);
 }
 
+function headerTone(state: OverviewDerivedState): OverviewTone {
+  if (state.scenario === "no-snapshot") return "missing";
+  if (state.scenario === "single") return "ok";
+  return state.verdict.level;
+}
+
+function headerStatusLabel(state: OverviewDerivedState): string {
+  if (state.scenario === "no-snapshot") return "缺数";
+  if (state.scenario === "single") return "良好";
+  if (state.scenario === "all-offline" || state.facts.wan.allOffline) return "断链";
+  if (state.scenario === "resource-full") return "超阈";
+  if (state.scenario === "interfaces-down") return "异常";
+  if (state.scenario === "collection-down" || state.facts.collection.dataStale || state.facts.freshness.history) return "需确认";
+  if (state.verdict.level === "warn") return "需确认";
+  return "良好";
+}
+
+function headerModel(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): MobileOverviewModel["header"] {
+  const deviceName = clean(snapshot.identity || snapshot.name || snapshot.deviceName || state.facts.device.identity || "爱快路由");
+  const version = clean(snapshot.version || snapshot.routerosVersion || state.facts.device.version || "RouterOS");
+  return {
+    deviceName,
+    versionText: /^RouterOS\b/i.test(version) ? version : `RouterOS ${version}`,
+    recent: latestSuccess(snapshot, state),
+    statusLabel: headerStatusLabel(state),
+    tone: headerTone(state),
+  };
+}
+
 function heroVisualKind(priority: MobileOverviewModel["priority"]): MobileHeroVisualKind {
   if (priority === "wan-offline") return "wan-ports";
   if (priority === "resource-full") return "resource-bars";
@@ -344,14 +333,14 @@ function heroVisualKind(priority: MobileOverviewModel["priority"]): MobileHeroVi
   return "trend";
 }
 
-function showHeroMetrics(state: OverviewDerivedState, priority: MobileOverviewModel["priority"]): boolean {
-  return priority === "normal" && state.scenario === "fleet";
+function showHeroMetrics(): boolean {
+  return false;
 }
 
 function resourceFacts(state: OverviewDerivedState): MobileMonitorFact[] {
   const hidden = state.scenario === "no-snapshot";
   return [
-    { label: "CPU", raw: toNumber(state.facts.resource.cpu), threshold: 85 },
+    { label: "处理器", raw: toNumber(state.facts.resource.cpu), threshold: 85 },
     { label: "内存", raw: toNumber(state.facts.resource.memory), threshold: 85 },
     { label: "磁盘", raw: toNumber(state.facts.resource.disk), threshold: 90 },
   ].map((item) => ({
@@ -363,7 +352,7 @@ function resourceFacts(state: OverviewDerivedState): MobileMonitorFact[] {
 }
 
 function titleFor(network: RouterOsNetworkViewModel): string {
-  if (network.priority === "normal") return `${network.conclusion.value} · ${network.object.value}`;
+  if (network.priority === "normal") return "WAN 实时趋势";
   return network.conclusion.heroTitle;
 }
 
@@ -374,7 +363,7 @@ function subtitleFor(snapshot: OverviewRawSnapshot, state: OverviewDerivedState,
 
 function heroFacts(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): MobileMonitorFact[] {
   const priority = priorityOf(state);
-  const totalWan = Math.max(state.facts.wan.total || wanRows(snapshot).length, state.facts.wan.allOffline ? 8 : 0);
+  const totalWan = wanDisplayTotal(snapshot, state);
   const rate = totals(snapshot);
   if (priority === "snapshot-missing") {
     return [
@@ -444,7 +433,7 @@ function coreResourceValue(resource: MobileMonitorFact[], priority: MobileOvervi
 
 function coreMetrics(snapshot: OverviewRawSnapshot, state: OverviewDerivedState, network: RouterOsNetworkViewModel): MobileMonitorFact[] {
   const priority = network.priority;
-  const totalWan = Math.max(state.facts.wan.total || wanRows(snapshot).length, state.facts.wan.allOffline ? 8 : 0);
+  const totalWan = wanDisplayTotal(snapshot, state);
   const resource = resourceFacts(state);
   const wanValue = priority === "snapshot-missing"
     ? "不可判"
@@ -484,7 +473,7 @@ function coreMetrics(snapshot: OverviewRawSnapshot, state: OverviewDerivedState,
     {
       label: "资源",
       value: coreResourceValue(resource, priority),
-      note: priority === "resource-full" ? "持续6/6" : "CPU/内存/磁盘",
+      note: priority === "resource-full" ? "持续6/6" : "处理器/内存/磁盘",
       tone: resource.some((item) => item.tone === "danger") ? "danger" : priority === "snapshot-missing" ? "missing" : "ok",
     },
     {
@@ -497,7 +486,7 @@ function coreMetrics(snapshot: OverviewRawSnapshot, state: OverviewDerivedState,
 }
 
 function heroPills(snapshot: OverviewRawSnapshot, state: OverviewDerivedState, network: RouterOsNetworkViewModel): string[] {
-  const totalWan = Math.max(state.facts.wan.total || wanRows(snapshot).length, state.facts.wan.allOffline ? 8 : 0);
+  const totalWan = wanDisplayTotal(snapshot, state);
   const priority = network.priority;
   if (state.scenario === "fleet") return [
     `WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(totalWan || 1)}`,
@@ -516,26 +505,162 @@ function heroPills(snapshot: OverviewRawSnapshot, state: OverviewDerivedState, n
   ];
 }
 
+function splitHeroPill(text: string): { label: string; value: string } {
+  const [label, ...rest] = text.replace(/\s+/g, " ").trim().split(" ");
+  return { label: label || "状态", value: rest.join(" ") || text };
+}
+
+function heroPillTone(text: string): OverviewTone {
+  if (/缺失|不可用|断网|不展示|0\/|异常/.test(text)) return "danger";
+  if (/待|缓存|确认|参考|越阈|超/.test(text)) return "warn";
+  return "trust";
+}
+
+function heroTrustRail(pills: string[]): MobileHeroTrustCell[] {
+  return pills.slice(0, 3).map((text) => {
+    const item = splitHeroPill(text);
+    return {
+      label: item.label,
+      value: item.value,
+      tone: heroPillTone(text),
+    };
+  });
+}
+
+function heroInterfaceCells(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): MobileHeroInterfaceCell[] {
+  const rows = interfaceRows(snapshot).filter((row) => row.running === false).slice(0, 3);
+  const visible = rows.length ? rows : interfaceRows(snapshot).slice(0, 1);
+  return visible.map((row, index) => {
+    const name = clean(row.name || row.interface, `接口${index + 1}`);
+    const carrier = clean(row.parent || row.master || row.bridge, "承载待确认");
+    return {
+      id: `${name}-${index}`,
+      name,
+      carrier,
+      stateText: index === 0 ? `${formatNumber(state.facts.interfaces.down)} Down` : "Down",
+      tone: "danger",
+    };
+  });
+}
+
+function heroChannelCells(state: OverviewDerivedState): MobileHeroChannelCell[] {
+  if (state.scenario === "no-snapshot") {
+    return [
+      { label: "RouterOS", value: "不可达", tone: "danger" },
+      { label: "REST", value: "待确认", tone: "warn" },
+      { label: "SSH", value: "不可用", tone: "danger" },
+      { label: "快照", value: "无", tone: "missing" },
+    ];
+  }
+  return [
+    { label: "RouterOS", value: "可达", tone: state.facts.collection.level },
+    { label: "REST", value: stripRest(state.facts.collection.restLabel), tone: state.facts.collection.level },
+    { label: "SSH", value: stripSsh(state.facts.collection.sshLabel), tone: state.facts.collection.level },
+    { label: "快照", value: trustText(state), tone: state.facts.collection.credibilityTone },
+  ];
+}
+
+function collectionTrustCells(state: OverviewDerivedState): MobileHeroChannelCell[] {
+  return heroChannelCells(state);
+}
+
+function collectionTrustSeparation(
+  priority: MobileOverviewModel["priority"],
+  scope: MobileImpactScope,
+): MobileOverviewModel["collectionTrustSeparation"] {
+  if (priority === "normal") {
+    return {
+      contract: "normal-hidden",
+      collectionPlane: "collection",
+      impactPlane: scope.plane,
+      separatedFromImpact: false,
+    };
+  }
+  if (scope.plane === "collection") {
+    return {
+      contract: "collection-plane-primary-impact-verdict",
+      collectionPlane: "collection",
+      impactPlane: scope.plane,
+      separatedFromImpact: false,
+    };
+  }
+  return {
+    contract: "collection-plane-secondary-impact-verdict-independent",
+    collectionPlane: "collection",
+    impactPlane: scope.plane,
+    separatedFromImpact: true,
+  };
+}
+
+function heroResourceCells(state: OverviewDerivedState): MobileHeroResourceCell[] {
+  const hidden = state.scenario === "no-snapshot";
+  const rows = [
+    { key: "processor" as const, label: "处理器", raw: toNumber(state.facts.resource.cpu), threshold: 85 },
+    { key: "memory" as const, label: "内存", raw: toNumber(state.facts.resource.memory), threshold: 85 },
+    { key: "disk" as const, label: "磁盘", raw: toNumber(state.facts.resource.disk), threshold: 90 },
+  ];
+  const peak = rows.reduce((max, item) => (item.raw > max.raw ? item : max), rows[0]);
+  return rows.map((item) => {
+    const value = Number.isFinite(item.raw) ? Math.max(0, Math.min(100, item.raw)) : 0;
+    const overThreshold = !hidden && item.raw >= item.threshold;
+    return {
+      key: item.key,
+      label: item.label,
+      display: hidden ? "不展示" : formatPercent(item.raw, state.scenario === "resource-full" ? 1 : 0).replace(/\.0%$/, "%"),
+      thresholdText: `阈${item.threshold}%`,
+      sustainedText: hidden ? "无快照" : routerOsResourceSustainedText(item.raw, item.threshold),
+      meterPercent: `${value}%`,
+      risk: item.key === peak.key ? "primary-risk" : "secondary-risk",
+      tone: hidden ? "missing" : overThreshold ? "danger" : "ok",
+    };
+  });
+}
+
+function normalSummaryModel(
+  priority: MobileOverviewModel["priority"],
+): MobileOverviewModel["normalSummary"] {
+  return {
+    mode: priority === "normal" ? "normal-compact" : "incident-hidden",
+    contract: "separate-conclusion-trust-four-facts-chart-first",
+    cells: [],
+  };
+}
+
 function trustPlanes(network: RouterOsNetworkViewModel): MobileTrustPlane[] {
-  return network.planes.map((plane) => ({
-    id: plane.id,
-    label: plane.label,
-    value: plane.value,
-    note: plane.note,
-    tone: plane.tone,
-  }));
+  return ["forwarding", "collection", "snapshot", "business"].flatMap((id) => {
+    const plane = network.planes.find((item) => item.id === id);
+    if (!plane) return [];
+    return [{
+      id: plane.id,
+      label: plane.label,
+      value: plane.value,
+      note: plane.boundary,
+      tone: plane.tone,
+    }];
+  });
+}
+
+function statusCoreBlock(id: string): MobileMonitorRow["coreBlock"] {
+  if (id === "timeline-wan") return "wan";
+  if (id === "timeline-collection") return "collection";
+  if (id === "timeline-resource") return "resource";
+  return undefined;
+}
+
+function withSurfaceCoreBlocks(rows: MobileMonitorRow[]): MobileMonitorRow[] {
+  return rows.map((row) => ({ ...row, coreBlock: statusCoreBlock(row.id) }));
 }
 
 function statusRows(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): MobileMonitorRow[] {
-  const totalWan = Math.max(state.facts.wan.total || wanRows(snapshot).length, state.facts.wan.allOffline ? 8 : 0);
+  const totalWan = wanDisplayTotal(snapshot, state);
   const resource = resourceFacts(state);
   if (state.scenario === "no-snapshot") {
-    return [
+    return withSurfaceCoreBlocks([
       { id: "timeline-routeros", title: "RouterOS", value: "不可达", note: "当前无可信数据", tone: "danger" },
       { id: "timeline-snapshot", title: "业务快照", value: "缺失", note: `最近成功 ${latestSuccess(snapshot, state)}`, tone: "missing" },
       { id: "timeline-collection", title: "采集", value: "REST 待核", note: "SSH 断链", tone: "warn" },
       { id: "timeline-route", title: "默认路由", value: "待判", note: "路由快照未取回", tone: "warn" },
-    ];
+    ]);
   }
   const base: MobileMonitorRow[] = [
     {
@@ -563,7 +688,7 @@ function statusRows(snapshot: OverviewRawSnapshot, state: OverviewDerivedState):
       id: "timeline-resource",
       title: "资源",
       value: resource.map((item) => item.value.replace(/\.0%$/, "%")).join(" / "),
-      note: state.scenario === "resource-full" ? "三项超阈" : "CPU / 内存 / 磁盘",
+      note: state.scenario === "resource-full" ? "三项超阈" : "处理器 / 内存 / 磁盘",
       tone: resource.some((item) => item.tone === "danger") ? "danger" : "ok",
     },
     {
@@ -576,247 +701,137 @@ function statusRows(snapshot: OverviewRawSnapshot, state: OverviewDerivedState):
   ];
   const pick = (ids: string[]) => ids.map((id) => base.find((row) => row.id === id)).filter(Boolean) as MobileMonitorRow[];
   const priority = priorityOf(state);
-  if (priority === "resource-full") return pick(["timeline-resource", "timeline-wan", "timeline-collection", "timeline-route"]);
-  if (priority === "wan-offline") return pick(["timeline-wan", "timeline-route", "timeline-collection", "timeline-resource"]);
-  if (priority === "interface-down") return pick(["timeline-interface", "timeline-route", "timeline-wan", "timeline-collection"]);
-  if (priority === "collection-degraded") return pick(["timeline-collection", "timeline-wan", "timeline-resource", "timeline-route"]);
-  return pick(["timeline-wan", "timeline-collection", "timeline-resource", "timeline-route"]);
+  if (priority === "resource-full") return withSurfaceCoreBlocks(pick(["timeline-resource", "timeline-wan", "timeline-collection", "timeline-route"]));
+  if (priority === "wan-offline") return withSurfaceCoreBlocks(pick(["timeline-wan", "timeline-route", "timeline-collection", "timeline-resource"]));
+  if (priority === "interface-down") return withSurfaceCoreBlocks(pick(["timeline-interface", "timeline-route", "timeline-wan", "timeline-collection"]));
+  if (priority === "collection-degraded") return withSurfaceCoreBlocks(pick(["timeline-collection", "timeline-wan", "timeline-resource", "timeline-route"]));
+  return withSurfaceCoreBlocks(pick(["timeline-wan", "timeline-collection", "timeline-resource", "timeline-route"]));
 }
 
 function wanPorts(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): MobileWanPort[] {
-  const rows = Array.from({ length: 8 }, (_, index) => wanRows(snapshot)[index] || ({ name: `WAN${index + 1}`, running: false } as OverviewRawWanRow));
+  const source = wanRows(snapshot);
+  const total = Math.max(1, wanLineCount(snapshot, state));
+  const rows = Array.from({ length: Math.min(8, total) }, (_, index) => source[index] || ({ name: `WAN${index + 1}`, running: false } as OverviewRawWanRow));
   return rows.map((row, index) => {
     const offline = state.facts.wan.allOffline || row.running === false;
     const name = clean(row.name || row.interface, `pppoe-wan${index + 1}`).replace(/^pppoe[-_]?/i, "");
     const carrier = clean(row.parent || row.access || row.interface, `P${index + 1}`).replace(/^ether/i, "ether");
+    const role = total <= 1 || index === 0 ? "default" : index === 1 ? "backup" : "member";
+    const roleLabel = role === "default" ? "默认出口" : role === "backup" ? "备用出口" : "成员出口";
+    const routeBinding = role === "default" ? "default-route" : role === "backup" ? "standby-route" : "member-route";
+    const impact = !offline ? "not-affected" : role === "default" ? "default-route-affected" : role === "backup" ? "backup-affected" : "member-affected";
+    const businessImpact = state.facts.wan.allOffline
+      ? "internet-down"
+      : impact === "default-route-affected"
+        ? "degraded-backup"
+        : "no-primary-impact";
+    const stateText = offline ? "离线" : "在线";
+    const portState = offline ? "down" : "up";
     return {
       id: `wan-port-${index}`,
       label: `P${index + 1}`,
       name,
-      note: offline ? `${carrier} · 离线` : `${carrier} · 在线`,
+      note: `${roleLabel} · ${carrier} · ${stateText}`,
+      carrier,
+      stateText,
+      portState,
+      role,
+      roleLabel,
+      impact,
+      businessImpact,
+      routeBinding,
+      layout: "matrix",
       tone: offline ? "danger" : "ok",
     };
   });
 }
 
-function offlineWanRows(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): MobileMonitorListRow[] {
-  const source = wanRows(snapshot);
-  const total = Math.max(8, state.facts.wan.total || source.length);
-  return Array.from({ length: Math.min(5, total) }, (_, index) => {
-    const row = source[index] || ({ name: `pppoe-wan${index + 1}`, running: false } as OverviewRawWanRow);
-    const name = clean(row.name || row.interface, `pppoe-wan${index + 1}`);
-    const parent = clean(row.parent || row.interface || row.access, "承载待确认");
-    return {
-      id: `offline-wan-${index}`,
-      rank: index + 1,
-      name,
-      kind: "WAN",
-      meta: `P${index + 1} · ${parent} · 路由不可用`,
-      value: "离线",
-      status: "Down",
-      percent: 0,
-      tone: "danger",
-    };
-  });
+
+function abnormalDecisionNextAction(priority: MobileOverviewModel["priority"]): string {
+  if (priority === "wan-offline") return "查出口";
+  if (priority === "snapshot-missing") return "等快照";
+  if (priority === "interface-down") return "核承载";
+  if (priority === "resource-full") return "降负载";
+  if (priority === "collection-degraded") return "核采集";
+  return "观察";
 }
 
-function interfaceIncidentRows(snapshot: OverviewRawSnapshot): MobileMonitorListRow[] {
-  const rows = interfaceRows(snapshot).filter((row) => row.running === false).slice(0, 5);
-  const visible = rows.length ? rows : interfaceRows(snapshot).slice(0, 5);
-  return visible.map((row, index) => ({
-    id: `interface-down-${index}`,
-    rank: index + 1,
-    name: clean(row.name || row.interface, `接口${index + 1}`),
-    kind: "接口",
-    meta: `${clean(row.parent || row.master || row.bridge, "承载待确认")} · 默认路由待判`,
-    value: row.running === false ? "Down" : "待判",
-    status: row.running === false ? "Down" : "待判",
-    percent: 0,
-    tone: row.running === false ? "danger" : "warn",
-  }));
+function abnormalDecisionActionNote(priority: MobileOverviewModel["priority"]): string {
+  if (priority === "wan-offline") return "WAN / 默认路由";
+  if (priority === "snapshot-missing") return "RouterOS / 快照";
+  if (priority === "interface-down") return "接口 / 默认路由";
+  if (priority === "resource-full") return "CPU / 内存 / 磁盘";
+  if (priority === "collection-degraded") return "通道 / 缓存";
+  return "持续观察";
 }
 
-function snapshotBoundaryRows(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): MobileMonitorListRow[] {
+function abnormalDecisionEvidenceTone(priority: MobileOverviewModel["priority"]): OverviewTone {
+  if (priority === "snapshot-missing") return "missing";
+  if (priority === "wan-offline") return "danger";
+  return "trust";
+}
+
+function abnormalDecisionCells(
+  priority: MobileOverviewModel["priority"],
+  contract: MobileOverviewModel["appHomeContract"],
+  scope: MobileImpactScope,
+  network: RouterOsNetworkViewModel,
+  heroTitle: string,
+  listTitle: string,
+): MobileAbnormalDecisionCell[] {
+  if (priority === "normal") return [];
+  const evidenceParts = contract.trustBoundary.split("·").map((part) => clean(part)).filter(Boolean);
   return [
-    { id: "business-hidden", rank: "", name: "业务流量", meta: `最近成功 ${latestSuccess(snapshot, state)} · 无快照`, value: "不展示", status: "缺失", percent: 0, tone: "missing" },
-    { id: "terminal-ranking-hidden", rank: "", name: "终端排行", meta: "设备名 / IP / 上下行需业务快照", value: "不可判", status: "缺失", percent: 0, tone: "missing" },
-    { id: "metadata-only", rank: "", name: "采集元数据", meta: "最近成功与链路状态可参考", value: "可参考", status: "边界", percent: 0, tone: "warn" },
-    { id: "routeros-link", rank: "", name: "RouterOS 链路", meta: "当前不可达，等待恢复", value: "断链", status: "当前", percent: 0, tone: "danger" },
+    { label: "对象", value: listTitle, note: heroTitle, tone: scope.tone },
+    { label: "影响", value: scope.value, note: scope.note, tone: scope.tone },
+    { label: "证据", value: evidenceParts[0] || network.snapshot.value, note: evidenceParts.slice(1).join(" · ") || network.snapshot.label, tone: abnormalDecisionEvidenceTone(priority) },
+    { label: "下一步", value: abnormalDecisionNextAction(priority), note: abnormalDecisionActionNote(priority), tone: contract.severity === "p0" ? "danger" : "warn" },
   ];
-}
-
-function collectionBoundaryRows(network: RouterOsNetworkViewModel): MobileMonitorListRow[] {
-  return network.channels
-    .filter((item) => item.id !== "routeros")
-    .map((item, index) => ({
-      id: `collection-${item.id}`,
-      rank: "",
-      name: item.label,
-      kind: index === 2 ? "可信度" : "采集",
-      meta: item.note,
-      value: item.value,
-      status: item.id === "snapshot" ? "边界" : "通道",
-      percent: 0,
-      tone: item.tone,
-    }));
-}
-
-function terminalCandidates(snapshot: OverviewRawSnapshot): Record<string, unknown>[] {
-  const raw = snapshot as unknown as Record<string, unknown>;
-  const connections = isRecord(raw.connections) ? raw.connections : {};
-  const traffic = isRecord(raw.traffic) ? raw.traffic : {};
-  const sources = [
-    raw.terminals,
-    raw.clients,
-    raw.devices,
-    raw.hosts,
-    connections.topTerminals,
-    connections.topClients,
-    connections.topIps,
-    traffic.terminals,
-    traffic.clients,
-    traffic.topTerminals,
-  ];
-  for (const source of sources) {
-    const rows = recordArray(source);
-    if (rows.length) return rows;
-  }
-  return [];
-}
-
-function terminalName(row: Record<string, unknown>, index: number): { name: string; ip: string } {
-  const ip = firstText(row, ["ip", "address", "host", "clientIp", "srcAddress"], "");
-  const rawName = firstText(row, ["name", "deviceName", "hostname", "hostName", "label", "mac"], "");
-  const mockName = /^(?:client|terminal|host|device|终端|设备|主机)[-_\s]*\d+$/i.test(rawName);
-  const pureIp = rawName && (rawName === ip || /^\d{1,3}(?:\.\d{1,3}){3}$/.test(rawName));
-  const fallbackNames = [
-    "客厅 iPhone",
-    "书房 MacBook",
-    "NAS 存储",
-    "客厅 Apple TV",
-    "游戏主机",
-    "卧室 iPad",
-    "门口摄像头",
-    "访客手机",
-    "智能音箱",
-    "工作站 PC",
-  ];
-  return {
-    name: pureIp || mockName || !rawName ? fallbackNames[index % fallbackNames.length] : rawName,
-    ip: ip || "IP 未记录",
-  };
-}
-
-function terminalKind(row: Record<string, unknown>, name: string): string {
-  const raw = `${name} ${firstText(row, ["type", "kind", "category", "vendor", "os"], "")}`.toLowerCase();
-  if (/iphone|手机|phone|访客/.test(raw)) return "手机";
-  if (/ipad|平板/.test(raw)) return "平板";
-  if (/mac|book|pc|windows|工作站|电脑/.test(raw)) return "电脑";
-  if (/nas|server|存储/.test(raw)) return "存储";
-  if (/tv|电视|影音/.test(raw)) return "影音";
-  if (/camera|摄像/.test(raw)) return "摄像头";
-  if (/游戏|xbox|playstation|switch/.test(raw)) return "游戏";
-  if (/音箱|speaker/.test(raw)) return "智能家居";
-  return "终端";
-}
-
-function terminalStatus(row: Record<string, unknown>): { text: string; abnormal: boolean; tone: OverviewTone } {
-  const raw = firstText(row, ["status", "state", "health", "online"], "online").toLowerCase();
-  const abnormal = /offline|down|error|blocked|abnormal|false|异常|离线|阻断/.test(raw);
-  if (abnormal) return { text: /blocked|阻断/.test(raw) ? "阻断" : "异常", abnormal: true, tone: "danger" };
-  return { text: "在线", abnormal: false, tone: "trust" };
-}
-
-function terminalRankingRows(snapshot: OverviewRawSnapshot): MobileMonitorListRow[] {
-  const rows = terminalCandidates(snapshot).map((row, index) => {
-    const { name, ip } = terminalName(row, index);
-    const kind = terminalKind(row, name);
-    const down = firstNumber(row, ["downRate", "downloadRate", "rxRate", "download", "down", "bytesDown", "rxBytes"]);
-    const up = firstNumber(row, ["upRate", "uploadRate", "txRate", "upload", "up", "bytesUp", "txBytes"]);
-    const total = firstNumber(row, ["totalRate", "rate", "traffic", "bytes", "total", "value"]) || down + up;
-    const status = terminalStatus(row);
-    return {
-      id: clean(row.id ?? row.mac ?? row.ip ?? `terminal-${index}`, `terminal-${index}`),
-      rank: index + 1,
-      name,
-      kind,
-      meta: `${ip} · ↓${mobileRate(down)} ↑${mobileRate(up)}`,
-      value: status.abnormal ? status.text : (total ? mobileRate(total) : "未采集"),
-      status: status.text,
-      percent: total,
-      tone: status.tone,
-      abnormal: status.abnormal,
-      sourceIndex: index,
-    };
-  });
-
-  if (!rows.length) {
-    return [{
-      id: "terminal-empty",
-      rank: 0,
-      name: "未识别设备",
-      kind: "终端",
-      meta: "设备名 / IP / 下载上传等待采集",
-      value: "未采集",
-      status: "等待",
-      percent: 0,
-      tone: "missing",
-    }];
-  }
-
-  const max = Math.max(1, ...rows.map((row) => row.percent));
-  return rows
-    .sort((a, b) => Number(b.abnormal) - Number(a.abnormal) || b.percent - a.percent || a.sourceIndex - b.sourceIndex)
-    .slice(0, 5)
-    .map((row, index) => ({
-      id: row.id,
-      rank: index + 1,
-      name: row.name,
-      kind: row.kind,
-      meta: row.meta,
-      value: row.value,
-      status: row.status,
-      percent: Math.max(6, Math.min(100, (row.percent / max) * 100)),
-      tone: row.tone,
-    }));
-}
-
-function primaryList(snapshot: OverviewRawSnapshot, state: OverviewDerivedState, network: RouterOsNetworkViewModel): MobilePrimaryListModel {
-  const priority = network.priority;
-  if (priority === "wan-offline") return { kind: "wan-incident", title: "离线出口", meta: `默认路由异常 · 成功 ${latestSuccess(snapshot, state)}`, rows: offlineWanRows(snapshot, state) };
-  if (priority === "snapshot-missing") return { kind: "snapshot-boundary", title: "可信边界", meta: `最近成功 ${latestSuccess(snapshot, state)}`, rows: snapshotBoundaryRows(snapshot, state) };
-  if (priority === "interface-down") return { kind: "interface-incident", title: "接口影响", meta: "承载待判 · 默认路由", rows: interfaceIncidentRows(snapshot) };
-  if (priority === "collection-degraded") return { kind: "collection-boundary", title: "采集边界", meta: "REST / SSH / 快照", rows: collectionBoundaryRows(network) };
-  if (priority === "resource-full") return { kind: "terminal-ranking", title: "高流量终端", meta: "异常优先 · 总流量", rows: terminalRankingRows(snapshot) };
-  return { kind: "terminal-ranking", title: "设备排行", meta: "异常优先 · 总流量", rows: terminalRankingRows(snapshot) };
-}
-
-function surfaceModel(priority: MobileOverviewModel["priority"]): MobileOverviewModel["surface"] {
-  if (priority === "normal") return { order: "status-before-list", ranking: "primary" };
-  if (priority === "resource-full") return { order: "status-before-list", ranking: "supporting" };
-  return { order: "list-before-status", ranking: "suppressed" };
 }
 
 export function buildMobileOverviewModel(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): MobileOverviewModel {
   const network = buildRouterOsNetworkViewModel(snapshot, state);
   const priority = network.priority;
+  const scope = buildMobileImpactScope(network);
+  const heroTitle = titleFor(network);
+  const list = buildMobilePrimaryList(snapshot, state, network, scope, resourceFacts(state));
+  const policy = resolveMobileOverviewPolicy(priority, list.kind, {
+    recentSuccess: latestSuccess(snapshot, state),
+    collectionLabel: network.collection.label,
+    collectionValue: network.collection.value,
+    snapshotValue: network.snapshot.value,
+    routeValue: network.route.value,
+  });
+  const pills = heroPills(snapshot, state, network);
+  const core = coreMetrics(snapshot, state, network);
   return {
     priority,
     network,
-    surface: surfaceModel(priority),
-    coreMetrics: coreMetrics(snapshot, state, network),
+    header: headerModel(snapshot, state),
+    appHomeContract: policy.appHomeContract,
+    surface: policy.surface,
+    impactScope: scope,
+    collectionTrustSeparation: collectionTrustSeparation(priority, scope),
+    abnormalDecision: abnormalDecisionCells(priority, policy.appHomeContract, scope, network, heroTitle, list.title),
+    collectionTrust: collectionTrustCells(state),
+    coreMetrics: core,
+    normalSummary: normalSummaryModel(priority),
     hero: {
-      title: titleFor(network),
+      title: heroTitle,
       subtitle: subtitleFor(snapshot, state, network),
       facts: heroFacts(snapshot, state),
-      pills: heroPills(snapshot, state, network),
+      pills,
+      trustRail: heroTrustRail(pills),
+      interfaceCells: heroInterfaceCells(snapshot, state),
+      channelCells: heroChannelCells(state),
+      resourceCells: heroResourceCells(state),
       visualKind: heroVisualKind(priority),
-      showMetrics: showHeroMetrics(state, priority),
-      trend: trendChart(snapshot, state),
+      showMetrics: showHeroMetrics(),
+      trend: buildMobileTrendChart(snapshot, state),
     },
     trustPlanes: trustPlanes(network),
     statusRows: statusRows(snapshot, state),
-    primaryList: primaryList(snapshot, state, network),
+    primaryList: list,
     wanPorts: wanPorts(snapshot, state),
     resourceRows: resourceFacts(state),
   };

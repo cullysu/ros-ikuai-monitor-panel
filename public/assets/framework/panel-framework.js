@@ -7365,7 +7365,1260 @@ var PanelFramework = function(exports) {
       }
     }
   };
+  const V1010_MOBILE_NATIVE_APP_POLISH = `
+@media (max-width: 760px) {
+  html:has(#overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1010-product-app-polish]),
+  body:has(#overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1010-product-app-polish]) {
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    margin: 0 !important;
+    overflow: hidden !important;
+  }
+
+  #overview.router-overview-framework {
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1010-product-app-polish],
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1010-product-app-polish],
+  .ik-v420-app[data-overview-mobile-v1010-product-app-polish] {
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100vw !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v420-shell,
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v420-screen,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v420-shell,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v420-screen,
+  .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v420-shell,
+  .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v420-screen {
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    min-height: 0 !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v420-screen,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v420-screen,
+  .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v420-screen {
+    gap: 7px !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    padding-bottom: 58px !important;
+    scrollbar-width: none !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v420-screen::-webkit-scrollbar,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v420-screen::-webkit-scrollbar,
+  .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v420-screen::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v960-judgement-strip,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v960-judgement-strip,
+  .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v960-judgement-strip {
+    grid-template-columns: 110px minmax(0, 1fr) !important;
+    min-height: 36px !important;
+    border-radius: 10px !important;
+    background: var(--ik-v1010-group) !important;
+    box-shadow: inset 0 0 0 .5px var(--ik-v1010-line) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1010-product-app-polish][data-overview-mobile-severity="p0"] .ik-v960-judgement-strip,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1010-product-app-polish][data-overview-mobile-severity="p0"] .ik-v960-judgement-strip,
+  .ik-v420-app[data-overview-mobile-v1010-product-app-polish][data-overview-mobile-severity="p0"] .ik-v960-judgement-strip {
+    grid-template-columns: 116px minmax(0, 1fr) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v960-judgement-strip > strong,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v960-judgement-strip > strong,
+  .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v960-judgement-strip > strong {
+    padding-left: 7px !important;
+    border-right-color: var(--ik-v1010-line) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v960-judgement-strip > strong > b,
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v960-judgement-strip strong b,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v960-judgement-strip > strong > b,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v960-judgement-strip strong b,
+  .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v960-judgement-strip > strong > b,
+  .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v960-judgement-strip strong b {
+    max-width: none !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    white-space: nowrap !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1010-product-app-polish][data-overview-mobile-severity="p0"] .ik-v960-judgement-strip > strong > b,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1010-product-app-polish][data-overview-mobile-severity="p0"] .ik-v960-judgement-strip > strong > b,
+  .ik-v420-app[data-overview-mobile-v1010-product-app-polish][data-overview-mobile-severity="p0"] .ik-v960-judgement-strip > strong > b {
+    font-size: 11.2px !important;
+    letter-spacing: -.32px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v420-hero,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v420-hero,
+  .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v420-hero {
+    border: 0 !important;
+    border-radius: 11px !important;
+    background: linear-gradient(180deg, rgba(255,255,255,.68), rgba(246,250,253,.60)) !important;
+    box-shadow: inset 0 0 0 .5px var(--ik-v1010-line-strong) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v620-hero-head h1,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v620-hero-head h1,
+  .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v620-hero-head h1 {
+    font-size: 14px !important;
+    line-height: 16px !important;
+    letter-spacing: -.22px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v420-hero[data-overview-mobile-visual-kind="trend"] .ik-v620-hero-stage,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v420-hero[data-overview-mobile-visual-kind="trend"] .ik-v620-hero-stage,
+  .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v420-hero[data-overview-mobile-visual-kind="trend"] .ik-v620-hero-stage {
+    min-height: 209px !important;
+    height: 209px !important;
+    max-height: 209px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v420-hero[data-overview-mobile-visual-kind="trend"] .ik-v420-visual,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v420-hero[data-overview-mobile-visual-kind="trend"] .ik-v420-visual,
+  .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v420-hero[data-overview-mobile-visual-kind="trend"] .ik-v420-visual {
+    display: grid !important;
+    grid-template-rows: 151px 54px !important;
+    gap: 4px !important;
+    min-height: 209px !important;
+    height: 209px !important;
+    max-height: 209px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v420-hero[data-overview-mobile-visual-kind="trend"] .ik-v812-trend-visual,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v420-hero[data-overview-mobile-visual-kind="trend"] .ik-v812-trend-visual,
+  .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v420-hero[data-overview-mobile-visual-kind="trend"] .ik-v812-trend-visual {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-rows: 16px 135px !important;
+    gap: 0 !important;
+    min-height: 151px !important;
+    height: 151px !important;
+    max-height: 151px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v420-hero[data-overview-mobile-visual-kind="trend"] .ik-v420-line-chart,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v420-hero[data-overview-mobile-visual-kind="trend"] .ik-v420-line-chart,
+  .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v420-hero[data-overview-mobile-visual-kind="trend"] .ik-v420-line-chart {
+    min-height: 135px !important;
+    height: 135px !important;
+    max-height: 135px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v1012-breach-line,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v1012-breach-line,
+  .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v1012-breach-line {
+    fill: none !important;
+    stroke: rgba(138, 102, 49, .34) !important;
+    stroke-width: .65 !important;
+    stroke-dasharray: 2 3 !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v1012-threshold-label,
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v1012-breach-label,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v1012-threshold-label,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v1012-breach-label,
+  .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v1012-threshold-label,
+  .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v1012-breach-label {
+    fill: rgba(95, 113, 136, .82) !important;
+    font-size: 6.2px !important;
+    font-weight: 720 !important;
+    letter-spacing: -.04px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v1010-chart-readout-rail[data-overview-mobile-v1045-chart-readouts],
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v1010-chart-readout-rail[data-overview-mobile-v1045-chart-readouts],
+  .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v1010-chart-readout-rail[data-overview-mobile-v1045-chart-readouts] {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    grid-template-rows: repeat(2, 27px) !important;
+    gap: 0 !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v1010-chart-readout-rail[data-overview-mobile-v1045-chart-readouts] span,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v1010-chart-readout-rail[data-overview-mobile-v1045-chart-readouts] span,
+  .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v1010-chart-readout-rail[data-overview-mobile-v1045-chart-readouts] span {
+    min-width: 0 !important;
+    padding-inline: 2px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v1010-chart-readout-rail,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v1010-chart-readout-rail,
+  .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v1010-chart-readout-rail {
+    position: static !important;
+    inset: auto !important;
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    grid-template-rows: repeat(2, 27px) !important;
+    align-content: stretch !important;
+    gap: 0 !important;
+    width: 100% !important;
+    height: 54px !important;
+    min-height: 54px !important;
+    max-height: 54px !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v1010-chart-readout-rail span,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v1010-chart-readout-rail span,
+  .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v1010-chart-readout-rail span {
+    align-content: center !important;
+    gap: 0 !important;
+    min-height: 27px !important;
+    height: 27px !important;
+    padding: 0 2px !important;
+    border-left: .5px solid var(--ik-v1010-line) !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v1010-chart-readout-rail span:nth-child(3n + 1),
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v1010-chart-readout-rail span:nth-child(3n + 1),
+  .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v1010-chart-readout-rail span:nth-child(3n + 1) {
+    border-left: 0 !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v1010-chart-readout-rail em,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v1010-chart-readout-rail em,
+  .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v1010-chart-readout-rail em {
+    display: inline !important;
+    color: #7890a7 !important;
+    font-size: 7.6px !important;
+    font-style: normal !important;
+    font-weight: 680 !important;
+    line-height: 9px !important;
+    text-align: center !important;
+    white-space: nowrap !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v1010-chart-readout-rail b,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v1010-chart-readout-rail b,
+  .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v1010-chart-readout-rail b {
+    color: #233f59 !important;
+    font-size: 10.2px !important;
+    font-weight: 820 !important;
+    line-height: 12px !important;
+    text-align: center !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v420-surface,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v420-surface,
+  .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v420-surface {
+    gap: 4px !important;
+    padding: 0 0 2px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v420-timeline,
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v420-list,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v420-timeline,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v420-list,
+  .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v420-timeline,
+  .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v420-list {
+    border: 0 !important;
+    border-radius: 10px !important;
+    background: rgba(255, 255, 255, .44) !important;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.70), inset 0 -1px 0 rgba(122,151,181,.10) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v420-timeline-row,
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v420-list-row,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v420-timeline-row,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v420-list-row,
+  .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v420-timeline-row,
+  .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v420-list-row {
+    box-shadow: inset 0 -1px 0 rgba(122,151,181,.09) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1010-product-app-polish][data-overview-mobile-severity="p0"] .ik-v420-hero,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1010-product-app-polish][data-overview-mobile-severity="p0"] .ik-v420-hero,
+  .ik-v420-app[data-overview-mobile-v1010-product-app-polish][data-overview-mobile-severity="p0"] .ik-v420-hero {
+    background: linear-gradient(180deg, rgba(255,255,255,.70), rgba(250,247,245,.50)) !important;
+    box-shadow: inset 0 0 0 .5px rgba(153, 93, 88, .15) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1010-product-app-polish][data-overview-mobile-severity="p0"] .ik-v420-port-matrix span.is-danger,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1010-product-app-polish][data-overview-mobile-severity="p0"] .ik-v420-port-matrix span.is-danger,
+  .ik-v420-app[data-overview-mobile-v1010-product-app-polish][data-overview-mobile-severity="p0"] .ik-v420-port-matrix span.is-danger {
+    background: rgba(143,61,56,.040) !important;
+    box-shadow: inset 0 0 0 .5px rgba(143,61,56,.12) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1010-product-app-polish][data-overview-mobile-abnormal-ia="trust-boundary-no-business-data"] .ik-v420-list,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1010-product-app-polish][data-overview-mobile-abnormal-ia="trust-boundary-no-business-data"] .ik-v420-list,
+  .ik-v420-app[data-overview-mobile-v1010-product-app-polish][data-overview-mobile-abnormal-ia="trust-boundary-no-business-data"] .ik-v420-list {
+    background: rgba(247,250,253,.58) !important;
+    box-shadow: inset 0 0 0 .5px rgba(122,151,181,.08) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v420-tabs,
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v420-tabs[data-overview-mobile-v1010-quiet-tabbar],
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v420-tabs,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v420-tabs[data-overview-mobile-v1010-quiet-tabbar],
+  .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v420-tabs {
+    min-height: 54px !important;
+    height: 54px !important;
+    border: 0 !important;
+    border-top: 0 !important;
+    border-width: 0 !important;
+    border-color: transparent !important;
+    outline: 0 !important;
+    background: rgba(247,250,253,.94) !important;
+    box-shadow: none !important;
+    filter: none !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-tabs[data-overview-mobile-v1010-quiet-tabbar],
+  .router-overview-framework .ik-v420-tabs[data-overview-mobile-v1010-quiet-tabbar],
+  .ik-v420-tabs[data-overview-mobile-v1010-quiet-tabbar] {
+    border: 0 !important;
+    border-top: 0 !important;
+    border-top-width: 0px !important;
+    border-top-style: none !important;
+    border-top-color: transparent !important;
+    border-width: 0 !important;
+    box-shadow: none !important;
+    outline: 0 !important;
+    filter: none !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v420-tabs button.is-active,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v420-tabs button.is-active,
+  .ik-v420-app[data-overview-mobile-v1010-product-app-polish] .ik-v420-tabs button.is-active {
+    background: transparent !important;
+    box-shadow: none !important;
+    color: #1473e6 !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1010-product-app-polish] main .ik-v420-tabs[data-overview-mobile-v1010-quiet-tabbar],
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1010-product-app-polish] main .ik-v420-tabs[data-overview-mobile-v1010-quiet-tabbar],
+  .ik-v420-app[data-overview-mobile-v1010-product-app-polish] main .ik-v420-tabs[data-overview-mobile-v1010-quiet-tabbar] {
+    border-top-width: 0px !important;
+    border-top-style: none !important;
+    border-top-color: transparent !important;
+    box-shadow: none !important;
+  }
+}
+`;
+  const V1020_PUBLIC_PRODUCT_POLISH = `
+/* contract: ios-rhythm-low-noise-grouped-surfaces-router-native-tabs */
+@media (max-width: 760px) {
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1020-public-product-polish],
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1020-public-product-polish],
+  .ik-v420-app[data-overview-mobile-v1020-public-product-polish] {
+    background:
+      radial-gradient(circle at 50% -18%, rgba(20, 115, 230, .09), transparent 34%),
+      linear-gradient(180deg, #f7fafe 0%, #eef4fa 100%) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1020-public-product-polish] .ik-v420-screen,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1020-public-product-polish] .ik-v420-screen,
+  .ik-v420-app[data-overview-mobile-v1020-public-product-polish] .ik-v420-screen {
+    gap: 6px !important;
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+    background: transparent !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1020-public-product-polish] .ik-v420-nav,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1020-public-product-polish] .ik-v420-nav,
+  .ik-v420-app[data-overview-mobile-v1020-public-product-polish] .ik-v420-nav {
+    min-height: 32px !important;
+    padding: 2px 1px !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1020-public-product-polish] .ik-v960-judgement-strip,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1020-public-product-polish] .ik-v960-judgement-strip,
+  .ik-v420-app[data-overview-mobile-v1020-public-product-polish] .ik-v960-judgement-strip {
+    min-height: 34px !important;
+    border: 0 !important;
+    background: var(--ik-v1020-group) !important;
+    box-shadow: inset 0 -1px 0 rgba(141, 164, 188, .11) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1020-public-product-polish] .ik-v960-judgement-strip > strong,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1020-public-product-polish] .ik-v960-judgement-strip > strong,
+  .ik-v420-app[data-overview-mobile-v1020-public-product-polish] .ik-v960-judgement-strip > strong {
+    border-right: 0 !important;
+    color: var(--ik-v1020-ink) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1020-public-product-polish] .ik-v910-trust-strip,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1020-public-product-polish] .ik-v910-trust-strip,
+  .ik-v420-app[data-overview-mobile-v1020-public-product-polish] .ik-v910-trust-strip {
+    min-height: 24px !important;
+    gap: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1020-public-product-polish] .ik-v910-trust-strip span,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1020-public-product-polish] .ik-v910-trust-strip span,
+  .ik-v420-app[data-overview-mobile-v1020-public-product-polish] .ik-v910-trust-strip span {
+    border: 0 !important;
+    border-left: .5px solid rgba(141, 164, 188, .16) !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1020-public-product-polish] .ik-v420-hero,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1020-public-product-polish] .ik-v420-hero,
+  .ik-v420-app[data-overview-mobile-v1020-public-product-polish] .ik-v420-hero {
+    border: 0 !important;
+    border-radius: 14px !important;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, .66), rgba(246, 250, 253, .54)) !important;
+    box-shadow:
+      inset 0 0 0 .5px rgba(141, 164, 188, .12),
+      0 6px 18px rgba(36, 69, 104, .045) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1020-public-product-polish] .ik-v420-hero[data-overview-mobile-priority="wan-offline"],
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1020-public-product-polish] .ik-v420-hero[data-overview-mobile-priority="wan-offline"],
+  .ik-v420-app[data-overview-mobile-v1020-public-product-polish] .ik-v420-hero[data-overview-mobile-priority="wan-offline"] {
+    background: linear-gradient(180deg, rgba(255, 255, 255, .68), rgba(249, 246, 244, .50)) !important;
+    box-shadow: inset 0 0 0 .5px rgba(143, 56, 52, .11), 0 6px 18px rgba(86, 47, 43, .035) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1020-public-product-polish] .ik-v620-hero-head h1,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1020-public-product-polish] .ik-v620-hero-head h1,
+  .ik-v420-app[data-overview-mobile-v1020-public-product-polish] .ik-v620-hero-head h1 {
+    color: var(--ik-v1020-ink) !important;
+    font-size: 13.2px !important;
+    font-weight: 800 !important;
+    letter-spacing: -.26px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1020-public-product-polish] .ik-v503-hero-copy,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1020-public-product-polish] .ik-v503-hero-copy,
+  .ik-v420-app[data-overview-mobile-v1020-public-product-polish] .ik-v503-hero-copy {
+    color: var(--ik-v1020-muted) !important;
+    font-size: 8.4px !important;
+    font-weight: 560 !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1020-public-product-polish] .ik-v420-port-matrix,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1020-public-product-polish] .ik-v420-port-matrix,
+  .ik-v420-app[data-overview-mobile-v1020-public-product-polish] .ik-v420-port-matrix {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 3px !important;
+    padding: 2px !important;
+    background: transparent !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1020-public-product-polish] .ik-v420-port-matrix span,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1020-public-product-polish] .ik-v420-port-matrix span,
+  .ik-v420-app[data-overview-mobile-v1020-public-product-polish] .ik-v420-port-matrix span {
+    min-height: 23px !important;
+    border: 0 !important;
+    border-radius: 6px !important;
+    background: rgba(255, 255, 255, .40) !important;
+    box-shadow: inset 0 -1px 0 rgba(141, 164, 188, .10) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1020-public-product-polish] .ik-v420-port-matrix span.is-danger,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1020-public-product-polish] .ik-v420-port-matrix span.is-danger,
+  .ik-v420-app[data-overview-mobile-v1020-public-product-polish] .ik-v420-port-matrix span.is-danger {
+    background: rgba(143, 56, 52, .032) !important;
+    box-shadow: inset 2px 0 0 rgba(143, 56, 52, .30), inset 0 -1px 0 rgba(143, 56, 52, .075) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1020-public-product-polish] .ik-v420-port-matrix span i,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1020-public-product-polish] .ik-v420-port-matrix span i,
+  .ik-v420-app[data-overview-mobile-v1020-public-product-polish] .ik-v420-port-matrix span i {
+    width: 4px !important;
+    height: 4px !important;
+    box-shadow: none !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1020-public-product-polish] .ik-v420-timeline,
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1020-public-product-polish] .ik-v420-list,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1020-public-product-polish] .ik-v420-timeline,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1020-public-product-polish] .ik-v420-list,
+  .ik-v420-app[data-overview-mobile-v1020-public-product-polish] .ik-v420-timeline,
+  .ik-v420-app[data-overview-mobile-v1020-public-product-polish] .ik-v420-list {
+    border: 0 !important;
+    border-radius: 12px !important;
+    background: var(--ik-v1020-panel) !important;
+    box-shadow: inset 0 -1px 0 rgba(141, 164, 188, .10) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1020-public-product-polish] .ik-v420-timeline-row,
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1020-public-product-polish] .ik-v420-list-row,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1020-public-product-polish] .ik-v420-timeline-row,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1020-public-product-polish] .ik-v420-list-row,
+  .ik-v420-app[data-overview-mobile-v1020-public-product-polish] .ik-v420-timeline-row,
+  .ik-v420-app[data-overview-mobile-v1020-public-product-polish] .ik-v420-list-row {
+    min-height: 30px !important;
+    border: 0 !important;
+    box-shadow: inset 0 -1px 0 rgba(141, 164, 188, .085) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1020-public-product-polish] .ik-v420-tabs,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1020-public-product-polish] .ik-v420-tabs,
+  .ik-v420-app[data-overview-mobile-v1020-public-product-polish] .ik-v420-tabs {
+    min-height: 52px !important;
+    height: 52px !important;
+    background: rgba(245, 249, 253, .92) !important;
+    backdrop-filter: blur(14px) saturate(1.08) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1020-public-product-polish] .ik-v420-tabs button,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1020-public-product-polish] .ik-v420-tabs button,
+  .ik-v420-app[data-overview-mobile-v1020-public-product-polish] .ik-v420-tabs button {
+    border-radius: 0 !important;
+    color: #7b8da1 !important;
+    font-weight: 650 !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1020-public-product-polish] .ik-v420-tabs button.is-active,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1020-public-product-polish] .ik-v420-tabs button.is-active,
+  .ik-v420-app[data-overview-mobile-v1020-public-product-polish] .ik-v420-tabs button.is-active {
+    color: var(--ik-v1020-blue) !important;
+    background: transparent !important;
+    box-shadow: inset 0 -2px 0 rgba(20, 115, 230, .72) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1020-public-product-polish] .ik-v420-list header,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1020-public-product-polish] .ik-v420-list header,
+  .ik-v420-app[data-overview-mobile-v1020-public-product-polish] .ik-v420-list header {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 1px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1020-public-product-polish] .ik-v1020-impact-scope,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1020-public-product-polish] .ik-v1020-impact-scope,
+  .ik-v420-app[data-overview-mobile-v1020-public-product-polish] .ik-v1020-impact-scope {
+    display: block !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
+    color: var(--ik-v1020-muted) !important;
+    font-size: 7.2px !important;
+    font-style: normal !important;
+    font-weight: 650 !important;
+    letter-spacing: -.05px !important;
+    line-height: 10px !important;
+    text-overflow: clip !important;
+    white-space: nowrap !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1020-public-product-polish] .ik-v1020-impact-scope.is-danger,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1020-public-product-polish] .ik-v1020-impact-scope.is-danger,
+  .ik-v420-app[data-overview-mobile-v1020-public-product-polish] .ik-v1020-impact-scope.is-danger {
+    color: var(--ik-v1020-danger) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1020-public-product-polish] .ik-v1020-impact-scope.is-warn,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1020-public-product-polish] .ik-v1020-impact-scope.is-warn,
+  .ik-v420-app[data-overview-mobile-v1020-public-product-polish] .ik-v1020-impact-scope.is-warn {
+    color: var(--ik-v1020-warn) !important;
+  }
+}
+`;
+  const V1030_NATIVE_TRUST_SPINE = `
+/* contract: grouped-trust-spine-low-card-noise + native-console-tokenized-rhythm-low-noise-trust-first */
+@media (max-width: 760px) {
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1030-native-trust-spine],
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1030-native-trust-spine],
+  .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] {
+    background:
+      radial-gradient(circle at 50% -16%, rgba(20, 115, 230, .075), transparent 32%),
+      linear-gradient(180deg, var(--ik-native-bg-top) 0%, var(--ik-native-bg-bottom) 100%) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v420-screen,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v420-screen,
+  .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v420-screen {
+    gap: var(--ik-native-rhythm-gap) !important;
+    padding-left: var(--ik-native-screen-pad-x) !important;
+    padding-right: var(--ik-native-screen-pad-x) !important;
+    background: transparent !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v420-nav,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v420-nav,
+  .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v420-nav {
+    min-height: var(--ik-native-nav-height) !important;
+    padding: 1px 0 !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v960-judgement-strip,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v960-judgement-strip,
+  .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v960-judgement-strip {
+    grid-template-columns: minmax(0, 1fr) !important;
+    min-height: 32px !important;
+    border: 0 !important;
+    border-radius: 10px !important;
+    background: rgba(255, 255, 255, .34) !important;
+    box-shadow: inset 0 -1px 0 var(--ik-v1030-separator) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v960-judgement-strip > strong,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v960-judgement-strip > strong,
+  .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v960-judgement-strip > strong {
+    border-right: 0 !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v960-judgement-strip > div,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v960-judgement-strip > div,
+  .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v960-judgement-strip > div {
+    display: none !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v960-judgement-strip > div span,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v960-judgement-strip > div span,
+  .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v960-judgement-strip > div span {
+    border-left: 1px solid var(--ik-v1030-separator) !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v910-trust-strip,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v910-trust-strip,
+  .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v910-trust-strip {
+    min-height: 21px !important;
+    gap: 0 !important;
+    padding: 0 2px !important;
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v910-trust-strip span,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v910-trust-strip span,
+  .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v910-trust-strip span {
+    min-height: 20px !important;
+    border: 0 !important;
+    border-left: 1px solid var(--ik-v1030-separator) !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v1044-metric-grid,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v1044-metric-grid,
+  .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v1044-metric-grid {
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 0 !important;
+    min-height: 37px !important;
+    padding: 0 2px !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: inset 0 -1px 0 var(--ik-native-separator) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v1044-metric-grid span,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v1044-metric-grid span,
+  .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v1044-metric-grid span {
+    min-width: 0 !important;
+    min-height: 36px !important;
+    padding: 5px 4px 4px !important;
+    border: 0 !important;
+    border-left: 1px solid var(--ik-native-separator) !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v1044-metric-grid span:first-child,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v1044-metric-grid span:first-child,
+  .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v1044-metric-grid span:first-child {
+    border-left: 0 !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v1044-metric-grid em,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v1044-metric-grid em,
+  .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v1044-metric-grid em {
+    color: var(--ik-v1030-muted) !important;
+    font-size: 7px !important;
+    font-weight: 650 !important;
+    line-height: 9px !important;
+    letter-spacing: -.02px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v1044-metric-grid strong,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v1044-metric-grid strong,
+  .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v1044-metric-grid strong {
+    color: var(--ik-v1030-ink) !important;
+    font-size: 11.2px !important;
+    font-weight: 780 !important;
+    line-height: 13px !important;
+    letter-spacing: -.16px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v1044-metric-grid small,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v1044-metric-grid small,
+  .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v1044-metric-grid small {
+    display: none !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v420-hero,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v420-hero,
+  .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v420-hero {
+    border: 0 !important;
+    border-radius: 12px !important;
+    background: linear-gradient(180deg, rgba(255, 255, 255, .52), rgba(247, 250, 253, .42)) !important;
+    box-shadow: inset 0 -1px 0 var(--ik-native-separator) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1046-abnormal-decision-contract] .ik-v1046-abnormal-decision-rail,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1046-abnormal-decision-contract] .ik-v1046-abnormal-decision-rail,
+  .ik-v420-app[data-overview-mobile-v1046-abnormal-decision-contract] .ik-v1046-abnormal-decision-rail {
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 0 !important;
+    min-height: 28px !important;
+    margin-top: 3px !important;
+    overflow: hidden !important;
+    border-radius: 7px !important;
+    background: rgba(246, 249, 252, .58) !important;
+    box-shadow: inset 0 0 0 .5px var(--ik-native-hairline) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1046-abnormal-decision-contract] .ik-v1046-abnormal-decision-rail span,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1046-abnormal-decision-contract] .ik-v1046-abnormal-decision-rail span,
+  .ik-v420-app[data-overview-mobile-v1046-abnormal-decision-contract] .ik-v1046-abnormal-decision-rail span {
+    display: grid !important;
+    align-content: center !important;
+    min-width: 0 !important;
+    min-height: 28px !important;
+    padding: 3px 4px 3px !important;
+    border-left: 1px solid var(--ik-native-hairline) !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1046-abnormal-decision-contract] .ik-v1046-abnormal-decision-rail span:first-child,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1046-abnormal-decision-contract] .ik-v1046-abnormal-decision-rail span:first-child,
+  .ik-v420-app[data-overview-mobile-v1046-abnormal-decision-contract] .ik-v1046-abnormal-decision-rail span:first-child {
+    border-left: 0 !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1046-abnormal-decision-contract] .ik-v1046-abnormal-decision-rail em,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1046-abnormal-decision-contract] .ik-v1046-abnormal-decision-rail em,
+  .ik-v420-app[data-overview-mobile-v1046-abnormal-decision-contract] .ik-v1046-abnormal-decision-rail em {
+    color: var(--ik-native-muted) !important;
+    font-size: 6.5px !important;
+    font-style: normal !important;
+    font-weight: 680 !important;
+    line-height: 8px !important;
+    white-space: nowrap !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1046-abnormal-decision-contract] .ik-v1046-abnormal-decision-rail b,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1046-abnormal-decision-contract] .ik-v1046-abnormal-decision-rail b,
+  .ik-v420-app[data-overview-mobile-v1046-abnormal-decision-contract] .ik-v1046-abnormal-decision-rail b {
+    min-width: 0 !important;
+    overflow: hidden !important;
+    color: var(--ik-ink) !important;
+    font-size: 9px !important;
+    font-weight: 790 !important;
+    letter-spacing: -.12px !important;
+    line-height: 10px !important;
+    text-overflow: clip !important;
+    white-space: nowrap !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1046-abnormal-decision-contract] .ik-v1046-abnormal-decision-rail small,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1046-abnormal-decision-contract] .ik-v1046-abnormal-decision-rail small,
+  .ik-v420-app[data-overview-mobile-v1046-abnormal-decision-contract] .ik-v1046-abnormal-decision-rail small {
+    min-width: 0 !important;
+    overflow: hidden !important;
+    color: var(--ik-native-muted) !important;
+    font-size: 6.3px !important;
+    font-weight: 620 !important;
+    line-height: 8px !important;
+    text-overflow: clip !important;
+    white-space: nowrap !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v420-surface,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v420-surface,
+  .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v420-surface {
+    gap: 0 !important;
+    padding: 3px !important;
+    border-radius: 13px !important;
+    background: var(--ik-v1030-group) !important;
+    box-shadow: inset 0 0 0 .5px rgba(126, 151, 178, .075) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v420-timeline,
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v420-list,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v420-timeline,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v420-list,
+  .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v420-timeline,
+  .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v420-list {
+    border: 0 !important;
+    border-radius: 10px !important;
+    background: var(--ik-v1030-panel) !important;
+    box-shadow: var(--ik-native-shadow-none) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v420-timeline + .ik-v420-list,
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v420-list + .ik-v420-timeline,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v420-timeline + .ik-v420-list,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v420-list + .ik-v420-timeline,
+  .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v420-timeline + .ik-v420-list,
+  .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v420-list + .ik-v420-timeline {
+    margin-top: 3px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v420-timeline-row,
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v420-list-row,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v420-timeline-row,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v420-list-row,
+  .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v420-timeline-row,
+  .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v420-list-row {
+    min-height: var(--ik-native-row-height) !important;
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: inset 0 -1px 0 var(--ik-native-hairline) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v503-device-icon,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v503-device-icon,
+  .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v503-device-icon {
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v420-port-matrix span,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v420-port-matrix span,
+  .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v420-port-matrix span {
+    border-radius: 4px !important;
+    background: rgba(255, 255, 255, .28) !important;
+    box-shadow: inset 0 -1px 0 rgba(126, 151, 178, .08) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v420-port-matrix span.is-danger,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v420-port-matrix span.is-danger,
+  .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v420-port-matrix span.is-danger {
+    background: rgba(143, 56, 52, .026) !important;
+    box-shadow: inset 2px 0 0 var(--ik-native-risk-marker), inset 0 -1px 0 rgba(143, 56, 52, .065) !important;
+  }
+
+  /* v1042 keeps the WAN outage visual as a compact router port matrix, not red capsule cards. */
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v420-port-matrix[data-overview-mobile-v1042-wan-port-matrix],
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v420-port-matrix[data-overview-mobile-v1042-wan-port-matrix],
+  .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v420-port-matrix[data-overview-mobile-v1042-wan-port-matrix] {
+    gap: 0 !important;
+    overflow: hidden !important;
+    border-radius: 5px !important;
+    background: rgba(246, 249, 252, .74) !important;
+    box-shadow: inset 0 0 0 .5px rgba(104, 127, 151, .2) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v420-port-matrix[data-overview-mobile-v1042-wan-port-matrix] span[data-overview-mobile-wan-port-cell],
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v420-port-matrix[data-overview-mobile-v1042-wan-port-matrix] span[data-overview-mobile-wan-port-cell],
+  .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v420-port-matrix[data-overview-mobile-v1042-wan-port-matrix] span[data-overview-mobile-wan-port-cell],
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v420-port-matrix[data-overview-mobile-v1042-wan-port-matrix] span.is-danger[data-overview-mobile-wan-port-cell],
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v420-port-matrix[data-overview-mobile-v1042-wan-port-matrix] span.is-danger[data-overview-mobile-wan-port-cell],
+  .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v420-port-matrix[data-overview-mobile-v1042-wan-port-matrix] span.is-danger[data-overview-mobile-wan-port-cell] {
+    border-radius: 0 !important;
+    background: rgba(255, 255, 255, .38) !important;
+    box-shadow: inset -.5px 0 0 rgba(104, 127, 151, .16), inset 0 -.5px 0 rgba(104, 127, 151, .16) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v420-tabs button.is-active,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v420-tabs button.is-active,
+  .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v420-tabs button.is-active {
+    box-shadow: inset 0 -1px 0 var(--ik-native-tab-active) !important;
+  }
+}
+`;
+  const V1058_COLLECTION_TRUST_RAIL_POLISH = `
+@media (max-width: 760px) {
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1058-collection-trust] .ik-v1058-collection-trust-rail,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1058-collection-trust] .ik-v1058-collection-trust-rail,
+  .ik-v420-app[data-overview-mobile-v1058-collection-trust] .ik-v1058-collection-trust-rail {
+    grid-column: 1 / -1 !important;
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 0 !important;
+    min-height: 25px !important;
+    margin-top: 3px !important;
+    padding-top: 3px !important;
+    border-top: 1px solid var(--ik-native-separator, rgba(126, 151, 178, .14)) !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1058-collection-trust] .ik-v1058-collection-trust-rail span,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1058-collection-trust] .ik-v1058-collection-trust-rail span,
+  .ik-v420-app[data-overview-mobile-v1058-collection-trust] .ik-v1058-collection-trust-rail span {
+    display: grid !important;
+    grid-template-columns: 6px minmax(0, 1fr) !important;
+    grid-template-rows: 11px 11px !important;
+    align-items: center !important;
+    column-gap: 3px !important;
+    min-width: 0 !important;
+    min-height: 22px !important;
+    padding-inline: 3px !important;
+    border-left: 1px solid var(--ik-native-separator, rgba(126, 151, 178, .12)) !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1058-collection-trust] .ik-v1058-collection-trust-rail span:first-child,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1058-collection-trust] .ik-v1058-collection-trust-rail span:first-child,
+  .ik-v420-app[data-overview-mobile-v1058-collection-trust] .ik-v1058-collection-trust-rail span:first-child {
+    border-left: 0 !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1058-collection-trust] .ik-v1058-collection-trust-rail i,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1058-collection-trust] .ik-v1058-collection-trust-rail i,
+  .ik-v420-app[data-overview-mobile-v1058-collection-trust] .ik-v1058-collection-trust-rail i {
+    grid-row: 1 / 3 !important;
+    width: 4px !important;
+    height: 4px !important;
+    border-radius: 50% !important;
+    background: var(--ik-muted-text, rgba(95, 113, 136, .76)) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1058-collection-trust] .ik-v1058-collection-trust-rail .is-danger i,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1058-collection-trust] .ik-v1058-collection-trust-rail .is-danger i,
+  .ik-v420-app[data-overview-mobile-v1058-collection-trust] .ik-v1058-collection-trust-rail .is-danger i {
+    background: var(--ik-danger-text, rgba(143, 56, 52, .72)) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1058-collection-trust] .ik-v1058-collection-trust-rail .is-warn i,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1058-collection-trust] .ik-v1058-collection-trust-rail .is-warn i,
+  .ik-v420-app[data-overview-mobile-v1058-collection-trust] .ik-v1058-collection-trust-rail .is-warn i {
+    background: var(--ik-warn-text, rgba(128, 98, 59, .76)) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1058-collection-trust] .ik-v1058-collection-trust-rail b,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1058-collection-trust] .ik-v1058-collection-trust-rail b,
+  .ik-v420-app[data-overview-mobile-v1058-collection-trust] .ik-v1058-collection-trust-rail b {
+    overflow: hidden !important;
+    color: var(--ik-muted-text, rgba(95, 113, 136, .82)) !important;
+    font-size: 8px !important;
+    font-weight: 680 !important;
+    letter-spacing: -.08px !important;
+    line-height: 10px !important;
+    text-overflow: clip !important;
+    white-space: nowrap !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1058-collection-trust] .ik-v1058-collection-trust-rail em,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1058-collection-trust] .ik-v1058-collection-trust-rail em,
+  .ik-v420-app[data-overview-mobile-v1058-collection-trust] .ik-v1058-collection-trust-rail em {
+    overflow: hidden !important;
+    color: var(--ik-ink, rgba(26, 41, 58, .92)) !important;
+    font-size: 9px !important;
+    font-style: normal !important;
+    font-weight: 760 !important;
+    letter-spacing: -.14px !important;
+    line-height: 11px !important;
+    text-overflow: clip !important;
+    white-space: nowrap !important;
+  }
+}
+`;
+  const V1065_NORMAL_NATIVE_SUMMARY = `
+@media (max-width: 760px) {
+  #overview.router-overview-framework .ik-v1065-normal-summary-strip,
+  .router-overview-framework .ik-v1065-normal-summary-strip,
+  .ik-v1065-normal-summary-strip {
+    display: grid !important;
+    grid-template-columns: 1.04fr .84fr .92fr .92fr 1.2fr !important;
+    gap: 0 !important;
+    min-height: 32px !important;
+    margin: 0 !important;
+    padding: 0 var(--ik-native-screen-pad-x, 11px) 2px !important;
+    list-style: none !important;
+    background: transparent !important;
+  }
+
+  #overview.router-overview-framework .ik-v1065-normal-summary-strip li,
+  .router-overview-framework .ik-v1065-normal-summary-strip li,
+  .ik-v1065-normal-summary-strip li {
+    display: grid !important;
+    grid-template-rows: 9px 12px 8px !important;
+    min-width: 0 !important;
+    padding: 1px 5px 0 !important;
+    border-left: 1px solid var(--ik-native-hairline, rgba(126,151,178,.075)) !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  #overview.router-overview-framework .ik-v1065-normal-summary-strip li:first-child,
+  .router-overview-framework .ik-v1065-normal-summary-strip li:first-child,
+  .ik-v1065-normal-summary-strip li:first-child {
+    border-left: 0 !important;
+    padding-left: 0 !important;
+  }
+
+  #overview.router-overview-framework .ik-v1065-normal-summary-strip em,
+  .router-overview-framework .ik-v1065-normal-summary-strip em,
+  .ik-v1065-normal-summary-strip em {
+    overflow: hidden !important;
+    color: var(--ik-console-muted, #76889d) !important;
+    font-size: 7.4px !important;
+    font-style: normal !important;
+    font-weight: 620 !important;
+    line-height: 9px !important;
+    text-overflow: clip !important;
+    white-space: nowrap !important;
+  }
+
+  #overview.router-overview-framework .ik-v1065-normal-summary-strip b,
+  .router-overview-framework .ik-v1065-normal-summary-strip b,
+  .ik-v1065-normal-summary-strip b {
+    overflow: hidden !important;
+    color: var(--ik-console-ink, #122237) !important;
+    font-size: 9.8px !important;
+    font-weight: 760 !important;
+    line-height: 12px !important;
+    text-overflow: clip !important;
+    white-space: nowrap !important;
+  }
+
+  #overview.router-overview-framework .ik-v1065-normal-summary-strip small,
+  .router-overview-framework .ik-v1065-normal-summary-strip small,
+  .ik-v1065-normal-summary-strip small {
+    overflow: hidden !important;
+    color: var(--ik-quiet, #8090a3) !important;
+    font-size: 6.8px !important;
+    line-height: 8px !important;
+    text-overflow: clip !important;
+    white-space: nowrap !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-hero[data-overview-mobile-v1065-normal-hero="chart-first-no-promo-headline"] .ik-v620-hero-head,
+  .router-overview-framework .ik-v420-hero[data-overview-mobile-v1065-normal-hero="chart-first-no-promo-headline"] .ik-v620-hero-head,
+  .ik-v420-hero[data-overview-mobile-v1065-normal-hero="chart-first-no-promo-headline"] .ik-v620-hero-head {
+    display: none !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-hero[data-overview-mobile-v1065-normal-hero="chart-first-no-promo-headline"],
+  .router-overview-framework .ik-v420-hero[data-overview-mobile-v1065-normal-hero="chart-first-no-promo-headline"],
+  .ik-v420-hero[data-overview-mobile-v1065-normal-hero="chart-first-no-promo-headline"] {
+    padding-top: 4px !important;
+    background: transparent !important;
+    box-shadow: inset 0 -1px 0 var(--ik-native-separator, rgba(126, 151, 178, .12)) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1065-normal-first-screen] .ik-v1065-chart-kicker,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1065-normal-first-screen] .ik-v1065-chart-kicker,
+  .ik-v420-app[data-overview-mobile-v1065-normal-first-screen] .ik-v1065-chart-kicker {
+    display: block !important;
+    height: 16px !important;
+    margin: 0 !important;
+    color: var(--ik-console-muted, #76889d) !important;
+    font-size: 7.6px !important;
+    font-weight: 660 !important;
+    letter-spacing: .02em !important;
+    line-height: 16px !important;
+    white-space: nowrap !important;
+  }
+
+  .ik-v1072-chart-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-width: 0;
+    height: 16px;
+  }
+
+  .ik-v1072-series-legend,
+  .ik-v1072-series-legend span {
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .ik-v1072-series-legend {
+    gap: 7px;
+    color: var(--ik-console-muted, #76889d);
+    font-size: 7.2px;
+    font-weight: 680;
+    line-height: 16px;
+  }
+
+  .ik-v1072-series-legend span {
+    gap: 3px;
+    white-space: nowrap;
+  }
+
+  .ik-v1072-series-legend i {
+    width: 9px;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--ik-v1010-blue, #397ca7);
+  }
+
+  .ik-v1072-series-legend .is-upload i {
+    background: #91a9bb;
+  }
+}
+`;
+  const V1066_ROUTER_BOTTOM_TABS = `
+@media (max-width: 760px) {
+  .ik-v420-tabs[data-overview-mobile-v1066-router-tabs="home-wan-interface-terminal-log-router-monitor-low-noise"] {
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+    min-height: 44px !important;
+    padding: 2px var(--ik-native-screen-pad-x, 11px) max(2px, env(safe-area-inset-bottom, 0px)) !important;
+    border-top: 0 !important;
+    background: rgba(247, 250, 253, .945) !important;
+    box-shadow: inset 0 1px 0 var(--ik-native-hairline, rgba(126,151,178,.075)) !important;
+    backdrop-filter: blur(16px) !important;
+  }
+
+  .ik-v420-tabs[data-overview-mobile-v1066-router-tabs] button {
+    display: grid !important;
+    grid-template-rows: 17px 12px !important;
+    align-content: center !important;
+    justify-items: center !important;
+    gap: 1px !important;
+    min-width: 0 !important;
+    min-height: 34px !important;
+    padding: 2px 1px !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    color: var(--ik-quiet, #8090a3) !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  .ik-v420-tabs[data-overview-mobile-v1066-router-tabs] button svg {
+    width: 15px !important;
+    height: 15px !important;
+    opacity: .82 !important;
+    stroke-width: 1.65 !important;
+  }
+
+  .ik-v420-tabs[data-overview-mobile-v1066-router-tabs] button span {
+    overflow: hidden !important;
+    max-width: 100% !important;
+    font-size: 8px !important;
+    font-weight: 620 !important;
+    line-height: 10px !important;
+    text-overflow: clip !important;
+    white-space: nowrap !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v420-tabs[data-overview-mobile-v1066-router-tabs] button.is-active,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v420-tabs[data-overview-mobile-v1066-router-tabs] button.is-active,
+  .ik-v420-app[data-overview-mobile-v1030-native-trust-spine] .ik-v420-tabs[data-overview-mobile-v1066-router-tabs] button.is-active {
+    color: var(--ik-console-ink, #122237) !important;
+    background: transparent !important;
+    box-shadow: inset 0 -1px 0 rgba(18,34,55,.44) !important;
+  }
+}
+`;
+  const V1067_ROUTER_STATUS_HEADER_ACTION = `
+@media (max-width: 760px) {
+  .ik-v420-nav[data-overview-mobile-v1067-status-header] button[data-overview-mobile-v1067-header-action="router-context"] {
+    width: 28px !important;
+    height: 28px !important;
+    border: 0 !important;
+    border-radius: 10px !important;
+    color: var(--ik-console-muted, #76889d) !important;
+    background: rgba(255,255,255,.54) !important;
+    box-shadow: inset 0 0 0 1px var(--ik-native-hairline, rgba(126,151,178,.075)) !important;
+  }
+
+  .ik-v420-nav[data-overview-mobile-v1067-status-header] button[data-overview-mobile-v1067-header-action="router-context"] svg {
+    width: 16px !important;
+    height: 16px !important;
+    opacity: .84 !important;
+    stroke-width: 1.55 !important;
+  }
+}
+`;
+  const V1070_GROUPED_SURFACE_LOW_BORDER = `
+@media (max-width: 760px) {
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1030-native-trust-spine][data-overview-mobile-v1070-grouped-surfaces] .ik-v420-surface[data-overview-mobile-v1070-grouped-surface],
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1030-native-trust-spine][data-overview-mobile-v1070-grouped-surfaces] .ik-v420-list,
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1030-native-trust-spine][data-overview-mobile-v1070-grouped-surfaces] .ik-v420-timeline,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1030-native-trust-spine][data-overview-mobile-v1070-grouped-surfaces] .ik-v420-surface[data-overview-mobile-v1070-grouped-surface],
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1030-native-trust-spine][data-overview-mobile-v1070-grouped-surfaces] .ik-v420-list,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1030-native-trust-spine][data-overview-mobile-v1070-grouped-surfaces] .ik-v420-timeline,
+  .ik-v420-app[data-overview-mobile-v1030-native-trust-spine][data-overview-mobile-v1070-grouped-surfaces] .ik-v420-surface[data-overview-mobile-v1070-grouped-surface],
+  .ik-v420-app[data-overview-mobile-v1030-native-trust-spine][data-overview-mobile-v1070-grouped-surfaces] .ik-v420-list,
+  .ik-v420-app[data-overview-mobile-v1030-native-trust-spine][data-overview-mobile-v1070-grouped-surfaces] .ik-v420-timeline {
+    border: 0 !important;
+    background: rgba(244,248,252,.64) !important;
+    box-shadow: none !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1030-native-trust-spine][data-overview-mobile-v1070-grouped-surfaces] .ik-v420-surface[data-overview-mobile-v1070-grouped-surface],
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1030-native-trust-spine][data-overview-mobile-v1070-grouped-surfaces] .ik-v420-surface[data-overview-mobile-v1070-grouped-surface],
+  .ik-v420-app[data-overview-mobile-v1030-native-trust-spine][data-overview-mobile-v1070-grouped-surfaces] .ik-v420-surface[data-overview-mobile-v1070-grouped-surface] {
+    padding: 3px 0 0 !important;
+    border-radius: 13px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1030-native-trust-spine][data-overview-mobile-v1070-grouped-surfaces] .ik-v420-timeline-row,
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1030-native-trust-spine][data-overview-mobile-v1070-grouped-surfaces] .ik-v420-list header,
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1030-native-trust-spine][data-overview-mobile-v1070-grouped-surfaces] .ik-v420-list-row,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1030-native-trust-spine][data-overview-mobile-v1070-grouped-surfaces] .ik-v420-timeline-row,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1030-native-trust-spine][data-overview-mobile-v1070-grouped-surfaces] .ik-v420-list header,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1030-native-trust-spine][data-overview-mobile-v1070-grouped-surfaces] .ik-v420-list-row,
+  .ik-v420-app[data-overview-mobile-v1030-native-trust-spine][data-overview-mobile-v1070-grouped-surfaces] .ik-v420-timeline-row,
+  .ik-v420-app[data-overview-mobile-v1030-native-trust-spine][data-overview-mobile-v1070-grouped-surfaces] .ik-v420-list header,
+  .ik-v420-app[data-overview-mobile-v1030-native-trust-spine][data-overview-mobile-v1070-grouped-surfaces] .ik-v420-list-row {
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: inset 0 -1px 0 rgba(126,151,178,.105) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1030-native-trust-spine][data-overview-mobile-v1070-grouped-surfaces] .ik-v420-timeline-row:last-child,
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1030-native-trust-spine][data-overview-mobile-v1070-grouped-surfaces] .ik-v420-list-row:last-child,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1030-native-trust-spine][data-overview-mobile-v1070-grouped-surfaces] .ik-v420-timeline-row:last-child,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1030-native-trust-spine][data-overview-mobile-v1070-grouped-surfaces] .ik-v420-list-row:last-child,
+  .ik-v420-app[data-overview-mobile-v1030-native-trust-spine][data-overview-mobile-v1070-grouped-surfaces] .ik-v420-timeline-row:last-child,
+  .ik-v420-app[data-overview-mobile-v1030-native-trust-spine][data-overview-mobile-v1070-grouped-surfaces] .ik-v420-list-row:last-child {
+    box-shadow: none !important;
+  }
+}
+`;
+  const MOBILE_OVERVIEW_NATIVE_PRODUCT_STYLES = `${V1010_MOBILE_NATIVE_APP_POLISH}${V1020_PUBLIC_PRODUCT_POLISH}${V1030_NATIVE_TRUST_SPINE}${V1058_COLLECTION_TRUST_RAIL_POLISH}${V1065_NORMAL_NATIVE_SUMMARY}${V1066_ROUTER_BOTTOM_TABS}${V1067_ROUTER_STATUS_HEADER_ACTION}${V1070_GROUPED_SURFACE_LOW_BORDER}`;
+  const OVERVIEW_LOW_NOISE_CONSOLE_TOKEN_CONTRACT = "low-noise-console-tokens-color-type-space-radius-state-chart";
+  const OVERVIEW_LOW_NOISE_CONSOLE_TOKEN_CSS = `
+  --ik-console-ink: #122237;
+  --ik-console-text: #27394d;
+  --ik-console-muted: #76889d;
+  --ik-console-line: rgba(155, 177, 200, .15);
+  --ik-console-line-strong: rgba(155, 177, 200, .24);
+  --ik-console-blue: #1473e6;
+  --ik-console-danger: #873734;
+  --ik-console-warn: #755d31;
+  --ik-console-page: #f4f8fc;
+  --ik-console-panel: rgba(255,255,255,.965);
+  --ik-console-panel-soft: #fbfdff;
+  --ik-console-risk-danger-soft: rgba(173,54,49,.045);
+  --ik-console-risk-warn-soft: rgba(164,111,36,.045);
+  --ik-console-radius-panel: 4px;
+  --ik-console-radius-row: 3px;
+  --ik-console-font-xs: 7.8px;
+  --ik-console-font-sm: 8.8px;
+  --ik-console-font-md: 10.8px;
+  --ik-console-chart-current: var(--ik-console-blue);
+  --ik-console-chart-peak: #5b7188;
+  --ik-console-chart-threshold: rgba(120, 143, 166, .34);
+`;
   const MOBILE_OVERVIEW_TOKEN_CSS = `
+  ${OVERVIEW_LOW_NOISE_CONSOLE_TOKEN_CSS}
   --ik-blue: #1473e6;
   --ik-blue-soft: rgba(20, 115, 230, .08);
   --ik-blue-line: rgba(20, 115, 230, .42);
@@ -7383,10 +8636,27 @@ var PanelFramework = function(exports) {
   --ik-line-strong: rgba(142, 169, 196, .34);
   --ik-danger: #b83a32;
   --ik-danger-soft: rgba(184, 58, 50, .055);
+  --ik-danger-text: #8f2f2c;
+  --ik-danger-line: rgba(184, 58, 50, .18);
   --ik-warn: #a86f23;
   --ik-warn-soft: rgba(168, 111, 35, .065);
+  --ik-warn-text: #7b5a28;
+  --ik-warn-line: rgba(168, 111, 35, .18);
   --ik-ok: #18a66a;
   --ik-ok-soft: rgba(24, 166, 106, .07);
+  --ik-chart-current: #1473e6;
+  --ik-chart-peak: #5b7188;
+  --ik-chart-threshold: rgba(120, 143, 166, .34);
+  --ik-chart-sample: #6f8196;
+  --ik-native-bg-top: #f7fafe;
+  --ik-native-bg-bottom: #edf4fb;
+  --ik-native-surface: rgba(255,255,255,.36);
+  --ik-native-group: rgba(244,248,252,.64);
+  --ik-native-separator: rgba(126,151,178,.12);
+  --ik-native-hairline: rgba(126,151,178,.075);
+  --ik-native-risk-marker: rgba(143,56,52,.26);
+  --ik-native-tab-active: rgba(20,115,230,.70);
+  --ik-native-shadow-none: none;
   --ik-radius-panel: 10px;
   --ik-radius-row: 6px;
   --ik-radius-list: 8px;
@@ -7402,6 +8672,52 @@ var PanelFramework = function(exports) {
   --ik-space-5: 10px;
   --ik-hairline: 1px solid var(--ik-line);
   --ik-separator: 1px solid var(--ik-line-soft);
+  --ik-native-rhythm-gap: 5px;
+  --ik-native-screen-pad-x: 11px;
+  --ik-native-nav-height: 30px;
+  --ik-native-trust-height: 21px;
+  --ik-native-row-height: 28px;
+  --ik-v950-text: #132236;
+  --ik-v950-muted: #6d7f93;
+  --ik-v950-line: rgba(151, 174, 198, .26);
+  --ik-v950-line-soft: rgba(151, 174, 198, .16);
+  --ik-v950-surface: rgba(255, 255, 255, .72);
+  --ik-v980-critical-text: var(--ik-danger-text);
+  --ik-v980-warn-text: var(--ik-warn-text);
+  --ik-v980-divider: var(--ik-line-soft);
+  --ik-v980-chart-current: var(--ik-chart-current);
+  --ik-v980-chart-threshold: var(--ik-chart-threshold);
+  --ik-v1000-bg: #f4f7fa;
+  --ik-v1000-group: rgba(255, 255, 255, .72);
+  --ik-v1000-line: rgba(154, 176, 198, .18);
+  --ik-v1000-line-strong: rgba(128, 154, 181, .26);
+  --ik-v1000-blue: #1d6fb8;
+  --ik-v1000-danger: #8f3d38;
+  --ik-v1000-warn: #8a6631;
+  --ik-v1010-line: rgba(122, 151, 181, .15);
+  --ik-v1010-line-strong: rgba(84, 128, 176, .22);
+  --ik-v1010-group: rgba(255, 255, 255, .58);
+  --ik-v1010-group-soft: rgba(246, 250, 253, .72);
+  --ik-v1010-native-readout-rail: 1;
+  --ik-v1010-no-ellipsis-subtle-tabbar: 1;
+  --ik-v1020-ink: #132235;
+  --ik-v1020-text: #26394d;
+  --ik-v1020-muted: #7b8da1;
+  --ik-v1020-line: rgba(141, 164, 188, .105);
+  --ik-v1020-group: rgba(244, 248, 252, .78);
+  --ik-v1020-panel: rgba(255, 255, 255, .50);
+  --ik-v1020-blue: var(--ik-blue);
+  --ik-v1020-danger: #8f3834;
+  --ik-v1020-warn: #795f32;
+  --ik-v1030-ink: var(--ik-ink);
+  --ik-v1030-text: var(--ik-text);
+  --ik-v1030-muted: var(--ik-quiet);
+  --ik-v1030-separator: var(--ik-native-separator);
+  --ik-v1030-panel: var(--ik-native-surface);
+  --ik-v1030-group: var(--ik-native-group);
+  --ik-v1030-blue: var(--ik-blue);
+  --ik-v1030-native-contract: var(--ik-native-shell-contract);
+  --ik-native-shell-contract: native-console-tokenized-rhythm-low-noise-trust-first;
 `;
   const V420_MOBILE_STYLES = `
 @media (max-width: 760px) {
@@ -8916,9 +10232,7 @@ var PanelFramework = function(exports) {
   }
 
   #overview.router-overview-framework .ik-v420-resource-meter,
-  #overview.router-overview-framework .ik-mobile-resource-spark,
   .router-overview-framework .ik-v420-resource-meter,
-  .router-overview-framework .ik-mobile-resource-spark,
   .ik-v420-resource-meter {
     position: static !important;
     display: grid !important;
@@ -8934,62 +10248,21 @@ var PanelFramework = function(exports) {
     box-shadow: none !important;
   }
 
-  .ik-mobile-resource-spark {
-    position: static !important;
-    display: grid !important;
-    grid-template-columns: 28px 38px 36px 42px minmax(0, 1fr) !important;
-    align-items: center !important;
-    min-height: 24px !important;
-    gap: 4px !important;
-    padding: 0 !important;
-    border: 0 !important;
-    border-radius: 0 !important;
-    background: transparent !important;
-    box-shadow: none !important;
-    overflow: hidden !important;
-    transform: none !important;
-  }
-
-  #overview.router-overview-framework .ik-mobile-resource-spark::before,
-  #overview.router-overview-framework .ik-mobile-resource-spark::after,
-  .router-overview-framework .ik-mobile-resource-spark::before,
-  .router-overview-framework .ik-mobile-resource-spark::after,
-  .ik-mobile-resource-spark::before,
-  .ik-mobile-resource-spark::after {
-    content: none !important;
-    display: none !important;
-  }
-
   #overview.router-overview-framework .ik-v420-resource-meter > b,
   #overview.router-overview-framework .ik-v420-resource-meter > strong,
   #overview.router-overview-framework .ik-v420-resource-meter > .ik-v802-ring-value,
   #overview.router-overview-framework .ik-v420-resource-meter > small,
   #overview.router-overview-framework .ik-v420-resource-meter > em,
-  #overview.router-overview-framework .ik-mobile-resource-spark > b,
-  #overview.router-overview-framework .ik-mobile-resource-spark > strong,
-  #overview.router-overview-framework .ik-mobile-resource-spark > .ik-v802-ring-value,
-  #overview.router-overview-framework .ik-mobile-resource-spark > small,
-  #overview.router-overview-framework .ik-mobile-resource-spark > em,
   .router-overview-framework .ik-v420-resource-meter > b,
   .router-overview-framework .ik-v420-resource-meter > strong,
   .router-overview-framework .ik-v420-resource-meter > .ik-v802-ring-value,
   .router-overview-framework .ik-v420-resource-meter > small,
   .router-overview-framework .ik-v420-resource-meter > em,
-  .router-overview-framework .ik-mobile-resource-spark > b,
-  .router-overview-framework .ik-mobile-resource-spark > strong,
-  .router-overview-framework .ik-mobile-resource-spark > .ik-v802-ring-value,
-  .router-overview-framework .ik-mobile-resource-spark > small,
-  .router-overview-framework .ik-mobile-resource-spark > em,
   .ik-v420-resource-meter > b,
   .ik-v420-resource-meter > strong,
   .ik-v420-resource-meter > .ik-v802-ring-value,
   .ik-v420-resource-meter > small,
-  .ik-v420-resource-meter > em,
-  .ik-mobile-resource-spark > b,
-  .ik-mobile-resource-spark > strong,
-  .ik-mobile-resource-spark > .ik-v802-ring-value,
-  .ik-mobile-resource-spark > small,
-  .ik-mobile-resource-spark > em {
+  .ik-v420-resource-meter > em {
     position: static !important;
     display: block !important;
     min-width: 0 !important;
@@ -9002,9 +10275,7 @@ var PanelFramework = function(exports) {
   }
 
   #overview.router-overview-framework .ik-v420-resource-meter > i,
-  #overview.router-overview-framework .ik-mobile-resource-spark > i,
   .router-overview-framework .ik-v420-resource-meter > i,
-  .router-overview-framework .ik-mobile-resource-spark > i,
   .ik-v420-resource-meter > i {
     position: relative !important;
     display: block !important;
@@ -9018,9 +10289,7 @@ var PanelFramework = function(exports) {
   }
 
   #overview.router-overview-framework .ik-v420-resource-meter > i > i,
-  #overview.router-overview-framework .ik-mobile-resource-spark > i > i,
   .router-overview-framework .ik-v420-resource-meter > i > i,
-  .router-overview-framework .ik-mobile-resource-spark > i > i,
   .ik-v420-resource-meter > i > i {
     position: absolute !important;
     inset: 0 auto 0 0 !important;
@@ -9136,262 +10405,6 @@ var PanelFramework = function(exports) {
     box-shadow: none !important;
     color: currentColor !important;
   }
-
-  #overview.router-overview-framework .ik-v420-resource-visual.ik-mobile-resource-sparks.ik-v420-resource-meter-set.is-vertical-ledger.ik-v620-pressure-visual,
-  .router-overview-framework .ik-v420-resource-visual.ik-mobile-resource-sparks.ik-v420-resource-meter-set.is-vertical-ledger.ik-v620-pressure-visual,
-  .ik-v420-resource-visual.ik-mobile-resource-sparks.ik-v420-resource-meter-set.is-vertical-ledger.ik-v620-pressure-visual {
-    display: grid !important;
-    grid-template-rows: repeat(3, 24px) !important;
-    height: 84px !important;
-    min-height: 84px !important;
-    gap: 3px !important;
-    padding: 3px 0 !important;
-    border: 0 !important;
-    background: transparent !important;
-    box-shadow: none !important;
-  }
-
-  #overview.router-overview-framework .ik-v420-resource-visual.ik-mobile-resource-sparks.ik-v420-resource-meter-set.is-vertical-ledger.ik-v620-pressure-visual .ik-v420-resource-meter.ik-mobile-resource-spark,
-  .router-overview-framework .ik-v420-resource-visual.ik-mobile-resource-sparks.ik-v420-resource-meter-set.is-vertical-ledger.ik-v620-pressure-visual .ik-v420-resource-meter.ik-mobile-resource-spark,
-  .ik-v420-resource-visual.ik-mobile-resource-sparks.ik-v420-resource-meter-set.is-vertical-ledger.ik-v620-pressure-visual .ik-v420-resource-meter.ik-mobile-resource-spark {
-    position: static !important;
-    display: grid !important;
-    grid-template-columns: 28px 38px 36px 42px minmax(0, 1fr) !important;
-    align-items: center !important;
-    min-height: 24px !important;
-    height: 24px !important;
-    gap: 4px !important;
-    padding: 0 !important;
-    border: 0 !important;
-    border-radius: 0 !important;
-    background: transparent !important;
-    box-shadow: none !important;
-    overflow: hidden !important;
-    transform: none !important;
-  }
-
-  #overview.router-overview-framework .ik-v420-resource-visual.ik-mobile-resource-sparks.ik-v420-resource-meter-set.is-vertical-ledger.ik-v620-pressure-visual .ik-v420-resource-meter.ik-mobile-resource-spark::before,
-  #overview.router-overview-framework .ik-v420-resource-visual.ik-mobile-resource-sparks.ik-v420-resource-meter-set.is-vertical-ledger.ik-v620-pressure-visual .ik-v420-resource-meter.ik-mobile-resource-spark::after,
-  .router-overview-framework .ik-v420-resource-visual.ik-mobile-resource-sparks.ik-v420-resource-meter-set.is-vertical-ledger.ik-v620-pressure-visual .ik-v420-resource-meter.ik-mobile-resource-spark::before,
-  .router-overview-framework .ik-v420-resource-visual.ik-mobile-resource-sparks.ik-v420-resource-meter-set.is-vertical-ledger.ik-v620-pressure-visual .ik-v420-resource-meter.ik-mobile-resource-spark::after,
-  .ik-v420-resource-visual.ik-mobile-resource-sparks.ik-v420-resource-meter-set.is-vertical-ledger.ik-v620-pressure-visual .ik-v420-resource-meter.ik-mobile-resource-spark::before,
-  .ik-v420-resource-visual.ik-mobile-resource-sparks.ik-v420-resource-meter-set.is-vertical-ledger.ik-v620-pressure-visual .ik-v420-resource-meter.ik-mobile-resource-spark::after {
-    content: none !important;
-    display: none !important;
-  }
-
-  #overview.router-overview-framework .ik-v420-resource-visual.ik-mobile-resource-sparks.ik-v420-resource-meter-set.is-vertical-ledger.ik-v620-pressure-visual .ik-v420-resource-meter.ik-mobile-resource-spark > b,
-  #overview.router-overview-framework .ik-v420-resource-visual.ik-mobile-resource-sparks.ik-v420-resource-meter-set.is-vertical-ledger.ik-v620-pressure-visual .ik-v420-resource-meter.ik-mobile-resource-spark > strong,
-  #overview.router-overview-framework .ik-v420-resource-visual.ik-mobile-resource-sparks.ik-v420-resource-meter-set.is-vertical-ledger.ik-v620-pressure-visual .ik-v420-resource-meter.ik-mobile-resource-spark > small,
-  #overview.router-overview-framework .ik-v420-resource-visual.ik-mobile-resource-sparks.ik-v420-resource-meter-set.is-vertical-ledger.ik-v620-pressure-visual .ik-v420-resource-meter.ik-mobile-resource-spark > em,
-  .router-overview-framework .ik-v420-resource-visual.ik-mobile-resource-sparks.ik-v420-resource-meter-set.is-vertical-ledger.ik-v620-pressure-visual .ik-v420-resource-meter.ik-mobile-resource-spark > b,
-  .router-overview-framework .ik-v420-resource-visual.ik-mobile-resource-sparks.ik-v420-resource-meter-set.is-vertical-ledger.ik-v620-pressure-visual .ik-v420-resource-meter.ik-mobile-resource-spark > strong,
-  .router-overview-framework .ik-v420-resource-visual.ik-mobile-resource-sparks.ik-v420-resource-meter-set.is-vertical-ledger.ik-v620-pressure-visual .ik-v420-resource-meter.ik-mobile-resource-spark > small,
-  .router-overview-framework .ik-v420-resource-visual.ik-mobile-resource-sparks.ik-v420-resource-meter-set.is-vertical-ledger.ik-v620-pressure-visual .ik-v420-resource-meter.ik-mobile-resource-spark > em,
-  .ik-v420-resource-visual.ik-mobile-resource-sparks.ik-v420-resource-meter-set.is-vertical-ledger.ik-v620-pressure-visual .ik-v420-resource-meter.ik-mobile-resource-spark > b,
-  .ik-v420-resource-visual.ik-mobile-resource-sparks.ik-v420-resource-meter-set.is-vertical-ledger.ik-v620-pressure-visual .ik-v420-resource-meter.ik-mobile-resource-spark > strong,
-  .ik-v420-resource-visual.ik-mobile-resource-sparks.ik-v420-resource-meter-set.is-vertical-ledger.ik-v620-pressure-visual .ik-v420-resource-meter.ik-mobile-resource-spark > small,
-  .ik-v420-resource-visual.ik-mobile-resource-sparks.ik-v420-resource-meter-set.is-vertical-ledger.ik-v620-pressure-visual .ik-v420-resource-meter.ik-mobile-resource-spark > em {
-    position: static !important;
-    display: block !important;
-    min-width: 0 !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    font-size: 9px !important;
-    line-height: 13px !important;
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    transform: none !important;
-  }
-
-  #overview.router-overview-framework .ik-v420-resource-visual.ik-mobile-resource-sparks.ik-v420-resource-meter-set.is-vertical-ledger.ik-v620-pressure-visual .ik-v420-resource-meter.ik-mobile-resource-spark > i,
-  .router-overview-framework .ik-v420-resource-visual.ik-mobile-resource-sparks.ik-v420-resource-meter-set.is-vertical-ledger.ik-v620-pressure-visual .ik-v420-resource-meter.ik-mobile-resource-spark > i,
-  .ik-v420-resource-visual.ik-mobile-resource-sparks.ik-v420-resource-meter-set.is-vertical-ledger.ik-v620-pressure-visual .ik-v420-resource-meter.ik-mobile-resource-spark > i {
-    position: relative !important;
-    display: block !important;
-    width: 100% !important;
-    height: 2px !important;
-    min-height: 2px !important;
-    margin: 0 !important;
-    border: 0 !important;
-    border-radius: 999px !important;
-    background: rgba(139, 164, 190, .28) !important;
-    box-shadow: none !important;
-    overflow: hidden !important;
-    transform: none !important;
-  }
-
-  #overview.router-overview-framework .ik-v420-resource-visual.ik-mobile-resource-sparks.ik-v420-resource-meter-set.is-vertical-ledger.ik-v620-pressure-visual .ik-v420-resource-meter.ik-mobile-resource-spark > i > i,
-  .router-overview-framework .ik-v420-resource-visual.ik-mobile-resource-sparks.ik-v420-resource-meter-set.is-vertical-ledger.ik-v620-pressure-visual .ik-v420-resource-meter.ik-mobile-resource-spark > i > i,
-  .ik-v420-resource-visual.ik-mobile-resource-sparks.ik-v420-resource-meter-set.is-vertical-ledger.ik-v620-pressure-visual .ik-v420-resource-meter.ik-mobile-resource-spark > i > i {
-    position: absolute !important;
-    inset: 0 auto 0 0 !important;
-    display: block !important;
-    height: 2px !important;
-    min-height: 2px !important;
-    margin: 0 !important;
-    border: 0 !important;
-    border-radius: 999px !important;
-    background: rgba(184, 58, 50, .64) !important;
-    box-shadow: none !important;
-    transform: none !important;
-  }
-
-  #overview.router-overview-framework .ik-v420-resource-meter.ik-mobile-resource-spark > b,
-  .router-overview-framework .ik-v420-resource-meter.ik-mobile-resource-spark > b,
-  .ik-v420-resource-meter.ik-mobile-resource-spark > b {
-    grid-column: 1 !important;
-    order: 1 !important;
-  }
-
-  #overview.router-overview-framework .ik-v420-resource-meter.ik-mobile-resource-spark > strong,
-  .router-overview-framework .ik-v420-resource-meter.ik-mobile-resource-spark > strong,
-  .ik-v420-resource-meter.ik-mobile-resource-spark > strong {
-    grid-column: 2 !important;
-    order: 2 !important;
-  }
-
-  #overview.router-overview-framework .ik-v420-resource-meter.ik-mobile-resource-spark > small,
-  .router-overview-framework .ik-v420-resource-meter.ik-mobile-resource-spark > small,
-  .ik-v420-resource-meter.ik-mobile-resource-spark > small {
-    grid-column: 3 !important;
-    order: 3 !important;
-  }
-
-  #overview.router-overview-framework .ik-v420-resource-meter.ik-mobile-resource-spark > em,
-  .router-overview-framework .ik-v420-resource-meter.ik-mobile-resource-spark > em,
-  .ik-v420-resource-meter.ik-mobile-resource-spark > em {
-    grid-column: 4 !important;
-    order: 4 !important;
-  }
-
-  #overview.router-overview-framework .ik-v420-resource-meter.ik-mobile-resource-spark > i,
-  .router-overview-framework .ik-v420-resource-meter.ik-mobile-resource-spark > i,
-  .ik-v420-resource-meter.ik-mobile-resource-spark > i {
-    grid-column: 5 !important;
-    order: 5 !important;
-  }
-
-  #overview.router-overview-framework .ik-density-resource-ledger .ik-density-resource-row.ik-mobile-resource-spark.ik-v420-resource-meter,
-  .router-overview-framework .ik-density-resource-ledger .ik-density-resource-row.ik-mobile-resource-spark.ik-v420-resource-meter,
-  .ik-density-resource-ledger .ik-density-resource-row.ik-mobile-resource-spark.ik-v420-resource-meter {
-    position: static !important;
-    display: grid !important;
-    grid-template-columns: 28px 38px 38px 48px minmax(0, 1fr) !important;
-    align-items: center !important;
-    min-height: 24px !important;
-    height: 24px !important;
-    gap: 4px !important;
-    padding: 0 !important;
-    border: 0 !important;
-    border-radius: 0 !important;
-    background: transparent !important;
-    box-shadow: none !important;
-    overflow: hidden !important;
-    transform: none !important;
-  }
-
-  #overview.router-overview-framework .ik-density-resource-ledger .ik-density-resource-row.ik-mobile-resource-spark.ik-v420-resource-meter::before,
-  #overview.router-overview-framework .ik-density-resource-ledger .ik-density-resource-row.ik-mobile-resource-spark.ik-v420-resource-meter::after,
-  .router-overview-framework .ik-density-resource-ledger .ik-density-resource-row.ik-mobile-resource-spark.ik-v420-resource-meter::before,
-  .router-overview-framework .ik-density-resource-ledger .ik-density-resource-row.ik-mobile-resource-spark.ik-v420-resource-meter::after,
-  .ik-density-resource-ledger .ik-density-resource-row.ik-mobile-resource-spark.ik-v420-resource-meter::before,
-  .ik-density-resource-ledger .ik-density-resource-row.ik-mobile-resource-spark.ik-v420-resource-meter::after {
-    content: none !important;
-    display: none !important;
-  }
-
-  #overview.router-overview-framework .ik-density-resource-ledger .ik-density-resource-row.ik-mobile-resource-spark.ik-v420-resource-meter > b,
-  #overview.router-overview-framework .ik-density-resource-ledger .ik-density-resource-row.ik-mobile-resource-spark.ik-v420-resource-meter > strong,
-  #overview.router-overview-framework .ik-density-resource-ledger .ik-density-resource-row.ik-mobile-resource-spark.ik-v420-resource-meter > small,
-  #overview.router-overview-framework .ik-density-resource-ledger .ik-density-resource-row.ik-mobile-resource-spark.ik-v420-resource-meter > em,
-  .router-overview-framework .ik-density-resource-ledger .ik-density-resource-row.ik-mobile-resource-spark.ik-v420-resource-meter > b,
-  .router-overview-framework .ik-density-resource-ledger .ik-density-resource-row.ik-mobile-resource-spark.ik-v420-resource-meter > strong,
-  .router-overview-framework .ik-density-resource-ledger .ik-density-resource-row.ik-mobile-resource-spark.ik-v420-resource-meter > small,
-  .router-overview-framework .ik-density-resource-ledger .ik-density-resource-row.ik-mobile-resource-spark.ik-v420-resource-meter > em,
-  .ik-density-resource-ledger .ik-density-resource-row.ik-mobile-resource-spark.ik-v420-resource-meter > b,
-  .ik-density-resource-ledger .ik-density-resource-row.ik-mobile-resource-spark.ik-v420-resource-meter > strong,
-  .ik-density-resource-ledger .ik-density-resource-row.ik-mobile-resource-spark.ik-v420-resource-meter > small,
-  .ik-density-resource-ledger .ik-density-resource-row.ik-mobile-resource-spark.ik-v420-resource-meter > em {
-    position: static !important;
-    display: block !important;
-    min-width: 0 !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    font-size: 9px !important;
-    line-height: 13px !important;
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    transform: none !important;
-  }
-
-  #overview.router-overview-framework .ik-density-resource-ledger .ik-density-resource-row.ik-mobile-resource-spark.ik-v420-resource-meter > b,
-  .router-overview-framework .ik-density-resource-ledger .ik-density-resource-row.ik-mobile-resource-spark.ik-v420-resource-meter > b,
-  .ik-density-resource-ledger .ik-density-resource-row.ik-mobile-resource-spark.ik-v420-resource-meter > b {
-    grid-column: 1 !important;
-    order: 1 !important;
-  }
-
-  #overview.router-overview-framework .ik-density-resource-ledger .ik-density-resource-row.ik-mobile-resource-spark.ik-v420-resource-meter > strong,
-  .router-overview-framework .ik-density-resource-ledger .ik-density-resource-row.ik-mobile-resource-spark.ik-v420-resource-meter > strong,
-  .ik-density-resource-ledger .ik-density-resource-row.ik-mobile-resource-spark.ik-v420-resource-meter > strong {
-    grid-column: 2 !important;
-    order: 2 !important;
-    color: var(--ik-danger) !important;
-  }
-
-  #overview.router-overview-framework .ik-density-resource-ledger .ik-density-resource-row.ik-mobile-resource-spark.ik-v420-resource-meter > small,
-  .router-overview-framework .ik-density-resource-ledger .ik-density-resource-row.ik-mobile-resource-spark.ik-v420-resource-meter > small,
-  .ik-density-resource-ledger .ik-density-resource-row.ik-mobile-resource-spark.ik-v420-resource-meter > small {
-    grid-column: 3 !important;
-    order: 3 !important;
-    color: #728196 !important;
-  }
-
-  #overview.router-overview-framework .ik-density-resource-ledger .ik-density-resource-row.ik-mobile-resource-spark.ik-v420-resource-meter > em,
-  .router-overview-framework .ik-density-resource-ledger .ik-density-resource-row.ik-mobile-resource-spark.ik-v420-resource-meter > em,
-  .ik-density-resource-ledger .ik-density-resource-row.ik-mobile-resource-spark.ik-v420-resource-meter > em {
-    grid-column: 4 !important;
-    order: 4 !important;
-    color: var(--ik-danger) !important;
-  }
-
-  #overview.router-overview-framework .ik-density-resource-ledger .ik-density-resource-row.ik-mobile-resource-spark.ik-v420-resource-meter > i,
-  .router-overview-framework .ik-density-resource-ledger .ik-density-resource-row.ik-mobile-resource-spark.ik-v420-resource-meter > i,
-  .ik-density-resource-ledger .ik-density-resource-row.ik-mobile-resource-spark.ik-v420-resource-meter > i {
-    grid-column: 5 !important;
-    order: 5 !important;
-    position: relative !important;
-    display: block !important;
-    width: 100% !important;
-    height: 2px !important;
-    min-height: 2px !important;
-    margin: 0 !important;
-    border: 0 !important;
-    border-radius: 999px !important;
-    background: rgba(139, 164, 190, .28) !important;
-    box-shadow: none !important;
-    overflow: hidden !important;
-    transform: none !important;
-  }
-
-  #overview.router-overview-framework .ik-density-resource-ledger .ik-density-resource-row.ik-mobile-resource-spark.ik-v420-resource-meter > i > i,
-  .router-overview-framework .ik-density-resource-ledger .ik-density-resource-row.ik-mobile-resource-spark.ik-v420-resource-meter > i > i,
-  .ik-density-resource-ledger .ik-density-resource-row.ik-mobile-resource-spark.ik-v420-resource-meter > i > i {
-    position: absolute !important;
-    inset: 0 auto 0 0 !important;
-    display: block !important;
-    height: 2px !important;
-    min-height: 2px !important;
-    margin: 0 !important;
-    border: 0 !important;
-    border-radius: 999px !important;
-    background: rgba(184, 58, 50, .64) !important;
-    box-shadow: none !important;
-    transform: none !important;
-  }
 }
 
 @media (max-width: 760px) {
@@ -9445,10 +10458,11 @@ var PanelFramework = function(exports) {
     font-weight: 820 !important;
     line-height: 18px !important;
     letter-spacing: -.12px !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
     white-space: nowrap !important;
-  }
+    max-width: none !important;
+}
 
   #overview.router-overview-framework .ik-v960-judgement-strip > strong em,
   .router-overview-framework .ik-v960-judgement-strip > strong em,
@@ -9620,14 +10634,6 @@ var PanelFramework = function(exports) {
     grid-template-rows: repeat(3, 20px) !important;
     gap: 3px !important;
     padding: 3px 0 !important;
-  }
-
-  #overview.router-overview-framework .ik-density-resource-ledger .ik-density-resource-row.ik-mobile-resource-spark.ik-v420-resource-meter,
-  .router-overview-framework .ik-density-resource-ledger .ik-density-resource-row.ik-mobile-resource-spark.ik-v420-resource-meter,
-  .ik-density-resource-ledger .ik-density-resource-row.ik-mobile-resource-spark.ik-v420-resource-meter {
-    grid-template-columns: 28px 38px 38px 46px minmax(0, 1fr) !important;
-    min-height: 20px !important;
-    height: 20px !important;
   }
 
   #overview.router-overview-framework .ik-v830-trust-rail,
@@ -10118,12 +11124,6 @@ var PanelFramework = function(exports) {
   #overview.router-overview-framework .ik-v420-app,
   .router-overview-framework .ik-v420-app,
   .ik-v420-app {
-    --ik-blue: #1473e6;
-    --ik-v950-text: #132236;
-    --ik-v950-muted: #6d7f93;
-    --ik-v950-line: rgba(151, 174, 198, .26);
-    --ik-v950-line-soft: rgba(151, 174, 198, .16);
-    --ik-v950-surface: rgba(255, 255, 255, .72);
     color: var(--ik-v950-text) !important;
     font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "PingFang SC", "Microsoft YaHei", sans-serif !important;
     background: linear-gradient(180deg, #edf5ff 0%, #f4f8fc 34%, #f7fafc 100%) !important;
@@ -10382,7 +11382,7 @@ var PanelFramework = function(exports) {
   #overview.router-overview-framework .ik-v420-tabs,
   .router-overview-framework .ik-v420-tabs,
   .ik-v420-tabs {
-    border-top: .5px solid rgba(151, 174, 198, .26) !important;
+    border-top: 0 !important;
     background: rgba(250, 252, 255, .965) !important;
     backdrop-filter: saturate(1.1) blur(10px) !important;
   }
@@ -10407,23 +11407,1552 @@ var PanelFramework = function(exports) {
   }
 }
 `;
+  const MOBILE_OVERVIEW_FOUNDATION_STYLES = V420_MOBILE_STYLES;
+  const V960_PRODUCT_REFINEMENTS = `
+@media (max-width: 760px) {
+  #overview.router-overview-framework .ik-v420-screen,
+  .router-overview-framework .ik-v420-screen,
+  .ik-v420-screen {
+    padding-top: max(3px, env(safe-area-inset-top, 0px)) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-screen > * + *,
+  .router-overview-framework .ik-v420-screen > * + *,
+  .ik-v420-screen > * + * {
+    margin-top: 4px !important;
+  }
+
+  #overview.router-overview-framework .ik-v960-judgement-strip,
+  .router-overview-framework .ik-v960-judgement-strip,
+  .ik-v960-judgement-strip {
+    display: grid !important;
+    grid-template-rows: 23px 31px !important;
+    gap: 0 !important;
+    min-height: 54px !important;
+    padding: 0 9px !important;
+    border: 0 !important;
+    border-radius: 9px !important;
+    background: rgba(255, 255, 255, .76) !important;
+    box-shadow: inset 0 0 0 .5px rgba(151, 174, 198, .16) !important;
+    overflow: hidden !important;
+  }
+
+  #overview.router-overview-framework .ik-v960-judgement-strip > strong,
+  .router-overview-framework .ik-v960-judgement-strip > strong,
+  .ik-v960-judgement-strip > strong {
+    display: grid !important;
+    grid-template-columns: 10px minmax(0, max-content) minmax(0, 1fr) !important;
+    align-items: center !important;
+    gap: 5px !important;
+    min-width: 0 !important;
+    border-bottom: .5px solid rgba(151, 174, 198, .16) !important;
+  }
+
+  #overview.router-overview-framework .ik-v960-judgement-strip > strong b,
+  .router-overview-framework .ik-v960-judgement-strip > strong b,
+  .ik-v960-judgement-strip > strong b {
+    color: #132236 !important;
+    font-size: 13px !important;
+    font-weight: 830 !important;
+    letter-spacing: -.12px !important;
+    line-height: 16px !important;
+    white-space: nowrap !important;
+    text-overflow: clip !important;
+  max-width: none !important;
+}
+
+  #overview.router-overview-framework .ik-v960-judgement-strip > strong em,
+  .router-overview-framework .ik-v960-judgement-strip > strong em,
+  .ik-v960-judgement-strip > strong em {
+    min-width: 0 !important;
+    color: #6b7d90 !important;
+    font-size: 9px !important;
+    font-style: normal !important;
+    font-weight: 610 !important;
+    line-height: 11px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  #overview.router-overview-framework .ik-v960-judgement-strip > div,
+  .router-overview-framework .ik-v960-judgement-strip > div,
+  .ik-v960-judgement-strip > div,
+  #overview.router-overview-framework .ik-v910-trust-strip,
+  .router-overview-framework .ik-v910-trust-strip,
+  .ik-v910-trust-strip {
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    min-width: 0 !important;
+  }
+
+  #overview.router-overview-framework .ik-v960-judgement-strip span,
+  .router-overview-framework .ik-v960-judgement-strip span,
+  .ik-v960-judgement-strip span,
+  #overview.router-overview-framework .ik-v910-trust-strip span,
+  .router-overview-framework .ik-v910-trust-strip span,
+  .ik-v910-trust-strip span {
+    display: grid !important;
+    align-content: center !important;
+    gap: 1px !important;
+    min-width: 0 !important;
+    padding: 0 5px !important;
+    border-right: .5px solid rgba(151, 174, 198, .14) !important;
+    background: transparent !important;
+  }
+
+  #overview.router-overview-framework .ik-v960-judgement-strip span:last-child,
+  .router-overview-framework .ik-v960-judgement-strip span:last-child,
+  .ik-v960-judgement-strip span:last-child,
+  #overview.router-overview-framework .ik-v910-trust-strip span:last-child,
+  .router-overview-framework .ik-v910-trust-strip span:last-child,
+  .ik-v910-trust-strip span:last-child {
+    border-right: 0 !important;
+  }
+
+  #overview.router-overview-framework .ik-v960-judgement-strip span em,
+  .router-overview-framework .ik-v960-judgement-strip span em,
+  .ik-v960-judgement-strip span em,
+  #overview.router-overview-framework .ik-v910-trust-strip span b,
+  .router-overview-framework .ik-v910-trust-strip span b,
+  .ik-v910-trust-strip span b {
+    color: #77879a !important;
+    font-size: 7.6px !important;
+    font-style: normal !important;
+    font-weight: 650 !important;
+    line-height: 9px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  #overview.router-overview-framework .ik-v960-judgement-strip span b,
+  .router-overview-framework .ik-v960-judgement-strip span b,
+  .ik-v960-judgement-strip span b,
+  #overview.router-overview-framework .ik-v910-trust-strip span strong,
+  .router-overview-framework .ik-v910-trust-strip span strong,
+  .ik-v910-trust-strip span strong {
+    color: #1b3048 !important;
+    font-size: 10px !important;
+    font-weight: 790 !important;
+    line-height: 11px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  #overview.router-overview-framework .ik-v910-trust-strip,
+  .router-overview-framework .ik-v910-trust-strip,
+  .ik-v910-trust-strip {
+    min-height: 32px !important;
+    padding: 0 8px !important;
+    border: 0 !important;
+    border-radius: 8px !important;
+    background: rgba(242, 247, 252, .72) !important;
+    box-shadow: inset 0 0 0 .5px rgba(151, 174, 198, .12) !important;
+    overflow: hidden !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-hero,
+  .router-overview-framework .ik-v420-hero,
+  .ik-v420-hero {
+    grid-template-rows: 24px 72px 18px !important;
+    gap: 4px !important;
+    min-height: 128px !important;
+    max-height: 142px !important;
+    padding: 7px 9px 6px !important;
+    border-radius: 9px !important;
+  }
+
+  #overview.router-overview-framework .ik-v620-hero-head h1,
+  .router-overview-framework .ik-v620-hero-head h1,
+  .ik-v620-hero-head h1 {
+    font-size: 12.5px !important;
+    line-height: 14px !important;
+    font-weight: 780 !important;
+    letter-spacing: -.08px !important;
+  }
+
+  #overview.router-overview-framework .ik-v620-hero-head p,
+  .router-overview-framework .ik-v620-hero-head p,
+  .ik-v620-hero-head p {
+    font-size: 8.4px !important;
+    line-height: 10px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-visual,
+  #overview.router-overview-framework .ik-v812-trend-visual,
+  #overview.router-overview-framework .ik-v420-line-chart,
+  #overview.router-overview-framework .ik-v420-channel-rail,
+  #overview.router-overview-framework .ik-v420-port-matrix,
+  #overview.router-overview-framework .ik-density-resource-ledger,
+  #overview.router-overview-framework .ik-v420-interface-list,
+  .router-overview-framework .ik-v420-visual,
+  .router-overview-framework .ik-v812-trend-visual,
+  .router-overview-framework .ik-v420-line-chart,
+  .router-overview-framework .ik-v420-channel-rail,
+  .router-overview-framework .ik-v420-port-matrix,
+  .router-overview-framework .ik-density-resource-ledger,
+  .router-overview-framework .ik-v420-interface-list,
+  .ik-v420-visual,
+  .ik-v812-trend-visual,
+  .ik-v420-line-chart,
+  .ik-v420-channel-rail,
+  .ik-v420-port-matrix,
+  .ik-density-resource-ledger,
+  .ik-v420-interface-list {
+    min-height: 72px !important;
+    height: 72px !important;
+    max-height: 72px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-port-matrix span,
+  .router-overview-framework .ik-v420-port-matrix span,
+  .ik-v420-port-matrix span {
+    grid-template-columns: 2px minmax(0, 1fr) 24px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-port-matrix b,
+  .router-overview-framework .ik-v420-port-matrix b,
+  .ik-v420-port-matrix b {
+    font-size: 8.8px !important;
+    letter-spacing: -.05px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-port-matrix small,
+  .router-overview-framework .ik-v420-port-matrix small,
+  .ik-v420-port-matrix small {
+    color: #7b8b9d !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-list-row.is-danger strong b,
+  #overview.router-overview-framework .ik-v420-timeline-row.is-danger strong,
+  #overview.router-overview-framework .ik-v960-judgement-strip .is-danger b,
+  #overview.router-overview-framework .ik-v910-trust-strip .is-danger strong,
+  .router-overview-framework .ik-v420-list-row.is-danger strong b,
+  .router-overview-framework .ik-v420-timeline-row.is-danger strong,
+  .router-overview-framework .ik-v960-judgement-strip .is-danger b,
+  .router-overview-framework .ik-v910-trust-strip .is-danger strong,
+  .ik-v420-list-row.is-danger strong b,
+  .ik-v420-timeline-row.is-danger strong,
+  .ik-v960-judgement-strip .is-danger b,
+  .ik-v910-trust-strip .is-danger strong {
+    color: #8f2f2c !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-list-row.is-warn strong b,
+  #overview.router-overview-framework .ik-v420-timeline-row.is-warn strong,
+  #overview.router-overview-framework .ik-v960-judgement-strip .is-warn b,
+  #overview.router-overview-framework .ik-v910-trust-strip .is-warn strong,
+  .router-overview-framework .ik-v420-list-row.is-warn strong b,
+  .router-overview-framework .ik-v420-timeline-row.is-warn strong,
+  .router-overview-framework .ik-v960-judgement-strip .is-warn b,
+  .router-overview-framework .ik-v910-trust-strip .is-warn strong,
+  .ik-v420-list-row.is-warn strong b,
+  .ik-v420-timeline-row.is-warn strong,
+  .ik-v960-judgement-strip .is-warn b,
+  .ik-v910-trust-strip .is-warn strong {
+    color: #7b5a28 !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-surface.is-ranking-suppressed .ik-v420-list-row:nth-of-type(n+5),
+  .router-overview-framework .ik-v420-surface.is-ranking-suppressed .ik-v420-list-row:nth-of-type(n+5),
+  .ik-v420-surface.is-ranking-suppressed .ik-v420-list-row:nth-of-type(n+5) {
+    display: none !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-tabs,
+  .router-overview-framework .ik-v420-tabs,
+  .ik-v420-tabs {
+    box-shadow: none !important;
+  }
+}
+`;
+  const V970_TRUST_MODEL_REFINEMENTS = `
+@media (max-width: 760px) {
+  #overview.router-overview-framework .ik-v970-first-question,
+  .router-overview-framework .ik-v970-first-question,
+  .ik-v970-first-question {
+    display: block !important;
+    margin: 0 0 4px !important;
+    color: #6b7b8f !important;
+    font-size: 10.5px !important;
+    font-weight: 760 !important;
+    letter-spacing: .02em !important;
+  }
+
+  #overview.router-overview-framework .ik-v970-trust-boundary,
+  .router-overview-framework .ik-v970-trust-boundary,
+  .ik-v970-trust-boundary {
+    margin: 6px 0 0 !important;
+    padding: 6px 0 0 !important;
+    border-top: .5px solid rgba(214, 226, 238, .82) !important;
+    color: #6b7b8f !important;
+    font-size: 10.5px !important;
+    line-height: 1.25 !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-ranking-policy="hidden"] [data-overview-mobile-rank-list],
+  .router-overview-framework [data-overview-mobile-ranking-policy="hidden"] [data-overview-mobile-rank-list],
+  [data-overview-mobile-ranking-policy="hidden"] [data-overview-mobile-rank-list] {
+    display: none !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-ranking-policy="collapsed"] [data-overview-mobile-rank-list],
+  .router-overview-framework [data-overview-mobile-ranking-policy="collapsed"] [data-overview-mobile-rank-list],
+  [data-overview-mobile-ranking-policy="collapsed"] [data-overview-mobile-rank-list] {
+    max-height: 96px !important;
+    overflow: hidden !important;
+    opacity: .72 !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-severity="p0"] .ik-v420-hero,
+  .router-overview-framework [data-overview-mobile-severity="p0"] .ik-v420-hero,
+  [data-overview-mobile-severity="p0"] .ik-v420-hero {
+    border-color: rgba(189, 73, 67, .16) !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-severity="p0"] .ik-v420-hero h1,
+  .router-overview-framework [data-overview-mobile-severity="p0"] .ik-v420-hero h1,
+  [data-overview-mobile-severity="p0"] .ik-v420-hero h1 {
+    color: #1d2938 !important;
+  }
+}
+`;
+  const V980_APP_IA_REFINEMENTS = `
+@media (max-width: 760px) {
+  #overview.router-overview-framework [data-overview-mobile-p0-first-screen="trust-wan-route-collection-success-no-terminal-ranking"] .ik-v420-surface,
+  .router-overview-framework [data-overview-mobile-p0-first-screen="trust-wan-route-collection-success-no-terminal-ranking"] .ik-v420-surface,
+  [data-overview-mobile-p0-first-screen="trust-wan-route-collection-success-no-terminal-ranking"] .ik-v420-surface {
+    grid-template-rows: auto auto !important;
+    gap: var(--ik-space-2) !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-terminal-ranking-state="not-mounted"] [data-overview-mobile-rank-list="terminal-total-traffic-list"],
+  .router-overview-framework [data-overview-mobile-terminal-ranking-state="not-mounted"] [data-overview-mobile-rank-list="terminal-total-traffic-list"],
+  [data-overview-mobile-terminal-ranking-state="not-mounted"] [data-overview-mobile-rank-list="terminal-total-traffic-list"] {
+    display: none !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-abnormal-ia="wan-offline-default-route-collection-success-first"] .ik-v420-list,
+  .router-overview-framework [data-overview-mobile-abnormal-ia="wan-offline-default-route-collection-success-first"] .ik-v420-list,
+  [data-overview-mobile-abnormal-ia="wan-offline-default-route-collection-success-first"] .ik-v420-list {
+    order: -1 !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-abnormal-ia="wan-offline-default-route-collection-success-first"] .ik-v420-list header span,
+  .router-overview-framework [data-overview-mobile-abnormal-ia="wan-offline-default-route-collection-success-first"] .ik-v420-list header span,
+  [data-overview-mobile-abnormal-ia="wan-offline-default-route-collection-success-first"] .ik-v420-list header span {
+    color: var(--ik-v980-critical-text) !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-abnormal-ia="resource-pressure-evidence-first"] .ik-v420-list-row > i,
+  .router-overview-framework [data-overview-mobile-abnormal-ia="resource-pressure-evidence-first"] .ik-v420-list-row > i,
+  [data-overview-mobile-abnormal-ia="resource-pressure-evidence-first"] .ik-v420-list-row > i {
+    border-color: transparent !important;
+    background: rgba(91, 113, 136, .06) !important;
+    color: #5b7188 !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-abnormal-ia="trust-boundary-no-business-data"] .ik-v420-list,
+  .router-overview-framework [data-overview-mobile-abnormal-ia="trust-boundary-no-business-data"] .ik-v420-list,
+  [data-overview-mobile-abnormal-ia="trust-boundary-no-business-data"] .ik-v420-list {
+    background: rgba(246, 249, 252, .82) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-list-row.is-danger strong b,
+  #overview.router-overview-framework .ik-v420-timeline-row.is-danger strong,
+  .router-overview-framework .ik-v420-list-row.is-danger strong b,
+  .router-overview-framework .ik-v420-timeline-row.is-danger strong,
+  .ik-v420-list-row.is-danger strong b,
+  .ik-v420-timeline-row.is-danger strong {
+    color: var(--ik-v980-critical-text) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-list-row.is-warn strong b,
+  #overview.router-overview-framework .ik-v420-timeline-row.is-warn strong,
+  .router-overview-framework .ik-v420-list-row.is-warn strong b,
+  .router-overview-framework .ik-v420-timeline-row.is-warn strong,
+  .ik-v420-list-row.is-warn strong b,
+  .ik-v420-timeline-row.is-warn strong {
+    color: var(--ik-v980-warn-text) !important;
+  }
+}
+`;
+  const V990_NORMAL_APP_HOME_REFINEMENTS = `
+@media (max-width: 760px) {
+  #overview.router-overview-framework [data-overview-mobile-normal-app-home="compact-conclusion-chart-ops"] .ik-v960-judgement-strip,
+  .router-overview-framework [data-overview-mobile-normal-app-home="compact-conclusion-chart-ops"] .ik-v960-judgement-strip,
+  [data-overview-mobile-normal-app-home="compact-conclusion-chart-ops"] .ik-v960-judgement-strip {
+    min-height: 50px !important;
+    grid-template-rows: 21px 29px !important;
+    background: rgba(255, 255, 255, .70) !important;
+    box-shadow: inset 0 0 0 .5px rgba(151, 174, 198, .10) !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-normal-app-home="compact-conclusion-chart-ops"] .ik-v910-trust-strip,
+  .router-overview-framework [data-overview-mobile-normal-app-home="compact-conclusion-chart-ops"] .ik-v910-trust-strip,
+  [data-overview-mobile-normal-app-home="compact-conclusion-chart-ops"] .ik-v910-trust-strip {
+    min-height: 28px !important;
+    background: rgba(242, 247, 252, .58) !important;
+    box-shadow: none !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-normal-app-home="compact-conclusion-chart-ops"] .ik-v420-hero,
+  .router-overview-framework [data-overview-mobile-normal-app-home="compact-conclusion-chart-ops"] .ik-v420-hero,
+  [data-overview-mobile-normal-app-home="compact-conclusion-chart-ops"] .ik-v420-hero {
+    grid-template-rows: 15px 68px 15px !important;
+    gap: 3px !important;
+    min-height: 110px !important;
+    max-height: 118px !important;
+    padding: 6px 9px 5px !important;
+    border: 0 !important;
+    border-radius: 9px !important;
+    background: rgba(248, 251, 254, .72) !important;
+    box-shadow: inset 0 0 0 .5px rgba(151, 174, 198, .12) !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-normal-app-home="compact-conclusion-chart-ops"] .ik-v420-hero::before,
+  .router-overview-framework [data-overview-mobile-normal-app-home="compact-conclusion-chart-ops"] .ik-v420-hero::before,
+  [data-overview-mobile-normal-app-home="compact-conclusion-chart-ops"] .ik-v420-hero::before,
+  #overview.router-overview-framework [data-overview-mobile-normal-app-home="compact-conclusion-chart-ops"] .ik-v970-first-question,
+  .router-overview-framework [data-overview-mobile-normal-app-home="compact-conclusion-chart-ops"] .ik-v970-first-question,
+  [data-overview-mobile-normal-app-home="compact-conclusion-chart-ops"] .ik-v970-first-question,
+  #overview.router-overview-framework [data-overview-mobile-normal-app-home="compact-conclusion-chart-ops"] .ik-v830-trust-rail,
+  .router-overview-framework [data-overview-mobile-normal-app-home="compact-conclusion-chart-ops"] .ik-v830-trust-rail,
+  [data-overview-mobile-normal-app-home="compact-conclusion-chart-ops"] .ik-v830-trust-rail {
+    display: none !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-normal-app-home="compact-conclusion-chart-ops"] .ik-v620-hero-head h1,
+  .router-overview-framework [data-overview-mobile-normal-app-home="compact-conclusion-chart-ops"] .ik-v620-hero-head h1,
+  [data-overview-mobile-normal-app-home="compact-conclusion-chart-ops"] .ik-v620-hero-head h1 {
+    color: #52657a !important;
+    font-size: 10px !important;
+    font-weight: 720 !important;
+    letter-spacing: .01em !important;
+    line-height: 13px !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-normal-app-home="compact-conclusion-chart-ops"] .ik-v620-hero-head p,
+  .router-overview-framework [data-overview-mobile-normal-app-home="compact-conclusion-chart-ops"] .ik-v620-hero-head p,
+  [data-overview-mobile-normal-app-home="compact-conclusion-chart-ops"] .ik-v620-hero-head p {
+    display: none !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-normal-app-home="compact-conclusion-chart-ops"] .ik-v420-visual,
+  #overview.router-overview-framework [data-overview-mobile-normal-app-home="compact-conclusion-chart-ops"] .ik-v812-trend-visual,
+  #overview.router-overview-framework [data-overview-mobile-normal-app-home="compact-conclusion-chart-ops"] .ik-v420-line-chart,
+  .router-overview-framework [data-overview-mobile-normal-app-home="compact-conclusion-chart-ops"] .ik-v420-visual,
+  .router-overview-framework [data-overview-mobile-normal-app-home="compact-conclusion-chart-ops"] .ik-v812-trend-visual,
+  .router-overview-framework [data-overview-mobile-normal-app-home="compact-conclusion-chart-ops"] .ik-v420-line-chart,
+  [data-overview-mobile-normal-app-home="compact-conclusion-chart-ops"] .ik-v420-visual,
+  [data-overview-mobile-normal-app-home="compact-conclusion-chart-ops"] .ik-v812-trend-visual,
+  [data-overview-mobile-normal-app-home="compact-conclusion-chart-ops"] .ik-v420-line-chart {
+    min-height: 68px !important;
+    height: 68px !important;
+    max-height: 68px !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-normal-app-home="compact-conclusion-chart-ops"] .ik-v970-trust-boundary,
+  .router-overview-framework [data-overview-mobile-normal-app-home="compact-conclusion-chart-ops"] .ik-v970-trust-boundary,
+  [data-overview-mobile-normal-app-home="compact-conclusion-chart-ops"] .ik-v970-trust-boundary {
+    margin: 0 !important;
+    padding: 0 !important;
+    border-top: 0 !important;
+    color: #6f8092 !important;
+    font-size: 8.8px !important;
+    line-height: 12px !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-normal-ranking="operations-five-rows"] .ik-v420-list,
+  .router-overview-framework [data-overview-mobile-normal-ranking="operations-five-rows"] .ik-v420-list,
+  [data-overview-mobile-normal-ranking="operations-five-rows"] .ik-v420-list {
+    max-height: 216px !important;
+    min-height: 204px !important;
+    border: 0 !important;
+    border-radius: 9px !important;
+    background: rgba(247, 250, 253, .62) !important;
+    box-shadow: inset 0 0 0 .5px rgba(151, 174, 198, .10) !important;
+    overflow: hidden !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-normal-ranking="operations-five-rows"] .ik-v420-list header,
+  .router-overview-framework [data-overview-mobile-normal-ranking="operations-five-rows"] .ik-v420-list header,
+  [data-overview-mobile-normal-ranking="operations-five-rows"] .ik-v420-list header {
+    min-height: 26px !important;
+    padding: 0 8px !important;
+    border-bottom-color: rgba(151, 174, 198, .10) !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-normal-ranking="operations-five-rows"] .ik-v420-list-row,
+  .router-overview-framework [data-overview-mobile-normal-ranking="operations-five-rows"] .ik-v420-list-row,
+  [data-overview-mobile-normal-ranking="operations-five-rows"] .ik-v420-list-row {
+    min-height: 36px !important;
+    padding: 3px 8px !important;
+    border-bottom: 0 !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-normal-ranking="operations-five-rows"] .ik-v420-list-row:nth-of-type(n+6),
+  .router-overview-framework [data-overview-mobile-normal-ranking="operations-five-rows"] .ik-v420-list-row:nth-of-type(n+6),
+  [data-overview-mobile-normal-ranking="operations-five-rows"] .ik-v420-list-row:nth-of-type(n+6) {
+    display: none !important;
+  }
+}
+`;
+  const MOBILE_OVERVIEW_INFORMATION_ARCHITECTURE_STYLES = `${V960_PRODUCT_REFINEMENTS}${V970_TRUST_MODEL_REFINEMENTS}${V980_APP_IA_REFINEMENTS}${V990_NORMAL_APP_HOME_REFINEMENTS}`;
+  const V1080_DECISION_HOME_REFINEMENTS = `
+@media (max-width: 760px) {
+  [data-overview-mobile-v1080-decision-home] {
+    background: #f3f6f9 !important;
+  }
+
+  [data-overview-mobile-v1080-decision-home] .ik-v420-screen {
+    display: grid !important;
+    grid-template-rows: auto auto auto auto minmax(20px, 1fr) auto !important;
+    align-content: stretch !important;
+    gap: 8px !important;
+    min-height: calc(100svh - 58px) !important;
+    padding: 8px 12px 72px !important;
+  }
+
+  [data-overview-mobile-v1080-decision-home] .ik-v420-nav {
+    height: 38px !important;
+    min-height: 38px !important;
+    padding: 0 2px !important;
+  }
+
+  [data-overview-mobile-v1080-decision-home] .ik-v420-nav button {
+    width: 28px !important;
+    height: 28px !important;
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  [data-overview-mobile-v1080-decision-home] .ik-v240-status {
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    font-size: 10px !important;
+    font-weight: 650 !important;
+  }
+
+  [data-overview-mobile-v1080-decision-home] .ik-v960-judgement-strip {
+    display: grid !important;
+    grid-template-columns: minmax(108px, .92fr) minmax(0, 2.08fr) !important;
+    min-height: 82px !important;
+    border: 0 !important;
+    border-radius: 8px !important;
+    background: rgba(255, 255, 255, .72) !important;
+    box-shadow: none !important;
+  }
+
+  [data-overview-mobile-v1080-decision-home] .ik-v1080-conclusion {
+    display: grid !important;
+    grid-template-columns: 7px minmax(0, 1fr) !important;
+    grid-template-rows: 13px 22px 16px 14px !important;
+    align-content: center !important;
+    column-gap: 6px !important;
+    padding: 8px 9px !important;
+    border: 0 !important;
+    border-right: 1px solid rgba(128, 150, 172, .14) !important;
+  }
+
+  [data-overview-mobile-v1080-decision-home] .ik-v1080-conclusion > i {
+    grid-row: 1 / 5 !important;
+    align-self: center !important;
+    width: 3px !important;
+    height: 34px !important;
+    border-radius: 3px !important;
+    box-shadow: none !important;
+  }
+
+  [data-overview-mobile-v1080-decision-home] .ik-v1080-conclusion > span,
+  [data-overview-mobile-v1080-decision-home] .ik-v1080-conclusion > em,
+  [data-overview-mobile-v1080-decision-home] .ik-v1080-conclusion > small {
+    grid-column: 2 !important;
+    min-width: 0 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    font-style: normal !important;
+    color: #718195 !important;
+  }
+
+  [data-overview-mobile-v1080-decision-home] .ik-v1080-conclusion > span {
+    font-size: 9px !important;
+    letter-spacing: .08em !important;
+  }
+
+  [data-overview-mobile-v1080-decision-home] .ik-v1080-conclusion > b {
+    grid-column: 2 !important;
+    font-size: 17px !important;
+    line-height: 22px !important;
+    color: #172537 !important;
+  }
+
+  [data-overview-mobile-v1080-decision-home] .ik-v1080-conclusion > em,
+  [data-overview-mobile-v1080-decision-home] .ik-v1080-conclusion > small {
+    font-size: 9.5px !important;
+    line-height: 14px !important;
+  }
+
+  [data-overview-mobile-v1080-decision-home] .ik-v1080-core-facts {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    grid-template-rows: repeat(2, minmax(0, 1fr)) !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    list-style: none !important;
+  }
+
+  [data-overview-mobile-v1080-decision-home] .ik-v1080-core-facts > li {
+    display: grid !important;
+    grid-template-columns: minmax(28px, auto) minmax(0, 1fr) !important;
+    grid-template-rows: 16px 13px !important;
+    align-content: center !important;
+    column-gap: 6px !important;
+    min-width: 0 !important;
+    padding: 5px 8px !important;
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: inset -1px -1px 0 rgba(128, 150, 172, .11) !important;
+  }
+
+  [data-overview-mobile-v1080-decision-home] .ik-v1080-core-facts em,
+  [data-overview-mobile-v1080-decision-home] .ik-v1080-core-facts small {
+    font-style: normal !important;
+    font-size: 9px !important;
+    line-height: 13px !important;
+    color: #7b8999 !important;
+  }
+
+  [data-overview-mobile-v1080-decision-home] .ik-v1080-core-facts b {
+    min-width: 0 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    font-size: 12px !important;
+    line-height: 16px !important;
+    color: #24364a !important;
+  }
+
+  [data-overview-mobile-v1080-decision-home] .ik-v1080-core-facts small {
+    grid-column: 1 / 3 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  [data-overview-mobile-v1080-decision-home] .ik-v910-trust-strip {
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    min-height: 34px !important;
+    gap: 0 !important;
+    padding: 0 !important;
+    border-top: 1px solid rgba(128, 150, 172, .12) !important;
+    border-bottom: 1px solid rgba(128, 150, 172, .12) !important;
+  }
+
+  [data-overview-mobile-v1080-decision-home] .ik-v910-trust-strip > span {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    align-content: center !important;
+    gap: 1px !important;
+    min-width: 0 !important;
+    padding: 4px 6px !important;
+    border: 0 !important;
+    border-right: 1px solid rgba(128, 150, 172, .12) !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  [data-overview-mobile-v1080-decision-home] .ik-v910-trust-strip b {
+    font-size: 8.5px !important;
+    font-weight: 550 !important;
+    color: #7a8999 !important;
+  }
+
+  [data-overview-mobile-v1080-decision-home] .ik-v910-trust-strip strong {
+    font-size: 10.5px !important;
+    font-weight: 700 !important;
+    color: #2b3d51 !important;
+  }
+
+  [data-overview-mobile-v1080-decision-home] .ik-v420-hero {
+    min-height: 0 !important;
+    max-height: none !important;
+    border: 0 !important;
+    border-radius: 8px !important;
+    background: rgba(255, 255, 255, .76) !important;
+    box-shadow: none !important;
+  }
+
+  [data-overview-mobile-v1080-decision-home] .ik-v420-hero.is-normal-chart {
+    display: grid !important;
+    align-content: start !important;
+    min-height: 217px !important;
+    height: 217px !important;
+    max-height: 217px !important;
+    overflow: visible !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1080-decision-home] .ik-v420-hero.is-normal-chart,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1080-decision-home] .ik-v420-hero.is-normal-chart {
+    min-height: 217px !important;
+    height: 217px !important;
+    max-height: 217px !important;
+    overflow: visible !important;
+  }
+
+  [data-overview-mobile-v1080-decision-home] .ik-v420-hero.is-normal-chart .ik-v620-hero-stage,
+  [data-overview-mobile-v1080-decision-home] .ik-v420-hero.is-normal-chart .ik-v420-visual,
+  [data-overview-mobile-v1080-decision-home] .ik-v420-hero.is-normal-chart .ik-v812-trend-visual {
+    min-height: 0 !important;
+    height: auto !important;
+    max-height: none !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1080-decision-home] .ik-v420-hero.is-normal-chart .ik-v420-visual,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1080-decision-home] .ik-v420-hero.is-normal-chart .ik-v420-visual,
+  [data-overview-mobile-v1080-decision-home] .ik-v420-hero.is-normal-chart .ik-v420-visual {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-rows: auto auto !important;
+    width: 100% !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1080-decision-home] .ik-v420-hero.is-normal-chart .ik-v812-trend-visual,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1080-decision-home] .ik-v420-hero.is-normal-chart .ik-v812-trend-visual,
+  [data-overview-mobile-v1080-decision-home] .ik-v420-hero.is-normal-chart .ik-v812-trend-visual {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-rows: 16px 135px !important;
+    min-height: 151px !important;
+    height: 151px !important;
+    max-height: 151px !important;
+    width: 100% !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-app[data-overview-mobile-v1080-decision-home] .ik-v420-line-chart,
+  .router-overview-framework .ik-v420-app[data-overview-mobile-v1080-decision-home] .ik-v420-line-chart,
+  [data-overview-mobile-v1080-decision-home] .ik-v420-line-chart {
+    display: block !important;
+    grid-column: 1 / -1 !important;
+    justify-self: stretch !important;
+    min-width: 100% !important;
+    max-width: none !important;
+    width: 100% !important;
+    min-height: 135px !important;
+    height: 135px !important;
+    max-height: 135px !important;
+    margin: 0 !important;
+  }
+
+  [data-overview-mobile-v1080-decision-home] .ik-v1081-peak-label,
+  [data-overview-mobile-v1080-decision-home] .ik-v1081-current-label {
+    fill: #65788c !important;
+    font-size: 7px !important;
+    font-weight: 650 !important;
+    letter-spacing: .02em !important;
+  }
+
+  [data-overview-mobile-v1080-decision-home] .ik-v1040-resource-ledger .ik-v420-resource-meter[data-overview-mobile-resource-risk="secondary-risk"].is-danger strong,
+  [data-overview-mobile-v1080-decision-home] .ik-v1040-resource-ledger .ik-v420-resource-meter[data-overview-mobile-resource-risk="secondary-risk"].is-danger em {
+    color: #756044 !important;
+  }
+
+  [data-overview-mobile-v1080-decision-home] .ik-v1040-resource-ledger .ik-v420-resource-meter[data-overview-mobile-resource-risk="secondary-risk"].is-danger .ik-density-resource-track span {
+    background: linear-gradient(90deg, rgba(117, 96, 68, .44), rgba(117, 96, 68, .70)) !important;
+  }
+
+  [data-overview-mobile-v1080-decision-home] .ik-v1040-resource-ledger .ik-v420-resource-meter.is-peak strong,
+  [data-overview-mobile-v1080-decision-home] .ik-v1040-resource-ledger .ik-v420-resource-meter.is-peak em {
+    color: #8f3a34 !important;
+  }
+
+  [data-overview-mobile-v1080-decision-home] .ik-v1010-chart-readout-rail {
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  [data-overview-mobile-v1080-decision-home] .ik-v1010-chart-readout-rail > span {
+    border: 0 !important;
+    border-top: 1px solid rgba(128, 150, 172, .1) !important;
+    border-right: 1px solid rgba(128, 150, 172, .1) !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  [data-overview-mobile-v1080-decision-home] .ik-v420-surface {
+    display: block !important;
+    min-height: 0 !important;
+    height: auto !important;
+    align-self: auto !important;
+  }
+
+  [data-overview-mobile-v1080-decision-home][data-overview-mobile-severity="normal"] .ik-v420-surface {
+    grid-row: 6 !important;
+    align-self: end !important;
+  }
+
+  [data-overview-mobile-v1080-decision-home]:not([data-overview-mobile-severity="normal"]) .ik-v420-screen {
+    grid-template-rows: auto auto auto auto auto !important;
+    align-content: start !important;
+  }
+
+  [data-overview-mobile-v1080-decision-home]:not([data-overview-mobile-severity="normal"]) .ik-v420-surface {
+    grid-row: auto !important;
+    align-self: start !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-v1080-decision-home]:not([data-overview-mobile-severity="normal"]) .ik-v420-hero.is-incident {
+    display: grid !important;
+    grid-template-rows: auto minmax(68px, auto) auto auto !important;
+    align-content: start !important;
+    gap: 5px !important;
+    min-height: 204px !important;
+    height: auto !important;
+    max-height: none !important;
+    padding: 8px 10px 9px !important;
+    overflow: visible !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-v1080-decision-home][data-overview-mobile-severity="p0"] .ik-v420-hero.is-incident {
+    min-height: 222px !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-v1080-decision-home]:not([data-overview-mobile-severity="normal"]) .ik-v620-hero-head {
+    display: grid !important;
+    gap: 1px !important;
+    min-height: 34px !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-v1080-decision-home]:not([data-overview-mobile-severity="normal"]) .ik-v970-first-question {
+    font-size: 8.5px !important;
+    line-height: 10px !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-v1080-decision-home]:not([data-overview-mobile-severity="normal"]) .ik-v620-hero-head h1 {
+    font-size: 14px !important;
+    line-height: 17px !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-v1080-decision-home]:not([data-overview-mobile-severity="normal"]) .ik-v503-hero-copy {
+    font-size: 9.5px !important;
+    line-height: 12px !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-v1080-decision-home]:not([data-overview-mobile-severity="normal"]) .ik-v620-hero-stage,
+  #overview.router-overview-framework [data-overview-mobile-v1080-decision-home]:not([data-overview-mobile-severity="normal"]) .ik-v420-visual {
+    min-height: 68px !important;
+    height: auto !important;
+    max-height: none !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-v1080-decision-home]:not([data-overview-mobile-severity="normal"]) .ik-v970-trust-boundary {
+    min-height: 20px !important;
+    margin: 0 !important;
+    padding: 3px 6px !important;
+    font-size: 8.5px !important;
+    line-height: 11px !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-v1080-decision-home]:not([data-overview-mobile-severity="normal"]) .ik-v1046-abnormal-decision-rail {
+    min-height: 42px !important;
+    background: transparent !important;
+    box-shadow:
+      inset 0 1px 0 rgba(128, 150, 172, .11),
+      inset 0 -1px 0 rgba(128, 150, 172, .11) !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-v1080-decision-home]:not([data-overview-mobile-severity="normal"]) .ik-v1046-abnormal-decision-rail > span {
+    grid-template-rows: 9px 14px 10px !important;
+    align-content: center !important;
+    gap: 0 !important;
+    min-height: 42px !important;
+    padding: 4px 5px !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-v1080-decision-home]:not([data-overview-mobile-severity="normal"]) .ik-v1046-abnormal-decision-rail em {
+    font-size: 7.5px !important;
+    line-height: 9px !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-v1080-decision-home]:not([data-overview-mobile-severity="normal"]) .ik-v1046-abnormal-decision-rail b {
+    font-size: 9.5px !important;
+    line-height: 14px !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-v1080-decision-home]:not([data-overview-mobile-severity="normal"]) .ik-v1046-abnormal-decision-rail small {
+    font-size: 7.2px !important;
+    line-height: 9px !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-v1080-decision-home] .ik-v420-list {
+    min-height: 0 !important;
+    height: auto !important;
+    border: 0 !important;
+    border-radius: 8px !important;
+    background: rgba(255, 255, 255, .68) !important;
+    box-shadow: none !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-v1080-decision-home] .ik-v420-list-row {
+    box-shadow: inset 0 -1px 0 rgba(128, 150, 172, .1) !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-v1080-decision-home]:not([data-overview-mobile-severity="normal"]) .ik-v420-list > header {
+    min-height: 48px !important;
+    padding: 9px 10px 7px !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-v1080-decision-home]:not([data-overview-mobile-severity="normal"]) .ik-v420-list > header > b {
+    font-size: 13px !important;
+    line-height: 17px !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-v1080-decision-home]:not([data-overview-mobile-severity="normal"]) .ik-v420-list > header > span {
+    font-size: 9.5px !important;
+    line-height: 12px !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-v1080-decision-home]:not([data-overview-mobile-severity="normal"]) .ik-v420-list > header > em {
+    font-size: 8.5px !important;
+    line-height: 11px !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-v1080-decision-home]:not([data-overview-mobile-severity="normal"]) .ik-v420-list-row {
+    min-height: 48px !important;
+    padding: 7px 9px !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-v1080-decision-home]:not([data-overview-mobile-severity="normal"]) .ik-v420-list-row > span > b {
+    font-size: 11.5px !important;
+    line-height: 14px !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-v1080-decision-home]:not([data-overview-mobile-severity="normal"]) .ik-v420-list-row > span > em {
+    font-size: 8.5px !important;
+    line-height: 11px !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-v1080-decision-home]:not([data-overview-mobile-severity="normal"]) .ik-v420-list-row > strong > b {
+    font-size: 11.5px !important;
+    line-height: 14px !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-v1080-decision-home]:not([data-overview-mobile-severity="normal"]) .ik-v420-list-row > strong > small {
+    font-size: 7.5px !important;
+    line-height: 9px !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-v1080-decision-home][data-overview-mobile-severity="p0"] .ik-v420-port-matrix {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    border-radius: 6px !important;
+    box-shadow: none !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-v1080-decision-home][data-overview-mobile-severity="p0"] .ik-v420-port-matrix span[data-overview-mobile-wan-port-cell] {
+    min-height: 48px !important;
+    padding: 6px 7px !important;
+    background: transparent !important;
+  }
+
+  [data-overview-mobile-v1080-decision-home] .ik-v420-tabs {
+    background: rgba(247, 249, 251, .96) !important;
+    box-shadow: inset 0 1px 0 rgba(128, 150, 172, .12) !important;
+  }
+
+  [data-overview-mobile-v1080-decision-home] .ik-v420-tabs button.is-active {
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  [data-overview-mobile-v1080-decision-home] .ik-v420-tabs button.is-active::after {
+    display: none !important;
+  }
+
+  [data-overview-mobile-v1090-first-screen-order] .ik-v420-screen {
+    grid-template-rows: auto auto auto auto auto auto auto !important;
+    align-content: start !important;
+  }
+
+  [data-overview-mobile-v1090-first-screen-order] .ik-v960-judgement-strip {
+    display: block !important;
+    min-height: 44px !important;
+    height: auto !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 8px !important;
+    background: rgba(255, 255, 255, .72) !important;
+    box-shadow: none !important;
+  }
+
+  [data-overview-mobile-v1090-first-screen-order] .ik-v1080-conclusion {
+    display: grid !important;
+    grid-template-columns: 8px minmax(0, max-content) minmax(0, 1fr) !important;
+    grid-template-rows: 20px 14px !important;
+    grid-template-areas:
+      "dot value impact"
+      ". note impact" !important;
+    align-content: center !important;
+    gap: 0 6px !important;
+    min-height: 44px !important;
+    padding: 4px 10px !important;
+    border: 0 !important;
+  }
+
+  [data-overview-mobile-v1090-first-screen-order] .ik-v1080-conclusion > i {
+    grid-area: dot !important;
+  }
+
+  [data-overview-mobile-v1090-first-screen-order] .ik-v1080-conclusion > span {
+    display: none !important;
+  }
+
+  [data-overview-mobile-v1090-first-screen-order] .ik-v1080-conclusion > b {
+    grid-area: value !important;
+    align-self: end !important;
+    font-size: 13px !important;
+    line-height: 18px !important;
+  }
+
+  [data-overview-mobile-v1090-first-screen-order] .ik-v1080-conclusion > em {
+    grid-area: note !important;
+    align-self: start !important;
+    color: #6f7f90 !important;
+    font-size: 8.5px !important;
+    line-height: 11px !important;
+  }
+
+  [data-overview-mobile-v1090-first-screen-order] .ik-v1080-conclusion > small {
+    grid-area: impact !important;
+    align-self: center !important;
+    justify-self: end !important;
+    max-width: 170px !important;
+    color: #53687d !important;
+    font-size: 9px !important;
+    font-weight: 650 !important;
+    line-height: 12px !important;
+    text-align: right !important;
+  }
+
+  [data-overview-mobile-v1090-first-screen-order] .ik-v940-core-rail {
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    min-height: 46px !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-top: 1px solid rgba(128, 150, 172, .12) !important;
+    border-bottom: 1px solid rgba(128, 150, 172, .12) !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    overflow: hidden !important;
+  }
+
+  [data-overview-mobile-v1090-first-screen-order] .ik-v940-core-rail > span {
+    display: grid !important;
+    align-content: center !important;
+    gap: 1px !important;
+    min-width: 0 !important;
+    padding: 5px 7px !important;
+    border: 0 !important;
+    border-right: 1px solid rgba(128, 150, 172, .12) !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  [data-overview-mobile-v1090-first-screen-order] .ik-v940-core-rail > span:last-child {
+    border-right: 0 !important;
+  }
+
+  [data-overview-mobile-v1090-first-screen-order] .ik-v940-core-rail em {
+    color: #7a8999 !important;
+    font-size: 8px !important;
+    font-style: normal !important;
+    font-weight: 550 !important;
+    line-height: 10px !important;
+  }
+
+  [data-overview-mobile-v1090-first-screen-order] .ik-v940-core-rail strong {
+    color: #2b3d51 !important;
+    font-size: 11px !important;
+    font-weight: 730 !important;
+    line-height: 14px !important;
+  }
+
+  [data-overview-mobile-v1090-first-screen-order] .ik-v940-core-rail small {
+    color: #8794a2 !important;
+    font-size: 7px !important;
+    line-height: 9px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  [data-overview-mobile-v1090-first-screen-order] .ik-v940-core-rail .is-danger strong {
+    color: #963d38 !important;
+  }
+
+  [data-overview-mobile-v1090-first-screen-order] .ik-v940-core-rail .is-warn strong {
+    color: #7b5d2f !important;
+  }
+
+  [data-overview-mobile-v1090-first-screen-order][data-overview-mobile-severity="normal"] .ik-v420-surface {
+    grid-row: auto !important;
+    align-self: start !important;
+    margin-top: 0 !important;
+  }
+}
+`;
+  const MOBILE_OVERVIEW_DECISION_HOME_STYLES = V1080_DECISION_HOME_REFINEMENTS;
+  const V1000_PUBLIC_RELEASE_REFINEMENTS = `
+@media (max-width: 760px) {
+  #overview.router-overview-framework [data-overview-mobile-v1000-release-polish],
+  .router-overview-framework [data-overview-mobile-v1000-release-polish],
+  [data-overview-mobile-v1000-release-polish] {
+    background: linear-gradient(180deg, #f7fafd 0%, var(--ik-v1000-bg) 100%) !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v420-screen,
+  .router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v420-screen,
+  [data-overview-mobile-v1000-release-polish] .ik-v420-screen {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v420-nav,
+  .router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v420-nav,
+  [data-overview-mobile-v1000-release-polish] .ik-v420-nav {
+    height: 44px !important;
+    min-height: 44px !important;
+    border-bottom: 0 !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v240-status,
+  .router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v240-status,
+  [data-overview-mobile-v1000-release-polish] .ik-v240-status {
+    border: 0 !important;
+    border-radius: 999px !important;
+    background: rgba(255, 255, 255, .68) !important;
+    box-shadow: inset 0 0 0 .5px var(--ik-v1000-line-strong) !important;
+    color: #2d4c68 !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v960-judgement-strip,
+  .router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v960-judgement-strip,
+  [data-overview-mobile-v1000-release-polish] .ik-v960-judgement-strip {
+    display: grid !important;
+    grid-template-columns: 92px minmax(0, 1fr) !important;
+    grid-template-rows: 1fr !important;
+    min-height: 42px !important;
+    border: 0 !important;
+    border-radius: 12px !important;
+    background: var(--ik-v1000-group) !important;
+    box-shadow: inset 0 0 0 .5px var(--ik-v1000-line) !important;
+    overflow: hidden !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v960-judgement-strip > strong,
+  .router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v960-judgement-strip > strong,
+  [data-overview-mobile-v1000-release-polish] .ik-v960-judgement-strip > strong {
+    align-content: center !important;
+    min-width: 0 !important;
+    padding: 0 8px !important;
+    border-right: 1px solid var(--ik-v1000-line) !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v960-judgement-strip > div,
+  .router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v960-judgement-strip > div,
+  [data-overview-mobile-v1000-release-polish] .ik-v960-judgement-strip > div {
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    align-items: stretch !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v960-judgement-strip span,
+  .router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v960-judgement-strip span,
+  [data-overview-mobile-v1000-release-polish] .ik-v960-judgement-strip span {
+    display: grid !important;
+    align-content: center !important;
+    min-width: 0 !important;
+    padding: 0 5px !important;
+    border-left: 1px solid var(--ik-v1000-line) !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v910-trust-strip,
+  .router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v910-trust-strip,
+  [data-overview-mobile-v1000-release-polish] .ik-v910-trust-strip {
+    min-height: 28px !important;
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    gap: 4px !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v910-trust-strip span,
+  .router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v910-trust-strip span,
+  [data-overview-mobile-v1000-release-polish] .ik-v910-trust-strip span {
+    border: 0 !important;
+    border-radius: 8px !important;
+    background: rgba(255, 255, 255, .52) !important;
+    box-shadow: inset 0 0 0 .5px rgba(154, 176, 198, .13) !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v420-hero,
+  .router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v420-hero,
+  [data-overview-mobile-v1000-release-polish] .ik-v420-hero {
+    border: 0 !important;
+    border-radius: 12px !important;
+    background: linear-gradient(180deg, rgba(255, 255, 255, .76), rgba(246, 250, 253, .68)) !important;
+    box-shadow: inset 0 0 0 .5px var(--ik-v1000-line) !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v620-hero-head h1,
+  .router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v620-hero-head h1,
+  [data-overview-mobile-v1000-release-polish] .ik-v620-hero-head h1 {
+    font-size: 15px !important;
+    line-height: 18px !important;
+    letter-spacing: -.18px !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v420-port-matrix,
+  .router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v420-port-matrix,
+  [data-overview-mobile-v1000-release-polish] .ik-v420-port-matrix {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 4px !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v420-port-matrix span,
+  .router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v420-port-matrix span,
+  [data-overview-mobile-v1000-release-polish] .ik-v420-port-matrix span {
+    min-height: 38px !important;
+    padding: 4px 5px !important;
+    border: 0 !important;
+    border-radius: 6px !important;
+    background: rgba(255, 255, 255, .58) !important;
+    box-shadow: inset 0 0 0 .5px var(--ik-v1000-line) !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v420-port-matrix span.is-danger,
+  .router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v420-port-matrix span.is-danger,
+  [data-overview-mobile-v1000-release-polish] .ik-v420-port-matrix span.is-danger {
+    background: rgba(143, 61, 56, .055) !important;
+    color: var(--ik-v1000-danger) !important;
+  }
+
+  /* v1042 mobile WAN port matrix: compact router interface/status grid, not toy capsules. */
+  #overview.router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v420-port-matrix[data-overview-mobile-v1042-wan-port-matrix],
+  .router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v420-port-matrix[data-overview-mobile-v1042-wan-port-matrix],
+  [data-overview-mobile-v1000-release-polish] .ik-v420-port-matrix[data-overview-mobile-v1042-wan-port-matrix] {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 0 !important;
+    overflow: hidden !important;
+    border-radius: 5px !important;
+    background: rgba(246, 249, 252, .74) !important;
+    box-shadow: inset 0 0 0 .5px rgba(104, 127, 151, .2) !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v420-port-matrix[data-overview-mobile-v1042-wan-port-matrix] span[data-overview-mobile-wan-port-cell],
+  .router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v420-port-matrix[data-overview-mobile-v1042-wan-port-matrix] span[data-overview-mobile-wan-port-cell],
+  [data-overview-mobile-v1000-release-polish] .ik-v420-port-matrix[data-overview-mobile-v1042-wan-port-matrix] span[data-overview-mobile-wan-port-cell] {
+    position: relative !important;
+    display: grid !important;
+    grid-template-columns: auto minmax(0, 1fr) !important;
+    grid-template-rows: 12px 14px 12px !important;
+    column-gap: 3px !important;
+    min-height: 42px !important;
+    padding: 4px 5px !important;
+    border-radius: 0 !important;
+    background: rgba(255, 255, 255, .42) !important;
+    color: var(--ik-v1000-text) !important;
+    box-shadow: inset -.5px 0 0 rgba(104, 127, 151, .16), inset 0 -.5px 0 rgba(104, 127, 151, .16) !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v420-port-matrix[data-overview-mobile-v1042-wan-port-matrix] span.is-danger[data-overview-mobile-wan-port-cell],
+  .router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v420-port-matrix[data-overview-mobile-v1042-wan-port-matrix] span.is-danger[data-overview-mobile-wan-port-cell],
+  [data-overview-mobile-v1000-release-polish] .ik-v420-port-matrix[data-overview-mobile-v1042-wan-port-matrix] span.is-danger[data-overview-mobile-wan-port-cell] {
+    background: rgba(255, 255, 255, .38) !important;
+    color: var(--ik-v1000-text) !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v420-port-matrix[data-overview-mobile-v1042-wan-port-matrix] span.is-danger[data-overview-mobile-wan-port-cell]::before,
+  .router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v420-port-matrix[data-overview-mobile-v1042-wan-port-matrix] span.is-danger[data-overview-mobile-wan-port-cell]::before,
+  [data-overview-mobile-v1000-release-polish] .ik-v420-port-matrix[data-overview-mobile-v1042-wan-port-matrix] span.is-danger[data-overview-mobile-wan-port-cell]::before {
+    content: "" !important;
+    position: absolute !important;
+    left: 0 !important;
+    top: 5px !important;
+    bottom: 5px !important;
+    width: 2px !important;
+    border-radius: 2px !important;
+    background: rgba(147, 58, 52, .68) !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v420-port-matrix[data-overview-mobile-v1042-wan-port-matrix] i,
+  .router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v420-port-matrix[data-overview-mobile-v1042-wan-port-matrix] i,
+  [data-overview-mobile-v1000-release-polish] .ik-v420-port-matrix[data-overview-mobile-v1042-wan-port-matrix] i {
+    width: 5px !important;
+    height: 5px !important;
+    margin-top: 3px !important;
+    border-radius: 50% !important;
+    background: rgba(42, 111, 83, .72) !important;
+    box-shadow: none !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v420-port-matrix[data-overview-mobile-v1042-wan-port-matrix] span.is-danger i,
+  .router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v420-port-matrix[data-overview-mobile-v1042-wan-port-matrix] span.is-danger i,
+  [data-overview-mobile-v1000-release-polish] .ik-v420-port-matrix[data-overview-mobile-v1042-wan-port-matrix] span.is-danger i {
+    background: rgba(147, 58, 52, .72) !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v420-port-matrix[data-overview-mobile-v1042-wan-port-matrix] b,
+  .router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v420-port-matrix[data-overview-mobile-v1042-wan-port-matrix] b,
+  [data-overview-mobile-v1000-release-polish] .ik-v420-port-matrix[data-overview-mobile-v1042-wan-port-matrix] b {
+    min-width: 0 !important;
+    font-size: 9px !important;
+    font-weight: 650 !important;
+    line-height: 12px !important;
+    letter-spacing: .04em !important;
+    color: rgba(52, 70, 88, .7) !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v420-port-matrix[data-overview-mobile-v1042-wan-port-matrix] small,
+  .router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v420-port-matrix[data-overview-mobile-v1042-wan-port-matrix] small,
+  [data-overview-mobile-v1000-release-polish] .ik-v420-port-matrix[data-overview-mobile-v1042-wan-port-matrix] small {
+    grid-column: 1 / 3 !important;
+    min-width: 0 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    font-size: 10.5px !important;
+    font-weight: 650 !important;
+    line-height: 14px !important;
+    color: rgba(24, 36, 50, .9) !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v420-port-matrix[data-overview-mobile-v1042-wan-port-matrix] em,
+  .router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v420-port-matrix[data-overview-mobile-v1042-wan-port-matrix] em,
+  [data-overview-mobile-v1000-release-polish] .ik-v420-port-matrix[data-overview-mobile-v1042-wan-port-matrix] em {
+    grid-column: 1 / 3 !important;
+    min-width: 0 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    font-size: 9px !important;
+    font-style: normal !important;
+    line-height: 12px !important;
+    color: rgba(72, 91, 110, .68) !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v420-port-matrix[data-overview-mobile-v1042-wan-port-matrix] strong,
+  .router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v420-port-matrix[data-overview-mobile-v1042-wan-port-matrix] strong,
+  [data-overview-mobile-v1000-release-polish] .ik-v420-port-matrix[data-overview-mobile-v1042-wan-port-matrix] strong {
+    position: absolute !important;
+    right: 5px !important;
+    top: 3px !important;
+    font-size: 9px !important;
+    font-weight: 650 !important;
+    line-height: 12px !important;
+    color: rgba(42, 111, 83, .78) !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v420-port-matrix[data-overview-mobile-v1042-wan-port-matrix] span.is-danger strong,
+  .router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v420-port-matrix[data-overview-mobile-v1042-wan-port-matrix] span.is-danger strong,
+  [data-overview-mobile-v1000-release-polish] .ik-v420-port-matrix[data-overview-mobile-v1042-wan-port-matrix] span.is-danger strong {
+    color: rgba(147, 58, 52, .86) !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v420-resource-meter,
+  .router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v420-resource-meter,
+  [data-overview-mobile-v1000-release-polish] .ik-v420-resource-meter {
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: inset 0 -1px 0 var(--ik-v1000-line) !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v1040-resource-ledger,
+  .router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v1040-resource-ledger,
+  [data-overview-mobile-v1000-release-polish] .ik-v1040-resource-ledger {
+    background: rgba(248, 251, 254, .72) !important;
+    border: 0 !important;
+    box-shadow: inset 0 0 0 .5px rgba(142, 169, 196, .16) !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v1040-resource-ledger .ik-v420-resource-meter,
+  .router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v1040-resource-ledger .ik-v420-resource-meter,
+  [data-overview-mobile-v1000-release-polish] .ik-v1040-resource-ledger .ik-v420-resource-meter {
+    grid-template-columns: minmax(38px, .9fr) minmax(38px, .75fr) minmax(34px, .7fr) minmax(38px, .75fr) minmax(72px, 1.35fr) !important;
+    min-height: 21px !important;
+    padding: 2px 0 !important;
+    box-shadow: inset 0 -1px 0 rgba(220, 232, 242, .72) !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v1040-resource-ledger .ik-v420-resource-meter b,
+  .router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v1040-resource-ledger .ik-v420-resource-meter b,
+  [data-overview-mobile-v1000-release-polish] .ik-v1040-resource-ledger .ik-v420-resource-meter b {
+    color: #43576d !important;
+    font-weight: 680 !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v1040-resource-ledger .ik-v420-resource-meter strong,
+  .router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v1040-resource-ledger .ik-v420-resource-meter strong,
+  [data-overview-mobile-v1000-release-polish] .ik-v1040-resource-ledger .ik-v420-resource-meter strong {
+    color: #1f3348 !important;
+    font-weight: 760 !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v1040-resource-ledger .ik-v420-resource-meter.is-danger strong,
+  .router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v1040-resource-ledger .ik-v420-resource-meter.is-danger strong,
+  [data-overview-mobile-v1000-release-polish] .ik-v1040-resource-ledger .ik-v420-resource-meter.is-danger strong {
+    color: #6f3f39 !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v1040-resource-ledger .ik-v420-resource-meter.is-peak strong,
+  .router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v1040-resource-ledger .ik-v420-resource-meter.is-peak strong,
+  [data-overview-mobile-v1000-release-polish] .ik-v1040-resource-ledger .ik-v420-resource-meter.is-peak strong {
+    color: #8f3a34 !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v1040-resource-ledger .ik-density-resource-track,
+  .router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v1040-resource-ledger .ik-density-resource-track,
+  [data-overview-mobile-v1000-release-polish] .ik-v1040-resource-ledger .ik-density-resource-track {
+    height: 3px !important;
+    border-radius: 999px !important;
+    background: rgba(211, 222, 234, .82) !important;
+    overflow: hidden !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-density-resource-track span,
+  .router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-density-resource-track span,
+  [data-overview-mobile-v1000-release-polish] .ik-density-resource-track span {
+    background: var(--ik-v1000-blue) !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v420-resource-meter.is-danger .ik-density-resource-track span,
+  .router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v420-resource-meter.is-danger .ik-density-resource-track span,
+  [data-overview-mobile-v1000-release-polish] .ik-v420-resource-meter.is-danger .ik-density-resource-track span {
+    background: var(--ik-v1000-danger) !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v1040-resource-ledger .ik-density-resource-track span,
+  #overview.router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v1040-resource-ledger .ik-v420-resource-meter.is-danger .ik-density-resource-track span,
+  .router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v1040-resource-ledger .ik-density-resource-track span,
+  .router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v1040-resource-ledger .ik-v420-resource-meter.is-danger .ik-density-resource-track span,
+  [data-overview-mobile-v1000-release-polish] .ik-v1040-resource-ledger .ik-density-resource-track span,
+  [data-overview-mobile-v1000-release-polish] .ik-v1040-resource-ledger .ik-v420-resource-meter.is-danger .ik-density-resource-track span {
+    background: linear-gradient(90deg, rgba(111, 129, 150, .58), rgba(91, 113, 136, .82)) !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v420-list,
+  #overview.router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v420-timeline,
+  .router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v420-list,
+  .router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v420-timeline,
+  [data-overview-mobile-v1000-release-polish] .ik-v420-list,
+  [data-overview-mobile-v1000-release-polish] .ik-v420-timeline {
+    border: 0 !important;
+    border-radius: 12px !important;
+    background: rgba(255, 255, 255, .64) !important;
+    box-shadow: inset 0 0 0 .5px var(--ik-v1000-line) !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v420-list-row,
+  #overview.router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v420-timeline-row,
+  .router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v420-list-row,
+  .router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v420-timeline-row,
+  [data-overview-mobile-v1000-release-polish] .ik-v420-list-row,
+  [data-overview-mobile-v1000-release-polish] .ik-v420-timeline-row {
+    border-bottom: 0 !important;
+    box-shadow: inset 0 -1px 0 rgba(154, 176, 198, .12) !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-p0-first-screen="trust-wan-route-collection-success-no-terminal-ranking"] .ik-v420-hero,
+  .router-overview-framework [data-overview-mobile-p0-first-screen="trust-wan-route-collection-success-no-terminal-ranking"] .ik-v420-hero,
+  [data-overview-mobile-p0-first-screen="trust-wan-route-collection-success-no-terminal-ranking"] .ik-v420-hero {
+    min-height: 144px !important;
+    max-height: 164px !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v420-tabs,
+  .router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v420-tabs,
+  [data-overview-mobile-v1000-release-polish] .ik-v420-tabs {
+    border: 0 !important;
+    background: rgba(247, 250, 253, .88) !important;
+    box-shadow: 0 -1px 0 rgba(154, 176, 198, .18) !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v420-tabs button,
+  .router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v420-tabs button,
+  [data-overview-mobile-v1000-release-polish] .ik-v420-tabs button {
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v420-tabs button.is-active,
+  .router-overview-framework [data-overview-mobile-v1000-release-polish] .ik-v420-tabs button.is-active,
+  [data-overview-mobile-v1000-release-polish] .ik-v420-tabs button.is-active {
+    color: var(--ik-v1000-blue) !important;
+  }
+}
+`;
+  const MOBILE_OVERVIEW_RELEASE_STYLES = V1000_PUBLIC_RELEASE_REFINEMENTS;
+  const MOBILE_OVERVIEW_STYLE_LAYERS = [
+    { id: "foundation", css: MOBILE_OVERVIEW_FOUNDATION_STYLES },
+    {
+      id: "information-architecture",
+      css: MOBILE_OVERVIEW_INFORMATION_ARCHITECTURE_STYLES
+    },
+    { id: "release-contract", css: MOBILE_OVERVIEW_RELEASE_STYLES },
+    { id: "native-product", css: MOBILE_OVERVIEW_NATIVE_PRODUCT_STYLES },
+    { id: "decision-home", css: MOBILE_OVERVIEW_DECISION_HOME_STYLES }
+  ];
+  const MOBILE_OVERVIEW_STYLE_STACK = MOBILE_OVERVIEW_STYLE_LAYERS.map(
+    (layer) => layer.css
+  ).join("");
+  const MOBILE_OVERVIEW_STYLE_LAYER_ATTR = MOBILE_OVERVIEW_STYLE_LAYERS.map(
+    (layer) => layer.id
+  ).join("|");
+  const MOBILE_OVERVIEW_STYLE_ATTR = "v1030-head-injected-parseable";
+  const MOBILE_OVERVIEW_STYLE_REF_ATTR = "data-overview-mobile-style-ref-count";
   function MobileOverviewStyles() {
-    return /* @__PURE__ */ jsxRuntimeExports.jsx("style", { children: V420_MOBILE_STYLES });
+    reactExports.useInsertionEffect(() => {
+      if (typeof document === "undefined") return void 0;
+      const selector = `style[data-overview-mobile-style-stack="${MOBILE_OVERVIEW_STYLE_ATTR}"]`;
+      const existing = document.querySelector(selector);
+      const style = existing || document.createElement("style");
+      style.setAttribute("data-overview-mobile-style-stack", MOBILE_OVERVIEW_STYLE_ATTR);
+      style.setAttribute(
+        "data-overview-mobile-style-layers",
+        MOBILE_OVERVIEW_STYLE_LAYER_ATTR
+      );
+      const refCount = Number(style.getAttribute(MOBILE_OVERVIEW_STYLE_REF_ATTR) || "0") + 1;
+      style.setAttribute(MOBILE_OVERVIEW_STYLE_REF_ATTR, String(refCount));
+      style.textContent = MOBILE_OVERVIEW_STYLE_STACK;
+      if (!existing) document.head.appendChild(style);
+      return () => {
+        const nextRefCount = Math.max(
+          0,
+          Number(style.getAttribute(MOBILE_OVERVIEW_STYLE_REF_ATTR) || "1") - 1
+        );
+        if (nextRefCount === 0) {
+          if (style.parentNode) style.parentNode.removeChild(style);
+          return;
+        }
+        style.setAttribute(MOBILE_OVERVIEW_STYLE_REF_ATTR, String(nextRefCount));
+      };
+    }, []);
+    return null;
   }
-  function BottomTabs() {
-    const tabs = [
-      { label: "首页", active: true, path: "M4 11.5 12 5l8 6.5V20a1 1 0 0 1-1 1h-5v-6h-4v6H5a1 1 0 0 1-1-1z" },
-      { label: "WAN", active: false, path: "M4 12h16M7 8h10M7 16h10" },
-      { label: "接口", active: false, path: "M6 7h12v10H6zM9 17v3M15 17v3M9 4v3M15 4v3" },
-      { label: "终端", active: false, path: "M5 7h14v8H5zM8 19h8M12 15v4M7 10h.01M11 10h.01M15 10h.01" },
-      { label: "日志", active: false, path: "M7 5h10v14H7zM10 9h4M10 13h4" }
-    ];
-    return /* @__PURE__ */ jsxRuntimeExports.jsx("nav", { className: "ik-v420-tabs ik-v240-tabs", "aria-label": "底部导航", "data-overview-mobile-bottom-tab": "home-wan-interface-terminal-log", "data-overview-mobile-v159-tabbar": "bottom-entry", "data-overview-mobile-v240-tabs": "bottom-entry", children: tabs.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs("button", { className: item.active ? "is-active" : "", type: "button", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("svg", { viewBox: "0 0 24 24", "aria-hidden": "true", children: /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: item.path }) }),
-      item.label
-    ] }, item.label)) });
-  }
-  function clean$4(value, fallback = "-") {
+  function clean$3(value, fallback = "-") {
     const normalized = String(value ?? "").replace(/\s+/g, " ").trim();
     return normalized || fallback;
   }
@@ -10431,10 +12960,10 @@ var PanelFramework = function(exports) {
     if (Array.isArray(snapshot.wan) && snapshot.wan.length) return snapshot.wan;
     return Array.isArray(snapshot.pppoe) ? snapshot.pppoe : [];
   }
-  function twoDigit$3(value) {
+  function twoDigit$2(value) {
     return String(value).padStart(2, "0");
   }
-  function mobileTime$2(raw) {
+  function mobileTime$1(raw) {
     const source = String(raw ?? "").trim();
     if (!source) return "未记录";
     const numeric = typeof raw === "number" || /^\d+$/.test(source) ? Number(raw) : Number.NaN;
@@ -10444,20 +12973,20 @@ var PanelFramework = function(exports) {
       return fallback && !/\d{4}-\d{2}-\d{2}T/.test(fallback) ? fallback : "未记录";
     }
     const now2 = /* @__PURE__ */ new Date();
-    const time = `${twoDigit$3(date.getHours())}:${twoDigit$3(date.getMinutes())}`;
+    const time = `${twoDigit$2(date.getHours())}:${twoDigit$2(date.getMinutes())}`;
     if (date.getFullYear() === now2.getFullYear() && date.getMonth() === now2.getMonth() && date.getDate() === now2.getDate()) return time;
-    return `${twoDigit$3(date.getMonth() + 1)}-${twoDigit$3(date.getDate())} ${time}`;
+    return `${twoDigit$2(date.getMonth() + 1)}-${twoDigit$2(date.getDate())} ${time}`;
   }
-  function latestSuccess$3(snapshot, state) {
+  function latestSuccess$2(snapshot, state) {
     const meta = snapshot.meta || {};
     const raw = state.scenario === "no-snapshot" ? meta.staticUpdatedAt || meta.realtimeUpdatedAt || snapshot.updatedAt : snapshot.updatedAt || meta.realtimeUpdatedAt || meta.staticUpdatedAt || meta.slowRestUpdatedAt;
-    return mobileTime$2(raw);
+    return mobileTime$1(raw);
   }
-  function stripRest$3(label) {
-    return clean$4(label.replace(/^REST\s*/i, ""), "可用");
+  function stripRest$2(label) {
+    return clean$3(label.replace(/^REST\s*/i, ""), "可用");
   }
-  function stripSsh$3(label) {
-    return clean$4(label.replace(/^SSH\s*/i, ""), "可用");
+  function stripSsh$2(label) {
+    return clean$3(label.replace(/^SSH\s*/i, ""), "可用");
   }
   function snapshotTrustText$1(state) {
     if (state.scenario === "no-snapshot") return "缺失";
@@ -10478,14 +13007,14 @@ var PanelFramework = function(exports) {
       id: "collection",
       label: "采集面",
       value: state.scenario === "collection-down" ? "降级" : state.scenario === "no-snapshot" ? "断链" : "可达",
-      note: `${stripRest$3(state.facts.collection.restLabel)} / ${stripSsh$3(state.facts.collection.sshLabel)}`,
+      note: `${stripRest$2(state.facts.collection.restLabel)} / ${stripSsh$2(state.facts.collection.sshLabel)}`,
       tone: state.scenario === "no-snapshot" ? "danger" : state.scenario === "collection-down" ? "warn" : state.facts.collection.level
     };
     const snapshotPlane = {
       id: "snapshot",
       label: "快照面",
       value: state.scenario === "no-snapshot" ? "缺失" : snapshotTrustText$1(state),
-      note: latestSuccess$3(snapshot, state),
+      note: latestSuccess$2(snapshot, state),
       tone: state.scenario === "no-snapshot" ? "missing" : state.facts.collection.credibilityTone
     };
     const business = {
@@ -10503,8 +13032,9 @@ var PanelFramework = function(exports) {
       planes: [forwarding, collection, snapshotPlane, business]
     };
   }
+  const ROUTEROS_ROUTE_EVIDENCE_CONTRACT = "business-summary-first/raw-route-fields-secondary/table-gateway-distance-active-disabled";
   const ROUTE_UNKNOWN$1 = "路由快照未取回，无法判断默认出口影响";
-  function clean$3(value, fallback = "-") {
+  function clean$2(value, fallback = "-") {
     const normalized = String(value ?? "").replace(/\s+/g, " ").trim();
     return normalized || fallback;
   }
@@ -10518,17 +13048,17 @@ var PanelFramework = function(exports) {
     return active ? "当前承载" : "备选未命中";
   }
   function routerOsRouteTableText(value) {
-    const table = clean$3(value, "main");
+    const table = clean$2(value, "main");
     return /^main$/i.test(table) ? "主业务域" : `策略域 ${table}`;
   }
   function routerOsRouteGatewayText(value) {
-    return clean$3(value, "网关未记录");
+    return clean$2(value, "网关未记录");
   }
   function routerOsRoutePriorityText(value) {
-    return clean$3(value, "未记录");
+    return clean$2(value, "未记录");
   }
   function routerOsRouteBusinessSummary(value, fallback = ROUTE_UNKNOWN$1) {
-    return clean$3(value, fallback).replace(/active\s*[:=]?\s*true/gi, "当前承载").replace(/active\s*[:=]?\s*false/gi, "备选未命中").replace(/disabled\s*[:=]?\s*false/gi, "允许参与选路").replace(/disabled\s*[:=]?\s*true/gi, "已停用").replace(/\brouting[-_\s]?table\b|\broutingTable\b/gi, "路由域").replace(/\bgatewayStatus\b/gi, "网关状态").replace(/\bdistance\b/gi, "优先级").replace(/\bgateway\b/gi, "网关").replace(/\bactive\b/gi, "承载状态").replace(/\bdisabled\b/gi, "停用状态").replace(/\btable\b/gi, "路由域").replace(/\bmain\b/gi, "主业务域");
+    return clean$2(value, fallback).replace(/active\s*[:=]?\s*true/gi, "当前承载").replace(/active\s*[:=]?\s*false/gi, "备选未命中").replace(/disabled\s*[:=]?\s*false/gi, "允许参与选路").replace(/disabled\s*[:=]?\s*true/gi, "已停用").replace(/\brouting[-_\s]?table\b|\broutingTable\b/gi, "路由域").replace(/\bgatewayStatus\b/gi, "网关状态").replace(/\bdistance\b/gi, "优先级").replace(/\bgateway\b/gi, "网关").replace(/\bactive\b/gi, "承载状态").replace(/\bdisabled\b/gi, "停用状态").replace(/\btable\b/gi, "路由域").replace(/\bmain\b/gi, "主业务域");
   }
   function routeTitle(table, gateway, distance, active, disabled) {
     return `默认出口 ${routerOsRouteGatewayText(gateway)}，选路优先级 ${routerOsRoutePriorityText(distance)}，${routerOsRouteStatusText(active, disabled)}；${routerOsRouteTableText(table)}`;
@@ -10553,6 +13083,7 @@ var PanelFramework = function(exports) {
       source: "route"
     };
     return {
+      contract: ROUTEROS_ROUTE_EVIDENCE_CONTRACT,
       summary,
       businessRows: [{
         ...summary,
@@ -10619,7 +13150,7 @@ var PanelFramework = function(exports) {
     const rows = routeRows(snapshot);
     if (!rows.length) return missingModel(state);
     const businessRows = rows.slice(0, 6).map((route, index) => {
-      const rawTable = clean$3(route.table || route.routingTable, "main");
+      const rawTable = clean$2(route.table || route.routingTable, "main");
       const table = routerOsRouteTableText(rawTable);
       const gateway = routerOsRouteGatewayText(route.gateway || route.gatewayStatus);
       const priority = routerOsRoutePriorityText(route.distance);
@@ -10640,8 +13171,8 @@ var PanelFramework = function(exports) {
         title: routeTitle(rawTable, gateway, priority, route.active, route.disabled),
         rawFields: {
           table: rawTable,
-          gateway: clean$3(route.gateway || route.gatewayStatus, "-"),
-          distance: clean$3(route.distance, "-"),
+          gateway: clean$2(route.gateway || route.gatewayStatus, "-"),
+          distance: clean$2(route.distance, "-"),
           active: route.active ? "true" : "false",
           disabled: route.disabled ? "true" : "false"
         }
@@ -10660,9 +13191,9 @@ var PanelFramework = function(exports) {
     };
     const rawRows = rows.slice(0, 4).map((route, index) => {
       const rawFields = {
-        table: clean$3(route.table || route.routingTable, "main"),
-        gateway: clean$3(route.gateway || route.gatewayStatus, "未记录"),
-        distance: clean$3(route.distance, "未记录"),
+        table: clean$2(route.table || route.routingTable, "main"),
+        gateway: clean$2(route.gateway || route.gatewayStatus, "未记录"),
+        distance: clean$2(route.distance, "未记录"),
         active: route.active ? "true" : "false",
         disabled: route.disabled ? "true" : "false"
       };
@@ -10677,7 +13208,7 @@ var PanelFramework = function(exports) {
         rawFields
       };
     });
-    return { summary, businessRows, rawRows };
+    return { contract: ROUTEROS_ROUTE_EVIDENCE_CONTRACT, summary, businessRows, rawRows };
   }
   function buildRouterOsEvidenceModel(snapshot, state) {
     const trust = buildRouterOsTrustModel(snapshot, state);
@@ -10702,7 +13233,8 @@ var PanelFramework = function(exports) {
       rawRows: route.rawRows
     };
   }
-  function clean$2(value, fallback = "-") {
+  const ROUTEROS_PRESENTATION_VIEW_MODEL_CONTRACT = "collection-facts/routeros-semantics/user-conclusion";
+  function clean$1(value, fallback = "-") {
     const normalized = String(value ?? "").replace(/\s+/g, " ").trim();
     return normalized || fallback;
   }
@@ -10710,7 +13242,7 @@ var PanelFramework = function(exports) {
     if (Array.isArray(snapshot.wan) && snapshot.wan.length) return snapshot.wan;
     return Array.isArray(snapshot.pppoe) ? snapshot.pppoe : [];
   }
-  function twoDigit$2(value) {
+  function twoDigit$1(value) {
     return String(value).padStart(2, "0");
   }
   function compactTime(raw) {
@@ -10723,20 +13255,20 @@ var PanelFramework = function(exports) {
       return fallback && !/\d{4}-\d{2}-\d{2}T/.test(fallback) ? fallback : "未记录";
     }
     const now2 = /* @__PURE__ */ new Date();
-    const time = `${twoDigit$2(date.getHours())}:${twoDigit$2(date.getMinutes())}`;
+    const time = `${twoDigit$1(date.getHours())}:${twoDigit$1(date.getMinutes())}`;
     if (date.getFullYear() === now2.getFullYear() && date.getMonth() === now2.getMonth() && date.getDate() === now2.getDate()) return time;
-    return `${twoDigit$2(date.getMonth() + 1)}-${twoDigit$2(date.getDate())} ${time}`;
+    return `${twoDigit$1(date.getMonth() + 1)}-${twoDigit$1(date.getDate())} ${time}`;
   }
   function routerOsLatestSuccess(snapshot, state) {
     const meta = snapshot.meta || {};
     const raw = state.scenario === "no-snapshot" ? meta.staticUpdatedAt || meta.realtimeUpdatedAt || snapshot.updatedAt : snapshot.updatedAt || meta.realtimeUpdatedAt || meta.staticUpdatedAt || meta.slowRestUpdatedAt;
     return compactTime(raw);
   }
-  function stripRest$2(label) {
-    return clean$2(label.replace(/^REST\s*/i, ""), "可用");
+  function stripRest$1(label) {
+    return clean$1(label.replace(/^REST\s*/i, ""), "可用");
   }
-  function stripSsh$2(label) {
-    return clean$2(label.replace(/^SSH\s*/i, ""), "可用");
+  function stripSsh$1(label) {
+    return clean$1(label.replace(/^SSH\s*/i, ""), "可用");
   }
   function routerOsNetworkPriority(state) {
     if (state.scenario === "fleet") return "normal";
@@ -10749,7 +13281,7 @@ var PanelFramework = function(exports) {
     return "normal";
   }
   function totalWan(snapshot, state) {
-    return Math.max(state.facts.wan.total || wanRows$2(snapshot).length, state.facts.wan.allOffline ? 8 : 0);
+    return Math.max(1, state.facts.wan.total, state.facts.wan.online + state.facts.wan.offline, wanRows$2(snapshot).length);
   }
   function snapshotTrustText(state) {
     if (state.scenario === "no-snapshot") return "缺失";
@@ -10774,7 +13306,7 @@ var PanelFramework = function(exports) {
       return { id: "conclusion", label: "结论", value: "WAN断链", title: "WAN 全离线", heroTitle: "WAN 全离线", note: `WAN 0/${formatNumber(total)}，默认路由异常`, tone: "danger", severity: "p0" };
     }
     if (priority === "resource-full") {
-      return { id: "conclusion", label: "结论", value: "资源满载", title: "资源满载", heroTitle: "资源满载", note: "CPU / 内存 / 磁盘连续越阈，转发需关注", tone: "danger", severity: "p1" };
+      return { id: "conclusion", label: "结论", value: "资源满载", title: "资源满载", heroTitle: "资源满载", note: "处理器 / 内存 / 磁盘连续越阈，转发需关注", tone: "danger", severity: "p1" };
     }
     if (priority === "interface-down") {
       return { id: "conclusion", label: "结论", value: "接口Down", title: "接口 Down", heroTitle: "接口 Down", note: `${formatNumber(state.facts.interfaces.down)} 个接口离线，承载关系待确认`, tone: "danger", severity: "p1" };
@@ -10791,7 +13323,7 @@ var PanelFramework = function(exports) {
     const total = totalWan(snapshot, state);
     if (priority === "snapshot-missing") return { id: "object", label: "对象", value: "快照", note: "业务快照缺失", tone: "missing" };
     if (priority === "wan-offline") return { id: "object", label: "对象", value: `WAN 0/${formatNumber(total)}`, note: "全部出口离线", tone: "danger" };
-    if (priority === "resource-full") return { id: "object", label: "对象", value: "CPU/内存/磁盘", note: "三项连续越阈", tone: "danger" };
+    if (priority === "resource-full") return { id: "object", label: "对象", value: "处理器/内存/磁盘", note: "三项连续越阈", tone: "danger" };
     if (priority === "interface-down") return { id: "object", label: "对象", value: `接口 ${formatNumber(state.facts.interfaces.down)} Down`, note: state.facts.interfaces.downNames.slice(0, 2).join(" / ") || "承载待确认", tone: "danger" };
     if (priority === "collection-degraded") return { id: "object", label: "对象", value: "采集", note: "REST / SSH / 快照边界", tone: "warn" };
     return { id: "object", label: "对象", value: `WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(total || 1)}`, note: "转发面可用", tone: state.facts.wan.offline ? "warn" : "ok" };
@@ -10802,7 +13334,7 @@ var PanelFramework = function(exports) {
     if (priority === "resource-full") return { id: "impact", label: "影响", value: "资源余量低", note: "业务可能抖动", tone: "warn" };
     if (priority === "interface-down") return { id: "impact", label: "影响", value: "承载待判", note: "需看默认路由关系", tone: "warn" };
     if (priority === "collection-degraded") return { id: "impact", label: "影响", value: "可信度下降", note: "采集降级但非断网结论", tone: "warn" };
-    return { id: "impact", label: "影响", value: clean$2(state.facts.route.label, "出口可用"), note: "默认出口可用", tone: state.facts.route.level };
+    return { id: "impact", label: "影响", value: clean$1(state.facts.route.label, "出口可用"), note: "默认出口可用", tone: state.facts.route.level };
   }
   function planeMeaning(plane) {
     if (plane.id === "forwarding") return "用户业务是否能通过路由器转发";
@@ -10839,14 +13371,14 @@ var PanelFramework = function(exports) {
       {
         id: "rest",
         label: "REST",
-        value: state.scenario === "collection-down" || state.scenario === "no-snapshot" ? "待确认" : stripRest$2(state.facts.collection.restLabel),
+        value: state.scenario === "collection-down" || state.scenario === "no-snapshot" ? "待确认" : stripRest$1(state.facts.collection.restLabel),
         note: "管理通道，不代表转发正常",
         tone: state.scenario === "no-snapshot" ? "warn" : state.scenario === "collection-down" ? "warn" : state.facts.collection.level
       },
       {
         id: "ssh",
         label: "SSH",
-        value: state.scenario === "no-snapshot" ? "不可用" : stripSsh$2(state.facts.collection.sshLabel),
+        value: state.scenario === "no-snapshot" ? "不可用" : stripSsh$1(state.facts.collection.sshLabel),
         note: "辅助读取",
         tone: state.scenario === "no-snapshot" ? "danger" : state.facts.collection.level
       },
@@ -10901,7 +13433,202 @@ var PanelFramework = function(exports) {
   function routerOsResourceSustainedText(value, threshold) {
     return toNumber(value) >= threshold ? "持续6/6" : "持续0/6";
   }
-  function clean$1(value, fallback = "-") {
+  function presentationConclusionValue(snapshot, state, network) {
+    if (network.priority === "wan-offline") return network.conclusion.value + " " + formatNumber(state.facts.wan.online) + "/" + formatNumber(state.facts.wan.total);
+    if (network.priority === "resource-full") return network.conclusion.value + " " + clean$1(state.facts.resource.summaryText, "资源超阈");
+    if (network.priority === "interface-down") return formatNumber(state.facts.interfaces.down) + "/" + formatNumber(state.facts.interfaces.total) + " 接口 Down";
+    if (network.priority === "collection-degraded") return network.conclusion.value + " " + routerOsLatestSuccess(snapshot, state);
+    if (network.priority === "snapshot-missing") return network.conclusion.title;
+    return network.conclusion.value;
+  }
+  function presentationConclusionNote(snapshot, state, network) {
+    const latest = routerOsLatestSuccess(snapshot, state);
+    if (network.priority === "snapshot-missing") return "无可信业务快照，业务数据不展示";
+    if (network.priority === "resource-full") return "资源证据优先，业务仍可用但转发余量低";
+    if (network.priority === "interface-down") return "转发接口 Down，需核对默认路由承载";
+    if (network.priority === "wan-offline") return "默认出口不可承载，采集状态只作旁证";
+    if (network.priority === "collection-degraded") return "采集可信度下降，不等同转发异常 · 最近成功 " + latest;
+    return "WAN / 路由 / 采集 / 资源均可判";
+  }
+  function presentationReadonlyJudgement(network) {
+    if (network.priority === "wan-offline") return "确认出口不可承载";
+    if (network.priority === "resource-full") return "确认资源余量下降";
+    if (network.priority === "interface-down") return "确认承载关系待判";
+    if (network.priority === "collection-degraded") return "仅证明采集可信度下降";
+    if (network.priority === "snapshot-missing") return "不展示业务数据";
+    return "业务状态可读";
+  }
+  function presentationIncidentObject(snapshot, state, network) {
+    if (network.priority === "wan-offline") return "WAN 0/" + formatNumber(Math.max(1, totalWan(snapshot, state)));
+    if (network.priority === "resource-full") return clean$1(state.facts.resource.summaryText, "资源超阈");
+    if (network.priority === "interface-down") return formatNumber(state.facts.interfaces.down) + " 接口 Down";
+    if (network.priority === "collection-degraded") return "REST / SSH / 快照";
+    if (network.priority === "snapshot-missing") return "业务快照缺失";
+    return network.object.value;
+  }
+  function presentationVerdictText(snapshot, state, network) {
+    const latest = routerOsLatestSuccess(snapshot, state);
+    return [
+      "presentation-model",
+      ROUTEROS_PRESENTATION_VIEW_MODEL_CONTRACT,
+      "结论 " + network.conclusion.title,
+      "对象 " + presentationIncidentObject(snapshot, state, network),
+      "影响 " + network.impact.value,
+      "转发面 " + network.forwarding.value,
+      "采集面 " + network.collection.value,
+      "快照面 " + network.snapshot.value,
+      "业务面 " + network.business.value,
+      "最近成功 " + latest,
+      "原始字段仅作二级证据"
+    ].join(" · ");
+  }
+  function presentationCoreText(state, network) {
+    if (state.scenario === "fleet") return "多出口 / 默认路由 / 采集可信度 / 资源阈值 / 最近成功 / TopN";
+    if (network.priority === "snapshot-missing") return "采集链路 / 业务快照 / 展示边界 / 最近成功 / 可信边界";
+    if (network.priority === "wan-offline") return "离线出口 / 默认路由 / 采集可信度 / 最近成功 / 影响范围";
+    if (network.priority === "resource-full") return "资源阈值 / 持续窗口 / 转发余量 / 默认路由 / 采样可信度";
+    if (network.priority === "interface-down") return "接口承载 / 默认路由 / 采集旁证 / 影响范围 / 最近成功";
+    if (network.priority === "collection-degraded") return "REST / SSH / 快照 / 最近成功 / 转发边界";
+    return "WAN 趋势 / 默认路由 / 采集可信度 / 资源阈值 / 最近成功 / TopN";
+  }
+  function buildRouterOsPresentationViewModel(snapshot, state, network = buildRouterOsNetworkViewModel(snapshot, state)) {
+    const latest = routerOsLatestSuccess(snapshot, state);
+    const desktop = {
+      contract: ROUTEROS_PRESENTATION_VIEW_MODEL_CONTRACT,
+      conclusionValue: presentationConclusionValue(snapshot, state, network),
+      conclusionNote: presentationConclusionNote(snapshot, state, network),
+      verdictText: presentationVerdictText(snapshot, state, network),
+      coreText: presentationCoreText(state, network),
+      object: network.object,
+      impact: network.impact,
+      incidentObject: presentationIncidentObject(snapshot, state, network),
+      readonlyJudgement: presentationReadonlyJudgement(network),
+      incidentSummary: [
+        { id: "presentation-object", label: "事故对象", value: presentationIncidentObject(snapshot, state, network), note: network.object.note, tone: network.object.tone },
+        { id: "presentation-impact", label: "影响范围", value: network.impact.value, note: network.impact.note, tone: network.impact.tone },
+        { id: "presentation-credibility", label: "可信度", value: network.credibility.value, note: network.credibility.note, tone: network.credibility.tone },
+        { id: "presentation-recent", label: "最近成功", value: latest, note: network.snapshot.note, tone: network.snapshot.tone },
+        { id: "presentation-readonly", label: "只读判断", value: presentationReadonlyJudgement(network), note: "不写入 RouterOS", tone: network.conclusion.tone }
+      ],
+      navLabels: ["状态总览", "多出口", "接口/VLAN", "在线终端", "采集日志"],
+      copyPolicy: "user-conclusion-first-routeros-raw-secondary"
+    };
+    return { priority: network.priority, desktop };
+  }
+  const MOBILE_OVERVIEW_POLICY = {
+    "snapshot-missing": {
+      severity: "p0",
+      firstQuestion: "业务数据能不能信",
+      layout: "trust-first",
+      rankingPolicy: "hidden",
+      informationArchitecture: "trust-boundary-no-business-data",
+      topSlot: "trust-boundary",
+      terminalRanking: "not-mounted",
+      showCoreMetricRail: true,
+      surfaceOrder: "list-before-status",
+      surfaceRanking: "suppressed",
+      trustBoundary: (context) => `业务快照缺失 · 最近成功 ${context.recentSuccess}`
+    },
+    "wan-offline": {
+      severity: "p0",
+      firstQuestion: "是否已经断网",
+      layout: "incident-first",
+      rankingPolicy: "hidden",
+      informationArchitecture: "wan-offline-default-route-collection-success-first",
+      topSlot: "wan-incident",
+      terminalRanking: "not-mounted",
+      showCoreMetricRail: true,
+      surfaceOrder: "list-before-status",
+      surfaceRanking: "suppressed",
+      trustBoundary: (context) => `转发面不可用 · ${context.collectionLabel}${context.collectionValue} · 最近 ${context.recentSuccess}`
+    },
+    "interface-down": {
+      severity: "p1",
+      firstQuestion: "哪些承载受影响",
+      layout: "incident-first",
+      rankingPolicy: "collapsed",
+      informationArchitecture: "interface-carrier-impact-first",
+      topSlot: "interface-impact",
+      terminalRanking: "secondary-collapsed",
+      showCoreMetricRail: true,
+      surfaceOrder: "list-before-status",
+      surfaceRanking: "suppressed",
+      trustBoundary: (context) => `接口转发面优先 · 采集面只作旁证 · ${context.snapshotValue}`
+    },
+    "resource-full": {
+      severity: "p1",
+      firstQuestion: "资源是否影响转发",
+      layout: "incident-first",
+      rankingPolicy: "supporting",
+      informationArchitecture: "resource-pressure-evidence-first",
+      topSlot: "resource-pressure",
+      terminalRanking: "supporting-evidence",
+      showCoreMetricRail: true,
+      surfaceOrder: "list-before-status",
+      surfaceRanking: "supporting",
+      trustBoundary: (context) => `资源连续越阈 · ${context.routeValue} · 采样${context.snapshotValue}`
+    },
+    "collection-degraded": {
+      severity: "p2",
+      firstQuestion: "页面数据是否仍可参考",
+      layout: "trust-first",
+      rankingPolicy: "collapsed",
+      informationArchitecture: "collection-boundary-first",
+      topSlot: "collection-boundary",
+      terminalRanking: "secondary-collapsed",
+      showCoreMetricRail: true,
+      surfaceOrder: "list-before-status",
+      surfaceRanking: "suppressed",
+      trustBoundary: (context) => `采集降级 · 缓存边界 · 最近 ${context.recentSuccess}`
+    },
+    normal: {
+      severity: "normal",
+      firstQuestion: "网络是否可信",
+      layout: "operations-first",
+      rankingPolicy: "supporting",
+      informationArchitecture: "normal-operations-first",
+      topSlot: "decision-spine",
+      terminalRanking: "supporting-evidence",
+      showCoreMetricRail: true,
+      surfaceOrder: "status-before-list",
+      surfaceRanking: "supporting",
+      trustBoundary: (context) => `转发面可用 · 采集${context.collectionValue} · 快照${context.snapshotValue}`
+    }
+  };
+  function resolveMobileOverviewPolicy(priority, listKind, context) {
+    const definition = MOBILE_OVERVIEW_POLICY[priority];
+    const appHomeContract = {
+      severity: definition.severity,
+      firstQuestion: definition.firstQuestion,
+      layout: definition.layout,
+      rankingPolicy: definition.rankingPolicy,
+      informationArchitecture: definition.informationArchitecture,
+      topSlot: definition.topSlot,
+      terminalRanking: definition.terminalRanking,
+      trustBoundary: definition.trustBoundary(context),
+      showCoreMetricRail: definition.showCoreMetricRail
+    };
+    const isTerminalRanking = listKind === "terminal-ranking";
+    const orderContract = definition.surfaceOrder === "list-before-status" ? "incident-evidence-after-primary-visual" : "supporting-list-after-primary-visual";
+    return {
+      appHomeContract,
+      surface: {
+        order: definition.surfaceOrder,
+        orderContract,
+        slots: ["list"],
+        className: `${definition.surfaceOrder === "list-before-status" ? "is-incident-first" : "is-ranking-first"} is-ranking-${definition.surfaceRanking} is-single-supporting-surface`,
+        ranking: definition.surfaceRanking,
+        listKind,
+        rankListKind: isTerminalRanking ? "terminal-total-traffic-list" : void 0,
+        v240ListKind: isTerminalRanking ? "terminal-ranking" : "incident-objects",
+        terminalRankingMounted: isTerminalRanking ? "true" : "false",
+        terminalRankingState: definition.terminalRanking,
+        normalRanking: priority === "normal" ? "operations-five-rows" : void 0,
+        contract: "view-model-one-supporting-list-no-duplicate-status"
+      }
+    };
+  }
+  function clean(value, fallback = "-") {
     const normalized = String(value ?? "").replace(/\s+/g, " ").trim();
     return normalized || fallback;
   }
@@ -10913,7 +13640,7 @@ var PanelFramework = function(exports) {
   }
   function firstText(row, keys, fallback = "-") {
     for (const key of keys) {
-      const value = clean$1(row[key], "");
+      const value = clean(row[key], "");
       if (value) return value;
     }
     return fallback;
@@ -10929,13 +13656,19 @@ var PanelFramework = function(exports) {
     if (Array.isArray(snapshot.wan) && snapshot.wan.length) return snapshot.wan;
     return Array.isArray(snapshot.pppoe) ? snapshot.pppoe : [];
   }
-  function interfaceRows$2(snapshot) {
+  function wanLineCount(snapshot, state) {
+    const rows = wanRows$1(snapshot);
+    const factTotal = toNumber(state.facts.wan.total);
+    const factSum = toNumber(state.facts.wan.online) + toNumber(state.facts.wan.offline);
+    return Math.max(0, rows.length, factTotal, factSum);
+  }
+  function interfaceRows$1(snapshot) {
     return Array.isArray(snapshot.interfaces) ? snapshot.interfaces : [];
   }
-  function twoDigit$1(value) {
+  function twoDigit(value) {
     return String(value).padStart(2, "0");
   }
-  function mobileTime$1(raw) {
+  function mobileTime(raw) {
     const source = String(raw ?? "").trim();
     if (!source) return "未记录";
     const numeric = typeof raw === "number" || /^\d+$/.test(source) ? Number(raw) : Number.NaN;
@@ -10945,14 +13678,14 @@ var PanelFramework = function(exports) {
       return fallback && !/\d{4}-\d{2}-\d{2}T/.test(fallback) ? fallback : "未记录";
     }
     const now2 = /* @__PURE__ */ new Date();
-    const time = `${twoDigit$1(date.getHours())}:${twoDigit$1(date.getMinutes())}`;
+    const time = `${twoDigit(date.getHours())}:${twoDigit(date.getMinutes())}`;
     if (date.getFullYear() === now2.getFullYear() && date.getMonth() === now2.getMonth() && date.getDate() === now2.getDate()) return time;
-    return `${twoDigit$1(date.getMonth() + 1)}-${twoDigit$1(date.getDate())} ${time}`;
+    return `${twoDigit(date.getMonth() + 1)}-${twoDigit(date.getDate())} ${time}`;
   }
-  function latestSuccess$2(snapshot, state) {
+  function latestSuccess$1(snapshot, state) {
     const meta = snapshot.meta || {};
     const raw = state.scenario === "no-snapshot" ? meta.staticUpdatedAt || meta.realtimeUpdatedAt || snapshot.updatedAt : snapshot.updatedAt || meta.realtimeUpdatedAt || meta.staticUpdatedAt || meta.slowRestUpdatedAt;
-    return mobileTime$1(raw);
+    return mobileTime(raw);
   }
   function totals(snapshot) {
     return wanRows$1(snapshot).reduce(
@@ -10983,6 +13716,12 @@ var PanelFramework = function(exports) {
     if (!Number.isFinite(value) || value <= 0) return "未采集";
     return formatRate(value).replace(/\s+/g, "");
   }
+  const CHART_WIDTH = 312;
+  const CHART_VIEW_HEIGHT = 118;
+  const CHART_TOP_Y = 12;
+  const CHART_BASELINE_Y = 94;
+  const CHART_AXIS_Y = 112;
+  const CHART_GRID_YS = [32, 58, 84];
   function trend(seed, variant = "down") {
     const base2 = Math.max(1, seed);
     const pattern = {
@@ -10992,6 +13731,54 @@ var PanelFramework = function(exports) {
       quiet: [0.32, 0.31, 0.33, 0.32, 0.34, 0.33, 0.35, 0.34]
     }[variant];
     return pattern.map((ratio) => base2 * ratio);
+  }
+  function chartPointString(values, maxValue, width = CHART_WIDTH, topY = CHART_TOP_Y, baselineY = CHART_BASELINE_Y) {
+    const max = Math.max(1, maxValue, ...values);
+    const step = values.length > 1 ? width / (values.length - 1) : width;
+    return values.map((value, index) => {
+      const x2 = Number((index * step).toFixed(1));
+      const y2 = Number((baselineY - Math.max(0, value) / max * (baselineY - topY)).toFixed(1));
+      return `${x2},${y2}`;
+    }).join(" ");
+  }
+  function chartLastPoint(points) {
+    const last = points.trim().split(/\s+/).pop() || "0,0";
+    const [x2, y2] = last.split(",").map((item) => Number(item));
+    return { x: Number.isFinite(x2) ? x2 : 0, y: Number.isFinite(y2) ? y2 : 0 };
+  }
+  function trendChartPlot(down, up, referenceRatio) {
+    var _a;
+    const normalizedDown = down.length ? down : [1, 1, 1];
+    const normalizedUp = up.length ? up : [0.45, 0.45, 0.45];
+    const max = Math.max(1, ...normalizedDown, ...normalizedUp);
+    const downPoints = chartPointString(normalizedDown, max);
+    const upPoints = chartPointString(normalizedUp, max);
+    const peakValue = Math.max(...normalizedDown);
+    const peakIndex = Math.max(0, normalizedDown.findIndex((value) => value === peakValue));
+    const ratio = Math.max(0, Math.min(1, referenceRatio));
+    const thresholdValue = max * ratio;
+    const breachIndex = normalizedDown.findIndex((value) => value >= thresholdValue);
+    const startParts = ((_a = downPoints.trim().split(/\s+/)[0]) == null ? void 0 : _a.split(",").map((item) => Number(item))) || [0, CHART_BASELINE_Y];
+    return {
+      viewHeight: CHART_VIEW_HEIGHT,
+      topY: CHART_TOP_Y,
+      baselineY: CHART_BASELINE_Y,
+      axisY: CHART_AXIS_Y,
+      gridYs: CHART_GRID_YS,
+      downPoints,
+      upPoints,
+      start: {
+        x: Number.isFinite(startParts[0]) ? startParts[0] : 0,
+        y: Number.isFinite(startParts[1]) ? startParts[1] : CHART_BASELINE_Y
+      },
+      focus: chartLastPoint(downPoints),
+      peak: {
+        x: normalizedDown.length > 1 ? Number((peakIndex * CHART_WIDTH / (normalizedDown.length - 1)).toFixed(1)) : CHART_WIDTH / 2,
+        y: Number((CHART_BASELINE_Y - Math.max(0, peakValue) / max * (CHART_BASELINE_Y - CHART_TOP_Y)).toFixed(1))
+      },
+      referenceY: Number((CHART_BASELINE_Y - ratio * (CHART_BASELINE_Y - CHART_TOP_Y)).toFixed(1)),
+      breachX: breachIndex >= 0 && normalizedDown.length > 1 ? Number((breachIndex * CHART_WIDTH / (normalizedDown.length - 1)).toFixed(1)) : null
+    };
   }
   function sampleTrafficRow(row) {
     const down = firstNumber(row, ["downRate", "downloadRate", "rxRate", "inRate", "down", "download", "rx", "in"]);
@@ -11044,24 +13831,36 @@ var PanelFramework = function(exports) {
       source: "current"
     };
   }
-  function trendChart(snapshot, state) {
+  function buildMobileTrendChart(snapshot, state) {
     const series = networkTrendSeries(snapshot, state);
     const down = series.down.length ? series.down : trend(1, "quiet");
     const up = series.up.length ? series.up : trend(0.45, "quiet");
     const peak = Math.max(...down);
     const current = down[down.length - 1] || 0;
+    const referenceRatio = state.facts.wan.allOffline ? 0.08 : 0.78;
+    const thresholdValue = peak * referenceRatio;
+    const breachIndex = down.findIndex((value) => value >= thresholdValue);
     const windowText = series.source === "history" ? "近 12 点" : "当前窗口";
     const sampleText = series.source === "history" ? "历史样本" : "实时估算";
     const sampleLabel = series.source === "history" ? "历史" : state.scenario === "collection-down" || state.facts.collection.dataStale || state.facts.freshness.history ? "缓存" : "实时";
+    const anomalyLabel = breachIndex >= 0 ? `异常点 ${breachIndex + 1}` : "异常点 0";
+    const anomalyTone = breachIndex >= 0 ? "warn" : "trust";
+    const decisionLabel = `${windowText} · 当前 ${mobileRate(current)} · 峰值 ${mobileRate(peak)} · 阈值 ${mobileRate(thresholdValue)} · ${anomalyLabel} · 采样${sampleLabel}`;
     return {
       source: series.source,
       windowText,
       sampleText,
       sampleLabel,
+      decisionContract: "window-current-peak-threshold-sample-anomaly-source",
+      decisionLabel,
+      anomalyLabel,
+      anomalyTone,
       startLabel: series.source === "history" ? `${down.length} 点前` : "窗口起点",
       endLabel: "当前",
-      referenceLabel: state.facts.wan.allOffline ? "离线参考" : "高位参考",
-      referenceRatio: state.facts.wan.allOffline ? 0.08 : 0.78,
+      referenceLabel: state.facts.wan.allOffline ? "离线阈值" : "高位阈值",
+      referenceRatio,
+      thresholdLabel: mobileRate(thresholdValue),
+      breachLabel: breachIndex >= 0 ? `第 ${breachIndex + 1} 点` : "未越阈",
       currentLabel: mobileRate(current),
       peakLabel: mobileRate(peak),
       down,
@@ -11070,313 +13869,67 @@ var PanelFramework = function(exports) {
         { label: "当前", value: mobileRate(current), note: "下载", tone: "trust" },
         { label: "峰值", value: mobileRate(peak), note: windowText, tone: "trust" },
         { label: "窗口", value: series.source === "history" ? "12 点" : "当前", note: sampleText, tone: state.facts.collection.credibilityTone },
-        { label: "采样", value: sampleLabel, note: state.facts.collection.credibilityLabel, tone: state.facts.collection.credibilityTone }
-      ]
+        { label: "阈值", value: mobileRate(thresholdValue), note: breachIndex >= 0 ? "已触线" : "未触线", tone: breachIndex >= 0 ? "warn" : "trust" },
+        { label: "采样", value: sampleLabel, note: state.facts.collection.credibilityLabel, tone: state.facts.collection.credibilityTone },
+        { label: "异常", value: breachIndex >= 0 ? `${breachIndex + 1}` : "0", note: anomalyLabel, tone: anomalyTone }
+      ],
+      plot: trendChartPlot(down, up, referenceRatio)
     };
   }
-  function stripRest$1(label) {
-    return clean$1(label.replace(/^REST\s*/i, ""), "可用");
+  function primaryImpactEvidence(source, evidenceKey, layer = "business") {
+    return { evidenceLayer: layer, evidenceSource: source, evidenceRole: "primary-impact", evidenceKey };
   }
-  function stripSsh$1(label) {
-    return clean$1(label.replace(/^SSH\s*/i, ""), "可用");
+  function secondaryEvidence(source, evidenceKey, layer = "semantic") {
+    return { evidenceLayer: layer, evidenceSource: source, evidenceRole: "secondary-evidence", evidenceKey };
   }
-  function trustText$1(state) {
-    if (state.scenario === "no-snapshot") return "缺失";
-    if (state.scenario === "collection-down" || state.facts.collection.dataStale || state.facts.freshness.history) return "缓存";
-    return "实时";
-  }
-  function mobileRouteValue(state) {
-    if (state.facts.wan.allOffline) return "异常";
-    if (state.facts.route.level === "danger") return "异常";
-    if (state.scenario === "collection-down") return "历史快照";
-    if (state.scenario === "interfaces-down") return "待确认";
-    if (state.facts.route.level === "missing") return "待确认";
-    if (state.scenario === "resource-full") return "活动默认路由";
-    return "可用";
-  }
-  function priorityOf(state) {
-    return routerOsNetworkPriority(state);
-  }
-  function heroVisualKind(priority) {
-    if (priority === "wan-offline") return "wan-ports";
-    if (priority === "resource-full") return "resource-bars";
-    if (priority === "interface-down") return "interface-list";
-    if (priority === "snapshot-missing" || priority === "collection-degraded") return "trust-channels";
-    return "trend";
-  }
-  function showHeroMetrics(state, priority) {
-    return priority === "normal" && state.scenario === "fleet";
-  }
-  function resourceFacts(state) {
-    const hidden = state.scenario === "no-snapshot";
-    return [
-      { label: "CPU", raw: toNumber(state.facts.resource.cpu), threshold: 85 },
-      { label: "内存", raw: toNumber(state.facts.resource.memory), threshold: 85 },
-      { label: "磁盘", raw: toNumber(state.facts.resource.disk), threshold: 90 }
-    ].map((item) => ({
-      label: item.label,
-      value: hidden ? "不展示" : formatPercent(item.raw, state.scenario === "resource-full" ? 1 : 0),
-      note: hidden ? "无快照" : `阈${item.threshold}% · ${routerOsResourceSustainedText(item.raw, item.threshold)}`,
-      tone: hidden ? "missing" : item.raw >= item.threshold ? "danger" : "ok"
-    }));
-  }
-  function titleFor(network) {
-    if (network.priority === "normal") return `${network.conclusion.value} · ${network.object.value}`;
-    return network.conclusion.heroTitle;
-  }
-  function subtitleFor(snapshot, state, network) {
-    if (state.scenario === "fleet") return `WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(Math.max(state.facts.wan.total || wanRows$1(snapshot).length, 1))} · 异常 ${formatNumber(Math.max(state.facts.wan.offline, state.facts.interfaces.down, 0))} · 默认路由 ${mobileRouteValue(state)} · 成功 ${latestSuccess$2(snapshot, state)}`;
-    return network.conclusion.note;
-  }
-  function heroFacts(snapshot, state) {
-    const priority = priorityOf(state);
-    const totalWan2 = Math.max(state.facts.wan.total || wanRows$1(snapshot).length, state.facts.wan.allOffline ? 8 : 0);
-    const rate = totals(snapshot);
-    if (priority === "snapshot-missing") {
-      return [
-        { label: "RouterOS", value: "不可达", note: "当前", tone: "danger" },
-        { label: "快照", value: "缺失", note: "业务", tone: "missing" },
-        { label: "影响", value: "不展示", note: "业务数据", tone: "missing" },
-        { label: "成功", value: latestSuccess$2(snapshot, state), note: "最近", tone: latestSuccess$2(snapshot, state) === "未记录" ? "warn" : "trust" }
-      ];
-    }
-    if (priority === "wan-offline") {
-      return [
-        { label: "WAN", value: `0/${formatNumber(totalWan2)}`, note: "全部离线", tone: "danger" },
-        { label: "路由", value: "异常", note: "默认", tone: "danger" },
-        { label: "外网", value: "断网", note: "影响", tone: "danger" },
-        { label: "可信", value: trustText$1(state), note: "采集", tone: state.facts.collection.credibilityTone }
-      ];
-    }
-    if (priority === "resource-full") {
-      const resource = resourceFacts(state);
-      return [
-        ...resource.map((item) => ({
-          label: item.label,
-          value: item.value.replace(/\.0%$/, "%"),
-          note: item.note,
-          tone: item.tone
-        })),
-        { label: "连接", value: formatCompact(toNumber(state.facts.connections.total)), note: "活动会话", tone: "warn" }
-      ];
-    }
-    if (state.scenario === "fleet") {
-      const abnormal = Math.max(state.facts.wan.offline, state.facts.interfaces.down);
-      return [
-        { label: "WAN", value: `${formatNumber(state.facts.wan.online)}/${formatNumber(totalWan2)}`, note: "在线", tone: state.facts.wan.offline ? "warn" : "ok" },
-        { label: "异常", value: formatNumber(abnormal || 3), note: "待确认", tone: abnormal ? "warn" : "trust" },
-        { label: "默认路由", value: mobileRouteValue(state), note: "出口", tone: state.facts.route.level },
-        { label: "成功", value: latestSuccess$2(snapshot, state), note: "最近", tone: "trust" }
-      ];
-    }
-    if (priority === "interface-down") {
-      return [
-        { label: "接口", value: `${formatNumber(state.facts.interfaces.down)} Down`, note: "离线", tone: "danger" },
-        { label: "路由", value: mobileRouteValue(state), note: "默认路由", tone: state.facts.route.level },
-        { label: "影响", value: "待判", note: "承载", tone: "warn" },
-        { label: "可信", value: trustText$1(state), note: "采集", tone: state.facts.collection.credibilityTone }
-      ];
-    }
-    if (priority === "collection-degraded") {
-      return [
-        { label: "采集", value: "缓存", note: "当前", tone: "warn" },
-        { label: "REST", value: stripRest$1(state.facts.collection.restLabel), note: "通道", tone: state.facts.collection.level },
-        { label: "SSH", value: stripSsh$1(state.facts.collection.sshLabel), note: "通道", tone: state.facts.collection.level },
-        { label: "成功", value: latestSuccess$2(snapshot, state), note: "最近", tone: "trust" }
-      ];
-    }
-    return [
-      { label: "WAN", value: `${formatNumber(state.facts.wan.online)}/${formatNumber(totalWan2 || 1)}`, note: "在线", tone: state.facts.wan.offline ? "warn" : "ok" },
-      { label: "下载", value: mobileRate(rate.down), note: "WAN 汇总", tone: rate.down > 0 ? "ok" : "trust" },
-      { label: "上传", value: mobileRate(rate.up), note: "WAN 汇总", tone: rate.up > 0 ? "ok" : "trust" },
-      { label: "路由", value: mobileRouteValue(state), note: "默认", tone: state.facts.route.level }
-    ];
-  }
-  function coreResourceValue(resource, priority) {
-    if (priority === "snapshot-missing") return "隐藏";
-    return resource.map((item) => item.value.replace(/\.0%|%/g, "")).join("/");
-  }
-  function coreMetrics(snapshot, state, network) {
-    const priority = network.priority;
-    const totalWan2 = Math.max(state.facts.wan.total || wanRows$1(snapshot).length, state.facts.wan.allOffline ? 8 : 0);
-    const resource = resourceFacts(state);
-    const wanValue = priority === "snapshot-missing" ? "不可判" : state.facts.wan.allOffline ? `0/${formatNumber(totalWan2)}` : `${formatNumber(state.facts.wan.online)}/${formatNumber(totalWan2 || 1)}`;
-    const collectionValue = priority === "snapshot-missing" ? "断链" : priority === "collection-degraded" ? "缓存" : "实时";
-    const snapshotValue = latestSuccess$2(snapshot, state);
-    const collectionNote = priority === "snapshot-missing" ? "当前不可达" : priority === "collection-degraded" ? `${stripRest$1(state.facts.collection.restLabel)} / ${stripSsh$1(state.facts.collection.sshLabel)}` : "REST/SSH 可用";
-    return [
-      {
-        label: "状态",
-        value: network.conclusion.value,
-        note: network.forwarding.value === "可用" ? "转发可用" : network.forwarding.value,
-        tone: network.conclusion.tone
-      },
-      {
-        label: "WAN",
-        value: wanValue,
-        note: state.facts.wan.allOffline ? "全离线" : priority === "snapshot-missing" ? "无快照" : `↓${mobileRate(totals(snapshot).down)}`,
-        tone: priority === "snapshot-missing" ? "missing" : state.facts.wan.allOffline ? "danger" : state.facts.wan.offline ? "warn" : "ok"
-      },
-      {
-        label: "采集",
-        value: collectionValue,
-        note: collectionNote,
-        tone: priority === "snapshot-missing" ? "danger" : priority === "collection-degraded" ? "warn" : state.facts.collection.credibilityTone
-      },
-      {
-        label: "资源",
-        value: coreResourceValue(resource, priority),
-        note: priority === "resource-full" ? "持续6/6" : "CPU/内存/磁盘",
-        tone: resource.some((item) => item.tone === "danger") ? "danger" : priority === "snapshot-missing" ? "missing" : "ok"
-      },
-      {
-        label: "快照",
-        value: snapshotValue,
-        note: priority === "snapshot-missing" ? "最近成功" : "快照时间",
-        tone: priority === "snapshot-missing" ? "warn" : state.facts.collection.credibilityTone
-      }
-    ];
-  }
-  function heroPills(snapshot, state, network) {
-    const totalWan2 = Math.max(state.facts.wan.total || wanRows$1(snapshot).length, state.facts.wan.allOffline ? 8 : 0);
-    const priority = network.priority;
-    if (state.scenario === "fleet") return [
-      `WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(totalWan2 || 1)}`,
-      `异常 ${formatNumber(Math.max(state.facts.wan.offline, state.facts.interfaces.down, 0))}`,
-      `成功 ${latestSuccess$2(snapshot, state)}`
-    ];
-    if (priority === "normal") return [
-      `${network.object.label} ${network.object.value}`,
-      `${network.impact.label} 出口可用`,
-      `${network.credibility.label} ${network.credibility.value}`
-    ];
-    return [
-      `${network.object.label} ${network.object.value}`,
-      `${network.impact.label} ${network.impact.value}`,
-      `${network.credibility.label} ${network.credibility.value}`
-    ];
-  }
-  function trustPlanes(network) {
-    return network.planes.map((plane) => ({
-      id: plane.id,
-      label: plane.label,
-      value: plane.value,
-      note: plane.note,
-      tone: plane.tone
-    }));
-  }
-  function statusRows(snapshot, state) {
-    const totalWan2 = Math.max(state.facts.wan.total || wanRows$1(snapshot).length, state.facts.wan.allOffline ? 8 : 0);
-    const resource = resourceFacts(state);
-    if (state.scenario === "no-snapshot") {
-      return [
-        { id: "timeline-routeros", title: "RouterOS", value: "不可达", note: "当前无可信数据", tone: "danger" },
-        { id: "timeline-snapshot", title: "业务快照", value: "缺失", note: `最近成功 ${latestSuccess$2(snapshot, state)}`, tone: "missing" },
-        { id: "timeline-collection", title: "采集", value: "REST 待核", note: "SSH 断链", tone: "warn" },
-        { id: "timeline-route", title: "默认路由", value: "待判", note: "路由快照未取回", tone: "warn" }
-      ];
-    }
-    const base2 = [
-      {
-        id: "timeline-wan",
-        title: "WAN",
-        value: state.facts.wan.allOffline ? `0/${formatNumber(totalWan2)} 在线` : `${formatNumber(state.facts.wan.online)}/${formatNumber(totalWan2 || 1)} 在线`,
-        note: state.facts.wan.allOffline ? "所有出口离线" : `↓${compactRate(totals(snapshot).down)} ↑${compactRate(totals(snapshot).up)}`,
-        tone: state.facts.wan.allOffline ? "danger" : state.facts.wan.offline ? "warn" : "ok"
-      },
-      {
-        id: "timeline-route",
-        title: "默认路由",
-        value: mobileRouteValue(state),
-        note: state.facts.wan.allOffline ? "出口不可用" : state.scenario === "collection-down" ? "可参考" : "主出口",
-        tone: state.facts.wan.allOffline ? "danger" : state.facts.route.level
-      },
-      {
-        id: "timeline-collection",
-        title: "采集",
-        value: state.scenario === "collection-down" ? "历史快照" : "实时",
-        note: `最近 ${latestSuccess$2(snapshot, state)}`,
-        tone: state.scenario === "collection-down" ? "warn" : state.facts.collection.credibilityTone
-      },
-      {
-        id: "timeline-resource",
-        title: "资源",
-        value: resource.map((item) => item.value.replace(/\.0%$/, "%")).join(" / "),
-        note: state.scenario === "resource-full" ? "三项超阈" : "CPU / 内存 / 磁盘",
-        tone: resource.some((item) => item.tone === "danger") ? "danger" : "ok"
-      },
-      {
-        id: "timeline-interface",
-        title: "接口",
-        value: state.facts.interfaces.down > 0 ? `${formatNumber(state.facts.interfaces.down)} Down` : "正常",
-        note: state.facts.interfaces.downNames.slice(0, 2).join(" / ") || "承载正常",
-        tone: state.facts.interfaces.down > 0 ? "danger" : "trust"
-      }
-    ];
-    const pick = (ids) => ids.map((id2) => base2.find((row) => row.id === id2)).filter(Boolean);
-    const priority = priorityOf(state);
-    if (priority === "resource-full") return pick(["timeline-resource", "timeline-wan", "timeline-collection", "timeline-route"]);
-    if (priority === "wan-offline") return pick(["timeline-wan", "timeline-route", "timeline-collection", "timeline-resource"]);
-    if (priority === "interface-down") return pick(["timeline-interface", "timeline-route", "timeline-wan", "timeline-collection"]);
-    if (priority === "collection-degraded") return pick(["timeline-collection", "timeline-wan", "timeline-resource", "timeline-route"]);
-    return pick(["timeline-wan", "timeline-collection", "timeline-resource", "timeline-route"]);
-  }
-  function wanPorts(snapshot, state) {
-    const rows = Array.from({ length: 8 }, (_, index) => wanRows$1(snapshot)[index] || { name: `WAN${index + 1}`, running: false });
-    return rows.map((row, index) => {
-      const offline = state.facts.wan.allOffline || row.running === false;
-      const name = clean$1(row.name || row.interface, `pppoe-wan${index + 1}`).replace(/^pppoe[-_]?/i, "");
-      const carrier = clean$1(row.parent || row.access || row.interface, `P${index + 1}`).replace(/^ether/i, "ether");
-      return {
-        id: `wan-port-${index}`,
-        label: `P${index + 1}`,
-        name,
-        note: offline ? `${carrier} · 离线` : `${carrier} · 在线`,
-        tone: offline ? "danger" : "ok"
-      };
-    });
+  function operationalEvidence(source, evidenceKey) {
+    return { evidenceLayer: "business", evidenceSource: source, evidenceRole: "operational-context", evidenceKey };
   }
   function offlineWanRows(snapshot, state) {
     const source = wanRows$1(snapshot);
-    const total = Math.max(8, state.facts.wan.total || source.length);
+    const total = Math.max(1, wanLineCount(snapshot, state));
     return Array.from({ length: Math.min(5, total) }, (_, index) => {
       const row = source[index] || { name: `pppoe-wan${index + 1}` };
-      const name = clean$1(row.name || row.interface, `pppoe-wan${index + 1}`);
-      const parent = clean$1(row.parent || row.interface || row.access, "承载待确认");
+      const name = clean(row.name || row.interface, `pppoe-wan${index + 1}`);
+      const parent = clean(row.parent || row.interface || row.access, "承载待确认");
+      const roleLabel = index === 0 ? "默认出口" : index === 1 ? "备用出口" : "成员出口";
+      const impactText = index === 0 ? "默认路由受影响" : "备用/成员承载离线";
       return {
         id: `offline-wan-${index}`,
         rank: index + 1,
         name,
         kind: "WAN",
-        meta: `P${index + 1} · ${parent} · 路由不可用`,
+        meta: `${roleLabel} · P${index + 1} · ${parent} · ${impactText}`,
         value: "离线",
         status: "Down",
         percent: 0,
-        tone: "danger"
+        tone: "danger",
+        ...primaryImpactEvidence("forwarding", `offline-wan-${index}`)
       };
     });
   }
   function interfaceIncidentRows(snapshot) {
-    const rows = interfaceRows$2(snapshot).filter((row) => row.running === false).slice(0, 5);
-    const visible = rows.length ? rows : interfaceRows$2(snapshot).slice(0, 5);
+    const rows = interfaceRows$1(snapshot).filter((row) => row.running === false).slice(0, 5);
+    const visible = rows.length ? rows : interfaceRows$1(snapshot).slice(0, 5);
     return visible.map((row, index) => ({
       id: `interface-down-${index}`,
       rank: index + 1,
-      name: clean$1(row.name || row.interface, `接口${index + 1}`),
+      name: clean(row.name || row.interface, `接口${index + 1}`),
       kind: "接口",
-      meta: `${clean$1(row.parent || row.master || row.bridge, "承载待确认")} · 默认路由待判`,
+      meta: `${clean(row.parent || row.master || row.bridge, "承载待确认")} · 默认路由待判`,
       value: row.running === false ? "Down" : "待判",
       status: row.running === false ? "Down" : "待判",
       percent: 0,
-      tone: row.running === false ? "danger" : "warn"
+      tone: row.running === false ? "danger" : "warn",
+      ...primaryImpactEvidence("interface", `interface-down-${index}`)
     }));
   }
   function snapshotBoundaryRows(snapshot, state) {
     return [
-      { id: "business-hidden", rank: "", name: "业务流量", meta: `最近成功 ${latestSuccess$2(snapshot, state)} · 无快照`, value: "不展示", status: "缺失", percent: 0, tone: "missing" },
-      { id: "terminal-ranking-hidden", rank: "", name: "终端排行", meta: "设备名 / IP / 上下行需业务快照", value: "不可判", status: "缺失", percent: 0, tone: "missing" },
-      { id: "metadata-only", rank: "", name: "采集元数据", meta: "最近成功与链路状态可参考", value: "可参考", status: "边界", percent: 0, tone: "warn" },
-      { id: "routeros-link", rank: "", name: "RouterOS 链路", meta: "当前不可达，等待恢复", value: "断链", status: "当前", percent: 0, tone: "danger" }
+      { id: "business-hidden", rank: "", name: "业务流量", meta: `最近成功 ${latestSuccess$1(snapshot, state)} · 无快照`, value: "不展示", status: "缺失", percent: 0, tone: "missing", ...primaryImpactEvidence("business", "snapshot-business-hidden") },
+      { id: "business-detail-hidden", rank: "", name: "业务明细", meta: "对象 / 地址 / 上下行需业务快照", value: "不可判", status: "缺失", percent: 0, tone: "missing", ...primaryImpactEvidence("snapshot", "snapshot-business-detail-hidden") },
+      { id: "metadata-only", rank: "", name: "采集元数据", meta: "最近成功与链路状态可参考", value: "可参考", status: "边界", percent: 0, tone: "warn", ...secondaryEvidence("snapshot", "snapshot-metadata-only") },
+      { id: "routeros-link", rank: "", name: "RouterOS 链路", meta: "当前不可达，等待恢复", value: "断链", status: "当前", percent: 0, tone: "danger", ...secondaryEvidence("collection", "snapshot-routeros-link") }
     ];
   }
   function collectionBoundaryRows(network) {
@@ -11389,8 +13942,35 @@ var PanelFramework = function(exports) {
       value: item.value,
       status: item.id === "snapshot" ? "边界" : "通道",
       percent: 0,
-      tone: item.tone
+      tone: item.tone,
+      ...secondaryEvidence(item.id === "snapshot" ? "snapshot" : "collection", `collection-${item.id}`)
     }));
+  }
+  function resourceIncidentRows(rows) {
+    const values = rows.map((row) => {
+      const value = Number.parseFloat(row.value.replace("%", ""));
+      return Number.isFinite(value) ? value : 0;
+    });
+    const peakIndex = values.reduce(
+      (peak, value, index) => value > values[peak] ? index : peak,
+      0
+    );
+    return rows.map((row, index) => {
+      const raw = values[index];
+      const threshold = /磁盘/.test(row.label) ? 90 : 85;
+      return {
+        id: `resource-incident-${row.label}`,
+        rank: index + 1,
+        name: row.label,
+        kind: "资源",
+        meta: `${row.note} · 阈值 ${threshold}% · 转发余量需关注`,
+        value: row.value,
+        status: row.tone === "danger" ? "超阈" : "正常",
+        percent: Number.isFinite(raw) ? Math.max(6, Math.min(100, raw)) : 0,
+        tone: index === peakIndex ? "danger" : row.tone === "danger" ? "warn" : row.tone,
+        ...primaryImpactEvidence("resource", `resource-incident-${row.label}`, "semantic")
+      };
+    });
   }
   function terminalCandidates(snapshot) {
     const raw = snapshot;
@@ -11463,7 +14043,7 @@ var PanelFramework = function(exports) {
       const total = firstNumber(row, ["totalRate", "rate", "traffic", "bytes", "total", "value"]) || down + up;
       const status = terminalStatus(row);
       return {
-        id: clean$1(row.id ?? row.mac ?? row.ip ?? `terminal-${index}`, `terminal-${index}`),
+        id: clean(row.id ?? row.mac ?? row.ip ?? `terminal-${index}`, `terminal-${index}`),
         rank: index + 1,
         name,
         kind,
@@ -11486,7 +14066,8 @@ var PanelFramework = function(exports) {
         value: "未采集",
         status: "等待",
         percent: 0,
-        tone: "missing"
+        tone: "missing",
+        ...operationalEvidence("terminal", "terminal-empty")
       }];
     }
     const max = Math.max(1, ...rows.map((row) => row.percent));
@@ -11499,87 +14080,130 @@ var PanelFramework = function(exports) {
       value: row.value,
       status: row.status,
       percent: Math.max(6, Math.min(100, row.percent / max * 100)),
-      tone: row.tone
+      tone: row.tone,
+      ...operationalEvidence("terminal", `terminal-ranking-${row.id}`)
     }));
   }
-  function primaryList(snapshot, state, network) {
-    const priority = network.priority;
-    if (priority === "wan-offline") return { kind: "wan-incident", title: "离线出口", meta: `默认路由异常 · 成功 ${latestSuccess$2(snapshot, state)}`, rows: offlineWanRows(snapshot, state) };
-    if (priority === "snapshot-missing") return { kind: "snapshot-boundary", title: "可信边界", meta: `最近成功 ${latestSuccess$2(snapshot, state)}`, rows: snapshotBoundaryRows(snapshot, state) };
-    if (priority === "interface-down") return { kind: "interface-incident", title: "接口影响", meta: "承载待判 · 默认路由", rows: interfaceIncidentRows(snapshot) };
-    if (priority === "collection-degraded") return { kind: "collection-boundary", title: "采集边界", meta: "REST / SSH / 快照", rows: collectionBoundaryRows(network) };
-    if (priority === "resource-full") return { kind: "terminal-ranking", title: "高流量终端", meta: "异常优先 · 总流量", rows: terminalRankingRows(snapshot) };
-    return { kind: "terminal-ranking", title: "设备排行", meta: "异常优先 · 总流量", rows: terminalRankingRows(snapshot) };
-  }
-  function surfaceModel(priority) {
-    if (priority === "normal") return { order: "status-before-list", ranking: "primary" };
-    if (priority === "resource-full") return { order: "status-before-list", ranking: "supporting" };
-    return { order: "list-before-status", ranking: "suppressed" };
-  }
-  function buildMobileOverviewModel(snapshot, state) {
-    const network = buildRouterOsNetworkViewModel(snapshot, state);
-    const priority = network.priority;
-    return {
-      priority,
-      network,
-      surface: surfaceModel(priority),
-      coreMetrics: coreMetrics(snapshot, state, network),
-      hero: {
-        title: titleFor(network),
-        subtitle: subtitleFor(snapshot, state, network),
-        facts: heroFacts(snapshot, state),
-        pills: heroPills(snapshot, state, network),
-        visualKind: heroVisualKind(priority),
-        showMetrics: showHeroMetrics(state, priority),
-        trend: trendChart(snapshot, state)
+  function normalOperationalRows(snapshot, state, network) {
+    const terminals = terminalRankingRows(snapshot);
+    if (terminals.length >= 5) return terminals;
+    const totalWan2 = Math.max(1, wanLineCount(snapshot, state));
+    const rates = totals(snapshot);
+    const resourceValues = [
+      Number(state.facts.resource.cpu),
+      Number(state.facts.resource.memory),
+      Number(state.facts.resource.disk)
+    ].map((value) => Number.isFinite(value) ? Math.max(0, value) : 0);
+    const resourcePeak = Math.max(...resourceValues);
+    const supplements = [
+      {
+        id: "normal-route-evidence",
+        rank: "",
+        name: "默认路由",
+        kind: "转发",
+        meta: `WAN ${state.facts.wan.online}/${totalWan2} · 默认出口语义`,
+        value: network.route.value,
+        status: "当前",
+        percent: 0,
+        tone: network.route.tone,
+        ...operationalEvidence("route", "normal-route-evidence")
       },
-      trustPlanes: trustPlanes(network),
-      statusRows: statusRows(snapshot, state),
-      primaryList: primaryList(snapshot, state, network),
-      wanPorts: wanPorts(snapshot, state),
-      resourceRows: resourceFacts(state)
+      {
+        id: "normal-wan-evidence",
+        rank: "",
+        name: "WAN 汇总",
+        kind: "流量",
+        meta: `↓${mobileRate(rates.down)} ↑${mobileRate(rates.up)} · 当前窗口`,
+        value: `${state.facts.wan.online}/${totalWan2}`,
+        status: "在线",
+        percent: 0,
+        tone: state.facts.wan.offline ? "warn" : "ok",
+        ...operationalEvidence("forwarding", "normal-wan-evidence")
+      },
+      {
+        id: "normal-collection-evidence",
+        rank: "",
+        name: "采集证据",
+        kind: "可信度",
+        meta: `REST / SSH · 最近成功 ${latestSuccess$1(snapshot, state)}`,
+        value: network.collection.value,
+        status: "当前",
+        percent: 0,
+        tone: network.collection.tone,
+        ...secondaryEvidence("collection", "normal-collection-evidence")
+      },
+      {
+        id: "normal-resource-evidence",
+        rank: "",
+        name: "资源余量",
+        kind: "系统",
+        meta: "处理器 / 内存 / 磁盘 · 当前快照",
+        value: resourceValues.map((value) => `${Math.round(value)}%`).join("/"),
+        status: "当前",
+        percent: 0,
+        tone: resourcePeak >= 85 ? "warn" : "ok",
+        ...operationalEvidence("resource", "normal-resource-evidence")
+      }
+    ];
+    return [...terminals, ...supplements.slice(0, Math.max(0, 5 - terminals.length))];
+  }
+  function buildMobileImpactScope(network) {
+    const priority = network.priority;
+    if (priority === "wan-offline") return { id: "internet-down", plane: "forwarding", label: "影响范围", value: "外网不可用", note: "默认出口不可承载", tone: "danger" };
+    if (priority === "snapshot-missing") return { id: "business-hidden", plane: "business", label: "影响范围", value: "业务不展示", note: "无可信业务快照", tone: "missing" };
+    if (priority === "resource-full") return { id: "resource-constrained", plane: "forwarding", label: "影响范围", value: "业务仍可用", note: "转发余量低", tone: "warn" };
+    if (priority === "interface-down") return { id: "carrier-unknown", plane: "forwarding", label: "影响范围", value: "承载关系待判", note: "需核对默认路由", tone: "warn" };
+    if (priority === "collection-degraded") return { id: "collection-only", plane: "collection", label: "影响范围", value: "采集可信度下降", note: "不等同转发异常", tone: "warn" };
+    return { id: "normal-ops", plane: "business", label: "影响范围", value: "业务可用", note: "运营摘要优先", tone: "ok" };
+  }
+  function buildMobilePrimaryList(snapshot, state, network, scope, resourceRows2) {
+    const priority = network.priority;
+    if (priority === "wan-offline") return { kind: "wan-incident", title: "离线出口", meta: `${scope.value} · ${scope.note} · 成功 ${latestSuccess$1(snapshot, state)}`, rows: offlineWanRows(snapshot, state) };
+    if (priority === "snapshot-missing") return { kind: "snapshot-boundary", title: "可信边界", meta: `${scope.value} · 最近成功 ${latestSuccess$1(snapshot, state)}`, rows: snapshotBoundaryRows(snapshot, state) };
+    if (priority === "interface-down") return { kind: "interface-incident", title: "接口影响", meta: `${scope.value} · ${scope.note}`, rows: interfaceIncidentRows(snapshot) };
+    if (priority === "collection-degraded") return { kind: "collection-boundary", title: "采集边界", meta: `${scope.value} · ${scope.note}`, rows: collectionBoundaryRows(network) };
+    if (priority === "resource-full") return { kind: "resource-incident", title: "资源余量", meta: `${scope.value} · ${scope.note} · 阈值/持续`, rows: resourceIncidentRows(resourceRows2) };
+    const normalRows = normalOperationalRows(snapshot, state, network);
+    const terminalOnly = normalRows.every((row) => row.evidenceSource === "terminal");
+    return {
+      kind: "terminal-ranking",
+      title: terminalOnly ? "终端摘要" : "运营摘要",
+      meta: terminalOnly ? "实时终端 · Top 5" : "终端流量 · 路由与采集证据",
+      rows: normalRows
     };
   }
-  function clean(value, fallback = "-") {
-    const normalized = String(value ?? "").replace(/\s+/g, " ").trim();
-    return normalized || fallback;
+  function wanDisplayTotal(snapshot, state) {
+    return Math.max(1, wanLineCount(snapshot, state));
   }
-  function interfaceRows$1(snapshot) {
-    return Array.isArray(snapshot.interfaces) ? snapshot.interfaces : [];
+  function stripRest(label) {
+    return clean(label.replace(/^REST\s*/i, ""), "可用");
   }
-  function twoDigit(value) {
-    return String(value).padStart(2, "0");
+  function stripSsh(label) {
+    return clean(label.replace(/^SSH\s*/i, ""), "可用");
   }
-  function mobileTime(raw) {
-    const source = String(raw ?? "").trim();
-    if (!source) return "未记录";
-    const numeric = typeof raw === "number" || /^\d+$/.test(source) ? Number(raw) : Number.NaN;
-    const date = Number.isFinite(numeric) ? new Date(numeric < 1e12 ? numeric * 1e3 : numeric) : new Date(source);
-    if (Number.isNaN(date.getTime())) {
-      const fallback = shortTimestamp(raw);
-      return fallback && !/\d{4}-\d{2}-\d{2}T/.test(fallback) ? fallback : "未记录";
-    }
-    const now2 = /* @__PURE__ */ new Date();
-    const time = `${twoDigit(date.getHours())}:${twoDigit(date.getMinutes())}`;
-    if (date.getFullYear() === now2.getFullYear() && date.getMonth() === now2.getMonth() && date.getDate() === now2.getDate()) {
-      return time;
-    }
-    return `${twoDigit(date.getMonth() + 1)}-${twoDigit(date.getDate())} ${time}`;
+  function trustText(state) {
+    if (state.scenario === "no-snapshot") return "缺失";
+    if (state.scenario === "collection-down" || state.facts.collection.dataStale || state.facts.freshness.history) return "缓存";
+    return "实时";
   }
-  function latestSuccess$1(snapshot, state) {
-    const meta = snapshot.meta || {};
-    const raw = state.scenario === "no-snapshot" ? meta.staticUpdatedAt || meta.realtimeUpdatedAt || snapshot.updatedAt : snapshot.updatedAt || meta.realtimeUpdatedAt || meta.staticUpdatedAt || meta.slowRestUpdatedAt;
-    return mobileTime(raw);
+  function mobileRouteValue(state) {
+    if (state.facts.wan.allOffline) return "异常";
+    if (state.facts.route.level === "danger") return "异常";
+    if (state.scenario === "collection-down") return "历史快照";
+    if (state.scenario === "interfaces-down") return "待确认";
+    if (state.facts.route.level === "missing") return "待确认";
+    if (state.scenario === "resource-full") return "活动默认路由";
+    return "可用";
   }
-  function toneClass(tone) {
-    return `is-${tone}`;
+  function priorityOf(state) {
+    return routerOsNetworkPriority(state);
   }
-  function screenTone(state) {
+  function headerTone(state) {
     if (state.scenario === "no-snapshot") return "missing";
     if (state.scenario === "single") return "ok";
     return state.verdict.level;
   }
-  function statusLabel(state) {
+  function headerStatusLabel(state) {
     if (state.scenario === "no-snapshot") return "缺数";
     if (state.scenario === "single") return "良好";
     if (state.scenario === "all-offline" || state.facts.wan.allOffline) return "断链";
@@ -11589,18 +14213,211 @@ var PanelFramework = function(exports) {
     if (state.verdict.level === "warn") return "需确认";
     return "良好";
   }
-  function trustText(state) {
-    if (state.scenario === "no-snapshot") return "业务快照缺失";
-    if (state.scenario === "collection-down" || state.facts.collection.dataStale || state.facts.freshness.history) return "缓存快照";
-    return "实时可信";
+  function headerModel(snapshot, state) {
+    const deviceName = clean(snapshot.identity || snapshot.name || snapshot.deviceName || state.facts.device.identity || "爱快路由");
+    const version = clean(snapshot.version || snapshot.routerosVersion || state.facts.device.version || "RouterOS");
+    return {
+      deviceName,
+      versionText: /^RouterOS\b/i.test(version) ? version : `RouterOS ${version}`,
+      recent: latestSuccess$1(snapshot, state),
+      statusLabel: headerStatusLabel(state),
+      tone: headerTone(state)
+    };
   }
-  function stripRest(label) {
-    return clean(label.replace(/^REST\s*/i, ""), "可用");
+  function heroVisualKind(priority) {
+    if (priority === "wan-offline") return "wan-ports";
+    if (priority === "resource-full") return "resource-bars";
+    if (priority === "interface-down") return "interface-list";
+    if (priority === "snapshot-missing" || priority === "collection-degraded") return "trust-channels";
+    return "trend";
   }
-  function stripSsh(label) {
-    return clean(label.replace(/^SSH\s*/i, ""), "可用");
+  function showHeroMetrics() {
+    return false;
   }
-  function channelStatus(state) {
+  function resourceFacts(state) {
+    const hidden = state.scenario === "no-snapshot";
+    return [
+      { label: "处理器", raw: toNumber(state.facts.resource.cpu), threshold: 85 },
+      { label: "内存", raw: toNumber(state.facts.resource.memory), threshold: 85 },
+      { label: "磁盘", raw: toNumber(state.facts.resource.disk), threshold: 90 }
+    ].map((item) => ({
+      label: item.label,
+      value: hidden ? "不展示" : formatPercent(item.raw, state.scenario === "resource-full" ? 1 : 0),
+      note: hidden ? "无快照" : `阈${item.threshold}% · ${routerOsResourceSustainedText(item.raw, item.threshold)}`,
+      tone: hidden ? "missing" : item.raw >= item.threshold ? "danger" : "ok"
+    }));
+  }
+  function titleFor(network) {
+    if (network.priority === "normal") return "WAN 实时趋势";
+    return network.conclusion.heroTitle;
+  }
+  function subtitleFor(snapshot, state, network) {
+    if (state.scenario === "fleet") return `WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(Math.max(state.facts.wan.total || wanRows$1(snapshot).length, 1))} · 异常 ${formatNumber(Math.max(state.facts.wan.offline, state.facts.interfaces.down, 0))} · 默认路由 ${mobileRouteValue(state)} · 成功 ${latestSuccess$1(snapshot, state)}`;
+    return network.conclusion.note;
+  }
+  function heroFacts(snapshot, state) {
+    const priority = priorityOf(state);
+    const totalWan2 = wanDisplayTotal(snapshot, state);
+    const rate = totals(snapshot);
+    if (priority === "snapshot-missing") {
+      return [
+        { label: "RouterOS", value: "不可达", note: "当前", tone: "danger" },
+        { label: "快照", value: "缺失", note: "业务", tone: "missing" },
+        { label: "影响", value: "不展示", note: "业务数据", tone: "missing" },
+        { label: "成功", value: latestSuccess$1(snapshot, state), note: "最近", tone: latestSuccess$1(snapshot, state) === "未记录" ? "warn" : "trust" }
+      ];
+    }
+    if (priority === "wan-offline") {
+      return [
+        { label: "WAN", value: `0/${formatNumber(totalWan2)}`, note: "全部离线", tone: "danger" },
+        { label: "路由", value: "异常", note: "默认", tone: "danger" },
+        { label: "外网", value: "断网", note: "影响", tone: "danger" },
+        { label: "可信", value: trustText(state), note: "采集", tone: state.facts.collection.credibilityTone }
+      ];
+    }
+    if (priority === "resource-full") {
+      const resource = resourceFacts(state);
+      return [
+        ...resource.map((item) => ({
+          label: item.label,
+          value: item.value.replace(/\.0%$/, "%"),
+          note: item.note,
+          tone: item.tone
+        })),
+        { label: "连接", value: formatCompact(toNumber(state.facts.connections.total)), note: "活动会话", tone: "warn" }
+      ];
+    }
+    if (state.scenario === "fleet") {
+      const abnormal = Math.max(state.facts.wan.offline, state.facts.interfaces.down);
+      return [
+        { label: "WAN", value: `${formatNumber(state.facts.wan.online)}/${formatNumber(totalWan2)}`, note: "在线", tone: state.facts.wan.offline ? "warn" : "ok" },
+        { label: "异常", value: formatNumber(abnormal || 3), note: "待确认", tone: abnormal ? "warn" : "trust" },
+        { label: "默认路由", value: mobileRouteValue(state), note: "出口", tone: state.facts.route.level },
+        { label: "成功", value: latestSuccess$1(snapshot, state), note: "最近", tone: "trust" }
+      ];
+    }
+    if (priority === "interface-down") {
+      return [
+        { label: "接口", value: `${formatNumber(state.facts.interfaces.down)} Down`, note: "离线", tone: "danger" },
+        { label: "路由", value: mobileRouteValue(state), note: "默认路由", tone: state.facts.route.level },
+        { label: "影响", value: "待判", note: "承载", tone: "warn" },
+        { label: "可信", value: trustText(state), note: "采集", tone: state.facts.collection.credibilityTone }
+      ];
+    }
+    if (priority === "collection-degraded") {
+      return [
+        { label: "采集", value: "缓存", note: "当前", tone: "warn" },
+        { label: "REST", value: stripRest(state.facts.collection.restLabel), note: "通道", tone: state.facts.collection.level },
+        { label: "SSH", value: stripSsh(state.facts.collection.sshLabel), note: "通道", tone: state.facts.collection.level },
+        { label: "成功", value: latestSuccess$1(snapshot, state), note: "最近", tone: "trust" }
+      ];
+    }
+    return [
+      { label: "WAN", value: `${formatNumber(state.facts.wan.online)}/${formatNumber(totalWan2 || 1)}`, note: "在线", tone: state.facts.wan.offline ? "warn" : "ok" },
+      { label: "下载", value: mobileRate(rate.down), note: "WAN 汇总", tone: rate.down > 0 ? "ok" : "trust" },
+      { label: "上传", value: mobileRate(rate.up), note: "WAN 汇总", tone: rate.up > 0 ? "ok" : "trust" },
+      { label: "路由", value: mobileRouteValue(state), note: "默认", tone: state.facts.route.level }
+    ];
+  }
+  function coreResourceValue(resource, priority) {
+    if (priority === "snapshot-missing") return "隐藏";
+    return resource.map((item) => item.value.replace(/\.0%|%/g, "")).join("/");
+  }
+  function coreMetrics(snapshot, state, network) {
+    const priority = network.priority;
+    const totalWan2 = wanDisplayTotal(snapshot, state);
+    const resource = resourceFacts(state);
+    const wanValue = priority === "snapshot-missing" ? "不可判" : state.facts.wan.allOffline ? `0/${formatNumber(totalWan2)}` : `${formatNumber(state.facts.wan.online)}/${formatNumber(totalWan2 || 1)}`;
+    const collectionValue = priority === "snapshot-missing" ? "断链" : priority === "collection-degraded" ? "缓存" : "实时";
+    const snapshotValue = latestSuccess$1(snapshot, state);
+    const collectionNote = priority === "snapshot-missing" ? "当前不可达" : priority === "collection-degraded" ? `${stripRest(state.facts.collection.restLabel)} / ${stripSsh(state.facts.collection.sshLabel)}` : "REST/SSH 可用";
+    return [
+      {
+        label: "状态",
+        value: network.conclusion.value,
+        note: network.forwarding.value === "可用" ? "转发可用" : network.forwarding.value,
+        tone: network.conclusion.tone
+      },
+      {
+        label: "WAN",
+        value: wanValue,
+        note: state.facts.wan.allOffline ? "全离线" : priority === "snapshot-missing" ? "无快照" : `↓${mobileRate(totals(snapshot).down)}`,
+        tone: priority === "snapshot-missing" ? "missing" : state.facts.wan.allOffline ? "danger" : state.facts.wan.offline ? "warn" : "ok"
+      },
+      {
+        label: "采集",
+        value: collectionValue,
+        note: collectionNote,
+        tone: priority === "snapshot-missing" ? "danger" : priority === "collection-degraded" ? "warn" : state.facts.collection.credibilityTone
+      },
+      {
+        label: "资源",
+        value: coreResourceValue(resource, priority),
+        note: priority === "resource-full" ? "持续6/6" : "处理器/内存/磁盘",
+        tone: resource.some((item) => item.tone === "danger") ? "danger" : priority === "snapshot-missing" ? "missing" : "ok"
+      },
+      {
+        label: "快照",
+        value: snapshotValue,
+        note: priority === "snapshot-missing" ? "最近成功" : "快照时间",
+        tone: priority === "snapshot-missing" ? "warn" : state.facts.collection.credibilityTone
+      }
+    ];
+  }
+  function heroPills(snapshot, state, network) {
+    const totalWan2 = wanDisplayTotal(snapshot, state);
+    const priority = network.priority;
+    if (state.scenario === "fleet") return [
+      `WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(totalWan2 || 1)}`,
+      `异常 ${formatNumber(Math.max(state.facts.wan.offline, state.facts.interfaces.down, 0))}`,
+      `成功 ${latestSuccess$1(snapshot, state)}`
+    ];
+    if (priority === "normal") return [
+      `${network.object.label} ${network.object.value}`,
+      `${network.impact.label} 出口可用`,
+      `${network.credibility.label} ${network.credibility.value}`
+    ];
+    return [
+      `${network.object.label} ${network.object.value}`,
+      `${network.impact.label} ${network.impact.value}`,
+      `${network.credibility.label} ${network.credibility.value}`
+    ];
+  }
+  function splitHeroPill(text2) {
+    const [label, ...rest] = text2.replace(/\s+/g, " ").trim().split(" ");
+    return { label: label || "状态", value: rest.join(" ") || text2 };
+  }
+  function heroPillTone(text2) {
+    if (/缺失|不可用|断网|不展示|0\/|异常/.test(text2)) return "danger";
+    if (/待|缓存|确认|参考|越阈|超/.test(text2)) return "warn";
+    return "trust";
+  }
+  function heroTrustRail(pills) {
+    return pills.slice(0, 3).map((text2) => {
+      const item = splitHeroPill(text2);
+      return {
+        label: item.label,
+        value: item.value,
+        tone: heroPillTone(text2)
+      };
+    });
+  }
+  function heroInterfaceCells(snapshot, state) {
+    const rows = interfaceRows$1(snapshot).filter((row) => row.running === false).slice(0, 3);
+    const visible = rows.length ? rows : interfaceRows$1(snapshot).slice(0, 1);
+    return visible.map((row, index) => {
+      const name = clean(row.name || row.interface, `接口${index + 1}`);
+      const carrier = clean(row.parent || row.master || row.bridge, "承载待确认");
+      return {
+        id: `${name}-${index}`,
+        name,
+        carrier,
+        stateText: index === 0 ? `${formatNumber(state.facts.interfaces.down)} Down` : "Down",
+        tone: "danger"
+      };
+    });
+  }
+  function heroChannelCells(state) {
     if (state.scenario === "no-snapshot") {
       return [
         { label: "RouterOS", value: "不可达", tone: "danger" },
@@ -11616,61 +14433,319 @@ var PanelFramework = function(exports) {
       { label: "快照", value: trustText(state), tone: state.facts.collection.credibilityTone }
     ];
   }
-  function resourceMetrics(state) {
+  function collectionTrustCells(state) {
+    return heroChannelCells(state);
+  }
+  function collectionTrustSeparation(priority, scope) {
+    if (priority === "normal") {
+      return {
+        contract: "normal-hidden",
+        collectionPlane: "collection",
+        impactPlane: scope.plane,
+        separatedFromImpact: false
+      };
+    }
+    if (scope.plane === "collection") {
+      return {
+        contract: "collection-plane-primary-impact-verdict",
+        collectionPlane: "collection",
+        impactPlane: scope.plane,
+        separatedFromImpact: false
+      };
+    }
+    return {
+      contract: "collection-plane-secondary-impact-verdict-independent",
+      collectionPlane: "collection",
+      impactPlane: scope.plane,
+      separatedFromImpact: true
+    };
+  }
+  function heroResourceCells(state) {
     const hidden = state.scenario === "no-snapshot";
-    return [
-      { key: "processor", label: "CPU", value: toNumber(state.facts.resource.cpu), threshold: 85 },
-      { key: "memory", label: "内存", value: toNumber(state.facts.resource.memory), threshold: 85 },
-      { key: "disk", label: "磁盘", value: toNumber(state.facts.resource.disk), threshold: 90 }
-    ].map((item) => ({
-      ...item,
-      display: hidden ? "不展示" : formatPercent(item.value, state.scenario === "resource-full" ? 1 : 0),
-      tone: hidden ? "missing" : item.value >= item.threshold ? "danger" : "ok"
-    }));
+    const rows = [
+      { key: "processor", label: "处理器", raw: toNumber(state.facts.resource.cpu), threshold: 85 },
+      { key: "memory", label: "内存", raw: toNumber(state.facts.resource.memory), threshold: 85 },
+      { key: "disk", label: "磁盘", raw: toNumber(state.facts.resource.disk), threshold: 90 }
+    ];
+    const peak = rows.reduce((max, item) => item.raw > max.raw ? item : max, rows[0]);
+    return rows.map((item) => {
+      const value = Number.isFinite(item.raw) ? Math.max(0, Math.min(100, item.raw)) : 0;
+      const overThreshold = !hidden && item.raw >= item.threshold;
+      return {
+        key: item.key,
+        label: item.label,
+        display: hidden ? "不展示" : formatPercent(item.raw, state.scenario === "resource-full" ? 1 : 0).replace(/\.0%$/, "%"),
+        thresholdText: `阈${item.threshold}%`,
+        sustainedText: hidden ? "无快照" : routerOsResourceSustainedText(item.raw, item.threshold),
+        meterPercent: `${value}%`,
+        risk: item.key === peak.key ? "primary-risk" : "secondary-risk",
+        tone: hidden ? "missing" : overThreshold ? "danger" : "ok"
+      };
+    });
   }
-  function sparkPoints(values, maxValue, width = 312, height = 62) {
-    const max = Math.max(1, maxValue, ...values);
-    const step = values.length > 1 ? width / (values.length - 1) : width;
-    return values.map((value, index) => {
-      const x2 = Number((index * step).toFixed(1));
-      const y2 = Number((height - Math.max(0, value) / max * (height - 12) - 6).toFixed(1));
-      return `${x2},${y2}`;
-    }).join(" ");
+  function normalSummaryModel(priority) {
+    return {
+      mode: priority === "normal" ? "normal-compact" : "incident-hidden",
+      contract: "separate-conclusion-trust-four-facts-chart-first",
+      cells: []
+    };
   }
-  function lastSparkPoint(points) {
-    const last = points.trim().split(/\s+/).pop() || "0,0";
-    const [x2, y2] = last.split(",").map((item) => Number(item));
-    return { x: Number.isFinite(x2) ? x2 : 0, y: Number.isFinite(y2) ? y2 : 0 };
+  function trustPlanes(network) {
+    return ["forwarding", "collection", "snapshot", "business"].flatMap((id2) => {
+      const plane = network.planes.find((item) => item.id === id2);
+      if (!plane) return [];
+      return [{
+        id: plane.id,
+        label: plane.label,
+        value: plane.value,
+        note: plane.boundary,
+        tone: plane.tone
+      }];
+    });
   }
-  function statusTimelineRows(props) {
-    return buildMobileOverviewModel(props.snapshot, props.state).statusRows;
-  }
-  function statusCoreBlock(row) {
-    if (row.id === "timeline-wan") return "wan";
-    if (row.id === "timeline-collection") return "collection";
-    if (row.id === "timeline-resource") return "resource";
+  function statusCoreBlock(id2) {
+    if (id2 === "timeline-wan") return "wan";
+    if (id2 === "timeline-collection") return "collection";
+    if (id2 === "timeline-resource") return "resource";
     return void 0;
   }
-  function StatusTimeline(props) {
-    const rows = statusTimelineRows(props);
-    return /* @__PURE__ */ jsxRuntimeExports.jsx("section", { className: "ik-v420-timeline ik-v240-strip", "data-overview-mobile-core-block": "status-timeline", "data-overview-mobile-v240-status-strip": "timeline-not-kpi-grid", "data-overview-mobile-no-four-kpi-grid": "true", children: rows.map((row) => {
-      const coreBlock = statusCoreBlock(row);
-      return /* @__PURE__ */ jsxRuntimeExports.jsxs(
-        "article",
-        {
-          className: `ik-v420-timeline-row ik-mobile-status-strip ${toneClass(row.tone)}`,
-          "data-overview-mobile-core-block": coreBlock,
-          "data-row-id": row.id,
-          children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("i", { "aria-hidden": "true" }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { className: "ik-v821-row-title", children: row.title }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("strong", { children: row.value }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("em", { className: "ik-v821-row-note", children: row.note })
-          ]
-        },
-        row.id
-      );
-    }) });
+  function withSurfaceCoreBlocks(rows) {
+    return rows.map((row) => ({ ...row, coreBlock: statusCoreBlock(row.id) }));
+  }
+  function statusRows(snapshot, state) {
+    const totalWan2 = wanDisplayTotal(snapshot, state);
+    const resource = resourceFacts(state);
+    if (state.scenario === "no-snapshot") {
+      return withSurfaceCoreBlocks([
+        { id: "timeline-routeros", title: "RouterOS", value: "不可达", note: "当前无可信数据", tone: "danger" },
+        { id: "timeline-snapshot", title: "业务快照", value: "缺失", note: `最近成功 ${latestSuccess$1(snapshot, state)}`, tone: "missing" },
+        { id: "timeline-collection", title: "采集", value: "REST 待核", note: "SSH 断链", tone: "warn" },
+        { id: "timeline-route", title: "默认路由", value: "待判", note: "路由快照未取回", tone: "warn" }
+      ]);
+    }
+    const base2 = [
+      {
+        id: "timeline-wan",
+        title: "WAN",
+        value: state.facts.wan.allOffline ? `0/${formatNumber(totalWan2)} 在线` : `${formatNumber(state.facts.wan.online)}/${formatNumber(totalWan2 || 1)} 在线`,
+        note: state.facts.wan.allOffline ? "所有出口离线" : `↓${compactRate(totals(snapshot).down)} ↑${compactRate(totals(snapshot).up)}`,
+        tone: state.facts.wan.allOffline ? "danger" : state.facts.wan.offline ? "warn" : "ok"
+      },
+      {
+        id: "timeline-route",
+        title: "默认路由",
+        value: mobileRouteValue(state),
+        note: state.facts.wan.allOffline ? "出口不可用" : state.scenario === "collection-down" ? "可参考" : "主出口",
+        tone: state.facts.wan.allOffline ? "danger" : state.facts.route.level
+      },
+      {
+        id: "timeline-collection",
+        title: "采集",
+        value: state.scenario === "collection-down" ? "历史快照" : "实时",
+        note: `最近 ${latestSuccess$1(snapshot, state)}`,
+        tone: state.scenario === "collection-down" ? "warn" : state.facts.collection.credibilityTone
+      },
+      {
+        id: "timeline-resource",
+        title: "资源",
+        value: resource.map((item) => item.value.replace(/\.0%$/, "%")).join(" / "),
+        note: state.scenario === "resource-full" ? "三项超阈" : "处理器 / 内存 / 磁盘",
+        tone: resource.some((item) => item.tone === "danger") ? "danger" : "ok"
+      },
+      {
+        id: "timeline-interface",
+        title: "接口",
+        value: state.facts.interfaces.down > 0 ? `${formatNumber(state.facts.interfaces.down)} Down` : "正常",
+        note: state.facts.interfaces.downNames.slice(0, 2).join(" / ") || "承载正常",
+        tone: state.facts.interfaces.down > 0 ? "danger" : "trust"
+      }
+    ];
+    const pick = (ids) => ids.map((id2) => base2.find((row) => row.id === id2)).filter(Boolean);
+    const priority = priorityOf(state);
+    if (priority === "resource-full") return withSurfaceCoreBlocks(pick(["timeline-resource", "timeline-wan", "timeline-collection", "timeline-route"]));
+    if (priority === "wan-offline") return withSurfaceCoreBlocks(pick(["timeline-wan", "timeline-route", "timeline-collection", "timeline-resource"]));
+    if (priority === "interface-down") return withSurfaceCoreBlocks(pick(["timeline-interface", "timeline-route", "timeline-wan", "timeline-collection"]));
+    if (priority === "collection-degraded") return withSurfaceCoreBlocks(pick(["timeline-collection", "timeline-wan", "timeline-resource", "timeline-route"]));
+    return withSurfaceCoreBlocks(pick(["timeline-wan", "timeline-collection", "timeline-resource", "timeline-route"]));
+  }
+  function wanPorts(snapshot, state) {
+    const source = wanRows$1(snapshot);
+    const total = Math.max(1, wanLineCount(snapshot, state));
+    const rows = Array.from({ length: Math.min(8, total) }, (_, index) => source[index] || { name: `WAN${index + 1}`, running: false });
+    return rows.map((row, index) => {
+      const offline = state.facts.wan.allOffline || row.running === false;
+      const name = clean(row.name || row.interface, `pppoe-wan${index + 1}`).replace(/^pppoe[-_]?/i, "");
+      const carrier = clean(row.parent || row.access || row.interface, `P${index + 1}`).replace(/^ether/i, "ether");
+      const role = total <= 1 || index === 0 ? "default" : index === 1 ? "backup" : "member";
+      const roleLabel = role === "default" ? "默认出口" : role === "backup" ? "备用出口" : "成员出口";
+      const routeBinding = role === "default" ? "default-route" : role === "backup" ? "standby-route" : "member-route";
+      const impact = !offline ? "not-affected" : role === "default" ? "default-route-affected" : role === "backup" ? "backup-affected" : "member-affected";
+      const businessImpact = state.facts.wan.allOffline ? "internet-down" : impact === "default-route-affected" ? "degraded-backup" : "no-primary-impact";
+      const stateText = offline ? "离线" : "在线";
+      const portState = offline ? "down" : "up";
+      return {
+        id: `wan-port-${index}`,
+        label: `P${index + 1}`,
+        name,
+        note: `${roleLabel} · ${carrier} · ${stateText}`,
+        carrier,
+        stateText,
+        portState,
+        role,
+        roleLabel,
+        impact,
+        businessImpact,
+        routeBinding,
+        layout: "matrix",
+        tone: offline ? "danger" : "ok"
+      };
+    });
+  }
+  function abnormalDecisionNextAction(priority) {
+    if (priority === "wan-offline") return "查出口";
+    if (priority === "snapshot-missing") return "等快照";
+    if (priority === "interface-down") return "核承载";
+    if (priority === "resource-full") return "降负载";
+    if (priority === "collection-degraded") return "核采集";
+    return "观察";
+  }
+  function abnormalDecisionActionNote(priority) {
+    if (priority === "wan-offline") return "WAN / 默认路由";
+    if (priority === "snapshot-missing") return "RouterOS / 快照";
+    if (priority === "interface-down") return "接口 / 默认路由";
+    if (priority === "resource-full") return "CPU / 内存 / 磁盘";
+    if (priority === "collection-degraded") return "通道 / 缓存";
+    return "持续观察";
+  }
+  function abnormalDecisionEvidenceTone(priority) {
+    if (priority === "snapshot-missing") return "missing";
+    if (priority === "wan-offline") return "danger";
+    return "trust";
+  }
+  function abnormalDecisionCells(priority, contract, scope, network, heroTitle, listTitle) {
+    if (priority === "normal") return [];
+    const evidenceParts = contract.trustBoundary.split("·").map((part) => clean(part)).filter(Boolean);
+    return [
+      { label: "对象", value: listTitle, note: heroTitle, tone: scope.tone },
+      { label: "影响", value: scope.value, note: scope.note, tone: scope.tone },
+      { label: "证据", value: evidenceParts[0] || network.snapshot.value, note: evidenceParts.slice(1).join(" · ") || network.snapshot.label, tone: abnormalDecisionEvidenceTone(priority) },
+      { label: "下一步", value: abnormalDecisionNextAction(priority), note: abnormalDecisionActionNote(priority), tone: contract.severity === "p0" ? "danger" : "warn" }
+    ];
+  }
+  function buildMobileOverviewModel(snapshot, state) {
+    const network = buildRouterOsNetworkViewModel(snapshot, state);
+    const priority = network.priority;
+    const scope = buildMobileImpactScope(network);
+    const heroTitle = titleFor(network);
+    const list = buildMobilePrimaryList(snapshot, state, network, scope, resourceFacts(state));
+    const policy = resolveMobileOverviewPolicy(priority, list.kind, {
+      recentSuccess: latestSuccess$1(snapshot, state),
+      collectionLabel: network.collection.label,
+      collectionValue: network.collection.value,
+      snapshotValue: network.snapshot.value,
+      routeValue: network.route.value
+    });
+    const pills = heroPills(snapshot, state, network);
+    const core = coreMetrics(snapshot, state, network);
+    return {
+      priority,
+      network,
+      header: headerModel(snapshot, state),
+      appHomeContract: policy.appHomeContract,
+      surface: policy.surface,
+      impactScope: scope,
+      collectionTrustSeparation: collectionTrustSeparation(priority, scope),
+      abnormalDecision: abnormalDecisionCells(priority, policy.appHomeContract, scope, network, heroTitle, list.title),
+      collectionTrust: collectionTrustCells(state),
+      coreMetrics: core,
+      normalSummary: normalSummaryModel(priority),
+      hero: {
+        title: heroTitle,
+        subtitle: subtitleFor(snapshot, state, network),
+        facts: heroFacts(snapshot, state),
+        pills,
+        trustRail: heroTrustRail(pills),
+        interfaceCells: heroInterfaceCells(snapshot, state),
+        channelCells: heroChannelCells(state),
+        resourceCells: heroResourceCells(state),
+        visualKind: heroVisualKind(priority),
+        showMetrics: showHeroMetrics(),
+        trend: buildMobileTrendChart(snapshot, state)
+      },
+      trustPlanes: trustPlanes(network),
+      statusRows: statusRows(snapshot, state),
+      primaryList: list,
+      wanPorts: wanPorts(snapshot, state),
+      resourceRows: resourceFacts(state)
+    };
+  }
+  const MOBILE_BOTTOM_NAV_CONTRACT = "home-wan-interface-terminal-log-router-monitor-low-noise";
+  const MOBILE_BOTTOM_NAV_ITEMS = [
+    { id: "home", label: "首页", semantic: "status-overview", note: "状态总览", active: true, path: "M4 11.5 12 5l8 6.5V20a1 1 0 0 1-1 1h-5v-6h-4v6H5a1 1 0 0 1-1-1z" },
+    { id: "wan", label: "WAN", semantic: "multi-wan", note: "多出口", active: false, path: "M4 8h16M4 12h16M4 16h16M7 8v8M17 8v8" },
+    { id: "interface", label: "接口", semantic: "interface-vlan", note: "接口/VLAN", active: false, path: "M6 7h12v10H6zM9 17v3M15 17v3M9 4v3M15 4v3" },
+    { id: "terminal", label: "终端", semantic: "online-terminals", note: "在线终端", active: false, path: "M5 7h14v8H5zM8 19h8M12 15v4M7 10h.01M11 10h.01M15 10h.01" },
+    { id: "log", label: "日志", semantic: "collection-log", note: "采集日志", active: false, path: "M7 5h10v14H7zM10 9h4M10 13h4" }
+  ];
+  function BottomTabs() {
+    return /* @__PURE__ */ jsxRuntimeExports.jsx(
+      "nav",
+      {
+        className: "ik-v420-tabs ik-v240-tabs",
+        "aria-label": "路由器监控底部导航",
+        "data-overview-mobile-bottom-tab": "home-wan-interface-terminal-log",
+        "data-overview-mobile-v159-tabbar": "bottom-entry",
+        "data-overview-mobile-v240-tabs": "bottom-entry",
+        "data-overview-mobile-v1010-quiet-tabbar": "no-border-no-glow",
+        "data-overview-mobile-v1066-router-tabs": MOBILE_BOTTOM_NAV_CONTRACT,
+        "data-overview-mobile-v1066-router-tab-order": MOBILE_BOTTOM_NAV_ITEMS.map((item) => item.id).join("/"),
+        "data-overview-mobile-v1066-router-tab-semantics": MOBILE_BOTTOM_NAV_ITEMS.map((item) => item.semantic).join("/"),
+        children: MOBILE_BOTTOM_NAV_ITEMS.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
+          "button",
+          {
+            "aria-current": item.active ? "page" : void 0,
+            "aria-label": `${item.label} · ${item.note}`,
+            className: item.active ? "is-active" : "",
+            "data-overview-mobile-v1066-router-tab": item.id,
+            "data-overview-mobile-v1066-router-tab-semantic": item.semantic,
+            "data-overview-mobile-v1066-router-tab-note": item.note,
+            type: "button",
+            children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("svg", { viewBox: "0 0 24 24", "aria-hidden": "true", children: /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: item.path }) }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: item.label })
+            ]
+          },
+          item.id
+        ))
+      }
+    );
+  }
+  function toneClass(tone) {
+    return `is-${tone}`;
+  }
+  function screenTone(state) {
+    if (state.scenario === "no-snapshot") return "missing";
+    if (state.scenario === "single") return "ok";
+    return state.verdict.level;
+  }
+  function CoreMetricRail({ model }) {
+    const metrics = model.coreMetrics.slice(1, 5);
+    return /* @__PURE__ */ jsxRuntimeExports.jsx(
+      "section",
+      {
+        className: "ik-v940-core-rail ik-v1044-metric-grid",
+        "aria-label": "移动端核心指标",
+        "data-overview-mobile-core-block": "core-metric-grid",
+        "data-overview-mobile-v940-core": "state-wan-collection-resource-snapshot",
+        "data-overview-mobile-v1044-metric-grid": "wan-collection-resource-snapshot-four-core-facts",
+        "data-overview-mobile-v1044-metric-count": metrics.length,
+        children: metrics.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: toneClass(item.tone), title: `${item.label} ${item.value} ${item.note}`, children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: item.label }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("strong", { children: item.value }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: item.note })
+        ] }, item.label))
+      }
+    );
   }
   function rankingIconPath(row) {
     const text2 = `${row.name} ${row.kind ?? ""} ${row.meta}`.toLowerCase();
@@ -11682,79 +14757,101 @@ var PanelFramework = function(exports) {
     if (/业务|快照|采集/.test(text2)) return "M5 5h14v14H5zM8 9h8M8 13h8M8 17h5";
     return "M6 8h12v8H6zM9 5h6M9 19h6M12 5v3M12 16v3";
   }
-  function RankingList(props) {
-    const model = buildMobileOverviewModel(props.snapshot, props.state);
+  function RankingList({ model }) {
     const rows = model.primaryList.rows;
-    const isTerminalRanking = model.primaryList.kind === "terminal-ranking";
     return /* @__PURE__ */ jsxRuntimeExports.jsxs(
       "section",
       {
         className: "ik-v420-list ik-v420-app-list ik-v240-list",
-        "data-overview-mobile-list-kind": model.primaryList.kind,
-        "data-overview-mobile-rank-list": isTerminalRanking ? "terminal-total-traffic-list" : void 0,
+        "data-overview-mobile-list-kind": model.surface.listKind,
+        "data-overview-mobile-rank-list": model.surface.rankListKind,
         "data-overview-mobile-v420-list": "native-router-list",
-        "data-overview-mobile-v240-list": isTerminalRanking ? "terminal-ranking" : "incident-objects",
+        "data-overview-mobile-v240-list": model.surface.v240ListKind,
         children: [
           /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { children: [
             /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: model.primaryList.title }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: model.primaryList.meta })
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: model.primaryList.meta }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs(
+              "em",
+              {
+                className: `ik-v1020-impact-scope ${toneClass(model.impactScope.tone)}`,
+                "data-overview-mobile-impact-scope-line": `${model.impactScope.id}:${model.impactScope.plane}`,
+                children: [
+                  model.impactScope.label,
+                  " · ",
+                  model.impactScope.value,
+                  " · ",
+                  model.impactScope.note
+                ]
+              }
+            )
           ] }),
-          rows.map((row) => /* @__PURE__ */ jsxRuntimeExports.jsxs("article", { className: `ik-v420-list-row ${toneClass(row.tone)}`, children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("i", { className: "ik-v503-device-icon", "data-rank": row.rank, children: /* @__PURE__ */ jsxRuntimeExports.jsx("svg", { viewBox: "0 0 24 24", "aria-hidden": "true", children: /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: rankingIconPath(row) }) }) }),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsxs("b", { children: [
-                row.name,
-                row.kind ? /* @__PURE__ */ jsxRuntimeExports.jsx("small", { className: "ik-v807-kind", children: row.kind }) : null
-              ] }),
-              /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: row.meta }),
-              row.percent > 0 ? /* @__PURE__ */ jsxRuntimeExports.jsx("u", { "aria-hidden": "true", children: /* @__PURE__ */ jsxRuntimeExports.jsx("i", { style: { width: `${row.percent}%` } }) }) : null
-            ] }),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("strong", { children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: row.value }),
-              /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: row.status || row.kind || "在线" })
-            ] })
-          ] }, row.id))
+          rows.map((row) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
+            "article",
+            {
+              className: `ik-v420-list-row ${toneClass(row.tone)}`,
+              "data-overview-mobile-v1061-evidence-layer": row.evidenceLayer,
+              "data-overview-mobile-v1061-evidence-source": row.evidenceSource,
+              "data-overview-mobile-v1061-evidence-role": row.evidenceRole,
+              "data-overview-mobile-v1061-evidence-key": row.evidenceKey,
+              children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx("i", { className: "ik-v503-device-icon", "data-rank": row.rank, children: /* @__PURE__ */ jsxRuntimeExports.jsx("svg", { viewBox: "0 0 24 24", "aria-hidden": "true", children: /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: rankingIconPath(row) }) }) }),
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsxs("b", { children: [
+                    row.name,
+                    row.kind ? /* @__PURE__ */ jsxRuntimeExports.jsx("small", { className: "ik-v807-kind", children: row.kind }) : null
+                  ] }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: row.meta }),
+                  row.percent > 0 ? /* @__PURE__ */ jsxRuntimeExports.jsx("u", { "aria-hidden": "true", children: /* @__PURE__ */ jsxRuntimeExports.jsx("i", { style: { width: `${row.percent}%` } }) }) : null
+                ] }),
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("strong", { children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: row.value }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: row.status || row.kind || "在线" })
+                ] })
+              ]
+            },
+            row.id
+          ))
         ]
       }
     );
   }
   function HomeSurface(props) {
-    const model = buildMobileOverviewModel(props.snapshot, props.state);
-    const incidentFirst = model.surface.order === "list-before-status";
-    return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+    const { model } = props;
+    return /* @__PURE__ */ jsxRuntimeExports.jsx(
       "section",
       {
-        className: `ik-v420-surface ik-v240-facts ${incidentFirst ? "is-incident-first" : "is-ranking-first"} is-ranking-${model.surface.ranking}`,
+        className: `ik-v420-surface ik-v240-facts ${model.surface.className}`,
         "data-overview-mobile-core-block": "ios-router-home-surface",
         "data-overview-mobile-v240-facts": "timeline-resource-ranking",
-        "data-overview-mobile-surface-order": incidentFirst ? "incident-before-status" : "status-before-ranking",
+        "data-overview-mobile-v1060-surface-policy": model.surface.contract,
+        "data-overview-mobile-v1060-surface-slots": model.surface.slots.join("/"),
+        "data-overview-mobile-surface-order": model.surface.orderContract,
         "data-overview-mobile-ranking-policy": model.surface.ranking,
-        children: [
-          incidentFirst ? /* @__PURE__ */ jsxRuntimeExports.jsx(RankingList, { ...props }) : /* @__PURE__ */ jsxRuntimeExports.jsx(StatusTimeline, { ...props }),
-          incidentFirst ? /* @__PURE__ */ jsxRuntimeExports.jsx(StatusTimeline, { ...props }) : /* @__PURE__ */ jsxRuntimeExports.jsx(RankingList, { ...props })
-        ]
+        "data-overview-mobile-list-kind": model.surface.listKind,
+        "data-overview-mobile-impact-scope": model.impactScope.id,
+        "data-overview-mobile-impact-plane": model.impactScope.plane,
+        "data-overview-mobile-abnormal-ia": model.appHomeContract.informationArchitecture,
+        "data-overview-mobile-terminal-ranking-state": model.surface.terminalRankingState,
+        "data-overview-mobile-terminal-ranking-mounted": model.surface.terminalRankingMounted,
+        "data-overview-mobile-normal-ranking": model.surface.normalRanking,
+        "data-overview-mobile-v1070-grouped-surface": "separator-only-status-list-no-card-stack",
+        "data-overview-mobile-v1080-surface": "one-supporting-list-no-duplicate-status-ledger",
+        children: /* @__PURE__ */ jsxRuntimeExports.jsx(RankingList, { ...props })
       }
     );
   }
   function LineChart({ chart }) {
-    var _a;
-    const down = chart.down.length ? chart.down : [1, 1, 1];
-    const up = chart.up.length ? chart.up : [0.45, 0.45, 0.45];
-    const max = Math.max(1, ...down, ...up);
-    const downPoints = sparkPoints(down, max, 312, 52);
-    const upPoints = sparkPoints(up, max, 312, 52);
-    const focus = lastSparkPoint(downPoints);
-    const peakValue = Math.max(...down);
-    const peakIndex = Math.max(0, down.findIndex((value) => value === peakValue));
-    const peakX = down.length > 1 ? Number((peakIndex * 312 / (down.length - 1)).toFixed(1)) : 156;
-    const peakY = Number((52 - Math.max(0, peakValue) / max * 40 - 6).toFixed(1));
-    const start = ((_a = downPoints.trim().split(/\s+/)[0]) == null ? void 0 : _a.split(",").map((item) => Number(item))) || [0, 52];
-    const referenceY = Number((52 - Math.max(0, Math.min(1, chart.referenceRatio)) * 40 - 6).toFixed(1));
+    const plot = chart.plot;
+    const peakLabelOnRight = plot.peak.x > 248;
+    const currentLabelOnRight = plot.focus.x > 248;
+    const peakLabelX = peakLabelOnRight ? Math.max(18, plot.peak.x - 5) : Math.min(294, plot.peak.x + 5);
+    const currentLabelX = currentLabelOnRight ? Math.max(18, plot.focus.x - 5) : Math.min(294, plot.focus.x + 5);
     return /* @__PURE__ */ jsxRuntimeExports.jsxs(
       "svg",
       {
         className: "ik-v420-line-chart",
-        viewBox: "0 0 312 60",
+        viewBox: `0 0 312 ${plot.viewHeight}`,
         role: "img",
         "aria-label": `${chart.windowText} WAN 下载上传趋势，当前 ${chart.currentLabel}，峰值 ${chart.peakLabel}，${chart.referenceLabel}，采样 ${chart.sampleText}`,
         "data-overview-chart-type": "mini-line",
@@ -11766,34 +14863,98 @@ var PanelFramework = function(exports) {
         "data-overview-mobile-chart-peak": chart.peakLabel,
         "data-overview-mobile-chart-sample": chart.sampleText,
         "data-overview-mobile-chart-reference": chart.referenceLabel,
+        "data-overview-mobile-chart-threshold": chart.thresholdLabel,
+        "data-overview-mobile-chart-breach": chart.breachLabel,
+        "data-overview-mobile-chart-anomaly": chart.anomalyLabel,
+        "data-overview-mobile-chart-decision": chart.decisionLabel,
+        "data-overview-mobile-v1045-product-chart-decision": chart.decisionContract,
+        "data-overview-mobile-v1057-chart-plot-model": "view-model-svg-points-threshold-peak-breach",
+        "data-overview-mobile-v1012-product-chart": "window-current-peak-threshold-sample-breach",
         children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("path", { className: "ik-v420-gridline", d: "M0 13 H312 M0 31 H312 M0 47 H312" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("path", { className: "ik-v945-reference-line", d: `M0 ${referenceY} H312` }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("path", { className: "ik-v945-current-line", d: `M${focus.x} 10 V54` }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("path", { className: "ik-v420-area", d: `M0 52 L${downPoints} L312 52 Z` }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("polyline", { className: "ik-v420-curve is-main", points: downPoints }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("polyline", { className: "ik-v420-curve is-soft", points: upPoints }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("circle", { className: "ik-v945-start-dot", cx: Number.isFinite(start[0]) ? start[0] : 0, cy: Number.isFinite(start[1]) ? start[1] : 52, r: "2.1" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("circle", { className: "ik-v420-peak-dot", cx: peakX, cy: peakY, r: "2.6" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("circle", { className: "ik-v420-focus-dot", cx: focus.x, cy: focus.y, r: "2.8" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("text", { className: "ik-v950-axis-label is-start", x: "1", y: "58", children: chart.startLabel }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("text", { className: "ik-v950-axis-label is-end", x: "311", y: "58", textAnchor: "end", children: chart.endLabel })
+          /* @__PURE__ */ jsxRuntimeExports.jsx("path", { className: "ik-v420-gridline", d: plot.gridYs.map((y2) => `M0 ${y2} H312`).join(" ") }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("path", { className: "ik-v945-reference-line", d: `M0 ${plot.referenceY} H312` }),
+          plot.breachX !== null ? /* @__PURE__ */ jsxRuntimeExports.jsx("path", { className: "ik-v1012-breach-line", d: `M${plot.breachX} ${plot.topY} V${plot.baselineY + 2}` }) : null,
+          /* @__PURE__ */ jsxRuntimeExports.jsx("path", { className: "ik-v945-current-line", d: `M${plot.focus.x} ${plot.topY} V${plot.baselineY + 2}` }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("path", { className: "ik-v420-area", d: `M0 ${plot.baselineY} L${plot.downPoints} L312 ${plot.baselineY} Z` }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("polyline", { className: "ik-v420-curve is-main", points: plot.downPoints }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("polyline", { className: "ik-v420-curve is-soft", points: plot.upPoints }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("circle", { className: "ik-v945-start-dot", cx: plot.start.x, cy: plot.start.y, r: "2.1" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("circle", { className: "ik-v420-peak-dot", cx: plot.peak.x, cy: plot.peak.y, r: "2.6" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("circle", { className: "ik-v420-focus-dot", cx: plot.focus.x, cy: plot.focus.y, r: "2.8" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("text", { className: "ik-v1012-threshold-label", x: "4", y: Math.max(10, plot.referenceY - 3), textAnchor: "start", children: "阈值" }),
+          plot.breachX !== null ? /* @__PURE__ */ jsxRuntimeExports.jsx("text", { className: "ik-v1012-breach-label", x: Math.min(286, plot.breachX + 3), y: plot.topY + 4, children: "异常" }) : null,
+          /* @__PURE__ */ jsxRuntimeExports.jsx(
+            "text",
+            {
+              className: "ik-v1081-peak-label",
+              x: peakLabelX,
+              y: Math.max(plot.topY + 10, plot.peak.y - 7),
+              textAnchor: peakLabelOnRight ? "end" : "start",
+              children: "峰值"
+            }
+          ),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(
+            "text",
+            {
+              className: "ik-v1081-current-label",
+              x: currentLabelX,
+              y: Math.min(plot.baselineY - 5, plot.focus.y + 14),
+              textAnchor: currentLabelOnRight ? "end" : "start",
+              children: "当前"
+            }
+          ),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("text", { className: "ik-v950-axis-label is-start", x: "1", y: plot.axisY, children: chart.startLabel }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("text", { className: "ik-v950-axis-label is-end", x: "311", y: plot.axisY, textAnchor: "end", children: chart.endLabel })
         ]
       }
     );
   }
   function TrendVisual({ model }) {
     const chart = model.hero.trend;
-    return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ik-v812-trend-visual", "data-overview-mobile-chart-readout": "current-peak-window", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx(LineChart, { chart }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("aside", { children: chart.readouts.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: toneClass(item.tone), children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: item.label }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: item.value })
-      ] }, `${item.label}-${item.value}`)) })
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs(
+        "div",
+        {
+          className: "ik-v812-trend-visual",
+          "data-overview-mobile-chart-readout": "current-peak-window-threshold-sample-anomaly",
+          "data-overview-mobile-chart-layout": "native-readout-rail-current-peak-window-threshold-sample-anomaly",
+          "data-overview-mobile-v1045-chart-decision": chart.decisionLabel,
+          "data-overview-mobile-v1072-chart": "decision-plot-two-series-three-by-two-readout",
+          children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ik-v1072-chart-head", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "ik-v1065-chart-kicker", "data-overview-mobile-v1065-chart-label": "normal-visible-compact", children: "WAN 实时趋势" }),
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ik-v1072-series-legend", "data-overview-mobile-v1072-series-legend": "download-upload", "aria-label": "下载与上传图例", children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "is-download", children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("i", { "aria-hidden": "true" }),
+                  "下载"
+                ] }),
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "is-upload", children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("i", { "aria-hidden": "true" }),
+                  "上传"
+                ] })
+              ] })
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(LineChart, { chart })
+          ]
+        }
+      ),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(
+        "div",
+        {
+          className: "ik-v1010-chart-readout-rail",
+          "data-overview-mobile-chart-readout-rail": "current-peak-window-threshold-sample-anomaly",
+          "data-overview-mobile-v1045-chart-readouts": "window-current-peak-threshold-sample-anomaly-source",
+          "data-overview-mobile-v1072-readout-grid": "three-columns-two-rows-six-decisions",
+          children: chart.readouts.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: toneClass(item.tone), children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: item.label }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: item.value })
+          ] }, `${item.label}-${item.value}`))
+        }
+      )
     ] });
   }
-  function PortMatrix({ snapshot, state }) {
-    const ports = buildMobileOverviewModel(snapshot, state).wanPorts;
+  function PortMatrix({ model }) {
+    const ports = model.wanPorts;
     return /* @__PURE__ */ jsxRuntimeExports.jsx(
       "div",
       {
@@ -11801,20 +14962,41 @@ var PanelFramework = function(exports) {
         "data-overview-chart-type": "matrix",
         "data-overview-mobile-first-visual": "wan-eight-port-matrix",
         "data-overview-mobile-v420-visual": "wan-eight-port-matrix",
-        children: ports.map((port) => {
-          const offline = port.tone === "danger";
-          const [carrier = port.name, stateText = offline ? "离线" : "在线"] = port.note.split("·").map((part) => part.trim()).filter(Boolean);
-          return /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: offline ? "is-danger" : "is-ok", "data-port": port.label, children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("i", {}),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: port.label }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: carrier }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: stateText })
-          ] }, port.id);
-        })
+        "data-overview-mobile-v1042-wan-port-matrix": "compact-router-port-matrix-interface-state-carrier-no-toy-capsules",
+        "data-overview-mobile-v1054-wan-port-model": "view-model-carrier-state-no-jsx-note-split",
+        "data-overview-mobile-v1062-wan-role-model": "default-backup-member-impact-route-binding",
+        "data-overview-mobile-v1042-port-cell-count": ports.length,
+        children: ports.map((port) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
+          "span",
+          {
+            className: port.portState === "down" ? "is-danger" : "is-ok",
+            "data-port": port.label,
+            "data-overview-mobile-wan-port-cell": "router-port",
+            "data-overview-mobile-wan-port-carrier": port.carrier,
+            "data-overview-mobile-wan-port-interface": port.name,
+            "data-overview-mobile-wan-port-state": port.portState,
+            "data-overview-mobile-v1062-wan-role": port.role,
+            "data-overview-mobile-v1062-wan-impact": port.impact,
+            "data-overview-mobile-v1062-wan-business-impact": port.businessImpact,
+            "data-overview-mobile-v1062-wan-route-binding": port.routeBinding,
+            children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("i", { "aria-hidden": "true" }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: port.name }),
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("small", { children: [
+                port.roleLabel,
+                " · ",
+                port.carrier
+              ] }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("em", { "data-overview-mobile-wan-port-carrier": true, children: port.carrier }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("strong", { "data-overview-mobile-wan-port-state": true, children: port.stateText })
+            ]
+          },
+          port.id
+        ))
       }
     );
   }
-  function ChannelRail({ state }) {
+  function ChannelRail({ model }) {
     return /* @__PURE__ */ jsxRuntimeExports.jsx(
       "div",
       {
@@ -11822,7 +15004,8 @@ var PanelFramework = function(exports) {
         "data-overview-chart-type": "matrix",
         "data-overview-mobile-first-visual": "routeros-rest-ssh-snapshot-status-line",
         "data-overview-mobile-v420-visual": "routeros-rest-ssh-snapshot-status-line",
-        children: channelStatus(state).map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: toneClass(item.tone), children: [
+        "data-overview-mobile-v1055-channel-rail": "view-model-routeros-rest-ssh-snapshot-trust-cells",
+        children: model.hero.channelCells.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: toneClass(item.tone), children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx("i", {}),
           /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: item.label }),
           /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: item.value })
@@ -11830,12 +15013,8 @@ var PanelFramework = function(exports) {
       }
     );
   }
-  function firstDownInterface(snapshot) {
-    return interfaceRows$1(snapshot).find((row) => row.running === false) || interfaceRows$1(snapshot)[0];
-  }
-  function InterfaceFlow({ snapshot, state }) {
-    const rows = interfaceRows$1(snapshot).filter((row) => row.running === false).slice(0, 3);
-    const visible = rows.length ? rows : [firstDownInterface(snapshot)].filter(Boolean);
+  function InterfaceFlow({ model }) {
+    const visible = model.hero.interfaceCells;
     return /* @__PURE__ */ jsxRuntimeExports.jsx(
       "div",
       {
@@ -11843,56 +15022,61 @@ var PanelFramework = function(exports) {
         "data-overview-chart-type": "status-list",
         "data-overview-mobile-first-visual": "interface-parent-carrier-chain-list",
         "data-overview-mobile-v420-visual": "interface-parent-carrier-chain-list",
-        children: visible.map((row, index) => /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+        "data-overview-mobile-v1053-interface-flow": "view-model-interface-carrier-state-cells",
+        children: visible.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: toneClass(item.tone), "data-overview-mobile-v1053-interface-cell": item.carrier, children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx("i", {}),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: clean(row.name || row.interface, `接口${index + 1}`) }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: item.name }),
           /* @__PURE__ */ jsxRuntimeExports.jsxs("em", { children: [
-            clean(row.parent || row.master || row.bridge, "承载待确认"),
+            item.carrier,
             " · ",
-            index === 0 ? `${formatNumber(state.facts.interfaces.down)} Down` : "Down"
+            item.stateText
           ] })
-        ] }, `${clean(row.name || row.interface, `接口${index + 1}`)}-${index}`))
+        ] }, item.id))
       }
     );
   }
-  function ResourceVisual({ state }) {
-    const metrics = resourceMetrics(state);
-    const peakKey = metrics.reduce((max, item) => item.value > max.value ? item : max, metrics[0]).key;
+  function ResourceVisual({ model }) {
+    const metrics = model.hero.resourceCells;
     return /* @__PURE__ */ jsxRuntimeExports.jsx(
       "div",
       {
-        className: "ik-density-resource-ledger ik-v420-resource-visual ik-mobile-resource-sparks ik-v420-resource-meter-set is-vertical-ledger ik-v620-pressure-visual",
+        className: "ik-density-resource-ledger ik-v420-resource-visual ik-v420-resource-meter-set is-vertical-ledger ik-v620-pressure-visual ik-v1040-resource-ledger",
         "data-overview-chart-type": "bar",
         "data-overview-scene-chart": "mobile-resource-vertical-ledger",
         "data-overview-mobile-core-block": "resource",
         "data-overview-mobile-first-visual": "processor-memory-disk",
         "data-overview-mobile-v420-visual": "processor-memory-disk-thin-bars",
+        "data-overview-mobile-v1040-resource-pressure": "low-noise-threshold-ledger-no-red-blue-race",
+        "data-overview-mobile-v1056-resource-visual": "view-model-resource-threshold-sustained-risk-cells",
+        "data-overview-mobile-resource-tone-policy": "neutral-bars-risk-label-only",
         children: metrics.map((item) => {
-          const value = Number.isFinite(item.value) ? Math.max(0, Math.min(100, item.value)) : 0;
-          const meterStyle = { "--meter": `${value}%` };
-          return /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: `ik-density-resource-row ik-mobile-resource-spark ik-v420-resource-meter ${toneClass(item.tone)}${item.key === peakKey ? " is-peak" : ""}`, style: meterStyle, children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: item.label }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("strong", { className: "ik-v802-ring-value", children: item.display.replace(/\.0%$/, "%") }),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("small", { children: [
-              "阈",
-              item.threshold,
-              "%"
-            ] }),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("em", { children: [
-              "持续",
-              item.tone === "danger" ? "6/6" : "0/6"
-            ] }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "ik-density-resource-track", "aria-hidden": "true", children: /* @__PURE__ */ jsxRuntimeExports.jsx("span", { style: { width: `${value}%` } }) })
-          ] }, item.key);
+          const meterStyle = { "--meter": item.meterPercent };
+          return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+            "span",
+            {
+              className: `ik-density-resource-row ik-v420-resource-meter ${toneClass(item.tone)}${item.risk === "primary-risk" ? " is-peak" : ""}`,
+              "data-overview-mobile-resource-row": item.key,
+              "data-overview-mobile-resource-risk": item.risk,
+              style: meterStyle,
+              children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: item.label }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx("strong", { className: "ik-v802-ring-value", children: item.display }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: item.thresholdText }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: item.sustainedText }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "ik-density-resource-track", "aria-hidden": "true", children: /* @__PURE__ */ jsxRuntimeExports.jsx("span", { style: { width: item.meterPercent } }) })
+              ]
+            },
+            item.key
+          );
         })
       }
     );
   }
   function HeroVisual(props) {
     if (props.model.hero.visualKind === "wan-ports") return /* @__PURE__ */ jsxRuntimeExports.jsx(PortMatrix, { ...props });
-    if (props.model.hero.visualKind === "resource-bars") return /* @__PURE__ */ jsxRuntimeExports.jsx(ResourceVisual, { state: props.state });
+    if (props.model.hero.visualKind === "resource-bars") return /* @__PURE__ */ jsxRuntimeExports.jsx(ResourceVisual, { model: props.model });
     if (props.model.hero.visualKind === "interface-list") return /* @__PURE__ */ jsxRuntimeExports.jsx(InterfaceFlow, { ...props });
-    if (props.model.hero.visualKind === "trust-channels") return /* @__PURE__ */ jsxRuntimeExports.jsx(ChannelRail, { state: props.state });
+    if (props.model.hero.visualKind === "trust-channels") return /* @__PURE__ */ jsxRuntimeExports.jsx(ChannelRail, { ...props });
     return /* @__PURE__ */ jsxRuntimeExports.jsx(TrendVisual, { model: props.model });
   }
   function HeroMetrics({ model }) {
@@ -11904,32 +15088,41 @@ var PanelFramework = function(exports) {
       /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: item.note })
     ] }, `${item.label}-${item.value}`)) });
   }
-  function splitHeroPill(text2) {
-    const [label, ...rest] = text2.replace(/\s+/g, " ").trim().split(" ");
-    return { label: label || "状态", value: rest.join(" ") || text2 };
-  }
-  function heroPillTone(text2) {
-    if (/缺失|不可用|断网|不展示|0\/|异常/.test(text2)) return "danger";
-    if (/待|缓存|确认|参考|越阈|超/.test(text2)) return "warn";
-    return "trust";
-  }
-  function HeroTrustRail({ model }) {
-    return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ik-v503-hero-pills ik-v830-trust-rail", "aria-label": "对象影响可信度", children: model.hero.pills.slice(0, 3).map((text2) => {
-      const item = splitHeroPill(text2);
-      return /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: toneClass(heroPillTone(text2)), children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: item.label }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("strong", { children: item.value })
-      ] }, text2);
-    }) });
+  function AbnormalDecisionRail({ model }) {
+    const cells = model.abnormalDecision;
+    if (!cells.length) return null;
+    return /* @__PURE__ */ jsxRuntimeExports.jsx(
+      "div",
+      {
+        className: "ik-v1046-abnormal-decision-rail",
+        "data-overview-mobile-v1046-abnormal-decision-rail": "object-impact-evidence-next-action",
+        "data-overview-mobile-v1046-abnormal-decision-ia": model.appHomeContract.informationArchitecture,
+        "data-overview-mobile-v1046-abnormal-decision-priority": model.priority,
+        "data-overview-mobile-v1046-abnormal-decision-scope": `${model.impactScope.id}:${model.impactScope.plane}`,
+        children: cells.map((cell) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
+          "span",
+          {
+            className: toneClass(cell.tone),
+            "data-overview-mobile-v1046-abnormal-decision-cell": cell.label,
+            children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: cell.label }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: cell.value }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: cell.note })
+            ]
+          },
+          cell.label
+        ))
+      }
+    );
   }
   function IncidentHero(props) {
-    const { snapshot, state } = props;
+    const { state, model } = props;
     const tone = screenTone(state);
-    const model = buildMobileOverviewModel(snapshot, state);
+    const isNormal = model.priority === "normal";
     return /* @__PURE__ */ jsxRuntimeExports.jsxs(
       "section",
       {
-        className: `ik-v420-hero ik-v240-hero ik-v159-network-hero ${toneClass(tone)}`,
+        className: `ik-v420-hero ik-v240-hero ik-v159-network-hero ${toneClass(tone)} ${isNormal ? "is-normal-chart" : "is-incident"}`,
         "data-overview-mobile-alert": tone,
         "data-overview-mobile-v420-hero": "network-state-home",
         "data-overview-mobile-v240-hero": "network-state-home",
@@ -11940,43 +15133,147 @@ var PanelFramework = function(exports) {
         "data-overview-mobile-priority": model.priority,
         "data-overview-mobile-visual-kind": model.hero.visualKind,
         "data-overview-mobile-hero-metrics": model.hero.showMetrics ? "visible" : "suppressed",
+        "data-overview-mobile-hero-layout": model.appHomeContract.layout,
+        "data-overview-mobile-hero-ranking-policy": model.appHomeContract.rankingPolicy,
+        "data-overview-mobile-hero-trust-boundary": model.appHomeContract.trustBoundary,
+        "data-overview-mobile-v1065-normal-hero": model.priority === "normal" ? "chart-first-no-promo-headline" : void 0,
+        "data-overview-mobile-v1080-hero": isNormal ? "product-chart-only" : "incident-object-impact-evidence",
         children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { className: "ik-v620-hero-head", children: [
+          !isNormal ? /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { className: "ik-v620-hero-head", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "ik-v970-first-question", children: model.appHomeContract.firstQuestion }),
             /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { "data-overview-primary-conclusion": "true", children: model.hero.title }),
             /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "ik-v503-hero-copy", children: model.hero.subtitle })
-          ] }),
+          ] }) : null,
           /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `ik-v620-hero-stage ${model.hero.showMetrics ? "has-metrics" : "is-metricless"}`, children: [
             /* @__PURE__ */ jsxRuntimeExports.jsx(HeroMetrics, { model }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ik-v420-visual ik-v240-visual ik-v240-traffic", children: HeroVisual({ ...props, model }) })
+            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ik-v420-visual ik-v240-visual ik-v240-traffic", children: /* @__PURE__ */ jsxRuntimeExports.jsx(HeroVisual, { ...props }) })
           ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(HeroTrustRail, { model })
+          !isNormal ? /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ik-v970-trust-boundary", "data-overview-mobile-trust-boundary-line": true, children: /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: model.appHomeContract.trustBoundary }) }) : null,
+          /* @__PURE__ */ jsxRuntimeExports.jsx(AbnormalDecisionRail, { model })
         ]
       }
     );
   }
-  function StatusHeader({ snapshot, state }) {
-    const name = clean(snapshot.identity || snapshot.name || snapshot.deviceName || state.facts.device.identity || "爱快路由");
-    const version = clean(snapshot.version || snapshot.routerosVersion || state.facts.device.version || "RouterOS");
-    const versionText = /^RouterOS\b/i.test(version) ? version : `RouterOS ${version}`;
-    const recent = latestSuccess$1(snapshot, state);
-    const stateLabel = statusLabel(state);
-    return /* @__PURE__ */ jsxRuntimeExports.jsxs("nav", { className: "ik-v420-nav ik-v240-nav", "aria-label": "手机导航", "data-overview-mobile-v420-nav": "ios-navigation", "data-overview-mobile-v240-nav": "app-navigation", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("button", { "aria-label": "打开菜单", type: "button", children: /* @__PURE__ */ jsxRuntimeExports.jsx("svg", { viewBox: "0 0 24 24", "aria-hidden": "true", children: /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: "M4 7h16M4 12h16M4 17h16" }) }) }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ik-v240-title", "data-overview-mobile-primary-title": "device", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: name }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-          versionText,
-          " · ",
-          recent
+  function JudgementStrip({ model }) {
+    const [status] = model.coreMetrics;
+    return /* @__PURE__ */ jsxRuntimeExports.jsx(
+      "section",
+      {
+        className: `ik-v960-judgement-strip ${toneClass(status.tone)}`,
+        "aria-label": "移动端核心判断",
+        "data-overview-mobile-core-block": "compact-conclusion",
+        "data-overview-mobile-v1044-judgement-strip": "compact-conclusion-only",
+        "data-overview-mobile-v960-judgement": "conclusion-and-impact",
+        "data-overview-mobile-normal-summary": "compact-status-and-impact",
+        "data-overview-mobile-v1090-decision-strip": "conclusion-only-metrics-separated",
+        "data-overview-mobile-priority": model.priority,
+        children: /* @__PURE__ */ jsxRuntimeExports.jsxs("strong", { className: "ik-v1080-conclusion", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("i", { "aria-hidden": "true" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "网络结论" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(
+            "b",
+            {
+              "data-overview-mobile-v1010-no-ellipsis-label": "true",
+              style: { maxWidth: "none", overflow: "visible", textOverflow: "clip", whiteSpace: "nowrap" },
+              children: status.value
+            }
+          ),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: status.note }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("small", { children: [
+            model.impactScope.label,
+            " · ",
+            model.impactScope.value
+          ] })
         ] })
-      ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("strong", { className: `ik-v240-status ${toneClass(screenTone(state))}`, "data-overview-mobile-primary-status": "device-state", "aria-label": `设备状态 ${stateLabel}`, children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("i", {}),
-        stateLabel
-      ] })
-    ] });
+      }
+    );
+  }
+  function StatusHeader({ model }) {
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+      "nav",
+      {
+        className: "ik-v420-nav ik-v240-nav",
+        "aria-label": "RouterOS 设备状态导航",
+        "data-overview-mobile-v420-nav": "ios-navigation",
+        "data-overview-mobile-v240-nav": "app-navigation",
+        "data-overview-mobile-v1067-status-header": "routeros-device-state-header-context-action-low-noise",
+        children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(
+            "button",
+            {
+              "aria-label": "打开 RouterOS 采集链路与设备上下文",
+              "data-overview-mobile-v1067-header-action": "router-context",
+              "data-overview-mobile-v1067-header-action-semantic": "device-collection-route-context",
+              "data-overview-mobile-v1067-header-action-tone": "low-noise-outline",
+              type: "button",
+              children: /* @__PURE__ */ jsxRuntimeExports.jsx("svg", { viewBox: "0 0 24 24", "aria-hidden": "true", children: /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: "M5 7h14M7 12h10M9 17h6M6 7l2-3h8l2 3M8 20h8" }) })
+            }
+          ),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ik-v240-title", "data-overview-mobile-primary-title": "device", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: model.header.deviceName }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+              model.header.versionText,
+              " · ",
+              model.header.recent
+            ] })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("strong", { className: `ik-v240-status ${toneClass(model.header.tone)}`, "data-overview-mobile-primary-status": "device-state", "aria-label": `设备状态 ${model.header.statusLabel}`, children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("i", {}),
+            model.header.statusLabel
+          ] })
+        ]
+      }
+    );
+  }
+  function CollectionTrustRail({ model }) {
+    if (model.appHomeContract.severity === "normal") return null;
+    return /* @__PURE__ */ jsxRuntimeExports.jsx(
+      "div",
+      {
+        className: "ik-v1058-collection-trust-rail",
+        "aria-label": "采集链路可信度",
+        "data-overview-mobile-v1058-collection-trust": "routeros-rest-ssh-snapshot-fixed-abnormal-first-screen",
+        "data-overview-mobile-v1059-collection-plane": "collection-secondary-evidence-not-impact-verdict",
+        children: model.collectionTrust.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
+          "span",
+          {
+            className: toneClass(item.tone),
+            "data-overview-mobile-v1058-collection-channel": item.label,
+            "data-overview-mobile-v1059-plane": "collection",
+            title: `${item.label} ${item.value}`,
+            children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("i", { "aria-hidden": "true" }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: item.label }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: item.value })
+            ]
+          },
+          `${item.label}-${item.value}`
+        ))
+      }
+    );
+  }
+  function TrustStrip({ model }) {
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+      "section",
+      {
+        className: "ik-v910-trust-strip",
+        "aria-label": "RouterOS 可信度",
+        "data-overview-mobile-trust-strip": "forwarding-collection-snapshot-business",
+        "data-overview-mobile-core-block": "trust-strip",
+        "data-overview-mobile-v1058-collection-trust-policy": model.appHomeContract.severity === "normal" ? "normal-hidden" : "fixed-abnormal-routeros-rest-ssh-snapshot",
+        children: [
+          model.trustPlanes.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: toneClass(item.tone), title: `${item.label} ${item.value} ${item.note}`, children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: item.label }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("strong", { children: item.value })
+          ] }, item.id)),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(CollectionTrustRail, { model })
+        ]
+      }
+    );
   }
   function MobileOverviewHome(props) {
+    const model = buildMobileOverviewModel(props.snapshot, props.state);
+    const resolvedProps = { ...props, model };
     return /* @__PURE__ */ jsxRuntimeExports.jsxs(
       "div",
       {
@@ -11997,9 +15294,38 @@ var PanelFramework = function(exports) {
         "data-overview-mobile-no-table-visual": "true",
         "data-overview-mobile-no-red-orange-blocks": "true",
         "data-overview-mobile-scene": props.state.scenario,
+        "data-overview-mobile-priority": model.priority,
+        "data-overview-mobile-severity": model.appHomeContract.severity,
+        "data-overview-mobile-layout-contract": model.appHomeContract.layout,
+        "data-overview-mobile-ranking-policy": model.appHomeContract.rankingPolicy,
+        "data-overview-mobile-abnormal-ia": model.appHomeContract.informationArchitecture,
+        "data-overview-mobile-top-slot": model.appHomeContract.topSlot,
+        "data-overview-mobile-terminal-ranking-state": model.appHomeContract.terminalRanking,
+        "data-overview-mobile-normal-app-home": model.priority === "normal" ? "compact-conclusion-chart-ops" : void 0,
+        "data-overview-mobile-v1065-normal-first-screen": model.normalSummary.mode === "normal-compact" ? model.normalSummary.contract : void 0,
+        "data-overview-mobile-compact-conclusion": model.priority === "normal" ? "conclusion-trust-wan-collection-resource-snapshot" : void 0,
+        "data-overview-mobile-first-question": model.appHomeContract.firstQuestion,
+        "data-overview-mobile-trust-boundary": model.appHomeContract.trustBoundary,
+        "data-overview-mobile-impact-scope": model.impactScope.id,
+        "data-overview-mobile-impact-plane": model.impactScope.plane,
+        "data-overview-mobile-design-token-system": "mobileOverviewTokens:color-type-space-radius-state-chart",
+        "data-overview-mobile-v1000-release-polish": "compact-app-home-ia-scene-priority",
+        "data-overview-mobile-v1010-product-app-polish": "native-readout-rail-no-ellipsis-subtle-tabbar",
+        "data-overview-mobile-v1020-public-product-polish": "ios-rhythm-low-noise-grouped-surfaces-router-native-tabs",
+        "data-overview-mobile-v1030-native-trust-spine": "grouped-trust-spine-low-card-noise",
+        "data-overview-mobile-v1043-native-token-contract": "native-console-tokenized-rhythm-low-noise-trust-first",
+        "data-overview-mobile-v1046-abnormal-decision-contract": "object-impact-evidence-next-action-low-noise-console",
+        "data-overview-mobile-v1058-collection-trust": model.appHomeContract.severity === "normal" ? "normal-hidden" : "routeros-rest-ssh-snapshot-fixed-abnormal-first-screen",
+        "data-overview-mobile-v1059-collection-impact-separation": model.collectionTrustSeparation.contract,
+        "data-overview-mobile-v1059-collection-plane": model.collectionTrustSeparation.collectionPlane,
+        "data-overview-mobile-v1059-impact-plane": model.collectionTrustSeparation.impactPlane,
+        "data-overview-mobile-v1059-separated-from-impact": model.collectionTrustSeparation.separatedFromImpact ? "true" : "false",
+        "data-overview-mobile-p0-first-screen": model.appHomeContract.severity === "p0" ? "trust-wan-route-collection-success-no-terminal-ranking" : void 0,
+        "data-overview-mobile-v1070-grouped-surfaces": "ios-grouped-gray-separators-no-card-border-stack",
+        "data-overview-mobile-v1080-decision-home": "compact-conclusion-trust-four-facts-scenario-evidence-one-supporting-list",
+        "data-overview-mobile-v1090-first-screen-order": "conclusion-trust-four-facts-priority-incident-supporting-list",
         "data-overview-mobile-no-snapshot-no-rate-placeholder": props.state.scenario === "no-snapshot" ? "true" : void 0,
         children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(MobileOverviewStyles, {}),
           /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ik-v420-shell ik-v240-shell", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
             "main",
             {
@@ -12010,14 +15336,26 @@ var PanelFramework = function(exports) {
               "data-overview-mobile-v420-first-screen-contract": "ios-nav-network-hero-status-ledger-ranking-tab",
               "data-overview-mobile-v420-frame-model": "ios-router-app-home-not-desktop-collapse-not-table-not-box-stack",
               "data-overview-mobile-v420-visual-contract": "single-labelled-wan-sparkline-wan-collection-duo-resource-bars-native-ranking",
+              "data-overview-mobile-app-question": model.appHomeContract.firstQuestion,
+              "data-overview-mobile-app-trust-boundary": model.appHomeContract.trustBoundary,
+              "data-overview-mobile-app-ranking-policy": model.appHomeContract.rankingPolicy,
+              "data-overview-mobile-app-abnormal-ia": model.appHomeContract.informationArchitecture,
+              "data-overview-mobile-app-terminal-ranking-state": model.appHomeContract.terminalRanking,
+              "data-overview-mobile-app-normal-home": model.priority === "normal" ? "compact-conclusion-chart-ops" : void 0,
+              "data-overview-mobile-v1044-first-screen-hierarchy": "device-conclusion-trust-four-facts-scenario-evidence-supporting-list-tabs",
+              "data-overview-mobile-v1071-density-contract": "one-decision-header-one-trust-strip-one-scenario-visual-one-supporting-list",
               children: [
-                /* @__PURE__ */ jsxRuntimeExports.jsx(StatusHeader, { ...props }),
-                /* @__PURE__ */ jsxRuntimeExports.jsx(IncidentHero, { ...props }),
-                /* @__PURE__ */ jsxRuntimeExports.jsx(HomeSurface, { ...props }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx(StatusHeader, { ...resolvedProps }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx(JudgementStrip, { ...resolvedProps }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx(TrustStrip, { ...resolvedProps }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx(CoreMetricRail, { ...resolvedProps }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx(IncidentHero, { ...resolvedProps }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx(HomeSurface, { ...resolvedProps }),
                 /* @__PURE__ */ jsxRuntimeExports.jsx(BottomTabs, {})
               ]
             }
-          ) })
+          ) }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(MobileOverviewStyles, {})
         ]
       }
     );
@@ -12029,6 +15367,7 @@ var PanelFramework = function(exports) {
   const OVERVIEW_IKUAI40_MATURE_VISUAL_STANDARD = "judgement-charts-scene-specific-mobile-microchart-blue-white-flat-no-short-empty-cards";
   const OVERVIEW_SCENE_CHART_PRIORITY = "normal=traffic;resource=pressure;wan=interface-status;interfaces=forwarding;collection=channel-timeline;no-snapshot=chain-visibility";
   const OVERVIEW_SCENE_CHART_CONTRACT = "normal:traffic-trend;resource:resource-pressure;wan:wan-interface-status;interfaces:interface-forwarding-status;collection:collection-channel-timeline;no-snapshot:snapshot-chain-visibility-matrix;stale:snapshot-age-route-context";
+  const DESKTOP_IKUAI_SHORT_NAV_CONTRACT = "status-overview/multi-wan/interface-vlan/online-terminals/collection-log";
   function routeBusinessSummary(value, fallback = ROUTE_UNKNOWN) {
     return routerOsRouteBusinessSummary(value, fallback);
   }
@@ -12070,42 +15409,15 @@ var PanelFramework = function(exports) {
     const short = shortTimestamp(successSource);
     return short === "-" ? "未记录" : short;
   }
-  function topbarImpactValue(state) {
-    if (state.scenario === "no-snapshot") return "链路受限";
-    if (state.scenario === "resource-full") return "资源超阈";
-    if (state.scenario === "interfaces-down") return "转发异常";
-    if (state.scenario === "all-offline") return "出口离线";
-    if (state.scenario === "collection-down") return "缓存展示";
-    return "可参考";
+  function topbarImpactValue(snapshot, state) {
+    return desktopPresentation(snapshot, state).impact.value;
   }
-  function topbarImpactNote(state) {
-    if (state.scenario === "no-snapshot") return "无可信快照";
-    if (state.scenario === "resource-full") return "三项超阈";
-    if (state.scenario === "interfaces-down") return `${formatNumber(state.facts.interfaces.down)} Down`;
-    if (state.scenario === "all-offline") return `${formatNumber(state.facts.wan.offline)} 条离线`;
-    if (state.scenario === "collection-down") return "缓存参考";
-    return "业务可参考";
+  function topbarImpactNote(snapshot, state) {
+    return desktopPresentation(snapshot, state).impact.note;
   }
-  function topbarObjectValue(state) {
-    if (state.scenario === "no-snapshot") {
-      return { value: "路由待判", note: "快照缺失" };
-    }
-    if (state.scenario === "resource-full") {
-      return { value: "资源", note: `WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(state.facts.wan.total)}` };
-    }
-    if (state.scenario === "interfaces-down") {
-      return { value: "WAN 接口", note: compactListText(state.facts.interfaces.downNames, 2) || "转发面异常" };
-    }
-    if (state.scenario === "all-offline") {
-      return { value: `WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(state.facts.wan.total)}`, note: `${formatNumber(state.facts.wan.offline)} 条离线` };
-    }
-    if (state.scenario === "collection-down") {
-      return { value: "采集", note: "WAN 可参考" };
-    }
-    return {
-      value: `WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(state.facts.wan.total)}`,
-      note: state.facts.route.level === "danger" ? "默认路由异常" : state.facts.route.level === "missing" ? "默认路由待判" : "默认路由可用"
-    };
+  function topbarObjectValue(snapshot, state) {
+    const object = desktopPresentation(snapshot, state).object;
+    return { value: object.value, note: object.note };
   }
   function topbarCollectionValue(state) {
     if (state.scenario === "no-snapshot") {
@@ -12131,32 +15443,14 @@ var PanelFramework = function(exports) {
       note: state.scenario === "no-snapshot" ? "快照缺失" : `快照 ${state.facts.freshness.credibilityLabel}`
     };
   }
+  function desktopPresentation(snapshot, state) {
+    return buildRouterOsPresentationViewModel(snapshot, state).desktop;
+  }
   function topbarConclusionNote(snapshot, state) {
-    const recent = latestSuccess(snapshot, state.scenario);
-    if (state.scenario === "no-snapshot") return "无业务快照，业务数据不展示";
-    if (state.scenario === "resource-full") return "资源证据优先";
-    if (state.scenario === "interfaces-down") return `转发接口 down`;
-    if (state.scenario === "all-offline") return `WAN 0/${formatNumber(state.facts.wan.total)}`;
-    if (state.scenario === "collection-down") return `最近成功 ${recent}`;
-    return "WAN 出口在线";
+    return desktopPresentation(snapshot, state).conclusionNote;
   }
   function desktopConclusionValue(snapshot, state) {
-    if (state.scenario === "all-offline") {
-      return `WAN 全离线 ${formatNumber(state.facts.wan.online)}/${formatNumber(state.facts.wan.total)}`;
-    }
-    if (state.scenario === "resource-full") {
-      return `资源满载 ${formatPercent(state.facts.resource.cpu, 0)}`;
-    }
-    if (state.scenario === "interfaces-down") {
-      return `${formatNumber(state.facts.interfaces.down)}/${formatNumber(state.facts.interfaces.total)} 接口 Down`;
-    }
-    if (state.scenario === "collection-down") {
-      return `采集降级 ${latestSuccess(snapshot, state.scenario)}`;
-    }
-    if (state.scenario === "no-snapshot") {
-      return "业务快照缺失";
-    }
-    return state.verdict.topLabel;
+    return desktopPresentation(snapshot, state).conclusionValue;
   }
   function statusUpdated(snapshot) {
     var _a;
@@ -12204,7 +15498,7 @@ var PanelFramework = function(exports) {
     return { value: stripChannelPrefix(state.facts.collection.sshLabel, "SSH") || "可用", tone: "ok", note: "静态读取可用" };
   }
   function topbarItems(snapshot, state) {
-    const object = topbarObjectValue(state);
+    const object = topbarObjectValue(snapshot, state);
     const collection = topbarCollectionValue(state);
     const snapshotCell = topbarSnapshotValue(snapshot, state);
     if (state.scenario === "no-snapshot") {
@@ -12213,8 +15507,8 @@ var PanelFramework = function(exports) {
       const rest = restState(snapshot, state);
       const ssh = sshState(snapshot, state);
       return [
-        { label: "设备", value: "采集对象", note: "链路异常", role: "device", tone: "trust" },
         { label: "结论", value: desktopConclusionValue(snapshot, state), note: "无业务快照", role: "conclusion", tone: state.verdict.level },
+        { label: "设备", value: "采集对象", note: "链路异常", role: "device", tone: "trust" },
         { label: "RouterOS", value: routeros.value, note: routeros.note, role: "routeros", tone: routeros.tone },
         { label: "REST", value: rest.value, note: rest.note, role: "rest", tone: rest.tone },
         { label: "SSH", value: ssh.value, note: "SSH 不可用", role: "ssh", tone: ssh.tone },
@@ -12222,10 +15516,10 @@ var PanelFramework = function(exports) {
       ];
     }
     return [
-      { label: "设备", value: state.facts.device.identity, note: `${state.facts.device.version} · ${state.facts.device.uptime}`, role: "device", tone: "trust" },
       { label: "结论", value: desktopConclusionValue(snapshot, state), note: topbarConclusionNote(snapshot, state), role: "conclusion", tone: state.verdict.level },
+      { label: "设备", value: state.facts.device.identity, note: `${state.facts.device.version} · ${state.facts.device.uptime}`, role: "device", tone: "trust" },
       { label: "对象", value: object.value, note: object.note, role: "object", tone: "trust" },
-      { label: "影响", value: topbarImpactValue(state), note: topbarImpactNote(state), role: "impact", tone: state.verdict.level },
+      { label: "影响", value: topbarImpactValue(snapshot, state), note: topbarImpactNote(snapshot, state), role: "impact", tone: state.verdict.level },
       { label: "采集", value: collection.value, note: collection.note, role: "collection", tone: state.facts.collection.credibilityTone },
       { label: "快照", value: snapshotCell.value, note: snapshotCell.note, role: "snapshot", tone: state.facts.freshness.credibilityTone }
     ];
@@ -12248,29 +15542,10 @@ var PanelFramework = function(exports) {
     return "实时";
   }
   function verdictContractText(snapshot, state) {
-    const recent = latestSuccess(snapshot, state.scenario);
-    switch (state.scenario) {
-      case "no-snapshot":
-        return `快照缺失 路由器管理面当前不可达 REST 待确认 SSH 断链 无业务快照，业务数据不展示 默认出口待判 路由快照缺失 端点失败未记录 最近成功 ${recent} 状态更新时间 ${statusUpdated(snapshot)} 采集链路 业务快照 展示范围 速率不展示 禁用零速率占位`;
-      case "collection-down":
-        return `采集异常 采集通道 通道状态降级 采集面 REST 待确认 SSH 不可用 缓存快照 业务快照状态 端点失败记录 最近成功 ${recent} 业务可信度 缓存可参考 当前不可判定 默认出口 路由快照 WAN 资源`;
-      case "resource-full":
-        return `资源满载 资源证据 处理器96 内存92 磁盘97 连接压力 活动会话 接口吞吐 Top5 DNS缓存 最危险项 持续 6 点 阈值 均值 峰 WAN 默认路由 REST SSH 业务快照`;
-      case "interfaces-down":
-        return `接口转发面 接口全 Down down 数 涉及接口 父接口 桥接 VLAN PPPoE出口 默认路由影响不可判定 路由快照摘要 当前影响未知 REST 不可达 SSH 不可达 采集状态更新时间 业务快照 缓存快照 WAN 转发面证据`;
-      case "all-offline":
-        return `WAN 全离线 全部 WAN 离线 离线对象 WAN 0/${formatNumber(state.facts.wan.total)} ${formatNumber(state.facts.wan.offline)} 默认路由异常 未发现活动默认路由 REST SSH 采集 业务快照 路由快照 影响`;
-      case "fleet":
-        return `WAN账本 Fleet 64 180 terminal client 类型分布 默认路由条目 接口排行 异常TopN 采集可信度 历史快照 当前影响未知 REST SSH 业务快照 默认路由`;
-      default:
-        return `风险 正常 WAN 证据 默认路由 路由快照 采集 REST SSH 业务快照 历史快照 当前影响未知 影响 WAN 资源 终端 最近成功 ${recent}`;
-    }
+    return desktopPresentation(snapshot, state).verdictText;
   }
-  function desktopCoreText(state) {
-    if (state.scenario === "fleet") {
-      return "WAN账本 / 路由快照 / 采集通道 / 资源阈值 / 最近成功 / TopN";
-    }
-    return "WAN线路 / 路由快照 / 采集通道 / 资源阈值 / 最近成功 / TopN";
+  function desktopCoreText(snapshot, state) {
+    return desktopPresentation(snapshot, state).coreText;
   }
   function moduleChartType(module) {
     if (/resource-risk-priority|collection-channel-ledger/i.test(module)) return "line";
@@ -12303,522 +15578,23 @@ var PanelFramework = function(exports) {
     if (/无|缺失|禁显|不展示|不可|未采集/.test(`${row.current}${row.mean}${row.trust}`)) return "0/6";
     return "6/6";
   }
-  function JudgementChart({ module, rows, kind = "trend" }) {
-    const maxValue = Math.max(1, ...rows.map((row) => Math.max(row.currentValue, row.peakValue, row.thresholdValue)));
+  function ledgerCellText(row, index, fallback = "-") {
+    const value = row == null ? void 0 : row.cells[index];
+    return typeof value === "string" || typeof value === "number" ? String(value) : fallback;
+  }
+  function desktopWanDecisionRail(snapshot, state, rows) {
     const lead = rows[0];
-    const leadSamples = chartSamplePoints(lead);
-    const anomalyCount = rows.filter((row) => row.tone === "danger" || row.tone === "warn" || row.currentValue >= row.thresholdValue).length;
-    return /* @__PURE__ */ jsxRuntimeExports.jsxs(
-      "div",
-      {
-        className: `ro-judgement-chart ro-judgement-chart--${kind}`,
-        "data-overview-visual-block": true,
-        "data-overview-judgement-chart": "current-peak-mean-window-threshold-trust",
-        "data-overview-chart-grammar": "axis-current-peak-mean-window-threshold-unit-trust",
-        "data-overview-chart-type": kind === "pressure" ? "bar" : "line",
-        "data-overview-chart-module": module,
-        "data-overview-scene-chart": module,
-        "data-overview-chart-focus": "current-threshold-peak",
-        "data-overview-chart-main-metric": (lead == null ? void 0 : lead.label) || "无业务快照",
-        "data-overview-chart-threshold": (lead == null ? void 0 : lead.threshold) || "待判",
-        "data-overview-chart-anomaly-points": anomalyCount,
-        "data-overview-chart-semantic": "main-metric-threshold-anomaly-point",
-        "data-overview-chart-has-current": "true",
-        "data-overview-chart-has-peak": "true",
-        "data-overview-chart-has-mean": "true",
-        "data-overview-chart-has-window": "true",
-        "data-overview-chart-has-threshold": "true",
-        "data-overview-chart-has-trust": "true",
-        "data-overview-chart-unit": rows.map((row) => row.unit || "").filter(Boolean).join("/") || "status",
-        "data-overview-chart-judgement-contract": "current-peak-mean-window-threshold-confidence-readable",
-        "data-overview-chart-metadata-coverage": OVERVIEW_CHART_METADATA_COVERAGE,
-        "data-overview-plot-contract": kind === "pressure" ? "real-percent-axis-peak-current-threshold-mean" : "real-rate-axis-peak-current-threshold-mean",
-        "data-overview-collection-channel-bars": module === "collection-cache-ledger" ? "true" : void 0,
-        "data-overview-traffic-judgement": module === "wan-trend" || module === "traffic-trend" ? "true" : void 0,
-        "data-overview-chart-raw-fields": "current-peak-mean-window-threshold-confidence",
-        children: [
-          lead ? /* @__PURE__ */ jsxRuntimeExports.jsxs(
-            "div",
-            {
-              className: "ro-chart-summary",
-              "data-overview-chart-meta": true,
-              "data-overview-sample-points": leadSamples,
-              "data-overview-time-window": lead.window,
-              "data-overview-confidence": lead.trust,
-              "data-overview-chart-summary": "current-threshold-mean-peak-confidence",
-              title: `判断图：当前 ${lead.current} / 峰值 ${lead.peak} / 均值 ${lead.mean} / 样本 ${leadSamples} / 窗口 ${lead.window} / 阈值 ${lead.threshold} / 单位 ${chartUnitLabel(lead.unit)} / 可信度 ${lead.trust}`,
-              children: [
-                /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { "data-overview-field": true, children: [
-                  "主值 ",
-                  /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: lead.current })
-                ] }),
-                /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { "data-overview-field": true, children: [
-                  "阈值 ",
-                  /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: lead.threshold })
-                ] }),
-                /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { "data-overview-field": true, children: [
-                  "异常点 ",
-                  /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: formatNumber(anomalyCount) })
-                ] })
-              ]
-            }
-          ) : /* @__PURE__ */ jsxRuntimeExports.jsxs(
-            "div",
-            {
-              className: "ro-chart-empty",
-              "data-overview-chart-meta": true,
-              "data-overview-empty-chart-state": "grey-axis-no-business-snapshot",
-              "data-overview-sample-points": "0/0",
-              "data-overview-time-window": "无业务快照",
-              "data-overview-confidence": "待判",
-              children: [
-                /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "无业务快照" }),
-                /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: "图表不伪装零值" }),
-                /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: "最近成功未记录 / 灰色轴线" })
-              ]
-            }
-          ),
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ro-chart-axis", "data-overview-y-axis": "overview-y-axis", "aria-hidden": "true", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "0" }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "均值" }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "阈值线" }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "峰值" })
-          ] }),
-          rows.map((row) => {
-            const currentWidth = ratioPercent(row.currentValue, maxValue);
-            const meanWidth = ratioPercent(row.meanValue, maxValue);
-            const peakWidth = ratioPercent(row.peakValue, maxValue);
-            const thresholdLeft = ratioPercent(row.thresholdValue, maxValue);
-            const samplePoints = chartSamplePoints(row);
-            const isAnomaly = row.tone === "danger" || row.tone === "warn" || row.currentValue >= row.thresholdValue;
-            return /* @__PURE__ */ jsxRuntimeExports.jsxs(
-              "div",
-              {
-                className: "ro-judgement-row",
-                "data-tone": row.tone || "trust",
-                "data-overview-chart-row": row.id,
-                "data-overview-current": row.current,
-                "data-overview-peak": row.peak,
-                "data-overview-mean": row.mean,
-                "data-overview-chart-window": row.window,
-                "data-overview-threshold": row.threshold,
-                "data-overview-anomaly-point": isAnomaly ? "true" : void 0,
-                "data-overview-chart-main-metric": row.label,
-                "data-overview-confidence": row.trust,
-                "data-overview-unit": row.unit || "status",
-                "data-overview-sample-points": samplePoints,
-                "data-overview-time-window": row.window,
-                "data-overview-chart-judgement-visible": "axis-threshold-current-peak-mean-readout",
-                title: `当前 ${row.current} / 峰值 ${row.peak} / 均值 ${row.mean} / 样本 ${samplePoints} / 窗口 ${row.window} / 阈值 ${row.threshold} / 单位 ${row.unit || "status"} / 可信度 ${row.trust}`,
-                children: [
-                  /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "ro-chart-label", children: row.label }),
-                  /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ro-chart-track", "aria-hidden": "true", children: [
-                    /* @__PURE__ */ jsxRuntimeExports.jsx("i", { className: "ro-chart-mean", style: { width: `${meanWidth}%` } }),
-                    /* @__PURE__ */ jsxRuntimeExports.jsx("b", { className: "ro-chart-current", style: { width: `${currentWidth}%` } }),
-                    /* @__PURE__ */ jsxRuntimeExports.jsx("em", { className: "ro-chart-peak", style: { left: `${peakWidth}%` } }),
-                    /* @__PURE__ */ jsxRuntimeExports.jsx("strong", { className: "ro-chart-threshold", style: { left: `${thresholdLeft}%` } }),
-                    isAnomaly ? /* @__PURE__ */ jsxRuntimeExports.jsx("u", { className: "ro-chart-anomaly-dot", style: { left: `${currentWidth}%` } }) : null
-                  ] }),
-                  /* @__PURE__ */ jsxRuntimeExports.jsxs(
-                    "span",
-                    {
-                      className: "ro-chart-readout",
-                      "data-overview-trend-readout": true,
-                      "data-overview-chart-judgement-strip": "current-peak-mean-window-sample-threshold-confidence",
-                      "data-overview-chart-judgement-strip-visible": "true",
-                      "data-overview-mobile-first-chart-readout": true,
-                      "data-overview-chart-meta": true,
-                      "data-overview-sample-points": samplePoints,
-                      "data-overview-time-window": row.window,
-                      "data-overview-confidence": row.trust,
-                      children: [
-                        /* @__PURE__ */ jsxRuntimeExports.jsxs("i", { className: "ik-overview-trend-cell ik-overview-current-label", children: [
-                          "现 ",
-                          row.current
-                        ] }),
-                        /* @__PURE__ */ jsxRuntimeExports.jsxs("i", { className: "ik-overview-trend-cell", children: [
-                          "阈 ",
-                          row.threshold
-                        ] }),
-                        /* @__PURE__ */ jsxRuntimeExports.jsx("i", { className: "ik-overview-trend-cell", children: isAnomaly ? "异常点" : row.window })
-                      ]
-                    }
-                  )
-                ]
-              },
-              row.id
-            );
-          })
-        ]
-      }
-    );
-  }
-  function MiniTrendVisual({ module, rows }) {
-    const lead = rows[0];
-    const basis = Math.max(1, ...rows.map((row) => Math.max(row.currentValue, row.peakValue, row.meanValue, row.thresholdValue)));
-    const points = rows.slice(0, 3).flatMap((row) => [
-      Math.max(0, row.meanValue * 0.78),
-      Math.max(0, row.meanValue),
-      Math.max(0, row.currentValue),
-      Math.max(0, row.peakValue * 0.92)
-    ]);
-    const values = (points.length ? points : [0, basis * 0.28, basis * 0.42, basis * 0.36, basis * 0.54, basis * 0.48]).slice(-12);
-    const svgPoints = values.map((value, index) => {
-      const x2 = values.length > 1 ? index / (values.length - 1) * 186 : 0;
-      const y2 = 44 - Math.max(0, value) / basis * 34;
-      return `${x2.toFixed(1)},${Math.max(5, Math.min(44, y2)).toFixed(1)}`;
-    }).join(" ");
-    const area = `M0,48 L${svgPoints} L186,48 Z`;
-    return /* @__PURE__ */ jsxRuntimeExports.jsxs(
-      "div",
-      {
-        className: "ro-mini-trend-visual",
-        "data-overview-chart-type": "line",
-        "data-overview-scene-chart": module,
-        "data-overview-chart-grammar": "compact-current-peak-window-no-ruler",
-        "data-overview-chart-has-current": "true",
-        "data-overview-chart-has-peak": "true",
-        "data-overview-chart-has-window": "true",
-        "data-overview-chart-unit": (lead == null ? void 0 : lead.unit) || "bps",
-        children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("svg", { viewBox: "0 0 186 52", role: "img", "aria-label": lead ? `${lead.label} 当前 ${lead.current} 峰值 ${lead.peak} 窗口 ${lead.window}` : "WAN 趋势", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("path", { className: "ro-mini-trend-area", d: area }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("polyline", { className: "ro-mini-trend-line", points: svgPoints })
-          ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ro-mini-trend-readout", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: "当前" }),
-              /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: (lead == null ? void 0 : lead.current) || "-" })
-            ] }),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: "峰值" }),
-              /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: (lead == null ? void 0 : lead.peak) || "-" })
-            ] }),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: "窗口" }),
-              /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: (lead == null ? void 0 : lead.window) || "-" })
-            ] })
-          ] })
-        ]
-      }
-    );
-  }
-  function ChannelMatrixVisual({ module, rows }) {
-    return /* @__PURE__ */ jsxRuntimeExports.jsx(
-      "div",
-      {
-        className: "ro-channel-matrix-visual",
-        "data-overview-chart-type": module === "collection-cache-ledger" ? "bar" : "matrix",
-        "data-overview-scene-chart": module,
-        "data-overview-collection-matrix": "rest-ssh-snapshot-status",
-        children: rows.slice(0, 4).map((row) => /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { "data-tone": row.tone || "trust", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("i", { "aria-hidden": "true" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: row.label }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("strong", { children: row.current }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: row.trust })
-        ] }, row.id))
-      }
-    );
-  }
-  function ResourcePressureLedgerVisual({ rows }) {
-    return /* @__PURE__ */ jsxRuntimeExports.jsx(
-      "div",
-      {
-        className: "ro-resource-ledger-visual",
-        "data-overview-chart-type": "pressure",
-        "data-overview-scene-chart": "resource-three-row-threshold-ledger",
-        "data-overview-resource-danger-order-bars": "thin-row-ledger",
-        children: rows.slice(0, 3).map((row) => /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { "data-tone": row.tone || "trust", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: row.label }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("strong", { children: row.current }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("i", { "aria-hidden": "true", children: /* @__PURE__ */ jsxRuntimeExports.jsx("i", { style: { width: `${clampPercent(row.currentValue)}%` } }) }),
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("em", { children: [
-            "阈",
-            row.threshold,
-            " · 持续 ",
-            chartSamplePoints(row)
-          ] })
-        ] }, row.id))
-      }
-    );
-  }
-  function desktopIncidentObject(snapshot, state) {
-    if (state.scenario === "all-offline") return `WAN 0/${formatNumber(Math.max(8, state.facts.wan.total || collectWanRows(snapshot).length))}`;
-    if (state.scenario === "resource-full") return state.facts.resource.summaryText;
-    if (state.scenario === "interfaces-down") return `${formatNumber(state.facts.interfaces.down)} 接口 Down`;
-    if (state.scenario === "collection-down") return "REST / SSH / 快照";
-    if (state.scenario === "no-snapshot") return "业务快照缺失";
-    return topbarObjectValue(state).value;
-  }
-  function desktopReadonlyJudgement(state) {
-    if (state.scenario === "all-offline") return "确认出口不可承载";
-    if (state.scenario === "resource-full") return "确认资源余量不足";
-    if (state.scenario === "interfaces-down") return "确认转发面影响";
-    if (state.scenario === "collection-down") return "仅按缓存参考";
-    if (state.scenario === "no-snapshot") return "不展示业务数据";
-    return "业务状态可读";
-  }
-  function DesktopIncidentSummary({ snapshot, state }) {
-    if (state.scenario === "single" || state.scenario === "fleet") return null;
-    const items = [
-      ["事故对象", desktopIncidentObject(snapshot, state)],
-      ["影响范围", topbarImpactValue(state).value],
-      ["可信度", moduleTrust(state)],
-      ["最近成功", latestSuccess(snapshot, state.scenario)],
-      ["只读判断", desktopReadonlyJudgement(state)]
+    const top = trafficTop3Rows(snapshot, state)[0];
+    const route = trafficRouteRows(snapshot, state)[0];
+    const sampling = trafficSamplingRows(snapshot, state)[0];
+    const peak = trafficPeakRows(snapshot, state)[0];
+    return [
+      { id: "current", label: "当前", value: (lead == null ? void 0 : lead.current) || "-", note: (lead == null ? void 0 : lead.unit) || "bps", tone: state.facts.wan.allOffline ? "danger" : "trust" },
+      { id: "peak", label: "峰值", value: (lead == null ? void 0 : lead.peak) || "-", note: (lead == null ? void 0 : lead.window) || "最近窗口", tone: "trust" },
+      { id: "top-outlet", label: "Top出口", value: ledgerCellText(top, 1), note: ledgerCellText(top, 2), tone: (top == null ? void 0 : top.tone) || "trust" },
+      { id: "default-route", label: "默认出口", value: ledgerCellText(route, 1), note: ledgerCellText(route, 2), tone: (route == null ? void 0 : route.tone) || state.facts.route.level },
+      { id: "sampling", label: "采样", value: ledgerCellText(sampling, 1), note: ledgerCellText(peak, 1), tone: (sampling == null ? void 0 : sampling.tone) || state.facts.collection.level }
     ];
-    return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ro-incident-summary", "data-overview-desktop-incident-summary": "object-impact-trust-recent-readonly", children: items.map(([label, value]) => /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: label }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: value })
-    ] }, label)) });
-  }
-  function VisualStack({ snapshot, state, children }) {
-    return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ro-visual-stack", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx(DesktopIncidentSummary, { snapshot, state }),
-      children
-    ] });
-  }
-  function ChainTimeline({ rows, module }) {
-    const lead = rows[0];
-    const recent = lead ? String(lead.cells[2] || "") : "未记录";
-    const noSnapshotTimeline = module.startsWith("no-snapshot");
-    return /* @__PURE__ */ jsxRuntimeExports.jsxs(
-      "div",
-      {
-        className: "ro-chain-timeline ik-no-snapshot-timeline-visual ik-overview-timeline",
-        "data-overview-judgement-chart": "chain-timeline-current-recent-failure-next",
-        "data-overview-scene-chart": module,
-        "data-overview-chart-type": noSnapshotTimeline ? "line" : "timeline",
-        "data-overview-chart-has-current": "true",
-        "data-overview-chart-has-window": "true",
-        "data-overview-chart-has-trust": "true",
-        "data-overview-chart-unit": "status",
-        "data-overview-confidence": "链路可参考",
-        "data-overview-chart-meta": true,
-        "data-overview-sample-points": rows.length ? `${Math.min(rows.length, 6)}/${rows.length}` : "0/0",
-        "data-overview-time-window": recent || "最近成功未记录",
-        "data-overview-no-snapshot-compact-flow": noSnapshotTimeline ? "true" : void 0,
-        "data-overview-no-snapshot-success-timeline": noSnapshotTimeline || module === "collection-success-timeline" ? "true" : void 0,
-        "data-overview-no-snapshot-collection-timeline-parent-judgement": noSnapshotTimeline ? "true" : void 0,
-        "data-overview-collection-incident-timeline-parent-judgement": module === "collection-success-timeline" ? "true" : void 0,
-        children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ro-chain-meta", "data-overview-chart-meta": true, "data-overview-confidence": "链路可参考", "data-overview-time-window": recent || "最近成功未记录", "data-overview-sample-points": rows.length ? `${Math.min(rows.length, 6)}/${rows.length}` : "0/0", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "当前链路" }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: lead ? lead.cells[1] : "无业务快照" }),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("em", { children: [
-              "最近成功 ",
-              recent || "未记录",
-              " / 链路可参考"
-            ] })
-          ] }),
-          rows.slice(0, 6).map((row, index) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ro-chain-node ik-overview-chain-node ik-no-snapshot-chain-node", "data-tone": row.tone || "trust", "data-overview-chain-step": index + 1, children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: row.cells[0] }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: row.cells[1] }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: row.cells[2] })
-          ] }, row.id))
-        ]
-      }
-    );
-  }
-  function VisibilityMatrixVisual({ rows }) {
-    return /* @__PURE__ */ jsxRuntimeExports.jsxs(
-      "div",
-      {
-        className: "ro-visibility-matrix ik-no-snapshot-matrix-grid ik-overview-module-matrix",
-        "data-overview-judgement-chart": "visibility-matrix-current-reason-trust",
-        "data-overview-scene-chart": "no-snapshot-visibility-matrix",
-        "data-overview-chart-type": "matrix",
-        "data-overview-chart-has-current": "true",
-        "data-overview-chart-has-window": "true",
-        "data-overview-chart-has-trust": "true",
-        "data-overview-chart-unit": "status",
-        "data-overview-empty-chart-state": "no-business-snapshot-grey-axis",
-        "data-overview-chart-meta": true,
-        "data-overview-sample-points": rows.length ? `${Math.min(rows.length, 8)}/${rows.length}` : "0/0",
-        "data-overview-time-window": "模块可见性",
-        "data-overview-no-snapshot-four-col-matrix": "true",
-        "data-overview-confidence": "业务状态不可参考",
-        "data-overview-no-snapshot-module-matrix-parent-judgement": "true",
-        "data-overview-matrix-evidence": "current-commit",
-        children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ro-visibility-axis", "aria-hidden": "true", children: "无业务快照 / 模块可见性 / 灰色为空态轴线" }),
-          rows.slice(0, 8).map((row) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ro-visibility-cell ik-no-snapshot-matrix-cell ik-no-snapshot-ledger-cell", "data-tone": row.tone || "trust", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: row.cells[0] }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: row.cells[1] })
-          ] }, row.id))
-        ]
-      }
-    );
-  }
-  function Module({ title, subtitle, module, tone = "trust", headers, rows, trust, className = "", minRows = 0, visual }) {
-    const paddedRows = rows;
-    const isWanLedger = /wan/i.test(module);
-    const isAnomalyEvidence = isWanLedger && !/wan-trend/i.test(module);
-    const isRankLedger = /rank|top5|normal-wan-evidence/i.test(module);
-    const isSecondaryEvidence = /terminal|boundary|collection-resource-threshold|resource-boundary|normal-ops-ledger/.test(module);
-    const primaryEvidenceModules = /* @__PURE__ */ new Set([
-      "wan-trend",
-      "resource-risk-priority",
-      "resource-pressure-bars",
-      "interface-forwarding",
-      "collection-cache-ledger",
-      "no-snapshot-summary",
-      "wan-offline-bars"
-    ]);
-    const gridStyle = {
-      gridTemplateColumns: `repeat(${Math.max(1, headers.length)}, minmax(0, 1fr))`
-    };
-    const showTrustTag = Boolean(
-      trust && trust !== "实时" && /^(wan-trend|wan-offline-bars|resource-risk-priority|collection-channel-ledger|no-snapshot-summary|interface-forwarding|normal-collection-channel|collection-status)$/.test(module)
-    );
-    return /* @__PURE__ */ jsxRuntimeExports.jsxs(
-      "section",
-      {
-        className: `ro-module ik-overview-flat-module ${className}`.trim(),
-        "data-tone": tone,
-        "data-overview-density-module": module,
-        "data-overview-visual-block": true,
-        "data-overview-chart-type": moduleChartType(module),
-        "data-overview-desktop-tier": "evidence",
-        "data-overview-module-body-policy": "content-sized",
-        "data-overview-top5-total": module === "resource-interface-top5" ? rows.length : void 0,
-        "data-overview-wan-offline-bars": module === "wan-offline-bars" ? "true" : void 0,
-        "data-overview-wan-mini-table": isWanLedger ? "true" : void 0,
-        "data-overview-anomaly-evidence": primaryEvidenceModules.has(module) || isAnomalyEvidence ? "true" : void 0,
-        "data-overview-rank-grid": isRankLedger ? "true" : void 0,
-        "data-overview-resource-interface-top5-first-screen": module === "resource-interface-top5" ? "true" : void 0,
-        "data-overview-evidence-weight": primaryEvidenceModules.has(module) ? "primary" : isSecondaryEvidence ? "secondary" : "support",
-        "data-overview-secondary": isSecondaryEvidence ? "true" : void 0,
-        "data-overview-routeros-business-main-view": /route|default-route/i.test(module) ? "translated-fields" : void 0,
-        "data-overview-resource-judgement-parent": module === "resource-risk-priority" ? "true" : void 0,
-        "data-overview-resource-danger-card-judgement": module === "resource-risk-priority" ? "true" : void 0,
-        "data-overview-resource-danger-bars-confidence-standard": module === "resource-risk-priority" ? "current-peak-mean-threshold-trust" : void 0,
-        "data-overview-resource-ledger-parent-judgement": module === "resource-risk-priority" ? "compact-row-ledger" : void 0,
-        "data-overview-resource-three-metric-ledger-mode": module === "resource-risk-priority" ? "compact-row-ledger" : void 0,
-        "data-overview-resource-complementary-pressure-bars": module === "resource-pressure-bars" ? "true" : void 0,
-        "data-overview-resource-complementary-kind": module === "resource-pressure-bars" ? "connection-interface-dns-sessions" : void 0,
-        "data-overview-resource-complementary-role": module === "resource-pressure-bars" ? "connection-pressure-interface-throughput-dns-cache-active-sessions" : void 0,
-        "data-overview-resource-context-parent": module === "resource-pressure-bars" ? "true" : void 0,
-        "data-overview-collection-bars-parent-judgement": module === "collection-cache-ledger" ? "true" : void 0,
-        "data-overview-collection-triad-bars": module === "collection-cache-ledger" ? "rest-ssh-snapshot-only" : void 0,
-        "data-overview-collection-success-timeline-primary": module === "collection-recent-failures" ? "true" : void 0,
-        "data-overview-collection-success-timeline": module === "collection-recent-failures" ? "true" : void 0,
-        "data-overview-interface-carrier-table": module === "interface-forwarding" || module === "interface-relation-carrier" ? "true" : void 0,
-        "data-overview-interface-relation-detail": module === "interface-relation-carrier" ? "carrier-table" : void 0,
-        "data-overview-no-snapshot-ledger-parent-judgement": module === "no-snapshot-channel-status" ? "true" : void 0,
-        "data-overview-no-snapshot-channel-parent-judgement": module === "no-snapshot-channel-status" ? "true" : void 0,
-        "data-overview-no-snapshot-timeline-parent-judgement": module === "no-snapshot-channel-status" ? "true" : void 0,
-        "data-overview-no-snapshot-module-matrix-parent-judgement": module === "no-snapshot-summary" || module === "no-snapshot-module-visibility" ? "true" : void 0,
-        "data-overview-no-snapshot-recent-channel-parent-judgement": module === "no-snapshot-recent-success" ? "true" : void 0,
-        "data-overview-no-snapshot-collection-channel-parent-judgement": module === "no-snapshot-channel-status" ? "true" : void 0,
-        "data-overview-no-snapshot-content-sized": module.startsWith("no-snapshot") ? "true" : void 0,
-        "data-overview-three-col-table": headers.length === 3 ? "true" : void 0,
-        "data-overview-table-evidence-wrap": headers.length === 3 ? "third-column-full-wrap" : void 0,
-        "data-overview-top5-display-policy": module === "resource-interface-top5" ? "bar-main-value-share-only-tooltip-secondary" : void 0,
-        "data-overview-top5-visual-noise-policy": module === "resource-interface-top5" ? "bar-main-value-share-right-secondary-tooltip" : void 0,
-        "data-overview-top5-density": module === "resource-interface-top5" ? "flat-light-3col" : void 0,
-        "data-overview-top5-row-visual-contract": module === "resource-interface-top5" ? "name-bar-main-share-right-tooltip-secondary" : void 0,
-        "data-overview-min-rows": minRows,
-        "data-overview-filler-rows": "disabled",
-        children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { className: "ro-module-head", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx("b", { className: "ik-overview-flat-title", children: title }),
-              subtitle ? /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: subtitle }) : null
-            ] }),
-            showTrustTag ? /* @__PURE__ */ jsxRuntimeExports.jsx("em", { "data-trust": trust, children: trust }) : null,
-            module === "resource-interface-top5" ? /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "ro-sr-contract", "data-overview-top5-total": rows.length, children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "ik-overview-top5-rate", children: /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: "Top5速率" }) }),
-              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "ik-overview-top5-connections", children: /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: "Top5连接" }) })
-            ] }) : null
-          ] }),
-          visual,
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ro-ledger-table ik-home-evidence-list", role: "table", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ro-ledger-head ro-ledger-row", role: "row", style: gridStyle, children: headers.map((header) => /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ro-ledger-head-cell", role: "columnheader", children: header }, header)) }),
-            paddedRows.map((row) => {
-              var _a;
-              const share = (_a = row.attrs) == null ? void 0 : _a["data-overview-share"];
-              const rowStyle = share !== void 0 ? { ...gridStyle, "--overview-share": `${share}%` } : gridStyle;
-              return /* @__PURE__ */ jsxRuntimeExports.jsx(
-                "div",
-                {
-                  className: `ro-ledger-row ik-home-evidence-row${module === "resource-pressure-bars" || module === "resource-risk-priority" ? " ik-overview-bar-row" : ""}`,
-                  role: "row",
-                  style: rowStyle,
-                  "data-tone": row.tone || "trust",
-                  "data-overview-field": true,
-                  title: row.title,
-                  ...row.attrs,
-                  children: headers.map((_, index) => /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ro-ledger-cell ik-overview-module-cell", role: "cell", "data-overview-field": true, children: /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "ik-overview-cell-text", children: row.cells[index] ?? "" }) }, `${row.id}-${index}`))
-                },
-                row.id
-              );
-            })
-          ] })
-        ]
-      }
-    );
-  }
-  function InfoBand({ snapshot, state }) {
-    const items = topbarItems(snapshot, state).slice(0, 6);
-    const isNoSnapshot = state.scenario === "no-snapshot";
-    const topbarFixedSix = isNoSnapshot ? "device-conclusion-routeros-rest-ssh-recent-success" : "device-conclusion-object-impact-collection-snapshot";
-    const topbarHierarchy = isNoSnapshot ? "primary-routeros-rest-ssh-recent-success" : "primary-object-impact-collection-snapshot";
-    const topbarPriorityContract = isNoSnapshot ? "conclusion-rail-device-routeros-rest-ssh-recent-success" : "conclusion-rail-device-object-impact-collection-snapshot";
-    const topbarSecondary = isNoSnapshot ? "recent-success-demoted" : "snapshot-demoted";
-    return /* @__PURE__ */ jsxRuntimeExports.jsxs(
-      "div",
-      {
-        className: "ro-topbar ik-home-flat-topbar",
-        "data-overview-desktop-tier": "conclusion",
-        "data-overview-desktop-hierarchy-tier": "1-conclusion",
-        "data-overview-summary": true,
-        "data-overview-status-bus": true,
-        "data-overview-verdict-status-bus": true,
-        "data-overview-status-bar": true,
-        "data-overview-summary-main": true,
-        "data-overview-desktop-top": true,
-        "data-overview-flat-topbar": true,
-        "data-overview-topbar-hierarchy": topbarHierarchy,
-        "data-overview-topbar-priority-contract": topbarPriorityContract,
-        "data-overview-topbar-primary-weight": "conclusion-12_5-device-12",
-        "data-overview-topbar-conclusion-rail": "left-4px",
-        "data-overview-topbar-secondary": topbarSecondary,
-        "data-overview-topbar-fixed-six": topbarFixedSix,
-        "data-overview-topbar-no-overflow": "max-six-cells-short-notes",
-        "data-overview-first-viewport-title": topbarFixedSix,
-        "data-overview-topbar-no-iso-long-timestamp": "true",
-        "data-overview-first-viewport-no-duplicate-title-tag": "true",
-        "data-overview-topbar-muted-tags": "no-heavy-status-tags",
-        children: [
-          items.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ro-topbar-cell ik-home-flat-cell ik-home-ops-item", "data-tone": item.tone, "data-overview-field": true, "data-overview-status-cell": true, "data-overview-status-role": item.role, "data-overview-status-priority": topbarPriority(item.role), "data-overview-summary-cell": true, children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: item.label }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { style: topbarValueStyle(item.role), "data-overview-desktop-primary": item.role === "conclusion" ? "true" : void 0, children: item.value }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("em", { style: topbarNoteStyle(item.role), children: item.note })
-          ] }, item.role)),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "ro-contract-hidden", "data-overview-field": true }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "ro-contract-hidden", "data-overview-field": true })
-        ]
-      }
-    );
-  }
-  function DesktopThinKpis({ snapshot, state }) {
-    const object = topbarObjectValue(state);
-    const collection = topbarCollectionValue(state);
-    const terminals = desktopTerminalRows(snapshot);
-    const resource = state.scenario === "no-snapshot" ? "禁显" : formatPercent(state.facts.resource.cpu, 0);
-    const isFleetDensity = state.scenario === "fleet";
-    const items = [
-      { label: "WAN", value: object.value, note: isFleetDensity ? "类型分布" : topbarImpactValue(state), tone: state.verdict.level },
-      { label: "资源", value: resource, note: state.scenario === "resource-full" ? "持续超阈" : "阈值", tone: state.scenario === "resource-full" ? "danger" : state.facts.resource.level },
-      { label: "采集", value: collection.value, note: state.scenario === "collection-down" ? "缓存" : state.scenario === "no-snapshot" ? "断链" : "实时", tone: state.facts.collection.credibilityTone },
-      { label: "终端", value: terminals.length ? formatNumber(terminals.length) : "无", note: "总流量排序", tone: terminals.length ? "trust" : "missing" }
-    ];
-    return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ro-desktop-thin-kpis", "data-overview-desktop-kpi-row": "thin-business-summary", children: items.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ro-desktop-thin-kpi ik-overview-kpi-card", "data-overview-kpi-card": true, "data-tone": item.tone, children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: item.label }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: item.value }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: item.note })
-    ] }, item.label)) });
   }
   function trafficTotals(snapshot) {
     const rows = collectWanRows(snapshot);
@@ -12933,42 +15709,84 @@ var PanelFramework = function(exports) {
       { id: "ops-sample", cells: ["样本", "最近6点", "当前 / 均值 / 峰值"], tone: state.facts.freshness.credibilityTone }
     ];
   }
+  function routeFactRows(snapshot, state) {
+    const routeEvidence = buildRouterOsRouteEvidenceModel(snapshot, state);
+    const summaryRow = {
+      id: "route-business-summary",
+      attrs: {
+        "data-overview-default-route-row": "true",
+        "data-routeros-route-evidence-contract": routeEvidence.contract,
+        "data-routeros-evidence-item": "business",
+        "data-routeros-evidence-role": "business-summary-primary",
+        "data-routeros-raw-field-mode": "hidden-secondary"
+      },
+      cells: [
+        routeEvidence.summary.label,
+        routeEvidence.summary.value,
+        "业务结论",
+        routeEvidence.summary.note
+      ],
+      title: "RouterOS 原始 route 字段已标准化为业务出口结论；原始字段仅作为二级证据",
+      tone: routeEvidence.summary.tone
+    };
+    return [summaryRow, ...routeEvidence.businessRows.map((route) => ({
+      id: route.id,
+      attrs: {
+        "data-overview-default-route-row": "true",
+        "data-overview-route-copy": "business",
+        "data-routeros-route-evidence-contract": routeEvidence.contract,
+        "data-routeros-evidence-item": route.layer,
+        "data-routeros-evidence-role": "business-main",
+        "data-routeros-raw-field-mode": "business-translated-no-raw-attrs",
+        "data-routeros-v1047-business-route-copy": "gateway-priority-status-no-routeros-raw-fields"
+      },
+      cells: [
+        route.label,
+        `网关 ${route.gateway}`,
+        `优先级 ${route.priority}`,
+        route.status
+      ],
+      title: route.title,
+      tone: route.tone
+    }))];
+  }
   function routeBusinessRows(snapshot, state) {
-    return buildRouterOsRouteEvidenceModel(snapshot, state).businessRows.slice(0, 4).map((route) => {
-      var _a, _b, _c, _d, _e;
-      return {
-        id: `route-business-${route.routeIndex}`,
-        attrs: {
-          "data-overview-default-route-row": "true",
-          "data-overview-route-copy": "business-main",
-          "data-routeros-evidence-item": route.layer,
-          "data-routeros-raw-field-mode": "translated",
-          "data-routeros-raw-table": ((_a = route.rawFields) == null ? void 0 : _a.table) || "",
-          "data-routeros-raw-gateway": ((_b = route.rawFields) == null ? void 0 : _b.gateway) || "",
-          "data-routeros-raw-distance": ((_c = route.rawFields) == null ? void 0 : _c.distance) || "",
-          "data-routeros-raw-active": ((_d = route.rawFields) == null ? void 0 : _d.active) || "",
-          "data-routeros-raw-disabled": ((_e = route.rawFields) == null ? void 0 : _e.disabled) || ""
-        },
-        cells: [
-          route.label,
-          route.gateway,
-          `优先级 ${route.priority}`,
-          route.status
-        ],
-        title: route.title,
-        tone: route.tone
-      };
-    });
+    const routeEvidence = buildRouterOsRouteEvidenceModel(snapshot, state);
+    return routeEvidence.businessRows.slice(0, 4).map((route) => ({
+      id: `route-business-${route.routeIndex}`,
+      attrs: {
+        "data-overview-default-route-row": "true",
+        "data-overview-route-copy": "business-main",
+        "data-routeros-route-evidence-contract": routeEvidence.contract,
+        "data-routeros-evidence-item": route.layer,
+        "data-routeros-evidence-role": "business-main",
+        "data-routeros-raw-field-mode": "business-translated-no-raw-attrs",
+        "data-routeros-v1047-business-route-copy": "gateway-priority-status-no-routeros-raw-fields"
+      },
+      cells: [
+        route.label,
+        route.gateway,
+        `优先级 ${route.priority}`,
+        route.status
+      ],
+      title: route.title,
+      tone: route.tone
+    }));
   }
   function routeRawEvidenceRows(snapshot, state) {
-    return buildRouterOsRouteEvidenceModel(snapshot, state).rawRows.map((item) => {
+    const routeEvidence = buildRouterOsRouteEvidenceModel(snapshot, state);
+    return routeEvidence.rawRows.map((item) => {
       var _a, _b, _c, _d, _e;
       return {
         id: item.id,
         attrs: {
           "data-overview-default-route-row": "true",
+          "data-routeros-route-evidence-contract": routeEvidence.contract,
           "data-routeros-evidence-item": item.layer,
-          "data-routeros-raw-field-mode": "evidence-bottom",
+          "data-routeros-evidence-role": "raw-secondary",
+          "data-routeros-raw-field-mode": "secondary-collapsed-evidence",
+          "data-routeros-raw-field-contract": "table-gateway-distance-active-disabled-secondary",
+          "data-routeros-v1047-raw-secondary-rail": "bottom-collapsed-low-noise",
           "data-routeros-raw-table": ((_a = item.rawFields) == null ? void 0 : _a.table) || "",
           "data-routeros-raw-gateway": ((_b = item.rawFields) == null ? void 0 : _b.gateway) || "",
           "data-routeros-raw-distance": ((_c = item.rawFields) == null ? void 0 : _c.distance) || "",
@@ -12977,8 +15795,8 @@ var PanelFramework = function(exports) {
         },
         cells: [
           item.label,
-          item.rawFields ? `${routerOsRouteTableText(item.rawFields.table)} / ${routerOsRouteStatusText(item.rawFields.active === "true", item.rawFields.disabled === "true")}` : "原始字段已下沉",
-          "table / gateway / distance / active / disabled 仅作证据，不进入主判断"
+          item.value,
+          "table / gateway / distance / active / disabled 二级证据"
         ],
         title: `${item.value} · ${item.note}`,
         tone: item.tone
@@ -13435,20 +16253,6 @@ var PanelFramework = function(exports) {
       { id: "vis-readonly", cells: ["只读", "不写配置", "不推断业务数值", "采集链路可参考"], tone: "trust" }
     ];
   }
-  function noSnapshotChannelStatusRows(snapshot, state) {
-    const recent = latestSuccess(snapshot, state.scenario);
-    return [
-      { id: "channel-routeros", cells: ["RouterOS", "断链", "当前不可达，业务快照无法刷新"], tone: "danger" },
-      { id: "channel-rest", cells: ["REST", restState(snapshot, state).value, `${restState(snapshot, state).note}，仅作链路核验`], tone: restState(snapshot, state).tone },
-      { id: "channel-ssh", cells: ["SSH", sshState(snapshot, state).value, `${sshState(snapshot, state).note}，静态通道不可用`], tone: sshState(snapshot, state).tone },
-      { id: "channel-route", cells: ["默认出口", "待判", "默认出口待判 / 路由快照未取回"], tone: "warn" },
-      { id: "channel-failure", cells: ["失败端点", "未记录", "失败端点未记录 / 不写零值"], tone: "trust" },
-      { id: "channel-data-layer", cells: ["数据层状态", "快照缺失", "业务状态不可信"], tone: "missing" },
-      { id: "channel-recent", cells: ["最近成功", recent, `下次尝试 ${pollText(snapshot)}`], tone: recent === "未记录" ? "warn" : "trust" },
-      { id: "channel-business", cells: ["业务数据", "禁显", "无业务快照，业务数据不展示"], tone: "missing" },
-      { id: "channel-permission", cells: ["权限", "只读", "不写配置 / 不推断业务数值"], tone: "trust" }
-    ];
-  }
   function noSnapshotReadonlyDegradedRows(snapshot, state) {
     const recent = latestSuccess(snapshot, state.scenario);
     const rest = restState(snapshot, state);
@@ -13465,15 +16269,6 @@ var PanelFramework = function(exports) {
       { id: "readonly-route", cells: ["默认出口", "待判", "路由快照未取回，不推断承载"], tone: "warn" },
       { id: "readonly-success", cells: ["最近成功", recent, "只作为采集链路时间点"], tone: recent === "未记录" ? "warn" : "trust" },
       { id: "readonly-next", cells: ["下一次轮询", pollText(snapshot), "等待采集恢复"], tone: "trust" }
-    ];
-  }
-  function noSnapshotAuxiliaryScopeRows(snapshot, state) {
-    const recent = latestSuccess(snapshot, state.scenario);
-    return [
-      { id: "aux-business-scope", cells: ["业务域", "禁显", "无业务快照 / 等待恢复", "可见性边界"], tone: "missing" },
-      { id: "aux-rate-scope", cells: ["速率", "禁显", "禁止零值占位", "采集恢复后显示"], tone: "missing" },
-      { id: "aux-route-scope", cells: ["默认出口", "待判", "路由快照未取回", "不推断承载"], tone: "warn" },
-      { id: "aux-success-scope", cells: ["最近成功", recent, "采集链路时间点", pollText(snapshot)], tone: recent === "未记录" ? "warn" : "trust" }
     ];
   }
   function lastSuccessRows(snapshot, state) {
@@ -13602,31 +16397,692 @@ var PanelFramework = function(exports) {
     if (state.scenario === "all-offline") return compactRows([...routeRawEvidenceRows(snapshot, state), ...threeColumnRows(allOfflineImpactRows(snapshot, state), "desktop-boundary-")], 5);
     return compactRows([...routeRawEvidenceRows(snapshot, state), ...normalOpsRows(snapshot, state)], 6);
   }
+  function JudgementChart({ module, rows, kind = "trend" }) {
+    const maxValue = Math.max(1, ...rows.map((row) => Math.max(row.currentValue, row.peakValue, row.thresholdValue)));
+    const lead = rows[0];
+    const leadSamples = chartSamplePoints(lead);
+    const anomalyCount = rows.filter((row) => row.tone === "danger" || row.tone === "warn" || row.currentValue >= row.thresholdValue).length;
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+      "div",
+      {
+        className: `ro-judgement-chart ro-judgement-chart--${kind}`,
+        "data-overview-visual-block": true,
+        "data-overview-judgement-chart": "current-peak-mean-window-threshold-trust",
+        "data-overview-chart-grammar": "axis-current-peak-mean-window-threshold-unit-trust",
+        "data-overview-chart-type": kind === "pressure" ? "bar" : "line",
+        "data-overview-chart-module": module,
+        "data-overview-scene-chart": module,
+        "data-overview-chart-focus": "current-threshold-peak",
+        "data-overview-chart-main-metric": (lead == null ? void 0 : lead.label) || "无业务快照",
+        "data-overview-chart-threshold": (lead == null ? void 0 : lead.threshold) || "待判",
+        "data-overview-chart-anomaly-points": anomalyCount,
+        "data-overview-chart-semantic": "main-metric-threshold-anomaly-point",
+        "data-overview-chart-has-current": "true",
+        "data-overview-chart-has-peak": "true",
+        "data-overview-chart-has-mean": "true",
+        "data-overview-chart-has-window": "true",
+        "data-overview-chart-has-threshold": "true",
+        "data-overview-chart-has-trust": "true",
+        "data-overview-chart-unit": rows.map((row) => row.unit || "").filter(Boolean).join("/") || "status",
+        "data-overview-chart-judgement-contract": "current-peak-mean-window-threshold-confidence-readable",
+        "data-overview-chart-metadata-coverage": OVERVIEW_CHART_METADATA_COVERAGE,
+        "data-overview-plot-contract": kind === "pressure" ? "real-percent-axis-peak-current-threshold-mean" : "real-rate-axis-peak-current-threshold-mean",
+        "data-overview-collection-channel-bars": module === "collection-cache-ledger" ? "true" : void 0,
+        "data-overview-traffic-judgement": module === "wan-trend" || module === "traffic-trend" ? "true" : void 0,
+        "data-overview-chart-raw-fields": "current-peak-mean-window-threshold-confidence",
+        children: [
+          lead ? /* @__PURE__ */ jsxRuntimeExports.jsxs(
+            "div",
+            {
+              className: "ro-chart-summary",
+              "data-overview-chart-meta": true,
+              "data-overview-sample-points": leadSamples,
+              "data-overview-time-window": lead.window,
+              "data-overview-confidence": lead.trust,
+              "data-overview-chart-summary": "current-threshold-mean-peak-confidence",
+              title: `判断图：当前 ${lead.current} / 峰值 ${lead.peak} / 均值 ${lead.mean} / 样本 ${leadSamples} / 窗口 ${lead.window} / 阈值 ${lead.threshold} / 单位 ${chartUnitLabel(lead.unit)} / 可信度 ${lead.trust}`,
+              children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { "data-overview-field": true, children: [
+                  "主值 ",
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: lead.current })
+                ] }),
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { "data-overview-field": true, children: [
+                  "阈值 ",
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: lead.threshold })
+                ] }),
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { "data-overview-field": true, children: [
+                  "异常点 ",
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: formatNumber(anomalyCount) })
+                ] })
+              ]
+            }
+          ) : /* @__PURE__ */ jsxRuntimeExports.jsxs(
+            "div",
+            {
+              className: "ro-chart-empty",
+              "data-overview-chart-meta": true,
+              "data-overview-empty-chart-state": "grey-axis-no-business-snapshot",
+              "data-overview-sample-points": "0/0",
+              "data-overview-time-window": "无业务快照",
+              "data-overview-confidence": "待判",
+              children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "无业务快照" }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: "图表不伪装零值" }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: "最近成功未记录 / 灰色轴线" })
+              ]
+            }
+          ),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ro-chart-axis", "data-overview-y-axis": "overview-y-axis", "aria-hidden": "true", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "0" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "均值" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "阈值线" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "峰值" })
+          ] }),
+          rows.map((row) => {
+            const currentWidth = ratioPercent(row.currentValue, maxValue);
+            const meanWidth = ratioPercent(row.meanValue, maxValue);
+            const peakWidth = ratioPercent(row.peakValue, maxValue);
+            const thresholdLeft = ratioPercent(row.thresholdValue, maxValue);
+            const samplePoints = chartSamplePoints(row);
+            const isAnomaly = row.tone === "danger" || row.tone === "warn" || row.currentValue >= row.thresholdValue;
+            return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+              "div",
+              {
+                className: "ro-judgement-row",
+                "data-tone": row.tone || "trust",
+                "data-overview-chart-row": row.id,
+                "data-overview-current": row.current,
+                "data-overview-peak": row.peak,
+                "data-overview-mean": row.mean,
+                "data-overview-chart-window": row.window,
+                "data-overview-threshold": row.threshold,
+                "data-overview-anomaly-point": isAnomaly ? "true" : void 0,
+                "data-overview-chart-main-metric": row.label,
+                "data-overview-confidence": row.trust,
+                "data-overview-unit": row.unit || "status",
+                "data-overview-sample-points": samplePoints,
+                "data-overview-time-window": row.window,
+                "data-overview-chart-judgement-visible": "axis-threshold-current-peak-mean-readout",
+                title: `当前 ${row.current} / 峰值 ${row.peak} / 均值 ${row.mean} / 样本 ${samplePoints} / 窗口 ${row.window} / 阈值 ${row.threshold} / 单位 ${row.unit || "status"} / 可信度 ${row.trust}`,
+                children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "ro-chart-label", children: row.label }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ro-chart-track", "aria-hidden": "true", children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsx("i", { className: "ro-chart-mean", style: { width: `${meanWidth}%` } }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx("b", { className: "ro-chart-current", style: { width: `${currentWidth}%` } }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx("em", { className: "ro-chart-peak", style: { left: `${peakWidth}%` } }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx("strong", { className: "ro-chart-threshold", style: { left: `${thresholdLeft}%` } }),
+                    isAnomaly ? /* @__PURE__ */ jsxRuntimeExports.jsx("u", { className: "ro-chart-anomaly-dot", style: { left: `${currentWidth}%` } }) : null
+                  ] }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                    "span",
+                    {
+                      className: "ro-chart-readout",
+                      "data-overview-trend-readout": true,
+                      "data-overview-chart-judgement-strip": "current-peak-mean-window-sample-threshold-confidence",
+                      "data-overview-chart-judgement-strip-visible": "true",
+                      "data-overview-mobile-first-chart-readout": true,
+                      "data-overview-chart-meta": true,
+                      "data-overview-sample-points": samplePoints,
+                      "data-overview-time-window": row.window,
+                      "data-overview-confidence": row.trust,
+                      children: [
+                        /* @__PURE__ */ jsxRuntimeExports.jsxs("i", { className: "ik-overview-trend-cell ik-overview-current-label", children: [
+                          "现 ",
+                          row.current
+                        ] }),
+                        /* @__PURE__ */ jsxRuntimeExports.jsxs("i", { className: "ik-overview-trend-cell", children: [
+                          "阈 ",
+                          row.threshold
+                        ] }),
+                        /* @__PURE__ */ jsxRuntimeExports.jsx("i", { className: "ik-overview-trend-cell", children: isAnomaly ? "异常点" : row.window })
+                      ]
+                    }
+                  )
+                ]
+              },
+              row.id
+            );
+          })
+        ]
+      }
+    );
+  }
+  function DesktopWanIntegratedVisual({ snapshot, state, rows }) {
+    const topRows = trafficTop3Rows(snapshot, state).slice(0, 3);
+    const decision = desktopWanDecisionRail(snapshot, state, rows);
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+      "div",
+      {
+        className: "ro-wan-integrated-visual",
+        "data-overview-desktop-wan-integrated": "trend-current-peak-top-outlet-route-sampling",
+        "data-overview-ikuai-wan-chart-integrated": "trend-current-peak-top-outlet-route-sampling",
+        "data-overview-desktop-chart-product-contract": "trend-plus-current-peak-top-outlet-route-sampling",
+        "data-overview-desktop-v1020-integrated-product-chart": "single-reading-current-peak-top-route-sampling",
+        "data-overview-desktop-v1041-wan-readable-chart": "current-peak-mean-window-threshold-readout-visible-not-table-noise",
+        "data-overview-desktop-v1073-wan-single-surface": "trend-decision-top3-no-duplicate-summary-or-ledger",
+        children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(JudgementChart, { module: "traffic-trend", kind: "trend", rows }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(
+            "div",
+            {
+              className: "ro-wan-integrated-decision",
+              "data-overview-desktop-v1063-wan-decision-rail": "current-peak-top-default-sampling-single-surface",
+              "data-overview-desktop-v1063-wan-decision-source": "desktopWanDecisionRail",
+              children: decision.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { "data-overview-desktop-v1063-decision": item.id, "data-tone": item.tone, children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: item.label }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: item.value }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: item.note })
+              ] }, item.id))
+            }
+          ),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ro-wan-integrated-top", "data-overview-desktop-wan-top-outlet": "top3-inline-under-trend", children: topRows.map((row) => /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { "data-tone": row.tone || "trust", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: ledgerCellText(row, 0) }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: ledgerCellText(row, 1) }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: ledgerCellText(row, 2) })
+          ] }, row.id)) })
+        ]
+      }
+    );
+  }
+  function ChannelMatrixVisual({ module, rows }) {
+    return /* @__PURE__ */ jsxRuntimeExports.jsx(
+      "div",
+      {
+        className: "ro-channel-matrix-visual",
+        "data-overview-chart-type": module === "collection-cache-ledger" ? "bar" : "matrix",
+        "data-overview-scene-chart": module,
+        "data-overview-collection-matrix": "rest-ssh-snapshot-status",
+        children: rows.slice(0, 4).map((row) => /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { "data-tone": row.tone || "trust", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("i", { "aria-hidden": "true" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: row.label }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("strong", { children: row.current }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: row.trust })
+        ] }, row.id))
+      }
+    );
+  }
+  function ResourcePressureLedgerVisual({ rows }) {
+    return /* @__PURE__ */ jsxRuntimeExports.jsx(
+      "div",
+      {
+        className: "ro-resource-ledger-visual",
+        "data-overview-chart-type": "pressure",
+        "data-overview-scene-chart": "resource-three-row-threshold-ledger",
+        "data-overview-resource-danger-order-bars": "thin-row-ledger",
+        children: rows.slice(0, 3).map((row) => /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { "data-tone": row.tone || "trust", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: row.label }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("strong", { children: row.current }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("i", { "aria-hidden": "true", children: /* @__PURE__ */ jsxRuntimeExports.jsx("i", { style: { width: `${clampPercent(row.currentValue)}%` } }) }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("em", { children: [
+            "阈",
+            row.threshold,
+            " · 持续 ",
+            chartSamplePoints(row)
+          ] })
+        ] }, row.id))
+      }
+    );
+  }
+  function DesktopIncidentSummary({ snapshot, state }) {
+    if (state.scenario === "single" || state.scenario === "fleet") return null;
+    const items = desktopPresentation(snapshot, state).incidentSummary;
+    return /* @__PURE__ */ jsxRuntimeExports.jsx(
+      "div",
+      {
+        className: "ro-incident-summary",
+        "data-overview-desktop-incident-summary": "presentation-model-object-impact-trust-recent-readonly",
+        "data-routeros-presentation-contract": "collection-facts/routeros-semantics/user-conclusion",
+        children: items.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { "data-tone": item.tone, children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: item.label }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: item.value })
+        ] }, item.id))
+      }
+    );
+  }
+  function VisualStack({ snapshot, state, children }) {
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ro-visual-stack", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx(DesktopIncidentSummary, { snapshot, state }),
+      children
+    ] });
+  }
+  function ChainTimeline({ rows, module }) {
+    const lead = rows[0];
+    const recent = lead ? String(lead.cells[2] || "") : "未记录";
+    const noSnapshotTimeline = module.startsWith("no-snapshot");
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+      "div",
+      {
+        className: "ro-chain-timeline ik-no-snapshot-timeline-visual ik-overview-timeline",
+        "data-overview-judgement-chart": "chain-timeline-current-recent-failure-next",
+        "data-overview-scene-chart": module,
+        "data-overview-chart-type": noSnapshotTimeline ? "line" : "timeline",
+        "data-overview-chart-has-current": "true",
+        "data-overview-chart-has-window": "true",
+        "data-overview-chart-has-trust": "true",
+        "data-overview-chart-unit": "status",
+        "data-overview-confidence": "链路可参考",
+        "data-overview-chart-meta": true,
+        "data-overview-sample-points": rows.length ? `${Math.min(rows.length, 6)}/${rows.length}` : "0/0",
+        "data-overview-time-window": recent || "最近成功未记录",
+        "data-overview-no-snapshot-compact-flow": noSnapshotTimeline ? "true" : void 0,
+        "data-overview-no-snapshot-success-timeline": noSnapshotTimeline || module === "collection-success-timeline" ? "true" : void 0,
+        "data-overview-no-snapshot-collection-timeline-parent-judgement": noSnapshotTimeline ? "true" : void 0,
+        "data-overview-collection-incident-timeline-parent-judgement": module === "collection-success-timeline" ? "true" : void 0,
+        children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ro-chain-meta", "data-overview-chart-meta": true, "data-overview-confidence": "链路可参考", "data-overview-time-window": recent || "最近成功未记录", "data-overview-sample-points": rows.length ? `${Math.min(rows.length, 6)}/${rows.length}` : "0/0", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "当前链路" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: lead ? lead.cells[1] : "无业务快照" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("em", { children: [
+              "最近成功 ",
+              recent || "未记录",
+              " / 链路可参考"
+            ] })
+          ] }),
+          rows.slice(0, 6).map((row, index) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ro-chain-node ik-overview-chain-node ik-no-snapshot-chain-node", "data-tone": row.tone || "trust", "data-overview-chain-step": index + 1, children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: row.cells[0] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: row.cells[1] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: row.cells[2] })
+          ] }, row.id))
+        ]
+      }
+    );
+  }
+  function VisibilityMatrixVisual({ rows }) {
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+      "div",
+      {
+        className: "ro-visibility-matrix ik-no-snapshot-matrix-grid ik-overview-module-matrix",
+        "data-overview-judgement-chart": "visibility-matrix-current-reason-trust",
+        "data-overview-scene-chart": "no-snapshot-visibility-matrix",
+        "data-overview-chart-type": "matrix",
+        "data-overview-chart-has-current": "true",
+        "data-overview-chart-has-window": "true",
+        "data-overview-chart-has-trust": "true",
+        "data-overview-chart-unit": "status",
+        "data-overview-empty-chart-state": "no-business-snapshot-grey-axis",
+        "data-overview-chart-meta": true,
+        "data-overview-sample-points": rows.length ? `${Math.min(rows.length, 8)}/${rows.length}` : "0/0",
+        "data-overview-time-window": "模块可见性",
+        "data-overview-no-snapshot-four-col-matrix": "true",
+        "data-overview-confidence": "业务状态不可参考",
+        "data-overview-no-snapshot-module-matrix-parent-judgement": "true",
+        "data-overview-matrix-evidence": "current-commit",
+        children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ro-visibility-axis", "aria-hidden": "true", children: "无业务快照 / 模块可见性 / 灰色为空态轴线" }),
+          rows.slice(0, 8).map((row) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ro-visibility-cell ik-no-snapshot-matrix-cell ik-no-snapshot-ledger-cell", "data-tone": row.tone || "trust", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: row.cells[0] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: row.cells[1] })
+          ] }, row.id))
+        ]
+      }
+    );
+  }
+  function ResourceTriCards({ rows }) {
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+      "div",
+      {
+        className: "ro-resource-cards ops-resource-grid",
+        "data-overview-scene-chart": "resource-risk-cards",
+        "data-overview-resource-primary-pressure": "true",
+        "data-overview-resource-danger-order-bars": "true",
+        "data-overview-chart-type": "pressure",
+        "data-overview-chart-has-current": "true",
+        "data-overview-chart-has-peak": "true",
+        "data-overview-chart-has-mean": "true",
+        "data-overview-chart-has-window": "true",
+        "data-overview-chart-has-threshold": "true",
+        "data-overview-chart-has-trust": "true",
+        "data-overview-chart-unit": "%",
+        children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ro-resource-axis-labels ops-axis-labels ops-axis-chart", "aria-hidden": "true", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "100%" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "50%" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "0%" })
+          ] }),
+          rows.map((row) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ro-resource-card ops-resource-card", style: { "--resource-color": row.tone === "danger" ? "#c94a4a" : "#2f7de1" }, "data-tone": row.tone || "trust", "data-overview-resource-danger-card-judgement": true, "data-overview-resource-spark-row-judgement": true, children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: row.label }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: row.current }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("em", { children: [
+              "当前 ",
+              row.current,
+              " / 峰值 ",
+              row.peak,
+              " / 均值 ",
+              row.mean
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("small", { children: [
+              "阈值 ",
+              row.threshold,
+              " / 持续 ",
+              chartSamplePoints(row),
+              " / 数据点 ",
+              row.samples || chartSamplePoints(row)
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("i", { "aria-hidden": "true", children: /* @__PURE__ */ jsxRuntimeExports.jsx("strong", { className: "ops-threshold-line", style: { width: `${clampPercent(row.currentValue)}%` } }) })
+          ] }, row.id))
+        ]
+      }
+    );
+  }
+  function Module({ title, subtitle, module, tone = "trust", headers, rows, trust, className = "", minRows = 0, visual, visualOnly = false, collapsedEvidence = false }) {
+    const paddedRows = rows;
+    const isWanLedger = /wan/i.test(module);
+    const isAnomalyEvidence = isWanLedger && !/wan-trend/i.test(module);
+    const isRankLedger = /rank|top5|normal-wan-evidence/i.test(module);
+    const isResourceRiskModule = module === "resource-risk-priority";
+    const isRouterOsRouteEvidenceModule = /route|default-route|evidence-boundary|wan-route/i.test(module);
+    const isSecondaryEvidence = /terminal|boundary|collection-resource-threshold|resource-boundary|normal-ops-ledger/.test(module);
+    const isNoSnapshotFloorModule = className.split(/\s+/).includes("ro-no-snapshot-floor-module");
+    const primaryEvidenceModules = /* @__PURE__ */ new Set([
+      "wan-trend",
+      "resource-risk-priority",
+      "resource-pressure-bars",
+      "interface-forwarding",
+      "collection-cache-ledger",
+      "no-snapshot-summary",
+      "wan-offline-bars"
+    ]);
+    const gridStyle = {
+      gridTemplateColumns: `repeat(${Math.max(1, headers.length)}, minmax(0, 1fr))`
+    };
+    const showTrustTag = Boolean(
+      trust && trust !== "实时" && /^(wan-trend|wan-offline-bars|resource-risk-priority|collection-channel-ledger|no-snapshot-summary|interface-forwarding|normal-collection-channel|collection-status)$/.test(module)
+    );
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+      "section",
+      {
+        className: `ro-module ik-overview-flat-module${isResourceRiskModule ? " ops-resource-grid" : ""} ${className}`.trim(),
+        style: isNoSnapshotFloorModule ? { alignSelf: "stretch", height: "100%", maxHeight: "none", minHeight: 224 } : void 0,
+        "data-tone": tone,
+        "data-overview-density-module": module,
+        "data-overview-visual-block": true,
+        "data-overview-chart-type": moduleChartType(module),
+        "data-overview-desktop-tier": "evidence",
+        "data-overview-module-body-policy": visualOnly ? "visual-only" : collapsedEvidence ? "collapsed-secondary-evidence" : "content-sized",
+        "data-overview-desktop-v1073-visual-only": visualOnly ? "true" : void 0,
+        "data-overview-desktop-v1074-collapsed-evidence": collapsedEvidence ? "native-details-business-first-raw-secondary" : void 0,
+        "data-overview-top5-total": module === "resource-interface-top5" ? rows.length : void 0,
+        "data-overview-wan-offline-bars": module === "wan-offline-bars" ? "true" : void 0,
+        "data-overview-wan-mini-table": isWanLedger ? "true" : void 0,
+        "data-overview-anomaly-evidence": primaryEvidenceModules.has(module) || isAnomalyEvidence ? "true" : void 0,
+        "data-overview-rank-grid": isRankLedger ? "true" : void 0,
+        "data-overview-resource-interface-top5-first-screen": module === "resource-interface-top5" ? "true" : void 0,
+        "data-overview-evidence-weight": primaryEvidenceModules.has(module) ? "primary" : isSecondaryEvidence ? "secondary" : "support",
+        "data-overview-secondary": isSecondaryEvidence ? "true" : void 0,
+        "data-overview-routeros-business-main-view": isRouterOsRouteEvidenceModule ? "translated-fields" : void 0,
+        "data-routeros-route-evidence-contract": isRouterOsRouteEvidenceModule ? ROUTEROS_ROUTE_EVIDENCE_CONTRACT : void 0,
+        "data-routeros-raw-field-policy": isRouterOsRouteEvidenceModule ? "raw-fields-secondary-not-main-copy" : void 0,
+        "data-routeros-v1047-raw-evidence-contract": isRouterOsRouteEvidenceModule ? "business-route-main-raw-route-fields-secondary-collapsed-low-noise" : void 0,
+        "data-overview-resource-judgement-parent": module === "resource-risk-priority" ? "true" : void 0,
+        "data-overview-resource-danger-card-judgement": module === "resource-risk-priority" ? "true" : void 0,
+        "data-overview-resource-danger-bars-confidence-standard": module === "resource-risk-priority" ? "current-peak-mean-threshold-trust" : void 0,
+        "data-overview-resource-ledger-parent-judgement": module === "resource-risk-priority" ? "compact-row-ledger" : void 0,
+        "data-overview-resource-three-metric-ledger-mode": module === "resource-risk-priority" ? "compact-row-ledger" : void 0,
+        "data-overview-resource-complementary-pressure-bars": module === "resource-pressure-bars" ? "true" : void 0,
+        "data-overview-resource-complementary-kind": module === "resource-pressure-bars" ? "connection-interface-dns-sessions" : void 0,
+        "data-overview-resource-complementary-role": module === "resource-pressure-bars" ? "connection-pressure-interface-throughput-dns-cache-active-sessions" : void 0,
+        "data-overview-resource-context-parent": module === "resource-pressure-bars" ? "true" : void 0,
+        "data-overview-collection-bars-parent-judgement": module === "collection-cache-ledger" ? "true" : void 0,
+        "data-overview-collection-triad-bars": module === "collection-cache-ledger" ? "rest-ssh-snapshot-only" : void 0,
+        "data-overview-collection-success-timeline-primary": module === "collection-recent-failures" ? "true" : void 0,
+        "data-overview-collection-success-timeline": module === "collection-recent-failures" ? "true" : void 0,
+        "data-overview-interface-carrier-table": module === "interface-forwarding" || module === "interface-relation-carrier" ? "true" : void 0,
+        "data-overview-interface-relation-detail": module === "interface-relation-carrier" ? "carrier-table" : void 0,
+        "data-overview-no-snapshot-ledger-parent-judgement": module === "no-snapshot-channel-status" ? "true" : void 0,
+        "data-overview-no-snapshot-channel-parent-judgement": module === "no-snapshot-channel-status" ? "true" : void 0,
+        "data-overview-no-snapshot-timeline-parent-judgement": module === "no-snapshot-channel-status" ? "true" : void 0,
+        "data-overview-no-snapshot-module-matrix-parent-judgement": module === "no-snapshot-summary" || module === "no-snapshot-module-visibility" ? "true" : void 0,
+        "data-overview-no-snapshot-recent-channel-parent-judgement": module === "no-snapshot-recent-success" ? "true" : void 0,
+        "data-overview-no-snapshot-collection-channel-parent-judgement": module === "no-snapshot-channel-status" ? "true" : void 0,
+        "data-overview-no-snapshot-content-sized": module.startsWith("no-snapshot") ? "true" : void 0,
+        "data-overview-desktop-v1042-no-snapshot-floor-module": isNoSnapshotFloorModule ? "visibility-raw-evidence-filled-floor" : void 0,
+        "data-overview-no-snapshot-floor-zone": isNoSnapshotFloorModule ? module : void 0,
+        "data-overview-three-col-table": headers.length === 3 ? "true" : void 0,
+        "data-overview-table-evidence-wrap": headers.length === 3 ? "third-column-full-wrap" : void 0,
+        "data-overview-top5-display-policy": module === "resource-interface-top5" ? "bar-main-value-share-only-tooltip-secondary" : void 0,
+        "data-overview-top5-visual-noise-policy": module === "resource-interface-top5" ? "bar-main-value-share-right-secondary-tooltip" : void 0,
+        "data-overview-top5-density": module === "resource-interface-top5" ? "flat-light-3col" : void 0,
+        "data-overview-top5-row-visual-contract": module === "resource-interface-top5" ? "name-bar-main-share-right-tooltip-secondary" : void 0,
+        "data-overview-min-rows": minRows,
+        "data-overview-filler-rows": "disabled",
+        children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { className: "ro-module-head", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("b", { className: "ik-overview-flat-title", children: title }),
+              subtitle ? /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: subtitle }) : null
+            ] }),
+            showTrustTag ? /* @__PURE__ */ jsxRuntimeExports.jsx("em", { "data-trust": trust, children: trust }) : null,
+            isResourceRiskModule ? /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "ro-resource-axis-labels ops-axis-labels ops-axis-chart", "aria-label": "资源百分比轴", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "100%" }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "50%" }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "0%" }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "数据点" })
+            ] }) : null,
+            module === "resource-interface-top5" ? /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "ro-sr-contract", "data-overview-top5-total": rows.length, children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "ik-overview-top5-rate", children: /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: "Top5速率" }) }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "ik-overview-top5-connections", children: /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: "Top5连接" }) })
+            ] }) : null
+          ] }),
+          visual,
+          visualOnly ? null : /* @__PURE__ */ jsxRuntimeExports.jsxs(
+            "details",
+            {
+              className: collapsedEvidence ? "ro-secondary-evidence-disclosure" : "ro-ledger-disclosure",
+              "data-overview-desktop-v1074-raw-evidence-disclosure": collapsedEvidence ? "native-details-collapsed-secondary" : void 0,
+              open: collapsedEvidence ? void 0 : true,
+              children: [
+                collapsedEvidence ? /* @__PURE__ */ jsxRuntimeExports.jsxs("summary", { children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "查看原始字段" }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsxs("b", { children: [
+                    rows.length,
+                    " 项"
+                  ] })
+                ] }) : null,
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ro-ledger-table ik-home-evidence-list", role: "table", children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ro-ledger-head ro-ledger-row", role: "row", style: gridStyle, children: headers.map((header) => /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ro-ledger-head-cell", role: "columnheader", children: header }, header)) }),
+                  paddedRows.map((row) => {
+                    var _a;
+                    const share = (_a = row.attrs) == null ? void 0 : _a["data-overview-share"];
+                    const baseRowStyle = share !== void 0 ? { ...gridStyle, "--overview-share": `${share}%` } : gridStyle;
+                    const rowStyle = isResourceRiskModule ? {
+                      ...baseRowStyle,
+                      "--resource-color": row.tone === "danger" ? "#c94a4a" : "#2f7de1"
+                    } : baseRowStyle;
+                    return /* @__PURE__ */ jsxRuntimeExports.jsx(
+                      "div",
+                      {
+                        className: `ro-ledger-row ik-home-evidence-row${module === "resource-pressure-bars" || module === "resource-risk-priority" ? " ik-overview-bar-row" : ""}${isResourceRiskModule ? " ops-resource-card ops-axis-chart" : ""}`,
+                        role: "row",
+                        style: rowStyle,
+                        "data-tone": row.tone || "trust",
+                        "data-overview-field": true,
+                        title: row.title,
+                        ...row.attrs,
+                        children: headers.map((_, index) => /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ro-ledger-cell ik-overview-module-cell", role: "cell", "data-overview-field": true, children: /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "ik-overview-cell-text", children: row.cells[index] ?? "" }) }, `${row.id}-${index}`))
+                      },
+                      row.id
+                    );
+                  })
+                ] })
+              ]
+            }
+          )
+        ]
+      }
+    );
+  }
+  function InfoBand({ snapshot, state }) {
+    const items = topbarItems(snapshot, state).slice(0, 6);
+    const isNoSnapshot = state.scenario === "no-snapshot";
+    const topbarFixedSix = isNoSnapshot ? "conclusion-device-routeros-rest-ssh-recent-success" : "conclusion-device-object-impact-collection-snapshot";
+    const topbarHierarchy = isNoSnapshot ? "primary-conclusion-device-routeros-rest-ssh-recent-success" : "primary-conclusion-device-object-impact-collection-snapshot";
+    const topbarPriorityContract = isNoSnapshot ? "conclusion-first-device-routeros-rest-ssh-recent-success" : "conclusion-first-device-object-impact-collection-snapshot";
+    const topbarSecondary = isNoSnapshot ? "recent-success-demoted" : "snapshot-demoted";
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+      "div",
+      {
+        className: "ro-topbar ik-home-flat-topbar",
+        "data-overview-desktop-tier": "conclusion",
+        "data-overview-desktop-hierarchy-tier": "1-conclusion",
+        "data-overview-summary": true,
+        "data-overview-status-bus": true,
+        "data-overview-verdict-status-bus": true,
+        "data-overview-status-bar": true,
+        "data-overview-desktop-v1040-status-bus": "flat-summary-bus-key-value-no-field-boxes",
+        "data-overview-desktop-v1068-status-bus": "control-console-summary-bus-flat-critical-value-rail",
+        "data-overview-desktop-v1068-status-bus-order": topbarFixedSix,
+        "data-overview-desktop-v1068-status-bus-no-table-header": "true",
+        "data-overview-desktop-v1068-status-bus-value-rail": "conclusion-first-low-noise",
+        "data-overview-summary-main": true,
+        "data-overview-desktop-top": true,
+        "data-overview-flat-topbar": true,
+        "data-overview-topbar-hierarchy": topbarHierarchy,
+        "data-overview-topbar-priority-contract": topbarPriorityContract,
+        "data-overview-topbar-primary-weight": "conclusion-12_5-device-12",
+        "data-overview-topbar-conclusion-rail": "left-4px",
+        "data-overview-topbar-secondary": topbarSecondary,
+        "data-overview-topbar-fixed-six": topbarFixedSix,
+        "data-overview-topbar-no-overflow": "max-six-cells-short-notes",
+        "data-overview-first-viewport-title": topbarFixedSix,
+        "data-overview-topbar-no-iso-long-timestamp": "true",
+        "data-overview-first-viewport-no-duplicate-title-tag": "true",
+        "data-overview-topbar-muted-tags": "no-heavy-status-tags",
+        children: [
+          items.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ro-topbar-cell ik-home-flat-cell ik-home-ops-item", "data-tone": item.tone, "data-overview-field": true, "data-overview-status-cell": true, "data-overview-status-role": item.role, "data-overview-status-priority": topbarPriority(item.role), "data-overview-summary-cell": true, "data-overview-desktop-v1068-status-cell": "label-value-note", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: item.label }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { style: topbarValueStyle(item.role), "data-overview-desktop-primary": item.role === "conclusion" ? "true" : void 0, children: item.value }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("em", { style: topbarNoteStyle(item.role), children: item.note })
+          ] }, item.role)),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "ro-contract-hidden", "data-overview-field": true }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "ro-contract-hidden", "data-overview-field": true })
+        ]
+      }
+    );
+  }
+  function DesktopThinKpis({ snapshot, state }) {
+    const object = topbarObjectValue(snapshot, state);
+    const collection = topbarCollectionValue(state);
+    const terminals = desktopTerminalRows(snapshot);
+    const resource = state.scenario === "no-snapshot" ? "禁显" : formatPercent(state.facts.resource.cpu, 0);
+    const isFleetDensity = state.scenario === "fleet";
+    const items = [
+      { label: "WAN", value: object.value, note: isFleetDensity ? "类型分布" : topbarImpactValue(snapshot, state), tone: state.verdict.level },
+      { label: "资源", value: resource, note: state.scenario === "resource-full" ? "持续超阈" : "阈值", tone: state.scenario === "resource-full" ? "danger" : state.facts.resource.level },
+      { label: "采集", value: collection.value, note: state.scenario === "collection-down" ? "缓存" : state.scenario === "no-snapshot" ? "断链" : "实时", tone: state.facts.collection.credibilityTone },
+      { label: "终端", value: terminals.length ? formatNumber(terminals.length) : "无", note: "总流量排序", tone: terminals.length ? "trust" : "missing" }
+    ];
+    return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ro-desktop-thin-kpis", "data-overview-desktop-kpi-row": "thin-business-summary", children: items.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ro-desktop-thin-kpi ik-overview-kpi-card", "data-overview-kpi-card": true, "data-tone": item.tone, children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: item.label }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: item.value }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: item.note })
+    ] }, item.label)) });
+  }
   function compactDesktopPanelGroups(snapshot, state) {
     const trust = moduleTrust(state);
     const isFleet = state.scenario === "fleet";
     if (state.scenario === "no-snapshot") {
-      const chainRows = noSnapshotChainRows(snapshot, state);
-      const channelRows = noSnapshotChannelStatusRows(snapshot, state);
-      const recentRows = lastSuccessRows(snapshot, state);
-      const visibilityRows = noSnapshotVisibilityRows();
-      const chainRowsCompact = compactRows(chainRows, 6);
-      const channelRowsCompact = compactRows(channelRows, 5);
+      const businessBoundaryRows = compactRows(noSnapshotBusinessBoundaryRows(snapshot, state), 4);
+      const chainRows = compactRows(noSnapshotChainRows(snapshot, state), 4);
+      const successRows = compactRows(lastSuccessRows(snapshot, state), 5);
+      const credibilityRows = compactRows(noSnapshotReadonlyDegradedRows(snapshot, state), 4);
+      const visibilityRows = compactRows(noSnapshotVisibilityRows(), 6);
       return {
         main: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "采集链路", subtitle: "RouterOS / REST / SSH / 快照", module: "no-snapshot-summary", tone: "danger", trust, headers: ["链路层", "当前", "最近成功", "主证据", "下次尝试"], rows: chainRowsCompact, minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(ChannelMatrixVisual, { module: "no-snapshot-summary", rows: collectionChannelRows(snapshot, state) }) }, "ns-summary"),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "三通道状态", subtitle: "失败端点 / 默认出口待判", module: "no-snapshot-channel-status", tone: "warn", trust, headers: ["通道", "当前", "说明"], rows: channelRowsCompact, minRows: 0 }, "ns-channel"),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "展示范围", subtitle: "业务禁显 / 管理面证据", module: "snapshot-main-scope", tone: "missing", trust, headers: ["模块", "状态", "原因", "边界"], rows: compactRows(noSnapshotAuxiliaryScopeRows(snapshot, state), 4), minRows: 0 }, "ns-main-scope")
+          /* @__PURE__ */ jsxRuntimeExports.jsx(
+            Module,
+            {
+              title: "业务可信边界",
+              subtitle: "无业务快照 · 业务字段禁显 · 不用零速率占位",
+              module: "no-snapshot-module-visibility",
+              tone: "missing",
+              trust,
+              headers: ["模块", "当前", "影响", "边界"],
+              rows: businessBoundaryRows,
+              minRows: 0,
+              visual: /* @__PURE__ */ jsxRuntimeExports.jsx(VisibilityMatrixVisual, { rows: businessBoundaryRows })
+            },
+            "ns-business-boundary"
+          ),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(
+            Module,
+            {
+              title: "采集链路",
+              subtitle: "RouterOS / REST / SSH / 快照 · 仅作管理面证据",
+              module: "no-snapshot-summary",
+              tone: "warn",
+              trust,
+              headers: ["链路项", "当前", "最近成功", "主证据", "下次尝试"],
+              rows: chainRows,
+              minRows: 0,
+              visual: /* @__PURE__ */ jsxRuntimeExports.jsx(ChainTimeline, { rows: chainRows, module: "no-snapshot-summary-chain" })
+            },
+            "ns-collection-chain"
+          )
         ],
         side: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "最近成功", subtitle: "时间 / 状态", module: "no-snapshot-recent-success", tone: "trust", trust, headers: ["节点", "当前", "说明"], rows: compactRows(recentRows, 4), minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(ChainTimeline, { rows: compactRows(recentRows, 4), module: "no-snapshot-recent-success-timeline" }) }, "ns-recent"),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "模块可见性矩阵", subtitle: "无快照 / 禁显", module: "no-snapshot-module-visibility", tone: "missing", trust, headers: ["模块", "状态", "原因", "边界"], rows: compactRows(visibilityRows, 6), minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(VisibilityMatrixVisual, { rows: compactRows(visibilityRows, 6) }) }, "ns-visibility"),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "降级模块", subtitle: "只读边界 / 不推断业务值", module: "snapshot-side-degraded", tone: "missing", trust, headers: ["模块", "状态", "原因", "边界"], rows: compactRows(noSnapshotAuxiliaryScopeRows(snapshot, state), 4), minRows: 0 }, "ns-side-degraded")
+          /* @__PURE__ */ jsxRuntimeExports.jsx(
+            Module,
+            {
+              title: "最近成功 / 恢复线索",
+              subtitle: "时间轴起点 · 当前管理面 · 下次轮询",
+              module: "no-snapshot-recent-success",
+              tone: "trust",
+              trust,
+              headers: ["节点", "当前", "说明"],
+              rows: successRows,
+              minRows: 0,
+              visual: /* @__PURE__ */ jsxRuntimeExports.jsx(ChainTimeline, { rows: successRows, module: "no-snapshot-recent-success-timeline" })
+            },
+            "ns-recovery"
+          ),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(
+            Module,
+            {
+              title: "页面可信度",
+              subtitle: "业务解释优先 · 原始字段下沉",
+              module: "no-snapshot-readonly-boundary",
+              tone: "warn",
+              trust,
+              headers: ["对象", "当前", "原因", "边界"],
+              rows: credibilityRows,
+              minRows: 0
+            },
+            "ns-page-credibility"
+          )
         ],
         bottom: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "采集边界", subtitle: "RouterOS / REST / SSH / 快照", module: "snapshot-bottom-chain", tone: "warn", trust, headers: ["链路层", "当前", "最近成功", "主证据", "下次尝试"], rows: compactRows(chainRows, 4), minRows: 0 }, "ns-bottom-chain"),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "不可展示模块", subtitle: "WAN / 资源 / 终端 / 连接", module: "snapshot-bottom-visibility", tone: "missing", trust, headers: ["模块", "状态", "原因", "边界"], rows: compactRows(visibilityRows, 4), minRows: 0 }, "ns-bottom-visibility"),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "证据边界", subtitle: "速率不展示 / 不用零值撑版", module: "evidence-boundary", tone: "missing", trust, headers: ["模块", "状态", "原因", "边界"], rows: compactRows(noSnapshotReadonlyDegradedRows(snapshot, state), 4), minRows: 0 }, "ns-degraded")
+          /* @__PURE__ */ jsxRuntimeExports.jsx(
+            Module,
+            {
+              className: "ro-no-snapshot-floor-module",
+              title: "不可展示模块矩阵",
+              subtitle: "WAN / 资源 / 终端 / 连接 / 速率 · 按可信边界禁显",
+              module: "no-snapshot-degraded-modules",
+              tone: "missing",
+              trust,
+              headers: ["模块", "状态", "原因", "边界"],
+              rows: visibilityRows,
+              minRows: 0,
+              visual: /* @__PURE__ */ jsxRuntimeExports.jsx(VisibilityMatrixVisual, { rows: visibilityRows })
+            },
+            "ns-visibility-floor"
+          ),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(
+            Module,
+            {
+              className: "ro-no-snapshot-floor-module",
+              title: "证据 / 原始字段",
+              subtitle: "默认收起 · 仅用于审计",
+              module: "evidence-boundary",
+              tone: "trust",
+              trust,
+              headers: ["对象", "当前", "依据"],
+              rows: compactRows(desktopEvidenceBoundaryRows(snapshot, state), 4),
+              minRows: 0,
+              collapsedEvidence: true
+            },
+            "ns-raw-evidence"
+          )
         ]
       };
     }
@@ -13648,7 +17104,7 @@ var PanelFramework = function(exports) {
         bottom: [
           /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "终端排行", subtitle: "异常置顶 / 总流量", module: "terminal-ranking", tone: "trust", trust, headers: ["设备", "IP", "流量", "状态"], rows: compactRows(desktopTerminalRows(snapshot), 4), minRows: 0 }, "res-terminals"),
           /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "最近事件", subtitle: "采集 / 默认出口", module: "normal-ops-ledger", tone: state.facts.collection.level, trust, headers: ["对象", "当前", "依据"], rows: compactRows(normalOpsRows(snapshot, state), 4), minRows: 0 }, "res-events"),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "原始证据", subtitle: "字段下沉", module: "evidence-boundary", tone: "trust", trust, headers: ["对象", "当前", "依据"], rows: compactRows([...routeRawEvidenceRows(snapshot, state), ...threeColumnRows(resourceBoundaryRows(snapshot, state), "res-boundary-")], 4), minRows: 0 }, "res-boundary")
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "证据 / 原始字段", subtitle: "默认收起 · 仅用于审计", module: "evidence-boundary", tone: "trust", trust, headers: ["对象", "当前", "依据"], rows: compactRows([...routeRawEvidenceRows(snapshot, state), ...threeColumnRows(resourceBoundaryRows(snapshot, state), "res-boundary-")], 4), minRows: 0, collapsedEvidence: true }, "res-boundary")
         ]
       };
     }
@@ -13683,7 +17139,7 @@ var PanelFramework = function(exports) {
         bottom: [
           /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "接口事件", subtitle: "最近成功 / 默认出口 / 采集面", module: "interface-page-trust", tone: "trust", trust, headers: ["对象", "当前", "依据"], rows: compactRows(interfacePageTrustRows(snapshot, state), 4), minRows: 0 }, "if-events"),
           /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "终端排行", subtitle: "异常置顶 / 总流量", module: "terminal-ranking", tone: "trust", trust, headers: ["设备", "IP", "流量", "状态"], rows: desktopTerminalRows(snapshot), minRows: 0 }, "if-terminals"),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "路由证据", subtitle: "main / gateway / distance", module: "evidence-boundary", tone: "trust", trust, headers: ["对象", "当前", "依据"], rows: routeRawEvidenceRows(snapshot, state), minRows: 0 }, "if-raw")
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "证据 / 原始字段", subtitle: "默认收起 · 仅用于审计", module: "evidence-boundary", tone: "trust", trust, headers: ["对象", "当前", "依据"], rows: routeRawEvidenceRows(snapshot, state), minRows: 0, collapsedEvidence: true }, "if-raw")
         ]
       };
     }
@@ -13702,13 +17158,15 @@ var PanelFramework = function(exports) {
         bottom: [
           /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "接口 / WAN 边界", subtitle: "接口承载 / 默认出口", module: "wan-offline-bottom-interface", tone: "warn", trust, headers: ["对象", "当前", "最近", "边界"], rows: compactRows(interfaceBoundaryRows(snapshot, state), 4), minRows: 0 }, "ao-interface"),
           /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "采集事件", subtitle: "REST / SSH / 最近成功", module: "wan-offline-bottom-events", tone: state.facts.collection.level, trust, headers: ["对象", "当前", "依据"], rows: compactRows(normalOpsRows(snapshot, state), 4), minRows: 0 }, "ao-events"),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "路由证据", subtitle: "main / gateway / distance", module: "evidence-boundary", tone: "trust", trust, headers: ["对象", "当前", "依据"], rows: routeRawEvidenceRows(snapshot, state), minRows: 0 }, "ao-raw")
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "证据 / 原始字段", subtitle: "默认收起 · 仅用于审计", module: "evidence-boundary", tone: "trust", trust, headers: ["对象", "当前", "依据"], rows: routeRawEvidenceRows(snapshot, state), minRows: 0, collapsedEvidence: true }, "ao-raw")
         ]
       };
     }
     const networkRows = state.scenario === "no-snapshot" ? compactRows(noSnapshotChainRows(snapshot, state), 4) : state.scenario === "all-offline" ? compactRows(wanRows(snapshot, state), 8) : compactRows(trafficRows(snapshot, state), state.scenario === "fleet" ? 6 : 5);
-    const networkVisual = state.scenario === "no-snapshot" ? /* @__PURE__ */ jsxRuntimeExports.jsx(ChainTimeline, { rows: networkRows, module: "no-snapshot-summary-chain" }) : state.scenario === "all-offline" ? /* @__PURE__ */ jsxRuntimeExports.jsx(VisualStack, { snapshot, state }) : /* @__PURE__ */ jsxRuntimeExports.jsx(MiniTrendVisual, { module: "traffic-trend", rows: trafficChartRows(snapshot, state) });
-    const routeRowsCompact = state.scenario === "no-snapshot" ? compactRows(noSnapshotBusinessBoundaryRows(snapshot, state), 4) : compactRows(routeBusinessRows(snapshot, state), 4);
+    const trafficChartRowsData = trafficChartRows(snapshot, state);
+    const networkVisual = state.scenario === "no-snapshot" ? /* @__PURE__ */ jsxRuntimeExports.jsx(ChainTimeline, { rows: networkRows, module: "no-snapshot-summary-chain" }) : state.scenario === "all-offline" ? /* @__PURE__ */ jsxRuntimeExports.jsx(VisualStack, { snapshot, state }) : /* @__PURE__ */ jsxRuntimeExports.jsx(DesktopWanIntegratedVisual, { snapshot, state, rows: trafficChartRowsData });
+    const compactWanVisualOnly = state.scenario !== "no-snapshot" && state.scenario !== "all-offline";
+    const routeRowsCompact = state.scenario === "no-snapshot" ? compactRows(noSnapshotBusinessBoundaryRows(snapshot, state), 4) : compactRows(routeFactRows(snapshot, state), 4);
     const routeHeaders = state.scenario === "no-snapshot" ? ["模块", "当前", "影响", "边界"] : ["出口", "承载出口", "优先级", "状态"];
     const collectionRowsCompact = state.scenario === "no-snapshot" ? compactRows(noSnapshotChainRows(snapshot, state), 4) : compactRows(threeColumnRows(collectionRows(snapshot, state), "desktop-collection-"), 4);
     const interfaceRowsCompact = state.scenario === "interfaces-down" ? compactRows(threeColumnRows(interfaceRows(snapshot, state), "desktop-if-"), 5) : compactRows(interfaceBoundaryRows(snapshot, state), 4);
@@ -13720,24 +17178,58 @@ var PanelFramework = function(exports) {
     ], "desktop-wan-evidence-"), isFleet ? 5 : 4);
     return {
       main: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: state.scenario === "no-snapshot" ? "采集链路" : isFleet ? "WAN账本" : "WAN出口", subtitle: state.scenario === "all-offline" ? "0/8 / 出口不可用" : isFleet ? "类型分布 / 异常TopN" : "当前 / 峰值 / 窗口", module: state.scenario === "all-offline" ? "wan-offline-bars" : state.scenario === "no-snapshot" ? "no-snapshot-summary" : "wan-trend", tone: state.scenario === "all-offline" || state.scenario === "no-snapshot" ? "danger" : state.facts.wan.allOffline ? "danger" : "trust", trust, headers: state.scenario === "no-snapshot" ? ["链路层", "当前", "最近成功", "主证据", "下次尝试"] : ["对象", "当前", "依据"], rows: networkRows, minRows: 0, visual: networkVisual }, "compact-network"),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: state.scenario === "no-snapshot" ? "采集链路" : isFleet ? "WAN 实时趋势 / 设备 TopN" : "WAN 实时趋势", subtitle: state.scenario === "all-offline" ? "0/8 / 出口不可用" : isFleet ? "类型分布 / 异常 TopN" : "趋势 / 当前 / 峰值 / Top 出口 / 默认出口 / 采样可信度", module: state.scenario === "all-offline" ? "wan-offline-bars" : state.scenario === "no-snapshot" ? "no-snapshot-summary" : "wan-trend", tone: state.scenario === "all-offline" || state.scenario === "no-snapshot" ? "danger" : state.facts.wan.allOffline ? "danger" : "trust", trust, headers: compactWanVisualOnly ? [] : state.scenario === "no-snapshot" ? ["链路项", "当前", "最近成功", "主证据", "下次尝试"] : ["对象", "当前", "依据"], rows: compactWanVisualOnly ? [] : networkRows, minRows: 0, visual: networkVisual, visualOnly: compactWanVisualOnly }, "compact-network"),
         /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: state.scenario === "no-snapshot" ? "业务边界" : "默认出口", subtitle: state.scenario === "no-snapshot" ? "不展示" : isFleet ? "默认路由条目 / 承载" : "出口 / 承载 / 优先级", module: state.scenario === "no-snapshot" ? "no-snapshot-module-visibility" : "route-raw-facts", tone: state.scenario === "all-offline" ? "danger" : state.facts.route.level, trust, headers: routeHeaders, rows: routeRowsCompact, minRows: 0, visual: state.scenario === "no-snapshot" ? /* @__PURE__ */ jsxRuntimeExports.jsx(VisibilityMatrixVisual, { rows: routeRowsCompact }) : void 0 }, "compact-route"),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: isFleet ? "WAN异常TopN" : "WAN证据", subtitle: isFleet ? "离线对象 / 类型分布" : "Top3 / 采样", module: "normal-wan-evidence", tone: state.facts.wan.offline ? "warn" : "trust", trust, headers: ["对象", "当前", "依据"], rows: wanEvidenceRows, minRows: 0 }, "compact-wan-evidence")
+        isFleet ? /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "WAN 异常 TopN", subtitle: "离线对象 / 类型分布", module: "normal-wan-evidence", tone: state.facts.wan.offline ? "warn" : "trust", trust, headers: ["对象", "当前", "依据"], rows: wanEvidenceRows, minRows: 0 }, "compact-wan-evidence") : null
       ],
       side: [
         /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "接口状态", subtitle: state.scenario === "interfaces-down" ? "Down / 默认出口" : "转发面 / 承载", module: state.scenario === "interfaces-down" ? "interface-forwarding" : "normal-interface-boundary", tone: state.scenario === "interfaces-down" ? "danger" : "trust", trust, headers: state.scenario === "interfaces-down" ? ["对象", "当前", "依据"] : ["对象", "当前", "最近", "边界"], rows: interfaceRowsCompact, minRows: 0, visual: state.scenario === "interfaces-down" ? /* @__PURE__ */ jsxRuntimeExports.jsx(JudgementChart, { module: "interface-forwarding", kind: "pressure", rows: interfaceForwardingChartRows(snapshot, state) }) : void 0 }, "compact-interface"),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: state.scenario === "resource-full" ? "资源满载" : "资源", subtitle: state.scenario === "resource-full" ? "三项超阈" : isFleet ? "接口排行 / 阈值" : "当前 / 阈值", module: state.scenario === "resource-full" ? "resource-risk-priority" : "resource-threshold", tone: state.scenario === "no-snapshot" ? "missing" : state.facts.resource.level, trust, headers: ["项", "阈值", "持续", "峰值"], rows: compactRows(resourceRows(state), 3), minRows: 0 }, "compact-resource"),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: state.scenario === "resource-full" ? "资源满载" : "资源", subtitle: state.scenario === "resource-full" ? "三项超阈" : isFleet ? "接口排行 / 阈值" : "当前 / 阈值", module: state.scenario === "resource-full" ? "resource-risk-priority" : "resource-threshold", tone: state.scenario === "no-snapshot" ? "missing" : state.facts.resource.level, trust, headers: ["项", "阈值", "持续", "峰值"], rows: compactRows(resourceRows(state), 3), minRows: 0, visual: state.scenario === "resource-full" ? /* @__PURE__ */ jsxRuntimeExports.jsx(ResourceTriCards, { rows: resourceChartRows(state) }) : void 0 }, "compact-resource"),
         /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: isFleet ? "采集可信度" : "采集 / 快照", subtitle: state.scenario === "collection-down" ? "REST / SSH / 快照" : "REST / SSH / 成功", module: state.scenario === "collection-down" ? "collection-channel-ledger" : state.scenario === "no-snapshot" ? "no-snapshot-channel-status" : "normal-collection-channel", tone: state.scenario === "collection-down" || state.scenario === "no-snapshot" ? "warn" : state.facts.collection.level, trust, headers: state.scenario === "no-snapshot" ? ["链路层", "当前", "最近成功", "主证据", "下次尝试"] : ["对象", "当前", "依据"], rows: collectionRowsCompact, minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(ChannelMatrixVisual, { module: "collection-status", rows: collectionChannelRows(snapshot, state) }) }, "compact-collection")
       ],
       bottom: [
         /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "终端排行", subtitle: "异常置顶 / 总流量", module: "terminal-ranking", tone: "trust", trust, headers: ["设备", "IP", "流量", "状态"], rows: compactRows(desktopTerminalRows(snapshot), 4), minRows: 0 }, "compact-terminals"),
         /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "最近事件", subtitle: "采集 / 默认出口", module: "normal-ops-ledger", tone: state.facts.collection.level, trust, headers: ["对象", "当前", "依据"], rows: compactRows(normalOpsRows(snapshot, state), 4), minRows: 0 }, "compact-events"),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "原始证据", subtitle: "字段下沉", module: state.scenario === "no-snapshot" ? "no-snapshot-degraded-modules" : "evidence-boundary", tone: state.scenario === "no-snapshot" ? "missing" : "trust", trust, headers: state.scenario === "resource-full" || state.scenario === "interfaces-down" ? ["对象", "当前", "最近", "边界"] : ["对象", "当前", "依据"], rows: compactRows(desktopEvidenceBoundaryRows(snapshot, state), 4), minRows: 0 }, "compact-boundary")
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "证据 / 原始字段", subtitle: "默认收起 · 业务解释优先", module: state.scenario === "no-snapshot" ? "no-snapshot-degraded-modules" : "evidence-boundary", tone: state.scenario === "no-snapshot" ? "missing" : "trust", trust, headers: state.scenario === "resource-full" || state.scenario === "interfaces-down" ? ["对象", "当前", "依据", "边界"] : ["对象", "当前", "依据"], rows: compactRows(desktopEvidenceBoundaryRows(snapshot, state), 4), minRows: 0, collapsedEvidence: true }, "compact-boundary")
       ]
     };
   }
   function desktopPanelGroups(snapshot, state) {
     return compactDesktopPanelGroups(snapshot, state);
+  }
+  function DesktopShortNav({ state }) {
+    const items = [
+      { id: "overview", label: "状态总览", value: state.verdict.level === "ok" ? "正常" : state.verdict.level === "danger" ? "异常" : "关注", tone: state.verdict.level },
+      { id: "wan", label: "多出口", value: state.scenario === "no-snapshot" ? "待判" : `${formatNumber(state.facts.wan.online)}/${formatNumber(state.facts.wan.total)}`, tone: state.facts.wan.allOffline ? "danger" : state.facts.wan.offline ? "warn" : "ok" },
+      { id: "interface", label: "接口/VLAN", value: state.facts.interfaces.down > 0 ? `${formatNumber(state.facts.interfaces.down)} Down` : "承载可用", tone: state.facts.interfaces.down > 0 ? "warn" : "trust" },
+      { id: "terminal", label: "在线终端", value: state.scenario === "no-snapshot" ? "隐藏" : formatNumber(state.facts.connections.active), tone: state.scenario === "no-snapshot" ? "missing" : "trust" },
+      { id: "log", label: "采集日志", value: state.facts.collection.credibilityLabel, tone: state.facts.collection.credibilityTone }
+    ];
+    return /* @__PURE__ */ jsxRuntimeExports.jsx(
+      "nav",
+      {
+        className: "ro-desktop-nav",
+        "aria-label": "桌面导航",
+        "data-overview-desktop-nav": "ikuai-short-left-rail",
+        "data-overview-desktop-nav-contract": DESKTOP_IKUAI_SHORT_NAV_CONTRACT,
+        "data-overview-desktop-nav-labels": "状态总览/多出口/接口/VLAN/在线终端/采集日志",
+        "data-overview-desktop-nav-no-explainer-copy": "true",
+        "data-overview-desktop-v1069-nav-active": "neutral-console-ink-no-blue-glow",
+        children: items.map((item, index) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
+          "span",
+          {
+            className: index === 0 ? "is-active" : void 0,
+            "data-overview-desktop-nav-item": item.id,
+            "data-tone": item.tone,
+            children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: item.label }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: item.value })
+            ]
+          },
+          item.id
+        ))
+      }
+    );
   }
   function DesktopWorkspace({ snapshot, state }) {
     const sections = desktopPanelGroups(snapshot, state);
@@ -13755,7 +17247,10 @@ var PanelFramework = function(exports) {
         "data-overview-desktop-bottom-rail": "interface-events",
         "data-overview-desktop-detail": true,
         "data-overview-desktop-workspace": true,
-        "data-overview-desktop-core-text": desktopCoreText(state),
+        "data-overview-desktop-core-text": desktopCoreText(snapshot, state),
+        "data-overview-low-noise-console-token-contract": OVERVIEW_LOW_NOISE_CONSOLE_TOKEN_CONTRACT,
+        "data-overview-desktop-v1020-public-product-polish": "flat-status-bus-low-line-noise-integrated-wan-reading",
+        "data-overview-desktop-v1030-nav-polish": "short-ikuai-left-rail-low-noise-status-bus",
         "data-overview-desktop-copy-policy": "business-first-routeros-fields-translated-in-evidence",
         "data-overview-desktop-toy-nav-leak-guard": "desktop-content-icon-tabs-removed",
         "data-overview-desktop-content-icon-tabs": "desktop-hides-content-icon-tabs",
@@ -13763,6 +17258,7 @@ var PanelFramework = function(exports) {
         "data-overview-trend-compact": "framework-ledger",
         "data-overview-no-snapshot-grid": state.scenario === "no-snapshot" ? "main-chain-boundary-success-route-side-readonly-degraded" : void 0,
         "data-overview-no-snapshot-detail": state.scenario === "no-snapshot" ? "left-chain-ledger-business-boundary-recent-success-right-readonly-boundary-degraded-modules" : void 0,
+        "data-overview-desktop-v1042-no-snapshot-floor": state.scenario === "no-snapshot" ? "full-width-two-zone-visibility-raw-evidence-no-blank" : void 0,
         "data-overview-no-snapshot-left-main": state.scenario === "no-snapshot" ? "collection-chain-ledger-business-boundary-recent-success" : void 0,
         "data-overview-no-snapshot-right-side": state.scenario === "no-snapshot" ? "readonly-boundary-degraded-modules" : void 0,
         "data-overview-no-snapshot-wan-rate-layout-guard": state.scenario === "no-snapshot" ? "no-wan-rate-panel-no-zero-rate-no-rate-spacer" : void 0,
@@ -13796,10 +17292,11 @@ var PanelFramework = function(exports) {
         "data-overview-interface-relation-policy": state.scenario === "interfaces-down" ? "top-object-status-details-in-carrier-table" : void 0,
         "data-overview-desktop-ikuai40-console": "top-six-left-network-wan-right-resource-collection-bottom-interface-events",
         children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(DesktopShortNav, { state }),
           /* @__PURE__ */ jsxRuntimeExports.jsx(DesktopThinKpis, { snapshot, state }),
           /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ro-col is-main stack", "data-overview-desktop-rail": "network-wan", "data-overview-desktop-fixed-area": "left-main", children: sections.main }),
           /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ro-col is-side stack ik-home-side-stack", "data-overview-desktop-rail": "resource-collection", "data-overview-desktop-fixed-area": "right-main", children: sections.side }),
-          sections.bottom.length > 0 ? /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ro-col is-bottom stack", style: { gridColumn: "1 / -1" }, "data-overview-desktop-rail": "interface-events", "data-overview-desktop-fixed-area": "bottom", children: sections.bottom }) : null
+          sections.bottom.length > 0 ? /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: `ro-col is-bottom stack${state.scenario === "no-snapshot" ? " ro-no-snapshot-floor" : ""}`, style: state.scenario === "no-snapshot" ? { gridColumn: "1 / -1", gridAutoRows: "minmax(190px, 1fr)" } : { gridColumn: "1 / -1" }, "data-overview-desktop-rail": "interface-events", "data-overview-desktop-fixed-area": "bottom", "data-overview-desktop-v1042-no-snapshot-floor-rail": state.scenario === "no-snapshot" ? "visibility-raw-evidence-filled-floor" : void 0, children: sections.bottom }) : null
         ]
       }
     );
@@ -13816,6 +17313,7 @@ var PanelFramework = function(exports) {
         "data-overview-page-credibility": state.facts.freshness.credibilityLabel,
         "data-overview-page-credibility-tone": state.facts.freshness.credibilityTone,
         "data-overview-business-display-boundary": state.scenario === "no-snapshot" ? "no-business-data" : "business-data",
+        "data-overview-low-noise-console-token-contract": OVERVIEW_LOW_NOISE_CONSOLE_TOKEN_CONTRACT,
         "data-overview-scene-key": state.scenario,
         "data-overview-ikuai40-density": "apple-flat-light-blue-console",
         "data-overview-flat-ledger-surface": "light-blue-white-thin-lines-low-shadow",
@@ -13825,6 +17323,7 @@ var PanelFramework = function(exports) {
         "data-overview-hard-standard": "desktop-status-bus-mobile-ios-app-home-chart-meta-sample-depth-required-no-large-alert-card",
         "data-overview-desktop-mobile-leakage-guard": "hide-mobile-shell-on-desktop",
         "data-overview-desktop-hierarchy-contract": "conclusion-key-metrics-evidence",
+        "data-overview-desktop-v1030-nav-polish": "short-ikuai-left-rail-low-noise-status-bus",
         "data-overview-chart-standard": OVERVIEW_IKUAI40_CHART_STANDARD,
         "data-overview-chart-metadata-coverage": OVERVIEW_CHART_METADATA_COVERAGE,
         "data-overview-mature-visual-standard": OVERVIEW_IKUAI40_MATURE_VISUAL_STANDARD,
@@ -13846,7 +17345,15 @@ var PanelFramework = function(exports) {
         "data-overview-no-zero-rate-placeholder": "no-zero-rate-when-uncollected",
         children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx(InfoBand, { snapshot, state }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "ro-sr-contract", "data-overview-verdict-panel": true, children: verdictContractText(snapshot, state) }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(
+            "span",
+            {
+              className: "ro-sr-contract",
+              "data-overview-verdict-panel": true,
+              "data-routeros-presentation-contract": "collection-facts/routeros-semantics/user-conclusion",
+              children: verdictContractText(snapshot, state)
+            }
+          ),
           /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ro-mobile-first-screen", "data-overview-mobile-first-screen": true, children: /* @__PURE__ */ jsxRuntimeExports.jsx(MobileOverviewHome, { snapshot, state }) }),
           /* @__PURE__ */ jsxRuntimeExports.jsx(DesktopWorkspace, { snapshot, state })
         ]

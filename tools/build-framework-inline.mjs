@@ -39,6 +39,7 @@ await build(defineConfig({
   },
   build: {
     minify: false,
+    cssMinify: true,
     outDir: resolve(projectRoot, "public/assets/framework"),
     emptyOutDir: false,
     lib: {

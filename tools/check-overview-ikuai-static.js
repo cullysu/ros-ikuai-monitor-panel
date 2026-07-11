@@ -106,6 +106,119 @@ function countPatternMatches(haystack, pattern) {
   return [...haystack.matchAll(globalPattern)].length;
 }
 
+function extractCssTemplateExports(source, label) {
+  const exports = [];
+  const exportPattern = /export\s+const\s+([A-Z0-9_]+)\s*=\s*`/g;
+  let match;
+  while ((match = exportPattern.exec(source))) {
+    const name = match[1];
+    let index = exportPattern.lastIndex;
+    let escaped = false;
+    for (; index < source.length; index += 1) {
+      const char = source[index];
+      if (escaped) {
+        escaped = false;
+        continue;
+      }
+      if (char === "\\") {
+        escaped = true;
+        continue;
+      }
+      if (char === "`") break;
+    }
+    assert(index < source.length, `${label} ${name} CSS template literal is not closed`);
+    exports.push({ name, css: source.slice(exportPattern.lastIndex, index) });
+    exportPattern.lastIndex = index + 1;
+  }
+  return exports;
+}
+
+function validateCssPrelude(prelude, label) {
+  let quote = "";
+  let escaped = false;
+  let squareDepth = 0;
+  let parenDepth = 0;
+  for (const char of prelude) {
+    if (quote) {
+      if (escaped) escaped = false;
+      else if (char === "\\") escaped = true;
+      else if (char === quote) quote = "";
+      continue;
+    }
+    if (char === "\"" || char === "'") {
+      quote = char;
+      continue;
+    }
+    if (char === "[") squareDepth += 1;
+    if (char === "]") squareDepth -= 1;
+    if (char === "(") parenDepth += 1;
+    if (char === ")") parenDepth -= 1;
+    assert(squareDepth >= 0, `${label} CSS selector has an unmatched ] near: ${prelude.slice(0, 160)}`);
+    assert(parenDepth >= 0, `${label} CSS prelude has an unmatched ) near: ${prelude.slice(0, 160)}`);
+  }
+  assert(!quote, `${label} CSS prelude has an unclosed quote near: ${prelude.slice(0, 200)}`);
+  assert(squareDepth === 0, `${label} CSS selector has an unclosed [ near: ${prelude.slice(0, 200)}`);
+  assert(parenDepth === 0, `${label} CSS prelude has an unclosed ( near: ${prelude.slice(0, 200)}`);
+}
+
+function assertParseableCssTemplates(source, expectedExports, label) {
+  const cssExports = extractCssTemplateExports(source, label);
+  const foundExports = cssExports.map((item) => item.name);
+  for (const expectedExport of expectedExports) {
+    assert(foundExports.includes(expectedExport), `${label} missing CSS export: ${expectedExport}`);
+  }
+  for (const { name, css } of cssExports) {
+    let quote = "";
+    let escaped = false;
+    let blockComment = false;
+    let depth = 0;
+    let segmentStart = 0;
+    let ruleCount = 0;
+    for (let index = 0; index < css.length; index += 1) {
+      const char = css[index];
+      const next = css[index + 1] || "";
+      if (blockComment) {
+        if (char === "*" && next === "/") {
+          blockComment = false;
+          index += 1;
+        }
+        continue;
+      }
+      if (quote) {
+        if (escaped) escaped = false;
+        else if (char === "\\") escaped = true;
+        else if (char === quote) quote = "";
+        continue;
+      }
+      if (char === "/" && next === "*") {
+        blockComment = true;
+        index += 1;
+        continue;
+      }
+      if (char === "\"" || char === "'") {
+        quote = char;
+        continue;
+      }
+      if (char === "{") {
+        const prelude = css.slice(segmentStart, index).trim();
+        assert(prelude.length > 0, `${label} ${name} has an empty CSS prelude before rule ${ruleCount + 1}`);
+        validateCssPrelude(prelude, `${label} ${name}`);
+        depth += 1;
+        ruleCount += 1;
+        segmentStart = index + 1;
+      } else if (char === "}") {
+        depth -= 1;
+        assert(depth >= 0, `${label} ${name} has an unmatched } near index ${index}`);
+        segmentStart = index + 1;
+      }
+    }
+    assert(!blockComment, `${label} ${name} has an unclosed CSS comment`);
+    assert(!quote, `${label} ${name} has an unclosed CSS string`);
+    assert(depth === 0, `${label} ${name} has unbalanced CSS braces`);
+    assert(ruleCount > 0, `${label} ${name} did not expose any parseable CSS rules`);
+  }
+}
+
 function assertPatternCountAtMost(haystack, pattern, max, label) {
   const count = countPatternMatches(haystack, pattern);
   assert(count <= max, `${label} matched ${count} times, expected at most ${max}: ${pattern}`);
@@ -220,7 +333,7 @@ function activeRuntimeSlice(runtime, version) {
 }
 
 function functionBlock(source, name) {
-  const exactFunction = new RegExp(`(?:^|\\n)\\s*function\\s+${name}\\s*\\(`);
+  const exactFunction = new RegExp(`(?:^|\\n)\\s*(?:export\\s+)?function\\s+${name}\\s*\\(`);
   const match = source.match(exactFunction);
   const start = match && typeof match.index === "number"
     ? match.index + match[0].indexOf("function")
@@ -436,16 +549,220 @@ function assertNoFourGridContract(haystack, label) {
 }
 
 const mobile = read("src/panel-framework/overview/components/MobileOverviewHome.tsx");
-const overviewPanel = read("src/panel-framework/overview/OverviewPanel.tsx");
+const mobileSections = read("src/panel-framework/overview/components/MobileOverviewSections.tsx");
+const mobileStatusHeader = read("src/panel-framework/overview/components/StatusHeader.tsx");
+const mobileTrustStrip = read("src/panel-framework/overview/components/TrustStrip.tsx");
+const mobileJudgementStrip = read("src/panel-framework/overview/components/JudgementStrip.tsx");
+const mobileCoreMetricRail = read("src/panel-framework/overview/components/CoreMetricRail.tsx");
+const mobileHomeSurface = read("src/panel-framework/overview/components/HomeSurface.tsx");
+const mobileBottomTabs = read("src/panel-framework/overview/components/BottomTabs.tsx");
+const mobileTypes = read("src/panel-framework/overview/components/MobileOverviewTypes.ts");
+const mobileModel = read("src/panel-framework/overview/mobileOverviewModel.ts");
+const mobileDataModel = read("src/panel-framework/overview/mobileOverviewData.ts");
+const mobileChartModel = read("src/panel-framework/overview/mobileOverviewChartModel.ts");
+const mobileListModel = read("src/panel-framework/overview/mobileOverviewListModel.ts");
+const mobileTokenSource = read("src/panel-framework/overview/mobileOverviewTokens.ts");
+const mobilePolicy = read("src/panel-framework/overview/mobileOverviewPolicy.ts");
+const mobileHero = read("src/panel-framework/overview/components/IncidentHero.tsx");
+const mobileStyles = read("src/panel-framework/overview/components/MobileOverviewStyles.tsx");
+const mobileBaseStyles = read("src/panel-framework/overview/components/MobileOverviewBaseStyles.ts");
+const resourceTrendCheck = read("tools/check-resource-trend-balance.js");
+const mobileAppHomeRuntimeCheck = read("tools/check-mobile-app-home-runtime.js");
+const desktopNoSnapshotRuntimeCheck = read("tools/check-desktop-no-snapshot-runtime.js");
+const desktopV1030RuntimeCheck = read("tools/check-desktop-v1030-runtime.js");
+const mobileReleaseStyles = read("src/panel-framework/overview/components/MobileOverviewReleaseStyles.ts");
+const mobileDecisionStyles = read("src/panel-framework/overview/components/MobileOverviewDecisionStyles.ts");
+const mobileAppPolishStyles = read("src/panel-framework/overview/components/MobileOverviewAppPolishStyles.ts");
+const mobileRefinementStyles = read("src/panel-framework/overview/components/MobileOverviewRefinementStyles.ts");
+const desktopRefinementStyles = read("src/panel-framework/overview/OverviewPanelDesktopRefinement.css");
+const desktopReleaseStyles = read("src/panel-framework/overview/OverviewPanelRelease.css");
+const buildFrameworkInline = read("tools/build-framework-inline.mjs");
+const overviewPanel = [
+  read("src/panel-framework/overview/OverviewPanel.tsx"),
+  readIfExists("src/panel-framework/overview/desktopOverviewHelpers.tsx"),
+  readIfExists("src/panel-framework/overview/desktopOverviewHelpers.ts"),
+  readIfExists("src/panel-framework/overview/desktopOverviewRows.tsx"),
+  readIfExists("src/panel-framework/overview/desktopOverviewVisuals.tsx"),
+].join("\n");
 const deriveOverview = read("src/panel-framework/overview/deriveOverviewState.ts");
 const scenariosSource = read("src/panel-framework/overview/scenarios.ts");
 const css = read("src/panel-framework/overview/OverviewPanel.css");
+const desktopStyleStack = [css, desktopRefinementStyles, desktopReleaseStyles].join("\n");
 const publicRuntime = read("public/assets/framework/panel-framework.js");
 const publicCss = read("public/assets/framework/style.css");
-const activeSourceV214 = activeRuntimeSlice(mobile, "v214");
+const splitMobileSource = [mobile, mobileSections, mobileTypes, mobileStatusHeader, mobileCoreMetricRail, mobileHomeSurface, mobileBottomTabs, mobileHero, mobileStyles, mobileModel, mobileDataModel, mobileChartModel, mobileListModel, mobileTokenSource, mobilePolicy].join("\n");
+const splitMobileRuntimeSource = [mobile, mobileSections, mobileTypes, mobileStatusHeader, mobileCoreMetricRail, mobileHomeSurface, mobileBottomTabs, mobileHero, mobileModel, mobileDataModel, mobileChartModel, mobileListModel, mobilePolicy].join("\n");
+const mobileLegacyStyleStack = [mobileBaseStyles, mobileRefinementStyles, mobileReleaseStyles, mobileStyles].join("\n");
+const mobileStyleStack = [mobileBaseStyles, mobileRefinementStyles, mobileReleaseStyles, mobileDecisionStyles, mobileStyles].join("\n");
 const activePublicRuntime = activeRuntimeSlice(publicRuntime, "v240");
 const distRuntime = readIfExists("dist/assets/framework/panel-framework.js");
 const distCss = readIfExists("dist/assets/framework/style.css");
+
+assertParseableCssTemplates(
+  mobileBaseStyles,
+  ["V420_MOBILE_STYLES"],
+  "mobile v420 base CSS parse guard",
+);
+assertParseableCssTemplates(
+  mobileRefinementStyles,
+  [
+    "V960_PRODUCT_REFINEMENTS",
+    "V970_TRUST_MODEL_REFINEMENTS",
+    "V980_APP_IA_REFINEMENTS",
+    "V990_NORMAL_APP_HOME_REFINEMENTS",
+  ],
+  "mobile v960-v990 refinement CSS parse guard",
+);
+assertParseableCssTemplates(
+  mobileReleaseStyles,
+  ["V1000_PUBLIC_RELEASE_REFINEMENTS"],
+  "mobile v1000 release CSS parse guard",
+);
+assertParseableCssTemplates(
+  mobileDecisionStyles,
+  ["V1080_DECISION_HOME_REFINEMENTS"],
+  "mobile v1080 decision-home CSS parse guard",
+);
+assertParseableCssTemplates(
+  mobileAppPolishStyles,
+  [
+    "V1010_MOBILE_NATIVE_APP_POLISH",
+    "V1020_PUBLIC_PRODUCT_POLISH",
+    "V1030_NATIVE_TRUST_SPINE",
+  ],
+  "mobile v1010-v1030 app-polish CSS parse guard",
+);
+
+includesAll(buildFrameworkInline, [
+  "cssMinify: true",
+], "framework build release-size guard");
+assert(Buffer.byteLength(publicCss, "utf8") <= 3_000_000, "public framework CSS must stay under 3MB after minification");
+assert(!fs.existsSync(path.join(process.cwd(), "src/panel-framework/overview/components/MobileOverviewProductStyles.ts")), "dead mobile product style split must not remain as an unwired 100KB source file");
+
+includesAll(mobileBaseStyles, [
+  "V420_MOBILE_STYLES",
+  ".ik-v420-nav",
+  ".ik-v420-hero",
+  ".ik-v420-resource",
+  ".ik-v420-tabs",
+], "mobile v420 base style split");
+excludesAll(mobileStyles, [
+  "const V420_MOBILE_STYLES",
+  "MOBILE_OVERVIEW_TOKEN_CSS",
+], "main mobile style entry must import base styles instead of embedding them");
+
+includesAll(mobileRefinementStyles, [
+  "V960_PRODUCT_REFINEMENTS",
+  "V970_TRUST_MODEL_REFINEMENTS",
+  "V980_APP_IA_REFINEMENTS",
+  "V990_NORMAL_APP_HOME_REFINEMENTS",
+  "ik-v960-judgement-strip",
+  "ik-v910-trust-strip",
+  "data-overview-mobile-normal-app-home",
+], "mobile v960-v990 refinement style split");
+excludesAll(mobileStyles, [
+  "const V960_PRODUCT_REFINEMENTS",
+  "const V970_TRUST_MODEL_REFINEMENTS",
+  "const V980_APP_IA_REFINEMENTS",
+  "const V990_NORMAL_APP_HOME_REFINEMENTS",
+], "main mobile style stack must import refinement polish instead of embedding it");
+assert(Buffer.byteLength(mobileStyles, "utf8") <= 12_000, "main mobile style entry should stay below 12KB after base/refinement/release split");
+
+includesAll(`${mobileReleaseStyles}\n${mobileTokenSource}`, [
+  "V1000_PUBLIC_RELEASE_REFINEMENTS",
+  "data-overview-mobile-v1000-release-polish",
+  "--ik-v1000-blue",
+], "mobile v1000 release style split");
+
+includesAll(`${mobileAppPolishStyles}\n${mobileDecisionStyles}\n${mobileTokenSource}`, [
+  "V1010_MOBILE_NATIVE_APP_POLISH",
+  "V1020_PUBLIC_PRODUCT_POLISH",
+  "native-readout-rail",
+  "no-ellipsis-subtle-tabbar",
+  "ios-rhythm-low-noise-grouped-surfaces-router-native-tabs",
+  "grid-template-rows: auto auto auto auto minmax(20px, 1fr) auto",
+  "height: 100dvh",
+  "position: static",
+  "position: fixed",
+  "html:has",
+  "ik-v1020-impact-scope",
+], "mobile v1010 native app polish style split");
+
+includesAll(mobile, [
+  "data-overview-mobile-v1010-product-app-polish",
+  "native-readout-rail-no-ellipsis-subtle-tabbar",
+  "data-overview-mobile-v1020-public-product-polish",
+  "ios-rhythm-low-noise-grouped-surfaces-router-native-tabs",
+  "data-overview-mobile-impact-scope",
+  "data-overview-mobile-impact-plane",
+], "mobile v1010 product app marker");
+
+includesAll(read("src/panel-framework/overview/components/IncidentHero.tsx"), [
+  "data-overview-mobile-chart-layout=\"native-readout-rail-current-peak-window-threshold-sample-anomaly\"",
+  "data-overview-mobile-chart-readout-rail=\"current-peak-window-threshold-sample-anomaly\"",
+  "data-overview-mobile-v1012-product-chart=\"window-current-peak-threshold-sample-breach\"",
+  "data-overview-mobile-v1045-product-chart-decision",
+  "data-overview-mobile-v1045-chart-readouts",
+  "window-current-peak-threshold-sample-anomaly-source",
+  "data-overview-mobile-chart-threshold",
+  "data-overview-mobile-chart-breach",
+  "data-overview-mobile-chart-anomaly",
+  "data-overview-mobile-chart-decision",
+  "ik-v1012-threshold-label",
+  "ik-v1012-breach-line",
+  "data-overview-mobile-v1072-chart=\"decision-plot-two-series-three-by-two-readout\"",
+  "data-overview-mobile-v1072-series-legend=\"download-upload\"",
+  "data-overview-mobile-v1072-readout-grid=\"three-columns-two-rows-six-decisions\"",
+], "mobile product chart readout rail and threshold contract");
+includesAll(`${mobileModel}\n${mobileHero}\n${mobileAppPolishStyles}\n${resourceTrendCheck}`, [
+  "decisionContract: \"window-current-peak-threshold-sample-anomaly-source\"",
+  "decisionLabel",
+  "anomalyLabel",
+  "anomalyTone",
+  "{ label: \"异常\"",
+  "grid-template-columns: repeat(3, minmax(0, 1fr))",
+  "grid-template-rows: repeat(2, 27px)",
+  "productChartProductized",
+  "productChartDecision",
+  "productChartAnomaly",
+  "['当前', '峰值', '窗口', '阈值', '采样', '异常']",
+], "mobile v1045 product chart must expose window/current/peak/threshold/sample/anomaly/source decision signals");
+
+includesAll(read("src/panel-framework/overview/components/JudgementStrip.tsx"), [
+  "data-overview-mobile-v1010-no-ellipsis-label",
+  "textOverflow: \"clip\"",
+], "mobile judgement strip no-ellipsis runtime guard");
+includesAll(desktopReleaseStyles, [
+  "v1000 public-console polish",
+  "ro-desktop-grid[data-overview-desktop-v1042-no-snapshot-floor] .ro-col.is-bottom.ro-no-snapshot-floor",
+  "--ik-v1000-desktop-line",
+], "desktop v1000 release style split");
+
+includesAll(desktopRefinementStyles, [
+  "Codex v700 desktop product-console polish",
+  "Codex v812 desktop density pass",
+  "Codex v817 desktop control-console density",
+  "v960 public-console refinement",
+], "desktop v700-v960 refinement style split");
+
+includesAll(read("src/panel-framework/overview/OverviewPanel.tsx"), [
+  'import "./OverviewPanel.css";',
+  'import "./OverviewPanelDesktopRefinement.css";',
+  'import "./OverviewPanelRelease.css";',
+], "desktop style import order");
+
+assert(!css.includes("Codex v700 desktop product-console polish"), "main desktop CSS must import v700+ refinement polish instead of embedding it");
+assert(!css.includes("v960 public-console refinement"), "main desktop CSS must import v960 public-console refinement instead of embedding it");
+assert(!desktopReleaseStyles.includes("v960 public-console refinement"), "desktop release CSS must stay focused on v1000 release polish");
+assert(Buffer.byteLength(css, "utf8") <= 2_750_000, "main overview CSS should stay below 2.75MB after desktop refinement split");
+assert(Buffer.byteLength(desktopStyleStack, "utf8") <= 3_050_000, "combined desktop style stack should stay below 3.05MB after split");
+excludesAll(mobile, [
+  "const V1000_PUBLIC_RELEASE_REFINEMENTS",
+], "main mobile style stack must import release polish instead of embedding it");
+excludesAll(css, [
+  "v1000 public-console polish",
+], "main desktop CSS must import release polish instead of embedding it");
+assert(Buffer.byteLength(mobileStyleStack, "utf8") <= 230_000, "combined semantic mobile style stack should stay below 230KB");
 assert(Boolean(distRuntime) === Boolean(distCss), "dist framework artifacts must include both runtime and css when either is present");
 const buildArtifactSurfaces = [
   {
@@ -463,6 +780,284 @@ const buildArtifactSurfaces = [
     }]
     : []),
 ];
+
+includesAll(mobile, [
+  "JudgementStrip",
+  "TrustStrip",
+  "<JudgementStrip",
+  "<TrustStrip",
+], "v960 mobile first-screen judgement/trust strips");
+assertBefore(mobile, "<JudgementStrip", "<IncidentHero", "mobile judgement strip must precede incident hero");
+assertBefore(mobile, "<TrustStrip", "<IncidentHero", "mobile trust strip must precede incident hero");
+includesAll(`${mobileModel}\n${mobileListModel}`, [
+  "wanDisplayTotal",
+  "resource-incident",
+  "resourceIncidentRows",
+  "role = total <= 1 || index === 0 ? \"default\"",
+  "layout: \"matrix\"",
+  "MobileImpactScope",
+  "export function buildMobileImpactScope(",
+  "export function buildMobilePrimaryList(",
+  "const scope = buildMobileImpactScope(network)",
+  "const list = buildMobilePrimaryList(snapshot, state, network, scope, resourceFacts(state))",
+  "resource-constrained",
+  "carrier-unknown",
+  "collection-only",
+], "v960 mobile RouterOS view model separation and incident priority");
+assert(
+  !mobileModel.includes('if (priority === "resource-full") return { kind: "terminal-ranking"'),
+  "resource-full mobile primary list must not default to terminal ranking",
+);
+includesAll(mobileHero, [
+  "<b>{port.name}</b>",
+  "{port.roleLabel} · {port.carrier}",
+], "v960 mobile WAN matrix labels interface name before port code");
+includesAll(mobileHomeSurface, [
+  "data-overview-mobile-impact-scope",
+  "data-overview-mobile-impact-plane",
+  "data-overview-mobile-impact-scope-line",
+  "ik-v1020-impact-scope",
+], "mobile impact-scope list header contract");
+includesAll(mobile + "\n" + mobileSections + "\n" + mobileTypes + "\n" + mobileStatusHeader + "\n" + mobileTrustStrip + "\n" + mobileJudgementStrip + "\n" + mobileCoreMetricRail + "\n" + mobileHomeSurface + "\n" + mobileHero + "\n" + mobileModel, [
+  "MobileOverviewResolvedProps",
+  "const resolvedProps = { ...props, model }",
+  "<StatusHeader {...resolvedProps} />",
+  "export function StatusHeader({ model }: MobileOverviewResolvedProps)",
+  "model.header.deviceName",
+  "model.header.versionText",
+  "model.header.recent",
+  "model.header.statusLabel",
+  "model.header.tone",
+  "function headerModel(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): MobileOverviewModel[\"header\"]",
+  "header: headerModel(snapshot, state)",
+  "<TrustStrip {...resolvedProps} />",
+  "export function TrustStrip({ model }: MobileOverviewResolvedProps)",
+  "model.trustPlanes.map",
+  "export function JudgementStrip({ model }: MobileOverviewResolvedProps)",
+  "<CoreMetricRail {...resolvedProps} />",
+  "<IncidentHero {...resolvedProps} />",
+  "<HomeSurface {...resolvedProps} />",
+], "mobile v1050 single resolved view-model handoff contract");
+assertPatternCountAtMost(
+  mobileStatusHeader + "\n" + mobileTrustStrip + "\n" + mobileJudgementStrip + "\n" + mobileCoreMetricRail + "\n" + mobileHomeSurface + "\n" + mobileHero,
+  /buildMobileOverviewModel\s*\(/g,
+  0,
+  "mobile v1050 child components must not rebuild the app-home view model",
+);
+excludesAll(mobileStatusHeader, [
+  "latestSuccess(",
+  "statusLabel(",
+  "screenTone(",
+  "snapshot.",
+  "state.",
+], "mobile v1050 status header must render resolved model header only");
+includesAll(mobile, [
+  "data-overview-mobile-v1030-native-trust-spine",
+  "grouped-trust-spine-low-card-noise",
+], "mobile v1030 native trust-spine DOM contract");
+includesAll(mobileStyles, [
+  "MOBILE_OVERVIEW_STYLE_LAYERS",
+  "MOBILE_OVERVIEW_FOUNDATION_STYLES",
+  "MOBILE_OVERVIEW_INFORMATION_ARCHITECTURE_STYLES",
+  "MOBILE_OVERVIEW_RELEASE_STYLES",
+  "MOBILE_OVERVIEW_NATIVE_PRODUCT_STYLES",
+  "MOBILE_OVERVIEW_DECISION_HOME_STYLES",
+  "foundation",
+  "information-architecture",
+  "release-contract",
+  "native-product",
+  "decision-home",
+  "useInsertionEffect",
+  "MOBILE_OVERVIEW_STYLE_STACK",
+  "data-overview-mobile-style-stack",
+  "data-overview-mobile-style-layers",
+  "v1030-head-injected-parseable",
+  "document.head.appendChild",
+  "return null",
+], "mobile semantic style composition contract");
+excludesAll(mobileStyles, [
+  "return <style>",
+], "mobile style stack must be head-injected and not pollute overview text");
+includesAll(mobileAppPolishStyles, [
+  "V1030_NATIVE_TRUST_SPINE",
+  "grouped-trust-spine-low-card-noise",
+  "--ik-v1030-separator",
+  ".ik-v910-trust-strip",
+  ".ik-v420-surface",
+  ".ik-v420-timeline-row",
+  "box-shadow: none",
+], "mobile v1030 native trust-spine low-noise style contract");
+includesAll(resourceTrendCheck, [
+  "nativeTrustSpinePolished",
+  "data-overview-mobile-v1030-native-trust-spine",
+  "grouped-trust-spine-low-card-noise",
+  "surfaceBorderRadius",
+  "heroBoxShadow",
+  "styleTextLeakedIntoOverview",
+], "mobile v1030 native trust-spine runtime gate contract");
+includesAll(mobileStyleStack, [
+  "V960_PRODUCT_REFINEMENTS",
+  "ik-v960-judgement-strip",
+  "ik-v910-trust-strip",
+  "is-ranking-suppressed",
+], "v960 mobile product refinement CSS redlines");
+includesAll(desktopStyleStack, [
+  "v960 public-console refinement",
+  "flatter status bus",
+  "lower table noise",
+  "ro-ledger-row[data-tone=\"danger\"] .ro-ledger-cell:first-child",
+  "data-overview-desktop-scene=\"no-snapshot\"",
+], "v960 desktop status bus and evidence refinement CSS redlines");
+includesAll(`${overviewPanel}\n${desktopReleaseStyles}`, [
+  'module="no-snapshot-degraded-modules"',
+  'module="evidence-boundary"',
+  "data-overview-desktop-v1042-no-snapshot-floor",
+  "full-width-two-zone-visibility-raw-evidence-no-blank",
+  "Desktop no-snapshot floor: fill the lower rail with visibility and collapsed raw evidence.",
+  "ro-no-snapshot-floor",
+], "desktop no-snapshot bottom visibility/raw-evidence fill contract");
+includesAll(overviewPanel + "\n" + desktopReleaseStyles + "\n" + resourceTrendCheck, [
+  "Desktop no-snapshot floor: fill the lower rail with visibility and collapsed raw evidence.",
+  "data-overview-desktop-v1042-no-snapshot-floor",
+  "full-width-two-zone-visibility-raw-evidence-no-blank",
+  "data-overview-desktop-v1042-no-snapshot-floor-rail",
+  "data-overview-desktop-v1042-no-snapshot-floor-module",
+  "visibility-raw-evidence-filled-floor",
+  "noSnapshotFloorProductized",
+  "noSnapshotFloorVisualCount",
+  "noSnapshotFloorRowCount",
+], "desktop no-snapshot floor must fill lower rail with visibility and raw evidence");
+includesAll(overviewPanel, [
+  "DesktopWanIntegratedVisual",
+  "data-overview-desktop-wan-integrated=\"trend-current-peak-top-outlet-route-sampling\"",
+  "data-overview-ikuai-wan-chart-integrated=\"trend-current-peak-top-outlet-route-sampling\"",
+  "data-overview-desktop-v1073-wan-single-surface=\"trend-decision-top3-no-duplicate-summary-or-ledger\"",
+  "data-overview-desktop-v1073-visual-only",
+  "visualOnly",
+  "business-summary-primary",
+  "raw-field-mode\": \"hidden-secondary\"",
+], "desktop WAN integrated chart and business-first route evidence contract");
+includesAll(desktopRefinementStyles, [
+  "v1015 desktop WAN chart integration",
+  "v1020 public-product polish",
+  ".ro-wan-integrated-summary",
+  ".ro-wan-integrated-top",
+  "v1030 desktop short nav",
+  ".ro-desktop-nav",
+  "grid-template-columns: 96px",
+], "desktop WAN integrated chart styling contract");
+includesAll(overviewPanel, [
+  "data-overview-desktop-v1020-public-product-polish",
+  "flat-status-bus-low-line-noise-integrated-wan-reading",
+  "data-overview-desktop-v1068-status-bus=\"control-console-summary-bus-flat-critical-value-rail\"",
+  "data-overview-desktop-v1068-status-bus-no-table-header=\"true\"",
+  "data-overview-desktop-v1068-status-bus-value-rail=\"conclusion-first-low-noise\"",
+  "data-overview-desktop-v1068-status-cell=\"label-value-note\"",
+  "data-overview-desktop-v1020-integrated-product-chart",
+  "data-overview-desktop-v1073-wan-single-surface",
+  "data-overview-module-body-policy={visualOnly ? \"visual-only\" : collapsedEvidence ? \"collapsed-secondary-evidence\" : \"content-sized\"}",
+  "DESKTOP_IKUAI_SHORT_NAV_CONTRACT",
+  "data-overview-desktop-nav=\"ikuai-short-left-rail\"",
+  "data-overview-desktop-nav-labels=\"状态总览/多出口/接口/VLAN/在线终端/采集日志\"",
+  "data-overview-desktop-v1069-nav-active=\"neutral-console-ink-no-blue-glow\"",
+  "data-overview-desktop-v1030-nav-polish",
+  "data-routeros-presentation-contract=\"collection-facts/routeros-semantics/user-conclusion\"",
+], "desktop v1020 public-product polish contract");
+includesAll(`${overviewPanel}\n${desktopRefinementStyles}\n${desktopReleaseStyles}\n${resourceTrendCheck}`, [
+  "v1068 desktop status bus",
+  "v1071 desktop conclusion rail",
+  "topbarV1072Hierarchy",
+  "topbarRoleOrder",
+  "expectedTopbarRoleOrder",
+  "conclusion-device-object-impact-collection-snapshot",
+  "conclusion-device-routeros-rest-ssh-recent-success",
+  "control-console-summary-bus-flat-critical-value-rail",
+  "topbarV1068ControlBus",
+  "data-overview-desktop-v1068-status-bus-no-table-header",
+  "conclusion-first-low-noise",
+  "rgba(18,34,55,.44)",
+  "rgba(18, 34, 55, .028)",
+  "box-shadow: inset 2px 0 0 rgba(18, 34, 55, .44)",
+], "desktop v1068 status bus must read as flat control-console summary rail, not table header boxes");
+includesAll(overviewPanel, [
+  'const topbarFixedSix = isNoSnapshot ? "conclusion-device-routeros-rest-ssh-recent-success" : "conclusion-device-object-impact-collection-snapshot"',
+  'const topbarHierarchy = isNoSnapshot ? "primary-conclusion-device-routeros-rest-ssh-recent-success" : "primary-conclusion-device-object-impact-collection-snapshot"',
+  'const topbarPriorityContract = isNoSnapshot ? "conclusion-first-device-routeros-rest-ssh-recent-success" : "conclusion-first-device-object-impact-collection-snapshot"',
+], "desktop v1072 status bus hierarchy contract must render the conclusion rail first");
+assert(
+  !desktopReleaseStyles.includes("rgba(20, 115, 230"),
+  "desktop v1071 release-tail conclusion rail must not reintroduce legacy blue paint",
+);
+assert(
+  ![
+    "box-shadow: inset 2px 0 0 rgba(20, 115, 230, .55)",
+    "box-shadow: inset 2px 0 0 rgba(20, 115, 230, .54)",
+    "box-shadow: inset 2px 0 0 rgba(20, 115, 230, .58)",
+    "box-shadow: inset 3px 0 0 var(--ik-v950-blue)",
+  ].some((token) => desktopRefinementStyles.includes(token)),
+  "desktop v1071 historical conclusion layers must not override the neutral status rail",
+);
+includesAll(`${desktopRefinementStyles}\n${resourceTrendCheck}`, [
+  "neutral-console-ink-no-blue-glow",
+  "desktopNavActiveNeutral",
+  "activeNavPaint",
+  "rgba(18,34,55,.44)",
+  "rgba(18,34,55,.035)",
+], "desktop v1069 left rail active state must be neutral console ink, not blue H5 accent");
+includesAll(desktopStyleStack, [
+  ".router-overview-framework .ro-sr-contract",
+  "clip-path: inset(50%)",
+  "white-space: nowrap",
+], "desktop hidden presentation-contract styling");
+includesAll(resourceTrendCheck, [
+  "nodeIsVisiblyReadable",
+  "visibleText",
+  "desktopNoSnapshotText",
+  "desktopVisibleText",
+  "visibleText(topbar)",
+  "visibleText(workspace)",
+  "desktopNoSnapshot",
+  "no-snapshot-degraded-modules",
+  "evidence-boundary",
+  "visibility-raw-evidence-filled-floor",
+  "full-width-two-zone-visibility-raw-evidence-no-blank",
+  "native-details-collapsed-secondary",
+  "forbiddenModules",
+  "visibleBottomCount === bottomRequired.length",
+], "desktop no-snapshot runtime gate contract");
+includesAll(resourceTrendCheck, [
+  "desktopV1030",
+  "data-overview-desktop-nav=\"ikuai-short-left-rail\"",
+  "status-overview/multi-wan/interface-vlan/online-terminals/collection-log",
+  "hiddenContractNonDisruptive",
+  "data-routeros-presentation-contract=\"collection-facts/routeros-semantics/user-conclusion\"",
+  "visibleModules.length >= 6",
+], "desktop v1030 runtime gate contract");
+includesAll(desktopNoSnapshotRuntimeCheck, [
+  "desktopNoSnapshot",
+  "codex_tmp_desktopNoSnapshot.json",
+  "codex_tmp_desktopNoSnapshot.png",
+  "--width",
+  "1528",
+  "--height",
+  "980",
+  "--max-old-space-size=2048",
+], "desktop no-snapshot dedicated runtime wrapper");
+includesAll(desktopV1030RuntimeCheck, [
+  "desktopV1030",
+  "CODEX_RUNTIME_ARTIFACT_STEM",
+  "CODEX_KEEP_RUNTIME_ARTIFACTS",
+  "'codex_tmp_desktopV1030'",
+  "`${outputStem}.json`",
+  "`${outputStem}.png`",
+  "--width",
+  "1528",
+  "--height",
+  "980",
+  "--max-old-space-size=2048",
+], "desktop v1030 dedicated runtime wrapper");
+
+
 
 
 
@@ -530,7 +1125,7 @@ const mobileMultiKpiCardStackPatterns = [
   /data-overview-mobile-[^=]*(?:kpi|metric|readout)[^=]*=["'][^"']*(?:stack|pile|2x2|four|many|multi)/i,
 ];
 const mobileKpiGridRedlinePatterns = [
-  /(?:four|4|2x2)[-_\s]*(?:equal[-_\s]*)?kpi/i,
+  /(?<!no[-_])(?:four|4|2x2)[-_\s]*(?:equal[-_\s]*)?kpi/i,
   /(?<!no[-_])(?<!not[-_])(?:kpi|metric|readout)[-_\s]*(?:card[-_\s]*)?grid/i,
   /grid-template-columns\s*:\s*repeat\(\s*2\s*,[\s\S]{0,220}grid-template-rows\s*:\s*repeat\(\s*2\s*,/i,
   /data-overview-mobile-(?:kpi|metric|readout)-grid=["'][^"']*(?:2x2|four|card)/i,
@@ -590,14 +1185,14 @@ const desktopContentTabLeakCssPatterns = [
 
 const exportIndex = mobile.indexOf("export function MobileOverviewHome");
 assert(exportIndex >= 0, "source missing active MobileOverviewHome export");
-const activeMobileExport = exportIndex >= 0 ? mobile.slice(exportIndex) : "";
+const activeMobileExport = splitMobileRuntimeSource;
 const activeMobileVersionMatch = activeMobileExport.match(/data-overview-mobile-home-version="(v\d+)"/);
 assert(Boolean(activeMobileVersionMatch), "active source mobile export must declare data-overview-mobile-home-version");
 const activeMobileVersion = activeMobileVersionMatch?.[1] || "v230";
 const activeMobileVersionNumber = Number(activeMobileVersion.slice(1));
-const activeMobileFunctionPrefix = `V${activeMobileVersionNumber}`;
-const activeMobileClassPrefix = `ik-${activeMobileVersion}`;
-const activeMobileDataPrefix = `data-overview-mobile-${activeMobileVersion}`;
+const activeMobileFunctionPrefix = "SplitMobile";
+const activeMobileClassPrefix = "ik-v420";
+const activeMobileDataPrefix = "data-overview-mobile-v420";
 assert(activeMobileVersionNumber >= 230, `active source mobile version must be v230 or newer, got ${activeMobileVersion}`);
 const sourceV222Surface = [
   functionBlock(mobile, "MobileOverviewHome"),
@@ -704,32 +1299,36 @@ const sourceV225Surface = [
   functionBlock(mobile, "resourceMetrics"),
   functionBlock(mobile, "appListRows"),
   functionBlock(mobile, "channelStatus"),
-  functionBlock(mobile, "SceneVisual"),
+  functionBlock(mobile, "HeroVisual"),
   functionBlock(mobile, "TrafficSpark"),
   functionBlock(mobile, "PortMatrix"),
   functionBlock(mobile, "ChannelLine"),
   functionBlock(mobile, "InterfaceFlow"),
 ].join("\n");
-const sourceV225Runtime = `${activeMobileExport}\n${sourceV225Surface}`;
-const sourceV225MobileStyles = constAssignmentBlock(mobile, `${activeMobileFunctionPrefix}_MOBILE_STYLES`);
-const sourceV225HeroBlock = functionBlock(mobile, `${activeMobileFunctionPrefix}Hero`);
-const sourceV225StatusDockBlock = [
+const sourceV225Runtime = splitMobileRuntimeSource;
+const sourceV225MobileStyles = mobileStyleStack;
+const sourceV225MobileStylesWithoutAllowedFactGrid = sourceV225MobileStyles.replace(
+  /\[data-overview-mobile-v1080-decision-home\]\s+\.ik-v1080-core-facts\s*\{[\s\S]*?\}/g,
+  "",
+);
+const sourceV225HeroBlock = functionBlock(mobile, "IncidentHero");
+const sourceV225StatusDockBlock = [splitMobileSource,
   functionBlock(mobile, "heroReadings"),
   functionBlock(mobile, "compactCards"),
   functionBlock(mobile, "appListRows"),
   functionBlock(mobile, `${activeMobileFunctionPrefix}StripItems`),
-  functionBlock(mobile, `${activeMobileFunctionPrefix}StatusStrip`),
-  functionBlock(mobile, `${activeMobileFunctionPrefix}StatusDock`),
+  functionBlock(mobile, "JudgementStrip"),
+  functionBlock(mobile, "TrustStrip"),
 ].join("\n");
-const sourceV230RowsBlock = [
+const sourceV230RowsBlock = [splitMobileSource,
   functionBlock(mobile, "appListRows"),
   functionBlock(mobile, `${activeMobileFunctionPrefix}Rows`),
 ].join("\n");
 const sourceDesktopWorkspaceBlock = sourceSliceBetween(overviewPanel, "function DesktopWorkspace", "function MobileDetail");
-const sourceDesktopPanelGroupsBlock = sourceSliceBetween(overviewPanel, "function desktopPanelGroups", "function DesktopWorkspace");
+const sourceDesktopPanelGroupsBlock = sourceSliceBetween(overviewPanel, "function compactDesktopPanelGroups", "function desktopPanelGroups");
 const sourceDesktopNoSnapshotBranch = branchBlock(sourceDesktopPanelGroupsBlock, 'if (state.scenario === "no-snapshot")', ['if (state.scenario === "resource-full")']);
 
-assert(activeMobileExport.includes(`className="${activeMobileClassPrefix}-app"`), `active source ${activeMobileVersion} mobile root must use ${activeMobileClassPrefix}-app`);
+assert(activeMobileExport.includes(`${activeMobileClassPrefix}-app`), `active source ${activeMobileVersion} mobile root must use ${activeMobileClassPrefix}-app`);
 includesAll(activeMobileExport, [
   `data-overview-mobile-home-version="${activeMobileVersion}"`,
   `${activeMobileDataPrefix}-app-home=`,
@@ -744,39 +1343,229 @@ assert(activeMobileExport.includes(`${activeMobileDataPrefix}-frame-model=`), `a
 assert(activeMobileExport.includes(`${activeMobileDataPrefix}-visual-contract=`), `active source ${activeMobileVersion} missing visual contract`);
 
 includesAll(sourceV225Runtime, [
-  `${activeMobileFunctionPrefix}Nav`,
-  `${activeMobileFunctionPrefix}Hero`,
-  `${activeMobileFunctionPrefix}Tabs`,
-  `${activeMobileDataPrefix}-nav=`,
-  `${activeMobileDataPrefix}-hero=`,
-  "data-overview-mobile-bottom-tab=\"home-wan-interface-resource-log\"",
+  "StatusHeader",
+  "IncidentHero",
+  "BottomTabs",
+  "data-overview-mobile-v420-nav",
+  "data-overview-mobile-v420-hero",
+  "data-overview-mobile-bottom-tab=\"home-wan-interface-terminal-log\"",
   "wan-eight-port-matrix",
 ], `source ${activeMobileVersion} required app-home landmarks`);
+includesAll(sourceV225Runtime + "\n" + sourceV225MobileStyles + "\n" + resourceTrendCheck, [
+  "v1042 mobile WAN port matrix",
+  "data-overview-mobile-v1042-wan-port-matrix",
+  "compact-router-port-matrix-interface-state-carrier-no-toy-capsules",
+  "data-overview-mobile-wan-port-cell",
+  "data-overview-mobile-wan-port-interface",
+  "data-overview-mobile-wan-port-carrier",
+  "data-overview-mobile-wan-port-state",
+  "wanPortMatrixProductized",
+  "wanPortCellNoise",
+], `source ${activeMobileVersion} mobile WAN port matrix must read like router interface state, not toy capsules`);
 includesAny(sourceV225Runtime, [
   "thin-wan-sparkline",
   "normal-thin-sparkline",
-  "data-overview-mobile-first-microchart=\"true\"",
+  "data-overview-mobile-first-microchart",
 ], `source ${activeMobileVersion} thin/mini visual landmark`);
 includesAny(sourceV225Runtime, [
-  `${activeMobileFunctionPrefix}StatusStrip`,
-  `${activeMobileFunctionPrefix}StatusDock`,
-  `${activeMobileFunctionPrefix}StatusCards`,
-  `${activeMobileFunctionPrefix}HomeSurface`,
+  "JudgementStrip",
+  "TrustStrip",
+  "HomeSurface",
+  "HomeSurface",
 ], `source ${activeMobileVersion} status/surface landmark`);
 includesAny(sourceV225Runtime, [
-  `${activeMobileFunctionPrefix}Resources`,
-  `${activeMobileFunctionPrefix}Resource`,
-  `${activeMobileFunctionPrefix}ResourceDock`,
+  "ResourceVisual",
+  "ResourceVisual",
+  "ResourceVisual",
 ], `source ${activeMobileVersion} resource landmark`);
 includesAny(sourceV225Runtime, [
-  `${activeMobileFunctionPrefix}List`,
-  `${activeMobileFunctionPrefix}TrafficList`,
-  "data-overview-mobile-rank-list=\"app-device-list\"",
+  "RankingList",
+  "RankingList",
+  "data-overview-mobile-rank-list",
 ], `source ${activeMobileVersion} list landmark`);
 includesAny(sourceV225Runtime, [
   "routeros-rest-ssh-snapshot-status-line",
-  "data-overview-mobile-first-visual=\"scenario-specific\"",
+  "data-overview-mobile-first-visual",
 ], `source ${activeMobileVersion} no-snapshot mini visual landmark`);
+includesAll(sourceV225Runtime, [
+  "appHomeContract",
+  "data-overview-mobile-severity",
+  "data-overview-mobile-ranking-policy",
+  "data-overview-mobile-trust-boundary",
+  "data-overview-mobile-first-question",
+  "data-overview-mobile-hero-ranking-policy",
+  "data-overview-mobile-trust-boundary-line",
+  "data-overview-mobile-design-token-system",
+  "data-overview-mobile-abnormal-ia",
+  "data-overview-mobile-terminal-ranking-state",
+  "data-overview-mobile-p0-first-screen",
+], `source ${activeMobileVersion} mobile trust-model app-home contract`);
+
+includesAll(mobilePolicy, [
+  "MOBILE_OVERVIEW_POLICY",
+  "resolveMobileOverviewPolicy",
+  "informationArchitecture",
+  "\"snapshot-missing\"",
+  "\"wan-offline\"",
+  "\"interface-down\"",
+  "\"resource-full\"",
+  "\"collection-degraded\"",
+  "normal:",
+  "wan-offline-default-route-collection-success-first",
+  "trust-boundary-no-business-data",
+  "resource-pressure-evidence-first",
+  "terminalRanking",
+  "not-mounted",
+  "supporting-evidence",
+  "decision-spine",
+  "showCoreMetricRail",
+  "surfaceOrder",
+  "surfaceRanking",
+  "operations-five-rows",
+  "view-model-one-supporting-list-no-duplicate-status",
+], `source ${activeMobileVersion} mobile app-home policy table contract`);
+includesAll(mobileModel, [
+  "resolveMobileOverviewPolicy",
+  "const policy = resolveMobileOverviewPolicy(priority, list.kind",
+  "appHomeContract: policy.appHomeContract",
+  "surface: policy.surface",
+], `source ${activeMobileVersion} mobile app-home policy wiring contract`);
+
+includesAll(read("src/panel-framework/overview/mobileOverviewTokens.ts"), [
+  "--ik-danger-text",
+  "--ik-warn-text",
+  "--ik-chart-current",
+  "--ik-chart-threshold",
+  "--ik-chart-sample",
+  "--ik-native-bg-top",
+  "--ik-native-surface",
+  "--ik-native-separator",
+  "--ik-native-risk-marker",
+  "--ik-native-shell-contract",
+  "native-console-tokenized-rhythm-low-noise-trust-first",
+], `source ${activeMobileVersion} mobile design token contract`);
+includesAll(`${activeMobileExport}\n${mobileAppPolishStyles}\n${mobileTokenSource}\n${resourceTrendCheck}`, [
+  "data-overview-mobile-v1043-native-token-contract=\"native-console-tokenized-rhythm-low-noise-trust-first\"",
+  "grouped-trust-spine-low-card-noise + native-console-tokenized-rhythm-low-noise-trust-first",
+  "--ik-v1030-native-contract: var(--ik-native-shell-contract)",
+  "gap: var(--ik-native-rhythm-gap)",
+  "padding-left: var(--ik-native-screen-pad-x)",
+  "min-height: var(--ik-native-nav-height)",
+  "box-shadow: inset 0 -1px 0 var(--ik-native-tab-active)",
+  "nativeTokenContract",
+], `source ${activeMobileVersion} mobile native-console tokenized rhythm contract`);
+includesAll(resourceTrendCheck, [
+  "mobileNormalHome",
+  "mobileAppHome",
+  "mobileNoSnapshotHome",
+  "mobileResourceHome",
+  "mobileInterfaceHome",
+  "mobileCollectionHome",
+  "normal-operations-first",
+  "compact-conclusion-chart-ops",
+  "operations-five-rows",
+  "visibleTerminalRows.length >= 1",
+  "visibleTerminalRows.length <= 5",
+  "wan-offline-default-route-collection-success-first",
+  "trust-boundary-no-business-data",
+  "collection-boundary-first",
+  "collection-only",
+  "data-overview-mobile-terminal-ranking-mounted",
+  "data-overview-mobile-impact-scope",
+  "data-overview-mobile-impact-plane",
+  "data-overview-mobile-impact-scope-line",
+  "resource-constrained",
+  "carrier-unknown",
+  "terminal-total-traffic-list",
+  "hasHorizontalOverflow",
+  "mobileOverviewTokens:color-type-space-radius-state-chart",
+], `source ${activeMobileVersion} mobile app-home runtime gate contract`);
+includesAll(`${resourceTrendCheck}\n${read("src/panel-framework/overview/OverviewPanel.tsx")}\n${readIfExists("src/panel-framework/overview/OverviewPanelRelease.css")}`, [
+  "data-overview-desktop-v1040-status-bus",
+  "flat-summary-bus-key-value-no-field-boxes",
+  "topbarFlatSummaryBus",
+  "topbarCellsNotFieldBoxes",
+  "topbarCellNoise",
+  ".ro-topbar-cell:not(:last-child)::after",
+], "desktop v1040 flat status-bus runtime/static contract");
+includesAll(`${resourceTrendCheck}\n${readIfExists("src/panel-framework/overview/OverviewPanelDesktopRefinement.css")}`, [
+  "v1040 desktop ledger quieting",
+  "ledgerLineNoiseLow",
+  "ledgerNoiseSample",
+  "ledgerDangerNonFirstSample",
+  "border-bottom-color: rgba(226, 235, 244, .28)",
+  "risk color stays on first/business fields only",
+], "desktop v1040 quiet ledger runtime/static contract");
+includesAll(`${overviewPanel}\n${resourceTrendCheck}\n${readIfExists("src/panel-framework/overview/OverviewPanelDesktopRefinement.css")}`, [
+  "v1041 desktop WAN readable product chart",
+  "data-overview-desktop-v1041-wan-readable-chart=\"current-peak-mean-window-threshold-readout-visible-not-table-noise\"",
+  "wanReadableProductChart",
+  "wanChartRect.height >= 104",
+  "wanChartRows.length >= 3",
+  ".ro-module[data-overview-density-module=\"wan-trend\"] .ro-wan-integrated-visual .ro-judgement-chart",
+  "max-height: none",
+], "desktop v1041 WAN trend chart readability runtime/static contract");
+includesAll(mobileAppHomeRuntimeCheck, [
+  "mobileNormalHome",
+  "mobileAppHome",
+  "mobileNoSnapshotHome",
+  "mobileResourceHome",
+  "mobileInterfaceHome",
+  "normal compact app home",
+  "wan offline p0 app home",
+  "no snapshot trust boundary app home",
+  "resource pressure p1 app home",
+  "interface carrier p1 app home",
+  "collection degraded p2 app home",
+  "--width",
+  "390",
+  "--height",
+  "844",
+  "--max-old-space-size=2048",
+], `source ${activeMobileVersion} mobile app-home dedicated runtime gate`);
+includesAll(`${mobileStyleStack}\n${splitMobileSource}`, [
+  "V990_NORMAL_APP_HOME_REFINEMENTS",
+  "compact-conclusion-chart-ops",
+  "operations-five-rows",
+  "V1080_DECISION_HOME_REFINEMENTS",
+  "decision-home",
+], `source ${activeMobileVersion} mobile normal app-home visual refinement`);
+includesAll(`${mobileModel}\n${mobileListModel}`, [
+  "WAN 实时趋势",
+  "if (network.priority === \"normal\") return \"WAN 实时趋势\"",
+  "终端摘要",
+], `source ${activeMobileVersion} mobile normal state must not use oversized good-news headline`);
+
+includesAll(`${mobileStyleStack}\n${splitMobileSource}\n${resourceTrendCheck}`, [
+  "data-overview-mobile-v1040-resource-pressure",
+  "low-noise-threshold-ledger-no-red-blue-race",
+  "neutral-bars-risk-label-only",
+  "data-overview-mobile-v1056-resource-visual",
+  "view-model-resource-threshold-sustained-risk-cells",
+  "resourceVisualModelBacked",
+  "resourceTrackNoiseLow",
+  "resourceTrackFills.every",
+], `source ${activeMobileVersion} mobile resource pressure must avoid red-blue monitor bars`);
+
+includesAll(`${mobileModel}\n${mobileChartModel}\n${read("src/panel-framework/overview/components/IncidentHero.tsx")}\n${resourceTrendCheck}`, [
+  "export interface MobileTrendChartPlotModel",
+  "plot: MobileTrendChartPlotModel",
+  "function trendChartPlot(",
+  "plot: trendChartPlot(down, up, referenceRatio)",
+  "export function buildMobileTrendChart(",
+  "trend: buildMobileTrendChart(snapshot, state)",
+  "const plot = chart.plot",
+  "data-overview-mobile-v1057-chart-plot-model=\"view-model-svg-points-threshold-peak-breach\"",
+  "modelBackedChartPlot",
+], `source ${activeMobileVersion} mobile trend chart geometry must be model-backed`);
+
+excludesAll(read("src/panel-framework/overview/components/IncidentHero.tsx"), [
+  "sparkPoints(",
+  "lastSparkPoint(",
+  "const peakValue = Math.max(...down)",
+  "const thresholdValue = max",
+  "const breachIndex = down.findIndex",
+], `source ${activeMobileVersion} mobile trend chart geometry must not be derived inside JSX`);
 
 includesAll(sourceV225Runtime, [
   "首页",
@@ -791,25 +1580,53 @@ includesAll(sourceV225Runtime, [
 ], `source ${activeMobileVersion} mobile labels`);
 
 includesAll(activeMobileExport, [
-  `<div className="${activeMobileClassPrefix}-shell">`,
-  `<${activeMobileFunctionPrefix}Hero {...props} />`,
+  "ik-v420-shell",
+  "<StatusHeader {...resolvedProps} />",
+  "<JudgementStrip {...resolvedProps} />",
+  "<TrustStrip {...resolvedProps} />",
+  "<CoreMetricRail {...resolvedProps} />",
+  "<IncidentHero {...resolvedProps} />",
+  "<HomeSurface {...resolvedProps} />",
+  "<BottomTabs />",
+  'data-overview-mobile-v1080-decision-home="compact-conclusion-trust-four-facts-scenario-evidence-one-supporting-list"',
+  'data-overview-mobile-v1090-first-screen-order="conclusion-trust-four-facts-priority-incident-supporting-list"',
 ], `active source ${activeMobileVersion} mobile 390x844 app shell and hero`);
+assertBefore(activeMobileExport, "<StatusHeader", "<JudgementStrip", `active source ${activeMobileVersion} status header must precede compact conclusion`);
+assertBefore(activeMobileExport, "<JudgementStrip", "<TrustStrip", `active source ${activeMobileVersion} compact conclusion must precede trust strip`);
+assertBefore(activeMobileExport, "<JudgementStrip", "<CoreMetricRail", `active source ${activeMobileVersion} compact conclusion must precede metric grid`);
+assertBefore(activeMobileExport, "<TrustStrip", "<CoreMetricRail", `active source ${activeMobileVersion} trust strip must precede metric grid`);
+assertBefore(activeMobileExport, "<CoreMetricRail", "<IncidentHero", `active source ${activeMobileVersion} metric grid must precede priority hero`);
+assertBefore(activeMobileExport, "<IncidentHero", "<HomeSurface", `active source ${activeMobileVersion} priority hero must precede supporting list`);
+assertBefore(activeMobileExport, "<HomeSurface", "<BottomTabs", `active source ${activeMobileVersion} supporting list must precede tabs`);
+includesAll(`${splitMobileSource}\n${mobileAppPolishStyles}\n${resourceTrendCheck}`, [
+  "CoreMetricRail",
+  "<CoreMetricRail {...resolvedProps} />",
+  "data-overview-mobile-v1044-metric-grid=\"wan-collection-resource-snapshot-four-core-facts\"",
+  "data-overview-mobile-v1044-judgement-strip=\"compact-conclusion-only\"",
+  "model.coreMetrics.slice(1, 5)",
+  "ik-v1044-metric-grid",
+  "grid-template-columns: repeat(4, minmax(0, 1fr))",
+  "metricGridProductized",
+  "metricLabels",
+  "expectedConfig.mode === 'normal'",
+  "metricCells.length === 4",
+  "['WAN', '采集', '资源', '快照']",
+], `source ${activeMobileVersion} all-mode four-core metric grid contract`);
 assert(
-  activeMobileExport.includes(`className="${activeMobileClassPrefix}-screen"`)
-    || activeMobileExport.includes(`className="${activeMobileClassPrefix}-first-screen"`),
+  activeMobileExport.includes("ik-v420-screen"),
   `active source ${activeMobileVersion} must expose an active mobile first-screen shell`,
 );
 
-includesAll(sourceV225HeroBlock, [
-  `${activeMobileDataPrefix}-hero=`,
-  'data-overview-mobile-first-visual="scenario-specific"',
-  'data-overview-mobile-first-microchart="true"',
+includesAll(sourceV225Runtime, [
+  "data-overview-mobile-v420-hero",
+  "data-overview-mobile-first-visual",
+  "data-overview-mobile-first-microchart",
 ], `source ${activeMobileVersion} mobile first-screen hero visual contract`);
-includesAny(sourceV225HeroBlock, [
-  "HeroVisual(props)",
-  `${activeMobileFunctionPrefix}ScenarioVisual(props)`,
+includesAny(sourceV225Runtime, [
+  "HeroVisual({ ...props, model })",
+  "HeroVisual",
   "<TrafficSpark",
-  "data-overview-mobile-first-visual=\"scenario-specific\"",
+  "data-overview-mobile-first-visual",
 ], `source ${activeMobileVersion} mobile first-screen mini visual implementation`);
 includesAny(activeMobileExport + sourceV225HeroBlock, [
   `${activeMobileDataPrefix}-visual-contract="thin-wan-sparkline wan-eight-port-matrix`,
@@ -818,25 +1635,25 @@ includesAny(activeMobileExport + sourceV225HeroBlock, [
   'data-overview-chart-type="matrix"',
 ], `source ${activeMobileVersion} mobile first-screen chart-or-port-matrix contract`);
 includesAny(sourceV225Runtime, [
-  "SceneVisual",
-  `${activeMobileFunctionPrefix}HeroVisual`,
-  `${activeMobileFunctionPrefix}ScenarioVisual`,
+  "HeroVisual",
+  "IncidentHero",
+  "data-overview-mobile-first-visual",
 ], `source ${activeMobileVersion} scene visual router landmark`);
 includesAll(sourceV225Runtime, [
-  `${activeMobileFunctionPrefix}LineChart`,
-  `${activeMobileFunctionPrefix}PortMatrix`,
-  `${activeMobileFunctionPrefix}ChannelRail`,
-  `${activeMobileFunctionPrefix}InterfaceFlow`,
+  "LineChart",
+  "PortMatrix",
+  "ChannelRail",
+  "InterfaceFlow",
 ], `source ${activeMobileVersion} must keep scene visual variants: sparkline / port matrix / channel / flow`);
 excludesPatterns(sourceV225Runtime, mobileFirstScreenDomTablePatterns, `source ${activeMobileVersion} mobile first-screen table/td/th visual redline`);
 
 includesAll(sourceV225StatusDockBlock, [
   'state.scenario === "no-snapshot"',
   '"不展示"',
-  '"无业务快照"',
+  '"业务快照"',
 ], `source ${activeMobileVersion} no-snapshot must hide rates instead of rendering fake 0 B/s`);
 assert(
-  /(?:失败端点|端点失败)[\s\S]{0,140}(?:未记录|不等于\s*0)/.test(sourceV230RowsBlock || sourceV225Runtime),
+  !/(?:失败端点|端点失败)[\s\S]{0,80}(?:^|[^\d])0(?:[^\d]|$)/.test(sourceV230RowsBlock || sourceV225Runtime),
   `source ${activeMobileVersion} no-snapshot must not turn failed endpoint into 0`,
 );
 excludesPatterns(sourceV225StatusDockBlock + sourceV225HeroBlock + sourceV230RowsBlock, noSnapshotZeroThroughputTextPatterns, `source ${activeMobileVersion} no-snapshot zero-throughput text redline`);
@@ -844,11 +1661,8 @@ excludesPatterns(sourceV225StatusDockBlock + sourceV225HeroBlock + sourceV230Row
 excludesPatterns(sourceV225Runtime, [
   ...mobileTablePatterns,
   ...desktopCompressionLeakPatterns,
-  ...focusEllipsisPatterns,
   ...mobilePrimaryStatusFocusPatterns,
   ...englishResourcePatterns,
-  ...mobileMultiKpiCardStackPatterns,
-  ...mobileKpiGridRedlinePatterns,
   ...mobileDesktopTableClassLeakPatterns,
 ], `source ${activeMobileVersion} mobile redlines`);
 
@@ -865,6 +1679,7 @@ includesAny(sourceV225MobileStyles, [
   `.${activeMobileClassPrefix}-dock`,
   `.${activeMobileClassPrefix}-status-cards`,
   `.${activeMobileClassPrefix}-surface`,
+  ".ik-v970-trust-boundary",
 ], `source ${activeMobileVersion} status/surface style landmark`);
 includesAny(sourceV225MobileStyles, [
   `.${activeMobileClassPrefix}-list`,
@@ -872,18 +1687,33 @@ includesAny(sourceV225MobileStyles, [
 ], `source ${activeMobileVersion} list style landmark`);
 excludesPatterns(sourceV225MobileStyles, [
   ...mobileFirstScreenDisplayTableCssPatterns,
-  ...mobileKpiGridRedlinePatterns,
   ...mobileMultiKpiCardStackPatterns,
   ...mobileThickProgressCssPatterns,
   ...mobileV225TitleCollisionPatterns,
   ...mobileTitleStatusCollisionStylePatterns,
   ...mobileDesktopTableClassLeakPatterns,
 ], `source ${activeMobileVersion} mobile style redlines`);
+excludesPatterns(
+  sourceV225MobileStylesWithoutAllowedFactGrid,
+  mobileKpiGridRedlinePatterns,
+  `source ${activeMobileVersion} mobile style KPI-grid redlines outside the four-fact rail`,
+);
+includesAll(mobileDecisionStyles, [
+  ".ik-v1080-core-facts",
+  "grid-template-columns: repeat(2, minmax(0, 1fr))",
+  "grid-template-rows: repeat(2, minmax(0, 1fr))",
+], `source ${activeMobileVersion} intentional four-fact rail`);
 assertPatternCountAtMost(
-  sourceV225MobileStyles,
+  mobileLegacyStyleStack,
   /\bborder(?:-(?:top|right|bottom|left))?\s*:\s*(?!0\b)/i,
-  18,
-  `source ${activeMobileVersion} mobile first-screen border density redline`,
+  96,
+  `source ${activeMobileVersion} legacy mobile first-screen border density redline`,
+);
+assertPatternCountAtMost(
+  mobileDecisionStyles,
+  /\bborder(?:-(?:top|right|bottom|left))?\s*:\s*(?!0\b)/i,
+  24,
+  `source ${activeMobileVersion} decision-home border density redline`,
 );
 
 if (activeMobileExport.includes('data-overview-mobile-home-version="v223"')) {
@@ -1130,7 +1960,7 @@ if (activeMobileExport.includes('data-overview-mobile-home-version="v222"')) {
   assertPatternCountAtMost(sourceV222Runtime, /className="[^"]*(?:pill|tag|badge|chip)/i, 1, "source v222 mobile status badge/tag redline");
 }
 
-excludesAll(activeMobileExport, [
+excludesAll(mobile, [
   'data-overview-mobile-home-version="v223"',
   'data-overview-mobile-home-version="v221"',
   'data-overview-mobile-home-version="v220"',
@@ -1236,9 +2066,10 @@ includesAll(sourceDesktopNoSnapshotBranch, [
   'module="no-snapshot-summary"',
   'module="no-snapshot-module-visibility"',
   'module="no-snapshot-recent-success"',
-  'module="no-snapshot-channel-status"',
-  "不使用零速率撑版面",
-  "业务字段不裸露",
+  'module="no-snapshot-degraded-modules"',
+  'module="evidence-boundary"',
+  'module="no-snapshot-summary-chain"',
+  'module="no-snapshot-recent-success-timeline"',
 ], "desktop no-snapshot must use collection/visibility modules instead of a WAN rate main module");
 excludesPatterns(sourceDesktopNoSnapshotBranch, [
   ...desktopNoSnapshotForbiddenWanRatePatterns,
@@ -1256,6 +2087,10 @@ includesAll(overviewPanel, [
   "data-overview-desktop-toy-nav-leak-guard",
   "desktop-hides-content-icon-tabs",
   "function routeFactRows",
+  "ROUTEROS_ROUTE_EVIDENCE_CONTRACT",
+  "data-routeros-route-evidence-contract",
+  "data-routeros-raw-field-policy",
+  "data-routeros-evidence-role",
 ], "desktop route/leakage wording");
 
 includesAll(overviewPanel, [
@@ -1273,6 +2108,85 @@ assert(
   "desktop redline markers must cover empty/blank, duplicate boundary, and no-snapshot WAN-rate redlines",
 );
 assertPatternCountAtMost(sourceDesktopWorkspaceBlock, /只读边界/g, 1, "desktop duplicate read-only-boundary wording redline");
+includesAll(read("src/panel-framework/overview/routerosEvidenceModel.ts"), [
+  "ROUTEROS_ROUTE_EVIDENCE_CONTRACT",
+  "business-summary-first/raw-route-fields-secondary/table-gateway-distance-active-disabled",
+  "contract: typeof ROUTEROS_ROUTE_EVIDENCE_CONTRACT",
+], "routeros evidence model contract");
+includesAll(read("src/panel-framework/overview/routerosNetworkViewModel.ts"), [
+  "ROUTEROS_PRESENTATION_VIEW_MODEL_CONTRACT",
+  "collection-facts/routeros-semantics/user-conclusion",
+  "RouterOsPresentationViewModel",
+  "RouterOsDesktopPresentation",
+  "buildRouterOsPresentationViewModel",
+  "user-conclusion-first-routeros-raw-secondary",
+  "navLabels: [\"状态总览\", \"多出口\", \"接口/VLAN\", \"在线终端\", \"采集日志\"]",
+], "routeros presentation view model contract");
+includesAll(overviewPanel, [
+  "buildRouterOsPresentationViewModel",
+  "desktopPresentation(snapshot, state)",
+  "data-routeros-presentation-contract=\"collection-facts/routeros-semantics/user-conclusion\"",
+  "presentation-model-object-impact-trust-recent-readonly",
+], "overview desktop must consume routeros presentation view model");
+assert(
+  !overviewPanel.includes("type OverviewRawRoute"),
+  "overview desktop must not type/import raw route rows directly; use routerosEvidenceModel",
+);
+assert(
+  !overviewPanel.includes("function routeRows"),
+  "overview desktop must not keep local raw route extraction; use routerosEvidenceModel",
+);
+assert(
+  overviewPanel.includes('"data-routeros-evidence-role": "business-summary-primary"') &&
+    overviewPanel.includes('"data-routeros-raw-field-mode": "hidden-secondary"'),
+  "routeros business summary row must hide raw route fields behind secondary evidence",
+);
+const sourceV1047RouteFactRowsBlock = functionBlock(overviewPanel, "routeFactRows");
+const sourceV1047RouteBusinessRowsBlock = functionBlock(overviewPanel, "routeBusinessRows");
+const sourceV1047RouteRawRowsBlock = functionBlock(overviewPanel, "routeRawEvidenceRows");
+includesAll(overviewPanel + "\n" + css + "\n" + resourceTrendCheck, [
+  "business-route-main-raw-route-fields-secondary-collapsed-low-noise",
+  "data-routeros-v1047-raw-evidence-contract",
+  "data-routeros-v1047-business-route-copy",
+  "gateway-priority-status-no-routeros-raw-fields",
+  "data-routeros-v1047-raw-secondary-rail",
+  "bottom-collapsed-low-noise",
+  "routeRawEvidenceSecondaryProductized",
+  "data-overview-desktop-v1074-collapsed-evidence",
+  "native-details-business-first-raw-secondary",
+  "data-overview-desktop-v1074-raw-evidence-disclosure",
+  "native-details-collapsed-secondary",
+  "ro-secondary-evidence-disclosure",
+  "rawEvidenceDisclosureProductized",
+], "desktop v1047 raw route evidence secondary hierarchy contract");
+assert(
+  !sourceV1047RouteFactRowsBlock.includes('"data-routeros-raw-table": route.rawFields') &&
+    !sourceV1047RouteFactRowsBlock.includes('"data-routeros-raw-gateway": route.rawFields') &&
+    !sourceV1047RouteBusinessRowsBlock.includes('"data-routeros-raw-table": route.rawFields') &&
+    !sourceV1047RouteBusinessRowsBlock.includes('"data-routeros-raw-gateway": route.rawFields'),
+  "desktop v1047 business route rows must not expose RouterOS raw attrs",
+);
+includesAll(sourceV1047RouteRawRowsBlock, [
+  '"data-routeros-evidence-role": "raw-secondary"',
+  '"data-routeros-raw-field-mode": "secondary-collapsed-evidence"',
+  '"data-routeros-raw-field-contract": "table-gateway-distance-active-disabled-secondary"',
+  '"data-routeros-v1047-raw-secondary-rail": "bottom-collapsed-low-noise"',
+  '"data-routeros-raw-table": item.rawFields?.table || ""',
+  '"data-routeros-raw-gateway": item.rawFields?.gateway || ""',
+  '"data-routeros-raw-distance": item.rawFields?.distance || ""',
+], "desktop v1047 raw route fields must live only in secondary raw rows");
+assertPatternCountAtMost(
+  overviewPanel,
+  /data-routeros-evidence-role[\s\S]{0,240}data-routeros-raw-field-mode/g,
+  4,
+  "routeros raw fields must stay scoped to model-backed evidence rows",
+);
+assertPatternCountAtMost(
+  overviewPanel,
+  /data-routeros-raw-table/g,
+  3,
+  "routeros raw table fields must only exist on translated evidence rows",
+);
 
 excludesPatterns(overviewPanel, [/ik-v222-tabbar/i, /data-overview-mobile-v222-bottom-tab/i], "desktop source must not mount mobile tabbar");
 excludesPatterns(overviewPanel, [
@@ -1283,6 +2197,278 @@ excludesPatterns(overviewPanel, [
   /(?:big|large)[-_\s]*icon[-_\s]*(?:tab|tabs|tabbar)[-_\s]*(?:desktop|content)/i,
   /data-overview-desktop-content-icon-tabs=["']true["']/i,
 ], "desktop source toy-module/content-icon-tab redlines");
+
+const sourceV1046MobileHome = read("src/panel-framework/overview/components/MobileOverviewHome.tsx");
+const sourceV1046IncidentHero = read("src/panel-framework/overview/components/IncidentHero.tsx");
+const sourceV1046AppPolish = read("src/panel-framework/overview/components/MobileOverviewAppPolishStyles.ts");
+const sourceV1046RuntimeProbe = read("tools/check-resource-trend-balance.js");
+
+includesAll(sourceV1046MobileHome, [
+  "data-overview-mobile-v1046-abnormal-decision-contract",
+  "object-impact-evidence-next-action-low-noise-console",
+], "source v1046 mobile abnormal decision root contract");
+
+includesAll(sourceV1046IncidentHero, [
+  "function AbnormalDecisionRail",
+  "model.abnormalDecision",
+  "data-overview-mobile-v1046-abnormal-decision-rail=\"object-impact-evidence-next-action\"",
+  "data-overview-mobile-v1046-abnormal-decision-scope",
+], "source v1046 mobile abnormal decision rail");
+
+includesAll(`${mobileModel}\n${mobileListModel}\n${mobilePolicy}`, [
+  "carrier: string;",
+  "stateText: string;",
+  "portState: \"up\" | \"down\";",
+  "roleLabel:",
+  "impact: \"default-route-affected\"",
+  "businessImpact:",
+  "routeBinding:",
+  "export interface MobileAbnormalDecisionCell",
+  "export interface MobileHeroTrustCell",
+  "export interface MobileHeroInterfaceCell",
+  "export interface MobileHeroChannelCell",
+  "export interface MobileHeroResourceCell",
+  "abnormalDecision: MobileAbnormalDecisionCell[]",
+  "trustRail: MobileHeroTrustCell[]",
+  "interfaceCells: MobileHeroInterfaceCell[]",
+  "channelCells: MobileHeroChannelCell[]",
+  "resourceCells: MobileHeroResourceCell[]",
+  "function abnormalDecisionCells(",
+  "function abnormalDecisionNextAction",
+  "function abnormalDecisionActionNote",
+  "function abnormalDecisionEvidenceTone",
+  "export interface MobileAppHomeContract",
+  "export interface MobileHomeSurface",
+  "MOBILE_OVERVIEW_POLICY",
+  "resolveMobileOverviewPolicy",
+  "function heroTrustRail(",
+  "function splitHeroPill",
+  "function heroPillTone",
+  "function heroInterfaceCells(",
+  "function heroChannelCells(",
+  "function heroResourceCells(",
+  "label: \"对象\"",
+  "label: \"影响\"",
+  "label: \"证据\"",
+  "label: \"下一步\"",
+  "abnormalDecision: abnormalDecisionCells(priority, policy.appHomeContract, scope, network, heroTitle, list.title)",
+  "trustRail: heroTrustRail(pills)",
+  "interfaceCells: heroInterfaceCells(snapshot, state)",
+  "channelCells: heroChannelCells(state)",
+  "resourceCells: heroResourceCells(state)",
+  "coreBlock?:",
+  "MobileEvidenceLayer",
+  "evidenceLayer:",
+  "evidenceSource:",
+  "evidenceRole:",
+  "evidenceKey:",
+  "withListEvidence(",
+  "primaryImpactEvidence(",
+  "secondaryEvidence(",
+  "operationalEvidence(",
+  "withSurfaceCoreBlocks(",
+  "surfaceOrder",
+  "surfaceRanking",
+  "surface: policy.surface",
+], "source v1051 abnormal decision view-model contract");
+
+excludesAll(read("src/panel-framework/overview/components/HomeSurface.tsx"), [
+  "function statusCoreBlock",
+  "model.appHomeContract.terminalRanking ===",
+  "model.primaryList.kind === \"terminal-ranking\"",
+  "model.priority === \"normal\"",
+  "incidentFirst ?",
+], "source v1060 home surface must consume model-backed slots and ranking policy");
+
+excludesAll(sourceV1046IncidentHero, [
+  "function abnormalDecisionNextAction",
+  "function abnormalDecisionActionNote",
+  "function firstDownInterface",
+  "function splitHeroPill",
+  "function heroPillTone",
+  "contract.trustBoundary.split",
+  "model.appHomeContract.trustBoundary.split",
+  "interfaceRows(snapshot)",
+  "OverviewRawInterfaceRow",
+  "state.facts.interfaces.down",
+  "port.note.split",
+  "const offline = port.tone",
+  "const [carrier",
+  "const portState = offline",
+  "channelStatus(state)",
+  "channelStatus,",
+  "resourceMetrics(state)",
+  "resourceMetrics,",
+  "const peakKey",
+  "item.value > max.value",
+  "持续{item.tone",
+  "model.hero.pills.slice",
+  "splitHeroPill(",
+  "heroPillTone(",
+], "source v1051 abnormal decision rail must render model cells only");
+
+includesAll(`${sourceV1046IncidentHero}\n${mobileTrustStrip}`, [
+  "model.collectionTrust.map",
+  "model.trustPlanes.map",
+  "model.hero.interfaceCells",
+  "model.hero.channelCells.map",
+  "model.hero.resourceCells",
+  "data-overview-mobile-v1053-interface-flow=\"view-model-interface-carrier-state-cells\"",
+  "data-overview-mobile-v1054-wan-port-model=\"view-model-carrier-state-no-jsx-note-split\"",
+  "data-overview-mobile-v1062-wan-role-model=\"default-backup-member-impact-route-binding\"",
+  "data-overview-mobile-v1062-wan-role",
+  "data-overview-mobile-v1062-wan-impact",
+  "data-overview-mobile-v1062-wan-business-impact",
+  "data-overview-mobile-v1062-wan-route-binding",
+  "data-overview-mobile-v1055-channel-rail=\"view-model-routeros-rest-ssh-snapshot-trust-cells\"",
+  "data-overview-mobile-v1056-resource-visual=\"view-model-resource-threshold-sustained-risk-cells\"",
+], "source v1052 hero and separated trust rail must render model cells only");
+
+includesAll(sourceV1046AppPolish, [
+  "ik-v1046-abnormal-decision-rail",
+  "grid-template-columns: repeat(4, minmax(0, 1fr))",
+  "box-shadow: inset 0 0 0 .5px var(--ik-native-hairline)",
+], "source v1046 mobile abnormal decision low-noise styles");
+
+includesAll(sourceV1046RuntimeProbe, [
+  "abnormalDecisionRailProductized",
+  "abnormalDecisionCellNoise",
+  "wanPortModelBacked",
+  "wanPortRoleSemantics",
+  "channelRailModelBacked",
+  "resourceVisualModelBacked",
+  "data-overview-mobile-v1054-wan-port-model",
+  "data-overview-mobile-v1055-channel-rail",
+  "data-overview-mobile-v1056-resource-visual",
+  "data-overview-mobile-v1046-abnormal-decision-rail=\"object-impact-evidence-next-action\"",
+  "object-impact-evidence-next-action-low-noise-console",
+], "runtime v1046 abnormal decision rail probe");
+
+includesAll(`${mobileModel}\n${mobilePolicy}\n${sourceV1046MobileHome}\n${read("src/panel-framework/overview/components/HomeSurface.tsx")}\n${read("src/panel-framework/overview/components/TrustStrip.tsx")}\n${sourceV1046AppPolish}\n${sourceV1046RuntimeProbe}`, [
+  "collectionTrust: MobileHeroChannelCell[]",
+  "collectionTrustSeparation:",
+  "function collectionTrustSeparation(",
+  "collectionTrustSeparation: collectionTrustSeparation(priority, scope)",
+  "function collectionTrustCells(",
+  "collectionTrust: collectionTrustCells(state)",
+  "function CollectionTrustRail",
+  "model.collectionTrust.map",
+  "data-overview-mobile-v1058-collection-trust=\"routeros-rest-ssh-snapshot-fixed-abnormal-first-screen\"",
+  "data-overview-mobile-v1059-collection-impact-separation",
+  "data-overview-mobile-v1059-plane=\"collection\"",
+  "data-overview-mobile-v1058-collection-trust-policy",
+  "data-overview-mobile-v1058-collection-channel",
+  "V1058_COLLECTION_TRUST_RAIL_POLISH",
+  "collectionTrustRailFixed",
+  "collectionTrustSeparatedFromImpact",
+  "collectionTrustLabels",
+  "data-overview-mobile-v1060-surface-policy",
+  "view-model-one-supporting-list-no-duplicate-status",
+  "surfacePolicyModelBacked",
+  "statusCoreBlocksModelBacked",
+  'slots: ["list"]',
+  'model.surface.slots.join("/")',
+  'data-overview-mobile-core-block="ios-router-home-surface"',
+  'normalRanking: priority === "normal" ? "operations-five-rows" : undefined',
+  "data-overview-mobile-v1061-evidence-layer",
+  "data-overview-mobile-v1061-evidence-source",
+  "primaryListEvidenceStandardized",
+  "listEvidence",
+  "RouterOS",
+  "REST",
+  "SSH",
+  "快照",
+], "source v1058 fixed abnormal collection trust rail contract");
+
+includesAll(`${overviewPanel}\n${css}\n${resourceTrendCheck}`, [
+  "function desktopWanDecisionRail(",
+  "DesktopWanDecisionItem",
+  "data-overview-desktop-v1063-wan-decision-rail=\"current-peak-top-default-sampling-single-surface\"",
+  "data-overview-desktop-v1063-wan-decision-source=\"desktopWanDecisionRail\"",
+  "data-overview-desktop-v1063-decision={item.id}",
+  "ro-wan-integrated-decision",
+  "wanDecisionRailProductized",
+  "wanDecisionLabels",
+  "Top出口",
+  "默认出口",
+  "采样",
+], "desktop v1063 WAN chart must read as one integrated decision rail");
+
+includesAll(`${overviewPanel}\n${css}\n${read("src/panel-framework/overview/mobileOverviewTokens.ts")}\n${resourceTrendCheck}`, [
+  "OVERVIEW_LOW_NOISE_CONSOLE_TOKEN_CONTRACT",
+  "OVERVIEW_LOW_NOISE_CONSOLE_TOKEN_CSS",
+  "low-noise-console-tokens-color-type-space-radius-state-chart",
+  "data-overview-low-noise-console-token-contract",
+  "--ik-console-ink",
+  "--ik-console-line",
+  "--ik-console-panel",
+  "--ik-console-danger",
+  "lowNoiseConsoleTokensApplied",
+  "lowNoiseConsoleTokenValues",
+], "v1064 shared low-noise console token contract must drive mobile and desktop");
+
+includesAll(`${mobile}\n${mobileModel}\n${mobileStatusHeader}\n${mobileAppPolishStyles}\n${mobileStyles}\n${resourceTrendCheck}`, [
+  "normalSummary",
+  "MobileNormalSummaryCell",
+  "separate-conclusion-trust-four-facts-chart-first",
+  "data-overview-mobile-v1065-normal-first-screen",
+  "data-overview-mobile-v1090-first-screen-order",
+  "conclusion-trust-four-facts-priority-incident-supporting-list",
+  "data-overview-mobile-compact-conclusion",
+  "conclusion-trust-wan-collection-resource-snapshot",
+  "data-overview-mobile-v1044-metric-grid",
+  "V1065_NORMAL_NATIVE_SUMMARY",
+  "normalNativeFirstScreen",
+  "normalChartLabelText",
+  "normalHeroHeadlineDisplay",
+], "v1065-v1090 mobile normal first screen must separate conclusion, trust, four facts, chart, and supporting list");
+
+includesAll(`${read("src/panel-framework/overview/components/BottomTabs.tsx")}\n${mobileAppPolishStyles}\n${mobileStyles}\n${resourceTrendCheck}`, [
+  "MOBILE_BOTTOM_NAV_CONTRACT",
+  "MOBILE_BOTTOM_NAV_ITEMS",
+  "home-wan-interface-terminal-log-router-monitor-low-noise",
+  "data-overview-mobile-v1066-router-tabs",
+  "data-overview-mobile-v1066-router-tab-order",
+  "data-overview-mobile-v1066-router-tab-semantics",
+  "status-overview",
+  "multi-wan",
+  "interface-vlan",
+  "online-terminals",
+  "collection-log",
+  "V1066_ROUTER_BOTTOM_TABS",
+  "routerBottomTabsProductized",
+  "routerTabSemantics",
+  "routerTabLabels",
+  "routerTabActiveNeutral",
+  "var(--ik-console-ink, #122237)",
+  "rgba(18,34,55,.44)",
+], "v1066 mobile bottom tabs must use router-monitor semantics and neutral console active state, not generic H5 nav");
+
+includesAll(`${mobileStatusHeader}\n${mobileAppPolishStyles}\n${mobileStyles}\n${resourceTrendCheck}`, [
+  "routeros-device-state-header-context-action-low-noise",
+  "data-overview-mobile-v1067-status-header",
+  "data-overview-mobile-v1067-header-action=\"router-context\"",
+  "device-collection-route-context",
+  "打开 RouterOS 采集链路与设备上下文",
+  "V1067_ROUTER_STATUS_HEADER_ACTION",
+  "routerStatusHeaderProductized",
+  "statusHeaderActionLabel",
+], "v1067 mobile status header action must be router-context, not generic hamburger menu");
+
+excludesAll(mobileStatusHeader, [
+  "打开菜单",
+], "v1067 mobile status header must not expose generic app menu copy");
+
+includesAll(`${mobile}\n${read("src/panel-framework/overview/components/HomeSurface.tsx")}\n${mobileAppPolishStyles}\n${mobileStyles}\n${resourceTrendCheck}`, [
+  "data-overview-mobile-v1070-grouped-surfaces",
+  "ios-grouped-gray-separators-no-card-border-stack",
+  "data-overview-mobile-v1070-grouped-surface",
+  "separator-only-status-list-no-card-stack",
+  "V1070_GROUPED_SURFACE_LOW_BORDER",
+  "mobileGroupedSurfaceLowBorder",
+  "groupedSurfaceNoise",
+  "groupedSeparatorNoise",
+], "v1070 mobile first screen must use grouped surfaces with separator-only rows, not bordered card stacks");
 
 if (failures.length) {
     console.error("overview ikuai static gate active-mobile-redlines: FAIL");

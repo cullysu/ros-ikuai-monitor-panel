@@ -5,4 +5,4 @@ export { IncidentHero } from "./IncidentHero";
 export { JudgementStrip } from "./JudgementStrip";
 export { StatusHeader } from "./StatusHeader";
 export { TrustStrip } from "./TrustStrip";
-export type { MobileOverviewHomeProps } from "./MobileOverviewTypes";
+export type { MobileOverviewHomeProps, MobileOverviewResolvedProps } from "./MobileOverviewTypes";

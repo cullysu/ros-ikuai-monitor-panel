@@ -1,8 +1,13 @@
 import type { OverviewDerivedState, OverviewRawSnapshot, OverviewTone } from "../index";
+import type { MobileOverviewModel } from "../mobileOverviewModel";
 
 export interface MobileOverviewHomeProps {
   snapshot: OverviewRawSnapshot;
   state: OverviewDerivedState;
+}
+
+export interface MobileOverviewResolvedProps extends MobileOverviewHomeProps {
+  model: MobileOverviewModel;
 }
 
 export type ResourceReading = {
@@ -12,6 +17,7 @@ export type ResourceReading = {
   display: string;
   threshold: number;
   tone: OverviewTone;
+  coreBlock?: "wan" | "collection" | "resource";
 };
 
 export type NativeRow = {
@@ -32,6 +38,10 @@ export type AppRankingRow = {
   status?: string;
   percent: number;
   tone: OverviewTone;
+  evidenceLayer: "business" | "semantic" | "raw";
+  evidenceSource: "route" | "collection" | "snapshot" | "forwarding" | "business" | "resource" | "terminal" | "interface";
+  evidenceRole: "primary-impact" | "secondary-evidence" | "operational-context";
+  evidenceKey: string;
 };
 
 export type ChannelReading = {

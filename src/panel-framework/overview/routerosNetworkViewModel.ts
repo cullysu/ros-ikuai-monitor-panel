@@ -54,6 +54,28 @@ export interface RouterOsNetworkViewModel {
   evidence: RouterOsEvidenceModel;
 }
 
+export const ROUTEROS_PRESENTATION_VIEW_MODEL_CONTRACT = "collection-facts/routeros-semantics/user-conclusion";
+
+export interface RouterOsDesktopPresentation {
+  contract: typeof ROUTEROS_PRESENTATION_VIEW_MODEL_CONTRACT;
+  conclusionValue: string;
+  conclusionNote: string;
+  verdictText: string;
+  coreText: string;
+  object: RouterOsNetworkToken;
+  impact: RouterOsNetworkToken;
+  incidentObject: string;
+  readonlyJudgement: string;
+  incidentSummary: RouterOsNetworkToken[];
+  navLabels: ["状态总览", "多出口", "接口/VLAN", "在线终端", "采集日志"];
+  copyPolicy: "user-conclusion-first-routeros-raw-secondary";
+}
+
+export interface RouterOsPresentationViewModel {
+  priority: RouterOsNetworkPriority;
+  desktop: RouterOsDesktopPresentation;
+}
+
 function clean(value: unknown, fallback = "-"): string {
   const normalized = String(value ?? "").replace(/\s+/g, " ").trim();
   return normalized || fallback;
@@ -113,7 +135,7 @@ export function routerOsNetworkPriority(state: OverviewDerivedState): RouterOsNe
 }
 
 function totalWan(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): number {
-  return Math.max(state.facts.wan.total || wanRows(snapshot).length, state.facts.wan.allOffline ? 8 : 0);
+  return Math.max(1, state.facts.wan.total, state.facts.wan.online + state.facts.wan.offline, wanRows(snapshot).length);
 }
 
 function snapshotTrustText(state: OverviewDerivedState): string {
@@ -141,7 +163,7 @@ function conclusionFor(snapshot: OverviewRawSnapshot, state: OverviewDerivedStat
     return { id: "conclusion", label: "结论", value: "WAN断链", title: "WAN 全离线", heroTitle: "WAN 全离线", note: `WAN 0/${formatNumber(total)}，默认路由异常`, tone: "danger", severity: "p0" };
   }
   if (priority === "resource-full") {
-    return { id: "conclusion", label: "结论", value: "资源满载", title: "资源满载", heroTitle: "资源满载", note: "CPU / 内存 / 磁盘连续越阈，转发需关注", tone: "danger", severity: "p1" };
+    return { id: "conclusion", label: "结论", value: "资源满载", title: "资源满载", heroTitle: "资源满载", note: "处理器 / 内存 / 磁盘连续越阈，转发需关注", tone: "danger", severity: "p1" };
   }
   if (priority === "interface-down") {
     return { id: "conclusion", label: "结论", value: "接口Down", title: "接口 Down", heroTitle: "接口 Down", note: `${formatNumber(state.facts.interfaces.down)} 个接口离线，承载关系待确认`, tone: "danger", severity: "p1" };
@@ -159,7 +181,7 @@ function objectFor(snapshot: OverviewRawSnapshot, state: OverviewDerivedState, p
   const total = totalWan(snapshot, state);
   if (priority === "snapshot-missing") return { id: "object", label: "对象", value: "快照", note: "业务快照缺失", tone: "missing" };
   if (priority === "wan-offline") return { id: "object", label: "对象", value: `WAN 0/${formatNumber(total)}`, note: "全部出口离线", tone: "danger" };
-  if (priority === "resource-full") return { id: "object", label: "对象", value: "CPU/内存/磁盘", note: "三项连续越阈", tone: "danger" };
+  if (priority === "resource-full") return { id: "object", label: "对象", value: "处理器/内存/磁盘", note: "三项连续越阈", tone: "danger" };
   if (priority === "interface-down") return { id: "object", label: "对象", value: `接口 ${formatNumber(state.facts.interfaces.down)} Down`, note: state.facts.interfaces.downNames.slice(0, 2).join(" / ") || "承载待确认", tone: "danger" };
   if (priority === "collection-degraded") return { id: "object", label: "对象", value: "采集", note: "REST / SSH / 快照边界", tone: "warn" };
   return { id: "object", label: "对象", value: `WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(total || 1)}`, note: "转发面可用", tone: state.facts.wan.offline ? "warn" : "ok" };
@@ -277,4 +299,94 @@ export function buildRouterOsNetworkViewModel(snapshot: OverviewRawSnapshot, sta
 
 export function routerOsResourceSustainedText(value: unknown, threshold: number): string {
   return toNumber(value) >= threshold ? "持续6/6" : "持续0/6";
+}
+
+
+function presentationConclusionValue(snapshot: OverviewRawSnapshot, state: OverviewDerivedState, network: RouterOsNetworkViewModel): string {
+  if (network.priority === "wan-offline") return network.conclusion.value + " " + formatNumber(state.facts.wan.online) + "/" + formatNumber(state.facts.wan.total);
+  if (network.priority === "resource-full") return network.conclusion.value + " " + clean(state.facts.resource.summaryText, "资源超阈");
+  if (network.priority === "interface-down") return formatNumber(state.facts.interfaces.down) + "/" + formatNumber(state.facts.interfaces.total) + " 接口 Down";
+  if (network.priority === "collection-degraded") return network.conclusion.value + " " + routerOsLatestSuccess(snapshot, state);
+  if (network.priority === "snapshot-missing") return network.conclusion.title;
+  return network.conclusion.value;
+}
+
+function presentationConclusionNote(snapshot: OverviewRawSnapshot, state: OverviewDerivedState, network: RouterOsNetworkViewModel): string {
+  const latest = routerOsLatestSuccess(snapshot, state);
+  if (network.priority === "snapshot-missing") return "无可信业务快照，业务数据不展示";
+  if (network.priority === "resource-full") return "资源证据优先，业务仍可用但转发余量低";
+  if (network.priority === "interface-down") return "转发接口 Down，需核对默认路由承载";
+  if (network.priority === "wan-offline") return "默认出口不可承载，采集状态只作旁证";
+  if (network.priority === "collection-degraded") return "采集可信度下降，不等同转发异常 · 最近成功 " + latest;
+  return "WAN / 路由 / 采集 / 资源均可判";
+}
+
+function presentationReadonlyJudgement(network: RouterOsNetworkViewModel): string {
+  if (network.priority === "wan-offline") return "确认出口不可承载";
+  if (network.priority === "resource-full") return "确认资源余量下降";
+  if (network.priority === "interface-down") return "确认承载关系待判";
+  if (network.priority === "collection-degraded") return "仅证明采集可信度下降";
+  if (network.priority === "snapshot-missing") return "不展示业务数据";
+  return "业务状态可读";
+}
+
+function presentationIncidentObject(snapshot: OverviewRawSnapshot, state: OverviewDerivedState, network: RouterOsNetworkViewModel): string {
+  if (network.priority === "wan-offline") return "WAN 0/" + formatNumber(Math.max(1, totalWan(snapshot, state)));
+  if (network.priority === "resource-full") return clean(state.facts.resource.summaryText, "资源超阈");
+  if (network.priority === "interface-down") return formatNumber(state.facts.interfaces.down) + " 接口 Down";
+  if (network.priority === "collection-degraded") return "REST / SSH / 快照";
+  if (network.priority === "snapshot-missing") return "业务快照缺失";
+  return network.object.value;
+}
+
+function presentationVerdictText(snapshot: OverviewRawSnapshot, state: OverviewDerivedState, network: RouterOsNetworkViewModel): string {
+  const latest = routerOsLatestSuccess(snapshot, state);
+  return [
+    "presentation-model",
+    ROUTEROS_PRESENTATION_VIEW_MODEL_CONTRACT,
+    "结论 " + network.conclusion.title,
+    "对象 " + presentationIncidentObject(snapshot, state, network),
+    "影响 " + network.impact.value,
+    "转发面 " + network.forwarding.value,
+    "采集面 " + network.collection.value,
+    "快照面 " + network.snapshot.value,
+    "业务面 " + network.business.value,
+    "最近成功 " + latest,
+    "原始字段仅作二级证据",
+  ].join(" · ");
+}
+
+function presentationCoreText(state: OverviewDerivedState, network: RouterOsNetworkViewModel): string {
+  if (state.scenario === "fleet") return "多出口 / 默认路由 / 采集可信度 / 资源阈值 / 最近成功 / TopN";
+  if (network.priority === "snapshot-missing") return "采集链路 / 业务快照 / 展示边界 / 最近成功 / 可信边界";
+  if (network.priority === "wan-offline") return "离线出口 / 默认路由 / 采集可信度 / 最近成功 / 影响范围";
+  if (network.priority === "resource-full") return "资源阈值 / 持续窗口 / 转发余量 / 默认路由 / 采样可信度";
+  if (network.priority === "interface-down") return "接口承载 / 默认路由 / 采集旁证 / 影响范围 / 最近成功";
+  if (network.priority === "collection-degraded") return "REST / SSH / 快照 / 最近成功 / 转发边界";
+  return "WAN 趋势 / 默认路由 / 采集可信度 / 资源阈值 / 最近成功 / TopN";
+}
+
+export function buildRouterOsPresentationViewModel(snapshot: OverviewRawSnapshot, state: OverviewDerivedState, network = buildRouterOsNetworkViewModel(snapshot, state)): RouterOsPresentationViewModel {
+  const latest = routerOsLatestSuccess(snapshot, state);
+  const desktop: RouterOsDesktopPresentation = {
+    contract: ROUTEROS_PRESENTATION_VIEW_MODEL_CONTRACT,
+    conclusionValue: presentationConclusionValue(snapshot, state, network),
+    conclusionNote: presentationConclusionNote(snapshot, state, network),
+    verdictText: presentationVerdictText(snapshot, state, network),
+    coreText: presentationCoreText(state, network),
+    object: network.object,
+    impact: network.impact,
+    incidentObject: presentationIncidentObject(snapshot, state, network),
+    readonlyJudgement: presentationReadonlyJudgement(network),
+    incidentSummary: [
+      { id: "presentation-object", label: "事故对象", value: presentationIncidentObject(snapshot, state, network), note: network.object.note, tone: network.object.tone },
+      { id: "presentation-impact", label: "影响范围", value: network.impact.value, note: network.impact.note, tone: network.impact.tone },
+      { id: "presentation-credibility", label: "可信度", value: network.credibility.value, note: network.credibility.note, tone: network.credibility.tone },
+      { id: "presentation-recent", label: "最近成功", value: latest, note: network.snapshot.note, tone: network.snapshot.tone },
+      { id: "presentation-readonly", label: "只读判断", value: presentationReadonlyJudgement(network), note: "不写入 RouterOS", tone: network.conclusion.tone },
+    ],
+    navLabels: ["状态总览", "多出口", "接口/VLAN", "在线终端", "采集日志"],
+    copyPolicy: "user-conclusion-first-routeros-raw-secondary",
+  };
+  return { priority: network.priority, desktop };
 }

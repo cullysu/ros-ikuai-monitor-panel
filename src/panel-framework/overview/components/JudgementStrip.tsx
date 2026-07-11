@@ -1,32 +1,31 @@
-import { buildMobileOverviewModel } from "../mobileOverviewModel";
-import type { MobileOverviewHomeProps } from "./MobileOverviewTypes";
+import type { MobileOverviewResolvedProps } from "./MobileOverviewTypes";
 import { toneClass } from "./MobileOverviewUtils";
 
-export function JudgementStrip(props: MobileOverviewHomeProps) {
-  const model = buildMobileOverviewModel(props.snapshot, props.state);
-  const [status, ...metrics] = model.coreMetrics;
+export function JudgementStrip({ model }: MobileOverviewResolvedProps) {
+  const [status] = model.coreMetrics;
   return (
     <section
-      className={`ik-v940-core-rail ik-v960-judgement-strip ${toneClass(status.tone)}`}
+      className={`ik-v960-judgement-strip ${toneClass(status.tone)}`}
       aria-label="移动端核心判断"
-      data-overview-mobile-core-block="core-metrics"
-      data-overview-mobile-v940-core="state-wan-collection-resource-snapshot"
-      data-overview-mobile-v960-judgement="conclusion-trust-wan-resource-snapshot"
+      data-overview-mobile-core-block="compact-conclusion"
+      data-overview-mobile-v1044-judgement-strip="compact-conclusion-only"
+      data-overview-mobile-v960-judgement="conclusion-and-impact"
+      data-overview-mobile-normal-summary="compact-status-and-impact"
+      data-overview-mobile-v1090-decision-strip="conclusion-only-metrics-separated"
       data-overview-mobile-priority={model.priority}
     >
-      <strong>
+      <strong className="ik-v1080-conclusion">
         <i aria-hidden="true" />
-        <b>{status.value}</b>
+        <span>网络结论</span>
+        <b
+          data-overview-mobile-v1010-no-ellipsis-label="true"
+          style={{ maxWidth: "none", overflow: "visible", textOverflow: "clip", whiteSpace: "nowrap" }}
+        >
+          {status.value}
+        </b>
         <em>{status.note}</em>
+        <small>{model.impactScope.label} · {model.impactScope.value}</small>
       </strong>
-      <div>
-        {metrics.map((item) => (
-          <span className={toneClass(item.tone)} key={item.label} title={`${item.label} ${item.value} ${item.note}`}>
-            <em>{item.label}</em>
-            <b>{item.value}</b>
-          </span>
-        ))}
-      </div>
     </section>
   );
 }

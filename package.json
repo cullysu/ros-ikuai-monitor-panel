@@ -3,7 +3,12 @@
   "private": true,
   "version": "0.0.0",
   "scripts": {
-    "build": "node --max-old-space-size=2048 tools/build-framework-inline.mjs"
+    "build": "node --max-old-space-size=2048 tools/build-framework-inline.mjs",
+    "check:overview": "node --max-old-space-size=2048 tools/check-overview-architecture.js && node --max-old-space-size=2048 tools/check-overview-ikuai-static.js",
+    "check:overview-architecture": "node --max-old-space-size=2048 tools/check-overview-architecture.js",
+    "check:mobile-app-home": "node --max-old-space-size=2048 tools/check-mobile-app-home-runtime.js",
+    "check:desktop-no-snapshot": "node --max-old-space-size=2048 tools/check-desktop-no-snapshot-runtime.js",
+    "check:desktop-v1030": "node --max-old-space-size=2048 tools/check-desktop-v1030-runtime.js"
   },
   "dependencies": {
     "react": "^18.3.1",

@@ -114,7 +114,7 @@ export function channelStatus(state: OverviewDerivedState): ChannelReading[] {
 export function resourceMetrics(state: OverviewDerivedState): ResourceReading[] {
   const hidden = state.scenario === "no-snapshot";
   return [
-    { key: "processor" as const, label: "CPU", value: toNumber(state.facts.resource.cpu), threshold: 85 },
+    { key: "processor" as const, label: "处理器", value: toNumber(state.facts.resource.cpu), threshold: 85 },
     { key: "memory" as const, label: "内存", value: toNumber(state.facts.resource.memory), threshold: 85 },
     { key: "disk" as const, label: "磁盘", value: toNumber(state.facts.resource.disk), threshold: 90 },
   ].map((item) => ({
