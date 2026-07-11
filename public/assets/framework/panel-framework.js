@@ -14546,7 +14546,7 @@ var PanelFramework = function(exports) {
       {
         id: "timeline-collection",
         title: "采集",
-        value: state.scenario === "collection-down" ? "历史快照" : "实时",
+        value: state.scenario === "collection-down" ? "历史快照" : "通道可读",
         note: `最近 ${latestSuccess$1(snapshot, state)}`,
         tone: state.scenario === "collection-down" ? "warn" : state.facts.collection.credibilityTone
       },
@@ -14858,7 +14858,7 @@ var PanelFramework = function(exports) {
         className: "ik-v420-line-chart",
         viewBox: `0 0 312 ${plot.viewHeight}`,
         role: "img",
-        "aria-label": `${chart.windowText} WAN 下载上传趋势，当前 ${chart.currentLabel}，峰值 ${chart.peakLabel}，${chart.referenceLabel}，采样 ${chart.sampleText}`,
+        "aria-label": `${chart.windowText} WAN 下载上传采样趋势，当前 ${chart.currentLabel}，峰值 ${chart.peakLabel}，${chart.referenceLabel}，采样 ${chart.sampleText}`,
         "data-overview-chart-type": "mini-line",
         "data-overview-scene-chart": "mobile-wan-rate-sparkline",
         "data-overview-mobile-first-visual": "thin-wan-sparkline",
@@ -14927,7 +14927,7 @@ var PanelFramework = function(exports) {
           "data-overview-mobile-v1072-chart": "decision-plot-two-series-three-by-two-readout",
           children: [
             /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ik-v1072-chart-head", children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "ik-v1065-chart-kicker", "data-overview-mobile-v1065-chart-label": "normal-visible-compact", children: "WAN 实时趋势" }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "ik-v1065-chart-kicker", "data-overview-mobile-v1065-chart-label": "normal-visible-compact", children: "WAN 采样趋势" }),
               /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ik-v1072-series-legend", "data-overview-mobile-v1072-series-legend": "download-upload", "aria-label": "下载与上传图例", children: [
                 /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "is-download", children: [
                   /* @__PURE__ */ jsxRuntimeExports.jsx("i", { "aria-hidden": "true" }),
@@ -16934,7 +16934,7 @@ var PanelFramework = function(exports) {
     const items = [
       { label: "WAN", value: object.value, note: isFleetDensity ? "类型分布" : topbarImpactValue(snapshot, state), tone: state.verdict.level },
       { label: "资源", value: resource, note: state.scenario === "resource-full" ? "持续超阈" : "阈值", tone: state.scenario === "resource-full" ? "danger" : state.facts.resource.level },
-      { label: "采集", value: collection.value, note: state.scenario === "collection-down" ? "缓存" : state.scenario === "no-snapshot" ? "断链" : "实时", tone: state.facts.collection.credibilityTone },
+      { label: "采集", value: collection.value, note: state.scenario === "collection-down" ? "缓存" : state.scenario === "no-snapshot" ? "断链" : "通道可读", tone: state.facts.collection.credibilityTone },
       { label: "终端", value: terminals.length ? formatNumber(terminals.length) : "无", note: "总流量排序", tone: terminals.length ? "trust" : "missing" }
     ];
     return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ro-desktop-thin-kpis", "data-overview-desktop-kpi-row": "thin-business-summary", children: items.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ro-desktop-thin-kpi ik-overview-kpi-card", "data-overview-kpi-card": true, "data-tone": item.tone, children: [
@@ -17144,7 +17144,7 @@ var PanelFramework = function(exports) {
     ], "desktop-wan-evidence-"), isFleet ? 5 : 4);
     return {
       main: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(WanTrend, { title: state.scenario === "no-snapshot" ? "采集链路" : isFleet ? "WAN 实时趋势 / 设备 TopN" : "WAN 实时趋势", subtitle: state.scenario === "all-offline" ? "0/8 / 出口不可用" : isFleet ? "类型分布 / 异常 TopN" : "趋势 / 当前 / 峰值 / Top 出口 / 默认出口 / 采样可信度", module: state.scenario === "all-offline" ? "wan-offline-bars" : state.scenario === "no-snapshot" ? "no-snapshot-summary" : "wan-trend", tone: state.scenario === "all-offline" || state.scenario === "no-snapshot" ? "danger" : state.facts.wan.allOffline ? "danger" : "trust", trust, headers: compactWanVisualOnly ? [] : state.scenario === "no-snapshot" ? ["链路项", "当前", "最近成功", "主证据", "下次尝试"] : ["对象", "当前", "依据"], rows: compactWanVisualOnly ? [] : networkRows, minRows: 0, visual: networkVisual, visualOnly: compactWanVisualOnly }, "compact-network"),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(WanTrend, { title: state.scenario === "no-snapshot" ? "采集链路" : isFleet ? "WAN 采样趋势 / 设备 TopN" : "WAN 采样趋势", subtitle: state.scenario === "all-offline" ? "0/8 / 出口不可用" : isFleet ? "类型分布 / 异常 TopN" : "趋势 / 当前 / 峰值 / Top 出口 / 默认出口 / 采样可信度", module: state.scenario === "all-offline" ? "wan-offline-bars" : state.scenario === "no-snapshot" ? "no-snapshot-summary" : "wan-trend", tone: state.scenario === "all-offline" || state.scenario === "no-snapshot" ? "danger" : state.facts.wan.allOffline ? "danger" : "trust", trust, headers: compactWanVisualOnly ? [] : state.scenario === "no-snapshot" ? ["链路项", "当前", "最近成功", "主证据", "下次尝试"] : ["对象", "当前", "依据"], rows: compactWanVisualOnly ? [] : networkRows, minRows: 0, visual: networkVisual, visualOnly: compactWanVisualOnly }, "compact-network"),
         /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: state.scenario === "no-snapshot" ? "业务边界" : "默认出口", subtitle: state.scenario === "no-snapshot" ? "不展示" : isFleet ? "默认路由条目 / 承载" : "出口 / 承载 / 优先级", module: state.scenario === "no-snapshot" ? "no-snapshot-module-visibility" : "route-raw-facts", tone: state.scenario === "all-offline" ? "danger" : state.facts.route.level, trust, headers: routeHeaders, rows: routeRowsCompact, minRows: 0, visual: state.scenario === "no-snapshot" ? /* @__PURE__ */ jsxRuntimeExports.jsx(VisibilityMatrixVisual, { rows: routeRowsCompact }) : void 0 }, "compact-route"),
         isFleet ? /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "WAN 异常 TopN", subtitle: "离线对象 / 类型分布", module: "normal-wan-evidence", tone: state.facts.wan.offline ? "warn" : "trust", trust, headers: ["对象", "当前", "依据"], rows: wanEvidenceRows, minRows: 0 }, "compact-wan-evidence") : null
       ],

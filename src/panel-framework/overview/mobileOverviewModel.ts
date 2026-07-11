@@ -687,7 +687,7 @@ function statusRows(snapshot: OverviewRawSnapshot, state: OverviewDerivedState):
     {
       id: "timeline-collection",
       title: "采集",
-      value: state.scenario === "collection-down" ? "历史快照" : "实时",
+      value: state.scenario === "collection-down" ? "历史快照" : "通道可读",
       note: `最近 ${latestSuccess(snapshot, state)}`,
       tone: state.scenario === "collection-down" ? "warn" : state.facts.collection.credibilityTone,
     },

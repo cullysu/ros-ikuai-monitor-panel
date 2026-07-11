@@ -776,6 +776,11 @@ function main(argv = process.argv.slice(2)) {
   assertContains('src/panel-framework/overview/components/DesktopConsole.tsx', '<WanTrend key="compact-network"');
   assertContains('src/panel-framework/overview/components/DesktopConsole.tsx', '<EvidenceChain key="compact-boundary"');
   assertContains('src/panel-framework/overview/components/DesktopConsole.tsx', '<TerminalRanking key="compact-terminals"');
+  assertContains('src/panel-framework/overview/components/IncidentHero.tsx', 'WAN 采样趋势');
+  assertContains('src/panel-framework/overview/components/DesktopConsole.tsx', 'WAN 采样趋势');
+  assertContains('src/panel-framework/overview/mobileOverviewModel.ts', '通道可读');
+  assertNotContains('src/panel-framework/overview/components/IncidentHero.tsx', 'WAN 实时趋势');
+  assertNotContains('src/panel-framework/overview/components/DesktopConsole.tsx', 'WAN 实时趋势');
   assertNotExists('public/scale-adaptive-patch.js');
   assertNotExists('public/layout-whitespace-patch.js');
   assertNotExists('public/panel-professional-redesign.js');

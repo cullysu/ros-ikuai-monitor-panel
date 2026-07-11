@@ -17,7 +17,7 @@ function LineChart({ chart }: { chart: MobileTrendChartModel }) {
       className="ik-v420-line-chart"
       viewBox={`0 0 312 ${plot.viewHeight}`}
       role="img"
-      aria-label={`${chart.windowText} WAN 下载上传趋势，当前 ${chart.currentLabel}，峰值 ${chart.peakLabel}，${chart.referenceLabel}，采样 ${chart.sampleText}`}
+      aria-label={`${chart.windowText} WAN 下载上传采样趋势，当前 ${chart.currentLabel}，峰值 ${chart.peakLabel}，${chart.referenceLabel}，采样 ${chart.sampleText}`}
       data-overview-chart-type="mini-line"
       data-overview-scene-chart="mobile-wan-rate-sparkline"
       data-overview-mobile-first-visual="thin-wan-sparkline"
@@ -81,7 +81,7 @@ function TrendVisual({ model }: { model: MobileOverviewModel }) {
         data-overview-mobile-v1072-chart="decision-plot-two-series-three-by-two-readout"
       >
         <div className="ik-v1072-chart-head">
-          <span className="ik-v1065-chart-kicker" data-overview-mobile-v1065-chart-label="normal-visible-compact">WAN 实时趋势</span>
+          <span className="ik-v1065-chart-kicker" data-overview-mobile-v1065-chart-label="normal-visible-compact">WAN 采样趋势</span>
           <div className="ik-v1072-series-legend" data-overview-mobile-v1072-series-legend="download-upload" aria-label="下载与上传图例">
             <span className="is-download"><i aria-hidden="true" />下载</span>
             <span className="is-upload"><i aria-hidden="true" />上传</span>
