@@ -442,7 +442,10 @@ function rowIcon(row: AppRankingRow): string {
 
 function SupportingList({ model }: { model: MobileOverviewModel }) {
   const rows = model.primaryList.rows.slice(0, model.priority === "normal" ? 3 : 4);
-  const title = model.priority === "normal" ? "运营摘要 · 终端流量参考" : "异常证据";
+  const title = model.priority === "normal" ? "运营摘要详情" : "异常证据详情";
+  const summary = model.priority === "normal"
+    ? "首屏只保留判断依据，排行进入详情"
+    : "先处理事故对象，证据链进入详情";
   const listStyle = { "--mobile-list-count": rows.length } as CSSProperties;
   return (
     <section
@@ -460,6 +463,8 @@ function SupportingList({ model }: { model: MobileOverviewModel }) {
       data-overview-mobile-normal-ranking={model.surface.normalRanking}
       data-overview-mobile-v1070-grouped-surface="separator-only-status-list-no-card-stack"
       data-overview-mobile-v1080-surface="one-supporting-list-no-duplicate-status-ledger"
+      data-overview-mobile-v1120-supporting-surface="detail-entry-evidence-below-primary-task"
+      data-overview-mobile-v1120-evidence-policy="first-screen-summary-only-rows-deferred"
       style={listStyle}
     >
       <div
@@ -468,34 +473,52 @@ function SupportingList({ model }: { model: MobileOverviewModel }) {
         data-overview-mobile-rank-list={model.surface.rankListKind}
         data-overview-mobile-v420-list="native-router-list"
         data-overview-mobile-v240-list={model.surface.v240ListKind}
-        data-overview-mobile-supporting-list="below-decision-not-primary-home-task"
+        data-overview-mobile-supporting-list="detail-entry-below-primary-task"
         data-overview-mobile-impact-scope-line={`${model.impactScope.id}:${model.impactScope.plane}`}
       >
         <header>
           <b>{title}</b>
-          <span>{model.primaryList.meta}</span>
+          <span>{summary}</span>
           <em className={toneClass(model.impactScope.tone)}>{model.impactScope.label} · {model.impactScope.value}</em>
         </header>
-        {rows.map((row) => (
-          <article
-            className={`ik-v420-list-row ${toneClass(row.tone)}`}
-            data-overview-mobile-v1061-evidence-layer={row.evidenceLayer}
-            data-overview-mobile-v1061-evidence-source={row.evidenceSource}
-            data-overview-mobile-v1061-evidence-role={model.priority === "normal" && row.evidenceRole === "secondary-evidence" ? "operational-context" : row.evidenceRole}
-            data-overview-mobile-v1061-evidence-key={row.evidenceKey}
-            key={row.id}
-          >
-            <i className="ik-mobile-row-token" data-rank={row.rank}>{rowIcon(row)}</i>
-            <span>
-              <b>{row.name}</b>
-              <em>{row.meta}</em>
-            </span>
-            <strong>
-              <b>{row.value}</b>
-              <small>{row.status || row.kind || "参考"}</small>
-            </strong>
-          </article>
-        ))}
+        <button
+          className={`ik-mobile-detail-entry ${toneClass(model.impactScope.tone)}`}
+          data-overview-mobile-v1120-detail-entry="evidence-ranking-drilldown"
+          data-overview-mobile-v1120-detail-count={rows.length}
+          type="button"
+        >
+          <span>
+            <b>{model.priority === "normal" ? "查看运营细节" : "查看事故证据"}</b>
+            <em>{model.primaryList.meta}</em>
+          </span>
+          <strong>{rows.length} 项</strong>
+        </button>
+        <div
+          className="ik-mobile-supporting-detail-rows"
+          data-overview-mobile-v1120-deferred-rows="evidence-below-mobile-home-task"
+          aria-hidden="true"
+        >
+          {rows.map((row) => (
+            <article
+              className={`ik-v420-list-row ik-mobile-deferred-row ${toneClass(row.tone)}`}
+              data-overview-mobile-v1061-evidence-layer={row.evidenceLayer}
+              data-overview-mobile-v1061-evidence-source={row.evidenceSource}
+              data-overview-mobile-v1061-evidence-role={model.priority === "normal" && row.evidenceRole === "secondary-evidence" ? "operational-context" : row.evidenceRole}
+              data-overview-mobile-v1061-evidence-key={row.evidenceKey}
+              key={row.id}
+            >
+              <i className="ik-mobile-row-token" data-rank={row.rank}>{rowIcon(row)}</i>
+              <span>
+                <b>{row.name}</b>
+                <em>{row.meta}</em>
+              </span>
+              <strong>
+                <b>{row.value}</b>
+                <small>{row.status || row.kind || "参考"}</small>
+              </strong>
+            </article>
+          ))}
+        </div>
       </div>
     </section>
   );
@@ -555,6 +578,9 @@ export function MobileOverviewHome(props: MobileOverviewHomeProps) {
       data-overview-mobile-v1100-first-screen-order="device-decision-four-facts-next-step-supporting-tabs"
       data-overview-mobile-v1110-public-home="device-primary-card-four-facts-supporting-no-redundant-strips"
       data-overview-mobile-v1110-first-screen-order="device-primary-decision-four-facts-supporting-list-tabs"
+      data-overview-mobile-v1120-public-home="single-task-verdict-core-facts-detail-entry"
+      data-overview-mobile-v1120-first-screen-order="device-primary-decision-four-facts-detail-entry-tabs"
+      data-overview-mobile-v1120-evidence-depth="supporting-rows-deferred-from-first-screen"
       data-overview-mobile-no-snapshot-no-rate-placeholder={props.state.scenario === "no-snapshot" ? "true" : undefined}
     >
       <div className="ik-v420-shell ik-v240-shell">
@@ -572,6 +598,7 @@ export function MobileOverviewHome(props: MobileOverviewHomeProps) {
           data-overview-mobile-app-terminal-ranking-state={model.appHomeContract.terminalRanking}
           data-overview-mobile-v1100-first-screen-hierarchy="device-primary-decision-four-facts-next-step-supporting-list-tabs"
           data-overview-mobile-v1110-first-screen-hierarchy="device-primary-decision-four-facts-supporting-list-tabs"
+          data-overview-mobile-v1120-first-screen-hierarchy="device-primary-decision-four-facts-detail-entry-tabs"
         >
           <DeviceBar model={model} />
           <PrimaryDecision model={model} />

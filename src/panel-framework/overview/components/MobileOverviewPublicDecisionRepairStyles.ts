@@ -566,6 +566,75 @@ export const MOBILE_OVERVIEW_PUBLIC_DECISION_REPAIR_STYLES = `
     padding: 7px 9px !important;
   }
 
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1120-public-home] .ik-mobile-supporting-list {
+    display: grid !important;
+    grid-template-rows: 34px minmax(48px, 1fr) !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1120-public-home] .ik-mobile-detail-entry {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    align-items: center !important;
+    gap: 10px !important;
+    width: 100% !important;
+    min-height: 48px !important;
+    height: 48px !important;
+    margin: 0 !important;
+    padding: 8px 10px !important;
+    border: 0 !important;
+    border-top: 1px solid rgba(126, 151, 178, .16) !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    color: #172236 !important;
+    box-shadow: none !important;
+    text-align: left !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1120-public-home] .ik-mobile-detail-entry > span {
+    display: grid !important;
+    gap: 2px !important;
+    min-width: 0 !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1120-public-home] .ik-mobile-detail-entry b {
+    overflow: hidden !important;
+    color: #172236 !important;
+    font-size: 12px !important;
+    font-weight: 820 !important;
+    line-height: 1.12 !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1120-public-home] .ik-mobile-detail-entry em {
+    overflow: hidden !important;
+    color: #6b7b8f !important;
+    font-size: 10px !important;
+    font-style: normal !important;
+    font-weight: 620 !important;
+    line-height: 1.12 !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1120-public-home] .ik-mobile-detail-entry > strong {
+    display: inline-grid !important;
+    place-items: center !important;
+    min-width: 38px !important;
+    height: 24px !important;
+    border: 1px solid #cbd9e8 !important;
+    border-radius: 7px !important;
+    background: #f8fbff !important;
+    color: #1f4f86 !important;
+    font-size: 11px !important;
+    font-weight: 820 !important;
+    line-height: 1 !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1120-public-home] .ik-mobile-supporting-detail-rows {
+    display: none !important;
+  }
+
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-mobile-supporting-list .ik-v420-list-row {
     min-height: 42px !important;
     height: 42px !important;

@@ -1277,7 +1277,10 @@ async function main() {
           normalNativeFirstScreen: root.getAttribute('data-overview-mobile-v1065-normal-first-screen') || '',
           firstScreenOrder: root.getAttribute('data-overview-mobile-v1090-first-screen-order') || '',
           publicHomeV1110: root.getAttribute('data-overview-mobile-v1110-public-home') || '',
-          firstScreenOrderV1110: root.getAttribute('data-overview-mobile-v1110-first-screen-order') || ''
+          firstScreenOrderV1110: root.getAttribute('data-overview-mobile-v1110-first-screen-order') || '',
+          publicHomeV1120: root.getAttribute('data-overview-mobile-v1120-public-home') || '',
+          firstScreenOrderV1120: root.getAttribute('data-overview-mobile-v1120-first-screen-order') || '',
+          evidenceDepthV1120: root.getAttribute('data-overview-mobile-v1120-evidence-depth') || ''
         } : {};
         const surfaceAttrs = surface ? {
           listKind: surface.getAttribute('data-overview-mobile-list-kind') || '',
@@ -1430,6 +1433,7 @@ async function main() {
         const judgementStrip = root?.querySelector('[data-overview-mobile-v1044-judgement-strip="compact-conclusion-only"]');
         const trustStrip = root?.querySelector('.ik-v910-trust-strip');
         const isPublicHomeV1110 = rootAttrs.publicHomeV1110 === 'device-primary-card-four-facts-supporting-no-redundant-strips';
+        const isPublicHomeV1120 = rootAttrs.publicHomeV1120 === 'single-task-verdict-core-facts-detail-entry';
         const judgementStyle = judgementStrip ? getComputedStyle(judgementStrip) : null;
         const trustStripStyle = trustStrip ? getComputedStyle(trustStrip) : null;
         const metricGrid = root?.querySelector('[data-overview-mobile-v1044-metric-grid="wan-collection-resource-snapshot-four-core-facts"]');
@@ -1468,7 +1472,8 @@ async function main() {
           rootAttrs.normalNativeFirstScreen === 'separate-conclusion-trust-four-facts-chart-first' &&
           (
             rootAttrs.firstScreenOrder === 'conclusion-trust-four-facts-priority-incident-supporting-list' ||
-            rootAttrs.firstScreenOrderV1110 === 'device-primary-decision-four-facts-supporting-list-tabs'
+            rootAttrs.firstScreenOrderV1110 === 'device-primary-decision-four-facts-supporting-list-tabs' ||
+            rootAttrs.firstScreenOrderV1120 === 'device-primary-decision-four-facts-detail-entry-tabs'
           ) &&
           hero?.getAttribute('data-overview-mobile-v1065-normal-hero') === 'chart-first-no-promo-headline' &&
           firstScreenOrderProductized &&
@@ -1550,6 +1555,19 @@ async function main() {
               collectionTrustCells.every((cell) => cell.getAttribute('data-overview-mobile-v1059-plane') === 'collection')
             )
           )
+        );
+        const detailEntryV1120 = list?.querySelector('[data-overview-mobile-v1120-detail-entry="evidence-ranking-drilldown"]');
+        const deferredRowsV1120 = list?.querySelector('[data-overview-mobile-v1120-deferred-rows="evidence-below-mobile-home-task"]');
+        const detailEntryV1120Visible = Boolean(detailEntryV1120 && (() => {
+          const style = getComputedStyle(detailEntryV1120);
+          const rect = detailEntryV1120.getBoundingClientRect();
+          return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height >= 40;
+        })());
+        const evidenceDeferredV1120 = Boolean(
+          isPublicHomeV1120 &&
+          rootAttrs.evidenceDepthV1120 === 'supporting-rows-deferred-from-first-screen' &&
+          detailEntryV1120Visible &&
+          deferredRowsV1120
         );
         const listEvidenceRows = Array.from(list?.querySelectorAll('[data-overview-mobile-v1061-evidence-layer]') || []);
         const listEvidence = listEvidenceRows.map((row) => ({
@@ -1836,8 +1854,12 @@ async function main() {
           abnormalDecisionRailRect.height >= 40 &&
           abnormalDecisionRailRect.top >= heroRect.top - 1 &&
           abnormalDecisionRailRect.bottom <= heroRect.bottom + 1 &&
-          abnormalListRowRects.length > 0 &&
-          abnormalListRowRects.every((rect) => rect.width > 0 && rect.height >= (isPublicHomeV1110 ? 42 : 44))
+          (
+            evidenceDeferredV1120
+              ? detailEntryV1120Visible && abnormalListRowRects.every((rect) => rect.width === 0 || rect.height === 0)
+              : abnormalListRowRects.length > 0 &&
+                abnormalListRowRects.every((rect) => rect.width > 0 && rect.height >= (isPublicHomeV1110 ? 42 : 44))
+          )
         );
         const appRect = root?.getBoundingClientRect();
         const screenRect = screen?.getBoundingClientRect();
@@ -1932,7 +1954,7 @@ async function main() {
             : rootAttrs.p0FirstScreen === '') &&
           surfaceAttrs.listKind === expectedListKind &&
           (expectedConfig.mode === 'normal'
-            ? surfaceAttrs.terminalRankingMounted === 'true' && surfaceAttrs.terminalRankingState === 'supporting-evidence' && surfaceAttrs.normalRanking === 'operations-five-rows' && Boolean(terminalList) && !terminalRankingCopyVisible && visibleTerminalRows.length >= 1 && visibleTerminalRows.length <= 5
+            ? surfaceAttrs.terminalRankingMounted === 'true' && surfaceAttrs.terminalRankingState === 'supporting-evidence' && surfaceAttrs.normalRanking === 'operations-five-rows' && Boolean(terminalList) && !terminalRankingCopyVisible && (evidenceDeferredV1120 ? visibleTerminalRows.length === 0 : (visibleTerminalRows.length >= 1 && visibleTerminalRows.length <= 5))
             : surfaceAttrs.terminalRankingMounted === 'false' && surfaceAttrs.terminalRankingState === expectedTerminalRanking && !terminalList && !terminalRankingCopyVisible) &&
           !styleTextLeakedIntoOverview &&
           missing.length === 0 &&
@@ -1953,6 +1975,8 @@ async function main() {
           terminalListMounted: Boolean(terminalList),
           terminalRowCount: terminalRows.length,
           visibleTerminalRowCount: visibleTerminalRows.length,
+          evidenceDeferredV1120,
+          detailEntryV1120Visible,
           terminalRankingCopyVisible,
           styleTextLeakedIntoOverview,
           hasHorizontalOverflow,
