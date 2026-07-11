@@ -245,7 +245,6 @@ export interface MobileOverviewModel {
   statusRows: MobileMonitorRow[];
   primaryList: MobilePrimaryListModel;
   wanPorts: MobileWanPort[];
-  resourceRows: MobileMonitorFact[];
 }
 
 function wanDisplayTotal(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): number {
@@ -352,13 +351,26 @@ function resourceFacts(state: OverviewDerivedState): MobileMonitorFact[] {
 }
 
 function titleFor(network: RouterOsNetworkViewModel): string {
-  if (network.priority === "normal") return "WAN / 默认路由证据";
-  return network.conclusion.heroTitle;
+  if (network.priority === "normal") return "网络可用";
+  if (network.priority === "wan-offline") return "外网不可用";
+  if (network.priority === "snapshot-missing") return "业务数据不可判";
+  if (network.priority === "collection-degraded") return "采集不完整";
+  if (network.priority === "resource-full") return "资源过载";
+  if (network.priority === "interface-down") return "接口异常";
+  return network.conclusion.value;
 }
 
-function subtitleFor(snapshot: OverviewRawSnapshot, state: OverviewDerivedState, network: RouterOsNetworkViewModel): string {
-  if (state.scenario === "fleet") return `WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(Math.max(state.facts.wan.total || wanRows(snapshot).length, 1))} · 异常 ${formatNumber(Math.max(state.facts.wan.offline, state.facts.interfaces.down, 0))} · 默认路由 ${mobileRouteValue(state)} · 成功 ${latestSuccess(snapshot, state)}`;
-  return network.conclusion.note;
+function subtitleFor(
+  snapshot: OverviewRawSnapshot,
+  state: OverviewDerivedState,
+  network: RouterOsNetworkViewModel,
+  scope: MobileImpactScope,
+  contract: MobileAppHomeContract,
+): string {
+  if (network.priority === "normal") {
+    return `WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(wanDisplayTotal(snapshot, state) || 1)} · 默认路由${mobileRouteValue(state)} · 快照 ${latestSuccess(snapshot, state)}`;
+  }
+  return `${scope.value} · ${contract.trustBoundary}`;
 }
 
 function heroFacts(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): MobileMonitorFact[] {
@@ -428,7 +440,7 @@ function heroFacts(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): 
 
 function coreResourceValue(resource: MobileMonitorFact[], priority: MobileOverviewModel["priority"]): string {
   if (priority === "snapshot-missing") return "隐藏";
-  return resource.map((item) => item.value.replace(/\.0%|%/g, "")).join("/");
+  return resource.map((item) => item.value.replace(/\.0%$/, "%")).join("/");
 }
 
 function coreMetrics(snapshot: OverviewRawSnapshot, state: OverviewDerivedState, network: RouterOsNetworkViewModel): MobileMonitorFact[] {
@@ -451,23 +463,11 @@ function coreMetrics(snapshot: OverviewRawSnapshot, state: OverviewDerivedState,
     : priority === "collection-degraded"
       ? `${stripRest(state.facts.collection.restLabel)} / ${stripSsh(state.facts.collection.sshLabel)}`
       : "REST/SSH 可读";
-  const statusFact: MobileMonitorFact = {
-    label: "状态",
-    value: network.conclusion.value,
-    note: network.forwarding.value === "可用" ? "转发可用" : network.forwarding.value,
-    tone: network.conclusion.tone,
-  };
   const wanFact: MobileMonitorFact = {
     label: "WAN",
     value: wanValue,
     note: state.facts.wan.allOffline ? "全离线" : priority === "snapshot-missing" ? "无快照" : "在线出口",
     tone: priority === "snapshot-missing" ? "missing" : state.facts.wan.allOffline ? "danger" : state.facts.wan.offline ? "warn" : "ok",
-  };
-  const routeFact: MobileMonitorFact = {
-    label: "默认路由",
-    value: mobileRouteValue(state),
-    note: priority === "snapshot-missing" ? "无业务快照" : state.facts.wan.allOffline ? "出口异常" : "承载出口",
-    tone: priority === "snapshot-missing" ? "missing" : state.facts.wan.allOffline ? "danger" : state.facts.route.level,
   };
   const collectionFact: MobileMonitorFact = {
     label: "采集",
@@ -487,9 +487,7 @@ function coreMetrics(snapshot: OverviewRawSnapshot, state: OverviewDerivedState,
     note: priority === "snapshot-missing" ? "最近成功" : "可信窗口",
     tone: priority === "snapshot-missing" ? "warn" : state.facts.collection.credibilityTone,
   };
-  if (priority === "resource-full") return [statusFact, resourceFact, routeFact, collectionFact, wanFact];
-  if (priority === "snapshot-missing") return [statusFact, collectionFact, snapshotFact, routeFact, wanFact];
-  return [statusFact, wanFact, routeFact, collectionFact, snapshotFact];
+  return [wanFact, collectionFact, resourceFact, snapshotFact];
 }
 
 function heroPills(snapshot: OverviewRawSnapshot, state: OverviewDerivedState, network: RouterOsNetworkViewModel): string[] {
@@ -825,7 +823,7 @@ export function buildMobileOverviewModel(snapshot: OverviewRawSnapshot, state: O
     normalSummary: normalSummaryModel(priority),
     hero: {
       title: heroTitle,
-      subtitle: subtitleFor(snapshot, state, network),
+      subtitle: subtitleFor(snapshot, state, network, scope, policy.appHomeContract),
       facts: heroFacts(snapshot, state),
       pills,
       trustRail: heroTrustRail(pills),
@@ -840,6 +838,5 @@ export function buildMobileOverviewModel(snapshot: OverviewRawSnapshot, state: O
     statusRows: statusRows(snapshot, state),
     primaryList: list,
     wanPorts: wanPorts(snapshot, state),
-    resourceRows: resourceFacts(state),
   };
 }

@@ -15677,12 +15677,19 @@ var PanelFramework = function(exports) {
     }));
   }
   function titleFor(network) {
-    if (network.priority === "normal") return "WAN / 默认路由证据";
-    return network.conclusion.heroTitle;
+    if (network.priority === "normal") return "网络可用";
+    if (network.priority === "wan-offline") return "外网不可用";
+    if (network.priority === "snapshot-missing") return "业务数据不可判";
+    if (network.priority === "collection-degraded") return "采集不完整";
+    if (network.priority === "resource-full") return "资源过载";
+    if (network.priority === "interface-down") return "接口异常";
+    return network.conclusion.value;
   }
-  function subtitleFor(snapshot, state, network) {
-    if (state.scenario === "fleet") return `WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(Math.max(state.facts.wan.total || wanRows$1(snapshot).length, 1))} · 异常 ${formatNumber(Math.max(state.facts.wan.offline, state.facts.interfaces.down, 0))} · 默认路由 ${mobileRouteValue(state)} · 成功 ${latestSuccess$1(snapshot, state)}`;
-    return network.conclusion.note;
+  function subtitleFor(snapshot, state, network, scope, contract) {
+    if (network.priority === "normal") {
+      return `WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(wanDisplayTotal(snapshot, state) || 1)} · 默认路由${mobileRouteValue(state)} · 快照 ${latestSuccess$1(snapshot, state)}`;
+    }
+    return `${scope.value} · ${contract.trustBoundary}`;
   }
   function heroFacts(snapshot, state) {
     const priority = priorityOf(state);
@@ -15750,7 +15757,7 @@ var PanelFramework = function(exports) {
   }
   function coreResourceValue(resource, priority) {
     if (priority === "snapshot-missing") return "隐藏";
-    return resource.map((item) => item.value.replace(/\.0%|%/g, "")).join("/");
+    return resource.map((item) => item.value.replace(/\.0%$/, "%")).join("/");
   }
   function coreMetrics(snapshot, state, network) {
     const priority = network.priority;
@@ -15760,23 +15767,11 @@ var PanelFramework = function(exports) {
     const collectionValue = priority === "snapshot-missing" ? "断链" : priority === "collection-degraded" ? "缓存" : "通道可读";
     const snapshotValue = latestSuccess$1(snapshot, state);
     const collectionNote = priority === "snapshot-missing" ? "当前不可达" : priority === "collection-degraded" ? `${stripRest(state.facts.collection.restLabel)} / ${stripSsh(state.facts.collection.sshLabel)}` : "REST/SSH 可读";
-    const statusFact = {
-      label: "状态",
-      value: network.conclusion.value,
-      note: network.forwarding.value === "可用" ? "转发可用" : network.forwarding.value,
-      tone: network.conclusion.tone
-    };
     const wanFact = {
       label: "WAN",
       value: wanValue,
       note: state.facts.wan.allOffline ? "全离线" : priority === "snapshot-missing" ? "无快照" : "在线出口",
       tone: priority === "snapshot-missing" ? "missing" : state.facts.wan.allOffline ? "danger" : state.facts.wan.offline ? "warn" : "ok"
-    };
-    const routeFact = {
-      label: "默认路由",
-      value: mobileRouteValue(state),
-      note: priority === "snapshot-missing" ? "无业务快照" : state.facts.wan.allOffline ? "出口异常" : "承载出口",
-      tone: priority === "snapshot-missing" ? "missing" : state.facts.wan.allOffline ? "danger" : state.facts.route.level
     };
     const collectionFact = {
       label: "采集",
@@ -15796,9 +15791,7 @@ var PanelFramework = function(exports) {
       note: priority === "snapshot-missing" ? "最近成功" : "可信窗口",
       tone: priority === "snapshot-missing" ? "warn" : state.facts.collection.credibilityTone
     };
-    if (priority === "resource-full") return [statusFact, resourceFact, routeFact, collectionFact, wanFact];
-    if (priority === "snapshot-missing") return [statusFact, collectionFact, snapshotFact, routeFact, wanFact];
-    return [statusFact, wanFact, routeFact, collectionFact, snapshotFact];
+    return [wanFact, collectionFact, resourceFact, snapshotFact];
   }
   function heroPills(snapshot, state, network) {
     const totalWan2 = wanDisplayTotal(snapshot, state);
@@ -16097,7 +16090,7 @@ var PanelFramework = function(exports) {
       normalSummary: normalSummaryModel(priority),
       hero: {
         title: heroTitle,
-        subtitle: subtitleFor(snapshot, state, network),
+        subtitle: subtitleFor(snapshot, state, network, scope, policy.appHomeContract),
         facts: heroFacts(snapshot, state),
         pills,
         trustRail: heroTrustRail(pills),
@@ -16111,8 +16104,7 @@ var PanelFramework = function(exports) {
       trustPlanes: trustPlanes(network),
       statusRows: statusRows(snapshot, state),
       primaryList: list,
-      wanPorts: wanPorts(snapshot, state),
-      resourceRows: resourceFacts(state)
+      wanPorts: wanPorts(snapshot, state)
     };
   }
   const MOBILE_BOTTOM_NAV_CONTRACT = "home-wan-interface-terminal-log-router-monitor-low-noise";
@@ -16159,55 +16151,10 @@ var PanelFramework = function(exports) {
   function toneClass(tone) {
     return `is-${tone}`;
   }
-  function primaryStatus(model) {
-    return model.coreMetrics[0] || {
-      label: "状态",
-      value: model.network.conclusion.value,
-      note: model.network.conclusion.note,
-      tone: model.network.conclusion.tone
-    };
-  }
-  function factValue(model, label) {
-    var _a;
-    return ((_a = model.coreMetrics.find((item) => item.label === label)) == null ? void 0 : _a.value) || "-";
-  }
-  function decisionTitle(model) {
-    if (model.priority === "normal") {
-      return "网络可用";
-    }
-    if (model.priority === "wan-offline") return "外网不可用";
-    if (model.priority === "snapshot-missing") return "业务数据不可判";
-    if (model.priority === "collection-degraded") return "采集不完整";
-    if (model.priority === "resource-full") return "资源过载";
-    if (model.priority === "interface-down") return "接口异常";
-    return model.network.conclusion.value;
-  }
-  function decisionSubtitle(model) {
-    if (model.priority === "normal") {
-      return `WAN ${factValue(model, "WAN")} · 默认路由${factValue(model, "默认路由")} · 快照 ${factValue(model, "快照")}`;
-    }
-    return `${model.impactScope.value} · ${model.appHomeContract.trustBoundary}`;
-  }
   function nextStep(model) {
     const action = model.abnormalDecision.find((item) => item.label === "下一步");
     if (action) return { value: action.value, note: action.note, tone: toneClass(action.tone) };
     return { value: "查看 WAN", note: "默认路由 / 快照", tone: "is-trust" };
-  }
-  function factSet(model) {
-    const resource = {
-      label: "资源",
-      value: model.resourceRows.map((item) => item.value.replace(/\.0%$/, "%")).join("/") || "-",
-      note: "处理器/内存/磁盘",
-      tone: model.resourceRows.some((item) => item.tone === "danger") ? "danger" : model.priority === "snapshot-missing" ? "missing" : "ok"
-    };
-    const snapshot = model.coreMetrics.find((item) => item.label === "快照") || {
-      label: "快照",
-      value: model.header.recent || "-",
-      note: model.priority === "snapshot-missing" ? "业务快照缺失" : "最近成功",
-      tone: model.priority === "snapshot-missing" ? "missing" : "ok"
-    };
-    const preferred = ["WAN", "采集", "资源", "快照"].map((label) => label === "资源" ? resource : label === "快照" ? snapshot : model.coreMetrics.find((item) => item.label === label)).filter(Boolean);
-    return preferred.length === 4 ? preferred : model.coreMetrics.slice(1, 5);
   }
   function DeviceBar({ model }) {
     return /* @__PURE__ */ jsxRuntimeExports.jsxs(
@@ -16489,14 +16436,13 @@ var PanelFramework = function(exports) {
     return /* @__PURE__ */ jsxRuntimeExports.jsx(IncidentDecisionVisual, { model });
   }
   function PrimaryDecision({ model }) {
-    const status = primaryStatus(model);
     const action = nextStep(model);
     return /* @__PURE__ */ jsxRuntimeExports.jsxs(
       "section",
       {
-        className: `ik-v420-hero ik-v240-hero ik-v159-network-hero ik-mobile-decision-card ${toneClass(status.tone)}`,
+        className: `ik-v420-hero ik-v240-hero ik-v159-network-hero ik-mobile-decision-card ${toneClass(model.network.conclusion.tone)}`,
         "aria-label": "移动端网络状态结论",
-        "data-overview-mobile-alert": status.tone,
+        "data-overview-mobile-alert": model.network.conclusion.tone,
         "data-overview-mobile-v420-hero": "network-state-home",
         "data-overview-mobile-v240-hero": "network-state-home",
         "data-overview-mobile-v159-main-hero": "network-state-home",
@@ -16510,8 +16456,8 @@ var PanelFramework = function(exports) {
         children: [
           /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ik-mobile-decision-head", children: [
             /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: model.appHomeContract.firstQuestion }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { children: decisionTitle(model) }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("p", { children: decisionSubtitle(model) })
+            /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { children: model.hero.title }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("p", { children: model.hero.subtitle })
           ] }),
           /* @__PURE__ */ jsxRuntimeExports.jsx(DecisionVisual, { model }),
           /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `ik-mobile-next-step ${action.tone}`, "data-overview-mobile-next-step": "object-impact-credibility-action", children: [
@@ -16524,7 +16470,7 @@ var PanelFramework = function(exports) {
     );
   }
   function CoreFacts({ model }) {
-    const facts = factSet(model);
+    const facts = model.coreMetrics;
     return /* @__PURE__ */ jsxRuntimeExports.jsx(
       "section",
       {

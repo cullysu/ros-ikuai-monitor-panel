@@ -5,122 +5,10 @@ import { BottomTabs } from "./BottomTabs";
 import type { AppRankingRow, MobileOverviewHomeProps } from "./MobileOverviewTypes";
 import { toneClass } from "./MobileOverviewUtils";
 
-type DecisionFact = MobileOverviewModel["coreMetrics"][number];
-
-function primaryStatus(model: MobileOverviewModel): DecisionFact {
-  return model.coreMetrics[0] || {
-    label: "状态",
-    value: model.network.conclusion.value,
-    note: model.network.conclusion.note,
-    tone: model.network.conclusion.tone,
-  };
-}
-
-function factValue(model: MobileOverviewModel, label: string): string {
-  return model.coreMetrics.find((item) => item.label === label)?.value || "-";
-}
-
-function decisionTitle(model: MobileOverviewModel): string {
-  if (model.priority === "normal") {
-    return "网络可用";
-  }
-  if (model.priority === "wan-offline") return "外网不可用";
-  if (model.priority === "snapshot-missing") return "业务数据不可判";
-  if (model.priority === "collection-degraded") return "采集不完整";
-  if (model.priority === "resource-full") return "资源过载";
-  if (model.priority === "interface-down") return "接口异常";
-  return model.network.conclusion.value;
-}
-
-function decisionSubtitle(model: MobileOverviewModel): string {
-  if (model.priority === "normal") {
-    return `WAN ${factValue(model, "WAN")} · 默认路由${factValue(model, "默认路由")} · 快照 ${factValue(model, "快照")}`;
-  }
-  return `${model.impactScope.value} · ${model.appHomeContract.trustBoundary}`;
-}
-
 function nextStep(model: MobileOverviewModel): { value: string; note: string; tone: string } {
   const action = model.abnormalDecision.find((item) => item.label === "下一步");
   if (action) return { value: action.value, note: action.note, tone: toneClass(action.tone) };
   return { value: "查看 WAN", note: "默认路由 / 快照", tone: "is-trust" };
-}
-
-function factSet(model: MobileOverviewModel): DecisionFact[] {
-  const resource: DecisionFact = {
-    label: "资源",
-    value: model.resourceRows.map((item) => item.value.replace(/\.0%$/, "%")).join("/") || "-",
-    note: "处理器/内存/磁盘",
-    tone: model.resourceRows.some((item) => item.tone === "danger")
-      ? "danger"
-      : model.priority === "snapshot-missing"
-        ? "missing"
-        : "ok",
-  };
-  const snapshot: DecisionFact = model.coreMetrics.find((item) => item.label === "快照") || {
-    label: "快照",
-    value: model.header.recent || "-",
-    note: model.priority === "snapshot-missing" ? "业务快照缺失" : "最近成功",
-    tone: model.priority === "snapshot-missing" ? "missing" : "ok",
-  };
-  const preferred = ["WAN", "采集", "资源", "快照"]
-    .map((label) => (label === "资源" ? resource : label === "快照" ? snapshot : model.coreMetrics.find((item) => item.label === label)))
-    .filter(Boolean) as DecisionFact[];
-  return preferred.length === 4 ? preferred : model.coreMetrics.slice(1, 5);
-}
-
-function CompactJudgement({ model }: { model: MobileOverviewModel }) {
-  const status = primaryStatus(model);
-  return (
-    <section
-      className={`ik-v960-judgement-strip ${toneClass(status.tone)} ik-mobile-compact-judgement`}
-      aria-label="移动端核心判断"
-      data-overview-mobile-core-block="compact-conclusion"
-      data-overview-mobile-v1044-judgement-strip="compact-conclusion-only"
-      data-overview-mobile-v960-judgement="conclusion-and-impact"
-      data-overview-mobile-v1090-decision-strip="conclusion-only-metrics-separated"
-    >
-      <strong>
-        <i aria-hidden="true" />
-        <span>网络结论</span>
-        <b>{model.priority === "normal" ? "良好" : status.value}</b>
-        <em>{status.note}</em>
-      </strong>
-    </section>
-  );
-}
-
-function CompactTrust({ model }: { model: MobileOverviewModel }) {
-  return (
-    <section
-      className="ik-v910-trust-strip ik-mobile-compact-trust"
-      aria-label="RouterOS 可信度边界"
-      data-overview-mobile-trust-strip="forwarding-collection-snapshot-business"
-    >
-      <span><b>转发</b><strong>{model.network.forwarding.value}</strong></span>
-      <span><b>采集</b><strong>{factValue(model, "采集")}</strong></span>
-      <span><b>快照</b><strong>{factValue(model, "快照")}</strong></span>
-      {model.appHomeContract.severity === "normal" ? null : (
-        <div
-          className="ik-v1058-collection-trust-rail"
-          data-overview-mobile-v1058-collection-trust="routeros-rest-ssh-snapshot-fixed-abnormal-first-screen"
-          data-overview-mobile-v1059-collection-plane="collection-secondary-evidence-not-impact-verdict"
-        >
-          {model.collectionTrust.map((item) => (
-            <span
-              className={toneClass(item.tone)}
-              data-overview-mobile-v1058-collection-channel={item.label}
-              data-overview-mobile-v1059-plane="collection"
-              key={`${item.label}-${item.value}`}
-            >
-              <i aria-hidden="true" />
-              <b>{item.label}</b>
-              <em>{item.value}</em>
-            </span>
-          ))}
-        </div>
-      )}
-    </section>
-  );
 }
 
 function DeviceBar({ model }: { model: MobileOverviewModel }) {
@@ -362,13 +250,12 @@ function DecisionVisual({ model }: { model: MobileOverviewModel }) {
 }
 
 function PrimaryDecision({ model }: { model: MobileOverviewModel }) {
-  const status = primaryStatus(model);
   const action = nextStep(model);
   return (
     <section
-      className={`ik-v420-hero ik-v240-hero ik-v159-network-hero ik-mobile-decision-card ${toneClass(status.tone)}`}
+      className={`ik-v420-hero ik-v240-hero ik-v159-network-hero ik-mobile-decision-card ${toneClass(model.network.conclusion.tone)}`}
       aria-label="移动端网络状态结论"
-      data-overview-mobile-alert={status.tone}
+      data-overview-mobile-alert={model.network.conclusion.tone}
       data-overview-mobile-v420-hero="network-state-home"
       data-overview-mobile-v240-hero="network-state-home"
       data-overview-mobile-v159-main-hero="network-state-home"
@@ -382,8 +269,8 @@ function PrimaryDecision({ model }: { model: MobileOverviewModel }) {
     >
       <div className="ik-mobile-decision-head">
         <span>{model.appHomeContract.firstQuestion}</span>
-        <h1>{decisionTitle(model)}</h1>
-        <p>{decisionSubtitle(model)}</p>
+        <h1>{model.hero.title}</h1>
+        <p>{model.hero.subtitle}</p>
       </div>
       <DecisionVisual model={model} />
       <div className={`ik-mobile-next-step ${action.tone}`} data-overview-mobile-next-step="object-impact-credibility-action">
@@ -396,7 +283,7 @@ function PrimaryDecision({ model }: { model: MobileOverviewModel }) {
 }
 
 function CoreFacts({ model }: { model: MobileOverviewModel }) {
-  const facts = factSet(model);
+  const facts = model.coreMetrics;
   return (
     <section
       className="ik-v240-facts ik-v240-strip ik-mobile-core-facts"
