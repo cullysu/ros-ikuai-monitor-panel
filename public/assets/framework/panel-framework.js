@@ -13599,19 +13599,9 @@ var PanelFramework = function(exports) {
     max-height: none !important;
     padding: 12px !important;
     border: 1px solid #c7d5e4 !important;
-    border-left: 3px solid #1f6fd1 !important;
     border-radius: 6px !important;
     background: #ffffff !important;
     box-shadow: none !important;
-  }
-
-  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-decision-card.is-danger {
-    border-left-color: #c62828 !important;
-  }
-
-  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-decision-card.is-warn,
-  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-decision-card.is-missing {
-    border-left-color: #b7791f !important;
   }
 
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-decision-card[data-overview-mobile-visual-kind="trust-channels"],
@@ -13638,15 +13628,15 @@ var PanelFramework = function(exports) {
 
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-decision-head h1 {
     color: #0f1f32 !important;
-    font-size: 30px !important;
+    font-size: 28px !important;
     font-weight: 900 !important;
     line-height: .98 !important;
-    letter-spacing: -.065em !important;
+    letter-spacing: -.035em !important;
   }
 
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-decision-head p {
     color: #52657a !important;
-    font-size: 11px !important;
+    font-size: 12px !important;
     font-weight: 620 !important;
     line-height: 1.22 !important;
   }
@@ -13762,6 +13752,20 @@ var PanelFramework = function(exports) {
     padding: 7px 6px !important;
   }
 
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-core-facts em {
+    font-size: 10.5px !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-core-facts strong {
+    font-size: 14px !important;
+    line-height: 1.08 !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-core-facts small {
+    font-size: 10px !important;
+    line-height: 1.08 !important;
+  }
+
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-supporting-surface {
     min-height: 82px !important;
     height: 82px !important;
@@ -13856,7 +13860,6 @@ var PanelFramework = function(exports) {
     padding: 6px 9px !important;
   }
 
-  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-wan-incident-stack,
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-channel-incident-stack,
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-generic-incident-stack,
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-resource-incident-stack {
@@ -13876,13 +13879,6 @@ var PanelFramework = function(exports) {
     height: 132px !important;
     max-height: 132px !important;
     padding: 6px !important;
-  }
-
-  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-wan-incident-stack {
-    grid-template-rows: 120px 42px 42px !important;
-    min-height: 224px !important;
-    height: 224px !important;
-    max-height: 224px !important;
   }
 
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-resource-incident-stack {
@@ -13912,7 +13908,7 @@ var PanelFramework = function(exports) {
     min-width: 0 !important;
     overflow: hidden !important;
     color: #172236 !important;
-    font-size: 10.5px !important;
+    font-size: 11px !important;
     font-weight: 840 !important;
     line-height: 1.05 !important;
     text-overflow: ellipsis !important;
@@ -13942,7 +13938,7 @@ var PanelFramework = function(exports) {
     justify-self: end !important;
     align-self: center !important;
     color: #172236 !important;
-    font-size: 12px !important;
+    font-size: 13px !important;
     font-weight: 860 !important;
     line-height: 1 !important;
     white-space: nowrap !important;
@@ -13953,7 +13949,7 @@ var PanelFramework = function(exports) {
     min-width: 0 !important;
     overflow: hidden !important;
     color: #6b7b8f !important;
-    font-size: 9px !important;
+    font-size: 10px !important;
     font-weight: 640 !important;
     line-height: 1.05 !important;
     text-overflow: ellipsis !important;
@@ -13965,7 +13961,7 @@ var PanelFramework = function(exports) {
     min-width: 0 !important;
     overflow: hidden !important;
     color: #6b7b8f !important;
-    font-size: 9px !important;
+    font-size: 10px !important;
     font-style: normal !important;
     font-weight: 640 !important;
     line-height: 1.05 !important;
@@ -13989,12 +13985,12 @@ var PanelFramework = function(exports) {
   }
 
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-abnormal-decision-rail em {
-    font-size: 10px !important;
+    font-size: 11px !important;
     line-height: 1.15 !important;
   }
 
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-abnormal-decision-rail b {
-    font-size: 13.5px !important;
+    font-size: 14px !important;
     line-height: 1.15 !important;
   }
 
@@ -15319,7 +15315,7 @@ var PanelFramework = function(exports) {
     };
   }
   function heroVisualKind(priority) {
-    if (priority === "wan-offline") return "wan-ports";
+    if (priority === "wan-offline") return "incident-verdict";
     if (priority === "resource-full") return "resource-bars";
     if (priority === "interface-down") return "interface-list";
     if (priority === "snapshot-missing" || priority === "collection-degraded") return "trust-channels";
@@ -15422,7 +15418,8 @@ var PanelFramework = function(exports) {
   }
   function coreResourceValue(resource, priority) {
     if (priority === "snapshot-missing") return "隐藏";
-    return resource.map((item) => item.value.replace(/\.0%$/, "%")).join("/");
+    const values = resource.map((item) => Number.parseFloat(item.value)).filter((value) => Number.isFinite(value));
+    return values.length ? `最高 ${Math.max(...values)}%` : "未读取";
   }
   function coreMetrics(snapshot, state, network) {
     const priority = network.priority;
@@ -16015,50 +16012,10 @@ var PanelFramework = function(exports) {
       }
     );
   }
-  function WanIncidentVisual({ model }) {
-    return /* @__PURE__ */ jsxRuntimeExports.jsxs(
-      "div",
-      {
-        className: "ik-mobile-decision-visual ik-v240-flow ik-v420-port-matrix ik-mobile-wan-incident-stack",
-        "data-overview-chart-type": "status",
-        "data-overview-mobile-first-visual": "wan-incident-summary",
-        "data-overview-mobile-first-microchart": "true",
-        "data-overview-mobile-v240-visual": "wan-incident-summary",
-        "data-overview-mobile-v1042-wan-port-matrix": "compact-router-port-matrix-interface-state-carrier-no-toy-capsules",
-        "data-overview-mobile-v1054-wan-port-model": "view-model-carrier-state-no-jsx-note-split",
-        "data-overview-mobile-v1062-wan-role-model": "default-backup-member-impact-route-binding",
-        children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(AbnormalDecisionRail, { model }),
-          model.wanPorts.slice(0, 4).map((port) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
-            "span",
-            {
-              className: port.portState === "down" ? "is-danger" : "is-ok",
-              "data-overview-mobile-wan-port-cell": "router-port",
-              "data-overview-mobile-wan-port-carrier": port.carrier,
-              "data-overview-mobile-wan-port-interface": port.name,
-              "data-overview-mobile-wan-port-state": port.portState,
-              "data-overview-mobile-v1062-wan-role": port.role,
-              "data-overview-mobile-v1062-wan-impact": port.impact,
-              "data-overview-mobile-v1062-wan-business-impact": port.businessImpact,
-              "data-overview-mobile-v1062-wan-route-binding": port.routeBinding,
-              children: [
-                /* @__PURE__ */ jsxRuntimeExports.jsx("i", { "aria-hidden": "true" }),
-                /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: port.name }),
-                /* @__PURE__ */ jsxRuntimeExports.jsx("strong", { "data-overview-mobile-wan-port-state": port.portState, children: port.stateText }),
-                /* @__PURE__ */ jsxRuntimeExports.jsx("em", { "data-overview-mobile-wan-port-carrier": true, children: port.carrier })
-              ]
-            },
-            port.id
-          ))
-        ]
-      }
-    );
-  }
   function DecisionVisual({ model }) {
     if (model.priority === "normal") return /* @__PURE__ */ jsxRuntimeExports.jsx(WanDecisionSpark, { model });
     if (model.priority === "resource-full") return /* @__PURE__ */ jsxRuntimeExports.jsx(ResourceDecisionVisual, { model });
     if (model.priority === "snapshot-missing" || model.priority === "collection-degraded") return /* @__PURE__ */ jsxRuntimeExports.jsx(ChannelDecisionVisual, { model });
-    if (model.priority === "wan-offline") return /* @__PURE__ */ jsxRuntimeExports.jsx(WanIncidentVisual, { model });
     return /* @__PURE__ */ jsxRuntimeExports.jsx(IncidentDecisionVisual, { model });
   }
   function PrimaryDecision({ model }) {

@@ -92,7 +92,7 @@ export interface MobileWanPort {
   tone: OverviewTone;
 }
 
-export type MobileHeroVisualKind = "trend" | "wan-ports" | "resource-bars" | "interface-list" | "trust-channels";
+export type MobileHeroVisualKind = "trend" | "wan-ports" | "resource-bars" | "interface-list" | "trust-channels" | "incident-verdict";
 
 export interface MobileTrendChartPoint {
   x: number;
@@ -325,7 +325,7 @@ function headerModel(snapshot: OverviewRawSnapshot, state: OverviewDerivedState)
 }
 
 function heroVisualKind(priority: MobileOverviewModel["priority"]): MobileHeroVisualKind {
-  if (priority === "wan-offline") return "wan-ports";
+  if (priority === "wan-offline") return "incident-verdict";
   if (priority === "resource-full") return "resource-bars";
   if (priority === "interface-down") return "interface-list";
   if (priority === "snapshot-missing" || priority === "collection-degraded") return "trust-channels";
@@ -440,7 +440,10 @@ function heroFacts(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): 
 
 function coreResourceValue(resource: MobileMonitorFact[], priority: MobileOverviewModel["priority"]): string {
   if (priority === "snapshot-missing") return "隐藏";
-  return resource.map((item) => item.value.replace(/\.0%$/, "%")).join("/");
+  const values = resource
+    .map((item) => Number.parseFloat(item.value))
+    .filter((value) => Number.isFinite(value));
+  return values.length ? `最高 ${Math.max(...values)}%` : "未读取";
 }
 
 function coreMetrics(snapshot: OverviewRawSnapshot, state: OverviewDerivedState, network: RouterOsNetworkViewModel): MobileMonitorFact[] {

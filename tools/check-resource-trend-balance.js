@@ -1717,36 +1717,11 @@ async function main() {
             ))
           };
         });
-        const wanPortRoleSemantics = sectionName !== 'mobileAppHome' || Boolean(
-          wanPortMatrix &&
-          wanPortMatrix.getAttribute('data-overview-mobile-v1062-wan-role-model') === 'default-backup-member-impact-route-binding' &&
-          wanPortCellNoise.some((cell) => cell.role === 'default' && cell.routeBinding === 'default-route' && cell.impact === 'default-route-affected') &&
-          wanPortCellNoise.some((cell) => cell.role === 'backup' && cell.routeBinding === 'standby-route') &&
-          wanPortCellNoise.every((cell) => (
-            ['default', 'backup', 'member'].includes(cell.role) &&
-            ['default-route-affected', 'backup-affected', 'member-affected', 'not-affected'].includes(cell.impact) &&
-            ['internet-down', 'degraded-backup', 'no-primary-impact'].includes(cell.businessImpact) &&
-            ['default-route', 'standby-route', 'member-route'].includes(cell.routeBinding)
-          ))
-        );
-        const wanPortMatrixProductized = sectionName !== 'mobileAppHome' || Boolean(
-          wanPortMatrix &&
-          wanPortMatrix.getAttribute('data-overview-mobile-v1042-wan-port-matrix') === 'compact-router-port-matrix-interface-state-carrier-no-toy-capsules' &&
-          wanPortMatrix.getAttribute('data-overview-mobile-v1054-wan-port-model') === 'view-model-carrier-state-no-jsx-note-split' &&
-          wanPortRoleSemantics &&
-          wanPortCells.length >= 4 &&
-          wanPortCellNoise.every((cell) => (
-            cell.radius <= 5 &&
-            cell.height >= 36 &&
-            cell.hasInterface &&
-            cell.hasCarrier &&
-            cell.hasState &&
-            cell.carrier &&
-            (cell.portState === 'down' || cell.portState === 'up') &&
-            !cell.strongRedFill &&
-            !cell.raisedShadow &&
-            cell.quietHairline
-          ))
+        const wanPortEvidenceDeferred = sectionName !== 'mobileAppHome' || Boolean(
+          !wanPortMatrix &&
+          wanPortCells.length === 0 &&
+          evidenceDeferred &&
+          listEvidence.some((item) => item.source === 'route' || item.source === 'forwarding')
         );
         const channelRail = hero?.querySelector('[data-overview-mobile-channel-verdict="object-impact-credibility-next-action-no-channel-grid"]');
         const channelRailModelBacked = (sectionName !== 'mobileNoSnapshotHome' && sectionName !== 'mobileCollectionHome') || Boolean(channelRail);
@@ -1893,7 +1868,7 @@ async function main() {
           primaryListEvidenceStandardized &&
           resourceTrackNoiseLow &&
           resourceVisualModelBacked &&
-          wanPortMatrixProductized &&
+          wanPortEvidenceDeferred &&
           channelRailModelBacked &&
           abnormalDecisionRailProductized &&
           abnormalHeroLayoutStable &&
@@ -2011,9 +1986,7 @@ async function main() {
           resourceTrackNoiseLow,
           resourceVisualModelBacked,
           resourceTrackFills,
-          wanPortMatrixProductized,
-          wanPortRoleSemantics,
-          wanPortModelBacked: sectionName !== 'mobileAppHome' || Boolean(wanPortMatrix?.getAttribute('data-overview-mobile-v1054-wan-port-model') === 'view-model-carrier-state-no-jsx-note-split'),
+          wanPortEvidenceDeferred,
           channelRailModelBacked,
           wanPortCellCount: wanPortCells.length,
           wanPortCellNoise,

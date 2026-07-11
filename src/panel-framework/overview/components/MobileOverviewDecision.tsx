@@ -159,47 +159,10 @@ function IncidentDecisionVisual({ model }: { model: MobileOverviewModel }) {
   );
 }
 
-function WanIncidentVisual({ model }: { model: MobileOverviewModel }) {
-  return (
-    <div
-      className="ik-mobile-decision-visual ik-v240-flow ik-v420-port-matrix ik-mobile-wan-incident-stack"
-      data-overview-chart-type="status"
-      data-overview-mobile-first-visual="wan-incident-summary"
-      data-overview-mobile-first-microchart="true"
-      data-overview-mobile-v240-visual="wan-incident-summary"
-      data-overview-mobile-v1042-wan-port-matrix="compact-router-port-matrix-interface-state-carrier-no-toy-capsules"
-      data-overview-mobile-v1054-wan-port-model="view-model-carrier-state-no-jsx-note-split"
-      data-overview-mobile-v1062-wan-role-model="default-backup-member-impact-route-binding"
-    >
-      <AbnormalDecisionRail model={model} />
-      {model.wanPorts.slice(0, 4).map((port) => (
-        <span
-          className={port.portState === "down" ? "is-danger" : "is-ok"}
-          data-overview-mobile-wan-port-cell="router-port"
-          data-overview-mobile-wan-port-carrier={port.carrier}
-          data-overview-mobile-wan-port-interface={port.name}
-          data-overview-mobile-wan-port-state={port.portState}
-          data-overview-mobile-v1062-wan-role={port.role}
-          data-overview-mobile-v1062-wan-impact={port.impact}
-          data-overview-mobile-v1062-wan-business-impact={port.businessImpact}
-          data-overview-mobile-v1062-wan-route-binding={port.routeBinding}
-          key={port.id}
-        >
-          <i aria-hidden="true" />
-          <b>{port.name}</b>
-          <strong data-overview-mobile-wan-port-state={port.portState}>{port.stateText}</strong>
-          <em data-overview-mobile-wan-port-carrier>{port.carrier}</em>
-        </span>
-      ))}
-    </div>
-  );
-}
-
 function DecisionVisual({ model }: { model: MobileOverviewModel }) {
   if (model.priority === "normal") return <WanDecisionSpark model={model} />;
   if (model.priority === "resource-full") return <ResourceDecisionVisual model={model} />;
   if (model.priority === "snapshot-missing" || model.priority === "collection-degraded") return <ChannelDecisionVisual model={model} />;
-  if (model.priority === "wan-offline") return <WanIncidentVisual model={model} />;
   return <IncidentDecisionVisual model={model} />;
 }
 

@@ -59,19 +59,9 @@ export const MOBILE_OVERVIEW_PUBLIC_DECISION_REPAIR_STYLES = `
     max-height: none !important;
     padding: 12px !important;
     border: 1px solid #c7d5e4 !important;
-    border-left: 3px solid #1f6fd1 !important;
     border-radius: 6px !important;
     background: #ffffff !important;
     box-shadow: none !important;
-  }
-
-  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-decision-card.is-danger {
-    border-left-color: #c62828 !important;
-  }
-
-  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-decision-card.is-warn,
-  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-decision-card.is-missing {
-    border-left-color: #b7791f !important;
   }
 
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-decision-card[data-overview-mobile-visual-kind="trust-channels"],
@@ -98,15 +88,15 @@ export const MOBILE_OVERVIEW_PUBLIC_DECISION_REPAIR_STYLES = `
 
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-decision-head h1 {
     color: #0f1f32 !important;
-    font-size: 30px !important;
+    font-size: 28px !important;
     font-weight: 900 !important;
     line-height: .98 !important;
-    letter-spacing: -.065em !important;
+    letter-spacing: -.035em !important;
   }
 
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-decision-head p {
     color: #52657a !important;
-    font-size: 11px !important;
+    font-size: 12px !important;
     font-weight: 620 !important;
     line-height: 1.22 !important;
   }
@@ -222,6 +212,20 @@ export const MOBILE_OVERVIEW_PUBLIC_DECISION_REPAIR_STYLES = `
     padding: 7px 6px !important;
   }
 
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-core-facts em {
+    font-size: 10.5px !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-core-facts strong {
+    font-size: 14px !important;
+    line-height: 1.08 !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-core-facts small {
+    font-size: 10px !important;
+    line-height: 1.08 !important;
+  }
+
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-supporting-surface {
     min-height: 82px !important;
     height: 82px !important;
@@ -316,7 +320,6 @@ export const MOBILE_OVERVIEW_PUBLIC_DECISION_REPAIR_STYLES = `
     padding: 6px 9px !important;
   }
 
-  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-wan-incident-stack,
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-channel-incident-stack,
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-generic-incident-stack,
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-resource-incident-stack {
@@ -336,13 +339,6 @@ export const MOBILE_OVERVIEW_PUBLIC_DECISION_REPAIR_STYLES = `
     height: 132px !important;
     max-height: 132px !important;
     padding: 6px !important;
-  }
-
-  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-wan-incident-stack {
-    grid-template-rows: 120px 42px 42px !important;
-    min-height: 224px !important;
-    height: 224px !important;
-    max-height: 224px !important;
   }
 
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-resource-incident-stack {
@@ -372,7 +368,7 @@ export const MOBILE_OVERVIEW_PUBLIC_DECISION_REPAIR_STYLES = `
     min-width: 0 !important;
     overflow: hidden !important;
     color: #172236 !important;
-    font-size: 10.5px !important;
+    font-size: 11px !important;
     font-weight: 840 !important;
     line-height: 1.05 !important;
     text-overflow: ellipsis !important;
@@ -402,7 +398,7 @@ export const MOBILE_OVERVIEW_PUBLIC_DECISION_REPAIR_STYLES = `
     justify-self: end !important;
     align-self: center !important;
     color: #172236 !important;
-    font-size: 12px !important;
+    font-size: 13px !important;
     font-weight: 860 !important;
     line-height: 1 !important;
     white-space: nowrap !important;
@@ -413,7 +409,7 @@ export const MOBILE_OVERVIEW_PUBLIC_DECISION_REPAIR_STYLES = `
     min-width: 0 !important;
     overflow: hidden !important;
     color: #6b7b8f !important;
-    font-size: 9px !important;
+    font-size: 10px !important;
     font-weight: 640 !important;
     line-height: 1.05 !important;
     text-overflow: ellipsis !important;
@@ -425,7 +421,7 @@ export const MOBILE_OVERVIEW_PUBLIC_DECISION_REPAIR_STYLES = `
     min-width: 0 !important;
     overflow: hidden !important;
     color: #6b7b8f !important;
-    font-size: 9px !important;
+    font-size: 10px !important;
     font-style: normal !important;
     font-weight: 640 !important;
     line-height: 1.05 !important;
@@ -449,12 +445,12 @@ export const MOBILE_OVERVIEW_PUBLIC_DECISION_REPAIR_STYLES = `
   }
 
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-abnormal-decision-rail em {
-    font-size: 10px !important;
+    font-size: 11px !important;
     line-height: 1.15 !important;
   }
 
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-abnormal-decision-rail b {
-    font-size: 13.5px !important;
+    font-size: 14px !important;
     line-height: 1.15 !important;
   }
 

@@ -1366,7 +1366,7 @@ includesAll(sourceV225Runtime + "\n" + sourceV225MobileStyles + "\n" + resourceT
   "data-overview-mobile-wan-port-interface",
   "data-overview-mobile-wan-port-carrier",
   "data-overview-mobile-wan-port-state",
-  "wanPortMatrixProductized",
+  "wanPortEvidenceDeferred",
   "wanPortCellNoise",
 ], `source ${activeMobileVersion} mobile WAN port matrix must read like router interface state, not toy capsules`);
 includesAny(sourceV225Runtime, [
@@ -2370,8 +2370,7 @@ includesAll(sourceV1046AppPolish, [
 includesAll(sourceV1046RuntimeProbe, [
   "abnormalDecisionRailProductized",
   "abnormalDecisionCellNoise",
-  "wanPortModelBacked",
-  "wanPortRoleSemantics",
+  "wanPortEvidenceDeferred",
   "channelRailModelBacked",
   "resourceVisualModelBacked",
   "data-overview-mobile-v1054-wan-port-model",

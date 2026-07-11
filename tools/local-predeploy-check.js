@@ -3737,7 +3737,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       .map((record) => [record.dataToken, record.className, record.text].join(' '))
       .join(' ');
     const mobile390ExpectedVisualPattern = scaleScenario === 'all-offline'
-      ? /port|matrix|端口|WAN/i
+      ? /incident|verdict|object|impact|对象|影响|可信度|下一步/i
       : scaleScenario === 'no-snapshot' || scaleScenario === 'collection-down'
         ? /channel|snapshot-status-line|REST|SSH|快照|采集/i
         : scaleScenario === 'resource-full'
