@@ -33,6 +33,8 @@ const desktopHelpersFile =
   "src/panel-framework/overview/desktopOverviewHelpers.tsx";
 const desktopRowsFile =
   "src/panel-framework/overview/desktopOverviewRows.tsx";
+const desktopResourceRowsFile =
+  "src/panel-framework/overview/desktopResourceRows.ts";
 const desktopVisualsFile =
   "src/panel-framework/overview/desktopOverviewVisuals.tsx";
 const builtCssFile = "public/assets/framework/style.css";
@@ -48,6 +50,7 @@ const desktopScenes = read(desktopScenesFile);
 const panelCss = read(panelCssFile);
 const desktopHelpers = read(desktopHelpersFile);
 const desktopRows = read(desktopRowsFile);
+const desktopResourceRows = read(desktopResourceRowsFile);
 const desktopVisuals = read(desktopVisualsFile);
 const mobileHome = read(mobileHomeFile);
 const mobileStyles = read(mobileStylesFile);
@@ -113,8 +116,12 @@ assert(
   `desktopOverviewHelpers.tsx exceeds 450 lines: ${lines(desktopHelpers)}`
 );
 assert(
-  lines(desktopRows) <= 1050,
-  `desktopOverviewRows.tsx exceeds 1050 lines: ${lines(desktopRows)}`
+  lines(desktopRows) <= 850,
+  `desktopOverviewRows.tsx exceeds 850 lines: ${lines(desktopRows)}`
+);
+assert(
+  lines(desktopResourceRows) <= 250,
+  `desktopResourceRows.ts exceeds 250 lines: ${lines(desktopResourceRows)}`
 );
 assert(
   lines(desktopVisuals) <= 400,
@@ -157,6 +164,10 @@ assert(
 assert(
   desktopScenes.includes('from "./desktopOverviewRows"'),
   "desktopOverviewScenes.tsx must consume the extracted desktop row layer"
+);
+assert(
+  desktopScenes.includes('from "./desktopResourceRows"'),
+  "desktopOverviewScenes.tsx must consume the resource evidence row module"
 );
 assert(
   desktopVisuals.includes('from "./desktopOverviewRows"'),
@@ -260,5 +271,5 @@ if (failures.length > 0) {
 }
 
 console.log(
-  `overview architecture gate: PASS panel=${lines(panel)} lines desktop=${lines(desktopConsole)} lines scenes=${lines(desktopScenes)} lines helper=${lines(desktopHelpers)} lines rows=${lines(desktopRows)} lines visuals=${lines(desktopVisuals)} lines css=${bytes(panelCssFile)} bytes mobileStyles=${mobileStyleByteTotal} bytes important=${importantShare.toFixed(4)} mobile=${mobileRuleShare.toFixed(4)}`
+  `overview architecture gate: PASS panel=${lines(panel)} lines desktop=${lines(desktopConsole)} lines scenes=${lines(desktopScenes)} lines helper=${lines(desktopHelpers)} lines rows=${lines(desktopRows)} lines resourceRows=${lines(desktopResourceRows)} lines visuals=${lines(desktopVisuals)} lines css=${bytes(panelCssFile)} bytes mobileStyles=${mobileStyleByteTotal} bytes important=${importantShare.toFixed(4)} mobile=${mobileRuleShare.toFixed(4)}`
 );

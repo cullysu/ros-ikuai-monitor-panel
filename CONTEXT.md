@@ -20,6 +20,10 @@ _Avoid_: Status message, health score
 The RouterOS, route, collection, snapshot, interface, resource, or terminal facts supporting a **Network Judgement**.
 _Avoid_: Raw dump, diagnostics table
 
+**Resource Evidence**:
+The threshold, sustained-window, connection-pressure, interface-throughput, and cache observations supporting a resource **Network Judgement**.
+_Avoid_: Resource card, CPU table
+
 **Credibility Boundary**:
 The explicit limit on which observations remain trustworthy when collection or snapshots are degraded.
 _Avoid_: Disclaimer, warning text
@@ -28,6 +32,7 @@ _Avoid_: Disclaimer, warning text
 
 - An **Overview Scenario** selects exactly one **Desktop Scene**.
 - A **Desktop Scene** gives the **Network Judgement** priority over its supporting **Evidence Chain**.
+- **Resource Evidence** is one focused part of an **Evidence Chain**.
 - A degraded **Evidence Chain** narrows the **Credibility Boundary** without automatically changing forwarding-plane availability.
 
 ## Example dialogue

@@ -584,6 +584,8 @@ const overviewPanel = [
   readIfExists("src/panel-framework/overview/desktopOverviewHelpers.tsx"),
   readIfExists("src/panel-framework/overview/desktopOverviewHelpers.ts"),
   readIfExists("src/panel-framework/overview/desktopOverviewRows.tsx"),
+  readIfExists("src/panel-framework/overview/desktopResourceRows.ts"),
+  readIfExists("src/panel-framework/overview/desktopEvidenceRows.ts"),
   readIfExists("src/panel-framework/overview/desktopOverviewVisuals.tsx"),
 ].join("\n");
 const deriveOverview = read("src/panel-framework/overview/deriveOverviewState.ts");

@@ -8,8 +8,6 @@ import {
   collectionReadonlyRows,
   collectionRows,
   compactRows,
-  connectionPressureChartRows,
-  desktopEvidenceBoundaryRows,
   desktopTerminalRows,
   interfaceBoundaryRows,
   interfaceCollectionRows,
@@ -23,12 +21,6 @@ import {
   noSnapshotReadonlyDegradedRows,
   noSnapshotVisibilityRows,
   normalOpsRows,
-  resourceBoundaryRows,
-  resourceChartRows,
-  resourceContextRows,
-  resourceRiskRows,
-  resourceRows,
-  resourceTop5Rows,
   routeBusinessRows,
   routeFactRows,
   routeRawEvidenceRows,
@@ -42,6 +34,16 @@ import {
   wanContinuityRows,
   wanRows,
 } from "./desktopOverviewRows";
+import { desktopEvidenceBoundaryRows } from "./desktopEvidenceRows";
+import {
+  connectionPressureChartRows,
+  resourceBoundaryRows,
+  resourceChartRows,
+  resourceContextRows,
+  resourceRiskRows,
+  resourceRows,
+  resourceTop5Rows,
+} from "./desktopResourceRows";
 import {
   ChainTimeline,
   ChannelMatrixVisual,
