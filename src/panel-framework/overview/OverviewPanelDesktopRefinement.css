@@ -75,11 +75,6 @@
     font-weight: 540 !important;
   }
 
-  #overview.router-overview-framework .ro-desktop-grid.ik-home-layout[data-overview-desktop-workspace] {
-    gap: 8px !important;
-    grid-template-columns: minmax(0, 1.5fr) minmax(360px, .88fr) !important;
-  }
-
   #overview.router-overview-framework .ro-module.ik-overview-flat-module {
     border-color: var(--ik-line) !important;
     border-radius: 4px !important;
@@ -875,15 +870,6 @@
     text-overflow: ellipsis !important;
   }
 
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-desktop-grid {
-    gap: 5px !important;
-    min-height: calc(100vh - 96px) !important;
-  }
-
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-col {
-    gap: 5px !important;
-  }
-
   .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module {
     border: 1px solid #dce5ee !important;
     border-left-width: 2px !important;
@@ -1154,17 +1140,6 @@
     color: #7d8da1 !important;
     font-size: 8.2px !important;
     line-height: 1.05 !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-desktop-grid {
-    grid-template-columns: minmax(0, 1fr) 410px !important;
-    gap: 4px !important;
-    min-height: 0 !important;
-    align-items: start !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-col {
-    gap: 4px !important;
   }
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module {
@@ -1600,16 +1575,6 @@
     color: #8796a8 !important;
   }
 
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-desktop-grid {
-    gap: 4px !important;
-    grid-template-columns: minmax(0, 1fr) 398px !important;
-    min-height: calc(100vh - 86px) !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-col {
-    gap: 4px !important;
-  }
-
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module {
     border: 1px solid var(--v817-line-strong) !important;
     border-left: 1px solid var(--v817-line-strong) !important;
@@ -1987,40 +1952,11 @@
     color: #8190a2 !important;
   }
 
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-desktop-grid {
-    grid-template-columns: minmax(0, 1fr) 386px !important;
-    grid-template-rows: 28px minmax(0, 1fr) 154px !important;
-    gap: 4px !important;
-    align-content: start !important;
-    height: calc(100vh - 84px) !important;
-    min-height: calc(100vh - 84px) !important;
-    overflow: hidden !important;
-  }
-
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-col.is-main,
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-col.is-side {
     min-height: 0 !important;
     max-height: none !important;
     overflow: hidden !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-col.is-main {
-    grid-column: 1 !important;
-    grid-row: 2 !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-col.is-side {
-    grid-column: 2 !important;
-    grid-row: 2 !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-col.is-bottom {
-    grid-column: 1 / -1 !important;
-    grid-row: 3 !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-col {
-    gap: 4px !important;
   }
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module {
@@ -2274,19 +2210,6 @@
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-topbar-cell[data-overview-status-role="conclusion"] b {
     font-size: 12px !important;
     font-weight: 840 !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-desktop-grid {
-    grid-template-columns: minmax(0, 1fr) 374px !important;
-    grid-template-rows: 54px minmax(0, 1fr) 148px !important;
-    gap: 3px !important;
-    height: calc(100vh - 82px) !important;
-    min-height: calc(100vh - 82px) !important;
-    overflow: hidden !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-col {
-    gap: 3px !important;
   }
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-col.is-bottom {
@@ -2783,16 +2706,20 @@
 }
 
 
-/* v1030 desktop short nav: iKuai-like left rail and quieter public chrome. */
+/* Canonical desktop workspace grid and short navigation. */
 @media (min-width: 761px) {
-  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-desktop-grid,
-  .router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-desktop-grid {
+  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-desktop-grid {
     grid-template-columns: 96px minmax(0, 1.47fr) minmax(360px, .88fr) !important;
+    grid-template-rows: 54px minmax(0, 1fr) 148px !important;
+    align-content: start !important;
     align-items: stretch !important;
+    gap: 3px !important;
+    height: calc(100vh - 82px) !important;
+    min-height: calc(100vh - 82px) !important;
+    overflow: hidden !important;
   }
 
-  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-desktop-nav,
-  .router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-desktop-nav {
+  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-desktop-nav {
     grid-row: 1 / span 3 !important;
     display: grid !important;
     grid-auto-rows: minmax(31px, max-content) !important;
@@ -2805,8 +2732,7 @@
     box-shadow: inset -1px 0 0 rgba(255, 255, 255, .72) !important;
   }
 
-  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-desktop-nav span,
-  .router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-desktop-nav span {
+  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-desktop-nav span {
     display: grid !important;
     grid-template-rows: 14px 11px !important;
     gap: 0 !important;
@@ -2818,15 +2744,13 @@
     box-shadow: none !important;
   }
 
-  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-desktop-nav span.is-active,
-  .router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-desktop-nav span.is-active {
+  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-desktop-nav span.is-active {
     color: var(--ik-console-ink, #122237) !important;
     background: rgba(18,34,55,.035) !important;
     box-shadow: inset 2px 0 0 rgba(18,34,55,.44) !important;
   }
 
-  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-desktop-nav b,
-  .router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-desktop-nav b {
+  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-desktop-nav b {
     overflow: hidden !important;
     color: inherit !important;
     font-size: 11px !important;
@@ -2836,8 +2760,7 @@
     white-space: nowrap !important;
   }
 
-  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-desktop-nav em,
-  .router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-desktop-nav em {
+  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-desktop-nav em {
     overflow: hidden !important;
     color: #8796a8 !important;
     font-size: 9px !important;
@@ -2902,14 +2825,23 @@
     white-space: nowrap !important;
   }
 
-  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-col.is-main,
-  .router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-col.is-main {
-    grid-column: 2 !important;
+  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-col {
+    gap: 3px !important;
   }
 
-  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-col.is-side,
-  .router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-col.is-side {
+  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-col.is-main {
+    grid-column: 2 !important;
+    grid-row: 2 !important;
+  }
+
+  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-col.is-side {
     grid-column: 3 !important;
+    grid-row: 2 !important;
+  }
+
+  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-col.is-bottom {
+    grid-column: 1 / -1 !important;
+    grid-row: 3 !important;
   }
 
   /* v1068 desktop status bus: control-console summary rail, not table header boxes. */

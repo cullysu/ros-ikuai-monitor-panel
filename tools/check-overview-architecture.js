@@ -93,6 +93,8 @@ let versionMarkerCount = 0;
 let desktopRefinementImportantCount = 0;
 let desktopDecisionRailRuleCount = 0;
 let desktopDecisionCellRuleCount = 0;
+let desktopWorkspaceGridRuleCount = 0;
+let desktopNavRuleCount = 0;
 
 cssRoot.walkRules((rule) => {
   ruleCount += 1;
@@ -127,6 +129,16 @@ desktopRefinementRoot.walkRules((rule) => {
   }
   if (/\.ro-desktop-thin-kpi(?!s)/.test(rule.selector)) {
     desktopDecisionCellRuleCount += 1;
+  }
+  if (
+    rule.selector
+      .split(",")
+      .some((selector) => selector.trim().endsWith(".ro-desktop-grid"))
+  ) {
+    desktopWorkspaceGridRuleCount += 1;
+  }
+  if (rule.selector.includes(".ro-desktop-nav")) {
+    desktopNavRuleCount += 1;
   }
 });
 
@@ -296,12 +308,16 @@ assert(
   `OverviewPanel.css mobile rule share regressed above 11%: ${mobileRuleShare.toFixed(4)}`
 );
 assert(
-  desktopRefinementImportantCount <= 1334,
-  `Desktop refinement !important count regressed above 1334: ${desktopRefinementImportantCount}`
+  desktopRefinementImportantCount <= 1310,
+  `Desktop refinement !important count regressed above 1310: ${desktopRefinementImportantCount}`
 );
 assert(
   desktopDecisionRailRuleCount === 1 && desktopDecisionCellRuleCount <= 4,
   `Desktop decision rail must stay consolidated: railRules=${desktopDecisionRailRuleCount} cellRules=${desktopDecisionCellRuleCount}`
+);
+assert(
+  desktopWorkspaceGridRuleCount === 1 && desktopNavRuleCount === 5,
+  `Desktop workspace grid/nav must stay canonical: gridRules=${desktopWorkspaceGridRuleCount} navRules=${desktopNavRuleCount}`
 );
 assert(
   versionMarkerCount <= 159,
@@ -372,5 +388,5 @@ if (failures.length > 0) {
 }
 
 console.log(
-  `overview architecture gate: PASS panel=${lines(panel)} lines desktop=${lines(desktopConsole)} lines desktopDecision=${lines(desktopDecisionRail)} lines scenes=${lines(desktopScenes)} lines helper=${lines(desktopHelpers)} lines rowsFacade=${lines(desktopRows)} lines trafficRows=${lines(desktopTrafficRows)} lines networkRows=${lines(desktopNetworkRows)} lines credibilityRows=${lines(desktopCredibilityRows)} lines terminalRows=${lines(desktopTerminalRows)} lines resourceRows=${lines(desktopResourceRows)} lines visuals=${lines(desktopVisuals)} lines mobileHome=${lines(mobileHome)} lines mobileDecision=${lines(mobileDecision)} lines mobileSections=${lines(mobileHomeSections)} lines css=${bytes(panelCssFile)} bytes mobileStyles=${mobileStyleByteTotal} bytes important=${importantShare.toFixed(4)} desktopImportant=${desktopRefinementImportantCount} decisionRailRules=${desktopDecisionRailRuleCount} decisionCellRules=${desktopDecisionCellRuleCount} mobile=${mobileRuleShare.toFixed(4)}`
+  `overview architecture gate: PASS panel=${lines(panel)} lines desktop=${lines(desktopConsole)} lines desktopDecision=${lines(desktopDecisionRail)} lines scenes=${lines(desktopScenes)} lines helper=${lines(desktopHelpers)} lines rowsFacade=${lines(desktopRows)} lines trafficRows=${lines(desktopTrafficRows)} lines networkRows=${lines(desktopNetworkRows)} lines credibilityRows=${lines(desktopCredibilityRows)} lines terminalRows=${lines(desktopTerminalRows)} lines resourceRows=${lines(desktopResourceRows)} lines visuals=${lines(desktopVisuals)} lines mobileHome=${lines(mobileHome)} lines mobileDecision=${lines(mobileDecision)} lines mobileSections=${lines(mobileHomeSections)} lines css=${bytes(panelCssFile)} bytes mobileStyles=${mobileStyleByteTotal} bytes important=${importantShare.toFixed(4)} desktopImportant=${desktopRefinementImportantCount} decisionRailRules=${desktopDecisionRailRuleCount} decisionCellRules=${desktopDecisionCellRuleCount} workspaceGridRules=${desktopWorkspaceGridRuleCount} navRules=${desktopNavRuleCount} mobile=${mobileRuleShare.toFixed(4)}`
 );
