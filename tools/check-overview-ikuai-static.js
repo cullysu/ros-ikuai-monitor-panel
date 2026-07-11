@@ -2236,8 +2236,8 @@ const sourceV1122Decision = read("src/panel-framework/overview/components/Mobile
 const sourceV1122RepairStyles = read("src/panel-framework/overview/components/MobileOverviewPublicDecisionRepairStyles.ts");
 
 includesAll(`${sourceV1046MobileHome}\n${sourceV1122Decision}`, [
-  "data-overview-mobile-v1122-public-home",
-  "single-verdict-readable-abnormal-facts-compact-detail",
+  "data-overview-mobile-console",
+  "ik-mobile-public-home",
   "data-overview-mobile-v1122-channel-verdict",
   "object-impact-credibility-next-action-no-channel-grid",
   "data-overview-mobile-v1046-abnormal-decision-rail=\"object-impact-credibility-next-action\"",

@@ -40,9 +40,6 @@ export function MobileOverviewHome(props: MobileOverviewHomeProps) {
       data-overview-mobile-collection-separated={model.collectionTrustSeparation.separatedFromImpact ? "true" : "false"}
       data-overview-mobile-v1090-first-screen-order="conclusion-trust-four-facts-priority-incident-supporting-list"
       data-overview-mobile-p0-first-screen={model.appHomeContract.severity === "p0" ? "trust-wan-route-collection-success-no-terminal-ranking" : undefined}
-      data-overview-mobile-v1110-public-home="device-primary-card-four-facts-supporting-no-redundant-strips"
-      data-overview-mobile-v1120-public-home="single-task-verdict-core-facts-detail-entry"
-      data-overview-mobile-v1122-public-home="single-verdict-readable-abnormal-facts-compact-detail"
       data-overview-mobile-no-snapshot-no-rate-placeholder={props.state.scenario === "no-snapshot" ? "true" : undefined}
     >
       <div className="ik-v420-shell ik-v240-shell">

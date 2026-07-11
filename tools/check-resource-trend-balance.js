@@ -1262,9 +1262,7 @@ async function main() {
           collectionImpactSeparation: root.getAttribute('data-overview-mobile-collection-policy') || '',
           collectionPlane: root.getAttribute('data-overview-mobile-collection-plane') || '',
           collectionSeparatedFromImpact: root.getAttribute('data-overview-mobile-collection-separated') || '',
-          firstScreenOrder: root.getAttribute('data-overview-mobile-v1090-first-screen-order') || '',
-          publicHomeV1110: root.getAttribute('data-overview-mobile-v1110-public-home') || '',
-          publicHomeV1120: root.getAttribute('data-overview-mobile-v1120-public-home') || ''
+          firstScreenOrder: root.getAttribute('data-overview-mobile-v1090-first-screen-order') || ''
         } : {};
         const surfaceAttrs = surface ? {
           listKind: surface.getAttribute('data-overview-mobile-list-kind') || '',
@@ -1415,8 +1413,6 @@ async function main() {
         );
         const judgementStrip = root?.querySelector('[data-overview-mobile-v1044-judgement-strip="compact-conclusion-only"]');
         const trustStrip = root?.querySelector('.ik-v910-trust-strip');
-        const isPublicHomeV1110 = rootAttrs.publicHomeV1110 === 'device-primary-card-four-facts-supporting-no-redundant-strips';
-        const isPublicHomeV1120 = rootAttrs.publicHomeV1120 === 'single-task-verdict-core-facts-detail-entry';
         const judgementStyle = judgementStrip ? getComputedStyle(judgementStrip) : null;
         const trustStripStyle = trustStrip ? getComputedStyle(trustStrip) : null;
         const metricGrid = root?.querySelector('[data-overview-mobile-v1044-metric-grid="wan-collection-resource-snapshot-four-core-facts"]');
@@ -1444,9 +1440,7 @@ async function main() {
         const normalHeroHeadline = hero?.querySelector('.ik-v620-hero-head');
         const normalHeroHeadlineStyle = normalHeroHeadline ? getComputedStyle(normalHeroHeadline) : null;
         const normalHeroHeadlineRect = normalHeroHeadline?.getBoundingClientRect();
-        const firstScreenOrderNodes = isPublicHomeV1110
-          ? [hero, metricGrid, surface]
-          : [judgementStrip, trustStrip, metricGrid, hero, surface];
+        const firstScreenOrderNodes = [hero, metricGrid, surface];
         const firstScreenOrderProductized = firstScreenOrderNodes.every(Boolean) && firstScreenOrderNodes.every((node, index) => (
           index === firstScreenOrderNodes.length - 1 ||
           Boolean(node.compareDocumentPosition(firstScreenOrderNodes[index + 1]) & Node.DOCUMENT_POSITION_FOLLOWING)
@@ -1454,7 +1448,8 @@ async function main() {
         const normalNativeFirstScreen = sectionName !== 'mobileNormalHome' || Boolean(
           hero?.getAttribute('data-overview-mobile-v1065-normal-hero') === 'chart-first-no-promo-headline' &&
           firstScreenOrderProductized &&
-          (isPublicHomeV1110 ? (!judgementStrip && !trustStrip) : (judgementStrip && trustStrip)) &&
+          !judgementStrip &&
+          !trustStrip &&
           metricGrid &&
           normalChartLabel &&
           normalize(hero.querySelector('.ik-mobile-decision-head h1')?.textContent || '').includes('网络可用') &&
@@ -1541,7 +1536,6 @@ async function main() {
           return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height >= 40;
         })());
         const evidenceDeferredV1120 = Boolean(
-          isPublicHomeV1120 &&
           detailEntryV1120Visible &&
           deferredRowsV1120
         );
@@ -1627,11 +1621,11 @@ async function main() {
           listStyle &&
           bottomTabsStyle &&
           activeTabLowNoise &&
-          Number.parseFloat(heroStyle.borderTopWidth || '0') <= (isPublicHomeV1110 ? 1 : 0) &&
+          Number.parseFloat(heroStyle.borderTopWidth || '0') <= 1 &&
           Number.parseFloat(listStyle.borderTopWidth || '0') === 0 &&
           /rgba?\\((?:245|247|250),\\s*(?:249|250|252),\\s*(?:253|255)/.test(bottomTabsStyle.backgroundColor || '')
         );
-        const nativeTrustSpinePolished = isPublicHomeV1110 ? Boolean(
+        const nativeTrustSpinePolished = Boolean(
           rootAttrs.tokenSystem === 'mobileOverviewTokens:color-type-space-radius-state-chart' &&
           surfaceStyle &&
           heroStyle &&
@@ -1644,22 +1638,6 @@ async function main() {
           Number.parseFloat(surfaceStyle.borderRadius || '0') >= 8 &&
           !/rgba?\([^)]*,\s*0\.[2-9][^)]*\)\s+0px\s+(?:[2-9]|1\d)px\s+(?:1\d|2\d)/.test(heroStyle.boxShadow || '') &&
           !/rgba?\([^)]*,\s*0\.[2-9][^)]*\)\s+0px\s+(?:2|3|4|5|6|7|8|9|1\d)px/.test(listStyle.boxShadow || '')
-        ) : Boolean(
-          rootAttrs.tokenSystem === 'mobileOverviewTokens:color-type-space-radius-state-chart' &&
-          surfaceStyle &&
-          judgementStyle &&
-          trustStripStyle &&
-          heroStyle &&
-          listStyle &&
-          Number.parseFloat(judgementStyle.borderTopWidth || '0') === 0 &&
-          Number.parseFloat(judgementStyle.borderLeftWidth || '0') === 0 &&
-          Number.parseFloat(trustStripStyle.borderTopWidth || '0') === 0 &&
-          Number.parseFloat(heroStyle.borderTopWidth || '0') === 0 &&
-          Number.parseFloat(listStyle.borderTopWidth || '0') === 0 &&
-          Number.parseFloat(surfaceStyle.borderTopWidth || '0') === 0 &&
-          Number.parseFloat(surfaceStyle.borderRadius || '0') >= 12 &&
-          !/rgba?\\([^)]*,\\s*0\\.[2-9][^)]*\\)\\s+0px\\s+(?:[2-9]|1\\d)px\\s+(?:1\\d|2\\d)/.test(heroStyle.boxShadow || '') &&
-          !/rgba?\\([^)]*,\\s*0\\.[2-9][^)]*\\)\\s+0px\\s+(?:2|3|4|5|6|7|8|9|1\\d)px/.test(listStyle.boxShadow || '')
         );
         const resourceLedger = hero?.querySelector('[data-overview-mobile-v1040-resource-pressure="low-noise-threshold-ledger-no-red-blue-race"]');
         const resourceRows = Array.from(resourceLedger?.querySelectorAll('[data-overview-mobile-resource-row]') || []);
@@ -1837,7 +1815,7 @@ async function main() {
             evidenceDeferredV1120
               ? detailEntryV1120Visible && abnormalListRowRects.every((rect) => rect.width === 0 || rect.height === 0)
               : abnormalListRowRects.length > 0 &&
-                abnormalListRowRects.every((rect) => rect.width > 0 && rect.height >= (isPublicHomeV1110 ? 42 : 44))
+                abnormalListRowRects.every((rect) => rect.width > 0 && rect.height >= 42)
           )
         );
         const appRect = root?.getBoundingClientRect();
