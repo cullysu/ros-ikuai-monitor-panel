@@ -734,7 +734,16 @@ def assert_frontend_charts_skip_missing_values():
                 (ROOT / "src" / "panel-framework" / "overview" / "desktopOverviewVisuals.tsx").read_text(encoding="utf-8"),
             ]
         )
-        overview_css = (ROOT / "src" / "panel-framework" / "overview" / "OverviewPanel.css").read_text(encoding="utf-8")
+        overview_css_parts = [
+            (ROOT / "src" / "panel-framework" / "overview" / "OverviewPanel.css").read_text(encoding="utf-8")
+        ]
+        overview_styles_dir = ROOT / "src" / "panel-framework" / "overview" / "styles"
+        if overview_styles_dir.exists():
+            overview_css_parts.extend(
+                css_path.read_text(encoding="utf-8")
+                for css_path in sorted(overview_styles_dir.glob("*.css"))
+            )
+        overview_css = "\n".join(overview_css_parts)
         derive_source = (ROOT / "src" / "panel-framework" / "overview" / "deriveOverviewState.ts").read_text(encoding="utf-8")
         for marker in (
             'data-overview-chart-has-current="true"',

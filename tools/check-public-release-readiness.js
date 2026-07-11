@@ -105,6 +105,18 @@ function frameworkCompatibilitySurface() {
   ].join('\n');
 }
 
+function frameworkOverviewStylesSurface() {
+  const stylesDir = path.join(ROOT, 'src/panel-framework/overview/styles');
+  if (!fs.existsSync(stylesDir)) {
+    return '';
+  }
+  return fs.readdirSync(stylesDir)
+    .filter((entry) => entry.endsWith('.css'))
+    .sort()
+    .map((entry) => read(path.join('src/panel-framework/overview/styles', entry)))
+    .join('\n/* overview-style-layer */\n');
+}
+
 function readReleaseSurface(relPath) {
   const text = read(relPath);
   if (relPath !== 'public/index.html') return text;
@@ -120,6 +132,7 @@ function readReleaseSurface(relPath) {
     readIfExists('public/assets/framework/style.css'),
     read('src/panel-framework/overview/OverviewPanel.tsx'),
     readIfExists('src/panel-framework/overview/OverviewPanel.css'),
+    frameworkOverviewStylesSurface(),
     read('src/panel-framework/overview/deriveOverviewState.ts'),
     read('src/panel-framework/panel-framework-app.tsx'),
     readIfExists('app.py'),
@@ -731,6 +744,16 @@ function main(argv = process.argv.slice(2)) {
   assertContains('tools/local-predeploy-check.js', 'overviewDefaultRouteSemanticUndeterminedOk');
   assertNotContains('tools/local-predeploy-check.js', 'overviewFirstScreenFieldCount >= minOverviewFirstScreenFields');
   assertContains('tools/local-predeploy-check.js', "const requiredScenarios = ['single', 'fleet', 'all-offline', 'no-snapshot', 'collection-down', 'resource-full', 'interfaces-down'];");
+  assertContains('src/panel-framework/overview/OverviewPanel.css', '@import "./styles/overview-foundation.css";');
+  assertContains('src/panel-framework/overview/OverviewPanel.css', '@import "./styles/overview-desktop.css";');
+  assertContains('src/panel-framework/overview/OverviewPanel.css', '@import "./styles/overview-mobile.css";');
+  assertContains('src/panel-framework/overview/OverviewPanel.css', '@import "./styles/overview-states.css";');
+  assertNotContains('src/panel-framework/overview/OverviewPanel.css', '@media');
+  assertContains('src/panel-framework/overview/styles/overview-foundation.css', '--ro-border');
+  assertContains('src/panel-framework/overview/styles/overview-desktop.css', '@media (min-width: 761px)');
+  assertContains('src/panel-framework/overview/styles/overview-mobile.css', '@media (max-width');
+  assertContains('src/panel-framework/overview/styles/overview-states.css', 'ro-desktop-key-row');
+  assertContains('src/panel-framework/overview/styles/overview-states.css', '--ik40-console-page');
   assertNotExists('public/scale-adaptive-patch.js');
   assertNotExists('public/layout-whitespace-patch.js');
   assertNotExists('public/panel-professional-redesign.js');
