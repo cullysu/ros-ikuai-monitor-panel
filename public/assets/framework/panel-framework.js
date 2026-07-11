@@ -14106,6 +14106,75 @@ var PanelFramework = function(exports) {
     padding: 7px 9px !important;
   }
 
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1120-public-home] .ik-mobile-supporting-list {
+    display: grid !important;
+    grid-template-rows: 34px minmax(48px, 1fr) !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1120-public-home] .ik-mobile-detail-entry {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    align-items: center !important;
+    gap: 10px !important;
+    width: 100% !important;
+    min-height: 48px !important;
+    height: 48px !important;
+    margin: 0 !important;
+    padding: 8px 10px !important;
+    border: 0 !important;
+    border-top: 1px solid rgba(126, 151, 178, .16) !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    color: #172236 !important;
+    box-shadow: none !important;
+    text-align: left !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1120-public-home] .ik-mobile-detail-entry > span {
+    display: grid !important;
+    gap: 2px !important;
+    min-width: 0 !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1120-public-home] .ik-mobile-detail-entry b {
+    overflow: hidden !important;
+    color: #172236 !important;
+    font-size: 12px !important;
+    font-weight: 820 !important;
+    line-height: 1.12 !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1120-public-home] .ik-mobile-detail-entry em {
+    overflow: hidden !important;
+    color: #6b7b8f !important;
+    font-size: 10px !important;
+    font-style: normal !important;
+    font-weight: 620 !important;
+    line-height: 1.12 !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1120-public-home] .ik-mobile-detail-entry > strong {
+    display: inline-grid !important;
+    place-items: center !important;
+    min-width: 38px !important;
+    height: 24px !important;
+    border: 1px solid #cbd9e8 !important;
+    border-radius: 7px !important;
+    background: #f8fbff !important;
+    color: #1f4f86 !important;
+    font-size: 11px !important;
+    font-weight: 820 !important;
+    line-height: 1 !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1120-public-home] .ik-mobile-supporting-detail-rows {
+    display: none !important;
+  }
+
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-mobile-supporting-list .ik-v420-list-row {
     min-height: 42px !important;
     height: 42px !important;
@@ -16500,7 +16569,8 @@ var PanelFramework = function(exports) {
   }
   function SupportingList({ model }) {
     const rows = model.primaryList.rows.slice(0, model.priority === "normal" ? 3 : 4);
-    const title = model.priority === "normal" ? "运营摘要 · 终端流量参考" : "异常证据";
+    const title = model.priority === "normal" ? "运营摘要详情" : "异常证据详情";
+    const summary = model.priority === "normal" ? "首屏只保留判断依据，排行进入详情" : "先处理事故对象，证据链进入详情";
     const listStyle = { "--mobile-list-count": rows.length };
     return /* @__PURE__ */ jsxRuntimeExports.jsx(
       "section",
@@ -16519,6 +16589,8 @@ var PanelFramework = function(exports) {
         "data-overview-mobile-normal-ranking": model.surface.normalRanking,
         "data-overview-mobile-v1070-grouped-surface": "separator-only-status-list-no-card-stack",
         "data-overview-mobile-v1080-surface": "one-supporting-list-no-duplicate-status-ledger",
+        "data-overview-mobile-v1120-supporting-surface": "detail-entry-evidence-below-primary-task",
+        "data-overview-mobile-v1120-evidence-policy": "first-screen-summary-only-rows-deferred",
         style: listStyle,
         children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
           "div",
@@ -16528,40 +16600,67 @@ var PanelFramework = function(exports) {
             "data-overview-mobile-rank-list": model.surface.rankListKind,
             "data-overview-mobile-v420-list": "native-router-list",
             "data-overview-mobile-v240-list": model.surface.v240ListKind,
-            "data-overview-mobile-supporting-list": "below-decision-not-primary-home-task",
+            "data-overview-mobile-supporting-list": "detail-entry-below-primary-task",
             "data-overview-mobile-impact-scope-line": `${model.impactScope.id}:${model.impactScope.plane}`,
             children: [
               /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { children: [
                 /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: title }),
-                /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: model.primaryList.meta }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: summary }),
                 /* @__PURE__ */ jsxRuntimeExports.jsxs("em", { className: toneClass(model.impactScope.tone), children: [
                   model.impactScope.label,
                   " · ",
                   model.impactScope.value
                 ] })
               ] }),
-              rows.map((row) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
-                "article",
+              /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                "button",
                 {
-                  className: `ik-v420-list-row ${toneClass(row.tone)}`,
-                  "data-overview-mobile-v1061-evidence-layer": row.evidenceLayer,
-                  "data-overview-mobile-v1061-evidence-source": row.evidenceSource,
-                  "data-overview-mobile-v1061-evidence-role": model.priority === "normal" && row.evidenceRole === "secondary-evidence" ? "operational-context" : row.evidenceRole,
-                  "data-overview-mobile-v1061-evidence-key": row.evidenceKey,
+                  className: `ik-mobile-detail-entry ${toneClass(model.impactScope.tone)}`,
+                  "data-overview-mobile-v1120-detail-entry": "evidence-ranking-drilldown",
+                  "data-overview-mobile-v1120-detail-count": rows.length,
+                  type: "button",
                   children: [
-                    /* @__PURE__ */ jsxRuntimeExports.jsx("i", { className: "ik-mobile-row-token", "data-rank": row.rank, children: rowIcon(row) }),
                     /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-                      /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: row.name }),
-                      /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: row.meta })
+                      /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: model.priority === "normal" ? "查看运营细节" : "查看事故证据" }),
+                      /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: model.primaryList.meta })
                     ] }),
                     /* @__PURE__ */ jsxRuntimeExports.jsxs("strong", { children: [
-                      /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: row.value }),
-                      /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: row.status || row.kind || "参考" })
+                      rows.length,
+                      " 项"
                     ] })
                   ]
-                },
-                row.id
-              ))
+                }
+              ),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                "div",
+                {
+                  className: "ik-mobile-supporting-detail-rows",
+                  "data-overview-mobile-v1120-deferred-rows": "evidence-below-mobile-home-task",
+                  "aria-hidden": "true",
+                  children: rows.map((row) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                    "article",
+                    {
+                      className: `ik-v420-list-row ik-mobile-deferred-row ${toneClass(row.tone)}`,
+                      "data-overview-mobile-v1061-evidence-layer": row.evidenceLayer,
+                      "data-overview-mobile-v1061-evidence-source": row.evidenceSource,
+                      "data-overview-mobile-v1061-evidence-role": model.priority === "normal" && row.evidenceRole === "secondary-evidence" ? "operational-context" : row.evidenceRole,
+                      "data-overview-mobile-v1061-evidence-key": row.evidenceKey,
+                      children: [
+                        /* @__PURE__ */ jsxRuntimeExports.jsx("i", { className: "ik-mobile-row-token", "data-rank": row.rank, children: rowIcon(row) }),
+                        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+                          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: row.name }),
+                          /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: row.meta })
+                        ] }),
+                        /* @__PURE__ */ jsxRuntimeExports.jsxs("strong", { children: [
+                          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: row.value }),
+                          /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: row.status || row.kind || "参考" })
+                        ] })
+                      ]
+                    },
+                    row.id
+                  ))
+                }
+              )
             ]
           }
         )
@@ -16623,6 +16722,9 @@ var PanelFramework = function(exports) {
         "data-overview-mobile-v1100-first-screen-order": "device-decision-four-facts-next-step-supporting-tabs",
         "data-overview-mobile-v1110-public-home": "device-primary-card-four-facts-supporting-no-redundant-strips",
         "data-overview-mobile-v1110-first-screen-order": "device-primary-decision-four-facts-supporting-list-tabs",
+        "data-overview-mobile-v1120-public-home": "single-task-verdict-core-facts-detail-entry",
+        "data-overview-mobile-v1120-first-screen-order": "device-primary-decision-four-facts-detail-entry-tabs",
+        "data-overview-mobile-v1120-evidence-depth": "supporting-rows-deferred-from-first-screen",
         "data-overview-mobile-no-snapshot-no-rate-placeholder": props.state.scenario === "no-snapshot" ? "true" : void 0,
         children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ik-v420-shell ik-v240-shell", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
@@ -16641,6 +16743,7 @@ var PanelFramework = function(exports) {
               "data-overview-mobile-app-terminal-ranking-state": model.appHomeContract.terminalRanking,
               "data-overview-mobile-v1100-first-screen-hierarchy": "device-primary-decision-four-facts-next-step-supporting-list-tabs",
               "data-overview-mobile-v1110-first-screen-hierarchy": "device-primary-decision-four-facts-supporting-list-tabs",
+              "data-overview-mobile-v1120-first-screen-hierarchy": "device-primary-decision-four-facts-detail-entry-tabs",
               children: [
                 /* @__PURE__ */ jsxRuntimeExports.jsx(DeviceBar, { model }),
                 /* @__PURE__ */ jsxRuntimeExports.jsx(PrimaryDecision, { model }),
