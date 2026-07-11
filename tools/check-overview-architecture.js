@@ -97,6 +97,8 @@ let desktopWorkspaceGridRuleCount = 0;
 let desktopNavRuleCount = 0;
 let desktopStatusBusRuleCount = 0;
 let desktopLegacyTopbarRuleCount = 0;
+let desktopModuleShellRuleCount = 0;
+let desktopModuleHeadRuleCount = 0;
 
 cssRoot.walkRules((rule) => {
   ruleCount += 1;
@@ -148,6 +150,28 @@ desktopRefinementRoot.walkRules((rule) => {
     } else {
       desktopLegacyTopbarRuleCount += 1;
     }
+  }
+  const selectors = rule.selector.split(",").map((selector) => selector.trim());
+  if (
+    selectors.length > 0 &&
+    selectors.every(
+      (selector) => /\.ro-module$/.test(selector) && !selector.includes(">")
+    )
+  ) {
+    desktopModuleShellRuleCount += 1;
+  }
+  if (
+    selectors.length > 0 &&
+    selectors.every(
+      (selector) =>
+        /\.ro-module-head(?:\s+(?:b|span|em))?$/.test(selector) &&
+        !selector.includes(".ro-col") &&
+        !selector.includes(".ro-module[") &&
+        !selector.includes(":is(") &&
+        !selector.includes(">")
+    )
+  ) {
+    desktopModuleHeadRuleCount += 1;
   }
 });
 
@@ -317,8 +341,8 @@ assert(
   `OverviewPanel.css mobile rule share regressed above 11%: ${mobileRuleShare.toFixed(4)}`
 );
 assert(
-  desktopRefinementImportantCount <= 1042,
-  `Desktop refinement !important count regressed above 1042: ${desktopRefinementImportantCount}`
+  desktopRefinementImportantCount <= 924,
+  `Desktop refinement !important count regressed above 924: ${desktopRefinementImportantCount}`
 );
 assert(
   desktopDecisionRailRuleCount === 1 && desktopDecisionCellRuleCount <= 4,
@@ -331,6 +355,10 @@ assert(
 assert(
   desktopStatusBusRuleCount === 8 && desktopLegacyTopbarRuleCount === 0,
   `Desktop status bus must stay canonical: statusBusRules=${desktopStatusBusRuleCount} legacyTopbarRules=${desktopLegacyTopbarRuleCount}`
+);
+assert(
+  desktopModuleShellRuleCount === 1 && desktopModuleHeadRuleCount === 3,
+  `Desktop module shell/head must stay canonical: shellRules=${desktopModuleShellRuleCount} headRules=${desktopModuleHeadRuleCount}`
 );
 assert(
   versionMarkerCount <= 159,
@@ -401,5 +429,5 @@ if (failures.length > 0) {
 }
 
 console.log(
-  `overview architecture gate: PASS panel=${lines(panel)} lines desktop=${lines(desktopConsole)} lines desktopDecision=${lines(desktopDecisionRail)} lines scenes=${lines(desktopScenes)} lines helper=${lines(desktopHelpers)} lines rowsFacade=${lines(desktopRows)} lines trafficRows=${lines(desktopTrafficRows)} lines networkRows=${lines(desktopNetworkRows)} lines credibilityRows=${lines(desktopCredibilityRows)} lines terminalRows=${lines(desktopTerminalRows)} lines resourceRows=${lines(desktopResourceRows)} lines visuals=${lines(desktopVisuals)} lines mobileHome=${lines(mobileHome)} lines mobileDecision=${lines(mobileDecision)} lines mobileSections=${lines(mobileHomeSections)} lines css=${bytes(panelCssFile)} bytes mobileStyles=${mobileStyleByteTotal} bytes important=${importantShare.toFixed(4)} desktopImportant=${desktopRefinementImportantCount} decisionRailRules=${desktopDecisionRailRuleCount} decisionCellRules=${desktopDecisionCellRuleCount} workspaceGridRules=${desktopWorkspaceGridRuleCount} navRules=${desktopNavRuleCount} statusBusRules=${desktopStatusBusRuleCount} legacyTopbarRules=${desktopLegacyTopbarRuleCount} mobile=${mobileRuleShare.toFixed(4)}`
+  `overview architecture gate: PASS panel=${lines(panel)} lines desktop=${lines(desktopConsole)} lines desktopDecision=${lines(desktopDecisionRail)} lines scenes=${lines(desktopScenes)} lines helper=${lines(desktopHelpers)} lines rowsFacade=${lines(desktopRows)} lines trafficRows=${lines(desktopTrafficRows)} lines networkRows=${lines(desktopNetworkRows)} lines credibilityRows=${lines(desktopCredibilityRows)} lines terminalRows=${lines(desktopTerminalRows)} lines resourceRows=${lines(desktopResourceRows)} lines visuals=${lines(desktopVisuals)} lines mobileHome=${lines(mobileHome)} lines mobileDecision=${lines(mobileDecision)} lines mobileSections=${lines(mobileHomeSections)} lines css=${bytes(panelCssFile)} bytes mobileStyles=${mobileStyleByteTotal} bytes important=${importantShare.toFixed(4)} desktopImportant=${desktopRefinementImportantCount} decisionRailRules=${desktopDecisionRailRuleCount} decisionCellRules=${desktopDecisionCellRuleCount} workspaceGridRules=${desktopWorkspaceGridRuleCount} navRules=${desktopNavRuleCount} statusBusRules=${desktopStatusBusRuleCount} legacyTopbarRules=${desktopLegacyTopbarRuleCount} moduleShellRules=${desktopModuleShellRuleCount} moduleHeadRules=${desktopModuleHeadRuleCount} mobile=${mobileRuleShare.toFixed(4)}`
 );

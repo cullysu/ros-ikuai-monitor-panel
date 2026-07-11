@@ -33,31 +33,11 @@
     --ik-warn: #c9781f;
   }
 
-  #overview.router-overview-framework .ro-module.ik-overview-flat-module {
-    border-color: var(--ik-line) !important;
-    border-radius: 4px !important;
-    background: var(--ik-panel) !important;
-  }
-
-  #overview.router-overview-framework .ro-module-head {
-    min-height: 26px !important;
-    padding: 4px 8px !important;
-    background: linear-gradient(180deg, #fbfdff, #f7fbff) !important;
-    border-bottom-color: #edf4fa !important;
-  }
-
   #overview.router-overview-framework .ik-overview-flat-title {
     color: #1d2d40 !important;
     font-size: 12.2px !important;
     line-height: 14px !important;
     font-weight: 780 !important;
-  }
-
-  #overview.router-overview-framework .ro-module-head span {
-    color: #8191a3 !important;
-    font-size: 9.8px !important;
-    line-height: 11px !important;
-    font-weight: 520 !important;
   }
 
   #overview.router-overview-framework .ro-ledger-row {
@@ -240,19 +220,6 @@
     --ik-v1020-desktop-danger: var(--ik-console-danger);
     --ik-v1020-desktop-warn: var(--ik-console-warn);
     background: var(--ik-console-page) !important;
-  }
-
-  #overview.router-overview-framework[data-overview-desktop-v1020-public-product-polish] .ro-module,
-  .router-overview-framework[data-overview-desktop-v1020-public-product-polish] .ro-module {
-    border-color: var(--ik-v1020-desktop-line-strong) !important;
-    background: rgba(255, 255, 255, .965) !important;
-    box-shadow: none !important;
-  }
-
-  #overview.router-overview-framework[data-overview-desktop-v1020-public-product-polish] .ro-module-head,
-  .router-overview-framework[data-overview-desktop-v1020-public-product-polish] .ro-module-head {
-    border-bottom-color: var(--ik-v1020-desktop-line) !important;
-    background: #fbfdff !important;
   }
 
   #overview.router-overview-framework[data-overview-desktop-v1020-public-product-polish] .ro-ledger-head-cell,
@@ -640,43 +607,6 @@
     text-overflow: ellipsis !important;
   }
 
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module {
-    border: 1px solid #dce5ee !important;
-    border-left-width: 2px !important;
-    border-radius: 0 !important;
-    box-shadow: none !important;
-    overflow: hidden !important;
-  }
-
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module-head {
-    min-height: 28px !important;
-    height: 28px !important;
-    padding: 3px 6px !important;
-    border-bottom: 1px solid #e6edf5 !important;
-    background: #fff !important;
-  }
-
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module-head b {
-    font-size: 11.5px !important;
-    line-height: 1 !important;
-  }
-
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module-head span {
-    display: inline !important;
-    margin-left: 5px !important;
-    font-size: 8.5px !important;
-    line-height: 1 !important;
-    color: #8491a3 !important;
-  }
-
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module-head em {
-    padding: 1px 4px !important;
-    border: 0 !important;
-    font-size: 8.5px !important;
-    line-height: 1 !important;
-    background: transparent !important;
-  }
-
   .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-judgement-chart,
   .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-resource-visual,
   .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-traffic-visual,
@@ -865,56 +795,14 @@
     background: #f3f7fb !important;
   }
 
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module {
-    border: 1px solid var(--v814-line-strong) !important;
-    border-left: 2px solid #d0deeb !important;
-    border-radius: 0 !important;
-    background: #fff !important;
-    box-shadow: none !important;
-  }
-
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-tone="danger"] { border-left-color: #d8423a !important; }
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-tone="warn"] { border-left-color: #d58a21 !important; }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module-head {
-    height: 27px !important;
-    min-height: 27px !important;
-    padding: 3px 6px !important;
-    border-bottom: 1px solid var(--v814-line) !important;
-    background: #fbfdff !important;
-  }
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module-head div {
     display: flex !important;
     min-width: 0 !important;
     align-items: baseline !important;
     gap: 5px !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module-head b {
-    color: var(--v814-text) !important;
-    font-size: 11.3px !important;
-    line-height: 1 !important;
-    font-weight: 800 !important;
-    white-space: nowrap !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module-head span {
-    min-width: 0 !important;
-    color: var(--v814-muted) !important;
-    font-size: 8.2px !important;
-    line-height: 1 !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    white-space: nowrap !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module-head em {
-    color: #517193 !important;
-    font-size: 8.2px !important;
-    font-weight: 700 !important;
-    background: transparent !important;
-    border: 0 !important;
   }
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-chart-axis {
@@ -1250,15 +1138,6 @@
     background: #f8fbfe !important;
   }
 
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module {
-    border: 1px solid var(--v817-line-strong) !important;
-    border-left: 1px solid var(--v817-line-strong) !important;
-    border-radius: 0 !important;
-    background: #fff !important;
-    box-shadow: none !important;
-    min-height: 0 !important;
-  }
-
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-col.is-main > .ro-module:first-child,
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-col.is-side > .ro-module,
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-col.is-bottom > .ro-module {
@@ -1273,33 +1152,8 @@
     border-left: 2px solid #d58a21 !important;
   }
 
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module-head {
-    height: 25px !important;
-    min-height: 25px !important;
-    padding: 2px 6px !important;
-    border-bottom: 1px solid var(--v817-line) !important;
-    background: #fff !important;
-  }
-
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module-head div {
     gap: 4px !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module-head b {
-    font-size: 10.8px !important;
-    line-height: 1 !important;
-    color: var(--v817-text) !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module-head span {
-    font-size: 7.8px !important;
-    color: #8796a8 !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module-head em {
-    padding: 0 !important;
-    font-size: 7.8px !important;
-    color: #5b7693 !important;
   }
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-desktop-grid:is(
@@ -1596,40 +1450,12 @@
     overflow: hidden !important;
   }
 
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module {
-    border: 1px solid #dfe8f2 !important;
-    border-radius: 0 !important;
-    box-shadow: none !important;
-    background: #fff !important;
-  }
-
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-tone="danger"] {
     border-left: 2px solid #d83a32 !important;
   }
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-tone="warn"] {
     border-left: 2px solid #cf8424 !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module-head {
-    height: 26px !important;
-    min-height: 26px !important;
-    padding: 3px 6px !important;
-    border-bottom: 1px solid #e9f0f7 !important;
-    background: #fff !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module-head b {
-    font-size: 10.6px !important;
-    line-height: 1.05 !important;
-    font-weight: 800 !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module-head span,
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module-head em {
-    font-size: 7.5px !important;
-    line-height: 1 !important;
-    color: #75869a !important;
   }
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-head-cell {
@@ -1803,44 +1629,11 @@
     max-height: 148px !important;
   }
 
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module {
-    border: 1px solid var(--v825-line-strong) !important;
-    border-radius: 0 !important;
-    background: #fff !important;
-    box-shadow: none !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module-head {
-    height: 26px !important;
-    min-height: 26px !important;
-    padding: 2px 6px !important;
-    border-bottom: 1px solid var(--v825-line) !important;
-    background: #fff !important;
-  }
-
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module-head > div {
     display: flex !important;
     min-width: 0 !important;
     align-items: baseline !important;
     gap: 5px !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module-head b {
-    font-size: 10.2px !important;
-    line-height: 1 !important;
-    font-weight: 800 !important;
-    color: var(--v825-text) !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module-head span,
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module-head em {
-    max-width: 160px !important;
-    font-size: 7.2px !important;
-    line-height: 1 !important;
-    color: var(--v825-muted) !important;
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
   }
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-table {
@@ -1994,11 +1787,6 @@
     background: #f3f7fb !important;
   }
 
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module {
-    border-color: var(--ik-v950-line) !important;
-    background: #fff !important;
-  }
-
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-tone="danger"] {
     border-left-color: rgba(164, 48, 45, .70) !important;
   }
@@ -2006,16 +1794,6 @@
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-tone="warn"],
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-tone="missing"] {
     border-left-color: rgba(128, 98, 59, .56) !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module-head {
-    border-bottom-color: var(--ik-v950-soft-line) !important;
-    background: linear-gradient(180deg, #fff, #fbfdff) !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module-head b {
-    color: var(--ik-v950-text) !important;
-    letter-spacing: -.04px !important;
   }
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-head-cell {
@@ -2087,14 +1865,6 @@
 /* v960 public-console refinement: flatter status bus, quieter evidence, lower table noise. */
 @media (min-width: 761px) {
 
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module,
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module {
-    border: 1px solid rgba(157, 177, 198, .26) !important;
-    border-left: 0 !important;
-    box-shadow: none !important;
-    background: rgba(255, 255, 255, .96) !important;
-  }
-
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-evidence-weight="primary"],
   .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-evidence-weight="primary"] {
     border-left: 2px solid rgba(20, 115, 230, .42) !important;
@@ -2103,28 +1873,6 @@
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-evidence-weight="primary"][data-tone="danger"],
   .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-evidence-weight="primary"][data-tone="danger"] {
     border-left-color: rgba(173, 54, 49, .54) !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module-head,
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module-head {
-    height: 25px !important;
-    min-height: 25px !important;
-    border-bottom: 1px solid rgba(157, 177, 198, .18) !important;
-    background: #fbfdff !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module-head b,
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module-head b {
-    color: #172a3d !important;
-    font-size: 11px !important;
-    font-weight: 790 !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module-head span,
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module-head span {
-    color: #708295 !important;
-    font-size: 8px !important;
-    font-weight: 560 !important;
   }
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-head-cell,
@@ -2383,15 +2131,46 @@
     line-height: 10px !important;
   }
 
+  /* Canonical desktop module shell and heading. */
+  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-module {
+    min-height: 0 !important;
+    overflow: hidden !important;
+    border: 1px solid rgba(157, 177, 198, .26) !important;
+    border-left: 0 !important;
+    border-radius: 3px !important;
+    background: rgba(255, 255, 255, .96) !important;
+    box-shadow: none !important;
+  }
+
+  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-module-head {
+    height: 25px !important;
+    min-height: 25px !important;
+    padding: 2px 6px !important;
+    border-bottom: 1px solid rgba(157, 177, 198, .18) !important;
+    background: #fbfdff !important;
+  }
+
+  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-module-head b {
+    color: #172a3d !important;
+    font-size: 11px !important;
+    font-weight: 790 !important;
+    line-height: 1 !important;
+  }
+
+  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-module-head span,
+  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-module-head em {
+    max-width: 160px !important;
+    overflow: hidden !important;
+    color: #708295 !important;
+    font-size: 8px !important;
+    line-height: 1 !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
   #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-col.is-bottom,
   .router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-col.is-bottom {
     grid-column: 2 / -1 !important;
-  }
-
-  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-module,
-  .router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-module {
-    border-color: rgba(155, 177, 200, .13) !important;
-    border-radius: 3px !important;
   }
 
   #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-ledger-cell,
