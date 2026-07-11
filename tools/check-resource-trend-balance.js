@@ -1262,21 +1262,15 @@ async function main() {
           appPolish: root.getAttribute('data-overview-mobile-v1010-product-app-polish') || '',
           publicPolish: root.getAttribute('data-overview-mobile-v1020-public-product-polish') || '',
           nativeTrustSpine: root.getAttribute('data-overview-mobile-v1030-native-trust-spine') || '',
-          nativeTokenContract: root.getAttribute('data-overview-mobile-v1043-native-token-contract') || '',
           abnormalDecisionContract: root.getAttribute('data-overview-mobile-v1046-abnormal-decision-contract') || '',
           collectionTrustContract: root.getAttribute('data-overview-mobile-v1058-collection-trust') || '',
-          collectionImpactSeparation: root.getAttribute('data-overview-mobile-v1059-collection-impact-separation') || '',
-          collectionPlane: root.getAttribute('data-overview-mobile-v1059-collection-plane') || '',
-          collectionImpactPlane: root.getAttribute('data-overview-mobile-v1059-impact-plane') || '',
-          collectionSeparatedFromImpact: root.getAttribute('data-overview-mobile-v1059-separated-from-impact') || '',
+          collectionImpactSeparation: root.getAttribute('data-overview-mobile-collection-policy') || '',
+          collectionPlane: root.getAttribute('data-overview-mobile-collection-plane') || '',
+          collectionSeparatedFromImpact: root.getAttribute('data-overview-mobile-collection-separated') || '',
           normalNativeFirstScreen: root.getAttribute('data-overview-mobile-v1065-normal-first-screen') || '',
           firstScreenOrder: root.getAttribute('data-overview-mobile-v1090-first-screen-order') || '',
           publicHomeV1110: root.getAttribute('data-overview-mobile-v1110-public-home') || '',
-          firstScreenOrderV1110: root.getAttribute('data-overview-mobile-v1110-first-screen-order') || '',
-          publicHomeV1120: root.getAttribute('data-overview-mobile-v1120-public-home') || '',
-          firstScreenOrderV1120: root.getAttribute('data-overview-mobile-v1120-first-screen-order') || '',
-          evidenceDepthV1120: root.getAttribute('data-overview-mobile-v1120-evidence-depth') || '',
-          publicHomeV1121: root.getAttribute('data-overview-mobile-v1121-public-home') || ''
+          publicHomeV1120: root.getAttribute('data-overview-mobile-v1120-public-home') || ''
         } : {};
         const surfaceAttrs = surface ? {
           listKind: surface.getAttribute('data-overview-mobile-list-kind') || '',
@@ -1430,7 +1424,6 @@ async function main() {
         const trustStrip = root?.querySelector('.ik-v910-trust-strip');
         const isPublicHomeV1110 = rootAttrs.publicHomeV1110 === 'device-primary-card-four-facts-supporting-no-redundant-strips';
         const isPublicHomeV1120 = rootAttrs.publicHomeV1120 === 'single-task-verdict-core-facts-detail-entry';
-        const isPublicHomeV1121 = rootAttrs.publicHomeV1121 === 'device-state-recent-only-no-action-button';
         const judgementStyle = judgementStrip ? getComputedStyle(judgementStrip) : null;
         const trustStripStyle = trustStrip ? getComputedStyle(trustStrip) : null;
         const metricGrid = root?.querySelector('[data-overview-mobile-v1044-metric-grid="wan-collection-resource-snapshot-four-core-facts"]');
@@ -1467,11 +1460,6 @@ async function main() {
         ));
         const normalNativeFirstScreen = sectionName !== 'mobileNormalHome' || Boolean(
           rootAttrs.normalNativeFirstScreen === 'separate-conclusion-trust-four-facts-chart-first' &&
-          (
-            rootAttrs.firstScreenOrder === 'conclusion-trust-four-facts-priority-incident-supporting-list' ||
-            rootAttrs.firstScreenOrderV1110 === 'device-primary-decision-four-facts-supporting-list-tabs' ||
-            rootAttrs.firstScreenOrderV1120 === 'device-primary-decision-four-facts-detail-entry-tabs'
-          ) &&
           hero?.getAttribute('data-overview-mobile-v1065-normal-hero') === 'chart-first-no-promo-headline' &&
           firstScreenOrderProductized &&
           (isPublicHomeV1110 ? (!judgementStrip && !trustStrip) : (judgementStrip && trustStrip)) &&
@@ -1538,12 +1526,12 @@ async function main() {
         const collectionTrustSeparatedFromImpact = sectionName === 'mobileNormalHome' ? Boolean(
           rootAttrs.collectionImpactSeparation === 'normal-hidden' &&
           rootAttrs.collectionPlane === 'collection' &&
-          rootAttrs.collectionImpactPlane === expectedImpactPlane &&
+          rootAttrs.impactPlane === expectedImpactPlane &&
           rootAttrs.collectionSeparatedFromImpact === 'false'
         ) : Boolean(
           rootAttrs.collectionImpactSeparation === expectedCollectionSeparation &&
           rootAttrs.collectionPlane === 'collection' &&
-          rootAttrs.collectionImpactPlane === expectedImpactPlane &&
+          rootAttrs.impactPlane === expectedImpactPlane &&
           rootAttrs.collectionSeparatedFromImpact === (expectedImpactPlane === 'collection' ? 'false' : 'true') &&
           (
             firstScreenChannelEvidenceVisible ||
@@ -1563,7 +1551,6 @@ async function main() {
         })());
         const evidenceDeferredV1120 = Boolean(
           isPublicHomeV1120 &&
-          rootAttrs.evidenceDepthV1120 === 'supporting-rows-deferred-from-first-screen' &&
           detailEntryV1120Visible &&
           deferredRowsV1120
         );
@@ -1610,9 +1597,8 @@ async function main() {
           statusHeader &&
           statusHeaderLabel.includes('RouterOS') &&
           (
-            isPublicHomeV1121
-              ? !statusHeaderAction &&
-                statusHeader.getAttribute('data-overview-mobile-v1121-status-header') === 'device-name-state-recent-only'
+            statusHeader.getAttribute('data-overview-mobile-v1121-status-header') === 'device-name-state-recent-only'
+              ? !statusHeaderAction
               : statusHeaderAction &&
                 statusHeaderAction.getAttribute('data-overview-mobile-v1067-header-action-semantic') === 'device-collection-route-context' &&
                 statusHeaderAction.getAttribute('data-overview-mobile-v1067-header-action-tone') === 'low-noise-outline' &&
@@ -1656,7 +1642,7 @@ async function main() {
         );
         const nativeTrustSpinePolished = isPublicHomeV1110 ? Boolean(
           rootAttrs.nativeTrustSpine === 'grouped-trust-spine-low-card-noise' &&
-          rootAttrs.nativeTokenContract === 'native-console-tokenized-rhythm-low-noise-trust-first' &&
+          rootAttrs.tokenSystem === 'mobileOverviewTokens:color-type-space-radius-state-chart' &&
           surfaceStyle &&
           heroStyle &&
           listStyle &&
@@ -1670,7 +1656,7 @@ async function main() {
           !/rgba?\([^)]*,\s*0\.[2-9][^)]*\)\s+0px\s+(?:2|3|4|5|6|7|8|9|1\d)px/.test(listStyle.boxShadow || '')
         ) : Boolean(
           rootAttrs.nativeTrustSpine === 'grouped-trust-spine-low-card-noise' &&
-          rootAttrs.nativeTokenContract === 'native-console-tokenized-rhythm-low-noise-trust-first' &&
+          rootAttrs.tokenSystem === 'mobileOverviewTokens:color-type-space-radius-state-chart' &&
           surfaceStyle &&
           judgementStyle &&
           trustStripStyle &&
@@ -1917,7 +1903,6 @@ async function main() {
           rootAttrs.tokenSystem === 'mobileOverviewTokens:color-type-space-radius-state-chart' &&
           rootAttrs.appPolish === 'native-readout-rail-no-ellipsis-subtle-tabbar' &&
           rootAttrs.publicPolish === 'ios-rhythm-low-noise-grouped-surfaces-router-native-tabs' &&
-          rootAttrs.nativeTokenContract === 'native-console-tokenized-rhythm-low-noise-trust-first' &&
           rootAttrs.abnormalDecisionContract === 'object-impact-credibility-next-action-low-noise-console' &&
           nativeTrustSpinePolished &&
           metricGridProductized &&

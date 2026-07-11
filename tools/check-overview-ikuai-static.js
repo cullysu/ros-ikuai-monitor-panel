@@ -1455,7 +1455,7 @@ includesAll(read("src/panel-framework/overview/mobileOverviewTokens.ts"), [
   "native-console-tokenized-rhythm-low-noise-trust-first",
 ], `source ${activeMobileVersion} mobile design token contract`);
 includesAll(`${activeMobileExport}\n${mobileAppPolishStyles}\n${mobileTokenSource}\n${resourceTrendCheck}`, [
-  "data-overview-mobile-v1043-native-token-contract=\"native-console-tokenized-rhythm-low-noise-trust-first\"",
+  "data-overview-mobile-design-token-system=\"mobileOverviewTokens:color-type-space-radius-state-chart\"",
   "grouped-trust-spine-low-card-noise + native-console-tokenized-rhythm-low-noise-trust-first",
   "--ik-v1030-native-contract: var(--ik-native-shell-contract)",
   "gap: var(--ik-native-rhythm-gap)",
@@ -2393,7 +2393,7 @@ includesAll(`${mobileModel}\n${mobilePolicy}\n${sourceV1046MobileHome}\n${read("
   "function CollectionTrustRail",
   "model.collectionTrust.map",
   "data-overview-mobile-v1058-collection-trust=\"routeros-rest-ssh-snapshot-fixed-abnormal-first-screen\"",
-  "data-overview-mobile-v1059-collection-impact-separation",
+  "data-overview-mobile-collection-policy",
   "data-overview-mobile-v1059-plane=\"collection\"",
   "data-overview-mobile-v1058-collection-trust-policy",
   "data-overview-mobile-v1058-collection-channel",
