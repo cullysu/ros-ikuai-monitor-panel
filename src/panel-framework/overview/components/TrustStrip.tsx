@@ -1,7 +1,7 @@
 import { toneClass } from "./MobileOverviewUtils";
 import type { MobileOverviewResolvedProps } from "./MobileOverviewTypes";
 
-function CollectionTrustRail({ model }: MobileOverviewResolvedProps) {
+function CollectionTrustRail({ model }: Pick<MobileOverviewResolvedProps, "model">) {
   if (model.appHomeContract.severity === "normal") return null;
   return (
     <div

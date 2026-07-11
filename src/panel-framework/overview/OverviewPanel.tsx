@@ -2,7 +2,6 @@ import { MobileOverviewHome } from "./components/MobileOverviewHome";
 import { DesktopWorkspace } from "./components/DesktopConsole";
 import { StatusVerdict } from "./components/StatusVerdict";
 import { OVERVIEW_LOW_NOISE_CONSOLE_TOKEN_CONTRACT } from "./mobileOverviewTokens";
-import type { OverviewPanelProps } from "./index";
 import {
   OVERVIEW_CHART_METADATA_COVERAGE,
   OVERVIEW_CHART_STATUS_COLORS,
@@ -11,6 +10,7 @@ import {
   OVERVIEW_SCENE_CHART_CONTRACT,
   OVERVIEW_SCENE_CHART_PRIORITY,
   verdictContractText,
+  type OverviewPanelProps,
 } from "./desktopOverviewHelpers";
 import "./OverviewPanel.css";
 import "./OverviewPanelDesktopRefinement.css";

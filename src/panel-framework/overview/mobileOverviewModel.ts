@@ -214,7 +214,7 @@ export interface MobileOverviewModel {
   appHomeContract: MobileAppHomeContract;
   normalSummary: {
     mode: "normal-compact" | "incident-hidden";
-    contract: "compact-native-summary-status-wan-collection-resource-snapshot-chart-first";
+    contract: "separate-conclusion-trust-four-facts-chart-first";
     cells: MobileNormalSummaryCell[];
   };
   surface: MobileHomeSurface;

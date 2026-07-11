@@ -13,6 +13,9 @@ jobs:
   linux-validation:
     name: Linux validation
     runs-on: ubuntu-latest
+    env:
+      CODEX_MEMORY_LIMIT_MB: "2048"
+      NODE_OPTIONS: --max-old-space-size=2048
     steps:
       - name: Check out repository
         uses: actions/checkout@v6
@@ -35,6 +38,13 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: "22"
+          cache: npm
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: TypeScript contract check
+        run: npm run check:types
 
       - name: LAN/default documentation checks
         run: |
