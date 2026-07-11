@@ -805,10 +805,12 @@ def assert_frontend_wan_aggregate_default():
         and 'data-overview-framework-asset="script"' in index_source
     )
     if framework_shell:
-        rows_source = (ROOT / "src" / "panel-framework" / "overview" / "desktopOverviewRows.tsx").read_text(encoding="utf-8")
+        rows_facade_source = (ROOT / "src" / "panel-framework" / "overview" / "desktopOverviewRows.ts").read_text(encoding="utf-8")
+        rows_source = (ROOT / "src" / "panel-framework" / "overview" / "desktopOverviewTrafficRows.ts").read_text(encoding="utf-8")
         visuals_source = (ROOT / "src" / "panel-framework" / "overview" / "desktopOverviewVisuals.tsx").read_text(encoding="utf-8")
         desktop_scene_source = (ROOT / "src" / "panel-framework" / "overview" / "desktopOverviewScenes.tsx").read_text(encoding="utf-8")
         artifact_source = (ROOT / "public" / "assets" / "framework" / "panel-framework.js").read_text(encoding="utf-8")
+        assert 'export * from "./desktopOverviewTrafficRows";' in rows_facade_source
         assert "export function trafficTotals" in rows_source
         assert "const rows = collectWanRows(snapshot);" in rows_source
         assert "up: rows.reduce((total, row) => total + toNumber(row.upRate), 0)" in rows_source
