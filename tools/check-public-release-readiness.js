@@ -781,6 +781,11 @@ function main(argv = process.argv.slice(2)) {
   assertContains('src/panel-framework/overview/mobileOverviewModel.ts', '通道可读');
   assertNotContains('src/panel-framework/overview/components/IncidentHero.tsx', 'WAN 实时趋势');
   assertNotContains('src/panel-framework/overview/components/DesktopConsole.tsx', 'WAN 实时趋势');
+  assertContains('src/panel-framework/overview/styles/overview-mobile.css', 'mobile-professional-console-no-glow');
+  assertContains('src/panel-framework/overview/styles/overview-mobile.css', 'mobile-professional-console-final-eof');
+  assertContains('src/panel-framework/overview/styles/overview-mobile.css', 'box-shadow: inset 0 -2px 0 #1f2937');
+  assertContains('src/panel-framework/overview/styles/overview-mobile.css', 'border-radius: 14px !important;');
+  assertNotContains('src/panel-framework/overview/styles/overview-mobile.css', 'radial-gradient(circle at 50% 0, rgba(22, 119, 255, .18), transparent 42%)');
   assertNotExists('public/scale-adaptive-patch.js');
   assertNotExists('public/layout-whitespace-patch.js');
   assertNotExists('public/panel-professional-redesign.js');

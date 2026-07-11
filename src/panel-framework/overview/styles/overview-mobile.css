@@ -234,6 +234,157 @@
   }
 }
 
+/* Codex v510 mobile-professional-console-no-glow.
+   Final public mobile surface: network-console density, restrained chrome,
+   no soft health-app glow. Keep this block at EOF so it wins over older layers. */
+@media (max-width: 760px) {
+  #overview.router-overview-framework .ik-v420-screen {
+    background:
+      linear-gradient(180deg, #f4f6f8 0%, #edf1f5 100%) !important;
+    gap: 7px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-hero,
+  #overview.router-overview-framework .ik-v420-list,
+  #overview.router-overview-framework .ik-v420-timeline,
+  #overview.router-overview-framework .ik-v420-tabs,
+  #overview.router-overview-framework .ik-v420-visual,
+  #overview.router-overview-framework .ik-v240-visual {
+    border-color: rgba(139, 153, 169, .46) !important;
+    box-shadow: 0 1px 0 rgba(255, 255, 255, .86) inset, 0 8px 18px rgba(34, 49, 69, .075) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-hero {
+    border-radius: 14px !important;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, .96), rgba(246, 248, 250, .94)) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-hero::before,
+  #overview.router-overview-framework .ik-v420-hero::after,
+  #overview.router-overview-framework .ik-v420-tabs::before,
+  #overview.router-overview-framework .ik-v420-tabs::after,
+  #overview.router-overview-framework .ik-v420-list::before,
+  #overview.router-overview-framework .ik-v420-list::after {
+    display: none !important;
+    content: none !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-hero h1 {
+    color: #1f2933 !important;
+    font-size: 26px !important;
+    letter-spacing: -.045em !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-hero p,
+  #overview.router-overview-framework .ik-v420-hero small,
+  #overview.router-overview-framework .ik-v420-timeline-row span em {
+    color: #667382 !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-hero-stats,
+  #overview.router-overview-framework .ik-v420-hero-facts,
+  #overview.router-overview-framework .ik-v420-timeline,
+  #overview.router-overview-framework .ik-v420-list {
+    border-radius: 10px !important;
+    background: rgba(255, 255, 255, .72) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-hero-stats b,
+  #overview.router-overview-framework .ik-v420-hero-stats .is-primary b {
+    color: #111827 !important;
+    font-size: 21px !important;
+    font-weight: 820 !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-hero-stats em,
+  #overview.router-overview-framework .ik-v420-hero-facts em,
+  #overview.router-overview-framework .ik-v420-list-row em {
+    color: #556371 !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-visual,
+  #overview.router-overview-framework .ik-v240-visual {
+    border-radius: 10px !important;
+    background:
+      linear-gradient(180deg, rgba(249, 251, 253, .98), rgba(240, 244, 248, .94)) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-line-chart {
+    filter: saturate(.82) contrast(1.05) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-timeline {
+    padding: 9px 12px 5px !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-timeline-row {
+    border-bottom: 1px solid rgba(157, 171, 187, .34) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-timeline-row > i,
+  #overview.router-overview-framework .ik-v420-list-row > i,
+  #overview.router-overview-framework .ik-v503-device-icon {
+    border-radius: 6px !important;
+    background: linear-gradient(180deg, #f8fafc, #e7edf3) !important;
+    border: 1px solid rgba(133, 148, 166, .42) !important;
+    box-shadow: none !important;
+    color: #334155 !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-list {
+    border-radius: 12px !important;
+    background: rgba(255, 255, 255, .78) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-list-row {
+    min-height: 44px !important;
+    border-bottom-color: rgba(157, 171, 187, .30) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-list-row b,
+  #overview.router-overview-framework .ik-v420-timeline-row span b,
+  #overview.router-overview-framework .ik-v420-timeline header b {
+    color: #202b37 !important;
+    letter-spacing: -.018em !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-tabs {
+    border-radius: 12px !important;
+    border-color: rgba(125, 139, 156, .44) !important;
+    background: rgba(246, 248, 250, .96) !important;
+    box-shadow: 0 -1px 0 rgba(255, 255, 255, .92) inset, 0 -6px 18px rgba(28, 42, 61, .075) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-tabs button {
+    border-radius: 8px !important;
+    color: #667382 !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-tabs button.is-active {
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, .98), rgba(239, 243, 247, .96)) !important;
+    box-shadow: inset 0 -2px 0 #1f2937 !important;
+    color: #1f2937 !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-tabs button.is-active svg,
+  #overview.router-overview-framework .ik-v420-tabs button.is-active i {
+    color: #1f2937 !important;
+    filter: none !important;
+  }
+
+  #overview.router-overview-framework [data-overview-mobile-scene="resource-full"] .ik-v420-hero,
+  #overview.router-overview-framework [data-overview-mobile-scene="all-offline"] .ik-v420-hero,
+  #overview.router-overview-framework [data-overview-mobile-scene="interfaces-down"] .ik-v420-hero,
+  #overview.router-overview-framework [data-overview-mobile-scene="collection-down"] .ik-v420-hero,
+  #overview.router-overview-framework [data-overview-mobile-scene="no-snapshot"] .ik-v420-hero {
+    border-color: rgba(115, 126, 139, .56) !important;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, .98), rgba(244, 246, 248, .96)) !important;
+  }
+}
+
 @media (max-width: 760px) {
   .ro-topbar {
     display: none;
@@ -12341,16 +12492,63 @@
   }
 
   #overview.router-overview-framework .ik-v420-tabs button.is-active {
-    background:
-      radial-gradient(circle at 50% 0, rgba(22, 119, 255, .18), transparent 42%),
-      linear-gradient(180deg, #edf7ff, #e3f0ff) !important;
-    color: #1677ff !important;
+    background: linear-gradient(180deg, #f7f9fb, #edf1f5) !important;
+    box-shadow: inset 0 -2px 0 #1f2937 !important;
+    color: #1f2937 !important;
   }
 
   #overview.router-overview-framework [data-overview-mobile-scene="resource-full"] .ik-v420-visual,
   #overview.router-overview-framework [data-overview-mobile-scene="resource-full"] .ik-v240-visual {
     height: 94px !important;
     max-height: 100px !important;
+  }
+}
+
+/* Codex v511 mobile-professional-console-final-eof.
+   Final EOF layer wins over older polish blocks: squared control-console chrome,
+   neutral status hierarchy, and no soft blue tab glow. */
+@media (max-width: 760px) {
+  #overview.router-overview-framework .ik-v420-hero {
+    border-radius: 14px !important;
+    border-color: rgba(139, 153, 169, .50) !important;
+    background: linear-gradient(180deg, rgba(255, 255, 255, .97), rgba(245, 247, 250, .95)) !important;
+    box-shadow: 0 1px 0 rgba(255, 255, 255, .86) inset, 0 8px 18px rgba(34, 49, 69, .075) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-list,
+  #overview.router-overview-framework .ik-v420-timeline,
+  #overview.router-overview-framework .ik-v420-visual,
+  #overview.router-overview-framework .ik-v240-visual {
+    border-radius: 10px !important;
+    border-color: rgba(139, 153, 169, .42) !important;
+    background: rgba(255, 255, 255, .78) !important;
+    box-shadow: 0 1px 0 rgba(255, 255, 255, .82) inset, 0 7px 16px rgba(34, 49, 69, .065) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-tabs {
+    border-radius: 12px !important;
+    border-color: rgba(125, 139, 156, .44) !important;
+    background: rgba(246, 248, 250, .96) !important;
+    box-shadow: 0 -1px 0 rgba(255, 255, 255, .92) inset, 0 -6px 18px rgba(28, 42, 61, .075) !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-tabs button {
+    border-radius: 8px !important;
+    color: #667382 !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-tabs button.is-active {
+    background: linear-gradient(180deg, #f7f9fb, #edf1f5) !important;
+    box-shadow: inset 0 -2px 0 #1f2937 !important;
+    color: #1f2937 !important;
+  }
+
+  #overview.router-overview-framework .ik-v420-hero::before,
+  #overview.router-overview-framework .ik-v420-hero::after,
+  #overview.router-overview-framework .ik-v420-tabs::before,
+  #overview.router-overview-framework .ik-v420-tabs::after {
+    display: none !important;
+    content: none !important;
   }
 }
 
@@ -24902,10 +25100,9 @@
   }
 
   #overview.router-overview-framework .ik-v420-tabs button.is-active {
-    background:
-      radial-gradient(circle at 50% 0, rgba(22, 119, 255, .18), transparent 42%),
-      linear-gradient(180deg, #edf7ff, #e3f0ff) !important;
-    color: #1677ff !important;
+    background: linear-gradient(180deg, #f7f9fb, #edf1f5) !important;
+    box-shadow: inset 0 -2px 0 #1f2937 !important;
+    color: #1f2937 !important;
   }
 
   #overview.router-overview-framework [data-overview-mobile-scene="resource-full"] .ik-v420-visual,
