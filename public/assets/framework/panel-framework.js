@@ -13930,6 +13930,315 @@ var PanelFramework = function(exports) {
     box-shadow: none !important;
     color: rgb(18, 34, 55) !important;
   }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-mobile-decision-screen {
+    display: grid !important;
+    grid-template-rows: 46px auto 64px minmax(132px, 1fr) !important;
+    gap: 9px !important;
+    padding: max(12px, env(safe-area-inset-top)) 12px calc(76px + env(safe-area-inset-bottom)) !important;
+    background: #edf2f7 !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-mobile-device-bar {
+    min-height: 46px !important;
+    height: 46px !important;
+    padding: 0 1px !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-mobile-device-title {
+    justify-items: center !important;
+    text-align: center !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-mobile-device-title b {
+    color: #142033 !important;
+    font-size: 17px !important;
+    letter-spacing: -.035em !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-mobile-device-title span {
+    color: #66758a !important;
+    font-size: 10.5px !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-mobile-context-button {
+    width: 36px !important;
+    height: 36px !important;
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-mobile-device-bar .ik-v240-status {
+    min-width: 58px !important;
+    min-height: 30px !important;
+    border-radius: 8px !important;
+    border-color: #b9cce3 !important;
+    background: #f8fbff !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-mobile-decision-card {
+    display: grid !important;
+    grid-template-rows: auto minmax(128px, auto) 34px !important;
+    gap: 9px !important;
+    min-height: 0 !important;
+    height: auto !important;
+    max-height: none !important;
+    padding: 12px !important;
+    border: 1px solid #bed2e8 !important;
+    border-left: 4px solid #1f6fd1 !important;
+    border-radius: 9px !important;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%) !important;
+    box-shadow: none !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-mobile-decision-card.is-danger {
+    border-left-color: #c62828 !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-mobile-decision-card.is-warn,
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-mobile-decision-card.is-missing {
+    border-left-color: #b7791f !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-mobile-decision-head {
+    min-height: 0 !important;
+    height: auto !important;
+    max-height: none !important;
+    gap: 4px !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-mobile-decision-head span {
+    color: #52657a !important;
+    font-size: 10.5px !important;
+    font-weight: 760 !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-mobile-decision-head h1 {
+    color: #0f1f32 !important;
+    font-size: 30px !important;
+    font-weight: 900 !important;
+    line-height: .98 !important;
+    letter-spacing: -.065em !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-mobile-decision-head p {
+    color: #52657a !important;
+    font-size: 11px !important;
+    font-weight: 620 !important;
+    line-height: 1.22 !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-mobile-decision-card > .ik-mobile-decision-trend {
+    grid-template-rows: 88px 52px !important;
+    min-height: 140px !important;
+    height: 140px !important;
+    max-height: 140px !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-mobile-decision-trend .ik-mobile-decision-trend-plot {
+    grid-template-rows: 18px 66px !important;
+    min-height: 88px !important;
+    height: 88px !important;
+    max-height: 88px !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-mobile-decision-trend .ik-mobile-decision-visual {
+    height: 64px !important;
+    max-height: 64px !important;
+    border-radius: 7px !important;
+    background: #f4f8fc !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-mobile-decision-trend [data-overview-mobile-v1012-product-chart] {
+    height: 64px !important;
+    max-height: 64px !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-mobile-decision-card .ik-mobile-decision-readouts {
+    min-height: 52px !important;
+    height: 52px !important;
+    max-height: 52px !important;
+    border-top: 1px solid #dce7f2 !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-mobile-decision-readouts span {
+    min-height: 26px !important;
+    padding: 4px 5px !important;
+    box-shadow: inset -1px 0 0 rgba(119, 141, 166, .14) !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-mobile-next-step {
+    grid-template-columns: 42px minmax(72px, .8fr) minmax(0, 1fr) !important;
+    min-height: 34px !important;
+    height: 34px !important;
+    max-height: 34px !important;
+    border-radius: 7px !important;
+    background: #f8fbff !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-mobile-core-facts {
+    grid-row: auto !important;
+    min-height: 64px !important;
+    height: 64px !important;
+    border-radius: 8px !important;
+    border-color: #cbd9e8 !important;
+    background: #ffffff !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-mobile-core-facts span {
+    min-height: 64px !important;
+    padding: 7px 6px !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-mobile-supporting-surface {
+    min-height: 0 !important;
+    overflow: hidden !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-mobile-supporting-list {
+    height: 100% !important;
+    border-radius: 8px !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-mobile-supporting-list header {
+    min-height: 34px !important;
+    padding: 7px 9px !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-mobile-supporting-list .ik-v420-list-row {
+    min-height: 42px !important;
+    height: 42px !important;
+    padding: 6px 9px !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-mobile-wan-incident-stack,
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-mobile-channel-incident-stack,
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-mobile-generic-incident-stack,
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-mobile-resource-incident-stack {
+    min-height: 136px !important;
+    height: auto !important;
+    max-height: none !important;
+    border-radius: 7px !important;
+    background: #f6f9fc !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-mobile-resource-incident-stack > .ik-mobile-resource-line {
+    display: grid !important;
+    grid-template-columns: 48px minmax(0, 1fr) 46px !important;
+    grid-template-areas:
+      "label bar value"
+      "threshold note value" !important;
+    align-items: center !important;
+    column-gap: 8px !important;
+    row-gap: 2px !important;
+    min-height: 30px !important;
+    height: 30px !important;
+    max-height: 30px !important;
+    padding: 4px 6px !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-mobile-resource-incident-stack > .ik-mobile-resource-line > b {
+    grid-area: label !important;
+    min-width: 0 !important;
+    overflow: hidden !important;
+    color: #172236 !important;
+    font-size: 10.5px !important;
+    font-weight: 840 !important;
+    line-height: 1.05 !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-mobile-resource-incident-stack > .ik-mobile-resource-line > i {
+    grid-area: bar !important;
+    display: block !important;
+    width: 100% !important;
+    height: 5px !important;
+    min-height: 5px !important;
+    max-height: 5px !important;
+    border-radius: 999px !important;
+    background: #dce6f0 !important;
+    overflow: hidden !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-mobile-resource-incident-stack > .ik-mobile-resource-line > i > u {
+    display: block !important;
+    height: 100% !important;
+    border-radius: inherit !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-mobile-resource-incident-stack > .ik-mobile-resource-line > strong {
+    grid-area: value !important;
+    justify-self: end !important;
+    align-self: center !important;
+    color: #172236 !important;
+    font-size: 12px !important;
+    font-weight: 860 !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-mobile-resource-incident-stack > .ik-mobile-resource-line > small {
+    grid-area: threshold !important;
+    min-width: 0 !important;
+    overflow: hidden !important;
+    color: #6b7b8f !important;
+    font-size: 8px !important;
+    font-weight: 640 !important;
+    line-height: 1.05 !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-mobile-resource-incident-stack > .ik-mobile-resource-line > em {
+    grid-area: note !important;
+    min-width: 0 !important;
+    overflow: hidden !important;
+    color: #6b7b8f !important;
+    font-size: 8px !important;
+    font-style: normal !important;
+    font-weight: 640 !important;
+    line-height: 1.05 !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-mobile-abnormal-decision-rail {
+    min-height: 44px !important;
+    height: 44px !important;
+    max-height: 44px !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-mobile-abnormal-decision-rail > span {
+    min-height: 44px !important;
+    height: 44px !important;
+    max-height: 44px !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-v420-tabs,
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-v240-tabs {
+    position: fixed !important;
+    left: 12px !important;
+    right: 12px !important;
+    bottom: max(8px, env(safe-area-inset-bottom)) !important;
+    width: auto !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    transform: none !important;
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+    border: 1px solid #d3deea !important;
+    border-radius: 10px !important;
+    background: rgba(249, 252, 255, .97) !important;
+    box-shadow: none !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-v420-tabs button.is-active,
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-v240-tabs button.is-active {
+    background: #edf4fb !important;
+    box-shadow: inset 0 -2px 0 #1f6fd1 !important;
+    color: #143b6f !important;
+  }
 }
 `;
   const MOBILE_OVERVIEW_STYLE_LAYERS = [
@@ -15792,25 +16101,25 @@ var PanelFramework = function(exports) {
   }
   function decisionTitle(model) {
     if (model.priority === "normal") {
-      return `良好 · WAN ${factValue(model, "WAN")} · 默认路由${factValue(model, "默认路由")}`;
+      return "网络可用";
     }
-    if (model.priority === "wan-offline") return "WAN 全离线";
-    if (model.priority === "snapshot-missing") return "业务快照缺失";
-    if (model.priority === "collection-degraded") return "采集降级";
-    if (model.priority === "resource-full") return "资源持续越阈";
-    if (model.priority === "interface-down") return "接口 Down 待确认";
+    if (model.priority === "wan-offline") return "外网不可用";
+    if (model.priority === "snapshot-missing") return "业务数据不可判";
+    if (model.priority === "collection-degraded") return "采集不完整";
+    if (model.priority === "resource-full") return "资源过载";
+    if (model.priority === "interface-down") return "接口异常";
     return model.network.conclusion.value;
   }
   function decisionSubtitle(model) {
     if (model.priority === "normal") {
-      return `转发面 ${model.network.forwarding.value} · 快照 ${factValue(model, "快照")} · ${model.appHomeContract.trustBoundary}`;
+      return `WAN ${factValue(model, "WAN")} · 默认路由${factValue(model, "默认路由")} · 快照 ${factValue(model, "快照")}`;
     }
-    return `${model.impactScope.label}：${model.impactScope.value} · ${model.impactScope.note}`;
+    return `${model.impactScope.value} · ${model.appHomeContract.trustBoundary}`;
   }
   function nextStep(model) {
     const action = model.abnormalDecision.find((item) => item.label === "下一步");
     if (action) return { value: action.value, note: action.note, tone: toneClass(action.tone) };
-    return { value: "继续观察", note: "WAN / 默认路由 / 快照时间", tone: "is-trust" };
+    return { value: "查看 WAN", note: "默认路由 / 快照", tone: "is-trust" };
   }
   function factSet(model) {
     const resource = {
@@ -15827,72 +16136,6 @@ var PanelFramework = function(exports) {
     };
     const preferred = ["WAN", "采集", "资源", "快照"].map((label) => label === "资源" ? resource : label === "快照" ? snapshot : model.coreMetrics.find((item) => item.label === label)).filter(Boolean);
     return preferred.length === 4 ? preferred : model.coreMetrics.slice(1, 5);
-  }
-  function CompactJudgement({ model }) {
-    const status = primaryStatus(model);
-    return /* @__PURE__ */ jsxRuntimeExports.jsx(
-      "section",
-      {
-        className: `ik-v960-judgement-strip ${toneClass(status.tone)} ik-mobile-compact-judgement`,
-        "aria-label": "移动端核心判断",
-        "data-overview-mobile-core-block": "compact-conclusion",
-        "data-overview-mobile-v1044-judgement-strip": "compact-conclusion-only",
-        "data-overview-mobile-v960-judgement": "conclusion-and-impact",
-        "data-overview-mobile-v1090-decision-strip": "conclusion-only-metrics-separated",
-        children: /* @__PURE__ */ jsxRuntimeExports.jsxs("strong", { children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("i", { "aria-hidden": "true" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "网络结论" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: model.priority === "normal" ? "良好" : status.value }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: status.note })
-        ] })
-      }
-    );
-  }
-  function CompactTrust({ model }) {
-    return /* @__PURE__ */ jsxRuntimeExports.jsxs(
-      "section",
-      {
-        className: "ik-v910-trust-strip ik-mobile-compact-trust",
-        "aria-label": "RouterOS 可信度边界",
-        "data-overview-mobile-trust-strip": "forwarding-collection-snapshot-business",
-        children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: "转发" }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("strong", { children: model.network.forwarding.value })
-          ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: "采集" }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("strong", { children: factValue(model, "采集") })
-          ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: "快照" }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("strong", { children: factValue(model, "快照") })
-          ] }),
-          model.appHomeContract.severity === "normal" ? null : /* @__PURE__ */ jsxRuntimeExports.jsx(
-            "div",
-            {
-              className: "ik-v1058-collection-trust-rail",
-              "data-overview-mobile-v1058-collection-trust": "routeros-rest-ssh-snapshot-fixed-abnormal-first-screen",
-              "data-overview-mobile-v1059-collection-plane": "collection-secondary-evidence-not-impact-verdict",
-              children: model.collectionTrust.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
-                "span",
-                {
-                  className: toneClass(item.tone),
-                  "data-overview-mobile-v1058-collection-channel": item.label,
-                  "data-overview-mobile-v1059-plane": "collection",
-                  children: [
-                    /* @__PURE__ */ jsxRuntimeExports.jsx("i", { "aria-hidden": "true" }),
-                    /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: item.label }),
-                    /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: item.value })
-                  ]
-                },
-                `${item.label}-${item.value}`
-              ))
-            }
-          )
-        ]
-      }
-    );
   }
   function DeviceBar({ model }) {
     return /* @__PURE__ */ jsxRuntimeExports.jsxs(
@@ -15920,9 +16163,7 @@ var PanelFramework = function(exports) {
             /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: model.header.deviceName }),
             /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
               "只读观察 · 最近 ",
-              model.header.recent,
-              " · ",
-              model.priority === "normal" ? "良好" : model.header.statusLabel
+              model.header.recent
             ] })
           ] }),
           /* @__PURE__ */ jsxRuntimeExports.jsxs(
@@ -15944,8 +16185,8 @@ var PanelFramework = function(exports) {
   function WanDecisionSpark({ model }) {
     const chart = model.hero.trend;
     const plot = chart.plot;
-    const anomaly = chart.anomalyLabel || "0";
-    const chartDecision = `当前 ${chart.currentLabel} · 峰值 ${chart.peakLabel} · 阈值 ${chart.thresholdLabel} · 异常点 ${anomaly} · 采样 ${chart.sampleText}`;
+    const anomaly = (chart.anomalyLabel || "0").replace(/^异常点\s*/, "");
+    const chartDecision = `当前 ${chart.currentLabel} · 峰值 ${chart.peakLabel} · 阈值 ${chart.thresholdLabel} · 异常 ${anomaly} · 采样 ${chart.sampleText}`;
     return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ik-mobile-decision-trend", "data-overview-mobile-v1072-chart": "decision-plot-two-series-three-by-two-readout", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ik-mobile-decision-trend-plot", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ik-v1072-chart-head", children: [
@@ -16067,8 +16308,7 @@ var PanelFramework = function(exports) {
                 /* @__PURE__ */ jsxRuntimeExports.jsx("i", { "aria-hidden": "true", children: /* @__PURE__ */ jsxRuntimeExports.jsx("u", { style: { width: item.meterPercent } }) }),
                 /* @__PURE__ */ jsxRuntimeExports.jsx("strong", { children: item.display }),
                 /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: item.thresholdText }),
-                /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: item.sustainedText }),
-                /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "ik-density-resource-track", "aria-hidden": "true", children: /* @__PURE__ */ jsxRuntimeExports.jsx("span", { style: { width: item.meterPercent } }) })
+                /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: item.sustainedText })
               ]
             },
             item.key
@@ -16132,28 +16372,12 @@ var PanelFramework = function(exports) {
     return /* @__PURE__ */ jsxRuntimeExports.jsx(
       "div",
       {
-        className: "ik-mobile-decision-visual ik-v240-flow ik-v1046-abnormal-decision-rail",
+        className: "ik-mobile-decision-visual ik-mobile-generic-incident-stack",
         "data-overview-chart-type": "status",
         "data-overview-mobile-first-visual": "incident-object-impact-next-step",
         "data-overview-mobile-first-microchart": "true",
         "data-overview-mobile-v240-visual": "incident-decision-line",
-        "data-overview-mobile-v1046-abnormal-decision-rail": "object-impact-evidence-next-action",
-        "data-overview-mobile-v1046-abnormal-decision-ia": model.appHomeContract.informationArchitecture,
-        "data-overview-mobile-v1046-abnormal-decision-priority": model.priority,
-        "data-overview-mobile-v1046-abnormal-decision-scope": `${model.impactScope.id}:${model.impactScope.plane}`,
-        children: model.abnormalDecision.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
-          "span",
-          {
-            className: toneClass(item.tone),
-            "data-overview-mobile-v1046-abnormal-decision-cell": item.label,
-            children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: item.label }),
-              /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: item.value }),
-              /* @__PURE__ */ jsxRuntimeExports.jsx("strong", { children: item.note })
-            ]
-          },
-          item.label
-        ))
+        children: /* @__PURE__ */ jsxRuntimeExports.jsx(AbnormalDecisionRail, { model })
       }
     );
   }
@@ -16397,6 +16621,8 @@ var PanelFramework = function(exports) {
         "data-overview-mobile-v1100-public-home": "one-primary-task-evidence-below-fold-ios-safe-area",
         "data-overview-mobile-v1100-readonly-mode": "visible",
         "data-overview-mobile-v1100-first-screen-order": "device-decision-four-facts-next-step-supporting-tabs",
+        "data-overview-mobile-v1110-public-home": "device-primary-card-four-facts-supporting-no-redundant-strips",
+        "data-overview-mobile-v1110-first-screen-order": "device-primary-decision-four-facts-supporting-list-tabs",
         "data-overview-mobile-no-snapshot-no-rate-placeholder": props.state.scenario === "no-snapshot" ? "true" : void 0,
         children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ik-v420-shell ik-v240-shell", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
@@ -16414,12 +16640,11 @@ var PanelFramework = function(exports) {
               "data-overview-mobile-app-abnormal-ia": model.appHomeContract.informationArchitecture,
               "data-overview-mobile-app-terminal-ranking-state": model.appHomeContract.terminalRanking,
               "data-overview-mobile-v1100-first-screen-hierarchy": "device-primary-decision-four-facts-next-step-supporting-list-tabs",
+              "data-overview-mobile-v1110-first-screen-hierarchy": "device-primary-decision-four-facts-supporting-list-tabs",
               children: [
                 /* @__PURE__ */ jsxRuntimeExports.jsx(DeviceBar, { model }),
-                /* @__PURE__ */ jsxRuntimeExports.jsx(CompactJudgement, { model }),
-                /* @__PURE__ */ jsxRuntimeExports.jsx(CompactTrust, { model }),
-                /* @__PURE__ */ jsxRuntimeExports.jsx(CoreFacts, { model }),
                 /* @__PURE__ */ jsxRuntimeExports.jsx(PrimaryDecision, { model }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx(CoreFacts, { model }),
                 /* @__PURE__ */ jsxRuntimeExports.jsx(SupportingList, { model }),
                 /* @__PURE__ */ jsxRuntimeExports.jsx(BottomTabs, {})
               ]

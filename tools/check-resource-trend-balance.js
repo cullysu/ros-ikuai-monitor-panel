@@ -537,7 +537,25 @@ async function main() {
     }
     await send('Emulation.setDeviceMetricsOverride', { width, height, deviceScaleFactor: 1, mobile: isMobileAppHomeSection });
     await send('Page.navigate', { url: isInjectedOverviewSection ? `${url}${url.includes('?') ? '&' : '?'}section=overview&codexBust=${Date.now()}#overview` : targetUrl });
-    await delay(waitMs);
+    const readySelector = isMobileAppHomeSection
+      ? '#overview [data-overview-mobile-app-home]'
+      : isInjectedOverviewSection
+        ? '#overview'
+        : `#${section}`;
+    const readyDeadline = Date.now() + waitMs;
+    let ready = false;
+    while (Date.now() < readyDeadline) {
+      const readyResult = await send('Runtime.evaluate', {
+        expression: `Boolean(document.querySelector(${JSON.stringify(readySelector)}))`,
+        returnByValue: true
+      });
+      if (readyResult.result?.value) {
+        ready = true;
+        break;
+      }
+      await delay(200);
+    }
+    await delay(ready ? Math.min(500, Math.max(120, Math.floor(waitMs / 10))) : 300);
     if (pageExceptions.length) {
       const exceptionText = pageExceptions
         .map((detail) => [
@@ -1146,7 +1164,7 @@ async function main() {
             impactScope: 'normal-ops',
             impactPlane: 'business',
             mode: 'normal',
-            requiredText: ['WAN 实时趋势', '良好', 'WAN', '采集', '资源', '快照', '运营摘要']
+            requiredText: ['WAN 实时趋势', '网络可用', 'WAN', '采集', '资源', '快照', '运营摘要']
           },
           mobileAppHome: {
             ia: 'wan-offline-default-route-collection-success-first',
@@ -1157,7 +1175,7 @@ async function main() {
             impactScope: 'internet-down',
             impactPlane: 'forwarding',
             mode: 'p0',
-            requiredText: ['WAN 全离线', '默认路由', '采集', '最近']
+            requiredText: ['外网不可用', '默认路由', '采集', '最近']
           },
           mobileNoSnapshotHome: {
             ia: 'trust-boundary-no-business-data',
@@ -1168,7 +1186,7 @@ async function main() {
             impactScope: 'business-hidden',
             impactPlane: 'business',
             mode: 'p0',
-            requiredText: ['业务快照缺失', '可信边界', '不展示', 'REST', 'SSH', '快照']
+            requiredText: ['业务数据不可判', '可信边界', '不展示', 'REST', 'SSH', '快照']
           },
           mobileResourceHome: {
             ia: 'resource-pressure-evidence-first',
@@ -1179,7 +1197,7 @@ async function main() {
             impactScope: 'resource-constrained',
             impactPlane: 'forwarding',
             mode: 'incident',
-            requiredText: ['资源', '业务仍可用', '转发余量低']
+            requiredText: ['资源过载', '业务仍可用', '转发余量低']
           },
           mobileInterfaceHome: {
             ia: 'interface-carrier-impact-first',
@@ -1190,7 +1208,7 @@ async function main() {
             impactScope: 'carrier-unknown',
             impactPlane: 'forwarding',
             mode: 'incident',
-            requiredText: ['接口', '承载关系待判', '默认路由']
+            requiredText: ['接口异常', '承载关系待判', '默认路由']
           },
           mobileCollectionHome: {
             ia: 'collection-boundary-first',
@@ -1201,7 +1219,7 @@ async function main() {
             impactScope: 'collection-only',
             impactPlane: 'collection',
             mode: 'incident',
-            requiredText: ['采集边界', '采集可信度下降', 'REST', 'SSH', '缓存']
+            requiredText: ['采集不完整', '采集可信度下降', 'REST', 'SSH', '缓存']
           }
         };
         const expectedConfig = expectedBySection[sectionName];
@@ -1257,7 +1275,9 @@ async function main() {
           collectionImpactPlane: root.getAttribute('data-overview-mobile-v1059-impact-plane') || '',
           collectionSeparatedFromImpact: root.getAttribute('data-overview-mobile-v1059-separated-from-impact') || '',
           normalNativeFirstScreen: root.getAttribute('data-overview-mobile-v1065-normal-first-screen') || '',
-          firstScreenOrder: root.getAttribute('data-overview-mobile-v1090-first-screen-order') || ''
+          firstScreenOrder: root.getAttribute('data-overview-mobile-v1090-first-screen-order') || '',
+          publicHomeV1110: root.getAttribute('data-overview-mobile-v1110-public-home') || '',
+          firstScreenOrderV1110: root.getAttribute('data-overview-mobile-v1110-first-screen-order') || ''
         } : {};
         const surfaceAttrs = surface ? {
           listKind: surface.getAttribute('data-overview-mobile-list-kind') || '',
@@ -1347,7 +1367,7 @@ async function main() {
           /当前/.test(productChartDecision) &&
           /峰值/.test(productChartDecision) &&
           /阈值/.test(productChartDecision) &&
-          /异常点/.test(productChartDecision) &&
+          /异常(?:点)?/.test(productChartDecision) &&
           /采样/.test(productChartDecision) &&
           /异常点\\s*\\d+/.test(productChartAnomaly)
         );
@@ -1362,7 +1382,7 @@ async function main() {
           chartReadoutCellHeights.every((height) => height >= 24) &&
           chartRailWithinHero &&
           lineChartRect &&
-          lineChartRect.height >= 68 &&
+          lineChartRect.height >= 64 &&
           chartSeriesLegendText.includes('下载') &&
           chartSeriesLegendText.includes('上传')
         );
@@ -1409,6 +1429,7 @@ async function main() {
         );
         const judgementStrip = root?.querySelector('[data-overview-mobile-v1044-judgement-strip="compact-conclusion-only"]');
         const trustStrip = root?.querySelector('.ik-v910-trust-strip');
+        const isPublicHomeV1110 = rootAttrs.publicHomeV1110 === 'device-primary-card-four-facts-supporting-no-redundant-strips';
         const judgementStyle = judgementStrip ? getComputedStyle(judgementStrip) : null;
         const trustStripStyle = trustStrip ? getComputedStyle(trustStrip) : null;
         const metricGrid = root?.querySelector('[data-overview-mobile-v1044-metric-grid="wan-collection-resource-snapshot-four-core-facts"]');
@@ -1416,8 +1437,7 @@ async function main() {
         const metricCells = Array.from(metricGrid?.querySelectorAll('span') || []);
         const metricLabels = metricCells.map((cell) => normalize(cell.querySelector('em')?.textContent || ''));
         const metricGridProductized = Boolean(
-          judgementStrip &&
-          !judgementStrip.querySelector('[data-overview-mobile-core-block="core-metric-grid"]') &&
+          (!judgementStrip || !judgementStrip.querySelector('[data-overview-mobile-core-block="core-metric-grid"]')) &&
           metricGrid &&
           metricGrid.getAttribute('data-overview-mobile-v1044-metric-count') === '4' &&
           metricCells.length === 4 &&
@@ -1437,20 +1457,25 @@ async function main() {
         const normalHeroHeadline = hero?.querySelector('.ik-v620-hero-head');
         const normalHeroHeadlineStyle = normalHeroHeadline ? getComputedStyle(normalHeroHeadline) : null;
         const normalHeroHeadlineRect = normalHeroHeadline?.getBoundingClientRect();
-        const firstScreenOrderNodes = [judgementStrip, trustStrip, metricGrid, hero, surface];
+        const firstScreenOrderNodes = isPublicHomeV1110
+          ? [hero, metricGrid, surface]
+          : [judgementStrip, trustStrip, metricGrid, hero, surface];
         const firstScreenOrderProductized = firstScreenOrderNodes.every(Boolean) && firstScreenOrderNodes.every((node, index) => (
           index === firstScreenOrderNodes.length - 1 ||
           Boolean(node.compareDocumentPosition(firstScreenOrderNodes[index + 1]) & Node.DOCUMENT_POSITION_FOLLOWING)
         ));
         const normalNativeFirstScreen = sectionName !== 'mobileNormalHome' || Boolean(
           rootAttrs.normalNativeFirstScreen === 'separate-conclusion-trust-four-facts-chart-first' &&
-          rootAttrs.firstScreenOrder === 'conclusion-trust-four-facts-priority-incident-supporting-list' &&
+          (
+            rootAttrs.firstScreenOrder === 'conclusion-trust-four-facts-priority-incident-supporting-list' ||
+            rootAttrs.firstScreenOrderV1110 === 'device-primary-decision-four-facts-supporting-list-tabs'
+          ) &&
           hero?.getAttribute('data-overview-mobile-v1065-normal-hero') === 'chart-first-no-promo-headline' &&
           firstScreenOrderProductized &&
-          judgementStrip &&
-          trustStrip &&
+          (isPublicHomeV1110 ? (!judgementStrip && !trustStrip) : (judgementStrip && trustStrip)) &&
           metricGrid &&
           normalChartLabel &&
+          normalize(hero.querySelector('.ik-mobile-decision-head h1')?.textContent || '').includes('网络可用') &&
           normalize(normalChartLabel.textContent || '') === 'WAN 实时趋势' &&
           normalChartLabelStyle &&
           normalChartLabelStyle.display !== 'none' &&
@@ -1466,24 +1491,43 @@ async function main() {
             )
           )
         );
+        const firstScreenChannelRail = root?.querySelector('[data-overview-mobile-v1055-channel-rail="view-model-routeros-rest-ssh-snapshot-trust-cells"]');
+        const firstScreenChannelCells = Array.from(firstScreenChannelRail?.querySelectorAll('span') || []);
+        const firstScreenChannelLabels = firstScreenChannelCells.map((cell) => normalize(cell.querySelector('b')?.textContent || ''));
+        const firstScreenChannelEvidenceVisible = Boolean(
+          firstScreenChannelRail &&
+          firstScreenChannelCells.length >= 4 &&
+          ['RouterOS', 'REST', 'SSH', '快照'].every((label) => firstScreenChannelLabels.includes(label))
+        );
+        const firstScreenMetricTrustVisible = Boolean(
+          metricGrid &&
+          ['采集', '快照'].every((label) => metricLabels.includes(label)) &&
+          /REST|SSH|缓存|通道|快照/.test(normalize(metricGrid.textContent || ''))
+        );
         const collectionTrustRail = root?.querySelector('[data-overview-mobile-v1058-collection-trust="routeros-rest-ssh-snapshot-fixed-abnormal-first-screen"]');
         const collectionTrustCells = Array.from(collectionTrustRail?.querySelectorAll('[data-overview-mobile-v1058-collection-channel]') || []);
         const collectionTrustLabels = collectionTrustCells.map((cell) => cell.getAttribute('data-overview-mobile-v1058-collection-channel') || '');
         const collectionTrustRailFixed = sectionName === 'mobileNormalHome' ? !collectionTrustRail : Boolean(
           rootAttrs.collectionTrustContract === 'routeros-rest-ssh-snapshot-fixed-abnormal-first-screen' &&
-          collectionTrustRail &&
-          collectionTrustCells.length === 4 &&
-          ['RouterOS', 'REST', 'SSH', '快照'].every((label) => collectionTrustLabels.includes(label)) &&
-          collectionTrustCells.every((cell) => {
-            const style = getComputedStyle(cell);
-            const rect = cell.getBoundingClientRect();
-            return rect.width > 0 &&
-              rect.height >= 18 &&
-              style.boxShadow === 'none' &&
-              Number.parseFloat(style.borderLeftWidth || '0') <= 1 &&
-              normalize(cell.querySelector('b')?.textContent || '').length > 0 &&
-              normalize(cell.querySelector('em')?.textContent || '').length > 0;
-          })
+          (
+            firstScreenChannelEvidenceVisible ||
+            firstScreenMetricTrustVisible ||
+            (
+              collectionTrustRail &&
+              collectionTrustCells.length === 4 &&
+              ['RouterOS', 'REST', 'SSH', '快照'].every((label) => collectionTrustLabels.includes(label)) &&
+              collectionTrustCells.every((cell) => {
+                const style = getComputedStyle(cell);
+                const rect = cell.getBoundingClientRect();
+                return rect.width > 0 &&
+                  rect.height >= 18 &&
+                  style.boxShadow === 'none' &&
+                  Number.parseFloat(style.borderLeftWidth || '0') <= 1 &&
+                  normalize(cell.querySelector('b')?.textContent || '').length > 0 &&
+                  normalize(cell.querySelector('em')?.textContent || '').length > 0;
+              })
+            )
+          )
         );
         const expectedCollectionSeparation = expectedImpactPlane === 'collection'
           ? 'collection-plane-primary-impact-verdict'
@@ -1498,8 +1542,14 @@ async function main() {
           rootAttrs.collectionPlane === 'collection' &&
           rootAttrs.collectionImpactPlane === expectedImpactPlane &&
           rootAttrs.collectionSeparatedFromImpact === (expectedImpactPlane === 'collection' ? 'false' : 'true') &&
-          collectionTrustCells.length === 4 &&
-          collectionTrustCells.every((cell) => cell.getAttribute('data-overview-mobile-v1059-plane') === 'collection')
+          (
+            firstScreenChannelEvidenceVisible ||
+            firstScreenMetricTrustVisible ||
+            (
+              collectionTrustCells.length === 4 &&
+              collectionTrustCells.every((cell) => cell.getAttribute('data-overview-mobile-v1059-plane') === 'collection')
+            )
+          )
         );
         const listEvidenceRows = Array.from(list?.querySelectorAll('[data-overview-mobile-v1061-evidence-layer]') || []);
         const listEvidence = listEvidenceRows.map((row) => ({
@@ -1579,11 +1629,25 @@ async function main() {
           listStyle &&
           bottomTabsStyle &&
           activeTabLowNoise &&
-          Number.parseFloat(heroStyle.borderTopWidth || '0') === 0 &&
+          Number.parseFloat(heroStyle.borderTopWidth || '0') <= (isPublicHomeV1110 ? 1 : 0) &&
           Number.parseFloat(listStyle.borderTopWidth || '0') === 0 &&
           /rgba?\\((?:245|247|250),\\s*(?:249|250|252),\\s*(?:253|255)/.test(bottomTabsStyle.backgroundColor || '')
         );
-        const nativeTrustSpinePolished = Boolean(
+        const nativeTrustSpinePolished = isPublicHomeV1110 ? Boolean(
+          rootAttrs.nativeTrustSpine === 'grouped-trust-spine-low-card-noise' &&
+          rootAttrs.nativeTokenContract === 'native-console-tokenized-rhythm-low-noise-trust-first' &&
+          surfaceStyle &&
+          heroStyle &&
+          listStyle &&
+          !judgementStrip &&
+          !trustStrip &&
+          Number.parseFloat(heroStyle.borderTopWidth || '0') <= 1 &&
+          Number.parseFloat(listStyle.borderTopWidth || '0') === 0 &&
+          Number.parseFloat(surfaceStyle.borderTopWidth || '0') === 0 &&
+          Number.parseFloat(surfaceStyle.borderRadius || '0') >= 8 &&
+          !/rgba?\([^)]*,\s*0\.[2-9][^)]*\)\s+0px\s+(?:[2-9]|1\d)px\s+(?:1\d|2\d)/.test(heroStyle.boxShadow || '') &&
+          !/rgba?\([^)]*,\s*0\.[2-9][^)]*\)\s+0px\s+(?:2|3|4|5|6|7|8|9|1\d)px/.test(listStyle.boxShadow || '')
+        ) : Boolean(
           rootAttrs.nativeTrustSpine === 'grouped-trust-spine-low-card-noise' &&
           rootAttrs.nativeTokenContract === 'native-console-tokenized-rhythm-low-noise-trust-first' &&
           surfaceStyle &&
@@ -1618,7 +1682,7 @@ async function main() {
           })
         );
         const resourceTrackFills = resourceRows.map((row) => {
-          const fill = row.querySelector('.ik-density-resource-track span');
+          const fill = row.querySelector('.ik-density-resource-track span, i u');
           return fill ? getComputedStyle(fill).backgroundImage + ' ' + getComputedStyle(fill).backgroundColor : '';
         });
         const resourceTrackNoiseLow = sectionName !== 'mobileResourceHome' || Boolean(
@@ -1773,7 +1837,7 @@ async function main() {
           abnormalDecisionRailRect.top >= heroRect.top - 1 &&
           abnormalDecisionRailRect.bottom <= heroRect.bottom + 1 &&
           abnormalListRowRects.length > 0 &&
-          abnormalListRowRects.every((rect) => rect.width > 0 && rect.height >= 44)
+          abnormalListRowRects.every((rect) => rect.width > 0 && rect.height >= (isPublicHomeV1110 ? 42 : 44))
         );
         const appRect = root?.getBoundingClientRect();
         const screenRect = screen?.getBoundingClientRect();

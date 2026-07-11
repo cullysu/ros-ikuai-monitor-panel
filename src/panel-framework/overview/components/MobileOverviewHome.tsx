@@ -22,27 +22,27 @@ function factValue(model: MobileOverviewModel, label: string): string {
 
 function decisionTitle(model: MobileOverviewModel): string {
   if (model.priority === "normal") {
-    return `良好 · WAN ${factValue(model, "WAN")} · 默认路由${factValue(model, "默认路由")}`;
+    return "网络可用";
   }
-  if (model.priority === "wan-offline") return "WAN 全离线";
-  if (model.priority === "snapshot-missing") return "业务快照缺失";
-  if (model.priority === "collection-degraded") return "采集降级";
-  if (model.priority === "resource-full") return "资源持续越阈";
-  if (model.priority === "interface-down") return "接口 Down 待确认";
+  if (model.priority === "wan-offline") return "外网不可用";
+  if (model.priority === "snapshot-missing") return "业务数据不可判";
+  if (model.priority === "collection-degraded") return "采集不完整";
+  if (model.priority === "resource-full") return "资源过载";
+  if (model.priority === "interface-down") return "接口异常";
   return model.network.conclusion.value;
 }
 
 function decisionSubtitle(model: MobileOverviewModel): string {
   if (model.priority === "normal") {
-    return `转发面 ${model.network.forwarding.value} · 快照 ${factValue(model, "快照")} · ${model.appHomeContract.trustBoundary}`;
+    return `WAN ${factValue(model, "WAN")} · 默认路由${factValue(model, "默认路由")} · 快照 ${factValue(model, "快照")}`;
   }
-  return `${model.impactScope.label}：${model.impactScope.value} · ${model.impactScope.note}`;
+  return `${model.impactScope.value} · ${model.appHomeContract.trustBoundary}`;
 }
 
 function nextStep(model: MobileOverviewModel): { value: string; note: string; tone: string } {
   const action = model.abnormalDecision.find((item) => item.label === "下一步");
   if (action) return { value: action.value, note: action.note, tone: toneClass(action.tone) };
-  return { value: "继续观察", note: "WAN / 默认路由 / 快照时间", tone: "is-trust" };
+  return { value: "查看 WAN", note: "默认路由 / 快照", tone: "is-trust" };
 }
 
 function factSet(model: MobileOverviewModel): DecisionFact[] {
@@ -144,7 +144,7 @@ function DeviceBar({ model }: { model: MobileOverviewModel }) {
       </button>
       <div className="ik-mobile-device-title" data-overview-mobile-primary-title="device">
         <b>{model.header.deviceName}</b>
-        <span>只读观察 · 最近 {model.header.recent} · {model.priority === "normal" ? "良好" : model.header.statusLabel}</span>
+        <span>只读观察 · 最近 {model.header.recent}</span>
       </div>
       <strong
         className={`ik-v240-status ${toneClass(model.header.tone)}`}
@@ -161,8 +161,8 @@ function DeviceBar({ model }: { model: MobileOverviewModel }) {
 function WanDecisionSpark({ model }: { model: MobileOverviewModel }) {
   const chart = model.hero.trend;
   const plot = chart.plot;
-  const anomaly = chart.anomalyLabel || "0";
-  const chartDecision = `当前 ${chart.currentLabel} · 峰值 ${chart.peakLabel} · 阈值 ${chart.thresholdLabel} · 异常点 ${anomaly} · 采样 ${chart.sampleText}`;
+  const anomaly = (chart.anomalyLabel || "0").replace(/^异常点\s*/, "");
+  const chartDecision = `当前 ${chart.currentLabel} · 峰值 ${chart.peakLabel} · 阈值 ${chart.thresholdLabel} · 异常 ${anomaly} · 采样 ${chart.sampleText}`;
   return (
     <div className="ik-mobile-decision-trend" data-overview-mobile-v1072-chart="decision-plot-two-series-three-by-two-readout">
       <div className="ik-mobile-decision-trend-plot">
@@ -253,7 +253,6 @@ function ResourceDecisionVisual({ model }: { model: MobileOverviewModel }) {
           <strong>{item.display}</strong>
           <small>{item.thresholdText}</small>
           <em>{item.sustainedText}</em>
-          <span className="ik-density-resource-track" aria-hidden="true"><span style={{ width: item.meterPercent }} /></span>
         </span>
       ))}
     </div>
@@ -316,27 +315,13 @@ function ChannelDecisionVisual({ model }: { model: MobileOverviewModel }) {
 function IncidentDecisionVisual({ model }: { model: MobileOverviewModel }) {
   return (
     <div
-      className="ik-mobile-decision-visual ik-v240-flow ik-v1046-abnormal-decision-rail"
+      className="ik-mobile-decision-visual ik-mobile-generic-incident-stack"
       data-overview-chart-type="status"
       data-overview-mobile-first-visual="incident-object-impact-next-step"
       data-overview-mobile-first-microchart="true"
       data-overview-mobile-v240-visual="incident-decision-line"
-      data-overview-mobile-v1046-abnormal-decision-rail="object-impact-evidence-next-action"
-      data-overview-mobile-v1046-abnormal-decision-ia={model.appHomeContract.informationArchitecture}
-      data-overview-mobile-v1046-abnormal-decision-priority={model.priority}
-      data-overview-mobile-v1046-abnormal-decision-scope={`${model.impactScope.id}:${model.impactScope.plane}`}
     >
-      {model.abnormalDecision.map((item) => (
-        <span
-          className={toneClass(item.tone)}
-          data-overview-mobile-v1046-abnormal-decision-cell={item.label}
-          key={item.label}
-        >
-          <em>{item.label}</em>
-          <b>{item.value}</b>
-          <strong>{item.note}</strong>
-        </span>
-      ))}
+      <AbnormalDecisionRail model={model} />
     </div>
   );
 }
@@ -568,6 +553,8 @@ export function MobileOverviewHome(props: MobileOverviewHomeProps) {
       data-overview-mobile-v1100-public-home="one-primary-task-evidence-below-fold-ios-safe-area"
       data-overview-mobile-v1100-readonly-mode="visible"
       data-overview-mobile-v1100-first-screen-order="device-decision-four-facts-next-step-supporting-tabs"
+      data-overview-mobile-v1110-public-home="device-primary-card-four-facts-supporting-no-redundant-strips"
+      data-overview-mobile-v1110-first-screen-order="device-primary-decision-four-facts-supporting-list-tabs"
       data-overview-mobile-no-snapshot-no-rate-placeholder={props.state.scenario === "no-snapshot" ? "true" : undefined}
     >
       <div className="ik-v420-shell ik-v240-shell">
@@ -584,12 +571,11 @@ export function MobileOverviewHome(props: MobileOverviewHomeProps) {
           data-overview-mobile-app-abnormal-ia={model.appHomeContract.informationArchitecture}
           data-overview-mobile-app-terminal-ranking-state={model.appHomeContract.terminalRanking}
           data-overview-mobile-v1100-first-screen-hierarchy="device-primary-decision-four-facts-next-step-supporting-list-tabs"
+          data-overview-mobile-v1110-first-screen-hierarchy="device-primary-decision-four-facts-supporting-list-tabs"
         >
           <DeviceBar model={model} />
-          <CompactJudgement model={model} />
-          <CompactTrust model={model} />
-          <CoreFacts model={model} />
           <PrimaryDecision model={model} />
+          <CoreFacts model={model} />
           <SupportingList model={model} />
           <BottomTabs />
         </main>
