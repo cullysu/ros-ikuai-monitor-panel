@@ -16156,40 +16156,6 @@ var PanelFramework = function(exports) {
     if (action) return { value: action.value, note: action.note, tone: toneClass(action.tone) };
     return { value: "查看 WAN", note: "默认路由 / 快照", tone: "is-trust" };
   }
-  function DeviceBar({ model }) {
-    return /* @__PURE__ */ jsxRuntimeExports.jsxs(
-      "nav",
-      {
-        className: "ik-v420-nav ik-v240-nav ik-mobile-device-bar",
-        "aria-label": "RouterOS 设备状态导航",
-        "data-overview-mobile-v420-nav": "ios-navigation",
-        "data-overview-mobile-v240-nav": "app-navigation",
-        "data-overview-mobile-v1067-status-header": "routeros-device-state-header-context-action-low-noise",
-        "data-overview-mobile-v1121-status-header": "device-name-state-recent-only",
-        children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ik-mobile-device-title", "data-overview-mobile-primary-title": "device", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: model.header.deviceName }),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-              "只读观察 · 最近 ",
-              model.header.recent
-            ] })
-          ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsxs(
-            "strong",
-            {
-              className: `ik-v240-status ${toneClass(model.header.tone)}`,
-              "data-overview-mobile-primary-status": "device-state",
-              "aria-label": `设备状态 ${model.header.statusLabel}`,
-              children: [
-                /* @__PURE__ */ jsxRuntimeExports.jsx("i", { "aria-hidden": "true" }),
-                model.header.statusLabel
-              ]
-            }
-          )
-        ]
-      }
-    );
-  }
   function WanDecisionSpark({ model }) {
     const chart = model.hero.trend;
     const plot = chart.plot;
@@ -16465,6 +16431,40 @@ var PanelFramework = function(exports) {
             /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: action.value }),
             /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: action.note })
           ] })
+        ]
+      }
+    );
+  }
+  function DeviceBar({ model }) {
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+      "nav",
+      {
+        className: "ik-v420-nav ik-v240-nav ik-mobile-device-bar",
+        "aria-label": "RouterOS 设备状态导航",
+        "data-overview-mobile-v420-nav": "ios-navigation",
+        "data-overview-mobile-v240-nav": "app-navigation",
+        "data-overview-mobile-v1067-status-header": "routeros-device-state-header-context-action-low-noise",
+        "data-overview-mobile-v1121-status-header": "device-name-state-recent-only",
+        children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ik-mobile-device-title", "data-overview-mobile-primary-title": "device", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: model.header.deviceName }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+              "只读观察 · 最近 ",
+              model.header.recent
+            ] })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs(
+            "strong",
+            {
+              className: `ik-v240-status ${toneClass(model.header.tone)}`,
+              "data-overview-mobile-primary-status": "device-state",
+              "aria-label": `设备状态 ${model.header.statusLabel}`,
+              children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx("i", { "aria-hidden": "true" }),
+                model.header.statusLabel
+              ]
+            }
+          )
         ]
       }
     );

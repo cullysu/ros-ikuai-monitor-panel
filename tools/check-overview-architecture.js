@@ -40,6 +40,10 @@ const desktopVisualsFile =
 const builtCssFile = "public/assets/framework/style.css";
 const mobileHomeFile =
   "src/panel-framework/overview/components/MobileOverviewHome.tsx";
+const mobileDecisionFile =
+  "src/panel-framework/overview/components/MobileOverviewDecision.tsx";
+const mobileHomeSectionsFile =
+  "src/panel-framework/overview/components/MobileOverviewHomeSections.tsx";
 const mobileStylesFile =
   "src/panel-framework/overview/components/MobileOverviewStyles.tsx";
 const mobileModelFile =
@@ -53,6 +57,8 @@ const desktopRows = read(desktopRowsFile);
 const desktopResourceRows = read(desktopResourceRowsFile);
 const desktopVisuals = read(desktopVisualsFile);
 const mobileHome = read(mobileHomeFile);
+const mobileDecision = read(mobileDecisionFile);
+const mobileHomeSections = read(mobileHomeSectionsFile);
 const mobileStyles = read(mobileStylesFile);
 const mobileModel = read(mobileModelFile);
 const cssRoot = postcss.parse(panelCss, { from: panelCssFile });
@@ -128,7 +134,15 @@ assert(
   `desktopOverviewVisuals.tsx exceeds 400 lines: ${lines(desktopVisuals)}`
 );
 assert(bytes(panelCssFile) <= 1830000, `OverviewPanel.css exceeds 1.83 MB: ${bytes(panelCssFile)}`);
-assert(lines(mobileHome) <= 500, `MobileOverviewHome.tsx exceeds 500 lines: ${lines(mobileHome)}`);
+assert(lines(mobileHome) <= 120, `MobileOverviewHome.tsx exceeds 120 lines: ${lines(mobileHome)}`);
+assert(
+  lines(mobileDecision) <= 270,
+  `MobileOverviewDecision.tsx exceeds 270 lines: ${lines(mobileDecision)}`
+);
+assert(
+  lines(mobileHomeSections) <= 170,
+  `MobileOverviewHomeSections.tsx exceeds 170 lines: ${lines(mobileHomeSections)}`
+);
 assert(lines(mobileModel) <= 900, `mobileOverviewModel.ts exceeds 900 lines: ${lines(mobileModel)}`);
 assert(!panel.includes("ik-ios-"), "OverviewPanel.tsx reintroduced legacy ik-ios classes");
 assert(!panel.includes("ik-mobile-"), "OverviewPanel.tsx reintroduced legacy ik-mobile classes");
@@ -175,10 +189,19 @@ assert(
 );
 assert(
   mobileHome.includes("buildMobileOverviewModel") &&
-    mobileHome.includes("model.hero.title") &&
-    mobileHome.includes("model.coreMetrics") &&
+    mobileHome.includes("PrimaryDecision") &&
+    mobileHome.includes("DeviceBar") &&
+    mobileHome.includes("CoreFacts") &&
+    mobileHome.includes("SupportingList") &&
     mobileHome.includes("BottomTabs"),
-  "MobileOverviewHome.tsx must render the deep mobile overview model and app navigation"
+  "MobileOverviewHome.tsx must remain a small mobile-home composition boundary"
+);
+assert(
+  mobileDecision.includes("model.hero.title") &&
+    mobileDecision.includes("DecisionVisual") &&
+    mobileHomeSections.includes("model.coreMetrics") &&
+    mobileHomeSections.includes("model.primaryList.rows"),
+  "Mobile home modules must consume decision and supporting evidence from the view model"
 );
 assert(
   mobileStyles.includes("MOBILE_OVERVIEW_STYLE_LAYERS") &&
@@ -271,5 +294,5 @@ if (failures.length > 0) {
 }
 
 console.log(
-  `overview architecture gate: PASS panel=${lines(panel)} lines desktop=${lines(desktopConsole)} lines scenes=${lines(desktopScenes)} lines helper=${lines(desktopHelpers)} lines rows=${lines(desktopRows)} lines resourceRows=${lines(desktopResourceRows)} lines visuals=${lines(desktopVisuals)} lines css=${bytes(panelCssFile)} bytes mobileStyles=${mobileStyleByteTotal} bytes important=${importantShare.toFixed(4)} mobile=${mobileRuleShare.toFixed(4)}`
+  `overview architecture gate: PASS panel=${lines(panel)} lines desktop=${lines(desktopConsole)} lines scenes=${lines(desktopScenes)} lines helper=${lines(desktopHelpers)} lines rows=${lines(desktopRows)} lines resourceRows=${lines(desktopResourceRows)} lines visuals=${lines(desktopVisuals)} lines mobileHome=${lines(mobileHome)} lines mobileDecision=${lines(mobileDecision)} lines mobileSections=${lines(mobileHomeSections)} lines css=${bytes(panelCssFile)} bytes mobileStyles=${mobileStyleByteTotal} bytes important=${importantShare.toFixed(4)} mobile=${mobileRuleShare.toFixed(4)}`
 );

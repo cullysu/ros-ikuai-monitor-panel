@@ -549,6 +549,8 @@ function assertNoFourGridContract(haystack, label) {
 }
 
 const mobile = read("src/panel-framework/overview/components/MobileOverviewHome.tsx");
+const mobileDecision = read("src/panel-framework/overview/components/MobileOverviewDecision.tsx");
+const mobileHomeSections = read("src/panel-framework/overview/components/MobileOverviewHomeSections.tsx");
 const mobileSections = read("src/panel-framework/overview/components/MobileOverviewSections.tsx");
 const mobileStatusHeader = read("src/panel-framework/overview/components/StatusHeader.tsx");
 const mobileTrustStrip = read("src/panel-framework/overview/components/TrustStrip.tsx");
@@ -594,8 +596,8 @@ const css = read("src/panel-framework/overview/OverviewPanel.css");
 const desktopStyleStack = [css, desktopRefinementStyles, desktopReleaseStyles].join("\n");
 const publicRuntime = read("public/assets/framework/panel-framework.js");
 const publicCss = read("public/assets/framework/style.css");
-const splitMobileSource = [mobile, mobileSections, mobileTypes, mobileStatusHeader, mobileCoreMetricRail, mobileHomeSurface, mobileBottomTabs, mobileHero, mobileStyles, mobileModel, mobileDataModel, mobileChartModel, mobileListModel, mobileTokenSource, mobilePolicy].join("\n");
-const splitMobileRuntimeSource = [mobile, mobileSections, mobileTypes, mobileStatusHeader, mobileCoreMetricRail, mobileHomeSurface, mobileBottomTabs, mobileHero, mobileModel, mobileDataModel, mobileChartModel, mobileListModel, mobilePolicy].join("\n");
+const splitMobileSource = [mobile, mobileDecision, mobileHomeSections, mobileSections, mobileTypes, mobileStatusHeader, mobileCoreMetricRail, mobileHomeSurface, mobileBottomTabs, mobileHero, mobileStyles, mobileModel, mobileDataModel, mobileChartModel, mobileListModel, mobileTokenSource, mobilePolicy].join("\n");
+const splitMobileRuntimeSource = [mobile, mobileDecision, mobileHomeSections, mobileSections, mobileTypes, mobileStatusHeader, mobileCoreMetricRail, mobileHomeSurface, mobileBottomTabs, mobileHero, mobileModel, mobileDataModel, mobileChartModel, mobileListModel, mobilePolicy].join("\n");
 const mobileLegacyStyleStack = [mobileBaseStyles, mobileRefinementStyles, mobileReleaseStyles, mobileStyles].join("\n");
 const mobileStyleStack = [mobileBaseStyles, mobileRefinementStyles, mobileReleaseStyles, mobileDecisionStyles, mobileStyles].join("\n");
 const activePublicRuntime = activeRuntimeSlice(publicRuntime, "v240");
