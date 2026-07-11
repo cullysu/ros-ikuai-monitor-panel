@@ -13976,7 +13976,7 @@ var PanelFramework = function(exports) {
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-mobile-device-bar .ik-v240-status {
     min-width: 58px !important;
     min-height: 30px !important;
-    border-radius: 8px !important;
+    border-radius: 6px !important;
     border-color: #b9cce3 !important;
     background: #f8fbff !important;
   }
@@ -13989,10 +13989,10 @@ var PanelFramework = function(exports) {
     height: auto !important;
     max-height: none !important;
     padding: 12px !important;
-    border: 1px solid #bed2e8 !important;
-    border-left: 4px solid #1f6fd1 !important;
-    border-radius: 9px !important;
-    background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%) !important;
+    border: 1px solid #c7d5e4 !important;
+    border-left: 3px solid #1f6fd1 !important;
+    border-radius: 6px !important;
+    background: #ffffff !important;
     box-shadow: none !important;
   }
 
@@ -14059,7 +14059,7 @@ var PanelFramework = function(exports) {
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-mobile-decision-trend .ik-mobile-decision-visual {
     height: 64px !important;
     max-height: 64px !important;
-    border-radius: 7px !important;
+    border-radius: 4px !important;
     background: #f4f8fc !important;
   }
 
@@ -14094,7 +14094,7 @@ var PanelFramework = function(exports) {
     grid-row: auto !important;
     min-height: 64px !important;
     height: 64px !important;
-    border-radius: 8px !important;
+    border-radius: 6px !important;
     border-color: #cbd9e8 !important;
     background: #ffffff !important;
   }
@@ -14114,7 +14114,7 @@ var PanelFramework = function(exports) {
 
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-mobile-supporting-list {
     height: 100% !important;
-    border-radius: 8px !important;
+    border-radius: 6px !important;
   }
 
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-mobile-supporting-list header {
@@ -14180,7 +14180,7 @@ var PanelFramework = function(exports) {
     min-width: 38px !important;
     height: 24px !important;
     border: 1px solid #cbd9e8 !important;
-    border-radius: 7px !important;
+    border-radius: 4px !important;
     background: #f8fbff !important;
     color: #1f4f86 !important;
     font-size: 11px !important;
@@ -14317,42 +14317,44 @@ var PanelFramework = function(exports) {
 
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-mobile-abnormal-decision-rail {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    grid-template-rows: repeat(2, 60px) !important;
-    min-height: 120px !important;
-    height: 120px !important;
-    max-height: 120px !important;
+    grid-template-rows: repeat(2, 56px) !important;
+    min-height: 112px !important;
+    height: 112px !important;
+    max-height: 112px !important;
   }
 
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-mobile-abnormal-decision-rail > span {
-    min-height: 60px !important;
-    height: 60px !important;
-    max-height: 60px !important;
-    padding: 7px 8px !important;
+    min-height: 56px !important;
+    height: 56px !important;
+    max-height: 56px !important;
+    padding: 8px 9px !important;
   }
 
-  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1122-public-home] .ik-mobile-abnormal-decision-rail em,
-  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1122-public-home] .ik-mobile-abnormal-decision-rail strong {
-    font-size: 9.5px !important;
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1122-public-home] .ik-mobile-abnormal-decision-rail em {
+    font-size: 10px !important;
+    line-height: 1.15 !important;
   }
 
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1122-public-home] .ik-mobile-abnormal-decision-rail b {
-    font-size: 12.5px !important;
+    font-size: 13.5px !important;
+    line-height: 1.15 !important;
   }
 
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-v420-tabs,
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-v1110-public-home] .ik-v240-tabs {
     position: fixed !important;
-    left: 12px !important;
-    right: 12px !important;
-    bottom: max(8px, env(safe-area-inset-bottom)) !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
     width: auto !important;
     min-width: 0 !important;
     max-width: none !important;
     transform: none !important;
     grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
-    border: 1px solid #d3deea !important;
-    border-radius: 10px !important;
-    background: rgba(249, 252, 255, .97) !important;
+    border: 0 !important;
+    border-top: 1px solid #d3deea !important;
+    border-radius: 0 !important;
+    background: #f9fcff !important;
     box-shadow: none !important;
   }
 
@@ -16105,12 +16107,20 @@ var PanelFramework = function(exports) {
     if (priority === "wan-offline") return "danger";
     return "trust";
   }
+  function abnormalDecisionImpactValue(priority, scope) {
+    if (priority === "wan-offline") return "默认路由不可承载";
+    if (priority === "snapshot-missing") return "业务数据不展示";
+    if (priority === "resource-full") return "业务可用 · 余量低";
+    if (priority === "interface-down") return "承载关系待判";
+    if (priority === "collection-degraded") return "采集可信度下降";
+    return scope.value;
+  }
   function abnormalDecisionCells(priority, contract, scope, network, heroTitle, listTitle) {
     if (priority === "normal") return [];
     const evidenceParts = contract.trustBoundary.split("·").map((part) => clean(part)).filter(Boolean);
     return [
       { label: "对象", value: listTitle, note: heroTitle, tone: scope.tone },
-      { label: "影响", value: scope.value, note: scope.note, tone: scope.tone },
+      { label: "影响", value: abnormalDecisionImpactValue(priority, scope), note: scope.note, tone: scope.tone },
       { label: "可信度", value: evidenceParts[0] || network.snapshot.value, note: evidenceParts.slice(1).join(" · ") || network.snapshot.label, tone: abnormalDecisionEvidenceTone(priority) },
       { label: "下一步", value: abnormalDecisionNextAction(priority), note: abnormalDecisionActionNote(priority), tone: contract.severity === "p0" ? "danger" : "warn" }
     ];
@@ -16361,8 +16371,7 @@ var PanelFramework = function(exports) {
             "data-overview-mobile-v1046-abnormal-decision-cell": item.label,
             children: [
               /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: item.label }),
-              /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: item.value }),
-              /* @__PURE__ */ jsxRuntimeExports.jsx("strong", { children: item.note })
+              /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: item.value })
             ]
           },
           item.label

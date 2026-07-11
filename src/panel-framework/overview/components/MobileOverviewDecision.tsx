@@ -124,7 +124,6 @@ function AbnormalDecisionRail({ model }: { model: MobileOverviewModel }) {
         >
           <em>{item.label}</em>
           <b>{item.value}</b>
-          <strong>{item.note}</strong>
         </span>
       ))}
     </div>

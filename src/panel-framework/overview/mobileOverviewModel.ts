@@ -776,6 +776,18 @@ function abnormalDecisionEvidenceTone(priority: MobileOverviewModel["priority"])
   return "trust";
 }
 
+function abnormalDecisionImpactValue(
+  priority: MobileOverviewModel["priority"],
+  scope: MobileImpactScope,
+): string {
+  if (priority === "wan-offline") return "默认路由不可承载";
+  if (priority === "snapshot-missing") return "业务数据不展示";
+  if (priority === "resource-full") return "业务可用 · 余量低";
+  if (priority === "interface-down") return "承载关系待判";
+  if (priority === "collection-degraded") return "采集可信度下降";
+  return scope.value;
+}
+
 function abnormalDecisionCells(
   priority: MobileOverviewModel["priority"],
   contract: MobileOverviewModel["appHomeContract"],
@@ -788,7 +800,7 @@ function abnormalDecisionCells(
   const evidenceParts = contract.trustBoundary.split("·").map((part) => clean(part)).filter(Boolean);
   return [
     { label: "对象", value: listTitle, note: heroTitle, tone: scope.tone },
-    { label: "影响", value: scope.value, note: scope.note, tone: scope.tone },
+    { label: "影响", value: abnormalDecisionImpactValue(priority, scope), note: scope.note, tone: scope.tone },
     { label: "可信度", value: evidenceParts[0] || network.snapshot.value, note: evidenceParts.slice(1).join(" · ") || network.snapshot.label, tone: abnormalDecisionEvidenceTone(priority) },
     { label: "下一步", value: abnormalDecisionNextAction(priority), note: abnormalDecisionActionNote(priority), tone: contract.severity === "p0" ? "danger" : "warn" },
   ];

@@ -2009,6 +2009,12 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const overviewMobileResourceFullVerticalOk = sectionName !== 'overview' || scaleScenario !== 'resource-full' || !isMobileOverview || Boolean(
       Array.from(mobileFirstScreen?.querySelectorAll('.ik-v420-resource-meter-set[data-overview-scene-chart="mobile-resource-vertical-ledger"], .ik-v420-resource-meter') || [])
         .filter(nodeVisibleInFirstScreen).length >= 3 ||
+      (() => {
+        const rows = Array.from(mobileFirstScreen?.querySelectorAll('.ik-mobile-resource-incident-stack > .ik-mobile-resource-line') || [])
+          .filter(nodeVisibleInFirstScreen);
+        const rowText = normalize(rows.map((node) => node.textContent || '').join(' '));
+        return rows.length === 3 && /处理器/.test(rowText) && /内存/.test(rowText) && /磁盘/.test(rowText);
+      })() ||
       Array.from(mobileFirstScreen?.querySelectorAll('[data-overview-mobile-v1040-resource-pressure], [data-overview-mobile-resource-card="cpu-memory-disk-horizontal"]') || [])
         .filter(nodeVisibleInFirstScreen)
         .some((node) => /CPU/.test(normalize(node.textContent || '')) && /内存/.test(normalize(node.textContent || '')) && /磁盘/.test(normalize(node.textContent || '')))
