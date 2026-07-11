@@ -15,7 +15,7 @@ function WanDecisionSpark({ model }: { model: MobileOverviewModel }) {
     <div className="ik-mobile-decision-trend" data-overview-mobile-v1072-chart="decision-plot-two-series-three-by-two-readout">
       <div className="ik-mobile-decision-trend-plot">
         <div className="ik-v1072-chart-head">
-          <span className="ik-v1065-chart-kicker" data-overview-mobile-v1065-chart-label="normal-visible-compact">WAN 实时趋势</span>
+          <span className="ik-v1065-chart-kicker" data-overview-mobile-v1065-chart-label="normal-visible-compact">WAN 趋势 · {chart.windowText}</span>
           <div className="ik-v1072-series-legend" data-overview-mobile-v1072-series-legend="download-upload" aria-label="下载与上传图例">
             <span className="is-download"><i aria-hidden="true" />下载</span>
             <span className="is-upload"><i aria-hidden="true" />上传</span>
@@ -58,18 +58,14 @@ function WanDecisionSpark({ model }: { model: MobileOverviewModel }) {
       <i className="ik-v812-trend-visual ik-mobile-decision-trend-anchor" aria-hidden="true" />
       <div
         className="ik-v1010-chart-readout-rail ik-mobile-decision-readouts"
-        data-overview-mobile-chart-readout-rail="current-peak-window-threshold-sample-anomaly"
-        data-overview-mobile-v1045-chart-readouts="window-current-peak-threshold-sample-anomaly-source"
-        data-overview-mobile-v1072-readout-grid="three-columns-two-rows-six-decisions"
-        data-overview-mobile-hero-metrics="current-peak-window-threshold-sample-anomaly"
-        data-overview-mobile-v240-big-numbers="current-rate"
+        data-overview-mobile-chart-readout-rail="current-peak-threshold-sample"
+        data-overview-mobile-chart-readout-grid="two-columns-two-rows-four-decisions"
+        data-overview-mobile-hero-metrics="current-peak-threshold-sample"
       >
         <span><em>当前</em><b>{chart.currentLabel}</b></span>
         <span><em>峰值</em><b>{chart.peakLabel}</b></span>
-        <span><em>窗口</em><b>{chart.windowText}</b></span>
         <span><em>阈值</em><b>{chart.thresholdLabel}</b></span>
         <span><em>采样</em><b>{chart.sampleText}</b></span>
-        <span><em>异常</em><b>{anomaly}</b></span>
       </div>
     </div>
   );

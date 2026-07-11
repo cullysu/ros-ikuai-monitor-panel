@@ -139,7 +139,9 @@ export function buildMobileTrendChart(snapshot: OverviewRawSnapshot, state: Over
   const referenceRatio = state.facts.wan.allOffline ? 0.08 : 0.78;
   const thresholdValue = peak * referenceRatio;
   const breachIndex = down.findIndex((value) => value >= thresholdValue);
-  const windowText = series.source === "history" ? "近 12 点" : "当前窗口";
+  const windowText = series.source === "history"
+    ? `近 ${Math.max(down.length, up.length)} 点`
+    : `近 ${Math.max(down.length, up.length)} 次`;
   const sampleText = series.source === "history" ? "历史样本" : "实时估算";
   const sampleLabel = series.source === "history"
     ? "历史"

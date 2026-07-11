@@ -13713,7 +13713,7 @@ var PanelFramework = function(exports) {
 
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-decision-card .ik-mobile-decision-readouts {
     display: grid !important;
-    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
     grid-template-rows: repeat(2, minmax(24px, auto)) !important;
     position: static !important;
     width: 100% !important;
@@ -14932,7 +14932,7 @@ var PanelFramework = function(exports) {
     const referenceRatio = state.facts.wan.allOffline ? 0.08 : 0.78;
     const thresholdValue = peak * referenceRatio;
     const breachIndex = down.findIndex((value) => value >= thresholdValue);
-    const windowText = series.source === "history" ? "近 12 点" : "当前窗口";
+    const windowText = series.source === "history" ? `近 ${Math.max(down.length, up.length)} 点` : `近 ${Math.max(down.length, up.length)} 次`;
     const sampleText = series.source === "history" ? "历史样本" : "实时估算";
     const sampleLabel = series.source === "history" ? "历史" : state.scenario === "collection-down" || state.facts.collection.dataStale || state.facts.freshness.history ? "缓存" : "实时";
     const anomalyLabel = breachIndex >= 0 ? `异常点 ${breachIndex + 1}` : "异常点 0";
@@ -15834,7 +15834,10 @@ var PanelFramework = function(exports) {
     return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ik-mobile-decision-trend", "data-overview-mobile-v1072-chart": "decision-plot-two-series-three-by-two-readout", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ik-mobile-decision-trend-plot", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ik-v1072-chart-head", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "ik-v1065-chart-kicker", "data-overview-mobile-v1065-chart-label": "normal-visible-compact", children: "WAN 实时趋势" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "ik-v1065-chart-kicker", "data-overview-mobile-v1065-chart-label": "normal-visible-compact", children: [
+            "WAN 趋势 · ",
+            chart.windowText
+          ] }),
           /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ik-v1072-series-legend", "data-overview-mobile-v1072-series-legend": "download-upload", "aria-label": "下载与上传图例", children: [
             /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "is-download", children: [
               /* @__PURE__ */ jsxRuntimeExports.jsx("i", { "aria-hidden": "true" }),
@@ -15891,11 +15894,9 @@ var PanelFramework = function(exports) {
         "div",
         {
           className: "ik-v1010-chart-readout-rail ik-mobile-decision-readouts",
-          "data-overview-mobile-chart-readout-rail": "current-peak-window-threshold-sample-anomaly",
-          "data-overview-mobile-v1045-chart-readouts": "window-current-peak-threshold-sample-anomaly-source",
-          "data-overview-mobile-v1072-readout-grid": "three-columns-two-rows-six-decisions",
-          "data-overview-mobile-hero-metrics": "current-peak-window-threshold-sample-anomaly",
-          "data-overview-mobile-v240-big-numbers": "current-rate",
+          "data-overview-mobile-chart-readout-rail": "current-peak-threshold-sample",
+          "data-overview-mobile-chart-readout-grid": "two-columns-two-rows-four-decisions",
+          "data-overview-mobile-hero-metrics": "current-peak-threshold-sample",
           children: [
             /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
               /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: "当前" }),
@@ -15906,20 +15907,12 @@ var PanelFramework = function(exports) {
               /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: chart.peakLabel })
             ] }),
             /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: "窗口" }),
-              /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: chart.windowText })
-            ] }),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
               /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: "阈值" }),
               /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: chart.thresholdLabel })
             ] }),
             /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
               /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: "采样" }),
               /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: chart.sampleText })
-            ] }),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: "异常" }),
-              /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: anomaly })
             ] })
           ]
         }

@@ -1159,7 +1159,7 @@ async function main() {
             impactScope: 'normal-ops',
             impactPlane: 'business',
             mode: 'normal',
-            requiredText: ['WAN 实时趋势', '网络可用', 'WAN', '采集', '资源', '快照', '运行明细']
+            requiredText: ['WAN 趋势', '网络可用', 'WAN', '采集', '资源', '快照', '运行明细']
           },
           mobileAppHome: {
             ia: 'wan-offline-default-route-collection-success-first',
@@ -1286,11 +1286,11 @@ async function main() {
           text: normalize(impactLine.textContent || '')
         } : {};
         const hasHorizontalOverflow = document.documentElement.scrollWidth > document.documentElement.clientWidth + 1 || wideNodes.length > 0;
-        const chartRail = hero?.querySelector('[data-overview-mobile-chart-readout-rail="current-peak-window-threshold-sample-anomaly"]');
+        const chartRail = hero?.querySelector('[data-overview-mobile-chart-readout-rail="current-peak-threshold-sample"]');
         const trendVisual = hero?.querySelector('.ik-v812-trend-visual');
         const v1072Chart = hero?.querySelector('[data-overview-mobile-v1072-chart="decision-plot-two-series-three-by-two-readout"]');
         const v1072SeriesLegend = v1072Chart?.querySelector('[data-overview-mobile-v1072-series-legend="download-upload"]');
-        const v1072ReadoutGrid = hero?.querySelector('[data-overview-mobile-v1072-readout-grid="three-columns-two-rows-six-decisions"]');
+        const decisionReadoutGrid = hero?.querySelector('[data-overview-mobile-chart-readout-grid="two-columns-two-rows-four-decisions"]');
         const productChart = hero?.querySelector('[data-overview-mobile-v1012-product-chart="window-current-peak-threshold-sample-breach"]');
         const productDecisionChart = hero?.querySelector('[data-overview-mobile-v1045-product-chart-decision="window-current-peak-threshold-sample-anomaly-source"]');
         const modelBackedChartPlot = sectionName !== 'mobileNormalHome' || Boolean(
@@ -1335,7 +1335,7 @@ async function main() {
         const visibleChartRailLabelText = visibleChartRailLabels.map((node) => normalize(node.textContent || ''));
         const chartRailFullWidth = sectionName !== 'mobileNormalHome' || Boolean(chartRailRect && trendVisualRect && chartRailRect.width >= trendVisualRect.width - 2);
         const chartRailNotSideBubble = sectionName !== 'mobileNormalHome' || Boolean(chartRailRect && trendVisualRect && Math.abs(chartRailRect.left - trendVisualRect.left) <= 2 && chartRailRect.top >= trendVisualRect.bottom - 2);
-        const chartReadoutLabelsVisible = sectionName !== 'mobileNormalHome' || (chartRailLabels.length >= 6 && visibleChartRailLabels.length >= 6);
+        const chartReadoutLabelsVisible = sectionName !== 'mobileNormalHome' || (chartRailLabels.length === 4 && visibleChartRailLabels.length === 4);
         const hasThresholdChartContract = sectionName !== 'mobileNormalHome' || Boolean(
           productChart &&
           productChart.getAttribute('data-overview-mobile-chart-threshold') &&
@@ -1347,8 +1347,8 @@ async function main() {
         const productChartProductized = sectionName !== 'mobileNormalHome' || Boolean(
           productDecisionChart &&
           chartRail &&
-          chartRail.getAttribute('data-overview-mobile-v1045-chart-readouts') === 'window-current-peak-threshold-sample-anomaly-source' &&
-          ['当前', '峰值', '窗口', '阈值', '采样', '异常'].every((label) => visibleChartRailLabelText.includes(label)) &&
+          chartRail.getAttribute('data-overview-mobile-chart-readout-grid') === 'two-columns-two-rows-four-decisions' &&
+          ['当前', '峰值', '阈值', '采样'].every((label) => visibleChartRailLabelText.includes(label)) &&
           /当前/.test(productChartDecision) &&
           /峰值/.test(productChartDecision) &&
           /阈值/.test(productChartDecision) &&
@@ -1360,10 +1360,10 @@ async function main() {
         const chartDecisionLayoutProductized = sectionName !== 'mobileNormalHome' || Boolean(
           v1072Chart &&
           v1072SeriesLegend &&
-          v1072ReadoutGrid === chartRail &&
-          chartReadoutColumnCount === 3 &&
+          decisionReadoutGrid === chartRail &&
+          chartReadoutColumnCount === 2 &&
           chartReadoutRowCount === 2 &&
-          chartReadoutCells.length === 6 &&
+          chartReadoutCells.length === 4 &&
           chartReadoutCellHeights.every((height) => height >= 24) &&
           chartRailWithinHero &&
           lineChartRect &&
@@ -1453,7 +1453,7 @@ async function main() {
           metricGrid &&
           normalChartLabel &&
           normalize(hero.querySelector('.ik-mobile-decision-head h1')?.textContent || '').includes('网络可用') &&
-          normalize(normalChartLabel.textContent || '') === 'WAN 实时趋势' &&
+          normalize(normalChartLabel.textContent || '').startsWith('WAN 趋势 · ') &&
           normalChartLabelStyle &&
           normalChartLabelStyle.display !== 'none' &&
           normalChartLabelRect &&

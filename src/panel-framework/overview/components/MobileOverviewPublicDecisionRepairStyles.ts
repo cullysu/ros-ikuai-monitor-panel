@@ -173,7 +173,7 @@ export const MOBILE_OVERVIEW_PUBLIC_DECISION_REPAIR_STYLES = `
 
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-decision-card .ik-mobile-decision-readouts {
     display: grid !important;
-    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
     grid-template-rows: repeat(2, minmax(24px, auto)) !important;
     position: static !important;
     width: 100% !important;
