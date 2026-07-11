@@ -27,6 +27,8 @@ const panelFile = "src/panel-framework/overview/OverviewPanel.tsx";
 const panelCssFile = "src/panel-framework/overview/OverviewPanel.css";
 const desktopRefinementFile =
   "src/panel-framework/overview/OverviewPanelDesktopRefinement.css";
+const desktopReleaseFile =
+  "src/panel-framework/overview/OverviewPanelRelease.css";
 const desktopConsoleFile =
   "src/panel-framework/overview/components/DesktopConsole.tsx";
 const desktopDecisionRailFile =
@@ -66,6 +68,7 @@ const desktopDecisionRail = read(desktopDecisionRailFile);
 const desktopScenes = read(desktopScenesFile);
 const panelCss = read(panelCssFile);
 const desktopRefinement = read(desktopRefinementFile);
+const desktopRelease = read(desktopReleaseFile);
 const desktopHelpers = read(desktopHelpersFile);
 const desktopRows = read(desktopRowsFile);
 const desktopTrafficRows = read(desktopTrafficRowsFile);
@@ -82,6 +85,9 @@ const mobileModel = read(mobileModelFile);
 const cssRoot = postcss.parse(panelCss, { from: panelCssFile });
 const desktopRefinementRoot = postcss.parse(desktopRefinement, {
   from: desktopRefinementFile,
+});
+const desktopReleaseRoot = postcss.parse(desktopRelease, {
+  from: desktopReleaseFile,
 });
 let declarationCount = 0;
 let importantCount = 0;
@@ -100,6 +106,11 @@ let desktopLegacyTopbarRuleCount = 0;
 let desktopModuleShellRuleCount = 0;
 let desktopModuleHeadRuleCount = 0;
 let desktopLedgerRuleCount = 0;
+let desktopModuleToneRuleCount = 0;
+let desktopLedgerToneRuleCount = 0;
+let desktopLedgerToneShadowCount = 0;
+let desktopReleaseToneResetCount = 0;
+let desktopReleaseNonPrimaryNeutralCount = 0;
 
 cssRoot.walkRules((rule) => {
   ruleCount += 1;
@@ -189,6 +200,52 @@ desktopRefinementRoot.walkRules((rule) => {
     })
   ) {
     desktopLedgerRuleCount += 1;
+  }
+  if (
+    selectors.length > 0 &&
+    selectors.every(
+      (selector) =>
+        selector.includes(".ro-module[data-tone=") &&
+        !selector.includes("[data-overview-evidence-weight") &&
+        !selector.includes("[data-overview-density-module") &&
+        !selector.includes(".ro-col")
+    )
+  ) {
+    desktopModuleToneRuleCount += 1;
+  }
+  if (
+    selectors.length > 0 &&
+    selectors.every(
+      (selector) =>
+        selector.includes(".ro-ledger-row[data-tone=") &&
+        !selector.includes(".ro-module") &&
+        !selector.includes(".ro-col")
+    )
+  ) {
+    desktopLedgerToneRuleCount += 1;
+    rule.walkDecls("box-shadow", () => {
+      desktopLedgerToneShadowCount += 1;
+    });
+  }
+});
+desktopReleaseRoot.walkRules((rule) => {
+  if (
+    ["danger", "warn", "missing"].every((tone) =>
+      rule.selector.includes(`.ro-ledger-row[data-tone="${tone}"]`)
+    ) &&
+    rule.nodes?.some(
+      (node) => node.type === "decl" && node.prop === "box-shadow" && node.value === "none"
+    )
+  ) {
+    desktopReleaseToneResetCount += 1;
+  }
+  if (
+    rule.selector.includes(":not(:first-child) .ik-overview-cell-text") &&
+    ["danger", "warn", "missing"].every((tone) =>
+      rule.selector.includes(`.ro-ledger-row[data-tone="${tone}"]`)
+    )
+  ) {
+    desktopReleaseNonPrimaryNeutralCount += 1;
   }
 });
 
@@ -358,8 +415,8 @@ assert(
   `OverviewPanel.css mobile rule share regressed above 11%: ${mobileRuleShare.toFixed(4)}`
 );
 assert(
-  desktopRefinementImportantCount <= 827,
-  `Desktop refinement !important count regressed above 827: ${desktopRefinementImportantCount}`
+  desktopRefinementImportantCount <= 802,
+  `Desktop refinement !important count regressed above 802: ${desktopRefinementImportantCount}`
 );
 assert(
   desktopDecisionRailRuleCount === 1 && desktopDecisionCellRuleCount <= 4,
@@ -380,6 +437,16 @@ assert(
 assert(
   desktopLedgerRuleCount === 6 && !desktopRefinement.includes("nth-child(odd)"),
   `Desktop ledger must stay canonical and zebra-free: ledgerRules=${desktopLedgerRuleCount}`
+);
+assert(
+  desktopModuleToneRuleCount === 2 &&
+    desktopLedgerToneRuleCount === 3 &&
+    desktopLedgerToneShadowCount === 0,
+  `Desktop tone hierarchy must stay restrained: moduleToneRules=${desktopModuleToneRuleCount} ledgerToneRules=${desktopLedgerToneRuleCount} ledgerToneShadows=${desktopLedgerToneShadowCount}`
+);
+assert(
+  desktopReleaseToneResetCount === 1 && desktopReleaseNonPrimaryNeutralCount === 1,
+  `Desktop release tone reset must neutralize row chrome and non-primary text: resets=${desktopReleaseToneResetCount} nonPrimary=${desktopReleaseNonPrimaryNeutralCount}`
 );
 assert(
   versionMarkerCount <= 159,
@@ -450,5 +517,5 @@ if (failures.length > 0) {
 }
 
 console.log(
-  `overview architecture gate: PASS panel=${lines(panel)} lines desktop=${lines(desktopConsole)} lines desktopDecision=${lines(desktopDecisionRail)} lines scenes=${lines(desktopScenes)} lines helper=${lines(desktopHelpers)} lines rowsFacade=${lines(desktopRows)} lines trafficRows=${lines(desktopTrafficRows)} lines networkRows=${lines(desktopNetworkRows)} lines credibilityRows=${lines(desktopCredibilityRows)} lines terminalRows=${lines(desktopTerminalRows)} lines resourceRows=${lines(desktopResourceRows)} lines visuals=${lines(desktopVisuals)} lines mobileHome=${lines(mobileHome)} lines mobileDecision=${lines(mobileDecision)} lines mobileSections=${lines(mobileHomeSections)} lines css=${bytes(panelCssFile)} bytes mobileStyles=${mobileStyleByteTotal} bytes important=${importantShare.toFixed(4)} desktopImportant=${desktopRefinementImportantCount} decisionRailRules=${desktopDecisionRailRuleCount} decisionCellRules=${desktopDecisionCellRuleCount} workspaceGridRules=${desktopWorkspaceGridRuleCount} navRules=${desktopNavRuleCount} statusBusRules=${desktopStatusBusRuleCount} legacyTopbarRules=${desktopLegacyTopbarRuleCount} moduleShellRules=${desktopModuleShellRuleCount} moduleHeadRules=${desktopModuleHeadRuleCount} ledgerRules=${desktopLedgerRuleCount} mobile=${mobileRuleShare.toFixed(4)}`
+  `overview architecture gate: PASS panel=${lines(panel)} lines desktop=${lines(desktopConsole)} lines desktopDecision=${lines(desktopDecisionRail)} lines scenes=${lines(desktopScenes)} lines helper=${lines(desktopHelpers)} lines rowsFacade=${lines(desktopRows)} lines trafficRows=${lines(desktopTrafficRows)} lines networkRows=${lines(desktopNetworkRows)} lines credibilityRows=${lines(desktopCredibilityRows)} lines terminalRows=${lines(desktopTerminalRows)} lines resourceRows=${lines(desktopResourceRows)} lines visuals=${lines(desktopVisuals)} lines mobileHome=${lines(mobileHome)} lines mobileDecision=${lines(mobileDecision)} lines mobileSections=${lines(mobileHomeSections)} lines css=${bytes(panelCssFile)} bytes mobileStyles=${mobileStyleByteTotal} bytes important=${importantShare.toFixed(4)} desktopImportant=${desktopRefinementImportantCount} decisionRailRules=${desktopDecisionRailRuleCount} decisionCellRules=${desktopDecisionCellRuleCount} workspaceGridRules=${desktopWorkspaceGridRuleCount} navRules=${desktopNavRuleCount} statusBusRules=${desktopStatusBusRuleCount} legacyTopbarRules=${desktopLegacyTopbarRuleCount} moduleShellRules=${desktopModuleShellRuleCount} moduleHeadRules=${desktopModuleHeadRuleCount} ledgerRules=${desktopLedgerRuleCount} moduleToneRules=${desktopModuleToneRuleCount} ledgerToneRules=${desktopLedgerToneRuleCount} ledgerToneShadows=${desktopLedgerToneShadowCount} releaseToneResets=${desktopReleaseToneResetCount} releaseNonPrimary=${desktopReleaseNonPrimaryNeutralCount} mobile=${mobileRuleShare.toFixed(4)}`
 );

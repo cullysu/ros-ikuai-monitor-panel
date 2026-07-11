@@ -130,10 +130,17 @@
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="danger"] > .ro-ledger-cell:not(:first-child),
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="warn"] > .ro-ledger-cell:not(:first-child),
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="missing"] > .ro-ledger-cell:not(:first-child),
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="danger"] > .ro-ledger-cell:not(:first-child),
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="warn"] > .ro-ledger-cell:not(:first-child),
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="missing"] > .ro-ledger-cell:not(:first-child) {
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="danger"] > .ro-ledger-cell:not(:first-child) .ik-overview-cell-text,
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="warn"] > .ro-ledger-cell:not(:first-child) .ik-overview-cell-text,
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="missing"] > .ro-ledger-cell:not(:first-child) .ik-overview-cell-text {
     color: #24374b !important;
+  }
+
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="danger"],
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="warn"],
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="missing"] {
+    background: transparent !important;
+    box-shadow: none !important;
   }
 
 

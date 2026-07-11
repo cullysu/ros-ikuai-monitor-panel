@@ -203,29 +203,6 @@
     background: var(--ik-console-page) !important;
   }
 
-  #overview.router-overview-framework[data-overview-desktop-v1020-public-product-polish] .ro-ledger-row[data-tone="danger"] .ro-ledger-cell,
-  #overview.router-overview-framework[data-overview-desktop-v1020-public-product-polish] .ro-ledger-row[data-tone="warn"] .ro-ledger-cell,
-  #overview.router-overview-framework[data-overview-desktop-v1020-public-product-polish] .ro-ledger-row[data-tone="missing"] .ro-ledger-cell,
-  .router-overview-framework[data-overview-desktop-v1020-public-product-polish] .ro-ledger-row[data-tone="danger"] .ro-ledger-cell,
-  .router-overview-framework[data-overview-desktop-v1020-public-product-polish] .ro-ledger-row[data-tone="warn"] .ro-ledger-cell,
-  .router-overview-framework[data-overview-desktop-v1020-public-product-polish] .ro-ledger-row[data-tone="missing"] .ro-ledger-cell {
-    color: var(--ik-v1020-desktop-text) !important;
-  }
-
-  #overview.router-overview-framework[data-overview-desktop-v1020-public-product-polish] .ro-ledger-row[data-tone="danger"] .ro-ledger-cell:first-child,
-  .router-overview-framework[data-overview-desktop-v1020-public-product-polish] .ro-ledger-row[data-tone="danger"] .ro-ledger-cell:first-child {
-    color: var(--ik-v1020-desktop-danger) !important;
-    font-weight: 790 !important;
-  }
-
-  #overview.router-overview-framework[data-overview-desktop-v1020-public-product-polish] .ro-ledger-row[data-tone="warn"] .ro-ledger-cell:first-child,
-  #overview.router-overview-framework[data-overview-desktop-v1020-public-product-polish] .ro-ledger-row[data-tone="missing"] .ro-ledger-cell:first-child,
-  .router-overview-framework[data-overview-desktop-v1020-public-product-polish] .ro-ledger-row[data-tone="warn"] .ro-ledger-cell:first-child,
-  .router-overview-framework[data-overview-desktop-v1020-public-product-polish] .ro-ledger-row[data-tone="missing"] .ro-ledger-cell:first-child {
-    color: var(--ik-v1020-desktop-warn) !important;
-    font-weight: 750 !important;
-  }
-
   #overview.router-overview-framework[data-overview-desktop-v1020-public-product-polish] .ro-wan-integrated-visual,
   .router-overview-framework[data-overview-desktop-v1020-public-product-polish] .ro-wan-integrated-visual {
     display: grid !important;
@@ -747,9 +724,6 @@
     background: #f3f7fb !important;
   }
 
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-tone="danger"] { border-left-color: #d8423a !important; }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-tone="warn"] { border-left-color: #d58a21 !important; }
-
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module-head div {
     display: flex !important;
     min-width: 0 !important;
@@ -1061,14 +1035,6 @@
     min-height: 0 !important;
   }
 
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-tone="danger"] {
-    border-left: 2px solid #d8423a !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-tone="warn"] {
-    border-left: 2px solid #d58a21 !important;
-  }
-
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module-head div {
     gap: 4px !important;
   }
@@ -1339,14 +1305,6 @@
     overflow: hidden !important;
   }
 
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-tone="danger"] {
-    border-left: 2px solid #d83a32 !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-tone="warn"] {
-    border-left: 2px solid #cf8424 !important;
-  }
-
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-cell:nth-child(n+3),
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-cell:nth-child(n+3) .ik-overview-cell-text {
     color: #64758a !important;
@@ -1435,23 +1393,6 @@
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-col.is-bottom .ro-ledger-row:not(.ro-ledger-head),
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="evidence-boundary"] .ro-ledger-row:not(.ro-ledger-head) {
     border-bottom-color: rgba(233, 240, 247, .48) !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="danger"],
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="warn"] {
-    box-shadow: inset 2px 0 0 rgba(184, 58, 50, .42) !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="warn"] {
-    box-shadow: inset 2px 0 0 rgba(137, 153, 170, .46) !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="danger"] .ro-ledger-cell:nth-child(n+3),
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="warn"] .ro-ledger-cell:nth-child(n+3),
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="danger"] .ro-ledger-cell:nth-child(n+3) .ik-overview-cell-text,
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="warn"] .ro-ledger-cell:nth-child(n+3) .ik-overview-cell-text {
-    color: #6d7f93 !important;
-    font-weight: 500 !important;
   }
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="evidence-boundary"] .ro-ledger-cell,
@@ -1594,49 +1535,6 @@
     background: #f3f7fb !important;
   }
 
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-tone="danger"] {
-    border-left-color: rgba(164, 48, 45, .70) !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-tone="warn"],
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-tone="missing"] {
-    border-left-color: rgba(128, 98, 59, .56) !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="danger"],
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="warn"],
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="missing"] {
-    box-shadow: inset 2px 0 0 rgba(164, 48, 45, .34) !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="warn"],
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="missing"] {
-    box-shadow: inset 2px 0 0 rgba(128, 98, 59, .32) !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="danger"] .ro-ledger-cell,
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="danger"] .ik-overview-cell-text,
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="warn"] .ro-ledger-cell,
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="warn"] .ik-overview-cell-text,
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="missing"] .ro-ledger-cell,
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="missing"] .ik-overview-cell-text {
-    color: #23364c !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="danger"] .ro-ledger-cell:first-child .ik-overview-cell-text,
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="danger"] .ro-ledger-cell:nth-child(2) .ik-overview-cell-text {
-    color: var(--ik-v950-danger) !important;
-    font-weight: 800 !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="warn"] .ro-ledger-cell:first-child .ik-overview-cell-text,
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="warn"] .ro-ledger-cell:nth-child(2) .ik-overview-cell-text,
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="missing"] .ro-ledger-cell:first-child .ik-overview-cell-text,
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="missing"] .ro-ledger-cell:nth-child(2) .ik-overview-cell-text {
-    color: var(--ik-v950-warn) !important;
-    font-weight: 760 !important;
-  }
-
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-cell:nth-child(n+3),
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-cell:nth-child(n+3) .ik-overview-cell-text {
     color: #65778d !important;
@@ -1665,23 +1563,6 @@
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-evidence-weight="primary"][data-tone="danger"],
   .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-evidence-weight="primary"][data-tone="danger"] {
     border-left-color: rgba(173, 54, 49, .54) !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="danger"] .ro-ledger-cell,
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="danger"] .ro-ledger-cell,
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="warn"] .ro-ledger-cell,
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="warn"] .ro-ledger-cell {
-    color: #203245 !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="danger"] .ro-ledger-cell:first-child,
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="danger"] .ro-ledger-cell:first-child {
-    color: #8f2f2c !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="warn"] .ro-ledger-cell:first-child,
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="warn"] .ro-ledger-cell:first-child {
-    color: #765927 !important;
   }
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-evidence-weight="secondary"],
@@ -1915,6 +1796,15 @@
     box-shadow: none !important;
   }
 
+  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-module[data-tone="danger"] {
+    border-left: 2px solid rgba(164, 48, 45, .70) !important;
+  }
+
+  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-module[data-tone="warn"],
+  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-module[data-tone="missing"] {
+    border-left: 2px solid rgba(128, 98, 59, .56) !important;
+  }
+
   #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-module-head {
     height: 25px !important;
     min-height: 25px !important;
@@ -1991,6 +1881,26 @@
     font-weight: 520 !important;
   }
 
+  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-ledger-row[data-tone="danger"] .ro-ledger-cell,
+  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-ledger-row[data-tone="warn"] .ro-ledger-cell,
+  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-ledger-row[data-tone="missing"] .ro-ledger-cell {
+    color: #24374b !important;
+  }
+
+  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-ledger-row[data-tone="danger"] .ro-ledger-cell:first-child,
+  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-ledger-row[data-tone="danger"] .ro-ledger-cell:first-child .ik-overview-cell-text {
+    color: #8f3a34 !important;
+    font-weight: 720 !important;
+  }
+
+  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-ledger-row[data-tone="warn"] .ro-ledger-cell:first-child,
+  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-ledger-row[data-tone="warn"] .ro-ledger-cell:first-child .ik-overview-cell-text,
+  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-ledger-row[data-tone="missing"] .ro-ledger-cell:first-child,
+  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-ledger-row[data-tone="missing"] .ro-ledger-cell:first-child .ik-overview-cell-text {
+    color: #765927 !important;
+    font-weight: 700 !important;
+  }
+
   #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-col.is-bottom,
   .router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-col.is-bottom {
     grid-column: 2 / -1 !important;
@@ -2004,29 +1914,6 @@
   #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-ledger-row:not(.ro-ledger-head):hover .ro-ledger-cell,
   .router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-ledger-row:not(.ro-ledger-head):hover .ro-ledger-cell {
     background: rgba(246, 250, 254, .48) !important;
-  }
-
-  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-ledger-row[data-tone="danger"] .ro-ledger-cell,
-  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-ledger-row[data-tone="warn"] .ro-ledger-cell,
-  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-ledger-row[data-tone="missing"] .ro-ledger-cell,
-  .router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-ledger-row[data-tone="danger"] .ro-ledger-cell,
-  .router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-ledger-row[data-tone="warn"] .ro-ledger-cell,
-  .router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-ledger-row[data-tone="missing"] .ro-ledger-cell {
-    color: #24374b !important;
-  }
-
-  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-ledger-row[data-tone="danger"] .ro-ledger-cell:first-child,
-  .router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-ledger-row[data-tone="danger"] .ro-ledger-cell:first-child {
-    color: #8f3a34 !important;
-    font-weight: 720 !important;
-  }
-
-  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-ledger-row[data-tone="warn"] .ro-ledger-cell:first-child,
-  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-ledger-row[data-tone="missing"] .ro-ledger-cell:first-child,
-  .router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-ledger-row[data-tone="warn"] .ro-ledger-cell:first-child,
-  .router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-ledger-row[data-tone="missing"] .ro-ledger-cell:first-child {
-    color: #765927 !important;
-    font-weight: 700 !important;
   }
 }
 
@@ -2050,9 +1937,9 @@
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"][data-overview-desktop-v1030-nav-polish] .ro-module .ro-ledger .ro-ledger-row[data-tone="danger"] > .ro-ledger-cell:not(:first-child),
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"][data-overview-desktop-v1030-nav-polish] .ro-module .ro-ledger .ro-ledger-row[data-tone="warn"] > .ro-ledger-cell:not(:first-child),
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"][data-overview-desktop-v1030-nav-polish] .ro-module .ro-ledger .ro-ledger-row[data-tone="missing"] > .ro-ledger-cell:not(:first-child),
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"][data-overview-desktop-v1030-nav-polish] .ro-module .ro-ledger .ro-ledger-row[data-tone="danger"] > .ro-ledger-cell:not(:first-child),
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"][data-overview-desktop-v1030-nav-polish] .ro-module .ro-ledger .ro-ledger-row[data-tone="warn"] > .ro-ledger-cell:not(:first-child),
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"][data-overview-desktop-v1030-nav-polish] .ro-module .ro-ledger .ro-ledger-row[data-tone="missing"] > .ro-ledger-cell:not(:first-child) {
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"][data-overview-desktop-v1030-nav-polish] .ro-module .ro-ledger .ro-ledger-row[data-tone="danger"] > .ro-ledger-cell:not(:first-child) .ik-overview-cell-text,
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"][data-overview-desktop-v1030-nav-polish] .ro-module .ro-ledger .ro-ledger-row[data-tone="warn"] > .ro-ledger-cell:not(:first-child) .ik-overview-cell-text,
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"][data-overview-desktop-v1030-nav-polish] .ro-module .ro-ledger .ro-ledger-row[data-tone="missing"] > .ro-ledger-cell:not(:first-child) .ik-overview-cell-text {
     color: #24374b !important;
   }
 }
