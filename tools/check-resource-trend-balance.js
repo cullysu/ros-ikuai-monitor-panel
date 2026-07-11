@@ -756,7 +756,6 @@ async function main() {
         );
         const navRect = nav?.getBoundingClientRect();
         const workspaceRect = workspace?.getBoundingClientRect();
-        const coreText = workspace?.getAttribute('data-overview-desktop-core-text') || '';
         const topbar = sectionEl?.querySelector('.ro-topbar');
         const thinKpis = sectionEl?.querySelector('.ro-desktop-thin-kpis');
         const desktopDecisionRail = sectionEl?.querySelector('[data-overview-desktop-decision-rail="four-user-decisions"]');
@@ -779,22 +778,10 @@ async function main() {
           const rect = node.getBoundingClientRect();
           return rect.width > 120 && rect.height > 80;
         });
-        const hiddenContract = sectionEl?.querySelector('[data-routeros-presentation-contract="collection-facts/routeros-semantics/user-conclusion"]');
-        const hiddenContractStyle = hiddenContract ? getComputedStyle(hiddenContract) : null;
-        const hiddenContractRect = hiddenContract?.getBoundingClientRect();
-        const hiddenContractText = normalize(hiddenContract?.textContent || '');
-        const hiddenContractNonDisruptive = Boolean(
-          hiddenContract &&
-          hiddenContractText.includes('presentation-model') &&
-          hiddenContractText.includes('原始字段仅作二级证据') &&
-          hiddenContractStyle &&
-          hiddenContractRect &&
-          Number.parseFloat(hiddenContractStyle.width || '0') <= 1 &&
-          Number.parseFloat(hiddenContractStyle.height || '0') <= 1 &&
-          hiddenContractRect.width <= 1 &&
-          hiddenContractRect.height <= 1 &&
-          hiddenContractStyle.overflow === 'hidden'
-        );
+        const syntheticGateTextCount = sectionEl?.querySelectorAll(
+          '[data-overview-desktop-core-text], .ro-sr-contract'
+        ).length || 0;
+        const syntheticGateTextAbsent = syntheticGateTextCount === 0;
         const wideNodes = Array.from(sectionEl?.querySelectorAll('*') || [])
           .map((node) => {
             const rect = node.getBoundingClientRect();
@@ -804,10 +791,8 @@ async function main() {
           .slice(0, 8);
         const hasHorizontalOverflow = document.documentElement.scrollWidth > document.documentElement.clientWidth + 1 || wideNodes.length > 0;
         const desktopVisibleText = normalize([visibleText(topbar), visibleText(workspace), visibleText(nav)].join(' '));
-        const requiredText = ['WAN 实时趋势', '默认出口', '采集', '资源', '快照'];
+        const requiredText = ['WAN 采样趋势', '默认出口', '采集', '资源', '快照'];
         const missing = requiredText.filter((item) => !desktopVisibleText.includes(item));
-        const requiredCoreText = ['采集可信度', '资源阈值', '最近成功'];
-        const missingCoreText = requiredCoreText.filter((item) => !coreText.includes(item));
         const lowNoiseConsoleTokenContract = 'low-noise-console-tokens-color-type-space-radius-state-chart';
         const lowNoiseConsoleTokenNames = ['--ik-console-ink', '--ik-console-line', '--ik-console-panel', '--ik-console-danger'];
         const lowNoiseConsoleTokenStyle = sectionEl ? getComputedStyle(sectionEl) : null;
@@ -1056,7 +1041,7 @@ async function main() {
           thinKpis &&
           desktopDecisionRailOk &&
           visibleModules.length >= 6 &&
-          hiddenContractNonDisruptive &&
+          syntheticGateTextAbsent &&
           topbarFlatSummaryBus &&
           topbarV1068ControlBus &&
           topbarV1072Hierarchy &&
@@ -1066,7 +1051,6 @@ async function main() {
           lowNoiseConsoleTokensApplied &&
           ledgerLineNoiseLow &&
           missing.length === 0 &&
-          missingCoreText.length === 0 &&
           !hasHorizontalOverflow
         );
         return {
@@ -1076,8 +1060,6 @@ async function main() {
           section: sectionName,
           url: location.href,
           missing,
-          missingCoreText,
-          coreText,
           navLabels,
           missingLabels,
           navItemCount: navItems.length,
@@ -1088,7 +1070,8 @@ async function main() {
           navRect: navRect ? { width: navRect.width, height: navRect.height, left: navRect.left, right: navRect.right } : null,
           workspaceRect: workspaceRect ? { width: workspaceRect.width, height: workspaceRect.height } : null,
           visibleModuleCount: visibleModules.length,
-          hiddenContractNonDisruptive,
+          syntheticGateTextAbsent,
+          syntheticGateTextCount,
           topbarFlatSummaryBus,
           topbarV1068ControlBus,
           topbarV1072Hierarchy,
@@ -1146,9 +1129,6 @@ async function main() {
             color: style.color,
             borderBottomColor: style.borderBottomColor
           })),
-          hiddenContractText: hiddenContractText.slice(0, 300),
-          hiddenContractRect: hiddenContractRect ? { width: hiddenContractRect.width, height: hiddenContractRect.height } : null,
-          hiddenContractStyle: hiddenContractStyle ? { width: hiddenContractStyle.width, height: hiddenContractStyle.height, overflow: hiddenContractStyle.overflow, clipPath: hiddenContractStyle.clipPath } : null,
           hasHorizontalOverflow,
           wideNodes,
           viewport: { width: innerWidth, height: innerHeight, clientWidth: document.documentElement.clientWidth, scrollWidth: document.documentElement.scrollWidth },

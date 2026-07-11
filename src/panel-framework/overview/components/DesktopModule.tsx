@@ -99,12 +99,6 @@ export function Module({ title, subtitle, module, tone = "trust", headers, rows,
             <span>数据点</span>
           </span>
         ) : null}
-        {module === "resource-interface-top5" ? (
-          <span className="ro-sr-contract" data-overview-top5-total={rows.length}>
-            <span className="ik-overview-top5-rate"><em>Top5速率</em></span>
-            <span className="ik-overview-top5-connections"><em>Top5连接</em></span>
-          </span>
-        ) : null}
       </header>
       {visual}
       {visualOnly ? null : (

@@ -9,7 +9,6 @@ import {
   OVERVIEW_IKUAI40_MATURE_VISUAL_STANDARD,
   OVERVIEW_SCENE_CHART_CONTRACT,
   OVERVIEW_SCENE_CHART_PRIORITY,
-  verdictContractText,
   type OverviewPanelProps,
 } from "./desktopOverviewHelpers";
 import "./OverviewPanel.css";
@@ -59,13 +58,6 @@ export function OverviewPanel({ snapshot, state }: OverviewPanelProps) {
       data-overview-no-zero-rate-placeholder="no-zero-rate-when-uncollected"
     >
       <StatusVerdict snapshot={snapshot} state={state} />
-      <span
-        className="ro-sr-contract"
-        data-overview-verdict-panel
-        data-routeros-presentation-contract="collection-facts/routeros-semantics/user-conclusion"
-      >
-        {verdictContractText(snapshot, state)}
-      </span>
       <div className="ro-mobile-first-screen" data-overview-mobile-first-screen>
         <MobileOverviewHome snapshot={snapshot} state={state} />
       </div>

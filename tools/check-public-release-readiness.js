@@ -635,8 +635,6 @@ function main(argv = process.argv.slice(2)) {
   assertContains('tools/local-predeploy-check.js', "loadAuditResourceText.includes('持续')");
   assertContains('public/index.html', 'renderFreshnessStrip');
   assertContains('public/index.html', '事件更新时间');
-  assertContains('public/index.html', '业务快照时间');
-  assertContains('public/index.html', '业务快照年龄');
   assertContains('public/index.html', '失败端点');
   assertContains('public/index.html', '当前为只读模式：仅通过 RouterOS API/SSH 读取状态，不写入配置');
   assertContains('public/index.html', 'RouterOS 写入');

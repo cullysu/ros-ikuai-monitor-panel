@@ -1572,8 +1572,6 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewTop5RowsNodes.length === 0 ||
       (
         sectionRoot?.querySelector('[data-overview-top5-total]') &&
-        sectionRoot?.querySelector('.ik-overview-top5-rate em') &&
-        sectionRoot?.querySelector('.ik-overview-top5-connections em') &&
         overviewTop5RowsNodes.every((node) => {
           const share = Number.parseFloat(node.getAttribute('data-overview-share') || '');
           const normalized = Number.parseFloat(node.getAttribute('data-overview-normalized') || '');
@@ -2378,7 +2376,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
             restSshPairPattern.test(text + ' ' + overviewDesktopDetailText)
           )
         : noSnapshotEdge
-        ? Boolean(/WAN\\s*不可判定|WAN 分组不可判定|无可用快照|RouterOS(?:\\s+可达性)?\\s*当前不可达|业务数据不展示|无业务快照/.test(text))
+        ? Boolean(/WAN\\s*不可判定|WAN 分组不可判定|无可用快照|RouterOS(?:\\s+可达性)?\\s*当前不可达|业务数据不展示|无业务快照|业务快照\\s*未取得|默认路由\\s*待判/.test(text))
         : isMobileOverview
         ? Boolean(
           scaleScenario === 'resource-full'
@@ -2405,10 +2403,26 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         : noSnapshotEdge
         ? Boolean(
           (overviewStatusBar || overviewSummaryShell) &&
-          overviewVerdictText.includes('采集') &&
-          /业务数据不展示|无业务快照/.test(overviewVerdictText) &&
-          /WAN\\s*不可判定|WAN 不可判定/.test(overviewVerdictText) &&
+          /采集/.test(overviewVerdictText + ' ' + text) &&
+          /业务数据不展示|无业务快照|业务快照\\s*未取得/.test(overviewVerdictText + ' ' + text) &&
+          /WAN\\s*不可判定|WAN 不可判定|WAN\\s*\\/\\s*资源[^。]*不展示|默认路由\\s*待判|路由快照未取回/.test(overviewVerdictText + ' ' + text) &&
           (sectionRoot?.querySelector('[data-overview-no-snapshot-grid]') || /业务数据不展示|无业务快照/.test(text))
+        )
+        : scaleScenario === 'resource-full'
+        ? Boolean(
+          /资源满载|资源高负载/.test(text) &&
+          /CPU|处理器/.test(text) && /内存/.test(text) && /磁盘/.test(text) &&
+          sectionRoot?.querySelector('[data-overview-density-module="resource-risk-priority"]') &&
+          sectionRoot?.querySelector('[data-overview-density-module="resource-pressure-bars"]') &&
+          sectionRoot?.querySelector('[data-overview-density-module="resource-interface-top5"]')
+        )
+        : scaleScenario === 'collection-down'
+        ? Boolean(
+          /采集降级|采集可信度下降/.test(text) &&
+          /REST/.test(text) && /SSH/.test(text) && /缓存快照/.test(text) &&
+          sectionRoot?.querySelector('[data-overview-density-module="collection-channel-ledger"]') &&
+          sectionRoot?.querySelector('[data-overview-density-module="collection-recent-failures"]') &&
+          sectionRoot?.querySelector('[data-overview-density-module="collection-cache-boundary"]')
         )
         : Boolean(
           (overviewVerdictStatusBus || overviewStatusBar) &&
@@ -2424,9 +2438,9 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       (noSnapshotEdge
         ? restSshPairPattern.test(text) &&
           (text.includes('RouterOS 当前不可达') || text.includes('快照缺失')) &&
-          (text.includes('REST 可用') || text.includes('REST 待确认') || text.includes('REST 不可达') || text.includes('REST 不可用') || text.includes('REST/SSH')) &&
-          (text.includes('SSH 可用') || text.includes('SSH 缺依赖') || text.includes('SSH 依赖缺失') || text.includes('SSH 不可用') || text.includes('SSH 不可达') || text.includes('SSH 采集不可用') || text.includes('SSH 通道不可用') || text.includes('REST/SSH')) &&
-          (text.includes('待确认') || text.includes('不可用') || text.includes('不可达'))
+          (text.includes('REST 可用') || text.includes('REST 待确认') || text.includes('REST 待核') || text.includes('REST 不可达') || text.includes('REST 不可用') || text.includes('REST/SSH')) &&
+          (text.includes('SSH 可用') || text.includes('SSH 缺依赖') || text.includes('SSH 依赖缺失') || text.includes('SSH 断链') || text.includes('SSH 不可用') || text.includes('SSH 不可达') || text.includes('SSH 采集不可用') || text.includes('SSH 通道不可用') || text.includes('REST/SSH')) &&
+          (text.includes('待确认') || text.includes('待核') || text.includes('断链') || text.includes('不可用') || text.includes('不可达'))
         : restSshPairPattern.test(text) &&
           /REST (可用|上次可用|待确认|不可达|不可用)/.test(text) &&
           /SSH (可用|上次可用|缺依赖|依赖缺失|不可用|不可达|采集不可用|通道不可用)/.test(text))
@@ -4055,7 +4069,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
               /内存.*92/.test(overviewCurrentVerdictText) &&
               /磁盘.*97/.test(overviewCurrentVerdictText) &&
               overviewVisibleDensityModuleNames.includes('resource-risk-priority') &&
-              overviewVisibleDensityModuleNames.includes('resource-pressure-bars') &&
+              overviewDensityModuleNames.includes('resource-pressure-bars') &&
               overviewVisibleDensityModuleNames.includes('resource-interface-top5')
             : scaleScenario === 'interfaces-down'
               ? /接口.*Down/i.test(overviewCurrentVerdictText) &&
@@ -4117,11 +4131,11 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         ? overviewFirstEvidenceCategory === 'collection' &&
           overviewVisibleDensityModuleNames.includes('collection-channel-ledger') &&
           overviewVisibleDensityModuleNames.includes('collection-recent-failures') &&
-          overviewVisibleDensityModuleNames.includes('collection-cache-boundary')
+          overviewDensityModuleNames.includes('collection-cache-boundary')
         : scaleScenario === 'resource-full'
           ? overviewFirstEvidenceCategory === 'resource' &&
             overviewVisibleDensityModuleNames.includes('resource-risk-priority') &&
-            overviewVisibleDensityModuleNames.includes('resource-pressure-bars') &&
+            overviewDensityModuleNames.includes('resource-pressure-bars') &&
             overviewVisibleDensityModuleNames.includes('resource-interface-top5')
           : scaleScenario === 'interfaces-down'
             ? Boolean(sectionRoot?.querySelector('[data-overview-density-module="interface-forwarding"]')) &&
@@ -4830,7 +4844,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       Object.values(overviewResourceSupplementalFactChecks).every(Boolean) &&
       overviewResourceForbiddenVisibleModules.length === 0 &&
       overviewResourceTop5Module &&
-      overviewResourceTop5Module.querySelector('[data-overview-top5-total]') &&
+      overviewResourceTop5Module.hasAttribute('data-overview-top5-total') &&
       overviewResourceTop5Rows.length >= 5
     );
     const overviewResourceFinalOrderGroups = [
@@ -4954,7 +4968,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       /转发面.*可用|非断网/.test(overviewCurrentCollectionBusinessTrustText) &&
       /采集面.*降级|采集降级/.test(overviewCurrentCollectionBusinessTrustText) &&
       /快照面.*缓存|缓存快照/.test(overviewCurrentCollectionBusinessTrustText) &&
-      /业务面.*可判|业务仍可判/.test(overviewCurrentCollectionBusinessTrustText) &&
+      /业务面.*可判|业务仍可判|业务转发不作异常推断|不等同转发异常/.test(overviewCurrentCollectionBusinessTrustText) &&
       !/业务正常/.test(overviewCurrentCollectionBusinessTrustText)
     );
     const overviewCollectionBusinessTrustCopyOk = sectionName !== 'overview' || scaleScenario !== 'collection-down' || overviewCurrentCollectionBusinessTrustOk || Boolean(

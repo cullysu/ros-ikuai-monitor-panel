@@ -1013,11 +1013,10 @@ includesAll(`${desktopRefinementStyles}\n${resourceTrendCheck}`, [
   "rgba(18,34,55,.44)",
   "rgba(18,34,55,.035)",
 ], "desktop v1069 left rail active state must be neutral console ink, not blue H5 accent");
-includesAll(desktopStyleStack, [
-  ".router-overview-framework .ro-sr-contract",
-  "clip-path: inset(50%)",
-  "white-space: nowrap",
-], "desktop hidden presentation-contract styling");
+assert(
+  !desktopStyleStack.includes(".ro-sr-contract"),
+  "desktop styles must not preserve a hidden presentation-contract layer",
+);
 includesAll(resourceTrendCheck, [
   "nodeIsVisiblyReadable",
   "visibleText",
@@ -1040,8 +1039,8 @@ includesAll(resourceTrendCheck, [
   "desktopV1030",
   "data-overview-desktop-nav=\"ikuai-short-left-rail\"",
   "status-overview/multi-wan/interface-vlan/online-terminals/collection-log",
-  "hiddenContractNonDisruptive",
-  "data-routeros-presentation-contract=\"collection-facts/routeros-semantics/user-conclusion\"",
+  "syntheticGateTextAbsent",
+  "syntheticGateTextCount",
   "visibleModules.length >= 6",
 ], "desktop v1030 runtime gate contract");
 includesAll(desktopNoSnapshotRuntimeCheck, [
@@ -2132,8 +2131,6 @@ includesAll(read("src/panel-framework/overview/routerosEvidenceModel.ts"), [
   "contract: typeof ROUTEROS_ROUTE_EVIDENCE_CONTRACT",
 ], "routeros evidence model contract");
 includesAll(read("src/panel-framework/overview/routerosNetworkViewModel.ts"), [
-  "ROUTEROS_PRESENTATION_VIEW_MODEL_CONTRACT",
-  "collection-facts/routeros-semantics/user-conclusion",
   "RouterOsPresentationViewModel",
   "RouterOsDesktopPresentation",
   "buildRouterOsPresentationViewModel",
@@ -2143,9 +2140,13 @@ includesAll(read("src/panel-framework/overview/routerosNetworkViewModel.ts"), [
 includesAll(overviewPanel, [
   "buildRouterOsPresentationViewModel",
   "desktopPresentation(snapshot, state)",
-  "data-routeros-presentation-contract=\"collection-facts/routeros-semantics/user-conclusion\"",
   "presentation-model-object-impact-trust-recent-readonly",
 ], "overview desktop must consume routeros presentation view model");
+assert(
+  !overviewPanel.includes("data-overview-desktop-core-text") &&
+    !overviewPanel.includes("ro-sr-contract"),
+  "overview desktop must not feed release gates with hidden presentation text",
+);
 assert(
   !overviewPanel.includes("type OverviewRawRoute"),
   "overview desktop must not type/import raw route rows directly; use routerosEvidenceModel",

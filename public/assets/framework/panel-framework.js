@@ -14354,7 +14354,6 @@ var PanelFramework = function(exports) {
       rawRows: route.rawRows
     };
   }
-  const ROUTEROS_PRESENTATION_VIEW_MODEL_CONTRACT = "collection-facts/routeros-semantics/user-conclusion";
   function clean$1(value, fallback = "-") {
     const normalized = String(value ?? "").replace(/\s+/g, " ").trim();
     return normalized || fallback;
@@ -14403,10 +14402,6 @@ var PanelFramework = function(exports) {
   }
   function totalWan(snapshot, state) {
     return Math.max(1, state.facts.wan.total, state.facts.wan.online + state.facts.wan.offline, wanRows$2(snapshot).length);
-  }
-  function formatResourcePercent(value) {
-    const numeric = toNumber(value);
-    return Number.isFinite(numeric) ? `${Math.round(numeric)}%` : "-";
   }
   function snapshotTrustText(state) {
     if (state.scenario === "no-snapshot") return "缺失";
@@ -14595,55 +14590,11 @@ var PanelFramework = function(exports) {
     if (network.priority === "snapshot-missing") return "业务快照缺失";
     return network.object.value;
   }
-  function presentationVerdictText(snapshot, state, network) {
-    var _a, _b, _c;
-    const latest = routerOsLatestSuccess(snapshot, state);
-    const rest = ((_a = network.channels.find((channel) => channel.id === "rest")) == null ? void 0 : _a.value) || "可核对";
-    const ssh = ((_b = network.channels.find((channel) => channel.id === "ssh")) == null ? void 0 : _b.value) || "可核对";
-    const snapshotState = ((_c = network.channels.find((channel) => channel.id === "snapshot")) == null ? void 0 : _c.value) || network.snapshot.value;
-    const channelStatus = `REST ${rest} / SSH ${ssh} / 快照 ${snapshotState}`;
-    const routeStatus = network.priority === "snapshot-missing" ? "WAN 不可判定 / 默认路由 不可判定" : `WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(totalWan(snapshot, state))} / 默认路由 ${routeValue(state)}`;
-    const resourceStatus = network.priority === "resource-full" ? [
-      `资源状态 CPU ${formatResourcePercent(state.facts.resource.cpu)} / MEM ${formatResourcePercent(state.facts.resource.memory)} / DISK ${formatResourcePercent(state.facts.resource.disk)}`,
-      "阈值 90% / 持续 6点 / 峰值 已越阈",
-      "采样新鲜 / 采集状态更新时间 " + latest,
-      "证据 资源证据 / 连接压力 / 接口 Top5"
-    ].join(" · ") : "";
-    return [
-      "presentation-model",
-      ROUTEROS_PRESENTATION_VIEW_MODEL_CONTRACT,
-      "结论 " + network.conclusion.title,
-      "对象 " + presentationIncidentObject(snapshot, state, network),
-      "影响 " + network.impact.value,
-      routeStatus,
-      "转发面 " + network.forwarding.value,
-      "采集面 " + network.collection.value,
-      "采集通道 " + channelStatus,
-      "快照面 " + network.snapshot.value,
-      "业务面 " + network.business.value,
-      "最近成功 " + latest,
-      network.priority === "snapshot-missing" ? "无可用快照 / 快照缺失 / RouterOS 当前不可达 / 业务快照时间 无 / 业务快照年龄 不可判定 / 业务数据不展示" : "",
-      resourceStatus,
-      "原始字段仅作二级证据"
-    ].filter(Boolean).join(" · ");
-  }
-  function presentationCoreText(state, network) {
-    if (state.scenario === "fleet") return "多出口 / 默认路由 / 采集可信度 / 资源阈值 / 最近成功 / TopN";
-    if (network.priority === "snapshot-missing") return "采集链路 / 业务快照 / 展示边界 / 最近成功 / 可信边界";
-    if (network.priority === "wan-offline") return "离线出口 / 默认路由 / 采集可信度 / 最近成功 / 影响范围";
-    if (network.priority === "resource-full") return "资源阈值 / 持续窗口 / 转发余量 / 默认路由 / 采样可信度";
-    if (network.priority === "interface-down") return "接口承载 / 默认路由 / 采集旁证 / 影响范围 / 最近成功";
-    if (network.priority === "collection-degraded") return "REST 待确认 / SSH 不可用 / 缓存快照 / 最近成功 / 转发边界";
-    return "WAN 趋势 / 默认路由 / 采集可信度 / 资源阈值 / 最近成功 / TopN";
-  }
   function buildRouterOsPresentationViewModel(snapshot, state, network = buildRouterOsNetworkViewModel(snapshot, state)) {
     const latest = routerOsLatestSuccess(snapshot, state);
     const desktop = {
-      contract: ROUTEROS_PRESENTATION_VIEW_MODEL_CONTRACT,
       conclusionValue: presentationConclusionValue(snapshot, state, network),
       conclusionNote: presentationConclusionNote(snapshot, state, network),
-      verdictText: presentationVerdictText(snapshot, state, network),
-      coreText: presentationCoreText(state, network),
       object: network.object,
       impact: network.impact,
       incidentObject: presentationIncidentObject(snapshot, state, network),
@@ -16589,12 +16540,6 @@ var PanelFramework = function(exports) {
     if (state.scenario === "collection-down" || state.scenario === "interfaces-down" || state.facts.freshness.history || state.facts.collection.dataStale) return "缓存快照";
     return "实时";
   }
-  function verdictContractText(snapshot, state) {
-    return desktopPresentation(snapshot, state).verdictText;
-  }
-  function desktopCoreText(snapshot, state) {
-    return desktopPresentation(snapshot, state).coreText;
-  }
   function moduleChartType(module) {
     if (/resource-risk-priority|collection-channel-ledger/i.test(module)) return "line";
     if (/no-snapshot-summary|no-snapshot-recent-success/i.test(module)) return "line";
@@ -17707,10 +17652,6 @@ var PanelFramework = function(exports) {
               /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "50%" }),
               /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "0%" }),
               /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "数据点" })
-            ] }) : null,
-            module === "resource-interface-top5" ? /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "ro-sr-contract", "data-overview-top5-total": rows.length, children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "ik-overview-top5-rate", children: /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: "Top5速率" }) }),
-              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "ik-overview-top5-connections", children: /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: "Top5连接" }) })
             ] }) : null
           ] }),
           visual,
@@ -17976,14 +17917,12 @@ var PanelFramework = function(exports) {
         "data-overview-desktop-bottom-rail": "interface-events",
         "data-overview-desktop-detail": true,
         "data-overview-desktop-workspace": true,
-        "data-overview-desktop-core-text": desktopCoreText(snapshot, state),
         "data-overview-low-noise-console-token-contract": OVERVIEW_LOW_NOISE_CONSOLE_TOKEN_CONTRACT,
         "data-overview-desktop-v1020-public-product-polish": "flat-status-bus-low-line-noise-integrated-wan-reading",
         "data-overview-desktop-v1030-nav-polish": "short-ikuai-left-rail-low-noise-status-bus",
         "data-overview-desktop-copy-policy": "business-first-routeros-fields-translated-in-evidence",
         "data-overview-desktop-toy-nav-leak-guard": "desktop-content-icon-tabs-removed",
         "data-overview-desktop-content-icon-tabs": "desktop-hides-content-icon-tabs",
-        "data-overview-verdict-panel": verdictContractText(snapshot, state),
         "data-overview-trend-compact": "framework-ledger",
         "data-overview-no-snapshot-grid": state.scenario === "no-snapshot" ? "collection-chain-business-boundary-recovery" : void 0,
         "data-overview-no-snapshot-detail": state.scenario === "no-snapshot" ? "three-visible-evidence-sections-raw-fields-collapsed" : void 0,
@@ -18122,15 +18061,6 @@ var PanelFramework = function(exports) {
         "data-overview-no-zero-rate-placeholder": "no-zero-rate-when-uncollected",
         children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx(StatusVerdict, { snapshot, state }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(
-            "span",
-            {
-              className: "ro-sr-contract",
-              "data-overview-verdict-panel": true,
-              "data-routeros-presentation-contract": "collection-facts/routeros-semantics/user-conclusion",
-              children: verdictContractText(snapshot, state)
-            }
-          ),
           /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ro-mobile-first-screen", "data-overview-mobile-first-screen": true, children: /* @__PURE__ */ jsxRuntimeExports.jsx(MobileOverviewHome, { snapshot, state }) }),
           /* @__PURE__ */ jsxRuntimeExports.jsx(DesktopWorkspace, { snapshot, state })
         ]

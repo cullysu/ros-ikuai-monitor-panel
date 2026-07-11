@@ -324,14 +324,6 @@ export function moduleTrust(state: OverviewDerivedState): "实时" | "缓存快�
   return "实时";
 }
 
-export function verdictContractText(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): string {
-  return desktopPresentation(snapshot, state).verdictText;
-}
-
-export function desktopCoreText(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): string {
-  return desktopPresentation(snapshot, state).coreText;
-}
-
 export function moduleChartType(module: string): "line" | "bar" | "matrix" | "status" | "timeline" {
   if (/resource-risk-priority|collection-channel-ledger/i.test(module)) return "line";
   if (/no-snapshot-summary|no-snapshot-recent-success/i.test(module)) return "line";

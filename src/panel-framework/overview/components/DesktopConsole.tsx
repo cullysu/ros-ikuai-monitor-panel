@@ -2,8 +2,6 @@ import { formatNumber, type OverviewDerivedState, type OverviewTone } from "../i
 import { OVERVIEW_LOW_NOISE_CONSOLE_TOKEN_CONTRACT } from "../mobileOverviewTokens";
 import {
   DESKTOP_IKUAI_SHORT_NAV_CONTRACT,
-  desktopCoreText,
-  verdictContractText,
   type OverviewPanelProps,
 } from "../desktopOverviewHelpers";
 import { buildDesktopOverviewScene } from "../desktopOverviewScenes";
@@ -53,14 +51,12 @@ export function DesktopWorkspace({ snapshot, state }: OverviewPanelProps) {
       data-overview-desktop-bottom-rail="interface-events"
       data-overview-desktop-detail
       data-overview-desktop-workspace
-      data-overview-desktop-core-text={desktopCoreText(snapshot, state)}
       data-overview-low-noise-console-token-contract={OVERVIEW_LOW_NOISE_CONSOLE_TOKEN_CONTRACT}
       data-overview-desktop-v1020-public-product-polish="flat-status-bus-low-line-noise-integrated-wan-reading"
       data-overview-desktop-v1030-nav-polish="short-ikuai-left-rail-low-noise-status-bus"
       data-overview-desktop-copy-policy="business-first-routeros-fields-translated-in-evidence"
       data-overview-desktop-toy-nav-leak-guard="desktop-content-icon-tabs-removed"
       data-overview-desktop-content-icon-tabs="desktop-hides-content-icon-tabs"
-      data-overview-verdict-panel={verdictContractText(snapshot, state)}
       data-overview-trend-compact="framework-ledger"
       data-overview-no-snapshot-grid={state.scenario === "no-snapshot" ? "collection-chain-business-boundary-recovery" : undefined}
       data-overview-no-snapshot-detail={state.scenario === "no-snapshot" ? "three-visible-evidence-sections-raw-fields-collapsed" : undefined}
