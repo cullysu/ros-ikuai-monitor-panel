@@ -34,7 +34,15 @@ const desktopScenesFile =
 const desktopHelpersFile =
   "src/panel-framework/overview/desktopOverviewHelpers.tsx";
 const desktopRowsFile =
-  "src/panel-framework/overview/desktopOverviewRows.tsx";
+  "src/panel-framework/overview/desktopOverviewRows.ts";
+const desktopTrafficRowsFile =
+  "src/panel-framework/overview/desktopOverviewTrafficRows.ts";
+const desktopNetworkRowsFile =
+  "src/panel-framework/overview/desktopOverviewNetworkRows.tsx";
+const desktopCredibilityRowsFile =
+  "src/panel-framework/overview/desktopOverviewCredibilityRows.tsx";
+const desktopTerminalRowsFile =
+  "src/panel-framework/overview/desktopOverviewTerminalRows.ts";
 const desktopResourceRowsFile =
   "src/panel-framework/overview/desktopResourceRows.ts";
 const desktopVisualsFile =
@@ -57,6 +65,10 @@ const desktopScenes = read(desktopScenesFile);
 const panelCss = read(panelCssFile);
 const desktopHelpers = read(desktopHelpersFile);
 const desktopRows = read(desktopRowsFile);
+const desktopTrafficRows = read(desktopTrafficRowsFile);
+const desktopNetworkRows = read(desktopNetworkRowsFile);
+const desktopCredibilityRows = read(desktopCredibilityRowsFile);
+const desktopTerminalRows = read(desktopTerminalRowsFile);
 const desktopResourceRows = read(desktopResourceRowsFile);
 const desktopVisuals = read(desktopVisualsFile);
 const mobileHome = read(mobileHomeFile);
@@ -129,8 +141,24 @@ assert(
   `desktopOverviewHelpers.tsx exceeds 450 lines: ${lines(desktopHelpers)}`
 );
 assert(
-  lines(desktopRows) <= 850,
-  `desktopOverviewRows.tsx exceeds 850 lines: ${lines(desktopRows)}`
+  lines(desktopRows) <= 10,
+  `desktopOverviewRows.ts must remain a narrow compatibility facade: ${lines(desktopRows)} lines`
+);
+assert(
+  lines(desktopTrafficRows) <= 280,
+  `desktopOverviewTrafficRows.ts exceeds 280 lines: ${lines(desktopTrafficRows)}`
+);
+assert(
+  lines(desktopNetworkRows) <= 340,
+  `desktopOverviewNetworkRows.tsx exceeds 340 lines: ${lines(desktopNetworkRows)}`
+);
+assert(
+  lines(desktopCredibilityRows) <= 320,
+  `desktopOverviewCredibilityRows.tsx exceeds 320 lines: ${lines(desktopCredibilityRows)}`
+);
+assert(
+  lines(desktopTerminalRows) <= 110,
+  `desktopOverviewTerminalRows.ts exceeds 110 lines: ${lines(desktopTerminalRows)}`
 );
 assert(
   lines(desktopResourceRows) <= 250,
@@ -186,6 +214,16 @@ assert(
 assert(
   desktopScenes.includes('from "./desktopOverviewVisuals"'),
   "desktopOverviewScenes.tsx must compose the extracted desktop visual layer"
+);
+assert(
+  [
+    "desktopOverviewTrafficRows",
+    "desktopOverviewNetworkRows",
+    "desktopOverviewCredibilityRows",
+    "desktopOverviewTerminalRows",
+  ].every((moduleName) => desktopRows.includes(`export * from "./${moduleName}"`)) &&
+    !desktopRows.includes("export function"),
+  "desktopOverviewRows.ts must only expose the four domain row modules"
 );
 assert(
   desktopScenes.includes('from "./desktopOverviewRows"'),
@@ -306,5 +344,5 @@ if (failures.length > 0) {
 }
 
 console.log(
-  `overview architecture gate: PASS panel=${lines(panel)} lines desktop=${lines(desktopConsole)} lines desktopDecision=${lines(desktopDecisionRail)} lines scenes=${lines(desktopScenes)} lines helper=${lines(desktopHelpers)} lines rows=${lines(desktopRows)} lines resourceRows=${lines(desktopResourceRows)} lines visuals=${lines(desktopVisuals)} lines mobileHome=${lines(mobileHome)} lines mobileDecision=${lines(mobileDecision)} lines mobileSections=${lines(mobileHomeSections)} lines css=${bytes(panelCssFile)} bytes mobileStyles=${mobileStyleByteTotal} bytes important=${importantShare.toFixed(4)} mobile=${mobileRuleShare.toFixed(4)}`
+  `overview architecture gate: PASS panel=${lines(panel)} lines desktop=${lines(desktopConsole)} lines desktopDecision=${lines(desktopDecisionRail)} lines scenes=${lines(desktopScenes)} lines helper=${lines(desktopHelpers)} lines rowsFacade=${lines(desktopRows)} lines trafficRows=${lines(desktopTrafficRows)} lines networkRows=${lines(desktopNetworkRows)} lines credibilityRows=${lines(desktopCredibilityRows)} lines terminalRows=${lines(desktopTerminalRows)} lines resourceRows=${lines(desktopResourceRows)} lines visuals=${lines(desktopVisuals)} lines mobileHome=${lines(mobileHome)} lines mobileDecision=${lines(mobileDecision)} lines mobileSections=${lines(mobileHomeSections)} lines css=${bytes(panelCssFile)} bytes mobileStyles=${mobileStyleByteTotal} bytes important=${importantShare.toFixed(4)} mobile=${mobileRuleShare.toFixed(4)}`
 );
