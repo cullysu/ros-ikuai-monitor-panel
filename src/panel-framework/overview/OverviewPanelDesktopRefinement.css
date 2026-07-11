@@ -40,21 +40,6 @@
     font-weight: 780 !important;
   }
 
-  #overview.router-overview-framework .ro-ledger-row {
-    min-height: 24px !important;
-    border-bottom-color: #f1f5f9 !important;
-  }
-
-  #overview.router-overview-framework .ro-ledger-head.ro-ledger-row {
-    min-height: 21px !important;
-    background: #f8fbfe !important;
-  }
-
-  #overview.router-overview-framework .ro-ledger-cell,
-  #overview.router-overview-framework .ro-ledger-head-cell {
-    padding: 3px 7px !important;
-  }
-
   #overview.router-overview-framework .ik-overview-cell-text {
     color: #2c3a4d !important;
     font-size: 10.8px !important;
@@ -197,10 +182,6 @@
     color: #7d8da0;
     font-weight: 580;
   }
-
-  .ro-secondary-evidence-disclosure > .ro-ledger-table {
-    box-shadow: inset 0 1px 0 rgba(226, 235, 244, .26);
-  }
 }
 
 /* v1040 desktop status bus: final override after older dense-console passes.
@@ -220,18 +201,6 @@
     --ik-v1020-desktop-danger: var(--ik-console-danger);
     --ik-v1020-desktop-warn: var(--ik-console-warn);
     background: var(--ik-console-page) !important;
-  }
-
-  #overview.router-overview-framework[data-overview-desktop-v1020-public-product-polish] .ro-ledger-head-cell,
-  .router-overview-framework[data-overview-desktop-v1020-public-product-polish] .ro-ledger-head-cell {
-    border-bottom-color: var(--ik-v1020-desktop-line) !important;
-    background: #f8fbfe !important;
-  }
-
-  #overview.router-overview-framework[data-overview-desktop-v1020-public-product-polish] .ro-ledger-cell,
-  .router-overview-framework[data-overview-desktop-v1020-public-product-polish] .ro-ledger-cell {
-    border-bottom: 1px solid rgba(229, 237, 245, .56) !important;
-    color: var(--ik-v1020-desktop-text) !important;
   }
 
   #overview.router-overview-framework[data-overview-desktop-v1020-public-product-polish] .ro-ledger-row[data-tone="danger"] .ro-ledger-cell,
@@ -652,23 +621,6 @@
     font-size: 13px !important;
   }
 
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-head-cell,
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-table th {
-    height: 22px !important;
-    padding: 2px 4px !important;
-    font-size: 8.5px !important;
-    background: #f8fbfe !important;
-  }
-
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-cell,
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-table td {
-    height: 28px !important;
-    padding: 2px 4px !important;
-    font-size: 9px !important;
-    line-height: 1.1 !important;
-    border-bottom: 1px solid #eef3f8 !important;
-  }
-
   .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-evidence-weight="secondary"] .ro-ledger-cell,
   .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-evidence-weight="secondary"] .ro-ledger-table td {
     height: 24px !important;
@@ -835,41 +787,6 @@
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-chart-readout {
     color: #294761 !important;
     font-size: 8.2px !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-table {
-    border-top: 0 !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-head-cell {
-    height: 20px !important;
-    padding: 2px 5px !important;
-    border-right: 0 !important;
-    border-bottom: 1px solid var(--v814-line) !important;
-    background: var(--v814-soft) !important;
-    color: #77889b !important;
-    font-size: 8px !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-cell {
-    height: 28px !important;
-    min-height: 28px !important;
-    padding: 2px 5px !important;
-    border-right: 0 !important;
-    border-bottom: 1px solid #edf3f8 !important;
-    color: #1a2b3f !important;
-    font-size: 8.8px !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-cell:first-child {
-    font-weight: 760 !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-cell small {
-    display: block !important;
-    color: #8292a5 !important;
-    font-size: 7.6px !important;
-    font-weight: 500 !important;
   }
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-evidence-weight="secondary"] .ro-ledger-cell {
@@ -1221,34 +1138,6 @@
     color: #687b91 !important;
   }
 
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-head-cell {
-    height: 18px !important;
-    padding: 1px 5px !important;
-    border-right: 0 !important;
-    border-bottom: 1px solid var(--v817-line) !important;
-    background: #f9fbfd !important;
-    font-size: 7.6px !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-cell {
-    height: 26px !important;
-    min-height: 26px !important;
-    padding: 1px 5px !important;
-    border-right: 0 !important;
-    border-bottom: 1px solid #f0f5f9 !important;
-    font-size: 8.4px !important;
-    color: #1c2b3e !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-cell:first-child {
-    font-weight: 760 !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-cell small {
-    font-size: 7.2px !important;
-    color: #8998aa !important;
-  }
-
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-evidence-weight="secondary"] .ro-ledger-cell,
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="evidence-boundary"] .ro-ledger-cell,
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="route-raw-facts"] .ro-ledger-cell {
@@ -1458,39 +1347,6 @@
     border-left: 2px solid #cf8424 !important;
   }
 
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-head-cell {
-    height: 18px !important;
-    min-height: 18px !important;
-    padding: 1px 5px !important;
-    border-right: 0 !important;
-    border-bottom: 1px solid #edf3f8 !important;
-    background: #fafcff !important;
-    color: #8795a6 !important;
-    font-size: 7.3px !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row:not(.ro-ledger-head) {
-    min-height: 28px !important;
-    height: 28px !important;
-    border-bottom: 1px solid #f1f5f9 !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-cell {
-    height: 28px !important;
-    min-height: 28px !important;
-    padding: 2px 5px !important;
-    border-right: 0 !important;
-    border-bottom: 0 !important;
-    color: #1a293a !important;
-    font-size: 8.4px !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-cell:first-child,
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-cell:nth-child(2) {
-    font-weight: 760 !important;
-    color: #102033 !important;
-  }
-
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-cell:nth-child(n+3),
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-cell:nth-child(n+3) .ik-overview-cell-text {
     color: #64758a !important;
@@ -1575,10 +1431,6 @@
     white-space: nowrap !important;
   }
 
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row:not(.ro-ledger-head) {
-    border-bottom-color: rgba(229, 238, 247, .62) !important;
-  }
-
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-evidence-weight="secondary"] .ro-ledger-row:not(.ro-ledger-head),
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-col.is-bottom .ro-ledger-row:not(.ro-ledger-head),
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="evidence-boundary"] .ro-ledger-row:not(.ro-ledger-head) {
@@ -1634,51 +1486,6 @@
     min-width: 0 !important;
     align-items: baseline !important;
     gap: 5px !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-table {
-    border: 0 !important;
-    background: #fff !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-head-cell {
-    height: 16px !important;
-    min-height: 16px !important;
-    padding: 1px 5px !important;
-    border: 0 !important;
-    border-bottom: 1px solid var(--v825-line) !important;
-    background: #fff !important;
-    color: #8a98aa !important;
-    font-size: 7px !important;
-    line-height: 1 !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row:not(.ro-ledger-head) {
-    height: 28px !important;
-    min-height: 28px !important;
-    border-bottom: 1px solid #f3f7fb !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-cell {
-    height: 28px !important;
-    min-height: 28px !important;
-    padding: 1px 5px !important;
-    border: 0 !important;
-    color: #1b2b3c !important;
-    font-size: 8.2px !important;
-    line-height: 1.12 !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-cell:first-child,
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-cell:nth-child(2) {
-    color: var(--v825-text) !important;
-    font-weight: 760 !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-cell:nth-child(n+3),
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-cell small {
-    color: #6d7f93 !important;
-    font-weight: 520 !important;
   }
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-evidence-weight="secondary"] .ro-ledger-row:not(.ro-ledger-head),
@@ -1796,21 +1603,6 @@
     border-left-color: rgba(128, 98, 59, .56) !important;
   }
 
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-head-cell {
-    border-bottom-color: var(--ik-v950-soft-line) !important;
-    background: #fbfdff !important;
-    color: #8796a8 !important;
-    font-weight: 680 !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row:not(.ro-ledger-head) {
-    border-bottom-color: rgba(229, 238, 247, .54) !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row:not(.ro-ledger-head):nth-child(odd) {
-    background: rgba(248, 251, 254, .38) !important;
-  }
-
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="danger"],
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="warn"],
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="missing"] {
@@ -1873,25 +1665,6 @@
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-evidence-weight="primary"][data-tone="danger"],
   .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-evidence-weight="primary"][data-tone="danger"] {
     border-left-color: rgba(173, 54, 49, .54) !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-head-cell,
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-head-cell {
-    height: 18px !important;
-    border-bottom: 1px solid rgba(157, 177, 198, .18) !important;
-    background: #f7fafd !important;
-    color: #7f90a3 !important;
-    font-size: 7.8px !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-cell,
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-cell {
-    height: 25px !important;
-    min-height: 25px !important;
-    border-right: 0 !important;
-    border-bottom: 1px solid rgba(230, 237, 245, .72) !important;
-    color: #203245 !important;
-    font-size: 8.6px !important;
   }
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="danger"] .ro-ledger-cell,
@@ -2168,35 +1941,65 @@
     white-space: nowrap !important;
   }
 
+  /* Canonical desktop ledger: quiet separators, no audit-grid zebra striping. */
+  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-ledger-table {
+    border: 0 !important;
+    background: #fff !important;
+  }
+
+  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-ledger-head-cell {
+    height: 18px !important;
+    min-height: 16px !important;
+    padding: 1px 5px !important;
+    border: 0 !important;
+    border-bottom: 1px solid rgba(154, 176, 198, .14) !important;
+    background: rgba(248, 251, 254, .72) !important;
+    color: #8293a6 !important;
+    font-size: 7.8px !important;
+    font-weight: 620 !important;
+    line-height: 1 !important;
+  }
+
+  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-ledger-row:not(.ro-ledger-head) {
+    height: 28px !important;
+    min-height: 28px !important;
+    border-bottom: 1px solid rgba(226, 235, 244, .28) !important;
+    background: transparent !important;
+  }
+
+  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-ledger-cell {
+    height: 25px !important;
+    min-height: 25px !important;
+    padding: 1px 5px !important;
+    border: 0 !important;
+    border-bottom: 1px solid rgba(226, 235, 244, .28) !important;
+    background: transparent !important;
+    color: #24374b !important;
+    font-size: 8.6px !important;
+    line-height: 1.12 !important;
+  }
+
+  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-ledger-cell:first-child,
+  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-ledger-cell:nth-child(2) {
+    color: var(--v825-text) !important;
+    font-weight: 760 !important;
+  }
+
+  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-ledger-cell:nth-child(n+3),
+  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-ledger-cell small {
+    color: #65778d !important;
+    font-weight: 520 !important;
+  }
+
   #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-col.is-bottom,
   .router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-col.is-bottom {
     grid-column: 2 / -1 !important;
-  }
-
-  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-ledger-cell,
-  .router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-ledger-cell {
-    border-bottom-color: rgba(226, 235, 244, .44) !important;
   }
 }
 
 /* v1040 desktop ledger quieting: dense, but no Excel-audit grid noise.
    Lines become soft rhythm cues; risk color stays on first/business fields only. */
 @media (min-width: 761px) {
-  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-ledger-head-cell,
-  .router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-ledger-head-cell {
-    border-bottom-color: rgba(154, 176, 198, .14) !important;
-    background: rgba(248, 251, 254, .72) !important;
-    color: #8293a6 !important;
-    font-weight: 620 !important;
-  }
-
-  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-ledger-cell,
-  .router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-ledger-cell {
-    border-right: 0 !important;
-    border-bottom-color: rgba(226, 235, 244, .28) !important;
-    background: transparent !important;
-    color: #24374b !important;
-  }
 
   #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-ledger-row:not(.ro-ledger-head):hover .ro-ledger-cell,
   .router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-ledger-row:not(.ro-ledger-head):hover .ro-ledger-cell {
