@@ -15,7 +15,7 @@ const FULL_MATRIX_SCENARIOS = [
   'resource-full',
   'interfaces-down',
 ];
-const FULL_MATRIX_VIEWPORT_KEYS = ['desktop', 'narrow'];
+const FULL_MATRIX_VIEWPORT_KEYS = ['desktop', 'desktop1440', 'wide', 'narrow'];
 const FULL_MATRIX_CELLS = FULL_MATRIX_SCENARIOS.flatMap((scenario) =>
   FULL_MATRIX_VIEWPORT_KEYS.map((viewport) => `public::${scenario}::overview::${viewport}`));
 
@@ -52,7 +52,7 @@ Options:
 }
 
 function normalizeMatrixCell(cell) {
-  return String(cell || '').replace(/::(desktop|narrow)=\d+x\d+$/u, '::$1');
+  return String(cell || '').replace(/::([A-Za-z0-9_-]+)=\d+x\d+$/u, '::$1');
 }
 
 function read(relPath) {
@@ -274,7 +274,7 @@ function summaryMatchesHead(summary, head) {
 }
 
 function parseResponsiveCheckName(name) {
-  const match = /^responsive public\/([^/]+)\/(desktop|narrow)\/overview$/u.exec(String(name || '').trim());
+  const match = /^responsive public\/([^/]+)\/([^/]+)\/overview$/u.exec(String(name || '').trim());
   return match ? { scenario: match[1], viewport: match[2] } : null;
 }
 
@@ -311,7 +311,7 @@ function collectGateDetailFailures(latest) {
         });
       }
     };
-    if (parsed.viewport === 'desktop') {
+    if (parsed.viewport === 'desktop' || parsed.viewport === 'desktop1440') {
       recordCheckFailure('desktopDensity');
       pushMissing('desktopDensity', 'overviewDesktopDensityOk');
       pushMissing('desktopDensity', 'overviewDesktopTableDensityOk');
@@ -490,7 +490,7 @@ function main(argv = process.argv.slice(2)) {
   assertContains('.github/workflows/ci.yml', '--scale-scenarios all-offline,no-snapshot,collection-down,resource-full,interfaces-down');
   assertContains('.github/workflows/ci.yml', '--sections overview');
   assertContains('.github/workflows/ci.yml', '--sections overview-edge-cases');
-  assertContains('.github/workflows/ci.yml', '--viewports desktop=1366x900,narrow=390x844');
+  assertContains('.github/workflows/ci.yml', '--viewports desktop=1366x900,desktop1440=1440x900,wide=844x390,narrow=390x844');
 
   assertContains('compose.yml', '${ROS_PANEL_IMAGE:-routeros-triage-panel:local}');
   assertContains('.env.docker.example', 'ROS_PANEL_IMAGE=routeros-triage-panel:local');
@@ -664,7 +664,7 @@ function main(argv = process.argv.slice(2)) {
   assertContains('tools/local-predeploy-check.js', 'OVERVIEW_RELEASE_VIEWPORTS');
   assertContains('tools/local-predeploy-check.js', 'viewportCellKey');
   assertContains('tools/check-public-release-readiness.js', 'normalizeMatrixCell');
-  assertContains('tools/local-predeploy-check.js', '--viewports <list>          Comma list like desktop=1366x900,narrow=390x844.');
+  assertContains('tools/local-predeploy-check.js', '--viewports <list>          Comma list like desktop=1366x900,desktop1440=1440x900,wide=844x390,narrow=390x844.');
   assertContains('tools/local-predeploy-check.js', 'aggregateComplete: matrixAggregate.complete,');
   assertContains('tools/local-predeploy-check.js', 'screenshotDir: args.out');
   assertContains('tools/local-predeploy-check.js', 'scenarioMatrix:');
@@ -783,6 +783,7 @@ function main(argv = process.argv.slice(2)) {
   assertNotContains('src/panel-framework/overview/components/DesktopConsole.tsx', 'WAN 实时趋势');
   assertContains('src/panel-framework/overview/styles/overview-mobile.css', 'mobile-professional-console-no-glow');
   assertContains('src/panel-framework/overview/styles/overview-mobile.css', 'mobile-professional-console-final-eof');
+  assertContains('src/panel-framework/overview/styles/overview-mobile.css', 'mobile-phone-landscape-shell');
   assertContains('src/panel-framework/overview/styles/overview-mobile.css', 'box-shadow: inset 0 -2px 0 #1f2937');
   assertContains('src/panel-framework/overview/styles/overview-mobile.css', 'border-radius: 14px !important;');
   assertNotContains('src/panel-framework/overview/styles/overview-mobile.css', 'radial-gradient(circle at 50% 0, rgba(22, 119, 255, .18), transparent 42%)');

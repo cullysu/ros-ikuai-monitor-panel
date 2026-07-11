@@ -138,6 +138,11 @@ function totalWan(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): n
   return Math.max(1, state.facts.wan.total, state.facts.wan.online + state.facts.wan.offline, wanRows(snapshot).length);
 }
 
+function formatResourcePercent(value: unknown): string {
+  const numeric = toNumber(value);
+  return Number.isFinite(numeric) ? `${Math.round(numeric)}%` : "-";
+}
+
 function snapshotTrustText(state: OverviewDerivedState): string {
   if (state.scenario === "no-snapshot") return "缺失";
   if (state.scenario === "collection-down" || state.facts.collection.dataStale || state.facts.freshness.history) return "缓存";
@@ -145,6 +150,7 @@ function snapshotTrustText(state: OverviewDerivedState): string {
 }
 
 function routeValue(state: OverviewDerivedState): string {
+  if (state.scenario === "no-snapshot") return "不可判定";
   if (state.facts.wan.allOffline) return "异常";
   if (state.facts.route.level === "danger") return "异常";
   if (state.scenario === "collection-down") return "历史快照";
@@ -183,7 +189,7 @@ function objectFor(snapshot: OverviewRawSnapshot, state: OverviewDerivedState, p
   if (priority === "wan-offline") return { id: "object", label: "对象", value: `WAN 0/${formatNumber(total)}`, note: "全部出口离线", tone: "danger" };
   if (priority === "resource-full") return { id: "object", label: "对象", value: "处理器/内存/磁盘", note: "三项连续越阈", tone: "danger" };
   if (priority === "interface-down") return { id: "object", label: "对象", value: `接口 ${formatNumber(state.facts.interfaces.down)} Down`, note: state.facts.interfaces.downNames.slice(0, 2).join(" / ") || "承载待确认", tone: "danger" };
-  if (priority === "collection-degraded") return { id: "object", label: "对象", value: "采集", note: "REST / SSH / 快照边界", tone: "warn" };
+  if (priority === "collection-degraded") return { id: "object", label: "对象", value: "采集", note: "REST 待确认 / SSH 不可用 / 快照缓存", tone: "warn" };
   return { id: "object", label: "对象", value: `WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(total || 1)}`, note: "转发面可用", tone: state.facts.wan.offline ? "warn" : "ok" };
 }
 
@@ -334,26 +340,45 @@ function presentationIncidentObject(snapshot: OverviewRawSnapshot, state: Overvi
   if (network.priority === "wan-offline") return "WAN 0/" + formatNumber(Math.max(1, totalWan(snapshot, state)));
   if (network.priority === "resource-full") return clean(state.facts.resource.summaryText, "资源超阈");
   if (network.priority === "interface-down") return formatNumber(state.facts.interfaces.down) + " 接口 Down";
-  if (network.priority === "collection-degraded") return "REST / SSH / 快照";
+  if (network.priority === "collection-degraded") return "REST 待确认 / SSH 不可用 / 快照缓存";
   if (network.priority === "snapshot-missing") return "业务快照缺失";
   return network.object.value;
 }
 
 function presentationVerdictText(snapshot: OverviewRawSnapshot, state: OverviewDerivedState, network: RouterOsNetworkViewModel): string {
   const latest = routerOsLatestSuccess(snapshot, state);
+  const rest = network.channels.find((channel) => channel.id === "rest")?.value || "可核对";
+  const ssh = network.channels.find((channel) => channel.id === "ssh")?.value || "可核对";
+  const snapshotState = network.channels.find((channel) => channel.id === "snapshot")?.value || network.snapshot.value;
+  const channelStatus = `REST ${rest} / SSH ${ssh} / 快照 ${snapshotState}`;
+  const routeStatus = network.priority === "snapshot-missing"
+    ? "WAN 不可判定 / 默认路由 不可判定"
+    : `WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(totalWan(snapshot, state))} / 默认路由 ${routeValue(state)}`;
+  const resourceStatus = network.priority === "resource-full"
+    ? [
+      `资源状态 CPU ${formatResourcePercent(state.facts.resource.cpu)} / MEM ${formatResourcePercent(state.facts.resource.memory)} / DISK ${formatResourcePercent(state.facts.resource.disk)}`,
+      "阈值 90% / 持续 6点 / 峰值 已越阈",
+      "采样新鲜 / 采集状态更新时间 " + latest,
+      "证据 资源证据 / 连接压力 / 接口 Top5",
+    ].join(" · ")
+    : "";
   return [
     "presentation-model",
     ROUTEROS_PRESENTATION_VIEW_MODEL_CONTRACT,
     "结论 " + network.conclusion.title,
     "对象 " + presentationIncidentObject(snapshot, state, network),
     "影响 " + network.impact.value,
+    routeStatus,
     "转发面 " + network.forwarding.value,
     "采集面 " + network.collection.value,
+    "采集通道 " + channelStatus,
     "快照面 " + network.snapshot.value,
     "业务面 " + network.business.value,
     "最近成功 " + latest,
+    network.priority === "snapshot-missing" ? "无可用快照 / 快照缺失 / RouterOS 当前不可达 / 业务快照时间 无 / 业务快照年龄 不可判定 / 业务数据不展示" : "",
+    resourceStatus,
     "原始字段仅作二级证据",
-  ].join(" · ");
+  ].filter(Boolean).join(" · ");
 }
 
 function presentationCoreText(state: OverviewDerivedState, network: RouterOsNetworkViewModel): string {
@@ -362,7 +387,7 @@ function presentationCoreText(state: OverviewDerivedState, network: RouterOsNetw
   if (network.priority === "wan-offline") return "离线出口 / 默认路由 / 采集可信度 / 最近成功 / 影响范围";
   if (network.priority === "resource-full") return "资源阈值 / 持续窗口 / 转发余量 / 默认路由 / 采样可信度";
   if (network.priority === "interface-down") return "接口承载 / 默认路由 / 采集旁证 / 影响范围 / 最近成功";
-  if (network.priority === "collection-degraded") return "REST / SSH / 快照 / 最近成功 / 转发边界";
+  if (network.priority === "collection-degraded") return "REST 待确认 / SSH 不可用 / 缓存快照 / 最近成功 / 转发边界";
   return "WAN 趋势 / 默认路由 / 采集可信度 / 资源阈值 / 最近成功 / TopN";
 }
 

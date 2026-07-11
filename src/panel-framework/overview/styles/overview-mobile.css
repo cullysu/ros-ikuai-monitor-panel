@@ -234,6 +234,37 @@
   }
 }
 
+/* Codex v512 mobile-phone-landscape-shell.
+   A 844px-wide phone in landscape must not inherit the desktop rail/sidebar:
+   keep the public overview as a full-width console surface. */
+@media (min-width: 761px) and (max-width: 900px) and (max-height: 520px) {
+  body[data-app-shell="ikuai"] .ik-rail,
+  body[data-app-shell="ikuai"] .sidebar {
+    display: none !important;
+  }
+
+  body[data-app-shell="ikuai"] .app.ik-shell,
+  body[data-app-shell="ikuai"] .frame,
+  body[data-app-shell="ikuai"] .content {
+    width: 100vw !important;
+    max-width: none !important;
+  }
+
+  body[data-app-shell="ikuai"] .frame {
+    flex: 1 1 100vw !important;
+    min-width: 0 !important;
+  }
+
+  body[data-app-shell="ikuai"] .content {
+    padding: 0 !important;
+  }
+
+  #overview.router-overview-framework {
+    width: 100% !important;
+    max-width: none !important;
+  }
+}
+
 /* Codex v510 mobile-professional-console-no-glow.
    Final public mobile surface: network-console density, restrained chrome,
    no soft health-app glow. Keep this block at EOF so it wins over older layers. */

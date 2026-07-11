@@ -47,6 +47,8 @@ const EDGE_SCALE_SCENARIOS = ['all-offline', 'no-snapshot', 'collection-down', '
 const OVERVIEW_RELEASE_SCALE_SCENARIOS = ['single', 'fleet', ...EDGE_SCALE_SCENARIOS];
 const OVERVIEW_RELEASE_VIEWPORTS = [
   { name: 'desktop', width: 1366, height: 900 },
+  { name: 'desktop1440', width: 1440, height: 900 },
+  { name: 'wide', width: 844, height: 390 },
   { name: 'narrow', width: 390, height: 844 },
 ];
 const SCALE_SCENARIOS = new Set(['single', 'multi', 'fleet', ...EDGE_SCALE_SCENARIOS]);
@@ -87,7 +89,7 @@ Options:
   --out <dir>                 Output directory. Default: _acceptance/local-predeploy-<timestamp>.
   --profile <public|private|both>
                               Browser fixture profile. Default: both.
-  --viewports <list>          Comma list like desktop=1366x900,narrow=390x844.
+  --viewports <list>          Comma list like desktop=1366x900,desktop1440=1440x900,wide=844x390,narrow=390x844.
   --sections <list>           Comma list of sections to visit, or main-menu/public-release.
   --scale-scenarios <list>    Comma list: single,multi,fleet,all-offline,no-snapshot,collection-down,resource-full,interfaces-down. Default: multi; overview-only runs default to release overview matrix.
   --skip-browser              Run backend/static/API checks only.
