@@ -7733,6 +7733,22 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
   return result.result && result.result.value;
 }
 
+async function withTimeout(promise, timeoutMs, label) {
+  let timer = null;
+  try {
+    return await Promise.race([
+      promise,
+      new Promise((_, reject) => {
+        timer = setTimeout(() => {
+          reject(new Error(`${label} timed out after ${timeoutMs}ms`));
+        }, timeoutMs);
+      }),
+    ]);
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+}
+
 async function captureScreenshot(cdp, filePath) {
   const shot = await cdp.send('Page.captureScreenshot', {
     format: 'png',
@@ -7745,30 +7761,53 @@ async function captureScreenshot(cdp, filePath) {
 
 async function runBrowserChecks(args, report, baseUrl) {
   const profiles = args.profile === 'both' ? ['public', 'private'] : [args.profile];
-  const browser = await launchBrowser(args, report);
-  report.browser = { path: browser.browserPath };
-  try {
-    for (const profile of profiles) {
-      const sections = args.sections || (profile === 'private' ? DEFAULT_PRIVATE_SECTIONS : DEFAULT_PUBLIC_SECTIONS);
-      for (const scaleScenario of args.scaleScenarios) {
+  for (const profile of profiles) {
+    const sections = args.sections || (profile === 'private' ? DEFAULT_PRIVATE_SECTIONS : DEFAULT_PUBLIC_SECTIONS);
+    for (const scaleScenario of args.scaleScenarios) {
       for (const viewport of args.viewports) {
-        const cdp = await browser.connect();
+        const browser = await launchBrowser(args, report);
+        report.browser = { path: browser.browserPath };
+        let cdp = null;
         const runtimeErrors = [];
         const consoleErrors = [];
-        cdp.on('Runtime.exceptionThrown', (params) => {
-          runtimeErrors.push(params.exceptionDetails || params);
-        });
-        cdp.on('Runtime.consoleAPICalled', (params) => {
-          if (params.type === 'error') consoleErrors.push(params);
-        });
-        cdp.on('Log.entryAdded', (params) => {
-          if (params.entry && params.entry.level === 'error') consoleErrors.push(params.entry);
-        });
         try {
           try {
-            await navigateWithFixture(cdp, baseUrl, profile, viewport, report, scaleScenario);
+            cdp = await withTimeout(
+              browser.connect(),
+              15000,
+              `browser connect ${profile}/${scaleScenario}/${viewport.name}`,
+            );
           } catch (error) {
-            const bootDiag = await collectBootDiagnostics(cdp);
+            record(report, `browser boot ${profile}/${scaleScenario}/${viewport.name}`, false, {
+              profile,
+              scaleScenario,
+              viewport,
+              stage: 'connect',
+              error: error.stack || error.message || String(error),
+            });
+            continue;
+          }
+          cdp.on('Runtime.exceptionThrown', (params) => {
+            runtimeErrors.push(params.exceptionDetails || params);
+          });
+          cdp.on('Runtime.consoleAPICalled', (params) => {
+            if (params.type === 'error') consoleErrors.push(params);
+          });
+          cdp.on('Log.entryAdded', (params) => {
+            if (params.entry && params.entry.level === 'error') consoleErrors.push(params.entry);
+          });
+          try {
+            await withTimeout(
+              navigateWithFixture(cdp, baseUrl, profile, viewport, report, scaleScenario),
+              25000,
+              `browser navigate ${profile}/${scaleScenario}/${viewport.name}`,
+            );
+          } catch (error) {
+            const bootDiag = await withTimeout(
+              collectBootDiagnostics(cdp),
+              5000,
+              `boot diagnostics ${profile}/${scaleScenario}/${viewport.name}`,
+            ).catch((diagError) => ({ error: diagError.message }));
             const detail = {
               profile,
               scaleScenario,
@@ -7781,14 +7820,40 @@ async function runBrowserChecks(args, report, baseUrl) {
               bootDiag,
             };
             record(report, `browser boot ${profile}/${scaleScenario}/${viewport.name}`, false, detail);
-            await captureScreenshot(cdp, path.join(args.out, `${profile}-${scaleScenario}-${viewport.name}-boot-failure.png`)).catch(() => {});
+            await withTimeout(
+              captureScreenshot(cdp, path.join(args.out, `${profile}-${scaleScenario}-${viewport.name}-boot-failure.png`)),
+              8000,
+              `boot failure screenshot ${profile}/${scaleScenario}/${viewport.name}`,
+            ).catch(() => {});
             continue;
           }
           for (const section of sections) {
             const runtimeErrorStart = runtimeErrors.length;
             const consoleErrorStart = consoleErrors.length;
-            const sectionActivation = await setSection(cdp, section);
-            const inspection = await inspectSection(cdp, profile, viewport, section, args, scaleScenario);
+            let sectionActivation = null;
+            let inspection = null;
+            try {
+              sectionActivation = await withTimeout(
+                setSection(cdp, section),
+                8000,
+                `set section ${profile}/${scaleScenario}/${viewport.name}/${section}`,
+              );
+              inspection = await withTimeout(
+                inspectSection(cdp, profile, viewport, section, args, scaleScenario),
+                18000,
+                `inspect section ${profile}/${scaleScenario}/${viewport.name}/${section}`,
+              );
+            } catch (error) {
+              inspection = {
+                pass: false,
+                profile,
+                scaleScenario,
+                viewport,
+                requestedSection: section,
+                stage: 'inspect',
+                error: error.stack || error.message || String(error),
+              };
+            }
             inspection.runtimeErrorCount = runtimeErrors.length;
             inspection.consoleErrorCount = consoleErrors.length;
             inspection.newRuntimeErrorCount = runtimeErrors.length - runtimeErrorStart;
@@ -7812,6 +7877,30 @@ async function runBrowserChecks(args, report, baseUrl) {
               inspection.firstRuntimeError = runtimeErrors[0] || null;
               inspection.firstConsoleError = consoleErrors[0] || null;
             }
+            const preScreenshotPass = inspection.pass;
+            let screenshotOk = true;
+            if (section === 'overview' || !preScreenshotPass) {
+              const fileName = `${profile}-${scaleScenario}-${viewport.name}-${section}.png`.replace(/[^A-Za-z0-9_.-]+/g, '-');
+              const screenshotPath = path.join(args.out, fileName);
+              await withTimeout(
+                captureScreenshot(cdp, screenshotPath),
+                20000,
+                `screenshot ${profile}/${scaleScenario}/${viewport.name}/${section}`,
+              )
+                .then(() => {
+                  inspection.screenshot = fileName;
+                })
+                .catch((error) => {
+                  screenshotOk = false;
+                  inspection.screenshotOk = false;
+                  inspection.screenshotError = error.message;
+                  warn(report, `screenshot failed ${profile}/${scaleScenario}/${viewport.name}/${section}`, { error: error.message });
+                });
+            }
+            if (section === 'overview') {
+              inspection.screenshotOk = screenshotOk;
+              inspection.pass = Boolean(inspection.pass && screenshotOk);
+            }
             const hardPass = inspection.pass;
             report.browserChecks.push(inspection);
             record(report, `responsive ${profile}/${scaleScenario}/${viewport.name}/${section}`, hardPass, inspection);
@@ -7821,22 +7910,26 @@ async function runBrowserChecks(args, report, baseUrl) {
                 note: 'Current shell keeps desktop layout on narrow viewports; use --strict-responsive to fail this.',
               });
             }
-            if (section === 'overview' || !hardPass) {
-              const fileName = `${profile}-${scaleScenario}-${viewport.name}-${section}.png`.replace(/[^A-Za-z0-9_.-]+/g, '-');
-              await captureScreenshot(cdp, path.join(args.out, fileName)).catch((error) => {
-                warn(report, `screenshot failed ${profile}/${viewport.name}/${section}`, { error: error.message });
+          }
+        } finally {
+          if (cdp) {
+            cdp.close();
+            if (typeof cdp.closeTarget === 'function') {
+              await withTimeout(
+                cdp.closeTarget(),
+                3000,
+                `close browser target ${profile}/${scaleScenario}/${viewport.name}`,
+              ).catch((error) => {
+                warn(report, `browser target close timed out ${profile}/${scaleScenario}/${viewport.name}`, { error: error.message });
               });
             }
           }
-        } finally {
-          cdp.close();
-          if (typeof cdp.closeTarget === 'function') await cdp.closeTarget();
+          await withTimeout(browser.stop(), 8000, 'browser stop').catch((error) => {
+            warn(report, 'browser stop timed out', { error: error.message });
+          });
         }
       }
-      }
     }
-  } finally {
-    await browser.stop();
   }
 }
 

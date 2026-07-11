@@ -187,7 +187,7 @@ function listReleaseMatrixReports(rootDir = ROOT) {
   }
   const reports = [];
   for (const entry of fs.readdirSync(acceptanceDir, { withFileTypes: true })) {
-    if (!entry.isDirectory() || !entry.name.startsWith('release-matrix-')) {
+    if (!entry.isDirectory()) {
       continue;
     }
     const reportPath = path.join(acceptanceDir, entry.name, 'report.json');
@@ -196,6 +196,10 @@ function listReleaseMatrixReports(rootDir = ROOT) {
     }
     const stat = fs.statSync(reportPath);
     if (!stat.isFile()) {
+      continue;
+    }
+    const summary = summarizeMatrixReport(reportPath);
+    if (!isFullMatrixShape(summary)) {
       continue;
     }
     reports.push({ reportPath, mtimeMs: stat.mtimeMs });
@@ -634,6 +638,11 @@ function main(argv = process.argv.slice(2)) {
   assertContains('tools/local-predeploy-check.js', 'screenshotDir: args.out');
   assertContains('tools/local-predeploy-check.js', 'scenarioMatrix:');
   assertContains('tools/local-predeploy-check.js', 'screenshots: listScreenshotFiles(args.out)');
+  assertContains('tools/local-predeploy-check.js', 'async function withTimeout(');
+  assertContains('tools/local-predeploy-check.js', 'captureScreenshot(cdp, screenshotPath)');
+  assertContains('tools/local-predeploy-check.js', 'inspection.screenshotOk = screenshotOk;');
+  assertContains('tools/local-predeploy-check.js', 'inspection.pass = Boolean(inspection.pass && screenshotOk);');
+  assertContains('tools/local-predeploy-check.js', "await withTimeout(browser.stop(), 8000, 'browser stop')");
   assertContains('tools/local-predeploy-check.js', 'overviewDesktopSamplingStateUniqueOk');
   assertContains('tools/local-predeploy-check.js', 'overviewDesktopTopConclusionUniqueOk');
   assertContains('tools/local-predeploy-check.js', 'overviewMobileSamplingStateUniqueOk');
