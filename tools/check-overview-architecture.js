@@ -25,6 +25,8 @@ function assert(condition, message) {
 
 const panelFile = "src/panel-framework/overview/OverviewPanel.tsx";
 const panelCssFile = "src/panel-framework/overview/OverviewPanel.css";
+const desktopRefinementFile =
+  "src/panel-framework/overview/OverviewPanelDesktopRefinement.css";
 const desktopConsoleFile =
   "src/panel-framework/overview/components/DesktopConsole.tsx";
 const desktopDecisionRailFile =
@@ -63,6 +65,7 @@ const desktopConsole = read(desktopConsoleFile);
 const desktopDecisionRail = read(desktopDecisionRailFile);
 const desktopScenes = read(desktopScenesFile);
 const panelCss = read(panelCssFile);
+const desktopRefinement = read(desktopRefinementFile);
 const desktopHelpers = read(desktopHelpersFile);
 const desktopRows = read(desktopRowsFile);
 const desktopTrafficRows = read(desktopTrafficRowsFile);
@@ -77,6 +80,9 @@ const mobileHomeSections = read(mobileHomeSectionsFile);
 const mobileStyles = read(mobileStylesFile);
 const mobileModel = read(mobileModelFile);
 const cssRoot = postcss.parse(panelCss, { from: panelCssFile });
+const desktopRefinementRoot = postcss.parse(desktopRefinement, {
+  from: desktopRefinementFile,
+});
 let declarationCount = 0;
 let importantCount = 0;
 let ruleCount = 0;
@@ -84,6 +90,9 @@ let mobileRuleCount = 0;
 let legacyIosSelectorCount = 0;
 let legacyMobileSelectorCount = 0;
 let versionMarkerCount = 0;
+let desktopRefinementImportantCount = 0;
+let desktopDecisionRailRuleCount = 0;
+let desktopDecisionCellRuleCount = 0;
 
 cssRoot.walkRules((rule) => {
   ruleCount += 1;
@@ -108,6 +117,17 @@ cssRoot.walkDecls((decl) => {
 });
 cssRoot.walkComments((comment) => {
   if (/\bv\d{3,4}\b/i.test(comment.text)) versionMarkerCount += 1;
+});
+desktopRefinementRoot.walkDecls((decl) => {
+  if (decl.important) desktopRefinementImportantCount += 1;
+});
+desktopRefinementRoot.walkRules((rule) => {
+  if (rule.selector.includes(".ro-desktop-thin-kpis")) {
+    desktopDecisionRailRuleCount += 1;
+  }
+  if (/\.ro-desktop-thin-kpi(?!s)/.test(rule.selector)) {
+    desktopDecisionCellRuleCount += 1;
+  }
 });
 
 const importantShare = importantCount / Math.max(1, declarationCount);
@@ -276,6 +296,14 @@ assert(
   `OverviewPanel.css mobile rule share regressed above 11%: ${mobileRuleShare.toFixed(4)}`
 );
 assert(
+  desktopRefinementImportantCount <= 1334,
+  `Desktop refinement !important count regressed above 1334: ${desktopRefinementImportantCount}`
+);
+assert(
+  desktopDecisionRailRuleCount === 1 && desktopDecisionCellRuleCount <= 4,
+  `Desktop decision rail must stay consolidated: railRules=${desktopDecisionRailRuleCount} cellRules=${desktopDecisionCellRuleCount}`
+);
+assert(
   versionMarkerCount <= 159,
   `OverviewPanel.css version marker count regressed above 159: ${versionMarkerCount}`
 );
@@ -344,5 +372,5 @@ if (failures.length > 0) {
 }
 
 console.log(
-  `overview architecture gate: PASS panel=${lines(panel)} lines desktop=${lines(desktopConsole)} lines desktopDecision=${lines(desktopDecisionRail)} lines scenes=${lines(desktopScenes)} lines helper=${lines(desktopHelpers)} lines rowsFacade=${lines(desktopRows)} lines trafficRows=${lines(desktopTrafficRows)} lines networkRows=${lines(desktopNetworkRows)} lines credibilityRows=${lines(desktopCredibilityRows)} lines terminalRows=${lines(desktopTerminalRows)} lines resourceRows=${lines(desktopResourceRows)} lines visuals=${lines(desktopVisuals)} lines mobileHome=${lines(mobileHome)} lines mobileDecision=${lines(mobileDecision)} lines mobileSections=${lines(mobileHomeSections)} lines css=${bytes(panelCssFile)} bytes mobileStyles=${mobileStyleByteTotal} bytes important=${importantShare.toFixed(4)} mobile=${mobileRuleShare.toFixed(4)}`
+  `overview architecture gate: PASS panel=${lines(panel)} lines desktop=${lines(desktopConsole)} lines desktopDecision=${lines(desktopDecisionRail)} lines scenes=${lines(desktopScenes)} lines helper=${lines(desktopHelpers)} lines rowsFacade=${lines(desktopRows)} lines trafficRows=${lines(desktopTrafficRows)} lines networkRows=${lines(desktopNetworkRows)} lines credibilityRows=${lines(desktopCredibilityRows)} lines terminalRows=${lines(desktopTerminalRows)} lines resourceRows=${lines(desktopResourceRows)} lines visuals=${lines(desktopVisuals)} lines mobileHome=${lines(mobileHome)} lines mobileDecision=${lines(mobileDecision)} lines mobileSections=${lines(mobileHomeSections)} lines css=${bytes(panelCssFile)} bytes mobileStyles=${mobileStyleByteTotal} bytes important=${importantShare.toFixed(4)} desktopImportant=${desktopRefinementImportantCount} decisionRailRules=${desktopDecisionRailRuleCount} decisionCellRules=${desktopDecisionCellRuleCount} mobile=${mobileRuleShare.toFixed(4)}`
 );
