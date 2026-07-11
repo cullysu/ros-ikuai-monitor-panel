@@ -1,4 +1,4 @@
-import type { CSSProperties, ReactNode } from "react";
+import type { ReactNode } from "react";
 import {
   compactListText,
   formatCompact,
@@ -110,215 +110,10 @@ import {
   VisibilityMatrixVisual,
   VisualStack,
 } from "../desktopOverviewVisuals";
-
-function Module({ title, subtitle, module, tone = "trust", headers, rows, trust, className = "", minRows = 0, visual, visualOnly = false, collapsedEvidence = false }: ModuleProps) {
-  const paddedRows = rows;
-  const isWanLedger = /wan/i.test(module);
-  const isAnomalyEvidence = isWanLedger && !/wan-trend/i.test(module);
-  const isRankLedger = /rank|top5|normal-wan-evidence/i.test(module);
-  const isResourceRiskModule = module === "resource-risk-priority";
-  const isRouterOsRouteEvidenceModule = /route|default-route|evidence-boundary|wan-route/i.test(module);
-  const isSecondaryEvidence = /terminal|boundary|collection-resource-threshold|resource-boundary|normal-ops-ledger/.test(module);
-  const isNoSnapshotFloorModule = className.split(/\s+/).includes("ro-no-snapshot-floor-module");
-  const primaryEvidenceModules = new Set([
-    "wan-trend",
-    "resource-risk-priority",
-    "resource-pressure-bars",
-    "interface-forwarding",
-    "collection-cache-ledger",
-    "no-snapshot-summary",
-    "wan-offline-bars",
-  ]);
-  const gridStyle: CSSProperties = {
-    gridTemplateColumns: `repeat(${Math.max(1, headers.length)}, minmax(0, 1fr))`,
-  };
-  const showTrustTag = Boolean(
-    trust
-    && trust !== "实时"
-    && /^(wan-trend|wan-offline-bars|resource-risk-priority|collection-channel-ledger|no-snapshot-summary|interface-forwarding|normal-collection-channel|collection-status)$/.test(module),
-  );
-  return (
-    <section
-      className={`ro-module ik-overview-flat-module${isResourceRiskModule ? " ops-resource-grid" : ""} ${className}`.trim()}
-      style={isNoSnapshotFloorModule ? { alignSelf: "stretch", height: "100%", maxHeight: "none", minHeight: 224 } : undefined}
-      data-tone={tone}
-      data-overview-density-module={module}
-      data-overview-visual-block
-      data-overview-chart-type={moduleChartType(module)}
-      data-overview-desktop-tier="evidence"
-      data-overview-module-body-policy={visualOnly ? "visual-only" : collapsedEvidence ? "collapsed-secondary-evidence" : "content-sized"}
-      data-overview-desktop-v1073-visual-only={visualOnly ? "true" : undefined}
-      data-overview-desktop-v1074-collapsed-evidence={collapsedEvidence ? "native-details-business-first-raw-secondary" : undefined}
-      data-overview-top5-total={module === "resource-interface-top5" ? rows.length : undefined}
-      data-overview-wan-offline-bars={module === "wan-offline-bars" ? "true" : undefined}
-      data-overview-wan-mini-table={isWanLedger ? "true" : undefined}
-      data-overview-anomaly-evidence={primaryEvidenceModules.has(module) || isAnomalyEvidence ? "true" : undefined}
-      data-overview-rank-grid={isRankLedger ? "true" : undefined}
-      data-overview-resource-interface-top5-first-screen={module === "resource-interface-top5" ? "true" : undefined}
-      data-overview-evidence-weight={primaryEvidenceModules.has(module) ? "primary" : isSecondaryEvidence ? "secondary" : "support"}
-      data-overview-secondary={isSecondaryEvidence ? "true" : undefined}
-      data-overview-routeros-business-main-view={isRouterOsRouteEvidenceModule ? "translated-fields" : undefined}
-      data-routeros-route-evidence-contract={isRouterOsRouteEvidenceModule ? ROUTEROS_ROUTE_EVIDENCE_CONTRACT : undefined}
-      data-routeros-raw-field-policy={isRouterOsRouteEvidenceModule ? "raw-fields-secondary-not-main-copy" : undefined}
-      data-routeros-v1047-raw-evidence-contract={isRouterOsRouteEvidenceModule ? "business-route-main-raw-route-fields-secondary-collapsed-low-noise" : undefined}
-      data-overview-resource-judgement-parent={module === "resource-risk-priority" ? "true" : undefined}
-      data-overview-resource-danger-card-judgement={module === "resource-risk-priority" ? "true" : undefined}
-      data-overview-resource-danger-bars-confidence-standard={module === "resource-risk-priority" ? "current-peak-mean-threshold-trust" : undefined}
-      data-overview-resource-ledger-parent-judgement={module === "resource-risk-priority" ? "compact-row-ledger" : undefined}
-      data-overview-resource-three-metric-ledger-mode={module === "resource-risk-priority" ? "compact-row-ledger" : undefined}
-      data-overview-resource-complementary-pressure-bars={module === "resource-pressure-bars" ? "true" : undefined}
-      data-overview-resource-complementary-kind={module === "resource-pressure-bars" ? "connection-interface-dns-sessions" : undefined}
-      data-overview-resource-complementary-role={module === "resource-pressure-bars" ? "connection-pressure-interface-throughput-dns-cache-active-sessions" : undefined}
-      data-overview-resource-context-parent={module === "resource-pressure-bars" ? "true" : undefined}
-      data-overview-collection-bars-parent-judgement={module === "collection-cache-ledger" ? "true" : undefined}
-      data-overview-collection-triad-bars={module === "collection-cache-ledger" ? "rest-ssh-snapshot-only" : undefined}
-      data-overview-collection-success-timeline-primary={module === "collection-recent-failures" ? "true" : undefined}
-      data-overview-collection-success-timeline={module === "collection-recent-failures" ? "true" : undefined}
-      data-overview-interface-carrier-table={module === "interface-forwarding" || module === "interface-relation-carrier" ? "true" : undefined}
-      data-overview-interface-relation-detail={module === "interface-relation-carrier" ? "carrier-table" : undefined}
-      data-overview-no-snapshot-ledger-parent-judgement={module === "no-snapshot-channel-status" ? "true" : undefined}
-      data-overview-no-snapshot-channel-parent-judgement={module === "no-snapshot-channel-status" ? "true" : undefined}
-      data-overview-no-snapshot-timeline-parent-judgement={module === "no-snapshot-channel-status" ? "true" : undefined}
-      data-overview-no-snapshot-module-matrix-parent-judgement={module === "no-snapshot-summary" || module === "no-snapshot-module-visibility" ? "true" : undefined}
-      data-overview-no-snapshot-recent-channel-parent-judgement={module === "no-snapshot-recent-success" ? "true" : undefined}
-      data-overview-no-snapshot-collection-channel-parent-judgement={module === "no-snapshot-channel-status" ? "true" : undefined}
-      data-overview-no-snapshot-content-sized={module.startsWith("no-snapshot") ? "true" : undefined}
-      data-overview-desktop-v1042-no-snapshot-floor-module={isNoSnapshotFloorModule ? "visibility-raw-evidence-filled-floor" : undefined}
-      data-overview-no-snapshot-floor-zone={isNoSnapshotFloorModule ? module : undefined}
-      data-overview-three-col-table={headers.length === 3 ? "true" : undefined}
-      data-overview-table-evidence-wrap={headers.length === 3 ? "third-column-full-wrap" : undefined}
-      data-overview-top5-display-policy={module === "resource-interface-top5" ? "bar-main-value-share-only-tooltip-secondary" : undefined}
-      data-overview-top5-visual-noise-policy={module === "resource-interface-top5" ? "bar-main-value-share-right-secondary-tooltip" : undefined}
-      data-overview-top5-density={module === "resource-interface-top5" ? "flat-light-3col" : undefined}
-      data-overview-top5-row-visual-contract={module === "resource-interface-top5" ? "name-bar-main-share-right-tooltip-secondary" : undefined}
-      data-overview-min-rows={minRows}
-      data-overview-filler-rows="disabled"
-    >
-      <header className="ro-module-head">
-        <div>
-          <b className="ik-overview-flat-title">{title}</b>
-          {subtitle ? <span>{subtitle}</span> : null}
-        </div>
-        {showTrustTag ? <em data-trust={trust}>{trust}</em> : null}
-        {isResourceRiskModule ? (
-          <span className="ro-resource-axis-labels ops-axis-labels ops-axis-chart" aria-label="资源百分比轴">
-            <span>100%</span>
-            <span>50%</span>
-            <span>0%</span>
-            <span>数据点</span>
-          </span>
-        ) : null}
-        {module === "resource-interface-top5" ? (
-          <span className="ro-sr-contract" data-overview-top5-total={rows.length}>
-            <span className="ik-overview-top5-rate"><em>Top5速率</em></span>
-            <span className="ik-overview-top5-connections"><em>Top5连接</em></span>
-          </span>
-        ) : null}
-      </header>
-      {visual}
-      {visualOnly ? null : (
-        <details
-          className={collapsedEvidence ? "ro-secondary-evidence-disclosure" : "ro-ledger-disclosure"}
-          data-overview-desktop-v1074-raw-evidence-disclosure={collapsedEvidence ? "native-details-collapsed-secondary" : undefined}
-          open={collapsedEvidence ? undefined : true}
-        >
-          {collapsedEvidence ? (
-            <summary>
-              <span>查看原始字段</span>
-              <b>{rows.length} 项</b>
-            </summary>
-          ) : null}
-          <div className="ro-ledger-table ik-home-evidence-list" role="table">
-        <div className="ro-ledger-head ro-ledger-row" role="row" style={gridStyle}>
-          {headers.map((header) => (
-            <div className="ro-ledger-head-cell" role="columnheader" key={header}>{header}</div>
-          ))}
-        </div>
-        {paddedRows.map((row) => {
-          const share = row.attrs?.["data-overview-share"];
-          const baseRowStyle = share !== undefined
-            ? ({ ...gridStyle, "--overview-share": `${share}%` } as CSSProperties)
-            : gridStyle;
-          const rowStyle = isResourceRiskModule
-            ? ({
-              ...baseRowStyle,
-              "--resource-color": row.tone === "danger" ? "#c94a4a" : "#2f7de1",
-            } as CSSProperties)
-            : baseRowStyle;
-          return (
-            <div
-              key={row.id}
-              className={`ro-ledger-row ik-home-evidence-row${module === "resource-pressure-bars" || module === "resource-risk-priority" ? " ik-overview-bar-row" : ""}${isResourceRiskModule ? " ops-resource-card ops-axis-chart" : ""}`}
-              role="row"
-              style={rowStyle}
-              data-tone={row.tone || "trust"}
-              data-overview-field
-              title={row.title}
-              {...row.attrs}
-            >
-              {headers.map((_, index) => (
-                <div className="ro-ledger-cell ik-overview-module-cell" role="cell" key={`${row.id}-${index}`} data-overview-field>
-                  <span className="ik-overview-cell-text">{row.cells[index] ?? ""}</span>
-                </div>
-              ))}
-            </div>
-          );
-        })}
-          </div>
-        </details>
-      )}
-    </section>
-  );
-}
-
-export function InfoBand({ snapshot, state }: OverviewPanelProps) {
-  const items = topbarItems(snapshot, state).slice(0, 6);
-  const isNoSnapshot = state.scenario === "no-snapshot";
-  const topbarFixedSix = isNoSnapshot ? "conclusion-device-routeros-rest-ssh-recent-success" : "conclusion-device-object-impact-collection-snapshot";
-  const topbarHierarchy = isNoSnapshot ? "primary-conclusion-device-routeros-rest-ssh-recent-success" : "primary-conclusion-device-object-impact-collection-snapshot";
-  const topbarPriorityContract = isNoSnapshot ? "conclusion-first-device-routeros-rest-ssh-recent-success" : "conclusion-first-device-object-impact-collection-snapshot";
-  const topbarSecondary = isNoSnapshot ? "recent-success-demoted" : "snapshot-demoted";
-  return (
-    <div
-      className="ro-topbar ik-home-flat-topbar"
-      data-overview-desktop-tier="conclusion"
-      data-overview-desktop-hierarchy-tier="1-conclusion"
-      data-overview-summary
-      data-overview-status-bus
-      data-overview-verdict-status-bus
-      data-overview-status-bar
-      data-overview-desktop-v1040-status-bus="flat-summary-bus-key-value-no-field-boxes"
-      data-overview-desktop-v1068-status-bus="control-console-summary-bus-flat-critical-value-rail"
-      data-overview-desktop-v1068-status-bus-order={topbarFixedSix}
-      data-overview-desktop-v1068-status-bus-no-table-header="true"
-      data-overview-desktop-v1068-status-bus-value-rail="conclusion-first-low-noise"
-      data-overview-summary-main
-      data-overview-desktop-top
-      data-overview-flat-topbar
-      data-overview-topbar-hierarchy={topbarHierarchy}
-      data-overview-topbar-priority-contract={topbarPriorityContract}
-      data-overview-topbar-primary-weight="conclusion-12_5-device-12"
-      data-overview-topbar-conclusion-rail="left-4px"
-      data-overview-topbar-secondary={topbarSecondary}
-      data-overview-topbar-fixed-six={topbarFixedSix}
-      data-overview-topbar-no-overflow="max-six-cells-short-notes"
-      data-overview-first-viewport-title={topbarFixedSix}
-      data-overview-topbar-no-iso-long-timestamp="true"
-      data-overview-first-viewport-no-duplicate-title-tag="true"
-      data-overview-topbar-muted-tags="no-heavy-status-tags"
-    >
-      {items.map((item) => (
-        <div className="ro-topbar-cell ik-home-flat-cell ik-home-ops-item" key={item.role} data-tone={item.tone} data-overview-field data-overview-status-cell data-overview-status-role={item.role} data-overview-status-priority={topbarPriority(item.role)} data-overview-summary-cell data-overview-desktop-v1068-status-cell="label-value-note">
-          <span>{item.label}</span>
-          <b style={topbarValueStyle(item.role)} data-overview-desktop-primary={item.role === "conclusion" ? "true" : undefined}>{item.value}</b>
-          <em style={topbarNoteStyle(item.role)}>{item.note}</em>
-        </div>
-      ))}
-      <span className="ro-contract-hidden" data-overview-field />
-      <span className="ro-contract-hidden" data-overview-field />
-    </div>
-  );
-}
+import { Module } from "./DesktopModule";
+import { EvidenceChain } from "./EvidenceChain";
+import { TerminalRanking } from "./TerminalRanking";
+import { WanTrend } from "./WanTrend";
 
 function DesktopThinKpis({ snapshot, state }: OverviewPanelProps) {
   const object = topbarObjectValue(snapshot, state);
@@ -552,7 +347,7 @@ function compactDesktopPanelGroups(snapshot: OverviewRawSnapshot, state: Overvie
   ], "desktop-wan-evidence-"), isFleet ? 5 : 4);
   return {
     main: [
-      <Module key="compact-network" title={state.scenario === "no-snapshot" ? "采集链路" : isFleet ? "WAN 实时趋势 / 设备 TopN" : "WAN 实时趋势"} subtitle={state.scenario === "all-offline" ? "0/8 / 出口不可用" : isFleet ? "类型分布 / 异常 TopN" : "趋势 / 当前 / 峰值 / Top 出口 / 默认出口 / 采样可信度"} module={state.scenario === "all-offline" ? "wan-offline-bars" : state.scenario === "no-snapshot" ? "no-snapshot-summary" : "wan-trend"} tone={state.scenario === "all-offline" || state.scenario === "no-snapshot" ? "danger" : state.facts.wan.allOffline ? "danger" : "trust"} trust={trust} headers={compactWanVisualOnly ? [] : state.scenario === "no-snapshot" ? ["链路项", "当前", "最近成功", "主证据", "下次尝试"] : ["对象", "当前", "依据"]} rows={compactWanVisualOnly ? [] : networkRows} minRows={0} visual={networkVisual} visualOnly={compactWanVisualOnly} />,
+      <WanTrend key="compact-network" title={state.scenario === "no-snapshot" ? "采集链路" : isFleet ? "WAN 实时趋势 / 设备 TopN" : "WAN 实时趋势"} subtitle={state.scenario === "all-offline" ? "0/8 / 出口不可用" : isFleet ? "类型分布 / 异常 TopN" : "趋势 / 当前 / 峰值 / Top 出口 / 默认出口 / 采样可信度"} module={state.scenario === "all-offline" ? "wan-offline-bars" : state.scenario === "no-snapshot" ? "no-snapshot-summary" : "wan-trend"} tone={state.scenario === "all-offline" || state.scenario === "no-snapshot" ? "danger" : state.facts.wan.allOffline ? "danger" : "trust"} trust={trust} headers={compactWanVisualOnly ? [] : state.scenario === "no-snapshot" ? ["链路项", "当前", "最近成功", "主证据", "下次尝试"] : ["对象", "当前", "依据"]} rows={compactWanVisualOnly ? [] : networkRows} minRows={0} visual={networkVisual} visualOnly={compactWanVisualOnly} />,
       <Module key="compact-route" title={state.scenario === "no-snapshot" ? "业务边界" : "默认出口"} subtitle={state.scenario === "no-snapshot" ? "不展示" : isFleet ? "默认路由条目 / 承载" : "出口 / 承载 / 优先级"} module={state.scenario === "no-snapshot" ? "no-snapshot-module-visibility" : "route-raw-facts"} tone={state.scenario === "all-offline" ? "danger" : state.facts.route.level} trust={trust} headers={routeHeaders} rows={routeRowsCompact} minRows={0} visual={state.scenario === "no-snapshot" ? <VisibilityMatrixVisual rows={routeRowsCompact} /> : undefined} />,
       isFleet ? <Module key="compact-wan-evidence" title="WAN 异常 TopN" subtitle="离线对象 / 类型分布" module="normal-wan-evidence" tone={state.facts.wan.offline ? "warn" : "trust"} trust={trust} headers={["对象", "当前", "依据"]} rows={wanEvidenceRows} minRows={0} /> : null,
     ],
@@ -562,9 +357,9 @@ function compactDesktopPanelGroups(snapshot: OverviewRawSnapshot, state: Overvie
       <Module key="compact-collection" title={isFleet ? "采集可信度" : "采集 / 快照"} subtitle={state.scenario === "collection-down" ? "REST / SSH / 快照" : "REST / SSH / 成功"} module={state.scenario === "collection-down" ? "collection-channel-ledger" : state.scenario === "no-snapshot" ? "no-snapshot-channel-status" : "normal-collection-channel"} tone={state.scenario === "collection-down" || state.scenario === "no-snapshot" ? "warn" : state.facts.collection.level} trust={trust} headers={state.scenario === "no-snapshot" ? ["链路层", "当前", "最近成功", "主证据", "下次尝试"] : ["对象", "当前", "依据"]} rows={collectionRowsCompact} minRows={0} visual={<ChannelMatrixVisual module="collection-status" rows={collectionChannelRows(snapshot, state)} />} />,
     ],
     bottom: [
-      <Module key="compact-terminals" title="终端排行" subtitle="异常置顶 / 总流量" module="terminal-ranking" tone="trust" trust={trust} headers={["设备", "IP", "流量", "状态"]} rows={compactRows(desktopTerminalRows(snapshot), 4)} minRows={0} />,
+      <TerminalRanking key="compact-terminals" title="终端排行" subtitle="异常置顶 / 总流量" module="terminal-ranking" tone="trust" trust={trust} headers={["设备", "IP", "流量", "状态"]} rows={compactRows(desktopTerminalRows(snapshot), 4)} minRows={0} />,
       <Module key="compact-events" title="最近事件" subtitle="采集 / 默认出口" module="normal-ops-ledger" tone={state.facts.collection.level} trust={trust} headers={["对象", "当前", "依据"]} rows={compactRows(normalOpsRows(snapshot, state), 4)} minRows={0} />,
-      <Module key="compact-boundary" title="证据 / 原始字段" subtitle="默认收起 · 业务解释优先" module={state.scenario === "no-snapshot" ? "no-snapshot-degraded-modules" : "evidence-boundary"} tone={state.scenario === "no-snapshot" ? "missing" : "trust"} trust={trust} headers={state.scenario === "resource-full" || state.scenario === "interfaces-down" ? ["对象", "当前", "依据", "边界"] : ["对象", "当前", "依据"]} rows={compactRows(desktopEvidenceBoundaryRows(snapshot, state), 4)} minRows={0} collapsedEvidence />,
+      <EvidenceChain key="compact-boundary" title="证据 / 原始字段" subtitle="默认收起 · 业务解释优先" module={state.scenario === "no-snapshot" ? "no-snapshot-degraded-modules" : "evidence-boundary"} tone={state.scenario === "no-snapshot" ? "missing" : "trust"} trust={trust} headers={state.scenario === "resource-full" || state.scenario === "interfaces-down" ? ["对象", "当前", "依据", "边界"] : ["对象", "当前", "依据"]} rows={compactRows(desktopEvidenceBoundaryRows(snapshot, state), 4)} minRows={0} collapsedEvidence />,
     ],
   };
 }

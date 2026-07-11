@@ -1,5 +1,6 @@
 import { MobileOverviewHome } from "./components/MobileOverviewHome";
-import { DesktopWorkspace, InfoBand } from "./components/DesktopConsole";
+import { DesktopWorkspace } from "./components/DesktopConsole";
+import { StatusVerdict } from "./components/StatusVerdict";
 import { OVERVIEW_LOW_NOISE_CONSOLE_TOKEN_CONTRACT } from "./mobileOverviewTokens";
 import type { OverviewPanelProps } from "./index";
 import {
@@ -57,7 +58,7 @@ export function OverviewPanel({ snapshot, state }: OverviewPanelProps) {
       data-overview-no-snapshot-big-wan-rate-guard="no-business-rates-without-snapshot"
       data-overview-no-zero-rate-placeholder="no-zero-rate-when-uncollected"
     >
-      <InfoBand snapshot={snapshot} state={state} />
+      <StatusVerdict snapshot={snapshot} state={state} />
       <span
         className="ro-sr-contract"
         data-overview-verdict-panel

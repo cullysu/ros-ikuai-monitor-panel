@@ -727,11 +727,15 @@ def assert_frontend_charts_skip_missing_values():
         and 'data-overview-framework-asset="script"' in index_source
     )
     if framework_shell:
+        overview_components_dir = ROOT / "src" / "panel-framework" / "overview" / "components"
         overview_source = "\n".join(
             [
                 (ROOT / "src" / "panel-framework" / "overview" / "OverviewPanel.tsx").read_text(encoding="utf-8"),
-                (ROOT / "src" / "panel-framework" / "overview" / "components" / "DesktopConsole.tsx").read_text(encoding="utf-8"),
                 (ROOT / "src" / "panel-framework" / "overview" / "desktopOverviewVisuals.tsx").read_text(encoding="utf-8"),
+                *[
+                    component_path.read_text(encoding="utf-8")
+                    for component_path in sorted(overview_components_dir.glob("*.tsx"))
+                ],
             ]
         )
         overview_css_parts = [

@@ -16916,53 +16916,14 @@ var PanelFramework = function(exports) {
       }
     );
   }
-  function InfoBand({ snapshot, state }) {
-    const items = topbarItems(snapshot, state).slice(0, 6);
-    const isNoSnapshot = state.scenario === "no-snapshot";
-    const topbarFixedSix = isNoSnapshot ? "conclusion-device-routeros-rest-ssh-recent-success" : "conclusion-device-object-impact-collection-snapshot";
-    const topbarHierarchy = isNoSnapshot ? "primary-conclusion-device-routeros-rest-ssh-recent-success" : "primary-conclusion-device-object-impact-collection-snapshot";
-    const topbarPriorityContract = isNoSnapshot ? "conclusion-first-device-routeros-rest-ssh-recent-success" : "conclusion-first-device-object-impact-collection-snapshot";
-    const topbarSecondary = isNoSnapshot ? "recent-success-demoted" : "snapshot-demoted";
-    return /* @__PURE__ */ jsxRuntimeExports.jsxs(
-      "div",
-      {
-        className: "ro-topbar ik-home-flat-topbar",
-        "data-overview-desktop-tier": "conclusion",
-        "data-overview-desktop-hierarchy-tier": "1-conclusion",
-        "data-overview-summary": true,
-        "data-overview-status-bus": true,
-        "data-overview-verdict-status-bus": true,
-        "data-overview-status-bar": true,
-        "data-overview-desktop-v1040-status-bus": "flat-summary-bus-key-value-no-field-boxes",
-        "data-overview-desktop-v1068-status-bus": "control-console-summary-bus-flat-critical-value-rail",
-        "data-overview-desktop-v1068-status-bus-order": topbarFixedSix,
-        "data-overview-desktop-v1068-status-bus-no-table-header": "true",
-        "data-overview-desktop-v1068-status-bus-value-rail": "conclusion-first-low-noise",
-        "data-overview-summary-main": true,
-        "data-overview-desktop-top": true,
-        "data-overview-flat-topbar": true,
-        "data-overview-topbar-hierarchy": topbarHierarchy,
-        "data-overview-topbar-priority-contract": topbarPriorityContract,
-        "data-overview-topbar-primary-weight": "conclusion-12_5-device-12",
-        "data-overview-topbar-conclusion-rail": "left-4px",
-        "data-overview-topbar-secondary": topbarSecondary,
-        "data-overview-topbar-fixed-six": topbarFixedSix,
-        "data-overview-topbar-no-overflow": "max-six-cells-short-notes",
-        "data-overview-first-viewport-title": topbarFixedSix,
-        "data-overview-topbar-no-iso-long-timestamp": "true",
-        "data-overview-first-viewport-no-duplicate-title-tag": "true",
-        "data-overview-topbar-muted-tags": "no-heavy-status-tags",
-        children: [
-          items.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ro-topbar-cell ik-home-flat-cell ik-home-ops-item", "data-tone": item.tone, "data-overview-field": true, "data-overview-status-cell": true, "data-overview-status-role": item.role, "data-overview-status-priority": topbarPriority(item.role), "data-overview-summary-cell": true, "data-overview-desktop-v1068-status-cell": "label-value-note", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: item.label }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { style: topbarValueStyle(item.role), "data-overview-desktop-primary": item.role === "conclusion" ? "true" : void 0, children: item.value }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("em", { style: topbarNoteStyle(item.role), children: item.note })
-          ] }, item.role)),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "ro-contract-hidden", "data-overview-field": true }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "ro-contract-hidden", "data-overview-field": true })
-        ]
-      }
-    );
+  function EvidenceChain({ className = "", ...props }) {
+    return /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { ...props, className: `ro-semantic-evidence-chain ${className}`.trim() });
+  }
+  function TerminalRanking({ className = "", ...props }) {
+    return /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { ...props, className: `ro-semantic-terminal-ranking ${className}`.trim() });
+  }
+  function WanTrend({ className = "", ...props }) {
+    return /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { ...props, className: `ro-semantic-wan-trend ${className}`.trim() });
   }
   function DesktopThinKpis({ snapshot, state }) {
     const object = topbarObjectValue(snapshot, state);
@@ -17183,7 +17144,7 @@ var PanelFramework = function(exports) {
     ], "desktop-wan-evidence-"), isFleet ? 5 : 4);
     return {
       main: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: state.scenario === "no-snapshot" ? "采集链路" : isFleet ? "WAN 实时趋势 / 设备 TopN" : "WAN 实时趋势", subtitle: state.scenario === "all-offline" ? "0/8 / 出口不可用" : isFleet ? "类型分布 / 异常 TopN" : "趋势 / 当前 / 峰值 / Top 出口 / 默认出口 / 采样可信度", module: state.scenario === "all-offline" ? "wan-offline-bars" : state.scenario === "no-snapshot" ? "no-snapshot-summary" : "wan-trend", tone: state.scenario === "all-offline" || state.scenario === "no-snapshot" ? "danger" : state.facts.wan.allOffline ? "danger" : "trust", trust, headers: compactWanVisualOnly ? [] : state.scenario === "no-snapshot" ? ["链路项", "当前", "最近成功", "主证据", "下次尝试"] : ["对象", "当前", "依据"], rows: compactWanVisualOnly ? [] : networkRows, minRows: 0, visual: networkVisual, visualOnly: compactWanVisualOnly }, "compact-network"),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(WanTrend, { title: state.scenario === "no-snapshot" ? "采集链路" : isFleet ? "WAN 实时趋势 / 设备 TopN" : "WAN 实时趋势", subtitle: state.scenario === "all-offline" ? "0/8 / 出口不可用" : isFleet ? "类型分布 / 异常 TopN" : "趋势 / 当前 / 峰值 / Top 出口 / 默认出口 / 采样可信度", module: state.scenario === "all-offline" ? "wan-offline-bars" : state.scenario === "no-snapshot" ? "no-snapshot-summary" : "wan-trend", tone: state.scenario === "all-offline" || state.scenario === "no-snapshot" ? "danger" : state.facts.wan.allOffline ? "danger" : "trust", trust, headers: compactWanVisualOnly ? [] : state.scenario === "no-snapshot" ? ["链路项", "当前", "最近成功", "主证据", "下次尝试"] : ["对象", "当前", "依据"], rows: compactWanVisualOnly ? [] : networkRows, minRows: 0, visual: networkVisual, visualOnly: compactWanVisualOnly }, "compact-network"),
         /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: state.scenario === "no-snapshot" ? "业务边界" : "默认出口", subtitle: state.scenario === "no-snapshot" ? "不展示" : isFleet ? "默认路由条目 / 承载" : "出口 / 承载 / 优先级", module: state.scenario === "no-snapshot" ? "no-snapshot-module-visibility" : "route-raw-facts", tone: state.scenario === "all-offline" ? "danger" : state.facts.route.level, trust, headers: routeHeaders, rows: routeRowsCompact, minRows: 0, visual: state.scenario === "no-snapshot" ? /* @__PURE__ */ jsxRuntimeExports.jsx(VisibilityMatrixVisual, { rows: routeRowsCompact }) : void 0 }, "compact-route"),
         isFleet ? /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "WAN 异常 TopN", subtitle: "离线对象 / 类型分布", module: "normal-wan-evidence", tone: state.facts.wan.offline ? "warn" : "trust", trust, headers: ["对象", "当前", "依据"], rows: wanEvidenceRows, minRows: 0 }, "compact-wan-evidence") : null
       ],
@@ -17193,9 +17154,9 @@ var PanelFramework = function(exports) {
         /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: isFleet ? "采集可信度" : "采集 / 快照", subtitle: state.scenario === "collection-down" ? "REST / SSH / 快照" : "REST / SSH / 成功", module: state.scenario === "collection-down" ? "collection-channel-ledger" : state.scenario === "no-snapshot" ? "no-snapshot-channel-status" : "normal-collection-channel", tone: state.scenario === "collection-down" || state.scenario === "no-snapshot" ? "warn" : state.facts.collection.level, trust, headers: state.scenario === "no-snapshot" ? ["链路层", "当前", "最近成功", "主证据", "下次尝试"] : ["对象", "当前", "依据"], rows: collectionRowsCompact, minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(ChannelMatrixVisual, { module: "collection-status", rows: collectionChannelRows(snapshot, state) }) }, "compact-collection")
       ],
       bottom: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "终端排行", subtitle: "异常置顶 / 总流量", module: "terminal-ranking", tone: "trust", trust, headers: ["设备", "IP", "流量", "状态"], rows: compactRows(desktopTerminalRows(snapshot), 4), minRows: 0 }, "compact-terminals"),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(TerminalRanking, { title: "终端排行", subtitle: "异常置顶 / 总流量", module: "terminal-ranking", tone: "trust", trust, headers: ["设备", "IP", "流量", "状态"], rows: compactRows(desktopTerminalRows(snapshot), 4), minRows: 0 }, "compact-terminals"),
         /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "最近事件", subtitle: "采集 / 默认出口", module: "normal-ops-ledger", tone: state.facts.collection.level, trust, headers: ["对象", "当前", "依据"], rows: compactRows(normalOpsRows(snapshot, state), 4), minRows: 0 }, "compact-events"),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "证据 / 原始字段", subtitle: "默认收起 · 业务解释优先", module: state.scenario === "no-snapshot" ? "no-snapshot-degraded-modules" : "evidence-boundary", tone: state.scenario === "no-snapshot" ? "missing" : "trust", trust, headers: state.scenario === "resource-full" || state.scenario === "interfaces-down" ? ["对象", "当前", "依据", "边界"] : ["对象", "当前", "依据"], rows: compactRows(desktopEvidenceBoundaryRows(snapshot, state), 4), minRows: 0, collapsedEvidence: true }, "compact-boundary")
+        /* @__PURE__ */ jsxRuntimeExports.jsx(EvidenceChain, { title: "证据 / 原始字段", subtitle: "默认收起 · 业务解释优先", module: state.scenario === "no-snapshot" ? "no-snapshot-degraded-modules" : "evidence-boundary", tone: state.scenario === "no-snapshot" ? "missing" : "trust", trust, headers: state.scenario === "resource-full" || state.scenario === "interfaces-down" ? ["对象", "当前", "依据", "边界"] : ["对象", "当前", "依据"], rows: compactRows(desktopEvidenceBoundaryRows(snapshot, state), 4), minRows: 0, collapsedEvidence: true }, "compact-boundary")
       ]
     };
   }
@@ -17306,6 +17267,54 @@ var PanelFramework = function(exports) {
       }
     );
   }
+  function StatusVerdict({ snapshot, state }) {
+    const items = topbarItems(snapshot, state).slice(0, 6);
+    const isNoSnapshot = state.scenario === "no-snapshot";
+    const topbarFixedSix = isNoSnapshot ? "conclusion-device-routeros-rest-ssh-recent-success" : "conclusion-device-object-impact-collection-snapshot";
+    const topbarHierarchy = isNoSnapshot ? "primary-conclusion-device-routeros-rest-ssh-recent-success" : "primary-conclusion-device-object-impact-collection-snapshot";
+    const topbarPriorityContract = isNoSnapshot ? "conclusion-first-device-routeros-rest-ssh-recent-success" : "conclusion-first-device-object-impact-collection-snapshot";
+    const topbarSecondary = isNoSnapshot ? "recent-success-demoted" : "snapshot-demoted";
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+      "div",
+      {
+        className: "ro-topbar ik-home-flat-topbar",
+        "data-overview-desktop-tier": "conclusion",
+        "data-overview-desktop-hierarchy-tier": "1-conclusion",
+        "data-overview-summary": true,
+        "data-overview-status-bus": true,
+        "data-overview-verdict-status-bus": true,
+        "data-overview-status-bar": true,
+        "data-overview-desktop-v1040-status-bus": "flat-summary-bus-key-value-no-field-boxes",
+        "data-overview-desktop-v1068-status-bus": "control-console-summary-bus-flat-critical-value-rail",
+        "data-overview-desktop-v1068-status-bus-order": topbarFixedSix,
+        "data-overview-desktop-v1068-status-bus-no-table-header": "true",
+        "data-overview-desktop-v1068-status-bus-value-rail": "conclusion-first-low-noise",
+        "data-overview-summary-main": true,
+        "data-overview-desktop-top": true,
+        "data-overview-flat-topbar": true,
+        "data-overview-topbar-hierarchy": topbarHierarchy,
+        "data-overview-topbar-priority-contract": topbarPriorityContract,
+        "data-overview-topbar-primary-weight": "conclusion-12_5-device-12",
+        "data-overview-topbar-conclusion-rail": "left-4px",
+        "data-overview-topbar-secondary": topbarSecondary,
+        "data-overview-topbar-fixed-six": topbarFixedSix,
+        "data-overview-topbar-no-overflow": "max-six-cells-short-notes",
+        "data-overview-first-viewport-title": topbarFixedSix,
+        "data-overview-topbar-no-iso-long-timestamp": "true",
+        "data-overview-first-viewport-no-duplicate-title-tag": "true",
+        "data-overview-topbar-muted-tags": "no-heavy-status-tags",
+        children: [
+          items.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ro-topbar-cell ik-home-flat-cell ik-home-ops-item", "data-tone": item.tone, "data-overview-field": true, "data-overview-status-cell": true, "data-overview-status-role": item.role, "data-overview-status-priority": topbarPriority(item.role), "data-overview-summary-cell": true, "data-overview-desktop-v1068-status-cell": "label-value-note", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: item.label }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { style: topbarValueStyle(item.role), "data-overview-desktop-primary": item.role === "conclusion" ? "true" : void 0, children: item.value }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("em", { style: topbarNoteStyle(item.role), children: item.note })
+          ] }, item.role)),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "ro-contract-hidden", "data-overview-field": true }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "ro-contract-hidden", "data-overview-field": true })
+        ]
+      }
+    );
+  }
   function OverviewPanel({ snapshot, state }) {
     return /* @__PURE__ */ jsxRuntimeExports.jsxs(
       "section",
@@ -17349,7 +17358,7 @@ var PanelFramework = function(exports) {
         "data-overview-no-snapshot-big-wan-rate-guard": "no-business-rates-without-snapshot",
         "data-overview-no-zero-rate-placeholder": "no-zero-rate-when-uncollected",
         children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(InfoBand, { snapshot, state }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(StatusVerdict, { snapshot, state }),
           /* @__PURE__ */ jsxRuntimeExports.jsx(
             "span",
             {

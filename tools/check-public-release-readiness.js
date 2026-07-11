@@ -117,6 +117,18 @@ function frameworkOverviewStylesSurface() {
     .join('\n/* overview-style-layer */\n');
 }
 
+function frameworkOverviewComponentsSurface() {
+  const componentsDir = path.join(ROOT, 'src/panel-framework/overview/components');
+  if (!fs.existsSync(componentsDir)) {
+    return '';
+  }
+  return fs.readdirSync(componentsDir)
+    .filter((entry) => entry.endsWith('.tsx'))
+    .sort()
+    .map((entry) => read(path.join('src/panel-framework/overview/components', entry)))
+    .join('\n/* overview-component-layer */\n');
+}
+
 function readReleaseSurface(relPath) {
   const text = read(relPath);
   if (relPath !== 'public/index.html') return text;
@@ -133,6 +145,7 @@ function readReleaseSurface(relPath) {
     read('src/panel-framework/overview/OverviewPanel.tsx'),
     readIfExists('src/panel-framework/overview/OverviewPanel.css'),
     frameworkOverviewStylesSurface(),
+    frameworkOverviewComponentsSurface(),
     read('src/panel-framework/overview/deriveOverviewState.ts'),
     read('src/panel-framework/panel-framework-app.tsx'),
     readIfExists('app.py'),
@@ -754,6 +767,15 @@ function main(argv = process.argv.slice(2)) {
   assertContains('src/panel-framework/overview/styles/overview-mobile.css', '@media (max-width');
   assertContains('src/panel-framework/overview/styles/overview-states.css', 'ro-desktop-key-row');
   assertContains('src/panel-framework/overview/styles/overview-states.css', '--ik40-console-page');
+  assertContains('src/panel-framework/overview/components/StatusVerdict.tsx', 'export function StatusVerdict');
+  assertContains('src/panel-framework/overview/components/DesktopModule.tsx', 'export function Module');
+  assertContains('src/panel-framework/overview/components/WanTrend.tsx', 'export function WanTrend');
+  assertContains('src/panel-framework/overview/components/EvidenceChain.tsx', 'export function EvidenceChain');
+  assertContains('src/panel-framework/overview/components/TerminalRanking.tsx', 'export function TerminalRanking');
+  assertContains('src/panel-framework/overview/OverviewPanel.tsx', '<StatusVerdict snapshot={snapshot} state={state} />');
+  assertContains('src/panel-framework/overview/components/DesktopConsole.tsx', '<WanTrend key="compact-network"');
+  assertContains('src/panel-framework/overview/components/DesktopConsole.tsx', '<EvidenceChain key="compact-boundary"');
+  assertContains('src/panel-framework/overview/components/DesktopConsole.tsx', '<TerminalRanking key="compact-terminals"');
   assertNotExists('public/scale-adaptive-patch.js');
   assertNotExists('public/layout-whitespace-patch.js');
   assertNotExists('public/panel-professional-redesign.js');
