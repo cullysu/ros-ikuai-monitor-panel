@@ -35,16 +35,9 @@ export function MobileOverviewHome(props: MobileOverviewHomeProps) {
       data-overview-mobile-design-token-system="mobileOverviewTokens:color-type-space-radius-state-chart"
       data-overview-mobile-normal-app-home={model.priority === "normal" ? "compact-conclusion-chart-ops" : undefined}
       data-overview-mobile-compact-conclusion={model.priority === "normal" ? "conclusion-trust-wan-collection-resource-snapshot" : undefined}
-      data-overview-mobile-v1010-product-app-polish="native-readout-rail-no-ellipsis-subtle-tabbar"
-      data-overview-mobile-v1020-public-product-polish="ios-rhythm-low-noise-grouped-surfaces-router-native-tabs"
-      data-overview-mobile-v1030-native-trust-spine="grouped-trust-spine-low-card-noise"
-      data-overview-mobile-v1046-abnormal-decision-contract="object-impact-credibility-next-action-low-noise-console"
-      data-overview-mobile-v1058-collection-trust={model.appHomeContract.severity === "normal" ? "normal-hidden" : "routeros-rest-ssh-snapshot-fixed-abnormal-first-screen"}
       data-overview-mobile-collection-policy={model.collectionTrustSeparation.contract}
       data-overview-mobile-collection-plane={model.collectionTrustSeparation.collectionPlane}
       data-overview-mobile-collection-separated={model.collectionTrustSeparation.separatedFromImpact ? "true" : "false"}
-      data-overview-mobile-v1065-normal-first-screen={model.priority === "normal" ? "separate-conclusion-trust-four-facts-chart-first" : undefined}
-      data-overview-mobile-v1070-grouped-surfaces="ios-grouped-gray-separators-no-card-border-stack"
       data-overview-mobile-v1090-first-screen-order="conclusion-trust-four-facts-priority-incident-supporting-list"
       data-overview-mobile-p0-first-screen={model.appHomeContract.severity === "p0" ? "trust-wan-route-collection-success-no-terminal-ranking" : undefined}
       data-overview-mobile-v1110-public-home="device-primary-card-four-facts-supporting-no-redundant-strips"

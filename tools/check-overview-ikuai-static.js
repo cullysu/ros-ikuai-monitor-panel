@@ -700,13 +700,11 @@ includesAll(`${mobileAppPolishStyles}\n${mobileDecisionStyles}\n${mobileTokenSou
 ], "mobile v1010 native app polish style split");
 
 includesAll(mobile, [
-  "data-overview-mobile-v1010-product-app-polish",
-  "native-readout-rail-no-ellipsis-subtle-tabbar",
-  "data-overview-mobile-v1020-public-product-polish",
-  "ios-rhythm-low-noise-grouped-surfaces-router-native-tabs",
+  "ik-mobile-public-home",
+  "data-overview-mobile-design-token-system",
   "data-overview-mobile-impact-scope",
   "data-overview-mobile-impact-plane",
-], "mobile v1010 product app marker");
+], "mobile product app semantic contract");
 
 includesAll(read("src/panel-framework/overview/components/IncidentHero.tsx"), [
   "data-overview-mobile-chart-layout=\"native-readout-rail-current-peak-window-threshold-sample-anomaly\"",
@@ -863,9 +861,9 @@ excludesAll(mobileStatusHeader, [
   "state.",
 ], "mobile v1050 status header must render resolved model header only");
 includesAll(mobile, [
-  "data-overview-mobile-v1030-native-trust-spine",
-  "grouped-trust-spine-low-card-noise",
-], "mobile v1030 native trust-spine DOM contract");
+  "ik-mobile-public-home",
+  "mobileOverviewTokens:color-type-space-radius-state-chart",
+], "mobile native trust-spine semantic contract");
 includesAll(mobileStyles, [
   "MOBILE_OVERVIEW_STYLE_LAYERS",
   "MOBILE_OVERVIEW_FOUNDATION_STYLES",
@@ -900,12 +898,11 @@ includesAll(mobileAppPolishStyles, [
 ], "mobile v1030 native trust-spine low-noise style contract");
 includesAll(resourceTrendCheck, [
   "nativeTrustSpinePolished",
-  "data-overview-mobile-v1030-native-trust-spine",
-  "grouped-trust-spine-low-card-noise",
+  "mobileOverviewTokens:color-type-space-radius-state-chart",
   "surfaceBorderRadius",
   "heroBoxShadow",
   "styleTextLeakedIntoOverview",
-], "mobile v1030 native trust-spine runtime gate contract");
+], "mobile native trust-spine runtime gate contract");
 includesAll(mobileStyleStack, [
   "V960_PRODUCT_REFINEMENTS",
   "ik-v960-judgement-strip",
@@ -2223,9 +2220,10 @@ const sourceV1046AppPolish = read("src/panel-framework/overview/components/Mobil
 const sourceV1046RuntimeProbe = read("tools/check-resource-trend-balance.js");
 
 includesAll(sourceV1046MobileHome, [
-  "data-overview-mobile-v1046-abnormal-decision-contract",
-  "object-impact-credibility-next-action-low-noise-console",
-], "source v1046 mobile abnormal decision root contract");
+  "ik-mobile-public-home",
+  "data-overview-mobile-abnormal-ia",
+  "data-overview-mobile-priority",
+], "mobile abnormal decision semantic root contract");
 
 includesAll(sourceV1046IncidentHero, [
   "function AbnormalDecisionRail",
@@ -2450,7 +2448,6 @@ includesAll(`${mobile}\n${mobileModel}\n${mobileStatusHeader}\n${mobileAppPolish
   "normalSummary",
   "MobileNormalSummaryCell",
   "separate-conclusion-trust-four-facts-chart-first",
-  "data-overview-mobile-v1065-normal-first-screen",
   "data-overview-mobile-v1090-first-screen-order",
   "conclusion-trust-four-facts-priority-incident-supporting-list",
   "data-overview-mobile-compact-conclusion",
@@ -2499,8 +2496,7 @@ excludesAll(mobileStatusHeader, [
 ], "v1067 mobile status header must not expose generic app menu copy");
 
 includesAll(`${mobile}\n${read("src/panel-framework/overview/components/HomeSurface.tsx")}\n${mobileAppPolishStyles}\n${mobileStyles}\n${resourceTrendCheck}`, [
-  "data-overview-mobile-v1070-grouped-surfaces",
-  "ios-grouped-gray-separators-no-card-border-stack",
+  "ik-mobile-public-home",
   "data-overview-mobile-v1070-grouped-surface",
   "separator-only-status-list-no-card-stack",
   "V1070_GROUPED_SURFACE_LOW_BORDER",

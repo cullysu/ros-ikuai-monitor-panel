@@ -1259,15 +1259,9 @@ async function main() {
           severity: root.getAttribute('data-overview-mobile-severity') || '',
           impactScope: root.getAttribute('data-overview-mobile-impact-scope') || '',
           impactPlane: root.getAttribute('data-overview-mobile-impact-plane') || '',
-          appPolish: root.getAttribute('data-overview-mobile-v1010-product-app-polish') || '',
-          publicPolish: root.getAttribute('data-overview-mobile-v1020-public-product-polish') || '',
-          nativeTrustSpine: root.getAttribute('data-overview-mobile-v1030-native-trust-spine') || '',
-          abnormalDecisionContract: root.getAttribute('data-overview-mobile-v1046-abnormal-decision-contract') || '',
-          collectionTrustContract: root.getAttribute('data-overview-mobile-v1058-collection-trust') || '',
           collectionImpactSeparation: root.getAttribute('data-overview-mobile-collection-policy') || '',
           collectionPlane: root.getAttribute('data-overview-mobile-collection-plane') || '',
           collectionSeparatedFromImpact: root.getAttribute('data-overview-mobile-collection-separated') || '',
-          normalNativeFirstScreen: root.getAttribute('data-overview-mobile-v1065-normal-first-screen') || '',
           firstScreenOrder: root.getAttribute('data-overview-mobile-v1090-first-screen-order') || '',
           publicHomeV1110: root.getAttribute('data-overview-mobile-v1110-public-home') || '',
           publicHomeV1120: root.getAttribute('data-overview-mobile-v1120-public-home') || ''
@@ -1409,7 +1403,6 @@ async function main() {
           return compact === '' || compact === 'none' || (compact.includes('inset') && !compact.includes('4px') && !compact.includes('8px') && !compact.includes('12px'));
         };
         const mobileGroupedSurfaceLowBorder = Boolean(
-          root?.getAttribute('data-overview-mobile-v1070-grouped-surfaces') === 'ios-grouped-gray-separators-no-card-border-stack' &&
           surface?.getAttribute('data-overview-mobile-v1070-grouped-surface') === 'separator-only-status-list-no-card-stack' &&
           groupedSurfaceStyles.length >= 2 &&
           groupedSurfaceStyles.every((style) => isZeroBorderBox(style) && isSeparatorOnlyShadow(style.boxShadow || '')) &&
@@ -1459,7 +1452,6 @@ async function main() {
           Boolean(node.compareDocumentPosition(firstScreenOrderNodes[index + 1]) & Node.DOCUMENT_POSITION_FOLLOWING)
         ));
         const normalNativeFirstScreen = sectionName !== 'mobileNormalHome' || Boolean(
-          rootAttrs.normalNativeFirstScreen === 'separate-conclusion-trust-four-facts-chart-first' &&
           hero?.getAttribute('data-overview-mobile-v1065-normal-hero') === 'chart-first-no-promo-headline' &&
           firstScreenOrderProductized &&
           (isPublicHomeV1110 ? (!judgementStrip && !trustStrip) : (judgementStrip && trustStrip)) &&
@@ -1499,7 +1491,6 @@ async function main() {
         const collectionTrustCells = Array.from(collectionTrustRail?.querySelectorAll('[data-overview-mobile-v1058-collection-channel]') || []);
         const collectionTrustLabels = collectionTrustCells.map((cell) => cell.getAttribute('data-overview-mobile-v1058-collection-channel') || '');
         const collectionTrustRailFixed = sectionName === 'mobileNormalHome' ? !collectionTrustRail : Boolean(
-          rootAttrs.collectionTrustContract === 'routeros-rest-ssh-snapshot-fixed-abnormal-first-screen' &&
           (
             firstScreenChannelEvidenceVisible ||
             firstScreenMetricTrustVisible ||
@@ -1641,7 +1632,6 @@ async function main() {
           /rgba?\\((?:245|247|250),\\s*(?:249|250|252),\\s*(?:253|255)/.test(bottomTabsStyle.backgroundColor || '')
         );
         const nativeTrustSpinePolished = isPublicHomeV1110 ? Boolean(
-          rootAttrs.nativeTrustSpine === 'grouped-trust-spine-low-card-noise' &&
           rootAttrs.tokenSystem === 'mobileOverviewTokens:color-type-space-radius-state-chart' &&
           surfaceStyle &&
           heroStyle &&
@@ -1655,7 +1645,6 @@ async function main() {
           !/rgba?\([^)]*,\s*0\.[2-9][^)]*\)\s+0px\s+(?:[2-9]|1\d)px\s+(?:1\d|2\d)/.test(heroStyle.boxShadow || '') &&
           !/rgba?\([^)]*,\s*0\.[2-9][^)]*\)\s+0px\s+(?:2|3|4|5|6|7|8|9|1\d)px/.test(listStyle.boxShadow || '')
         ) : Boolean(
-          rootAttrs.nativeTrustSpine === 'grouped-trust-spine-low-card-noise' &&
           rootAttrs.tokenSystem === 'mobileOverviewTokens:color-type-space-radius-state-chart' &&
           surfaceStyle &&
           judgementStyle &&
@@ -1870,7 +1859,7 @@ async function main() {
         );
         const firstScreenText = normalize(screen?.textContent || '');
         const styleTextLeakedIntoOverview = Boolean(
-          /@media\\s*\\(|--ik-v\\d|data-overview-mobile-v1030-native-trust-spine|box-shadow\\s*:|grid-template-columns\\s*:/.test(firstScreenText)
+          /@media\\s*\\(|--ik-v\\d|data-overview-mobile-v\\d|box-shadow\\s*:|grid-template-columns\\s*:/.test(firstScreenText)
         );
         const terminalRankingCopyVisible = ['设备排行', '高流量终端', '终端排行'].some((item) => firstScreenText.includes(item));
         const expectedSurfaceSlots = 'list';
@@ -1901,9 +1890,6 @@ async function main() {
           rootAttrs.topSlot === expectedTopSlot &&
           rootAttrs.terminalRankingState === expectedTerminalRanking &&
           rootAttrs.tokenSystem === 'mobileOverviewTokens:color-type-space-radius-state-chart' &&
-          rootAttrs.appPolish === 'native-readout-rail-no-ellipsis-subtle-tabbar' &&
-          rootAttrs.publicPolish === 'ios-rhythm-low-noise-grouped-surfaces-router-native-tabs' &&
-          rootAttrs.abnormalDecisionContract === 'object-impact-credibility-next-action-low-noise-console' &&
           nativeTrustSpinePolished &&
           metricGridProductized &&
           mobileGroupedSurfaceLowBorder &&
