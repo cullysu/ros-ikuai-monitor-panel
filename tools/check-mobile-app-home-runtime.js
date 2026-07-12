@@ -186,6 +186,11 @@ async function main() {
       'bottom tabs navigate to real modules',
       ['tools/check-resource-trend-balance.js', '--url', url, '--section', 'mobileNavigation', '--width', '390', '--height', '844', '--json', 'codex_tmp_mobileNavigation.json', '--png', 'codex_tmp_mobileNavigation.png', '--wait', '3600'],
       ['codex_tmp_mobileNavigation.json', 'codex_tmp_mobileNavigation.png']
+    ],
+    [
+      'bottom tabs preserve no-snapshot credibility boundary',
+      ['tools/check-resource-trend-balance.js', '--url', url, '--section', 'mobileNavigationNoSnapshot', '--width', '390', '--height', '844', '--json', 'codex_tmp_mobileNavigationNoSnapshot.json', '--png', 'codex_tmp_mobileNavigationNoSnapshot.png', '--wait', '3600'],
+      ['codex_tmp_mobileNavigationNoSnapshot.json', 'codex_tmp_mobileNavigationNoSnapshot.png']
     ]
   ];
 

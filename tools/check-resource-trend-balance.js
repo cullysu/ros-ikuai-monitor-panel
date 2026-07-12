@@ -409,6 +409,7 @@ async function main() {
     desktopV1030: balanceSnapshot,
     mobileNormalHome: balanceSnapshot,
     mobileNavigation: balanceSnapshot,
+    mobileNavigationNoSnapshot: noSnapshotSnapshot,
     mobileAppHome: allOfflineSnapshot,
     mobileNoSnapshotHome: noSnapshotSnapshot,
     mobileResourceHome: resourceFullSnapshot,
@@ -416,7 +417,7 @@ async function main() {
     mobileCollectionHome: collectionDownSnapshot
   };
   const isInjectedOverviewSection = Boolean(injectedSnapshots[section]);
-  const isMobileAppHomeSection = section === 'mobileNormalHome' || section === 'mobileNavigation' || section === 'mobileAppHome' || section === 'mobileNoSnapshotHome' || section === 'mobileResourceHome' || section === 'mobileInterfaceHome' || section === 'mobileCollectionHome';
+  const isMobileAppHomeSection = section === 'mobileNormalHome' || section === 'mobileNavigation' || section === 'mobileNavigationNoSnapshot' || section === 'mobileAppHome' || section === 'mobileNoSnapshotHome' || section === 'mobileResourceHome' || section === 'mobileInterfaceHome' || section === 'mobileCollectionHome';
   const targetUrl = `${url}${url.includes('?') ? '&' : '?'}section=${encodeURIComponent(section)}&codexBust=${Date.now()}#${encodeURIComponent(section)}`;
   const browser = spawn(browserPath, [
     '--headless=new',
@@ -602,7 +603,7 @@ async function main() {
         }
         return normalize(parts.join(' '));
       };
-      const sectionEl = sectionName === 'loadAudit' || sectionName === 'balance' || sectionName === 'desktopNoSnapshot' || sectionName === 'desktopV1030' || sectionName === 'mobileNormalHome' || sectionName === 'mobileNavigation' || sectionName === 'mobileAppHome' || sectionName === 'mobileNoSnapshotHome' || sectionName === 'mobileResourceHome' || sectionName === 'mobileInterfaceHome' || sectionName === 'mobileCollectionHome'
+      const sectionEl = sectionName === 'loadAudit' || sectionName === 'balance' || sectionName === 'desktopNoSnapshot' || sectionName === 'desktopV1030' || sectionName === 'mobileNormalHome' || sectionName === 'mobileNavigation' || sectionName === 'mobileNavigationNoSnapshot' || sectionName === 'mobileAppHome' || sectionName === 'mobileNoSnapshotHome' || sectionName === 'mobileResourceHome' || sectionName === 'mobileInterfaceHome' || sectionName === 'mobileCollectionHome'
         ? document.querySelector('#overview')
         : document.querySelector('#' + sectionName);
       const text = visibleText(sectionEl);
@@ -1112,7 +1113,7 @@ async function main() {
           textExcerpt: desktopVisibleText.slice(0, 700)
         };
       }
-      if (sectionName === 'mobileNavigation') {
+      if (sectionName === 'mobileNavigation' || sectionName === 'mobileNavigationNoSnapshot') {
         const root = sectionEl?.querySelector('[data-overview-mobile-console]');
         const tabs = Array.from(root?.querySelectorAll('[data-overview-mobile-v1066-router-tab]') || []);
         const expectedTargets = {
@@ -1129,6 +1130,7 @@ async function main() {
         });
         return (async () => {
           const detailIds = ['wan', 'interface', 'terminal', 'log'];
+          const noSnapshotNavigation = sectionName === 'mobileNavigationNoSnapshot';
           const navigationResults = [];
           for (const id of detailIds) {
             const tab = tabs.find((item) => item.getAttribute('data-overview-mobile-v1066-router-tab') === id);
@@ -1137,6 +1139,13 @@ async function main() {
             const activeView = root?.querySelector('[data-overview-mobile-tab-view="' + id + '"]');
             const activeTab = root?.querySelector('[data-overview-mobile-v1066-router-tab="' + id + '"].is-active');
             const homeDecision = root?.querySelector('[data-overview-mobile-v420-hero="network-state-home"]');
+            const viewText = normalize(activeView?.textContent || '');
+            const credibility = activeView?.getAttribute('data-overview-mobile-tab-credibility') || '';
+            const credibilityOk = noSnapshotNavigation
+              ? id === 'log'
+                ? credibility === 'collection-evidence' && ['RouterOS', 'REST', 'SSH'].every((label) => viewText.includes(label))
+                : credibility === 'business-hidden' && viewText.includes('不可判') && viewText.includes('无业务快照') && !['0/0 在线', '全部运行', '0 活动'].some((item) => viewText.includes(item))
+              : id === 'log' ? credibility === 'collection-evidence' : credibility === 'business-visible';
             navigationResults.push({
               id,
               pass: Boolean(
@@ -1145,9 +1154,11 @@ async function main() {
                 activeTab?.getAttribute('aria-current') === 'page' &&
                 root.querySelector('[data-overview-mobile-first-screen="app-home"]')?.getAttribute('data-overview-mobile-active-tab') === id &&
                 !homeDecision &&
-                activeView.querySelectorAll('.ik-mobile-tab-list article').length >= 1
+                activeView.querySelectorAll('.ik-mobile-tab-list article').length >= 1 &&
+                credibilityOk
               ),
-              viewText: normalize(activeView?.textContent || '').slice(0, 180)
+              credibility,
+              viewText: viewText.slice(0, 180)
             });
           }
           return {

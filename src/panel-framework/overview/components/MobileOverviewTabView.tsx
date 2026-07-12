@@ -99,7 +99,8 @@ function logRows(model: MobileOverviewModel, state: MobileOverviewHomeProps["sta
 }
 
 export function MobileOverviewTabView({ activeTab, model, snapshot, state }: MobileOverviewTabViewProps) {
-  const config = activeTab === "wan"
+  const businessHidden = state.scenario === "no-snapshot" && activeTab !== "log";
+  const baseConfig = activeTab === "wan"
     ? {
         eyebrow: "出口与默认路由",
         title: "WAN",
@@ -134,6 +135,19 @@ export function MobileOverviewTabView({ activeTab, model, snapshot, state }: Mob
             tone: state.facts.collection.credibilityTone,
             rows: logRows(model, state),
           };
+  const config = businessHidden ? {
+    ...baseConfig,
+    summary: "不可判",
+    note: "无业务快照，不展示不可验证数值",
+    tone: "missing" as OverviewTone,
+    rows: [{
+      id: `${activeTab}-credibility-boundary`,
+      label: "可信边界",
+      value: "等待快照",
+      note: `${baseConfig.title} 数据暂不展示`,
+      tone: "missing" as OverviewTone,
+    }],
+  } : baseConfig;
   const rows = config.rows.length > 0 ? config.rows : [{
     id: "empty",
     label: "暂无明细",
@@ -148,6 +162,7 @@ export function MobileOverviewTabView({ activeTab, model, snapshot, state }: Mob
       id={`mobile-${activeTab}-view`}
       data-overview-mobile-tab-view={activeTab}
       data-overview-mobile-tab-view-contract="mobile-native-summary-flat-list-no-desktop-table"
+      data-overview-mobile-tab-credibility={businessHidden ? "business-hidden" : activeTab === "log" ? "collection-evidence" : "business-visible"}
     >
       <header className="ik-mobile-tab-head">
         <div>
