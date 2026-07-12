@@ -162,8 +162,8 @@ ordered(mobile, [
   '<BottomTabs activeId={activeTab} onSelect={setActiveTab} />',
 ], 'mobile home information order');
 includesAll(mobile, [
-  'data-overview-mobile-app-home="ikuai40-ios-router-home"',
-  'data-overview-mobile-no-desktop-collapse="true"',
+  'ik-mobile-public-home',
+  'ik-mobile-decision-screen',
   'activeTab === "home"',
   '<MobileOverviewTabView',
 ], 'mobile app shell');

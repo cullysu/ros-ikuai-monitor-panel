@@ -625,11 +625,10 @@ function main(argv = process.argv.slice(2)) {
   assertContains('public/index.html', 'CPU / 内存');
   assertMatches('public/index.html', /异常\s*TopN/);
   assertContains('public/index.html', 'mobileSectionSelect');
-  assertContains('public/index.html', 'data-overview-mobile-app-home="ikuai40-ios-router-home"');
+  assertContains('public/index.html', 'ik-mobile-public-home');
   assertContains('public/index.html', 'data-overview-mobile-home-mode="ios-app-home"');
-  assertContains('public/index.html', 'data-overview-mobile-first-screen-no-table="true"');
-  assertContains('public/index.html', 'data-overview-mobile-first-screen-uses-microchart="true"');
-  assertContains('public/index.html', 'data-overview-mobile-no-desktop-collapse="true"');
+  assertContains('public/index.html', 'ik-mobile-decision-screen');
+  assertContains('public/index.html', 'ik-mobile-primary-conclusion');
   assertContains('public/index.html', 'data-overview-mobile-alert');
   assertContains('public/index.html', 'data-overview-mobile-ios-nav="true"');
   assertContains('public/index.html', 'ik-ios-hero-card');

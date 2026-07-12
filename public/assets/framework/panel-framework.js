@@ -9562,8 +9562,6 @@ var PanelFramework = function(exports) {
       {
         className: "ik-v420-app ik-v240-app ik-mobile-public-home",
         "data-overview-mobile-console": true,
-        "data-overview-mobile-app-home": "ikuai40-ios-router-home",
-        "data-overview-mobile-no-desktop-collapse": "true",
         "data-overview-mobile-scene": props.state.scenario,
         "data-overview-mobile-priority": model.priority,
         children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ik-v420-shell ik-v240-shell", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
@@ -9572,8 +9570,6 @@ var PanelFramework = function(exports) {
             id: "mobile-home-view",
             className: "ik-v420-screen ik-v240-screen ik-mobile-decision-screen",
             "data-overview-mobile-first-screen": "app-home",
-            "data-overview-mobile-first-screen-no-table": "true",
-            "data-overview-mobile-first-screen-uses-microchart": "true",
             "data-overview-mobile-active-tab": activeTab,
             children: [
               /* @__PURE__ */ jsxRuntimeExports.jsx(DeviceBar, { model }),

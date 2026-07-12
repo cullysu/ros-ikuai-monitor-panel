@@ -2048,7 +2048,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       window.innerHeight <= 932;
     const mobileOverviewAppViewport = mobileOverview390x844 || compactLandscapeOverview;
     const mobileLandscapeAppRoot = compactLandscapeOverview
-      ? sectionRoot?.querySelector('[data-overview-mobile-app-home="ikuai40-ios-router-home"]')
+      ? sectionRoot?.querySelector('.ik-mobile-public-home')
       : null;
     const mobileLandscapeScreen = mobileLandscapeAppRoot?.querySelector('[data-overview-mobile-first-screen="app-home"]');
     const mobileLandscapeTabs = mobileLandscapeAppRoot?.querySelector('.ik-v420-tabs[aria-label="路由器监控底部导航"]');
@@ -2293,7 +2293,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       if (isMobileOverview) {
         overviewRankCompactOk = Boolean(
           (mobileLeadPreview && mobileLeadRows.length >= 2) ||
-          sectionRoot?.querySelector('[data-overview-mobile-app-home="ikuai40-ios-router-home"], .ik-ios-router-home') ||
+          sectionRoot?.querySelector('.ik-mobile-public-home, .ik-ios-router-home') ||
           (mobileFlatStatus && mobileFlatRowCountOk && mobileFlatLinkLabelsOk)
         );
       } else if (overviewSceneSpecificDesktopDensityOk) {
@@ -3282,7 +3282,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       : [];
     const overviewMobile390FirstScreenNoTableOk = !mobileOverview390x844 || (overviewMobileFirstScreenTableCount === 0 && mobile390VisibleTableVisualCount === 0);
     const overviewMobile390FirstTwoRowsVisibleOk = !mobileOverview390x844 || Boolean(
-      sectionRoot?.querySelector('[data-overview-mobile-app-home="ikuai40-ios-router-home"]') ||
+      sectionRoot?.querySelector('.ik-mobile-public-home') ||
       (
         mobile390FirstDetailRows.length >= 2 &&
         mobile390FirstDetailRows.slice(0, 2).every(nodeVisibleInFirstScreen)

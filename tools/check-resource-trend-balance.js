@@ -543,7 +543,7 @@ async function main() {
     await send('Emulation.setDeviceMetricsOverride', { width, height, deviceScaleFactor: 1, mobile: isMobileAppHomeSection });
     await send('Page.navigate', { url: isInjectedOverviewSection ? `${url}${url.includes('?') ? '&' : '?'}section=overview&codexBust=${Date.now()}#overview` : targetUrl });
     const readySelector = isMobileAppHomeSection
-      ? '#overview [data-overview-mobile-app-home]'
+      ? '#overview .ik-mobile-public-home'
       : isInjectedOverviewSection
         ? '#overview'
         : `#${section}`;
@@ -611,7 +611,7 @@ async function main() {
         : document.querySelector('#' + sectionName);
       const text = visibleText(sectionEl);
       if (sectionName === 'loadAudit') {
-        const required = ['处理器', '内存', '磁盘', '当前', '峰值', '均值', '阈值', '持续', '数据点', '100%', '50%', '0%'];
+        const required = ['处理器', '内存', '磁盘', '当前', '峰值', '异常点', '阈值', '持续', '数据点', '100%', '50%', '0%'];
         const missing = required.filter((item) => !text.includes(item));
         const cards = Array.from(sectionEl?.querySelectorAll('.ops-resource-card, .ro-resource-card') || []);
         const axes = Array.from(sectionEl?.querySelectorAll('.ops-axis-chart, .ro-resource-card') || []);
