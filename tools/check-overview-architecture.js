@@ -45,6 +45,8 @@ const desktopScenesFile =
   "src/panel-framework/overview/desktopOverviewScenes.tsx";
 const desktopDefaultSceneFile =
   "src/panel-framework/overview/desktopOverviewDefaultScene.tsx";
+const desktopResourceSceneFile =
+  "src/panel-framework/overview/desktopOverviewResourceScene.tsx";
 const desktopHelpersFile =
   "src/panel-framework/overview/desktopOverviewHelpers.tsx";
 const routerOsNetworkViewModelFile =
@@ -87,6 +89,7 @@ const desktopModule = read(desktopModuleFile);
 const statusVerdict = read(statusVerdictFile);
 const desktopScenes = read(desktopScenesFile);
 const desktopDefaultScene = read(desktopDefaultSceneFile);
+const desktopResourceScene = read(desktopResourceSceneFile);
 const panelCss = read(panelCssFile);
 const desktopBaseStyles = read(desktopBaseStylesFile);
 const desktopRefinement = read(desktopRefinementFile);
@@ -550,6 +553,11 @@ assert(
 assert(
   desktopDefaultScene.includes('from "./desktopResourceRows"'),
   "desktopOverviewDefaultScene.tsx must consume the resource evidence row module"
+);
+assert(
+  /module="resource-interface-top5"[^>]*\bcollapsed\b/.test(desktopResourceScene) &&
+    /module="normal-ops-ledger"[^>]*\bcollapsed\b/.test(desktopResourceScene),
+  "Resource-full desktop scene must defer interface throughput and recent-event ledgers below the resource judgement"
 );
 assert(
   desktopVisuals.includes('from "./desktopOverviewTrafficRows"'),
