@@ -1,17 +1,12 @@
 import { useInsertionEffect } from "react";
 import { MOBILE_OVERVIEW_PRODUCT_SHELL_STYLES } from "./MobileOverviewProductShellStyles";
 import { MOBILE_OVERVIEW_FOUNDATION_STYLES } from "./MobileOverviewBaseStyles";
-import { MOBILE_OVERVIEW_INFORMATION_ARCHITECTURE_STYLES } from "./MobileOverviewRefinementStyles";
 import { MOBILE_OVERVIEW_DECISION_HOME_STYLES } from "./MobileOverviewDecisionStyles";
 import { MOBILE_OVERVIEW_PUBLIC_DECISION_STYLES } from "./MobileOverviewPublicDecisionStyles";
 import { MOBILE_OVERVIEW_PUBLIC_DECISION_REPAIR_STYLES } from "./MobileOverviewPublicDecisionRepairStyles";
 
 const MOBILE_OVERVIEW_STYLE_LAYERS = [
   { id: "foundation", css: MOBILE_OVERVIEW_FOUNDATION_STYLES },
-  {
-    id: "information-architecture",
-    css: MOBILE_OVERVIEW_INFORMATION_ARCHITECTURE_STYLES,
-  },
   {
     id: "product-shell",
     css: MOBILE_OVERVIEW_PRODUCT_SHELL_STYLES,
