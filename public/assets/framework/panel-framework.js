@@ -9087,10 +9087,10 @@ var PanelFramework = function(exports) {
     const plot = chart.plot;
     const anomaly = (chart.anomalyLabel || "0").replace(/^异常点\s*/, "");
     const chartDecision = `当前 ${chart.currentLabel} · 峰值 ${chart.peakLabel} · 阈值 ${chart.thresholdLabel} · 异常 ${anomaly} · 采样 ${chart.sampleText}`;
-    return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ik-mobile-decision-trend", "data-overview-mobile-v1072-chart": "decision-plot-two-series-three-by-two-readout", children: [
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ik-mobile-decision-trend", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ik-mobile-decision-trend-plot", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ik-v1072-chart-head", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "ik-v1065-chart-kicker", "data-overview-mobile-v1065-chart-label": "normal-visible-compact", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "ik-v1065-chart-kicker", children: [
             "WAN 趋势 · ",
             chart.windowText
           ] }),
@@ -9223,21 +9223,21 @@ var PanelFramework = function(exports) {
         className: "ik-v1046-abnormal-decision-rail ik-mobile-abnormal-decision-rail",
         children: [
           /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ik-mobile-incident-summary", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: toneClass(object.tone), "data-overview-mobile-v1046-abnormal-decision-cell": object.label, children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: `ik-mobile-decision-cell ${toneClass(object.tone)}`, children: [
               /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: "对象" }),
               /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: object.value })
             ] }),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: toneClass(impact.tone), "data-overview-mobile-v1046-abnormal-decision-cell": impact.label, children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: `ik-mobile-decision-cell ${toneClass(impact.tone)}`, children: [
               /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: "影响" }),
               /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: impact.value })
             ] })
           ] }),
           /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ik-mobile-incident-guidance", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: toneClass(credibility.tone), "data-overview-mobile-v1046-abnormal-decision-cell": credibility.label, children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: `ik-mobile-decision-cell ${toneClass(credibility.tone)}`, children: [
               /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: "可信度" }),
               /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: credibility.value })
             ] }),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: toneClass(action.tone), "data-overview-mobile-v1046-abnormal-decision-cell": action.label, children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: `ik-mobile-decision-cell ${toneClass(action.tone)}`, children: [
               /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: "下一步" }),
               /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: action.value })
             ] })
