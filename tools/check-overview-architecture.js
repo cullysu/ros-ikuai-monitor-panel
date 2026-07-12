@@ -39,6 +39,8 @@ const desktopDecisionRailFile =
   "src/panel-framework/overview/components/DesktopDecisionRail.tsx";
 const desktopScenesFile =
   "src/panel-framework/overview/desktopOverviewScenes.tsx";
+const desktopDefaultSceneFile =
+  "src/panel-framework/overview/desktopOverviewDefaultScene.tsx";
 const desktopHelpersFile =
   "src/panel-framework/overview/desktopOverviewHelpers.tsx";
 const routerOsNetworkViewModelFile =
@@ -74,6 +76,7 @@ const panel = read(panelFile);
 const desktopConsole = read(desktopConsoleFile);
 const desktopDecisionRail = read(desktopDecisionRailFile);
 const desktopScenes = read(desktopScenesFile);
+const desktopDefaultScene = read(desktopDefaultSceneFile);
 const panelCss = read(panelCssFile);
 const desktopBaseStyles = read(desktopBaseStylesFile);
 const desktopRefinement = read(desktopRefinementFile);
@@ -466,8 +469,19 @@ assert(
   "DesktopConsole.tsx must compose the desktop object/impact/action/credibility rail"
 );
 assert(
-  desktopScenes.includes('from "./desktopOverviewVisuals"'),
-  "desktopOverviewScenes.tsx must compose the extracted desktop visual layer"
+  [
+    "desktopOverviewAllOfflineScene",
+    "desktopOverviewCollectionScene",
+    "desktopOverviewDefaultScene",
+    "desktopOverviewInterfaceScene",
+    "desktopOverviewNoSnapshotScene",
+    "desktopOverviewResourceScene",
+  ].every((moduleName) => desktopScenes.includes(`from "./${moduleName}"`)) &&
+    ["no-snapshot", "resource-full", "collection-down", "interfaces-down", "all-offline"].every((scenario) =>
+      desktopScenes.includes(`case "${scenario}":`)
+    ) &&
+    desktopScenes.includes("return buildDefaultDesktopScene(snapshot, state);"),
+  "desktopOverviewScenes.tsx must dispatch every desktop scenario to an isolated scene module"
 );
 assert(
   [
@@ -480,12 +494,16 @@ assert(
   "desktopOverviewRows.ts must only expose the four domain row modules"
 );
 assert(
-  desktopScenes.includes('from "./desktopOverviewRows"'),
-  "desktopOverviewScenes.tsx must consume the extracted desktop row layer"
+  desktopDefaultScene.includes('from "./desktopOverviewVisuals"'),
+  "desktopOverviewDefaultScene.tsx must compose the extracted desktop visual layer"
 );
 assert(
-  desktopScenes.includes('from "./desktopResourceRows"'),
-  "desktopOverviewScenes.tsx must consume the resource evidence row module"
+  desktopDefaultScene.includes('from "./desktopOverviewRows"'),
+  "desktopOverviewDefaultScene.tsx must consume the extracted desktop row layer"
+);
+assert(
+  desktopDefaultScene.includes('from "./desktopResourceRows"'),
+  "desktopOverviewDefaultScene.tsx must consume the resource evidence row module"
 );
 assert(
   desktopVisuals.includes('from "./desktopOverviewRows"'),

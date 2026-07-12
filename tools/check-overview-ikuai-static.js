@@ -52,6 +52,8 @@ const desktopDecision = read('src/panel-framework/overview/components/DesktopDec
 const desktopModule = read('src/panel-framework/overview/components/DesktopModule.tsx');
 const wanOfflineFocus = read('src/panel-framework/overview/components/WanOfflineFocus.tsx');
 const desktopScenes = read('src/panel-framework/overview/desktopOverviewScenes.tsx');
+const desktopDefaultScene = read('src/panel-framework/overview/desktopOverviewDefaultScene.tsx');
+const desktopAllOfflineScene = read('src/panel-framework/overview/desktopOverviewAllOfflineScene.tsx');
 const desktopHierarchyStyles = read('src/panel-framework/overview/OverviewPanelDesktopHierarchy.css');
 const mobile = read('src/panel-framework/overview/components/MobileOverviewHome.tsx');
 const mobileDecision = read('src/panel-framework/overview/components/MobileOverviewDecision.tsx');
@@ -129,17 +131,18 @@ excludesAll(desktopDecision, [
 ], 'desktop decision deduplication');
 
 includesAll(desktopScenes, [
-  'state.scenario === "fleet"',
-  'state.scenario === "all-offline"',
-  'state.scenario === "no-snapshot"',
-  'state.scenario === "collection-down"',
-  'state.scenario === "resource-full"',
-  'state.scenario === "interfaces-down"',
-], 'desktop scenario ownership');
-includesAll(desktopScenes, ['Math.max(state.facts.wan.total, offlineRows.length)', '<WanOfflineFocus', 'collapsed />'], 'desktop adaptive WAN incident hierarchy');
-excludesAll(desktopScenes, ['subtitle="0/8', 'compactRows(wanContinuityRows(state), 8)'], 'desktop WAN fixture cleanup');
+  'case "all-offline"',
+  'case "no-snapshot"',
+  'case "collection-down"',
+  'case "resource-full"',
+  'case "interfaces-down"',
+  'return buildDefaultDesktopScene(snapshot, state);',
+], 'desktop scenario dispatcher ownership');
+includesAll(desktopDefaultScene, ['state.scenario === "fleet"'], 'desktop normal/fleet scene ownership');
+includesAll(desktopAllOfflineScene, ['Math.max(state.facts.wan.total, offlineRows.length)', '<WanOfflineFocus', 'collapsed />'], 'desktop adaptive WAN incident hierarchy');
+excludesAll(desktopAllOfflineScene, ['subtitle="0/8', 'compactRows(wanContinuityRows(state), 8)'], 'desktop WAN fixture cleanup');
 includesAll(wanOfflineFocus, ['rows.slice(0, 4)', '其余 {hiddenCount} 条线路在详情中', '不展示 0 B/s'], 'desktop WAN incident focus');
-if ((desktopScenes.match(/\bcollapsed\s*\/>/g) || []).length < 3) fail('desktop normal hierarchy', 'expected three collapsed secondary summaries');
+if ((desktopDefaultScene.match(/\bcollapsed\s*\/>/g) || []).length < 3) fail('desktop normal hierarchy', 'expected three collapsed secondary summaries');
 includesAll(desktopModule, ['collapsed ? "ro-secondary-evidence-disclosure ro-compact-summary-disclosure"', 'ro-compact-summary-disclosure', '查看详情'], 'desktop compact disclosure');
 const desktopModuleContractCount = (desktopModule.match(/\bdata-(?:overview|routeros)-[\w-]+/g) || []).length;
 if (desktopModuleContractCount > 20) fail('desktop module contract budget', `expected <=20 attributes, found ${desktopModuleContractCount}`);
@@ -153,7 +156,7 @@ includesAll(desktopHierarchyStyles, ['data-overview-desktop-scene="single"', 'da
 
 ordered(mobile, [
   '<DeviceBar model={model} />',
-  '<PrimaryDecision model={model} />',
+  '<PrimaryDecision model={model} onSelectTab={setActiveTab} />',
   '<CoreFacts model={model} />',
   '<SupportingList model={model} />',
   '<BottomTabs activeId={activeTab} onSelect={setActiveTab} />',

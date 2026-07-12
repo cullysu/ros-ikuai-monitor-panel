@@ -46,6 +46,11 @@ jobs:
       - name: TypeScript contract check
         run: npm run check:types
 
+      - name: Overview architecture contracts
+        run: |
+          node tools/check-overview-architecture.js
+          node tools/check-overview-ikuai-static.js
+
       - name: LAN/default documentation checks
         run: |
           node tools/check-lan-access-defaults.js
