@@ -80,7 +80,7 @@ foreach ($Marker in @(
     "ROS_PANEL_PROFILE=routeros_only",
     "ROS_PANEL_IP_ALIAS_WRITE_ENABLED=0",
     "ROS_PANEL_EXPOSE_ADMIN_SESSIONS=0",
-    "ROS_PANEL_NETWORK_WRITE_ENABLED=1"
+    "ROS_PANEL_LOCAL_SETTINGS_WRITE_ENABLED=1"
 )) {
     if (-not $EnvText.Contains($Marker)) {
         throw "Windows EXE env default is missing $Marker"

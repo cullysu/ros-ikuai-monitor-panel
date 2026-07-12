@@ -69,7 +69,11 @@ The in-panel address dialog can save loopback-only settings to
 the EXE after saving. Non-loopback addresses remain blocked by the public
 profile.
 This write capability is limited to the panel's local sidecar environment file;
-it never writes RouterOS configuration.
+it never writes RouterOS configuration. The controlling variable is
+`ROS_PANEL_LOCAL_SETTINGS_WRITE_ENABLED=1`, and its writable allowlist is exactly
+`ROS_PANEL_BIND`, `ROS_PANEL_PORT`, and `ROS_PANEL_TARGET_IP`. The legacy
+`ROS_PANEL_NETWORK_WRITE_ENABLED` name is accepted only for compatibility with
+existing private installs.
 
 ## Troubleshooting
 

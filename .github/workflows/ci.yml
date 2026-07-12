@@ -183,6 +183,6 @@ jobs:
           Select-String -Path $envFile -Pattern "ROS_PANEL_PROFILE=routeros_only" -Quiet | ForEach-Object {
             if (-not $_) { throw "Windows env is missing RouterOS-only profile default." }
           }
-          Select-String -Path $envFile -Pattern "ROS_PANEL_NETWORK_WRITE_ENABLED=1" -Quiet | ForEach-Object {
+          Select-String -Path $envFile -Pattern "ROS_PANEL_LOCAL_SETTINGS_WRITE_ENABLED=1" -Quiet | ForEach-Object {
             if (-not $_) { throw "Windows env is missing panel address write default." }
           }

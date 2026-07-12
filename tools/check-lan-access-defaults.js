@@ -60,9 +60,14 @@ function main() {
   assertContains('app.py', 'PANEL_TRUST_PROXY_HEADERS');
   assertContains('app.py', 'PANEL_ALLOW_LOCALHOST_HOST_FORWARD');
   assertContains('app.py', 'PANEL_LOCALHOST_FORWARD_TOKEN');
-  assertContains('app.py', 'PANEL_NETWORK_WRITE_ENABLED_RAW');
+  assertContains('app.py', 'PANEL_LOCAL_SETTINGS_WRITE_ENABLED_RAW');
+  assertContains('app.py', '"ROS_PANEL_LOCAL_SETTINGS_WRITE_ENABLED",');
+  assertContains('app.py', 'env_value("ROS_PANEL_NETWORK_WRITE_ENABLED", "auto")');
+  assertContains('app.py', 'PANEL_LOCAL_SETTINGS_ENV_KEYS = ("ROS_PANEL_BIND", "ROS_PANEL_PORT", "ROS_PANEL_TARGET_IP")');
+  assertContains('app.py', 'def write_panel_local_settings_env(bind, port, target, env_path=None):');
   assertContains('app.py', '"scope": "panel-local-listen-address-only"');
   assertContains('app.py', '"routerosConfigWrites": False');
+  assertContains('app.py', '"setting": "ROS_PANEL_LOCAL_SETTINGS_WRITE_ENABLED"');
   assertContains('app.py', 'never writes RouterOS configuration');
   assertContains('app.py', 'headers.get("Host")');
   assertContains('app.py', 'headers.get("X-Forwarded-Host")');
@@ -81,7 +86,7 @@ function main() {
   assertContains('install.sh', 'set_env_value "$env_file" "ROS_PANEL_LOCALHOST_FORWARD_TOKEN" ""');
   assertContains('install.sh', 'set_env_value "$env_file" "ROS_PANEL_IP_ALIAS_WRITE_ENABLED" "0"');
   assertContains('install.sh', 'set_env_value "$env_file" "ROS_PANEL_EXPOSE_ADMIN_SESSIONS" "0"');
-  assertContains('install.sh', 'set_env_value "$env_file" "ROS_PANEL_NETWORK_WRITE_ENABLED" "0"');
+  assertContains('install.sh', 'set_env_value "$env_file" "ROS_PANEL_LOCAL_SETTINGS_WRITE_ENABLED" "0"');
   assertNotContains('install.sh', 'Open from other LAN devices');
   assertNotContains('install.sh', 'lan-url:');
   assertNotContains('install.sh', 'allow inbound TCP $PUBLISHED_PORT');
@@ -93,7 +98,7 @@ function main() {
   assertContains('env.example', 'ROS_PANEL_TRUST_PROXY_HEADERS=0');
   assertContains('env.example', 'ROS_PANEL_ALLOW_LOCALHOST_HOST_FORWARD=0');
   assertContains('env.example', 'ROS_PANEL_LOCALHOST_FORWARD_TOKEN=');
-  assertContains('env.example', 'ROS_PANEL_NETWORK_WRITE_ENABLED=auto');
+  assertContains('env.example', 'ROS_PANEL_LOCAL_SETTINGS_WRITE_ENABLED=auto');
 
   assertContains('routeros-panel.env.example', 'ROS_PANEL_BIND=127.0.0.1');
   assertContains('routeros-panel.env.example', 'ROS_PANEL_PORT=28646');
@@ -101,7 +106,8 @@ function main() {
   assertContains('routeros-panel.env.example', 'ROS_PANEL_TRUST_PROXY_HEADERS=0');
   assertContains('routeros-panel.env.example', 'ROS_PANEL_ALLOW_LOCALHOST_HOST_FORWARD=0');
   assertContains('routeros-panel.env.example', 'ROS_PANEL_LOCALHOST_FORWARD_TOKEN=');
-  assertContains('routeros-panel.env.example', 'ROS_PANEL_NETWORK_WRITE_ENABLED=1');
+  assertContains('routeros-panel.env.example', 'ROS_PANEL_LOCAL_SETTINGS_WRITE_ENABLED=1');
+  assertContains('routeros-panel.env.example', 'never enables RouterOS configuration writes');
 
   assertContains('.env.docker.example', 'ROS_PANEL_PUBLISHED_ADDR=127.0.0.1');
   assertContains('.env.docker.example', 'ROS_PANEL_PUBLISHED_PORT=28646');
@@ -110,12 +116,12 @@ function main() {
   assertContains('.env.docker.example', 'ROS_PANEL_TRUST_PROXY_HEADERS=0');
   assertContains('.env.docker.example', 'ROS_PANEL_ALLOW_LOCALHOST_HOST_FORWARD=0');
   assertContains('.env.docker.example', 'ROS_PANEL_LOCALHOST_FORWARD_TOKEN=');
-  assertContains('.env.docker.example', 'ROS_PANEL_NETWORK_WRITE_ENABLED=0');
+  assertContains('.env.docker.example', 'ROS_PANEL_LOCAL_SETTINGS_WRITE_ENABLED=0');
   assertContains('Dockerfile', 'ROS_PANEL_TARGET_IP=127.0.0.1');
   assertContains('Dockerfile', 'ROS_PANEL_TRUST_PROXY_HEADERS=0');
   assertContains('Dockerfile', 'ROS_PANEL_ALLOW_LOCALHOST_HOST_FORWARD=0');
   assertNotContains('Dockerfile', 'ROS_PANEL_LOCALHOST_FORWARD_TOKEN=', 'forward token baked into image defaults');
-  assertContains('Dockerfile', 'ROS_PANEL_NETWORK_WRITE_ENABLED=0');
+  assertContains('Dockerfile', 'ROS_PANEL_LOCAL_SETTINGS_WRITE_ENABLED=0');
   assertContains('compose.yml', '${ROS_PANEL_IMAGE:-routeros-triage-panel:local}');
   assertContains('compose.yml', '${ROS_PANEL_PUBLISHED_ADDR:-127.0.0.1}:${ROS_PANEL_PUBLISHED_PORT:-28646}:${ROS_PANEL_PORT:-28646}');
   assertContains('compose.yml', 'ROS_PANEL_BIND: "${ROS_PANEL_BIND:-0.0.0.0}"');
@@ -123,7 +129,7 @@ function main() {
   assertContains('compose.yml', 'ROS_PANEL_TRUST_PROXY_HEADERS: "${ROS_PANEL_TRUST_PROXY_HEADERS:-0}"');
   assertContains('compose.yml', 'ROS_PANEL_ALLOW_LOCALHOST_HOST_FORWARD: "${ROS_PANEL_ALLOW_LOCALHOST_HOST_FORWARD:-0}"');
   assertContains('compose.yml', 'ROS_PANEL_LOCALHOST_FORWARD_TOKEN: "${ROS_PANEL_LOCALHOST_FORWARD_TOKEN:-}"');
-  assertContains('compose.yml', 'ROS_PANEL_NETWORK_WRITE_ENABLED: "${ROS_PANEL_NETWORK_WRITE_ENABLED:-0}"');
+  assertContains('compose.yml', 'ROS_PANEL_LOCAL_SETTINGS_WRITE_ENABLED: "${ROS_PANEL_LOCAL_SETTINGS_WRITE_ENABLED:-0}"');
 
   assertContains('deploy_linux.sh', 'DEFAULT_PANEL_BIND="127.0.0.1"');
   assertContains('deploy_linux.sh', 'DEFAULT_PANEL_TARGET_IP="127.0.0.1"');
@@ -132,7 +138,7 @@ function main() {
   assertContains('deploy_linux.sh', 'ROS_PANEL_LOCALHOST_FORWARD_TOKEN="${ROS_PANEL_LOCALHOST_FORWARD_TOKEN:-}"');
   assertContains('deploy_linux.sh', 'ROS_PANEL_IP_ALIAS_WRITE_ENABLED="${ROS_PANEL_IP_ALIAS_WRITE_ENABLED:-0}"');
   assertContains('deploy_linux.sh', 'ROS_PANEL_EXPOSE_ADMIN_SESSIONS="${ROS_PANEL_EXPOSE_ADMIN_SESSIONS:-0}"');
-  assertContains('deploy_linux.sh', 'ROS_PANEL_NETWORK_WRITE_ENABLED="${ROS_PANEL_NETWORK_WRITE_ENABLED:-0}"');
+  assertContains('deploy_linux.sh', 'ROS_PANEL_LOCAL_SETTINGS_WRITE_ENABLED="${ROS_PANEL_LOCAL_SETTINGS_WRITE_ENABLED:-0}"');
   assertContains('deploy_linux.sh', 'curl -fsS "http://127.0.0.1:${ROS_PANEL_PORT}/api/health"');
   assertContains('routeros-panel.service', 'User=routeros-panel');
   assertContains('routeros-panel.service', 'Group=routeros-panel');

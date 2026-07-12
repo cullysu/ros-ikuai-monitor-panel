@@ -509,7 +509,7 @@ function main(argv = process.argv.slice(2)) {
   assertContains('install.sh', 'ROS_PANEL_ALLOW_LOCALHOST_HOST_FORWARD');
   assertContains('install.sh', 'ROS_PANEL_IP_ALIAS_WRITE_ENABLED');
   assertContains('install.sh', 'ROS_PANEL_EXPOSE_ADMIN_SESSIONS');
-  assertContains('install.sh', 'ROS_PANEL_NETWORK_WRITE_ENABLED');
+  assertContains('install.sh', 'ROS_PANEL_LOCAL_SETTINGS_WRITE_ENABLED');
 
   assertContains('PRODUCT_MODEL.md', '## Public Delivery Contract');
   assertContains('PRODUCT_MODEL.md', 'Docker / Compose');
@@ -553,17 +553,17 @@ function main(argv = process.argv.slice(2)) {
   assertContains('Dockerfile', 'USER panel');
   assertContains('Dockerfile', 'ROS_PANEL_ALLOW_LOCALHOST_HOST_FORWARD=0');
   assertNotContains('Dockerfile', 'ROS_PANEL_LOCALHOST_FORWARD_TOKEN=', 'forward token baked into image defaults');
-  assertContains('Dockerfile', 'ROS_PANEL_NETWORK_WRITE_ENABLED=0');
+  assertContains('Dockerfile', 'ROS_PANEL_LOCAL_SETTINGS_WRITE_ENABLED=0');
   assertContains('Dockerfile', 'chown -R root:root /app');
   assertContains('Dockerfile', 'chown panel:panel /app/data');
   assertContains('Dockerfile', 'chmod 0750 /app/data');
   assertContains('compose.yml', 'read_only: true');
   assertContains('compose.yml', 'ROS_PANEL_ALLOW_LOCALHOST_HOST_FORWARD: "${ROS_PANEL_ALLOW_LOCALHOST_HOST_FORWARD:-0}"');
   assertContains('compose.yml', 'ROS_PANEL_LOCALHOST_FORWARD_TOKEN: "${ROS_PANEL_LOCALHOST_FORWARD_TOKEN:-}"');
-  assertContains('compose.yml', 'ROS_PANEL_NETWORK_WRITE_ENABLED: "${ROS_PANEL_NETWORK_WRITE_ENABLED:-0}"');
+  assertContains('compose.yml', 'ROS_PANEL_LOCAL_SETTINGS_WRITE_ENABLED: "${ROS_PANEL_LOCAL_SETTINGS_WRITE_ENABLED:-0}"');
   assertContains('compose.yml', 'no-new-privileges:true');
   assertContains('deploy_linux.sh', 'useradd --system --user-group');
-  assertContains('deploy_linux.sh', 'ROS_PANEL_NETWORK_WRITE_ENABLED="${ROS_PANEL_NETWORK_WRITE_ENABLED:-0}"');
+  assertContains('deploy_linux.sh', 'ROS_PANEL_LOCAL_SETTINGS_WRITE_ENABLED="${ROS_PANEL_LOCAL_SETTINGS_WRITE_ENABLED:-0}"');
   assertContains('deploy_linux.sh', 'sudo chown -R root:root "${APP_DIR}"');
   assertContains('deploy_linux.sh', 'sudo chown -R "${PANEL_RUNTIME_USER}:${PANEL_RUNTIME_GROUP}" "${APP_DIR}/data"');
   assertContains('deploy_linux.sh', 'curl -fsS "http://127.0.0.1:${ROS_PANEL_PORT}/api/health"');
@@ -574,10 +574,14 @@ function main(argv = process.argv.slice(2)) {
   assertContains('routeros-panel@.service', 'Group=routeros-panel');
   assertNotContains('routeros-panel@.service', 'ros-panel-ip@.service', 'implicit template IP helper dependency');
   assertContains('tools/build-windows-exe.ps1', 'ROS_PANEL_BIND=127.0.0.1');
-  assertContains('tools/build-windows-exe.ps1', 'ROS_PANEL_NETWORK_WRITE_ENABLED=1');
+  assertContains('tools/build-windows-exe.ps1', 'ROS_PANEL_LOCAL_SETTINGS_WRITE_ENABLED=1');
+  assertContains('app.py', 'PANEL_LOCAL_SETTINGS_ENV_KEYS = ("ROS_PANEL_BIND", "ROS_PANEL_PORT", "ROS_PANEL_TARGET_IP")');
+  assertContains('app.py', '"routerosConfigWrites": False');
+  assertContains('README.zh-CN.md', '不会向 RouterOS 写入任何路由、防火墙、接口或其他配置');
   assertContains('.github/workflows/ci.yml', 'Windows env is missing loopback bind default');
   assertContains('.github/workflows/ci.yml', 'Windows env is missing panel address write default');
   assertContains('public/index.html', 'snapshotNeedsRouterLogin');
+  assertContains('public/index.html', 'aria-label="只读：不写 RouterOS 配置"');
   assertContains('public/index.html', 'snapshotHasRouterSshLoginError');
   assertContains('public/index.html', 'routerLoginDraft');
   assertContains('public/index.html', 'captureRouterLoginDraftFromForm');

@@ -37,7 +37,7 @@ In all four modes, public defaults are `routeros_only`,
 `ROS_PANEL_TRUST_PROXY_HEADERS=0`, local IP-alias writes disabled, admin-session
 exposure disabled, no built-in auth/TLS, and no RouterOS configuration writes.
 Panel address writes are deployment-owned: Docker, Linux systemd/VM, and
-RouterOS Container keep `ROS_PANEL_NETWORK_WRITE_ENABLED=0`; Windows EXE uses a
+RouterOS Container keep `ROS_PANEL_LOCAL_SETTINGS_WRITE_ENABLED=0`; Windows EXE uses a
 user-writable sidecar env file and may save loopback-only address settings.
 That Windows write capability changes only the panel's local listen address and
 never writes RouterOS configuration.

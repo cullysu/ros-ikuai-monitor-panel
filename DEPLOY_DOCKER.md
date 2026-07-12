@@ -157,7 +157,7 @@ address settings. Normal browser/API status uses the request `Host` header, so
 manual Compose should leave it as `127.0.0.1`.
 
 The in-panel address dialog is read-only for Docker installs
-(`ROS_PANEL_NETWORK_WRITE_ENABLED=0`). This avoids writing settings that cannot
+(`ROS_PANEL_LOCAL_SETTINGS_WRITE_ENABLED=0`). This avoids writing settings that cannot
 update Docker's host port mapping. Change `.env.docker`, then restart the
 Compose service, if you intentionally need a different loopback port.
 

@@ -92,8 +92,11 @@ not cross devices without an explicit local forwarder or tunnel on that device.
 The in-panel address dialog is a status view in Docker, Linux systemd/VM, and
 RouterOS Container installs; edit the installer/env file and restart for those
 modes. The Windows EXE sidecar env file is user-writable, so the dialog may save
-loopback-only address settings there. This switch changes only the panel's local
-listen address; it never writes RouterOS configuration.
+loopback-only address settings there. `ROS_PANEL_LOCAL_SETTINGS_WRITE_ENABLED`
+controls only that local sidecar save operation; it never writes RouterOS routes,
+firewall rules, interfaces, or any other RouterOS configuration. The old
+`ROS_PANEL_NETWORK_WRITE_ENABLED` name remains only as a compatibility alias for
+existing private installs and should not be used in new deployments.
 
 ## Quick Start: Docker One-command
 
@@ -175,6 +178,10 @@ Outputs:
 - `dist\RouterOS-Triage-Panel-Windows.zip`
 
 Run from a trusted local folder. The project does not yet provide code signing.
+
+The Windows template sets `ROS_PANEL_LOCAL_SETTINGS_WRITE_ENABLED=1`. That permits
+only the local `bind / port / target` sidecar fields to be saved, while the public
+profile still enforces loopback. It grants no RouterOS configuration-write access.
 
 Read [DEPLOY_WINDOWS_EXE.md](./DEPLOY_WINDOWS_EXE.md) for EXE usage, build, and
 status/error details.

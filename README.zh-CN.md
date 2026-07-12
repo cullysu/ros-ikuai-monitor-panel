@@ -70,7 +70,9 @@ admin session 暴露。`127.0.0.1` 永远是当前浏览器所在设备；跨设
 面板里的“面板地址”对 Docker、Linux systemd/VM、RouterOS Container 是只读状态
 视图；这些方式要改地址必须改安装 env/部署层后重启。Windows EXE 的 sidecar
 `routeros-panel.env` 在普通可写目录下可以由面板保存，但仍只允许 loopback 地址。
-这个“网络写入”开关只修改面板本机监听地址，不会向 RouterOS 写入任何配置。
+`ROS_PANEL_LOCAL_SETTINGS_WRITE_ENABLED` 只控制面板本机 sidecar 的地址设置保存，
+不会向 RouterOS 写入任何路由、防火墙、接口或其他配置。旧变量
+`ROS_PANEL_NETWORK_WRITE_ENABLED` 仅作为已有私有部署的兼容别名，不应再用于新安装。
 
 ## Docker 一条命令
 
@@ -159,6 +161,10 @@ powershell -ExecutionPolicy Bypass -File .\tools\build-windows-exe.ps1
 - `dist\RouterOS-Triage-Panel-Windows.zip`
 
 从受信任的本地目录运行。项目当前还没有代码签名。
+
+Windows 模板中的 `ROS_PANEL_LOCAL_SETTINGS_WRITE_ENABLED=1` 只允许面板保存本机
+`bind / port / target` 三项，并且公开模式仍强制 loopback；它不授予任何 RouterOS
+配置写权限。
 
 更多说明见 [DEPLOY_WINDOWS_EXE.md](./DEPLOY_WINDOWS_EXE.md)。
 

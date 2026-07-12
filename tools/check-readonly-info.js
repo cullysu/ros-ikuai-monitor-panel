@@ -124,7 +124,7 @@ async function main() {
       const popover = document.querySelector('.ik-readonly-popover');
       const text = String(popover?.textContent || '').replace(/\\s+/g, ' ').trim();
       return {
-        pass: Boolean(button && popover?.classList.contains('is-open') && text.includes('只读状态') && text.includes('RouterOS') && text.includes('不会修改')),
+        pass: Boolean(button && button.getAttribute('aria-label')?.includes('不写 RouterOS 配置') && popover?.classList.contains('is-open') && text.includes('只读状态') && text.includes('RouterOS') && text.includes('不会修改')),
         opened: popover?.classList.contains('is-open') || false,
         text,
         buttonText: button?.textContent || '',

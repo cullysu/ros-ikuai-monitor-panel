@@ -178,8 +178,16 @@ def detect_panel_lan_ip():
 DEFAULT_PANEL_BIND = "127.0.0.1"
 DEFAULT_PANEL_PORT = 28646
 DEFAULT_PANEL_TARGET = "127.0.0.1"
-PANEL_NETWORK_ENV_KEYS = ("ROS_PANEL_BIND", "ROS_PANEL_PORT", "ROS_PANEL_TARGET_IP")
-PANEL_NETWORK_WRITE_ENABLED_RAW = str(env_value("ROS_PANEL_NETWORK_WRITE_ENABLED", "auto")).strip().lower()
+PANEL_LOCAL_SETTINGS_ENV_KEYS = ("ROS_PANEL_BIND", "ROS_PANEL_PORT", "ROS_PANEL_TARGET_IP")
+# The public name describes the actual boundary: this permits writing only the
+# panel's local sidecar address settings. Keep the old, ambiguous name as a
+# compatibility fallback for existing private installs.
+PANEL_LOCAL_SETTINGS_WRITE_ENABLED_RAW = str(
+    env_value(
+        "ROS_PANEL_LOCAL_SETTINGS_WRITE_ENABLED",
+        env_value("ROS_PANEL_NETWORK_WRITE_ENABLED", "auto"),
+    )
+).strip().lower()
 PANEL_TRUST_PROXY_HEADERS = str(env_value("ROS_PANEL_TRUST_PROXY_HEADERS", "0")).strip().lower() in {"1", "true", "yes", "on"}
 PANEL_ALLOW_LOCALHOST_HOST_FORWARD = str(env_value("ROS_PANEL_ALLOW_LOCALHOST_HOST_FORWARD", "0")).strip().lower() in {"1", "true", "yes", "on"}
 PANEL_LOCALHOST_FORWARD_HEADER = "X-Ros-Panel-Localhost-Forward"
@@ -525,7 +533,7 @@ def panel_network_payload(bind=None, port=None, target=None, restart_required=Fa
     port = normalize_panel_port(port if port is not None else PANEL_PORT)
     target = resolve_panel_access_host(target if target is not None else PANEL_TARGET)
     env_path = panel_env_write_path()
-    write_status = panel_env_write_status(env_path)
+    write_status = panel_local_settings_write_status(env_path)
     configured_url = panel_access_url(bind, port, target)
     browser_url = str(request_url or "").strip() or configured_url
     return {
@@ -568,9 +576,9 @@ def read_text_with_env_fallback(path):
         return path.read_text(encoding=fallback_encoding, errors="replace")
 
 
-def panel_env_write_status(path=None):
+def panel_local_settings_write_status(path=None):
     path = Path(path).resolve() if path else panel_env_write_path()
-    if PANEL_NETWORK_WRITE_ENABLED_RAW in {"0", "false", "no", "off", "disabled", "read_only", "readonly"}:
+    if PANEL_LOCAL_SETTINGS_WRITE_ENABLED_RAW in {"0", "false", "no", "off", "disabled", "read_only", "readonly"}:
         return {
             "envFile": str(path),
             "exists": path.exists(),
@@ -579,6 +587,7 @@ def panel_env_write_status(path=None):
             "mode": "disabled",
             "scope": "panel-local-listen-address-only",
             "routerosConfigWrites": False,
+            "setting": "ROS_PANEL_LOCAL_SETTINGS_WRITE_ENABLED",
             "message": "Panel address settings are read-only in this delivery mode. Edit the installer/env file and restart the panel instead. This setting never writes RouterOS configuration.",
         }
     parent = path.parent
@@ -598,18 +607,19 @@ def panel_env_write_status(path=None):
         "writable": bool(writable),
         "scope": "panel-local-listen-address-only",
         "routerosConfigWrites": False,
+        "setting": "ROS_PANEL_LOCAL_SETTINGS_WRITE_ENABLED",
         "mode": "auto",
         "message": message,
     }
 
 
-def write_panel_network_env(bind, port, target, env_path=None):
+def write_panel_local_settings_env(bind, port, target, env_path=None):
     bind = normalize_panel_host(bind, "bind")
     port = normalize_panel_port(port)
     target = resolve_panel_access_host(target)
     bind, target = validate_panel_public_contract(bind, target, globals().get("PANEL_PROFILE_RAW", "routeros_only"))
     path = Path(env_path).resolve() if env_path else panel_env_write_path()
-    write_status = panel_env_write_status(path)
+    write_status = panel_local_settings_write_status(path)
     if not write_status["writable"]:
         raise PermissionError(write_status["message"])
     updates = {
@@ -631,7 +641,7 @@ def write_panel_network_env(bind, port, target, env_path=None):
             next_lines.append(line)
     if next_lines and next_lines[-1].strip():
         next_lines.append("")
-    for key in PANEL_NETWORK_ENV_KEYS:
+    for key in PANEL_LOCAL_SETTINGS_ENV_KEYS:
         if key not in found:
             next_lines.append(f"{key}={quote_env_value(updates[key])}")
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -5750,7 +5760,7 @@ class Handler(BaseHTTPRequestHandler):
                     payload.get("target") or payload.get("accessHost") or bind,
                     "access host",
                 )
-                saved_env_path = write_panel_network_env(bind, port, target)
+                saved_env_path = write_panel_local_settings_env(bind, port, target)
                 restart_required = bind != PANEL_BIND or port != PANEL_PORT or target != PANEL_TARGET
                 active = panel_network_payload(restart_required=False)
                 saved = panel_network_payload(bind=bind, port=port, target=target, restart_required=restart_required)

@@ -386,16 +386,31 @@ def assert_panel_network_config_helpers():
             "# keep this comment\n"
             "ROS_PANEL_PORT=8080\n"
             "OTHER_SETTING=keep-me\n"
+            "ROS_MONITOR_ROUTER_PASSWORD=must-not-change\n"
             "export ROS_PANEL_BIND=0.0.0.0\n",
             encoding="utf-8",
         )
-        app.write_panel_network_env("0.0.0.0", 28646, "127.0.0.1", env_path=env_path)
+        app.write_panel_local_settings_env("0.0.0.0", 28646, "127.0.0.1", env_path=env_path)
         content = env_path.read_text(encoding="utf-8")
         assert "# keep this comment" in content
         assert "OTHER_SETTING=keep-me" in content
+        assert "ROS_MONITOR_ROUTER_PASSWORD=must-not-change" in content
         assert "ROS_PANEL_PORT=28646" in content
         assert "export ROS_PANEL_BIND=0.0.0.0" in content
         assert "ROS_PANEL_TARGET_IP=127.0.0.1" in content
+        status = app.panel_local_settings_write_status(env_path)
+        assert status["scope"] == "panel-local-listen-address-only"
+        assert status["routerosConfigWrites"] is False
+        assert status["setting"] == "ROS_PANEL_LOCAL_SETTINGS_WRITE_ENABLED"
+        original_write_mode = app.PANEL_LOCAL_SETTINGS_WRITE_ENABLED_RAW
+        try:
+            app.PANEL_LOCAL_SETTINGS_WRITE_ENABLED_RAW = "0"
+            disabled_status = app.panel_local_settings_write_status(env_path)
+            assert disabled_status["writable"] is False
+            assert disabled_status["mode"] == "disabled"
+            assert disabled_status["routerosConfigWrites"] is False
+        finally:
+            app.PANEL_LOCAL_SETTINGS_WRITE_ENABLED_RAW = original_write_mode
 
 
 def assert_counter_rate_history_semantics():

@@ -262,7 +262,7 @@ configure_env() {
   set_env_value "$env_file" "ROS_PANEL_PROFILE" "routeros_only"
   set_env_value "$env_file" "ROS_PANEL_IP_ALIAS_WRITE_ENABLED" "0"
   set_env_value "$env_file" "ROS_PANEL_EXPOSE_ADMIN_SESSIONS" "0"
-  set_env_value "$env_file" "ROS_PANEL_NETWORK_WRITE_ENABLED" "0"
+  set_env_value "$env_file" "ROS_PANEL_LOCAL_SETTINGS_WRITE_ENABLED" "0"
   set_env_value "$env_file" "ROS_PANEL_ACTION_QUEUE_LIMIT" "24"
 }
 
