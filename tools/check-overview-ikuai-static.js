@@ -574,7 +574,7 @@ const desktopNoSnapshotRuntimeCheck = read("tools/check-desktop-no-snapshot-runt
 const desktopV1030RuntimeCheck = read("tools/check-desktop-v1030-runtime.js");
 const mobileReleaseStyles = read("src/panel-framework/overview/components/MobileOverviewReleaseStyles.ts");
 const mobileDecisionStyles = read("src/panel-framework/overview/components/MobileOverviewDecisionStyles.ts");
-const mobileAppPolishStyles = read("src/panel-framework/overview/components/MobileOverviewAppPolishStyles.ts");
+const mobileAppPolishStyles = read("src/panel-framework/overview/components/MobileOverviewProductShellStyles.ts");
 const mobileRefinementStyles = read("src/panel-framework/overview/components/MobileOverviewRefinementStyles.ts");
 const desktopRefinementStyles = read("src/panel-framework/overview/OverviewPanelDesktopRefinement.css");
 const desktopReleaseStyles = read("src/panel-framework/overview/OverviewPanelRelease.css");
@@ -2216,7 +2216,7 @@ excludesPatterns(overviewPanel, [
 
 const sourceV1046MobileHome = read("src/panel-framework/overview/components/MobileOverviewHome.tsx");
 const sourceV1046IncidentHero = read("src/panel-framework/overview/components/IncidentHero.tsx");
-const sourceV1046AppPolish = read("src/panel-framework/overview/components/MobileOverviewAppPolishStyles.ts");
+const mobileProductShellSource = read("src/panel-framework/overview/components/MobileOverviewProductShellStyles.ts");
 const sourceV1046RuntimeProbe = read("tools/check-resource-trend-balance.js");
 
 includesAll(sourceV1046MobileHome, [
@@ -2361,7 +2361,7 @@ includesAll(`${sourceV1046IncidentHero}\n${mobileTrustStrip}`, [
   "data-overview-mobile-v1056-resource-visual=\"view-model-resource-threshold-sustained-risk-cells\"",
 ], "source v1052 hero and separated trust rail must render model cells only");
 
-includesAll(sourceV1046AppPolish, [
+includesAll(mobileProductShellSource, [
   "ik-v1046-abnormal-decision-rail",
   "grid-template-columns: repeat(4, minmax(0, 1fr))",
   "box-shadow: inset 0 0 0 .5px var(--ik-native-hairline)",
@@ -2380,7 +2380,7 @@ includesAll(sourceV1046RuntimeProbe, [
   "object-impact-credibility-next-action-low-noise-console",
 ], "runtime v1046 abnormal decision rail probe");
 
-includesAll(`${mobileModel}\n${mobilePolicy}\n${sourceV1046MobileHome}\n${read("src/panel-framework/overview/components/HomeSurface.tsx")}\n${read("src/panel-framework/overview/components/TrustStrip.tsx")}\n${sourceV1046AppPolish}\n${sourceV1046RuntimeProbe}`, [
+includesAll(`${mobileModel}\n${mobilePolicy}\n${sourceV1046MobileHome}\n${read("src/panel-framework/overview/components/HomeSurface.tsx")}\n${read("src/panel-framework/overview/components/TrustStrip.tsx")}\n${mobileProductShellSource}\n${sourceV1046RuntimeProbe}`, [
   "collectionTrust: MobileHeroChannelCell[]",
   "collectionTrustSeparation:",
   "function collectionTrustSeparation(",

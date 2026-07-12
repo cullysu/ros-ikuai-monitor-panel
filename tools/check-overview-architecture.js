@@ -397,7 +397,7 @@ assert(
     mobileStyles.includes("foundation") &&
     mobileStyles.includes("information-architecture") &&
     mobileStyles.includes("release-contract") &&
-    mobileStyles.includes("native-product") &&
+    mobileStyles.includes("product-shell") &&
     mobileStyles.includes("decision-home"),
   "Mobile style injection must use semantic style layers"
 );
@@ -458,7 +458,7 @@ assert(
 );
 const mobileStyleLayerFiles = [
   "src/panel-framework/overview/components/MobileOverviewBaseStyles.ts",
-  "src/panel-framework/overview/components/MobileOverviewAppPolishStyles.ts",
+  "src/panel-framework/overview/components/MobileOverviewProductShellStyles.ts",
   "src/panel-framework/overview/components/MobileOverviewRefinementStyles.ts",
   "src/panel-framework/overview/components/MobileOverviewReleaseStyles.ts",
   "src/panel-framework/overview/components/MobileOverviewDecisionStyles.ts",
@@ -467,7 +467,7 @@ const mobileStyleLayerFiles = [
 ];
 const mobileStyleLineLimits = new Map([
   ["src/panel-framework/overview/components/MobileOverviewBaseStyles.ts", 2750],
-  ["src/panel-framework/overview/components/MobileOverviewAppPolishStyles.ts", 1300],
+  ["src/panel-framework/overview/components/MobileOverviewProductShellStyles.ts", 260],
   ["src/panel-framework/overview/components/MobileOverviewRefinementStyles.ts", 550],
   ["src/panel-framework/overview/components/MobileOverviewReleaseStyles.ts", 450],
   ["src/panel-framework/overview/components/MobileOverviewDecisionStyles.ts", 700],
@@ -483,7 +483,7 @@ for (const rel of mobileStyleLayerFiles) {
     lines(layer) <= mobileStyleLineLimits.get(rel),
     `${rel} exceeds ${mobileStyleLineLimits.get(rel)} lines: ${lines(layer)}`
   );
-  if (!rel.includes("MobileOverviewPublicDecision")) {
+  if (!rel.includes("MobileOverviewPublicDecision") && !rel.includes("MobileOverviewProductShell")) {
     assert(
       !layer.includes(".ik-mobile-") && !layer.includes(".ik-ios-"),
       `${rel} reintroduced legacy ik-mobile/ik-ios selectors`

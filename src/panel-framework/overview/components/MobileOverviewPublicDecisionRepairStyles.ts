@@ -430,6 +430,7 @@ export const MOBILE_OVERVIEW_PUBLIC_DECISION_REPAIR_STYLES = `
   }
 
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-abnormal-decision-rail {
+    display: grid !important;
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
     grid-template-rows: repeat(2, 56px) !important;
     min-height: 112px !important;
@@ -466,16 +467,17 @@ export const MOBILE_OVERVIEW_PUBLIC_DECISION_REPAIR_STYLES = `
     transform: none !important;
     grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
     border: 0 !important;
-    border-top: 1px solid #d3deea !important;
+    border-top: 0 !important;
     border-radius: 0 !important;
-    background: #f9fcff !important;
+    outline: 0 !important;
+    background: rgba(247, 250, 253, .94) !important;
     box-shadow: none !important;
   }
 
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-v420-tabs button.is-active,
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-v240-tabs button.is-active {
-    background: #edf4fb !important;
-    box-shadow: inset 0 -2px 0 #1f6fd1 !important;
+    background: transparent !important;
+    box-shadow: inset 0 -1px 0 rgba(18, 34, 55, .44) !important;
     color: #143b6f !important;
   }
 }

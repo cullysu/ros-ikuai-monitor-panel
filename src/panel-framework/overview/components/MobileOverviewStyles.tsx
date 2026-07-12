@@ -1,5 +1,5 @@
 import { useInsertionEffect } from "react";
-import { MOBILE_OVERVIEW_NATIVE_PRODUCT_STYLES } from "./MobileOverviewAppPolishStyles";
+import { MOBILE_OVERVIEW_PRODUCT_SHELL_STYLES } from "./MobileOverviewProductShellStyles";
 import { MOBILE_OVERVIEW_FOUNDATION_STYLES } from "./MobileOverviewBaseStyles";
 import { MOBILE_OVERVIEW_INFORMATION_ARCHITECTURE_STYLES } from "./MobileOverviewRefinementStyles";
 import { MOBILE_OVERVIEW_DECISION_HOME_STYLES } from "./MobileOverviewDecisionStyles";
@@ -14,7 +14,10 @@ const MOBILE_OVERVIEW_STYLE_LAYERS = [
     css: MOBILE_OVERVIEW_INFORMATION_ARCHITECTURE_STYLES,
   },
   { id: "release-contract", css: MOBILE_OVERVIEW_RELEASE_STYLES },
-  { id: "native-product", css: MOBILE_OVERVIEW_NATIVE_PRODUCT_STYLES },
+  {
+    id: "product-shell",
+    css: MOBILE_OVERVIEW_PRODUCT_SHELL_STYLES,
+  },
   { id: "decision-home", css: MOBILE_OVERVIEW_DECISION_HOME_STYLES },
   { id: "public-decision-home", css: MOBILE_OVERVIEW_PUBLIC_DECISION_STYLES },
   { id: "public-decision-repair", css: MOBILE_OVERVIEW_PUBLIC_DECISION_REPAIR_STYLES },
