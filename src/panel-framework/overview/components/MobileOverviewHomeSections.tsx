@@ -57,7 +57,10 @@ function supportingCopy(model: MobileOverviewModel): { title: string; summary: s
   if (model.priority === "wan-offline") return { title: "处理", summary: "出口 · 默认路由 · 最近成功", action: "查看出口详情" };
   if (model.priority === "snapshot-missing") return { title: "处理", summary: "数据边界 · 最近成功", action: "查看数据边界" };
   if (model.priority === "collection-degraded") return { title: "处理", summary: "采集通道 · 缓存快照", action: "查看采集详情" };
-  if (model.priority === "resource-full") return { title: "处理", summary: "资源压力 · 阈值持续", action: "查看资源详情" };
+  if (model.priority === "resource-full") {
+    const primary = model.hero.resourceCells.find((item) => item.risk === "primary-risk") || model.hero.resourceCells[0];
+    return { title: "处理", summary: primary ? `最高${primary.label} ${primary.display} · ${primary.sustainedText}` : "资源阈值持续超限", action: "查看资源详情" };
+  }
   return { title: "处理", summary: "受影响接口 · 默认路由", action: "查看接口详情" };
 }
 

@@ -8175,8 +8175,9 @@ var PanelFramework = function(exports) {
     const referenceValue = peak * referenceRatio;
     const highPointIndex = down.findIndex((value) => value >= referenceValue);
     const windowText = series.source === "history" ? `近 ${Math.max(down.length, up.length)} 点` : `近 ${Math.max(down.length, up.length)} 次`;
-    const sampleText = series.source === "history" ? "历史样本" : "实时估算";
-    const sampleLabel = series.source === "history" ? "历史" : state.scenario === "collection-down" || state.facts.collection.dataStale || state.facts.freshness.history ? "缓存" : "实时";
+    const staleSample = state.scenario === "collection-down" || state.facts.collection.dataStale || state.facts.freshness.history;
+    const sampleText = series.source === "history" ? `${Math.max(down.length, up.length)}点历史` : staleSample ? "缓存推算" : "当前快照";
+    const sampleLabel = series.source === "history" ? "历史" : staleSample ? "缓存" : "快照";
     const anomalyLabel = highPointIndex >= 0 ? `高位点 ${highPointIndex + 1}` : "高位点 0";
     const anomalyTone = "trust";
     const decisionLabel = `${windowText} · 当前 ${mobileRate(current)} · 峰值 ${mobileRate(peak)} · 参考 ${mobileRate(referenceValue)} · ${anomalyLabel} · 采样${sampleLabel}`;
@@ -8946,26 +8947,33 @@ var PanelFramework = function(exports) {
       };
     });
   }
-  function abnormalDecisionNextAction(priority) {
+  function primaryResourceCell(resourceCells) {
+    return resourceCells.find((item) => item.risk === "primary-risk") || resourceCells[0];
+  }
+  function abnormalDecisionNextAction(priority, resourceCells) {
+    var _a;
     if (priority === "wan-offline") return "查出口";
     if (priority === "snapshot-missing") return "查采集";
     if (priority === "interface-down") return "核承载";
-    if (priority === "resource-full") return "查连接压力";
+    if (priority === "resource-full") return `先处理${((_a = primaryResourceCell(resourceCells)) == null ? void 0 : _a.label) || "资源"}`;
     if (priority === "collection-degraded") return "核采集";
     return "观察";
   }
-  function abnormalDecisionActionNote(priority) {
+  function abnormalDecisionActionNote(priority, resourceCells) {
     if (priority === "wan-offline") return "WAN / 默认路由";
     if (priority === "snapshot-missing") return "采集 / 最近成功";
     if (priority === "interface-down") return "接口 / 默认路由";
-    if (priority === "resource-full") return "连接压力 / 接口吞吐";
+    if (priority === "resource-full") {
+      const primary = primaryResourceCell(resourceCells);
+      return primary ? `${primary.display} · ${primary.thresholdText} · ${primary.sustainedText}` : "按最高风险项处理";
+    }
     if (priority === "collection-degraded") return "通道 / 缓存";
     return "持续观察";
   }
   function abnormalDecisionTargetTab(priority) {
     if (priority === "wan-offline") return "wan";
     if (priority === "snapshot-missing" || priority === "collection-degraded") return "log";
-    if (priority === "resource-full") return "terminal";
+    if (priority === "resource-full") return void 0;
     if (priority === "interface-down") return "interface";
     return void 0;
   }
@@ -8977,19 +8985,19 @@ var PanelFramework = function(exports) {
   function abnormalDecisionImpactValue(priority, scope) {
     if (priority === "wan-offline") return "默认路由不可承载";
     if (priority === "snapshot-missing") return "业务数据不展示";
-    if (priority === "resource-full") return "业务可用 · 余量低";
+    if (priority === "resource-full") return "业务仍可用 · 风险高";
     if (priority === "interface-down") return "承载关系待判";
     if (priority === "collection-degraded") return "采集可信度下降";
     return scope.value;
   }
-  function abnormalDecisionCells(priority, contract, scope, network, heroTitle, listTitle) {
+  function abnormalDecisionCells(priority, contract, scope, network, heroTitle, listTitle, resourceCells) {
     if (priority === "normal") return [];
     const evidenceParts = contract.trustBoundary.split("·").map((part) => clean$1(part)).filter(Boolean);
     return [
       { label: "对象", value: listTitle, note: heroTitle, tone: scope.tone },
       { label: "影响", value: abnormalDecisionImpactValue(priority, scope), note: scope.note, tone: scope.tone },
       { label: "可信度", value: evidenceParts[0] || network.snapshot.value, note: evidenceParts.slice(1).join(" · ") || network.snapshot.label, tone: abnormalDecisionEvidenceTone(priority) },
-      { label: "下一步", value: abnormalDecisionNextAction(priority), note: abnormalDecisionActionNote(priority), tone: contract.severity === "p0" ? "danger" : "warn", targetTab: abnormalDecisionTargetTab(priority) }
+      { label: "下一步", value: abnormalDecisionNextAction(priority, resourceCells), note: abnormalDecisionActionNote(priority, resourceCells), tone: contract.severity === "p0" ? "danger" : "warn", targetTab: abnormalDecisionTargetTab(priority) }
     ];
   }
   function buildMobileOverviewModel(snapshot, state) {
@@ -9007,6 +9015,7 @@ var PanelFramework = function(exports) {
     });
     const pills = heroPills(snapshot, state, network);
     const core = coreMetrics(snapshot, state, network);
+    const resourceCells = heroResourceCells(state);
     return {
       priority,
       network,
@@ -9015,7 +9024,7 @@ var PanelFramework = function(exports) {
       surface: policy.surface,
       impactScope: scope,
       collectionTrustSeparation: collectionTrustSeparation(priority, scope),
-      abnormalDecision: abnormalDecisionCells(priority, policy.appHomeContract, scope, network, heroTitle, list.title),
+      abnormalDecision: abnormalDecisionCells(priority, policy.appHomeContract, scope, network, heroTitle, list.title, resourceCells),
       collectionTrust: collectionTrustCells(state),
       coreMetrics: core,
       normalSummary: normalSummaryModel(priority),
@@ -9027,7 +9036,7 @@ var PanelFramework = function(exports) {
         trustRail: heroTrustRail(pills),
         interfaceCells: heroInterfaceCells(snapshot, state),
         channelCells: heroChannelCells(state),
-        resourceCells: heroResourceCells(state),
+        resourceCells,
         visualKind: heroVisualKind(priority),
         showMetrics: showHeroMetrics(),
         trend: buildMobileTrendChart(snapshot, state)
@@ -9313,7 +9322,10 @@ var PanelFramework = function(exports) {
     if (model.priority === "wan-offline") return { title: "处理", summary: "出口 · 默认路由 · 最近成功", action: "查看出口详情" };
     if (model.priority === "snapshot-missing") return { title: "处理", summary: "数据边界 · 最近成功", action: "查看数据边界" };
     if (model.priority === "collection-degraded") return { title: "处理", summary: "采集通道 · 缓存快照", action: "查看采集详情" };
-    if (model.priority === "resource-full") return { title: "处理", summary: "资源压力 · 阈值持续", action: "查看资源详情" };
+    if (model.priority === "resource-full") {
+      const primary = model.hero.resourceCells.find((item) => item.risk === "primary-risk") || model.hero.resourceCells[0];
+      return { title: "处理", summary: primary ? `最高${primary.label} ${primary.display} · ${primary.sustainedText}` : "资源阈值持续超限", action: "查看资源详情" };
+    }
     return { title: "处理", summary: "受影响接口 · 默认路由", action: "查看接口详情" };
   }
   function SupportingList({ model }) {

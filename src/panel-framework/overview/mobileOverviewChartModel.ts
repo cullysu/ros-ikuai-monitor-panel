@@ -142,12 +142,13 @@ export function buildMobileTrendChart(snapshot: OverviewRawSnapshot, state: Over
   const windowText = series.source === "history"
     ? `近 ${Math.max(down.length, up.length)} 点`
     : `近 ${Math.max(down.length, up.length)} 次`;
-  const sampleText = series.source === "history" ? "历史样本" : "实时估算";
+  const staleSample = state.scenario === "collection-down" || state.facts.collection.dataStale || state.facts.freshness.history;
+  const sampleText = series.source === "history" ? `${Math.max(down.length, up.length)}点历史` : staleSample ? "缓存推算" : "当前快照";
   const sampleLabel = series.source === "history"
     ? "历史"
-    : state.scenario === "collection-down" || state.facts.collection.dataStale || state.facts.freshness.history
+    : staleSample
       ? "缓存"
-      : "实时";
+      : "快照";
   const anomalyLabel = highPointIndex >= 0 ? `高位点 ${highPointIndex + 1}` : "高位点 0";
   const anomalyTone: OverviewTone = "trust";
   const decisionLabel = `${windowText} · 当前 ${mobileRate(current)} · 峰值 ${mobileRate(peak)} · 参考 ${mobileRate(referenceValue)} · ${anomalyLabel} · 采样${sampleLabel}`;

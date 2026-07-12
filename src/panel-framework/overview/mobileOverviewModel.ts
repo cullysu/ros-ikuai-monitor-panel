@@ -767,20 +767,33 @@ function wanPorts(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): M
 }
 
 
-function abnormalDecisionNextAction(priority: MobileOverviewModel["priority"]): string {
+function primaryResourceCell(resourceCells: MobileHeroResourceCell[]): MobileHeroResourceCell | undefined {
+  return resourceCells.find((item) => item.risk === "primary-risk") || resourceCells[0];
+}
+
+function abnormalDecisionNextAction(
+  priority: MobileOverviewModel["priority"],
+  resourceCells: MobileHeroResourceCell[],
+): string {
   if (priority === "wan-offline") return "查出口";
   if (priority === "snapshot-missing") return "查采集";
   if (priority === "interface-down") return "核承载";
-  if (priority === "resource-full") return "查连接压力";
+  if (priority === "resource-full") return `先处理${primaryResourceCell(resourceCells)?.label || "资源"}`;
   if (priority === "collection-degraded") return "核采集";
   return "观察";
 }
 
-function abnormalDecisionActionNote(priority: MobileOverviewModel["priority"]): string {
+function abnormalDecisionActionNote(
+  priority: MobileOverviewModel["priority"],
+  resourceCells: MobileHeroResourceCell[],
+): string {
   if (priority === "wan-offline") return "WAN / 默认路由";
   if (priority === "snapshot-missing") return "采集 / 最近成功";
   if (priority === "interface-down") return "接口 / 默认路由";
-  if (priority === "resource-full") return "连接压力 / 接口吞吐";
+  if (priority === "resource-full") {
+    const primary = primaryResourceCell(resourceCells);
+    return primary ? `${primary.display} · ${primary.thresholdText} · ${primary.sustainedText}` : "按最高风险项处理";
+  }
   if (priority === "collection-degraded") return "通道 / 缓存";
   return "持续观察";
 }
@@ -788,7 +801,7 @@ function abnormalDecisionActionNote(priority: MobileOverviewModel["priority"]): 
 function abnormalDecisionTargetTab(priority: MobileOverviewModel["priority"]): MobileAbnormalDecisionCell["targetTab"] {
   if (priority === "wan-offline") return "wan";
   if (priority === "snapshot-missing" || priority === "collection-degraded") return "log";
-  if (priority === "resource-full") return "terminal";
+  if (priority === "resource-full") return undefined;
   if (priority === "interface-down") return "interface";
   return undefined;
 }
@@ -805,7 +818,7 @@ function abnormalDecisionImpactValue(
 ): string {
   if (priority === "wan-offline") return "默认路由不可承载";
   if (priority === "snapshot-missing") return "业务数据不展示";
-  if (priority === "resource-full") return "业务可用 · 余量低";
+  if (priority === "resource-full") return "业务仍可用 · 风险高";
   if (priority === "interface-down") return "承载关系待判";
   if (priority === "collection-degraded") return "采集可信度下降";
   return scope.value;
@@ -818,6 +831,7 @@ function abnormalDecisionCells(
   network: RouterOsNetworkViewModel,
   heroTitle: string,
   listTitle: string,
+  resourceCells: MobileHeroResourceCell[],
 ): MobileAbnormalDecisionCell[] {
   if (priority === "normal") return [];
   const evidenceParts = contract.trustBoundary.split("·").map((part) => clean(part)).filter(Boolean);
@@ -825,7 +839,7 @@ function abnormalDecisionCells(
     { label: "对象", value: listTitle, note: heroTitle, tone: scope.tone },
     { label: "影响", value: abnormalDecisionImpactValue(priority, scope), note: scope.note, tone: scope.tone },
     { label: "可信度", value: evidenceParts[0] || network.snapshot.value, note: evidenceParts.slice(1).join(" · ") || network.snapshot.label, tone: abnormalDecisionEvidenceTone(priority) },
-    { label: "下一步", value: abnormalDecisionNextAction(priority), note: abnormalDecisionActionNote(priority), tone: contract.severity === "p0" ? "danger" : "warn", targetTab: abnormalDecisionTargetTab(priority) },
+    { label: "下一步", value: abnormalDecisionNextAction(priority, resourceCells), note: abnormalDecisionActionNote(priority, resourceCells), tone: contract.severity === "p0" ? "danger" : "warn", targetTab: abnormalDecisionTargetTab(priority) },
   ];
 }
 
@@ -844,6 +858,7 @@ export function buildMobileOverviewModel(snapshot: OverviewRawSnapshot, state: O
   });
   const pills = heroPills(snapshot, state, network);
   const core = coreMetrics(snapshot, state, network);
+  const resourceCells = heroResourceCells(state);
   return {
     priority,
     network,
@@ -852,7 +867,7 @@ export function buildMobileOverviewModel(snapshot: OverviewRawSnapshot, state: O
     surface: policy.surface,
     impactScope: scope,
     collectionTrustSeparation: collectionTrustSeparation(priority, scope),
-    abnormalDecision: abnormalDecisionCells(priority, policy.appHomeContract, scope, network, heroTitle, list.title),
+    abnormalDecision: abnormalDecisionCells(priority, policy.appHomeContract, scope, network, heroTitle, list.title, resourceCells),
     collectionTrust: collectionTrustCells(state),
     coreMetrics: core,
     normalSummary: normalSummaryModel(priority),
@@ -864,7 +879,7 @@ export function buildMobileOverviewModel(snapshot: OverviewRawSnapshot, state: O
       trustRail: heroTrustRail(pills),
       interfaceCells: heroInterfaceCells(snapshot, state),
       channelCells: heroChannelCells(state),
-      resourceCells: heroResourceCells(state),
+      resourceCells,
       visualKind: heroVisualKind(priority),
       showMetrics: showHeroMetrics(),
       trend: buildMobileTrendChart(snapshot, state),

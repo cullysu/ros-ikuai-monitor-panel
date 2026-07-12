@@ -1170,27 +1170,27 @@ async function main() {
       }
       if (sectionName === 'mobileIncidentActionNavigation') {
         const root = sectionEl?.querySelector('[data-overview-mobile-console]');
-        const action = root?.querySelector('button.ik-mobile-decision-cell.is-action[aria-label*="查连接压力"]');
-        action?.click();
+        const action = root?.querySelector('.ik-mobile-incident-guidance .ik-mobile-decision-cell:last-child');
+        const resourceDetails = root?.querySelector('.ik-mobile-supporting-list button');
         return (async () => {
           await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-          const activeView = root?.querySelector('[data-overview-mobile-tab-view="terminal"]');
-          const activeTab = root?.querySelector('button[aria-controls="mobile-terminal-view"].is-active');
           const activeScreen = root?.querySelector('[data-overview-mobile-first-screen="app-home"]');
-          const viewText = normalize(activeView?.textContent || '');
+          const actionText = normalize(action?.textContent || '');
+          const supportingText = normalize(resourceDetails?.closest('.ik-mobile-supporting-list')?.textContent || '');
           return {
             pass: Boolean(
               action &&
-              activeView &&
-              activeTab?.getAttribute('aria-current') === 'page' &&
-              activeScreen?.getAttribute('data-overview-mobile-active-tab') === 'terminal' &&
-              /连接|终端/.test(viewText)
+              action.tagName !== 'BUTTON' &&
+              /先处理(处理器|内存|磁盘)/.test(actionText) &&
+              activeScreen?.getAttribute('data-overview-mobile-active-tab') === 'home' &&
+              resourceDetails &&
+              /最高(处理器|内存|磁盘).*(持续|超阈)/.test(supportingText)
             ),
             section: sectionName,
             url: location.href,
-            actionLabel: action?.getAttribute('aria-label') || '',
+            actionLabel: actionText,
             activeTab: activeScreen?.getAttribute('data-overview-mobile-active-tab') || '',
-            viewText: viewText.slice(0, 180),
+            viewText: supportingText.slice(0, 180),
             viewport: { width: innerWidth, height: innerHeight }
           };
         })();
