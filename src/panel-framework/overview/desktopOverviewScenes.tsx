@@ -157,7 +157,6 @@ export function buildDesktopOverviewScene(snapshot: OverviewRawSnapshot, state: 
     };
   }
 
-  const networkRows = compactRows(trafficRows(snapshot, state), isFleet ? 6 : 5);
   const trafficChartRowsData = trafficChartRows(snapshot, state);
   const networkVisual = <DesktopWanIntegratedVisual snapshot={snapshot} state={state} rows={trafficChartRowsData} />;
   const routeRowsCompact = compactRows(routeFactRows(snapshot, state), 4);
@@ -171,8 +170,8 @@ export function buildDesktopOverviewScene(snapshot: OverviewRawSnapshot, state: 
   ], "desktop-wan-evidence-"), isFleet ? 5 : 4);
   return {
     main: [
-      <WanTrend key="compact-network" title={isFleet ? "WAN 采样趋势 / 设备 TopN" : "WAN 采样趋势"} subtitle={isFleet ? "类型分布 / 异常 TopN" : "趋势 / 当前 / 峰值 / Top 出口 / 默认出口 / 采样可信度"} module="wan-trend" tone={state.facts.wan.allOffline ? "danger" : "trust"} trust={trust} headers={[]} rows={[]} minRows={0} visual={networkVisual} visualOnly />,
-      <Module key="compact-route" title="默认出口" subtitle={isFleet ? "默认路由条目 / 承载" : "出口 / 承载 / 优先级"} module="route-raw-facts" tone={state.facts.route.level} trust={trust} headers={["出口", "承载出口", "优先级", "状态"]} rows={routeRowsCompact} minRows={0} />,
+      <WanTrend key="compact-network" title={isFleet ? "WAN 采样趋势 / 设备 TopN" : "WAN 采样趋势"} subtitle={isFleet ? "类型分布 / 异常 TopN" : "当前 / 峰值 / 默认出口 / 最近6点"} module="wan-trend" tone={state.facts.wan.allOffline ? "danger" : "trust"} trust={trust} headers={[]} rows={[]} minRows={0} visual={networkVisual} visualOnly />,
+      isFleet ? <Module key="compact-route" title="默认出口" subtitle="默认路由条目 / 承载" module="route-raw-facts" tone={state.facts.route.level} trust={trust} headers={["出口", "承载出口", "优先级", "状态"]} rows={routeRowsCompact} minRows={0} /> : null,
       isFleet ? <Module key="compact-wan-evidence" title="WAN 异常 TopN" subtitle="离线对象 / 类型分布" module="normal-wan-evidence" tone={state.facts.wan.offline ? "warn" : "trust"} trust={trust} headers={["对象", "当前", "依据"]} rows={wanEvidenceRows} minRows={0} /> : null,
     ],
     side: [

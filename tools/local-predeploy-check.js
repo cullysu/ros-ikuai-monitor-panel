@@ -3077,7 +3077,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         const rect = node.getBoundingClientRect();
         const type = overviewVisualBalanceTypeForNode(node);
         const text = normalize(node.textContent || '');
-        const graphicMarks = node.querySelectorAll('svg path, svg polyline, svg line, svg rect, svg circle, [data-overview-chart-point], [data-overview-bar], [data-overview-module-cell], .ik-overview-bar-row, .ik-overview-chain-node, .ik-overview-module-cell').length;
+        const graphicMarks = node.querySelectorAll('svg path, svg polyline, svg line, svg rect, svg circle, [data-overview-chart-point], [data-overview-bar], [data-overview-module-cell], .ro-chart-mean, .ro-chart-current, .ro-chart-peak, .ro-chart-threshold, .ik-overview-bar-row, .ik-overview-chain-node, .ik-overview-module-cell').length;
         const hasReadableSize = rect.width >= 140 && rect.height >= 56;
         const hasMeaningfulMarks = type === 'line' || type === 'bar'
           ? graphicMarks >= 2

@@ -80,7 +80,7 @@ export function trendDatum(id: string, label: string, currentValue: number, thre
     threshold: formatRate(thresholdValue),
     thresholdValue,
     window: "最近6点",
-    trust: "实时",
+    trust: "采样",
     tone,
     unit,
   };
@@ -91,11 +91,14 @@ export function trafficChartRows(snapshot: OverviewRawSnapshot, state: OverviewD
   const top = totals.rows.slice().sort((left, right) => toNumber(right.downRate || right.upRate) - toNumber(left.downRate || left.upRate))[0];
   const topValue = top ? Math.max(toNumber(top.downRate), toNumber(top.upRate)) : 0;
   const baseThreshold = Math.max(totals.up, totals.down, topValue, 1) * 1.35;
-  return [
+  const summaryRows = [
     trendDatum("traffic-down", "总下行", totals.down, baseThreshold, totals.down > baseThreshold * 0.8 ? "warn" : "trust"),
     trendDatum("traffic-up", "总上行", totals.up, baseThreshold, totals.up > baseThreshold * 0.8 ? "warn" : "trust"),
-    trendDatum("traffic-top-wan", top ? text(top.name || top.interface, "WAN Top1") : "WAN Top1", topValue, baseThreshold, state.facts.wan.allOffline ? "danger" : "trust"),
   ];
+  if (totals.rows.length > 1) {
+    summaryRows.push(trendDatum("traffic-top-wan", top ? text(top.name || top.interface, "WAN Top1") : "WAN Top1", topValue, baseThreshold, state.facts.wan.allOffline ? "danger" : "trust"));
+  }
+  return summaryRows;
 }
 
 export function offlineWanStatusChartRows(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): ChartDatum[] {

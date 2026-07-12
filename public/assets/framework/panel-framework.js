@@ -10024,7 +10024,7 @@ var PanelFramework = function(exports) {
       threshold: formatRate(thresholdValue),
       thresholdValue,
       window: "最近6点",
-      trust: "实时",
+      trust: "采样",
       tone,
       unit
     };
@@ -10034,11 +10034,14 @@ var PanelFramework = function(exports) {
     const top = totals2.rows.slice().sort((left, right) => toNumber(right.downRate || right.upRate) - toNumber(left.downRate || left.upRate))[0];
     const topValue = top ? Math.max(toNumber(top.downRate), toNumber(top.upRate)) : 0;
     const baseThreshold = Math.max(totals2.up, totals2.down, topValue, 1) * 1.35;
-    return [
+    const summaryRows = [
       trendDatum("traffic-down", "总下行", totals2.down, baseThreshold, totals2.down > baseThreshold * 0.8 ? "warn" : "trust"),
-      trendDatum("traffic-up", "总上行", totals2.up, baseThreshold, totals2.up > baseThreshold * 0.8 ? "warn" : "trust"),
-      trendDatum("traffic-top-wan", top ? text(top.name || top.interface, "WAN Top1") : "WAN Top1", topValue, baseThreshold, state.facts.wan.allOffline ? "danger" : "trust")
+      trendDatum("traffic-up", "总上行", totals2.up, baseThreshold, totals2.up > baseThreshold * 0.8 ? "warn" : "trust")
     ];
+    if (totals2.rows.length > 1) {
+      summaryRows.push(trendDatum("traffic-top-wan", top ? text(top.name || top.interface, "WAN Top1") : "WAN Top1", topValue, baseThreshold, state.facts.wan.allOffline ? "danger" : "trust"));
+    }
+    return summaryRows;
   }
   function trafficRows(snapshot, state) {
     const totals2 = trafficTotals(snapshot);
@@ -11212,7 +11215,6 @@ var PanelFramework = function(exports) {
         ]
       };
     }
-    compactRows(trafficRows(snapshot, state), isFleet ? 6 : 5);
     const trafficChartRowsData = trafficChartRows(snapshot, state);
     const networkVisual = /* @__PURE__ */ jsxRuntimeExports.jsx(DesktopWanIntegratedVisual, { snapshot, state, rows: trafficChartRowsData });
     const routeRowsCompact = compactRows(routeFactRows(snapshot, state), 4);
@@ -11226,8 +11228,8 @@ var PanelFramework = function(exports) {
     ], "desktop-wan-evidence-"), isFleet ? 5 : 4);
     return {
       main: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(WanTrend, { title: isFleet ? "WAN 采样趋势 / 设备 TopN" : "WAN 采样趋势", subtitle: isFleet ? "类型分布 / 异常 TopN" : "趋势 / 当前 / 峰值 / Top 出口 / 默认出口 / 采样可信度", module: "wan-trend", tone: state.facts.wan.allOffline ? "danger" : "trust", trust, headers: [], rows: [], minRows: 0, visual: networkVisual, visualOnly: true }, "compact-network"),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "默认出口", subtitle: isFleet ? "默认路由条目 / 承载" : "出口 / 承载 / 优先级", module: "route-raw-facts", tone: state.facts.route.level, trust, headers: ["出口", "承载出口", "优先级", "状态"], rows: routeRowsCompact, minRows: 0 }, "compact-route"),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(WanTrend, { title: isFleet ? "WAN 采样趋势 / 设备 TopN" : "WAN 采样趋势", subtitle: isFleet ? "类型分布 / 异常 TopN" : "当前 / 峰值 / 默认出口 / 最近6点", module: "wan-trend", tone: state.facts.wan.allOffline ? "danger" : "trust", trust, headers: [], rows: [], minRows: 0, visual: networkVisual, visualOnly: true }, "compact-network"),
+        isFleet ? /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "默认出口", subtitle: "默认路由条目 / 承载", module: "route-raw-facts", tone: state.facts.route.level, trust, headers: ["出口", "承载出口", "优先级", "状态"], rows: routeRowsCompact, minRows: 0 }, "compact-route") : null,
         isFleet ? /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "WAN 异常 TopN", subtitle: "离线对象 / 类型分布", module: "normal-wan-evidence", tone: state.facts.wan.offline ? "warn" : "trust", trust, headers: ["对象", "当前", "依据"], rows: wanEvidenceRows, minRows: 0 }, "compact-wan-evidence") : null
       ],
       side: [
