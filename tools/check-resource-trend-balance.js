@@ -1119,17 +1119,17 @@ async function main() {
       }
       if (sectionName === 'mobileNavigation' || sectionName === 'mobileNavigationNoSnapshot') {
         const root = sectionEl?.querySelector('[data-overview-mobile-console]');
-        const tabs = Array.from(root?.querySelectorAll('[data-overview-mobile-v1066-router-tab]') || []);
+        const tabs = Array.from(root?.querySelectorAll('nav[aria-label="路由器监控底部导航"] button[aria-controls^="mobile-"]') || []);
         const expectedTargets = {
-          home: 'mobile-view:home',
-          wan: 'mobile-view:wan',
-          interface: 'mobile-view:interface',
-          terminal: 'mobile-view:terminal',
-          log: 'mobile-view:log'
+          home: 'mobile-home-view',
+          wan: 'mobile-wan-view',
+          interface: 'mobile-interface-view',
+          terminal: 'mobile-terminal-view',
+          log: 'mobile-log-view'
         };
         const targetContractOk = tabs.length === 5 && tabs.every((tab) => {
-          const id = tab.getAttribute('data-overview-mobile-v1066-router-tab') || '';
-          const target = tab.getAttribute('data-overview-mobile-tab-target') || '';
+          const target = tab.getAttribute('aria-controls') || '';
+          const id = target.replace(/^mobile-/, '').replace(/-view$/, '');
           return expectedTargets[id] === target;
         });
         return (async () => {
@@ -1137,11 +1137,11 @@ async function main() {
           const noSnapshotNavigation = sectionName === 'mobileNavigationNoSnapshot';
           const navigationResults = [];
           for (const id of detailIds) {
-            const tab = tabs.find((item) => item.getAttribute('data-overview-mobile-v1066-router-tab') === id);
+            const tab = tabs.find((item) => (item.getAttribute('aria-controls') || '') === 'mobile-' + id + '-view');
             tab?.click();
             await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
             const activeView = root?.querySelector('[data-overview-mobile-tab-view="' + id + '"]');
-            const activeTab = root?.querySelector('[data-overview-mobile-v1066-router-tab="' + id + '"].is-active');
+            const activeTab = root?.querySelector('button[aria-controls="mobile-' + id + '-view"].is-active');
             const homeDecision = root?.querySelector('[data-overview-mobile-v420-hero="network-state-home"]');
             const viewText = normalize(activeView?.textContent || '');
             const credibility = activeView?.getAttribute('data-overview-mobile-tab-credibility') || '';
@@ -1679,10 +1679,10 @@ async function main() {
           ))
         );
         const listStyle = list ? getComputedStyle(list) : null;
-        const routerTabs = root?.querySelector('[data-overview-mobile-v1066-router-tabs="home-wan-interface-terminal-log-router-monitor-low-noise"]');
-        const routerTabItems = Array.from(routerTabs?.querySelectorAll('[data-overview-mobile-v1066-router-tab]') || []);
-        const routerTabIds = routerTabItems.map((item) => item.getAttribute('data-overview-mobile-v1066-router-tab') || '');
-        const routerTabSemantics = routerTabItems.map((item) => item.getAttribute('data-overview-mobile-v1066-router-tab-semantic') || '');
+        const routerTabs = root?.querySelector('nav[aria-label="路由器监控底部导航"]');
+        const routerTabItems = Array.from(routerTabs?.querySelectorAll('button[aria-controls^="mobile-"]') || []);
+        const routerTabIds = routerTabItems.map((item) => (item.getAttribute('aria-controls') || '').replace(/^mobile-/, '').replace(/-view$/, ''));
+        const routerTabTargets = routerTabItems.map((item) => item.getAttribute('aria-controls') || '');
         const routerTabLabels = routerTabItems.map((item) => normalize(item.textContent || ''));
         const routerTabTouchTargetsOk = routerTabItems.every((item) => {
           const rect = item.getBoundingClientRect();
@@ -1737,11 +1737,10 @@ async function main() {
         );
         const routerBottomTabsProductized = Boolean(
           routerTabs &&
-          routerTabs.getAttribute('data-overview-mobile-v1066-router-tab-order') === 'home/wan/interface/terminal/log' &&
-          routerTabs.getAttribute('data-overview-mobile-v1066-router-tab-semantics') === 'status-overview/multi-wan/interface-vlan/online-terminals/collection-log' &&
           routerTabItems.length === 5 &&
           ['home', 'wan', 'interface', 'terminal', 'log'].every((id) => routerTabIds.includes(id)) &&
-          ['status-overview', 'multi-wan', 'interface-vlan', 'online-terminals', 'collection-log'].every((id) => routerTabSemantics.includes(id)) &&
+          routerTabTargets.includes('mobile-home-view') &&
+          Boolean(document.getElementById('mobile-home-view')) &&
           ['首页', 'WAN', '接口', '终端', '日志'].every((label) => routerTabLabels.includes(label)) &&
           routerTabActiveItems.length === 1 &&
           routerTabTouchTargetsOk &&
@@ -2082,7 +2081,7 @@ async function main() {
           routerBottomTabsProductized,
           routerTabItems: routerTabItems.length,
           routerTabIds,
-          routerTabSemantics,
+          routerTabTargets,
           routerTabLabels,
           routerTabTouchTargetsOk,
           routerTabActiveNeutral,

@@ -21,6 +21,7 @@ export function MobileOverviewHome(props: MobileOverviewHomeProps) {
     >
       <div className="ik-v420-shell ik-v240-shell">
         <main
+          id="mobile-home-view"
           className="ik-v420-screen ik-v240-screen ik-mobile-decision-screen"
           data-overview-mobile-first-screen="app-home"
           data-overview-mobile-first-screen-no-table="true"
