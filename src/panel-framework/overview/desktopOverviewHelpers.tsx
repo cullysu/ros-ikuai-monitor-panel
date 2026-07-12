@@ -80,6 +80,7 @@ export interface ModuleProps {
   minRows?: number;
   visual?: ReactNode;
   visualOnly?: boolean;
+  collapsed?: boolean;
   collapsedEvidence?: boolean;
 }
 

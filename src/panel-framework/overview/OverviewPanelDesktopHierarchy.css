@@ -1,0 +1,30 @@
+/* Desktop product hierarchy: keep secondary facts reachable without letting
+   three evidence ledgers compete with the WAN judgement surface. */
+@media (min-width: 761px) {
+  #overview.router-overview-framework .ro-desktop-grid[data-overview-desktop-scene="single"] .ro-module[data-overview-density-module="wan-trend"] .ro-wan-integrated-visual {
+    grid-template-rows: minmax(clamp(190px, 24vh, 230px), auto) 38px 32px !important;
+  }
+
+  #overview.router-overview-framework .ro-desktop-grid[data-overview-desktop-scene="single"] .ro-module[data-overview-density-module="wan-trend"] .ro-judgement-chart {
+    min-height: clamp(180px, 22vh, 210px) !important;
+  }
+
+  #overview.router-overview-framework .ro-desktop-grid[data-overview-desktop-scene="fleet"] .ro-module[data-overview-density-module="wan-trend"] .ro-wan-integrated-visual {
+    grid-template-rows: minmax(clamp(160px, 20vh, 190px), auto) 38px 32px !important;
+  }
+
+  #overview.router-overview-framework .ro-desktop-grid[data-overview-desktop-scene="fleet"] .ro-module[data-overview-density-module="wan-trend"] .ro-judgement-chart {
+    min-height: clamp(150px, 18vh, 180px) !important;
+  }
+
+  #overview.router-overview-framework .ro-compact-summary-disclosure > summary {
+    color: #536a82;
+    background: #f8fbfe;
+    box-shadow: inset 0 1px 0 rgba(216, 228, 240, .48);
+  }
+
+  #overview.router-overview-framework .ro-compact-summary-disclosure > summary span {
+    color: #415a74;
+    font-weight: 690;
+  }
+}

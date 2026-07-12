@@ -2,7 +2,7 @@ import type { CSSProperties } from "react";
 import { ROUTEROS_ROUTE_EVIDENCE_CONTRACT } from "../routerosEvidenceModel";
 import { moduleChartType, type ModuleProps } from "../desktopOverviewHelpers";
 
-export function Module({ title, subtitle, module, tone = "trust", headers, rows, trust, className = "", minRows = 0, visual, visualOnly = false, collapsedEvidence = false }: ModuleProps) {
+export function Module({ title, subtitle, module, tone = "trust", headers, rows, trust, className = "", minRows = 0, visual, visualOnly = false, collapsed = false, collapsedEvidence = false }: ModuleProps) {
   const paddedRows = rows;
   const isWanLedger = /wan/i.test(module);
   const isAnomalyEvidence = isWanLedger && !/wan-trend/i.test(module);
@@ -37,7 +37,7 @@ export function Module({ title, subtitle, module, tone = "trust", headers, rows,
       data-overview-visual-block
       data-overview-chart-type={moduleChartType(module)}
       data-overview-desktop-tier="evidence"
-      data-overview-module-body-policy={visualOnly ? "visual-only" : collapsedEvidence ? "collapsed-secondary-evidence" : "content-sized"}
+      data-overview-module-body-policy={visualOnly ? "visual-only" : collapsedEvidence ? "collapsed-secondary-evidence" : collapsed ? "collapsed-summary" : "content-sized"}
       data-overview-desktop-v1073-visual-only={visualOnly ? "true" : undefined}
       data-overview-desktop-v1074-collapsed-evidence={collapsedEvidence ? "native-details-business-first-raw-secondary" : undefined}
       data-overview-top5-total={module === "resource-interface-top5" ? rows.length : undefined}
@@ -103,13 +103,13 @@ export function Module({ title, subtitle, module, tone = "trust", headers, rows,
       {visual}
       {visualOnly ? null : (
         <details
-          className={collapsedEvidence ? "ro-secondary-evidence-disclosure" : "ro-ledger-disclosure"}
+          className={collapsedEvidence ? "ro-secondary-evidence-disclosure" : collapsed ? "ro-secondary-evidence-disclosure ro-compact-summary-disclosure" : "ro-ledger-disclosure"}
           data-overview-desktop-v1074-raw-evidence-disclosure={collapsedEvidence ? "native-details-collapsed-secondary" : undefined}
-          open={collapsedEvidence ? undefined : true}
+          open={collapsedEvidence || collapsed ? undefined : true}
         >
-          {collapsedEvidence ? (
+          {collapsedEvidence || collapsed ? (
             <summary>
-              <span>查看原始字段</span>
+              <span>{collapsedEvidence ? "查看原始字段" : "查看详情"}</span>
               <b>{rows.length} 项</b>
             </summary>
           ) : null}

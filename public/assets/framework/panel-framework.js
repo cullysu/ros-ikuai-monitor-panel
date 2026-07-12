@@ -15383,7 +15383,7 @@ var PanelFramework = function(exports) {
       children
     ] });
   }
-  function Module({ title, subtitle, module, tone = "trust", headers, rows, trust, className = "", minRows = 0, visual, visualOnly = false, collapsedEvidence = false }) {
+  function Module({ title, subtitle, module, tone = "trust", headers, rows, trust, className = "", minRows = 0, visual, visualOnly = false, collapsed = false, collapsedEvidence = false }) {
     const paddedRows = rows;
     const isWanLedger = /wan/i.test(module);
     const isAnomalyEvidence = isWanLedger && !/wan-trend/i.test(module);
@@ -15417,7 +15417,7 @@ var PanelFramework = function(exports) {
         "data-overview-visual-block": true,
         "data-overview-chart-type": moduleChartType(module),
         "data-overview-desktop-tier": "evidence",
-        "data-overview-module-body-policy": visualOnly ? "visual-only" : collapsedEvidence ? "collapsed-secondary-evidence" : "content-sized",
+        "data-overview-module-body-policy": visualOnly ? "visual-only" : collapsedEvidence ? "collapsed-secondary-evidence" : collapsed ? "collapsed-summary" : "content-sized",
         "data-overview-desktop-v1073-visual-only": visualOnly ? "true" : void 0,
         "data-overview-desktop-v1074-collapsed-evidence": collapsedEvidence ? "native-details-business-first-raw-secondary" : void 0,
         "data-overview-top5-total": module === "resource-interface-top5" ? rows.length : void 0,
@@ -15482,12 +15482,12 @@ var PanelFramework = function(exports) {
           visualOnly ? null : /* @__PURE__ */ jsxRuntimeExports.jsxs(
             "details",
             {
-              className: collapsedEvidence ? "ro-secondary-evidence-disclosure" : "ro-ledger-disclosure",
+              className: collapsedEvidence ? "ro-secondary-evidence-disclosure" : collapsed ? "ro-secondary-evidence-disclosure ro-compact-summary-disclosure" : "ro-ledger-disclosure",
               "data-overview-desktop-v1074-raw-evidence-disclosure": collapsedEvidence ? "native-details-collapsed-secondary" : void 0,
-              open: collapsedEvidence ? void 0 : true,
+              open: collapsedEvidence || collapsed ? void 0 : true,
               children: [
-                collapsedEvidence ? /* @__PURE__ */ jsxRuntimeExports.jsxs("summary", { children: [
-                  /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "查看原始字段" }),
+                collapsedEvidence || collapsed ? /* @__PURE__ */ jsxRuntimeExports.jsxs("summary", { children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: collapsedEvidence ? "查看原始字段" : "查看详情" }),
                   /* @__PURE__ */ jsxRuntimeExports.jsxs("b", { children: [
                     rows.length,
                     " 项"
@@ -15643,9 +15643,9 @@ var PanelFramework = function(exports) {
         isFleet ? /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "WAN 异常 TopN", subtitle: "离线对象 / 类型分布", module: "normal-wan-evidence", tone: state.facts.wan.offline ? "warn" : "trust", trust, headers: ["对象", "当前", "依据"], rows: wanEvidenceRows, minRows: 0 }, "compact-wan-evidence") : null
       ],
       side: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "接口状态", subtitle: "转发面 / 承载", module: "normal-interface-boundary", tone: "trust", trust, headers: ["对象", "当前", "最近", "边界"], rows: interfaceRowsCompact, minRows: 0 }, "compact-interface"),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "资源", subtitle: isFleet ? "接口排行 / 阈值" : "当前 / 阈值", module: "resource-threshold", tone: state.facts.resource.level, trust, headers: ["项", "阈值", "持续", "峰值"], rows: compactRows(resourceRows(state), 3), minRows: 0 }, "compact-resource"),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: isFleet ? "采集可信度" : "采集 / 快照", subtitle: "REST / SSH / 成功", module: "normal-collection-channel", tone: state.facts.collection.level, trust, headers: ["对象", "当前", "依据"], rows: collectionRowsCompact, minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(ChannelMatrixVisual, { module: "collection-status", rows: collectionChannelRows(snapshot, state) }) }, "compact-collection")
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "接口状态", subtitle: "转发面 / 承载", module: "normal-interface-boundary", tone: "trust", trust, headers: ["对象", "当前", "最近", "边界"], rows: interfaceRowsCompact, minRows: 0, collapsed: true }, "compact-interface"),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "资源", subtitle: isFleet ? "接口排行 / 阈值" : "当前 / 阈值", module: "resource-threshold", tone: state.facts.resource.level, trust, headers: ["项", "阈值", "持续", "峰值"], rows: compactRows(resourceRows(state), 3), minRows: 0, collapsed: true }, "compact-resource"),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: isFleet ? "采集可信度" : "采集 / 快照", subtitle: "REST / SSH / 成功", module: "normal-collection-channel", tone: state.facts.collection.level, trust, headers: ["对象", "当前", "依据"], rows: collectionRowsCompact, minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(ChannelMatrixVisual, { module: "collection-status", rows: collectionChannelRows(snapshot, state) }), collapsed: true }, "compact-collection")
       ],
       bottom: [
         /* @__PURE__ */ jsxRuntimeExports.jsx(TerminalRanking, { title: "终端排行", subtitle: "异常置顶 / 总流量", module: "terminal-ranking", tone: "trust", trust, headers: ["设备", "IP", "流量", "状态"], rows: compactRows(desktopTerminalRows(snapshot), 4), minRows: 0 }, "compact-terminals"),

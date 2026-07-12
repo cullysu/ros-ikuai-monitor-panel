@@ -6107,6 +6107,8 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     let overviewDesktopTopBandOk = true;
     let overviewDesktopEffectiveHeightProbe = null;
     let overviewDesktopEffectiveHeightOk = true;
+    let overviewDesktopFocusedHierarchyProbe = null;
+    let overviewDesktopFocusedHierarchyOk = false;
     if (sectionName === 'overview' && isDesktopOverview && sectionRoot) {
       const rect = sectionRoot.getBoundingClientRect();
       const left = Math.max(0, rect.left);
@@ -6194,6 +6196,31 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       const flatConsoleTableCount = overviewDesktopDetail ? overviewDesktopDetail.querySelectorAll('table').length : 0;
       const flatConsoleWrapCount = overviewDesktopDetail ? overviewDesktopDetail.querySelectorAll('.ops-table-wrap').length : 0;
       const flatConsoleFieldCount = overviewFieldNodes.filter(nodeVisibleInFirstScreen).length;
+      const compactSummaryDisclosures = Array.from(sectionRoot.querySelectorAll('.ro-compact-summary-disclosure'))
+        .filter((node) => node.getBoundingClientRect().width > 0 && node.getBoundingClientRect().height > 0);
+      const focusedWanVisual = sectionRoot.querySelector('[data-overview-density-module="wan-trend"] .ro-wan-integrated-visual');
+      const focusedWanVisualRect = focusedWanVisual?.getBoundingClientRect();
+      const focusedBottomRail = sectionRoot.querySelector('.ro-col.is-bottom');
+      const focusedBottomRailRect = focusedBottomRail?.getBoundingClientRect();
+      overviewDesktopFocusedHierarchyOk = ['single', 'fleet'].includes(scaleScenario) && Boolean(
+        compactSummaryDisclosures.length >= 3 &&
+        compactSummaryDisclosures.every((node) => !node.hasAttribute('open')) &&
+        focusedWanVisualRect &&
+        focusedWanVisualRect.width >= rect.width * 0.52 &&
+        focusedWanVisualRect.height >= 240 &&
+        focusedBottomRailRect &&
+        focusedBottomRailRect.width >= rect.width * 0.72 &&
+        focusedBottomRailRect.height >= 120 &&
+        focusedBottomRailRect.top < window.innerHeight * 0.80
+      );
+      overviewDesktopFocusedHierarchyProbe = {
+        disclosureCount: compactSummaryDisclosures.length,
+        disclosuresClosed: compactSummaryDisclosures.every((node) => !node.hasAttribute('open')),
+        wanVisualHeight: Math.round(focusedWanVisualRect?.height || 0),
+        wanVisualWidth: Math.round(focusedWanVisualRect?.width || 0),
+        bottomRailTop: Math.round(focusedBottomRailRect?.top || 0),
+        bottomRailHeight: Math.round(focusedBottomRailRect?.height || 0),
+      };
       const flatConsoleVisible = Boolean(
         overviewStatusBar &&
         overviewStatusBar.getBoundingClientRect().top < window.innerHeight * 0.20 &&
@@ -6279,7 +6306,9 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       }
       const rightBlank = Math.max(0, rightTotal - rightFilled);
       const rightFillRatio = rightTotal ? rightFilled / rightTotal : 0;
-      const rightFillMinRatio = scaleScenario === 'resource-full' ? 0.68 : (noSnapshotEdge ? 0.72 : 0.56);
+      const rightFillMinRatio = overviewDesktopFocusedHierarchyOk
+        ? 0.50
+        : scaleScenario === 'resource-full' ? 0.68 : (noSnapshotEdge ? 0.72 : 0.56);
       overviewDesktopRightFillProbe = {
         filled: rightFilled,
         total: rightTotal,
@@ -7763,6 +7792,8 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewBlankProbe,
       overviewDesktopRightFillOk,
       overviewDesktopRightFillProbe,
+      overviewDesktopFocusedHierarchyOk,
+      overviewDesktopFocusedHierarchyProbe,
       overviewDesktopColumnContinuityOk,
       overviewDesktopColumnContinuityProbe,
       overviewDesktopTopBandOk,

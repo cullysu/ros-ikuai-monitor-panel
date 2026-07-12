@@ -49,7 +49,9 @@ function lineCount(text) {
 const overview = read('src/panel-framework/overview/OverviewPanel.tsx');
 const desktop = read('src/panel-framework/overview/components/DesktopConsole.tsx');
 const desktopDecision = read('src/panel-framework/overview/components/DesktopDecisionRail.tsx');
+const desktopModule = read('src/panel-framework/overview/components/DesktopModule.tsx');
 const desktopScenes = read('src/panel-framework/overview/desktopOverviewScenes.tsx');
+const desktopHierarchyStyles = read('src/panel-framework/overview/OverviewPanelDesktopHierarchy.css');
 const mobile = read('src/panel-framework/overview/components/MobileOverviewHome.tsx');
 const mobileDecision = read('src/panel-framework/overview/components/MobileOverviewDecision.tsx');
 const mobileSections = read('src/panel-framework/overview/components/MobileOverviewHomeSections.tsx');
@@ -120,6 +122,9 @@ includesAll(desktopScenes, [
   'state.scenario === "resource-full"',
   'state.scenario === "interfaces-down"',
 ], 'desktop scenario ownership');
+if ((desktopScenes.match(/\bcollapsed\s*\/>/g) || []).length < 3) fail('desktop normal hierarchy', 'expected three collapsed secondary summaries');
+includesAll(desktopModule, ['collapsed ? "collapsed-summary"', 'ro-compact-summary-disclosure', '查看详情'], 'desktop compact disclosure');
+includesAll(desktopHierarchyStyles, ['data-overview-desktop-scene="single"', 'data-overview-desktop-scene="fleet"', 'ro-compact-summary-disclosure'], 'desktop focused hierarchy styles');
 
 ordered(mobile, [
   '<DeviceBar model={model} />',
@@ -173,6 +178,7 @@ includesAll(predeploy, [
   'waitForAnyJson',
   'terminateBrowserTree',
   'matrixBlocksTopLevelPass',
+  'overviewDesktopFocusedHierarchyOk',
   'report.pass = report.failures.length === 0 && !matrixBlocksTopLevelPass',
   'process.exitCode = report.exitCodeShouldFail ? 1 : 0',
 ], 'release gate integrity');

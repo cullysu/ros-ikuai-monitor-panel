@@ -14,6 +14,7 @@ import {
 import "./OverviewPanel.css";
 import "./OverviewPanelDesktopRefinement.css";
 import "./OverviewPanelRelease.css";
+import "./OverviewPanelDesktopHierarchy.css";
 
 export function OverviewPanel({ snapshot, state }: OverviewPanelProps) {
   return (
