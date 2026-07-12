@@ -485,7 +485,253 @@ def assert_counter_rate_history_semantics():
     )
     assert first_zero_candidate["meta"]["freshCounterSample"] is True, first_zero_candidate["meta"]
     assert int(first_zero_candidate["wan"][0]["upRate"]) == second_overview_history[-1], first_zero_candidate["wan"][0]
-    assert int(first_zero_candidate["wan"][0]["downRate"]) == second_overview_dow…3055 tokens truncated… in windows_spec
+    assert int(first_zero_candidate["wan"][0]["downRate"]) == second_overview_down_history[-1], first_zero_candidate["wan"][0]
+    assert first_zero_candidate["overview"]["history"]["uplink"][-1] == second_overview_history[-1], first_zero_candidate["overview"]["history"]
+    assert first_zero_candidate["overview"]["history"]["downlink"][-1] == second_overview_down_history[-1], first_zero_candidate["overview"]["history"]
+    assert first_zero_candidate["wan"][0]["history"]["up"][-1] == second_line_history[-1], first_zero_candidate["wan"][0]["history"]
+    assert first_zero_candidate["wan"][0]["history"]["down"][-1] == second_line_down_history[-1], first_zero_candidate["wan"][0]["history"]
+    assert len(first_zero_candidate["overview"]["history"]["uplink"]) == len(second_overview_history) + 1
+    assert len(first_zero_candidate["wan"][0]["history"]["up"]) == len(second_line_history) + 1
+
+    collector.prev_ts = time.time() - 1
+    true_zero = collector.build_snapshot(
+        make_rate_rest(1800, 3200, cpu_load=22, free_memory=570000, free_hdd=785000),
+        make_empty_ssh(),
+        fresh_counter_sample=True,
+    )
+    assert true_zero["meta"]["freshCounterSample"] is True, true_zero["meta"]
+    assert true_zero["wan"][0]["upRate"] == 0, true_zero["wan"][0]
+    assert true_zero["wan"][0]["downRate"] == 0, true_zero["wan"][0]
+    assert true_zero["overview"]["history"]["uplink"][-1] == 0, true_zero["overview"]["history"]
+    assert true_zero["overview"]["history"]["downlink"][-1] == 0, true_zero["overview"]["history"]
+    assert true_zero["wan"][0]["history"]["up"][-1] == 0, true_zero["wan"][0]["history"]
+    assert true_zero["wan"][0]["history"]["down"][-1] == 0, true_zero["wan"][0]["history"]
+    true_zero_uplink_history = true_zero["overview"]["history"]["uplink"][:]
+    true_zero_line_history = true_zero["wan"][0]["history"]["up"][:]
+
+    collector.prev_ts = time.time() - 1
+    rollback = collector.build_snapshot(
+        make_rate_rest(900, 1700, cpu_load=25, free_memory=560000, free_hdd=780000),
+        make_empty_ssh(),
+        fresh_counter_sample=True,
+    )
+    assert rollback["meta"]["freshCounterSample"] is True, rollback["meta"]
+    assert rollback["overview"]["history"]["uplink"][-1] is None, rollback["overview"]["history"]
+    assert rollback["overview"]["history"]["downlink"][-1] is None, rollback["overview"]["history"]
+    assert rollback["wan"][0]["history"]["up"][-1] is None, rollback["wan"][0]["history"]
+    assert rollback["wan"][0]["history"]["down"][-1] is None, rollback["wan"][0]["history"]
+    assert rollback["pppoe"][0]["upRate"] is None, rollback["pppoe"][0]
+    assert rollback["pppoe"][0]["downRate"] is None, rollback["pppoe"][0]
+    assert rollback["loadBalance"]["distribution"][0]["share"] == 0, rollback["loadBalance"]["distribution"]
+    assert rollback["loadBalance"]["distribution"][0]["upRate"] is None, rollback["loadBalance"]["distribution"]
+    assert rollback["loadBalance"]["distribution"][0]["downRate"] is None, rollback["loadBalance"]["distribution"]
+    assert rollback["overview"]["history"]["uplink"][:-1] == true_zero_uplink_history, rollback["overview"]["history"]
+    assert rollback["wan"][0]["history"]["up"][:-1] == true_zero_line_history, rollback["wan"][0]["history"]
+    assert rollback["overview"]["history"]["cpu"][-1] == 25, rollback["overview"]["history"]
+
+
+def assert_interface_quality_metrics_track_recent_samples():
+    collector = app.Collector()
+    collector.get_wan_latency = lambda force=False: {
+        "ok": True,
+        "target": "www.baidu.com",
+        "latencyMs": 8,
+        "updatedAt": "2026-05-25 11:00:00",
+        "method": "fixture",
+        "error": None,
+    }
+
+    first = collector.build_snapshot(
+        make_rate_rest(
+            1000,
+            2000,
+            rx_packets=100,
+            tx_packets=100,
+            rx_drop=5,
+            tx_drop=0,
+            rx_error=1,
+            tx_error=0,
+        ),
+        make_empty_ssh(),
+        fresh_counter_sample=True,
+    )
+    first_iface = first["interfaces"][0]
+    assert first_iface["dropTotal"] == 5, first_iface
+    assert first_iface["errorTotal"] == 1, first_iface
+    assert first_iface["dropDelta"] == 0, first_iface
+    assert first_iface["errorDelta"] == 0, first_iface
+    assert first_iface["lossRate"] is None, first_iface
+    assert first_iface["qualitySampleReady"] is False, first_iface
+
+    second = collector.build_snapshot(
+        make_rate_rest(
+            1800,
+            3200,
+            rx_packets=200,
+            tx_packets=300,
+            rx_drop=6,
+            tx_drop=2,
+            rx_error=1,
+            tx_error=1,
+        ),
+        make_empty_ssh(),
+        fresh_counter_sample=True,
+    )
+    second_iface = second["interfaces"][0]
+    assert second_iface["packetDelta"] == 300, second_iface
+    assert second_iface["dropTotal"] == 8, second_iface
+    assert second_iface["errorTotal"] == 2, second_iface
+    assert second_iface["dropDelta"] == 3, second_iface
+    assert second_iface["errorDelta"] == 1, second_iface
+    assert abs(second_iface["lossRate"] - 0.01) < 0.000001, second_iface
+    assert abs(second_iface["errorRate"] - (1 / 300)) < 0.000001, second_iface
+    assert second_iface["qualitySampleReady"] is True, second_iface
+
+    stale = collector.build_snapshot(
+        make_rate_rest(
+            1800,
+            3200,
+            rx_packets=200,
+            tx_packets=300,
+            rx_drop=6,
+            tx_drop=2,
+            rx_error=1,
+            tx_error=1,
+        ),
+        make_empty_ssh(),
+        fresh_counter_sample=False,
+    )
+    stale_iface = stale["interfaces"][0]
+    assert stale["meta"]["freshCounterSample"] is False, stale["meta"]
+    assert stale_iface["dropDelta"] == 3, stale_iface
+    assert stale_iface["errorDelta"] == 1, stale_iface
+    assert abs(stale_iface["lossRate"] - 0.01) < 0.000001, stale_iface
+    assert abs(stale_iface["errorRate"] - (1 / 300)) < 0.000001, stale_iface
+
+    vlan_rest = make_rate_rest(1000, 1000, name="vlan10", iface_type="vlan")
+    vlan_snapshot = collector.build_snapshot(vlan_rest, make_empty_ssh(), fresh_counter_sample=True)
+    vlan_iface = vlan_snapshot["interfaces"][0]
+    assert vlan_iface["isDerivedInterface"] is True, vlan_iface
+    assert vlan_iface["qualityEvidenceLevel"] == "logical", vlan_iface
+    assert vlan_iface["qualityDisplayWeight"] < 1, vlan_iface
+    assert vlan_iface["logicalPairKey"] == "logical-pair:10", vlan_iface
+    assert vlan_iface["qualityGroupKey"] == "logical-pair:10", vlan_iface
+
+
+def assert_arp_alerts_are_confidence_classified():
+    collector = app.Collector()
+    collector.get_wan_latency = lambda force=False: {
+        "ok": True,
+        "target": "www.baidu.com",
+        "latencyMs": 8,
+        "updatedAt": "2026-05-25 12:40:00",
+        "method": "fixture",
+        "error": None,
+    }
+
+    stale_rest = make_rate_rest(1000, 2000)
+    stale_rest["interfaces"].append(
+        {
+            "name": "bridge-lan",
+            "type": "bridge",
+            "running": "true",
+            "disabled": "false",
+            "mac-address": "02:aa:00:00:00:01",
+            "rx-byte": "100",
+            "tx-byte": "200",
+            "rx-packet": "10",
+            "tx-packet": "20",
+            "rx-drop": "0",
+            "tx-drop": "0",
+            "rx-error": "0",
+            "tx-error": "0",
+        }
+    )
+    stale_rest["ip_addresses"].append(
+        {"interface": "bridge-lan", "actual-interface": "bridge-lan", "address": "10.30.0.1/24", "network": "10.30.0.0"}
+    )
+    stale_rest["arp"] = [
+        {"address": "10.30.0.10", "mac-address": "02:aa:bb:cc:dd:ee", "status": "reachable", "dynamic": "true"},
+        {"address": "10.30.0.11", "mac-address": "02:aa:bb:cc:dd:ee", "status": "failed", "dynamic": "true"},
+    ]
+    stale_snapshot = collector.build_snapshot(stale_rest, make_empty_ssh(), fresh_counter_sample=True)
+    stale_alert = stale_snapshot["arp"]["alerts"][0]
+    assert stale_alert["kind"] == "MAC drift", stale_alert
+    assert stale_alert["severity"] == "info", stale_alert
+    stale_finding = next(row for row in stale_snapshot["healthFindings"]["findings"] if row["id"] == "arp.identity_conflicts")
+    assert stale_finding["severity"] != "critical", stale_finding
+
+    active_rest = copy.deepcopy(stale_rest)
+    active_rest["arp"] = [
+        {"address": "10.30.0.20", "mac-address": "02:aa:bb:cc:00:01", "status": "reachable", "dynamic": "true"},
+        {"address": "10.30.0.20", "mac-address": "02:aa:bb:cc:00:02", "status": "complete", "dynamic": "true"},
+    ]
+    active_snapshot = collector.build_snapshot(active_rest, make_empty_ssh(), fresh_counter_sample=True)
+    active_alert = active_snapshot["arp"]["alerts"][0]
+    assert active_alert["kind"] == "IP conflict", active_alert
+    assert active_alert["severity"] == "critical", active_alert
+    assert active_alert["activeConflict"] is True, active_alert
+    active_finding = next(row for row in active_snapshot["healthFindings"]["findings"] if row["id"] == "arp.identity_conflicts")
+    assert active_finding["severity"] == "critical", active_finding
+
+
+def assert_arbitrary_scale_snapshot_contract():
+    collector = app.Collector()
+    collector.get_wan_latency = lambda force=False: {
+        "ok": True,
+        "target": "www.baidu.com",
+        "latencyMs": 8,
+        "updatedAt": "2026-05-25 12:45:00",
+        "method": "fixture",
+        "error": None,
+    }
+    ssh = make_empty_ssh()
+    ssh["counts"] = {"all": 250, "tcp": 0, "udp": 0, "icmp": 0}
+    ssh["active_connections"] = [make_active_connection(index) for index in range(120)]
+    snapshot = collector.build_snapshot(make_arbitrary_scale_rest(125), ssh, fresh_counter_sample=True)
+    scale = snapshot["meta"]["scale"]
+    assert snapshot["meta"]["capabilities"]["wanFallback"] is True, snapshot["meta"]["capabilities"]
+    assert scale["wan"]["actualCount"] == 1, scale["wan"]
+    assert scale["pppoe"]["actualCount"] == 0, scale["pppoe"]
+    assert scale["interfaces"]["actualCount"] == 125, scale["interfaces"]
+    assert scale["interfaces"]["bucket"] == "fleet", scale["interfaces"]
+    assert scale["connectionsActive"]["actualCount"] == 250, scale["connectionsActive"]
+    assert scale["connectionsActive"]["shownCount"] == app.ACTIVE_CONNECTION_LIMIT, scale["connectionsActive"]
+    assert scale["connectionsActive"]["hasMore"] is True, scale["connectionsActive"]
+    assert scale["connectionsActive"]["sampled"] is True, scale["connectionsActive"]
+    protocol_top = snapshot["connections"]["protocolTop"]
+    assert protocol_top, snapshot["connections"]
+    assert protocol_top[0]["protocol"] == "TCP", protocol_top[0]
+    assert protocol_top[0]["connections"] == 120, protocol_top[0]
+    assert protocol_top[0]["upRate"] > 0 and protocol_top[0]["downRate"] > 0, protocol_top[0]
+    assert snapshot["connections"]["meta"]["protocolTop"]["shownCount"] == 1, snapshot["connections"]["meta"]["protocolTop"]
+    assert all(not str(row.get("name", "")).startswith("pppoe-out") for row in snapshot["wan"]), snapshot["wan"]
+
+
+def assert_deploy_defaults_are_project_safe():
+    service_text = (ROOT / "ros-panel-ip.service").read_text(encoding="utf-8")
+    template_text = (ROOT / "ros-panel-ip@.service").read_text(encoding="utf-8")
+    deploy_text = (ROOT / "deploy_linux.sh").read_text(encoding="utf-8")
+    install_text = (ROOT / "install.sh").read_text(encoding="utf-8")
+    windows_spec = (ROOT / "routeros-triage-panel.spec").read_text(encoding="utf-8")
+    assert "192.168.3.5" not in service_text
+    assert "192.168.3.5" not in template_text
+    assert 'PANEL_IP="$${ROS_PANEL_TARGET_IP:-}"' in service_text
+    assert 'PANEL_IP="$${ROS_PANEL_TARGET_IP:-}"' in template_text
+    assert 'DEFAULT_PANEL_BIND="127.0.0.1"' in deploy_text
+    assert 'DEFAULT_PANEL_TARGET_IP="127.0.0.1"' in deploy_text
+    assert 'DEFAULT_ROUTER_USER="admin"' not in deploy_text
+    for stale_public_pattern in (
+        "public/*.bak-*",
+        "public/_preview*.html",
+        "public/*.pre-*.js",
+        "public/index.extracted.js",
+    ):
+        assert stale_public_pattern in deploy_text
+        assert stale_public_pattern in install_text
+    assert "def public_datas()" in windows_spec
+    assert "index.extracted.js" in windows_spec
+    assert '".bak-"' in windows_spec
     assert '".pre-"' in windows_spec
 
 
