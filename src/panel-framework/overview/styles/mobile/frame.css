@@ -33,6 +33,7 @@
     font-size: 17px !important;
     line-height: 1.08 !important;
     letter-spacing: 0 !important;
+    white-space: nowrap !important;
   }
 
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-device-title span {
@@ -40,6 +41,7 @@
     color: #66758a !important;
     font-size: 11.5px !important;
     line-height: 1.1 !important;
+    white-space: nowrap !important;
   }
 
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-context-button {

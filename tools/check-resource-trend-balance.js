@@ -1265,6 +1265,22 @@ async function main() {
       if (sectionName === 'mobileNormalHome' || sectionName === 'mobileAppHome' || sectionName === 'mobileNoSnapshotHome' || sectionName === 'mobileResourceHome' || sectionName === 'mobileInterfaceHome' || sectionName === 'mobileCollectionHome') {
         const root = sectionEl?.querySelector('[data-overview-mobile-console]');
         const screen = sectionEl?.querySelector('[data-overview-mobile-first-screen="app-home"]');
+        const deviceTitle = screen?.querySelector('.ik-mobile-device-title > b');
+        const deviceStatus = screen?.querySelector('.ik-mobile-device-bar .ik-v240-status');
+        const deviceTitleText = normalize(deviceTitle?.textContent || '');
+        const deviceTitleRect = deviceTitle?.getBoundingClientRect();
+        const deviceHeaderVisible = Boolean(
+          deviceTitleText &&
+          deviceTitleRect &&
+          deviceTitleRect.top >= 0 &&
+          deviceTitleRect.bottom <= 58
+        );
+        const deviceHeaderUsesVerdict = /(?:无可用快照|业务数据不可判|采集不完整|资源过载|外网不可用|接口异常)/.test(deviceTitleText);
+        const deviceStatusVisible = Boolean(
+          normalize(deviceStatus?.textContent || '') &&
+          deviceStatus &&
+          deviceStatus.getBoundingClientRect().top >= 0
+        );
         const surface = sectionEl?.querySelector('.ik-mobile-supporting-surface');
         const hero = sectionEl?.querySelector('.ik-mobile-primary-conclusion');
         const list = surface?.querySelector('.ik-mobile-supporting-list');
@@ -1979,6 +1995,9 @@ async function main() {
           screen &&
           surface &&
           hero &&
+          deviceHeaderVisible &&
+          !deviceHeaderUsesVerdict &&
+          deviceStatusVisible &&
           buildTimeMobileCss &&
           mobileTokensApplied &&
           nativeTrustSpinePolished &&
@@ -2026,6 +2045,17 @@ async function main() {
           missing,
           mobileStyleStack,
           rootAttrs,
+          deviceHeader: {
+            title: deviceTitleText,
+            visible: deviceHeaderVisible,
+            usesVerdict: deviceHeaderUsesVerdict,
+            statusVisible: deviceStatusVisible,
+            rect: deviceTitleRect ? {
+              top: deviceTitleRect.top,
+              bottom: deviceTitleRect.bottom,
+              height: deviceTitleRect.height,
+            } : null,
+          },
           mobileTokensApplied,
           mobileTokenValues,
           surfaceAttrs,

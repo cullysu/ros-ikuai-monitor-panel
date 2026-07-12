@@ -8562,8 +8562,19 @@ var PanelFramework = function(exports) {
     if (state.verdict.level === "warn") return "需确认";
     return "可用";
   }
+  function headerDeviceName(snapshot, state) {
+    var _a;
+    const candidates = [
+      (_a = snapshot.overview) == null ? void 0 : _a.identity,
+      state.facts.device.identity,
+      snapshot.identity,
+      snapshot.deviceName,
+      snapshot.name
+    ].map((value) => clean$1(value));
+    return candidates.find((value) => value !== "-" && !/(?:无可用快照|业务数据不可判|采集不完整|资源过载|外网不可用|接口异常)/.test(value)) || "RouterOS 设备";
+  }
   function headerModel(snapshot, state) {
-    const deviceName = clean$1(snapshot.identity || snapshot.name || snapshot.deviceName || state.facts.device.identity || "爱快路由");
+    const deviceName = headerDeviceName(snapshot, state);
     const version = clean$1(snapshot.version || snapshot.routerosVersion || state.facts.device.version || "RouterOS");
     return {
       deviceName,

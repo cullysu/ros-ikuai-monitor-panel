@@ -314,8 +314,19 @@ function headerStatusLabel(state: OverviewDerivedState): string {
   return "可用";
 }
 
+function headerDeviceName(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): string {
+  const candidates = [
+    snapshot.overview?.identity,
+    state.facts.device.identity,
+    snapshot.identity,
+    snapshot.deviceName,
+    snapshot.name,
+  ].map((value) => clean(value));
+  return candidates.find((value) => value !== "-" && !/(?:无可用快照|业务数据不可判|采集不完整|资源过载|外网不可用|接口异常)/.test(value)) || "RouterOS 设备";
+}
+
 function headerModel(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): MobileOverviewModel["header"] {
-  const deviceName = clean(snapshot.identity || snapshot.name || snapshot.deviceName || state.facts.device.identity || "爱快路由");
+  const deviceName = headerDeviceName(snapshot, state);
   const version = clean(snapshot.version || snapshot.routerosVersion || state.facts.device.version || "RouterOS");
   return {
     deviceName,

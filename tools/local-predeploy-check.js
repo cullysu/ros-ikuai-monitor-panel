@@ -7932,11 +7932,38 @@ async function withTimeout(promise, timeoutMs, label) {
 }
 
 async function captureScreenshot(cdp, filePath) {
-  const shot = await cdp.send('Page.captureScreenshot', {
-    format: 'png',
-    fromSurface: true,
-    captureBeyondViewport: false,
+  await cdp.send('Runtime.evaluate', {
+    expression: `(() => {
+      window.scrollTo(0, 0);
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+      const mobileScreen = document.querySelector('#overview .ik-mobile-decision-screen');
+      if (mobileScreen) mobileScreen.scrollTop = 0;
+      return true;
+    })()`,
+    returnByValue: true,
   });
+  await new Promise((resolve) => setTimeout(resolve, 120));
+  let shot = null;
+  let lastError = null;
+  for (let attempt = 1; attempt <= 2; attempt += 1) {
+    try {
+      shot = await withTimeout(
+        cdp.send('Page.captureScreenshot', {
+          format: 'png',
+          fromSurface: true,
+          captureBeyondViewport: false,
+        }),
+        7500,
+        `capture screenshot attempt ${attempt}`,
+      );
+      break;
+    } catch (error) {
+      lastError = error;
+      if (attempt === 1) await new Promise((resolve) => setTimeout(resolve, 120));
+    }
+  }
+  if (!shot) throw lastError || new Error('screenshot capture failed');
   await fs.mkdir(path.dirname(filePath), { recursive: true });
   await fs.writeFile(filePath, Buffer.from(shot.data, 'base64'));
 }
