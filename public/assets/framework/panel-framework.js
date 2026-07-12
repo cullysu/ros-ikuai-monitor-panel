@@ -11002,6 +11002,42 @@ var PanelFramework = function(exports) {
       ] })
     ] });
   }
+  function buildResourceFullDesktopScene(snapshot, state) {
+    const trust = moduleTrust(state);
+    const riskChart = resourceChartRows(state);
+    const pressureRows = compactRows(resourceContextRows(snapshot, state), 8);
+    const top5Rows = resourceTop5Rows(snapshot).slice(0, 8);
+    return {
+      main: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(
+          Module,
+          {
+            title: "最危险项",
+            subtitle: "CPU / 内存 / 磁盘 · 连接压力 / 活动会话 / DNS缓存 · 阈值 / 持续 6 点 / 均值 / 峰值",
+            module: "resource-risk-priority",
+            tone: "danger",
+            trust,
+            headers: ["项", "当前", "阈值", "峰值"],
+            rows: resourceRiskRows(state),
+            minRows: 0,
+            visual: /* @__PURE__ */ jsxRuntimeExports.jsx(VisualStack, { snapshot, state, children: /* @__PURE__ */ jsxRuntimeExports.jsx(ResourcePressureLedgerVisual, { rows: riskChart }) })
+          },
+          "res-risk"
+        )
+      ],
+      side: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "连接压力", subtitle: "连接压力 / 活动会话 / DNS缓存 / 接口", module: "resource-pressure-bars", tone: "warn", trust, headers: ["项目", "当前", "依据"], rows: pressureRows, minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(JudgementChart, { module: "resource-pressure-bars", kind: "pressure", rows: connectionPressureChartRows(snapshot, state) }) }, "res-pressure"),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "接口状态", subtitle: "承载 / 边界", module: "normal-interface-boundary", tone: "trust", trust, headers: ["对象", "当前", "最近", "边界"], rows: compactRows(interfaceBoundaryRows(snapshot, state), 4), minRows: 0 }, "res-interface"),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "采集 / 快照", subtitle: "REST / SSH / 成功", module: "normal-collection-channel", tone: state.facts.collection.level, trust, headers: ["对象", "当前", "依据"], rows: compactRows(threeColumnRows(collectionRows(snapshot, state), "res-col-"), 4), minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(ChannelMatrixVisual, { module: "collection-status", rows: collectionChannelRows(snapshot, state) }) }, "res-collection"),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "默认出口", subtitle: "出口 / 承载 / 优先级", module: "route-raw-facts", tone: state.facts.route.level, trust, headers: ["出口", "承载出口", "优先级", "状态"], rows: compactRows(routeBusinessRows(snapshot, state), 4), minRows: 0 }, "res-route")
+      ],
+      bottom: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "接口吞吐 Top5", subtitle: "接口吞吐 Top5 / 占比 / 资源影响", module: "resource-interface-top5", tone: "warn", trust, headers: ["接口", "速率", "占比"], rows: compactRows(top5Rows, 5), className: "ik-overview-top5-list", minRows: 0 }, "res-top5"),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "最近事件", subtitle: "采集 / 默认出口", module: "normal-ops-ledger", tone: state.facts.collection.level, trust, headers: ["对象", "当前", "依据"], rows: compactRows(normalOpsRows(snapshot, state), 4), minRows: 0 }, "res-events"),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "证据 / 原始字段", subtitle: "默认收起 · 仅用于审计", module: "evidence-boundary", tone: "trust", trust, headers: ["对象", "当前", "依据"], rows: compactRows([...routeRawEvidenceRows(snapshot, state), ...threeColumnRows(resourceBoundaryRows(snapshot, state), "res-boundary-")], 4), minRows: 0, collapsedEvidence: true }, "res-boundary")
+      ]
+    };
+  }
   function buildDesktopOverviewScene(snapshot, state) {
     const trust = moduleTrust(state);
     const isFleet = state.scenario === "fleet";
@@ -11022,23 +11058,7 @@ var PanelFramework = function(exports) {
       };
     }
     if (state.scenario === "resource-full") {
-      const riskChart = resourceChartRows(state);
-      const pressureRows = compactRows(resourceContextRows(snapshot, state), 8);
-      const top5Rows = resourceTop5Rows(snapshot).slice(0, 8);
-      return {
-        main: [/* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "最危险项", subtitle: "CPU / 内存 / 磁盘 · 连接压力 / 活动会话 / DNS缓存 · 阈值 / 持续 6 点 / 均值 / 峰值", module: "resource-risk-priority", tone: "danger", trust, headers: ["项", "当前", "阈值", "峰值"], rows: resourceRiskRows(state), minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(VisualStack, { snapshot, state, children: /* @__PURE__ */ jsxRuntimeExports.jsx(ResourcePressureLedgerVisual, { rows: riskChart }) }) }, "res-risk")],
-        side: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "连接压力", subtitle: "连接压力 / 活动会话 / DNS缓存 / 接口", module: "resource-pressure-bars", tone: "warn", trust, headers: ["项目", "当前", "依据"], rows: pressureRows, minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(JudgementChart, { module: "resource-pressure-bars", kind: "pressure", rows: connectionPressureChartRows(snapshot, state) }) }, "res-pressure"),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "接口状态", subtitle: "承载 / 边界", module: "normal-interface-boundary", tone: "trust", trust, headers: ["对象", "当前", "最近", "边界"], rows: compactRows(interfaceBoundaryRows(snapshot, state), 4), minRows: 0 }, "res-interface"),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "采集 / 快照", subtitle: "REST / SSH / 成功", module: "normal-collection-channel", tone: state.facts.collection.level, trust, headers: ["对象", "当前", "依据"], rows: compactRows(threeColumnRows(collectionRows(snapshot, state), "res-col-"), 4), minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(ChannelMatrixVisual, { module: "collection-status", rows: collectionChannelRows(snapshot, state) }) }, "res-collection"),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "默认出口", subtitle: "出口 / 承载 / 优先级", module: "route-raw-facts", tone: state.facts.route.level, trust, headers: ["出口", "承载出口", "优先级", "状态"], rows: compactRows(routeBusinessRows(snapshot, state), 4), minRows: 0 }, "res-route")
-        ],
-        bottom: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "接口吞吐 Top5", subtitle: "接口吞吐 Top5 / 占比 / 资源影响", module: "resource-interface-top5", tone: "warn", trust, headers: ["接口", "速率", "占比"], rows: compactRows(top5Rows, 5), className: "ik-overview-top5-list", minRows: 0 }, "res-top5"),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "最近事件", subtitle: "采集 / 默认出口", module: "normal-ops-ledger", tone: state.facts.collection.level, trust, headers: ["对象", "当前", "依据"], rows: compactRows(normalOpsRows(snapshot, state), 4), minRows: 0 }, "res-events"),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "证据 / 原始字段", subtitle: "默认收起 · 仅用于审计", module: "evidence-boundary", tone: "trust", trust, headers: ["对象", "当前", "依据"], rows: compactRows([...routeRawEvidenceRows(snapshot, state), ...threeColumnRows(resourceBoundaryRows(snapshot, state), "res-boundary-")], 4), minRows: 0, collapsedEvidence: true }, "res-boundary")
-        ]
-      };
+      return buildResourceFullDesktopScene(snapshot, state);
     }
     if (state.scenario === "collection-down") {
       const collectionVisual = /* @__PURE__ */ jsxRuntimeExports.jsx(VisualStack, { snapshot, state, children: /* @__PURE__ */ jsxRuntimeExports.jsx(ChannelMatrixVisual, { module: "collection-cache-ledger", rows: collectionChannelRows(snapshot, state) }) });
