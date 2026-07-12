@@ -1,4 +1,3 @@
-import type { CSSProperties } from "react";
 import type { OverviewTone } from "../index";
 import { desktopPresentation, type OverviewPanelProps } from "../desktopOverviewHelpers";
 
@@ -7,21 +6,6 @@ interface DecisionAction {
   note: string;
   tone: OverviewTone;
 }
-
-const actionRailStyle = {
-  gridColumn: "1 / -1",
-  gridRow: 1,
-  display: "grid",
-  gridTemplateColumns: "minmax(0, 1.2fr) minmax(0, .8fr)",
-  height: 54,
-  minHeight: 54,
-  maxHeight: 54,
-  gap: 0,
-  marginBottom: 2,
-  borderBottom: "1px solid rgba(155, 177, 200, .13)",
-  background: "transparent",
-  overflow: "hidden",
-} satisfies CSSProperties;
 
 function nextAction(state: OverviewPanelProps["state"]): DecisionAction {
   switch (state.scenario) {
@@ -58,7 +42,6 @@ export function DesktopDecisionRail({ snapshot, state }: OverviewPanelProps) {
     <section
       className="ro-desktop-decision-rail"
       aria-label="桌面判断与处置"
-      style={actionRailStyle}
       data-overview-desktop-kpi-row="next-action-credibility"
       data-overview-desktop-decision-rail="action-and-credibility"
     >

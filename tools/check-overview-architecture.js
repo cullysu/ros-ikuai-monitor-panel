@@ -41,6 +41,10 @@ const desktopScenesFile =
   "src/panel-framework/overview/desktopOverviewScenes.tsx";
 const desktopHelpersFile =
   "src/panel-framework/overview/desktopOverviewHelpers.tsx";
+const routerOsNetworkViewModelFile =
+  "src/panel-framework/overview/routerosNetworkViewModel.ts";
+const routerOsPresentationViewModelFile =
+  "src/panel-framework/overview/routerosPresentationViewModel.ts";
 const desktopRowsFile =
   "src/panel-framework/overview/desktopOverviewRows.ts";
 const desktopTrafficRowsFile =
@@ -76,6 +80,8 @@ const desktopRefinement = read(desktopRefinementFile);
 const desktopRelease = read(desktopReleaseFile);
 const desktopIncidentStyles = read(desktopIncidentStylesFile);
 const desktopHelpers = read(desktopHelpersFile);
+const routerOsNetworkViewModel = read(routerOsNetworkViewModelFile);
+const routerOsPresentationViewModel = read(routerOsPresentationViewModelFile);
 const desktopRows = read(desktopRowsFile);
 const desktopTrafficRows = read(desktopTrafficRowsFile);
 const desktopNetworkRows = read(desktopNetworkRowsFile);
@@ -418,8 +424,24 @@ assert(
   "OverviewPanel.tsx must load the semantic desktop incident layer"
 );
 assert(
-  desktopHelpers.includes("buildRouterOsPresentationViewModel"),
+  desktopHelpers.includes('from "./routerosPresentationViewModel"') &&
+    desktopHelpers.includes("buildRouterOsPresentationViewModel"),
   "desktopOverviewHelpers.tsx must consume the RouterOS presentation view model"
+);
+assert(
+  lines(routerOsNetworkViewModel) <= 300 &&
+    !routerOsNetworkViewModel.includes("buildRouterOsPresentationViewModel"),
+  "routerosNetworkViewModel.ts must stay focused on network evidence, not presentation copy"
+);
+assert(
+  lines(routerOsPresentationViewModel) <= 110 &&
+    routerOsPresentationViewModel.includes("buildRouterOsPresentationViewModel"),
+  "routerosPresentationViewModel.ts must own the bounded desktop presentation policy"
+);
+assert(
+  !desktopDecisionRail.includes("style={") &&
+    desktopBaseStyles.includes(".ro-desktop-decision-rail"),
+  "DesktopDecisionRail layout must live in the desktop stylesheet, not inline JSX"
 );
 assert(
   desktopConsole.includes('from "../desktopOverviewScenes"') &&
