@@ -24,7 +24,10 @@
 
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-core-facts {
     grid-area: side !important;
-    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    grid-template-rows: repeat(2, 56px) !important;
+    min-height: 112px !important;
+    height: 112px !important;
     align-self: start !important;
     width: 100% !important;
     min-width: 0 !important;
