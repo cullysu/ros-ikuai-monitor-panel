@@ -1,0 +1,35 @@
+/* Shared desktop console tokens. Keep the control-console surface independent
+   from scene-specific layout and incident overrides. */
+@media (min-width: 761px) {
+  #overview.router-overview-framework {
+    --ik-console-ink: #122237;
+    --ik-console-text: #27394d;
+    --ik-console-muted: #76889d;
+    --ik-console-line: rgba(155, 177, 200, .15);
+    --ik-console-line-strong: rgba(155, 177, 200, .24);
+    --ik-console-blue: #1473e6;
+    --ik-console-danger: #873734;
+    --ik-console-warn: #755d31;
+    --ik-console-page: #f4f8fc;
+    --ik-console-panel: rgba(255,255,255,.965);
+    --ik-console-panel-soft: #fbfdff;
+    --ik-console-risk-danger-soft: rgba(173,54,49,.045);
+    --ik-console-risk-warn-soft: rgba(164,111,36,.045);
+    --ik-console-radius-panel: 4px;
+    --ik-console-radius-row: 3px;
+    --ik-console-font-xs: 7.8px;
+    --ik-console-font-sm: 8.8px;
+    --ik-console-font-md: 10.8px;
+    --ik-console-chart-current: var(--ik-console-blue);
+    --ik-console-chart-peak: #5b7188;
+    --ik-console-chart-threshold: rgba(120, 143, 166, .34);
+    --ik-blue: var(--ik-console-blue);
+    --ik-line: #e4edf6;
+    --ik-panel: #ffffff;
+    --ik-panel-soft: var(--ik-console-panel-soft);
+    --ik-ink: #172436;
+    --ik-muted: #66778c;
+    --ik-red: #d93025;
+    --ik-warn: #c9781f;
+  }
+}

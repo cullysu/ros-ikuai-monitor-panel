@@ -4,6 +4,7 @@ import { StatusVerdict } from "./components/StatusVerdict";
 import { OVERVIEW_LOW_NOISE_CONSOLE_TOKEN_CONTRACT } from "./mobileOverviewTokens";
 import { type OverviewPanelProps } from "./desktopOverviewHelpers";
 import "./OverviewPanel.css";
+import "./styles/desktop/tokens.css";
 import "./OverviewPanelDesktopRefinement.css";
 import "./OverviewPanelRelease.css";
 import "./OverviewPanelDesktopHierarchy.css";
