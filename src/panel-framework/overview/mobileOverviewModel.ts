@@ -119,7 +119,7 @@ export interface MobileTrendChartModel {
   windowText: string;
   sampleText: string;
   sampleLabel: string;
-  decisionContract: "window-current-peak-threshold-sample-anomaly-source";
+  decisionContract: "window-current-peak-reference-sample-high-point-source";
   decisionLabel: string;
   anomalyLabel: string;
   anomalyTone: OverviewTone;
