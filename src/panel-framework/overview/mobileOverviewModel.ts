@@ -127,7 +127,7 @@ export interface MobileTrendChartModel {
   endLabel: string;
   referenceLabel: string;
   referenceRatio: number;
-  thresholdLabel: string;
+  referenceValueLabel: string;
   breachLabel: string;
   currentLabel: string;
   peakLabel: string;

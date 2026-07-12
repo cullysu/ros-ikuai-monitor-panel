@@ -137,8 +137,8 @@ export function buildMobileTrendChart(snapshot: OverviewRawSnapshot, state: Over
   const peak = Math.max(...down);
   const current = down[down.length - 1] || 0;
   const referenceRatio = state.facts.wan.allOffline ? 0.08 : 0.78;
-  const thresholdValue = peak * referenceRatio;
-  const breachIndex = down.findIndex((value) => value >= thresholdValue);
+  const referenceValue = peak * referenceRatio;
+  const highPointIndex = down.findIndex((value) => value >= referenceValue);
   const windowText = series.source === "history"
     ? `近 ${Math.max(down.length, up.length)} 点`
     : `近 ${Math.max(down.length, up.length)} 次`;
@@ -148,24 +148,24 @@ export function buildMobileTrendChart(snapshot: OverviewRawSnapshot, state: Over
     : state.scenario === "collection-down" || state.facts.collection.dataStale || state.facts.freshness.history
       ? "缓存"
       : "实时";
-  const anomalyLabel = breachIndex >= 0 ? `异常点 ${breachIndex + 1}` : "异常点 0";
-  const anomalyTone: OverviewTone = breachIndex >= 0 ? "warn" : "trust";
-  const decisionLabel = `${windowText} · 当前 ${mobileRate(current)} · 峰值 ${mobileRate(peak)} · 阈值 ${mobileRate(thresholdValue)} · ${anomalyLabel} · 采样${sampleLabel}`;
+  const anomalyLabel = highPointIndex >= 0 ? `高位点 ${highPointIndex + 1}` : "高位点 0";
+  const anomalyTone: OverviewTone = "trust";
+  const decisionLabel = `${windowText} · 当前 ${mobileRate(current)} · 峰值 ${mobileRate(peak)} · 参考 ${mobileRate(referenceValue)} · ${anomalyLabel} · 采样${sampleLabel}`;
   return {
     source: series.source,
     windowText,
     sampleText,
     sampleLabel,
-    decisionContract: "window-current-peak-threshold-sample-anomaly-source",
+    decisionContract: "window-current-peak-reference-sample-high-point-source",
     decisionLabel,
     anomalyLabel,
     anomalyTone,
     startLabel: series.source === "history" ? `${down.length} 点前` : "窗口起点",
     endLabel: "当前",
-    referenceLabel: state.facts.wan.allOffline ? "离线阈值" : "高位阈值",
+    referenceLabel: state.facts.wan.allOffline ? "离线参考" : "高位参考",
     referenceRatio,
-    thresholdLabel: mobileRate(thresholdValue),
-    breachLabel: breachIndex >= 0 ? `第 ${breachIndex + 1} 点` : "未越阈",
+    referenceValueLabel: mobileRate(referenceValue),
+    breachLabel: highPointIndex >= 0 ? `第 ${highPointIndex + 1} 点` : "未到参考线",
     currentLabel: mobileRate(current),
     peakLabel: mobileRate(peak),
     down,
@@ -174,9 +174,9 @@ export function buildMobileTrendChart(snapshot: OverviewRawSnapshot, state: Over
       { label: "当前", value: mobileRate(current), note: "下载", tone: "trust" },
       { label: "峰值", value: mobileRate(peak), note: windowText, tone: "trust" },
       { label: "窗口", value: series.source === "history" ? "12 点" : "当前", note: sampleText, tone: state.facts.collection.credibilityTone },
-      { label: "阈值", value: mobileRate(thresholdValue), note: breachIndex >= 0 ? "已触线" : "未触线", tone: breachIndex >= 0 ? "warn" : "trust" },
+      { label: "参考", value: mobileRate(referenceValue), note: "峰值参考", tone: "trust" },
       { label: "采样", value: sampleLabel, note: state.facts.collection.credibilityLabel, tone: state.facts.collection.credibilityTone },
-      { label: "异常", value: breachIndex >= 0 ? `${breachIndex + 1}` : "0", note: anomalyLabel, tone: anomalyTone },
+      { label: "高位", value: highPointIndex >= 0 ? `${highPointIndex + 1}` : "0", note: anomalyLabel, tone: anomalyTone },
     ],
     plot: trendChartPlot(down, up, referenceRatio),
   };

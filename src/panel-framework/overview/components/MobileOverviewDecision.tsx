@@ -3,8 +3,8 @@ import { toneClass } from "./MobileOverviewUtils";
 function WanDecisionSpark({ model }: { model: MobileOverviewModel }) {
   const chart = model.hero.trend;
   const plot = chart.plot;
-  const anomaly = (chart.anomalyLabel || "0").replace(/^异常点\s*/, "");
-  const chartDecision = `当前 ${chart.currentLabel} · 峰值 ${chart.peakLabel} · 阈值 ${chart.thresholdLabel} · 异常点 ${anomaly} · 采样 ${chart.sampleText}`;
+  const highPoint = (chart.anomalyLabel || "0").replace(/^高位点\s*/, "");
+  const chartDecision = `当前 ${chart.currentLabel} · 峰值 ${chart.peakLabel} · 参考 ${chart.referenceValueLabel} · 高位点 ${highPoint} · 采样 ${chart.sampleText}`;
   return (
     <div className="ik-mobile-decision-trend">
       <div className="ik-mobile-decision-trend-plot">
@@ -35,7 +35,7 @@ function WanDecisionSpark({ model }: { model: MobileOverviewModel }) {
       <div className="ik-v1010-chart-readout-rail ik-mobile-decision-readouts" aria-label={chartDecision}>
         <span><em>当前</em><b>{chart.currentLabel}</b></span>
         <span><em>峰值</em><b>{chart.peakLabel}</b></span>
-        <span><em>阈值</em><b>{chart.thresholdLabel}</b></span>
+        <span><em>参考</em><b>{chart.referenceValueLabel}</b></span>
         <span><em>采样</em><b>{chart.sampleText}</b></span>
       </div>
     </div>

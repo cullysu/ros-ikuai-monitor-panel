@@ -1393,7 +1393,7 @@ async function main() {
           productChart.querySelector('.ik-v945-reference-line')
         );
         const productChartDecision = chartRail?.getAttribute('aria-label') || '';
-        const productChartAnomaly = productChartDecision.match(/异常(?:点)?\\s*(\\d+)/)?.[0].replace(/异常(?:点)?\\s*/, '异常点 ') || '';
+        const productChartAnomaly = productChartDecision.match(/高位(?:点)?\\s*(\\d+)/)?.[0].replace(/高位(?:点)?\\s*/, '高位点 ') || '';
         const trendColumns = trendVisual ? getComputedStyle(trendVisual).gridTemplateColumns.trim().split(/\s+/).filter(Boolean).length : 0;
         const chartRailRect = chartRail?.getBoundingClientRect();
         const trendVisualRect = trendVisual?.getBoundingClientRect();
@@ -1439,23 +1439,23 @@ async function main() {
         const chartRailFullWidth = sectionName !== 'mobileNormalHome' || Boolean(chartRailRect && trendVisualRect && chartRailRect.width >= trendVisualRect.width - 2);
         const chartRailNotSideBubble = sectionName !== 'mobileNormalHome' || Boolean(chartRailRect && trendVisualRect && Math.abs(chartRailRect.left - trendVisualRect.left) <= 2 && chartRailRect.top >= trendVisualRect.bottom - 2);
         const chartReadoutLabelsVisible = sectionName !== 'mobileNormalHome' || (chartRailLabels.length === 4 && visibleChartRailLabels.length === 4);
-        const hasThresholdChartContract = sectionName !== 'mobileNormalHome' || Boolean(
+        const hasReferenceChartContract = sectionName !== 'mobileNormalHome' || Boolean(
           productChart &&
           productChart.querySelector('.ik-mobile-decision-ref') &&
           productChart.querySelector('.ik-v420-peak-dot') &&
           productChart.querySelector('.ik-mobile-decision-dot') &&
-          chartRail?.textContent?.includes('阈值')
+          chartRail?.textContent?.includes('参考')
         );
         const productChartProductized = sectionName !== 'mobileNormalHome' || Boolean(
           productDecisionChart &&
           chartRail &&
-          ['当前', '峰值', '阈值', '采样'].every((label) => visibleChartRailLabelText.includes(label)) &&
+          ['当前', '峰值', '参考', '采样'].every((label) => visibleChartRailLabelText.includes(label)) &&
           /当前/.test(productChartDecision) &&
           /峰值/.test(productChartDecision) &&
-          /阈值/.test(productChartDecision) &&
-          /异常(?:点)?/.test(productChartDecision) &&
+          /参考/.test(productChartDecision) &&
+          /高位(?:点)?/.test(productChartDecision) &&
           /采样/.test(productChartDecision) &&
-          /异常点\\s*\\d+/.test(productChartAnomaly)
+          /高位点\\s*\\d+/.test(productChartAnomaly)
         );
         const hasProductChartRail = sectionName !== 'mobileNormalHome' || Boolean(chartRail);
         const chartDecisionLayoutProductized = sectionName !== 'mobileNormalHome' || Boolean(
@@ -1472,7 +1472,7 @@ async function main() {
           chartSeriesLegendText.includes('下载') &&
           chartSeriesLegendText.includes('上传')
         );
-        const hasNativeChartLayout = sectionName !== 'mobileNormalHome' || (hasProductChartRail && trendColumns === 1 && chartRailFullWidth && chartRailNotSideBubble && chartReadoutLabelsVisible && hasThresholdChartContract && productChartProductized && chartDecisionLayoutProductized && chartSeriesPaintProductized);
+        const hasNativeChartLayout = sectionName !== 'mobileNormalHome' || (hasProductChartRail && trendColumns === 1 && chartRailFullWidth && chartRailNotSideBubble && chartReadoutLabelsVisible && hasReferenceChartContract && productChartProductized && chartDecisionLayoutProductized && chartSeriesPaintProductized);
         const judgementLabel = root?.querySelector('.ik-v960-judgement-strip > strong b');
         const judgementLabelNoEllipsis = !judgementLabel || getComputedStyle(judgementLabel).textOverflow !== 'ellipsis';
         const bottomTabs = screen?.querySelector('.ik-v420-tabs');
@@ -2037,7 +2037,7 @@ async function main() {
             download: { stroke: downloadLineStyle?.stroke || '', fill: downloadLineStyle?.fill || '' },
             upload: { stroke: uploadLineStyle?.stroke || '', fill: uploadLineStyle?.fill || '' },
           },
-          hasThresholdChartContract,
+          hasReferenceChartContract,
           visibleChartRailLabelCount: visibleChartRailLabels.length,
           visibleChartRailLabelText,
           judgementLabelNoEllipsis,
