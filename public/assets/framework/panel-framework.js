@@ -11038,24 +11038,28 @@ var PanelFramework = function(exports) {
       ]
     };
   }
+  function buildNoSnapshotDesktopScene(snapshot, state) {
+    const trust = moduleTrust(state);
+    const businessBoundaryRows = compactRows(noSnapshotBusinessBoundaryRows(snapshot, state), 4);
+    const chainRows = compactRows(noSnapshotChainRows(snapshot, state), 4);
+    const successRows = compactRows(lastSuccessRows(snapshot, state), 4);
+    return {
+      main: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "采集链路", subtitle: "管理面证据 · 不代表业务可用", module: "no-snapshot-summary", tone: "warn", trust, headers: ["通道", "当前", "依据"], rows: chainRows, minRows: 0 }, "ns-collection-chain"),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "业务数据不可判", subtitle: "缺少业务快照 · WAN / 资源 / 终端数值不展示", module: "no-snapshot-module-visibility", tone: "missing", trust, headers: ["对象", "当前", "影响", "处理"], rows: businessBoundaryRows, minRows: 0 }, "ns-business-boundary")
+      ],
+      side: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "恢复线索", subtitle: "最近成功 · 当前状态 · 下次轮询", module: "no-snapshot-recent-success", tone: "trust", trust, headers: ["节点", "当前", "说明"], rows: successRows, minRows: 0 }, "ns-recovery"),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "原始证据", subtitle: "默认收起 · 仅用于审计", module: "evidence-boundary", tone: "trust", trust, headers: ["对象", "当前", "依据"], rows: compactRows(desktopEvidenceBoundaryRows(snapshot, state), 4), minRows: 0, collapsedEvidence: true }, "ns-raw-evidence")
+      ],
+      bottom: []
+    };
+  }
   function buildDesktopOverviewScene(snapshot, state) {
     const trust = moduleTrust(state);
     const isFleet = state.scenario === "fleet";
     if (state.scenario === "no-snapshot") {
-      const businessBoundaryRows = compactRows(noSnapshotBusinessBoundaryRows(snapshot, state), 4);
-      const chainRows = compactRows(noSnapshotChainRows(snapshot, state), 4);
-      const successRows = compactRows(lastSuccessRows(snapshot, state), 4);
-      return {
-        main: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "采集链路", subtitle: "管理面证据 · 不代表业务可用", module: "no-snapshot-summary", tone: "warn", trust, headers: ["通道", "当前", "依据"], rows: chainRows, minRows: 0 }, "ns-collection-chain"),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "业务数据不可判", subtitle: "缺少业务快照 · WAN / 资源 / 终端数值不展示", module: "no-snapshot-module-visibility", tone: "missing", trust, headers: ["对象", "当前", "影响", "处理"], rows: businessBoundaryRows, minRows: 0 }, "ns-business-boundary")
-        ],
-        side: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "恢复线索", subtitle: "最近成功 · 当前状态 · 下次轮询", module: "no-snapshot-recent-success", tone: "trust", trust, headers: ["节点", "当前", "说明"], rows: successRows, minRows: 0 }, "ns-recovery"),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "原始证据", subtitle: "默认收起 · 仅用于审计", module: "evidence-boundary", tone: "trust", trust, headers: ["对象", "当前", "依据"], rows: compactRows(desktopEvidenceBoundaryRows(snapshot, state), 4), minRows: 0, collapsedEvidence: true }, "ns-raw-evidence")
-        ],
-        bottom: []
-      };
+      return buildNoSnapshotDesktopScene(snapshot, state);
     }
     if (state.scenario === "resource-full") {
       return buildResourceFullDesktopScene(snapshot, state);
