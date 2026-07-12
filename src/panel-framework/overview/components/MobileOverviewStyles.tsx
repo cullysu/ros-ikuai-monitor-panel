@@ -3,7 +3,6 @@ import { MOBILE_OVERVIEW_PRODUCT_SHELL_STYLES } from "./MobileOverviewProductShe
 import { MOBILE_OVERVIEW_FOUNDATION_STYLES } from "./MobileOverviewBaseStyles";
 import { MOBILE_OVERVIEW_INFORMATION_ARCHITECTURE_STYLES } from "./MobileOverviewRefinementStyles";
 import { MOBILE_OVERVIEW_DECISION_HOME_STYLES } from "./MobileOverviewDecisionStyles";
-import { MOBILE_OVERVIEW_RELEASE_STYLES } from "./MobileOverviewReleaseStyles";
 import { MOBILE_OVERVIEW_PUBLIC_DECISION_STYLES } from "./MobileOverviewPublicDecisionStyles";
 import { MOBILE_OVERVIEW_PUBLIC_DECISION_REPAIR_STYLES } from "./MobileOverviewPublicDecisionRepairStyles";
 
@@ -13,7 +12,6 @@ const MOBILE_OVERVIEW_STYLE_LAYERS = [
     id: "information-architecture",
     css: MOBILE_OVERVIEW_INFORMATION_ARCHITECTURE_STYLES,
   },
-  { id: "release-contract", css: MOBILE_OVERVIEW_RELEASE_STYLES },
   {
     id: "product-shell",
     css: MOBILE_OVERVIEW_PRODUCT_SHELL_STYLES,
