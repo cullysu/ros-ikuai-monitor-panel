@@ -14,6 +14,21 @@ export type MobilePrimaryListKind =
   | "snapshot-boundary"
   | "collection-boundary";
 
+export type MobileIncidentTargetTab = "wan" | "interface" | "terminal" | "log";
+
+export interface MobileIncidentAction {
+  value: string;
+  note: string;
+  targetTab?: MobileIncidentTargetTab;
+}
+
+export interface MobileIncidentResource {
+  label: string;
+  display: string;
+  thresholdText: string;
+  sustainedText: string;
+}
+
 export interface MobileAppHomeContract {
   severity: "p0" | "p1" | "p2" | "normal";
   firstQuestion: string;
@@ -72,6 +87,7 @@ interface MobileOverviewPolicyDefinition
   extends Omit<MobileAppHomeContract, "trustBoundary"> {
   surfaceOrder: MobileHomeSurface["order"];
   surfaceRanking: MobileHomeSurface["ranking"];
+  incidentAction?: MobileIncidentAction;
   trustBoundary: (context: MobileOverviewPolicyContext) => string;
 }
 
@@ -90,6 +106,7 @@ const MOBILE_OVERVIEW_POLICY: Record<
     showCoreMetricRail: true,
     surfaceOrder: "list-before-status",
     surfaceRanking: "suppressed",
+    incidentAction: { value: "查采集状态", note: "采集 / 最近成功", targetTab: "log" },
     trustBoundary: (context) =>
       `业务快照缺失 · 最近成功 ${context.recentSuccess}`,
   },
@@ -104,6 +121,7 @@ const MOBILE_OVERVIEW_POLICY: Record<
     showCoreMetricRail: true,
     surfaceOrder: "list-before-status",
     surfaceRanking: "suppressed",
+    incidentAction: { value: "查默认出口", note: "WAN / 默认路由", targetTab: "wan" },
     trustBoundary: (context) =>
       `转发面不可用 · ${context.collectionLabel}${context.collectionValue} · 最近 ${context.recentSuccess}`,
   },
@@ -118,6 +136,7 @@ const MOBILE_OVERVIEW_POLICY: Record<
     showCoreMetricRail: true,
     surfaceOrder: "list-before-status",
     surfaceRanking: "suppressed",
+    incidentAction: { value: "查接口承载", note: "接口 / 默认路由", targetTab: "interface" },
     trustBoundary: (context) =>
       `接口转发面优先 · 采集面只作旁证 · ${context.snapshotValue}`,
   },
@@ -146,6 +165,7 @@ const MOBILE_OVERVIEW_POLICY: Record<
     showCoreMetricRail: true,
     surfaceOrder: "list-before-status",
     surfaceRanking: "suppressed",
+    incidentAction: { value: "查采集通道", note: "通道 / 缓存", targetTab: "log" },
     trustBoundary: (context) =>
       `采集降级 · 缓存边界 · 最近 ${context.recentSuccess}`,
   },
@@ -164,6 +184,24 @@ const MOBILE_OVERVIEW_POLICY: Record<
       `转发面可用 · 采集${context.collectionValue} · 快照${context.snapshotValue}`,
   },
 };
+
+export function resolveMobileIncidentAction(
+  priority: MobileOverviewPriority,
+  resource?: MobileIncidentResource,
+): MobileIncidentAction {
+  if (priority === "resource-full") {
+    return {
+      value: `先处理${resource?.label || "资源"}`,
+      note: resource
+        ? `${resource.display} · ${resource.thresholdText} · ${resource.sustainedText}`
+        : "按最高风险项处理",
+    };
+  }
+  return MOBILE_OVERVIEW_POLICY[priority].incidentAction || {
+    value: "观察",
+    note: "持续观察",
+  };
+}
 
 export function resolveMobileOverviewPolicy(
   priority: MobileOverviewPriority,

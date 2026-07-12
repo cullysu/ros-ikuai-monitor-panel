@@ -16,6 +16,7 @@ import {
 } from "./routerosNetworkViewModel";
 import type { RouterOsTrustPlane } from "./routerosTrustModel";
 import {
+  resolveMobileIncidentAction,
   resolveMobileOverviewPolicy,
   type MobileAppHomeContract,
   type MobileHomeSurface,
@@ -767,45 +768,6 @@ function wanPorts(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): M
 }
 
 
-function primaryResourceCell(resourceCells: MobileHeroResourceCell[]): MobileHeroResourceCell | undefined {
-  return resourceCells.find((item) => item.risk === "primary-risk") || resourceCells[0];
-}
-
-function abnormalDecisionNextAction(
-  priority: MobileOverviewModel["priority"],
-  resourceCells: MobileHeroResourceCell[],
-): string {
-  if (priority === "wan-offline") return "查默认出口";
-  if (priority === "snapshot-missing") return "查采集状态";
-  if (priority === "interface-down") return "查接口承载";
-  if (priority === "resource-full") return `先处理${primaryResourceCell(resourceCells)?.label || "资源"}`;
-  if (priority === "collection-degraded") return "查采集通道";
-  return "观察";
-}
-
-function abnormalDecisionActionNote(
-  priority: MobileOverviewModel["priority"],
-  resourceCells: MobileHeroResourceCell[],
-): string {
-  if (priority === "wan-offline") return "WAN / 默认路由";
-  if (priority === "snapshot-missing") return "采集 / 最近成功";
-  if (priority === "interface-down") return "接口 / 默认路由";
-  if (priority === "resource-full") {
-    const primary = primaryResourceCell(resourceCells);
-    return primary ? `${primary.display} · ${primary.thresholdText} · ${primary.sustainedText}` : "按最高风险项处理";
-  }
-  if (priority === "collection-degraded") return "通道 / 缓存";
-  return "持续观察";
-}
-
-function abnormalDecisionTargetTab(priority: MobileOverviewModel["priority"]): MobileAbnormalDecisionCell["targetTab"] {
-  if (priority === "wan-offline") return "wan";
-  if (priority === "snapshot-missing" || priority === "collection-degraded") return "log";
-  if (priority === "resource-full") return undefined;
-  if (priority === "interface-down") return "interface";
-  return undefined;
-}
-
 function abnormalDecisionEvidenceTone(priority: MobileOverviewModel["priority"]): OverviewTone {
   if (priority === "snapshot-missing") return "missing";
   if (priority === "wan-offline") return "danger";
@@ -835,11 +797,13 @@ function abnormalDecisionCells(
 ): MobileAbnormalDecisionCell[] {
   if (priority === "normal") return [];
   const evidenceParts = contract.trustBoundary.split("·").map((part) => clean(part)).filter(Boolean);
+  const primaryResource = resourceCells.find((item) => item.risk === "primary-risk") || resourceCells[0];
+  const action = resolveMobileIncidentAction(priority, primaryResource);
   return [
     { label: "对象", value: listTitle, note: heroTitle, tone: scope.tone },
     { label: "影响", value: abnormalDecisionImpactValue(priority, scope), note: scope.note, tone: scope.tone },
     { label: "可信度", value: evidenceParts[0] || network.snapshot.value, note: evidenceParts.slice(1).join(" · ") || network.snapshot.label, tone: abnormalDecisionEvidenceTone(priority) },
-    { label: "下一步", value: abnormalDecisionNextAction(priority, resourceCells), note: abnormalDecisionActionNote(priority, resourceCells), tone: contract.severity === "p0" ? "danger" : "warn", targetTab: abnormalDecisionTargetTab(priority) },
+    { label: "下一步", value: action.value, note: action.note, tone: contract.severity === "p0" ? "danger" : "warn", targetTab: action.targetTab },
   ];
 }
 

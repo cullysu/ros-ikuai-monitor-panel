@@ -7861,6 +7861,7 @@ var PanelFramework = function(exports) {
       showCoreMetricRail: true,
       surfaceOrder: "list-before-status",
       surfaceRanking: "suppressed",
+      incidentAction: { value: "查采集状态", note: "采集 / 最近成功", targetTab: "log" },
       trustBoundary: (context) => `业务快照缺失 · 最近成功 ${context.recentSuccess}`
     },
     "wan-offline": {
@@ -7874,6 +7875,7 @@ var PanelFramework = function(exports) {
       showCoreMetricRail: true,
       surfaceOrder: "list-before-status",
       surfaceRanking: "suppressed",
+      incidentAction: { value: "查默认出口", note: "WAN / 默认路由", targetTab: "wan" },
       trustBoundary: (context) => `转发面不可用 · ${context.collectionLabel}${context.collectionValue} · 最近 ${context.recentSuccess}`
     },
     "interface-down": {
@@ -7887,6 +7889,7 @@ var PanelFramework = function(exports) {
       showCoreMetricRail: true,
       surfaceOrder: "list-before-status",
       surfaceRanking: "suppressed",
+      incidentAction: { value: "查接口承载", note: "接口 / 默认路由", targetTab: "interface" },
       trustBoundary: (context) => `接口转发面优先 · 采集面只作旁证 · ${context.snapshotValue}`
     },
     "resource-full": {
@@ -7913,6 +7916,7 @@ var PanelFramework = function(exports) {
       showCoreMetricRail: true,
       surfaceOrder: "list-before-status",
       surfaceRanking: "suppressed",
+      incidentAction: { value: "查采集通道", note: "通道 / 缓存", targetTab: "log" },
       trustBoundary: (context) => `采集降级 · 缓存边界 · 最近 ${context.recentSuccess}`
     },
     normal: {
@@ -7929,6 +7933,18 @@ var PanelFramework = function(exports) {
       trustBoundary: (context) => `转发面可用 · 采集${context.collectionValue} · 快照${context.snapshotValue}`
     }
   };
+  function resolveMobileIncidentAction(priority, resource) {
+    if (priority === "resource-full") {
+      return {
+        value: `先处理${(resource == null ? void 0 : resource.label) || "资源"}`,
+        note: resource ? `${resource.display} · ${resource.thresholdText} · ${resource.sustainedText}` : "按最高风险项处理"
+      };
+    }
+    return MOBILE_OVERVIEW_POLICY[priority].incidentAction || {
+      value: "观察",
+      note: "持续观察"
+    };
+  }
   function resolveMobileOverviewPolicy(priority, listKind, context) {
     const definition = MOBILE_OVERVIEW_POLICY[priority];
     const appHomeContract = {
@@ -8947,36 +8963,6 @@ var PanelFramework = function(exports) {
       };
     });
   }
-  function primaryResourceCell(resourceCells) {
-    return resourceCells.find((item) => item.risk === "primary-risk") || resourceCells[0];
-  }
-  function abnormalDecisionNextAction(priority, resourceCells) {
-    var _a;
-    if (priority === "wan-offline") return "查默认出口";
-    if (priority === "snapshot-missing") return "查采集状态";
-    if (priority === "interface-down") return "查接口承载";
-    if (priority === "resource-full") return `先处理${((_a = primaryResourceCell(resourceCells)) == null ? void 0 : _a.label) || "资源"}`;
-    if (priority === "collection-degraded") return "查采集通道";
-    return "观察";
-  }
-  function abnormalDecisionActionNote(priority, resourceCells) {
-    if (priority === "wan-offline") return "WAN / 默认路由";
-    if (priority === "snapshot-missing") return "采集 / 最近成功";
-    if (priority === "interface-down") return "接口 / 默认路由";
-    if (priority === "resource-full") {
-      const primary = primaryResourceCell(resourceCells);
-      return primary ? `${primary.display} · ${primary.thresholdText} · ${primary.sustainedText}` : "按最高风险项处理";
-    }
-    if (priority === "collection-degraded") return "通道 / 缓存";
-    return "持续观察";
-  }
-  function abnormalDecisionTargetTab(priority) {
-    if (priority === "wan-offline") return "wan";
-    if (priority === "snapshot-missing" || priority === "collection-degraded") return "log";
-    if (priority === "resource-full") return void 0;
-    if (priority === "interface-down") return "interface";
-    return void 0;
-  }
   function abnormalDecisionEvidenceTone(priority) {
     if (priority === "snapshot-missing") return "missing";
     if (priority === "wan-offline") return "danger";
@@ -8993,11 +8979,13 @@ var PanelFramework = function(exports) {
   function abnormalDecisionCells(priority, contract, scope, network, heroTitle, listTitle, resourceCells) {
     if (priority === "normal") return [];
     const evidenceParts = contract.trustBoundary.split("·").map((part) => clean$1(part)).filter(Boolean);
+    const primaryResource = resourceCells.find((item) => item.risk === "primary-risk") || resourceCells[0];
+    const action = resolveMobileIncidentAction(priority, primaryResource);
     return [
       { label: "对象", value: listTitle, note: heroTitle, tone: scope.tone },
       { label: "影响", value: abnormalDecisionImpactValue(priority, scope), note: scope.note, tone: scope.tone },
       { label: "可信度", value: evidenceParts[0] || network.snapshot.value, note: evidenceParts.slice(1).join(" · ") || network.snapshot.label, tone: abnormalDecisionEvidenceTone(priority) },
-      { label: "下一步", value: abnormalDecisionNextAction(priority, resourceCells), note: abnormalDecisionActionNote(priority, resourceCells), tone: contract.severity === "p0" ? "danger" : "warn", targetTab: abnormalDecisionTargetTab(priority) }
+      { label: "下一步", value: action.value, note: action.note, tone: contract.severity === "p0" ? "danger" : "warn", targetTab: action.targetTab }
     ];
   }
   function buildMobileOverviewModel(snapshot, state) {

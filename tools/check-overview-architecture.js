@@ -78,6 +78,8 @@ const mobileStylesFile =
   "src/panel-framework/overview/styles/mobile/mobile-product.css";
 const mobileModelFile =
   "src/panel-framework/overview/mobileOverviewModel.ts";
+const mobilePolicyFile =
+  "src/panel-framework/overview/mobileOverviewPolicy.ts";
 const panel = read(panelFile);
 const desktopConsole = read(desktopConsoleFile);
 const desktopDecisionRail = read(desktopDecisionRailFile);
@@ -106,6 +108,7 @@ const mobileDecision = read(mobileDecisionFile);
 const mobileHomeSections = read(mobileHomeSectionsFile);
 const mobileStyles = read(mobileStylesFile);
 const mobileModel = read(mobileModelFile);
+const mobilePolicy = read(mobilePolicyFile);
 const cssRoot = postcss.parse(panelCss, { from: panelCssFile });
 const desktopBaseStylesRoot = postcss.parse(desktopBaseStyles, {
   from: desktopBaseStylesFile,
@@ -494,6 +497,19 @@ assert(
 assert(
   !/data-overview-desktop-v\d+|data-routeros-v\d+/.test(desktopVisuals),
   "desktopOverviewVisuals.tsx must expose semantic visual attributes only"
+);
+assert(
+  mobileModel.includes("resolveMobileIncidentAction") &&
+    !mobileModel.includes("function abnormalDecisionNextAction") &&
+    !mobileModel.includes("function abnormalDecisionActionNote") &&
+    !mobileModel.includes("function abnormalDecisionTargetTab"),
+  "mobileOverviewModel.ts must delegate incident action copy and tab targets to the mobile policy module"
+);
+assert(
+  ["查默认出口", "查采集状态", "查接口承载", "查采集通道"].every((copy) =>
+    mobilePolicy.includes(copy)
+  ),
+  "mobileOverviewPolicy.ts must own object-specific incident action copy"
 );
 assert(
   (desktopConsole.match(/data-overview-/g) || []).length <= 6,
