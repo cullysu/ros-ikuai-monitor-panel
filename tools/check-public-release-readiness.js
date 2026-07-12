@@ -783,14 +783,14 @@ function main(argv = process.argv.slice(2)) {
   assertContains('src/panel-framework/overview/components/EvidenceChain.tsx', 'export function EvidenceChain');
   assertContains('src/panel-framework/overview/components/TerminalRanking.tsx', 'export function TerminalRanking');
   assertContains('src/panel-framework/overview/OverviewPanel.tsx', '<StatusVerdict snapshot={snapshot} state={state} />');
-  assertContains('src/panel-framework/overview/desktopOverviewScenes.tsx', '<WanTrend key="compact-network"');
-  assertContains('src/panel-framework/overview/desktopOverviewScenes.tsx', '<EvidenceChain key="compact-boundary"');
-  assertContains('src/panel-framework/overview/desktopOverviewScenes.tsx', '<TerminalRanking key="compact-terminals"');
+  assertContains('src/panel-framework/overview/desktopOverviewDefaultScene.tsx', '<WanTrend key="compact-network"');
+  assertContains('src/panel-framework/overview/desktopOverviewDefaultScene.tsx', '<EvidenceChain key="compact-boundary"');
+  assertContains('src/panel-framework/overview/desktopOverviewDefaultScene.tsx', '<TerminalRanking key="compact-terminals"');
   assertContains('src/panel-framework/overview/components/MobileOverviewDecision.tsx', 'WAN 趋势');
-  assertContains('src/panel-framework/overview/desktopOverviewScenes.tsx', 'WAN 采样趋势');
+  assertContains('src/panel-framework/overview/desktopOverviewDefaultScene.tsx', 'WAN 采样趋势');
   assertContains('src/panel-framework/overview/mobileOverviewModel.ts', '通道可读');
   assertNotContains('src/panel-framework/overview/components/MobileOverviewDecision.tsx', 'WAN 实时趋势');
-  assertNotContains('src/panel-framework/overview/desktopOverviewScenes.tsx', 'WAN 实时趋势');
+  assertNotContains('src/panel-framework/overview/desktopOverviewDefaultScene.tsx', 'WAN 实时趋势');
   for (const retiredMobileComponent of [
     'CoreMetricRail.tsx',
     'HomeSurface.tsx',
