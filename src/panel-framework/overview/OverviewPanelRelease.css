@@ -164,30 +164,30 @@
 /* v1072 mobile WAN decision geometry: keep the six readouts in an exact 3x2 rail. */
 @media (max-width: 760px) {
   #overview.router-overview-framework
-    .ik-v420-hero[data-overview-mobile-visual-kind="trend"][data-overview-mobile-v1065-normal-hero="chart-first-no-promo-headline"],
+    .ik-v420-hero.ik-mobile-decision-card.is-trend,
   .router-overview-framework
-    .ik-v420-hero[data-overview-mobile-visual-kind="trend"][data-overview-mobile-v1065-normal-hero="chart-first-no-promo-headline"],
-    .ik-v420-hero[data-overview-mobile-visual-kind="trend"][data-overview-mobile-v1065-normal-hero="chart-first-no-promo-headline"] {
+    .ik-v420-hero.ik-mobile-decision-card.is-trend,
+    .ik-v420-hero.ik-mobile-decision-card.is-trend {
     height: auto !important;
     min-height: 154px !important;
     max-height: none !important;
   }
 
   #overview.router-overview-framework
-    .ik-v420-hero[data-overview-mobile-visual-kind="trend"]
+    .ik-v420-hero.ik-mobile-decision-card.is-trend
     .ik-v620-hero-stage,
   #overview.router-overview-framework
-    .ik-v420-hero[data-overview-mobile-visual-kind="trend"]
+    .ik-v420-hero.ik-mobile-decision-card.is-trend
     .ik-v420-visual,
   .router-overview-framework
-    .ik-v420-hero[data-overview-mobile-visual-kind="trend"]
+    .ik-v420-hero.ik-mobile-decision-card.is-trend
     .ik-v620-hero-stage,
   .router-overview-framework
-    .ik-v420-hero[data-overview-mobile-visual-kind="trend"]
+    .ik-v420-hero.ik-mobile-decision-card.is-trend
     .ik-v420-visual,
-  .ik-v420-hero[data-overview-mobile-visual-kind="trend"]
+  .ik-v420-hero.ik-mobile-decision-card.is-trend
     .ik-v620-hero-stage,
-  .ik-v420-hero[data-overview-mobile-visual-kind="trend"]
+  .ik-v420-hero.ik-mobile-decision-card.is-trend
     .ik-v420-visual {
     min-height: 146px !important;
     height: 146px !important;
@@ -195,12 +195,12 @@
   }
 
   #overview.router-overview-framework
-    .ik-v420-hero[data-overview-mobile-visual-kind="trend"]
+    .ik-v420-hero.ik-mobile-decision-card.is-trend
     .ik-v420-visual,
   .router-overview-framework
-    .ik-v420-hero[data-overview-mobile-visual-kind="trend"]
+    .ik-v420-hero.ik-mobile-decision-card.is-trend
     .ik-v420-visual,
-  .ik-v420-hero[data-overview-mobile-visual-kind="trend"]
+  .ik-v420-hero.ik-mobile-decision-card.is-trend
     .ik-v420-visual {
     display: grid !important;
     grid-template-rows: 88px 54px !important;

@@ -14,8 +14,8 @@
     box-shadow: none !important;
   }
 
-  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-decision-card[data-overview-mobile-visual-kind="trust-channels"],
-  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-decision-card[data-overview-mobile-visual-kind="interface-list"] {
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-decision-card.is-trust-channels,
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-decision-card.is-interface-list {
     grid-template-rows: auto auto !important;
   }
 

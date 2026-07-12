@@ -9086,7 +9086,7 @@ var PanelFramework = function(exports) {
     const chart = model.hero.trend;
     const plot = chart.plot;
     const anomaly = (chart.anomalyLabel || "0").replace(/^异常点\s*/, "");
-    const chartDecision = `当前 ${chart.currentLabel} · 峰值 ${chart.peakLabel} · 阈值 ${chart.thresholdLabel} · 异常 ${anomaly} · 采样 ${chart.sampleText}`;
+    const chartDecision = `当前 ${chart.currentLabel} · 峰值 ${chart.peakLabel} · 阈值 ${chart.thresholdLabel} · 异常点 ${anomaly} · 采样 ${chart.sampleText}`;
     return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ik-mobile-decision-trend", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ik-mobile-decision-trend-plot", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ik-v1072-chart-head", children: [
@@ -9094,7 +9094,7 @@ var PanelFramework = function(exports) {
             "WAN 趋势 · ",
             chart.windowText
           ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ik-v1072-series-legend", "data-overview-mobile-v1072-series-legend": "download-upload", "aria-label": "下载与上传图例", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ik-v1072-series-legend", "aria-label": "下载与上传图例", children: [
             /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "is-download", children: [
               /* @__PURE__ */ jsxRuntimeExports.jsx("i", { "aria-hidden": "true" }),
               "下载"
@@ -9105,110 +9105,63 @@ var PanelFramework = function(exports) {
             ] })
           ] })
         ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(
-          "div",
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ik-mobile-decision-visual ik-v240-traffic ik-mobile-wan-trend", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
+          "svg",
           {
-            className: "ik-mobile-decision-visual ik-v240-traffic",
-            "data-overview-chart-type": "line",
-            "data-overview-scene-chart": "mobile-wan-rate-sparkline",
-            "data-overview-mobile-first-visual": "wan-rate-decision-spark",
-            "data-overview-mobile-first-microchart": "true",
-            "data-overview-mobile-v240-visual": "wan-rate-line",
-            "data-overview-mobile-chart-window": chart.windowText,
-            "data-overview-mobile-chart-peak": chart.peakLabel,
-            "data-overview-mobile-chart-sample": chart.sampleText,
-            "data-overview-mobile-chart-reference": chart.referenceLabel,
-            children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
-              "svg",
-              {
-                className: "ik-mobile-line-chart",
-                viewBox: `0 0 312 ${Math.max(plot.viewHeight, 76)}`,
-                role: "img",
-                "aria-label": `${chart.windowText} WAN 采样趋势，当前 ${chart.currentLabel}，峰值 ${chart.peakLabel}`,
-                "data-overview-mobile-v1012-product-chart": "window-current-peak-threshold-sample-breach",
-                "data-overview-mobile-v1045-product-chart-decision": "window-current-peak-threshold-sample-anomaly-source",
-                "data-overview-mobile-v1057-chart-plot-model": "view-model-svg-points-threshold-peak-breach",
-                "data-overview-mobile-chart-threshold": chart.thresholdLabel,
-                "data-overview-mobile-chart-breach": chart.breachLabel,
-                "data-overview-mobile-chart-anomaly": `异常点 ${anomaly}`,
-                "data-overview-mobile-chart-decision": chartDecision,
-                children: [
-                  /* @__PURE__ */ jsxRuntimeExports.jsx("path", { className: "ik-v420-gridline ik-mobile-decision-grid", d: plot.gridYs.map((y2) => `M0 ${y2} H312`).join(" ") }),
-                  /* @__PURE__ */ jsxRuntimeExports.jsx("path", { className: "ik-v945-reference-line ik-mobile-decision-ref", d: `M0 ${plot.referenceY} H312` }),
-                  /* @__PURE__ */ jsxRuntimeExports.jsx("polyline", { className: "ik-v420-curve is-main ik-mobile-decision-line is-download", points: plot.downPoints }),
-                  /* @__PURE__ */ jsxRuntimeExports.jsx("polyline", { className: "ik-v420-curve is-soft ik-mobile-decision-line is-upload", points: plot.upPoints }),
-                  /* @__PURE__ */ jsxRuntimeExports.jsx("circle", { className: "ik-v420-peak-dot", cx: plot.peak.x, cy: plot.peak.y, r: "2.6" }),
-                  /* @__PURE__ */ jsxRuntimeExports.jsx("circle", { className: "ik-v420-focus-dot ik-mobile-decision-dot", cx: plot.focus.x, cy: plot.focus.y, r: "3" })
-                ]
-              }
-            )
+            className: "ik-mobile-line-chart",
+            viewBox: `0 0 312 ${Math.max(plot.viewHeight, 76)}`,
+            role: "img",
+            "aria-label": `${chart.windowText} WAN 采样趋势，当前 ${chart.currentLabel}，峰值 ${chart.peakLabel}`,
+            children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("path", { className: "ik-v420-gridline ik-mobile-decision-grid", d: plot.gridYs.map((y2) => `M0 ${y2} H312`).join(" ") }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("path", { className: "ik-v945-reference-line ik-mobile-decision-ref", d: `M0 ${plot.referenceY} H312` }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("polyline", { className: "ik-v420-curve is-main ik-mobile-decision-line is-download", points: plot.downPoints }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("polyline", { className: "ik-v420-curve is-soft ik-mobile-decision-line is-upload", points: plot.upPoints }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("circle", { className: "ik-v420-peak-dot", cx: plot.peak.x, cy: plot.peak.y, r: "2.6" }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("circle", { className: "ik-v420-focus-dot ik-mobile-decision-dot", cx: plot.focus.x, cy: plot.focus.y, r: "3" })
+            ]
           }
-        )
+        ) })
       ] }),
       /* @__PURE__ */ jsxRuntimeExports.jsx("i", { className: "ik-v812-trend-visual ik-mobile-decision-trend-anchor", "aria-hidden": "true" }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs(
-        "div",
-        {
-          className: "ik-v1010-chart-readout-rail ik-mobile-decision-readouts",
-          "data-overview-mobile-chart-readout-rail": "current-peak-threshold-sample",
-          "data-overview-mobile-chart-readout-grid": "two-columns-two-rows-four-decisions",
-          "data-overview-mobile-hero-metrics": "current-peak-threshold-sample",
-          children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: "当前" }),
-              /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: chart.currentLabel })
-            ] }),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: "峰值" }),
-              /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: chart.peakLabel })
-            ] }),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: "阈值" }),
-              /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: chart.thresholdLabel })
-            ] }),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: "采样" }),
-              /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: chart.sampleText })
-            ] })
-          ]
-        }
-      )
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ik-v1010-chart-readout-rail ik-mobile-decision-readouts", "aria-label": chartDecision, children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: "当前" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: chart.currentLabel })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: "峰值" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: chart.peakLabel })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: "阈值" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: chart.thresholdLabel })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: "采样" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: chart.sampleText })
+        ] })
+      ] })
     ] });
   }
   function ResourceDecisionVisual({ model }) {
-    return /* @__PURE__ */ jsxRuntimeExports.jsxs(
-      "div",
-      {
-        className: "ik-mobile-decision-visual ik-v420-resource-meter-set ik-density-resource-ledger ik-v1040-resource-ledger ik-mobile-resource-incident-stack",
-        "data-overview-chart-type": "bar",
-        "data-overview-scene-chart": "mobile-resource-decision-bars",
-        "data-overview-mobile-first-visual": "resource-pressure-bars",
-        "data-overview-mobile-first-microchart": "true",
-        "data-overview-mobile-v240-visual": "resource-pressure-bars",
-        "data-overview-mobile-v1040-resource-pressure": "low-noise-threshold-ledger-no-red-blue-race",
-        "data-overview-mobile-v1056-resource-visual": "view-model-resource-threshold-sustained-risk-cells",
-        "data-overview-mobile-resource-tone-policy": "neutral-bars-risk-label-only",
-        children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(AbnormalDecisionRail, { model }),
-          model.hero.resourceCells.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
-            "span",
-            {
-              className: `ik-mobile-resource-line ${toneClass(item.tone)}`,
-              "data-overview-mobile-resource-row": item.key,
-              "data-overview-mobile-resource-risk": item.risk,
-              children: [
-                /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: item.label }),
-                /* @__PURE__ */ jsxRuntimeExports.jsx("i", { "aria-hidden": "true", children: /* @__PURE__ */ jsxRuntimeExports.jsx("u", { style: { width: item.meterPercent } }) }),
-                /* @__PURE__ */ jsxRuntimeExports.jsx("strong", { children: item.display }),
-                /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: item.thresholdText }),
-                /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: item.sustainedText })
-              ]
-            },
-            item.key
-          ))
-        ]
-      }
-    );
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ik-mobile-decision-visual ik-v420-resource-meter-set ik-density-resource-ledger ik-v1040-resource-ledger ik-mobile-resource-incident-stack ik-mobile-resource-decision", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx(AbnormalDecisionRail, { model }),
+      model.hero.resourceCells.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
+        "span",
+        {
+          className: `ik-mobile-resource-line ${toneClass(item.tone)}`,
+          children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: item.label }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("i", { "aria-hidden": "true", children: /* @__PURE__ */ jsxRuntimeExports.jsx("u", { style: { width: item.meterPercent } }) }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("strong", { children: item.display }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: item.thresholdText }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: item.sustainedText })
+          ]
+        },
+        item.key
+      ))
+    ] });
   }
   function AbnormalDecisionRail({ model }) {
     const byLabel = new Map(model.abnormalDecision.map((item) => [item.label, item]));
@@ -9247,31 +9200,10 @@ var PanelFramework = function(exports) {
     );
   }
   function ChannelDecisionVisual({ model }) {
-    return /* @__PURE__ */ jsxRuntimeExports.jsx(
-      "div",
-      {
-        className: "ik-mobile-decision-visual ik-v240-channel-line ik-mobile-channel-incident-stack",
-        "data-overview-chart-type": "status",
-        "data-overview-mobile-first-visual": "collection-snapshot-verdict",
-        "data-overview-mobile-first-microchart": "true",
-        "data-overview-mobile-v240-visual": "collection-snapshot-verdict",
-        "data-overview-mobile-channel-verdict": "object-impact-credibility-next-action-no-channel-grid",
-        children: /* @__PURE__ */ jsxRuntimeExports.jsx(AbnormalDecisionRail, { model })
-      }
-    );
+    return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ik-mobile-decision-visual ik-v240-channel-line ik-mobile-channel-incident-stack ik-mobile-channel-decision", children: /* @__PURE__ */ jsxRuntimeExports.jsx(AbnormalDecisionRail, { model }) });
   }
   function IncidentDecisionVisual({ model }) {
-    return /* @__PURE__ */ jsxRuntimeExports.jsx(
-      "div",
-      {
-        className: "ik-mobile-decision-visual ik-mobile-generic-incident-stack",
-        "data-overview-chart-type": "status",
-        "data-overview-mobile-first-visual": "incident-object-impact-next-step",
-        "data-overview-mobile-first-microchart": "true",
-        "data-overview-mobile-v240-visual": "incident-decision-line",
-        children: /* @__PURE__ */ jsxRuntimeExports.jsx(AbnormalDecisionRail, { model })
-      }
-    );
+    return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ik-mobile-decision-visual ik-mobile-generic-incident-stack ik-mobile-incident-decision", children: /* @__PURE__ */ jsxRuntimeExports.jsx(AbnormalDecisionRail, { model }) });
   }
   function DecisionVisual({ model }) {
     if (model.priority === "normal") return /* @__PURE__ */ jsxRuntimeExports.jsx(WanDecisionSpark, { model });
@@ -9292,18 +9224,8 @@ var PanelFramework = function(exports) {
     return /* @__PURE__ */ jsxRuntimeExports.jsxs(
       "section",
       {
-        className: `ik-v420-hero ik-v240-hero ik-v159-network-hero ik-mobile-decision-card ${toneClass(model.network.conclusion.tone)}`,
+        className: `ik-v420-hero ik-v240-hero ik-v159-network-hero ik-mobile-decision-card ik-mobile-primary-conclusion is-${model.hero.visualKind} ${toneClass(model.network.conclusion.tone)}`,
         "aria-label": "移动端网络状态结论",
-        "data-overview-mobile-alert": model.network.conclusion.tone,
-        "data-overview-mobile-v420-hero": "network-state-home",
-        "data-overview-mobile-v240-hero": "network-state-home",
-        "data-overview-mobile-v159-main-hero": "network-state-home",
-        "data-overview-mobile-hero-metrics": "decision-current-evidence",
-        "data-overview-mobile-priority": model.priority,
-        "data-overview-mobile-visual-kind": model.hero.visualKind,
-        "data-overview-mobile-hero-ranking-policy": model.appHomeContract.rankingPolicy,
-        "data-overview-mobile-v1065-normal-hero": model.priority === "normal" ? "chart-first-no-promo-headline" : void 0,
-        "data-overview-primary-conclusion": "true",
         children: [
           /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ik-mobile-decision-head", children: [
             /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: decisionKicker(model) }),

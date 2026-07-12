@@ -1142,7 +1142,7 @@ async function main() {
             await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
             const activeView = root?.querySelector('[data-overview-mobile-tab-view="' + id + '"]');
             const activeTab = root?.querySelector('button[aria-controls="mobile-' + id + '-view"].is-active');
-            const homeDecision = root?.querySelector('[data-overview-mobile-v420-hero="network-state-home"]');
+            const homeDecision = root?.querySelector('.ik-mobile-primary-conclusion');
             const viewText = normalize(activeView?.textContent || '');
             const credibility = activeView?.getAttribute('data-overview-mobile-tab-credibility') || '';
             const credibilityOk = noSnapshotNavigation
@@ -1248,7 +1248,7 @@ async function main() {
         const root = sectionEl?.querySelector('[data-overview-mobile-console]');
         const screen = sectionEl?.querySelector('[data-overview-mobile-first-screen="app-home"]');
         const surface = sectionEl?.querySelector('.ik-mobile-supporting-surface');
-        const hero = sectionEl?.querySelector('[data-overview-mobile-v420-hero="network-state-home"]');
+        const hero = sectionEl?.querySelector('.ik-mobile-primary-conclusion');
         const list = surface?.querySelector('.ik-mobile-supporting-list');
         const terminalList = null;
         const terminalRows = Array.from(list?.querySelectorAll('.ik-mobile-deferred-row') || []);
@@ -1381,33 +1381,32 @@ async function main() {
           detailRows: surface.querySelectorAll('.ik-mobile-deferred-row').length,
         } : {};
         const heroAttrs = hero ? {
-          priority: hero.getAttribute('data-overview-mobile-priority') || '',
-          visualKind: hero.getAttribute('data-overview-mobile-visual-kind') || '',
-          rankingPolicy: hero.getAttribute('data-overview-mobile-hero-ranking-policy') || ''
+          priority: root?.getAttribute('data-overview-mobile-priority') || '',
+          visualKind: Array.from(hero.classList).find((className) => className.startsWith('is-'))?.slice(3) || '',
+          rankingPolicy: ''
         } : {};
         const impactLine = surface?.querySelector('.ik-mobile-supporting-list header em');
         const impactLineAttrs = impactLine ? {
           text: normalize(impactLine.textContent || '')
         } : {};
         const hasHorizontalOverflow = document.documentElement.scrollWidth > document.documentElement.clientWidth + 1 || wideNodes.length > 0;
-        const chartRail = hero?.querySelector('[data-overview-mobile-chart-readout-rail="current-peak-threshold-sample"]');
+        const chartRail = hero?.querySelector('.ik-mobile-decision-readouts');
         const trendVisual = hero?.querySelector('.ik-v812-trend-visual');
         const v1072Chart = hero?.querySelector('.ik-mobile-decision-trend');
-        const v1072SeriesLegend = v1072Chart?.querySelector('[data-overview-mobile-v1072-series-legend="download-upload"]');
-        const decisionReadoutGrid = hero?.querySelector('[data-overview-mobile-chart-readout-grid="two-columns-two-rows-four-decisions"]');
-        const productChart = hero?.querySelector('[data-overview-mobile-v1012-product-chart="window-current-peak-threshold-sample-breach"]');
-        const productDecisionChart = hero?.querySelector('[data-overview-mobile-v1045-product-chart-decision="window-current-peak-threshold-sample-anomaly-source"]');
+        const v1072SeriesLegend = v1072Chart?.querySelector('.ik-v1072-series-legend');
+        const decisionReadoutGrid = hero?.querySelector('.ik-mobile-decision-readouts');
+        const productChart = hero?.querySelector('svg.ik-mobile-line-chart');
+        const productDecisionChart = productChart;
         const modelBackedChartPlot = sectionName !== 'mobileNormalHome' || Boolean(
           productChart &&
-          productChart.getAttribute('data-overview-mobile-v1057-chart-plot-model') === 'view-model-svg-points-threshold-peak-breach' &&
           productChart.querySelector('.ik-v420-curve.is-main')?.getAttribute('points') &&
           productChart.querySelector('.ik-v420-curve.is-soft')?.getAttribute('points') &&
           productChart.querySelector('.ik-v420-peak-dot') &&
           productChart.querySelector('.ik-v420-focus-dot') &&
           productChart.querySelector('.ik-v945-reference-line')
         );
-        const productChartDecision = productDecisionChart?.getAttribute('data-overview-mobile-chart-decision') || '';
-        const productChartAnomaly = productDecisionChart?.getAttribute('data-overview-mobile-chart-anomaly') || '';
+        const productChartDecision = chartRail?.getAttribute('aria-label') || '';
+        const productChartAnomaly = productChartDecision.match(/异常(?:点)?\\s*(\\d+)/)?.[0].replace(/异常(?:点)?\\s*/, '异常点 ') || '';
         const trendColumns = trendVisual ? getComputedStyle(trendVisual).gridTemplateColumns.trim().split(/\s+/).filter(Boolean).length : 0;
         const chartRailRect = chartRail?.getBoundingClientRect();
         const trendVisualRect = trendVisual?.getBoundingClientRect();
@@ -1455,16 +1454,14 @@ async function main() {
         const chartReadoutLabelsVisible = sectionName !== 'mobileNormalHome' || (chartRailLabels.length === 4 && visibleChartRailLabels.length === 4);
         const hasThresholdChartContract = sectionName !== 'mobileNormalHome' || Boolean(
           productChart &&
-          productChart.getAttribute('data-overview-mobile-chart-threshold') &&
-          productChart.getAttribute('data-overview-mobile-chart-breach') &&
-          productChart.getAttribute('data-overview-mobile-chart-anomaly') &&
-          productChart.getAttribute('data-overview-mobile-chart-decision') &&
+          productChart.querySelector('.ik-mobile-decision-ref') &&
+          productChart.querySelector('.ik-v420-peak-dot') &&
+          productChart.querySelector('.ik-mobile-decision-dot') &&
           chartRail?.textContent?.includes('阈值')
         );
         const productChartProductized = sectionName !== 'mobileNormalHome' || Boolean(
           productDecisionChart &&
           chartRail &&
-          chartRail.getAttribute('data-overview-mobile-chart-readout-grid') === 'two-columns-two-rows-four-decisions' &&
           ['当前', '峰值', '阈值', '采样'].every((label) => visibleChartRailLabelText.includes(label)) &&
           /当前/.test(productChartDecision) &&
           /峰值/.test(productChartDecision) &&
@@ -1570,7 +1567,7 @@ async function main() {
           Boolean(node.compareDocumentPosition(firstScreenOrderNodes[index + 1]) & Node.DOCUMENT_POSITION_FOLLOWING)
         ));
         const normalNativeFirstScreen = sectionName !== 'mobileNormalHome' || Boolean(
-          hero?.getAttribute('data-overview-mobile-v1065-normal-hero') === 'chart-first-no-promo-headline' &&
+          hero?.classList.contains('is-trend') &&
           firstScreenOrderProductized &&
           !judgementStrip &&
           !trustStrip &&
@@ -1592,7 +1589,7 @@ async function main() {
             )
           )
         );
-        const firstScreenChannelRail = root?.querySelector('[data-overview-mobile-channel-verdict="object-impact-credibility-next-action-no-channel-grid"]');
+        const firstScreenChannelRail = root?.querySelector('.ik-mobile-channel-decision');
         const firstScreenChannelCells = Array.from(firstScreenChannelRail?.querySelectorAll('.ik-mobile-decision-cell') || []);
         const firstScreenChannelEvidenceVisible = Boolean(
           firstScreenChannelRail &&
@@ -1761,17 +1758,15 @@ async function main() {
           !/rgba?\([^)]*,\s*0\.[2-9][^)]*\)\s+0px\s+(?:[2-9]|1\d)px\s+(?:1\d|2\d)/.test(heroStyle.boxShadow || '') &&
           !/rgba?\([^)]*,\s*0\.[2-9][^)]*\)\s+0px\s+(?:2|3|4|5|6|7|8|9|1\d)px/.test(listStyle.boxShadow || '')
         );
-        const resourceLedger = hero?.querySelector('[data-overview-mobile-v1040-resource-pressure="low-noise-threshold-ledger-no-red-blue-race"]');
-        const resourceRows = Array.from(resourceLedger?.querySelectorAll('[data-overview-mobile-resource-row]') || []);
+        const resourceLedger = hero?.querySelector('.ik-mobile-resource-decision');
+        const resourceRows = Array.from(resourceLedger?.querySelectorAll('.ik-mobile-resource-line') || []);
         const resourceVisualModelBacked = sectionName !== 'mobileResourceHome' || Boolean(
           resourceLedger &&
-          resourceLedger.getAttribute('data-overview-mobile-v1056-resource-visual') === 'view-model-resource-threshold-sustained-risk-cells' &&
           resourceRows.length >= 3 &&
           resourceRows.every((row) => {
-            const risk = row.getAttribute('data-overview-mobile-resource-risk') || '';
             return Boolean(
-              row.getAttribute('data-overview-mobile-resource-row') &&
-              (risk === 'primary-risk' || risk === 'secondary-risk') &&
+              row.querySelector('b')?.textContent &&
+              row.querySelector('strong')?.textContent &&
               normalize(row.querySelector('small')?.textContent || '').startsWith('阈') &&
               normalize(row.querySelector('em')?.textContent || '').length > 0
             );
@@ -1784,7 +1779,6 @@ async function main() {
         const resourceTrackNoiseLow = sectionName !== 'mobileResourceHome' || Boolean(
           resourceLedger &&
           resourceRows.length >= 3 &&
-          resourceLedger.getAttribute('data-overview-mobile-resource-tone-policy') === 'neutral-bars-risk-label-only' &&
           resourceTrackFills.length >= 3 &&
           resourceTrackFills.every((value) => !/20,\\s*115,\\s*230|147,\\s*58,\\s*52|184,\\s*58,\\s*50/.test(value))
         );
@@ -1845,7 +1839,7 @@ async function main() {
           evidenceDeferred &&
           listEvidence.some((item) => /默认路由|出口|WAN/.test(item.name + ' ' + item.meta))
         );
-        const channelRail = hero?.querySelector('[data-overview-mobile-channel-verdict="object-impact-credibility-next-action-no-channel-grid"]');
+        const channelRail = hero?.querySelector('.ik-mobile-channel-decision');
         const channelRailModelBacked = (sectionName !== 'mobileNoSnapshotHome' && sectionName !== 'mobileCollectionHome') || Boolean(channelRail);
         const abnormalDecisionRail = hero?.querySelector('.ik-mobile-abnormal-decision-rail');
         const abnormalDecisionCells = Array.from(abnormalDecisionRail?.querySelectorAll('.ik-mobile-decision-cell') || []);

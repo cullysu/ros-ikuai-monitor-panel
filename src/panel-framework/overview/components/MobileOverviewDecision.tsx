@@ -10,41 +10,23 @@ function WanDecisionSpark({ model }: { model: MobileOverviewModel }) {
   const chart = model.hero.trend;
   const plot = chart.plot;
   const anomaly = (chart.anomalyLabel || "0").replace(/^异常点\s*/, "");
-  const chartDecision = `当前 ${chart.currentLabel} · 峰值 ${chart.peakLabel} · 阈值 ${chart.thresholdLabel} · 异常 ${anomaly} · 采样 ${chart.sampleText}`;
+  const chartDecision = `当前 ${chart.currentLabel} · 峰值 ${chart.peakLabel} · 阈值 ${chart.thresholdLabel} · 异常点 ${anomaly} · 采样 ${chart.sampleText}`;
   return (
     <div className="ik-mobile-decision-trend">
       <div className="ik-mobile-decision-trend-plot">
         <div className="ik-v1072-chart-head">
           <span className="ik-v1065-chart-kicker">WAN 趋势 · {chart.windowText}</span>
-          <div className="ik-v1072-series-legend" data-overview-mobile-v1072-series-legend="download-upload" aria-label="下载与上传图例">
+          <div className="ik-v1072-series-legend" aria-label="下载与上传图例">
             <span className="is-download"><i aria-hidden="true" />下载</span>
             <span className="is-upload"><i aria-hidden="true" />上传</span>
           </div>
         </div>
-        <div
-          className="ik-mobile-decision-visual ik-v240-traffic"
-          data-overview-chart-type="line"
-          data-overview-scene-chart="mobile-wan-rate-sparkline"
-          data-overview-mobile-first-visual="wan-rate-decision-spark"
-          data-overview-mobile-first-microchart="true"
-          data-overview-mobile-v240-visual="wan-rate-line"
-          data-overview-mobile-chart-window={chart.windowText}
-          data-overview-mobile-chart-peak={chart.peakLabel}
-          data-overview-mobile-chart-sample={chart.sampleText}
-          data-overview-mobile-chart-reference={chart.referenceLabel}
-        >
+        <div className="ik-mobile-decision-visual ik-v240-traffic ik-mobile-wan-trend">
           <svg
             className="ik-mobile-line-chart"
             viewBox={`0 0 312 ${Math.max(plot.viewHeight, 76)}`}
             role="img"
             aria-label={`${chart.windowText} WAN 采样趋势，当前 ${chart.currentLabel}，峰值 ${chart.peakLabel}`}
-            data-overview-mobile-v1012-product-chart="window-current-peak-threshold-sample-breach"
-            data-overview-mobile-v1045-product-chart-decision="window-current-peak-threshold-sample-anomaly-source"
-            data-overview-mobile-v1057-chart-plot-model="view-model-svg-points-threshold-peak-breach"
-            data-overview-mobile-chart-threshold={chart.thresholdLabel}
-            data-overview-mobile-chart-breach={chart.breachLabel}
-            data-overview-mobile-chart-anomaly={`异常点 ${anomaly}`}
-            data-overview-mobile-chart-decision={chartDecision}
           >
             <path className="ik-v420-gridline ik-mobile-decision-grid" d={plot.gridYs.map((y) => `M0 ${y} H312`).join(" ")} />
             <path className="ik-v945-reference-line ik-mobile-decision-ref" d={`M0 ${plot.referenceY} H312`} />
@@ -56,12 +38,7 @@ function WanDecisionSpark({ model }: { model: MobileOverviewModel }) {
         </div>
       </div>
       <i className="ik-v812-trend-visual ik-mobile-decision-trend-anchor" aria-hidden="true" />
-      <div
-        className="ik-v1010-chart-readout-rail ik-mobile-decision-readouts"
-        data-overview-mobile-chart-readout-rail="current-peak-threshold-sample"
-        data-overview-mobile-chart-readout-grid="two-columns-two-rows-four-decisions"
-        data-overview-mobile-hero-metrics="current-peak-threshold-sample"
-      >
+      <div className="ik-v1010-chart-readout-rail ik-mobile-decision-readouts" aria-label={chartDecision}>
         <span><em>当前</em><b>{chart.currentLabel}</b></span>
         <span><em>峰值</em><b>{chart.peakLabel}</b></span>
         <span><em>阈值</em><b>{chart.thresholdLabel}</b></span>
@@ -73,23 +50,11 @@ function WanDecisionSpark({ model }: { model: MobileOverviewModel }) {
 
 function ResourceDecisionVisual({ model }: { model: MobileOverviewModel }) {
   return (
-    <div
-      className="ik-mobile-decision-visual ik-v420-resource-meter-set ik-density-resource-ledger ik-v1040-resource-ledger ik-mobile-resource-incident-stack"
-      data-overview-chart-type="bar"
-      data-overview-scene-chart="mobile-resource-decision-bars"
-      data-overview-mobile-first-visual="resource-pressure-bars"
-      data-overview-mobile-first-microchart="true"
-      data-overview-mobile-v240-visual="resource-pressure-bars"
-      data-overview-mobile-v1040-resource-pressure="low-noise-threshold-ledger-no-red-blue-race"
-      data-overview-mobile-v1056-resource-visual="view-model-resource-threshold-sustained-risk-cells"
-      data-overview-mobile-resource-tone-policy="neutral-bars-risk-label-only"
-    >
+    <div className="ik-mobile-decision-visual ik-v420-resource-meter-set ik-density-resource-ledger ik-v1040-resource-ledger ik-mobile-resource-incident-stack ik-mobile-resource-decision">
       <AbnormalDecisionRail model={model} />
       {model.hero.resourceCells.map((item) => (
         <span
           className={`ik-mobile-resource-line ${toneClass(item.tone)}`}
-          data-overview-mobile-resource-row={item.key}
-          data-overview-mobile-resource-risk={item.risk}
           key={item.key}
         >
           <b>{item.label}</b>
@@ -140,14 +105,7 @@ function AbnormalDecisionRail({ model }: { model: MobileOverviewModel }) {
 
 function ChannelDecisionVisual({ model }: { model: MobileOverviewModel }) {
   return (
-    <div
-      className="ik-mobile-decision-visual ik-v240-channel-line ik-mobile-channel-incident-stack"
-      data-overview-chart-type="status"
-      data-overview-mobile-first-visual="collection-snapshot-verdict"
-      data-overview-mobile-first-microchart="true"
-      data-overview-mobile-v240-visual="collection-snapshot-verdict"
-      data-overview-mobile-channel-verdict="object-impact-credibility-next-action-no-channel-grid"
-    >
+    <div className="ik-mobile-decision-visual ik-v240-channel-line ik-mobile-channel-incident-stack ik-mobile-channel-decision">
       <AbnormalDecisionRail model={model} />
     </div>
   );
@@ -155,13 +113,7 @@ function ChannelDecisionVisual({ model }: { model: MobileOverviewModel }) {
 
 function IncidentDecisionVisual({ model }: { model: MobileOverviewModel }) {
   return (
-    <div
-      className="ik-mobile-decision-visual ik-mobile-generic-incident-stack"
-      data-overview-chart-type="status"
-      data-overview-mobile-first-visual="incident-object-impact-next-step"
-      data-overview-mobile-first-microchart="true"
-      data-overview-mobile-v240-visual="incident-decision-line"
-    >
+    <div className="ik-mobile-decision-visual ik-mobile-generic-incident-stack ik-mobile-incident-decision">
       <AbnormalDecisionRail model={model} />
     </div>
   );
@@ -187,18 +139,8 @@ export function PrimaryDecision({ model }: { model: MobileOverviewModel }) {
   const action = nextStep(model);
   return (
     <section
-      className={`ik-v420-hero ik-v240-hero ik-v159-network-hero ik-mobile-decision-card ${toneClass(model.network.conclusion.tone)}`}
+      className={`ik-v420-hero ik-v240-hero ik-v159-network-hero ik-mobile-decision-card ik-mobile-primary-conclusion is-${model.hero.visualKind} ${toneClass(model.network.conclusion.tone)}`}
       aria-label="移动端网络状态结论"
-      data-overview-mobile-alert={model.network.conclusion.tone}
-      data-overview-mobile-v420-hero="network-state-home"
-      data-overview-mobile-v240-hero="network-state-home"
-      data-overview-mobile-v159-main-hero="network-state-home"
-      data-overview-mobile-hero-metrics="decision-current-evidence"
-      data-overview-mobile-priority={model.priority}
-      data-overview-mobile-visual-kind={model.hero.visualKind}
-      data-overview-mobile-hero-ranking-policy={model.appHomeContract.rankingPolicy}
-      data-overview-mobile-v1065-normal-hero={model.priority === "normal" ? "chart-first-no-promo-headline" : undefined}
-      data-overview-primary-conclusion="true"
     >
       <div className="ik-mobile-decision-head">
         <span>{decisionKicker(model)}</span>
