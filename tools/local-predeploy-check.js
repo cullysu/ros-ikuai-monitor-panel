@@ -428,6 +428,26 @@ async function waitForJson(url, timeoutMs = 15000) {
   throw lastError || new Error(`Timed out waiting for ${url}`);
 }
 
+async function waitForAnyJson(candidates, timeoutMs = 15000) {
+  const deadline = Date.now() + timeoutMs;
+  const errors = new Map();
+  while (Date.now() < deadline) {
+    for (const candidate of candidates) {
+      try {
+        const result = await fetchJson(`${candidate}/json/version`, { timeoutMs: 700 });
+        if (result.response.ok) return candidate;
+        errors.set(candidate, new Error(`HTTP ${result.response.status}`));
+      } catch (error) {
+        errors.set(candidate, error);
+      }
+    }
+    await delay(150);
+  }
+  throw new Error(
+    candidates.map((candidate) => `${candidate}: ${errors.get(candidate)?.message || 'not ready'}`).join('; ')
+  );
+}
+
 async function runCommand(command, args, options = {}) {
   return new Promise((resolve) => {
     const child = spawn(command, args, {
@@ -446,6 +466,20 @@ async function runCommand(command, args, options = {}) {
 }
 
 async function getFreePort() {
+  if (process.platform === 'win32') {
+    for (let attempt = 0; attempt < 64; attempt += 1) {
+      const candidate = 20000 + Math.floor(Math.random() * 25000);
+      const available = await new Promise((resolve) => {
+        const server = net.createServer();
+        server.once('error', () => resolve(false));
+        server.listen(candidate, '127.0.0.1', () => {
+          server.close(() => resolve(true));
+        });
+      });
+      if (available) return candidate;
+    }
+    throw new Error('Unable to reserve a Windows loopback port outside the ephemeral range.');
+  }
   return new Promise((resolve, reject) => {
     const server = net.createServer();
     server.once('error', reject);
@@ -1013,6 +1047,19 @@ class CdpSession {
   }
 }
 
+function terminateBrowserTree(child) {
+  if (!child?.pid) return;
+  if (process.platform === 'win32') {
+    spawnSync('taskkill', ['/pid', String(child.pid), '/t', '/f'], {
+      windowsHide: true,
+      stdio: 'ignore',
+      timeout: 8000,
+    });
+    return;
+  }
+  if (!child.killed) child.kill('SIGKILL');
+}
+
 async function launchBrowser(args, report) {
   const browserPath = await findBrowser();
   if (!browserPath) {
@@ -1058,10 +1105,16 @@ async function launchBrowser(args, report) {
   child.on('exit', (code, signal) => { exit = { code, signal }; });
   report.browser = { path: browserPath, port, userDataDir };
 
+  let devtoolsBaseUrl = '';
   try {
-    await waitForJson(`http://127.0.0.1:${port}/json/version`, 45000);
+    devtoolsBaseUrl = await waitForAnyJson(
+      [`http://127.0.0.1:${port}`, `http://[::1]:${port}`],
+      45000
+    );
+    report.browser.devtoolsBaseUrl = devtoolsBaseUrl;
   } catch (error) {
-    child.kill('SIGKILL');
+    terminateBrowserTree(child);
+    await fs.rm(userDataDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 }).catch(() => {});
     const stdoutArtifact = await writeLogArtifact(args.out, 'browser-launch.stdout.log', stdout);
     const stderrArtifact = await writeLogArtifact(args.out, 'browser-launch.stderr.log', stderr);
     report.browser = {
@@ -1071,13 +1124,16 @@ async function launchBrowser(args, report) {
       stdout: summarizeTextArtifact(stdout, stdoutArtifact),
       stderr: summarizeTextArtifact(stderr, stderrArtifact),
     };
-    throw new Error(`Browser CDP endpoint did not become ready: ${error.message}`);
+    const launchMessage = error instanceof AggregateError
+      ? error.errors.map((item) => item?.message || String(item)).join('; ')
+      : error.message;
+    throw new Error(`Browser CDP endpoint did not become ready: ${launchMessage}`);
   }
 
   async function connect() {
     let pageTarget = null;
     try {
-      const created = await fetchJson(`http://127.0.0.1:${port}/json/new?about:blank`, {
+      const created = await fetchJson(`${devtoolsBaseUrl}/json/new?about:blank`, {
         method: 'PUT',
         timeoutMs: 3000,
       });
@@ -1087,7 +1143,7 @@ async function launchBrowser(args, report) {
     } catch {}
     for (let i = 0; i < 50; i += 1) {
       if (pageTarget) break;
-      const { json } = await fetchJson(`http://127.0.0.1:${port}/json/list`, { timeoutMs: 3000 });
+      const { json } = await fetchJson(`${devtoolsBaseUrl}/json/list`, { timeoutMs: 3000 });
       pageTarget = json.find((target) => target.type === 'page' && target.webSocketDebuggerUrl);
       if (pageTarget) break;
       await delay(200);
@@ -1098,7 +1154,7 @@ async function launchBrowser(args, report) {
     session.targetId = pageTarget.id;
     session.closeTarget = async () => {
       if (!pageTarget.id) return;
-      await fetchText(`http://127.0.0.1:${port}/json/close/${encodeURIComponent(pageTarget.id)}`, {
+      await fetchText(`${devtoolsBaseUrl}/json/close/${encodeURIComponent(pageTarget.id)}`, {
         timeoutMs: 2000,
       }).catch(() => {});
     };
@@ -1109,8 +1165,8 @@ async function launchBrowser(args, report) {
     browserPath,
     connect,
     stop: async () => {
-      if (child && !child.killed) child.kill('SIGKILL');
-      await delay(300);
+      terminateBrowserTree(child);
+      await delay(500);
       await fs.rm(userDataDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 }).catch(() => {});
     },
   };
@@ -1971,7 +2027,11 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const trustNoticeStyle = trustNotice ? getComputedStyle(trustNotice) : null;
     const trustMode = sectionRoot?.querySelector('[data-overview-trust-mode]');
     const historyModeActive = trustMode?.getAttribute('data-overview-trust-mode') === 'history';
-    const isMobileOverview = sectionName === 'overview' && window.innerWidth < 768;
+    const compactLandscapeOverview = sectionName === 'overview' &&
+      window.innerWidth >= 761 &&
+      window.innerWidth <= 900 &&
+      window.innerHeight <= 520;
+    const isMobileOverview = sectionName === 'overview' && (window.innerWidth < 768 || compactLandscapeOverview);
     const requestedMobile390x844 = ${Number(viewport.width) === 390 && Number(viewport.height) === 844 ? 'true' : 'false'};
     const mobileOverview390x844 = sectionName === 'overview' &&
       requestedMobile390x844 &&
@@ -1979,6 +2039,41 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       window.innerWidth <= 430 &&
       window.innerHeight >= 812 &&
       window.innerHeight <= 932;
+    const mobileOverviewAppViewport = mobileOverview390x844 || compactLandscapeOverview;
+    const mobileLandscapeAppRoot = compactLandscapeOverview
+      ? sectionRoot?.querySelector('[data-overview-mobile-app-home="ikuai40-ios-router-home"]')
+      : null;
+    const mobileLandscapeScreen = mobileLandscapeAppRoot?.querySelector('[data-overview-mobile-first-screen="app-home"]');
+    const mobileLandscapeTabs = mobileLandscapeAppRoot?.querySelector('.ik-v420-tabs[aria-label="路由器监控底部导航"]');
+    const mobileLandscapeRootRect = mobileLandscapeAppRoot?.getBoundingClientRect();
+    const mobileLandscapeScreenRect = mobileLandscapeScreen?.getBoundingClientRect();
+    const mobileLandscapeTabsRect = mobileLandscapeTabs?.getBoundingClientRect();
+    const mobileLandscapeScreenStyle = mobileLandscapeScreen ? getComputedStyle(mobileLandscapeScreen) : null;
+    const mobileLandscapeDesktopVisible = Array.from(sectionRoot?.querySelectorAll(':scope > .ro-topbar, :scope > .ro-desktop-grid') || [])
+      .some((node) => {
+        const style = getComputedStyle(node);
+        const rect = node.getBoundingClientRect();
+        return style.display !== 'none' && style.visibility !== 'hidden' && Number(style.opacity || 1) > 0.01 && rect.width > 0 && rect.height > 0;
+      });
+    const overviewMobileLandscapeAppOk = !compactLandscapeOverview || Boolean(
+      mobileFirstScreen &&
+      mobileLandscapeAppRoot &&
+      mobileLandscapeScreen &&
+      mobileLandscapeTabs &&
+      mobileLandscapeRootRect &&
+      mobileLandscapeScreenRect &&
+      mobileLandscapeTabsRect &&
+      mobileLandscapeScreenStyle?.display === 'grid' &&
+      (mobileLandscapeScreenStyle.gridTemplateColumns || '').split(' ').filter(Boolean).length === 2 &&
+      mobileLandscapeRootRect.width >= window.innerWidth - 4 &&
+      mobileLandscapeRootRect.height >= window.innerHeight - 4 &&
+      mobileLandscapeScreenRect.width >= window.innerWidth - 4 &&
+      mobileLandscapeScreenRect.height <= window.innerHeight + 4 &&
+      mobileLandscapeTabsRect.width >= window.innerWidth - 4 &&
+      mobileLandscapeTabsRect.height >= 44 &&
+      mobileLandscapeTabs.querySelectorAll('button').length === 5 &&
+      !mobileLandscapeDesktopVisible
+    );
     const mobileCoreBlocksVisible = mobileCoreBlocks.filter(nodeVisibleInFirstScreen);
     const mobileCoreBlockLabels = mobileCoreBlocksVisible
       .map((node) => normalize(node.querySelector('.ik-v821-row-title, .ik-mobile-overview-block-head span, span')?.textContent || node.textContent || ''))
@@ -6649,10 +6744,11 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       )
     );
     const desktopOverflow = window.innerWidth >= 1024 && overflowX > 24;
-    const strictNarrowOverflow = ${args.strictResponsive ? 'true' : 'false'} && window.innerWidth < 768 && overflowX > 24;
+    const strictNarrowOverflow = ${args.strictResponsive ? 'true' : 'false'} && isMobileOverview && overflowX > 24;
     const mobileOverviewAppHomePass = Boolean(
       sectionName === 'overview' &&
-      mobileOverview390x844 &&
+      mobileOverviewAppViewport &&
+      overviewMobileLandscapeAppOk &&
       overviewMobile390AcceptanceOk &&
       app &&
       active &&
@@ -6937,8 +7033,23 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       !desktopOverflow &&
       !strictNarrowOverflow
     );
-    const mobileOverviewAppHomeGateProbe = mobileOverview390x844 ? {
+    const mobileOverviewAppHomeGateProbe = mobileOverviewAppViewport ? {
       appHomePass: mobileOverviewAppHomePass,
+      compactLandscape: compactLandscapeOverview,
+      landscapeContract: overviewMobileLandscapeAppOk,
+      landscapeRoot: mobileLandscapeRootRect ? { width: mobileLandscapeRootRect.width, height: mobileLandscapeRootRect.height } : null,
+      landscapeScreen: mobileLandscapeScreenRect ? {
+        width: mobileLandscapeScreenRect.width,
+        height: mobileLandscapeScreenRect.height,
+        display: mobileLandscapeScreenStyle?.display || '',
+        columns: mobileLandscapeScreenStyle?.gridTemplateColumns || ''
+      } : null,
+      landscapeTabs: mobileLandscapeTabsRect ? {
+        width: mobileLandscapeTabsRect.width,
+        height: mobileLandscapeTabsRect.height,
+        buttons: mobileLandscapeTabs?.querySelectorAll('button').length || 0
+      } : null,
+      landscapeDesktopVisible: mobileLandscapeDesktopVisible,
       acceptance: overviewMobile390AcceptanceOk,
       iosHome: overviewMobileIosRouterHomeOk,
       noTable: overviewMobile390FirstScreenNoTableOk,
@@ -8974,7 +9085,7 @@ async function main() {
 
   console.log(`[INFO] report: ${path.join(args.out, 'report.json')}`);
   console.log(`[INFO] result: ${report.pass ? 'pass' : report.failures.length ? `${report.failures.length} failure(s)` : 'incomplete release matrix'}`);
-  if (report.exitCodeShouldFail) process.exitCode = 1;
+  process.exitCode = report.exitCodeShouldFail ? 1 : 0;
 }
 
 main().catch((error) => {

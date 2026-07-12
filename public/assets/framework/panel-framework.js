@@ -7366,7 +7366,7 @@ var PanelFramework = function(exports) {
     }
   };
   const MOBILE_OVERVIEW_CURRENT_SHELL_STYLES = `
-@media (max-width: 760px) {
+@media (max-width: 760px), (min-width: 761px) and (max-width: 900px) and (max-height: 520px) {
   html:has(#overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console]),
   body:has(#overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console]) {
     height: 100dvh !important;
@@ -7382,10 +7382,37 @@ var PanelFramework = function(exports) {
     overflow: hidden !important;
   }
 
+  html body #overview.router-overview-framework > .ro-topbar,
+  html body #overview.router-overview-framework > .ro-desktop-grid {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+
+  html body #overview.router-overview-framework > .ro-mobile-first-screen {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    width: 100% !important;
+    height: auto !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    min-height: 100dvh !important;
+    max-height: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    pointer-events: auto !important;
+  }
+
   #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] {
+    display: block !important;
     position: fixed !important;
     inset: 0 !important;
+    visibility: visible !important;
+    opacity: 1 !important;
     width: 100vw !important;
+    max-width: none !important;
     height: 100dvh !important;
     max-height: 100dvh !important;
     min-height: 0 !important;
@@ -7394,6 +7421,10 @@ var PanelFramework = function(exports) {
 
   #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-v420-shell,
   #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-decision-screen {
+    visibility: visible !important;
+    opacity: 1 !important;
+    width: 100% !important;
+    max-width: none !important;
     height: 100dvh !important;
     max-height: 100dvh !important;
     min-height: 0 !important;
@@ -7772,7 +7803,7 @@ var PanelFramework = function(exports) {
   --ik-native-shell-contract: native-console-tokenized-rhythm-low-noise-trust-first;
 `;
   const V420_MOBILE_STYLES = `
-@media (max-width: 760px) {
+@media (max-width: 760px), (min-width: 761px) and (max-width: 900px) and (max-height: 520px) {
   #overview.router-overview-framework .ik-v420-app,
   .router-overview-framework .ik-v420-app,
   .ik-v420-app {
@@ -9016,7 +9047,7 @@ var PanelFramework = function(exports) {
   }
 }
 
-@media (max-width: 760px) {
+@media (max-width: 760px), (min-width: 761px) and (max-width: 900px) and (max-height: 520px) {
   #overview.router-overview-framework .ik-v420-screen,
   .router-overview-framework .ik-v420-screen,
   .ik-v420-screen {
@@ -9459,7 +9490,7 @@ var PanelFramework = function(exports) {
   }
 }
 
-@media (max-width: 760px) {
+@media (max-width: 760px), (min-width: 761px) and (max-width: 900px) and (max-height: 520px) {
   #overview.router-overview-framework .ik-v960-judgement-strip,
   .router-overview-framework .ik-v960-judgement-strip,
   .ik-v960-judgement-strip {
@@ -9777,7 +9808,7 @@ var PanelFramework = function(exports) {
   }
 }
 
-@media (max-width: 760px) {
+@media (max-width: 760px), (min-width: 761px) and (max-width: 900px) and (max-height: 520px) {
   #overview.router-overview-framework .ik-v420-screen,
   .router-overview-framework .ik-v420-screen,
   .ik-v420-screen {
@@ -10172,7 +10203,7 @@ var PanelFramework = function(exports) {
   }
 }
 
-@media (max-width: 760px) {
+@media (max-width: 760px), (min-width: 761px) and (max-width: 900px) and (max-height: 520px) {
   #overview.router-overview-framework .ik-v420-app,
   .router-overview-framework .ik-v420-app,
   .ik-v420-app {
@@ -10461,7 +10492,7 @@ var PanelFramework = function(exports) {
 `;
   const MOBILE_OVERVIEW_FOUNDATION_STYLES = V420_MOBILE_STYLES;
   const MOBILE_OVERVIEW_PUBLIC_DECISION_STYLES = `
-@media (max-width: 760px) {
+@media (max-width: 760px), (min-width: 761px) and (max-width: 900px) and (max-height: 520px) {
   #overview.router-overview-framework .ik-mobile-public-home,
   #overview.router-overview-framework .ik-mobile-public-home * {
     box-sizing: border-box;
@@ -11088,13 +11119,13 @@ var PanelFramework = function(exports) {
     grid-area: facts !important;
   }
 
-  #overview.router-overview-framework .ik-mobile-public-home .ik-mobile-supporting-list {
+  #overview.router-overview-framework .ik-mobile-public-home .ik-mobile-supporting-surface {
     grid-area: list !important;
   }
 }
 `;
   const MOBILE_OVERVIEW_PUBLIC_DECISION_REPAIR_STYLES = `
-@media (max-width: 760px) {
+@media (max-width: 760px), (min-width: 761px) and (max-width: 900px) and (max-height: 520px) {
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-decision-screen {
     display: grid !important;
     grid-template-rows: 46px auto 64px auto !important;
@@ -11567,6 +11598,9 @@ var PanelFramework = function(exports) {
 
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-v420-tabs,
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-v240-tabs {
+    display: grid !important;
+    visibility: visible !important;
+    opacity: 1 !important;
     position: fixed !important;
     left: 0 !important;
     right: 0 !important;
@@ -11574,6 +11608,8 @@ var PanelFramework = function(exports) {
     width: auto !important;
     min-width: 0 !important;
     max-width: none !important;
+    height: 52px !important;
+    max-height: none !important;
     transform: none !important;
     grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
     border: 0 !important;
@@ -11589,6 +11625,51 @@ var PanelFramework = function(exports) {
     background: transparent !important;
     box-shadow: inset 0 -1px 0 rgba(18, 34, 55, .44) !important;
     color: #143b6f !important;
+  }
+}
+
+@media (min-width: 761px) and (max-width: 900px) and (max-height: 520px) {
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-decision-screen {
+    grid-template-columns: minmax(320px, .96fr) minmax(0, 1.04fr) !important;
+    grid-template-rows: 46px 252px !important;
+    grid-template-areas:
+      "nav nav"
+      "hero side" !important;
+    gap: 8px 10px !important;
+    padding: 10px 12px 62px !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-device-bar {
+    grid-area: nav !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-decision-card {
+    grid-area: hero !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    height: 252px !important;
+    min-height: 252px !important;
+    max-height: 252px !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-core-facts {
+    grid-area: side !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    align-self: start !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-supporting-surface {
+    grid-area: side !important;
+    align-self: end !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-decision-head h1 {
+    font-size: 28px !important;
+    line-height: 1.05 !important;
   }
 }
 `;

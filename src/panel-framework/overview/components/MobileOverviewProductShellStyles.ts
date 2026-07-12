@@ -1,5 +1,5 @@
 const MOBILE_OVERVIEW_CURRENT_SHELL_STYLES = `
-@media (max-width: 760px) {
+@media (max-width: 760px), (min-width: 761px) and (max-width: 900px) and (max-height: 520px) {
   html:has(#overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console]),
   body:has(#overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console]) {
     height: 100dvh !important;
@@ -15,10 +15,37 @@ const MOBILE_OVERVIEW_CURRENT_SHELL_STYLES = `
     overflow: hidden !important;
   }
 
+  html body #overview.router-overview-framework > .ro-topbar,
+  html body #overview.router-overview-framework > .ro-desktop-grid {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+
+  html body #overview.router-overview-framework > .ro-mobile-first-screen {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    width: 100% !important;
+    height: auto !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    min-height: 100dvh !important;
+    max-height: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    pointer-events: auto !important;
+  }
+
   #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] {
+    display: block !important;
     position: fixed !important;
     inset: 0 !important;
+    visibility: visible !important;
+    opacity: 1 !important;
     width: 100vw !important;
+    max-width: none !important;
     height: 100dvh !important;
     max-height: 100dvh !important;
     min-height: 0 !important;
@@ -27,6 +54,10 @@ const MOBILE_OVERVIEW_CURRENT_SHELL_STYLES = `
 
   #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-v420-shell,
   #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-decision-screen {
+    visibility: visible !important;
+    opacity: 1 !important;
+    width: 100% !important;
+    max-width: none !important;
     height: 100dvh !important;
     max-height: 100dvh !important;
     min-height: 0 !important;

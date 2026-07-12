@@ -2,7 +2,7 @@
 import { MOBILE_OVERVIEW_TOKEN_CSS } from "../mobileOverviewTokens";
 
 export const V420_MOBILE_STYLES = `
-@media (max-width: 760px) {
+@media (max-width: 760px), (min-width: 761px) and (max-width: 900px) and (max-height: 520px) {
   #overview.router-overview-framework .ik-v420-app,
   .router-overview-framework .ik-v420-app,
   .ik-v420-app {
@@ -1246,7 +1246,7 @@ export const V420_MOBILE_STYLES = `
   }
 }
 
-@media (max-width: 760px) {
+@media (max-width: 760px), (min-width: 761px) and (max-width: 900px) and (max-height: 520px) {
   #overview.router-overview-framework .ik-v420-screen,
   .router-overview-framework .ik-v420-screen,
   .ik-v420-screen {
@@ -1689,7 +1689,7 @@ export const V420_MOBILE_STYLES = `
   }
 }
 
-@media (max-width: 760px) {
+@media (max-width: 760px), (min-width: 761px) and (max-width: 900px) and (max-height: 520px) {
   #overview.router-overview-framework .ik-v960-judgement-strip,
   .router-overview-framework .ik-v960-judgement-strip,
   .ik-v960-judgement-strip {
@@ -2007,7 +2007,7 @@ export const V420_MOBILE_STYLES = `
   }
 }
 
-@media (max-width: 760px) {
+@media (max-width: 760px), (min-width: 761px) and (max-width: 900px) and (max-height: 520px) {
   #overview.router-overview-framework .ik-v420-screen,
   .router-overview-framework .ik-v420-screen,
   .ik-v420-screen {
@@ -2402,7 +2402,7 @@ export const V420_MOBILE_STYLES = `
   }
 }
 
-@media (max-width: 760px) {
+@media (max-width: 760px), (min-width: 761px) and (max-width: 900px) and (max-height: 520px) {
   #overview.router-overview-framework .ik-v420-app,
   .router-overview-framework .ik-v420-app,
   .ik-v420-app {

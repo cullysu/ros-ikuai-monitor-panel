@@ -203,6 +203,23 @@ async function main() {
       ['codex_tmp_mobileIncidentDrilldown.json', 'codex_tmp_mobileIncidentDrilldown.png']
     ]
   ];
+  const landscapeChecks = [
+    [
+      'compact landscape app home',
+      ['tools/check-resource-trend-balance.js', '--url', url, '--section', 'mobileNormalHome', '--width', '844', '--height', '390', '--json', 'codex_tmp_mobileLandscapeHome.json', '--png', 'codex_tmp_mobileLandscapeHome.png', '--wait', '3600'],
+      ['codex_tmp_mobileLandscapeHome.json', 'codex_tmp_mobileLandscapeHome.png']
+    ]
+  ];
+  if (process.env.CODEX_MOBILE_WIDTH || process.env.CODEX_MOBILE_HEIGHT) {
+    const requestedWidth = String(Math.max(320, Number(process.env.CODEX_MOBILE_WIDTH || 390) || 390));
+    const requestedHeight = String(Math.max(320, Number(process.env.CODEX_MOBILE_HEIGHT || 844) || 844));
+    for (const [, args] of mobileChecks) {
+      const widthIndex = args.indexOf('--width');
+      const heightIndex = args.indexOf('--height');
+      if (widthIndex >= 0) args[widthIndex + 1] = requestedWidth;
+      if (heightIndex >= 0) args[heightIndex + 1] = requestedHeight;
+    }
+  }
 
   const requestedSections = new Set(
     String(process.env.CODEX_MOBILE_SECTIONS || '')
@@ -211,7 +228,7 @@ async function main() {
       .filter(Boolean)
   );
   const selectedChecks = requestedSections.size === 0
-    ? mobileChecks
+    ? [...mobileChecks, ...landscapeChecks]
     : mobileChecks.filter(([, args]) => {
       const sectionIndex = args.indexOf('--section');
       return sectionIndex >= 0 && requestedSections.has(args[sectionIndex + 1]);

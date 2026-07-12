@@ -1,5 +1,5 @@
 export const MOBILE_OVERVIEW_PUBLIC_DECISION_STYLES = `
-@media (max-width: 760px) {
+@media (max-width: 760px), (min-width: 761px) and (max-width: 900px) and (max-height: 520px) {
   #overview.router-overview-framework .ik-mobile-public-home,
   #overview.router-overview-framework .ik-mobile-public-home * {
     box-sizing: border-box;
@@ -626,7 +626,7 @@ export const MOBILE_OVERVIEW_PUBLIC_DECISION_STYLES = `
     grid-area: facts !important;
   }
 
-  #overview.router-overview-framework .ik-mobile-public-home .ik-mobile-supporting-list {
+  #overview.router-overview-framework .ik-mobile-public-home .ik-mobile-supporting-surface {
     grid-area: list !important;
   }
 }

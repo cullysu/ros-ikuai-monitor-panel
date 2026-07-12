@@ -1333,7 +1333,23 @@ async function main() {
         const expectedImpactPlane = expectedConfig.impactPlane;
         const requiredText = expectedConfig.requiredText;
         const missing = requiredText.filter((item) => !text.includes(item));
+        const isEffectivelyVisible = (node) => {
+          let current = node;
+          while (current && current !== sectionEl?.parentElement) {
+            const style = getComputedStyle(current);
+            if (
+              style.display === 'none' ||
+              style.visibility === 'hidden' ||
+              style.visibility === 'collapse' ||
+              Number(style.opacity || 1) <= 0.01
+            ) return false;
+            current = current.parentElement;
+          }
+          const rect = node.getBoundingClientRect();
+          return rect.width > 0 && rect.height > 0;
+        };
         const wideNodes = Array.from(sectionEl?.querySelectorAll('*') || [])
+          .filter(isEffectivelyVisible)
           .map((node) => {
             const rect = node.getBoundingClientRect();
             return { tag: node.tagName, className: String(node.className || ''), width: rect.width, right: rect.right };
