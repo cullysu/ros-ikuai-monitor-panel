@@ -5,7 +5,7 @@
     gap: 9px !important;
     align-content: start !important;
     padding: max(12px, env(safe-area-inset-top)) 12px calc(76px + env(safe-area-inset-bottom)) !important;
-    background: #edf2f7 !important;
+    background: #f1f4f7 !important;
   }
 
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-device-bar {
@@ -32,7 +32,7 @@
     color: #142033 !important;
     font-size: 17px !important;
     line-height: 1.08 !important;
-    letter-spacing: -.035em !important;
+    letter-spacing: 0 !important;
   }
 
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-device-title span {
