@@ -1536,6 +1536,7 @@ async function main() {
           ? ['WAN', '默认路由', '采集', '快照']
           : ['WAN', '采集', '资源', '快照'];
         const metricGridColumnCount = (metricGridStyle?.gridTemplateColumns || '').split(' ').filter(Boolean).length;
+        const isLandscapeMobile = innerWidth > innerHeight;
         const metricGridProductized = Boolean(
           (!judgementStrip || !judgementStrip.querySelector('.ik-mobile-core-facts')) &&
           metricGrid &&
@@ -1543,9 +1544,13 @@ async function main() {
           expectedMetricLabels.every((label) => metricLabels.includes(label)) &&
           metricGridStyle &&
           metricGridStyle.display === 'grid' &&
-          metricGridColumnCount === 2 &&
-          (metricGridStyle.gridTemplateRows || '').split(' ').filter(Boolean).length === 2 &&
-          Number.parseFloat(metricGridStyle.height || '0') >= 112
+          (isLandscapeMobile
+            ? metricGridColumnCount === 2 &&
+              (metricGridStyle.gridTemplateRows || '').split(' ').filter(Boolean).length === 2 &&
+              Number.parseFloat(metricGridStyle.height || '0') >= 112
+            : metricGridColumnCount === 1 &&
+              (metricGridStyle.gridTemplateRows || '').split(' ').filter(Boolean).length === 4 &&
+              Number.parseFloat(metricGridStyle.height || '0') >= 184)
         );
         const normalSummaryStrip = sectionName === 'mobileNormalHome' ? metricGrid : null;
         const normalSummaryCells = Array.from(normalSummaryStrip?.querySelectorAll('.ik-mobile-fact') || []);

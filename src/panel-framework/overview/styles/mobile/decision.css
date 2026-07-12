@@ -2,7 +2,7 @@
 
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-decision-card {
     display: grid !important;
-    grid-template-rows: auto minmax(128px, auto) 44px !important;
+    grid-template-rows: auto minmax(128px, auto) !important;
     gap: 9px !important;
     min-height: 0 !important;
     height: auto !important;
@@ -19,7 +19,13 @@
     grid-template-rows: auto auto !important;
   }
 
-  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-decision-card:not([data-overview-mobile-priority="normal"]) {
+  @media (max-width: 760px) {
+    html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-decision-card.is-trend {
+      min-height: 280px !important;
+    }
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-decision-card:not(.is-trend) {
     grid-template-rows: auto auto !important;
   }
 

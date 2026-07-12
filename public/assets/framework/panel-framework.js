@@ -9077,11 +9077,6 @@ var PanelFramework = function(exports) {
   function toneClass(tone) {
     return `is-${tone}`;
   }
-  function nextStep(model) {
-    const action = model.abnormalDecision.find((item) => item.label === "下一步");
-    if (action) return { value: action.value, note: action.note, tone: toneClass(action.tone) };
-    return { value: "查看 WAN", note: "默认路由 / 快照", tone: "is-trust" };
-  }
   function WanDecisionSpark({ model }) {
     const chart = model.hero.trend;
     const plot = chart.plot;
@@ -9220,7 +9215,6 @@ var PanelFramework = function(exports) {
     return "接口告警";
   }
   function PrimaryDecision({ model }) {
-    const action = nextStep(model);
     return /* @__PURE__ */ jsxRuntimeExports.jsxs(
       "section",
       {
@@ -9232,12 +9226,7 @@ var PanelFramework = function(exports) {
             /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { children: model.hero.title }),
             /* @__PURE__ */ jsxRuntimeExports.jsx("p", { children: model.hero.subtitle })
           ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(DecisionVisual, { model }),
-          model.priority === "normal" ? /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `ik-mobile-next-step ${action.tone}`, children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "下一步" }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: action.value }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: action.note })
-          ] }) : null
+          /* @__PURE__ */ jsxRuntimeExports.jsx(DecisionVisual, { model })
         ]
       }
     );

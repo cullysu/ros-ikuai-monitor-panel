@@ -1,11 +1,5 @@
 import type { MobileOverviewModel } from "../mobileOverviewModel";
 import { toneClass } from "./MobileOverviewUtils";
-
-function nextStep(model: MobileOverviewModel): { value: string; note: string; tone: string } {
-  const action = model.abnormalDecision.find((item) => item.label === "下一步");
-  if (action) return { value: action.value, note: action.note, tone: toneClass(action.tone) };
-  return { value: "查看 WAN", note: "默认路由 / 快照", tone: "is-trust" };
-}
 function WanDecisionSpark({ model }: { model: MobileOverviewModel }) {
   const chart = model.hero.trend;
   const plot = chart.plot;
@@ -136,7 +130,6 @@ function decisionKicker(model: MobileOverviewModel): string {
 }
 
 export function PrimaryDecision({ model }: { model: MobileOverviewModel }) {
-  const action = nextStep(model);
   return (
     <section
       className={`ik-v420-hero ik-v240-hero ik-v159-network-hero ik-mobile-decision-card ik-mobile-primary-conclusion is-${model.hero.visualKind} ${toneClass(model.network.conclusion.tone)}`}
@@ -148,13 +141,6 @@ export function PrimaryDecision({ model }: { model: MobileOverviewModel }) {
         <p>{model.hero.subtitle}</p>
       </div>
       <DecisionVisual model={model} />
-      {model.priority === "normal" ? (
-        <div className={`ik-mobile-next-step ${action.tone}`}>
-          <span>下一步</span>
-          <b>{action.value}</b>
-          <em>{action.note}</em>
-        </div>
-      ) : null}
     </section>
   );
 }
