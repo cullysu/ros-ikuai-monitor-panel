@@ -50,3 +50,10 @@ await build(defineConfig({
     }
   }
 }));
+
+// The bundle is committed as a public runtime asset. Validate the generated
+// JavaScript itself so a truncated or otherwise malformed artifact cannot pass
+// a source-only TypeScript build.
+childProcess.execFileSync(process.execPath, ["--check", resolve(projectRoot, "public/assets/framework/panel-framework.js")], {
+  stdio: "inherit"
+});

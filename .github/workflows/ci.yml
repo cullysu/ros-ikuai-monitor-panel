@@ -46,7 +46,6 @@ jobs:
       - name: TypeScript contract check
         run: npm run check:types
 
-      # Keep scenario ownership and mobile-home contracts in the required CI path.
       - name: Overview architecture contracts
         run: |
           node tools/check-overview-architecture.js
@@ -62,6 +61,7 @@ jobs:
           for file in public/*.js tools/*.js; do
             node --check "$file"
           done
+          node --check public/assets/framework/panel-framework.js
           node <<'NODE'
           const fs = require('fs');
           const vm = require('vm');
