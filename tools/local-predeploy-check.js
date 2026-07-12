@@ -1406,7 +1406,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const overviewNoSnapshotRecentSuccessModule = sectionRoot?.querySelector('[data-overview-density-module="no-snapshot-recent-success"]');
     const overviewNoSnapshotReadonlyBoundaryModule = sectionRoot?.querySelector('[data-overview-density-module="no-snapshot-readonly-boundary"]');
     const overviewNoSnapshotDegradedModulesModule = sectionRoot?.querySelector('[data-overview-density-module="no-snapshot-degraded-modules"]');
-    const overviewNoSnapshotRawEvidenceModule = sectionRoot?.querySelector('[data-overview-density-module="evidence-boundary"][data-overview-desktop-v1074-collapsed-evidence]');
+    const overviewNoSnapshotRawEvidenceModule = sectionRoot?.querySelector('[data-overview-density-module="evidence-boundary"][data-overview-evidence-mode]');
     const overviewNoSnapshotTrustLevelModule = sectionRoot?.querySelector('[data-overview-density-module="no-snapshot-trust-level"]');
     const overviewNoSnapshotBoundaryDegradeModule = sectionRoot?.querySelector('[data-overview-density-module="no-snapshot-boundary-degrade"]');
     const overviewNoSnapshotTimelineModule = sectionRoot?.querySelector('[data-overview-density-module="no-snapshot-collection-timeline"]');
@@ -3575,7 +3575,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewNoSnapshotAuditCopyCount === 0 &&
       overviewNoSnapshotReadonlyBoundaryModule &&
       overviewNoSnapshotRawEvidenceModule &&
-      overviewNoSnapshotRawEvidenceModule.hasAttribute('data-overview-desktop-v1074-collapsed-evidence') &&
+      overviewNoSnapshotRawEvidenceModule.hasAttribute('data-overview-evidence-mode') &&
       /不写配置/.test(normalize(overviewNoSnapshotReadonlyBoundaryModule.textContent || '')) &&
       /业务数据不可判|业务可信边界|业务展示边界/.test(overviewNoSnapshotSurfaceText) &&
       /速率\\s*不展示|速率不展示/.test(overviewNoSnapshotSurfaceText) &&
@@ -3584,7 +3584,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const overviewNoSnapshotOpsLedgerCopyOk = sectionName !== 'overview' || !isDesktopOverview || !noSnapshotEdge || Boolean(
       (
       overviewNoSnapshotRawEvidenceModule &&
-      overviewNoSnapshotRawEvidenceModule.hasAttribute('data-overview-desktop-v1074-collapsed-evidence') &&
+      overviewNoSnapshotRawEvidenceModule.hasAttribute('data-overview-evidence-mode') &&
       /不写配置/.test(overviewNoSnapshotSurfaceText) &&
       /业务数据不可判/.test(overviewNoSnapshotSurfaceText) &&
       /速率\s*不展示|数值不展示/.test(overviewNoSnapshotSurfaceText) &&
@@ -3636,7 +3636,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewNoSnapshotModuleCountOk &&
       overviewNoSnapshotCoreModuleNodes.length === 3 &&
       overviewNoSnapshotRawEvidenceModule &&
-      overviewNoSnapshotRawEvidenceModule.hasAttribute('data-overview-desktop-v1074-collapsed-evidence') &&
+      overviewNoSnapshotRawEvidenceModule.hasAttribute('data-overview-evidence-mode') &&
       /业务数据不可判|业务可信边界/.test(overviewNoSnapshotSurfaceText) &&
       /采集链路/.test(overviewNoSnapshotSurfaceText) &&
       /恢复线索/.test(overviewNoSnapshotSurfaceText) &&

@@ -701,7 +701,7 @@ async function main() {
         const recoveryRect = recoveryModule?.getBoundingClientRect();
         const rawEvidenceRect = rawEvidenceModule?.getBoundingClientRect();
         const rawEvidenceRowCount = rawEvidenceModule?.querySelectorAll('.ro-ledger-row:not(.ro-ledger-head)').length || 0;
-        const rawEvidenceDisclosure = rawEvidenceModule?.querySelector('[data-overview-desktop-v1074-raw-evidence-disclosure="native-details-collapsed-secondary"]');
+        const rawEvidenceDisclosure = rawEvidenceModule?.querySelector('[data-overview-evidence-disclosure="native-details-collapsed-secondary"]');
         const hasRawEvidenceDisclosure = Boolean(rawEvidenceDisclosure && rawEvidenceDisclosure.open === false);
         const noSnapshotEvidenceDeferred = Boolean(
           recoveryModule &&
@@ -858,7 +858,7 @@ async function main() {
           boxShadow: style.boxShadow
         }));
         const wanModule = sectionEl?.querySelector('[data-overview-density-module="wan-trend"]');
-        const wanIntegrated = wanModule?.querySelector('[data-overview-desktop-v1041-wan-readable-chart="current-peak-mean-window-threshold-readout-visible-not-table-noise"]');
+        const wanIntegrated = wanModule?.querySelector('[data-overview-wan-chart-contract="current-peak-mean-window-threshold-readout-visible-not-table-noise"]');
         const wanModuleLedgerCount = wanModule?.querySelectorAll(':scope > .ro-ledger-table').length || 0;
         const wanDuplicateEvidenceModuleCount = sectionEl?.querySelectorAll('[data-overview-density-module="normal-wan-evidence"]').length || 0;
         const wanChart = wanIntegrated?.querySelector('.ro-judgement-chart[data-overview-chart-module="traffic-trend"]');
@@ -868,13 +868,13 @@ async function main() {
         const wanChartSummaryRect = wanChartSummary?.getBoundingClientRect();
         const wanSummaryItems = Array.from(wanIntegrated?.querySelectorAll('.ro-wan-integrated-summary span') || []);
         const wanTopItems = Array.from(wanIntegrated?.querySelectorAll('.ro-wan-integrated-top span') || []);
-        const wanDecisionRail = wanIntegrated?.querySelector('[data-overview-desktop-v1063-wan-decision-rail="current-peak-top-default-sampling-single-surface"]');
-        const wanDecisionItems = Array.from(wanDecisionRail?.querySelectorAll('[data-overview-desktop-v1063-decision]') || []);
+        const wanDecisionRail = wanIntegrated?.querySelector('[data-overview-wan-decision-rail="current-peak-top-default-sampling-single-surface"]');
+        const wanDecisionItems = Array.from(wanDecisionRail?.querySelectorAll('[data-overview-wan-decision]') || []);
         const wanDecisionLabels = wanDecisionItems.map((item) => normalize(item.querySelector('em')?.textContent || ''));
         const wanDecisionRect = wanDecisionRail?.getBoundingClientRect();
         const wanDecisionRailProductized = Boolean(
           wanDecisionRail &&
-          wanDecisionRail.getAttribute('data-overview-desktop-v1063-wan-decision-source') === 'desktopWanDecisionRail' &&
+          wanDecisionRail.getAttribute('data-overview-wan-decision-source') === 'desktopWanDecisionRail' &&
           wanDecisionRect &&
           wanDecisionRect.width >= 520 &&
           wanDecisionRect.height >= 28 &&
@@ -887,9 +887,9 @@ async function main() {
         );
         const wanSingleSurfaceProductized = Boolean(
           wanModule &&
-          wanModule.getAttribute('data-overview-desktop-v1073-visual-only') === 'true' &&
+          wanModule.getAttribute('data-overview-module-visual-only') === 'true' &&
           wanIntegrated &&
-          wanIntegrated.getAttribute('data-overview-desktop-v1073-wan-single-surface') === 'trend-decision-top3-no-duplicate-summary-or-ledger' &&
+          wanIntegrated.getAttribute('data-overview-wan-single-surface') === 'trend-decision-top3-no-duplicate-summary-or-ledger' &&
           wanModuleLedgerCount === 0 &&
           wanSummaryItems.length === 0 &&
           wanDuplicateEvidenceModuleCount === 0
@@ -912,7 +912,7 @@ async function main() {
           wanSingleSurfaceProductized &&
           wanTopItems.length >= 2
         );
-        const routeModules = Array.from(sectionEl?.querySelectorAll('[data-routeros-v1047-raw-evidence-contract="business-route-main-raw-route-fields-secondary-collapsed-low-noise"]') || []);
+        const routeModules = Array.from(sectionEl?.querySelectorAll('[data-routeros-raw-evidence-contract="business-route-main-raw-route-fields-secondary-collapsed-low-noise"]') || []);
         const routeBusinessRows = Array.from(sectionEl?.querySelectorAll('[data-routeros-evidence-role="business-main"]') || []);
         const routeRawSecondaryRows = Array.from(sectionEl?.querySelectorAll('[data-routeros-evidence-role="raw-secondary"]') || []);
         const rawAttrNames = ['data-routeros-raw-table', 'data-routeros-raw-gateway', 'data-routeros-raw-distance', 'data-routeros-raw-active', 'data-routeros-raw-disabled'];
@@ -924,7 +924,7 @@ async function main() {
         const routeRawSecondaryComplete = routeRawSecondaryRows.length >= 1 && routeRawSecondaryRows.every((row) => (
           row.getAttribute('data-routeros-raw-field-mode') === 'secondary-collapsed-evidence' &&
           row.getAttribute('data-routeros-raw-field-contract') === 'table-gateway-distance-active-disabled-secondary' &&
-          row.getAttribute('data-routeros-v1047-raw-secondary-rail') === 'bottom-collapsed-low-noise' &&
+          row.getAttribute('data-routeros-raw-secondary-rail') === 'bottom-collapsed-low-noise' &&
           rawAttrNames.every((name) => Boolean(row.getAttribute(name)))
         ));
         const routeRawSecondaryStyles = routeRawSecondaryRows.slice(0, 6).map((row) => {
@@ -949,15 +949,15 @@ async function main() {
           routeRawSecondaryComplete &&
           routeRawSecondaryLowNoise
         );
-        const rawEvidenceDisclosure = sectionEl?.querySelector('[data-overview-desktop-v1074-raw-evidence-disclosure="native-details-collapsed-secondary"]');
-        const rawEvidenceDisclosureModule = rawEvidenceDisclosure?.closest('[data-overview-desktop-v1074-collapsed-evidence]');
+        const rawEvidenceDisclosure = sectionEl?.querySelector('[data-overview-evidence-disclosure="native-details-collapsed-secondary"]');
+        const rawEvidenceDisclosureModule = rawEvidenceDisclosure?.closest('[data-overview-evidence-mode]');
         const rawEvidenceDisclosureSummary = rawEvidenceDisclosure?.querySelector(':scope > summary');
         const rawEvidenceDisclosureSummaryRect = rawEvidenceDisclosureSummary?.getBoundingClientRect();
         const rawEvidenceDisclosureProductized = Boolean(
           rawEvidenceDisclosure &&
           rawEvidenceDisclosure.open === false &&
           rawEvidenceDisclosureModule &&
-          rawEvidenceDisclosureModule.getAttribute('data-overview-desktop-v1074-collapsed-evidence') === 'native-details-business-first-raw-secondary' &&
+          rawEvidenceDisclosureModule.getAttribute('data-overview-evidence-mode') === 'native-details-business-first-raw-secondary' &&
           rawEvidenceDisclosureSummary &&
           rawEvidenceDisclosureSummaryRect &&
           rawEvidenceDisclosureSummaryRect.height >= 24 &&
@@ -1070,13 +1070,13 @@ async function main() {
           routeBusinessRowCount: routeBusinessRows.length,
           routeRawSecondaryRowCount: routeRawSecondaryRows.length,
           routeRawSecondaryStyles,
-          wanChartContract: wanIntegrated?.getAttribute('data-overview-desktop-v1041-wan-readable-chart') || '',
+          wanChartContract: wanIntegrated?.getAttribute('data-overview-wan-chart-contract') || '',
           wanChartRect: wanChartRect ? { width: wanChartRect.width, height: wanChartRect.height } : null,
           wanChartRowCount: wanChartRows.length,
           wanDecisionRailProductized,
           wanSingleSurfaceProductized,
           wanDecisionLabels,
-          wanModuleVisualOnly: wanModule?.getAttribute('data-overview-desktop-v1073-visual-only') || '',
+          wanModuleVisualOnly: wanModule?.getAttribute('data-overview-module-visual-only') || '',
           wanModuleLedgerCount,
           wanDuplicateEvidenceModuleCount,
           wanSummaryItemCount: wanSummaryItems.length,

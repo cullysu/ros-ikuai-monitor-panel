@@ -87,14 +87,14 @@
 
 }
 
-/* v1074 desktop raw evidence disclosure: business interpretation first, raw fields secondary. */
+/* Desktop raw evidence disclosure: business interpretation first, raw fields secondary. */
 @media (min-width: 761px) {
   .ro-ledger-disclosure {
     display: contents;
   }
 
-  #overview.router-overview-framework .ro-module[data-overview-desktop-v1074-collapsed-evidence] ,
-  .router-overview-framework .ro-module[data-overview-desktop-v1074-collapsed-evidence] {
+  #overview.router-overview-framework .ro-module[data-overview-evidence-mode] ,
+  .router-overview-framework .ro-module[data-overview-evidence-mode] {
     align-self: start !important;
     min-height: 0 !important;
     background: rgba(248, 251, 254, .42) !important;

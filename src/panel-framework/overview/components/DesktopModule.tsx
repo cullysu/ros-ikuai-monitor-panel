@@ -35,8 +35,8 @@ export function Module({ title, subtitle, module, tone = "trust", headers, rows,
       data-overview-visual-block
       data-overview-chart-type={moduleChartType(module)}
       data-overview-desktop-tier="evidence"
-      data-overview-desktop-v1073-visual-only={visualOnly ? "true" : undefined}
-      data-overview-desktop-v1074-collapsed-evidence={collapsedEvidence ? "native-details-business-first-raw-secondary" : undefined}
+      data-overview-module-visual-only={visualOnly ? "true" : undefined}
+      data-overview-evidence-mode={collapsedEvidence ? "native-details-business-first-raw-secondary" : undefined}
       data-overview-top5-total={module === "resource-interface-top5" ? rows.length : undefined}
       data-overview-wan-offline-bars={module === "wan-offline-bars" ? "true" : undefined}
       data-overview-wan-mini-table={isWanLedger ? "true" : undefined}
@@ -44,7 +44,7 @@ export function Module({ title, subtitle, module, tone = "trust", headers, rows,
       data-overview-rank-grid={isRankLedger ? "true" : undefined}
       data-overview-evidence-weight={primaryEvidenceModules.has(module) ? "primary" : isSecondaryEvidence ? "secondary" : "support"}
       data-routeros-route-evidence-contract={isRouterOsRouteEvidenceModule ? ROUTEROS_ROUTE_EVIDENCE_CONTRACT : undefined}
-      data-routeros-v1047-raw-evidence-contract={isRouterOsRouteEvidenceModule ? "business-route-main-raw-route-fields-secondary-collapsed-low-noise" : undefined}
+      data-routeros-raw-evidence-contract={isRouterOsRouteEvidenceModule ? "business-route-main-raw-route-fields-secondary-collapsed-low-noise" : undefined}
       data-overview-three-col-table={headers.length === 3 ? "true" : undefined}
     >
       <header className="ro-module-head">
@@ -66,7 +66,7 @@ export function Module({ title, subtitle, module, tone = "trust", headers, rows,
       {visualOnly ? null : (
         <details
           className={collapsedEvidence ? "ro-secondary-evidence-disclosure" : collapsed ? "ro-secondary-evidence-disclosure ro-compact-summary-disclosure" : "ro-ledger-disclosure"}
-          data-overview-desktop-v1074-raw-evidence-disclosure={collapsedEvidence ? "native-details-collapsed-secondary" : undefined}
+          data-overview-evidence-disclosure={collapsedEvidence ? "native-details-collapsed-secondary" : undefined}
           open={collapsedEvidence || collapsed ? undefined : true}
         >
           {collapsedEvidence || collapsed ? (

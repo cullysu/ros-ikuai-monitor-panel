@@ -2264,12 +2264,6 @@
   }
 }
 
-@media (min-width: 761px) {
-}
-
-@media (min-width: 761px) {
-}
-
 /* Codex v517 ACTUAL EOF: stronger desktop chart de-red. */
 @media (min-width: 761px) {
   #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-judgement-row[data-tone="danger"] .ro-chart-current,
@@ -4614,19 +4608,19 @@
     opacity: .92 !important;
   }
 
-  /* v1047 desktop RouterOS raw route fields: visible only as low-noise secondary evidence, never as main business copy. */
-  #overview.router-overview-framework [data-routeros-v1047-raw-evidence-contract]
+  /* Desktop RouterOS raw route fields: visible only as low-noise secondary evidence, never as main business copy. */
+  #overview.router-overview-framework [data-routeros-raw-evidence-contract]
     [data-routeros-evidence-role="raw-secondary"],
-  #overview.router-overview-framework [data-routeros-v1047-raw-secondary-rail="bottom-collapsed-low-noise"] {
+  #overview.router-overview-framework [data-routeros-raw-secondary-rail="bottom-collapsed-low-noise"] {
     min-height: 24px !important;
     color: #51677f !important;
     background: rgba(247, 250, 253, .42) !important;
     box-shadow: inset 0 -1px 0 rgba(226, 235, 244, .26) !important;
   }
 
-  #overview.router-overview-framework [data-routeros-v1047-raw-evidence-contract]
+  #overview.router-overview-framework [data-routeros-raw-evidence-contract]
     [data-routeros-evidence-role="raw-secondary"] .ro-ledger-cell,
-  #overview.router-overview-framework [data-routeros-v1047-raw-secondary-rail="bottom-collapsed-low-noise"] .ro-ledger-cell {
+  #overview.router-overview-framework [data-routeros-raw-secondary-rail="bottom-collapsed-low-noise"] .ro-ledger-cell {
     color: #51677f !important;
     font-size: 10.5px !important;
     font-weight: 520 !important;
@@ -4636,9 +4630,9 @@
     box-shadow: none !important;
   }
 
-  #overview.router-overview-framework [data-routeros-v1047-raw-evidence-contract]
+  #overview.router-overview-framework [data-routeros-raw-evidence-contract]
     [data-routeros-evidence-role="raw-secondary"] .ro-ledger-cell:first-child,
-  #overview.router-overview-framework [data-routeros-v1047-raw-secondary-rail="bottom-collapsed-low-noise"] .ro-ledger-cell:first-child {
+  #overview.router-overview-framework [data-routeros-raw-secondary-rail="bottom-collapsed-low-noise"] .ro-ledger-cell:first-child {
     color: #6f8093 !important;
     font-weight: 650 !important;
   }

@@ -62,7 +62,7 @@ export function routeFactRows(snapshot: OverviewRawSnapshot, state: OverviewDeri
       "data-routeros-evidence-item": route.layer,
       "data-routeros-evidence-role": "business-main",
       "data-routeros-raw-field-mode": "business-translated-no-raw-attrs",
-      "data-routeros-v1047-business-route-copy": "gateway-priority-status-no-routeros-raw-fields",
+      "data-routeros-business-route-copy": "gateway-priority-status-no-routeros-raw-fields",
     },
     cells: [
       route.label,
@@ -86,7 +86,7 @@ export function routeBusinessRows(snapshot: OverviewRawSnapshot, state: Overview
       "data-routeros-evidence-item": route.layer,
       "data-routeros-evidence-role": "business-main",
       "data-routeros-raw-field-mode": "business-translated-no-raw-attrs",
-      "data-routeros-v1047-business-route-copy": "gateway-priority-status-no-routeros-raw-fields",
+      "data-routeros-business-route-copy": "gateway-priority-status-no-routeros-raw-fields",
     },
     cells: [
       route.label,
@@ -110,7 +110,7 @@ export function routeRawEvidenceRows(snapshot: OverviewRawSnapshot, state: Overv
       "data-routeros-evidence-role": "raw-secondary",
       "data-routeros-raw-field-mode": "secondary-collapsed-evidence",
       "data-routeros-raw-field-contract": "table-gateway-distance-active-disabled-secondary",
-      "data-routeros-v1047-raw-secondary-rail": "bottom-collapsed-low-noise",
+      "data-routeros-raw-secondary-rail": "bottom-collapsed-low-noise",
       "data-routeros-raw-table": item.rawFields?.table || "",
       "data-routeros-raw-gateway": item.rawFields?.gateway || "",
       "data-routeros-raw-distance": item.rawFields?.distance || "",

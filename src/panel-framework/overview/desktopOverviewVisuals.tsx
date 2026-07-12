@@ -149,18 +149,18 @@ export function DesktopWanIntegratedVisual({ snapshot, state, rows }: OverviewPa
       data-overview-desktop-wan-integrated="trend-current-peak-top-outlet-route-sampling"
       data-overview-ikuai-wan-chart-integrated="trend-current-peak-top-outlet-route-sampling"
       data-overview-desktop-chart-product-contract="trend-plus-current-peak-top-outlet-route-sampling"
-      data-overview-desktop-v1020-integrated-product-chart="single-reading-current-peak-top-route-sampling"
-      data-overview-desktop-v1041-wan-readable-chart="current-peak-mean-window-threshold-readout-visible-not-table-noise"
-      data-overview-desktop-v1073-wan-single-surface="trend-decision-top3-no-duplicate-summary-or-ledger"
+      data-overview-wan-integrated-chart="single-reading-current-peak-top-route-sampling"
+      data-overview-wan-chart-contract="current-peak-mean-window-threshold-readout-visible-not-table-noise"
+      data-overview-wan-single-surface="trend-decision-top3-no-duplicate-summary-or-ledger"
     >
       <JudgementChart module="traffic-trend" kind="trend" rows={rows} />
       <div
         className="ro-wan-integrated-decision"
-        data-overview-desktop-v1063-wan-decision-rail="current-peak-top-default-sampling-single-surface"
-        data-overview-desktop-v1063-wan-decision-source="desktopWanDecisionRail"
+        data-overview-wan-decision-rail="current-peak-top-default-sampling-single-surface"
+        data-overview-wan-decision-source="desktopWanDecisionRail"
       >
         {decision.map((item) => (
-          <span data-overview-desktop-v1063-decision={item.id} data-tone={item.tone} key={item.id}>
+          <span data-overview-wan-decision={item.id} data-tone={item.tone} key={item.id}>
             <em>{item.label}</em>
             <b>{item.value}</b>
             <small>{item.note}</small>

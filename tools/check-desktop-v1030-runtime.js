@@ -104,7 +104,7 @@ function runOnce(url) {
         if (report.pass !== true) {
           throw new Error(`desktop v1030 report did not pass: ${JSON.stringify(report)}`);
         }
-        console.log(`[desktop-v1030] PASS v1074=${report.rawEvidenceDisclosureProductized === true}`);
+        console.log(`[desktop-v1030] PASS evidenceDisclosure=${report.rawEvidenceDisclosureProductized === true}`);
       } catch (error) {
         resultError = error;
       }

@@ -37,6 +37,8 @@ const desktopConsoleFile =
   "src/panel-framework/overview/components/DesktopConsole.tsx";
 const desktopDecisionRailFile =
   "src/panel-framework/overview/components/DesktopDecisionRail.tsx";
+const desktopModuleFile =
+  "src/panel-framework/overview/components/DesktopModule.tsx";
 const desktopScenesFile =
   "src/panel-framework/overview/desktopOverviewScenes.tsx";
 const desktopDefaultSceneFile =
@@ -73,6 +75,7 @@ const mobileModelFile =
 const panel = read(panelFile);
 const desktopConsole = read(desktopConsoleFile);
 const desktopDecisionRail = read(desktopDecisionRailFile);
+const desktopModule = read(desktopModuleFile);
 const desktopScenes = read(desktopScenesFile);
 const desktopDefaultScene = read(desktopDefaultSceneFile);
 const panelCss = read(panelCssFile);
@@ -456,6 +459,18 @@ assert(
 assert(
   !/data-overview-desktop-v\d+|data-overview-desktop-redline-markers|data-overview-desktop-fixed-skeleton|data-overview-side-table-mode/.test(desktopConsole),
   "DesktopConsole.tsx must not carry versioned or self-certifying acceptance markers"
+);
+assert(
+  !/data-overview-desktop-v\d+|data-routeros-v\d+/.test(desktopModule),
+  "DesktopModule.tsx must expose semantic evidence attributes only"
+);
+assert(
+  !/data-overview-desktop-v\d+|data-routeros-v\d+/.test(desktopNetworkRows),
+  "desktopOverviewNetworkRows.tsx must expose semantic route evidence attributes only"
+);
+assert(
+  !/data-overview-desktop-v\d+|data-routeros-v\d+/.test(desktopVisuals),
+  "desktopOverviewVisuals.tsx must expose semantic visual attributes only"
 );
 assert(
   (desktopConsole.match(/data-overview-/g) || []).length <= 6,

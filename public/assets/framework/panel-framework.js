@@ -10088,7 +10088,7 @@ var PanelFramework = function(exports) {
         "data-routeros-evidence-item": route.layer,
         "data-routeros-evidence-role": "business-main",
         "data-routeros-raw-field-mode": "business-translated-no-raw-attrs",
-        "data-routeros-v1047-business-route-copy": "gateway-priority-status-no-routeros-raw-fields"
+        "data-routeros-business-route-copy": "gateway-priority-status-no-routeros-raw-fields"
       },
       cells: [
         route.label,
@@ -10111,7 +10111,7 @@ var PanelFramework = function(exports) {
         "data-routeros-evidence-item": route.layer,
         "data-routeros-evidence-role": "business-main",
         "data-routeros-raw-field-mode": "business-translated-no-raw-attrs",
-        "data-routeros-v1047-business-route-copy": "gateway-priority-status-no-routeros-raw-fields"
+        "data-routeros-business-route-copy": "gateway-priority-status-no-routeros-raw-fields"
       },
       cells: [
         route.label,
@@ -10136,7 +10136,7 @@ var PanelFramework = function(exports) {
           "data-routeros-evidence-role": "raw-secondary",
           "data-routeros-raw-field-mode": "secondary-collapsed-evidence",
           "data-routeros-raw-field-contract": "table-gateway-distance-active-disabled-secondary",
-          "data-routeros-v1047-raw-secondary-rail": "bottom-collapsed-low-noise",
+          "data-routeros-raw-secondary-rail": "bottom-collapsed-low-noise",
           "data-routeros-raw-table": ((_a = item.rawFields) == null ? void 0 : _a.table) || "",
           "data-routeros-raw-gateway": ((_b = item.rawFields) == null ? void 0 : _b.gateway) || "",
           "data-routeros-raw-distance": ((_c = item.rawFields) == null ? void 0 : _c.distance) || "",
@@ -10599,18 +10599,18 @@ var PanelFramework = function(exports) {
         "data-overview-desktop-wan-integrated": "trend-current-peak-top-outlet-route-sampling",
         "data-overview-ikuai-wan-chart-integrated": "trend-current-peak-top-outlet-route-sampling",
         "data-overview-desktop-chart-product-contract": "trend-plus-current-peak-top-outlet-route-sampling",
-        "data-overview-desktop-v1020-integrated-product-chart": "single-reading-current-peak-top-route-sampling",
-        "data-overview-desktop-v1041-wan-readable-chart": "current-peak-mean-window-threshold-readout-visible-not-table-noise",
-        "data-overview-desktop-v1073-wan-single-surface": "trend-decision-top3-no-duplicate-summary-or-ledger",
+        "data-overview-wan-integrated-chart": "single-reading-current-peak-top-route-sampling",
+        "data-overview-wan-chart-contract": "current-peak-mean-window-threshold-readout-visible-not-table-noise",
+        "data-overview-wan-single-surface": "trend-decision-top3-no-duplicate-summary-or-ledger",
         children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx(JudgementChart, { module: "traffic-trend", kind: "trend", rows }),
           /* @__PURE__ */ jsxRuntimeExports.jsx(
             "div",
             {
               className: "ro-wan-integrated-decision",
-              "data-overview-desktop-v1063-wan-decision-rail": "current-peak-top-default-sampling-single-surface",
-              "data-overview-desktop-v1063-wan-decision-source": "desktopWanDecisionRail",
-              children: decision.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { "data-overview-desktop-v1063-decision": item.id, "data-tone": item.tone, children: [
+              "data-overview-wan-decision-rail": "current-peak-top-default-sampling-single-surface",
+              "data-overview-wan-decision-source": "desktopWanDecisionRail",
+              children: decision.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { "data-overview-wan-decision": item.id, "data-tone": item.tone, children: [
                 /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: item.label }),
                 /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: item.value }),
                 /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: item.note })
@@ -10719,8 +10719,8 @@ var PanelFramework = function(exports) {
         "data-overview-visual-block": true,
         "data-overview-chart-type": moduleChartType(module),
         "data-overview-desktop-tier": "evidence",
-        "data-overview-desktop-v1073-visual-only": visualOnly ? "true" : void 0,
-        "data-overview-desktop-v1074-collapsed-evidence": collapsedEvidence ? "native-details-business-first-raw-secondary" : void 0,
+        "data-overview-module-visual-only": visualOnly ? "true" : void 0,
+        "data-overview-evidence-mode": collapsedEvidence ? "native-details-business-first-raw-secondary" : void 0,
         "data-overview-top5-total": module === "resource-interface-top5" ? rows.length : void 0,
         "data-overview-wan-offline-bars": module === "wan-offline-bars" ? "true" : void 0,
         "data-overview-wan-mini-table": isWanLedger ? "true" : void 0,
@@ -10728,7 +10728,7 @@ var PanelFramework = function(exports) {
         "data-overview-rank-grid": isRankLedger ? "true" : void 0,
         "data-overview-evidence-weight": primaryEvidenceModules.has(module) ? "primary" : isSecondaryEvidence ? "secondary" : "support",
         "data-routeros-route-evidence-contract": isRouterOsRouteEvidenceModule ? ROUTEROS_ROUTE_EVIDENCE_CONTRACT : void 0,
-        "data-routeros-v1047-raw-evidence-contract": isRouterOsRouteEvidenceModule ? "business-route-main-raw-route-fields-secondary-collapsed-low-noise" : void 0,
+        "data-routeros-raw-evidence-contract": isRouterOsRouteEvidenceModule ? "business-route-main-raw-route-fields-secondary-collapsed-low-noise" : void 0,
         "data-overview-three-col-table": headers.length === 3 ? "true" : void 0,
         children: [
           /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { className: "ro-module-head", children: [
@@ -10749,7 +10749,7 @@ var PanelFramework = function(exports) {
             "details",
             {
               className: collapsedEvidence ? "ro-secondary-evidence-disclosure" : collapsed ? "ro-secondary-evidence-disclosure ro-compact-summary-disclosure" : "ro-ledger-disclosure",
-              "data-overview-desktop-v1074-raw-evidence-disclosure": collapsedEvidence ? "native-details-collapsed-secondary" : void 0,
+              "data-overview-evidence-disclosure": collapsedEvidence ? "native-details-collapsed-secondary" : void 0,
               open: collapsedEvidence || collapsed ? void 0 : true,
               children: [
                 collapsedEvidence || collapsed ? /* @__PURE__ */ jsxRuntimeExports.jsxs("summary", { children: [
