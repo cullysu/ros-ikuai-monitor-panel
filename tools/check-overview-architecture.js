@@ -25,6 +25,8 @@ function assert(condition, message) {
 
 const panelFile = "src/panel-framework/overview/OverviewPanel.tsx";
 const panelCssFile = "src/panel-framework/overview/OverviewPanel.css";
+const desktopBaseStylesFile =
+  "src/panel-framework/overview/styles/overview-desktop.css";
 const desktopRefinementFile =
   "src/panel-framework/overview/OverviewPanelDesktopRefinement.css";
 const desktopReleaseFile =
@@ -69,6 +71,7 @@ const desktopConsole = read(desktopConsoleFile);
 const desktopDecisionRail = read(desktopDecisionRailFile);
 const desktopScenes = read(desktopScenesFile);
 const panelCss = read(panelCssFile);
+const desktopBaseStyles = read(desktopBaseStylesFile);
 const desktopRefinement = read(desktopRefinementFile);
 const desktopRelease = read(desktopReleaseFile);
 const desktopIncidentStyles = read(desktopIncidentStylesFile);
@@ -86,6 +89,9 @@ const mobileHomeSections = read(mobileHomeSectionsFile);
 const mobileStyles = read(mobileStylesFile);
 const mobileModel = read(mobileModelFile);
 const cssRoot = postcss.parse(panelCss, { from: panelCssFile });
+const desktopBaseStylesRoot = postcss.parse(desktopBaseStyles, {
+  from: desktopBaseStylesFile,
+});
 const desktopRefinementRoot = postcss.parse(desktopRefinement, {
   from: desktopRefinementFile,
 });
@@ -101,6 +107,34 @@ let legacyMobileSelectorCount = 0;
 let versionMarkerCount = 0;
 let desktopRefinementImportantCount = 0;
 let desktopRefinementShadowedDeclarationCount = 0;
+let desktopBaseImportantCount = 0;
+
+function countShadowedDeclarations(root) {
+  let count = 0;
+  const propertiesBySelector = new Map();
+  root.walkRules((rule) => {
+    const atRuleContext = [];
+    for (let parent = rule.parent; parent && parent.type !== "root"; parent = parent.parent) {
+      if (parent.type === "atrule") atRuleContext.unshift(`@${parent.name} ${parent.params}`);
+    }
+    const selectorContext = `${atRuleContext.join(" > ")}\n${rule.selector}`;
+    const earlierProperties = propertiesBySelector.get(selectorContext) || new Set();
+    const currentProperties = new Set();
+    rule.nodes.filter((node) => node.type === "decl").forEach((decl) => {
+      const propertyKey = `${decl.prop}\n${decl.important}`;
+      if (earlierProperties.has(propertyKey)) count += 1;
+      currentProperties.add(propertyKey);
+    });
+    currentProperties.forEach((propertyKey) => earlierProperties.add(propertyKey));
+    propertiesBySelector.set(selectorContext, earlierProperties);
+  });
+  return count;
+}
+
+desktopBaseStylesRoot.walkDecls((decl) => {
+  if (decl.important) desktopBaseImportantCount += 1;
+});
+const desktopBaseShadowedDeclarationCount = countShadowedDeclarations(desktopBaseStylesRoot);
 let desktopDecisionRailRuleCount = 0;
 let desktopDecisionCellRuleCount = 0;
 let desktopWorkspaceGridRuleCount = 0;
@@ -339,6 +373,18 @@ assert(
   `desktopOverviewVisuals.tsx exceeds 400 lines: ${lines(desktopVisuals)}`
 );
 assert(bytes(panelCssFile) <= 1830000, `OverviewPanel.css exceeds 1.83 MB: ${bytes(panelCssFile)}`);
+assert(
+  lines(desktopBaseStyles) <= 4700,
+  `overview-desktop.css exceeds 4700 lines: ${lines(desktopBaseStyles)}`
+);
+assert(
+  desktopBaseImportantCount <= 2000,
+  `overview-desktop.css important count regressed above 2000: ${desktopBaseImportantCount}`
+);
+assert(
+  desktopBaseShadowedDeclarationCount === 0,
+  `overview-desktop.css must not redeclare the same property in a later identical selector context: ${desktopBaseShadowedDeclarationCount}`
+);
 assert(lines(mobileHome) <= 120, `MobileOverviewHome.tsx exceeds 120 lines: ${lines(mobileHome)}`);
 assert(
   lines(mobileDecision) <= 270,
@@ -555,5 +601,5 @@ if (failures.length > 0) {
 }
 
 console.log(
-  `overview architecture gate: PASS panel=${lines(panel)} lines desktop=${lines(desktopConsole)} lines desktopDecision=${lines(desktopDecisionRail)} lines scenes=${lines(desktopScenes)} lines helper=${lines(desktopHelpers)} lines rowsFacade=${lines(desktopRows)} lines trafficRows=${lines(desktopTrafficRows)} lines networkRows=${lines(desktopNetworkRows)} lines credibilityRows=${lines(desktopCredibilityRows)} lines terminalRows=${lines(desktopTerminalRows)} lines resourceRows=${lines(desktopResourceRows)} lines visuals=${lines(desktopVisuals)} lines mobileHome=${lines(mobileHome)} lines mobileDecision=${lines(mobileDecision)} lines mobileSections=${lines(mobileHomeSections)} lines css=${bytes(panelCssFile)} bytes mobileStyles=${mobileStyleByteTotal} bytes important=${importantShare.toFixed(4)} desktopImportant=${desktopRefinementImportantCount} decisionRailRules=${desktopDecisionRailRuleCount} decisionCellRules=${desktopDecisionCellRuleCount} workspaceGridRules=${desktopWorkspaceGridRuleCount} navRules=${desktopNavRuleCount} statusBusRules=${desktopStatusBusRuleCount} legacyTopbarRules=${desktopLegacyTopbarRuleCount} moduleShellRules=${desktopModuleShellRuleCount} moduleHeadRules=${desktopModuleHeadRuleCount} ledgerRules=${desktopLedgerRuleCount} moduleToneRules=${desktopModuleToneRuleCount} ledgerToneRules=${desktopLedgerToneRuleCount} ledgerToneShadows=${desktopLedgerToneShadowCount} releaseToneResets=${desktopReleaseToneResetCount} releaseNonPrimary=${desktopReleaseNonPrimaryNeutralCount} mobile=${mobileRuleShare.toFixed(4)}`
+  `overview architecture gate: PASS panel=${lines(panel)} lines desktop=${lines(desktopConsole)} lines desktopDecision=${lines(desktopDecisionRail)} lines scenes=${lines(desktopScenes)} lines helper=${lines(desktopHelpers)} lines rowsFacade=${lines(desktopRows)} lines trafficRows=${lines(desktopTrafficRows)} lines networkRows=${lines(desktopNetworkRows)} lines credibilityRows=${lines(desktopCredibilityRows)} lines terminalRows=${lines(desktopTerminalRows)} lines resourceRows=${lines(desktopResourceRows)} lines visuals=${lines(desktopVisuals)} lines mobileHome=${lines(mobileHome)} lines mobileDecision=${lines(mobileDecision)} lines mobileSections=${lines(mobileHomeSections)} lines css=${bytes(panelCssFile)} bytes desktopBase=${lines(desktopBaseStyles)} lines desktopBaseImportant=${desktopBaseImportantCount} mobileStyles=${mobileStyleByteTotal} bytes important=${importantShare.toFixed(4)} desktopImportant=${desktopRefinementImportantCount} decisionRailRules=${desktopDecisionRailRuleCount} decisionCellRules=${desktopDecisionCellRuleCount} workspaceGridRules=${desktopWorkspaceGridRuleCount} navRules=${desktopNavRuleCount} statusBusRules=${desktopStatusBusRuleCount} legacyTopbarRules=${desktopLegacyTopbarRuleCount} moduleShellRules=${desktopModuleShellRuleCount} moduleHeadRules=${desktopModuleHeadRuleCount} ledgerRules=${desktopLedgerRuleCount} moduleToneRules=${desktopModuleToneRuleCount} ledgerToneRules=${desktopLedgerToneRuleCount} ledgerToneShadows=${desktopLedgerToneShadowCount} releaseToneResets=${desktopReleaseToneResetCount} releaseNonPrimary=${desktopReleaseNonPrimaryNeutralCount} mobile=${mobileRuleShare.toFixed(4)}`
 );
