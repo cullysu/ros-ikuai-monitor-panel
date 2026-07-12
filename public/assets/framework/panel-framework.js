@@ -8948,7 +8948,7 @@ var PanelFramework = function(exports) {
   }
   function abnormalDecisionNextAction(priority) {
     if (priority === "wan-offline") return "查出口";
-    if (priority === "snapshot-missing") return "等快照";
+    if (priority === "snapshot-missing") return "查采集";
     if (priority === "interface-down") return "核承载";
     if (priority === "resource-full") return "降负载";
     if (priority === "collection-degraded") return "核采集";
@@ -8956,7 +8956,7 @@ var PanelFramework = function(exports) {
   }
   function abnormalDecisionActionNote(priority) {
     if (priority === "wan-offline") return "WAN / 默认路由";
-    if (priority === "snapshot-missing") return "RouterOS / 快照";
+    if (priority === "snapshot-missing") return "采集 / 最近成功";
     if (priority === "interface-down") return "接口 / 默认路由";
     if (priority === "resource-full") return "CPU / 内存 / 磁盘";
     if (priority === "collection-degraded") return "通道 / 缓存";
