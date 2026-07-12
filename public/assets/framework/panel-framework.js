@@ -9664,13 +9664,11 @@ var PanelFramework = function(exports) {
         "data-overview-mobile-trust-boundary": model.appHomeContract.trustBoundary,
         "data-overview-mobile-impact-scope": model.impactScope.id,
         "data-overview-mobile-impact-plane": model.impactScope.plane,
-        "data-overview-mobile-design-token-system": "mobileOverviewTokens:color-type-space-radius-state-chart",
         "data-overview-mobile-normal-app-home": model.priority === "normal" ? "compact-conclusion-chart-ops" : void 0,
         "data-overview-mobile-compact-conclusion": model.priority === "normal" ? "conclusion-trust-wan-collection-resource-snapshot" : void 0,
         "data-overview-mobile-collection-policy": model.collectionTrustSeparation.contract,
         "data-overview-mobile-collection-plane": model.collectionTrustSeparation.collectionPlane,
         "data-overview-mobile-collection-separated": model.collectionTrustSeparation.separatedFromImpact ? "true" : "false",
-        "data-overview-mobile-v1090-first-screen-order": "conclusion-trust-four-facts-priority-incident-supporting-list",
         "data-overview-mobile-p0-first-screen": model.appHomeContract.severity === "p0" ? "trust-wan-route-collection-success-no-terminal-ranking" : void 0,
         children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ik-v420-shell ik-v240-shell", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
           "main",

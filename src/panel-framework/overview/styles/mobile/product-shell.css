@@ -38,6 +38,10 @@
   }
 
   #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] {
+    --ik-blue: #1473e6;
+    --ik-panel: #ffffff;
+    --ik-space-4: 8px;
+    --ik-native-shell-contract: native-console-tokenized-rhythm-low-noise-trust-first;
     display: block !important;
     position: fixed !important;
     inset: 0 !important;

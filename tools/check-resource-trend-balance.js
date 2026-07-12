@@ -1373,7 +1373,6 @@ async function main() {
           ia: root.getAttribute('data-overview-mobile-abnormal-ia') || '',
           topSlot: root.getAttribute('data-overview-mobile-top-slot') || '',
           terminalRankingState: root.getAttribute('data-overview-mobile-terminal-ranking-state') || '',
-          tokenSystem: root.getAttribute('data-overview-mobile-design-token-system') || '',
           p0FirstScreen: root.getAttribute('data-overview-mobile-p0-first-screen') || '',
           normalHome: root.getAttribute('data-overview-mobile-normal-app-home') || '',
           compactConclusion: root.getAttribute('data-overview-mobile-compact-conclusion') || '',
@@ -1382,9 +1381,14 @@ async function main() {
           impactPlane: root.getAttribute('data-overview-mobile-impact-plane') || '',
           collectionImpactSeparation: root.getAttribute('data-overview-mobile-collection-policy') || '',
           collectionPlane: root.getAttribute('data-overview-mobile-collection-plane') || '',
-          collectionSeparatedFromImpact: root.getAttribute('data-overview-mobile-collection-separated') || '',
-          firstScreenOrder: root.getAttribute('data-overview-mobile-v1090-first-screen-order') || ''
+          collectionSeparatedFromImpact: root.getAttribute('data-overview-mobile-collection-separated') || ''
         } : {};
+        const mobileTokenNames = ['--ik-blue', '--ik-panel', '--ik-space-4', '--ik-native-shell-contract'];
+        const mobileTokenValues = Object.fromEntries(mobileTokenNames.map((name) => [
+          name,
+          root ? getComputedStyle(root).getPropertyValue(name).trim() : ''
+        ]));
+        const mobileTokensApplied = mobileTokenNames.every((name) => mobileTokenValues[name]);
         const surfaceAttrs = surface ? {
           listKind: surface.getAttribute('data-overview-mobile-list-kind') || '',
           terminalRankingMounted: surface.getAttribute('data-overview-mobile-terminal-ranking-mounted') || '',
@@ -1790,7 +1794,7 @@ async function main() {
           /rgba?\\((?:245|247|250),\\s*(?:249|250|252),\\s*(?:253|255)/.test(bottomTabsStyle.backgroundColor || '')
         );
         const nativeTrustSpinePolished = Boolean(
-          rootAttrs.tokenSystem === 'mobileOverviewTokens:color-type-space-radius-state-chart' &&
+          mobileTokensApplied &&
           surfaceStyle &&
           heroStyle &&
           listStyle &&
@@ -2013,7 +2017,7 @@ async function main() {
           rootAttrs.ia === expectedIa &&
           rootAttrs.topSlot === expectedTopSlot &&
           rootAttrs.terminalRankingState === expectedTerminalRanking &&
-          rootAttrs.tokenSystem === 'mobileOverviewTokens:color-type-space-radius-state-chart' &&
+          mobileTokensApplied &&
           nativeTrustSpinePolished &&
           metricGridProductized &&
           mobileGroupedSurfaceLowBorder &&
@@ -2066,6 +2070,8 @@ async function main() {
           missing,
           mobileStyleStack,
           rootAttrs,
+          mobileTokensApplied,
+          mobileTokenValues,
           surfaceAttrs,
           heroAttrs,
           expectedConfig,

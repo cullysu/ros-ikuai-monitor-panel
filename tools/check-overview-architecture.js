@@ -393,6 +393,10 @@ assert(
 );
 assert(lines(mobileHome) <= 120, `MobileOverviewHome.tsx exceeds 120 lines: ${lines(mobileHome)}`);
 assert(
+  !/data-overview-mobile-v\d+|data-overview-mobile-design-token-system/.test(mobileHome),
+  "MobileOverviewHome.tsx must not expose versioned or self-certifying design-token attributes"
+);
+assert(
   lines(mobileDecision) <= 270,
   `MobileOverviewDecision.tsx exceeds 270 lines: ${lines(mobileDecision)}`
 );
