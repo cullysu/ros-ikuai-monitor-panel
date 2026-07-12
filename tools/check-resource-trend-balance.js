@@ -1356,18 +1356,15 @@ async function main() {
           .filter((item) => item.width > innerWidth + 1 || item.right > innerWidth + 1)
           .slice(0, 8);
         const mobileStyleElement = document.querySelector('style[data-overview-mobile-style-stack]');
-        let mobileStyleRuleCount = 0;
-        try {
-          mobileStyleRuleCount = mobileStyleElement?.sheet?.cssRules?.length || 0;
-        } catch {
-          mobileStyleRuleCount = -1;
-        }
+        const buildTimeMobileCss = Boolean(
+          !mobileStyleElement &&
+          screen &&
+          getComputedStyle(screen).display === 'grid'
+        );
         const mobileStyleStack = {
-          present: Boolean(mobileStyleElement),
-          textLength: mobileStyleElement?.textContent?.length || 0,
-          ruleCount: mobileStyleRuleCount,
-          layers: mobileStyleElement?.getAttribute('data-overview-mobile-style-layers') || '',
-          refCount: mobileStyleElement?.getAttribute('data-overview-mobile-style-ref-count') || ''
+          delivery: 'build-time-css',
+          runtimeStylePresent: Boolean(mobileStyleElement),
+          computedScreenDisplay: screen ? getComputedStyle(screen).display : '',
         };
         const rootAttrs = root ? {
           ia: root.getAttribute('data-overview-mobile-abnormal-ia') || '',
@@ -2001,6 +1998,7 @@ async function main() {
           screen &&
           surface &&
           hero &&
+          buildTimeMobileCss &&
           rootAttrs.ia === expectedIa &&
           rootAttrs.topSlot === expectedTopSlot &&
           rootAttrs.terminalRankingState === expectedTerminalRanking &&

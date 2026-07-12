@@ -56,16 +56,16 @@ const mobile = read('src/panel-framework/overview/components/MobileOverviewHome.
 const mobileDecision = read('src/panel-framework/overview/components/MobileOverviewDecision.tsx');
 const mobileSections = read('src/panel-framework/overview/components/MobileOverviewHomeSections.tsx');
 const mobileTabs = read('src/panel-framework/overview/components/BottomTabs.tsx');
-const mobileStyles = read('src/panel-framework/overview/components/MobileOverviewStyles.tsx');
+const mobileStyles = read('src/panel-framework/overview/styles/mobile/mobile-product.css');
 const mobileModel = read('src/panel-framework/overview/mobileOverviewModel.ts');
 const mobilePolicy = read('src/panel-framework/overview/mobileOverviewPolicy.ts');
-const landscapeStyles = read('src/panel-framework/overview/components/MobileOverviewLandscapeStyles.ts');
-const navigationStyles = read('src/panel-framework/overview/components/MobileOverviewNavigationStyles.ts');
-const incidentStyles = read('src/panel-framework/overview/components/MobileOverviewIncidentStyles.ts');
-const productShellStyles = read('src/panel-framework/overview/components/MobileOverviewProductShellStyles.ts');
-const mobileDecisionStyles = read('src/panel-framework/overview/components/MobileOverviewDecisionStyles.ts');
-const mobileFrameStyles = read('src/panel-framework/overview/components/MobileOverviewFrameStyles.ts');
-const mobileSurfaceStyles = read('src/panel-framework/overview/components/MobileOverviewSurfaceStyles.ts');
+const landscapeStyles = read('src/panel-framework/overview/styles/mobile/landscape.css');
+const navigationStyles = read('src/panel-framework/overview/styles/mobile/navigation.css');
+const incidentStyles = read('src/panel-framework/overview/styles/mobile/incident.css');
+const productShellStyles = read('src/panel-framework/overview/styles/mobile/product-shell.css');
+const mobileDecisionStyles = read('src/panel-framework/overview/styles/mobile/decision.css');
+const mobileFrameStyles = read('src/panel-framework/overview/styles/mobile/frame.css');
+const mobileSurfaceStyles = read('src/panel-framework/overview/styles/mobile/surface.css');
 const predeploy = read('tools/local-predeploy-check.js');
 const mobileRuntime = read('tools/check-mobile-app-home-runtime.js');
 
@@ -188,21 +188,19 @@ for (const tab of ['home', 'wan', 'interface', 'terminal', 'log']) {
 includesAll(mobileTabs, ['aria-current', 'aria-controls', '路由器监控底部导航'], 'mobile navigation accessibility');
 
 includesAll(mobileStyles, [
-  'MOBILE_OVERVIEW_CORE_STYLES',
-  'MOBILE_OVERVIEW_FRAME_STYLES',
-  'MOBILE_OVERVIEW_DECISION_STYLES',
-  'MOBILE_OVERVIEW_SURFACE_STYLES',
-  'MOBILE_OVERVIEW_PRODUCT_SHELL_STYLES',
-  'MOBILE_OVERVIEW_INCIDENT_STYLES',
-  'MOBILE_OVERVIEW_NAVIGATION_STYLES',
-  'MOBILE_OVERVIEW_LANDSCAPE_STYLES',
-  'useInsertionEffect',
+  '@import "./core.css";',
+  '@import "./product-shell.css";',
+  '@import "./frame.css";',
+  '@import "./decision.css";',
+  '@import "./surface.css";',
+  '@import "./incident.css";',
+  '@import "./navigation.css";',
+  '@import "./landscape.css";',
 ], 'mobile style composition');
 excludesAll(mobileStyles, [
-  'MOBILE_OVERVIEW_FOUNDATION_STYLES',
-  'MOBILE_OVERVIEW_PUBLIC_DECISION_STYLES',
   'foundation',
   'public-decision-home',
+  'repair',
 ], 'mobile retired style layer cleanup');
 includesAll(landscapeStyles, ['min-width: 761px', 'max-width: 900px', 'max-height: 520px', '"hero side"'], 'landscape mobile layout');
 includesAll(navigationStyles, ['position: fixed', 'height: 52px', 'repeat(5, minmax(0, 1fr))'], 'mobile native navigation');

@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { MobileOverviewStyles } from "./MobileOverviewStyles";
 import { buildMobileOverviewModel } from "../mobileOverviewModel";
+import "../styles/mobile/mobile-product.css";
 import { BottomTabs, type MobileBottomTabId } from "./BottomTabs";
 import type { MobileOverviewHomeProps } from "./MobileOverviewTypes";
 import { PrimaryDecision } from "./MobileOverviewDecision";
@@ -58,7 +58,6 @@ export function MobileOverviewHome(props: MobileOverviewHomeProps) {
           <BottomTabs activeId={activeTab} onSelect={setActiveTab} />
         </main>
       </div>
-      <MobileOverviewStyles />
     </div>
   );
 }

@@ -800,13 +800,14 @@ function main(argv = process.argv.slice(2)) {
     'StatusHeader.tsx',
     'TrustStrip.tsx',
   ]) assertNotExists(`src/panel-framework/overview/components/${retiredMobileComponent}`);
-  assertContains('src/panel-framework/overview/components/MobileOverviewStyles.tsx', 'MOBILE_OVERVIEW_STYLE_LAYERS');
+  assertNotExists('src/panel-framework/overview/components/MobileOverviewStyles.tsx');
   assertNotExists('src/panel-framework/overview/components/MobileOverviewBaseStyles.ts');
   assertNotExists('src/panel-framework/overview/components/MobileOverviewPublicDecisionStyles.ts');
   assertNotExists('src/panel-framework/overview/components/MobileOverviewPublicDecisionRepairStyles.ts');
-  assertContains('src/panel-framework/overview/components/MobileOverviewStyles.tsx', 'MobileOverviewIncidentStyles');
-  assertContains('src/panel-framework/overview/components/MobileOverviewStyles.tsx', 'MobileOverviewLandscapeStyles');
-  assertContains('src/panel-framework/overview/components/MobileOverviewStyles.tsx', 'MobileOverviewNavigationStyles');
+  assertContains('src/panel-framework/overview/components/MobileOverviewHome.tsx', 'import "../styles/mobile/mobile-product.css";');
+  assertContains('src/panel-framework/overview/styles/mobile/mobile-product.css', '@import "./core.css";');
+  assertContains('src/panel-framework/overview/styles/mobile/mobile-product.css', '@import "./decision.css";');
+  assertContains('src/panel-framework/overview/styles/mobile/mobile-product.css', '@import "./surface.css";');
   assertMaxBytes('public/assets/framework/style.css', 500000);
   assertNotExists('public/scale-adaptive-patch.js');
   assertNotExists('public/layout-whitespace-patch.js');
