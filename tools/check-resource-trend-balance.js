@@ -408,6 +408,7 @@ async function main() {
     desktopNoSnapshot: noSnapshotSnapshot,
     desktopV1030: balanceSnapshot,
     mobileNormalHome: balanceSnapshot,
+    mobileNavigation: balanceSnapshot,
     mobileAppHome: allOfflineSnapshot,
     mobileNoSnapshotHome: noSnapshotSnapshot,
     mobileResourceHome: resourceFullSnapshot,
@@ -415,7 +416,7 @@ async function main() {
     mobileCollectionHome: collectionDownSnapshot
   };
   const isInjectedOverviewSection = Boolean(injectedSnapshots[section]);
-  const isMobileAppHomeSection = section === 'mobileNormalHome' || section === 'mobileAppHome' || section === 'mobileNoSnapshotHome' || section === 'mobileResourceHome' || section === 'mobileInterfaceHome' || section === 'mobileCollectionHome';
+  const isMobileAppHomeSection = section === 'mobileNormalHome' || section === 'mobileNavigation' || section === 'mobileAppHome' || section === 'mobileNoSnapshotHome' || section === 'mobileResourceHome' || section === 'mobileInterfaceHome' || section === 'mobileCollectionHome';
   const targetUrl = `${url}${url.includes('?') ? '&' : '?'}section=${encodeURIComponent(section)}&codexBust=${Date.now()}#${encodeURIComponent(section)}`;
   const browser = spawn(browserPath, [
     '--headless=new',
@@ -601,7 +602,7 @@ async function main() {
         }
         return normalize(parts.join(' '));
       };
-      const sectionEl = sectionName === 'loadAudit' || sectionName === 'balance' || sectionName === 'desktopNoSnapshot' || sectionName === 'desktopV1030' || sectionName === 'mobileNormalHome' || sectionName === 'mobileAppHome' || sectionName === 'mobileNoSnapshotHome' || sectionName === 'mobileResourceHome' || sectionName === 'mobileInterfaceHome' || sectionName === 'mobileCollectionHome'
+      const sectionEl = sectionName === 'loadAudit' || sectionName === 'balance' || sectionName === 'desktopNoSnapshot' || sectionName === 'desktopV1030' || sectionName === 'mobileNormalHome' || sectionName === 'mobileNavigation' || sectionName === 'mobileAppHome' || sectionName === 'mobileNoSnapshotHome' || sectionName === 'mobileResourceHome' || sectionName === 'mobileInterfaceHome' || sectionName === 'mobileCollectionHome'
         ? document.querySelector('#overview')
         : document.querySelector('#' + sectionName);
       const text = visibleText(sectionEl);
@@ -1111,6 +1112,39 @@ async function main() {
           textExcerpt: desktopVisibleText.slice(0, 700)
         };
       }
+      if (sectionName === 'mobileNavigation') {
+        const root = sectionEl?.querySelector('[data-overview-mobile-console]');
+        const tabs = Array.from(root?.querySelectorAll('[data-overview-mobile-v1066-router-tab]') || []);
+        const expectedTargets = {
+          home: '#overview',
+          wan: '#balance',
+          interface: '#interfaces',
+          terminal: '#dhcp',
+          log: '#logs'
+        };
+        const targetContractOk = tabs.length === 5 && tabs.every((tab) => {
+          const id = tab.getAttribute('data-overview-mobile-v1066-router-tab') || '';
+          const target = tab.getAttribute('data-overview-mobile-tab-target') || '';
+          const section = target.replace(/^#/, '');
+          return expectedTargets[id] === target && Boolean(document.querySelector('[data-shell-nav="primary"] [data-section="' + section + '"]'));
+        });
+        const wanTab = tabs.find((tab) => tab.getAttribute('data-overview-mobile-v1066-router-tab') === 'wan');
+        const hashBefore = location.hash;
+        wanTab?.click();
+        const hashAfter = location.hash;
+        const activeShellSection = document.querySelector('[data-shell-nav="primary"] [data-section].is-active')?.getAttribute('data-section') || '';
+        return {
+          pass: Boolean(root && targetContractOk && wanTab && hashAfter === '#balance' && activeShellSection === 'balance'),
+          section: sectionName,
+          url: location.href,
+          targetContractOk,
+          tabCount: tabs.length,
+          hashBefore,
+          hashAfter,
+          activeShellSection,
+          viewport: { width: innerWidth, height: innerHeight }
+        };
+      }
       if (sectionName === 'mobileNormalHome' || sectionName === 'mobileAppHome' || sectionName === 'mobileNoSnapshotHome' || sectionName === 'mobileResourceHome' || sectionName === 'mobileInterfaceHome' || sectionName === 'mobileCollectionHome') {
         const root = sectionEl?.querySelector('[data-overview-mobile-console]');
         const screen = sectionEl?.querySelector('[data-overview-mobile-first-screen="app-home"]');
@@ -1539,6 +1573,12 @@ async function main() {
         const routerTabIds = routerTabItems.map((item) => item.getAttribute('data-overview-mobile-v1066-router-tab') || '');
         const routerTabSemantics = routerTabItems.map((item) => item.getAttribute('data-overview-mobile-v1066-router-tab-semantic') || '');
         const routerTabLabels = routerTabItems.map((item) => normalize(item.textContent || ''));
+        const routerTabTouchTargetsOk = routerTabItems.every((item) => {
+          const rect = item.getBoundingClientRect();
+          const label = item.querySelector('span');
+          const labelStyle = label ? getComputedStyle(label) : null;
+          return rect.height >= 44 && labelStyle && Number.parseFloat(labelStyle.fontSize || '0') >= 10;
+        });
         const routerTabActiveItems = routerTabItems.filter((item) => item.classList.contains('is-active'));
         const routerTabActiveStyle = routerTabActiveItems[0] ? getComputedStyle(routerTabActiveItems[0]) : null;
         const routerTabActivePaint = (routerTabActiveStyle?.color || '') + ' ' + (routerTabActiveStyle?.boxShadow || '');
@@ -1578,6 +1618,7 @@ async function main() {
           ['status-overview', 'multi-wan', 'interface-vlan', 'online-terminals', 'collection-log'].every((id) => routerTabSemantics.includes(id)) &&
           ['首页', 'WAN', '接口', '终端', '日志'].every((label) => routerTabLabels.includes(label)) &&
           routerTabActiveItems.length === 1 &&
+          routerTabTouchTargetsOk &&
           routerTabActiveItems[0]?.getAttribute('aria-current') === 'page' &&
           routerTabActiveStyle &&
           routerTabActiveNeutral &&
@@ -1915,6 +1956,7 @@ async function main() {
           routerTabIds,
           routerTabSemantics,
           routerTabLabels,
+          routerTabTouchTargetsOk,
           routerTabActiveNeutral,
           routerStatusHeaderProductized,
           statusHeaderActionLabel,

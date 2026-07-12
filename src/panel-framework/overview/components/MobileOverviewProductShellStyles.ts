@@ -44,7 +44,7 @@ const MOBILE_OVERVIEW_CURRENT_SHELL_STYLES = `
 
   #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-v420-tabs {
     grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
-    min-height: 44px !important;
+    min-height: 52px !important;
     padding: 2px 11px max(2px, env(safe-area-inset-bottom, 0px)) !important;
     border-top: 0 !important;
     background: rgba(247, 250, 253, .94) !important;
@@ -58,7 +58,7 @@ const MOBILE_OVERVIEW_CURRENT_SHELL_STYLES = `
     justify-items: center !important;
     gap: 1px !important;
     min-width: 0 !important;
-    min-height: 34px !important;
+    min-height: 44px !important;
     padding: 2px 1px !important;
     color: #8090a3 !important;
     background: transparent !important;
@@ -75,9 +75,9 @@ const MOBILE_OVERVIEW_CURRENT_SHELL_STYLES = `
   #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-v420-tabs button span {
     overflow: hidden !important;
     max-width: 100% !important;
-    font-size: 8px !important;
-    font-weight: 620 !important;
-    line-height: 10px !important;
+    font-size: 10px !important;
+    font-weight: 640 !important;
+    line-height: 12px !important;
     text-overflow: clip !important;
     white-space: nowrap !important;
   }

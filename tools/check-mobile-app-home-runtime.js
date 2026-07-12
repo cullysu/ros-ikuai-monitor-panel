@@ -181,6 +181,11 @@ async function main() {
       'collection degraded p2 app home',
       ['tools/check-resource-trend-balance.js', '--url', url, '--section', 'mobileCollectionHome', '--width', '390', '--height', '844', '--json', 'codex_tmp_mobileCollectionHome.json', '--png', 'codex_tmp_mobileCollectionHome.png', '--wait', '3600'],
       ['codex_tmp_mobileCollectionHome.json', 'codex_tmp_mobileCollectionHome.png']
+    ],
+    [
+      'bottom tabs navigate to real modules',
+      ['tools/check-resource-trend-balance.js', '--url', url, '--section', 'mobileNavigation', '--width', '390', '--height', '844', '--json', 'codex_tmp_mobileNavigation.json', '--png', 'codex_tmp_mobileNavigation.png', '--wait', '3600'],
+      ['codex_tmp_mobileNavigation.json', 'codex_tmp_mobileNavigation.png']
     ]
   ];
 

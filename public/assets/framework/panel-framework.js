@@ -7411,7 +7411,7 @@ var PanelFramework = function(exports) {
 
   #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-v420-tabs {
     grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
-    min-height: 44px !important;
+    min-height: 52px !important;
     padding: 2px 11px max(2px, env(safe-area-inset-bottom, 0px)) !important;
     border-top: 0 !important;
     background: rgba(247, 250, 253, .94) !important;
@@ -7425,7 +7425,7 @@ var PanelFramework = function(exports) {
     justify-items: center !important;
     gap: 1px !important;
     min-width: 0 !important;
-    min-height: 34px !important;
+    min-height: 44px !important;
     padding: 2px 1px !important;
     color: #8090a3 !important;
     background: transparent !important;
@@ -7442,9 +7442,9 @@ var PanelFramework = function(exports) {
   #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-v420-tabs button span {
     overflow: hidden !important;
     max-width: 100% !important;
-    font-size: 8px !important;
-    font-weight: 620 !important;
-    line-height: 10px !important;
+    font-size: 10px !important;
+    font-weight: 640 !important;
+    line-height: 12px !important;
     text-overflow: clip !important;
     white-space: nowrap !important;
   }
@@ -13226,12 +13226,22 @@ var PanelFramework = function(exports) {
   }
   const MOBILE_BOTTOM_NAV_CONTRACT = "home-wan-interface-terminal-log-router-monitor-low-noise";
   const MOBILE_BOTTOM_NAV_ITEMS = [
-    { id: "home", label: "首页", semantic: "status-overview", note: "状态总览", active: true, path: "M4 11.5 12 5l8 6.5V20a1 1 0 0 1-1 1h-5v-6h-4v6H5a1 1 0 0 1-1-1z" },
-    { id: "wan", label: "WAN", semantic: "multi-wan", note: "多出口", active: false, path: "M4 8h16M4 12h16M4 16h16M7 8v8M17 8v8" },
-    { id: "interface", label: "接口", semantic: "interface-vlan", note: "接口/VLAN", active: false, path: "M6 7h12v10H6zM9 17v3M15 17v3M9 4v3M15 4v3" },
-    { id: "terminal", label: "终端", semantic: "online-terminals", note: "在线终端", active: false, path: "M5 7h14v8H5zM8 19h8M12 15v4M7 10h.01M11 10h.01M15 10h.01" },
-    { id: "log", label: "日志", semantic: "collection-log", note: "采集日志", active: false, path: "M7 5h10v14H7zM10 9h4M10 13h4" }
+    { id: "home", label: "首页", semantic: "status-overview", note: "状态总览", active: true, section: "overview", path: "M4 11.5 12 5l8 6.5V20a1 1 0 0 1-1 1h-5v-6h-4v6H5a1 1 0 0 1-1-1z" },
+    { id: "wan", label: "WAN", semantic: "multi-wan", note: "多出口", active: false, section: "balance", path: "M4 8h16M4 12h16M4 16h16M7 8v8M17 8v8" },
+    { id: "interface", label: "接口", semantic: "interface-vlan", note: "接口/VLAN", active: false, section: "interfaces", path: "M6 7h12v10H6zM9 17v3M15 17v3M9 4v3M15 4v3" },
+    { id: "terminal", label: "终端", semantic: "online-terminals", note: "在线终端", active: false, section: "dhcp", path: "M5 7h14v8H5zM8 19h8M12 15v4M7 10h.01M11 10h.01M15 10h.01" },
+    { id: "log", label: "日志", semantic: "collection-log", note: "采集日志", active: false, section: "logs", path: "M7 5h10v14H7zM10 9h4M10 13h4" }
   ];
+  function activateMobileSection(section) {
+    const shellLink = document.querySelector(
+      `[data-shell-nav="primary"] [data-section="${section}"]`
+    );
+    if (shellLink) {
+      shellLink.click();
+      return;
+    }
+    window.location.hash = section;
+  }
   function BottomTabs() {
     return /* @__PURE__ */ jsxRuntimeExports.jsx(
       "nav",
@@ -13254,6 +13264,8 @@ var PanelFramework = function(exports) {
             "data-overview-mobile-v1066-router-tab": item.id,
             "data-overview-mobile-v1066-router-tab-semantic": item.semantic,
             "data-overview-mobile-v1066-router-tab-note": item.note,
+            "data-overview-mobile-tab-target": `#${item.section}`,
+            onClick: () => activateMobileSection(item.section),
             type: "button",
             children: [
               /* @__PURE__ */ jsxRuntimeExports.jsx("svg", { viewBox: "0 0 24 24", "aria-hidden": "true", children: /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: item.path }) }),
