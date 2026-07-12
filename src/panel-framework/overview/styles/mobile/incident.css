@@ -52,6 +52,27 @@
     border-left: 1px solid #d7e1ec !important;
   }
 
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-incident-guidance > button.ik-mobile-decision-cell {
+    display: flex !important;
+    min-width: 0 !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    gap: 6px !important;
+    padding: 0 10px !important;
+    border: 0 !important;
+    border-left: 1px solid #d7e1ec !important;
+    background: transparent !important;
+    color: inherit !important;
+    font: inherit !important;
+    text-align: right !important;
+    cursor: pointer !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-incident-guidance > button.ik-mobile-decision-cell:focus-visible {
+    outline: 2px solid #1473e6 !important;
+    outline-offset: -2px !important;
+  }
+
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-abnormal-decision-rail em {
     font-size: 11px !important;
     line-height: 1.15 !important;

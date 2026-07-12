@@ -415,11 +415,12 @@ async function main() {
     mobileAppHome: allOfflineSnapshot,
     mobileNoSnapshotHome: noSnapshotSnapshot,
     mobileResourceHome: resourceFullSnapshot,
+    mobileIncidentActionNavigation: resourceFullSnapshot,
     mobileInterfaceHome: interfaceDownSnapshot,
     mobileCollectionHome: collectionDownSnapshot
   };
   const isInjectedOverviewSection = Boolean(injectedSnapshots[section]);
-  const isMobileAppHomeSection = section === 'mobileNormalHome' || section === 'mobileNavigation' || section === 'mobileNavigationNoSnapshot' || section === 'mobileDetailDrilldown' || section === 'mobileIncidentDrilldown' || section === 'mobileAppHome' || section === 'mobileNoSnapshotHome' || section === 'mobileResourceHome' || section === 'mobileInterfaceHome' || section === 'mobileCollectionHome';
+  const isMobileAppHomeSection = section === 'mobileNormalHome' || section === 'mobileNavigation' || section === 'mobileNavigationNoSnapshot' || section === 'mobileDetailDrilldown' || section === 'mobileIncidentDrilldown' || section === 'mobileIncidentActionNavigation' || section === 'mobileAppHome' || section === 'mobileNoSnapshotHome' || section === 'mobileResourceHome' || section === 'mobileInterfaceHome' || section === 'mobileCollectionHome';
   const targetUrl = `${url}${url.includes('?') ? '&' : '?'}section=${encodeURIComponent(section)}&codexBust=${Date.now()}#${encodeURIComponent(section)}`;
   const browser = spawn(browserPath, [
     '--headless=new',
@@ -605,7 +606,7 @@ async function main() {
         }
         return normalize(parts.join(' '));
       };
-      const sectionEl = sectionName === 'loadAudit' || sectionName === 'balance' || sectionName === 'desktopNoSnapshot' || sectionName === 'desktopV1030' || sectionName === 'mobileNormalHome' || sectionName === 'mobileNavigation' || sectionName === 'mobileNavigationNoSnapshot' || sectionName === 'mobileDetailDrilldown' || sectionName === 'mobileIncidentDrilldown' || sectionName === 'mobileAppHome' || sectionName === 'mobileNoSnapshotHome' || sectionName === 'mobileResourceHome' || sectionName === 'mobileInterfaceHome' || sectionName === 'mobileCollectionHome'
+      const sectionEl = sectionName === 'loadAudit' || sectionName === 'balance' || sectionName === 'desktopNoSnapshot' || sectionName === 'desktopV1030' || sectionName === 'mobileNormalHome' || sectionName === 'mobileNavigation' || sectionName === 'mobileNavigationNoSnapshot' || sectionName === 'mobileDetailDrilldown' || sectionName === 'mobileIncidentDrilldown' || sectionName === 'mobileIncidentActionNavigation' || sectionName === 'mobileAppHome' || sectionName === 'mobileNoSnapshotHome' || sectionName === 'mobileResourceHome' || sectionName === 'mobileInterfaceHome' || sectionName === 'mobileCollectionHome'
         ? document.querySelector('#overview')
         : document.querySelector('#' + sectionName);
       const text = visibleText(sectionEl);
@@ -1159,6 +1160,33 @@ async function main() {
             targetContractOk,
             tabCount: tabs.length,
             navigationResults,
+            viewport: { width: innerWidth, height: innerHeight }
+          };
+        })();
+      }
+      if (sectionName === 'mobileIncidentActionNavigation') {
+        const root = sectionEl?.querySelector('[data-overview-mobile-console]');
+        const action = root?.querySelector('button.ik-mobile-decision-cell.is-action[aria-label*="查连接压力"]');
+        action?.click();
+        return (async () => {
+          await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+          const activeView = root?.querySelector('[data-overview-mobile-tab-view="terminal"]');
+          const activeTab = root?.querySelector('button[aria-controls="mobile-terminal-view"].is-active');
+          const activeScreen = root?.querySelector('[data-overview-mobile-first-screen="app-home"]');
+          const viewText = normalize(activeView?.textContent || '');
+          return {
+            pass: Boolean(
+              action &&
+              activeView &&
+              activeTab?.getAttribute('aria-current') === 'page' &&
+              activeScreen?.getAttribute('data-overview-mobile-active-tab') === 'terminal' &&
+              /连接|终端/.test(viewText)
+            ),
+            section: sectionName,
+            url: location.href,
+            actionLabel: action?.getAttribute('aria-label') || '',
+            activeTab: activeScreen?.getAttribute('data-overview-mobile-active-tab') || '',
+            viewText: viewText.slice(0, 180),
             viewport: { width: innerWidth, height: innerHeight }
           };
         })();

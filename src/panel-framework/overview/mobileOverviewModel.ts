@@ -160,6 +160,7 @@ export interface MobileAbnormalDecisionCell {
   value: string;
   note: string;
   tone: OverviewTone;
+  targetTab?: "wan" | "interface" | "terminal" | "log";
 }
 
 export interface MobileHeroTrustCell {
@@ -784,6 +785,14 @@ function abnormalDecisionActionNote(priority: MobileOverviewModel["priority"]): 
   return "持续观察";
 }
 
+function abnormalDecisionTargetTab(priority: MobileOverviewModel["priority"]): MobileAbnormalDecisionCell["targetTab"] {
+  if (priority === "wan-offline") return "wan";
+  if (priority === "snapshot-missing" || priority === "collection-degraded") return "log";
+  if (priority === "resource-full") return "terminal";
+  if (priority === "interface-down") return "interface";
+  return undefined;
+}
+
 function abnormalDecisionEvidenceTone(priority: MobileOverviewModel["priority"]): OverviewTone {
   if (priority === "snapshot-missing") return "missing";
   if (priority === "wan-offline") return "danger";
@@ -816,7 +825,7 @@ function abnormalDecisionCells(
     { label: "对象", value: listTitle, note: heroTitle, tone: scope.tone },
     { label: "影响", value: abnormalDecisionImpactValue(priority, scope), note: scope.note, tone: scope.tone },
     { label: "可信度", value: evidenceParts[0] || network.snapshot.value, note: evidenceParts.slice(1).join(" · ") || network.snapshot.label, tone: abnormalDecisionEvidenceTone(priority) },
-    { label: "下一步", value: abnormalDecisionNextAction(priority), note: abnormalDecisionActionNote(priority), tone: contract.severity === "p0" ? "danger" : "warn" },
+    { label: "下一步", value: abnormalDecisionNextAction(priority), note: abnormalDecisionActionNote(priority), tone: contract.severity === "p0" ? "danger" : "warn", targetTab: abnormalDecisionTargetTab(priority) },
   ];
 }
 

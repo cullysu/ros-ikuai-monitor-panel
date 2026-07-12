@@ -31,7 +31,7 @@ export function MobileOverviewHome(props: MobileOverviewHomeProps) {
           <DeviceBar model={model} />
           {activeTab === "home" ? (
             <>
-              <PrimaryDecision model={model} />
+              <PrimaryDecision model={model} onSelectTab={setActiveTab} />
               <CoreFacts model={model} />
               <SupportingList model={model} />
             </>

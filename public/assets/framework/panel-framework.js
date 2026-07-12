@@ -8962,6 +8962,13 @@ var PanelFramework = function(exports) {
     if (priority === "collection-degraded") return "通道 / 缓存";
     return "持续观察";
   }
+  function abnormalDecisionTargetTab(priority) {
+    if (priority === "wan-offline") return "wan";
+    if (priority === "snapshot-missing" || priority === "collection-degraded") return "log";
+    if (priority === "resource-full") return "terminal";
+    if (priority === "interface-down") return "interface";
+    return void 0;
+  }
   function abnormalDecisionEvidenceTone(priority) {
     if (priority === "snapshot-missing") return "missing";
     if (priority === "wan-offline") return "danger";
@@ -8982,7 +8989,7 @@ var PanelFramework = function(exports) {
       { label: "对象", value: listTitle, note: heroTitle, tone: scope.tone },
       { label: "影响", value: abnormalDecisionImpactValue(priority, scope), note: scope.note, tone: scope.tone },
       { label: "可信度", value: evidenceParts[0] || network.snapshot.value, note: evidenceParts.slice(1).join(" · ") || network.snapshot.label, tone: abnormalDecisionEvidenceTone(priority) },
-      { label: "下一步", value: abnormalDecisionNextAction(priority), note: abnormalDecisionActionNote(priority), tone: contract.severity === "p0" ? "danger" : "warn" }
+      { label: "下一步", value: abnormalDecisionNextAction(priority), note: abnormalDecisionActionNote(priority), tone: contract.severity === "p0" ? "danger" : "warn", targetTab: abnormalDecisionTargetTab(priority) }
     ];
   }
   function buildMobileOverviewModel(snapshot, state) {
@@ -9139,9 +9146,9 @@ var PanelFramework = function(exports) {
       ] })
     ] });
   }
-  function ResourceDecisionVisual({ model }) {
+  function ResourceDecisionVisual({ model, onSelectTab }) {
     return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ik-mobile-decision-visual ik-v420-resource-meter-set ik-density-resource-ledger ik-v1040-resource-ledger ik-mobile-resource-incident-stack ik-mobile-resource-decision", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx(AbnormalDecisionRail, { model }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(AbnormalDecisionRail, { model, onSelectTab }),
       model.hero.resourceCells.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
         "span",
         {
@@ -9158,7 +9165,7 @@ var PanelFramework = function(exports) {
       ))
     ] });
   }
-  function AbnormalDecisionRail({ model }) {
+  function AbnormalDecisionRail({ model, onSelectTab }) {
     const byLabel = new Map(model.abnormalDecision.map((item) => [item.label, item]));
     const object = byLabel.get("对象");
     const impact = byLabel.get("影响");
@@ -9185,7 +9192,19 @@ var PanelFramework = function(exports) {
               /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: "可信度" }),
               /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: credibility.value })
             ] }),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: `ik-mobile-decision-cell ${toneClass(action.tone)}`, children: [
+            action.targetTab && onSelectTab ? /* @__PURE__ */ jsxRuntimeExports.jsxs(
+              "button",
+              {
+                "aria-label": `下一步：${action.value}，${action.note}`,
+                className: `ik-mobile-decision-cell is-action ${toneClass(action.tone)}`,
+                onClick: () => onSelectTab(action.targetTab),
+                type: "button",
+                children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: "下一步" }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: action.value })
+                ]
+              }
+            ) : /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: `ik-mobile-decision-cell ${toneClass(action.tone)}`, children: [
               /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: "下一步" }),
               /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: action.value })
             ] })
@@ -9194,17 +9213,17 @@ var PanelFramework = function(exports) {
       }
     );
   }
-  function ChannelDecisionVisual({ model }) {
-    return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ik-mobile-decision-visual ik-v240-channel-line ik-mobile-channel-incident-stack ik-mobile-channel-decision", children: /* @__PURE__ */ jsxRuntimeExports.jsx(AbnormalDecisionRail, { model }) });
+  function ChannelDecisionVisual({ model, onSelectTab }) {
+    return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ik-mobile-decision-visual ik-v240-channel-line ik-mobile-channel-incident-stack ik-mobile-channel-decision", children: /* @__PURE__ */ jsxRuntimeExports.jsx(AbnormalDecisionRail, { model, onSelectTab }) });
   }
-  function IncidentDecisionVisual({ model }) {
-    return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ik-mobile-decision-visual ik-mobile-generic-incident-stack ik-mobile-incident-decision", children: /* @__PURE__ */ jsxRuntimeExports.jsx(AbnormalDecisionRail, { model }) });
+  function IncidentDecisionVisual({ model, onSelectTab }) {
+    return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ik-mobile-decision-visual ik-mobile-generic-incident-stack ik-mobile-incident-decision", children: /* @__PURE__ */ jsxRuntimeExports.jsx(AbnormalDecisionRail, { model, onSelectTab }) });
   }
-  function DecisionVisual({ model }) {
+  function DecisionVisual({ model, onSelectTab }) {
     if (model.priority === "normal") return /* @__PURE__ */ jsxRuntimeExports.jsx(WanDecisionSpark, { model });
-    if (model.priority === "resource-full") return /* @__PURE__ */ jsxRuntimeExports.jsx(ResourceDecisionVisual, { model });
-    if (model.priority === "snapshot-missing" || model.priority === "collection-degraded") return /* @__PURE__ */ jsxRuntimeExports.jsx(ChannelDecisionVisual, { model });
-    return /* @__PURE__ */ jsxRuntimeExports.jsx(IncidentDecisionVisual, { model });
+    if (model.priority === "resource-full") return /* @__PURE__ */ jsxRuntimeExports.jsx(ResourceDecisionVisual, { model, onSelectTab });
+    if (model.priority === "snapshot-missing" || model.priority === "collection-degraded") return /* @__PURE__ */ jsxRuntimeExports.jsx(ChannelDecisionVisual, { model, onSelectTab });
+    return /* @__PURE__ */ jsxRuntimeExports.jsx(IncidentDecisionVisual, { model, onSelectTab });
   }
   function decisionKicker(model) {
     if (model.priority === "normal") return "网络状态";
@@ -9214,7 +9233,7 @@ var PanelFramework = function(exports) {
     if (model.priority === "resource-full") return "资源告警";
     return "接口告警";
   }
-  function PrimaryDecision({ model }) {
+  function PrimaryDecision({ model, onSelectTab }) {
     return /* @__PURE__ */ jsxRuntimeExports.jsxs(
       "section",
       {
@@ -9226,7 +9245,7 @@ var PanelFramework = function(exports) {
             /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { children: model.hero.title }),
             /* @__PURE__ */ jsxRuntimeExports.jsx("p", { children: model.hero.subtitle })
           ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(DecisionVisual, { model })
+          /* @__PURE__ */ jsxRuntimeExports.jsx(DecisionVisual, { model, onSelectTab })
         ]
       }
     );
@@ -9547,7 +9566,7 @@ var PanelFramework = function(exports) {
             children: [
               /* @__PURE__ */ jsxRuntimeExports.jsx(DeviceBar, { model }),
               activeTab === "home" ? /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
-                /* @__PURE__ */ jsxRuntimeExports.jsx(PrimaryDecision, { model }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx(PrimaryDecision, { model, onSelectTab: setActiveTab }),
                 /* @__PURE__ */ jsxRuntimeExports.jsx(CoreFacts, { model }),
                 /* @__PURE__ */ jsxRuntimeExports.jsx(SupportingList, { model })
               ] }) : /* @__PURE__ */ jsxRuntimeExports.jsx(MobileOverviewTabView, { activeTab, model, snapshot: props.snapshot, state: props.state }),

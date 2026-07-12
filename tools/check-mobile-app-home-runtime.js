@@ -201,6 +201,11 @@ async function main() {
       'incident detail entry expands primary evidence',
       ['tools/check-resource-trend-balance.js', '--url', url, '--section', 'mobileIncidentDrilldown', '--width', '390', '--height', '844', '--json', 'codex_tmp_mobileIncidentDrilldown.json', '--png', 'codex_tmp_mobileIncidentDrilldown.png', '--wait', '3600'],
       ['codex_tmp_mobileIncidentDrilldown.json', 'codex_tmp_mobileIncidentDrilldown.png']
+    ],
+    [
+      'resource incident next step opens connection view',
+      ['tools/check-resource-trend-balance.js', '--url', url, '--section', 'mobileIncidentActionNavigation', '--width', '390', '--height', '844', '--json', 'codex_tmp_mobileIncidentActionNavigation.json', '--png', 'codex_tmp_mobileIncidentActionNavigation.png', '--wait', '3600'],
+      ['codex_tmp_mobileIncidentActionNavigation.json', 'codex_tmp_mobileIncidentActionNavigation.png']
     ]
   ];
   const landscapeChecks = [

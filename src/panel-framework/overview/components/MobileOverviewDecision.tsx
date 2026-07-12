@@ -1,4 +1,5 @@
 import type { MobileOverviewModel } from "../mobileOverviewModel";
+import type { MobileBottomTabId } from "./BottomTabs";
 import { toneClass } from "./MobileOverviewUtils";
 function WanDecisionSpark({ model }: { model: MobileOverviewModel }) {
   const chart = model.hero.trend;
@@ -42,10 +43,10 @@ function WanDecisionSpark({ model }: { model: MobileOverviewModel }) {
   );
 }
 
-function ResourceDecisionVisual({ model }: { model: MobileOverviewModel }) {
+function ResourceDecisionVisual({ model, onSelectTab }: { model: MobileOverviewModel; onSelectTab?: (tab: MobileBottomTabId) => void }) {
   return (
     <div className="ik-mobile-decision-visual ik-v420-resource-meter-set ik-density-resource-ledger ik-v1040-resource-ledger ik-mobile-resource-incident-stack ik-mobile-resource-decision">
-      <AbnormalDecisionRail model={model} />
+      <AbnormalDecisionRail model={model} onSelectTab={onSelectTab} />
       {model.hero.resourceCells.map((item) => (
         <span
           className={`ik-mobile-resource-line ${toneClass(item.tone)}`}
@@ -62,7 +63,7 @@ function ResourceDecisionVisual({ model }: { model: MobileOverviewModel }) {
   );
 }
 
-function AbnormalDecisionRail({ model }: { model: MobileOverviewModel }) {
+function AbnormalDecisionRail({ model, onSelectTab }: { model: MobileOverviewModel; onSelectTab?: (tab: MobileBottomTabId) => void }) {
   const byLabel = new Map(model.abnormalDecision.map((item) => [item.label, item]));
   const object = byLabel.get("对象");
   const impact = byLabel.get("影响");
@@ -88,36 +89,48 @@ function AbnormalDecisionRail({ model }: { model: MobileOverviewModel }) {
           <em>可信度</em>
           <b>{credibility.value}</b>
         </span>
-        <span className={`ik-mobile-decision-cell ${toneClass(action.tone)}`}>
-          <em>下一步</em>
-          <b>{action.value}</b>
-        </span>
+        {action.targetTab && onSelectTab ? (
+          <button
+            aria-label={`下一步：${action.value}，${action.note}`}
+            className={`ik-mobile-decision-cell is-action ${toneClass(action.tone)}`}
+            onClick={() => onSelectTab(action.targetTab as MobileBottomTabId)}
+            type="button"
+          >
+            <em>下一步</em>
+            <b>{action.value}</b>
+          </button>
+        ) : (
+          <span className={`ik-mobile-decision-cell ${toneClass(action.tone)}`}>
+            <em>下一步</em>
+            <b>{action.value}</b>
+          </span>
+        )}
       </div>
     </div>
   );
 }
 
-function ChannelDecisionVisual({ model }: { model: MobileOverviewModel }) {
+function ChannelDecisionVisual({ model, onSelectTab }: { model: MobileOverviewModel; onSelectTab?: (tab: MobileBottomTabId) => void }) {
   return (
     <div className="ik-mobile-decision-visual ik-v240-channel-line ik-mobile-channel-incident-stack ik-mobile-channel-decision">
-      <AbnormalDecisionRail model={model} />
+      <AbnormalDecisionRail model={model} onSelectTab={onSelectTab} />
     </div>
   );
 }
 
-function IncidentDecisionVisual({ model }: { model: MobileOverviewModel }) {
+function IncidentDecisionVisual({ model, onSelectTab }: { model: MobileOverviewModel; onSelectTab?: (tab: MobileBottomTabId) => void }) {
   return (
     <div className="ik-mobile-decision-visual ik-mobile-generic-incident-stack ik-mobile-incident-decision">
-      <AbnormalDecisionRail model={model} />
+      <AbnormalDecisionRail model={model} onSelectTab={onSelectTab} />
     </div>
   );
 }
 
-function DecisionVisual({ model }: { model: MobileOverviewModel }) {
+function DecisionVisual({ model, onSelectTab }: { model: MobileOverviewModel; onSelectTab?: (tab: MobileBottomTabId) => void }) {
   if (model.priority === "normal") return <WanDecisionSpark model={model} />;
-  if (model.priority === "resource-full") return <ResourceDecisionVisual model={model} />;
-  if (model.priority === "snapshot-missing" || model.priority === "collection-degraded") return <ChannelDecisionVisual model={model} />;
-  return <IncidentDecisionVisual model={model} />;
+  if (model.priority === "resource-full") return <ResourceDecisionVisual model={model} onSelectTab={onSelectTab} />;
+  if (model.priority === "snapshot-missing" || model.priority === "collection-degraded") return <ChannelDecisionVisual model={model} onSelectTab={onSelectTab} />;
+  return <IncidentDecisionVisual model={model} onSelectTab={onSelectTab} />;
 }
 
 function decisionKicker(model: MobileOverviewModel): string {
@@ -129,7 +142,7 @@ function decisionKicker(model: MobileOverviewModel): string {
   return "接口告警";
 }
 
-export function PrimaryDecision({ model }: { model: MobileOverviewModel }) {
+export function PrimaryDecision({ model, onSelectTab }: { model: MobileOverviewModel; onSelectTab?: (tab: MobileBottomTabId) => void }) {
   return (
     <section
       className={`ik-v420-hero ik-v240-hero ik-v159-network-hero ik-mobile-decision-card ik-mobile-primary-conclusion is-${model.hero.visualKind} ${toneClass(model.network.conclusion.tone)}`}
@@ -140,7 +153,7 @@ export function PrimaryDecision({ model }: { model: MobileOverviewModel }) {
         <h1>{model.hero.title}</h1>
         <p>{model.hero.subtitle}</p>
       </div>
-      <DecisionVisual model={model} />
+      <DecisionVisual model={model} onSelectTab={onSelectTab} />
     </section>
   );
 }
