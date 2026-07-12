@@ -1,0 +1,17 @@
+/* Desktop incident action is a component-owned strip, not a generic KPI row. */
+@media (min-width: 761px) {
+  #overview.router-overview-framework .ro-desktop-decision-rail {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, .8fr);
+    height: 54px;
+    min-height: 54px;
+    max-height: 54px;
+    gap: 0;
+    margin-bottom: 2px;
+    border-bottom: 1px solid rgba(155, 177, 200, .13);
+    background: transparent;
+    overflow: hidden;
+  }
+}

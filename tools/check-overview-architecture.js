@@ -447,8 +447,9 @@ assert(
 );
 assert(
   !desktopDecisionRail.includes("style={") &&
-    desktopBaseStyles.includes(".ro-desktop-decision-rail"),
-  "DesktopDecisionRail layout must live in the desktop stylesheet, not inline JSX"
+    desktopBaseStyles.includes('@import "./desktop/decision-rail.css";') &&
+    exists("src/panel-framework/overview/styles/desktop/decision-rail.css"),
+  "DesktopDecisionRail layout must live in its desktop component stylesheet, not inline JSX"
 );
 assert(
   desktopConsole.includes('from "../desktopOverviewScenes"') &&

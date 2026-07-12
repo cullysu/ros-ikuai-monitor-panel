@@ -1,3 +1,5 @@
+@import "./desktop/decision-rail.css";
+
 /* Codex v814 desktop density correction: remove measurement-ruler feel, keep iKuai-like scan density. */
 @media (min-width: 761px) {
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"],
@@ -2215,21 +2217,6 @@
       "main side"
       "bottom bottom" !important;
     grid-template-rows: 34px auto auto !important;
-  }
-
-  #overview.router-overview-framework .ro-desktop-decision-rail {
-    grid-column: 1 / -1;
-    grid-row: 1;
-    display: grid;
-    grid-template-columns: minmax(0, 1.2fr) minmax(0, .8fr);
-    height: 54px;
-    min-height: 54px;
-    max-height: 54px;
-    gap: 0;
-    margin-bottom: 2px;
-    border-bottom: 1px solid rgba(155, 177, 200, .13);
-    background: transparent;
-    overflow: hidden;
   }
 
   #overview.router-overview-framework .ro-desktop-thin-kpis {
