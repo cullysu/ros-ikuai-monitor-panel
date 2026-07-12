@@ -1447,6 +1447,19 @@ async function main() {
           chartRailRect.bottom <= heroRect.bottom + 1
         );
         const chartSeriesLegendText = normalize(v1072SeriesLegend?.textContent || '');
+        const downloadLine = productChart?.querySelector('.ik-mobile-decision-line.is-download');
+        const uploadLine = productChart?.querySelector('.ik-mobile-decision-line.is-upload');
+        const downloadLineStyle = downloadLine ? getComputedStyle(downloadLine) : null;
+        const uploadLineStyle = uploadLine ? getComputedStyle(uploadLine) : null;
+        const chartSeriesPaintProductized = sectionName !== 'mobileNormalHome' || Boolean(
+          downloadLineStyle &&
+          uploadLineStyle &&
+          downloadLineStyle.fill === 'none' &&
+          uploadLineStyle.fill === 'none' &&
+          downloadLineStyle.stroke !== uploadLineStyle.stroke &&
+          downloadLineStyle.stroke !== 'rgb(0, 0, 0)' &&
+          uploadLineStyle.stroke !== 'rgb(0, 0, 0)'
+        );
         const chartRailLabels = Array.from(chartRail?.querySelectorAll('em') || []);
         const visibleChartRailLabels = chartRailLabels.filter((node) => {
           const style = getComputedStyle(node);
@@ -1492,7 +1505,7 @@ async function main() {
           chartSeriesLegendText.includes('下载') &&
           chartSeriesLegendText.includes('上传')
         );
-        const hasNativeChartLayout = sectionName !== 'mobileNormalHome' || (hasProductChartRail && trendColumns === 1 && chartRailFullWidth && chartRailNotSideBubble && chartReadoutLabelsVisible && hasThresholdChartContract && productChartProductized && chartDecisionLayoutProductized);
+        const hasNativeChartLayout = sectionName !== 'mobileNormalHome' || (hasProductChartRail && trendColumns === 1 && chartRailFullWidth && chartRailNotSideBubble && chartReadoutLabelsVisible && hasThresholdChartContract && productChartProductized && chartDecisionLayoutProductized && chartSeriesPaintProductized);
         const judgementLabel = root?.querySelector('.ik-v960-judgement-strip > strong b');
         const judgementLabelNoEllipsis = !judgementLabel || getComputedStyle(judgementLabel).textOverflow !== 'ellipsis';
         const bottomTabs = screen?.querySelector('.ik-v420-tabs');
@@ -1705,9 +1718,24 @@ async function main() {
         const statusHeaderActionStyle = statusHeaderAction ? getComputedStyle(statusHeaderAction) : null;
         const statusHeaderActionLabel = statusHeaderAction?.getAttribute('aria-label') || '';
         const statusHeaderLabel = statusHeader?.getAttribute('aria-label') || '';
+        const statusHeaderTitle = statusHeader?.querySelector('[data-overview-mobile-primary-title="device"]');
+        const statusHeaderState = statusHeader?.querySelector('[data-overview-mobile-primary-status="device-state"]');
+        const statusHeaderTitleRect = statusHeaderTitle?.getBoundingClientRect();
+        const statusHeaderStateRect = statusHeaderState?.getBoundingClientRect();
+        const statusHeaderStateStyle = statusHeaderState ? getComputedStyle(statusHeaderState) : null;
+        const statusHeaderFlatAndSeparated = Boolean(
+          statusHeaderTitleRect &&
+          statusHeaderStateRect &&
+          statusHeaderTitleRect.right <= statusHeaderStateRect.left - 4 &&
+          statusHeaderStateStyle &&
+          Number.parseFloat(statusHeaderStateStyle.borderTopWidth || '0') === 0 &&
+          statusHeaderStateStyle.backgroundColor === 'rgba(0, 0, 0, 0)' &&
+          statusHeaderStateStyle.boxShadow === 'none'
+        );
         const routerStatusHeaderProductized = Boolean(
           statusHeader &&
           statusHeaderLabel.includes('RouterOS') &&
+          statusHeaderFlatAndSeparated &&
           (
             statusHeader.getAttribute('data-overview-mobile-status-header') === 'device-name-state-recent-only'
               ? !statusHeaderAction
@@ -2064,6 +2092,11 @@ async function main() {
           chartRailClassName: chartRail?.className || '',
           lineChartHeight: lineChartRect?.height || 0,
           chartSeriesLegendText,
+          chartSeriesPaintProductized,
+          chartSeriesPaint: {
+            download: { stroke: downloadLineStyle?.stroke || '', fill: downloadLineStyle?.fill || '' },
+            upload: { stroke: uploadLineStyle?.stroke || '', fill: uploadLineStyle?.fill || '' },
+          },
           hasThresholdChartContract,
           visibleChartRailLabelCount: visibleChartRailLabels.length,
           visibleChartRailLabelText,
@@ -2077,6 +2110,7 @@ async function main() {
           routerTabTouchTargetsOk,
           routerTabActiveNeutral,
           routerStatusHeaderProductized,
+          statusHeaderFlatAndSeparated,
           statusHeaderActionLabel,
           appRhythmPolished,
           surfacePolicyModelBacked,

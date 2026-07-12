@@ -10,27 +10,37 @@ export const MOBILE_OVERVIEW_FRAME_STYLES = `
   }
 
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-device-bar {
+    display: grid !important;
     grid-template-columns: minmax(0, 1fr) auto !important;
+    align-items: center !important;
+    gap: 10px !important;
     min-height: 46px !important;
     height: 46px !important;
     padding: 0 1px !important;
   }
 
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-device-title {
+    display: grid !important;
+    align-content: center !important;
+    gap: 2px !important;
     justify-items: start !important;
     text-align: left !important;
     min-width: 0 !important;
   }
 
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-device-title b {
+    display: block !important;
     color: #142033 !important;
     font-size: 17px !important;
+    line-height: 1.08 !important;
     letter-spacing: -.035em !important;
   }
 
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-device-title span {
+    display: block !important;
     color: #66758a !important;
     font-size: 10.5px !important;
+    line-height: 1.1 !important;
   }
 
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-context-button {
@@ -43,11 +53,29 @@ export const MOBILE_OVERVIEW_FRAME_STYLES = `
   }
 
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-device-bar .ik-v240-status {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    gap: 5px !important;
     min-width: 58px !important;
     min-height: 30px !important;
-    border-radius: 6px !important;
-    border-color: #b9cce3 !important;
-    background: #f8fbff !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    color: #31475f !important;
+    font-size: 12px !important;
+    font-weight: 760 !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-device-bar .ik-v240-status > i {
+    display: block !important;
+    width: 6px !important;
+    height: 6px !important;
+    border-radius: 50% !important;
+    background: currentColor !important;
   }
 }
 `;

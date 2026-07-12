@@ -365,12 +365,16 @@ function subtitleFor(
   state: OverviewDerivedState,
   network: RouterOsNetworkViewModel,
   scope: MobileImpactScope,
-  contract: MobileAppHomeContract,
 ): string {
   if (network.priority === "normal") {
     return `WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(wanDisplayTotal(snapshot, state) || 1)} · 默认路由${mobileRouteValue(state)} · 快照 ${latestSuccess(snapshot, state)}`;
   }
-  return `${scope.value} · ${contract.trustBoundary}`;
+  if (network.priority === "wan-offline") return `默认出口不可承载 · 最近成功 ${latestSuccess(snapshot, state)}`;
+  if (network.priority === "snapshot-missing") return `当前业务指标隐藏 · 最近成功 ${latestSuccess(snapshot, state)}`;
+  if (network.priority === "collection-degraded") return `当前使用缓存快照 · 最近成功 ${latestSuccess(snapshot, state)}`;
+  if (network.priority === "resource-full") return "业务仍可用 · 资源阈值持续超限";
+  if (network.priority === "interface-down") return `部分接口不可用 · 默认路由${mobileRouteValue(state)}`;
+  return scope.value;
 }
 
 function heroFacts(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): MobileMonitorFact[] {
@@ -481,7 +485,7 @@ function coreMetrics(snapshot: OverviewRawSnapshot, state: OverviewDerivedState,
   const resourceFact: MobileMonitorFact = {
     label: "资源",
     value: coreResourceValue(resource, priority),
-    note: priority === "resource-full" ? "持续6/6" : "处理器/内存/磁盘",
+    note: priority === "resource-full" ? "持续6/6" : "CPU·内存·磁盘",
     tone: resource.some((item) => item.tone === "danger") ? "danger" : priority === "snapshot-missing" ? "missing" : "ok",
   };
   const snapshotFact: MobileMonitorFact = {
@@ -838,7 +842,7 @@ export function buildMobileOverviewModel(snapshot: OverviewRawSnapshot, state: O
     normalSummary: normalSummaryModel(priority),
     hero: {
       title: heroTitle,
-      subtitle: subtitleFor(snapshot, state, network, scope, policy.appHomeContract),
+      subtitle: subtitleFor(snapshot, state, network, scope),
       facts: heroFacts(snapshot, state),
       pills,
       trustRail: heroTrustRail(pills),

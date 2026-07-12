@@ -43,8 +43,30 @@ export const MOBILE_OVERVIEW_SURFACE_STYLES = `
   }
 
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-supporting-list header {
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
     min-height: 34px !important;
     padding: 7px 9px !important;
+    overflow: hidden !important;
+    white-space: nowrap !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-supporting-list header > b {
+    color: #1d3148 !important;
+    font-size: 12px !important;
+    font-weight: 800 !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-supporting-list header > span {
+    overflow: hidden !important;
+    color: #64778b !important;
+    font-size: 10px !important;
+    text-overflow: ellipsis !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-supporting-list header > em {
+    display: none !important;
   }
 
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-supporting-list {

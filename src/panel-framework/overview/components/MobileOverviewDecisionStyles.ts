@@ -122,6 +122,40 @@ export const MOBILE_OVERVIEW_DECISION_STYLES = `
     max-height: 64px !important;
   }
 
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-line-chart :is(path, polyline) {
+    fill: none !important;
+    vector-effect: non-scaling-stroke !important;
+    stroke-linecap: round !important;
+    stroke-linejoin: round !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-decision-grid {
+    stroke: #dce6ef !important;
+    stroke-width: .8 !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-decision-ref {
+    stroke: #9eb0c2 !important;
+    stroke-width: 1 !important;
+    stroke-dasharray: 4 5 !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-decision-line.is-download {
+    stroke: #176fc1 !important;
+    stroke-width: 2 !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-decision-line.is-upload {
+    stroke: #73879c !important;
+    stroke-width: 1.5 !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] :is(.ik-v420-peak-dot, .ik-mobile-decision-dot) {
+    fill: #ffffff !important;
+    stroke: #176fc1 !important;
+    stroke-width: 1.6 !important;
+  }
+
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-decision-card .ik-mobile-decision-readouts {
     display: grid !important;
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
