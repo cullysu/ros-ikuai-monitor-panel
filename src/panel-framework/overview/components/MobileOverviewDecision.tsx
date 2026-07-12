@@ -113,10 +113,6 @@ function AbnormalDecisionRail({ model }: { model: MobileOverviewModel }) {
   return (
     <div
       className="ik-v1046-abnormal-decision-rail ik-mobile-abnormal-decision-rail"
-      data-overview-mobile-v1046-abnormal-decision-rail="object-impact-credibility-next-action"
-      data-overview-mobile-v1046-abnormal-decision-ia={model.appHomeContract.informationArchitecture}
-      data-overview-mobile-v1046-abnormal-decision-priority={model.priority}
-      data-overview-mobile-v1046-abnormal-decision-scope={`${model.impactScope.id}:${model.impactScope.plane}`}
     >
       <div className="ik-mobile-incident-summary">
         <span className={toneClass(object.tone)} data-overview-mobile-v1046-abnormal-decision-cell={object.label}>

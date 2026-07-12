@@ -9225,10 +9225,6 @@ var PanelFramework = function(exports) {
       "div",
       {
         className: "ik-v1046-abnormal-decision-rail ik-mobile-abnormal-decision-rail",
-        "data-overview-mobile-v1046-abnormal-decision-rail": "object-impact-credibility-next-action",
-        "data-overview-mobile-v1046-abnormal-decision-ia": model.appHomeContract.informationArchitecture,
-        "data-overview-mobile-v1046-abnormal-decision-priority": model.priority,
-        "data-overview-mobile-v1046-abnormal-decision-scope": `${model.impactScope.id}:${model.impactScope.plane}`,
         children: [
           /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ik-mobile-incident-summary", children: [
             /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: toneClass(object.tone), "data-overview-mobile-v1046-abnormal-decision-cell": object.label, children: [
@@ -9660,26 +9656,10 @@ var PanelFramework = function(exports) {
       {
         className: "ik-v420-app ik-v240-app ik-mobile-public-home",
         "data-overview-mobile-console": true,
-        "data-overview-mobile-ios-router-home": "true",
         "data-overview-mobile-app-home": "ikuai40-ios-router-home",
-        "data-overview-mobile-home-mode": "ios-router-app-home",
         "data-overview-mobile-no-desktop-collapse": "true",
         "data-overview-mobile-scene": props.state.scenario,
         "data-overview-mobile-priority": model.priority,
-        "data-overview-mobile-severity": model.appHomeContract.severity,
-        "data-overview-mobile-ranking-policy": model.appHomeContract.rankingPolicy,
-        "data-overview-mobile-abnormal-ia": model.appHomeContract.informationArchitecture,
-        "data-overview-mobile-top-slot": model.appHomeContract.topSlot,
-        "data-overview-mobile-terminal-ranking-state": model.appHomeContract.terminalRanking,
-        "data-overview-mobile-trust-boundary": model.appHomeContract.trustBoundary,
-        "data-overview-mobile-impact-scope": model.impactScope.id,
-        "data-overview-mobile-impact-plane": model.impactScope.plane,
-        "data-overview-mobile-normal-app-home": model.priority === "normal" ? "compact-conclusion-chart-ops" : void 0,
-        "data-overview-mobile-compact-conclusion": model.priority === "normal" ? "conclusion-trust-wan-collection-resource-snapshot" : void 0,
-        "data-overview-mobile-collection-policy": model.collectionTrustSeparation.contract,
-        "data-overview-mobile-collection-plane": model.collectionTrustSeparation.collectionPlane,
-        "data-overview-mobile-collection-separated": model.collectionTrustSeparation.separatedFromImpact ? "true" : "false",
-        "data-overview-mobile-p0-first-screen": model.appHomeContract.severity === "p0" ? "trust-wan-route-collection-success-no-terminal-ranking" : void 0,
         children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ik-v420-shell ik-v240-shell", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
           "main",
           {
