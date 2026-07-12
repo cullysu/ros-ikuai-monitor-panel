@@ -9326,12 +9326,8 @@ var PanelFramework = function(exports) {
       {
         className: "ik-v420-nav ik-v240-nav ik-mobile-device-bar",
         "aria-label": "RouterOS 设备状态导航",
-        "data-overview-mobile-v420-nav": "ios-navigation",
-        "data-overview-mobile-v240-nav": "app-navigation",
-        "data-overview-mobile-v1067-status-header": "routeros-device-state-header-context-action-low-noise",
-        "data-overview-mobile-status-header": "device-name-state-recent-only",
         children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ik-mobile-device-title", "data-overview-mobile-primary-title": "device", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ik-mobile-device-title", children: [
             /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: model.header.deviceName }),
             /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
               "只读观察 · 最近 ",
@@ -9342,7 +9338,6 @@ var PanelFramework = function(exports) {
             "strong",
             {
               className: `ik-v240-status ${toneClass(model.header.tone)}`,
-              "data-overview-mobile-primary-status": "device-state",
               "aria-label": `设备状态 ${model.header.statusLabel}`,
               children: [
                 /* @__PURE__ */ jsxRuntimeExports.jsx("i", { "aria-hidden": "true" }),
@@ -9361,17 +9356,10 @@ var PanelFramework = function(exports) {
       {
         className: "ik-v240-facts ik-v240-strip ik-mobile-core-facts",
         "aria-label": "移动端四项核心事实",
-        "data-overview-mobile-core-block": "four-core-facts",
-        "data-overview-mobile-v240-facts": "wan-collection-resource-snapshot",
-        "data-overview-mobile-v240-status-strip": "four-facts",
-        "data-overview-mobile-v1065-normal-summary-strip": model.priority === "normal" ? "model-backed-status-wan-route-collection-snapshot" : void 0,
-        "data-overview-mobile-v1044-metric-grid": "wan-collection-resource-snapshot-four-core-facts",
-        "data-overview-mobile-v1044-metric-count": facts.length,
         children: facts.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
           "span",
           {
-            className: toneClass(item.tone),
-            "data-overview-mobile-v1065-summary-cell": item.label === "WAN" ? "wan" : item.label === "默认路由" ? "route" : item.label === "采集" ? "collection" : item.label === "资源" ? "resource" : "snapshot",
+            className: `ik-mobile-fact ${toneClass(item.tone)}`,
             children: [
               /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: item.label }),
               /* @__PURE__ */ jsxRuntimeExports.jsx("strong", { children: item.value }),
@@ -9406,33 +9394,12 @@ var PanelFramework = function(exports) {
     return /* @__PURE__ */ jsxRuntimeExports.jsx(
       "section",
       {
-        className: "ik-v420-surface ik-v240-facts ik-mobile-supporting-surface",
-        "data-overview-mobile-core-block": "ios-router-home-surface",
-        "data-overview-mobile-v1060-surface-policy": model.surface.contract,
-        "data-overview-mobile-v1060-surface-slots": model.surface.slots.join("/"),
-        "data-overview-mobile-surface-order": model.surface.orderContract,
-        "data-overview-mobile-ranking-policy": model.surface.ranking,
-        "data-overview-mobile-list-kind": model.surface.listKind,
-        "data-overview-mobile-impact-scope": model.impactScope.id,
-        "data-overview-mobile-impact-plane": model.impactScope.plane,
-        "data-overview-mobile-terminal-ranking-mounted": model.surface.terminalRankingMounted,
-        "data-overview-mobile-terminal-ranking-state": model.surface.terminalRankingState,
-        "data-overview-mobile-normal-ranking": model.surface.normalRanking,
-        "data-overview-mobile-v1070-grouped-surface": "separator-only-status-list-no-card-stack",
-        "data-overview-mobile-v1080-surface": "one-supporting-list-no-duplicate-status-ledger",
-        "data-overview-mobile-supporting-surface": "detail-entry-evidence-below-primary-task",
-        "data-overview-mobile-detail-expanded": expanded ? "true" : "false",
+        className: `ik-v420-surface ik-v240-facts ik-mobile-supporting-surface${expanded ? " is-expanded" : ""}`,
         style: listStyle,
         children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
           "div",
           {
-            className: "ik-v420-list ik-v420-app-list ik-v240-list ik-mobile-supporting-list",
-            "data-overview-mobile-list-kind": model.surface.listKind,
-            "data-overview-mobile-rank-list": model.surface.rankListKind,
-            "data-overview-mobile-v420-list": "native-router-list",
-            "data-overview-mobile-v240-list": model.surface.v240ListKind,
-            "data-overview-mobile-impact-scope-line": `${model.impactScope.id}:${model.impactScope.plane}`,
-            "data-overview-mobile-detail-expanded": expanded ? "true" : "false",
+            className: `ik-v420-list ik-v420-app-list ik-v240-list ik-mobile-supporting-list${expanded ? " is-expanded" : ""}`,
             children: [
               /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { children: [
                 /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: copy.title }),
@@ -9447,7 +9414,6 @@ var PanelFramework = function(exports) {
                 "button",
                 {
                   className: `ik-mobile-detail-entry ${toneClass(model.impactScope.tone)}`,
-                  "data-overview-mobile-detail-entry": "evidence-ranking-drilldown",
                   "aria-controls": "mobile-supporting-detail-rows",
                   "aria-expanded": expanded,
                   onClick: () => setExpanded((value) => !value),
@@ -9467,19 +9433,13 @@ var PanelFramework = function(exports) {
               /* @__PURE__ */ jsxRuntimeExports.jsx(
                 "div",
                 {
-                  className: "ik-mobile-supporting-detail-rows",
+                  className: `ik-mobile-supporting-detail-rows${expanded ? " is-expanded" : ""}`,
                   id: "mobile-supporting-detail-rows",
-                  "data-overview-mobile-deferred-rows": "evidence-below-mobile-home-task",
-                  "data-overview-mobile-detail-expanded": expanded ? "true" : "false",
                   "aria-hidden": !expanded,
                   children: rows.map((row) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
                     "article",
                     {
                       className: `ik-v420-list-row ik-mobile-deferred-row ${toneClass(row.tone)}`,
-                      "data-overview-mobile-v1061-evidence-layer": row.evidenceLayer,
-                      "data-overview-mobile-v1061-evidence-source": row.evidenceSource,
-                      "data-overview-mobile-v1061-evidence-role": model.priority === "normal" && row.evidenceRole === "secondary-evidence" ? "operational-context" : row.evidenceRole,
-                      "data-overview-mobile-v1061-evidence-key": row.evidenceKey,
                       children: [
                         /* @__PURE__ */ jsxRuntimeExports.jsx("i", { className: "ik-mobile-row-token", "data-rank": row.rank, children: rowIcon(row) }),
                         /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
