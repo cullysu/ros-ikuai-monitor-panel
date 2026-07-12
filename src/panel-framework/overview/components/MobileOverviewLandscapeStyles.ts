@@ -1,0 +1,46 @@
+export const MOBILE_OVERVIEW_LANDSCAPE_STYLES = `
+@media (min-width: 761px) and (max-width: 900px) and (max-height: 520px) {
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-decision-screen {
+    grid-template-columns: minmax(320px, .96fr) minmax(0, 1.04fr) !important;
+    grid-template-rows: 46px 252px !important;
+    grid-template-areas:
+      "nav nav"
+      "hero side" !important;
+    gap: 8px 10px !important;
+    padding: 10px 12px 62px !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-device-bar {
+    grid-area: nav !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-decision-card {
+    grid-area: hero !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    height: 252px !important;
+    min-height: 252px !important;
+    max-height: 252px !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-core-facts {
+    grid-area: side !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    align-self: start !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-supporting-surface {
+    grid-area: side !important;
+    align-self: end !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-decision-head h1 {
+    font-size: 28px !important;
+    line-height: 1.05 !important;
+  }
+}
+`;

@@ -11596,38 +11596,10 @@ var PanelFramework = function(exports) {
     line-height: 1.15 !important;
   }
 
-  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-v420-tabs,
-  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-v240-tabs {
-    display: grid !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    position: fixed !important;
-    left: 0 !important;
-    right: 0 !important;
-    bottom: 0 !important;
-    width: auto !important;
-    min-width: 0 !important;
-    max-width: none !important;
-    height: 52px !important;
-    max-height: none !important;
-    transform: none !important;
-    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
-    border: 0 !important;
-    border-top: 0 !important;
-    border-radius: 0 !important;
-    outline: 0 !important;
-    background: rgba(247, 250, 253, .94) !important;
-    box-shadow: none !important;
-  }
-
-  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-v420-tabs button.is-active,
-  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-v240-tabs button.is-active {
-    background: transparent !important;
-    box-shadow: inset 0 -1px 0 rgba(18, 34, 55, .44) !important;
-    color: #143b6f !important;
-  }
 }
 
+`;
+  const MOBILE_OVERVIEW_LANDSCAPE_STYLES = `
 @media (min-width: 761px) and (max-width: 900px) and (max-height: 520px) {
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-decision-screen {
     grid-template-columns: minmax(320px, .96fr) minmax(0, 1.04fr) !important;
@@ -11673,6 +11645,40 @@ var PanelFramework = function(exports) {
   }
 }
 `;
+  const MOBILE_OVERVIEW_NAVIGATION_STYLES = `
+@media (max-width: 760px), (min-width: 761px) and (max-width: 900px) and (max-height: 520px) {
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-v420-tabs,
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-v240-tabs {
+    display: grid !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: fixed !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: auto !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    height: 52px !important;
+    max-height: none !important;
+    transform: none !important;
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+    border: 0 !important;
+    border-top: 0 !important;
+    border-radius: 0 !important;
+    outline: 0 !important;
+    background: rgba(247, 250, 253, .94) !important;
+    box-shadow: none !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-v420-tabs button.is-active,
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-v240-tabs button.is-active {
+    background: transparent !important;
+    box-shadow: inset 0 -1px 0 rgba(18, 34, 55, .44) !important;
+    color: #143b6f !important;
+  }
+}
+`;
   const MOBILE_OVERVIEW_STYLE_LAYERS = [
     { id: "foundation", css: MOBILE_OVERVIEW_FOUNDATION_STYLES },
     {
@@ -11680,7 +11686,9 @@ var PanelFramework = function(exports) {
       css: MOBILE_OVERVIEW_PRODUCT_SHELL_STYLES
     },
     { id: "public-decision-home", css: MOBILE_OVERVIEW_PUBLIC_DECISION_STYLES },
-    { id: "public-decision-repair", css: MOBILE_OVERVIEW_PUBLIC_DECISION_REPAIR_STYLES }
+    { id: "public-decision-repair", css: MOBILE_OVERVIEW_PUBLIC_DECISION_REPAIR_STYLES },
+    { id: "navigation", css: MOBILE_OVERVIEW_NAVIGATION_STYLES },
+    { id: "landscape", css: MOBILE_OVERVIEW_LANDSCAPE_STYLES }
   ];
   const MOBILE_OVERVIEW_STYLE_STACK = MOBILE_OVERVIEW_STYLE_LAYERS.map(
     (layer) => layer.css
@@ -15563,6 +15571,20 @@ var PanelFramework = function(exports) {
       ]
     };
   }
+  const actionRailStyle = {
+    gridColumn: "1 / -1",
+    gridRow: 1,
+    display: "grid",
+    gridTemplateColumns: "minmax(0, 1.2fr) minmax(0, .8fr)",
+    height: 54,
+    minHeight: 54,
+    maxHeight: 54,
+    gap: 0,
+    marginBottom: 2,
+    borderBottom: "1px solid rgba(155, 177, 200, .13)",
+    background: "transparent",
+    overflow: "hidden"
+  };
   function nextAction(state) {
     switch (state.scenario) {
       case "all-offline":
@@ -15584,8 +15606,6 @@ var PanelFramework = function(exports) {
     const credibility = presentation.incidentSummary.find((item) => item.label === "可信度");
     const action = nextAction(state);
     const items = [
-      { label: "结论", value: presentation.conclusionValue, note: presentation.conclusionNote, tone: state.verdict.level },
-      { label: "影响", value: presentation.impact.value, note: presentation.impact.note, tone: presentation.impact.tone },
       { label: "下一步", value: action.value, note: action.note, tone: action.tone },
       {
         label: "可信度",
@@ -15597,11 +15617,12 @@ var PanelFramework = function(exports) {
     return /* @__PURE__ */ jsxRuntimeExports.jsx(
       "section",
       {
-        className: "ro-desktop-thin-kpis ro-desktop-decision-rail",
+        className: "ro-desktop-decision-rail",
         "aria-label": "桌面判断与处置",
-        "data-overview-desktop-kpi-row": "conclusion-impact-next-action-credibility",
-        "data-overview-desktop-decision-rail": "four-user-decisions",
-        children: items.map((item, index) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `ro-desktop-thin-kpi ik-overview-kpi-card${index === 0 ? " is-primary" : ""}`, "data-overview-desktop-decision-role": index === 0 ? "primary-conclusion" : item.label, "data-tone": item.tone, children: [
+        style: actionRailStyle,
+        "data-overview-desktop-kpi-row": "next-action-credibility",
+        "data-overview-desktop-decision-rail": "action-and-credibility",
+        children: items.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ro-desktop-thin-kpi ik-overview-kpi-card", "data-overview-desktop-decision-role": item.label, "data-tone": item.tone, children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: item.label }),
           /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: item.value }),
           /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: item.note })
@@ -15615,63 +15636,30 @@ var PanelFramework = function(exports) {
       "div",
       {
         className: "ro-desktop-grid ik-home-layout",
-        "data-overview-desktop-layout": "fixed-summary-keymetrics-left-right-bottom",
         "data-overview-desktop-hierarchy": "conclusion-key-metrics-evidence",
         "data-overview-desktop-hierarchy-tier": "3-evidence",
-        "data-overview-desktop-skeleton": "top-six-summary-left-network-wan-right-resource-collection-bottom-interface-events",
-        "data-overview-desktop-surface": "ikuai40-admin-console-not-consumer-app-cards",
-        "data-overview-desktop-left-rail": "network-wan",
-        "data-overview-desktop-right-rail": "resource-collection",
-        "data-overview-desktop-bottom-rail": "interface-events",
         "data-overview-desktop-detail": true,
         "data-overview-desktop-workspace": true,
         "data-overview-low-noise-console-token-contract": OVERVIEW_LOW_NOISE_CONSOLE_TOKEN_CONTRACT,
         "data-overview-desktop-v1020-public-product-polish": "flat-status-bus-low-line-noise-integrated-wan-reading",
         "data-overview-desktop-v1030-nav-polish": "short-ikuai-left-rail-low-noise-status-bus",
-        "data-overview-desktop-copy-policy": "business-first-routeros-fields-translated-in-evidence",
         "data-overview-desktop-toy-nav-leak-guard": "desktop-content-icon-tabs-removed",
         "data-overview-desktop-content-icon-tabs": "desktop-hides-content-icon-tabs",
         "data-overview-trend-compact": "framework-ledger",
         "data-overview-no-snapshot-grid": state.scenario === "no-snapshot" ? "collection-chain-business-boundary-recovery" : void 0,
         "data-overview-no-snapshot-detail": state.scenario === "no-snapshot" ? "three-visible-evidence-sections-raw-fields-collapsed" : void 0,
         "data-overview-desktop-v1042-no-snapshot-floor": state.scenario === "no-snapshot" ? "single-collapsed-raw-evidence" : void 0,
-        "data-overview-no-snapshot-left-main": state.scenario === "no-snapshot" ? "collection-chain-business-boundary" : void 0,
-        "data-overview-no-snapshot-right-side": state.scenario === "no-snapshot" ? "recovery-line" : void 0,
-        "data-overview-no-snapshot-wan-rate-layout-guard": state.scenario === "no-snapshot" ? "no-wan-rate-panel-no-zero-rate-no-rate-spacer" : void 0,
         "data-overview-desktop-effective-content-height": "760",
         "data-overview-desktop-redline-markers": "no-empty-left60-no-duplicate-boundary-no-nosnapshot-wan-rate-no-toy-tabs",
         "data-overview-no-snapshot-no-wan-rate-placeholder": state.scenario === "no-snapshot" ? "business-rates-hidden" : void 0,
-        "data-overview-no-snapshot-zero-rate-guard": state.scenario === "no-snapshot" ? "replace-zero-rate-with-hidden" : void 0,
         "data-overview-side-table-mode": "three-col-no-badge",
         "data-overview-desktop-fixed-skeleton": "left-network-wan-right-resource-collection-bottom-interface-events",
-        "data-overview-side-column-ratio": "24-24-52",
-        "data-overview-side-badge-mode": "inline-text-no-column",
-        "data-overview-side-evidence-wrap": "third-col-no-ellipsis",
-        "data-overview-side-evidence-no-ellipsis": "true",
-        "data-overview-desktop-ratio": "chart-table-52-48",
-        "data-overview-desktop-visual-table-balance": "52-48-min45-each",
         "data-overview-desktop-scene": state.scenario,
-        "data-overview-normal-first-screen": state.scenario === "single" || state.scenario === "fleet" ? "traffic-plus-evidence" : void 0,
-        "data-overview-normal-traffic-under-chart": state.scenario === "single" || state.scenario === "fleet" ? "current-wan-top3-route-sampling-samples-peak-success" : void 0,
-        "data-overview-normal-traffic-under-chart-facts": state.scenario === "single" || state.scenario === "fleet" ? "7" : void 0,
-        "data-overview-no-empty-traffic-panel": state.scenario === "single" || state.scenario === "fleet" ? "true" : void 0,
-        "data-overview-resource-first-screen": state.scenario === "resource-full" ? "danger-bars-three-metric-ledger-pressure-interface-top5" : void 0,
-        "data-overview-resource-first-screen-structure": state.scenario === "resource-full" ? "danger-bars-three-metric-ledger-pressure-interface-top5" : void 0,
-        "data-overview-resource-no-short-card": state.scenario === "resource-full" ? "content-sized-resource-evidence" : void 0,
-        "data-overview-resource-no-spark-duplicate": state.scenario === "resource-full" ? "danger-bars-replace-small-sparklines" : void 0,
-        "data-overview-collection-channel-priority": state.scenario === "collection-down" ? "rest-ssh-snapshot-before-resource" : void 0,
-        "data-overview-collection-resource-deferred": state.scenario === "collection-down" ? "true" : void 0,
-        "data-overview-collection-only-first-screen": state.scenario === "collection-down" ? "rest-ssh-snapshot-success-timeline-no-resource" : void 0,
-        "data-overview-interface-relation-mode": state.scenario === "interfaces-down" ? "deferred" : void 0,
-        "data-overview-interface-top-block": state.scenario === "interfaces-down" ? "object-status-only" : void 0,
-        "data-overview-interface-top-node": state.scenario === "interfaces-down" ? "object-status-only-no-relation-text" : void 0,
-        "data-overview-interface-relation-policy": state.scenario === "interfaces-down" ? "top-object-status-details-in-carrier-table" : void 0,
-        "data-overview-desktop-ikuai40-console": "top-six-left-network-wan-right-resource-collection-bottom-interface-events",
         children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx(DesktopDecisionRail, { snapshot, state }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ro-col is-main stack", "data-overview-desktop-rail": "network-wan", "data-overview-desktop-fixed-area": "left-main", children: sections.main }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ro-col is-side stack ik-home-side-stack", "data-overview-desktop-rail": "resource-collection", "data-overview-desktop-fixed-area": "right-main", children: sections.side }),
-          sections.bottom.length > 0 ? /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: `ro-col is-bottom stack${state.scenario === "no-snapshot" ? " ro-no-snapshot-floor" : ""}`, style: { gridColumn: "1 / -1" }, "data-overview-desktop-rail": "interface-events", "data-overview-desktop-fixed-area": "bottom", "data-overview-desktop-v1042-no-snapshot-floor-rail": state.scenario === "no-snapshot" ? "single-collapsed-raw-evidence" : void 0, children: sections.bottom }) : null
+          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ro-col is-main stack", children: sections.main }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ro-col is-side stack ik-home-side-stack", children: sections.side }),
+          sections.bottom.length > 0 ? /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: `ro-col is-bottom stack${state.scenario === "no-snapshot" ? " ro-no-snapshot-floor" : ""}`, style: { gridColumn: "1 / -1" }, "data-overview-desktop-v1042-no-snapshot-floor-rail": state.scenario === "no-snapshot" ? "single-collapsed-raw-evidence" : void 0, children: sections.bottom }) : null
         ]
       }
     );

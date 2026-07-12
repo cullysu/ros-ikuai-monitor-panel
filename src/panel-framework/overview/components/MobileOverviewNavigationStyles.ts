@@ -1,0 +1,34 @@
+export const MOBILE_OVERVIEW_NAVIGATION_STYLES = `
+@media (max-width: 760px), (min-width: 761px) and (max-width: 900px) and (max-height: 520px) {
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-v420-tabs,
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-v240-tabs {
+    display: grid !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: fixed !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: auto !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    height: 52px !important;
+    max-height: none !important;
+    transform: none !important;
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+    border: 0 !important;
+    border-top: 0 !important;
+    border-radius: 0 !important;
+    outline: 0 !important;
+    background: rgba(247, 250, 253, .94) !important;
+    box-shadow: none !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-v420-tabs button.is-active,
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-v240-tabs button.is-active {
+    background: transparent !important;
+    box-shadow: inset 0 -1px 0 rgba(18, 34, 55, .44) !important;
+    color: #143b6f !important;
+  }
+}
+`;

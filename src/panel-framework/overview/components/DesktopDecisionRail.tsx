@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import type { OverviewTone } from "../index";
 import { desktopPresentation, type OverviewPanelProps } from "../desktopOverviewHelpers";
 
@@ -6,6 +7,21 @@ interface DecisionAction {
   note: string;
   tone: OverviewTone;
 }
+
+const actionRailStyle = {
+  gridColumn: "1 / -1",
+  gridRow: 1,
+  display: "grid",
+  gridTemplateColumns: "minmax(0, 1.2fr) minmax(0, .8fr)",
+  height: 54,
+  minHeight: 54,
+  maxHeight: 54,
+  gap: 0,
+  marginBottom: 2,
+  borderBottom: "1px solid rgba(155, 177, 200, .13)",
+  background: "transparent",
+  overflow: "hidden",
+} satisfies CSSProperties;
 
 function nextAction(state: OverviewPanelProps["state"]): DecisionAction {
   switch (state.scenario) {
@@ -29,8 +45,6 @@ export function DesktopDecisionRail({ snapshot, state }: OverviewPanelProps) {
   const credibility = presentation.incidentSummary.find((item) => item.label === "可信度");
   const action = nextAction(state);
   const items = [
-    { label: "结论", value: presentation.conclusionValue, note: presentation.conclusionNote, tone: state.verdict.level },
-    { label: "影响", value: presentation.impact.value, note: presentation.impact.note, tone: presentation.impact.tone },
     { label: "下一步", value: action.value, note: action.note, tone: action.tone },
     {
       label: "可信度",
@@ -42,13 +56,14 @@ export function DesktopDecisionRail({ snapshot, state }: OverviewPanelProps) {
 
   return (
     <section
-      className="ro-desktop-thin-kpis ro-desktop-decision-rail"
+      className="ro-desktop-decision-rail"
       aria-label="桌面判断与处置"
-      data-overview-desktop-kpi-row="conclusion-impact-next-action-credibility"
-      data-overview-desktop-decision-rail="four-user-decisions"
+      style={actionRailStyle}
+      data-overview-desktop-kpi-row="next-action-credibility"
+      data-overview-desktop-decision-rail="action-and-credibility"
     >
-      {items.map((item, index) => (
-        <div className={`ro-desktop-thin-kpi ik-overview-kpi-card${index === 0 ? " is-primary" : ""}`} data-overview-desktop-decision-role={index === 0 ? "primary-conclusion" : item.label} data-tone={item.tone} key={item.label}>
+      {items.map((item) => (
+        <div className="ro-desktop-thin-kpi ik-overview-kpi-card" data-overview-desktop-decision-role={item.label} data-tone={item.tone} key={item.label}>
           <span>{item.label}</span>
           <b>{item.value}</b>
           <em>{item.note}</em>

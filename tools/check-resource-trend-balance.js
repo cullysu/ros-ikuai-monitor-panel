@@ -748,16 +748,15 @@ async function main() {
         const desktopNavigationDeduplicated = Boolean(!duplicateWorkspaceNav && shellSidebar);
         const workspaceRect = workspace?.getBoundingClientRect();
         const topbar = sectionEl?.querySelector('.ro-topbar');
-        const thinKpis = sectionEl?.querySelector('.ro-desktop-thin-kpis');
-        const desktopDecisionRail = sectionEl?.querySelector('[data-overview-desktop-decision-rail="four-user-decisions"]');
+        const thinKpis = sectionEl?.querySelector('[data-overview-desktop-decision-rail="action-and-credibility"]');
+        const desktopDecisionRail = sectionEl?.querySelector('[data-overview-desktop-decision-rail="action-and-credibility"]');
         const desktopDecisionCells = Array.from(desktopDecisionRail?.querySelectorAll('.ro-desktop-thin-kpi') || []);
         const desktopDecisionLabels = desktopDecisionCells.map((cell) => normalize(cell.querySelector('span')?.textContent || ''));
         const desktopDecisionRailOk = Boolean(
           desktopDecisionRail &&
-          desktopDecisionRail.getAttribute('data-overview-desktop-kpi-row') === 'conclusion-impact-next-action-credibility' &&
-          desktopDecisionCells.length === 4 &&
-          ['结论', '影响', '下一步', '可信度'].every((label) => desktopDecisionLabels.includes(label)) &&
-          desktopDecisionCells[0]?.getAttribute('data-overview-desktop-decision-role') === 'primary-conclusion' &&
+          desktopDecisionRail.getAttribute('data-overview-desktop-kpi-row') === 'next-action-credibility' &&
+          desktopDecisionCells.length === 2 &&
+          ['下一步', '可信度'].every((label) => desktopDecisionLabels.includes(label)) &&
           desktopDecisionCells.every((cell) => {
             const rect = cell.getBoundingClientRect();
             return rect.width >= 180 && rect.height >= 48 &&
