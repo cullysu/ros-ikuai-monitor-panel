@@ -751,22 +751,10 @@ async function main() {
         const desktopNavigationDeduplicated = Boolean(!duplicateWorkspaceNav && shellSidebar);
         const workspaceRect = workspace?.getBoundingClientRect();
         const topbar = sectionEl?.querySelector('.ro-topbar');
-        const thinKpis = sectionEl?.querySelector('[data-overview-desktop-decision-rail="action-and-credibility"]');
         const desktopDecisionRail = sectionEl?.querySelector('[data-overview-desktop-decision-rail="action-and-credibility"]');
         const desktopDecisionCells = Array.from(desktopDecisionRail?.querySelectorAll('.ro-desktop-thin-kpi') || []);
         const desktopDecisionLabels = desktopDecisionCells.map((cell) => normalize(cell.querySelector('span')?.textContent || ''));
-        const desktopDecisionRailOk = Boolean(
-          desktopDecisionRail &&
-          desktopDecisionRail.getAttribute('data-overview-desktop-kpi-row') === 'next-action-credibility' &&
-          desktopDecisionCells.length === 2 &&
-          ['下一步', '可信度'].every((label) => desktopDecisionLabels.includes(label)) &&
-          desktopDecisionCells.every((cell) => {
-            const rect = cell.getBoundingClientRect();
-            return rect.width >= 180 && rect.height >= 48 &&
-              normalize(cell.querySelector('b')?.textContent || '').length > 0 &&
-              normalize(cell.querySelector('em')?.textContent || '').length > 0;
-          })
-        );
+        const desktopDecisionRailOk = Boolean(!desktopDecisionRail && workspace?.classList.contains('is-normal-scene'));
         const mainModules = Array.from(sectionEl?.querySelectorAll('[data-overview-density-module]') || []);
         const visibleModules = mainModules.filter((node) => {
           const rect = node.getBoundingClientRect();
@@ -1024,7 +1012,6 @@ async function main() {
           workspaceRect &&
           workspaceRect.width > 1200 &&
           topbar &&
-          thinKpis &&
           desktopDecisionRailOk &&
           visibleModules.length >= 6 &&
           syntheticGateTextAbsent &&

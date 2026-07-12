@@ -7,7 +7,7 @@ interface DecisionAction {
   tone: OverviewTone;
 }
 
-function nextAction(state: OverviewPanelProps["state"]): DecisionAction {
+function nextAction(state: OverviewPanelProps["state"]): DecisionAction | null {
   switch (state.scenario) {
     case "all-offline":
       return { value: "核对默认出口", note: "线路、网关与承载接口", tone: "danger" };
@@ -20,7 +20,7 @@ function nextAction(state: OverviewPanelProps["state"]): DecisionAction {
     case "interfaces-down":
       return { value: "核对 Down 接口", note: "确认默认出口承载关系", tone: "warn" };
     default:
-      return { value: "查看 WAN 趋势", note: "默认出口、峰值与采样窗口", tone: "trust" };
+      return null;
   }
 }
 
@@ -28,6 +28,7 @@ export function DesktopDecisionRail({ snapshot, state }: OverviewPanelProps) {
   const presentation = desktopPresentation(snapshot, state);
   const credibility = presentation.incidentSummary.find((item) => item.label === "可信度");
   const action = nextAction(state);
+  if (!action) return null;
   const items = [
     { label: "下一步", value: action.value, note: action.note, tone: action.tone },
     {

@@ -13,6 +13,13 @@
     min-height: 0 !important;
   }
 
+  #overview.router-overview-framework .ro-desktop-grid.ik-home-layout.is-normal-scene[data-overview-desktop-workspace] {
+    grid-template-areas:
+      "main side"
+      "bottom bottom" !important;
+    grid-template-rows: auto auto !important;
+  }
+
   #overview.router-overview-framework .ro-desktop-thin-kpis {
     grid-area: kpis !important;
     grid-column: 1 / -1 !important;

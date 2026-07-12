@@ -1866,7 +1866,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
           (scaleScenario === 'interfaces-down' && overviewDesktopDetailRows.length >= 6)
         ) &&
         overviewDesktopDetailFirstTwoRowsVisible &&
-        (text.length >= (overviewNormalEvidenceDownshift ? 700 : 750) || (noSnapshotEdge && text.length >= 560))
+        (text.length >= (overviewNormalEvidenceDownshift ? 620 : 750) || (noSnapshotEdge && text.length >= 560))
       )
     );
     const overviewDesktopModuleSpreadOk = sectionName !== 'overview' || !isDesktopOverview || Boolean(
@@ -3050,6 +3050,9 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       card.childCount <= 3 &&
       card.nestedTableCount === 0
     );
+    const overviewDesktopKpiBalanceOk = ['single', 'fleet'].includes(scaleScenario)
+      ? overviewDesktopKpiCount === 0
+      : overviewDesktopKpiCount > 0 && overviewDesktopKpiCount <= 6 && overviewDesktopKpiStructureOk;
     const overviewDesktopTableNodes = Array.from(sectionRoot?.querySelectorAll('table, .ops-table-wrap, .ik-home-mini-table, .ik-home-mini-table-wrap, [data-overview-detail-section="table"]') || [])
       .filter(nodeVisibleInFirstScreen);
     const overviewDesktopTableNodesUnique = overviewDesktopTableNodes.filter((node, index, nodes) => !nodes.some((other, otherIndex) => otherIndex !== index && other.contains(node)));
@@ -3345,9 +3348,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewDesktopChartReadabilityOk
     );
     const overviewVisualBalanceDesktopOk = Boolean(
-      overviewDesktopKpiCount > 0 &&
-      overviewDesktopKpiCount <= 6 &&
-      overviewDesktopKpiStructureOk &&
+      overviewDesktopKpiBalanceOk &&
       overviewVisualBalanceTypeCount >= (noSnapshotEdge ? 2 : 3) &&
       (overviewDesktopVisualHasLine || scaleScenario === 'all-offline') &&
       overviewDesktopVisualHasBar &&

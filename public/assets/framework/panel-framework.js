@@ -11113,13 +11113,14 @@ var PanelFramework = function(exports) {
       case "interfaces-down":
         return { value: "核对 Down 接口", note: "确认默认出口承载关系", tone: "warn" };
       default:
-        return { value: "查看 WAN 趋势", note: "默认出口、峰值与采样窗口", tone: "trust" };
+        return null;
     }
   }
   function DesktopDecisionRail({ snapshot, state }) {
     const presentation = desktopPresentation(snapshot, state);
     const credibility = presentation.incidentSummary.find((item) => item.label === "可信度");
     const action = nextAction(state);
+    if (!action) return null;
     const items = [
       { label: "下一步", value: action.value, note: action.note, tone: action.tone },
       {
@@ -11146,10 +11147,11 @@ var PanelFramework = function(exports) {
   }
   function DesktopWorkspace({ snapshot, state }) {
     const sections = buildDesktopOverviewScene(snapshot, state);
+    const hasDecisionRail = state.scenario !== "single" && state.scenario !== "fleet";
     return /* @__PURE__ */ jsxRuntimeExports.jsxs(
       "div",
       {
-        className: "ro-desktop-grid ik-home-layout",
+        className: `ro-desktop-grid ik-home-layout${hasDecisionRail ? "" : " is-normal-scene"}`,
         "data-overview-desktop-hierarchy": "conclusion-key-metrics-evidence",
         "data-overview-desktop-hierarchy-tier": "3-evidence",
         "data-overview-desktop-detail": true,
@@ -11157,7 +11159,7 @@ var PanelFramework = function(exports) {
         "data-overview-no-snapshot-detail": state.scenario === "no-snapshot" ? "business-data-unavailable-recovery-evidence-deferred" : void 0,
         "data-overview-desktop-scene": state.scenario,
         children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(DesktopDecisionRail, { snapshot, state }),
+          hasDecisionRail ? /* @__PURE__ */ jsxRuntimeExports.jsx(DesktopDecisionRail, { snapshot, state }) : null,
           /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ro-col is-main stack", children: sections.main }),
           /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ro-col is-side stack ik-home-side-stack", children: sections.side }),
           sections.bottom.length > 0 ? /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ro-col is-bottom stack", style: { gridColumn: "1 / -1" }, children: sections.bottom }) : null
