@@ -801,7 +801,7 @@ function main(argv = process.argv.slice(2)) {
     'TrustStrip.tsx',
   ]) assertNotExists(`src/panel-framework/overview/components/${retiredMobileComponent}`);
   assertContains('src/panel-framework/overview/components/MobileOverviewStyles.tsx', 'MOBILE_OVERVIEW_STYLE_LAYERS');
-  assertContains('src/panel-framework/overview/components/MobileOverviewStyles.tsx', 'MobileOverviewBaseStyles');
+  assertNotExists('src/panel-framework/overview/components/MobileOverviewBaseStyles.ts');
   assertContains('src/panel-framework/overview/components/MobileOverviewStyles.tsx', 'MobileOverviewIncidentStyles');
   assertContains('src/panel-framework/overview/components/MobileOverviewStyles.tsx', 'MobileOverviewLandscapeStyles');
   assertContains('src/panel-framework/overview/components/MobileOverviewStyles.tsx', 'MobileOverviewNavigationStyles');

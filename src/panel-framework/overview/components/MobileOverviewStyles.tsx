@@ -1,6 +1,5 @@
 import { useInsertionEffect } from "react";
 import { MOBILE_OVERVIEW_PRODUCT_SHELL_STYLES } from "./MobileOverviewProductShellStyles";
-import { MOBILE_OVERVIEW_FOUNDATION_STYLES } from "./MobileOverviewBaseStyles";
 import { MOBILE_OVERVIEW_PUBLIC_DECISION_STYLES } from "./MobileOverviewPublicDecisionStyles";
 import { MOBILE_OVERVIEW_PUBLIC_DECISION_REPAIR_STYLES } from "./MobileOverviewPublicDecisionRepairStyles";
 import { MOBILE_OVERVIEW_LANDSCAPE_STYLES } from "./MobileOverviewLandscapeStyles";
@@ -8,7 +7,6 @@ import { MOBILE_OVERVIEW_NAVIGATION_STYLES } from "./MobileOverviewNavigationSty
 import { MOBILE_OVERVIEW_INCIDENT_STYLES } from "./MobileOverviewIncidentStyles";
 
 const MOBILE_OVERVIEW_STYLE_LAYERS = [
-  { id: "foundation", css: MOBILE_OVERVIEW_FOUNDATION_STYLES },
   {
     id: "product-shell",
     css: MOBILE_OVERVIEW_PRODUCT_SHELL_STYLES,

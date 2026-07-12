@@ -394,8 +394,12 @@ assert(
 );
 assert(
   mobileStyles.includes("MOBILE_OVERVIEW_STYLE_LAYERS") &&
-    mobileStyles.includes("foundation") &&
-    mobileStyles.includes("product-shell"),
+    mobileStyles.includes("product-shell") &&
+    mobileStyles.includes("public-decision-home") &&
+    mobileStyles.includes("incident") &&
+    mobileStyles.includes("navigation") &&
+    mobileStyles.includes("landscape") &&
+    !mobileStyles.includes("foundation"),
   "Mobile style injection must use semantic style layers"
 );
 assert(
@@ -454,16 +458,20 @@ assert(
   "Mobile style modules reintroduced legacy ik-mobile/ik-ios selectors"
 );
 const mobileStyleLayerFiles = [
-  "src/panel-framework/overview/components/MobileOverviewBaseStyles.ts",
   "src/panel-framework/overview/components/MobileOverviewProductShellStyles.ts",
   "src/panel-framework/overview/components/MobileOverviewPublicDecisionStyles.ts",
   "src/panel-framework/overview/components/MobileOverviewPublicDecisionRepairStyles.ts",
+  "src/panel-framework/overview/components/MobileOverviewIncidentStyles.ts",
+  "src/panel-framework/overview/components/MobileOverviewNavigationStyles.ts",
+  "src/panel-framework/overview/components/MobileOverviewLandscapeStyles.ts",
 ];
 const mobileStyleLineLimits = new Map([
-  ["src/panel-framework/overview/components/MobileOverviewBaseStyles.ts", 2750],
   ["src/panel-framework/overview/components/MobileOverviewProductShellStyles.ts", 320],
   ["src/panel-framework/overview/components/MobileOverviewPublicDecisionStyles.ts", 650],
   ["src/panel-framework/overview/components/MobileOverviewPublicDecisionRepairStyles.ts", 500],
+  ["src/panel-framework/overview/components/MobileOverviewIncidentStyles.ts", 120],
+  ["src/panel-framework/overview/components/MobileOverviewNavigationStyles.ts", 80],
+  ["src/panel-framework/overview/components/MobileOverviewLandscapeStyles.ts", 80],
 ]);
 let mobileStyleByteTotal = 0;
 for (const rel of mobileStyleLayerFiles) {
@@ -474,16 +482,10 @@ for (const rel of mobileStyleLayerFiles) {
     lines(layer) <= mobileStyleLineLimits.get(rel),
     `${rel} exceeds ${mobileStyleLineLimits.get(rel)} lines: ${lines(layer)}`
   );
-  if (!rel.includes("MobileOverviewPublicDecision") && !rel.includes("MobileOverviewProductShell")) {
-    assert(
-      !layer.includes(".ik-mobile-") && !layer.includes(".ik-ios-"),
-      `${rel} reintroduced legacy ik-mobile/ik-ios selectors`
-    );
-  }
 }
 assert(
-  mobileStyleByteTotal <= 275000,
-  `Mobile overview style layers exceed 275 KB: ${mobileStyleByteTotal}`
+  mobileStyleByteTotal <= 70000,
+  `Mobile overview style layers exceed 70 KB: ${mobileStyleByteTotal}`
 );
 
 
@@ -496,7 +498,7 @@ if (exists(builtCssFile)) {
     if (rule.selector.includes(".ik-ios-")) builtLegacyIosSelectorCount += 1;
     if (rule.selector.includes(".ik-mobile-")) builtLegacyMobileSelectorCount += 1;
   });
-  assert(bytes(builtCssFile) <= 1766000, `Built style.css exceeds 1.766 MB: ${bytes(builtCssFile)}`);
+  assert(bytes(builtCssFile) <= 500000, `Built style.css exceeds 500 KB: ${bytes(builtCssFile)}`);
   assert(
     builtLegacyIosSelectorCount === 0,
     `Built style.css contains ${builtLegacyIosSelectorCount} legacy ik-ios selector rules`
