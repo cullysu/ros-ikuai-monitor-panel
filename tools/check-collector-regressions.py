@@ -823,7 +823,7 @@ def assert_frontend_wan_aggregate_default():
         rows_facade_source = (ROOT / "src" / "panel-framework" / "overview" / "desktopOverviewRows.ts").read_text(encoding="utf-8")
         rows_source = (ROOT / "src" / "panel-framework" / "overview" / "desktopOverviewTrafficRows.ts").read_text(encoding="utf-8")
         visuals_source = (ROOT / "src" / "panel-framework" / "overview" / "desktopOverviewVisuals.tsx").read_text(encoding="utf-8")
-        desktop_scene_source = (ROOT / "src" / "panel-framework" / "overview" / "desktopOverviewScenes.tsx").read_text(encoding="utf-8")
+        desktop_scene_source = (ROOT / "src" / "panel-framework" / "overview" / "desktopOverviewDefaultScene.tsx").read_text(encoding="utf-8")
         artifact_source = (ROOT / "public" / "assets" / "framework" / "panel-framework.js").read_text(encoding="utf-8")
         assert 'export * from "./desktopOverviewTrafficRows";' in rows_facade_source
         assert "export function trafficTotals" in rows_source
