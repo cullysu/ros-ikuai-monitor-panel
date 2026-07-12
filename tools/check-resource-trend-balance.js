@@ -1392,7 +1392,7 @@ async function main() {
         const hasHorizontalOverflow = document.documentElement.scrollWidth > document.documentElement.clientWidth + 1 || wideNodes.length > 0;
         const chartRail = hero?.querySelector('[data-overview-mobile-chart-readout-rail="current-peak-threshold-sample"]');
         const trendVisual = hero?.querySelector('.ik-v812-trend-visual');
-        const v1072Chart = hero?.querySelector('[data-overview-mobile-v1072-chart="decision-plot-two-series-three-by-two-readout"]');
+        const v1072Chart = hero?.querySelector('.ik-mobile-decision-trend');
         const v1072SeriesLegend = v1072Chart?.querySelector('[data-overview-mobile-v1072-series-legend="download-upload"]');
         const decisionReadoutGrid = hero?.querySelector('[data-overview-mobile-chart-readout-grid="two-columns-two-rows-four-decisions"]');
         const productChart = hero?.querySelector('[data-overview-mobile-v1012-product-chart="window-current-peak-threshold-sample-breach"]');
@@ -1558,7 +1558,7 @@ async function main() {
         });
         const normalSummaryLabels = normalSummaryCells.map((cell) => normalize(cell.querySelector('em')?.textContent || ''));
         const normalSummaryStyle = normalSummaryStrip ? getComputedStyle(normalSummaryStrip) : null;
-        const normalChartLabel = hero?.querySelector('[data-overview-mobile-v1065-chart-label="normal-visible-compact"]');
+        const normalChartLabel = hero?.querySelector('.ik-v1065-chart-kicker');
         const normalChartLabelStyle = normalChartLabel ? getComputedStyle(normalChartLabel) : null;
         const normalChartLabelRect = normalChartLabel?.getBoundingClientRect();
         const normalHeroHeadline = hero?.querySelector('.ik-v620-hero-head');
@@ -1593,7 +1593,7 @@ async function main() {
           )
         );
         const firstScreenChannelRail = root?.querySelector('[data-overview-mobile-channel-verdict="object-impact-credibility-next-action-no-channel-grid"]');
-        const firstScreenChannelCells = Array.from(firstScreenChannelRail?.querySelectorAll('[data-overview-mobile-v1046-abnormal-decision-cell]') || []);
+        const firstScreenChannelCells = Array.from(firstScreenChannelRail?.querySelectorAll('.ik-mobile-decision-cell') || []);
         const firstScreenChannelEvidenceVisible = Boolean(
           firstScreenChannelRail &&
           firstScreenChannelCells.length >= 4 &&
@@ -1848,7 +1848,7 @@ async function main() {
         const channelRail = hero?.querySelector('[data-overview-mobile-channel-verdict="object-impact-credibility-next-action-no-channel-grid"]');
         const channelRailModelBacked = (sectionName !== 'mobileNoSnapshotHome' && sectionName !== 'mobileCollectionHome') || Boolean(channelRail);
         const abnormalDecisionRail = hero?.querySelector('.ik-mobile-abnormal-decision-rail');
-        const abnormalDecisionCells = Array.from(abnormalDecisionRail?.querySelectorAll('[data-overview-mobile-v1046-abnormal-decision-cell]') || []);
+        const abnormalDecisionCells = Array.from(abnormalDecisionRail?.querySelectorAll('.ik-mobile-decision-cell') || []);
         const abnormalDecisionLabels = abnormalDecisionCells.map((cell) => normalize(cell.querySelector('em')?.textContent || ''));
         const abnormalDecisionValues = abnormalDecisionCells.map((cell) => normalize(cell.querySelector('b')?.textContent || ''));
         const abnormalDecisionRailStyle = abnormalDecisionRail ? getComputedStyle(abnormalDecisionRail) : null;

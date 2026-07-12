@@ -73,7 +73,7 @@
     max-height: 88px !important;
   }
 
-  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-priority="normal"] .ik-mobile-decision-card[data-overview-mobile-visual-kind="trend"] > .ik-mobile-decision-trend[data-overview-mobile-v1072-chart="decision-plot-two-series-three-by-two-readout"] > .ik-mobile-decision-trend-anchor.ik-v812-trend-visual {
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-priority="normal"] .ik-mobile-decision-card > .ik-mobile-decision-trend > .ik-mobile-decision-trend-anchor.ik-v812-trend-visual {
     display: block !important;
     box-sizing: border-box !important;
     grid-row: 2 / 3 !important;

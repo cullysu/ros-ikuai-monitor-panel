@@ -12,10 +12,10 @@ function WanDecisionSpark({ model }: { model: MobileOverviewModel }) {
   const anomaly = (chart.anomalyLabel || "0").replace(/^异常点\s*/, "");
   const chartDecision = `当前 ${chart.currentLabel} · 峰值 ${chart.peakLabel} · 阈值 ${chart.thresholdLabel} · 异常 ${anomaly} · 采样 ${chart.sampleText}`;
   return (
-    <div className="ik-mobile-decision-trend" data-overview-mobile-v1072-chart="decision-plot-two-series-three-by-two-readout">
+    <div className="ik-mobile-decision-trend">
       <div className="ik-mobile-decision-trend-plot">
         <div className="ik-v1072-chart-head">
-          <span className="ik-v1065-chart-kicker" data-overview-mobile-v1065-chart-label="normal-visible-compact">WAN 趋势 · {chart.windowText}</span>
+          <span className="ik-v1065-chart-kicker">WAN 趋势 · {chart.windowText}</span>
           <div className="ik-v1072-series-legend" data-overview-mobile-v1072-series-legend="download-upload" aria-label="下载与上传图例">
             <span className="is-download"><i aria-hidden="true" />下载</span>
             <span className="is-upload"><i aria-hidden="true" />上传</span>
@@ -115,21 +115,21 @@ function AbnormalDecisionRail({ model }: { model: MobileOverviewModel }) {
       className="ik-v1046-abnormal-decision-rail ik-mobile-abnormal-decision-rail"
     >
       <div className="ik-mobile-incident-summary">
-        <span className={toneClass(object.tone)} data-overview-mobile-v1046-abnormal-decision-cell={object.label}>
+        <span className={`ik-mobile-decision-cell ${toneClass(object.tone)}`}>
           <em>对象</em>
           <b>{object.value}</b>
         </span>
-        <span className={toneClass(impact.tone)} data-overview-mobile-v1046-abnormal-decision-cell={impact.label}>
+        <span className={`ik-mobile-decision-cell ${toneClass(impact.tone)}`}>
           <em>影响</em>
           <b>{impact.value}</b>
         </span>
       </div>
       <div className="ik-mobile-incident-guidance">
-        <span className={toneClass(credibility.tone)} data-overview-mobile-v1046-abnormal-decision-cell={credibility.label}>
+        <span className={`ik-mobile-decision-cell ${toneClass(credibility.tone)}`}>
           <em>可信度</em>
           <b>{credibility.value}</b>
         </span>
-        <span className={toneClass(action.tone)} data-overview-mobile-v1046-abnormal-decision-cell={action.label}>
+        <span className={`ik-mobile-decision-cell ${toneClass(action.tone)}`}>
           <em>下一步</em>
           <b>{action.value}</b>
         </span>
