@@ -422,114 +422,7 @@ function heroFacts(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): 
     return [
       { label: "接口", value: `${formatNumber(state.facts.interfaces.down)} Down`, note: "离线", tone: "danger" },
       { label: "路由", value: mobileRouteValue(state), note: "默认路由", tone: state.facts.route.level },
-      { label: "影响", value: "待判", note: "承载", tone: "warn" },
-      { label: "可信", value: trustText(state), note: "采集", tone: state.facts.collection.credibilityTone },
-    ];
-  }
-  if (priority === "collection-degraded") {
-    return [
-      { label: "采集", value: "缓存", note: "当前", tone: "warn" },
-      { label: "REST", value: stripRest(state.facts.collection.restLabel), note: "通道", tone: state.facts.collection.level },
-      { label: "SSH", value: stripSsh(state.facts.collection.sshLabel), note: "通道", tone: state.facts.collection.level },
-      { label: "成功", value: latestSuccess(snapshot, state), note: "最近", tone: "trust" },
-    ];
-  }
-  return [
-    { label: "WAN", value: `${formatNumber(state.facts.wan.online)}/${formatNumber(totalWan || 1)}`, note: "在线", tone: state.facts.wan.offline ? "warn" : "ok" },
-    { label: "默认路由", value: mobileRouteValue(state), note: "承载出口", tone: state.facts.route.level },
-    { label: "采集", value: trustText(state), note: "REST/SSH", tone: state.facts.collection.credibilityTone },
-    { label: "快照", value: latestSuccess(snapshot, state), note: `↓${mobileRate(rate.down)} ↑${mobileRate(rate.up)}`, tone: state.facts.collection.credibilityTone },
-  ];
-}
-
-function coreResourceValue(resource: MobileMonitorFact[], priority: MobileOverviewModel["priority"]): string {
-  if (priority === "snapshot-missing") return "隐藏";
-  const values = resource
-    .map((item) => Number.parseFloat(item.value))
-    .filter((value) => Number.isFinite(value));
-  return values.length ? `最高 ${Math.max(...values)}%` : "未读取";
-}
-
-function coreMetrics(snapshot: OverviewRawSnapshot, state: OverviewDerivedState, network: RouterOsNetworkViewModel): MobileMonitorFact[] {
-  const priority = network.priority;
-  const totalWan = wanDisplayTotal(snapshot, state);
-  const resource = resourceFacts(state);
-  const wanValue = priority === "snapshot-missing"
-    ? "不可判"
-    : state.facts.wan.allOffline
-      ? `0/${formatNumber(totalWan)}`
-      : `${formatNumber(state.facts.wan.online)}/${formatNumber(totalWan || 1)}`;
-  const collectionValue = priority === "snapshot-missing"
-    ? "断链"
-    : priority === "collection-degraded"
-      ? "缓存"
-      : "通道可读";
-  const snapshotValue = latestSuccess(snapshot, state);
-  const collectionNote = priority === "snapshot-missing"
-    ? "当前不可达"
-    : priority === "collection-degraded"
-      ? `${stripRest(state.facts.collection.restLabel)} / ${stripSsh(state.facts.collection.sshLabel)}`
-      : "REST/SSH 可读";
-  const wanFact: MobileMonitorFact = {
-    label: "WAN",
-    value: wanValue,
-    note: state.facts.wan.allOffline ? "全离线" : priority === "snapshot-missing" ? "无快照" : "在线出口",
-    tone: priority === "snapshot-missing" ? "missing" : state.facts.wan.allOffline ? "danger" : state.facts.wan.offline ? "warn" : "ok",
-  };
-  const collectionFact: MobileMonitorFact = {
-    label: "采集",
-    value: collectionValue,
-    note: collectionNote,
-    tone: priority === "snapshot-missing" ? "danger" : priority === "collection-degraded" ? "warn" : state.facts.collection.credibilityTone,
-  };
-  const resourceFact: MobileMonitorFact = {
-    label: "资源",
-    value: coreResourceValue(resource, priority),
-    note: priority === "resource-full" ? "持续6/6" : "CPU·内存·磁盘",
-    tone: resource.some((item) => item.tone === "danger") ? "danger" : priority === "snapshot-missing" ? "missing" : "ok",
-  };
-  const snapshotFact: MobileMonitorFact = {
-    label: "快照",
-    value: snapshotValue,
-    note: priority === "snapshot-missing" ? "最近成功" : "可信窗口",
-    tone: priority === "snapshot-missing" ? "warn" : state.facts.collection.credibilityTone,
-  };
-  const routeFact: MobileMonitorFact = {
-    label: "默认路由",
-    value: mobileRouteValue(state),
-    note: priority === "snapshot-missing" ? "路由待判" : "主出口承载",
-    tone: priority === "snapshot-missing" ? "missing" : state.facts.route.level,
-  };
-  if (priority === "normal") return [wanFact, routeFact, collectionFact, snapshotFact];
-  return [wanFact, collectionFact, resourceFact, snapshotFact];
-}
-
-function heroPills(snapshot: OverviewRawSnapshot, state: OverviewDerivedState, network: RouterOsNetworkViewModel): string[] {
-  const totalWan = wanDisplayTotal(snapshot, state);
-  const priority = network.priority;
-  if (state.scenario === "fleet") return [
-    `WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(totalWan || 1)}`,
-    `异常 ${formatNumber(Math.max(state.facts.wan.offline, state.facts.interfaces.down, 0))}`,
-    `成功 ${latestSuccess(snapshot, state)}`,
-  ];
-  if (priority === "normal") return [
-    `${network.object.label} ${network.object.value}`,
-    `${network.impact.label} 出口可用`,
-    `${network.credibility.label} ${network.credibility.value}`,
-  ];
-  return [
-    `${network.object.label} ${network.object.value}`,
-    `${network.impact.label} ${network.impact.value}`,
-    `${network.credibility.label} ${network.credibility.value}`,
-  ];
-}
-
-function splitHeroPill(text: string): { label: string; value: string } {
-  const [label, ...rest] = text.replace(/\s+/g, " ").trim().split(" ");
-  return { label: label || "状态", value: rest.join(" ") || text };
-}
-
-function heroPillTone(text: string): OverviewTone {
+5�-�G����ƭy�tion heroPillTone(text: string): OverviewTone {
   if (/缺失|不可用|断网|不展示|0\/|异常/.test(text)) return "danger";
   if (/待|缓存|确认|参考|越阈|超/.test(text)) return "warn";
   return "trust";
@@ -768,7 +661,7 @@ function wanPorts(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): M
 
 function abnormalDecisionNextAction(priority: MobileOverviewModel["priority"]): string {
   if (priority === "wan-offline") return "查出口";
-  if (priority === "snapshot-missing") return "等快照";
+  if (priority === "snapshot-missing") return "查采集";
   if (priority === "interface-down") return "核承载";
   if (priority === "resource-full") return "降负载";
   if (priority === "collection-degraded") return "核采集";
@@ -777,7 +670,7 @@ function abnormalDecisionNextAction(priority: MobileOverviewModel["priority"]): 
 
 function abnormalDecisionActionNote(priority: MobileOverviewModel["priority"]): string {
   if (priority === "wan-offline") return "WAN / 默认路由";
-  if (priority === "snapshot-missing") return "RouterOS / 快照";
+  if (priority === "snapshot-missing") return "采集 / 最近成功";
   if (priority === "interface-down") return "接口 / 默认路由";
   if (priority === "resource-full") return "CPU / 内存 / 磁盘";
   if (priority === "collection-degraded") return "通道 / 缓存";
