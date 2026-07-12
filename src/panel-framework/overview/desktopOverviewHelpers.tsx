@@ -108,7 +108,6 @@ export const OVERVIEW_CHART_METADATA_COVERAGE = "all-chart-type-elements-unit-cu
 export const OVERVIEW_IKUAI40_MATURE_VISUAL_STANDARD = "judgement-charts-scene-specific-mobile-microchart-blue-white-flat-no-short-empty-cards";
 export const OVERVIEW_SCENE_CHART_PRIORITY = "normal=traffic;resource=pressure;wan=interface-status;interfaces=forwarding;collection=channel-timeline;no-snapshot=chain-visibility";
 export const OVERVIEW_SCENE_CHART_CONTRACT = "normal:traffic-trend;resource:resource-pressure;wan:wan-interface-status;interfaces:interface-forwarding-status;collection:collection-channel-timeline;no-snapshot:snapshot-chain-visibility-matrix;stale:snapshot-age-route-context";
-export const DESKTOP_IKUAI_SHORT_NAV_CONTRACT = "status-overview/multi-wan/interface-vlan/online-terminals/collection-log";
 export function routeBusinessSummary(value: unknown, fallback = ROUTE_UNKNOWN): string {
   return routerOsRouteBusinessSummary(value, fallback);
 }

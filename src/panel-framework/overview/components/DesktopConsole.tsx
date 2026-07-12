@@ -1,39 +1,7 @@
-import { formatNumber, type OverviewDerivedState, type OverviewTone } from "../index";
 import { OVERVIEW_LOW_NOISE_CONSOLE_TOKEN_CONTRACT } from "../mobileOverviewTokens";
-import {
-  DESKTOP_IKUAI_SHORT_NAV_CONTRACT,
-  type OverviewPanelProps,
-} from "../desktopOverviewHelpers";
+import type { OverviewPanelProps } from "../desktopOverviewHelpers";
 import { buildDesktopOverviewScene } from "../desktopOverviewScenes";
 import { DesktopDecisionRail } from "./DesktopDecisionRail";
-
-function DesktopShortNav({ state }: { state: OverviewDerivedState }) {
-  const items = [
-    { id: "overview", label: "状态总览", value: state.verdict.level === "ok" ? "正常" : state.verdict.level === "danger" ? "异常" : "关注", tone: state.verdict.level },
-    { id: "wan", label: "多出口", value: state.scenario === "no-snapshot" ? "待判" : `${formatNumber(state.facts.wan.online)}/${formatNumber(state.facts.wan.total)}`, tone: state.facts.wan.allOffline ? "danger" : state.facts.wan.offline ? "warn" : "ok" },
-    { id: "interface", label: "接口/VLAN", value: state.facts.interfaces.down > 0 ? `${formatNumber(state.facts.interfaces.down)} Down` : "承载可用", tone: state.facts.interfaces.down > 0 ? "warn" : "trust" },
-    { id: "terminal", label: "在线终端", value: state.scenario === "no-snapshot" ? "隐藏" : formatNumber(state.facts.connections.active), tone: state.scenario === "no-snapshot" ? "missing" : "trust" },
-    { id: "log", label: "采集日志", value: state.facts.collection.credibilityLabel, tone: state.facts.collection.credibilityTone },
-  ] satisfies { id: string; label: string; value: string; tone: OverviewTone }[];
-  return (
-    <nav
-      className="ro-desktop-nav"
-      aria-label="桌面导航"
-      data-overview-desktop-nav="ikuai-short-left-rail"
-      data-overview-desktop-nav-contract={DESKTOP_IKUAI_SHORT_NAV_CONTRACT}
-      data-overview-desktop-nav-labels="状态总览/多出口/接口/VLAN/在线终端/采集日志"
-      data-overview-desktop-nav-no-explainer-copy="true"
-      data-overview-desktop-v1069-nav-active="neutral-console-ink-no-blue-glow"
-    >
-      {items.map((item, index) => (
-        <span className={index === 0 ? "is-active" : undefined} data-overview-desktop-nav-item={item.id} data-tone={item.tone} key={item.id}>
-          <b>{item.label}</b>
-          <em>{item.value}</em>
-        </span>
-      ))}
-    </nav>
-  );
-}
 
 export function DesktopWorkspace({ snapshot, state }: OverviewPanelProps) {
   const sections = buildDesktopOverviewScene(snapshot, state);
@@ -94,7 +62,6 @@ export function DesktopWorkspace({ snapshot, state }: OverviewPanelProps) {
       data-overview-interface-relation-policy={state.scenario === "interfaces-down" ? "top-object-status-details-in-carrier-table" : undefined}
       data-overview-desktop-ikuai40-console="top-six-left-network-wan-right-resource-collection-bottom-interface-events"
     >
-      <DesktopShortNav state={state} />
       <DesktopDecisionRail snapshot={snapshot} state={state} />
       <div className="ro-col is-main stack" data-overview-desktop-rail="network-wan" data-overview-desktop-fixed-area="left-main">{sections.main}</div>
       <div className="ro-col is-side stack ik-home-side-stack" data-overview-desktop-rail="resource-collection" data-overview-desktop-fixed-area="right-main">{sections.side}</div>

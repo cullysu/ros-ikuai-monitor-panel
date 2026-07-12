@@ -309,7 +309,7 @@
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-channel-matrix-visual,
   .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-channel-matrix-visual {
     display: grid !important;
-    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    grid-template-columns: minmax(0, 1.34fr) repeat(3, minmax(0, 1fr)) !important;
     gap: 1px !important;
     min-height: 54px !important;
     padding: 4px 5px !important;
@@ -5103,6 +5103,15 @@
 
   #overview.router-overview-framework .ro-desktop-thin-kpi.ik-overview-kpi-card:last-child {
     border-right: 0 !important;
+  }
+
+  #overview.router-overview-framework .ro-desktop-thin-kpi.ik-overview-kpi-card.is-primary {
+    background: #f7fafc !important;
+  }
+
+  #overview.router-overview-framework .ro-desktop-thin-kpi.ik-overview-kpi-card.is-primary b {
+    font-size: 14.4px !important;
+    letter-spacing: -.01em !important;
   }
 
   #overview.router-overview-framework .ro-desktop-thin-kpi span {

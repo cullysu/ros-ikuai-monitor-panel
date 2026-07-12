@@ -62,7 +62,6 @@ export interface RouterOsDesktopPresentation {
   incidentObject: string;
   readonlyJudgement: string;
   incidentSummary: RouterOsNetworkToken[];
-  navLabels: ["状态总览", "多出口", "接口/VLAN", "在线终端", "采集日志"];
   copyPolicy: "user-conclusion-first-routeros-raw-secondary";
 }
 
@@ -354,7 +353,6 @@ export function buildRouterOsPresentationViewModel(snapshot: OverviewRawSnapshot
       { id: "presentation-recent", label: "最近成功", value: latest, note: network.snapshot.note, tone: network.snapshot.tone },
       { id: "presentation-readonly", label: "只读判断", value: presentationReadonlyJudgement(network), note: "不写入 RouterOS", tone: network.conclusion.tone },
     ],
-    navLabels: ["状态总览", "多出口", "接口/VLAN", "在线终端", "采集日志"],
     copyPolicy: "user-conclusion-first-routeros-raw-secondary",
   };
   return { priority: network.priority, desktop };

@@ -61,6 +61,9 @@ function main() {
   assertContains('app.py', 'PANEL_ALLOW_LOCALHOST_HOST_FORWARD');
   assertContains('app.py', 'PANEL_LOCALHOST_FORWARD_TOKEN');
   assertContains('app.py', 'PANEL_NETWORK_WRITE_ENABLED_RAW');
+  assertContains('app.py', '"scope": "panel-local-listen-address-only"');
+  assertContains('app.py', '"routerosConfigWrites": False');
+  assertContains('app.py', 'never writes RouterOS configuration');
   assertContains('app.py', 'headers.get("Host")');
   assertContains('app.py', 'headers.get("X-Forwarded-Host")');
   assertContains('app.py', '"browserUrl": browser_url');

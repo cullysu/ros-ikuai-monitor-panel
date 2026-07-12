@@ -12050,7 +12050,6 @@ var PanelFramework = function(exports) {
         { id: "presentation-recent", label: "最近成功", value: latest, note: network.snapshot.note, tone: network.snapshot.tone },
         { id: "presentation-readonly", label: "只读判断", value: presentationReadonlyJudgement(network), note: "不写入 RouterOS", tone: network.conclusion.tone }
       ],
-      navLabels: ["状态总览", "多出口", "接口/VLAN", "在线终端", "采集日志"],
       copyPolicy: "user-conclusion-first-routeros-raw-secondary"
     };
     return { priority: network.priority, desktop };
@@ -13734,7 +13733,6 @@ var PanelFramework = function(exports) {
   const OVERVIEW_IKUAI40_MATURE_VISUAL_STANDARD = "judgement-charts-scene-specific-mobile-microchart-blue-white-flat-no-short-empty-cards";
   const OVERVIEW_SCENE_CHART_PRIORITY = "normal=traffic;resource=pressure;wan=interface-status;interfaces=forwarding;collection=channel-timeline;no-snapshot=chain-visibility";
   const OVERVIEW_SCENE_CHART_CONTRACT = "normal:traffic-trend;resource:resource-pressure;wan:wan-interface-status;interfaces:interface-forwarding-status;collection:collection-channel-timeline;no-snapshot:snapshot-chain-visibility-matrix;stale:snapshot-age-route-context";
-  const DESKTOP_IKUAI_SHORT_NAV_CONTRACT = "status-overview/multi-wan/interface-vlan/online-terminals/collection-log";
   function routeBusinessSummary(value, fallback = ROUTE_UNKNOWN) {
     return routerOsRouteBusinessSummary(value, fallback);
   }
@@ -15219,7 +15217,7 @@ var PanelFramework = function(exports) {
     const credibility = presentation.incidentSummary.find((item) => item.label === "可信度");
     const action = nextAction(state);
     const items = [
-      { label: "对象", value: presentation.object.value, note: presentation.object.note, tone: presentation.object.tone },
+      { label: "结论", value: presentation.conclusionValue, note: presentation.conclusionNote, tone: state.verdict.level },
       { label: "影响", value: presentation.impact.value, note: presentation.impact.note, tone: presentation.impact.tone },
       { label: "下一步", value: action.value, note: action.note, tone: action.tone },
       {
@@ -15234,38 +15232,13 @@ var PanelFramework = function(exports) {
       {
         className: "ro-desktop-thin-kpis ro-desktop-decision-rail",
         "aria-label": "桌面判断与处置",
-        "data-overview-desktop-kpi-row": "object-impact-next-action-credibility",
+        "data-overview-desktop-kpi-row": "conclusion-impact-next-action-credibility",
         "data-overview-desktop-decision-rail": "four-user-decisions",
-        children: items.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ro-desktop-thin-kpi ik-overview-kpi-card", "data-tone": item.tone, children: [
+        children: items.map((item, index) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `ro-desktop-thin-kpi ik-overview-kpi-card${index === 0 ? " is-primary" : ""}`, "data-overview-desktop-decision-role": index === 0 ? "primary-conclusion" : item.label, "data-tone": item.tone, children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: item.label }),
           /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: item.value }),
           /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: item.note })
         ] }, item.label))
-      }
-    );
-  }
-  function DesktopShortNav({ state }) {
-    const items = [
-      { id: "overview", label: "状态总览", value: state.verdict.level === "ok" ? "正常" : state.verdict.level === "danger" ? "异常" : "关注", tone: state.verdict.level },
-      { id: "wan", label: "多出口", value: state.scenario === "no-snapshot" ? "待判" : `${formatNumber(state.facts.wan.online)}/${formatNumber(state.facts.wan.total)}`, tone: state.facts.wan.allOffline ? "danger" : state.facts.wan.offline ? "warn" : "ok" },
-      { id: "interface", label: "接口/VLAN", value: state.facts.interfaces.down > 0 ? `${formatNumber(state.facts.interfaces.down)} Down` : "承载可用", tone: state.facts.interfaces.down > 0 ? "warn" : "trust" },
-      { id: "terminal", label: "在线终端", value: state.scenario === "no-snapshot" ? "隐藏" : formatNumber(state.facts.connections.active), tone: state.scenario === "no-snapshot" ? "missing" : "trust" },
-      { id: "log", label: "采集日志", value: state.facts.collection.credibilityLabel, tone: state.facts.collection.credibilityTone }
-    ];
-    return /* @__PURE__ */ jsxRuntimeExports.jsx(
-      "nav",
-      {
-        className: "ro-desktop-nav",
-        "aria-label": "桌面导航",
-        "data-overview-desktop-nav": "ikuai-short-left-rail",
-        "data-overview-desktop-nav-contract": DESKTOP_IKUAI_SHORT_NAV_CONTRACT,
-        "data-overview-desktop-nav-labels": "状态总览/多出口/接口/VLAN/在线终端/采集日志",
-        "data-overview-desktop-nav-no-explainer-copy": "true",
-        "data-overview-desktop-v1069-nav-active": "neutral-console-ink-no-blue-glow",
-        children: items.map((item, index) => /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: index === 0 ? "is-active" : void 0, "data-overview-desktop-nav-item": item.id, "data-tone": item.tone, children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: item.label }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: item.value })
-        ] }, item.id))
       }
     );
   }
@@ -15328,7 +15301,6 @@ var PanelFramework = function(exports) {
         "data-overview-interface-relation-policy": state.scenario === "interfaces-down" ? "top-object-status-details-in-carrier-table" : void 0,
         "data-overview-desktop-ikuai40-console": "top-six-left-network-wan-right-resource-collection-bottom-interface-events",
         children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(DesktopShortNav, { state }),
           /* @__PURE__ */ jsxRuntimeExports.jsx(DesktopDecisionRail, { snapshot, state }),
           /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ro-col is-main stack", "data-overview-desktop-rail": "network-wan", "data-overview-desktop-fixed-area": "left-main", children: sections.main }),
           /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ro-col is-side stack ik-home-side-stack", "data-overview-desktop-rail": "resource-collection", "data-overview-desktop-fixed-area": "right-main", children: sections.side }),

@@ -420,8 +420,8 @@ assert(
   `Desktop decision rail must stay consolidated: railRules=${desktopDecisionRailRuleCount} cellRules=${desktopDecisionCellRuleCount}`
 );
 assert(
-  desktopWorkspaceGridRuleCount === 1 && desktopNavRuleCount === 5,
-  `Desktop workspace grid/nav must stay canonical: gridRules=${desktopWorkspaceGridRuleCount} navRules=${desktopNavRuleCount}`
+  desktopWorkspaceGridRuleCount === 1 && desktopNavRuleCount === 0,
+  `Desktop workspace grid must stay canonical and must not duplicate shell navigation: gridRules=${desktopWorkspaceGridRuleCount} navRules=${desktopNavRuleCount}`
 );
 assert(
   desktopStatusBusRuleCount === 8 && desktopLegacyTopbarRuleCount === 0,

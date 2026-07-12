@@ -577,7 +577,9 @@ def panel_env_write_status(path=None):
             "parent": str(path.parent),
             "writable": False,
             "mode": "disabled",
-            "message": "Panel address settings are read-only in this delivery mode. Edit the installer/env file and restart the panel instead.",
+            "scope": "panel-local-listen-address-only",
+            "routerosConfigWrites": False,
+            "message": "Panel address settings are read-only in this delivery mode. Edit the installer/env file and restart the panel instead. This setting never writes RouterOS configuration.",
         }
     parent = path.parent
     probe_parent = parent
@@ -585,15 +587,17 @@ def panel_env_write_status(path=None):
         probe_parent = probe_parent.parent
     writable = os.access(path, os.W_OK) if path.exists() else os.access(probe_parent, os.W_OK)
     message = (
-        "Panel address settings can be saved to the local env file."
+        "Panel address settings can be saved to the local env file. This changes only the panel's local listen address and never writes RouterOS configuration."
         if writable
-        else "Panel address settings are read-only in this delivery mode. Edit the installer/env file and restart the panel instead."
+        else "Panel address settings are read-only in this delivery mode. Edit the installer/env file and restart the panel instead. This setting never writes RouterOS configuration."
     )
     return {
         "envFile": str(path),
         "exists": path.exists(),
         "parent": str(parent),
         "writable": bool(writable),
+        "scope": "panel-local-listen-address-only",
+        "routerosConfigWrites": False,
         "mode": "auto",
         "message": message,
     }

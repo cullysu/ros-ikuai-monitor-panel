@@ -739,22 +739,9 @@ async function main() {
       }
       if (sectionName === 'desktopV1030') {
         const workspace = sectionEl?.querySelector('[data-overview-desktop-workspace]');
-        const nav = sectionEl?.querySelector('[data-overview-desktop-nav="ikuai-short-left-rail"]');
-        const navItems = Array.from(nav?.querySelectorAll('[data-overview-desktop-nav-item]') || []);
-        const navLabels = navItems.map((node) => normalize(node.querySelector('b')?.textContent || ''));
-        const expectedLabels = ['状态总览', '多出口', '接口/VLAN', '在线终端', '采集日志'];
-        const missingLabels = expectedLabels.filter((label, index) => navLabels[index] !== label);
-        const activeNavItem = nav?.querySelector('.is-active[data-overview-desktop-nav-item]');
-        const activeNavStyle = activeNavItem ? getComputedStyle(activeNavItem) : null;
-        const activeNavPaint = ((activeNavStyle?.color || '') + ' ' + (activeNavStyle?.backgroundColor || '') + ' ' + (activeNavStyle?.boxShadow || '')).replaceAll(' ', '');
-        const desktopNavActiveNeutral = Boolean(
-          nav &&
-          nav.getAttribute('data-overview-desktop-v1069-nav-active') === 'neutral-console-ink-no-blue-glow' &&
-          activeNavStyle &&
-          activeNavPaint.includes('18,34,55') &&
-          !activeNavPaint.includes('20,115,230')
-        );
-        const navRect = nav?.getBoundingClientRect();
+        const duplicateWorkspaceNav = sectionEl?.querySelector('[data-overview-desktop-nav="ikuai-short-left-rail"]');
+        const shellSidebar = document.querySelector('.sidebar[data-shell-sidebar="legacy"], .ik-rail');
+        const desktopNavigationDeduplicated = Boolean(!duplicateWorkspaceNav && shellSidebar);
         const workspaceRect = workspace?.getBoundingClientRect();
         const topbar = sectionEl?.querySelector('.ro-topbar');
         const thinKpis = sectionEl?.querySelector('.ro-desktop-thin-kpis');
@@ -763,9 +750,10 @@ async function main() {
         const desktopDecisionLabels = desktopDecisionCells.map((cell) => normalize(cell.querySelector('span')?.textContent || ''));
         const desktopDecisionRailOk = Boolean(
           desktopDecisionRail &&
-          desktopDecisionRail.getAttribute('data-overview-desktop-kpi-row') === 'object-impact-next-action-credibility' &&
+          desktopDecisionRail.getAttribute('data-overview-desktop-kpi-row') === 'conclusion-impact-next-action-credibility' &&
           desktopDecisionCells.length === 4 &&
-          ['对象', '影响', '下一步', '可信度'].every((label) => desktopDecisionLabels.includes(label)) &&
+          ['结论', '影响', '下一步', '可信度'].every((label) => desktopDecisionLabels.includes(label)) &&
+          desktopDecisionCells[0]?.getAttribute('data-overview-desktop-decision-role') === 'primary-conclusion' &&
           desktopDecisionCells.every((cell) => {
             const rect = cell.getBoundingClientRect();
             return rect.width >= 180 && rect.height >= 48 &&
@@ -790,7 +778,7 @@ async function main() {
           .filter((item) => item.width > innerWidth + 1 || item.right > innerWidth + 1)
           .slice(0, 8);
         const hasHorizontalOverflow = document.documentElement.scrollWidth > document.documentElement.clientWidth + 1 || wideNodes.length > 0;
-        const desktopVisibleText = normalize([visibleText(topbar), visibleText(workspace), visibleText(nav)].join(' '));
+        const desktopVisibleText = normalize([visibleText(topbar), visibleText(workspace)].join(' '));
         const requiredText = ['WAN 采样趋势', '默认出口', '采集', '资源', '快照'];
         const missing = requiredText.filter((item) => !desktopVisibleText.includes(item));
         const lowNoiseConsoleTokenContract = 'low-noise-console-tokens-color-type-space-radius-state-chart';
@@ -1026,16 +1014,8 @@ async function main() {
         );
         const pass = Boolean(
           workspace &&
-          nav &&
-          nav.getAttribute('data-overview-desktop-nav-contract') === 'status-overview/multi-wan/interface-vlan/online-terminals/collection-log' &&
-          nav.getAttribute('data-overview-desktop-nav-labels') === expectedLabels.join('/') &&
-          desktopNavActiveNeutral &&
-          navItems.length === expectedLabels.length &&
-          missingLabels.length === 0 &&
-          navRect &&
+          desktopNavigationDeduplicated &&
           workspaceRect &&
-          navRect.width >= 78 &&
-          navRect.height > 260 &&
           workspaceRect.width > 1200 &&
           topbar &&
           thinKpis &&
@@ -1060,14 +1040,9 @@ async function main() {
           section: sectionName,
           url: location.href,
           missing,
-          navLabels,
-          missingLabels,
-          navItemCount: navItems.length,
-          navContract: nav?.getAttribute('data-overview-desktop-nav-contract') || '',
-          navLabelAttr: nav?.getAttribute('data-overview-desktop-nav-labels') || '',
-          desktopNavActiveNeutral,
-          activeNavPaint,
-          navRect: navRect ? { width: navRect.width, height: navRect.height, left: navRect.left, right: navRect.right } : null,
+          desktopNavigationDeduplicated,
+          duplicateWorkspaceNavPresent: Boolean(duplicateWorkspaceNav),
+          shellSidebarPresent: Boolean(shellSidebar),
           workspaceRect: workspaceRect ? { width: workspaceRect.width, height: workspaceRect.height } : null,
           visibleModuleCount: visibleModules.length,
           syntheticGateTextAbsent,

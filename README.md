@@ -92,7 +92,8 @@ not cross devices without an explicit local forwarder or tunnel on that device.
 The in-panel address dialog is a status view in Docker, Linux systemd/VM, and
 RouterOS Container installs; edit the installer/env file and restart for those
 modes. The Windows EXE sidecar env file is user-writable, so the dialog may save
-loopback-only address settings there.
+loopback-only address settings there. This switch changes only the panel's local
+listen address; it never writes RouterOS configuration.
 
 ## Quick Start: Docker One-command
 

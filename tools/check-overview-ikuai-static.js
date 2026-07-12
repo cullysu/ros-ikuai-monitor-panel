@@ -948,9 +948,8 @@ includesAll(desktopRefinementStyles, [
   "v1020 public-product polish",
   ".ro-wan-integrated-summary",
   ".ro-wan-integrated-top",
-  "v1030 desktop short nav",
-  ".ro-desktop-nav",
-  "grid-template-columns: 96px",
+  "Canonical desktop workspace grid. Navigation belongs to the application shell.",
+  "grid-template-columns: minmax(0, 1.47fr) minmax(360px, .88fr)",
 ], "desktop WAN integrated chart styling contract");
 includesAll(overviewPanel, [
   "data-overview-desktop-v1020-public-product-polish",
@@ -962,10 +961,8 @@ includesAll(overviewPanel, [
   "data-overview-desktop-v1020-integrated-product-chart",
   "data-overview-desktop-v1073-wan-single-surface",
   "data-overview-module-body-policy={visualOnly ? \"visual-only\" : collapsedEvidence ? \"collapsed-secondary-evidence\" : \"content-sized\"}",
-  "DESKTOP_IKUAI_SHORT_NAV_CONTRACT",
-  "data-overview-desktop-nav=\"ikuai-short-left-rail\"",
-  "data-overview-desktop-nav-labels=\"状态总览/多出口/接口/VLAN/在线终端/采集日志\"",
-  "data-overview-desktop-v1069-nav-active=\"neutral-console-ink-no-blue-glow\"",
+  "data-overview-desktop-kpi-row=\"conclusion-impact-next-action-credibility\"",
+  "data-overview-desktop-decision-role",
   "data-overview-desktop-v1030-nav-polish",
   "data-routeros-presentation-contract=\"collection-facts/routeros-semantics/user-conclusion\"",
 ], "desktop v1020 public-product polish contract");
@@ -1034,8 +1031,9 @@ includesAll(resourceTrendCheck, [
 ], "desktop no-snapshot runtime gate contract");
 includesAll(resourceTrendCheck, [
   "desktopV1030",
-  "data-overview-desktop-nav=\"ikuai-short-left-rail\"",
-  "status-overview/multi-wan/interface-vlan/online-terminals/collection-log",
+  "duplicateWorkspaceNav",
+  "desktopNavigationDeduplicated",
+  "shellSidebarPresent",
   "syntheticGateTextAbsent",
   "syntheticGateTextCount",
   "visibleModules.length >= 6",

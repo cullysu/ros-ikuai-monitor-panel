@@ -39,6 +39,8 @@ exposure disabled, no built-in auth/TLS, and no RouterOS configuration writes.
 Panel address writes are deployment-owned: Docker, Linux systemd/VM, and
 RouterOS Container keep `ROS_PANEL_NETWORK_WRITE_ENABLED=0`; Windows EXE uses a
 user-writable sidecar env file and may save loopback-only address settings.
+That Windows write capability changes only the panel's local listen address and
+never writes RouterOS configuration.
 
 `127.0.0.1` is always the machine running the browser. A different client device
 cannot use its own `127.0.0.1` to reach a panel running elsewhere unless that

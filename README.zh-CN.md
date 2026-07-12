@@ -70,6 +70,7 @@ admin session 暴露。`127.0.0.1` 永远是当前浏览器所在设备；跨设
 面板里的“面板地址”对 Docker、Linux systemd/VM、RouterOS Container 是只读状态
 视图；这些方式要改地址必须改安装 env/部署层后重启。Windows EXE 的 sidecar
 `routeros-panel.env` 在普通可写目录下可以由面板保存，但仍只允许 loopback 地址。
+这个“网络写入”开关只修改面板本机监听地址，不会向 RouterOS 写入任何配置。
 
 ## Docker 一条命令
 

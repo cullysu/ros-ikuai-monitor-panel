@@ -68,6 +68,8 @@ The in-panel address dialog can save loopback-only settings to
 `routeros-panel.env` when the ZIP is extracted to a user-writable folder. Restart
 the EXE after saving. Non-loopback addresses remain blocked by the public
 profile.
+This write capability is limited to the panel's local sidecar environment file;
+it never writes RouterOS configuration.
 
 ## Troubleshooting
 
