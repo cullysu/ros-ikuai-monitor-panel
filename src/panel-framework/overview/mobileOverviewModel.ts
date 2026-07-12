@@ -775,11 +775,11 @@ function abnormalDecisionNextAction(
   priority: MobileOverviewModel["priority"],
   resourceCells: MobileHeroResourceCell[],
 ): string {
-  if (priority === "wan-offline") return "查出口";
-  if (priority === "snapshot-missing") return "查采集";
-  if (priority === "interface-down") return "核承载";
+  if (priority === "wan-offline") return "查默认出口";
+  if (priority === "snapshot-missing") return "查采集状态";
+  if (priority === "interface-down") return "查接口承载";
   if (priority === "resource-full") return `先处理${primaryResourceCell(resourceCells)?.label || "资源"}`;
-  if (priority === "collection-degraded") return "核采集";
+  if (priority === "collection-degraded") return "查采集通道";
   return "观察";
 }
 
