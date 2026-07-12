@@ -3821,7 +3821,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       : [];
     const overviewMobile390NoCpuMemDiskEnglishOk = !mobileOverview390x844 || mobile390EnglishResourceTextHits.length === 0;
     const mobile390TitleNode = mobileOverview390x844
-      ? sectionRoot?.querySelector('.ik-v240-title, [data-overview-mobile-primary-title], .ik-ios-nav-title')
+      ? sectionRoot?.querySelector('.ik-mobile-device-title, .ik-v240-title, .ik-ios-nav-title')
       : null;
     const mobile390NavNode = mobileOverview390x844
       ? sectionRoot?.querySelector('.ik-v240-nav, [data-overview-mobile-v240-nav], [data-overview-mobile-v159-nav], .ik-ios-top-nav')
@@ -4664,7 +4664,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         '.ik-ios-hero-card *',
         '.ik-ios-rings-card *',
         '.ik-ios-rank-card *',
-        '[data-overview-mobile-primary-title]',
+        '.ik-mobile-device-title',
         '.ik-ios-nav-title',
         '.ik-ios-hero-head',
         '.ik-ios-rings-card header',
@@ -4695,7 +4695,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       : [];
     const mobile390TitleOverlapSamples = mobileOverview390x844
       ? Array.from(sectionRoot?.querySelectorAll([
-        '[data-overview-mobile-primary-title]',
+        '.ik-mobile-device-title',
         '.ik-ios-nav-title',
         '.ik-ios-hero-head',
         '.ik-ios-resource-card header',
