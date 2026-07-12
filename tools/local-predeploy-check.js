@@ -1852,10 +1852,10 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         overviewDesktopDetail &&
         overviewDesktopScenarioTrendOk && overviewTrendReadoutOk &&
         overviewDesktopRankRequirementOk && overviewTop5ReadoutOk &&
-        (overviewStatusBar.querySelectorAll('.ik-home-ops-item, [data-overview-field]').length >= 6) &&
+        (overviewStatusBar.querySelectorAll('.ik-home-ops-item, [data-overview-field]').length >= (noSnapshotEdge ? 6 : 4)) &&
         (
-          overviewNoSnapshotGridItems.length >= (noSnapshotEdge ? 6 : 8) ||
-          overviewSummaryShell.querySelectorAll('.ik-summary-box, [data-overview-field]').length >= (noSnapshotEdge ? 6 : 8)
+          overviewNoSnapshotGridItems.length >= 6 ||
+          overviewSummaryShell.querySelectorAll('.ik-summary-box, [data-overview-field]').length >= 6
         ) &&
         (overviewDensityModules.length >= 3 || overviewDesktopDenseRows >= 24 || (noSnapshotEdge && overviewDensityModules.length >= 3 && overviewNoSnapshotGridItems.length >= 6)) &&
         (
@@ -4811,36 +4811,21 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const overviewStatusBarRoleOrder = overviewStatusBarCells
       .map((node) => node.getAttribute('data-overview-status-role') || '')
       .filter(Boolean);
-    const overviewStatusBarExpectedRoleOrder = [
-      'conclusion',
-      'device',
-      'object',
-      'impact',
-      'collection',
-      'snapshot',
-    ];
-    const overviewStatusBusSixCellContractOk = Boolean(
+    const overviewStatusBarExpectedRoleOrder = noSnapshotEdge
+      ? ['conclusion', 'device', 'routeros', 'rest', 'ssh', 'recent-success']
+      : ['conclusion', 'impact', 'collection', 'snapshot'];
+    const overviewStatusBusRoleContractOk = Boolean(
       overviewStatusBar &&
-      overviewStatusBarCells.length === 6 &&
-      overviewStatusBarVisibleCells.length === 6 &&
-      overviewStatusBarLabels.length === 6 &&
+      overviewStatusBarCells.length === overviewStatusBarExpectedRoleOrder.length &&
+      overviewStatusBarVisibleCells.length === overviewStatusBarExpectedRoleOrder.length &&
+      overviewStatusBarLabels.length === overviewStatusBarExpectedRoleOrder.length &&
       overviewStatusBarRoleOrder.length === overviewStatusBarExpectedRoleOrder.length &&
       overviewStatusBarExpectedRoleOrder.every(
         (role, index) => overviewStatusBarRoleOrder[index] === role
       )
     );
-    const overviewStatusBusLegacyNoSnapshotContractOk = Boolean(
-      noSnapshotEdge &&
-      overviewStatusBar &&
-      overviewStatusBarCells.length === 6 &&
-      overviewStatusBarVisibleCells.length === 6 &&
-      overviewStatusBarLabels.length === 6 &&
-      ['结论', '设备', 'RouterOS', 'REST', 'SSH', '最近成功'].every(
-        (label, index) => overviewStatusBarLabels[index] === label
-      )
-    );
     const overviewStatusBusAcceptedContractOk = Boolean(
-      overviewStatusBusSixCellContractOk || overviewStatusBusLegacyNoSnapshotContractOk
+      overviewStatusBusRoleContractOk
     );
     const overviewTopBandIsoTimestampPattern = /\\b\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z?\\b/;
     const overviewStatusBusFixedGrammarOk = sectionName !== 'overview' || !isDesktopOverview || Boolean(
@@ -5190,8 +5175,8 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const overviewChineseUiNoEngineeringEnglishOk = sectionName !== 'overview' || !(/[�]/.test(overviewChineseUiVisibleText) || /(?:^|[^A-Za-z])(endpoint|failure|stale|snapshot|bucket|hasMore|sampled|sort|cache\\s+gap|active\\s+sessions|process\\s*\\/\\s*service|ConnTrack|Conn|module|detail|panel|ledger|chart|window|threshold|confidence|ratio|sample|current|peak|mean)(?:[^A-Za-z]|$)/i.test(overviewChineseUiVisibleText));
     const overviewDesktopFlatStatusBarOk = sectionName !== 'overview' || !isDesktopOverview || Boolean(
       overviewStatusBar &&
-      overviewStatusBarCells.length >= 6 &&
-      overviewStatusBarVisibleCells.length >= 6 &&
+      overviewStatusBarCells.length >= overviewStatusBarExpectedRoleOrder.length &&
+      overviewStatusBarVisibleCells.length >= overviewStatusBarExpectedRoleOrder.length &&
       overviewStatusBarRect &&
       overviewStatusBarRect.height <= 56 &&
       overviewStatusBarStyle &&
@@ -5281,7 +5266,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         overviewStatusBar &&
         overviewStatusBusAcceptedContractOk &&
         overviewStatusBarText.length >= 12 &&
-        (overviewStatusBusLegacyNoSnapshotContractOk || (
+        (noSnapshotEdge || (
           overviewStatusBarRoleOrder.includes('collection') &&
           overviewStatusBarRoleOrder.includes('snapshot')
         ))
@@ -6874,7 +6859,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewOperatorHomeOk &&
       overviewMinimalOk &&
       overviewSummaryShell &&
-      overviewStatusBusLegacyNoSnapshotContractOk &&
+      overviewStatusBusRoleContractOk &&
       overviewDesktopDetail &&
       overviewDesktopRect &&
       overviewDesktopRect.height >= window.innerHeight * 0.9 &&

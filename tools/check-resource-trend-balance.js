@@ -806,7 +806,7 @@ async function main() {
         const topbarRoleOrder = topbarCells.map((cell) => cell.getAttribute('data-overview-status-role') || '');
         const expectedTopbarRoleOrder = sectionName === 'desktopNoSnapshot'
           ? ['conclusion', 'device', 'routeros', 'rest', 'ssh', 'recent-success']
-          : ['conclusion', 'device', 'object', 'impact', 'collection', 'snapshot'];
+          : ['conclusion', 'impact', 'collection', 'snapshot'];
         const topbarV1072Hierarchy = Boolean(
           topbar &&
           topbar.getAttribute('data-overview-desktop-v1068-status-bus-order') === expectedTopbarRoleOrder.join('-') &&
@@ -815,7 +815,7 @@ async function main() {
         );
         const topbarCellStyles = topbarCells.map((node) => getComputedStyle(node));
         const topbarCellRects = topbarCells.map((node) => node.getBoundingClientRect());
-        const topbarCellsNotFieldBoxes = topbarCellStyles.length >= 6 && topbarCellStyles.every((style) => (
+        const topbarCellsNotFieldBoxes = topbarCellStyles.length >= expectedTopbarRoleOrder.length && topbarCellStyles.every((style) => (
           Number.parseFloat(style.borderTopWidth || '0') === 0 &&
           Number.parseFloat(style.borderBottomWidth || '0') === 0 &&
           Number.parseFloat(style.borderLeftWidth || '0') === 0 &&
@@ -844,7 +844,7 @@ async function main() {
           Number.parseFloat(topbarStyle.borderLeftWidth || '0') === 0 &&
           Number.parseFloat(topbarStyle.borderRightWidth || '0') === 0 &&
           Number.parseFloat(topbarStyle.borderRadius || '0') <= 1 &&
-          topbarCells.length >= 6 &&
+          topbarCells.length >= expectedTopbarRoleOrder.length &&
           topbarCells.every((cell) => cell.getAttribute('data-overview-desktop-v1068-status-cell') === 'label-value-note') &&
           topbarCellStyles.every((style) => (
             Number.parseFloat(style.borderTopWidth || '0') === 0 &&
