@@ -49,7 +49,16 @@ export function BottomTabs({ activeId, onSelect }: BottomTabsProps) {
           type="button"
           key={item.id}
         >
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d={item.path} /></svg>
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path
+              d={item.path}
+              fill="none"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="1.8"
+            />
+          </svg>
           <span>{item.label}</span>
         </button>
       ))}

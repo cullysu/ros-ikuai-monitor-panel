@@ -9059,7 +9059,17 @@ var PanelFramework = function(exports) {
             onClick: () => onSelect(item.id),
             type: "button",
             children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx("svg", { viewBox: "0 0 24 24", "aria-hidden": "true", children: /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: item.path }) }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("svg", { viewBox: "0 0 24 24", "aria-hidden": "true", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+                "path",
+                {
+                  d: item.path,
+                  fill: "none",
+                  stroke: "currentColor",
+                  strokeLinecap: "round",
+                  strokeLinejoin: "round",
+                  strokeWidth: "1.8"
+                }
+              ) }),
               /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: item.label })
             ]
           },

@@ -189,7 +189,14 @@ includesAll(mobileSections, ['export function DeviceBar', 'export function CoreF
 for (const tab of ['home', 'wan', 'interface', 'terminal', 'log']) {
   if (!mobileTabs.includes(`id: "${tab}"`)) fail('mobile navigation semantics', `missing ${tab}`);
 }
-includesAll(mobileTabs, ['aria-current', 'aria-controls', '路由器监控底部导航'], 'mobile navigation accessibility');
+includesAll(mobileTabs, [
+  'aria-current',
+  'aria-controls',
+  '路由器监控底部导航',
+  'fill="none"',
+  'stroke="currentColor"',
+  'strokeLinecap="round"',
+], 'mobile navigation accessibility');
 
 includesAll(mobileStyles, [
   '@import "./core.css";',
