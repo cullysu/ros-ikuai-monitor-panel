@@ -712,12 +712,12 @@ function buildMatrixSummary(browserChecks = [], args = {}) {
   const cellId = (profile, scenario, section, viewport) => `${profile}::${scenario}::${section}::${viewport}`;
   const requiredViewportIds = overviewReleaseMatrix
     ? OVERVIEW_RELEASE_VIEWPORTS.map((viewport) => viewportCellKey(viewport))
-    : [...new Set(cells.map((cell) => cell.viewport).filter(Boolean))];
+    : [...new Set(cells.map((cell) => cell.viewportKey || cell.viewport).filter(Boolean))];
   const coveredCells = [...new Set(cells.map((cell) => cellId(
     cell.profile,
     cell.scaleScenario,
     cell.section,
-    overviewReleaseMatrix ? (cell.viewportKey || cell.viewport) : cell.viewport,
+    cell.viewportKey || cell.viewport,
   )))].sort();
   const passedCells = [...new Set(cells
     .filter((cell) => cell.pass)
@@ -725,7 +725,7 @@ function buildMatrixSummary(browserChecks = [], args = {}) {
       cell.profile,
       cell.scaleScenario,
       cell.section,
-      overviewReleaseMatrix ? (cell.viewportKey || cell.viewport) : cell.viewport,
+      cell.viewportKey || cell.viewport,
     )))].sort();
   const requiredCells = [];
   for (const profile of profiles) {
