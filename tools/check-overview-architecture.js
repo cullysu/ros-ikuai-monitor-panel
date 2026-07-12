@@ -39,6 +39,8 @@ const desktopDecisionRailFile =
   "src/panel-framework/overview/components/DesktopDecisionRail.tsx";
 const desktopModuleFile =
   "src/panel-framework/overview/components/DesktopModule.tsx";
+const statusVerdictFile =
+  "src/panel-framework/overview/components/StatusVerdict.tsx";
 const desktopScenesFile =
   "src/panel-framework/overview/desktopOverviewScenes.tsx";
 const desktopDefaultSceneFile =
@@ -76,6 +78,7 @@ const panel = read(panelFile);
 const desktopConsole = read(desktopConsoleFile);
 const desktopDecisionRail = read(desktopDecisionRailFile);
 const desktopModule = read(desktopModuleFile);
+const statusVerdict = read(statusVerdictFile);
 const desktopScenes = read(desktopScenesFile);
 const desktopDefaultScene = read(desktopDefaultSceneFile);
 const panelCss = read(panelCssFile);
@@ -223,7 +226,7 @@ desktopRefinementRoot.walkRules((rule) => {
     desktopNavRuleCount += 1;
   }
   if (rule.selector.includes(".ro-topbar")) {
-    if (rule.selector.includes("[data-overview-desktop-v1068-status-bus]")) {
+    if (rule.selector.includes('[data-overview-status-bus="control-console-summary-bus-flat-critical-value-rail"]')) {
       desktopStatusBusRuleCount += 1;
     } else {
       desktopLegacyTopbarRuleCount += 1;
@@ -463,6 +466,10 @@ assert(
 assert(
   !/data-overview-desktop-v\d+|data-routeros-v\d+/.test(desktopModule),
   "DesktopModule.tsx must expose semantic evidence attributes only"
+);
+assert(
+  !/data-overview-desktop-v\d+/.test(statusVerdict),
+  "StatusVerdict.tsx must expose one semantic status-bus contract"
 );
 assert(
   !/data-overview-desktop-v\d+|data-routeros-v\d+/.test(desktopNetworkRows),

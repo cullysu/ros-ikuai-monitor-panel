@@ -18,14 +18,12 @@ export function StatusVerdict({ snapshot, state }: OverviewPanelProps) {
       data-overview-desktop-tier="conclusion"
       data-overview-desktop-hierarchy-tier="1-conclusion"
       data-overview-summary
-      data-overview-status-bus
+      data-overview-status-bus="control-console-summary-bus-flat-critical-value-rail"
       data-overview-verdict-status-bus
       data-overview-status-bar
-      data-overview-desktop-v1040-status-bus="flat-summary-bus-key-value-no-field-boxes"
-      data-overview-desktop-v1068-status-bus="control-console-summary-bus-flat-critical-value-rail"
-      data-overview-desktop-v1068-status-bus-order={topbarOrder}
-      data-overview-desktop-v1068-status-bus-no-table-header="true"
-      data-overview-desktop-v1068-status-bus-value-rail="conclusion-first-low-noise"
+      data-overview-status-order={topbarOrder}
+      data-overview-status-no-table-header="true"
+      data-overview-status-value-rail="conclusion-first-low-noise"
       data-overview-summary-main
       data-overview-desktop-top
       data-overview-flat-topbar
@@ -42,7 +40,7 @@ export function StatusVerdict({ snapshot, state }: OverviewPanelProps) {
       data-overview-topbar-muted-tags="no-heavy-status-tags"
     >
       {items.map((item) => (
-        <div className="ro-topbar-cell ik-home-flat-cell ik-home-ops-item" key={item.role} data-tone={item.tone} data-overview-field data-overview-status-cell data-overview-status-role={item.role} data-overview-status-priority={topbarPriority(item.role)} data-overview-summary-cell data-overview-desktop-v1068-status-cell="label-value-note">
+        <div className="ro-topbar-cell ik-home-flat-cell ik-home-ops-item" key={item.role} data-tone={item.tone} data-overview-field data-overview-status-cell data-overview-status-role={item.role} data-overview-status-priority={topbarPriority(item.role)} data-overview-summary-cell data-overview-status-cell-contract="label-value-note">
           <span>{item.label}</span>
           <b style={topbarValueStyle(item.role)} data-overview-desktop-primary={item.role === "conclusion" ? "true" : undefined}>{item.value}</b>
           <em style={topbarNoteStyle(item.role)}>{item.note}</em>

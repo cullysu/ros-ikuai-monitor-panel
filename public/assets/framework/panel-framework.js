@@ -11237,14 +11237,12 @@ var PanelFramework = function(exports) {
         "data-overview-desktop-tier": "conclusion",
         "data-overview-desktop-hierarchy-tier": "1-conclusion",
         "data-overview-summary": true,
-        "data-overview-status-bus": true,
+        "data-overview-status-bus": "control-console-summary-bus-flat-critical-value-rail",
         "data-overview-verdict-status-bus": true,
         "data-overview-status-bar": true,
-        "data-overview-desktop-v1040-status-bus": "flat-summary-bus-key-value-no-field-boxes",
-        "data-overview-desktop-v1068-status-bus": "control-console-summary-bus-flat-critical-value-rail",
-        "data-overview-desktop-v1068-status-bus-order": topbarOrder,
-        "data-overview-desktop-v1068-status-bus-no-table-header": "true",
-        "data-overview-desktop-v1068-status-bus-value-rail": "conclusion-first-low-noise",
+        "data-overview-status-order": topbarOrder,
+        "data-overview-status-no-table-header": "true",
+        "data-overview-status-value-rail": "conclusion-first-low-noise",
         "data-overview-summary-main": true,
         "data-overview-desktop-top": true,
         "data-overview-flat-topbar": true,
@@ -11260,7 +11258,7 @@ var PanelFramework = function(exports) {
         "data-overview-first-viewport-no-duplicate-title-tag": "true",
         "data-overview-topbar-muted-tags": "no-heavy-status-tags",
         children: [
-          items.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ro-topbar-cell ik-home-flat-cell ik-home-ops-item", "data-tone": item.tone, "data-overview-field": true, "data-overview-status-cell": true, "data-overview-status-role": item.role, "data-overview-status-priority": topbarPriority(item.role), "data-overview-summary-cell": true, "data-overview-desktop-v1068-status-cell": "label-value-note", children: [
+          items.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ro-topbar-cell ik-home-flat-cell ik-home-ops-item", "data-tone": item.tone, "data-overview-field": true, "data-overview-status-cell": true, "data-overview-status-role": item.role, "data-overview-status-priority": topbarPriority(item.role), "data-overview-summary-cell": true, "data-overview-status-cell-contract": "label-value-note", children: [
             /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: item.label }),
             /* @__PURE__ */ jsxRuntimeExports.jsx("b", { style: topbarValueStyle(item.role), "data-overview-desktop-primary": item.role === "conclusion" ? "true" : void 0, children: item.value }),
             /* @__PURE__ */ jsxRuntimeExports.jsx("em", { style: topbarNoteStyle(item.role), children: item.note })

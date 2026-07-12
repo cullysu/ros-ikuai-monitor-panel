@@ -796,9 +796,9 @@ async function main() {
         const expectedTopbarRoleOrder = sectionName === 'desktopNoSnapshot'
           ? ['conclusion', 'device', 'routeros', 'rest', 'ssh', 'recent-success']
           : ['conclusion', 'impact', 'collection', 'snapshot'];
-        const topbarV1072Hierarchy = Boolean(
+        const topbarHierarchyOk = Boolean(
           topbar &&
-          topbar.getAttribute('data-overview-desktop-v1068-status-bus-order') === expectedTopbarRoleOrder.join('-') &&
+          topbar.getAttribute('data-overview-status-order') === expectedTopbarRoleOrder.join('-') &&
           topbarRoleOrder.join('-') === expectedTopbarRoleOrder.join('-') &&
           topbarRoleOrder[0] === 'conclusion'
         );
@@ -811,9 +811,8 @@ async function main() {
           Number.parseFloat(style.borderRadius || '0') <= 1 &&
           (style.backgroundColor === 'rgba(0, 0, 0, 0)' || style.backgroundColor === 'transparent')
         ));
-        const topbarFlatSummaryBus = Boolean(
+        const topbarFlatSurfaceOk = Boolean(
           topbar &&
-          topbar.getAttribute('data-overview-desktop-v1040-status-bus') === 'flat-summary-bus-key-value-no-field-boxes' &&
           topbarStyle &&
           Number.parseFloat(topbarStyle.borderTopWidth || '0') === 0 &&
           Number.parseFloat(topbarStyle.borderLeftWidth || '0') === 0 &&
@@ -822,11 +821,11 @@ async function main() {
           ['rgba(0, 0, 0, 0)', 'transparent'].includes(topbarStyle.backgroundColor || '') &&
           topbarCellsNotFieldBoxes
         );
-        const topbarV1068ControlBus = Boolean(
+        const topbarContractOk = Boolean(
           topbar &&
-          topbar.getAttribute('data-overview-desktop-v1068-status-bus') === 'control-console-summary-bus-flat-critical-value-rail' &&
-          topbar.getAttribute('data-overview-desktop-v1068-status-bus-no-table-header') === 'true' &&
-          topbar.getAttribute('data-overview-desktop-v1068-status-bus-value-rail') === 'conclusion-first-low-noise' &&
+          topbar.getAttribute('data-overview-status-bus') === 'control-console-summary-bus-flat-critical-value-rail' &&
+          topbar.getAttribute('data-overview-status-no-table-header') === 'true' &&
+          topbar.getAttribute('data-overview-status-value-rail') === 'conclusion-first-low-noise' &&
           topbarStyle &&
           Number.parseFloat(topbarStyle.height || '0') <= 40 &&
           Number.parseFloat(topbarStyle.borderTopWidth || '0') === 0 &&
@@ -834,7 +833,7 @@ async function main() {
           Number.parseFloat(topbarStyle.borderRightWidth || '0') === 0 &&
           Number.parseFloat(topbarStyle.borderRadius || '0') <= 1 &&
           topbarCells.length >= expectedTopbarRoleOrder.length &&
-          topbarCells.every((cell) => cell.getAttribute('data-overview-desktop-v1068-status-cell') === 'label-value-note') &&
+          topbarCells.every((cell) => cell.getAttribute('data-overview-status-cell-contract') === 'label-value-note') &&
           topbarCellStyles.every((style) => (
             Number.parseFloat(style.borderTopWidth || '0') === 0 &&
             Number.parseFloat(style.borderRightWidth || '0') === 0 &&
@@ -1021,9 +1020,9 @@ async function main() {
           desktopDecisionRailOk &&
           visibleModules.length >= 6 &&
           syntheticGateTextAbsent &&
-          topbarFlatSummaryBus &&
-          topbarV1068ControlBus &&
-          topbarV1072Hierarchy &&
+          topbarFlatSurfaceOk &&
+          topbarContractOk &&
+          topbarHierarchyOk &&
           wanReadableProductChart &&
           routeRawEvidenceSecondaryProductized &&
           rawEvidenceDisclosureProductized &&
@@ -1046,13 +1045,12 @@ async function main() {
           visibleModuleCount: visibleModules.length,
           syntheticGateTextAbsent,
           syntheticGateTextCount,
-          topbarFlatSummaryBus,
-          topbarV1068ControlBus,
-          topbarV1072Hierarchy,
+          topbarFlatSurfaceOk,
+          topbarContractOk,
+          topbarHierarchyOk,
           topbarRoleOrder,
           expectedTopbarRoleOrder,
-          topbarBusContract: topbar?.getAttribute('data-overview-desktop-v1040-status-bus') || '',
-          topbarV1068Contract: topbar?.getAttribute('data-overview-desktop-v1068-status-bus') || '',
+          topbarBusContract: topbar?.getAttribute('data-overview-status-bus') || '',
           lowNoiseConsoleTokensApplied,
           lowNoiseConsoleTokenContract: sectionEl?.getAttribute('data-overview-low-noise-console-token-contract') || '',
           lowNoiseConsoleWorkspaceContract: sectionEl?.contains(workspace) ? 'structural-descendant' : '',
