@@ -7027,7 +7027,7 @@ var PanelFramework = function(exports) {
     const text2 = String(value ?? "").replace(/\s+/g, " ").trim();
     return text2 || fallback;
   }
-  function text$1(value, fallback = "-") {
+  function text$2(value, fallback = "-") {
     return normalize(value, fallback);
   }
   function credibilityLabelOf(credibility) {
@@ -7057,7 +7057,7 @@ var PanelFramework = function(exports) {
     if (meta.realtimeError || meta.slowRestError) return "cache";
     return "realtime";
   }
-  function wanRows$4(snapshot) {
+  function wanRows$5(snapshot) {
     return Array.isArray(snapshot.wan) && snapshot.wan.length ? snapshot.wan : Array.isArray(snapshot.pppoe) ? snapshot.pppoe : [];
   }
   function routeRows$1(snapshot) {
@@ -7187,7 +7187,7 @@ var PanelFramework = function(exports) {
     return { level, available, cpu, memory, disk, summaryText: available ? `处理器 ${formatPercent(cpu)} / 内存 ${formatPercent(memory)} / 磁盘 ${formatPercent(disk)}` : "处理器 未记录 / 内存 未记录 / 磁盘 未记录" };
   }
   function wanState(snapshot) {
-    const rows = wanRows$4(snapshot);
+    const rows = wanRows$5(snapshot);
     const available = !isSnapshotUnavailable(snapshot);
     const online = rows.filter((row) => row.running !== false).length;
     const total = rows.length;
@@ -7250,7 +7250,7 @@ var PanelFramework = function(exports) {
   }
   function topbarState(snapshot, verdict, facts) {
     const unavailable = facts.freshness.credibility === "unavailable";
-    const routeros = unavailable || snapshot.status === "error" ? { label: "设备通达", value: "不可达", note: text$1(snapshot.error, "当前采集失败"), tone: "danger" } : { label: "设备通达", value: "可达", note: "管理面已返回快照", tone: "ok" };
+    const routeros = unavailable || snapshot.status === "error" ? { label: "设备通达", value: "不可达", note: text$2(snapshot.error, "当前采集失败"), tone: "danger" } : { label: "设备通达", value: "可达", note: "管理面已返回快照", tone: "ok" };
     const rest = unavailable ? { label: "REST", value: "未记录", note: "无业务快照", tone: "missing" } : facts.collection.credibility === "cache" ? { label: "REST", value: "缓存", note: facts.collection.channelText, tone: "warn" } : { label: "REST", value: "实时", note: "实时快照可用", tone: "trust" };
     const ssh = unavailable ? { label: "SSH", value: "未记录", note: "无业务快照", tone: "missing" } : facts.collection.credibility === "cache" ? { label: "SSH", value: "缓存", note: facts.collection.channelText, tone: "warn" } : { label: "SSH", value: "实时", note: "静态读取可用", tone: "trust" };
     const recentSuccess = unavailable ? { label: "最近成功", value: "未记录", note: "业务快照缺失", tone: "warn" } : { label: "最近成功", value: shortTimestamp(facts.freshness.source), note: facts.freshness.credibilityLabel, tone: facts.freshness.credibilityTone };
@@ -7535,6 +7535,112 @@ var PanelFramework = function(exports) {
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-v240-tabs button:focus-visible {
     outline: 2px solid #1f6fd1 !important;
     outline-offset: -3px !important;
+  }
+
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-tab-view {
+    display: grid !important;
+    align-content: start !important;
+    gap: 10px !important;
+    min-height: 0 !important;
+    margin: 0 12px !important;
+    padding: 0 0 68px !important;
+    overflow: visible !important;
+  }
+
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-tab-head {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    gap: 3px 12px !important;
+    align-items: end !important;
+    padding: 14px 12px 12px !important;
+    border: 1px solid #cbd8e5 !important;
+    border-radius: 6px !important;
+    background: #fff !important;
+    box-shadow: none !important;
+  }
+
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-tab-head span,
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-tab-head p {
+    color: #748499 !important;
+    font-size: 11px !important;
+    line-height: 14px !important;
+  }
+
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-tab-head h1 {
+    margin: 2px 0 0 !important;
+    color: #102033 !important;
+    font-size: 24px !important;
+    line-height: 27px !important;
+    letter-spacing: -.035em !important;
+  }
+
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-tab-head > strong {
+    color: #18334f !important;
+    font-size: 14px !important;
+    line-height: 18px !important;
+  }
+
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-tab-head > strong[data-tone="danger"] {
+    color: #b72f29 !important;
+  }
+
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-tab-head p {
+    grid-column: 1 / -1 !important;
+    margin: 2px 0 0 !important;
+  }
+
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-tab-list {
+    overflow: hidden !important;
+    border: 1px solid #d5e0eb !important;
+    border-radius: 6px !important;
+    background: #fff !important;
+  }
+
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-tab-list article {
+    display: grid !important;
+    grid-template-columns: 8px minmax(0, 1fr) auto !important;
+    gap: 9px !important;
+    align-items: center !important;
+    min-height: 56px !important;
+    padding: 8px 11px !important;
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: inset 0 -1px 0 rgba(155, 177, 200, .18) !important;
+  }
+
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-tab-list article:last-child {
+    box-shadow: none !important;
+  }
+
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-tab-list article > i {
+    width: 6px !important;
+    height: 6px !important;
+    border-radius: 999px !important;
+    background: #2d9b68 !important;
+  }
+
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-tab-list article[data-tone="warn"] > i {
+    background: #c17a24 !important;
+  }
+
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-tab-list article[data-tone="danger"] > i,
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-tab-list article[data-tone="missing"] > i {
+    background: #c6423b !important;
+  }
+
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-tab-list b,
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-tab-list > article > strong {
+    color: #182a3e !important;
+    font-size: 13px !important;
+    line-height: 16px !important;
+  }
+
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-tab-list small {
+    display: block !important;
+    margin-top: 2px !important;
+    color: #7b8b9e !important;
+    font-size: 10.5px !important;
+    line-height: 13px !important;
   }
 }
 `;
@@ -11521,7 +11627,7 @@ var PanelFramework = function(exports) {
     const normalized = String(value ?? "").replace(/\s+/g, " ").trim();
     return normalized || fallback;
   }
-  function wanRows$3(snapshot) {
+  function wanRows$4(snapshot) {
     if (Array.isArray(snapshot.wan) && snapshot.wan.length) return snapshot.wan;
     return Array.isArray(snapshot.pppoe) ? snapshot.pppoe : [];
   }
@@ -11559,7 +11665,7 @@ var PanelFramework = function(exports) {
     return "实时";
   }
   function buildRouterOsTrustModel(snapshot, state) {
-    const totalWan2 = Math.max(state.facts.wan.total || wanRows$3(snapshot).length, state.facts.wan.allOffline ? 8 : 0);
+    const totalWan2 = Math.max(state.facts.wan.total || wanRows$4(snapshot).length, state.facts.wan.allOffline ? 8 : 0);
     const noSnapshot = state.scenario === "no-snapshot";
     const forwarding = {
       id: "forwarding",
@@ -11802,7 +11908,7 @@ var PanelFramework = function(exports) {
     const normalized = String(value ?? "").replace(/\s+/g, " ").trim();
     return normalized || fallback;
   }
-  function wanRows$2(snapshot) {
+  function wanRows$3(snapshot) {
     if (Array.isArray(snapshot.wan) && snapshot.wan.length) return snapshot.wan;
     return Array.isArray(snapshot.pppoe) ? snapshot.pppoe : [];
   }
@@ -11845,7 +11951,7 @@ var PanelFramework = function(exports) {
     return "normal";
   }
   function totalWan(snapshot, state) {
-    return Math.max(1, state.facts.wan.total, state.facts.wan.online + state.facts.wan.offline, wanRows$2(snapshot).length);
+    return Math.max(1, state.facts.wan.total, state.facts.wan.online + state.facts.wan.offline, wanRows$3(snapshot).length);
   }
   function snapshotTrustText(state) {
     if (state.scenario === "no-snapshot") return "缺失";
@@ -12191,17 +12297,17 @@ var PanelFramework = function(exports) {
     }
     return 0;
   }
-  function wanRows$1(snapshot) {
+  function wanRows$2(snapshot) {
     if (Array.isArray(snapshot.wan) && snapshot.wan.length) return snapshot.wan;
     return Array.isArray(snapshot.pppoe) ? snapshot.pppoe : [];
   }
   function wanLineCount(snapshot, state) {
-    const rows = wanRows$1(snapshot);
+    const rows = wanRows$2(snapshot);
     const factTotal = toNumber(state.facts.wan.total);
     const factSum = toNumber(state.facts.wan.online) + toNumber(state.facts.wan.offline);
     return Math.max(0, rows.length, factTotal, factSum);
   }
-  function interfaceRows$1(snapshot) {
+  function interfaceRows$2(snapshot) {
     return Array.isArray(snapshot.interfaces) ? snapshot.interfaces : [];
   }
   function twoDigit(value) {
@@ -12227,7 +12333,7 @@ var PanelFramework = function(exports) {
     return mobileTime(raw);
   }
   function totals(snapshot) {
-    return wanRows$1(snapshot).reduce(
+    return wanRows$2(snapshot).reduce(
       (sum, row) => ({
         up: sum.up + toNumber(row.upRate),
         down: sum.down + toNumber(row.downRate)
@@ -12425,7 +12531,7 @@ var PanelFramework = function(exports) {
     return { evidenceLayer: "business", evidenceSource: source, evidenceRole: "operational-context", evidenceKey };
   }
   function offlineWanRows(snapshot, state) {
-    const source = wanRows$1(snapshot);
+    const source = wanRows$2(snapshot);
     const total = Math.max(1, wanLineCount(snapshot, state));
     return Array.from({ length: Math.min(5, total) }, (_, index) => {
       const row = source[index] || { name: `pppoe-wan${index + 1}` };
@@ -12448,8 +12554,8 @@ var PanelFramework = function(exports) {
     });
   }
   function interfaceIncidentRows(snapshot) {
-    const rows = interfaceRows$1(snapshot).filter((row) => row.running === false).slice(0, 5);
-    const visible = rows.length ? rows : interfaceRows$1(snapshot).slice(0, 5);
+    const rows = interfaceRows$2(snapshot).filter((row) => row.running === false).slice(0, 5);
+    const visible = rows.length ? rows : interfaceRows$2(snapshot).slice(0, 5);
     return visible.map((row, index) => ({
       id: `interface-down-${index}`,
       rank: index + 1,
@@ -12941,8 +13047,8 @@ var PanelFramework = function(exports) {
     });
   }
   function heroInterfaceCells(snapshot, state) {
-    const rows = interfaceRows$1(snapshot).filter((row) => row.running === false).slice(0, 3);
-    const visible = rows.length ? rows : interfaceRows$1(snapshot).slice(0, 1);
+    const rows = interfaceRows$2(snapshot).filter((row) => row.running === false).slice(0, 3);
+    const visible = rows.length ? rows : interfaceRows$2(snapshot).slice(0, 1);
     return visible.map((row, index) => {
       const name = clean(row.name || row.interface, `接口${index + 1}`);
       const carrier = clean(row.parent || row.master || row.bridge, "承载待确认");
@@ -13107,7 +13213,7 @@ var PanelFramework = function(exports) {
     return withSurfaceCoreBlocks(pick(["timeline-wan", "timeline-collection", "timeline-resource", "timeline-route"]));
   }
   function wanPorts(snapshot, state) {
-    const source = wanRows$1(snapshot);
+    const source = wanRows$2(snapshot);
     const total = Math.max(1, wanLineCount(snapshot, state));
     const rows = Array.from({ length: Math.min(8, total) }, (_, index) => source[index] || { name: `WAN${index + 1}`, running: false });
     return rows.map((row, index) => {
@@ -13226,23 +13332,13 @@ var PanelFramework = function(exports) {
   }
   const MOBILE_BOTTOM_NAV_CONTRACT = "home-wan-interface-terminal-log-router-monitor-low-noise";
   const MOBILE_BOTTOM_NAV_ITEMS = [
-    { id: "home", label: "首页", semantic: "status-overview", note: "状态总览", active: true, section: "overview", path: "M4 11.5 12 5l8 6.5V20a1 1 0 0 1-1 1h-5v-6h-4v6H5a1 1 0 0 1-1-1z" },
-    { id: "wan", label: "WAN", semantic: "multi-wan", note: "多出口", active: false, section: "balance", path: "M4 8h16M4 12h16M4 16h16M7 8v8M17 8v8" },
-    { id: "interface", label: "接口", semantic: "interface-vlan", note: "接口/VLAN", active: false, section: "interfaces", path: "M6 7h12v10H6zM9 17v3M15 17v3M9 4v3M15 4v3" },
-    { id: "terminal", label: "终端", semantic: "online-terminals", note: "在线终端", active: false, section: "dhcp", path: "M5 7h14v8H5zM8 19h8M12 15v4M7 10h.01M11 10h.01M15 10h.01" },
-    { id: "log", label: "日志", semantic: "collection-log", note: "采集日志", active: false, section: "logs", path: "M7 5h10v14H7zM10 9h4M10 13h4" }
+    { id: "home", label: "首页", semantic: "status-overview", note: "状态总览", path: "M4 11.5 12 5l8 6.5V20a1 1 0 0 1-1 1h-5v-6h-4v6H5a1 1 0 0 1-1-1z" },
+    { id: "wan", label: "WAN", semantic: "multi-wan", note: "多出口", path: "M4 8h16M4 12h16M4 16h16M7 8v8M17 8v8" },
+    { id: "interface", label: "接口", semantic: "interface-vlan", note: "接口/VLAN", path: "M6 7h12v10H6zM9 17v3M15 17v3M9 4v3M15 4v3" },
+    { id: "terminal", label: "终端", semantic: "online-terminals", note: "在线终端", path: "M5 7h14v8H5zM8 19h8M12 15v4M7 10h.01M11 10h.01M15 10h.01" },
+    { id: "log", label: "日志", semantic: "collection-log", note: "采集日志", path: "M7 5h10v14H7zM10 9h4M10 13h4" }
   ];
-  function activateMobileSection(section) {
-    const shellLink = document.querySelector(
-      `[data-shell-nav="primary"] [data-section="${section}"]`
-    );
-    if (shellLink) {
-      shellLink.click();
-      return;
-    }
-    window.location.hash = section;
-  }
-  function BottomTabs() {
+  function BottomTabs({ activeId, onSelect }) {
     return /* @__PURE__ */ jsxRuntimeExports.jsx(
       "nav",
       {
@@ -13258,14 +13354,15 @@ var PanelFramework = function(exports) {
         children: MOBILE_BOTTOM_NAV_ITEMS.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
           "button",
           {
-            "aria-current": item.active ? "page" : void 0,
+            "aria-controls": `mobile-${item.id}-view`,
+            "aria-current": activeId === item.id ? "page" : void 0,
             "aria-label": `${item.label} · ${item.note}`,
-            className: item.active ? "is-active" : "",
+            className: activeId === item.id ? "is-active" : "",
             "data-overview-mobile-v1066-router-tab": item.id,
             "data-overview-mobile-v1066-router-tab-semantic": item.semantic,
             "data-overview-mobile-v1066-router-tab-note": item.note,
-            "data-overview-mobile-tab-target": `#${item.section}`,
-            onClick: () => activateMobileSection(item.section),
+            "data-overview-mobile-tab-target": `mobile-view:${item.id}`,
+            onClick: () => onSelect(item.id),
             type: "button",
             children: [
               /* @__PURE__ */ jsxRuntimeExports.jsx("svg", { viewBox: "0 0 24 24", "aria-hidden": "true", children: /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: item.path }) }),
@@ -13674,7 +13771,143 @@ var PanelFramework = function(exports) {
       }
     );
   }
+  function record(value) {
+    return value && typeof value === "object" ? value : {};
+  }
+  function text$1(value, fallback = "未记录") {
+    const normalized = String(value ?? "").trim();
+    return normalized || fallback;
+  }
+  function number(value) {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+  function wanRows$1(model) {
+    return model.wanPorts.slice(0, 8).map((port) => ({
+      id: port.id,
+      label: port.name,
+      value: port.stateText,
+      note: `${port.roleLabel} · ${port.carrier || port.note}`,
+      tone: port.tone
+    }));
+  }
+  function interfaceRows$1(snapshot) {
+    const rows = Array.isArray(snapshot.interfaces) ? snapshot.interfaces : [];
+    return rows.slice(0, 8).map((item, index) => {
+      const name = text$1(item.name || item.interface, `接口 ${index + 1}`);
+      const running = item.running !== false && item.disabled !== true;
+      const carrier = text$1(item.parent || item.master || item.bridge || item.pppoeOut || item.pppoe, "独立接口");
+      const rate = number(item.rxRate ?? item.downRate) + number(item.txRate ?? item.upRate);
+      return {
+        id: `${name}-${index}`,
+        label: name,
+        value: running ? "运行" : "Down",
+        note: `${text$1(item.type || item.role, "接口")} · ${carrier}${rate > 0 ? ` · ${formatRate(rate)}` : ""}`,
+        tone: running ? "trust" : "danger"
+      };
+    });
+  }
+  function terminalRows(snapshot) {
+    var _a;
+    const source = Array.isArray(snapshot.terminals) && snapshot.terminals.length > 0 ? snapshot.terminals : Array.isArray((_a = snapshot.connections) == null ? void 0 : _a.topIps) ? snapshot.connections.topIps : [];
+    return source.slice(0, 8).map((item, index) => {
+      const value = record(item);
+      const address = text$1(value.ip || value.address || value.host, `终端 ${index + 1}`);
+      const name = text$1(value.name || value.hostname || value.device, address);
+      const rate = number(value.rate ?? value.bytes ?? value.traffic ?? value.value);
+      return {
+        id: `${address}-${index}`,
+        label: name,
+        value: rate > 0 ? formatRate(rate) : "在线",
+        note: address === name ? "连接记录" : address,
+        tone: "trust"
+      };
+    });
+  }
+  function logRows(model, state) {
+    const channels = model.collectionTrust.map((channel, index) => ({
+      id: `channel-${index}`,
+      label: channel.label,
+      value: channel.value,
+      note: "只读采集通道",
+      tone: channel.tone
+    }));
+    const failures = state.facts.failures.entries.slice(0, 5).map((entry, index) => ({
+      id: `failure-${index}`,
+      label: text$1(entry.name || entry.group, "采集失败"),
+      value: "需确认",
+      note: text$1(entry.message || entry.at, "未记录详情"),
+      tone: "warn"
+    }));
+    return [...channels, ...failures].slice(0, 8);
+  }
+  function MobileOverviewTabView({ activeTab, model, snapshot, state }) {
+    const config = activeTab === "wan" ? {
+      eyebrow: "出口与默认路由",
+      title: "WAN",
+      summary: `${formatNumber(state.facts.wan.online)}/${formatNumber(state.facts.wan.total)} 在线`,
+      note: state.facts.route.label,
+      tone: state.facts.wan.allOffline ? "danger" : state.facts.wan.offline ? "warn" : "trust",
+      rows: wanRows$1(model)
+    } : activeTab === "interface" ? {
+      eyebrow: "承载接口",
+      title: "接口",
+      summary: state.facts.interfaces.down > 0 ? `${formatNumber(state.facts.interfaces.down)} 个 Down` : "全部运行",
+      note: `${formatNumber(state.facts.interfaces.total)} 个接口`,
+      tone: state.facts.interfaces.down > 0 ? "warn" : "trust",
+      rows: interfaceRows$1(snapshot)
+    } : activeTab === "terminal" ? {
+      eyebrow: "在线终端与连接",
+      title: "终端",
+      summary: `${formatNumber(state.facts.connections.active)} 活动`,
+      note: `${formatNumber(state.facts.connections.total)} 条连接`,
+      tone: "trust",
+      rows: terminalRows(snapshot)
+    } : {
+      eyebrow: "只读采集记录",
+      title: "日志",
+      summary: state.facts.collection.credibilityLabel,
+      note: `失败 ${formatNumber(state.facts.failures.count)} 项 · 最近 ${model.header.recent}`,
+      tone: state.facts.collection.credibilityTone,
+      rows: logRows(model, state)
+    };
+    const rows = config.rows.length > 0 ? config.rows : [{
+      id: "empty",
+      label: "暂无明细",
+      value: "等待采集",
+      note: "当前快照没有可展示记录",
+      tone: "missing"
+    }];
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+      "section",
+      {
+        className: "ik-mobile-tab-view",
+        id: `mobile-${activeTab}-view`,
+        "data-overview-mobile-tab-view": activeTab,
+        "data-overview-mobile-tab-view-contract": "mobile-native-summary-flat-list-no-desktop-table",
+        children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { className: "ik-mobile-tab-head", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: config.eyebrow }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { children: config.title })
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("strong", { "data-tone": config.tone, children: config.summary }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("p", { children: config.note })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ik-mobile-tab-list", role: "list", children: rows.map((row) => /* @__PURE__ */ jsxRuntimeExports.jsxs("article", { "data-tone": row.tone, role: "listitem", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("i", { "aria-hidden": "true" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: row.label }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: row.note })
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("strong", { children: row.value })
+          ] }, row.id)) })
+        ]
+      }
+    );
+  }
   function MobileOverviewHome(props) {
+    const [activeTab, setActiveTab] = reactExports.useState("home");
     const model = buildMobileOverviewModel(props.snapshot, props.state);
     return /* @__PURE__ */ jsxRuntimeExports.jsxs(
       "div",
@@ -13724,12 +13957,15 @@ var PanelFramework = function(exports) {
               "data-overview-mobile-app-ranking-policy": model.appHomeContract.rankingPolicy,
               "data-overview-mobile-app-abnormal-ia": model.appHomeContract.informationArchitecture,
               "data-overview-mobile-app-terminal-ranking-state": model.appHomeContract.terminalRanking,
+              "data-overview-mobile-active-tab": activeTab,
               children: [
                 /* @__PURE__ */ jsxRuntimeExports.jsx(DeviceBar, { model }),
-                /* @__PURE__ */ jsxRuntimeExports.jsx(PrimaryDecision, { model }),
-                /* @__PURE__ */ jsxRuntimeExports.jsx(CoreFacts, { model }),
-                /* @__PURE__ */ jsxRuntimeExports.jsx(SupportingList, { model }),
-                /* @__PURE__ */ jsxRuntimeExports.jsx(BottomTabs, {})
+                activeTab === "home" ? /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(PrimaryDecision, { model }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(CoreFacts, { model }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(SupportingList, { model })
+                ] }) : /* @__PURE__ */ jsxRuntimeExports.jsx(MobileOverviewTabView, { activeTab, model, snapshot: props.snapshot, state: props.state }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx(BottomTabs, { activeId: activeTab, onSelect: setActiveTab })
               ]
             }
           ) }),
@@ -14492,8 +14728,8 @@ var PanelFramework = function(exports) {
     return Array.isArray(value) ? value.filter((item) => typeof item === "object" && item !== null) : [];
   }
   function desktopNumber(value) {
-    const number = toNumber(value);
-    return Number.isFinite(number) && number > 0 ? number : 0;
+    const number2 = toNumber(value);
+    return Number.isFinite(number2) && number2 > 0 ? number2 : 0;
   }
   function desktopFirstText(row, keys, fallback = "-") {
     for (const key of keys) {

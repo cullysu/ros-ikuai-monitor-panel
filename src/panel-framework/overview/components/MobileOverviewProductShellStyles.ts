@@ -169,6 +169,112 @@ const MOBILE_OVERVIEW_CURRENT_SHELL_STYLES = `
     outline: 2px solid #1f6fd1 !important;
     outline-offset: -3px !important;
   }
+
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-tab-view {
+    display: grid !important;
+    align-content: start !important;
+    gap: 10px !important;
+    min-height: 0 !important;
+    margin: 0 12px !important;
+    padding: 0 0 68px !important;
+    overflow: visible !important;
+  }
+
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-tab-head {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    gap: 3px 12px !important;
+    align-items: end !important;
+    padding: 14px 12px 12px !important;
+    border: 1px solid #cbd8e5 !important;
+    border-radius: 6px !important;
+    background: #fff !important;
+    box-shadow: none !important;
+  }
+
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-tab-head span,
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-tab-head p {
+    color: #748499 !important;
+    font-size: 11px !important;
+    line-height: 14px !important;
+  }
+
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-tab-head h1 {
+    margin: 2px 0 0 !important;
+    color: #102033 !important;
+    font-size: 24px !important;
+    line-height: 27px !important;
+    letter-spacing: -.035em !important;
+  }
+
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-tab-head > strong {
+    color: #18334f !important;
+    font-size: 14px !important;
+    line-height: 18px !important;
+  }
+
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-tab-head > strong[data-tone="danger"] {
+    color: #b72f29 !important;
+  }
+
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-tab-head p {
+    grid-column: 1 / -1 !important;
+    margin: 2px 0 0 !important;
+  }
+
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-tab-list {
+    overflow: hidden !important;
+    border: 1px solid #d5e0eb !important;
+    border-radius: 6px !important;
+    background: #fff !important;
+  }
+
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-tab-list article {
+    display: grid !important;
+    grid-template-columns: 8px minmax(0, 1fr) auto !important;
+    gap: 9px !important;
+    align-items: center !important;
+    min-height: 56px !important;
+    padding: 8px 11px !important;
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: inset 0 -1px 0 rgba(155, 177, 200, .18) !important;
+  }
+
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-tab-list article:last-child {
+    box-shadow: none !important;
+  }
+
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-tab-list article > i {
+    width: 6px !important;
+    height: 6px !important;
+    border-radius: 999px !important;
+    background: #2d9b68 !important;
+  }
+
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-tab-list article[data-tone="warn"] > i {
+    background: #c17a24 !important;
+  }
+
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-tab-list article[data-tone="danger"] > i,
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-tab-list article[data-tone="missing"] > i {
+    background: #c6423b !important;
+  }
+
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-tab-list b,
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-tab-list > article > strong {
+    color: #182a3e !important;
+    font-size: 13px !important;
+    line-height: 16px !important;
+  }
+
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-tab-list small {
+    display: block !important;
+    margin-top: 2px !important;
+    color: #7b8b9e !important;
+    font-size: 10.5px !important;
+    line-height: 13px !important;
+  }
 }
 `;
 

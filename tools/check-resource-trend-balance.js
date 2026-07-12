@@ -1116,34 +1116,50 @@ async function main() {
         const root = sectionEl?.querySelector('[data-overview-mobile-console]');
         const tabs = Array.from(root?.querySelectorAll('[data-overview-mobile-v1066-router-tab]') || []);
         const expectedTargets = {
-          home: '#overview',
-          wan: '#balance',
-          interface: '#interfaces',
-          terminal: '#dhcp',
-          log: '#logs'
+          home: 'mobile-view:home',
+          wan: 'mobile-view:wan',
+          interface: 'mobile-view:interface',
+          terminal: 'mobile-view:terminal',
+          log: 'mobile-view:log'
         };
         const targetContractOk = tabs.length === 5 && tabs.every((tab) => {
           const id = tab.getAttribute('data-overview-mobile-v1066-router-tab') || '';
           const target = tab.getAttribute('data-overview-mobile-tab-target') || '';
-          const section = target.replace(/^#/, '');
-          return expectedTargets[id] === target && Boolean(document.querySelector('[data-shell-nav="primary"] [data-section="' + section + '"]'));
+          return expectedTargets[id] === target;
         });
-        const wanTab = tabs.find((tab) => tab.getAttribute('data-overview-mobile-v1066-router-tab') === 'wan');
-        const hashBefore = location.hash;
-        wanTab?.click();
-        const hashAfter = location.hash;
-        const activeShellSection = document.querySelector('[data-shell-nav="primary"] [data-section].is-active')?.getAttribute('data-section') || '';
-        return {
-          pass: Boolean(root && targetContractOk && wanTab && hashAfter === '#balance' && activeShellSection === 'balance'),
-          section: sectionName,
-          url: location.href,
-          targetContractOk,
-          tabCount: tabs.length,
-          hashBefore,
-          hashAfter,
-          activeShellSection,
-          viewport: { width: innerWidth, height: innerHeight }
-        };
+        return (async () => {
+          const detailIds = ['wan', 'interface', 'terminal', 'log'];
+          const navigationResults = [];
+          for (const id of detailIds) {
+            const tab = tabs.find((item) => item.getAttribute('data-overview-mobile-v1066-router-tab') === id);
+            tab?.click();
+            await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+            const activeView = root?.querySelector('[data-overview-mobile-tab-view="' + id + '"]');
+            const activeTab = root?.querySelector('[data-overview-mobile-v1066-router-tab="' + id + '"].is-active');
+            const homeDecision = root?.querySelector('[data-overview-mobile-v420-hero="network-state-home"]');
+            navigationResults.push({
+              id,
+              pass: Boolean(
+                tab &&
+                activeView &&
+                activeTab?.getAttribute('aria-current') === 'page' &&
+                root.querySelector('[data-overview-mobile-first-screen="app-home"]')?.getAttribute('data-overview-mobile-active-tab') === id &&
+                !homeDecision &&
+                activeView.querySelectorAll('.ik-mobile-tab-list article').length >= 1
+              ),
+              viewText: normalize(activeView?.textContent || '').slice(0, 180)
+            });
+          }
+          return {
+            pass: Boolean(root && targetContractOk && navigationResults.length === 4 && navigationResults.every((item) => item.pass)),
+            section: sectionName,
+            url: location.href,
+            targetContractOk,
+            tabCount: tabs.length,
+            navigationResults,
+            viewport: { width: innerWidth, height: innerHeight }
+          };
+        })();
       }
       if (sectionName === 'mobileNormalHome' || sectionName === 'mobileAppHome' || sectionName === 'mobileNoSnapshotHome' || sectionName === 'mobileResourceHome' || sectionName === 'mobileInterfaceHome' || sectionName === 'mobileCollectionHome') {
         const root = sectionEl?.querySelector('[data-overview-mobile-console]');
@@ -2073,7 +2089,7 @@ async function main() {
       return { pass: false, section: sectionName, error: 'unsupported section' };
     })()`;
 
-    const result = await send('Runtime.evaluate', { expression, returnByValue: true });
+    const result = await send('Runtime.evaluate', { expression, returnByValue: true, awaitPromise: true });
     if (result.exceptionDetails) {
       const detail = result.exceptionDetails;
       const exceptionText = [

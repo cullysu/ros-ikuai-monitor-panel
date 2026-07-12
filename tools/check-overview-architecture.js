@@ -461,7 +461,7 @@ const mobileStyleLayerFiles = [
 ];
 const mobileStyleLineLimits = new Map([
   ["src/panel-framework/overview/components/MobileOverviewBaseStyles.ts", 2750],
-  ["src/panel-framework/overview/components/MobileOverviewProductShellStyles.ts", 260],
+  ["src/panel-framework/overview/components/MobileOverviewProductShellStyles.ts", 320],
   ["src/panel-framework/overview/components/MobileOverviewPublicDecisionStyles.ts", 650],
   ["src/panel-framework/overview/components/MobileOverviewPublicDecisionRepairStyles.ts", 500],
 ]);

@@ -28,12 +28,17 @@ _Avoid_: Resource card, CPU table
 The explicit limit on which observations remain trustworthy when collection or snapshots are degraded.
 _Avoid_: Disclaimer, warning text
 
+**Mobile Module View**:
+A dedicated, touch-first WAN, interface, terminal, or collection-log view selected from the mobile bottom navigation. It presents a concise summary and one flat evidence list without reusing a desktop scene.
+_Avoid_: Hash target, compressed desktop page, decorative tab
+
 ## Relationships
 
 - An **Overview Scenario** selects exactly one **Desktop Scene**.
 - A **Desktop Scene** gives the **Network Judgement** priority over its supporting **Evidence Chain**.
 - **Resource Evidence** is one focused part of an **Evidence Chain**.
 - A degraded **Evidence Chain** narrows the **Credibility Boundary** without automatically changing forwarding-plane availability.
+- The mobile home selects a **Mobile Module View** in place; selecting a module replaces the home decision surface while preserving the device header and bottom navigation.
 
 ## Example dialogue
 
