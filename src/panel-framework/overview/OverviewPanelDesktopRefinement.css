@@ -1374,7 +1374,7 @@
 
 /* Canonical desktop workspace grid. Navigation belongs to the application shell. */
 @media (min-width: 761px) {
-  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-desktop-grid {
+  #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-desktop-grid {
     grid-template-columns: minmax(0, 1.47fr) minmax(360px, .88fr) !important;
     grid-template-rows: var(--ro-desktop-grid-rows, 54px minmax(0, 1fr) 148px) !important;
     align-content: start !important;
@@ -1386,7 +1386,7 @@
   }
 
   /* Canonical desktop decision rail: one active product rule. */
-  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-desktop-thin-kpis {
+  #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-desktop-thin-kpis {
     grid-column: 1 / -1 !important;
     grid-row: 1 !important;
     height: 54px !important;
@@ -1401,7 +1401,7 @@
     box-shadow: none !important;
   }
 
-  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-desktop-thin-kpi {
+  #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-desktop-thin-kpi {
     height: 52px !important;
     min-height: 52px !important;
     padding: 7px 11px 6px !important;
@@ -1411,12 +1411,12 @@
     box-shadow: none !important;
   }
 
-  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-desktop-thin-kpi:last-child {
+  #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-desktop-thin-kpi:last-child {
     border-right: 0 !important;
   }
 
-  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-desktop-thin-kpi span,
-  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-desktop-thin-kpi em {
+  #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-desktop-thin-kpi span,
+  #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-desktop-thin-kpi em {
     overflow: hidden !important;
     color: var(--v817-muted) !important;
     font-size: 10px !important;
@@ -1425,34 +1425,34 @@
     white-space: nowrap !important;
   }
 
-  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-desktop-thin-kpi b {
+  #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-desktop-thin-kpi b {
     color: var(--v817-text) !important;
     font-size: 13.2px !important;
     line-height: 1 !important;
     white-space: nowrap !important;
   }
 
-  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-col {
+  #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-col {
     gap: 3px !important;
   }
 
-  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-col.is-main {
+  #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-col.is-main {
     grid-column: 2 !important;
     grid-row: 2 !important;
   }
 
-  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-col.is-side {
+  #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-col.is-side {
     grid-column: 3 !important;
     grid-row: 2 !important;
   }
 
-  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-col.is-bottom {
+  #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-col.is-bottom {
     grid-column: 1 / -1 !important;
     grid-row: 3 !important;
   }
 
   /* Canonical desktop status bus structure; semantic tones live beside the conclusion rule. */
-  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-topbar[data-overview-desktop-v1068-status-bus] {
+  #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-topbar[data-overview-desktop-v1068-status-bus] {
     grid-column: 1 / -1 !important;
     height: 38px !important;
     min-height: 38px !important;
@@ -1467,7 +1467,7 @@
     box-shadow: none !important;
   }
 
-  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-topbar[data-overview-desktop-v1068-status-bus] .ro-topbar-cell {
+  #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-topbar[data-overview-desktop-v1068-status-bus] .ro-topbar-cell {
     height: 38px !important;
     min-height: 38px !important;
     padding: 4px 10px !important;
@@ -1478,22 +1478,22 @@
     position: relative !important;
   }
 
-  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-topbar[data-overview-desktop-v1068-status-bus] .ro-topbar-cell[data-overview-status-role="conclusion"] {
+  #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-topbar[data-overview-desktop-v1068-status-bus] .ro-topbar-cell[data-overview-status-role="conclusion"] {
     background: linear-gradient(90deg, rgba(18, 34, 55, .028), rgba(255, 255, 255, 0) 72%) !important;
     box-shadow: inset 2px 0 0 rgba(18,34,55,.44) !important;
   }
 
-  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-topbar[data-overview-desktop-v1068-status-bus] .ro-topbar-cell[data-tone="danger"][data-overview-status-role="conclusion"] {
+  #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-topbar[data-overview-desktop-v1068-status-bus] .ro-topbar-cell[data-tone="danger"][data-overview-status-role="conclusion"] {
     background: linear-gradient(90deg, rgba(173, 54, 49, .045), rgba(255, 255, 255, 0) 72%) !important;
     box-shadow: inset 2px 0 0 rgba(173, 54, 49, .55) !important;
   }
 
-  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-topbar[data-overview-desktop-v1068-status-bus] .ro-topbar-cell[data-tone="warn"][data-overview-status-role="conclusion"] {
+  #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-topbar[data-overview-desktop-v1068-status-bus] .ro-topbar-cell[data-tone="warn"][data-overview-status-role="conclusion"] {
     background: linear-gradient(90deg, rgba(164, 111, 36, .045), rgba(255, 255, 255, 0) 72%) !important;
     box-shadow: inset 2px 0 0 rgba(164, 111, 36, .55) !important;
   }
 
-  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-topbar[data-overview-desktop-v1068-status-bus] .ro-topbar-cell span {
+  #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-topbar[data-overview-desktop-v1068-status-bus] .ro-topbar-cell span {
     color: var(--ik-console-muted, #76889d) !important;
     font-size: 10px !important;
     font-weight: 560 !important;
@@ -1501,14 +1501,14 @@
     letter-spacing: .01em !important;
   }
 
-  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-topbar[data-overview-desktop-v1068-status-bus] .ro-topbar-cell b {
+  #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-topbar[data-overview-desktop-v1068-status-bus] .ro-topbar-cell b {
     color: var(--ik-console-ink, #122237) !important;
     font-size: 12px !important;
     font-weight: 760 !important;
     line-height: 14px !important;
   }
 
-  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-topbar[data-overview-desktop-v1068-status-bus] .ro-topbar-cell em {
+  #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-topbar[data-overview-desktop-v1068-status-bus] .ro-topbar-cell em {
     color: var(--ik-console-subtle, #8fa0b3) !important;
     font-size: 9px !important;
     font-weight: 520 !important;
@@ -1516,7 +1516,7 @@
   }
 
   /* Canonical desktop module shell and heading. */
-  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-module {
+  #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-module {
     min-height: 0 !important;
     overflow: hidden !important;
     border: 1px solid rgba(157, 177, 198, .26) !important;
@@ -1526,16 +1526,16 @@
     box-shadow: none !important;
   }
 
-  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-module[data-tone="danger"] {
+  #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-module[data-tone="danger"] {
     border-left: 2px solid rgba(164, 48, 45, .70) !important;
   }
 
-  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-module[data-tone="warn"],
-  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-module[data-tone="missing"] {
+  #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-module[data-tone="warn"],
+  #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-module[data-tone="missing"] {
     border-left: 2px solid rgba(128, 98, 59, .56) !important;
   }
 
-  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-module-head {
+  #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-module-head {
     height: 25px !important;
     min-height: 25px !important;
     padding: 2px 6px !important;
@@ -1543,15 +1543,15 @@
     background: #fbfdff !important;
   }
 
-  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-module-head b {
+  #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-module-head b {
     color: #172a3d !important;
     font-size: 11px !important;
     font-weight: 790 !important;
     line-height: 1 !important;
   }
 
-  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-module-head span,
-  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-module-head em {
+  #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-module-head span,
+  #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-module-head em {
     max-width: 160px !important;
     overflow: hidden !important;
     color: #708295 !important;
@@ -1562,12 +1562,12 @@
   }
 
   /* Canonical desktop ledger: quiet separators, no audit-grid zebra striping. */
-  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-ledger-table {
+  #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-ledger-table {
     border: 0 !important;
     background: #fff !important;
   }
 
-  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-ledger-head-cell {
+  #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-ledger-head-cell {
     height: 18px !important;
     min-height: 16px !important;
     padding: 1px 5px !important;
@@ -1580,14 +1580,14 @@
     line-height: 1 !important;
   }
 
-  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-ledger-row:not(.ro-ledger-head) {
+  #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-ledger-row:not(.ro-ledger-head) {
     height: 28px !important;
     min-height: 28px !important;
     border-bottom: 1px solid rgba(226, 235, 244, .28) !important;
     background: transparent !important;
   }
 
-  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-ledger-cell {
+  #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-ledger-cell {
     height: 25px !important;
     min-height: 25px !important;
     padding: 1px 5px !important;
@@ -1599,40 +1599,40 @@
     line-height: 1.12 !important;
   }
 
-  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-ledger-cell:first-child,
-  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-ledger-cell:nth-child(2) {
+  #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-ledger-cell:first-child,
+  #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-ledger-cell:nth-child(2) {
     color: var(--v825-text) !important;
     font-weight: 760 !important;
   }
 
-  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-ledger-cell:nth-child(n+3),
-  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-ledger-cell small {
+  #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-ledger-cell:nth-child(n+3),
+  #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-ledger-cell small {
     color: #65778d !important;
     font-weight: 520 !important;
   }
 
-  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-ledger-row[data-tone="danger"] .ro-ledger-cell,
-  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-ledger-row[data-tone="warn"] .ro-ledger-cell,
-  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-ledger-row[data-tone="missing"] .ro-ledger-cell {
+  #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-ledger-row[data-tone="danger"] .ro-ledger-cell,
+  #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-ledger-row[data-tone="warn"] .ro-ledger-cell,
+  #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-ledger-row[data-tone="missing"] .ro-ledger-cell {
     color: #24374b !important;
   }
 
-  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-ledger-row[data-tone="danger"] .ro-ledger-cell:first-child,
-  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-ledger-row[data-tone="danger"] .ro-ledger-cell:first-child .ik-overview-cell-text {
+  #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-ledger-row[data-tone="danger"] .ro-ledger-cell:first-child,
+  #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-ledger-row[data-tone="danger"] .ro-ledger-cell:first-child .ik-overview-cell-text {
     color: #8f3a34 !important;
     font-weight: 720 !important;
   }
 
-  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-ledger-row[data-tone="warn"] .ro-ledger-cell:first-child,
-  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-ledger-row[data-tone="warn"] .ro-ledger-cell:first-child .ik-overview-cell-text,
-  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-ledger-row[data-tone="missing"] .ro-ledger-cell:first-child,
-  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-ledger-row[data-tone="missing"] .ro-ledger-cell:first-child .ik-overview-cell-text {
+  #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-ledger-row[data-tone="warn"] .ro-ledger-cell:first-child,
+  #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-ledger-row[data-tone="warn"] .ro-ledger-cell:first-child .ik-overview-cell-text,
+  #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-ledger-row[data-tone="missing"] .ro-ledger-cell:first-child,
+  #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-ledger-row[data-tone="missing"] .ro-ledger-cell:first-child .ik-overview-cell-text {
     color: #765927 !important;
     font-weight: 700 !important;
   }
 
-  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-col.is-bottom,
-  .router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-col.is-bottom {
+  #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-col.is-bottom,
+  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-col.is-bottom {
     grid-column: 2 / -1 !important;
   }
 }
@@ -1641,16 +1641,16 @@
    Lines become soft rhythm cues; risk color stays on first/business fields only. */
 @media (min-width: 761px) {
 
-  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-ledger-row:not(.ro-ledger-head):hover .ro-ledger-cell,
-  .router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-ledger-row:not(.ro-ledger-head):hover .ro-ledger-cell {
+  #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-ledger-row:not(.ro-ledger-head):hover .ro-ledger-cell,
+  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-ledger-row:not(.ro-ledger-head):hover .ro-ledger-cell {
     background: rgba(246, 250, 254, .48) !important;
   }
 }
 
 /* v1040 final ledger override: beat older row/cell shorthand rules in built CSS. */
 @media (min-width: 761px) {
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"][data-overview-desktop-v1030-nav-polish] .ro-module .ro-ledger .ro-ledger-row:not(.ro-ledger-head) > .ro-ledger-cell,
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"][data-overview-desktop-v1030-nav-polish] .ro-module .ro-ledger .ro-ledger-row:not(.ro-ledger-head) > .ro-ledger-cell {
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"][data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-module .ro-ledger .ro-ledger-row:not(.ro-ledger-head) > .ro-ledger-cell,
+  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"][data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-module .ro-ledger .ro-ledger-row:not(.ro-ledger-head) > .ro-ledger-cell {
     border-right-width: 0 !important;
     border-right-color: transparent !important;
     border-bottom: 1px solid rgba(226, 235, 244, .28) !important;
@@ -1658,18 +1658,18 @@
     color: #24374b !important;
   }
 
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"][data-overview-desktop-v1030-nav-polish] .ro-module .ro-ledger .ro-ledger-head > .ro-ledger-head-cell,
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"][data-overview-desktop-v1030-nav-polish] .ro-module .ro-ledger .ro-ledger-head > .ro-ledger-head-cell {
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"][data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-module .ro-ledger .ro-ledger-head > .ro-ledger-head-cell,
+  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"][data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-module .ro-ledger .ro-ledger-head > .ro-ledger-head-cell {
     border-bottom: 1px solid rgba(154, 176, 198, .14) !important;
     background-color: rgba(248, 251, 254, .72) !important;
   }
 
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"][data-overview-desktop-v1030-nav-polish] .ro-module .ro-ledger .ro-ledger-row[data-tone="danger"] > .ro-ledger-cell:not(:first-child),
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"][data-overview-desktop-v1030-nav-polish] .ro-module .ro-ledger .ro-ledger-row[data-tone="warn"] > .ro-ledger-cell:not(:first-child),
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"][data-overview-desktop-v1030-nav-polish] .ro-module .ro-ledger .ro-ledger-row[data-tone="missing"] > .ro-ledger-cell:not(:first-child),
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"][data-overview-desktop-v1030-nav-polish] .ro-module .ro-ledger .ro-ledger-row[data-tone="danger"] > .ro-ledger-cell:not(:first-child) .ik-overview-cell-text,
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"][data-overview-desktop-v1030-nav-polish] .ro-module .ro-ledger .ro-ledger-row[data-tone="warn"] > .ro-ledger-cell:not(:first-child) .ik-overview-cell-text,
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"][data-overview-desktop-v1030-nav-polish] .ro-module .ro-ledger .ro-ledger-row[data-tone="missing"] > .ro-ledger-cell:not(:first-child) .ik-overview-cell-text {
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"][data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-module .ro-ledger .ro-ledger-row[data-tone="danger"] > .ro-ledger-cell:not(:first-child),
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"][data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-module .ro-ledger .ro-ledger-row[data-tone="warn"] > .ro-ledger-cell:not(:first-child),
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"][data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-module .ro-ledger .ro-ledger-row[data-tone="missing"] > .ro-ledger-cell:not(:first-child),
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"][data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-module .ro-ledger .ro-ledger-row[data-tone="danger"] > .ro-ledger-cell:not(:first-child) .ik-overview-cell-text,
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"][data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-module .ro-ledger .ro-ledger-row[data-tone="warn"] > .ro-ledger-cell:not(:first-child) .ik-overview-cell-text,
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"][data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-module .ro-ledger .ro-ledger-row[data-tone="missing"] > .ro-ledger-cell:not(:first-child) .ik-overview-cell-text {
     color: #24374b !important;
   }
 }

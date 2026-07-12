@@ -11294,7 +11294,6 @@ var PanelFramework = function(exports) {
         "data-overview-hard-standard": "desktop-status-bus-mobile-ios-app-home-chart-meta-sample-depth-required-no-large-alert-card",
         "data-overview-desktop-mobile-leakage-guard": "hide-mobile-shell-on-desktop",
         "data-overview-desktop-hierarchy-contract": "conclusion-key-metrics-evidence",
-        "data-overview-desktop-v1030-nav-polish": "short-ikuai-left-rail-low-noise-status-bus",
         "data-overview-mobile-no-snapshot-microchart": state.scenario === "no-snapshot" ? "snapshot-channel-matrix" : void 0,
         "data-overview-no-snapshot-flow-timeline-matrix": state.scenario === "no-snapshot" ? "true" : void 0,
         "data-overview-no-snapshot-density-contract": state.scenario === "no-snapshot" ? "left60-chain-boundary-success-route-right-readonly-degraded" : void 0,

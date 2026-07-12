@@ -916,7 +916,11 @@ async function main() {
         const routeBusinessRows = Array.from(sectionEl?.querySelectorAll('[data-routeros-evidence-role="business-main"]') || []);
         const routeRawSecondaryRows = Array.from(sectionEl?.querySelectorAll('[data-routeros-evidence-role="raw-secondary"]') || []);
         const rawAttrNames = ['data-routeros-raw-table', 'data-routeros-raw-gateway', 'data-routeros-raw-distance', 'data-routeros-raw-active', 'data-routeros-raw-disabled'];
-        const routeBusinessRowsNoRawAttrs = routeBusinessRows.length >= 1 && routeBusinessRows.every((row) => rawAttrNames.every((name) => !row.hasAttribute(name)));
+        const routeBusinessSurfacePresent = Boolean(
+          routeBusinessRows.length >= 1 ||
+          (wanDecisionRailProductized && wanDecisionLabels.includes('默认出口'))
+        );
+        const routeBusinessRowsNoRawAttrs = routeBusinessRows.every((row) => rawAttrNames.every((name) => !row.hasAttribute(name)));
         const routeRawSecondaryComplete = routeRawSecondaryRows.length >= 1 && routeRawSecondaryRows.every((row) => (
           row.getAttribute('data-routeros-raw-field-mode') === 'secondary-collapsed-evidence' &&
           row.getAttribute('data-routeros-raw-field-contract') === 'table-gateway-distance-active-disabled-secondary' &&
@@ -940,6 +944,7 @@ async function main() {
         ));
         const routeRawEvidenceSecondaryProductized = Boolean(
           routeModules.length >= 1 &&
+          routeBusinessSurfacePresent &&
           routeBusinessRowsNoRawAttrs &&
           routeRawSecondaryComplete &&
           routeRawSecondaryLowNoise
@@ -1058,6 +1063,7 @@ async function main() {
           rawEvidenceDisclosureOpen: rawEvidenceDisclosure?.open || false,
           rawEvidenceDisclosureSummaryText: normalize(rawEvidenceDisclosureSummary?.textContent || ''),
           rawEvidenceDisclosureSummaryHeight: rawEvidenceDisclosureSummaryRect?.height || 0,
+          routeBusinessSurfacePresent,
           routeBusinessRowsNoRawAttrs,
           routeRawSecondaryComplete,
           routeRawSecondaryLowNoise,

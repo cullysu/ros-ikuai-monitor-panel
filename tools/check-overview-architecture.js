@@ -404,6 +404,10 @@ assert(lines(mobileModel) <= 900, `mobileOverviewModel.ts exceeds 900 lines: ${l
 assert(!panel.includes("ik-ios-"), "OverviewPanel.tsx reintroduced legacy ik-ios classes");
 assert(!panel.includes("ik-mobile-"), "OverviewPanel.tsx reintroduced legacy ik-mobile classes");
 assert(
+  !/data-overview-desktop-v\d+/.test(panel),
+  "OverviewPanel.tsx must not expose versioned desktop acceptance attributes"
+);
+assert(
   legacyIosSelectorCount === 0,
   `OverviewPanel.css reintroduced ${legacyIosSelectorCount} legacy ik-ios selector rules`
 );
