@@ -5,12 +5,11 @@ import {
   collectionChannelRows,
   collectionReadonlyRows,
   collectionRows,
-  compactRows,
   lastSuccessRows,
-  routeBusinessRows,
   threeColumnRows,
-  wanRows,
-} from "./desktopOverviewRows";
+} from "./desktopOverviewCredibilityRows";
+import { routeBusinessRows, wanRows } from "./desktopOverviewNetworkRows";
+import { compactRows } from "./desktopOverviewTerminalRows";
 import { ChannelMatrixVisual, VisualStack } from "./desktopOverviewVisuals";
 import { Module } from "./components/DesktopModule";
 import type { DesktopSceneSections } from "./desktopOverviewSceneTypes";

@@ -2,17 +2,17 @@ import type { OverviewDerivedState, OverviewRawSnapshot } from "./index";
 import { moduleTrust } from "./desktopOverviewHelpers";
 import {
   collectionRows,
-  compactRows,
-  desktopTerminalRows,
-  interfaceBoundaryRows,
-  routeFactRows,
   threeColumnRows,
+} from "./desktopOverviewCredibilityRows";
+import { interfaceBoundaryRows, routeFactRows } from "./desktopOverviewNetworkRows";
+import { compactRows, desktopTerminalRows } from "./desktopOverviewTerminalRows";
+import {
   trafficChartRows,
   trafficPeakRows,
   trafficRouteRows,
   trafficSamplingRows,
   trafficTop3Rows,
-} from "./desktopOverviewRows";
+} from "./desktopOverviewTrafficRows";
 import { resourceRows } from "./desktopResourceRows";
 import { desktopEvidenceBoundaryRows } from "./desktopEvidenceRows";
 import { DesktopWanIntegratedVisual } from "./desktopOverviewVisuals";

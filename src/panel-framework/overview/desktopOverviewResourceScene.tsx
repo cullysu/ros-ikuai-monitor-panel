@@ -3,13 +3,12 @@ import { moduleTrust } from "./desktopOverviewHelpers";
 import {
   collectionChannelRows,
   collectionRows,
-  compactRows,
-  interfaceBoundaryRows,
   lastSuccessRows,
-  normalOpsRows,
-  routeRawEvidenceRows,
   threeColumnRows,
-} from "./desktopOverviewRows";
+} from "./desktopOverviewCredibilityRows";
+import { interfaceBoundaryRows, routeRawEvidenceRows } from "./desktopOverviewNetworkRows";
+import { compactRows } from "./desktopOverviewTerminalRows";
+import { normalOpsRows } from "./desktopOverviewTrafficRows";
 import { desktopEvidenceBoundaryRows } from "./desktopEvidenceRows";
 import {
   connectionPressureChartRows,

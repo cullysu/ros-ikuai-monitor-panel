@@ -1,11 +1,11 @@
 import type { OverviewDerivedState, OverviewRawSnapshot } from "./index";
 import { moduleTrust } from "./desktopOverviewHelpers";
 import {
-  compactRows,
   lastSuccessRows,
   noSnapshotBusinessBoundaryRows,
   noSnapshotChainRows,
-} from "./desktopOverviewRows";
+} from "./desktopOverviewCredibilityRows";
+import { compactRows } from "./desktopOverviewTerminalRows";
 import { desktopEvidenceBoundaryRows } from "./desktopEvidenceRows";
 import { Module } from "./components/DesktopModule";
 import type { DesktopSceneSections } from "./desktopOverviewSceneTypes";

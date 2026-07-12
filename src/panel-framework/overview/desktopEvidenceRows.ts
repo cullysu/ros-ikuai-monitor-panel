@@ -3,13 +3,12 @@ import type { LedgerRow } from "./desktopOverviewHelpers";
 import {
   allOfflineImpactRows,
   collectionReadonlyRows,
-  compactRows,
-  interfaceBoundaryRows,
   noSnapshotReadonlyDegradedRows,
-  normalOpsRows,
-  routeRawEvidenceRows,
   threeColumnRows,
-} from "./desktopOverviewRows";
+} from "./desktopOverviewCredibilityRows";
+import { interfaceBoundaryRows, routeRawEvidenceRows } from "./desktopOverviewNetworkRows";
+import { compactRows } from "./desktopOverviewTerminalRows";
+import { normalOpsRows } from "./desktopOverviewTrafficRows";
 import { resourceBoundaryRows } from "./desktopResourceRows";
 
 export function desktopEvidenceBoundaryRows(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): LedgerRow[] {

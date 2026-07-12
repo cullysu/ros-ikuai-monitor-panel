@@ -1,9 +1,7 @@
 import type { OverviewDerivedState, OverviewRawSnapshot } from "./index";
 import { moduleTrust } from "./desktopOverviewHelpers";
+import { collectionChannelRows, threeColumnRows } from "./desktopOverviewCredibilityRows";
 import {
-  collectionChannelRows,
-  compactRows,
-  desktopTerminalRows,
   interfaceBoundaryRows,
   interfaceCollectionRows,
   interfacePageTrustRows,
@@ -11,8 +9,8 @@ import {
   interfaceRows,
   routeBusinessRows,
   routeRawEvidenceRows,
-  threeColumnRows,
-} from "./desktopOverviewRows";
+} from "./desktopOverviewNetworkRows";
+import { compactRows, desktopTerminalRows } from "./desktopOverviewTerminalRows";
 import { ChannelMatrixVisual, VisualStack } from "./desktopOverviewVisuals";
 import { Module } from "./components/DesktopModule";
 import type { DesktopSceneSections } from "./desktopOverviewSceneTypes";

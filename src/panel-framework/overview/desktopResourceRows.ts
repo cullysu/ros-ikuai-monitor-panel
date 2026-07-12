@@ -23,7 +23,7 @@ import {
   statusUpdated,
   text,
 } from "./desktopOverviewHelpers";
-import { trafficTotals, trendDatum } from "./desktopOverviewRows";
+import { trafficTotals, trendDatum } from "./desktopOverviewTrafficRows";
 
 export function resourceRows(state: OverviewDerivedState): LedgerRow[] {
   const metrics = [
@@ -220,4 +220,3 @@ export function resourceSustainRows(snapshot: OverviewRawSnapshot, state: Overvi
     { id: "resource-sustain-readonly", cells: ["展示边界", "不写配置", "不推断修复", "只展示阈值"], tone: "trust" },
   ];
 }
-

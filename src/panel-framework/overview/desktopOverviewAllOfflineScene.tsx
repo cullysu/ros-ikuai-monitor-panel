@@ -4,15 +4,17 @@ import {
   allOfflineImpactRows,
   collectionChannelRows,
   collectionRows,
-  compactRows,
-  interfaceBoundaryRows,
-  normalOpsRows,
-  routeBusinessRows,
-  routeRawEvidenceRows,
   threeColumnRows,
   wanContinuityRows,
+} from "./desktopOverviewCredibilityRows";
+import {
+  interfaceBoundaryRows,
+  routeBusinessRows,
+  routeRawEvidenceRows,
   wanRows,
-} from "./desktopOverviewRows";
+} from "./desktopOverviewNetworkRows";
+import { compactRows } from "./desktopOverviewTerminalRows";
+import { normalOpsRows } from "./desktopOverviewTrafficRows";
 import { ChannelMatrixVisual } from "./desktopOverviewVisuals";
 import { Module } from "./components/DesktopModule";
 import type { DesktopSceneSections } from "./desktopOverviewSceneTypes";

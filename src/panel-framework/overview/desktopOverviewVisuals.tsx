@@ -14,7 +14,7 @@ import {
 import {
   desktopWanDecisionRail,
   trafficTop3Rows,
-} from "./desktopOverviewRows";
+} from "./desktopOverviewTrafficRows";
 
 export function JudgementChart({ module, rows, kind = "trend" }: { module: string; rows: ChartDatum[]; kind?: "trend" | "pressure" }) {
   const maxValue = Math.max(1, ...rows.map((row) => Math.max(row.currentValue, row.peakValue, row.thresholdValue)));

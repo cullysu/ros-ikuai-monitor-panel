@@ -9862,134 +9862,201 @@ var PanelFramework = function(exports) {
     const value = row == null ? void 0 : row.cells[index];
     return typeof value === "string" || typeof value === "number" ? String(value) : fallback;
   }
-  function desktopWanDecisionRail(snapshot, state, rows) {
-    const lead = rows[0];
-    const top = trafficTop3Rows(snapshot, state)[0];
-    const route = trafficRouteRows(snapshot, state)[0];
-    const sampling = trafficSamplingRows(snapshot, state)[0];
-    const peak = trafficPeakRows(snapshot, state)[0];
+  function collectionRows(snapshot, state) {
+    const recent = latestSuccess(snapshot, state.scenario);
+    const rest = restState(snapshot, state);
+    const ssh = sshState(snapshot, state);
     return [
-      { id: "current", label: "当前", value: (lead == null ? void 0 : lead.current) || "-", note: (lead == null ? void 0 : lead.unit) || "bps", tone: state.facts.wan.allOffline ? "danger" : "trust" },
-      { id: "peak", label: "峰值", value: (lead == null ? void 0 : lead.peak) || "-", note: (lead == null ? void 0 : lead.window) || "最近窗口", tone: "trust" },
-      { id: "top-outlet", label: "Top出口", value: ledgerCellText(top, 1), note: ledgerCellText(top, 2), tone: (top == null ? void 0 : top.tone) || "trust" },
-      { id: "default-route", label: "默认出口", value: ledgerCellText(route, 1), note: ledgerCellText(route, 2), tone: (route == null ? void 0 : route.tone) || state.facts.route.level },
-      { id: "sampling", label: "采样", value: ledgerCellText(sampling, 1), note: ledgerCellText(peak, 1), tone: (sampling == null ? void 0 : sampling.tone) || state.facts.collection.level }
+      { id: "collection-routeros", cells: ["设备通达性", routerosState(snapshot, state.scenario).value, recent, businessErrorNote(snapshot.error, "当前可达")], tone: routerosState(snapshot, state.scenario).tone },
+      { id: "collection-rest", cells: ["REST", rest.value, recent, rest.note], tone: rest.tone },
+      { id: "collection-ssh", cells: ["SSH", ssh.value, recent, ssh.note], tone: ssh.tone },
+      { id: "collection-cache", cells: ["数据层状态", state.scenario === "no-snapshot" ? "隐藏" : state.scenario === "collection-down" ? "缓存" : "实时", recent, state.scenario === "no-snapshot" ? "无业务快照，业务禁显" : state.scenario === "collection-down" ? "业务快照非实时 / 待恢复" : "业务快照可参考"], tone: state.scenario === "no-snapshot" ? "missing" : state.scenario === "collection-down" ? "warn" : "ok" },
+      { id: "collection-boundary", cells: ["展示边界", state.scenario === "collection-down" ? "只读缓存" : "实时可参考", recent, state.scenario === "collection-down" ? "REST / SSH / 快照分开判" : "业务快照边界清晰"], tone: state.scenario === "collection-down" ? "warn" : "trust" },
+      { id: "collection-failure", cells: ["失败端点", state.scenario === "collection-down" ? "未记录" : state.facts.failures.count ? failureText(snapshot, state) : "未记录", statusUpdated(snapshot), state.scenario === "collection-down" ? "未记录" : state.facts.failures.count ? "见端点列表" : "未记录"], tone: state.facts.failures.count ? "warn" : "trust" },
+      { id: "collection-trust", cells: ["可信度", state.scenario === "collection-down" ? "可参考" : moduleTrust(state), recent, state.scenario === "collection-down" ? "非实时" : "按快照可信度显示"], tone: state.scenario === "collection-down" ? "warn" : "trust" },
+      { id: "collection-next", cells: ["下次尝试", pollText(snapshot), recent, "轮询中"], tone: "trust" }
     ];
   }
-  function trafficTotals(snapshot) {
-    const rows = collectWanRows(snapshot);
-    return {
-      up: rows.reduce((total, row) => total + toNumber(row.upRate), 0),
-      down: rows.reduce((total, row) => total + toNumber(row.downRate), 0),
-      rows
-    };
-  }
-  function trendDatum(id2, label, currentValue, thresholdValue, tone, unit = "bps") {
-    const peakValue = Math.max(currentValue, thresholdValue * 0.68, currentValue * 1.18);
-    const meanValue = Math.max(0, currentValue * 0.72);
-    return {
-      id: id2,
-      label,
-      current: formatRate(currentValue),
-      currentValue,
-      peak: formatRate(peakValue),
-      peakValue,
-      mean: formatRate(meanValue),
-      meanValue,
-      threshold: formatRate(thresholdValue),
-      thresholdValue,
-      window: "最近6点",
-      trust: "采样",
-      tone,
-      unit
-    };
-  }
-  function trafficChartRows(snapshot, state) {
-    const totals2 = trafficTotals(snapshot);
-    const top = totals2.rows.slice().sort((left, right) => toNumber(right.downRate || right.upRate) - toNumber(left.downRate || left.upRate))[0];
-    const topValue = top ? Math.max(toNumber(top.downRate), toNumber(top.upRate)) : 0;
-    const baseThreshold = Math.max(totals2.up, totals2.down, topValue, 1) * 1.35;
-    const summaryRows = [
-      trendDatum("traffic-down", "总下行", totals2.down, baseThreshold, totals2.down > baseThreshold * 0.8 ? "warn" : "trust"),
-      trendDatum("traffic-up", "总上行", totals2.up, baseThreshold, totals2.up > baseThreshold * 0.8 ? "warn" : "trust")
+  function collectionChannelRows(snapshot, state) {
+    const rest = restState(snapshot, state);
+    const ssh = sshState(snapshot, state);
+    const snapshotOk = state.scenario === "collection-down" ? 42 : state.scenario === "no-snapshot" ? 0 : 92;
+    const channelScore = (item) => item.tone === "ok" ? 92 : item.tone === "danger" ? 12 : 46;
+    return [
+      {
+        id: "channel-rest",
+        label: "REST",
+        current: rest.value,
+        currentValue: channelScore(rest),
+        peak: "可用",
+        peakValue: 100,
+        mean: rest.tone === "ok" ? "稳定" : "待核",
+        meanValue: channelScore(rest),
+        threshold: "可达",
+        thresholdValue: 80,
+        window: latestSuccess(snapshot, state.scenario),
+        trust: state.scenario === "collection-down" ? "缓存快照" : moduleTrust(state),
+        tone: rest.tone,
+        unit: "status"
+      },
+      {
+        id: "channel-ssh",
+        label: "SSH",
+        current: ssh.value,
+        currentValue: channelScore(ssh),
+        peak: "可用",
+        peakValue: 100,
+        mean: ssh.tone === "ok" ? "稳定" : "不可用",
+        meanValue: channelScore(ssh),
+        threshold: "可达",
+        thresholdValue: 80,
+        window: latestSuccess(snapshot, state.scenario),
+        trust: state.scenario === "collection-down" ? "缓存快照" : moduleTrust(state),
+        tone: ssh.tone,
+        unit: "status"
+      },
+      {
+        id: "channel-snapshot",
+        label: "快照",
+        current: state.scenario === "no-snapshot" ? "无" : state.scenario === "collection-down" ? "缓存" : "实时",
+        currentValue: snapshotOk,
+        peak: "实时",
+        peakValue: 100,
+        mean: state.scenario === "collection-down" ? "缓存可参考" : moduleTrust(state),
+        meanValue: snapshotOk,
+        threshold: "实时",
+        thresholdValue: 80,
+        window: latestSuccess(snapshot, state.scenario),
+        trust: moduleTrust(state),
+        tone: state.scenario === "no-snapshot" ? "danger" : state.scenario === "collection-down" ? "warn" : "trust",
+        unit: "status"
+      }
     ];
-    if (totals2.rows.length > 1) {
-      summaryRows.push(trendDatum("traffic-top-wan", top ? text(top.name || top.interface, "WAN Top1") : "WAN Top1", topValue, baseThreshold, state.facts.wan.allOffline ? "danger" : "trust"));
-    }
-    return summaryRows;
   }
-  function trafficRows(snapshot, state) {
-    const totals2 = trafficTotals(snapshot);
-    const offlineRows = state.scenario === "fleet" ? collectWanRows(snapshot).filter((row) => row.running === false).slice(0, 3).map((row, index) => {
-      const name = text(row.name || row.interface, `wan-offline-${index + 1}`);
+  function threeColumnRows(rows, prefix = "") {
+    return rows.map((row, index) => {
+      const [first, second, ...rest] = row.cells;
       return {
-        id: `traffic-offline-${index}`,
-        attrs: { "data-overview-anomaly-object": name },
-        cells: ["离线对象", name, "历史离线 / 当前影响未知"],
-        tone: "warn"
-      };
-    }) : [];
-    const fleetRows = state.scenario === "fleet" ? [
-      { id: "fleet-type-distribution", cells: ["类型分布", "PPPoE / static / DHCP", "WAN账本分组"], tone: "trust" },
-      { id: "fleet-default-route-count", cells: ["默认路由条目", routeLabelText(state), routeBusinessText(state)], tone: state.facts.route.level },
-      { id: "fleet-interface-rank", cells: ["接口排行", "Top8 可见", "按接口吞吐排序"], tone: "trust" },
-      { id: "fleet-anomaly-topn", cells: ["异常TopN", compactListText(offlineRows.map((row) => String(row.cells[1] || "")), 3) || "留存无新增", "历史 / 当前影响未知"], tone: offlineRows.length ? "warn" : "trust" },
-      { id: "fleet-collection-confidence", cells: ["采集可信度", moduleTrust(state), state.facts.collection.channelText], tone: state.facts.collection.level },
-      { id: "fleet-terminal-scale", cells: ["终端规模", `${formatNumber(Array.isArray(snapshot.terminals) ? snapshot.terminals.length : state.facts.connections.total)} terminal`, `${formatCompact(state.facts.connections.total)} 连接`], tone: "trust" }
-    ] : [];
-    const topRows = totals2.rows.slice().sort((left, right) => Math.max(toNumber(right.downRate), toNumber(right.upRate)) - Math.max(toNumber(left.downRate), toNumber(left.upRate))).slice(0, 3).map((row, index) => {
-      const name = text(row.name || row.interface, `wan-${index + 1}`);
-      const value = Math.max(toNumber(row.downRate), toNumber(row.upRate));
-      const attrs = { "data-overview-wan-detail-row": "true", ...row.running === false && state.scenario === "fleet" ? { "data-overview-anomaly-object": name } : {} };
-      return {
-        id: `traffic-top-${index}`,
-        attrs,
-        cells: [`WAN Top${index + 1}`, `${name} ${formatRate(value)}`, row.running === false ? "离线" : "当前速率"],
-        tone: row.running === false ? "danger" : "trust"
+        ...row,
+        id: `${prefix}${row.id || index}`,
+        cells: [first, second, rest.filter((cell) => cell !== "").map((cell, cellIndex) => /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: cell }, `${row.id}-three-${cellIndex}`))]
       };
     });
-    const peak = Math.max(totals2.up, totals2.down, ...totals2.rows.map((row) => Math.max(toNumber(row.downRate), toNumber(row.upRate))));
+  }
+  function noSnapshotChainRows(snapshot, state) {
+    const recent = latestSuccess(snapshot, state.scenario);
+    const next = pollText(snapshot);
     return [
-      { id: "traffic-current-down", cells: ["当前下行", formatRate(totals2.down), "图表主值"], tone: "trust" },
-      { id: "traffic-current-up", cells: ["当前上行", formatRate(totals2.up), "图表主值"], tone: "trust" },
-      ...offlineRows,
-      ...fleetRows,
-      ...topRows,
-      { id: "traffic-route", cells: ["默认出口", routeLabelText(state), routeBusinessText(state)], tone: state.facts.route.level },
-      { id: "traffic-sampling", cells: ["采样可信度", moduleTrust(state), "最近6点 / 当前值峰值均值"], tone: state.facts.freshness.credibilityTone },
-      { id: "traffic-peak", cells: ["最近峰值", formatRate(peak), `最近成功 ${latestSuccess(snapshot, state.scenario)}`], tone: "trust" }
+      { id: "chain-router", cells: ["RouterOS", "不可达", "管理连接未建立"], tone: "danger" },
+      { id: "chain-rest", cells: ["REST", restState(snapshot, state).value, restState(snapshot, state).note], tone: restState(snapshot, state).tone },
+      { id: "chain-ssh", cells: ["SSH", sshState(snapshot, state).value, sshState(snapshot, state).note], tone: sshState(snapshot, state).tone },
+      { id: "chain-next", cells: ["下一次轮询", next, `最近成功 ${recent}`], tone: recent === "未记录" ? "warn" : "trust" }
     ];
   }
-  function trafficTop3Rows(snapshot, state) {
-    return trafficRows(snapshot, state).filter((row) => /^traffic-top-/.test(row.id));
-  }
-  function trafficRouteRows(snapshot, state) {
-    const route = buildRouterOsRouteEvidenceModel(snapshot, state).summary;
-    return [{
-      id: "traffic-route",
-      attrs: { "data-overview-default-route-row": "true", "data-overview-route-evidence-model": "routeros-standard" },
-      cells: ["默认出口", route.value, route.note],
-      tone: route.tone,
-      title: "默认出口已通过 RouterOS evidence item 标准化"
-    }];
-  }
-  function trafficSamplingRows(snapshot, state) {
-    return trafficRows(snapshot, state).filter((row) => row.id === "traffic-sampling");
-  }
-  function trafficPeakRows(snapshot, state) {
-    return trafficRows(snapshot, state).filter((row) => row.id === "traffic-peak");
-  }
-  function normalOpsRows(snapshot, state) {
+  function noSnapshotBusinessBoundaryRows(snapshot, state) {
     const recent = latestSuccess(snapshot, state.scenario);
     return [
-      { id: "ops-rest", cells: ["REST", restState(snapshot, state).value, restState(snapshot, state).note], tone: restState(snapshot, state).tone },
-      { id: "ops-ssh", cells: ["SSH", sshState(snapshot, state).value, sshState(snapshot, state).note], tone: sshState(snapshot, state).tone },
-      { id: "ops-success", cells: ["最近成功", recent, moduleTrust(state)], tone: recent === "未记录" ? "warn" : "trust" },
-      { id: "ops-failure", cells: ["端点失败", failureText(snapshot, state), "未记录不写 0"], tone: state.facts.failures.count ? "warn" : "trust" },
-      { id: "ops-route", cells: ["默认出口", routeLabelText(state), routeBusinessText(state)], tone: state.facts.route.level },
-      { id: "ops-readonly", cells: ["只读", "不写配置", "仅展示设备事实"], tone: "trust" },
-      { id: "ops-device", cells: ["设备", state.facts.device.identity, `${state.facts.device.version} · ${state.facts.device.uptime}`], tone: "trust" },
-      { id: "ops-sample", cells: ["样本", "最近6点", "当前 / 均值 / 峰值"], tone: state.facts.freshness.credibilityTone }
+      { id: "boundary-business", cells: ["业务快照", "未取得", "WAN / 资源 / 终端 / 连接 / 速率不展示", "避免把缺失解释为 0"], tone: "missing" },
+      { id: "boundary-route", cells: ["默认路由", "待判定", ROUTE_UNKNOWN, "路由快照取回后判断"], tone: "warn" },
+      { id: "boundary-success", cells: ["最近成功", recent, `状态更新 ${statusUpdated(snapshot)}`, "仅证明采集曾成功"], tone: recent === "未记录" ? "warn" : "trust" },
+      { id: "boundary-mode", cells: ["操作模式", "只读", "不会修改 RouterOS 配置", `等待 ${pollText(snapshot)}`], tone: "trust" }
+    ];
+  }
+  function noSnapshotReadonlyDegradedRows(snapshot, state) {
+    const recent = latestSuccess(snapshot, state.scenario);
+    const rest = restState(snapshot, state);
+    const ssh = sshState(snapshot, state);
+    const router = routerosState(snapshot, state.scenario);
+    return [
+      { id: "readonly-policy", cells: ["只读范围", "只读", "不写配置 / 不推断业务数值"], tone: "trust" },
+      { id: "readonly-chain", cells: ["保留模块", "采集链路", "页面可信等级链路可参考 / 最近成功可展示"], tone: "trust" },
+      { id: "readonly-business", cells: ["业务数据展示边界", "无业务快照", "无业务快照，业务数据不展示"], tone: "missing" },
+      { id: "readonly-rate", cells: ["速率", "不展示", "无业务快照时速率不展示"], tone: "missing" },
+      { id: "readonly-router", cells: ["路由器管理面", router.value, router.note], tone: router.tone },
+      { id: "readonly-rest", cells: ["REST", rest.value, rest.note], tone: rest.tone },
+      { id: "readonly-ssh", cells: ["SSH", ssh.value, ssh.note], tone: ssh.tone },
+      { id: "readonly-route", cells: ["默认出口", "待判", "路由快照未取回，不推断承载"], tone: "warn" },
+      { id: "readonly-success", cells: ["最近成功", recent, "只作为采集链路时间点"], tone: recent === "未记录" ? "warn" : "trust" },
+      { id: "readonly-next", cells: ["下一次轮询", pollText(snapshot), "等待采集恢复"], tone: "trust" }
+    ];
+  }
+  function lastSuccessRows(snapshot, state) {
+    const recent = latestSuccess(snapshot, state.scenario);
+    const label = state.scenario === "collection-down" ? "最后成功" : "最近成功";
+    if (state.scenario === "no-snapshot") {
+      return [
+        { id: "success-time", cells: ["最近成功", recent, "采集时间点"], tone: recent === "未记录" ? "warn" : "trust" },
+        { id: "success-current", cells: ["当前状态", "快照缺失", `状态更新 ${statusUpdated(snapshot)}`], tone: "missing" },
+        { id: "success-next", cells: ["下一次轮询", pollText(snapshot), "继续只读采集"], tone: "trust" },
+        { id: "success-target", cells: ["恢复判据", "取得新快照", "届时重新判断 WAN 与业务状态"], tone: "warn" }
+      ];
+    }
+    return [
+      { id: "success-time", cells: [label, recent, "当前采样"], tone: recent === "未记录" ? "warn" : "trust" },
+      { id: "success-source", cells: ["来源", "业务快照", state.facts.collection.channelText], tone: "trust" },
+      { id: "success-scope", cells: ["可展示范围", "业务状态", moduleTrust(state)], tone: "ok" },
+      { id: "success-disabled", cells: ["已折叠模块", "无", "按边界显示"], tone: "trust" },
+      { id: "success-current", cells: ["当前状态", "可用", "业务快照可参考"], tone: "trust" },
+      { id: "success-next", cells: ["下一次轮询", pollText(snapshot), "时间轴终点"], tone: "trust" }
+    ];
+  }
+  function wanContinuityRows(state) {
+    return [
+      { id: "cont-total", cells: ["离线对象", `${formatNumber(state.facts.wan.offline)} 条`, "全部 WAN 离线"], tone: "danger" },
+      { id: "cont-online", cells: ["WAN", `${formatNumber(state.facts.wan.online)}/${formatNumber(state.facts.wan.total)}`, `WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(state.facts.wan.total)}`], tone: "danger" },
+      { id: "cont-route", cells: ["默认路由", "异常", "未发现活动默认路由"], tone: "danger" },
+      { id: "cont-carry", cells: ["承载", "未承载", "离线线路未承载业务"], tone: "warn" },
+      { id: "cont-rate", cells: ["速率", "无有效样本", "离线线路不伪装零速率"], tone: "warn" },
+      { id: "cont-rest", cells: ["REST", state.facts.collection.restLabel, "采集通道可核对"], tone: state.facts.collection.level },
+      { id: "cont-ssh", cells: ["SSH", state.facts.collection.sshLabel, "静态读取可核对"], tone: state.facts.collection.level },
+      { id: "cont-age", cells: ["业务快照", state.facts.freshness.text, moduleTrust(state)], tone: state.facts.freshness.level },
+      { id: "cont-next", cells: ["下钻", "WAN明细", "先看线路与默认路由"], tone: "trust" },
+      { id: "cont-resource", cells: ["资源", state.facts.resource.summaryText, "事故二级证据"], tone: state.facts.resource.level },
+      { id: "cont-terminal", cells: ["连接", `${formatCompact(state.facts.connections.total)} 连接`, "二屏补充"], tone: "trust" },
+      { id: "cont-boundary", cells: ["只读", "不写配置", "状态台仅展示"], tone: "trust" }
+    ];
+  }
+  function allOfflineImpactRows(snapshot, state) {
+    const recent = latestSuccess(snapshot, state.scenario);
+    return [
+      { id: "ao-impact-object", cells: ["事故对象", `${formatNumber(state.facts.wan.offline)} 条 WAN`, "全部出口离线"], tone: "danger" },
+      { id: "ao-impact-route", cells: ["默认出口", routeLabelText(state), routeBusinessText(state)], tone: state.facts.route.level },
+      { id: "ao-impact-carrier", cells: ["承载关系", "未承载", "离线线路不承载业务"], tone: "warn" },
+      { id: "ao-impact-rate", cells: ["速率展示", "不展示", "无有效样本，不显示零速率"], tone: "warn" },
+      { id: "ao-impact-collection", cells: ["采集可信", state.facts.collection.credibilityLabel, state.facts.collection.channelText], tone: state.facts.collection.level },
+      { id: "ao-impact-success", cells: ["最近成功", recent, moduleTrust(state)], tone: recent === "未记录" ? "warn" : "trust" },
+      { id: "ao-impact-resource", cells: ["资源", state.facts.resource.summaryText, "二级证据"], tone: state.facts.resource.level },
+      { id: "ao-impact-readonly", cells: ["展示边界", "不写配置", "只展示状态与证据"], tone: "trust" }
+    ];
+  }
+  function collectionBoundaryLedgerRows(snapshot, state) {
+    const recent = latestSuccess(snapshot, state.scenario);
+    return [
+      { id: "cb-rest", cells: ["REST", restState(snapshot, state).value, restState(snapshot, state).note], tone: restState(snapshot, state).tone },
+      { id: "cb-ssh", cells: ["SSH", sshState(snapshot, state).value, sshState(snapshot, state).note], tone: sshState(snapshot, state).tone },
+      { id: "cb-snapshot", cells: ["业务快照", "缓存快照", "当前展示最后成功快照"], tone: "warn" },
+      { id: "cb-success", cells: ["最后成功", recent, "业务状态按缓存参考"], tone: recent === "未记录" ? "warn" : "trust" },
+      { id: "cb-failure", cells: ["端点失败", failureText(snapshot, state), "未记录不写 0"], tone: state.facts.failures.count ? "warn" : "trust" },
+      { id: "cb-route", cells: ["默认出口", routeLabelText(state), routeBusinessText(state)], tone: state.facts.route.level },
+      { id: "cb-wan", cells: ["WAN", state.facts.wan.text, "缓存快照下可参考"], tone: state.facts.wan.allOffline ? "danger" : "trust" },
+      { id: "cb-resource", cells: ["资源", state.facts.resource.summaryText, "缓存快照下可参考"], tone: state.facts.resource.level },
+      { id: "cb-next", cells: ["下次尝试", pollText(snapshot), "轮询中"], tone: "trust" },
+      { id: "cb-readonly", cells: ["展示边界", "不写配置", "不推断业务数值"], tone: "trust" }
+    ];
+  }
+  function collectionReadonlyRows(snapshot, state) {
+    const recent = latestSuccess(snapshot, state.scenario);
+    return [
+      { id: "cr-display", cells: ["展示范围", "最后成功快照", `最近成功 ${recent}`], tone: "warn" },
+      { id: "cr-route", cells: ["默认出口快照", routeLabelText(state), routeBusinessText(state)], tone: state.facts.route.level },
+      { id: "cr-wan", cells: ["WAN明细", state.facts.wan.text, "缓存快照可参考"], tone: state.facts.wan.allOffline ? "danger" : "trust" },
+      { id: "cr-resource", cells: ["资源阈值", state.facts.resource.summaryText, "缓存快照可参考"], tone: state.facts.resource.level },
+      { id: "cr-terminal", cells: ["终端排行", `${formatCompact(state.facts.connections.total)} 连接`, "缓存快照可参考"], tone: "trust" },
+      { id: "cr-rate", cells: ["速率趋势", "缓存窗口", "不伪装实时"], tone: "warn" },
+      { id: "cr-failure", cells: ["端点失败", failureText(snapshot, state), "未记录不写 0"], tone: state.facts.failures.count ? "warn" : "trust" },
+      { id: "cr-next", cells: ["下次尝试", pollText(snapshot), "轮询中"], tone: "trust" },
+      { id: "cr-readonly", cells: ["只读策略", "不写配置", "不推断业务数值"], tone: "trust" },
+      { id: "cr-trust", cells: ["可信度", moduleTrust(state), "REST / SSH / 快照分开判"], tone: "warn" }
     ];
   }
   function routeFactRows(snapshot, state) {
@@ -10200,203 +10267,6 @@ var PanelFramework = function(exports) {
       { id: "if-boundary-readonly", cells: ["展示边界", "不写配置", "不替代路由器明细", "仅展示证据"], tone: "trust" }
     ];
   }
-  function collectionRows(snapshot, state) {
-    const recent = latestSuccess(snapshot, state.scenario);
-    const rest = restState(snapshot, state);
-    const ssh = sshState(snapshot, state);
-    return [
-      { id: "collection-routeros", cells: ["设备通达性", routerosState(snapshot, state.scenario).value, recent, businessErrorNote(snapshot.error, "当前可达")], tone: routerosState(snapshot, state.scenario).tone },
-      { id: "collection-rest", cells: ["REST", rest.value, recent, rest.note], tone: rest.tone },
-      { id: "collection-ssh", cells: ["SSH", ssh.value, recent, ssh.note], tone: ssh.tone },
-      { id: "collection-cache", cells: ["数据层状态", state.scenario === "no-snapshot" ? "隐藏" : state.scenario === "collection-down" ? "缓存" : "实时", recent, state.scenario === "no-snapshot" ? "无业务快照，业务禁显" : state.scenario === "collection-down" ? "业务快照非实时 / 待恢复" : "业务快照可参考"], tone: state.scenario === "no-snapshot" ? "missing" : state.scenario === "collection-down" ? "warn" : "ok" },
-      { id: "collection-boundary", cells: ["展示边界", state.scenario === "collection-down" ? "只读缓存" : "实时可参考", recent, state.scenario === "collection-down" ? "REST / SSH / 快照分开判" : "业务快照边界清晰"], tone: state.scenario === "collection-down" ? "warn" : "trust" },
-      { id: "collection-failure", cells: ["失败端点", state.scenario === "collection-down" ? "未记录" : state.facts.failures.count ? failureText(snapshot, state) : "未记录", statusUpdated(snapshot), state.scenario === "collection-down" ? "未记录" : state.facts.failures.count ? "见端点列表" : "未记录"], tone: state.facts.failures.count ? "warn" : "trust" },
-      { id: "collection-trust", cells: ["可信度", state.scenario === "collection-down" ? "可参考" : moduleTrust(state), recent, state.scenario === "collection-down" ? "非实时" : "按快照可信度显示"], tone: state.scenario === "collection-down" ? "warn" : "trust" },
-      { id: "collection-next", cells: ["下次尝试", pollText(snapshot), recent, "轮询中"], tone: "trust" }
-    ];
-  }
-  function collectionChannelRows(snapshot, state) {
-    const rest = restState(snapshot, state);
-    const ssh = sshState(snapshot, state);
-    const snapshotOk = state.scenario === "collection-down" ? 42 : state.scenario === "no-snapshot" ? 0 : 92;
-    const channelScore = (item) => item.tone === "ok" ? 92 : item.tone === "danger" ? 12 : 46;
-    return [
-      {
-        id: "channel-rest",
-        label: "REST",
-        current: rest.value,
-        currentValue: channelScore(rest),
-        peak: "可用",
-        peakValue: 100,
-        mean: rest.tone === "ok" ? "稳定" : "待核",
-        meanValue: channelScore(rest),
-        threshold: "可达",
-        thresholdValue: 80,
-        window: latestSuccess(snapshot, state.scenario),
-        trust: state.scenario === "collection-down" ? "缓存快照" : moduleTrust(state),
-        tone: rest.tone,
-        unit: "status"
-      },
-      {
-        id: "channel-ssh",
-        label: "SSH",
-        current: ssh.value,
-        currentValue: channelScore(ssh),
-        peak: "可用",
-        peakValue: 100,
-        mean: ssh.tone === "ok" ? "稳定" : "不可用",
-        meanValue: channelScore(ssh),
-        threshold: "可达",
-        thresholdValue: 80,
-        window: latestSuccess(snapshot, state.scenario),
-        trust: state.scenario === "collection-down" ? "缓存快照" : moduleTrust(state),
-        tone: ssh.tone,
-        unit: "status"
-      },
-      {
-        id: "channel-snapshot",
-        label: "快照",
-        current: state.scenario === "no-snapshot" ? "无" : state.scenario === "collection-down" ? "缓存" : "实时",
-        currentValue: snapshotOk,
-        peak: "实时",
-        peakValue: 100,
-        mean: state.scenario === "collection-down" ? "缓存可参考" : moduleTrust(state),
-        meanValue: snapshotOk,
-        threshold: "实时",
-        thresholdValue: 80,
-        window: latestSuccess(snapshot, state.scenario),
-        trust: moduleTrust(state),
-        tone: state.scenario === "no-snapshot" ? "danger" : state.scenario === "collection-down" ? "warn" : "trust",
-        unit: "status"
-      }
-    ];
-  }
-  function threeColumnRows(rows, prefix = "") {
-    return rows.map((row, index) => {
-      const [first, second, ...rest] = row.cells;
-      return {
-        ...row,
-        id: `${prefix}${row.id || index}`,
-        cells: [first, second, rest.filter((cell) => cell !== "").map((cell, cellIndex) => /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: cell }, `${row.id}-three-${cellIndex}`))]
-      };
-    });
-  }
-  function noSnapshotChainRows(snapshot, state) {
-    const recent = latestSuccess(snapshot, state.scenario);
-    const next = pollText(snapshot);
-    return [
-      { id: "chain-router", cells: ["RouterOS", "不可达", "管理连接未建立"], tone: "danger" },
-      { id: "chain-rest", cells: ["REST", restState(snapshot, state).value, restState(snapshot, state).note], tone: restState(snapshot, state).tone },
-      { id: "chain-ssh", cells: ["SSH", sshState(snapshot, state).value, sshState(snapshot, state).note], tone: sshState(snapshot, state).tone },
-      { id: "chain-next", cells: ["下一次轮询", next, `最近成功 ${recent}`], tone: recent === "未记录" ? "warn" : "trust" }
-    ];
-  }
-  function noSnapshotBusinessBoundaryRows(snapshot, state) {
-    const recent = latestSuccess(snapshot, state.scenario);
-    return [
-      { id: "boundary-business", cells: ["业务快照", "未取得", "WAN / 资源 / 终端 / 连接 / 速率不展示", "避免把缺失解释为 0"], tone: "missing" },
-      { id: "boundary-route", cells: ["默认路由", "待判定", ROUTE_UNKNOWN, "路由快照取回后判断"], tone: "warn" },
-      { id: "boundary-success", cells: ["最近成功", recent, `状态更新 ${statusUpdated(snapshot)}`, "仅证明采集曾成功"], tone: recent === "未记录" ? "warn" : "trust" },
-      { id: "boundary-mode", cells: ["操作模式", "只读", "不会修改 RouterOS 配置", `等待 ${pollText(snapshot)}`], tone: "trust" }
-    ];
-  }
-  function noSnapshotReadonlyDegradedRows(snapshot, state) {
-    const recent = latestSuccess(snapshot, state.scenario);
-    const rest = restState(snapshot, state);
-    const ssh = sshState(snapshot, state);
-    const router = routerosState(snapshot, state.scenario);
-    return [
-      { id: "readonly-policy", cells: ["只读范围", "只读", "不写配置 / 不推断业务数值"], tone: "trust" },
-      { id: "readonly-chain", cells: ["保留模块", "采集链路", "页面可信等级链路可参考 / 最近成功可展示"], tone: "trust" },
-      { id: "readonly-business", cells: ["业务数据展示边界", "无业务快照", "无业务快照，业务数据不展示"], tone: "missing" },
-      { id: "readonly-rate", cells: ["速率", "不展示", "无业务快照时速率不展示"], tone: "missing" },
-      { id: "readonly-router", cells: ["路由器管理面", router.value, router.note], tone: router.tone },
-      { id: "readonly-rest", cells: ["REST", rest.value, rest.note], tone: rest.tone },
-      { id: "readonly-ssh", cells: ["SSH", ssh.value, ssh.note], tone: ssh.tone },
-      { id: "readonly-route", cells: ["默认出口", "待判", "路由快照未取回，不推断承载"], tone: "warn" },
-      { id: "readonly-success", cells: ["最近成功", recent, "只作为采集链路时间点"], tone: recent === "未记录" ? "warn" : "trust" },
-      { id: "readonly-next", cells: ["下一次轮询", pollText(snapshot), "等待采集恢复"], tone: "trust" }
-    ];
-  }
-  function lastSuccessRows(snapshot, state) {
-    const recent = latestSuccess(snapshot, state.scenario);
-    const label = state.scenario === "collection-down" ? "最后成功" : "最近成功";
-    if (state.scenario === "no-snapshot") {
-      return [
-        { id: "success-time", cells: ["最近成功", recent, "采集时间点"], tone: recent === "未记录" ? "warn" : "trust" },
-        { id: "success-current", cells: ["当前状态", "快照缺失", `状态更新 ${statusUpdated(snapshot)}`], tone: "missing" },
-        { id: "success-next", cells: ["下一次轮询", pollText(snapshot), "继续只读采集"], tone: "trust" },
-        { id: "success-target", cells: ["恢复判据", "取得新快照", "届时重新判断 WAN 与业务状态"], tone: "warn" }
-      ];
-    }
-    return [
-      { id: "success-time", cells: [label, recent, "当前采样"], tone: recent === "未记录" ? "warn" : "trust" },
-      { id: "success-source", cells: ["来源", "业务快照", state.facts.collection.channelText], tone: "trust" },
-      { id: "success-scope", cells: ["可展示范围", "业务状态", moduleTrust(state)], tone: "ok" },
-      { id: "success-disabled", cells: ["已折叠模块", "无", "按边界显示"], tone: "trust" },
-      { id: "success-current", cells: ["当前状态", "可用", "业务快照可参考"], tone: "trust" },
-      { id: "success-next", cells: ["下一次轮询", pollText(snapshot), "时间轴终点"], tone: "trust" }
-    ];
-  }
-  function wanContinuityRows(state) {
-    return [
-      { id: "cont-total", cells: ["离线对象", `${formatNumber(state.facts.wan.offline)} 条`, "全部 WAN 离线"], tone: "danger" },
-      { id: "cont-online", cells: ["WAN", `${formatNumber(state.facts.wan.online)}/${formatNumber(state.facts.wan.total)}`, `WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(state.facts.wan.total)}`], tone: "danger" },
-      { id: "cont-route", cells: ["默认路由", "异常", "未发现活动默认路由"], tone: "danger" },
-      { id: "cont-carry", cells: ["承载", "未承载", "离线线路未承载业务"], tone: "warn" },
-      { id: "cont-rate", cells: ["速率", "无有效样本", "离线线路不伪装零速率"], tone: "warn" },
-      { id: "cont-rest", cells: ["REST", state.facts.collection.restLabel, "采集通道可核对"], tone: state.facts.collection.level },
-      { id: "cont-ssh", cells: ["SSH", state.facts.collection.sshLabel, "静态读取可核对"], tone: state.facts.collection.level },
-      { id: "cont-age", cells: ["业务快照", state.facts.freshness.text, moduleTrust(state)], tone: state.facts.freshness.level },
-      { id: "cont-next", cells: ["下钻", "WAN明细", "先看线路与默认路由"], tone: "trust" },
-      { id: "cont-resource", cells: ["资源", state.facts.resource.summaryText, "事故二级证据"], tone: state.facts.resource.level },
-      { id: "cont-terminal", cells: ["连接", `${formatCompact(state.facts.connections.total)} 连接`, "二屏补充"], tone: "trust" },
-      { id: "cont-boundary", cells: ["只读", "不写配置", "状态台仅展示"], tone: "trust" }
-    ];
-  }
-  function allOfflineImpactRows(snapshot, state) {
-    const recent = latestSuccess(snapshot, state.scenario);
-    return [
-      { id: "ao-impact-object", cells: ["事故对象", `${formatNumber(state.facts.wan.offline)} 条 WAN`, "全部出口离线"], tone: "danger" },
-      { id: "ao-impact-route", cells: ["默认出口", routeLabelText(state), routeBusinessText(state)], tone: state.facts.route.level },
-      { id: "ao-impact-carrier", cells: ["承载关系", "未承载", "离线线路不承载业务"], tone: "warn" },
-      { id: "ao-impact-rate", cells: ["速率展示", "不展示", "无有效样本，不显示零速率"], tone: "warn" },
-      { id: "ao-impact-collection", cells: ["采集可信", state.facts.collection.credibilityLabel, state.facts.collection.channelText], tone: state.facts.collection.level },
-      { id: "ao-impact-success", cells: ["最近成功", recent, moduleTrust(state)], tone: recent === "未记录" ? "warn" : "trust" },
-      { id: "ao-impact-resource", cells: ["资源", state.facts.resource.summaryText, "二级证据"], tone: state.facts.resource.level },
-      { id: "ao-impact-readonly", cells: ["展示边界", "不写配置", "只展示状态与证据"], tone: "trust" }
-    ];
-  }
-  function collectionBoundaryLedgerRows(snapshot, state) {
-    const recent = latestSuccess(snapshot, state.scenario);
-    return [
-      { id: "cb-rest", cells: ["REST", restState(snapshot, state).value, restState(snapshot, state).note], tone: restState(snapshot, state).tone },
-      { id: "cb-ssh", cells: ["SSH", sshState(snapshot, state).value, sshState(snapshot, state).note], tone: sshState(snapshot, state).tone },
-      { id: "cb-snapshot", cells: ["业务快照", "缓存快照", "当前展示最后成功快照"], tone: "warn" },
-      { id: "cb-success", cells: ["最后成功", recent, "业务状态按缓存参考"], tone: recent === "未记录" ? "warn" : "trust" },
-      { id: "cb-failure", cells: ["端点失败", failureText(snapshot, state), "未记录不写 0"], tone: state.facts.failures.count ? "warn" : "trust" },
-      { id: "cb-route", cells: ["默认出口", routeLabelText(state), routeBusinessText(state)], tone: state.facts.route.level },
-      { id: "cb-wan", cells: ["WAN", state.facts.wan.text, "缓存快照下可参考"], tone: state.facts.wan.allOffline ? "danger" : "trust" },
-      { id: "cb-resource", cells: ["资源", state.facts.resource.summaryText, "缓存快照下可参考"], tone: state.facts.resource.level },
-      { id: "cb-next", cells: ["下次尝试", pollText(snapshot), "轮询中"], tone: "trust" },
-      { id: "cb-readonly", cells: ["展示边界", "不写配置", "不推断业务数值"], tone: "trust" }
-    ];
-  }
-  function collectionReadonlyRows(snapshot, state) {
-    const recent = latestSuccess(snapshot, state.scenario);
-    return [
-      { id: "cr-display", cells: ["展示范围", "最后成功快照", `最近成功 ${recent}`], tone: "warn" },
-      { id: "cr-route", cells: ["默认出口快照", routeLabelText(state), routeBusinessText(state)], tone: state.facts.route.level },
-      { id: "cr-wan", cells: ["WAN明细", state.facts.wan.text, "缓存快照可参考"], tone: state.facts.wan.allOffline ? "danger" : "trust" },
-      { id: "cr-resource", cells: ["资源阈值", state.facts.resource.summaryText, "缓存快照可参考"], tone: state.facts.resource.level },
-      { id: "cr-terminal", cells: ["终端排行", `${formatCompact(state.facts.connections.total)} 连接`, "缓存快照可参考"], tone: "trust" },
-      { id: "cr-rate", cells: ["速率趋势", "缓存窗口", "不伪装实时"], tone: "warn" },
-      { id: "cr-failure", cells: ["端点失败", failureText(snapshot, state), "未记录不写 0"], tone: state.facts.failures.count ? "warn" : "trust" },
-      { id: "cr-next", cells: ["下次尝试", pollText(snapshot), "轮询中"], tone: "trust" },
-      { id: "cr-readonly", cells: ["只读策略", "不写配置", "不推断业务数值"], tone: "trust" },
-      { id: "cr-trust", cells: ["可信度", moduleTrust(state), "REST / SSH / 快照分开判"], tone: "warn" }
-    ];
-  }
   function compactRows(rows, count) {
     return rows.slice(0, count);
   }
@@ -10438,6 +10308,136 @@ var PanelFramework = function(exports) {
         title: String(total)
       };
     }).sort((a, b) => (b.tone === "danger" ? 1 : 0) - (a.tone === "danger" ? 1 : 0) || Number(b.title || 0) - Number(a.title || 0)).slice(0, 5);
+  }
+  function desktopWanDecisionRail(snapshot, state, rows) {
+    const lead = rows[0];
+    const top = trafficTop3Rows(snapshot, state)[0];
+    const route = trafficRouteRows(snapshot, state)[0];
+    const sampling = trafficSamplingRows(snapshot, state)[0];
+    const peak = trafficPeakRows(snapshot, state)[0];
+    return [
+      { id: "current", label: "当前", value: (lead == null ? void 0 : lead.current) || "-", note: (lead == null ? void 0 : lead.unit) || "bps", tone: state.facts.wan.allOffline ? "danger" : "trust" },
+      { id: "peak", label: "峰值", value: (lead == null ? void 0 : lead.peak) || "-", note: (lead == null ? void 0 : lead.window) || "最近窗口", tone: "trust" },
+      { id: "top-outlet", label: "Top出口", value: ledgerCellText(top, 1), note: ledgerCellText(top, 2), tone: (top == null ? void 0 : top.tone) || "trust" },
+      { id: "default-route", label: "默认出口", value: ledgerCellText(route, 1), note: ledgerCellText(route, 2), tone: (route == null ? void 0 : route.tone) || state.facts.route.level },
+      { id: "sampling", label: "采样", value: ledgerCellText(sampling, 1), note: ledgerCellText(peak, 1), tone: (sampling == null ? void 0 : sampling.tone) || state.facts.collection.level }
+    ];
+  }
+  function trafficTotals(snapshot) {
+    const rows = collectWanRows(snapshot);
+    return {
+      up: rows.reduce((total, row) => total + toNumber(row.upRate), 0),
+      down: rows.reduce((total, row) => total + toNumber(row.downRate), 0),
+      rows
+    };
+  }
+  function trendDatum(id2, label, currentValue, thresholdValue, tone, unit = "bps") {
+    const peakValue = Math.max(currentValue, thresholdValue * 0.68, currentValue * 1.18);
+    const meanValue = Math.max(0, currentValue * 0.72);
+    return {
+      id: id2,
+      label,
+      current: formatRate(currentValue),
+      currentValue,
+      peak: formatRate(peakValue),
+      peakValue,
+      mean: formatRate(meanValue),
+      meanValue,
+      threshold: formatRate(thresholdValue),
+      thresholdValue,
+      window: "最近6点",
+      trust: "采样",
+      tone,
+      unit
+    };
+  }
+  function trafficChartRows(snapshot, state) {
+    const totals2 = trafficTotals(snapshot);
+    const top = totals2.rows.slice().sort((left, right) => toNumber(right.downRate || right.upRate) - toNumber(left.downRate || left.upRate))[0];
+    const topValue = top ? Math.max(toNumber(top.downRate), toNumber(top.upRate)) : 0;
+    const baseThreshold = Math.max(totals2.up, totals2.down, topValue, 1) * 1.35;
+    const summaryRows = [
+      trendDatum("traffic-down", "总下行", totals2.down, baseThreshold, totals2.down > baseThreshold * 0.8 ? "warn" : "trust"),
+      trendDatum("traffic-up", "总上行", totals2.up, baseThreshold, totals2.up > baseThreshold * 0.8 ? "warn" : "trust")
+    ];
+    if (totals2.rows.length > 1) {
+      summaryRows.push(trendDatum("traffic-top-wan", top ? text(top.name || top.interface, "WAN Top1") : "WAN Top1", topValue, baseThreshold, state.facts.wan.allOffline ? "danger" : "trust"));
+    }
+    return summaryRows;
+  }
+  function trafficRows(snapshot, state) {
+    const totals2 = trafficTotals(snapshot);
+    const offlineRows = state.scenario === "fleet" ? collectWanRows(snapshot).filter((row) => row.running === false).slice(0, 3).map((row, index) => {
+      const name = text(row.name || row.interface, `wan-offline-${index + 1}`);
+      return {
+        id: `traffic-offline-${index}`,
+        attrs: { "data-overview-anomaly-object": name },
+        cells: ["离线对象", name, "历史离线 / 当前影响未知"],
+        tone: "warn"
+      };
+    }) : [];
+    const fleetRows = state.scenario === "fleet" ? [
+      { id: "fleet-type-distribution", cells: ["类型分布", "PPPoE / static / DHCP", "WAN账本分组"], tone: "trust" },
+      { id: "fleet-default-route-count", cells: ["默认路由条目", routeLabelText(state), routeBusinessText(state)], tone: state.facts.route.level },
+      { id: "fleet-interface-rank", cells: ["接口排行", "Top8 可见", "按接口吞吐排序"], tone: "trust" },
+      { id: "fleet-anomaly-topn", cells: ["异常TopN", compactListText(offlineRows.map((row) => String(row.cells[1] || "")), 3) || "留存无新增", "历史 / 当前影响未知"], tone: offlineRows.length ? "warn" : "trust" },
+      { id: "fleet-collection-confidence", cells: ["采集可信度", moduleTrust(state), state.facts.collection.channelText], tone: state.facts.collection.level },
+      { id: "fleet-terminal-scale", cells: ["终端规模", `${formatNumber(Array.isArray(snapshot.terminals) ? snapshot.terminals.length : state.facts.connections.total)} terminal`, `${formatCompact(state.facts.connections.total)} 连接`], tone: "trust" }
+    ] : [];
+    const topRows = totals2.rows.slice().sort((left, right) => Math.max(toNumber(right.downRate), toNumber(right.upRate)) - Math.max(toNumber(left.downRate), toNumber(left.upRate))).slice(0, 3).map((row, index) => {
+      const name = text(row.name || row.interface, `wan-${index + 1}`);
+      const value = Math.max(toNumber(row.downRate), toNumber(row.upRate));
+      const attrs = { "data-overview-wan-detail-row": "true", ...row.running === false && state.scenario === "fleet" ? { "data-overview-anomaly-object": name } : {} };
+      return {
+        id: `traffic-top-${index}`,
+        attrs,
+        cells: [`WAN Top${index + 1}`, `${name} ${formatRate(value)}`, row.running === false ? "离线" : "当前速率"],
+        tone: row.running === false ? "danger" : "trust"
+      };
+    });
+    const peak = Math.max(totals2.up, totals2.down, ...totals2.rows.map((row) => Math.max(toNumber(row.downRate), toNumber(row.upRate))));
+    return [
+      { id: "traffic-current-down", cells: ["当前下行", formatRate(totals2.down), "图表主值"], tone: "trust" },
+      { id: "traffic-current-up", cells: ["当前上行", formatRate(totals2.up), "图表主值"], tone: "trust" },
+      ...offlineRows,
+      ...fleetRows,
+      ...topRows,
+      { id: "traffic-route", cells: ["默认出口", routeLabelText(state), routeBusinessText(state)], tone: state.facts.route.level },
+      { id: "traffic-sampling", cells: ["采样可信度", moduleTrust(state), "最近6点 / 当前值峰值均值"], tone: state.facts.freshness.credibilityTone },
+      { id: "traffic-peak", cells: ["最近峰值", formatRate(peak), `最近成功 ${latestSuccess(snapshot, state.scenario)}`], tone: "trust" }
+    ];
+  }
+  function trafficTop3Rows(snapshot, state) {
+    return trafficRows(snapshot, state).filter((row) => /^traffic-top-/.test(row.id));
+  }
+  function trafficRouteRows(snapshot, state) {
+    const route = buildRouterOsRouteEvidenceModel(snapshot, state).summary;
+    return [{
+      id: "traffic-route",
+      attrs: { "data-overview-default-route-row": "true", "data-overview-route-evidence-model": "routeros-standard" },
+      cells: ["默认出口", route.value, route.note],
+      tone: route.tone,
+      title: "默认出口已通过 RouterOS evidence item 标准化"
+    }];
+  }
+  function trafficSamplingRows(snapshot, state) {
+    return trafficRows(snapshot, state).filter((row) => row.id === "traffic-sampling");
+  }
+  function trafficPeakRows(snapshot, state) {
+    return trafficRows(snapshot, state).filter((row) => row.id === "traffic-peak");
+  }
+  function normalOpsRows(snapshot, state) {
+    const recent = latestSuccess(snapshot, state.scenario);
+    return [
+      { id: "ops-rest", cells: ["REST", restState(snapshot, state).value, restState(snapshot, state).note], tone: restState(snapshot, state).tone },
+      { id: "ops-ssh", cells: ["SSH", sshState(snapshot, state).value, sshState(snapshot, state).note], tone: sshState(snapshot, state).tone },
+      { id: "ops-success", cells: ["最近成功", recent, moduleTrust(state)], tone: recent === "未记录" ? "warn" : "trust" },
+      { id: "ops-failure", cells: ["端点失败", failureText(snapshot, state), "未记录不写 0"], tone: state.facts.failures.count ? "warn" : "trust" },
+      { id: "ops-route", cells: ["默认出口", routeLabelText(state), routeBusinessText(state)], tone: state.facts.route.level },
+      { id: "ops-readonly", cells: ["只读", "不写配置", "仅展示设备事实"], tone: "trust" },
+      { id: "ops-device", cells: ["设备", state.facts.device.identity, `${state.facts.device.version} · ${state.facts.device.uptime}`], tone: "trust" },
+      { id: "ops-sample", cells: ["样本", "最近6点", "当前 / 均值 / 峰值"], tone: state.facts.freshness.credibilityTone }
+    ];
   }
   function JudgementChart({ module, rows, kind = "trend" }) {
     const maxValue = Math.max(1, ...rows.map((row) => Math.max(row.currentValue, row.peakValue, row.thresholdValue)));
