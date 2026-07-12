@@ -1267,7 +1267,7 @@ async function main() {
             impactScope: 'normal-ops',
             impactPlane: 'business',
             mode: 'normal',
-            requiredText: ['WAN 趋势', '网络可用', 'WAN', '采集', '资源', '快照', '运行明细']
+            requiredText: ['WAN 趋势', '网络可用', 'WAN', '默认路由', '采集', '快照', '运行明细']
           },
           mobileAppHome: {
             ia: 'wan-offline-default-route-collection-success-first',
@@ -1542,20 +1542,23 @@ async function main() {
         const metricGridStyle = metricGrid ? getComputedStyle(metricGrid) : null;
         const metricCells = Array.from(metricGrid?.querySelectorAll('span') || []);
         const metricLabels = metricCells.map((cell) => normalize(cell.querySelector('em')?.textContent || ''));
+        const expectedMetricLabels = sectionName === 'mobileNormalHome'
+          ? ['WAN', '默认路由', '采集', '快照']
+          : ['WAN', '采集', '资源', '快照'];
         const metricGridColumnCount = (metricGridStyle?.gridTemplateColumns || '').split(' ').filter(Boolean).length;
         const metricGridProductized = Boolean(
           (!judgementStrip || !judgementStrip.querySelector('[data-overview-mobile-core-block="core-metric-grid"]')) &&
           metricGrid &&
           metricGrid.getAttribute('data-overview-mobile-v1044-metric-count') === '4' &&
           metricCells.length === 4 &&
-          ['WAN', '采集', '资源', '快照'].every((label) => metricLabels.includes(label)) &&
+          expectedMetricLabels.every((label) => metricLabels.includes(label)) &&
           metricGridStyle &&
           metricGridStyle.display === 'grid' &&
           metricGridColumnCount === 2 &&
           (metricGridStyle.gridTemplateRows || '').split(' ').filter(Boolean).length === 2 &&
           Number.parseFloat(metricGridStyle.height || '0') >= 112
         );
-        const normalSummaryStrip = root?.querySelector('[data-overview-mobile-v1065-normal-summary-strip="model-backed-status-wan-collection-resource-snapshot"]');
+        const normalSummaryStrip = root?.querySelector('[data-overview-mobile-v1065-normal-summary-strip="model-backed-status-wan-route-collection-snapshot"]');
         const normalSummaryCells = Array.from(normalSummaryStrip?.querySelectorAll('[data-overview-mobile-v1065-summary-cell]') || []);
         const normalSummaryCellIds = normalSummaryCells.map((cell) => cell.getAttribute('data-overview-mobile-v1065-summary-cell') || '');
         const normalSummaryLabels = normalSummaryCells.map((cell) => normalize(cell.querySelector('em')?.textContent || ''));

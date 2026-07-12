@@ -494,6 +494,13 @@ function coreMetrics(snapshot: OverviewRawSnapshot, state: OverviewDerivedState,
     note: priority === "snapshot-missing" ? "最近成功" : "可信窗口",
     tone: priority === "snapshot-missing" ? "warn" : state.facts.collection.credibilityTone,
   };
+  const routeFact: MobileMonitorFact = {
+    label: "默认路由",
+    value: mobileRouteValue(state),
+    note: priority === "snapshot-missing" ? "路由待判" : "主出口承载",
+    tone: priority === "snapshot-missing" ? "missing" : state.facts.route.level,
+  };
+  if (priority === "normal") return [wanFact, routeFact, collectionFact, snapshotFact];
   return [wanFact, collectionFact, resourceFact, snapshotFact];
 }
 

@@ -8700,6 +8700,13 @@ var PanelFramework = function(exports) {
       note: priority === "snapshot-missing" ? "最近成功" : "可信窗口",
       tone: priority === "snapshot-missing" ? "warn" : state.facts.collection.credibilityTone
     };
+    const routeFact = {
+      label: "默认路由",
+      value: mobileRouteValue(state),
+      note: priority === "snapshot-missing" ? "路由待判" : "主出口承载",
+      tone: priority === "snapshot-missing" ? "missing" : state.facts.route.level
+    };
+    if (priority === "normal") return [wanFact, routeFact, collectionFact, snapshotFact];
     return [wanFact, collectionFact, resourceFact, snapshotFact];
   }
   function heroPills(snapshot, state, network) {
@@ -9283,6 +9290,14 @@ var PanelFramework = function(exports) {
     if (model.priority === "snapshot-missing" || model.priority === "collection-degraded") return /* @__PURE__ */ jsxRuntimeExports.jsx(ChannelDecisionVisual, { model });
     return /* @__PURE__ */ jsxRuntimeExports.jsx(IncidentDecisionVisual, { model });
   }
+  function decisionKicker(model) {
+    if (model.priority === "normal") return "网络状态";
+    if (model.priority === "wan-offline") return "网络中断";
+    if (model.priority === "snapshot-missing") return "数据边界";
+    if (model.priority === "collection-degraded") return "采集状态";
+    if (model.priority === "resource-full") return "资源告警";
+    return "接口告警";
+  }
   function PrimaryDecision({ model }) {
     const action = nextStep(model);
     return /* @__PURE__ */ jsxRuntimeExports.jsxs(
@@ -9302,7 +9317,7 @@ var PanelFramework = function(exports) {
         "data-overview-primary-conclusion": "true",
         children: [
           /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ik-mobile-decision-head", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: model.appHomeContract.firstQuestion }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: decisionKicker(model) }),
             /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { children: model.hero.title }),
             /* @__PURE__ */ jsxRuntimeExports.jsx("p", { children: model.hero.subtitle })
           ] }),
@@ -9360,14 +9375,14 @@ var PanelFramework = function(exports) {
         "data-overview-mobile-core-block": "four-core-facts",
         "data-overview-mobile-v240-facts": "wan-collection-resource-snapshot",
         "data-overview-mobile-v240-status-strip": "four-facts",
-        "data-overview-mobile-v1065-normal-summary-strip": model.priority === "normal" ? "model-backed-status-wan-collection-resource-snapshot" : void 0,
+        "data-overview-mobile-v1065-normal-summary-strip": model.priority === "normal" ? "model-backed-status-wan-route-collection-snapshot" : void 0,
         "data-overview-mobile-v1044-metric-grid": "wan-collection-resource-snapshot-four-core-facts",
         "data-overview-mobile-v1044-metric-count": facts.length,
         children: facts.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
           "span",
           {
             className: toneClass(item.tone),
-            "data-overview-mobile-v1065-summary-cell": item.label === "WAN" ? "wan" : item.label === "采集" ? "collection" : item.label === "资源" ? "resource" : "snapshot",
+            "data-overview-mobile-v1065-summary-cell": item.label === "WAN" ? "wan" : item.label === "默认路由" ? "route" : item.label === "采集" ? "collection" : item.label === "资源" ? "resource" : "snapshot",
             children: [
               /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: item.label }),
               /* @__PURE__ */ jsxRuntimeExports.jsx("strong", { children: item.value }),

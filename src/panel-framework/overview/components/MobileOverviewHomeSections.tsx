@@ -37,14 +37,14 @@ export function CoreFacts({ model }: { model: MobileOverviewModel }) {
       data-overview-mobile-core-block="four-core-facts"
       data-overview-mobile-v240-facts="wan-collection-resource-snapshot"
       data-overview-mobile-v240-status-strip="four-facts"
-      data-overview-mobile-v1065-normal-summary-strip={model.priority === "normal" ? "model-backed-status-wan-collection-resource-snapshot" : undefined}
+      data-overview-mobile-v1065-normal-summary-strip={model.priority === "normal" ? "model-backed-status-wan-route-collection-snapshot" : undefined}
       data-overview-mobile-v1044-metric-grid="wan-collection-resource-snapshot-four-core-facts"
       data-overview-mobile-v1044-metric-count={facts.length}
     >
       {facts.map((item) => (
         <span
           className={toneClass(item.tone)}
-          data-overview-mobile-v1065-summary-cell={item.label === "WAN" ? "wan" : item.label === "采集" ? "collection" : item.label === "资源" ? "resource" : "snapshot"}
+          data-overview-mobile-v1065-summary-cell={item.label === "WAN" ? "wan" : item.label === "默认路由" ? "route" : item.label === "采集" ? "collection" : item.label === "资源" ? "resource" : "snapshot"}
           key={`${item.label}-${item.value}`}
         >
           <em>{item.label}</em>

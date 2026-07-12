@@ -174,6 +174,15 @@ function DecisionVisual({ model }: { model: MobileOverviewModel }) {
   return <IncidentDecisionVisual model={model} />;
 }
 
+function decisionKicker(model: MobileOverviewModel): string {
+  if (model.priority === "normal") return "网络状态";
+  if (model.priority === "wan-offline") return "网络中断";
+  if (model.priority === "snapshot-missing") return "数据边界";
+  if (model.priority === "collection-degraded") return "采集状态";
+  if (model.priority === "resource-full") return "资源告警";
+  return "接口告警";
+}
+
 export function PrimaryDecision({ model }: { model: MobileOverviewModel }) {
   const action = nextStep(model);
   return (
@@ -192,7 +201,7 @@ export function PrimaryDecision({ model }: { model: MobileOverviewModel }) {
       data-overview-primary-conclusion="true"
     >
       <div className="ik-mobile-decision-head">
-        <span>{model.appHomeContract.firstQuestion}</span>
+        <span>{decisionKicker(model)}</span>
         <h1>{model.hero.title}</h1>
         <p>{model.hero.subtitle}</p>
       </div>
