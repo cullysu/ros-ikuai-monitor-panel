@@ -104,11 +104,6 @@ export interface ChartDatum {
 
 export const ROUTE_UNKNOWN = "路由快照未取回，无法判断默认出口影响";
 export const FILLER_TONE: OverviewTone = "trust";
-export const OVERVIEW_IKUAI40_CHART_STANDARD = "unit-window-samples-current-peak-mean-threshold-confidence-y-axis";
-export const OVERVIEW_CHART_METADATA_COVERAGE = "all-chart-type-elements-unit-current-peak-mean-window-sample-points-threshold-confidence-readout";
-export const OVERVIEW_IKUAI40_MATURE_VISUAL_STANDARD = "judgement-charts-scene-specific-mobile-microchart-blue-white-flat-no-short-empty-cards";
-export const OVERVIEW_SCENE_CHART_PRIORITY = "normal=traffic;resource=pressure;wan=interface-status;interfaces=forwarding;collection=channel-timeline;no-snapshot=chain-visibility";
-export const OVERVIEW_SCENE_CHART_CONTRACT = "normal:traffic-trend;resource:resource-pressure;wan:wan-interface-status;interfaces:interface-forwarding-status;collection:collection-channel-timeline;no-snapshot:snapshot-chain-visibility-matrix;stale:snapshot-age-route-context";
 export function routeBusinessSummary(value: unknown, fallback = ROUTE_UNKNOWN): string {
   return routerOsRouteBusinessSummary(value, fallback);
 }
@@ -121,14 +116,6 @@ export function routeLabelText(state: OverviewDerivedState): string {
   if (state.scenario === "no-snapshot") return "默认出口待判";
   return routeBusinessSummary(state.facts.route.label || "默认出口待判", "默认出口待判");
 }
-
-export const OVERVIEW_CHART_STATUS_COLORS = Object.freeze({
-  danger: "#d93025",
-  warn: "#f08c00",
-  normal: "#3f7fbd",
-  missing: "#9aa9ba",
-  unavailable: "#9aa9ba",
-});
 
 export function text(value: unknown, fallback = "-"): string {
   const normalized = String(value ?? "").replace(/\s+/g, " ").trim();

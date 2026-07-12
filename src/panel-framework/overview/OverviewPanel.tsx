@@ -2,15 +2,7 @@ import { MobileOverviewHome } from "./components/MobileOverviewHome";
 import { DesktopWorkspace } from "./components/DesktopConsole";
 import { StatusVerdict } from "./components/StatusVerdict";
 import { OVERVIEW_LOW_NOISE_CONSOLE_TOKEN_CONTRACT } from "./mobileOverviewTokens";
-import {
-  OVERVIEW_CHART_METADATA_COVERAGE,
-  OVERVIEW_CHART_STATUS_COLORS,
-  OVERVIEW_IKUAI40_CHART_STANDARD,
-  OVERVIEW_IKUAI40_MATURE_VISUAL_STANDARD,
-  OVERVIEW_SCENE_CHART_CONTRACT,
-  OVERVIEW_SCENE_CHART_PRIORITY,
-  type OverviewPanelProps,
-} from "./desktopOverviewHelpers";
+import { type OverviewPanelProps } from "./desktopOverviewHelpers";
 import "./OverviewPanel.css";
 import "./OverviewPanelDesktopRefinement.css";
 import "./OverviewPanelRelease.css";
@@ -39,16 +31,6 @@ export function OverviewPanel({ snapshot, state }: OverviewPanelProps) {
       data-overview-desktop-mobile-leakage-guard="hide-mobile-shell-on-desktop"
       data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"
       data-overview-desktop-v1030-nav-polish="short-ikuai-left-rail-low-noise-status-bus"
-      data-overview-chart-standard={OVERVIEW_IKUAI40_CHART_STANDARD}
-      data-overview-chart-metadata-coverage={OVERVIEW_CHART_METADATA_COVERAGE}
-      data-overview-mature-visual-standard={OVERVIEW_IKUAI40_MATURE_VISUAL_STANDARD}
-      data-overview-scene-chart-priority={OVERVIEW_SCENE_CHART_PRIORITY}
-      data-overview-scene-chart-contract={OVERVIEW_SCENE_CHART_CONTRACT}
-      data-overview-chart-color-normal={OVERVIEW_CHART_STATUS_COLORS.normal}
-      data-overview-mobile-first-microchart-policy="first-screen"
-      data-overview-mobile-first-screen-microchart-required="true"
-      data-overview-mobile-first-screen-uses-microchart="true"
-      data-overview-mobile-first-microchart-kind="scenario-insight"
       data-overview-mobile-no-snapshot-microchart={state.scenario === "no-snapshot" ? "snapshot-channel-matrix" : undefined}
       data-overview-no-snapshot-flow-timeline-matrix={state.scenario === "no-snapshot" ? "true" : undefined}
       data-overview-no-snapshot-density-contract={state.scenario === "no-snapshot" ? "left60-chain-boundary-success-route-right-readonly-degraded" : undefined}

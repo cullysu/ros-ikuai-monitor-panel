@@ -4,7 +4,6 @@ import {
   type ChartDatum,
   type LedgerRow,
   type OverviewPanelProps,
-  OVERVIEW_CHART_METADATA_COVERAGE,
   chartSamplePoints,
   chartUnitLabel,
   clampPercent,
@@ -44,7 +43,6 @@ export function JudgementChart({ module, rows, kind = "trend" }: { module: strin
       data-overview-chart-has-trust="true"
       data-overview-chart-unit={rows.map((row) => row.unit || "").filter(Boolean).join("/") || "status"}
       data-overview-chart-judgement-contract="current-peak-mean-window-threshold-confidence-readable"
-      data-overview-chart-metadata-coverage={OVERVIEW_CHART_METADATA_COVERAGE}
       data-overview-plot-contract={kind === "pressure" ? "real-percent-axis-peak-current-threshold-mean" : "real-rate-axis-peak-current-threshold-mean"}
       data-overview-collection-channel-bars={module === "collection-cache-ledger" ? "true" : undefined}
       data-overview-traffic-judgement={module === "wan-trend" || module === "traffic-trend" ? "true" : undefined}

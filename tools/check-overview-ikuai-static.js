@@ -78,6 +78,17 @@ includesAll(overview, [
   'data-overview-no-zero-rate-placeholder',
 ], 'overview composition');
 excludesAll(overview, ['switch (state.scenario)', '<table', 'dangerouslySetInnerHTML'], 'overview shell ownership');
+excludesAll(overview, [
+  'data-overview-chart-standard',
+  'data-overview-chart-metadata-coverage',
+  'data-overview-mature-visual-standard',
+  'data-overview-scene-chart-priority',
+  'data-overview-scene-chart-contract',
+  'data-overview-chart-color-normal',
+  'data-overview-mobile-first-microchart-policy',
+  'data-overview-mobile-first-screen-microchart-required',
+  'data-overview-mobile-first-microchart-kind',
+], 'overview self-certifying probe cleanup');
 
 includesAll(desktop, [
   'buildDesktopOverviewScene(snapshot, state)',

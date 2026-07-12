@@ -9764,11 +9764,6 @@ var PanelFramework = function(exports) {
   }
   const ROUTE_UNKNOWN = "路由快照未取回，无法判断默认出口影响";
   const FILLER_TONE = "trust";
-  const OVERVIEW_IKUAI40_CHART_STANDARD = "unit-window-samples-current-peak-mean-threshold-confidence-y-axis";
-  const OVERVIEW_CHART_METADATA_COVERAGE = "all-chart-type-elements-unit-current-peak-mean-window-sample-points-threshold-confidence-readout";
-  const OVERVIEW_IKUAI40_MATURE_VISUAL_STANDARD = "judgement-charts-scene-specific-mobile-microchart-blue-white-flat-no-short-empty-cards";
-  const OVERVIEW_SCENE_CHART_PRIORITY = "normal=traffic;resource=pressure;wan=interface-status;interfaces=forwarding;collection=channel-timeline;no-snapshot=chain-visibility";
-  const OVERVIEW_SCENE_CHART_CONTRACT = "normal:traffic-trend;resource:resource-pressure;wan:wan-interface-status;interfaces:interface-forwarding-status;collection:collection-channel-timeline;no-snapshot:snapshot-chain-visibility-matrix;stale:snapshot-age-route-context";
   function routeBusinessSummary(value, fallback = ROUTE_UNKNOWN) {
     return routerOsRouteBusinessSummary(value, fallback);
   }
@@ -9779,13 +9774,6 @@ var PanelFramework = function(exports) {
     if (state.scenario === "no-snapshot") return "默认出口待判";
     return routeBusinessSummary(state.facts.route.label || "默认出口待判", "默认出口待判");
   }
-  const OVERVIEW_CHART_STATUS_COLORS = Object.freeze({
-    danger: "#d93025",
-    warn: "#f08c00",
-    normal: "#3f7fbd",
-    missing: "#9aa9ba",
-    unavailable: "#9aa9ba"
-  });
   function text(value, fallback = "-") {
     const normalized = String(value ?? "").replace(/\s+/g, " ").trim();
     return normalized || fallback;
@@ -10763,7 +10751,6 @@ var PanelFramework = function(exports) {
         "data-overview-chart-has-trust": "true",
         "data-overview-chart-unit": rows.map((row) => row.unit || "").filter(Boolean).join("/") || "status",
         "data-overview-chart-judgement-contract": "current-peak-mean-window-threshold-confidence-readable",
-        "data-overview-chart-metadata-coverage": OVERVIEW_CHART_METADATA_COVERAGE,
         "data-overview-plot-contract": kind === "pressure" ? "real-percent-axis-peak-current-threshold-mean" : "real-rate-axis-peak-current-threshold-mean",
         "data-overview-collection-channel-bars": module === "collection-cache-ledger" ? "true" : void 0,
         "data-overview-traffic-judgement": module === "wan-trend" || module === "traffic-trend" ? "true" : void 0,
@@ -11392,16 +11379,6 @@ var PanelFramework = function(exports) {
         "data-overview-desktop-mobile-leakage-guard": "hide-mobile-shell-on-desktop",
         "data-overview-desktop-hierarchy-contract": "conclusion-key-metrics-evidence",
         "data-overview-desktop-v1030-nav-polish": "short-ikuai-left-rail-low-noise-status-bus",
-        "data-overview-chart-standard": OVERVIEW_IKUAI40_CHART_STANDARD,
-        "data-overview-chart-metadata-coverage": OVERVIEW_CHART_METADATA_COVERAGE,
-        "data-overview-mature-visual-standard": OVERVIEW_IKUAI40_MATURE_VISUAL_STANDARD,
-        "data-overview-scene-chart-priority": OVERVIEW_SCENE_CHART_PRIORITY,
-        "data-overview-scene-chart-contract": OVERVIEW_SCENE_CHART_CONTRACT,
-        "data-overview-chart-color-normal": OVERVIEW_CHART_STATUS_COLORS.normal,
-        "data-overview-mobile-first-microchart-policy": "first-screen",
-        "data-overview-mobile-first-screen-microchart-required": "true",
-        "data-overview-mobile-first-screen-uses-microchart": "true",
-        "data-overview-mobile-first-microchart-kind": "scenario-insight",
         "data-overview-mobile-no-snapshot-microchart": state.scenario === "no-snapshot" ? "snapshot-channel-matrix" : void 0,
         "data-overview-no-snapshot-flow-timeline-matrix": state.scenario === "no-snapshot" ? "true" : void 0,
         "data-overview-no-snapshot-density-contract": state.scenario === "no-snapshot" ? "left60-chain-boundary-success-route-right-readonly-degraded" : void 0,
