@@ -8,7 +8,8 @@ import {
   lastSuccessRows,
   threeColumnRows,
 } from "./desktopOverviewCredibilityRows";
-import { routeBusinessRows, wanRows } from "./desktopOverviewNetworkRows";
+import { routeBusinessRows } from "./desktopOverviewRouteRows";
+import { wanRows } from "./desktopOverviewWanRows";
 import { compactRows } from "./desktopOverviewTerminalRows";
 import { ChannelMatrixVisual, VisualStack } from "./desktopOverviewVisuals";
 import { Module } from "./components/DesktopModule";

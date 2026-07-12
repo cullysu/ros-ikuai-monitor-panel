@@ -7,12 +7,9 @@ import {
   threeColumnRows,
   wanContinuityRows,
 } from "./desktopOverviewCredibilityRows";
-import {
-  interfaceBoundaryRows,
-  routeBusinessRows,
-  routeRawEvidenceRows,
-  wanRows,
-} from "./desktopOverviewNetworkRows";
+import { interfaceBoundaryRows } from "./desktopOverviewInterfaceRows";
+import { routeBusinessRows, routeRawEvidenceRows } from "./desktopOverviewRouteRows";
+import { wanRows } from "./desktopOverviewWanRows";
 import { compactRows } from "./desktopOverviewTerminalRows";
 import { normalOpsRows } from "./desktopOverviewTrafficRows";
 import { ChannelMatrixVisual } from "./desktopOverviewVisuals";

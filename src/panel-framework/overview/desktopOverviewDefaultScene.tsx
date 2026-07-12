@@ -4,7 +4,8 @@ import {
   collectionRows,
   threeColumnRows,
 } from "./desktopOverviewCredibilityRows";
-import { interfaceBoundaryRows, routeFactRows } from "./desktopOverviewNetworkRows";
+import { interfaceBoundaryRows } from "./desktopOverviewInterfaceRows";
+import { routeFactRows } from "./desktopOverviewRouteRows";
 import { compactRows, desktopTerminalRows } from "./desktopOverviewTerminalRows";
 import {
   trafficChartRows,

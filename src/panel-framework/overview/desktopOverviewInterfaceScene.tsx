@@ -7,9 +7,8 @@ import {
   interfacePageTrustRows,
   interfaceRelationRows,
   interfaceRows,
-  routeBusinessRows,
-  routeRawEvidenceRows,
-} from "./desktopOverviewNetworkRows";
+} from "./desktopOverviewInterfaceRows";
+import { routeBusinessRows, routeRawEvidenceRows } from "./desktopOverviewRouteRows";
 import { compactRows, desktopTerminalRows } from "./desktopOverviewTerminalRows";
 import { ChannelMatrixVisual, VisualStack } from "./desktopOverviewVisuals";
 import { Module } from "./components/DesktopModule";

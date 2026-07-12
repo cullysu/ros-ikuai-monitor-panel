@@ -53,8 +53,12 @@ const routerOsPresentationViewModelFile =
   "src/panel-framework/overview/routerosPresentationViewModel.ts";
 const desktopTrafficRowsFile =
   "src/panel-framework/overview/desktopOverviewTrafficRows.ts";
-const desktopNetworkRowsFile =
-  "src/panel-framework/overview/desktopOverviewNetworkRows.tsx";
+const desktopRouteRowsFile =
+  "src/panel-framework/overview/desktopOverviewRouteRows.ts";
+const desktopWanRowsFile =
+  "src/panel-framework/overview/desktopOverviewWanRows.tsx";
+const desktopInterfaceRowsFile =
+  "src/panel-framework/overview/desktopOverviewInterfaceRows.tsx";
 const desktopCredibilityRowsFile =
   "src/panel-framework/overview/desktopOverviewCredibilityRows.tsx";
 const desktopTerminalRowsFile =
@@ -90,7 +94,9 @@ const desktopHelpers = read(desktopHelpersFile);
 const routerOsNetworkViewModel = read(routerOsNetworkViewModelFile);
 const routerOsPresentationViewModel = read(routerOsPresentationViewModelFile);
 const desktopTrafficRows = read(desktopTrafficRowsFile);
-const desktopNetworkRows = read(desktopNetworkRowsFile);
+const desktopRouteRows = read(desktopRouteRowsFile);
+const desktopWanRows = read(desktopWanRowsFile);
+const desktopInterfaceRows = read(desktopInterfaceRowsFile);
 const desktopCredibilityRows = read(desktopCredibilityRowsFile);
 const desktopTerminalRows = read(desktopTerminalRowsFile);
 const desktopResourceRows = read(desktopResourceRowsFile);
@@ -361,8 +367,16 @@ assert(
   `desktopOverviewTrafficRows.ts exceeds 280 lines: ${lines(desktopTrafficRows)}`
 );
 assert(
-  lines(desktopNetworkRows) <= 340,
-  `desktopOverviewNetworkRows.tsx exceeds 340 lines: ${lines(desktopNetworkRows)}`
+  lines(desktopRouteRows) <= 150,
+  `desktopOverviewRouteRows.ts exceeds 150 lines: ${lines(desktopRouteRows)}`
+);
+assert(
+  lines(desktopWanRows) <= 80,
+  `desktopOverviewWanRows.tsx exceeds 80 lines: ${lines(desktopWanRows)}`
+);
+assert(
+  lines(desktopInterfaceRows) <= 250,
+  `desktopOverviewInterfaceRows.tsx exceeds 250 lines: ${lines(desktopInterfaceRows)}`
 );
 assert(
   lines(desktopCredibilityRows) <= 320,
@@ -472,8 +486,10 @@ assert(
   "StatusVerdict.tsx must expose one semantic status-bus contract"
 );
 assert(
-  !/data-overview-desktop-v\d+|data-routeros-v\d+/.test(desktopNetworkRows),
-  "desktopOverviewNetworkRows.tsx must expose semantic route evidence attributes only"
+  ![desktopRouteRows, desktopWanRows, desktopInterfaceRows].some((source) =>
+    /data-overview-desktop-v\d+|data-routeros-v\d+/.test(source)
+  ),
+  "Desktop route, WAN, and interface row modules must expose semantic evidence attributes only"
 );
 assert(
   !/data-overview-desktop-v\d+|data-routeros-v\d+/.test(desktopVisuals),
@@ -509,7 +525,8 @@ assert(
 );
 assert(
   desktopDefaultScene.includes('from "./desktopOverviewTrafficRows"') &&
-    desktopDefaultScene.includes('from "./desktopOverviewNetworkRows"') &&
+    desktopDefaultScene.includes('from "./desktopOverviewRouteRows"') &&
+    desktopDefaultScene.includes('from "./desktopOverviewInterfaceRows"') &&
     desktopDefaultScene.includes('from "./desktopOverviewCredibilityRows"') &&
     desktopDefaultScene.includes('from "./desktopOverviewTerminalRows"'),
   "desktopOverviewDefaultScene.tsx must consume the row modules that own its evidence"
@@ -666,5 +683,5 @@ if (failures.length > 0) {
 }
 
 console.log(
-  `overview architecture gate: PASS panel=${lines(panel)} lines desktop=${lines(desktopConsole)} lines desktopDecision=${lines(desktopDecisionRail)} lines scenes=${lines(desktopScenes)} lines helper=${lines(desktopHelpers)} lines trafficRows=${lines(desktopTrafficRows)} lines networkRows=${lines(desktopNetworkRows)} lines credibilityRows=${lines(desktopCredibilityRows)} lines terminalRows=${lines(desktopTerminalRows)} lines resourceRows=${lines(desktopResourceRows)} lines visuals=${lines(desktopVisuals)} lines mobileHome=${lines(mobileHome)} lines mobileDecision=${lines(mobileDecision)} lines mobileSections=${lines(mobileHomeSections)} lines css=${bytes(panelCssFile)} bytes desktopBase=${lines(desktopBaseStyles)} lines desktopBaseImportant=${desktopBaseImportantCount} mobileStyles=${mobileStyleByteTotal} bytes important=${importantShare.toFixed(4)} desktopImportant=${desktopRefinementImportantCount} decisionRailRules=${desktopDecisionRailRuleCount} decisionCellRules=${desktopDecisionCellRuleCount} workspaceGridRules=${desktopWorkspaceGridRuleCount} navRules=${desktopNavRuleCount} statusBusRules=${desktopStatusBusRuleCount} legacyTopbarRules=${desktopLegacyTopbarRuleCount} moduleShellRules=${desktopModuleShellRuleCount} moduleHeadRules=${desktopModuleHeadRuleCount} ledgerRules=${desktopLedgerRuleCount} moduleToneRules=${desktopModuleToneRuleCount} ledgerToneRules=${desktopLedgerToneRuleCount} ledgerToneShadows=${desktopLedgerToneShadowCount} releaseToneResets=${desktopReleaseToneResetCount} releaseNonPrimary=${desktopReleaseNonPrimaryNeutralCount} mobile=${mobileRuleShare.toFixed(4)}`
+  `overview architecture gate: PASS panel=${lines(panel)} lines desktop=${lines(desktopConsole)} lines desktopDecision=${lines(desktopDecisionRail)} lines scenes=${lines(desktopScenes)} lines helper=${lines(desktopHelpers)} lines trafficRows=${lines(desktopTrafficRows)} lines routeRows=${lines(desktopRouteRows)} lines wanRows=${lines(desktopWanRows)} lines interfaceRows=${lines(desktopInterfaceRows)} lines credibilityRows=${lines(desktopCredibilityRows)} lines terminalRows=${lines(desktopTerminalRows)} lines resourceRows=${lines(desktopResourceRows)} lines visuals=${lines(desktopVisuals)} lines mobileHome=${lines(mobileHome)} lines mobileDecision=${lines(mobileDecision)} lines mobileSections=${lines(mobileHomeSections)} lines css=${bytes(panelCssFile)} bytes desktopBase=${lines(desktopBaseStyles)} lines desktopBaseImportant=${desktopBaseImportantCount} mobileStyles=${mobileStyleByteTotal} bytes important=${importantShare.toFixed(4)} desktopImportant=${desktopRefinementImportantCount} decisionRailRules=${desktopDecisionRailRuleCount} decisionCellRules=${desktopDecisionCellRuleCount} workspaceGridRules=${desktopWorkspaceGridRuleCount} navRules=${desktopNavRuleCount} statusBusRules=${desktopStatusBusRuleCount} legacyTopbarRules=${desktopLegacyTopbarRuleCount} moduleShellRules=${desktopModuleShellRuleCount} moduleHeadRules=${desktopModuleHeadRuleCount} ledgerRules=${desktopLedgerRuleCount} moduleToneRules=${desktopModuleToneRuleCount} ledgerToneRules=${desktopLedgerToneRuleCount} ledgerToneShadows=${desktopLedgerToneShadowCount} releaseToneResets=${desktopReleaseToneResetCount} releaseNonPrimary=${desktopReleaseNonPrimaryNeutralCount} mobile=${mobileRuleShare.toFixed(4)}`
 );

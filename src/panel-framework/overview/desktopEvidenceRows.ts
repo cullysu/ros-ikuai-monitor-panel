@@ -6,7 +6,8 @@ import {
   noSnapshotReadonlyDegradedRows,
   threeColumnRows,
 } from "./desktopOverviewCredibilityRows";
-import { interfaceBoundaryRows, routeRawEvidenceRows } from "./desktopOverviewNetworkRows";
+import { interfaceBoundaryRows } from "./desktopOverviewInterfaceRows";
+import { routeRawEvidenceRows } from "./desktopOverviewRouteRows";
 import { compactRows } from "./desktopOverviewTerminalRows";
 import { normalOpsRows } from "./desktopOverviewTrafficRows";
 import { resourceBoundaryRows } from "./desktopResourceRows";

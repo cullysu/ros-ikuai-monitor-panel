@@ -10071,6 +10071,94 @@ var PanelFramework = function(exports) {
       { id: "cr-trust", cells: ["可信度", moduleTrust(state), "REST / SSH / 快照分开判"], tone: "warn" }
     ];
   }
+  function interfaceRows(snapshot, state) {
+    const rows = collectInterfaceRows(snapshot).filter((row) => row.running === false);
+    if (!rows.length) return [{ id: "interface-ok", cells: ["接口转发面", "未发现 down", `REST / SSH 与转发面分离判断 / ${routeLabelText(state)}`], tone: state.scenario === "interfaces-down" ? "warn" : "ok" }];
+    return rows.slice(0, 8).map((row, index) => {
+      const name = text(row.name || row.interface, `if-${index + 1}`);
+      const parent = text(row.parent || row.master || "-", "-");
+      const bridge = text(row.bridge || "-", "-");
+      const vlan = text(row.vlan || row.vlanId || "-", "-");
+      return {
+        id: `if-${name}-${index}`,
+        cells: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: name }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("small", { children: [
+              "父接口 ",
+              parent
+            ] })
+          ] }),
+          "已断开",
+          `桥接 ${bridge} / VLAN ${vlan} / 默认出口 ${routeLabelText(state)}`
+        ],
+        tone: "danger"
+      };
+    });
+  }
+  function interfaceRelationRows(snapshot, state) {
+    const rows = collectInterfaceRows(snapshot).filter((row) => row.running === false);
+    if (!rows.length) return [{ id: "if-relation-ok", cells: ["接口关系", "未记录", "无 down 接口关系需要展开"], tone: "trust" }];
+    const relationRows = rows.slice(0, 8).map((row, index) => {
+      const name = text(row.name || row.interface, `if-${index + 1}`);
+      const parent = text(row.parent || row.master || "-", "-");
+      const bridge = text(row.bridge || "-", "-");
+      const vlan = text(row.vlan || row.vlanId || "-", "-");
+      const pppoe = text(row.pppoeOut || row.pppoe || "-", "-");
+      return {
+        id: `if-relation-${name}-${index}`,
+        cells: [name, `父接口 ${parent}`, `桥接 ${bridge} / VLAN ${vlan} / PPPoE出口 ${pppoe}`],
+        tone: "warn"
+      };
+    });
+    return relationRows.concat([
+      { id: "if-relation-boundary", cells: ["判断边界", "采集面分离", "REST/SSH 不替代转发面判断"], tone: "trust" },
+      { id: "if-relation-route", cells: ["默认出口", routeLabelText(state), routeBusinessText(state)], tone: state.facts.route.level }
+    ]);
+  }
+  function interfaceCollectionRows(snapshot, state) {
+    const recent = latestSuccess(snapshot, state.scenario);
+    const rest = restState(snapshot, state);
+    const ssh = sshState(snapshot, state);
+    return [
+      { id: "if-collection-routeros", cells: ["路由器管理面", routerosState(snapshot, state.scenario).value, recent, "采集入口"], tone: routerosState(snapshot, state.scenario).tone },
+      { id: "if-collection-rest", cells: ["REST", rest.value, recent, rest.note], tone: rest.tone },
+      { id: "if-collection-ssh", cells: ["SSH", ssh.value, recent, ssh.note], tone: ssh.tone },
+      { id: "if-collection-boundary", cells: ["判断边界", "采集面", "不替代接口转发面", state.facts.collection.channelText], tone: state.facts.collection.level }
+    ];
+  }
+  function interfacePageTrustRows(snapshot, state) {
+    const recent = latestSuccess(snapshot, state.scenario);
+    return [
+      { id: "if-page-trust", cells: ["页面可信度", moduleTrust(state), "接口快照可参考"], tone: state.facts.freshness.credibilityTone },
+      { id: "if-page-success", cells: ["最近成功", recent, "接口状态时间"], tone: recent === "未记录" ? "warn" : "trust" },
+      { id: "if-page-route", cells: ["默认出口", routeLabelText(state), "影响单独判定"], tone: state.facts.route.level },
+      { id: "if-page-collection", cells: ["采集面", `${restState(snapshot, state).value} / ${sshState(snapshot, state).value}`, "不替代转发面"], tone: state.facts.collection.level },
+      { id: "if-page-readonly", cells: ["展示边界", "不写配置", "仅展示证据"], tone: "trust" }
+    ];
+  }
+  function interfaceBoundaryRows(snapshot, state) {
+    const recent = latestSuccess(snapshot, state.scenario);
+    const down = collectInterfaceRows(snapshot).filter((row) => row.running === false);
+    const names = compactListText(down.slice(0, 5).map((row, index) => text(row.name || row.interface, `if-${index + 1}`)), 5) || "未记录";
+    const parentCount = new Set(down.map((row) => text(row.parent || row.master || "-", "-"))).size;
+    const bridgeCount = down.filter((row) => text(row.bridge || "-", "-") !== "-").length;
+    const vlanCount = down.filter((row) => text(row.vlan || row.vlanId || "-", "-") !== "-").length;
+    return [
+      { id: "if-boundary-object", cells: ["转发面对象", `${formatNumber(down.length)}个Down`, "涉及接口", names], tone: down.length ? "danger" : "trust" },
+      { id: "if-boundary-parent", cells: ["父接口", `${formatNumber(parentCount)}组`, "桥接/VLAN", `${formatNumber(bridgeCount)}桥 / ${formatNumber(vlanCount)} VLAN`], tone: down.length ? "warn" : "trust" },
+      { id: "if-boundary-route", cells: ["默认出口", routeLabelText(state), "影响判断", "转发面证据优先"], tone: state.facts.route.level },
+      { id: "if-boundary-rest", cells: ["REST", restState(snapshot, state).value, recent, "采集面旁证"], tone: restState(snapshot, state).tone },
+      { id: "if-boundary-ssh", cells: ["SSH", sshState(snapshot, state).value, recent, "不替代转发面"], tone: sshState(snapshot, state).tone },
+      { id: "if-boundary-snapshot", cells: ["业务快照", moduleTrust(state), recent, "接口状态按快照显示"], tone: state.facts.freshness.credibilityTone },
+      { id: "if-boundary-list", cells: ["接口清单", names, recent, "优先看Down对象"], tone: down.length ? "danger" : "trust" },
+      { id: "if-boundary-scope", cells: ["影响范围", "转发面", recent, "不等同管理面"], tone: "warn" },
+      { id: "if-boundary-recovery", cells: ["恢复判断", "未推断", recent, "等待下一次采样"], tone: "trust" },
+      { id: "if-boundary-display", cells: ["展示范围", "接口 / 路由 / 采集", recent, "业务值不写配置"], tone: "trust" },
+      { id: "if-boundary-next", cells: ["下次尝试", pollText(snapshot), "轮询中", "不承诺已恢复"], tone: "trust" },
+      { id: "if-boundary-readonly", cells: ["展示边界", "不写配置", "不替代路由器明细", "仅展示证据"], tone: "trust" }
+    ];
+  }
   function routeFactRows(snapshot, state) {
     const routeEvidence = buildRouterOsRouteEvidenceModel(snapshot, state);
     const summaryRow = {
@@ -10190,94 +10278,6 @@ var PanelFramework = function(exports) {
         tone: row.running === false ? "danger" : "ok"
       };
     });
-  }
-  function interfaceRows(snapshot, state) {
-    const rows = collectInterfaceRows(snapshot).filter((row) => row.running === false);
-    if (!rows.length) return [{ id: "interface-ok", cells: ["接口转发面", "未发现 down", `REST / SSH 与转发面分离判断 / ${routeLabelText(state)}`], tone: state.scenario === "interfaces-down" ? "warn" : "ok" }];
-    return rows.slice(0, 8).map((row, index) => {
-      const name = text(row.name || row.interface, `if-${index + 1}`);
-      const parent = text(row.parent || row.master || "-", "-");
-      const bridge = text(row.bridge || "-", "-");
-      const vlan = text(row.vlan || row.vlanId || "-", "-");
-      return {
-        id: `if-${name}-${index}`,
-        cells: [
-          /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: name }),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("small", { children: [
-              "父接口 ",
-              parent
-            ] })
-          ] }),
-          "已断开",
-          `桥接 ${bridge} / VLAN ${vlan} / 默认出口 ${routeLabelText(state)}`
-        ],
-        tone: "danger"
-      };
-    });
-  }
-  function interfaceRelationRows(snapshot, state) {
-    const rows = collectInterfaceRows(snapshot).filter((row) => row.running === false);
-    if (!rows.length) return [{ id: "if-relation-ok", cells: ["接口关系", "未记录", "无 down 接口关系需要展开"], tone: "trust" }];
-    const relationRows = rows.slice(0, 8).map((row, index) => {
-      const name = text(row.name || row.interface, `if-${index + 1}`);
-      const parent = text(row.parent || row.master || "-", "-");
-      const bridge = text(row.bridge || "-", "-");
-      const vlan = text(row.vlan || row.vlanId || "-", "-");
-      const pppoe = text(row.pppoeOut || row.pppoe || "-", "-");
-      return {
-        id: `if-relation-${name}-${index}`,
-        cells: [name, `父接口 ${parent}`, `桥接 ${bridge} / VLAN ${vlan} / PPPoE出口 ${pppoe}`],
-        tone: "warn"
-      };
-    });
-    return relationRows.concat([
-      { id: "if-relation-boundary", cells: ["判断边界", "采集面分离", "REST/SSH 不替代转发面判断"], tone: "trust" },
-      { id: "if-relation-route", cells: ["默认出口", routeLabelText(state), routeBusinessText(state)], tone: state.facts.route.level }
-    ]);
-  }
-  function interfaceCollectionRows(snapshot, state) {
-    const recent = latestSuccess(snapshot, state.scenario);
-    const rest = restState(snapshot, state);
-    const ssh = sshState(snapshot, state);
-    return [
-      { id: "if-collection-routeros", cells: ["路由器管理面", routerosState(snapshot, state.scenario).value, recent, "采集入口"], tone: routerosState(snapshot, state.scenario).tone },
-      { id: "if-collection-rest", cells: ["REST", rest.value, recent, rest.note], tone: rest.tone },
-      { id: "if-collection-ssh", cells: ["SSH", ssh.value, recent, ssh.note], tone: ssh.tone },
-      { id: "if-collection-boundary", cells: ["判断边界", "采集面", "不替代接口转发面", state.facts.collection.channelText], tone: state.facts.collection.level }
-    ];
-  }
-  function interfacePageTrustRows(snapshot, state) {
-    const recent = latestSuccess(snapshot, state.scenario);
-    return [
-      { id: "if-page-trust", cells: ["页面可信度", moduleTrust(state), "接口快照可参考"], tone: state.facts.freshness.credibilityTone },
-      { id: "if-page-success", cells: ["最近成功", recent, "接口状态时间"], tone: recent === "未记录" ? "warn" : "trust" },
-      { id: "if-page-route", cells: ["默认出口", routeLabelText(state), "影响单独判定"], tone: state.facts.route.level },
-      { id: "if-page-collection", cells: ["采集面", `${restState(snapshot, state).value} / ${sshState(snapshot, state).value}`, "不替代转发面"], tone: state.facts.collection.level },
-      { id: "if-page-readonly", cells: ["展示边界", "不写配置", "仅展示证据"], tone: "trust" }
-    ];
-  }
-  function interfaceBoundaryRows(snapshot, state) {
-    const recent = latestSuccess(snapshot, state.scenario);
-    const down = collectInterfaceRows(snapshot).filter((row) => row.running === false);
-    const names = compactListText(down.slice(0, 5).map((row, index) => text(row.name || row.interface, `if-${index + 1}`)), 5) || "未记录";
-    const parentCount = new Set(down.map((row) => text(row.parent || row.master || "-", "-"))).size;
-    const bridgeCount = down.filter((row) => text(row.bridge || "-", "-") !== "-").length;
-    const vlanCount = down.filter((row) => text(row.vlan || row.vlanId || "-", "-") !== "-").length;
-    return [
-      { id: "if-boundary-object", cells: ["转发面对象", `${formatNumber(down.length)}个Down`, "涉及接口", names], tone: down.length ? "danger" : "trust" },
-      { id: "if-boundary-parent", cells: ["父接口", `${formatNumber(parentCount)}组`, "桥接/VLAN", `${formatNumber(bridgeCount)}桥 / ${formatNumber(vlanCount)} VLAN`], tone: down.length ? "warn" : "trust" },
-      { id: "if-boundary-route", cells: ["默认出口", routeLabelText(state), "影响判断", "转发面证据优先"], tone: state.facts.route.level },
-      { id: "if-boundary-rest", cells: ["REST", restState(snapshot, state).value, recent, "采集面旁证"], tone: restState(snapshot, state).tone },
-      { id: "if-boundary-ssh", cells: ["SSH", sshState(snapshot, state).value, recent, "不替代转发面"], tone: sshState(snapshot, state).tone },
-      { id: "if-boundary-snapshot", cells: ["业务快照", moduleTrust(state), recent, "接口状态按快照显示"], tone: state.facts.freshness.credibilityTone },
-      { id: "if-boundary-list", cells: ["接口清单", names, recent, "优先看Down对象"], tone: down.length ? "danger" : "trust" },
-      { id: "if-boundary-scope", cells: ["影响范围", "转发面", recent, "不等同管理面"], tone: "warn" },
-      { id: "if-boundary-recovery", cells: ["恢复判断", "未推断", recent, "等待下一次采样"], tone: "trust" },
-      { id: "if-boundary-display", cells: ["展示范围", "接口 / 路由 / 采集", recent, "业务值不写配置"], tone: "trust" },
-      { id: "if-boundary-next", cells: ["下次尝试", pollText(snapshot), "轮询中", "不承诺已恢复"], tone: "trust" },
-      { id: "if-boundary-readonly", cells: ["展示边界", "不写配置", "不替代路由器明细", "仅展示证据"], tone: "trust" }
-    ];
   }
   function compactRows(rows, count) {
     return rows.slice(0, count);
