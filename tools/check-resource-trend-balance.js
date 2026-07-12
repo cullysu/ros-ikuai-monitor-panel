@@ -798,7 +798,6 @@ async function main() {
           : ['conclusion', 'impact', 'collection', 'snapshot'];
         const topbarHierarchyOk = Boolean(
           topbar &&
-          topbar.getAttribute('data-overview-status-order') === expectedTopbarRoleOrder.join('-') &&
           topbarRoleOrder.join('-') === expectedTopbarRoleOrder.join('-') &&
           topbarRoleOrder[0] === 'conclusion'
         );
@@ -824,8 +823,8 @@ async function main() {
         const topbarContractOk = Boolean(
           topbar &&
           topbar.getAttribute('data-overview-status-bus') === 'control-console-summary-bus-flat-critical-value-rail' &&
-          topbar.getAttribute('data-overview-status-no-table-header') === 'true' &&
-          topbar.getAttribute('data-overview-status-value-rail') === 'conclusion-first-low-noise' &&
+          topbar.querySelectorAll('table, th').length === 0 &&
+          topbar.querySelector('[data-overview-status-role="conclusion"] [data-overview-desktop-primary="true"]') &&
           topbarStyle &&
           Number.parseFloat(topbarStyle.height || '0') <= 40 &&
           Number.parseFloat(topbarStyle.borderTopWidth || '0') === 0 &&

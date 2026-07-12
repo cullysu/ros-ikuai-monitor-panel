@@ -11222,10 +11222,6 @@ var PanelFramework = function(exports) {
     const allItems = topbarItems(snapshot, state).slice(0, 6);
     const isNoSnapshot = state.scenario === "no-snapshot";
     const items = isNoSnapshot ? allItems : allItems.filter((item) => ["conclusion", "impact", "collection", "snapshot"].includes(item.role));
-    const topbarOrder = isNoSnapshot ? "conclusion-device-routeros-rest-ssh-recent-success" : "conclusion-impact-collection-snapshot";
-    const topbarHierarchy = isNoSnapshot ? "primary-conclusion-device-routeros-rest-ssh-recent-success" : "primary-conclusion-impact-collection-snapshot";
-    const topbarPriorityContract = isNoSnapshot ? "conclusion-first-device-routeros-rest-ssh-recent-success" : "conclusion-first-impact-collection-snapshot";
-    const topbarSecondary = isNoSnapshot ? "recent-success-demoted" : "snapshot-demoted";
     return /* @__PURE__ */ jsxRuntimeExports.jsxs(
       "div",
       {
@@ -11236,23 +11232,8 @@ var PanelFramework = function(exports) {
         "data-overview-status-bus": "control-console-summary-bus-flat-critical-value-rail",
         "data-overview-verdict-status-bus": true,
         "data-overview-status-bar": true,
-        "data-overview-status-order": topbarOrder,
-        "data-overview-status-no-table-header": "true",
-        "data-overview-status-value-rail": "conclusion-first-low-noise",
         "data-overview-summary-main": true,
         "data-overview-desktop-top": true,
-        "data-overview-flat-topbar": true,
-        "data-overview-topbar-hierarchy": topbarHierarchy,
-        "data-overview-topbar-priority-contract": topbarPriorityContract,
-        "data-overview-topbar-primary-weight": "conclusion-12_5-device-12",
-        "data-overview-topbar-conclusion-rail": "left-4px",
-        "data-overview-topbar-secondary": topbarSecondary,
-        "data-overview-topbar-fixed-six": topbarOrder,
-        "data-overview-topbar-no-overflow": isNoSnapshot ? "max-six-cells-short-notes" : "four-facts-conclusion-first",
-        "data-overview-first-viewport-title": topbarOrder,
-        "data-overview-topbar-no-iso-long-timestamp": "true",
-        "data-overview-first-viewport-no-duplicate-title-tag": "true",
-        "data-overview-topbar-muted-tags": "no-heavy-status-tags",
         children: [
           items.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ro-topbar-cell ik-home-flat-cell ik-home-ops-item", "data-tone": item.tone, "data-overview-field": true, "data-overview-status-cell": true, "data-overview-status-role": item.role, "data-overview-status-priority": topbarPriority(item.role), "data-overview-summary-cell": true, "data-overview-status-cell-contract": "label-value-note", children: [
             /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: item.label }),

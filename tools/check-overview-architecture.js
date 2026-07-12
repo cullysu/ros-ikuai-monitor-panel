@@ -512,8 +512,9 @@ assert(
   "DesktopModule.tsx must expose semantic evidence attributes only"
 );
 assert(
-  !/data-overview-desktop-v\d+/.test(statusVerdict),
-  "StatusVerdict.tsx must expose one semantic status-bus contract"
+  !/data-overview-desktop-v\d+|data-overview-(?:status-no-table-header|status-value-rail|topbar-priority-contract|topbar-fixed-six)/.test(statusVerdict) &&
+    (statusVerdict.match(/\bdata-overview-[\w-]+/g) || []).length <= 18,
+  "StatusVerdict.tsx must keep only structural status-bus roles, not self-certifying layout claims"
 );
 assert(
   ![desktopRouteRows, desktopWanRows, desktopInterfaceRows].some((source) =>
