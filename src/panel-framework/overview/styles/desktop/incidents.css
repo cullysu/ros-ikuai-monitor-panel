@@ -1,0 +1,137 @@
+@media (min-width: 761px) {
+  #overview.router-overview-framework .ro-wan-offline-focus {
+    display: grid;
+    gap: 6px;
+    padding: 7px;
+    background: #fff;
+  }
+
+  #overview.router-overview-framework .ro-wan-offline-verdict {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    border-bottom: 1px solid rgba(154, 176, 198, .2);
+  }
+
+  #overview.router-overview-framework .ro-wan-offline-verdict > span {
+    display: grid;
+    grid-template-rows: 11px 17px 11px;
+    min-width: 0;
+    padding: 2px 8px 5px;
+    box-shadow: inset -1px 0 0 rgba(154, 176, 198, .18);
+  }
+
+  #overview.router-overview-framework .ro-wan-offline-verdict > span:last-child {
+    box-shadow: none;
+  }
+
+  #overview.router-overview-framework .ro-wan-offline-verdict :is(em, small) {
+    overflow: hidden;
+    color: #728398;
+    font-size: 8px;
+    font-style: normal;
+    font-weight: 560;
+    line-height: 11px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  #overview.router-overview-framework .ro-wan-offline-verdict b {
+    overflow: hidden;
+    color: #7f3532;
+    font-size: 12px;
+    font-weight: 780;
+    line-height: 17px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  #overview.router-overview-framework .ro-wan-offline-objects {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    border-top: 1px solid rgba(154, 176, 198, .14);
+    border-bottom: 1px solid rgba(154, 176, 198, .14);
+  }
+
+  #overview.router-overview-framework .ro-wan-offline-objects > div {
+    display: grid;
+    grid-template-rows: 15px 13px 12px;
+    min-width: 0;
+    padding: 4px 7px;
+    box-shadow: inset -1px 0 0 rgba(154, 176, 198, .16);
+  }
+
+  #overview.router-overview-framework .ro-wan-offline-objects > div:nth-of-type(4) {
+    box-shadow: none;
+  }
+
+  #overview.router-overview-framework .ro-wan-offline-objects .ro-wan-offline-object,
+  #overview.router-overview-framework .ro-wan-offline-objects span,
+  #overview.router-overview-framework .ro-wan-offline-objects em {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  #overview.router-overview-framework .ro-wan-offline-objects .ro-wan-offline-object {
+    color: #24374b;
+    font-size: 10px;
+    line-height: 15px;
+  }
+
+  #overview.router-overview-framework .ro-wan-offline-object > b {
+    color: inherit;
+    font-size: inherit;
+    line-height: inherit;
+  }
+
+  #overview.router-overview-framework .ro-wan-offline-object > small {
+    margin-left: 5px;
+    color: #8090a2;
+    font-size: 8px;
+    font-weight: 520;
+  }
+
+  #overview.router-overview-framework .ro-wan-offline-objects span {
+    color: #8a3935;
+    font-size: 9px;
+    font-weight: 700;
+    line-height: 13px;
+  }
+
+  #overview.router-overview-framework .ro-wan-offline-objects em {
+    color: #718398;
+    font-size: 8px;
+    font-style: normal;
+    line-height: 12px;
+  }
+
+  #overview.router-overview-framework .ro-wan-offline-objects > p {
+    grid-column: 1 / -1;
+    margin: 0;
+    padding: 4px 7px;
+    color: #718398;
+    font-size: 8px;
+    line-height: 11px;
+  }
+
+  #overview.router-overview-framework .ro-desktop-grid[data-overview-desktop-scene="no-snapshot"] {
+    grid-template-rows: 54px minmax(0, 1fr) !important;
+  }
+
+  #overview.router-overview-framework .ro-desktop-grid:is(
+    [data-overview-desktop-scene="no-snapshot"],
+    [data-overview-desktop-scene="all-offline"]
+  ) .ro-col {
+    align-content: start !important;
+    grid-auto-rows: max-content !important;
+    height: max-content !important;
+  }
+
+  #overview.router-overview-framework .ro-desktop-grid:is(
+    [data-overview-desktop-scene="no-snapshot"],
+    [data-overview-desktop-scene="all-offline"]
+  ) .ro-module {
+    height: auto !important;
+    max-height: none !important;
+  }
+}

@@ -10955,7 +10955,6 @@ var PanelFramework = function(exports) {
     const isResourceRiskModule = module === "resource-risk-priority";
     const isRouterOsRouteEvidenceModule = /route|default-route|evidence-boundary|wan-route/i.test(module);
     const isSecondaryEvidence = /terminal|boundary|collection-resource-threshold|resource-boundary|normal-ops-ledger/.test(module);
-    const isNoSnapshotFloorModule = className.split(/\s+/).includes("ro-no-snapshot-floor-module");
     const primaryEvidenceModules = /* @__PURE__ */ new Set([
       "wan-trend",
       "resource-risk-priority",
@@ -10975,7 +10974,6 @@ var PanelFramework = function(exports) {
       "section",
       {
         className: `ro-module ik-overview-flat-module${isResourceRiskModule ? " ops-resource-grid" : ""} ${className}`.trim(),
-        style: isNoSnapshotFloorModule ? { alignSelf: "stretch", height: "100%", maxHeight: "none", minHeight: 224 } : void 0,
         "data-tone": tone,
         "data-overview-density-module": module,
         "data-overview-visual-block": true,
@@ -10991,7 +10989,6 @@ var PanelFramework = function(exports) {
         "data-overview-evidence-weight": primaryEvidenceModules.has(module) ? "primary" : isSecondaryEvidence ? "secondary" : "support",
         "data-routeros-route-evidence-contract": isRouterOsRouteEvidenceModule ? ROUTEROS_ROUTE_EVIDENCE_CONTRACT : void 0,
         "data-routeros-v1047-raw-evidence-contract": isRouterOsRouteEvidenceModule ? "business-route-main-raw-route-fields-secondary-collapsed-low-noise" : void 0,
-        "data-overview-desktop-v1042-no-snapshot-floor-module": isNoSnapshotFloorModule ? "collapsed-raw-evidence-only" : void 0,
         "data-overview-three-col-table": headers.length === 3 ? "true" : void 0,
         children: [
           /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { className: "ro-module-head", children: [
@@ -11064,6 +11061,45 @@ var PanelFramework = function(exports) {
   function WanTrend({ className = "", ...props }) {
     return /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { ...props, className: `ro-semantic-wan-trend ${className}`.trim() });
   }
+  function WanOfflineFocus({ rows, total }) {
+    const visibleRows = rows.slice(0, 4);
+    const hiddenCount = Math.max(0, rows.length - visibleRows.length);
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ro-wan-offline-focus", "data-overview-wan-offline-focus": "summary-top-objects-details-deferred", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ro-wan-offline-verdict", "aria-label": "WAN 全离线判断", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: "线路状态" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("b", { children: [
+            "0/",
+            total,
+            " 在线"
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: "全部出口离线" })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: "默认出口" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: "未承载" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: "活动默认路由 0" })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: "速率" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: "无有效样本" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: "不展示 0 B/s" })
+        ] })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ro-wan-offline-objects", "aria-label": "优先核对的离线线路", children: [
+        visibleRows.map((row) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { "data-overview-wan-detail-row": true, "data-tone": row.tone || "danger", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "ro-wan-offline-object", children: row.cells[0] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: row.cells[1] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: row.cells[2] })
+        ] }, row.id)),
+        hiddenCount > 0 ? /* @__PURE__ */ jsxRuntimeExports.jsxs("p", { children: [
+          "其余 ",
+          hiddenCount,
+          " 条线路在详情中"
+        ] }) : null
+      ] })
+    ] });
+  }
   function buildDesktopOverviewScene(snapshot, state) {
     const trust = moduleTrust(state);
     const isFleet = state.scenario === "fleet";
@@ -11074,14 +11110,13 @@ var PanelFramework = function(exports) {
       return {
         main: [
           /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "采集链路", subtitle: "管理面证据 · 不代表业务可用", module: "no-snapshot-summary", tone: "warn", trust, headers: ["通道", "当前", "依据"], rows: chainRows, minRows: 0 }, "ns-collection-chain"),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "业务可信边界", subtitle: "缺少业务快照 · 不展示不可验证数值", module: "no-snapshot-module-visibility", tone: "missing", trust, headers: ["对象", "当前", "影响", "处理"], rows: businessBoundaryRows, minRows: 0 }, "ns-business-boundary")
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "业务数据不可判", subtitle: "缺少业务快照 · WAN / 资源 / 终端数值不展示", module: "no-snapshot-module-visibility", tone: "missing", trust, headers: ["对象", "当前", "影响", "处理"], rows: businessBoundaryRows, minRows: 0 }, "ns-business-boundary")
         ],
         side: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "恢复线索", subtitle: "最近成功 · 当前状态 · 下次轮询", module: "no-snapshot-recent-success", tone: "trust", trust, headers: ["节点", "当前", "说明"], rows: successRows, minRows: 0 }, "ns-recovery")
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "恢复线索", subtitle: "最近成功 · 当前状态 · 下次轮询", module: "no-snapshot-recent-success", tone: "trust", trust, headers: ["节点", "当前", "说明"], rows: successRows, minRows: 0 }, "ns-recovery"),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "原始证据", subtitle: "默认收起 · 仅用于审计", module: "evidence-boundary", tone: "trust", trust, headers: ["对象", "当前", "依据"], rows: compactRows(desktopEvidenceBoundaryRows(snapshot, state), 4), minRows: 0, collapsedEvidence: true }, "ns-raw-evidence")
         ],
-        bottom: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { className: "ro-no-snapshot-floor-module", title: "原始证据", subtitle: "默认收起 · 仅用于审计", module: "evidence-boundary", tone: "trust", trust, headers: ["对象", "当前", "依据"], rows: compactRows(desktopEvidenceBoundaryRows(snapshot, state), 4), minRows: 0, collapsedEvidence: true }, "ns-raw-evidence")
-        ]
+        bottom: []
       };
     }
     if (state.scenario === "resource-full") {
@@ -11136,14 +11171,15 @@ var PanelFramework = function(exports) {
     }
     if (state.scenario === "all-offline") {
       const offlineRows = wanRows(snapshot, state);
+      const totalWan2 = Math.max(state.facts.wan.total, offlineRows.length);
       return {
         main: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "WAN线路", subtitle: "0/8 / 出口不可用", module: "wan-offline-bars", tone: "danger", trust, headers: ["线路", "状态", "承载"], rows: offlineRows, minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(VisualStack, { snapshot, state }) }, "ao-wan"),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "WAN 全离线", subtitle: `0/${totalWan2} 在线 · 默认出口不可承载`, module: "wan-offline-bars", tone: "danger", trust, headers: ["线路", "状态", "承载"], rows: offlineRows, minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(WanOfflineFocus, { rows: offlineRows, total: totalWan2 }), collapsed: true }, "ao-wan"),
           /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "默认出口判断", subtitle: "出口 / 承载 / 优先级", module: "wan-route-ledger", tone: state.facts.route.level, trust, headers: ["出口", "网关", "优先级", "状态"], rows: routeBusinessRows(snapshot, state), minRows: 0 }, "ao-route")
         ],
         side: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "WAN连续性", subtitle: "0/8 / 默认路由异常", module: "wan-offline-continuity", tone: "danger", trust, headers: ["字段", "当前", "依据"], rows: compactRows(wanContinuityRows(state), 8), minRows: 0 }, "ao-continuity"),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "采集通道", subtitle: "REST / SSH / 快照", module: "collection-status", tone: state.facts.collection.level, trust, headers: ["对象", "当前", "依据"], rows: threeColumnRows(collectionRows(snapshot, state), "ao3-"), minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(ChannelMatrixVisual, { module: "collection-status", rows: collectionChannelRows(snapshot, state) }) }, "ao-collection"),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "WAN连续性", subtitle: `0/${totalWan2} 在线 · 默认路由异常`, module: "wan-offline-continuity", tone: "danger", trust, headers: ["字段", "当前", "依据"], rows: compactRows(wanContinuityRows(state), 4), minRows: 0, collapsed: true }, "ao-continuity"),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "采集通道", subtitle: "REST / SSH / 快照", module: "collection-status", tone: state.facts.collection.level, trust, headers: ["对象", "当前", "依据"], rows: threeColumnRows(collectionRows(snapshot, state), "ao3-"), minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(ChannelMatrixVisual, { module: "collection-status", rows: collectionChannelRows(snapshot, state) }), collapsed: true }, "ao-collection"),
           /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "业务影响", subtitle: "默认路由 / 速率不展示", module: "wan-offline-impact-boundary", tone: "warn", trust, headers: ["对象", "当前", "依据"], rows: compactRows(threeColumnRows(allOfflineImpactRows(snapshot, state), "aoi-"), 5), minRows: 0 }, "ao-impact")
         ],
         bottom: [
@@ -11258,9 +11294,7 @@ var PanelFramework = function(exports) {
         "data-overview-desktop-toy-nav-leak-guard": "desktop-content-icon-tabs-removed",
         "data-overview-desktop-content-icon-tabs": "desktop-hides-content-icon-tabs",
         "data-overview-trend-compact": "framework-ledger",
-        "data-overview-no-snapshot-grid": state.scenario === "no-snapshot" ? "collection-chain-business-boundary-recovery" : void 0,
-        "data-overview-no-snapshot-detail": state.scenario === "no-snapshot" ? "three-visible-evidence-sections-raw-fields-collapsed" : void 0,
-        "data-overview-desktop-v1042-no-snapshot-floor": state.scenario === "no-snapshot" ? "single-collapsed-raw-evidence" : void 0,
+        "data-overview-no-snapshot-detail": state.scenario === "no-snapshot" ? "business-data-unavailable-recovery-evidence-deferred" : void 0,
         "data-overview-desktop-effective-content-height": "760",
         "data-overview-desktop-redline-markers": "no-empty-left60-no-duplicate-boundary-no-nosnapshot-wan-rate-no-toy-tabs",
         "data-overview-no-snapshot-no-wan-rate-placeholder": state.scenario === "no-snapshot" ? "business-rates-hidden" : void 0,
@@ -11271,7 +11305,7 @@ var PanelFramework = function(exports) {
           /* @__PURE__ */ jsxRuntimeExports.jsx(DesktopDecisionRail, { snapshot, state }),
           /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ro-col is-main stack", children: sections.main }),
           /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ro-col is-side stack ik-home-side-stack", children: sections.side }),
-          sections.bottom.length > 0 ? /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: `ro-col is-bottom stack${state.scenario === "no-snapshot" ? " ro-no-snapshot-floor" : ""}`, style: { gridColumn: "1 / -1" }, "data-overview-desktop-v1042-no-snapshot-floor-rail": state.scenario === "no-snapshot" ? "single-collapsed-raw-evidence" : void 0, children: sections.bottom }) : null
+          sections.bottom.length > 0 ? /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ro-col is-bottom stack", style: { gridColumn: "1 / -1" }, children: sections.bottom }) : null
         ]
       }
     );

@@ -19,9 +19,7 @@ export function DesktopWorkspace({ snapshot, state }: OverviewPanelProps) {
       data-overview-desktop-toy-nav-leak-guard="desktop-content-icon-tabs-removed"
       data-overview-desktop-content-icon-tabs="desktop-hides-content-icon-tabs"
       data-overview-trend-compact="framework-ledger"
-      data-overview-no-snapshot-grid={state.scenario === "no-snapshot" ? "collection-chain-business-boundary-recovery" : undefined}
-      data-overview-no-snapshot-detail={state.scenario === "no-snapshot" ? "three-visible-evidence-sections-raw-fields-collapsed" : undefined}
-      data-overview-desktop-v1042-no-snapshot-floor={state.scenario === "no-snapshot" ? "single-collapsed-raw-evidence" : undefined}
+      data-overview-no-snapshot-detail={state.scenario === "no-snapshot" ? "business-data-unavailable-recovery-evidence-deferred" : undefined}
       data-overview-desktop-effective-content-height="760"
       data-overview-desktop-redline-markers="no-empty-left60-no-duplicate-boundary-no-nosnapshot-wan-rate-no-toy-tabs"
       data-overview-no-snapshot-no-wan-rate-placeholder={state.scenario === "no-snapshot" ? "business-rates-hidden" : undefined}
@@ -32,7 +30,7 @@ export function DesktopWorkspace({ snapshot, state }: OverviewPanelProps) {
       <DesktopDecisionRail snapshot={snapshot} state={state} />
       <div className="ro-col is-main stack">{sections.main}</div>
       <div className="ro-col is-side stack ik-home-side-stack">{sections.side}</div>
-      {sections.bottom.length > 0 ? <div className={`ro-col is-bottom stack${state.scenario === "no-snapshot" ? " ro-no-snapshot-floor" : ""}`} style={{ gridColumn: "1 / -1" }} data-overview-desktop-v1042-no-snapshot-floor-rail={state.scenario === "no-snapshot" ? "single-collapsed-raw-evidence" : undefined}>{sections.bottom}</div> : null}
+      {sections.bottom.length > 0 ? <div className="ro-col is-bottom stack" style={{ gridColumn: "1 / -1" }}>{sections.bottom}</div> : null}
     </div>
   );
 }

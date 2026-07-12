@@ -10,7 +10,6 @@ export function Module({ title, subtitle, module, tone = "trust", headers, rows,
   const isResourceRiskModule = module === "resource-risk-priority";
   const isRouterOsRouteEvidenceModule = /route|default-route|evidence-boundary|wan-route/i.test(module);
   const isSecondaryEvidence = /terminal|boundary|collection-resource-threshold|resource-boundary|normal-ops-ledger/.test(module);
-  const isNoSnapshotFloorModule = className.split(/\s+/).includes("ro-no-snapshot-floor-module");
   const primaryEvidenceModules = new Set([
     "wan-trend",
     "resource-risk-priority",
@@ -31,7 +30,6 @@ export function Module({ title, subtitle, module, tone = "trust", headers, rows,
   return (
     <section
       className={`ro-module ik-overview-flat-module${isResourceRiskModule ? " ops-resource-grid" : ""} ${className}`.trim()}
-      style={isNoSnapshotFloorModule ? { alignSelf: "stretch", height: "100%", maxHeight: "none", minHeight: 224 } : undefined}
       data-tone={tone}
       data-overview-density-module={module}
       data-overview-visual-block
@@ -47,7 +45,6 @@ export function Module({ title, subtitle, module, tone = "trust", headers, rows,
       data-overview-evidence-weight={primaryEvidenceModules.has(module) ? "primary" : isSecondaryEvidence ? "secondary" : "support"}
       data-routeros-route-evidence-contract={isRouterOsRouteEvidenceModule ? ROUTEROS_ROUTE_EVIDENCE_CONTRACT : undefined}
       data-routeros-v1047-raw-evidence-contract={isRouterOsRouteEvidenceModule ? "business-route-main-raw-route-fields-secondary-collapsed-low-noise" : undefined}
-      data-overview-desktop-v1042-no-snapshot-floor-module={isNoSnapshotFloorModule ? "collapsed-raw-evidence-only" : undefined}
       data-overview-three-col-table={headers.length === 3 ? "true" : undefined}
     >
       <header className="ro-module-head">

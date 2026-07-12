@@ -1401,16 +1401,6 @@
     color: #657689 !important;
   }
 
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-desktop-grid[data-overview-desktop-scene="no-snapshot"],
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-desktop-grid[data-overview-desktop-scene="no-snapshot"] {
-    min-height: calc(100vh - 104px) !important;
-    align-content: stretch !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-desktop-grid[data-overview-desktop-scene="no-snapshot"] .ro-col,
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-desktop-grid[data-overview-desktop-scene="no-snapshot"] .ro-col {
-    align-content: stretch !important;
-  }
 }
 
 
@@ -1425,14 +1415,6 @@
     height: calc(100vh - 82px) !important;
     min-height: calc(100vh - 82px) !important;
     overflow: hidden !important;
-  }
-
-  #overview.router-overview-framework[data-overview-desktop-v1030-nav-polish] .ro-desktop-grid[data-overview-desktop-v1042-no-snapshot-floor] {
-    --ro-desktop-grid-rows: 54px auto auto;
-    --ro-col-align-content: start;
-    --ro-col-height: auto;
-    --ro-col-grid-auto-rows: max-content;
-    --ro-col-module-height: auto;
   }
 
   /* Canonical desktop decision rail: one active product rule. */

@@ -54,6 +54,7 @@ import { Module } from "./components/DesktopModule";
 import { EvidenceChain } from "./components/EvidenceChain";
 import { TerminalRanking } from "./components/TerminalRanking";
 import { WanTrend } from "./components/WanTrend";
+import { WanOfflineFocus } from "./components/WanOfflineFocus";
 
 export interface DesktopSceneSections {
   main: ReactNode[];
@@ -72,14 +73,13 @@ export function buildDesktopOverviewScene(snapshot: OverviewRawSnapshot, state: 
     return {
       main: [
         <Module key="ns-collection-chain" title="采集链路" subtitle="管理面证据 · 不代表业务可用" module="no-snapshot-summary" tone="warn" trust={trust} headers={["通道", "当前", "依据"]} rows={chainRows} minRows={0} />,
-        <Module key="ns-business-boundary" title="业务可信边界" subtitle="缺少业务快照 · 不展示不可验证数值" module="no-snapshot-module-visibility" tone="missing" trust={trust} headers={["对象", "当前", "影响", "处理"]} rows={businessBoundaryRows} minRows={0} />,
+        <Module key="ns-business-boundary" title="业务数据不可判" subtitle="缺少业务快照 · WAN / 资源 / 终端数值不展示" module="no-snapshot-module-visibility" tone="missing" trust={trust} headers={["对象", "当前", "影响", "处理"]} rows={businessBoundaryRows} minRows={0} />,
       ],
       side: [
         <Module key="ns-recovery" title="恢复线索" subtitle="最近成功 · 当前状态 · 下次轮询" module="no-snapshot-recent-success" tone="trust" trust={trust} headers={["节点", "当前", "说明"]} rows={successRows} minRows={0} />,
+        <Module key="ns-raw-evidence" title="原始证据" subtitle="默认收起 · 仅用于审计" module="evidence-boundary" tone="trust" trust={trust} headers={["对象", "当前", "依据"]} rows={compactRows(desktopEvidenceBoundaryRows(snapshot, state), 4)} minRows={0} collapsedEvidence />,
       ],
-      bottom: [
-        <Module key="ns-raw-evidence" className="ro-no-snapshot-floor-module" title="原始证据" subtitle="默认收起 · 仅用于审计" module="evidence-boundary" tone="trust" trust={trust} headers={["对象", "当前", "依据"]} rows={compactRows(desktopEvidenceBoundaryRows(snapshot, state), 4)} minRows={0} collapsedEvidence />,
-      ],
+      bottom: [],
     };
   }
 
@@ -138,14 +138,15 @@ export function buildDesktopOverviewScene(snapshot: OverviewRawSnapshot, state: 
 
   if (state.scenario === "all-offline") {
     const offlineRows = wanRows(snapshot, state);
+    const totalWan = Math.max(state.facts.wan.total, offlineRows.length);
     return {
       main: [
-        <Module key="ao-wan" title="WAN线路" subtitle="0/8 / 出口不可用" module="wan-offline-bars" tone="danger" trust={trust} headers={["线路", "状态", "承载"]} rows={offlineRows} minRows={0} visual={<VisualStack snapshot={snapshot} state={state} />} />,
+        <Module key="ao-wan" title="WAN 全离线" subtitle={`0/${totalWan} 在线 · 默认出口不可承载`} module="wan-offline-bars" tone="danger" trust={trust} headers={["线路", "状态", "承载"]} rows={offlineRows} minRows={0} visual={<WanOfflineFocus rows={offlineRows} total={totalWan} />} collapsed />,
         <Module key="ao-route" title="默认出口判断" subtitle="出口 / 承载 / 优先级" module="wan-route-ledger" tone={state.facts.route.level} trust={trust} headers={["出口", "网关", "优先级", "状态"]} rows={routeBusinessRows(snapshot, state)} minRows={0} />,
       ],
       side: [
-        <Module key="ao-continuity" title="WAN连续性" subtitle="0/8 / 默认路由异常" module="wan-offline-continuity" tone="danger" trust={trust} headers={["字段", "当前", "依据"]} rows={compactRows(wanContinuityRows(state), 8)} minRows={0} />,
-        <Module key="ao-collection" title="采集通道" subtitle="REST / SSH / 快照" module="collection-status" tone={state.facts.collection.level} trust={trust} headers={["对象", "当前", "依据"]} rows={threeColumnRows(collectionRows(snapshot, state), "ao3-")} minRows={0} visual={<ChannelMatrixVisual module="collection-status" rows={collectionChannelRows(snapshot, state)} />} />,
+        <Module key="ao-continuity" title="WAN连续性" subtitle={`0/${totalWan} 在线 · 默认路由异常`} module="wan-offline-continuity" tone="danger" trust={trust} headers={["字段", "当前", "依据"]} rows={compactRows(wanContinuityRows(state), 4)} minRows={0} collapsed />,
+        <Module key="ao-collection" title="采集通道" subtitle="REST / SSH / 快照" module="collection-status" tone={state.facts.collection.level} trust={trust} headers={["对象", "当前", "依据"]} rows={threeColumnRows(collectionRows(snapshot, state), "ao3-")} minRows={0} visual={<ChannelMatrixVisual module="collection-status" rows={collectionChannelRows(snapshot, state)} />} collapsed />,
         <Module key="ao-impact" title="业务影响" subtitle="默认路由 / 速率不展示" module="wan-offline-impact-boundary" tone="warn" trust={trust} headers={["对象", "当前", "依据"]} rows={compactRows(threeColumnRows(allOfflineImpactRows(snapshot, state), "aoi-"), 5)} minRows={0} />,
       ],
       bottom: [

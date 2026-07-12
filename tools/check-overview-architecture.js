@@ -29,6 +29,8 @@ const desktopRefinementFile =
   "src/panel-framework/overview/OverviewPanelDesktopRefinement.css";
 const desktopReleaseFile =
   "src/panel-framework/overview/OverviewPanelRelease.css";
+const desktopIncidentStylesFile =
+  "src/panel-framework/overview/styles/desktop/incidents.css";
 const desktopConsoleFile =
   "src/panel-framework/overview/components/DesktopConsole.tsx";
 const desktopDecisionRailFile =
@@ -69,6 +71,7 @@ const desktopScenes = read(desktopScenesFile);
 const panelCss = read(panelCssFile);
 const desktopRefinement = read(desktopRefinementFile);
 const desktopRelease = read(desktopReleaseFile);
+const desktopIncidentStyles = read(desktopIncidentStylesFile);
 const desktopHelpers = read(desktopHelpersFile);
 const desktopRows = read(desktopRowsFile);
 const desktopTrafficRows = read(desktopTrafficRowsFile);
@@ -296,6 +299,14 @@ assert(
   `desktopOverviewScenes.tsx exceeds 350 lines: ${lines(desktopScenes)}`
 );
 assert(
+  lines(desktopIncidentStyles) <= 150,
+  `desktop incident styles exceed 150 lines: ${lines(desktopIncidentStyles)}`
+);
+assert(
+  (desktopIncidentStyles.match(/!important/g) || []).length <= 6,
+  "Desktop incident styles must not become another override layer"
+);
+assert(
   lines(desktopHelpers) <= 450,
   `desktopOverviewHelpers.tsx exceeds 450 lines: ${lines(desktopHelpers)}`
 );
@@ -355,6 +366,10 @@ assert(
 assert(
   panel.includes('from "./components/DesktopConsole"'),
   "OverviewPanel.tsx must compose the extracted desktop console boundary"
+);
+assert(
+  panel.includes('import "./styles/desktop/incidents.css";'),
+  "OverviewPanel.tsx must load the semantic desktop incident layer"
 );
 assert(
   desktopHelpers.includes("buildRouterOsPresentationViewModel"),

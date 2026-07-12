@@ -1797,7 +1797,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         overviewNoSnapshotRawEvidenceModule &&
         nodeVisibleInFirstScreen(overviewNoSnapshotRawEvidenceModule) &&
         /采集链路图|采集链路/.test(overviewNoSnapshotCoreModuleText) &&
-        /业务可信边界|模块可见性/.test(overviewNoSnapshotCoreModuleText) &&
+        /业务数据不可判|业务可信边界|模块可见性/.test(overviewNoSnapshotCoreModuleText) &&
         /恢复线索/.test(overviewNoSnapshotCoreModuleText) &&
         /RouterOS/.test(overviewNoSnapshotCoreModuleText) &&
         /REST/.test(overviewNoSnapshotCoreModuleText) &&
@@ -1825,7 +1825,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         sectionRoot?.querySelector('[data-overview-density-module="wan-offline-bars"]') &&
         sectionRoot?.querySelector('[data-overview-density-module="wan-offline-continuity"]') &&
         sectionRoot?.querySelector('[data-overview-density-module="wan-route-ledger"]') &&
-        (text.includes('WAN 0/8') || text.includes('WAN0/8') || text.includes('WAN全离线') || text.includes('WAN 全离线')) &&
+        (/WAN\\s*0\\/\\d+/.test(text) || text.includes('WAN全离线') || text.includes('WAN 全离线')) &&
         /默认路由|RouterOS/.test(text)
       ) ||
       (
@@ -2620,7 +2620,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       isDesktopOverview &&
       overviewNoSnapshotCoreModulesVisible &&
       /采集链路图|采集链路/.test(overviewNoSnapshotCoreModuleText) &&
-      /业务可信边界|模块可见性/.test(overviewNoSnapshotCoreModuleText) &&
+      /业务数据不可判|业务可信边界|模块可见性/.test(overviewNoSnapshotCoreModuleText) &&
       /恢复线索/.test(overviewNoSnapshotCoreModuleText) &&
       /REST/.test(overviewNoSnapshotCoreModuleText) &&
       /SSH/.test(overviewNoSnapshotCoreModuleText) &&
@@ -3548,12 +3548,19 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewNoSnapshotRawEvidenceModule &&
       overviewNoSnapshotRawEvidenceModule.hasAttribute('data-overview-desktop-v1074-collapsed-evidence') &&
       /不写配置/.test(normalize(overviewNoSnapshotReadonlyBoundaryModule.textContent || '')) &&
-      /业务可信边界|业务展示边界/.test(overviewNoSnapshotSurfaceText) &&
+      /业务数据不可判|业务可信边界|业务展示边界/.test(overviewNoSnapshotSurfaceText) &&
       /速率\\s*不展示|速率不展示/.test(overviewNoSnapshotSurfaceText) &&
       /下次轮询|下次尝试/.test(overviewNoSnapshotSurfaceText)
     );
     const overviewNoSnapshotOpsLedgerCopyOk = sectionName !== 'overview' || !isDesktopOverview || !noSnapshotEdge || Boolean(
-      overviewNoSnapshotBusinessFirstOpsLedgerOk || (
+      (
+      overviewNoSnapshotRawEvidenceModule &&
+      overviewNoSnapshotRawEvidenceModule.hasAttribute('data-overview-desktop-v1074-collapsed-evidence') &&
+      /不写配置/.test(overviewNoSnapshotSurfaceText) &&
+      /业务数据不可判/.test(overviewNoSnapshotSurfaceText) &&
+      /速率\s*不展示|数值不展示/.test(overviewNoSnapshotSurfaceText) &&
+      /下次轮询|下次尝试/.test(overviewNoSnapshotSurfaceText)
+      ) || overviewNoSnapshotBusinessFirstOpsLedgerOk || (
       overviewNoSnapshotAuditCopyCount === 0 &&
       /页面可信等级\\s*(?:采集链路可参考|链路可参考)|可信等级\\s*链路可参考|页面可信\\s*链路可参考|可信\\s*链路可参/.test(overviewNoSnapshotSurfaceText) &&
       /只读边界[\\s\\S]{0,180}不写配置|只读策略[\\s\\S]{0,80}不写配置|只读\\s*不写配置/.test(overviewNoSnapshotSurfaceText) &&
@@ -3575,8 +3582,8 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     );
     const overviewNoSnapshotUnifiedBusinessCopyOk = sectionName !== 'overview' || !isDesktopOverview || !noSnapshotEdge || Boolean(
       /业务快照\s*未取得|缺少业务快照/.test(overviewNoSnapshotSurfaceText) &&
-      /不展示不可验证数值|避免把缺失解释为\s*0/.test(overviewNoSnapshotSurfaceText) &&
-      !/业务表隐藏|业务表无|业务数据待确认|业务数据不可判定|数据可信度不可判定|业务数值隐藏/.test(overviewNoSnapshotSurfaceText)
+      /数值不展示|不展示不可验证数值|避免把缺失解释为\s*0/.test(overviewNoSnapshotSurfaceText) &&
+      !/业务表隐藏|业务表无|业务数据待确认|数据可信度不可判定|业务数值隐藏/.test(overviewNoSnapshotSurfaceText)
     );
     const overviewNoSnapshotNoDuplicateBoundaryOk = sectionName !== 'overview' || !isDesktopOverview || !noSnapshotEdge || Boolean(
       overviewNoSnapshotLegacyDowngradeModules.length === 0 &&
@@ -3601,7 +3608,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewNoSnapshotCoreModuleNodes.length === 3 &&
       overviewNoSnapshotRawEvidenceModule &&
       overviewNoSnapshotRawEvidenceModule.hasAttribute('data-overview-desktop-v1074-collapsed-evidence') &&
-      /业务可信边界/.test(overviewNoSnapshotSurfaceText) &&
+      /业务数据不可判|业务可信边界/.test(overviewNoSnapshotSurfaceText) &&
       /采集链路/.test(overviewNoSnapshotSurfaceText) &&
       /恢复线索/.test(overviewNoSnapshotSurfaceText) &&
       /默认路由影响\\s*待判|默认路由\\s*待判/.test(overviewNoSnapshotSurfaceText) &&
@@ -3612,7 +3619,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewNoSnapshotBusinessFirstLedgerStructureOk || (
       overviewNoSnapshotDesktopCoreFactsOk &&
       /采集链路图|采集链路/.test(overviewNoSnapshotSurfaceText) &&
-      /业务可信边界|模块可见性/.test(overviewNoSnapshotSurfaceText) &&
+      /业务数据不可判|业务可信边界|模块可见性/.test(overviewNoSnapshotSurfaceText) &&
       /恢复线索/.test(overviewNoSnapshotSurfaceText) &&
       /最近成功/.test(overviewNoSnapshotSurfaceText) &&
       /下次轮询|下次尝试/.test(overviewNoSnapshotSurfaceText) &&
@@ -5691,14 +5698,18 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         mobileWanEvidenceRows.length >= Math.min(3, totalWanCount)
       )
     );
-    const overviewAllOfflineWanBlockNodes = Array.from(sectionRoot?.querySelectorAll([
-      '[data-overview-density-module="wan-offline-bars"] [data-overview-wan-detail-row]',
-      '[data-overview-density-module="wan-offline-bars"] .ik-overview-wan-bar',
-      '[data-overview-density-module="wan-offline-bars"] .ik-overview-wan-node'
-    ].join(',')) || []).filter(nodeVisibleInFirstScreen);
-    const overviewAllOfflineEightWanBlocksOk = sectionName !== 'overview' || scaleScenario !== 'all-offline' || !isDesktopOverview || Boolean(
-      totalWanCount >= 8 &&
-      overviewAllOfflineWanBlockNodes.length >= Math.min(8, totalWanCount)
+    const overviewAllOfflineFocus = sectionRoot?.querySelector('[data-overview-wan-offline-focus="summary-top-objects-details-deferred"]');
+    const overviewAllOfflineWanBlockNodes = Array.from((overviewAllOfflineFocus || sectionRoot)?.querySelectorAll(overviewAllOfflineFocus
+      ? '[data-overview-wan-detail-row]'
+      : [
+        '[data-overview-density-module="wan-offline-bars"] [data-overview-wan-detail-row]',
+        '[data-overview-density-module="wan-offline-bars"] .ik-overview-wan-bar',
+        '[data-overview-density-module="wan-offline-bars"] .ik-overview-wan-node'
+      ].join(',')) || []).filter(nodeVisibleInFirstScreen);
+    const overviewAllOfflinePriorityObjectsOk = sectionName !== 'overview' || scaleScenario !== 'all-offline' || !isDesktopOverview || Boolean(
+      totalWanCount > 0 &&
+      overviewAllOfflineWanBlockNodes.length >= Math.min(4, totalWanCount) &&
+      overviewAllOfflineWanBlockNodes.length <= 4
     );
     const fleetWanActualCount = Number(scaleMeta.wan?.actualCount || snapshotForEvidence.meta?.wanCount || evidenceWanRows.length || 0);
     const fleetTerminalActualCount = Number(scaleMeta.terminals?.actualCount || snapshotForEvidence.meta?.terminalCount || snapshotForEvidence.terminals?.length || 0);
@@ -5721,7 +5732,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       (overviewVisibleDensityModuleNames.includes('collection-status') || overviewVisibleDensityModuleNames.includes('freshness')) &&
       !overviewVisibleDensityModuleNames.includes('rank') &&
       !overviewVisibleDensityModuleNames.includes('resource-threshold') &&
-      overviewAllOfflineEightWanBlocksOk &&
+      overviewAllOfflinePriorityObjectsOk &&
       /速率[：:]无有效样本|速率无有效样本/.test(fleetSceneText + ' ' + overviewDesktopDetailText)
     );
     const fleetOfflineEvidenceCount = fleetOfflineNames.filter((name) => fleetSceneText.includes(name)).length;
@@ -6475,7 +6486,8 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         ? overviewDensityModules.filter((node) => {
           const rect = node.getBoundingClientRect();
           const style = getComputedStyle(node);
-          return rect.width > 0 &&
+          return node.getAttribute('data-overview-density-module') !== 'evidence-boundary' &&
+            rect.width > 0 &&
             rect.height > 0 &&
             rect.bottom > 0 &&
             rect.top < window.innerHeight &&
@@ -6532,7 +6544,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewNoSnapshotFiveModuleRowCounts.every((item) => item.rows >= 4 && item.rows <= 5 && item.textLength >= 48)
     );
     overviewNoSnapshotModuleFillOk = sectionName !== 'overview' || !noSnapshotEdge || !isDesktopOverview || Boolean(
-        overviewNoSnapshotModuleFillSamples.length === 4 &&
+        overviewNoSnapshotModuleFillSamples.length === 3 &&
         (overviewNoSnapshotModuleFillRatio >= 0.42 || overviewNoSnapshotModuleFactFillOk)
       );
       const overviewResourceFillTargets = scaleScenario === 'resource-full'
@@ -7004,7 +7016,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       (overviewMobile390AcceptanceOk || overviewNoSnapshotDowngradeReasonsOk) &&
       (overviewMobile390AcceptanceOk || overviewNoSnapshotRepetitionBudgetOk) &&
       overviewAllWanOfflineSummaryOk &&
-      overviewAllOfflineEightWanBlocksOk &&
+      overviewAllOfflinePriorityObjectsOk &&
       overviewIncidentWanRateFillerForbiddenOk &&
       overviewCollectionLayerSplitOk &&
       overviewCollectionTimelinePriorityOk &&
@@ -7599,7 +7611,8 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         offlineWanCount,
         excerpt: combinedOverviewText.slice(0, 260),
       },
-      overviewAllOfflineEightWanBlocksOk,
+      overviewAllOfflinePriorityObjectsOk,
+      overviewAllOfflinePriorityObjectCount: overviewAllOfflineWanBlockNodes.length,
       overviewNoSnapshotFreshnessForbiddenOk,
       overviewNoSnapshotSamplingStateUniqueOk,
       overviewNoSnapshotDesktopEvidenceTripletOk,

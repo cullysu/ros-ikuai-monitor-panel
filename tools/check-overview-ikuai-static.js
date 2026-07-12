@@ -50,6 +50,7 @@ const overview = read('src/panel-framework/overview/OverviewPanel.tsx');
 const desktop = read('src/panel-framework/overview/components/DesktopConsole.tsx');
 const desktopDecision = read('src/panel-framework/overview/components/DesktopDecisionRail.tsx');
 const desktopModule = read('src/panel-framework/overview/components/DesktopModule.tsx');
+const wanOfflineFocus = read('src/panel-framework/overview/components/WanOfflineFocus.tsx');
 const desktopScenes = read('src/panel-framework/overview/desktopOverviewScenes.tsx');
 const desktopHierarchyStyles = read('src/panel-framework/overview/OverviewPanelDesktopHierarchy.css');
 const mobile = read('src/panel-framework/overview/components/MobileOverviewHome.tsx');
@@ -124,6 +125,9 @@ includesAll(desktopScenes, [
   'state.scenario === "resource-full"',
   'state.scenario === "interfaces-down"',
 ], 'desktop scenario ownership');
+includesAll(desktopScenes, ['Math.max(state.facts.wan.total, offlineRows.length)', '<WanOfflineFocus', 'collapsed />'], 'desktop adaptive WAN incident hierarchy');
+excludesAll(desktopScenes, ['subtitle="0/8', 'compactRows(wanContinuityRows(state), 8)'], 'desktop WAN fixture cleanup');
+includesAll(wanOfflineFocus, ['rows.slice(0, 4)', '其余 {hiddenCount} 条线路在详情中', '不展示 0 B/s'], 'desktop WAN incident focus');
 if ((desktopScenes.match(/\bcollapsed\s*\/>/g) || []).length < 3) fail('desktop normal hierarchy', 'expected three collapsed secondary summaries');
 includesAll(desktopModule, ['collapsed ? "ro-secondary-evidence-disclosure ro-compact-summary-disclosure"', 'ro-compact-summary-disclosure', '查看详情'], 'desktop compact disclosure');
 const desktopModuleContractCount = (desktopModule.match(/\bdata-(?:overview|routeros)-[\w-]+/g) || []).length;

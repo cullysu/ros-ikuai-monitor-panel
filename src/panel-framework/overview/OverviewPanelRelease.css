@@ -161,40 +161,6 @@
   }
 }
 
-/* Desktop no-snapshot floor: keep raw fields available without turning absence into another dashboard. */
-@media (min-width: 761px) {
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-desktop-grid[data-overview-desktop-v1042-no-snapshot-floor] .ro-col.is-bottom.ro-no-snapshot-floor,
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-desktop-grid[data-overview-desktop-v1042-no-snapshot-floor] .ro-col.is-bottom.ro-no-snapshot-floor {
-    display: grid !important;
-    grid-template-columns: minmax(0, 1fr) !important;
-    grid-auto-rows: auto !important;
-    gap: 8px !important;
-    align-items: stretch !important;
-    align-content: start !important;
-    justify-items: stretch !important;
-    grid-column: 1 / -1 !important;
-    min-height: 0 !important;
-    max-height: none !important;
-    overflow: visible !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-desktop-grid[data-overview-desktop-v1042-no-snapshot-floor],
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-desktop-grid[data-overview-desktop-v1042-no-snapshot-floor] {
-    grid-template-rows: 54px auto auto !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-desktop-v1042-no-snapshot-floor-module],
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-desktop-v1042-no-snapshot-floor-module] {
-    align-self: stretch !important;
-    height: auto !important;
-    max-height: none !important;
-    min-height: 0 !important;
-    display: block !important;
-    overflow: visible !important;
-    background: rgba(255, 255, 255, .92) !important;
-  }
-}
-
 /* v1072 mobile WAN decision geometry: keep the six readouts in an exact 3x2 rail. */
 @media (max-width: 760px) {
   #overview.router-overview-framework

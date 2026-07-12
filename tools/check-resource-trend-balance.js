@@ -686,7 +686,7 @@ async function main() {
         ];
         const missingModules = requiredModules.filter((item) => !moduleNames.includes(item));
         const forbiddenModules = moduleNames.filter((item) => /terminal-ranking|wan-trend|normal-wan-evidence|traffic-trend|wan-throughput|wan-rate|no-snapshot-readonly-boundary|no-snapshot-degraded-modules/.test(item));
-        const requiredText = ['采集链路', '业务可信边界', '恢复线索', '业务快照', '速率不展示', '只读'];
+        const requiredText = ['采集链路', '业务数据不可判', '恢复线索', '业务快照', '速率不展示', '只读'];
         const desktopNoSnapshotText = normalize(modules.map((node) => visibleText(node)).join(' '));
         const missing = requiredText.filter((item) => !desktopNoSnapshotText.includes(item));
         const primaryModules = requiredModules.slice(0, 3)
@@ -695,20 +695,23 @@ async function main() {
         const primaryRects = primaryModules.map((node) => node.getBoundingClientRect());
         const visiblePrimaryCount = primaryRects.filter((rect) => rect.width > 0 && rect.height >= 120).length;
         const workspace = sectionEl?.querySelector('[data-overview-desktop-workspace]');
-        const floorRail = workspace?.querySelector('[data-overview-desktop-v1042-no-snapshot-floor-rail="single-collapsed-raw-evidence"]');
-        const floorRect = floorRail?.getBoundingClientRect();
-        const floorModules = Array.from(floorRail?.querySelectorAll('[data-overview-desktop-v1042-no-snapshot-floor-module="collapsed-raw-evidence-only"]') || []);
-        const floorRowCount = floorModules.reduce((sum, node) => sum + node.querySelectorAll('.ro-ledger-row:not(.ro-ledger-head)').length, 0);
-        const floorModuleRects = floorModules.map((node) => node.getBoundingClientRect());
-        const hasRawEvidenceDisclosure = Boolean(floorRail?.querySelector('[data-overview-desktop-v1074-raw-evidence-disclosure="native-details-collapsed-secondary"]'));
-        const noSnapshotFloorProductized = Boolean(
-          workspace?.getAttribute('data-overview-desktop-v1042-no-snapshot-floor') === 'single-collapsed-raw-evidence' &&
-          floorRail &&
-          floorRect &&
-          floorRect.height >= 48 &&
-          floorModules.length === 1 &&
-          floorRowCount >= 4 &&
-          floorModuleRects.every((rect) => rect.width > 600 && rect.height >= 48) &&
+        const recoveryModule = workspace?.querySelector('[data-overview-density-module="no-snapshot-recent-success"]');
+        const rawEvidenceModule = workspace?.querySelector('[data-overview-density-module="evidence-boundary"]');
+        const recoveryRect = recoveryModule?.getBoundingClientRect();
+        const rawEvidenceRect = rawEvidenceModule?.getBoundingClientRect();
+        const rawEvidenceRowCount = rawEvidenceModule?.querySelectorAll('.ro-ledger-row:not(.ro-ledger-head)').length || 0;
+        const rawEvidenceDisclosure = rawEvidenceModule?.querySelector('[data-overview-desktop-v1074-raw-evidence-disclosure="native-details-collapsed-secondary"]');
+        const hasRawEvidenceDisclosure = Boolean(rawEvidenceDisclosure && rawEvidenceDisclosure.open === false);
+        const noSnapshotEvidenceDeferred = Boolean(
+          recoveryModule &&
+          rawEvidenceModule &&
+          recoveryModule.parentElement === rawEvidenceModule.parentElement &&
+          recoveryRect &&
+          rawEvidenceRect &&
+          rawEvidenceRect.width >= 300 &&
+          rawEvidenceRect.height >= 28 &&
+          rawEvidenceRect.top >= recoveryRect.bottom - 1 &&
+          rawEvidenceRowCount >= 4 &&
           hasRawEvidenceDisclosure
         );
         const hasHorizontalOverflow = document.documentElement.scrollWidth > document.documentElement.clientWidth + 1;
@@ -720,7 +723,7 @@ async function main() {
             forbiddenModules.length === 0 &&
             moduleNames.length === requiredModules.length &&
             visiblePrimaryCount === 3 &&
-            noSnapshotFloorProductized &&
+            noSnapshotEvidenceDeferred &&
             hasRawEvidenceDisclosure &&
             !hasHorizontalOverflow
           ),
@@ -730,10 +733,10 @@ async function main() {
           missingModules,
           forbiddenModules,
           visiblePrimaryCount,
-          noSnapshotFloorProductized,
-          noSnapshotFloorHeight: floorRect ? floorRect.height : 0,
-          noSnapshotFloorRowCount: floorRowCount,
-          noSnapshotFloorModuleRects: floorModuleRects.map((rect) => ({ left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom, width: rect.width, height: rect.height })),
+          noSnapshotEvidenceDeferred,
+          noSnapshotRawEvidenceRowCount: rawEvidenceRowCount,
+          noSnapshotRecoveryRect: recoveryRect ? { left: recoveryRect.left, top: recoveryRect.top, right: recoveryRect.right, bottom: recoveryRect.bottom, width: recoveryRect.width, height: recoveryRect.height } : null,
+          noSnapshotRawEvidenceRect: rawEvidenceRect ? { left: rawEvidenceRect.left, top: rawEvidenceRect.top, right: rawEvidenceRect.right, bottom: rawEvidenceRect.bottom, width: rawEvidenceRect.width, height: rawEvidenceRect.height } : null,
           hasRawEvidenceDisclosure,
           moduleNames,
           viewport: { width: innerWidth, height: innerHeight, clientWidth: document.documentElement.clientWidth, scrollWidth: document.documentElement.scrollWidth },
