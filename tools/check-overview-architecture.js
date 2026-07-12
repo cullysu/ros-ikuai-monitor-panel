@@ -463,6 +463,11 @@ assert(
   "OverviewPanel.tsx must load the semantic desktop incident layer"
 );
 assert(
+  (panel.match(/\bdata-overview-[\w-]+/g) || []).length <= 12 &&
+    !/data-overview-(?:hard-standard|mobile-home-acceptance|no-snapshot-(?:density-contract|content-sized|content-packed|big-wan-rate-guard))/.test(panel),
+  "OverviewPanel.tsx must keep root attributes structural or state-derived, not self-certifying release claims"
+);
+assert(
   desktopHelpers.includes('from "./routerosPresentationViewModel"') &&
     desktopHelpers.includes("buildRouterOsPresentationViewModel"),
   "desktopOverviewHelpers.tsx must consume the RouterOS presentation view model"

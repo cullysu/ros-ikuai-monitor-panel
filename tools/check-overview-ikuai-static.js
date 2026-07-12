@@ -77,7 +77,7 @@ includesAll(overview, [
   '<MobileOverviewHome snapshot={snapshot} state={state} />',
   '<DesktopWorkspace snapshot={snapshot} state={state} />',
   'data-overview-business-display-boundary',
-  'data-overview-no-zero-rate-placeholder',
+  'data-overview-scene-key',
 ], 'overview composition');
 excludesAll(overview, ['switch (state.scenario)', '<table', 'dangerouslySetInnerHTML'], 'overview shell ownership');
 excludesAll(overview, [

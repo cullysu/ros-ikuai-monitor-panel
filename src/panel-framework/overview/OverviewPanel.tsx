@@ -25,22 +25,7 @@ export function OverviewPanel({ snapshot, state }: OverviewPanelProps) {
       data-overview-low-noise-console-token-contract={OVERVIEW_LOW_NOISE_CONSOLE_TOKEN_CONTRACT}
       data-overview-scene-key={state.scenario}
       data-overview-ikuai40-density="apple-flat-light-blue-console"
-      data-overview-flat-ledger-surface="light-blue-white-thin-lines-low-shadow"
-      data-overview-mobile-metrics
-      data-overview-mobile-home-mode="ios-app-home"
-      data-overview-mobile-home-acceptance="ios-router-home-primary-flow"
-      data-overview-hard-standard="desktop-status-bus-mobile-ios-app-home-chart-meta-sample-depth-required-no-large-alert-card"
-      data-overview-desktop-mobile-leakage-guard="hide-mobile-shell-on-desktop"
       data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"
-      data-overview-mobile-no-snapshot-microchart={state.scenario === "no-snapshot" ? "snapshot-channel-matrix" : undefined}
-      data-overview-no-snapshot-flow-timeline-matrix={state.scenario === "no-snapshot" ? "true" : undefined}
-      data-overview-no-snapshot-density-contract={state.scenario === "no-snapshot" ? "left60-chain-boundary-success-route-right-readonly-degraded" : undefined}
-      data-overview-no-snapshot-no-stretch-cards={state.scenario === "no-snapshot" ? "auto-height-content" : undefined}
-      data-overview-no-snapshot-content-sized={state.scenario === "no-snapshot" ? "true" : undefined}
-      data-overview-no-snapshot-content-packed={state.scenario === "no-snapshot" ? "chain-boundary-success-no-empty-left60" : undefined}
-      data-overview-no-snapshot-no-wan-rate-placeholder={state.scenario === "no-snapshot" ? "business-rates-hidden" : undefined}
-      data-overview-no-snapshot-big-wan-rate-guard="no-business-rates-without-snapshot"
-      data-overview-no-zero-rate-placeholder="no-zero-rate-when-uncollected"
     >
       <StatusVerdict snapshot={snapshot} state={state} />
       <div className="ro-mobile-first-screen" data-overview-mobile-first-screen>
