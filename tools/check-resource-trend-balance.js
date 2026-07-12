@@ -1178,9 +1178,9 @@ async function main() {
       }
       if (sectionName === 'mobileDetailDrilldown' || sectionName === 'mobileIncidentDrilldown') {
         const root = sectionEl?.querySelector('[data-overview-mobile-console]');
-        const detailButton = root?.querySelector('[data-overview-mobile-detail-entry="evidence-ranking-drilldown"]');
-        const detailSurface = root?.querySelector('[data-overview-mobile-supporting-surface="detail-entry-evidence-below-primary-task"]');
-        const detailRows = root?.querySelector('[data-overview-mobile-deferred-rows="evidence-below-mobile-home-task"]');
+        const detailButton = root?.querySelector('.ik-mobile-detail-entry[aria-controls="mobile-supporting-detail-rows"]');
+        const detailSurface = root?.querySelector('.ik-mobile-supporting-surface');
+        const detailRows = root?.querySelector('#mobile-supporting-detail-rows.ik-mobile-supporting-detail-rows');
         const rowNodes = Array.from(detailRows?.querySelectorAll('.ik-mobile-deferred-row') || []);
         const visibleCount = () => rowNodes.filter((node) => {
           const style = getComputedStyle(node);
@@ -1206,10 +1206,10 @@ async function main() {
           const incidentMode = sectionName === 'mobileIncidentDrilldown';
           const buttonText = normalize(detailButton?.textContent || '');
           const rowEvidenceComplete = rowNodes.every((row) => (
-            row.getAttribute('data-overview-mobile-v1061-evidence-layer') &&
-            row.getAttribute('data-overview-mobile-v1061-evidence-source') &&
-            row.getAttribute('data-overview-mobile-v1061-evidence-role') &&
-            row.getAttribute('data-overview-mobile-v1061-evidence-key')
+            normalize(row.querySelector('span b')?.textContent || '') &&
+            normalize(row.querySelector('span em')?.textContent || '') &&
+            normalize(row.querySelector('strong b')?.textContent || '') &&
+            normalize(row.querySelector('strong small')?.textContent || '')
           ));
           return {
             pass: Boolean(
@@ -1226,7 +1226,7 @@ async function main() {
               buttonText.includes('收起详情') &&
               rowsUnclipped &&
               rowEvidenceComplete &&
-              (!incidentMode || rowNodes.some((row) => row.getAttribute('data-overview-mobile-v1061-evidence-role') === 'primary-impact'))
+              (!incidentMode || normalize(rowNodes[0]?.querySelector('.ik-mobile-row-token')?.textContent || '') === '!')
             ),
             section: sectionName,
             url: location.href,
@@ -1247,11 +1247,11 @@ async function main() {
       if (sectionName === 'mobileNormalHome' || sectionName === 'mobileAppHome' || sectionName === 'mobileNoSnapshotHome' || sectionName === 'mobileResourceHome' || sectionName === 'mobileInterfaceHome' || sectionName === 'mobileCollectionHome') {
         const root = sectionEl?.querySelector('[data-overview-mobile-console]');
         const screen = sectionEl?.querySelector('[data-overview-mobile-first-screen="app-home"]');
-        const surface = sectionEl?.querySelector('[data-overview-mobile-core-block="ios-router-home-surface"]');
+        const surface = sectionEl?.querySelector('.ik-mobile-supporting-surface');
         const hero = sectionEl?.querySelector('[data-overview-mobile-v420-hero="network-state-home"]');
-        const list = surface?.querySelector('.ik-v420-list');
-        const terminalList = sectionEl?.querySelector('[data-overview-mobile-rank-list="terminal-total-traffic-list"]');
-        const terminalRows = Array.from(terminalList?.querySelectorAll('.ik-v420-list-row') || []);
+        const list = surface?.querySelector('.ik-mobile-supporting-list');
+        const terminalList = null;
+        const terminalRows = Array.from(list?.querySelectorAll('.ik-mobile-deferred-row') || []);
         const visibleTerminalRows = terminalRows.filter((node) => {
           const style = getComputedStyle(node);
           const rect = node.getBoundingClientRect();
@@ -1375,24 +1375,18 @@ async function main() {
         ]));
         const mobileTokensApplied = mobileTokenNames.every((name) => mobileTokenValues[name]);
         const surfaceAttrs = surface ? {
-          listKind: surface.getAttribute('data-overview-mobile-list-kind') || '',
-          terminalRankingMounted: surface.getAttribute('data-overview-mobile-terminal-ranking-mounted') || '',
-          terminalRankingState: surface.getAttribute('data-overview-mobile-terminal-ranking-state') || '',
-          normalRanking: surface.getAttribute('data-overview-mobile-normal-ranking') || '',
-          impactScope: surface.getAttribute('data-overview-mobile-impact-scope') || '',
-          impactPlane: surface.getAttribute('data-overview-mobile-impact-plane') || '',
-          surfacePolicy: surface.getAttribute('data-overview-mobile-v1060-surface-policy') || '',
-          surfaceSlots: surface.getAttribute('data-overview-mobile-v1060-surface-slots') || '',
-          surfaceOrder: surface.getAttribute('data-overview-mobile-surface-order') || ''
+          list: Boolean(list),
+          headers: surface.querySelectorAll('header').length,
+          detailControl: Boolean(surface.querySelector('.ik-mobile-detail-entry[aria-controls="mobile-supporting-detail-rows"]')),
+          detailRows: surface.querySelectorAll('.ik-mobile-deferred-row').length,
         } : {};
         const heroAttrs = hero ? {
           priority: hero.getAttribute('data-overview-mobile-priority') || '',
           visualKind: hero.getAttribute('data-overview-mobile-visual-kind') || '',
           rankingPolicy: hero.getAttribute('data-overview-mobile-hero-ranking-policy') || ''
         } : {};
-        const impactLine = surface?.querySelector('[data-overview-mobile-impact-scope-line]');
+        const impactLine = surface?.querySelector('.ik-mobile-supporting-list header em');
         const impactLineAttrs = impactLine ? {
-          line: impactLine.getAttribute('data-overview-mobile-impact-scope-line') || '',
           text: normalize(impactLine.textContent || '')
         } : {};
         const hasHorizontalOverflow = document.documentElement.scrollWidth > document.documentElement.clientWidth + 1 || wideNodes.length > 0;
@@ -1524,7 +1518,6 @@ async function main() {
           return compact === '' || compact === 'none' || (compact.includes('inset') && !compact.includes('4px') && !compact.includes('8px') && !compact.includes('12px'));
         };
         const mobileGroupedSurfaceLowBorder = Boolean(
-          surface?.getAttribute('data-overview-mobile-v1070-grouped-surface') === 'separator-only-status-list-no-card-stack' &&
           groupedSurfaceStyles.length >= 2 &&
           groupedSurfaceStyles.every((style) => isZeroBorderBox(style) && isSeparatorOnlyShadow(style.boxShadow || '')) &&
           groupedSeparatorStyles.length >= 2 &&
@@ -1538,7 +1531,7 @@ async function main() {
         const trustStrip = root?.querySelector('.ik-v910-trust-strip');
         const judgementStyle = judgementStrip ? getComputedStyle(judgementStrip) : null;
         const trustStripStyle = trustStrip ? getComputedStyle(trustStrip) : null;
-        const metricGrid = root?.querySelector('[data-overview-mobile-v1044-metric-grid="wan-collection-resource-snapshot-four-core-facts"]');
+        const metricGrid = root?.querySelector('.ik-mobile-core-facts');
         const metricGridStyle = metricGrid ? getComputedStyle(metricGrid) : null;
         const metricCells = Array.from(metricGrid?.querySelectorAll('span') || []);
         const metricLabels = metricCells.map((cell) => normalize(cell.querySelector('em')?.textContent || ''));
@@ -1547,9 +1540,8 @@ async function main() {
           : ['WAN', '采集', '资源', '快照'];
         const metricGridColumnCount = (metricGridStyle?.gridTemplateColumns || '').split(' ').filter(Boolean).length;
         const metricGridProductized = Boolean(
-          (!judgementStrip || !judgementStrip.querySelector('[data-overview-mobile-core-block="core-metric-grid"]')) &&
+          (!judgementStrip || !judgementStrip.querySelector('.ik-mobile-core-facts')) &&
           metricGrid &&
-          metricGrid.getAttribute('data-overview-mobile-v1044-metric-count') === '4' &&
           metricCells.length === 4 &&
           expectedMetricLabels.every((label) => metricLabels.includes(label)) &&
           metricGridStyle &&
@@ -1558,9 +1550,12 @@ async function main() {
           (metricGridStyle.gridTemplateRows || '').split(' ').filter(Boolean).length === 2 &&
           Number.parseFloat(metricGridStyle.height || '0') >= 112
         );
-        const normalSummaryStrip = root?.querySelector('[data-overview-mobile-v1065-normal-summary-strip="model-backed-status-wan-route-collection-snapshot"]');
-        const normalSummaryCells = Array.from(normalSummaryStrip?.querySelectorAll('[data-overview-mobile-v1065-summary-cell]') || []);
-        const normalSummaryCellIds = normalSummaryCells.map((cell) => cell.getAttribute('data-overview-mobile-v1065-summary-cell') || '');
+        const normalSummaryStrip = sectionName === 'mobileNormalHome' ? metricGrid : null;
+        const normalSummaryCells = Array.from(normalSummaryStrip?.querySelectorAll('.ik-mobile-fact') || []);
+        const normalSummaryCellIds = normalSummaryCells.map((cell) => {
+          const label = normalize(cell.querySelector('em')?.textContent || '');
+          return label === '默认路由' ? 'route' : label === '采集' ? 'collection' : label === '快照' ? 'snapshot' : label.toLowerCase();
+        });
         const normalSummaryLabels = normalSummaryCells.map((cell) => normalize(cell.querySelector('em')?.textContent || ''));
         const normalSummaryStyle = normalSummaryStrip ? getComputedStyle(normalSummaryStrip) : null;
         const normalChartLabel = hero?.querySelector('[data-overview-mobile-v1065-chart-label="normal-visible-compact"]');
@@ -1648,8 +1643,8 @@ async function main() {
             )
           )
         );
-        const detailEntry = list?.querySelector('[data-overview-mobile-detail-entry="evidence-ranking-drilldown"]');
-        const deferredRows = list?.querySelector('[data-overview-mobile-deferred-rows="evidence-below-mobile-home-task"]');
+        const detailEntry = list?.querySelector('.ik-mobile-detail-entry[aria-controls="mobile-supporting-detail-rows"]');
+        const deferredRows = list?.querySelector('#mobile-supporting-detail-rows.ik-mobile-supporting-detail-rows');
         const detailEntryVisible = Boolean(detailEntry && (() => {
           const style = getComputedStyle(detailEntry);
           const rect = detailEntry.getBoundingClientRect();
@@ -1659,23 +1654,20 @@ async function main() {
           detailEntryVisible &&
           deferredRows
         );
-        const listEvidenceRows = Array.from(list?.querySelectorAll('[data-overview-mobile-v1061-evidence-layer]') || []);
+        const listEvidenceRows = Array.from(list?.querySelectorAll('.ik-mobile-deferred-row') || []);
         const listEvidence = listEvidenceRows.map((row) => ({
-          layer: row.getAttribute('data-overview-mobile-v1061-evidence-layer') || '',
-          source: row.getAttribute('data-overview-mobile-v1061-evidence-source') || '',
-          role: row.getAttribute('data-overview-mobile-v1061-evidence-role') || '',
-          key: row.getAttribute('data-overview-mobile-v1061-evidence-key') || ''
+          name: normalize(row.querySelector('span b')?.textContent || ''),
+          meta: normalize(row.querySelector('span em')?.textContent || ''),
+          value: normalize(row.querySelector('strong b')?.textContent || ''),
+          status: normalize(row.querySelector('strong small')?.textContent || '')
         }));
-        const expectedPrimaryRole = expectedConfig.mode === 'normal' ? 'operational-context' : 'primary-impact';
         const primaryListEvidenceStandardized = Boolean(
           listEvidenceRows.length > 0 &&
           listEvidence.every((item) => (
-            item.layer &&
-            item.layer !== 'raw' &&
-            item.source &&
-            item.role &&
-            item.key &&
-            (item.role === expectedPrimaryRole || item.role === 'secondary-evidence')
+            item.name &&
+            item.meta &&
+            item.value &&
+            item.status
           ))
         );
         const listStyle = list ? getComputedStyle(list) : null;
@@ -1699,13 +1691,13 @@ async function main() {
         routerTabActiveCompact.includes('18,34,55') &&
         !routerTabActiveCompact.includes('20,115,230')
       );
-        const statusHeader = root?.querySelector('[data-overview-mobile-v1067-status-header="routeros-device-state-header-context-action-low-noise"]');
-        const statusHeaderAction = statusHeader?.querySelector('[data-overview-mobile-v1067-header-action="router-context"]');
+        const statusHeader = root?.querySelector('.ik-mobile-device-bar');
+        const statusHeaderAction = statusHeader?.querySelector('button, a');
         const statusHeaderActionStyle = statusHeaderAction ? getComputedStyle(statusHeaderAction) : null;
         const statusHeaderActionLabel = statusHeaderAction?.getAttribute('aria-label') || '';
         const statusHeaderLabel = statusHeader?.getAttribute('aria-label') || '';
-        const statusHeaderTitle = statusHeader?.querySelector('[data-overview-mobile-primary-title="device"]');
-        const statusHeaderState = statusHeader?.querySelector('[data-overview-mobile-primary-status="device-state"]');
+        const statusHeaderTitle = statusHeader?.querySelector('.ik-mobile-device-title');
+        const statusHeaderState = statusHeader?.querySelector('.ik-v240-status');
         const statusHeaderTitleRect = statusHeaderTitle?.getBoundingClientRect();
         const statusHeaderStateRect = statusHeaderState?.getBoundingClientRect();
         const statusHeaderStateStyle = statusHeaderState ? getComputedStyle(statusHeaderState) : null;
@@ -1722,18 +1714,7 @@ async function main() {
           statusHeader &&
           statusHeaderLabel.includes('RouterOS') &&
           statusHeaderFlatAndSeparated &&
-          (
-            statusHeader.getAttribute('data-overview-mobile-status-header') === 'device-name-state-recent-only'
-              ? !statusHeaderAction
-              : statusHeaderAction &&
-                statusHeaderAction.getAttribute('data-overview-mobile-v1067-header-action-semantic') === 'device-collection-route-context' &&
-                statusHeaderAction.getAttribute('data-overview-mobile-v1067-header-action-tone') === 'low-noise-outline' &&
-                statusHeaderActionLabel.includes('RouterOS') &&
-                !statusHeaderActionLabel.toLowerCase().includes('menu') &&
-                statusHeaderActionStyle &&
-                Number.parseFloat(statusHeaderActionStyle.borderTopWidth || '0') === 0 &&
-                !/rgba?\([^)]*,\s*0\.[2-9][^)]*\)\s+0px\s+0px\s+[4-9]/.test(statusHeaderActionStyle.boxShadow || '')
-          )
+          !statusHeaderAction
         );
         const routerBottomTabsProductized = Boolean(
           routerTabs &&
@@ -1862,7 +1843,7 @@ async function main() {
           !wanPortMatrix &&
           wanPortCells.length === 0 &&
           evidenceDeferred &&
-          listEvidence.some((item) => item.source === 'route' || item.source === 'forwarding')
+          listEvidence.some((item) => /默认路由|出口|WAN/.test(item.name + ' ' + item.meta))
         );
         const channelRail = hero?.querySelector('[data-overview-mobile-channel-verdict="object-impact-credibility-next-action-no-channel-grid"]');
         const channelRailModelBacked = (sectionName !== 'mobileNoSnapshotHome' && sectionName !== 'mobileCollectionHome') || Boolean(channelRail);
@@ -1959,14 +1940,12 @@ async function main() {
           /@media\\s*\\(|--ik-v\\d|data-overview-mobile-v\\d|box-shadow\\s*:|grid-template-columns\\s*:/.test(firstScreenText)
         );
         const terminalRankingCopyVisible = ['设备排行', '高流量终端', '终端排行'].some((item) => firstScreenText.includes(item));
-        const expectedSurfaceSlots = 'list';
-        const expectedSurfaceOrder = expectedConfig.mode === 'normal'
-          ? 'supporting-list-after-primary-visual'
-          : 'incident-evidence-after-primary-visual';
         const surfacePolicyModelBacked = Boolean(
-          surfaceAttrs.surfacePolicy === 'view-model-one-supporting-list-no-duplicate-status' &&
-          surfaceAttrs.surfaceSlots === expectedSurfaceSlots &&
-          surfaceAttrs.surfaceOrder === expectedSurfaceOrder
+          surfaceAttrs.list &&
+          surfaceAttrs.headers === 1 &&
+          surfaceAttrs.detailControl &&
+          surfaceAttrs.detailRows > 0 &&
+          firstScreenOrderProductized
         );
         const statusCoreBlocks = Array.from(surface?.querySelectorAll('[data-row-id]') || []).map((row) => ({
           id: row.getAttribute('data-row-id') || '',
@@ -2016,10 +1995,9 @@ async function main() {
             : expectedConfig.mode === 'p0'
             ? abnormalDecisionRailProductized
             : true) &&
-          surfaceAttrs.listKind === expectedListKind &&
           (expectedConfig.mode === 'normal'
-            ? surfaceAttrs.terminalRankingMounted === 'true' && surfaceAttrs.terminalRankingState === 'supporting-evidence' && surfaceAttrs.normalRanking === 'operations-five-rows' && Boolean(terminalList) && !terminalRankingCopyVisible && (evidenceDeferred ? visibleTerminalRows.length === 0 : (visibleTerminalRows.length >= 1 && visibleTerminalRows.length <= 5))
-            : surfaceAttrs.terminalRankingMounted === 'false' && surfaceAttrs.terminalRankingState === expectedTerminalRanking && !terminalList && !terminalRankingCopyVisible) &&
+            ? !terminalRankingCopyVisible && (evidenceDeferred ? visibleTerminalRows.length === 0 : (visibleTerminalRows.length >= 1 && visibleTerminalRows.length <= 3))
+            : !terminalRankingCopyVisible && (evidenceDeferred ? visibleTerminalRows.length === 0 : visibleTerminalRows.length >= 1)) &&
           !styleTextLeakedIntoOverview &&
           missing.length === 0 &&
           !hasHorizontalOverflow

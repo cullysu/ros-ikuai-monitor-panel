@@ -155,15 +155,15 @@
     display: none !important;
   }
 
-  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-supporting-list[data-overview-mobile-detail-expanded="true"] {
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-supporting-list.is-expanded {
     grid-template-rows: 34px 48px auto !important;
   }
 
-  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-supporting-detail-rows[data-overview-mobile-detail-expanded="true"] {
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-supporting-detail-rows.is-expanded {
     display: grid !important;
   }
 
-  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-supporting-surface[data-overview-mobile-detail-expanded="true"] {
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-supporting-surface.is-expanded {
     min-height: 0 !important;
     height: auto !important;
     max-height: none !important;
