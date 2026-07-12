@@ -1553,6 +1553,8 @@ async function main() {
         const metricGridStyle = metricGrid ? getComputedStyle(metricGrid) : null;
         const metricCells = Array.from(metricGrid?.querySelectorAll('span') || []);
         const metricLabels = metricCells.map((cell) => normalize(cell.querySelector('em')?.textContent || ''));
+        const metricGridColumnCount = (metricGridStyle?.gridTemplateColumns || '').split(' ').filter(Boolean).length;
+        const collectionMetricGrid = sectionName === 'mobileCollectionHome';
         const metricGridProductized = Boolean(
           (!judgementStrip || !judgementStrip.querySelector('[data-overview-mobile-core-block="core-metric-grid"]')) &&
           metricGrid &&
@@ -1561,7 +1563,13 @@ async function main() {
           ['WAN', '采集', '资源', '快照'].every((label) => metricLabels.includes(label)) &&
           metricGridStyle &&
           metricGridStyle.display === 'grid' &&
-          (metricGridStyle.gridTemplateColumns || '').split(' ').length === 4
+          (
+            collectionMetricGrid
+              ? metricGridColumnCount === 2 &&
+                (metricGridStyle.gridTemplateRows || '').split(' ').filter(Boolean).length === 2 &&
+                Number.parseFloat(metricGridStyle.height || '0') >= 112
+              : metricGridColumnCount === 4
+          )
         );
         const normalSummaryStrip = root?.querySelector('[data-overview-mobile-v1065-normal-summary-strip="model-backed-status-wan-collection-resource-snapshot"]');
         const normalSummaryCells = Array.from(normalSummaryStrip?.querySelectorAll('[data-overview-mobile-v1065-summary-cell]') || []);

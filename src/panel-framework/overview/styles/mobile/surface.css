@@ -28,6 +28,29 @@
     line-height: 1.08 !important;
   }
 
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-priority="collection-degraded"] .ik-mobile-core-facts {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    grid-template-rows: repeat(2, 56px) !important;
+    height: 112px !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-priority="collection-degraded"] .ik-mobile-decision-screen {
+    grid-template-rows: 46px auto 112px auto !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-priority="collection-degraded"] .ik-mobile-core-facts span {
+    min-height: 56px !important;
+    padding: 8px 10px !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-priority="collection-degraded"] .ik-mobile-core-facts span:nth-child(2n) {
+    border-right: 0 !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-priority="collection-degraded"] .ik-mobile-core-facts span:nth-child(-n + 2) {
+    border-bottom: 1px solid #e3ebf3 !important;
+  }
+
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-supporting-surface {
     min-height: 82px !important;
     height: 82px !important;
