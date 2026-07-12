@@ -177,7 +177,7 @@ export function buildDesktopOverviewScene(snapshot: OverviewRawSnapshot, state: 
     side: [
       <Module key="compact-interface" title="接口状态" subtitle="转发面 / 承载" module="normal-interface-boundary" tone="trust" trust={trust} headers={["对象", "当前", "最近", "边界"]} rows={interfaceRowsCompact} minRows={0} collapsed />,
       <Module key="compact-resource" title="资源" subtitle={isFleet ? "接口排行 / 阈值" : "当前 / 阈值"} module="resource-threshold" tone={state.facts.resource.level} trust={trust} headers={["项", "阈值", "持续", "峰值"]} rows={compactRows(resourceRows(state), 3)} minRows={0} collapsed />,
-      <Module key="compact-collection" title={isFleet ? "采集可信度" : "采集 / 快照"} subtitle="REST / SSH / 成功" module="normal-collection-channel" tone={state.facts.collection.level} trust={trust} headers={["对象", "当前", "依据"]} rows={collectionRowsCompact} minRows={0} visual={<ChannelMatrixVisual module="collection-status" rows={collectionChannelRows(snapshot, state)} />} collapsed />,
+      <Module key="compact-collection" title={isFleet ? "采集可信度" : "采集 / 快照"} subtitle="REST / SSH / 成功" module="normal-collection-channel" tone={state.facts.collection.level} trust={trust} headers={["对象", "当前", "依据"]} rows={collectionRowsCompact} minRows={0} collapsed />,
     ],
     bottom: [
       <TerminalRanking key="compact-terminals" title="终端排行" subtitle="异常置顶 / 总流量" module="terminal-ranking" tone="trust" trust={trust} headers={["设备", "IP", "流量", "状态"]} rows={compactRows(desktopTerminalRows(snapshot), 4)} minRows={0} />,

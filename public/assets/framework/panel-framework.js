@@ -10872,6 +10872,7 @@ var PanelFramework = function(exports) {
   }
   function DesktopWanIntegratedVisual({ snapshot, state, rows }) {
     const topRows = trafficTop3Rows(snapshot, state).slice(0, 3);
+    const showTopOutlets = Math.max(state.facts.wan.total, topRows.length) > 1;
     const decision = desktopWanDecisionRail(snapshot, state, rows);
     return /* @__PURE__ */ jsxRuntimeExports.jsxs(
       "div",
@@ -10898,11 +10899,11 @@ var PanelFramework = function(exports) {
               ] }, item.id))
             }
           ),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ro-wan-integrated-top", "data-overview-desktop-wan-top-outlet": "top3-inline-under-trend", children: topRows.map((row) => /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { "data-tone": row.tone || "trust", children: [
+          showTopOutlets ? /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ro-wan-integrated-top", "data-overview-desktop-wan-top-outlet": "top3-inline-under-trend", children: topRows.map((row) => /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { "data-tone": row.tone || "trust", children: [
             /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: ledgerCellText(row, 0) }),
             /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: ledgerCellText(row, 1) }),
             /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: ledgerCellText(row, 2) })
-          ] }, row.id)) })
+          ] }, row.id)) }) : null
         ]
       }
     );
@@ -11230,7 +11231,7 @@ var PanelFramework = function(exports) {
       side: [
         /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "接口状态", subtitle: "转发面 / 承载", module: "normal-interface-boundary", tone: "trust", trust, headers: ["对象", "当前", "最近", "边界"], rows: interfaceRowsCompact, minRows: 0, collapsed: true }, "compact-interface"),
         /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "资源", subtitle: isFleet ? "接口排行 / 阈值" : "当前 / 阈值", module: "resource-threshold", tone: state.facts.resource.level, trust, headers: ["项", "阈值", "持续", "峰值"], rows: compactRows(resourceRows(state), 3), minRows: 0, collapsed: true }, "compact-resource"),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: isFleet ? "采集可信度" : "采集 / 快照", subtitle: "REST / SSH / 成功", module: "normal-collection-channel", tone: state.facts.collection.level, trust, headers: ["对象", "当前", "依据"], rows: collectionRowsCompact, minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(ChannelMatrixVisual, { module: "collection-status", rows: collectionChannelRows(snapshot, state) }), collapsed: true }, "compact-collection")
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: isFleet ? "采集可信度" : "采集 / 快照", subtitle: "REST / SSH / 成功", module: "normal-collection-channel", tone: state.facts.collection.level, trust, headers: ["对象", "当前", "依据"], rows: collectionRowsCompact, minRows: 0, collapsed: true }, "compact-collection")
       ],
       bottom: [
         /* @__PURE__ */ jsxRuntimeExports.jsx(TerminalRanking, { title: "终端排行", subtitle: "异常置顶 / 总流量", module: "terminal-ranking", tone: "trust", trust, headers: ["设备", "IP", "流量", "状态"], rows: compactRows(desktopTerminalRows(snapshot), 4), minRows: 0 }, "compact-terminals"),

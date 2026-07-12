@@ -141,6 +141,7 @@ export function JudgementChart({ module, rows, kind = "trend" }: { module: strin
 
 export function DesktopWanIntegratedVisual({ snapshot, state, rows }: OverviewPanelProps & { rows: ChartDatum[] }) {
   const topRows = trafficTop3Rows(snapshot, state).slice(0, 3);
+  const showTopOutlets = Math.max(state.facts.wan.total, topRows.length) > 1;
   const decision = desktopWanDecisionRail(snapshot, state, rows);
   return (
     <div
@@ -166,15 +167,17 @@ export function DesktopWanIntegratedVisual({ snapshot, state, rows }: OverviewPa
           </span>
         ))}
       </div>
-      <div className="ro-wan-integrated-top" data-overview-desktop-wan-top-outlet="top3-inline-under-trend">
-        {topRows.map((row) => (
-          <span data-tone={row.tone || "trust"} key={row.id}>
-            <em>{ledgerCellText(row, 0)}</em>
-            <b>{ledgerCellText(row, 1)}</b>
-            <small>{ledgerCellText(row, 2)}</small>
-          </span>
-        ))}
-      </div>
+      {showTopOutlets ? (
+        <div className="ro-wan-integrated-top" data-overview-desktop-wan-top-outlet="top3-inline-under-trend">
+          {topRows.map((row) => (
+            <span data-tone={row.tone || "trust"} key={row.id}>
+              <em>{ledgerCellText(row, 0)}</em>
+              <b>{ledgerCellText(row, 1)}</b>
+              <small>{ledgerCellText(row, 2)}</small>
+            </span>
+          ))}
+        </div>
+      ) : null}
     </div>
   );
 }
