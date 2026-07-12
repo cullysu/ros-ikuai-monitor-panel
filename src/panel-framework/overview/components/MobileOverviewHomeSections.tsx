@@ -1,4 +1,4 @@
-import type { CSSProperties } from "react";
+import { useState, type CSSProperties } from "react";
 import type { MobileOverviewModel } from "../mobileOverviewModel";
 import type { AppRankingRow } from "./MobileOverviewTypes";
 import { toneClass } from "./MobileOverviewUtils";
@@ -65,6 +65,7 @@ function rowIcon(row: AppRankingRow): string {
 }
 
 export function SupportingList({ model }: { model: MobileOverviewModel }) {
+  const [expanded, setExpanded] = useState(false);
   const rows = model.primaryList.rows.slice(0, model.priority === "normal" ? 3 : 4);
   const title = model.priority === "normal" ? "运行明细" : "处置依据";
   const summary = model.priority === "normal"
@@ -89,6 +90,7 @@ export function SupportingList({ model }: { model: MobileOverviewModel }) {
       data-overview-mobile-v1080-surface="one-supporting-list-no-duplicate-status-ledger"
       data-overview-mobile-supporting-surface="detail-entry-evidence-below-primary-task"
       data-overview-mobile-evidence-policy="first-screen-summary-only-rows-deferred"
+      data-overview-mobile-detail-expanded={expanded ? "true" : "false"}
       style={listStyle}
     >
       <div
@@ -99,6 +101,7 @@ export function SupportingList({ model }: { model: MobileOverviewModel }) {
         data-overview-mobile-v240-list={model.surface.v240ListKind}
         data-overview-mobile-supporting-list="detail-entry-below-primary-task"
         data-overview-mobile-impact-scope-line={`${model.impactScope.id}:${model.impactScope.plane}`}
+        data-overview-mobile-detail-expanded={expanded ? "true" : "false"}
       >
         <header>
           <b>{title}</b>
@@ -109,18 +112,23 @@ export function SupportingList({ model }: { model: MobileOverviewModel }) {
           className={`ik-mobile-detail-entry ${toneClass(model.impactScope.tone)}`}
           data-overview-mobile-detail-entry="evidence-ranking-drilldown"
           data-overview-mobile-detail-count={rows.length}
+          aria-controls="mobile-supporting-detail-rows"
+          aria-expanded={expanded}
+          onClick={() => setExpanded((value) => !value)}
           type="button"
         >
           <span>
-            <b>{model.priority === "normal" ? "查看运营细节" : "查看事故证据"}</b>
+            <b>{expanded ? "收起细节" : model.priority === "normal" ? "查看运营细节" : "查看事故证据"}</b>
             <em>{model.primaryList.meta}</em>
           </span>
           <strong>{rows.length} 项</strong>
         </button>
         <div
           className="ik-mobile-supporting-detail-rows"
+          id="mobile-supporting-detail-rows"
           data-overview-mobile-deferred-rows="evidence-below-mobile-home-task"
-          aria-hidden="true"
+          data-overview-mobile-detail-expanded={expanded ? "true" : "false"}
+          aria-hidden={!expanded}
         >
           {rows.map((row) => (
             <article

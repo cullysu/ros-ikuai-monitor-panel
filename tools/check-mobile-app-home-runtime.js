@@ -191,6 +191,16 @@ async function main() {
       'bottom tabs preserve no-snapshot credibility boundary',
       ['tools/check-resource-trend-balance.js', '--url', url, '--section', 'mobileNavigationNoSnapshot', '--width', '390', '--height', '844', '--json', 'codex_tmp_mobileNavigationNoSnapshot.json', '--png', 'codex_tmp_mobileNavigationNoSnapshot.png', '--wait', '3600'],
       ['codex_tmp_mobileNavigationNoSnapshot.json', 'codex_tmp_mobileNavigationNoSnapshot.png']
+    ],
+    [
+      'normal detail entry expands evidence rows',
+      ['tools/check-resource-trend-balance.js', '--url', url, '--section', 'mobileDetailDrilldown', '--width', '390', '--height', '844', '--json', 'codex_tmp_mobileDetailDrilldown.json', '--png', 'codex_tmp_mobileDetailDrilldown.png', '--wait', '3600'],
+      ['codex_tmp_mobileDetailDrilldown.json', 'codex_tmp_mobileDetailDrilldown.png']
+    ],
+    [
+      'incident detail entry expands primary evidence',
+      ['tools/check-resource-trend-balance.js', '--url', url, '--section', 'mobileIncidentDrilldown', '--width', '390', '--height', '844', '--json', 'codex_tmp_mobileIncidentDrilldown.json', '--png', 'codex_tmp_mobileIncidentDrilldown.png', '--wait', '3600'],
+      ['codex_tmp_mobileIncidentDrilldown.json', 'codex_tmp_mobileIncidentDrilldown.png']
     ]
   ];
 

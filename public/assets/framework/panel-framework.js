@@ -11409,6 +11409,21 @@ var PanelFramework = function(exports) {
     display: none !important;
   }
 
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-supporting-list[data-overview-mobile-detail-expanded="true"] {
+    grid-template-rows: 34px 48px auto !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-supporting-detail-rows[data-overview-mobile-detail-expanded="true"] {
+    display: grid !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-supporting-surface[data-overview-mobile-detail-expanded="true"] {
+    min-height: 0 !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-supporting-list .ik-v420-list-row {
     min-height: 42px !important;
     height: 42px !important;
@@ -13672,6 +13687,7 @@ var PanelFramework = function(exports) {
     return row.rank ? String(row.rank) : "•";
   }
   function SupportingList({ model }) {
+    const [expanded, setExpanded] = reactExports.useState(false);
     const rows = model.primaryList.rows.slice(0, model.priority === "normal" ? 3 : 4);
     const title = model.priority === "normal" ? "运行明细" : "处置依据";
     const summary = model.priority === "normal" ? "默认路由 · 采集 · 快照" : "影响对象 · 可信边界 · 最近记录";
@@ -13695,6 +13711,7 @@ var PanelFramework = function(exports) {
         "data-overview-mobile-v1080-surface": "one-supporting-list-no-duplicate-status-ledger",
         "data-overview-mobile-supporting-surface": "detail-entry-evidence-below-primary-task",
         "data-overview-mobile-evidence-policy": "first-screen-summary-only-rows-deferred",
+        "data-overview-mobile-detail-expanded": expanded ? "true" : "false",
         style: listStyle,
         children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
           "div",
@@ -13706,6 +13723,7 @@ var PanelFramework = function(exports) {
             "data-overview-mobile-v240-list": model.surface.v240ListKind,
             "data-overview-mobile-supporting-list": "detail-entry-below-primary-task",
             "data-overview-mobile-impact-scope-line": `${model.impactScope.id}:${model.impactScope.plane}`,
+            "data-overview-mobile-detail-expanded": expanded ? "true" : "false",
             children: [
               /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { children: [
                 /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: title }),
@@ -13722,10 +13740,13 @@ var PanelFramework = function(exports) {
                   className: `ik-mobile-detail-entry ${toneClass(model.impactScope.tone)}`,
                   "data-overview-mobile-detail-entry": "evidence-ranking-drilldown",
                   "data-overview-mobile-detail-count": rows.length,
+                  "aria-controls": "mobile-supporting-detail-rows",
+                  "aria-expanded": expanded,
+                  onClick: () => setExpanded((value) => !value),
                   type: "button",
                   children: [
                     /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-                      /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: model.priority === "normal" ? "查看运营细节" : "查看事故证据" }),
+                      /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: expanded ? "收起细节" : model.priority === "normal" ? "查看运营细节" : "查看事故证据" }),
                       /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: model.primaryList.meta })
                     ] }),
                     /* @__PURE__ */ jsxRuntimeExports.jsxs("strong", { children: [
@@ -13739,8 +13760,10 @@ var PanelFramework = function(exports) {
                 "div",
                 {
                   className: "ik-mobile-supporting-detail-rows",
+                  id: "mobile-supporting-detail-rows",
                   "data-overview-mobile-deferred-rows": "evidence-below-mobile-home-task",
-                  "aria-hidden": "true",
+                  "data-overview-mobile-detail-expanded": expanded ? "true" : "false",
+                  "aria-hidden": !expanded,
                   children: rows.map((row) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
                     "article",
                     {

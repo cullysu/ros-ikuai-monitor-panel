@@ -314,6 +314,21 @@ export const MOBILE_OVERVIEW_PUBLIC_DECISION_REPAIR_STYLES = `
     display: none !important;
   }
 
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-supporting-list[data-overview-mobile-detail-expanded="true"] {
+    grid-template-rows: 34px 48px auto !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-supporting-detail-rows[data-overview-mobile-detail-expanded="true"] {
+    display: grid !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-supporting-surface[data-overview-mobile-detail-expanded="true"] {
+    min-height: 0 !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-supporting-list .ik-v420-list-row {
     min-height: 42px !important;
     height: 42px !important;

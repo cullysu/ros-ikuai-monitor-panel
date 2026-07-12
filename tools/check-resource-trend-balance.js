@@ -410,6 +410,8 @@ async function main() {
     mobileNormalHome: balanceSnapshot,
     mobileNavigation: balanceSnapshot,
     mobileNavigationNoSnapshot: noSnapshotSnapshot,
+    mobileDetailDrilldown: balanceSnapshot,
+    mobileIncidentDrilldown: allOfflineSnapshot,
     mobileAppHome: allOfflineSnapshot,
     mobileNoSnapshotHome: noSnapshotSnapshot,
     mobileResourceHome: resourceFullSnapshot,
@@ -417,7 +419,7 @@ async function main() {
     mobileCollectionHome: collectionDownSnapshot
   };
   const isInjectedOverviewSection = Boolean(injectedSnapshots[section]);
-  const isMobileAppHomeSection = section === 'mobileNormalHome' || section === 'mobileNavigation' || section === 'mobileNavigationNoSnapshot' || section === 'mobileAppHome' || section === 'mobileNoSnapshotHome' || section === 'mobileResourceHome' || section === 'mobileInterfaceHome' || section === 'mobileCollectionHome';
+  const isMobileAppHomeSection = section === 'mobileNormalHome' || section === 'mobileNavigation' || section === 'mobileNavigationNoSnapshot' || section === 'mobileDetailDrilldown' || section === 'mobileIncidentDrilldown' || section === 'mobileAppHome' || section === 'mobileNoSnapshotHome' || section === 'mobileResourceHome' || section === 'mobileInterfaceHome' || section === 'mobileCollectionHome';
   const targetUrl = `${url}${url.includes('?') ? '&' : '?'}section=${encodeURIComponent(section)}&codexBust=${Date.now()}#${encodeURIComponent(section)}`;
   const browser = spawn(browserPath, [
     '--headless=new',
@@ -603,7 +605,7 @@ async function main() {
         }
         return normalize(parts.join(' '));
       };
-      const sectionEl = sectionName === 'loadAudit' || sectionName === 'balance' || sectionName === 'desktopNoSnapshot' || sectionName === 'desktopV1030' || sectionName === 'mobileNormalHome' || sectionName === 'mobileNavigation' || sectionName === 'mobileNavigationNoSnapshot' || sectionName === 'mobileAppHome' || sectionName === 'mobileNoSnapshotHome' || sectionName === 'mobileResourceHome' || sectionName === 'mobileInterfaceHome' || sectionName === 'mobileCollectionHome'
+      const sectionEl = sectionName === 'loadAudit' || sectionName === 'balance' || sectionName === 'desktopNoSnapshot' || sectionName === 'desktopV1030' || sectionName === 'mobileNormalHome' || sectionName === 'mobileNavigation' || sectionName === 'mobileNavigationNoSnapshot' || sectionName === 'mobileDetailDrilldown' || sectionName === 'mobileIncidentDrilldown' || sectionName === 'mobileAppHome' || sectionName === 'mobileNoSnapshotHome' || sectionName === 'mobileResourceHome' || sectionName === 'mobileInterfaceHome' || sectionName === 'mobileCollectionHome'
         ? document.querySelector('#overview')
         : document.querySelector('#' + sectionName);
       const text = visibleText(sectionEl);
@@ -1168,6 +1170,74 @@ async function main() {
             targetContractOk,
             tabCount: tabs.length,
             navigationResults,
+            viewport: { width: innerWidth, height: innerHeight }
+          };
+        })();
+      }
+      if (sectionName === 'mobileDetailDrilldown' || sectionName === 'mobileIncidentDrilldown') {
+        const root = sectionEl?.querySelector('[data-overview-mobile-console]');
+        const detailButton = root?.querySelector('[data-overview-mobile-detail-entry="evidence-ranking-drilldown"]');
+        const detailSurface = root?.querySelector('[data-overview-mobile-supporting-surface="detail-entry-evidence-below-primary-task"]');
+        const detailRows = root?.querySelector('[data-overview-mobile-deferred-rows="evidence-below-mobile-home-task"]');
+        const rowNodes = Array.from(detailRows?.querySelectorAll('.ik-mobile-deferred-row') || []);
+        const visibleCount = () => rowNodes.filter((node) => {
+          const style = getComputedStyle(node);
+          const rect = node.getBoundingClientRect();
+          return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height >= 40;
+        }).length;
+        const beforeVisible = visibleCount();
+        const beforeExpanded = detailButton?.getAttribute('aria-expanded') || '';
+        detailButton?.click();
+        return (async () => {
+          await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+          const afterVisible = visibleCount();
+          const afterExpanded = detailButton?.getAttribute('aria-expanded') || '';
+          const surfaceRect = detailSurface?.getBoundingClientRect();
+          const surfaceStyle = detailSurface ? getComputedStyle(detailSurface) : null;
+          const rowRects = rowNodes.map((row) => row.getBoundingClientRect());
+          const rowsUnclipped = Boolean(
+            surfaceRect &&
+            rowRects.every((rect) => rect.top >= surfaceRect.top - 1 && rect.bottom <= surfaceRect.bottom + 1) &&
+            surfaceStyle &&
+            surfaceStyle.overflow !== 'hidden'
+          );
+          const incidentMode = sectionName === 'mobileIncidentDrilldown';
+          const buttonText = normalize(detailButton?.textContent || '');
+          const rowEvidenceComplete = rowNodes.every((row) => (
+            row.getAttribute('data-overview-mobile-v1061-evidence-layer') &&
+            row.getAttribute('data-overview-mobile-v1061-evidence-source') &&
+            row.getAttribute('data-overview-mobile-v1061-evidence-role') &&
+            row.getAttribute('data-overview-mobile-v1061-evidence-key')
+          ));
+          return {
+            pass: Boolean(
+              root &&
+              detailButton &&
+              detailSurface &&
+              detailRows &&
+              rowNodes.length >= 3 &&
+              beforeVisible === 0 &&
+              beforeExpanded === 'false' &&
+              afterVisible === rowNodes.length &&
+              afterExpanded === 'true' &&
+              detailRows.getAttribute('aria-hidden') === 'false' &&
+              buttonText.includes('收起细节') &&
+              rowsUnclipped &&
+              rowEvidenceComplete &&
+              (!incidentMode || rowNodes.some((row) => row.getAttribute('data-overview-mobile-v1061-evidence-role') === 'primary-impact'))
+            ),
+            section: sectionName,
+            url: location.href,
+            incidentMode,
+            rowCount: rowNodes.length,
+            beforeVisible,
+            afterVisible,
+            beforeExpanded,
+            afterExpanded,
+            buttonText,
+            rowsUnclipped,
+            surfaceHeight: surfaceRect?.height || 0,
+            rowEvidenceComplete,
             viewport: { width: innerWidth, height: innerHeight }
           };
         })();
