@@ -147,6 +147,16 @@ function readReleaseSurface(relPath) {
     frameworkOverviewStylesSurface(),
     frameworkOverviewComponentsSurface(),
     read('src/panel-framework/overview/deriveOverviewState.ts'),
+    read('src/panel-framework/overview/desktopOverviewScenes.tsx'),
+    read('src/panel-framework/overview/desktopOverviewDefaultScene.tsx'),
+    read('src/panel-framework/overview/desktopOverviewAllOfflineScene.tsx'),
+    read('src/panel-framework/overview/desktopOverviewCollectionScene.tsx'),
+    read('src/panel-framework/overview/desktopOverviewInterfaceScene.tsx'),
+    read('src/panel-framework/overview/desktopOverviewNoSnapshotScene.tsx'),
+    read('src/panel-framework/overview/desktopOverviewResourceScene.tsx'),
+    read('src/panel-framework/overview/desktopOverviewVisuals.tsx'),
+    read('src/panel-framework/overview/mobileOverviewModel.ts'),
+    read('src/panel-framework/overview/mobileOverviewPolicy.ts'),
     read('src/panel-framework/panel-framework-app.tsx'),
     readIfExists('app.py'),
     frameworkCompatibilitySurface(),
@@ -497,159 +507,7 @@ function main(argv = process.argv.slice(2)) {
   assertContains('.github/workflows/ci.yml', '--scale-scenarios single,fleet');
   assertContains('.github/workflows/ci.yml', '--scale-scenarios all-offline,no-snapshot,collection-down,resource-full,interfaces-down');
   assertContains('.github/workflows/ci.yml', '--sections overview');
-  assertContains('.github/workflows/ci.yml', '--sections overview-edge-cases');
-  assertContains('.github/workflows/ci.yml', '--viewports desktop=1366x900,desktop1440=1440x900,wide=844x390,narrow=390x844');
-
-  assertContains('compose.yml', '${ROS_PANEL_IMAGE:-routeros-triage-panel:local}');
-  assertContains('.env.docker.example', 'ROS_PANEL_IMAGE=routeros-triage-panel:local');
-  assertContains('.env.docker.example', `# ROS_PANEL_IMAGE=${ghcrImage}`);
-  assertContains('install.sh', 'DEFAULT_LOCAL_IMAGE="routeros-triage-panel:local"');
-  assertContains('install.sh', `DEFAULT_PREBUILT_IMAGE="${ghcrImage}"`);
-  assertContains('install.sh', 'pull routeros-triage');
-  assertContains('install.sh', 'falling back to local Docker build');
-  assertContains('install.sh', '--prebuilt');
-  assertContains('install.sh', '--build-local');
-  assertContains('install.sh', '--local-only');
-  assertContains('install.sh', 'PUBLISHED_ADDR="127.0.0.1"');
-  assertContains('install.sh', '--lan is not supported by the public installer');
-  assertContains('install.sh', 'exposure:   localhost-only');
-  assertContains('install.sh', 'ROS_PANEL_TRUST_PROXY_HEADERS');
-  assertContains('install.sh', 'ROS_PANEL_ALLOW_LOCALHOST_HOST_FORWARD');
-  assertContains('install.sh', 'ROS_PANEL_IP_ALIAS_WRITE_ENABLED');
-  assertContains('install.sh', 'ROS_PANEL_EXPOSE_ADMIN_SESSIONS');
-  assertContains('install.sh', 'ROS_PANEL_LOCAL_SETTINGS_WRITE_ENABLED');
-
-  assertContains('PRODUCT_MODEL.md', '## Public Delivery Contract');
-  assertContains('PRODUCT_MODEL.md', 'Docker / Compose');
-  assertContains('PRODUCT_MODEL.md', 'Windows EXE');
-  assertContains('PRODUCT_MODEL.md', 'Linux systemd / VM');
-  assertContains('PRODUCT_MODEL.md', 'RouterOS Container');
-  assertContains('README.md', '## Public Delivery Matrix');
-  assertContains('README.zh-CN.md', '## 公开交付矩阵');
-  assertContains('DEPLOY_DOCKER.md', 'Docker / Compose is one of the four public delivery modes');
-  assertContains('DEPLOY_WINDOWS_EXE.md', 'Windows EXE is one of the four public delivery modes');
-  assertContains('DEPLOY_ROUTEROS_CONTAINER.md', 'RouterOS Container is one of the four public delivery modes');
-  assertContains('DEPLOY_LOCAL.md', 'Local Python is a development and trial path');
-
-  assertContains('tools/build-routeros-container-archive.sh', 'docker buildx build');
-  assertContains('tools/build-routeros-container-archive.sh', 'docker save');
-  assertContains('tools/build-routeros-container-archive.sh', '--provenance=false');
-  assertContains('tools/build-routeros-container-archive.sh', 'convert-oci-to-routeros-docker-archive.py');
-  assertContains('tools/build-routeros-container-archive.sh', 'Use a client-local forwarder');
-  assertContains('tools/convert-oci-to-routeros-docker-archive.py', 'IMAGE_INDEX_MEDIA_TYPES');
-  assertContains('.gitignore', '/*.tar');
-  assertContains('DEPLOY_DOCKER.md', ghcrImage);
-  assertContains('README.md', ghcrImage);
-  assertContains('README.md', 'Default public path: build a RouterOS-friendly archive locally');
-  assertContains('DEPLOY_ROUTEROS_CONTAINER.md', ghcrImage);
-  assertContains('DEPLOY_ROUTEROS_CONTAINER.md', 'The default public path is to build a RouterOS-friendly archive locally');
-  assertContains('DEPLOY_ROUTEROS_CONTAINER.md', 'Local archive, default public path');
-  assertContains('DEPLOY_ROUTEROS_CONTAINER.md', 'Optional registry image, only after the GHCR package is public');
-  assertContains('DEPLOY_ROUTEROS_CONTAINER.md', 'connect-routeros-container-localhost.ps1');
-  assertContains('DEPLOY_ROUTEROS_CONTAINER.md', 'http://127.0.0.1:28646/');
-  assertContains('DEPLOY_ROUTEROS_CONTAINER.md', 'Host header guard');
-  assertContains('DEPLOY_ROUTEROS_CONTAINER.md', 'ROS_PANEL_ALLOW_LOCALHOST_HOST_FORWARD=1');
-  assertContains('DEPLOY_ROUTEROS_CONTAINER.md', 'ROS_PANEL_LOCALHOST_FORWARD_TOKEN');
-  assertContains('DEPLOY_ROUTEROS_CONTAINER.md', '--forward-token');
-  assertContains('DEPLOY_ROUTEROS_CONTAINER.md', 'Host: 127.0.0.1:28646');
-  assertContains('DEPLOY_ROUTEROS_CONTAINER.md', 'and running');
-  assertContains('tools/build-routeros-container-archive.sh', 'wait until it is not running');
-  assertContains('DEPLOY_ROUTEROS_CONTAINER.md', '/container/start [find where root-dir="disk1/routeros-triage"]');
-  assertNotContains('DEPLOY_ROUTEROS_CONTAINER.md', 'YOUR_ORG/routeros-triage-panel:TAG');
-  assertNotContains('DEPLOY_ROUTEROS_CONTAINER.md', 'remote-image~"routeros-triage-panel"');
-
-  assertContains('Dockerfile', 'USER panel');
-  assertContains('Dockerfile', 'ROS_PANEL_ALLOW_LOCALHOST_HOST_FORWARD=0');
-  assertNotContains('Dockerfile', 'ROS_PANEL_LOCALHOST_FORWARD_TOKEN=', 'forward token baked into image defaults');
-  assertContains('Dockerfile', 'ROS_PANEL_LOCAL_SETTINGS_WRITE_ENABLED=0');
-  assertContains('Dockerfile', 'chown -R root:root /app');
-  assertContains('Dockerfile', 'chown panel:panel /app/data');
-  assertContains('Dockerfile', 'chmod 0750 /app/data');
-  assertContains('compose.yml', 'read_only: true');
-  assertContains('compose.yml', 'ROS_PANEL_ALLOW_LOCALHOST_HOST_FORWARD: "${ROS_PANEL_ALLOW_LOCALHOST_HOST_FORWARD:-0}"');
-  assertContains('compose.yml', 'ROS_PANEL_LOCALHOST_FORWARD_TOKEN: "${ROS_PANEL_LOCALHOST_FORWARD_TOKEN:-}"');
-  assertContains('compose.yml', 'ROS_PANEL_LOCAL_SETTINGS_WRITE_ENABLED: "${ROS_PANEL_LOCAL_SETTINGS_WRITE_ENABLED:-0}"');
-  assertContains('compose.yml', 'no-new-privileges:true');
-  assertContains('deploy_linux.sh', 'useradd --system --user-group');
-  assertContains('deploy_linux.sh', 'ROS_PANEL_LOCAL_SETTINGS_WRITE_ENABLED="${ROS_PANEL_LOCAL_SETTINGS_WRITE_ENABLED:-0}"');
-  assertContains('deploy_linux.sh', 'sudo chown -R root:root "${APP_DIR}"');
-  assertContains('deploy_linux.sh', 'sudo chown -R "${PANEL_RUNTIME_USER}:${PANEL_RUNTIME_GROUP}" "${APP_DIR}/data"');
-  assertContains('deploy_linux.sh', 'curl -fsS "http://127.0.0.1:${ROS_PANEL_PORT}/api/health"');
-  assertContains('routeros-panel.service', 'User=routeros-panel');
-  assertContains('routeros-panel.service', 'Group=routeros-panel');
-  assertNotContains('routeros-panel.service', 'ros-panel-ip.service', 'implicit IP helper dependency');
-  assertContains('routeros-panel@.service', 'User=routeros-panel');
-  assertContains('routeros-panel@.service', 'Group=routeros-panel');
-  assertNotContains('routeros-panel@.service', 'ros-panel-ip@.service', 'implicit template IP helper dependency');
-  assertContains('tools/build-windows-exe.ps1', 'ROS_PANEL_BIND=127.0.0.1');
-  assertContains('tools/build-windows-exe.ps1', 'ROS_PANEL_LOCAL_SETTINGS_WRITE_ENABLED=1');
-  assertContains('app.py', 'PANEL_LOCAL_SETTINGS_ENV_KEYS = ("ROS_PANEL_BIND", "ROS_PANEL_PORT", "ROS_PANEL_TARGET_IP")');
-  assertContains('app.py', '"routerosConfigWrites": False');
-  assertContains('README.zh-CN.md', '不会向 RouterOS 写入任何路由、防火墙、接口或其他配置');
-  assertContains('.github/workflows/ci.yml', 'Windows env is missing loopback bind default');
-  assertContains('.github/workflows/ci.yml', 'Windows env is missing panel address write default');
-  assertContains('public/index.html', 'snapshotNeedsRouterLogin');
-  assertContains('public/index.html', 'aria-label="只读：不写 RouterOS 配置"');
-  assertContains('public/index.html', 'snapshotHasRouterSshLoginError');
-  assertContains('public/index.html', 'routerLoginDraft');
-  assertContains('public/index.html', 'captureRouterLoginDraftFromForm');
-  assertContains('public/index.html', 'data-router-login-form');
-  assertContains('public/index.html', '/api/router-login');
-  assertContains('public/index.html', 'rememberPassword');
-  assertContains('public/index.html', '连接并进入面板');
-
-  assertContains('README.md', '# RouterOS Read-only Status Panel');
-  assertContains('README.zh-CN.md', '# RouterOS 只读状态面板');
-  assertContains('README.md', 'status visibility');
-  assertContains('README.md', 'not configuration management');
-  assertContains('README.md', 'troubleshooting automation');
-  assertContains('README.zh-CN.md', '不做配置管理');
-  assertContains('README.zh-CN.md', '暂时不做排障工具');
-  assertContains('PRODUCT_MODEL.md', 'Public UI should not imply automatic repair, configuration management, or');
-
-  assertContains('public/index.html', 'renderReadonlyStatusBus');
-  assertContains('public/index.html', '面板健康');
-  assertContains('public/index.html', 'RouterOS 健康');
-  assertContains('public/index.html', '数据年龄');
-  assertMatches('public/index.html', /WAN\s*线路/);
-  assertContains('public/index.html', 'CPU / 内存');
-  assertContains('public/index.html', '异常TopN');
-  assertContains('public/index.html', 'mobileSectionSelect');
-  assertContains('public/index.html', 'data-overview-mobile-app-home="ikuai40-ios-router-home"');
-  assertContains('public/index.html', 'data-overview-mobile-home-mode="ios-app-home"');
-  assertContains('public/index.html', 'data-overview-mobile-first-screen-no-table="true"');
-  assertContains('public/index.html', 'data-overview-mobile-first-screen-uses-microchart="true"');
-  assertContains('public/index.html', 'data-overview-mobile-no-desktop-collapse="true"');
-  assertContains('public/index.html', 'data-overview-mobile-alert');
-  assertContains('public/index.html', 'data-overview-mobile-ios-nav="true"');
-  assertContains('public/index.html', 'ik-ios-hero-card');
-  assertContains('public/index.html', 'ik-ios-ring-grid');
-  assertContains('public/index.html', 'ik-ios-bottom-tab');
-  assertContains('public/index.html', 'MobileBottomTabs');
-  assertContains('public/index.html', 'WAN明细');
-  assertContains('public/index.html', '采集状态');
-  assertContains('public/index.html', '资源阈值');
-  assertContains('public/index.html', '路由快照');
-  assertContains('public/index.html', '快照缺失');
-  assertContains('public/index.html', '快照证据');
-  assertContains('public/index.html', 'RouterOS 当前不可达');
-  assertContains('public/index.html', '无业务快照，业务数据不展示');
-  assertContains('public/index.html', '链路可参考 / 业务状态不可参考');
-  assertNotContains('public/index.html', '数据可信度不可判定');
-  assertNotContains('public/index.html', '业务数据不可判定');
-  assertNotContains('public/index.html', '业务数值隐藏');
-  assertContains('public/index.html', '快照缺失 · 状态更新时间');
-  assertNotContains('public/index.html', '建议查看');
-  assertNotContains('public/index.html', '建议：');
-  assertNotContains('public/index.html', 'endpoint failure');
-  assertContains('public/index.html', '样本不足，趋势暂不可用');
-  assertContains('public/index.html', 'resource-risk-priority');
-  assertContains('tools/local-predeploy-check.js', "loadAuditResourceText.includes('持续')");
-  assertContains('public/index.html', 'renderFreshnessStrip');
-  assertContains('public/index.html', '事件更新时间');
-  assertContains('public/index.html', '失败端点');
-  assertContains('public/index.html', '当前为只读模式：仅通过 RouterOS API/SSH 读取状态，不写入配置');
-  assertContains('public/index.html', 'RouterOS 写入');
+  assertContains('.github/workflows/ci.yml', '--sections overview-edge-cases'…2778 tokens truncated…/index.html', 'RouterOS 写入');
   assertContains('public/index.html', '本地别名写入');
   assertAnyContains('public/index.html', ['REST 状态', 'REST 采集', 'restState(snapshot, state)', 'REST'], 'REST 状态');
   assertAnyContains('public/index.html', ['SSH 状态', 'SSH 采集', 'sshState(snapshot, state)', 'SSH'], 'SSH 状态');
