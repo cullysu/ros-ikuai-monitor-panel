@@ -469,6 +469,11 @@ assert(
   "routerosPresentationViewModel.ts must own the bounded desktop presentation policy"
 );
 assert(
+  routerOsPresentationViewModel.includes('return "网络可用";') &&
+    routerOsNetworkViewModel.includes('value: "转发可用"'),
+  "Desktop presentation must lead with a public network judgement while keeping forwarding availability as evidence"
+);
+assert(
   !desktopDecisionRail.includes("style={") &&
     desktopBaseStyles.includes('@import "./desktop/decision-rail.css";') &&
     exists("src/panel-framework/overview/styles/desktop/decision-rail.css"),
