@@ -396,6 +396,9 @@ assert(
   mobileStyles.includes("MOBILE_OVERVIEW_STYLE_LAYERS") &&
     mobileStyles.includes("core") &&
     mobileStyles.includes("product-shell") &&
+    mobileStyles.includes("frame") &&
+    mobileStyles.includes("decision") &&
+    mobileStyles.includes("surface") &&
     mobileStyles.includes("incident") &&
     mobileStyles.includes("navigation") &&
     mobileStyles.includes("landscape") &&
@@ -459,16 +462,20 @@ assert(
 );
 const mobileStyleLayerFiles = [
   "src/panel-framework/overview/components/MobileOverviewCoreStyles.ts",
+  "src/panel-framework/overview/components/MobileOverviewFrameStyles.ts",
+  "src/panel-framework/overview/components/MobileOverviewDecisionStyles.ts",
+  "src/panel-framework/overview/components/MobileOverviewSurfaceStyles.ts",
   "src/panel-framework/overview/components/MobileOverviewProductShellStyles.ts",
-  "src/panel-framework/overview/components/MobileOverviewPublicDecisionRepairStyles.ts",
   "src/panel-framework/overview/components/MobileOverviewIncidentStyles.ts",
   "src/panel-framework/overview/components/MobileOverviewNavigationStyles.ts",
   "src/panel-framework/overview/components/MobileOverviewLandscapeStyles.ts",
 ];
 const mobileStyleLineLimits = new Map([
   ["src/panel-framework/overview/components/MobileOverviewCoreStyles.ts", 80],
+  ["src/panel-framework/overview/components/MobileOverviewFrameStyles.ts", 60],
+  ["src/panel-framework/overview/components/MobileOverviewDecisionStyles.ts", 280],
+  ["src/panel-framework/overview/components/MobileOverviewSurfaceStyles.ts", 160],
   ["src/panel-framework/overview/components/MobileOverviewProductShellStyles.ts", 320],
-  ["src/panel-framework/overview/components/MobileOverviewPublicDecisionRepairStyles.ts", 500],
   ["src/panel-framework/overview/components/MobileOverviewIncidentStyles.ts", 120],
   ["src/panel-framework/overview/components/MobileOverviewNavigationStyles.ts", 80],
   ["src/panel-framework/overview/components/MobileOverviewLandscapeStyles.ts", 80],

@@ -1,7 +1,9 @@
 import { useInsertionEffect } from "react";
 import { MOBILE_OVERVIEW_CORE_STYLES } from "./MobileOverviewCoreStyles";
+import { MOBILE_OVERVIEW_DECISION_STYLES } from "./MobileOverviewDecisionStyles";
+import { MOBILE_OVERVIEW_FRAME_STYLES } from "./MobileOverviewFrameStyles";
 import { MOBILE_OVERVIEW_PRODUCT_SHELL_STYLES } from "./MobileOverviewProductShellStyles";
-import { MOBILE_OVERVIEW_PUBLIC_DECISION_REPAIR_STYLES } from "./MobileOverviewPublicDecisionRepairStyles";
+import { MOBILE_OVERVIEW_SURFACE_STYLES } from "./MobileOverviewSurfaceStyles";
 import { MOBILE_OVERVIEW_LANDSCAPE_STYLES } from "./MobileOverviewLandscapeStyles";
 import { MOBILE_OVERVIEW_NAVIGATION_STYLES } from "./MobileOverviewNavigationStyles";
 import { MOBILE_OVERVIEW_INCIDENT_STYLES } from "./MobileOverviewIncidentStyles";
@@ -12,7 +14,9 @@ const MOBILE_OVERVIEW_STYLE_LAYERS = [
     id: "product-shell",
     css: MOBILE_OVERVIEW_PRODUCT_SHELL_STYLES,
   },
-  { id: "public-decision-repair", css: MOBILE_OVERVIEW_PUBLIC_DECISION_REPAIR_STYLES },
+  { id: "frame", css: MOBILE_OVERVIEW_FRAME_STYLES },
+  { id: "decision", css: MOBILE_OVERVIEW_DECISION_STYLES },
+  { id: "surface", css: MOBILE_OVERVIEW_SURFACE_STYLES },
   { id: "incident", css: MOBILE_OVERVIEW_INCIDENT_STYLES },
   { id: "navigation", css: MOBILE_OVERVIEW_NAVIGATION_STYLES },
   { id: "landscape", css: MOBILE_OVERVIEW_LANDSCAPE_STYLES },

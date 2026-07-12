@@ -63,7 +63,9 @@ const landscapeStyles = read('src/panel-framework/overview/components/MobileOver
 const navigationStyles = read('src/panel-framework/overview/components/MobileOverviewNavigationStyles.ts');
 const incidentStyles = read('src/panel-framework/overview/components/MobileOverviewIncidentStyles.ts');
 const productShellStyles = read('src/panel-framework/overview/components/MobileOverviewProductShellStyles.ts');
-const decisionRepairStyles = read('src/panel-framework/overview/components/MobileOverviewPublicDecisionRepairStyles.ts');
+const mobileDecisionStyles = read('src/panel-framework/overview/components/MobileOverviewDecisionStyles.ts');
+const mobileFrameStyles = read('src/panel-framework/overview/components/MobileOverviewFrameStyles.ts');
+const mobileSurfaceStyles = read('src/panel-framework/overview/components/MobileOverviewSurfaceStyles.ts');
 const predeploy = read('tools/local-predeploy-check.js');
 const mobileRuntime = read('tools/check-mobile-app-home-runtime.js');
 
@@ -187,8 +189,10 @@ includesAll(mobileTabs, ['aria-current', 'aria-controls', '路由器监控底部
 
 includesAll(mobileStyles, [
   'MOBILE_OVERVIEW_CORE_STYLES',
+  'MOBILE_OVERVIEW_FRAME_STYLES',
+  'MOBILE_OVERVIEW_DECISION_STYLES',
+  'MOBILE_OVERVIEW_SURFACE_STYLES',
   'MOBILE_OVERVIEW_PRODUCT_SHELL_STYLES',
-  'MOBILE_OVERVIEW_PUBLIC_DECISION_REPAIR_STYLES',
   'MOBILE_OVERVIEW_INCIDENT_STYLES',
   'MOBILE_OVERVIEW_NAVIGATION_STYLES',
   'MOBILE_OVERVIEW_LANDSCAPE_STYLES',
@@ -204,7 +208,9 @@ includesAll(landscapeStyles, ['min-width: 761px', 'max-width: 900px', 'max-heigh
 includesAll(navigationStyles, ['position: fixed', 'height: 52px', 'repeat(5, minmax(0, 1fr))'], 'mobile native navigation');
 includesAll(incidentStyles, ['ik-mobile-incident-summary', 'ik-mobile-incident-guidance', 'min-height: 98px'], 'mobile incident hierarchy');
 includesAll(productShellStyles, ['ro-desktop-grid', 'ro-mobile-first-screen', '100dvh', 'position: fixed', 'min-height: 44px'], 'mobile/desktop shell isolation');
-if (lineCount(decisionRepairStyles) > 500) fail('mobile repair stylesheet budget', `${lineCount(decisionRepairStyles)} lines`);
+includesAll(mobileFrameStyles, ['ik-mobile-decision-screen', 'ik-mobile-device-bar'], 'mobile frame styles');
+includesAll(mobileDecisionStyles, ['ik-mobile-decision-card', 'ik-mobile-decision-trend', 'ik-mobile-resource-incident-stack'], 'mobile decision styles');
+includesAll(mobileSurfaceStyles, ['ik-mobile-core-facts', 'ik-mobile-supporting-surface', 'ik-mobile-detail-entry'], 'mobile surface styles');
 
 includesAll(mobilePolicy, [
   'normal-operations-first',
@@ -241,5 +247,5 @@ if (failures.length) {
   for (const item of failures) console.error(`- ${item}`);
   process.exitCode = 1;
 } else {
-  console.log(`overview ikuai current static gate: PASS desktopContracts=${desktopContractCount} mobileRepairLines=${lineCount(decisionRepairStyles)}`);
+  console.log(`overview ikuai current static gate: PASS desktopContracts=${desktopContractCount} mobileStyleOwnership=frame-decision-surface`);
 }

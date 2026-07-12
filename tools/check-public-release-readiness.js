@@ -803,6 +803,7 @@ function main(argv = process.argv.slice(2)) {
   assertContains('src/panel-framework/overview/components/MobileOverviewStyles.tsx', 'MOBILE_OVERVIEW_STYLE_LAYERS');
   assertNotExists('src/panel-framework/overview/components/MobileOverviewBaseStyles.ts');
   assertNotExists('src/panel-framework/overview/components/MobileOverviewPublicDecisionStyles.ts');
+  assertNotExists('src/panel-framework/overview/components/MobileOverviewPublicDecisionRepairStyles.ts');
   assertContains('src/panel-framework/overview/components/MobileOverviewStyles.tsx', 'MobileOverviewIncidentStyles');
   assertContains('src/panel-framework/overview/components/MobileOverviewStyles.tsx', 'MobileOverviewLandscapeStyles');
   assertContains('src/panel-framework/overview/components/MobileOverviewStyles.tsx', 'MobileOverviewNavigationStyles');

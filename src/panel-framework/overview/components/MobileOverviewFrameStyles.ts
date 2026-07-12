@@ -1,0 +1,53 @@
+export const MOBILE_OVERVIEW_FRAME_STYLES = `
+@media (max-width: 760px), (min-width: 761px) and (max-width: 900px) and (max-height: 520px) {
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-decision-screen {
+    display: grid !important;
+    grid-template-rows: 46px auto 64px auto !important;
+    gap: 9px !important;
+    align-content: start !important;
+    padding: max(12px, env(safe-area-inset-top)) 12px calc(76px + env(safe-area-inset-bottom)) !important;
+    background: #edf2f7 !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-device-bar {
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    min-height: 46px !important;
+    height: 46px !important;
+    padding: 0 1px !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-device-title {
+    justify-items: start !important;
+    text-align: left !important;
+    min-width: 0 !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-device-title b {
+    color: #142033 !important;
+    font-size: 17px !important;
+    letter-spacing: -.035em !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-device-title span {
+    color: #66758a !important;
+    font-size: 10.5px !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-context-button {
+    display: none !important;
+    width: 36px !important;
+    height: 36px !important;
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-device-bar .ik-v240-status {
+    min-width: 58px !important;
+    min-height: 30px !important;
+    border-radius: 6px !important;
+    border-color: #b9cce3 !important;
+    background: #f8fbff !important;
+  }
+}
+`;
