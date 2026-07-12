@@ -9031,7 +9031,6 @@ var PanelFramework = function(exports) {
       wanPorts: wanPorts(snapshot, state)
     };
   }
-  const MOBILE_BOTTOM_NAV_CONTRACT = "home-wan-interface-terminal-log-router-monitor-low-noise";
   const MOBILE_BOTTOM_NAV_ITEMS = [
     { id: "home", label: "首页", semantic: "status-overview", note: "状态总览", path: "M4 11.5 12 5l8 6.5V20a1 1 0 0 1-1 1h-5v-6h-4v6H5a1 1 0 0 1-1-1z" },
     { id: "wan", label: "WAN", semantic: "multi-wan", note: "多出口", path: "M4 8h16M4 12h16M4 16h16M7 8v8M17 8v8" },
@@ -9045,24 +9044,14 @@ var PanelFramework = function(exports) {
       {
         className: "ik-v420-tabs ik-v240-tabs",
         "aria-label": "路由器监控底部导航",
-        "data-overview-mobile-bottom-tab": "home-wan-interface-terminal-log",
-        "data-overview-mobile-v159-tabbar": "bottom-entry",
-        "data-overview-mobile-v240-tabs": "bottom-entry",
-        "data-overview-mobile-v1010-quiet-tabbar": "no-border-no-glow",
-        "data-overview-mobile-v1066-router-tabs": MOBILE_BOTTOM_NAV_CONTRACT,
-        "data-overview-mobile-v1066-router-tab-order": MOBILE_BOTTOM_NAV_ITEMS.map((item) => item.id).join("/"),
-        "data-overview-mobile-v1066-router-tab-semantics": MOBILE_BOTTOM_NAV_ITEMS.map((item) => item.semantic).join("/"),
         children: MOBILE_BOTTOM_NAV_ITEMS.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
           "button",
           {
+            id: `mobile-tab-${item.id}`,
             "aria-controls": `mobile-${item.id}-view`,
             "aria-current": activeId === item.id ? "page" : void 0,
             "aria-label": `${item.label} · ${item.note}`,
             className: activeId === item.id ? "is-active" : "",
-            "data-overview-mobile-v1066-router-tab": item.id,
-            "data-overview-mobile-v1066-router-tab-semantic": item.semantic,
-            "data-overview-mobile-v1066-router-tab-note": item.note,
-            "data-overview-mobile-tab-target": `mobile-view:${item.id}`,
             onClick: () => onSelect(item.id),
             type: "button",
             children: [
@@ -9678,6 +9667,7 @@ var PanelFramework = function(exports) {
         children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ik-v420-shell ik-v240-shell", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
           "main",
           {
+            id: "mobile-home-view",
             className: "ik-v420-screen ik-v240-screen ik-mobile-decision-screen",
             "data-overview-mobile-first-screen": "app-home",
             "data-overview-mobile-first-screen-no-table": "true",
