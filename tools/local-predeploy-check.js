@@ -3206,10 +3206,30 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const mobile390AppHomeHeroMetricsOk = !mobileOverview390x844 || Boolean((sectionRoot || mobileFirstScreen)?.querySelector('[data-overview-mobile-hero-metrics], [data-overview-mobile-v240-big-numbers]'));
     const mobile390AppHomeResourceCardOk = !mobileOverview390x844 || Boolean((sectionRoot || mobileFirstScreen)?.querySelector('[data-overview-mobile-v159-secondary="wan-collection-two-cards-not-2x2"], .ik-v159-secondary, .ik-v240-facts, .ik-v240-strip, .ik-v240-resource-trends, [data-overview-mobile-v240-facts], [data-overview-mobile-v240-status-strip]'));
     const mobile390AppHomeRankCardOk = !mobileOverview390x844 || Boolean((sectionRoot || mobileFirstScreen)?.querySelector('[data-overview-mobile-v159-topn], .ik-v159-top-list, .ik-v240-list, [data-overview-mobile-v240-list]'));
-    const mobile390AppHomeBottomTabOk = !mobileOverview390x844 || Boolean(
-      Array.from(sectionRoot?.querySelectorAll('.ik-ios-bottom-tab, [data-overview-mobile-bottom-tab]') || [])
-        .some(nodeVisibleInViewport)
-    );
+    const mobile390AppHomeTabControls = {
+      home: 'mobile-home-view',
+      wan: 'mobile-wan-view',
+      interface: 'mobile-interface-view',
+      terminal: 'mobile-terminal-view',
+      log: 'mobile-log-view',
+    };
+    const mobile390AppHomeBottomTabOk = !mobileOverview390x844 || (() => {
+      const navigation = sectionRoot?.querySelector('nav[aria-label="路由器监控底部导航"]');
+      const tabButtons = Array.from(navigation?.querySelectorAll('button[aria-controls^="mobile-"]') || []);
+      const activeTab = tabButtons.filter((button) => button.getAttribute('aria-current') === 'page');
+      return Boolean(
+        navigation &&
+        nodeVisibleInViewport(navigation) &&
+        tabButtons.length === Object.keys(mobile390AppHomeTabControls).length &&
+        activeTab.length === 1 &&
+        activeTab[0]?.getAttribute('aria-controls') === mobile390AppHomeTabControls.home &&
+        Boolean(document.getElementById(mobile390AppHomeTabControls.home)) &&
+        Object.entries(mobile390AppHomeTabControls).every(([tabId, viewId]) => {
+          const button = navigation.querySelector('#mobile-tab-' + tabId);
+          return button?.getAttribute('aria-controls') === viewId;
+        })
+      );
+    })();
     const mobile390ResourcePressureVisualOk = scaleScenario === 'resource-full' && mobile390ScenarioVisualRecords.some((record) => (
       record.readable &&
       /处理器|内存|磁盘|CPU|MEM|DISK/.test(record.text)
