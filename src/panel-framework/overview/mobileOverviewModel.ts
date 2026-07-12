@@ -302,7 +302,7 @@ function headerTone(state: OverviewDerivedState): OverviewTone {
 }
 
 function headerStatusLabel(state: OverviewDerivedState): string {
-  if (state.scenario === "no-snapshot") return "缺数";
+  if (state.scenario === "no-snapshot") return "待采集";
   if (state.scenario === "single") return "可用";
   if (state.scenario === "all-offline" || state.facts.wan.allOffline) return "断链";
   if (state.scenario === "resource-full") return "超阈";
@@ -370,7 +370,7 @@ function subtitleFor(
     return `WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(wanDisplayTotal(snapshot, state) || 1)} · 默认路由${mobileRouteValue(state)} · 快照 ${latestSuccess(snapshot, state)}`;
   }
   if (network.priority === "wan-offline") return `默认出口不可承载 · 最近成功 ${latestSuccess(snapshot, state)}`;
-  if (network.priority === "snapshot-missing") return `当前业务指标隐藏 · 最近成功 ${latestSuccess(snapshot, state)}`;
+  if (network.priority === "snapshot-missing") return `最近成功 ${latestSuccess(snapshot, state)} · 当前指标不展示`;
   if (network.priority === "collection-degraded") return `当前使用缓存快照 · 最近成功 ${latestSuccess(snapshot, state)}`;
   if (network.priority === "resource-full") return "业务仍可用 · 资源阈值持续超限";
   if (network.priority === "interface-down") return `部分接口不可用 · 默认路由${mobileRouteValue(state)}`;
