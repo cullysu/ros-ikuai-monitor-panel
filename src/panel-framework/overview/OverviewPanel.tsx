@@ -7,6 +7,7 @@ import "./OverviewPanel.css";
 import "./styles/desktop/status-bus.css";
 import "./styles/desktop/tokens.css";
 import "./OverviewPanelDesktopRefinement.css";
+import "./styles/desktop/wan-trend.css";
 import "./OverviewPanelRelease.css";
 import "./OverviewPanelDesktopHierarchy.css";
 import "./styles/desktop/incidents.css";

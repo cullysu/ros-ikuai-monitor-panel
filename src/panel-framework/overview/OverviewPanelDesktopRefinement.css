@@ -151,7 +151,6 @@
     font-weight: 580;
   }
 }
-
 /* Desktop status bus: final override after older dense-console passes.
    Keep it as a flat summary bus, not six bordered field boxes. */
 @media (min-width: 761px) {
@@ -1663,91 +1662,5 @@
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"][data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-module .ro-ledger .ro-ledger-row[data-tone="warn"] > .ro-ledger-cell:not(:first-child) .ik-overview-cell-text,
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"][data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-module .ro-ledger .ro-ledger-row[data-tone="missing"] > .ro-ledger-cell:not(:first-child) .ik-overview-cell-text {
     color: #24374b !important;
-  }
-}
-
-/* Desktop WAN readable product chart: trend remains the product surface, not a tiny evidence table. */
-@media (min-width: 761px) {
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="wan-trend"] .ro-wan-integrated-visual,
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="wan-trend"] .ro-wan-integrated-visual {
-    grid-template-rows: minmax(126px, auto) 38px 32px !important;
-    gap: 4px !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="wan-trend"] .ro-wan-integrated-visual .ro-judgement-chart,
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="wan-trend"] .ro-wan-integrated-visual .ro-judgement-chart {
-    min-height: 116px !important;
-    max-height: none !important;
-    padding: 6px 7px !important;
-    gap: 5px !important;
-    border-bottom-color: rgba(226, 235, 244, .28) !important;
-    background: #fff !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="wan-trend"] .ro-wan-integrated-visual .ro-judgement-row,
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="wan-trend"] .ro-wan-integrated-visual .ro-judgement-row {
-    min-height: 24px !important;
-    height: 24px !important;
-    gap: 7px !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="wan-trend"] .ro-wan-integrated-visual .ro-chart-summary,
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="wan-trend"] .ro-wan-integrated-visual .ro-chart-summary {
-    min-height: 20px !important;
-    color: #24374b !important;
-    font-size: 9px !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="wan-trend"] .ro-wan-integrated-decision,
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="wan-trend"] .ro-wan-integrated-decision {
-    display: grid !important;
-    grid-template-columns: 1.04fr 1fr 1.12fr 1.18fr 1fr !important;
-    min-height: 34px !important;
-    background: rgba(248, 251, 254, .82) !important;
-    box-shadow: inset 0 1px 0 rgba(226, 235, 244, .44), inset 0 -1px 0 rgba(226, 235, 244, .26) !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="wan-trend"] .ro-wan-integrated-decision span,
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="wan-trend"] .ro-wan-integrated-decision span {
-    display: grid !important;
-    grid-template-rows: 10px 13px 9px !important;
-    min-width: 0 !important;
-    padding: 3px 7px !important;
-    box-shadow: inset -1px 0 0 rgba(226, 235, 244, .32) !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="wan-trend"] .ro-wan-integrated-decision em,
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="wan-trend"] .ro-wan-integrated-decision em {
-    overflow: hidden !important;
-    color: #7c8fa3 !important;
-    font-size: 8px !important;
-    font-style: normal !important;
-    font-weight: 620 !important;
-    letter-spacing: .02em !important;
-    line-height: 10px !important;
-    text-overflow: clip !important;
-    white-space: nowrap !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="wan-trend"] .ro-wan-integrated-decision b,
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="wan-trend"] .ro-wan-integrated-decision b {
-    overflow: hidden !important;
-    color: #172a3d !important;
-    font-size: 10.4px !important;
-    font-weight: 780 !important;
-    line-height: 13px !important;
-    text-overflow: clip !important;
-    white-space: nowrap !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="wan-trend"] .ro-wan-integrated-decision small,
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="wan-trend"] .ro-wan-integrated-decision small {
-    overflow: hidden !important;
-    color: #8b9aac !important;
-    font-size: 7.4px !important;
-    font-weight: 560 !important;
-    line-height: 9px !important;
-    text-overflow: clip !important;
-    white-space: nowrap !important;
   }
 }

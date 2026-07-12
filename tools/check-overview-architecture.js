@@ -35,6 +35,8 @@ const desktopIncidentStylesFile =
   "src/panel-framework/overview/styles/desktop/incidents.css";
 const desktopStatusBusStylesFile =
   "src/panel-framework/overview/styles/desktop/status-bus.css";
+const desktopWanTrendStylesFile =
+  "src/panel-framework/overview/styles/desktop/wan-trend.css";
 const desktopConsoleFile =
   "src/panel-framework/overview/components/DesktopConsole.tsx";
 const desktopDecisionRailFile =
@@ -98,6 +100,7 @@ const desktopRefinement = read(desktopRefinementFile);
 const desktopRelease = read(desktopReleaseFile);
 const desktopIncidentStyles = read(desktopIncidentStylesFile);
 const desktopStatusBusStyles = read(desktopStatusBusStylesFile);
+const desktopWanTrendStyles = read(desktopWanTrendStylesFile);
 const desktopHelpers = read(desktopHelpersFile);
 const routerOsNetworkViewModel = read(routerOsNetworkViewModelFile);
 const routerOsPresentationViewModel = read(routerOsPresentationViewModelFile);
@@ -372,6 +375,13 @@ assert(
     desktopStatusBusStyles.includes(".ro-topbar.ik-home-flat-topbar") &&
     panel.includes('import "./styles/desktop/status-bus.css";'),
   "Desktop status-bus styles must live in the focused component layer"
+);
+assert(
+  lines(desktopWanTrendStyles) <= 120 &&
+    desktopWanTrendStyles.includes('[data-overview-density-module="wan-trend"]') &&
+    panel.includes('import "./styles/desktop/wan-trend.css";') &&
+    !desktopRefinement.includes('Desktop WAN readable product chart'),
+  "Desktop WAN trend styles must live in the focused component layer"
 );
 assert(
   lines(desktopHelpers) <= 450,
