@@ -93,4 +93,15 @@
     min-height: 28px !important;
     padding: 4px 8px !important;
   }
+
+  #overview.router-overview-framework .ro-desktop-grid[data-overview-desktop-scene="single"] > .ro-col.is-bottom,
+  #overview.router-overview-framework .ro-desktop-grid[data-overview-desktop-scene="fleet"] > .ro-col.is-bottom {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    align-items: start !important;
+  }
+
+  #overview.router-overview-framework .ro-desktop-grid[data-overview-desktop-scene="single"] > .ro-col.is-bottom > .ro-module[data-overview-density-module="evidence-boundary"],
+  #overview.router-overview-framework .ro-desktop-grid[data-overview-desktop-scene="fleet"] > .ro-col.is-bottom > .ro-module[data-overview-density-module="evidence-boundary"] {
+    min-height: 0 !important;
+  }
 }
