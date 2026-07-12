@@ -33,6 +33,8 @@ const desktopReleaseFile =
   "src/panel-framework/overview/OverviewPanelRelease.css";
 const desktopIncidentStylesFile =
   "src/panel-framework/overview/styles/desktop/incidents.css";
+const desktopStatusBusStylesFile =
+  "src/panel-framework/overview/styles/desktop/status-bus.css";
 const desktopConsoleFile =
   "src/panel-framework/overview/components/DesktopConsole.tsx";
 const desktopDecisionRailFile =
@@ -95,6 +97,7 @@ const desktopBaseStyles = read(desktopBaseStylesFile);
 const desktopRefinement = read(desktopRefinementFile);
 const desktopRelease = read(desktopReleaseFile);
 const desktopIncidentStyles = read(desktopIncidentStylesFile);
+const desktopStatusBusStyles = read(desktopStatusBusStylesFile);
 const desktopHelpers = read(desktopHelpersFile);
 const routerOsNetworkViewModel = read(routerOsNetworkViewModelFile);
 const routerOsPresentationViewModel = read(routerOsPresentationViewModelFile);
@@ -363,6 +366,12 @@ assert(
 assert(
   (desktopIncidentStyles.match(/!important/g) || []).length <= 6,
   "Desktop incident styles must not become another override layer"
+);
+assert(
+  lines(desktopStatusBusStyles) <= 100 &&
+    desktopStatusBusStyles.includes(".ro-topbar.ik-home-flat-topbar") &&
+    panel.includes('import "./styles/desktop/status-bus.css";'),
+  "Desktop status-bus styles must live in the focused component layer"
 );
 assert(
   lines(desktopHelpers) <= 450,

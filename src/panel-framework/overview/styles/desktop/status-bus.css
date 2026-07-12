@@ -1,0 +1,78 @@
+@media (min-width: 761px) {
+  #overview.router-overview-framework .ro-topbar.ik-home-flat-topbar {
+    height: 46px !important;
+    min-height: 46px !important;
+    max-height: 46px !important;
+    display: grid !important;
+    grid-template-columns: 1.14fr 1.1fr .96fr .96fr .98fr .98fr !important;
+    gap: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    border: 1px solid var(--ik-line) !important;
+    border-radius: 5px !important;
+    background: #fff !important;
+    box-shadow: none !important;
+  }
+
+  #overview.router-overview-framework .ro-topbar-cell.ik-home-flat-cell {
+    display: grid !important;
+    grid-template-rows: 12px 17px 12px !important;
+    align-content: center !important;
+    gap: 1px !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    padding: 4px 10px 4px 12px !important;
+    border-right: 1px solid #edf3f8 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+  }
+
+  #overview.router-overview-framework .ro-topbar-cell.ik-home-flat-cell:last-of-type {
+    border-right: 0 !important;
+  }
+
+  #overview.router-overview-framework .ro-topbar-cell span {
+    color: var(--ik-quiet) !important;
+    font-size: 10px !important;
+    line-height: 12px !important;
+    font-weight: 650 !important;
+    letter-spacing: .02em !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+  }
+
+  #overview.router-overview-framework .ro-topbar-cell b {
+    color: var(--ik-ink) !important;
+    font-size: 12.8px !important;
+    line-height: 17px !important;
+    font-weight: 760 !important;
+    letter-spacing: -.12px !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+  }
+
+  #overview.router-overview-framework .ro-topbar-cell[data-overview-status-role="conclusion"] b {
+    color: #0f253f !important;
+    font-size: 13.6px !important;
+    font-weight: 820 !important;
+  }
+
+  #overview.router-overview-framework .ro-topbar-cell[data-tone="danger"] b,
+  #overview.router-overview-framework .ro-topbar-cell[data-tone="missing"] b {
+    color: var(--ik-red) !important;
+  }
+
+  #overview.router-overview-framework .ro-topbar-cell em {
+    color: var(--ik-muted) !important;
+    font-size: 10px !important;
+    line-height: 12px !important;
+    font-style: normal !important;
+    font-weight: 560 !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+  }
+}
