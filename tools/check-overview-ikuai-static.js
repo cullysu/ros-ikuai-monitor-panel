@@ -123,7 +123,15 @@ includesAll(desktopScenes, [
   'state.scenario === "interfaces-down"',
 ], 'desktop scenario ownership');
 if ((desktopScenes.match(/\bcollapsed\s*\/>/g) || []).length < 3) fail('desktop normal hierarchy', 'expected three collapsed secondary summaries');
-includesAll(desktopModule, ['collapsed ? "collapsed-summary"', 'ro-compact-summary-disclosure', '查看详情'], 'desktop compact disclosure');
+includesAll(desktopModule, ['collapsed ? "ro-secondary-evidence-disclosure ro-compact-summary-disclosure"', 'ro-compact-summary-disclosure', '查看详情'], 'desktop compact disclosure');
+const desktopModuleContractCount = (desktopModule.match(/\bdata-(?:overview|routeros)-[\w-]+/g) || []).length;
+if (desktopModuleContractCount > 20) fail('desktop module contract budget', `expected <=20 attributes, found ${desktopModuleContractCount}`);
+excludesAll(desktopModule, [
+  'data-overview-resource-danger-bars-confidence-standard',
+  'data-overview-no-snapshot-ledger-parent-judgement',
+  'data-overview-top5-row-visual-contract',
+  'data-overview-filler-rows',
+], 'desktop retired probe cleanup');
 includesAll(desktopHierarchyStyles, ['data-overview-desktop-scene="single"', 'data-overview-desktop-scene="fleet"', 'ro-compact-summary-disclosure'], 'desktop focused hierarchy styles');
 
 ordered(mobile, [
