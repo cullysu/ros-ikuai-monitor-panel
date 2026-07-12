@@ -1,7 +1,6 @@
 import { useInsertionEffect } from "react";
 import { MOBILE_OVERVIEW_PRODUCT_SHELL_STYLES } from "./MobileOverviewProductShellStyles";
 import { MOBILE_OVERVIEW_FOUNDATION_STYLES } from "./MobileOverviewBaseStyles";
-import { MOBILE_OVERVIEW_DECISION_HOME_STYLES } from "./MobileOverviewDecisionStyles";
 import { MOBILE_OVERVIEW_PUBLIC_DECISION_STYLES } from "./MobileOverviewPublicDecisionStyles";
 import { MOBILE_OVERVIEW_PUBLIC_DECISION_REPAIR_STYLES } from "./MobileOverviewPublicDecisionRepairStyles";
 
@@ -11,7 +10,6 @@ const MOBILE_OVERVIEW_STYLE_LAYERS = [
     id: "product-shell",
     css: MOBILE_OVERVIEW_PRODUCT_SHELL_STYLES,
   },
-  { id: "decision-home", css: MOBILE_OVERVIEW_DECISION_HOME_STYLES },
   { id: "public-decision-home", css: MOBILE_OVERVIEW_PUBLIC_DECISION_STYLES },
   { id: "public-decision-repair", css: MOBILE_OVERVIEW_PUBLIC_DECISION_REPAIR_STYLES },
 ] as const;

@@ -395,8 +395,7 @@ assert(
 assert(
   mobileStyles.includes("MOBILE_OVERVIEW_STYLE_LAYERS") &&
     mobileStyles.includes("foundation") &&
-    mobileStyles.includes("product-shell") &&
-    mobileStyles.includes("decision-home"),
+    mobileStyles.includes("product-shell"),
   "Mobile style injection must use semantic style layers"
 );
 assert(
@@ -457,14 +456,12 @@ assert(
 const mobileStyleLayerFiles = [
   "src/panel-framework/overview/components/MobileOverviewBaseStyles.ts",
   "src/panel-framework/overview/components/MobileOverviewProductShellStyles.ts",
-  "src/panel-framework/overview/components/MobileOverviewDecisionStyles.ts",
   "src/panel-framework/overview/components/MobileOverviewPublicDecisionStyles.ts",
   "src/panel-framework/overview/components/MobileOverviewPublicDecisionRepairStyles.ts",
 ];
 const mobileStyleLineLimits = new Map([
   ["src/panel-framework/overview/components/MobileOverviewBaseStyles.ts", 2750],
   ["src/panel-framework/overview/components/MobileOverviewProductShellStyles.ts", 260],
-  ["src/panel-framework/overview/components/MobileOverviewDecisionStyles.ts", 700],
   ["src/panel-framework/overview/components/MobileOverviewPublicDecisionStyles.ts", 650],
   ["src/panel-framework/overview/components/MobileOverviewPublicDecisionRepairStyles.ts", 500],
 ]);
