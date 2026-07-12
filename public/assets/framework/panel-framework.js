@@ -9694,7 +9694,6 @@ var PanelFramework = function(exports) {
       }
     );
   }
-  const OVERVIEW_LOW_NOISE_CONSOLE_TOKEN_CONTRACT = "low-noise-console-tokens-color-type-space-radius-state-chart";
   function clean(value, fallback = "-") {
     const normalized = String(value ?? "").replace(/\s+/g, " ").trim();
     return normalized || fallback;
@@ -11302,18 +11301,7 @@ var PanelFramework = function(exports) {
         "data-overview-desktop-hierarchy-tier": "3-evidence",
         "data-overview-desktop-detail": true,
         "data-overview-desktop-workspace": true,
-        "data-overview-low-noise-console-token-contract": OVERVIEW_LOW_NOISE_CONSOLE_TOKEN_CONTRACT,
-        "data-overview-desktop-v1020-public-product-polish": "flat-status-bus-low-line-noise-integrated-wan-reading",
-        "data-overview-desktop-v1030-nav-polish": "short-ikuai-left-rail-low-noise-status-bus",
-        "data-overview-desktop-toy-nav-leak-guard": "desktop-content-icon-tabs-removed",
-        "data-overview-desktop-content-icon-tabs": "desktop-hides-content-icon-tabs",
-        "data-overview-trend-compact": "framework-ledger",
         "data-overview-no-snapshot-detail": state.scenario === "no-snapshot" ? "business-data-unavailable-recovery-evidence-deferred" : void 0,
-        "data-overview-desktop-effective-content-height": "760",
-        "data-overview-desktop-redline-markers": "no-empty-left60-no-duplicate-boundary-no-nosnapshot-wan-rate-no-toy-tabs",
-        "data-overview-no-snapshot-no-wan-rate-placeholder": state.scenario === "no-snapshot" ? "business-rates-hidden" : void 0,
-        "data-overview-side-table-mode": "three-col-no-badge",
-        "data-overview-desktop-fixed-skeleton": "left-network-wan-right-resource-collection-bottom-interface-events",
         "data-overview-desktop-scene": state.scenario,
         children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx(DesktopDecisionRail, { snapshot, state }),
@@ -11372,6 +11360,7 @@ var PanelFramework = function(exports) {
       }
     );
   }
+  const OVERVIEW_LOW_NOISE_CONSOLE_TOKEN_CONTRACT = "low-noise-console-tokens-color-type-space-radius-state-chart";
   function OverviewPanel({ snapshot, state }) {
     return /* @__PURE__ */ jsxRuntimeExports.jsxs(
       "section",

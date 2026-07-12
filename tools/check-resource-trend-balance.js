@@ -798,7 +798,7 @@ async function main() {
           sectionEl &&
           workspace &&
           sectionEl.getAttribute('data-overview-low-noise-console-token-contract') === lowNoiseConsoleTokenContract &&
-          workspace.getAttribute('data-overview-low-noise-console-token-contract') === lowNoiseConsoleTokenContract &&
+          sectionEl.contains(workspace) &&
           lowNoiseConsoleTokenNames.every((name) => lowNoiseConsoleTokenValues[name])
         );
         const topbarStyle = topbar ? getComputedStyle(topbar) : null;
@@ -1062,7 +1062,7 @@ async function main() {
           topbarV1068Contract: topbar?.getAttribute('data-overview-desktop-v1068-status-bus') || '',
           lowNoiseConsoleTokensApplied,
           lowNoiseConsoleTokenContract: sectionEl?.getAttribute('data-overview-low-noise-console-token-contract') || '',
-          lowNoiseConsoleWorkspaceContract: workspace?.getAttribute('data-overview-low-noise-console-token-contract') || '',
+          lowNoiseConsoleWorkspaceContract: sectionEl?.contains(workspace) ? 'structural-descendant' : '',
           lowNoiseConsoleTokenValues,
           wanReadableProductChart,
           routeRawEvidenceSecondaryProductized,

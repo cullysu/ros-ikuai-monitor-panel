@@ -449,6 +449,14 @@ assert(
   "DesktopConsole.tsx must delegate scenario composition to the desktop scene module"
 );
 assert(
+  !/data-overview-desktop-v\d+|data-overview-desktop-redline-markers|data-overview-desktop-fixed-skeleton|data-overview-side-table-mode/.test(desktopConsole),
+  "DesktopConsole.tsx must not carry versioned or self-certifying acceptance markers"
+);
+assert(
+  (desktopConsole.match(/data-overview-/g) || []).length <= 6,
+  "DesktopConsole.tsx must keep only structural overview attributes"
+);
+assert(
   desktopConsole.includes('from "./DesktopDecisionRail"') &&
     desktopConsole.includes("<DesktopDecisionRail"),
   "DesktopConsole.tsx must compose the desktop object/impact/action/credibility rail"

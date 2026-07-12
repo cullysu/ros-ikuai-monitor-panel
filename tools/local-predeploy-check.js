@@ -1527,7 +1527,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     );
     const overviewMonitorSplitOk = sectionName !== 'overview' || !isDesktopOverview || Boolean(
       overviewMonitorSceneBypassOk ||
-      sectionRoot?.querySelector('[data-overview-trend-compact]') ||
+      sectionRoot?.querySelector('.ro-semantic-wan-trend') ||
       overviewFocusModule ||
       overviewNoSnapshotGrid ||
       sectionRoot?.querySelector('[data-overview-desktop-detail] .ops-table-wrap') ||
@@ -2262,7 +2262,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         !noSnapshotFreshCopyPattern.test(text)
       ))
     );
-    const trendCompact = sectionRoot?.querySelector('[data-overview-trend-compact]');
+    const trendCompact = sectionRoot?.querySelector('.ro-semantic-wan-trend');
     const overviewTrendCompactOk = sectionName !== 'overview' || noSnapshotEdge || Boolean(
       !/采样不足|样本不足|趋势暂不可用/.test(text) || (
         trendCompact &&

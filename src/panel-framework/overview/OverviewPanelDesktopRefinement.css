@@ -202,8 +202,8 @@
     --ik-v1020-desktop-warn: var(--ik-console-warn);
   }
 
-  #overview.router-overview-framework[data-overview-desktop-v1020-public-product-polish] .ro-wan-integrated-visual,
-  .router-overview-framework[data-overview-desktop-v1020-public-product-polish] .ro-wan-integrated-visual {
+  #overview.router-overview-framework .ro-semantic-wan-trend .ro-wan-integrated-visual,
+  .router-overview-framework .ro-semantic-wan-trend .ro-wan-integrated-visual {
     display: grid !important;
     grid-template-rows: minmax(84px, auto) 42px 34px !important;
     gap: 3px !important;
@@ -211,8 +211,8 @@
     background: #fff !important;
   }
 
-  #overview.router-overview-framework[data-overview-desktop-v1020-public-product-polish] .ro-wan-integrated-summary,
-  .router-overview-framework[data-overview-desktop-v1020-public-product-polish] .ro-wan-integrated-summary {
+  #overview.router-overview-framework .ro-semantic-wan-trend .ro-wan-integrated-summary,
+  .router-overview-framework .ro-semantic-wan-trend .ro-wan-integrated-summary {
     display: grid !important;
     grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
     gap: 0 !important;
@@ -221,30 +221,30 @@
     background: #fbfdff !important;
   }
 
-  #overview.router-overview-framework[data-overview-desktop-v1020-public-product-polish] .ro-wan-integrated-summary span,
-  .router-overview-framework[data-overview-desktop-v1020-public-product-polish] .ro-wan-integrated-summary span {
+  #overview.router-overview-framework .ro-semantic-wan-trend .ro-wan-integrated-summary span,
+  .router-overview-framework .ro-semantic-wan-trend .ro-wan-integrated-summary span {
     padding: 4px 5px !important;
     border-right: 1px solid rgba(155, 177, 200, .13) !important;
     background: transparent !important;
   }
 
-  #overview.router-overview-framework[data-overview-desktop-v1020-public-product-polish] .ro-wan-integrated-summary b,
-  .router-overview-framework[data-overview-desktop-v1020-public-product-polish] .ro-wan-integrated-summary b {
+  #overview.router-overview-framework .ro-semantic-wan-trend .ro-wan-integrated-summary b,
+  .router-overview-framework .ro-semantic-wan-trend .ro-wan-integrated-summary b {
     color: var(--ik-v1020-desktop-ink) !important;
     font-size: 11px !important;
     font-weight: 810 !important;
   }
 
-  #overview.router-overview-framework[data-overview-desktop-v1020-public-product-polish] .ro-wan-integrated-top,
-  .router-overview-framework[data-overview-desktop-v1020-public-product-polish] .ro-wan-integrated-top {
+  #overview.router-overview-framework .ro-semantic-wan-trend .ro-wan-integrated-top,
+  .router-overview-framework .ro-semantic-wan-trend .ro-wan-integrated-top {
     display: grid !important;
     grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
     gap: 3px !important;
     background: transparent !important;
   }
 
-  #overview.router-overview-framework[data-overview-desktop-v1020-public-product-polish] .ro-wan-integrated-top span,
-  .router-overview-framework[data-overview-desktop-v1020-public-product-polish] .ro-wan-integrated-top span {
+  #overview.router-overview-framework .ro-semantic-wan-trend .ro-wan-integrated-top span,
+  .router-overview-framework .ro-semantic-wan-trend .ro-wan-integrated-top span {
     min-height: 30px !important;
     border: 0 !important;
     border-left: 2px solid rgba(20, 115, 230, .26) !important;
