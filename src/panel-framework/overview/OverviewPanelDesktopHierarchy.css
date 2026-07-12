@@ -1,6 +1,48 @@
 /* Desktop product hierarchy: keep secondary facts reachable without letting
    three evidence ledgers compete with the WAN judgement surface. */
 @media (min-width: 761px) {
+  #overview.router-overview-framework .ro-desktop-grid.ik-home-layout[data-overview-desktop-workspace] {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1.42fr) minmax(380px, .92fr) !important;
+    grid-template-areas:
+      "kpis kpis"
+      "main side"
+      "bottom bottom" !important;
+    gap: 8px !important;
+    align-items: start !important;
+    min-height: 0 !important;
+  }
+
+  #overview.router-overview-framework .ro-desktop-thin-kpis {
+    grid-area: kpis !important;
+    grid-column: 1 / -1 !important;
+    display: grid !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: relative !important;
+    z-index: 2 !important;
+    height: 38px !important;
+    min-height: 38px !important;
+    max-height: 40px !important;
+    overflow: visible !important;
+  }
+
+  #overview.router-overview-framework .ro-desktop-grid.ik-home-layout > .ro-col.is-main {
+    grid-area: main !important;
+  }
+
+  #overview.router-overview-framework .ro-desktop-grid.ik-home-layout > .ro-col.is-side {
+    grid-area: side !important;
+  }
+
+  #overview.router-overview-framework .ro-desktop-grid.ik-home-layout > .ro-col.is-bottom {
+    grid-area: bottom !important;
+  }
+
+  #overview.router-overview-framework[data-overview-scene-key="resource-full"] .ro-desktop-grid.ik-home-layout {
+    grid-template-columns: minmax(0, 1.34fr) minmax(410px, .98fr) !important;
+  }
+
   #overview.router-overview-framework .ro-desktop-grid[data-overview-desktop-scene="single"] .ro-module[data-overview-density-module="wan-trend"] .ro-wan-integrated-visual {
     grid-template-rows: minmax(clamp(190px, 24vh, 230px), auto) 38px 32px !important;
   }

@@ -182,6 +182,14 @@ function assertNotExists(relPath) {
   }
 }
 
+function assertMaxBytes(relPath, maxBytes) {
+  const filePath = path.join(ROOT, relPath);
+  const size = fs.statSync(filePath).size;
+  if (size > maxBytes) {
+    throw new Error(`${relPath} exceeds ${maxBytes} bytes (found ${size})`);
+  }
+}
+
 function assertMatches(relPath, pattern, label = pattern) {
   const text = readReleaseSurface(relPath);
   if (!pattern.test(text)) {
@@ -761,12 +769,12 @@ function main(argv = process.argv.slice(2)) {
   assertContains('tools/local-predeploy-check.js', "const requiredScenarios = ['single', 'fleet', 'all-offline', 'no-snapshot', 'collection-down', 'resource-full', 'interfaces-down'];");
   assertContains('src/panel-framework/overview/OverviewPanel.css', '@import "./styles/overview-foundation.css";');
   assertContains('src/panel-framework/overview/OverviewPanel.css', '@import "./styles/overview-desktop.css";');
-  assertContains('src/panel-framework/overview/OverviewPanel.css', '@import "./styles/overview-mobile.css";');
   assertContains('src/panel-framework/overview/OverviewPanel.css', '@import "./styles/overview-states.css";');
   assertNotContains('src/panel-framework/overview/OverviewPanel.css', '@media');
+  assertNotContains('src/panel-framework/overview/OverviewPanel.css', 'overview-mobile.css');
+  assertNotExists('src/panel-framework/overview/styles/overview-mobile.css');
   assertContains('src/panel-framework/overview/styles/overview-foundation.css', '--ro-border');
   assertContains('src/panel-framework/overview/styles/overview-desktop.css', '@media (min-width: 761px)');
-  assertContains('src/panel-framework/overview/styles/overview-mobile.css', '@media (max-width');
   assertContains('src/panel-framework/overview/styles/overview-states.css', 'ro-desktop-key-row');
   assertContains('src/panel-framework/overview/styles/overview-states.css', '--ik40-console-page');
   assertContains('src/panel-framework/overview/components/StatusVerdict.tsx', 'export function StatusVerdict');
@@ -792,12 +800,12 @@ function main(argv = process.argv.slice(2)) {
     'StatusHeader.tsx',
     'TrustStrip.tsx',
   ]) assertNotExists(`src/panel-framework/overview/components/${retiredMobileComponent}`);
-  assertContains('src/panel-framework/overview/styles/overview-mobile.css', 'mobile-professional-console-no-glow');
-  assertContains('src/panel-framework/overview/styles/overview-mobile.css', 'mobile-professional-console-final-eof');
-  assertContains('src/panel-framework/overview/styles/overview-mobile.css', 'mobile-phone-landscape-shell');
-  assertContains('src/panel-framework/overview/styles/overview-mobile.css', 'box-shadow: inset 0 -2px 0 #1f2937');
-  assertContains('src/panel-framework/overview/styles/overview-mobile.css', 'border-radius: 14px !important;');
-  assertNotContains('src/panel-framework/overview/styles/overview-mobile.css', 'radial-gradient(circle at 50% 0, rgba(22, 119, 255, .18), transparent 42%)');
+  assertContains('src/panel-framework/overview/components/MobileOverviewStyles.tsx', 'MOBILE_OVERVIEW_STYLE_LAYERS');
+  assertContains('src/panel-framework/overview/components/MobileOverviewStyles.tsx', 'MobileOverviewBaseStyles');
+  assertContains('src/panel-framework/overview/components/MobileOverviewStyles.tsx', 'MobileOverviewIncidentStyles');
+  assertContains('src/panel-framework/overview/components/MobileOverviewStyles.tsx', 'MobileOverviewLandscapeStyles');
+  assertContains('src/panel-framework/overview/components/MobileOverviewStyles.tsx', 'MobileOverviewNavigationStyles');
+  assertMaxBytes('public/assets/framework/style.css', 500000);
   assertNotExists('public/scale-adaptive-patch.js');
   assertNotExists('public/layout-whitespace-patch.js');
   assertNotExists('public/panel-professional-redesign.js');
