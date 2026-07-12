@@ -10439,168 +10439,6 @@ var PanelFramework = function(exports) {
       };
     }).sort((a, b) => (b.tone === "danger" ? 1 : 0) - (a.tone === "danger" ? 1 : 0) || Number(b.title || 0) - Number(a.title || 0)).slice(0, 5);
   }
-  function resourceRows(state) {
-    const metrics = [
-      { id: "cpu", label: "处理器", current: state.facts.resource.cpu, threshold: 85 },
-      { id: "memory", label: "内存", current: state.facts.resource.memory, threshold: 85 },
-      { id: "disk", label: "磁盘", current: state.facts.resource.disk, threshold: 90 }
-    ];
-    return metrics.map((metric) => {
-      const current = toNumber(metric.current);
-      return { id: `resource-${metric.id}`, cells: [`${metric.label} ${formatPercent(current, 1)}`, `阈值${metric.threshold}%`, "持续 6 点/6", `峰值${formatPercent(current, 1)}`], tone: current >= metric.threshold ? "danger" : current >= metric.threshold - 15 ? "warn" : "ok" };
-    });
-  }
-  function resourceChartRows(state) {
-    const metrics = [
-      { id: "cpu", label: "处理器", current: toNumber(state.facts.resource.cpu), threshold: 85 },
-      { id: "memory", label: "内存", current: toNumber(state.facts.resource.memory), threshold: 85 },
-      { id: "disk", label: "磁盘", current: toNumber(state.facts.resource.disk), threshold: 90 }
-    ];
-    return metrics.map((metric) => {
-      const peak = Math.max(metric.current, metric.threshold);
-      return {
-        id: `resource-chart-${metric.id}`,
-        label: metric.label,
-        current: formatPercent(metric.current, 1),
-        currentValue: metric.current,
-        peak: formatPercent(peak, 1),
-        peakValue: peak,
-        mean: formatPercent(Math.max(0, metric.current - 2.5), 1),
-        meanValue: Math.max(0, metric.current - 2.5),
-        threshold: `${metric.threshold}%`,
-        thresholdValue: metric.threshold,
-        window: "最近6点",
-        trust: "实时",
-        tone: metric.current >= metric.threshold ? "danger" : metric.current >= metric.threshold - 15 ? "warn" : "trust",
-        unit: "%"
-      };
-    });
-  }
-  function connectionPressureChartRows(snapshot, state) {
-    const totals2 = trafficTotals(snapshot);
-    const conn = toNumber(state.facts.connections.total);
-    const active = toNumber(state.facts.connections.active);
-    const throughput = Math.max(totals2.up, totals2.down);
-    return [
-      {
-        id: "pressure-connections",
-        label: "连接",
-        current: formatCompact(conn),
-        currentValue: conn,
-        peak: formatCompact(Math.max(conn, conn * 1.12)),
-        peakValue: Math.max(conn, conn * 1.12),
-        mean: formatCompact(conn * 0.76),
-        meanValue: conn * 0.76,
-        threshold: "50K",
-        thresholdValue: 5e4,
-        window: "最近6点",
-        trust: moduleTrust(state),
-        tone: conn > 5e4 ? "danger" : "warn",
-        unit: "conn"
-      },
-      {
-        id: "pressure-active",
-        label: "活动会话",
-        current: formatNumber(active),
-        currentValue: active,
-        peak: formatNumber(Math.max(active, active * 1.18)),
-        peakValue: Math.max(active, active * 1.18),
-        mean: formatNumber(active * 0.7),
-        meanValue: active * 0.7,
-        threshold: "动态",
-        thresholdValue: Math.max(active * 1.3, 1),
-        window: "最近6点",
-        trust: moduleTrust(state),
-        tone: "warn",
-        unit: "session"
-      },
-      trendDatum("pressure-throughput", "接口吞吐", throughput, Math.max(throughput * 1.25, 1), "warn")
-    ];
-  }
-  function resourceRiskRows(state) {
-    const cpu = toNumber(state.facts.resource.cpu);
-    const mem = toNumber(state.facts.resource.memory);
-    const disk = toNumber(state.facts.resource.disk);
-    const overCount = [cpu >= 85, mem >= 85, disk >= 90].filter(Boolean).length;
-    return [
-      { id: "resource-cpu", cells: ["处理器", formatPercent(cpu, 1), "阈值85%", `峰值${formatPercent(cpu, 1)}`], tone: cpu >= 85 ? "warn" : cpu >= 70 ? "trust" : FILLER_TONE },
-      { id: "resource-mem", cells: ["内存", formatPercent(mem, 1), "阈值85%", `峰值${formatPercent(mem, 1)}`], tone: mem >= 85 ? "warn" : mem >= 70 ? "trust" : FILLER_TONE },
-      { id: "resource-disk", cells: ["磁盘", formatPercent(disk, 1), "阈值90%", `峰值${formatPercent(disk, 1)}`], tone: disk >= 90 ? "warn" : disk >= 75 ? "trust" : FILLER_TONE },
-      { id: "resource-over-count", cells: ["越阈项", `${formatNumber(overCount)}/3`, "持续6/6", overCount >= 3 ? "三项同时越阈" : "局部越阈"], tone: overCount >= 3 ? "warn" : "trust" },
-      { id: "resource-conn-risk", cells: ["连接压力", formatCompact(state.facts.connections.total), "活动会话", formatNumber(state.facts.connections.active)], tone: state.facts.connections.total > 5e4 ? "warn" : "trust" },
-      { id: "resource-route-context", cells: ["默认出口", routeLabelText(state), "承载状态", state.facts.route.level === "ok" ? "可承载" : "待确认"], tone: state.facts.route.level },
-      { id: "resource-collect-context", cells: ["采集", state.facts.collection.credibilityLabel, "双通道", state.facts.collection.channelText], tone: state.facts.collection.level },
-      { id: "resource-snapshot-context", cells: ["业务快照", state.facts.freshness.text, "可信度", state.facts.freshness.credibilityLabel], tone: state.facts.freshness.level }
-    ];
-  }
-  function resourceContextRows(snapshot, state) {
-    const ifaceRows = collectInterfaceRows(snapshot);
-    const busiest = ifaceRows.slice().sort((a, b) => toNumber(b.txRate || b.upRate) - toNumber(a.txRate || a.upRate))[0];
-    return [
-      { id: "conn-pressure", cells: ["连接压力", formatCompact(state.facts.connections.total), "连接总量高"], tone: state.facts.connections.total > 5e4 ? "warn" : "trust" },
-      { id: "active-sessions", cells: ["活动会话", formatNumber(state.facts.connections.active), "会话保持压力"], tone: "warn" },
-      { id: "dns-cache", cells: ["DNS缓存", snapshot.dns ? "已采集" : "未采集", "可作为压力伴随证据"], tone: snapshot.dns ? "trust" : "missing" },
-      { id: "interface-throughput", cells: ["接口吞吐", (busiest == null ? void 0 : busiest.name) || "未采集", busiest ? `${formatRate(busiest.txRate || busiest.upRate)} 上行` : "未采集"], tone: busiest ? "warn" : "missing" },
-      { id: "route-resource", cells: ["默认出口判断", routeLabelText(state), state.facts.route.level === "ok" ? "承载正常" : "待确认"], tone: state.facts.route.level },
-      { id: "sample-window", cells: ["样本", "6/6", "趋势可参考"], tone: "trust" },
-      { id: "conn-peak", cells: ["连接峰值", formatCompact(state.facts.connections.total), "峰值与当前同向"], tone: state.facts.connections.total > 5e4 ? "warn" : "trust" },
-      { id: "cache-gap", cells: ["缓存缺口", snapshot.dns ? "可核对" : "未采集", "DNS / 连接压力互证"], tone: snapshot.dns ? "trust" : "missing" }
-    ];
-  }
-  function resourceTop5Rows(snapshot) {
-    var _a;
-    const rows = collectInterfaceRows(snapshot).slice().sort((a, b) => toNumber(b.txRate || b.upRate) - toNumber(a.txRate || a.upRate));
-    const seeds = rows.length ? rows : [
-      { name: "sfp1", txRate: 12e7 },
-      { name: "ether1", txRate: 82e6 },
-      { name: "ether2", txRate: 42e6 },
-      { name: "bridge-lan", txRate: 26e6 },
-      { name: "pppoe-out10", txRate: 12e6 },
-      { name: "pppoe-out20", txRate: 9e6 },
-      { name: "ether3", txRate: 64e5 },
-      { name: "ether4", txRate: 28e5 }
-    ];
-    const max = Math.max(...seeds.map((row) => toNumber(row.txRate || row.upRate || 0)), 1);
-    const ranked = seeds.slice(0, 8).map((row, index) => {
-      const tx = toNumber(row.txRate || row.upRate || 0);
-      const share = Math.round(tx / max * 100);
-      return {
-        id: `top5-${index}`,
-        attrs: { "data-overview-share": String(share), "data-overview-normalized": String(share) },
-        cells: [text(row.name || row.interface, `if-${index + 1}`), formatRate(tx), `${share}%`],
-        title: `接口吞吐 Top5 ${Math.min(index + 1, 5)}/5 / ${formatRate(tx)} / 占比 ${share}%`,
-        tone: index === 0 ? "warn" : "trust"
-      };
-    });
-    const supplemental = [
-      { id: "top5-active-sessions", attrs: { "data-overview-share": "62", "data-overview-normalized": "62" }, cells: ["活动会话", "62%", "会话压力"], title: "资源伴随证据 / 活动会话", tone: "warn" },
-      { id: "top5-dns-cache", attrs: { "data-overview-share": "48", "data-overview-normalized": "48" }, cells: ["DNS缓存", "48%", snapshot.dns ? "已采集" : "未采集"], title: "缓存缺口 / DNS", tone: snapshot.dns ? "trust" : "missing" },
-      { id: "top5-cache-gap", attrs: { "data-overview-share": "42", "data-overview-normalized": "42" }, cells: ["缓存差距", "42%", "连接/DNS"], title: "压力互证", tone: "warn" },
-      { id: "top5-busiest-interface", attrs: { "data-overview-share": "38", "data-overview-normalized": "38" }, cells: ["最忙接口", "38%", String(((_a = ranked[0]) == null ? void 0 : _a.cells[0]) || "未采集")], title: "接口峰值", tone: "warn" }
-    ];
-    return [...ranked, ...supplemental];
-  }
-  function resourceBoundaryRows(snapshot, state) {
-    const recent = latestSuccess(snapshot, state.scenario);
-    return [
-      { id: "resource-boundary-rest", cells: ["REST", restState(snapshot, state).value, recent, restState(snapshot, state).note], tone: restState(snapshot, state).tone },
-      { id: "resource-boundary-ssh", cells: ["SSH", sshState(snapshot, state).value, recent, sshState(snapshot, state).note], tone: sshState(snapshot, state).tone },
-      { id: "resource-boundary-cache", cells: ["业务快照", moduleTrust(state), recent, "资源证据实时"], tone: "trust" },
-      { id: "resource-boundary-terminal", cells: ["终端排行", "二屏", "不抢资源证据", "Top8 延后"], tone: "trust" },
-      { id: "resource-boundary-readonly", cells: ["只读", "不写配置", "只展示阈值", "不推断修复"], tone: "trust" },
-      { id: "resource-boundary-route", cells: ["默认出口", routeLabelText(state), routeBusinessText(state), "资源旁证"], tone: state.facts.route.level },
-      { id: "resource-boundary-sample", cells: ["样本", "6/6", "趋势可参考", "持续窗口"], tone: "trust" },
-      { id: "resource-boundary-failure", cells: ["端点失败", failureText(snapshot, state), statusUpdated(snapshot), "未记录不写 0"], tone: state.facts.failures.count ? "warn" : "trust" }
-    ];
-  }
-  function desktopEvidenceBoundaryRows(snapshot, state) {
-    if (state.scenario === "no-snapshot") return compactRows(noSnapshotReadonlyDegradedRows(snapshot, state), 4);
-    if (state.scenario === "collection-down") return compactRows(threeColumnRows(collectionReadonlyRows(snapshot, state), "desktop-boundary-"), 4);
-    if (state.scenario === "resource-full") return compactRows([...routeRawEvidenceRows(snapshot, state), ...threeColumnRows(resourceBoundaryRows(snapshot, state), "desktop-res-boundary-")], 5);
-    if (state.scenario === "interfaces-down") return compactRows([...routeRawEvidenceRows(snapshot, state), ...threeColumnRows(interfaceBoundaryRows(snapshot, state), "desktop-if-boundary-")], 5);
-    if (state.scenario === "all-offline") return compactRows([...routeRawEvidenceRows(snapshot, state), ...threeColumnRows(allOfflineImpactRows(snapshot, state), "desktop-boundary-")], 5);
-    return compactRows([...routeRawEvidenceRows(snapshot, state), ...normalOpsRows(snapshot, state)], 6);
-  }
   function JudgementChart({ module, rows, kind = "trend" }) {
     const maxValue = Math.max(1, ...rows.map((row) => Math.max(row.currentValue, row.peakValue, row.thresholdValue)));
     const lead = rows[0];
@@ -10954,101 +10792,6 @@ var PanelFramework = function(exports) {
       }
     );
   }
-  function EvidenceChain({ className = "", ...props }) {
-    return /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { ...props, className: `ro-semantic-evidence-chain ${className}`.trim() });
-  }
-  function TerminalRanking({ className = "", ...props }) {
-    return /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { ...props, className: `ro-semantic-terminal-ranking ${className}`.trim() });
-  }
-  function WanTrend({ className = "", ...props }) {
-    return /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { ...props, className: `ro-semantic-wan-trend ${className}`.trim() });
-  }
-  function buildResourceFullDesktopScene(snapshot, state) {
-    const trust = moduleTrust(state);
-    const riskChart = resourceChartRows(state);
-    const pressureRows = compactRows(resourceContextRows(snapshot, state), 8);
-    const top5Rows = resourceTop5Rows(snapshot).slice(0, 8);
-    return {
-      main: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(
-          Module,
-          {
-            title: "最危险项",
-            subtitle: "CPU / 内存 / 磁盘 · 连接压力 / 活动会话 / DNS缓存 · 阈值 / 持续 6 点 / 均值 / 峰值",
-            module: "resource-risk-priority",
-            tone: "danger",
-            trust,
-            headers: ["项", "当前", "阈值", "峰值"],
-            rows: resourceRiskRows(state),
-            minRows: 0,
-            visual: /* @__PURE__ */ jsxRuntimeExports.jsx(VisualStack, { snapshot, state, children: /* @__PURE__ */ jsxRuntimeExports.jsx(ResourcePressureLedgerVisual, { rows: riskChart }) })
-          },
-          "res-risk"
-        )
-      ],
-      side: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "连接压力", subtitle: "连接压力 / 活动会话 / DNS缓存 / 接口", module: "resource-pressure-bars", tone: "warn", trust, headers: ["项目", "当前", "依据"], rows: pressureRows, minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(JudgementChart, { module: "resource-pressure-bars", kind: "pressure", rows: connectionPressureChartRows(snapshot, state) }) }, "res-pressure"),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "接口状态", subtitle: "承载 / 边界", module: "normal-interface-boundary", tone: "trust", trust, headers: ["对象", "当前", "最近", "边界"], rows: compactRows(interfaceBoundaryRows(snapshot, state), 4), minRows: 0 }, "res-interface"),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "采集 / 快照", subtitle: "REST / SSH / 成功", module: "normal-collection-channel", tone: state.facts.collection.level, trust, headers: ["对象", "当前", "依据"], rows: compactRows(threeColumnRows(collectionRows(snapshot, state), "res-col-"), 4), minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(ChannelMatrixVisual, { module: "collection-status", rows: collectionChannelRows(snapshot, state) }) }, "res-collection"),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "默认出口", subtitle: "出口 / 承载 / 优先级", module: "route-raw-facts", tone: state.facts.route.level, trust, headers: ["出口", "承载出口", "优先级", "状态"], rows: compactRows(routeBusinessRows(snapshot, state), 4), minRows: 0 }, "res-route")
-      ],
-      bottom: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "接口吞吐 Top5", subtitle: "接口吞吐 Top5 / 占比 / 资源影响", module: "resource-interface-top5", tone: "warn", trust, headers: ["接口", "速率", "占比"], rows: compactRows(top5Rows, 5), className: "ik-overview-top5-list", minRows: 0 }, "res-top5"),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "最近事件", subtitle: "采集 / 默认出口", module: "normal-ops-ledger", tone: state.facts.collection.level, trust, headers: ["对象", "当前", "依据"], rows: compactRows(normalOpsRows(snapshot, state), 4), minRows: 0 }, "res-events"),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "证据 / 原始字段", subtitle: "默认收起 · 仅用于审计", module: "evidence-boundary", tone: "trust", trust, headers: ["对象", "当前", "依据"], rows: compactRows([...routeRawEvidenceRows(snapshot, state), ...threeColumnRows(resourceBoundaryRows(snapshot, state), "res-boundary-")], 4), minRows: 0, collapsedEvidence: true }, "res-boundary")
-      ]
-    };
-  }
-  function buildNoSnapshotDesktopScene(snapshot, state) {
-    const trust = moduleTrust(state);
-    const businessBoundaryRows = compactRows(noSnapshotBusinessBoundaryRows(snapshot, state), 4);
-    const chainRows = compactRows(noSnapshotChainRows(snapshot, state), 4);
-    const successRows = compactRows(lastSuccessRows(snapshot, state), 4);
-    return {
-      main: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "采集链路", subtitle: "管理面证据 · 不代表业务可用", module: "no-snapshot-summary", tone: "warn", trust, headers: ["通道", "当前", "依据"], rows: chainRows, minRows: 0 }, "ns-collection-chain"),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "业务数据不可判", subtitle: "缺少业务快照 · WAN / 资源 / 终端数值不展示", module: "no-snapshot-module-visibility", tone: "missing", trust, headers: ["对象", "当前", "影响", "处理"], rows: businessBoundaryRows, minRows: 0 }, "ns-business-boundary")
-      ],
-      side: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "恢复线索", subtitle: "最近成功 · 当前状态 · 下次轮询", module: "no-snapshot-recent-success", tone: "trust", trust, headers: ["节点", "当前", "说明"], rows: successRows, minRows: 0 }, "ns-recovery"),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "原始证据", subtitle: "默认收起 · 仅用于审计", module: "evidence-boundary", tone: "trust", trust, headers: ["对象", "当前", "依据"], rows: compactRows(desktopEvidenceBoundaryRows(snapshot, state), 4), minRows: 0, collapsedEvidence: true }, "ns-raw-evidence")
-      ],
-      bottom: []
-    };
-  }
-  function buildCollectionDownDesktopScene(snapshot, state) {
-    moduleTrust(state);
-    const collectionVisual = /* @__PURE__ */ jsxRuntimeExports.jsx(VisualStack, { snapshot, state, children: /* @__PURE__ */ jsxRuntimeExports.jsx(ChannelMatrixVisual, { module: "collection-cache-ledger", rows: collectionChannelRows(snapshot, state) }) });
-    return {
-      main: [/* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "采集证据", subtitle: "通道状态降级 / 数据层状态 / REST 不可达 / SSH 不可用 / 缓存快照 / 失败端点 / 最近成功", module: "collection-channel-ledger", tone: "warn", trust: "缓存快照", headers: ["对象", "当前", "依据"], rows: threeColumnRows(collectionRows(snapshot, state), "c3-"), minRows: 0, visual: collectionVisual }, "col-channel")],
-      side: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "最近成功", subtitle: "上次成功 / 边界", module: "collection-recent-failures", tone: "trust", headers: ["节点", "当前", "说明"], rows: lastSuccessRows(snapshot, state), minRows: 0 }, "col-recent"),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "展示边界", subtitle: "不写配置 / 不推断", module: "collection-cache-boundary", tone: "warn", headers: ["对象", "当前", "依据"], rows: compactRows(threeColumnRows(collectionBoundaryLedgerRows(snapshot, state), "cbl-"), 6), minRows: 0 }, "col-boundary"),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "默认出口", subtitle: "出口 / 承载 / 优先级", module: "collection-route-wan-boundary", tone: state.facts.route.level, headers: ["出口", "网关", "优先级", "状态"], rows: compactRows(routeBusinessRows(snapshot, state), 4), minRows: 0 }, "col-route"),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "WAN线路", subtitle: "参考", module: "wan-lines", tone: state.facts.wan.allOffline ? "danger" : "trust", headers: ["线路", "状态", "承载"], rows: compactRows(wanRows(snapshot, state), 4), minRows: 0 }, "col-wan")
-      ],
-      bottom: [/* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "采集事件", subtitle: "最近成功 / 端点失败 / 默认出口", module: "collection-bottom-events", tone: "trust", headers: ["对象", "当前", "依据"], rows: compactRows(threeColumnRows(collectionReadonlyRows(snapshot, state), "cro-"), 4), minRows: 0 }, "col-events")]
-    };
-  }
-  function buildInterfacesDownDesktopScene(snapshot, state) {
-    const trust = moduleTrust(state);
-    return {
-      main: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "接口转发面", subtitle: "Down 数 / 承载 / 默认出口", module: "interface-forwarding", tone: "danger", trust, headers: ["对象", "当前", "依据"], rows: interfaceRows(snapshot, state), minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(VisualStack, { snapshot, state }) }, "if-forward"),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "默认出口影响", subtitle: "出口 / 承载 / 优先级", module: "route-raw-facts", tone: state.facts.route.level, trust, headers: ["出口", "承载出口", "优先级", "状态"], rows: compactRows(routeBusinessRows(snapshot, state), 4), minRows: 0 }, "if-route")
-      ],
-      side: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "采集面通道", subtitle: "REST / SSH / 快照", module: "interface-collection-channel", tone: state.facts.collection.level, trust, headers: ["对象", "当前", "依据"], rows: threeColumnRows(interfaceCollectionRows(snapshot, state), "ic3-"), minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(ChannelMatrixVisual, { module: "interface-collection-channel", rows: collectionChannelRows(snapshot, state) }) }, "if-collection"),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "承载关系", subtitle: "父接口 / VLAN / PPPoE", module: "interface-relation-carrier", tone: "warn", trust, headers: ["对象", "当前", "依据"], rows: compactRows(threeColumnRows(interfaceRelationRows(snapshot, state), "irc3-"), 5), minRows: 0 }, "if-relation"),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "判断边界", subtitle: "Down / 默认出口 / 采集", module: "interface-forwarding-boundary", tone: "warn", trust, headers: ["对象", "当前", "最近", "边界"], rows: compactRows(interfaceBoundaryRows(snapshot, state), 4), minRows: 0 }, "if-boundary")
-      ],
-      bottom: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "接口事件", subtitle: "最近成功 / 默认出口 / 采集面", module: "interface-page-trust", tone: "trust", trust, headers: ["对象", "当前", "依据"], rows: compactRows(interfacePageTrustRows(snapshot, state), 4), minRows: 0 }, "if-events"),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "终端排行", subtitle: "异常置顶 / 总流量", module: "terminal-ranking", tone: "trust", trust, headers: ["设备", "IP", "流量", "状态"], rows: desktopTerminalRows(snapshot), minRows: 0 }, "if-terminals"),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "证据 / 原始字段", subtitle: "默认收起 · 仅用于审计", module: "evidence-boundary", tone: "trust", trust, headers: ["对象", "当前", "依据"], rows: routeRawEvidenceRows(snapshot, state), minRows: 0, collapsedEvidence: true }, "if-raw")
-      ]
-    };
-  }
   function WanOfflineFocus({ rows, total }) {
     const visibleRows = rows.slice(0, 4);
     const hiddenCount = Math.max(0, rows.length - visibleRows.length);
@@ -11109,24 +10852,194 @@ var PanelFramework = function(exports) {
       ]
     };
   }
-  function buildDesktopOverviewScene(snapshot, state) {
+  function buildCollectionDownDesktopScene(snapshot, state) {
+    moduleTrust(state);
+    const collectionVisual = /* @__PURE__ */ jsxRuntimeExports.jsx(VisualStack, { snapshot, state, children: /* @__PURE__ */ jsxRuntimeExports.jsx(ChannelMatrixVisual, { module: "collection-cache-ledger", rows: collectionChannelRows(snapshot, state) }) });
+    return {
+      main: [/* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "采集证据", subtitle: "通道状态降级 / 数据层状态 / REST 不可达 / SSH 不可用 / 缓存快照 / 失败端点 / 最近成功", module: "collection-channel-ledger", tone: "warn", trust: "缓存快照", headers: ["对象", "当前", "依据"], rows: threeColumnRows(collectionRows(snapshot, state), "c3-"), minRows: 0, visual: collectionVisual }, "col-channel")],
+      side: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "最近成功", subtitle: "上次成功 / 边界", module: "collection-recent-failures", tone: "trust", headers: ["节点", "当前", "说明"], rows: lastSuccessRows(snapshot, state), minRows: 0 }, "col-recent"),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "展示边界", subtitle: "不写配置 / 不推断", module: "collection-cache-boundary", tone: "warn", headers: ["对象", "当前", "依据"], rows: compactRows(threeColumnRows(collectionBoundaryLedgerRows(snapshot, state), "cbl-"), 6), minRows: 0 }, "col-boundary"),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "默认出口", subtitle: "出口 / 承载 / 优先级", module: "collection-route-wan-boundary", tone: state.facts.route.level, headers: ["出口", "网关", "优先级", "状态"], rows: compactRows(routeBusinessRows(snapshot, state), 4), minRows: 0 }, "col-route"),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "WAN线路", subtitle: "参考", module: "wan-lines", tone: state.facts.wan.allOffline ? "danger" : "trust", headers: ["线路", "状态", "承载"], rows: compactRows(wanRows(snapshot, state), 4), minRows: 0 }, "col-wan")
+      ],
+      bottom: [/* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "采集事件", subtitle: "最近成功 / 端点失败 / 默认出口", module: "collection-bottom-events", tone: "trust", headers: ["对象", "当前", "依据"], rows: compactRows(threeColumnRows(collectionReadonlyRows(snapshot, state), "cro-"), 4), minRows: 0 }, "col-events")]
+    };
+  }
+  function resourceRows(state) {
+    const metrics = [
+      { id: "cpu", label: "处理器", current: state.facts.resource.cpu, threshold: 85 },
+      { id: "memory", label: "内存", current: state.facts.resource.memory, threshold: 85 },
+      { id: "disk", label: "磁盘", current: state.facts.resource.disk, threshold: 90 }
+    ];
+    return metrics.map((metric) => {
+      const current = toNumber(metric.current);
+      return { id: `resource-${metric.id}`, cells: [`${metric.label} ${formatPercent(current, 1)}`, `阈值${metric.threshold}%`, "持续 6 点/6", `峰值${formatPercent(current, 1)}`], tone: current >= metric.threshold ? "danger" : current >= metric.threshold - 15 ? "warn" : "ok" };
+    });
+  }
+  function resourceChartRows(state) {
+    const metrics = [
+      { id: "cpu", label: "处理器", current: toNumber(state.facts.resource.cpu), threshold: 85 },
+      { id: "memory", label: "内存", current: toNumber(state.facts.resource.memory), threshold: 85 },
+      { id: "disk", label: "磁盘", current: toNumber(state.facts.resource.disk), threshold: 90 }
+    ];
+    return metrics.map((metric) => {
+      const peak = Math.max(metric.current, metric.threshold);
+      return {
+        id: `resource-chart-${metric.id}`,
+        label: metric.label,
+        current: formatPercent(metric.current, 1),
+        currentValue: metric.current,
+        peak: formatPercent(peak, 1),
+        peakValue: peak,
+        mean: formatPercent(Math.max(0, metric.current - 2.5), 1),
+        meanValue: Math.max(0, metric.current - 2.5),
+        threshold: `${metric.threshold}%`,
+        thresholdValue: metric.threshold,
+        window: "最近6点",
+        trust: "实时",
+        tone: metric.current >= metric.threshold ? "danger" : metric.current >= metric.threshold - 15 ? "warn" : "trust",
+        unit: "%"
+      };
+    });
+  }
+  function connectionPressureChartRows(snapshot, state) {
+    const totals2 = trafficTotals(snapshot);
+    const conn = toNumber(state.facts.connections.total);
+    const active = toNumber(state.facts.connections.active);
+    const throughput = Math.max(totals2.up, totals2.down);
+    return [
+      {
+        id: "pressure-connections",
+        label: "连接",
+        current: formatCompact(conn),
+        currentValue: conn,
+        peak: formatCompact(Math.max(conn, conn * 1.12)),
+        peakValue: Math.max(conn, conn * 1.12),
+        mean: formatCompact(conn * 0.76),
+        meanValue: conn * 0.76,
+        threshold: "50K",
+        thresholdValue: 5e4,
+        window: "最近6点",
+        trust: moduleTrust(state),
+        tone: conn > 5e4 ? "danger" : "warn",
+        unit: "conn"
+      },
+      {
+        id: "pressure-active",
+        label: "活动会话",
+        current: formatNumber(active),
+        currentValue: active,
+        peak: formatNumber(Math.max(active, active * 1.18)),
+        peakValue: Math.max(active, active * 1.18),
+        mean: formatNumber(active * 0.7),
+        meanValue: active * 0.7,
+        threshold: "动态",
+        thresholdValue: Math.max(active * 1.3, 1),
+        window: "最近6点",
+        trust: moduleTrust(state),
+        tone: "warn",
+        unit: "session"
+      },
+      trendDatum("pressure-throughput", "接口吞吐", throughput, Math.max(throughput * 1.25, 1), "warn")
+    ];
+  }
+  function resourceRiskRows(state) {
+    const cpu = toNumber(state.facts.resource.cpu);
+    const mem = toNumber(state.facts.resource.memory);
+    const disk = toNumber(state.facts.resource.disk);
+    const overCount = [cpu >= 85, mem >= 85, disk >= 90].filter(Boolean).length;
+    return [
+      { id: "resource-cpu", cells: ["处理器", formatPercent(cpu, 1), "阈值85%", `峰值${formatPercent(cpu, 1)}`], tone: cpu >= 85 ? "warn" : cpu >= 70 ? "trust" : FILLER_TONE },
+      { id: "resource-mem", cells: ["内存", formatPercent(mem, 1), "阈值85%", `峰值${formatPercent(mem, 1)}`], tone: mem >= 85 ? "warn" : mem >= 70 ? "trust" : FILLER_TONE },
+      { id: "resource-disk", cells: ["磁盘", formatPercent(disk, 1), "阈值90%", `峰值${formatPercent(disk, 1)}`], tone: disk >= 90 ? "warn" : disk >= 75 ? "trust" : FILLER_TONE },
+      { id: "resource-over-count", cells: ["越阈项", `${formatNumber(overCount)}/3`, "持续6/6", overCount >= 3 ? "三项同时越阈" : "局部越阈"], tone: overCount >= 3 ? "warn" : "trust" },
+      { id: "resource-conn-risk", cells: ["连接压力", formatCompact(state.facts.connections.total), "活动会话", formatNumber(state.facts.connections.active)], tone: state.facts.connections.total > 5e4 ? "warn" : "trust" },
+      { id: "resource-route-context", cells: ["默认出口", routeLabelText(state), "承载状态", state.facts.route.level === "ok" ? "可承载" : "待确认"], tone: state.facts.route.level },
+      { id: "resource-collect-context", cells: ["采集", state.facts.collection.credibilityLabel, "双通道", state.facts.collection.channelText], tone: state.facts.collection.level },
+      { id: "resource-snapshot-context", cells: ["业务快照", state.facts.freshness.text, "可信度", state.facts.freshness.credibilityLabel], tone: state.facts.freshness.level }
+    ];
+  }
+  function resourceContextRows(snapshot, state) {
+    const ifaceRows = collectInterfaceRows(snapshot);
+    const busiest = ifaceRows.slice().sort((a, b) => toNumber(b.txRate || b.upRate) - toNumber(a.txRate || a.upRate))[0];
+    return [
+      { id: "conn-pressure", cells: ["连接压力", formatCompact(state.facts.connections.total), "连接总量高"], tone: state.facts.connections.total > 5e4 ? "warn" : "trust" },
+      { id: "active-sessions", cells: ["活动会话", formatNumber(state.facts.connections.active), "会话保持压力"], tone: "warn" },
+      { id: "dns-cache", cells: ["DNS缓存", snapshot.dns ? "已采集" : "未采集", "可作为压力伴随证据"], tone: snapshot.dns ? "trust" : "missing" },
+      { id: "interface-throughput", cells: ["接口吞吐", (busiest == null ? void 0 : busiest.name) || "未采集", busiest ? `${formatRate(busiest.txRate || busiest.upRate)} 上行` : "未采集"], tone: busiest ? "warn" : "missing" },
+      { id: "route-resource", cells: ["默认出口判断", routeLabelText(state), state.facts.route.level === "ok" ? "承载正常" : "待确认"], tone: state.facts.route.level },
+      { id: "sample-window", cells: ["样本", "6/6", "趋势可参考"], tone: "trust" },
+      { id: "conn-peak", cells: ["连接峰值", formatCompact(state.facts.connections.total), "峰值与当前同向"], tone: state.facts.connections.total > 5e4 ? "warn" : "trust" },
+      { id: "cache-gap", cells: ["缓存缺口", snapshot.dns ? "可核对" : "未采集", "DNS / 连接压力互证"], tone: snapshot.dns ? "trust" : "missing" }
+    ];
+  }
+  function resourceTop5Rows(snapshot) {
+    var _a;
+    const rows = collectInterfaceRows(snapshot).slice().sort((a, b) => toNumber(b.txRate || b.upRate) - toNumber(a.txRate || a.upRate));
+    const seeds = rows.length ? rows : [
+      { name: "sfp1", txRate: 12e7 },
+      { name: "ether1", txRate: 82e6 },
+      { name: "ether2", txRate: 42e6 },
+      { name: "bridge-lan", txRate: 26e6 },
+      { name: "pppoe-out10", txRate: 12e6 },
+      { name: "pppoe-out20", txRate: 9e6 },
+      { name: "ether3", txRate: 64e5 },
+      { name: "ether4", txRate: 28e5 }
+    ];
+    const max = Math.max(...seeds.map((row) => toNumber(row.txRate || row.upRate || 0)), 1);
+    const ranked = seeds.slice(0, 8).map((row, index) => {
+      const tx = toNumber(row.txRate || row.upRate || 0);
+      const share = Math.round(tx / max * 100);
+      return {
+        id: `top5-${index}`,
+        attrs: { "data-overview-share": String(share), "data-overview-normalized": String(share) },
+        cells: [text(row.name || row.interface, `if-${index + 1}`), formatRate(tx), `${share}%`],
+        title: `接口吞吐 Top5 ${Math.min(index + 1, 5)}/5 / ${formatRate(tx)} / 占比 ${share}%`,
+        tone: index === 0 ? "warn" : "trust"
+      };
+    });
+    const supplemental = [
+      { id: "top5-active-sessions", attrs: { "data-overview-share": "62", "data-overview-normalized": "62" }, cells: ["活动会话", "62%", "会话压力"], title: "资源伴随证据 / 活动会话", tone: "warn" },
+      { id: "top5-dns-cache", attrs: { "data-overview-share": "48", "data-overview-normalized": "48" }, cells: ["DNS缓存", "48%", snapshot.dns ? "已采集" : "未采集"], title: "缓存缺口 / DNS", tone: snapshot.dns ? "trust" : "missing" },
+      { id: "top5-cache-gap", attrs: { "data-overview-share": "42", "data-overview-normalized": "42" }, cells: ["缓存差距", "42%", "连接/DNS"], title: "压力互证", tone: "warn" },
+      { id: "top5-busiest-interface", attrs: { "data-overview-share": "38", "data-overview-normalized": "38" }, cells: ["最忙接口", "38%", String(((_a = ranked[0]) == null ? void 0 : _a.cells[0]) || "未采集")], title: "接口峰值", tone: "warn" }
+    ];
+    return [...ranked, ...supplemental];
+  }
+  function resourceBoundaryRows(snapshot, state) {
+    const recent = latestSuccess(snapshot, state.scenario);
+    return [
+      { id: "resource-boundary-rest", cells: ["REST", restState(snapshot, state).value, recent, restState(snapshot, state).note], tone: restState(snapshot, state).tone },
+      { id: "resource-boundary-ssh", cells: ["SSH", sshState(snapshot, state).value, recent, sshState(snapshot, state).note], tone: sshState(snapshot, state).tone },
+      { id: "resource-boundary-cache", cells: ["业务快照", moduleTrust(state), recent, "资源证据实时"], tone: "trust" },
+      { id: "resource-boundary-terminal", cells: ["终端排行", "二屏", "不抢资源证据", "Top8 延后"], tone: "trust" },
+      { id: "resource-boundary-readonly", cells: ["只读", "不写配置", "只展示阈值", "不推断修复"], tone: "trust" },
+      { id: "resource-boundary-route", cells: ["默认出口", routeLabelText(state), routeBusinessText(state), "资源旁证"], tone: state.facts.route.level },
+      { id: "resource-boundary-sample", cells: ["样本", "6/6", "趋势可参考", "持续窗口"], tone: "trust" },
+      { id: "resource-boundary-failure", cells: ["端点失败", failureText(snapshot, state), statusUpdated(snapshot), "未记录不写 0"], tone: state.facts.failures.count ? "warn" : "trust" }
+    ];
+  }
+  function desktopEvidenceBoundaryRows(snapshot, state) {
+    if (state.scenario === "no-snapshot") return compactRows(noSnapshotReadonlyDegradedRows(snapshot, state), 4);
+    if (state.scenario === "collection-down") return compactRows(threeColumnRows(collectionReadonlyRows(snapshot, state), "desktop-boundary-"), 4);
+    if (state.scenario === "resource-full") return compactRows([...routeRawEvidenceRows(snapshot, state), ...threeColumnRows(resourceBoundaryRows(snapshot, state), "desktop-res-boundary-")], 5);
+    if (state.scenario === "interfaces-down") return compactRows([...routeRawEvidenceRows(snapshot, state), ...threeColumnRows(interfaceBoundaryRows(snapshot, state), "desktop-if-boundary-")], 5);
+    if (state.scenario === "all-offline") return compactRows([...routeRawEvidenceRows(snapshot, state), ...threeColumnRows(allOfflineImpactRows(snapshot, state), "desktop-boundary-")], 5);
+    return compactRows([...routeRawEvidenceRows(snapshot, state), ...normalOpsRows(snapshot, state)], 6);
+  }
+  function EvidenceChain({ className = "", ...props }) {
+    return /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { ...props, className: `ro-semantic-evidence-chain ${className}`.trim() });
+  }
+  function TerminalRanking({ className = "", ...props }) {
+    return /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { ...props, className: `ro-semantic-terminal-ranking ${className}`.trim() });
+  }
+  function WanTrend({ className = "", ...props }) {
+    return /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { ...props, className: `ro-semantic-wan-trend ${className}`.trim() });
+  }
+  function buildDefaultDesktopScene(snapshot, state) {
     const trust = moduleTrust(state);
     const isFleet = state.scenario === "fleet";
-    if (state.scenario === "no-snapshot") {
-      return buildNoSnapshotDesktopScene(snapshot, state);
-    }
-    if (state.scenario === "resource-full") {
-      return buildResourceFullDesktopScene(snapshot, state);
-    }
-    if (state.scenario === "collection-down") {
-      return buildCollectionDownDesktopScene(snapshot, state);
-    }
-    if (state.scenario === "interfaces-down") {
-      return buildInterfacesDownDesktopScene(snapshot, state);
-    }
-    if (state.scenario === "all-offline") {
-      return buildAllOfflineDesktopScene(snapshot, state);
-    }
     const trafficChartRowsData = trafficChartRows(snapshot, state);
     const networkVisual = /* @__PURE__ */ jsxRuntimeExports.jsx(DesktopWanIntegratedVisual, { snapshot, state, rows: trafficChartRowsData });
     const routeRowsCompact = compactRows(routeFactRows(snapshot, state), 4);
@@ -11154,6 +11067,94 @@ var PanelFramework = function(exports) {
         /* @__PURE__ */ jsxRuntimeExports.jsx(EvidenceChain, { title: "证据 / 原始字段", subtitle: "默认收起 · 业务解释优先", module: "evidence-boundary", tone: "trust", trust, headers: ["对象", "当前", "依据"], rows: compactRows(desktopEvidenceBoundaryRows(snapshot, state), 4), minRows: 0, collapsedEvidence: true }, "compact-boundary")
       ]
     };
+  }
+  function buildInterfacesDownDesktopScene(snapshot, state) {
+    const trust = moduleTrust(state);
+    return {
+      main: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "接口转发面", subtitle: "Down 数 / 承载 / 默认出口", module: "interface-forwarding", tone: "danger", trust, headers: ["对象", "当前", "依据"], rows: interfaceRows(snapshot, state), minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(VisualStack, { snapshot, state }) }, "if-forward"),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "默认出口影响", subtitle: "出口 / 承载 / 优先级", module: "route-raw-facts", tone: state.facts.route.level, trust, headers: ["出口", "承载出口", "优先级", "状态"], rows: compactRows(routeBusinessRows(snapshot, state), 4), minRows: 0 }, "if-route")
+      ],
+      side: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "采集面通道", subtitle: "REST / SSH / 快照", module: "interface-collection-channel", tone: state.facts.collection.level, trust, headers: ["对象", "当前", "依据"], rows: threeColumnRows(interfaceCollectionRows(snapshot, state), "ic3-"), minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(ChannelMatrixVisual, { module: "interface-collection-channel", rows: collectionChannelRows(snapshot, state) }) }, "if-collection"),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "承载关系", subtitle: "父接口 / VLAN / PPPoE", module: "interface-relation-carrier", tone: "warn", trust, headers: ["对象", "当前", "依据"], rows: compactRows(threeColumnRows(interfaceRelationRows(snapshot, state), "irc3-"), 5), minRows: 0 }, "if-relation"),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "判断边界", subtitle: "Down / 默认出口 / 采集", module: "interface-forwarding-boundary", tone: "warn", trust, headers: ["对象", "当前", "最近", "边界"], rows: compactRows(interfaceBoundaryRows(snapshot, state), 4), minRows: 0 }, "if-boundary")
+      ],
+      bottom: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "接口事件", subtitle: "最近成功 / 默认出口 / 采集面", module: "interface-page-trust", tone: "trust", trust, headers: ["对象", "当前", "依据"], rows: compactRows(interfacePageTrustRows(snapshot, state), 4), minRows: 0 }, "if-events"),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "终端排行", subtitle: "异常置顶 / 总流量", module: "terminal-ranking", tone: "trust", trust, headers: ["设备", "IP", "流量", "状态"], rows: desktopTerminalRows(snapshot), minRows: 0 }, "if-terminals"),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "证据 / 原始字段", subtitle: "默认收起 · 仅用于审计", module: "evidence-boundary", tone: "trust", trust, headers: ["对象", "当前", "依据"], rows: routeRawEvidenceRows(snapshot, state), minRows: 0, collapsedEvidence: true }, "if-raw")
+      ]
+    };
+  }
+  function buildNoSnapshotDesktopScene(snapshot, state) {
+    const trust = moduleTrust(state);
+    const businessBoundaryRows = compactRows(noSnapshotBusinessBoundaryRows(snapshot, state), 4);
+    const chainRows = compactRows(noSnapshotChainRows(snapshot, state), 4);
+    const successRows = compactRows(lastSuccessRows(snapshot, state), 4);
+    return {
+      main: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "采集链路", subtitle: "管理面证据 · 不代表业务可用", module: "no-snapshot-summary", tone: "warn", trust, headers: ["通道", "当前", "依据"], rows: chainRows, minRows: 0 }, "ns-collection-chain"),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "业务数据不可判", subtitle: "缺少业务快照 · WAN / 资源 / 终端数值不展示", module: "no-snapshot-module-visibility", tone: "missing", trust, headers: ["对象", "当前", "影响", "处理"], rows: businessBoundaryRows, minRows: 0 }, "ns-business-boundary")
+      ],
+      side: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "恢复线索", subtitle: "最近成功 · 当前状态 · 下次轮询", module: "no-snapshot-recent-success", tone: "trust", trust, headers: ["节点", "当前", "说明"], rows: successRows, minRows: 0 }, "ns-recovery"),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "原始证据", subtitle: "默认收起 · 仅用于审计", module: "evidence-boundary", tone: "trust", trust, headers: ["对象", "当前", "依据"], rows: compactRows(desktopEvidenceBoundaryRows(snapshot, state), 4), minRows: 0, collapsedEvidence: true }, "ns-raw-evidence")
+      ],
+      bottom: []
+    };
+  }
+  function buildResourceFullDesktopScene(snapshot, state) {
+    const trust = moduleTrust(state);
+    const riskChart = resourceChartRows(state);
+    const pressureRows = compactRows(resourceContextRows(snapshot, state), 8);
+    const top5Rows = resourceTop5Rows(snapshot).slice(0, 8);
+    return {
+      main: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(
+          Module,
+          {
+            title: "最危险项",
+            subtitle: "CPU / 内存 / 磁盘 · 连接压力 / 活动会话 / DNS缓存 · 阈值 / 持续 6 点 / 均值 / 峰值",
+            module: "resource-risk-priority",
+            tone: "danger",
+            trust,
+            headers: ["项", "当前", "阈值", "峰值"],
+            rows: resourceRiskRows(state),
+            minRows: 0,
+            visual: /* @__PURE__ */ jsxRuntimeExports.jsx(VisualStack, { snapshot, state, children: /* @__PURE__ */ jsxRuntimeExports.jsx(ResourcePressureLedgerVisual, { rows: riskChart }) })
+          },
+          "res-risk"
+        )
+      ],
+      side: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "连接压力", subtitle: "连接压力 / 活动会话 / DNS缓存 / 接口", module: "resource-pressure-bars", tone: "warn", trust, headers: ["项目", "当前", "依据"], rows: pressureRows, minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(JudgementChart, { module: "resource-pressure-bars", kind: "pressure", rows: connectionPressureChartRows(snapshot, state) }) }, "res-pressure"),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "接口状态", subtitle: "承载 / 边界", module: "normal-interface-boundary", tone: "trust", trust, headers: ["对象", "当前", "最近", "边界"], rows: compactRows(interfaceBoundaryRows(snapshot, state), 4), minRows: 0 }, "res-interface"),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "采集 / 快照", subtitle: "REST / SSH / 成功", module: "normal-collection-channel", tone: state.facts.collection.level, trust, headers: ["对象", "当前", "依据"], rows: compactRows(threeColumnRows(collectionRows(snapshot, state), "res-col-"), 4), minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(ChannelMatrixVisual, { module: "collection-status", rows: collectionChannelRows(snapshot, state) }) }, "res-collection"),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "默认出口", subtitle: "出口 / 承载 / 优先级", module: "route-raw-facts", tone: state.facts.route.level, trust, headers: ["出口", "承载出口", "优先级", "状态"], rows: compactRows(routeBusinessRows(snapshot, state), 4), minRows: 0 }, "res-route")
+      ],
+      bottom: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "接口吞吐 Top5", subtitle: "接口吞吐 Top5 / 占比 / 资源影响", module: "resource-interface-top5", tone: "warn", trust, headers: ["接口", "速率", "占比"], rows: compactRows(top5Rows, 5), className: "ik-overview-top5-list", minRows: 0 }, "res-top5"),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "最近事件", subtitle: "采集 / 默认出口", module: "normal-ops-ledger", tone: state.facts.collection.level, trust, headers: ["对象", "当前", "依据"], rows: compactRows(normalOpsRows(snapshot, state), 4), minRows: 0 }, "res-events"),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "证据 / 原始字段", subtitle: "默认收起 · 仅用于审计", module: "evidence-boundary", tone: "trust", trust, headers: ["对象", "当前", "依据"], rows: compactRows([...routeRawEvidenceRows(snapshot, state), ...threeColumnRows(resourceBoundaryRows(snapshot, state), "res-boundary-")], 4), minRows: 0, collapsedEvidence: true }, "res-boundary")
+      ]
+    };
+  }
+  function buildDesktopOverviewScene(snapshot, state) {
+    switch (state.scenario) {
+      case "no-snapshot":
+        return buildNoSnapshotDesktopScene(snapshot, state);
+      case "resource-full":
+        return buildResourceFullDesktopScene(snapshot, state);
+      case "collection-down":
+        return buildCollectionDownDesktopScene(snapshot, state);
+      case "interfaces-down":
+        return buildInterfacesDownDesktopScene(snapshot, state);
+      case "all-offline":
+        return buildAllOfflineDesktopScene(snapshot, state);
+      default:
+        return buildDefaultDesktopScene(snapshot, state);
+    }
   }
   function nextAction(state) {
     switch (state.scenario) {
