@@ -778,11 +778,20 @@ function main(argv = process.argv.slice(2)) {
   assertContains('src/panel-framework/overview/desktopOverviewScenes.tsx', '<WanTrend key="compact-network"');
   assertContains('src/panel-framework/overview/desktopOverviewScenes.tsx', '<EvidenceChain key="compact-boundary"');
   assertContains('src/panel-framework/overview/desktopOverviewScenes.tsx', '<TerminalRanking key="compact-terminals"');
-  assertContains('src/panel-framework/overview/components/IncidentHero.tsx', 'WAN 采样趋势');
+  assertContains('src/panel-framework/overview/components/MobileOverviewDecision.tsx', 'WAN 趋势');
   assertContains('src/panel-framework/overview/desktopOverviewScenes.tsx', 'WAN 采样趋势');
   assertContains('src/panel-framework/overview/mobileOverviewModel.ts', '通道可读');
-  assertNotContains('src/panel-framework/overview/components/IncidentHero.tsx', 'WAN 实时趋势');
+  assertNotContains('src/panel-framework/overview/components/MobileOverviewDecision.tsx', 'WAN 实时趋势');
   assertNotContains('src/panel-framework/overview/desktopOverviewScenes.tsx', 'WAN 实时趋势');
+  for (const retiredMobileComponent of [
+    'CoreMetricRail.tsx',
+    'HomeSurface.tsx',
+    'IncidentHero.tsx',
+    'JudgementStrip.tsx',
+    'MobileOverviewSections.tsx',
+    'StatusHeader.tsx',
+    'TrustStrip.tsx',
+  ]) assertNotExists(`src/panel-framework/overview/components/${retiredMobileComponent}`);
   assertContains('src/panel-framework/overview/styles/overview-mobile.css', 'mobile-professional-console-no-glow');
   assertContains('src/panel-framework/overview/styles/overview-mobile.css', 'mobile-professional-console-final-eof');
   assertContains('src/panel-framework/overview/styles/overview-mobile.css', 'mobile-phone-landscape-shell');

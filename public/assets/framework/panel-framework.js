@@ -13588,7 +13588,7 @@ var PanelFramework = function(exports) {
                 className: "ik-mobile-line-chart",
                 viewBox: `0 0 312 ${Math.max(plot.viewHeight, 76)}`,
                 role: "img",
-                "aria-label": `${chart.windowText} WAN 实时趋势，当前 ${chart.currentLabel}，峰值 ${chart.peakLabel}`,
+                "aria-label": `${chart.windowText} WAN 采样趋势，当前 ${chart.currentLabel}，峰值 ${chart.peakLabel}`,
                 "data-overview-mobile-v1012-product-chart": "window-current-peak-threshold-sample-breach",
                 "data-overview-mobile-v1045-product-chart-decision": "window-current-peak-threshold-sample-anomaly-source",
                 "data-overview-mobile-v1057-chart-plot-model": "view-model-svg-points-threshold-peak-breach",
