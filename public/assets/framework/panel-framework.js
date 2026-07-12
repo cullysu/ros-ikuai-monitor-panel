@@ -10963,45 +10963,6 @@ var PanelFramework = function(exports) {
   function WanTrend({ className = "", ...props }) {
     return /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { ...props, className: `ro-semantic-wan-trend ${className}`.trim() });
   }
-  function WanOfflineFocus({ rows, total }) {
-    const visibleRows = rows.slice(0, 4);
-    const hiddenCount = Math.max(0, rows.length - visibleRows.length);
-    return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ro-wan-offline-focus", "data-overview-wan-offline-focus": "summary-top-objects-details-deferred", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ro-wan-offline-verdict", "aria-label": "WAN 全离线判断", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: "线路状态" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("b", { children: [
-            "0/",
-            total,
-            " 在线"
-          ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: "全部出口离线" })
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: "默认出口" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: "未承载" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: "活动默认路由 0" })
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: "速率" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: "无有效样本" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: "不展示 0 B/s" })
-        ] })
-      ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ro-wan-offline-objects", "aria-label": "优先核对的离线线路", children: [
-        visibleRows.map((row) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { "data-overview-wan-detail-row": true, "data-tone": row.tone || "danger", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "ro-wan-offline-object", children: row.cells[0] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: row.cells[1] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: row.cells[2] })
-        ] }, row.id)),
-        hiddenCount > 0 ? /* @__PURE__ */ jsxRuntimeExports.jsxs("p", { children: [
-          "其余 ",
-          hiddenCount,
-          " 条线路在详情中"
-        ] }) : null
-      ] })
-    ] });
-  }
   function buildResourceFullDesktopScene(snapshot, state) {
     const trust = moduleTrust(state);
     const riskChart = resourceChartRows(state);
@@ -11088,6 +11049,66 @@ var PanelFramework = function(exports) {
       ]
     };
   }
+  function WanOfflineFocus({ rows, total }) {
+    const visibleRows = rows.slice(0, 4);
+    const hiddenCount = Math.max(0, rows.length - visibleRows.length);
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ro-wan-offline-focus", "data-overview-wan-offline-focus": "summary-top-objects-details-deferred", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ro-wan-offline-verdict", "aria-label": "WAN 全离线判断", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: "线路状态" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("b", { children: [
+            "0/",
+            total,
+            " 在线"
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: "全部出口离线" })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: "默认出口" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: "未承载" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: "活动默认路由 0" })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: "速率" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: "无有效样本" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: "不展示 0 B/s" })
+        ] })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ro-wan-offline-objects", "aria-label": "优先核对的离线线路", children: [
+        visibleRows.map((row) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { "data-overview-wan-detail-row": true, "data-tone": row.tone || "danger", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "ro-wan-offline-object", children: row.cells[0] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: row.cells[1] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: row.cells[2] })
+        ] }, row.id)),
+        hiddenCount > 0 ? /* @__PURE__ */ jsxRuntimeExports.jsxs("p", { children: [
+          "其余 ",
+          hiddenCount,
+          " 条线路在详情中"
+        ] }) : null
+      ] })
+    ] });
+  }
+  function buildAllOfflineDesktopScene(snapshot, state) {
+    const trust = moduleTrust(state);
+    const offlineRows = wanRows(snapshot, state);
+    const totalWan2 = Math.max(state.facts.wan.total, offlineRows.length);
+    return {
+      main: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "WAN 全离线", subtitle: `0/${totalWan2} 在线 · 默认出口不可承载`, module: "wan-offline-bars", tone: "danger", trust, headers: ["线路", "状态", "承载"], rows: offlineRows, minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(WanOfflineFocus, { rows: offlineRows, total: totalWan2 }), collapsed: true }, "ao-wan"),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "默认出口判断", subtitle: "出口 / 承载 / 优先级", module: "wan-route-ledger", tone: state.facts.route.level, trust, headers: ["出口", "网关", "优先级", "状态"], rows: routeBusinessRows(snapshot, state), minRows: 0 }, "ao-route")
+      ],
+      side: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "WAN连续性", subtitle: `0/${totalWan2} 在线 · 默认路由异常`, module: "wan-offline-continuity", tone: "danger", trust, headers: ["字段", "当前", "依据"], rows: compactRows(wanContinuityRows(state), 4), minRows: 0, collapsed: true }, "ao-continuity"),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "采集通道", subtitle: "REST / SSH / 快照", module: "collection-status", tone: state.facts.collection.level, trust, headers: ["对象", "当前", "依据"], rows: threeColumnRows(collectionRows(snapshot, state), "ao3-"), minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(ChannelMatrixVisual, { module: "collection-status", rows: collectionChannelRows(snapshot, state) }), collapsed: true }, "ao-collection"),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "业务影响", subtitle: "默认路由 / 速率不展示", module: "wan-offline-impact-boundary", tone: "warn", trust, headers: ["对象", "当前", "依据"], rows: compactRows(threeColumnRows(allOfflineImpactRows(snapshot, state), "aoi-"), 5), minRows: 0 }, "ao-impact")
+      ],
+      bottom: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "接口 / WAN 边界", subtitle: "接口承载 / 默认出口", module: "wan-offline-bottom-interface", tone: "warn", trust, headers: ["对象", "当前", "最近", "边界"], rows: compactRows(interfaceBoundaryRows(snapshot, state), 4), minRows: 0 }, "ao-interface"),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "采集事件", subtitle: "REST / SSH / 最近成功", module: "wan-offline-bottom-events", tone: state.facts.collection.level, trust, headers: ["对象", "当前", "依据"], rows: compactRows(normalOpsRows(snapshot, state), 4), minRows: 0 }, "ao-events"),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "证据 / 原始字段", subtitle: "默认收起 · 仅用于审计", module: "evidence-boundary", tone: "trust", trust, headers: ["对象", "当前", "依据"], rows: routeRawEvidenceRows(snapshot, state), minRows: 0, collapsedEvidence: true }, "ao-raw")
+      ]
+    };
+  }
   function buildDesktopOverviewScene(snapshot, state) {
     const trust = moduleTrust(state);
     const isFleet = state.scenario === "fleet";
@@ -11104,24 +11125,7 @@ var PanelFramework = function(exports) {
       return buildInterfacesDownDesktopScene(snapshot, state);
     }
     if (state.scenario === "all-offline") {
-      const offlineRows = wanRows(snapshot, state);
-      const totalWan2 = Math.max(state.facts.wan.total, offlineRows.length);
-      return {
-        main: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "WAN 全离线", subtitle: `0/${totalWan2} 在线 · 默认出口不可承载`, module: "wan-offline-bars", tone: "danger", trust, headers: ["线路", "状态", "承载"], rows: offlineRows, minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(WanOfflineFocus, { rows: offlineRows, total: totalWan2 }), collapsed: true }, "ao-wan"),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "默认出口判断", subtitle: "出口 / 承载 / 优先级", module: "wan-route-ledger", tone: state.facts.route.level, trust, headers: ["出口", "网关", "优先级", "状态"], rows: routeBusinessRows(snapshot, state), minRows: 0 }, "ao-route")
-        ],
-        side: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "WAN连续性", subtitle: `0/${totalWan2} 在线 · 默认路由异常`, module: "wan-offline-continuity", tone: "danger", trust, headers: ["字段", "当前", "依据"], rows: compactRows(wanContinuityRows(state), 4), minRows: 0, collapsed: true }, "ao-continuity"),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "采集通道", subtitle: "REST / SSH / 快照", module: "collection-status", tone: state.facts.collection.level, trust, headers: ["对象", "当前", "依据"], rows: threeColumnRows(collectionRows(snapshot, state), "ao3-"), minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(ChannelMatrixVisual, { module: "collection-status", rows: collectionChannelRows(snapshot, state) }), collapsed: true }, "ao-collection"),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "业务影响", subtitle: "默认路由 / 速率不展示", module: "wan-offline-impact-boundary", tone: "warn", trust, headers: ["对象", "当前", "依据"], rows: compactRows(threeColumnRows(allOfflineImpactRows(snapshot, state), "aoi-"), 5), minRows: 0 }, "ao-impact")
-        ],
-        bottom: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "接口 / WAN 边界", subtitle: "接口承载 / 默认出口", module: "wan-offline-bottom-interface", tone: "warn", trust, headers: ["对象", "当前", "最近", "边界"], rows: compactRows(interfaceBoundaryRows(snapshot, state), 4), minRows: 0 }, "ao-interface"),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "采集事件", subtitle: "REST / SSH / 最近成功", module: "wan-offline-bottom-events", tone: state.facts.collection.level, trust, headers: ["对象", "当前", "依据"], rows: compactRows(normalOpsRows(snapshot, state), 4), minRows: 0 }, "ao-events"),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "证据 / 原始字段", subtitle: "默认收起 · 仅用于审计", module: "evidence-boundary", tone: "trust", trust, headers: ["对象", "当前", "依据"], rows: routeRawEvidenceRows(snapshot, state), minRows: 0, collapsedEvidence: true }, "ao-raw")
-        ]
-      };
+      return buildAllOfflineDesktopScene(snapshot, state);
     }
     const trafficChartRowsData = trafficChartRows(snapshot, state);
     const networkVisual = /* @__PURE__ */ jsxRuntimeExports.jsx(DesktopWanIntegratedVisual, { snapshot, state, rows: trafficChartRowsData });
