@@ -95,7 +95,6 @@ export function SupportingList({ model }: { model: MobileOverviewModel }) {
       data-overview-mobile-v1070-grouped-surface="separator-only-status-list-no-card-stack"
       data-overview-mobile-v1080-surface="one-supporting-list-no-duplicate-status-ledger"
       data-overview-mobile-supporting-surface="detail-entry-evidence-below-primary-task"
-      data-overview-mobile-evidence-policy="first-screen-summary-only-rows-deferred"
       data-overview-mobile-detail-expanded={expanded ? "true" : "false"}
       style={listStyle}
     >
@@ -105,7 +104,6 @@ export function SupportingList({ model }: { model: MobileOverviewModel }) {
         data-overview-mobile-rank-list={model.surface.rankListKind}
         data-overview-mobile-v420-list="native-router-list"
         data-overview-mobile-v240-list={model.surface.v240ListKind}
-        data-overview-mobile-supporting-list="detail-entry-below-primary-task"
         data-overview-mobile-impact-scope-line={`${model.impactScope.id}:${model.impactScope.plane}`}
         data-overview-mobile-detail-expanded={expanded ? "true" : "false"}
       >
@@ -117,7 +115,6 @@ export function SupportingList({ model }: { model: MobileOverviewModel }) {
         <button
           className={`ik-mobile-detail-entry ${toneClass(model.impactScope.tone)}`}
           data-overview-mobile-detail-entry="evidence-ranking-drilldown"
-          data-overview-mobile-detail-count={rows.length}
           aria-controls="mobile-supporting-detail-rows"
           aria-expanded={expanded}
           onClick={() => setExpanded((value) => !value)}

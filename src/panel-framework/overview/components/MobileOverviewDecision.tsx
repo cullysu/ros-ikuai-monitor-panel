@@ -193,7 +193,6 @@ export function PrimaryDecision({ model }: { model: MobileOverviewModel }) {
       data-overview-mobile-visual-kind={model.hero.visualKind}
       data-overview-mobile-hero-ranking-policy={model.appHomeContract.rankingPolicy}
       data-overview-mobile-v1065-normal-hero={model.priority === "normal" ? "chart-first-no-promo-headline" : undefined}
-      data-overview-mobile-decision-card="one-conclusion-one-impact-one-next-step"
       data-overview-primary-conclusion="true"
     >
       <div className="ik-mobile-decision-head">
@@ -203,7 +202,7 @@ export function PrimaryDecision({ model }: { model: MobileOverviewModel }) {
       </div>
       <DecisionVisual model={model} />
       {model.priority === "normal" ? (
-        <div className={`ik-mobile-next-step ${action.tone}`} data-overview-mobile-next-step="normal-drilldown">
+        <div className={`ik-mobile-next-step ${action.tone}`}>
           <span>下一步</span>
           <b>{action.value}</b>
           <em>{action.note}</em>

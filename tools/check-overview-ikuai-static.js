@@ -147,6 +147,36 @@ includesAll(mobile, [
   'activeTab === "home"',
   '<MobileOverviewTabView',
 ], 'mobile app shell');
+const mobileContractCount = new Set(mobile.match(/\bdata-overview-[\w-]+/g) || []).size;
+if (mobileContractCount > 28) fail('mobile home contract budget', `expected <=28 attributes, found ${mobileContractCount}`);
+const mobileDecisionContractCount = new Set(mobileDecision.match(/\bdata-overview-[\w-]+/g) || []).size;
+if (mobileDecisionContractCount > 42) fail('mobile decision contract budget', `expected <=42 attributes, found ${mobileDecisionContractCount}`);
+const mobileSectionsContractCount = new Set(mobileSections.match(/\bdata-overview-[\w-]+/g) || []).size;
+if (mobileSectionsContractCount > 38) fail('mobile sections contract budget', `expected <=38 attributes, found ${mobileSectionsContractCount}`);
+excludesAll(mobile, [
+  'data-overview-mobile-home-version',
+  'data-overview-mobile-no-kpi-card-grid',
+  'data-overview-mobile-no-red-orange',
+  'data-overview-mobile-no-table-visual',
+  'data-overview-mobile-no-red-orange-blocks',
+  'data-overview-mobile-layout-contract',
+  'data-overview-mobile-first-question',
+  'data-overview-mobile-no-snapshot-no-rate-placeholder',
+  'data-overview-mobile-app-question',
+  'data-overview-mobile-app-trust-boundary',
+  'data-overview-mobile-app-ranking-policy',
+  'data-overview-mobile-app-abnormal-ia',
+  'data-overview-mobile-app-terminal-ranking-state',
+], 'mobile home retired probe cleanup');
+excludesAll(mobileDecision, [
+  'data-overview-mobile-decision-card',
+  'data-overview-mobile-next-step',
+], 'mobile decision retired probe cleanup');
+excludesAll(mobileSections, [
+  'data-overview-mobile-evidence-policy',
+  'data-overview-mobile-supporting-list',
+  'data-overview-mobile-detail-count',
+], 'mobile sections retired probe cleanup');
 includesAll(mobileModel, ['网络可用', '外网不可用', '业务数据不可判', '采集不完整', '资源过载', '接口异常'], 'mobile factual verdict copy');
 includesAll(mobileSections, ['export function DeviceBar', 'export function CoreFacts', 'export function SupportingList', 'aria-expanded'], 'mobile semantic sections');
 
