@@ -46,6 +46,7 @@ jobs:
       - name: TypeScript contract check
         run: npm run check:types
 
+      # Keep scenario ownership and mobile-home contracts in the required CI path.
       - name: Overview architecture contracts
         run: |
           node tools/check-overview-architecture.js
