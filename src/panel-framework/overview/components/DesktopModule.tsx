@@ -24,7 +24,7 @@ export function Module({ title, subtitle, module, tone = "trust", headers, rows,
   };
   const showTrustTag = Boolean(
     trust
-    && trust !== "实时"
+    && trust !== "当前采样"
     && /^(wan-trend|wan-offline-bars|resource-risk-priority|collection-channel-ledger|no-snapshot-summary|interface-forwarding|normal-collection-channel|collection-status)$/.test(module),
   );
   return (

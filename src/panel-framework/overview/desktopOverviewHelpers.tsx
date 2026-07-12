@@ -75,7 +75,7 @@ export interface ModuleProps {
   tone?: OverviewTone;
   headers: string[];
   rows: LedgerRow[];
-  trust?: "实时" | "缓存快照" | "链路可参考";
+  trust?: "当前采样" | "缓存快照" | "链路可参考";
   className?: string;
   minRows?: number;
   visual?: ReactNode;
@@ -269,7 +269,7 @@ export function restState(snapshot: OverviewRawSnapshot, state: OverviewDerivedS
   if (snapshot.meta?.realtimeError || snapshot.meta?.slowRestError || state.scenario === "collection-down") {
     return { value: "待确认", tone: "warn", note: businessErrorNote(snapshot.meta?.realtimeError || snapshot.meta?.slowRestError, "当前使用缓存") };
   }
-  return { value: stripChannelPrefix(state.facts.collection.restLabel, "REST") || "可用", tone: "ok", note: "实时快照可用" };
+  return { value: stripChannelPrefix(state.facts.collection.restLabel, "REST") || "可用", tone: "ok", note: "当前快照可用" };
 }
 
 export function sshState(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): { value: string; tone: OverviewTone; note: string } {
@@ -327,10 +327,10 @@ export function topbarNoteStyle(role: string): CSSProperties | undefined {
 }
 
 
-export function moduleTrust(state: OverviewDerivedState): "实时" | "缓存快照" | "链路可参考" {
+export function moduleTrust(state: OverviewDerivedState): "当前采样" | "缓存快照" | "链路可参考" {
   if (state.scenario === "no-snapshot") return "链路可参考";
   if (state.scenario === "collection-down" || state.scenario === "interfaces-down" || state.facts.freshness.history || state.facts.collection.dataStale) return "缓存快照";
-  return "实时";
+  return "当前采样";
 }
 
 export function moduleChartType(module: string): "line" | "bar" | "matrix" | "status" | "timeline" {

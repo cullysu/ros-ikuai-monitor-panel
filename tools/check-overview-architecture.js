@@ -468,6 +468,11 @@ assert(
   "desktopOverviewHelpers.tsx must consume the RouterOS presentation view model"
 );
 assert(
+  desktopHelpers.includes('return "当前采样";') &&
+    !desktopHelpers.includes('return "实时";'),
+  "Desktop evidence modules must label healthy observations as current samples, not realtime guarantees"
+);
+assert(
   lines(routerOsNetworkViewModel) <= 300 &&
     !routerOsNetworkViewModel.includes("buildRouterOsPresentationViewModel"),
   "routerosNetworkViewModel.ts must stay focused on network evidence, not presentation copy"

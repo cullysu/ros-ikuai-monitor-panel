@@ -9768,7 +9768,7 @@ var PanelFramework = function(exports) {
     if (((_a = snapshot.meta) == null ? void 0 : _a.realtimeError) || ((_b = snapshot.meta) == null ? void 0 : _b.slowRestError) || state.scenario === "collection-down") {
       return { value: "待确认", tone: "warn", note: businessErrorNote(((_c = snapshot.meta) == null ? void 0 : _c.realtimeError) || ((_d = snapshot.meta) == null ? void 0 : _d.slowRestError), "当前使用缓存") };
     }
-    return { value: stripChannelPrefix(state.facts.collection.restLabel, "REST") || "可用", tone: "ok", note: "实时快照可用" };
+    return { value: stripChannelPrefix(state.facts.collection.restLabel, "REST") || "可用", tone: "ok", note: "当前快照可用" };
   }
   function sshState(snapshot, state) {
     var _a, _b;
@@ -9821,7 +9821,7 @@ var PanelFramework = function(exports) {
   function moduleTrust(state) {
     if (state.scenario === "no-snapshot") return "链路可参考";
     if (state.scenario === "collection-down" || state.scenario === "interfaces-down" || state.facts.freshness.history || state.facts.collection.dataStale) return "缓存快照";
-    return "实时";
+    return "当前采样";
   }
   function moduleChartType(module) {
     if (/resource-risk-priority|collection-channel-ledger/i.test(module)) return "line";
@@ -9866,8 +9866,8 @@ var PanelFramework = function(exports) {
       { id: "collection-routeros", cells: ["设备通达性", routerosState(snapshot, state.scenario).value, recent, businessErrorNote(snapshot.error, "当前可达")], tone: routerosState(snapshot, state.scenario).tone },
       { id: "collection-rest", cells: ["REST", rest.value, recent, rest.note], tone: rest.tone },
       { id: "collection-ssh", cells: ["SSH", ssh.value, recent, ssh.note], tone: ssh.tone },
-      { id: "collection-cache", cells: ["数据层状态", state.scenario === "no-snapshot" ? "隐藏" : state.scenario === "collection-down" ? "缓存" : "实时", recent, state.scenario === "no-snapshot" ? "无业务快照，业务禁显" : state.scenario === "collection-down" ? "业务快照非实时 / 待恢复" : "业务快照可参考"], tone: state.scenario === "no-snapshot" ? "missing" : state.scenario === "collection-down" ? "warn" : "ok" },
-      { id: "collection-boundary", cells: ["展示边界", state.scenario === "collection-down" ? "只读缓存" : "实时可参考", recent, state.scenario === "collection-down" ? "REST / SSH / 快照分开判" : "业务快照边界清晰"], tone: state.scenario === "collection-down" ? "warn" : "trust" },
+      { id: "collection-cache", cells: ["数据层状态", state.scenario === "no-snapshot" ? "隐藏" : state.scenario === "collection-down" ? "缓存" : "当前采样", recent, state.scenario === "no-snapshot" ? "无业务快照，业务禁显" : state.scenario === "collection-down" ? "业务快照非实时 / 待恢复" : "当前样本可参考"], tone: state.scenario === "no-snapshot" ? "missing" : state.scenario === "collection-down" ? "warn" : "ok" },
+      { id: "collection-boundary", cells: ["展示边界", state.scenario === "collection-down" ? "只读缓存" : "当前采样可参考", recent, state.scenario === "collection-down" ? "REST / SSH / 快照分开判" : "业务快照边界清晰"], tone: state.scenario === "collection-down" ? "warn" : "trust" },
       { id: "collection-failure", cells: ["失败端点", state.scenario === "collection-down" ? "未记录" : state.facts.failures.count ? failureText(snapshot, state) : "未记录", statusUpdated(snapshot), state.scenario === "collection-down" ? "未记录" : state.facts.failures.count ? "见端点列表" : "未记录"], tone: state.facts.failures.count ? "warn" : "trust" },
       { id: "collection-trust", cells: ["可信度", state.scenario === "collection-down" ? "可参考" : moduleTrust(state), recent, state.scenario === "collection-down" ? "非实时" : "按快照可信度显示"], tone: state.scenario === "collection-down" ? "warn" : "trust" },
       { id: "collection-next", cells: ["下次尝试", pollText(snapshot), recent, "轮询中"], tone: "trust" }
@@ -9914,13 +9914,13 @@ var PanelFramework = function(exports) {
       {
         id: "channel-snapshot",
         label: "快照",
-        current: state.scenario === "no-snapshot" ? "无" : state.scenario === "collection-down" ? "缓存" : "实时",
+        current: state.scenario === "no-snapshot" ? "无" : state.scenario === "collection-down" ? "缓存" : "当前采样",
         currentValue: snapshotOk,
-        peak: "实时",
+        peak: "当前采样",
         peakValue: 100,
         mean: state.scenario === "collection-down" ? "缓存可参考" : moduleTrust(state),
         meanValue: snapshotOk,
-        threshold: "实时",
+        threshold: "采样可用",
         thresholdValue: 80,
         window: latestSuccess(snapshot, state.scenario),
         trust: moduleTrust(state),
@@ -10704,7 +10704,7 @@ var PanelFramework = function(exports) {
       gridTemplateColumns: `repeat(${Math.max(1, headers.length)}, minmax(0, 1fr))`
     };
     const showTrustTag = Boolean(
-      trust && trust !== "实时" && /^(wan-trend|wan-offline-bars|resource-risk-priority|collection-channel-ledger|no-snapshot-summary|interface-forwarding|normal-collection-channel|collection-status)$/.test(module)
+      trust && trust !== "当前采样" && /^(wan-trend|wan-offline-bars|resource-risk-priority|collection-channel-ledger|no-snapshot-summary|interface-forwarding|normal-collection-channel|collection-status)$/.test(module)
     );
     return /* @__PURE__ */ jsxRuntimeExports.jsxs(
       "section",
@@ -10893,7 +10893,7 @@ var PanelFramework = function(exports) {
         threshold: `${metric.threshold}%`,
         thresholdValue: metric.threshold,
         window: "最近6点",
-        trust: "实时",
+        trust: "当前采样",
         tone: metric.current >= metric.threshold ? "danger" : metric.current >= metric.threshold - 15 ? "warn" : "trust",
         unit: "%"
       };
@@ -11008,7 +11008,7 @@ var PanelFramework = function(exports) {
     return [
       { id: "resource-boundary-rest", cells: ["REST", restState(snapshot, state).value, recent, restState(snapshot, state).note], tone: restState(snapshot, state).tone },
       { id: "resource-boundary-ssh", cells: ["SSH", sshState(snapshot, state).value, recent, sshState(snapshot, state).note], tone: sshState(snapshot, state).tone },
-      { id: "resource-boundary-cache", cells: ["业务快照", moduleTrust(state), recent, "资源证据实时"], tone: "trust" },
+      { id: "resource-boundary-cache", cells: ["业务快照", moduleTrust(state), recent, "资源证据当前采样"], tone: "trust" },
       { id: "resource-boundary-terminal", cells: ["终端排行", "二屏", "不抢资源证据", "Top8 延后"], tone: "trust" },
       { id: "resource-boundary-readonly", cells: ["只读", "不写配置", "只展示阈值", "不推断修复"], tone: "trust" },
       { id: "resource-boundary-route", cells: ["默认出口", routeLabelText(state), routeBusinessText(state), "资源旁证"], tone: state.facts.route.level },
