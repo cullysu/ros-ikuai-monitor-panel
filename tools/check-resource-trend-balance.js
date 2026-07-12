@@ -1220,7 +1220,7 @@ async function main() {
               afterVisible === rowNodes.length &&
               afterExpanded === 'true' &&
               detailRows.getAttribute('aria-hidden') === 'false' &&
-              buttonText.includes('收起细节') &&
+              buttonText.includes('收起详情') &&
               rowsUnclipped &&
               rowEvidenceComplete &&
               (!incidentMode || rowNodes.some((row) => row.getAttribute('data-overview-mobile-v1061-evidence-role') === 'primary-impact'))
@@ -1858,6 +1858,10 @@ async function main() {
         const abnormalDecisionLabels = abnormalDecisionCells.map((cell) => normalize(cell.querySelector('em')?.textContent || ''));
         const abnormalDecisionValues = abnormalDecisionCells.map((cell) => normalize(cell.querySelector('b')?.textContent || ''));
         const abnormalDecisionRailStyle = abnormalDecisionRail ? getComputedStyle(abnormalDecisionRail) : null;
+        const abnormalDecisionSummary = abnormalDecisionRail?.querySelector('.ik-mobile-incident-summary');
+        const abnormalDecisionGuidance = abnormalDecisionRail?.querySelector('.ik-mobile-incident-guidance');
+        const abnormalDecisionSummaryStyle = abnormalDecisionSummary ? getComputedStyle(abnormalDecisionSummary) : null;
+        const abnormalDecisionGuidanceStyle = abnormalDecisionGuidance ? getComputedStyle(abnormalDecisionGuidance) : null;
         const abnormalDecisionRailRect = abnormalDecisionRail?.getBoundingClientRect();
         const abnormalListRows = expectedConfig.mode === 'normal'
           ? []
@@ -1893,15 +1897,17 @@ async function main() {
           abnormalDecisionRail.getAttribute('data-overview-mobile-v1046-abnormal-decision-priority') === heroAttrs.priority &&
           abnormalDecisionRail.getAttribute('data-overview-mobile-v1046-abnormal-decision-scope') === expectedImpactScope + ':' + expectedImpactPlane &&
           abnormalDecisionRailStyle &&
-          abnormalDecisionRailStyle.display === 'grid' &&
-          (abnormalDecisionRailStyle.gridTemplateColumns || '').split(' ').length === 2 &&
-          (abnormalDecisionRailStyle.gridTemplateRows || '').split(' ').length === 2 &&
+          abnormalDecisionRailStyle.display === 'flex' &&
+          abnormalDecisionSummaryStyle?.display === 'grid' &&
+          abnormalDecisionGuidanceStyle?.display === 'grid' &&
+          (abnormalDecisionSummaryStyle.gridTemplateColumns || '').split(' ').length === 2 &&
+          (abnormalDecisionGuidanceStyle.gridTemplateColumns || '').split(' ').length === 2 &&
           abnormalDecisionCells.length === 4 &&
           ['对象', '影响', '可信度', '下一步'].every((label) => abnormalDecisionLabels.includes(label)) &&
           abnormalDecisionValues.every((value) => value.length > 0) &&
           abnormalDecisionCellNoise.every((cell) => (
             cell.width > 0 &&
-            cell.height >= 48 &&
+            cell.height >= 36 &&
             !cell.strongRedFill &&
             !cell.raisedShadow &&
             Number.parseFloat(cell.borderLeftWidth || '0') <= 1

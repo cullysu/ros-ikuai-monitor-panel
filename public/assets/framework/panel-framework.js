@@ -11475,18 +11475,18 @@ var PanelFramework = function(exports) {
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-generic-incident-stack {
     display: grid !important;
     grid-template-columns: minmax(0, 1fr) !important;
-    grid-template-rows: 120px !important;
-    min-height: 132px !important;
-    height: 132px !important;
-    max-height: 132px !important;
+    grid-template-rows: 98px !important;
+    min-height: 110px !important;
+    height: 110px !important;
+    max-height: 110px !important;
     padding: 6px !important;
   }
 
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-resource-incident-stack {
-    grid-template-rows: 120px repeat(3, 34px) !important;
-    min-height: 243px !important;
-    height: 243px !important;
-    max-height: 243px !important;
+    grid-template-rows: 98px repeat(3, 34px) !important;
+    min-height: 221px !important;
+    height: 221px !important;
+    max-height: 221px !important;
   }
 
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-resource-incident-stack > .ik-mobile-resource-line {
@@ -11568,32 +11568,6 @@ var PanelFramework = function(exports) {
     line-height: 1.05 !important;
     text-overflow: ellipsis !important;
     white-space: nowrap !important;
-  }
-
-  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-abnormal-decision-rail {
-    display: grid !important;
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    grid-template-rows: repeat(2, 56px) !important;
-    min-height: 112px !important;
-    height: 112px !important;
-    max-height: 112px !important;
-  }
-
-  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-abnormal-decision-rail > span {
-    min-height: 56px !important;
-    height: 56px !important;
-    max-height: 56px !important;
-    padding: 8px 9px !important;
-  }
-
-  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-abnormal-decision-rail em {
-    font-size: 11px !important;
-    line-height: 1.15 !important;
-  }
-
-  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-abnormal-decision-rail b {
-    font-size: 14px !important;
-    line-height: 1.15 !important;
   }
 
 }
@@ -11679,6 +11653,91 @@ var PanelFramework = function(exports) {
   }
 }
 `;
+  const MOBILE_OVERVIEW_INCIDENT_STYLES = `
+@media (max-width: 760px), (min-width: 761px) and (max-width: 900px) and (max-height: 520px) {
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-abnormal-decision-rail {
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: 98px !important;
+    height: 98px !important;
+    max-height: 98px !important;
+    overflow: hidden !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-incident-summary {
+    display: grid !important;
+    grid-template-columns: minmax(0, .92fr) minmax(0, 1.48fr) !important;
+    min-height: 58px !important;
+    height: 58px !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-incident-summary > span {
+    display: flex !important;
+    min-width: 0 !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    gap: 3px !important;
+    padding: 8px 10px !important;
+    border: 0 !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-incident-summary > span + span {
+    border-left: 1px solid #d7e1ec !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-incident-guidance {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) minmax(112px, auto) !important;
+    min-height: 40px !important;
+    height: 40px !important;
+    border-top: 1px solid #d7e1ec !important;
+    background: #eef4fa !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-incident-guidance > span {
+    display: flex !important;
+    min-width: 0 !important;
+    align-items: center !important;
+    gap: 6px !important;
+    padding: 0 10px !important;
+    border: 0 !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-incident-guidance > span + span {
+    justify-content: flex-end !important;
+    border-left: 1px solid #d7e1ec !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-abnormal-decision-rail em {
+    font-size: 11px !important;
+    line-height: 1.15 !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-abnormal-decision-rail b {
+    font-size: 14px !important;
+    line-height: 1.15 !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-incident-summary b,
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-incident-guidance b {
+    min-width: 0 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-incident-guidance em {
+    flex: 0 0 auto !important;
+    color: #6b7b8f !important;
+    font-size: 10px !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-incident-guidance b {
+    color: #16395f !important;
+    font-size: 12px !important;
+  }
+}
+`;
   const MOBILE_OVERVIEW_STYLE_LAYERS = [
     { id: "foundation", css: MOBILE_OVERVIEW_FOUNDATION_STYLES },
     {
@@ -11687,6 +11746,7 @@ var PanelFramework = function(exports) {
     },
     { id: "public-decision-home", css: MOBILE_OVERVIEW_PUBLIC_DECISION_STYLES },
     { id: "public-decision-repair", css: MOBILE_OVERVIEW_PUBLIC_DECISION_REPAIR_STYLES },
+    { id: "incident", css: MOBILE_OVERVIEW_INCIDENT_STYLES },
     { id: "navigation", css: MOBILE_OVERVIEW_NAVIGATION_STYLES },
     { id: "landscape", css: MOBILE_OVERVIEW_LANDSCAPE_STYLES }
   ];
@@ -13615,7 +13675,13 @@ var PanelFramework = function(exports) {
     );
   }
   function AbnormalDecisionRail({ model }) {
-    return /* @__PURE__ */ jsxRuntimeExports.jsx(
+    const byLabel = new Map(model.abnormalDecision.map((item) => [item.label, item]));
+    const object = byLabel.get("对象");
+    const impact = byLabel.get("影响");
+    const credibility = byLabel.get("可信度");
+    const action = byLabel.get("下一步");
+    if (!object || !impact || !credibility || !action) return null;
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs(
       "div",
       {
         className: "ik-v1046-abnormal-decision-rail ik-mobile-abnormal-decision-rail",
@@ -13623,18 +13689,28 @@ var PanelFramework = function(exports) {
         "data-overview-mobile-v1046-abnormal-decision-ia": model.appHomeContract.informationArchitecture,
         "data-overview-mobile-v1046-abnormal-decision-priority": model.priority,
         "data-overview-mobile-v1046-abnormal-decision-scope": `${model.impactScope.id}:${model.impactScope.plane}`,
-        children: model.abnormalDecision.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
-          "span",
-          {
-            className: toneClass(item.tone),
-            "data-overview-mobile-v1046-abnormal-decision-cell": item.label,
-            children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: item.label }),
-              /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: item.value })
-            ]
-          },
-          item.label
-        ))
+        children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ik-mobile-incident-summary", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: toneClass(object.tone), "data-overview-mobile-v1046-abnormal-decision-cell": object.label, children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: "对象" }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: object.value })
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: toneClass(impact.tone), "data-overview-mobile-v1046-abnormal-decision-cell": impact.label, children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: "影响" }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: impact.value })
+            ] })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ik-mobile-incident-guidance", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: toneClass(credibility.tone), "data-overview-mobile-v1046-abnormal-decision-cell": credibility.label, children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: "可信度" }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: credibility.value })
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: toneClass(action.tone), "data-overview-mobile-v1046-abnormal-decision-cell": action.label, children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: "下一步" }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: action.value })
+            ] })
+          ] })
+        ]
       }
     );
   }
@@ -13775,11 +13851,18 @@ var PanelFramework = function(exports) {
     if (row.evidenceSource === "collection" || row.evidenceSource === "snapshot") return "log";
     return row.rank ? String(row.rank) : "•";
   }
+  function supportingCopy(model) {
+    if (model.priority === "normal") return { title: "运行明细", summary: "默认路由 · 采集 · 快照", action: "查看运行明细" };
+    if (model.priority === "wan-offline") return { title: "处理", summary: "出口 · 默认路由 · 最近成功", action: "查看出口详情" };
+    if (model.priority === "snapshot-missing") return { title: "处理", summary: "数据边界 · 最近成功", action: "查看数据边界" };
+    if (model.priority === "collection-degraded") return { title: "处理", summary: "采集通道 · 缓存快照", action: "查看采集详情" };
+    if (model.priority === "resource-full") return { title: "处理", summary: "资源压力 · 阈值持续", action: "查看资源详情" };
+    return { title: "处理", summary: "受影响接口 · 默认路由", action: "查看接口详情" };
+  }
   function SupportingList({ model }) {
     const [expanded, setExpanded] = reactExports.useState(false);
     const rows = model.primaryList.rows.slice(0, model.priority === "normal" ? 3 : 4);
-    const title = model.priority === "normal" ? "运行明细" : "处置依据";
-    const summary = model.priority === "normal" ? "默认路由 · 采集 · 快照" : "影响对象 · 可信边界 · 最近记录";
+    const copy = supportingCopy(model);
     const listStyle = { "--mobile-list-count": rows.length };
     return /* @__PURE__ */ jsxRuntimeExports.jsx(
       "section",
@@ -13815,8 +13898,8 @@ var PanelFramework = function(exports) {
             "data-overview-mobile-detail-expanded": expanded ? "true" : "false",
             children: [
               /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { children: [
-                /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: title }),
-                /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: summary }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: copy.title }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: copy.summary }),
                 /* @__PURE__ */ jsxRuntimeExports.jsxs("em", { className: toneClass(model.impactScope.tone), children: [
                   model.impactScope.label,
                   " · ",
@@ -13835,7 +13918,7 @@ var PanelFramework = function(exports) {
                   type: "button",
                   children: [
                     /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-                      /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: expanded ? "收起细节" : model.priority === "normal" ? "查看运营细节" : "查看事故证据" }),
+                      /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: expanded ? "收起详情" : copy.action }),
                       /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: model.primaryList.meta })
                     ] }),
                     /* @__PURE__ */ jsxRuntimeExports.jsxs("strong", { children: [

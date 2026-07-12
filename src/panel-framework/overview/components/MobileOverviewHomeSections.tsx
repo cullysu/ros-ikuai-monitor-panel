@@ -64,13 +64,19 @@ function rowIcon(row: AppRankingRow): string {
   return row.rank ? String(row.rank) : "•";
 }
 
+function supportingCopy(model: MobileOverviewModel): { title: string; summary: string; action: string } {
+  if (model.priority === "normal") return { title: "运行明细", summary: "默认路由 · 采集 · 快照", action: "查看运行明细" };
+  if (model.priority === "wan-offline") return { title: "处理", summary: "出口 · 默认路由 · 最近成功", action: "查看出口详情" };
+  if (model.priority === "snapshot-missing") return { title: "处理", summary: "数据边界 · 最近成功", action: "查看数据边界" };
+  if (model.priority === "collection-degraded") return { title: "处理", summary: "采集通道 · 缓存快照", action: "查看采集详情" };
+  if (model.priority === "resource-full") return { title: "处理", summary: "资源压力 · 阈值持续", action: "查看资源详情" };
+  return { title: "处理", summary: "受影响接口 · 默认路由", action: "查看接口详情" };
+}
+
 export function SupportingList({ model }: { model: MobileOverviewModel }) {
   const [expanded, setExpanded] = useState(false);
   const rows = model.primaryList.rows.slice(0, model.priority === "normal" ? 3 : 4);
-  const title = model.priority === "normal" ? "运行明细" : "处置依据";
-  const summary = model.priority === "normal"
-    ? "默认路由 · 采集 · 快照"
-    : "影响对象 · 可信边界 · 最近记录";
+  const copy = supportingCopy(model);
   const listStyle = { "--mobile-list-count": rows.length } as CSSProperties;
   return (
     <section
@@ -104,8 +110,8 @@ export function SupportingList({ model }: { model: MobileOverviewModel }) {
         data-overview-mobile-detail-expanded={expanded ? "true" : "false"}
       >
         <header>
-          <b>{title}</b>
-          <span>{summary}</span>
+          <b>{copy.title}</b>
+          <span>{copy.summary}</span>
           <em className={toneClass(model.impactScope.tone)}>{model.impactScope.label} · {model.impactScope.value}</em>
         </header>
         <button
@@ -118,7 +124,7 @@ export function SupportingList({ model }: { model: MobileOverviewModel }) {
           type="button"
         >
           <span>
-            <b>{expanded ? "收起细节" : model.priority === "normal" ? "查看运营细节" : "查看事故证据"}</b>
+            <b>{expanded ? "收起详情" : copy.action}</b>
             <em>{model.primaryList.meta}</em>
           </span>
           <strong>{rows.length} 项</strong>

@@ -104,6 +104,12 @@ function ResourceDecisionVisual({ model }: { model: MobileOverviewModel }) {
 }
 
 function AbnormalDecisionRail({ model }: { model: MobileOverviewModel }) {
+  const byLabel = new Map(model.abnormalDecision.map((item) => [item.label, item]));
+  const object = byLabel.get("对象");
+  const impact = byLabel.get("影响");
+  const credibility = byLabel.get("可信度");
+  const action = byLabel.get("下一步");
+  if (!object || !impact || !credibility || !action) return null;
   return (
     <div
       className="ik-v1046-abnormal-decision-rail ik-mobile-abnormal-decision-rail"
@@ -112,16 +118,26 @@ function AbnormalDecisionRail({ model }: { model: MobileOverviewModel }) {
       data-overview-mobile-v1046-abnormal-decision-priority={model.priority}
       data-overview-mobile-v1046-abnormal-decision-scope={`${model.impactScope.id}:${model.impactScope.plane}`}
     >
-      {model.abnormalDecision.map((item) => (
-        <span
-          className={toneClass(item.tone)}
-          data-overview-mobile-v1046-abnormal-decision-cell={item.label}
-          key={item.label}
-        >
-          <em>{item.label}</em>
-          <b>{item.value}</b>
+      <div className="ik-mobile-incident-summary">
+        <span className={toneClass(object.tone)} data-overview-mobile-v1046-abnormal-decision-cell={object.label}>
+          <em>对象</em>
+          <b>{object.value}</b>
         </span>
-      ))}
+        <span className={toneClass(impact.tone)} data-overview-mobile-v1046-abnormal-decision-cell={impact.label}>
+          <em>影响</em>
+          <b>{impact.value}</b>
+        </span>
+      </div>
+      <div className="ik-mobile-incident-guidance">
+        <span className={toneClass(credibility.tone)} data-overview-mobile-v1046-abnormal-decision-cell={credibility.label}>
+          <em>可信度</em>
+          <b>{credibility.value}</b>
+        </span>
+        <span className={toneClass(action.tone)} data-overview-mobile-v1046-abnormal-decision-cell={action.label}>
+          <em>下一步</em>
+          <b>{action.value}</b>
+        </span>
+      </div>
     </div>
   );
 }

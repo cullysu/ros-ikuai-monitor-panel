@@ -5,6 +5,7 @@ import { MOBILE_OVERVIEW_PUBLIC_DECISION_STYLES } from "./MobileOverviewPublicDe
 import { MOBILE_OVERVIEW_PUBLIC_DECISION_REPAIR_STYLES } from "./MobileOverviewPublicDecisionRepairStyles";
 import { MOBILE_OVERVIEW_LANDSCAPE_STYLES } from "./MobileOverviewLandscapeStyles";
 import { MOBILE_OVERVIEW_NAVIGATION_STYLES } from "./MobileOverviewNavigationStyles";
+import { MOBILE_OVERVIEW_INCIDENT_STYLES } from "./MobileOverviewIncidentStyles";
 
 const MOBILE_OVERVIEW_STYLE_LAYERS = [
   { id: "foundation", css: MOBILE_OVERVIEW_FOUNDATION_STYLES },
@@ -14,6 +15,7 @@ const MOBILE_OVERVIEW_STYLE_LAYERS = [
   },
   { id: "public-decision-home", css: MOBILE_OVERVIEW_PUBLIC_DECISION_STYLES },
   { id: "public-decision-repair", css: MOBILE_OVERVIEW_PUBLIC_DECISION_REPAIR_STYLES },
+  { id: "incident", css: MOBILE_OVERVIEW_INCIDENT_STYLES },
   { id: "navigation", css: MOBILE_OVERVIEW_NAVIGATION_STYLES },
   { id: "landscape", css: MOBILE_OVERVIEW_LANDSCAPE_STYLES },
 ] as const;

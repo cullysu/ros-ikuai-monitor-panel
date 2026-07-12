@@ -1,0 +1,85 @@
+export const MOBILE_OVERVIEW_INCIDENT_STYLES = `
+@media (max-width: 760px), (min-width: 761px) and (max-width: 900px) and (max-height: 520px) {
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-abnormal-decision-rail {
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: 98px !important;
+    height: 98px !important;
+    max-height: 98px !important;
+    overflow: hidden !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-incident-summary {
+    display: grid !important;
+    grid-template-columns: minmax(0, .92fr) minmax(0, 1.48fr) !important;
+    min-height: 58px !important;
+    height: 58px !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-incident-summary > span {
+    display: flex !important;
+    min-width: 0 !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    gap: 3px !important;
+    padding: 8px 10px !important;
+    border: 0 !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-incident-summary > span + span {
+    border-left: 1px solid #d7e1ec !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-incident-guidance {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) minmax(112px, auto) !important;
+    min-height: 40px !important;
+    height: 40px !important;
+    border-top: 1px solid #d7e1ec !important;
+    background: #eef4fa !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-incident-guidance > span {
+    display: flex !important;
+    min-width: 0 !important;
+    align-items: center !important;
+    gap: 6px !important;
+    padding: 0 10px !important;
+    border: 0 !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-incident-guidance > span + span {
+    justify-content: flex-end !important;
+    border-left: 1px solid #d7e1ec !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-abnormal-decision-rail em {
+    font-size: 11px !important;
+    line-height: 1.15 !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-abnormal-decision-rail b {
+    font-size: 14px !important;
+    line-height: 1.15 !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-incident-summary b,
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-incident-guidance b {
+    min-width: 0 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-incident-guidance em {
+    flex: 0 0 auto !important;
+    color: #6b7b8f !important;
+    font-size: 10px !important;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-incident-guidance b {
+    color: #16395f !important;
+    font-size: 12px !important;
+  }
+}
+`;

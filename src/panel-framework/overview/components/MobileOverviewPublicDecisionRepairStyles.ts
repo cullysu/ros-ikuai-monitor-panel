@@ -349,18 +349,18 @@ export const MOBILE_OVERVIEW_PUBLIC_DECISION_REPAIR_STYLES = `
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-generic-incident-stack {
     display: grid !important;
     grid-template-columns: minmax(0, 1fr) !important;
-    grid-template-rows: 120px !important;
-    min-height: 132px !important;
-    height: 132px !important;
-    max-height: 132px !important;
+    grid-template-rows: 98px !important;
+    min-height: 110px !important;
+    height: 110px !important;
+    max-height: 110px !important;
     padding: 6px !important;
   }
 
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-resource-incident-stack {
-    grid-template-rows: 120px repeat(3, 34px) !important;
-    min-height: 243px !important;
-    height: 243px !important;
-    max-height: 243px !important;
+    grid-template-rows: 98px repeat(3, 34px) !important;
+    min-height: 221px !important;
+    height: 221px !important;
+    max-height: 221px !important;
   }
 
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-resource-incident-stack > .ik-mobile-resource-line {
@@ -442,32 +442,6 @@ export const MOBILE_OVERVIEW_PUBLIC_DECISION_REPAIR_STYLES = `
     line-height: 1.05 !important;
     text-overflow: ellipsis !important;
     white-space: nowrap !important;
-  }
-
-  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-abnormal-decision-rail {
-    display: grid !important;
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    grid-template-rows: repeat(2, 56px) !important;
-    min-height: 112px !important;
-    height: 112px !important;
-    max-height: 112px !important;
-  }
-
-  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-abnormal-decision-rail > span {
-    min-height: 56px !important;
-    height: 56px !important;
-    max-height: 56px !important;
-    padding: 8px 9px !important;
-  }
-
-  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-abnormal-decision-rail em {
-    font-size: 11px !important;
-    line-height: 1.15 !important;
-  }
-
-  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-abnormal-decision-rail b {
-    font-size: 14px !important;
-    line-height: 1.15 !important;
   }
 
 }
