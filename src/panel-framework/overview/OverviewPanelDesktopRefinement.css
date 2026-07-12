@@ -200,7 +200,6 @@
     --ik-v1020-desktop-blue: var(--ik-console-blue);
     --ik-v1020-desktop-danger: var(--ik-console-danger);
     --ik-v1020-desktop-warn: var(--ik-console-warn);
-    background: var(--ik-console-page) !important;
   }
 
   #overview.router-overview-framework[data-overview-desktop-v1020-public-product-polish] .ro-wan-integrated-visual,
@@ -451,18 +450,6 @@
     [data-overview-desktop-scene="resource-full"],
     [data-overview-desktop-scene="collection-down"],
     [data-overview-desktop-scene="no-snapshot"]
-  ) .ro-col.is-main > .ro-module:first-child .ro-module-head {
-    min-height: 34px !important;
-    padding: 7px 10px !important;
-    background: linear-gradient(180deg, #fff, #fbfdff) !important;
-  }
-
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-desktop-grid:is(
-    [data-overview-desktop-scene="all-offline"],
-    [data-overview-desktop-scene="interfaces-down"],
-    [data-overview-desktop-scene="resource-full"],
-    [data-overview-desktop-scene="collection-down"],
-    [data-overview-desktop-scene="no-snapshot"]
   ) .ro-col.is-main > .ro-module:first-child .ro-module-head b {
     color: #15263a !important;
     font-size: 13.5px !important;
@@ -491,7 +478,6 @@
   }
 
   .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-chart-track {
-    height: 3px !important;
     background: #edf4fb !important;
   }
 
@@ -501,16 +487,7 @@
   }
 
   .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ik-sidebar-mini-status {
-    gap: 6px !important;
-    padding: 11px 10px !important;
     border-top-color: #e5eef7 !important;
-    background: linear-gradient(180deg, rgba(250,253,255,.36), rgba(241,247,253,.74)) !important;
-  }
-
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ik-sidebar-mini-status div {
-    min-height: 29px !important;
-    border-radius: 9px !important;
-    background: rgba(255,255,255,.92) !important;
   }
 }
 
@@ -728,29 +705,14 @@
     display: flex !important;
     min-width: 0 !important;
     align-items: baseline !important;
-    gap: 5px !important;
   }
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-chart-axis {
     display: none !important;
   }
 
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-judgement-chart {
-    padding: 4px 5px !important;
-    gap: 3px !important;
-    background: #fff !important;
-  }
-
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-judgement-row {
     grid-template-columns: 58px minmax(0, 1fr) 112px !important;
-    min-height: 23px !important;
-    height: 23px !important;
-    gap: 6px !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-chart-track {
-    height: 3px !important;
-    background: #edf4fa !important;
   }
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-chart-label {
@@ -771,21 +733,13 @@
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-mini-trend-visual {
     display: grid !important;
-    grid-template-columns: minmax(0, 1fr) 126px !important;
     gap: 8px !important;
     align-items: center !important;
-    height: 74px !important;
-    padding: 5px 6px !important;
-    border-bottom: 1px solid var(--v814-line) !important;
-    background: #fff !important;
   }
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-mini-trend-visual svg {
     width: 100% !important;
-    height: 52px !important;
   }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-mini-trend-area { fill: rgba(20,115,230,.07) !important; }
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-mini-trend-line {
     fill: none !important;
     stroke: var(--v814-blue) !important;
@@ -804,8 +758,6 @@
     display: grid !important;
     gap: 2px !important;
     min-width: 0 !important;
-    padding-left: 5px !important;
-    border-left: 1px solid var(--v814-line) !important;
   }
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-mini-trend-readout em,
@@ -815,33 +767,23 @@
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-mini-trend-readout em {
     color: var(--v814-muted) !important;
-    font-size: 8px !important;
     font-style: normal !important;
   }
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-mini-trend-readout b {
     color: var(--v814-text) !important;
-    font-size: 10.4px !important;
   }
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-channel-matrix-visual {
     display: grid !important;
     grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
-    gap: 1px !important;
-    min-height: 54px !important;
-    padding: 4px 5px !important;
-    border-bottom: 1px solid var(--v814-line) !important;
-    background: #fff !important;
   }
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-channel-matrix-visual span {
     display: grid !important;
     grid-template-columns: 7px minmax(0, 1fr) !important;
-    grid-template-rows: 12px 16px 12px !important;
     align-items: center !important;
     column-gap: 4px !important;
-    padding: 3px 5px !important;
-    background: #fbfdff !important;
   }
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-channel-matrix-visual i {
@@ -863,7 +805,6 @@
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-channel-matrix-visual strong {
     grid-column: 2 !important;
     color: var(--v814-text) !important;
-    font-size: 10.5px !important;
     white-space: nowrap !important;
   }
 
@@ -879,10 +820,6 @@
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-visual-stack {
     display: grid !important;
-    gap: 3px !important;
-    padding: 4px 5px !important;
-    border-bottom: 1px solid var(--v814-line) !important;
-    background: #fff !important;
   }
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-visual-stack .ro-channel-matrix-visual,
@@ -893,29 +830,21 @@
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-incident-summary {
     display: grid !important;
-    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
-    gap: 1px !important;
-    min-height: 32px !important;
   }
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-incident-summary span {
     display: grid !important;
     align-content: center !important;
     min-width: 0 !important;
-    padding: 3px 5px !important;
-    border-left: 1px solid var(--v814-line) !important;
-    background: #fbfdff !important;
   }
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-incident-summary em {
     color: var(--v814-muted) !important;
-    font-size: 7.6px !important;
     font-style: normal !important;
   }
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-incident-summary b {
     color: var(--v814-text) !important;
-    font-size: 9.4px !important;
     white-space: nowrap !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
@@ -923,19 +852,12 @@
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-resource-ledger-visual {
     display: grid !important;
-    gap: 4px !important;
-    min-height: 64px !important;
-    padding: 5px !important;
-    border-bottom: 1px solid var(--v814-line) !important;
     background: #fff !important;
   }
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-resource-ledger-visual span {
     display: grid !important;
-    grid-template-columns: 52px 48px minmax(0, 1fr) 88px !important;
     align-items: center !important;
-    gap: 7px !important;
-    min-height: 17px !important;
   }
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-resource-ledger-visual b {
@@ -945,7 +867,6 @@
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-resource-ledger-visual strong {
     color: var(--v814-text) !important;
-    font-size: 11px !important;
   }
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-resource-ledger-visual span[data-tone="danger"] strong { color: #c93932 !important; }
@@ -979,21 +900,6 @@
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-col.is-bottom {
     display: grid !important;
-    grid-template-columns: 1.05fr 1fr 1fr !important;
-    gap: 4px !important;
-    max-height: 156px !important;
-    overflow: hidden !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-col.is-bottom .ro-module-head {
-    height: 24px !important;
-    min-height: 24px !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-col.is-bottom .ro-ledger-cell {
-    height: 24px !important;
-    min-height: 24px !important;
-    font-size: 8.2px !important;
   }
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="resource-pressure-bars"] {
@@ -1014,19 +920,6 @@
     --v817-blue: #1473e6;
     --v817-text: #102033;
     --v817-muted: #718297;
-    padding: 4px !important;
-  }
-
-  body:has(#overview.router-overview-framework) .sidebar::after {
-    content: "只读\\A实时\\AREST 可用\\ASSH 缺依赖\\A快照同步" !important;
-    margin: auto 10px 10px !important;
-    padding: 7px 9px !important;
-    color: #60738a !important;
-    font-size: 10px !important;
-    line-height: 1.35 !important;
-    border: 1px solid var(--v817-line-strong) !important;
-    border-radius: 4px !important;
-    background: #f8fbfe !important;
   }
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-col.is-main > .ro-module:first-child,
@@ -1074,11 +967,7 @@
   }
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-judgement-chart {
-    margin: 0 !important;
-    padding: 4px 5px !important;
     gap: 3px !important;
-    background: #fff !important;
-    box-shadow: none !important;
   }
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-judgement-row {
@@ -1113,14 +1002,7 @@
   }
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-mini-trend-visual {
-    height: 60px !important;
-    padding: 3px 5px !important;
     grid-template-columns: minmax(0, 1fr) 112px !important;
-    border-bottom: 1px solid var(--v817-line) !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-mini-trend-visual svg {
-    height: 42px !important;
   }
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-mini-trend-area {
@@ -1141,8 +1023,6 @@
   }
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-channel-matrix-visual {
-    min-height: 46px !important;
-    padding: 3px 4px !important;
     gap: 1px !important;
   }
 
@@ -1162,16 +1042,11 @@
   }
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-visual-stack {
-    gap: 2px !important;
-    padding: 3px 4px !important;
     border-bottom: 1px solid var(--v817-line) !important;
-    background: #fff !important;
   }
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-incident-summary {
-    min-height: 28px !important;
     grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
-    gap: 1px !important;
   }
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-incident-summary span {
@@ -1213,8 +1088,6 @@
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-col.is-bottom {
     grid-template-columns: 1.08fr 1fr 1fr !important;
     gap: 4px !important;
-    max-height: 150px !important;
-    overflow: hidden !important;
   }
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-col.is-bottom .ro-module-head {
@@ -1237,7 +1110,6 @@
 @media (min-width: 761px) {
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-col.is-bottom {
     align-items: stretch !important;
-    max-height: 154px !important;
     min-height: 0 !important;
     overflow: hidden !important;
   }
@@ -1294,10 +1166,6 @@
     background: transparent !important;
   }
 
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] {
-    padding: 3px !important;
-  }
-
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-col.is-main,
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-col.is-side {
     min-height: 0 !important;
@@ -1305,51 +1173,8 @@
     overflow: hidden !important;
   }
 
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-cell:nth-child(n+3),
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-cell:nth-child(n+3) .ik-overview-cell-text {
-    color: #64758a !important;
-    font-weight: 520 !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-evidence-weight="secondary"] .ro-ledger-row:not(.ro-ledger-head),
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="evidence-boundary"] .ro-ledger-row:not(.ro-ledger-head) {
-    min-height: 24px !important;
-    height: 24px !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-evidence-weight="secondary"] .ro-ledger-cell,
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="evidence-boundary"] .ro-ledger-cell {
-    min-height: 24px !important;
-    height: 24px !important;
-  }
-
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="route-raw-facts"] .ro-ledger-cell small {
     display: none !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-mini-trend-visual {
-    height: 72px !important;
-    padding: 4px 6px !important;
-    border-bottom: 1px solid #e9f0f7 !important;
-    background: #fff !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-mini-trend-visual svg {
-    height: 48px !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-judgement-chart {
-    margin: 0 !important;
-    padding: 4px 5px !important;
-    background: #fff !important;
-    box-shadow: none !important;
-  }
-
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-channel-matrix-visual {
-    min-height: 44px !important;
-    padding: 3px 4px !important;
-    background: #fff !important;
-    box-shadow: none !important;
   }
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-channel-matrix-visual span,
@@ -1397,7 +1222,6 @@
 
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="evidence-boundary"] .ro-ledger-cell,
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="no-snapshot-degraded-modules"] .ro-ledger-cell {
-    color: #596b7f !important;
     font-size: 7.9px !important;
   }
 

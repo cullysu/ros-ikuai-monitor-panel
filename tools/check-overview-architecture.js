@@ -97,6 +97,7 @@ let legacyIosSelectorCount = 0;
 let legacyMobileSelectorCount = 0;
 let versionMarkerCount = 0;
 let desktopRefinementImportantCount = 0;
+let desktopRefinementShadowedDeclarationCount = 0;
 let desktopDecisionRailRuleCount = 0;
 let desktopDecisionCellRuleCount = 0;
 let desktopWorkspaceGridRuleCount = 0;
@@ -138,6 +139,25 @@ cssRoot.walkComments((comment) => {
 });
 desktopRefinementRoot.walkDecls((decl) => {
   if (decl.important) desktopRefinementImportantCount += 1;
+});
+const desktopRefinementPropertiesBySelector = new Map();
+desktopRefinementRoot.walkRules((rule) => {
+  const atRuleContext = [];
+  for (let parent = rule.parent; parent && parent.type !== "root"; parent = parent.parent) {
+    if (parent.type === "atrule") atRuleContext.unshift(`@${parent.name} ${parent.params}`);
+  }
+  const selectorContext = `${atRuleContext.join(" > ")}\n${rule.selector}`;
+  const earlierProperties = desktopRefinementPropertiesBySelector.get(selectorContext) || new Set();
+  const currentProperties = new Set();
+  rule.nodes
+    .filter((node) => node.type === "decl")
+    .forEach((decl) => {
+      const propertyKey = `${decl.prop}\n${decl.important}`;
+      if (earlierProperties.has(propertyKey)) desktopRefinementShadowedDeclarationCount += 1;
+      currentProperties.add(propertyKey);
+    });
+  currentProperties.forEach((propertyKey) => earlierProperties.add(propertyKey));
+  desktopRefinementPropertiesBySelector.set(selectorContext, earlierProperties);
 });
 desktopRefinementRoot.walkRules((rule) => {
   if (rule.selector.includes(".ro-desktop-thin-kpis")) {
@@ -412,8 +432,12 @@ assert(
   `OverviewPanel.css mobile rule share regressed above 11%: ${mobileRuleShare.toFixed(4)}`
 );
 assert(
-  desktopRefinementImportantCount <= 802,
-  `Desktop refinement !important count regressed above 802: ${desktopRefinementImportantCount}`
+  desktopRefinementImportantCount <= 650,
+  `Desktop refinement !important count regressed above 650: ${desktopRefinementImportantCount}`
+);
+assert(
+  desktopRefinementShadowedDeclarationCount === 0,
+  `Desktop refinement must not redeclare the same property in a later identical selector context: ${desktopRefinementShadowedDeclarationCount}`
 );
 assert(
   desktopDecisionRailRuleCount === 1 && desktopDecisionCellRuleCount <= 4,
