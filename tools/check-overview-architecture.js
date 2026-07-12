@@ -394,8 +394,8 @@ assert(
 );
 assert(
   mobileStyles.includes("MOBILE_OVERVIEW_STYLE_LAYERS") &&
+    mobileStyles.includes("core") &&
     mobileStyles.includes("product-shell") &&
-    mobileStyles.includes("public-decision-home") &&
     mobileStyles.includes("incident") &&
     mobileStyles.includes("navigation") &&
     mobileStyles.includes("landscape") &&
@@ -458,16 +458,16 @@ assert(
   "Mobile style modules reintroduced legacy ik-mobile/ik-ios selectors"
 );
 const mobileStyleLayerFiles = [
+  "src/panel-framework/overview/components/MobileOverviewCoreStyles.ts",
   "src/panel-framework/overview/components/MobileOverviewProductShellStyles.ts",
-  "src/panel-framework/overview/components/MobileOverviewPublicDecisionStyles.ts",
   "src/panel-framework/overview/components/MobileOverviewPublicDecisionRepairStyles.ts",
   "src/panel-framework/overview/components/MobileOverviewIncidentStyles.ts",
   "src/panel-framework/overview/components/MobileOverviewNavigationStyles.ts",
   "src/panel-framework/overview/components/MobileOverviewLandscapeStyles.ts",
 ];
 const mobileStyleLineLimits = new Map([
+  ["src/panel-framework/overview/components/MobileOverviewCoreStyles.ts", 80],
   ["src/panel-framework/overview/components/MobileOverviewProductShellStyles.ts", 320],
-  ["src/panel-framework/overview/components/MobileOverviewPublicDecisionStyles.ts", 650],
   ["src/panel-framework/overview/components/MobileOverviewPublicDecisionRepairStyles.ts", 500],
   ["src/panel-framework/overview/components/MobileOverviewIncidentStyles.ts", 120],
   ["src/panel-framework/overview/components/MobileOverviewNavigationStyles.ts", 80],
@@ -484,8 +484,8 @@ for (const rel of mobileStyleLayerFiles) {
   );
 }
 assert(
-  mobileStyleByteTotal <= 70000,
-  `Mobile overview style layers exceed 70 KB: ${mobileStyleByteTotal}`
+  mobileStyleByteTotal <= 50000,
+  `Mobile overview style layers exceed 50 KB: ${mobileStyleByteTotal}`
 );
 
 

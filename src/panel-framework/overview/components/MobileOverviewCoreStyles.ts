@@ -1,0 +1,65 @@
+export const MOBILE_OVERVIEW_CORE_STYLES = `
+@media (max-width: 760px), (min-width: 761px) and (max-width: 900px) and (max-height: 520px) {
+  #overview.router-overview-framework .ik-mobile-core-facts {
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 0 !important;
+    min-height: 62px !important;
+    padding: 0 !important;
+    border: 1px solid #d1dce8 !important;
+    border-radius: 8px !important;
+    background: #ffffff !important;
+    box-shadow: none !important;
+    overflow: hidden !important;
+  }
+
+  #overview.router-overview-framework .ik-mobile-core-facts span {
+    display: grid !important;
+    align-content: center !important;
+    min-width: 0 !important;
+    min-height: 62px !important;
+    padding: 7px 6px !important;
+    border-right: 1px solid #e3ebf3 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  #overview.router-overview-framework .ik-mobile-core-facts span:last-child {
+    border-right: 0 !important;
+  }
+
+  #overview.router-overview-framework .ik-mobile-core-facts em {
+    color: #68788c !important;
+    font-size: 9.5px !important;
+    font-style: normal !important;
+    font-weight: 700 !important;
+    line-height: 1.05 !important;
+    white-space: nowrap !important;
+  }
+
+  #overview.router-overview-framework .ik-mobile-core-facts strong {
+    display: block !important;
+    margin-top: 4px !important;
+    color: #172236 !important;
+    font-family: Bahnschrift, "Segoe UI", sans-serif !important;
+    font-size: 13px !important;
+    font-weight: 840 !important;
+    line-height: 1.05 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  #overview.router-overview-framework .ik-mobile-core-facts small {
+    display: block !important;
+    margin-top: 3px !important;
+    color: #7b8798 !important;
+    font-size: 8.5px !important;
+    font-weight: 580 !important;
+    line-height: 1.08 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+}
+`;

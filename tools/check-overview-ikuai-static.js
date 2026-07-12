@@ -186,15 +186,20 @@ for (const tab of ['home', 'wan', 'interface', 'terminal', 'log']) {
 includesAll(mobileTabs, ['aria-current', 'aria-controls', '路由器监控底部导航'], 'mobile navigation accessibility');
 
 includesAll(mobileStyles, [
+  'MOBILE_OVERVIEW_CORE_STYLES',
   'MOBILE_OVERVIEW_PRODUCT_SHELL_STYLES',
-  'MOBILE_OVERVIEW_PUBLIC_DECISION_STYLES',
   'MOBILE_OVERVIEW_PUBLIC_DECISION_REPAIR_STYLES',
   'MOBILE_OVERVIEW_INCIDENT_STYLES',
   'MOBILE_OVERVIEW_NAVIGATION_STYLES',
   'MOBILE_OVERVIEW_LANDSCAPE_STYLES',
   'useInsertionEffect',
 ], 'mobile style composition');
-excludesAll(mobileStyles, ['MOBILE_OVERVIEW_FOUNDATION_STYLES', 'foundation'], 'mobile retired foundation cleanup');
+excludesAll(mobileStyles, [
+  'MOBILE_OVERVIEW_FOUNDATION_STYLES',
+  'MOBILE_OVERVIEW_PUBLIC_DECISION_STYLES',
+  'foundation',
+  'public-decision-home',
+], 'mobile retired style layer cleanup');
 includesAll(landscapeStyles, ['min-width: 761px', 'max-width: 900px', 'max-height: 520px', '"hero side"'], 'landscape mobile layout');
 includesAll(navigationStyles, ['position: fixed', 'height: 52px', 'repeat(5, minmax(0, 1fr))'], 'mobile native navigation');
 includesAll(incidentStyles, ['ik-mobile-incident-summary', 'ik-mobile-incident-guidance', 'min-height: 98px'], 'mobile incident hierarchy');
