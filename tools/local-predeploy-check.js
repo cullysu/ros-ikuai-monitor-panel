@@ -1837,6 +1837,13 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         /REST|SSH|缓存快照|最近成功/.test(text)
       )
     );
+    const overviewNormalEvidenceDownshift = isDesktopOverview &&
+      (scaleScenario === 'single' || scaleScenario === 'fleet') &&
+      Boolean(
+        overviewDesktopDetail?.querySelector('[data-overview-density-module="terminal-ranking"]') &&
+        overviewDesktopDetail?.querySelector('[data-overview-density-module="evidence-boundary"]') &&
+        !overviewDesktopDetail?.querySelector('[data-overview-density-module="normal-ops-ledger"]')
+      );
     const overviewDesktopDensityOk = sectionName !== 'overview' || !isDesktopOverview || Boolean(
       overviewSceneSpecificDesktopDensityOk ||
       (
@@ -1859,7 +1866,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
           (scaleScenario === 'interfaces-down' && overviewDesktopDetailRows.length >= 6)
         ) &&
         overviewDesktopDetailFirstTwoRowsVisible &&
-        (text.length >= 750 || (noSnapshotEdge && text.length >= 560))
+        (text.length >= (overviewNormalEvidenceDownshift ? 700 : 750) || (noSnapshotEdge && text.length >= 560))
       )
     );
     const overviewDesktopModuleSpreadOk = sectionName !== 'overview' || !isDesktopOverview || Boolean(
