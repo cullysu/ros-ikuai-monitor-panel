@@ -11,7 +11,7 @@ export function DeviceBar({ model }: { model: MobileOverviewModel }) {
     >
       <div className="ik-mobile-device-title">
         <b>{model.header.deviceName}</b>
-        <span>只读观察 · 最近 {model.header.recent}</span>
+        <span>只读 · 不改配置 · {model.header.recent}</span>
       </div>
       <strong
         className={`ik-v240-status ${toneClass(model.header.tone)}`}

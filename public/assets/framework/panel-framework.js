@@ -9241,7 +9241,7 @@ var PanelFramework = function(exports) {
           /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ik-mobile-device-title", children: [
             /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: model.header.deviceName }),
             /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-              "只读观察 · 最近 ",
+              "只读 · 不改配置 · ",
               model.header.recent
             ] })
           ] }),
