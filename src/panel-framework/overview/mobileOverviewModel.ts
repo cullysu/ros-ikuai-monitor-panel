@@ -802,6 +802,7 @@ function abnormalDecisionCells(
   contract: MobileOverviewModel["appHomeContract"],
   scope: MobileImpactScope,
   network: RouterOsNetworkViewModel,
+  state: OverviewDerivedState,
   heroTitle: string,
   listTitle: string,
   resourceCells: MobileHeroResourceCell[],
@@ -809,7 +810,12 @@ function abnormalDecisionCells(
   if (priority === "normal") return [];
   const evidenceParts = contract.trustBoundary.split("·").map((part) => clean(part)).filter(Boolean);
   const primaryResource = resourceCells.find((item) => item.risk === "primary-risk") || resourceCells[0];
-  const action = resolveMobileIncidentAction(priority, primaryResource);
+  const action = resolveMobileIncidentAction(priority, primaryResource, {
+    collectionDegraded: state.facts.collection.channelDegraded || state.facts.collection.dataStale || state.facts.freshness.history,
+    connectionPressure: state.facts.connections.total > 50000,
+    connectionTotalText: formatCompact(state.facts.connections.total),
+    interfaceAvailable: state.facts.interfaces.total > 0,
+  });
   return [
     { label: "对象", value: listTitle, note: heroTitle, tone: scope.tone },
     { label: "影响", value: abnormalDecisionImpactValue(priority, scope), note: scope.note, tone: scope.tone },
@@ -842,7 +848,7 @@ export function buildMobileOverviewModel(snapshot: OverviewRawSnapshot, state: O
     surface: policy.surface,
     impactScope: scope,
     collectionTrustSeparation: collectionTrustSeparation(priority, scope),
-    abnormalDecision: abnormalDecisionCells(priority, policy.appHomeContract, scope, network, heroTitle, list.title, resourceCells),
+    abnormalDecision: abnormalDecisionCells(priority, policy.appHomeContract, scope, network, state, heroTitle, list.title, resourceCells),
     collectionTrust: collectionTrustCells(state),
     coreMetrics: core,
     normalSummary: normalSummaryModel(priority),

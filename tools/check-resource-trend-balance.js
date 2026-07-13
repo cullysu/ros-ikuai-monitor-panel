@@ -1204,12 +1204,20 @@ async function main() {
           const activeScreen = root?.querySelector('[data-overview-mobile-first-screen="app-home"]');
           const actionText = normalize(action?.textContent || '');
           const supportingText = normalize(resourceDetails?.closest('.ik-mobile-supporting-list')?.textContent || '');
+          const startedAtHome = activeScreen?.getAttribute('data-overview-mobile-active-tab') === 'home';
+          if (action?.tagName === 'BUTTON') action.click();
+          await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+          const terminalView = root?.querySelector('[data-overview-mobile-tab-view="terminal"]');
+          const terminalText = normalize(terminalView?.textContent || '');
           return {
             pass: Boolean(
               action &&
-              action.tagName !== 'BUTTON' &&
-              /先处理(处理器|内存|磁盘)/.test(actionText) &&
-              activeScreen?.getAttribute('data-overview-mobile-active-tab') === 'home' &&
+              action.tagName === 'BUTTON' &&
+              actionText.includes('查连接压力') &&
+              startedAtHome &&
+              activeScreen?.getAttribute('data-overview-mobile-active-tab') === 'terminal' &&
+              terminalView &&
+              terminalText.includes('条连接') &&
               resourceDetails &&
               /最高(处理器|内存|磁盘).*(持续|超阈)/.test(supportingText)
             ),
@@ -1217,6 +1225,7 @@ async function main() {
             url: location.href,
             actionLabel: actionText,
             activeTab: activeScreen?.getAttribute('data-overview-mobile-active-tab') || '',
+            terminalText: terminalText.slice(0, 180),
             viewText: supportingText.slice(0, 180),
             viewport: { width: innerWidth, height: innerHeight }
           };

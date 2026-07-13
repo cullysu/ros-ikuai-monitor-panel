@@ -7933,8 +7933,11 @@ var PanelFramework = function(exports) {
       trustBoundary: (context) => `转发面可用 · 采集${context.collectionValue} · 快照${context.snapshotValue}`
     }
   };
-  function resolveMobileIncidentAction(priority, resource) {
+  function resolveMobileIncidentAction(priority, resource, diagnostic) {
     if (priority === "resource-full") {
+      if (diagnostic == null ? void 0 : diagnostic.collectionDegraded) return { value: "核采集可信度", note: "资源已越阈，先确认当前采样边界", targetTab: "log" };
+      if (diagnostic == null ? void 0 : diagnostic.connectionPressure) return { value: "查连接压力", note: diagnostic.connectionTotalText + " 连接 · 阈值 50K", targetTab: "terminal" };
+      if (diagnostic == null ? void 0 : diagnostic.interfaceAvailable) return { value: "查接口吞吐", note: "连接未到压力阈值，先核承载吞吐", targetTab: "interface" };
       return {
         value: `先处理${(resource == null ? void 0 : resource.label) || "资源"}`,
         note: resource ? `${resource.display} · ${resource.thresholdText} · ${resource.sustainedText}` : "按最高风险项处理"
@@ -8987,11 +8990,16 @@ var PanelFramework = function(exports) {
     if (priority === "collection-degraded") return "采集可信度下降";
     return scope.value;
   }
-  function abnormalDecisionCells(priority, contract, scope, network, heroTitle, listTitle, resourceCells) {
+  function abnormalDecisionCells(priority, contract, scope, network, state, heroTitle, listTitle, resourceCells) {
     if (priority === "normal") return [];
     const evidenceParts = contract.trustBoundary.split("·").map((part) => clean$1(part)).filter(Boolean);
     const primaryResource = resourceCells.find((item) => item.risk === "primary-risk") || resourceCells[0];
-    const action = resolveMobileIncidentAction(priority, primaryResource);
+    const action = resolveMobileIncidentAction(priority, primaryResource, {
+      collectionDegraded: state.facts.collection.channelDegraded || state.facts.collection.dataStale || state.facts.freshness.history,
+      connectionPressure: state.facts.connections.total > 5e4,
+      connectionTotalText: formatCompact(state.facts.connections.total),
+      interfaceAvailable: state.facts.interfaces.total > 0
+    });
     return [
       { label: "对象", value: listTitle, note: heroTitle, tone: scope.tone },
       { label: "影响", value: abnormalDecisionImpactValue(priority, scope), note: scope.note, tone: scope.tone },
@@ -9023,7 +9031,7 @@ var PanelFramework = function(exports) {
       surface: policy.surface,
       impactScope: scope,
       collectionTrustSeparation: collectionTrustSeparation(priority, scope),
-      abnormalDecision: abnormalDecisionCells(priority, policy.appHomeContract, scope, network, heroTitle, list.title, resourceCells),
+      abnormalDecision: abnormalDecisionCells(priority, policy.appHomeContract, scope, network, state, heroTitle, list.title, resourceCells),
       collectionTrust: collectionTrustCells(state),
       coreMetrics: core,
       normalSummary: normalSummaryModel(priority),

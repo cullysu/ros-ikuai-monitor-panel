@@ -29,6 +29,13 @@ export interface MobileIncidentResource {
   sustainedText: string;
 }
 
+export interface MobileResourceDiagnosticContext {
+  collectionDegraded: boolean;
+  connectionPressure: boolean;
+  connectionTotalText: string;
+  interfaceAvailable: boolean;
+}
+
 export interface MobileAppHomeContract {
   severity: "p0" | "p1" | "p2" | "normal";
   firstQuestion: string;
@@ -188,8 +195,12 @@ const MOBILE_OVERVIEW_POLICY: Record<
 export function resolveMobileIncidentAction(
   priority: MobileOverviewPriority,
   resource?: MobileIncidentResource,
+  diagnostic?: MobileResourceDiagnosticContext,
 ): MobileIncidentAction {
   if (priority === "resource-full") {
+    if (diagnostic?.collectionDegraded) return { value: "核采集可信度", note: "资源已越阈，先确认当前采样边界", targetTab: "log" };
+    if (diagnostic?.connectionPressure) return { value: "查连接压力", note: diagnostic.connectionTotalText + " 连接 · 阈值 50K", targetTab: "terminal" };
+    if (diagnostic?.interfaceAvailable) return { value: "查接口吞吐", note: "连接未到压力阈值，先核承载吞吐", targetTab: "interface" };
     return {
       value: `先处理${resource?.label || "资源"}`,
       note: resource
