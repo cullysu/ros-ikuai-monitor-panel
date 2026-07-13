@@ -83,7 +83,7 @@ export function statusLabel(state: OverviewDerivedState): string {
 function trustText(state: OverviewDerivedState): string {
   if (state.scenario === "no-snapshot") return "业务快照缺失";
   if (state.scenario === "collection-down" || state.facts.collection.dataStale || state.facts.freshness.history) return "缓存快照";
-  return "实时可信";
+  return "当前快照";
 }
 
 function stripRest(label: string): string {

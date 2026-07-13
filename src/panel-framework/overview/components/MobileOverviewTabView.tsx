@@ -97,7 +97,6 @@ export function MobileOverviewTabView(props: MobileOverviewTabViewProps) {
       className="ik-mobile-tab-view"
       id={`mobile-${activeTab}-view`}
       data-overview-mobile-tab-view={activeTab}
-      data-overview-mobile-tab-view-contract="mobile-native-summary-flat-list-no-desktop-table"
       data-overview-mobile-tab-credibility={businessHidden ? "business-hidden" : activeTab === "log" ? "collection-evidence" : "business-visible"}
     >
       <header className="ik-mobile-tab-head">

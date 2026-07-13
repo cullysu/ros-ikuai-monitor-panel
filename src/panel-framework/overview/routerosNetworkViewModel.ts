@@ -153,7 +153,7 @@ function conclusionFor(snapshot: OverviewRawSnapshot, state: OverviewDerivedStat
   if (state.scenario === "fleet") {
     return { id: "conclusion", label: "结论", value: "需确认", title: "多线路可用", heroTitle: "多线路可用", note: `WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(total || 1)}，默认路由 ${routeValue(state)}`, tone: "warn", severity: "normal" };
   }
-  return { id: "conclusion", label: "结论", value: "转发可用", title: "转发面可用", heroTitle: "WAN / 默认路由证据", note: `WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(total || 1)}，默认路由可用，快照在可信窗口内`, tone: "ok", severity: "normal" };
+  return { id: "conclusion", label: "结论", value: "转发可用", title: "转发面可用", heroTitle: "WAN / 默认路由证据", note: `WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(total || 1)}，默认路由可用，当前快照可用`, tone: "ok", severity: "normal" };
 }
 
 function objectFor(snapshot: OverviewRawSnapshot, state: OverviewDerivedState, priority: RouterOsNetworkPriority): RouterOsNetworkToken {

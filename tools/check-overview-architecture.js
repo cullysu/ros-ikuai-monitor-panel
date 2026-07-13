@@ -561,6 +561,11 @@ assert(
   `MobileOverviewTabView.tsx exceeds 150 lines: ${lines(mobileTabView)}`
 );
 assert(
+  !mobileTabView.includes("data-overview-mobile-tab-view-contract") &&
+    mobileTabView.includes("data-overview-mobile-tab-credibility"),
+  "Mobile detail tabs must expose semantic credibility state, not self-certifying layout claims"
+);
+assert(
   lines(mobileTabRows) <= 150 &&
     mobileTabView.includes('from "./mobileOverviewTabRows"') &&
     ["mobileWanRows", "mobileInterfaceRows", "mobileTerminalRows", "mobileLogRows"].every((name) => mobileTabRows.includes(`function ${name}`)),

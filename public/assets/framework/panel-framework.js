@@ -7730,7 +7730,7 @@ var PanelFramework = function(exports) {
     if (state.scenario === "fleet") {
       return { id: "conclusion", label: "结论", value: "需确认", title: "多线路可用", heroTitle: "多线路可用", note: `WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(total || 1)}，默认路由 ${routeValue(state)}`, tone: "warn", severity: "normal" };
     }
-    return { id: "conclusion", label: "结论", value: "转发可用", title: "转发面可用", heroTitle: "WAN / 默认路由证据", note: `WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(total || 1)}，默认路由可用，快照在可信窗口内`, tone: "ok", severity: "normal" };
+    return { id: "conclusion", label: "结论", value: "转发可用", title: "转发面可用", heroTitle: "WAN / 默认路由证据", note: `WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(total || 1)}，默认路由可用，当前快照可用`, tone: "ok", severity: "normal" };
   }
   function objectFor(snapshot, state, priority) {
     const total = totalWan(snapshot, state);
@@ -8728,7 +8728,7 @@ var PanelFramework = function(exports) {
     const snapshotFact = {
       label: "快照",
       value: snapshotValue,
-      note: priority === "snapshot-missing" ? "最近成功" : "可信窗口",
+      note: priority === "snapshot-missing" ? "最近成功" : "当前快照",
       tone: priority === "snapshot-missing" ? "warn" : state.facts.collection.credibilityTone
     };
     const routeFact = {
@@ -9549,7 +9549,6 @@ var PanelFramework = function(exports) {
         className: "ik-mobile-tab-view",
         id: `mobile-${activeTab}-view`,
         "data-overview-mobile-tab-view": activeTab,
-        "data-overview-mobile-tab-view-contract": "mobile-native-summary-flat-list-no-desktop-table",
         "data-overview-mobile-tab-credibility": businessHidden ? "business-hidden" : activeTab === "log" ? "collection-evidence" : "business-visible",
         children: [
           /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { className: "ik-mobile-tab-head", children: [

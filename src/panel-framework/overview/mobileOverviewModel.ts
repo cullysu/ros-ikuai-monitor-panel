@@ -504,7 +504,7 @@ function coreMetrics(snapshot: OverviewRawSnapshot, state: OverviewDerivedState,
   const snapshotFact: MobileMonitorFact = {
     label: "快照",
     value: snapshotValue,
-    note: priority === "snapshot-missing" ? "最近成功" : "可信窗口",
+    note: priority === "snapshot-missing" ? "最近成功" : "当前快照",
     tone: priority === "snapshot-missing" ? "warn" : state.facts.collection.credibilityTone,
   };
   const routeFact: MobileMonitorFact = {
