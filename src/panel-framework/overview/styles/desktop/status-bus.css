@@ -1,8 +1,11 @@
 @media (min-width: 761px) {
   /*Canonical desktop status bus; it owns only the top-level conclusion rail.*/
   #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-topbar.ro-status-bus {
+    display: grid !important;
+    grid-template-columns: minmax(150px, .9fr) minmax(176px, 1.06fr) minmax(126px, .78fr) minmax(118px, .72fr) minmax(126px, .76fr) minmax(118px, .68fr) !important;
     grid-column: 1 / -1 !important;
     height: 38px !important;
+    max-height: 56px !important;
     min-height: 38px !important;
     gap: 0 !important;
     margin: 0 0 5px !important;
@@ -13,8 +16,13 @@
     background: transparent !important;
     background-image: none !important;
     box-shadow: none !important;
+    overflow: visible !important;
   }
   #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-topbar.ro-status-bus .ro-topbar-cell {
+    min-width: 0 !important;
+    display: grid !important;
+    align-content: center !important;
+    gap: 2px !important;
     height: 38px !important;
     min-height: 38px !important;
     padding: 4px 10px !important;
@@ -22,6 +30,7 @@
     border-radius: 0 !important;
     background: transparent !important;
     box-shadow: inset 1px 0 0 rgba(126,151,178,.10) !important;
+    overflow: visible !important;
     position: relative !important;
   }
   #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-topbar.ro-status-bus .ro-topbar-cell[data-overview-status-role="conclusion"] {
@@ -37,19 +46,39 @@
     box-shadow: inset 2px 0 0 rgba(164, 111, 36, .55) !important;
   }
   #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-topbar.ro-status-bus .ro-topbar-cell span {
+    display: block !important;
     color: var(--ik-console-muted, #76889d) !important;
     font-size: 10px !important;
     font-weight: 560 !important;
     line-height: 11px !important;
     letter-spacing: .01em !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
   }
   #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-topbar.ro-status-bus .ro-topbar-cell b {
+    display: block !important;
     color: var(--ik-console-ink, #122237) !important;
     font-size: 12px !important;
     font-weight: 760 !important;
     line-height: 14px !important;
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    overflow-wrap: anywhere !important;
+  }
+  #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-topbar.ro-status-bus .ro-topbar-cell[data-overview-status-role="conclusion"] b {
+    font-size: 14.2px !important;
+    line-height: 1.05 !important;
+    font-weight: 900 !important;
+  }
+  #overview.router-overview-framework[data-overview-scene-key="resource-full"] .ro-topbar.ro-status-bus .ro-topbar-cell[data-overview-status-role="conclusion"] b,
+  #overview.router-overview-framework[data-overview-scene-key="all-offline"] .ro-topbar.ro-status-bus .ro-topbar-cell[data-overview-status-role="conclusion"] b,
+  #overview.router-overview-framework[data-overview-scene-key="interfaces-down"] .ro-topbar.ro-status-bus .ro-topbar-cell[data-overview-status-role="conclusion"] b {
+    color: #d93025 !important;
   }
   #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-topbar.ro-status-bus .ro-topbar-cell em {
+    display: none !important;
     color: var(--ik-console-subtle, #8fa0b3) !important;
     font-size: 9px !important;
     font-weight: 520 !important;

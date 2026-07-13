@@ -27,6 +27,8 @@ const panelFile = "src/panel-framework/overview/OverviewPanel.tsx";
 const panelCssFile = "src/panel-framework/overview/OverviewPanel.css";
 const desktopBaseStylesFile =
   "src/panel-framework/overview/styles/overview-desktop.css";
+const desktopConsoleRefinementStylesFile =
+  "src/panel-framework/overview/styles/desktop/console-refinement.css";
 const desktopBaseStyleLayerFiles = [
   desktopBaseStylesFile,
   "src/panel-framework/overview/styles/desktop/density.css",
@@ -36,7 +38,7 @@ const desktopBaseStyleLayerFiles = [
   "src/panel-framework/overview/styles/desktop/evidence.css",
   "src/panel-framework/overview/styles/desktop/console-skeleton.css",
   "src/panel-framework/overview/styles/desktop/layout.css",
-  "src/panel-framework/overview/styles/desktop/console-refinement.css",
+  desktopConsoleRefinementStylesFile,
 ];
 const desktopRefinementFile =
   "src/panel-framework/overview/styles/desktop/refinement.css";
@@ -142,6 +144,7 @@ const desktopDefaultScene = read(desktopDefaultSceneFile);
 const desktopResourceScene = read(desktopResourceSceneFile);
 const panelCss = read(panelCssFile);
 const desktopBaseStyles = desktopBaseStyleLayerFiles.map(read).join("\n");
+const desktopConsoleRefinementStyles = read(desktopConsoleRefinementStylesFile);
 const desktopRefinement = read(desktopRefinementFile);
 const desktopRuntimeStyles = read(desktopRuntimeStylesFile);
 const desktopWorkspaceLayout = read(desktopWorkspaceLayoutFile);
@@ -463,7 +466,8 @@ assert(
   lines(desktopStatusBusStyles) <= 130 &&
     desktopStatusBusStyles.includes(".ro-topbar.ro-status-bus") &&
     panel.includes('import "./styles/desktop/status-bus.css";') &&
-    !desktopRefinement.includes(".ro-topbar.ro-status-bus"),
+    !desktopRefinement.includes(".ro-topbar.ro-status-bus") &&
+    !desktopConsoleRefinementStyles.includes(".ro-topbar"),
   "Desktop status bus must have one canonical component layer, not a refinement shadow"
 );
 assert(
@@ -879,7 +883,7 @@ assert(
   `Desktop base styles must not ship inactive flat-dense root rules: ${desktopLegacyRootRuleCount}`
 );
 assert(
-  desktopStatusBusRuleCount === 8 && desktopLegacyTopbarRuleCount === 0,
+  desktopStatusBusRuleCount === 10 && desktopLegacyTopbarRuleCount === 0,
   `Desktop status bus must stay canonical: statusBusRules=${desktopStatusBusRuleCount} legacyTopbarRules=${desktopLegacyTopbarRuleCount}`
 );
 assert(
