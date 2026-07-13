@@ -3253,9 +3253,23 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       mobile390AppHomeRankCardOk &&
       mobile390AppHomeBottomTabOk
     );
+    const mobile390NoSnapshotDecisionHomeOk = !mobileOverview390x844 || !noSnapshotEdge || Boolean(
+      !sectionRoot?.querySelector('.ik-mobile-core-facts') &&
+      mobile390AppHomeChromeNodes.some((node) => node.classList.contains('ik-mobile-device-bar')) &&
+      mobile390AppHomeChromeNodes.some((node) => node.classList.contains('ik-mobile-primary-conclusion')) &&
+      mobile390AppHomeChromeNodes.some((node) => node.classList.contains('ik-mobile-supporting-list')) &&
+      mobile390AppHomeBottomTabOk
+    );
     const mobile390AppHomeTwinOk = !mobileOverview390x844 || Boolean(
       (mobileFirstScreen || sectionRoot)?.querySelector('.ik-mobile-supporting-list, [data-overview-mobile-v159-topn], .ik-v159-top-list, .ik-v240-list, [data-overview-mobile-v240-list]')
     );
+    const mobile390AppHomeStructureOk = noSnapshotEdge
+      ? mobile390NoSnapshotDecisionHomeOk
+      : mobile390AppHomeChromeOk &&
+        mobile390AppHomeTwinOk &&
+        mobile390AppHomeHeroMetricsOk &&
+        mobile390AppHomeResourceCardOk &&
+        mobile390AppHomeRankCardOk;
     const mobile390AppHomeScenarioVisualOk = !mobileOverview390x844 || Boolean(
       mobileFirstScreenSceneVisualNodes.length > 0 ||
       mobileFirstScreenPortMatrix ||
@@ -3285,7 +3299,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         mobile390FirstDetailRows.slice(0, 2).every(nodeVisibleInFirstScreen)
       )
     );
-    const overviewMobile390AppHomeFirstOk = mobile390AppHomeChromeOk && mobile390AppHomeTwinOk && mobile390AppHomeHeroMetricsOk && mobile390AppHomeResourceCardOk && mobile390AppHomeRankCardOk && mobile390AppHomeBottomTabOk && overviewMobile390FirstScreenNoTableOk && overviewMobile390NoOldKpiStackOk && mobile390ScenarioVisualNotDecorativeOk;
+    const overviewMobile390AppHomeFirstOk = mobile390AppHomeStructureOk && mobile390AppHomeBottomTabOk && overviewMobile390FirstScreenNoTableOk && overviewMobile390NoOldKpiStackOk && mobile390ScenarioVisualNotDecorativeOk;
     const overviewMobile390FirstScreenVisualOk = !mobileOverview390x844 || Boolean(
       mobile390AppHomeScenarioVisualOk &&
       mobile390ScenarioVisualNotDecorativeOk &&
@@ -4728,8 +4742,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       mobile390TitleOverlapSamples.length === 0
     );
     const overviewMobileIosRouterHomeOk = !mobileOverview390x844 || Boolean(
-      mobile390AppHomeChromeOk &&
-      mobile390AppHomeTwinOk &&
+      mobile390AppHomeStructureOk &&
       mobile390AppHomeScenarioVisualOk &&
       mobile390AppHomeRingTrafficOk &&
       overviewMobile390FirstScreenNoTableOk &&
@@ -7120,6 +7133,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       noCoreClip: overviewMobile390NoCoreTextClipOk,
       resourceVertical: overviewMobileResourceFullVerticalOk,
       appHomeFirst: overviewMobile390AppHomeFirstOk,
+      noSnapshotDecisionHome: mobile390NoSnapshotDecisionHomeOk,
       noSnapshotRateForbidden: overviewNoSnapshotFirstScreenRateForbiddenOk,
       noLongTimestamp: overviewLongTimestampForbiddenOk,
       chineseUi: overviewChineseUiNoEngineeringEnglishOk,
@@ -7441,6 +7455,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       mobile390CoreTextClipSamples: mobile390CoreTextClipSamples.slice(0, 8),
       overviewMobileResourceFullVerticalOk,
       overviewMobile390AppHomeFirstOk,
+      mobile390NoSnapshotDecisionHomeOk,
       mobile390AppHomeTwinOk,
       mobile390AppHomeHeroMetricsOk,
       mobile390AppHomeResourceCardOk,

@@ -28,7 +28,7 @@ export function MobileOverviewHome(props: MobileOverviewHomeProps) {
           {activeTab === "home" ? (
             <>
               <PrimaryDecision model={model} onSelectTab={setActiveTab} />
-              <CoreFacts model={model} />
+              {model.coreMetrics.length ? <CoreFacts model={model} /> : null}
               <SupportingList model={model} />
             </>
           ) : (

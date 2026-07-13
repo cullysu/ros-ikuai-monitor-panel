@@ -1653,12 +1653,15 @@ async function main() {
         const metricGridStyle = metricGrid ? getComputedStyle(metricGrid) : null;
         const metricCells = Array.from(metricGrid?.querySelectorAll('span') || []);
         const metricLabels = metricCells.map((cell) => normalize(cell.querySelector('em')?.textContent || ''));
+        const noSnapshotMetricsDeferred = sectionName === 'mobileNoSnapshotHome';
         const expectedMetricLabels = sectionName === 'mobileNormalHome'
           ? ['WAN', '默认路由', '采集', '快照']
           : ['WAN', '采集', '资源', '快照'];
         const metricGridColumnCount = (metricGridStyle?.gridTemplateColumns || '').split(' ').filter(Boolean).length;
         const isLandscapeMobile = innerWidth > innerHeight;
-        const metricGridProductized = Boolean(
+        const metricGridProductized = noSnapshotMetricsDeferred
+          ? !metricGrid
+          : Boolean(
           (!judgementStrip || !judgementStrip.querySelector('.ik-mobile-core-facts')) &&
           metricGrid &&
           metricCells.length === 4 &&
@@ -1672,7 +1675,7 @@ async function main() {
             : metricGridColumnCount === 1 &&
               (metricGridStyle.gridTemplateRows || '').split(' ').filter(Boolean).length === 4 &&
               Number.parseFloat(metricGridStyle.height || '0') >= 184)
-        );
+          );
         const normalSummaryStrip = sectionName === 'mobileNormalHome' ? metricGrid : null;
         const normalSummaryCells = Array.from(normalSummaryStrip?.querySelectorAll('.ik-mobile-fact') || []);
         const normalSummaryCellIds = normalSummaryCells.map((cell) => {
@@ -1687,7 +1690,7 @@ async function main() {
         const normalHeroHeadline = hero?.querySelector('.ik-v620-hero-head');
         const normalHeroHeadlineStyle = normalHeroHeadline ? getComputedStyle(normalHeroHeadline) : null;
         const normalHeroHeadlineRect = normalHeroHeadline?.getBoundingClientRect();
-        const firstScreenOrderNodes = [hero, metricGrid, surface];
+        const firstScreenOrderNodes = noSnapshotMetricsDeferred ? [hero, surface] : [hero, metricGrid, surface];
         const firstScreenOrderProductized = firstScreenOrderNodes.every(Boolean) && firstScreenOrderNodes.every((node, index) => (
           index === firstScreenOrderNodes.length - 1 ||
           Boolean(node.compareDocumentPosition(firstScreenOrderNodes[index + 1]) & Node.DOCUMENT_POSITION_FOLLOWING)
@@ -2211,6 +2214,7 @@ async function main() {
           listEvidence,
           nativeTrustSpinePolished,
           metricGridProductized,
+          noSnapshotMetricsDeferred,
           mobileGroupedSurfaceLowBorder,
           groupedSurfaceNoise: groupedSurfaceStyles.map((style) => ({
             backgroundColor: style.backgroundColor,
