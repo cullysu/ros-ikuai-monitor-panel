@@ -769,7 +769,7 @@ assert(
   "Mobile home modules must consume decision and supporting evidence from the view model"
 );
 assert(
-  ["core.css", "product-shell.css", "frame.css", "decision.css", "trend.css", "surface.css", "incident.css", "navigation.css", "landscape.css"]
+  ["core.css", "product-shell.css", "frame.css", "decision.css", "trend.css", "surface.css", "incident.css", "navigation.css", "landscape.css", "landscape-trend.css", "landscape-resource.css"]
     .every((file) => mobileStyles.includes(`@import "./${file}";`)),
   "Mobile build-time CSS must use semantic component layers"
 );
@@ -847,6 +847,8 @@ const mobileStyleLayerFiles = [
   "src/panel-framework/overview/styles/mobile/incident.css",
   "src/panel-framework/overview/styles/mobile/navigation.css",
   "src/panel-framework/overview/styles/mobile/landscape.css",
+  "src/panel-framework/overview/styles/mobile/landscape-trend.css",
+  "src/panel-framework/overview/styles/mobile/landscape-resource.css",
 ];
 const mobileStyleLineLimits = new Map([
   ["src/panel-framework/overview/styles/mobile/core.css", 80],
@@ -858,6 +860,8 @@ const mobileStyleLineLimits = new Map([
   ["src/panel-framework/overview/styles/mobile/incident.css", 120],
   ["src/panel-framework/overview/styles/mobile/navigation.css", 80],
   ["src/panel-framework/overview/styles/mobile/landscape.css", 80],
+  ["src/panel-framework/overview/styles/mobile/landscape-trend.css", 80],
+  ["src/panel-framework/overview/styles/mobile/landscape-resource.css", 80],
 ]);
 let mobileStyleByteTotal = 0;
 for (const rel of mobileStyleLayerFiles) {

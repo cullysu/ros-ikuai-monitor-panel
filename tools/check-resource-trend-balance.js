@@ -1518,6 +1518,16 @@ async function main() {
         const trendVisualRect = trendVisual?.getBoundingClientRect();
         const lineChartRect = productChart?.getBoundingClientRect();
         const heroRect = hero?.getBoundingClientRect();
+        const heroHeadline = hero?.querySelector('.ik-mobile-decision-head h1');
+        const heroHeadlineRect = heroHeadline?.getBoundingClientRect();
+        const heroHeadlineVisible = Boolean(
+          heroRect &&
+          heroHeadlineRect &&
+          heroHeadlineRect.width > 0 &&
+          heroHeadlineRect.height > 0 &&
+          heroHeadlineRect.top >= heroRect.top - 1 &&
+          heroHeadlineRect.bottom <= heroRect.bottom + 1
+        );
         const chartRailStyle = chartRail ? getComputedStyle(chartRail) : null;
         const chartReadoutCells = Array.from(chartRail?.querySelectorAll(':scope > span') || []);
         const chartReadoutCellRects = chartReadoutCells.map((cell) => cell.getBoundingClientRect());
@@ -2067,6 +2077,7 @@ async function main() {
           screen &&
           surface &&
           hero &&
+          heroHeadlineVisible &&
           deviceHeaderVisible &&
           !deviceHeaderUsesVerdict &&
           deviceStatusVisible &&
@@ -2160,6 +2171,8 @@ async function main() {
           chartRailComputedColumns: chartRailStyle?.gridTemplateColumns || '',
           chartRailComputedRows: chartRailStyle?.gridTemplateRows || '',
           chartRailWithinHero,
+          heroHeadlineVisible,
+          heroHeadlineRect: heroHeadlineRect ? { left: heroHeadlineRect.left, top: heroHeadlineRect.top, right: heroHeadlineRect.right, bottom: heroHeadlineRect.bottom, width: heroHeadlineRect.width, height: heroHeadlineRect.height } : null,
           chartRailRect: chartRailRect ? { left: chartRailRect.left, top: chartRailRect.top, right: chartRailRect.right, bottom: chartRailRect.bottom, width: chartRailRect.width, height: chartRailRect.height } : null,
           heroRect: heroRect ? { left: heroRect.left, top: heroRect.top, right: heroRect.right, bottom: heroRect.bottom, width: heroRect.width, height: heroRect.height } : null,
           chartRailClassName: chartRail?.className || '',

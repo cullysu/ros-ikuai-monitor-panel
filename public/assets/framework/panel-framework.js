@@ -9169,6 +9169,7 @@ var PanelFramework = function(exports) {
         "span",
         {
           className: `ik-mobile-resource-line ${toneClass(item.tone)}`,
+          "data-risk": item.risk,
           children: [
             /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: item.label }),
             /* @__PURE__ */ jsxRuntimeExports.jsx("i", { "aria-hidden": "true", children: /* @__PURE__ */ jsxRuntimeExports.jsx("u", { style: { width: item.meterPercent } }) }),

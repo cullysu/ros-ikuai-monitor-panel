@@ -1,0 +1,13 @@
+@media (min-width: 761px) and (max-width: 900px) and (max-height: 520px) {
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-priority="normal"] .ik-mobile-decision-card {
+    grid-template-rows: 70px 140px;
+    align-content: start;
+    gap: 6px;
+    padding: 10px 12px;
+  }
+
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-priority="normal"] .ik-mobile-decision-head {
+    gap: 2px;
+  }
+
+}

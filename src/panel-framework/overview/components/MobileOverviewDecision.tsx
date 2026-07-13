@@ -50,6 +50,7 @@ function ResourceDecisionVisual({ model, onSelectTab }: { model: MobileOverviewM
       {model.hero.resourceCells.map((item) => (
         <span
           className={`ik-mobile-resource-line ${toneClass(item.tone)}`}
+          data-risk={item.risk}
           key={item.key}
         >
           <b>{item.label}</b>

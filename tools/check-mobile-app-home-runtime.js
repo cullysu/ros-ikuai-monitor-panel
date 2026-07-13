@@ -233,6 +233,11 @@ async function main() {
       'compact landscape app home',
       ['tools/check-resource-trend-balance.js', '--url', url, '--section', 'mobileNormalHome', '--width', '844', '--height', '390', '--json', 'codex_tmp_mobileLandscapeHome.json', '--png', 'codex_tmp_mobileLandscapeHome.png', '--wait', '3600'],
       ['codex_tmp_mobileLandscapeHome.json', 'codex_tmp_mobileLandscapeHome.png']
+    ],
+    [
+      'resource pressure landscape keeps the conclusion visible',
+      ['tools/check-resource-trend-balance.js', '--url', url, '--section', 'mobileResourceHome', '--width', '844', '--height', '390', '--json', 'codex_tmp_mobileLandscapeResource.json', '--png', 'codex_tmp_mobileLandscapeResource.png', '--wait', '3600'],
+      ['codex_tmp_mobileLandscapeResource.json', 'codex_tmp_mobileLandscapeResource.png']
     ]
   ];
   if (process.env.CODEX_MOBILE_WIDTH || process.env.CODEX_MOBILE_HEIGHT) {
