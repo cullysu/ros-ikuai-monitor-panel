@@ -9,31 +9,31 @@ function WanDecisionSpark({ model }: { model: MobileOverviewModel }) {
   return (
     <div className="ik-mobile-decision-trend">
       <div className="ik-mobile-decision-trend-plot">
-        <div className="ik-v1072-chart-head">
-          <span className="ik-v1065-chart-kicker">WAN 趋势 · {chart.windowText}</span>
-          <div className="ik-v1072-series-legend" aria-label="下载与上传图例">
+        <div className="ik-mobile-chart-head">
+          <span className="ik-mobile-chart-kicker">WAN 趋势 · {chart.windowText}</span>
+          <div className="ik-mobile-series-legend" aria-label="下载与上传图例">
             <span className="is-download"><i aria-hidden="true" />下载</span>
             <span className="is-upload"><i aria-hidden="true" />上传</span>
           </div>
         </div>
-        <div className="ik-mobile-decision-visual ik-v240-traffic ik-mobile-wan-trend">
+        <div className="ik-mobile-decision-visual ik-mobile-traffic-visual ik-mobile-wan-trend">
           <svg
             className="ik-mobile-line-chart"
             viewBox={`0 0 312 ${Math.max(plot.viewHeight, 76)}`}
             role="img"
             aria-label={`${chart.windowText} WAN 采样趋势，当前 ${chart.currentLabel}，峰值 ${chart.peakLabel}`}
           >
-            <path className="ik-v420-gridline ik-mobile-decision-grid" d={plot.gridYs.map((y) => `M0 ${y} H312`).join(" ")} />
-            <path className="ik-v945-reference-line ik-mobile-decision-ref" d={`M0 ${plot.referenceY} H312`} />
-            <polyline className="ik-v420-curve is-main ik-mobile-decision-line is-download" points={plot.downPoints} />
-            <polyline className="ik-v420-curve is-soft ik-mobile-decision-line is-upload" points={plot.upPoints} />
-            <circle className="ik-v420-peak-dot" cx={plot.peak.x} cy={plot.peak.y} r="2.6" />
-            <circle className="ik-v420-focus-dot ik-mobile-decision-dot" cx={plot.focus.x} cy={plot.focus.y} r="3" />
+            <path className="ik-mobile-chart-grid ik-mobile-decision-grid" d={plot.gridYs.map((y) => `M0 ${y} H312`).join(" ")} />
+            <path className="ik-mobile-chart-reference ik-mobile-decision-ref" d={`M0 ${plot.referenceY} H312`} />
+            <polyline className="ik-mobile-chart-line ik-mobile-decision-line is-download" points={plot.downPoints} />
+            <polyline className="ik-mobile-chart-line ik-mobile-decision-line is-upload" points={plot.upPoints} />
+            <circle className="ik-mobile-chart-peak" cx={plot.peak.x} cy={plot.peak.y} r="2.6" />
+            <circle className="ik-mobile-chart-focus ik-mobile-decision-dot" cx={plot.focus.x} cy={plot.focus.y} r="3" />
           </svg>
         </div>
       </div>
-      <i className="ik-v812-trend-visual ik-mobile-decision-trend-anchor" aria-hidden="true" />
-      <div className="ik-v1010-chart-readout-rail ik-mobile-decision-readouts" aria-label={chartDecision}>
+      <i className="ik-mobile-decision-trend-anchor" aria-hidden="true" />
+      <div className="ik-mobile-decision-readouts" aria-label={chartDecision}>
         <span><em>当前</em><b>{chart.currentLabel}</b></span>
         <span><em>峰值</em><b>{chart.peakLabel}</b></span>
         <span><em>参考</em><b>{chart.referenceValueLabel}</b></span>
@@ -45,7 +45,7 @@ function WanDecisionSpark({ model }: { model: MobileOverviewModel }) {
 
 function ResourceDecisionVisual({ model, onSelectTab }: { model: MobileOverviewModel; onSelectTab?: (tab: MobileBottomTabId) => void }) {
   return (
-    <div className="ik-mobile-decision-visual ik-v420-resource-meter-set ik-density-resource-ledger ik-v1040-resource-ledger ik-mobile-resource-incident-stack ik-mobile-resource-decision">
+    <div className="ik-mobile-decision-visual ik-mobile-resource-incident-stack ik-mobile-resource-decision">
       <AbnormalDecisionRail model={model} onSelectTab={onSelectTab} />
       {model.hero.resourceCells.map((item) => (
         <span
@@ -72,7 +72,7 @@ function AbnormalDecisionRail({ model, onSelectTab }: { model: MobileOverviewMod
   if (!object || !impact || !credibility || !action) return null;
   return (
     <div
-      className="ik-v1046-abnormal-decision-rail ik-mobile-abnormal-decision-rail"
+      className="ik-mobile-abnormal-decision-rail"
     >
       <div className="ik-mobile-incident-summary">
         <span className={`ik-mobile-decision-cell ${toneClass(object.tone)}`}>
@@ -112,7 +112,7 @@ function AbnormalDecisionRail({ model, onSelectTab }: { model: MobileOverviewMod
 
 function ChannelDecisionVisual({ model, onSelectTab }: { model: MobileOverviewModel; onSelectTab?: (tab: MobileBottomTabId) => void }) {
   return (
-    <div className="ik-mobile-decision-visual ik-v240-channel-line ik-mobile-channel-incident-stack ik-mobile-channel-decision">
+    <div className="ik-mobile-decision-visual ik-mobile-channel-incident-stack ik-mobile-channel-decision">
       <AbnormalDecisionRail model={model} onSelectTab={onSelectTab} />
     </div>
   );
@@ -145,7 +145,7 @@ function decisionKicker(model: MobileOverviewModel): string {
 export function PrimaryDecision({ model, onSelectTab }: { model: MobileOverviewModel; onSelectTab?: (tab: MobileBottomTabId) => void }) {
   return (
     <section
-      className={`ik-v420-hero ik-v240-hero ik-v159-network-hero ik-mobile-decision-card ik-mobile-primary-conclusion is-${model.hero.visualKind} ${toneClass(model.network.conclusion.tone)}`}
+      className={`ik-mobile-decision-card ik-mobile-primary-conclusion is-${model.hero.visualKind} ${toneClass(model.network.conclusion.tone)}`}
       aria-label="移动端网络状态结论"
     >
       <div className="ik-mobile-decision-head">

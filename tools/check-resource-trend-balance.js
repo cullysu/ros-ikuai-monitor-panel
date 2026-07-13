@@ -1497,19 +1497,19 @@ async function main() {
         } : {};
         const hasHorizontalOverflow = document.documentElement.scrollWidth > document.documentElement.clientWidth + 1 || wideNodes.length > 0;
         const chartRail = hero?.querySelector('.ik-mobile-decision-readouts');
-        const trendVisual = hero?.querySelector('.ik-v812-trend-visual');
+        const trendVisual = hero?.querySelector('.ik-mobile-decision-trend-anchor');
         const v1072Chart = hero?.querySelector('.ik-mobile-decision-trend');
-        const v1072SeriesLegend = v1072Chart?.querySelector('.ik-v1072-series-legend');
+        const v1072SeriesLegend = v1072Chart?.querySelector('.ik-mobile-series-legend');
         const decisionReadoutGrid = hero?.querySelector('.ik-mobile-decision-readouts');
         const productChart = hero?.querySelector('svg.ik-mobile-line-chart');
         const productDecisionChart = productChart;
         const modelBackedChartPlot = sectionName !== 'mobileNormalHome' || Boolean(
           productChart &&
-          productChart.querySelector('.ik-v420-curve.is-main')?.getAttribute('points') &&
-          productChart.querySelector('.ik-v420-curve.is-soft')?.getAttribute('points') &&
-          productChart.querySelector('.ik-v420-peak-dot') &&
-          productChart.querySelector('.ik-v420-focus-dot') &&
-          productChart.querySelector('.ik-v945-reference-line')
+          productChart.querySelector('.ik-mobile-chart-line.is-download')?.getAttribute('points') &&
+          productChart.querySelector('.ik-mobile-chart-line.is-upload')?.getAttribute('points') &&
+          productChart.querySelector('.ik-mobile-chart-peak') &&
+          productChart.querySelector('.ik-mobile-chart-focus') &&
+          productChart.querySelector('.ik-mobile-chart-reference')
         );
         const productChartDecision = chartRail?.getAttribute('aria-label') || '';
         const productChartAnomaly = productChartDecision.match(/高位(?:点)?\\s*(\\d+)/)?.[0].replace(/高位(?:点)?\\s*/, '高位点 ') || '';
@@ -1561,7 +1561,7 @@ async function main() {
         const hasReferenceChartContract = sectionName !== 'mobileNormalHome' || Boolean(
           productChart &&
           productChart.querySelector('.ik-mobile-decision-ref') &&
-          productChart.querySelector('.ik-v420-peak-dot') &&
+          productChart.querySelector('.ik-mobile-chart-peak') &&
           productChart.querySelector('.ik-mobile-decision-dot') &&
           chartRail?.textContent?.includes('参考')
         );
@@ -1666,7 +1666,7 @@ async function main() {
         });
         const normalSummaryLabels = normalSummaryCells.map((cell) => normalize(cell.querySelector('em')?.textContent || ''));
         const normalSummaryStyle = normalSummaryStrip ? getComputedStyle(normalSummaryStrip) : null;
-        const normalChartLabel = hero?.querySelector('.ik-v1065-chart-kicker');
+        const normalChartLabel = hero?.querySelector('.ik-mobile-chart-kicker');
         const normalChartLabelStyle = normalChartLabel ? getComputedStyle(normalChartLabel) : null;
         const normalChartLabelRect = normalChartLabel?.getBoundingClientRect();
         const normalHeroHeadline = hero?.querySelector('.ik-v620-hero-head');

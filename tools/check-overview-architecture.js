@@ -106,6 +106,8 @@ const mobileFrameStylesFile =
   "src/panel-framework/overview/styles/mobile/frame.css";
 const mobileCoreStylesFile =
   "src/panel-framework/overview/styles/mobile/core.css";
+const mobileDecisionStylesFile =
+  "src/panel-framework/overview/styles/mobile/decision.css";
 const mobileModelFile =
   "src/panel-framework/overview/mobileOverviewModel.ts";
 const mobilePolicyFile =
@@ -147,6 +149,7 @@ const mobileProductShell = read(mobileProductShellFile);
 const mobileNavigationStyles = read(mobileNavigationStylesFile);
 const mobileFrameStyles = read(mobileFrameStylesFile);
 const mobileCoreStyles = read(mobileCoreStylesFile);
+const mobileDecisionStyles = read(mobileDecisionStylesFile);
 const mobileModel = read(mobileModelFile);
 const mobilePolicy = read(mobilePolicyFile);
 const cssRoot = postcss.parse(panelCss, { from: panelCssFile });
@@ -419,8 +422,9 @@ assert(
   (mobileProductShell.match(/!important/g) || []).length === 0 &&
     (mobileNavigationStyles.match(/!important/g) || []).length === 0 &&
     (mobileFrameStyles.match(/!important/g) || []).length === 0 &&
-    (mobileCoreStyles.match(/!important/g) || []).length === 0,
-  "Mobile product shell, frame, core, and navigation must not use override priorities"
+    (mobileCoreStyles.match(/!important/g) || []).length === 0 &&
+    (mobileDecisionStyles.match(/!important/g) || []).length === 0,
+  "Mobile product shell, frame, core, decision, and navigation must not use override priorities"
 );
 assert(
   lines(desktopHelpers) <= 450,
@@ -504,6 +508,10 @@ assert(
 assert(
   lines(mobileDecision) <= 270,
   `MobileOverviewDecision.tsx exceeds 270 lines: ${lines(mobileDecision)}`
+);
+assert(
+  !/ik-v\d+/.test(mobileDecision),
+  "Mobile decision card must not inherit legacy hero, chart, or incident classes"
 );
 assert(
   lines(mobileHomeSections) <= 170,
