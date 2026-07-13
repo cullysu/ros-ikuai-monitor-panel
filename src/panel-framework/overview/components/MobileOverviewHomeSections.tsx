@@ -1,4 +1,4 @@
-import { useState, type CSSProperties } from "react";
+import { useState } from "react";
 import type { MobileOverviewModel } from "../mobileOverviewModel";
 import type { AppRankingRow } from "./MobileOverviewTypes";
 import { toneClass } from "./MobileOverviewUtils";
@@ -68,14 +68,12 @@ export function SupportingList({ model }: { model: MobileOverviewModel }) {
   const [expanded, setExpanded] = useState(false);
   const rows = model.primaryList.rows.slice(0, model.priority === "normal" ? 3 : 4);
   const copy = supportingCopy(model);
-  const listStyle = { "--mobile-list-count": rows.length } as CSSProperties;
   return (
     <section
-      className={`ik-v420-surface ik-v240-facts ik-mobile-supporting-surface${expanded ? " is-expanded" : ""}`}
-      style={listStyle}
+      className={`ik-mobile-supporting-surface${expanded ? " is-expanded" : ""}`}
     >
       <div
-        className={`ik-v420-list ik-v420-app-list ik-v240-list ik-mobile-supporting-list${expanded ? " is-expanded" : ""}`}
+        className={`ik-mobile-supporting-list${expanded ? " is-expanded" : ""}`}
       >
         <header>
           <b>{copy.title}</b>
@@ -102,7 +100,7 @@ export function SupportingList({ model }: { model: MobileOverviewModel }) {
         >
           {rows.map((row) => (
             <article
-              className={`ik-v420-list-row ik-mobile-deferred-row ${toneClass(row.tone)}`}
+              className={`ik-mobile-deferred-row ${toneClass(row.tone)}`}
               key={row.id}
             >
               <i className="ik-mobile-row-token" data-rank={row.rank}>{rowIcon(row)}</i>

@@ -1,132 +1,214 @@
 @media (max-width: 760px), (min-width: 761px) and (max-width: 900px) and (max-height: 520px) {
-  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-supporting-surface {
-    min-height: 82px !important;
-    height: 82px !important;
-    max-height: 82px !important;
-    align-self: start !important;
-    overflow: hidden !important;
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-supporting-surface {
+    align-self: start;
+    min-height: 82px;
+    height: 82px;
+    max-height: 82px;
+    padding: 3px 0 0;
+    overflow: hidden;
+    border: 0;
+    border-radius: 8px;
+    background: rgba(244, 248, 252, .64);
+    box-shadow: none;
   }
 
-  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-supporting-list {
-    height: 100% !important;
-    border-radius: 6px !important;
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-supporting-list {
+    display: grid;
+    grid-template-rows: 34px 48px;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    border: 0;
+    border-radius: 6px;
+    background: rgba(244, 248, 252, .64);
+    box-shadow: none;
   }
 
-  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-supporting-list header {
-    display: flex !important;
-    align-items: center !important;
-    gap: 6px !important;
-    min-height: 34px !important;
-    padding: 7px 9px !important;
-    overflow: hidden !important;
-    white-space: nowrap !important;
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-supporting-list header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 34px;
+    padding: 7px 9px;
+    overflow: hidden;
+    border: 0;
+    background: transparent;
+    box-shadow: inset 0 -1px 0 rgba(126, 151, 178, .105);
+    white-space: nowrap;
   }
 
-  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-supporting-list header > b {
-    color: #1d3148 !important;
-    font-size: 12px !important;
-    font-weight: 800 !important;
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-supporting-list header > b {
+    color: #1d3148;
+    font-size: 12px;
+    font-weight: 800;
   }
 
-  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-supporting-list header > span {
-    overflow: hidden !important;
-    color: #64778b !important;
-    font-size: 10px !important;
-    text-overflow: ellipsis !important;
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-supporting-list header > span {
+    overflow: hidden;
+    color: #64778b;
+    font-size: 10px;
+    text-overflow: ellipsis;
   }
 
-  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-supporting-list header > em {
-    display: none !important;
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-supporting-list header > em {
+    display: none;
   }
 
-  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-supporting-list {
-    display: grid !important;
-    grid-template-rows: 34px 48px !important;
-    height: auto !important;
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-detail-entry {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    min-height: 48px;
+    height: 48px;
+    margin: 0;
+    padding: 8px 10px;
+    border: 0;
+    border-top: 1px solid rgba(126, 151, 178, .16);
+    border-radius: 0;
+    background: transparent;
+    color: #172236;
+    box-shadow: none;
+    text-align: left;
   }
 
-  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-detail-entry {
-    display: grid !important;
-    grid-template-columns: minmax(0, 1fr) auto !important;
-    align-items: center !important;
-    gap: 10px !important;
-    width: 100% !important;
-    min-height: 48px !important;
-    height: 48px !important;
-    margin: 0 !important;
-    padding: 8px 10px !important;
-    border: 0 !important;
-    border-top: 1px solid rgba(126, 151, 178, .16) !important;
-    border-radius: 0 !important;
-    background: transparent !important;
-    color: #172236 !important;
-    box-shadow: none !important;
-    text-align: left !important;
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-detail-entry > span {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
   }
 
-  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-detail-entry > span {
-    display: grid !important;
-    gap: 2px !important;
-    min-width: 0 !important;
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-detail-entry b {
+    overflow: hidden;
+    color: #172236;
+    font-size: 12px;
+    font-weight: 820;
+    line-height: 1.12;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
-  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-detail-entry b {
-    overflow: hidden !important;
-    color: #172236 !important;
-    font-size: 12px !important;
-    font-weight: 820 !important;
-    line-height: 1.12 !important;
-    text-overflow: ellipsis !important;
-    white-space: nowrap !important;
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-detail-entry em {
+    overflow: hidden;
+    color: #6b7b8f;
+    font-size: 10px;
+    font-style: normal;
+    font-weight: 620;
+    line-height: 1.12;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
-  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-detail-entry em {
-    overflow: hidden !important;
-    color: #6b7b8f !important;
-    font-size: 10px !important;
-    font-style: normal !important;
-    font-weight: 620 !important;
-    line-height: 1.12 !important;
-    text-overflow: ellipsis !important;
-    white-space: nowrap !important;
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-detail-entry > strong {
+    display: inline-grid;
+    place-items: center;
+    min-width: 38px;
+    height: 24px;
+    border: 1px solid #cbd9e8;
+    border-radius: 4px;
+    background: #f8fbff;
+    color: #1f4f86;
+    font-size: 11px;
+    font-weight: 820;
+    line-height: 1;
   }
 
-  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-detail-entry > strong {
-    display: inline-grid !important;
-    place-items: center !important;
-    min-width: 38px !important;
-    height: 24px !important;
-    border: 1px solid #cbd9e8 !important;
-    border-radius: 4px !important;
-    background: #f8fbff !important;
-    color: #1f4f86 !important;
-    font-size: 11px !important;
-    font-weight: 820 !important;
-    line-height: 1 !important;
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-supporting-detail-rows {
+    display: none;
   }
 
-  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-supporting-detail-rows {
-    display: none !important;
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-supporting-list.is-expanded {
+    grid-template-rows: 34px 48px auto;
+    height: auto;
   }
 
-  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-supporting-list.is-expanded {
-    grid-template-rows: 34px 48px auto !important;
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-supporting-detail-rows.is-expanded {
+    display: grid;
   }
 
-  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-supporting-detail-rows.is-expanded {
-    display: grid !important;
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-supporting-surface.is-expanded {
+    min-height: 0;
+    height: auto;
+    max-height: none;
+    overflow: visible;
   }
 
-  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-supporting-surface.is-expanded {
-    min-height: 0 !important;
-    height: auto !important;
-    max-height: none !important;
-    overflow: visible !important;
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-deferred-row {
+    display: grid;
+    grid-template-columns: 26px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 7px;
+    min-width: 0;
+    min-height: 42px;
+    height: 42px;
+    padding: 6px 9px;
+    border: 0;
+    background: transparent;
+    box-shadow: inset 0 -1px 0 rgba(126, 151, 178, .105);
   }
 
-  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-supporting-list .ik-v420-list-row {
-    min-height: 42px !important;
-    height: 42px !important;
-    padding: 6px 9px !important;
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-deferred-row:last-child {
+    box-shadow: none;
+  }
+
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-row-token {
+    display: grid;
+    place-items: center;
+    width: 20px;
+    height: 20px;
+    overflow: hidden;
+    border: 1px solid #cbd9e8;
+    border-radius: 3px;
+    color: #52657a;
+    font-size: 9px;
+    font-style: normal;
+    font-weight: 800;
+    line-height: 1;
+  }
+
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-deferred-row > span,
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-deferred-row > strong {
+    display: grid;
+    min-width: 0;
+  }
+
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-deferred-row > span {
+    gap: 2px;
+  }
+
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-deferred-row > span > b,
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-deferred-row > strong > b {
+    overflow: hidden;
+    color: #1d3148;
+    font-size: 11px;
+    font-weight: 780;
+    line-height: 1.1;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-deferred-row > span > em,
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-deferred-row > strong > small {
+    overflow: hidden;
+    color: #718196;
+    font-size: 9.5px;
+    font-style: normal;
+    font-weight: 620;
+    line-height: 1.1;
+    text-align: right;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-deferred-row.is-danger .ik-mobile-row-token {
+    border-color: #e4b6b4;
+    color: #a33b36;
+  }
+
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-deferred-row.is-warn .ik-mobile-row-token,
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-deferred-row.is-missing .ik-mobile-row-token {
+    border-color: #e7c987;
+    color: #986a15;
   }
 }

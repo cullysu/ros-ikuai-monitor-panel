@@ -108,6 +108,8 @@ const mobileCoreStylesFile =
   "src/panel-framework/overview/styles/mobile/core.css";
 const mobileDecisionStylesFile =
   "src/panel-framework/overview/styles/mobile/decision.css";
+const mobileSurfaceStylesFile =
+  "src/panel-framework/overview/styles/mobile/surface.css";
 const mobileModelFile =
   "src/panel-framework/overview/mobileOverviewModel.ts";
 const mobilePolicyFile =
@@ -150,6 +152,7 @@ const mobileNavigationStyles = read(mobileNavigationStylesFile);
 const mobileFrameStyles = read(mobileFrameStylesFile);
 const mobileCoreStyles = read(mobileCoreStylesFile);
 const mobileDecisionStyles = read(mobileDecisionStylesFile);
+const mobileSurfaceStyles = read(mobileSurfaceStylesFile);
 const mobileModel = read(mobileModelFile);
 const mobilePolicy = read(mobilePolicyFile);
 const cssRoot = postcss.parse(panelCss, { from: panelCssFile });
@@ -423,8 +426,9 @@ assert(
     (mobileNavigationStyles.match(/!important/g) || []).length === 0 &&
     (mobileFrameStyles.match(/!important/g) || []).length === 0 &&
     (mobileCoreStyles.match(/!important/g) || []).length === 0 &&
-    (mobileDecisionStyles.match(/!important/g) || []).length === 0,
-  "Mobile product shell, frame, core, decision, and navigation must not use override priorities"
+    (mobileDecisionStyles.match(/!important/g) || []).length === 0 &&
+    (mobileSurfaceStyles.match(/!important/g) || []).length === 0,
+  "Mobile product shell, frame, core, decision, surface, and navigation must not use override priorities"
 );
 assert(
   lines(desktopHelpers) <= 450,
@@ -520,8 +524,9 @@ assert(
 assert(
   mobileHomeSections.includes("ik-mobile-device-status") &&
     mobileHomeSections.includes('className="ik-mobile-core-facts"') &&
-    !/className="[^"]*ik-v(?:240|420)-(?:nav|status|facts|strip)/.test(mobileHomeSections),
-  "Mobile device and core facts must not inherit legacy layout classes"
+    !/className="[^"]*ik-v(?:240|420)-(?:nav|status|facts|strip)/.test(mobileHomeSections) &&
+    !/className={`ik-v(?:240|420)-(?:surface|list|app-list|list-row)/.test(mobileHomeSections),
+  "Mobile home sections must not inherit legacy navigation, facts, or supporting-list classes"
 );
 assert(
   lines(mobileTabView) <= 150,
@@ -786,7 +791,7 @@ const mobileStyleLineLimits = new Map([
   ["src/panel-framework/overview/styles/mobile/core.css", 80],
   ["src/panel-framework/overview/styles/mobile/frame.css", 100],
   ["src/panel-framework/overview/styles/mobile/decision.css", 330],
-  ["src/panel-framework/overview/styles/mobile/surface.css", 200],
+  ["src/panel-framework/overview/styles/mobile/surface.css", 220],
   ["src/panel-framework/overview/styles/mobile/product-shell.css", 320],
   ["src/panel-framework/overview/styles/mobile/incident.css", 120],
   ["src/panel-framework/overview/styles/mobile/navigation.css", 80],

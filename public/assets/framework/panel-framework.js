@@ -9339,16 +9339,14 @@ var PanelFramework = function(exports) {
     const [expanded, setExpanded] = reactExports.useState(false);
     const rows = model.primaryList.rows.slice(0, model.priority === "normal" ? 3 : 4);
     const copy = supportingCopy(model);
-    const listStyle = { "--mobile-list-count": rows.length };
     return /* @__PURE__ */ jsxRuntimeExports.jsx(
       "section",
       {
-        className: `ik-v420-surface ik-v240-facts ik-mobile-supporting-surface${expanded ? " is-expanded" : ""}`,
-        style: listStyle,
+        className: `ik-mobile-supporting-surface${expanded ? " is-expanded" : ""}`,
         children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
           "div",
           {
-            className: `ik-v420-list ik-v420-app-list ik-v240-list ik-mobile-supporting-list${expanded ? " is-expanded" : ""}`,
+            className: `ik-mobile-supporting-list${expanded ? " is-expanded" : ""}`,
             children: [
               /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { children: [
                 /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: copy.title }),
@@ -9388,7 +9386,7 @@ var PanelFramework = function(exports) {
                   children: rows.map((row) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
                     "article",
                     {
-                      className: `ik-v420-list-row ik-mobile-deferred-row ${toneClass(row.tone)}`,
+                      className: `ik-mobile-deferred-row ${toneClass(row.tone)}`,
                       children: [
                         /* @__PURE__ */ jsxRuntimeExports.jsx("i", { className: "ik-mobile-row-token", "data-rank": row.rank, children: rowIcon(row) }),
                         /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
