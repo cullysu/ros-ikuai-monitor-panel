@@ -65,6 +65,11 @@ const overviewRetiredDesktopKeyRowStyleFiles = [
   "src/panel-framework/overview/styles/desktop/layout.css",
   "src/panel-framework/overview/styles/desktop/refinement.css",
 ];
+const overviewRetiredTimeTabStyleFiles = [
+  "src/panel-framework/overview/styles/overview-states.css",
+  "src/panel-framework/overview/styles/desktop/console-skeleton.css",
+  "src/panel-framework/overview/styles/desktop/hierarchy.css",
+];
 const desktopRefinementFile =
   "src/panel-framework/overview/styles/desktop/refinement.css";
 const desktopRuntimeStylesFile =
@@ -612,6 +617,12 @@ assert(
     (file) => !/\.ro-desktop-(?:key-row|key-cell|severe-evidence)\b/.test(read(file))
   ),
   "Overview style sources must not retain selectors for retired desktop key-row or key-cell renderers"
+);
+assert(
+  overviewRetiredTimeTabStyleFiles.every(
+    (file) => !/\.ro-time-tabs\b/.test(read(file))
+  ),
+  "Overview style sources must not retain selectors for the retired time-tab renderer"
 );
 const desktopBaseStyleLayerLimits = new Map([
   ["src/panel-framework/overview/styles/desktop/density.css", 900],

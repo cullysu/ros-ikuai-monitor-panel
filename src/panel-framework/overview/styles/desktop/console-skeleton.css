@@ -37,11 +37,6 @@
     background: #fff !important;
     box-shadow: none !important;
   }
-  .router-overview-framework .ro-time-tabs,
-  .router-overview-framework :where(.ik-v181-nav, .ik-v193-nav, .ik-v198-nav, .ik-v199-nav, .ik-v214-nav) {
-    display: none !important;
-    pointer-events: none !important;
-  }
   .router-overview-framework .ro-chart-track {
     position: relative !important;
     border: 1px solid #dce7f2 !important;

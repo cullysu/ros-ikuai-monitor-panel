@@ -786,6 +786,7 @@ function main(argv = process.argv.slice(2)) {
   assertContains('src/panel-framework/overview/styles/desktop/density.css', '@media (min-width: 761px)');
   assertNotContains('src/panel-framework/overview/styles/overview-states.css', 'ro-desktop-key-row');
   assertNotContains('src/panel-framework/overview/styles/overview-states.css', 'ro-desktop-key-cell');
+  assertNotContains('src/panel-framework/overview/styles/overview-states.css', 'ro-time-tabs');
   assertContains('src/panel-framework/overview/styles/overview-states.css', '--ik40-console-page');
   assertContains('src/panel-framework/overview/components/StatusVerdict.tsx', 'export function StatusVerdict');
   assertContains('src/panel-framework/overview/components/DesktopModule.tsx', 'export function Module');

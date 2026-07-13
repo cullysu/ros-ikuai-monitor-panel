@@ -16,9 +16,6 @@
   .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-col.is-bottom > .ro-module {
     height: var(--ro-col-module-height, 100%) !important;
   }
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-time-tabs {
-    display: none !important;
-  }
   .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ik-sidebar-mini-status {
     gap: 4px !important;
     padding: 10px 10px 11px !important;

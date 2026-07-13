@@ -347,34 +347,6 @@
 .ro-spark-line[data-tone="warn"] { stroke: var(--ro-warn); }
 .ro-spark-line[data-tone="missing"] { stroke: #9aa6b5; }
 
-.ro-time-tabs {
-  display: grid;
-  grid-template-columns: repeat(3, max-content);
-  gap: 3px;
-  justify-content: end;
-  color: var(--ro-faint);
-  font-size: 9px;
-  font-weight: 750;
-  line-height: 1;
-}
-
-.ro-time-tabs span {
-  margin-left: 0;
-  padding: 1px 4px;
-  border: 1px solid #d9e2ed;
-  background: #fff;
-}
-
-.ro-module-head .ro-time-tabs span {
-  color: inherit;
-}
-
-.ro-time-tabs span[data-active="true"] {
-  border-color: #9fb8d6;
-  color: var(--ro-blue);
-  background: #f6faff;
-}
-
 .ro-topn-block {
   display: grid;
   grid-template-columns: minmax(90px, .8fr) minmax(0, 1fr);
@@ -1558,7 +1530,7 @@
   letter-spacing: 0;
 }
 
-.router-overview-framework .ro-module,\n.router-overview-framework .ro-mobile-ledger,\n.router-overview-framework .ro-mobile-detail-table,\n.router-overview-framework .ro-mobile-continuation,\n.router-overview-framework .ro-resource-card,\n.router-overview-framework .ro-topn-block,\n.router-overview-framework .ro-port-matrix-col,\n.router-overview-framework .ro-mobile-primary-card,\n.router-overview-framework .ro-mobile-mini-trend,\n.router-overview-framework .ro-mobile-core-block,\n.router-overview-framework .ro-mobile-top5-strip,\n.router-overview-framework .ro-mobile-empty-axis,\n.router-overview-framework .ro-chart-empty,\n.router-overview-framework .ro-time-tabs span,\n.router-overview-framework .ro-module-head em {
+.router-overview-framework .ro-module,\n.router-overview-framework .ro-mobile-ledger,\n.router-overview-framework .ro-mobile-detail-table,\n.router-overview-framework .ro-mobile-continuation,\n.router-overview-framework .ro-resource-card,\n.router-overview-framework .ro-topn-block,\n.router-overview-framework .ro-port-matrix-col,\n.router-overview-framework .ro-mobile-primary-card,\n.router-overview-framework .ro-mobile-mini-trend,\n.router-overview-framework .ro-mobile-core-block,\n.router-overview-framework .ro-mobile-top5-strip,\n.router-overview-framework .ro-mobile-empty-axis,\n.router-overview-framework .ro-chart-empty,\n.router-overview-framework .ro-module-head em {
   background-image: none !important;
   box-shadow: none !important;
   text-shadow: none !important;
