@@ -87,6 +87,9 @@ jobs:
             --strict-responsive \
             --out _acceptance/ci-public-predeploy
 
+      - name: Mobile public home interaction contracts
+        run: npm run check:mobile-app-home
+
       - name: Public overview edge cases
         run: |
           node tools/local-predeploy-check.js \

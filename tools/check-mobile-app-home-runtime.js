@@ -206,6 +206,26 @@ async function main() {
       'resource incident next step opens connection view',
       ['tools/check-resource-trend-balance.js', '--url', url, '--section', 'mobileIncidentActionNavigation', '--width', '390', '--height', '844', '--json', 'codex_tmp_mobileIncidentActionNavigation.json', '--png', 'codex_tmp_mobileIncidentActionNavigation.png', '--wait', '3600'],
       ['codex_tmp_mobileIncidentActionNavigation.json', 'codex_tmp_mobileIncidentActionNavigation.png']
+    ],
+    [
+      'WAN outage next step opens WAN detail',
+      ['tools/check-resource-trend-balance.js', '--url', url, '--section', 'mobileWanIncidentAction', '--width', '390', '--height', '844', '--json', 'codex_tmp_mobileWanIncidentAction.json', '--png', 'codex_tmp_mobileWanIncidentAction.png', '--wait', '3600'],
+      ['codex_tmp_mobileWanIncidentAction.json', 'codex_tmp_mobileWanIncidentAction.png']
+    ],
+    [
+      'interface incident next step opens interface detail',
+      ['tools/check-resource-trend-balance.js', '--url', url, '--section', 'mobileInterfaceIncidentAction', '--width', '390', '--height', '844', '--json', 'codex_tmp_mobileInterfaceIncidentAction.json', '--png', 'codex_tmp_mobileInterfaceIncidentAction.png', '--wait', '3600'],
+      ['codex_tmp_mobileInterfaceIncidentAction.json', 'codex_tmp_mobileInterfaceIncidentAction.png']
+    ],
+    [
+      'collection incident next step opens collection detail',
+      ['tools/check-resource-trend-balance.js', '--url', url, '--section', 'mobileCollectionIncidentAction', '--width', '390', '--height', '844', '--json', 'codex_tmp_mobileCollectionIncidentAction.json', '--png', 'codex_tmp_mobileCollectionIncidentAction.png', '--wait', '3600'],
+      ['codex_tmp_mobileCollectionIncidentAction.json', 'codex_tmp_mobileCollectionIncidentAction.png']
+    ],
+    [
+      'no-snapshot next step opens trust boundary detail',
+      ['tools/check-resource-trend-balance.js', '--url', url, '--section', 'mobileNoSnapshotIncidentAction', '--width', '390', '--height', '844', '--json', 'codex_tmp_mobileNoSnapshotIncidentAction.json', '--png', 'codex_tmp_mobileNoSnapshotIncidentAction.png', '--wait', '3600'],
+      ['codex_tmp_mobileNoSnapshotIncidentAction.json', 'codex_tmp_mobileNoSnapshotIncidentAction.png']
     ]
   ];
   const landscapeChecks = [

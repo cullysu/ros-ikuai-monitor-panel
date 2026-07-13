@@ -416,11 +416,22 @@ async function main() {
     mobileNoSnapshotHome: noSnapshotSnapshot,
     mobileResourceHome: resourceFullSnapshot,
     mobileIncidentActionNavigation: resourceFullSnapshot,
+    mobileWanIncidentAction: allOfflineSnapshot,
+    mobileInterfaceIncidentAction: interfaceDownSnapshot,
+    mobileCollectionIncidentAction: collectionDownSnapshot,
+    mobileNoSnapshotIncidentAction: noSnapshotSnapshot,
     mobileInterfaceHome: interfaceDownSnapshot,
     mobileCollectionHome: collectionDownSnapshot
   };
   const isInjectedOverviewSection = Boolean(injectedSnapshots[section]);
-  const isMobileAppHomeSection = section === 'mobileNormalHome' || section === 'mobileNavigation' || section === 'mobileNavigationNoSnapshot' || section === 'mobileDetailDrilldown' || section === 'mobileIncidentDrilldown' || section === 'mobileIncidentActionNavigation' || section === 'mobileAppHome' || section === 'mobileNoSnapshotHome' || section === 'mobileResourceHome' || section === 'mobileInterfaceHome' || section === 'mobileCollectionHome';
+  const mobileIncidentActionRoutes = {
+    mobileWanIncidentAction: { tab: 'wan', action: '查默认出口', credibility: 'business-visible' },
+    mobileInterfaceIncidentAction: { tab: 'interface', action: '查接口承载', credibility: 'business-visible' },
+    mobileCollectionIncidentAction: { tab: 'log', action: '查采集通道', credibility: 'collection-evidence' },
+    mobileNoSnapshotIncidentAction: { tab: 'log', action: '查采集状态', credibility: 'collection-evidence' }
+  };
+  const incidentActionRoute = mobileIncidentActionRoutes[section] || null;
+  const isMobileAppHomeSection = section === 'mobileNormalHome' || section === 'mobileNavigation' || section === 'mobileNavigationNoSnapshot' || section === 'mobileDetailDrilldown' || section === 'mobileIncidentDrilldown' || section === 'mobileIncidentActionNavigation' || Boolean(incidentActionRoute) || section === 'mobileAppHome' || section === 'mobileNoSnapshotHome' || section === 'mobileResourceHome' || section === 'mobileInterfaceHome' || section === 'mobileCollectionHome';
   const targetUrl = `${url}${url.includes('?') ? '&' : '?'}section=${encodeURIComponent(section)}&codexBust=${Date.now()}#${encodeURIComponent(section)}`;
   const browser = spawn(browserPath, [
     '--headless=new',
@@ -606,7 +617,8 @@ async function main() {
         }
         return normalize(parts.join(' '));
       };
-      const sectionEl = sectionName === 'loadAudit' || sectionName === 'balance' || sectionName === 'desktopNoSnapshot' || sectionName === 'desktopV1030' || sectionName === 'mobileNormalHome' || sectionName === 'mobileNavigation' || sectionName === 'mobileNavigationNoSnapshot' || sectionName === 'mobileDetailDrilldown' || sectionName === 'mobileIncidentDrilldown' || sectionName === 'mobileIncidentActionNavigation' || sectionName === 'mobileAppHome' || sectionName === 'mobileNoSnapshotHome' || sectionName === 'mobileResourceHome' || sectionName === 'mobileInterfaceHome' || sectionName === 'mobileCollectionHome'
+      const incidentActionRoute = ${JSON.stringify(incidentActionRoute)};
+      const sectionEl = sectionName === 'loadAudit' || sectionName === 'balance' || sectionName === 'desktopNoSnapshot' || sectionName === 'desktopV1030' || sectionName === 'mobileNormalHome' || sectionName === 'mobileNavigation' || sectionName === 'mobileNavigationNoSnapshot' || sectionName === 'mobileDetailDrilldown' || sectionName === 'mobileIncidentDrilldown' || sectionName === 'mobileIncidentActionNavigation' || incidentActionRoute || sectionName === 'mobileAppHome' || sectionName === 'mobileNoSnapshotHome' || sectionName === 'mobileResourceHome' || sectionName === 'mobileInterfaceHome' || sectionName === 'mobileCollectionHome'
         ? document.querySelector('#overview')
         : document.querySelector('#' + sectionName);
       const text = visibleText(sectionEl);
@@ -1259,6 +1271,40 @@ async function main() {
             surfaceHeight: surfaceRect?.height || 0,
             rowEvidenceComplete,
             viewport: { width: innerWidth, height: innerHeight }
+          };
+        })();
+      }
+      if (incidentActionRoute) {
+        const root = sectionEl?.querySelector('[data-overview-mobile-console]');
+        const action = root?.querySelector('.ik-mobile-incident-guidance .ik-mobile-decision-cell:last-child');
+        return (async () => {
+          action?.click();
+          await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+          const activeScreen = root?.querySelector('[data-overview-mobile-first-screen="app-home"]');
+          const activeView = root?.querySelector('[data-overview-mobile-tab-view="' + incidentActionRoute.tab + '"]');
+          const activeTab = root?.querySelector('button[aria-controls="mobile-' + incidentActionRoute.tab + '-view"].is-active');
+          const actionText = normalize(action?.textContent || '');
+          const viewText = normalize(activeView?.textContent || '');
+          const credibility = activeView?.getAttribute('data-overview-mobile-tab-credibility') || '';
+          return {
+            pass: Boolean(
+              root &&
+              action?.tagName === 'BUTTON' &&
+              actionText.includes(incidentActionRoute.action) &&
+              activeScreen?.getAttribute('data-overview-mobile-active-tab') === incidentActionRoute.tab &&
+              activeTab?.getAttribute('aria-current') === 'page' &&
+              activeView &&
+              !root.querySelector('.ik-mobile-primary-conclusion') &&
+              activeView.querySelectorAll('.ik-mobile-tab-list article').length >= 1 &&
+              credibility === incidentActionRoute.credibility
+            ),
+            section: sectionName,
+            url: location.href,
+            expected: incidentActionRoute,
+            actionLabel: actionText,
+            activeTab: activeScreen?.getAttribute('data-overview-mobile-active-tab') || '',
+            credibility,
+            viewText: viewText.slice(0, 180)
           };
         })();
       }
