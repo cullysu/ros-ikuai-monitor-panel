@@ -410,7 +410,7 @@ desktopDecisionRailRoot.walkRules((rule) => {
   }
 });
 desktopStatusBusRoot.walkRules((rule) => {
-  if (rule.selector.includes(".ro-topbar.ro-status-bus")) {
+  if (rule.selector.includes(".ro-status-bus")) {
     desktopStatusBusRuleCount += 1;
   }
 });
@@ -471,9 +471,9 @@ assert(
 );
 assert(
   lines(desktopStatusBusStyles) <= 130 &&
-    desktopStatusBusStyles.includes(".ro-topbar.ro-status-bus") &&
+    desktopStatusBusStyles.includes(".ro-status-bus") &&
     panel.includes('import "./styles/desktop/status-bus.css";') &&
-    !desktopRefinement.includes(".ro-topbar.ro-status-bus") &&
+    !desktopRefinement.includes(".ro-status-bus") &&
     !desktopConsoleRefinementStyles.includes(".ro-topbar"),
   "Desktop status bus must have one canonical component layer, not a refinement shadow"
 );
@@ -744,8 +744,10 @@ assert(
 );
 assert(
   !/data-overview-desktop-v\d+|data-overview-(?:summary|status-bus|verdict-status-bus|status-bar|summary-main|desktop-top|status-cell-contract|status-no-table-header|status-value-rail|topbar-priority-contract|topbar-fixed-six)/.test(statusVerdict) &&
-    statusVerdict.includes("ro-status-bus") &&
-    statusVerdict.includes("ro-status-cell") &&
+  statusVerdict.includes('className="ro-status-bus"') &&
+    statusVerdict.includes('className="ro-status-cell"') &&
+    !statusVerdict.includes("ro-topbar") &&
+    !statusVerdict.includes("ik-home-flat") &&
     !statusVerdict.includes("ro-contract-hidden") &&
     (statusVerdict.match(/\bdata-overview-[\w-]+/g) || []).length <= 18,
   "StatusVerdict.tsx must use semantic status-bus classes, not self-certifying layout claims"

@@ -779,7 +779,7 @@ async function main() {
         const shellSidebar = document.querySelector('.sidebar[data-shell-sidebar="legacy"], .ik-rail');
         const desktopNavigationDeduplicated = Boolean(!duplicateWorkspaceNav && shellSidebar);
         const workspaceRect = workspace?.getBoundingClientRect();
-        const topbar = sectionEl?.querySelector('.ro-topbar');
+        const topbar = sectionEl?.querySelector('.ro-status-bus');
         const desktopDecisionRail = sectionEl?.querySelector('[data-overview-desktop-decision-rail="action-and-credibility"]');
         const desktopDecisionCells = Array.from(desktopDecisionRail?.querySelectorAll('.ro-desktop-thin-kpi') || []);
         const desktopDecisionLabels = desktopDecisionCells.map((cell) => normalize(cell.querySelector('span')?.textContent || ''));
@@ -819,7 +819,7 @@ async function main() {
           lowNoiseConsoleTokenNames.every((name) => lowNoiseConsoleTokenValues[name])
         );
         const topbarStyle = topbar ? getComputedStyle(topbar) : null;
-        const topbarCells = Array.from(topbar?.querySelectorAll('.ro-topbar-cell') || []);
+        const topbarCells = Array.from(topbar?.querySelectorAll('.ro-status-cell') || []);
         const topbarRoleOrder = topbarCells.map((cell) => cell.getAttribute('data-overview-status-role') || '');
         const expectedTopbarRoleOrder = sectionName === 'desktopNoSnapshot'
           ? ['conclusion', 'device', 'routeros', 'rest', 'ssh', 'recent-success']

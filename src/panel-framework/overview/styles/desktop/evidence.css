@@ -167,26 +167,6 @@
     background: rgba(138, 170, 201, .34) !important;
     border-radius: 999px !important;
   }
-  #overview.router-overview-framework .ro-status-bus > .ro-status-cell {
-    align-content: center !important;
-    gap: 2px !important;
-  }
-  #overview.router-overview-framework .ro-status-cell span {
-    color: #708096 !important;
-    font-size: 10px !important;
-    font-weight: 720 !important;
-  }
-  #overview.router-overview-framework .ro-status-cell b {
-    color: #17253a !important;
-    font-size: 12.6px !important;
-    line-height: 1.05 !important;
-    font-weight: 860 !important;
-  }
-  #overview.router-overview-framework .ro-status-cell em {
-    color: #7c8998 !important;
-    font-size: 9.8px !important;
-    line-height: 1.05 !important;
-  }
 }
 
 /*v432 no-snapshot desktop product polish: console evidence, not audit report.*/

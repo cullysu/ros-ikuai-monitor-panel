@@ -11222,9 +11222,9 @@ var PanelFramework = function(exports) {
     return /* @__PURE__ */ jsxRuntimeExports.jsx(
       "div",
       {
-        className: `ro-topbar ro-status-bus ik-home-flat-topbar${isNoSnapshot ? "" : " is-compact-facts"}`,
+        className: "ro-status-bus",
         "data-overview-desktop-tier": "conclusion",
-        children: items.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ro-topbar-cell ro-status-cell ik-home-flat-cell ik-home-ops-item", "data-tone": item.tone, "data-overview-field": true, "data-overview-status-role": item.role, "data-overview-status-priority": topbarPriority(item.role), children: [
+        children: items.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ro-status-cell", "data-tone": item.tone, "data-overview-field": true, "data-overview-status-role": item.role, "data-overview-status-priority": topbarPriority(item.role), children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: item.label }),
           /* @__PURE__ */ jsxRuntimeExports.jsx("b", { "data-overview-desktop-primary": item.role === "conclusion" ? "true" : void 0, children: item.value }),
           /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: item.note })
