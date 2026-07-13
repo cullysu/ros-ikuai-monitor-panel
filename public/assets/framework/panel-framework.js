@@ -11248,7 +11248,7 @@ var PanelFramework = function(exports) {
         "data-overview-desktop-hierarchy-contract": "conclusion-key-metrics-evidence",
         children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx(StatusVerdict, { snapshot, state }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ro-mobile-first-screen", "data-overview-mobile-first-screen": true, children: /* @__PURE__ */ jsxRuntimeExports.jsx(MobileOverviewHome, { snapshot, state }) }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ro-mobile-first-screen", "data-overview-mobile-first-screen": true, children: /* @__PURE__ */ jsxRuntimeExports.jsx(MobileOverviewHome, { snapshot, state }, state.scenario) }),
           /* @__PURE__ */ jsxRuntimeExports.jsx(DesktopWorkspace, { snapshot, state })
         ]
       }

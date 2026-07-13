@@ -75,7 +75,7 @@ const mobileRuntime = read('tools/check-mobile-app-home-runtime.js');
 
 includesAll(overview, [
   '<StatusVerdict snapshot={snapshot} state={state} />',
-  '<MobileOverviewHome snapshot={snapshot} state={state} />',
+  '<MobileOverviewHome key={state.scenario} snapshot={snapshot} state={state} />',
   '<DesktopWorkspace snapshot={snapshot} state={state} />',
   'data-overview-business-display-boundary',
   'data-overview-scene-key',

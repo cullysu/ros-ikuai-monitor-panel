@@ -24,7 +24,7 @@ export function OverviewPanel({ snapshot, state }: OverviewPanelProps) {
     >
       <StatusVerdict snapshot={snapshot} state={state} />
       <div className="ro-mobile-first-screen" data-overview-mobile-first-screen>
-        <MobileOverviewHome snapshot={snapshot} state={state} />
+        <MobileOverviewHome key={state.scenario} snapshot={snapshot} state={state} />
       </div>
       <DesktopWorkspace snapshot={snapshot} state={state} />
     </section>
