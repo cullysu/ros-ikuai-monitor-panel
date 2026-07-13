@@ -4,32 +4,14 @@
   .router-overview-framework {
     background: #f3f7fb !important;
   }
-  .router-overview-framework > .ro-topbar.ik-home-flat-topbar,
   .router-overview-framework > .ro-desktop-key-row[data-overview-desktop-tier="key-metrics"] {
     display: grid !important;
     grid-template-columns: minmax(132px, .82fr) minmax(280px, 1.7fr) repeat(4, minmax(118px, .82fr)) !important;
-    gap: 0 !important;
-    margin: 0 0 8px !important;
-    border: 1px solid #dce7f2 !important;
-    border-left: 5px solid #1677ff !important;
-    border-radius: 2px !important;
-    background: #fff !important;
-    box-shadow: none !important;
   }
-  .router-overview-framework > .ro-topbar.ik-home-flat-topbar > .ro-topbar-cell,
   .router-overview-framework > .ro-desktop-key-row > .ro-desktop-key-cell {
-    min-height: 52px !important;
-    padding: 6px 9px !important;
     border-right: 1px solid #e8f0f7 !important;
-    border-radius: 0 !important;
-    background: transparent !important;
-    box-shadow: none !important;
   }
-  .router-overview-framework > .ro-topbar.ik-home-flat-topbar [data-overview-status-role="conclusion"] b,
   .router-overview-framework > .ro-desktop-key-row > .ro-desktop-key-cell:first-child b {
-    font-size: 18px !important;
-    font-weight: 920 !important;
-    letter-spacing: -.03em !important;
     white-space: normal !important;
     overflow: visible !important;
     text-overflow: clip !important;
@@ -113,12 +95,12 @@
     background: var(--ik40-console-page) !important;
     color: var(--ik40-console-ink) !important;
   }
-  .router-overview-framework :where(.ro-module, .ro-resource-card, .ro-topbar, .ro-desktop-key-row) {
+  .router-overview-framework :where(.ro-module, .ro-resource-card, .ro-desktop-key-row) {
     border-color: var(--ik40-console-line) !important;
     border-radius: 3px !important;
     box-shadow: none !important;
   }
-  .router-overview-framework :where(.ro-module, .ro-resource-card, .ro-topbar-cell, .ro-desktop-key-cell) {
+  .router-overview-framework :where(.ro-module, .ro-resource-card, .ro-desktop-key-cell) {
     background: var(--ik40-console-surface) !important;
   }
   .router-overview-framework :where(.ro-module, .ro-resource-card) {
@@ -130,12 +112,12 @@
     gap: 8px !important;
   }
   /*Color discipline: normal/warn are blue + dark grey; orange is cache-only; red is incident-only.*/
-  .router-overview-framework :where(.ro-topbar-cell, .ro-desktop-key-cell, .ro-module)[data-tone="ok"],
-  .router-overview-framework :where(.ro-topbar-cell, .ro-desktop-key-cell, .ro-module)[data-tone="trust"],
-  .router-overview-framework :where(.ro-topbar-cell, .ro-desktop-key-cell, .ro-module)[data-tone="warn"] {
+  .router-overview-framework :where(.ro-desktop-key-cell, .ro-module)[data-tone="ok"],
+  .router-overview-framework :where(.ro-desktop-key-cell, .ro-module)[data-tone="trust"],
+  .router-overview-framework :where(.ro-desktop-key-cell, .ro-module)[data-tone="warn"] {
     border-left-color: var(--ik40-console-blue) !important;
   }
-  .router-overview-framework :where(.ro-topbar-cell, .ro-desktop-key-cell, .ro-module)[data-tone="danger"] {
+  .router-overview-framework :where(.ro-desktop-key-cell, .ro-module)[data-tone="danger"] {
     border-left-color: var(--ik40-console-danger) !important;
   }
   .router-overview-framework .ro-module[data-overview-density-module*="cache"],
@@ -143,22 +125,18 @@
   .router-overview-framework .ro-module[data-overview-density-module*="collection-channel"] {
     border-left-color: var(--ik40-console-cache) !important;
   }
-  .router-overview-framework .ro-topbar-cell[data-overview-status-role="collection"],
-  .router-overview-framework .ro-topbar-cell[data-overview-status-role="snapshot"] {
-    border-left-color: var(--ik40-console-blue) !important;
-  }
-  .router-overview-framework :where(.ro-topbar-cell, .ro-desktop-key-cell) b,
+  .router-overview-framework .ro-desktop-key-cell b,
   .router-overview-framework .ro-module-head b,
   .router-overview-framework .ro-ledger-cell:first-child {
     color: var(--ik40-console-ink) !important;
   }
-  .router-overview-framework :where(.ro-topbar-cell, .ro-desktop-key-cell) span,
-  .router-overview-framework :where(.ro-topbar-cell, .ro-desktop-key-cell) em,
+  .router-overview-framework .ro-desktop-key-cell span,
+  .router-overview-framework .ro-desktop-key-cell em,
   .router-overview-framework .ro-module-head span,
   .router-overview-framework .ro-module-head em {
     color: var(--ik40-console-muted) !important;
   }
-  .router-overview-framework :where(.ro-topbar-cell, .ro-desktop-key-cell)[data-tone="danger"] b,
+  .router-overview-framework .ro-desktop-key-cell[data-tone="danger"] b,
   .router-overview-framework .ro-module[data-tone="danger"] .ro-module-head b {
     color: #8f3833 !important;
   }
@@ -190,19 +168,16 @@
     font-size: 10px !important;
     font-weight: 620 !important;
   }
-  .router-overview-framework > .ro-topbar.ik-home-flat-topbar,
   .router-overview-framework > .ro-desktop-key-row[data-overview-desktop-tier="key-metrics"] {
     border-left-color: var(--ik40-console-blue) !important;
     border-radius: 3px !important;
     background: var(--ik40-console-line) !important;
   }
-  .router-overview-framework > .ro-topbar.ik-home-flat-topbar > .ro-topbar-cell,
   .router-overview-framework > .ro-desktop-key-row > .ro-desktop-key-cell {
     min-height: 50px !important;
     padding: 6px 9px !important;
     border-radius: 0 !important;
   }
-  .router-overview-framework > .ro-topbar.ik-home-flat-topbar [data-overview-status-role="conclusion"] b,
   .router-overview-framework > .ro-desktop-key-row > .ro-desktop-key-cell:first-child b {
     color: var(--ik40-console-blue-deep) !important;
     font-size: 17px !important;

@@ -578,6 +578,12 @@ assert(
   ),
   "Desktop hierarchy source must not retain archived flat-dense root styles"
 );
+assert(
+  !read("src/panel-framework/overview/styles/desktop/console-skeleton.css").includes(
+    ".ro-topbar"
+  ),
+  "Desktop console skeleton must not retain selector arms for the retired topbar renderer"
+);
 const desktopBaseStyleLayerLimits = new Map([
   ["src/panel-framework/overview/styles/desktop/density.css", 900],
   ["src/panel-framework/overview/styles/desktop/first-screen.css", 550],
