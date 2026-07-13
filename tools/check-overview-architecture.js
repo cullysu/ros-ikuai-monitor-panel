@@ -917,6 +917,13 @@ assert(
   `Desktop release tone reset must neutralize row chrome and non-primary text: resets=${desktopReleaseToneResetCount} nonPrimary=${desktopReleaseNonPrimaryNeutralCount}`
 );
 assert(
+  !desktopRelease.includes("@media (max-width") &&
+    !desktopRelease.includes("ik-v420") &&
+    !desktopRelease.includes("ik-v620") &&
+    !desktopRelease.includes("v1072"),
+  "Desktop release layer must not carry inactive mobile patch styles"
+);
+assert(
   versionMarkerCount <= 159,
   `OverviewPanel.css version marker count regressed above 159: ${versionMarkerCount}`
 );
