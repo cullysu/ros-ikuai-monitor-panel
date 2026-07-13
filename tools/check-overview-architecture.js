@@ -104,6 +104,8 @@ const mobileNavigationStylesFile =
   "src/panel-framework/overview/styles/mobile/navigation.css";
 const mobileFrameStylesFile =
   "src/panel-framework/overview/styles/mobile/frame.css";
+const mobileCoreStylesFile =
+  "src/panel-framework/overview/styles/mobile/core.css";
 const mobileModelFile =
   "src/panel-framework/overview/mobileOverviewModel.ts";
 const mobilePolicyFile =
@@ -144,6 +146,7 @@ const mobileStyles = read(mobileStylesFile);
 const mobileProductShell = read(mobileProductShellFile);
 const mobileNavigationStyles = read(mobileNavigationStylesFile);
 const mobileFrameStyles = read(mobileFrameStylesFile);
+const mobileCoreStyles = read(mobileCoreStylesFile);
 const mobileModel = read(mobileModelFile);
 const mobilePolicy = read(mobilePolicyFile);
 const cssRoot = postcss.parse(panelCss, { from: panelCssFile });
@@ -415,8 +418,9 @@ assert(
 assert(
   (mobileProductShell.match(/!important/g) || []).length === 0 &&
     (mobileNavigationStyles.match(/!important/g) || []).length === 0 &&
-    (mobileFrameStyles.match(/!important/g) || []).length === 0,
-  "Mobile product shell, frame, and navigation must not use override priorities"
+    (mobileFrameStyles.match(/!important/g) || []).length === 0 &&
+    (mobileCoreStyles.match(/!important/g) || []).length === 0,
+  "Mobile product shell, frame, core, and navigation must not use override priorities"
 );
 assert(
   lines(desktopHelpers) <= 450,
@@ -507,8 +511,9 @@ assert(
 );
 assert(
   mobileHomeSections.includes("ik-mobile-device-status") &&
-    !/ik-v(?:240|420)-(?:nav|status)/.test(mobileHomeSections),
-  "Mobile device bar must not inherit legacy navigation or status classes"
+    mobileHomeSections.includes('className="ik-mobile-core-facts"') &&
+    !/className="[^"]*ik-v(?:240|420)-(?:nav|status|facts|strip)/.test(mobileHomeSections),
+  "Mobile device and core facts must not inherit legacy layout classes"
 );
 assert(
   lines(mobileTabView) <= 150,

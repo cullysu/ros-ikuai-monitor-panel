@@ -27,7 +27,7 @@ export function CoreFacts({ model }: { model: MobileOverviewModel }) {
   const facts = model.coreMetrics;
   return (
     <section
-      className="ik-v240-facts ik-v240-strip ik-mobile-core-facts"
+      className="ik-mobile-core-facts"
       aria-label="移动端四项核心事实"
     >
       {facts.map((item) => (
