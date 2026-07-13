@@ -37,7 +37,7 @@
     text-overflow: clip !important;
   }
 
-  .router-overview-framework .ro-desktop-grid.ik-home-layout[data-overview-desktop-workspace] {
+  .router-overview-framework .ro-desktop-grid.ik-home-layout.ik-desktop-workspace {
     display: grid !important;
     grid-template-areas:
       "network resource"
@@ -146,7 +146,7 @@
   }
 
   .router-overview-framework .ro-col,
-  .router-overview-framework .ro-desktop-grid.ik-home-layout[data-overview-desktop-workspace],
+  .router-overview-framework .ro-desktop-grid.ik-home-layout.ik-desktop-workspace,
   .router-overview-framework .ro-desktop-grid[data-overview-desktop-hierarchy="conclusion-metrics-evidence"] {
     gap: 8px !important;
   }
@@ -589,4 +589,3 @@
     font-weight: 760 !important;
   }
 }
-

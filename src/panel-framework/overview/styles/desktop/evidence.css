@@ -1,6 +1,6 @@
 /* Codex v502: keep the validator-required key-metric rail, but make it a metric strip rather than a second conclusion bus. */
 @media (min-width: 761px) {
-  #overview.router-overview-framework .ro-desktop-grid.ik-home-layout[data-overview-desktop-workspace] {
+  #overview.router-overview-framework .ro-desktop-grid.ik-home-layout.ik-desktop-workspace {
     grid-template-areas:
       "kpis kpis"
       "main side"
@@ -605,4 +605,3 @@
     box-shadow: 0 0 0 1px rgba(240, 140, 0, .18) !important;
   }
 }
-

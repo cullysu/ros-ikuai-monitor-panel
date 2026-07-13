@@ -540,6 +540,13 @@ assert(
   "Mobile decision card must not inherit legacy hero, chart, or incident classes"
 );
 assert(
+  desktopConsole.includes("ik-desktop-workspace") &&
+    desktopConsole.includes("ik-desktop-evidence") &&
+    !/data-overview-desktop-(?:hierarchy|hierarchy-tier|detail|workspace)/.test(desktopConsole) &&
+    !desktopConsole.includes("data-overview-no-snapshot-detail"),
+  "Desktop workspace must expose semantic structure, not self-certifying hierarchy attributes"
+);
+assert(
   mobileDecision.includes("ik-mobile-incident-cell") &&
     mobileDecision.includes("ik-mobile-incident-action") &&
     !mobileDecision.includes("ik-mobile-decision-cell"),

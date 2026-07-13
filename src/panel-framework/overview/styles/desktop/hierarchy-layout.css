@@ -1,7 +1,7 @@
 /* Desktop product hierarchy: keep secondary facts reachable without letting
    three evidence ledgers compete with the WAN judgement surface. */
 @media (min-width: 761px) {
-  #overview.router-overview-framework .ro-desktop-grid.ik-home-layout[data-overview-desktop-workspace] {
+  #overview.router-overview-framework .ro-desktop-grid.ik-home-layout.ik-desktop-workspace {
     display: grid !important;
     grid-template-columns: minmax(0, 1.42fr) minmax(380px, .92fr) !important;
     grid-template-areas:
@@ -13,7 +13,7 @@
     min-height: 0 !important;
   }
 
-  #overview.router-overview-framework .ro-desktop-grid.ik-home-layout.is-normal-scene[data-overview-desktop-workspace] {
+  #overview.router-overview-framework .ro-desktop-grid.ik-home-layout.is-normal-scene.ik-desktop-workspace {
     grid-template-areas:
       "main side"
       "bottom bottom" !important;

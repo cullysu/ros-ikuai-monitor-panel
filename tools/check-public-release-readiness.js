@@ -826,7 +826,7 @@ function main(argv = process.argv.slice(2)) {
   assertNotContains('app.py', 'manual_review');
   assertPublicBoundaryClean('public/index.html');
   assertNotContains('public/index.html', 'events.length');
-  assertContains('public/index.html', 'data-overview-desktop-workspace');
+  assertContains('public/index.html', 'ik-desktop-workspace');
   assertAnyContains('public/index.html', ['data-overview-density-module="wan-trend"', 'module="wan-trend"', 'module: "wan-trend"', '"wan-trend"'], 'wan-trend overview module');
   assertContains('public/index.html', 'data-overview-rank-grid');
   assertContains('public/index.html', 'data-app-shell="ikuai"');

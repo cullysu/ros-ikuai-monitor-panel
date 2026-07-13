@@ -498,15 +498,15 @@
 
 /*v194-desktop-console-hierarchy-tightening*/
 @media (min-width: 768px){
-.router-overview-framework [data-overview-desktop-workspace]{min-height:760px!important;align-content:stretch!important}
-.router-overview-framework [data-overview-desktop-workspace] .ro-col{min-height:0!important}.router-overview-framework [data-overview-desktop-workspace] .ro-col.is-bottom{min-height:220px!important}
-.router-overview-framework [data-overview-desktop-workspace] .ro-col.is-main>.ro-module:first-child{border-left:3px solid #1677ff!important;background:linear-gradient(180deg,#fff 0%,#fbfdff 100%)!important}
+.router-overview-framework .ik-desktop-workspace{min-height:760px!important;align-content:stretch!important}
+.router-overview-framework .ik-desktop-workspace .ro-col{min-height:0!important}.router-overview-framework .ik-desktop-workspace .ro-col.is-bottom{min-height:220px!important}
+.router-overview-framework .ik-desktop-workspace .ro-col.is-main>.ro-module:first-child{border-left:3px solid #1677ff!important;background:linear-gradient(180deg,#fff 0%,#fbfdff 100%)!important}
 .router-overview-framework [data-overview-desktop-scene="resource-full"] .ro-col.is-main>.ro-module:first-child,.router-overview-framework [data-overview-desktop-scene="all-offline"] .ro-col.is-main>.ro-module:first-child{border-left-color:#d93025!important}
 .router-overview-framework [data-overview-desktop-scene="interfaces-down"] .ro-col.is-main>.ro-module:first-child,.router-overview-framework [data-overview-desktop-scene="collection-down"] .ro-col.is-main>.ro-module:first-child,.router-overview-framework [data-overview-desktop-scene="no-snapshot"] .ro-col.is-main>.ro-module:first-child{border-left-color:#e66a2c!important}
-.router-overview-framework [data-overview-desktop-workspace] .ro-col.is-side>.ro-module:first-child{border-left:2px solid #1677ff!important}.router-overview-framework [data-overview-desktop-scene="resource-full"] .ro-col.is-side>.ro-module:first-child{border-left-color:#d93025!important}
-.router-overview-framework [data-overview-desktop-workspace] .ro-module-head b{letter-spacing:0!important}.router-overview-framework [data-overview-desktop-workspace] .ro-module-head span{max-width:68%!important;color:#748196!important}
-.router-overview-framework [data-overview-desktop-workspace] .ro-col.is-bottom .ro-module{min-height:210px!important}.router-overview-framework [data-overview-desktop-workspace] .ro-col.is-bottom .ro-module-head{background:#f8fbff!important}
-.router-overview-framework [data-overview-desktop-workspace] .ro-ledger-row{min-height:30px!important}.router-overview-framework [data-overview-desktop-workspace] .ro-ledger-row:nth-child(n+7){min-height:28px!important;color:#405066!important}
+.router-overview-framework .ik-desktop-workspace .ro-col.is-side>.ro-module:first-child{border-left:2px solid #1677ff!important}.router-overview-framework [data-overview-desktop-scene="resource-full"] .ro-col.is-side>.ro-module:first-child{border-left-color:#d93025!important}
+.router-overview-framework .ik-desktop-workspace .ro-module-head b{letter-spacing:0!important}.router-overview-framework .ik-desktop-workspace .ro-module-head span{max-width:68%!important;color:#748196!important}
+.router-overview-framework .ik-desktop-workspace .ro-col.is-bottom .ro-module{min-height:210px!important}.router-overview-framework .ik-desktop-workspace .ro-col.is-bottom .ro-module-head{background:#f8fbff!important}
+.router-overview-framework .ik-desktop-workspace .ro-ledger-row{min-height:30px!important}.router-overview-framework .ik-desktop-workspace .ro-ledger-row:nth-child(n+7){min-height:28px!important;color:#405066!important}
 }
 
 @media (min-width: 768px){.router-overview-framework .ik-app-home-v195 :is(.ik-v193-nav,.ik-v193-app,.ik-v193-tabbar){display:none!important;visibility:hidden!important}}
@@ -754,4 +754,3 @@
     opacity: .86 !important;
   }
 }
-

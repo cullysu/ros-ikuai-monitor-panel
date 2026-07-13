@@ -723,7 +723,7 @@ async function main() {
           .filter(Boolean);
         const primaryRects = primaryModules.map((node) => node.getBoundingClientRect());
         const visiblePrimaryCount = primaryRects.filter((rect) => rect.width > 0 && rect.height >= 120).length;
-        const workspace = sectionEl?.querySelector('[data-overview-desktop-workspace]');
+        const workspace = sectionEl?.querySelector('.ik-desktop-workspace');
         const recoveryModule = workspace?.querySelector('[data-overview-density-module="no-snapshot-recent-success"]');
         const rawEvidenceModule = workspace?.querySelector('[data-overview-density-module="evidence-boundary"]');
         const recoveryRect = recoveryModule?.getBoundingClientRect();
@@ -774,7 +774,7 @@ async function main() {
         };
       }
       if (sectionName === 'desktopV1030') {
-        const workspace = sectionEl?.querySelector('[data-overview-desktop-workspace]');
+        const workspace = sectionEl?.querySelector('.ik-desktop-workspace');
         const duplicateWorkspaceNav = sectionEl?.querySelector('[data-overview-desktop-nav="ikuai-short-left-rail"]');
         const shellSidebar = document.querySelector('.sidebar[data-shell-sidebar="legacy"], .ik-rail');
         const desktopNavigationDeduplicated = Boolean(!duplicateWorkspaceNav && shellSidebar);

@@ -11241,12 +11241,7 @@ var PanelFramework = function(exports) {
     return /* @__PURE__ */ jsxRuntimeExports.jsxs(
       "div",
       {
-        className: `ro-desktop-grid ik-home-layout${hasDecisionRail ? "" : " is-normal-scene"}`,
-        "data-overview-desktop-hierarchy": "conclusion-key-metrics-evidence",
-        "data-overview-desktop-hierarchy-tier": "3-evidence",
-        "data-overview-desktop-detail": true,
-        "data-overview-desktop-workspace": true,
-        "data-overview-no-snapshot-detail": state.scenario === "no-snapshot" ? "business-data-unavailable-recovery-evidence-deferred" : void 0,
+        className: `ro-desktop-grid ik-home-layout ik-desktop-workspace ik-desktop-evidence${hasDecisionRail ? "" : " is-normal-scene"}`,
         "data-overview-desktop-scene": state.scenario,
         children: [
           hasDecisionRail ? /* @__PURE__ */ jsxRuntimeExports.jsx(DesktopDecisionRail, { snapshot, state }) : null,

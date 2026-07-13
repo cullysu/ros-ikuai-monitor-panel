@@ -8,12 +8,7 @@ export function DesktopWorkspace({ snapshot, state }: OverviewPanelProps) {
 
   return (
     <div
-      className={`ro-desktop-grid ik-home-layout${hasDecisionRail ? "" : " is-normal-scene"}`}
-      data-overview-desktop-hierarchy="conclusion-key-metrics-evidence"
-      data-overview-desktop-hierarchy-tier="3-evidence"
-      data-overview-desktop-detail
-      data-overview-desktop-workspace
-      data-overview-no-snapshot-detail={state.scenario === "no-snapshot" ? "business-data-unavailable-recovery-evidence-deferred" : undefined}
+      className={`ro-desktop-grid ik-home-layout ik-desktop-workspace ik-desktop-evidence${hasDecisionRail ? "" : " is-normal-scene"}`}
       data-overview-desktop-scene={state.scenario}
     >
       {hasDecisionRail ? <DesktopDecisionRail snapshot={snapshot} state={state} /> : null}

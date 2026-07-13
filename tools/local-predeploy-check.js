@@ -1384,7 +1384,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const overviewDesktopPrimaryText = normalize(overviewDesktopPrimary?.textContent || '');
     const overviewFocusModule = sectionRoot?.querySelector('[data-overview-density-module="resource-focus"], [data-overview-density-module="collection-focus"], [data-overview-density-module="freshness-focus"], [data-overview-density-module="wan-focus"], [data-overview-density-module="route-focus"], [data-overview-density-module="interface-forwarding"], [data-overview-density-module="no-snapshot-focus"]');
     const overviewNoSnapshotGrid = sectionRoot?.querySelector('[data-overview-no-snapshot-grid]');
-    const overviewNoSnapshotFlatDetail = sectionRoot?.querySelector('[data-overview-no-snapshot-detail]');
+    const overviewNoSnapshotFlatDetail = sectionRoot?.querySelector('.ik-desktop-evidence[data-overview-desktop-scene="no-snapshot"]');
     const overviewNoSnapshotGridItems = Array.from((overviewNoSnapshotGrid || overviewNoSnapshotFlatDetail)?.querySelectorAll('.freshness-item, [data-overview-field], tbody tr') || []);
     const overviewNoSnapshotGridStyle = overviewNoSnapshotGrid ? getComputedStyle(overviewNoSnapshotGrid) : null;
     const overviewNoSnapshotGridColumns = overviewNoSnapshotGridStyle ? overviewNoSnapshotGridStyle.gridTemplateColumns.split(' ').filter(Boolean).length : 0;
@@ -1451,7 +1451,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         /采集链路账本|采集链路|快照账本|模块可见性|降级模块|只读边界/.test([overviewNoSnapshotGridText, overviewNoSnapshotDowngradeText, overviewNoSnapshotBoundaryText].join(' '))
       )
     );
-    const overviewDesktopEvidenceScope = sectionRoot?.querySelector('[data-overview-summary], [data-overview-desktop-detail]')
+    const overviewDesktopEvidenceScope = sectionRoot?.querySelector('[data-overview-summary], .ik-desktop-evidence')
       ? sectionRoot
       : null;
     const operatorGrid = sectionRoot?.querySelector('.ik-home-operator-grid');
@@ -1459,13 +1459,13 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const operatorText = normalize(operatorGrid?.textContent || '');
     const isOperatorHome = sectionName === 'overview' && Boolean(
       (overviewSummaryShell && overviewSummaryMain) ||
-      (sectionRoot?.querySelector('[data-overview-status-bar]') && sectionRoot?.querySelector('[data-overview-desktop-detail]'))
+      (sectionRoot?.querySelector('[data-overview-status-bar]') && sectionRoot?.querySelector('.ik-desktop-evidence'))
     );
     const isDesktopOverview = sectionName === 'overview' && window.innerWidth >= 1024;
     const isCurrent35Home = sectionName === 'overview' && Boolean(
       overviewSummaryShell && overviewSummaryMain ||
       sectionRoot?.querySelector('.ik-home-layout, [data-overview-verdict-panel]') ||
-      (sectionRoot?.querySelector('[data-overview-status-bar]') && sectionRoot?.querySelector('[data-overview-desktop-detail]'))
+      (sectionRoot?.querySelector('[data-overview-status-bar]') && sectionRoot?.querySelector('.ik-desktop-evidence'))
     );
     const overviewOperatorHomeOk = sectionName !== 'overview' || Boolean(
       overviewSummaryShell &&
@@ -1530,7 +1530,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       sectionRoot?.querySelector('.ro-semantic-wan-trend') ||
       overviewFocusModule ||
       overviewNoSnapshotGrid ||
-      sectionRoot?.querySelector('[data-overview-desktop-detail] .ops-table-wrap') ||
+      sectionRoot?.querySelector('.ik-desktop-evidence .ops-table-wrap') ||
       sectionRoot?.querySelector('[data-overview-density-module="freshness"]') ||
       sectionRoot?.querySelector('[data-overview-detail-section="table"]') ||
       (
@@ -1671,7 +1671,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     );
     const humanScaleCopyOk = !scaleRequiredSections.has(sectionName) || !/\\bbucket\\b|\\bhasMore\\b|\\bsampled\\b|\\bsort\\b/i.test(text);
     const overviewDensityModules = Array.from(sectionRoot?.querySelectorAll('[data-overview-density-module]') || []);
-    const overviewDesktopDetail = sectionRoot?.querySelector('[data-overview-desktop-detail]');
+    const overviewDesktopDetail = sectionRoot?.querySelector('.ik-desktop-evidence');
     const overviewDesktopDenseNodes = overviewDesktopEvidenceScope
       ? Array.from(overviewDesktopEvidenceScope.querySelectorAll('tbody tr, .ik-home-evidence-row, .ik-summary-box, [data-overview-field]'))
       : [];
@@ -3969,7 +3969,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       sectionRoot?.querySelector('[data-overview-summary]') &&
       sectionRoot?.querySelector('[data-overview-status-bar]') &&
       sectionRoot?.querySelector('[data-overview-anomaly-evidence]') &&
-      sectionRoot?.querySelector('[data-overview-desktop-detail]')
+      sectionRoot?.querySelector('.ik-desktop-evidence')
     );
     const overviewNoSnapshotFirstScreenRateForbiddenOk = sectionName !== 'overview' || !noSnapshotEdge || Boolean(
       !overviewNoSnapshotFirstScreenText.includes('WAN速率') &&
@@ -6262,7 +6262,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       const desktopContentRects = Array.from(sectionRoot.querySelectorAll([
         '[data-overview-status-bar]',
         '[data-overview-summary]',
-        '[data-overview-desktop-detail]',
+        '.ik-desktop-evidence',
         '[data-overview-density-module]',
         '[data-overview-rank-grid]',
         '.ik-overview-flat-module',

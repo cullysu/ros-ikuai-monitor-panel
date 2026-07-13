@@ -18,7 +18,7 @@
     padding: 7px 9px 6px !important;
   }
 
-  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-desktop-grid.ik-home-layout[data-overview-desktop-workspace] {
+  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-desktop-grid.ik-home-layout.ik-desktop-workspace {
     grid-template-columns: minmax(0, 1.42fr) minmax(380px, .92fr) !important;
     grid-template-areas:
       "main side"
@@ -341,7 +341,7 @@
     --ik-warn: #cf7b22;
   }
 
-  #overview.router-overview-framework .ro-desktop-grid.ik-home-layout[data-overview-desktop-workspace] {
+  #overview.router-overview-framework .ro-desktop-grid.ik-home-layout.ik-desktop-workspace {
     gap: 7px !important;
     grid-template-columns: minmax(0, 1.46fr) minmax(370px, .9fr) !important;
     align-items: start !important;
