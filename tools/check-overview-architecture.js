@@ -29,9 +29,11 @@ const desktopBaseStylesFile =
   "src/panel-framework/overview/styles/overview-desktop.css";
 const desktopConsoleRefinementStylesFile =
   "src/panel-framework/overview/styles/desktop/console-refinement.css";
+const desktopDensityStylesFile =
+  "src/panel-framework/overview/styles/desktop/density.css";
 const desktopBaseStyleLayerFiles = [
   desktopBaseStylesFile,
-  "src/panel-framework/overview/styles/desktop/density.css",
+  desktopDensityStylesFile,
   "src/panel-framework/overview/styles/desktop/first-screen.css",
   "src/panel-framework/overview/styles/desktop/hierarchy.css",
   "src/panel-framework/overview/styles/desktop/shell-chrome.css",
@@ -145,6 +147,7 @@ const desktopResourceScene = read(desktopResourceSceneFile);
 const panelCss = read(panelCssFile);
 const desktopBaseStyles = desktopBaseStyleLayerFiles.map(read).join("\n");
 const desktopConsoleRefinementStyles = read(desktopConsoleRefinementStylesFile);
+const desktopDensityStyles = read(desktopDensityStylesFile);
 const desktopRefinement = read(desktopRefinementFile);
 const desktopRuntimeStyles = read(desktopRuntimeStylesFile);
 const desktopWorkspaceLayout = read(desktopWorkspaceLayoutFile);
@@ -870,7 +873,8 @@ assert(
 );
 assert(
   desktopDecisionRailRuleCount === 1 && desktopDecisionCellRuleCount <= 7 &&
-    !desktopBaseStyles.includes(".ro-desktop-thin-kpis") &&
+    !desktopConsoleRefinementStyles.includes(".ro-desktop-thin-kpi") &&
+    !desktopDensityStyles.includes(".ro-desktop-thin-kpi") &&
     !desktopRefinement.includes(".ro-desktop-thin-kpi"),
   `Desktop decision rail must stay consolidated: railRules=${desktopDecisionRailRuleCount} cellRules=${desktopDecisionCellRuleCount}`
 );

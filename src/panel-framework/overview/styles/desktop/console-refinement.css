@@ -68,31 +68,6 @@
 /*Codex v434 EOF validation-compatible desktop density layer.*/
 
 @media (min-width: 761px) {
-  #overview.router-overview-framework .ro-desktop-thin-kpi {
-    display: grid !important;
-    grid-template-columns: minmax(58px, .42fr) minmax(0, .6fr) minmax(0, 1fr) !important;
-    align-items: center !important;
-    gap: 8px !important;
-    min-height: 38px !important;
-    padding: 4px 8px !important;
-    border: 0 !important;
-    border-radius: 0 !important;
-    background: #fff !important;
-    box-shadow: none !important;
-  }
-  #overview.router-overview-framework .ro-desktop-thin-kpi span {
-    line-height: 1 !important;
-  }
-  #overview.router-overview-framework .ro-desktop-thin-kpi b {
-    line-height: 1.05 !important;
-  }
-  #overview.router-overview-framework .ro-desktop-thin-kpi[data-tone="danger"] b {
-    color: #d93025 !important;
-  }
-  #overview.router-overview-framework .ro-desktop-thin-kpi[data-tone="warn"] b,
-  #overview.router-overview-framework .ro-desktop-thin-kpi[data-tone="missing"] b {
-    color: #b66b12 !important;
-  }
   #overview.router-overview-framework .ro-chart-readout {
     min-height: 24px !important;
     height: 24px !important;
@@ -196,63 +171,6 @@
     gap: 7px !important;
     grid-template-columns: minmax(0, 1.46fr) minmax(370px, .9fr) !important;
     align-items: start !important;
-  }
-  #overview.router-overview-framework .ro-desktop-thin-kpi.ik-overview-kpi-card {
-    display: grid !important;
-    grid-template-columns: minmax(0, 1fr) minmax(110px, .9fr) !important;
-    grid-template-rows: 15px 22px !important;
-    align-items: center !important;
-    column-gap: 10px !important;
-    row-gap: 1px !important;
-    min-width: 0 !important;
-    min-height: 0 !important;
-    height: 52px !important;
-    padding: 7px 11px 6px !important;
-    border: 0 !important;
-    border-right: 1px solid #edf3f8 !important;
-    border-radius: 0 !important;
-    background: transparent !important;
-    box-shadow: none !important;
-  }
-  #overview.router-overview-framework .ro-desktop-thin-kpi.ik-overview-kpi-card:last-child {
-    border-right: 0 !important;
-  }
-  #overview.router-overview-framework .ro-desktop-thin-kpi.ik-overview-kpi-card.is-primary {
-    background: #f7fafc !important;
-  }
-  #overview.router-overview-framework .ro-desktop-thin-kpi.ik-overview-kpi-card.is-primary b {
-    font-size: 14.4px !important;
-    letter-spacing: -.01em !important;
-  }
-  #overview.router-overview-framework .ro-desktop-thin-kpi span {
-    grid-column: 1 !important;
-    grid-row: 1 !important;
-    color: var(--ik-quiet) !important;
-    font-size: 10px !important;
-    font-weight: 640 !important;
-    white-space: nowrap !important;
-  }
-  #overview.router-overview-framework .ro-desktop-thin-kpi b {
-    grid-column: 1 !important;
-    grid-row: 2 !important;
-    color: var(--ik-ink) !important;
-    font-size: 13.2px !important;
-    font-weight: 820 !important;
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-  }
-  #overview.router-overview-framework .ro-desktop-thin-kpi em {
-    grid-column: 2 !important;
-    grid-row: 1 / 3 !important;
-    align-self: center !important;
-    color: var(--ik-muted) !important;
-    font-size: 10.5px !important;
-    line-height: 1.25 !important;
-    font-style: normal !important;
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
   }
   #overview.router-overview-framework .ro-col.stack,
   #overview.router-overview-framework .ro-module,
