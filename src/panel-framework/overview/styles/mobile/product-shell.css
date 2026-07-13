@@ -76,7 +76,7 @@
     display: none;
   }
 
-  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-v420-tabs {
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-bottom-tabs {
     grid-template-columns: repeat(5, minmax(0, 1fr));
     min-height: 52px;
     padding: 2px 11px max(2px, env(safe-area-inset-bottom, 0px));
@@ -85,7 +85,7 @@
     box-shadow: none;
   }
 
-  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-v420-tabs button {
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-bottom-tabs button {
     display: grid;
     grid-template-rows: 17px 12px;
     align-content: center;
@@ -99,14 +99,14 @@
     box-shadow: none;
   }
 
-  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-v420-tabs button svg {
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-bottom-tabs button svg {
     width: 15px;
     height: 15px;
     opacity: .82;
     stroke-width: 1.65;
   }
 
-  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-v420-tabs button span {
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-bottom-tabs button span {
     overflow: hidden;
     max-width: 100%;
     font-size: 10px;
@@ -116,7 +116,7 @@
     white-space: nowrap;
   }
 
-  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-v420-tabs button.is-active {
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-bottom-tabs button.is-active {
     color: #122237;
     background: transparent;
     box-shadow: inset 0 -1px 0 rgba(18, 34, 55, .44);
@@ -191,15 +191,13 @@
     background: #91a9bb;
   }
 
-  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-v420-tabs button,
-  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-v240-tabs button {
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-bottom-tabs button {
     border: 0;
     border-radius: 0;
     outline: 0;
   }
 
-  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-v420-tabs button:focus-visible,
-  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-v240-tabs button:focus-visible {
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-bottom-tabs button:focus-visible {
     outline: 2px solid #1f6fd1;
     outline-offset: -3px;
   }

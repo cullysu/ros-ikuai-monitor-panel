@@ -94,10 +94,14 @@ const mobileTabViewFile =
   "src/panel-framework/overview/components/MobileOverviewTabView.tsx";
 const mobileTabRowsFile =
   "src/panel-framework/overview/components/mobileOverviewTabRows.ts";
+const mobileBottomTabsFile =
+  "src/panel-framework/overview/components/BottomTabs.tsx";
 const mobileStylesFile =
   "src/panel-framework/overview/styles/mobile/mobile-product.css";
 const mobileProductShellFile =
   "src/panel-framework/overview/styles/mobile/product-shell.css";
+const mobileNavigationStylesFile =
+  "src/panel-framework/overview/styles/mobile/navigation.css";
 const mobileModelFile =
   "src/panel-framework/overview/mobileOverviewModel.ts";
 const mobilePolicyFile =
@@ -133,8 +137,10 @@ const mobileDecision = read(mobileDecisionFile);
 const mobileHomeSections = read(mobileHomeSectionsFile);
 const mobileTabView = read(mobileTabViewFile);
 const mobileTabRows = read(mobileTabRowsFile);
+const mobileBottomTabs = read(mobileBottomTabsFile);
 const mobileStyles = read(mobileStylesFile);
 const mobileProductShell = read(mobileProductShellFile);
+const mobileNavigationStyles = read(mobileNavigationStylesFile);
 const mobileModel = read(mobileModelFile);
 const mobilePolicy = read(mobilePolicyFile);
 const cssRoot = postcss.parse(panelCss, { from: panelCssFile });
@@ -404,8 +410,9 @@ assert(
   "Desktop WAN trend styles must stay focused without override priorities"
 );
 assert(
-  (mobileProductShell.match(/!important/g) || []).length === 0,
-  "Mobile product shell must not use override priorities"
+  (mobileProductShell.match(/!important/g) || []).length === 0 &&
+    (mobileNavigationStyles.match(/!important/g) || []).length === 0,
+  "Mobile product shell and navigation must not use override priorities"
 );
 assert(
   lines(desktopHelpers) <= 450,
@@ -503,6 +510,11 @@ assert(
     mobileTabView.includes('from "./mobileOverviewTabRows"') &&
     ["mobileWanRows", "mobileInterfaceRows", "mobileTerminalRows", "mobileLogRows"].every((name) => mobileTabRows.includes(`function ${name}`)),
   "Mobile detail tabs must keep row extraction outside the React view component"
+);
+assert(
+  mobileBottomTabs.includes('className="ik-mobile-bottom-tabs"') &&
+    !/ik-v(?:240|420)-tabs/.test(mobileBottomTabs),
+  "Mobile bottom navigation must not inherit legacy desktop tab classes"
 );
 assert(lines(mobileModel) <= 900, `mobileOverviewModel.ts exceeds 900 lines: ${lines(mobileModel)}`);
 assert(!panel.includes("ik-ios-"), "OverviewPanel.tsx reintroduced legacy ik-ios classes");

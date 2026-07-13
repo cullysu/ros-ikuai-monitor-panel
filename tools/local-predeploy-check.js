@@ -2051,7 +2051,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       ? sectionRoot?.querySelector('.ik-mobile-public-home')
       : null;
     const mobileLandscapeScreen = mobileLandscapeAppRoot?.querySelector('[data-overview-mobile-first-screen="app-home"]');
-    const mobileLandscapeTabs = mobileLandscapeAppRoot?.querySelector('.ik-v420-tabs[aria-label="路由器监控底部导航"]');
+    const mobileLandscapeTabs = mobileLandscapeAppRoot?.querySelector('.ik-mobile-bottom-tabs[aria-label="路由器监控底部导航"]');
     const mobileLandscapeRootRect = mobileLandscapeAppRoot?.getBoundingClientRect();
     const mobileLandscapeScreenRect = mobileLandscapeScreen?.getBoundingClientRect();
     const mobileLandscapeTabsRect = mobileLandscapeTabs?.getBoundingClientRect();
@@ -3210,7 +3210,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       : [];
     const mobile390ScenarioVisualNotDecorativeOk = !mobileOverview390x844 || mobile390ScenarioVisualRecords.some((record) => record.readable);
     const mobile390AppHomeChromeNodes = mobileOverview390x844
-      ? Array.from((sectionRoot || mobileFirstScreen)?.querySelectorAll('.ik-mobile-device-bar, .ik-mobile-primary-conclusion, .ik-mobile-core-facts, .ik-mobile-supporting-surface, .ik-mobile-supporting-list, .ik-v420-tabs, .ik-v159-nav, .ik-v159-network-hero, .ik-v159-secondary, .ik-v159-resource-strip, .ik-v159-top-list, .ik-v159-tabbar, .ik-v240-nav, .ik-v240-hero, .ik-v240-facts, .ik-v240-strip, .ik-v240-list, .ik-v240-tabs, [data-overview-mobile-v159-nav], [data-overview-mobile-v159-main-hero], [data-overview-mobile-v159-secondary], [data-overview-mobile-v159-resource], [data-overview-mobile-v159-topn], [data-overview-mobile-v159-tabbar], [data-overview-mobile-v240-nav], [data-overview-mobile-v240-hero], [data-overview-mobile-v240-facts], [data-overview-mobile-v240-status-strip], [data-overview-mobile-v240-list], [data-overview-mobile-hero-metrics], [data-overview-mobile-v240-big-numbers], [data-overview-mobile-bottom-tab]') || [])
+      ? Array.from((sectionRoot || mobileFirstScreen)?.querySelectorAll('.ik-mobile-device-bar, .ik-mobile-primary-conclusion, .ik-mobile-core-facts, .ik-mobile-supporting-surface, .ik-mobile-supporting-list, .ik-mobile-bottom-tabs, .ik-v159-nav, .ik-v159-network-hero, .ik-v159-secondary, .ik-v159-resource-strip, .ik-v159-top-list, .ik-v159-tabbar, .ik-v240-nav, .ik-v240-hero, .ik-v240-facts, .ik-v240-strip, .ik-v240-list, [data-overview-mobile-v159-nav], [data-overview-mobile-v159-main-hero], [data-overview-mobile-v159-secondary], [data-overview-mobile-v159-resource], [data-overview-mobile-v159-topn], [data-overview-mobile-v159-tabbar], [data-overview-mobile-v240-nav], [data-overview-mobile-v240-hero], [data-overview-mobile-v240-facts], [data-overview-mobile-v240-status-strip], [data-overview-mobile-v240-list], [data-overview-mobile-hero-metrics], [data-overview-mobile-v240-big-numbers], [data-overview-mobile-bottom-tab]') || [])
         .filter((node) => node.classList.contains('ik-ios-bottom-tab') ? nodeVisibleInViewport(node) : nodeVisibleInFirstScreen(node))
       : [];
     const mobile390AppHomeRankPresent = !mobileOverview390x844 || Boolean((sectionRoot || mobileFirstScreen)?.querySelector('.ik-mobile-supporting-list, .ik-v159-top-list, [data-overview-mobile-v159-topn], .ik-v240-list, [data-overview-mobile-v240-list]'));
@@ -3250,7 +3250,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       mobile390AppHomeChromeNodes.some((node) => node.classList.contains('ik-mobile-primary-conclusion') || node.classList.contains('ik-v159-network-hero') || node.classList.contains('ik-v240-hero') || node.hasAttribute('data-overview-mobile-v159-main-hero') || node.hasAttribute('data-overview-mobile-v240-hero')) &&
       mobile390AppHomeChromeNodes.some((node) => node.classList.contains('ik-mobile-supporting-list') || node.classList.contains('ik-v159-top-list') || node.classList.contains('ik-v240-list') || node.hasAttribute('data-overview-mobile-v159-topn') || node.hasAttribute('data-overview-mobile-v240-list')) &&
       mobile390AppHomeRankPresent &&
-      mobile390AppHomeChromeNodes.some((node) => node.classList.contains('ik-v420-tabs') || node.classList.contains('ik-v159-tabbar') || node.classList.contains('ik-v240-tabs') || node.hasAttribute('data-overview-mobile-v159-tabbar') || node.hasAttribute('data-overview-mobile-bottom-tab')) &&
+      mobile390AppHomeChromeNodes.some((node) => node.classList.contains('ik-mobile-bottom-tabs') || node.classList.contains('ik-v159-tabbar') || node.hasAttribute('data-overview-mobile-v159-tabbar') || node.hasAttribute('data-overview-mobile-bottom-tab')) &&
       mobile390AppHomeHeroMetricsOk &&
       mobile390AppHomeResourceCardOk &&
       mobile390AppHomeRankCardOk &&
@@ -3819,7 +3819,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       : [];
     const overviewMobile390NoHeavyVisualBlocksOk = !mobileOverview390x844 || mobile390HeavyVisualBlockRecords.length === 0;
     const overviewMobile390BottomTabOk = !mobileOverview390x844 || Boolean(
-      Array.from(sectionRoot?.querySelectorAll('.ik-ios-bottom-tab, .ik-v240-tabs, [data-overview-mobile-bottom-tab]') || []).some(nodeVisibleInViewport)
+      Array.from(sectionRoot?.querySelectorAll('.ik-mobile-bottom-tabs, .ik-ios-bottom-tab, [data-overview-mobile-bottom-tab]') || []).some(nodeVisibleInViewport)
     );
     const mobile390PrimaryStatusNode = mobileOverview390x844
       ? sectionRoot?.querySelector('.ik-v240-status, [data-overview-mobile-primary-status], [data-overview-mobile-status], .ik-ios-nav-status')

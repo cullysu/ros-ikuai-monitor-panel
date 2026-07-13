@@ -9065,7 +9065,7 @@ var PanelFramework = function(exports) {
     return /* @__PURE__ */ jsxRuntimeExports.jsx(
       "nav",
       {
-        className: "ik-v420-tabs ik-v240-tabs",
+        className: "ik-mobile-bottom-tabs",
         "aria-label": "路由器监控底部导航",
         children: MOBILE_BOTTOM_NAV_ITEMS.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
           "button",

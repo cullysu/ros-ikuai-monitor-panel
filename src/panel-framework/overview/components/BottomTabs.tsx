@@ -24,7 +24,7 @@ interface BottomTabsProps {
 export function BottomTabs({ activeId, onSelect }: BottomTabsProps) {
   return (
     <nav
-      className="ik-v420-tabs ik-v240-tabs"
+      className="ik-mobile-bottom-tabs"
       aria-label="路由器监控底部导航"
     >
       {MOBILE_BOTTOM_NAV_ITEMS.map((item) => (

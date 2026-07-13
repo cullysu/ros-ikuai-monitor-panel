@@ -1594,7 +1594,7 @@ async function main() {
         const hasNativeChartLayout = sectionName !== 'mobileNormalHome' || (hasProductChartRail && trendColumns === 1 && chartRailFullWidth && chartRailNotSideBubble && chartReadoutLabelsVisible && hasReferenceChartContract && productChartProductized && chartDecisionLayoutProductized && chartSeriesPaintProductized);
         const judgementLabel = root?.querySelector('.ik-v960-judgement-strip > strong b');
         const judgementLabelNoEllipsis = !judgementLabel || getComputedStyle(judgementLabel).textOverflow !== 'ellipsis';
-        const bottomTabs = screen?.querySelector('.ik-v420-tabs');
+        const bottomTabs = screen?.querySelector('.ik-mobile-bottom-tabs');
         const bottomTabsStyle = bottomTabs ? getComputedStyle(bottomTabs) : null;
         const bottomTabsQuiet = Boolean(
           bottomTabsStyle &&
