@@ -9578,15 +9578,15 @@ var PanelFramework = function(exports) {
     return /* @__PURE__ */ jsxRuntimeExports.jsx(
       "div",
       {
-        className: "ik-v420-app ik-v240-app ik-mobile-public-home",
+        className: "ik-mobile-public-home",
         "data-overview-mobile-console": true,
         "data-overview-mobile-scene": props.state.scenario,
         "data-overview-mobile-priority": model.priority,
-        children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ik-v420-shell ik-v240-shell", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
+        children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ik-mobile-app-shell", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
           "main",
           {
             id: "mobile-home-view",
-            className: "ik-v420-screen ik-v240-screen ik-mobile-decision-screen",
+            className: "ik-mobile-decision-screen",
             "data-overview-mobile-first-screen": "app-home",
             "data-overview-mobile-active-tab": activeTab,
             children: [

@@ -12,15 +12,15 @@ export function MobileOverviewHome(props: MobileOverviewHomeProps) {
   const model = buildMobileOverviewModel(props.snapshot, props.state);
   return (
     <div
-      className="ik-v420-app ik-v240-app ik-mobile-public-home"
+      className="ik-mobile-public-home"
       data-overview-mobile-console
       data-overview-mobile-scene={props.state.scenario}
       data-overview-mobile-priority={model.priority}
     >
-      <div className="ik-v420-shell ik-v240-shell">
+      <div className="ik-mobile-app-shell">
         <main
           id="mobile-home-view"
-          className="ik-v420-screen ik-v240-screen ik-mobile-decision-screen"
+          className="ik-mobile-decision-screen"
           data-overview-mobile-first-screen="app-home"
           data-overview-mobile-active-tab={activeTab}
         >

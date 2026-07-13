@@ -120,7 +120,7 @@
     background: #f4f8fc;
   }
 
-  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-decision-trend [data-overview-mobile-v1012-product-chart] {
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-decision-trend .ik-mobile-line-chart {
     display: block;
     width: 100%;
     height: 64px;

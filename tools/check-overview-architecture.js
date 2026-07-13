@@ -108,6 +108,8 @@ const mobileCoreStylesFile =
   "src/panel-framework/overview/styles/mobile/core.css";
 const mobileDecisionStylesFile =
   "src/panel-framework/overview/styles/mobile/decision.css";
+const mobileTrendStylesFile =
+  "src/panel-framework/overview/styles/mobile/trend.css";
 const mobileSurfaceStylesFile =
   "src/panel-framework/overview/styles/mobile/surface.css";
 const mobileIncidentStylesFile =
@@ -156,6 +158,7 @@ const mobileNavigationStyles = read(mobileNavigationStylesFile);
 const mobileFrameStyles = read(mobileFrameStylesFile);
 const mobileCoreStyles = read(mobileCoreStylesFile);
 const mobileDecisionStyles = read(mobileDecisionStylesFile);
+const mobileTrendStyles = read(mobileTrendStylesFile);
 const mobileSurfaceStyles = read(mobileSurfaceStylesFile);
 const mobileIncidentStyles = read(mobileIncidentStylesFile);
 const mobileLandscapeStyles = read(mobileLandscapeStylesFile);
@@ -433,10 +436,15 @@ assert(
     (mobileFrameStyles.match(/!important/g) || []).length === 0 &&
     (mobileCoreStyles.match(/!important/g) || []).length === 0 &&
     (mobileDecisionStyles.match(/!important/g) || []).length === 0 &&
+    (mobileTrendStyles.match(/!important/g) || []).length === 0 &&
     (mobileSurfaceStyles.match(/!important/g) || []).length === 0 &&
     (mobileIncidentStyles.match(/!important/g) || []).length === 0 &&
     (mobileLandscapeStyles.match(/!important/g) || []).length === 0,
-  "Mobile product shell, frame, core, decision, surface, incident, landscape, and navigation must not use override priorities"
+  "Mobile product shell, frame, core, decision, trend, surface, incident, landscape, and navigation must not use override priorities"
+);
+assert(
+  !/ik-v\d+/.test(mobileProductShell),
+  "Mobile product shell must not retain legacy app, shell, or chart selectors"
 );
 assert(
   lines(desktopHelpers) <= 450,
@@ -516,6 +524,12 @@ assert(lines(mobileHome) <= 120, `MobileOverviewHome.tsx exceeds 120 lines: ${li
 assert(
   !/data-overview-mobile-v\d+|data-overview-mobile-design-token-system/.test(mobileHome),
   "MobileOverviewHome.tsx must not expose versioned or self-certifying design-token attributes"
+);
+assert(
+  !/ik-v\d+/.test(mobileHome) &&
+    mobileHome.includes('className="ik-mobile-app-shell"') &&
+    mobileHome.includes('className="ik-mobile-decision-screen"'),
+  "MobileOverviewHome.tsx must own semantic root, shell, and screen classes"
 );
 assert(
   lines(mobileDecision) <= 270,
@@ -727,7 +741,7 @@ assert(
   "Mobile home modules must consume decision and supporting evidence from the view model"
 );
 assert(
-  ["core.css", "product-shell.css", "frame.css", "decision.css", "surface.css", "incident.css", "navigation.css", "landscape.css"]
+  ["core.css", "product-shell.css", "frame.css", "decision.css", "trend.css", "surface.css", "incident.css", "navigation.css", "landscape.css"]
     .every((file) => mobileStyles.includes(`@import "./${file}";`)),
   "Mobile build-time CSS must use semantic component layers"
 );
@@ -795,6 +809,7 @@ const mobileStyleLayerFiles = [
   "src/panel-framework/overview/styles/mobile/core.css",
   "src/panel-framework/overview/styles/mobile/frame.css",
   "src/panel-framework/overview/styles/mobile/decision.css",
+  "src/panel-framework/overview/styles/mobile/trend.css",
   "src/panel-framework/overview/styles/mobile/surface.css",
   "src/panel-framework/overview/styles/mobile/product-shell.css",
   "src/panel-framework/overview/styles/mobile/incident.css",
@@ -805,6 +820,7 @@ const mobileStyleLineLimits = new Map([
   ["src/panel-framework/overview/styles/mobile/core.css", 80],
   ["src/panel-framework/overview/styles/mobile/frame.css", 100],
   ["src/panel-framework/overview/styles/mobile/decision.css", 330],
+  ["src/panel-framework/overview/styles/mobile/trend.css", 100],
   ["src/panel-framework/overview/styles/mobile/surface.css", 220],
   ["src/panel-framework/overview/styles/mobile/product-shell.css", 320],
   ["src/panel-framework/overview/styles/mobile/incident.css", 120],
