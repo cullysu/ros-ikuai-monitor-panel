@@ -27,6 +27,16 @@ const panelFile = "src/panel-framework/overview/OverviewPanel.tsx";
 const panelCssFile = "src/panel-framework/overview/OverviewPanel.css";
 const desktopBaseStylesFile =
   "src/panel-framework/overview/styles/overview-desktop.css";
+const desktopBaseStyleLayerFiles = [
+  desktopBaseStylesFile,
+  "src/panel-framework/overview/styles/desktop/density.css",
+  "src/panel-framework/overview/styles/desktop/first-screen.css",
+  "src/panel-framework/overview/styles/desktop/hierarchy.css",
+  "src/panel-framework/overview/styles/desktop/evidence.css",
+  "src/panel-framework/overview/styles/desktop/console-skeleton.css",
+  "src/panel-framework/overview/styles/desktop/layout.css",
+  "src/panel-framework/overview/styles/desktop/console-refinement.css",
+];
 const desktopRefinementFile =
   "src/panel-framework/overview/OverviewPanelDesktopRefinement.css";
 const desktopReleaseFile =
@@ -99,7 +109,7 @@ const desktopScenes = read(desktopScenesFile);
 const desktopDefaultScene = read(desktopDefaultSceneFile);
 const desktopResourceScene = read(desktopResourceSceneFile);
 const panelCss = read(panelCssFile);
-const desktopBaseStyles = read(desktopBaseStylesFile);
+const desktopBaseStyles = desktopBaseStyleLayerFiles.map(read).join("\n");
 const desktopRefinement = read(desktopRefinementFile);
 const desktopRelease = read(desktopReleaseFile);
 const desktopIncidentStyles = read(desktopIncidentStylesFile);
@@ -426,6 +436,31 @@ assert(
   `desktopOverviewVisuals.tsx exceeds 400 lines: ${lines(desktopVisuals)}`
 );
 assert(bytes(panelCssFile) <= 1830000, `OverviewPanel.css exceeds 1.83 MB: ${bytes(panelCssFile)}`);
+assert(
+  lines(read(desktopBaseStylesFile)) <= 12 &&
+    [
+      "density.css",
+      "first-screen.css",
+      "hierarchy.css",
+      "evidence.css",
+      "console-skeleton.css",
+      "layout.css",
+      "console-refinement.css",
+    ].every((file) => read(desktopBaseStylesFile).includes(`@import \"./desktop/${file}\";`)),
+  "Desktop CSS entry must compose named density, hierarchy, evidence, layout, and console layers"
+);
+const desktopBaseStyleLayerLimits = new Map([
+  ["src/panel-framework/overview/styles/desktop/density.css", 900],
+  ["src/panel-framework/overview/styles/desktop/first-screen.css", 550],
+  ["src/panel-framework/overview/styles/desktop/hierarchy.css", 800],
+  ["src/panel-framework/overview/styles/desktop/evidence.css", 650],
+  ["src/panel-framework/overview/styles/desktop/console-skeleton.css", 650],
+  ["src/panel-framework/overview/styles/desktop/layout.css", 550],
+  ["src/panel-framework/overview/styles/desktop/console-refinement.css", 700],
+]);
+for (const [file, limit] of desktopBaseStyleLayerLimits) {
+  assert(exists(file) && lines(read(file)) <= limit, `${file} exceeds ${limit} lines`);
+}
 assert(
   lines(desktopBaseStyles) <= 4700,
   `overview-desktop.css exceeds 4700 lines: ${lines(desktopBaseStyles)}`
