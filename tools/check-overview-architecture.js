@@ -496,6 +496,12 @@ assert(
     ].every((file) => read(desktopBaseStylesFile).includes(`@import \"./desktop/${file}\";`)),
   "Desktop CSS entry must compose named density, hierarchy, evidence, layout, and console layers"
 );
+assert(
+  !/\b(?:ik-v\d+|ik-app-home-v\d+)\b/.test(
+    read("src/panel-framework/overview/styles/desktop/hierarchy.css")
+  ),
+  "Desktop hierarchy styles must not retain versioned mobile containment patches"
+);
 const desktopBaseStyleLayerLimits = new Map([
   ["src/panel-framework/overview/styles/desktop/density.css", 900],
   ["src/panel-framework/overview/styles/desktop/first-screen.css", 550],

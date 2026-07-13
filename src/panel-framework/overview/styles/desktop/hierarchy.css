@@ -419,8 +419,6 @@
   }
 }
 
-@media (min-width: 768px){.router-overview-framework .ik-v162-tabbar{display:none!important;}}
-
 @media (min-width: 768px) {
   .router-overview-framework .ro-desktop-key-row{margin:8px 0 10px!important;padding:0!important;display:grid!important;grid-template-columns:1.35fr repeat(5,minmax(118px,1fr))!important;gap:0!important;}
   .router-overview-framework .ro-desktop-key-cell{border:0!important;}
@@ -432,12 +430,6 @@
   .router-overview-framework [data-overview-module] > header,.router-overview-framework .ik-home-module header{min-height:34px!important;padding:8px 10px!important;border-bottom:1px solid #e5edf5!important;background:#fbfdff!important;}
   .router-overview-framework .ro-ledger-cell{padding:6px 8px!important;}
 }
-
-@media (min-width: 768px){.router-overview-framework .ik-v164-tabbar{display:none!important;}}
-
-@media(min-width:768px){.ik-v166-tabbar{display:none!important;visibility:hidden!important;height:0!important;min-height:0!important;margin:0!important;padding:0!important;overflow:hidden!important}}
-
-@media(min-width:768px){.router-overview-framework :is(.ik-v171-tabbar){display:none!important;visibility:hidden!important;height:0!important;min-height:0!important;margin:0!important;padding:0!important;overflow:hidden!important;}}
 
 @media(min-width:768px){
 .router-overview-framework .ik-home-flat-topbar{border-left:5px solid #1677ff!important;background:#fff!important;box-shadow:none!important}.router-overview-framework .ik-home-flat-topbar .ro-topbar-cell{border-right:1px solid rgba(226,236,246,.8)!important;background:transparent!important}.router-overview-framework .ik-home-flat-topbar .ro-topbar-cell b{font-weight:760!important;color:#0f172a!important}.router-overview-framework .ik-home-flat-topbar .ro-topbar-cell[data-tone=danger] b{color:#d93025!important}.router-overview-framework .ik-home-flat-topbar .ro-topbar-cell em{color:#6f7f92!important}
@@ -485,16 +477,14 @@
 }
 
 @media (min-width: 768px){
-  .router-overview-framework :is(.ik-v189-nav,.ik-v189-app,.ik-v189-first-screen,.ik-v189-home-stack){display:none!important;visibility:hidden!important;}.router-overview-framework .ro-desktop-key-row[data-overview-desktop-tier="key-metrics"]{border-bottom:1px solid #e5edf5!important;}
+  .router-overview-framework .ro-desktop-key-row[data-overview-desktop-tier="key-metrics"]{border-bottom:1px solid #e5edf5!important;}
 }
 
 @media (min-width:768px){
-.router-overview-framework :is(.ik-v191-nav,.ik-v191-app,.ik-v191-tabbar){display:none!important;visibility:hidden!important}.router-overview-framework .ro-desktop-key-row{grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:0!important;border:1px solid #e5edf5!important;border-left:0!important;border-right:0!important;background:#fff!important}.router-overview-framework .ro-desktop-key-cell{min-height:62px!important;border-radius:0!important;box-shadow:none!important;border:0!important;border-right:1px solid #e5edf5!important;background:#fff!important}.router-overview-framework .ro-desktop-key-cell:last-child{border-right:0!important}.router-overview-framework .ro-desktop-key-cell span{font-size:11px!important;color:#748196!important}.router-overview-framework .ro-desktop-key-cell b{font-size:14px!important;line-height:1.15!important}.router-overview-framework .ro-desktop-grid{grid-template-columns:minmax(0,1.45fr) minmax(360px,.95fr)!important;gap:10px!important;align-items:stretch!important}.router-overview-framework .ro-module{border-radius:4px!important;border-color:#e2ebf4!important;box-shadow:none!important}.router-overview-framework .ro-module-head{min-height:32px!important;padding:6px 10px!important;background:#fbfdff!important}.router-overview-framework .ro-ledger-row{min-height:30px!important}.router-overview-framework .ro-col.is-bottom{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:10px!important}.router-overview-framework .ro-topbar{border-radius:0!important;box-shadow:none!important}
+.router-overview-framework .ro-desktop-key-row{grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:0!important;border:1px solid #e5edf5!important;border-left:0!important;border-right:0!important;background:#fff!important}.router-overview-framework .ro-desktop-key-cell{min-height:62px!important;border-radius:0!important;box-shadow:none!important;border:0!important;border-right:1px solid #e5edf5!important;background:#fff!important}.router-overview-framework .ro-desktop-key-cell:last-child{border-right:0!important}.router-overview-framework .ro-desktop-key-cell span{font-size:11px!important;color:#748196!important}.router-overview-framework .ro-desktop-key-cell b{font-size:14px!important;line-height:1.15!important}.router-overview-framework .ro-desktop-grid{grid-template-columns:minmax(0,1.45fr) minmax(360px,.95fr)!important;gap:10px!important;align-items:stretch!important}.router-overview-framework .ro-module{border-radius:4px!important;border-color:#e2ebf4!important;box-shadow:none!important}.router-overview-framework .ro-module-head{min-height:32px!important;padding:6px 10px!important;background:#fbfdff!important}.router-overview-framework .ro-ledger-row{min-height:30px!important}.router-overview-framework .ro-col.is-bottom{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:10px!important}.router-overview-framework .ro-topbar{border-radius:0!important;box-shadow:none!important}
 }
 
 @media (min-width: 768px){.router-overview-framework [data-overview-desktop-toy-nav-leak-guard]{--desktop-console-order:v193-no-content-icon-tabs}.router-overview-framework .ro-desktop-grid{grid-template-columns:minmax(0,1.48fr) minmax(380px,.92fr)!important;gap:10px!important;align-items:stretch!important}.router-overview-framework .ro-module[data-tone=danger],.router-overview-framework [data-tone=danger].ro-module{border-left:3px solid #d93025!important}.router-overview-framework .ro-desktop-key-row{border-top:1px solid #e5edf5!important;border-bottom:1px solid #e5edf5!important;background:#fff!important}.router-overview-framework .ro-desktop-key-cell{border-radius:0!important;box-shadow:none!important}}
-
-@media (min-width: 768px){.router-overview-framework .ik-app-home-v194 :is(.ik-v193-nav,.ik-v193-app,.ik-v193-tabbar){display:none!important;visibility:hidden!important}}
 
 /*v194-desktop-console-hierarchy-tightening*/
 @media (min-width: 768px){
@@ -508,12 +498,6 @@
 .router-overview-framework .ik-desktop-workspace .ro-col.is-bottom .ro-module{min-height:210px!important}.router-overview-framework .ik-desktop-workspace .ro-col.is-bottom .ro-module-head{background:#f8fbff!important}
 .router-overview-framework .ik-desktop-workspace .ro-ledger-row{min-height:30px!important}.router-overview-framework .ik-desktop-workspace .ro-ledger-row:nth-child(n+7){min-height:28px!important;color:#405066!important}
 }
-
-@media (min-width: 768px){.router-overview-framework .ik-app-home-v195 :is(.ik-v193-nav,.ik-v193-app,.ik-v193-tabbar){display:none!important;visibility:hidden!important}}
-
-@media (min-width: 768px){.router-overview-framework .ik-app-home-v196 :is(.ik-v193-nav,.ik-v193-app,.ik-v193-tabbar){display:none!important;visibility:hidden!important}}
-
-@media (min-width: 768px){.router-overview-framework .ik-app-home-v198 :is(.ik-v198-nav,.ik-v198-app,.ik-v198-tabbar,.ik-v193-nav,.ik-v193-app,.ik-v193-tabbar){display:none!important;visibility:hidden!important}}
 
 /* subagent-3: desktop-only low-risk hierarchy and toy-tab containment. */
 @media (min-width: 768px) {
