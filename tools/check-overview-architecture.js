@@ -397,138 +397,409 @@ assert(
 );
 assert(
   lines(desktopWanTrendStyles) <= 120 &&
- ×žv¶‰žËkºwµç]—
-ËË\Ý
-[™[
-Kˆ“Ý™\šY]Ô[™[Þ]\Ý›Ý^ÜÙH™\œÚ[Û™Y\ÚÝÜXØÙ\[˜ÙH]šX]\È‚ŠNÂ˜\ÜÙ\
-ˆYØXÞR[ÜÔÙ[XÝÜÛÝ[OOHˆÝ™\šY]Ô[™[˜ÜÜÈ™Z[›ÙXÙY	ÛYØXÞR[ÜÔÙ[XÝÜÛÝ[HYØXÞHZËZ[ÜÈÙ[XÝÜˆ[\ØŠNÂ˜\ÜÙ\
-ˆYØXÞS[Øš[TÙ[XÝÜÛÝ[OOHˆÝ™\šY]Ô[™[˜ÜÜÈ™Z[›ÙXÙY	ÛYØXÞS[Øš[TÙ[XÝÜÛÝ[HYØXÞHZË[[Øš[HÙ[XÝÜˆ[\ØŠNÂ˜\ÜÙ\
-ˆYØXÞQ[˜Ý[ÛœË™]™\žJ
-˜[YJHOˆ\[™[š[˜ÛY\Ê[˜Ý[Ûˆ	Û˜[Y_X
-JKˆ“Ý™\šY]Ô[™[Þ™Z[›ÙXÙYHYØXÞH™[™\™\ˆ[˜Ý[Ûˆ‚ŠNÂ˜\ÜÙ\
-ˆ[™[š[˜ÛY\Ê	Ùœ›ÛH‹‹ØÛÛ\Û™[ËÑ\ÚÝÜÛÛœÛÛH‰ÊKˆ“Ý™\šY]Ô[™[Þ]\ÝÛÛ\ÜÙHH^˜XÝY\ÚÝÜÛÛœÛÛH›Ý[™\žH‚ŠNÂ˜\ÜÙ\
-ˆ[™[š[˜ÛY\Ê	Ú[\Ü‹‹ÜÝ[\ËÙ\ÚÝÜÚ[˜ÚY[Ë˜ÜÜÈŽÉÊKˆ“Ý™\šY]Ô[™[Þ]\ÝØYHÙ[X[XÈ\ÚÝÜ[˜ÚY[^Y\ˆ‚ŠNÂ˜\ÜÙ\
-ˆ
-[™[›X]Ú
-×™]K[Ý™\šY]ËV×ËWJËÙÊH×JK›[™ÝHLˆ	‰‚ˆKÙ]K[Ý™\šY]ËJÎš\™\Ý[™\™[Øš[KZÛYKXXØÙ\[˜Ù_›Ë\Û˜\ÚÝJÎ™[œÚ]KXÛÛ˜XÝÛÛ[\Ú^™YÛÛ[\XÚÙYšYË]Ø[‹\˜]KYÝX\™
-JKË\Ý
-[™[
-Kˆ“Ý™\šY]Ô[™[Þ]\ÝÙY\›ÛÝ]šX]\ÈÝXÝ\˜[ÜˆÝ]KY\š]™Y›ÝÙ[‹XÙ\YžZ[™È™[X\ÙHÛZ[\È‚ŠNÂ˜\ÜÙ\
-ˆ\ÚÝÜ[\œËš[˜ÛY\Ê	Ùœ›ÛH‹‹Ü›Ý]\›ÜÔ™\Ù[][Û•šY]Ó[Ù[‰ÊH	‰‚ˆ\ÚÝÜ[\œËš[˜ÛY\Ê˜Z[›Ý]\“ÜÔ™\Ù[][Û•šY]Ó[Ù[ŠKˆ™\ÚÝÜÝ™\šY]Ò[\œËÞ]\ÝÛÛœÝ[YHH›Ý]\“ÔÈ™\Ù[][ÛˆšY]È[Ù[‚ŠNÂ˜\ÜÙ\
-ˆ\ÚÝÜ[\œËš[˜ÛY\Ê	Ü™]\›ˆ¹odùbczaáù¨-ÈŽÉÊH	‰‚ˆY\ÚÝÜ[\œËš[˜ÛY\Ê	Ü™]\›ˆ¹k§¹¥íˆŽÉÊKˆ‘\ÚÝÜ]šY[˜ÙH[Ù[\È]\ÝX™[X[HØœÙ\˜][ÛœÈ\ÈÝ\œ™[Ø[\\Ë›Ý™X[[YHÝX\˜[Y\È‚ŠNÂ˜\ÜÙ\
-ˆ[™\Ê›Ý]\“ÜÓ™]ÛÜšÕšY]Ó[Ù[
-HHÌ	‰‚ˆ\›Ý]\“ÜÓ™]ÛÜšÕšY]Ó[Ù[š[˜ÛY\Ê˜Z[›Ý]\“ÜÔ™\Ù[][Û•šY]Ó[Ù[ŠKˆœ›Ý]\›ÜÓ™]ÛÜšÕšY]Ó[Ù[È]\ÝÝ^H›ØÝ\ÙYÛˆ™]ÛÜšÈ]šY[˜ÙK›Ý™\Ù[][ÛˆÛÜH‚ŠNÂ˜\ÜÙ\
-ˆ[™\Ê›Ý]\“ÜÔ™\Ù[][Û•šY]Ó[Ù[
-HHLL	‰‚ˆ›Ý]\“ÜÔ™\Ù[][Û•šY]Ó[Ù[š[˜ÛY\Ê˜Z[›Ý]\“ÜÔ™\Ù[][Û•šY]Ó[Ù[ŠKˆœ›Ý]\›ÜÔ™\Ù[][Û•šY]Ó[Ù[È]\ÝÝÛˆH›Ý[™Y\ÚÝÜ™\Ù[][ÛˆÛXÞH‚ŠNÂ˜\ÜÙ\
-ˆ›Ý]\“ÜÔ™\Ù[][Û•šY]Ó[Ù[š[˜ÛY\Ê	Ü™]\›ˆ¹ïdyîç9cëùå*ŽÉÊH	‰‚ˆ›Ý]\“ÜÓ™]ÛÜšÕšY]Ó[Ù[š[˜ÛY\Ê	Ý˜[YNˆº/k9cäycëùå*‰ÊKˆ‘\ÚÝÜ™\Ù[][Ûˆ]\ÝXYÚ]HX›XÈ™]ÛÜšÈYÙ[Y[Ú[HÙY\[™È›ÜØ\™[™È]˜Z[Xš[]H\È]šY[˜ÙH‚ŠNÂ˜\ÜÙ\
-ˆY\ÚÝÜXÚ\Ú[Û”˜Z[š[˜ÛY\ÊœÝ[O^ÈŠH	‰‚ˆ\ÚÝÜ˜\ÙTÝ[\Ëš[˜ÛY\Ê	Ð[\Ü‹‹Ù\ÚÝÜÙXÚ\Ú[Û‹\˜Z[˜ÜÜÈŽÉÊH	‰‚ˆ^\ÝÊœÜ˜ËÜ[™[Yœ˜[Y]ÛÜšËÛÝ™\šY]ËÜÝ[\ËÙ\ÚÝÜÙXÚ\Ú[Û‹\˜Z[˜ÜÜÈŠKˆ‘\ÚÝÜXÚ\Ú[Û”˜Z[^[Ý]]\Ý]™H[ˆ]È\ÚÝÜÛÛ\Û™[Ý[\ÚY]›Ý[›[™H”Ö‚ŠNÂ˜\ÜÙ\
-ˆ\ÚÝÜÛÛœÛÛKš[˜ÛY\Ê	Ùœ›ÛH‹‹‹Ù\ÚÝÜÝ™\šY]ÔØÙ[™\È‰ÊH	‰‚ˆ\ÚÝÜÛÛœÛÛKš[˜ÛY\Ê˜Z[\ÚÝÜÝ™\šY]ÔØÙ[™JÛ˜\ÚÝÝ]JHŠKˆ‘\ÚÝÜÛÛœÛÛKÞ]\Ý[YØ]HØÙ[˜\š[ÈÛÛ\ÜÚ][ÛˆÈH\ÚÝÜØÙ[™H[Ù[H‚ŠNÂ˜\ÜÙ\
-ˆKÙ]K[Ý™\šY]ËY\ÚÝÜ]—
-ß]K[Ý™\šY]ËY\ÚÝÜ\™Y[™K[X\šÙ\œß]K[Ý™\šY]ËY\ÚÝÜYš^Y\ÚÙ[]ÛŸ]K[Ý™\šY]Ë\ÚYK]X›K[[ÙKË\Ý
-\ÚÝÜÛÛœÛÛJKˆ‘\ÚÝÜÛÛœÛÛKÞ]\Ý›ÝØ\œžH™\œÚ[Û™YÜˆÙ[‹XÙ\YžZ[™ÈXØÙ\[˜ÙHX\šÙ\œÈ‚ŠNÂ˜\ÜÙ\
-ˆKÙ]K[Ý™\šY]ËY\ÚÝÜ]—
-ß]K\›Ý]\›ÜË]—
-ËË\Ý
-\ÚÝÜ[Ù[JKˆ‘\ÚÝÜ[Ù[KÞ]\Ý^ÜÙHÙ[X[XÈ]šY[˜ÙH]šX]\ÈÛ›H‚ŠNÂ˜\ÜÙ\
-ˆKÙ]K[Ý™\šY]ËY\ÚÝÜ]—
-ß]K[Ý™\šY]ËJÎœÝ]\Ë[›Ë]X›KZXY\ŸÝ]\Ë]˜[YK\˜Z[Ü˜\‹\š[Üš]KXÛÛ˜XÝÜ˜\‹Yš^Y\Ú^
-KË\Ý
-Ý]\Õ™\™XÝ
-H	‰‚ˆ
-Ý]\Õ™\™XÝ›X]Ú
-×™]K[Ý™\šY]ËV×ËWJËÙÊH×JK›[™ÝHNˆ”Ý]\Õ™\™XÝÞ]\ÝÙY\Û›HÝXÝ\˜[Ý]\ËX\È›Û\Ë›ÝÙ[‹XÙ\YžZ[™È^[Ý]ÛZ[\È‚ŠNÂ˜\ÜÙ\
-ˆVÙ\ÚÝÜ›Ý]T›ÝÜË\ÚÝÜØ[”›ÝÜË\ÚÝÜ[\™˜XÙT›ÝÜ×KœÛÛYJ
-ÛÝ\˜ÙJHO‚ˆÙ]K[Ý™\šY]ËY\ÚÝÜ]—
-ß]K\›Ý]\›ÜË]—
-ËË\Ý
-ÛÝ\˜ÙJBˆ
-Kˆ‘\ÚÝÜ›Ý]KÐS‹[™[\™˜XÙH›ÝÈ[Ù[\È]\Ý^ÜÙHÙ[X[XÈ]šY[˜ÙH]šX]\ÈÛ›H‚ŠNÂ˜\ÜÙ\
-ˆKÙ]K[Ý™\šY]ËY\ÚÝÜ]—
-ß]K\›Ý]\›ÜË]—
-ËË\Ý
-\ÚÝÜš\ÝX[ÊKˆ™\ÚÝÜÝ™\šY]Õš\ÝX[ËÞ]\Ý^ÜÙHÙ[X[XÈš\ÝX[]šX]\ÈÛ›H‚ŠNÂ˜\ÜÙ\
-ˆ[Øš[S[Ù[š[˜ÛY\Êœ™\ÛÛ™S[Øš[R[˜ÚY[XÝ[ÛˆŠH	‰‚ˆ[[Øš[S[Ù[š[˜ÛY\Ê™[˜Ý[ÛˆX››Ü›X[XÚ\Ú[Û“™^XÝ[ÛˆŠH	‰‚ˆ[[Øš[S[Ù[š[˜ÛY\Ê™[˜Ý[ÛˆX››Ü›X[XÚ\Ú[ÛXÝ[Û“›ÝHŠH	‰‚ˆ[[Øš[S[Ù[š[˜ÛY\Ê™[˜Ý[ÛˆX››Ü›X[XÚ\Ú[Û•\™Ù]XˆŠKˆ›[Øš[SÝ™\šY]Ó[Ù[È]\Ý[YØ]H[˜ÚY[XÝ[ÛˆÛÜH[™Xˆ\™Ù]ÈÈH[Øš[HÛXÞH[Ù[H‚ŠNÂ˜\ÜÙ\
-ˆÈ¹§éznæ:+©9aî¹cèÈ‹¹§ézaáúfá¹â­¹  H‹¹§éy£©ycèù¢oú/oH‹¹§ézaáúfáº`&º`dÈ—K™]™\žJ
-ÛÜJHO‚ˆ[Øš[TÛXÞKš[˜ÛY\ÊÛÜJBˆ
-Kˆ›[Øš[SÝ™\šY]ÔÛXÞKÈ]\ÝÝÛˆØš™XÝ\ÜXÚYšXÈ[˜ÚY[XÝ[ÛˆÛÜH‚ŠNÂ˜\ÜÙ\
-ˆ
-\ÚÝÜÛÛœÛÛK›X]Ú
-Ù]K[Ý™\šY]ËKÙÊH×JK›[™ÝH‹ˆ‘\ÚÝÜÛÛœÛÛKÞ]\ÝÙY\Û›HÝXÝ\˜[Ý™\šY]È]šX]\È‚ŠNÂ˜\ÜÙ\
-ˆ\ÚÝÜÛÛœÛÛKš[˜ÛY\Ê	Ùœ›ÛH‹‹Ñ\ÚÝÜXÚ\Ú[Û”˜Z[‰ÊH	‰‚ˆ\ÚÝÜÛÛœÛÛKš[˜ÛY\Ê\ÚÝÜXÚ\Ú[Û”˜Z[ŠKˆ‘\ÚÝÜÛÛœÛÛKÞ]\ÝÛÛ\ÜÙHH\ÚÝÜØš™XÝÚ[\XÝØXÝ[Û‹ØÜ™YXš[]H˜Z[‚ŠNÂ˜\ÜÙ\
-ˆÂˆ™\ÚÝÜÝ™\šY]Ð[Ù™›[™TØÙ[™H‹ˆ™\ÚÝÜÝ™\šY]ÐÛÛXÝ[Û”ØÙ[™H‹ˆ™\ÚÝÜÝ™\šY]ÑY˜][ØÙ[™H‹ˆ™\ÚÝÜÝ™\šY]Ò[\™˜XÙTØÙ[™H‹ˆ™\ÚÝÜÝ™\šY]Ó›ÔÛ˜\ÚÝØÙ[™H‹ˆ™\ÚÝÜÝ™\šY]Ô™\ÛÝ\˜ÙTØÙ[™H‹ˆK™]™\žJ
-[Ù[S˜[YJHOˆ\ÚÝÜØÙ[™\Ëš[˜ÛY\Êœ›ÛH‹‹ÉÛ[Ù[S˜[Y_H˜
-JH	‰‚ˆÈ››Ë\Û˜\ÚÝ‹œ™\ÛÝ\˜ÙKY[‹˜ÛÛXÝ[Û‹YÝÛˆ‹š[\™˜XÙ\ËYÝÛˆ‹˜[[Ù™›[™H—K™]™\žJ
-ØÙ[˜\š[ÊHO‚ˆ\ÚÝÜØÙ[™\Ëš[˜ÛY\ÊØ\ÙH‰ÜØÙ[˜\š[ßHŽ˜
-Bˆ
-H	‰‚ˆ\ÚÝÜØÙ[™\Ëš[˜ÛY\Êœ™]\›ˆZ[Y˜][\ÚÝÜØÙ[™JÛ˜\ÚÝÝ]JNÈŠKˆ™\ÚÝÜÝ™\šY]ÔØÙ[™\ËÞ]\Ý\Ü]Ú]™\žH\ÚÝÜØÙ[˜\š[ÈÈ[ˆ\ÛÛ]YØÙ[™H[Ù[H‚ŠNÂ˜\ÜÙ\
-ˆ\ÚÝÜY˜][ØÙ[™Kš[˜ÛY\Ê	Ùœ›ÛH‹‹Ù\ÚÝÜÝ™\šY]Õš\ÝX[È‰ÊKˆ™\ÚÝÜÝ™\šY]ÑY˜][ØÙ[™KÞ]\ÝÛÛ\ÜÙHH^˜XÝY\ÚÝÜš\ÝX[^Y\ˆ‚ŠNÂ˜\ÜÙ\
-ˆ\ÚÝÜY˜][ØÙ[™Kš[˜ÛY\Ê	Ùœ›ÛH‹‹Ù\ÚÝÜÝ™\šY]Õ˜Y™šXÔ›ÝÜÈ‰ÊH	‰‚ˆ\ÚÝÜY˜][ØÙ[™Kš[˜ÛY\Ê	Ùœ›ÛH‹‹Ù\ÚÝÜÝ™\šY]Ô›Ý]T›ÝÜÈ‰ÊH	‰‚ˆ\ÚÝÜY˜][ØÙ[™Kš[˜ÛY\Ê	Ùœ›ÛH‹‹Ù\ÚÝÜÝ™\šY]Ò[\™˜XÙT›ÝÜÈ‰ÊH	‰‚ˆ\ÚÝÜY˜][ØÙ[™Kš[˜ÛY\Ê	Ùœ›ÛH‹‹Ù\ÚÝÜÝ™\šY]ÐÜ™YXš[]T›ÝÜÈ‰ÊH	‰‚ˆ\ÚÝÜY˜][ØÙ[™Kš[˜ÛY\Ê	Ùœ›ÛH‹‹Ù\ÚÝÜÝ™\šY]Õ\›Z[˜[›ÝÜÈ‰ÊKˆ™\ÚÝÜÝ™\šY]ÑY˜][ØÙ[™KÞ]\ÝÛÛœÝ[YHH›ÝÈ[Ù[\È]ÝÛˆ]È]šY[˜ÙH‚ŠNÂ˜\ÜÙ\
-ˆ\ÚÝÜY˜][ØÙ[™Kš[˜ÛY\Ê	Ùœ›ÛH‹‹Ù\ÚÝÜ™\ÛÝ\˜ÙT›ÝÜÈ‰ÊKˆ™\ÚÝÜÝ™\šY]ÑY˜][ØÙ[™KÞ]\ÝÛÛœÝ[YHH™\ÛÝ\˜ÙH]šY[˜ÙH›ÝÈ[Ù[H‚ŠNÂ˜\ÜÙ\
-ˆÛ[Ù[OHœ™\ÛÝ\˜ÙKZ[\™˜XÙK]ÜH–×—J—˜ÛÛ\ÙY‹Ë\Ý
-\ÚÝÜ™\ÛÝ\˜ÙTØÙ[™JH	‰‚ˆÛ[Ù[OH››Ü›X[[ÜË[YÙ\ˆ–×—J—˜ÛÛ\ÙY‹Ë\Ý
-\ÚÝÜ™\ÛÝ\˜ÙTØÙ[™JKˆ”™\ÛÝ\˜ÙKY[\ÚÝÜØÙ[™H]\ÝY™\ˆ[\™˜XÙH›ÝYÚ][™™XÙ[Y]™[YÙ\œÈ™[ÝÈH™\ÛÝ\˜ÙHYÙ[Y[‚ŠNÂ˜\ÜÙ\
-ˆ\ÚÝÜš\ÝX[Ëš[˜ÛY\Ê	Ùœ›ÛH‹‹Ù\ÚÝÜÝ™\šY]Õ˜Y™šXÔ›ÝÜÈ‰ÊKˆ™\ÚÝÜÝ™\šY]Õš\ÝX[ËÞ]\ÝÛÛœÝ[YHH˜Y™šXÈ›ÝÈ[Ù[H\™XÝH‚ŠNÂ˜\ÜÙ\
-ˆ[Øš[RÛYKš[˜ÛY\Ê˜Z[[Øš[SÝ™\šY]Ó[Ù[ŠH	‰‚ˆ[Øš[RÛYKš[˜ÛY\Ê”š[X\žQXÚ\Ú[ÛˆŠH	‰‚ˆ[Øš[RÛYKš[˜ÛY\Ê‘]šXÙP˜\ˆŠH	‰‚ˆ[Øš[RÛYKš[˜ÛY\ÊÛÜ™Q˜XÝÈŠH	‰‚ˆ[Øš[RÛYKš[˜ÛY\Ê”Ý\Ü[™Ó\ÝŠH	‰‚ˆ[Øš[RÛYKš[˜ÛY\Ê›ÝÛUXœÈŠKˆ“[Øš[SÝ™\šY]ÒÛYKÞ]\Ý™[XZ[ˆHÛX[[Øš[KZÛYHÛÛ\ÜÚ][Ûˆ›Ý[™\žH‚ŠNÂ˜\ÜÙ\
-ˆ[Øš[QXÚ\Ú[Û‹š[˜ÛY\Ê›[Ù[š\›Ë]HŠH	‰‚ˆ[Øš[QXÚ\Ú[Û‹š[˜ÛY\Ê‘XÚ\Ú[Û•š\ÝX[ŠH	‰‚ˆ[Øš[RÛYTÙXÝ[ÛœËš[˜ÛY\Ê›[Ù[˜ÛÜ™SY]šXÜÈŠH	‰‚ˆ[Øš[RÛYTÙXÝ[ÛœËš[˜ÛY\Ê›[Ù[œš[X\žS\Ýœ›ÝÜÈŠKˆ“[Øš[HÛYH[Ù[\È]\ÝÛÛœÝ[YHXÚ\Ú[Ûˆ[™Ý\Ü[™È]šY[˜ÙHœ›ÛHHšY]È[Ù[‚ŠNÂ˜\ÜÙ\
-ˆÈ˜ÛÜ™K˜ÜÜÈ‹œ›ÙXÝ\Ú[˜ÜÜÈ‹™œ˜[YK˜ÜÜÈ‹™XÚ\Ú[Û‹˜ÜÜÈ‹œÝ\™˜XÙK˜ÜÜÈ‹š[˜ÚY[˜ÜÜÈ‹›˜]šYØ][Û‹˜ÜÜÈ‹›[™ØØ\K˜ÜÜÈ—Bˆ™]™\žJ
-š[JHOˆ[Øš[TÝ[\Ëš[˜ÛY\Ê[\Ü‹‹ÉÙš[_HŽØ
-JKˆ“[Øš[HZ[][YHÔÔÈ]\Ý\ÙHÙ[X[XÈÛÛ\Û™[^Y\œÈ‚ŠNÂ˜\ÜÙ\
-ˆ[[Øš[RÛYKš[˜ÛY\Ê“[Øš[SÝ™\šY]ÔÝ[\ÈŠH	‰‚ˆ[[Øš[RÛYKš[˜ÛY\Ê\ÙR[œÙ\[Û‘Y™™XÝŠH	‰‚ˆ[Øš[RÛYKš[˜ÛY\Ê	Ú[\Ü‹‹‹ÜÝ[\ËÛ[Øš[KÛ[Øš[K\›ÙXÝ˜ÜÜÈŽÉÊKˆ“[Øš[HÛYH]\Ý\ÙHZ[][YHÔÔÈÚ]Ý][[YHÝ[H[š™XÝ[Ûˆ‚ŠNÂ˜\ÜÙ\
-ˆ[\Ü[Ú\™HHŽ‹ˆÝ™\šY]Ô[™[˜ÜÜÈ[\Ü[Ú\™H™YÜ™\ÜÙYX›Ý™H‰Nˆ	Ú[\Ü[Ú\™KÑš^Y
+    desktopWanTrendStyles.includes('[data-overview-density-module="wan-trend"]') &&
+    panel.includes('import "./styles/overview-desktop-runtime.css";') &&
+    (desktopWanTrendStyles.match(/!important/g) || []).length === 0 &&
+    !desktopRefinement.includes('Desktop WAN readable product chart'),
+  "Desktop WAN trend styles must stay focused without override priorities"
+);
+assert(
+  (mobileProductShell.match(/!important/g) || []).length === 0,
+  "Mobile product shell must not use override priorities"
+);
+assert(
+  lines(desktopHelpers) <= 450,
+  `desktopOverviewHelpers.tsx exceeds 450 lines: ${lines(desktopHelpers)}`
+);
+assert(
+  lines(desktopTrafficRows) <= 280,
+  `desktopOverviewTrafficRows.ts exceeds 280 lines: ${lines(desktopTrafficRows)}`
+);
+assert(
+  lines(desktopRouteRows) <= 150,
+  `desktopOverviewRouteRows.ts exceeds 150 lines: ${lines(desktopRouteRows)}`
+);
+assert(
+  lines(desktopWanRows) <= 80,
+  `desktopOverviewWanRows.tsx exceeds 80 lines: ${lines(desktopWanRows)}`
+);
+assert(
+  lines(desktopInterfaceRows) <= 250,
+  `desktopOverviewInterfaceRows.tsx exceeds 250 lines: ${lines(desktopInterfaceRows)}`
+);
+assert(
+  lines(desktopCredibilityRows) <= 320,
+  `desktopOverviewCredibilityRows.tsx exceeds 320 lines: ${lines(desktopCredibilityRows)}`
+);
+assert(
+  lines(desktopTerminalRows) <= 110,
+  `desktopOverviewTerminalRows.ts exceeds 110 lines: ${lines(desktopTerminalRows)}`
+);
+assert(
+  lines(desktopResourceRows) <= 250,
+  `desktopResourceRows.ts exceeds 250 lines: ${lines(desktopResourceRows)}`
+);
+assert(
+  lines(desktopVisuals) <= 400,
+  `desktopOverviewVisuals.tsx exceeds 400 lines: ${lines(desktopVisuals)}`
+);
+assert(bytes(panelCssFile) <= 1830000, `OverviewPanel.css exceeds 1.83 MB: ${bytes(panelCssFile)}`);
+assert(
+  lines(read(desktopBaseStylesFile)) <= 12 &&
+    [
+      "density.css",
+      "first-screen.css",
+      "hierarchy.css",
+      "evidence.css",
+      "console-skeleton.css",
+      "layout.css",
+      "console-refinement.css",
+    ].every((file) => read(desktopBaseStylesFile).includes(`@import \"./desktop/${file}\";`)),
+  "Desktop CSS entry must compose named density, hierarchy, evidence, layout, and console layers"
+);
+const desktopBaseStyleLayerLimits = new Map([
+  ["src/panel-framework/overview/styles/desktop/density.css", 900],
+  ["src/panel-framework/overview/styles/desktop/first-screen.css", 550],
+  ["src/panel-framework/overview/styles/desktop/hierarchy.css", 800],
+  ["src/panel-framework/overview/styles/desktop/evidence.css", 650],
+  ["src/panel-framework/overview/styles/desktop/console-skeleton.css", 650],
+  ["src/panel-framework/overview/styles/desktop/layout.css", 550],
+  ["src/panel-framework/overview/styles/desktop/console-refinement.css", 700],
+]);
+for (const [file, limit] of desktopBaseStyleLayerLimits) {
+  assert(exists(file) && lines(read(file)) <= limit, `${file} exceeds ${limit} lines`);
+}
+assert(
+  lines(desktopBaseStyles) <= 4700,
+  `overview-desktop.css exceeds 4700 lines: ${lines(desktopBaseStyles)}`
+);
+assert(
+  desktopBaseImportantCount <= 2000,
+  `overview-desktop.css important count regressed above 2000: ${desktopBaseImportantCount}`
+);
+assert(
+  desktopBaseShadowedDeclarationCount === 0,
+  `overview-desktop.css must not redeclare the same property in a later identical selector context: ${desktopBaseShadowedDeclarationCount}`
+);
+assert(lines(mobileHome) <= 120, `MobileOverviewHome.tsx exceeds 120 lines: ${lines(mobileHome)}`);
+assert(
+  !/data-overview-mobile-v\d+|data-overview-mobile-design-token-system/.test(mobileHome),
+  "MobileOverviewHome.tsx must not expose versioned or self-certifying design-token attributes"
+);
+assert(
+  lines(mobileDecision) <= 270,
+  `MobileOverviewDecision.tsx exceeds 270 lines: ${lines(mobileDecision)}`
+);
+assert(
+  lines(mobileHomeSections) <= 170,
+  `MobileOverviewHomeSections.tsx exceeds 170 lines: ${lines(mobileHomeSections)}`
+);
+assert(
+  lines(mobileTabView) <= 150,
+  `MobileOverviewTabView.tsx exceeds 150 lines: ${lines(mobileTabView)}`
+);
+assert(
+  lines(mobileTabRows) <= 150 &&
+    mobileTabView.includes('from "./mobileOverviewTabRows"') &&
+    ["mobileWanRows", "mobileInterfaceRows", "mobileTerminalRows", "mobileLogRows"].every((name) => mobileTabRows.includes(`function ${name}`)),
+  "Mobile detail tabs must keep row extraction outside the React view component"
+);
+assert(lines(mobileModel) <= 900, `mobileOverviewModel.ts exceeds 900 lines: ${lines(mobileModel)}`);
+assert(!panel.includes("ik-ios-"), "OverviewPanel.tsx reintroduced legacy ik-ios classes");
+assert(!panel.includes("ik-mobile-"), "OverviewPanel.tsx reintroduced legacy ik-mobile classes");
+assert(
+  !/data-overview-desktop-v\d+/.test(panel),
+  "OverviewPanel.tsx must not expose versioned desktop acceptance attributes"
+);
+assert(
+  legacyIosSelectorCount === 0,
+  `OverviewPanel.css reintroduced ${legacyIosSelectorCount} legacy ik-ios selector rules`
+);
+assert(
+  legacyMobileSelectorCount === 0,
+  `OverviewPanel.css reintroduced ${legacyMobileSelectorCount} legacy ik-mobile selector rules`
+);
+assert(
+  legacyFunctions.every((name) => !panel.includes(`function ${name}`)),
+  "OverviewPanel.tsx reintroduced a legacy renderer function"
+);
+assert(
+  panel.includes('from "./components/DesktopConsole"'),
+  "OverviewPanel.tsx must compose the extracted desktop console boundary"
+);
+assert(
+  panel.includes('import "./styles/desktop/incidents.css";'),
+  "OverviewPanel.tsx must load the semantic desktop incident layer"
+);
+assert(
+  (panel.match(/\bdata-overview-[\w-]+/g) || []).length <= 12 &&
+    !/data-overview-(?:hard-standard|mobile-home-acceptance|no-snapshot-(?:density-contract|content-sized|content-packed|big-wan-rate-guard))/.test(panel),
+  "OverviewPanel.tsx must keep root attributes structural or state-derived, not self-certifying release claims"
+);
+assert(
+  desktopHelpers.includes('from "./routerosPresentationViewModel"') &&
+    desktopHelpers.includes("buildRouterOsPresentationViewModel"),
+  "desktopOverviewHelpers.tsx must consume the RouterOS presentation view model"
+);
+assert(
+  desktopHelpers.includes('return "å½“å‰é‡‡æ ·";') &&
+    !desktopHelpers.includes('return "å®žæ—¶";'),
+  "Desktop evidence modules must label healthy observations as current samples, not realtime guarantees"
+);
+assert(
+  lines(routerOsNetworkViewModel) <= 300 &&
+    !routerOsNetworkViewModel.includes("buildRouterOsPresentationViewModel"),
+  "routerosNetworkViewModel.ts must stay focused on network evidence, not presentation copy"
+);
+assert(
+  lines(routerOsPresentationViewModel) <= 110 &&
+    routerOsPresentationViewModel.includes("buildRouterOsPresentationViewModel"),
+  "routerosPresentationViewModel.ts must own the bounded desktop presentation policy"
+);
+assert(
+  routerOsPresentationViewModel.includes('return "ç½‘ç»œå¯ç”¨";') &&
+    routerOsNetworkViewModel.includes('value: "è½¬å‘å¯ç”¨"'),
+  "Desktop presentation must lead with a public network judgement while keeping forwarding availability as evidence"
+);
+assert(
+  !desktopDecisionRail.includes("style={") &&
+    desktopBaseStyles.includes('@import "./desktop/decision-rail.css";') &&
+    exists("src/panel-framework/overview/styles/desktop/decision-rail.css"),
+  "DesktopDecisionRail layout must live in its desktop component stylesheet, not inline JSX"
+);
+assert(
+  desktopConsole.includes('from "../desktopOverviewScenes"') &&
+    desktopConsole.includes("buildDesktopOverviewScene(snapshot, state)"),
+  "DesktopConsole.tsx must delegate scenario composition to the desktop scene module"
+);
+assert(
+  !/data-overview-desktop-v\d+|data-overview-desktop-redline-markers|data-overview-desktop-fixed-skeleton|data-overview-side-table-mode/.test(desktopConsole),
+  "DesktopConsole.tsx must not carry versioned or self-certifying acceptance markers"
+);
+assert(
+  !/data-overview-desktop-v\d+|data-routeros-v\d+/.test(desktopModule),
+  "DesktopModule.tsx must expose semantic evidence attributes only"
+);
+assert(
+  !/data-overview-desktop-v\d+|data-overview-(?:status-no-table-header|status-value-rail|topbar-priority-contract|topbar-fixed-six)/.test(statusVerdict) &&
+    (statusVerdict.match(/\bdata-overview-[\w-]+/g) || []).length <= 18,
+  "StatusVerdict.tsx must keep only structural status-bus roles, not self-certifying layout claims"
+);
+assert(
+  ![desktopRouteRows, desktopWanRows, desktopInterfaceRows].some((source) =>
+    /data-overview-desktop-v\d+|data-routeros-v\d+/.test(source)
+  ),
+  "Desktop route, WAN, and interface row modules must expose semantic evidence attributes only"
+);
+assert(
+  !/data-overview-desktop-v\d+|data-routeros-v\d+/.test(desktopVisuals),
+  "desktopOverviewVisuals.tsx must expose semantic visual attributes only"
+);
+assert(
+  mobileModel.includes("resolveMobileIncidentAction") &&
+    !mobileModel.includes("function abnormalDecisionNextAction") &&
+    !mobileModel.includes("function abnormalDecisionActionNote") &&
+    !mobileModel.includes("function abnormalDecisionTargetTab"),
+  "mobileOverviewModel.ts must delegate incident action copy and tab targets to the mobile policy module"
+);
+assert(
+  ["æŸ¥é»˜è®¤å‡ºå£", "æŸ¥é‡‡é›†çŠ¶æ€", "æŸ¥æŽ¥å£æ‰¿è½½", "æŸ¥é‡‡é›†é€šé“"].every((copy) =>
+    mobilePolicy.includes(copy)
+  ),
+  "mobileOverviewPolicy.ts must own object-specific incident action copy"
+);
+assert(
+  (desktopConsole.match(/data-overview-/g) || []).length <= 6,
+  "DesktopConsole.tsx must keep only structural overview attributes"
+);
+assert(
+  desktopConsole.includes('from "./DesktopDecisionRail"') &&
+    desktopConsole.includes("<DesktopDecisionRail"),
+  "DesktopConsole.tsx must compose the desktop object/impact/action/credibility rail"
+);
+assert(
+  [
+    "desktopOverviewAllOfflineScene",
+    "desktopOverviewCollectionScene",
+    "desktopOverviewDefaultScene",
+    "desktopOverviewInterfaceScene",
+    "desktopOverviewNoSnapshotScene",
+    "desktopOverviewResourceScene",
+  ].every((moduleName) => desktopScenes.includes(`from "./${moduleName}"`)) &&
+    ["no-snapshot", "resource-full", "collection-down", "interfaces-down", "all-offline"].every((scenario) =>
+      desktopScenes.includes(`case "${scenario}":`)
+    ) &&
+    desktopScenes.includes("return buildDefaultDesktopScene(snapshot, state);"),
+  "desktopOverviewScenes.tsx must dispatch every desktop scenario to an isolated scene module"
+);
+assert(
+  desktopDefaultScene.includes('from "./desktopOverviewVisuals"'),
+  "desktopOverviewDefaultScene.tsx must compose the extracted desktop visual layer"
+);
+assert(
+  desktopDefaultScene.includes('from "./desktopOverviewTrafficRows"') &&
+    desktopDefaultScene.includes('from "./desktopOverviewRouteRows"') &&
+    desktopDefaultScene.includes('from "./desktopOverviewInterfaceRows"') &&
+    desktopDefaultScene.includes('from "./desktopOverviewCredibilityRows"') &&
+    desktopDefaultScene.includes('from "./desktopOverviewTerminalRows"'),
+  "desktopOverviewDefaultScene.tsx must consume the row modules that own its evidence"
+);
+assert(
+  desktopDefaultScene.includes('from "./desktopResourceRows"'),
+  "desktopOverviewDefaultScene.tsx must consume the resource evidence row module"
+);
+assert(
+  /module="resource-interface-top5"[^>]*\bcollapsed\b/.test(desktopResourceScene) &&
+    /module="normal-ops-ledger"[^>]*\bcollapsed\b/.test(desktopResourceScene),
+  "Resource-full desktop scene must defer interface throughput and recent-event ledgers below the resource judgement"
+);
+assert(
+  desktopVisuals.includes('from "./desktopOverviewTrafficRows"'),
+  "desktopOverviewVisuals.tsx must consume the traffic row module directly"
+);
+assert(
+  mobileHome.includes("buildMobileOverviewModel") &&
+    mobileHome.includes("PrimaryDecision") &&
+    mobileHome.includes("DeviceBar") &&
+    mobileHome.includes("CoreFacts") &&
+    mobileHome.includes("SupportingList") &&
+    mobileHome.includes("BottomTabs"),
+  "MobileOverviewHome.tsx must remain a small mobile-home composition boundary"
+);
+assert(
+  mobileDecision.includes("model.hero.title") &&
+    mobileDecision.includes("DecisionVisual") &&
+    mobileHomeSections.includes("model.coreMetrics") &&
+    mobileHomeSections.includes("model.primaryList.rows"),
+  "Mobile home modules must consume decision and supporting evidence from the view model"
+);
+assert(
+  ["core.css", "product-shell.css", "frame.css", "decision.css", "surface.css", "incident.css", "navigation.css", "landscape.css"]
+    .every((file) => mobileStyles.includes(`@import "./${file}";`)),
+  "Mobile build-time CSS must use semantic component layers"
+);
+assert(
+  !mobileHome.includes("MobileOverviewStyles") &&
+    !mobileHome.includes("useInsertionEffect") &&
+    mobileHome.includes('import "../styles/mobile/mobile-product.css";'),
+  "Mobile home must use build-time CSS without runtime style injection"
+);
+assert(
+  importantShare <= 0.886,
+  `OverviewPanel.css important share regressed above 88.6%: ${importantShare.toFixed(4)}`
+);
+assert(
+  mobileRuleShare <= 0.11,
+  `OverviewPanel.css mobile rule share regressed above 11%: ${mobileRuleShare.toFixed(4)}`
+);
+assert(
+  desktopRefinementImportantCount <= 650,
+  `Desktop refinement !important count regressed above 650: ${desktopRefinementImportantCount}`
+);
+assert(
+  desktopRefinementShadowedDeclarationCount === 0,
+  `Desktop refinement must not redeclare the same property in a later identical selector context: ${desktopRefinementShadowedDeclarationCount}`
+);
+assert(
+  desktopDecisionRailRuleCount === 1 && desktopDecisionCellRuleCount <= 4,
+  `Desktop decision rail must stay consolidated: railRules=${desktopDecisionRailRuleCount} cellRules=${desktopDecisionCellRuleCount}`
+);
+assert(
+  desktopWorkspaceGridRuleCount === 1 && desktopNavRuleCount === 0,
+  `Desktop workspace grid must stay canonical and must not duplicate shell navigation: gridRules=${desktopWorkspaceGridRuleCount} navRules=${desktopNavRuleCount}`
+);
+assert(
+  desktopStatusBusRuleCount === 8 && desktopLegacyTopbarRuleCount === 0,
+  `Desktop status bus must stay canonical: statusBusRules=${desktopStatusBusRuleCount} legacyTopbarRules=${desktopLegacyTopbarRuleCount}`
+);
+assert(
+  desktopModuleShellRuleCount === 1 && desktopModuleHeadRuleCount === 3,
+  `Desktop module shell/head must stay canonical: shellRules=${desktopModuleShellRuleCount} headRules=${desktopModuleHeadRuleCount}`
+);
+assert(
+  desktopLedgerRuleCount === 6 && !desktopRefinement.includes("nth-child(odd)"),
+  `Desktop ledger must stay canonical and zebra-free: ledgerRules=${desktopLedgerRuleCount}`
+);
+assert(
+  desktopModuleToneRuleCount === 2 &&
+    desktopLedgerToneRuleCount === 3 &&
+    desktopLedgerToneShadowCount === 0,
+  `Desktop tone hierarchy must stay restrained: moduleToneRules=${desktopModuleToneRuleCount} ledgerToneRules=${desktopLedgerToneRuleCount} ledgerToneShadows=${desktopLedgerToneShadowCount}`
+);
+assert(
+  desktopReleaseToneResetCount === 1 && desktopReleaseNonPrimaryNeutralCount === 1,
+  `Desktop release tone reset must neutralize row chrome and non-primary text: resets=${desktopReleaseToneResetCount} nonPrimary=${desktopReleaseNonPrimaryNeutralCount}`
+);
+assert(
+  versionMarkerCount <= 159,
+  `OverviewPanel.css version marker count regressed above 159: ${versionMarkerCount}`
+);
+assert(
+  !mobileStyles.includes("foundation") && !mobileStyles.includes("repair"),
+  "Mobile CSS entry reintroduced chronological patch layers"
+);
+const mobileStyleLayerFiles = [
+  "src/panel-framework/overview/styles/mobile/core.css",
+  "src/panel-framework/overview/styles/mobile/frame.css",
+  "src/panel-framework/overview/styles/mobile/decision.css",
+  "src/panel-framework/overview/styles/mobile/surface.css",
+  "src/panel-framework/overview/styles/mobile/product-shell.css",
+  "src/panel-framework/overview/styles/mobile/incident.css",
+  "src/panel-framework/overview/styles/mobile/navigation.css",
+  "src/panel-framework/overview/styles/mobile/landscape.css",
+];
+const mobileStyleLineLimits = new Map([
+  ["src/panel-framework/overview/styles/mobile/core.css", 80],
+  ["src/panel-framework/overview/styles/mobile/frame.css", 100],
+  ["src/panel-framework/overview/styles/mobile/decision.css", 330],
+  ["src/panel-framework/overview/styles/mobile/surface.css", 200],
+  ["src/panel-framework/overview/styles/mobile/product-shell.css", 320],
+  ["src/panel-framework/overview/styles/mobile/incident.css", 120],
+  ["src/panel-framework/overview/styles/mobile/navigation.css", 80],
+  ["src/panel-framework/overview/styles/mobile/landscape.css", 80],
+]);
+let mobileStyleByteTotal = 0;
+for (const rel of mobileStyleLayerFiles) {
+  if (!exists(rel)) continue;
+  const layer = read(rel);
+  mobileStyleByteTotal += bytes(rel);
+  assert(
+    lines(layer) <= mobileStyleLineLimits.get(rel),
+    `${rel} exceeds ${mobileStyleLineLimits.get(rel)} lines: ${lines(layer)}`
+  );
+}
+assert(
+  mobileStyleByteTotal <= 50000,
+  `Mobile overview style layers exceed 50 KB: ${mobileStyleByteTotal}`
+);
 
-_XŠNÂ˜\ÜÙ\
-ˆ[Øš[T[TÚ\™HHŒLKˆÝ™\šY]Ô[™[˜ÜÜÈ[Øš[H[HÚ\™H™YÜ™\ÜÙYX›Ý™HLINˆ	Û[Øš[T[TÚ\™KÑš^Y
 
-_XŠNÂ˜\ÜÙ\
-ˆ\ÚÝÜ™Yš[™[Y[[\Ü[ÛÝ[HLˆ\ÚÝÜ™Yš[™[Y[Z[\Ü[ÛÝ[™YÜ™\ÜÙYX›Ý™HLˆ	Ù\ÚÝÜ™Yš[™[Y[[\Ü[ÛÝ[XŠNÂ˜\ÜÙ\
-ˆ\ÚÝÜ™Yš[™[Y[ÚYÝÙYXÛ\˜][ÛÛÝ[OOHˆ\ÚÝÜ™Yš[™[Y[]\Ý›Ý™YXÛ\™HHØ[YH›Ü\H[ˆH]\ˆY[XØ[Ù[XÝÜˆÛÛ^ˆ	Ù\ÚÝÜ™Yš[™[Y[ÚYÝÙYXÛ\˜][ÛÛÝ[XŠNÂ˜\ÜÙ\
-ˆ\ÚÝÜXÚ\Ú[Û”˜Z[[PÛÝ[OOHH	‰ˆ\ÚÝÜXÚ\Ú[ÛÙ[[PÛÝ[Hˆ\ÚÝÜXÚ\Ú[Ûˆ˜Z[]\ÝÝ^HÛÛœÛÛY]Yˆ˜Z[[\ÏIÙ\ÚÝÜXÚ\Ú[Û”˜Z[[PÛÝ[HÙ[[\ÏIÙ\ÚÝÜXÚ\Ú[ÛÙ[[PÛÝ[XŠNÂ˜\ÜÙ\
-ˆ\ÚÝÜÛÜšÜÜXÙQÜšY[PÛÝ[OOHH	‰ˆ\ÚÝÜ˜]”[PÛÝ[OOHˆ\ÚÝÜÛÜšÜÜXÙHÜšY]\ÝÝ^HØ[›ÛšXØ[[™]\Ý›Ý\XØ]HÚ[˜]šYØ][ÛŽˆÜšY[\ÏIÙ\ÚÝÜÛÜšÜÜXÙQÜšY[PÛÝ[H˜]”[\ÏIÙ\ÚÝÜ˜]”[PÛÝ[XŠNÂ˜\ÜÙ\
-ˆ\ÚÝÜÝ]\Ð\Ô[PÛÝ[OOH	‰ˆ\ÚÝÜYØXÞUÜ˜\”[PÛÝ[OOHˆ\ÚÝÜÝ]\È\È]\ÝÝ^HØ[›ÛšXØ[ˆÝ]\Ð\Ô[\ÏIÙ\ÚÝÜÝ]\Ð\Ô[PÛÝ[HYØXÞUÜ˜\”[\ÏIÙ\ÚÝÜYØXÞUÜ˜\”[PÛÝ[XŠNÂ˜\ÜÙ\
-ˆ\ÚÝÜ[Ù[TÚ[[PÛÝ[OOHH	‰ˆ\ÚÝÜ[Ù[RXY[PÛÝ[OOHËˆ\ÚÝÜ[Ù[HÚ[ÚXY]\ÝÝ^HØ[›ÛšXØ[ˆÚ[[\ÏIÙ\ÚÝÜ[Ù[TÚ[[PÛÝ[HXY[\ÏIÙ\ÚÝÜ[Ù[RXY[PÛÝ[XŠNÂ˜\ÜÙ\
-ˆ\ÚÝÜYÙ\”[PÛÝ[OOHˆ	‰ˆY\ÚÝÜ™Yš[™[Y[š[˜ÛY\Ê›XÚ[
-Ù
-HŠKˆ\ÚÝÜYÙ\ˆ]\ÝÝ^HØ[›ÛšXØ[[™™Xœ˜KYœ™YNˆYÙ\”[\ÏIÙ\ÚÝÜYÙ\”[PÛÝ[XŠNÂ˜\ÜÙ\
-ˆ\ÚÝÜ[Ù[UÛ™T[PÛÝ[OOHˆ	‰‚ˆ\ÚÝÜYÙ\•Û™T[PÛÝ[OOHÈ	‰‚ˆ\ÚÝÜYÙ\•Û™TÚYÝÐÛÝ[OOHˆ\ÚÝÜÛ™HY\˜\˜ÚH]\ÝÝ^H™\Ý˜Z[™Yˆ[Ù[UÛ™T[\ÏIÙ\ÚÝÜ[Ù[UÛ™T[PÛÝ[HYÙ\•Û™T[\ÏIÙ\ÚÝÜYÙ\•Û™T[PÛÝ[HYÙ\•Û™TÚYÝÜÏIÙ\ÚÝÜYÙ\•Û™TÚYÝÐÛÝ[XŠNÂ˜\ÜÙ\
-ˆ\ÚÝÜ™[X\ÙUÛ™T™\Ù]ÛÝ[OOHH	‰ˆ\ÚÝÜ™[X\ÙS›Û”š[X\žS™]]˜[ÛÝ[OOHKˆ\ÚÝÜ™[X\ÙHÛ™H™\Ù]]\Ý™]]˜[^™H›ÝÈÚ›ÛYH[™›Û‹\š[X\žH^ˆ™\Ù]ÏIÙ\ÚÝÜ™[X\ÙUÛ™T™\Ù]ÛÝ[H›Û”š[X\žOIÙ\ÚÝÜ™[X\ÙS›Û”š[X\žS™]]˜[ÛÝ[XŠNÂ˜\ÜÙ\
-ˆ™\œÚ[Û“X\šÙ\ÛÝ[HMNKˆÝ™\šY]Ô[™[˜ÜÜÈ™\œÚ[ÛˆX\šÙ\ˆÛÝ[™YÜ™\ÜÙYX›Ý™HMNNˆ	Ý™\œÚ[Û“X\šÙ\ÛÝ[XŠNÂ˜\ÜÙ\
-ˆ[[Øš[TÝ[\Ëš[˜ÛY\Ê™›Ý[™][ÛˆŠH	‰ˆ[[Øš[TÝ[\Ëš[˜ÛY\Êœ™\Z\ˆŠKˆ“[Øš[HÔÔÈ[žH™Z[›ÙXÙYÚ›Û›ÛÙÚXØ[]Ú^Y\œÈ‚ŠNÂ˜ÛÛœÝ[Øš[TÝ[S^Y\‘š[\ÈHÂˆœÜ˜ËÜ[™[Yœ˜[Y]ÛÜšËÛÝ™\šY]ËÜÝ[\ËÛ[Øš[KØÛÜ™K˜ÜÜÈ‹ˆœÜ˜ËÜ[™[Yœ˜[Y]ÛÜšËÛÝ™\šY]ËÜÝ[\ËÛ[Øš[KÙœ˜[YK˜ÜÜÈ‹ˆœÜ˜ËÜ[™[Yœ˜[Y]ÛÜšËÛÝ™\šY]ËÜÝ[\ËÛ[Øš[KÙXÚ\Ú[Û‹˜ÜÜÈ‹ˆœÜ˜ËÜ[™[Yœ˜[Y]ÛÜšËÛÝ™\šY]ËÜÝ[\ËÛ[Øš[KÜÝ\™˜XÙK˜ÜÜÈ‹ˆœÜ˜ËÜ[™[Yœ˜[Y]ÛÜšËÛÝ™\šY]ËÜÝ[\ËÛ[Øš[KÜ›ÙXÝ\Ú[˜ÜÜÈ‹ˆœÜ˜ËÜ[™[Yœ˜[Y]ÛÜšËÛÝ™\šY]ËÜÝ[\ËÛ[Øš[KÚ[˜ÚY[˜ÜÜÈ‹ˆœÜ˜ËÜ[™[Yœ˜[Y]ÛÜšËÛÝ™\šY]ËÜÝ[\ËÛ[Øš[KÛ˜]šYØ][Û‹˜ÜÜÈ‹ˆœÜ˜ËÜ[™[Yœ˜[Y]ÛÜšËÛÝ™\šY]ËÜÝ[\ËÛ[Øš[KÛ[™ØØ\K˜ÜÜÈ‹—NÂ˜ÛÛœÝ[Øš[TÝ[S[™S[Z]ÈH™]ÈX\
-ÂˆÈœÜ˜ËÜ[™[Yœ˜[Y]ÛÜšËÛÝ™\šY]ËÜÝ[\ËÛ[Øš[KØÛÜ™K˜ÜÜÈ‹KˆÈœÜ˜ËÜ[™[Yœ˜[Y]ÛÜšËÛÝ™\šY]ËÜÝ[\ËÛ[Øš[KÙœ˜[YK˜ÜÜÈ‹LKˆÈœÜ˜ËÜ[™[Yœ˜[Y]ÛÜšËÛÝ™\šY]ËÜÝ[\ËÛ[Øš[KÙXÚ\Ú[Û‹˜ÜÜÈ‹ÌÌKˆÈœÜ˜ËÜ[™[Yœ˜[Y]ÛÜšËÛÝ™\šY]ËÜÝ[\ËÛ[Øš[KÜÝ\™˜XÙK˜ÜÜÈ‹ŒKˆÈœÜ˜ËÜ[™[Yœ˜[Y]ÛÜšËÛÝ™\šY]ËÜÝ[\ËÛ[Øš[KÜ›ÙXÝ\Ú[˜ÜÜÈ‹ÌŒKˆÈœÜ˜ËÜ[™[Yœ˜[Y]ÛÜšËÛÝ™\šY]ËÜÝ[\ËÛ[Øš[KÚ[˜ÚY[˜ÜÜÈ‹LŒKˆÈœÜ˜ËÜ[™[Yœ˜[Y]ÛÜšËÛÝ™\šY]ËÜÝ[\ËÛ[Øš[KÛ˜]šYØ][Û‹˜ÜÜÈ‹KˆÈœÜ˜ËÜ[™[Yœ˜[Y]ÛÜšËÛÝ™\šY]ËÜÝ[\ËÛ[Øš[KÛ[™ØØ\K˜ÜÜÈ‹K—JNÂ›][Øš[TÝ[Pž]UÝ[HÂ™›Üˆ
-ÛÛœÝ™[Ùˆ[Øš[TÝ[S^Y\‘š[\ÊHÂˆYˆ
-Y^\ÝÊ™[
-JHÛÛ[YNÂˆÛÛœÝ^Y\ˆH™XY
-™[
-NÂˆ[Øš[TÝ[Pž]UÝ[
-ÏHž]\Ê™[
-NÂˆ\ÜÙ\
-ˆ[™\Ê^Y\ŠHH[Øš[TÝ[S[™S[Z]Ë™Ù]
-™[
-Kˆ	Ü™[H^ÙYYÈ	Û[Øš[TÝ[S[™S[Z]Ë™Ù]
-™[
-_H[™\Îˆ	Û[™\Ê^Y\Š_Xˆ
-NÂŸB˜\ÜÙ\
-ˆ[Øš[TÝ[Pž]UÝ[HLˆ[Øš[HÝ™\šY]ÈÝ[H^Y\œÈ^ÙYYLÐŽˆ	Û[Øš[TÝ[Pž]UÝ[XŠNÂ‚‚šYˆ
-^\ÝÊZ[ÜÜÑš[JJHÂˆÛÛœÝZ[ÜÜÈH™XY
-Z[ÜÜÑš[JNÂˆÛÛœÝZ[ÜÜÔ›ÛÝHÜÝÜÜËœ\œÙJZ[ÜÜËÈœ›ÛNˆZ[ÜÜÑš[HJNÂˆ]Z[YØXÞR[ÜÔÙ[XÝÜÛÝ[HÂˆ]Z[YØXÞS[Øš[TÙ[XÝÜÛÝ[HÂˆZ[ÜÜÔ›ÛÝØ[Ô[\Ê
-[JHOˆÂˆYˆ
-[KœÙ[XÝÜ‹š[˜ÛY\Ê‹šZËZ[ÜËHŠJHZ[YØXÞR[ÜÔÙ[XÝÜÛÝ[
-ÏHNÂˆYˆ
-[KœÙ[XÝÜ‹š[˜ÛY\Ê‹šZË[[Øš[KHŠJHZ[YØXÞS[Øš[TÙ[XÝÜÛÝ[
-ÏHNÂˆJNÂˆ\ÜÙ\
-ž]\ÊZ[ÜÜÑš[JHHLZ[Ý[K˜ÜÜÈ^ÙYYÈLÐŽˆ	Øž]\ÊZ[ÜÜÑš[J_X
-NÂˆ\ÜÙ\
-ˆZ[YØXÞR[ÜÔÙ[XÝÜÛÝ[OOHˆZ[Ý[K˜ÜÜÈÛÛZ[œÈ	ØZ[YØXÞR[ÜÔÙ[XÝÜÛÝ[HYØXÞHZËZ[ÜÈÙ[XÝÜˆ[\Øˆ
-NÂˆ\ÜÙ\
-ˆZ[YØXÞS[Øš[TÙ[XÝÜÛÝ[ˆ	‰ˆZ[YØXÞS[Øš[TÙ[XÝÜÛÝ[HŒŒˆZ[Ý[K˜ÜÜÈ[Øš[HÙ[XÝÜˆYÙ]]\ÝÝ^HÚ][ˆK‹ŒŒŒ[\Îˆ	ØZ[YØXÞS[Øš[TÙ[XÝÜÛÝ[Xˆ
-NÂŸB‚šYˆ
-˜Z[\™\Ë›[™Ýˆ
-HÂˆÛÛœÛÛK™\œ›ÜŠ›Ý™\šY]È\˜Ú]XÝ\™HØ]NˆRSŠNÂˆ›Üˆ
-ÛÛœÝ˜Z[\™HÙˆ˜Z[\™\ÊHÛÛœÛÛK™\œ›ÜŠH	Ù˜Z[\™_X
-NÂˆ›ØÙ\ÜË™^]
-JNÂŸB‚˜ÛÛœÛÛK›ÙÊˆÝ™\šY]È\˜Ú]XÝ\™HØ]NˆTÔÈ[™[IÛ[™\Ê[™[
-_H[™\È\ÚÝÜIÛ[™\Ê\ÚÝÜÛÛœÛÛJ_H[™\È\ÚÝÜXÚ\Ú[ÛIÛ[™\Ê\ÚÝÜXÚ\Ú[Û”˜Z[
-_H[™\ÈØÙ[™\ÏIÛ[™\Ê\ÚÝÜØÙ[™\Ê_H[™\È[\IÛ[™\Ê\ÚÝÜ[\œÊ_H[™\È˜Y™šXÔ›ÝÜÏIÛ[™\Ê\ÚÝÜ˜Y™šXÔ›ÝÜÊ_H[™\È›Ý]T›ÝÜÏIÛ[™\Ê\ÚÝÜ›Ý]T›ÝÜÊ_H[™\ÈØ[”›ÝÜÏIÛ[™\Ê\ÚÝÜØ[”›ÝÜÊ_H[™\È[\™˜XÙT›ÝÜÏIÛ[™\Ê\ÚÝÜ[\™˜XÙT›ÝÜÊ_H[™\ÈÜ™YXš[]T›ÝÜÏIÛ[™\Ê\ÚÝÜÜ™YXš[]T›ÝÜÊ_H[™\È\›Z[˜[›ÝÜÏIÛ[™\Ê\ÚÝÜ\›Z[˜[›ÝÜÊ_H[™\È™\ÛÝ\˜ÙT›ÝÜÏIÛ[™\Ê\ÚÝÜ™\ÛÝ\˜ÙT›ÝÜÊ_H[™\Èš\ÝX[ÏIÛ[™\Ê\ÚÝÜš\ÝX[Ê_H[™\È[Øš[RÛYOIÛ[™\Ê[Øš[RÛYJ_H[™\È[Øš[QXÚ\Ú[ÛIÛ[™\Ê[Øš[QXÚ\Ú[ÛŠ_H[™\È[Øš[TÙXÝ[ÛœÏIÛ[™\Ê[Øš[RÛYTÙXÝ[ÛœÊ_H[™\È[Øš[UX•šY]ÏIÛ[™\Ê[Øš[UX•šY]Ê_H[™\È[Øš[UX”›ÝÜÏIÛ[™\Ê[Øš[UX”›ÝÜÊ_H[™\ÈÜÜÏIØž]\Ê[™[ÜÜÑš[J_Hž]\È\ÚÝÜ˜\ÙOIÛ[™\Ê\ÚÝÜ˜\ÙTÝ[\Ê_H[™\È\ÚÝÜ˜\ÙR[\Ü[IÙ\ÚÝÜ˜\ÙR[\Ü[ÛÝ[H[Øš[TÝ[\ÏIÛ[Øš[TÝ[Pž]UÝ[Hž]\È[\Ü[IÚ[\Ü[Ú\™KÑš^Y
+if (exists(builtCssFile)) {
+  const builtCss = read(builtCssFile);
+  const builtCssRoot = postcss.parse(builtCss, { from: builtCssFile });
+  let builtLegacyIosSelectorCount = 0;
+  let builtLegacyMobileSelectorCount = 0;
+  builtCssRoot.walkRules((rule) => {
+    if (rule.selector.includes(".ik-ios-")) builtLegacyIosSelectorCount += 1;
+    if (rule.selector.includes(".ik-mobile-")) builtLegacyMobileSelectorCount += 1;
+  });
+  assert(bytes(builtCssFile) <= 500000, `Built style.css exceeds 500 KB: ${bytes(builtCssFile)}`);
+  assert(
+    builtLegacyIosSelectorCount === 0,
+    `Built style.css contains ${builtLegacyIosSelectorCount} legacy ik-ios selector rules`
+  );
+  assert(
+    builtLegacyMobileSelectorCount > 0 && builtLegacyMobileSelectorCount <= 220,
+    `Built style.css mobile selector budget must stay within 1..220 rules: ${builtLegacyMobileSelectorCount}`
+  );
+}
 
-_H\ÚÝÜ[\Ü[IÙ\ÚÝÜ™Yš[™[Y[[\Ü[ÛÝ[HXÚ\Ú[Û”˜Z[[\ÏIÙ\ÚÝÜXÚ\Ú[Û”˜Z[[PÛÝ[HXÚ\Ú[ÛÙ[[\ÏIÙ\ÚÝÜXÚ\Ú[ÛÙ[[PÛÝ[HÛÜšÜÜXÙQÜšY[\ÏIÙ\ÚÝÜÛÜšÜÜXÙQÜšY[PÛÝ[H˜]”[\ÏIÙ\ÚÝÜ˜]”[PÛÝ[HÝ]\Ð\Ô[\ÏIÙ\ÚÝÜÝ]\Ð\Ô[PÛÝ[HYØXÞUÜ˜\”[\ÏIÙ\ÚÝÜYØXÞUÜ˜\”[PÛÝ[H[Ù[TÚ[[\ÏIÙ\ÚÝÜ[Ù[TÚ[[PÛÝ[H[Ù[RXY[\ÏIÙ\ÚÝÜ[Ù[RXY[PÛÝ[HYÙ\”[\ÏIÙ\ÚÝÜYÙ\”[PÛÝ[H[Ù[UÛ™T[\ÏIÙ\ÚÝÜ[Ù[UÛ™T[PÛÝ[HYÙ\•Û™T[\ÏIÙ\ÚÝÜYÙ\•Û™T[PÛÝ[HYÙ\•Û™TÚYÝÜÏIÙ\ÚÝÜYÙ\•Û™TÚYÝÐÛÝ[H™[X\ÙUÛ™T™\Ù]ÏIÙ\ÚÝÜ™[X\ÙUÛ™T™\Ù]ÛÝ[H™[X\ÙS›Û”š[X\žOIÙ\ÚÝÜ™[X\ÙS›Û”š[X\žS™]]˜[ÛÝ[H[Øš[OIÛ[Øš[T[TÚ\™KÑš^Y
+if (failures.length > 0) {
+  console.error("overview architecture gate: FAIL");
+  for (const failure of failures) console.error(`- ${failure}`);
+  process.exit(1);
+}
 
-_XŠNÂ
+console.log(
+  `overview architecture gate: PASS panel=${lines(panel)} lines desktop=${lines(desktopConsole)} lines desktopDecision=${lines(desktopDecisionRail)} lines scenes=${lines(desktopScenes)} lines helper=${lines(desktopHelpers)} lines trafficRows=${lines(desktopTrafficRows)} lines routeRows=${lines(desktopRouteRows)} lines wanRows=${lines(desktopWanRows)} lines interfaceRows=${lines(desktopInterfaceRows)} lines credibilityRows=${lines(desktopCredibilityRows)} lines terminalRows=${lines(desktopTerminalRows)} lines resourceRows=${lines(desktopResourceRows)} lines visuals=${lines(desktopVisuals)} lines mobileHome=${lines(mobileHome)} lines mobileDecision=${lines(mobileDecision)} lines mobileSections=${lines(mobileHomeSections)} lines mobileTabView=${lines(mobileTabView)} lines mobileTabRows=${lines(mobileTabRows)} lines css=${bytes(panelCssFile)} bytes desktopBase=${lines(desktopBaseStyles)} lines desktopBaseImportant=${desktopBaseImportantCount} mobileStyles=${mobileStyleByteTotal} bytes important=${importantShare.toFixed(4)} desktopImportant=${desktopRefinementImportantCount} decisionRailRules=${desktopDecisionRailRuleCount} decisionCellRules=${desktopDecisionCellRuleCount} workspaceGridRules=${desktopWorkspaceGridRuleCount} navRules=${desktopNavRuleCount} statusBusRules=${desktopStatusBusRuleCount} legacyTopbarRules=${desktopLegacyTopbarRuleCount} moduleShellRules=${desktopModuleShellRuleCount} moduleHeadRules=${desktopModuleHeadRuleCount} ledgerRules=${desktopLedgerRuleCount} moduleToneRules=${desktopModuleToneRuleCount} ledgerToneRules=${desktopLedgerToneRuleCount} ledgerToneShadows=${desktopLedgerToneShadowCount} releaseToneResets=${desktopReleaseToneResetCount} releaseNonPrimary=${desktopReleaseNonPrimaryNeutralCount} mobile=${mobileRuleShare.toFixed(4)}`
+);
