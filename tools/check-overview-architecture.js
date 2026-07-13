@@ -44,6 +44,8 @@ const desktopReleaseFile =
   "src/panel-framework/overview/styles/desktop/release.css";
 const desktopIncidentStylesFile =
   "src/panel-framework/overview/styles/desktop/incidents.css";
+const desktopStatusBusStylesFile =
+  "src/panel-framework/overview/styles/desktop/status-bus.css";
 const desktopWanTrendStylesFile =
   "src/panel-framework/overview/styles/desktop/wan-trend.css";
 const desktopConsoleFile =
@@ -132,6 +134,7 @@ const desktopBaseStyles = desktopBaseStyleLayerFiles.map(read).join("\n");
 const desktopRefinement = read(desktopRefinementFile);
 const desktopRelease = read(desktopReleaseFile);
 const desktopIncidentStyles = read(desktopIncidentStylesFile);
+const desktopStatusBusStyles = read(desktopStatusBusStylesFile);
 const desktopWanTrendStyles = read(desktopWanTrendStylesFile);
 const desktopHelpers = read(desktopHelpersFile);
 const routerOsNetworkViewModel = read(routerOsNetworkViewModelFile);
@@ -171,6 +174,9 @@ const desktopRefinementRoot = postcss.parse(desktopRefinement, {
 });
 const desktopReleaseRoot = postcss.parse(desktopRelease, {
   from: desktopReleaseFile,
+});
+const desktopStatusBusRoot = postcss.parse(desktopStatusBusStyles, {
+  from: desktopStatusBusStylesFile,
 });
 let declarationCount = 0;
 let importantCount = 0;
@@ -292,11 +298,7 @@ desktopRefinementRoot.walkRules((rule) => {
     desktopLegacyRootRuleCount += 1;
   }
   if (rule.selector.includes(".ro-topbar")) {
-    if (rule.selector.includes('[data-overview-status-bus="control-console-summary-bus-flat-critical-value-rail"]')) {
-      desktopStatusBusRuleCount += 1;
-    } else {
-      desktopLegacyTopbarRuleCount += 1;
-    }
+    desktopLegacyTopbarRuleCount += 1;
   }
   const selectors = rule.selector.split(",").map((selector) => selector.trim());
   if (
@@ -363,6 +365,11 @@ desktopRefinementRoot.walkRules((rule) => {
     });
   }
 });
+desktopStatusBusRoot.walkRules((rule) => {
+  if (rule.selector.includes('[data-overview-status-bus="control-console-summary-bus-flat-critical-value-rail"]')) {
+    desktopStatusBusRuleCount += 1;
+  }
+});
 desktopReleaseRoot.walkRules((rule) => {
   if (
     ["danger", "warn", "missing"].every((tone) =>
@@ -419,10 +426,11 @@ assert(
   "Desktop incident styles must not use override priorities"
 );
 assert(
-  !exists("src/panel-framework/overview/styles/desktop/status-bus.css") &&
-    !panel.includes('import "./styles/desktop/status-bus.css";') &&
-    desktopRefinement.includes('[data-overview-status-bus="control-console-summary-bus-flat-critical-value-rail"]'),
-  "Desktop status bus must have one canonical runtime layer, without a shadow component stylesheet"
+  lines(desktopStatusBusStyles) <= 130 &&
+    desktopStatusBusStyles.includes('[data-overview-status-bus="control-console-summary-bus-flat-critical-value-rail"]') &&
+    panel.includes('import "./styles/desktop/status-bus.css";') &&
+    !desktopRefinement.includes('[data-overview-status-bus="control-console-summary-bus-flat-critical-value-rail"]'),
+  "Desktop status bus must have one canonical component layer, not a refinement shadow"
 );
 assert(
   lines(desktopWanTrendStyles) <= 120 &&

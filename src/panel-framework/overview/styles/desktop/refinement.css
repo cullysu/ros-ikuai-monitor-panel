@@ -1272,62 +1272,6 @@
     grid-column: 1 / -1 !important;
     grid-row: 3 !important;
   }
-  /*Canonical desktop status bus structure; semantic tones live beside the conclusion rule.*/
-  #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-topbar[data-overview-status-bus="control-console-summary-bus-flat-critical-value-rail"] {
-    grid-column: 1 / -1 !important;
-    height: 38px !important;
-    min-height: 38px !important;
-    gap: 0 !important;
-    margin: 0 0 5px !important;
-    padding: 0 8px !important;
-    border: 0 !important;
-    border-radius: 0 !important;
-    border-bottom: 1px solid rgba(126,151,178,.13) !important;
-    background: transparent !important;
-    background-image: none !important;
-    box-shadow: none !important;
-  }
-  #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-topbar[data-overview-status-bus="control-console-summary-bus-flat-critical-value-rail"] .ro-topbar-cell {
-    height: 38px !important;
-    min-height: 38px !important;
-    padding: 4px 10px !important;
-    border: 0 !important;
-    border-radius: 0 !important;
-    background: transparent !important;
-    box-shadow: inset 1px 0 0 rgba(126,151,178,.10) !important;
-    position: relative !important;
-  }
-  #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-topbar[data-overview-status-bus="control-console-summary-bus-flat-critical-value-rail"] .ro-topbar-cell[data-overview-status-role="conclusion"] {
-    background: linear-gradient(90deg, rgba(18, 34, 55, .028), rgba(255, 255, 255, 0) 72%) !important;
-    box-shadow: inset 2px 0 0 rgba(18,34,55,.44) !important;
-  }
-  #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-topbar[data-overview-status-bus="control-console-summary-bus-flat-critical-value-rail"] .ro-topbar-cell[data-tone="danger"][data-overview-status-role="conclusion"] {
-    background: linear-gradient(90deg, rgba(173, 54, 49, .045), rgba(255, 255, 255, 0) 72%) !important;
-    box-shadow: inset 2px 0 0 rgba(173, 54, 49, .55) !important;
-  }
-  #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-topbar[data-overview-status-bus="control-console-summary-bus-flat-critical-value-rail"] .ro-topbar-cell[data-tone="warn"][data-overview-status-role="conclusion"] {
-    background: linear-gradient(90deg, rgba(164, 111, 36, .045), rgba(255, 255, 255, 0) 72%) !important;
-    box-shadow: inset 2px 0 0 rgba(164, 111, 36, .55) !important;
-  }
-  #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-topbar[data-overview-status-bus="control-console-summary-bus-flat-critical-value-rail"] .ro-topbar-cell span {
-    color: var(--ik-console-muted, #76889d) !important;
-    font-size: 10px !important;
-    font-weight: 560 !important;
-    line-height: 11px !important;
-    letter-spacing: .01em !important;
-  }
-  #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-topbar[data-overview-status-bus="control-console-summary-bus-flat-critical-value-rail"] .ro-topbar-cell b {
-    color: var(--ik-console-ink, #122237) !important;
-    font-size: 12px !important;
-    font-weight: 760 !important;
-    line-height: 14px !important;
-  }
-  #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-topbar[data-overview-status-bus="control-console-summary-bus-flat-critical-value-rail"] .ro-topbar-cell em {
-    color: var(--ik-console-subtle, #8fa0b3) !important;
-    font-size: 9px !important;
-    font-weight: 520 !important;
-    line-height: 10px !important;
-  }
   /*Canonical desktop module shell and heading.*/
   #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-module {
     min-height: 0 !important;

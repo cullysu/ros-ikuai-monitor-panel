@@ -7,6 +7,7 @@ import "./OverviewPanel.css";
 import "./styles/desktop/tokens.css";
 import "./styles/overview-desktop-runtime.css";
 import "./styles/desktop/incidents.css";
+import "./styles/desktop/status-bus.css";
 
 export function OverviewPanel({ snapshot, state }: OverviewPanelProps) {
   return (
