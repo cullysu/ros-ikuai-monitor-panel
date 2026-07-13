@@ -217,6 +217,7 @@ let desktopWorkspaceGridRuleCount = 0;
 let desktopNavRuleCount = 0;
 let desktopStatusBusRuleCount = 0;
 let desktopLegacyTopbarRuleCount = 0;
+let desktopLegacyRootRuleCount = 0;
 let desktopModuleShellRuleCount = 0;
 let desktopModuleHeadRuleCount = 0;
 let desktopLedgerRuleCount = 0;
@@ -288,6 +289,9 @@ desktopRefinementRoot.walkRules((rule) => {
   }
   if (rule.selector.includes(".ro-desktop-nav")) {
     desktopNavRuleCount += 1;
+  }
+  if (rule.selector.includes("flat-dense-readonly-console")) {
+    desktopLegacyRootRuleCount += 1;
   }
   if (rule.selector.includes(".ro-topbar")) {
     if (rule.selector.includes('[data-overview-status-bus="control-console-summary-bus-flat-critical-value-rail"]')) {
@@ -792,6 +796,10 @@ assert(
 assert(
   desktopWorkspaceGridRuleCount === 1 && desktopNavRuleCount === 0,
   `Desktop workspace grid must stay canonical and must not duplicate shell navigation: gridRules=${desktopWorkspaceGridRuleCount} navRules=${desktopNavRuleCount}`
+);
+assert(
+  desktopLegacyRootRuleCount === 0,
+  `Desktop base styles must not ship inactive flat-dense root rules: ${desktopLegacyRootRuleCount}`
 );
 assert(
   desktopStatusBusRuleCount === 8 && desktopLegacyTopbarRuleCount === 0,

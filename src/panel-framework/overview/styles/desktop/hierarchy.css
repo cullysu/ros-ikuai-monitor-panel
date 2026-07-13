@@ -1,5 +1,9 @@
-/* Desktop-only console hierarchy polish: remove toy tabs, stretch the right/bottom
-   lanes, and keep sidebar footer labels read-only and calmer. */
+/* Archived legacy root: no current OverviewPanel DOM selects this rule set.
+   Kept temporarily as source archaeology while the active apple-flat rules below
+   are validated independently. */
+/*
+Desktop-only console hierarchy polish: remove toy tabs, stretch the right/bottom
+lanes, and keep sidebar footer labels read-only and calmer.
 @media (min-width: 761px) {
   .router-overview-framework[data-overview-ikuai40-density="flat-dense-readonly-console"] {
     --ro-page: #f6f8fb !important;
@@ -299,6 +303,8 @@
     color: #27699f !important;
   }
 
+*/
+@media (min-width: 761px) {
   .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-desktop-grid[data-overview-desktop-hierarchy="conclusion-metrics-evidence"] {
     grid-template-rows: auto minmax(0, 1fr) !important;
     align-items: stretch !important;
