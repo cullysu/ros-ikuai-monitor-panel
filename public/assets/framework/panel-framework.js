@@ -11295,9 +11295,6 @@ var PanelFramework = function(exports) {
       {
         id: "overview",
         className: "section router-overview-framework",
-        "data-overview-framework": "react-vite",
-        "data-overview-summary-root": true,
-        "data-overview-readonly-console-contract": "react-overview-preserved",
         "data-overview-page-credibility": state.facts.freshness.credibilityLabel,
         "data-overview-page-credibility-tone": state.facts.freshness.credibilityTone,
         "data-overview-business-display-boundary": state.scenario === "no-snapshot" ? "no-business-data" : "business-data",
