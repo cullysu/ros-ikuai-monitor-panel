@@ -506,6 +506,12 @@ assert(
   ),
   "Desktop hierarchy styles must not retain versioned mobile containment patches"
 );
+assert(
+  !read("src/panel-framework/overview/styles/desktop/hierarchy.css").includes(
+    "flat-dense-readonly-console"
+  ),
+  "Desktop hierarchy source must not retain archived flat-dense root styles"
+);
 const desktopBaseStyleLayerLimits = new Map([
   ["src/panel-framework/overview/styles/desktop/density.css", 900],
   ["src/panel-framework/overview/styles/desktop/first-screen.css", 550],
