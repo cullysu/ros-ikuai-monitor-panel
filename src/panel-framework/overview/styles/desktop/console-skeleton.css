@@ -4,18 +4,6 @@
   .router-overview-framework {
     background: #f3f7fb !important;
   }
-  .router-overview-framework > .ro-desktop-key-row[data-overview-desktop-tier="key-metrics"] {
-    display: grid !important;
-    grid-template-columns: minmax(132px, .82fr) minmax(280px, 1.7fr) repeat(4, minmax(118px, .82fr)) !important;
-  }
-  .router-overview-framework > .ro-desktop-key-row > .ro-desktop-key-cell {
-    border-right: 1px solid #e8f0f7 !important;
-  }
-  .router-overview-framework > .ro-desktop-key-row > .ro-desktop-key-cell:first-child b {
-    white-space: normal !important;
-    overflow: visible !important;
-    text-overflow: clip !important;
-  }
   .router-overview-framework .ro-desktop-grid.ik-home-layout.ik-desktop-workspace {
     display: grid !important;
     grid-template-areas: "network resource"
@@ -95,7 +83,7 @@
     background: var(--ik40-console-page) !important;
     color: var(--ik40-console-ink) !important;
   }
-  .router-overview-framework :where(.ro-module, .ro-resource-card, .ro-desktop-key-row) {
+  .router-overview-framework :where(.ro-module, .ro-resource-card) {
     border-color: var(--ik40-console-line) !important;
     border-radius: 3px !important;
     box-shadow: none !important;
@@ -167,21 +155,6 @@
   .router-overview-framework .ro-module-head em {
     font-size: 10px !important;
     font-weight: 620 !important;
-  }
-  .router-overview-framework > .ro-desktop-key-row[data-overview-desktop-tier="key-metrics"] {
-    border-left-color: var(--ik40-console-blue) !important;
-    border-radius: 3px !important;
-    background: var(--ik40-console-line) !important;
-  }
-  .router-overview-framework > .ro-desktop-key-row > .ro-desktop-key-cell {
-    min-height: 50px !important;
-    padding: 6px 9px !important;
-    border-radius: 0 !important;
-  }
-  .router-overview-framework > .ro-desktop-key-row > .ro-desktop-key-cell:first-child b {
-    color: var(--ik40-console-blue-deep) !important;
-    font-size: 17px !important;
-    font-weight: 880 !important;
   }
   /*Table rhythm: primary rows 30-32px, secondary rows 26-28px.*/
   .router-overview-framework .ro-ledger-table {

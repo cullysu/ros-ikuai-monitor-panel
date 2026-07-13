@@ -15,57 +15,6 @@
     --v4-console-cache: #9a6419;
     --v4-console-danger: #c93932;
   }
-  .router-overview-framework > .ro-desktop-key-row[data-overview-desktop-tier="key-metrics"] {
-    margin: 0 0 9px !important;
-    border: 1px solid var(--v4-console-line) !important;
-    border-left: 0 !important;
-    border-radius: 4px !important;
-    background: var(--v4-console-line) !important;
-    box-shadow: none !important;
-    gap: 1px !important;
-  }
-  .router-overview-framework > .ro-desktop-key-row > .ro-desktop-key-cell {
-    min-height: 58px !important;
-    padding: 8px 10px !important;
-    border: 0 !important;
-    border-radius: 0 !important;
-    background: #fff !important;
-    box-shadow: none !important;
-  }
-  .router-overview-framework > .ro-desktop-key-row > .ro-desktop-key-cell:first-child {
-    border-left: 5px solid var(--v4-console-blue) !important;
-    background: linear-gradient(90deg, rgba(22,119,255,.055), #fff 190px) !important;
-  }
-  .router-overview-framework[data-overview-scene-key="resource-full"] > .ro-desktop-key-row > .ro-desktop-key-cell:first-child,
-  .router-overview-framework[data-overview-scene-key="all-offline"] > .ro-desktop-key-row > .ro-desktop-key-cell:first-child,
-  .router-overview-framework[data-overview-scene-key="interfaces-down"] > .ro-desktop-key-row > .ro-desktop-key-cell:first-child {
-    border-left-color: var(--v4-console-danger) !important;
-    background: linear-gradient(90deg, rgba(201,57,50,.065), #fff 190px) !important;
-  }
-  .router-overview-framework > .ro-desktop-key-row span,
-  .router-overview-framework > .ro-desktop-key-row em {
-    color: var(--v4-console-muted) !important;
-    font-size: 10.5px !important;
-    font-weight: 650 !important;
-    line-height: 1.15 !important;
-  }
-  .router-overview-framework > .ro-desktop-key-row b {
-    color: var(--v4-console-ink) !important;
-    font-size: 15px !important;
-    font-weight: 860 !important;
-    line-height: 1.1 !important;
-  }
-  .router-overview-framework > .ro-desktop-key-row > .ro-desktop-key-cell:first-child b {
-    color: var(--v4-console-blue-deep) !important;
-    font-size: 21px !important;
-    font-weight: 940 !important;
-    letter-spacing: -.03em !important;
-  }
-  .router-overview-framework[data-overview-scene-key="resource-full"] > .ro-desktop-key-row > .ro-desktop-key-cell:first-child b,
-  .router-overview-framework[data-overview-scene-key="all-offline"] > .ro-desktop-key-row > .ro-desktop-key-cell:first-child b,
-  .router-overview-framework[data-overview-scene-key="interfaces-down"] > .ro-desktop-key-row > .ro-desktop-key-cell:first-child b {
-    color: var(--v4-console-danger) !important;
-  }
   .router-overview-framework .ro-desktop-grid.ik-home-layout.ik-desktop-workspace {
     grid-template-columns: minmax(0, 1.52fr) minmax(386px, .92fr) !important;
     gap: 9px !important;
@@ -218,31 +167,6 @@
     --ik-v6-muted: #667789;
     --ik-v6-danger: #c9342f;
     --ik-v6-cache: #b46a1f;
-  }
-  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] > .ro-desktop-key-row[data-overview-desktop-tier="key-metrics"] {
-    margin-bottom: 9px !important;
-    border-radius: 3px !important;
-    border: 1px solid var(--ik-v6-line) !important;
-    background: var(--ik-v6-line) !important;
-    gap: 1px !important;
-    box-shadow: none !important;
-  }
-  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] > .ro-desktop-key-row > .ro-desktop-key-cell {
-    min-height: 56px !important;
-    border-radius: 0 !important;
-    border: 0 !important;
-    background: #fff !important;
-    box-shadow: none !important;
-  }
-  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] > .ro-desktop-key-row > .ro-desktop-key-cell:first-child {
-    border-left: 5px solid var(--ik-v6-blue) !important;
-    background: linear-gradient(90deg, rgba(22,119,255,.055), #fff 210px) !important;
-  }
-  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"][data-overview-scene-key="resource-full"] > .ro-desktop-key-row > .ro-desktop-key-cell:first-child,
-  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"][data-overview-scene-key="all-offline"] > .ro-desktop-key-row > .ro-desktop-key-cell:first-child,
-  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"][data-overview-scene-key="interfaces-down"] > .ro-desktop-key-row > .ro-desktop-key-cell:first-child {
-    border-left-color: var(--ik-v6-danger) !important;
-    background: linear-gradient(90deg, rgba(201,52,47,.06), #fff 210px) !important;
   }
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-desktop-grid.ik-home-layout.ik-desktop-workspace {
     grid-template-columns: minmax(0, 1.45fr) minmax(390px, .95fr) !important;

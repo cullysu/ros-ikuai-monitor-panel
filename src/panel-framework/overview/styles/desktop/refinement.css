@@ -415,10 +415,6 @@
     padding: 6px !important;
     background: #f2f6fa !important;
   }
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-desktop-key-row {
-    gap: 2px !important;
-    margin: 0 0 4px !important;
-  }
   .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-desktop-key-cell {
     min-height: 34px !important;
     height: 34px !important;

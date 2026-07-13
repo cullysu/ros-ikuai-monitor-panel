@@ -119,16 +119,6 @@
 }
 
 @media (min-width: 761px) {
-  .router-overview-framework .ro-desktop-key-row {
-    display: grid !important;
-    grid-template-columns: minmax(172px, 1.12fr) repeat(5, minmax(0, 1fr)) !important;
-    gap: 1px !important;
-    margin-bottom: 8px !important;
-    border: 1px solid #dbe4ef !important;
-    border-radius: 8px !important;
-    overflow: hidden !important;
-    background: #dbe4ef !important;
-  }
   .router-overview-framework .ro-desktop-key-cell {
     min-height: 58px !important;
     padding: 6px 8px 5px !important;
@@ -241,9 +231,6 @@
 }
 
 @media (min-width: 761px) {
-  .router-overview-framework .ro-desktop-key-row {
-    align-items: stretch !important;
-  }
   .router-overview-framework .ro-module {
     border-radius: 5px !important;
     box-shadow: none !important;

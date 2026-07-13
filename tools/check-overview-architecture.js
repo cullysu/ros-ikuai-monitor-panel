@@ -55,6 +55,16 @@ const overviewRetiredTopbarStyleFiles = [
   "src/panel-framework/overview/styles/desktop/release.css",
   "src/panel-framework/overview/styles/mobile/product-shell.css",
 ];
+const overviewRetiredDesktopKeyRowStyleFiles = [
+  "src/panel-framework/overview/styles/overview-states.css",
+  "src/panel-framework/overview/styles/desktop/console-refinement.css",
+  "src/panel-framework/overview/styles/desktop/console-skeleton.css",
+  "src/panel-framework/overview/styles/desktop/evidence.css",
+  "src/panel-framework/overview/styles/desktop/first-screen.css",
+  "src/panel-framework/overview/styles/desktop/hierarchy.css",
+  "src/panel-framework/overview/styles/desktop/layout.css",
+  "src/panel-framework/overview/styles/desktop/refinement.css",
+];
 const desktopRefinementFile =
   "src/panel-framework/overview/styles/desktop/refinement.css";
 const desktopRuntimeStylesFile =
@@ -596,6 +606,12 @@ assert(
     (file) => !/\.ro-topbar(?:-cell)?\b|\.ik-home-flat-topbar\b/.test(read(file))
   ),
   "Overview style sources must not retain selectors for the retired topbar renderer"
+);
+assert(
+  overviewRetiredDesktopKeyRowStyleFiles.every(
+    (file) => !/\.ro-desktop-(?:key-row|severe-evidence)\b/.test(read(file))
+  ),
+  "Overview style sources must not retain selectors for retired desktop key-row renderers"
 );
 const desktopBaseStyleLayerLimits = new Map([
   ["src/panel-framework/overview/styles/desktop/density.css", 900],

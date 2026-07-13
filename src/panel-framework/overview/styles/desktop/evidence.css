@@ -340,10 +340,6 @@
     --ro-admin-soft: #f7fbff;
     --ro-admin-text: #172235;
   }
-  .router-overview-framework[data-overview-scene-key="resource-full"] > .ro-desktop-key-row,\n.router-overview-framework[data-overview-scene-key="all-offline"] > .ro-desktop-key-row,\n.router-overview-framework[data-overview-scene-key="interfaces-down"] > .ro-desktop-key-row {
-    border-left-color: #d93025 !important;
-    background: linear-gradient(90deg, rgba(217, 48, 37, .045), #fff 280px) !important;
-  }
   .router-overview-framework .ro-module {
     border-color: var(--ro-admin-line) !important;
     border-left-width: 3px !important;

@@ -2650,10 +2650,6 @@
 
 /* Task D refinement: keep the mobile home app-like with paired values/cards, not a vertical table. */
 
-.ro-desktop-key-row {
-  display: none;
-}
-
 /* v63.1: keep scene insight inside hero compact and readable; no clipped microcopy. */
 
 /* v63.2: all-offline port matrix and interface chain must use full App-card width, not min-content columns. */
@@ -3009,15 +3005,6 @@
 .ik-desktop-content-tabs,
 [data-overview-desktop-content-icon-tabs="true"] {
   display: none !important;
-}
-
-.ro-desktop-key-row {
-  display: grid;
-  grid-template-columns: 1.35fr repeat(5, minmax(0, 1fr));
-  gap: 1px;
-  margin: 0 0 6px;
-  border: 1px solid var(--ro-border);
-  background: var(--ro-border);
 }
 
 .ro-desktop-key-cell {
