@@ -52,7 +52,7 @@ export function buildDefaultDesktopScene(
       <Module key="compact-collection" title={isFleet ? "采集可信度" : "采集 / 快照"} subtitle="REST / SSH / 成功" module="normal-collection-channel" tone={state.facts.collection.level} trust={trust} headers={["对象", "当前", "依据"]} rows={collectionRowsCompact} minRows={0} collapsed />,
     ],
     bottom: [
-      <TerminalRanking key="compact-terminals" title="终端排行" subtitle="异常置顶 / 总流量" module="terminal-ranking" tone="trust" trust={trust} headers={["设备", "IP", "流量", "状态"]} rows={compactRows(desktopTerminalRows(snapshot), 4)} minRows={0} />,
+      <TerminalRanking key="compact-terminals" title="终端排行" subtitle="按总流量排序" module="terminal-ranking" tone="trust" trust={trust} headers={["设备", "IP", "流量", "状态"]} rows={compactRows(desktopTerminalRows(snapshot), 4)} minRows={0} />,
       <EvidenceChain key="compact-boundary" title="证据 / 原始字段" subtitle="默认收起 · 业务解释优先" module="evidence-boundary" tone="trust" trust={trust} headers={["对象", "当前", "依据"]} rows={compactRows(desktopEvidenceBoundaryRows(snapshot, state), 4)} minRows={0} collapsedEvidence />,
     ],
   };
