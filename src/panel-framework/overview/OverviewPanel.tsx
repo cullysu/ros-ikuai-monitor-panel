@@ -4,7 +4,6 @@ import { StatusVerdict } from "./components/StatusVerdict";
 import { OVERVIEW_LOW_NOISE_CONSOLE_TOKEN_CONTRACT } from "./mobileOverviewTokens";
 import { type OverviewPanelProps } from "./desktopOverviewHelpers";
 import "./OverviewPanel.css";
-import "./styles/desktop/status-bus.css";
 import "./styles/desktop/tokens.css";
 import "./styles/overview-desktop-runtime.css";
 import "./styles/desktop/incidents.css";

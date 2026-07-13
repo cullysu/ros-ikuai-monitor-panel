@@ -44,8 +44,6 @@ const desktopReleaseFile =
   "src/panel-framework/overview/styles/desktop/release.css";
 const desktopIncidentStylesFile =
   "src/panel-framework/overview/styles/desktop/incidents.css";
-const desktopStatusBusStylesFile =
-  "src/panel-framework/overview/styles/desktop/status-bus.css";
 const desktopWanTrendStylesFile =
   "src/panel-framework/overview/styles/desktop/wan-trend.css";
 const desktopConsoleFile =
@@ -134,7 +132,6 @@ const desktopBaseStyles = desktopBaseStyleLayerFiles.map(read).join("\n");
 const desktopRefinement = read(desktopRefinementFile);
 const desktopRelease = read(desktopReleaseFile);
 const desktopIncidentStyles = read(desktopIncidentStylesFile);
-const desktopStatusBusStyles = read(desktopStatusBusStylesFile);
 const desktopWanTrendStyles = read(desktopWanTrendStylesFile);
 const desktopHelpers = read(desktopHelpersFile);
 const routerOsNetworkViewModel = read(routerOsNetworkViewModelFile);
@@ -422,10 +419,10 @@ assert(
   "Desktop incident styles must not use override priorities"
 );
 assert(
-  lines(desktopStatusBusStyles) <= 100 &&
-    desktopStatusBusStyles.includes(".ro-topbar.ik-home-flat-topbar") &&
-    panel.includes('import "./styles/desktop/status-bus.css";'),
-  "Desktop status-bus styles must live in the focused component layer"
+  !exists("src/panel-framework/overview/styles/desktop/status-bus.css") &&
+    !panel.includes('import "./styles/desktop/status-bus.css";') &&
+    desktopRefinement.includes('[data-overview-status-bus="control-console-summary-bus-flat-critical-value-rail"]'),
+  "Desktop status bus must have one canonical runtime layer, without a shadow component stylesheet"
 );
 assert(
   lines(desktopWanTrendStyles) <= 120 &&

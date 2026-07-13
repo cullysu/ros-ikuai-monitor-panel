@@ -7,7 +7,6 @@ const files = [
   "src/panel-framework/overview/styles/overview-desktop.css",
   "src/panel-framework/overview/styles/overview-desktop-runtime.css",
   "src/panel-framework/overview/styles/desktop/tokens.css",
-  "src/panel-framework/overview/styles/desktop/status-bus.css",
   "src/panel-framework/overview/styles/desktop/decision-rail.css",
   "src/panel-framework/overview/styles/desktop/density.css",
   "src/panel-framework/overview/styles/desktop/first-screen.css",
