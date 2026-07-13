@@ -1042,7 +1042,8 @@ async function main() {
           workspace &&
           desktopNavigationDeduplicated &&
           workspaceRect &&
-          workspaceRect.width > 1200 &&
+          workspaceRect.width >= 960 &&
+          workspaceRect.width / innerWidth >= 0.8 &&
           topbar &&
           desktopDecisionRailOk &&
           visibleModules.length >= 6 &&
