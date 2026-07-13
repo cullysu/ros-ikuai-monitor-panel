@@ -115,23 +115,23 @@
   }
 
   #overview.router-overview-framework .ro-desktop-grid[data-overview-desktop-scene="no-snapshot"] {
-    grid-template-rows: 54px minmax(0, 1fr) !important;
+    grid-template-rows: 54px minmax(0, 1fr);
   }
 
   #overview.router-overview-framework .ro-desktop-grid:is(
     [data-overview-desktop-scene="no-snapshot"],
     [data-overview-desktop-scene="all-offline"]
   ) .ro-col {
-    align-content: start !important;
-    grid-auto-rows: max-content !important;
-    height: max-content !important;
+    align-content: start;
+    grid-auto-rows: max-content;
+    height: max-content;
   }
 
   #overview.router-overview-framework .ro-desktop-grid:is(
     [data-overview-desktop-scene="no-snapshot"],
     [data-overview-desktop-scene="all-offline"]
   ) .ro-module {
-    height: auto !important;
-    max-height: none !important;
+    height: auto;
+    max-height: none;
   }
 }

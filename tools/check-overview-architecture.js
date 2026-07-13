@@ -383,8 +383,8 @@ assert(
   `desktop incident styles exceed 150 lines: ${lines(desktopIncidentStyles)}`
 );
 assert(
-  (desktopIncidentStyles.match(/!important/g) || []).length <= 6,
-  "Desktop incident styles must not become another override layer"
+  (desktopIncidentStyles.match(/!important/g) || []).length === 0,
+  "Desktop incident styles must not use override priorities"
 );
 assert(
   lines(desktopStatusBusStyles) <= 100 &&
