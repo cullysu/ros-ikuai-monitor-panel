@@ -3007,51 +3007,6 @@
   display: none !important;
 }
 
-.ro-desktop-key-cell {
-  min-width: 0;
-  min-height: 48px;
-  padding: 5px 7px 4px;
-  background: #fff;
-  border-left: 2px solid transparent;
-}
-
-.ro-desktop-key-cell[data-tone="danger"] { border-left-color: var(--ro-danger); }
-.ro-desktop-key-cell[data-tone="warn"] { border-left-color: var(--ro-warn); }
-.ro-desktop-key-cell[data-tone="ok"] { border-left-color: var(--ro-ok); }
-.ro-desktop-key-cell[data-tone="trust"],
-.ro-desktop-key-cell[data-tone="missing"] { border-left-color: #9ca9b8; }
-
-.ro-desktop-key-cell span {
-  display: block;
-  color: var(--ro-muted);
-  font-size: 10px;
-  font-weight: 700;
-}
-
-.ro-desktop-key-cell b {
-  display: block;
-  margin-top: 2px;
-  overflow: hidden;
-  color: var(--ro-text);
-  font-size: 13px;
-  font-weight: 900;
-  line-height: 1.1;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.ro-desktop-key-cell em {
-  display: block;
-  margin-top: 1px;
-  overflow: hidden;
-  color: var(--ro-faint);
-  font-size: 9px;
-  font-style: normal;
-  font-weight: 650;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 /* Exploration 4: desktop iKuai 4.0 data-console polish.
    Intent: clean operational console, not an acceptance-report dashboard. */
 .router-overview-framework {

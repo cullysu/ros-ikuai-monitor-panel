@@ -609,9 +609,9 @@ assert(
 );
 assert(
   overviewRetiredDesktopKeyRowStyleFiles.every(
-    (file) => !/\.ro-desktop-(?:key-row|severe-evidence)\b/.test(read(file))
+    (file) => !/\.ro-desktop-(?:key-row|key-cell|severe-evidence)\b/.test(read(file))
   ),
-  "Overview style sources must not retain selectors for retired desktop key-row renderers"
+  "Overview style sources must not retain selectors for retired desktop key-row or key-cell renderers"
 );
 const desktopBaseStyleLayerLimits = new Map([
   ["src/panel-framework/overview/styles/desktop/density.css", 900],

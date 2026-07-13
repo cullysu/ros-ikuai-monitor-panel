@@ -119,59 +119,6 @@
 }
 
 @media (min-width: 761px) {
-  .router-overview-framework .ro-desktop-key-cell {
-    min-height: 58px !important;
-    padding: 6px 8px 5px !important;
-    border-left: 2px solid transparent !important;
-    background: #fff !important;
-  }
-  .router-overview-framework .ro-desktop-key-cell:first-child {
-    padding-inline-start: 10px !important;
-  }
-  .router-overview-framework .ro-desktop-key-cell span {
-    display: block !important;
-    color: #6f7d8e !important;
-    font-size: 9px !important;
-    line-height: 1.05 !important;
-  }
-  .router-overview-framework .ro-desktop-key-cell b {
-    display: block !important;
-    color: #17212c !important;
-    font-size: 12px !important;
-    font-weight: 760 !important;
-    line-height: 1.1 !important;
-    letter-spacing: -.01em !important;
-  }
-  .router-overview-framework .ro-desktop-key-cell em {
-    display: block !important;
-    color: #7f8d9f !important;
-    font-size: 9px !important;
-    font-style: normal !important;
-    line-height: 1.12 !important;
-  }
-  .router-overview-framework .ro-desktop-key-cell:first-child b {
-    font-size: 14px !important;
-    font-weight: 780 !important;
-  }
-  .router-overview-framework .ro-desktop-key-cell[data-tone="danger"] {
-    border-left-color: #d93025 !important;
-    background: linear-gradient(180deg, #fff 0%, #f7fbff 100%) !important;
-  }
-  .router-overview-framework .ro-desktop-key-cell[data-tone="danger"] b {
-    color: #c5312e !important;
-  }
-  .router-overview-framework .ro-desktop-key-cell[data-tone="warn"] {
-    border-left-color: #f08c00 !important;
-  }
-  .router-overview-framework .ro-desktop-key-cell[data-tone="ok"] {
-    border-left-color: #3f7fbd !important;
-  }
-  .router-overview-framework .ro-desktop-key-cell[data-tone="missing"] {
-    border-left-color: #9aa9ba !important;
-  }
-}
-
-@media (min-width: 761px) {
   .router-overview-framework .ik-sidebar-mini-status {
     gap: 7px !important;
     padding-top: 12px !important;

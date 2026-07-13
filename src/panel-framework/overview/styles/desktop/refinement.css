@@ -415,30 +415,6 @@
     padding: 6px !important;
     background: #f2f6fa !important;
   }
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-desktop-key-cell {
-    min-height: 34px !important;
-    height: 34px !important;
-    padding: 3px 6px !important;
-    border: 1px solid #e0e8f1 !important;
-    border-radius: 0 !important;
-    background: #fff !important;
-    box-shadow: none !important;
-  }
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-desktop-key-cell span,
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-desktop-key-cell em {
-    font-size: 8.5px !important;
-    line-height: 1 !important;
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-  }
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-desktop-key-cell b {
-    font-size: 11px !important;
-    line-height: 1.05 !important;
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-  }
   .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-judgement-chart,
   .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-resource-visual,
   .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-traffic-visual,
