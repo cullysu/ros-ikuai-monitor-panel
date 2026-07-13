@@ -386,11 +386,27 @@ async function main() {
   }
   const userDataDir = path.resolve(arg('--user-data-dir', path.join(process.cwd(), `_edge_resource_${section}_${port}_${Date.now()}`)));
 
-  const browserCandidates = [
+  const winBrowserCandidates = [
     'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',
     'C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe',
     'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe'
   ];
+  const macBrowserCandidates = [
+    '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+    '/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge'
+  ];
+  const linuxBrowserCandidates = [
+    '/usr/bin/google-chrome-stable',
+    '/usr/bin/google-chrome',
+    '/usr/bin/chromium',
+    '/usr/bin/chromium-browser',
+    '/usr/bin/microsoft-edge'
+  ];
+  const browserCandidates = process.platform === 'win32'
+    ? winBrowserCandidates
+    : process.platform === 'darwin'
+      ? macBrowserCandidates
+      : linuxBrowserCandidates;
   const requestedBrowserPath = arg('--browser', process.env.CODEX_BROWSER_PATH || '');
   if (requestedBrowserPath && !(await exists(requestedBrowserPath))) {
     throw new Error(`Requested browser executable not found: ${requestedBrowserPath}`);
