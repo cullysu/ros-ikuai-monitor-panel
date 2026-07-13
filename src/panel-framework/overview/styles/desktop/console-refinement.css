@@ -155,7 +155,7 @@
 /*Codex v434 EOF validation-compatible desktop density layer.*/
 
 @media (min-width: 761px) {
-  #overview.router-overview-framework [data-overview-status-bar] {
+  #overview.router-overview-framework .ro-status-bus {
     display: grid !important;
     height: 54px !important;
     max-height: 56px !important;
@@ -169,7 +169,7 @@
     box-shadow: none !important;
     overflow: visible !important;
   }
-  #overview.router-overview-framework [data-overview-status-bar] > [data-overview-status-cell] {
+  #overview.router-overview-framework .ro-status-bus > .ro-status-cell {
     height: 52px !important;
     min-height: 0 !important;
     border-radius: 0 !important;

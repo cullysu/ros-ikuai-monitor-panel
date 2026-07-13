@@ -850,7 +850,7 @@ async function main() {
         );
         const topbarContractOk = Boolean(
           topbar &&
-          topbar.getAttribute('data-overview-status-bus') === 'control-console-summary-bus-flat-critical-value-rail' &&
+          topbar.classList.contains('ro-status-bus') &&
           topbar.querySelectorAll('table, th').length === 0 &&
           topbar.querySelector('[data-overview-status-role="conclusion"] [data-overview-desktop-primary="true"]') &&
           topbarStyle &&
@@ -860,7 +860,12 @@ async function main() {
           Number.parseFloat(topbarStyle.borderRightWidth || '0') === 0 &&
           Number.parseFloat(topbarStyle.borderRadius || '0') <= 1 &&
           topbarCells.length >= expectedTopbarRoleOrder.length &&
-          topbarCells.every((cell) => cell.getAttribute('data-overview-status-cell-contract') === 'label-value-note') &&
+          topbarCells.every((cell) =>
+            cell.classList.contains('ro-status-cell') &&
+            cell.querySelector(':scope > span') &&
+            cell.querySelector(':scope > b') &&
+            cell.querySelector(':scope > em')
+          ) &&
           topbarCellStyles.every((style) => (
             Number.parseFloat(style.borderTopWidth || '0') === 0 &&
             Number.parseFloat(style.borderRightWidth || '0') === 0 &&
@@ -1078,7 +1083,7 @@ async function main() {
           topbarHierarchyOk,
           topbarRoleOrder,
           expectedTopbarRoleOrder,
-          topbarBusContract: topbar?.getAttribute('data-overview-status-bus') || '',
+          topbarBusContract: topbar?.classList.contains('ro-status-bus') ? 'semantic-status-bus' : '',
           lowNoiseConsoleTokensApplied,
           lowNoiseConsoleTokenContract: sectionEl?.getAttribute('data-overview-low-noise-console-token-contract') || '',
           lowNoiseConsoleWorkspaceContract: sectionEl?.contains(workspace) ? 'structural-descendant' : '',

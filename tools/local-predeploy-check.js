@@ -1375,10 +1375,10 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const scaleDisclosureOk = scenario !== 'fleet' || !scaleRequiredSections.has(sectionName) || scaleDisclosureCount > 0 || isCurrent35Shell;
     const sectionRoot = requested || active;
     const detailSections = new Set(['interfaces', 'terminals', 'dhcp', 'trafficLoad']);
-    const overviewSummaryShell = sectionRoot?.querySelector('[data-overview-summary]');
-    const overviewSummaryMain = sectionRoot?.querySelector('[data-overview-summary-main]');
-    const overviewSummaryFocus = overviewSummaryShell?.getAttribute('data-overview-summary-focus') || '';
-    const overviewDesktopTopShell = sectionRoot?.querySelector('[data-overview-desktop-top]');
+    const overviewSummaryShell = sectionRoot?.querySelector('.ro-status-bus');
+    const overviewSummaryMain = overviewSummaryShell;
+    const overviewSummaryFocus = '';
+    const overviewDesktopTopShell = overviewSummaryShell;
     const overviewDesktopPrimary = overviewDesktopTopShell?.querySelector('[data-overview-desktop-primary]');
     const overviewDesktopTopText = normalize(overviewDesktopTopShell?.textContent || '');
     const overviewDesktopPrimaryText = normalize(overviewDesktopPrimary?.textContent || '');
@@ -1451,7 +1451,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         /采集链路账本|采集链路|快照账本|模块可见性|降级模块|只读边界/.test([overviewNoSnapshotGridText, overviewNoSnapshotDowngradeText, overviewNoSnapshotBoundaryText].join(' '))
       )
     );
-    const overviewDesktopEvidenceScope = sectionRoot?.querySelector('[data-overview-summary], .ik-desktop-evidence')
+    const overviewDesktopEvidenceScope = sectionRoot?.querySelector('.ro-status-bus, .ik-desktop-evidence')
       ? sectionRoot
       : null;
     const operatorGrid = sectionRoot?.querySelector('.ik-home-operator-grid');
@@ -1459,19 +1459,19 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const operatorText = normalize(operatorGrid?.textContent || '');
     const isOperatorHome = sectionName === 'overview' && Boolean(
       (overviewSummaryShell && overviewSummaryMain) ||
-      (sectionRoot?.querySelector('[data-overview-status-bar]') && sectionRoot?.querySelector('.ik-desktop-evidence'))
+      (sectionRoot?.querySelector('.ro-status-bus') && sectionRoot?.querySelector('.ik-desktop-evidence'))
     );
     const isDesktopOverview = sectionName === 'overview' && window.innerWidth >= 1024;
     const isCurrent35Home = sectionName === 'overview' && Boolean(
       overviewSummaryShell && overviewSummaryMain ||
       sectionRoot?.querySelector('.ik-home-layout, [data-overview-verdict-panel]') ||
-      (sectionRoot?.querySelector('[data-overview-status-bar]') && sectionRoot?.querySelector('.ik-desktop-evidence'))
+      (sectionRoot?.querySelector('.ro-status-bus') && sectionRoot?.querySelector('.ik-desktop-evidence'))
     );
     const overviewOperatorHomeOk = sectionName !== 'overview' || Boolean(
       overviewSummaryShell &&
       (
         overviewSummaryMain ||
-        sectionRoot?.querySelector('[data-overview-status-bar]')
+        sectionRoot?.querySelector('.ro-status-bus')
       ) &&
       /结论|风险|WAN|资源|采集|证据|REST|SSH/.test(normalize(overviewSummaryShell.textContent || ''))
     );
@@ -1696,7 +1696,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       sectionRoot?.querySelector('[data-overview-density-module="collection-focus"]') ||
       overviewDensityModules.length >= 3
     );
-    const overviewStatusBar = sectionRoot?.querySelector('[data-overview-status-bar]');
+    const overviewStatusBar = sectionRoot?.querySelector('.ro-status-bus');
     const overviewVerdictPanel = sectionRoot?.querySelector('[data-overview-verdict-panel]');
     const overviewMainVerdict = sectionRoot?.querySelector('[data-overview-main-verdict]') || overviewSummaryMain;
     const overviewIncidentLine = sectionRoot?.querySelector('[data-overview-incident-line]');
@@ -1705,9 +1705,9 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const overviewNextActions = sectionRoot?.querySelector('[data-overview-next-actions]');
     const overviewActionCueText = normalize(overviewNextActions?.textContent || '');
     const overviewActionCueOk = !overviewNextActions || overviewActionLabelPattern.test(overviewActionCueText);
-    const overviewVerdictStatusBus = sectionRoot?.querySelector('[data-overview-verdict-status-bus]');
+    const overviewVerdictStatusBus = overviewStatusBar;
     const overviewStatusBarText = normalize(overviewStatusBar?.textContent || '');
-    const overviewNoSnapshotStatusBarCells = Array.from(overviewStatusBar?.querySelectorAll('.ik-home-ops-item, [data-overview-status-cell]') || []);
+    const overviewNoSnapshotStatusBarCells = Array.from(overviewStatusBar?.querySelectorAll('.ro-status-cell') || []);
     const overviewNoSnapshotVisibleStatusBarCells = overviewNoSnapshotStatusBarCells.filter((node) => {
       const rect = node.getBoundingClientRect();
       const style = getComputedStyle(node);
@@ -2954,7 +2954,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       '[data-overview-chart-type]',
       '[data-overview-visual-block]',
       '[data-overview-kpi-card]',
-      '[data-overview-status-bar]',
+      '.ro-status-bus',
       '.ik-overview-kpi-card',
       '.ik-overview-visual-module',
       '.ik-overview-resource-spark',
@@ -3966,8 +3966,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       : [];
     const overviewDesktopNoContentIconTabsOk = sectionName !== 'overview' || !isDesktopOverview || overviewDesktopContentIconTabRecords.length === 0;
     const overviewDesktopHierarchyMarkerOk = sectionName !== 'overview' || !isDesktopOverview || Boolean(
-      sectionRoot?.querySelector('[data-overview-summary]') &&
-      sectionRoot?.querySelector('[data-overview-status-bar]') &&
+      sectionRoot?.querySelector('.ro-status-bus') &&
       sectionRoot?.querySelector('[data-overview-anomaly-evidence]') &&
       sectionRoot?.querySelector('.ik-desktop-evidence')
     );
@@ -5160,7 +5159,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     );
     const overviewStatusBarRect = overviewStatusBar?.getBoundingClientRect();
     const overviewStatusBarStyle = overviewStatusBar ? getComputedStyle(overviewStatusBar) : null;
-    const overviewStatusBusCells = Array.from(overviewVerdictStatusBus?.querySelectorAll('[data-overview-status-cell]') || []);
+    const overviewStatusBusCells = Array.from(overviewVerdictStatusBus?.querySelectorAll('.ro-status-cell') || []);
     const overviewStatusBusVisibleCells = overviewStatusBusCells.filter(nodeVisibleInFirstScreen);
     const overviewStatusBusText = normalize(overviewVerdictStatusBus?.textContent || overviewStatusBar?.textContent || '');
     const overviewSummaryBoxText = normalize(overviewSummaryMain?.textContent || '');
@@ -6166,7 +6165,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         '.ik-home-rank-grid',
         '.ik-home-summary-shell',
         '.ik-home-flat-topbar',
-        '[data-overview-status-bar]',
+        '.ro-status-bus',
         '.ik-overview-kpi-grid',
         '.ik-overview-kpi-card',
         '[data-overview-kpi-card]',
@@ -6260,8 +6259,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         )
       );
       const desktopContentRects = Array.from(sectionRoot.querySelectorAll([
-        '[data-overview-status-bar]',
-        '[data-overview-summary]',
+        '.ro-status-bus',
         '.ik-desktop-evidence',
         '[data-overview-density-module]',
         '[data-overview-rank-grid]',
@@ -6725,7 +6723,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewSummaryShell,
       overviewStatusBar,
       ...(overviewSummaryShell ? Array.from(overviewSummaryShell.querySelectorAll([
-        '[data-overview-status-bar]',
+        '.ro-status-bus',
         '[data-overview-field]',
         '[data-overview-no-snapshot-grid]',
         '[data-overview-density-module]',

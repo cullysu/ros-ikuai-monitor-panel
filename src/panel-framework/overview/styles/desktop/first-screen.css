@@ -247,35 +247,6 @@
   }
 }
 
-/*v67: desktop status bus must remain the fixed six-field iKuai grammar.*/
-
-@media (min-width: 761px) {
-  .router-overview-framework .ro-topbar[data-overview-status-bar="fixed-six"] {
-    display: grid !important;
-    grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
-    min-height: 52px !important;
-    height: auto !important;
-    box-shadow: none !important;
-    border-radius: 4px !important;
-    background-image: none !important;
-    overflow: visible !important;
-  }
-  .router-overview-framework .ro-topbar[data-overview-status-bar="fixed-six"] .ro-topbar-cell,
-  .router-overview-framework .ro-topbar[data-overview-status-bar="fixed-six"] .ik-home-ops-item {
-    min-width: 0 !important;
-    min-height: 50px !important;
-    overflow: hidden !important;
-  }
-  .router-overview-framework .ro-topbar[data-overview-status-bar="fixed-six"] .ro-topbar-cell span,
-  .router-overview-framework .ro-topbar[data-overview-status-bar="fixed-six"] .ro-topbar-cell b,
-  .router-overview-framework .ro-topbar[data-overview-status-bar="fixed-six"] .ro-topbar-cell em {
-    max-width: 100% !important;
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: clip !important;
-  }
-}
-
 /*Edict v70 product correction: real iOS router app rhythm, no KPI four-grid, no desktop toy tabs.*/
 
 @media (min-width: 761px) {

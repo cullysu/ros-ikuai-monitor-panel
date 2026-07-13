@@ -374,7 +374,7 @@ desktopDecisionRailRoot.walkRules((rule) => {
   }
 });
 desktopStatusBusRoot.walkRules((rule) => {
-  if (rule.selector.includes('[data-overview-status-bus="control-console-summary-bus-flat-critical-value-rail"]')) {
+  if (rule.selector.includes(".ro-topbar.ro-status-bus")) {
     desktopStatusBusRuleCount += 1;
   }
 });
@@ -435,9 +435,9 @@ assert(
 );
 assert(
   lines(desktopStatusBusStyles) <= 130 &&
-    desktopStatusBusStyles.includes('[data-overview-status-bus="control-console-summary-bus-flat-critical-value-rail"]') &&
+    desktopStatusBusStyles.includes(".ro-topbar.ro-status-bus") &&
     panel.includes('import "./styles/desktop/status-bus.css";') &&
-    !desktopRefinement.includes('[data-overview-status-bus="control-console-summary-bus-flat-critical-value-rail"]'),
+    !desktopRefinement.includes(".ro-topbar.ro-status-bus"),
   "Desktop status bus must have one canonical component layer, not a refinement shadow"
 );
 assert(
@@ -692,9 +692,11 @@ assert(
   "DesktopModule.tsx must expose semantic evidence attributes only"
 );
 assert(
-  !/data-overview-desktop-v\d+|data-overview-(?:status-no-table-header|status-value-rail|topbar-priority-contract|topbar-fixed-six)/.test(statusVerdict) &&
+  !/data-overview-desktop-v\d+|data-overview-(?:summary|status-bus|verdict-status-bus|status-bar|summary-main|desktop-top|status-cell-contract|status-no-table-header|status-value-rail|topbar-priority-contract|topbar-fixed-six)/.test(statusVerdict) &&
+    statusVerdict.includes("ro-status-bus") &&
+    statusVerdict.includes("ro-status-cell") &&
     (statusVerdict.match(/\bdata-overview-[\w-]+/g) || []).length <= 18,
-  "StatusVerdict.tsx must keep only structural status-bus roles, not self-certifying layout claims"
+  "StatusVerdict.tsx must use semantic status-bus classes, not self-certifying layout claims"
 );
 assert(
   ![desktopRouteRows, desktopWanRows, desktopInterfaceRows].some((source) =>

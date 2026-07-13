@@ -11260,17 +11260,10 @@ var PanelFramework = function(exports) {
     return /* @__PURE__ */ jsxRuntimeExports.jsxs(
       "div",
       {
-        className: `ro-topbar ik-home-flat-topbar${isNoSnapshot ? "" : " is-compact-facts"}`,
+        className: `ro-topbar ro-status-bus ik-home-flat-topbar${isNoSnapshot ? "" : " is-compact-facts"}`,
         "data-overview-desktop-tier": "conclusion",
-        "data-overview-desktop-hierarchy-tier": "1-conclusion",
-        "data-overview-summary": true,
-        "data-overview-status-bus": "control-console-summary-bus-flat-critical-value-rail",
-        "data-overview-verdict-status-bus": true,
-        "data-overview-status-bar": true,
-        "data-overview-summary-main": true,
-        "data-overview-desktop-top": true,
         children: [
-          items.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ro-topbar-cell ik-home-flat-cell ik-home-ops-item", "data-tone": item.tone, "data-overview-field": true, "data-overview-status-cell": true, "data-overview-status-role": item.role, "data-overview-status-priority": topbarPriority(item.role), "data-overview-summary-cell": true, "data-overview-status-cell-contract": "label-value-note", children: [
+          items.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ro-topbar-cell ro-status-cell ik-home-flat-cell ik-home-ops-item", "data-tone": item.tone, "data-overview-field": true, "data-overview-status-role": item.role, "data-overview-status-priority": topbarPriority(item.role), children: [
             /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: item.label }),
             /* @__PURE__ */ jsxRuntimeExports.jsx("b", { style: topbarValueStyle(item.role), "data-overview-desktop-primary": item.role === "conclusion" ? "true" : void 0, children: item.value }),
             /* @__PURE__ */ jsxRuntimeExports.jsx("em", { style: topbarNoteStyle(item.role), children: item.note })
