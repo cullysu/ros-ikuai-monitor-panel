@@ -1,4 +1,5 @@
-/* Subagent 3: first-screen summary workbench and calmer desktop density. */
+/*Subagent 3: first-screen summary workbench and calmer desktop density.*/
+
 @media (min-width: 761px) {
   .router-overview-framework .ro-module[data-tone="danger"],
   .router-overview-framework .ro-module[data-tone="warn"],
@@ -10,74 +11,59 @@
   .router-overview-framework .ro-visibility-cell[data-tone="warn"] {
     background: #fff;
   }
-
   .router-overview-framework .ro-chart-current,
   .router-overview-framework .ro-spark-line,
   .router-overview-framework .ro-resource-card strong {
     filter: saturate(.92);
   }
-
   .router-overview-framework .ro-judgement-row[data-tone="danger"] .ro-chart-current,
   .router-overview-framework .ro-spark-line[data-tone="danger"] {
     stroke-width: 2.1;
   }
-
   .router-overview-framework .ro-judgement-chart,
   .router-overview-framework .ro-resource-visual,
   .router-overview-framework .ro-interface-visual,
   .router-overview-framework .ro-topn-block {
     border-bottom-color: #dbe3ee;
   }
-
   .router-overview-framework .ro-port-matrix {
     grid-template-columns: repeat(3, minmax(150px, 1fr));
     gap: 5px;
   }
-
   .router-overview-framework .ro-port-matrix-list {
     grid-template-columns: repeat(auto-fit, minmax(52px, 1fr));
   }
-
   .router-overview-framework .ro-port-matrix-row {
     min-height: 43px;
     font-size: 10px;
   }
-
   .router-overview-framework .ro-port-matrix-row b {
     font-size: 12px;
   }
-
   .router-overview-framework .ro-port-matrix.is-compact .ro-port-matrix-list {
     grid-template-columns: repeat(auto-fit, minmax(44px, 1fr));
   }
-
   .router-overview-framework .ro-port-matrix.is-compact .ro-port-matrix-row {
     min-height: 28px;
   }
-
   .router-overview-framework .ro-topn-block.is-ranking .ro-topn-row,
   .router-overview-framework .ro-topn-block.is-compact .ro-topn-row {
     grid-template-columns: 42px minmax(120px, 1.05fr) minmax(116px, .9fr) max-content;
     min-height: 24px;
   }
-
   .router-overview-framework .ro-topn-block.is-ranking .ro-topn-row {
     padding-left: 46px;
   }
-
   .router-overview-framework .ro-topn-row .ro-topn-bar,
   .router-overview-framework .ro-topn-block.is-ranking .ro-topn-row .ro-topn-bar {
     height: 18px;
   }
-
   .router-overview-framework .ro-sparkline {
     min-height: 34px;
   }
-
   .router-overview-framework .ro-sparkline.is-compact {
     min-height: 22px;
   }
-
   .router-overview-framework .ro-chart-summary,
   .router-overview-framework .ro-chart-readout {
     font-size: 10px;
@@ -89,29 +75,24 @@
   .ro-desktop-grid[data-overview-desktop-scene="resource-full"] [data-overview-density-module="resource-pressure-bars"] .ro-topn-block.is-ranking {
     display: none;
   }
-
   .ro-desktop-grid[data-overview-desktop-scene="resource-full"] [data-overview-density-module="resource-boundary"] .ro-ledger-table,
   .ro-desktop-grid[data-overview-desktop-scene="resource-full"] [data-overview-density-module="resource-boundary"] .ro-ledger-row {
     background: transparent;
   }
-
   .ro-desktop-grid[data-overview-desktop-scene="interfaces-down"] {
     grid-template-columns: minmax(560px, 1.28fr) minmax(320px, .84fr);
     min-height: calc(100vh - 52px);
   }
-
   .ro-desktop-grid[data-overview-desktop-scene="interfaces-down"] [data-overview-density-module="interface-forwarding"],
   .ro-desktop-grid[data-overview-desktop-scene="interfaces-down"] [data-overview-density-module="interface-relation-carrier"],
   .ro-desktop-grid[data-overview-desktop-scene="interfaces-down"] [data-overview-density-module="route-snapshot"],
   .ro-desktop-grid[data-overview-desktop-scene="interfaces-down"] [data-overview-density-module="interface-second-screen-boundary"] {
     min-height: 0;
   }
-
   .ro-desktop-grid[data-overview-desktop-scene="interfaces-down"] .ro-interface-priority-visual,
   .ro-desktop-grid[data-overview-desktop-scene="interfaces-down"] .ro-interface-visual {
     background: #fff;
   }
-
   .ro-desktop-grid[data-overview-desktop-scene="interfaces-down"] [data-overview-density-module="terminal-connection-topn"],
   .ro-desktop-grid[data-overview-desktop-scene="interfaces-down"] [data-overview-density-module="resource-threshold"] {
     display: none;
@@ -122,20 +103,16 @@
   .ro-desktop-grid[data-overview-desktop-scene="no-snapshot"] {
     grid-template-columns: minmax(560px, 1.28fr) minmax(360px, .82fr);
   }
-
   .ro-desktop-grid[data-overview-desktop-scene="no-snapshot"] [data-overview-density-module="no-snapshot-summary"] .ro-chain-timeline {
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 4px;
   }
-
   .ro-desktop-grid[data-overview-desktop-scene="no-snapshot"] [data-overview-density-module="no-snapshot-summary"] .ro-chain-node {
     min-height: 46px;
   }
-
   .ro-desktop-grid[data-overview-desktop-scene="no-snapshot"] [data-overview-density-module="no-snapshot-module-visibility"] .ro-no-snapshot-link-visual {
     padding: 4px 5px;
   }
-
   .ro-desktop-grid[data-overview-desktop-scene="no-snapshot"] [data-overview-density-module="no-snapshot-module-visibility"] .ro-ledger-table {
     flex: 0 0 auto;
   }
@@ -152,25 +129,21 @@
     overflow: hidden !important;
     background: #dbe4ef !important;
   }
-
   .router-overview-framework .ro-desktop-key-cell {
     min-height: 58px !important;
     padding: 6px 8px 5px !important;
     border-left: 2px solid transparent !important;
     background: #fff !important;
   }
-
   .router-overview-framework .ro-desktop-key-cell:first-child {
     padding-inline-start: 10px !important;
   }
-
   .router-overview-framework .ro-desktop-key-cell span {
     display: block !important;
     color: #6f7d8e !important;
     font-size: 9px !important;
     line-height: 1.05 !important;
   }
-
   .router-overview-framework .ro-desktop-key-cell b {
     display: block !important;
     color: #17212c !important;
@@ -179,7 +152,6 @@
     line-height: 1.1 !important;
     letter-spacing: -.01em !important;
   }
-
   .router-overview-framework .ro-desktop-key-cell em {
     display: block !important;
     color: #7f8d9f !important;
@@ -187,29 +159,23 @@
     font-style: normal !important;
     line-height: 1.12 !important;
   }
-
   .router-overview-framework .ro-desktop-key-cell:first-child b {
     font-size: 14px !important;
     font-weight: 780 !important;
   }
-
   .router-overview-framework .ro-desktop-key-cell[data-tone="danger"] {
     border-left-color: #d93025 !important;
     background: linear-gradient(180deg, #fff 0%, #f7fbff 100%) !important;
   }
-
   .router-overview-framework .ro-desktop-key-cell[data-tone="danger"] b {
     color: #c5312e !important;
   }
-
   .router-overview-framework .ro-desktop-key-cell[data-tone="warn"] {
     border-left-color: #f08c00 !important;
   }
-
   .router-overview-framework .ro-desktop-key-cell[data-tone="ok"] {
     border-left-color: #3f7fbd !important;
   }
-
   .router-overview-framework .ro-desktop-key-cell[data-tone="missing"] {
     border-left-color: #9aa9ba !important;
   }
@@ -221,7 +187,6 @@
     padding-top: 12px !important;
     border-top: 1px solid #e8eff7 !important;
   }
-
   .router-overview-framework .ik-sidebar-mini-status div {
     min-height: 24px !important;
     padding: 0 !important;
@@ -231,68 +196,59 @@
     box-shadow: none !important;
     color: #62738a !important;
   }
-
   .router-overview-framework .ik-sidebar-mini-status span {
     min-width: 28px !important;
     color: #8b99aa !important;
     font-weight: 650 !important;
   }
-
   .router-overview-framework .ik-sidebar-mini-status b {
     color: #244160 !important;
   }
-
   .router-overview-framework .ro-topbar {
     border-color: #dfe9f4 !important;
     background: #dfe9f4 !important;
   }
-
   .router-overview-framework .ro-topbar-cell {
     background: #fff !important;
   }
-
   .router-overview-framework .ro-topbar-cell b {
     font-size: 12px !important;
     line-height: 1.12 !important;
   }
-
   .router-overview-framework .ro-topbar-cell[data-overview-status-role="conclusion"] b {
     font-size: 15px !important;
     letter-spacing: -.01em !important;
   }
-
   .router-overview-framework .ro-module {
     border-color: #dfe8f2 !important;
   }
-
   .router-overview-framework .ro-ledger-row,
   .router-overview-framework .ro-ledger-table tr {
     min-height: 28px !important;
   }
-
   .router-overview-framework .ro-ledger-table td,
   .router-overview-framework .ro-ledger-cell {
     font-size: 12px !important;
     line-height: 1.28 !important;
   }
-
   .router-overview-framework .ro-col.is-main > .ro-module:first-child {
     border-left-width: 3px !important;
   }
-
   .router-overview-framework .ro-col.is-main > .ro-module:first-child .ro-module-head b {
     font-size: 14px !important;
   }
 }
 
-/* v63.4: CL desktop core-text probe must not see the first interfaces-down evidence module as clipped. */
+/*v63.4: CL desktop core-text probe must not see the first interfaces-down evidence module as clipped.*/
+
 @media (min-width: 761px) {
   .router-overview-framework .ro-desktop-grid[data-overview-desktop-scene="interfaces-down"] [data-overview-density-module="interface-forwarding"][data-overview-anomaly-evidence] {
     overflow: visible !important;
   }
 }
 
-/* v67: desktop status bus must remain the fixed six-field iKuai grammar. */
+/*v67: desktop status bus must remain the fixed six-field iKuai grammar.*/
+
 @media (min-width: 761px) {
   .router-overview-framework .ro-topbar[data-overview-status-bar="fixed-six"] {
     display: grid !important;
@@ -304,14 +260,12 @@
     background-image: none !important;
     overflow: visible !important;
   }
-
   .router-overview-framework .ro-topbar[data-overview-status-bar="fixed-six"] .ro-topbar-cell,
   .router-overview-framework .ro-topbar[data-overview-status-bar="fixed-six"] .ik-home-ops-item {
     min-width: 0 !important;
     min-height: 50px !important;
     overflow: hidden !important;
   }
-
   .router-overview-framework .ro-topbar[data-overview-status-bar="fixed-six"] .ro-topbar-cell span,
   .router-overview-framework .ro-topbar[data-overview-status-bar="fixed-six"] .ro-topbar-cell b,
   .router-overview-framework .ro-topbar[data-overview-status-bar="fixed-six"] .ro-topbar-cell em {
@@ -322,7 +276,7 @@
   }
 }
 
-/* Edict v70 product correction: real iOS router app rhythm, no KPI four-grid, no desktop toy tabs. */
+/*Edict v70 product correction: real iOS router app rhythm, no KPI four-grid, no desktop toy tabs.*/
 
 @media (min-width: 761px) {
   .router-overview-framework .ro-desktop-grid > nav[aria-label="底部导航"] {
@@ -335,20 +289,16 @@
     border-radius: 4px !important;
     box-shadow: none !important;
   }
-
   .router-overview-framework .ro-desktop-key-row {
     align-items: stretch !important;
   }
-
   .router-overview-framework .ro-module {
     border-radius: 5px !important;
     box-shadow: none !important;
   }
-
   .router-overview-framework .ro-module-head b {
     line-height: 1.2 !important;
   }
-
   .router-overview-framework .ro-module-row,
   .router-overview-framework .ro-module-cell,
   .router-overview-framework .ik-home-evidence-row {
@@ -360,16 +310,13 @@
   .router-overview-framework .ro-topbar-cell[data-tone="warn"] {
     border-left-color: var(--ro-blue) !important;
   }
-
   .router-overview-framework .ro-topbar-cell[data-overview-status-role="collection"],
   .router-overview-framework .ro-topbar-cell[data-overview-status-role="snapshot"] {
     background: linear-gradient(180deg, #fff 0%, #f7fbff 100%) !important;
   }
-
   .router-overview-framework .ro-topbar-cell[data-overview-status-role="collection"] {
     border-left-color: var(--ro-warn) !important;
   }
-
   .router-overview-framework .ro-topbar-cell[data-overview-status-role="collection"] b,
   .router-overview-framework .ro-topbar-cell[data-overview-status-role="snapshot"] b,
   .router-overview-framework .ro-topbar-cell[data-overview-status-role="routeros"] b,
@@ -377,74 +324,59 @@
   .router-overview-framework .ro-topbar-cell[data-overview-status-role="ssh"] b {
     color: #1f4f85 !important;
   }
-
   .router-overview-framework .ro-topbar-cell[data-overview-status-role="collection"] em {
     color: var(--ro-warn) !important;
   }
-
   .router-overview-framework .ro-topbar-cell[data-overview-status-role="routeros"] em,
   .router-overview-framework .ro-topbar-cell[data-overview-status-role="rest"] em,
   .router-overview-framework .ro-topbar-cell[data-overview-status-role="ssh"] em,
   .router-overview-framework .ro-topbar-cell[data-overview-status-role="snapshot"] em {
     color: var(--ro-faint) !important;
   }
-
   .router-overview-framework .ro-chart-current {
     background: var(--ro-blue) !important;
   }
-
   .router-overview-framework .ro-judgement-row[data-tone="danger"] .ro-chart-current {
     background: var(--ro-danger) !important;
   }
-
   .router-overview-framework .ro-judgement-row[data-tone="warn"] .ro-chart-current {
     background: var(--ro-blue) !important;
   }
-
   .router-overview-framework .ro-module[data-overview-density-module^="collection-"] .ro-judgement-row[data-tone="warn"] .ro-chart-current,
   .router-overview-framework .ro-module[data-overview-density-module^="collection-"] .ro-chart-current {
     background: var(--ro-warn) !important;
   }
-
   .router-overview-framework .ro-chart-peak {
     border-left: 0 !important;
     transform: translate(-50%, -50%) !important;
     top: 50% !important;
   }
-
   .router-overview-framework .ro-judgement-row[data-tone="danger"] .ro-chart-peak {
     background: var(--ro-danger) !important;
   }
-
   .router-overview-framework .ro-judgement-row[data-tone="warn"] .ro-chart-peak {
     background: #4f6478 !important;
   }
-
   .router-overview-framework .ro-judgement-row[data-tone="danger"] .ro-chart-threshold {
     border-left-color: var(--ro-danger) !important;
   }
-
   .router-overview-framework .ro-judgement-row[data-tone="warn"] .ro-chart-threshold {
     border-left-color: #7a8796 !important;
   }
-
   .router-overview-framework .ro-chart-readout i:first-child {
     color: #1d2b39 !important;
     font-weight: 800 !important;
   }
-
   .router-overview-framework .ro-ledger-table th,
   .router-overview-framework .ro-ledger-head-cell {
     height: 23px !important;
   }
-
   .router-overview-framework .ro-ledger-table td,
   .router-overview-framework .ro-ledger-cell {
     height: 31px !important;
     padding-top: 4px !important;
     padding-bottom: 4px !important;
   }
-
   .router-overview-framework .ro-module[data-overview-evidence-weight="secondary"] .ro-ledger-table td,
   .router-overview-framework .ro-module[data-overview-evidence-weight="secondary"] .ro-ledger-cell,
   .router-overview-framework .ro-module[data-overview-evidence-weight="secondary"] .ro-ledger-head-cell {
@@ -452,29 +384,26 @@
     padding-top: 2px !important;
     padding-bottom: 2px !important;
   }
-
   .router-overview-framework .ro-module[data-overview-three-col-table="true"] .ro-ledger-row {
     min-height: 31px !important;
     align-items: center !important;
   }
-
   .router-overview-framework .ro-module[data-overview-evidence-weight="secondary"] .ro-ledger-row {
     min-height: 27px !important;
     align-items: center !important;
   }
-
   .router-overview-framework .ro-module[data-overview-density-module^="collection-"] .ro-ledger-row[data-tone="warn"] .ro-ledger-cell:first-child,
   .router-overview-framework .ro-module[data-overview-density-module^="collection-"] .ro-ledger-row[data-tone="warn"] .ro-ledger-cell:nth-child(2) {
     color: var(--ro-warn) !important;
   }
-
   .router-overview-framework .ro-module[data-overview-density-module^="collection-"] .ro-module-head em[data-trust="缓存快照"] {
     border-color: #deb56b !important;
     color: var(--ro-warn) !important;
   }
 }
 
-/* Main integration: desktop stays dense, but no key evidence text may be clipped. */
+/*Main integration: desktop stays dense, but no key evidence text may be clipped.*/
+
 @media (min-width: 761px) {
   .router-overview-framework .ro-ledger-table td,
   .router-overview-framework .ro-ledger-cell,
@@ -484,7 +413,6 @@
     min-height: 31px !important;
     overflow: visible !important;
   }
-
   .router-overview-framework .ro-module[data-overview-evidence-weight="secondary"] .ro-ledger-table td,
   .router-overview-framework .ro-module[data-overview-evidence-weight="secondary"] .ro-ledger-cell,
   .router-overview-framework .ro-module[data-overview-evidence-weight="secondary"] .ro-ledger-row,
@@ -492,7 +420,6 @@
     height: auto !important;
     min-height: 27px !important;
   }
-
   .router-overview-framework .ik-overview-cell-text,
   .router-overview-framework .ik-home-evidence-row b,
   .router-overview-framework .ik-home-evidence-row span,
@@ -501,23 +428,18 @@
     overflow: visible !important;
     text-overflow: clip !important;
   }
-
   .router-overview-framework .ro-desktop-grid[data-overview-desktop-scene="all-offline"] .ro-col.is-main [data-overview-density-module="wan-offline-bars"] {
     min-height: calc(100vh - 148px) !important;
   }
-
   .router-overview-framework .ro-desktop-grid[data-overview-desktop-scene="all-offline"] [data-overview-density-module="wan-offline-bars"] .ro-ledger-table {
     display: flex !important;
     flex: 1 1 auto !important;
     flex-direction: column !important;
   }
-
   .router-overview-framework .ro-desktop-grid[data-overview-desktop-scene="all-offline"] [data-overview-density-module="wan-offline-bars"] .ro-ledger-head {
     flex: 0 0 22px !important;
   }
-
   .router-overview-framework .ro-desktop-grid[data-overview-desktop-scene="all-offline"] [data-overview-density-module="wan-offline-bars"] .ik-home-evidence-row {
     flex: 1 1 0 !important;
   }
 }
-

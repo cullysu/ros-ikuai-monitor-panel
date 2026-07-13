@@ -1,6 +1,7 @@
-/* Product v4 desktop order pass:
+/*Product v4 desktop order pass:
    iKuai 4.0 control-console hierarchy, not a verifier report.
-   Tier 1 conclusion bus, tier 2 compact evidence strip, tier 3 calm evidence tables. */
+   Tier 1 conclusion bus, tier 2 compact evidence strip, tier 3 calm evidence tables.*/
+
 @media (min-width: 768px) {
   .router-overview-framework {
     --v4-console-blue: #1677ff;
@@ -14,7 +15,6 @@
     --v4-console-cache: #9a6419;
     --v4-console-danger: #c93932;
   }
-
   .router-overview-framework > .ro-topbar.ik-home-flat-topbar {
     margin: 5px 0 6px !important;
     border: 1px solid var(--v4-console-line) !important;
@@ -24,13 +24,11 @@
     box-shadow: none !important;
     gap: 0 !important;
   }
-
   .router-overview-framework[data-overview-scene-key="resource-full"] > .ro-topbar.ik-home-flat-topbar,
   .router-overview-framework[data-overview-scene-key="all-offline"] > .ro-topbar.ik-home-flat-topbar,
   .router-overview-framework[data-overview-scene-key="interfaces-down"] > .ro-topbar.ik-home-flat-topbar {
     border-left-color: var(--v4-console-danger) !important;
   }
-
   .router-overview-framework > .ro-topbar.ik-home-flat-topbar > .ro-topbar-cell {
     min-height: 52px !important;
     padding: 7px 10px !important;
@@ -38,11 +36,9 @@
     border-radius: 0 !important;
     background: #fff !important;
   }
-
   .router-overview-framework > .ro-topbar.ik-home-flat-topbar > .ro-topbar-cell:last-child {
     border-right: 0 !important;
   }
-
   .router-overview-framework > .ro-topbar.ik-home-flat-topbar span,
   .router-overview-framework > .ro-topbar.ik-home-flat-topbar em {
     color: var(--v4-console-muted) !important;
@@ -50,27 +46,23 @@
     font-weight: 660 !important;
     line-height: 1.15 !important;
   }
-
   .router-overview-framework > .ro-topbar.ik-home-flat-topbar b {
     color: var(--v4-console-ink) !important;
     font-size: 14px !important;
     font-weight: 840 !important;
     line-height: 1.1 !important;
   }
-
   .router-overview-framework > .ro-topbar.ik-home-flat-topbar [data-overview-status-role="conclusion"] b {
     color: var(--v4-console-blue-deep) !important;
     font-size: 19px !important;
     font-weight: 920 !important;
     letter-spacing: -.025em !important;
   }
-
   .router-overview-framework[data-overview-scene-key="resource-full"] > .ro-topbar.ik-home-flat-topbar [data-overview-status-role="conclusion"] b,
   .router-overview-framework[data-overview-scene-key="all-offline"] > .ro-topbar.ik-home-flat-topbar [data-overview-status-role="conclusion"] b,
   .router-overview-framework[data-overview-scene-key="interfaces-down"] > .ro-topbar.ik-home-flat-topbar [data-overview-status-role="conclusion"] b {
     color: var(--v4-console-danger) !important;
   }
-
   .router-overview-framework > .ro-desktop-key-row[data-overview-desktop-tier="key-metrics"] {
     margin: 0 0 9px !important;
     border: 1px solid var(--v4-console-line) !important;
@@ -80,7 +72,6 @@
     box-shadow: none !important;
     gap: 1px !important;
   }
-
   .router-overview-framework > .ro-desktop-key-row > .ro-desktop-key-cell {
     min-height: 58px !important;
     padding: 8px 10px !important;
@@ -89,19 +80,16 @@
     background: #fff !important;
     box-shadow: none !important;
   }
-
   .router-overview-framework > .ro-desktop-key-row > .ro-desktop-key-cell:first-child {
     border-left: 5px solid var(--v4-console-blue) !important;
     background: linear-gradient(90deg, rgba(22,119,255,.055), #fff 190px) !important;
   }
-
   .router-overview-framework[data-overview-scene-key="resource-full"] > .ro-desktop-key-row > .ro-desktop-key-cell:first-child,
   .router-overview-framework[data-overview-scene-key="all-offline"] > .ro-desktop-key-row > .ro-desktop-key-cell:first-child,
   .router-overview-framework[data-overview-scene-key="interfaces-down"] > .ro-desktop-key-row > .ro-desktop-key-cell:first-child {
     border-left-color: var(--v4-console-danger) !important;
     background: linear-gradient(90deg, rgba(201,57,50,.065), #fff 190px) !important;
   }
-
   .router-overview-framework > .ro-desktop-key-row span,
   .router-overview-framework > .ro-desktop-key-row em {
     color: var(--v4-console-muted) !important;
@@ -109,52 +97,44 @@
     font-weight: 650 !important;
     line-height: 1.15 !important;
   }
-
   .router-overview-framework > .ro-desktop-key-row b {
     color: var(--v4-console-ink) !important;
     font-size: 15px !important;
     font-weight: 860 !important;
     line-height: 1.1 !important;
   }
-
   .router-overview-framework > .ro-desktop-key-row > .ro-desktop-key-cell:first-child b {
     color: var(--v4-console-blue-deep) !important;
     font-size: 21px !important;
     font-weight: 940 !important;
     letter-spacing: -.03em !important;
   }
-
   .router-overview-framework[data-overview-scene-key="resource-full"] > .ro-desktop-key-row > .ro-desktop-key-cell:first-child b,
   .router-overview-framework[data-overview-scene-key="all-offline"] > .ro-desktop-key-row > .ro-desktop-key-cell:first-child b,
   .router-overview-framework[data-overview-scene-key="interfaces-down"] > .ro-desktop-key-row > .ro-desktop-key-cell:first-child b {
     color: var(--v4-console-danger) !important;
   }
-
   .router-overview-framework .ro-desktop-grid.ik-home-layout.ik-desktop-workspace {
     grid-template-columns: minmax(0, 1.52fr) minmax(386px, .92fr) !important;
     gap: 9px !important;
     min-height: calc(100vh - 112px) !important;
     align-items: stretch !important;
   }
-
   .router-overview-framework .ro-desktop-grid.ik-home-layout > .ro-col {
     gap: 9px !important;
   }
-
   .router-overview-framework .ro-desktop-grid.ik-home-layout > .ro-col.is-bottom {
     display: grid !important;
     grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
     gap: 9px !important;
     align-items: stretch !important;
   }
-
   .router-overview-framework .ro-module {
     border: 1px solid var(--v4-console-line) !important;
     border-radius: 4px !important;
     background: #fff !important;
     box-shadow: none !important;
   }
-
   .router-overview-framework .ro-col.is-main > .ro-module:first-child,
   .router-overview-framework .ro-module[data-overview-evidence-weight="primary"],
   .router-overview-framework .ro-module[data-overview-density-module="wan-trend"],
@@ -166,136 +146,115 @@
     border-left: 5px solid var(--v4-console-blue) !important;
     background: linear-gradient(180deg, #fff 0%, #fbfdff 100%) !important;
   }
-
   .router-overview-framework[data-overview-scene-key="resource-full"] .ro-col.is-main > .ro-module:first-child,
   .router-overview-framework[data-overview-scene-key="all-offline"] .ro-col.is-main > .ro-module:first-child,
   .router-overview-framework[data-overview-scene-key="interfaces-down"] .ro-col.is-main > .ro-module:first-child,
   .router-overview-framework .ro-module[data-tone="danger"] {
     border-left-color: var(--v4-console-danger) !important;
   }
-
   .router-overview-framework .ro-module[data-tone="warn"] {
     border-left-color: var(--v4-console-blue) !important;
   }
-
   .router-overview-framework .ro-module[data-overview-density-module*="cache"],
   .router-overview-framework .ro-module[data-overview-density-module*="collection-cache"],
   .router-overview-framework .ro-module[data-overview-density-module*="collection-channel"] {
     border-left-color: var(--v4-console-cache) !important;
   }
-
   .router-overview-framework .ro-module-head {
     min-height: 33px !important;
     padding: 7px 10px !important;
     border-bottom: 1px solid var(--v4-console-line-soft) !important;
     background: var(--v4-console-soft) !important;
   }
-
   .router-overview-framework .ro-module-head b {
     color: var(--v4-console-ink) !important;
     font-size: 13px !important;
     font-weight: 880 !important;
     letter-spacing: 0 !important;
   }
-
   .router-overview-framework .ro-col.is-main > .ro-module:first-child .ro-module-head b,
   .router-overview-framework .ro-module[data-overview-evidence-weight="primary"] .ro-module-head b,
   .router-overview-framework .ro-module[data-overview-density-module="wan-trend"] .ro-module-head b {
     font-size: 14px !important;
     font-weight: 920 !important;
   }
-
   .router-overview-framework .ro-module-head span,
   .router-overview-framework .ro-module-head em {
     color: var(--v4-console-muted) !important;
     font-size: 10.5px !important;
     font-weight: 640 !important;
   }
-
   .router-overview-framework .ro-ledger-row:not(.ro-ledger-head),
   .router-overview-framework .ik-home-evidence-row {
     min-height: 31px !important;
     max-height: none !important;
     border-bottom: 1px solid var(--v4-console-line-soft) !important;
   }
-
   .router-overview-framework .ro-module[data-overview-evidence-weight="secondary"] .ro-ledger-row:not(.ro-ledger-head),
   .router-overview-framework .ro-col.is-side .ro-ledger-row:not(.ro-ledger-head),
   .router-overview-framework .ro-col.is-bottom .ro-ledger-row:not(.ro-ledger-head) {
     min-height: 28px !important;
   }
-
   .router-overview-framework .ro-ledger-cell,
   .router-overview-framework .ro-ledger-table td {
     color: var(--v4-console-ink) !important;
     font-size: 11.5px !important;
     line-height: 1.26 !important;
   }
-
   .router-overview-framework .ro-ledger-cell:first-child,
   .router-overview-framework .ro-ledger-table td:first-child {
     color: #111d2f !important;
     font-weight: 830 !important;
   }
-
   .router-overview-framework .ro-ledger-cell:nth-child(n+3),
   .router-overview-framework .ro-ledger-table td:nth-child(n+3) {
     color: var(--v4-console-muted) !important;
   }
-
   .router-overview-framework .ro-ledger-head,
   .router-overview-framework .ro-ledger-table thead tr {
     background: #f7fafd !important;
   }
-
   .router-overview-framework .ro-chart-summary {
     grid-template-columns: minmax(142px, 1.32fr) repeat(4, minmax(64px, .78fr)) !important;
   }
-
   .router-overview-framework .ro-chart-summary span:first-child b {
     font-size: 15px !important;
   }
-
   .router-overview-framework .ro-judgement-row {
     grid-template-columns: 78px minmax(170px, 1fr) minmax(214px, 1.02fr) !important;
   }
-
   .router-overview-framework .ro-chart-track {
     height: 7px !important;
     border-radius: 2px !important;
   }
-
   .router-overview-framework .ro-chart-current,
   .router-overview-framework .ro-topn-bar strong,
   .router-overview-framework .ro-spark-line {
     background: var(--v4-console-blue) !important;
     stroke: var(--v4-console-blue) !important;
   }
-
   .router-overview-framework .ro-judgement-row[data-tone="danger"] .ro-chart-current,
   .router-overview-framework .ro-topn-row[data-tone="danger"] .ro-topn-bar strong,
   .router-overview-framework .ro-spark-line[data-tone="danger"] {
     background: var(--v4-console-danger) !important;
     stroke: var(--v4-console-danger) !important;
   }
-
   .router-overview-framework .ro-chart-threshold {
     border-left: 2px solid #4d5d70 !important;
   }
-
   .router-overview-framework .ro-col.is-main > .ro-module:first-child {
     min-height: 330px !important;
   }
-
   .router-overview-framework .ro-col.is-side > .ro-module,
   .router-overview-framework .ro-col.is-bottom > .ro-module {
     min-height: 214px !important;
   }
 }
 
-/* Product v6 desktop console pass:
+/*Product v6 desktop console pass:
    Reduce verifier-report feeling; one calm conclusion bus, one metric rail, then evidence.
-   Normal = blue/gray; cache = amber; severe = red only on the primary evidence path. */
+   Normal = blue/gray; cache = amber; severe = red only on the primary evidence path.*/
+
 @media (min-width: 768px) {
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] {
     --ik-v6-blue: #1677ff;
@@ -308,7 +267,6 @@
     --ik-v6-danger: #c9342f;
     --ik-v6-cache: #b46a1f;
   }
-
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] > .ro-topbar.ik-home-flat-topbar {
     min-height: 54px !important;
     margin: 4px 0 7px !important;
@@ -317,30 +275,25 @@
     border-radius: 3px !important;
     background: #fff !important;
   }
-
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"][data-overview-scene-key="resource-full"] > .ro-topbar.ik-home-flat-topbar,
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"][data-overview-scene-key="all-offline"] > .ro-topbar.ik-home-flat-topbar,
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"][data-overview-scene-key="interfaces-down"] > .ro-topbar.ik-home-flat-topbar {
     border-left-color: var(--ik-v6-danger) !important;
   }
-
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] > .ro-topbar.ik-home-flat-topbar > * {
     min-height: 52px !important;
     border-right: 1px solid var(--ik-v6-line-soft) !important;
     border-radius: 0 !important;
     box-shadow: none !important;
   }
-
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] > .ro-topbar.ik-home-flat-topbar > *:last-child {
     border-right: 0 !important;
   }
-
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] > .ro-topbar.ik-home-flat-topbar b {
     color: var(--ik-v6-text) !important;
     font-size: 14px !important;
     font-weight: 840 !important;
   }
-
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] > .ro-topbar.ik-home-flat-topbar [data-overview-status-role="conclusion"] b,
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] > .ro-topbar.ik-home-flat-topbar > *:first-child b {
     color: var(--ik-v6-blue-deep) !important;
@@ -348,20 +301,17 @@
     font-weight: 940 !important;
     letter-spacing: -.026em !important;
   }
-
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"][data-overview-scene-key="resource-full"] > .ro-topbar.ik-home-flat-topbar [data-overview-status-role="conclusion"] b,
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"][data-overview-scene-key="all-offline"] > .ro-topbar.ik-home-flat-topbar [data-overview-status-role="conclusion"] b,
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"][data-overview-scene-key="interfaces-down"] > .ro-topbar.ik-home-flat-topbar [data-overview-status-role="conclusion"] b {
     color: var(--ik-v6-danger) !important;
   }
-
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] > .ro-topbar.ik-home-flat-topbar span,
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] > .ro-topbar.ik-home-flat-topbar em {
     color: var(--ik-v6-muted) !important;
     font-size: 10.5px !important;
     font-weight: 630 !important;
   }
-
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] > .ro-desktop-key-row[data-overview-desktop-tier="key-metrics"] {
     margin-bottom: 9px !important;
     border-radius: 3px !important;
@@ -370,7 +320,6 @@
     gap: 1px !important;
     box-shadow: none !important;
   }
-
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] > .ro-desktop-key-row > .ro-desktop-key-cell {
     min-height: 56px !important;
     border-radius: 0 !important;
@@ -378,117 +327,97 @@
     background: #fff !important;
     box-shadow: none !important;
   }
-
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] > .ro-desktop-key-row > .ro-desktop-key-cell:first-child {
     border-left: 5px solid var(--ik-v6-blue) !important;
     background: linear-gradient(90deg, rgba(22,119,255,.055), #fff 210px) !important;
   }
-
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"][data-overview-scene-key="resource-full"] > .ro-desktop-key-row > .ro-desktop-key-cell:first-child,
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"][data-overview-scene-key="all-offline"] > .ro-desktop-key-row > .ro-desktop-key-cell:first-child,
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"][data-overview-scene-key="interfaces-down"] > .ro-desktop-key-row > .ro-desktop-key-cell:first-child {
     border-left-color: var(--ik-v6-danger) !important;
     background: linear-gradient(90deg, rgba(201,52,47,.06), #fff 210px) !important;
   }
-
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-desktop-grid.ik-home-layout.ik-desktop-workspace {
     grid-template-columns: minmax(0, 1.45fr) minmax(390px, .95fr) !important;
     gap: 10px !important;
     align-items: stretch !important;
     min-height: calc(100vh - 108px) !important;
   }
-
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-module {
     border-radius: 3px !important;
     border: 1px solid var(--ik-v6-line) !important;
     background: #fff !important;
     box-shadow: none !important;
   }
-
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-col.is-main > .ro-module:first-child {
     border-left: 6px solid var(--ik-v6-blue) !important;
     min-height: 342px !important;
   }
-
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"][data-overview-scene-key="resource-full"] .ro-col.is-main > .ro-module:first-child,
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"][data-overview-scene-key="all-offline"] .ro-col.is-main > .ro-module:first-child,
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"][data-overview-scene-key="interfaces-down"] .ro-col.is-main > .ro-module:first-child {
     border-left-color: var(--ik-v6-danger) !important;
   }
-
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-module[data-overview-density-module*="collection"],
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-module[data-overview-density-module*="cache"] {
     border-left-color: var(--ik-v6-cache) !important;
   }
-
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-module-head {
     min-height: 32px !important;
     padding: 6px 10px !important;
     border-bottom: 1px solid var(--ik-v6-line-soft) !important;
     background: #fbfdff !important;
   }
-
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-module-head b {
     font-size: 13px !important;
     font-weight: 860 !important;
     color: var(--ik-v6-text) !important;
   }
-
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-col.is-main > .ro-module:first-child .ro-module-head b {
     font-size: 14px !important;
     font-weight: 920 !important;
   }
-
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-ledger-row:not(.ro-ledger-head) {
     min-height: 31px !important;
   }
-
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-col.is-side .ro-ledger-row:not(.ro-ledger-head),
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-col.is-bottom .ro-ledger-row:not(.ro-ledger-head) {
     min-height: 28px !important;
   }
-
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-ledger-cell,
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-ledger-table td {
     font-size: 11.8px !important;
     line-height: 1.28 !important;
     color: var(--ik-v6-text) !important;
   }
-
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-ledger-cell:first-child,
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-ledger-table td:first-child {
     font-weight: 850 !important;
   }
-
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-ledger-cell:nth-child(n+3),
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-ledger-table td:nth-child(n+3) {
     color: var(--ik-v6-muted) !important;
   }
-
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-chart-track {
     height: 6px !important;
     border-radius: 2px !important;
     background: #e8f0f8 !important;
   }
-
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-chart-threshold {
     border-left: 2px solid #4b5d72 !important;
   }
-
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-chart-current,
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-spark-line,
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-topn-bar strong {
     background: var(--ik-v6-blue) !important;
     stroke: var(--ik-v6-blue) !important;
   }
-
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] [data-tone="danger"] .ro-chart-current,
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-judgement-row[data-tone="danger"] .ro-chart-current,
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-topn-row[data-tone="danger"] .ro-topn-bar strong {
     background: var(--ik-v6-danger) !important;
     stroke: var(--ik-v6-danger) !important;
   }
-
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ik-sidebar-mini-status {
     border: 0 !important;
     border-top: 1px solid var(--ik-v6-line) !important;

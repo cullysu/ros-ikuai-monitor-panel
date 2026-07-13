@@ -1,25 +1,22 @@
-/* Desktop product hierarchy: keep secondary facts reachable without letting
-   three evidence ledgers compete with the WAN judgement surface. */
+/*Desktop product hierarchy: keep secondary facts reachable without letting
+   three evidence ledgers compete with the WAN judgement surface.*/
+
 @media (min-width: 761px) {
   #overview.router-overview-framework .ro-desktop-grid.ik-home-layout.ik-desktop-workspace {
     display: grid !important;
     grid-template-columns: minmax(0, 1.42fr) minmax(380px, .92fr) !important;
-    grid-template-areas:
-      "kpis kpis"
+    grid-template-areas: "kpis kpis"
       "main side"
       "bottom bottom" !important;
     gap: 8px !important;
     align-items: start !important;
     min-height: 0 !important;
   }
-
   #overview.router-overview-framework .ro-desktop-grid.ik-home-layout.is-normal-scene.ik-desktop-workspace {
-    grid-template-areas:
-      "main side"
+    grid-template-areas: "main side"
       "bottom bottom" !important;
     grid-template-rows: auto auto !important;
   }
-
   #overview.router-overview-framework .ro-desktop-thin-kpis {
     grid-area: kpis !important;
     grid-column: 1 / -1 !important;
@@ -33,89 +30,71 @@
     max-height: 40px !important;
     overflow: visible !important;
   }
-
   #overview.router-overview-framework .ro-desktop-grid.ik-home-layout > .ro-col.is-main {
     grid-area: main !important;
   }
-
   #overview.router-overview-framework .ro-desktop-grid.ik-home-layout > .ro-col.is-side {
     grid-area: side !important;
   }
-
   #overview.router-overview-framework .ro-desktop-grid.ik-home-layout > .ro-col.is-bottom {
     grid-area: bottom !important;
   }
-
   #overview.router-overview-framework[data-overview-scene-key="resource-full"] .ro-desktop-grid.ik-home-layout {
     grid-template-columns: minmax(0, 1.34fr) minmax(410px, .98fr) !important;
   }
-
   #overview.router-overview-framework .ro-desktop-grid[data-overview-desktop-scene="single"] .ro-module[data-overview-density-module="wan-trend"] .ro-wan-integrated-visual {
     grid-template-rows: minmax(clamp(190px, 24vh, 230px), auto) 38px 32px !important;
   }
-
   #overview.router-overview-framework .ro-desktop-grid[data-overview-desktop-scene="single"] .ro-module[data-overview-density-module="wan-trend"] .ro-judgement-chart {
     min-height: clamp(180px, 22vh, 210px) !important;
   }
-
   #overview.router-overview-framework .ro-desktop-grid[data-overview-desktop-scene="fleet"] .ro-module[data-overview-density-module="wan-trend"] .ro-wan-integrated-visual {
     grid-template-rows: minmax(clamp(160px, 20vh, 190px), auto) 38px 32px !important;
   }
-
   #overview.router-overview-framework .ro-desktop-grid[data-overview-desktop-scene="fleet"] .ro-module[data-overview-density-module="wan-trend"] .ro-judgement-chart {
     min-height: clamp(150px, 18vh, 180px) !important;
   }
-
   #overview.router-overview-framework .ro-compact-summary-disclosure > summary {
     color: #536a82;
     background: #f8fbfe;
     box-shadow: inset 0 1px 0 rgba(216, 228, 240, .48);
   }
-
   #overview.router-overview-framework .ro-compact-summary-disclosure > summary span {
     color: #415a74;
     font-weight: 690;
   }
-
   #overview.router-overview-framework .ro-desktop-grid[data-overview-desktop-scene="single"] > .ro-col.is-side,
   #overview.router-overview-framework .ro-desktop-grid[data-overview-desktop-scene="fleet"] > .ro-col.is-side {
     gap: 4px !important;
   }
-
   #overview.router-overview-framework .ro-desktop-grid[data-overview-desktop-scene="single"] > .ro-col.is-side > .ro-module,
   #overview.router-overview-framework .ro-desktop-grid[data-overview-desktop-scene="fleet"] > .ro-col.is-side > .ro-module {
     min-height: 0 !important;
     border-radius: 3px !important;
     box-shadow: none !important;
   }
-
   #overview.router-overview-framework .ro-desktop-grid[data-overview-desktop-scene="single"] > .ro-col.is-side > .ro-module > .ro-module-head,
   #overview.router-overview-framework .ro-desktop-grid[data-overview-desktop-scene="fleet"] > .ro-col.is-side > .ro-module > .ro-module-head {
     min-height: 28px !important;
     padding: 5px 8px !important;
   }
-
   #overview.router-overview-framework .ro-desktop-grid[data-overview-desktop-scene="single"] > .ro-col.is-side > .ro-module .ro-compact-summary-disclosure > summary,
   #overview.router-overview-framework .ro-desktop-grid[data-overview-desktop-scene="fleet"] > .ro-col.is-side > .ro-module .ro-compact-summary-disclosure > summary {
     min-height: 28px !important;
     padding: 4px 8px !important;
   }
-
   #overview.router-overview-framework .ro-desktop-grid[data-overview-desktop-scene="single"] > .ro-col.is-bottom,
   #overview.router-overview-framework .ro-desktop-grid[data-overview-desktop-scene="fleet"] > .ro-col.is-bottom {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
     align-items: start !important;
   }
-
   #overview.router-overview-framework .ro-desktop-grid[data-overview-desktop-scene="single"] > .ro-col.is-bottom > .ro-module[data-overview-density-module="evidence-boundary"],
   #overview.router-overview-framework .ro-desktop-grid[data-overview-desktop-scene="fleet"] > .ro-col.is-bottom > .ro-module[data-overview-density-module="evidence-boundary"] {
     min-height: 0 !important;
   }
-
   #overview.router-overview-framework .ro-topbar.ik-home-flat-topbar.is-compact-facts {
     grid-template-columns: minmax(210px, 1.45fr) repeat(3, minmax(156px, .9fr)) !important;
   }
-
   #overview.router-overview-framework .ro-topbar.ik-home-flat-topbar.is-compact-facts > .ro-topbar-cell:first-child b {
     font-size: 17px !important;
     font-weight: 900 !important;

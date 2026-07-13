@@ -1,0 +1,71 @@
+@media (min-width: 768px) {
+  .sidebar[data-shell-sidebar="legacy"] .ik-sidebar-mini-status,
+  .ik-rail .ik-sidebar-mini-status {
+    margin-top: auto !important;
+    padding: 7px 4px 5px !important;
+    border: 0 !important;
+    border-top: 1px solid rgba(217, 228, 239, .9) !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+  .sidebar[data-shell-sidebar="legacy"] .ik-sidebar-mini-status div,
+  .ik-rail .ik-sidebar-mini-status div {
+    min-height: 20px !important;
+    padding: 1px 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    cursor: default !important;
+    pointer-events: none !important;
+  }
+  .sidebar[data-shell-sidebar="legacy"] .ik-sidebar-mini-status span,
+  .ik-rail .ik-sidebar-mini-status span {
+    color: #8a96a6 !important;
+    font-size: 9.8px !important;
+    font-weight: 520 !important;
+  }
+  .sidebar[data-shell-sidebar="legacy"] .ik-sidebar-mini-status b,
+  .ik-rail .ik-sidebar-mini-status b {
+    color: #4d6076 !important;
+    font-size: 10.8px !important;
+    font-weight: 620 !important;
+  }
+}
+
+@media (min-width: 761px) {
+  #overview.router-overview-framework .ro-module,
+  #overview.router-overview-framework .ro-ledger-table,
+  #overview.router-overview-framework .ro-judgement-chart {
+    scrollbar-width: thin !important;
+    scrollbar-color: rgba(130, 151, 173, .42) transparent !important;
+  }
+  #overview.router-overview-framework .ro-module::-webkit-scrollbar,
+  #overview.router-overview-framework .ro-ledger-table::-webkit-scrollbar,
+  #overview.router-overview-framework .ro-judgement-chart::-webkit-scrollbar {
+    width: 4px !important;
+    height: 4px !important;
+  }
+  #overview.router-overview-framework .ro-module::-webkit-scrollbar-thumb,
+  #overview.router-overview-framework .ro-ledger-table::-webkit-scrollbar-thumb,
+  #overview.router-overview-framework .ro-judgement-chart::-webkit-scrollbar-thumb {
+    background: rgba(130, 151, 173, .36) !important;
+    border-radius: 99px !important;
+  }
+  #overview.router-overview-framework .ro-topbar.ik-home-flat-topbar > .ro-topbar-cell {
+    padding-inline: 10px !important;
+  }
+  #overview.router-overview-framework .ro-topbar.ik-home-flat-topbar b {
+    font-size: 13px !important;
+    letter-spacing: -.015em !important;
+  }
+  #overview.router-overview-framework .ro-col.is-main > .ro-module:first-child {
+    border-left-width: 4px !important;
+    background: linear-gradient(180deg, #fff 0%, #fbfdff 100%) !important;
+  }
+  #overview.router-overview-framework .ro-col.is-bottom [data-overview-density-module="evidence-boundary"],
+  #overview.router-overview-framework .ro-col.is-bottom [data-overview-density-module*="boundary"] {
+    opacity: .86 !important;
+  }
+}

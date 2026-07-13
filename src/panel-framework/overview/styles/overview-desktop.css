@@ -2,6 +2,7 @@
 @import "./desktop/density.css";
 @import "./desktop/first-screen.css";
 @import "./desktop/hierarchy.css";
+@import "./desktop/shell-chrome.css";
 @import "./desktop/evidence.css";
 @import "./desktop/console-skeleton.css";
 @import "./desktop/layout.css";

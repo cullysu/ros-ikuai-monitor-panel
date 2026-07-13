@@ -2,17 +2,14 @@
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-decision-screen {
     grid-template-columns: minmax(320px, .96fr) minmax(0, 1.04fr);
     grid-template-rows: 46px 252px;
-    grid-template-areas:
-      "nav nav"
+    grid-template-areas: "nav nav"
       "hero side";
     gap: 8px 10px;
     padding: 10px 12px 62px;
   }
-
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-device-bar {
     grid-area: nav;
   }
-
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-decision-card {
     grid-area: hero;
     width: 100%;
@@ -21,7 +18,6 @@
     min-height: 252px;
     max-height: 252px;
   }
-
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-core-facts {
     grid-area: side;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -32,14 +28,12 @@
     width: 100%;
     min-width: 0;
   }
-
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-supporting-surface {
     grid-area: side;
     align-self: end;
     width: 100%;
     min-width: 0;
   }
-
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-decision-head h1 {
     font-size: 28px;
     line-height: 1.05;

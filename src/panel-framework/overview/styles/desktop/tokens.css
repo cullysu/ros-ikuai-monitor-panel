@@ -1,5 +1,6 @@
-/* Shared desktop console tokens. Keep the control-console surface independent
-   from scene-specific layout and incident overrides. */
+/*Shared desktop console tokens. Keep the control-console surface independent
+   from scene-specific layout and incident overrides.*/
+
 @media (min-width: 761px) {
   #overview.router-overview-framework {
     --ik-console-ink: #122237;

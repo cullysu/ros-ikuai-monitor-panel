@@ -1,9 +1,9 @@
-/* Implementation 4 EOF desktop essential repair: final desktop owner after all prior overrides. */
+/*Implementation 4 EOF desktop essential repair: final desktop owner after all prior overrides.*/
+
 @media (min-width: 768px) {
   .router-overview-framework {
     background: #f3f7fb !important;
   }
-
   .router-overview-framework > .ro-topbar.ik-home-flat-topbar,
   .router-overview-framework > .ro-desktop-key-row[data-overview-desktop-tier="key-metrics"] {
     display: grid !important;
@@ -16,7 +16,6 @@
     background: #fff !important;
     box-shadow: none !important;
   }
-
   .router-overview-framework > .ro-topbar.ik-home-flat-topbar > .ro-topbar-cell,
   .router-overview-framework > .ro-desktop-key-row > .ro-desktop-key-cell {
     min-height: 52px !important;
@@ -26,7 +25,6 @@
     background: transparent !important;
     box-shadow: none !important;
   }
-
   .router-overview-framework > .ro-topbar.ik-home-flat-topbar [data-overview-status-role="conclusion"] b,
   .router-overview-framework > .ro-desktop-key-row > .ro-desktop-key-cell:first-child b {
     font-size: 18px !important;
@@ -36,40 +34,31 @@
     overflow: visible !important;
     text-overflow: clip !important;
   }
-
   .router-overview-framework .ro-desktop-grid.ik-home-layout.ik-desktop-workspace {
     display: grid !important;
-    grid-template-areas:
-      "network resource"
+    grid-template-areas: "network resource"
       "bottom bottom" !important;
   }
-
   .router-overview-framework .ro-desktop-grid.ik-home-layout > .ro-col.is-main {
     grid-area: network !important;
   }
-
   .router-overview-framework .ro-desktop-grid.ik-home-layout > .ro-col.is-side {
     grid-area: resource !important;
   }
-
   .router-overview-framework .ro-desktop-grid.ik-home-layout > .ro-col.is-bottom {
     grid-area: bottom !important;
   }
-
   .router-overview-framework .ro-col.is-bottom [data-overview-density-module="terminal-ranking"] {
     display: none !important;
   }
-
   .router-overview-framework .ro-col.is-side [data-overview-density-module*="resource"],
   .router-overview-framework .ro-col.is-side [data-overview-density-module*="pressure"] {
     order: 1 !important;
   }
-
   .router-overview-framework .ro-col.is-side [data-overview-density-module*="collection"],
   .router-overview-framework .ro-col.is-side [data-overview-density-module*="collect"] {
     order: 2 !important;
   }
-
   .router-overview-framework .ro-module,
   .router-overview-framework .ro-resource-card,
   .router-overview-framework .ro-visibility-cell,
@@ -78,20 +67,17 @@
     background: #fff !important;
     box-shadow: none !important;
   }
-
   .router-overview-framework .ro-time-tabs,
   .router-overview-framework :where(.ik-v181-nav, .ik-v193-nav, .ik-v198-nav, .ik-v199-nav, .ik-v214-nav) {
     display: none !important;
     pointer-events: none !important;
   }
-
   .router-overview-framework .ro-chart-track {
     position: relative !important;
     border: 1px solid #dce7f2 !important;
     background: linear-gradient(90deg, #f7fbff, #eef5fc) !important;
     overflow: visible !important;
   }
-
   .router-overview-framework .ro-chart-anomaly-dot {
     position: absolute !important;
     top: 50% !important;
@@ -105,17 +91,14 @@
     transform: translateY(-50%) !important;
     box-shadow: 0 0 0 1px rgba(217, 48, 37, .45) !important;
   }
-
   .router-overview-framework .ro-judgement-row[data-tone="warn"] .ro-chart-anomaly-dot {
     background: #f08c00 !important;
     box-shadow: 0 0 0 1px rgba(240, 140, 0, .45) !important;
   }
-
   .router-overview-framework .ro-ledger-cell b {
     color: #172235 !important;
     font-weight: 860 !important;
   }
-
   .router-overview-framework .ro-ledger-cell small {
     display: block !important;
     margin-top: 2px !important;
@@ -130,133 +113,111 @@
     background: var(--ik40-console-page) !important;
     color: var(--ik40-console-ink) !important;
   }
-
   .router-overview-framework :where(.ro-module, .ro-resource-card, .ro-topbar, .ro-desktop-key-row) {
     border-color: var(--ik40-console-line) !important;
     border-radius: 3px !important;
     box-shadow: none !important;
   }
-
   .router-overview-framework :where(.ro-module, .ro-resource-card, .ro-topbar-cell, .ro-desktop-key-cell) {
     background: var(--ik40-console-surface) !important;
   }
-
   .router-overview-framework :where(.ro-module, .ro-resource-card) {
     border-left-width: 3px !important;
   }
-
   .router-overview-framework .ro-col,
   .router-overview-framework .ro-desktop-grid.ik-home-layout.ik-desktop-workspace,
   .router-overview-framework .ro-desktop-grid[data-overview-desktop-hierarchy="conclusion-metrics-evidence"] {
     gap: 8px !important;
   }
-
-  /* Color discipline: normal/warn are blue + dark grey; orange is cache-only; red is incident-only. */
+  /*Color discipline: normal/warn are blue + dark grey; orange is cache-only; red is incident-only.*/
   .router-overview-framework :where(.ro-topbar-cell, .ro-desktop-key-cell, .ro-module)[data-tone="ok"],
   .router-overview-framework :where(.ro-topbar-cell, .ro-desktop-key-cell, .ro-module)[data-tone="trust"],
   .router-overview-framework :where(.ro-topbar-cell, .ro-desktop-key-cell, .ro-module)[data-tone="warn"] {
     border-left-color: var(--ik40-console-blue) !important;
   }
-
   .router-overview-framework :where(.ro-topbar-cell, .ro-desktop-key-cell, .ro-module)[data-tone="danger"] {
     border-left-color: var(--ik40-console-danger) !important;
   }
-
   .router-overview-framework .ro-module[data-overview-density-module*="cache"],
   .router-overview-framework .ro-module[data-overview-density-module*="collection-cache"],
   .router-overview-framework .ro-module[data-overview-density-module*="collection-channel"] {
     border-left-color: var(--ik40-console-cache) !important;
   }
-
   .router-overview-framework .ro-topbar-cell[data-overview-status-role="collection"],
   .router-overview-framework .ro-topbar-cell[data-overview-status-role="snapshot"] {
     border-left-color: var(--ik40-console-blue) !important;
   }
-
   .router-overview-framework :where(.ro-topbar-cell, .ro-desktop-key-cell) b,
   .router-overview-framework .ro-module-head b,
   .router-overview-framework .ro-ledger-cell:first-child {
     color: var(--ik40-console-ink) !important;
   }
-
   .router-overview-framework :where(.ro-topbar-cell, .ro-desktop-key-cell) span,
   .router-overview-framework :where(.ro-topbar-cell, .ro-desktop-key-cell) em,
   .router-overview-framework .ro-module-head span,
   .router-overview-framework .ro-module-head em {
     color: var(--ik40-console-muted) !important;
   }
-
   .router-overview-framework :where(.ro-topbar-cell, .ro-desktop-key-cell)[data-tone="danger"] b,
   .router-overview-framework .ro-module[data-tone="danger"] .ro-module-head b {
     color: #8f3833 !important;
   }
-
   .router-overview-framework .ro-module[data-overview-density-module*="cache"] .ro-module-head b,
   .router-overview-framework .ro-module[data-overview-density-module*="collection-cache"] .ro-module-head b,
   .router-overview-framework .ro-module[data-overview-density-module*="collection-channel"] .ro-module-head b {
     color: #805015 !important;
   }
-
-  /* Console hierarchy: headers and metric bands are compact, flat, and scan-friendly. */
+  /*Console hierarchy: headers and metric bands are compact, flat, and scan-friendly.*/
   .router-overview-framework .ro-module-head {
     min-height: 28px !important;
     padding: 4px 8px !important;
     border-bottom: 1px solid var(--ik40-console-line) !important;
     background: linear-gradient(180deg, #fbfdff 0%, #f4f7fb 100%) !important;
   }
-
   .router-overview-framework .ro-module[data-overview-evidence-weight="secondary"] .ro-module-head {
     min-height: 26px !important;
     padding-top: 3px !important;
     padding-bottom: 3px !important;
     background: var(--ik40-console-soft) !important;
   }
-
   .router-overview-framework .ro-module-head b {
     font-size: 12px !important;
     font-weight: 820 !important;
     letter-spacing: 0 !important;
   }
-
   .router-overview-framework .ro-module-head span,
   .router-overview-framework .ro-module-head em {
     font-size: 10px !important;
     font-weight: 620 !important;
   }
-
   .router-overview-framework > .ro-topbar.ik-home-flat-topbar,
   .router-overview-framework > .ro-desktop-key-row[data-overview-desktop-tier="key-metrics"] {
     border-left-color: var(--ik40-console-blue) !important;
     border-radius: 3px !important;
     background: var(--ik40-console-line) !important;
   }
-
   .router-overview-framework > .ro-topbar.ik-home-flat-topbar > .ro-topbar-cell,
   .router-overview-framework > .ro-desktop-key-row > .ro-desktop-key-cell {
     min-height: 50px !important;
     padding: 6px 9px !important;
     border-radius: 0 !important;
   }
-
   .router-overview-framework > .ro-topbar.ik-home-flat-topbar [data-overview-status-role="conclusion"] b,
   .router-overview-framework > .ro-desktop-key-row > .ro-desktop-key-cell:first-child b {
     color: var(--ik40-console-blue-deep) !important;
     font-size: 17px !important;
     font-weight: 880 !important;
   }
-
-  /* Table rhythm: primary rows 30-32px, secondary rows 26-28px. */
+  /*Table rhythm: primary rows 30-32px, secondary rows 26-28px.*/
   .router-overview-framework .ro-ledger-table {
     gap: 2px !important;
   }
-
   .router-overview-framework .ro-ledger-head.ro-ledger-row,
   .router-overview-framework .ro-ledger-table thead tr {
     min-height: 26px !important;
     max-height: 28px !important;
     background: var(--ik40-console-soft) !important;
   }
-
   .router-overview-framework .ro-ledger-head-cell,
   .router-overview-framework .ro-ledger-table th {
     height: 26px !important;
@@ -269,7 +230,6 @@
     font-weight: 760 !important;
     line-height: 1.2 !important;
   }
-
   .router-overview-framework .ro-ledger-row:not(.ro-ledger-head),
   .router-overview-framework .ik-home-evidence-row {
     min-height: 31px !important;
@@ -278,13 +238,11 @@
     background: #fff !important;
     overflow: hidden !important;
   }
-
   .router-overview-framework .ro-module[data-overview-evidence-weight="secondary"] .ro-ledger-row:not(.ro-ledger-head),
   .router-overview-framework .ro-module[data-overview-evidence-weight="secondary"] .ik-home-evidence-row {
     min-height: 27px !important;
     max-height: 28px !important;
   }
-
   .router-overview-framework .ro-ledger-cell,
   .router-overview-framework .ro-ledger-table td {
     min-height: 30px !important;
@@ -298,41 +256,34 @@
     overflow-wrap: anywhere !important;
     overflow: hidden !important;
   }
-
   .router-overview-framework .ro-module[data-overview-evidence-weight="secondary"] .ro-ledger-cell,
   .router-overview-framework .ro-module[data-overview-evidence-weight="secondary"] .ro-ledger-table td {
     min-height: 26px !important;
     padding-top: 3px !important;
     padding-bottom: 3px !important;
   }
-
   .router-overview-framework .ik-overview-cell-text {
     overflow: hidden !important;
     text-overflow: ellipsis !important;
     white-space: nowrap !important;
   }
-
   .router-overview-framework .ro-ledger-row[data-tone="warn"],
   .router-overview-framework .ro-ledger-table tr[data-tone="warn"] {
     background: linear-gradient(90deg, rgba(45, 120, 183, .055), rgba(255, 255, 255, 0) 44%) !important;
   }
-
   .router-overview-framework .ro-module[data-overview-density-module*="cache"] .ro-ledger-row[data-tone="warn"],
   .router-overview-framework .ro-module[data-overview-density-module*="collection-cache"] .ro-ledger-row[data-tone="warn"],
   .router-overview-framework .ro-module[data-overview-density-module*="collection-channel"] .ro-ledger-row[data-tone="warn"] {
     background: linear-gradient(90deg, rgba(199, 122, 24, .075), rgba(255, 255, 255, 0) 44%) !important;
   }
-
   .router-overview-framework .ro-ledger-row[data-tone="danger"],
   .router-overview-framework .ro-ledger-table tr[data-tone="danger"] {
     background: linear-gradient(90deg, rgba(181, 73, 67, .075), rgba(255, 255, 255, 0) 44%) !important;
   }
-
   .router-overview-framework .ro-ledger-row[data-tone="warn"] .ro-ledger-cell:first-child,
   .router-overview-framework .ro-ledger-row[data-tone="warn"] .ro-ledger-cell:nth-child(2) {
     color: var(--ik40-console-blue-deep) !important;
   }
-
   .router-overview-framework .ro-module[data-overview-density-module*="cache"] .ro-ledger-row[data-tone="warn"] .ro-ledger-cell:first-child,
   .router-overview-framework .ro-module[data-overview-density-module*="cache"] .ro-ledger-row[data-tone="warn"] .ro-ledger-cell:nth-child(2),
   .router-overview-framework .ro-module[data-overview-density-module*="collection-cache"] .ro-ledger-row[data-tone="warn"] .ro-ledger-cell:first-child,
@@ -341,13 +292,11 @@
   .router-overview-framework .ro-module[data-overview-density-module*="collection-channel"] .ro-ledger-row[data-tone="warn"] .ro-ledger-cell:nth-child(2) {
     color: #805015 !important;
   }
-
   .router-overview-framework .ro-ledger-row[data-tone="danger"] .ro-ledger-cell:first-child,
   .router-overview-framework .ro-ledger-row[data-tone="danger"] .ro-ledger-cell:nth-child(2) {
     color: #8f3833 !important;
   }
-
-  /* Chart readability: main metric first, threshold crisp, anomalies explicit without toy glow. */
+  /*Chart readability: main metric first, threshold crisp, anomalies explicit without toy glow.*/
   .router-overview-framework .ro-judgement-chart,
   .router-overview-framework .ro-resource-visual,
   .router-overview-framework .ro-traffic-visual,
@@ -358,7 +307,6 @@
     background: #fbfdff !important;
     border-bottom: 1px solid var(--ik40-console-line) !important;
   }
-
   .router-overview-framework .ro-chart-summary {
     grid-template-columns: minmax(130px, 1.34fr) repeat(4, minmax(64px, .82fr)) !important;
     min-height: 28px !important;
@@ -366,7 +314,6 @@
     padding: 2px 0 5px !important;
     border-bottom: 1px solid #e7eef6 !important;
   }
-
   .router-overview-framework .ro-chart-summary span {
     min-height: 23px !important;
     padding: 3px 6px !important;
@@ -377,36 +324,30 @@
     font-size: 9px !important;
     line-height: 1.12 !important;
   }
-
   .router-overview-framework .ro-chart-summary span:first-child {
     border-color: #cfe1f1 !important;
     background: var(--ik40-console-blue-soft) !important;
     color: var(--ik40-console-blue-deep) !important;
   }
-
   .router-overview-framework .ro-chart-summary span:first-child b {
     color: var(--ik40-console-blue-deep) !important;
     font-size: 14px !important;
     font-weight: 860 !important;
   }
-
   .router-overview-framework .ro-chart-summary b {
     color: var(--ik40-console-ink) !important;
     font-weight: 780 !important;
   }
-
   .router-overview-framework .ro-judgement-row {
     grid-template-columns: 72px minmax(160px, 1fr) minmax(210px, 1.08fr) !important;
     min-height: 28px !important;
     gap: 6px !important;
   }
-
   .router-overview-framework .ro-chart-label {
     color: var(--ik40-console-muted) !important;
     font-size: 10.5px !important;
     font-weight: 720 !important;
   }
-
   .router-overview-framework .ro-chart-track {
     height: 8px !important;
     border: 1px solid #d8e2ec !important;
@@ -414,52 +355,44 @@
     background: #e9eff5 !important;
     overflow: visible !important;
   }
-
   .router-overview-framework .ro-chart-mean {
     opacity: .22 !important;
     background: rgba(45, 120, 183, .28) !important;
   }
-
   .router-overview-framework .ro-chart-current,
   .router-overview-framework .ro-topn-bar strong,
   .router-overview-framework .ro-spark-line {
     background: var(--ik40-console-blue) !important;
     stroke: var(--ik40-console-blue) !important;
   }
-
   .router-overview-framework .ro-judgement-row[data-tone="warn"] .ro-chart-current,
   .router-overview-framework .ro-topn-row[data-tone="warn"] .ro-topn-bar strong,
   .router-overview-framework .ro-spark-line[data-tone="warn"] {
     background: var(--ik40-console-blue) !important;
     stroke: var(--ik40-console-blue) !important;
   }
-
   .router-overview-framework .ro-module[data-overview-density-module*="cache"] .ro-judgement-row[data-tone="warn"] .ro-chart-current,
   .router-overview-framework .ro-module[data-overview-density-module*="collection-cache"] .ro-judgement-row[data-tone="warn"] .ro-chart-current,
   .router-overview-framework .ro-module[data-overview-density-module*="collection-channel"] .ro-judgement-row[data-tone="warn"] .ro-chart-current {
     background: var(--ik40-console-cache) !important;
     stroke: var(--ik40-console-cache) !important;
   }
-
   .router-overview-framework .ro-judgement-row[data-tone="danger"] .ro-chart-current,
   .router-overview-framework .ro-topn-row[data-tone="danger"] .ro-topn-bar strong,
   .router-overview-framework .ro-spark-line[data-tone="danger"] {
     background: var(--ik40-console-danger) !important;
     stroke: var(--ik40-console-danger) !important;
   }
-
   .router-overview-framework .ro-chart-threshold {
     width: 0 !important;
     border-left: 2px solid #4d5f72 !important;
     opacity: .9 !important;
   }
-
   .router-overview-framework .ro-module[data-overview-density-module*="cache"] .ro-chart-threshold,
   .router-overview-framework .ro-module[data-overview-density-module*="collection-cache"] .ro-chart-threshold,
   .router-overview-framework .ro-module[data-overview-density-module*="collection-channel"] .ro-chart-threshold {
     border-left-color: var(--ik40-console-cache) !important;
   }
-
   .router-overview-framework .ro-chart-peak {
     width: 7px !important;
     height: 7px !important;
@@ -468,7 +401,6 @@
     background: #526273 !important;
     box-shadow: 0 0 0 1px rgba(82, 98, 115, .3) !important;
   }
-
   .router-overview-framework .ro-chart-anomaly-dot {
     width: 8px !important;
     height: 8px !important;
@@ -477,19 +409,16 @@
     background: var(--ik40-console-danger) !important;
     box-shadow: 0 0 0 1px rgba(181, 73, 67, .48) !important;
   }
-
   .router-overview-framework .ro-judgement-row[data-tone="warn"] .ro-chart-anomaly-dot {
     background: var(--ik40-console-blue) !important;
     box-shadow: 0 0 0 1px rgba(45, 120, 183, .42) !important;
   }
-
   .router-overview-framework .ro-module[data-overview-density-module*="cache"] .ro-judgement-row[data-tone="warn"] .ro-chart-anomaly-dot,
   .router-overview-framework .ro-module[data-overview-density-module*="collection-cache"] .ro-judgement-row[data-tone="warn"] .ro-chart-anomaly-dot,
   .router-overview-framework .ro-module[data-overview-density-module*="collection-channel"] .ro-judgement-row[data-tone="warn"] .ro-chart-anomaly-dot {
     background: var(--ik40-console-cache) !important;
     box-shadow: 0 0 0 1px rgba(199, 122, 24, .45) !important;
   }
-
   .router-overview-framework .ro-chart-readout {
     display: grid !important;
     grid-template-columns: minmax(0, 1.35fr) repeat(3, minmax(0, .82fr)) !important;
@@ -501,20 +430,17 @@
     font-size: 9px !important;
     line-height: 1.12 !important;
   }
-
   .router-overview-framework .ro-chart-readout i {
     color: var(--ik40-console-muted) !important;
     font-size: 9px !important;
     font-weight: 620 !important;
   }
-
   .router-overview-framework .ro-chart-readout i:first-child,
   .router-overview-framework .ro-chart-readout .ik-overview-current-label {
     color: var(--ik40-console-blue-deep) !important;
     font-weight: 800 !important;
   }
-
-  /* Left rail: pills become static bottom-status-strip rows, not toy chips. */
+  /*Left rail: pills become static bottom-status-strip rows, not toy chips.*/
   .router-overview-framework .ik-sidebar-mini-status,
   .router-overview-framework .sidebar[data-shell-sidebar="legacy"] .ik-sidebar-mini-status,
   .router-overview-framework .ik-rail .ik-sidebar-mini-status {
@@ -524,7 +450,6 @@
     border-top: 1px solid var(--ik40-console-line) !important;
     background: transparent !important;
   }
-
   .router-overview-framework .ik-sidebar-mini-status div,
   .router-overview-framework .sidebar[data-shell-sidebar="legacy"] .ik-sidebar-mini-status div,
   .router-overview-framework .ik-rail .ik-sidebar-mini-status div,
@@ -543,7 +468,6 @@
     cursor: default !important;
     pointer-events: none !important;
   }
-
   .router-overview-framework .ik-sidebar-mini-status div::after,
   .router-overview-framework .sidebar .ik-meta-pill::after,
   .router-overview-framework .sidebar [class*="pill"]::after,
@@ -557,21 +481,17 @@
     height: 2px !important;
     background: var(--ik40-console-blue) !important;
   }
-
   .router-overview-framework .ik-sidebar-mini-status [data-tone="danger"]::after,
   .router-overview-framework .sidebar [data-tone="danger"]::after {
     background: var(--ik40-console-danger) !important;
   }
-
   .router-overview-framework .ik-sidebar-mini-status [data-tone="warn"]::after,
   .router-overview-framework .sidebar [data-tone="warn"]::after {
     background: var(--ik40-console-blue) !important;
   }
-
   .router-overview-framework .sidebar [data-overview-status-role*="cache"]::after {
     background: var(--ik40-console-cache) !important;
   }
-
   .router-overview-framework .sidebar .ik-meta-pill:hover,
   .router-overview-framework .sidebar [class*="pill"]:hover,
   .router-overview-framework .sidebar [class*="badge"]:hover {
@@ -579,12 +499,10 @@
     background: transparent !important;
     box-shadow: none !important;
   }
-
   .router-overview-framework .ik-sidebar-mini-status span,
   .router-overview-framework .ik-sidebar-mini-status b {
     color: var(--ik40-console-muted) !important;
   }
-
   .router-overview-framework .ik-sidebar-mini-status b {
     font-weight: 760 !important;
   }

@@ -2,7 +2,6 @@
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-priority="resource-full"] .ik-mobile-decision-screen {
     grid-template-columns: minmax(520px, 1.38fr) minmax(250px, .62fr);
   }
-
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-priority="resource-full"] .ik-mobile-decision-card {
     grid-template-columns: minmax(148px, .52fr) minmax(0, 1.48fr);
     grid-template-rows: minmax(0, 1fr);
@@ -10,12 +9,10 @@
     gap: 10px;
     padding: 12px;
   }
-
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-priority="resource-full"] .ik-mobile-decision-head {
     align-self: center;
     gap: 4px;
   }
-
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-priority="resource-full"] .ik-mobile-resource-incident-stack {
     grid-column: 2;
     grid-row: 1;
@@ -25,25 +22,21 @@
     height: 200px;
     max-height: 200px;
   }
-
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-priority="resource-full"] .ik-mobile-core-facts {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     grid-template-rows: repeat(2, 56px);
   }
-
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-priority="resource-full"] .ik-mobile-core-facts span {
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows: 14px minmax(0, 1fr);
     gap: 0;
     padding: 6px 8px;
   }
-
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-priority="resource-full"] .ik-mobile-core-facts em {
     grid-column: 1;
     grid-row: 1;
     font-size: 9px;
   }
-
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-priority="resource-full"] .ik-mobile-core-facts strong {
     grid-column: 1;
     grid-row: 2;
@@ -51,9 +44,7 @@
     justify-self: start;
     font-size: 13px;
   }
-
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-priority="resource-full"] .ik-mobile-core-facts small {
     display: none;
   }
-
 }

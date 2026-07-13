@@ -7,14 +7,12 @@
     max-height: 98px;
     overflow: hidden;
   }
-
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-incident-summary {
     display: grid;
     grid-template-columns: minmax(0, .92fr) minmax(0, 1.48fr);
     min-height: 58px;
     height: 58px;
   }
-
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-incident-summary > span {
     display: flex;
     min-width: 0;
@@ -24,11 +22,9 @@
     padding: 8px 10px;
     border: 0;
   }
-
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-incident-summary > span + span {
     border-left: 1px solid #d7e1ec;
   }
-
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-incident-guidance {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(112px, auto);
@@ -37,7 +33,6 @@
     border-top: 1px solid #d7e1ec;
     background: #eef4fa;
   }
-
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-incident-guidance > span {
     display: flex;
     min-width: 0;
@@ -46,12 +41,10 @@
     padding: 0 10px;
     border: 0;
   }
-
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-incident-guidance > span + span {
     justify-content: flex-end;
     border-left: 1px solid #d7e1ec;
   }
-
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-incident-guidance > button.ik-mobile-incident-action {
     display: flex;
     min-width: 0;
@@ -67,22 +60,18 @@
     text-align: right;
     cursor: pointer;
   }
-
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-incident-guidance > button.ik-mobile-incident-action:focus-visible {
     outline: 2px solid #1473e6;
     outline-offset: -2px;
   }
-
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-abnormal-decision-rail em {
     font-size: 11px;
     line-height: 1.15;
   }
-
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-abnormal-decision-rail b {
     font-size: 14px;
     line-height: 1.15;
   }
-
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-incident-summary b,
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-incident-guidance b {
     min-width: 0;
@@ -90,13 +79,11 @@
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-incident-guidance em {
     flex: 0 0 auto;
     color: #6b7b8f;
     font-size: 10px;
   }
-
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-incident-guidance b {
     color: #16395f;
     font-size: 12px;

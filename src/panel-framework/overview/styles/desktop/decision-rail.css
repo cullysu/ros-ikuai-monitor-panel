@@ -1,4 +1,5 @@
-/* Desktop incident action is a component-owned strip, not a generic KPI row. */
+/*Desktop incident action is a component-owned strip, not a generic KPI row.*/
+
 @media (min-width: 761px) {
   #overview.router-overview-framework .ro-desktop-decision-rail {
     grid-column: 1 / -1;
@@ -14,8 +15,7 @@
     background: transparent;
     overflow: hidden;
   }
-
-  /* Incidents need an explicit decision before the evidence grid begins. */
+  /*Incidents need an explicit decision before the evidence grid begins.*/
   #overview.router-overview-framework .ro-desktop-decision-rail .ro-desktop-thin-kpi.ik-overview-kpi-card {
     display: grid !important;
     grid-template-columns: 72px minmax(0, 1fr) !important;
@@ -31,21 +31,17 @@
     background: #fff !important;
     box-shadow: none !important;
   }
-
   #overview.router-overview-framework .ro-desktop-decision-rail .ro-desktop-thin-kpi.is-next-step {
     border-left: 3px solid #7d8ea1 !important;
     background: #fbfdff !important;
   }
-
   #overview.router-overview-framework .ro-desktop-decision-rail .ro-desktop-thin-kpi.is-next-step[data-tone="danger"] {
     border-left-color: var(--ik-red) !important;
   }
-
   #overview.router-overview-framework .ro-desktop-decision-rail .ro-desktop-thin-kpi.is-next-step[data-tone="warn"],
   #overview.router-overview-framework .ro-desktop-decision-rail .ro-desktop-thin-kpi.is-next-step[data-tone="missing"] {
     border-left-color: var(--ik-warn) !important;
   }
-
   #overview.router-overview-framework .ro-desktop-decision-rail .ro-desktop-thin-kpi span {
     grid-column: 1 !important;
     grid-row: 1 / 3 !important;
@@ -54,7 +50,6 @@
     font-size: 10px !important;
     font-weight: 700 !important;
   }
-
   #overview.router-overview-framework .ro-desktop-decision-rail .ro-desktop-thin-kpi b {
     grid-column: 2 !important;
     grid-row: 1 !important;
@@ -64,7 +59,6 @@
     line-height: 18px !important;
     font-weight: 780 !important;
   }
-
   #overview.router-overview-framework .ro-desktop-decision-rail .ro-desktop-thin-kpi em {
     grid-column: 2 !important;
     grid-row: 2 !important;

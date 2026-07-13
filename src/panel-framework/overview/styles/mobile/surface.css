@@ -11,7 +11,6 @@
     background: rgba(244, 248, 252, .64);
     box-shadow: none;
   }
-
   #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-supporting-list {
     display: grid;
     grid-template-rows: 34px 48px;
@@ -23,7 +22,6 @@
     background: rgba(244, 248, 252, .64);
     box-shadow: none;
   }
-
   #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-supporting-list header {
     display: flex;
     align-items: center;
@@ -36,24 +34,20 @@
     box-shadow: inset 0 -1px 0 rgba(126, 151, 178, .105);
     white-space: nowrap;
   }
-
   #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-supporting-list header > b {
     color: #1d3148;
     font-size: 12px;
     font-weight: 800;
   }
-
   #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-supporting-list header > span {
     overflow: hidden;
     color: #64778b;
     font-size: 10px;
     text-overflow: ellipsis;
   }
-
   #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-supporting-list header > em {
     display: none;
   }
-
   #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-detail-entry {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
@@ -72,13 +66,11 @@
     box-shadow: none;
     text-align: left;
   }
-
   #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-detail-entry > span {
     display: grid;
     gap: 2px;
     min-width: 0;
   }
-
   #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-detail-entry b {
     overflow: hidden;
     color: #172236;
@@ -88,7 +80,6 @@
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-
   #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-detail-entry em {
     overflow: hidden;
     color: #6b7b8f;
@@ -99,7 +90,6 @@
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-
   #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-detail-entry > strong {
     display: inline-grid;
     place-items: center;
@@ -113,27 +103,22 @@
     font-weight: 820;
     line-height: 1;
   }
-
   #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-supporting-detail-rows {
     display: none;
   }
-
   #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-supporting-list.is-expanded {
     grid-template-rows: 34px 48px auto;
     height: auto;
   }
-
   #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-supporting-detail-rows.is-expanded {
     display: grid;
   }
-
   #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-supporting-surface.is-expanded {
     min-height: 0;
     height: auto;
     max-height: none;
     overflow: visible;
   }
-
   #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-deferred-row {
     display: grid;
     grid-template-columns: 26px minmax(0, 1fr) auto;
@@ -147,11 +132,9 @@
     background: transparent;
     box-shadow: inset 0 -1px 0 rgba(126, 151, 178, .105);
   }
-
   #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-deferred-row:last-child {
     box-shadow: none;
   }
-
   #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-row-token {
     display: grid;
     place-items: center;
@@ -166,17 +149,14 @@
     font-weight: 800;
     line-height: 1;
   }
-
   #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-deferred-row > span,
   #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-deferred-row > strong {
     display: grid;
     min-width: 0;
   }
-
   #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-deferred-row > span {
     gap: 2px;
   }
-
   #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-deferred-row > span > b,
   #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-deferred-row > strong > b {
     overflow: hidden;
@@ -187,7 +167,6 @@
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-
   #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-deferred-row > span > em,
   #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-deferred-row > strong > small {
     overflow: hidden;
@@ -200,12 +179,10 @@
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-
   #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-deferred-row.is-danger .ik-mobile-row-token {
     border-color: #e4b6b4;
     color: #a33b36;
   }
-
   #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-deferred-row.is-warn .ik-mobile-row-token,
   #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-deferred-row.is-missing .ik-mobile-row-token {
     border-color: #e7c987;

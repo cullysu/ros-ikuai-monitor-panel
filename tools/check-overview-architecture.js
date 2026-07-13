@@ -15,7 +15,7 @@ function bytes(rel) {
 }
 
 function lines(text) {
-  return text.split(/\r?\n/).length;
+  return text.split(/\r\n|\r|\n/).length;
 }
 
 const failures = [];
@@ -32,6 +32,7 @@ const desktopBaseStyleLayerFiles = [
   "src/panel-framework/overview/styles/desktop/density.css",
   "src/panel-framework/overview/styles/desktop/first-screen.css",
   "src/panel-framework/overview/styles/desktop/hierarchy.css",
+  "src/panel-framework/overview/styles/desktop/shell-chrome.css",
   "src/panel-framework/overview/styles/desktop/evidence.css",
   "src/panel-framework/overview/styles/desktop/console-skeleton.css",
   "src/panel-framework/overview/styles/desktop/layout.css",
@@ -493,6 +494,7 @@ assert(
       "density.css",
       "first-screen.css",
       "hierarchy.css",
+      "shell-chrome.css",
       "evidence.css",
       "console-skeleton.css",
       "layout.css",
@@ -516,6 +518,7 @@ const desktopBaseStyleLayerLimits = new Map([
   ["src/panel-framework/overview/styles/desktop/density.css", 900],
   ["src/panel-framework/overview/styles/desktop/first-screen.css", 550],
   ["src/panel-framework/overview/styles/desktop/hierarchy.css", 800],
+  ["src/panel-framework/overview/styles/desktop/shell-chrome.css", 140],
   ["src/panel-framework/overview/styles/desktop/evidence.css", 650],
   ["src/panel-framework/overview/styles/desktop/console-skeleton.css", 650],
   ["src/panel-framework/overview/styles/desktop/layout.css", 550],

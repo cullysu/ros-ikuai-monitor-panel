@@ -1,59 +1,53 @@
-/* Codex v502: keep the validator-required key-metric rail, but make it a metric strip rather than a second conclusion bus. */
+/*Codex v502: keep the validator-required key-metric rail, but make it a metric strip rather than a second conclusion bus.*/
+
 @media (min-width: 761px) {
   #overview.router-overview-framework .ro-desktop-grid.ik-home-layout.ik-desktop-workspace {
-    grid-template-areas:
-      "kpis kpis"
+    grid-template-areas: "kpis kpis"
       "main side"
       "bottom bottom" !important;
     grid-template-rows: 34px auto auto !important;
   }
-
   #overview.router-overview-framework .ro-desktop-thin-kpis {
     grid-area: kpis !important;
     visibility: visible !important;
   }
-
   #overview.router-overview-framework .ro-desktop-thin-kpis > .ro-desktop-thin-kpi {
     min-height: 34px !important;
     height: 34px !important;
     padding: 4px 10px !important;
     box-shadow: none !important;
   }
-
   #overview.router-overview-framework .ro-desktop-thin-kpis span {
     font-size: 10.5px !important;
   }
-
   #overview.router-overview-framework .ro-desktop-thin-kpis b {
     font-size: 13px !important;
   }
-
   #overview.router-overview-framework .ro-desktop-thin-kpis em {
     font-size: 10px !important;
   }
 }
 
-/* v430 incident hardening: keep desktop console rows dense and prevent
-   resource Top5 rows from becoming tall report cards. */
-@media (min-width: 1024px) {
+/*v430 incident hardening: keep desktop console rows dense and prevent
+   resource Top5 rows from becoming tall report cards.*/
 
+@media (min-width: 1024px) {
   #overview.router-overview-framework [data-overview-density-module="resource-interface-top5"] .ro-ledger-table {
     overflow: hidden !important;
   }
-
   #overview.router-overview-framework [data-overview-density-module="resource-interface-top5"] .ro-ledger-row:not(.ro-ledger-head),
   #overview.router-overview-framework .ik-overview-top5-list .ro-ledger-row:not(.ro-ledger-head) {
     display: grid !important;
     padding-block: 0 !important;
   }
-
   #overview.router-overview-framework [data-overview-density-module="resource-interface-top5"] .ro-ledger-cell,
   #overview.router-overview-framework .ik-overview-top5-list .ro-ledger-cell {
     padding-block: 0 !important;
   }
 }
 
-/* Codex v517 ACTUAL EOF: stronger desktop chart de-red. */
+/*Codex v517 ACTUAL EOF: stronger desktop chart de-red.*/
+
 @media (min-width: 761px) {
   #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-judgement-row[data-tone="danger"] .ro-chart-current,
   #overview.router-overview-framework[data-overview-scene-key="resource-full"] .ro-judgement-row[data-tone="danger"] .ro-chart-current,
@@ -62,7 +56,6 @@
     background: linear-gradient(90deg, #2c7fc8 0%, #7fb8de 86%, #d93025 100%) !important;
     box-shadow: none !important;
   }
-
   #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-judgement-row[data-tone="danger"] .ro-chart-threshold {
     background: rgba(217, 48, 37, .72) !important;
   }
@@ -72,22 +65,20 @@
   #overview.router-overview-framework .ro-topbar-cell {
     padding: 5px 8px 4px !important;
   }
-
   #overview.router-overview-framework .ro-topbar-cell em {
     margin-top: 2px !important;
   }
-
   #overview.router-overview-framework .ro-judgement-chart {
     border-color: #e8f0f7 !important;
   }
-
   #overview.router-overview-framework .ro-module[data-tone="danger"] .ro-module-head {
     background: linear-gradient(90deg, rgba(217,48,37,.055), rgba(255,255,255,0) 58%) !important;
   }
 }
 
-/* Codex v507 EOF desktop product polish.
-   Runs after older compact-console layers; preserve iKuai rails, reduce "validation report" visuals. */
+/*Codex v507 EOF desktop product polish.
+   Runs after older compact-console layers; preserve iKuai rails, reduce "validation report" visuals.*/
+
 @media (min-width: 761px) {
   #overview.router-overview-framework {
     --ro-desktop-blue: #1677ff;
@@ -95,7 +86,6 @@
     --ro-desktop-soft: #f7fafc;
     --ro-desktop-text: #142338;
   }
-
   #overview.router-overview-framework .ro-module.ik-overview-flat-module,
   #overview.router-overview-framework .ro-module {
     border-color: var(--ro-desktop-line) !important;
@@ -103,14 +93,12 @@
     background: #fff !important;
     box-shadow: none !important;
   }
-
   #overview.router-overview-framework .ro-module-head b {
     color: var(--ro-desktop-text) !important;
     font-size: 12.6px !important;
     line-height: 1.05 !important;
     font-weight: 860 !important;
   }
-
   #overview.router-overview-framework .ro-module-head span,
   #overview.router-overview-framework .ro-module-head em {
     color: #6f8095 !important;
@@ -118,59 +106,49 @@
     line-height: 1.05 !important;
     font-weight: 620 !important;
   }
-
   #overview.router-overview-framework[data-overview-scene-key="resource-full"] .ro-col.is-main > .ro-module:first-child,
   #overview.router-overview-framework[data-overview-scene-key="all-offline"] .ro-col.is-main > .ro-module:first-child,
   #overview.router-overview-framework[data-overview-scene-key="interfaces-down"] .ro-col.is-main > .ro-module:first-child {
     border-left: 1px solid #dfe8f2 !important;
   }
-
   #overview.router-overview-framework[data-overview-scene-key="resource-full"] .ro-col.is-main > .ro-module:first-child .ro-module-head,
   #overview.router-overview-framework[data-overview-scene-key="all-offline"] .ro-col.is-main > .ro-module:first-child .ro-module-head,
   #overview.router-overview-framework[data-overview-scene-key="interfaces-down"] .ro-col.is-main > .ro-module:first-child .ro-module-head {
     background: linear-gradient(90deg, rgba(255, 246, 245, .95), #fff 72%) !important;
   }
-
   #overview.router-overview-framework[data-overview-scene-key="resource-full"] .ro-col.is-main > .ro-module:first-child .ro-module-head b,
   #overview.router-overview-framework[data-overview-scene-key="all-offline"] .ro-col.is-main > .ro-module:first-child .ro-module-head b,
   #overview.router-overview-framework[data-overview-scene-key="interfaces-down"] .ro-col.is-main > .ro-module:first-child .ro-module-head b {
     color: #c5221f !important;
     font-size: 13.6px !important;
   }
-
   #overview.router-overview-framework .ro-chart-summary span {
     color: #65778c !important;
     font-size: 10.5px !important;
     line-height: 1.05 !important;
   }
-
   #overview.router-overview-framework .ro-chart-summary span:first-child b,
   #overview.router-overview-framework .ro-chart-summary b {
     color: #173250 !important;
     font-size: 13.2px !important;
     font-weight: 860 !important;
   }
-
   #overview.router-overview-framework .ro-chart-axis {
     color: #8b9aac !important;
     font-size: 8.8px !important;
     font-weight: 680 !important;
   }
-
   #overview.router-overview-framework .ro-chart-label {
     color: #1d334a !important;
     font-size: 11px !important;
     font-weight: 820 !important;
   }
-
   #overview.router-overview-framework .ro-chart-peak {
     border-left: 1px solid rgba(28, 46, 67, .46) !important;
   }
-
   #overview.router-overview-framework .ro-chart-threshold {
     border-left: 1px solid rgba(201, 88, 84, .68) !important;
   }
-
   #overview.router-overview-framework .ro-chart-readout {
     padding: 1px 0 0 !important;
     box-shadow: none !important;
@@ -178,31 +156,28 @@
     font-size: 9.6px !important;
     line-height: 1.1 !important;
   }
-
   #overview.router-overview-framework .ro-resource-card {
     border: 1px solid #e3ebf4 !important;
     border-left: 0 !important;
     border-radius: 3px !important;
     background: #fbfdff !important;
   }
-
   #overview.router-overview-framework .ro-resource-card b {
     color: #173250 !important;
     font-weight: 860 !important;
   }
-
   #overview.router-overview-framework .ro-ledger-cell,
   #overview.router-overview-framework .ro-ledger-head-cell {
     border-color: #e8eff6 !important;
   }
-
   #overview.router-overview-framework .ro-ledger-cell:first-child {
     color: #1c3148 !important;
     font-weight: 820 !important;
   }
 }
 
-/* Codex v505 desktop polish: keep iKuai skeleton, reduce old-system scroll noise. */
+/*Codex v505 desktop polish: keep iKuai skeleton, reduce old-system scroll noise.*/
+
 @media (min-width: 761px) {
   #overview.router-overview-framework .ro-scroll,
   #overview.router-overview-framework .ro-module,
@@ -210,39 +185,33 @@
     scrollbar-width: thin !important;
     scrollbar-color: rgba(138, 170, 201, .34) transparent !important;
   }
-
   #overview.router-overview-framework .ro-scroll::-webkit-scrollbar,
   #overview.router-overview-framework .ro-module::-webkit-scrollbar,
   #overview.router-overview-framework .ro-ledger-table::-webkit-scrollbar {
     width: 3px !important;
     height: 3px !important;
   }
-
   #overview.router-overview-framework .ro-scroll::-webkit-scrollbar-thumb,
   #overview.router-overview-framework .ro-module::-webkit-scrollbar-thumb,
   #overview.router-overview-framework .ro-ledger-table::-webkit-scrollbar-thumb {
     background: rgba(138, 170, 201, .34) !important;
     border-radius: 999px !important;
   }
-
   #overview.router-overview-framework [data-overview-status-bar] > [data-overview-status-cell] {
     align-content: center !important;
     gap: 2px !important;
   }
-
   #overview.router-overview-framework [data-overview-status-cell] span {
     color: #708096 !important;
     font-size: 10px !important;
     font-weight: 720 !important;
   }
-
   #overview.router-overview-framework [data-overview-status-cell] b {
     color: #17253a !important;
     font-size: 12.6px !important;
     line-height: 1.05 !important;
     font-weight: 860 !important;
   }
-
   #overview.router-overview-framework [data-overview-status-cell] em {
     color: #7c8998 !important;
     font-size: 9.8px !important;
@@ -250,56 +219,49 @@
   }
 }
 
-/* v432 no-snapshot desktop product polish: console evidence, not audit report. */
+/*v432 no-snapshot desktop product polish: console evidence, not audit report.*/
+
 @media (min-width: 1024px) {
   #overview.router-overview-framework[data-overview-scene-key="no-snapshot"] .ro-module[data-overview-density-module^="no-snapshot"] {
     border-color: #dce8f3 !important;
     border-left-width: 2px !important;
     background: #fff !important;
   }
-
   #overview.router-overview-framework[data-overview-scene-key="no-snapshot"] .ro-module[data-overview-density-module="no-snapshot-summary"] {
     border-left-color: #d84a4f !important;
   }
-
   #overview.router-overview-framework[data-overview-scene-key="no-snapshot"] .ro-module[data-overview-density-module="no-snapshot-channel-status"],
   #overview.router-overview-framework[data-overview-scene-key="no-snapshot"] .ro-module[data-overview-density-module="no-snapshot-recent-success"],
   #overview.router-overview-framework[data-overview-scene-key="no-snapshot"] .ro-module[data-overview-density-module="no-snapshot-module-visibility"] {
     border-left-color: #b7a170 !important;
   }
-
   #overview.router-overview-framework[data-overview-scene-key="no-snapshot"] .ro-module[data-overview-density-module^="no-snapshot"] .ro-module-head {
     min-height: 30px !important;
     padding: 5px 8px !important;
     border-bottom-color: #e7eff7 !important;
     background: #fbfdff !important;
   }
-
   #overview.router-overview-framework[data-overview-scene-key="no-snapshot"] .ro-module[data-overview-density-module^="no-snapshot"] .ro-module-head b {
     color: #143454 !important;
     font-size: 12px !important;
     letter-spacing: 0 !important;
   }
-
   #overview.router-overview-framework[data-overview-scene-key="no-snapshot"] .ro-module[data-overview-density-module^="no-snapshot"] .ro-module-head span {
     color: #6f8093 !important;
     font-size: 10px !important;
   }
-
   #overview.router-overview-framework[data-overview-scene-key="no-snapshot"] .ro-module[data-overview-density-module^="no-snapshot"] :where(.ro-chain-timeline, .ro-visibility-matrix) {
     margin: 4px 6px 0 !important;
     border: 0 !important;
     background: #f7fbff !important;
     box-shadow: inset 0 0 0 1px #e5eef7 !important;
   }
-
   #overview.router-overview-framework[data-overview-scene-key="no-snapshot"] .ro-module[data-overview-density-module="no-snapshot-summary"] .ro-chain-timeline {
     grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
     max-height: 58px !important;
     gap: 3px !important;
     padding: 5px !important;
   }
-
   #overview.router-overview-framework[data-overview-scene-key="no-snapshot"] .ro-chain-node,
   #overview.router-overview-framework[data-overview-scene-key="no-snapshot"] .ro-visibility-cell {
     min-height: 36px !important;
@@ -307,53 +269,46 @@
     border-color: #e5eef7 !important;
     background: #fff !important;
   }
-
   #overview.router-overview-framework[data-overview-scene-key="no-snapshot"] .ro-chain-node span,
   #overview.router-overview-framework[data-overview-scene-key="no-snapshot"] .ro-visibility-cell span {
     color: #66778b !important;
     font-size: 9.5px !important;
   }
-
   #overview.router-overview-framework[data-overview-scene-key="no-snapshot"] .ro-chain-node b,
   #overview.router-overview-framework[data-overview-scene-key="no-snapshot"] .ro-visibility-cell b {
     color: #142b44 !important;
     font-size: 10.5px !important;
   }
-
   #overview.router-overview-framework[data-overview-scene-key="no-snapshot"] .ro-ledger-table {
     border-top-color: #edf3f9 !important;
     scrollbar-width: thin;
     scrollbar-color: #b9c7d7 transparent;
   }
-
   #overview.router-overview-framework[data-overview-scene-key="no-snapshot"] .ro-ledger-table::-webkit-scrollbar {
     width: 5px;
     height: 5px;
   }
-
   #overview.router-overview-framework[data-overview-scene-key="no-snapshot"] .ro-ledger-table::-webkit-scrollbar-thumb {
     border-radius: 99px;
     background: #b9c7d7;
   }
-
   #overview.router-overview-framework[data-overview-scene-key="no-snapshot"] .ro-ledger-head-cell {
     background: #f6f9fc !important;
     color: #31506c !important;
     font-size: 10px !important;
   }
-
   #overview.router-overview-framework[data-overview-scene-key="no-snapshot"] .ro-ledger-row {
     min-height: 27px !important;
     border-color: #edf3f9 !important;
   }
-
   #overview.router-overview-framework[data-overview-scene-key="no-snapshot"] .ro-ledger-cell {
     border-color: #edf3f9 !important;
     color: #243b53 !important;
   }
 }
 
-/* Codex v431 final desktop bus: fixed six cells, no clipped text, no gradient status bar. */
+/*Codex v431 final desktop bus: fixed six cells, no clipped text, no gradient status bar.*/
+
 @media (min-width: 761px) {
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] > .ro-topbar.ik-home-flat-topbar {
     margin-bottom: 8px !important;
@@ -361,59 +316,50 @@
 }
 
 @media (min-width: 761px) {
-
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-topbar {
     overflow: visible !important;
     border-left-width: 2px !important;
     background-image: none !important;
     box-shadow: none !important;
   }
-
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-topbar-cell {
     overflow: visible !important;
   }
-
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-topbar-cell span,
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-topbar-cell em {
     font-size: 10px !important;
     line-height: 1.1 !important;
   }
-
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-topbar-cell b {
     font-size: 12px !important;
     line-height: 1.08 !important;
   }
-
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-topbar-cell[data-overview-status-role="conclusion"] b {
     font-size: 14px !important;
   }
-
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-desktop-grid.ik-home-layout > .ro-col.is-main > .ro-module:first-child {
     max-height: 390px !important;
     overflow: auto !important;
   }
-
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-desktop-grid.ik-home-layout > .ro-col.is-main > .ro-module {
     max-height: 250px !important;
     overflow: auto !important;
   }
-
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-desktop-grid.ik-home-layout > .ro-col.is-side > .ro-module {
     max-height: 220px !important;
     overflow: auto !important;
   }
-
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-desktop-grid.ik-home-layout > .ro-col.is-side > .ro-module:first-child {
     max-height: 250px !important;
   }
-
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-desktop-grid.ik-home-layout > .ro-col.is-bottom > .ro-module {
     max-height: 200px !important;
     overflow: auto !important;
   }
 }
 
-/* Codex v432 final override must come after compact console rules. */
+/*Codex v432 final override must come after compact console rules.*/
+
 @media (min-width: 761px) {
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] > .ro-topbar.ik-home-flat-topbar {
     display: grid !important;
@@ -431,7 +377,6 @@
     box-shadow: none !important;
     overflow: visible !important;
   }
-
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"][data-overview-scene-key="resource-full"] > .ro-topbar.ik-home-flat-topbar,
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"][data-overview-scene-key="all-offline"] > .ro-topbar.ik-home-flat-topbar,
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"][data-overview-scene-key="interfaces-down"] > .ro-topbar.ik-home-flat-topbar {
@@ -439,7 +384,6 @@
     background: #dfe8f2 !important;
     background-image: none !important;
   }
-
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] > .ro-topbar.ik-home-flat-topbar > .ro-topbar-cell {
     min-width: 0 !important;
     min-height: 0 !important;
@@ -455,11 +399,9 @@
     box-shadow: none !important;
     overflow: visible !important;
   }
-
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] > .ro-topbar.ik-home-flat-topbar > .ro-topbar-cell:last-child {
     border-right: 0 !important;
   }
-
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] > .ro-topbar.ik-home-flat-topbar span {
     display: block !important;
     min-width: 0 !important;
@@ -471,7 +413,6 @@
     overflow: visible !important;
     text-overflow: clip !important;
   }
-
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] > .ro-topbar.ik-home-flat-topbar b {
     display: block !important;
     min-width: 0 !important;
@@ -484,71 +425,60 @@
     text-overflow: clip !important;
     overflow-wrap: anywhere !important;
   }
-
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] > .ro-topbar.ik-home-flat-topbar [data-overview-status-role="conclusion"] b {
     font-size: 14.2px !important;
     line-height: 1.05 !important;
     font-weight: 900 !important;
   }
-
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"][data-overview-scene-key="resource-full"] > .ro-topbar.ik-home-flat-topbar [data-overview-status-role="conclusion"] b,
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"][data-overview-scene-key="all-offline"] > .ro-topbar.ik-home-flat-topbar [data-overview-status-role="conclusion"] b,
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"][data-overview-scene-key="interfaces-down"] > .ro-topbar.ik-home-flat-topbar [data-overview-status-role="conclusion"] b {
     color: #d93025 !important;
   }
-
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] > .ro-topbar.ik-home-flat-topbar em {
     display: none !important;
   }
 }
 
-/* v400 desktop no-snapshot: chain ledger first, no fake WAN-rate filler, no stretched empty shells */
+/*v400 desktop no-snapshot: chain ledger first, no fake WAN-rate filler, no stretched empty shells*/
+
 @media (min-width: 761px) {
   .router-overview-framework[data-overview-scene-key="no-snapshot"] .ro-desktop-grid.ik-home-layout {
     grid-template-columns: minmax(0, 1.48fr) minmax(360px, 1fr) !important;
     gap: 8px !important;
     align-items: start !important;
   }
-
   .router-overview-framework[data-overview-scene-key="no-snapshot"] .ro-col {
     grid-auto-rows: max-content !important;
     align-content: start !important;
   }
-
   .router-overview-framework[data-overview-scene-key="no-snapshot"] .ro-module[data-overview-density-module^="no-snapshot"] {
     min-height: 0 !important;
     align-self: start !important;
   }
-
   .router-overview-framework[data-overview-scene-key="no-snapshot"] .ro-module[data-overview-density-module="no-snapshot-summary"] {
     border-left-color: #d93025 !important;
   }
-
   .router-overview-framework[data-overview-scene-key="no-snapshot"] .ro-module[data-overview-density-module="no-snapshot-module-visibility"],
   .router-overview-framework[data-overview-scene-key="no-snapshot"] .ro-module[data-overview-density-module="no-snapshot-channel-status"],
   .router-overview-framework[data-overview-scene-key="no-snapshot"] .ro-module[data-overview-density-module="no-snapshot-recent-success"] {
     border-left-color: #d7a341 !important;
   }
-
   .router-overview-framework[data-overview-scene-key="no-snapshot"] .ro-module[data-overview-density-module^="no-snapshot"] .ro-module-head {
     min-height: 28px !important;
     padding-block: 5px !important;
   }
-
   .router-overview-framework[data-overview-scene-key="no-snapshot"] .ro-module[data-overview-density-module^="no-snapshot"] .ro-ledger-row {
     min-height: 29px !important;
   }
-
   .router-overview-framework[data-overview-scene-key="no-snapshot"] .ro-module[data-overview-density-module^="no-snapshot"] :where(.ro-chain-timeline, .ro-visibility-matrix) {
     min-height: 0 !important;
     max-height: 118px !important;
     overflow: hidden !important;
   }
-
   .router-overview-framework[data-overview-scene-key="no-snapshot"] .ro-module[data-overview-density-module="no-snapshot-recent-success"] :where(.ro-chain-timeline, .ro-visibility-matrix) {
     max-height: 92px !important;
   }
-
   .router-overview-framework[data-overview-scene-key="no-snapshot"] [data-overview-density-module*="wan-trend"],
   .router-overview-framework[data-overview-scene-key="no-snapshot"] [data-overview-density-module*="wan-rate"],
   .router-overview-framework[data-overview-scene-key="no-snapshot"] [data-overview-density-module*="traffic"] {
@@ -556,7 +486,8 @@
   }
 }
 
-/* Implementation 4 desktop essential repair: iKuai 4.0 admin console skeleton. */
+/*Implementation 4 desktop essential repair: iKuai 4.0 admin console skeleton.*/
+
 @media (min-width: 768px) {
   .router-overview-framework {
     --ro-admin-blue: #1677ff;
@@ -564,7 +495,6 @@
     --ro-admin-soft: #f7fbff;
     --ro-admin-text: #172235;
   }
-
   .router-overview-framework[data-overview-scene-key="resource-full"] > .ro-topbar.ik-home-flat-topbar,
   .router-overview-framework[data-overview-scene-key="all-offline"] > .ro-topbar.ik-home-flat-topbar,
   .router-overview-framework[data-overview-scene-key="interfaces-down"] > .ro-topbar.ik-home-flat-topbar,
@@ -574,7 +504,6 @@
     border-left-color: #d93025 !important;
     background: linear-gradient(90deg, rgba(217, 48, 37, .045), #fff 280px) !important;
   }
-
   .router-overview-framework > .ro-topbar.ik-home-flat-topbar b,
   .router-overview-framework > .ro-desktop-key-row b {
     color: var(--ro-admin-text) !important;
@@ -582,23 +511,19 @@
     line-height: 1.12 !important;
     font-weight: 850 !important;
   }
-
   .router-overview-framework .ro-module {
     border-color: var(--ro-admin-line) !important;
     border-left-width: 3px !important;
   }
-
   .router-overview-framework .ro-chart-summary {
     min-height: 22px !important;
     border-bottom: 1px solid #edf3f9 !important;
   }
-
   .router-overview-framework .ro-chart-axis {
     color: #7b8796 !important;
     font-size: 9px !important;
     font-weight: 750 !important;
   }
-
   .router-overview-framework .ro-chart-threshold {
     width: 2px !important;
     background: #f08c00 !important;

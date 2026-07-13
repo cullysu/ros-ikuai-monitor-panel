@@ -6,7 +6,7 @@
     "prebuild": "node --max-old-space-size=2048 node_modules/typescript/bin/tsc --noEmit",
     "build": "node --max-old-space-size=2048 tools/build-framework-inline.mjs",
     "check:types": "node --max-old-space-size=2048 node_modules/typescript/bin/tsc --noEmit",
-    "check:overview": "node --max-old-space-size=2048 tools/check-overview-architecture.js && node --max-old-space-size=2048 tools/check-overview-ikuai-static.js",
+    "check:overview": "node --max-old-space-size=2048 tools/format-overview-css.js --check && node --max-old-space-size=2048 tools/check-overview-architecture.js && node --max-old-space-size=2048 tools/check-overview-ikuai-static.js",
     "check:overview-architecture": "node --max-old-space-size=2048 tools/check-overview-architecture.js",
     "check:mobile-app-home": "node --max-old-space-size=2048 tools/check-mobile-app-home-runtime.js",
     "check:desktop-no-snapshot": "node --max-old-space-size=2048 tools/check-desktop-no-snapshot-runtime.js",

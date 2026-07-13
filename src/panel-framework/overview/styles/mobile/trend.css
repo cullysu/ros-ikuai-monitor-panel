@@ -6,7 +6,6 @@
     min-width: 0;
     height: 18px;
   }
-
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-chart-kicker {
     color: #52657a;
     font-size: 10.5px;
@@ -14,13 +13,11 @@
     line-height: 18px;
     white-space: nowrap;
   }
-
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-series-legend,
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-series-legend span {
     display: inline-flex;
     align-items: center;
   }
-
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-series-legend {
     gap: 8px;
     color: #66758a;
@@ -28,19 +25,16 @@
     font-weight: 680;
     line-height: 18px;
   }
-
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-series-legend span {
     gap: 3px;
     white-space: nowrap;
   }
-
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-series-legend i {
     width: 9px;
     height: 2px;
     border-radius: 2px;
     background: #397ca7;
   }
-
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-series-legend .is-upload i {
     background: #91a9bb;
   }

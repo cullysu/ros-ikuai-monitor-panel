@@ -1,4 +1,5 @@
-/* v1000 public-console polish: flatter status bus, quieter tables, full no-snapshot floor. */
+/*v1000 public-console polish: flatter status bus, quieter tables, full no-snapshot floor.*/
+
 @media (min-width: 761px) {
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"],
   .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] {
@@ -7,7 +8,6 @@
     --ik-v1000-desktop-ink: #182b3f;
     --ik-v1000-desktop-muted: #718397;
   }
-
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-topbar,
   .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-topbar {
     background: transparent !important;
@@ -15,7 +15,6 @@
     border-bottom: 1px solid rgba(154, 176, 198, .18) !important;
     border-radius: 0 !important;
   }
-
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-topbar-cell,
   .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-topbar-cell {
     background: transparent !important;
@@ -24,7 +23,6 @@
     box-shadow: none !important;
     position: relative !important;
   }
-
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-topbar-cell:not(:last-child)::after,
   .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-topbar-cell:not(:last-child)::after {
     content: "" !important;
@@ -35,90 +33,77 @@
     width: 1px !important;
     background: rgba(154, 176, 198, .12) !important;
   }
-
-  /* v1071 desktop conclusion rail: neutral console ink, never legacy H5 blue. */
+  /*v1071 desktop conclusion rail: neutral console ink, never legacy H5 blue.*/
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-topbar-cell[data-overview-status-role="conclusion"],
   .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-topbar-cell[data-overview-status-role="conclusion"] {
     background: linear-gradient(90deg, rgba(18, 34, 55, .028), rgba(255, 255, 255, 0) 72%) !important;
     box-shadow: inset 2px 0 0 rgba(18, 34, 55, .44) !important;
   }
-
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-topbar-cell[data-tone="danger"][data-overview-status-role="conclusion"],
   .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-topbar-cell[data-tone="danger"][data-overview-status-role="conclusion"] {
     background: linear-gradient(90deg, rgba(173, 54, 49, .045), rgba(255, 255, 255, 0) 72%) !important;
     box-shadow: inset 2px 0 0 rgba(173, 54, 49, .55) !important;
   }
-
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-topbar-cell[data-tone="warn"][data-overview-status-role="conclusion"],
   .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-topbar-cell[data-tone="warn"][data-overview-status-role="conclusion"] {
     background: linear-gradient(90deg, rgba(164, 111, 36, .045), rgba(255, 255, 255, 0) 72%) !important;
     box-shadow: inset 2px 0 0 rgba(164, 111, 36, .55) !important;
   }
-
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-topbar-cell span,
   .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-topbar-cell span {
     color: #8292a5 !important;
     font-weight: 620 !important;
   }
-
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-topbar-cell b,
   .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-topbar-cell b {
     color: var(--ik-v1000-desktop-ink) !important;
     font-weight: 760 !important;
   }
-
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-topbar-cell em,
   .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-topbar-cell em {
     color: var(--ik-v1000-desktop-muted) !important;
   }
-
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-topbar-cell[data-tone="danger"]:not([data-overview-status-role="conclusion"]) b,
   .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-topbar-cell[data-tone="danger"]:not([data-overview-status-role="conclusion"]) b,
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-topbar-cell[data-tone="warn"]:not([data-overview-status-role="conclusion"]) b,
   .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-topbar-cell[data-tone="warn"]:not([data-overview-status-role="conclusion"]) b {
     color: var(--ik-v1000-desktop-ink) !important;
   }
-
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module,
   .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module {
     border-color: var(--ik-v1000-desktop-line) !important;
     background: rgba(255, 255, 255, .94) !important;
   }
-
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-cell,
   .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-cell {
     border-bottom-color: var(--ik-v1000-desktop-line-soft) !important;
   }
-
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row:not(.ro-ledger-head):hover .ro-ledger-cell,
   .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row:not(.ro-ledger-head):hover .ro-ledger-cell {
     background: rgba(245, 249, 253, .72) !important;
   }
-
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-evidence-weight="secondary"],
   .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-evidence-weight="secondary"],
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="evidence-boundary"],
   .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="evidence-boundary"] {
     background: rgba(248, 251, 254, .86) !important;
   }
-
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-evidence-weight="secondary"] .ro-ledger-cell,
   .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-evidence-weight="secondary"] .ro-ledger-cell,
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="evidence-boundary"] .ro-ledger-cell,
   .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="evidence-boundary"] .ro-ledger-cell {
     color: var(--ik-v1000-desktop-muted) !important;
   }
-
 }
 
-/* v1040 release-tail ledger quieting: keep dense evidence tables calm after release CSS. */
+/*v1040 release-tail ledger quieting: keep dense evidence tables calm after release CSS.*/
+
 @media (min-width: 761px) {
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-head > .ro-ledger-head-cell,
   .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-head > .ro-ledger-head-cell {
     border-bottom-color: rgba(154, 176, 198, .14) !important;
     background-color: rgba(248, 251, 254, .72) !important;
   }
-
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row:not(.ro-ledger-head) > .ro-ledger-cell,
   .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row:not(.ro-ledger-head) > .ro-ledger-cell {
     border-right-width: 0 !important;
@@ -126,7 +111,6 @@
     border-bottom-color: rgba(226, 235, 244, .28) !important;
     background-color: transparent !important;
   }
-
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="danger"] > .ro-ledger-cell:not(:first-child),
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="warn"] > .ro-ledger-cell:not(:first-child),
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="missing"] > .ro-ledger-cell:not(:first-child),
@@ -135,16 +119,13 @@
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="missing"] > .ro-ledger-cell:not(:first-child) .ik-overview-cell-text {
     color: #24374b !important;
   }
-
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="danger"],
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="warn"],
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="missing"] {
     background: transparent !important;
     box-shadow: none !important;
   }
-
-
-  /* Incident object columns stay neutral; status values keep their semantic treatment. */
+  /*Incident object columns stay neutral; status values keep their semantic treatment.*/
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="wan-offline-bars"] .ro-ledger-row:not(.ro-ledger-head) > .ro-ledger-cell:first-child .ik-overview-cell-text,
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="wan-offline-continuity"] .ro-ledger-row:not(.ro-ledger-head) > .ro-ledger-cell:first-child .ik-overview-cell-text,
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="interface-forwarding"] .ro-ledger-row:not(.ro-ledger-head) > .ro-ledger-cell:first-child .ik-overview-cell-text,
@@ -161,7 +142,8 @@
   }
 }
 
-/* v1072 mobile WAN decision geometry: keep the six readouts in an exact 3x2 rail. */
+/*v1072 mobile WAN decision geometry: keep the six readouts in an exact 3x2 rail.*/
+
 @media (max-width: 760px) {
   #overview.router-overview-framework
     .ik-v420-hero.ik-mobile-decision-card.is-trend,
@@ -172,7 +154,6 @@
     min-height: 154px !important;
     max-height: none !important;
   }
-
   #overview.router-overview-framework
     .ik-v420-hero.ik-mobile-decision-card.is-trend
     .ik-v620-hero-stage,
@@ -193,7 +174,6 @@
     height: 146px !important;
     max-height: 146px !important;
   }
-
   #overview.router-overview-framework
     .ik-v420-hero.ik-mobile-decision-card.is-trend
     .ik-v420-visual,
@@ -206,7 +186,6 @@
     grid-template-rows: 88px 54px !important;
     gap: 4px !important;
   }
-
   #overview.router-overview-framework
     [data-overview-mobile-v1072-readout-grid="three-columns-two-rows-six-decisions"],
   .router-overview-framework
@@ -221,7 +200,6 @@
     min-height: 54px !important;
     max-height: 54px !important;
   }
-
   #overview.router-overview-framework
     [data-overview-mobile-v1072-readout-grid="three-columns-two-rows-six-decisions"]
     > span,
