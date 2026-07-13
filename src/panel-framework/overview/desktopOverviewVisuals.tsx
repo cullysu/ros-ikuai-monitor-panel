@@ -7,10 +7,10 @@ import {
   chartSamplePoints,
   chartUnitLabel,
   clampPercent,
-  desktopPresentation,
   ledgerCellText,
   ratioPercent,
 } from "./desktopOverviewHelpers";
+import { desktopPresentation } from "./desktopOverviewPresentation";
 import {
   desktopWanDecisionRail,
   trafficTop3Rows,

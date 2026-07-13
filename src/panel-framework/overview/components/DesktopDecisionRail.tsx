@@ -1,5 +1,6 @@
 import type { OverviewTone } from "../index";
-import { desktopPresentation, type OverviewPanelProps } from "../desktopOverviewHelpers";
+import type { OverviewPanelProps } from "../desktopOverviewHelpers";
+import { desktopPresentation } from "../desktopOverviewPresentation";
 
 interface DecisionAction {
   value: string;

@@ -1,6 +1,6 @@
 import { OVERVIEW_LOW_NOISE_CONSOLE_TOKEN_CONTRACT } from "../mobileOverviewTokens";
 import type { OverviewPanelProps } from "../desktopOverviewHelpers";
-import { topbarItems, topbarPriority } from "../desktopOverviewHelpers";
+import { topbarItems, topbarPriority } from "../desktopOverviewTopbar";
 
 export function StatusVerdict({ snapshot, state }: OverviewPanelProps) {
   const allItems = topbarItems(snapshot, state).slice(0, 6);

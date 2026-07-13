@@ -16,7 +16,6 @@ import {
   type OverviewTone,
 } from "./index";
 import { routerOsRouteBusinessSummary } from "./routerosEvidenceModel";
-import { buildRouterOsPresentationViewModel } from "./routerosPresentationViewModel";
 
 export interface OverviewPanelProps {
   snapshot: OverviewRawSnapshot;
@@ -33,14 +32,6 @@ export interface LedgerRow {
   attrs?: Record<string, string | number>;
 }
 
-export interface TopbarItem {
-  label: string;
-  value: string;
-  note: string;
-  role: TopbarRole;
-  tone: OverviewTone;
-}
-
 export interface DesktopMetricItem {
   label: string;
   value: string;
@@ -55,18 +46,6 @@ export interface DesktopEvidenceItem {
   tone: OverviewTone;
   role: "object" | "primary" | "route" | "collection" | "freshness";
 }
-
-export type TopbarRole =
-  | "device"
-  | "conclusion"
-  | "object"
-  | "impact"
-  | "collection"
-  | "snapshot"
-  | "routeros"
-  | "rest"
-  | "ssh"
-  | "recent-success";
 
 export interface ModuleProps {
   title: string;
@@ -160,79 +139,6 @@ export function latestSuccess(snapshot: OverviewRawSnapshot, scenario: OverviewS
   return short === "-" ? "未记录" : short;
 }
 
-export function topbarImpactValue(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): string {
-  return desktopPresentation(snapshot, state).impact.value;
-}
-
-export function topbarImpactNote(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): string {
-  return desktopPresentation(snapshot, state).impact.note;
-}
-
-export function topbarObjectValue(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): { value: string; note: string } {
-  const object = desktopPresentation(snapshot, state).object;
-  return { value: object.value, note: object.note };
-}
-
-export function topbarCollectionValue(state: OverviewDerivedState): { value: string; note: string } {
-  if (state.scenario === "no-snapshot") {
-    return {
-      value: "\u94fe\u8def\u53d7\u9650",
-      note: "\u91c7\u96c6\u94fe\u8def\u9700\u6838",
-    };
-  }
-  if (state.scenario === "interfaces-down") {
-    return {
-      value: "\u91c7\u96c6\u4e0d\u53ef\u8fbe",
-      note: "REST \u4e0d\u53ef\u8fbe / SSH \u4e0d\u53ef\u8fbe",
-    };
-  }
-  if (state.facts.collection.dataStale) {
-    return {
-      value: "缓存可参考",
-      note: "当前采集非实时",
-    };
-  }
-  if (state.scenario === "collection-down") {
-    return {
-      value: "降级",
-      note: "REST 待确认 / SSH 不可用",
-    };
-  }
-  const restUnavailable = /不可|失败|待确认|缺失/.test(state.facts.collection.restLabel);
-  const sshUnavailable = /不可|失败|待确认|缺失/.test(state.facts.collection.sshLabel);
-  if (restUnavailable || sshUnavailable) {
-    return {
-      value: "部分可用",
-      note: `${restUnavailable ? "REST 待确认" : "REST 可用"} / ${sshUnavailable ? "SSH 不可用" : "SSH 可用"}`,
-    };
-  }
-  return {
-    value: "可读",
-    note: "REST / SSH",
-  };
-}
-
-export function topbarSnapshotValue(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): { value: string; note: string; tone: OverviewTone } {
-  const cached = state.scenario === "collection-down" || state.facts.collection.dataStale || state.facts.freshness.history;
-  return {
-    value: latestSuccess(snapshot, state.scenario),
-    note: state.scenario === "no-snapshot" ? "\u5feb\u7167\u7f3a\u5931" : cached ? "快照 缓存" : `\u5feb\u7167 ${state.facts.freshness.credibilityLabel}`,
-    tone: state.scenario === "no-snapshot" || cached ? "warn" : state.facts.freshness.credibilityTone,
-  };
-}
-
-export function desktopPresentation(snapshot: OverviewRawSnapshot, state: OverviewDerivedState) {
-  return buildRouterOsPresentationViewModel(snapshot, state).desktop;
-}
-
-export function topbarConclusionNote(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): string {
-  return desktopPresentation(snapshot, state).conclusionNote;
-}
-
-export function desktopConclusionValue(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): string {
-  return desktopPresentation(snapshot, state).conclusionValue;
-}
-
 export function statusUpdated(snapshot: OverviewRawSnapshot): string {
   const short = shortTimestamp(snapshot.updatedAt || snapshot.meta?.statusUpdatedAt || "");
   return short === "-" ? "未记录" : short;
@@ -279,41 +185,6 @@ export function sshState(snapshot: OverviewRawSnapshot, state: OverviewDerivedSt
     return { value: "不可用", tone: "warn", note: businessErrorNote(snapshot.meta?.staticError, "SSH 缺依赖") };
   }
   return { value: stripChannelPrefix(state.facts.collection.sshLabel, "SSH") || "可用", tone: "ok", note: "静态读取可用" };
-}
-
-export function topbarItems(snapshot: OverviewRawSnapshot, state: OverviewDerivedState) {
-  const object = topbarObjectValue(snapshot, state);
-  const collection = topbarCollectionValue(state);
-  const snapshotCell = topbarSnapshotValue(snapshot, state);
-  if (state.scenario === "no-snapshot") {
-    const updated = statusUpdated(snapshot);
-    const routeros = routerosState(snapshot, state.scenario);
-    const rest = restState(snapshot, state);
-    const ssh = sshState(snapshot, state);
-    return [
-      { label: "\u7ed3\u8bba", value: desktopConclusionValue(snapshot, state), note: "\u65e0\u4e1a\u52a1\u5feb\u7167", role: "conclusion", tone: state.verdict.level },
-      { label: "\u8bbe\u5907", value: "\u91c7\u96c6\u5bf9\u8c61", note: "\u94fe\u8def\u5f02\u5e38", role: "device", tone: "trust" as OverviewTone },
-      { label: "RouterOS", value: routeros.value, note: routeros.note, role: "routeros", tone: routeros.tone },
-      { label: "REST", value: rest.value, note: rest.note, role: "rest", tone: rest.tone },
-      { label: "SSH", value: ssh.value, note: "SSH 不可用", role: "ssh", tone: ssh.tone },
-      { label: "\u6700\u8fd1\u6210\u529f", value: snapshotCell.value, note: "业务快照年龄 不可判定", role: "recent-success", tone: snapshotCell.tone },
-    ] satisfies TopbarItem[];
-  }
-  return [
-    { label: "\u7ed3\u8bba", value: desktopConclusionValue(snapshot, state), note: topbarConclusionNote(snapshot, state), role: "conclusion", tone: state.verdict.level },
-    { label: "\u8bbe\u5907", value: state.facts.device.identity, note: `${state.facts.device.version} \u00b7 ${state.facts.device.uptime}`, role: "device", tone: "trust" as OverviewTone },
-    { label: "\u5bf9\u8c61", value: object.value, note: object.note, role: "object", tone: "trust" as OverviewTone },
-    { label: "\u5f71\u54cd", value: topbarImpactValue(snapshot, state), note: topbarImpactNote(snapshot, state), role: "impact", tone: state.verdict.level },
-    { label: "\u91c7\u96c6", value: collection.value, note: collection.note, role: "collection", tone: state.facts.collection.credibilityTone },
-    { label: "\u5feb\u7167", value: snapshotCell.value, note: snapshotCell.note, role: "snapshot", tone: snapshotCell.tone },
-  ] satisfies TopbarItem[];
-}
-
-export function topbarPriority(role: TopbarRole): "primary" | "key" | "secondary" | "meta" {
-  if (role === "conclusion") return "primary";
-  if (role === "device" || role === "object" || role === "impact" || role === "collection" || role === "routeros" || role === "rest" || role === "ssh") return "key";
-  if (role === "snapshot" || role === "recent-success") return "secondary";
-  return "meta";
 }
 
 export function moduleTrust(state: OverviewDerivedState): "当前采样" | "缓存快照" | "链路可参考" {
