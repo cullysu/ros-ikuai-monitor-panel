@@ -104,11 +104,6 @@
 }
 
 @media (min-width:768px) {
-  .router-overview-framework .ro-desktop-grid.ik-home-layout {
-    grid-template-columns: minmax(0,1.34fr) minmax(390px,1fr) !important;
-    gap: 10px !important;
-    min-height: calc(100vh - 112px) !important;
-  }
   .router-overview-framework .ro-module.ik-overview-flat-module {
     border-radius: 6px !important;
     border-color: #e3edf6 !important;
@@ -171,9 +166,6 @@
 }
 
 @media (min-width: 768px) {
-  .router-overview-framework .ro-desktop-grid {
-    min-height: calc(100vh - 118px) !important;
-  }
   .router-overview-framework .ro-module {
     border-left: 3px solid #9fb7d2 !important;
   }
@@ -346,10 +338,6 @@
 }
 
 @media (min-width: 768px) {
-  .router-overview-framework .ro-desktop-grid.ik-home-layout {
-    grid-template-columns: minmax(0,1.44fr) minmax(410px,.98fr) !important;
-    min-height: calc(100vh - 90px) !important;
-  }
   .router-overview-framework .ro-module[data-overview-evidence-weight="primary"] {
     border-left-width: 6px !important;
   }
@@ -371,11 +359,6 @@
 }
 
 @media (min-width:768px) {
-  .router-overview-framework .ro-desktop-grid {
-    grid-template-columns: minmax(0,1.45fr) minmax(360px,.95fr) !important;
-    gap: 10px !important;
-    align-items: stretch !important;
-  }
   .router-overview-framework .ro-module {
     border-radius: 4px !important;
     border-color: #e2ebf4 !important;
@@ -399,11 +382,6 @@
 @media (min-width: 768px) {
   .router-overview-framework [data-overview-desktop-toy-nav-leak-guard] {
     --desktop-console-order: v193-no-content-icon-tabs;
-  }
-  .router-overview-framework .ro-desktop-grid {
-    grid-template-columns: minmax(0,1.48fr) minmax(380px,.92fr) !important;
-    gap: 10px !important;
-    align-items: stretch !important;
   }
   .router-overview-framework .ro-module[data-tone=danger],.router-overview-framework [data-tone=danger].ro-module {
     border-left: 3px solid #d93025 !important;
@@ -469,10 +447,6 @@
     --ro-desktop-soft-line: #e8eff7;
     --ro-desktop-soft-bg: #f8fbff;
     --ro-desktop-danger-bg: rgba(217, 48, 37, .06);
-  }
-  .router-overview-framework .ro-desktop-grid.ik-home-layout {
-    gap: 9px !important;
-    align-items: start !important;
   }
   .router-overview-framework [data-overview-desktop-hierarchy-tier="3-evidence"] .ro-module.ik-overview-flat-module {
     border: 1px solid var(--ro-desktop-line) !important;

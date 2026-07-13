@@ -11,13 +11,6 @@
     --v814-soft: #f8fbfe;
     background: #f3f7fb !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-desktop-grid,
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-desktop-grid {
-    grid-template-columns: minmax(0, 1fr) 410px !important;
-    gap: 4px !important;
-    min-height: 0 !important;
-    align-items: start !important;
-  }
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-col,
   .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-col {
     gap: 4px !important;
@@ -264,451 +257,23 @@
     display: grid !important;
     gap: 3px !important;
     padding: 4px 5px !important;
-    border-bottom: 1px solid var(--v814-line) !important;
-    background: #fff !important;
-  }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-visual-stack .ro-channel-matrix-visual,
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-visual-stack .ro-resource-ledger-visual,
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-visual-stack .ro-channel-matrix-visual,
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-visual-stack .ro-resource-ledger-visual {
-    padding: 0 !important;
-    border-bottom: 0 !important;
-  }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-incident-summary,
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-incident-summary {
-    display: grid !important;
-    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
-    gap: 1px !important;
-    min-height: 32px !important;
-  }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-incident-summary span,
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-incident-summary span {
-    display: grid !important;
-    align-content: center !important;
-    min-width: 0 !important;
-    padding: 3px 5px !important;
-    background: #fbfdff !important;
-    border-left: 1px solid var(--v814-line) !important;
-  }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-incident-summary em,
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-incident-summary em {
-    color: var(--v814-muted) !important;
-    font-size: 7.6px !important;
-    font-style: normal !important;
-  }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-incident-summary b,
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-incident-summary b {
-    color: var(--v814-text) !important;
-    font-size: 9.4px !important;
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-  }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-resource-ledger-visual,
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-resource-ledger-visual {
-    display: grid !important;
-    gap: 4px !important;
-    min-height: 64px !important;
-    padding: 5px !important;
-    background: #fff !important;
-    border-bottom: 1px solid var(--v814-line) !important;
-  }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-resource-ledger-visual span,
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-resource-ledger-visual span {
-    display: grid !important;
-    grid-template-columns: 52px 48px minmax(0, 1fr) 88px !important;
-    align-items: center !important;
-    gap: 7px !important;
-    min-height: 17px !important;
-  }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-resource-ledger-visual b,
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-resource-ledger-visual b {
-    color: var(--v814-muted) !important;
-    font-size: 8.6px !important;
-  }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-resource-ledger-visual strong,
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-resource-ledger-visual strong {
-    color: var(--v814-text) !important;
-    font-size: 11px !important;
-  }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-resource-ledger-visual span[data-tone="danger"] strong,
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-resource-ledger-visual span[data-tone="danger"] strong {
-    color: #c93932 !important;
-  }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-resource-ledger-visual i,
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-resource-ledger-visual i {
-    display: block !important;
-    height: 3px !important;
-    overflow: hidden !important;
-    border-radius: 4px !important;
-    background: #e8f0f7 !important;
-  }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-resource-ledger-visual i i,
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-resource-ledger-visual i i {
-    height: 100% !important;
-    background: var(--v814-blue) !important;
-  }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-resource-ledger-visual span[data-tone="danger"] i i,
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-resource-ledger-visual span[data-tone="danger"] i i {
-    background: #d8423a !important;
-  }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-resource-ledger-visual em,
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-resource-ledger-visual em {
-    color: var(--v814-muted) !important;
-    font-size: 8px !important;
-    font-style: normal !important;
-    text-align: right !important;
-    white-space: nowrap !important;
-  }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-resource-cards,
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-resource-cards {
-    display: none !important;
-  }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-col.is-bottom,
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-col.is-bottom {
-    display: grid !important;
-    grid-template-columns: 1.05fr 1fr 1fr !important;
-    gap: 4px !important;
-    max-height: 156px !important;
-    overflow: hidden !important;
-  }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-col.is-bottom .ro-module-head,
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-col.is-bottom .ro-module-head {
-    height: 24px !important;
-    min-height: 24px !important;
-  }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-col.is-bottom .ro-ledger-cell,
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-col.is-bottom .ro-ledger-cell {
-    height: 24px !important;
-    min-height: 24px !important;
-    font-size: 8.2px !important;
-  }
-}
-
-@media (min-width: 761px) {
-  .router-overview-framework {
-    min-height: calc(100vh - 48px);
-    padding: 6px;
-  }
-  .ro-desktop-grid,
-  .ro-col {
-    gap: 4px;
-  }
-  .ro-module-head {
-    min-height: 20px;
-    padding: 2px 5px;
-  }
-  .ro-chart-summary {
-    min-height: 15px;
-    padding-bottom: 2px;
-  }
-}
-
-@media (min-width: 761px) {
-  .ro-desktop-grid[data-overview-desktop-scene="no-snapshot"] {
-    align-items: start;
-  }
-  .ro-desktop-grid[data-overview-desktop-scene="no-snapshot"] .ro-col.is-side {
-    grid-template-columns: 1fr;
-  }
-  .ro-desktop-grid[data-overview-desktop-scene="no-snapshot"] .ro-col {
-    align-content: start;
-    grid-auto-rows: auto;
-    height: auto;
-  }
-  .ro-desktop-grid[data-overview-desktop-scene="no-snapshot"] .ro-module-head b {
-    color: var(--ro-primary);
-  }
-  .ro-desktop-grid[data-overview-desktop-scene="no-snapshot"] .ro-module-head em {
-    color: var(--ro-secondary);
-    border-color: #dfe5ee;
-  }
-  .ro-desktop-grid[data-overview-desktop-scene="no-snapshot"] .ro-ledger-table td,
-.ro-desktop-grid[data-overview-desktop-scene="no-snapshot"] .ro-ledger-cell {
-    white-space: normal;
-  }
-  .ro-desktop-grid[data-overview-desktop-scene="no-snapshot"] .ro-module {
-    height: auto;
-    min-height: 0;
-  }
-  .ro-desktop-grid[data-overview-desktop-scene="no-snapshot"] .ro-module[data-overview-density-module="no-snapshot-channel-status"],
-  .ro-desktop-grid[data-overview-desktop-scene="no-snapshot"] .ro-module[data-overview-density-module="no-snapshot-summary"],
-  .ro-desktop-grid[data-overview-desktop-scene="no-snapshot"] .ro-module[data-overview-density-module="no-snapshot-module-visibility"] {
-    height: auto;
-    min-height: 0;
-  }
-  .ro-desktop-grid[data-overview-desktop-scene="no-snapshot"] .ro-chain-timeline,
-  .ro-desktop-grid[data-overview-desktop-scene="no-snapshot"] .ro-visibility-matrix {
-    position: relative;
-    min-height: 0;
-    border: 1px solid #dfe5ee;
-    background: #fff;
-  }
-  .ro-desktop-grid[data-overview-desktop-scene="resource-full"] .ro-resource-cards,
-  .ro-desktop-grid[data-overview-desktop-scene="collection-down"] .ro-resource-cards,
-  .ro-desktop-grid[data-overview-desktop-scene="normal"] .ro-resource-cards,
-  .ro-desktop-grid[data-overview-desktop-scene="resource-full"] .ro-chain-timeline,
-  .ro-desktop-grid[data-overview-desktop-scene="collection-down"] .ro-chain-timeline,
-  .ro-desktop-grid[data-overview-desktop-scene="normal"] .ro-chain-timeline,
-  .ro-desktop-grid[data-overview-desktop-scene="resource-full"] .ro-visibility-matrix,
-  .ro-desktop-grid[data-overview-desktop-scene="collection-down"] .ro-visibility-matrix,
-  .ro-desktop-grid[data-overview-desktop-scene="normal"] .ro-visibility-matrix {
-    background: #fff;
-  }
-  .ro-desktop-grid[data-overview-desktop-scene="resource-full"] .ro-judgement-chart,
-  .ro-desktop-grid[data-overview-desktop-scene="resource-full"] .ro-resource-visual,
-  .ro-desktop-grid[data-overview-desktop-scene="collection-down"] .ro-judgement-chart,
-  .ro-desktop-grid[data-overview-desktop-scene="collection-down"] .ro-resource-visual,
-  .ro-desktop-grid[data-overview-desktop-scene="normal"] .ro-judgement-chart,
-  .ro-desktop-grid[data-overview-desktop-scene="normal"] .ro-resource-visual {
-    background: #fff;
-  }
-  .ro-desktop-grid[data-overview-desktop-scene="no-snapshot"] .ro-ledger-table th,
-  .ro-desktop-grid[data-overview-desktop-scene="resource-full"] .ro-ledger-table th,
-  .ro-desktop-grid[data-overview-desktop-scene="collection-down"] .ro-ledger-table th,
-  .ro-desktop-grid[data-overview-desktop-scene="normal"] .ro-ledger-table th {
-    background: #fff;
-  }
-  .ro-desktop-grid[data-overview-desktop-scene="no-snapshot"] .ro-chain-timeline::before,
-  .ro-desktop-grid[data-overview-desktop-scene="no-snapshot"] .ro-visibility-matrix::before {
-    content: "";
-    position: absolute;
-    left: 10px;
-    right: 10px;
-    top: 50%;
-    height: 1px;
-    background: #cfd7e2;
-    transform: translateY(-50%);
-  }
-}
-
-@media (min-width: 761px) {
-  .ro-desktop-grid {
-    align-items: start;
-    min-height: calc(100vh - 52px);
-    background: #fefefe;
-  }
-  .ro-col {
-    align-content: start;
-    grid-auto-rows: auto;
-    height: auto;
-  }
-  .ro-module {
-    height: auto;
-    overflow: visible;
-    background: #fff;
-  }
-  .ro-desktop-grid[data-overview-desktop-scene="resource-full"] {
-    grid-template-columns: minmax(520px, 1.24fr) minmax(420px, .96fr);
-  }
-  .ro-desktop-grid[data-overview-desktop-scene="no-snapshot"] {
-    min-height: calc(100vh - 52px);
-  }
-  .ro-ledger-table th,
-  .ro-ledger-head-cell {
-    height: 20px;
-  }
-  .ro-ledger-table td,
-  .ro-ledger-cell {
-    height: 22px;
-    padding-top: 3px;
-    padding-bottom: 3px;
-  }
-  .ro-desktop-grid[data-overview-desktop-scene="no-snapshot"] .ro-ledger-table th,
-  .ro-desktop-grid[data-overview-desktop-scene="no-snapshot"] .ro-ledger-table td,
-  .ro-desktop-grid[data-overview-desktop-scene="no-snapshot"] .ro-ledger-head-cell,
-  .ro-desktop-grid[data-overview-desktop-scene="no-snapshot"] .ro-ledger-cell {
-    height: auto;
-    min-height: 24px;
-    padding: 3px 5px;
-    line-height: 1.2;
-    white-space: normal;
-    overflow: visible;
-    text-overflow: clip;
-    word-break: normal;
-    overflow-wrap: anywhere;
-  }
-  .ro-desktop-grid[data-overview-desktop-scene="no-snapshot"] .ro-ledger-row {
-    min-height: 24px;
-  }
-  .ro-desktop-grid[data-overview-desktop-scene="no-snapshot"] .ro-ledger-cell > .ik-overview-cell-text {
-    max-height: none;
-    line-height: 1.2;
-    white-space: normal;
-    overflow: visible;
-    text-overflow: clip;
-  }
-  .ro-desktop-grid[data-overview-desktop-scene="no-snapshot"] .ro-module-head {
-    min-height: 22px;
-    padding-top: 3px;
-    padding-bottom: 3px;
-  }
-  .ro-desktop-grid[data-overview-desktop-scene="resource-full"] .ro-ledger-table td,
-  .ro-desktop-grid[data-overview-desktop-scene="interfaces-down"] .ro-ledger-table td,
-  .ro-desktop-grid[data-overview-desktop-scene="collection-down"] .ro-ledger-table td,
-  .ro-desktop-grid[data-overview-desktop-scene="all-offline"] .ro-ledger-table td,
-  .ro-desktop-grid[data-overview-desktop-scene="resource-full"] .ro-ledger-cell,
-  .ro-desktop-grid[data-overview-desktop-scene="interfaces-down"] .ro-ledger-cell,
-  .ro-desktop-grid[data-overview-desktop-scene="collection-down"] .ro-ledger-cell,
-  .ro-desktop-grid[data-overview-desktop-scene="all-offline"] .ro-ledger-cell {
-    height: 23px;
-  }
-  .ro-desktop-grid[data-overview-desktop-scene="resource-full"] .ro-ledger-cell > .ik-overview-cell-text,
-  .ro-desktop-grid[data-overview-desktop-scene="resource-full"] .ro-ledger-head-cell {
-    min-height: 100%;
-  }
-  .ro-desktop-grid[data-overview-desktop-scene="resource-full"] [data-overview-density-module="resource-risk-priority"] .ro-ledger-table,
-  .ro-desktop-grid[data-overview-desktop-scene="resource-full"] [data-overview-density-module="resource-risk-priority"] .ro-ledger-row {
-    flex: 0 0 auto;
-  }
-  .ro-desktop-grid[data-overview-desktop-scene="resource-full"] [data-overview-density-module="resource-risk-priority"] .ro-ledger-cell {
-    height: 22px;
-    line-height: 1.08;
-  }
-  .ro-desktop-grid[data-overview-desktop-scene="resource-full"] [data-overview-density-module="resource-risk-priority"] .ro-resource-visual {
-    padding: 3px 5px 2px;
-    gap: 2px;
-    border-bottom-color: #dbe4ef;
-    background: linear-gradient(180deg, #fff 0%, #f7fbff 100%);
-  }
-  .ro-desktop-grid[data-overview-desktop-scene="resource-full"] [data-overview-density-module="resource-pressure-bars"] .ro-ledger-table td,
-  .ro-desktop-grid[data-overview-desktop-scene="resource-full"] [data-overview-density-module="resource-pressure-bars"] .ro-ledger-cell,
-  .ro-desktop-grid[data-overview-desktop-scene="resource-full"] [data-overview-density-module="resource-interface-top5"] .ro-ledger-table td,
-  .ro-desktop-grid[data-overview-desktop-scene="resource-full"] [data-overview-density-module="resource-interface-top5"] .ro-ledger-cell {
-    height: 21px;
-  }
-  .ro-desktop-grid[data-overview-desktop-scene="resource-full"] [data-overview-density-module="resource-interface-top5"] .ro-ledger-row[data-overview-share] .ro-ledger-cell:nth-child(2)::before {
-    opacity: .72;
-  }
-  .ro-desktop-grid[data-overview-desktop-scene="resource-full"] [data-overview-density-module="resource-interface-top5"] .ro-topn-block.is-ranking .ro-topn-row {
-    grid-template-columns: minmax(88px, .84fr) minmax(80px, .58fr) minmax(0, 1.3fr) max-content;
-    min-height: 26px;
-    padding-left: 45px;
-  }
-  .ro-desktop-grid[data-overview-desktop-scene="resource-full"] [data-overview-density-module="resource-interface-top5"] .ro-topn-block.is-ranking .ro-topn-row span {
-    color: var(--ro-text);
-    text-overflow: ellipsis;
-  }
-  .ro-desktop-grid[data-overview-desktop-scene="resource-full"] [data-overview-density-module="resource-interface-top5"] .ro-ledger-table {
-    display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: 1px;
-    flex: 0 0 auto;
-    padding: 2px 5px 5px;
-    border-top: 1px solid #e5edf6;
-    background: #f8fbfe;
-  }
-  .ro-desktop-grid[data-overview-desktop-scene="resource-full"] [data-overview-density-module="resource-interface-top5"] .ro-ledger-head {
-    display: none;
-  }
-  .ro-desktop-grid[data-overview-desktop-scene="resource-full"] [data-overview-density-module="resource-interface-top5"] .ro-ledger-row[data-overview-share] {
-    display: block !important;
-    min-width: 0;
-    min-height: 30px;
-    padding: 3px 4px;
-    overflow: hidden;
-    border: 1px solid #dde7f1;
-    background: #fff;
-  }
-  .ro-desktop-grid[data-overview-desktop-scene="resource-full"] [data-overview-density-module="resource-interface-top5"] .ro-ledger-row[data-overview-share] .ro-ledger-cell {
-    display: block;
-    height: auto;
-    min-height: 0;
-    border-bottom: 0;
-    padding: 0;
-    font-size: 9px;
-    line-height: 1.12;
-  }
-  .ro-desktop-grid[data-overview-desktop-scene="resource-full"] [data-overview-density-module="resource-interface-top5"] .ro-ledger-row[data-overview-share] .ro-ledger-cell:first-child,
-  .ro-desktop-grid[data-overview-desktop-scene="resource-full"] [data-overview-density-module="resource-interface-top5"] .ro-ledger-row[data-overview-share] .ro-ledger-cell:nth-child(2) {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  .ro-desktop-grid[data-overview-desktop-scene="resource-full"] [data-overview-density-module="resource-interface-top5"] .ro-ledger-row[data-overview-share] .ro-ledger-cell:nth-child(2)::before,
-  .ro-desktop-grid[data-overview-desktop-scene="resource-full"] [data-overview-density-module="resource-interface-top5"] .ro-ledger-row[data-overview-share] .ro-ledger-cell:nth-child(3) {
-    display: none;
-  }
-  .ro-desktop-grid[data-overview-desktop-scene="normal"] [data-overview-density-module="port-status-matrix"] .ro-port-matrix {
-    padding-bottom: 2px;
-  }
-  .ro-desktop-grid[data-overview-desktop-scene="single"] [data-overview-density-module="wan-trend"] .ik-home-evidence-row:nth-of-type(n+5),
-  .ro-desktop-grid[data-overview-desktop-scene="normal"] [data-overview-density-module="wan-trend"] .ik-home-evidence-row:nth-of-type(n+5) {
-    display: none;
-  }
-  .ro-desktop-grid[data-overview-desktop-scene="single"] [data-overview-density-module="wan-trend"] .ro-ledger-table,
-  .ro-desktop-grid[data-overview-desktop-scene="normal"] [data-overview-density-module="wan-trend"] .ro-ledger-table {
-    flex: 0 0 auto;
-  }
-  .ro-desktop-grid[data-overview-desktop-scene="no-snapshot"] .ro-chain-timeline,
-  .ro-desktop-grid[data-overview-desktop-scene="no-snapshot"] .ro-visibility-matrix {
-    padding: 4px 5px;
-    gap: 2px;
-  }
-  .ro-desktop-grid[data-overview-desktop-scene="no-snapshot"] .ro-chain-node,
-  .ro-desktop-grid[data-overview-desktop-scene="no-snapshot"] .ro-visibility-cell {
-    min-height: 26px;
-    padding: 2px 3px;
-  }
-  .ro-desktop-grid[data-overview-desktop-scene="resource-full"] .ro-resource-cards,
-  .ro-desktop-grid[data-overview-desktop-scene="collection-down"] .ro-resource-cards,
-  .ro-desktop-grid[data-overview-desktop-scene="normal"] .ro-resource-cards,
-  .ro-desktop-grid[data-overview-desktop-scene="resource-full"] .ro-chain-timeline,
-  .ro-desktop-grid[data-overview-desktop-scene="collection-down"] .ro-chain-timeline,
-  .ro-desktop-grid[data-overview-desktop-scene="normal"] .ro-chain-timeline,
-  .ro-desktop-grid[data-overview-desktop-scene="resource-full"] .ro-visibility-matrix,
-  .ro-desktop-grid[data-overview-desktop-scene="collection-down"] .ro-visibility-matrix,
-  .ro-desktop-grid[data-overview-desktop-scene="normal"] .ro-visibility-matrix,
-  .ro-desktop-grid[data-overview-desktop-scene="resource-full"] .ro-judgement-chart,
-  .ro-desktop-grid[data-overview-desktop-scene="collection-down"] .ro-judgement-chart,
-  .ro-desktop-grid[data-overview-desktop-scene="normal"] .ro-judgement-chart,
-  .ro-desktop-grid[data-overview-desktop-scene="resource-full"] .ro-resource-visual,
-  .ro-desktop-grid[data-overview-desktop-scene="collection-down"] .ro-resource-visual,
-  .ro-desktop-grid[data-overview-desktop-scene="normal"] .ro-resource-visual,
-  .ro-desktop-grid[data-overview-desktop-scene="resource-full"] .ro-module,
-  .ro-desktop-grid[data-overview-desktop-scene="collection-down"] .ro-module,
-  .ro-desktop-grid[data-overview-desktop-scene="normal"] .ro-module {
-    background: #fff;
-  }
-  .ro-desktop-grid[data-overview-desktop-scene="resource-full"] [data-overview-density-module="resource-risk-priority"] .ro-sparkline {
-    height: 40px;
-  }
-  .ro-desktop-grid[data-overview-desktop-scene="resource-full"] [data-overview-density-module="resource-risk-priority"] .ro-resource-cards {
-    gap: 4px;
-  }
-  .ro-desktop-grid[data-overview-desktop-scene="resource-full"] [data-overview-density-module="resource-risk-priority"] .ro-resource-card {
-    min-height: 52px;
-    padding: 4px 5px 5px;
-    border-color: #d9e3ee;
-  }
-  .ro-desktop-grid[data-overview-desktop-scene="resource-full"] [data-overview-density-module="resource-risk-priority"] .ro-resource-card em {
-    font-size: 8px;
-  }
-  .ro-desktop-grid[data-overview-desktop-scene="resource-full"] [data-overview-density-module="resource-risk-priority"] .ro-resource-card i {
-    height: 2px;
-  }
-  .ro-desktop-grid[data-overview-desktop-scene="resource-full"] [data-overview-density-module="resource-interface-top5"] .ro-topn-block.is-ranking {
-    padding: 6px 7px 4px;
-  }
-  .ro-desktop-grid[data-overview-desktop-scene="resource-full"] [data-overview-density-module="resource-interface-top5"] .ro-topn-block.is-ranking .ro-topn-row::after {
-    top: 5px;
-    left: 4px;
-    color: var(--ro-blue);
-  }
-  .ro-desktop-grid[data-overview-desktop-scene="resource-full"] [data-overview-density-module="resource-interface-top5"] .ro-topn-block.is-ranking .ro-topn-row b {
-    font-size: 10px;
-  }
-  .ro-desktop-grid[data-overview-desktop-scene="resource-full"] [data-overview-density-module="resource-pressure-bars"] .ro-ledger-table {
-    padding-bottom: 4px;
-  }
-  .ro-desktop-grid[data-overview-desktop-scene="resource-full"] [data-overview-density-module="resource-pressure-bars"] .ro-ledger-row {
-    align-items: center;
-  }
-  .ro-desktop-grid[data-overview-desktop-scene="resource-full"] [data-overview-density-module="resource-pressure-bars"] .ro-ledger-cell:nth-child(2) {
-    font-weight: 800;
-  }
-  .ro-desktop-grid[data-overview-desktop-scene="resource-full"] [data-overview-density-module="resource-pressure-bars"] .ro-ledger-cell:nth-child(3) {
-    color: var(--ro-faint);
-    font-size: 8px;
-  }
-}
+    border-botvз­-ўG§ІЪоќЖ­yШ››Л\Ы\ЪЭ—Hњ›ЛXЫЫљ\Л\ЪYHВ€ЬљY][\]KXЫЫ[[њО€YњЋВ€B€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OH››Л\Ы\ЪЭ—Hњ›ЛXЫЫВ€[YЫ‹XЫЫќ[ќ€Э\ќВ€ЬљYX]]Л\›ЭЬО€]]ОВ€ZYЪ€]]ОВ€B€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OH››Л\Ы\ЪЭ—Hњ›Л[[Щ[KZXY€В€ЫЫЬЋ€\ЉK\›Л\љ[X\ћJNВ€B€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OH››Л\Ы\ЪЭ—Hњ›Л[[Щ[KZXY[HВ€ЫЫЬЋ€\ЉK\›Л\ЩXЫЫ™\ћJNВ€›Ь™\‹XЫЫЬЋ€Щ™MYYNВ€B€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OH››Л\Ы\ЪЭ—Hњ›Л[YЩ\‹]X›H‹њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OH››Л\Ы\ЪЭ—Hњ›Л[YЩ\‹XЩ[В€Ъ]K\ЬXЩN€›Ь›X[В€B€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OH››Л\Ы\ЪЭ—Hњ›Л[[Щ[HВ€ZYЪ€]]ОВ€Z[‹ZZYЪ€В€B€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OH››Л\Ы\ЪЭ—Hњ›Л[[Щ[VЩ]K[Э™\ќљY]ЛY[њЪ]K[[Щ[OH››Л\Ы\ЪЭXЪ[›™[\Э]\И—K€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OH››Л\Ы\ЪЭ—Hњ›Л[[Щ[VЩ]K[Э™\ќљY]ЛY[њЪ]K[[Щ[OH››Л\Ы\ЪЭ\Э[[X\ћH—K€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OH››Л\Ы\ЪЭ—Hњ›Л[[Щ[VЩ]K[Э™\ќљY]ЛY[њЪ]K[[Щ[OH››Л\Ы\ЪЭ[[Щ[K]љ\ЪXљ[]H—HВ€ZYЪ€]]ОВ€Z[‹ZZYЪ€В€B€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OH››Л\Ы\ЪЭ—Hњ›ЛXЪZ[‹][Y[[™K€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OH››Л\Ы\ЪЭ—Hњ›Л]љ\ЪXљ[]K[X]љ^В€ЬЪ][ЫЋ€™[]]™NВ€Z[‹ZZYЪ€В€›Ь™\Ћ€\ЫЫYЩ™MYYNВ€XЪЩЬ›Э[™€Щ™™ЋВ€B€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OHњ™\ЫЭ\ЩKYќ[—Hњ›Л\™\ЫЭ\ЩKXШ\™Л€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OHЫЫXЭ[Ы‹YЭЫ€—Hњ›Л\™\ЫЭ\ЩKXШ\™Л€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OH››Ь›X[—Hњ›Л\™\ЫЭ\ЩKXШ\™Л€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OHњ™\ЫЭ\ЩKYќ[—Hњ›ЛXЪZ[‹][Y[[™K€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OHЫЫXЭ[Ы‹YЭЫ€—Hњ›ЛXЪZ[‹][Y[[™K€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OH››Ь›X[—Hњ›ЛXЪZ[‹][Y[[™K€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OHњ™\ЫЭ\ЩKYќ[—Hњ›Л]љ\ЪXљ[]K[X]љ^€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OHЫЫXЭ[Ы‹YЭЫ€—Hњ›Л]љ\ЪXљ[]K[X]љ^€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OH››Ь›X[—Hњ›Л]љ\ЪXљ[]K[X]љ^В€XЪЩЬ›Э[™€Щ™™ЋВ€B€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OHњ™\ЫЭ\ЩKYќ[—Hњ›ЛZќYЩ[Y[ќXЪ\ќ€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OHњ™\ЫЭ\ЩKYќ[—Hњ›Л\™\ЫЭ\ЩK]љ\ЭX[€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OHЫЫXЭ[Ы‹YЭЫ€—Hњ›ЛZќYЩ[Y[ќXЪ\ќ€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OHЫЫXЭ[Ы‹YЭЫ€—Hњ›Л\™\ЫЭ\ЩK]љ\ЭX[€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OH››Ь›X[—Hњ›ЛZќYЩ[Y[ќXЪ\ќ€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OH››Ь›X[—Hњ›Л\™\ЫЭ\ЩK]љ\ЭX[В€XЪЩЬ›Э[™€Щ™™ЋВ€B€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OH››Л\Ы\ЪЭ—Hњ›Л[YЩ\‹]X›H€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OHњ™\ЫЭ\ЩKYќ[—Hњ›Л[YЩ\‹]X›H€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OHЫЫXЭ[Ы‹YЭЫ€—Hњ›Л[YЩ\‹]X›H€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OH››Ь›X[—Hњ›Л[YЩ\‹]X›HВ€XЪЩЬ›Э[™€Щ™™ЋВ€B€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OH››Л\Ы\ЪЭ—Hњ›ЛXЪZ[‹][Y[[™NЋ™Y›Ь™K€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OH››Л\Ы\ЪЭ—Hњ›Л]љ\ЪXљ[]K[X]љ^Ћ™Y›Ь™HВ€ЫЫќ[ќ€€ЋВ€ЬЪ][ЫЋ€XњЫЫ]NВ€Yќ€LВ€љYЪ€LВ€Ь€L	NВ€ZYЪ€\В€XЪЩЬ›Э[™€ШЩ™ЩLЋВ€[њЩ›Ь›N€[њЫ]VJML	JNВ€BџB‚ђYYXH
+Z[‹]ЪY€НЊ\
+HВ€њ›ЛXЫЫВ€[YЫ‹XЫЫќ[ќ€Э\ќВ€ЬљYX]]Л\›ЭЬО€]]ОВ€ZYЪ€]]ОВ€B€њ›Л[[Щ[HВ€ZYЪ€]]ОВ€Э™\™›ЭО€љ\ЪX›NВ€XЪЩЬ›Э[™€Щ™™ЋВ€B€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OHњ™\ЫЭ\ЩKYќ[—HВ€ЬљY][\]KXЫЫ[[њО€Z[›X^
+LЊKЊЌњЉHZ[›X^
+ЊЋM™њЉNВ€B€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OH››Л\Ы\ЪЭ—HВ€Z[‹ZZYЪ€Ш[КLљHLњ
+NВ€B€њ›Л[YЩ\‹]X›H€њ›Л[YЩ\‹ZXYXЩ[В€ZYЪ€ЊВ€B€њ›Л[YЩ\‹]X›H€њ›Л[YЩ\‹XЩ[В€ZYЪ€ЊњВ€Y[™Л]Ь€ЬВ€Y[™ЛX›ЭЫN€ЬВ€B€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OH››Л\Ы\ЪЭ—Hњ›Л[YЩ\‹]X›H€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OH››Л\Ы\ЪЭ—Hњ›Л[YЩ\‹]X›H€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OH››Л\Ы\ЪЭ—Hњ›Л[YЩ\‹ZXYXЩ[€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OH››Л\Ы\ЪЭ—Hњ›Л[YЩ\‹XЩ[В€ZYЪ€]]ОВ€Z[‹ZZYЪ€ЌВ€Y[™О€Ь\В€[™KZZYЪ€KЊЋВ€Ъ]K\ЬXЩN€›Ь›X[В€Э™\™›ЭО€љ\ЪX›NВ€^[Э™\™›ЭО€Ы\В€ЫЬ™Xњ™XZО€›Ь›X[В€Э™\™›ЭЛ]Ь\€[ћ]Ъ\™NВ€B€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OH››Л\Ы\ЪЭ—Hњ›Л[YЩ\‹\›ЭИВ€Z[‹ZZYЪ€ЌВ€B€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OH››Л\Ы\ЪЭ—Hњ›Л[YЩ\‹XЩ[€љZЛ[Э™\ќљY]ЛXЩ[]^В€X^ZZYЪ€›Ы™NВ€[™KZZYЪ€KЊЋВ€Ъ]K\ЬXЩN€›Ь›X[В€Э™\™›ЭО€љ\ЪX›NВ€^[Э™\™›ЭО€Ы\В€B€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OH››Л\Ы\ЪЭ—Hњ›Л[[Щ[KZXYВ€Z[‹ZZYЪ€ЊњВ€Y[™Л]Ь€ЬВ€Y[™ЛX›ЭЫN€ЬВ€B€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OHњ™\ЫЭ\ЩKYќ[—Hњ›Л[YЩ\‹]X›H€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OHљ[ќ\™XЩ\ЛYЭЫ€—Hњ›Л[YЩ\‹]X›H€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OHЫЫXЭ[Ы‹YЭЫ€—Hњ›Л[YЩ\‹]X›H€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OH[[Щ™›[™H—Hњ›Л[YЩ\‹]X›H€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OHњ™\ЫЭ\ЩKYќ[—Hњ›Л[YЩ\‹XЩ[€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OHљ[ќ\™XЩ\ЛYЭЫ€—Hњ›Л[YЩ\‹XЩ[€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OHЫЫXЭ[Ы‹YЭЫ€—Hњ›Л[YЩ\‹XЩ[€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OH[[Щ™›[™H—Hњ›Л[YЩ\‹XЩ[В€ZYЪ€ЊЬВ€B€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OHњ™\ЫЭ\ЩKYќ[—Hњ›Л[YЩ\‹XЩ[€љZЛ[Э™\ќљY]ЛXЩ[]^€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OHњ™\ЫЭ\ЩKYќ[—Hњ›Л[YЩ\‹ZXYXЩ[В€Z[‹ZZYЪ€L	NВ€B€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OHњ™\ЫЭ\ЩKYќ[—HЩ]K[Э™\ќљY]ЛY[њЪ]K[[Щ[OHњ™\ЫЭ\ЩK\љ\ЪЛ\љ[Ьљ]H—Hњ›Л[YЩ\‹]X›K€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OHњ™\ЫЭ\ЩKYќ[—HЩ]K[Э™\ќљY]ЛY[њЪ]K[[Щ[OHњ™\ЫЭ\ЩK\љ\ЪЛ\љ[Ьљ]H—Hњ›Л[YЩ\‹\›ЭИВ€›^€]]ОВ€B€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OHњ™\ЫЭ\ЩKYќ[—HЩ]K[Э™\ќљY]ЛY[њЪ]K[[Щ[OHњ™\ЫЭ\ЩK\љ\ЪЛ\љ[Ьљ]H—Hњ›Л[YЩ\‹XЩ[В€ZYЪ€ЊњВ€[™KZZYЪ€KЊВ€B€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OHњ™\ЫЭ\ЩKYќ[—HЩ]K[Э™\ќљY]ЛY[њЪ]K[[Щ[OHњ™\ЫЭ\ЩK\љ\ЪЛ\љ[Ьљ]H—Hњ›Л\™\ЫЭ\ЩK]љ\ЭX[В€Y[™О€Ь\њВ€Ш\€њВ€›Ь™\‹X›ЭЫKXЫЫЬЋ€Щ™MYЋВ€XЪЩЬ›Э[™€[™X\‹YЬYY[ќ
+NYЛЩ™™€	KЩЌЩ™™€L	JNВ€B€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OHњ™\ЫЭ\ЩKYќ[—HЩ]K[Э™\ќљY]ЛY[њЪ]K[[Щ[OHњ™\ЫЭ\ЩK\™\ЬЭ\™KX\њИ—Hњ›Л[YЩ\‹]X›H€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OHњ™\ЫЭ\ЩKYќ[—HЩ]K[Э™\ќљY]ЛY[њЪ]K[[Щ[OHњ™\ЫЭ\ЩK\™\ЬЭ\™KX\њИ—Hњ›Л[YЩ\‹XЩ[€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OHњ™\ЫЭ\ЩKYќ[—HЩ]K[Э™\ќљY]ЛY[њЪ]K[[Щ[OHњ™\ЫЭ\ЩKZ[ќ\™XЩK]ЬH—Hњ›Л[YЩ\‹]X›H€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OHњ™\ЫЭ\ЩKYќ[—HЩ]K[Э™\ќљY]ЛY[њЪ]K[[Щ[OHњ™\ЫЭ\ЩKZ[ќ\™XЩK]ЬH—Hњ›Л[YЩ\‹XЩ[В€ZYЪ€Њ\В€B€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OHњ™\ЫЭ\ЩKYќ[—HЩ]K[Э™\ќљY]ЛY[њЪ]K[[Щ[OHњ™\ЫЭ\ЩKZ[ќ\™XЩK]ЬH—Hњ›Л[YЩ\‹\›ЭЦЩ]K[Э™\ќљY]Л\Ъ\™WHњ›Л[YЩ\‹XЩ[›ќXЪ[
+ЉNЋ™Y›Ь™HВ€ЬXЪ]N€ЌМЋВ€B€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OHњ™\ЫЭ\ЩKYќ[—HЩ]K[Э™\ќљY]ЛY[њЪ]K[[Щ[OHњ™\ЫЭ\ЩKZ[ќ\™XЩK]ЬH—Hњ›Л]Ь‹X›ШЪЛљ\Л\[љЪ[™Ињ›Л]Ь‹\›ЭИВ€ЬљY][\]KXЫЫ[[њО€Z[›X^
+ЋњЉHZ[›X^
+ЌNњЉHZ[›X^
+KЊЩњЉHX^XЫЫќ[ќВ€Z[‹ZZYЪ€ЌњВ€Y[™Л[Yќ€\В€B€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OHњ™\ЫЭ\ЩKYќ[—HЩ]K[Э™\ќљY]ЛY[њЪ]K[[Щ[OHњ™\ЫЭ\ЩKZ[ќ\™XЩK]ЬH—Hњ›Л]Ь‹X›ШЪЛљ\Л\[љЪ[™Ињ›Л]Ь‹\›ЭИЬ[€В€ЫЫЬЋ€\ЉK\›Л]^
+NВ€^[Э™\™›ЭО€[\Ъ\ОВ€B€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OHњ™\ЫЭ\ЩKYќ[—HЩ]K[Э™\ќљY]ЛY[њЪ]K[[Щ[OHњ™\ЫЭ\ЩKZ[ќ\™XЩK]ЬH—Hњ›Л[YЩ\‹]X›HВ€\Ь^N€ЬљYВ€ЬљY][\]KXЫЫ[[њО€™\X]
+KZ[›X^
+YњЉJNВ€Ш\€\В€›^€]]ОВ€Y[™О€њ\\В€›Ь™\‹]Ь€\ЫЫYЩMYYЌЋВ€XЪЩЬ›Э[™€ЩЋ™™NВ€B€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OHњ™\ЫЭ\ЩKYќ[—HЩ]K[Э™\ќљY]ЛY[њЪ]K[[Щ[OHњ™\ЫЭ\ЩKZ[ќ\™XЩK]ЬH—Hњ›Л[YЩ\‹ZXYВ€\Ь^N€›Ы™NВ€B€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OHњ™\ЫЭ\ЩKYќ[—HЩ]K[Э™\ќљY]ЛY[њЪ]K[[Щ[OHњ™\ЫЭ\ЩKZ[ќ\™XЩK]ЬH—Hњ›Л[YЩ\‹\›ЭЦЩ]K[Э™\ќљY]Л\Ъ\™WHВ€\Ь^N€›ШЪИZ[\Ьќ[ќВ€Z[‹]ЪY€В€Z[‹ZZYЪ€МВ€Y[™О€ЬВ€Э™\™›ЭО€Y[ЋВ€›Ь™\Ћ€\ЫЫYЩMЩЊNВ€XЪЩЬ›Э[™€Щ™™ЋВ€B€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OHњ™\ЫЭ\ЩKYќ[—HЩ]K[Э™\ќљY]ЛY[њЪ]K[[Щ[OHњ™\ЫЭ\ЩKZ[ќ\™XЩK]ЬH—Hњ›Л[YЩ\‹\›ЭЦЩ]K[Э™\ќљY]Л\Ъ\™WHњ›Л[YЩ\‹XЩ[В€\Ь^N€›ШЪОВ€ZYЪ€]]ОВ€Z[‹ZZYЪ€В€›Ь™\‹X›ЭЫN€В€Y[™О€В€›Ыќ\Ъ^™N€\В€[™KZZYЪ€KЊLЋВ€B€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OHњ™\ЫЭ\ЩKYќ[—HЩ]K[Э™\ќљY]ЛY[њЪ]K[[Щ[OHњ™\ЫЭ\ЩKZ[ќ\™XЩK]ЬH—Hњ›Л[YЩ\‹\›ЭЦЩ]K[Э™\ќљY]Л\Ъ\™WHњ›Л[YЩ\‹XЩ[™љ\њЭXЪ[€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OHњ™\ЫЭ\ЩKYќ[—HЩ]K[Э™\ќљY]ЛY[њЪ]K[[Щ[OHњ™\ЫЭ\ЩKZ[ќ\™XЩK]ЬH—Hњ›Л[YЩ\‹\›ЭЦЩ]K[Э™\ќљY]Л\Ъ\™WHњ›Л[YЩ\‹XЩ[›ќXЪ[
+ЉHВ€Э™\™›ЭО€Y[ЋВ€^[Э™\™›ЭО€[\Ъ\ОВ€Ъ]K\ЬXЩN€›ЭЬ\В€B€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OHњ™\ЫЭ\ЩKYќ[—HЩ]K[Э™\ќљY]ЛY[њЪ]K[[Щ[OHњ™\ЫЭ\ЩKZ[ќ\™XЩK]ЬH—Hњ›Л[YЩ\‹\›ЭЦЩ]K[Э™\ќљY]Л\Ъ\™WHњ›Л[YЩ\‹XЩ[›ќXЪ[
+ЉNЋ™Y›Ь™K€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OHњ™\ЫЭ\ЩKYќ[—HЩ]K[Э™\ќљY]ЛY[њЪ]K[[Щ[OHњ™\ЫЭ\ЩKZ[ќ\™XЩK]ЬH—Hњ›Л[YЩ\‹\›ЭЦЩ]K[Э™\ќљY]Л\Ъ\™WHњ›Л[YЩ\‹XЩ[›ќXЪ[
+КHВ€\Ь^N€›Ы™NВ€B€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OH››Ь›X[—HЩ]K[Э™\ќљY]ЛY[њЪ]K[[Щ[OHњЬќ\Э]\Л[X]љ^—Hњ›Л\Ьќ[X]љ^В€Y[™ЛX›ЭЫN€њВ€B€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OHњЪ[™ЫH—HЩ]K[Э™\ќљY]ЛY[њЪ]K[[Щ[OHќШ[‹]™[™—HљZЛZЫYKY]љY[ЩK\›ЭО›ќ[Щ‹]\JЉНJK€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OH››Ь›X[—HЩ]K[Э™\ќљY]ЛY[њЪ]K[[Щ[OHќШ[‹]™[™—HљZЛZЫYKY]љY[ЩK\›ЭО›ќ[Щ‹]\JЉНJHВ€\Ь^N€›Ы™NВ€B€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OHњЪ[™ЫH—HЩ]K[Э™\ќљY]ЛY[њЪ]K[[Щ[OHќШ[‹]™[™—Hњ›Л[YЩ\‹]X›K€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OH››Ь›X[—HЩ]K[Э™\ќљY]ЛY[њЪ]K[[Щ[OHќШ[‹]™[™—Hњ›Л[YЩ\‹]X›HВ€›^€]]ОВ€B€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OH››Л\Ы\ЪЭ—Hњ›ЛXЪZ[‹][Y[[™K€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OH››Л\Ы\ЪЭ—Hњ›Л]љ\ЪXљ[]K[X]љ^В€Y[™О€\В€Ш\€њВ€B€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OH››Л\Ы\ЪЭ—Hњ›ЛXЪZ[‹[›ЩK€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OH››Л\Ы\ЪЭ—Hњ›Л]љ\ЪXљ[]KXЩ[В€Z[‹ZZYЪ€ЌњВ€Y[™О€њЬВ€B€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OHњ™\ЫЭ\ЩKYќ[—Hњ›Л\™\ЫЭ\ЩKXШ\™Л€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OHЫЫXЭ[Ы‹YЭЫ€—Hњ›Л\™\ЫЭ\ЩKXШ\™Л€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OH››Ь›X[—Hњ›Л\™\ЫЭ\ЩKXШ\™Л€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OHњ™\ЫЭ\ЩKYќ[—Hњ›ЛXЪZ[‹][Y[[™K€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OHЫЫXЭ[Ы‹YЭЫ€—Hњ›ЛXЪZ[‹][Y[[™K€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OH››Ь›X[—Hњ›ЛXЪZ[‹][Y[[™K€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OHњ™\ЫЭ\ЩKYќ[—Hњ›Л]љ\ЪXљ[]K[X]љ^€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OHЫЫXЭ[Ы‹YЭЫ€—Hњ›Л]љ\ЪXљ[]K[X]љ^€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OH››Ь›X[—Hњ›Л]љ\ЪXљ[]K[X]љ^€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OHњ™\ЫЭ\ЩKYќ[—Hњ›ЛZќYЩ[Y[ќXЪ\ќ€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OHЫЫXЭ[Ы‹YЭЫ€—Hњ›ЛZќYЩ[Y[ќXЪ\ќ€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OH››Ь›X[—Hњ›ЛZќYЩ[Y[ќXЪ\ќ€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OHњ™\ЫЭ\ЩKYќ[—Hњ›Л\™\ЫЭ\ЩK]љ\ЭX[€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OHЫЫXЭ[Ы‹YЭЫ€—Hњ›Л\™\ЫЭ\ЩK]љ\ЭX[€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OH››Ь›X[—Hњ›Л\™\ЫЭ\ЩK]љ\ЭX[€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OHњ™\ЫЭ\ЩKYќ[—Hњ›Л[[Щ[K€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OHЫЫXЭ[Ы‹YЭЫ€—Hњ›Л[[Щ[K€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OH››Ь›X[—Hњ›Л[[Щ[HВ€XЪЩЬ›Э[™€Щ™™ЋВ€B€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OHњ™\ЫЭ\ЩKYќ[—HЩ]K[Э™\ќљY]ЛY[њЪ]K[[Щ[OHњ™\ЫЭ\ЩK\љ\ЪЛ\љ[Ьљ]H—Hњ›Л\Ь\љЫ[™HВ€ZYЪ€В€B€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OHњ™\ЫЭ\ЩKYќ[—HЩ]K[Э™\ќљY]ЛY[њЪ]K[[Щ[OHњ™\ЫЭ\ЩK\љ\ЪЛ\љ[Ьљ]H—Hњ›Л\™\ЫЭ\ЩKXШ\™ИВ€Ш\€В€B€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OHњ™\ЫЭ\ЩKYќ[—HЩ]K[Э™\ќљY]ЛY[њЪ]K[[Щ[OHњ™\ЫЭ\ЩK\љ\ЪЛ\љ[Ьљ]H—Hњ›Л\™\ЫЭ\ЩKXШ\™В€Z[‹ZZYЪ€LњВ€Y[™О€\\В€›Ь™\‹XЫЫЬЋ€ЩYLЩYNВ€B€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OHњ™\ЫЭ\ЩKYќ[—HЩ]K[Э™\ќљY]ЛY[њЪ]K[[Щ[OHњ™\ЫЭ\ЩK\љ\ЪЛ\љ[Ьљ]H—Hњ›Л\™\ЫЭ\ЩKXШ\™[HВ€›Ыќ\Ъ^™N€В€B€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OHњ™\ЫЭ\ЩKYќ[—HЩ]K[Э™\ќљY]ЛY[њЪ]K[[Щ[OHњ™\ЫЭ\ЩK\љ\ЪЛ\љ[Ьљ]H—Hњ›Л\™\ЫЭ\ЩKXШ\™HВ€ZYЪ€њВ€B€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OHњ™\ЫЭ\ЩKYќ[—HЩ]K[Э™\ќљY]ЛY[њЪ]K[[Щ[OHњ™\ЫЭ\ЩKZ[ќ\™XЩK]ЬH—Hњ›Л]Ь‹X›ШЪЛљ\Л\[љЪ[™ИВ€Y[™О€њЬВ€B€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OHњ™\ЫЭ\ЩKYќ[—HЩ]K[Э™\ќљY]ЛY[њЪ]K[[Щ[OHњ™\ЫЭ\ЩKZ[ќ\™XЩK]ЬH—Hњ›Л]Ь‹X›ШЪЛљ\Л\[љЪ[™Ињ›Л]Ь‹\›ЭОЋYќ\€В€Ь€\В€Yќ€В€ЫЫЬЋ€\ЉK\›ЛX›YJNВ€B€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OHњ™\ЫЭ\ЩKYќ[—HЩ]K[Э™\ќљY]ЛY[њЪ]K[[Щ[OHњ™\ЫЭ\ЩKZ[ќ\™XЩK]ЬH—Hњ›Л]Ь‹X›ШЪЛљ\Л\[љЪ[™Ињ›Л]Ь‹\›ЭИ€В€›Ыќ\Ъ^™N€LВ€B€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OHњ™\ЫЭ\ЩKYќ[—HЩ]K[Э™\ќљY]ЛY[њЪ]K[[Щ[OHњ™\ЫЭ\ЩK\™\ЬЭ\™KX\њИ—Hњ›Л[YЩ\‹]X›HВ€Y[™ЛX›ЭЫN€В€B€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OHњ™\ЫЭ\ЩKYќ[—HЩ]K[Э™\ќљY]ЛY[њЪ]K[[Щ[OHњ™\ЫЭ\ЩK\™\ЬЭ\™KX\њИ—Hњ›Л[YЩ\‹\›ЭИВ€[YЫ‹Z][\О€Щ[ќ\ЋВ€B€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OHњ™\ЫЭ\ЩKYќ[—HЩ]K[Э™\ќљY]ЛY[њЪ]K[[Щ[OHњ™\ЫЭ\ЩK\™\ЬЭ\™KX\њИ—Hњ›Л[YЩ\‹XЩ[›ќXЪ[
+ЉHВ€›Ыќ]ЩZYЪ€В€B€њ›ЛY\ЪЭЬYЬљYЩ]K[Э™\ќљY]ЛY\ЪЭЬ\ШЩ[™OHњ™\ЫЭ\ЩKYќ[—HЩ]K[Э™\ќљY]ЛY[њЪ]K[[Щ[OHњ™\ЫЭ\ЩK\™\ЬЭ\™KX\њИ—Hњ›Л[YЩ\‹XЩ[›ќXЪ[
+КHВ€ЫЫЬЋ€\ЉK\›ЛYZ[ќ
+NВ€›Ыќ\Ъ^™N€В€BџB

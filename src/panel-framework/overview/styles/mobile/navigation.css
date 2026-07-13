@@ -20,8 +20,10 @@
     border-top: 1px solid rgba(148, 178, 205, .42);
     border-radius: 0;
     outline: 0;
-    background: rgba(244, 249, 252, .96);
+    background: rgba(241, 247, 251, .82);
     box-shadow: 0 -1px 0 rgba(255, 255, 255, .72);
+    backdrop-filter: blur(20px) saturate(125%);
+    -webkit-backdrop-filter: blur(20px) saturate(125%);
   }
   #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-bottom-tabs button {
     position: relative;

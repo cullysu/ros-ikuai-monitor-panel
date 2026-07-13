@@ -2,29 +2,40 @@
 
 @media (min-width: 761px) {
   #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-desktop-grid {
-    grid-template-columns: minmax(0, 1.47fr) minmax(360px, .88fr);
-    grid-template-rows: var(--ro-desktop-grid-rows, 54px minmax(0, 1fr) 148px);
+    display: grid;
+    grid-template-columns: minmax(0, 1.42fr) minmax(380px, .92fr);
+    grid-template-rows: auto auto auto;
+    grid-template-areas:
+      "rail rail"
+      "main side"
+      "bottom bottom";
     align-content: start;
-    align-items: stretch;
-    gap: 3px;
+    align-items: start;
+    gap: 8px;
     height: calc(100vh - 82px);
     min-height: calc(100vh - 82px);
     overflow: hidden;
+  }
+  #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-desktop-grid.is-normal-scene {
+    grid-template-areas:
+      "main side"
+      "bottom bottom";
+    grid-template-rows: auto auto;
   }
   #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-col {
     gap: 3px;
   }
   #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-col.is-main {
-    grid-column: 2;
-    grid-row: 2;
+    grid-area: main;
   }
   #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-col.is-side {
-    grid-column: 3;
-    grid-row: 2;
+    grid-area: side;
   }
   #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-col.is-bottom {
-    grid-column: 1 / -1;
-    grid-row: 3;
+    grid-area: bottom;
+  }
+  #overview.router-overview-framework[data-overview-scene-key="resource-full"] .ro-desktop-grid.ik-home-layout {
+    grid-template-columns: minmax(0, 1.34fr) minmax(410px, .98fr);
   }
   #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-module {
     min-height: 0;
@@ -124,10 +135,6 @@
   #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-ledger-row[data-tone="missing"] .ro-ledger-cell:first-child .ik-overview-cell-text {
     color: #765927;
     font-weight: 700;
-  }
-  #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-col.is-bottom,
-  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-col.is-bottom {
-    grid-column: 2 / -1;
   }
 }
 

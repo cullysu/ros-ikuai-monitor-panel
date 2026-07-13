@@ -10,7 +10,7 @@
     border: 0;
     border-bottom: 1px solid rgba(125, 160, 190, .38);
     border-radius: 0;
-    background: transparent;
+    background: rgba(222, 237, 247, .3);
     box-shadow: none;
   }
   #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-core-facts span {

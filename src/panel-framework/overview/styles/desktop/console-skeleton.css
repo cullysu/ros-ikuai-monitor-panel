@@ -4,20 +4,6 @@
   .router-overview-framework {
     background: #f3f7fb !important;
   }
-  .router-overview-framework .ro-desktop-grid.ik-home-layout.ik-desktop-workspace {
-    display: grid !important;
-    grid-template-areas: "network resource"
-      "bottom bottom" !important;
-  }
-  .router-overview-framework .ro-desktop-grid.ik-home-layout > .ro-col.is-main {
-    grid-area: network !important;
-  }
-  .router-overview-framework .ro-desktop-grid.ik-home-layout > .ro-col.is-side {
-    grid-area: resource !important;
-  }
-  .router-overview-framework .ro-desktop-grid.ik-home-layout > .ro-col.is-bottom {
-    grid-area: bottom !important;
-  }
   .router-overview-framework .ro-col.is-bottom [data-overview-density-module="terminal-ranking"] {
     display: none !important;
   }
@@ -90,7 +76,6 @@
     border-left-width: 3px !important;
   }
   .router-overview-framework .ro-col,
-  .router-overview-framework .ro-desktop-grid.ik-home-layout.ik-desktop-workspace,
   .router-overview-framework .ro-desktop-grid[data-overview-desktop-hierarchy="conclusion-metrics-evidence"] {
     gap: 8px !important;
   }

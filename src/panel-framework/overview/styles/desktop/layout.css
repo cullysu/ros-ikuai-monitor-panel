@@ -15,12 +15,6 @@
     --v4-console-cache: #9a6419;
     --v4-console-danger: #c93932;
   }
-  .router-overview-framework .ro-desktop-grid.ik-home-layout.ik-desktop-workspace {
-    grid-template-columns: minmax(0, 1.52fr) minmax(386px, .92fr) !important;
-    gap: 9px !important;
-    min-height: calc(100vh - 112px) !important;
-    align-items: stretch !important;
-  }
   .router-overview-framework .ro-desktop-grid.ik-home-layout > .ro-col {
     gap: 9px !important;
   }
@@ -167,12 +161,6 @@
     --ik-v6-muted: #667789;
     --ik-v6-danger: #c9342f;
     --ik-v6-cache: #b46a1f;
-  }
-  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-desktop-grid.ik-home-layout.ik-desktop-workspace {
-    grid-template-columns: minmax(0, 1.45fr) minmax(390px, .95fr) !important;
-    gap: 10px !important;
-    align-items: stretch !important;
-    min-height: calc(100vh - 108px) !important;
   }
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-module {
     border-radius: 3px !important;

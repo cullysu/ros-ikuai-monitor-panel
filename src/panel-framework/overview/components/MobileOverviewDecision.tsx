@@ -30,6 +30,9 @@ function WanDecisionSpark({ model }: { model: MobileOverviewModel }) {
             <circle className="ik-mobile-chart-peak" cx={plot.peak.x} cy={plot.peak.y} r="2.6" />
             <circle className="ik-mobile-chart-focus ik-mobile-decision-dot" cx={plot.focus.x} cy={plot.focus.y} r="3" />
           </svg>
+          <span className="ik-mobile-chart-time-axis" aria-hidden="true">
+            <i>较早采样</i><i>当前</i>
+          </span>
         </div>
       </div>
       <i className="ik-mobile-decision-trend-anchor" aria-hidden="true" />
