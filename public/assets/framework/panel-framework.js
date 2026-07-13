@@ -9270,7 +9270,7 @@ var PanelFramework = function(exports) {
     return /* @__PURE__ */ jsxRuntimeExports.jsxs(
       "nav",
       {
-        className: "ik-v420-nav ik-v240-nav ik-mobile-device-bar",
+        className: "ik-mobile-device-bar",
         "aria-label": "RouterOS 设备状态导航",
         children: [
           /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ik-mobile-device-title", children: [
@@ -9283,7 +9283,7 @@ var PanelFramework = function(exports) {
           /* @__PURE__ */ jsxRuntimeExports.jsxs(
             "strong",
             {
-              className: `ik-v240-status ${toneClass(model.header.tone)}`,
+              className: `ik-mobile-device-status ${toneClass(model.header.tone)}`,
               "aria-label": `设备状态 ${model.header.statusLabel}`,
               children: [
                 /* @__PURE__ */ jsxRuntimeExports.jsx("i", { "aria-hidden": "true" }),

@@ -3822,7 +3822,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       Array.from(sectionRoot?.querySelectorAll('.ik-mobile-bottom-tabs, .ik-ios-bottom-tab, [data-overview-mobile-bottom-tab]') || []).some(nodeVisibleInViewport)
     );
     const mobile390PrimaryStatusNode = mobileOverview390x844
-      ? sectionRoot?.querySelector('.ik-v240-status, [data-overview-mobile-primary-status], [data-overview-mobile-status], .ik-ios-nav-status')
+      ? sectionRoot?.querySelector('.ik-mobile-device-status, [data-overview-mobile-primary-status], [data-overview-mobile-status], .ik-ios-nav-status')
       : null;
     const mobile390PrimaryStatusText = normalize(mobile390PrimaryStatusNode?.textContent || '');
     const overviewMobile390NoFocusPrimaryStatusOk = !mobileOverview390x844 || mobile390PrimaryStatusText !== '关注';
@@ -3834,7 +3834,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       ? sectionRoot?.querySelector('.ik-mobile-device-title, .ik-v240-title, .ik-ios-nav-title')
       : null;
     const mobile390NavNode = mobileOverview390x844
-      ? sectionRoot?.querySelector('.ik-v240-nav, [data-overview-mobile-v240-nav], [data-overview-mobile-v159-nav], .ik-ios-top-nav')
+      ? sectionRoot?.querySelector('.ik-mobile-device-bar, [data-overview-mobile-v240-nav], [data-overview-mobile-v159-nav], .ik-ios-top-nav')
       : null;
     const mobile390TitleRect = mobile390TitleNode?.getBoundingClientRect();
     const mobile390StatusRect = mobile390PrimaryStatusNode?.getBoundingClientRect();

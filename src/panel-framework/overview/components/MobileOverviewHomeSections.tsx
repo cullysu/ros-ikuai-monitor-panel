@@ -6,7 +6,7 @@ import { toneClass } from "./MobileOverviewUtils";
 export function DeviceBar({ model }: { model: MobileOverviewModel }) {
   return (
     <nav
-      className="ik-v420-nav ik-v240-nav ik-mobile-device-bar"
+      className="ik-mobile-device-bar"
       aria-label="RouterOS 设备状态导航"
     >
       <div className="ik-mobile-device-title">
@@ -14,7 +14,7 @@ export function DeviceBar({ model }: { model: MobileOverviewModel }) {
         <span>只读 · 不改配置 · {model.header.recent}</span>
       </div>
       <strong
-        className={`ik-v240-status ${toneClass(model.header.tone)}`}
+        className={`ik-mobile-device-status ${toneClass(model.header.tone)}`}
         aria-label={`设备状态 ${model.header.statusLabel}`}
       >
         <i aria-hidden="true" />

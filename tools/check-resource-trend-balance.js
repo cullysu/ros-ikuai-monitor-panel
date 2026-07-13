@@ -1338,7 +1338,7 @@ async function main() {
         const root = sectionEl?.querySelector('[data-overview-mobile-console]');
         const screen = sectionEl?.querySelector('[data-overview-mobile-first-screen="app-home"]');
         const deviceTitle = screen?.querySelector('.ik-mobile-device-title > b');
-        const deviceStatus = screen?.querySelector('.ik-mobile-device-bar .ik-v240-status');
+        const deviceStatus = screen?.querySelector('.ik-mobile-device-bar .ik-mobile-device-status');
         const deviceTitleText = normalize(deviceTitle?.textContent || '');
         const deviceTitleRect = deviceTitle?.getBoundingClientRect();
         const deviceHeaderVisible = Boolean(
@@ -1805,7 +1805,7 @@ async function main() {
         const statusHeaderActionLabel = statusHeaderAction?.getAttribute('aria-label') || '';
         const statusHeaderLabel = statusHeader?.getAttribute('aria-label') || '';
         const statusHeaderTitle = statusHeader?.querySelector('.ik-mobile-device-title');
-        const statusHeaderState = statusHeader?.querySelector('.ik-v240-status');
+        const statusHeaderState = statusHeader?.querySelector('.ik-mobile-device-status');
         const statusHeaderTitleRect = statusHeaderTitle?.getBoundingClientRect();
         const statusHeaderStateRect = statusHeaderState?.getBoundingClientRect();
         const statusHeaderStateStyle = statusHeaderState ? getComputedStyle(statusHeaderState) : null;

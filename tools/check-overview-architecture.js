@@ -102,6 +102,8 @@ const mobileProductShellFile =
   "src/panel-framework/overview/styles/mobile/product-shell.css";
 const mobileNavigationStylesFile =
   "src/panel-framework/overview/styles/mobile/navigation.css";
+const mobileFrameStylesFile =
+  "src/panel-framework/overview/styles/mobile/frame.css";
 const mobileModelFile =
   "src/panel-framework/overview/mobileOverviewModel.ts";
 const mobilePolicyFile =
@@ -141,6 +143,7 @@ const mobileBottomTabs = read(mobileBottomTabsFile);
 const mobileStyles = read(mobileStylesFile);
 const mobileProductShell = read(mobileProductShellFile);
 const mobileNavigationStyles = read(mobileNavigationStylesFile);
+const mobileFrameStyles = read(mobileFrameStylesFile);
 const mobileModel = read(mobileModelFile);
 const mobilePolicy = read(mobilePolicyFile);
 const cssRoot = postcss.parse(panelCss, { from: panelCssFile });
@@ -411,8 +414,9 @@ assert(
 );
 assert(
   (mobileProductShell.match(/!important/g) || []).length === 0 &&
-    (mobileNavigationStyles.match(/!important/g) || []).length === 0,
-  "Mobile product shell and navigation must not use override priorities"
+    (mobileNavigationStyles.match(/!important/g) || []).length === 0 &&
+    (mobileFrameStyles.match(/!important/g) || []).length === 0,
+  "Mobile product shell, frame, and navigation must not use override priorities"
 );
 assert(
   lines(desktopHelpers) <= 450,
@@ -500,6 +504,11 @@ assert(
 assert(
   lines(mobileHomeSections) <= 170,
   `MobileOverviewHomeSections.tsx exceeds 170 lines: ${lines(mobileHomeSections)}`
+);
+assert(
+  mobileHomeSections.includes("ik-mobile-device-status") &&
+    !/ik-v(?:240|420)-(?:nav|status)/.test(mobileHomeSections),
+  "Mobile device bar must not inherit legacy navigation or status classes"
 );
 assert(
   lines(mobileTabView) <= 150,
