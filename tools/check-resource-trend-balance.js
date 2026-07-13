@@ -1198,7 +1198,7 @@ async function main() {
       }
       if (sectionName === 'mobileIncidentActionNavigation') {
         const root = sectionEl?.querySelector('[data-overview-mobile-console]');
-        const action = root?.querySelector('.ik-mobile-incident-guidance .ik-mobile-decision-cell:last-child');
+        const action = root?.querySelector('.ik-mobile-incident-guidance .ik-mobile-incident-action:last-child');
         const resourceDetails = root?.querySelector('.ik-mobile-supporting-list button');
         return (async () => {
           await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
@@ -1302,7 +1302,7 @@ async function main() {
       }
       if (incidentActionRoute) {
         const root = sectionEl?.querySelector('[data-overview-mobile-console]');
-        const action = root?.querySelector('.ik-mobile-incident-guidance .ik-mobile-decision-cell:last-child');
+        const action = root?.querySelector('.ik-mobile-incident-guidance .ik-mobile-incident-action:last-child');
         return (async () => {
           action?.click();
           await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
@@ -1701,7 +1701,7 @@ async function main() {
           )
         );
         const firstScreenChannelRail = root?.querySelector('.ik-mobile-channel-decision');
-        const firstScreenChannelCells = Array.from(firstScreenChannelRail?.querySelectorAll('.ik-mobile-decision-cell') || []);
+        const firstScreenChannelCells = Array.from(firstScreenChannelRail?.querySelectorAll('.ik-mobile-incident-cell') || []);
         const firstScreenChannelEvidenceVisible = Boolean(
           firstScreenChannelRail &&
           firstScreenChannelCells.length >= 4 &&
@@ -1953,7 +1953,7 @@ async function main() {
         const channelRail = hero?.querySelector('.ik-mobile-channel-decision');
         const channelRailModelBacked = (sectionName !== 'mobileNoSnapshotHome' && sectionName !== 'mobileCollectionHome') || Boolean(channelRail);
         const abnormalDecisionRail = hero?.querySelector('.ik-mobile-abnormal-decision-rail');
-        const abnormalDecisionCells = Array.from(abnormalDecisionRail?.querySelectorAll('.ik-mobile-decision-cell') || []);
+        const abnormalDecisionCells = Array.from(abnormalDecisionRail?.querySelectorAll('.ik-mobile-incident-cell') || []);
         const abnormalDecisionLabels = abnormalDecisionCells.map((cell) => normalize(cell.querySelector('em')?.textContent || ''));
         const abnormalDecisionValues = abnormalDecisionCells.map((cell) => normalize(cell.querySelector('b')?.textContent || ''));
         const abnormalDecisionRailStyle = abnormalDecisionRail ? getComputedStyle(abnormalDecisionRail) : null;

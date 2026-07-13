@@ -110,6 +110,8 @@ const mobileDecisionStylesFile =
   "src/panel-framework/overview/styles/mobile/decision.css";
 const mobileSurfaceStylesFile =
   "src/panel-framework/overview/styles/mobile/surface.css";
+const mobileIncidentStylesFile =
+  "src/panel-framework/overview/styles/mobile/incident.css";
 const mobileModelFile =
   "src/panel-framework/overview/mobileOverviewModel.ts";
 const mobilePolicyFile =
@@ -153,6 +155,7 @@ const mobileFrameStyles = read(mobileFrameStylesFile);
 const mobileCoreStyles = read(mobileCoreStylesFile);
 const mobileDecisionStyles = read(mobileDecisionStylesFile);
 const mobileSurfaceStyles = read(mobileSurfaceStylesFile);
+const mobileIncidentStyles = read(mobileIncidentStylesFile);
 const mobileModel = read(mobileModelFile);
 const mobilePolicy = read(mobilePolicyFile);
 const cssRoot = postcss.parse(panelCss, { from: panelCssFile });
@@ -427,8 +430,9 @@ assert(
     (mobileFrameStyles.match(/!important/g) || []).length === 0 &&
     (mobileCoreStyles.match(/!important/g) || []).length === 0 &&
     (mobileDecisionStyles.match(/!important/g) || []).length === 0 &&
-    (mobileSurfaceStyles.match(/!important/g) || []).length === 0,
-  "Mobile product shell, frame, core, decision, surface, and navigation must not use override priorities"
+    (mobileSurfaceStyles.match(/!important/g) || []).length === 0 &&
+    (mobileIncidentStyles.match(/!important/g) || []).length === 0,
+  "Mobile product shell, frame, core, decision, surface, incident, and navigation must not use override priorities"
 );
 assert(
   lines(desktopHelpers) <= 450,
@@ -516,6 +520,12 @@ assert(
 assert(
   !/ik-v\d+/.test(mobileDecision),
   "Mobile decision card must not inherit legacy hero, chart, or incident classes"
+);
+assert(
+  mobileDecision.includes("ik-mobile-incident-cell") &&
+    mobileDecision.includes("ik-mobile-incident-action") &&
+    !mobileDecision.includes("ik-mobile-decision-cell"),
+  "Mobile incident rail must own semantic cells and action controls"
 );
 assert(
   lines(mobileHomeSections) <= 170,

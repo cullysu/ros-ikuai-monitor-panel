@@ -9194,17 +9194,17 @@ var PanelFramework = function(exports) {
         className: "ik-mobile-abnormal-decision-rail",
         children: [
           /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ik-mobile-incident-summary", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: `ik-mobile-decision-cell ${toneClass(object.tone)}`, children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: `ik-mobile-incident-cell ${toneClass(object.tone)}`, children: [
               /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: "对象" }),
               /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: object.value })
             ] }),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: `ik-mobile-decision-cell ${toneClass(impact.tone)}`, children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: `ik-mobile-incident-cell ${toneClass(impact.tone)}`, children: [
               /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: "影响" }),
               /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: impact.value })
             ] })
           ] }),
           /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ik-mobile-incident-guidance", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: `ik-mobile-decision-cell ${toneClass(credibility.tone)}`, children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: `ik-mobile-incident-cell ${toneClass(credibility.tone)}`, children: [
               /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: "可信度" }),
               /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: credibility.value })
             ] }),
@@ -9212,7 +9212,7 @@ var PanelFramework = function(exports) {
               "button",
               {
                 "aria-label": `下一步：${action.value}，${action.note}`,
-                className: `ik-mobile-decision-cell is-action ${toneClass(action.tone)}`,
+                className: `ik-mobile-incident-cell ik-mobile-incident-action ${toneClass(action.tone)}`,
                 onClick: () => onSelectTab(action.targetTab),
                 type: "button",
                 children: [
@@ -9220,7 +9220,7 @@ var PanelFramework = function(exports) {
                   /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: action.value })
                 ]
               }
-            ) : /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: `ik-mobile-decision-cell ${toneClass(action.tone)}`, children: [
+            ) : /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: `ik-mobile-incident-cell ${toneClass(action.tone)}`, children: [
               /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: "下一步" }),
               /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: action.value })
             ] })

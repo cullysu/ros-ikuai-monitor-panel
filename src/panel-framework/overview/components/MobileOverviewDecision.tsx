@@ -75,24 +75,24 @@ function AbnormalDecisionRail({ model, onSelectTab }: { model: MobileOverviewMod
       className="ik-mobile-abnormal-decision-rail"
     >
       <div className="ik-mobile-incident-summary">
-        <span className={`ik-mobile-decision-cell ${toneClass(object.tone)}`}>
+        <span className={`ik-mobile-incident-cell ${toneClass(object.tone)}`}>
           <em>对象</em>
           <b>{object.value}</b>
         </span>
-        <span className={`ik-mobile-decision-cell ${toneClass(impact.tone)}`}>
+        <span className={`ik-mobile-incident-cell ${toneClass(impact.tone)}`}>
           <em>影响</em>
           <b>{impact.value}</b>
         </span>
       </div>
       <div className="ik-mobile-incident-guidance">
-        <span className={`ik-mobile-decision-cell ${toneClass(credibility.tone)}`}>
+        <span className={`ik-mobile-incident-cell ${toneClass(credibility.tone)}`}>
           <em>可信度</em>
           <b>{credibility.value}</b>
         </span>
         {action.targetTab && onSelectTab ? (
           <button
             aria-label={`下一步：${action.value}，${action.note}`}
-            className={`ik-mobile-decision-cell is-action ${toneClass(action.tone)}`}
+            className={`ik-mobile-incident-cell ik-mobile-incident-action ${toneClass(action.tone)}`}
             onClick={() => onSelectTab(action.targetTab as MobileBottomTabId)}
             type="button"
           >
@@ -100,7 +100,7 @@ function AbnormalDecisionRail({ model, onSelectTab }: { model: MobileOverviewMod
             <b>{action.value}</b>
           </button>
         ) : (
-          <span className={`ik-mobile-decision-cell ${toneClass(action.tone)}`}>
+          <span className={`ik-mobile-incident-cell ${toneClass(action.tone)}`}>
             <em>下一步</em>
             <b>{action.value}</b>
           </span>
