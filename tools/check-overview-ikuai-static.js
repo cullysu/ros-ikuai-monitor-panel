@@ -257,6 +257,7 @@ includesAll(mobilePolicy, [
 includesAll(predeploy, [
   'compactLandscapeOverview',
   'overviewMobileLandscapeAppOk',
+  "mobileLandscapeTabs.querySelectorAll('button').length === 3",
   'waitForAnyJson',
   'terminateBrowserTree',
   'matrixBlocksTopLevelPass',

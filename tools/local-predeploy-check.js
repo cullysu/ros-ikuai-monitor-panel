@@ -2075,7 +2075,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       mobileLandscapeScreenRect.height <= window.innerHeight + 4 &&
       mobileLandscapeTabsRect.width >= window.innerWidth - 4 &&
       mobileLandscapeTabsRect.height >= 44 &&
-      mobileLandscapeTabs.querySelectorAll('button').length === 5 &&
+      mobileLandscapeTabs.querySelectorAll('button').length === 3 &&
       !mobileLandscapeDesktopVisible
     );
     const mobileCoreBlocksVisible = mobileCoreBlocks.filter(nodeVisibleInFirstScreen);
