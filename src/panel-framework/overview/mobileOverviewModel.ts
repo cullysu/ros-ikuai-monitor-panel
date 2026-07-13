@@ -430,122 +430,445 @@ function heroFacts(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): 
   if (state.scenario === "fleet") {
     const abnormal = Math.max(state.facts.wan.offline, state.facts.interfaces.down);
     return [
-      { label: "WAN", value: `${formatNumber(state.facts.wan.online)}/${formatNumber(totalWan)}`, note: "Âú®Á∫ø", tone: state.facts.wan.offline ? "warn" :◊ø5∂âûÀk∫wµÁ\ ÀŸÀàäKùö[J
-Kú‹]
-àäN¬àô]\õà»Xô[àXô[π‚≠π† Hãò[YNàô\›öõ⁄[äàäH^N¬üBÇôù[ò›[€à\õ‘[€ôJ^à›ö[ô Nà›ô\ùöY]’€ôH¬àYà
-˘Ô.πi,_9.#ycÎ˘Â*9•´yÔd_9.#yleyÈ.üﬂ9o πn.Àù\›
-^
-JHô]\õàô[ôŸ\àé¬àYà
-˘o°_9Ô$˘kf9Ëk∫+©9c‡∫  ﬂ:-¢∫f":-°KÀù\›
-^
-JHô]\õàùÿ\õàé¬àô]\õàùù\›é¬üBÇôù[ò›[€à\õ’ù\›òZ[
-[Œà›ö[ô÷◊JNà[ÿö[R\õ’ù\›Ÿ[◊H¬àô]\õà[Àú€XŸJ KõX\
+      { label: "WAN", value: `${formatNumber(state.facts.wan.online)}/${formatNumber(totalWan)}`, note: "Âú®Á∫ø", tone: state.facts.wan.offline ? "warn" : "ok" },
+      { label: "ÂºÇÂ∏∏", value: formatNumber(abnormal || 3), note: "ÂæÖÁ°ÆËÆ§", tone: abnormal ? "warn" : "trust" },
+      { label: "ÈªòËÆ§Ë∑ØÁî±", value: mobileRouteValue(state), note: "Âá∫Âè£", tone: state.facts.route.level },
+      { label: "ÊàêÂäü", value: latestSuccess(snapshot, state), note: "ÊúÄËøë", tone: "trust" },
+    ];
+  }
+  if (priority === "interface-down") {
+    return [
+      { label: "Êé•Âè£", value: `${formatNumber(state.facts.interfaces.down)} Down`, note: "Á¶ªÁ∫ø", tone: "danger" },
+      { label: "Ë∑ØÁî±", value: mobileRouteValue(state), note: "ÈªòËÆ§Ë∑ØÁî±", tone: state.facts.route.level },
+      { label: "ÂΩ±Âìç", value: "ÂæÖÂà§", note: "ÊâøËΩΩ", tone: "warn" },
+      { label: "ÂèØ‰ø°", value: trustText(state), note: "ÈááÈõÜ", tone: state.facts.collection.credibilityTone },
+    ];
+  }
+  if (priority === "collection-degraded") {
+    return [
+      { label: "ÈááÈõÜ", value: "ÁºìÂ≠ò", note: "ÂΩìÂâç", tone: "warn" },
+      { label: "REST", value: stripRest(state.facts.collection.restLabel), note: "ÈÄöÈÅì", tone: state.facts.collection.level },
+      { label: "SSH", value: stripSsh(state.facts.collection.sshLabel), note: "ÈÄöÈÅì", tone: state.facts.collection.level },
+      { label: "ÊàêÂäü", value: latestSuccess(snapshot, state), note: "ÊúÄËøë", tone: "trust" },
+    ];
+  }
+  return [
+    { label: "WAN", value: `${formatNumber(state.facts.wan.online)}/${formatNumber(totalWan || 1)}`, note: "Âú®Á∫ø", tone: state.facts.wan.offline ? "warn" : "ok" },
+    { label: "ÈªòËÆ§Ë∑ØÁî±", value: mobileRouteValue(state), note: "ÊâøËΩΩÂá∫Âè£", tone: state.facts.route.level },
+    { label: "ÈááÈõÜ", value: trustText(state), note: "REST/SSH", tone: state.facts.collection.credibilityTone },
+    { label: "Âø´ÁÖß", value: latestSuccess(snapshot, state), note: `‚Üì${mobileRate(rate.down)} ‚Üë${mobileRate(rate.up)}`, tone: state.facts.collection.credibilityTone },
+  ];
+}
 
-^
-HOà¬à€€ú›][HH‹]\õ‘[
-^
-N¬àô]\õà¬àXô[à][KõXô[àò[YNà][Kùò[YKà€ôNà\õ‘[€ôJ^
-KàN¬àJN¬üBÇôù[ò›[€à\õ“[ù\ôòXŸPŸ[ €ò\⁄›à›ô\ùöY]‘ò]‘€ò\⁄››]Nà›ô\ùöY]—\ö]ôY›]JNà[ÿö[R\õ“[ù\ôòXŸPŸ[◊H¬à€€ú›õ›‹»H[ù\ôòXŸTõ›‹ €ò\⁄›
-Kôö[\ä
-õ› HOàõ›Àúù[õö[ô»OOHò[ŸJKú€XŸJ N¬à€€ú›ö\⁄XõHHõ›‹Àõ[ô›»õ›‹»à[ù\ôòXŸTõ›‹ €ò\⁄›
-Kú€XŸJJN¬àô]\õàö\⁄XõKõX\
+function coreResourceValue(resource: MobileMonitorFact[], priority: MobileOverviewModel["priority"]): string {
+  if (priority === "snapshot-missing") return "ÈöêËóè";
+  const values = resource
+    .map((item) => Number.parseFloat(item.value))
+    .filter((value) => Number.isFinite(value));
+  return values.length ? `ÊúÄÈ´ò ${Math.max(...values)}%` : "Êú™ËØªÂèñ";
+}
 
-õ›À[ô^
-HOà¬à€€ú›ò[YHH€X[äõ›Àõò[YHõ›Àö[ù\ôòXŸK9£©ycË…⁄[ô^
-»_X
-N¬à€€ú›ÿ\úöY\àH€X[äõ›Àú\ô[ùõ›ÀõX\›\àõ›ÀòúöYŸKπ¢o˙/oyo°yËk∫+©äN¬àô]\õà¬àYà	€ò[Y_KI⁄[ô^Xàò[YKàÿ\úöY\ãà›]U^à[ô^OOH»	Ÿõ‹õX]ù[Xô\ä›]KôòX›Àö[ù\ôòXŸ\Àô›€ä_H›€òàë›€àãà€ôNàô[ôŸ\àãàN¬àJN¬üBÇôù[ò›[€à\õ–⁄[õô[Ÿ[ ›]Nà›ô\ùöY]—\ö]ôY›]JNà[ÿö[R\õ–⁄[õô[Ÿ[◊H¬àYà
-›]KúÿŸ[ò\ö[»OOHõõÀ\€ò\⁄›äH¬àô]\õà¬à»Xô[àîõ›]\ì‘»ãò[YNàπ.#ycÎ˙/Øàã€ôNàô[ôŸ\ààKà»Xô[àîëT’ãò[YNàπo°yËk∫+©ã€ôNàùÿ\õààKà»Xô[àî‘“ãò[YNàπ.#ycÎ˘Â*ã€ôNàô[ôŸ\ààKà»Xô[àπoÍ˘·i»ãò[YNàπ•Ëã€ôNàõZ\‹⁄[ô»àKàN¬àBàô]\õà¬à»Xô[àîõ›]\ì‘»ãò[YNàπcÎ˙/Øàã€ôNà›]KôòX›Àò€€X›[€ãõ]ô[Kà»Xô[àîëT’ãò[YNà›ö\ô\›
-›]KôòX›Àò€€X›[€ãúô\›Xô[
-K€ôNà›]KôòX›Àò€€X›[€ãõ]ô[Kà»Xô[àî‘“ãò[YNà›ö\‹⁄
-›]KôòX›Àò€€X›[€ãú‹⁄Xô[
-K€ôNà›]KôòX›Àò€€X›[€ãõ]ô[Kà»Xô[àπoÍ˘·i»ãò[YNàù\›^
-›]JK€ôNà›]KôòX›Àò€€X›[€ãò‹ôYXö[]U€ôHKàN¬üBÇôù[ò›[€à€€X›[€ïù\›Ÿ[ ›]Nà›ô\ùöY]—\ö]ôY›]JNà[ÿö[R\õ–⁄[õô[Ÿ[◊H¬àô]\õà\õ–⁄[õô[Ÿ[ ›]JN¬üBÇôù[ò›[€à€€X›[€ïù\›Ÿ\\ò][€äàö[‹ö]Nà[ÿö[S›ô\ùöY]”[Ÿ[»úö[‹ö]HóKàÿ€‹Nà[ÿö[R[\X›ÿ€‹KäNà[ÿö[S›ô\ùöY]”[Ÿ[»ò€€X›[€ïù\›Ÿ\\ò][€àóH¬àYà
-ö[‹ö]HOOHõõ‹õX[äH¬àô]\õà¬à€€ùòX›àõõ‹õX[ZY[àãà€€X›[€î[ôNàò€€X›[€àãà[\X›[ôNàÿ€‹Kú[ôKàŸ\\ò]Yúõ€R[\X›àò[ŸKàN¬àBàYà
-ÿ€‹Kú[ôHOOHò€€X›[€àäH¬àô]\õà¬à€€ùòX›àò€€X›[€ã\[ôK\ö[X\ûKZ[\X›]ô\ôX›ãà€€X›[€î[ôNàò€€X›[€àãà[\X›[ôNàÿ€‹Kú[ôKàŸ\\ò]Yúõ€R[\X›àò[ŸKàN¬àBàô]\õà¬à€€ùòX›àò€€X›[€ã\[ôK\ŸX€€ô\ûKZ[\X›]ô\ôX›Z[ô\[ô[ùãà€€X›[€î[ôNàò€€X›[€àãà[\X›[ôNàÿ€‹Kú[ôKàŸ\\ò]Yúõ€R[\X›àùYKàN¬üBÇôù[ò›[€à\õ‘ô\€›\òŸPŸ[ ›]Nà›ô\ùöY]—\ö]ôY›]JNà[ÿö[R\õ‘ô\€›\òŸPŸ[◊H¬à€€ú›Y[àH›]KúÿŸ[ò\ö[»OOHõõÀ\€ò\⁄›é¬à€€ú›õ›‹»H¬à»Ÿ^NàúõÿŸ\‹€‹àà\»€€ú›Xô[àπi!9‰!πfjãò]Œà”ù[Xô\ä›]KôòX›Àúô\€›\òŸKò‹JKô\⁄€àHKà»Ÿ^NàõY[[‹ûHà\»€€ú›Xô[àπa°ykfãò]Œà”ù[Xô\ä›]KôòX›Àúô\€›\òŸKõY[[‹ûJKô\⁄€àHKà»Ÿ^Nàô\⁄»à\»€€ú›Xô[àπË‡yÊÊãò]Œà”ù[Xô\ä›]KôòX›Àúô\€›\òŸKô\⁄ Kô\⁄€àLKàN¬à€€ú›XZ»Hõ›‹ÀúôYXŸJ
-X^][JHOà
-][Kúò]»àX^úò]»»][HàX^
-Kõ›‹÷ÃJN¬àô]\õàõ›‹ÀõX\
+function coreMetrics(snapshot: OverviewRawSnapshot, state: OverviewDerivedState, network: RouterOsNetworkViewModel): MobileMonitorFact[] {
+  const priority = network.priority;
+  if (priority === "snapshot-missing") return [];
+  const totalWan = wanDisplayTotal(snapshot, state);
+  const resource = resourceFacts(state);
+  const wanValue = state.facts.wan.allOffline
+    ? `0/${formatNumber(totalWan)}`
+    : `${formatNumber(state.facts.wan.online)}/${formatNumber(totalWan || 1)}`;
+  const collectionValue = priority === "collection-degraded" ? "ÁºìÂ≠ò" : "ÈÄöÈÅìÂèØËØª";
+  const snapshotValue = latestSuccess(snapshot, state);
+  const collectionNote = priority === "collection-degraded"
+      ? `${stripRest(state.facts.collection.restLabel)} / ${stripSsh(state.facts.collection.sshLabel)}`
+      : "REST/SSH ÂèØËØª";
+  const wanFact: MobileMonitorFact = {
+    label: "WAN",
+    value: wanValue,
+    note: state.facts.wan.allOffline ? "ÂÖ®Á¶ªÁ∫ø" : "Âú®Á∫øÂá∫Âè£",
+    tone: state.facts.wan.allOffline ? "danger" : state.facts.wan.offline ? "warn" : "ok",
+  };
+  const collectionFact: MobileMonitorFact = {
+    label: "ÈááÈõÜ",
+    value: collectionValue,
+    note: collectionNote,
+    tone: priority === "collection-degraded" ? "warn" : state.facts.collection.credibilityTone,
+  };
+  const resourceFact: MobileMonitorFact = {
+    label: "ËµÑÊ∫ê",
+    value: coreResourceValue(resource, priority),
+    note: priority === "resource-full" ? "ÊåÅÁª≠6/6" : "CPU¬∑ÂÜÖÂ≠ò¬∑Á£ÅÁõò",
+    tone: resource.some((item) => item.tone === "danger") ? "danger" : "ok",
+  };
+  const snapshotFact: MobileMonitorFact = {
+    label: "Âø´ÁÖß",
+    value: snapshotValue,
+    note: "ÂΩìÂâçÂø´ÁÖß",
+    tone: state.facts.collection.credibilityTone,
+  };
+  const routeFact: MobileMonitorFact = {
+    label: "ÈªòËÆ§Ë∑ØÁî±",
+    value: mobileRouteValue(state),
+    note: "‰∏ªÂá∫Âè£ÊâøËΩΩ",
+    tone: state.facts.route.level,
+  };
+  if (priority === "normal") return [wanFact, routeFact, collectionFact, snapshotFact];
+  return [wanFact, collectionFact, resourceFact, snapshotFact];
+}
 
-][JHOà¬à€€ú›ò[YHHù[Xô\ãö\—ö[ö]J][Kúò] H»X]õX^
-X]õZ[äL][Kúò] JHà¬à€€ú››ô\ïô\⁄€HZY[à	âà][Kúò]»èH][Kùô\⁄€¬àô]\õà¬àŸ^Nà][KöŸ^KàXô[à][KõXô[à\‹^NàY[à»π.#yleyÈ.àààõ‹õX]\òŸ[ù
-][Kúò]À›]KúÿŸ[ò\ö[»OOHúô\€›\òŸKYù[à»Hà
-Kúô\XŸJ◊å	IÀâHäKàô\⁄€^à:f"	⁄][Kùô\⁄€IXà›\›Z[ôY^àY[à»π•Ë9oÍ˘·i»ààõ›]\ì‹‘ô\€›\òŸT›\›Z[ôY^
-][Kúò]À][Kùô\⁄€
-KàY]\î\òŸ[ùà	›ò[Y_IXàö\⁄Œà][KöŸ^HOOHXZÀöŸ^H»úö[X\ûK\ö\⁄»ààúŸX€€ô\ûK\ö\⁄»ãà€ôNàY[à»õZ\‹⁄[ô»àà›ô\ïô\⁄€»ô[ôŸ\àààõ⁄»ãàN¬àJN¬üBÇôù[ò›[€àõ‹õX[›[[X\ûS[Ÿ[
-àö[‹ö]Nà[ÿö[S›ô\ùöY]”[Ÿ[»úö[‹ö]HóKäNà[ÿö[S›ô\ùöY]”[Ÿ[»õõ‹õX[›[[X\ûHóH¬àô]\õà¬à[ŸNàö[‹ö]HOOHõõ‹õX[à»õõ‹õX[X€€\X›ààö[ò⁄Y[ùZY[àãà€€ùòX›àúŸ\\ò]KX€€ò€\⁄[€ã]ù\›Yõ›\ãYòX›ÀX⁄\ùYö\ú›ãàŸ[Œà◊KàN¬üBÇôù[ò›[€àù\›[ô\ ô]€‹öŒàõ›]\ì‹”ô]€‹ö’öY]”[Ÿ[
-Nà[ÿö[Uù\›[ôV◊H¬àô]\õà»ôõ‹ùÿ\ô[ô»ãò€€X›[€àãú€ò\⁄›ãòù\⁄[ô\‹»óKôõ]X\
+function heroPills(snapshot: OverviewRawSnapshot, state: OverviewDerivedState, network: RouterOsNetworkViewModel): string[] {
+  const totalWan = wanDisplayTotal(snapshot, state);
+  const priority = network.priority;
+  if (state.scenario === "fleet") return [
+    `WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(totalWan || 1)}`,
+    `ÂºÇÂ∏∏ ${formatNumber(Math.max(state.facts.wan.offline, state.facts.interfaces.down, 0))}`,
+    `ÊàêÂäü ${latestSuccess(snapshot, state)}`,
+  ];
+  if (priority === "normal") return [
+    `${network.object.label} ${network.object.value}`,
+    `${network.impact.label} Âá∫Âè£ÂèØÁî®`,
+    `${network.credibility.label} ${network.credibility.value}`,
+  ];
+  return [
+    `${network.object.label} ${network.object.value}`,
+    `${network.impact.label} ${network.impact.value}`,
+    `${network.credibility.label} ${network.credibility.value}`,
+  ];
+}
 
-Y
-HOà¬à€€ú›[ôHHô]€‹öÀú[ô\Àôö[ô
+function splitHeroPill(text: string): { label: string; value: string } {
+  const [label, ...rest] = text.replace(/\s+/g, " ").trim().split(" ");
+  return { label: label || "Áä∂ÊÄÅ", value: rest.join(" ") || text };
+}
 
-][JHOà][KöYOOHY
-N¬àYà
-\[ôJHô]\õà◊N¬àô]\õàﬁ¬àYà[ôKöYàXô[à[ôKõXô[àò[YNà[ôKùò[YKàõ›Nà[ôKòõ›[ô\ûKà€ôNà[ôKù€ôKàWN¬àJN¬üBÇôù[ò›[€à›]\–€‹ôPõÿ⁄ Yà›ö[ô Nà[ÿö[S[€ö]‹îõ›÷»ò€‹ôPõÿ⁄»óH¬àYà
-YOOHù[Y[[ôK]ÿ[àäHô]\õàùÿ[àé¬àYà
-YOOHù[Y[[ôKX€€X›[€àäHô]\õàò€€X›[€àé¬àYà
-YOOHù[Y[[ôK\ô\€›\òŸHäHô]\õàúô\€›\òŸHé¬àô]\õà[ôYö[ôY¬üBÇôù[ò›[€à⁄]›\ôòXŸP€‹ôPõÿ⁄‹ õ›‹Œà[ÿö[S[€ö]‹îõ›÷◊JNà[ÿö[S[€ö]‹îõ›÷◊H¬àô]\õàõ›‹ÀõX\
+function heroPillTone(text: string): OverviewTone {
+  if (/Áº∫Â§±|‰∏çÂèØÁî®|Êñ≠ÁΩë|‰∏çÂ±ïÁ§∫|0\/|ÂºÇÂ∏∏/.test(text)) return "danger";
+  if (/ÂæÖ|ÁºìÂ≠ò|Á°ÆËÆ§|ÂèÇËÄÉ|Ë∂äÈòà|Ë∂Ö/.test(text)) return "warn";
+  return "trust";
+}
 
-õ› HOà
-»ããúõ›À€‹ôPõÿ⁄Œà›]\–€‹ôPõÿ⁄ õ›ÀöY
-HJJN¬üBÇôù[ò›[€à›]\‘õ›‹ €ò\⁄›à›ô\ùöY]‘ò]‘€ò\⁄››]Nà›ô\ùöY]—\ö]ôY›]JNà[ÿö[S[€ö]‹îõ›÷◊H¬à€€ú››[ÿ[àHÿ[ë\‹^U›[
-€ò\⁄››]JN¬à€€ú›ô\€›\òŸHHô\€›\òŸQòX› ›]JN¬àYà
-›]KúÿŸ[ò\ö[»OOHõõÀ\€ò\⁄›äH¬àô]\õà⁄]›\ôòXŸP€‹ôPõÿ⁄‹ ¬à»Yàù[Y[[ôK\õ›]\õ‹»ã]Nàîõ›]\ì‘»ãò[YNàπ.#ycÎ˙/Øàãõ›Nàπod˘bcy•Ë9cÎ˘/Ëy•l9£kàã€ôNàô[ôŸ\ààKà»Yàù[Y[[ôK\€ò\⁄›ã]Nàπ.&πb®yoÍ˘·i»ãò[YNàπÔ.πi,Hãõ›Nà9ß :/‰y¢$9bß»	€]\››XÿŸ\‹ €ò\⁄››]J_X€ôNàõZ\‹⁄[ô»àKà»Yàù[Y[[ôKX€€X›[€àã]Nà∫a·˙f·àãò[YNàîëT’9o°y®.ãõ›Nàî‘“9•´zdÔàã€ôNàùÿ\õààKà»Yàù[Y[[ôK\õ›]Hã]Nà∫nÊ:+©:-Î˘Â,Hãò[YNàπo°yb)ãõ›Nà∫-Î˘Â,yoÍ˘·i˘ß*πcÂπfÁàã€ôNàùÿ\õààKàJN¬àBà€€ú›ò\ŸNà[ÿö[S[€ö]‹îõ›÷◊HH¬à¬àYàù[Y[[ôK]ÿ[àãà]Nàï–Sàãàò[YNà›]KôòX›Àùÿ[ãò[Ÿôõ[ôH»…Ÿõ‹õX]ù[Xô\ä›[ÿ[ä_H9g*9ÓØÿà	Ÿõ‹õX]ù[Xô\ä›]KôòX›Àùÿ[ãõ€õ[ôJ_K…Ÿõ‹õX]ù[Xô\ä›[ÿ[àJ_H9g*9ÓØÿàõ›Nà›]KôòX›Àùÿ[ãò[Ÿôõ[ôH»π¢`9ß"yaÓπcË˘ÈÆ˘ÓØ»àà8°§…ÿ€€\X›ò]J›[ €ò\⁄›
-Kô›€ä_H8°§Iÿ€€\X›ò]J›[ €ò\⁄›
-Kù\
-_Xà€ôNà›]KôòX›Àùÿ[ãò[Ÿôõ[ôH»ô[ôŸ\ààà›]KôòX›Àùÿ[ãõŸôõ[ôH»ùÿ\õàààõ⁄»ãàKà¬àYàù[Y[[ôK\õ›]Hãà]Nà∫nÊ:+©:-Î˘Â,Hãàò[YNà[ÿö[Tõ›]Uò[YJ›]JKàõ›Nà›]KôòX›Àùÿ[ãò[Ÿôõ[ôH»πaÓπcË˘.#ycÎ˘Â*àà›]KúÿŸ[ò\ö[»OOHò€€X›[€ãY›€àà»πcÎ˘c‡∫  »ààπ..˘aÓπcË»ãà€ôNà›]KôòX›Àùÿ[ãò[Ÿôõ[ôH»ô[ôŸ\ààà›]KôòX›Àúõ›]Kõ]ô[àKà¬àYàù[Y[[ôKX€€X›[€àãà]Nà∫a·˙f·àãàò[YNà›]KúÿŸ[ò\ö[»OOHò€€X›[€ãY›€àà»πc°πcÏπoÍ˘·i»àà∫`&∫`d˘cÎ˙+Ó»ãàõ›Nà9ß :/‰H	€]\››XÿŸ\‹ €ò\⁄››]J_Xà€ôNà›]KúÿŸ[ò\ö[»OOHò€€X›[€ãY›€àà»ùÿ\õààà›]KôòX›Àò€€X›[€ãò‹ôYXö[]U€ôKàKà¬àYàù[Y[[ôK\ô\€›\òŸHãà]Nà∫-a9Æ§ãàò[YNàô\€›\òŸKõX\
+function heroTrustRail(pills: string[]): MobileHeroTrustCell[] {
+  return pills.slice(0, 3).map((text) => {
+    const item = splitHeroPill(text);
+    return {
+      label: item.label,
+      value: item.value,
+      tone: heroPillTone(text),
+    };
+  });
+}
 
-][JHOà][Kùò[YKúô\XŸJ◊å	IÀâHäJKöõ⁄[äà»äKàõ›Nà›]KúÿŸ[ò\ö[»OOHúô\€›\òŸKYù[à»π."zhnz-°zf"ààπi!9‰!πfj»9a°ykf»9Ë‡yÊÊãà€ôNàô\€›\òŸKú€€YJ
-][JHOà][Kù€ôHOOHô[ôŸ\àäH»ô[ôŸ\àààõ⁄»ãàKà¬àYàù[Y[[ôKZ[ù\ôòXŸHãà]Nàπ£©ycË»ãàò[YNà›]KôòX›Àö[ù\ôòXŸ\Àô›€àà»	Ÿõ‹õX]ù[Xô\ä›]KôòX›Àö[ù\ôòXŸ\Àô›€ä_H›€òàπ´h˘n.ãàõ›Nà›]KôòX›Àö[ù\ôòXŸ\Àô›€ìò[Y\Àú€XŸJäKöõ⁄[äà»äHπ¢o˙/oy´h˘n.ãà€ôNà›]KôòX›Àö[ù\ôòXŸ\Àô›€àà»ô[ôŸ\àààùù\›ãàKàN¬à€€ú›X⁄»H
-YŒà›ö[ô÷◊JHOàYÀõX\
+function heroInterfaceCells(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): MobileHeroInterfaceCell[] {
+  const rows = interfaceRows(snapshot).filter((row) => row.running === false).slice(0, 3);
+  const visible = rows.length ? rows : interfaceRows(snapshot).slice(0, 1);
+  return visible.map((row, index) => {
+    const name = clean(row.name || row.interface, `Êé•Âè£${index + 1}`);
+    const carrier = clean(row.parent || row.master || row.bridge, "ÊâøËΩΩÂæÖÁ°ÆËÆ§");
+    return {
+      id: `${name}-${index}`,
+      name,
+      carrier,
+      stateText: index === 0 ? `${formatNumber(state.facts.interfaces.down)} Down` : "Down",
+      tone: "danger",
+    };
+  });
+}
 
-Y
-HOàò\ŸKôö[ô
+function heroChannelCells(state: OverviewDerivedState): MobileHeroChannelCell[] {
+  if (state.scenario === "no-snapshot") {
+    return [
+      { label: "RouterOS", value: "‰∏çÂèØËææ", tone: "danger" },
+      { label: "REST", value: "ÂæÖÁ°ÆËÆ§", tone: "warn" },
+      { label: "SSH", value: "‰∏çÂèØÁî®", tone: "danger" },
+      { label: "Âø´ÁÖß", value: "Êó†", tone: "missing" },
+    ];
+  }
+  return [
+    { label: "RouterOS", value: "ÂèØËææ", tone: state.facts.collection.level },
+    { label: "REST", value: stripRest(state.facts.collection.restLabel), tone: state.facts.collection.level },
+    { label: "SSH", value: stripSsh(state.facts.collection.sshLabel), tone: state.facts.collection.level },
+    { label: "Âø´ÁÖß", value: trustText(state), tone: state.facts.collection.credibilityTone },
+  ];
+}
 
-õ› HOàõ›ÀöYOOHY
-JKôö[\äõ€€X[äH\»[ÿö[S[€ö]‹îõ›÷◊N¬à€€ú›ö[‹ö]HHö[‹ö]SŸä›]JN¬àYà
-ö[‹ö]HOOHúô\€›\òŸKYù[äHô]\õà⁄]›\ôòXŸP€‹ôPõÿ⁄‹ X⁄ »ù[Y[[ôK\ô\€›\òŸHãù[Y[[ôK]ÿ[àãù[Y[[ôKX€€X›[€àãù[Y[[ôK\õ›]HóJJN¬àYà
-ö[‹ö]HOOHùÿ[ã[Ÿôõ[ôHäHô]\õà⁄]›\ôòXŸP€‹ôPõÿ⁄‹ X⁄ »ù[Y[[ôK]ÿ[àãù[Y[[ôK\õ›]Hãù[Y[[ôKX€€X›[€àãù[Y[[ôK\ô\€›\òŸHóJJN¬àYà
-ö[‹ö]HOOHö[ù\ôòXŸKY›€àäHô]\õà⁄]›\ôòXŸP€‹ôPõÿ⁄‹ X⁄ »ù[Y[[ôKZ[ù\ôòXŸHãù[Y[[ôK\õ›]Hãù[Y[[ôK]ÿ[àãù[Y[[ôKX€€X›[€àóJJN¬àYà
-ö[‹ö]HOOHò€€X›[€ãYY‹òYYäHô]\õà⁄]›\ôòXŸP€‹ôPõÿ⁄‹ X⁄ »ù[Y[[ôKX€€X›[€àãù[Y[[ôK]ÿ[àãù[Y[[ôK\ô\€›\òŸHãù[Y[[ôK\õ›]HóJJN¬àô]\õà⁄]›\ôòXŸP€‹ôPõÿ⁄‹ X⁄ »ù[Y[[ôK]ÿ[àãù[Y[[ôKX€€X›[€àãù[Y[[ôK\ô\€›\òŸHãù[Y[[ôK\õ›]HóJJN¬üBÇôù[ò›[€àÿ[î‹ù €ò\⁄›à›ô\ùöY]‘ò]‘€ò\⁄››]Nà›ô\ùöY]—\ö]ôY›]JNà[ÿö[Uÿ[î‹ù◊H¬à€€ú›€›\òŸHHÿ[îõ›‹ €ò\⁄›
-N¬à€€ú››[HX]õX^
-Kÿ[ì[ôP€›[ù
-€ò\⁄››]JJN¬à€€ú›õ›‹»H\úò^Kôúõ€J»[ô›àX]õZ[ä›[
-HK
-À[ô^
-HOà€›\òŸV⁄[ô^H
-»ò[YNà–Sâ⁄[ô^
-»_Xù[õö[ôŒàò[ŸHH\»›ô\ùöY]‘ò]’ÿ[îõ› JN¬àô]\õàõ›‹ÀõX\
+function collectionTrustCells(state: OverviewDerivedState): MobileHeroChannelCell[] {
+  return heroChannelCells(state);
+}
 
-õ›À[ô^
-HOà¬à€€ú›Ÿôõ[ôHH›]KôòX›Àùÿ[ãò[Ÿôõ[ôHõ›Àúù[õö[ô»OOHò[ŸN¬à€€ú›ò[YHH€X[äõ›Àõò[YHõ›Àö[ù\ôòXŸKŸK]ÿ[â⁄[ô^
-»_X
-Kúô\XŸJ◊úŸVÀW◊OÀ⁄KàäN¬à€€ú›ÿ\úöY\àH€X[äõ›Àú\ô[ùõ›ÀòXÿŸ\‹»õ›Àö[ù\ôòXŸK	⁄[ô^
-»_X
-Kúô\XŸJ◊ô]\ã⁄Kô]\àäN¬à€€ú›õ€HH›[HH[ô^OOH»ôYò][àà[ô^OOHH»òòX⁄›\ààõY[Xô\àé¬à€€ú›õ€SXô[Hõ€HOOHôYò][à»∫nÊ:+©9aÓπcË»ààõ€HOOHòòX⁄›\à»πi!˘Â*9aÓπcË»ààπ¢$9df9aÓπcË»é¬à€€ú›õ›]Pö[ô[ô»Hõ€HOOHôYò][à»ôYò][\õ›]Hààõ€HOOHòòX⁄›\à»ú›[ôûK\õ›]HààõY[Xô\ã\õ›]Hé¬à€€ú›[\X›H[Ÿôõ[ôH»õõ›XYôôX›Yààõ€HOOHôYò][à»ôYò][\õ›]KXYôôX›Yààõ€HOOHòòX⁄›\à»òòX⁄›\XYôôX›YààõY[Xô\ãXYôôX›Yé¬à€€ú›ù\⁄[ô\‹“[\X›H›]KôòX›Àùÿ[ãò[Ÿôõ[ôBà»ö[ù\õô]Y›€àÇàà[\X›OOHôYò][\õ›]KXYôôX›YÇà»ôY‹òYYXòX⁄›\ÇààõõÀ\ö[X\ûKZ[\X›é¬à€€ú››]U^HŸôõ[ôH»πÈÆ˘ÓØ»ààπg*9ÓØ»é¬à€€ú›‹ù›]HHŸôõ[ôH»ô›€àààù\é¬àô]\õà¬àYàÿ[ã\‹ùI⁄[ô^XàXô[à	⁄[ô^
-»_Xàò[YKàõ›Nà	‹õ€SXô[H0≠»	ÿÿ\úöY\üH0≠»	‹›]U^Xàÿ\úöY\ãà›]U^à‹ù›]Kàõ€Kàõ€SXô[à[\X›àù\⁄[ô\‹“[\X›àõ›]Pö[ô[ôÀà^[›]àõX]ö^ãà€ôNàŸôõ[ôH»ô[ôŸ\àààõ⁄»ãàN¬àJN¬üBÇÇôù[ò›[€àXõõ‹õX[X⁄\⁄[€ë]öY[òŸU€ôJö[‹ö]Nà[ÿö[S›ô\ùöY]”[Ÿ[»úö[‹ö]HóJNà›ô\ùöY]’€ôH¬àYà
-ö[‹ö]HOOHú€ò\⁄›[Z\‹⁄[ô»äHô]\õàõZ\‹⁄[ô»é¬àYà
-ö[‹ö]HOOHùÿ[ã[Ÿôõ[ôHäHô]\õàô[ôŸ\àé¬àô]\õàùù\›é¬üBÇôù[ò›[€àXõõ‹õX[X⁄\⁄[€í[\X›ò[YJàö[‹ö]Nà[ÿö[S›ô\ùöY]”[Ÿ[»úö[‹ö]HóKàÿ€‹Nà[ÿö[R[\X›ÿ€‹KäNà›ö[ô»¬àYà
-ö[‹ö]HOOHùÿ[ã[Ÿôõ[ôHäHô]\õà∫nÊ:+©:-Î˘Â,y.#ycÎ˘¢o˙/oHé¬àYà
-ö[‹ö]HOOHú€ò\⁄›[Z\‹⁄[ô»äHô]\õàπ.&πb®y•l9£kπ.#yleyÈ.àé¬àYà
-ö[‹ö]HOOHúô\€›\òŸKYù[äHô]\õàπ.&πb®y.„ycÎ˘Â*0≠»:h„∫fjzjÊé¬àYà
-ö[‹ö]HOOHö[ù\ôòXŸKY›€àäHô]\õàπ¢o˙/oyal˘ÏÓ˘o°yb)é¬àYà
-ö[‹ö]HOOHò€€X›[€ãYY‹òYYäHô]\õà∫a·˙f·πcÎ˘/Ëyn©π."˙fcHé¬àô]\õàÿ€‹Kùò[YN¬üBÇôù[ò›[€àXõõ‹õX[X⁄\⁄[€êŸ[ àö[‹ö]Nà[ÿö[S›ô\ùöY]”[Ÿ[»úö[‹ö]HóKà€€ùòX›à[ÿö[S›ô\ùöY]”[Ÿ[»ò\€YP€€ùòX›óKàÿ€‹Nà[ÿö[R[\X›ÿ€‹Kàô]€‹öŒàõ›]\ì‹”ô]€‹ö’öY]”[Ÿ[à›]Nà›ô\ùöY]—\ö]ôY›]Kà\õ’]Nà›ö[ôÀà\›]Nà›ö[ôÀàô\€›\òŸPŸ[Œà[ÿö[R\õ‘ô\€›\òŸPŸ[◊KäNà[ÿö[PXõõ‹õX[X⁄\⁄[€êŸ[◊H¬àYà
-ö[‹ö]HOOHõõ‹õX[äHô]\õà◊N¬à€€ú›]öY[òŸT\ù»H€€ùòX›ùù\›õ›[ô\ûKú‹]
-∞≠»äKõX\
+function collectionTrustSeparation(
+  priority: MobileOverviewModel["priority"],
+  scope: MobileImpactScope,
+): MobileOverviewModel["collectionTrustSeparation"] {
+  if (priority === "normal") {
+    return {
+      contract: "normal-hidden",
+      collectionPlane: "collection",
+      impactPlane: scope.plane,
+      separatedFromImpact: false,
+    };
+  }
+  if (scope.plane === "collection") {
+    return {
+      contract: "collection-plane-primary-impact-verdict",
+      collectionPlane: "collection",
+      impactPlane: scope.plane,
+      separatedFromImpact: false,
+    };
+  }
+  return {
+    contract: "collection-plane-secondary-impact-verdict-independent",
+    collectionPlane: "collection",
+    impactPlane: scope.plane,
+    separatedFromImpact: true,
+  };
+}
 
-\ù
-HOà€X[ä\ù
-JKôö[\äõ€€X[äN¬à€€ú›ö[X\ûTô\€›\òŸHHô\€›\òŸPŸ[Àôö[ô
+function heroResourceCells(state: OverviewDerivedState): MobileHeroResourceCell[] {
+  const hidden = state.scenario === "no-snapshot";
+  const rows = [
+    { key: "processor" as const, label: "Â§ÑÁêÜÂô®", raw: toNumber(state.facts.resource.cpu), threshold: 85 },
+    { key: "memory" as const, label: "ÂÜÖÂ≠ò", raw: toNumber(state.facts.resource.memory), threshold: 85 },
+    { key: "disk" as const, label: "Á£ÅÁõò", raw: toNumber(state.facts.resource.disk), threshold: 90 },
+  ];
+  const peak = rows.reduce((max, item) => (item.raw > max.raw ? item : max), rows[0]);
+  return rows.map((item) => {
+    const value = Number.isFinite(item.raw) ? Math.max(0, Math.min(100, item.raw)) : 0;
+    const overThreshold = !hidden && item.raw >= item.threshold;
+    return {
+      key: item.key,
+      label: item.label,
+      display: hidden ? "‰∏çÂ±ïÁ§∫" : formatPercent(item.raw, state.scenario === "resource-full" ? 1 : 0).replace(/\.0%$/, "%"),
+      thresholdText: `Èòà${item.threshold}%`,
+      sustainedText: hidden ? "Êó†Âø´ÁÖß" : routerOsResourceSustainedText(item.raw, item.threshold),
+      meterPercent: `${value}%`,
+      risk: item.key === peak.key ? "primary-risk" : "secondary-risk",
+      tone: hidden ? "missing" : overThreshold ? "danger" : "ok",
+    };
+  });
+}
 
-][JHOà][Kúö\⁄»OOHúö[X\ûK\ö\⁄»äHô\€›\òŸPŸ[÷ÃN¬à€€ú›X›[€àHô\€€ôS[ÿö[R[ò⁄Y[ùX›[€äö[‹ö]Kö[X\ûTô\€›\òŸK¬à€€X›[€ëY‹òYYà›]KôòX›Àò€€X›[€ãò⁄[õô[Y‹òYY›]KôòX›Àò€€X›[€ãô]T›[H›]KôòX›Àôúô\⁄ô\‹Àö\›‹ûKà€€õôX›[€îô\‹›\ôNà›]KôòX›Àò€€õôX›[€úÀù›[àLà€€õôX›[€ï›[^àõ‹õX]€€\X›
-›]KôòX›Àò€€õôX›[€úÀù›[
-Kà[ù\ôòXŸP]òZ[XõNà›]KôòX›Àö[ù\ôòXŸ\Àù›[ààJN¬àô]\õà¬à»Xô[àπkÓz,hHãò[YNà\›]Kõ›Nà\õ’]K€ôNàÿ€‹Kù€ôHKà»Xô[àπolyd„Hãò[YNàXõõ‹õX[X⁄\⁄[€í[\X›ò[YJö[‹ö]Kÿ€‹JKõ›Nàÿ€‹Kõõ›K€ôNàÿ€‹Kù€ôHKà»Xô[àπcÎ˘/Ëyn©àãò[YNà]öY[òŸT\ù÷ÃHô]€‹öÀú€ò\⁄›ùò[YKõ›Nà]öY[òŸT\ùÀú€XŸJJKöõ⁄[äà0≠»äHô]€‹öÀú€ò\⁄›õXô[€ôNàXõõ‹õX[X⁄\⁄[€ë]öY[òŸU€ôJö[‹ö]JHKà»Xô[àπ."˘. 9´iHãò[YNàX›[€ãùò[YKõ›NàX›[€ãõõ›K€ôNà€€ùòX›úŸ]ô\ö]HOOHúà»ô[ôŸ\àààùÿ\õàã\ôŸ]XéàX›[€ãù\ôŸ]XàKàN¬üBÇô^‹ùù[ò›[€àùZ[[ÿö[S›ô\ùöY]”[Ÿ[
-€ò\⁄›à›ô\ùöY]‘ò]‘€ò\⁄››]Nà›ô\ùöY]—\ö]ôY›]JNà[ÿö[S›ô\ùöY]”[Ÿ[¬à€€ú›ô]€‹ö»HùZ[õ›]\ì‹”ô]€‹ö’öY]”[Ÿ[
-€ò\⁄››]JN¬à€€ú›ö[‹ö]HHô]€‹öÀúö[‹ö]N¬à€€ú›ÿ€‹HHùZ[[ÿö[R[\X›ÿ€‹Jô]€‹ö N¬à€€ú›\õ’]HH]Qõ‹äô]€‹ö N¬à€€ú›\›HùZ[[ÿö[Tö[X\ûS\›
-€ò\⁄››]Kô]€‹öÀÿ€‹Kô\€›\òŸQòX› ›]JJN¬à€€ú›€XﬁHHô\€€ôS[ÿö[S›ô\ùöY]‘€XﬁJö[‹ö]K\›ö⁄[ô¬àôXŸ[ù›XÿŸ\‹Œà]\››XÿŸ\‹ €ò\⁄››]JKà€€X›[€ìXô[àô]€‹öÀò€€X›[€ãõXô[à€€X›[€ïò[YNàô]€‹öÀò€€X›[€ãùò[YKà€ò\⁄›ò[YNàô]€‹öÀú€ò\⁄›ùò[YKàõ›]Uò[YNàô]€‹öÀúõ›]Kùò[YKàJN¬à€€ú›[»H\õ‘[ €ò\⁄››]Kô]€‹ö N¬à€€ú›€‹ôHH€XﬁKò\€YP€€ùòX›ú⁄›–€‹ôSY]öX‘òZ[à»€‹ôSY]öX‹ €ò\⁄››]Kô]€‹ö Bàà◊N¬à€€ú›ô\€›\òŸPŸ[»H\õ‘ô\€›\òŸPŸ[ ›]JN¬àô]\õà¬àö[‹ö]Kàô]€‹öÀàXY\éàXY\ì[Ÿ[
-€ò\⁄››]JKà\€YP€€ùòX›à€XﬁKò\€YP€€ùòX›à›\ôòXŸNà€XﬁKú›\ôòXŸKà[\X›ÿ€‹Nàÿ€‹Kà€€X›[€ïù\›Ÿ\\ò][€éà€€X›[€ïù\›Ÿ\\ò][€äö[‹ö]Kÿ€‹JKàXõõ‹õX[X⁄\⁄[€éàXõõ‹õX[X⁄\⁄[€êŸ[ ö[‹ö]K€XﬁKò\€YP€€ùòX›ÿ€‹Kô]€‹öÀ›]K\õ’]K\›ù]Kô\€›\òŸPŸ[ Kà€€X›[€ïù\›à€€X›[€ïù\›Ÿ[ ›]JKà€‹ôSY]öX‹Œà€‹ôKà[ò⁄Y[ù[[Y]ûNàùZ[[ÿö[R[ò⁄Y[ù[[Y]ûJ€ò\⁄››]Kô]€‹ö Kàõ‹õX[›[[X\ûNàõ‹õX[›[[X\ûS[Ÿ[
-ö[‹ö]JKà\õŒà¬à]Nà\õ’]Kà›Xù]Nà›Xù]Qõ‹ä€ò\⁄››]Kô]€‹öÀÿ€‹JKàòX›Œà\õ—òX› €ò\⁄››]JKà[Ààù\›òZ[à\õ’ù\›òZ[
-[ Kà[ù\ôòXŸPŸ[Œà\õ“[ù\ôòXŸPŸ[ €ò\⁄››]JKà⁄[õô[Ÿ[Œà\õ–⁄[õô[Ÿ[ ›]JKàô\€›\òŸPŸ[Ààö\›X[⁄[ôà\õ’ö\›X[⁄[ô
-ö[‹ö]JKà⁄›”Y]öX‹Œà⁄›“\õ”Y]öX‹ 
-Kàô[ôàùZ[[ÿö[Uô[ô⁄\ù
-€ò\⁄››]JKàKàù\›[ô\Œàù\›[ô\ ô]€‹ö Kà›]\‘õ›‹Œà›]\‘õ›‹ €ò\⁄››]JKàö[X\ûS\›à\›àÿ[î‹ùŒàÿ[î‹ù €ò\⁄››]JKàN¬üB
+function normalSummaryModel(
+  priority: MobileOverviewModel["priority"],
+): MobileOverviewModel["normalSummary"] {
+  return {
+    mode: priority === "normal" ? "normal-compact" : "incident-hidden",
+    contract: "separate-conclusion-trust-four-facts-chart-first",
+    cells: [],
+  };
+}
+
+function trustPlanes(network: RouterOsNetworkViewModel): MobileTrustPlane[] {
+  return ["forwarding", "collection", "snapshot", "business"].flatMap((id) => {
+    const plane = network.planes.find((item) => item.id === id);
+    if (!plane) return [];
+    return [{
+      id: plane.id,
+      label: plane.label,
+      value: plane.value,
+      note: plane.boundary,
+      tone: plane.tone,
+    }];
+  });
+}
+
+function statusCoreBlock(id: string): MobileMonitorRow["coreBlock"] {
+  if (id === "timeline-wan") return "wan";
+  if (id === "timeline-collection") return "collection";
+  if (id === "timeline-resource") return "resource";
+  return undefined;
+}
+
+function withSurfaceCoreBlocks(rows: MobileMonitorRow[]): MobileMonitorRow[] {
+  return rows.map((row) => ({ ...row, coreBlock: statusCoreBlock(row.id) }));
+}
+
+function statusRows(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): MobileMonitorRow[] {
+  const totalWan = wanDisplayTotal(snapshot, state);
+  const resource = resourceFacts(state);
+  if (state.scenario === "no-snapshot") {
+    return withSurfaceCoreBlocks([
+      { id: "timeline-routeros", title: "RouterOS", value: "‰∏çÂèØËææ", note: "ÂΩìÂâçÊó†ÂèØ‰ø°Êï∞ÊçÆ", tone: "danger" },
+      { id: "timeline-snapshot", title: "‰∏öÂä°Âø´ÁÖß", value: "Áº∫Â§±", note: `ÊúÄËøëÊàêÂäü ${latestSuccess(snapshot, state)}`, tone: "missing" },
+      { id: "timeline-collection", title: "ÈááÈõÜ", value: "REST ÂæÖÊ†∏", note: "SSH Êñ≠Èìæ", tone: "warn" },
+      { id: "timeline-route", title: "ÈªòËÆ§Ë∑ØÁî±", value: "ÂæÖÂà§", note: "Ë∑ØÁî±Âø´ÁÖßÊú™ÂèñÂõû", tone: "warn" },
+    ]);
+  }
+  const base: MobileMonitorRow[] = [
+    {
+      id: "timeline-wan",
+      title: "WAN",
+      value: state.facts.wan.allOffline ? `0/${formatNumber(totalWan)} Âú®Á∫ø` : `${formatNumber(state.facts.wan.online)}/${formatNumber(totalWan || 1)} Âú®Á∫ø`,
+      note: state.facts.wan.allOffline ? "ÊâÄÊúâÂá∫Âè£Á¶ªÁ∫ø" : `‚Üì${compactRate(totals(snapshot).down)} ‚Üë${compactRate(totals(snapshot).up)}`,
+      tone: state.facts.wan.allOffline ? "danger" : state.facts.wan.offline ? "warn" : "ok",
+    },
+    {
+      id: "timeline-route",
+      title: "ÈªòËÆ§Ë∑ØÁî±",
+      value: mobileRouteValue(state),
+      note: state.facts.wan.allOffline ? "Âá∫Âè£‰∏çÂèØÁî®" : state.scenario === "collection-down" ? "ÂèØÂèÇËÄÉ" : "‰∏ªÂá∫Âè£",
+      tone: state.facts.wan.allOffline ? "danger" : state.facts.route.level,
+    },
+    {
+      id: "timeline-collection",
+      title: "ÈááÈõÜ",
+      value: state.scenario === "collection-down" ? "ÂéÜÂè≤Âø´ÁÖß" : "ÈÄöÈÅìÂèØËØª",
+      note: `ÊúÄËøë ${latestSuccess(snapshot, state)}`,
+      tone: state.scenario === "collection-down" ? "warn" : state.facts.collection.credibilityTone,
+    },
+    {
+      id: "timeline-resource",
+      title: "ËµÑÊ∫ê",
+      value: resource.map((item) => item.value.replace(/\.0%$/, "%")).join(" / "),
+      note: state.scenario === "resource-full" ? "‰∏âÈ°πË∂ÖÈòà" : "Â§ÑÁêÜÂô® / ÂÜÖÂ≠ò / Á£ÅÁõò",
+      tone: resource.some((item) => item.tone === "danger") ? "danger" : "ok",
+    },
+    {
+      id: "timeline-interface",
+      title: "Êé•Âè£",
+      value: state.facts.interfaces.down > 0 ? `${formatNumber(state.facts.interfaces.down)} Down` : "Ê≠£Â∏∏",
+      note: state.facts.interfaces.downNames.slice(0, 2).join(" / ") || "ÊâøËΩΩÊ≠£Â∏∏",
+      tone: state.facts.interfaces.down > 0 ? "danger" : "trust",
+    },
+  ];
+  const pick = (ids: string[]) => ids.map((id) => base.find((row) => row.id === id)).filter(Boolean) as MobileMonitorRow[];
+  const priority = priorityOf(state);
+  if (priority === "resource-full") return withSurfaceCoreBlocks(pick(["timeline-resource", "timeline-wan", "timeline-collection", "timeline-route"]));
+  if (priority === "wan-offline") return withSurfaceCoreBlocks(pick(["timeline-wan", "timeline-route", "timeline-collection", "timeline-resource"]));
+  if (priority === "interface-down") return withSurfaceCoreBlocks(pick(["timeline-interface", "timeline-route", "timeline-wan", "timeline-collection"]));
+  if (priority === "collection-degraded") return withSurfaceCoreBlocks(pick(["timeline-collection", "timeline-wan", "timeline-resource", "timeline-route"]));
+  return withSurfaceCoreBlocks(pick(["timeline-wan", "timeline-collection", "timeline-resource", "timeline-route"]));
+}
+
+function wanPorts(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): MobileWanPort[] {
+  const source = wanRows(snapshot);
+  const total = Math.max(1, wanLineCount(snapshot, state));
+  const rows = Array.from({ length: Math.min(8, total) }, (_, index) => source[index] || ({ name: `WAN${index + 1}`, running: false } as OverviewRawWanRow));
+  return rows.map((row, index) => {
+    const offline = state.facts.wan.allOffline || row.running === false;
+    const name = clean(row.name || row.interface, `pppoe-wan${index + 1}`).replace(/^pppoe[-_]?/i, "");
+    const carrier = clean(row.parent || row.access || row.interface, `P${index + 1}`).replace(/^ether/i, "ether");
+    const role = total <= 1 || index === 0 ? "default" : index === 1 ? "backup" : "member";
+    const roleLabel = role === "default" ? "ÈªòËÆ§Âá∫Âè£" : role === "backup" ? "Â§áÁî®Âá∫Âè£" : "ÊàêÂëòÂá∫Âè£";
+    const routeBinding = role === "default" ? "default-route" : role === "backup" ? "standby-route" : "member-route";
+    const impact = !offline ? "not-affected" : role === "default" ? "default-route-affected" : role === "backup" ? "backup-affected" : "member-affected";
+    const businessImpact = state.facts.wan.allOffline
+      ? "internet-down"
+      : impact === "default-route-affected"
+        ? "degraded-backup"
+        : "no-primary-impact";
+    const stateText = offline ? "Á¶ªÁ∫ø" : "Âú®Á∫ø";
+    const portState = offline ? "down" : "up";
+    return {
+      id: `wan-port-${index}`,
+      label: `P${index + 1}`,
+      name,
+      note: `${roleLabel} ¬∑ ${carrier} ¬∑ ${stateText}`,
+      carrier,
+      stateText,
+      portState,
+      role,
+      roleLabel,
+      impact,
+      businessImpact,
+      routeBinding,
+      layout: "matrix",
+      tone: offline ? "danger" : "ok",
+    };
+  });
+}
+
+
+function abnormalDecisionEvidenceTone(priority: MobileOverviewModel["priority"]): OverviewTone {
+  if (priority === "snapshot-missing") return "missing";
+  if (priority === "wan-offline") return "danger";
+  return "trust";
+}
+
+function abnormalDecisionImpactValue(
+  priority: MobileOverviewModel["priority"],
+  scope: MobileImpactScope,
+): string {
+  if (priority === "wan-offline") return "ÈªòËÆ§Ë∑ØÁî±‰∏çÂèØÊâøËΩΩ";
+  if (priority === "snapshot-missing") return "‰∏öÂä°Êï∞ÊçÆ‰∏çÂ±ïÁ§∫";
+  if (priority === "resource-full") return "‰∏öÂä°‰ªçÂèØÁî® ¬∑ È£éÈô©È´ò";
+  if (priority === "interface-down") return "ÊâøËΩΩÂÖ≥Á≥ªÂæÖÂà§";
+  if (priority === "collection-degraded") return "ÈááÈõÜÂèØ‰ø°Â∫¶‰∏ãÈôç";
+  return scope.value;
+}
+
+function abnormalDecisionCells(
+  priority: MobileOverviewModel["priority"],
+  contract: MobileOverviewModel["appHomeContract"],
+  scope: MobileImpactScope,
+  network: RouterOsNetworkViewModel,
+  state: OverviewDerivedState,
+  heroTitle: string,
+  listTitle: string,
+  resourceCells: MobileHeroResourceCell[],
+): MobileAbnormalDecisionCell[] {
+  if (priority === "normal") return [];
+  const evidenceParts = contract.trustBoundary.split("¬∑").map((part) => clean(part)).filter(Boolean);
+  const primaryResource = resourceCells.find((item) => item.risk === "primary-risk") || resourceCells[0];
+  const action = resolveMobileIncidentAction(priority, primaryResource, {
+    collectionDegraded: state.facts.collection.channelDegraded || state.facts.collection.dataStale || state.facts.freshness.history,
+    connectionPressure: state.facts.connections.total > 50000,
+    connectionTotalText: formatCompact(state.facts.connections.total),
+    interfaceAvailable: state.facts.interfaces.total > 0,
+  });
+  return [
+    { label: "ÂØπË±°", value: listTitle, note: heroTitle, tone: scope.tone },
+    { label: "ÂΩ±Âìç", value: abnormalDecisionImpactValue(priority, scope), note: scope.note, tone: scope.tone },
+    { label: "ÂèØ‰ø°Â∫¶", value: evidenceParts[0] || network.snapshot.value, note: evidenceParts.slice(1).join(" ¬∑ ") || network.snapshot.label, tone: abnormalDecisionEvidenceTone(priority) },
+    { label: "‰∏ã‰∏ÄÊ≠•", value: action.value, note: action.note, tone: contract.severity === "p0" ? "danger" : "warn", targetTab: action.targetTab },
+  ];
+}
+
+export function buildMobileOverviewModel(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): MobileOverviewModel {
+  const network = buildRouterOsNetworkViewModel(snapshot, state);
+  const priority = network.priority;
+  const scope = buildMobileImpactScope(network);
+  const heroTitle = titleFor(network);
+  const list = buildMobilePrimaryList(snapshot, state, network, scope, resourceFacts(state));
+  const policy = resolveMobileOverviewPolicy(priority, list.kind, {
+    recentSuccess: latestSuccess(snapshot, state),
+    collectionLabel: network.collection.label,
+    collectionValue: network.collection.value,
+    snapshotValue: network.snapshot.value,
+    routeValue: network.route.value,
+  });
+  const pills = heroPills(snapshot, state, network);
+  const core = policy.appHomeContract.showCoreMetricRail
+    ? coreMetrics(snapshot, state, network)
+    : [];
+  const resourceCells = heroResourceCells(state);
+  return {
+    priority,
+    network,
+    header: headerModel(snapshot, state),
+    appHomeContract: policy.appHomeContract,
+    surface: policy.surface,
+    impactScope: scope,
+    collectionTrustSeparation: collectionTrustSeparation(priority, scope),
+    abnormalDecision: abnormalDecisionCells(priority, policy.appHomeContract, scope, network, state, heroTitle, list.title, resourceCells),
+    collectionTrust: collectionTrustCells(state),
+    coreMetrics: core,
+    incidentTelemetry: buildMobileIncidentTelemetry(snapshot, state, network),
+    normalSummary: normalSummaryModel(priority),
+    hero: {
+      title: heroTitle,
+      subtitle: subtitleFor(snapshot, state, network, scope),
+      facts: heroFacts(snapshot, state),
+      pills,
+      trustRail: heroTrustRail(pills),
+      interfaceCells: heroInterfaceCells(snapshot, state),
+      channelCells: heroChannelCells(state),
+      resourceCells,
+      visualKind: heroVisualKind(priority),
+      showMetrics: showHeroMetrics(),
+      trend: buildMobileTrendChart(snapshot, state),
+    },
+    trustPlanes: trustPlanes(network),
+    statusRows: statusRows(snapshot, state),
+    primaryList: list,
+    wanPorts: wanPorts(snapshot, state),
+  };
+}
