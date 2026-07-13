@@ -390,25 +390,6 @@
     min-height: calc(100vh - 48px);
     padding: 6px;
   }
-  .ro-topbar {
-    grid-template-columns: minmax(122px, .78fr)
-      minmax(190px, 1.34fr)
-      minmax(136px, .96fr)
-      minmax(136px, .96fr)
-      minmax(120px, .82fr)
-      minmax(104px, .68fr);
-    margin-bottom: 4px;
-  }
-  .ro-topbar-cell {
-    min-height: 38px;
-    padding: 3px 5px 2px;
-  }
-  .ro-topbar-cell b {
-    font-size: 11px;
-  }
-  .ro-topbar-cell[data-overview-status-role="conclusion"] b {
-    font-size: 13.5px;
-  }
   .ro-desktop-grid,
   .ro-col {
     gap: 4px;

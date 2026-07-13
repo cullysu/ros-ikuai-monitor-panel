@@ -12,7 +12,6 @@
     min-height: 0;
     overflow: hidden;
   }
-  html body #overview.router-overview-framework > .ro-topbar,
   html body #overview.router-overview-framework > .ro-desktop-grid {
     display: none;
     visibility: hidden;

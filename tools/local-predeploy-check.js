@@ -2053,7 +2053,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const mobileLandscapeScreenRect = mobileLandscapeScreen?.getBoundingClientRect();
     const mobileLandscapeTabsRect = mobileLandscapeTabs?.getBoundingClientRect();
     const mobileLandscapeScreenStyle = mobileLandscapeScreen ? getComputedStyle(mobileLandscapeScreen) : null;
-    const mobileLandscapeDesktopVisible = Array.from(sectionRoot?.querySelectorAll(':scope > .ro-topbar, :scope > .ro-desktop-grid') || [])
+    const mobileLandscapeDesktopVisible = Array.from(sectionRoot?.querySelectorAll(':scope > .ro-desktop-grid') || [])
       .some((node) => {
         const style = getComputedStyle(node);
         const rect = node.getBoundingClientRect();
@@ -2965,7 +2965,6 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       '.ik-overview-timeline',
       '.ik-overview-module-matrix',
       '.ik-v420-timeline-row',
-      '.ik-home-flat-topbar',
       '.ik-home-status-tile',
       '.ik-home-ops-item',
       '.ik-summary-box',
@@ -2999,7 +2998,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       if (/ik-overview-protocol-mix|ik-overview-protocol-ring/.test(className)) return 'donut';
       if (/ik-overview-chart-shell|ik-overview-traffic-layout|line-trend-grid|line-bar/.test(className)) return 'line';
       if (/ik-overview-module-matrix|ik-home-evidence-grid|ik-home-evidence-list|ik-home-evidence-matrix|ik-home-mini-table|ops-table-wrap/.test(className) || node.tagName === 'TABLE') return 'matrix';
-      if (/ik-overview-kpi-card|ik-v420-timeline-row|ik-home-flat-topbar|ik-home-status-tile|ik-home-ops-item|ik-summary-box|ik-overview-channel-grid|ik-overview-wan-strip|ik-overview-interface-strip|ik-overview-stat-tile/.test(className)) return 'status';
+      if (/ik-overview-kpi-card|ik-v420-timeline-row|ik-home-status-tile|ik-home-ops-item|ik-summary-box|ik-overview-channel-grid|ik-overview-wan-strip|ik-overview-interface-strip|ik-overview-stat-tile/.test(className)) return 'status';
       return '';
     };
     const selectorForNode = (node) => {
@@ -6174,7 +6173,6 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         '.ik-home-evidence-split',
         '.ik-home-rank-grid',
         '.ik-home-summary-shell',
-        '.ik-home-flat-topbar',
         '.ro-status-bus',
         '.ik-overview-kpi-grid',
         '.ik-overview-kpi-card',

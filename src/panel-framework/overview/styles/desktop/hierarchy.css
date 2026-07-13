@@ -82,25 +82,7 @@
 /*CL desktop gate: keep the status bus flat, compact, and non-card-like.*/
 
 @media (min-width: 761px) {
-  .router-overview-framework .ro-topbar[data-overview-desktop-tier="conclusion"] {
-    height: 54px !important;
-    min-height: 54px !important;
-    max-height: 54px !important;
-    box-sizing: border-box !important;
-    box-shadow: none !important;
-    border: 1px solid #d5e0ec !important;
-    border-left: 2px solid #286fa8 !important;
-    border-radius: 4px !important;
-  }
-  .router-overview-framework .ro-topbar-cell {
-    min-height: 52px !important;
-    height: 52px !important;
-    padding: 5px 9px 4px !important;
-    box-sizing: border-box !important;
-  }
-  .router-overview-framework .ro-topbar-cell[data-overview-status-role="conclusion"] {
-    background: #fff !important;
-  }
+
 }
 
 @media (min-width: 768px) {
@@ -144,25 +126,6 @@
 }
 
 @media (min-width:768px) {
-  .router-overview-framework .ik-home-flat-topbar {
-    border-left: 5px solid #1677ff !important;
-    background: #fff !important;
-    box-shadow: none !important;
-  }
-  .router-overview-framework .ik-home-flat-topbar .ro-topbar-cell {
-    border-right: 1px solid rgba(226,236,246,.8) !important;
-    background: transparent !important;
-  }
-  .router-overview-framework .ik-home-flat-topbar .ro-topbar-cell b {
-    font-weight: 760 !important;
-    color: #0f172a !important;
-  }
-  .router-overview-framework .ik-home-flat-topbar .ro-topbar-cell[data-tone=danger] b {
-    color: #d93025 !important;
-  }
-  .router-overview-framework .ik-home-flat-topbar .ro-topbar-cell em {
-    color: #6f7f92 !important;
-  }
   .router-overview-framework .ro-desktop-key-row {
     border-radius: 6px !important;
     box-shadow: none !important;
@@ -250,38 +213,6 @@
 }
 
 @media (min-width: 768px) {
-  .router-overview-framework .ro-topbar {
-    grid-template-columns: minmax(150px,.95fr) minmax(220px,1.38fr) minmax(150px,.95fr) minmax(150px,.95fr) minmax(150px,.95fr) minmax(128px,.78fr) !important;
-    gap: 1px !important;
-    border: 1px solid #dce8f4 !important;
-    border-left: 5px solid #1677ff !important;
-    border-radius: 6px !important;
-    background: #dce8f4 !important;
-    margin-bottom: 10px !important;
-    box-shadow: none !important;
-  }
-  .router-overview-framework[data-overview-scene-key="resource-full"] .ro-topbar,.router-overview-framework[data-overview-scene-key="all-offline"] .ro-topbar,.router-overview-framework[data-overview-scene-key="interfaces-down"] .ro-topbar {
-    border-left-color: #d93025 !important;
-  }
-  .router-overview-framework .ro-topbar-cell {
-    min-height: 43px !important;
-    padding: 6px 9px 5px !important;
-    background: #fff !important;
-    border: 0 !important;
-    box-shadow: none !important;
-  }
-  .router-overview-framework .ro-topbar-cell span {
-    font-size: 10.5px !important;
-    line-height: 1 !important;
-    color: #718196 !important;
-    font-weight: 650 !important;
-  }
-  .router-overview-framework .ro-topbar-cell b {
-    font-size: 13px !important;
-    line-height: 1.1 !important;
-    font-weight: 850 !important;
-    color: #152238 !important;
-  }
   .router-overview-framework .ro-desktop-grid {
     min-height: calc(100vh - 118px) !important;
   }
@@ -362,13 +293,6 @@
     white-space: nowrap !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
-  }
-  .router-overview-framework[data-overview-scene-key="resource-full"] .ro-topbar-cell[data-overview-status-role="conclusion"] b,.router-overview-framework[data-overview-scene-key="all-offline"] .ro-topbar-cell[data-overview-status-role="conclusion"] b,.router-overview-framework[data-overview-scene-key="interfaces-down"] .ro-topbar-cell[data-overview-status-role="conclusion"] b {
-    font-size: 19px !important;
-    color: #d93025 !important;
-  }
-  .router-overview-framework[data-overview-scene-key="resource-full"] .ro-topbar,.router-overview-framework[data-overview-scene-key="all-offline"] .ro-topbar,.router-overview-framework[data-overview-scene-key="interfaces-down"] .ro-topbar {
-    background: linear-gradient(90deg,#d93025 0,#d93025 5px,#dce8f4 5px,#dce8f4 100%) !important;
   }
 }
 
@@ -578,10 +502,6 @@
     grid-template-columns: repeat(3,minmax(0,1fr)) !important;
     gap: 10px !important;
   }
-  .router-overview-framework .ro-topbar {
-    border-radius: 0 !important;
-    box-shadow: none !important;
-  }
 }
 
 @media (min-width: 768px) {
@@ -666,45 +586,6 @@
     --ro-desktop-soft-line: #e8eff7;
     --ro-desktop-soft-bg: #f8fbff;
     --ro-desktop-danger-bg: rgba(217, 48, 37, .06);
-  }
-  .router-overview-framework .ro-topbar.ik-home-flat-topbar {
-    margin-bottom: 8px !important;
-    border: 1px solid var(--ro-desktop-line) !important;
-    border-left: 7px solid #1677ff !important;
-    border-radius: 3px !important;
-    background: #fff !important;
-    box-shadow: none !important;
-  }
-  .router-overview-framework[data-overview-scene-key="resource-full"] .ro-topbar.ik-home-flat-topbar,
-  .router-overview-framework[data-overview-scene-key="all-offline"] .ro-topbar.ik-home-flat-topbar,
-  .router-overview-framework[data-overview-scene-key="interfaces-down"] .ro-topbar.ik-home-flat-topbar {
-    border-left-color: #d93025 !important;
-    background: linear-gradient(90deg, var(--ro-desktop-danger-bg) 0, #fff 320px) !important;
-  }
-  .router-overview-framework .ro-topbar-cell.ik-home-flat-cell {
-    min-height: 48px !important;
-    padding: 7px 10px 6px !important;
-    border-right: 1px solid var(--ro-desktop-soft-line) !important;
-  }
-  .router-overview-framework .ro-topbar-cell[data-overview-status-role="conclusion"] {
-    background: rgba(248, 251, 255, .82) !important;
-  }
-  .router-overview-framework .ro-topbar-cell[data-overview-status-role="conclusion"] b {
-    font-size: 21px !important;
-    line-height: 1.04 !important;
-    font-weight: 960 !important;
-    letter-spacing: -.04em !important;
-  }
-  .router-overview-framework[data-overview-scene-key="resource-full"] .ro-topbar-cell[data-overview-status-role="conclusion"] b,
-  .router-overview-framework[data-overview-scene-key="all-offline"] .ro-topbar-cell[data-overview-status-role="conclusion"] b,
-  .router-overview-framework[data-overview-scene-key="interfaces-down"] .ro-topbar-cell[data-overview-status-role="conclusion"] b {
-    color: #d93025 !important;
-    font-size: 23px !important;
-  }
-  .router-overview-framework .ro-topbar-cell em {
-    color: #627287 !important;
-    font-size: 10.8px !important;
-    line-height: 1.16 !important;
   }
   .router-overview-framework .ro-desktop-key-row[data-overview-desktop-tier="key-metrics"] {
     margin: 0 0 9px !important;

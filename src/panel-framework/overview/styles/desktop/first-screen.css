@@ -204,21 +204,6 @@
   .router-overview-framework .ik-sidebar-mini-status b {
     color: #244160 !important;
   }
-  .router-overview-framework .ro-topbar {
-    border-color: #dfe9f4 !important;
-    background: #dfe9f4 !important;
-  }
-  .router-overview-framework .ro-topbar-cell {
-    background: #fff !important;
-  }
-  .router-overview-framework .ro-topbar-cell b {
-    font-size: 12px !important;
-    line-height: 1.12 !important;
-  }
-  .router-overview-framework .ro-topbar-cell[data-overview-status-role="conclusion"] b {
-    font-size: 15px !important;
-    letter-spacing: -.01em !important;
-  }
   .router-overview-framework .ro-module {
     border-color: #dfe8f2 !important;
   }
@@ -256,10 +241,6 @@
 }
 
 @media (min-width: 761px) {
-  .router-overview-framework .ro-topbar {
-    border-radius: 4px !important;
-    box-shadow: none !important;
-  }
   .router-overview-framework .ro-desktop-key-row {
     align-items: stretch !important;
   }
@@ -278,32 +259,6 @@
 }
 
 @media (min-width: 761px) {
-  .router-overview-framework .ro-topbar-cell[data-tone="warn"] {
-    border-left-color: var(--ro-blue) !important;
-  }
-  .router-overview-framework .ro-topbar-cell[data-overview-status-role="collection"],
-  .router-overview-framework .ro-topbar-cell[data-overview-status-role="snapshot"] {
-    background: linear-gradient(180deg, #fff 0%, #f7fbff 100%) !important;
-  }
-  .router-overview-framework .ro-topbar-cell[data-overview-status-role="collection"] {
-    border-left-color: var(--ro-warn) !important;
-  }
-  .router-overview-framework .ro-topbar-cell[data-overview-status-role="collection"] b,
-  .router-overview-framework .ro-topbar-cell[data-overview-status-role="snapshot"] b,
-  .router-overview-framework .ro-topbar-cell[data-overview-status-role="routeros"] b,
-  .router-overview-framework .ro-topbar-cell[data-overview-status-role="rest"] b,
-  .router-overview-framework .ro-topbar-cell[data-overview-status-role="ssh"] b {
-    color: #1f4f85 !important;
-  }
-  .router-overview-framework .ro-topbar-cell[data-overview-status-role="collection"] em {
-    color: var(--ro-warn) !important;
-  }
-  .router-overview-framework .ro-topbar-cell[data-overview-status-role="routeros"] em,
-  .router-overview-framework .ro-topbar-cell[data-overview-status-role="rest"] em,
-  .router-overview-framework .ro-topbar-cell[data-overview-status-role="ssh"] em,
-  .router-overview-framework .ro-topbar-cell[data-overview-status-role="snapshot"] em {
-    color: var(--ro-faint) !important;
-  }
   .router-overview-framework .ro-chart-current {
     background: var(--ro-blue) !important;
   }

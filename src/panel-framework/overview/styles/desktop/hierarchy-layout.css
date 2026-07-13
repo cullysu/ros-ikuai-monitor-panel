@@ -79,11 +79,4 @@
   #overview.router-overview-framework .ro-desktop-grid[data-overview-desktop-scene="fleet"] > .ro-col.is-bottom > .ro-module[data-overview-density-module="evidence-boundary"] {
     min-height: 0 !important;
   }
-  #overview.router-overview-framework .ro-topbar.ik-home-flat-topbar.is-compact-facts {
-    grid-template-columns: minmax(210px, 1.45fr) repeat(3, minmax(156px, .9fr)) !important;
-  }
-  #overview.router-overview-framework .ro-topbar.ik-home-flat-topbar.is-compact-facts > .ro-topbar-cell:first-child b {
-    font-size: 17px !important;
-    font-weight: 900 !important;
-  }
 }

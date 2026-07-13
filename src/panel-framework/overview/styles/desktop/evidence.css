@@ -32,12 +32,6 @@
 }
 
 @media (min-width: 761px) {
-  #overview.router-overview-framework .ro-topbar-cell {
-    padding: 5px 8px 4px !important;
-  }
-  #overview.router-overview-framework .ro-topbar-cell em {
-    margin-top: 2px !important;
-  }
   #overview.router-overview-framework .ro-judgement-chart {
     border-color: #e8f0f7 !important;
   }
@@ -260,33 +254,10 @@
 /*Codex v431 final desktop bus: fixed six cells, no clipped text, no gradient status bar.*/
 
 @media (min-width: 761px) {
-  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] > .ro-topbar.ik-home-flat-topbar {
-    margin-bottom: 8px !important;
-  }
+
 }
 
 @media (min-width: 761px) {
-  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-topbar {
-    overflow: visible !important;
-    border-left-width: 2px !important;
-    background-image: none !important;
-    box-shadow: none !important;
-  }
-  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-topbar-cell {
-    overflow: visible !important;
-  }
-  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-topbar-cell span,
-  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-topbar-cell em {
-    font-size: 10px !important;
-    line-height: 1.1 !important;
-  }
-  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-topbar-cell b {
-    font-size: 12px !important;
-    line-height: 1.08 !important;
-  }
-  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-topbar-cell[data-overview-status-role="conclusion"] b {
-    font-size: 14px !important;
-  }
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-desktop-grid.ik-home-layout > .ro-col.is-main > .ro-module:first-child {
     max-height: 390px !important;
     overflow: auto !important;
@@ -311,83 +282,7 @@
 /*Codex v432 final override must come after compact console rules.*/
 
 @media (min-width: 761px) {
-  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] > .ro-topbar.ik-home-flat-topbar {
-    display: grid !important;
-    grid-template-columns: minmax(150px, .9fr) minmax(176px, 1.06fr) minmax(126px, .78fr) minmax(118px, .72fr) minmax(126px, .76fr) minmax(118px, .68fr) !important;
-    gap: 1px !important;
-    height: 54px !important;
-    max-height: 56px !important;
-    min-height: 0 !important;
-    padding: 0 !important;
-    border: 1px solid #dfe8f2 !important;
-    border-left: 2px solid #1677ff !important;
-    border-radius: 4px !important;
-    background: #dfe8f2 !important;
-    background-image: none !important;
-    box-shadow: none !important;
-    overflow: visible !important;
-  }
-  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"][data-overview-scene-key="resource-full"] > .ro-topbar.ik-home-flat-topbar,
-  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"][data-overview-scene-key="all-offline"] > .ro-topbar.ik-home-flat-topbar,
-  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"][data-overview-scene-key="interfaces-down"] > .ro-topbar.ik-home-flat-topbar {
-    border-left-color: #d93025 !important;
-    background: #dfe8f2 !important;
-    background-image: none !important;
-  }
-  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] > .ro-topbar.ik-home-flat-topbar > .ro-topbar-cell {
-    min-width: 0 !important;
-    min-height: 0 !important;
-    height: 52px !important;
-    padding: 5px 8px 4px !important;
-    display: grid !important;
-    align-content: center !important;
-    gap: 2px !important;
-    border: 0 !important;
-    border-right: 1px solid #dfe8f2 !important;
-    border-radius: 0 !important;
-    background: #fff !important;
-    box-shadow: none !important;
-    overflow: visible !important;
-  }
-  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] > .ro-topbar.ik-home-flat-topbar > .ro-topbar-cell:last-child {
-    border-right: 0 !important;
-  }
-  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] > .ro-topbar.ik-home-flat-topbar span {
-    display: block !important;
-    min-width: 0 !important;
-    color: #718196 !important;
-    font-size: 10px !important;
-    line-height: 1 !important;
-    font-weight: 700 !important;
-    white-space: nowrap !important;
-    overflow: visible !important;
-    text-overflow: clip !important;
-  }
-  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] > .ro-topbar.ik-home-flat-topbar b {
-    display: block !important;
-    min-width: 0 !important;
-    color: #152238 !important;
-    font-size: 12.4px !important;
-    line-height: 1.08 !important;
-    font-weight: 840 !important;
-    white-space: normal !important;
-    overflow: visible !important;
-    text-overflow: clip !important;
-    overflow-wrap: anywhere !important;
-  }
-  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] > .ro-topbar.ik-home-flat-topbar [data-overview-status-role="conclusion"] b {
-    font-size: 14.2px !important;
-    line-height: 1.05 !important;
-    font-weight: 900 !important;
-  }
-  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"][data-overview-scene-key="resource-full"] > .ro-topbar.ik-home-flat-topbar [data-overview-status-role="conclusion"] b,
-  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"][data-overview-scene-key="all-offline"] > .ro-topbar.ik-home-flat-topbar [data-overview-status-role="conclusion"] b,
-  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"][data-overview-scene-key="interfaces-down"] > .ro-topbar.ik-home-flat-topbar [data-overview-status-role="conclusion"] b {
-    color: #d93025 !important;
-  }
-  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] > .ro-topbar.ik-home-flat-topbar em {
-    display: none !important;
-  }
+
 }
 
 /*v400 desktop no-snapshot: chain ledger first, no fake WAN-rate filler, no stretched empty shells*/
@@ -445,21 +340,9 @@
     --ro-admin-soft: #f7fbff;
     --ro-admin-text: #172235;
   }
-  .router-overview-framework[data-overview-scene-key="resource-full"] > .ro-topbar.ik-home-flat-topbar,
-  .router-overview-framework[data-overview-scene-key="all-offline"] > .ro-topbar.ik-home-flat-topbar,
-  .router-overview-framework[data-overview-scene-key="interfaces-down"] > .ro-topbar.ik-home-flat-topbar,
-  .router-overview-framework[data-overview-scene-key="resource-full"] > .ro-desktop-key-row,
-  .router-overview-framework[data-overview-scene-key="all-offline"] > .ro-desktop-key-row,
-  .router-overview-framework[data-overview-scene-key="interfaces-down"] > .ro-desktop-key-row {
+  .router-overview-framework[data-overview-scene-key="resource-full"] > .ro-desktop-key-row,\n.router-overview-framework[data-overview-scene-key="all-offline"] > .ro-desktop-key-row,\n.router-overview-framework[data-overview-scene-key="interfaces-down"] > .ro-desktop-key-row {
     border-left-color: #d93025 !important;
     background: linear-gradient(90deg, rgba(217, 48, 37, .045), #fff 280px) !important;
-  }
-  .router-overview-framework > .ro-topbar.ik-home-flat-topbar b,
-  .router-overview-framework > .ro-desktop-key-row b {
-    color: var(--ro-admin-text) !important;
-    font-size: 13px !important;
-    line-height: 1.12 !important;
-    font-weight: 850 !important;
   }
   .router-overview-framework .ro-module {
     border-color: var(--ro-admin-line) !important;

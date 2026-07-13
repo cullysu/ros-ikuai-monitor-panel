@@ -53,13 +53,6 @@
     background: rgba(130, 151, 173, .36) !important;
     border-radius: 99px !important;
   }
-  #overview.router-overview-framework .ro-topbar.ik-home-flat-topbar > .ro-topbar-cell {
-    padding-inline: 10px !important;
-  }
-  #overview.router-overview-framework .ro-topbar.ik-home-flat-topbar b {
-    font-size: 13px !important;
-    letter-spacing: -.015em !important;
-  }
   #overview.router-overview-framework .ro-col.is-main > .ro-module:first-child {
     border-left-width: 4px !important;
     background: linear-gradient(180deg, #fff 0%, #fbfdff 100%) !important;

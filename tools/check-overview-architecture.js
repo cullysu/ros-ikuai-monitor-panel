@@ -42,6 +42,19 @@ const desktopBaseStyleLayerFiles = [
   "src/panel-framework/overview/styles/desktop/layout.css",
   desktopConsoleRefinementStylesFile,
 ];
+const overviewRetiredTopbarStyleFiles = [
+  "src/panel-framework/overview/styles/overview-states.css",
+  "src/panel-framework/overview/styles/desktop/density.css",
+  "src/panel-framework/overview/styles/desktop/first-screen.css",
+  "src/panel-framework/overview/styles/desktop/hierarchy.css",
+  "src/panel-framework/overview/styles/desktop/shell-chrome.css",
+  "src/panel-framework/overview/styles/desktop/evidence.css",
+  "src/panel-framework/overview/styles/desktop/console-skeleton.css",
+  "src/panel-framework/overview/styles/desktop/layout.css",
+  "src/panel-framework/overview/styles/desktop/hierarchy-layout.css",
+  "src/panel-framework/overview/styles/desktop/release.css",
+  "src/panel-framework/overview/styles/mobile/product-shell.css",
+];
 const desktopRefinementFile =
   "src/panel-framework/overview/styles/desktop/refinement.css";
 const desktopRuntimeStylesFile =
@@ -579,10 +592,10 @@ assert(
   "Desktop hierarchy source must not retain archived flat-dense root styles"
 );
 assert(
-  !read("src/panel-framework/overview/styles/desktop/console-skeleton.css").includes(
-    ".ro-topbar"
+  overviewRetiredTopbarStyleFiles.every(
+    (file) => !/\.ro-topbar(?:-cell)?\b|\.ik-home-flat-topbar\b/.test(read(file))
   ),
-  "Desktop console skeleton must not retain selector arms for the retired topbar renderer"
+  "Overview style sources must not retain selectors for the retired topbar renderer"
 );
 const desktopBaseStyleLayerLimits = new Map([
   ["src/panel-framework/overview/styles/desktop/density.css", 900],
