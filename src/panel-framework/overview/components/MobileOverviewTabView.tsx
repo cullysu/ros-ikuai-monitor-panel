@@ -27,49 +27,29 @@ interface MobileTabViewConfig {
 }
 
 function tabConfig({ activeTab, model, snapshot, state }: MobileOverviewTabViewProps): MobileTabViewConfig {
-  if (activeTab === "wan") {
+  if (activeTab === "network") {
     return {
-      eyebrow: "出口与默认路由",
-      title: "WAN",
+      eyebrow: "出口、默认路由与承载接口",
+      title: "网络",
       summary: `${formatNumber(state.facts.wan.online)}/${formatNumber(state.facts.wan.total)} 在线`,
-      note: state.facts.route.label,
+      note: `${state.facts.route.label} · 接口 ${formatNumber(state.facts.interfaces.down)} Down`,
       tone: state.facts.wan.allOffline ? "danger" : state.facts.wan.offline ? "warn" : "trust",
-      rows: mobileWanRows(model),
-    };
-  }
-  if (activeTab === "interface") {
-    return {
-      eyebrow: "承载接口",
-      title: "接口",
-      summary: state.facts.interfaces.down > 0 ? `${formatNumber(state.facts.interfaces.down)} 个 Down` : "全部运行",
-      note: `${formatNumber(state.facts.interfaces.total)} 个接口`,
-      tone: state.facts.interfaces.down > 0 ? "warn" : "trust",
-      rows: mobileInterfaceRows(snapshot),
-    };
-  }
-  if (activeTab === "terminal") {
-    return {
-      eyebrow: "在线终端与连接",
-      title: "终端",
-      summary: `${formatNumber(state.facts.connections.active)} 活动`,
-      note: `${formatNumber(state.facts.connections.total)} 条连接`,
-      tone: "trust",
-      rows: mobileTerminalRows(snapshot),
+      rows: [...mobileWanRows(model), ...mobileInterfaceRows(snapshot)].slice(0, 7),
     };
   }
   return {
-    eyebrow: "只读采集记录",
-    title: "日志",
+    eyebrow: "采集、连接与只读记录",
+    title: "诊断",
     summary: state.facts.collection.credibilityLabel,
-    note: `失败 ${formatNumber(state.facts.failures.count)} 项 · 最近 ${model.header.recent}`,
+    note: `${formatNumber(state.facts.connections.active)} 活动连接 · 失败 ${formatNumber(state.facts.failures.count)} 项 · 最近 ${model.header.recent}`,
     tone: state.facts.collection.credibilityTone,
-    rows: mobileLogRows(model, state),
+    rows: [...mobileLogRows(model, state), ...mobileTerminalRows(snapshot)].slice(0, 7),
   };
 }
 
 export function MobileOverviewTabView(props: MobileOverviewTabViewProps) {
   const { activeTab, model, state } = props;
-  const businessHidden = state.scenario === "no-snapshot" && activeTab !== "log";
+  const businessHidden = state.scenario === "no-snapshot" && activeTab === "network";
   const baseConfig = tabConfig(props);
   const config = businessHidden ? {
     ...baseConfig,
@@ -97,7 +77,7 @@ export function MobileOverviewTabView(props: MobileOverviewTabViewProps) {
       className="ik-mobile-tab-view"
       id={`mobile-${activeTab}-view`}
       data-overview-mobile-tab-view={activeTab}
-      data-overview-mobile-tab-credibility={businessHidden ? "business-hidden" : activeTab === "log" ? "collection-evidence" : "business-visible"}
+      data-overview-mobile-tab-credibility={businessHidden ? "business-hidden" : activeTab === "diagnose" ? "collection-evidence" : "business-visible"}
     >
       <header className="ik-mobile-tab-head">
         <div>

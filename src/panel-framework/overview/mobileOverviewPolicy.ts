@@ -14,7 +14,7 @@ export type MobilePrimaryListKind =
   | "snapshot-boundary"
   | "collection-boundary";
 
-export type MobileIncidentTargetTab = "wan" | "interface" | "terminal" | "log";
+export type MobileIncidentTargetTab = "network" | "diagnose";
 
 export interface MobileIncidentAction {
   value: string;
@@ -113,7 +113,7 @@ const MOBILE_OVERVIEW_POLICY: Record<
     showCoreMetricRail: false,
     surfaceOrder: "list-before-status",
     surfaceRanking: "suppressed",
-    incidentAction: { value: "查采集状态", note: "采集 / 最近成功", targetTab: "log" },
+    incidentAction: { value: "查采集状态", note: "采集 / 最近成功", targetTab: "diagnose" },
     trustBoundary: (context) =>
       `业务快照缺失 · 最近成功 ${context.recentSuccess}`,
   },
@@ -128,7 +128,7 @@ const MOBILE_OVERVIEW_POLICY: Record<
     showCoreMetricRail: false,
     surfaceOrder: "list-before-status",
     surfaceRanking: "suppressed",
-    incidentAction: { value: "查默认出口", note: "WAN / 默认路由", targetTab: "wan" },
+    incidentAction: { value: "查默认出口", note: "WAN / 默认路由", targetTab: "network" },
     trustBoundary: (context) =>
       `转发面不可用 · ${context.collectionLabel}${context.collectionValue} · 最近 ${context.recentSuccess}`,
   },
@@ -143,7 +143,7 @@ const MOBILE_OVERVIEW_POLICY: Record<
     showCoreMetricRail: false,
     surfaceOrder: "list-before-status",
     surfaceRanking: "suppressed",
-    incidentAction: { value: "查接口承载", note: "接口 / 默认路由", targetTab: "interface" },
+    incidentAction: { value: "查接口承载", note: "接口 / 默认路由", targetTab: "network" },
     trustBoundary: (context) =>
       `接口转发面优先 · 采集面只作旁证 · ${context.snapshotValue}`,
   },
@@ -172,7 +172,7 @@ const MOBILE_OVERVIEW_POLICY: Record<
     showCoreMetricRail: false,
     surfaceOrder: "list-before-status",
     surfaceRanking: "suppressed",
-    incidentAction: { value: "查采集通道", note: "通道 / 缓存", targetTab: "log" },
+    incidentAction: { value: "查采集通道", note: "通道 / 缓存", targetTab: "diagnose" },
     trustBoundary: (context) =>
       `采集降级 · 缓存边界 · 最近 ${context.recentSuccess}`,
   },
@@ -198,9 +198,9 @@ export function resolveMobileIncidentAction(
   diagnostic?: MobileResourceDiagnosticContext,
 ): MobileIncidentAction {
   if (priority === "resource-full") {
-    if (diagnostic?.collectionDegraded) return { value: "核采集可信度", note: "资源已越阈，先确认当前采样边界", targetTab: "log" };
-    if (diagnostic?.connectionPressure) return { value: "查连接压力", note: diagnostic.connectionTotalText + " 连接 · 阈值 50K", targetTab: "terminal" };
-    if (diagnostic?.interfaceAvailable) return { value: "查接口吞吐", note: "连接未到压力阈值，先核承载吞吐", targetTab: "interface" };
+    if (diagnostic?.collectionDegraded) return { value: "核采集可信度", note: "资源已越阈，先确认当前采样边界", targetTab: "diagnose" };
+    if (diagnostic?.connectionPressure) return { value: "查连接压力", note: diagnostic.connectionTotalText + " 连接 · 阈值 50K", targetTab: "diagnose" };
+    if (diagnostic?.interfaceAvailable) return { value: "查接口吞吐", note: "连接未到压力阈值，先核承载吞吐", targetTab: "network" };
     return {
       value: `先处理${resource?.label || "资源"}`,
       note: resource

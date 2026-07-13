@@ -5,7 +5,7 @@
     grid-template-areas: "nav nav"
       "hero side";
     gap: 8px 10px;
-    padding: 10px 12px 62px;
+    padding: 10px 12px 70px;
   }
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-device-bar {
     grid-area: nav;
@@ -17,6 +17,10 @@
     height: 252px;
     min-height: 252px;
     max-height: 252px;
+  }
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console]:not([data-overview-mobile-priority="resource-full"]) .ik-mobile-decision-card:not(.is-trend) {
+    gap: 6px;
+    padding: 10px;
   }
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-core-facts {
     grid-area: side;
@@ -37,5 +41,28 @@
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-decision-head h1 {
     font-size: 28px;
     line-height: 1.05;
+  }
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-incident-telemetry {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-rows: 44px;
+    min-height: 44px;
+    height: 44px;
+  }
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-incident-telemetry > span {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: 14px 18px;
+    padding: 4px 7px;
+    border-right: 1px solid rgba(147, 178, 206, .28);
+    border-bottom: 0;
+  }
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-incident-telemetry > span:last-child {
+    border-right: 0;
+  }
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-incident-telemetry b {
+    font-size: 12px;
+  }
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-incident-telemetry small,
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-priority="resource-full"] .ik-mobile-incident-telemetry {
+    display: none;
   }
 }

@@ -143,6 +143,25 @@ function decisionKicker(model: MobileOverviewModel): string {
   return "接口告警";
 }
 
+function IncidentTelemetry({ model }: { model: MobileOverviewModel }) {
+  if (model.priority === "normal") return null;
+  return (
+    <div
+      className="ik-mobile-incident-telemetry"
+      aria-label="当前监控遥测"
+      data-overview-mobile-incident-telemetry="current-rate-wan-collection-snapshot"
+    >
+      {model.incidentTelemetry.map((item) => (
+        <span className={toneClass(item.tone)} key={item.id}>
+          <em>{item.label}</em>
+          <b>{item.value}</b>
+          <small>{item.note}</small>
+        </span>
+      ))}
+    </div>
+  );
+}
+
 export function PrimaryDecision({ model, onSelectTab }: { model: MobileOverviewModel; onSelectTab?: (tab: MobileBottomTabId) => void }) {
   return (
     <section
@@ -155,6 +174,7 @@ export function PrimaryDecision({ model, onSelectTab }: { model: MobileOverviewM
         <p>{model.hero.subtitle}</p>
       </div>
       <DecisionVisual model={model} onSelectTab={onSelectTab} />
+      <IncidentTelemetry model={model} />
     </section>
   );
 }

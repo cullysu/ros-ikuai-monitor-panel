@@ -65,6 +65,7 @@ const mobilePolicy = read('src/panel-framework/overview/mobileOverviewPolicy.ts'
 const landscapeStyles = read('src/panel-framework/overview/styles/mobile/landscape.css');
 const navigationStyles = read('src/panel-framework/overview/styles/mobile/navigation.css');
 const incidentStyles = read('src/panel-framework/overview/styles/mobile/incident.css');
+const telemetryStyles = read('src/panel-framework/overview/styles/mobile/telemetry.css');
 const productShellStyles = read('src/panel-framework/overview/styles/mobile/product-shell.css');
 const mobileDecisionStyles = read('src/panel-framework/overview/styles/mobile/decision.css');
 const mobileFrameStyles = read('src/panel-framework/overview/styles/mobile/frame.css');
@@ -205,7 +206,7 @@ excludesAll(mobileSections, [
 includesAll(mobileModel, ['网络可用', '外网不可用', '业务数据不可判', '采集不完整', '资源过载', '接口异常'], 'mobile factual verdict copy');
 includesAll(mobileSections, ['export function DeviceBar', 'export function CoreFacts', 'export function SupportingList', 'aria-expanded'], 'mobile semantic sections');
 
-for (const tab of ['home', 'wan', 'interface', 'terminal', 'log']) {
+for (const tab of ['home', 'network', 'diagnose']) {
   if (!mobileTabs.includes(`id: "${tab}"`)) fail('mobile navigation semantics', `missing ${tab}`);
 }
 includesAll(mobileTabs, [
@@ -224,6 +225,7 @@ includesAll(mobileStyles, [
   '@import "./decision.css";',
   '@import "./surface.css";',
   '@import "./incident.css";',
+  '@import "./telemetry.css";',
   '@import "./navigation.css";',
   '@import "./landscape.css";',
 ], 'mobile style composition');
@@ -233,12 +235,13 @@ excludesAll(mobileStyles, [
   'repair',
 ], 'mobile retired style layer cleanup');
 includesAll(landscapeStyles, ['min-width: 761px', 'max-width: 900px', 'max-height: 520px', '"hero side"'], 'landscape mobile layout');
-includesAll(navigationStyles, ['position: fixed', 'height: 52px', 'repeat(5, minmax(0, 1fr))'], 'mobile native navigation');
-includesAll(incidentStyles, ['ik-mobile-incident-summary', 'ik-mobile-incident-guidance', 'min-height: 98px'], 'mobile incident hierarchy');
+includesAll(navigationStyles, ['position: fixed', 'repeat(3, minmax(0, 1fr))', 'height: 60px', 'rgba(235, 245, 252, .78)'], 'mobile native navigation positioning');
+includesAll(incidentStyles, ['ik-mobile-incident-summary', 'ik-mobile-incident-guidance', 'min-height: 103px', 'min-height: 45px'], 'mobile incident hierarchy');
+includesAll(telemetryStyles, ['ik-mobile-incident-telemetry', 'grid-template-rows: repeat(2, 50px)', 'min-height: 100px'], 'mobile incident telemetry');
 includesAll(productShellStyles, ['ro-desktop-grid', 'ro-mobile-first-screen', '100dvh', 'position: fixed', 'min-height: 44px'], 'mobile/desktop shell isolation');
-includesAll(mobileFrameStyles, ['ik-mobile-decision-screen', 'ik-mobile-device-bar'], 'mobile frame styles');
+includesAll(mobileFrameStyles, ['ik-mobile-decision-screen', 'ik-mobile-device-bar', 'linear-gradient(180deg, #e8f1f8', 'rgba(248, 252, 255, .66)'], 'mobile frame styles');
 includesAll(mobileDecisionStyles, ['ik-mobile-decision-card', 'ik-mobile-decision-trend', 'ik-mobile-resource-incident-stack'], 'mobile decision styles');
-includesAll(mobileCoreStyles, ['ik-mobile-core-facts', 'grid-template-rows: repeat(4, 46px)'], 'mobile core fact styles');
+includesAll(mobileCoreStyles, ['ik-mobile-core-facts', 'grid-template-columns: repeat(2, minmax(0, 1fr))', 'grid-template-rows: repeat(2, 52px)', 'rgba(248, 252, 255, .72)'], 'mobile core fact ownership');
 excludesAll(mobileSurfaceStyles, ['ik-mobile-core-facts'], 'mobile surface ownership');
 includesAll(mobileSurfaceStyles, ['ik-mobile-supporting-surface', 'ik-mobile-detail-entry'], 'mobile surface styles');
 
@@ -257,6 +260,8 @@ includesAll(predeploy, [
   'waitForAnyJson',
   'terminateBrowserTree',
   'matrixBlocksTopLevelPass',
+  'inspectScreenshotBlackPixels',
+  'unexpected black pixels',
   'overviewDesktopFocusedHierarchyOk',
   'report.pass = report.failures.length === 0 && !matrixBlocksTopLevelPass',
   'process.exitCode = report.exitCodeShouldFail ? 1 : 0',

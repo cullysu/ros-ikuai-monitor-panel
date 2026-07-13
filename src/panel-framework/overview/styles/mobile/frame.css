@@ -1,11 +1,11 @@
 @media (max-width: 760px), (min-width: 761px) and (max-width: 900px) and (max-height: 520px) {
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-decision-screen {
     display: grid;
-    grid-template-rows: 46px auto 184px auto;
-    gap: 9px;
+    grid-template-rows: 46px auto auto auto;
+    gap: 10px;
     align-content: start;
-    padding: max(12px, env(safe-area-inset-top)) 12px calc(76px + env(safe-area-inset-bottom));
-    background: #f1f4f7;
+    padding: max(12px, env(safe-area-inset-top)) 12px calc(82px + env(safe-area-inset-bottom));
+    background: linear-gradient(180deg, #e8f1f8 0%, #f4f8fb 46%, #edf3f8 100%);
   }
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-device-bar {
     display: grid;
@@ -14,7 +14,11 @@
     gap: 10px;
     min-height: 46px;
     height: 46px;
-    padding: 0 1px;
+    padding: 0 9px;
+    border: 1px solid rgba(151, 179, 204, .42);
+    border-radius: 14px;
+    background: rgba(248, 252, 255, .66);
+    box-shadow: 0 6px 18px rgba(53, 84, 116, .06);
   }
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-device-title {
     display: grid;
@@ -26,16 +30,18 @@
   }
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-device-title b {
     display: block;
-    color: #142033;
-    font-size: 17px;
+    color: #18324d;
+    font-size: 16px;
+    font-weight: 760;
     line-height: 1.08;
     letter-spacing: 0;
     white-space: nowrap;
   }
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-device-title span {
     display: block;
-    color: #66758a;
-    font-size: 11.5px;
+    color: #647a91;
+    font-size: 10.5px;
+    font-weight: 620;
     line-height: 1.1;
     white-space: nowrap;
   }
@@ -50,17 +56,18 @@
   #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-device-bar .ik-mobile-device-status {
     display: inline-flex;
     align-items: center;
-    justify-content: flex-end;
+    justify-content: center;
     gap: 5px;
-    min-width: 58px;
+    min-width: 64px;
     min-height: 30px;
-    border: 0;
-    border-radius: 0;
-    background: transparent;
+    padding: 0 9px;
+    border: 1px solid rgba(106, 151, 190, .38);
+    border-radius: 999px;
+    background: rgba(198, 221, 241, .54);
     box-shadow: none;
-    color: #31475f;
-    font-size: 12px;
-    font-weight: 760;
+    color: #234f77;
+    font-size: 11px;
+    font-weight: 780;
     line-height: 1;
     white-space: nowrap;
   }
@@ -70,5 +77,12 @@
     height: 6px;
     border-radius: 50%;
     background: currentColor;
+  }
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-device-bar .ik-mobile-device-status.is-danger,
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-device-bar .ik-mobile-device-status.is-missing,
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-device-bar .ik-mobile-device-status.is-warn {
+    border-color: rgba(101, 131, 160, .44);
+    background: rgba(212, 224, 235, .72);
+    color: #314b66;
   }
 }
