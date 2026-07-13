@@ -6,10 +6,7 @@ import { type OverviewPanelProps } from "./desktopOverviewHelpers";
 import "./OverviewPanel.css";
 import "./styles/desktop/status-bus.css";
 import "./styles/desktop/tokens.css";
-import "./OverviewPanelDesktopRefinement.css";
-import "./styles/desktop/wan-trend.css";
-import "./OverviewPanelRelease.css";
-import "./OverviewPanelDesktopHierarchy.css";
+import "./styles/overview-desktop-runtime.css";
 import "./styles/desktop/incidents.css";
 
 export function OverviewPanel({ snapshot, state }: OverviewPanelProps) {

@@ -38,9 +38,9 @@ const desktopBaseStyleLayerFiles = [
   "src/panel-framework/overview/styles/desktop/console-refinement.css",
 ];
 const desktopRefinementFile =
-  "src/panel-framework/overview/OverviewPanelDesktopRefinement.css";
+  "src/panel-framework/overview/styles/desktop/refinement.css";
 const desktopReleaseFile =
-  "src/panel-framework/overview/OverviewPanelRelease.css";
+  "src/panel-framework/overview/styles/desktop/release.css";
 const desktopIncidentStylesFile =
   "src/panel-framework/overview/styles/desktop/incidents.css";
 const desktopStatusBusStylesFile =
@@ -395,7 +395,7 @@ assert(
 assert(
   lines(desktopWanTrendStyles) <= 120 &&
     desktopWanTrendStyles.includes('[data-overview-density-module="wan-trend"]') &&
-    panel.includes('import "./styles/desktop/wan-trend.css";') &&
+    panel.includes('import "./styles/overview-desktop-runtime.css";') &&
     !desktopRefinement.includes('Desktop WAN readable product chart'),
   "Desktop WAN trend styles must live in the focused component layer"
 );
