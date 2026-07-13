@@ -11197,8 +11197,9 @@ var PanelFramework = function(exports) {
     const action = nextAction(state);
     if (!action) return null;
     const items = [
-      { label: "下一步", value: action.value, note: action.note, tone: action.tone },
+      { role: "next-step", label: "下一步", value: action.value, note: action.note, tone: action.tone },
       {
+        role: "credibility",
         label: "可信度",
         value: (credibility == null ? void 0 : credibility.value) || presentation.readonlyJudgement,
         note: (credibility == null ? void 0 : credibility.note) || "只读判断，不写入 RouterOS",
@@ -11212,11 +11213,20 @@ var PanelFramework = function(exports) {
         "aria-label": "桌面判断与处置",
         "data-overview-desktop-kpi-row": "next-action-credibility",
         "data-overview-desktop-decision-rail": "action-and-credibility",
-        children: items.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ro-desktop-thin-kpi ik-overview-kpi-card", "data-overview-desktop-decision-role": item.label, "data-tone": item.tone, children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: item.label }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: item.value }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: item.note })
-        ] }, item.label))
+        children: items.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
+          "div",
+          {
+            className: `ro-desktop-thin-kpi ik-overview-kpi-card is-${item.role}`,
+            "data-overview-desktop-decision-role": item.role,
+            "data-tone": item.tone,
+            children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: item.label }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: item.value }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: item.note })
+            ]
+          },
+          item.role
+        ))
       }
     );
   }

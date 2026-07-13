@@ -30,14 +30,15 @@ export function DesktopDecisionRail({ snapshot, state }: OverviewPanelProps) {
   const action = nextAction(state);
   if (!action) return null;
   const items = [
-    { label: "下一步", value: action.value, note: action.note, tone: action.tone },
+    { role: "next-step", label: "下一步", value: action.value, note: action.note, tone: action.tone },
     {
+      role: "credibility",
       label: "可信度",
       value: credibility?.value || presentation.readonlyJudgement,
       note: credibility?.note || "只读判断，不写入 RouterOS",
       tone: credibility?.tone || state.verdict.level,
     },
-  ] satisfies Array<{ label: string; value: string; note: string; tone: OverviewTone }>;
+  ] satisfies Array<{ role: "next-step" | "credibility"; label: string; value: string; note: string; tone: OverviewTone }>;
 
   return (
     <section
@@ -47,7 +48,12 @@ export function DesktopDecisionRail({ snapshot, state }: OverviewPanelProps) {
       data-overview-desktop-decision-rail="action-and-credibility"
     >
       {items.map((item) => (
-        <div className="ro-desktop-thin-kpi ik-overview-kpi-card" data-overview-desktop-decision-role={item.label} data-tone={item.tone} key={item.label}>
+        <div
+          className={`ro-desktop-thin-kpi ik-overview-kpi-card is-${item.role}`}
+          data-overview-desktop-decision-role={item.role}
+          data-tone={item.tone}
+          key={item.role}
+        >
           <span>{item.label}</span>
           <b>{item.value}</b>
           <em>{item.note}</em>
