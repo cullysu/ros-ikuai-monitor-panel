@@ -176,10 +176,6 @@
     box-shadow: none !important;
     overflow: visible !important;
   }
-  #overview.router-overview-framework .ro-desktop-thin-kpis {
-    grid-column: 1 / -1 !important;
-    margin: 0 !important;
-  }
   #overview.router-overview-framework .ro-desktop-thin-kpi {
     display: grid !important;
     grid-template-columns: minmax(58px, .42fr) minmax(0, .6fr) minmax(0, 1fr) !important;
@@ -308,20 +304,6 @@
     gap: 7px !important;
     grid-template-columns: minmax(0, 1.46fr) minmax(370px, .9fr) !important;
     align-items: start !important;
-  }
-  #overview.router-overview-framework .ro-desktop-thin-kpis {
-    height: 54px !important;
-    min-height: 54px !important;
-    max-height: 54px !important;
-    display: grid !important;
-    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
-    gap: 0 !important;
-    padding: 0 !important;
-    border: 1px solid #e6eef6 !important;
-    border-radius: 4px !important;
-    background: #fbfdff !important;
-    overflow: hidden !important;
-    box-shadow: none !important;
   }
   #overview.router-overview-framework .ro-desktop-thin-kpi.ik-overview-kpi-card {
     display: grid !important;

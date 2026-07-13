@@ -1,33 +1,3 @@
-/*Codex v502: keep the validator-required key-metric rail, but make it a metric strip rather than a second conclusion bus.*/
-
-@media (min-width: 761px) {
-  #overview.router-overview-framework .ro-desktop-grid.ik-home-layout.ik-desktop-workspace {
-    grid-template-areas: "kpis kpis"
-      "main side"
-      "bottom bottom" !important;
-    grid-template-rows: 34px auto auto !important;
-  }
-  #overview.router-overview-framework .ro-desktop-thin-kpis {
-    grid-area: kpis !important;
-    visibility: visible !important;
-  }
-  #overview.router-overview-framework .ro-desktop-thin-kpis > .ro-desktop-thin-kpi {
-    min-height: 34px !important;
-    height: 34px !important;
-    padding: 4px 10px !important;
-    box-shadow: none !important;
-  }
-  #overview.router-overview-framework .ro-desktop-thin-kpis span {
-    font-size: 10.5px !important;
-  }
-  #overview.router-overview-framework .ro-desktop-thin-kpis b {
-    font-size: 13px !important;
-  }
-  #overview.router-overview-framework .ro-desktop-thin-kpis em {
-    font-size: 10px !important;
-  }
-}
-
 /*v430 incident hardening: keep desktop console rows dense and prevent
    resource Top5 rows from becoming tall report cards.*/
 

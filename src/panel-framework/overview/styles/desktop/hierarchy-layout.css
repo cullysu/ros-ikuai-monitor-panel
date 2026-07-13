@@ -5,7 +5,7 @@
   #overview.router-overview-framework .ro-desktop-grid.ik-home-layout.ik-desktop-workspace {
     display: grid !important;
     grid-template-columns: minmax(0, 1.42fr) minmax(380px, .92fr) !important;
-    grid-template-areas: "kpis kpis"
+    grid-template-areas: "rail rail"
       "main side"
       "bottom bottom" !important;
     gap: 8px !important;
@@ -16,19 +16,6 @@
     grid-template-areas: "main side"
       "bottom bottom" !important;
     grid-template-rows: auto auto !important;
-  }
-  #overview.router-overview-framework .ro-desktop-thin-kpis {
-    grid-area: kpis !important;
-    grid-column: 1 / -1 !important;
-    display: grid !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    position: relative !important;
-    z-index: 2 !important;
-    height: 38px !important;
-    min-height: 38px !important;
-    max-height: 40px !important;
-    overflow: visible !important;
   }
   #overview.router-overview-framework .ro-desktop-grid.ik-home-layout > .ro-col.is-main {
     grid-area: main !important;

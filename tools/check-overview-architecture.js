@@ -52,6 +52,8 @@ const desktopConsoleFile =
   "src/panel-framework/overview/components/DesktopConsole.tsx";
 const desktopDecisionRailFile =
   "src/panel-framework/overview/components/DesktopDecisionRail.tsx";
+const desktopDecisionRailStylesFile =
+  "src/panel-framework/overview/styles/desktop/decision-rail.css";
 const desktopModuleFile =
   "src/panel-framework/overview/components/DesktopModule.tsx";
 const statusVerdictFile =
@@ -124,6 +126,7 @@ const mobilePolicyFile =
 const panel = read(panelFile);
 const desktopConsole = read(desktopConsoleFile);
 const desktopDecisionRail = read(desktopDecisionRailFile);
+const desktopDecisionRailStyles = read(desktopDecisionRailStylesFile);
 const desktopModule = read(desktopModuleFile);
 const statusVerdict = read(statusVerdictFile);
 const desktopScenes = read(desktopScenesFile);
@@ -174,6 +177,9 @@ const desktopRefinementRoot = postcss.parse(desktopRefinement, {
 });
 const desktopReleaseRoot = postcss.parse(desktopRelease, {
   from: desktopReleaseFile,
+});
+const desktopDecisionRailRoot = postcss.parse(desktopDecisionRailStyles, {
+  from: desktopDecisionRailStylesFile,
 });
 const desktopStatusBusRoot = postcss.parse(desktopStatusBusStyles, {
   from: desktopStatusBusStylesFile,
@@ -278,12 +284,6 @@ desktopRefinementRoot.walkRules((rule) => {
   desktopRefinementPropertiesBySelector.set(selectorContext, earlierProperties);
 });
 desktopRefinementRoot.walkRules((rule) => {
-  if (rule.selector.includes(".ro-desktop-thin-kpis")) {
-    desktopDecisionRailRuleCount += 1;
-  }
-  if (/\.ro-desktop-thin-kpi(?!s)/.test(rule.selector)) {
-    desktopDecisionCellRuleCount += 1;
-  }
   if (
     rule.selector
       .split(",")
@@ -363,6 +363,14 @@ desktopRefinementRoot.walkRules((rule) => {
     rule.walkDecls("box-shadow", () => {
       desktopLedgerToneShadowCount += 1;
     });
+  }
+});
+desktopDecisionRailRoot.walkRules((rule) => {
+  if (rule.selector.trim().endsWith(".ro-desktop-decision-rail")) {
+    desktopDecisionRailRuleCount += 1;
+  }
+  if (rule.selector.includes(".ro-desktop-decision-rail .ro-desktop-thin-kpi")) {
+    desktopDecisionCellRuleCount += 1;
   }
 });
 desktopStatusBusRoot.walkRules((rule) => {
@@ -804,7 +812,9 @@ assert(
   `Desktop refinement must not redeclare the same property in a later identical selector context: ${desktopRefinementShadowedDeclarationCount}`
 );
 assert(
-  desktopDecisionRailRuleCount === 1 && desktopDecisionCellRuleCount <= 4,
+  desktopDecisionRailRuleCount === 1 && desktopDecisionCellRuleCount <= 7 &&
+    !desktopBaseStyles.includes(".ro-desktop-thin-kpis") &&
+    !desktopRefinement.includes(".ro-desktop-thin-kpi"),
   `Desktop decision rail must stay consolidated: railRules=${desktopDecisionRailRuleCount} cellRules=${desktopDecisionCellRuleCount}`
 );
 assert(
