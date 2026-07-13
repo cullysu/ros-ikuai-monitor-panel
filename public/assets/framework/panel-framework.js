@@ -7858,7 +7858,7 @@ var PanelFramework = function(exports) {
       informationArchitecture: "trust-boundary-no-business-data",
       topSlot: "trust-boundary",
       terminalRanking: "not-mounted",
-      showCoreMetricRail: true,
+      showCoreMetricRail: false,
       surfaceOrder: "list-before-status",
       surfaceRanking: "suppressed",
       incidentAction: { value: "查采集状态", note: "采集 / 最近成功", targetTab: "log" },
@@ -7872,7 +7872,7 @@ var PanelFramework = function(exports) {
       informationArchitecture: "wan-offline-default-route-collection-success-first",
       topSlot: "wan-incident",
       terminalRanking: "not-mounted",
-      showCoreMetricRail: true,
+      showCoreMetricRail: false,
       surfaceOrder: "list-before-status",
       surfaceRanking: "suppressed",
       incidentAction: { value: "查默认出口", note: "WAN / 默认路由", targetTab: "wan" },
@@ -7886,7 +7886,7 @@ var PanelFramework = function(exports) {
       informationArchitecture: "interface-carrier-impact-first",
       topSlot: "interface-impact",
       terminalRanking: "secondary-collapsed",
-      showCoreMetricRail: true,
+      showCoreMetricRail: false,
       surfaceOrder: "list-before-status",
       surfaceRanking: "suppressed",
       incidentAction: { value: "查接口承载", note: "接口 / 默认路由", targetTab: "interface" },
@@ -7900,7 +7900,7 @@ var PanelFramework = function(exports) {
       informationArchitecture: "resource-pressure-evidence-first",
       topSlot: "resource-pressure",
       terminalRanking: "supporting-evidence",
-      showCoreMetricRail: true,
+      showCoreMetricRail: false,
       surfaceOrder: "list-before-status",
       surfaceRanking: "supporting",
       trustBoundary: (context) => `资源连续越阈 · ${context.routeValue} · 采样${context.snapshotValue}`
@@ -7913,7 +7913,7 @@ var PanelFramework = function(exports) {
       informationArchitecture: "collection-boundary-first",
       topSlot: "collection-boundary",
       terminalRanking: "secondary-collapsed",
-      showCoreMetricRail: true,
+      showCoreMetricRail: false,
       surfaceOrder: "list-before-status",
       surfaceRanking: "suppressed",
       incidentAction: { value: "查采集通道", note: "通道 / 缓存", targetTab: "log" },
@@ -9022,7 +9022,7 @@ var PanelFramework = function(exports) {
       routeValue: network.route.value
     });
     const pills = heroPills(snapshot, state, network);
-    const core = coreMetrics(snapshot, state, network);
+    const core = policy.appHomeContract.showCoreMetricRail ? coreMetrics(snapshot, state, network) : [];
     const resourceCells = heroResourceCells(state);
     return {
       priority,

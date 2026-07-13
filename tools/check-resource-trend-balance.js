@@ -1653,7 +1653,7 @@ async function main() {
         const metricGridStyle = metricGrid ? getComputedStyle(metricGrid) : null;
         const metricCells = Array.from(metricGrid?.querySelectorAll('span') || []);
         const metricLabels = metricCells.map((cell) => normalize(cell.querySelector('em')?.textContent || ''));
-        const noSnapshotMetricsDeferred = sectionName === 'mobileNoSnapshotHome';
+        const noSnapshotMetricsDeferred = sectionName !== 'mobileNormalHome';
         const expectedMetricLabels = sectionName === 'mobileNormalHome'
           ? ['WAN', '默认路由', '采集', '快照']
           : ['WAN', '采集', '资源', '快照'];
@@ -1732,13 +1732,15 @@ async function main() {
           ['采集', '快照'].every((label) => metricLabels.includes(label)) &&
           /REST|SSH|缓存|通道|快照/.test(normalize(metricGrid.textContent || ''))
         );
+        const firstScreenDecisionCredibilityVisible = Array.from(root?.querySelectorAll('.ik-mobile-abnormal-decision-rail .ik-mobile-incident-cell') || [])
+          .some((cell) => normalize(cell.querySelector('em')?.textContent || '') === '可信度' && normalize(cell.querySelector('b')?.textContent || '').length > 0);
         const collectionTrustRail = root?.querySelector('[data-overview-mobile-v1058-collection-trust="routeros-rest-ssh-snapshot-fixed-abnormal-first-screen"]');
         const collectionTrustCells = Array.from(collectionTrustRail?.querySelectorAll('[data-overview-mobile-v1058-collection-channel]') || []);
         const collectionTrustLabels = collectionTrustCells.map((cell) => cell.getAttribute('data-overview-mobile-v1058-collection-channel') || '');
         const collectionTrustRailFixed = sectionName === 'mobileNormalHome' ? !collectionTrustRail : Boolean(
           (
             firstScreenChannelEvidenceVisible ||
-            firstScreenMetricTrustVisible ||
+            firstScreenMetricTrustVisible || firstScreenDecisionCredibilityVisible ||
             (
               collectionTrustRail &&
               collectionTrustCells.length === 4 &&
@@ -1762,7 +1764,7 @@ async function main() {
         ) : Boolean(
           (
             firstScreenChannelEvidenceVisible ||
-            firstScreenMetricTrustVisible ||
+            firstScreenMetricTrustVisible || firstScreenDecisionCredibilityVisible ||
             (
               collectionTrustCells.length === 4 &&
               collectionTrustCells.every((cell) => cell.getAttribute('data-overview-mobile-v1059-plane') === 'collection')

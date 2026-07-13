@@ -831,7 +831,9 @@ export function buildMobileOverviewModel(snapshot: OverviewRawSnapshot, state: O
     routeValue: network.route.value,
   });
   const pills = heroPills(snapshot, state, network);
-  const core = coreMetrics(snapshot, state, network);
+  const core = policy.appHomeContract.showCoreMetricRail
+    ? coreMetrics(snapshot, state, network)
+    : [];
   const resourceCells = heroResourceCells(state);
   return {
     priority,

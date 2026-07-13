@@ -3252,7 +3252,13 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       mobile390AppHomeRankCardOk &&
       mobile390AppHomeBottomTabOk
     );
-    const mobile390NoSnapshotDecisionHomeOk = !mobileOverview390x844 || !noSnapshotEdge || Boolean(
+    const mobile390IncidentDecisionHome = noSnapshotEdge || [
+      'all-offline',
+      'collection-down',
+      'resource-full',
+      'interfaces-down',
+    ].includes(scaleScenario);
+    const mobile390NoSnapshotDecisionHomeOk = !mobileOverview390x844 || !mobile390IncidentDecisionHome || Boolean(
       !sectionRoot?.querySelector('.ik-mobile-core-facts') &&
       mobile390AppHomeChromeNodes.some((node) => node.classList.contains('ik-mobile-device-bar')) &&
       mobile390AppHomeChromeNodes.some((node) => node.classList.contains('ik-mobile-primary-conclusion')) &&
@@ -3262,7 +3268,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const mobile390AppHomeTwinOk = !mobileOverview390x844 || Boolean(
       (mobileFirstScreen || sectionRoot)?.querySelector('.ik-mobile-supporting-list, [data-overview-mobile-v159-topn], .ik-v159-top-list, .ik-v240-list, [data-overview-mobile-v240-list]')
     );
-    const mobile390AppHomeStructureOk = noSnapshotEdge
+    const mobile390AppHomeStructureOk = mobile390IncidentDecisionHome
       ? mobile390NoSnapshotDecisionHomeOk
       : mobile390AppHomeChromeOk &&
         mobile390AppHomeTwinOk &&
