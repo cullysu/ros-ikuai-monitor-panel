@@ -112,6 +112,8 @@ const mobileSurfaceStylesFile =
   "src/panel-framework/overview/styles/mobile/surface.css";
 const mobileIncidentStylesFile =
   "src/panel-framework/overview/styles/mobile/incident.css";
+const mobileLandscapeStylesFile =
+  "src/panel-framework/overview/styles/mobile/landscape.css";
 const mobileModelFile =
   "src/panel-framework/overview/mobileOverviewModel.ts";
 const mobilePolicyFile =
@@ -156,6 +158,7 @@ const mobileCoreStyles = read(mobileCoreStylesFile);
 const mobileDecisionStyles = read(mobileDecisionStylesFile);
 const mobileSurfaceStyles = read(mobileSurfaceStylesFile);
 const mobileIncidentStyles = read(mobileIncidentStylesFile);
+const mobileLandscapeStyles = read(mobileLandscapeStylesFile);
 const mobileModel = read(mobileModelFile);
 const mobilePolicy = read(mobilePolicyFile);
 const cssRoot = postcss.parse(panelCss, { from: panelCssFile });
@@ -431,8 +434,9 @@ assert(
     (mobileCoreStyles.match(/!important/g) || []).length === 0 &&
     (mobileDecisionStyles.match(/!important/g) || []).length === 0 &&
     (mobileSurfaceStyles.match(/!important/g) || []).length === 0 &&
-    (mobileIncidentStyles.match(/!important/g) || []).length === 0,
-  "Mobile product shell, frame, core, decision, surface, incident, and navigation must not use override priorities"
+    (mobileIncidentStyles.match(/!important/g) || []).length === 0 &&
+    (mobileLandscapeStyles.match(/!important/g) || []).length === 0,
+  "Mobile product shell, frame, core, decision, surface, incident, landscape, and navigation must not use override priorities"
 );
 assert(
   lines(desktopHelpers) <= 450,

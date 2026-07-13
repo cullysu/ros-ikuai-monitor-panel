@@ -1,47 +1,47 @@
 @media (min-width: 761px) and (max-width: 900px) and (max-height: 520px) {
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-decision-screen {
-    grid-template-columns: minmax(320px, .96fr) minmax(0, 1.04fr) !important;
-    grid-template-rows: 46px 252px !important;
+    grid-template-columns: minmax(320px, .96fr) minmax(0, 1.04fr);
+    grid-template-rows: 46px 252px;
     grid-template-areas:
       "nav nav"
-      "hero side" !important;
-    gap: 8px 10px !important;
-    padding: 10px 12px 62px !important;
+      "hero side";
+    gap: 8px 10px;
+    padding: 10px 12px 62px;
   }
 
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-device-bar {
-    grid-area: nav !important;
+    grid-area: nav;
   }
 
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-decision-card {
-    grid-area: hero !important;
-    width: 100% !important;
-    min-width: 0 !important;
-    height: 252px !important;
-    min-height: 252px !important;
-    max-height: 252px !important;
+    grid-area: hero;
+    width: 100%;
+    min-width: 0;
+    height: 252px;
+    min-height: 252px;
+    max-height: 252px;
   }
 
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-core-facts {
-    grid-area: side !important;
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    grid-template-rows: repeat(2, 56px) !important;
-    min-height: 112px !important;
-    height: 112px !important;
-    align-self: start !important;
-    width: 100% !important;
-    min-width: 0 !important;
+    grid-area: side;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: repeat(2, 56px);
+    min-height: 112px;
+    height: 112px;
+    align-self: start;
+    width: 100%;
+    min-width: 0;
   }
 
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-supporting-surface {
-    grid-area: side !important;
-    align-self: end !important;
-    width: 100% !important;
-    min-width: 0 !important;
+    grid-area: side;
+    align-self: end;
+    width: 100%;
+    min-width: 0;
   }
 
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-decision-head h1 {
-    font-size: 28px !important;
-    line-height: 1.05 !important;
+    font-size: 28px;
+    line-height: 1.05;
   }
 }
