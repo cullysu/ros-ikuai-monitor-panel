@@ -635,7 +635,7 @@ function main(argv = process.argv.slice(2)) {
   assertContains('public/index.html', 'ik-ios-bottom-tab');
   assertContains('public/index.html', 'MobileBottomTabs');
   assertContains('src/panel-framework/overview/components/MobileOverviewHome.tsx', 'data-overview-mobile-active-tab={activeTab}');
-  for (const tab of ['wan', 'interface', 'terminal', 'log']) {
+  for (const tab of ['network', 'diagnose']) {
     assertContains('src/panel-framework/overview/components/BottomTabs.tsx', `id: "${tab}"`);
   }
   assertContains('public/index.html', '快照缺失');
