@@ -396,8 +396,9 @@ assert(
   lines(desktopWanTrendStyles) <= 120 &&
     desktopWanTrendStyles.includes('[data-overview-density-module="wan-trend"]') &&
     panel.includes('import "./styles/overview-desktop-runtime.css";') &&
+    (desktopWanTrendStyles.match(/!important/g) || []).length === 0 &&
     !desktopRefinement.includes('Desktop WAN readable product chart'),
-  "Desktop WAN trend styles must live in the focused component layer"
+  "Desktop WAN trend styles must stay focused without override priorities"
 );
 assert(
   lines(desktopHelpers) <= 450,
