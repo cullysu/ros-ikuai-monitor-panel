@@ -9842,12 +9842,6 @@ var PanelFramework = function(exports) {
     if (role === "snapshot" || role === "recent-success") return "secondary";
     return "meta";
   }
-  function topbarValueStyle(role) {
-    return void 0;
-  }
-  function topbarNoteStyle(role) {
-    return void 0;
-  }
   function moduleTrust(state) {
     if (state.scenario === "no-snapshot") return "链路可参考";
     if (state.scenario === "collection-down" || state.scenario === "interfaces-down" || state.facts.freshness.history || state.facts.collection.dataStale) return "缓存快照";
@@ -11257,20 +11251,16 @@ var PanelFramework = function(exports) {
     const allItems = topbarItems(snapshot, state).slice(0, 6);
     const isNoSnapshot = state.scenario === "no-snapshot";
     const items = isNoSnapshot ? allItems : allItems.filter((item) => ["conclusion", "impact", "collection", "snapshot"].includes(item.role));
-    return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+    return /* @__PURE__ */ jsxRuntimeExports.jsx(
       "div",
       {
         className: `ro-topbar ro-status-bus ik-home-flat-topbar${isNoSnapshot ? "" : " is-compact-facts"}`,
         "data-overview-desktop-tier": "conclusion",
-        children: [
-          items.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ro-topbar-cell ro-status-cell ik-home-flat-cell ik-home-ops-item", "data-tone": item.tone, "data-overview-field": true, "data-overview-status-role": item.role, "data-overview-status-priority": topbarPriority(item.role), children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: item.label }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { style: topbarValueStyle(item.role), "data-overview-desktop-primary": item.role === "conclusion" ? "true" : void 0, children: item.value }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("em", { style: topbarNoteStyle(item.role), children: item.note })
-          ] }, item.role)),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "ro-contract-hidden", "data-overview-field": true }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "ro-contract-hidden", "data-overview-field": true })
-        ]
+        children: items.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ro-topbar-cell ro-status-cell ik-home-flat-cell ik-home-ops-item", "data-tone": item.tone, "data-overview-field": true, "data-overview-status-role": item.role, "data-overview-status-priority": topbarPriority(item.role), children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: item.label }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { "data-overview-desktop-primary": item.role === "conclusion" ? "true" : void 0, children: item.value }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: item.note })
+        ] }, item.role))
       }
     );
   }

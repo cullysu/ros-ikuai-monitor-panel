@@ -1,4 +1,4 @@
-import type { CSSProperties, ReactNode } from "react";
+import type { ReactNode } from "react";
 import {
   compactListText,
   formatCompact,
@@ -315,17 +315,6 @@ export function topbarPriority(role: TopbarRole): "primary" | "key" | "secondary
   if (role === "snapshot" || role === "recent-success") return "secondary";
   return "meta";
 }
-
-export function topbarValueStyle(role: string): CSSProperties | undefined {
-  void role;
-  return undefined;
-}
-
-export function topbarNoteStyle(role: string): CSSProperties | undefined {
-  void role;
-  return undefined;
-}
-
 
 export function moduleTrust(state: OverviewDerivedState): "当前采样" | "缓存快照" | "链路可参考" {
   if (state.scenario === "no-snapshot") return "链路可参考";

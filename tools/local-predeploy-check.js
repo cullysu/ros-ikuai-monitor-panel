@@ -1697,6 +1697,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewDensityModules.length >= 3
     );
     const overviewStatusBar = sectionRoot?.querySelector('.ro-status-bus');
+    const overviewStatusCells = Array.from(overviewStatusBar?.querySelectorAll('.ro-status-cell') || []);
     const overviewVerdictPanel = sectionRoot?.querySelector('[data-overview-verdict-panel]');
     const overviewMainVerdict = sectionRoot?.querySelector('[data-overview-main-verdict]') || overviewSummaryMain;
     const overviewIncidentLine = sectionRoot?.querySelector('[data-overview-incident-line]');
@@ -1852,11 +1853,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         overviewDesktopDetail &&
         overviewDesktopScenarioTrendOk && overviewTrendReadoutOk &&
         overviewDesktopRankRequirementOk && overviewTop5ReadoutOk &&
-        (overviewStatusBar.querySelectorAll('.ik-home-ops-item, [data-overview-field]').length >= (noSnapshotEdge ? 6 : 4)) &&
-        (
-          overviewNoSnapshotGridItems.length >= 6 ||
-          overviewSummaryShell.querySelectorAll('.ik-summary-box, [data-overview-field]').length >= 6
-        ) &&
+        overviewStatusCells.length >= (noSnapshotEdge ? 6 : 4) &&
         (overviewDensityModules.length >= 3 || overviewDesktopDenseRows >= 24 || (noSnapshotEdge && overviewDensityModules.length >= 3 && overviewNoSnapshotGridItems.length >= 6)) &&
         (
           overviewDesktopDetail.querySelectorAll('tbody tr, .ik-home-evidence-row, .ik-summary-box').length >= 6 ||
@@ -5159,7 +5156,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     );
     const overviewStatusBarRect = overviewStatusBar?.getBoundingClientRect();
     const overviewStatusBarStyle = overviewStatusBar ? getComputedStyle(overviewStatusBar) : null;
-    const overviewStatusBusCells = Array.from(overviewVerdictStatusBus?.querySelectorAll('.ro-status-cell') || []);
+    const overviewStatusBusCells = overviewStatusCells;
     const overviewStatusBusVisibleCells = overviewStatusBusCells.filter(nodeVisibleInFirstScreen);
     const overviewStatusBusText = normalize(overviewVerdictStatusBus?.textContent || overviewStatusBar?.textContent || '');
     const overviewSummaryBoxText = normalize(overviewSummaryMain?.textContent || '');

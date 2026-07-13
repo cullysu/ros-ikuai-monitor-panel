@@ -695,6 +695,7 @@ assert(
   !/data-overview-desktop-v\d+|data-overview-(?:summary|status-bus|verdict-status-bus|status-bar|summary-main|desktop-top|status-cell-contract|status-no-table-header|status-value-rail|topbar-priority-contract|topbar-fixed-six)/.test(statusVerdict) &&
     statusVerdict.includes("ro-status-bus") &&
     statusVerdict.includes("ro-status-cell") &&
+    !statusVerdict.includes("ro-contract-hidden") &&
     (statusVerdict.match(/\bdata-overview-[\w-]+/g) || []).length <= 18,
   "StatusVerdict.tsx must use semantic status-bus classes, not self-certifying layout claims"
 );
