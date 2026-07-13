@@ -68,6 +68,7 @@ const incidentStyles = read('src/panel-framework/overview/styles/mobile/incident
 const productShellStyles = read('src/panel-framework/overview/styles/mobile/product-shell.css');
 const mobileDecisionStyles = read('src/panel-framework/overview/styles/mobile/decision.css');
 const mobileFrameStyles = read('src/panel-framework/overview/styles/mobile/frame.css');
+const mobileCoreStyles = read('src/panel-framework/overview/styles/mobile/core.css');
 const mobileSurfaceStyles = read('src/panel-framework/overview/styles/mobile/surface.css');
 const predeploy = read('tools/local-predeploy-check.js');
 const mobileRuntime = read('tools/check-mobile-app-home-runtime.js');
@@ -237,7 +238,9 @@ includesAll(incidentStyles, ['ik-mobile-incident-summary', 'ik-mobile-incident-g
 includesAll(productShellStyles, ['ro-desktop-grid', 'ro-mobile-first-screen', '100dvh', 'position: fixed', 'min-height: 44px'], 'mobile/desktop shell isolation');
 includesAll(mobileFrameStyles, ['ik-mobile-decision-screen', 'ik-mobile-device-bar'], 'mobile frame styles');
 includesAll(mobileDecisionStyles, ['ik-mobile-decision-card', 'ik-mobile-decision-trend', 'ik-mobile-resource-incident-stack'], 'mobile decision styles');
-includesAll(mobileSurfaceStyles, ['ik-mobile-core-facts', 'ik-mobile-supporting-surface', 'ik-mobile-detail-entry'], 'mobile surface styles');
+includesAll(mobileCoreStyles, ['ik-mobile-core-facts', 'grid-template-rows: repeat(4, 46px)'], 'mobile core fact styles');
+excludesAll(mobileSurfaceStyles, ['ik-mobile-core-facts'], 'mobile surface ownership');
+includesAll(mobileSurfaceStyles, ['ik-mobile-supporting-surface', 'ik-mobile-detail-entry'], 'mobile surface styles');
 
 includesAll(mobilePolicy, [
   'normal-operations-first',
