@@ -6,12 +6,12 @@
     min-height: 0;
     height: auto;
     max-height: none;
-    padding: 14px;
-    border: 1px solid rgba(137, 169, 199, .54);
-    border-radius: 16px;
-    background: linear-gradient(145deg, rgba(255, 255, 255, .9), rgba(235, 244, 251, .8)),
-      rgba(242, 248, 253, .82);
-    box-shadow: 0 12px 28px rgba(42, 76, 109, .1), inset 0 1px 0 rgba(255, 255, 255, .82);
+    padding: 18px 0 14px;
+    border: 0;
+    border-bottom: 1px solid rgba(125, 160, 190, .38);
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
   }
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-decision-card.is-trust-channels,
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-decision-card.is-interface-list {
@@ -19,7 +19,7 @@
   }
   @media (max-width: 760px) {
     html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-decision-card.is-trend {
-      min-height: 296px;
+      min-height: 278px;
     }
   }
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-decision-card:not(.is-trend) {
@@ -29,45 +29,52 @@
     min-height: 0;
     height: auto;
     max-height: none;
-    gap: 4px;
+    gap: 5px;
   }
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-decision-head span {
     color: #4f7397;
     font-size: 11px;
     font-weight: 780;
   }
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-priority="wan-offline"] .ik-mobile-decision-head span {
+    color: #874844;
+  }
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-priority="resource-full"] .ik-mobile-decision-head span,
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-priority="interface-down"] .ik-mobile-decision-head span {
+    color: #786027;
+  }
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-decision-head h1 {
     color: #102b46;
-    font-size: 30px;
+    font-size: 32px;
     font-weight: 820;
     line-height: 1;
     letter-spacing: -.04em;
   }
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-decision-head p {
     color: #58718b;
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 620;
     line-height: 1.3;
   }
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-decision-card > .ik-mobile-decision-trend {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: 102px 52px;
+    grid-template-rows: 106px 44px;
     gap: 0;
     min-width: 0;
     position: relative;
-    min-height: 154px;
-    height: 154px;
-    max-height: 154px;
+    min-height: 150px;
+    height: 150px;
+    max-height: 150px;
   }
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-decision-trend .ik-mobile-decision-trend-plot {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: 18px 80px;
+    grid-template-rows: 20px 82px;
     gap: 3px;
-    min-height: 102px;
-    height: 102px;
-    max-height: 102px;
+    min-height: 106px;
+    height: 106px;
+    max-height: 106px;
   }
   #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-priority="normal"] .ik-mobile-decision-card > .ik-mobile-decision-trend > .ik-mobile-decision-trend-anchor {
     display: block;
@@ -103,16 +110,16 @@
   }
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-decision-trend .ik-mobile-decision-visual {
     grid-row: 2;
-    height: 78px;
-    max-height: 78px;
-    border-radius: 10px;
-    background: rgba(224, 238, 249, .62);
+    height: 82px;
+    max-height: 82px;
+    border-radius: 8px;
+    background: rgba(218, 234, 246, .58);
   }
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-decision-trend .ik-mobile-line-chart {
     display: block;
     width: 100%;
-    height: 78px;
-    max-height: 78px;
+    height: 82px;
+    max-height: 82px;
   }
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-line-chart :is(path, polyline) {
     fill: none;
@@ -144,18 +151,18 @@
   }
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-decision-card .ik-mobile-decision-readouts {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    grid-template-rows: repeat(2, minmax(24px, auto));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-rows: 44px;
     position: static;
     width: 100%;
-    min-height: 52px;
-    height: 52px;
-    max-height: 52px;
+    min-height: 44px;
+    height: 44px;
+    max-height: 44px;
     border-top: 1px solid #dce7f2;
   }
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-decision-readouts span {
-    min-height: 26px;
-    padding: 4px 5px;
+    min-height: 44px;
+    padding: 6px 5px;
     box-shadow: inset -1px 0 0 rgba(119, 141, 166, .14);
   }
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-next-step {
@@ -172,26 +179,28 @@
     min-height: 136px;
     height: auto;
     max-height: none;
-    border: 1px solid rgba(150, 180, 207, .42);
-    border-radius: 12px;
-    background: linear-gradient(145deg, rgba(224, 238, 249, .78), rgba(242, 248, 252, .86));
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .68);
+    border: 0;
+    border-top: 1px solid rgba(132, 163, 193, .34);
+    border-bottom: 1px solid rgba(132, 163, 193, .34);
+    border-radius: 0;
+    background: rgba(226, 239, 248, .64);
+    box-shadow: none;
   }
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-channel-incident-stack,
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-generic-incident-stack {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows: 103px;
-    min-height: 115px;
-    height: 115px;
-    max-height: 115px;
-    padding: 6px;
+    min-height: 103px;
+    height: 103px;
+    max-height: 103px;
+    padding: 0;
   }
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-resource-incident-stack {
     grid-template-rows: 103px repeat(3, 34px);
-    min-height: 226px;
-    height: 226px;
-    max-height: 226px;
+    min-height: 205px;
+    height: 205px;
+    max-height: 205px;
   }
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-resource-incident-stack > .ik-mobile-resource-line {
     display: grid;

@@ -1,4 +1,3 @@
-import { useState } from "react";
 import type { MobileOverviewModel } from "../mobileOverviewModel";
 import type { AppRankingRow } from "./MobileOverviewTypes";
 import { toneClass } from "./MobileOverviewUtils";
@@ -52,51 +51,35 @@ function rowIcon(row: AppRankingRow): string {
   return row.rank ? String(row.rank) : "•";
 }
 
-function supportingCopy(model: MobileOverviewModel): { title: string; summary: string; action: string } {
-  if (model.priority === "normal") return { title: "运行明细", summary: "默认路由 · 采集 · 快照", action: "查看运行明细" };
-  if (model.priority === "wan-offline") return { title: "处理", summary: "出口 · 默认路由 · 最近成功", action: "查看出口详情" };
-  if (model.priority === "snapshot-missing") return { title: "处理", summary: "数据边界 · 最近成功", action: "查看数据边界" };
-  if (model.priority === "collection-degraded") return { title: "处理", summary: "采集通道 · 缓存快照", action: "查看采集详情" };
+function supportingCopy(model: MobileOverviewModel): { title: string; summary: string } {
+  if (model.priority === "normal") return { title: "运行明细", summary: "默认路由 · 采集 · 快照" };
+  if (model.priority === "wan-offline") return { title: "处理", summary: "出口 · 默认路由 · 最近成功" };
+  if (model.priority === "snapshot-missing") return { title: "处理", summary: "数据边界 · 最近成功" };
+  if (model.priority === "collection-degraded") return { title: "处理", summary: "采集通道 · 缓存快照" };
   if (model.priority === "resource-full") {
     const primary = model.hero.resourceCells.find((item) => item.risk === "primary-risk") || model.hero.resourceCells[0];
-    return { title: "处理", summary: primary ? `最高${primary.label} ${primary.display} · ${primary.sustainedText}` : "资源阈值持续超限", action: "查看资源详情" };
+    return { title: "处理", summary: primary ? `最高${primary.label} ${primary.display} · ${primary.sustainedText}` : "资源阈值持续超限" };
   }
-  return { title: "处理", summary: "受影响接口 · 默认路由", action: "查看接口详情" };
+  return { title: "处理", summary: "受影响接口 · 默认路由" };
 }
 
 export function SupportingList({ model }: { model: MobileOverviewModel }) {
-  const [expanded, setExpanded] = useState(false);
   const rows = model.primaryList.rows.slice(0, model.priority === "normal" ? 3 : 4);
   const copy = supportingCopy(model);
   return (
-    <section
-      className={`ik-mobile-supporting-surface${expanded ? " is-expanded" : ""}`}
-    >
-      <div
-        className={`ik-mobile-supporting-list${expanded ? " is-expanded" : ""}`}
-      >
-        <header>
-          <b>{copy.title}</b>
-          <span>{copy.summary}</span>
-          <em className={toneClass(model.impactScope.tone)}>{model.impactScope.label} · {model.impactScope.value}</em>
-        </header>
-        <button
-          className={`ik-mobile-detail-entry ${toneClass(model.impactScope.tone)}`}
-          aria-controls="mobile-supporting-detail-rows"
-          aria-expanded={expanded}
-          onClick={() => setExpanded((value) => !value)}
-          type="button"
-        >
-          <span>
-            <b>{expanded ? "收起详情" : copy.action}</b>
-            <em>{model.primaryList.meta}</em>
+    <section className="ik-mobile-supporting-surface">
+      <div className="ik-mobile-supporting-list">
+        <header className={`ik-mobile-supporting-head ${toneClass(model.impactScope.tone)}`}>
+          <span className="ik-mobile-detail-copy">
+            <em>{copy.title} · {copy.summary}</em>
+            <b>{model.primaryList.title}</b>
+            <small>{model.impactScope.value} · {model.primaryList.meta}</small>
           </span>
-          <strong>{rows.length} 项</strong>
-        </button>
+          <strong><b>{rows.length}</b><small>项</small></strong>
+        </header>
         <div
-          className={`ik-mobile-supporting-detail-rows${expanded ? " is-expanded" : ""}`}
+          className="ik-mobile-supporting-detail-rows"
           id="mobile-supporting-detail-rows"
-          aria-hidden={!expanded}
         >
           {rows.map((row) => (
             <article

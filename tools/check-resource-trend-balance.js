@@ -1202,12 +1202,12 @@ async function main() {
       if (sectionName === 'mobileIncidentActionNavigation') {
         const root = sectionEl?.querySelector('[data-overview-mobile-console]');
         const action = root?.querySelector('.ik-mobile-incident-guidance .ik-mobile-incident-action:last-child');
-        const resourceDetails = root?.querySelector('.ik-mobile-supporting-list button');
+        const resourceDetails = root?.querySelector('.ik-mobile-supporting-list');
         return (async () => {
           await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
           const activeScreen = root?.querySelector('[data-overview-mobile-first-screen="app-home"]');
           const actionText = normalize(action?.textContent || '');
-          const supportingText = normalize(resourceDetails?.closest('.ik-mobile-supporting-list')?.textContent || '');
+          const supportingText = normalize(resourceDetails?.textContent || '');
           const startedAtHome = activeScreen?.getAttribute('data-overview-mobile-active-tab') === 'home';
           if (action?.tagName === 'BUTTON') action.click();
           await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
@@ -1237,71 +1237,54 @@ async function main() {
       }
       if (sectionName === 'mobileDetailDrilldown' || sectionName === 'mobileIncidentDrilldown') {
         const root = sectionEl?.querySelector('[data-overview-mobile-console]');
-        const detailButton = root?.querySelector('.ik-mobile-detail-entry[aria-controls="mobile-supporting-detail-rows"]');
+        const detailHeader = root?.querySelector('.ik-mobile-supporting-head');
         const detailSurface = root?.querySelector('.ik-mobile-supporting-surface');
         const detailRows = root?.querySelector('#mobile-supporting-detail-rows.ik-mobile-supporting-detail-rows');
         const rowNodes = Array.from(detailRows?.querySelectorAll('.ik-mobile-deferred-row') || []);
-        const visibleCount = () => rowNodes.filter((node) => {
+        const visibleCount = rowNodes.filter((node) => {
           const style = getComputedStyle(node);
           const rect = node.getBoundingClientRect();
           return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height >= 40;
         }).length;
-        const beforeVisible = visibleCount();
-        const beforeExpanded = detailButton?.getAttribute('aria-expanded') || '';
-        detailButton?.click();
-        return (async () => {
-          await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-          const afterVisible = visibleCount();
-          const afterExpanded = detailButton?.getAttribute('aria-expanded') || '';
-          const surfaceRect = detailSurface?.getBoundingClientRect();
-          const surfaceStyle = detailSurface ? getComputedStyle(detailSurface) : null;
-          const rowRects = rowNodes.map((row) => row.getBoundingClientRect());
-          const rowsUnclipped = Boolean(
-            surfaceRect &&
-            rowRects.every((rect) => rect.top >= surfaceRect.top - 1 && rect.bottom <= surfaceRect.bottom + 1) &&
-            surfaceStyle &&
-            surfaceStyle.overflow !== 'hidden'
-          );
-          const incidentMode = sectionName === 'mobileIncidentDrilldown';
-          const buttonText = normalize(detailButton?.textContent || '');
-          const rowEvidenceComplete = rowNodes.every((row) => (
-            normalize(row.querySelector('span b')?.textContent || '') &&
-            normalize(row.querySelector('span em')?.textContent || '') &&
-            normalize(row.querySelector('strong b')?.textContent || '') &&
-            normalize(row.querySelector('strong small')?.textContent || '')
-          ));
-          return {
-            pass: Boolean(
-              root &&
-              detailButton &&
-              detailSurface &&
-              detailRows &&
-              rowNodes.length >= 3 &&
-              beforeVisible === 0 &&
-              beforeExpanded === 'false' &&
-              afterVisible === rowNodes.length &&
-              afterExpanded === 'true' &&
-              detailRows.getAttribute('aria-hidden') === 'false' &&
-              buttonText.includes('收起详情') &&
-              rowsUnclipped &&
-              rowEvidenceComplete &&
-              (!incidentMode || normalize(rowNodes[0]?.querySelector('.ik-mobile-row-token')?.textContent || '') === '!')
-            ),
-            section: sectionName,
-            url: location.href,
-            incidentMode,
-            rowCount: rowNodes.length,
-            beforeVisible,
-            afterVisible,
-            beforeExpanded,
-            afterExpanded,
-            buttonText,
-            rowsUnclipped,
-            surfaceHeight: surfaceRect?.height || 0,
-            rowEvidenceComplete,
-            viewport: { width: innerWidth, height: innerHeight }
-          };
-        })();
+        const surfaceRect = detailSurface?.getBoundingClientRect();
+        const surfaceStyle = detailSurface ? getComputedStyle(detailSurface) : null;
+        const rowRects = rowNodes.map((row) => row.getBoundingClientRect());
+        const rowsUnclipped = Boolean(
+          surfaceRect &&
+          rowRects.every((rect) => rect.top >= surfaceRect.top - 1 && rect.bottom <= surfaceRect.bottom + 1) &&
+          surfaceStyle &&
+          surfaceStyle.overflow !== 'hidden'
+        );
+        const incidentMode = sectionName === 'mobileIncidentDrilldown';
+        const rowEvidenceComplete = rowNodes.every((row) => (
+          normalize(row.querySelector('span b')?.textContent || '') &&
+          normalize(row.querySelector('span em')?.textContent || '') &&
+          normalize(row.querySelector('strong b')?.textContent || '') &&
+          normalize(row.querySelector('strong small')?.textContent || '')
+        ));
+        return {
+          pass: Boolean(
+            root &&
+            detailHeader &&
+            detailSurface &&
+            detailRows &&
+            rowNodes.length >= 3 &&
+            visibleCount === rowNodes.length &&
+            !root.querySelector('.ik-mobile-detail-entry') &&
+            rowsUnclipped &&
+            rowEvidenceComplete &&
+            (!incidentMode || normalize(rowNodes[0]?.querySelector('.ik-mobile-row-token')?.textContent || '') === '!')
+          ),
+          section: sectionName,
+          url: location.href,
+          incidentMode,
+          rowCount: rowNodes.length,
+          visibleCount,
+          rowsUnclipped,
+          surfaceHeight: surfaceRect?.height || 0,
+          rowEvidenceComplete,
+          viewport: { width: innerWidth, height: innerHeight }
+        };
       }
       if (incidentActionRoute) {
         const root = sectionEl?.querySelector('[data-overview-mobile-console]');
@@ -1460,8 +1443,9 @@ async function main() {
             incidentTelemetryFacts.every((fact) => fact.value && fact.note) &&
             (resourceLandscapeTelemetryDeferred || (
               incidentTelemetryStyle?.display === 'grid' &&
-              (incidentTelemetryStyle.gridTemplateColumns || '').split(' ').filter(Boolean).length === (innerWidth > innerHeight ? 4 : 2) &&
-              Number.parseFloat(incidentTelemetryStyle.height || '0') >= (innerWidth > innerHeight ? 44 : 100)
+              (incidentTelemetryStyle.gridTemplateColumns || '').split(' ').filter(Boolean).length === 4 &&
+              (incidentTelemetryStyle.gridTemplateRows || '').split(' ').filter(Boolean).length === 1 &&
+              Number.parseFloat(incidentTelemetryStyle.height || '0') >= (innerWidth > innerHeight ? 44 : 60)
             ))
           );
         const noSnapshotTelemetryTruthful = sectionName !== 'mobileNoSnapshotHome' || Boolean(
@@ -1519,6 +1503,7 @@ async function main() {
           list: Boolean(list),
           headers: surface.querySelectorAll('header').length,
           detailControl: Boolean(surface.querySelector('.ik-mobile-detail-entry[aria-controls="mobile-supporting-detail-rows"]')),
+          directEvidence: Boolean(surface.querySelector('.ik-mobile-supporting-head + #mobile-supporting-detail-rows')),
           detailRows: surface.querySelectorAll('.ik-mobile-deferred-row').length,
         } : {};
         const heroAttrs = hero ? {
@@ -1626,10 +1611,10 @@ async function main() {
           v1072Chart &&
           v1072SeriesLegend &&
           decisionReadoutGrid === chartRail &&
-          chartReadoutColumnCount === 2 &&
-          chartReadoutRowCount === 2 &&
+          chartReadoutColumnCount === 4 &&
+          chartReadoutRowCount === 1 &&
           chartReadoutCells.length === 4 &&
-          chartReadoutCellHeights.every((height) => height >= 24) &&
+          chartReadoutCellHeights.every((height) => height >= 40) &&
           chartRailWithinHero &&
           lineChartRect &&
           lineChartRect.height >= 64 &&
@@ -1674,12 +1659,11 @@ async function main() {
         );
         const mobileGroupedSurfaceLowBorder = Boolean(
           groupedSurfaceStyles.length >= 2 &&
-          !['rgba(0, 0, 0, 0)', 'transparent'].includes(groupedSurfaceStyles[0].backgroundColor) &&
           groupedSurfaceStyles.every((style) => (
             isFineBorderBox(style) &&
             isSeparatorOnlyShadow(style.boxShadow || '')
           )) &&
-          groupedSeparatorStyles.length >= 2 &&
+          groupedSeparatorStyles.length >= 1 &&
           groupedSeparatorStyles.every((style) => (
             isFineBorderBox(style) &&
             isSeparatorOnlyShadow(style.boxShadow || '') &&
@@ -1709,9 +1693,9 @@ async function main() {
           expectedMetricLabels.every((label) => metricLabels.includes(label)) &&
           metricGridStyle &&
           metricGridStyle.display === 'grid' &&
-          metricGridColumnCount === 2 &&
-          (metricGridStyle.gridTemplateRows || '').split(' ').filter(Boolean).length === 2 &&
-          Number.parseFloat(metricGridStyle.height || '0') >= 104
+          metricGridColumnCount === (isLandscapeMobile ? 2 : 4) &&
+          (metricGridStyle.gridTemplateRows || '').split(' ').filter(Boolean).length === (isLandscapeMobile ? 2 : 1) &&
+          Number.parseFloat(metricGridStyle.height || '0') >= (isLandscapeMobile ? 104 : 60)
           );
         const normalSummaryStrip = sectionName === 'mobileNormalHome' ? metricGrid : null;
         const normalSummaryCells = Array.from(normalSummaryStrip?.querySelectorAll('.ik-mobile-fact') || []);
@@ -1819,6 +1803,11 @@ async function main() {
           detailEntryVisible &&
           deferredRows
         );
+        const evidenceCondensedForLandscape = Boolean(
+          isLandscapeMobile &&
+          deferredRows &&
+          visibleTerminalRows.length === 0
+        );
         const listEvidenceRows = Array.from(list?.querySelectorAll('.ik-mobile-deferred-row') || []);
         const listEvidence = listEvidenceRows.map((row) => ({
           name: normalize(row.querySelector('span b')?.textContent || ''),
@@ -1849,12 +1838,18 @@ async function main() {
         });
         const routerTabActiveItems = routerTabItems.filter((item) => item.classList.contains('is-active'));
         const routerTabActiveStyle = routerTabActiveItems[0] ? getComputedStyle(routerTabActiveItems[0]) : null;
+        const routerTabActiveIndicatorStyle = routerTabActiveItems[0] ? getComputedStyle(routerTabActiveItems[0], '::before') : null;
         const routerTabActivePaint = (routerTabActiveStyle?.color || '') + ' ' + (routerTabActiveStyle?.boxShadow || '');
         const routerTabActiveCompact = routerTabActivePaint.replaceAll(' ', '');
         const routerTabActiveNeutral = Boolean(
           routerTabActiveStyle &&
-          !['rgba(0,0,0,0)', 'transparent'].includes(routerTabActiveStyle.backgroundColor.replaceAll(' ', '')) &&
-          routerTabActiveCompact.includes('30,95,152')
+          routerTabActiveIndicatorStyle &&
+          ['rgba(0,0,0,0)', 'transparent'].includes(routerTabActiveStyle.backgroundColor.replaceAll(' ', '')) &&
+          routerTabActiveCompact.includes('24,95,152') &&
+          Number.parseFloat(routerTabActiveStyle.borderRadius || '0') === 0 &&
+          isSeparatorOnlyShadow(routerTabActiveStyle.boxShadow || '') &&
+          (routerTabActiveIndicatorStyle.backgroundColor || '').includes('42, 114, 170') &&
+          Number.parseFloat(routerTabActiveIndicatorStyle.height || '0') === 2
         );
         const statusHeader = root?.querySelector('.ik-mobile-device-bar');
         const statusHeaderStyle = statusHeader ? getComputedStyle(statusHeader) : null;
@@ -1874,8 +1869,10 @@ async function main() {
           statusHeaderStyle &&
           statusHeaderStateStyle &&
           Number.parseFloat(statusHeaderStyle.borderTopWidth || '0') <= 1 &&
-          Number.parseFloat(statusHeaderStyle.borderRadius || '0') >= 12 &&
-          !['rgba(0, 0, 0, 0)', 'transparent'].includes(statusHeaderStyle.backgroundColor) &&
+          Number.parseFloat(statusHeaderStyle.borderBottomWidth || '0') === 1 &&
+          Number.parseFloat(statusHeaderStyle.borderRadius || '0') === 0 &&
+          ['rgba(0, 0, 0, 0)', 'transparent'].includes(statusHeaderStyle.backgroundColor) &&
+          isSeparatorOnlyShadow(statusHeaderStyle.boxShadow || '') &&
           Number.parseFloat(statusHeaderStateStyle.borderTopWidth || '0') <= 1 &&
           Number.parseFloat(statusHeaderStateStyle.borderRadius || '0') >= 15 &&
           !['rgba(0, 0, 0, 0)', 'transparent'].includes(statusHeaderStateStyle.backgroundColor)
@@ -1917,7 +1914,13 @@ async function main() {
           activeTabLowNoise &&
           Number.parseFloat(heroStyle.borderTopWidth || '0') <= 1 &&
           Number.parseFloat(listStyle.borderTopWidth || '0') <= 1 &&
-          (bottomTabsStyle.backgroundColor || '').includes('235, 245, 252')
+          Number.parseFloat(heroStyle.borderRadius || '0') === 0 &&
+          Number.parseFloat(listStyle.borderRadius || '0') === 0 &&
+          ['rgba(0, 0, 0, 0)', 'transparent'].includes(heroStyle.backgroundColor) &&
+          ['rgba(0, 0, 0, 0)', 'transparent'].includes(listStyle.backgroundColor) &&
+          isSeparatorOnlyShadow(heroStyle.boxShadow || '') &&
+          isSeparatorOnlyShadow(listStyle.boxShadow || '') &&
+          (bottomTabsStyle.backgroundColor || '').includes('244, 249, 252')
         );
         const nativeTrustSpinePolished = Boolean(
           mobileTokensApplied &&
@@ -1929,10 +1932,12 @@ async function main() {
           Number.parseFloat(heroStyle.borderTopWidth || '0') <= 1 &&
           Number.parseFloat(listStyle.borderTopWidth || '0') <= 1 &&
           Number.parseFloat(surfaceStyle.borderTopWidth || '0') <= 1 &&
-          Number.parseFloat(surfaceStyle.borderRadius || '0') >= 12 &&
-          Number.parseFloat(heroStyle.borderRadius || '0') >= 14 &&
-          !['rgba(0, 0, 0, 0)', 'transparent'].includes(heroStyle.backgroundColor) &&
-          !['rgba(0, 0, 0, 0)', 'transparent'].includes(surfaceStyle.backgroundColor)
+          Number.parseFloat(surfaceStyle.borderRadius || '0') === 0 &&
+          Number.parseFloat(heroStyle.borderRadius || '0') === 0 &&
+          ['rgba(0, 0, 0, 0)', 'transparent'].includes(heroStyle.backgroundColor) &&
+          ['rgba(0, 0, 0, 0)', 'transparent'].includes(surfaceStyle.backgroundColor) &&
+          isSeparatorOnlyShadow(heroStyle.boxShadow || '') &&
+          isSeparatorOnlyShadow(surfaceStyle.boxShadow || '')
         );
         const resourceLedger = hero?.querySelector('.ik-mobile-resource-decision');
         const resourceRows = Array.from(resourceLedger?.querySelectorAll('.ik-mobile-resource-line') || []);
@@ -2012,7 +2017,7 @@ async function main() {
         const wanPortEvidenceDeferred = sectionName !== 'mobileAppHome' || Boolean(
           !wanPortMatrix &&
           wanPortCells.length === 0 &&
-          evidenceDeferred &&
+          (surfaceAttrs.directEvidence || evidenceDeferred) &&
           listEvidence.some((item) => /默认路由|出口|WAN/.test(item.name + ' ' + item.meta))
         );
         const channelRail = hero?.querySelector('.ik-mobile-channel-decision');
@@ -2090,6 +2095,8 @@ async function main() {
           (
             evidenceDeferred
               ? detailEntryVisible && abnormalListRowRects.every((rect) => rect.width === 0 || rect.height === 0)
+              : evidenceCondensedForLandscape
+                ? abnormalListRowRects.every((rect) => rect.width === 0 || rect.height === 0)
               : abnormalListRowRects.length > 0 &&
                 abnormalListRowRects.every((rect) => rect.width > 0 && rect.height >= 42)
           )
@@ -2119,7 +2126,8 @@ async function main() {
         const surfacePolicyModelBacked = Boolean(
           surfaceAttrs.list &&
           surfaceAttrs.headers === 1 &&
-          surfaceAttrs.detailControl &&
+          surfaceAttrs.directEvidence &&
+          !surfaceAttrs.detailControl &&
           surfaceAttrs.detailRows > 0 &&
           firstScreenOrderProductized
         );
@@ -2178,8 +2186,8 @@ async function main() {
             ? abnormalDecisionRailProductized
             : true) &&
           (expectedConfig.mode === 'normal'
-            ? !terminalRankingCopyVisible && (evidenceDeferred ? visibleTerminalRows.length === 0 : (visibleTerminalRows.length >= 1 && visibleTerminalRows.length <= 3))
-            : !terminalRankingCopyVisible && (evidenceDeferred ? visibleTerminalRows.length === 0 : visibleTerminalRows.length >= 1)) &&
+            ? !terminalRankingCopyVisible && (evidenceCondensedForLandscape ? visibleTerminalRows.length === 0 : (visibleTerminalRows.length >= 1 && visibleTerminalRows.length <= 3))
+            : !terminalRankingCopyVisible && (evidenceCondensedForLandscape ? visibleTerminalRows.length === 0 : visibleTerminalRows.length >= 1)) &&
           !styleTextLeakedIntoOverview &&
           missing.length === 0 &&
           !hasHorizontalOverflow

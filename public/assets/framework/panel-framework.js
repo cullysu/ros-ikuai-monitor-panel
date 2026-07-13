@@ -9370,89 +9370,65 @@ var PanelFramework = function(exports) {
     return row.rank ? String(row.rank) : "•";
   }
   function supportingCopy(model) {
-    if (model.priority === "normal") return { title: "运行明细", summary: "默认路由 · 采集 · 快照", action: "查看运行明细" };
-    if (model.priority === "wan-offline") return { title: "处理", summary: "出口 · 默认路由 · 最近成功", action: "查看出口详情" };
-    if (model.priority === "snapshot-missing") return { title: "处理", summary: "数据边界 · 最近成功", action: "查看数据边界" };
-    if (model.priority === "collection-degraded") return { title: "处理", summary: "采集通道 · 缓存快照", action: "查看采集详情" };
+    if (model.priority === "normal") return { title: "运行明细", summary: "默认路由 · 采集 · 快照" };
+    if (model.priority === "wan-offline") return { title: "处理", summary: "出口 · 默认路由 · 最近成功" };
+    if (model.priority === "snapshot-missing") return { title: "处理", summary: "数据边界 · 最近成功" };
+    if (model.priority === "collection-degraded") return { title: "处理", summary: "采集通道 · 缓存快照" };
     if (model.priority === "resource-full") {
       const primary = model.hero.resourceCells.find((item) => item.risk === "primary-risk") || model.hero.resourceCells[0];
-      return { title: "处理", summary: primary ? `最高${primary.label} ${primary.display} · ${primary.sustainedText}` : "资源阈值持续超限", action: "查看资源详情" };
+      return { title: "处理", summary: primary ? `最高${primary.label} ${primary.display} · ${primary.sustainedText}` : "资源阈值持续超限" };
     }
-    return { title: "处理", summary: "受影响接口 · 默认路由", action: "查看接口详情" };
+    return { title: "处理", summary: "受影响接口 · 默认路由" };
   }
   function SupportingList({ model }) {
-    const [expanded, setExpanded] = reactExports.useState(false);
     const rows = model.primaryList.rows.slice(0, model.priority === "normal" ? 3 : 4);
     const copy = supportingCopy(model);
-    return /* @__PURE__ */ jsxRuntimeExports.jsx(
-      "section",
-      {
-        className: `ik-mobile-supporting-surface${expanded ? " is-expanded" : ""}`,
-        children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
-          "div",
-          {
-            className: `ik-mobile-supporting-list${expanded ? " is-expanded" : ""}`,
-            children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { children: [
-                /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: copy.title }),
-                /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: copy.summary }),
-                /* @__PURE__ */ jsxRuntimeExports.jsxs("em", { className: toneClass(model.impactScope.tone), children: [
-                  model.impactScope.label,
-                  " · ",
-                  model.impactScope.value
+    return /* @__PURE__ */ jsxRuntimeExports.jsx("section", { className: "ik-mobile-supporting-surface", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ik-mobile-supporting-list", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { className: `ik-mobile-supporting-head ${toneClass(model.impactScope.tone)}`, children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "ik-mobile-detail-copy", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("em", { children: [
+            copy.title,
+            " · ",
+            copy.summary
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: model.primaryList.title }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("small", { children: [
+            model.impactScope.value,
+            " · ",
+            model.primaryList.meta
+          ] })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("strong", { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: rows.length }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: "项" })
+        ] })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(
+        "div",
+        {
+          className: "ik-mobile-supporting-detail-rows",
+          id: "mobile-supporting-detail-rows",
+          children: rows.map((row) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
+            "article",
+            {
+              className: `ik-mobile-deferred-row ${toneClass(row.tone)}`,
+              children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx("i", { className: "ik-mobile-row-token", "data-rank": row.rank, children: rowIcon(row) }),
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: row.name }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: row.meta })
+                ] }),
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("strong", { children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: row.value }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: row.status || row.kind || "参考" })
                 ] })
-              ] }),
-              /* @__PURE__ */ jsxRuntimeExports.jsxs(
-                "button",
-                {
-                  className: `ik-mobile-detail-entry ${toneClass(model.impactScope.tone)}`,
-                  "aria-controls": "mobile-supporting-detail-rows",
-                  "aria-expanded": expanded,
-                  onClick: () => setExpanded((value) => !value),
-                  type: "button",
-                  children: [
-                    /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-                      /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: expanded ? "收起详情" : copy.action }),
-                      /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: model.primaryList.meta })
-                    ] }),
-                    /* @__PURE__ */ jsxRuntimeExports.jsxs("strong", { children: [
-                      rows.length,
-                      " 项"
-                    ] })
-                  ]
-                }
-              ),
-              /* @__PURE__ */ jsxRuntimeExports.jsx(
-                "div",
-                {
-                  className: `ik-mobile-supporting-detail-rows${expanded ? " is-expanded" : ""}`,
-                  id: "mobile-supporting-detail-rows",
-                  "aria-hidden": !expanded,
-                  children: rows.map((row) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
-                    "article",
-                    {
-                      className: `ik-mobile-deferred-row ${toneClass(row.tone)}`,
-                      children: [
-                        /* @__PURE__ */ jsxRuntimeExports.jsx("i", { className: "ik-mobile-row-token", "data-rank": row.rank, children: rowIcon(row) }),
-                        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-                          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: row.name }),
-                          /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: row.meta })
-                        ] }),
-                        /* @__PURE__ */ jsxRuntimeExports.jsxs("strong", { children: [
-                          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: row.value }),
-                          /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: row.status || row.kind || "参考" })
-                        ] })
-                      ]
-                    },
-                    row.id
-                  ))
-                }
-              )
-            ]
-          }
-        )
-      }
-    );
+              ]
+            },
+            row.id
+          ))
+        }
+      )
+    ] }) });
   }
   function record(value) {
     return value && typeof value === "object" ? value : {};

@@ -1,36 +1,34 @@
 @media (max-width: 760px), (min-width: 761px) and (max-width: 900px) and (max-height: 520px) {
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-incident-telemetry {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    grid-template-rows: repeat(2, 50px);
-    min-height: 100px;
-    height: 100px;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-rows: 64px;
+    min-height: 64px;
+    height: 64px;
     overflow: hidden;
-    border: 1px solid rgba(147, 178, 206, .44);
-    border-radius: 12px;
-    background: rgba(232, 242, 250, .72);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .7);
+    border: 0;
+    border-bottom: 1px solid rgba(125, 160, 190, .38);
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
   }
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-incident-telemetry > span {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    grid-template-rows: 18px 22px;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: 18px 28px;
     min-width: 0;
-    padding: 6px 8px 4px;
+    padding: 9px 8px 7px;
     border-right: 1px solid rgba(147, 178, 206, .28);
-    border-bottom: 1px solid rgba(147, 178, 206, .28);
-  }
-  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-incident-telemetry > span:nth-child(2n) {
-    border-right: 0;
-  }
-  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-incident-telemetry > span:nth-child(n + 3) {
     border-bottom: 0;
+  }
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-incident-telemetry > span:last-child {
+    border-right: 0;
   }
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-incident-telemetry em,
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-incident-telemetry small {
     overflow: hidden;
     color: #668099;
-    font-size: 10px;
+    font-size: 10.5px;
     font-style: normal;
     font-weight: 660;
     line-height: 1.1;
@@ -46,16 +44,13 @@
     grid-row: 2;
     overflow: hidden;
     color: #153e65;
-    font-size: 16px;
+    font-size: 17px;
     font-weight: 840;
     line-height: 1.1;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-incident-telemetry small {
-    grid-column: 2;
-    grid-row: 2;
-    align-self: end;
-    text-align: right;
+    display: none;
   }
 }

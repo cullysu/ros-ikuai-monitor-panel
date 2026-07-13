@@ -35,8 +35,19 @@
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-supporting-surface {
     grid-area: side;
     align-self: end;
-    width: 100%;
-    min-width: 0;
+    height: 64px;
+    max-height: 64px;
+    overflow: hidden;
+  }
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-supporting-list {
+    grid-template-rows: 64px;
+  }
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-supporting-head {
+    min-height: 64px;
+    height: 64px;
+  }
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-supporting-detail-rows {
+    display: none;
   }
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-decision-head h1 {
     font-size: 28px;

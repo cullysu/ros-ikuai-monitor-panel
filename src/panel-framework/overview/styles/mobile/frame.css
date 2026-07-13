@@ -2,10 +2,10 @@
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-decision-screen {
     display: grid;
     grid-template-rows: 46px auto auto auto;
-    gap: 10px;
+    gap: 0;
     align-content: start;
-    padding: max(12px, env(safe-area-inset-top)) 12px calc(82px + env(safe-area-inset-bottom));
-    background: linear-gradient(180deg, #e8f1f8 0%, #f4f8fb 46%, #edf3f8 100%);
+    padding: max(8px, env(safe-area-inset-top)) 16px calc(72px + env(safe-area-inset-bottom));
+    background: linear-gradient(180deg, #edf5fa 0%, #f5f9fc 38%, #eef4f8 100%);
   }
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-device-bar {
     display: grid;
@@ -14,11 +14,12 @@
     gap: 10px;
     min-height: 46px;
     height: 46px;
-    padding: 0 9px;
-    border: 1px solid rgba(151, 179, 204, .42);
-    border-radius: 14px;
-    background: rgba(248, 252, 255, .66);
-    box-shadow: 0 6px 18px rgba(53, 84, 116, .06);
+    padding: 0 2px;
+    border: 0;
+    border-bottom: 1px solid rgba(125, 160, 190, .38);
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
   }
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-device-title {
     display: grid;
@@ -30,9 +31,9 @@
   }
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-device-title b {
     display: block;
-    color: #18324d;
-    font-size: 16px;
-    font-weight: 760;
+    color: #112f49;
+    font-size: 17px;
+    font-weight: 780;
     line-height: 1.08;
     letter-spacing: 0;
     white-space: nowrap;
@@ -40,7 +41,7 @@
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-device-title span {
     display: block;
     color: #647a91;
-    font-size: 10.5px;
+    font-size: 11px;
     font-weight: 620;
     line-height: 1.1;
     white-space: nowrap;
@@ -58,12 +59,12 @@
     align-items: center;
     justify-content: center;
     gap: 5px;
-    min-width: 64px;
+    min-width: 62px;
     min-height: 30px;
-    padding: 0 9px;
+    padding: 0 10px;
     border: 1px solid rgba(106, 151, 190, .38);
     border-radius: 999px;
-    background: rgba(198, 221, 241, .54);
+    background: rgba(201, 224, 242, .58);
     box-shadow: none;
     color: #234f77;
     font-size: 11px;
@@ -78,11 +79,19 @@
     border-radius: 50%;
     background: currentColor;
   }
-  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-device-bar .ik-mobile-device-status.is-danger,
-  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-device-bar .ik-mobile-device-status.is-missing,
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-device-bar .ik-mobile-device-status.is-danger {
+    border-color: rgba(164, 83, 79, .34);
+    background: rgba(177, 76, 70, .08);
+    color: #7d3d3a;
+  }
   #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-device-bar .ik-mobile-device-status.is-warn {
-    border-color: rgba(101, 131, 160, .44);
-    background: rgba(212, 224, 235, .72);
-    color: #314b66;
+    border-color: rgba(164, 126, 56, .34);
+    background: rgba(190, 140, 48, .08);
+    color: #73561f;
+  }
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-device-bar .ik-mobile-device-status.is-missing {
+    border-color: rgba(101, 131, 160, .38);
+    background: rgba(133, 158, 181, .11);
+    color: #405a73;
   }
 }
