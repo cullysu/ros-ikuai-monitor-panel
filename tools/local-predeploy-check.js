@@ -3258,6 +3258,10 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       'resource-full',
       'interfaces-down',
     ].includes(scaleScenario);
+    const mobile390FleetHeaderVerdictAligned = !mobileOverview390x844 || scaleScenario !== 'fleet' || Boolean(
+      normalize(sectionRoot?.querySelector('.ik-mobile-device-status')?.textContent || '') === '可用' &&
+      /网络可用/.test(normalize(sectionRoot?.querySelector('.ik-mobile-primary-conclusion')?.textContent || ''))
+    );
     const mobile390NoSnapshotDecisionHomeOk = !mobileOverview390x844 || !mobile390IncidentDecisionHome || Boolean(
       !sectionRoot?.querySelector('.ik-mobile-core-facts') &&
       mobile390AppHomeChromeNodes.some((node) => node.classList.contains('ik-mobile-device-bar')) &&
@@ -4767,6 +4771,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewMobile390NoMainProgressBarOk &&
       overviewMobile390NoHeavyVisualBlocksOk &&
       overviewMobileResourceFullVerticalOk &&
+      mobile390FleetHeaderVerdictAligned &&
       overviewMobile390BottomTabOk
     );
     const overviewMobile390AcceptanceOk = overviewMobileIosRouterHomeOk;
@@ -7137,6 +7142,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       noCoreClip: overviewMobile390NoCoreTextClipOk,
       resourceVertical: overviewMobileResourceFullVerticalOk,
       appHomeFirst: overviewMobile390AppHomeFirstOk,
+      fleetVerdictAligned: mobile390FleetHeaderVerdictAligned,
       noSnapshotDecisionHome: mobile390NoSnapshotDecisionHomeOk,
       noSnapshotRateForbidden: overviewNoSnapshotFirstScreenRateForbiddenOk,
       noLongTimestamp: overviewLongTimestampForbiddenOk,

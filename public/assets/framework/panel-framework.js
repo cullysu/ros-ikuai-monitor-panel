@@ -8552,12 +8552,12 @@ var PanelFramework = function(exports) {
   }
   function headerTone(state) {
     if (state.scenario === "no-snapshot") return "missing";
-    if (state.scenario === "single") return "ok";
+    if (priorityOf(state) === "normal") return "ok";
     return state.verdict.level;
   }
   function headerStatusLabel(state) {
     if (state.scenario === "no-snapshot") return "待采集";
-    if (state.scenario === "single") return "可用";
+    if (priorityOf(state) === "normal") return "可用";
     if (state.scenario === "all-offline" || state.facts.wan.allOffline) return "断链";
     if (state.scenario === "resource-full") return "超阈";
     if (state.scenario === "interfaces-down") return "异常";
