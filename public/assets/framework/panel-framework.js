@@ -7057,7 +7057,7 @@ var PanelFramework = function(exports) {
     if (meta.realtimeError || meta.slowRestError) return "cache";
     return "realtime";
   }
-  function wanRows$5(snapshot) {
+  function wanRows$4(snapshot) {
     return Array.isArray(snapshot.wan) && snapshot.wan.length ? snapshot.wan : Array.isArray(snapshot.pppoe) ? snapshot.pppoe : [];
   }
   function routeRows$1(snapshot) {
@@ -7187,7 +7187,7 @@ var PanelFramework = function(exports) {
     return { level, available, cpu, memory, disk, summaryText: available ? `处理器 ${formatPercent(cpu)} / 内存 ${formatPercent(memory)} / 磁盘 ${formatPercent(disk)}` : "处理器 未记录 / 内存 未记录 / 磁盘 未记录" };
   }
   function wanState(snapshot) {
-    const rows = wanRows$5(snapshot);
+    const rows = wanRows$4(snapshot);
     const available = !isSnapshotUnavailable(snapshot);
     const online = rows.filter((row) => row.running !== false).length;
     const total = rows.length;
@@ -7369,7 +7369,7 @@ var PanelFramework = function(exports) {
     const normalized = String(value ?? "").replace(/\s+/g, " ").trim();
     return normalized || fallback;
   }
-  function wanRows$4(snapshot) {
+  function wanRows$3(snapshot) {
     if (Array.isArray(snapshot.wan) && snapshot.wan.length) return snapshot.wan;
     return Array.isArray(snapshot.pppoe) ? snapshot.pppoe : [];
   }
@@ -7407,7 +7407,7 @@ var PanelFramework = function(exports) {
     return "实时";
   }
   function buildRouterOsTrustModel(snapshot, state) {
-    const totalWan2 = Math.max(state.facts.wan.total || wanRows$4(snapshot).length, state.facts.wan.allOffline ? 8 : 0);
+    const totalWan2 = Math.max(state.facts.wan.total || wanRows$3(snapshot).length, state.facts.wan.allOffline ? 8 : 0);
     const noSnapshot = state.scenario === "no-snapshot";
     const forwarding = {
       id: "forwarding",
@@ -7650,7 +7650,7 @@ var PanelFramework = function(exports) {
     const normalized = String(value ?? "").replace(/\s+/g, " ").trim();
     return normalized || fallback;
   }
-  function wanRows$3(snapshot) {
+  function wanRows$2(snapshot) {
     if (Array.isArray(snapshot.wan) && snapshot.wan.length) return snapshot.wan;
     return Array.isArray(snapshot.pppoe) ? snapshot.pppoe : [];
   }
@@ -7693,7 +7693,7 @@ var PanelFramework = function(exports) {
     return "normal";
   }
   function totalWan(snapshot, state) {
-    return Math.max(1, state.facts.wan.total, state.facts.wan.online + state.facts.wan.offline, wanRows$3(snapshot).length);
+    return Math.max(1, state.facts.wan.total, state.facts.wan.online + state.facts.wan.offline, wanRows$2(snapshot).length);
   }
   function snapshotTrustText(state) {
     if (state.scenario === "no-snapshot") return "缺失";
@@ -8002,17 +8002,17 @@ var PanelFramework = function(exports) {
     }
     return 0;
   }
-  function wanRows$2(snapshot) {
+  function wanRows$1(snapshot) {
     if (Array.isArray(snapshot.wan) && snapshot.wan.length) return snapshot.wan;
     return Array.isArray(snapshot.pppoe) ? snapshot.pppoe : [];
   }
   function wanLineCount(snapshot, state) {
-    const rows = wanRows$2(snapshot);
+    const rows = wanRows$1(snapshot);
     const factTotal = toNumber(state.facts.wan.total);
     const factSum = toNumber(state.facts.wan.online) + toNumber(state.facts.wan.offline);
     return Math.max(0, rows.length, factTotal, factSum);
   }
-  function interfaceRows$2(snapshot) {
+  function interfaceRows$1(snapshot) {
     return Array.isArray(snapshot.interfaces) ? snapshot.interfaces : [];
   }
   function twoDigit(value) {
@@ -8038,7 +8038,7 @@ var PanelFramework = function(exports) {
     return mobileTime(raw);
   }
   function totals(snapshot) {
-    return wanRows$2(snapshot).reduce(
+    return wanRows$1(snapshot).reduce(
       (sum, row) => ({
         up: sum.up + toNumber(row.upRate),
         down: sum.down + toNumber(row.downRate)
@@ -8237,7 +8237,7 @@ var PanelFramework = function(exports) {
     return { evidenceLayer: "business", evidenceSource: source, evidenceRole: "operational-context", evidenceKey };
   }
   function offlineWanRows(snapshot, state) {
-    const source = wanRows$2(snapshot);
+    const source = wanRows$1(snapshot);
     const total = Math.max(1, wanLineCount(snapshot, state));
     return Array.from({ length: Math.min(5, total) }, (_, index) => {
       const row = source[index] || { name: `pppoe-wan${index + 1}` };
@@ -8260,8 +8260,8 @@ var PanelFramework = function(exports) {
     });
   }
   function interfaceIncidentRows(snapshot) {
-    const rows = interfaceRows$2(snapshot).filter((row) => row.running === false).slice(0, 5);
-    const visible = rows.length ? rows : interfaceRows$2(snapshot).slice(0, 5);
+    const rows = interfaceRows$1(snapshot).filter((row) => row.running === false).slice(0, 5);
+    const visible = rows.length ? rows : interfaceRows$1(snapshot).slice(0, 5);
     return visible.map((row, index) => ({
       id: `interface-down-${index}`,
       rank: index + 1,
@@ -8776,8 +8776,8 @@ var PanelFramework = function(exports) {
     });
   }
   function heroInterfaceCells(snapshot, state) {
-    const rows = interfaceRows$2(snapshot).filter((row) => row.running === false).slice(0, 3);
-    const visible = rows.length ? rows : interfaceRows$2(snapshot).slice(0, 1);
+    const rows = interfaceRows$1(snapshot).filter((row) => row.running === false).slice(0, 3);
+    const visible = rows.length ? rows : interfaceRows$1(snapshot).slice(0, 1);
     return visible.map((row, index) => {
       const name = clean$1(row.name || row.interface, `接口${index + 1}`);
       const carrier = clean$1(row.parent || row.master || row.bridge, "承载待确认");
@@ -8942,7 +8942,7 @@ var PanelFramework = function(exports) {
     return withSurfaceCoreBlocks(pick(["timeline-wan", "timeline-collection", "timeline-resource", "timeline-route"]));
   }
   function wanPorts(snapshot, state) {
-    const source = wanRows$2(snapshot);
+    const source = wanRows$1(snapshot);
     const total = Math.max(1, wanLineCount(snapshot, state));
     const rows = Array.from({ length: Math.min(8, total) }, (_, index) => source[index] || { name: `WAN${index + 1}`, running: false });
     return rows.map((row, index) => {
@@ -9414,7 +9414,7 @@ var PanelFramework = function(exports) {
     const parsed = Number(value);
     return Number.isFinite(parsed) ? parsed : 0;
   }
-  function wanRows$1(model) {
+  function mobileWanRows(model) {
     return model.wanPorts.slice(0, 8).map((port) => ({
       id: port.id,
       label: port.name,
@@ -9423,7 +9423,7 @@ var PanelFramework = function(exports) {
       tone: port.tone
     }));
   }
-  function interfaceRows$1(snapshot) {
+  function mobileInterfaceRows(snapshot) {
     const rows = Array.isArray(snapshot.interfaces) ? snapshot.interfaces : [];
     return rows.slice(0, 8).map((item, index) => {
       const name = text$1(item.name || item.interface, `接口 ${index + 1}`);
@@ -9439,7 +9439,7 @@ var PanelFramework = function(exports) {
       };
     });
   }
-  function terminalRows(snapshot) {
+  function mobileTerminalRows(snapshot) {
     var _a;
     const source = Array.isArray(snapshot.terminals) && snapshot.terminals.length > 0 ? snapshot.terminals : Array.isArray((_a = snapshot.connections) == null ? void 0 : _a.topIps) ? snapshot.connections.topIps : [];
     return source.slice(0, 8).map((item, index) => {
@@ -9456,7 +9456,7 @@ var PanelFramework = function(exports) {
       };
     });
   }
-  function logRows(model, state) {
+  function mobileLogRows(model, state) {
     const channels = model.collectionTrust.map((channel, index) => ({
       id: `channel-${index}`,
       label: channel.label,
@@ -9473,37 +9473,50 @@ var PanelFramework = function(exports) {
     }));
     return [...channels, ...failures].slice(0, 8);
   }
-  function MobileOverviewTabView({ activeTab, model, snapshot, state }) {
-    const businessHidden = state.scenario === "no-snapshot" && activeTab !== "log";
-    const baseConfig = activeTab === "wan" ? {
-      eyebrow: "出口与默认路由",
-      title: "WAN",
-      summary: `${formatNumber(state.facts.wan.online)}/${formatNumber(state.facts.wan.total)} 在线`,
-      note: state.facts.route.label,
-      tone: state.facts.wan.allOffline ? "danger" : state.facts.wan.offline ? "warn" : "trust",
-      rows: wanRows$1(model)
-    } : activeTab === "interface" ? {
-      eyebrow: "承载接口",
-      title: "接口",
-      summary: state.facts.interfaces.down > 0 ? `${formatNumber(state.facts.interfaces.down)} 个 Down` : "全部运行",
-      note: `${formatNumber(state.facts.interfaces.total)} 个接口`,
-      tone: state.facts.interfaces.down > 0 ? "warn" : "trust",
-      rows: interfaceRows$1(snapshot)
-    } : activeTab === "terminal" ? {
-      eyebrow: "在线终端与连接",
-      title: "终端",
-      summary: `${formatNumber(state.facts.connections.active)} 活动`,
-      note: `${formatNumber(state.facts.connections.total)} 条连接`,
-      tone: "trust",
-      rows: terminalRows(snapshot)
-    } : {
+  function tabConfig({ activeTab, model, snapshot, state }) {
+    if (activeTab === "wan") {
+      return {
+        eyebrow: "出口与默认路由",
+        title: "WAN",
+        summary: `${formatNumber(state.facts.wan.online)}/${formatNumber(state.facts.wan.total)} 在线`,
+        note: state.facts.route.label,
+        tone: state.facts.wan.allOffline ? "danger" : state.facts.wan.offline ? "warn" : "trust",
+        rows: mobileWanRows(model)
+      };
+    }
+    if (activeTab === "interface") {
+      return {
+        eyebrow: "承载接口",
+        title: "接口",
+        summary: state.facts.interfaces.down > 0 ? `${formatNumber(state.facts.interfaces.down)} 个 Down` : "全部运行",
+        note: `${formatNumber(state.facts.interfaces.total)} 个接口`,
+        tone: state.facts.interfaces.down > 0 ? "warn" : "trust",
+        rows: mobileInterfaceRows(snapshot)
+      };
+    }
+    if (activeTab === "terminal") {
+      return {
+        eyebrow: "在线终端与连接",
+        title: "终端",
+        summary: `${formatNumber(state.facts.connections.active)} 活动`,
+        note: `${formatNumber(state.facts.connections.total)} 条连接`,
+        tone: "trust",
+        rows: mobileTerminalRows(snapshot)
+      };
+    }
+    return {
       eyebrow: "只读采集记录",
       title: "日志",
       summary: state.facts.collection.credibilityLabel,
       note: `失败 ${formatNumber(state.facts.failures.count)} 项 · 最近 ${model.header.recent}`,
       tone: state.facts.collection.credibilityTone,
-      rows: logRows(model, state)
+      rows: mobileLogRows(model, state)
     };
+  }
+  function MobileOverviewTabView(props) {
+    const { activeTab, model, state } = props;
+    const businessHidden = state.scenario === "no-snapshot" && activeTab !== "log";
+    const baseConfig = tabConfig(props);
     const config = businessHidden ? {
       ...baseConfig,
       summary: "不可判",
