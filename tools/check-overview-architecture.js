@@ -40,6 +40,10 @@ const desktopBaseStyleLayerFiles = [
 ];
 const desktopRefinementFile =
   "src/panel-framework/overview/styles/desktop/refinement.css";
+const desktopRuntimeStylesFile =
+  "src/panel-framework/overview/styles/overview-desktop-runtime.css";
+const desktopWorkspaceLayoutFile =
+  "src/panel-framework/overview/styles/desktop/workspace-layout.css";
 const desktopReleaseFile =
   "src/panel-framework/overview/styles/desktop/release.css";
 const desktopIncidentStylesFile =
@@ -139,6 +143,8 @@ const desktopResourceScene = read(desktopResourceSceneFile);
 const panelCss = read(panelCssFile);
 const desktopBaseStyles = desktopBaseStyleLayerFiles.map(read).join("\n");
 const desktopRefinement = read(desktopRefinementFile);
+const desktopRuntimeStyles = read(desktopRuntimeStylesFile);
+const desktopWorkspaceLayout = read(desktopWorkspaceLayoutFile);
 const desktopRelease = read(desktopReleaseFile);
 const desktopIncidentStyles = read(desktopIncidentStylesFile);
 const desktopStatusBusStyles = read(desktopStatusBusStylesFile);
@@ -181,6 +187,10 @@ const desktopBaseStylesRoot = postcss.parse(desktopBaseStyles, {
 const desktopRefinementRoot = postcss.parse(desktopRefinement, {
   from: desktopRefinementFile,
 });
+const desktopRuntimeStructureRoot = postcss.parse(
+  `${desktopRefinement}\n${desktopWorkspaceLayout}`,
+  { from: desktopRuntimeStylesFile }
+);
 const desktopReleaseRoot = postcss.parse(desktopRelease, {
   from: desktopReleaseFile,
 });
@@ -230,6 +240,7 @@ const desktopBaseShadowedDeclarationCount = countShadowedDeclarations(desktopBas
 let desktopDecisionRailRuleCount = 0;
 let desktopDecisionCellRuleCount = 0;
 let desktopWorkspaceGridRuleCount = 0;
+let desktopRefinementWorkspaceGridRuleCount = 0;
 let desktopNavRuleCount = 0;
 let desktopStatusBusRuleCount = 0;
 let desktopLegacyTopbarRuleCount = 0;
@@ -290,6 +301,15 @@ desktopRefinementRoot.walkRules((rule) => {
   desktopRefinementPropertiesBySelector.set(selectorContext, earlierProperties);
 });
 desktopRefinementRoot.walkRules((rule) => {
+  if (
+    rule.selector
+      .split(",")
+      .some((selector) => selector.trim().endsWith(".ro-desktop-grid"))
+  ) {
+    desktopRefinementWorkspaceGridRuleCount += 1;
+  }
+});
+desktopRuntimeStructureRoot.walkRules((rule) => {
   if (
     rule.selector
       .split(",")
@@ -829,6 +849,16 @@ assert(
 assert(
   desktopRefinementImportantCount <= 650,
   `Desktop refinement !important count regressed above 650: ${desktopRefinementImportantCount}`
+);
+assert(
+  lines(desktopWorkspaceLayout) <= 220 &&
+    desktopRuntimeStyles.indexOf('@import "./desktop/refinement.css";') >= 0 &&
+    desktopRuntimeStyles.indexOf('@import "./desktop/workspace-layout.css";') >
+      desktopRuntimeStyles.indexOf('@import "./desktop/refinement.css";') &&
+    desktopRuntimeStyles.indexOf('@import "./desktop/wan-trend.css";') >
+      desktopRuntimeStyles.indexOf('@import "./desktop/workspace-layout.css";') &&
+    desktopRefinementWorkspaceGridRuleCount === 0,
+  `Desktop workspace layout must own the canonical grid after refinement: lines=${lines(desktopWorkspaceLayout)} refinementGridRules=${desktopRefinementWorkspaceGridRuleCount}`
 );
 assert(
   desktopRefinementShadowedDeclarationCount === 0,
