@@ -1607,7 +1607,7 @@ async function main() {
         const timelineStyle = timeline ? getComputedStyle(timeline) : null;
         const groupedSurfaceNodes = [surface, list, timeline].filter(Boolean);
         const groupedSurfaceStyles = groupedSurfaceNodes.map((node) => getComputedStyle(node));
-        const groupedSeparatorNodes = Array.from(surface?.querySelectorAll('.ik-v420-timeline-row, .ik-v420-list header, .ik-v420-list-row') || []);
+        const groupedSeparatorNodes = Array.from(surface?.querySelectorAll('.ik-mobile-supporting-list header, .ik-mobile-deferred-row') || []);
         const groupedSeparatorStyles = groupedSeparatorNodes.map((node) => getComputedStyle(node));
         const isZeroBorderBox = (style) => Boolean(
           style &&
@@ -1964,7 +1964,7 @@ async function main() {
         const abnormalDecisionRailRect = abnormalDecisionRail?.getBoundingClientRect();
         const abnormalListRows = expectedConfig.mode === 'normal'
           ? []
-          : Array.from(list?.querySelectorAll('.ik-v420-list-row') || []);
+          : Array.from(list?.querySelectorAll('.ik-mobile-deferred-row') || []);
         const abnormalListRowRects = abnormalListRows.map((row) => row.getBoundingClientRect());
         const abnormalListRowStyles = abnormalListRows.map((row) => {
           const style = getComputedStyle(row);
