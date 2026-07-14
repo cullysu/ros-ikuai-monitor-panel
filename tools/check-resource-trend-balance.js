@@ -1904,7 +1904,7 @@ async function main() {
         const evidenceStatusMarkersReadable = evidenceDeferred || isLandscapeMobile || Boolean(
           evidenceReadability.length > 0 &&
           evidenceReadability.every((item) => (
-            item.rowHeight >= 48 &&
+            item.rowHeight >= 44 &&
             item.primaryFontSize >= 12 &&
             item.metaFontSize >= 10.5 &&
             item.statusFontSize >= 10 &&
@@ -2183,6 +2183,27 @@ async function main() {
         const abnormalDecisionSummaryStyle = abnormalDecisionSummary ? getComputedStyle(abnormalDecisionSummary) : null;
         const abnormalDecisionGuidanceStyle = abnormalDecisionGuidance ? getComputedStyle(abnormalDecisionGuidance) : null;
         const abnormalDecisionRailRect = abnormalDecisionRail?.getBoundingClientRect();
+        const incidentTelemetryRect = incidentTelemetry?.getBoundingClientRect();
+        const mobilePriority = root?.getAttribute('data-overview-mobile-priority') || '';
+        const informationOrder = hero?.getAttribute('data-overview-mobile-information-order') || '';
+        const resourceMetricRows = Array.from(hero?.querySelectorAll('.ik-mobile-resource-incident-stack > .ik-mobile-resource-line') || []);
+        const resourceMetricRects = resourceMetricRows.map((row) => row.getBoundingClientRect());
+        const abnormalInformationOrderOk = expectedConfig.mode === 'normal'
+          ? informationOrder === 'verdict-trend'
+          : mobilePriority === 'resource-full'
+            ? Boolean(
+              informationOrder === 'verdict-resource-evidence-telemetry' &&
+              resourceMetricRects.length === 3 &&
+              abnormalDecisionRailRect &&
+              resourceMetricRects.every((rect) => rect.width > 0 && rect.height >= 30 && rect.bottom <= abnormalDecisionRailRect.top + 1) &&
+              (resourceLandscapeTelemetryDeferred || (incidentTelemetryRect && abnormalDecisionRailRect.bottom <= incidentTelemetryRect.top + 1))
+            )
+            : Boolean(
+              informationOrder === 'verdict-telemetry-evidence' &&
+              incidentTelemetryRect &&
+              abnormalDecisionRailRect &&
+              incidentTelemetryRect.bottom <= abnormalDecisionRailRect.top + 1
+            );
         const abnormalActionCell = abnormalDecisionCells.find((cell) => normalize(cell.querySelector('em')?.textContent || '') === '下一步');
         const abnormalActionRect = abnormalActionCell?.getBoundingClientRect();
         const abnormalActionTouchTargetOk = sectionName === 'mobileNormalHome' || !abnormalActionCell || abnormalActionCell.tagName !== 'BUTTON' || Boolean(
@@ -2340,6 +2361,7 @@ async function main() {
           wanPortEvidenceDeferred,
           channelRailModelBacked,
           abnormalDecisionRailProductized,
+          abnormalInformationOrderOk,
           abnormalHeroLayoutStable,
           abnormalEvidencePolicyOk,
           appViewportBounded,
@@ -2521,6 +2543,8 @@ async function main() {
           wanPortCellCount: wanPortCells.length,
           wanPortCellNoise,
           abnormalDecisionRailProductized,
+          abnormalInformationOrderOk,
+          informationOrder,
           abnormalActionTouchTargetOk,
           abnormalHeroLayoutStable,
           abnormalEvidencePolicyOk,

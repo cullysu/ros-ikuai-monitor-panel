@@ -59,7 +59,6 @@ function WanDecisionSpark({ model }: { model: MobileOverviewModel }) {
 function ResourceDecisionVisual({ model, onSelectTab }: { model: MobileOverviewModel; onSelectTab?: (tab: MobileBottomTabId) => void }) {
   return (
     <div className="ik-mobile-decision-visual ik-mobile-resource-incident-stack ik-mobile-resource-decision">
-      <AbnormalDecisionRail model={model} onSelectTab={onSelectTab} />
       {model.hero.resourceCells.map((item) => (
         <span
           className={`ik-mobile-resource-line ${toneClass(item.tone)}`}
@@ -73,6 +72,7 @@ function ResourceDecisionVisual({ model, onSelectTab }: { model: MobileOverviewM
           <em>{item.sustainedText}</em>
         </span>
       ))}
+      <AbnormalDecisionRail model={model} onSelectTab={onSelectTab} />
     </div>
   );
 }
@@ -176,18 +176,21 @@ function IncidentTelemetry({ model }: { model: MobileOverviewModel }) {
 }
 
 export function PrimaryDecision({ model, onSelectTab }: { model: MobileOverviewModel; onSelectTab?: (tab: MobileBottomTabId) => void }) {
+  const telemetryFirst = model.priority !== "normal" && model.priority !== "resource-full";
   return (
     <section
       className={`ik-mobile-decision-card ik-mobile-primary-conclusion is-${model.hero.visualKind} ${toneClass(model.network.conclusion.tone)}`}
       aria-label="移动端网络状态结论"
+      data-overview-mobile-information-order={telemetryFirst ? "verdict-telemetry-evidence" : model.priority === "resource-full" ? "verdict-resource-evidence-telemetry" : "verdict-trend"}
     >
       <div className="ik-mobile-decision-head">
         <span>{decisionKicker(model)}</span>
         <h1>{model.hero.title}</h1>
         <p>{model.hero.subtitle}</p>
       </div>
+      {telemetryFirst ? <IncidentTelemetry model={model} /> : null}
       <DecisionVisual model={model} onSelectTab={onSelectTab} />
-      <IncidentTelemetry model={model} />
+      {telemetryFirst ? null : <IncidentTelemetry model={model} />}
     </section>
   );
 }

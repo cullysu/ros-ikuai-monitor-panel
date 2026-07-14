@@ -7,9 +7,10 @@
     height: 64px;
     overflow: hidden;
     border: 0;
+    border-top: 1px solid rgba(125, 160, 190, .38);
     border-bottom: 1px solid rgba(125, 160, 190, .38);
     border-radius: 0;
-    background: transparent;
+    background: rgba(218, 234, 246, .56);
     box-shadow: none;
   }
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-incident-telemetry > span {
@@ -44,7 +45,7 @@
     grid-row: 2;
     overflow: hidden;
     color: #153e65;
-    font-size: 17px;
+    font-size: 18px;
     font-weight: 840;
     line-height: 1.1;
     text-overflow: ellipsis;

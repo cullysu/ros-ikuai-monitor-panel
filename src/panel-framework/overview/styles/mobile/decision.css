@@ -8,10 +8,9 @@
     max-height: none;
     margin: 8px -2px 0;
     padding: 13px 10px 10px;
-    border: 1px solid rgba(139, 170, 198, .34);
-    border-left: 3px solid rgba(46, 111, 166, .72);
+    border: 1px solid rgba(95, 143, 184, .42);
     border-radius: 8px;
-    background: rgba(255, 255, 255, .46);
+    background: rgba(247, 252, 255, .72);
     box-shadow: 0 10px 24px -24px rgba(28, 64, 96, .72);
     backdrop-filter: blur(14px) saturate(112%);
     -webkit-backdrop-filter: blur(14px) saturate(112%);
@@ -29,17 +28,17 @@
     grid-template-rows: auto auto auto;
   }
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-priority="wan-offline"] .ik-mobile-decision-card {
-    border-left-color: rgba(145, 61, 57, .82);
+    border-color: rgba(145, 61, 57, .52);
     background: rgba(255, 249, 249, .52);
   }
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-priority="resource-full"] .ik-mobile-decision-card,
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-priority="interface-down"] .ik-mobile-decision-card {
-    border-left-color: rgba(157, 116, 35, .82);
+    border-color: rgba(157, 116, 35, .48);
     background: rgba(255, 252, 245, .54);
   }
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-priority="snapshot-missing"] .ik-mobile-decision-card,
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-priority="collection-degraded"] .ik-mobile-decision-card {
-    border-left-color: rgba(78, 111, 143, .72);
+    border-color: rgba(78, 111, 143, .46);
   }
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-decision-head {
     display: grid;
@@ -225,17 +224,17 @@
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-generic-incident-stack {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: 103px;
-    min-height: 103px;
-    height: 103px;
-    max-height: 103px;
+    grid-template-rows: 95px;
+    min-height: 95px;
+    height: 95px;
+    max-height: 95px;
     padding: 0;
   }
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-resource-incident-stack {
-    grid-template-rows: 103px repeat(3, 34px);
-    min-height: 205px;
-    height: 205px;
-    max-height: 205px;
+    grid-template-rows: repeat(3, 34px) 95px;
+    min-height: 197px;
+    height: 197px;
+    max-height: 197px;
   }
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-resource-incident-stack > .ik-mobile-resource-line {
     display: grid;

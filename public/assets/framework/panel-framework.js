@@ -9202,7 +9202,6 @@ var PanelFramework = function(exports) {
   }
   function ResourceDecisionVisual({ model, onSelectTab }) {
     return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ik-mobile-decision-visual ik-mobile-resource-incident-stack ik-mobile-resource-decision", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx(AbnormalDecisionRail, { model, onSelectTab }),
       model.hero.resourceCells.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
         "span",
         {
@@ -9217,7 +9216,8 @@ var PanelFramework = function(exports) {
           ]
         },
         item.key
-      ))
+      )),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(AbnormalDecisionRail, { model, onSelectTab })
     ] });
   }
   function AbnormalDecisionRail({ model, onSelectTab }) {
@@ -9305,19 +9305,22 @@ var PanelFramework = function(exports) {
     );
   }
   function PrimaryDecision({ model, onSelectTab }) {
+    const telemetryFirst = model.priority !== "normal" && model.priority !== "resource-full";
     return /* @__PURE__ */ jsxRuntimeExports.jsxs(
       "section",
       {
         className: `ik-mobile-decision-card ik-mobile-primary-conclusion is-${model.hero.visualKind} ${toneClass(model.network.conclusion.tone)}`,
         "aria-label": "移动端网络状态结论",
+        "data-overview-mobile-information-order": telemetryFirst ? "verdict-telemetry-evidence" : model.priority === "resource-full" ? "verdict-resource-evidence-telemetry" : "verdict-trend",
         children: [
           /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ik-mobile-decision-head", children: [
             /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: decisionKicker(model) }),
             /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { children: model.hero.title }),
             /* @__PURE__ */ jsxRuntimeExports.jsx("p", { children: model.hero.subtitle })
           ] }),
+          telemetryFirst ? /* @__PURE__ */ jsxRuntimeExports.jsx(IncidentTelemetry, { model }) : null,
           /* @__PURE__ */ jsxRuntimeExports.jsx(DecisionVisual, { model, onSelectTab }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(IncidentTelemetry, { model })
+          telemetryFirst ? null : /* @__PURE__ */ jsxRuntimeExports.jsx(IncidentTelemetry, { model })
         ]
       }
     );

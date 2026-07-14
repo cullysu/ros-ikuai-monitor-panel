@@ -2,16 +2,16 @@
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-abnormal-decision-rail {
     display: flex;
     flex-direction: column;
-    min-height: 103px;
-    height: 103px;
-    max-height: 103px;
+    min-height: 95px;
+    height: 95px;
+    max-height: 95px;
     overflow: hidden;
   }
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-incident-summary {
     display: grid;
     grid-template-columns: minmax(0, .92fr) minmax(0, 1.48fr);
-    min-height: 58px;
-    height: 58px;
+    min-height: 50px;
+    height: 50px;
   }
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-incident-summary > span {
     display: flex;

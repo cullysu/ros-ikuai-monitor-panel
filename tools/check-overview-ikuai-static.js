@@ -206,6 +206,7 @@ excludesAll(mobileSections, [
 ], 'mobile sections retired probe cleanup');
 includesAll(mobileModel, ['网络可用', '外网不可用', '业务数据不可判', '采集不完整', '资源过载', '接口异常'], 'mobile factual verdict copy');
 includesAll(mobileDecision, ['chart.source === "history" ? "WAN 趋势" : "WAN 当前速率"', 'data-overview-mobile-chart-source={chart.source}', 'ik-mobile-current-rate-snapshot', '无历史序列'], 'mobile chart source disclosure');
+includesAll(mobileDecision, ['data-overview-mobile-information-order', 'verdict-telemetry-evidence', 'verdict-resource-evidence-telemetry'], 'mobile abnormal data-first ordering');
 includesAll(mobileChartModel, ['source: "current"', 'down: [Math.max(0, rate.down)]', 'up: [Math.max(0, rate.up)]', '"无历史序列"'], 'mobile current snapshot truthfulness');
 excludesAll(mobileChartModel, ['function trend(', 'const pattern = {'], 'mobile synthetic trend prohibition');
 includesAll(mobileSections, ['export function DeviceBar', 'export function CoreFacts', 'export function SupportingList', 'ik-mobile-supporting-head'], 'mobile semantic sections');
@@ -240,7 +241,7 @@ excludesAll(mobileStyles, [
 ], 'mobile retired style layer cleanup');
 includesAll(landscapeStyles, ['min-width: 761px', 'max-width: 900px', 'max-height: 520px', '"hero side"'], 'landscape mobile layout');
 includesAll(navigationStyles, ['position: fixed', 'repeat(3, minmax(0, 1fr))', 'height: 58px', 'rgba(241, 247, 251, .82)', 'backdrop-filter: blur(20px)'], 'mobile native navigation positioning');
-includesAll(incidentStyles, ['ik-mobile-incident-summary', 'ik-mobile-incident-guidance', 'min-height: 103px', 'min-height: 45px'], 'mobile incident hierarchy');
+includesAll(incidentStyles, ['ik-mobile-incident-summary', 'ik-mobile-incident-guidance', 'min-height: 95px', 'min-height: 45px'], 'mobile incident hierarchy');
 includesAll(telemetryStyles, ['ik-mobile-incident-telemetry', 'grid-template-columns: repeat(4, minmax(0, 1fr))', 'grid-template-rows: 64px', 'min-height: 64px'], 'mobile incident telemetry');
 includesAll(productShellStyles, ['ro-desktop-grid', 'ro-mobile-first-screen', '100dvh', 'position: fixed', 'min-height: 44px'], 'mobile/desktop shell isolation');
 includesAll(mobileFrameStyles, ['ik-mobile-decision-screen', 'ik-mobile-device-bar', 'linear-gradient(155deg, #eaf4fa', 'backdrop-filter: blur(18px)', 'border-radius: 0', 'background: transparent'], 'mobile frame styles');
