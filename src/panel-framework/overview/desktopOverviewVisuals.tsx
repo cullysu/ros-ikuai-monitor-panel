@@ -29,13 +29,10 @@ export function JudgementChart({ module, rows, kind = "trend" }: { module: strin
       data-overview-chart-type={kind === "pressure" ? "bar" : "line"}
       data-overview-chart-module={module}
       data-overview-scene-chart={module}
-      data-overview-chart-focus="current-threshold-peak"
       data-overview-chart-main-metric={lead?.label || "无业务快照"}
       data-overview-chart-threshold={lead?.threshold || "待判"}
       data-overview-chart-anomaly-points={anomalyCount}
       data-overview-chart-unit={rows.map((row) => row.unit || "").filter(Boolean).join("/") || "status"}
-      data-overview-collection-channel-bars={module === "collection-cache-ledger" ? "true" : undefined}
-      data-overview-traffic-judgement={module === "wan-trend" || module === "traffic-trend" ? "true" : undefined}
     >
       {lead ? (
         <div
@@ -106,7 +103,6 @@ export function JudgementChart({ module, rows, kind = "trend" }: { module: strin
             </div>
             <span
               className="ro-chart-readout"
-              data-overview-trend-readout
               data-overview-chart-meta
               data-overview-sample-points={samplePoints}
               data-overview-time-window={row.window}
@@ -160,7 +156,6 @@ export function ChannelMatrixVisual({ module, rows }: { module: string; rows: Ch
       className="ro-channel-matrix-visual"
       data-overview-chart-type={module === "collection-cache-ledger" ? "bar" : "matrix"}
       data-overview-scene-chart={module}
-      data-overview-collection-matrix="rest-ssh-snapshot-status"
     >
       {rows.slice(0, 4).map((row) => (
         <span data-tone={row.tone || "trust"} key={row.id}>
@@ -180,7 +175,6 @@ export function ResourcePressureLedgerVisual({ rows }: { rows: ChartDatum[] }) {
       className="ro-resource-ledger-visual"
       data-overview-chart-type="pressure"
       data-overview-scene-chart="resource-three-row-threshold-ledger"
-      data-overview-resource-danger-order-bars="thin-row-ledger"
     >
       {rows.slice(0, 3).map((row) => (
         <span data-tone={row.tone || "trust"} key={row.id}>
@@ -200,7 +194,6 @@ function DesktopIncidentSummary({ snapshot, state }: OverviewPanelProps) {
   return (
     <div
       className="ro-incident-summary"
-      data-overview-desktop-incident-summary="presentation-model-object-impact-trust-recent-readonly"
       data-routeros-presentation-contract="collection-facts/routeros-semantics/user-conclusion"
     >
       {items.map((item) => (
@@ -237,10 +230,6 @@ export function ChainTimeline({ rows, module }: { rows: LedgerRow[]; module: str
       data-overview-chart-meta
       data-overview-sample-points={rows.length ? `${Math.min(rows.length, 6)}/${rows.length}` : "0/0"}
       data-overview-time-window={recent || "最近成功未记录"}
-      data-overview-no-snapshot-compact-flow={noSnapshotTimeline ? "true" : undefined}
-      data-overview-no-snapshot-success-timeline={noSnapshotTimeline || module === "collection-success-timeline" ? "true" : undefined}
-      data-overview-no-snapshot-collection-timeline-parent-judgement={noSnapshotTimeline ? "true" : undefined}
-      data-overview-collection-incident-timeline-parent-judgement={module === "collection-success-timeline" ? "true" : undefined}
     >
       <div className="ro-chain-meta" data-overview-chart-meta data-overview-confidence="链路可参考" data-overview-time-window={recent || "最近成功未记录"} data-overview-sample-points={rows.length ? `${Math.min(rows.length, 6)}/${rows.length}` : "0/0"}>
         <span>当前链路</span><b>{lead ? lead.cells[1] : "无业务快照"}</b><em>最近成功 {recent || "未记录"} / 链路可参考</em>
@@ -268,10 +257,7 @@ export function VisibilityMatrixVisual({ rows }: { rows: LedgerRow[] }) {
       data-overview-chart-meta
       data-overview-sample-points={rows.length ? `${Math.min(rows.length, 8)}/${rows.length}` : "0/0"}
       data-overview-time-window="模块可见性"
-      data-overview-no-snapshot-four-col-matrix="true"
       data-overview-confidence="业务状态不可参考"
-      data-overview-no-snapshot-module-matrix-parent-judgement="true"
-      data-overview-matrix-evidence="current-commit"
     >
       <div className="ro-visibility-axis" aria-hidden="true">无业务快照 / 模块可见性 / 灰色为空态轴线</div>
       {rows.slice(0, 8).map((row) => (
@@ -289,8 +275,6 @@ export function ResourceTriCards({ rows }: { rows: ChartDatum[] }) {
     <div
       className="ro-resource-cards ops-resource-grid"
       data-overview-scene-chart="resource-risk-cards"
-      data-overview-resource-primary-pressure="true"
-      data-overview-resource-danger-order-bars="true"
       data-overview-chart-type="pressure"
       data-overview-chart-unit="%"
     >
@@ -300,7 +284,7 @@ export function ResourceTriCards({ rows }: { rows: ChartDatum[] }) {
         <span>0%</span>
       </div>
       {rows.map((row) => (
-        <div className="ro-resource-card ops-resource-card" style={{ "--resource-color": row.tone === "danger" ? "#c94a4a" : "#2f7de1" } as CSSProperties} data-tone={row.tone || "trust"} key={row.id} data-overview-resource-danger-card-judgement data-overview-resource-spark-row-judgement>
+        <div className="ro-resource-card ops-resource-card" style={{ "--resource-color": row.tone === "danger" ? "#c94a4a" : "#2f7de1" } as CSSProperties} data-tone={row.tone || "trust"} key={row.id}>
           <span>{row.label}</span>
           <b>{row.current}</b>
           <em>当前 {row.current} / 峰值 {row.peak} / 均值 {row.mean}</em>

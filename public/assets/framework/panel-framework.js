@@ -8621,13 +8621,10 @@ var PanelFramework = function(exports) {
         "data-overview-chart-type": kind === "pressure" ? "bar" : "line",
         "data-overview-chart-module": module,
         "data-overview-scene-chart": module,
-        "data-overview-chart-focus": "current-threshold-peak",
         "data-overview-chart-main-metric": (lead == null ? void 0 : lead.label) || "无业务快照",
         "data-overview-chart-threshold": (lead == null ? void 0 : lead.threshold) || "待判",
         "data-overview-chart-anomaly-points": anomalyCount,
         "data-overview-chart-unit": rows.map((row) => row.unit || "").filter(Boolean).join("/") || "status",
-        "data-overview-collection-channel-bars": module === "collection-cache-ledger" ? "true" : void 0,
-        "data-overview-traffic-judgement": module === "wan-trend" || module === "traffic-trend" ? "true" : void 0,
         children: [
           lead ? /* @__PURE__ */ jsxRuntimeExports.jsxs(
             "div",
@@ -8713,7 +8710,6 @@ var PanelFramework = function(exports) {
                     "span",
                     {
                       className: "ro-chart-readout",
-                      "data-overview-trend-readout": true,
                       "data-overview-chart-meta": true,
                       "data-overview-sample-points": samplePoints,
                       "data-overview-time-window": row.window,
@@ -8765,7 +8761,6 @@ var PanelFramework = function(exports) {
         className: "ro-channel-matrix-visual",
         "data-overview-chart-type": module === "collection-cache-ledger" ? "bar" : "matrix",
         "data-overview-scene-chart": module,
-        "data-overview-collection-matrix": "rest-ssh-snapshot-status",
         children: rows.slice(0, 4).map((row) => /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { "data-tone": row.tone || "trust", children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx("i", { "aria-hidden": "true" }),
           /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: row.label }),
@@ -8782,7 +8777,6 @@ var PanelFramework = function(exports) {
         className: "ro-resource-ledger-visual",
         "data-overview-chart-type": "pressure",
         "data-overview-scene-chart": "resource-three-row-threshold-ledger",
-        "data-overview-resource-danger-order-bars": "thin-row-ledger",
         children: rows.slice(0, 3).map((row) => /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { "data-tone": row.tone || "trust", children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: row.label }),
           /* @__PURE__ */ jsxRuntimeExports.jsx("strong", { children: row.current }),
@@ -8804,7 +8798,6 @@ var PanelFramework = function(exports) {
       "div",
       {
         className: "ro-incident-summary",
-        "data-overview-desktop-incident-summary": "presentation-model-object-impact-trust-recent-readonly",
         "data-routeros-presentation-contract": "collection-facts/routeros-semantics/user-conclusion",
         children: items.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { "data-tone": item.tone, children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: item.label }),

@@ -1611,7 +1611,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       resourceAxisLabels.filter((label) => label === '50.0%' || label === '50%').length >= 3 &&
       resourceAxisLabels.filter((label) => label === '0.0%' || label === '0%').length >= 3
     );
-    const overviewTrendReadoutNodes = Array.from(sectionRoot?.querySelectorAll('[data-overview-trend-readout]') || []);
+    const overviewTrendReadoutNodes = Array.from(sectionRoot?.querySelectorAll('.ro-chart-readout') || []);
     const overviewTrendReadoutOk = sectionName !== 'overview' || isOperatorHome || Boolean(
       overviewTrendReadoutNodes.length >= 2 &&
       overviewTrendReadoutNodes.every((node) => node.querySelectorAll('.ik-overview-trend-cell').length >= 6)
