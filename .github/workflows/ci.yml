@@ -77,33 +77,13 @@ jobs:
       - name: Docker Compose config
         run: docker compose --env-file .env.docker.example config --quiet
 
-      - name: Public overview predeploy smoke
-        run: |
-          node tools/local-predeploy-check.js \
-            --profile public \
-            --viewports desktop=1366x900,desktop1440=1440x900,wide=844x390,narrow=390x844 \
-            --sections overview \
-            --scale-scenarios single,fleet \
-            --strict-responsive \
-            --out _acceptance/ci-public-predeploy
-
       - name: Native mobile interaction matrix
         run: npm run check:mobile-native
 
       - name: Desktop incident hierarchy contracts
         run: npm run check:desktop-incident-hierarchy
 
-      - name: Public overview edge cases
-        run: |
-          node tools/local-predeploy-check.js \
-            --profile public \
-            --viewports desktop=1366x900,desktop1440=1440x900,wide=844x390,narrow=390x844 \
-            --sections overview-edge-cases \
-            --scale-scenarios all-offline,no-snapshot,collection-down,resource-full,interfaces-down \
-            --strict-responsive \
-            --out _acceptance/ci-public-overview-edge-cases
-
-      - name: Public overview release matrix
+      - name: Public overview complete release matrix
         run: |
           node tools/local-predeploy-check.js \
             --profile public \
@@ -122,8 +102,6 @@ jobs:
         with:
           name: ci-public-predeploy
           path: |
-            _acceptance/ci-public-predeploy
-            _acceptance/ci-public-overview-edge-cases
             _acceptance/release-matrix-${{ github.sha }}
           if-no-files-found: ignore
 
