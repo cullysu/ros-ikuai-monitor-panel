@@ -1,0 +1,4 @@
+interface:
+  display_name: "Router Panel Product Loop"
+  short_description: "Run product, design, engineering, QA, and release gates"
+  default_prompt: "Use the router panel product loop to shape, implement, visually review, verify, and release this change without allowing incomplete gates to pass."

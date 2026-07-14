@@ -23,6 +23,7 @@ const files = [
   "src/panel-framework/overview/styles/desktop/incidents.css",
   "src/panel-framework/overview/styles/desktop/wan-trend.css",
   "src/panel-framework/overview/mobile-app/styles/router-mobile-app.css",
+  "src/panel-framework/overview/mobile-app/styles/router-mobile-detail.css",
 ];
 
 function indent(depth) {

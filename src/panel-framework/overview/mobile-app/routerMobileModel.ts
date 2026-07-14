@@ -36,6 +36,13 @@ export interface RouterMobileTrend {
   upShare: number;
 }
 
+export interface RouterMobileIncidentDecision {
+  object: string;
+  impact: string;
+  credibility: string;
+  nextStep: string;
+}
+
 export interface RouterMobileModel {
   scenario: OverviewDerivedState["scenario"];
   tone: RouterMobileTone;
@@ -50,6 +57,7 @@ export interface RouterMobileModel {
     title: string;
     detail: string;
   };
+  incident?: RouterMobileIncidentDecision;
   metrics: RouterMobileMetric[];
   trend: RouterMobileTrend;
   evidenceTitle: string;
@@ -276,6 +284,49 @@ function scenarioVerdict(state: OverviewDerivedState): RouterMobileModel["verdic
   }
 }
 
+function incidentDecision(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): RouterMobileIncidentDecision | undefined {
+  const updated = latestTime(snapshot, state);
+  switch (state.scenario) {
+    case "all-offline":
+      return {
+        object: `${state.facts.wan.total} 条 WAN 与默认路由`,
+        impact: "互联网访问不可用；局域网和管理面可能仍可用",
+        credibility: `当前快照可用 · ${updated}`,
+        nextStep: "先检查默认路由，再核对各 WAN 的拨号或上联状态",
+      };
+    case "no-snapshot":
+      return {
+        object: "REST / SSH 采集链路",
+        impact: "流量、WAN、接口和资源状态均不可判断",
+        credibility: "没有有效快照 · 仅能确认采集失败",
+        nextStep: "先恢复 REST 或只读 SSH，再判断实际网络状态",
+      };
+    case "collection-down":
+      return {
+        object: "实时采集通道",
+        impact: "页面数据已过期；不直接代表业务网络中断",
+        credibility: `仅保留上次成功快照 · ${updated}`,
+        nextStep: "先查看失败端点，再核对最近一次成功采集时间",
+      };
+    case "resource-full":
+      return {
+        object: `CPU ${Math.round(state.facts.resource.cpu)}% · 内存 ${Math.round(state.facts.resource.memory)}% · 磁盘 ${Math.round(state.facts.resource.disk)}%`,
+        impact: "转发性能可能下降；当前无法证明是否持续",
+        credibility: `单次资源快照 · ${updated}`,
+        nextStep: "先检查连接压力，再确认 CPU 与内存是否持续高位",
+      };
+    case "interfaces-down":
+      return {
+        object: `${state.facts.interfaces.down} 个 Down 接口`,
+        impact: state.facts.route.level === "ok" ? "默认出口仍生效；仅所列接口可能受影响" : "默认出口状态异常，外网承载可能受影响",
+        credibility: `当前接口快照可用 · ${updated}`,
+        nextStep: "先核对 Down 接口是否承载 WAN、上联或关键终端",
+      };
+    default:
+      return undefined;
+  }
+}
+
 function scenarioMetrics(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): RouterMobileMetric[] {
   const current = rates(snapshot);
   const down = rateParts(current.down);
@@ -380,11 +431,12 @@ export function buildRouterMobileModel(snapshot: OverviewRawSnapshot, state: Ove
     tone: toneOf(state),
     device: {
       name: clean(state.facts.device.identity, "RouterOS"),
-      secondary: [clean(state.facts.device.boardName, ""), clean(state.facts.device.version, "")].filter(Boolean).join(" · ") || clean(state.facts.device.target, "设备"),
+      secondary: [clean(state.facts.device.boardName, ""), clean(state.facts.device.version, "")].filter((value) => value && value !== "-").join(" · ") || clean(state.facts.device.target, "设备"),
       status: state.scenario === "no-snapshot" ? "待确认" : state.scenario === "collection-down" ? "采集降级" : state.scenario === "all-offline" ? "外网中断" : state.scenario === "resource-full" ? "资源告警" : state.scenario === "interfaces-down" ? "接口异常" : "运行中",
       updated: latestTime(snapshot, state),
     },
     verdict: scenarioVerdict(state),
+    incident: incidentDecision(snapshot, state),
     metrics: scenarioMetrics(snapshot, state),
     trend: trendModel(snapshot, state),
     evidenceTitle: evidence.title,

@@ -60,6 +60,8 @@ const mobile = read('src/panel-framework/overview/mobile-app/RouterMobileApp.tsx
 const mobileScreens = read('src/panel-framework/overview/mobile-app/RouterMobileScreens.tsx');
 const mobileModel = read('src/panel-framework/overview/mobile-app/routerMobileModel.ts');
 const mobileStyles = read('src/panel-framework/overview/mobile-app/styles/router-mobile-app.css');
+const mobileDetailStyles = read('src/panel-framework/overview/mobile-app/styles/router-mobile-detail.css');
+const mobileStyleBundle = `${mobileStyles}\n${mobileDetailStyles}`;
 const predeploy = read('tools/local-predeploy-check.js');
 const mobileRuntime = read('tools/check-mobile-app-home-runtime.js');
 
@@ -164,14 +166,15 @@ includesAll(mobile, [
   'activeTab === "network"',
   'activeTab === "collection"',
   'aria-current',
-  '只读监控',
+  '只读',
 ], 'isolated mobile app shell');
-excludesAll(`${mobile}\n${mobileScreens}\n${mobileModel}\n${mobileStyles}`, ['ik-mobile-', 'ik-ios-', 'ro-mobile-', 'ro-desktop-'], 'mobile namespace isolation');
+excludesAll(`${mobile}\n${mobileScreens}\n${mobileModel}\n${mobileStyleBundle}`, ['ik-mobile-', 'ik-ios-', 'ro-mobile-', 'ro-desktop-'], 'mobile namespace isolation');
 includesAll(mobileModel, ['网络出口可用', '全部 WAN 已离线', '业务状态不可判断', '当前数据不是实时值', '资源已进入高压区', '个接口停止运行'], 'mobile factual verdict copy');
 includesAll(mobileModel, ['source: "history"', 'source: "snapshot"', 'source: "unavailable"', '当前只有单次资源快照'], 'mobile source truthfulness');
 excludesAll(mobileModel, ['function trend(', 'const pattern = {'], 'mobile synthetic trend prohibition');
 includesAll(mobileScreens, ['data-router-mobile-traffic="history"', 'data-router-mobile-traffic="snapshot"', 'data-router-mobile-traffic="unavailable"'], 'mobile chart source disclosure');
-includesAll(mobileStyles, ['--rm-canvas', '.rm-header', '.rm-verdict', '.rm-metric-grid', '.rm-evidence-list', '.rm-tabbar', 'background: rgba(239, 247, 251, .82)', 'min-height: 44px', 'max-width: 900px', 'max-height: 520px'], 'mobile material, density, touch, and responsive styles');
+includesAll(mobileScreens, ['data-router-mobile-decision-row', 'data-router-mobile-open-detail', 'data-router-mobile-screen="detail"'], 'mobile incident decision and progressive disclosure');
+includesAll(mobileStyleBundle, ['--rm-canvas', '.rm-header', '.rm-verdict', '.rm-metric-grid', '.rm-evidence-list', '.rm-tabbar', 'background: var(--rm-canvas)', 'background: var(--rm-surface)', 'background: var(--rm-chrome)', 'backdrop-filter: blur(24px) saturate(135%)', 'box-shadow: var(--rm-material-shadow)', 'min-height: 44px', 'max-height: 520px', 'touch-action: manipulation'], 'mobile layered material, density, touch, and responsive styles');
 
 includesAll(predeploy, [
   'compactLandscapeOverview',
