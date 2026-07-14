@@ -51,6 +51,7 @@ At 390 × 844, a user can identify the service verdict, scenario-specific primar
 - One low-saturation blue product hue, a precise gray ramp, and low-chroma incident tones.
 - Flat grouped ledgers with 1 px dividers and a 7/10 px radius scale; no stacked material shadows.
 - Blur is reserved for top chrome where content actually passes behind it.
+- Top chrome and scroll content participate in one layout flow; safe-area growth may not overlap or cover the first content row.
 - Numbers lead, labels support, explanations stay short.
 - State remains identifiable by wording, dot, hierarchy, and tonal surface; color is not the only signal.
 - Minimum touch target is 44 × 44 px; reduced motion and safe areas are respected.
@@ -62,4 +63,5 @@ At 390 × 844, a user can identify the service verdict, scenario-specific primar
 - Incident states expose impact and next inspection without a four-row explanatory audit table.
 - Normal/resource/interface scenarios show a truthful traffic source; offline/no-snapshot do not show traffic.
 - Narrow and landscape screenshots contain no black/transparent canvas, horizontal overflow, clipped primary text, or content hidden by chrome.
+- When REST and SSH are both unavailable but a prior snapshot exists, the header and trust rail say `缓存快照`; they may not claim `运行中`, `实时`, or current collection.
 - Detail opens, back returns, and evidence/endpoint rows remain reachable with keyboard and touch.

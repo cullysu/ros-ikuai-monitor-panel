@@ -21,7 +21,7 @@ export function RouterMobileApp({ snapshot, state }: RouterMobileAppProps) {
           <div><strong>{model.device.name}</strong><b>只读监控</b></div>
           <span>{model.device.secondary}</span>
         </div>
-        <div className="rm-device-state" data-tone={model.tone}>
+        <div className="rm-device-state" data-tone={model.device.tone}>
           <strong>{model.device.status}</strong>
           <span>{model.device.updated}</span>
         </div>

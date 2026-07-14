@@ -163,6 +163,11 @@ async function main() {
       ['codex_tmp_mobileFleetHome.json', 'codex_tmp_mobileFleetHome.png']
     ],
     [
+      'fleet cached snapshot honesty',
+      ['tools/check-resource-trend-balance.js', '--url', url, '--section', 'mobileFleetCachedHome', '--width', '390', '--height', '844', '--json', 'codex_tmp_mobileFleetCachedHome.json', '--png', 'codex_tmp_mobileFleetCachedHome.png', '--wait', '3600'],
+      ['codex_tmp_mobileFleetCachedHome.json', 'codex_tmp_mobileFleetCachedHome.png']
+    ],
+    [
       'wan offline p0 app home',
       ['tools/check-resource-trend-balance.js', '--url', url, '--section', 'mobileAppHome', '--width', '390', '--height', '844', '--json', 'codex_tmp_mobileAppHome.json', '--png', 'codex_tmp_mobileAppHome.png', '--wait', '3600'],
       ['codex_tmp_mobileAppHome.json', 'codex_tmp_mobileAppHome.png']
@@ -259,6 +264,7 @@ async function main() {
   const requiredMobileSections = new Set([
     'mobileNormalHome',
     'mobileFleetHome',
+    'mobileFleetCachedHome',
     'mobileAppHome',
     'mobileNoSnapshotHome',
     'mobileResourceHome',

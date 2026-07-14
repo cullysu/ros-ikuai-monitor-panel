@@ -312,6 +312,14 @@ function fleetSnapshot() {
   return snapshot;
 }
 
+function fleetCachedSnapshot() {
+  const snapshot = fleetSnapshot();
+  snapshot.meta.realtimeError = 'REST realtime unavailable';
+  snapshot.meta.staticError = 'SSH static facts unavailable';
+  snapshot.meta.capabilities = { restTrusted: false, sshRead: false };
+  return snapshot;
+}
+
 function interfaceDownSnapshot() {
   const snapshot = balanceSnapshot();
   snapshot.meta.scaleScenario = 'interfaces-down';
@@ -440,6 +448,7 @@ async function main() {
     desktopV1030: balanceSnapshot,
     mobileNormalHome: balanceSnapshot,
     mobileFleetHome: fleetSnapshot,
+    mobileFleetCachedHome: fleetCachedSnapshot,
     mobileNavigation: balanceSnapshot,
     mobileNavigationNoSnapshot: noSnapshotSnapshot,
     mobileDetailDrilldown: balanceSnapshot,
@@ -463,7 +472,7 @@ async function main() {
     mobileNoSnapshotIncidentAction: { tab: 'diagnose', action: '查采集状态', credibility: 'collection-evidence' }
   };
   const incidentActionRoute = mobileIncidentActionRoutes[section] || null;
-  const isMobileAppHomeSection = section === 'mobileNormalHome' || section === 'mobileFleetHome' || section === 'mobileNavigation' || section === 'mobileNavigationNoSnapshot' || section === 'mobileDetailDrilldown' || section === 'mobileIncidentDrilldown' || section === 'mobileIncidentActionNavigation' || Boolean(incidentActionRoute) || section === 'mobileAppHome' || section === 'mobileNoSnapshotHome' || section === 'mobileResourceHome' || section === 'mobileInterfaceHome' || section === 'mobileCollectionHome';
+  const isMobileAppHomeSection = section === 'mobileNormalHome' || section === 'mobileFleetHome' || section === 'mobileFleetCachedHome' || section === 'mobileNavigation' || section === 'mobileNavigationNoSnapshot' || section === 'mobileDetailDrilldown' || section === 'mobileIncidentDrilldown' || section === 'mobileIncidentActionNavigation' || Boolean(incidentActionRoute) || section === 'mobileAppHome' || section === 'mobileNoSnapshotHome' || section === 'mobileResourceHome' || section === 'mobileInterfaceHome' || section === 'mobileCollectionHome';
   const targetUrl = `${url}${url.includes('?') ? '&' : '?'}section=${encodeURIComponent(section)}&codexBust=${Date.now()}#${encodeURIComponent(section)}`;
   const browser = spawn(browserPath, [
     '--headless=new',
@@ -650,7 +659,7 @@ async function main() {
         return normalize(parts.join(' '));
       };
       const incidentActionRoute = ${JSON.stringify(incidentActionRoute)};
-      const sectionEl = sectionName === 'loadAudit' || sectionName === 'balance' || sectionName === 'desktopNoSnapshot' || sectionName === 'desktopV1030' || sectionName === 'mobileNormalHome' || sectionName === 'mobileFleetHome' || sectionName === 'mobileNavigation' || sectionName === 'mobileNavigationNoSnapshot' || sectionName === 'mobileDetailDrilldown' || sectionName === 'mobileIncidentDrilldown' || sectionName === 'mobileIncidentActionNavigation' || incidentActionRoute || sectionName === 'mobileAppHome' || sectionName === 'mobileNoSnapshotHome' || sectionName === 'mobileResourceHome' || sectionName === 'mobileInterfaceHome' || sectionName === 'mobileCollectionHome'
+      const sectionEl = sectionName === 'loadAudit' || sectionName === 'balance' || sectionName === 'desktopNoSnapshot' || sectionName === 'desktopV1030' || sectionName === 'mobileNormalHome' || sectionName === 'mobileFleetHome' || sectionName === 'mobileFleetCachedHome' || sectionName === 'mobileNavigation' || sectionName === 'mobileNavigationNoSnapshot' || sectionName === 'mobileDetailDrilldown' || sectionName === 'mobileIncidentDrilldown' || sectionName === 'mobileIncidentActionNavigation' || incidentActionRoute || sectionName === 'mobileAppHome' || sectionName === 'mobileNoSnapshotHome' || sectionName === 'mobileResourceHome' || sectionName === 'mobileInterfaceHome' || sectionName === 'mobileCollectionHome'
         ? document.querySelector('#overview')
         : document.querySelector('#' + sectionName);
       const text = visibleText(sectionEl);
@@ -659,6 +668,7 @@ async function main() {
         const expectedScenarios = {
           mobileNormalHome: 'single',
           mobileFleetHome: 'fleet',
+          mobileFleetCachedHome: 'fleet',
           mobileNavigation: 'single',
           mobileNavigationNoSnapshot: 'no-snapshot',
           mobileDetailDrilldown: 'single',
@@ -687,8 +697,13 @@ async function main() {
         const incidentScenario = ['all-offline', 'no-snapshot', 'collection-down', 'resource-full', 'interfaces-down'].includes(expectedScenario);
         const initialText = visibleText(routerMobileApp);
         const initialTraffic = routerMobileApp.querySelector('[data-router-mobile-traffic]');
+        const initialTrafficText = visibleText(initialTraffic);
         const initialMetrics = Array.from(routerMobileApp.querySelectorAll('.rm-metric'));
         const trustFacts = Array.from(routerMobileApp.querySelectorAll('.rm-trust-rail > div'));
+        const snapshotTrustText = visibleText(trustFacts[0]);
+        const restTrustText = visibleText(trustFacts[1]);
+        const sshTrustText = visibleText(trustFacts[2]);
+        const collectionChannelsUnavailable = restTrustText.includes('失败') && sshTrustText.includes('失败');
         const initialEvidenceRows = Array.from(routerMobileApp.querySelectorAll('.rm-evidence-list article'));
         const decisionRows = Array.from(routerMobileApp.querySelectorAll('[data-router-mobile-decision-row]'));
         const detailTrigger = routerMobileApp.querySelector('[data-router-mobile-open-detail]');
@@ -708,8 +723,26 @@ async function main() {
         }
         const currentText = visibleText(routerMobileApp);
         const appRect = routerMobileApp.getBoundingClientRect();
+        const appStyle = getComputedStyle(routerMobileApp);
+        const mobileHeader = routerMobileApp.querySelector('.rm-header');
+        const mobileHeaderStyle = mobileHeader ? getComputedStyle(mobileHeader) : null;
+        const mobileContentStyle = initialContent ? getComputedStyle(initialContent) : null;
         const status = routerMobileApp.querySelector('.rm-device-state strong');
         const statusStyle = status ? getComputedStyle(status) : null;
+        const statusText = normalize(status?.textContent || '');
+        const safeAreaFlowOk = Boolean(
+          appStyle.display === 'grid' &&
+          mobileHeaderStyle?.position === 'relative' &&
+          mobileContentStyle?.position === 'relative' &&
+          initialContent &&
+          mobileHeader &&
+          initialContent.getBoundingClientRect().top >= mobileHeader.getBoundingClientRect().bottom - 1
+        );
+        const collectionSemanticsHonest = ['single', 'fleet'].includes(expectedScenario)
+          ? collectionChannelsUnavailable
+            ? statusText === '缓存快照' && snapshotTrustText.includes('缓存快照') && initialTrafficText.includes('缓存快照') && initialText.includes('当前仅能参考缓存快照') && !snapshotTrustText.includes('实时')
+            : statusText === 'WAN 运行中' && snapshotTrustText.includes('当前快照') && initialTrafficText.includes('当前快照') && initialText.includes('当前快照可用于判断')
+          : true;
         const traffic = initialTraffic;
         const checks = {
           appMounted: true,
@@ -727,6 +760,8 @@ async function main() {
           detailTouchTarget,
           readonlyBoundaryVisible: currentText.includes('只读监控'),
           statusReadable: Boolean(statusStyle && Number.parseFloat(statusStyle.fontSize) >= 11),
+          safeAreaFlowOk,
+          collectionSemanticsHonest,
           viewportBounded: appRect.width <= innerWidth + 1 && appRect.height <= innerHeight + 1,
           summaryFitsViewport,
           noHorizontalOverflow: document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1,
@@ -742,7 +777,13 @@ async function main() {
           metricCount: initialMetrics.length,
           evidenceRowCount: initialEvidenceRows.length,
           trafficSource: traffic?.getAttribute('data-router-mobile-traffic') || '',
+          initialTrafficText,
           trustFactCount: trustFacts.length,
+          statusText,
+          snapshotTrustText,
+          restTrustText,
+          sshTrustText,
+          collectionChannelsUnavailable,
           viewport: { width: innerWidth, height: innerHeight, scrollWidth: document.documentElement.scrollWidth },
           textExcerpt: currentText.slice(0, 700)
         };

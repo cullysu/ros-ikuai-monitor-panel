@@ -7127,7 +7127,7 @@ var PanelFramework = function(exports) {
     const level = seconds >= Math.max(900, poll * 15) ? "danger" : seconds >= Math.max(300, poll * 5) ? "warn" : "ok";
     return { label: level === "danger" ? "数据陈旧" : level === "warn" ? "数据偏旧" : "采样新鲜", level, stale: level !== "ok", history: level === "danger", missing: false, credibility, credibilityLabel: credibilityLabelOf(credibility), credibilityTone: credibilityToneOf(credibility), seconds, text: formatDurationCompact(seconds), source };
   }
-  function collectionState(snapshot, freshness, failures = failedEndpointSummary(snapshot)) {
+  function collectionState$1(snapshot, freshness, failures = failedEndpointSummary(snapshot)) {
     var _a, _b;
     const meta = snapshot.meta || {};
     const noSnapshot = isSnapshotUnavailable(snapshot);
@@ -7267,7 +7267,7 @@ var PanelFramework = function(exports) {
     const raw = snapshot || {};
     const freshness = freshnessState(raw, options.now ?? Date.now());
     const failures = failedEndpointSummary(raw);
-    const collection = collectionState(raw, freshness, failures);
+    const collection = collectionState$1(raw, freshness, failures);
     const facts = { device: deviceFacts(raw), freshness, collection, route: routeState(raw, freshness), resource: resourceState(raw), wan: wanState(raw), interfaces: interfaceState(raw), failures, connections: connectionState(raw) };
     const counts = countsOf(facts.wan, facts.interfaces, failures, facts.connections);
     const scenario = scenarioOf(raw, counts, facts.resource, collection, options);
@@ -9609,6 +9609,23 @@ var PanelFramework = function(exports) {
     const raw = state.scenario === "no-snapshot" ? meta.staticUpdatedAt || meta.realtimeUpdatedAt : snapshot.updatedAt || meta.realtimeUpdatedAt || meta.staticUpdatedAt;
     return timeLabel(raw);
   }
+  function collectionState(snapshot, state) {
+    var _a, _b, _c, _d;
+    const rest = Boolean((_b = (_a = snapshot.meta) == null ? void 0 : _a.capabilities) == null ? void 0 : _b.restTrusted);
+    const ssh = Boolean((_d = (_c = snapshot.meta) == null ? void 0 : _c.capabilities) == null ? void 0 : _d.sshRead);
+    if (state.scenario === "no-snapshot") return { rest, ssh, snapshotLabel: "仅仪表状态", tone: "critical" };
+    if (state.scenario === "collection-down" || !rest && !ssh) return { rest, ssh, snapshotLabel: "缓存快照", tone: "degraded" };
+    return { rest, ssh, snapshotLabel: "当前快照", tone: "healthy" };
+  }
+  function deviceState(snapshot, state) {
+    if (state.scenario === "no-snapshot") return { status: "待确认", tone: "unknown" };
+    if (state.scenario === "collection-down") return { status: "采集降级", tone: "degraded" };
+    if (state.scenario === "all-offline") return { status: "外网中断", tone: "critical" };
+    if (state.scenario === "resource-full") return { status: "资源告警", tone: "critical" };
+    if (state.scenario === "interfaces-down") return { status: "接口异常", tone: "degraded" };
+    const collection = collectionState(snapshot, state);
+    return collection.snapshotLabel === "缓存快照" ? { status: "缓存快照", tone: "degraded" } : { status: "WAN 运行中", tone: "healthy" };
+  }
   function toneOf(state) {
     if (state.scenario === "all-offline" || state.scenario === "resource-full") return "critical";
     if (state.scenario === "no-snapshot") return "unknown";
@@ -9655,11 +9672,12 @@ var PanelFramework = function(exports) {
     }
     const current = rates(snapshot);
     const history = historySeries(snapshot);
+    const collection = collectionState(snapshot, state);
     if (!history) {
       const maximum2 = Math.max(1, current.down, current.up);
       return {
         source: "snapshot",
-        window: state.scenario === "collection-down" ? "上次成功快照" : "当前快照",
+        window: state.scenario === "collection-down" ? "上次成功快照" : collection.snapshotLabel,
         downLabel: rateLabel(current.down),
         upLabel: rateLabel(current.up),
         peakLabel: "无历史峰值",
@@ -9670,7 +9688,7 @@ var PanelFramework = function(exports) {
     const maximum = Math.max(1, ...history.down, ...history.up);
     return {
       source: "history",
-      window: `最近 ${Math.max(history.down.length, history.up.length)} 次采样`,
+      window: collection.snapshotLabel === "缓存快照" ? `缓存记录 · 最近 ${Math.max(history.down.length, history.up.length)} 次` : `最近 ${Math.max(history.down.length, history.up.length)} 次采样`,
       downLabel: rateLabel(history.down[history.down.length - 1] || 0),
       upLabel: rateLabel(history.up[history.up.length - 1] || 0),
       peakLabel: `峰值 ${rateLabel(maximum)}`,
@@ -9737,11 +9755,12 @@ var PanelFramework = function(exports) {
       tone: "degraded"
     }));
   }
-  function scenarioVerdict(state) {
+  function scenarioVerdict(snapshot, state) {
     const routeFact = state.facts.route.level === "ok" ? "默认路由生效" : "默认路由尚未确认";
+    const observationFact = collectionState(snapshot, state).snapshotLabel === "缓存快照" ? "当前仅能参考缓存快照" : "当前快照可用于判断";
     switch (state.scenario) {
       case "fleet":
-        return { kicker: "多线路概况", title: `${state.facts.wan.online} 条 WAN 在线`, detail: `${routeFact}；采集快照可用于当前判断。` };
+        return { kicker: "多线路概况", title: `${state.facts.wan.online} 条 WAN 在线`, detail: `${routeFact}；${observationFact}。` };
       case "all-offline":
         return { kicker: "互联网出口", title: "全部 WAN 已离线", detail: "当前没有活动出口；局域网与管理面状态不能代表外网可用。" };
       case "no-snapshot":
@@ -9757,7 +9776,7 @@ var PanelFramework = function(exports) {
           detail: state.facts.route.level === "ok" && state.facts.wan.online > 0 ? "默认出口仍生效；请先核对受影响接口及其上联关系。" : "当前没有可确认在线的 WAN；需同时核对默认路由与受影响接口。"
         };
       default:
-        return { kicker: "网络概况", title: "WAN 出口在线", detail: `${state.facts.wan.online}/${state.facts.wan.total || 0} 条 WAN 在线；${routeFact}；采集快照可用于当前判断。` };
+        return { kicker: "网络概况", title: "WAN 出口在线", detail: `${state.facts.wan.online}/${state.facts.wan.total || 0} 条 WAN 在线；${routeFact}；${observationFact}。` };
     }
   }
   function incidentDecision(state) {
@@ -9809,11 +9828,12 @@ var PanelFramework = function(exports) {
       ];
     }
     if (state.scenario === "all-offline") {
+      const collection = collectionState(snapshot, state);
       return [
         { label: "WAN 在线", value: `0/${state.facts.wan.total}`, note: "全部离线", tone: "critical" },
         { label: "默认路由", value: "0", note: "无活动出口", tone: "critical" },
         { label: "下载", value: "0", unit: "bps", note: "外网不可用", tone: "critical" },
-        { label: "采集快照", value: latestTime(snapshot, state), note: state.facts.collection.credibilityLabel, tone: "healthy" }
+        { label: "采集快照", value: latestTime(snapshot, state), note: collection.snapshotLabel, tone: collection.tone }
       ];
     }
     const routeAvailable = state.facts.route.level === "ok";
@@ -9863,13 +9883,14 @@ var PanelFramework = function(exports) {
     }
     if (state.scenario === "resource-full") {
       const current = rates(snapshot);
+      const collection = collectionState(snapshot, state);
       return {
         title: "压力证据",
         rows: [
           { label: "连接压力", value: String(state.facts.connections.total), note: `${state.facts.connections.active} 条活动样本`, tone: "degraded" },
           { label: "接口吞吐", value: rateLabel(current.down + current.up), note: `${interfaceRows(snapshot).length} 个接口纳入快照`, tone: "healthy" },
           { label: "持续时间", value: "未取得", note: "当前只有单次资源快照", tone: "unknown" },
-          { label: "采集可信度", value: state.facts.collection.credibilityLabel, note: latestTime(snapshot, state), tone: "healthy" }
+          { label: "采集快照", value: collection.snapshotLabel, note: latestTime(snapshot, state), tone: collection.tone }
         ]
       };
     }
@@ -9885,15 +9906,14 @@ var PanelFramework = function(exports) {
     return { title: "运行证据", rows: normalEvidence(snapshot, state) };
   }
   function trustModel(snapshot, state) {
-    var _a, _b, _c, _d;
     const meta = snapshot.meta || {};
     const failures = failureEntries(snapshot).length;
-    const tone = state.scenario === "no-snapshot" ? "critical" : state.scenario === "collection-down" ? "degraded" : "healthy";
+    const collection = collectionState(snapshot, state);
     return {
       metrics: [
-        { label: "快照", value: latestTime(snapshot, state), note: state.facts.collection.credibilityLabel, tone },
-        { label: "REST", value: ((_a = meta.capabilities) == null ? void 0 : _a.restTrusted) ? "可用" : "失败", note: timeLabel(meta.realtimeUpdatedAt), tone: ((_b = meta.capabilities) == null ? void 0 : _b.restTrusted) ? "healthy" : "critical" },
-        { label: "SSH", value: ((_c = meta.capabilities) == null ? void 0 : _c.sshRead) ? "只读" : "失败", note: timeLabel(meta.staticUpdatedAt), tone: ((_d = meta.capabilities) == null ? void 0 : _d.sshRead) ? "healthy" : "critical" },
+        { label: "快照", value: latestTime(snapshot, state), note: collection.snapshotLabel, tone: collection.tone },
+        { label: "REST", value: collection.rest ? "可用" : "失败", note: timeLabel(meta.realtimeUpdatedAt), tone: collection.rest ? "healthy" : "critical" },
+        { label: "SSH", value: collection.ssh ? "只读" : "失败", note: timeLabel(meta.staticUpdatedAt), tone: collection.ssh ? "healthy" : "critical" },
         { label: "端点记录", value: String(failures), note: failures ? "失败明细" : "本次未附", tone: failures ? "degraded" : "healthy" }
       ],
       endpointRecords: failureEvidence(snapshot)
@@ -9901,16 +9921,18 @@ var PanelFramework = function(exports) {
   }
   function buildRouterMobileModel(snapshot, state) {
     const evidence = scenarioEvidence(snapshot, state);
+    const device = deviceState(snapshot, state);
     return {
       scenario: state.scenario,
       tone: toneOf(state),
       device: {
         name: clean(state.facts.device.identity, "RouterOS"),
         secondary: [clean(state.facts.device.boardName, ""), clean(state.facts.device.version, "")].filter((value) => value && value !== "-").join(" · ") || clean(state.facts.device.target, "设备"),
-        status: state.scenario === "no-snapshot" ? "待确认" : state.scenario === "collection-down" ? "采集降级" : state.scenario === "all-offline" ? "外网中断" : state.scenario === "resource-full" ? "资源告警" : state.scenario === "interfaces-down" ? "接口异常" : "运行中",
-        updated: latestTime(snapshot, state)
+        status: device.status,
+        updated: latestTime(snapshot, state),
+        tone: device.tone
       },
-      verdict: scenarioVerdict(state),
+      verdict: scenarioVerdict(snapshot, state),
       incident: incidentDecision(state),
       metrics: scenarioMetrics(snapshot, state),
       trend: trendModel(snapshot, state),
@@ -9931,7 +9953,7 @@ var PanelFramework = function(exports) {
           ] }),
           /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: model.device.secondary })
         ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "rm-device-state", "data-tone": model.tone, children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "rm-device-state", "data-tone": model.device.tone, children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx("strong", { children: model.device.status }),
           /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: model.device.updated })
         ] })

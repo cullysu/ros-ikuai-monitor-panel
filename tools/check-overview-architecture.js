@@ -925,6 +925,21 @@ assert(
   "Router mobile model must map every required scenario into the isolated mobile contract"
 );
 assert(
+  routerMobileModel.includes('snapshotLabel: "当前快照" | "缓存快照" | "仅仪表状态"') &&
+    routerMobileModel.includes('{ status: "缓存快照", tone: "degraded" }') &&
+    routerMobileModel.includes('当前仅能参考缓存快照') &&
+    routerMobileApp.includes('data-tone={model.device.tone}'),
+  "Router mobile chrome must distinguish network state from current versus cached collection evidence"
+);
+assert(
+  routerMobileStyles.includes("grid-template-rows: auto minmax(0, 1fr);") &&
+    routerMobileStyles.includes("padding: calc(8px + env(safe-area-inset-top)) 14px 8px;") &&
+    routerMobileStyles.includes("padding: 10px 12px calc(14px + env(safe-area-inset-bottom));") &&
+    !/\.rm-header\s*\{[^}]*position:\s*absolute/s.test(routerMobileStyles) &&
+    !/\.rm-content\s*\{[^}]*position:\s*absolute/s.test(routerMobileStyles),
+  "Router mobile safe areas must expand layout flow instead of overlapping a fixed content offset"
+);
+assert(
   routerMobileModel.includes('source: "history"') &&
     routerMobileModel.includes('source: "snapshot"') &&
     routerMobileModel.includes('source: "unavailable"') &&
