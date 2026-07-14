@@ -400,19 +400,502 @@ function findLatestFullMatrixReport(rootDir = ROOT) {
   return summaries[0];
 }
 
-function assertLatestFullMatrixReporëİ¶¶‰ËkºwµçH	Ûİ™\šY]Ñ\ÚİÜÚ]\ÜXÙPYÙ]ÚÉÊNÂˆ\ÜÙ\ÛÛZ[œÊ	İÛÛËÛØØ[\™Y\ŞKXÚXÚËšœÉË	Ûİ™\šY]Ñ\ÚİÜ[™›ĞYÙ]ÚÉÊNÂˆ\ÜÙ\ÛÛZ[œÊ	İÛÛËÛØØ[\™Y\ŞKXÚXÚËšœÉË	Ûİ™\šY]Ñ\ÚİÜ[™›Ñ[œÚ]SÚÉÊNÂˆ\ÜÙ\ÛÛZ[œÊ	İÛÛËÛØØ[\™Y\ŞKXÚXÚËšœÉË	ØÛÛœİİ™\šY]Ô™XYÛ›PÛÛœÛÛPÛÛ˜XİÚÉÊNÂˆ\ÜÙ\ÛÛZ[œÊ	İÛÛËÛØØ[\™Y\ŞKXÚXÚËšœÉË	Ûİ™\šY]Ñ\ÚİÜš\œİØÜ™Y[‘Y\SÚÉÊNÂˆ\ÜÙ\ÛÛZ[œÊ	İÛÛËÛØØ[\™Y\ŞKXÚXÚËšœÉË	Ûİ™\šY]ĞÜ›ÜÜÕšY]ÜÜÛÜQY\SÚÉÊNÂˆ\ÜÙ\ÛÛZ[œÊ	İÛÛËÛØØ[\™Y\ŞKXÚXÚËšœÉË	Ûİ™\šY]ĞØ\™YÙ]ÚÉÊNÂˆ\ÜÙ\ÛÛZ[œÊ	İÛÛËÛØØ[\™Y\ŞKXÚXÚËšœÉË	Ûİ™\šY]ÔÙ[X[XĞÛÛÜYÙ]ÚÉÊNÂˆ\ÜÙ\ÛÛZ[œÊ	İÛÛËÛØØ[\™Y\ŞKXÚXÚËšœÉË	Ûİ™\šY]ĞXİ[Û“[šÜÓİĞÚ›ÛYSÚÉÊNÂˆ\ÜÙ\ÛÛZ[œÊ	İÛÛËÛØØ[\™Y\ŞKXÚXÚËšœÉË	Ûİ™\šY]Ó[Øš[PÛÜ™SÚÉÊNÂˆ\ÜÙ\ÛÛZ[œÊ	İÛÛËÛØØ[\™Y\ŞKXÚXÚËšœÉË	Ûİ™\šY]Ó[Øš[Q›]İ]\ÕX›SÚÉÊNÂˆ\ÜÙ\ÛÛZ[œÊ	İÛÛËÛØØ[\™Y\ŞKXÚXÚËšœÉË	Ûİ™\šY]Ó[Øš[SYÙ\’ZYÚÚÉÊNÂˆ\ÜÙ\ÛÛZ[œÊ	İÛÛËÛØØ[\™Y\ŞKXÚXÚËšœÉË	Ûİ™\šY]Ó[Øš[P[\Ø\™ÛÛ\XİÚÉÊNÂˆ\ÜÙ\ÛÛZ[œÊ	İÛÛËÛØØ[\™Y\ŞKXÚXÚËšœÉË	Ûİ™\šY]Ó[Øš[Q]Z[š\œİÛÔ›İÜÕš\ÚX›SÚÉÊNÂˆ\ÜÙ\ÛÛZ[œÊ	İÛÛËÛØØ[\™Y\ŞKXÚXÚËšœÉË	Ûİ™\šY]Ô›ÙXİ™\™XİÚÉÊNÂˆ\ÜÙ\ÛÛZ[œÊ	İÛÛËÛØØ[\™Y\ŞKXÚXÚËšœÉË	Ûİ™\šY]ÕØ[“\İš[Üš]SÚÉÊNÂˆ\ÜÙ\ÛÛZ[œÊ	İÛÛËÛØØ[\™Y\ŞKXÚXÚËšœÉË	Ûİ™\šY]ÕØ[‘]šY[˜ÙTš[Üš]SÚÉÊNÂˆ\ÜÙ\ÛÛZ[œÊ	İÛÛËÛØØ[\™Y\ŞKXÚXÚËšœÉË	Û[Øš[UØ[‘]šY[˜ÙT›İÜËœÛXÙJÊK™]™\J›ÙUš\ÚX›R[‘š\œİØÜ™Y[ŠIÊNÂˆ\ÜÙ\ÛÛZ[œÊ	İÛÛËÛØØ[\™Y\ŞKXÚXÚËšœÉË	Ûİ™\šY]Ô™\Ûİ\˜ÙS[Y\šXÑ[œÚ]SÚÉÊNÂˆ\ÜÙ\ÛÛZ[œÊ	İÛÛËÛØØ[\™Y\ŞKXÚXÚËšœÉË	Ûİ™\šY]Ô™\Ûİ\˜ÙQ\˜][Û•š\ÚXš[]SÚÉÊNÂˆ\ÜÙ\›İÛÛZ[œÊ	İÛÛËÛØØ[\™Y\ŞKXÚXÚËšœÉË	Ûİ™\šY]Õ™[™ÛÛ\XİÚÈ	‰‰ÊNÂˆ\ÜÙ\›İÛÛZ[œÊ	İÛÛËÛØØ[\™Y\ŞKXÚXÚËšœÉË	Ûİ™\šY]Ô˜[šĞÛÛ\XİÚÈ	‰‰ÊNÂˆ\ÜÙ\›İÛÛZ[œÊ	İÛÛËÛØØ[\™Y\ŞKXÚXÚËšœÉË	Ûİ™\šY]Ô™\Ûİ\˜ÙU™[™ÚÈ	‰‰ÊNÂˆ\ÜÙ\›İÛÛZ[œÊ	İÛÛËÛØØ[\™Y\ŞKXÚXÚËšœÉË	Ûİ™\šY]Ğ^\ÓÚÈ	‰‰ÊNÂˆ\ÜÙ\›İÛÛZ[œÊ	İÛÛËÛØØ[\™Y\ŞKXÚXÚËšœÉË	Ûİ™\šY]Ó[Ûš]Ü”Ü]ÚÈ	‰‰ÊNÂˆ\ÜÙ\›İÛÛZ[œÊ	İÛÛËÛØØ[\™Y\ŞKXÚXÚËšœÉË	Ûİ™\šY]Ô™\Ûİ\˜ÙP^\ÓÚÈ	‰‰ÊNÂˆ\ÜÙ\›İÛÛZ[œÊ	İÛÛËÛØØ[\™Y\ŞKXÚXÚËšœÉË	Ûİ™\šY]Ô›İØÛÛ˜[šÓÚÈ	‰‰ÊNÂˆ\ÜÙ\ÛÛZ[œÊ	İÛÛËÛØØ[\™Y\ŞKXÚXÚËšœÉË	Ûİ™\šY]Ó[Øš[PÛÜP\ÜÙ[X›SÚÉÊNÂˆ\ÜÙ\ÛÛZ[œÊ	İÛÛËÛØØ[\™Y\ŞKXÚXÚËšœÉË	Ûİ™\šY]Ô™\İÜÚšY]ÜÜ\š]SÚÉÊNÂˆ\ÜÙ\ÛÛZ[œÊ	İÛÛËÛØØ[\™Y\ŞKXÚXÚËšœÉË	Ûİ™\šY]Ó[Øš[QY™™Xİ]™PÛİ™\˜YÙSÚÉÊNÂˆ\ÜÙ\ÛÛZ[œÊ	İÛÛËÛØØ[\™Y\ŞKXÚXÚËšœÉË	Ûİ™\šY]Ó[Øš[Qš\œİØÜ™Y[ÛÛ˜XİÚÉÊNÂˆ\ÜÙ\ÛÛZ[œÊ	İÛÛËÛØØ[\™Y\ŞKXÚXÚËšœÉË	Üİ[[X\Qš]ÕšY]ÜÜ	ÊNÂˆ\ÜÙ\ÛÛZ[œÊ	İÛÛËÛØØ[\™Y\ŞKXÚXÚËšœÉË	Ûİ™\šY]Ó[Øš[UØ[’[˜ÚY[š[Üš]SÚÉÊNÂˆ\ÜÙ\ÛÛZ[œÊ	İÛÛËÛØØ[\™Y\ŞKXÚXÚËšœÉË	Ûİ™\šY]Ô™\İÜÚÛİ\˜ÙPÛÛœÚ\İ[˜ŞSÚÉÊNÂˆ\ÜÙ\ÛÛZ[œÊ	İÛÛËÛØØ[\™Y\ŞKXÚXÚËšœÉË	Ûİ™\šY]Ô™\Ûİ\˜ÙQ[[˜ÚY[ÚÉÊNÂˆ\ÜÙ\ÛÛZ[œÊ	İÛÛËÛØØ[\™Y\ŞKXÚXÚËšœÉË	Ûİ™\šY]Ó›ÔÛ˜\Úİœ™\Ú™\ÜÑ›Ü˜šY[“ÚÉÊNÂˆ\ÜÙ\ÛÛZ[œÊ	İÛÛËÛØØ[\™Y\ŞKXÚXÚËšœÉË	Ûİ™\šY]Ó›ÔÛ˜\ÚİÙ[X[XÓÚÉÊNÂˆ\ÜÙ\ÛÛZ[œÊ	İÛÛËÛØØ[\™Y\ŞKXÚXÚËšœÉË	Ûİ™\šY]Ó›ÔÛ˜\Úİ\İYY]šXÜÑ›Ü˜šY[“ÚÉÊNÂˆ\ÜÙ\ÛÛZ[œÊ	İÛÛËÛØØ[\™Y\ŞKXÚXÚËšœÉË	Ûİ™\šY]Ó›ÔÛ˜\ÚİØ[\[™Ôİ]U[š\]YSÚÉÊNÂˆ\ÜÙ\ÛÛZ[œÊ	İÛÛËÛØØ[\™Y\ŞKXÚXÚËšœÉË	Ûİ™\šY]Ó›ÔÛ˜\Úİ\ÚİÜ]šY[˜ÙUš\]ÚÉÊNÂˆ\ÜÙ\ÛÛZ[œÊ	İÛÛËÛØØ[\™Y\ŞKXÚXÚËšœÉË	Ûİ™\šY]Ó›ÔÛ˜\ÚİÜšYÚÉÊNÂˆ\ÜÙ\ÛÛZ[œÊ	İÛÛËÛØØ[\™Y\ŞKXÚXÚËšœÉË	Ûİ™\šY]Ó›ÔÛ˜\ÚİÙ[X[XÔ›Ø™IÊNÂˆ\ÜÙ\›İÛÛZ[œÊ	İÛÛËÛØØ[\™Y\ŞKXÚXÚËšœÉË	Ûİ™\šY]Ñ›][Øš[PÛÛ˜XİÚÈ	ÊNÂˆ\ÜÙ\ÛÛZ[œÊ	İÛÛËÛØØ[\™Y\ŞKXÚXÚËšœÉË	Ûİ™\šY]ĞÛÛXİ[Û“^Y\”Ü]ÚÉÊNÂˆ\ÜÙ\ÛÛZ[œÊ	İÛÛËÛØØ[\™Y\ŞKXÚXÚËšœÉË	Ûİ™\šY]Ò[\™˜XÙ\ĞÚ[›™[ÛÛœÚ\İ[˜ŞSÚÉÊNÂˆ\ÜÙ\ÛÛZ[œÊ	İÛÛËÛØØ[\™Y\ŞKXÚXÚËšœÉË	Ûİ™\šY]Ò[\™˜XÙ\ÑİÛÛÛXİ[Û”\š]SÚÉÊNÂˆ\ÜÙ\ÛÛZ[œÊ	İÛÛËÛØØ[\™Y\ŞKXÚXÚËšœÉË	Ûİ™\šY]Ó[Øš[Q]šY[˜ÙU[š\]YSÚÉÊNÂˆ\ÜÙ\ÛÛZ[œÊ	İÛÛËÛØØ[\™Y\ŞKXÚXÚËšœÉË	Ûİ™\šY]Ñš\œİØÜ™Y[‘Y\SÚÉÊNÂˆ\ÜÙ\ÛÛZ[œÊ	İÛÛËÛØØ[\™Y\ŞKXÚXÚËšœÉË	Ûİ™\šY]Ñ\ÚİÜÜ˜[™›Ø™IÊNÂˆ\ÜÙ\ÛÛZ[œÊ	İÛÛËÛØØ[\™Y\ŞKXÚXÚËšœÉË	Ûİ™\šY]Ó[Øš[U[š\]YU™\™Xİ›Ø™IÊNÂˆ\ÜÙ\ÛÛZ[œÊ	İÛÛËÛØØ[\™Y\ŞKXÚXÚËšœÉË	Ûİ™\šY]Ñš\œİØÜ™Y[‘Y\T›Ø™IÊNÂˆ\ÜÙ\ÛÛZ[œÊ	İÛÛËÛØØ[\™Y\ŞKXÚXÚËšœÉË	Ûİ™\šY]Ò\İÜU]T™Yš^ÚÉÊNÂˆ\ÜÙ\ÛÛZ[œÊ	İÛÛËÛØØ[\™Y\ŞKXÚXÚËšœÉË	Ûİ™\šY]ÑY˜][›İ]TÙ[X[XÕ[™]\›Z[™YÚÉÊNÂˆ\ÜÙ\›İÛÛZ[œÊ	İÛÛËÛØØ[\™Y\ŞKXÚXÚËšœÉË	Ûİ™\šY]Ñš\œİØÜ™Y[‘šY[Ûİ[HZ[“İ™\šY]Ñš\œİØÜ™Y[‘šY[ÉÊNÂˆ\ÜÙ\ÛÛZ[œÊ	İÛÛËÛØØ[\™Y\ŞKXÚXÚËšœÉË˜ÛÛœİ™\]Z\™YØÙ[˜\š[ÜÈHÉÜÚ[™ÛIË	Ù›Y]	Ë	Ø[[Ù™›[™IË	Û›Ë\Û˜\Úİ	Ë	ØÛÛXİ[Û‹YİÛ‰Ë	Ü™\Ûİ\˜ÙKY[	Ë	Ú[\™˜XÙ\ËYİÛ‰×NÈŠNÂˆ\ÜÙ\ÛÛZ[œÊ	ÜÜ˜ËÜ[™[Yœ˜[Y]ÛÜšËÛİ™\šY]ËÓİ™\šY]Ô[™[˜ÜÜÉË	Ğ[\Ü‹‹Üİ[\ËÛİ™\šY]ËY›İ[™][Û‹˜ÜÜÈÉÊNÂˆ\ÜÙ\ÛÛZ[œÊ	ÜÜ˜ËÜ[™[Yœ˜[Y]ÛÜšËÛİ™\šY]ËÓİ™\šY]Ô[™[˜ÜÜÉË	Ğ[\Ü‹‹Üİ[\ËÛİ™\šY]ËY\ÚİÜ˜ÜÜÈÉÊNÂˆ\ÜÙ\ÛÛZ[œÊ	ÜÜ˜ËÜ[™[Yœ˜[Y]ÛÜšËÛİ™\šY]ËÓİ™\šY]Ô[™[˜ÜÜÉË	Ğ[\Ü‹‹Üİ[\ËÛİ™\šY]Ë\İ]\Ë˜ÜÜÈÉÊNÂˆ\ÜÙ\›İÛÛZ[œÊ	ÜÜ˜ËÜ[™[Yœ˜[Y]ÛÜšËÛİ™\šY]ËÓİ™\šY]Ô[™[˜ÜÜÉË	ĞYYXIÊNÂˆ\ÜÙ\›İÛÛZ[œÊ	ÜÜ˜ËÜ[™[Yœ˜[Y]ÛÜšËÛİ™\šY]ËÓİ™\šY]Ô[™[˜ÜÜÉË	Ûİ™\šY]Ë[[Øš[K˜ÜÜÉÊNÂˆ\ÜÙ\›İ^\İÊ	ÜÜ˜ËÜ[™[Yœ˜[Y]ÛÜšËÛİ™\šY]ËÜİ[\ËÛİ™\šY]Ë[[Øš[K˜ÜÜÉÊNÂˆ\ÜÙ\ÛÛZ[œÊ	ÜÜ˜ËÜ[™[Yœ˜[Y]ÛÜšËÛİ™\šY]ËÜİ[\ËÛİ™\šY]ËY›İ[™][Û‹˜ÜÜÉË	ËK\›ËX›Ü™\‰ÊNÂˆ\ÜÙ\ÛÛZ[œÊ	ÜÜ˜ËÜ[™[Yœ˜[Y]ÛÜšËÛİ™\šY]ËÜİ[\ËÛİ™\šY]ËY\ÚİÜ˜ÜÜÉË	Ğ[\Ü‹‹Ù\ÚİÜÙ[œÚ]K˜ÜÜÈÉÊNÂˆ\ÜÙ\ÛÛZ[œÊ	ÜÜ˜ËÜ[™[Yœ˜[Y]ÛÜšËÛİ™\šY]ËÜİ[\ËÙ\ÚİÜÙ[œÚ]K˜ÜÜÉË	ĞYYXH
-Z[‹]ÚYˆÍŒ\
-IÊNÂˆ\ÜÙ\›İÛÛZ[œÊ	ÜÜ˜ËÜ[™[Yœ˜[Y]ÛÜšËÛİ™\šY]ËÜİ[\ËÛİ™\šY]Ë\İ]\Ë˜ÜÜÉË	Ü›ËY\ÚİÜZÙ^K\›İÉÊNÂˆ\ÜÙ\›İÛÛZ[œÊ	ÜÜ˜ËÜ[™[Yœ˜[Y]ÛÜšËÛİ™\šY]ËÜİ[\ËÛİ™\šY]Ë\İ]\Ë˜ÜÜÉË	Ü›ËY\ÚİÜZÙ^KXÙ[	ÊNÂˆ\ÜÙ\›İÛÛZ[œÊ	ÜÜ˜ËÜ[™[Yœ˜[Y]ÛÜšËÛİ™\šY]ËÜİ[\ËÛİ™\šY]Ë\İ]\Ë˜ÜÜÉË	Ü›Ë][YK]XœÉÊNÂˆ\ÜÙ\ÛÛZ[œÊ	ÜÜ˜ËÜ[™[Yœ˜[Y]ÛÜšËÛİ™\šY]ËÜİ[\ËÛİ™\šY]Ë\İ]\Ë˜ÜÜÉË	ËKZZÍXÛÛœÛÛK\YÙIÊNÂˆ\ÜÙ\ÛÛZ[œÊ	ÜÜ˜ËÜ[™[Yœ˜[Y]ÛÜšËÛİ™\šY]ËØÛÛ\Û™[ËÔİ]\Õ™\™XİŞ	Ë	Ù^Ü[˜İ[Ûˆİ]\Õ™\™Xİ	ÊNÂˆ\ÜÙ\ÛÛZ[œÊ	ÜÜ˜ËÜ[™[Yœ˜[Y]ÛÜšËÛİ™\šY]ËØÛÛ\Û™[ËÑ\ÚİÜ[Ù[KŞ	Ë	Ù^Ü[˜İ[Ûˆ[Ù[IÊNÂˆ\ÜÙ\ÛÛZ[œÊ	ÜÜ˜ËÜ[™[Yœ˜[Y]ÛÜšËÛİ™\šY]ËØÛÛ\Û™[ËÕØ[•™[™Ş	Ë	Ù^Ü[˜İ[ÛˆØ[•™[™	ÊNÂˆ\ÜÙ\ÛÛZ[œÊ	ÜÜ˜ËÜ[™[Yœ˜[Y]ÛÜšËÛİ™\šY]ËØÛÛ\Û™[ËÑ]šY[˜ÙPÚZ[‹Ş	Ë	Ù^Ü[˜İ[Ûˆ]šY[˜ÙPÚZ[‰ÊNÂˆ\ÜÙ\ÛÛZ[œÊ	ÜÜ˜ËÜ[™[Yœ˜[Y]ÛÜšËÛİ™\šY]ËØÛÛ\Û™[ËÕ\›Z[˜[˜[šÚ[™ËŞ	Ë	Ù^Ü[˜İ[Ûˆ\›Z[˜[˜[šÚ[™ÉÊNÂˆ\ÜÙ\ÛÛZ[œÊ	ÜÜ˜ËÜ[™[Yœ˜[Y]ÛÜšËÛİ™\šY]ËÓİ™\šY]Ô[™[Ş	Ë	Ïİ]\Õ™\™XİÛ˜\Úİ^ÜÛ˜\ÚİHİ]O^Üİ]_HÏ‰ÊNÂˆ\ÜÙ\ÛÛZ[œÊ	ÜÜ˜ËÜ[™[Yœ˜[Y]ÛÜšËÛİ™\šY]ËÙ\ÚİÜİ™\šY]ÑY˜][ØÙ[™KŞ	Ë	ÏØ[•™[™Ù^OH˜ÛÛ\Xİ[™]ÛÜšÈ‰ÊNÂˆ\ÜÙ\ÛÛZ[œÊ	ÜÜ˜ËÜ[™[Yœ˜[Y]ÛÜšËÛİ™\šY]ËÙ\ÚİÜİ™\šY]ÑY˜][ØÙ[™KŞ	Ë	Ï]šY[˜ÙPÚZ[ˆÙ^OH˜ÛÛ\XİX›İ[™\H‰ÊNÂˆ\ÜÙ\ÛÛZ[œÊ	ÜÜ˜ËÜ[™[Yœ˜[Y]ÛÜšËÛİ™\šY]ËÙ\ÚİÜİ™\šY]ÑY˜][ØÙ[™KŞ	Ë	Ï\›Z[˜[˜[šÚ[™ÈÙ^OH˜ÛÛ\Xİ]\›Z[˜[È‰ÊNÂˆ\ÜÙ\ÛÛZ[œÊ	ÜÜ˜ËÜ[™[Yœ˜[Y]ÛÜšËÛİ™\šY]ËÛ[Øš[KX\Ô›İ]\“[Øš[TØÜ™Y[œËŞ	Ë	ÕĞSˆ9k§¹¥í¹­`z`'ÉÊNÂˆ\ÜÙ\ÛÛZ[œÊ	ÜÜ˜ËÜ[™[Yœ˜[Y]ÛÜšËÛİ™\šY]ËÙ\ÚİÜİ™\šY]ÑY˜][ØÙ[™KŞ	Ë	ÕĞSˆ:aáù¨-ú-¢ùb¯ÉÊNÂˆ\ÜÙ\ÛÛZ[œÊ	ÜÜ˜ËÜ[™[Yœ˜[Y]ÛÜšËÛİ™\šY]ËÛ[Øš[KX\Ü›İ]\“[Øš[S[Ù[ÉË	ÜÛİ\˜ÙNˆš\İÜH‰ÊNÂˆ\ÜÙ\ÛÛZ[œÊ	ÜÜ˜ËÜ[™[Yœ˜[Y]ÛÜšËÛİ™\šY]ËÛ[Øš[KX\Ü›İ]\“[Øš[S[Ù[ÉË	ÜÛİ\˜ÙNˆœÛ˜\Úİ‰ÊNÂˆ\ÜÙ\ÛÛZ[œÊ	ÜÜ˜ËÜ[™[Yœ˜[Y]ÛÜšËÛİ™\šY]ËÛ[Øš[KX\Ü›İ]\“[Øš[S[Ù[ÉË	ÜÛİ\˜ÙNˆ[˜]˜Z[X›H‰ÊNÂˆ\ÜÙ\›İÛÛZ[œÊ	ÜÜ˜ËÜ[™[Yœ˜[Y]ÛÜšËÛİ™\šY]ËÛ[Øš[KX\Ô›İ]\“[Øš[TØÜ™Y[œËŞ	Ë	ÕĞSˆ9k§¹¥íº-¢ùb¯ÉÊNÂˆ\ÜÙ\›İÛÛZ[œÊ	ÜÜ˜ËÜ[™[Yœ˜[Y]ÛÜšËÛİ™\šY]ËÙ\ÚİÜİ™\šY]ÑY˜][ØÙ[™KŞ	Ë	ÕĞSˆ9k§¹¥íº-¢ùb¯ÉÊNÂˆ›Üˆ
-ÛÛœİ™]\™Y[Øš[PÛÛ\Û™[ÙˆÂˆ	ĞÛÜ™SY]šXÔ˜Z[Ş	Ëˆ	ÒÛYTİ\™˜XÙKŞ	Ëˆ	Ò[˜ÚY[\›ËŞ	Ëˆ	ÒYÙ[Y[İš\Ş	Ëˆ	Ó[Øš[Sİ™\šY]ÔÙXİ[ÛœËŞ	Ëˆ	Ôİ]\ÒXY\‹Ş	Ëˆ	Õ\İİš\Ş	ËˆJH\ÜÙ\›İ^\İÊÜ˜ËÜ[™[Yœ˜[Y]ÛÜšËÛİ™\šY]ËØÛÛ\Û™[ËÉÜ™]\™Y[Øš[PÛÛ\Û™[X
-NÂˆ›Üˆ
-ÛÛœİ™]\™Y[Øš[Qš[HÙˆÂˆ	ÜÜ˜ËÜ[™[Yœ˜[Y]ÛÜšËÛİ™\šY]ËØÛÛ\Û™[ËÓ[Øš[Sİ™\šY]ÒÛYKŞ	Ëˆ	ÜÜ˜ËÜ[™[Yœ˜[Y]ÛÜšËÛİ™\šY]ËØÛÛ\Û™[ËÓ[Øš[Sİ™\šY]ÑXÚ\Ú[Û‹Ş	Ëˆ	ÜÜ˜ËÜ[™[Yœ˜[Y]ÛÜšËÛİ™\šY]ËØÛÛ\Û™[ËĞ›İÛUXœËŞ	Ëˆ	ÜÜ˜ËÜ[™[Yœ˜[Y]ÛÜšËÛİ™\šY]ËÛ[Øš[Sİ™\šY]Ó[Ù[ÉËˆ	ÜÜ˜ËÜ[™[Yœ˜[Y]ÛÜšËÛİ™\šY]ËÛ[Øš[Sİ™\šY]ÔÛXŞKÉËˆ	ÜÜ˜ËÜ[™[Yœ˜[Y]ÛÜšËÛİ™\šY]ËÜİ[\ËÛ[Øš[KÛ[Øš[K\›ÙXİ˜ÜÜÉËˆJH\ÜÙ\›İ^\İÊ™]\™Y[Øš[Qš[JNÂˆ\ÜÙ\›İ^\İÊ	ÜÜ˜ËÜ[™[Yœ˜[Y]ÛÜšËÛİ™\šY]ËØÛÛ\Û™[ËÓ[Øš[Sİ™\šY]Ôİ[\ËŞ	ÊNÂˆ\ÜÙ\›İ^\İÊ	ÜÜ˜ËÜ[™[Yœ˜[Y]ÛÜšËÛİ™\šY]ËØÛÛ\Û™[ËÓ[Øš[Sİ™\šY]Ğ˜\ÙTİ[\ËÉÊNÂˆ\ÜÙ\›İ^\İÊ	ÜÜ˜ËÜ[™[Yœ˜[Y]ÛÜšËÛİ™\šY]ËØÛÛ\Û™[ËÓ[Øš[Sİ™\šY]ÔX›XÑXÚ\Ú[Û”İ[\ËÉÊNÂˆ\ÜÙ\›İ^\İÊ	ÜÜ˜ËÜ[™[Yœ˜[Y]ÛÜšËÛİ™\šY]ËØÛÛ\Û™[ËÓ[Øš[Sİ™\šY]ÔX›XÑXÚ\Ú[Û”™\Z\”İ[\ËÉÊNÂˆ\ÜÙ\ÛÛZ[œÊ	ÜÜ˜ËÜ[™[Yœ˜[Y]ÛÜšËÛİ™\šY]ËÛ[Øš[KX\Ô›İ]\“[Øš[P\Ş	Ë	Ú[\Ü‹‹Üİ[\ËÜ›İ]\‹[[Øš[KX\˜ÜÜÈÉÊNÂˆ\ÜÙ\ÛÛZ[œÊ	ÜÜ˜ËÜ[™[Yœ˜[Y]ÛÜšËÛİ™\šY]ËÛ[Øš[KX\Üİ[\ËÜ›İ]\‹[[Øš[KX\˜ÜÜÉË	Ëœ›KX\	ÊNÂˆ\ÜÙ\ÛÛZ[œÊ	ÜÜ˜ËÜ[™[Yœ˜[Y]ÛÜšËÛİ™\šY]ËÛ[Øš[KX\Üİ[\ËÜ›İ]\‹[[Øš[KX\˜ÜÜÉË	Ëœ›K]X˜˜\‰ÊNÂˆ\ÜÙ\X^]\Ê	ÜX›XËØ\ÜÙ]ËÙœ˜[Y]ÛÜšËÜİ[K˜ÜÜÉËL
-NÂˆ\ÜÙ\›İ^\İÊ	ÜX›XËÜØØ[KXY\]™K\]ÚšœÉÊNÂˆ\ÜÙ\›İ^\İÊ	ÜX›XËÛ^[İ]]Ú]\ÜXÙK\]ÚšœÉÊNÂˆ\ÜÙ\›İ^\İÊ	ÜX›XËÜ[™[\›Ù™\ÜÚ[Û˜[\™Y\ÚYÛ‹šœÉÊNÂˆ\ÜÙ\›İÛÛZ[œÊ	Ø\œIË	ÜÙ[X[XÕšXYÙIÊNÂˆ\ÜÙ\›İÛÛZ[œÊ	Ø\œIË	ØXİ[Û”]Y]YIÊNÂˆ\ÜÙ\›İÛÛZ[œÊ	Ø\œIË	ÛX[X[Ü™]šY]ÉÊNÂˆ\ÜÙ\X›XĞ›İ[™\PÛX[Š	ÜX›XËÚ[™^š[	ÊNÂˆ\ÜÙ\›İÛÛZ[œÊ	ÜX›XËÚ[™^š[	Ë	Ù]™[Ë›[™İ	ÊNÂˆ\ÜÙ\ÛÛZ[œÊ	ÜX›XËÚ[™^š[	Ë	ÚZËY\ÚİÜ]ÛÜšÜÜXÙIÊNÂˆ\ÜÙ\[PÛÛZ[œÊ	ÜX›XËÚ[™^š[	ËÉÙ]K[İ™\šY]ËY[œÚ]K[[Ù[OHØ[‹]™[™‰Ë	Û[Ù[OHØ[‹]™[™‰Ë	Û[Ù[NˆØ[‹]™[™‰Ë	ÈØ[‹]™[™‰×K	İØ[‹]™[™İ™\šY]È[Ù[IÊNÂˆ\ÜÙ\ÛÛZ[œÊ	ÜX›XËÚ[™^š[	Ë	Ù]K[İ™\šY]Ë\˜[šËYÜšY	ÊNÂˆ\ÜÙ\ÛÛZ[œÊ	ÜX›XËÚ[™^š[	Ë	Ù]KX\\Ú[HšZİXZH‰ÊNÂˆ\ÜÙ\ÛÛZ[œÊ	ÜX›XËÚ[™^š[	Ë	Ù]K[İ™\šY]ËYœ˜[Y]ÛÜšËX\ÜÙ]Hœİ[H‰ÊNÂˆ\ÜÙ\ÛÛZ[œÊ	ÜX›XËÚ[™^š[	Ë	Ù]K[İ™\šY]ËYœ˜[Y]ÛÜšËX\ÜÙ]HœØÜš\‰ÊNÂˆ\ÜÙ\›İÛÛZ[œÊ	ÜX›XËÚ[™^š[	Ë	Û[İ[›İ]\“İ™\šY]Ô[™[	ÊNÂˆ\ÜÙ\›İÛÛZ[œÊ	ÜX›XËÚ[™^š[	Ë	Ü›İ]\‹[İ™\šY]ËYœ˜[Y]ÛÜšÉÊNÂˆ\ÜÙ\ÛÛZ[œÊ	İš]K˜ÛÛ™šYËÉË	ÜX›XÑ\ˆ˜[ÙIÊNÂˆ\ÜÙ\ÛÛZ[œÊ	İš]K˜ÛÛ™šYËÉË	Ûİ]\ˆœX›XËØ\ÜÙ]ËÙœ˜[Y]ÛÜšÈ‰ÊNÂˆ\ÜÙ\ÛÛZ[œÊ	İš]K˜ÛÛ™šYËÉË	Ùš[S˜[YNˆ
+function assertLatestFullMatrixReport(rootDir = ROOT) {
+  const latest = findLatestFullMatrixReport(rootDir);
+  const head = currentHead(rootDir);
+  const checkNames = new Set(latest.checks.map((check) => String(check.name || '').trim()).filter(Boolean));
+  const expectedCheckNames = FULL_MATRIX_SCENARIOS.flatMap((scenario) =>
+    FULL_MATRIX_VIEWPORT_KEYS.flatMap((viewport) => [
+      `browser boot public/${scenario}/${viewport}`,
+      `responsive public/${scenario}/${viewport}/overview`,
+    ]));
+  const missingChecks = expectedCheckNames.filter((checkName) => !checkNames.has(checkName));
+  const passedCells = new Set(latest.passedCells);
+  const missingCells = FULL_MATRIX_CELLS.filter((cell) => !passedCells.has(cell));
+  const reportCommit = String(latest.matrix.commit || '').trim();
+  const commitMatchesHead = commitMatchesReference(reportCommit, head);
+  const aggregate = latest.matrix && latest.matrix.aggregate && typeof latest.matrix.aggregate === 'object'
+    ? latest.matrix.aggregate
+    : {};
+  const aggregateCommit = String(aggregate.commit || '').trim();
+  const releaseEvidenceOk = Boolean(
+    reportCommit &&
+    commitMatchesHead &&
+    (!aggregateCommit || commitMatchesReference(aggregateCommit, head)) &&
+    (!aggregateCommit || aggregateCommit === reportCommit) &&
+    String(aggregate.screenshotDir || '').trim() &&
+    Array.isArray(aggregate.screenshots) &&
+    aggregate.screenshots.length >= FULL_MATRIX_CELLS.length &&
+    Array.isArray(aggregate.scenarioMatrix) &&
+    aggregate.scenarioMatrix.length >= FULL_MATRIX_SCENARIOS.length &&
+    Array.isArray(aggregate.requiredCells) &&
+    Array.isArray(aggregate.passedCells)
+  );
+  const failedChecks = latest.failedChecks;
+  const gateFailures = collectGateDetailFailures(latest);
+  const failedCheckBuckets = {
+    desktopDensity: gateFailures.desktopDensity.map((item) => item.check),
+    noSnapshotSemantic: gateFailures.noSnapshotSemantic.map((item) => item.check),
+    mobileActionCopy: gateFailures.mobileActionCopy.map((item) => item.check),
+  };
+  const checksPass = failedChecks.length === 0 && missingChecks.length === 0 && releaseEvidenceOk;
+  const reportPassMatchesChecks = Boolean(latest.reportPass) === checksPass;
+  if (!commitMatchesHead || !latest.matrix || !checksPass || !reportPassMatchesChecks || !latest.complete || latest.total !== FULL_MATRIX_CELLS.length || latest.passed !== FULL_MATRIX_CELLS.length || latest.failed !== 0 || missingCells.length || missingChecks.length) {
+    throw new Error(`Latest full matrix report is not 7x2 all green: ${JSON.stringify({
+      reportPath: path.relative(rootDir, latest.reportPath),
+      head,
+      reportCommit,
+      commitMatchesHead,
+      releaseEvidenceOk,
+      releaseEvidence: {
+        aggregateCommit,
+        screenshotDir: aggregate.screenshotDir || '',
+        screenshotCount: Array.isArray(aggregate.screenshots) ? aggregate.screenshots.length : null,
+        scenarioMatrixCount: Array.isArray(aggregate.scenarioMatrix) ? aggregate.scenarioMatrix.length : null,
+        requiredCellCount: Array.isArray(aggregate.requiredCells) ? aggregate.requiredCells.length : null,
+        passedCellCount: Array.isArray(aggregate.passedCells) ? aggregate.passedCells.length : null,
+      },
+      reportPass: latest.reportPass,
+      reportPassMatchesChecks,
+      complete: latest.complete,
+      total: latest.total,
+      passed: latest.passed,
+      failed: latest.failed,
+      checksPass,
+      failedChecks,
+      missingChecks,
+      requiredCells: latest.requiredCells.length,
+      passedCells: latest.passedCells.length,
+      missingCells,
+      failedCheckBuckets,
+      gateFailures,
+      failedScenarios: latest.scenarios.filter((scenario) => scenario && scenario.failed).map((scenario) => `${scenario.scaleScenario}:${scenario.failed}`),
+    })}`);
+  }
+  return latest;
+}
 
-HOˆœ[™[Yœ˜[Y]ÛÜšËšœÈ‰ÊNÂ‚ˆ\ÜÙ\ÛÛZ[œÊ	ÜX›XËÚ[™^š[	Ë	ú-ëùå,y.#¹b!¹­`yâ­¹  IÊNÂˆ\ÜÙ\ÛÛZ[œÊ	ÜX›XËÚ[™^š[	Ë	úf,¹àjùh¦z)á9b&IÊNÂˆ\ÜÙ\ÛÛZ[œÊ	ÜX›XËÚ[™^š[	Ë	ú-a9®¤9â­¹  IÊNÂˆ\ÜÙ\ÛÛZ[œÊ	ÜX›XËÚ[™^š[	Ë	ù­`zaãùâ­¹  IÊNÂˆ\ÜÙ\ÛÛZ[œÊ	ÜX›XËÚ[™^š[	Ë	ùîâ9êëùâ­¹  IÊNÂˆ\ÜÙ\ÛÛZ[œÊ	ÜX›XËÚ[™^š[	Ë	úaáúfá¹â­¹  IÊNÂˆ\ÜÙ\›İÛÛZ[œÊ	ÜX›XËÚ[™^š[	Ë	ú+â¹¥«y .ú)â	ÊNÂˆ\ÜÙ\›İÛÛZ[œÊ	ÜX›XËÚ[™^š[	Ë	ú-'ú/oyk¨z+¨IÊNÂˆ\ÜÙ\›İÛÛZ[œÊ	ÜX›XËÚ[™^š[	Ë	ĞPÓ:)á9b&IÊNÂˆ\ÜÙ\›İÛÛZ[œÊ	ÜX›XËÚ[™^š[	Ë	ùb!¹­`yæäy£©ÉÊNÂˆ\ÜÙ\›İÛÛZ[œÊ	ÜX›XËÚ[™^š[	Ë	ùîâ9êëúhãºfjIÊNÂˆ\ÜÙ\›İÛÛZ[œÊ	ÜX›XËÚ[™^š[	Ë	ùî¯ú-ëùâ­¹  y¨à9­bÉÊNÂˆ\ÜÙ\›İÛÛZ[œÊ	ÜX›XËÚ[™^š[	Ë	ú+íù¨à9§éIÊNÂˆ\ÜÙ\›İÛÛZ[œÊ	ÜX›XËÚ[™^š[	Ë	ù."ù. 9«iIÊNÂˆ\ÜÙ\›İÛÛZ[œÊ	ÜX›XËÚ[™^š[	Ë	Û^[İ]]Ú]\ÜXÙK\]ÚšœÉÊNÂˆ\ÜÙ\›İÛÛZ[œÊ	ÜX›XËÚ[™^š[	Ë	Ü™XYÛ›KYXYÛ›ÜİXÜËšœÉÊNÂˆ\ÜÙ\ÛÛZ[œÊ	Ø\œIË	Üš]˜]WÜX›X×Ø\ÜÙ]ÈHÈœ™XYÛ›KYXYÛ›ÜİXÜËšœÈŸIË	Ü™XYÛ›HXYÛ›ÜİXÜÈİ^\Èš]˜]H[ˆX›XÈ›Ùš[IÊNÂˆ\ÜÙ\ÛÛZ[œÊ	Ø\œIË	ÚYˆP“P×Ô“ÕUT“Ô×Ô“Ñ’SH[™\ÜÙ]Û˜[YH[ˆÙ[‹œš]˜]WÜX›X×Ø\ÜÙ]Î‰Ë	ÜX›XÈİ]XÈ›İ[™\H›Üˆ™XYÛ›HXYÛ›ÜİXÜÉÊNÂˆ\ÜÙ\ÛÛZ[œÊ	Ø\œIË	ËØ\KÜ™XYÛ›KYXYÛ›ÜİXÜÉË	Ü™XYÛ›HXYÛ›ÜİXÜÈTH›İ]H™[XZ[œÈ™\Ù[	ÊNÂˆ\ÜÙ\ÛÛZ[œÊ	Ø\œIË	Ü™XYÛ›HXYÛ›ÜİXÜÈ\™Hš]˜]H[ˆHX›XÈ›İ]\“ÔÈ›Ùš[IË	Ü™XYÛ›HXYÛ›ÜİXÜÈTHİ[™]\›œÈÈ[ˆX›XÈ›Ùš[IÊNÂˆ\ÜÙ\ÛÛZ[œÊ	Ø\œIË	ØÛÙOHœš]˜]WÙXYÛ›ÜİXÜ×Ù\ØX›Y‰Ë	Ü™XYÛ›HXYÛ›ÜİXÜÈÈÛÙH™[XZ[œÈ^XÚ]	ÊNÂˆ\ÜÙ\ÛÛZ[œÊ	İÛÛËÛØØ[\™Y\ŞKXÚXÚËšœÉË˜ÛÛœİš]˜]TX›XĞ\ÜÙ]HX›XÔ›İ]\›ÜÔ›Ùš[H	‰ˆ\ÜÙ]OOH	Ü™XYÛ›KYXYÛ›ÜİXÜËšœÉÎÈ‹	Ü™Y\ŞHÚXÚÙ\ˆ]\İÙY\™XYÛ›HXYÛ›ÜİXÜÈ\ÜÙ]š]˜]IÊNÂˆ\ÜÙ\ÛÛZ[œÊ	İÛÛËÛØØ[\™Y\ŞKXÚXÚËšœÉË	Üš]˜]TX›XĞ\ÜÙ]È™\İ[œ™\ÜÛœÙKœİ]\ÈOOHÈˆ™\İ[œ™\ÜÛœÙK›ÚÈ	‰ˆ™\İ[^›[™İˆL	Ë	ÜX›XÈ\ÜÙ]ÚXÚÈ]\İ™\Ù\™HHÈØ]IÊNÂˆ\ÜÙ\ÛÛZ[œÊ	İÛÛËÛØØ[\™Y\ŞKXÚXÚËšœÉË™XYËœ™\ÜÛœÙKœİ]\ÈOOHÈ	‰ˆXYËšœÛÛ‹˜ÛÙHOOH	Üš]˜]WÙXYÛ›ÜİXÜ×Ù\ØX›Y	È‹	ÜX›XÈ™XYÛ›HXYÛ›ÜİXÜÈTHÚXÚÈ]\İ™\Ù\™HHÈÛÙIÊNÂˆ\ÜÙ\ÛÛZ[œÊ	İÛÛËÛØØ[\™Y\ŞKXÚXÚËšœÉË	ÛØØ[Ù\™\ˆÙÜÈİ^Hœ™YHÙˆÛØÚÙ]™\Ù]›Ú\ÙIÊNÂˆ\ÜÙ\ÛÛZ[œÊ	İÛÛËÛØØ[\™Y\ŞKXÚXÚËšœÉË	ĞÛÛ›™Xİ[Û”™\Ù]\œ›Ü‰ÊNÂˆ\ÜÙ\ÛÛZ[œÊ	İÛÛËÛØØ[\™Y\ŞKXÚXÚËšœÉË	Ğœ›ÚÙ[”\Q\œ›Ü‰ÊNÂˆ\ÜÙ\›İÛÛZ[œÊ	ÜX›XËÚ[™^š[	Ë	ØÛÛXİ[Û’X[XYÛ›ÜİXÜÉÊNÂˆ\ÜÙ\›İÛÛZ[œÊ	ÜX›XËÚ[™^š[	Ë	ÙœÔ›ŞQXYÛ›ÜİXÜÉÊNÂˆ\ÜÙ\›İÛÛZ[œÊ	ÜX›XËÚ[™^š[	Ë	İØ[”]X[]QXYÛ›ÜİXÜÉÊNÂˆ\ÜÙ\›İÛÛZ[œÊ	ÜX›XËÚ[™^š[	Ë	İ\›Z[˜[š\ÚÑXYÛ›ÜİXÜÉÊNÂˆ\ÜÙ\›İÛÛZ[œÊ	ÜX›XËÚ[™^š[	Ë	ÜŞ\İ[P]Y]XYÛ›ÜİXÜÉÊNÂ‚ˆ\ÜÙ\ÛÛZ[œÊ	ÜX›XËÚ[™^š[	Ë	ùleyo ›İ]\“ÔÈ9c§ùiâùkeù«­IÊNÂˆ\ÜÙ\ÛÛZ[œÊ	ÜX›XËÚ[™^š[	Ë	ØÛÛ›™Xİ[Û‹[X\šÉÊNÂˆ\ÜÙ\ÛÛZ[œÊ	ÜX›XËÚ[™^š[	Ë	ÜXÚÙ][X\šÉÊNÂˆ\ÜÙ\ÛÛZ[œÊ	ÜX›XËÚ[™^š[	Ë	Ü›İ][™Ë[X\šÉÊNÂˆ\ÜÙ\ÛÛZ[œÊ	ÜX›XËÚ[™^š[	Ë	Ü\Üİ›İYÚ	ÊNÂˆ\ÜÙ\ÛÛZ[œÊ	ÜX›XËÚ[™^š[	Ë	Ú[‹Z[\™˜XÙIÊNÂˆ\ÜÙ\ÛÛZ[œÊ	ÜX›XËÚ[™^š[	Ë	Ûİ]Z[\™˜XÙIÊNÂˆ\ÜÙ\ÛÛZ[œÊ	ÜX›XËÚ[™^š[	Ë	ÜÜ˜ËXY™\ÜÉÊNÂˆ\ÜÙ\ÛÛZ[œÊ	ÜX›XËÚ[™^š[	Ë	ÙİXY™\ÜÉÊNÂˆ\ÜÙ\ÛÛZ[œÊ	Ø\œIË	Ü˜]ÓÜ™\‰ÊNÂˆ\ÜÙ\ÛÛZ[œÊ	Ø\œIË	ØÛÛ›™Xİ[Û‹[X\šÉÊNÂˆ\ÜÙ\ÛÛZ[œÊ	Ø\œIË	ÜXÚÙ][X\šÉÊNÂˆ\ÜÙ\ÛÛZ[œÊ	Ø\œIË	Ü›İ][™Ë[X\šÉÊNÂˆ\ÜÙ\ÛÛZ[œÊ	Ø\œIË	Ü\Üİ›İYÚ	ÊNÂ‚ˆYˆ
-\™ÜËœİ]XÓÛ›JHÂˆÛÛœÛÛK›ÙÊ	ÖÛÚ×Hİ]XÈX›XÈ™[X\ÙH™XY[™\ÜÈX\šÙ\œÈ\™H™\Ù[	ÊNÂˆH[ÙHÂˆÛÛœİ]\İ[X]š^™\ÜH\ÜÙ\]\İ[X]š^™\Ü
+function assertPublicBoundaryClean(relPath) {
+  const banned = [
+    'semanticTriage',
+    'actionQueue',
+    'manual_review',
+    'nextStep',
+    'å¤„ç†å»ºè®®',
+    'é£é™©ä¼˜å…ˆé˜Ÿåˆ—',
+    'è¯Šæ–­ä¸»çº¿',
+    'æ•°æ®æ–°é²œ',
+    'å½“å‰æ•°æ®æ–°é²œ',
+  ];
+  for (const needle of banned) {
+    assertNotContains(relPath, needle);
+  }
+}
 
-NÂˆÛÛœÛÛK›ÙÊÛÚ×H]\İ[X]š^™\Ü\ÈŞˆ[Ü™Y[ˆ	Ü]œ™[]]™J“ÓÕ]\İ[X]š^™\Üœ™\Ü]
-_X
-NÂˆB‚ˆÛÛœÛÛK›ÙÊ	ÖÛÚ×HX›XÈ™[X\ÙH™XY[™\ÜÈX\šÙ\œÈ\™H™\Ù[	ÊNÂŸB‚šYˆ
-™\]Z\™K›XZ[ˆOOH[Ù[JHÂˆXZ[Š
-NÂŸB‚›[Ù[K™^ÜÈHÂˆ\ÜÙ\]\İ[X]š^™\Üˆš[™]\İ[X]š^™\Üˆ\œÙP\™ÜËˆ•SÓPU’VĞÑSËˆ•SÓPU’VÔĞÑST’SÔËˆ•SÓPU’VÕ’QUÔÔ•ÒÑVTËŸNÂ
+function main(argv = process.argv.slice(2)) {
+  const args = parseArgs(argv);
+  if (args.help) {
+    console.log(usage());
+    return;
+  }
+
+  const ghcrImage = 'ghcr.io/cullysu/ros-ikuai-monitor-panel:main';
+
+  assertContains('.github/workflows/container-image.yml', 'packages: write');
+  assertContains('.github/workflows/container-image.yml', 'docker/build-push-action@v7');
+  assertContains('.github/workflows/container-image.yml', 'platforms: linux/amd64,linux/arm64');
+  assertContains('.github/workflows/container-image.yml', 'ghcr.io/${{ github.repository }}');
+  assertContains('.github/workflows/ci.yml', '--scale-scenarios single,fleet');
+  assertContains('.github/workflows/ci.yml', '--scale-scenarios all-offline,no-snapshot,collection-down,resource-full,interfaces-down');
+  assertContains('.github/workflows/ci.yml', '--sections overview');
+  assertContains('.github/workflows/ci.yml', '--sections overview-edge-cases');
+  assertContains('.github/workflows/ci.yml', '--viewports desktop=1366x900,desktop1440=1440x900,wide=844x390,narrow=390x844');
+
+  assertContains('compose.yml', '${ROS_PANEL_IMAGE:-routeros-triage-panel:local}');
+  assertContains('.env.docker.example', 'ROS_PANEL_IMAGE=routeros-triage-panel:local');
+  assertContains('.env.docker.example', `# ROS_PANEL_IMAGE=${ghcrImage}`);
+  assertContains('install.sh', 'DEFAULT_LOCAL_IMAGE="routeros-triage-panel:local"');
+  assertContains('install.sh', `DEFAULT_PREBUILT_IMAGE="${ghcrImage}"`);
+  assertContains('install.sh', 'pull routeros-triage');
+  assertContains('install.sh', 'falling back to local Docker build');
+  assertContains('install.sh', '--prebuilt');
+  assertContains('install.sh', '--build-local');
+  assertContains('install.sh', '--local-only');
+  assertContains('install.sh', 'PUBLISHED_ADDR="127.0.0.1"');
+  assertContains('install.sh', '--lan is not supported by the public installer');
+  assertContains('install.sh', 'exposure:   localhost-only');
+  assertContains('install.sh', 'ROS_PANEL_TRUST_PROXY_HEADERS');
+  assertContains('install.sh', 'ROS_PANEL_ALLOW_LOCALHOST_HOST_FORWARD');
+  assertContains('install.sh', 'ROS_PANEL_IP_ALIAS_WRITE_ENABLED');
+  assertContains('install.sh', 'ROS_PANEL_EXPOSE_ADMIN_SESSIONS');
+  assertContains('install.sh', 'ROS_PANEL_LOCAL_SETTINGS_WRITE_ENABLED');
+
+  assertContains('PRODUCT_MODEL.md', '## Public Delivery Contract');
+  assertContains('PRODUCT_MODEL.md', 'Docker / Compose');
+  assertContains('PRODUCT_MODEL.md', 'Windows EXE');
+  assertContains('PRODUCT_MODEL.md', 'Linux systemd / VM');
+  assertContains('PRODUCT_MODEL.md', 'RouterOS Container');
+  assertContains('README.md', '## Public Delivery Matrix');
+  assertContains('README.zh-CN.md', '## å…¬å¼€äº¤ä»˜çŸ©é˜µ');
+  assertContains('DEPLOY_DOCKER.md', 'Docker / Compose is one of the four public delivery modes');
+  assertContains('DEPLOY_WINDOWS_EXE.md', 'Windows EXE is one of the four public delivery modes');
+  assertContains('DEPLOY_ROUTEROS_CONTAINER.md', 'RouterOS Container is one of the four public delivery modes');
+  assertContains('DEPLOY_LOCAL.md', 'Local Python is a development and trial path');
+
+  assertContains('tools/build-routeros-container-archive.sh', 'docker buildx build');
+  assertContains('tools/build-routeros-container-archive.sh', 'docker save');
+  assertContains('tools/build-routeros-container-archive.sh', '--provenance=false');
+  assertContains('tools/build-routeros-container-archive.sh', 'convert-oci-to-routeros-docker-archive.py');
+  assertContains('tools/build-routeros-container-archive.sh', 'Use a client-local forwarder');
+  assertContains('tools/convert-oci-to-routeros-docker-archive.py', 'IMAGE_INDEX_MEDIA_TYPES');
+  assertContains('.gitignore', '/*.tar');
+  assertContains('DEPLOY_DOCKER.md', ghcrImage);
+  assertContains('README.md', ghcrImage);
+  assertContains('README.md', 'Default public path: build a RouterOS-friendly archive locally');
+  assertContains('DEPLOY_ROUTEROS_CONTAINER.md', ghcrImage);
+  assertContains('DEPLOY_ROUTEROS_CONTAINER.md', 'The default public path is to build a RouterOS-friendly archive locally');
+  assertContains('DEPLOY_ROUTEROS_CONTAINER.md', 'Local archive, default public path');
+  assertContains('DEPLOY_ROUTEROS_CONTAINER.md', 'Optional registry image, only after the GHCR package is public');
+  assertContains('DEPLOY_ROUTEROS_CONTAINER.md', 'connect-routeros-container-localhost.ps1');
+  assertContains('DEPLOY_ROUTEROS_CONTAINER.md', 'http://127.0.0.1:28646/');
+  assertContains('DEPLOY_ROUTEROS_CONTAINER.md', 'Host header guard');
+  assertContains('DEPLOY_ROUTEROS_CONTAINER.md', 'ROS_PANEL_ALLOW_LOCALHOST_HOST_FORWARD=1');
+  assertContains('DEPLOY_ROUTEROS_CONTAINER.md', 'ROS_PANEL_LOCALHOST_FORWARD_TOKEN');
+  assertContains('DEPLOY_ROUTEROS_CONTAINER.md', '--forward-token');
+  assertContains('DEPLOY_ROUTEROS_CONTAINER.md', 'Host: 127.0.0.1:28646');
+  assertContains('DEPLOY_ROUTEROS_CONTAINER.md', 'and running');
+  assertContains('tools/build-routeros-container-archive.sh', 'wait until it is not running');
+  assertContains('DEPLOY_ROUTEROS_CONTAINER.md', '/container/start [find where root-dir="disk1/routeros-triage"]');
+  assertNotContains('DEPLOY_ROUTEROS_CONTAINER.md', 'YOUR_ORG/routeros-triage-panel:TAG');
+  assertNotContains('DEPLOY_ROUTEROS_CONTAINER.md', 'remote-image~"routeros-triage-panel"');
+
+  assertContains('Dockerfile', 'USER panel');
+  assertContains('Dockerfile', 'ROS_PANEL_ALLOW_LOCALHOST_HOST_FORWARD=0');
+  assertNotContains('Dockerfile', 'ROS_PANEL_LOCALHOST_FORWARD_TOKEN=', 'forward token baked into image defaults');
+  assertContains('Dockerfile', 'ROS_PANEL_LOCAL_SETTINGS_WRITE_ENABLED=0');
+  assertContains('Dockerfile', 'chown -R root:root /app');
+  assertContains('Dockerfile', 'chown panel:panel /app/data');
+  assertContains('Dockerfile', 'chmod 0750 /app/data');
+  assertContains('compose.yml', 'read_only: true');
+  assertContains('compose.yml', 'ROS_PANEL_ALLOW_LOCALHOST_HOST_FORWARD: "${ROS_PANEL_ALLOW_LOCALHOST_HOST_FORWARD:-0}"');
+  assertContains('compose.yml', 'ROS_PANEL_LOCALHOST_FORWARD_TOKEN: "${ROS_PANEL_LOCALHOST_FORWARD_TOKEN:-}"');
+  assertContains('compose.yml', 'ROS_PANEL_LOCAL_SETTINGS_WRITE_ENABLED: "${ROS_PANEL_LOCAL_SETTINGS_WRITE_ENABLED:-0}"');
+  assertContains('compose.yml', 'no-new-privileges:true');
+  assertContains('deploy_linux.sh', 'useradd --system --user-group');
+  assertContains('deploy_linux.sh', 'ROS_PANEL_LOCAL_SETTINGS_WRITE_ENABLED="${ROS_PANEL_LOCAL_SETTINGS_WRITE_ENABLED:-0}"');
+  assertContains('deploy_linux.sh', 'sudo chown -R root:root "${APP_DIR}"');
+  assertContains('deploy_linux.sh', 'sudo chown -R "${PANEL_RUNTIME_USER}:${PANEL_RUNTIME_GROUP}" "${APP_DIR}/data"');
+  assertContains('deploy_linux.sh', 'curl -fsS "http://127.0.0.1:${ROS_PANEL_PORT}/api/health"');
+  assertContains('routeros-panel.service', 'User=routeros-panel');
+  assertContains('routeros-panel.service', 'Group=routeros-panel');
+  assertNotContains('routeros-panel.service', 'ros-panel-ip.service', 'implicit IP helper dependency');
+  assertContains('routeros-panel@.service', 'User=routeros-panel');
+  assertContains('routeros-panel@.service', 'Group=routeros-panel');
+  assertNotContains('routeros-panel@.service', 'ros-panel-ip@.service', 'implicit template IP helper dependency');
+  assertContains('tools/build-windows-exe.ps1', 'ROS_PANEL_BIND=127.0.0.1');
+  assertContains('tools/build-windows-exe.ps1', 'ROS_PANEL_LOCAL_SETTINGS_WRITE_ENABLED=1');
+  assertContains('app.py', 'PANEL_LOCAL_SETTINGS_ENV_KEYS = ("ROS_PANEL_BIND", "ROS_PANEL_PORT", "ROS_PANEL_TARGET_IP")');
+  assertContains('app.py', '"routerosConfigWrites": False');
+  assertContains('README.zh-CN.md', 'ä¸ä¼šå‘ RouterOS å†™å…¥ä»»ä½•è·¯ç”±ã€é˜²ç«å¢™ã€æ¥å£æˆ–å…¶ä»–é…ç½®');
+  assertContains('.github/workflows/ci.yml', 'Windows env is missing loopback bind default');
+  assertContains('.github/workflows/ci.yml', 'Windows env is missing panel address write default');
+  assertContains('public/index.html', 'snapshotNeedsRouterLogin');
+  assertContains('public/index.html', 'aria-label="åªè¯»ï¼šä¸å†™ RouterOS é…ç½®"');
+  assertContains('public/index.html', 'snapshotHasRouterSshLoginError');
+  assertContains('public/index.html', 'routerLoginDraft');
+  assertContains('public/index.html', 'captureRouterLoginDraftFromForm');
+  assertContains('public/index.html', 'data-router-login-form');
+  assertContains('public/index.html', '/api/router-login');
+  assertContains('public/index.html', 'rememberPassword');
+  assertContains('public/index.html', 'è¿æ¥å¹¶è¿›å…¥é¢æ¿');
+
+  assertContains('README.md', '# RouterOS Read-only Status Panel');
+  assertContains('README.zh-CN.md', '# RouterOS åªè¯»çŠ¶æ€é¢æ¿');
+  assertContains('README.md', 'status visibility');
+  assertContains('README.md', 'not configuration management');
+  assertContains('README.md', 'troubleshooting automation');
+  assertContains('README.zh-CN.md', 'ä¸åšé…ç½®ç®¡ç†');
+  assertContains('README.zh-CN.md', 'æš‚æ—¶ä¸åšæ’éšœå·¥å…·');
+  assertContains('PRODUCT_MODEL.md', 'Public UI should not imply automatic repair, configuration management, or');
+
+  assertContains('public/index.html', 'renderReadonlyStatusBus');
+  assertContains('public/index.html', 'é¢æ¿å¥åº·');
+  assertContains('public/index.html', 'RouterOS å¥åº·');
+  assertContains('public/index.html', 'æ•°æ®å¹´é¾„');
+  assertMatches('public/index.html', /WAN\s*çº¿è·¯/);
+  assertContains('public/index.html', 'CPU / å†…å­˜');
+  assertMatches('public/index.html', /å¼‚å¸¸\s*TopN/);
+  assertContains('public/assets/framework/panel-framework.js', 'data-router-mobile-app');
+  assertContains('public/assets/framework/panel-framework.js', 'rm-network-screen');
+  assertContains('public/assets/framework/panel-framework.js', 'rm-collection-screen');
+  assertContains('public/assets/framework/panel-framework.js', 'rm-tabbar');
+  assertContains('src/panel-framework/overview/mobile-app/RouterMobileApp.tsx', 'type RouterMobileTab = "network" | "collection";');
+  assertContains('public/assets/framework/panel-framework.js', 'ä¸šåŠ¡çŠ¶æ€ä¸å¯åˆ¤æ–­');
+  assertContains('public/assets/framework/panel-framework.js', 'æ²¡æœ‰å–å¾—æœ‰æ•ˆå¿«ç…§ï¼Œæµé‡ã€WAN ä¸èµ„æºæ•°å€¼å·²åœæ­¢å±•ç¤ºã€‚');
+  assertContains('public/assets/framework/panel-framework.js', 'å–å¾—æ–°çš„ä¸šåŠ¡å¿«ç…§å‰ï¼Œä¸æ˜¾ç¤ºå†å²é€Ÿç‡æˆ–å ä½æ›²çº¿ã€‚');
+  assertContains('public/assets/framework/panel-framework.js', 'å•æ¬¡å¿«ç…§åªæ˜¾ç¤ºå½“å‰é‡çº§ï¼Œä¸ç”Ÿæˆè¶‹åŠ¿æˆ–å³°å€¼ã€‚');
+  assertContains('public/assets/framework/panel-framework.js', 'ä»…ç›‘æ§çŠ¶æ€ï¼Œä¸ä¼šä¿®æ”¹è·¯ç”±å™¨é…ç½®');
+  assertContains('public/assets/framework/panel-framework.js', 'å¤±è´¥ç«¯ç‚¹');
+  assertContains('public/index.html', 'RouterOS å†™å…¥');
+  assertContains('public/index.html', 'æœ¬åœ°åˆ«åå†™å…¥');
+  assertAnyContains('public/index.html', ['REST çŠ¶æ€', 'REST é‡‡é›†', 'restState(snapshot, state)', 'REST'], 'REST çŠ¶æ€');
+  assertAnyContains('public/index.html', ['SSH çŠ¶æ€', 'SSH é‡‡é›†', 'sshState(snapshot, state)', 'SSH'], 'SSH çŠ¶æ€');
+  assertContains('public/index.html', 'å¤–éƒ¨è®¿é—®');
+  assertContains('app.py', 'statusFindings');
+  assertContains('app.py', 'healthFindings');
+  assertContains('tools/local-predeploy-check.js', 'main-menu');
+  assertContains('tools/local-predeploy-check.js', 'loadAudit');
+  assertContains('tools/local-predeploy-check.js', 'readonlyDiagnostics');
+  assertContains('tools/local-predeploy-check.js', 'security');
+  assertContains('tools/local-predeploy-check.js', 'buildMatrixSummary');
+  assertContains('tools/local-predeploy-check.js', 'report.matrix = buildMatrixSummary(report.browserChecks, args);');
+  assertContains('tools/local-predeploy-check.js', 'matrixBlocksTopLevelPass');
+  assertContains('tools/local-predeploy-check.js', 'top-level pass suppressed until required release matrix is complete');
+  assertContains('tools/local-predeploy-check.js', 'report.pass = report.failures.length === 0 && !matrixBlocksTopLevelPass;');
+  assertContains('tools/local-predeploy-check.js', 'unified release scenario matrix covers required scenarios');
+  assertContains('tools/local-predeploy-check.js', 'release-matrix-');
+  assertContains('tools/local-predeploy-check.js', 'function gitFullHead()');
+  assertContains('tools/local-predeploy-check.js', 'commit: gitFullHead() || gitShortHead(),');
+  assertContains('tools/local-predeploy-check.js', 'releaseMatrixComplete = explicitOverviewReleaseMatrix ? report.matrix.complete : matrixAggregate.complete');
+  assertContains('tools/local-predeploy-check.js', 'explicitOverviewReleaseMatrix');
+  assertContains('tools/local-predeploy-check.js', 'OVERVIEW_RELEASE_VIEWPORTS');
+  assertContains('tools/local-predeploy-check.js', 'viewportCellKey');
+  assertContains('tools/check-public-release-readiness.js', 'normalizeMatrixCell');
+  assertContains('tools/local-predeploy-check.js', '--viewports <list>          Comma list like desktop=1366x900,desktop1440=1440x900,wide=844x390,narrow=390x844.');
+  assertContains('tools/local-predeploy-check.js', 'aggregateComplete: matrixAggregate.complete,');
+  assertContains('tools/local-predeploy-check.js', 'screenshotDir: args.out');
+  assertContains('tools/local-predeploy-check.js', 'scenarioMatrix:');
+  assertContains('tools/local-predeploy-check.js', 'screenshots: listScreenshotFiles(args.out)');
+  assertContains('tools/local-predeploy-check.js', 'async function withTimeout(');
+  assertContains('tools/local-predeploy-check.js', 'captureScreenshot(cdp, screenshotPath)');
+  assertContains('tools/local-predeploy-check.js', 'inspection.screenshotOk = screenshotOk;');
+  assertContains('tools/local-predeploy-check.js', 'inspection.pass = Boolean(inspection.pass && screenshotOk);');
+  assertContains('tools/local-predeploy-check.js', "await withTimeout(browser.stop(), 8000, 'browser stop')");
+  assertContains('tools/local-predeploy-check.js', 'overviewDesktopSamplingStateUniqueOk');
+  assertContains('tools/local-predeploy-check.js', 'overviewDesktopTopConclusionUniqueOk');
+  assertContains('tools/local-predeploy-check.js', 'overviewMobileSamplingStateUniqueOk');
+  assertContains('tools/local-predeploy-check.js', 'overviewMobileActionLinksUniqueOk');
+  assertContains('tools/local-predeploy-check.js', 'overviewDesktopActionLinksUniqueOk');
+  assertContains('tools/local-predeploy-check.js', 'overviewMobilePrimaryConclusionUniqueOk');
+  assertContains('tools/local-predeploy-check.js', "const mobileAllowedActionLabels = new Set(['WANæ˜ç»†', 'é‡‡é›†çŠ¶æ€', 'èµ„æºé˜ˆå€¼', 'è·¯ç”±å¿«ç…§']);");
+  assertContains('tools/local-predeploy-check.js', 'overviewPrimaryConclusionNoEllipsisOk');
+  assertContains('tools/local-predeploy-check.js', 'overviewCollectionContradictionOk');
+  assertContains('tools/local-predeploy-check.js', 'overviewCollectionTrustMarkersOk');
+  assertContains('tools/local-predeploy-check.js', 'overviewInterfacesForwardingFirstOk');
+  assertContains('tools/local-predeploy-check.js', 'overviewStatusBusFixedGrammarOk');
+  assertContains('tools/local-predeploy-check.js', 'overviewResourceFirstScreenPriorityOk');
+  assertContains('tools/local-predeploy-check.js', 'overviewDefaultRouteRawFactsOk');
+  assertContains('tools/local-predeploy-check.js', 'overviewNoSnapshotDowngradeReasonsOk');
+  assertContains('tools/local-predeploy-check.js', 'overviewNoSnapshotFiveBlocksOk');
+  assertContains('tools/local-predeploy-check.js', 'overviewChineseUiNoEngineeringEnglishOk');
+  assertContains('tools/local-predeploy-check.js', 'overviewFirstScreenCoverageOk');
+  assertContains('tools/local-predeploy-check.js', 'overviewDesktopDensityOk');
+  assertContains('tools/local-predeploy-check.js', 'overviewDesktopTopBandOk');
+  assertContains('tools/local-predeploy-check.js', 'overviewDesktopFlatStatusBarOk');
+  assertContains('tools/local-predeploy-check.js', 'overviewDesktopTableDensityOk');
+  assertContains('tools/local-predeploy-check.js', "const overviewFlatDesktopContractOk = sectionName === 'overview' && isDesktopOverview && Boolean(");
+  assertContains('tools/local-predeploy-check.js', "const overviewFlatMobileContractOk = sectionName === 'overview' && isMobileOverview && Boolean(");
+  assertContains('tools/local-predeploy-check.js', 'overviewDesktopDetailFirstTwoRowsVisibleOk');
+  assertContains('tools/local-predeploy-check.js', 'overviewDesktopModuleSpreadOk');
+  assertContains('tools/local-predeploy-check.js', 'overviewBlankAreaOk');
+  assertContains('tools/local-predeploy-check.js', 'overviewDesktopNo72vhBlankOk');
+  assertContains('tools/local-predeploy-check.js', 'overviewMobileNo72vhBlankOk');
+  assertContains('tools/local-predeploy-check.js', 'overviewDesktopWhitespaceBudgetOk');
+  assertContains('tools/local-predeploy-check.js', 'overviewDesktopInfoBudgetOk');
+  assertContains('tools/local-predeploy-check.js', 'overviewDesktopInfoDensityOk');
+  assertContains('tools/local-predeploy-check.js', 'const overviewReadonlyConsoleContractOk');
+  assertContains('tools/local-predeploy-check.js', 'overviewDesktopFirstScreenDedupeOk');
+  assertContains('tools/local-predeploy-check.js', 'overviewCrossViewportCopyDedupeOk');
+  assertContains('tools/local-predeploy-check.js', 'overviewCardBudgetOk');
+  assertContains('tools/local-predeploy-check.js', 'overviewSemanticColorBudgetOk');
+  assertContains('tools/local-predeploy-check.js', 'overviewActionLinksLowChromeOk');
+  assertContains('tools/local-predeploy-check.js', 'overviewMobileCoreOk');
+  assertContains('tools/local-predeploy-check.js', 'overviewMobileFlatStatusTableOk');
+  assertContains('tools/local-predeploy-check.js', 'overviewMobileLedgerHeightOk');
+  assertContains('tools/local-predeploy-check.js', 'overviewMobileAlertCardCompactOk');
+  assertContains('tools/local-predeploy-check.js', 'overviewMobileDetailFirstTwoRowsVisibleOk');
+  assertContains('tools/local-predeploy-check.js', 'overviewProductVerdictOk');
+  assertContains('tools/local-predeploy-check.js', 'overviewWanListPriorityOk');
+  assertContains('tools/local-predeploy-check.js', 'overviewWanEvidencePriorityOk');
+  assertContains('tools/local-predeploy-check.js', 'mobileWanEvidenceRows.slice(0, 3).every(nodeVisibleInFirstScreen)');
+  assertContains('tools/local-predeploy-check.js', 'overviewResourceNumericDensityOk');
+  assertContains('tools/local-predeploy-check.js', 'overviewResourceDurationVisibilityOk');
+  assertNotContains('tools/local-predeploy-check.js', 'overviewTrendCompactOk &&');
+  assertNotContains('tools/local-predeploy-check.js', 'overviewRankCompactOk &&');
+  assertNotContains('tools/local-predeploy-check.js', 'overviewResourceTrendOk &&');
+  assertNotContains('tools/local-predeploy-check.js', 'overviewAxesOk &&');
+  assertNotContains('tools/local-predeploy-check.js', 'overviewMonitorSplitOk &&');
+  assertNotContains('tools/local-predeploy-check.js', 'overviewResourceAxisOk &&');
+  assertNotContains('tools/local-predeploy-check.js', 'overviewProtocolRankOk &&');
+  assertContains('tools/local-predeploy-check.js', 'overviewMobileCopyAssemblyOk');
+  assertContains('tools/local-predeploy-check.js', 'overviewRestSshViewportParityOk');
+  assertContains('tools/local-predeploy-check.js', 'overviewMobileEffectiveCoverageOk');
+  assertContains('tools/local-predeploy-check.js', 'overviewMobileFirstScreenContractOk');
+  assertContains('tools/local-predeploy-check.js', 'summaryFitsViewport');
+  assertContains('tools/local-predeploy-check.js', 'overviewMobileWanIncidentPriorityOk');
+  assertContains('tools/local-predeploy-check.js', 'overviewRestSshSourceConsistencyOk');
+  assertContains('tools/local-predeploy-check.js', 'overviewResourceFullIncidentOk');
+  assertContains('tools/local-predeploy-check.js', 'overviewNoSnapshotFreshnessForbiddenOk');
+  assertContains('tools/local-predeploy-check.js', 'overviewNoSnapshotSemanticOk');
+  assertContains('tools/local-predeploy-check.js', 'overviewNoSnapshotTrustedMetricsForbiddenOk');
+  assertContains('tools/local-predeploy-check.js', 'overviewNoSnapshotSamplingStateUniqueOk');
+  assertContains('tools/local-predeploy-check.js', 'overviewNoSnapshotDesktopEvidenceTripletOk');
+  assertContains('tools/local-predeploy-check.js', 'overviewNoSnapshotGridOk');
+  assertContains('tools/local-predeploy-check.js', 'overviewNoSnapshotSemanticProbe');
+  assertNotContains('tools/local-predeploy-check.js', 'overviewFlatMobileContractOk ||');
+  assertContains('tools/local-predeploy-check.js', 'overviewCollectionLayerSplitOk');
+  assertContains('tools/local-predeploy-check.js', 'overviewInterfacesChannelConsistencyOk');
+  assertContains('tools/local-predeploy-check.js', 'overviewInterfacesDownCollectionParityOk');
+  assertContains('tools/local-predeploy-check.js', 'overviewMobileEvidenceUniqueOk');
+  assertContains('tools/local-predeploy-check.js', 'overviewFirstScreenDedupeOk');
+  assertContains('tools/local-predeploy-check.js', 'overviewDesktopTopBandProbe');
+  assertContains('tools/local-predeploy-check.js', 'overviewMobileUniqueVerdictProbe');
+  assertContains('tools/local-predeploy-check.js', 'overviewFirstScreenDedupeProbe');
+  assertContains('tools/local-predeploy-check.js', 'overviewHistoryTitlePrefixOk');
+  assertContains('tools/local-predeploy-check.js', 'overviewDefaultRouteSemanticUndeterminedOk');
+  assertNotContains('tools/local-predeploy-check.js', 'overviewFirstScreenFieldCount >= minOverviewFirstScreenFields');
+  assertContains('tools/local-predeploy-check.js', "const requiredScenarios = ['single', 'fleet', 'all-offline', 'no-snapshot', 'collection-down', 'resource-full', 'interfaces-down'];");
+  assertContains('src/panel-framework/overview/OverviewPanel.css', '@import "./styles/overview-foundation.css";');
+  assertContains('src/panel-framework/overview/OverviewPanel.css', '@import "./styles/overview-desktop.css";');
+  assertContains('src/panel-framework/overview/OverviewPanel.css', '@import "./styles/overview-states.css";');
+  assertNotContains('src/panel-framework/overview/OverviewPanel.css', '@media');
+  assertNotContains('src/panel-framework/overview/OverviewPanel.css', 'overview-mobile.css');
+  assertNotExists('src/panel-framework/overview/styles/overview-mobile.css');
+  assertContains('src/panel-framework/overview/styles/overview-foundation.css', '--ro-border');
+  assertContains('src/panel-framework/overview/styles/overview-desktop.css', '@import "./desktop/density.css";');
+  assertContains('src/panel-framework/overview/styles/desktop/density.css', '@media (min-width: 761px)');
+  assertNotContains('src/panel-framework/overview/styles/overview-states.css', 'ro-desktop-key-row');
+  assertNotContains('src/panel-framework/overview/styles/overview-states.css', 'ro-desktop-key-cell');
+  assertNotContains('src/panel-framework/overview/styles/overview-states.css', 'ro-time-tabs');
+  assertContains('src/panel-framework/overview/styles/overview-states.css', '--ik40-console-page');
+  assertContains('src/panel-framework/overview/components/StatusVerdict.tsx', 'export function StatusVerdict');
+  assertContains('src/panel-framework/overview/components/DesktopModule.tsx', 'export function Module');
+  assertContains('src/panel-framework/overview/components/WanTrend.tsx', 'export function WanTrend');
+  assertContains('src/panel-framework/overview/components/EvidenceChain.tsx', 'export function EvidenceChain');
+  assertContains('src/panel-framework/overview/components/TerminalRanking.tsx', 'export function TerminalRanking');
+  assertContains('src/panel-framework/overview/OverviewPanel.tsx', '<StatusVerdict snapshot={snapshot} state={state} />');
+  assertContains('src/panel-framework/overview/desktopOverviewDefaultScene.tsx', '<WanTrend key="compact-network"');
+  assertContains('src/panel-framework/overview/desktopOverviewDefaultScene.tsx', '<EvidenceChain key="compact-boundary"');
+  assertContains('src/panel-framework/overview/desktopOverviewDefaultScene.tsx', '<TerminalRanking key="compact-terminals"');
+  assertContains('src/panel-framework/overview/mobile-app/RouterMobileScreens.tsx', 'WAN å®æ—¶æµé€Ÿ');
+  assertContains('src/panel-framework/overview/desktopOverviewDefaultScene.tsx', 'WAN é‡‡æ ·è¶‹åŠ¿');
+  assertContains('src/panel-framework/overview/mobile-app/routerMobileModel.ts', 'source: "history"');
+  assertContains('src/panel-framework/overview/mobile-app/routerMobileModel.ts', 'source: "snapshot"');
+  assertContains('src/panel-framework/overview/mobile-app/routerMobileModel.ts', 'source: "unavailable"');
+  assertNotContains('src/panel-framework/overview/mobile-app/RouterMobileScreens.tsx', 'WAN å®æ—¶è¶‹åŠ¿');
+  assertNotContains('src/panel-framework/overview/desktopOverviewDefaultScene.tsx', 'WAN å®æ—¶è¶‹åŠ¿');
+  for (const retiredMobileComponent of [
+    'CoreMetricRail.tsx',
+    'HomeSurface.tsx',
+    'IncidentHero.tsx',
+    'JudgementStrip.tsx',
+    'MobileOverviewSections.tsx',
+    'StatusHeader.tsx',
+    'TrustStrip.tsx',
+  ]) assertNotExists(`src/panel-framework/overview/components/${retiredMobileComponent}`);
+  for (const retiredMobileFile of [
+    'src/panel-framework/overview/components/MobileOverviewHome.tsx',
+    'src/panel-framework/overview/components/MobileOverviewDecision.tsx',
+    'src/panel-framework/overview/components/BottomTabs.tsx',
+    'src/panel-framework/overview/mobileOverviewModel.ts',
+    'src/panel-framework/overview/mobileOverviewPolicy.ts',
+    'src/panel-framework/overview/styles/mobile/mobile-product.css',
+  ]) assertNotExists(retiredMobileFile);
+  assertNotExists('src/panel-framework/overview/components/MobileOverviewStyles.tsx');
+  assertNotExists('src/panel-framework/overview/components/MobileOverviewBaseStyles.ts');
+  assertNotExists('src/panel-framework/overview/components/MobileOverviewPublicDecisionStyles.ts');
+  assertNotExists('src/panel-framework/overview/components/MobileOverviewPublicDecisionRepairStyles.ts');
+  assertContains('src/panel-framework/overview/mobile-app/RouterMobileApp.tsx', 'import "./styles/router-mobile-app.css";');
+  assertContains('src/panel-framework/overview/mobile-app/styles/router-mobile-app.css', '.rm-app');
+  assertContains('src/panel-framework/overview/mobile-app/styles/router-mobile-app.css', '.rm-tabbar');
+  assertMaxBytes('public/assets/framework/style.css', 500000);
+  assertNotExists('public/scale-adaptive-patch.js');
+  assertNotExists('public/layout-whitespace-patch.js');
+  assertNotExists('public/panel-professional-redesign.js');
+  assertNotContains('app.py', 'semanticTriage');
+  assertNotContains('app.py', 'actionQueue');
+  assertNotContains('app.py', 'manual_review');
+  assertPublicBoundaryClean('public/index.html');
+  assertNotContains('public/index.html', 'events.length');
+  assertContains('public/index.html', 'ik-desktop-workspace');
+  assertAnyContains('public/index.html', ['data-overview-density-module="wan-trend"', 'module="wan-trend"', 'module: "wan-trend"', '"wan-trend"'], 'wan-trend overview module');
+  assertContains('public/index.html', 'data-overview-rank-grid');
+  assertContains('public/index.html', 'data-app-shell="ikuai"');
+  assertContains('public/index.html', 'data-overview-framework-asset="style"');
+  assertContains('public/index.html', 'data-overview-framework-asset="script"');
+  assertNotContains('public/index.html', 'mountRouterOverviewPanel');
+  assertNotContains('public/index.html', 'router-overview-framework');
+  assertContains('vite.config.ts', 'publicDir: false');
+  assertContains('vite.config.ts', 'outDir: "public/assets/framework"');
+  assertContains('vite.config.ts', 'fileName: () => "panel-framework.js"');
+
+  assertContains('public/index.html', 'è·¯ç”±ä¸åˆ†æµçŠ¶æ€');
+  assertContains('public/index.html', 'é˜²ç«å¢™è§„åˆ™');
+  assertContains('public/index.html', 'èµ„æºçŠ¶æ€');
+  assertContains('public/index.html', 'æµé‡çŠ¶æ€');
+  assertContains('public/index.html', 'ç»ˆç«¯çŠ¶æ€');
+  assertContains('public/index.html', 'é‡‡é›†çŠ¶æ€');
+  assertNotContains('public/index.html', 'è¯Šæ–­æ€»è§ˆ');
+  assertNotContains('public/index.html', 'è´Ÿè½½å®¡è®¡');
+  assertNotContains('public/index.html', 'ACL è§„åˆ™');
+  assertNotContains('public/index.html', 'åˆ†æµç›‘æ§');
+  assertNotContains('public/index.html', 'ç»ˆç«¯é£é™©');
+  assertNotContains('public/index.html', 'çº¿è·¯çŠ¶æ€æ£€æµ‹');
+  assertNotContains('public/index.html', 'è¯·æ£€æŸ¥');
+  assertNotContains('public/index.html', 'ä¸‹ä¸€æ­¥');
+  assertNotContains('public/index.html', 'layout-whitespace-patch.js');
+  assertNotContains('public/index.html', 'readonly-diagnostics.js');
+  assertContains('app.py', 'private_public_assets = {"readonly-diagnostics.js"}', 'readonly diagnostics stays private in public profile');
+  assertContains('app.py', 'if PUBLIC_ROUTEROS_PROFILE and asset_name in self.private_public_assets:', 'public static boundary for readonly diagnostics');
+  assertContains('app.py', '/api/readonly-diagnostics', 'readonly diagnostics API route remains present');
+  assertContains('app.py', 'readonly diagnostics are private in the public RouterOS profile', 'readonly diagnostics API still returns 403 in public profile');
+  assertContains('app.py', 'code="private_diagnostics_disabled"', 'readonly diagnostics 403 code remains explicit');
+  assertContains('tools/local-predeploy-check.js', "const privatePublicAsset = publicRouterosProfile && asset === 'readonly-diagnostics.js';", 'predeploy checker must keep readonly diagnostics asset private');
+  assertContains('tools/local-predeploy-check.js', 'privatePublicAsset ? result.response.status === 403 : result.response.ok && result.text.length > 1000', 'public asset check must preserve the 403 gate');
+  assertContains('tools/local-predeploy-check.js', "diag.response.status === 403 && diag.json.code === 'private_diagnostics_disabled'", 'public readonly diagnostics API check must preserve the 403 code');
+  assertContains('tools/local-predeploy-check.js', 'local server logs stay free of socket reset noise');
+  assertContains('tools/local-predeploy-check.js', 'ConnectionResetError');
+  assertContains('tools/local-predeploy-check.js', 'BrokenPipeError');
+  assertNotContains('public/index.html', 'collectionHealthDiagnostics');
+  assertNotContains('public/index.html', 'dnsProxyDiagnostics');
+  assertNotContains('public/index.html', 'wanQualityDiagnostics');
+  assertNotContains('public/index.html', 'terminalRiskDiagnostics');
+  assertNotContains('public/index.html', 'systemAuditDiagnostics');
+
+  assertContains('public/index.html', 'å±•å¼€ RouterOS åŸå§‹å­—æ®µ');
+  assertContains('public/index.html', 'connection-mark');
+  assertContains('public/index.html', 'packet-mark');
+  assertContains('public/index.html', 'routing-mark');
+  assertContains('public/index.html', 'passthrough');
+  assertContains('public/index.html', 'in-interface');
+  assertContains('public/index.html', 'out-interface');
+  assertContains('public/index.html', 'src-address');
+  assertContains('public/index.html', 'dst-address');
+  assertContains('app.py', 'rawOrder');
+  assertContains('app.py', 'connection-mark');
+  assertContains('app.py', 'packet-mark');
+  assertContains('app.py', 'routing-mark');
+  assertContains('app.py', 'passthrough');
+
+  if (args.staticOnly) {
+    console.log('[ok] static public release readiness markers are present');
+  } else {
+    const latestFullMatrixReport = assertLatestFullMatrixReport();
+    console.log(`[ok] latest full matrix report is 7x2 all green: ${path.relative(ROOT, latestFullMatrixReport.reportPath)}`);
+  }
+
+  console.log('[ok] public release readiness markers are present');
+}
+
+if (require.main === module) {
+  main();
+}
+
+module.exports = {
+  assertLatestFullMatrixReport,
+  findLatestFullMatrixReport,
+  parseArgs,
+  FULL_MATRIX_CELLS,
+  FULL_MATRIX_SCENARIOS,
+  FULL_MATRIX_VIEWPORT_KEYS,
+};
