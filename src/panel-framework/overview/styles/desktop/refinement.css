@@ -609,7 +609,7 @@
     display: grid !important;
   }
   #overview.router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="resource-pressure-bars"] {
-    max-height: 190px !important;
+    max-height: var(--ro-resource-pressure-module-max-height, 190px) !important;
   }
   #overview.router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="resource-pressure-bars"] .ro-judgement-chart {
     max-height: 88px !important;

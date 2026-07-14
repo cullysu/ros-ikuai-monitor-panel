@@ -10,7 +10,8 @@
     "check:overview-architecture": "node --max-old-space-size=2048 tools/check-overview-architecture.js",
     "check:mobile-app-home": "node --max-old-space-size=2048 tools/check-mobile-app-home-runtime.js",
     "check:desktop-no-snapshot": "node --max-old-space-size=2048 tools/check-desktop-no-snapshot-runtime.js",
-    "check:desktop-v1030": "node --max-old-space-size=2048 tools/check-desktop-v1030-runtime.js"
+    "check:desktop-v1030": "node --max-old-space-size=2048 tools/check-desktop-v1030-runtime.js",
+    "check:desktop-incident-hierarchy": "node --max-old-space-size=2048 tools/check-desktop-incident-hierarchy-runtime.js"
   },
   "dependencies": {
     "react": "^18.3.1",

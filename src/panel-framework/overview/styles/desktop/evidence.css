@@ -245,11 +245,11 @@
 
 @media (min-width: 761px) {
   .router-overview-framework.ro-desktop-hierarchy .ro-desktop-grid.ik-home-layout > .ro-col.is-side > .ro-module {
-    max-height: 220px !important;
-    overflow: auto !important;
+    max-height: var(--ro-side-module-max-height, 220px) !important;
+    overflow: var(--ro-side-module-overflow, auto) !important;
   }
   .router-overview-framework.ro-desktop-hierarchy .ro-desktop-grid.ik-home-layout > .ro-col.is-side > .ro-module:first-child {
-    max-height: 250px !important;
+    max-height: var(--ro-side-first-module-max-height, 250px) !important;
   }
   .router-overview-framework.ro-desktop-hierarchy .ro-desktop-grid.ik-home-layout > .ro-col.is-bottom > .ro-module {
     max-height: 200px !important;

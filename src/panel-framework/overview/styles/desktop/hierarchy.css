@@ -1,6 +1,6 @@
 @media (min-width: 761px) {
   .router-overview-framework.ro-desktop-console .ro-desktop-grid[data-overview-desktop-hierarchy="conclusion-metrics-evidence"] {
-    grid-template-rows: auto minmax(0, 1fr) !important;
+    grid-template-rows: var(--ro-workspace-grid-template-rows, auto minmax(0, 1fr)) !important;
     align-items: stretch !important;
     min-height: calc(100vh - 144px) !important;
   }

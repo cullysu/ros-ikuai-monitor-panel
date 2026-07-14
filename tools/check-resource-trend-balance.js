@@ -446,6 +446,8 @@ async function main() {
     balance: balanceSnapshot,
     desktopNoSnapshot: noSnapshotSnapshot,
     desktopV1030: balanceSnapshot,
+    desktopAllOfflineHierarchy: allOfflineSnapshot,
+    desktopResourceHierarchy: resourceFullSnapshot,
     mobileNormalHome: balanceSnapshot,
     mobileFleetHome: fleetSnapshot,
     mobileFleetCachedHome: fleetCachedSnapshot,
@@ -659,7 +661,7 @@ async function main() {
         return normalize(parts.join(' '));
       };
       const incidentActionRoute = ${JSON.stringify(incidentActionRoute)};
-      const sectionEl = sectionName === 'loadAudit' || sectionName === 'balance' || sectionName === 'desktopNoSnapshot' || sectionName === 'desktopV1030' || sectionName === 'mobileNormalHome' || sectionName === 'mobileFleetHome' || sectionName === 'mobileFleetCachedHome' || sectionName === 'mobileNavigation' || sectionName === 'mobileNavigationNoSnapshot' || sectionName === 'mobileDetailDrilldown' || sectionName === 'mobileIncidentDrilldown' || sectionName === 'mobileIncidentActionNavigation' || incidentActionRoute || sectionName === 'mobileAppHome' || sectionName === 'mobileNoSnapshotHome' || sectionName === 'mobileResourceHome' || sectionName === 'mobileInterfaceHome' || sectionName === 'mobileCollectionHome'
+      const sectionEl = sectionName === 'loadAudit' || sectionName === 'balance' || sectionName === 'desktopNoSnapshot' || sectionName === 'desktopV1030' || sectionName === 'desktopAllOfflineHierarchy' || sectionName === 'desktopResourceHierarchy' || sectionName === 'mobileNormalHome' || sectionName === 'mobileFleetHome' || sectionName === 'mobileFleetCachedHome' || sectionName === 'mobileNavigation' || sectionName === 'mobileNavigationNoSnapshot' || sectionName === 'mobileDetailDrilldown' || sectionName === 'mobileIncidentDrilldown' || sectionName === 'mobileIncidentActionNavigation' || incidentActionRoute || sectionName === 'mobileAppHome' || sectionName === 'mobileNoSnapshotHome' || sectionName === 'mobileResourceHome' || sectionName === 'mobileInterfaceHome' || sectionName === 'mobileCollectionHome'
         ? document.querySelector('#overview')
         : document.querySelector('#' + sectionName);
       const text = visibleText(sectionEl);
@@ -852,6 +854,106 @@ async function main() {
           textExcerpt: text.slice(0, 500),
           viewport: { width: innerWidth, height: innerHeight },
           scrollHeight: document.documentElement.scrollHeight
+        };
+      }
+      if (sectionName === 'desktopAllOfflineHierarchy' || sectionName === 'desktopResourceHierarchy') {
+        const expectedScenario = sectionName === 'desktopAllOfflineHierarchy' ? 'all-offline' : 'resource-full';
+        const expectedCollapsedModules = sectionName === 'desktopAllOfflineHierarchy'
+          ? ['wan-offline-continuity', 'collection-status']
+          : ['normal-interface-boundary'];
+        const workspace = sectionEl?.querySelector('.ik-desktop-workspace');
+        const mainColumn = workspace?.querySelector(':scope > .ro-col.is-main');
+        const sideColumn = workspace?.querySelector(':scope > .ro-col.is-side');
+        const bottomColumn = workspace?.querySelector(':scope > .ro-col.is-bottom');
+        const sideModules = Array.from(sideColumn?.querySelectorAll(':scope > .ro-module') || []);
+        const sideRects = sideModules.map((node) => node.getBoundingClientRect()).sort((left, right) => left.top - right.top);
+        const sideGaps = sideRects.slice(1).map((rect, index) => rect.top - sideRects[index].bottom);
+        const mainRect = mainColumn?.getBoundingClientRect();
+        const sideRect = sideColumn?.getBoundingClientRect();
+        const bottomRect = bottomColumn?.getBoundingClientRect();
+        const bottomGap = mainRect && sideRect && bottomRect
+          ? bottomRect.top - Math.max(mainRect.bottom, sideRect.bottom)
+          : null;
+        const sideModuleMetrics = sideModules.map((node) => {
+          const disclosure = node.querySelector('details');
+          const style = getComputedStyle(node);
+          return {
+            name: node.getAttribute('data-overview-density-module') || '',
+            clientHeight: node.clientHeight,
+            scrollHeight: node.scrollHeight,
+            height: style.height,
+            minHeight: style.minHeight,
+            maxHeight: style.maxHeight,
+            overflow: style.overflow,
+            gridRow: style.gridRow,
+            disclosureOpen: disclosure?.open ?? null,
+            disclosureClientHeight: disclosure?.clientHeight ?? null,
+            disclosureScrollHeight: disclosure?.scrollHeight ?? null
+          };
+        });
+        const collapsedShells = expectedCollapsedModules.map((name) => {
+          const module = sideColumn?.querySelector('[data-overview-density-module="' + name + '"]');
+          const disclosure = module?.querySelector('details');
+          const header = module?.querySelector(':scope > .ro-module-head');
+          const visualChildren = Array.from(module?.querySelectorAll(':scope > :not(.ro-module-head):not(details)') || []);
+          const moduleRect = module?.getBoundingClientRect();
+          const headerRect = header?.getBoundingClientRect();
+          const disclosureRect = disclosure?.getBoundingClientRect();
+          const visualHeight = visualChildren.reduce((sum, node) => sum + node.getBoundingClientRect().height, 0);
+          return {
+            name,
+            found: Boolean(module),
+            open: disclosure?.open ?? null,
+            height: moduleRect?.height || 0,
+            headerHeight: headerRect?.height || 0,
+            disclosureHeight: disclosureRect?.height || 0,
+            visualHeight,
+            slack: moduleRect && headerRect && disclosureRect
+              ? moduleRect.height - headerRect.height - disclosureRect.height - visualHeight
+              : null
+          };
+        });
+        const sideStyle = sideColumn ? getComputedStyle(sideColumn) : null;
+        const workspaceStyle = workspace ? getComputedStyle(workspace) : null;
+        const incidentWorkspaceCompactOk = Boolean(
+          workspace &&
+          workspace.getAttribute('data-overview-desktop-scene') === expectedScenario &&
+          sideColumn &&
+          mainColumn &&
+          bottomColumn &&
+          sideModules.length >= expectedCollapsedModules.length + 1 &&
+          sideGaps.every((gap) => gap >= 0 && gap <= 8) &&
+          bottomGap !== null && bottomGap >= 0 && bottomGap <= 12 &&
+          sideModuleMetrics.every((item) => item.scrollHeight <= item.clientHeight + 1) &&
+          collapsedShells.every((item) => item.found && item.open === false && item.height > 0 && item.height <= (item.visualHeight > 0 ? 140 : 72) && item.slack !== null && item.slack <= 4) &&
+          sideStyle?.alignContent === 'start' &&
+          workspaceStyle?.alignContent === 'start' &&
+          document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1
+        );
+        return {
+          pass: incidentWorkspaceCompactOk,
+          incidentWorkspaceCompactOk,
+          section: sectionName,
+          scenario: workspace?.getAttribute('data-overview-desktop-scene') || '',
+          collapsedShells,
+          sideModuleMetrics,
+          sideModuleHeights: sideRects.map((rect) => rect.height),
+          sideGaps,
+          bottomGap,
+          sideStyle: sideStyle ? {
+            display: sideStyle.display,
+            alignContent: sideStyle.alignContent,
+            gridAutoRows: sideStyle.gridAutoRows,
+            height: sideStyle.height,
+            colHeight: sideStyle.getPropertyValue('--ro-col-height').trim(),
+            colGridAutoRows: sideStyle.getPropertyValue('--ro-col-grid-auto-rows').trim(),
+            colModuleHeight: sideStyle.getPropertyValue('--ro-col-module-height').trim()
+          } : null,
+          workspaceStyle: workspaceStyle ? {
+            alignContent: workspaceStyle.alignContent,
+            gridTemplateRows: workspaceStyle.gridTemplateRows
+          } : null,
+          viewport: { width: innerWidth, height: innerHeight, scrollWidth: document.documentElement.scrollWidth }
         };
       }
       if (sectionName === 'desktopNoSnapshot') {

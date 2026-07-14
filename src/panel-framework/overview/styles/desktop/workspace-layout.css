@@ -51,6 +51,32 @@
     --ro-col-module-height: auto;
     align-self: start;
   }
+  #overview.router-overview-framework.ro-desktop-hierarchy .ro-desktop-grid:is(
+    [data-overview-desktop-scene="all-offline"],
+    [data-overview-desktop-scene="collection-down"],
+    [data-overview-desktop-scene="resource-full"],
+    [data-overview-desktop-scene="interfaces-down"]
+  ) {
+    --ro-workspace-grid-template-rows: auto auto auto;
+    height: auto;
+    overflow: visible;
+  }
+  #overview.router-overview-framework.ro-desktop-hierarchy .ro-desktop-grid:is(
+    [data-overview-desktop-scene="all-offline"],
+    [data-overview-desktop-scene="collection-down"],
+    [data-overview-desktop-scene="resource-full"],
+    [data-overview-desktop-scene="interfaces-down"]
+  ) > .ro-col {
+    --ro-col-align-content: start;
+    --ro-col-height: auto;
+    --ro-col-grid-auto-rows: auto;
+    --ro-col-module-height: auto;
+    --ro-side-module-max-height: none;
+    --ro-side-first-module-max-height: none;
+    --ro-side-module-overflow: visible;
+    --ro-resource-pressure-module-max-height: none;
+    align-self: start;
+  }
   #overview.router-overview-framework.ro-desktop-hierarchy .ro-col {
     gap: 3px;
   }

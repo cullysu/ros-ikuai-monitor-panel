@@ -90,6 +90,9 @@ jobs:
       - name: Mobile public home interaction contracts
         run: npm run check:mobile-app-home
 
+      - name: Desktop incident hierarchy contracts
+        run: npm run check:desktop-incident-hierarchy
+
       - name: Public overview edge cases
         run: |
           node tools/local-predeploy-check.js \
