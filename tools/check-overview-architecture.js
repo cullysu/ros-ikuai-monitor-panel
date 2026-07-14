@@ -313,6 +313,7 @@ let desktopLedgerRuleCount = 0;
 let desktopModuleToneRuleCount = 0;
 let desktopLedgerToneRuleCount = 0;
 let desktopLedgerToneShadowCount = 0;
+let desktopModuleChromeLeftBorderDeclarationCount = 0;
 let desktopReleaseToneResetCount = 0;
 let desktopReleaseNonPrimaryNeutralCount = 0;
 let desktopSidebarMiniStatusRuleCount = 0;
@@ -508,6 +509,21 @@ desktopRuntimeStructureRoot.walkRules((rule) => {
       desktopLedgerToneShadowCount += 1;
     });
   }
+});
+[desktopBaseStylesRoot, desktopRuntimeStructureRoot].forEach((root) => {
+  root.walkRules((rule) => {
+    const ownsModuleChrome = rule.selector.split(",").some((selector) => {
+      const trimmed = selector.trim();
+      const moduleIndex = trimmed.lastIndexOf(".ro-module");
+      return moduleIndex >= 0 && !/\s/.test(trimmed.slice(moduleIndex + ".ro-module".length));
+    });
+    if (!ownsModuleChrome) return;
+    rule.walkDecls((decl) => {
+      if (decl.prop.startsWith("border-left")) {
+        desktopModuleChromeLeftBorderDeclarationCount += 1;
+      }
+    });
+  });
 });
 desktopDecisionRailRoot.walkRules((rule) => {
   if (rule.selector.trim().endsWith(".ro-desktop-decision-rail")) {
@@ -1060,10 +1076,12 @@ assert(
   `Desktop ledger must stay canonical and zebra-free: ledgerRules=${desktopLedgerRuleCount}`
 );
 assert(
-  desktopModuleToneRuleCount === 2 &&
+  desktopModuleToneRuleCount === 0 &&
+    !desktopWorkspaceLayout.includes('.ro-module[data-tone=') &&
+    desktopModuleChromeLeftBorderDeclarationCount === 0 &&
     desktopLedgerToneRuleCount === 3 &&
     desktopLedgerToneShadowCount === 0,
-  `Desktop tone hierarchy must stay restrained: moduleToneRules=${desktopModuleToneRuleCount} ledgerToneRules=${desktopLedgerToneRuleCount} ledgerToneShadows=${desktopLedgerToneShadowCount}`
+  `Desktop tone hierarchy must stay restrained: moduleToneRules=${desktopModuleToneRuleCount} moduleLeftBorders=${desktopModuleChromeLeftBorderDeclarationCount} ledgerToneRules=${desktopLedgerToneRuleCount} ledgerToneShadows=${desktopLedgerToneShadowCount}`
 );
 assert(
   desktopReleaseToneResetCount === 1 && desktopReleaseNonPrimaryNeutralCount === 1,

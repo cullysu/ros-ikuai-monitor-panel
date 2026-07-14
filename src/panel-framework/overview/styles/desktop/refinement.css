@@ -43,12 +43,10 @@
   #overview.router-overview-framework[data-overview-scene-key="interfaces-down"] .ro-col.is-main > .ro-module:first-child,
   #overview.router-overview-framework[data-overview-scene-key="resource-full"] .ro-col.is-main > .ro-module:first-child,
   #overview.router-overview-framework[data-overview-scene-key="no-snapshot"] .ro-col.is-main > .ro-module:first-child {
-    border-left: 4px solid rgba(217,48,37,.82) !important;
     background: linear-gradient(90deg, rgba(217,48,37,.045), rgba(255,255,255,0) 190px),
       #fff !important;
   }
   #overview.router-overview-framework[data-overview-scene-key="collection-down"] .ro-col.is-main > .ro-module:first-child {
-    border-left: 4px solid rgba(201,120,31,.82) !important;
     background: linear-gradient(90deg, rgba(201,120,31,.05), rgba(255,255,255,0) 190px),
       #fff !important;
   }
@@ -283,7 +281,6 @@
   #overview.router-overview-framework[data-overview-scene-key="no-snapshot"] .ro-col.is-main > .ro-module:first-child,
   #overview.router-overview-framework[data-overview-scene-key="collection-down"] .ro-col.is-main > .ro-module:first-child {
     position: relative !important;
-    border-left-width: 5px !important;
   }
   #overview.router-overview-framework[data-overview-scene-key="all-offline"] .ro-col.is-main > .ro-module:first-child .ro-module-head,
   #overview.router-overview-framework[data-overview-scene-key="interfaces-down"] .ro-col.is-main > .ro-module:first-child .ro-module-head,
@@ -353,7 +350,6 @@
     [data-overview-desktop-scene="collection-down"],
     [data-overview-desktop-scene="no-snapshot"]
   ) .ro-col.is-main > .ro-module:first-child {
-    border-left-width: 4px !important;
     border-color: #dfe9f3 !important;
     background: linear-gradient(90deg, rgba(201,75,69,.045), transparent 150px),
       #fff !important;
@@ -742,7 +738,6 @@
     [data-overview-desktop-scene="collection-down"],
     [data-overview-desktop-scene="no-snapshot"]
   ) .ro-col.is-main > .ro-module:first-child {
-    border-left-width: 2px !important;
     background: #fff !important;
   }
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-desktop-grid:is(
@@ -1111,14 +1106,6 @@
 /*v960 public-console refinement: flatter status bus, quieter evidence, lower table noise.*/
 
 @media (min-width: 761px) {
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-evidence-weight="primary"],
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-evidence-weight="primary"] {
-    border-left: 2px solid rgba(20, 115, 230, .42) !important;
-  }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-evidence-weight="primary"][data-tone="danger"],
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-evidence-weight="primary"][data-tone="danger"] {
-    border-left-color: rgba(173, 54, 49, .54) !important;
-  }
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-evidence-weight="secondary"],
   .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-evidence-weight="secondary"] {
     background: rgba(248, 251, 254, .92) !important;
