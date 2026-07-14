@@ -8,7 +8,8 @@
     "check:types": "node --max-old-space-size=2048 node_modules/typescript/bin/tsc --noEmit",
     "check:overview": "node --max-old-space-size=2048 tools/format-overview-css.js --check && node --max-old-space-size=2048 tools/check-overview-architecture.js && node --max-old-space-size=2048 tools/check-overview-ikuai-static.js",
     "check:overview-architecture": "node --max-old-space-size=2048 tools/check-overview-architecture.js",
-    "check:mobile-native": "node --max-old-space-size=2048 tools/check-mobile-native-runtime.js",
+    "check:mobile-native-model": "node --max-old-space-size=2048 tools/check-mobile-native-model.js",
+    "check:mobile-native": "node --max-old-space-size=2048 tools/check-mobile-native-model.js && node --max-old-space-size=2048 tools/check-mobile-native-runtime.js",
     "check:desktop-no-snapshot": "node --max-old-space-size=2048 tools/check-desktop-no-snapshot-runtime.js",
     "check:desktop-v1030": "node --max-old-space-size=2048 tools/check-desktop-v1030-runtime.js",
     "check:desktop-incident-hierarchy": "node --max-old-space-size=2048 tools/check-desktop-incident-hierarchy-runtime.js"

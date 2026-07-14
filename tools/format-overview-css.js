@@ -3,6 +3,7 @@ const path = require("node:path");
 const postcss = require("postcss");
 
 const files = [
+  "src/panel-framework/mobile-shell.css",
   "src/panel-framework/overview/OverviewPanel.css",
   "src/panel-framework/overview/styles/overview-desktop.css",
   "src/panel-framework/overview/styles/overview-desktop-runtime.css",

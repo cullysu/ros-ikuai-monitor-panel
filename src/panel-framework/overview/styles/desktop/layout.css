@@ -16,19 +16,19 @@
     --v4-console-danger: #c93932;
   }
   .router-overview-framework .ro-desktop-grid.ik-home-layout > .ro-col {
-    gap: 9px !important;
+    gap: 9px;
   }
   .router-overview-framework .ro-desktop-grid.ik-home-layout > .ro-col.is-bottom {
-    display: grid !important;
-    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-    gap: 9px !important;
-    align-items: stretch !important;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 9px;
+    align-items: stretch;
   }
   .router-overview-framework .ro-module {
-    border: 1px solid var(--v4-console-line) !important;
-    border-radius: 4px !important;
-    background: #fff !important;
-    box-shadow: none !important;
+    border: 1px solid var(--v4-console-line);
+    border-radius: 4px;
+    background: #fff;
+    box-shadow: none;
   }
   .router-overview-framework .ro-col.is-main > .ro-module:first-child,
   .router-overview-framework .ro-module[data-overview-evidence-weight="primary"],
@@ -38,92 +38,92 @@
   .router-overview-framework .ro-module[data-overview-density-module="interface-forwarding"],
   .router-overview-framework .ro-module[data-overview-density-module="collection-channel-ledger"],
   .router-overview-framework .ro-module[data-overview-density-module="no-snapshot-summary"] {
-    background: linear-gradient(180deg, #fff 0%, #fbfdff 100%) !important;
+    background: linear-gradient(180deg, #fff 0%, #fbfdff 100%);
   }
   .router-overview-framework .ro-module-head {
-    min-height: 33px !important;
-    padding: 7px 10px !important;
-    border-bottom: 1px solid var(--v4-console-line-soft) !important;
-    background: var(--v4-console-soft) !important;
+    min-height: 33px;
+    padding: 7px 10px;
+    border-bottom: 1px solid var(--v4-console-line-soft);
+    background: var(--v4-console-soft);
   }
   .router-overview-framework .ro-module-head b {
-    color: var(--v4-console-ink) !important;
-    font-size: 13px !important;
-    font-weight: 880 !important;
-    letter-spacing: 0 !important;
+    color: var(--v4-console-ink);
+    font-size: 13px;
+    font-weight: 880;
+    letter-spacing: 0;
   }
   .router-overview-framework .ro-col.is-main > .ro-module:first-child .ro-module-head b,
   .router-overview-framework .ro-module[data-overview-evidence-weight="primary"] .ro-module-head b,
   .router-overview-framework .ro-module[data-overview-density-module="wan-trend"] .ro-module-head b {
-    font-size: 14px !important;
-    font-weight: 920 !important;
+    font-size: 14px;
+    font-weight: 920;
   }
   .router-overview-framework .ro-module-head span,
   .router-overview-framework .ro-module-head em {
-    color: var(--v4-console-muted) !important;
-    font-size: 10.5px !important;
-    font-weight: 640 !important;
+    color: var(--v4-console-muted);
+    font-size: 10.5px;
+    font-weight: 640;
   }
   .router-overview-framework .ro-ledger-row:not(.ro-ledger-head),
   .router-overview-framework .ik-home-evidence-row {
-    min-height: 31px !important;
-    max-height: none !important;
-    border-bottom: 1px solid var(--v4-console-line-soft) !important;
+    min-height: 31px;
+    max-height: none;
+    border-bottom: 1px solid var(--v4-console-line-soft);
   }
   .router-overview-framework .ro-module[data-overview-evidence-weight="secondary"] .ro-ledger-row:not(.ro-ledger-head),
   .router-overview-framework .ro-col.is-side .ro-ledger-row:not(.ro-ledger-head),
   .router-overview-framework .ro-col.is-bottom .ro-ledger-row:not(.ro-ledger-head) {
-    min-height: 28px !important;
+    min-height: 28px;
   }
   .router-overview-framework .ro-ledger-cell,
   .router-overview-framework .ro-ledger-table td {
-    color: var(--v4-console-ink) !important;
-    font-size: 11.5px !important;
-    line-height: 1.26 !important;
+    color: var(--v4-console-ink);
+    font-size: 11.5px;
+    line-height: 1.26;
   }
   .router-overview-framework .ro-ledger-cell:first-child,
   .router-overview-framework .ro-ledger-table td:first-child {
-    color: #111d2f !important;
-    font-weight: 830 !important;
+    color: #111d2f;
+    font-weight: 830;
   }
   .router-overview-framework .ro-ledger-cell:nth-child(n+3),
   .router-overview-framework .ro-ledger-table td:nth-child(n+3) {
-    color: var(--v4-console-muted) !important;
+    color: var(--v4-console-muted);
   }
   .router-overview-framework .ro-ledger-head,
   .router-overview-framework .ro-ledger-table thead tr {
-    background: #f7fafd !important;
+    background: #f7fafd;
   }
   .router-overview-framework .ro-chart-summary {
-    grid-template-columns: minmax(142px, 1.32fr) repeat(4, minmax(64px, .78fr)) !important;
+    grid-template-columns: minmax(142px, 1.32fr) repeat(4, minmax(64px, .78fr));
   }
   .router-overview-framework .ro-chart-summary span:first-child b {
-    font-size: 15px !important;
+    font-size: 15px;
   }
   .router-overview-framework .ro-judgement-row {
-    grid-template-columns: 78px minmax(170px, 1fr) minmax(214px, 1.02fr) !important;
+    grid-template-columns: 78px minmax(170px, 1fr) minmax(214px, 1.02fr);
   }
   .router-overview-framework .ro-chart-track {
-    height: 7px !important;
-    border-radius: 2px !important;
+    height: 7px;
+    border-radius: 2px;
   }
   .router-overview-framework .ro-chart-current {
-    background: var(--v4-console-blue) !important;
-    stroke: var(--v4-console-blue) !important;
+    background: var(--v4-console-blue);
+    stroke: var(--v4-console-blue);
   }
   .router-overview-framework .ro-judgement-row[data-tone="danger"] .ro-chart-current {
-    background: var(--v4-console-danger) !important;
-    stroke: var(--v4-console-danger) !important;
+    background: var(--v4-console-danger);
+    stroke: var(--v4-console-danger);
   }
   .router-overview-framework .ro-chart-threshold {
-    border-left: 2px solid #4d5d70 !important;
+    border-left: 2px solid #4d5d70;
   }
   .router-overview-framework .ro-col.is-main > .ro-module:first-child {
-    min-height: 330px !important;
+    min-height: 330px;
   }
   .router-overview-framework .ro-col.is-side > .ro-module,
   .router-overview-framework .ro-col.is-bottom > .ro-module {
-    min-height: 214px !important;
+    min-height: 214px;
   }
 }
 
@@ -144,65 +144,65 @@
     --ik-v6-cache: #b46a1f;
   }
   .router-overview-framework.ro-desktop-hierarchy .ro-module {
-    border-radius: 3px !important;
-    border: 1px solid var(--ik-v6-line) !important;
-    background: #fff !important;
-    box-shadow: none !important;
+    border-radius: 3px;
+    border: 1px solid var(--ik-v6-line);
+    background: #fff;
+    box-shadow: none;
   }
   .router-overview-framework.ro-desktop-hierarchy .ro-col.is-main > .ro-module:first-child {
-    min-height: 342px !important;
+    min-height: 342px;
   }
   .router-overview-framework.ro-desktop-hierarchy .ro-module-head {
-    min-height: 32px !important;
-    padding: 6px 10px !important;
-    border-bottom: 1px solid var(--ik-v6-line-soft) !important;
-    background: #fbfdff !important;
+    min-height: 32px;
+    padding: 6px 10px;
+    border-bottom: 1px solid var(--ik-v6-line-soft);
+    background: #fbfdff;
   }
   .router-overview-framework.ro-desktop-hierarchy .ro-module-head b {
-    font-size: 13px !important;
-    font-weight: 860 !important;
-    color: var(--ik-v6-text) !important;
+    font-size: 13px;
+    font-weight: 860;
+    color: var(--ik-v6-text);
   }
   .router-overview-framework.ro-desktop-hierarchy .ro-col.is-main > .ro-module:first-child .ro-module-head b {
-    font-size: 14px !important;
-    font-weight: 920 !important;
+    font-size: 14px;
+    font-weight: 920;
   }
   .router-overview-framework.ro-desktop-hierarchy .ro-ledger-row:not(.ro-ledger-head) {
-    min-height: 31px !important;
+    min-height: 31px;
   }
   .router-overview-framework.ro-desktop-hierarchy .ro-col.is-side .ro-ledger-row:not(.ro-ledger-head),
   .router-overview-framework.ro-desktop-hierarchy .ro-col.is-bottom .ro-ledger-row:not(.ro-ledger-head) {
-    min-height: 28px !important;
+    min-height: 28px;
   }
   .router-overview-framework.ro-desktop-hierarchy .ro-ledger-cell,
   .router-overview-framework.ro-desktop-hierarchy .ro-ledger-table td {
-    font-size: 11.8px !important;
-    line-height: 1.28 !important;
-    color: var(--ik-v6-text) !important;
+    font-size: 11.8px;
+    line-height: 1.28;
+    color: var(--ik-v6-text);
   }
   .router-overview-framework.ro-desktop-hierarchy .ro-ledger-cell:first-child,
   .router-overview-framework.ro-desktop-hierarchy .ro-ledger-table td:first-child {
-    font-weight: 850 !important;
+    font-weight: 850;
   }
   .router-overview-framework.ro-desktop-hierarchy .ro-ledger-cell:nth-child(n+3),
   .router-overview-framework.ro-desktop-hierarchy .ro-ledger-table td:nth-child(n+3) {
-    color: var(--ik-v6-muted) !important;
+    color: var(--ik-v6-muted);
   }
   .router-overview-framework.ro-desktop-hierarchy .ro-chart-track {
-    height: 6px !important;
-    border-radius: 2px !important;
-    background: #e8f0f8 !important;
+    height: 6px;
+    border-radius: 2px;
+    background: #e8f0f8;
   }
   .router-overview-framework.ro-desktop-hierarchy .ro-chart-threshold {
-    border-left: 2px solid #4b5d72 !important;
+    border-left: 2px solid #4b5d72;
   }
   .router-overview-framework.ro-desktop-hierarchy .ro-chart-current {
-    background: var(--ik-v6-blue) !important;
-    stroke: var(--ik-v6-blue) !important;
+    background: var(--ik-v6-blue);
+    stroke: var(--ik-v6-blue);
   }
   .router-overview-framework.ro-desktop-hierarchy [data-tone="danger"] .ro-chart-current,
 .router-overview-framework.ro-desktop-hierarchy .ro-judgement-row[data-tone="danger"] .ro-chart-current {
-    background: var(--ik-v6-danger) !important;
-    stroke: var(--ik-v6-danger) !important;
+    background: var(--ik-v6-danger);
+    stroke: var(--ik-v6-danger);
   }
 }

@@ -147,18 +147,26 @@ const desktopVisualsFile =
 const builtCssFile = "public/assets/framework/style.css";
 const phoneOpsConsoleFile =
   "src/panel-framework/overview/mobile-native/MobileNativeConsole.tsx";
-const phoneOpsBriefFile =
-  "src/panel-framework/overview/mobile-native/MobileNativeSheet.tsx";
+const phoneOpsHomeFile =
+  "src/panel-framework/overview/mobile-native/MobileNativeHome.tsx";
+const phoneOpsPathFile =
+  "src/panel-framework/overview/mobile-native/MobileNativePathEvidence.tsx";
 const phoneOpsEvidenceFile =
   "src/panel-framework/overview/mobile-native/MobileNativeDetail.tsx";
 const phoneOpsModelFile =
   "src/panel-framework/overview/mobile-native/mobileNativeModel.ts";
+const phoneOpsModelEvidenceFile =
+  "src/panel-framework/overview/mobile-native/mobileNativeEvidence.ts";
+const phoneOpsTypesFile =
+  "src/panel-framework/overview/mobile-native/mobileNativeTypes.ts";
 const phoneOpsTokensFile =
   "src/panel-framework/overview/mobile-native/styles/mobile-native-tokens.css";
 const phoneOpsStylesFile =
   "src/panel-framework/overview/mobile-native/styles/mobile-native-layout.css";
 const phoneOpsEvidenceStylesFile =
   "src/panel-framework/overview/mobile-native/styles/mobile-native-states.css";
+const mobileShellStylesFile = "src/panel-framework/mobile-shell.css";
+const frameworkStylesFile = "src/panel-framework/styles.css";
 const overviewStatesStylesFile =
   "src/panel-framework/overview/styles/overview-states.css";
 const panel = read(panelFile);
@@ -215,15 +223,31 @@ const desktopTerminalRows = read(desktopTerminalRowsFile);
 const desktopResourceRows = read(desktopResourceRowsFile);
 const desktopVisuals = read(desktopVisualsFile);
 const phoneOpsConsole = read(phoneOpsConsoleFile);
-const phoneOpsBrief = read(phoneOpsBriefFile);
+const phoneOpsHome = read(phoneOpsHomeFile);
+const phoneOpsPath = read(phoneOpsPathFile);
 const phoneOpsEvidence = read(phoneOpsEvidenceFile);
 const phoneOpsModel = read(phoneOpsModelFile);
+const phoneOpsModelEvidence = read(phoneOpsModelEvidenceFile);
+const phoneOpsTypes = read(phoneOpsTypesFile);
 const phoneOpsTokens = read(phoneOpsTokensFile);
 const phoneOpsStyles = read(phoneOpsStylesFile);
 const phoneOpsEvidenceStyles = read(phoneOpsEvidenceStylesFile);
 const phoneOpsStyleBundle = `${phoneOpsTokens}\n${phoneOpsStyles}\n${phoneOpsEvidenceStyles}`;
+const mobileShellStyles = read(mobileShellStylesFile);
+const frameworkStyles = read(frameworkStylesFile);
 const overviewStatesStyles = read(overviewStatesStylesFile);
 const retiredVisualStyleBundle = `${overviewStatesStyles}\n${desktopBaseStyles}\n${desktopRefinement}`;
+const desktopLegibilityStyleBundle = [
+  overviewStatesStyles,
+  desktopBaseStyles,
+  desktopRefinement,
+  desktopRuntimeStyles,
+  desktopWorkspaceLayout,
+  desktopRelease,
+  desktopIncidentStyles,
+  desktopStatusBusStyles,
+  desktopWanTrendStyles,
+].join("\n");
 const cssRoot = postcss.parse(panelCss, { from: panelCssFile });
 const desktopBaseStylesRoot = postcss.parse(desktopBaseStyles, {
   from: desktopBaseStylesFile,
@@ -610,6 +634,22 @@ assert(
   "Phone operations styles must remain isolated and priority-free"
 );
 assert(
+  !/font-size:\s*(?:7|8|9)px\b/.test(desktopLegibilityStyleBundle),
+  "Desktop operational styles must not use 7–9px text"
+);
+assert(
+  frameworkStyles.includes('@import "./mobile-shell.css";') &&
+    mobileShellStyles.includes(":has(#overview.is-mobile-native)") &&
+    mobileShellStyles.includes(".ik-rail") &&
+    mobileShellStyles.includes(".sidebar") &&
+    mobileShellStyles.includes(".topbar") &&
+    !phoneOpsStyleBundle.includes(".ik-rail") &&
+    !phoneOpsStyleBundle.includes(".sidebar") &&
+    !phoneOpsStyleBundle.includes(".topbar") &&
+    !panel.includes("document.body.classList"),
+  "Mobile shell chrome must be owned by the framework shell, not by mobile component CSS or body mutation"
+);
+assert(
   lines(desktopHelpers) <= 320,
   `desktopOverviewHelpers.tsx exceeds 320 lines: ${lines(desktopHelpers)}`
 );
@@ -728,35 +768,42 @@ assert(
   `overview-desktop.css exceeds 4700 lines: ${lines(desktopBaseStyles)}`
 );
 assert(
-  desktopBaseImportantCount <= 2000,
-  `overview-desktop.css important count regressed above 2000: ${desktopBaseImportantCount}`
+  desktopBaseImportantCount <= 650,
+  `overview-desktop.css important count regressed above 650: ${desktopBaseImportantCount}`
 );
 assert(
   desktopBaseShadowedDeclarationCount === 0,
   `overview-desktop.css must not redeclare the same property in a later identical selector context: ${desktopBaseShadowedDeclarationCount}`
 );
 assert(lines(phoneOpsConsole) <= 80, `MobileNativeConsole.tsx exceeds 80 lines: ${lines(phoneOpsConsole)}`);
-assert(lines(phoneOpsBrief) <= 100, `MobileNativeSheet.tsx exceeds 100 lines: ${lines(phoneOpsBrief)}`);
+assert(lines(phoneOpsHome) <= 90, `MobileNativeHome.tsx exceeds 90 lines: ${lines(phoneOpsHome)}`);
+assert(lines(phoneOpsPath) <= 60, `MobileNativePathEvidence.tsx exceeds 60 lines: ${lines(phoneOpsPath)}`);
 assert(lines(phoneOpsEvidence) <= 100, `MobileNativeDetail.tsx exceeds 100 lines: ${lines(phoneOpsEvidence)}`);
-assert(lines(phoneOpsModel) <= 420, `mobileNativeModel.ts exceeds 420 lines: ${lines(phoneOpsModel)}`);
+assert(lines(phoneOpsModel) <= 360, `mobileNativeModel.ts exceeds 360 lines: ${lines(phoneOpsModel)}`);
+assert(lines(phoneOpsModelEvidence) <= 240, `mobileNativeEvidence.ts exceeds 240 lines: ${lines(phoneOpsModelEvidence)}`);
+assert(lines(phoneOpsTypes) <= 100, `mobileNativeTypes.ts exceeds 100 lines: ${lines(phoneOpsTypes)}`);
 assert(lines(phoneOpsTokens) <= 110, `mobile-native-tokens.css exceeds 110 lines: ${lines(phoneOpsTokens)}`);
 assert(lines(phoneOpsStyles) <= 750, `mobile-native-layout.css exceeds 750 lines: ${lines(phoneOpsStyles)}`);
 assert(lines(phoneOpsEvidenceStyles) <= 140, `mobile-native-states.css exceeds 140 lines: ${lines(phoneOpsEvidenceStyles)}`);
 assert(
   phoneOpsConsole.includes("data-mobile-native-console") &&
-    phoneOpsConsole.includes("<MobileNativeTopology") &&
-    phoneOpsConsole.includes("<MobileNativeSheet") &&
+    phoneOpsConsole.includes("<MobileNativeHome") &&
+    phoneOpsConsole.includes("<MobileNativePathEvidence") &&
     phoneOpsConsole.includes("<MobileNativeDetail") &&
     !phoneOpsConsole.includes('tabbar'),
-  "MobileNativeConsole must own topology, adaptive sheet, evidence navigation, and no tabs"
+  "MobileNativeConsole must own the evidence-first home, secondary path disclosure, detail navigation, and no tabs"
 );
 assert(
-  phoneOpsBrief.includes("data-mobile-native-sheet") &&
-    phoneOpsBrief.includes("model.facts.map") &&
-    phoneOpsBrief.includes("model.rows.map") &&
+  phoneOpsHome.includes("data-mobile-native-home") &&
+    phoneOpsHome.includes("data-mobile-native-evidence-mode") &&
+    phoneOpsHome.includes("model.facts.map") &&
+    phoneOpsHome.includes("model.rows.map") &&
+    phoneOpsPath.includes("data-mobile-native-path-evidence") &&
+    phoneOpsPath.includes("data-mobile-route-verification") &&
     phoneOpsEvidence.includes("data-mobile-native-detail") &&
-    phoneOpsEvidence.includes("data-mobile-native-back"),
-  "Native mobile screens must expose an adaptive decision sheet and subordinate evidence destination"
+    phoneOpsEvidence.includes("data-mobile-native-back") &&
+    phoneOpsEvidence.includes("data-mobile-native-detail-section"),
+  "Native mobile screens must expose evidence mode, decision facts, collapsed path evidence, and a novel detail destination"
 );
 assert(
   desktopConsole.includes("ik-desktop-workspace") &&
@@ -942,11 +989,21 @@ assert(
   "Native mobile model must map every required scenario"
 );
 assert(
-  phoneOpsModel.includes('ratePrefix: cached ? "上次" : "当前"') &&
-    phoneOpsModel.includes('pathState: cached ? "cached" : "active"') &&
+  phoneOpsTypes.includes('"current" | "stale" | "unavailable"') &&
+    phoneOpsModel.includes('mode === "current"') &&
+    phoneOpsModel.includes('mode === "stale"') &&
     phoneOpsModel.includes('showRates: false') &&
     phoneOpsModel.includes('当前业务状态不可判断'),
-  "Native mobile model must distinguish current, cached, and unavailable evidence"
+  "Native mobile model must distinguish current, stale, and unavailable evidence"
+);
+assert(
+  phoneOpsModelEvidence.includes("route.active === true && route.disabled !== true") &&
+    phoneOpsModelEvidence.includes("trailingStreak") &&
+    phoneOpsModelEvidence.includes("samples.length - 1") &&
+    !`${phoneOpsModel}\n${phoneOpsModelEvidence}`.includes("rows[0]") &&
+    !`${phoneOpsModel}\n${phoneOpsModelEvidence}`.includes("downRate || 0") &&
+    !`${phoneOpsModel}\n${phoneOpsModelEvidence}`.includes("upRate || 0"),
+  "Native mobile evidence must never invent an active route, coerce missing rates to zero, or label non-consecutive samples continuous"
 );
 assert(
   phoneOpsStyleBundle.includes("env(safe-area-inset-top)") &&
@@ -977,13 +1034,14 @@ assert(
   "Retired desktop visual primitives must not return to overview styles or acceptance fallbacks"
 );
 assert(
-  phoneOpsModel.includes('ratePrefix: cached ? "上次" : "当前"') &&
+  phoneOpsModel.includes('visibleRates !== null') &&
     phoneOpsModel.includes('case "no-snapshot"') &&
     phoneOpsModel.includes('case "all-offline"') &&
     (phoneOpsModel.match(/showRates: false/g) || []).length >= 2 &&
-    !phoneOpsBrief.includes("Trend") &&
-    !phoneOpsBrief.includes("<svg"),
-  "Native mobile traffic must attach to the path and disappear when business evidence is unavailable"
+    phoneOpsHome.includes('data-mobile-native-rates="current"') &&
+    !phoneOpsHome.includes("Trend") &&
+    !phoneOpsHome.includes("<svg"),
+  "Native mobile traffic must remain current-only and disappear when business evidence is stale or unavailable"
 );
 assert(
   (desktopConsole.match(/data-overview-/g) || []).length <= 6,
@@ -1049,7 +1107,7 @@ assert(
     phoneOpsConsole.includes('import "./styles/mobile-native-states.css";') &&
     !phoneOpsConsole.includes("useInsertionEffect") &&
     !phoneOpsConsole.includes("style>") &&
-    !/\b(?:rm|ro|ik-mobile|ik-ios|phone-ops)-/.test(`${phoneOpsConsole}\n${phoneOpsBrief}\n${phoneOpsEvidence}\n${phoneOpsModel}\n${phoneOpsStyleBundle}`),
+    !/\b(?:rm|ro|ik-mobile|ik-ios|phone-ops)-/.test(`${phoneOpsConsole}\n${phoneOpsHome}\n${phoneOpsPath}\n${phoneOpsEvidence}\n${phoneOpsModel}\n${phoneOpsModelEvidence}\n${phoneOpsStyleBundle}`),
   "Native mobile product must use isolated build-time stylesheets and no retired namespace"
 );
 assert(
@@ -1215,7 +1273,13 @@ if (exists(builtCssFile)) {
   );
   assert(builtLegacyMobileSelectorCount === 0, `Built style.css contains ${builtLegacyMobileSelectorCount} legacy ik-mobile selector rules`);
   assert(
-    builtCss.includes(".mn-shell") && builtCss.includes(".mn-sheet") && !builtCss.includes(".phone-ops-console") && !builtCss.includes(".rm-app"),
+    builtCss.includes(".mn-shell") &&
+      builtCss.includes(".mn-home") &&
+      builtCss.includes(".mn-path-evidence") &&
+      !builtCss.includes(".mn-sheet") &&
+      !builtCss.includes(".mn-topology") &&
+      !builtCss.includes(".phone-ops-console") &&
+      !builtCss.includes(".rm-app"),
     "Built style.css must contain the native mobile product and exclude retired mobile namespaces"
   );
 }
@@ -1227,5 +1291,5 @@ if (failures.length > 0) {
 }
 
 console.log(
-  `overview architecture gate: PASS panel=${lines(panel)} lines desktop=${lines(desktopConsole)} lines desktopDecision=${lines(desktopDecisionRail)} lines scenes=${lines(desktopScenes)} lines helper=${lines(desktopHelpers)} lines presentation=${lines(desktopPresentation)} lines topbar=${lines(desktopTopbar)} lines trafficRows=${lines(desktopTrafficRows)} lines routeRows=${lines(desktopRouteRows)} lines wanRows=${lines(desktopWanRows)} lines interfaceRows=${lines(desktopInterfaceRows)} lines credibilityRows=${lines(desktopCredibilityRows)} lines terminalRows=${lines(desktopTerminalRows)} lines resourceRows=${lines(desktopResourceRows)} lines visuals=${lines(desktopVisuals)} lines phoneConsole=${lines(phoneOpsConsole)} lines phoneBrief=${lines(phoneOpsBrief)} lines phoneEvidence=${lines(phoneOpsEvidence)} lines phoneModel=${lines(phoneOpsModel)} lines phoneStyles=${bytes(phoneOpsStylesFile) + bytes(phoneOpsEvidenceStylesFile)} bytes css=${bytes(panelCssFile)} bytes desktopBase=${lines(desktopBaseStyles)} lines desktopBaseImportant=${desktopBaseImportantCount} important=${importantShare.toFixed(4)} desktopImportant=${desktopRefinementImportantCount} workspaceImportant=${desktopWorkspaceLayoutImportantCount} decisionRailRules=${desktopDecisionRailRuleCount} decisionCellRules=${desktopDecisionCellRuleCount} workspaceGridRules=${desktopWorkspaceGridRuleCount} navRules=${desktopNavRuleCount} shellDescendantRules=${desktopImpossibleShellDescendantCount} statusBusRules=${desktopStatusBusRuleCount} legacyTopbarRules=${desktopLegacyTopbarRuleCount} sidebarStatusRules=${desktopSidebarMiniStatusRuleCount} sidebarStatusImportant=${desktopSidebarMiniStatusImportantCount} moduleShellRules=${desktopModuleShellRuleCount} moduleHeadRules=${desktopModuleHeadRuleCount} ledgerRules=${desktopLedgerRuleCount} moduleToneRules=${desktopModuleToneRuleCount} ledgerToneRules=${desktopLedgerToneRuleCount} ledgerToneShadows=${desktopLedgerToneShadowCount} releaseToneResets=${desktopReleaseToneResetCount} releaseNonPrimary=${desktopReleaseNonPrimaryNeutralCount} mobile=${mobileRuleShare.toFixed(4)}`
+  `overview architecture gate: PASS panel=${lines(panel)} lines desktop=${lines(desktopConsole)} lines desktopDecision=${lines(desktopDecisionRail)} lines scenes=${lines(desktopScenes)} lines helper=${lines(desktopHelpers)} lines presentation=${lines(desktopPresentation)} lines topbar=${lines(desktopTopbar)} lines trafficRows=${lines(desktopTrafficRows)} lines routeRows=${lines(desktopRouteRows)} lines wanRows=${lines(desktopWanRows)} lines interfaceRows=${lines(desktopInterfaceRows)} lines credibilityRows=${lines(desktopCredibilityRows)} lines terminalRows=${lines(desktopTerminalRows)} lines resourceRows=${lines(desktopResourceRows)} lines visuals=${lines(desktopVisuals)} lines phoneConsole=${lines(phoneOpsConsole)} lines phoneHome=${lines(phoneOpsHome)} lines phonePath=${lines(phoneOpsPath)} lines phoneEvidence=${lines(phoneOpsEvidence)} lines phoneModel=${lines(phoneOpsModel)} lines phoneModelEvidence=${lines(phoneOpsModelEvidence)} lines phoneStyles=${bytes(phoneOpsStylesFile) + bytes(phoneOpsEvidenceStylesFile)} bytes css=${bytes(panelCssFile)} bytes desktopBase=${lines(desktopBaseStyles)} lines desktopBaseImportant=${desktopBaseImportantCount} important=${importantShare.toFixed(4)} desktopImportant=${desktopRefinementImportantCount} workspaceImportant=${desktopWorkspaceLayoutImportantCount} decisionRailRules=${desktopDecisionRailRuleCount} decisionCellRules=${desktopDecisionCellRuleCount} workspaceGridRules=${desktopWorkspaceGridRuleCount} navRules=${desktopNavRuleCount} shellDescendantRules=${desktopImpossibleShellDescendantCount} statusBusRules=${desktopStatusBusRuleCount} legacyTopbarRules=${desktopLegacyTopbarRuleCount} sidebarStatusRules=${desktopSidebarMiniStatusRuleCount} sidebarStatusImportant=${desktopSidebarMiniStatusImportantCount} moduleShellRules=${desktopModuleShellRuleCount} moduleHeadRules=${desktopModuleHeadRuleCount} ledgerRules=${desktopLedgerRuleCount} moduleToneRules=${desktopModuleToneRuleCount} ledgerToneRules=${desktopLedgerToneRuleCount} ledgerToneShadows=${desktopLedgerToneShadowCount} releaseToneResets=${desktopReleaseToneResetCount} releaseNonPrimary=${desktopReleaseNonPrimaryNeutralCount} mobile=${mobileRuleShare.toFixed(4)}`
 );

@@ -1,98 +1,46 @@
-.mn-shell:not(.is-single):not(.is-fleet) .mn-topology {
-  height: 252px;
-  min-height: 0;
-  opacity: 0.68;
-  transform: scale(0.82) translateY(-20px);
-  transform-origin: top center;
+.mn-evidence-banner.is-warn,
+.mn-detail-evidence.is-warn {
+  border-left-color: var(--mn-warn);
+  background: var(--mn-warn-soft);
 }
 
-.mn-shell:not(.is-single):not(.is-fleet) .mn-sheet {
-  height: calc(100svh - 188px);
-  min-height: 0;
-}
-
-.mn-shell:not(.is-single):not(.is-fleet) .mn-sheet h1 {
-  font-size: 26px;
-}
-
-.mn-shell:not(.is-single):not(.is-fleet) .mn-rows {
-  margin-top: 12px;
-  border-top: 1px solid var(--mn-rule);
-}
-
-.mn-shell:not(.is-single):not(.is-fleet) .mn-route-label,
-.mn-shell:not(.is-single):not(.is-fleet) .mn-rate-pair {
-  display: none;
-}
-
-.mn-shell.is-path-cached .mn-path,
-.mn-shell.is-path-cached .mn-router-symbol i:last-child {
-  background: var(--mn-warn);
-}
-
-.mn-shell.is-path-cached .mn-route-label {
-  background: var(--mn-warn);
-}
-
-.mn-shell.is-path-offline .mn-path {
-  width: 1px;
-  background: var(--mn-danger);
-  opacity: 0.72;
-}
-
-.mn-shell.is-path-offline .mn-path::after {
-  border-color: var(--mn-danger);
-}
-
-.mn-shell.is-path-offline .mn-route-label {
-  background: var(--mn-danger);
-}
-
-.mn-shell.is-path-unknown .mn-path {
-  width: 1px;
-  background: var(--mn-rule-strong);
-}
-
-.mn-shell.is-path-unknown .mn-path::after {
-  border-color: var(--mn-rule-strong);
-}
-
-.mn-shell.is-path-unknown .mn-route-label {
-  background: var(--mn-muted);
-}
-
-.mn-shell.is-path-unknown .mn-node-router,
-.mn-shell.is-path-unknown .mn-node-clients {
-  opacity: 0.45;
-}
-
-.mn-shell.is-all-offline .mn-sheet-heading span,
-.mn-shell.is-resource-full .mn-sheet-heading span,
-.mn-shell.is-interfaces-down .mn-sheet-heading span {
-  color: var(--mn-danger);
-}
-
-.mn-shell.is-no-snapshot .mn-sheet-heading span,
-.mn-shell.is-collection-down .mn-sheet-heading span {
+.mn-evidence-banner.is-warn time,
+.mn-detail-evidence.is-warn time,
+.mn-shell.is-evidence-stale .mn-home-heading > span {
   color: var(--mn-warn);
 }
 
-@media (orientation: landscape) and (max-width: 900px) and (max-height: 520px) {
-  .mn-shell:not(.is-single):not(.is-fleet) .mn-topology {
-    height: 100svh;
-    opacity: 0.72;
-    transform: none;
-  }
-  .mn-shell:not(.is-single):not(.is-fleet) .mn-sheet {
-    height: 100svh;
-  }
-  .mn-shell:not(.is-single):not(.is-fleet) .mn-sheet h1 {
-    font-size: 22px;
-  }
-  .mn-shell:not(.is-single):not(.is-fleet) .mn-route-label {
-    display: block;
-  }
-  .mn-shell:not(.is-single):not(.is-fleet) .mn-rate-pair {
-    display: flex;
-  }
+.mn-evidence-banner.is-danger,
+.mn-detail-evidence.is-danger {
+  border-left-color: var(--mn-danger);
+  background: var(--mn-danger-soft);
+}
+
+.mn-evidence-banner.is-danger time,
+.mn-detail-evidence.is-danger time,
+.mn-shell.is-evidence-unavailable .mn-home-heading > span {
+  color: var(--mn-danger);
+}
+
+.mn-fact.is-danger b,
+.mn-path-row.is-danger b,
+.mn-detail-group .is-danger b {
+  color: var(--mn-danger);
+}
+
+.mn-fact.is-warn b,
+.mn-path-row.is-warn b,
+.mn-detail-group .is-warn b {
+  color: var(--mn-warn);
+}
+
+.mn-shell.is-all-offline .mn-home-heading > span,
+.mn-shell.is-resource-full .mn-home-heading > span,
+.mn-shell.is-interfaces-down .mn-home-heading > span {
+  color: var(--mn-danger);
+}
+
+.mn-shell.is-no-snapshot .mn-home-heading > span,
+.mn-shell.is-collection-down .mn-home-heading > span {
+  color: var(--mn-warn);
 }

@@ -83,7 +83,7 @@
   #overview.router-overview-framework.ro-desktop-hierarchy .ro-status-bus .ro-status-cell em {
     display: none;
     color: var(--ik-console-subtle, #8fa0b3);
-    font-size: 9px;
+    font-size: 10px;
     font-weight: 520;
     line-height: 10px;
   }

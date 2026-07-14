@@ -1,0 +1,33 @@
+@media (max-width: 900px) {
+  html:has(#overview.is-mobile-native),
+  body:has(#overview.is-mobile-native) {
+    width: 100%;
+    min-width: 0;
+    min-height: 100%;
+    overflow: auto;
+    background: #f1f5f7;
+  }
+  .app.ik-shell:has(#overview.is-mobile-native) {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    min-height: 100svh;
+    overflow: visible;
+    background: #f1f5f7;
+  }
+  .app.ik-shell:has(#overview.is-mobile-native) .ik-rail,
+  .app.ik-shell:has(#overview.is-mobile-native) .sidebar,
+  .app.ik-shell:has(#overview.is-mobile-native) .topbar {
+    display: none;
+  }
+  .app.ik-shell:has(#overview.is-mobile-native) .frame,
+  .app.ik-shell:has(#overview.is-mobile-native) .content {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    overflow: visible;
+  }
+}

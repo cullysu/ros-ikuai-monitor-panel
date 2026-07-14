@@ -1,8 +1,8 @@
 import { useState } from "react";
 import type { OverviewPanelProps } from "../desktopOverviewHelpers";
 import { MobileNativeDetail } from "./MobileNativeDetail";
-import { MobileNativeSheet } from "./MobileNativeSheet";
-import { MobileNativeTopology } from "./MobileNativeTopology";
+import { MobileNativeHome } from "./MobileNativeHome";
+import { MobileNativePathEvidence } from "./MobileNativePathEvidence";
 import { buildMobileNativeModel } from "./mobileNativeModel";
 import "./styles/mobile-native-tokens.css";
 import "./styles/mobile-native-layout.css";
@@ -16,16 +16,19 @@ export function MobileNativeConsole({ snapshot, state }: OverviewPanelProps) {
 
   return (
     <main
-      className={`mn-shell is-${model.scenario} is-path-${model.pathState}`}
+      className={`mn-shell is-${model.scenario} is-evidence-${model.evidenceMode}`}
       data-mobile-native-console
       data-mobile-native-scenario={model.scenario}
+      data-mobile-native-evidence={model.evidenceMode}
     >
       <header className="mn-chrome">
         <span><b>{model.device}</b><small>{model.deviceNote}</small></span>
         <span className="mn-readonly">只读</span>
       </header>
-      <MobileNativeTopology model={model} />
-      <MobileNativeSheet model={model} onOpenDetail={() => setDetailOpen(true)} />
+      <div className="mn-home-layout">
+        <MobileNativeHome model={model} onOpenDetail={() => setDetailOpen(true)} />
+        <MobileNativePathEvidence model={model} />
+      </div>
     </main>
   );
 }

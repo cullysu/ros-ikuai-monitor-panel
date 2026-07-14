@@ -156,10 +156,12 @@ function readReleaseSurface(relPath) {
     read('src/panel-framework/overview/desktopOverviewResourceScene.tsx'),
     read('src/panel-framework/overview/desktopOverviewVisuals.tsx'),
     read('src/panel-framework/overview/mobile-native/MobileNativeConsole.tsx'),
-    read('src/panel-framework/overview/mobile-native/MobileNativeTopology.tsx'),
-    read('src/panel-framework/overview/mobile-native/MobileNativeSheet.tsx'),
+    read('src/panel-framework/overview/mobile-native/MobileNativeHome.tsx'),
+    read('src/panel-framework/overview/mobile-native/MobileNativePathEvidence.tsx'),
     read('src/panel-framework/overview/mobile-native/MobileNativeDetail.tsx'),
     read('src/panel-framework/overview/mobile-native/mobileNativeModel.ts'),
+    read('src/panel-framework/overview/mobile-native/mobileNativeEvidence.ts'),
+    read('src/panel-framework/overview/mobile-native/mobileNativeTypes.ts'),
     read('src/panel-framework/panel-framework-app.tsx'),
     readIfExists('app.py'),
     frameworkCompatibilitySurface(),
@@ -627,13 +629,16 @@ function main(argv = process.argv.slice(2)) {
   assertContains('public/index.html', 'CPU / 内存');
   assertMatches('public/index.html', /异常\s*TopN/);
   assertContains('public/assets/framework/panel-framework.js', 'data-mobile-native-console');
-  assertContains('public/assets/framework/panel-framework.js', 'data-mobile-native-topology');
-  assertContains('public/assets/framework/panel-framework.js', 'data-mobile-native-sheet');
+  assertContains('public/assets/framework/panel-framework.js', 'data-mobile-native-home');
+  assertContains('public/assets/framework/panel-framework.js', 'data-mobile-native-path-evidence');
+  assertContains('public/assets/framework/panel-framework.js', 'data-mobile-native-evidence-mode');
   assertNotContains('public/assets/framework/panel-framework.js', 'rm-tabbar');
   assertNotContains('public/assets/framework/panel-framework.js', 'phone-ops-console');
+  assertNotContains('public/assets/framework/panel-framework.js', 'data-mobile-native-topology');
+  assertNotContains('public/assets/framework/panel-framework.js', 'data-mobile-native-sheet');
   assertContains('public/assets/framework/panel-framework.js', '当前业务状态不可判断');
-  assertContains('public/assets/framework/panel-framework.js', '速率、资源与终端数字已隐藏');
-  assertContains('public/assets/framework/panel-framework.js', '数字来自历史快照');
+  assertContains('public/assets/framework/panel-framework.js', '速率、资源、路由与终端数字已隐藏');
+  assertContains('public/assets/framework/panel-framework.js', '禁止当作实时状态');
   assertContains('public/assets/framework/panel-framework.js', '只读');
   assertContains('public/assets/framework/panel-framework.js', '失败端点');
   assertContains('public/index.html', 'RouterOS 写入');
@@ -777,12 +782,15 @@ function main(argv = process.argv.slice(2)) {
   assertContains('src/panel-framework/overview/desktopOverviewDefaultScene.tsx', '<WanTrend key="compact-network"');
   assertContains('src/panel-framework/overview/desktopOverviewDefaultScene.tsx', '<EvidenceChain key="compact-boundary"');
   assertContains('src/panel-framework/overview/desktopOverviewDefaultScene.tsx', '<TerminalRanking key="compact-terminals"');
-  assertContains('src/panel-framework/overview/mobile-native/MobileNativeTopology.tsx', '当前网络路径');
+  assertContains('src/panel-framework/overview/mobile-native/MobileNativeHome.tsx', 'data-mobile-native-evidence-mode');
+  assertContains('src/panel-framework/overview/mobile-native/MobileNativePathEvidence.tsx', '网络对象与路径证据');
   assertContains('src/panel-framework/overview/desktopOverviewDefaultScene.tsx', 'WAN 采样趋势');
-  assertContains('src/panel-framework/overview/mobile-native/mobileNativeModel.ts', 'ratePrefix: cached ? "上次" : "当前"');
-  assertContains('src/panel-framework/overview/mobile-native/mobileNativeModel.ts', 'pathState: cached ? "cached" : "active"');
+  assertContains('src/panel-framework/overview/mobile-native/mobileNativeTypes.ts', '"current" | "stale" | "unavailable"');
+  assertContains('src/panel-framework/overview/mobile-native/mobileNativeModel.ts', 'visibleRates !== null');
   assertContains('src/panel-framework/overview/mobile-native/mobileNativeModel.ts', 'showRates: false');
-  assertNotContains('src/panel-framework/overview/mobile-native/MobileNativeSheet.tsx', 'WAN 实时趋势');
+  assertContains('src/panel-framework/overview/mobile-native/mobileNativeEvidence.ts', 'route.active === true && route.disabled !== true');
+  assertContains('src/panel-framework/overview/mobile-native/mobileNativeEvidence.ts', 'trailingStreak');
+  assertNotContains('src/panel-framework/overview/mobile-native/mobileNativeHome.tsx', 'WAN 实时趋势');
   assertNotContains('src/panel-framework/overview/desktopOverviewDefaultScene.tsx', 'WAN 实时趋势');
   for (const retiredMobileComponent of [
     'CoreMetricRail.tsx',
@@ -805,13 +813,17 @@ function main(argv = process.argv.slice(2)) {
     'src/panel-framework/overview/phone-ops/PhoneOpsConsole.tsx',
     'src/panel-framework/overview/phone-ops/phoneOpsModel.ts',
   ]) assertNotExists(retiredMobileFile);
+  assertNotExists('src/panel-framework/overview/mobile-native/MobileNativeTopology.tsx');
+  assertNotExists('src/panel-framework/overview/mobile-native/MobileNativeSheet.tsx');
   assertNotExists('src/panel-framework/overview/components/MobileOverviewStyles.tsx');
   assertNotExists('src/panel-framework/overview/components/MobileOverviewBaseStyles.ts');
   assertNotExists('src/panel-framework/overview/components/MobileOverviewPublicDecisionStyles.ts');
   assertNotExists('src/panel-framework/overview/components/MobileOverviewPublicDecisionRepairStyles.ts');
   assertContains('src/panel-framework/overview/mobile-native/MobileNativeConsole.tsx', 'import "./styles/mobile-native-tokens.css";');
-  assertContains('src/panel-framework/overview/mobile-native/styles/mobile-native-layout.css', '.mn-topology');
-  assertContains('src/panel-framework/overview/mobile-native/styles/mobile-native-layout.css', '.mn-sheet');
+  assertContains('src/panel-framework/overview/mobile-native/styles/mobile-native-layout.css', '.mn-home');
+  assertContains('src/panel-framework/overview/mobile-native/styles/mobile-native-layout.css', '.mn-path-evidence');
+  assertNotContains('src/panel-framework/overview/mobile-native/styles/mobile-native-layout.css', '.mn-topology');
+  assertNotContains('src/panel-framework/overview/mobile-native/styles/mobile-native-layout.css', '.mn-sheet');
   assertNotContains('src/panel-framework/overview/mobile-native/styles/mobile-native-layout.css', '.rm-tabbar');
   assertMaxBytes('public/assets/framework/style.css', 500000);
   assertNotExists('public/scale-adaptive-patch.js');

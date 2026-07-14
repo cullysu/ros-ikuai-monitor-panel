@@ -57,14 +57,17 @@ const desktopAllOfflineScene = read('src/panel-framework/overview/desktopOvervie
 const desktopHierarchyStyles = read('src/panel-framework/overview/styles/desktop/hierarchy-layout.css');
 const desktopWorkspaceStyles = read('src/panel-framework/overview/styles/desktop/workspace-layout.css');
 const phoneConsole = read('src/panel-framework/overview/mobile-native/MobileNativeConsole.tsx');
-const phoneTopology = read('src/panel-framework/overview/mobile-native/MobileNativeTopology.tsx');
-const phoneSheet = read('src/panel-framework/overview/mobile-native/MobileNativeSheet.tsx');
+const phoneHome = read('src/panel-framework/overview/mobile-native/MobileNativeHome.tsx');
+const phonePath = read('src/panel-framework/overview/mobile-native/MobileNativePathEvidence.tsx');
 const phoneEvidence = read('src/panel-framework/overview/mobile-native/MobileNativeDetail.tsx');
 const phoneModel = read('src/panel-framework/overview/mobile-native/mobileNativeModel.ts');
+const phoneModelEvidence = read('src/panel-framework/overview/mobile-native/mobileNativeEvidence.ts');
+const phoneTypes = read('src/panel-framework/overview/mobile-native/mobileNativeTypes.ts');
 const phoneStyles = read('src/panel-framework/overview/mobile-native/styles/mobile-native-tokens.css');
 const phoneLayoutStyles = read('src/panel-framework/overview/mobile-native/styles/mobile-native-layout.css');
 const phoneStateStyles = read('src/panel-framework/overview/mobile-native/styles/mobile-native-states.css');
 const phoneStyleBundle = `${phoneStyles}\n${phoneLayoutStyles}\n${phoneStateStyles}`;
+const mobileShellStyles = read('src/panel-framework/mobile-shell.css');
 const predeploy = read('tools/local-predeploy-check.js');
 const phoneRuntime = read('tools/check-mobile-native-runtime.js');
 
@@ -157,26 +160,31 @@ includesAll(desktopHierarchyStyles, ['data-overview-desktop-scene="single"', 'da
 
 includesAll(phoneConsole, [
   'data-mobile-native-console',
-  '<MobileNativeTopology',
-  '<MobileNativeSheet',
+  '<MobileNativeHome',
+  '<MobileNativePathEvidence',
   '<MobileNativeDetail',
 ], 'isolated native mobile shell');
 excludesAll(phoneConsole, ['tabbar', 'BottomTabs', 'activeTab'], 'retired phone tab shell');
-excludesAll(`${phoneConsole}\n${phoneTopology}\n${phoneSheet}\n${phoneEvidence}\n${phoneModel}\n${phoneStyleBundle}`, ['ik-mobile-', 'ik-ios-', 'ro-mobile-', 'ro-desktop-', 'rm-app', 'phone-ops'], 'phone namespace isolation');
-includesAll(phoneModel, ['默认路由有活动记录', '条 WAN 未运行', '当前业务状态不可判断', '采集链路尚未恢复', '资源连续', '未运行'], 'phone factual verdict copy');
-includesAll(phoneModel, ['ratePrefix: cached ? "上次" : "当前"', 'showRates: false', '最后成功', 'resourceSamples'], 'phone source truthfulness');
+excludesAll(`${phoneConsole}\n${phoneHome}\n${phonePath}\n${phoneEvidence}\n${phoneModel}\n${phoneModelEvidence}\n${phoneStyleBundle}`, ['ik-mobile-', 'ik-ios-', 'ro-mobile-', 'ro-desktop-', 'rm-app', 'phone-ops'], 'phone namespace isolation');
+includesAll(phoneModel, ['活动默认路由已记录', '条 WAN 未运行', '当前业务状态不可判断', '当前变化不可见', '资源当前超过阈值', '未运行'], 'phone factual verdict copy');
+includesAll(`${phoneModel}\n${phoneModelEvidence}\n${phoneTypes}`, ['"current" | "stale" | "unavailable"', 'visibleRates !== null', 'showRates: false', '最后成功', 'trailingStreak'], 'phone source truthfulness');
 excludesAll(phoneModel, ['function syntheticTrend(', 'const pattern = {', '网络状态良好', '实时可信'], 'phone unsupported data and copy prohibition');
-includesAll(phoneTopology, ['data-mobile-native-topology', 'data-mobile-native-rates', 'model.showRates ?'], 'phone topology and rate semantics');
-includesAll(phoneSheet, ['data-mobile-native-sheet', 'model.facts.map', 'model.rows.map', 'data-mobile-native-open-detail'], 'phone adaptive sheet ownership');
-includesAll(phoneEvidence, ['data-mobile-native-detail', 'Escape', 'data-mobile-native-back', 'backRef.current?.focus()'], 'phone evidence navigation');
-includesAll(phoneStyleBundle, ['--mn-canvas', '.mn-topology', '.mn-sheet', '.mn-facts', '.mn-detail', 'env(safe-area-inset-top)', 'min-height: 44px', 'touch-action: manipulation'], 'phone native sheet, safe area, touch, and responsive styles');
+excludesAll(`${phoneModel}\n${phoneModelEvidence}`, ['rows[0]', 'downRate || 0', 'upRate || 0'], 'phone fabricated evidence prohibition');
+includesAll(phoneHome, ['data-mobile-native-home', 'data-mobile-native-evidence-mode', 'data-mobile-native-rates="current"', 'model.showRates ?', 'model.facts.map', 'model.rows.map', 'data-mobile-native-open-detail'], 'phone evidence-first home semantics');
+includesAll(phonePath, ['data-mobile-native-path-evidence', 'data-mobile-route-verification', '<details', '<summary'], 'phone collapsed path evidence');
+includesAll(phoneEvidence, ['data-mobile-native-detail', 'data-mobile-native-detail-section', 'Escape', 'data-mobile-native-back', 'backRef.current?.focus()'], 'phone evidence navigation');
+includesAll(phoneStyleBundle, ['--mn-canvas', '.mn-home', '.mn-path-evidence', '.mn-facts', '.mn-detail', 'env(safe-area-inset-top)', 'min-height: 44px', 'touch-action: manipulation'], 'phone evidence-first safe area, touch, and responsive styles');
 excludesAll(phoneStyleBundle, ['!important', 'radial-gradient(', '.rm-', '.ik-mobile-', '.ro-mobile-', '.phone-ops'], 'phone patch and retired namespace prohibition');
+includesAll(mobileShellStyles, [':has(#overview.is-mobile-native)', '.ik-rail', '.sidebar', '.topbar'], 'mobile shell ownership');
+excludesAll(phoneStyleBundle, ['.ik-rail', '.sidebar', '.topbar'], 'mobile component shell reach-out');
 
 includesAll(predeploy, [
   'compactLandscapeOverview',
-  'overviewMobileLandscapeAppOk',
+  'mobileOverviewAppViewport = isMobileOverview',
   "sectionRoot?.querySelector('[data-mobile-native-console]')",
-  "routerMobileSheet?.getAttribute('data-mobile-native-sheet')",
+  "routerMobileEvidence?.getAttribute('data-mobile-native-evidence-mode')",
+  'const pass = routerMobileRoot ? mobileOverviewAppHomePass : legacyOrDesktopPass',
+  'routerMobileSmallTextNodes.length === 0',
   'waitForAnyJson',
   'terminateBrowserTree',
   'matrixBlocksTopLevelPass',
@@ -186,15 +194,28 @@ includesAll(predeploy, [
   'report.pass = report.failures.length === 0 && !matrixBlocksTopLevelPass',
   'process.exitCode = report.exitCodeShouldFail ? 1 : 0',
 ], 'release gate integrity');
-includesAll(phoneRuntime, ['scenarios', 'viewports', 'expectedCells', 'report.matrix?.complete', 'screenshots.length'], 'phone runtime matrix coverage');
+includesAll(phoneRuntime, [
+  'scenarios',
+  'p320: \'320x568\'',
+  'p360: \'360x800\'',
+  'p375: \'375x667\'',
+  'p390: \'390x844\'',
+  'p430: \'430x932\'',
+  'tablet: \'768x1024\'',
+  'l667: \'667x375\'',
+  'l844: \'844x390\'',
+  'expectedCells',
+  'report.matrix?.complete',
+  'screenshots.length',
+], 'phone 56-cell runtime matrix coverage');
 
 for (const [file, text, limit] of [
   ['OverviewPanel.tsx', overview, 120],
   ['DesktopConsole.tsx', desktop, 120],
   ['DesktopDecisionRail.tsx', desktopDecision, 120],
   ['MobileNativeConsole.tsx', phoneConsole, 80],
-  ['MobileNativeTopology.tsx', phoneTopology, 80],
-  ['MobileNativeSheet.tsx', phoneSheet, 90],
+  ['MobileNativeHome.tsx', phoneHome, 90],
+  ['MobileNativePathEvidence.tsx', phonePath, 60],
   ['MobileNativeDetail.tsx', phoneEvidence, 100],
 ]) {
   if (lineCount(text) > limit) fail('component line budget', `${file} has ${lineCount(text)} lines (limit ${limit})`);

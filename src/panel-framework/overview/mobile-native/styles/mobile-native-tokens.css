@@ -1,7 +1,6 @@
 #overview.router-overview-framework.is-mobile-native {
-  --mn-canvas: oklch(94.5% 0.012 225);
-  --mn-surface: oklch(98.8% 0.005 225);
-  --mn-surface-translucent: oklch(98.8% 0.005 225 / 0.93);
+  --mn-canvas: oklch(96.3% 0.008 225);
+  --mn-surface: oklch(99.2% 0.003 225);
   --mn-ink: oklch(24% 0.032 230);
   --mn-secondary: oklch(43% 0.03 225);
   --mn-muted: oklch(52% 0.022 225);
@@ -9,7 +8,7 @@
   --mn-rule-strong: oklch(72% 0.03 225);
   --mn-blue: oklch(52% 0.09 225);
   --mn-blue-deep: oklch(39% 0.08 225);
-  --mn-blue-soft: oklch(91.5% 0.03 225);
+  --mn-blue-soft: oklch(93.5% 0.022 225);
   --mn-danger: oklch(46% 0.07 25);
   --mn-danger-soft: oklch(91% 0.025 25);
   --mn-warn: oklch(48% 0.055 75);
@@ -19,7 +18,7 @@
   min-height: 100svh;
   margin: 0;
   padding: 0;
-  overflow: visible;
+  overflow: clip;
   border: 0;
   border-radius: 0;
   background: var(--mn-canvas);
@@ -40,38 +39,4 @@
 #overview.is-mobile-native h1,
 #overview.is-mobile-native p {
   margin: 0;
-}
-
-@media (max-width: 900px) {
-  html:has(body.mobile-native-active),
-  body.mobile-native-active {
-    width: 100%;
-    min-width: 0;
-    min-height: 100%;
-    overflow: auto;
-    background: var(--mn-canvas, #edf3f6);
-  }
-  body.mobile-native-active .app.ik-shell {
-    display: block;
-    width: 100%;
-    min-width: 0;
-    min-height: 100svh;
-    overflow: visible;
-    background: var(--mn-canvas, #edf3f6);
-  }
-  body.mobile-native-active .ik-rail,
-  body.mobile-native-active .sidebar,
-  body.mobile-native-active .topbar {
-    display: none;
-  }
-  body.mobile-native-active .frame,
-  body.mobile-native-active .content {
-    display: block;
-    width: 100%;
-    min-width: 0;
-    min-height: 0;
-    margin: 0;
-    padding: 0;
-    overflow: visible;
-  }
 }

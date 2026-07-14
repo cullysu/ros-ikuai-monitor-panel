@@ -115,7 +115,7 @@
   }
   .ro-secondary-evidence-disclosure > summary span,
   .ro-secondary-evidence-disclosure > summary b {
-    font-size: 9px;
+    font-size: 10px;
     line-height: 12px;
   }
   .ro-secondary-evidence-disclosure > summary span {
@@ -214,7 +214,7 @@
 .router-overview-framework .ro-wan-integrated-top small {
     min-width: 0;
     color: #7b8da1;
-    font-size: 9px;
+    font-size: 10px;
     line-height: 11px;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -375,7 +375,7 @@
   .router-overview-framework.ro-desktop-console .ro-chart-summary {
     min-height: 16px !important;
     padding: 0 0 2px !important;
-    font-size: 8px !important;
+    font-size: 10px !important;
   }
   .router-overview-framework.ro-desktop-console .ro-chart-track {
     height: 2px !important;
@@ -597,7 +597,7 @@
   }
   #overview.router-overview-framework.ro-desktop-console .ro-resource-ledger-visual em {
     color: var(--v814-muted) !important;
-    font-size: 8px !important;
+    font-size: 10px !important;
     font-style: normal !important;
     text-align: right !important;
     white-space: nowrap !important;
@@ -721,7 +721,7 @@
     background: #fff !important;
   }
   #overview.router-overview-framework.ro-desktop-console .ro-incident-summary em {
-    font-size: 7px !important;
+    font-size: 10px !important;
   }
   #overview.router-overview-framework.ro-desktop-console .ro-incident-summary b {
     font-size: 8.5px !important;

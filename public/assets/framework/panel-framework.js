@@ -7060,7 +7060,7 @@ var PanelFramework = function(exports) {
   function wanRows$4(snapshot) {
     return Array.isArray(snapshot.wan) && snapshot.wan.length ? snapshot.wan : Array.isArray(snapshot.pppoe) ? snapshot.pppoe : [];
   }
-  function routeRows$1(snapshot) {
+  function routeRows$2(snapshot) {
     var _a, _b;
     const rows = ((_a = snapshot.routes) == null ? void 0 : _a.defaultRoutes) || ((_b = snapshot.routes) == null ? void 0 : _b.items) || [];
     return Array.isArray(rows) ? rows : [];
@@ -7169,11 +7169,11 @@ var PanelFramework = function(exports) {
     };
   }
   function routeState(snapshot, freshness) {
-    const rawSummary = defaultRouteRawSummary(routeRows$1(snapshot));
-    const businessSummary = defaultRouteBusinessSummary(routeRows$1(snapshot));
+    const rawSummary = defaultRouteRawSummary(routeRows$2(snapshot));
+    const businessSummary = defaultRouteBusinessSummary(routeRows$2(snapshot));
     if (isSnapshotUnavailable(snapshot) || snapshot.status === "error") return { label: "不可判定", text: "缺少当前路由快照", level: "warn", rawSummary };
     if (freshness.stale || freshness.history) return { label: "历史快照", text: "默认路由待判定", level: "warn", rawSummary };
-    const active = routeRows$1(snapshot).find((route) => route.active && !route.disabled) || routeRows$1(snapshot)[0];
+    const active = routeRows$2(snapshot).find((route) => route.active && !route.disabled) || routeRows$2(snapshot)[0];
     if (!active) return { label: "待确认", text: "默认路由事实未采集", level: "warn", rawSummary };
     return { label: active.active && !active.disabled ? "活动默认路由" : "默认路由待确认", text: businessSummary || "默认路由事实未采集", level: active.active && !active.disabled ? "ok" : "warn", rawSummary };
   }
@@ -7372,7 +7372,7 @@ var PanelFramework = function(exports) {
       }
     }
   };
-  function clean$3(value, fallback = "-") {
+  function clean$4(value, fallback = "-") {
     const normalized = String(value ?? "").replace(/\s+/g, " ").trim();
     return normalized || fallback;
   }
@@ -7403,10 +7403,10 @@ var PanelFramework = function(exports) {
     return mobileTime(raw);
   }
   function stripRest$1(label) {
-    return clean$3(label.replace(/^REST\s*/i, ""), "可用");
+    return clean$4(label.replace(/^REST\s*/i, ""), "可用");
   }
   function stripSsh$1(label) {
-    return clean$3(label.replace(/^SSH\s*/i, ""), "可用");
+    return clean$4(label.replace(/^SSH\s*/i, ""), "可用");
   }
   function snapshotTrustText$1(state) {
     if (state.scenario === "no-snapshot") return "缺失";
@@ -7454,11 +7454,11 @@ var PanelFramework = function(exports) {
   }
   const ROUTEROS_ROUTE_EVIDENCE_CONTRACT = "business-summary-first/raw-route-fields-secondary/table-gateway-distance-active-disabled";
   const ROUTE_UNKNOWN$1 = "路由快照未取回，无法判断默认出口影响";
-  function clean$2(value, fallback = "-") {
+  function clean$3(value, fallback = "-") {
     const normalized = String(value ?? "").replace(/\s+/g, " ").trim();
     return normalized || fallback;
   }
-  function routeRows(snapshot) {
+  function routeRows$1(snapshot) {
     var _a, _b;
     const rows = ((_a = snapshot.routes) == null ? void 0 : _a.defaultRoutes) || ((_b = snapshot.routes) == null ? void 0 : _b.items) || [];
     return Array.isArray(rows) ? rows : [];
@@ -7468,17 +7468,17 @@ var PanelFramework = function(exports) {
     return active ? "当前承载" : "备选未命中";
   }
   function routerOsRouteTableText(value) {
-    const table = clean$2(value, "main");
+    const table = clean$3(value, "main");
     return /^main$/i.test(table) ? "主业务域" : `策略域 ${table}`;
   }
   function routerOsRouteGatewayText(value) {
-    return clean$2(value, "网关未记录");
+    return clean$3(value, "网关未记录");
   }
   function routerOsRoutePriorityText(value) {
-    return clean$2(value, "未记录");
+    return clean$3(value, "未记录");
   }
   function routerOsRouteBusinessSummary(value, fallback = ROUTE_UNKNOWN$1) {
-    return clean$2(value, fallback).replace(/active\s*[:=]?\s*true/gi, "当前承载").replace(/active\s*[:=]?\s*false/gi, "备选未命中").replace(/disabled\s*[:=]?\s*false/gi, "允许参与选路").replace(/disabled\s*[:=]?\s*true/gi, "已停用").replace(/\brouting[-_\s]?table\b|\broutingTable\b/gi, "路由域").replace(/\bgatewayStatus\b/gi, "网关状态").replace(/\bdistance\b/gi, "优先级").replace(/\bgateway\b/gi, "网关").replace(/\bactive\b/gi, "承载状态").replace(/\bdisabled\b/gi, "停用状态").replace(/\btable\b/gi, "路由域").replace(/\bmain\b/gi, "主业务域");
+    return clean$3(value, fallback).replace(/active\s*[:=]?\s*true/gi, "当前承载").replace(/active\s*[:=]?\s*false/gi, "备选未命中").replace(/disabled\s*[:=]?\s*false/gi, "允许参与选路").replace(/disabled\s*[:=]?\s*true/gi, "已停用").replace(/\brouting[-_\s]?table\b|\broutingTable\b/gi, "路由域").replace(/\bgatewayStatus\b/gi, "网关状态").replace(/\bdistance\b/gi, "优先级").replace(/\bgateway\b/gi, "网关").replace(/\bactive\b/gi, "承载状态").replace(/\bdisabled\b/gi, "停用状态").replace(/\btable\b/gi, "路由域").replace(/\bmain\b/gi, "主业务域");
   }
   function routeTitle(table, gateway, distance, active, disabled) {
     return `默认出口 ${routerOsRouteGatewayText(gateway)}，选路优先级 ${routerOsRoutePriorityText(distance)}，${routerOsRouteStatusText(active, disabled)}；${routerOsRouteTableText(table)}`;
@@ -7567,10 +7567,10 @@ var PanelFramework = function(exports) {
   }
   function buildRouterOsRouteEvidenceModel(snapshot, state) {
     var _a;
-    const rows = routeRows(snapshot);
+    const rows = routeRows$1(snapshot);
     if (!rows.length) return missingModel(state);
     const businessRows = rows.slice(0, 6).map((route, index) => {
-      const rawTable = clean$2(route.table || route.routingTable, "main");
+      const rawTable = clean$3(route.table || route.routingTable, "main");
       const table = routerOsRouteTableText(rawTable);
       const gateway = routerOsRouteGatewayText(route.gateway || route.gatewayStatus);
       const priority = routerOsRoutePriorityText(route.distance);
@@ -7591,8 +7591,8 @@ var PanelFramework = function(exports) {
         title: routeTitle(rawTable, gateway, priority, route.active, route.disabled),
         rawFields: {
           table: rawTable,
-          gateway: clean$2(route.gateway || route.gatewayStatus, "-"),
-          distance: clean$2(route.distance, "-"),
+          gateway: clean$3(route.gateway || route.gatewayStatus, "-"),
+          distance: clean$3(route.distance, "-"),
           active: route.active ? "true" : "false",
           disabled: route.disabled ? "true" : "false"
         }
@@ -7611,9 +7611,9 @@ var PanelFramework = function(exports) {
     };
     const rawRows = rows.slice(0, 4).map((route, index) => {
       const rawFields = {
-        table: clean$2(route.table || route.routingTable, "main"),
-        gateway: clean$2(route.gateway || route.gatewayStatus, "未记录"),
-        distance: clean$2(route.distance, "未记录"),
+        table: clean$3(route.table || route.routingTable, "main"),
+        gateway: clean$3(route.gateway || route.gatewayStatus, "未记录"),
+        distance: clean$3(route.distance, "未记录"),
         active: route.active ? "true" : "false",
         disabled: route.disabled ? "true" : "false"
       };
@@ -8354,7 +8354,7 @@ var PanelFramework = function(exports) {
       { id: "ops-sample", cells: ["样本", "最近6点", "当前 / 均值 / 峰值"], tone: state.facts.freshness.credibilityTone }
     ];
   }
-  function clean$1(value, fallback = "-") {
+  function clean$2(value, fallback = "-") {
     const normalized = String(value ?? "").replace(/\s+/g, " ").trim();
     return normalized || fallback;
   }
@@ -8385,10 +8385,10 @@ var PanelFramework = function(exports) {
     return compactTime(raw);
   }
   function stripRest(label) {
-    return clean$1(label.replace(/^REST\s*/i, ""), "可用");
+    return clean$2(label.replace(/^REST\s*/i, ""), "可用");
   }
   function stripSsh(label) {
-    return clean$1(label.replace(/^SSH\s*/i, ""), "可用");
+    return clean$2(label.replace(/^SSH\s*/i, ""), "可用");
   }
   function routerOsNetworkPriority(state) {
     if (state.scenario === "fleet") return "normal";
@@ -8554,13 +8554,13 @@ var PanelFramework = function(exports) {
       evidence
     };
   }
-  function clean(value, fallback = "-") {
+  function clean$1(value, fallback = "-") {
     const normalized = String(value ?? "").replace(/\s+/g, " ").trim();
     return normalized || fallback;
   }
   function conclusionValue(snapshot, state, network) {
     if (network.priority === "wan-offline") return `${network.object.value} 全离线`;
-    if (network.priority === "resource-full") return `${network.conclusion.value} ${clean(state.facts.resource.summaryText, "资源超阈")}`;
+    if (network.priority === "resource-full") return `${network.conclusion.value} ${clean$1(state.facts.resource.summaryText, "资源超阈")}`;
     if (network.priority === "interface-down") return `${formatNumber(state.facts.interfaces.down)}/${formatNumber(state.facts.interfaces.total)} 接口 Down`;
     if (network.priority === "collection-degraded") return `${network.conclusion.value} ${routerOsLatestSuccess(snapshot, state)}`;
     if (network.priority === "snapshot-missing") return network.conclusion.title;
@@ -8584,7 +8584,7 @@ var PanelFramework = function(exports) {
     return "只读监测，不写配置";
   }
   function incidentObject(state, network) {
-    if (network.priority === "resource-full") return clean(state.facts.resource.summaryText, "资源超阈");
+    if (network.priority === "resource-full") return clean$1(state.facts.resource.summaryText, "资源超阈");
     if (network.priority === "interface-down") return `${formatNumber(state.facts.interfaces.down)} 接口 Down`;
     if (network.priority === "collection-degraded") return "REST 待确认 / SSH 不可用 / 快照缓存";
     if (network.priority === "snapshot-missing") return "业务快照缺失";
@@ -9457,49 +9457,67 @@ var PanelFramework = function(exports) {
         /* @__PURE__ */ jsxRuntimeExports.jsx("span", { "aria-hidden": "true" })
       ] }),
       /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mn-detail-content", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("p", { children: model.kicker }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { id: "mn-detail-title", children: model.actionTitle }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "mn-detail-group", "aria-label": "当前判断", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "判断" }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: model.title })
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `mn-detail-evidence is-${model.evidenceTone}`, "data-mobile-native-detail-evidence": model.evidenceMode, children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: model.evidenceLabel }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: model.evidenceNote })
           ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "记录时间" }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: model.timestamp })
-          ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "模式" }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: "只读，不修改 RouterOS" })
-          ] })
+          /* @__PURE__ */ jsxRuntimeExports.jsx("time", { children: model.timestamp })
         ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "mn-detail-group", "aria-label": "关键证据", children: [
-          model.facts.map((fact) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: fact.label }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: fact.value })
-          ] }, fact.label)),
-          model.rows.map((row) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("p", { children: "低优先级原始记录" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { id: "mn-detail-title", children: model.actionTitle }),
+        model.detailSections.map((section) => /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "mn-detail-section", "aria-label": section.title, "data-mobile-native-detail-section": true, children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: section.title }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: section.note })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mn-detail-group", children: section.rows.map((row, index) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `is-${row.tone || "trust"}`, children: [
             /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: row.label }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: row.value })
-          ] }, row.label))
-        ] })
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: row.value }),
+              row.note ? /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: row.note }) : null
+            ] })
+          ] }, `${row.label}-${index}`)) })
+        ] }, section.title))
       ] })
     ] });
   }
-  function MobileNativeSheet({ model, onOpenDetail }) {
-    return /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "mn-sheet", "aria-labelledby": "mn-sheet-title", "data-mobile-native-sheet": model.incident ? "expanded" : "partial", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mn-grabber", "aria-hidden": "true" }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mn-sheet-heading", children: [
+  function MobileNativeHome({ model, onOpenDetail }) {
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "mn-home", "aria-labelledby": "mn-home-title", "data-mobile-native-home": true, children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs(
+        "div",
+        {
+          className: `mn-evidence-banner is-${model.evidenceTone}`,
+          "data-mobile-native-evidence-mode": model.evidenceMode,
+          children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: model.evidenceLabel }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: model.evidenceNote })
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("time", { children: model.timestamp })
+          ]
+        }
+      ),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mn-home-heading", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: model.kicker }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("time", { children: model.timestamp })
+        /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { id: "mn-home-title", children: model.title }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("p", { children: model.summary })
       ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { id: "mn-sheet-title", children: model.title }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("p", { children: model.summary }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mn-facts", "aria-label": "关键指标", children: model.facts.map((fact) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `mn-fact is-${fact.tone || "trust"}`, children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mn-facts", "aria-label": "关键事实", children: model.facts.map((fact) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `mn-fact is-${fact.tone || "trust"}`, children: [
         /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: fact.label }),
         /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: fact.value })
       ] }, fact.label)) }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mn-rows", children: model.rows.map((row) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mn-row", children: [
+      model.showRates ? /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mn-rates", "data-mobile-native-rates": "current", "aria-label": "当前速率", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: "当前下载" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: model.downRate })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: "当前上传" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: model.upRate })
+        ] })
+      ] }) : null,
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mn-rows", "aria-label": "判断依据", children: model.rows.map((row) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mn-row", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: row.label }),
         /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: row.value }),
@@ -9515,72 +9533,44 @@ var PanelFramework = function(exports) {
       ] })
     ] });
   }
-  function MobileNativeTopology({ model }) {
-    return /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "mn-topology", "aria-label": "当前网络路径", "data-mobile-native-topology": model.pathState, children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mn-path mn-path-wan", "aria-hidden": "true" }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mn-path mn-path-lan", "aria-hidden": "true" }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mn-node mn-node-internet", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "mn-internet-symbol", "aria-hidden": "true", children: "WAN" }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: "互联网" }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: model.internetLabel })
-      ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mn-route-label", children: model.routeLabel }),
-      model.showRates ? /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mn-rate-pair", "data-mobile-native-rates": model.ratePrefix === "上次" ? "cached" : "current", children: [
+  function MobileNativePathEvidence({ model }) {
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs("details", { className: "mn-path-evidence", "data-mobile-native-path-evidence": true, "data-mobile-route-verification": model.routeVerification, children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("summary", { children: [
         /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("small", { children: [
-            model.ratePrefix,
-            "下载"
-          ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: model.downRate })
+          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: "网络对象与路径证据" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: model.pathSummary })
         ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("i", { "aria-hidden": "true", children: "›" })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mn-path-rows", children: model.pathRows.map((row) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `mn-path-row is-${row.tone || "trust"}`, children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: row.label }),
         /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("small", { children: [
-            model.ratePrefix,
-            "上传"
-          ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: model.upRate })
+          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: row.value }),
+          row.note ? /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: row.note }) : null
         ] })
-      ] }) : null,
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mn-node mn-node-router", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "mn-router-symbol", "aria-hidden": "true", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("i", {}),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("i", {})
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: model.device }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: model.deviceNote })
-      ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mn-node mn-node-clients", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "mn-client-symbols", "aria-hidden": "true", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("i", {}),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("i", {}),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("i", {})
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: model.clientLabel })
-      ] })
+      ] }, row.label)) })
     ] });
+  }
+  function clean(value, fallback = "未记录") {
+    const normalized = String(value ?? "").replace(/\s+/g, " ").trim();
+    return normalized || fallback;
+  }
+  function finiteObservation(value) {
+    if (value === null || value === void 0 || value === "") return null;
+    const numeric = Number(value);
+    return Number.isFinite(numeric) ? numeric : null;
   }
   function wanRows(snapshot) {
     return Array.isArray(snapshot.wan) && snapshot.wan.length ? snapshot.wan : Array.isArray(snapshot.pppoe) ? snapshot.pppoe : [];
   }
-  function rates(snapshot) {
-    return wanRows(snapshot).reduce(
-      (total, row) => ({ down: total.down + Number(row.downRate || 0), up: total.up + Number(row.upRate || 0) }),
-      { down: 0, up: 0 }
-    );
+  function routeRows(snapshot) {
+    var _a, _b;
+    const defaults = (_a = snapshot.routes) == null ? void 0 : _a.defaultRoutes;
+    if (Array.isArray(defaults) && defaults.length) return defaults;
+    return Array.isArray((_b = snapshot.routes) == null ? void 0 : _b.items) ? snapshot.routes.items : [];
   }
   function activeRoute(snapshot) {
-    var _a, _b;
-    const rows = ((_a = snapshot.routes) == null ? void 0 : _a.defaultRoutes) || ((_b = snapshot.routes) == null ? void 0 : _b.items) || [];
-    return rows.find((route) => route.active && !route.disabled) || rows[0];
-  }
-  function routeText(snapshot, state) {
-    var _a;
-    if (state.scenario === "no-snapshot") return "默认路由未知";
-    if (state.scenario === "all-offline") return "无活动默认路由";
-    const route = activeRoute(snapshot);
-    const gateway = String((route == null ? void 0 : route.gateway) || "").trim();
-    const carryingWan = ((_a = wanRows(snapshot).find((row) => row.running !== false)) == null ? void 0 : _a.name) || "main";
-    return gateway && gateway !== carryingWan ? `${carryingWan} · ${gateway}` : carryingWan;
+    return routeRows(snapshot).find((route) => route.active === true && route.disabled !== true) || null;
   }
   function latestRecord(snapshot) {
     const meta = snapshot.meta || {};
@@ -9588,8 +9578,157 @@ var PanelFramework = function(exports) {
     const short = shortTimestamp(value);
     return short === "-" ? "未记录" : short;
   }
+  function resourceSamples(snapshot) {
+    var _a;
+    const history = ((_a = snapshot.overview) == null ? void 0 : _a.history) || {};
+    const series = [history.cpu, history.memory, history.disk].map((value) => Array.isArray(value) ? value : []);
+    const total = Math.max(...series.map((values) => values.length), 0);
+    const samples = [];
+    for (let index = 0; index < total; index += 1) {
+      const cpu = finiteObservation(series[0][index]);
+      const memory = finiteObservation(series[1][index]);
+      const disk = finiteObservation(series[2][index]);
+      if (cpu === null && memory === null && disk === null) {
+        samples.push(null);
+        continue;
+      }
+      samples.push(cpu !== null && cpu >= 85 || memory !== null && memory >= 85 || disk !== null && disk >= 90);
+    }
+    let trailingStreak = 0;
+    for (let index = samples.length - 1; index >= 0 && samples[index] === true; index -= 1) trailingStreak += 1;
+    return {
+      observed: samples.filter((value) => value !== null).length,
+      exceeded: samples.filter((value) => value === true).length,
+      trailingStreak
+    };
+  }
+  function endpointFailureRows(entries) {
+    return entries.slice(0, 6).map((entry, index) => ({
+      label: clean(entry.group, `失败端点 ${index + 1}`),
+      value: clean(entry.name),
+      note: clean(entry.message || entry.at, "未提供附加说明"),
+      tone: "warn"
+    }));
+  }
+  function collectionDetail(snapshot, state) {
+    const meta = snapshot.meta || {};
+    const failures = [
+      ...meta.realtimeEndpointFailures || [],
+      ...meta.slowRestEndpointFailures || [],
+      ...meta.staticEndpointFailures || [],
+      ...meta.detailEndpointFailures || []
+    ];
+    const rows = [
+      { label: "REST", value: state.facts.collection.restLabel, note: `记录 ${shortTimestamp(meta.realtimeUpdatedAt)}` },
+      { label: "SSH", value: state.facts.collection.sshLabel, note: `记录 ${shortTimestamp(meta.staticUpdatedAt)}` },
+      { label: "连接详情", value: meta.connectionDetailError ? "采集失败" : "有记录", note: clean(meta.connectionDetailError || meta.connectionDetailUpdatedAt) },
+      ...endpointFailureRows(failures)
+    ];
+    return {
+      title: "采集链路证据",
+      note: failures.length ? `${failures.length} 个失败端点已保留` : "通道状态与最近记录",
+      rows
+    };
+  }
+  function routeDetail(snapshot) {
+    const rows = routeRows(snapshot).slice(0, 6).map((route, index) => ({
+      label: `默认路由 ${index + 1}`,
+      value: route.disabled === true ? "已停用" : route.active === true ? "活动记录" : "非活动记录",
+      note: `表 ${clean(route.table || route.routingTable, "main")} · 网关 ${clean(route.gateway || route.gatewayStatus)} · 距离 ${clean(route.distance)}`,
+      tone: route.active === true && route.disabled !== true ? "trust" : "warn"
+    }));
+    return {
+      title: "路由原始证据",
+      note: "只认 active=true 且未停用的记录",
+      rows: rows.length ? rows : [{ label: "默认路由", value: "未取得", note: "不使用任意首行兜底", tone: "warn" }]
+    };
+  }
+  function wanDetail(snapshot, mode) {
+    const rows = wanRows(snapshot).slice(0, 8).map((wan, index) => {
+      const down = finiteObservation(wan.downRate);
+      const up = finiteObservation(wan.upRate);
+      const rateNote = mode === "current" && down !== null && up !== null ? `下载 ${formatRate(down)} · 上传 ${formatRate(up)}` : mode === "stale" ? "历史对象记录；速率不展示" : "没有可信速率观测";
+      return {
+        label: clean(wan.name || wan.interface, `WAN ${index + 1}`),
+        value: wan.disabled === true ? "已停用" : wan.running === false ? "未运行" : "运行记录",
+        note: `${clean(wan.parent, "父接口未记录")} · ${rateNote}`,
+        tone: wan.running === false ? "danger" : "trust"
+      };
+    });
+    return {
+      title: "WAN 对象证据",
+      note: mode === "current" ? "对象状态与当前观测" : "非当前证据不显示速率数字",
+      rows: rows.length ? rows : [{ label: "WAN", value: "未取得", note: "没有对象记录", tone: "warn" }]
+    };
+  }
+  function interfaceDetail(snapshot) {
+    const rows = (snapshot.interfaces || []).filter((item) => item.running === false).slice(0, 8).map((item, index) => ({
+      label: clean(item.name || item.interface, `接口 ${index + 1}`),
+      value: item.disabled === true ? "已停用" : "未运行",
+      note: `父级 ${clean(item.parent || item.master)} · VLAN ${clean(item.vlan || item.vlanId)} · PPPoE ${clean(item.pppoeOut || item.pppoe)}`,
+      tone: "danger"
+    }));
+    return {
+      title: "接口依赖证据",
+      note: "Down 对象、父级、VLAN 与 PPPoE",
+      rows: rows.length ? rows : [{ label: "接口", value: "未发现 Down 记录", note: "只依据当前快照" }]
+    };
+  }
+  function resourceDetail(snapshot, state) {
+    const samples = resourceSamples(snapshot);
+    return {
+      title: "资源阈值证据",
+      note: "CPU/内存 85%，磁盘 90%",
+      rows: [
+        { label: "CPU", value: formatPercent(state.facts.resource.cpu), note: "阈值 85%", tone: "danger" },
+        { label: "内存", value: formatPercent(state.facts.resource.memory), note: "阈值 85%", tone: "danger" },
+        { label: "磁盘", value: formatPercent(state.facts.resource.disk), note: "阈值 90%", tone: "danger" },
+        {
+          label: "连续样本",
+          value: samples.observed ? `${samples.trailingStreak} 个` : "未取得",
+          note: samples.observed ? `共 ${samples.observed} 个有效样本，${samples.exceeded} 个超限` : "没有历史采样序列",
+          tone: samples.trailingStreak ? "danger" : "warn"
+        }
+      ]
+    };
+  }
+  function boundaryDetail() {
+    return {
+      title: "只读边界",
+      note: "页面只解释采集结果",
+      rows: [
+        { label: "RouterOS 配置", value: "不会修改", note: "不写路由、接口、DNS 或防火墙" },
+        { label: "本地面板", value: "仅展示", note: "诊断数据不代表业务承诺" }
+      ]
+    };
+  }
+  function buildDetailSections(snapshot, state, mode) {
+    const route = routeDetail(snapshot);
+    const wan = wanDetail(snapshot, mode);
+    const collection = collectionDetail(snapshot, state);
+    const boundary = boundaryDetail();
+    if (state.scenario === "no-snapshot" || state.scenario === "collection-down") return [collection, route, wan, boundary];
+    if (state.scenario === "resource-full") return [resourceDetail(snapshot, state), wan, route, collection, boundary];
+    if (state.scenario === "interfaces-down") return [interfaceDetail(snapshot), route, wan, collection, boundary];
+    if (state.scenario === "all-offline") return [wan, route, collection, boundary];
+    return [route, wan, collection, boundary];
+  }
+  function observedRates(snapshot) {
+    const rows = wanRows(snapshot).filter((row) => row.running !== false && row.disabled !== true);
+    if (!rows.length) return null;
+    let down = 0;
+    let up = 0;
+    for (const row of rows) {
+      const downObservation = finiteObservation(row.downRate);
+      const upObservation = finiteObservation(row.upRate);
+      if (downObservation === null || upObservation === null) return null;
+      down += downObservation;
+      up += upObservation;
+    }
+    return { down, up };
+  }
   function freshnessText(snapshot, state) {
-    if (state.scenario === "no-snapshot" || state.scenario === "collection-down") return `上次成功 ${latestRecord(snapshot)}`;
+    if (state.scenario === "no-snapshot" || state.scenario === "collection-down") return `最后成功 ${latestRecord(snapshot)}`;
     if (state.facts.freshness.seconds != null) {
       const seconds = Math.max(0, Math.round(state.facts.freshness.seconds));
       if (seconds >= 86400) return `${Math.floor(seconds / 86400)} 天前`;
@@ -9599,206 +9738,224 @@ var PanelFramework = function(exports) {
     }
     return latestRecord(snapshot);
   }
+  function evidenceMode(state) {
+    if (state.scenario === "no-snapshot" || state.facts.freshness.missing || state.facts.freshness.credibility === "unavailable" || state.facts.collection.credibility === "unavailable") return "unavailable";
+    if (state.scenario === "collection-down" || state.facts.freshness.stale || state.facts.freshness.history || state.facts.freshness.credibility === "cache" || state.facts.collection.dataStale) return "stale";
+    return "current";
+  }
+  function routeVerification(state, route) {
+    if (state.scenario === "all-offline") return "offline";
+    return route ? "verified" : "unknown";
+  }
+  function routeLabel(route, verification) {
+    if (verification === "offline") return "无活动默认路由";
+    if (!route) return "无法确认";
+    return clean(route.gateway || route.gatewayStatus);
+  }
   function failureCount(state) {
     return formatNumber(state.facts.failures.count);
   }
-  function resourceSamples(snapshot) {
-    var _a;
-    const history = ((_a = snapshot.overview) == null ? void 0 : _a.history) || {};
-    const cpu = Array.isArray(history.cpu) ? history.cpu.map(Number) : [];
-    const memory = Array.isArray(history.memory) ? history.memory.map(Number) : [];
-    const disk = Array.isArray(history.disk) ? history.disk.map(Number) : [];
-    const total = Math.max(cpu.length, memory.length, disk.length);
-    let exceeded = 0;
-    for (let index = 0; index < total; index += 1) {
-      if ((cpu[index] || 0) >= 85 || (memory[index] || 0) >= 85 || (disk[index] || 0) >= 90) exceeded += 1;
-    }
-    return { exceeded, total };
+  function pathRows(snapshot, state, mode, route, verification) {
+    const terminalCount = Array.isArray(snapshot.terminals) ? snapshot.terminals.length : 0;
+    const wanNames = wanRows(snapshot).filter((row) => row.running !== false).map((row) => clean(row.name || row.interface)).slice(0, 3);
+    return [
+      {
+        label: "默认路由",
+        value: verification === "verified" ? mode === "stale" ? "历史活动记录" : "活动记录" : verification === "offline" ? "无活动记录" : "无法确认",
+        note: route ? `${mode === "stale" ? "历史记录 · " : ""}网关 ${clean(route.gateway || route.gatewayStatus)} · 表 ${clean(route.table || route.routingTable, "main")} · 距离 ${clean(route.distance)}` : "没有明确 active=true 记录",
+        tone: verification === "verified" ? "trust" : verification === "offline" ? "danger" : "warn"
+      },
+      {
+        label: "WAN 对象",
+        value: `${state.facts.wan.online} / ${state.facts.wan.total}`,
+        note: wanNames.length ? wanNames.join(" · ") : "没有运行对象记录"
+      },
+      {
+        label: "终端记录",
+        value: mode === "unavailable" ? "不可判断" : `${formatNumber(terminalCount)} 台`,
+        note: mode === "current" ? "当前快照对象数" : mode === "stale" ? "历史快照对象数" : "业务快照缺失"
+      }
+    ];
   }
   function commonModel(snapshot, state) {
-    const currentRates = rates(snapshot);
-    const terminalCount = Array.isArray(snapshot.terminals) ? snapshot.terminals.length : 0;
-    const cached = state.facts.freshness.history || state.facts.freshness.stale || state.facts.collection.dataStale;
+    const mode = evidenceMode(state);
+    const route = activeRoute(snapshot);
+    const verification = routeVerification(state, route);
+    const rates = observedRates(snapshot);
+    const visibleRates = mode === "current" && !["all-offline", "no-snapshot"].includes(state.scenario) ? rates : null;
     const board = state.facts.device.boardName !== "-" ? state.facts.device.boardName : state.facts.device.version !== "-" ? state.facts.device.version : "RouterOS";
+    const staleRouteTitle = route ? "历史快照记录过活动默认路由" : "历史快照未确认活动默认路由";
+    const currentRouteTitle = route ? "活动默认路由已记录" : "默认路由无法确认";
     return {
       scenario: state.scenario,
       incident: !["single", "fleet"].includes(state.scenario),
-      pathState: cached ? "cached" : "active",
+      evidenceMode: mode,
+      evidenceLabel: mode === "current" ? "当前证据" : mode === "stale" ? "历史快照" : "证据不可用",
+      evidenceNote: mode === "current" ? "数据来自当前采集周期" : mode === "stale" ? "禁止当作实时状态" : "没有可用于业务判断的快照",
+      evidenceTone: mode === "current" ? "trust" : mode === "stale" ? "warn" : "danger",
+      routeVerification: verification,
       device: state.facts.device.identity || "RouterOS",
       deviceNote: board,
-      internetLabel: "默认出口有活动记录",
-      routeLabel: routeText(snapshot, state),
-      clientLabel: `${formatNumber(terminalCount)} 台终端有记录`,
-      showRates: true,
-      downRate: formatRate(currentRates.down),
-      upRate: formatRate(currentRates.up),
-      ratePrefix: cached ? "上次" : "当前",
-      kicker: "当前路径",
-      title: "默认路由有活动记录",
-      summary: cached ? `${state.facts.wan.online}/${state.facts.wan.total} 条 WAN 运行，数字来自历史快照` : `${state.facts.wan.online}/${state.facts.wan.total} 条 WAN 运行，采集记录完整`,
+      routeLabel: routeLabel(route, verification),
+      pathSummary: verification === "verified" ? `网关 ${routeLabel(route, verification)}` : verification === "offline" ? "无活动默认路由" : "活动默认路由未被证实",
+      showRates: visibleRates !== null,
+      downRate: visibleRates ? formatRate(visibleRates.down) : "",
+      upRate: visibleRates ? formatRate(visibleRates.up) : "",
+      kicker: "网络判断",
+      title: mode === "stale" ? staleRouteTitle : mode === "unavailable" ? "当前业务状态不可判断" : currentRouteTitle,
+      summary: mode === "current" ? `${state.facts.wan.online}/${state.facts.wan.total} 条 WAN 有运行记录；默认路由单独核验` : mode === "stale" ? `${state.facts.wan.online}/${state.facts.wan.total} 条 WAN 为历史记录；当前变化不可见` : "速率、资源、路由和终端数字停止展示",
       timestamp: freshnessText(snapshot, state),
       facts: [],
       rows: [],
-      actionTitle: "查看网络证据",
-      actionNote: "接口、采集与最近记录"
+      pathRows: pathRows(snapshot, state, mode, route, verification),
+      detailSections: buildDetailSections(snapshot, state, mode),
+      actionTitle: "查看原始证据",
+      actionNote: "路由、WAN、采集与接口记录"
     };
   }
   function buildMobileNativeModel(snapshot, state) {
     const model = commonModel(snapshot, state);
     const route = activeRoute(snapshot);
-    const gateway = String((route == null ? void 0 : route.gateway) || "未记录");
+    const gateway = routeLabel(route, model.routeVerification);
     const resources = state.facts.resource;
+    const routeRecord = route ? model.evidenceMode === "stale" ? "历史活动记录" : "活动记录" : "无法确认";
     switch (state.scenario) {
       case "single":
         return {
           ...model,
           facts: [
-            { label: "默认网关", value: gateway },
+            { label: "默认路由", value: routeRecord, tone: route ? model.evidenceMode === "stale" ? "warn" : "trust" : "warn" },
             { label: "WAN", value: `${state.facts.wan.online} / ${state.facts.wan.total}` },
-            { label: "CPU", value: formatPercent(resources.cpu) }
+            { label: model.evidenceMode === "current" ? "CPU" : "证据", value: model.evidenceMode === "current" ? formatPercent(resources.cpu) : model.evidenceLabel, tone: model.evidenceTone }
           ],
           rows: [
-            { label: "采集通道", value: `${state.facts.collection.restLabel} · ${state.facts.collection.sshLabel}` },
-            { label: "快照依据", value: freshnessText(snapshot, state), note: "RouterOS 当前记录" }
+            { label: "默认网关", value: gateway, note: route ? model.evidenceMode === "stale" ? "来自历史活动路由记录" : "来自明确活动路由" : "没有 active=true 记录" },
+            { label: "采集通道", value: `${state.facts.collection.restLabel} · ${state.facts.collection.sshLabel}` }
           ]
         };
       case "fleet":
         return {
           ...model,
           kicker: "线路汇总",
-          title: `${state.facts.wan.online} / ${state.facts.wan.total} 条 WAN 运行`,
-          summary: "默认路由有活动记录，汇总快照完整",
-          clientLabel: `${formatNumber(state.counts.connections)} 条连接记录`,
+          title: model.evidenceMode === "stale" ? `历史快照：${state.facts.wan.online} / ${state.facts.wan.total} 条 WAN 运行` : `${state.facts.wan.online} / ${state.facts.wan.total} 条 WAN 有运行记录`,
+          summary: route ? "汇总 WAN 与默认路由分别核验；不把单一 WAN 画成全局承载路径" : "WAN 对象有记录，但活动默认路由无法确认",
           facts: [
             { label: "WAN", value: `${state.facts.wan.online} / ${state.facts.wan.total}` },
-            { label: "连接", value: formatNumber(state.counts.connections) },
-            { label: "CPU", value: formatPercent(resources.cpu) }
+            { label: "连接记录", value: formatNumber(state.counts.connections) },
+            { label: "默认路由", value: routeRecord, tone: route ? model.evidenceMode === "stale" ? "warn" : "trust" : "warn" }
           ],
           rows: [
-            { label: "活动出口", value: model.routeLabel },
-            { label: "快照依据", value: freshnessText(snapshot, state), note: "RouterOS 汇总记录" }
+            { label: "路由网关", value: gateway },
+            { label: "采集依据", value: model.evidenceLabel, note: model.timestamp }
           ],
-          actionTitle: "查看线路分布",
-          actionNote: "默认路由、WAN 与连接范围"
+          actionTitle: "查看线路证据",
+          actionNote: "每条 WAN、默认路由与连接范围"
         };
       case "all-offline":
         return {
           ...model,
-          incident: true,
-          pathState: "offline",
-          internetLabel: "业务出口不可用",
+          routeVerification: "offline",
           routeLabel: "无活动默认路由",
-          clientLabel: "局域网记录保留",
           showRates: false,
           kicker: "出口中断",
           title: `全部 ${state.facts.wan.total} 条 WAN 未运行`,
-          summary: "没有活动默认路由，当前业务速率不展示",
+          summary: "当前快照没有活动默认路由；不展示业务速率",
           facts: [
             { label: "WAN", value: `0 / ${state.facts.wan.total}`, tone: "danger" },
             { label: "活动路由", value: "0", tone: "danger" },
-            { label: "采集", value: state.facts.collection.credibility === "realtime" ? "当前采样" : state.facts.collection.credibilityLabel }
+            { label: "采集证据", value: model.evidenceLabel, tone: model.evidenceTone }
           ],
           rows: [
-            { label: "影响范围", value: "全部外网业务" },
-            { label: "证据边界", value: "转发面无活动出口" },
+            { label: "影响范围", value: "全部外网出口" },
+            { label: "证据边界", value: "只证明当前无活动出口" },
             { label: "优先检查", value: "物理链路与 PPPoE" }
           ],
-          actionTitle: "查看离线线路",
-          actionNote: "对象、依赖与最近变化"
+          actionTitle: "查看离线对象",
+          actionNote: "WAN、路由与采集原始记录"
         };
       case "no-snapshot":
         return {
           ...model,
-          incident: true,
-          pathState: "unknown",
-          internetLabel: "当前状态未知",
-          routeLabel: "默认路由未知",
-          clientLabel: "终端状态未知",
+          routeVerification: "unknown",
+          routeLabel: "无法确认",
           showRates: false,
           kicker: "证据缺失",
           title: "当前业务状态不可判断",
-          summary: "没有可用业务快照；速率、资源与终端数字已隐藏",
+          summary: "没有可用业务快照；速率、资源、路由与终端数字已隐藏",
           facts: [
-            { label: "REST", value: "待确认", tone: "warn" },
-            { label: "SSH", value: "不可用", tone: "danger" },
+            { label: "REST", value: state.facts.collection.restLabel, tone: "warn" },
+            { label: "SSH", value: state.facts.collection.sshLabel, tone: "danger" },
             { label: "失败端点", value: failureCount(state), tone: "warn" }
           ],
           rows: [
             { label: "不可判断", value: "业务、转发与资源" },
-            { label: "仍可参考", value: `最后成功 ${latestRecord(snapshot)}` },
+            { label: "最后记录", value: latestRecord(snapshot), note: "仅用于恢复线索" },
             { label: "优先检查", value: "REST / SSH 采集链路" }
           ],
-          actionTitle: "打开采集诊断",
-          actionNote: "失败端点与恢复记录"
+          actionTitle: "打开采集证据",
+          actionNote: "失败端点、时间戳与恢复线索"
         };
       case "collection-down":
         return {
           ...model,
-          incident: true,
-          pathState: "cached",
-          internetLabel: "承载证据来自缓存",
-          routeLabel: `缓存 · ${gateway}`,
-          clientLabel: "终端记录来自缓存",
-          ratePrefix: "上次",
+          showRates: false,
           kicker: "采集降级",
-          title: "采集链路尚未恢复",
-          summary: "业务数字来自最后成功快照，新变化当前不可见",
+          title: "当前变化不可见",
+          summary: "只保留最后成功快照；所有速率数字停止展示",
           facts: [
-            { label: "缓存时间", value: latestRecord(snapshot), tone: "warn" },
+            { label: "证据", value: "历史快照", tone: "warn" },
             { label: "失败端点", value: failureCount(state), tone: "warn" },
-            { label: "路由记录", value: "已保留" }
+            { label: "路由记录", value: route ? "历史记录" : "无法确认", tone: route ? "warn" : "danger" }
           ],
           rows: [
-            { label: "管理面", value: snapshot.status === "error" ? "不可达" : "有历史记录" },
+            { label: "最后成功", value: latestRecord(snapshot) },
             { label: "采集面", value: "REST / SSH 未恢复" },
             { label: "优先检查", value: "先 REST，后 SSH" }
           ],
-          actionTitle: "打开采集诊断",
-          actionNote: "通道、端点与重试记录"
+          actionTitle: "打开采集证据",
+          actionNote: "通道、端点与历史路由记录"
         };
       case "resource-full": {
         const samples = resourceSamples(snapshot);
-        const sampleText = samples.total ? `${samples.exceeded} / ${samples.total}` : "当前";
         return {
           ...model,
-          incident: true,
           kicker: "资源压力",
-          title: samples.total ? `资源连续 ${sampleText} 个采样点超限` : "资源当前超过阈值",
-          summary: `磁盘 ${formatPercent(resources.disk)}，CPU 与内存同时处于高位`,
+          title: model.evidenceMode === "stale" ? "历史快照记录到资源超限" : "资源当前超过阈值",
+          summary: `CPU ${formatPercent(resources.cpu)} · 内存 ${formatPercent(resources.memory)} · 磁盘 ${formatPercent(resources.disk)}`,
           facts: [
             { label: "CPU", value: formatPercent(resources.cpu), tone: "danger" },
             { label: "内存", value: formatPercent(resources.memory), tone: "danger" },
             { label: "磁盘", value: formatPercent(resources.disk), tone: "danger" }
           ],
           rows: [
-            { label: "持续证据", value: samples.total ? `${sampleText} 个采样点` : "单点记录" },
+            { label: "连续样本", value: samples.observed ? `${samples.trailingStreak} 个` : "未取得", note: samples.observed ? `最近连续；共 ${samples.observed} 个有效样本` : "没有历史序列" },
             { label: "可能影响", value: "采集与转发稳定性" },
             { label: "优先检查", value: "连接压力与高吞吐接口" }
           ],
-          actionTitle: "查看资源诊断",
-          actionNote: "阈值、持续证据与连接压力"
+          actionTitle: "查看资源证据",
+          actionNote: "阈值、连续样本与 WAN 对象"
         };
       }
       case "interfaces-down": {
         const names = state.facts.interfaces.downNames.slice(0, 2).join(" / ") || "接口";
+        const routeCurrent = route && model.evidenceMode === "current";
         return {
           ...model,
-          incident: true,
           kicker: "接口异常",
           title: `${names} 未运行`,
-          summary: "默认路由仍有活动记录；受影响依赖需要核对",
+          summary: routeCurrent ? "当前快照有活动默认路由记录；接口依赖仍需核对" : "活动默认路由无法按当前证据确认",
           facts: [
             { label: "接口 Down", value: `${state.facts.interfaces.down} / ${state.facts.interfaces.total}`, tone: "danger" },
-            { label: "默认路由", value: (route == null ? void 0 : route.active) ? "承载中" : "待确认" },
+            { label: "默认路由", value: routeCurrent ? "活动记录" : "无法确认", tone: routeCurrent ? "trust" : "warn" },
             { label: "WAN", value: `${state.facts.wan.online} / ${state.facts.wan.total}` }
           ],
           rows: [
             { label: "影响对象", value: names },
             { label: "关联依赖", value: "父接口、VLAN 与 PPPoE" },
-            { label: "路由后果", value: (route == null ? void 0 : route.active) ? "默认出口仍承载" : "默认出口待确认" }
+            { label: "路由后果", value: routeCurrent ? "存在活动记录，业务仍需外部验证" : "无法确认" }
           ],
-          actionTitle: "查看接口关系",
-          actionNote: "父级、VLAN 与路由后果"
+          actionTitle: "查看接口证据",
+          actionNote: "Down 对象、父级、VLAN 与路由原始字段"
         };
       }
     }
@@ -9810,9 +9967,10 @@ var PanelFramework = function(exports) {
     return /* @__PURE__ */ jsxRuntimeExports.jsxs(
       "main",
       {
-        className: `mn-shell is-${model.scenario} is-path-${model.pathState}`,
+        className: `mn-shell is-${model.scenario} is-evidence-${model.evidenceMode}`,
         "data-mobile-native-console": true,
         "data-mobile-native-scenario": model.scenario,
+        "data-mobile-native-evidence": model.evidenceMode,
         children: [
           /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { className: "mn-chrome", children: [
             /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
@@ -9821,8 +9979,10 @@ var PanelFramework = function(exports) {
             ] }),
             /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "mn-readonly", children: "只读" })
           ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(MobileNativeTopology, { model }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(MobileNativeSheet, { model, onOpenDetail: () => setDetailOpen(true) })
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mn-home-layout", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx(MobileNativeHome, { model, onOpenDetail: () => setDetailOpen(true) }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(MobileNativePathEvidence, { model })
+          ] })
         ]
       }
     );
@@ -9841,10 +10001,6 @@ var PanelFramework = function(exports) {
   }
   function OverviewPanel({ snapshot, state }) {
     const mobile = useMobileOverview();
-    reactExports.useEffect(() => {
-      document.body.classList.toggle("mobile-native-active", mobile);
-      return () => document.body.classList.remove("mobile-native-active");
-    }, [mobile]);
     return /* @__PURE__ */ jsxRuntimeExports.jsx(
       "section",
       {

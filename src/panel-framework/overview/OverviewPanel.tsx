@@ -29,11 +29,6 @@ function useMobileOverview(): boolean {
 export function OverviewPanel({ snapshot, state }: OverviewPanelProps) {
   const mobile = useMobileOverview();
 
-  useEffect(() => {
-    document.body.classList.toggle("mobile-native-active", mobile);
-    return () => document.body.classList.remove("mobile-native-active");
-  }, [mobile]);
-
   return (
     <section
       id="overview"

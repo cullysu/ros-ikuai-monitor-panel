@@ -165,7 +165,7 @@
   padding: 1px 0 3px;
   border-bottom: 1px solid #eef3f8;
   color: var(--ro-muted);
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 720;
   line-height: 1.05;
 }
@@ -271,7 +271,7 @@
 
 .ro-resource-card span {
   color: var(--ro-muted);
-  font-size: 8px;
+  font-size: 10px;
   font-weight: 700;
   line-height: 1;
 }
@@ -285,7 +285,7 @@
 
 .ro-resource-card em {
   color: var(--ro-faint);
-  font-size: 7px;
+  font-size: 10px;
   font-style: normal;
   font-weight: 650;
   line-height: 1.05;
@@ -380,7 +380,7 @@
   border: 1px solid #d9e1eb;
   background: #f8fbff;
   color: var(--ro-muted);
-  font-size: 8px;
+  font-size: 10px;
   line-height: 1.2;
   white-space: nowrap;
 }
@@ -418,7 +418,7 @@
   display: block;
   overflow: hidden;
   color: var(--ro-faint);
-  font-size: 9px;
+  font-size: 10px;
   font-style: normal;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -444,7 +444,7 @@
   background: #fff;
   padding: 3px 4px;
   color: var(--ro-text);
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 800;
 }
 
@@ -469,7 +469,7 @@
 
 .ro-interface-route-chain-step em {
   color: var(--ro-faint);
-  font-size: 8px;
+  font-size: 10px;
   font-weight: 750;
   letter-spacing: .01em;
 }
@@ -482,7 +482,7 @@
 
 .ro-interface-route-chain-step i {
   color: var(--ro-muted);
-  font-size: 8px;
+  font-size: 10px;
   font-weight: 700;
 }
 
@@ -513,7 +513,7 @@
   gap: 4px;
   padding: 0 1px;
   color: var(--ro-faint);
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 750;
   line-height: 1;
 }
@@ -588,7 +588,7 @@
   flex-wrap: wrap;
   gap: 3px;
   color: var(--ro-muted);
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 650;
   min-width: 0;
   overflow: hidden;
@@ -637,7 +637,7 @@
 .ro-resource-card em {
   display: block;
   color: var(--ro-muted);
-  font-size: 9px;
+  font-size: 10px;
   font-style: normal;
   font-weight: 750;
 }
@@ -713,7 +713,7 @@
   gap: 2px;
   min-width: 0;
   color: var(--ro-muted);
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 800;
   text-align: center;
 }
@@ -770,7 +770,7 @@
   display: block;
   overflow: hidden;
   color: var(--ro-muted);
-  font-size: 9px;
+  font-size: 10px;
   font-style: normal;
   font-weight: 750;
   line-height: 1.15;
@@ -813,7 +813,7 @@
   background: #f8fafc;
   padding: 2px 4px;
   color: var(--ro-muted);
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 760;
 }
 
@@ -860,7 +860,7 @@
 .ro-visibility-cell span {
   display: block;
   color: var(--ro-muted);
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 750;
 }
 
@@ -877,7 +877,7 @@
   display: block;
   margin-top: 1px;
   color: var(--ro-faint);
-  font-size: 9px;
+  font-size: 10px;
   font-style: normal;
   white-space: nowrap;
   overflow: hidden;
@@ -915,7 +915,7 @@
   border: 1px dashed #cbd5e1;
   background: #f5f7fa;
   color: #667184;
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 750;
   line-height: 13px;
   padding: 0 5px;
@@ -1289,7 +1289,7 @@
 
 .router-overview-framework .ro-resource-card em {
   color: #8e99a8;
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 520;
 }
 
@@ -2057,7 +2057,7 @@
 .router-overview-framework .ro-module[data-tone="warn"] { border-left: 2px solid var(--ro-warn); }
 .router-overview-framework .ro-module-head { min-height: 28px; padding: 5px 7px 4px; background: linear-gradient(180deg, #fff 0%, #fbfdff 100%); border-bottom-color: var(--ro-line); }
 .router-overview-framework .ro-module-head b { font-size: 12px; letter-spacing: 0; }
-.router-overview-framework .ro-module-head span { font-size: 9px; color: #7c8796; }
+.router-overview-framework .ro-module-head span { font-size: 10px; color: #7c8796; }
 .router-overview-framework .ro-ledger-table th { background: #f8fbff; color: #7a8798; font-size: 10px; font-weight: 700; }
 .router-overview-framework .ro-ledger-row { background: #fff !important; }
 .router-overview-framework .ro-ledger-row[data-tone="danger"] { box-shadow: inset 2px 0 0 rgba(214,64,54,.72); }

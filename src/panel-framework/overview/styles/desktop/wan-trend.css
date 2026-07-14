@@ -53,7 +53,7 @@
   .router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="wan-trend"] .ro-wan-integrated-visual .ro-chart-summary {
     min-height: 20px;
     color: #24374b;
-    font-size: 9px;
+    font-size: 10px;
   }
   #overview.router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="wan-trend"] .ro-wan-integrated-decision,
   .router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="wan-trend"] .ro-wan-integrated-decision {
@@ -75,7 +75,7 @@
   .router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="wan-trend"] .ro-wan-integrated-decision em {
     overflow: hidden;
     color: #7c8fa3;
-    font-size: 8px;
+    font-size: 10px;
     font-style: normal;
     font-weight: 620;
     letter-spacing: .02em;
