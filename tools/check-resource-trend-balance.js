@@ -784,30 +784,30 @@ async function main() {
         const routeModule = sectionEl?.querySelector('[data-overview-density-module="route-raw-facts"]');
         const wanModule = sectionEl?.querySelector('[data-overview-density-module="wan-trend"]');
         const evidenceModule = sectionEl?.querySelector('[data-overview-density-module="normal-wan-evidence"]');
-        const integratedWan = wanModule?.querySelector('[data-overview-desktop-wan-integrated="trend-current-peak-top-outlet-route-sampling"]');
-        const integratedSummary = integratedWan?.querySelector('[data-overview-desktop-wan-integrated-summary="current-peak-top-route-sampling"]');
-        const integratedTop = integratedWan?.querySelector('[data-overview-desktop-wan-top-outlet="top3-inline-under-trend"]');
+        const integratedWan = wanModule?.querySelector('.ro-wan-integrated-visual');
+        const integratedDecision = integratedWan?.querySelector('.ro-wan-integrated-decision');
+        const integratedTop = integratedWan?.querySelector('.ro-wan-integrated-top');
         const businessSummaryRow = routeModule?.querySelector('[data-routeros-evidence-role="business-summary-primary"]');
         const routeRect = routeModule?.getBoundingClientRect();
         const wanRect = wanModule?.getBoundingClientRect();
         const routeRows = Array.from(routeModule?.querySelectorAll('.ro-ledger-row:not(.ro-ledger-head)') || []);
-        const wanRows = Array.from(wanModule?.querySelectorAll('.ro-ledger-row:not(.ro-ledger-head)') || []);
+        const wanDecisionItems = Array.from(integratedDecision?.querySelectorAll(':scope > span') || []);
         const chart = wanModule?.querySelector('[data-overview-scene-chart], [data-overview-chart-type], .ro-judgement-chart');
         const text = normalize([visibleText(routeModule), visibleText(wanModule), visibleText(evidenceModule)].join(' '));
         const required = ['默认出口', 'WAN', '当前', '峰值', '均值', '采样', '最近6点'];
         const missing = required.filter((item) => !text.includes(item));
         const heightDiff = routeRect && wanRect ? Math.abs(routeRect.height - wanRect.height) : null;
         return {
-          pass: Boolean(sectionEl && routeModule && wanModule && evidenceModule && chart && integratedWan && integratedSummary && integratedTop && businessSummaryRow && routeRows.length >= 2 && wanRows.length >= 2 && missing.length === 0 && heightDiff !== null && heightDiff <= 260),
+          pass: Boolean(sectionEl && routeModule && wanModule && evidenceModule && chart && integratedWan && integratedDecision && integratedTop && businessSummaryRow && routeRows.length >= 2 && wanDecisionItems.length >= 5 && missing.length === 0 && heightDiff !== null && heightDiff <= 260),
           section: sectionName,
           url: location.href,
           missing,
           routeRowCount: routeRows.length,
-          wanRowCount: wanRows.length,
+          wanDecisionItemCount: wanDecisionItems.length,
           hasChart: Boolean(chart),
           hasEvidenceModule: Boolean(evidenceModule),
           hasIntegratedWan: Boolean(integratedWan),
-          hasIntegratedSummary: Boolean(integratedSummary),
+          hasIntegratedDecision: Boolean(integratedDecision),
           hasIntegratedTop: Boolean(integratedTop),
           hasBusinessSummaryRow: Boolean(businessSummaryRow),
           wanHeight: wanRect ? wanRect.height : 0,
@@ -1001,23 +1001,22 @@ async function main() {
           boxShadow: style.boxShadow
         }));
         const wanModule = sectionEl?.querySelector('[data-overview-density-module="wan-trend"]');
-        const wanIntegrated = wanModule?.querySelector('[data-overview-wan-chart-contract="current-peak-mean-window-threshold-readout-visible-not-table-noise"]');
+        const wanIntegrated = wanModule?.querySelector('.ro-wan-integrated-visual');
         const wanModuleLedgerCount = wanModule?.querySelectorAll(':scope > .ro-ledger-table').length || 0;
         const wanDuplicateEvidenceModuleCount = sectionEl?.querySelectorAll('[data-overview-density-module="normal-wan-evidence"]').length || 0;
-        const wanChart = wanIntegrated?.querySelector('.ro-judgement-chart[data-overview-chart-module="traffic-trend"]');
+        const wanChart = wanIntegrated?.querySelector('.ro-judgement-chart');
         const wanChartRect = wanChart?.getBoundingClientRect();
         const wanChartRows = Array.from(wanChart?.querySelectorAll('.ro-judgement-row') || []);
         const wanChartSummary = wanChart?.querySelector('.ro-chart-summary');
         const wanChartSummaryRect = wanChartSummary?.getBoundingClientRect();
         const wanSummaryItems = Array.from(wanIntegrated?.querySelectorAll('.ro-wan-integrated-summary span') || []);
         const wanTopItems = Array.from(wanIntegrated?.querySelectorAll('.ro-wan-integrated-top span') || []);
-        const wanDecisionRail = wanIntegrated?.querySelector('[data-overview-wan-decision-rail="current-peak-top-default-sampling-single-surface"]');
-        const wanDecisionItems = Array.from(wanDecisionRail?.querySelectorAll('[data-overview-wan-decision]') || []);
+        const wanDecisionRail = wanIntegrated?.querySelector('.ro-wan-integrated-decision');
+        const wanDecisionItems = Array.from(wanDecisionRail?.querySelectorAll(':scope > span') || []);
         const wanDecisionLabels = wanDecisionItems.map((item) => normalize(item.querySelector('em')?.textContent || ''));
         const wanDecisionRect = wanDecisionRail?.getBoundingClientRect();
         const wanDecisionRailProductized = Boolean(
           wanDecisionRail &&
-          wanDecisionRail.getAttribute('data-overview-wan-decision-source') === 'desktopWanDecisionRail' &&
           wanDecisionRect &&
           wanDecisionRect.width >= 520 &&
           wanDecisionRect.height >= 28 &&
@@ -1032,7 +1031,6 @@ async function main() {
           wanModule &&
           wanModule.getAttribute('data-overview-module-visual-only') === 'true' &&
           wanIntegrated &&
-          wanIntegrated.getAttribute('data-overview-wan-single-surface') === 'trend-decision-top3-no-duplicate-summary-or-ledger' &&
           wanModuleLedgerCount === 0 &&
           wanSummaryItems.length === 0 &&
           wanDuplicateEvidenceModuleCount === 0
@@ -1212,7 +1210,7 @@ async function main() {
           routeBusinessRowCount: routeBusinessRows.length,
           routeRawSecondaryRowCount: routeRawSecondaryRows.length,
           routeRawSecondaryStyles,
-          wanChartContract: wanIntegrated?.getAttribute('data-overview-wan-chart-contract') || '',
+          wanChartContract: wanIntegrated ? 'semantic-wan-integrated-visual' : '',
           wanChartRect: wanChartRect ? { width: wanChartRect.width, height: wanChartRect.height } : null,
           wanChartRowCount: wanChartRows.length,
           wanDecisionRailProductized,

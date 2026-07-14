@@ -832,7 +832,8 @@ def assert_frontend_wan_aggregate_default():
         assert "const trafficChartRowsData = trafficChartRows(snapshot, state);" in desktop_scene_source
         assert "<DesktopWanIntegratedVisual snapshot={snapshot} state={state} rows={trafficChartRowsData} />" in desktop_scene_source
         assert '<WanTrend key="compact-network"' in desktop_scene_source
-        assert 'data-overview-wan-decision-rail="current-peak-top-default-sampling-single-surface"' in visuals_source
+        assert 'className="ro-wan-integrated-decision"' in visuals_source
+        assert "desktopWanDecisionRail(snapshot, state, rows)" in visuals_source
         assert "scale-adaptive-patch" not in index_source
         assert "panel-professional-redesign" not in index_source
         assert "layout-whitespace-patch" not in index_source

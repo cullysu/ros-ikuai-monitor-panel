@@ -864,6 +864,33 @@ assert(
   "desktopOverviewVisuals.tsx must expose semantic visual attributes only"
 );
 assert(
+  [
+    "data-overview-chart-grammar",
+    "data-overview-chart-semantic",
+    "data-overview-chart-judgement-contract",
+    "data-overview-plot-contract",
+    "data-overview-chart-raw-fields",
+    "data-overview-chart-summary",
+    "data-overview-chart-judgement-visible",
+    "data-overview-chart-judgement-strip",
+    "data-overview-chart-judgement-strip-visible",
+    "data-overview-mobile-first-chart-readout",
+    "data-overview-desktop-wan-integrated",
+    "data-overview-ikuai-wan-chart-integrated",
+    "data-overview-desktop-chart-product-contract",
+    "data-overview-wan-integrated-chart",
+    "data-overview-wan-chart-contract",
+    "data-overview-wan-single-surface",
+    "data-overview-wan-decision-rail",
+    "data-overview-wan-decision-source",
+    "data-overview-wan-decision",
+    "data-overview-desktop-wan-top-outlet",
+  ].every((attribute) => !desktopVisuals.includes(attribute)) &&
+    desktopVisuals.includes('className="ro-wan-integrated-visual"') &&
+    desktopVisuals.includes('className="ro-wan-integrated-decision"'),
+  "Desktop visuals must prove chart structure through semantic classes and rendered data, not product-contract attributes"
+);
+assert(
   ["fleet", "all-offline", "no-snapshot", "collection-down", "resource-full", "interfaces-down"].every((scenario) =>
     routerMobileModel.includes(`"${scenario}"`)
   ) && routerMobileModel.includes("default:") && routerMobileModel.includes("buildRouterMobileModel"),

@@ -8618,7 +8618,6 @@ var PanelFramework = function(exports) {
         className: `ro-judgement-chart ro-judgement-chart--${kind}`,
         "data-overview-visual-block": true,
         "data-overview-judgement-chart": "current-peak-mean-window-threshold-trust",
-        "data-overview-chart-grammar": "axis-current-peak-mean-window-threshold-unit-trust",
         "data-overview-chart-type": kind === "pressure" ? "bar" : "line",
         "data-overview-chart-module": module,
         "data-overview-scene-chart": module,
@@ -8626,7 +8625,6 @@ var PanelFramework = function(exports) {
         "data-overview-chart-main-metric": (lead == null ? void 0 : lead.label) || "无业务快照",
         "data-overview-chart-threshold": (lead == null ? void 0 : lead.threshold) || "待判",
         "data-overview-chart-anomaly-points": anomalyCount,
-        "data-overview-chart-semantic": "main-metric-threshold-anomaly-point",
         "data-overview-chart-has-current": "true",
         "data-overview-chart-has-peak": "true",
         "data-overview-chart-has-mean": "true",
@@ -8634,11 +8632,8 @@ var PanelFramework = function(exports) {
         "data-overview-chart-has-threshold": "true",
         "data-overview-chart-has-trust": "true",
         "data-overview-chart-unit": rows.map((row) => row.unit || "").filter(Boolean).join("/") || "status",
-        "data-overview-chart-judgement-contract": "current-peak-mean-window-threshold-confidence-readable",
-        "data-overview-plot-contract": kind === "pressure" ? "real-percent-axis-peak-current-threshold-mean" : "real-rate-axis-peak-current-threshold-mean",
         "data-overview-collection-channel-bars": module === "collection-cache-ledger" ? "true" : void 0,
         "data-overview-traffic-judgement": module === "wan-trend" || module === "traffic-trend" ? "true" : void 0,
-        "data-overview-chart-raw-fields": "current-peak-mean-window-threshold-confidence",
         children: [
           lead ? /* @__PURE__ */ jsxRuntimeExports.jsxs(
             "div",
@@ -8648,7 +8643,6 @@ var PanelFramework = function(exports) {
               "data-overview-sample-points": leadSamples,
               "data-overview-time-window": lead.window,
               "data-overview-confidence": lead.trust,
-              "data-overview-chart-summary": "current-threshold-mean-peak-confidence",
               title: `判断图：当前 ${lead.current} / 峰值 ${lead.peak} / 均值 ${lead.mean} / 样本 ${leadSamples} / 窗口 ${lead.window} / 阈值 ${lead.threshold} / 单位 ${chartUnitLabel(lead.unit)} / 可信度 ${lead.trust}`,
               children: [
                 /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { "data-overview-field": true, children: [
@@ -8711,7 +8705,6 @@ var PanelFramework = function(exports) {
                 "data-overview-unit": row.unit || "status",
                 "data-overview-sample-points": samplePoints,
                 "data-overview-time-window": row.window,
-                "data-overview-chart-judgement-visible": "axis-threshold-current-peak-mean-readout",
                 title: `当前 ${row.current} / 峰值 ${row.peak} / 均值 ${row.mean} / 样本 ${samplePoints} / 窗口 ${row.window} / 阈值 ${row.threshold} / 单位 ${row.unit || "status"} / 可信度 ${row.trust}`,
                 children: [
                   /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "ro-chart-label", children: row.label }),
@@ -8727,9 +8720,6 @@ var PanelFramework = function(exports) {
                     {
                       className: "ro-chart-readout",
                       "data-overview-trend-readout": true,
-                      "data-overview-chart-judgement-strip": "current-peak-mean-window-sample-threshold-confidence",
-                      "data-overview-chart-judgement-strip-visible": "true",
-                      "data-overview-mobile-first-chart-readout": true,
                       "data-overview-chart-meta": true,
                       "data-overview-sample-points": samplePoints,
                       "data-overview-time-window": row.window,
@@ -8760,39 +8750,19 @@ var PanelFramework = function(exports) {
     const topRows = trafficTop3Rows(snapshot, state).slice(0, 3);
     const showTopOutlets = Math.max(state.facts.wan.total, topRows.length) > 1;
     const decision = desktopWanDecisionRail(snapshot, state, rows);
-    return /* @__PURE__ */ jsxRuntimeExports.jsxs(
-      "div",
-      {
-        className: "ro-wan-integrated-visual",
-        "data-overview-desktop-wan-integrated": "trend-current-peak-top-outlet-route-sampling",
-        "data-overview-ikuai-wan-chart-integrated": "trend-current-peak-top-outlet-route-sampling",
-        "data-overview-desktop-chart-product-contract": "trend-plus-current-peak-top-outlet-route-sampling",
-        "data-overview-wan-integrated-chart": "single-reading-current-peak-top-route-sampling",
-        "data-overview-wan-chart-contract": "current-peak-mean-window-threshold-readout-visible-not-table-noise",
-        "data-overview-wan-single-surface": "trend-decision-top3-no-duplicate-summary-or-ledger",
-        children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(JudgementChart, { module: "traffic-trend", kind: "trend", rows }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(
-            "div",
-            {
-              className: "ro-wan-integrated-decision",
-              "data-overview-wan-decision-rail": "current-peak-top-default-sampling-single-surface",
-              "data-overview-wan-decision-source": "desktopWanDecisionRail",
-              children: decision.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { "data-overview-wan-decision": item.id, "data-tone": item.tone, children: [
-                /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: item.label }),
-                /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: item.value }),
-                /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: item.note })
-              ] }, item.id))
-            }
-          ),
-          showTopOutlets ? /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ro-wan-integrated-top", "data-overview-desktop-wan-top-outlet": "top3-inline-under-trend", children: topRows.map((row) => /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { "data-tone": row.tone || "trust", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: ledgerCellText(row, 0) }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: ledgerCellText(row, 1) }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: ledgerCellText(row, 2) })
-          ] }, row.id)) }) : null
-        ]
-      }
-    );
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ro-wan-integrated-visual", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx(JudgementChart, { module: "traffic-trend", kind: "trend", rows }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ro-wan-integrated-decision", children: decision.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { "data-tone": item.tone, children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: item.label }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: item.value }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: item.note })
+      ] }, item.id)) }),
+      showTopOutlets ? /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ro-wan-integrated-top", children: topRows.map((row) => /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { "data-tone": row.tone || "trust", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: ledgerCellText(row, 0) }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: ledgerCellText(row, 1) }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: ledgerCellText(row, 2) })
+      ] }, row.id)) }) : null
+    ] });
   }
   function ChannelMatrixVisual({ module, rows }) {
     return /* @__PURE__ */ jsxRuntimeExports.jsx(

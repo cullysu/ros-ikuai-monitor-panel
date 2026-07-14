@@ -26,7 +26,6 @@ export function JudgementChart({ module, rows, kind = "trend" }: { module: strin
       className={`ro-judgement-chart ro-judgement-chart--${kind}`}
       data-overview-visual-block
       data-overview-judgement-chart="current-peak-mean-window-threshold-trust"
-      data-overview-chart-grammar="axis-current-peak-mean-window-threshold-unit-trust"
       data-overview-chart-type={kind === "pressure" ? "bar" : "line"}
       data-overview-chart-module={module}
       data-overview-scene-chart={module}
@@ -34,7 +33,6 @@ export function JudgementChart({ module, rows, kind = "trend" }: { module: strin
       data-overview-chart-main-metric={lead?.label || "无业务快照"}
       data-overview-chart-threshold={lead?.threshold || "待判"}
       data-overview-chart-anomaly-points={anomalyCount}
-      data-overview-chart-semantic="main-metric-threshold-anomaly-point"
       data-overview-chart-has-current="true"
       data-overview-chart-has-peak="true"
       data-overview-chart-has-mean="true"
@@ -42,11 +40,8 @@ export function JudgementChart({ module, rows, kind = "trend" }: { module: strin
       data-overview-chart-has-threshold="true"
       data-overview-chart-has-trust="true"
       data-overview-chart-unit={rows.map((row) => row.unit || "").filter(Boolean).join("/") || "status"}
-      data-overview-chart-judgement-contract="current-peak-mean-window-threshold-confidence-readable"
-      data-overview-plot-contract={kind === "pressure" ? "real-percent-axis-peak-current-threshold-mean" : "real-rate-axis-peak-current-threshold-mean"}
       data-overview-collection-channel-bars={module === "collection-cache-ledger" ? "true" : undefined}
       data-overview-traffic-judgement={module === "wan-trend" || module === "traffic-trend" ? "true" : undefined}
-      data-overview-chart-raw-fields="current-peak-mean-window-threshold-confidence"
     >
       {lead ? (
         <div
@@ -55,7 +50,6 @@ export function JudgementChart({ module, rows, kind = "trend" }: { module: strin
           data-overview-sample-points={leadSamples}
           data-overview-time-window={lead.window}
           data-overview-confidence={lead.trust}
-          data-overview-chart-summary="current-threshold-mean-peak-confidence"
           title={`\u5224\u65ad\u56fe\uff1a\u5f53\u524d ${lead.current} / \u5cf0\u503c ${lead.peak} / \u5747\u503c ${lead.mean} / \u6837\u672c ${leadSamples} / \u7a97\u53e3 ${lead.window} / \u9608\u503c ${lead.threshold} / \u5355\u4f4d ${chartUnitLabel(lead.unit)} / \u53ef\u4fe1\u5ea6 ${lead.trust}`}
         >
           <span data-overview-field>{"主值 "}<b>{lead.current}</b></span>
@@ -105,7 +99,6 @@ export function JudgementChart({ module, rows, kind = "trend" }: { module: strin
             data-overview-unit={row.unit || "status"}
             data-overview-sample-points={samplePoints}
             data-overview-time-window={row.window}
-            data-overview-chart-judgement-visible="axis-threshold-current-peak-mean-readout"
             title={`当前 ${row.current} / 峰值 ${row.peak} / 均值 ${row.mean} / 样本 ${samplePoints} / 窗口 ${row.window} / 阈值 ${row.threshold} / 单位 ${row.unit || "status"} / 可信度 ${row.trust}`}
             key={row.id}
           >
@@ -120,9 +113,6 @@ export function JudgementChart({ module, rows, kind = "trend" }: { module: strin
             <span
               className="ro-chart-readout"
               data-overview-trend-readout
-              data-overview-chart-judgement-strip="current-peak-mean-window-sample-threshold-confidence"
-              data-overview-chart-judgement-strip-visible="true"
-              data-overview-mobile-first-chart-readout
               data-overview-chart-meta
               data-overview-sample-points={samplePoints}
               data-overview-time-window={row.window}
@@ -144,23 +134,11 @@ export function DesktopWanIntegratedVisual({ snapshot, state, rows }: OverviewPa
   const showTopOutlets = Math.max(state.facts.wan.total, topRows.length) > 1;
   const decision = desktopWanDecisionRail(snapshot, state, rows);
   return (
-    <div
-      className="ro-wan-integrated-visual"
-      data-overview-desktop-wan-integrated="trend-current-peak-top-outlet-route-sampling"
-      data-overview-ikuai-wan-chart-integrated="trend-current-peak-top-outlet-route-sampling"
-      data-overview-desktop-chart-product-contract="trend-plus-current-peak-top-outlet-route-sampling"
-      data-overview-wan-integrated-chart="single-reading-current-peak-top-route-sampling"
-      data-overview-wan-chart-contract="current-peak-mean-window-threshold-readout-visible-not-table-noise"
-      data-overview-wan-single-surface="trend-decision-top3-no-duplicate-summary-or-ledger"
-    >
+    <div className="ro-wan-integrated-visual">
       <JudgementChart module="traffic-trend" kind="trend" rows={rows} />
-      <div
-        className="ro-wan-integrated-decision"
-        data-overview-wan-decision-rail="current-peak-top-default-sampling-single-surface"
-        data-overview-wan-decision-source="desktopWanDecisionRail"
-      >
+      <div className="ro-wan-integrated-decision">
         {decision.map((item) => (
-          <span data-overview-wan-decision={item.id} data-tone={item.tone} key={item.id}>
+          <span data-tone={item.tone} key={item.id}>
             <em>{item.label}</em>
             <b>{item.value}</b>
             <small>{item.note}</small>
@@ -168,7 +146,7 @@ export function DesktopWanIntegratedVisual({ snapshot, state, rows }: OverviewPa
         ))}
       </div>
       {showTopOutlets ? (
-        <div className="ro-wan-integrated-top" data-overview-desktop-wan-top-outlet="top3-inline-under-trend">
+        <div className="ro-wan-integrated-top">
           {topRows.map((row) => (
             <span data-tone={row.tone || "trust"} key={row.id}>
               <em>{ledgerCellText(row, 0)}</em>
