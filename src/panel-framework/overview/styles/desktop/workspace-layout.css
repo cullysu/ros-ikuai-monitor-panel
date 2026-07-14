@@ -21,6 +21,22 @@
       "main side"
       "bottom bottom";
     grid-template-rows: auto auto;
+    align-items: stretch;
+  }
+  #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-desktop-grid.is-normal-scene > .ro-col.is-main,
+  #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-desktop-grid.is-normal-scene > .ro-col.is-side {
+    align-self: stretch;
+    height: 100%;
+  }
+  #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-desktop-grid.is-normal-scene > .ro-col.is-main {
+    display: flex;
+    flex-direction: column;
+  }
+  #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-desktop-grid.is-normal-scene > .ro-col.is-main > .ro-module[data-overview-density-module="wan-trend"] {
+    display: grid;
+    flex: 1 1 auto;
+    grid-template-rows: 25px minmax(0, 1fr);
+    height: 100%;
   }
   #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-col {
     gap: 3px;

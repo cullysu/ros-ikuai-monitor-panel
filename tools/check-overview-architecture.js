@@ -184,6 +184,8 @@ const panelCss = read(panelCssFile);
 const desktopBaseStyles = desktopBaseStyleLayerFiles.map(read).join("\n");
 const desktopConsoleRefinementStyles = read(desktopConsoleRefinementStylesFile);
 const desktopDensityStyles = read(desktopDensityStylesFile);
+const desktopEvidenceStyles = read("src/panel-framework/overview/styles/desktop/evidence.css");
+const desktopHierarchyLayout = read("src/panel-framework/overview/styles/desktop/hierarchy-layout.css");
 const desktopRefinement = read(desktopRefinementFile);
 const desktopRuntimeStyles = read(desktopRuntimeStylesFile);
 const desktopWorkspaceLayout = read(desktopWorkspaceLayoutFile);
@@ -553,6 +555,11 @@ assert(
     desktopWanTrendStyles.includes('[data-overview-density-module="wan-trend"]') &&
     panel.includes('import "./styles/overview-desktop-runtime.css";') &&
     (desktopWanTrendStyles.match(/!important/g) || []).length === 0 &&
+    desktopDensityStyles.includes('.ro-module:not([data-overview-density-module="wan-trend"]) .ro-judgement-row') &&
+    desktopRefinement.includes('.ro-module:not([data-overview-density-module="wan-trend"]) .ro-judgement-chart') &&
+    desktopRefinement.includes('.ro-module:not([data-overview-density-module="wan-trend"]) .ro-judgement-row') &&
+    !/ro-col\.is-main > \.ro-module(?::first-child)?\s*\{[^}]*max-height/.test(desktopEvidenceStyles) &&
+    !desktopHierarchyLayout.includes('data-overview-density-module="wan-trend"') &&
     !desktopRefinement.includes('Desktop WAN readable product chart'),
   "Desktop WAN trend styles must stay focused without override priorities"
 );

@@ -142,14 +142,6 @@
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] {
 
   }
-  #overview.router-overview-framework .ro-semantic-wan-trend .ro-wan-integrated-visual,
-  .router-overview-framework .ro-semantic-wan-trend .ro-wan-integrated-visual {
-    display: grid !important;
-    grid-template-rows: minmax(84px, auto) 42px 34px !important;
-    gap: 3px !important;
-    padding: 4px 5px 3px !important;
-    background: #fff !important;
-  }
   #overview.router-overview-framework .ro-semantic-wan-trend .ro-wan-integrated-summary,
   .router-overview-framework .ro-semantic-wan-trend .ro-wan-integrated-summary {
     display: grid !important;
@@ -573,7 +565,7 @@
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-chart-axis {
     display: none !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-judgement-row {
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module:not([data-overview-density-module="wan-trend"]) .ro-judgement-row {
     grid-template-columns: 58px minmax(0, 1fr) 112px !important;
   }
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-chart-label {
@@ -795,10 +787,10 @@
     content: none !important;
     display: none !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-judgement-chart {
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module:not([data-overview-density-module="wan-trend"]) .ro-judgement-chart {
     gap: 3px !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-judgement-row {
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module:not([data-overview-density-module="wan-trend"]) .ro-judgement-row {
     min-height: 21px !important;
     height: 21px !important;
     gap: 5px !important;
@@ -1065,7 +1057,7 @@
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-mini-trend-visual svg {
     height: 40px !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-judgement-chart {
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module:not([data-overview-density-module="wan-trend"]) .ro-judgement-chart {
     max-height: 112px !important;
     margin: 0 !important;
     padding: 3px 5px !important;

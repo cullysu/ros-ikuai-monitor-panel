@@ -76,8 +76,8 @@
     gap: 3px !important;
     background: #fff !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-judgement-row,
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-judgement-row {
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module:not([data-overview-density-module="wan-trend"]) .ro-judgement-row,
+  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module:not([data-overview-density-module="wan-trend"]) .ro-judgement-row {
     grid-template-columns: 58px minmax(0, 1fr) 112px !important;
     min-height: 23px !important;
     height: 23px !important;

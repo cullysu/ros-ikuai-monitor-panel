@@ -258,14 +258,6 @@
 }
 
 @media (min-width: 761px) {
-  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-desktop-grid.ik-home-layout > .ro-col.is-main > .ro-module:first-child {
-    max-height: 390px !important;
-    overflow: auto !important;
-  }
-  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-desktop-grid.ik-home-layout > .ro-col.is-main > .ro-module {
-    max-height: 250px !important;
-    overflow: auto !important;
-  }
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-desktop-grid.ik-home-layout > .ro-col.is-side > .ro-module {
     max-height: 220px !important;
     overflow: auto !important;
