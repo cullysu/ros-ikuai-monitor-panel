@@ -2168,7 +2168,7 @@ async function main() {
         const wanPortEvidenceDeferred = sectionName !== 'mobileAppHome' || Boolean(
           !wanPortMatrix &&
           wanPortCells.length === 0 &&
-          (surfaceAttrs.directEvidence || evidenceDeferred) &&
+          (surfaceAttrs.directEvidence || evidenceDeferred || visibleTerminalRows.length >= 2) &&
           listEvidence.some((item) => /默认路由|出口|WAN/.test(item.name + ' ' + item.meta))
         );
         const channelRail = hero?.querySelector('.ik-mobile-channel-decision');
@@ -2252,11 +2252,12 @@ async function main() {
                 abnormalListRowRects.every((rect) => rect.width > 0 && rect.height >= 42)
           )
         );
-        const abnormalEvidencePolicyOk = expectedConfig.mode === 'normal' || isLandscapeMobile || Boolean(
-          evidenceDeferred &&
+        const abnormalEvidencePolicyOk = expectedConfig.mode === 'normal' || Boolean(
           detailEntryVisible &&
           ['network', 'diagnose'].includes(detailEntry?.getAttribute('data-overview-mobile-detail-target') || '') &&
-          visibleTerminalRows.length === 0
+          visibleTerminalRows.length >= 1 &&
+          visibleTerminalRows.length <= 4 &&
+          abnormalListRowRects.every((rect) => rect.width > 0 && rect.height >= 42)
         );
         const appRect = root?.getBoundingClientRect();
         const screenRect = screen?.getBoundingClientRect();
@@ -2287,7 +2288,7 @@ async function main() {
           (expectedConfig.mode === 'normal'
             ? surfaceAttrs.headers === 1 && surfaceAttrs.directEvidence && !surfaceAttrs.detailControl
             : surfaceAttrs.headers === 0 && surfaceAttrs.detailControl && !surfaceAttrs.directEvidence &&
-              (isLandscapeMobile ? visibleTerminalRows.length >= 3 : evidenceDeferred))
+              visibleTerminalRows.length >= 1 && visibleTerminalRows.length <= 4)
         );
         const statusCoreBlocks = Array.from(surface?.querySelectorAll('[data-row-id]') || []).map((row) => ({
           id: row.getAttribute('data-row-id') || '',

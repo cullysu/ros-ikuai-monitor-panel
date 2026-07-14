@@ -96,12 +96,12 @@
 
 @media (max-width: 760px) {
   #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console]:not([data-overview-mobile-priority="normal"]) .ik-mobile-supporting-surface {
-    height: 44px;
-    max-height: 44px;
-    overflow: hidden;
+    height: auto;
+    max-height: none;
+    overflow: visible;
   }
   #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console]:not([data-overview-mobile-priority="normal"]) .ik-mobile-supporting-list {
-    grid-template-rows: 44px;
+    grid-template-rows: 44px auto;
   }
   #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-detail-entry {
     min-height: 44px;
@@ -109,6 +109,6 @@
     cursor: pointer;
   }
   #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console]:not([data-overview-mobile-priority="normal"]) .ik-mobile-supporting-detail-rows {
-    display: none;
+    display: grid;
   }
 }
