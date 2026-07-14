@@ -31,13 +31,11 @@ export function OverviewPanel({ snapshot, state }: OverviewPanelProps) {
   return (
     <section
       id="overview"
-      className="section router-overview-framework"
+      className={`section router-overview-framework ${mobile ? "is-mobile-product" : "ro-desktop-console ro-desktop-hierarchy"}`}
       data-overview-page-credibility={state.facts.freshness.credibilityLabel}
       data-overview-page-credibility-tone={state.facts.freshness.credibilityTone}
       data-overview-business-display-boundary={state.scenario === "no-snapshot" ? "no-business-data" : "business-data"}
       data-overview-scene-key={state.scenario}
-      data-overview-ikuai40-density="apple-flat-light-blue-console"
-      data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"
     >
       {mobile ? (
         <div className="router-mobile-app-mount" data-router-mobile-mount>

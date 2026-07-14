@@ -136,7 +136,7 @@
    Normal = blue/gray; cache = amber; severe = red only on the primary evidence path.*/
 
 @media (min-width: 768px) {
-  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] {
+  .router-overview-framework.ro-desktop-hierarchy {
     --ik-v6-blue: #1677ff;
     --ik-v6-blue-deep: #0b63c7;
     --ik-v6-line: #e2ebf4;
@@ -147,68 +147,68 @@
     --ik-v6-danger: #c9342f;
     --ik-v6-cache: #b46a1f;
   }
-  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-module {
+  .router-overview-framework.ro-desktop-hierarchy .ro-module {
     border-radius: 3px !important;
     border: 1px solid var(--ik-v6-line) !important;
     background: #fff !important;
     box-shadow: none !important;
   }
-  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-col.is-main > .ro-module:first-child {
+  .router-overview-framework.ro-desktop-hierarchy .ro-col.is-main > .ro-module:first-child {
     min-height: 342px !important;
   }
-  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-module-head {
+  .router-overview-framework.ro-desktop-hierarchy .ro-module-head {
     min-height: 32px !important;
     padding: 6px 10px !important;
     border-bottom: 1px solid var(--ik-v6-line-soft) !important;
     background: #fbfdff !important;
   }
-  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-module-head b {
+  .router-overview-framework.ro-desktop-hierarchy .ro-module-head b {
     font-size: 13px !important;
     font-weight: 860 !important;
     color: var(--ik-v6-text) !important;
   }
-  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-col.is-main > .ro-module:first-child .ro-module-head b {
+  .router-overview-framework.ro-desktop-hierarchy .ro-col.is-main > .ro-module:first-child .ro-module-head b {
     font-size: 14px !important;
     font-weight: 920 !important;
   }
-  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-ledger-row:not(.ro-ledger-head) {
+  .router-overview-framework.ro-desktop-hierarchy .ro-ledger-row:not(.ro-ledger-head) {
     min-height: 31px !important;
   }
-  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-col.is-side .ro-ledger-row:not(.ro-ledger-head),
-  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-col.is-bottom .ro-ledger-row:not(.ro-ledger-head) {
+  .router-overview-framework.ro-desktop-hierarchy .ro-col.is-side .ro-ledger-row:not(.ro-ledger-head),
+  .router-overview-framework.ro-desktop-hierarchy .ro-col.is-bottom .ro-ledger-row:not(.ro-ledger-head) {
     min-height: 28px !important;
   }
-  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-ledger-cell,
-  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-ledger-table td {
+  .router-overview-framework.ro-desktop-hierarchy .ro-ledger-cell,
+  .router-overview-framework.ro-desktop-hierarchy .ro-ledger-table td {
     font-size: 11.8px !important;
     line-height: 1.28 !important;
     color: var(--ik-v6-text) !important;
   }
-  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-ledger-cell:first-child,
-  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-ledger-table td:first-child {
+  .router-overview-framework.ro-desktop-hierarchy .ro-ledger-cell:first-child,
+  .router-overview-framework.ro-desktop-hierarchy .ro-ledger-table td:first-child {
     font-weight: 850 !important;
   }
-  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-ledger-cell:nth-child(n+3),
-  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-ledger-table td:nth-child(n+3) {
+  .router-overview-framework.ro-desktop-hierarchy .ro-ledger-cell:nth-child(n+3),
+  .router-overview-framework.ro-desktop-hierarchy .ro-ledger-table td:nth-child(n+3) {
     color: var(--ik-v6-muted) !important;
   }
-  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-chart-track {
+  .router-overview-framework.ro-desktop-hierarchy .ro-chart-track {
     height: 6px !important;
     border-radius: 2px !important;
     background: #e8f0f8 !important;
   }
-  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-chart-threshold {
+  .router-overview-framework.ro-desktop-hierarchy .ro-chart-threshold {
     border-left: 2px solid #4b5d72 !important;
   }
-  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-chart-current,
-  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-spark-line,
-  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-topn-bar strong {
+  .router-overview-framework.ro-desktop-hierarchy .ro-chart-current,
+  .router-overview-framework.ro-desktop-hierarchy .ro-spark-line,
+  .router-overview-framework.ro-desktop-hierarchy .ro-topn-bar strong {
     background: var(--ik-v6-blue) !important;
     stroke: var(--ik-v6-blue) !important;
   }
-  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] [data-tone="danger"] .ro-chart-current,
-  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-judgement-row[data-tone="danger"] .ro-chart-current,
-  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-topn-row[data-tone="danger"] .ro-topn-bar strong {
+  .router-overview-framework.ro-desktop-hierarchy [data-tone="danger"] .ro-chart-current,
+  .router-overview-framework.ro-desktop-hierarchy .ro-judgement-row[data-tone="danger"] .ro-chart-current,
+  .router-overview-framework.ro-desktop-hierarchy .ro-topn-row[data-tone="danger"] .ro-topn-bar strong {
     background: var(--ik-v6-danger) !important;
     stroke: var(--ik-v6-danger) !important;
   }

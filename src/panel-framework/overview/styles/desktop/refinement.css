@@ -137,7 +137,7 @@
 /*Public-product polish: flatter status bus, calmer tables, integrated WAN reading.*/
 
 @media (min-width: 761px) {
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] {
+  #overview.router-overview-framework.ro-desktop-console {
 
   }
   #overview.router-overview-framework .ro-semantic-wan-trend .ro-wan-integrated-summary,
@@ -343,7 +343,7 @@
 /*Codex v805 desktop product-console pass: stronger incident first panel, cleaner status bus.*/
 
 @media (min-width: 761px) {
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-desktop-grid:is(
+  .router-overview-framework.ro-desktop-console .ro-desktop-grid:is(
     [data-overview-desktop-scene="all-offline"],
     [data-overview-desktop-scene="interfaces-down"],
     [data-overview-desktop-scene="resource-full"],
@@ -354,7 +354,7 @@
     background: linear-gradient(90deg, rgba(201,75,69,.045), transparent 150px),
       #fff !important;
   }
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-desktop-grid:is(
+  .router-overview-framework.ro-desktop-console .ro-desktop-grid:is(
     [data-overview-desktop-scene="all-offline"],
     [data-overview-desktop-scene="interfaces-down"],
     [data-overview-desktop-scene="resource-full"],
@@ -365,14 +365,14 @@
     font-size: 13.5px !important;
     font-weight: 820 !important;
   }
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-desktop-grid:is(
+  .router-overview-framework.ro-desktop-console .ro-desktop-grid:is(
     [data-overview-desktop-scene="all-offline"],
     [data-overview-desktop-scene="interfaces-down"],
     [data-overview-desktop-scene="resource-full"],
     [data-overview-desktop-scene="collection-down"],
     [data-overview-desktop-scene="no-snapshot"]
   ) .ro-col.is-main > .ro-module:first-child .ro-chart-summary,
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-desktop-grid:is(
+  .router-overview-framework.ro-desktop-console .ro-desktop-grid:is(
     [data-overview-desktop-scene="all-offline"],
     [data-overview-desktop-scene="interfaces-down"],
     [data-overview-desktop-scene="resource-full"],
@@ -381,13 +381,13 @@
   ) .ro-col.is-main > .ro-module:first-child .ro-resource-cards {
     background: rgba(248,251,255,.72) !important;
   }
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-judgement-chart {
+  .router-overview-framework.ro-desktop-console .ro-judgement-chart {
     gap: 5px !important;
   }
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-chart-track {
+  .router-overview-framework.ro-desktop-console .ro-chart-track {
     background: #edf4fb !important;
   }
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-chart-threshold {
+  .router-overview-framework.ro-desktop-console .ro-chart-threshold {
     border-left-width: 1px !important;
     opacity: .44 !important;
   }
@@ -396,75 +396,75 @@
 /*Codex v812 desktop density pass: fewer shells, shorter rows, business facts first.*/
 
 @media (min-width: 761px) {
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] {
+  .router-overview-framework.ro-desktop-console {
     padding: 6px !important;
     background: #f2f6fa !important;
   }
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-judgement-chart,
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-resource-visual,
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-traffic-visual,
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-interface-visual,
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-no-snapshot-link-visual,
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-collection-link-visual {
+  .router-overview-framework.ro-desktop-console .ro-judgement-chart,
+  .router-overview-framework.ro-desktop-console .ro-resource-visual,
+  .router-overview-framework.ro-desktop-console .ro-traffic-visual,
+  .router-overview-framework.ro-desktop-console .ro-interface-visual,
+  .router-overview-framework.ro-desktop-console .ro-no-snapshot-link-visual,
+  .router-overview-framework.ro-desktop-console .ro-collection-link-visual {
     padding: 4px 5px !important;
     gap: 3px !important;
     background: #fff !important;
   }
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-chart-summary {
+  .router-overview-framework.ro-desktop-console .ro-chart-summary {
     min-height: 16px !important;
     padding: 0 0 2px !important;
     font-size: 8px !important;
   }
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-sparkline {
+  .router-overview-framework.ro-desktop-console .ro-sparkline {
     height: 24px !important;
   }
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-judgement-chart > .ro-sparkline {
+  .router-overview-framework.ro-desktop-console .ro-judgement-chart > .ro-sparkline {
     height: 28px !important;
   }
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-chart-track {
+  .router-overview-framework.ro-desktop-console .ro-chart-track {
     height: 2px !important;
   }
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-resource-cards {
+  .router-overview-framework.ro-desktop-console .ro-resource-cards {
     gap: 3px !important;
   }
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-resource-card {
+  .router-overview-framework.ro-desktop-console .ro-resource-card {
     min-height: 38px !important;
     padding: 3px 4px !important;
     border: 0 !important;
     border-left: 2px solid #dce5ee !important;
     background: #fbfdff !important;
   }
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-resource-card b {
+  .router-overview-framework.ro-desktop-console .ro-resource-card b {
     font-size: 13px !important;
   }
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-evidence-weight="secondary"] .ro-ledger-cell,
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-evidence-weight="secondary"] .ro-ledger-table td {
+  .router-overview-framework.ro-desktop-console .ro-module[data-overview-evidence-weight="secondary"] .ro-ledger-cell,
+  .router-overview-framework.ro-desktop-console .ro-module[data-overview-evidence-weight="secondary"] .ro-ledger-table td {
     height: 24px !important;
     color: #6f7e91 !important;
   }
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-topn-block {
+  .router-overview-framework.ro-desktop-console .ro-topn-block {
     padding: 4px 5px !important;
     gap: 4px !important;
   }
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-topn-block.is-ranking .ro-topn-row {
+  .router-overview-framework.ro-desktop-console .ro-topn-block.is-ranking .ro-topn-row {
     min-height: 24px !important;
     padding-left: 36px !important;
   }
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-topn-block.is-ranking .ro-topn-row .ro-topn-bar {
+  .router-overview-framework.ro-desktop-console .ro-topn-block.is-ranking .ro-topn-row .ro-topn-bar {
     height: 10px !important;
   }
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-port-matrix-row {
+  .router-overview-framework.ro-desktop-console .ro-port-matrix-row {
     min-height: 30px !important;
     padding: 2px 3px !important;
     border-top-width: 2px !important;
   }
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-chain-node,
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-visibility-cell {
+  .router-overview-framework.ro-desktop-console .ro-chain-node,
+  .router-overview-framework.ro-desktop-console .ro-visibility-cell {
     min-height: 30px !important;
     padding: 3px 4px !important;
     border: 1px solid #e1e8f0 !important;
   }
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-desktop-grid:is(
+  .router-overview-framework.ro-desktop-console .ro-desktop-grid:is(
     [data-overview-desktop-scene="all-offline"],
     [data-overview-desktop-scene="interfaces-down"],
     [data-overview-desktop-scene="resource-full"],
@@ -476,8 +476,8 @@
     padding: 4px 7px !important;
     background: #fff !important;
   }
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="route-raw-facts"] .ro-ledger-cell,
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="evidence-boundary"] .ro-ledger-cell {
+  .router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="route-raw-facts"] .ro-ledger-cell,
+  .router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="evidence-boundary"] .ro-ledger-cell {
     height: auto !important;
     min-height: 24px !important;
     white-space: normal !important;
@@ -485,29 +485,29 @@
     text-overflow: clip !important;
     overflow-wrap: anywhere !important;
   }
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="route-raw-facts"] .ro-ledger-table,
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="evidence-boundary"] .ro-ledger-table,
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="route-raw-facts"] .ro-ledger-row,
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="evidence-boundary"] .ro-ledger-row {
+  .router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="route-raw-facts"] .ro-ledger-table,
+  .router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="evidence-boundary"] .ro-ledger-table,
+  .router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="route-raw-facts"] .ro-ledger-row,
+  .router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="evidence-boundary"] .ro-ledger-row {
     height: auto !important;
     min-height: 24px !important;
     overflow: visible !important;
   }
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="route-raw-facts"] .ro-ledger-cell > .ik-overview-cell-text,
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="evidence-boundary"] .ro-ledger-cell > .ik-overview-cell-text {
+  .router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="route-raw-facts"] .ro-ledger-cell > .ik-overview-cell-text,
+  .router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="evidence-boundary"] .ro-ledger-cell > .ik-overview-cell-text {
     white-space: normal !important;
     overflow: visible !important;
     text-overflow: clip !important;
     overflow-wrap: anywhere !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="route-raw-facts"] .ro-ledger-table,
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="route-raw-facts"] .ro-ledger-row,
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="route-raw-facts"] .ro-ledger-cell,
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="route-raw-facts"] .ro-ledger-cell > .ik-overview-cell-text,
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="evidence-boundary"] .ro-ledger-table,
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="evidence-boundary"] .ro-ledger-row,
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="evidence-boundary"] .ro-ledger-cell,
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="evidence-boundary"] .ro-ledger-cell > .ik-overview-cell-text {
+  #overview.router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="route-raw-facts"] .ro-ledger-table,
+  #overview.router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="route-raw-facts"] .ro-ledger-row,
+  #overview.router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="route-raw-facts"] .ro-ledger-cell,
+  #overview.router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="route-raw-facts"] .ro-ledger-cell > .ik-overview-cell-text,
+  #overview.router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="evidence-boundary"] .ro-ledger-table,
+  #overview.router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="evidence-boundary"] .ro-ledger-row,
+  #overview.router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="evidence-boundary"] .ro-ledger-cell,
+  #overview.router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="evidence-boundary"] .ro-ledger-cell > .ik-overview-cell-text {
     min-width: 0 !important;
     height: auto !important;
     min-height: 24px !important;
@@ -522,8 +522,8 @@
 /*Codex v814 EOF desktop density correction: must come after all legacy console layers.*/
 
 @media (min-width: 761px) {
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"],
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] {
+  #overview.router-overview-framework.ro-desktop-console,
+  .router-overview-framework.ro-desktop-console {
     --v814-line: #e5edf5;
     --v814-line-strong: #d8e4ee;
     --v814-blue: #1473e6;
@@ -532,99 +532,99 @@
     --v814-soft: #f8fbfe;
     background: #f3f7fb !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module-head div {
+  #overview.router-overview-framework.ro-desktop-console .ro-module-head div {
     display: flex !important;
     min-width: 0 !important;
     align-items: baseline !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-chart-axis {
+  #overview.router-overview-framework.ro-desktop-console .ro-chart-axis {
     display: none !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module:not([data-overview-density-module="wan-trend"]) .ro-judgement-row {
+  #overview.router-overview-framework.ro-desktop-console .ro-module:not([data-overview-density-module="wan-trend"]) .ro-judgement-row {
     grid-template-columns: 58px minmax(0, 1fr) 112px !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-chart-label {
+  #overview.router-overview-framework.ro-desktop-console .ro-chart-label {
     color: var(--v814-muted) !important;
     font-size: 8.8px !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-chart-readout {
+  #overview.router-overview-framework.ro-desktop-console .ro-chart-readout {
     color: #294761 !important;
     font-size: 8.2px !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-evidence-weight="secondary"] .ro-ledger-cell {
+  #overview.router-overview-framework.ro-desktop-console .ro-module[data-overview-evidence-weight="secondary"] .ro-ledger-cell {
     height: 25px !important;
     min-height: 25px !important;
     color: #627386 !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-mini-trend-visual {
+  #overview.router-overview-framework.ro-desktop-console .ro-mini-trend-visual {
     display: grid !important;
     gap: 8px !important;
     align-items: center !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-mini-trend-visual svg {
+  #overview.router-overview-framework.ro-desktop-console .ro-mini-trend-visual svg {
     width: 100% !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-mini-trend-line {
+  #overview.router-overview-framework.ro-desktop-console .ro-mini-trend-line {
     fill: none !important;
     stroke: var(--v814-blue) !important;
     stroke-width: 1.6 !important;
     stroke-linecap: round !important;
     stroke-linejoin: round !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-mini-trend-readout {
+  #overview.router-overview-framework.ro-desktop-console .ro-mini-trend-readout {
     display: grid !important;
     grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
     gap: 4px !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-mini-trend-readout span {
+  #overview.router-overview-framework.ro-desktop-console .ro-mini-trend-readout span {
     display: grid !important;
     gap: 2px !important;
     min-width: 0 !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-mini-trend-readout em,
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-mini-trend-readout b {
+  #overview.router-overview-framework.ro-desktop-console .ro-mini-trend-readout em,
+  #overview.router-overview-framework.ro-desktop-console .ro-mini-trend-readout b {
     white-space: nowrap !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-mini-trend-readout em {
+  #overview.router-overview-framework.ro-desktop-console .ro-mini-trend-readout em {
     color: var(--v814-muted) !important;
     font-style: normal !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-mini-trend-readout b {
+  #overview.router-overview-framework.ro-desktop-console .ro-mini-trend-readout b {
     color: var(--v814-text) !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-channel-matrix-visual {
+  #overview.router-overview-framework.ro-desktop-console .ro-channel-matrix-visual {
     display: grid !important;
     grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-channel-matrix-visual span {
+  #overview.router-overview-framework.ro-desktop-console .ro-channel-matrix-visual span {
     display: grid !important;
     grid-template-columns: 7px minmax(0, 1fr) !important;
     align-items: center !important;
     column-gap: 4px !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-channel-matrix-visual i {
+  #overview.router-overview-framework.ro-desktop-console .ro-channel-matrix-visual i {
     width: 5px !important;
     height: 5px !important;
     border-radius: 50% !important;
     background: #20a66a !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-channel-matrix-visual span[data-tone="warn"] i,
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-channel-matrix-visual span[data-tone="missing"] i {
+  #overview.router-overview-framework.ro-desktop-console .ro-channel-matrix-visual span[data-tone="warn"] i,
+  #overview.router-overview-framework.ro-desktop-console .ro-channel-matrix-visual span[data-tone="missing"] i {
     background: #d58a21 !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-channel-matrix-visual span[data-tone="danger"] i {
+  #overview.router-overview-framework.ro-desktop-console .ro-channel-matrix-visual span[data-tone="danger"] i {
     background: #d8423a !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-channel-matrix-visual b {
+  #overview.router-overview-framework.ro-desktop-console .ro-channel-matrix-visual b {
     color: var(--v814-muted) !important;
     font-size: 8.3px !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-channel-matrix-visual strong {
+  #overview.router-overview-framework.ro-desktop-console .ro-channel-matrix-visual strong {
     grid-column: 2 !important;
     color: var(--v814-text) !important;
     white-space: nowrap !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-channel-matrix-visual em {
+  #overview.router-overview-framework.ro-desktop-console .ro-channel-matrix-visual em {
     grid-column: 2 !important;
     color: #8392a5 !important;
     font-size: 7.5px !important;
@@ -633,81 +633,81 @@
     overflow: hidden !important;
     text-overflow: ellipsis !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-visual-stack {
+  #overview.router-overview-framework.ro-desktop-console .ro-visual-stack {
     display: grid !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-visual-stack .ro-channel-matrix-visual,
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-visual-stack .ro-resource-ledger-visual {
+  #overview.router-overview-framework.ro-desktop-console .ro-visual-stack .ro-channel-matrix-visual,
+  #overview.router-overview-framework.ro-desktop-console .ro-visual-stack .ro-resource-ledger-visual {
     padding: 0 !important;
     border-bottom: 0 !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-incident-summary {
+  #overview.router-overview-framework.ro-desktop-console .ro-incident-summary {
     display: grid !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-incident-summary span {
+  #overview.router-overview-framework.ro-desktop-console .ro-incident-summary span {
     display: grid !important;
     align-content: center !important;
     min-width: 0 !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-incident-summary em {
+  #overview.router-overview-framework.ro-desktop-console .ro-incident-summary em {
     color: var(--v814-muted) !important;
     font-style: normal !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-incident-summary b {
+  #overview.router-overview-framework.ro-desktop-console .ro-incident-summary b {
     color: var(--v814-text) !important;
     white-space: nowrap !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-resource-ledger-visual {
+  #overview.router-overview-framework.ro-desktop-console .ro-resource-ledger-visual {
     display: grid !important;
     background: #fff !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-resource-ledger-visual span {
+  #overview.router-overview-framework.ro-desktop-console .ro-resource-ledger-visual span {
     display: grid !important;
     align-items: center !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-resource-ledger-visual b {
+  #overview.router-overview-framework.ro-desktop-console .ro-resource-ledger-visual b {
     color: var(--v814-muted) !important;
     font-size: 8.6px !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-resource-ledger-visual strong {
+  #overview.router-overview-framework.ro-desktop-console .ro-resource-ledger-visual strong {
     color: var(--v814-text) !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-resource-ledger-visual span[data-tone="danger"] strong {
+  #overview.router-overview-framework.ro-desktop-console .ro-resource-ledger-visual span[data-tone="danger"] strong {
     color: #c93932 !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-resource-ledger-visual i {
+  #overview.router-overview-framework.ro-desktop-console .ro-resource-ledger-visual i {
     display: block !important;
     height: 3px !important;
     overflow: hidden !important;
     border-radius: 4px !important;
     background: #e8f0f7 !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-resource-ledger-visual i i {
+  #overview.router-overview-framework.ro-desktop-console .ro-resource-ledger-visual i i {
     height: 100% !important;
     background: var(--v814-blue) !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-resource-ledger-visual span[data-tone="danger"] i i {
+  #overview.router-overview-framework.ro-desktop-console .ro-resource-ledger-visual span[data-tone="danger"] i i {
     background: #d8423a !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-resource-ledger-visual em {
+  #overview.router-overview-framework.ro-desktop-console .ro-resource-ledger-visual em {
     color: var(--v814-muted) !important;
     font-size: 8px !important;
     font-style: normal !important;
     text-align: right !important;
     white-space: nowrap !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-resource-cards {
+  #overview.router-overview-framework.ro-desktop-console .ro-resource-cards {
     display: none !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-col.is-bottom {
+  #overview.router-overview-framework.ro-desktop-console .ro-col.is-bottom {
     display: grid !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="resource-pressure-bars"] {
+  #overview.router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="resource-pressure-bars"] {
     max-height: 190px !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="resource-pressure-bars"] .ro-judgement-chart {
+  #overview.router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="resource-pressure-bars"] .ro-judgement-chart {
     max-height: 88px !important;
     overflow: hidden !important;
   }
@@ -716,22 +716,22 @@
 /*Codex v817 desktop control-console density: less chrome, more business facts.*/
 
 @media (min-width: 761px) {
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] {
+  #overview.router-overview-framework.ro-desktop-console {
     --v817-line: #e9f0f7;
     --v817-line-strong: #dce7f1;
     --v817-blue: #1473e6;
     --v817-text: #102033;
     --v817-muted: #718297;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-col.is-main > .ro-module:first-child,
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-col.is-side > .ro-module,
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-col.is-bottom > .ro-module {
+  #overview.router-overview-framework.ro-desktop-console .ro-col.is-main > .ro-module:first-child,
+  #overview.router-overview-framework.ro-desktop-console .ro-col.is-side > .ro-module,
+  #overview.router-overview-framework.ro-desktop-console .ro-col.is-bottom > .ro-module {
     min-height: 0 !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module-head div {
+  #overview.router-overview-framework.ro-desktop-console .ro-module-head div {
     gap: 4px !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-desktop-grid:is(
+  #overview.router-overview-framework.ro-desktop-console .ro-desktop-grid:is(
     [data-overview-desktop-scene="all-offline"],
     [data-overview-desktop-scene="interfaces-down"],
     [data-overview-desktop-scene="resource-full"],
@@ -740,7 +740,7 @@
   ) .ro-col.is-main > .ro-module:first-child {
     background: #fff !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-desktop-grid:is(
+  #overview.router-overview-framework.ro-desktop-console .ro-desktop-grid:is(
     [data-overview-desktop-scene="all-offline"],
     [data-overview-desktop-scene="interfaces-down"],
     [data-overview-desktop-scene="resource-full"],
@@ -761,113 +761,113 @@
     content: none !important;
     display: none !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module:not([data-overview-density-module="wan-trend"]) .ro-judgement-chart {
+  #overview.router-overview-framework.ro-desktop-console .ro-module:not([data-overview-density-module="wan-trend"]) .ro-judgement-chart {
     gap: 3px !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module:not([data-overview-density-module="wan-trend"]) .ro-judgement-row {
+  #overview.router-overview-framework.ro-desktop-console .ro-module:not([data-overview-density-module="wan-trend"]) .ro-judgement-row {
     min-height: 21px !important;
     height: 21px !important;
     gap: 5px !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-chart-track {
+  #overview.router-overview-framework.ro-desktop-console .ro-chart-track {
     height: 2px !important;
     background: #ecf3f9 !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-chart-current {
+  #overview.router-overview-framework.ro-desktop-console .ro-chart-current {
     background: var(--v817-blue) !important;
     box-shadow: none !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-chart-label,
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-chart-readout {
+  #overview.router-overview-framework.ro-desktop-console .ro-chart-label,
+  #overview.router-overview-framework.ro-desktop-console .ro-chart-readout {
     font-size: 7.8px !important;
     line-height: 1 !important;
     color: #687b91 !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-evidence-weight="secondary"] .ro-ledger-cell,
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="evidence-boundary"] .ro-ledger-cell,
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="route-raw-facts"] .ro-ledger-cell {
+  #overview.router-overview-framework.ro-desktop-console .ro-module[data-overview-evidence-weight="secondary"] .ro-ledger-cell,
+  #overview.router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="evidence-boundary"] .ro-ledger-cell,
+  #overview.router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="route-raw-facts"] .ro-ledger-cell {
     min-height: 24px !important;
     height: 24px !important;
     color: #607287 !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-mini-trend-visual {
+  #overview.router-overview-framework.ro-desktop-console .ro-mini-trend-visual {
     grid-template-columns: minmax(0, 1fr) 112px !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-mini-trend-area {
+  #overview.router-overview-framework.ro-desktop-console .ro-mini-trend-area {
     fill: rgba(20,115,230,.04) !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-mini-trend-readout span {
+  #overview.router-overview-framework.ro-desktop-console .ro-mini-trend-readout span {
     padding-left: 4px !important;
     border-left: 1px solid var(--v817-line) !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-mini-trend-readout em {
+  #overview.router-overview-framework.ro-desktop-console .ro-mini-trend-readout em {
     font-size: 7.2px !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-mini-trend-readout b {
+  #overview.router-overview-framework.ro-desktop-console .ro-mini-trend-readout b {
     font-size: 9.4px !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-channel-matrix-visual {
+  #overview.router-overview-framework.ro-desktop-console .ro-channel-matrix-visual {
     gap: 1px !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-channel-matrix-visual span {
+  #overview.router-overview-framework.ro-desktop-console .ro-channel-matrix-visual span {
     grid-template-rows: 10px 14px 10px !important;
     padding: 2px 4px !important;
     background: #fff !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-channel-matrix-visual strong {
+  #overview.router-overview-framework.ro-desktop-console .ro-channel-matrix-visual strong {
     font-size: 9.4px !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-channel-matrix-visual b,
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-channel-matrix-visual em {
+  #overview.router-overview-framework.ro-desktop-console .ro-channel-matrix-visual b,
+  #overview.router-overview-framework.ro-desktop-console .ro-channel-matrix-visual em {
     font-size: 7.2px !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-visual-stack {
+  #overview.router-overview-framework.ro-desktop-console .ro-visual-stack {
     border-bottom: 1px solid var(--v817-line) !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-incident-summary {
+  #overview.router-overview-framework.ro-desktop-console .ro-incident-summary {
     grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-incident-summary span {
+  #overview.router-overview-framework.ro-desktop-console .ro-incident-summary span {
     padding: 2px 4px !important;
     border-left: 1px solid var(--v817-line) !important;
     background: #fff !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-incident-summary em {
+  #overview.router-overview-framework.ro-desktop-console .ro-incident-summary em {
     font-size: 7px !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-incident-summary b {
+  #overview.router-overview-framework.ro-desktop-console .ro-incident-summary b {
     font-size: 8.5px !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-resource-ledger-visual {
+  #overview.router-overview-framework.ro-desktop-console .ro-resource-ledger-visual {
     min-height: 54px !important;
     padding: 3px 4px !important;
     gap: 3px !important;
     border-bottom: 1px solid var(--v817-line) !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-resource-ledger-visual span {
+  #overview.router-overview-framework.ro-desktop-console .ro-resource-ledger-visual span {
     grid-template-columns: 42px 42px minmax(0, 1fr) 78px !important;
     min-height: 15px !important;
     gap: 5px !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-resource-ledger-visual strong {
+  #overview.router-overview-framework.ro-desktop-console .ro-resource-ledger-visual strong {
     font-size: 9.8px !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-resource-ledger-visual b,
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-resource-ledger-visual em {
+  #overview.router-overview-framework.ro-desktop-console .ro-resource-ledger-visual b,
+  #overview.router-overview-framework.ro-desktop-console .ro-resource-ledger-visual em {
     font-size: 7.4px !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-col.is-bottom {
+  #overview.router-overview-framework.ro-desktop-console .ro-col.is-bottom {
     grid-template-columns: 1.08fr 1fr 1fr !important;
     gap: 4px !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-col.is-bottom .ro-module-head {
+  #overview.router-overview-framework.ro-desktop-console .ro-col.is-bottom .ro-module-head {
     height: 23px !important;
     min-height: 23px !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-col.is-bottom .ro-ledger-head-cell {
+  #overview.router-overview-framework.ro-desktop-console .ro-col.is-bottom .ro-ledger-head-cell {
     height: 17px !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-col.is-bottom .ro-ledger-cell {
+  #overview.router-overview-framework.ro-desktop-console .ro-col.is-bottom .ro-ledger-cell {
     height: 23px !important;
     min-height: 23px !important;
     font-size: 7.8px !important;
@@ -877,34 +877,34 @@
 /*Codex v819 desktop evidence guard: bottom evidence must never bleed over the console skeleton.*/
 
 @media (min-width: 761px) {
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-col.is-bottom {
+  #overview.router-overview-framework.ro-desktop-console .ro-col.is-bottom {
     align-items: stretch !important;
     min-height: 0 !important;
     overflow: hidden !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-col.is-bottom > .ro-module {
+  #overview.router-overview-framework.ro-desktop-console .ro-col.is-bottom > .ro-module {
     display: flex !important;
     flex-direction: column !important;
     max-height: 154px !important;
     min-height: 0 !important;
     overflow: hidden !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-col.is-bottom .ro-module-head {
+  #overview.router-overview-framework.ro-desktop-console .ro-col.is-bottom .ro-module-head {
     flex: 0 0 23px !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-col.is-bottom .ro-ledger-table {
+  #overview.router-overview-framework.ro-desktop-console .ro-col.is-bottom .ro-ledger-table {
     flex: 1 1 auto !important;
     min-height: 0 !important;
     max-height: 131px !important;
     overflow: hidden !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-col.is-bottom .ro-ledger-row {
+  #overview.router-overview-framework.ro-desktop-console .ro-col.is-bottom .ro-ledger-row {
     height: 23px !important;
     min-height: 23px !important;
     overflow: hidden !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-col.is-bottom .ro-ledger-cell,
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-col.is-bottom .ro-ledger-cell > .ik-overview-cell-text {
+  #overview.router-overview-framework.ro-desktop-console .ro-col.is-bottom .ro-ledger-cell,
+  #overview.router-overview-framework.ro-desktop-console .ro-col.is-bottom .ro-ledger-cell > .ik-overview-cell-text {
     height: 23px !important;
     min-height: 23px !important;
     white-space: nowrap !important;
@@ -916,31 +916,31 @@
 /*Codex v820 desktop density pass: iKuai-like console facts, not component chrome.*/
 
 @media (min-width: 761px) {
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-col.is-main,
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-col.is-side {
+  #overview.router-overview-framework.ro-desktop-console .ro-col.is-main,
+  #overview.router-overview-framework.ro-desktop-console .ro-col.is-side {
     min-height: 0 !important;
     max-height: none !important;
     overflow: hidden !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="route-raw-facts"] .ro-ledger-cell small {
+  #overview.router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="route-raw-facts"] .ro-ledger-cell small {
     display: none !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-channel-matrix-visual span,
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-incident-summary span,
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-visibility-cell {
+  #overview.router-overview-framework.ro-desktop-console .ro-channel-matrix-visual span,
+  #overview.router-overview-framework.ro-desktop-console .ro-incident-summary span,
+  #overview.router-overview-framework.ro-desktop-console .ro-visibility-cell {
     border: 0 !important;
     border-left: 1px solid #e9f0f7 !important;
     border-radius: 0 !important;
     background: #fff !important;
     box-shadow: none !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-incident-summary {
+  #overview.router-overview-framework.ro-desktop-console .ro-incident-summary {
     min-height: 28px !important;
     gap: 0 !important;
     border-bottom: 1px solid #e9f0f7 !important;
     background: #fff !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-visual-stack {
+  #overview.router-overview-framework.ro-desktop-console .ro-visual-stack {
     padding: 3px 4px !important;
     gap: 2px !important;
     background: #fff !important;
@@ -951,26 +951,26 @@
 /*Codex v826 desktop productization: business route surface, quieter iKuai ledger.*/
 
 @media (min-width: 761px) {
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="route-raw-facts"] .ro-ledger-table,
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="route-raw-facts"] .ro-ledger-row,
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="route-raw-facts"] .ro-ledger-cell,
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="route-raw-facts"] .ro-ledger-cell > .ik-overview-cell-text {
+  #overview.router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="route-raw-facts"] .ro-ledger-table,
+  #overview.router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="route-raw-facts"] .ro-ledger-row,
+  #overview.router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="route-raw-facts"] .ro-ledger-cell,
+  #overview.router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="route-raw-facts"] .ro-ledger-cell > .ik-overview-cell-text {
     min-width: 0 !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
     white-space: nowrap !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-evidence-weight="secondary"] .ro-ledger-row:not(.ro-ledger-head),
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-col.is-bottom .ro-ledger-row:not(.ro-ledger-head),
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="evidence-boundary"] .ro-ledger-row:not(.ro-ledger-head) {
+  #overview.router-overview-framework.ro-desktop-console .ro-module[data-overview-evidence-weight="secondary"] .ro-ledger-row:not(.ro-ledger-head),
+  #overview.router-overview-framework.ro-desktop-console .ro-col.is-bottom .ro-ledger-row:not(.ro-ledger-head),
+  #overview.router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="evidence-boundary"] .ro-ledger-row:not(.ro-ledger-head) {
     border-bottom-color: rgba(233, 240, 247, .48) !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="evidence-boundary"] .ro-ledger-cell,
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="no-snapshot-degraded-modules"] .ro-ledger-cell {
+  #overview.router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="evidence-boundary"] .ro-ledger-cell,
+  #overview.router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="no-snapshot-degraded-modules"] .ro-ledger-cell {
     font-size: 7.9px !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="evidence-boundary"] .ro-ledger-cell:first-child,
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="no-snapshot-degraded-modules"] .ro-ledger-cell:first-child {
+  #overview.router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="evidence-boundary"] .ro-ledger-cell:first-child,
+  #overview.router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="no-snapshot-degraded-modules"] .ro-ledger-cell:first-child {
     color: #1a293a !important;
     font-weight: 720 !important;
   }
@@ -979,45 +979,45 @@
 /*Codex v825 desktop density: iKuai-like scan console, fewer shells, more business facts.*/
 
 @media (min-width: 761px) {
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] {
+  #overview.router-overview-framework.ro-desktop-console {
     padding: 2px !important;
     --v825-line: #edf3f8;
     --v825-line-strong: #dfe8f2;
     --v825-muted: #718296;
     --v825-text: #102033;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-col.is-bottom {
+  #overview.router-overview-framework.ro-desktop-console .ro-col.is-bottom {
     max-height: 148px !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module-head > div {
+  #overview.router-overview-framework.ro-desktop-console .ro-module-head > div {
     display: flex !important;
     min-width: 0 !important;
     align-items: baseline !important;
     gap: 5px !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-evidence-weight="secondary"] .ro-ledger-row:not(.ro-ledger-head),
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="evidence-boundary"] .ro-ledger-row:not(.ro-ledger-head) {
+  #overview.router-overview-framework.ro-desktop-console .ro-module[data-overview-evidence-weight="secondary"] .ro-ledger-row:not(.ro-ledger-head),
+  #overview.router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="evidence-boundary"] .ro-ledger-row:not(.ro-ledger-head) {
     height: 24px !important;
     min-height: 24px !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-evidence-weight="secondary"] .ro-ledger-cell,
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="evidence-boundary"] .ro-ledger-cell {
+  #overview.router-overview-framework.ro-desktop-console .ro-module[data-overview-evidence-weight="secondary"] .ro-ledger-cell,
+  #overview.router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="evidence-boundary"] .ro-ledger-cell {
     height: 24px !important;
     min-height: 24px !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="resource-threshold"] .ro-judgement-chart {
+  #overview.router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="resource-threshold"] .ro-judgement-chart {
     display: none !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-mini-trend-visual {
+  #overview.router-overview-framework.ro-desktop-console .ro-mini-trend-visual {
     height: 60px !important;
     padding: 3px 6px !important;
     border-bottom: 1px solid var(--v825-line) !important;
     background: #fff !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-mini-trend-visual svg {
+  #overview.router-overview-framework.ro-desktop-console .ro-mini-trend-visual svg {
     height: 40px !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module:not([data-overview-density-module="wan-trend"]) .ro-judgement-chart {
+  #overview.router-overview-framework.ro-desktop-console .ro-module:not([data-overview-density-module="wan-trend"]) .ro-judgement-chart {
     max-height: 112px !important;
     margin: 0 !important;
     padding: 3px 5px !important;
@@ -1025,11 +1025,11 @@
     background: #fff !important;
     box-shadow: none !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="resource-risk-priority"] .ro-visual-stack,
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="resource-pressure-bars"] .ro-judgement-chart {
+  #overview.router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="resource-risk-priority"] .ro-visual-stack,
+  #overview.router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="resource-pressure-bars"] .ro-judgement-chart {
     max-height: 108px !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-channel-matrix-visual {
+  #overview.router-overview-framework.ro-desktop-console .ro-channel-matrix-visual {
     min-height: 30px !important;
     max-height: 38px !important;
     padding: 2px 4px !important;
@@ -1037,9 +1037,9 @@
     background: #fff !important;
     box-shadow: none !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-channel-matrix-visual span,
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-visibility-cell,
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-incident-summary span {
+  #overview.router-overview-framework.ro-desktop-console .ro-channel-matrix-visual span,
+  #overview.router-overview-framework.ro-desktop-console .ro-visibility-cell,
+  #overview.router-overview-framework.ro-desktop-console .ro-incident-summary span {
     min-height: 26px !important;
     padding: 2px 5px !important;
     border: 0 !important;
@@ -1048,7 +1048,7 @@
     background: #fff !important;
     box-shadow: none !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-chain-timeline {
+  #overview.router-overview-framework.ro-desktop-console .ro-chain-timeline {
     min-height: 32px !important;
     max-height: 40px !important;
     padding: 2px 4px !important;
@@ -1057,7 +1057,7 @@
     box-shadow: none !important;
     overflow: hidden !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-chain-node {
+  #overview.router-overview-framework.ro-desktop-console .ro-chain-node {
     min-height: 24px !important;
     padding: 2px 5px !important;
     border: 0 !important;
@@ -1066,19 +1066,19 @@
     background: #fff !important;
     box-shadow: none !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-chain-node span,
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-chain-node em {
+  #overview.router-overview-framework.ro-desktop-console .ro-chain-node span,
+  #overview.router-overview-framework.ro-desktop-console .ro-chain-node em {
     font-size: 7.2px !important;
     line-height: 1 !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-chain-node b {
+  #overview.router-overview-framework.ro-desktop-console .ro-chain-node b {
     font-size: 8.4px !important;
     line-height: 1 !important;
   }
 }
 
 @media (min-width: 761px) {
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] {
+  #overview.router-overview-framework.ro-desktop-console {
     --ik-v950-text: #112238;
     --ik-v950-muted: #66788d;
     --ik-v950-line: rgba(214, 226, 238, .82);
@@ -1088,17 +1088,17 @@
     --ik-v950-warn: #80623b;
     background: #f3f7fb !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-cell:nth-child(n+3),
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-cell:nth-child(n+3) .ik-overview-cell-text {
+  #overview.router-overview-framework.ro-desktop-console .ro-ledger-cell:nth-child(n+3),
+  #overview.router-overview-framework.ro-desktop-console .ro-ledger-cell:nth-child(n+3) .ik-overview-cell-text {
     color: #65778d !important;
     font-weight: 520 !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="evidence-boundary"] .ro-module-head,
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="no-snapshot-degraded-modules"] .ro-module-head {
+  #overview.router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="evidence-boundary"] .ro-module-head,
+  #overview.router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="no-snapshot-degraded-modules"] .ro-module-head {
     background: #fbfdff !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="evidence-boundary"] .ro-ledger-cell,
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="no-snapshot-degraded-modules"] .ro-ledger-cell {
+  #overview.router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="evidence-boundary"] .ro-ledger-cell,
+  #overview.router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="no-snapshot-degraded-modules"] .ro-ledger-cell {
     color: #5e7186 !important;
   }
 }
@@ -1106,14 +1106,14 @@
 /*v960 public-console refinement: flatter status bus, quieter evidence, lower table noise.*/
 
 @media (min-width: 761px) {
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-evidence-weight="secondary"],
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-evidence-weight="secondary"] {
+  #overview.router-overview-framework.ro-desktop-console .ro-module[data-overview-evidence-weight="secondary"],
+  .router-overview-framework.ro-desktop-console .ro-module[data-overview-evidence-weight="secondary"] {
     background: rgba(248, 251, 254, .92) !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-evidence-weight="secondary"] .ro-module-head b,
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-evidence-weight="secondary"] .ro-module-head b,
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-evidence-weight="secondary"] .ro-ledger-cell,
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-evidence-weight="secondary"] .ro-ledger-cell {
+  #overview.router-overview-framework.ro-desktop-console .ro-module[data-overview-evidence-weight="secondary"] .ro-module-head b,
+  .router-overview-framework.ro-desktop-console .ro-module[data-overview-evidence-weight="secondary"] .ro-module-head b,
+  #overview.router-overview-framework.ro-desktop-console .ro-module[data-overview-evidence-weight="secondary"] .ro-ledger-cell,
+  .router-overview-framework.ro-desktop-console .ro-module[data-overview-evidence-weight="secondary"] .ro-ledger-cell {
     color: #657689 !important;
   }
 }

@@ -1,6 +1,6 @@
 @media (min-width: 761px) {
   /*Canonical desktop status bus; it owns only the top-level conclusion rail.*/
-  #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-status-bus {
+  #overview.router-overview-framework.ro-desktop-hierarchy .ro-status-bus {
     display: grid;
     grid-template-columns: minmax(150px, .9fr) minmax(176px, 1.06fr) minmax(126px, .78fr) minmax(118px, .72fr) minmax(126px, .76fr) minmax(118px, .68fr);
     grid-column: 1 / -1;
@@ -18,7 +18,7 @@
     box-shadow: none;
     overflow: visible;
   }
-  #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-status-bus .ro-status-cell {
+  #overview.router-overview-framework.ro-desktop-hierarchy .ro-status-bus .ro-status-cell {
     min-width: 0;
     display: grid;
     align-content: center;
@@ -33,19 +33,19 @@
     overflow: visible;
     position: relative;
   }
-  #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-status-bus .ro-status-cell[data-overview-status-role="conclusion"] {
+  #overview.router-overview-framework.ro-desktop-hierarchy .ro-status-bus .ro-status-cell[data-overview-status-role="conclusion"] {
     background: linear-gradient(90deg, rgba(18, 34, 55, .028), rgba(255, 255, 255, 0) 72%);
     box-shadow: inset 2px 0 0 rgba(18,34,55,.44);
   }
-  #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-status-bus .ro-status-cell[data-tone="danger"][data-overview-status-role="conclusion"] {
+  #overview.router-overview-framework.ro-desktop-hierarchy .ro-status-bus .ro-status-cell[data-tone="danger"][data-overview-status-role="conclusion"] {
     background: linear-gradient(90deg, rgba(173, 54, 49, .045), rgba(255, 255, 255, 0) 72%);
     box-shadow: inset 2px 0 0 rgba(173, 54, 49, .55);
   }
-  #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-status-bus .ro-status-cell[data-tone="warn"][data-overview-status-role="conclusion"] {
+  #overview.router-overview-framework.ro-desktop-hierarchy .ro-status-bus .ro-status-cell[data-tone="warn"][data-overview-status-role="conclusion"] {
     background: linear-gradient(90deg, rgba(164, 111, 36, .045), rgba(255, 255, 255, 0) 72%);
     box-shadow: inset 2px 0 0 rgba(164, 111, 36, .55);
   }
-  #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-status-bus .ro-status-cell span {
+  #overview.router-overview-framework.ro-desktop-hierarchy .ro-status-bus .ro-status-cell span {
     display: block;
     color: var(--ik-console-muted, #76889d);
     font-size: 10px;
@@ -56,7 +56,7 @@
     overflow: visible;
     text-overflow: clip;
   }
-  #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-status-bus .ro-status-cell b {
+  #overview.router-overview-framework.ro-desktop-hierarchy .ro-status-bus .ro-status-cell b {
     display: block;
     color: var(--ik-console-ink, #122237);
     font-size: 12px;
@@ -67,7 +67,7 @@
     text-overflow: clip;
     overflow-wrap: anywhere;
   }
-  #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-status-bus .ro-status-cell[data-overview-status-role="conclusion"] b {
+  #overview.router-overview-framework.ro-desktop-hierarchy .ro-status-bus .ro-status-cell[data-overview-status-role="conclusion"] b {
     font-size: 14.2px;
     line-height: 1.05;
     font-weight: 900;
@@ -77,7 +77,7 @@
   #overview.router-overview-framework[data-overview-scene-key="interfaces-down"] .ro-status-bus .ro-status-cell[data-overview-status-role="conclusion"] b {
     color: #d93025;
   }
-  #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-status-bus .ro-status-cell em {
+  #overview.router-overview-framework.ro-desktop-hierarchy .ro-status-bus .ro-status-cell em {
     display: none;
     color: var(--ik-console-subtle, #8fa0b3);
     font-size: 9px;

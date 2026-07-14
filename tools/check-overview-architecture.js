@@ -176,6 +176,21 @@ const desktopRelease = read(desktopReleaseFile);
 const desktopIncidentStyles = read(desktopIncidentStylesFile);
 const desktopStatusBusStyles = read(desktopStatusBusStylesFile);
 const desktopWanTrendStyles = read(desktopWanTrendStylesFile);
+const desktopSelectorOwnershipStyles = [
+  "src/panel-framework/overview/styles/overview-states.css",
+  "src/panel-framework/overview/styles/desktop/console-refinement.css",
+  "src/panel-framework/overview/styles/desktop/density.css",
+  "src/panel-framework/overview/styles/desktop/evidence.css",
+  "src/panel-framework/overview/styles/desktop/hierarchy.css",
+  "src/panel-framework/overview/styles/desktop/layout.css",
+  "src/panel-framework/overview/styles/desktop/refinement.css",
+  "src/panel-framework/overview/styles/desktop/release.css",
+  "src/panel-framework/overview/styles/desktop/status-bus.css",
+  "src/panel-framework/overview/styles/desktop/wan-trend.css",
+  "src/panel-framework/overview/styles/desktop/workspace-layout.css",
+]
+  .map(read)
+  .join("\n");
 const desktopHelpers = read(desktopHelpersFile);
 const desktopPresentation = read(desktopPresentationFile);
 const desktopTopbar = read(desktopTopbarFile);
@@ -764,6 +779,16 @@ assert(
   (panel.match(/\bdata-overview-[\w-]+/g) || []).length <= 12 &&
     !/data-overview-(?:hard-standard|mobile-home-acceptance|no-snapshot-(?:density-contract|content-sized|content-packed|big-wan-rate-guard))/.test(panel),
   "OverviewPanel.tsx must keep root attributes structural or state-derived, not self-certifying release claims"
+);
+assert(
+  panel.includes(
+    'mobile ? "is-mobile-product" : "ro-desktop-console ro-desktop-hierarchy"'
+  ) &&
+    !/data-overview-(?:ikuai40-density|desktop-hierarchy-contract)/.test(panel) &&
+    !/data-overview-(?:ikuai40-density|desktop-hierarchy-contract)/.test(
+      desktopSelectorOwnershipStyles
+    ),
+  "Desktop selector ownership must use semantic desktop-only classes, not self-certifying root attributes"
 );
 assert(
   desktopTopbar.includes("desktopPresentation") &&

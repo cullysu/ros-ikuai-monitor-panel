@@ -1,36 +1,36 @@
 /*v1000 public-console polish: flatter status bus, quieter tables, full no-snapshot floor.*/
 
 @media (min-width: 761px) {
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"],
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] {
+  #overview.router-overview-framework.ro-desktop-console,
+  .router-overview-framework.ro-desktop-console {
     --ik-v1000-desktop-line: rgba(154, 176, 198, .20);
     --ik-v1000-desktop-line-soft: rgba(225, 233, 242, .62);
     --ik-v1000-desktop-ink: #182b3f;
     --ik-v1000-desktop-muted: #718397;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module,
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module {
+  #overview.router-overview-framework.ro-desktop-console .ro-module,
+  .router-overview-framework.ro-desktop-console .ro-module {
     border-color: var(--ik-v1000-desktop-line) !important;
     background: rgba(255, 255, 255, .94) !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-cell,
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-cell {
+  #overview.router-overview-framework.ro-desktop-console .ro-ledger-cell,
+  .router-overview-framework.ro-desktop-console .ro-ledger-cell {
     border-bottom-color: var(--ik-v1000-desktop-line-soft) !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row:not(.ro-ledger-head):hover .ro-ledger-cell,
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row:not(.ro-ledger-head):hover .ro-ledger-cell {
+  #overview.router-overview-framework.ro-desktop-console .ro-ledger-row:not(.ro-ledger-head):hover .ro-ledger-cell,
+  .router-overview-framework.ro-desktop-console .ro-ledger-row:not(.ro-ledger-head):hover .ro-ledger-cell {
     background: rgba(245, 249, 253, .72) !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-evidence-weight="secondary"],
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-evidence-weight="secondary"],
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="evidence-boundary"],
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="evidence-boundary"] {
+  #overview.router-overview-framework.ro-desktop-console .ro-module[data-overview-evidence-weight="secondary"],
+  .router-overview-framework.ro-desktop-console .ro-module[data-overview-evidence-weight="secondary"],
+  #overview.router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="evidence-boundary"],
+  .router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="evidence-boundary"] {
     background: rgba(248, 251, 254, .86) !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-evidence-weight="secondary"] .ro-ledger-cell,
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-evidence-weight="secondary"] .ro-ledger-cell,
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="evidence-boundary"] .ro-ledger-cell,
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="evidence-boundary"] .ro-ledger-cell {
+  #overview.router-overview-framework.ro-desktop-console .ro-module[data-overview-evidence-weight="secondary"] .ro-ledger-cell,
+  .router-overview-framework.ro-desktop-console .ro-module[data-overview-evidence-weight="secondary"] .ro-ledger-cell,
+  #overview.router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="evidence-boundary"] .ro-ledger-cell,
+  .router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="evidence-boundary"] .ro-ledger-cell {
     color: var(--ik-v1000-desktop-muted) !important;
   }
 }
@@ -38,45 +38,45 @@
 /*v1040 release-tail ledger quieting: keep dense evidence tables calm after release CSS.*/
 
 @media (min-width: 761px) {
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-head > .ro-ledger-head-cell,
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-head > .ro-ledger-head-cell {
+  #overview.router-overview-framework.ro-desktop-console .ro-ledger-head > .ro-ledger-head-cell,
+  .router-overview-framework.ro-desktop-console .ro-ledger-head > .ro-ledger-head-cell {
     border-bottom-color: rgba(154, 176, 198, .14) !important;
     background-color: rgba(248, 251, 254, .72) !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row:not(.ro-ledger-head) > .ro-ledger-cell,
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row:not(.ro-ledger-head) > .ro-ledger-cell {
+  #overview.router-overview-framework.ro-desktop-console .ro-ledger-row:not(.ro-ledger-head) > .ro-ledger-cell,
+  .router-overview-framework.ro-desktop-console .ro-ledger-row:not(.ro-ledger-head) > .ro-ledger-cell {
     border-right-width: 0 !important;
     border-right-color: transparent !important;
     border-bottom-color: rgba(226, 235, 244, .28) !important;
     background-color: transparent !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="danger"] > .ro-ledger-cell:not(:first-child),
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="warn"] > .ro-ledger-cell:not(:first-child),
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="missing"] > .ro-ledger-cell:not(:first-child),
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="danger"] > .ro-ledger-cell:not(:first-child) .ik-overview-cell-text,
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="warn"] > .ro-ledger-cell:not(:first-child) .ik-overview-cell-text,
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="missing"] > .ro-ledger-cell:not(:first-child) .ik-overview-cell-text {
+  #overview.router-overview-framework.ro-desktop-console .ro-ledger-row[data-tone="danger"] > .ro-ledger-cell:not(:first-child),
+  #overview.router-overview-framework.ro-desktop-console .ro-ledger-row[data-tone="warn"] > .ro-ledger-cell:not(:first-child),
+  #overview.router-overview-framework.ro-desktop-console .ro-ledger-row[data-tone="missing"] > .ro-ledger-cell:not(:first-child),
+  #overview.router-overview-framework.ro-desktop-console .ro-ledger-row[data-tone="danger"] > .ro-ledger-cell:not(:first-child) .ik-overview-cell-text,
+  #overview.router-overview-framework.ro-desktop-console .ro-ledger-row[data-tone="warn"] > .ro-ledger-cell:not(:first-child) .ik-overview-cell-text,
+  #overview.router-overview-framework.ro-desktop-console .ro-ledger-row[data-tone="missing"] > .ro-ledger-cell:not(:first-child) .ik-overview-cell-text {
     color: #24374b !important;
   }
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="danger"],
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="warn"],
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-row[data-tone="missing"] {
+  #overview.router-overview-framework.ro-desktop-console .ro-ledger-row[data-tone="danger"],
+  #overview.router-overview-framework.ro-desktop-console .ro-ledger-row[data-tone="warn"],
+  #overview.router-overview-framework.ro-desktop-console .ro-ledger-row[data-tone="missing"] {
     background: transparent !important;
     box-shadow: none !important;
   }
   /*Incident object columns stay neutral; status values keep their semantic treatment.*/
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="wan-offline-bars"] .ro-ledger-row:not(.ro-ledger-head) > .ro-ledger-cell:first-child .ik-overview-cell-text,
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="wan-offline-continuity"] .ro-ledger-row:not(.ro-ledger-head) > .ro-ledger-cell:first-child .ik-overview-cell-text,
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="interface-forwarding"] .ro-ledger-row:not(.ro-ledger-head) > .ro-ledger-cell:first-child .ik-overview-cell-text,
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="wan-offline-bars"] .ro-ledger-row:not(.ro-ledger-head) > .ro-ledger-cell:first-child .ik-overview-cell-text,
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="wan-offline-continuity"] .ro-ledger-row:not(.ro-ledger-head) > .ro-ledger-cell:first-child .ik-overview-cell-text,
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="interface-forwarding"] .ro-ledger-row:not(.ro-ledger-head) > .ro-ledger-cell:first-child .ik-overview-cell-text,
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="wan-offline-bars"] .ro-ledger-row:not(.ro-ledger-head) > .ro-ledger-cell:first-child .ik-overview-cell-text > b,
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="wan-offline-continuity"] .ro-ledger-row:not(.ro-ledger-head) > .ro-ledger-cell:first-child .ik-overview-cell-text > b,
-  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="interface-forwarding"] .ro-ledger-row:not(.ro-ledger-head) > .ro-ledger-cell:first-child .ik-overview-cell-text > b,
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="wan-offline-bars"] .ro-ledger-row:not(.ro-ledger-head) > .ro-ledger-cell:first-child .ik-overview-cell-text > b,
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="wan-offline-continuity"] .ro-ledger-row:not(.ro-ledger-head) > .ro-ledger-cell:first-child .ik-overview-cell-text > b,
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-overview-density-module="interface-forwarding"] .ro-ledger-row:not(.ro-ledger-head) > .ro-ledger-cell:first-child .ik-overview-cell-text > b {
+  #overview.router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="wan-offline-bars"] .ro-ledger-row:not(.ro-ledger-head) > .ro-ledger-cell:first-child .ik-overview-cell-text,
+  #overview.router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="wan-offline-continuity"] .ro-ledger-row:not(.ro-ledger-head) > .ro-ledger-cell:first-child .ik-overview-cell-text,
+  #overview.router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="interface-forwarding"] .ro-ledger-row:not(.ro-ledger-head) > .ro-ledger-cell:first-child .ik-overview-cell-text,
+  .router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="wan-offline-bars"] .ro-ledger-row:not(.ro-ledger-head) > .ro-ledger-cell:first-child .ik-overview-cell-text,
+  .router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="wan-offline-continuity"] .ro-ledger-row:not(.ro-ledger-head) > .ro-ledger-cell:first-child .ik-overview-cell-text,
+  .router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="interface-forwarding"] .ro-ledger-row:not(.ro-ledger-head) > .ro-ledger-cell:first-child .ik-overview-cell-text,
+  #overview.router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="wan-offline-bars"] .ro-ledger-row:not(.ro-ledger-head) > .ro-ledger-cell:first-child .ik-overview-cell-text > b,
+  #overview.router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="wan-offline-continuity"] .ro-ledger-row:not(.ro-ledger-head) > .ro-ledger-cell:first-child .ik-overview-cell-text > b,
+  #overview.router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="interface-forwarding"] .ro-ledger-row:not(.ro-ledger-head) > .ro-ledger-cell:first-child .ik-overview-cell-text > b,
+  .router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="wan-offline-bars"] .ro-ledger-row:not(.ro-ledger-head) > .ro-ledger-cell:first-child .ik-overview-cell-text > b,
+  .router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="wan-offline-continuity"] .ro-ledger-row:not(.ro-ledger-head) > .ro-ledger-cell:first-child .ik-overview-cell-text > b,
+  .router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="interface-forwarding"] .ro-ledger-row:not(.ro-ledger-head) > .ro-ledger-cell:first-child .ik-overview-cell-text > b {
     color: #24374b !important;
   }
 }

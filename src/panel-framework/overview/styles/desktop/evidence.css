@@ -19,14 +19,14 @@
 /*Codex v517 ACTUAL EOF: stronger desktop chart de-red.*/
 
 @media (min-width: 761px) {
-  #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-judgement-row[data-tone="danger"] .ro-chart-current,
+  #overview.router-overview-framework.ro-desktop-hierarchy .ro-judgement-row[data-tone="danger"] .ro-chart-current,
   #overview.router-overview-framework[data-overview-scene-key="resource-full"] .ro-judgement-row[data-tone="danger"] .ro-chart-current,
   #overview.router-overview-framework[data-overview-scene-key="interfaces-down"] .ro-judgement-row[data-tone="danger"] .ro-chart-current,
   #overview.router-overview-framework[data-overview-scene-key="all-offline"] .ro-judgement-row[data-tone="danger"] .ro-chart-current {
     background: linear-gradient(90deg, #2c7fc8 0%, #7fb8de 86%, #d93025 100%) !important;
     box-shadow: none !important;
   }
-  #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-judgement-row[data-tone="danger"] .ro-chart-threshold {
+  #overview.router-overview-framework.ro-desktop-hierarchy .ro-judgement-row[data-tone="danger"] .ro-chart-threshold {
     background: rgba(217, 48, 37, .72) !important;
   }
 }
@@ -244,14 +244,14 @@
 }
 
 @media (min-width: 761px) {
-  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-desktop-grid.ik-home-layout > .ro-col.is-side > .ro-module {
+  .router-overview-framework.ro-desktop-hierarchy .ro-desktop-grid.ik-home-layout > .ro-col.is-side > .ro-module {
     max-height: 220px !important;
     overflow: auto !important;
   }
-  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-desktop-grid.ik-home-layout > .ro-col.is-side > .ro-module:first-child {
+  .router-overview-framework.ro-desktop-hierarchy .ro-desktop-grid.ik-home-layout > .ro-col.is-side > .ro-module:first-child {
     max-height: 250px !important;
   }
-  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-desktop-grid.ik-home-layout > .ro-col.is-bottom > .ro-module {
+  .router-overview-framework.ro-desktop-hierarchy .ro-desktop-grid.ik-home-layout > .ro-col.is-bottom > .ro-module {
     max-height: 200px !important;
     overflow: auto !important;
   }

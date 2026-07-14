@@ -1,53 +1,53 @@
 /*Codex v430 desktop compact console: one status bus + fixed iKuai-style workspace.*/
 
 @media (min-width: 761px) {
-  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] {
+  .router-overview-framework.ro-desktop-hierarchy {
     padding: 8px !important;
   }
-  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-desktop-grid.ik-home-layout > .ro-col {
+  .router-overview-framework.ro-desktop-hierarchy .ro-desktop-grid.ik-home-layout > .ro-col {
     gap: 8px !important;
   }
-  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-desktop-grid.ik-home-layout > .ro-col.is-bottom {
+  .router-overview-framework.ro-desktop-hierarchy .ro-desktop-grid.ik-home-layout > .ro-col.is-bottom {
     grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
     gap: 8px !important;
   }
-  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-module-head {
+  .router-overview-framework.ro-desktop-hierarchy .ro-module-head {
     min-height: 28px !important;
     padding: 5px 8px !important;
   }
-  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-module-head b {
+  .router-overview-framework.ro-desktop-hierarchy .ro-module-head b {
     font-size: 12.5px !important;
   }
-  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-module-head span {
+  .router-overview-framework.ro-desktop-hierarchy .ro-module-head span {
     font-size: 10px !important;
     line-height: 1.15 !important;
   }
-  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-ledger-head {
+  .router-overview-framework.ro-desktop-hierarchy .ro-ledger-head {
     min-height: 24px !important;
   }
-  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-ledger-row {
+  .router-overview-framework.ro-desktop-hierarchy .ro-ledger-row {
     min-height: 26px !important;
   }
-  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-ledger-cell,
-  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-ledger-head-cell {
+  .router-overview-framework.ro-desktop-hierarchy .ro-ledger-cell,
+  .router-overview-framework.ro-desktop-hierarchy .ro-ledger-head-cell {
     padding: 4px 7px !important;
     font-size: 11.5px !important;
     line-height: 1.18 !important;
   }
-  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-judgement-chart {
+  .router-overview-framework.ro-desktop-hierarchy .ro-judgement-chart {
     margin: 6px 8px !important;
     padding: 6px 8px !important;
   }
-  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-chart-summary {
+  .router-overview-framework.ro-desktop-hierarchy .ro-chart-summary {
     gap: 5px !important;
     margin-bottom: 5px !important;
   }
-  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-chart-summary span {
+  .router-overview-framework.ro-desktop-hierarchy .ro-chart-summary span {
     min-height: 20px !important;
     padding: 3px 5px !important;
     font-size: 10px !important;
   }
-  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-judgement-row {
+  .router-overview-framework.ro-desktop-hierarchy .ro-judgement-row {
     min-height: 24px !important;
     gap: 6px !important;
   }

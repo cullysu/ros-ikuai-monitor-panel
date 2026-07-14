@@ -10028,13 +10028,11 @@ var PanelFramework = function(exports) {
       "section",
       {
         id: "overview",
-        className: "section router-overview-framework",
+        className: `section router-overview-framework ${mobile ? "is-mobile-product" : "ro-desktop-console ro-desktop-hierarchy"}`,
         "data-overview-page-credibility": state.facts.freshness.credibilityLabel,
         "data-overview-page-credibility-tone": state.facts.freshness.credibilityTone,
         "data-overview-business-display-boundary": state.scenario === "no-snapshot" ? "no-business-data" : "business-data",
         "data-overview-scene-key": state.scenario,
-        "data-overview-ikuai40-density": "apple-flat-light-blue-console",
-        "data-overview-desktop-hierarchy-contract": "conclusion-key-metrics-evidence",
         children: mobile ? /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "router-mobile-app-mount", "data-router-mobile-mount": true, children: /* @__PURE__ */ jsxRuntimeExports.jsx(RouterMobileApp, { snapshot, state }, state.scenario) }) : /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx(StatusVerdict, { snapshot, state }),
           /* @__PURE__ */ jsxRuntimeExports.jsx(DesktopWorkspace, { snapshot, state })
