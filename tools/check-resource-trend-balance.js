@@ -1850,6 +1850,23 @@ async function main() {
             item.statusPaddingLeft >= 4
           ))
         );
+        const supportingSurfaceRect = surface?.getBoundingClientRect();
+        const landscapeDetailStyle = deferredRows ? getComputedStyle(deferredRows) : null;
+        const landscapeEvidenceRects = visibleTerminalRows.map((row) => row.getBoundingClientRect());
+        const landscapeMetricRect = metricGrid?.getBoundingClientRect();
+        const landscapeTabsRect = bottomTabs?.getBoundingClientRect();
+        const landscapeEvidenceGridProductized = !isLandscapeMobile || Boolean(
+          supportingSurfaceRect &&
+          landscapeDetailStyle &&
+          landscapeDetailStyle.display === 'grid' &&
+          (landscapeDetailStyle.gridTemplateColumns || '').split(' ').filter(Boolean).length === 2 &&
+          supportingSurfaceRect.height >= 136 &&
+          visibleTerminalRows.length >= 3 &&
+          visibleTerminalRows.length <= 4 &&
+          landscapeEvidenceRects.every((rect) => rect.width >= 160 && rect.height >= 46) &&
+          (!landscapeMetricRect || supportingSurfaceRect.top >= landscapeMetricRect.bottom - 1) &&
+          (!landscapeTabsRect || supportingSurfaceRect.bottom <= landscapeTabsRect.top)
+        );
         const supportingHead = list?.querySelector('.ik-mobile-supporting-head');
         const supportingHeadRect = supportingHead?.getBoundingClientRect();
         const supportingHeadText = normalize(supportingHead?.textContent || '');
@@ -2239,6 +2256,7 @@ async function main() {
           statusCoreBlocksModelBacked,
           primaryListEvidenceStandardized,
           evidenceStatusMarkersReadable,
+          landscapeEvidenceGridProductized,
           normalOperationalDensityOk,
           compactSupportingHeaderOk,
           resourceTrackNoiseLow,
@@ -2350,6 +2368,13 @@ async function main() {
           primaryListEvidenceStandardized,
           evidenceStatusMarkersReadable,
           evidenceReadability,
+          landscapeEvidenceGridProductized,
+          landscapeEvidenceGrid: {
+            surfaceHeight: supportingSurfaceRect?.height || 0,
+            columns: (landscapeDetailStyle?.gridTemplateColumns || '').split(' ').filter(Boolean).length,
+            visibleRows: visibleTerminalRows.length,
+            rowRects: landscapeEvidenceRects.map((rect) => ({ width: rect.width, height: rect.height })),
+          },
           normalOperationalDensityOk,
           normalOperationalDensityChecks,
           compactSupportingHeaderOk,

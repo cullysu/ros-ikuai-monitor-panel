@@ -32,23 +32,6 @@
     width: 100%;
     min-width: 0;
   }
-  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-supporting-surface {
-    grid-area: side;
-    align-self: end;
-    height: 48px;
-    max-height: 48px;
-    overflow: hidden;
-  }
-  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-supporting-list {
-    grid-template-rows: 48px;
-  }
-  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-supporting-head {
-    min-height: 48px;
-    height: 48px;
-  }
-  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-supporting-detail-rows {
-    display: none;
-  }
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-decision-head h1 {
     font-size: 28px;
     line-height: 1.05;
