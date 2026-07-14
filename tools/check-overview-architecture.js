@@ -885,6 +885,13 @@ assert(
     "data-overview-wan-decision-source",
     "data-overview-wan-decision",
     "data-overview-desktop-wan-top-outlet",
+    "data-overview-chart-has-current",
+    "data-overview-chart-has-peak",
+    "data-overview-chart-has-mean",
+    "data-overview-chart-has-window",
+    "data-overview-chart-has-threshold",
+    "data-overview-chart-has-trust",
+    "data-overview-y-axis",
   ].every((attribute) => !desktopVisuals.includes(attribute)) &&
     desktopVisuals.includes('className="ro-wan-integrated-visual"') &&
     desktopVisuals.includes('className="ro-wan-integrated-decision"'),

@@ -1009,6 +1009,13 @@ async function main() {
         const wanChartRows = Array.from(wanChart?.querySelectorAll('.ro-judgement-row') || []);
         const wanChartSummary = wanChart?.querySelector('.ro-chart-summary');
         const wanChartSummaryRect = wanChartSummary?.getBoundingClientRect();
+        const wanChartMarksVisible = wanChartRows.length >= 3 && wanChartRows.every((row) => (
+          row.querySelector('.ro-chart-current') &&
+          row.querySelector('.ro-chart-peak') &&
+          row.querySelector('.ro-chart-mean') &&
+          row.querySelector('.ro-chart-threshold') &&
+          row.querySelector('.ro-chart-readout')
+        ));
         const wanSummaryItems = Array.from(wanIntegrated?.querySelectorAll('.ro-wan-integrated-summary span') || []);
         const wanTopItems = Array.from(wanIntegrated?.querySelectorAll('.ro-wan-integrated-top span') || []);
         const wanDecisionRail = wanIntegrated?.querySelector('.ro-wan-integrated-decision');
@@ -1038,11 +1045,11 @@ async function main() {
         const wanReadableProductChart = Boolean(
           wanIntegrated &&
           wanChart &&
-          wanChart.getAttribute('data-overview-chart-has-current') === 'true' &&
-          wanChart.getAttribute('data-overview-chart-has-peak') === 'true' &&
-          wanChart.getAttribute('data-overview-chart-has-mean') === 'true' &&
-          wanChart.getAttribute('data-overview-chart-has-window') === 'true' &&
-          wanChart.getAttribute('data-overview-chart-has-threshold') === 'true' &&
+          wanChart.querySelector('.ro-chart-axis') &&
+          wanChartMarksVisible &&
+          wanChartSummary &&
+          wanChartSummary.getAttribute('data-overview-time-window') &&
+          wanChartSummary.getAttribute('data-overview-confidence') &&
           wanChartRect &&
           wanChartRect.width >= 520 &&
           wanChartRect.height >= 104 &&

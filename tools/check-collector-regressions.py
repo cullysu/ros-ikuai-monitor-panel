@@ -765,11 +765,11 @@ def assert_frontend_charts_skip_missing_values():
         overview_css = "\n".join(overview_css_parts)
         derive_source = (ROOT / "src" / "panel-framework" / "overview" / "deriveOverviewState.ts").read_text(encoding="utf-8")
         for marker in (
-            'data-overview-chart-has-current="true"',
-            'data-overview-chart-has-peak="true"',
-            'data-overview-chart-has-mean="true"',
-            'data-overview-chart-has-threshold="true"',
-            'data-overview-y-axis="overview-y-axis"',
+            'className="ro-chart-current"',
+            'className="ro-chart-peak"',
+            'className="ro-chart-mean"',
+            'className="ro-chart-threshold"',
+            'className="ro-chart-axis"',
             "data-overview-rank-grid",
         ):
             assert marker in overview_source, f"{marker} not found in framework overview"

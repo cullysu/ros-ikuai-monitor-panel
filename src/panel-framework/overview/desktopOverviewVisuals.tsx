@@ -33,12 +33,6 @@ export function JudgementChart({ module, rows, kind = "trend" }: { module: strin
       data-overview-chart-main-metric={lead?.label || "无业务快照"}
       data-overview-chart-threshold={lead?.threshold || "待判"}
       data-overview-chart-anomaly-points={anomalyCount}
-      data-overview-chart-has-current="true"
-      data-overview-chart-has-peak="true"
-      data-overview-chart-has-mean="true"
-      data-overview-chart-has-window="true"
-      data-overview-chart-has-threshold="true"
-      data-overview-chart-has-trust="true"
       data-overview-chart-unit={rows.map((row) => row.unit || "").filter(Boolean).join("/") || "status"}
       data-overview-collection-channel-bars={module === "collection-cache-ledger" ? "true" : undefined}
       data-overview-traffic-judgement={module === "wan-trend" || module === "traffic-trend" ? "true" : undefined}
@@ -70,7 +64,7 @@ export function JudgementChart({ module, rows, kind = "trend" }: { module: strin
           <em>最近成功未记录 / 灰色轴线</em>
         </div>
       )}
-      <div className="ro-chart-axis" data-overview-y-axis="overview-y-axis" aria-hidden="true">
+      <div className="ro-chart-axis" aria-hidden="true">
         <span>0</span>
         <span>均值</span>
         <span>阈值线</span>
@@ -238,9 +232,6 @@ export function ChainTimeline({ rows, module }: { rows: LedgerRow[]; module: str
       data-overview-judgement-chart="chain-timeline-current-recent-failure-next"
       data-overview-scene-chart={module}
       data-overview-chart-type={noSnapshotTimeline ? "line" : "timeline"}
-      data-overview-chart-has-current="true"
-      data-overview-chart-has-window="true"
-      data-overview-chart-has-trust="true"
       data-overview-chart-unit="status"
       data-overview-confidence="链路可参考"
       data-overview-chart-meta
@@ -272,9 +263,6 @@ export function VisibilityMatrixVisual({ rows }: { rows: LedgerRow[] }) {
       data-overview-judgement-chart="visibility-matrix-current-reason-trust"
       data-overview-scene-chart="no-snapshot-visibility-matrix"
       data-overview-chart-type="matrix"
-      data-overview-chart-has-current="true"
-      data-overview-chart-has-window="true"
-      data-overview-chart-has-trust="true"
       data-overview-chart-unit="status"
       data-overview-empty-chart-state="no-business-snapshot-grey-axis"
       data-overview-chart-meta
@@ -304,12 +292,6 @@ export function ResourceTriCards({ rows }: { rows: ChartDatum[] }) {
       data-overview-resource-primary-pressure="true"
       data-overview-resource-danger-order-bars="true"
       data-overview-chart-type="pressure"
-      data-overview-chart-has-current="true"
-      data-overview-chart-has-peak="true"
-      data-overview-chart-has-mean="true"
-      data-overview-chart-has-window="true"
-      data-overview-chart-has-threshold="true"
-      data-overview-chart-has-trust="true"
       data-overview-chart-unit="%"
     >
       <div className="ro-resource-axis-labels ops-axis-labels ops-axis-chart" aria-hidden="true">

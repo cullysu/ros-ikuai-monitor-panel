@@ -8625,12 +8625,6 @@ var PanelFramework = function(exports) {
         "data-overview-chart-main-metric": (lead == null ? void 0 : lead.label) || "无业务快照",
         "data-overview-chart-threshold": (lead == null ? void 0 : lead.threshold) || "待判",
         "data-overview-chart-anomaly-points": anomalyCount,
-        "data-overview-chart-has-current": "true",
-        "data-overview-chart-has-peak": "true",
-        "data-overview-chart-has-mean": "true",
-        "data-overview-chart-has-window": "true",
-        "data-overview-chart-has-threshold": "true",
-        "data-overview-chart-has-trust": "true",
         "data-overview-chart-unit": rows.map((row) => row.unit || "").filter(Boolean).join("/") || "status",
         "data-overview-collection-channel-bars": module === "collection-cache-ledger" ? "true" : void 0,
         "data-overview-traffic-judgement": module === "wan-trend" || module === "traffic-trend" ? "true" : void 0,
@@ -8675,7 +8669,7 @@ var PanelFramework = function(exports) {
               ]
             }
           ),
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ro-chart-axis", "data-overview-y-axis": "overview-y-axis", "aria-hidden": "true", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ro-chart-axis", "aria-hidden": "true", children: [
             /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "0" }),
             /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "均值" }),
             /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "阈值线" }),
