@@ -107,15 +107,11 @@
     height: 7px !important;
     border-radius: 2px !important;
   }
-  .router-overview-framework .ro-chart-current,
-  .router-overview-framework .ro-topn-bar strong,
-  .router-overview-framework .ro-spark-line {
+  .router-overview-framework .ro-chart-current {
     background: var(--v4-console-blue) !important;
     stroke: var(--v4-console-blue) !important;
   }
-  .router-overview-framework .ro-judgement-row[data-tone="danger"] .ro-chart-current,
-  .router-overview-framework .ro-topn-row[data-tone="danger"] .ro-topn-bar strong,
-  .router-overview-framework .ro-spark-line[data-tone="danger"] {
+  .router-overview-framework .ro-judgement-row[data-tone="danger"] .ro-chart-current {
     background: var(--v4-console-danger) !important;
     stroke: var(--v4-console-danger) !important;
   }
@@ -200,15 +196,12 @@
   .router-overview-framework.ro-desktop-hierarchy .ro-chart-threshold {
     border-left: 2px solid #4b5d72 !important;
   }
-  .router-overview-framework.ro-desktop-hierarchy .ro-chart-current,
-  .router-overview-framework.ro-desktop-hierarchy .ro-spark-line,
-  .router-overview-framework.ro-desktop-hierarchy .ro-topn-bar strong {
+  .router-overview-framework.ro-desktop-hierarchy .ro-chart-current {
     background: var(--ik-v6-blue) !important;
     stroke: var(--ik-v6-blue) !important;
   }
   .router-overview-framework.ro-desktop-hierarchy [data-tone="danger"] .ro-chart-current,
-  .router-overview-framework.ro-desktop-hierarchy .ro-judgement-row[data-tone="danger"] .ro-chart-current,
-  .router-overview-framework.ro-desktop-hierarchy .ro-topn-row[data-tone="danger"] .ro-topn-bar strong {
+.router-overview-framework.ro-desktop-hierarchy .ro-judgement-row[data-tone="danger"] .ro-chart-current {
     background: var(--ik-v6-danger) !important;
     stroke: var(--ik-v6-danger) !important;
   }

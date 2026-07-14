@@ -25,6 +25,8 @@ function assert(condition, message) {
 
 const panelFile = "src/panel-framework/overview/OverviewPanel.tsx";
 const panelCssFile = "src/panel-framework/overview/OverviewPanel.css";
+const contextFile = "CONTEXT.md";
+const localPredeployFile = "tools/local-predeploy-check.js";
 const desktopBaseStylesFile =
   "src/panel-framework/overview/styles/overview-desktop.css";
 const desktopConsoleRefinementStylesFile =
@@ -156,6 +158,8 @@ const routerMobileDetailStylesFile =
 const overviewStatesStylesFile =
   "src/panel-framework/overview/styles/overview-states.css";
 const panel = read(panelFile);
+const context = read(contextFile);
+const localPredeploy = read(localPredeployFile);
 const desktopConsole = read(desktopConsoleFile);
 const desktopDecisionRail = read(desktopDecisionRailFile);
 const desktopDecisionRailStyles = read(desktopDecisionRailStylesFile);
@@ -213,6 +217,7 @@ const routerMobileStyles = read(routerMobileStylesFile);
 const routerMobileDetailStyles = read(routerMobileDetailStylesFile);
 const routerMobileStyleBundle = `${routerMobileStyles}\n${routerMobileDetailStyles}`;
 const overviewStatesStyles = read(overviewStatesStylesFile);
+const retiredVisualStyleBundle = `${overviewStatesStyles}\n${desktopBaseStyles}\n${desktopRefinement}`;
 const cssRoot = postcss.parse(panelCss, { from: panelCssFile });
 const desktopBaseStylesRoot = postcss.parse(desktopBaseStyles, {
   from: desktopBaseStylesFile,
@@ -949,6 +954,19 @@ assert(
     !overviewStatesStyles.includes("ik-v214-app") &&
     !overviewStatesStyles.includes("Mobile overview v"),
   "Retired mobile app CSS must not return to the shared overview state layer"
+);
+assert(
+  context.includes("**Mobile Operations Home**") &&
+    context.includes("**Mobile Evidence Detail**") &&
+    !context.includes("**Mobile Module View**") &&
+    !context.includes("mobile bottom navigation"),
+  "Overview domain language must describe the independent mobile home and subordinate evidence detail"
+);
+assert(
+  !/\.(?:ro-port-matrix|ro-topn|ro-spark(?:line|-grid|-threshold|-line)|ro-mini-trend-|ro-wan-integrated-summary)/.test(
+    `${retiredVisualStyleBundle}\n${localPredeploy}`
+  ),
+  "Retired desktop visual primitives must not return to overview styles or acceptance fallbacks"
 );
 assert(
   routerMobileModel.includes('source: "history"') &&

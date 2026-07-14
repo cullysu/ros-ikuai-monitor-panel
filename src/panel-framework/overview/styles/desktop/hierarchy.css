@@ -125,14 +125,6 @@
   .router-overview-framework .ro-ledger-cell {
     color: #314257 !important;
   }
-  .router-overview-framework :is(.ro-sparkline,.ro-judgement-chart,.ro-resource-visual,.ro-traffic-visual) {
-    background: #fbfdff !important;
-    border-color: #e6eef7 !important;
-    box-shadow: none !important;
-  }
-  .router-overview-framework .ro-spark-threshold {
-    stroke-width: 1 !important;
-  }
 }
 
 @media (min-width: 768px) {
@@ -178,19 +170,6 @@
     padding: 7px 9px !important;
     background: #fff !important;
     border-bottom: 1px solid #e7eff7 !important;
-  }
-  .router-overview-framework .ro-sparkline {
-    height: 42px !important;
-  }
-  .router-overview-framework .ro-spark-grid {
-    stroke: #edf3f9 !important;
-  }
-  .router-overview-framework .ro-spark-threshold {
-    stroke: #e66a2c !important;
-    opacity: .7 !important;
-  }
-  .router-overview-framework .ro-spark-line {
-    stroke-width: 1.9 !important;
   }
 }
 

@@ -28,9 +28,13 @@ _Avoid_: Resource card, CPU table
 The explicit limit on which observations remain trustworthy when collection or snapshots are degraded.
 _Avoid_: Disclaimer, warning text
 
-**Mobile Module View**:
-A dedicated, touch-first WAN, interface, terminal, or collection-log view selected from the mobile bottom navigation. It presents a concise summary and one flat evidence list without reusing a desktop scene.
-_Avoid_: Hash target, compressed desktop page, decorative tab
+**Mobile Operations Home**:
+A dedicated, touch-first decision surface that combines the current **Network Judgement**, four scenario-specific facts, valid traffic evidence, and the **Credibility Boundary** in one continuous screen. It never renders or restyles a **Desktop Scene**.
+_Avoid_: Compressed desktop page, card dashboard, decorative tab shell
+
+**Mobile Evidence Detail**:
+A full-screen drill-down reached from the single detail row on the **Mobile Operations Home**. It preserves device context, provides a predictable back action, and contains the lower-priority **Evidence Chain** without introducing bottom navigation.
+_Avoid_: Modal, audit dump, top-level tab destination
 
 ## Relationships
 
@@ -38,7 +42,8 @@ _Avoid_: Hash target, compressed desktop page, decorative tab
 - A **Desktop Scene** gives the **Network Judgement** priority over its supporting **Evidence Chain**.
 - **Resource Evidence** is one focused part of an **Evidence Chain**.
 - A degraded **Evidence Chain** narrows the **Credibility Boundary** without automatically changing forwarding-plane availability.
-- The mobile home selects a **Mobile Module View** in place; selecting a module replaces the home decision surface while preserving the device header and bottom navigation.
+- The **Mobile Operations Home** owns its render tree, styles, scenario ordering, and trust wording independently from every **Desktop Scene**.
+- The **Mobile Evidence Detail** is subordinate to the home judgement; it never splits network and collection evidence into competing top-level destinations.
 
 ## Example dialogue
 

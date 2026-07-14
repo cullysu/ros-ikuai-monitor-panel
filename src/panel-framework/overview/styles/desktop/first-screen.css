@@ -12,57 +12,16 @@
     background: #fff;
   }
   .router-overview-framework .ro-chart-current,
-  .router-overview-framework .ro-spark-line,
-  .router-overview-framework .ro-resource-card strong {
+.router-overview-framework .ro-resource-card strong {
     filter: saturate(.92);
   }
-  .router-overview-framework .ro-judgement-row[data-tone="danger"] .ro-chart-current,
-  .router-overview-framework .ro-spark-line[data-tone="danger"] {
+  .router-overview-framework .ro-judgement-row[data-tone="danger"] .ro-chart-current {
     stroke-width: 2.1;
   }
   .router-overview-framework .ro-judgement-chart,
-  .router-overview-framework .ro-resource-visual,
-  .router-overview-framework .ro-interface-visual,
-  .router-overview-framework .ro-topn-block {
+.router-overview-framework .ro-resource-visual,
+.router-overview-framework .ro-interface-visual {
     border-bottom-color: #dbe3ee;
-  }
-  .router-overview-framework .ro-port-matrix {
-    grid-template-columns: repeat(3, minmax(150px, 1fr));
-    gap: 5px;
-  }
-  .router-overview-framework .ro-port-matrix-list {
-    grid-template-columns: repeat(auto-fit, minmax(52px, 1fr));
-  }
-  .router-overview-framework .ro-port-matrix-row {
-    min-height: 43px;
-    font-size: 10px;
-  }
-  .router-overview-framework .ro-port-matrix-row b {
-    font-size: 12px;
-  }
-  .router-overview-framework .ro-port-matrix.is-compact .ro-port-matrix-list {
-    grid-template-columns: repeat(auto-fit, minmax(44px, 1fr));
-  }
-  .router-overview-framework .ro-port-matrix.is-compact .ro-port-matrix-row {
-    min-height: 28px;
-  }
-  .router-overview-framework .ro-topn-block.is-ranking .ro-topn-row,
-  .router-overview-framework .ro-topn-block.is-compact .ro-topn-row {
-    grid-template-columns: 42px minmax(120px, 1.05fr) minmax(116px, .9fr) max-content;
-    min-height: 24px;
-  }
-  .router-overview-framework .ro-topn-block.is-ranking .ro-topn-row {
-    padding-left: 46px;
-  }
-  .router-overview-framework .ro-topn-row .ro-topn-bar,
-  .router-overview-framework .ro-topn-block.is-ranking .ro-topn-row .ro-topn-bar {
-    height: 18px;
-  }
-  .router-overview-framework .ro-sparkline {
-    min-height: 34px;
-  }
-  .router-overview-framework .ro-sparkline.is-compact {
-    min-height: 22px;
   }
   .router-overview-framework .ro-chart-summary,
   .router-overview-framework .ro-chart-readout {
@@ -71,10 +30,6 @@
 }
 
 @media (min-width: 761px) {
-  .ro-desktop-grid[data-overview-desktop-scene="resource-full"] [data-overview-density-module="resource-pressure-bars"] .ro-topn-block.is-compact,
-  .ro-desktop-grid[data-overview-desktop-scene="resource-full"] [data-overview-density-module="resource-pressure-bars"] .ro-topn-block.is-ranking {
-    display: none;
-  }
   .ro-desktop-grid[data-overview-desktop-scene="resource-full"] [data-overview-density-module="resource-boundary"] .ro-ledger-table,
   .ro-desktop-grid[data-overview-desktop-scene="resource-full"] [data-overview-density-module="resource-boundary"] .ro-ledger-row {
     background: transparent;
@@ -168,15 +123,6 @@
 }
 
 @media (min-width: 761px) {
-  .router-overview-framework .ro-chart-current {
-    background: var(--ro-blue) !important;
-  }
-  .router-overview-framework .ro-judgement-row[data-tone="danger"] .ro-chart-current {
-    background: var(--ro-danger) !important;
-  }
-  .router-overview-framework .ro-judgement-row[data-tone="warn"] .ro-chart-current {
-    background: var(--ro-blue) !important;
-  }
   .router-overview-framework .ro-module[data-overview-density-module^="collection-"] .ro-judgement-row[data-tone="warn"] .ro-chart-current,
   .router-overview-framework .ro-module[data-overview-density-module^="collection-"] .ro-chart-current {
     background: var(--ro-warn) !important;

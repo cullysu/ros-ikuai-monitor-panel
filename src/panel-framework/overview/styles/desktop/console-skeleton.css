@@ -261,15 +261,11 @@
     opacity: .22 !important;
     background: rgba(45, 120, 183, .28) !important;
   }
-  .router-overview-framework .ro-chart-current,
-  .router-overview-framework .ro-topn-bar strong,
-  .router-overview-framework .ro-spark-line {
+  .router-overview-framework .ro-chart-current {
     background: var(--ik40-console-blue) !important;
     stroke: var(--ik40-console-blue) !important;
   }
-  .router-overview-framework .ro-judgement-row[data-tone="warn"] .ro-chart-current,
-  .router-overview-framework .ro-topn-row[data-tone="warn"] .ro-topn-bar strong,
-  .router-overview-framework .ro-spark-line[data-tone="warn"] {
+  .router-overview-framework .ro-judgement-row[data-tone="warn"] .ro-chart-current {
     background: var(--ik40-console-blue) !important;
     stroke: var(--ik40-console-blue) !important;
   }
@@ -279,9 +275,7 @@
     background: var(--ik40-console-cache) !important;
     stroke: var(--ik40-console-cache) !important;
   }
-  .router-overview-framework .ro-judgement-row[data-tone="danger"] .ro-chart-current,
-  .router-overview-framework .ro-topn-row[data-tone="danger"] .ro-topn-bar strong,
-  .router-overview-framework .ro-spark-line[data-tone="danger"] {
+  .router-overview-framework .ro-judgement-row[data-tone="danger"] .ro-chart-current {
     background: var(--ik40-console-danger) !important;
     stroke: var(--ik40-console-danger) !important;
   }
