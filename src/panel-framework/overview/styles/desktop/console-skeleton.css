@@ -361,18 +361,6 @@
     font-weight: 800 !important;
   }
   /*Left rail: pills become static bottom-status-strip rows, not toy chips.*/
-  .router-overview-framework .ik-sidebar-mini-status,
-  .router-overview-framework .sidebar[data-shell-sidebar="legacy"] .ik-sidebar-mini-status,
-  .router-overview-framework .ik-rail .ik-sidebar-mini-status {
-    gap: 3px !important;
-    margin-top: auto !important;
-    padding: 8px 10px 10px !important;
-    border-top: 1px solid var(--ik40-console-line) !important;
-    background: transparent !important;
-  }
-  .router-overview-framework .ik-sidebar-mini-status div,
-  .router-overview-framework .sidebar[data-shell-sidebar="legacy"] .ik-sidebar-mini-status div,
-  .router-overview-framework .ik-rail .ik-sidebar-mini-status div,
   .router-overview-framework .sidebar .ik-meta-pill,
   .router-overview-framework .sidebar [class*="pill"],
   .router-overview-framework .sidebar [class*="badge"] {
@@ -388,7 +376,6 @@
     cursor: default !important;
     pointer-events: none !important;
   }
-  .router-overview-framework .ik-sidebar-mini-status div::after,
   .router-overview-framework .sidebar .ik-meta-pill::after,
   .router-overview-framework .sidebar [class*="pill"]::after,
   .router-overview-framework .sidebar [class*="badge"]::after {
@@ -401,11 +388,9 @@
     height: 2px !important;
     background: var(--ik40-console-blue) !important;
   }
-  .router-overview-framework .ik-sidebar-mini-status [data-tone="danger"]::after,
   .router-overview-framework .sidebar [data-tone="danger"]::after {
     background: var(--ik40-console-danger) !important;
   }
-  .router-overview-framework .ik-sidebar-mini-status [data-tone="warn"]::after,
   .router-overview-framework .sidebar [data-tone="warn"]::after {
     background: var(--ik40-console-blue) !important;
   }
@@ -418,12 +403,5 @@
     transform: none !important;
     background: transparent !important;
     box-shadow: none !important;
-  }
-  .router-overview-framework .ik-sidebar-mini-status span,
-  .router-overview-framework .ik-sidebar-mini-status b {
-    color: var(--ik40-console-muted) !important;
-  }
-  .router-overview-framework .ik-sidebar-mini-status b {
-    font-weight: 760 !important;
   }
 }

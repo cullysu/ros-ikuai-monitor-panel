@@ -395,9 +395,6 @@
     border-left-width: 1px !important;
     opacity: .44 !important;
   }
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ik-sidebar-mini-status {
-    border-top-color: #e5eef7 !important;
-  }
 }
 
 /*Codex v812 desktop density pass: fewer shells, shorter rows, business facts first.*/
@@ -470,24 +467,6 @@
     min-height: 30px !important;
     padding: 3px 4px !important;
     border: 1px solid #e1e8f0 !important;
-  }
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ik-sidebar-mini-status {
-    gap: 3px !important;
-    padding: 6px !important;
-    background: transparent !important;
-  }
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ik-sidebar-mini-status div {
-    min-height: 22px !important;
-    padding: 3px 5px !important;
-    border: 0 !important;
-    border-left: 2px solid #dce5ee !important;
-    border-radius: 0 !important;
-    background: #fff !important;
-  }
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ik-sidebar-mini-status span,
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ik-sidebar-mini-status b {
-    font-size: 8.5px !important;
-    line-height: 1 !important;
   }
   .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-desktop-grid:is(
     [data-overview-desktop-scene="all-offline"],

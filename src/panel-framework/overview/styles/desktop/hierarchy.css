@@ -16,32 +16,6 @@
   .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-col.is-bottom > .ro-module {
     height: var(--ro-col-module-height, 100%) !important;
   }
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ik-sidebar-mini-status {
-    gap: 4px !important;
-    padding: 10px 10px 11px !important;
-    border-top-color: #e6edf5 !important;
-    background: transparent !important;
-  }
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ik-sidebar-mini-status div {
-    min-height: 22px !important;
-    padding: 0 !important;
-    border: 0 !important;
-    border-radius: 0 !important;
-    background: transparent !important;
-    box-shadow: none !important;
-    cursor: default !important;
-    pointer-events: none !important;
-  }
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ik-sidebar-mini-status span {
-    color: #8191a4 !important;
-    font-size: 10px !important;
-    font-weight: 650 !important;
-  }
-  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ik-sidebar-mini-status b {
-    color: #2c5277 !important;
-    font-size: 11px !important;
-    font-weight: 730 !important;
-  }
   .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-table th,
   .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-ledger-head-cell {
     background: #f7faff !important;
@@ -143,26 +117,6 @@
   .router-overview-framework .ro-ledger-cell:nth-child(n+3) {
     color: #687789 !important;
   }
-  .sidebar[data-shell-sidebar=legacy] .ik-sidebar-mini-status,.sidebar[data-shell-sidebar=legacy] .ik-sidebar-mini-status div {
-    border: 0 !important;
-    border-radius: 0 !important;
-    background: transparent !important;
-    box-shadow: none !important;
-  }
-  .sidebar[data-shell-sidebar=legacy] .ik-sidebar-mini-status {
-    padding: 8px 4px !important;
-  }
-  .sidebar[data-shell-sidebar=legacy] .ik-sidebar-mini-status div {
-    padding: 3px 0 !important;
-  }
-  .sidebar[data-shell-sidebar=legacy] .ik-sidebar-mini-status span {
-    font-size: 10px !important;
-    color: #7a8797 !important;
-  }
-  .sidebar[data-shell-sidebar=legacy] .ik-sidebar-mini-status b {
-    font-size: 11px !important;
-    color: #40546a !important;
-  }
 }
 
 @media (min-width: 768px) {
@@ -194,55 +148,12 @@
   .router-overview-framework .ro-spark-threshold {
     stroke-width: 1 !important;
   }
-  .sidebar[data-shell-sidebar="legacy"] .ik-sidebar-mini-status {
-    margin-top: auto !important;
-    border: 0 !important;
-    border-top: 1px solid rgba(217,228,239,.82) !important;
-    border-radius: 0 !important;
-    background: transparent !important;
-    box-shadow: none !important;
-    padding: 8px 4px 6px !important;
-  }
-  .sidebar[data-shell-sidebar="legacy"] .ik-sidebar-mini-status div {
-    min-height: 22px !important;
-    padding: 2px 0 !important;
-    border: 0 !important;
-    border-radius: 0 !important;
-    background: transparent !important;
-    box-shadow: none !important;
-    display: grid !important;
-    grid-template-columns: 32px minmax(0,1fr) !important;
-    gap: 6px !important;
-    align-items: center !important;
-  }
 }
 
 @media (min-width: 768px) {
   .router-overview-framework .ro-ledger-cell:first-child {
     font-weight: 820 !important;
     color: #142033 !important;
-  }
-}
-
-@media (min-width: 768px) {
-  .sidebar[data-shell-sidebar="legacy"] .ik-sidebar-mini-status,.ik-rail .ik-sidebar-mini-status {
-    border: 0 !important;
-  }
-  .sidebar[data-shell-sidebar="legacy"] .ik-sidebar-mini-status div,.ik-rail .ik-sidebar-mini-status div {
-    display: grid !important;
-    grid-template-columns: 34px minmax(0,1fr) !important;
-    gap: 6px !important;
-    align-items: center !important;
-  }
-  .sidebar[data-shell-sidebar="legacy"] .ik-sidebar-mini-status span,.ik-rail .ik-sidebar-mini-status span {
-    font-size: 10px !important;
-    font-weight: 520 !important;
-  }
-  .sidebar[data-shell-sidebar="legacy"] .ik-sidebar-mini-status b,.ik-rail .ik-sidebar-mini-status b {
-    font-size: 11px !important;
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
   }
 }
 
@@ -305,24 +216,6 @@
 }
 
 @media (min-width: 768px) {
-  .sidebar[data-shell-sidebar="legacy"] .ik-sidebar-mini-status,.ik-rail .ik-sidebar-mini-status {
-    border-top: 1px solid #dbe7f3 !important;
-    background: transparent !important;
-    box-shadow: none !important;
-    border-radius: 0 !important;
-    padding: 7px 4px !important;
-  }
-  .sidebar[data-shell-sidebar="legacy"] .ik-sidebar-mini-status div,.ik-rail .ik-sidebar-mini-status div {
-    min-height: 20px !important;
-    padding: 1px 0 !important;
-  }
-  .sidebar[data-shell-sidebar="legacy"] .ik-sidebar-mini-status b,.ik-rail .ik-sidebar-mini-status b {
-    font-weight: 620 !important;
-    color: #4f6177 !important;
-  }
-  .sidebar[data-shell-sidebar="legacy"] .ik-sidebar-mini-status span,.ik-rail .ik-sidebar-mini-status span {
-    color: #8794a5 !important;
-  }
   .router-overview-framework .ro-col.is-bottom {
     grid-template-columns: 1.1fr 1fr 1fr !important;
   }
@@ -348,13 +241,6 @@
   .router-overview-framework .ro-ledger-cell:nth-child(1),.router-overview-framework .ro-ledger-cell:nth-child(2) {
     font-weight: 780 !important;
     color: #142033 !important;
-  }
-  .sidebar[data-shell-sidebar="legacy"] .ik-sidebar-mini-status div,.ik-rail .ik-sidebar-mini-status div {
-    border: 0 !important;
-    background: transparent !important;
-    border-radius: 0 !important;
-    box-shadow: none !important;
-    cursor: default !important;
   }
 }
 

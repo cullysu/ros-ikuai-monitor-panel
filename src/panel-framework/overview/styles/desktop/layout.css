@@ -237,11 +237,4 @@
     background: var(--ik-v6-danger) !important;
     stroke: var(--ik-v6-danger) !important;
   }
-  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ik-sidebar-mini-status {
-    border: 0 !important;
-    border-top: 1px solid var(--ik-v6-line) !important;
-    border-radius: 0 !important;
-    background: transparent !important;
-    box-shadow: none !important;
-  }
 }

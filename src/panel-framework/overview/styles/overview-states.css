@@ -2698,10 +2698,6 @@
   }
 }
 
-.sidebar[data-shell-sidebar="legacy"] .ik-sidebar-mini-status{margin-top:auto!important;border:0!important;border-top:1px solid rgba(217,228,239,.82)!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;padding:8px 4px 6px!important;}
-.sidebar[data-shell-sidebar="legacy"] .ik-sidebar-mini-status div{min-height:22px!important;padding:2px 0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;display:grid!important;grid-template-columns:32px minmax(0,1fr)!important;gap:6px!important;align-items:center!important;}
-.sidebar[data-shell-sidebar="legacy"] .ik-sidebar-mini-status span{font-size:10px!important;line-height:1!important;color:#8492a4!important;font-weight:520!important;}
-.sidebar[data-shell-sidebar="legacy"] .ik-sidebar-mini-status b{font-size:11px!important;line-height:1!important;color:#44566d!important;font-weight:620!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;}
 
 /*end-v174-mobile-single-surface-no-box-tier*/
 

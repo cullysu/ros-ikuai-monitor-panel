@@ -1,36 +1,44 @@
 @media (min-width: 768px) {
-  .sidebar[data-shell-sidebar="legacy"] .ik-sidebar-mini-status,
-  .ik-rail .ik-sidebar-mini-status {
-    margin-top: auto !important;
-    padding: 7px 4px 5px !important;
-    border: 0 !important;
-    border-top: 1px solid rgba(217, 228, 239, .9) !important;
-    border-radius: 0 !important;
-    background: transparent !important;
-    box-shadow: none !important;
+  .sidebar[data-shell-sidebar="legacy"] .ik-sidebar-mini-status {
+    display: grid;
+    gap: 5px;
+    margin-top: auto;
+    padding: 8px 4px 6px;
+    border: 0;
+    border-top: 1px solid rgba(217, 228, 239, .82);
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
   }
-  .sidebar[data-shell-sidebar="legacy"] .ik-sidebar-mini-status div,
-  .ik-rail .ik-sidebar-mini-status div {
-    min-height: 20px !important;
-    padding: 1px 0 !important;
-    border: 0 !important;
-    border-radius: 0 !important;
-    background: transparent !important;
-    box-shadow: none !important;
-    cursor: default !important;
-    pointer-events: none !important;
+  .sidebar[data-shell-sidebar="legacy"] .ik-sidebar-mini-status div {
+    display: grid;
+    grid-template-columns: 32px minmax(0, 1fr);
+    align-items: center;
+    gap: 6px;
+    min-height: 22px;
+    padding: 2px 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    cursor: default;
+    pointer-events: none;
   }
-  .sidebar[data-shell-sidebar="legacy"] .ik-sidebar-mini-status span,
-  .ik-rail .ik-sidebar-mini-status span {
-    color: #8a96a6 !important;
-    font-size: 9.8px !important;
-    font-weight: 520 !important;
+  .sidebar[data-shell-sidebar="legacy"] .ik-sidebar-mini-status span {
+    color: #8492a4;
+    font-size: 10px;
+    font-weight: 520;
+    line-height: 1;
   }
-  .sidebar[data-shell-sidebar="legacy"] .ik-sidebar-mini-status b,
-  .ik-rail .ik-sidebar-mini-status b {
-    color: #4d6076 !important;
-    font-size: 10.8px !important;
-    font-weight: 620 !important;
+  .sidebar[data-shell-sidebar="legacy"] .ik-sidebar-mini-status b {
+    min-width: 0;
+    overflow: hidden;
+    color: #44566d;
+    font-size: 11px;
+    font-weight: 620;
+    line-height: 1;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 }
 

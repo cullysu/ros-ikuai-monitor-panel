@@ -31,12 +31,14 @@ const desktopConsoleRefinementStylesFile =
   "src/panel-framework/overview/styles/desktop/console-refinement.css";
 const desktopDensityStylesFile =
   "src/panel-framework/overview/styles/desktop/density.css";
+const desktopShellChromeStylesFile =
+  "src/panel-framework/overview/styles/desktop/shell-chrome.css";
 const desktopBaseStyleLayerFiles = [
   desktopBaseStylesFile,
   desktopDensityStylesFile,
   "src/panel-framework/overview/styles/desktop/first-screen.css",
   "src/panel-framework/overview/styles/desktop/hierarchy.css",
-  "src/panel-framework/overview/styles/desktop/shell-chrome.css",
+  desktopShellChromeStylesFile,
   "src/panel-framework/overview/styles/desktop/evidence.css",
   "src/panel-framework/overview/styles/desktop/console-skeleton.css",
   "src/panel-framework/overview/styles/desktop/layout.css",
@@ -77,6 +79,13 @@ const overviewRetiredTimeTabStyleFiles = [
   "src/panel-framework/overview/styles/overview-states.css",
   "src/panel-framework/overview/styles/desktop/console-skeleton.css",
   "src/panel-framework/overview/styles/desktop/hierarchy.css",
+];
+const overviewRetiredSidebarMiniStatusStyleFiles = [
+  "src/panel-framework/overview/styles/desktop/first-screen.css",
+  "src/panel-framework/overview/styles/desktop/hierarchy.css",
+  "src/panel-framework/overview/styles/desktop/console-skeleton.css",
+  "src/panel-framework/overview/styles/desktop/layout.css",
+  "src/panel-framework/overview/styles/desktop/refinement.css",
 ];
 const desktopRefinementFile =
   "src/panel-framework/overview/styles/desktop/refinement.css";
@@ -184,6 +193,7 @@ const panelCss = read(panelCssFile);
 const desktopBaseStyles = desktopBaseStyleLayerFiles.map(read).join("\n");
 const desktopConsoleRefinementStyles = read(desktopConsoleRefinementStylesFile);
 const desktopDensityStyles = read(desktopDensityStylesFile);
+const desktopShellChromeStyles = read(desktopShellChromeStylesFile);
 const desktopEvidenceStyles = read("src/panel-framework/overview/styles/desktop/evidence.css");
 const desktopHierarchyLayout = read("src/panel-framework/overview/styles/desktop/hierarchy-layout.css");
 const desktopRefinement = read(desktopRefinementFile);
@@ -244,6 +254,9 @@ const desktopDecisionRailRoot = postcss.parse(desktopDecisionRailStyles, {
 const desktopStatusBusRoot = postcss.parse(desktopStatusBusStyles, {
   from: desktopStatusBusStylesFile,
 });
+const desktopShellChromeRoot = postcss.parse(desktopShellChromeStyles, {
+  from: desktopShellChromeStylesFile,
+});
 let declarationCount = 0;
 let importantCount = 0;
 let ruleCount = 0;
@@ -299,6 +312,25 @@ let desktopLedgerToneRuleCount = 0;
 let desktopLedgerToneShadowCount = 0;
 let desktopReleaseToneResetCount = 0;
 let desktopReleaseNonPrimaryNeutralCount = 0;
+let desktopSidebarMiniStatusRuleCount = 0;
+let desktopSidebarMiniStatusImportantCount = 0;
+
+desktopShellChromeRoot.walkRules((rule) => {
+  if (!rule.selector.includes(".ik-sidebar-mini-status")) return;
+  desktopSidebarMiniStatusRuleCount += 1;
+  rule.walkDecls((decl) => {
+    if (decl.important) desktopSidebarMiniStatusImportantCount += 1;
+  });
+});
+const retiredSidebarMiniStatusSelectorCount = overviewRetiredSidebarMiniStatusStyleFiles
+  .map(read)
+  .reduce(
+    (count, styles) => count + (styles.match(/\.ik-sidebar-mini-status/g) || []).length,
+    0
+  );
+const overviewStateSidebarMiniStatusSelectorCount = (
+  read("src/panel-framework/overview/styles/overview-states.css").match(/\.ik-sidebar-mini-status/g) || []
+).length;
 
 for (const file of retiredDesktopWorkspaceOwnerFiles) {
   const root = postcss.parse(read(file), { from: file });
@@ -1006,6 +1038,13 @@ assert(
   "Desktop sidebar trust facts must stay semantic; CSS pseudo-content is forbidden"
 );
 assert(
+  desktopSidebarMiniStatusRuleCount === 4 &&
+    desktopSidebarMiniStatusImportantCount === 0 &&
+    retiredSidebarMiniStatusSelectorCount === 0 &&
+    overviewStateSidebarMiniStatusSelectorCount === 4,
+  `Desktop sidebar mini status must have one priority-free owner: rules=${desktopSidebarMiniStatusRuleCount} important=${desktopSidebarMiniStatusImportantCount} retired=${retiredSidebarMiniStatusSelectorCount} foundation=${overviewStateSidebarMiniStatusSelectorCount}`
+);
+assert(
   desktopModuleShellRuleCount === 1 && desktopModuleHeadRuleCount === 3,
   `Desktop module shell/head must stay canonical: shellRules=${desktopModuleShellRuleCount} headRules=${desktopModuleHeadRuleCount}`
 );
@@ -1107,5 +1146,5 @@ if (failures.length > 0) {
 }
 
 console.log(
-  `overview architecture gate: PASS panel=${lines(panel)} lines desktop=${lines(desktopConsole)} lines desktopDecision=${lines(desktopDecisionRail)} lines scenes=${lines(desktopScenes)} lines helper=${lines(desktopHelpers)} lines presentation=${lines(desktopPresentation)} lines topbar=${lines(desktopTopbar)} lines trafficRows=${lines(desktopTrafficRows)} lines routeRows=${lines(desktopRouteRows)} lines wanRows=${lines(desktopWanRows)} lines interfaceRows=${lines(desktopInterfaceRows)} lines credibilityRows=${lines(desktopCredibilityRows)} lines terminalRows=${lines(desktopTerminalRows)} lines resourceRows=${lines(desktopResourceRows)} lines visuals=${lines(desktopVisuals)} lines mobileHome=${lines(mobileHome)} lines mobileDecision=${lines(mobileDecision)} lines mobileSections=${lines(mobileHomeSections)} lines mobileTabView=${lines(mobileTabView)} lines mobileTabRows=${lines(mobileTabRows)} lines css=${bytes(panelCssFile)} bytes desktopBase=${lines(desktopBaseStyles)} lines desktopBaseImportant=${desktopBaseImportantCount} mobileStyles=${mobileStyleByteTotal} bytes important=${importantShare.toFixed(4)} desktopImportant=${desktopRefinementImportantCount} workspaceImportant=${desktopWorkspaceLayoutImportantCount} decisionRailRules=${desktopDecisionRailRuleCount} decisionCellRules=${desktopDecisionCellRuleCount} workspaceGridRules=${desktopWorkspaceGridRuleCount} navRules=${desktopNavRuleCount} statusBusRules=${desktopStatusBusRuleCount} legacyTopbarRules=${desktopLegacyTopbarRuleCount} moduleShellRules=${desktopModuleShellRuleCount} moduleHeadRules=${desktopModuleHeadRuleCount} ledgerRules=${desktopLedgerRuleCount} moduleToneRules=${desktopModuleToneRuleCount} ledgerToneRules=${desktopLedgerToneRuleCount} ledgerToneShadows=${desktopLedgerToneShadowCount} releaseToneResets=${desktopReleaseToneResetCount} releaseNonPrimary=${desktopReleaseNonPrimaryNeutralCount} mobile=${mobileRuleShare.toFixed(4)}`
+  `overview architecture gate: PASS panel=${lines(panel)} lines desktop=${lines(desktopConsole)} lines desktopDecision=${lines(desktopDecisionRail)} lines scenes=${lines(desktopScenes)} lines helper=${lines(desktopHelpers)} lines presentation=${lines(desktopPresentation)} lines topbar=${lines(desktopTopbar)} lines trafficRows=${lines(desktopTrafficRows)} lines routeRows=${lines(desktopRouteRows)} lines wanRows=${lines(desktopWanRows)} lines interfaceRows=${lines(desktopInterfaceRows)} lines credibilityRows=${lines(desktopCredibilityRows)} lines terminalRows=${lines(desktopTerminalRows)} lines resourceRows=${lines(desktopResourceRows)} lines visuals=${lines(desktopVisuals)} lines mobileHome=${lines(mobileHome)} lines mobileDecision=${lines(mobileDecision)} lines mobileSections=${lines(mobileHomeSections)} lines mobileTabView=${lines(mobileTabView)} lines mobileTabRows=${lines(mobileTabRows)} lines css=${bytes(panelCssFile)} bytes desktopBase=${lines(desktopBaseStyles)} lines desktopBaseImportant=${desktopBaseImportantCount} mobileStyles=${mobileStyleByteTotal} bytes important=${importantShare.toFixed(4)} desktopImportant=${desktopRefinementImportantCount} workspaceImportant=${desktopWorkspaceLayoutImportantCount} decisionRailRules=${desktopDecisionRailRuleCount} decisionCellRules=${desktopDecisionCellRuleCount} workspaceGridRules=${desktopWorkspaceGridRuleCount} navRules=${desktopNavRuleCount} statusBusRules=${desktopStatusBusRuleCount} legacyTopbarRules=${desktopLegacyTopbarRuleCount} sidebarStatusRules=${desktopSidebarMiniStatusRuleCount} sidebarStatusImportant=${desktopSidebarMiniStatusImportantCount} moduleShellRules=${desktopModuleShellRuleCount} moduleHeadRules=${desktopModuleHeadRuleCount} ledgerRules=${desktopLedgerRuleCount} moduleToneRules=${desktopModuleToneRuleCount} ledgerToneRules=${desktopLedgerToneRuleCount} ledgerToneShadows=${desktopLedgerToneShadowCount} releaseToneResets=${desktopReleaseToneResetCount} releaseNonPrimary=${desktopReleaseNonPrimaryNeutralCount} mobile=${mobileRuleShare.toFixed(4)}`
 );
