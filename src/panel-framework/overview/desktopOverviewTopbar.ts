@@ -90,10 +90,3 @@ export function topbarItems(snapshot: OverviewRawSnapshot, state: OverviewDerive
     { label: "快照", value: snapshotCell.value, note: snapshotCell.note, role: "snapshot", tone: snapshotCell.tone },
   ];
 }
-
-export function topbarPriority(role: TopbarRole): "primary" | "key" | "secondary" | "meta" {
-  if (role === "conclusion") return "primary";
-  if (role === "device" || role === "object" || role === "impact" || role === "collection" || role === "routeros" || role === "rest" || role === "ssh") return "key";
-  if (role === "snapshot" || role === "recent-success") return "secondary";
-  return "meta";
-}

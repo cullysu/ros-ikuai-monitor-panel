@@ -1379,7 +1379,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const overviewSummaryMain = overviewSummaryShell;
     const overviewSummaryFocus = '';
     const overviewDesktopTopShell = overviewSummaryShell;
-    const overviewDesktopPrimary = overviewDesktopTopShell?.querySelector('[data-overview-desktop-primary]');
+    const overviewDesktopPrimary = overviewDesktopTopShell?.querySelector('[data-overview-status-role="conclusion"] > b');
     const overviewDesktopTopText = normalize(overviewDesktopTopShell?.textContent || '');
     const overviewDesktopPrimaryText = normalize(overviewDesktopPrimary?.textContent || '');
     const overviewFocusModule = sectionRoot?.querySelector('[data-overview-density-module="resource-focus"], [data-overview-density-module="collection-focus"], [data-overview-density-module="freshness-focus"], [data-overview-density-module="wan-focus"], [data-overview-density-module="route-focus"], [data-overview-density-module="interface-forwarding"], [data-overview-density-module="no-snapshot-focus"]');

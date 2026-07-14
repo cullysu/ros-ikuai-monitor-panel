@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { DesktopWorkspace } from "./components/DesktopConsole";
 import { StatusVerdict } from "./components/StatusVerdict";
-import { OVERVIEW_LOW_NOISE_CONSOLE_TOKEN_CONTRACT } from "./mobileOverviewTokens";
 import { type OverviewPanelProps } from "./desktopOverviewHelpers";
 import { RouterMobileApp } from "./mobile-app/RouterMobileApp";
 import "./OverviewPanel.css";
@@ -36,7 +35,6 @@ export function OverviewPanel({ snapshot, state }: OverviewPanelProps) {
       data-overview-page-credibility={state.facts.freshness.credibilityLabel}
       data-overview-page-credibility-tone={state.facts.freshness.credibilityTone}
       data-overview-business-display-boundary={state.scenario === "no-snapshot" ? "no-business-data" : "business-data"}
-      data-overview-low-noise-console-token-contract={OVERVIEW_LOW_NOISE_CONSOLE_TOKEN_CONTRACT}
       data-overview-scene-key={state.scenario}
       data-overview-ikuai40-density="apple-flat-light-blue-console"
       data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"

@@ -34,7 +34,6 @@ export function Module({ title, subtitle, module, tone = "trust", headers, rows,
       data-overview-density-module={module}
       data-overview-visual-block
       data-overview-chart-type={moduleChartType(module)}
-      data-overview-desktop-tier="evidence"
       data-overview-module-visual-only={visualOnly ? "true" : undefined}
       data-overview-evidence-mode={collapsedEvidence ? "native-details-business-first-raw-secondary" : undefined}
       data-overview-top5-total={module === "resource-interface-top5" ? rows.length : undefined}

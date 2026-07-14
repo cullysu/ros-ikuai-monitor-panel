@@ -8886,7 +8886,6 @@ var PanelFramework = function(exports) {
         "data-overview-density-module": module,
         "data-overview-visual-block": true,
         "data-overview-chart-type": moduleChartType(module),
-        "data-overview-desktop-tier": "evidence",
         "data-overview-module-visual-only": visualOnly ? "true" : void 0,
         "data-overview-evidence-mode": collapsedEvidence ? "native-details-business-first-raw-secondary" : void 0,
         "data-overview-top5-total": module === "resource-interface-top5" ? rows.length : void 0,
@@ -9455,30 +9454,16 @@ var PanelFramework = function(exports) {
       { label: "快照", value: snapshotCell.value, note: snapshotCell.note, role: "snapshot", tone: snapshotCell.tone }
     ];
   }
-  function topbarPriority(role) {
-    if (role === "conclusion") return "primary";
-    if (role === "device" || role === "object" || role === "impact" || role === "collection" || role === "routeros" || role === "rest" || role === "ssh") return "key";
-    if (role === "snapshot" || role === "recent-success") return "secondary";
-    return "meta";
-  }
   function StatusVerdict({ snapshot, state }) {
     const allItems = topbarItems(snapshot, state).slice(0, 6);
     const isNoSnapshot = state.scenario === "no-snapshot";
     const items = isNoSnapshot ? allItems : allItems.filter((item) => ["conclusion", "impact", "collection", "snapshot"].includes(item.role));
-    return /* @__PURE__ */ jsxRuntimeExports.jsx(
-      "div",
-      {
-        className: "ro-status-bus",
-        "data-overview-desktop-tier": "conclusion",
-        children: items.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ro-status-cell", "data-tone": item.tone, "data-overview-field": true, "data-overview-status-role": item.role, "data-overview-status-priority": topbarPriority(item.role), children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: item.label }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { "data-overview-desktop-primary": item.role === "conclusion" ? "true" : void 0, children: item.value }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: item.note })
-        ] }, item.role))
-      }
-    );
+    return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ro-status-bus", children: items.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ro-status-cell", "data-tone": item.tone, "data-overview-field": true, "data-overview-status-role": item.role, children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: item.label }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: item.value }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: item.note })
+    ] }, item.role)) });
   }
-  const OVERVIEW_LOW_NOISE_CONSOLE_TOKEN_CONTRACT = "low-noise-console-tokens-color-type-space-radius-state-chart";
   function MetricGrid({ metrics }) {
     return /* @__PURE__ */ jsxRuntimeExports.jsx("section", { className: "rm-metric-grid", "aria-label": "关键指标", "data-router-mobile-metrics": true, children: metrics.map((metric) => /* @__PURE__ */ jsxRuntimeExports.jsxs("article", { className: "rm-metric", "data-tone": metric.tone || "healthy", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: metric.label }),
@@ -10047,7 +10032,6 @@ var PanelFramework = function(exports) {
         "data-overview-page-credibility": state.facts.freshness.credibilityLabel,
         "data-overview-page-credibility-tone": state.facts.freshness.credibilityTone,
         "data-overview-business-display-boundary": state.scenario === "no-snapshot" ? "no-business-data" : "business-data",
-        "data-overview-low-noise-console-token-contract": OVERVIEW_LOW_NOISE_CONSOLE_TOKEN_CONTRACT,
         "data-overview-scene-key": state.scenario,
         "data-overview-ikuai40-density": "apple-flat-light-blue-console",
         "data-overview-desktop-hierarchy-contract": "conclusion-key-metrics-evidence",

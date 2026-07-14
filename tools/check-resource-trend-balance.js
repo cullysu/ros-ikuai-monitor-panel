@@ -918,7 +918,6 @@ async function main() {
         const desktopVisibleText = normalize([visibleText(topbar), visibleText(workspace)].join(' '));
         const requiredText = ['WAN 采样趋势', '默认出口', '采集', '资源', '快照'];
         const missing = requiredText.filter((item) => !desktopVisibleText.includes(item));
-        const lowNoiseConsoleTokenContract = 'low-noise-console-tokens-color-type-space-radius-state-chart';
         const lowNoiseConsoleTokenNames = ['--ik-console-ink', '--ik-console-line', '--ik-console-panel', '--ik-console-danger'];
         const lowNoiseConsoleTokenStyle = sectionEl ? getComputedStyle(sectionEl) : null;
         const lowNoiseConsoleTokenValues = Object.fromEntries(lowNoiseConsoleTokenNames.map((name) => [
@@ -928,7 +927,6 @@ async function main() {
         const lowNoiseConsoleTokensApplied = Boolean(
           sectionEl &&
           workspace &&
-          sectionEl.getAttribute('data-overview-low-noise-console-token-contract') === lowNoiseConsoleTokenContract &&
           sectionEl.contains(workspace) &&
           lowNoiseConsoleTokenNames.every((name) => lowNoiseConsoleTokenValues[name])
         );
@@ -966,7 +964,7 @@ async function main() {
           topbar &&
           topbar.classList.contains('ro-status-bus') &&
           topbar.querySelectorAll('table, th').length === 0 &&
-          topbar.querySelector('[data-overview-status-role="conclusion"] [data-overview-desktop-primary="true"]') &&
+          topbar.querySelector('[data-overview-status-role="conclusion"] > b') &&
           topbarStyle &&
           Number.parseFloat(topbarStyle.height || '0') <= 40 &&
           Number.parseFloat(topbarStyle.borderTopWidth || '0') === 0 &&
@@ -1199,7 +1197,6 @@ async function main() {
           expectedTopbarRoleOrder,
           topbarBusContract: topbar?.classList.contains('ro-status-bus') ? 'semantic-status-bus' : '',
           lowNoiseConsoleTokensApplied,
-          lowNoiseConsoleTokenContract: sectionEl?.getAttribute('data-overview-low-noise-console-token-contract') || '',
           lowNoiseConsoleWorkspaceContract: sectionEl?.contains(workspace) ? 'structural-descendant' : '',
           lowNoiseConsoleTokenValues,
           wanReadableProductChart,

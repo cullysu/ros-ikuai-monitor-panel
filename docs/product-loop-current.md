@@ -34,8 +34,8 @@ See `.agents/skills/router-panel-product-loop/references/project-gates.md`.
 | Engineering | pass | Separate mobile app/model/screens/style ownership; desktop DOM absence is runtime-tested. |
 | Focused QA | pass | `check:types`, `build`, `check:overview`, and all mobile runtime scenarios pass locally. |
 | Full QA | pass | `_acceptance/release-matrix-mobile-product-loop-final/report.json` passes all 28 required cells and captures every required screenshot. |
-| Release | pending | No upload until full QA and release readiness pass. |
+| Release | pass | Remote commit `e5d8d3e` passed Linux validation, Windows packaging, and GHCR image publication. |
 
 ## Current return owner
 
-Release Engineering owns the next action: run release readiness, recheck remote parent, upload atomically, then wait for Linux, Windows, and GHCR checks.
+Engineering owns the next action: retire remaining self-certifying desktop selectors and reduce the legacy `!important` patch layer without changing the verified mobile product.

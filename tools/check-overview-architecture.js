@@ -1009,11 +1009,23 @@ const retiredMobilePaths = [
   "src/panel-framework/overview/components/BottomTabs.tsx",
   "src/panel-framework/overview/mobileOverviewModel.ts",
   "src/panel-framework/overview/mobileOverviewPolicy.ts",
+  "src/panel-framework/overview/mobileOverviewTokens.ts",
   "src/panel-framework/overview/styles/mobile/mobile-product.css",
 ];
 assert(
   retiredMobilePaths.every((file) => !exists(file)),
   "Retired mobile component, model, or patch-stack files must stay deleted"
+);
+assert(
+  !panel.includes("data-overview-low-noise-console-token-contract"),
+  "OverviewPanel must prove console tokens through computed styles, not a self-certifying DOM contract"
+);
+assert(
+  !`${statusVerdict}\n${desktopModule}`.includes("data-overview-desktop-tier") &&
+    !statusVerdict.includes("data-overview-status-priority") &&
+    !statusVerdict.includes("data-overview-desktop-primary") &&
+    !desktopTopbar.includes("topbarPriority"),
+  "Desktop hierarchy probes must derive from semantic roles and structure, not self-certifying priority attributes"
 );
 assert(
   bytes(routerMobileStylesFile) + bytes(routerMobileDetailStylesFile) <= 30000,
