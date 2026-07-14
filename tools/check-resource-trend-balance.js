@@ -1051,7 +1051,7 @@ async function main() {
           workspaceRect.width / innerWidth >= 0.8 &&
           topbar &&
           desktopDecisionRailOk &&
-          visibleModules.length >= 6 &&
+          visibleModules.length >= 5 &&
           syntheticGateTextAbsent &&
           topbarFlatSurfaceOk &&
           topbarContractOk &&

@@ -21,12 +21,12 @@
       "main side"
       "bottom bottom";
     grid-template-rows: auto auto;
-    align-items: stretch;
+    align-items: start;
   }
   #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-desktop-grid.is-normal-scene > .ro-col.is-main,
   #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-desktop-grid.is-normal-scene > .ro-col.is-side {
-    align-self: stretch;
-    height: 100%;
+    align-self: start;
+    height: auto;
   }
   #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-desktop-grid.is-normal-scene > .ro-col.is-main {
     display: flex;
@@ -34,9 +34,18 @@
   }
   #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-desktop-grid.is-normal-scene > .ro-col.is-main > .ro-module[data-overview-density-module="wan-trend"] {
     display: grid;
-    flex: 1 1 auto;
-    grid-template-rows: 25px minmax(0, 1fr);
-    height: 100%;
+    flex: 0 0 auto;
+    grid-template-rows: 25px auto;
+    height: auto;
+  }
+  #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-desktop-grid[data-overview-desktop-scene="single"] > .ro-col.is-bottom > .ro-module:only-child {
+    grid-column: 1 / -1;
+  }
+  #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-desktop-grid[data-overview-desktop-scene="single"] > .ro-col.is-bottom {
+    --ro-col-height: auto;
+    --ro-col-grid-auto-rows: auto;
+    --ro-col-module-height: auto;
+    align-self: start;
   }
   #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-col {
     gap: 3px;

@@ -6245,9 +6245,31 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       const focusedWanVisualRect = focusedWanVisual?.getBoundingClientRect();
       const focusedBottomRail = sectionRoot.querySelector('.ro-col.is-bottom');
       const focusedBottomRailRect = focusedBottomRail?.getBoundingClientRect();
-      overviewDesktopFocusedHierarchyOk = ['single', 'fleet'].includes(scaleScenario) && Boolean(
+      const focusedSideModules = Array.from(sectionRoot.querySelectorAll('.ro-col.is-side > [data-overview-density-module]'))
+        .filter((node) => node.getBoundingClientRect().width > 0 && node.getBoundingClientRect().height > 0);
+      const focusedOpenSideLedgers = focusedSideModules.filter((node) => node.querySelector('details[open]'));
+      const focusedTerminalInMain = sectionRoot.querySelector('.ro-col.is-main [data-overview-density-module="terminal-ranking"]');
+      const focusedTerminalInBottom = sectionRoot.querySelector('.ro-col.is-bottom [data-overview-density-module="terminal-ranking"]');
+      const singleFocusedHierarchy = scaleScenario === 'single' && Boolean(
+        compactSummaryDisclosures.length === 0 &&
+        focusedSideModules.length === 3 &&
+        focusedOpenSideLedgers.length === 3 &&
+        focusedTerminalInMain &&
+        !focusedTerminalInBottom &&
+        focusedWanVisualRect &&
+        focusedWanVisualRect.width >= rect.width * 0.52 &&
+        focusedWanVisualRect.height >= 240 &&
+        focusedWanVisualRect.height <= 340 &&
+        focusedBottomRailRect &&
+        focusedBottomRailRect.width >= rect.width * 0.72 &&
+        focusedBottomRailRect.height >= 24 &&
+        focusedBottomRailRect.top < window.innerHeight * 0.80
+      );
+      const fleetFocusedHierarchy = scaleScenario === 'fleet' && Boolean(
         compactSummaryDisclosures.length >= 3 &&
         compactSummaryDisclosures.every((node) => !node.hasAttribute('open')) &&
+        !focusedTerminalInMain &&
+        focusedTerminalInBottom &&
         focusedWanVisualRect &&
         focusedWanVisualRect.width >= rect.width * 0.52 &&
         focusedWanVisualRect.height >= 240 &&
@@ -6256,9 +6278,13 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         focusedBottomRailRect.height >= 120 &&
         focusedBottomRailRect.top < window.innerHeight * 0.80
       );
+      overviewDesktopFocusedHierarchyOk = singleFocusedHierarchy || fleetFocusedHierarchy;
       overviewDesktopFocusedHierarchyProbe = {
         disclosureCount: compactSummaryDisclosures.length,
         disclosuresClosed: compactSummaryDisclosures.every((node) => !node.hasAttribute('open')),
+        sideModuleCount: focusedSideModules.length,
+        openSideLedgerCount: focusedOpenSideLedgers.length,
+        terminalPlacement: focusedTerminalInMain ? 'main' : focusedTerminalInBottom ? 'bottom' : 'missing',
         wanVisualHeight: Math.round(focusedWanVisualRect?.height || 0),
         wanVisualWidth: Math.round(focusedWanVisualRect?.width || 0),
         bottomRailTop: Math.round(focusedBottomRailRect?.top || 0),
