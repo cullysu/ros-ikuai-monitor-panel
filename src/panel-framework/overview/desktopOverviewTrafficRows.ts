@@ -213,6 +213,10 @@ export function trafficTop3Rows(snapshot: OverviewRawSnapshot, state: OverviewDe
   return trafficRows(snapshot, state).filter((row) => /^traffic-top-/.test(row.id));
 }
 
+export function trafficAnomalyRows(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): LedgerRow[] {
+  return trafficRows(snapshot, state).filter((row) => /^traffic-offline-/.test(row.id));
+}
+
 export function trafficRouteRows(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): LedgerRow[] {
   const route = buildRouterOsRouteEvidenceModel(snapshot, state).summary;
   return [{

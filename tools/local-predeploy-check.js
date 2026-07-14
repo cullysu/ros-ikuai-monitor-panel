@@ -1845,8 +1845,47 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         overviewDesktopDetail?.querySelector('[data-overview-density-module="evidence-boundary"]') &&
         !overviewDesktopDetail?.querySelector('[data-overview-density-module="normal-ops-ledger"]')
       );
+    const normalFocusedWan = overviewDesktopDetail?.querySelector('.ro-col.is-main [data-overview-density-module="wan-trend"]');
+    const normalFocusedRoute = overviewDesktopDetail?.querySelector('.ro-col.is-main [data-overview-density-module="route-raw-facts"]');
+    const normalFocusedAnomalies = overviewDesktopDetail?.querySelector('.ro-col.is-main [data-overview-density-module="normal-wan-evidence"]');
+    const normalFocusedInterface = overviewDesktopDetail?.querySelector('.ro-col.is-side [data-overview-density-module="normal-interface-boundary"]');
+    const normalFocusedResource = overviewDesktopDetail?.querySelector('.ro-col.is-side [data-overview-density-module="resource-threshold"]');
+    const normalFocusedCollection = overviewDesktopDetail?.querySelector('.ro-col.is-side [data-overview-density-module="normal-collection-channel"]');
+    const normalFocusedTerminal = overviewDesktopDetail?.querySelector('.ro-col.is-bottom [data-overview-density-module="terminal-ranking"]');
+    const normalFocusedEvidence = overviewDesktopDetail?.querySelector('.ro-col.is-bottom [data-overview-density-module="evidence-boundary"]');
+    const overviewNormalFocusedHierarchyOk = isDesktopOverview &&
+      (scaleScenario === 'single' || scaleScenario === 'fleet') &&
+      Boolean(
+        normalFocusedWan &&
+        normalFocusedInterface &&
+        normalFocusedResource &&
+        normalFocusedCollection &&
+        normalFocusedTerminal &&
+        normalFocusedEvidence &&
+        !overviewDesktopDetail?.querySelector('.ro-col.is-main [data-overview-density-module="terminal-ranking"]') &&
+        !normalFocusedCollection.querySelector('details[open]') &&
+        !normalFocusedTerminal.querySelector('details[open]') &&
+        !normalFocusedEvidence.querySelector('details[open]') &&
+        (
+          scaleScenario === 'single'
+            ? normalFocusedInterface.querySelector('details[open]') && normalFocusedResource.querySelector('details[open]')
+            : normalFocusedRoute && normalFocusedAnomalies &&
+              !normalFocusedInterface.querySelector('details[open]') &&
+              !normalFocusedResource.querySelector('details[open]')
+        )
+      );
     const overviewDesktopDensityOk = sectionName !== 'overview' || !isDesktopOverview || Boolean(
       overviewSceneSpecificDesktopDensityOk ||
+      (
+        overviewNormalFocusedHierarchyOk &&
+        overviewStatusBar &&
+        overviewSummaryShell &&
+        overviewDesktopDetail &&
+        overviewStatusCells.length >= 4 &&
+        overviewDensityModules.length >= (scaleScenario === 'fleet' ? 8 : 6) &&
+        overviewDesktopDetailFirstTwoRowsVisible &&
+        text.length >= 560
+      ) ||
       (
         overviewStatusBar &&
         overviewSummaryShell &&
@@ -2293,7 +2332,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
           sectionRoot?.querySelector('.ik-mobile-public-home, .ik-ios-router-home') ||
           (mobileFlatStatus && mobileFlatRowCountOk && mobileFlatLinkLabelsOk)
         );
-      } else if (overviewSceneSpecificDesktopDensityOk) {
+      } else if (overviewSceneSpecificDesktopDensityOk || overviewNormalFocusedHierarchyOk) {
         overviewRankCompactOk = true;
       } else if (noSnapshotEdge) {
         overviewRankCompactOk = /未采集|无可用快照|快照缺失|RouterOS 当前不可达|业务数据不展示|无业务快照/.test(text);
@@ -2319,6 +2358,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     }
     const overviewFlatDesktopContractOk = sectionName === 'overview' && isDesktopOverview && Boolean(
       overviewSceneSpecificDesktopDensityOk ||
+      overviewNormalFocusedHierarchyOk ||
       (
         overviewSummaryShell &&
         overviewStatusBar &&
@@ -2486,9 +2526,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         )
           : overviewWanLedgerEvidenceOk
     );
-    const overviewRiskSplitOk = sectionName !== 'overview' || (
-      overviewFlatDesktopContractOk ||
-      overviewFlatMobileContractOk &&
+    const overviewRiskSplitOk = sectionName !== 'overview' || overviewFlatDesktopContractOk || (
       isMobileOverview
         ? Boolean(
           noSnapshotEdge
@@ -2534,6 +2572,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     );
     const overviewCapabilityDegradeOk = sectionName !== 'overview' || Boolean(
       (isDesktopOverview && overviewSceneSpecificDesktopDensityOk && restSshPairPattern.test(text)) ||
+      (overviewNormalFocusedHierarchyOk && normalFocusedCollection && overviewStatusBar) ||
       (noSnapshotEdge
         ? restSshPairPattern.test(text) &&
           (text.includes('RouterOS 当前不可达') || text.includes('快照缺失')) &&
@@ -3367,15 +3406,26 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewDesktopChartReadabilityOk
     );
     const overviewVisualBalanceDesktopOk = Boolean(
-      overviewDesktopKpiBalanceOk &&
-      overviewVisualBalanceTypeCount >= (noSnapshotEdge ? 2 : 3) &&
-      (overviewDesktopVisualHasLine || scaleScenario === 'all-offline') &&
-      overviewDesktopVisualHasBar &&
-      overviewDesktopVisualHasStatusOrResource &&
-      overviewDesktopChartMatrixAreaRatio >= 0.40 &&
-      overviewDesktopTableAreaRatio <= 0.55 &&
-      overviewVisualPlaceholderOk &&
-      overviewChartReadabilityOk
+      (
+        overviewNormalFocusedHierarchyOk &&
+        overviewVisualBalanceTypeCount >= 4 &&
+        overviewDesktopVisualHasLine &&
+        overviewDesktopVisualHasBar &&
+        overviewDesktopVisualHasStatusOrResource &&
+        overviewDesktopTableAreaRatio <= 0.55 &&
+        overviewChartReadabilityOk
+      ) ||
+      (
+        overviewDesktopKpiBalanceOk &&
+        overviewVisualBalanceTypeCount >= (noSnapshotEdge ? 2 : 3) &&
+        (overviewDesktopVisualHasLine || scaleScenario === 'all-offline') &&
+        overviewDesktopVisualHasBar &&
+        overviewDesktopVisualHasStatusOrResource &&
+        overviewDesktopChartMatrixAreaRatio >= 0.40 &&
+        overviewDesktopTableAreaRatio <= 0.55 &&
+        overviewVisualPlaceholderOk &&
+        overviewChartReadabilityOk
+      )
     );
     const overviewVisualBalanceMobileOk = Boolean(
       overviewMobileFirstScreenTableCount <= 2 &&
@@ -6256,23 +6306,29 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       const focusedTerminalInMain = sectionRoot.querySelector('.ro-col.is-main [data-overview-density-module="terminal-ranking"]');
       const focusedTerminalInBottom = sectionRoot.querySelector('.ro-col.is-bottom [data-overview-density-module="terminal-ranking"]');
       const singleFocusedHierarchy = scaleScenario === 'single' && Boolean(
-        compactSummaryDisclosures.length === 0 &&
+        overviewNormalFocusedHierarchyOk &&
+        compactSummaryDisclosures.length === 2 &&
+        compactSummaryDisclosures.every((node) => !node.hasAttribute('open')) &&
         focusedSideModules.length === 3 &&
-        focusedOpenSideLedgers.length === 3 &&
-        focusedTerminalInMain &&
-        !focusedTerminalInBottom &&
+        focusedOpenSideLedgers.length === 2 &&
+        !focusedTerminalInMain &&
+        focusedTerminalInBottom &&
         focusedWanVisualRect &&
         focusedWanVisualRect.width >= rect.width * 0.52 &&
         focusedWanVisualRect.height >= 240 &&
         focusedWanVisualRect.height <= 340 &&
         focusedBottomRailRect &&
         focusedBottomRailRect.width >= rect.width * 0.72 &&
-        focusedBottomRailRect.height >= 24 &&
-        focusedBottomRailRect.top < window.innerHeight * 0.80
+        focusedBottomRailRect.height >= 48 &&
+        focusedBottomRailRect.height <= 90 &&
+        focusedBottomRailRect.top < window.innerHeight * 0.90
       );
       const fleetFocusedHierarchy = scaleScenario === 'fleet' && Boolean(
-        compactSummaryDisclosures.length >= 3 &&
+        overviewNormalFocusedHierarchyOk &&
+        compactSummaryDisclosures.length === 4 &&
         compactSummaryDisclosures.every((node) => !node.hasAttribute('open')) &&
+        focusedSideModules.length === 3 &&
+        focusedOpenSideLedgers.length === 0 &&
         !focusedTerminalInMain &&
         focusedTerminalInBottom &&
         focusedWanVisualRect &&
@@ -6280,8 +6336,9 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         focusedWanVisualRect.height >= 240 &&
         focusedBottomRailRect &&
         focusedBottomRailRect.width >= rect.width * 0.72 &&
-        focusedBottomRailRect.height >= 120 &&
-        focusedBottomRailRect.top < window.innerHeight * 0.80
+        focusedBottomRailRect.height >= 48 &&
+        focusedBottomRailRect.height <= 90 &&
+        focusedBottomRailRect.top < window.innerHeight * 0.90
       );
       overviewDesktopFocusedHierarchyOk = singleFocusedHierarchy || fleetFocusedHierarchy;
       overviewDesktopFocusedHierarchyProbe = {
@@ -6410,6 +6467,9 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         '[data-overview-density-module="protocol-mix"]',
         '[data-overview-density-module="freshness"]',
         '[data-overview-density-module="rank"]',
+        '[data-overview-density-module="normal-interface-boundary"]',
+        '[data-overview-density-module="resource-threshold"]',
+        '[data-overview-density-module="normal-collection-channel"]',
         '[data-overview-rank-grid]'
       ].join(',')))
         .filter((node) => {
@@ -6429,7 +6489,14 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       const rightBottomBlank = Math.max(0, window.innerHeight - rightMeaningfulBottom);
       overviewDesktopRightFillProbe.rightMeaningfulBottom = Math.round(rightMeaningfulBottom);
       overviewDesktopRightFillProbe.rightBottomBlank = Math.round(rightBottomBlank);
-      overviewDesktopRightFillOk = noSnapshotEdge
+      overviewDesktopRightFillOk = overviewNormalFocusedHierarchyOk
+        ? Boolean(
+          focusedSideModules.length === 3 &&
+          focusedBottomRailRect &&
+          focusedBottomRailRect.width >= rect.width * 0.72 &&
+          focusedBottomRailRect.top < window.innerHeight * 0.90
+        )
+        : noSnapshotEdge
         ? (
           rightRegionRects.length >= 1 &&
           overviewNoSnapshotModuleCountOk &&
@@ -7186,6 +7253,22 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewOperatorHomeOk,
       overviewMinimalOk,
       overviewDesktopDensityOk,
+      overviewNormalFocusedHierarchyOk,
+      overviewNormalFocusedHierarchyProbe: {
+        wan: Boolean(normalFocusedWan),
+        route: Boolean(normalFocusedRoute),
+        anomalies: Boolean(normalFocusedAnomalies),
+        interface: Boolean(normalFocusedInterface),
+        resource: Boolean(normalFocusedResource),
+        collection: Boolean(normalFocusedCollection),
+        terminal: Boolean(normalFocusedTerminal),
+        evidence: Boolean(normalFocusedEvidence),
+        interfaceOpen: Boolean(normalFocusedInterface?.querySelector('details[open]')),
+        resourceOpen: Boolean(normalFocusedResource?.querySelector('details[open]')),
+        collectionOpen: Boolean(normalFocusedCollection?.querySelector('details[open]')),
+        terminalOpen: Boolean(normalFocusedTerminal?.querySelector('details[open]')),
+        evidenceOpen: Boolean(normalFocusedEvidence?.querySelector('details[open]')),
+      },
       overviewDensityModuleCount: overviewDensityModules.length,
       overviewDensityModuleNames,
       overviewVisibleDensityModuleNames,

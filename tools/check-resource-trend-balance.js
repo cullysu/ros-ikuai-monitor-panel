@@ -888,6 +888,53 @@ async function main() {
         const shellSidebar = document.querySelector('.sidebar[data-shell-sidebar="legacy"], .ik-rail');
         const desktopNavigationDeduplicated = Boolean(!duplicateWorkspaceNav && shellSidebar);
         const workspaceRect = workspace?.getBoundingClientRect();
+        const mainColumn = workspace?.querySelector(':scope > .ro-col.is-main');
+        const sideColumn = workspace?.querySelector(':scope > .ro-col.is-side');
+        const bottomColumn = workspace?.querySelector(':scope > .ro-col.is-bottom');
+        const mainPrimaryModule = mainColumn?.querySelector(':scope > .ro-module:first-child');
+        const terminalRankingModule = workspace?.querySelector('.ro-semantic-terminal-ranking');
+        const collectionSummaryModule = workspace?.querySelector('[data-overview-density-module="normal-collection-channel"]');
+        const mainColumnRect = mainColumn?.getBoundingClientRect();
+        const sideColumnRect = sideColumn?.getBoundingClientRect();
+        const bottomColumnRect = bottomColumn?.getBoundingClientRect();
+        const mainPrimaryRect = mainPrimaryModule?.getBoundingClientRect();
+        const terminalRankingRect = terminalRankingModule?.getBoundingClientRect();
+        const collectionSummaryRect = collectionSummaryModule?.getBoundingClientRect();
+        const mainColumnStyle = mainColumn ? getComputedStyle(mainColumn) : null;
+        const mainPrimaryStyle = mainPrimaryModule ? getComputedStyle(mainPrimaryModule) : null;
+        const normalColumnGap = mainColumnRect && sideColumnRect ? sideColumnRect.left - mainColumnRect.right : null;
+        const normalBottomGap = mainColumnRect && sideColumnRect && bottomColumnRect
+          ? bottomColumnRect.top - Math.max(mainColumnRect.bottom, sideColumnRect.bottom)
+          : null;
+        const normalMainFillRatio = mainColumnRect && mainPrimaryRect && mainColumnRect.width
+          ? mainPrimaryRect.width / mainColumnRect.width
+          : 0;
+        const terminalRankingParent = terminalRankingModule?.parentElement?.classList.contains('is-bottom')
+          ? 'bottom'
+          : terminalRankingModule?.parentElement?.classList.contains('is-main')
+            ? 'main'
+            : '';
+        const terminalRankingDisclosure = terminalRankingModule?.querySelector('details');
+        const collectionSummaryDisclosure = collectionSummaryModule?.querySelector('details');
+        const normalWorkspaceHierarchyOk = Boolean(
+          normalColumnGap !== null &&
+          normalColumnGap >= 0 &&
+          normalColumnGap <= 12 &&
+          normalBottomGap !== null &&
+          normalBottomGap >= 0 &&
+          normalBottomGap <= 12 &&
+          normalMainFillRatio >= 0.98 &&
+          terminalRankingParent === 'bottom' &&
+          terminalRankingDisclosure &&
+          !terminalRankingDisclosure.open &&
+          collectionSummaryDisclosure &&
+          !collectionSummaryDisclosure.open &&
+          collectionSummaryRect &&
+          collectionSummaryRect.height <= 90 &&
+          terminalRankingRect &&
+          terminalRankingRect.width > 0 &&
+          terminalRankingRect.height > 0
+        );
         const topbar = sectionEl?.querySelector('.ro-status-bus');
         const desktopDecisionRail = sectionEl?.querySelector('.ro-desktop-decision-rail');
         const desktopDecisionCells = Array.from(desktopDecisionRail?.querySelectorAll('.ro-desktop-thin-kpi') || []);
@@ -1169,7 +1216,8 @@ async function main() {
           workspaceRect.width / innerWidth >= 0.8 &&
           topbar &&
           desktopDecisionRailOk &&
-          visibleModules.length >= 5 &&
+          visibleModules.length >= 3 &&
+          normalWorkspaceHierarchyOk &&
           syntheticGateTextAbsent &&
           topbarFlatSurfaceOk &&
           topbarContractOk &&
@@ -1193,6 +1241,31 @@ async function main() {
           duplicateWorkspaceNavPresent: Boolean(duplicateWorkspaceNav),
           shellSidebarPresent: Boolean(shellSidebar),
           workspaceRect: workspaceRect ? { width: workspaceRect.width, height: workspaceRect.height } : null,
+          mainColumnRect: mainColumnRect ? { left: mainColumnRect.left, right: mainColumnRect.right, width: mainColumnRect.width } : null,
+          sideColumnRect: sideColumnRect ? { left: sideColumnRect.left, right: sideColumnRect.right, width: sideColumnRect.width } : null,
+          bottomColumnRect: bottomColumnRect ? { top: bottomColumnRect.top, bottom: bottomColumnRect.bottom, height: bottomColumnRect.height } : null,
+          mainPrimaryRect: mainPrimaryRect ? { left: mainPrimaryRect.left, right: mainPrimaryRect.right, width: mainPrimaryRect.width } : null,
+          normalColumnGap,
+          normalBottomGap,
+          normalMainFillRatio,
+          normalWorkspaceHierarchyOk,
+          normalLayoutStyles: {
+            mainDisplay: mainColumnStyle?.display || '',
+            workspaceAlignContent: topbarStyle ? getComputedStyle(workspace).alignContent : '',
+            workspaceGridTemplateRows: topbarStyle ? getComputedStyle(workspace).gridTemplateRows : '',
+            mainGridTemplateColumns: mainColumnStyle?.gridTemplateColumns || '',
+            primaryWidth: mainPrimaryStyle?.width || '',
+            primaryMaxWidth: mainPrimaryStyle?.maxWidth || '',
+            primaryJustifySelf: mainPrimaryStyle?.justifySelf || '',
+            primaryAlignSelf: mainPrimaryStyle?.alignSelf || '',
+          },
+          terminalRankingPlacement: {
+            parent: terminalRankingParent,
+            collapsed: Boolean(terminalRankingDisclosure && !terminalRankingDisclosure.open),
+            visible: Boolean(terminalRankingRect && terminalRankingRect.width > 0 && terminalRankingRect.height > 0),
+          },
+          collectionSummaryCollapsed: Boolean(collectionSummaryDisclosure && !collectionSummaryDisclosure.open),
+          collectionSummaryRect: collectionSummaryRect ? { width: collectionSummaryRect.width, height: collectionSummaryRect.height } : null,
           visibleModuleCount: visibleModules.length,
           syntheticGateTextAbsent,
           syntheticGateTextCount,

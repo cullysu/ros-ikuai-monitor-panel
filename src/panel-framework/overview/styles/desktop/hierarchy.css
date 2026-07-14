@@ -247,10 +247,6 @@
 /*v194-desktop-console-hierarchy-tightening*/
 
 @media (min-width: 768px) {
-  .router-overview-framework .ik-desktop-workspace {
-    min-height: 760px !important;
-    align-content: stretch !important;
-  }
   .router-overview-framework .ik-desktop-workspace .ro-col {
     min-height: 0 !important;
   }

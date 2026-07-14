@@ -4,9 +4,6 @@
   .router-overview-framework {
     background: #f3f7fb !important;
   }
-  .router-overview-framework .ro-col.is-bottom [data-overview-density-module="terminal-ranking"] {
-    display: none !important;
-  }
   .router-overview-framework .ro-col.is-side [data-overview-density-module*="resource"],
   .router-overview-framework .ro-col.is-side [data-overview-density-module*="pressure"] {
     order: 1 !important;

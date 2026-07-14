@@ -973,6 +973,15 @@ assert(
   "desktopOverviewDefaultScene.tsx must consume the resource evidence row module"
 );
 assert(
+  desktopDefaultScene.includes('minRows={0} collapsed />') &&
+    desktopDefaultScene.includes("bottom: [") &&
+    desktopDefaultScene.includes("terminalRanking,") &&
+    /module="normal-collection-channel"[^>]*\bcollapsed\b/.test(desktopDefaultScene) &&
+    !desktopDefaultScene.includes("isFleet ? null : terminalRanking") &&
+    !desktopBaseStyles.includes('.ro-col.is-bottom [data-overview-density-module="terminal-ranking"]'),
+  "Normal desktop scenes must defer a visible collapsed terminal ranking below the decision modules"
+);
+assert(
   /module="resource-interface-top5"[^>]*\bcollapsed\b/.test(desktopResourceScene) &&
     /module="normal-ops-ledger"[^>]*\bcollapsed\b/.test(desktopResourceScene),
   "Resource-full desktop scene must defer interface throughput and recent-event ledgers below the resource judgement"
@@ -1012,6 +1021,12 @@ assert(
   `Desktop workspace layout must own the canonical grid after refinement: lines=${lines(desktopWorkspaceLayout)} refinementGridRules=${desktopRefinementWorkspaceGridRuleCount}`
 );
 assert(
+  desktopWorkspaceLayout.includes("align-items: stretch;") &&
+    desktopWorkspaceLayout.includes("align-self: stretch;") &&
+    !desktopWorkspaceLayout.includes(".ro-module:only-child"),
+  "Normal desktop primary modules must fill their grid column without single-child layout patches"
+);
+assert(
   desktopWorkspaceLayoutImportantCount === 0,
   `Desktop workspace layout must not use override priorities: ${desktopWorkspaceLayoutImportantCount}`
 );
@@ -1037,6 +1052,11 @@ assert(
 assert(
   retiredDesktopWorkspaceRootDeclarationCount === 0,
   `Retired desktop layers must not reclaim the base workspace grid: ${retiredDesktopWorkspaceRootDeclarationCount}`
+);
+assert(
+  !desktopBaseStyles.includes("min-height: 760px !important") &&
+    !desktopBaseStyles.includes("align-content: stretch !important"),
+  "Retired desktop hierarchy layers must not stretch the canonical workspace or manufacture empty grid space"
 );
 assert(
   desktopLegacyRootRuleCount === 0,

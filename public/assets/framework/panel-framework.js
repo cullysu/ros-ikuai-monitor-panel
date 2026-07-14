@@ -8315,6 +8315,9 @@ var PanelFramework = function(exports) {
   function trafficTop3Rows(snapshot, state) {
     return trafficRows(snapshot, state).filter((row) => /^traffic-top-/.test(row.id));
   }
+  function trafficAnomalyRows(snapshot, state) {
+    return trafficRows(snapshot, state).filter((row) => /^traffic-offline-/.test(row.id));
+  }
   function trafficRouteRows(snapshot, state) {
     const route = buildRouterOsRouteEvidenceModel(snapshot, state).summary;
     return [{
@@ -9171,26 +9174,24 @@ var PanelFramework = function(exports) {
     const collectionRowsCompact = compactRows(threeColumnRows(collectionRows(snapshot, state), "desktop-collection-"), sideRowLimit);
     const interfaceRowsCompact = compactRows(interfaceBoundaryRows(snapshot, state), sideRowLimit);
     const wanEvidenceRows = compactRows(threeColumnRows([
-      ...trafficTop3Rows(snapshot, state),
+      ...trafficAnomalyRows(snapshot, state),
       ...trafficRouteRows(snapshot, state),
-      ...trafficSamplingRows(snapshot, state),
-      ...trafficPeakRows(snapshot, state)
+      ...trafficSamplingRows(snapshot, state)
     ], "desktop-wan-evidence-"), isFleet ? 5 : 4);
-    const terminalRanking = /* @__PURE__ */ jsxRuntimeExports.jsx(TerminalRanking, { title: "终端排行", subtitle: "按总流量排序", module: "terminal-ranking", tone: "trust", trust, headers: ["设备", "IP", "流量", "状态"], rows: compactRows(desktopTerminalRows(snapshot), isFleet ? 4 : 6), minRows: 0 }, "compact-terminals");
+    const terminalRanking = /* @__PURE__ */ jsxRuntimeExports.jsx(TerminalRanking, { title: "终端排行", subtitle: "按总流量排序", module: "terminal-ranking", tone: "trust", trust, headers: ["设备", "IP", "流量", "状态"], rows: compactRows(desktopTerminalRows(snapshot), isFleet ? 4 : 6), minRows: 0, collapsed: true }, "compact-terminals");
     return {
       main: [
         /* @__PURE__ */ jsxRuntimeExports.jsx(WanTrend, { title: isFleet ? "WAN 采样趋势 / 设备 TopN" : "WAN 采样趋势", subtitle: isFleet ? "类型分布 / 异常 TopN" : "当前 / 峰值 / 默认出口 / 最近6点", module: "wan-trend", tone: state.facts.wan.allOffline ? "danger" : "trust", trust, headers: [], rows: [], minRows: 0, visual: networkVisual, visualOnly: true }, "compact-network"),
         isFleet ? /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "默认出口", subtitle: "默认路由条目 / 承载", module: "route-raw-facts", tone: state.facts.route.level, trust, headers: ["出口", "承载出口", "优先级", "状态"], rows: routeRowsCompact, minRows: 0 }, "compact-route") : null,
-        isFleet ? /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "WAN 异常 TopN", subtitle: "离线对象 / 类型分布", module: "normal-wan-evidence", tone: state.facts.wan.offline ? "warn" : "trust", trust, headers: ["对象", "当前", "依据"], rows: wanEvidenceRows, minRows: 0 }, "compact-wan-evidence") : null,
-        isFleet ? null : terminalRanking
+        isFleet ? /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "WAN 异常 TopN", subtitle: "离线对象 / 类型分布", module: "normal-wan-evidence", tone: state.facts.wan.offline ? "warn" : "trust", trust, headers: ["对象", "当前", "依据"], rows: wanEvidenceRows, minRows: 0 }, "compact-wan-evidence") : null
       ],
       side: [
         /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "接口状态", subtitle: "转发面 / 承载", module: "normal-interface-boundary", tone: "trust", trust, headers: ["对象", "当前", "最近", "边界"], rows: interfaceRowsCompact, minRows: 0, collapsed: isFleet }, "compact-interface"),
         /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "资源", subtitle: isFleet ? "接口排行 / 阈值" : "当前 / 阈值", module: "resource-threshold", tone: state.facts.resource.level, trust, headers: ["项", "阈值", "持续", "峰值"], rows: compactRows(resourceRows(state), 3), minRows: 0, collapsed: isFleet }, "compact-resource"),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: isFleet ? "采集可信度" : "采集 / 快照", subtitle: "REST / SSH / 成功", module: "normal-collection-channel", tone: state.facts.collection.level, trust, headers: ["对象", "当前", "依据"], rows: collectionRowsCompact, minRows: 0, collapsed: isFleet }, "compact-collection")
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: isFleet ? "采集可信度" : "采集 / 快照", subtitle: "REST / SSH / 成功", module: "normal-collection-channel", tone: state.facts.collection.level, trust, headers: ["对象", "当前", "依据"], rows: collectionRowsCompact, minRows: 0, collapsed: true }, "compact-collection")
       ],
       bottom: [
-        isFleet ? terminalRanking : null,
+        terminalRanking,
         /* @__PURE__ */ jsxRuntimeExports.jsx(EvidenceChain, { title: "证据 / 原始字段", subtitle: "默认收起 · 业务解释优先", module: "evidence-boundary", tone: "trust", trust, headers: ["对象", "当前", "依据"], rows: compactRows(desktopEvidenceBoundaryRows(snapshot, state), 4), minRows: 0, collapsedEvidence: true }, "compact-boundary")
       ]
     };

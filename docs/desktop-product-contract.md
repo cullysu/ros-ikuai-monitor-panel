@@ -51,6 +51,10 @@ No WAN rate, resource value, terminal ranking, or route availability may be infe
 - Mobile and desktop render trees and styles remain independent.
 - Status roles are represented by semantic component classes, not acceptance-only DOM claims.
 - Four-cell and six-cell buses fill the available width without placeholder columns.
+- The normal WAN judgement module fills its complete main column; inherited item alignment must not create an artificial blank gutter.
+- Terminal ranking is secondary: it appears in the bottom evidence row and is collapsed by default for both single and fleet views.
+- Normal collection details are secondary because collection and snapshot status already appear in the top bus; the side module remains reachable, collapsed, and may not retain an empty equal-height shell.
+- CSS must not hide deferred terminal ranking after the scene has deliberately placed it.
 - Raw RouterOS fields remain collapsed secondary evidence.
 - A required scenario or viewport missing from the release matrix makes top-level `pass` false.
 - GitHub upload is incomplete until Linux, Windows, and GHCR checks pass for the exact remote SHA.

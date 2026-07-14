@@ -134,12 +134,13 @@ includesAll(desktopScenes, [
   'case "interfaces-down"',
   'return buildDefaultDesktopScene(snapshot, state);',
 ], 'desktop scenario dispatcher ownership');
-includesAll(desktopDefaultScene, ['state.scenario === "fleet"', 'const sideRowLimit = isFleet ? 4 : 3;', 'collapsed={isFleet}', 'isFleet ? 4 : 6', 'isFleet ? null : terminalRanking', 'isFleet ? terminalRanking : null'], 'desktop normal/fleet scene ownership');
+includesAll(desktopDefaultScene, ['state.scenario === "fleet"', 'const sideRowLimit = isFleet ? 4 : 3;', 'collapsed={isFleet}', 'isFleet ? 4 : 6', 'module="normal-collection-channel"', 'minRows={0} collapsed />', 'bottom: [', 'terminalRanking,'], 'desktop normal/fleet scene ownership');
+excludesAll(desktopDefaultScene, ['isFleet ? null : terminalRanking', 'isFleet ? terminalRanking : null'], 'desktop terminal ranking is deferred consistently');
 includesAll(desktopAllOfflineScene, ['Math.max(state.facts.wan.total, offlineRows.length)', '<WanOfflineFocus', 'collapsed />'], 'desktop adaptive WAN incident hierarchy');
 excludesAll(desktopAllOfflineScene, ['subtitle="0/8', 'compactRows(wanContinuityRows(state), 8)'], 'desktop WAN fixture cleanup');
 includesAll(wanOfflineFocus, ['rows.slice(0, 4)', '其余 {hiddenCount} 条线路在详情中', '不展示 0 B/s'], 'desktop WAN incident focus');
-if ((desktopDefaultScene.match(/\bcollapsed=\{isFleet\}/g) || []).length < 3) fail('desktop normal hierarchy', 'expected three fleet-only collapsed secondary summaries');
-includesAll(desktopWorkspaceStyles, ['.ro-desktop-grid.is-normal-scene', 'align-items: start', 'align-self: start', 'grid-template-rows: 25px auto', 'height: auto', '.ro-desktop-grid[data-overview-desktop-scene="single"] > .ro-col.is-bottom > .ro-module:only-child', '--ro-col-height: auto', '--ro-col-grid-auto-rows: auto', '--ro-col-module-height: auto'], 'desktop normal content-sized workspace');
+if ((desktopDefaultScene.match(/\bcollapsed=\{isFleet\}/g) || []).length < 2) fail('desktop normal hierarchy', 'expected fleet-only interface and resource summaries');
+includesAll(desktopWorkspaceStyles, ['.ro-desktop-grid.is-normal-scene', 'align-items: start', 'align-self: start', 'align-items: stretch', 'align-self: stretch', 'grid-template-rows: 25px auto', 'height: auto', '--ro-col-height: auto', '--ro-col-grid-auto-rows: auto', '--ro-col-module-height: auto'], 'desktop normal content-sized workspace');
 includesAll(desktopModule, ['collapsed ? "ro-secondary-evidence-disclosure ro-compact-summary-disclosure"', 'ro-compact-summary-disclosure', '查看详情'], 'desktop compact disclosure');
 const desktopModuleContractCount = (desktopModule.match(/\bdata-(?:overview|routeros)-[\w-]+/g) || []).length;
 if (desktopModuleContractCount > 20) fail('desktop module contract budget', `expected <=20 attributes, found ${desktopModuleContractCount}`);
