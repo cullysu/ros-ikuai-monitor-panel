@@ -817,9 +817,12 @@ assert(
 );
 assert(
   !desktopDecisionRail.includes("style={") &&
-    desktopBaseStyles.includes('@import "./desktop/decision-rail.css";') &&
-    exists("src/panel-framework/overview/styles/desktop/decision-rail.css"),
-  "DesktopDecisionRail layout must live in its desktop component stylesheet, not inline JSX"
+    panel.includes('import "./styles/desktop/decision-rail.css";') &&
+    panel.indexOf('import "./styles/desktop/decision-rail.css";') >
+      panel.indexOf('import "./styles/desktop/status-bus.css";') &&
+    !desktopBaseStyles.includes('@import "./desktop/decision-rail.css";') &&
+    !desktopDecisionRailStyles.includes("!important"),
+  "DesktopDecisionRail must own a final component layer without inline styles or !important"
 );
 assert(
   desktopConsole.includes('from "../desktopOverviewScenes"') &&

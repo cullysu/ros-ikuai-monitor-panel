@@ -8,6 +8,7 @@ import "./styles/desktop/tokens.css";
 import "./styles/overview-desktop-runtime.css";
 import "./styles/desktop/incidents.css";
 import "./styles/desktop/status-bus.css";
+import "./styles/desktop/decision-rail.css";
 
 const MOBILE_OVERVIEW_QUERY = "(max-width: 900px)";
 
