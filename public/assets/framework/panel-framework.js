@@ -9014,7 +9014,7 @@ var PanelFramework = function(exports) {
   function abnormalDecisionImpactValue(priority, scope) {
     if (priority === "wan-offline") return "默认路由不可承载";
     if (priority === "snapshot-missing") return "业务数据不展示";
-    if (priority === "resource-full") return "业务仍可用 · 风险高";
+    if (priority === "resource-full") return "业务仍可用 · 转发余量低";
     if (priority === "interface-down") return "承载关系待判";
     if (priority === "collection-degraded") return "采集可信度下降";
     return scope.value;
@@ -9391,25 +9391,23 @@ var PanelFramework = function(exports) {
     const rows = model.primaryList.rows.slice(0, 4);
     const copy = supportingCopy(model);
     return /* @__PURE__ */ jsxRuntimeExports.jsx("section", { className: "ik-mobile-supporting-surface", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ik-mobile-supporting-list", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { className: `ik-mobile-supporting-head ${toneClass(model.impactScope.tone)}`, children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "ik-mobile-detail-copy", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("em", { children: [
-            copy.title,
-            " · ",
-            copy.summary
-          ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: model.primaryList.title }),
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("small", { children: [
-            model.impactScope.value,
-            " · ",
-            model.primaryList.meta
-          ] })
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("strong", { children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: rows.length }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: "项" })
-        ] })
-      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs(
+        "header",
+        {
+          className: `ik-mobile-supporting-head ${toneClass(model.impactScope.tone)}`,
+          "aria-label": `${model.primaryList.title}，${model.impactScope.value}，${model.primaryList.meta}`,
+          children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "ik-mobile-detail-copy", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: copy.title }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: copy.summary })
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("strong", { children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: rows.length }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: "项" })
+            ] })
+          ]
+        }
+      ),
       /* @__PURE__ */ jsxRuntimeExports.jsx(
         "div",
         {

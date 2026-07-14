@@ -69,11 +69,13 @@ export function SupportingList({ model }: { model: MobileOverviewModel }) {
   return (
     <section className="ik-mobile-supporting-surface">
       <div className="ik-mobile-supporting-list">
-        <header className={`ik-mobile-supporting-head ${toneClass(model.impactScope.tone)}`}>
+        <header
+          className={`ik-mobile-supporting-head ${toneClass(model.impactScope.tone)}`}
+          aria-label={`${model.primaryList.title}，${model.impactScope.value}，${model.primaryList.meta}`}
+        >
           <span className="ik-mobile-detail-copy">
-            <em>{copy.title} · {copy.summary}</em>
-            <b>{model.primaryList.title}</b>
-            <small>{model.impactScope.value} · {model.primaryList.meta}</small>
+            <b>{copy.title}</b>
+            <small>{copy.summary}</small>
           </span>
           <strong><b>{rows.length}</b><small>项</small></strong>
         </header>

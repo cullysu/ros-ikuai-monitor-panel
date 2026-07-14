@@ -1511,10 +1511,6 @@ async function main() {
           visualKind: Array.from(hero.classList).find((className) => className.startsWith('is-'))?.slice(3) || '',
           rankingPolicy: ''
         } : {};
-        const impactLine = surface?.querySelector('.ik-mobile-supporting-list header em');
-        const impactLineAttrs = impactLine ? {
-          text: normalize(impactLine.textContent || '')
-        } : {};
         const hasHorizontalOverflow = document.documentElement.scrollWidth > document.documentElement.clientWidth + 1 || wideNodes.length > 0;
         const chartRail = hero?.querySelector('.ik-mobile-decision-readouts');
         const trendVisual = hero?.querySelector('.ik-mobile-decision-trend-anchor');
@@ -1819,6 +1815,18 @@ async function main() {
           const rect = row.getBoundingClientRect();
           return { top: rect.top, bottom: rect.bottom, width: rect.width, height: rect.height };
         });
+        const supportingHead = list?.querySelector('.ik-mobile-supporting-head');
+        const supportingHeadRect = supportingHead?.getBoundingClientRect();
+        const supportingHeadText = normalize(supportingHead?.textContent || '');
+        const compactSupportingHeaderOk = Boolean(
+          supportingHead &&
+          supportingHeadRect &&
+          !supportingHead.querySelector('em') &&
+          supportingHead.querySelector('.ik-mobile-detail-copy > b') &&
+          supportingHead.querySelector('.ik-mobile-detail-copy > small') &&
+          supportingHeadText &&
+          supportingHeadRect.height <= (isLandscapeMobile ? 48 : 42)
+        );
         const primaryListEvidenceStandardized = Boolean(
           listEvidenceRows.length > 0 &&
           listEvidence.every((item) => (
@@ -2163,60 +2171,66 @@ async function main() {
           (!coreBlockById['timeline-collection'] || coreBlockById['timeline-collection'] === 'collection') &&
           (!coreBlockById['timeline-resource'] || coreBlockById['timeline-resource'] === 'resource')
         );
-        const pass = Boolean(
-          root &&
-          screen &&
-          surface &&
-          hero &&
-          heroHeadlineVisible &&
-          deviceHeaderVisible &&
-          !deviceHeaderUsesVerdict &&
-          deviceStatusVisible &&
-          buildTimeMobileCss &&
-          mobileTokensApplied &&
-          nativeTrustSpinePolished &&
-          metricGridProductized &&
-          mobileGroupedSurfaceLowBorder &&
-          incidentTelemetryProductized &&
-          noSnapshotTelemetryTruthful &&
-          normalNativeFirstScreen &&
-          collectionTrustRailFixed &&
-          collectionTrustSeparatedFromImpact &&
-          hasProductChartRail &&
-          hasNativeChartLayout &&
-          productChartProductized &&
-          modelBackedChartPlot &&
-          judgementLabelNoEllipsis &&
-          bottomTabsQuiet &&
-          routerBottomTabsProductized &&
-          routerStatusHeaderProductized &&
-          appRhythmPolished &&
-          surfacePolicyModelBacked &&
-          statusCoreBlocksModelBacked &&
-          primaryListEvidenceStandardized &&
-          normalOperationalDensityOk &&
-          resourceTrackNoiseLow &&
-          resourceVisualModelBacked &&
-          wanPortEvidenceDeferred &&
-          channelRailModelBacked &&
-          abnormalDecisionRailProductized &&
-          abnormalHeroLayoutStable &&
-          appViewportBounded &&
-          abnormalViewportOverflowFree &&
-          (expectedConfig.mode === 'normal'
+        const mobilePassChecks = {
+          rootMounted: Boolean(root),
+          screenMounted: Boolean(screen),
+          supportingSurfaceMounted: Boolean(surface),
+          heroMounted: Boolean(hero),
+          heroHeadlineVisible,
+          deviceHeaderVisible,
+          deviceHeaderUsesProductName: !deviceHeaderUsesVerdict,
+          deviceStatusVisible,
+          buildTimeMobileCss,
+          mobileTokensApplied,
+          nativeTrustSpinePolished,
+          metricGridProductized,
+          mobileGroupedSurfaceLowBorder,
+          incidentTelemetryProductized,
+          noSnapshotTelemetryTruthful,
+          normalNativeFirstScreen,
+          collectionTrustRailFixed,
+          collectionTrustSeparatedFromImpact,
+          hasProductChartRail,
+          hasNativeChartLayout,
+          productChartProductized,
+          modelBackedChartPlot,
+          judgementLabelNoEllipsis,
+          bottomTabsQuiet,
+          routerBottomTabsProductized,
+          routerStatusHeaderProductized,
+          appRhythmPolished,
+          surfacePolicyModelBacked,
+          statusCoreBlocksModelBacked,
+          primaryListEvidenceStandardized,
+          normalOperationalDensityOk,
+          compactSupportingHeaderOk,
+          resourceTrackNoiseLow,
+          resourceVisualModelBacked,
+          wanPortEvidenceDeferred,
+          channelRailModelBacked,
+          abnormalDecisionRailProductized,
+          abnormalHeroLayoutStable,
+          appViewportBounded,
+          abnormalViewportOverflowFree,
+          scenarioVerdictCopyOk: expectedConfig.mode === 'normal'
             ? !firstScreenText.includes('正常状态总览')
             : expectedConfig.mode === 'p0'
-            ? abnormalDecisionRailProductized
-            : true) &&
-          (expectedConfig.mode === 'normal'
+              ? abnormalDecisionRailProductized
+              : true,
+          evidenceVisibilityOk: expectedConfig.mode === 'normal'
             ? !terminalRankingCopyVisible && (evidenceCondensedForLandscape ? visibleTerminalRows.length === 0 : (visibleTerminalRows.length >= 1 && visibleTerminalRows.length <= 4))
-            : !terminalRankingCopyVisible && (evidenceCondensedForLandscape ? visibleTerminalRows.length === 0 : visibleTerminalRows.length >= 1)) &&
-          !styleTextLeakedIntoOverview &&
-          missing.length === 0 &&
-          !hasHorizontalOverflow
-        );
+            : !terminalRankingCopyVisible && (evidenceCondensedForLandscape ? visibleTerminalRows.length === 0 : visibleTerminalRows.length >= 1),
+          styleTextNotLeaked: !styleTextLeakedIntoOverview,
+          requiredTextPresent: missing.length === 0,
+          noHorizontalOverflow: !hasHorizontalOverflow,
+        };
+        const failedPassChecks = Object.entries(mobilePassChecks)
+          .filter(([, value]) => !value)
+          .map(([name]) => name);
+        const pass = failedPassChecks.length === 0;
         return {
           pass,
+          failedPassChecks,
           section: sectionName,
           url: location.href,
           missing,
@@ -2238,12 +2252,12 @@ async function main() {
           surfaceAttrs,
           heroAttrs,
           expectedConfig,
-          impactLineAttrs,
           listText: normalize(list?.textContent || '').slice(0, 240),
           terminalListMounted: Boolean(terminalList),
           terminalRowCount: terminalRows.length,
           visibleTerminalRowCount: visibleTerminalRows.length,
           evidenceDeferred,
+          evidenceCondensedForLandscape,
           detailEntryVisible,
           terminalRankingCopyVisible,
           styleTextLeakedIntoOverview,
@@ -2299,6 +2313,12 @@ async function main() {
           primaryListEvidenceStandardized,
           normalOperationalDensityOk,
           normalOperationalDensityChecks,
+          compactSupportingHeaderOk,
+          supportingHeader: {
+            text: supportingHeadText,
+            height: supportingHeadRect?.height || 0,
+            visibleTextNodes: supportingHead?.querySelectorAll('.ik-mobile-detail-copy > b, .ik-mobile-detail-copy > small').length || 0,
+          },
           listEvidence,
           listEvidenceRects,
           bottomTabsTop: bottomTabsRect?.top || null,

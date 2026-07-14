@@ -789,7 +789,7 @@ function abnormalDecisionImpactValue(
 ): string {
   if (priority === "wan-offline") return "默认路由不可承载";
   if (priority === "snapshot-missing") return "业务数据不展示";
-  if (priority === "resource-full") return "业务仍可用 · 风险高";
+  if (priority === "resource-full") return "业务仍可用 · 转发余量低";
   if (priority === "interface-down") return "承载关系待判";
   if (priority === "collection-degraded") return "采集可信度下降";
   return scope.value;
