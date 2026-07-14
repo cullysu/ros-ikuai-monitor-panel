@@ -5,7 +5,7 @@
     gap: 0;
     align-content: start;
     padding: max(8px, env(safe-area-inset-top)) 16px calc(72px + env(safe-area-inset-bottom));
-    background: linear-gradient(155deg, #eaf4fa 0%, #f7fafc 42%, #edf4f8 100%);
+    background: linear-gradient(155deg, #e7f2f8 0%, #f5f9fc 42%, #edf4f8 100%);
   }
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-device-bar {
     display: grid;
@@ -16,9 +16,9 @@
     height: 46px;
     padding: 0 2px;
     border: 0;
-    border-bottom: 1px solid rgba(125, 160, 190, .38);
+    border-bottom: 1px solid rgba(112, 153, 188, .42);
     border-radius: 0;
-    background: rgba(239, 247, 251, .7);
+    background: rgba(247, 252, 255, .74);
     box-shadow: 0 1px 0 rgba(255, 255, 255, .58);
     backdrop-filter: blur(18px) saturate(118%);
     -webkit-backdrop-filter: blur(18px) saturate(118%);
@@ -42,7 +42,7 @@
   }
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-device-title span {
     display: block;
-    color: #647a91;
+    color: #617a92;
     font-size: 11px;
     font-weight: 620;
     line-height: 1.1;
@@ -64,11 +64,11 @@
     min-width: 62px;
     min-height: 30px;
     padding: 0 10px;
-    border: 1px solid rgba(106, 151, 190, .38);
+    border: 1px solid rgba(112, 153, 188, .42);
     border-radius: 999px;
-    background: rgba(201, 224, 242, .58);
+    background: rgba(216, 233, 245, .58);
     box-shadow: none;
-    color: #234f77;
+    color: #1b639c;
     font-size: 11px;
     font-weight: 780;
     line-height: 1;

@@ -246,8 +246,8 @@ includesAll(navigationStyles, ['position: fixed', 'repeat(3, minmax(0, 1fr))', '
 includesAll(incidentStyles, ['ik-mobile-incident-summary', 'ik-mobile-incident-guidance', 'min-height: 95px', 'min-height: 45px'], 'mobile incident hierarchy');
 includesAll(telemetryStyles, ['ik-mobile-incident-telemetry', 'grid-template-columns: repeat(4, minmax(0, 1fr))', 'grid-template-rows: 64px', 'min-height: 64px'], 'mobile incident telemetry');
 includesAll(productShellStyles, ['ro-desktop-grid', 'ro-mobile-first-screen', '100dvh', 'position: fixed', 'min-height: 44px'], 'mobile/desktop shell isolation');
-includesAll(mobileFrameStyles, ['ik-mobile-decision-screen', 'ik-mobile-device-bar', 'linear-gradient(155deg, #eaf4fa', 'backdrop-filter: blur(18px)', 'border-radius: 0', 'background: transparent'], 'mobile frame styles');
-includesAll(mobileDecisionStyles, ['ik-mobile-decision-card', 'ik-mobile-decision-trend', 'ik-mobile-resource-incident-stack'], 'mobile decision styles');
+includesAll(mobileFrameStyles, ['ik-mobile-decision-screen', 'ik-mobile-device-bar', 'linear-gradient(155deg, #e7f2f8', 'backdrop-filter: blur(18px)', 'border-radius: 0', 'background: transparent'], 'mobile frame styles');
+includesAll(mobileDecisionStyles, ['ik-mobile-decision-card', 'background-color: rgba(247, 252, 255, .74)', 'linear-gradient(145deg, rgba(255, 255, 255, .8)', 'backdrop-filter: blur(16px)', 'ik-mobile-decision-trend', 'ik-mobile-resource-incident-stack'], 'mobile decision styles');
 includesAll(mobileCoreStyles, ['ik-mobile-core-facts', 'grid-template-columns: repeat(4, minmax(0, 1fr))', 'grid-template-rows: 66px', 'border-radius: 0', 'background: transparent'], 'mobile core fact ownership');
 excludesAll(mobileSurfaceStyles, ['ik-mobile-core-facts'], 'mobile surface ownership');
 includesAll(mobileSurfaceStyles, ['ik-mobile-supporting-surface', 'ik-mobile-supporting-head', 'ik-mobile-supporting-detail-rows'], 'mobile surface styles');

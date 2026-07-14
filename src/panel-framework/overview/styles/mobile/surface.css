@@ -7,9 +7,9 @@
     padding: 0;
     overflow: visible;
     border: 0;
-    border-bottom: 1px solid rgba(125, 160, 190, .38);
+    border-bottom: 1px solid rgba(112, 153, 188, .42);
     border-radius: 0;
-    background: rgba(255, 255, 255, .22);
+    background: rgba(247, 252, 255, .38);
     box-shadow: none;
   }
   #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-supporting-list {
@@ -37,7 +37,7 @@
     border-top: 0;
     border-radius: 0;
     background: transparent;
-    color: #172236;
+    color: #102b46;
     box-shadow: none;
     text-align: left;
   }
@@ -55,7 +55,7 @@
   }
   #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-supporting-head b {
     overflow: hidden;
-    color: #172236;
+    color: #102b46;
     font-size: 13px;
     font-weight: 820;
     line-height: 1.12;
@@ -65,7 +65,7 @@
   #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-supporting-head em,
   #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-supporting-head small {
     overflow: hidden;
-    color: #6b7b8f;
+    color: #617a92;
     font-size: 10.5px;
     font-style: normal;
     font-weight: 620;
@@ -83,7 +83,7 @@
     border: 0;
     border-radius: 0;
     background: transparent;
-    color: #1f4f86;
+    color: #1b639c;
     font-size: 12px;
     font-weight: 820;
     line-height: 1;
@@ -95,12 +95,12 @@
     font-size: 16px;
   }
   #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-supporting-head > strong > small {
-    color: #718196;
+    color: #617a92;
     font-size: 10px;
   }
   #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-detail-chevron {
     margin-left: 3px;
-    color: #47729a;
+    color: #1b639c;
     font-size: 18px;
     font-style: normal;
     font-weight: 500;
@@ -117,7 +117,7 @@
     padding: 5px 9px;
     border: 0;
     background: transparent;
-    box-shadow: inset 0 -1px 0 rgba(126, 151, 178, .105);
+    box-shadow: inset 0 -1px 0 rgba(137, 170, 198, .24);
   }
   #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-deferred-row:last-child {
     box-shadow: none;
@@ -128,9 +128,9 @@
     width: 20px;
     height: 20px;
     overflow: hidden;
-    border: 1px solid #cbd9e8;
+    border: 1px solid rgba(112, 153, 188, .42);
     border-radius: 3px;
-    color: #52657a;
+    color: #617a92;
     font-size: 9px;
     font-style: normal;
     font-weight: 800;
@@ -151,7 +151,7 @@
   #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-deferred-row > span > b,
   #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-deferred-row > strong > b {
     overflow: hidden;
-    color: #1d3148;
+    color: #102b46;
     font-size: 12px;
     font-weight: 780;
     line-height: 1.1;
@@ -161,7 +161,7 @@
   #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-deferred-row > span > em,
   #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-deferred-row > strong > small {
     overflow: hidden;
-    color: #718196;
+    color: #617a92;
     font-size: 10.5px;
     font-style: normal;
     font-weight: 620;
@@ -180,8 +180,8 @@
     min-height: 20px;
     padding: 2px 4px;
     border-radius: 3px;
-    background: rgba(218, 231, 243, .72);
-    color: #516a82;
+    background: rgba(216, 233, 245, .58);
+    color: #1b639c;
     font-size: 11px;
     line-height: 1;
   }

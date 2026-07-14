@@ -48,6 +48,7 @@
     max-height: 100dvh;
     min-height: 0;
     overflow: hidden;
+    color: #102b46;
   }
   #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-app-shell,
   #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-decision-screen {
