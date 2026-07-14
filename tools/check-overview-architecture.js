@@ -153,6 +153,8 @@ const routerMobileStylesFile =
   "src/panel-framework/overview/mobile-app/styles/router-mobile-app.css";
 const routerMobileDetailStylesFile =
   "src/panel-framework/overview/mobile-app/styles/router-mobile-detail.css";
+const overviewStatesStylesFile =
+  "src/panel-framework/overview/styles/overview-states.css";
 const panel = read(panelFile);
 const desktopConsole = read(desktopConsoleFile);
 const desktopDecisionRail = read(desktopDecisionRailFile);
@@ -210,6 +212,7 @@ const routerMobileModel = read(routerMobileModelFile);
 const routerMobileStyles = read(routerMobileStylesFile);
 const routerMobileDetailStyles = read(routerMobileDetailStylesFile);
 const routerMobileStyleBundle = `${routerMobileStyles}\n${routerMobileDetailStyles}`;
+const overviewStatesStyles = read(overviewStatesStylesFile);
 const cssRoot = postcss.parse(panelCss, { from: panelCssFile });
 const desktopBaseStylesRoot = postcss.parse(desktopBaseStyles, {
   from: desktopBaseStylesFile,
@@ -938,6 +941,14 @@ assert(
     !/\.rm-header\s*\{[^}]*position:\s*absolute/s.test(routerMobileStyles) &&
     !/\.rm-content\s*\{[^}]*position:\s*absolute/s.test(routerMobileStyles),
   "Router mobile safe areas must expand layout flow instead of overlapping a fixed content offset"
+);
+assert(
+  lines(overviewStatesStyles) <= 2700 &&
+    !overviewStatesStyles.includes("ik-app-home-v") &&
+    !overviewStatesStyles.includes("ik-ios-router-home") &&
+    !overviewStatesStyles.includes("ik-v214-app") &&
+    !overviewStatesStyles.includes("Mobile overview v"),
+  "Retired mobile app CSS must not return to the shared overview state layer"
 );
 assert(
   routerMobileModel.includes('source: "history"') &&
