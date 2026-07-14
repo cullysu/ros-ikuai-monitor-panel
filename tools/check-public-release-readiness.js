@@ -507,10 +507,9 @@ function main(argv = process.argv.slice(2)) {
   assertContains('.github/workflows/container-image.yml', 'docker/build-push-action@v7');
   assertContains('.github/workflows/container-image.yml', 'platforms: linux/amd64,linux/arm64');
   assertContains('.github/workflows/container-image.yml', 'ghcr.io/${{ github.repository }}');
-  assertContains('.github/workflows/ci.yml', '--scale-scenarios single,fleet');
-  assertContains('.github/workflows/ci.yml', '--scale-scenarios all-offline,no-snapshot,collection-down,resource-full,interfaces-down');
+  assertContains('.github/workflows/ci.yml', '--scale-scenarios single,fleet,all-offline,no-snapshot,collection-down,resource-full,interfaces-down');
   assertContains('.github/workflows/ci.yml', '--sections overview');
-  assertContains('.github/workflows/ci.yml', '--sections overview-edge-cases');
+  assertNotContains('.github/workflows/ci.yml', '--sections overview-edge-cases');
   assertContains('.github/workflows/ci.yml', '--viewports desktop=1366x900,desktop1440=1440x900,wide=844x390,narrow=390x844');
 
   assertContains('compose.yml', '${ROS_PANEL_IMAGE:-routeros-triage-panel:local}');
