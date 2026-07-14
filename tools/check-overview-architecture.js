@@ -295,6 +295,9 @@ desktopBaseStylesRoot.walkDecls((decl) => {
   if (decl.important) desktopBaseImportantCount += 1;
 });
 const desktopBaseShadowedDeclarationCount = countShadowedDeclarations(desktopBaseStylesRoot);
+const desktopImpossibleShellDescendantCount = (
+  desktopBaseStyles.match(/\.router-overview-framework \.(?:sidebar|topbar|frame|ik-rail)/g) || []
+).length;
 let desktopDecisionRailRuleCount = 0;
 let desktopDecisionCellRuleCount = 0;
 let desktopWorkspaceGridRuleCount = 0;
@@ -1021,6 +1024,10 @@ assert(
   `Desktop workspace grid must stay canonical and must not duplicate shell navigation: gridRules=${desktopWorkspaceGridRuleCount} navRules=${desktopNavRuleCount}`
 );
 assert(
+  desktopImpossibleShellDescendantCount === 0,
+  `Overview styles must not claim sibling shell nodes: ${desktopImpossibleShellDescendantCount}`
+);
+assert(
   retiredDesktopWorkspaceRootDeclarationCount === 0,
   `Retired desktop layers must not reclaim the base workspace grid: ${retiredDesktopWorkspaceRootDeclarationCount}`
 );
@@ -1146,5 +1153,5 @@ if (failures.length > 0) {
 }
 
 console.log(
-  `overview architecture gate: PASS panel=${lines(panel)} lines desktop=${lines(desktopConsole)} lines desktopDecision=${lines(desktopDecisionRail)} lines scenes=${lines(desktopScenes)} lines helper=${lines(desktopHelpers)} lines presentation=${lines(desktopPresentation)} lines topbar=${lines(desktopTopbar)} lines trafficRows=${lines(desktopTrafficRows)} lines routeRows=${lines(desktopRouteRows)} lines wanRows=${lines(desktopWanRows)} lines interfaceRows=${lines(desktopInterfaceRows)} lines credibilityRows=${lines(desktopCredibilityRows)} lines terminalRows=${lines(desktopTerminalRows)} lines resourceRows=${lines(desktopResourceRows)} lines visuals=${lines(desktopVisuals)} lines mobileHome=${lines(mobileHome)} lines mobileDecision=${lines(mobileDecision)} lines mobileSections=${lines(mobileHomeSections)} lines mobileTabView=${lines(mobileTabView)} lines mobileTabRows=${lines(mobileTabRows)} lines css=${bytes(panelCssFile)} bytes desktopBase=${lines(desktopBaseStyles)} lines desktopBaseImportant=${desktopBaseImportantCount} mobileStyles=${mobileStyleByteTotal} bytes important=${importantShare.toFixed(4)} desktopImportant=${desktopRefinementImportantCount} workspaceImportant=${desktopWorkspaceLayoutImportantCount} decisionRailRules=${desktopDecisionRailRuleCount} decisionCellRules=${desktopDecisionCellRuleCount} workspaceGridRules=${desktopWorkspaceGridRuleCount} navRules=${desktopNavRuleCount} statusBusRules=${desktopStatusBusRuleCount} legacyTopbarRules=${desktopLegacyTopbarRuleCount} sidebarStatusRules=${desktopSidebarMiniStatusRuleCount} sidebarStatusImportant=${desktopSidebarMiniStatusImportantCount} moduleShellRules=${desktopModuleShellRuleCount} moduleHeadRules=${desktopModuleHeadRuleCount} ledgerRules=${desktopLedgerRuleCount} moduleToneRules=${desktopModuleToneRuleCount} ledgerToneRules=${desktopLedgerToneRuleCount} ledgerToneShadows=${desktopLedgerToneShadowCount} releaseToneResets=${desktopReleaseToneResetCount} releaseNonPrimary=${desktopReleaseNonPrimaryNeutralCount} mobile=${mobileRuleShare.toFixed(4)}`
+  `overview architecture gate: PASS panel=${lines(panel)} lines desktop=${lines(desktopConsole)} lines desktopDecision=${lines(desktopDecisionRail)} lines scenes=${lines(desktopScenes)} lines helper=${lines(desktopHelpers)} lines presentation=${lines(desktopPresentation)} lines topbar=${lines(desktopTopbar)} lines trafficRows=${lines(desktopTrafficRows)} lines routeRows=${lines(desktopRouteRows)} lines wanRows=${lines(desktopWanRows)} lines interfaceRows=${lines(desktopInterfaceRows)} lines credibilityRows=${lines(desktopCredibilityRows)} lines terminalRows=${lines(desktopTerminalRows)} lines resourceRows=${lines(desktopResourceRows)} lines visuals=${lines(desktopVisuals)} lines mobileHome=${lines(mobileHome)} lines mobileDecision=${lines(mobileDecision)} lines mobileSections=${lines(mobileHomeSections)} lines mobileTabView=${lines(mobileTabView)} lines mobileTabRows=${lines(mobileTabRows)} lines css=${bytes(panelCssFile)} bytes desktopBase=${lines(desktopBaseStyles)} lines desktopBaseImportant=${desktopBaseImportantCount} mobileStyles=${mobileStyleByteTotal} bytes important=${importantShare.toFixed(4)} desktopImportant=${desktopRefinementImportantCount} workspaceImportant=${desktopWorkspaceLayoutImportantCount} decisionRailRules=${desktopDecisionRailRuleCount} decisionCellRules=${desktopDecisionCellRuleCount} workspaceGridRules=${desktopWorkspaceGridRuleCount} navRules=${desktopNavRuleCount} shellDescendantRules=${desktopImpossibleShellDescendantCount} statusBusRules=${desktopStatusBusRuleCount} legacyTopbarRules=${desktopLegacyTopbarRuleCount} sidebarStatusRules=${desktopSidebarMiniStatusRuleCount} sidebarStatusImportant=${desktopSidebarMiniStatusImportantCount} moduleShellRules=${desktopModuleShellRuleCount} moduleHeadRules=${desktopModuleHeadRuleCount} ledgerRules=${desktopLedgerRuleCount} moduleToneRules=${desktopModuleToneRuleCount} ledgerToneRules=${desktopLedgerToneRuleCount} ledgerToneShadows=${desktopLedgerToneShadowCount} releaseToneResets=${desktopReleaseToneResetCount} releaseNonPrimary=${desktopReleaseNonPrimaryNeutralCount} mobile=${mobileRuleShare.toFixed(4)}`
 );

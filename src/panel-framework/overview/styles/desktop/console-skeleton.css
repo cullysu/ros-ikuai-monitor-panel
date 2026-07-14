@@ -360,48 +360,4 @@
     color: var(--ik40-console-blue-deep) !important;
     font-weight: 800 !important;
   }
-  /*Left rail: pills become static bottom-status-strip rows, not toy chips.*/
-  .router-overview-framework .sidebar .ik-meta-pill,
-  .router-overview-framework .sidebar [class*="pill"],
-  .router-overview-framework .sidebar [class*="badge"] {
-    position: relative !important;
-    min-height: 24px !important;
-    padding: 2px 0 5px !important;
-    border: 0 !important;
-    border-bottom: 2px solid #ccd6e1 !important;
-    border-radius: 0 !important;
-    background: transparent !important;
-    box-shadow: none !important;
-    color: var(--ik40-console-muted) !important;
-    cursor: default !important;
-    pointer-events: none !important;
-  }
-  .router-overview-framework .sidebar .ik-meta-pill::after,
-  .router-overview-framework .sidebar [class*="pill"]::after,
-  .router-overview-framework .sidebar [class*="badge"]::after {
-    content: "" !important;
-    position: absolute !important;
-    left: 0 !important;
-    right: auto !important;
-    bottom: -2px !important;
-    width: 34px !important;
-    height: 2px !important;
-    background: var(--ik40-console-blue) !important;
-  }
-  .router-overview-framework .sidebar [data-tone="danger"]::after {
-    background: var(--ik40-console-danger) !important;
-  }
-  .router-overview-framework .sidebar [data-tone="warn"]::after {
-    background: var(--ik40-console-blue) !important;
-  }
-  .router-overview-framework .sidebar [data-overview-status-role*="cache"]::after {
-    background: var(--ik40-console-cache) !important;
-  }
-  .router-overview-framework .sidebar .ik-meta-pill:hover,
-  .router-overview-framework .sidebar [class*="pill"]:hover,
-  .router-overview-framework .sidebar [class*="badge"]:hover {
-    transform: none !important;
-    background: transparent !important;
-    box-shadow: none !important;
-  }
 }
