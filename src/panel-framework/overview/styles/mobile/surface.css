@@ -104,9 +104,9 @@
     align-items: center;
     gap: 7px;
     min-width: 0;
-    min-height: 44px;
-    height: 44px;
-    padding: 6px 9px;
+    min-height: 48px;
+    height: 48px;
+    padding: 7px 9px;
     border: 0;
     background: transparent;
     box-shadow: inset 0 -1px 0 rgba(126, 151, 178, .105);
@@ -136,11 +136,15 @@
   #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-deferred-row > span {
     gap: 2px;
   }
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-deferred-row > strong {
+    justify-items: end;
+    gap: 2px;
+  }
   #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-deferred-row > span > b,
   #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-deferred-row > strong > b {
     overflow: hidden;
     color: #1d3148;
-    font-size: 11.5px;
+    font-size: 12px;
     font-weight: 780;
     line-height: 1.1;
     text-overflow: ellipsis;
@@ -150,7 +154,7 @@
   #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-deferred-row > strong > small {
     overflow: hidden;
     color: #718196;
-    font-size: 10px;
+    font-size: 10.5px;
     font-style: normal;
     font-weight: 620;
     line-height: 1.1;
@@ -160,6 +164,26 @@
   }
   #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-deferred-row > span > em {
     text-align: left;
+  }
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-deferred-row > strong > small {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 18px;
+    padding: 2px 4px;
+    border-radius: 3px;
+    background: rgba(218, 231, 243, .72);
+    color: #516a82;
+    line-height: 1;
+  }
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-deferred-row.is-danger > strong > small {
+    background: rgba(248, 229, 227, .82);
+    color: #8f3532;
+  }
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-deferred-row.is-warn > strong > small,
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-deferred-row.is-missing > strong > small {
+    background: rgba(247, 237, 213, .82);
+    color: #7c5a1c;
   }
   #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-deferred-row.is-danger .ik-mobile-row-token {
     border-color: #e4b6b4;

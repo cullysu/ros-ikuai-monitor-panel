@@ -1809,12 +1809,47 @@ async function main() {
           name: normalize(row.querySelector('span b')?.textContent || ''),
           meta: normalize(row.querySelector('span em')?.textContent || ''),
           value: normalize(row.querySelector('strong b')?.textContent || ''),
-          status: normalize(row.querySelector('strong small')?.textContent || '')
+          status: normalize(row.querySelector('strong small')?.textContent || ''),
+          tone: Array.from(row.classList).find((name) => name.startsWith('is-')) || '',
         }));
         const listEvidenceRects = listEvidenceRows.map((row) => {
           const rect = row.getBoundingClientRect();
           return { top: rect.top, bottom: rect.bottom, width: rect.width, height: rect.height };
         });
+        const evidenceReadability = listEvidenceRows.map((row) => {
+          const primary = row.querySelector(':scope > span > b');
+          const meta = row.querySelector(':scope > span > em');
+          const status = row.querySelector(':scope > strong > small');
+          const rowRect = row.getBoundingClientRect();
+          const primaryStyle = primary ? getComputedStyle(primary) : null;
+          const metaStyle = meta ? getComputedStyle(meta) : null;
+          const statusStyle = status ? getComputedStyle(status) : null;
+          const statusRect = status?.getBoundingClientRect();
+          return {
+            rowHeight: rowRect.height,
+            primaryFontSize: Number.parseFloat(primaryStyle?.fontSize || '0'),
+            metaFontSize: Number.parseFloat(metaStyle?.fontSize || '0'),
+            statusFontSize: Number.parseFloat(statusStyle?.fontSize || '0'),
+            statusHeight: statusRect?.height || 0,
+            statusBackground: statusStyle?.backgroundColor || '',
+            statusRadius: Number.parseFloat(statusStyle?.borderRadius || '0'),
+            statusPaddingLeft: Number.parseFloat(statusStyle?.paddingLeft || '0'),
+          };
+        });
+        const evidenceStatusMarkersReadable = isLandscapeMobile || Boolean(
+          evidenceReadability.length > 0 &&
+          evidenceReadability.every((item) => (
+            item.rowHeight >= 48 &&
+            item.primaryFontSize >= 12 &&
+            item.metaFontSize >= 10.5 &&
+            item.statusFontSize >= 10 &&
+            item.statusHeight >= 18 &&
+            !['rgba(0, 0, 0, 0)', 'transparent'].includes(item.statusBackground) &&
+            item.statusRadius >= 1 &&
+            item.statusRadius <= 4 &&
+            item.statusPaddingLeft >= 4
+          ))
+        );
         const supportingHead = list?.querySelector('.ik-mobile-supporting-head');
         const supportingHeadRect = supportingHead?.getBoundingClientRect();
         const supportingHeadText = normalize(supportingHead?.textContent || '');
@@ -1842,6 +1877,7 @@ async function main() {
           rowNames: listEvidence.map((item) => item.name).join('|') === '默认路由|WAN 汇总|采集证据|设备余量',
           resourceMeta: /CPU \\d+% · 内存 \\d+% · 磁盘 \\d+%/.test(listEvidence[3]?.meta || ''),
           interfaceStatus: /^接口 \\d+ Down$/.test(listEvidence[3]?.status || ''),
+          semanticTones: listEvidence.every((item) => item.tone === 'is-ok'),
           rowsFit: listEvidenceRects.every((rowRect) => (
             rowRect.width > 0 &&
             rowRect.height >= 42 &&
@@ -2202,6 +2238,7 @@ async function main() {
           surfacePolicyModelBacked,
           statusCoreBlocksModelBacked,
           primaryListEvidenceStandardized,
+          evidenceStatusMarkersReadable,
           normalOperationalDensityOk,
           compactSupportingHeaderOk,
           resourceTrackNoiseLow,
@@ -2311,6 +2348,8 @@ async function main() {
           statusCoreBlocksModelBacked,
           statusCoreBlocks,
           primaryListEvidenceStandardized,
+          evidenceStatusMarkersReadable,
+          evidenceReadability,
           normalOperationalDensityOk,
           normalOperationalDensityChecks,
           compactSupportingHeaderOk,
