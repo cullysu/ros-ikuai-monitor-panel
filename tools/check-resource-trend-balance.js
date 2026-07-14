@@ -1389,7 +1389,7 @@ async function main() {
             impactScope: 'normal-ops',
             impactPlane: 'business',
             mode: 'normal',
-            requiredText: ['WAN 趋势', '网络可用', 'WAN', '默认路由', '采集', '快照', '运行明细']
+            requiredText: ['网络可用', 'WAN', '默认路由', '采集', '快照', '运行明细']
           },
           mobileAppHome: {
             ia: 'wan-offline-default-route-collection-success-first',
@@ -1545,17 +1545,22 @@ async function main() {
         const chartRail = hero?.querySelector('.ik-mobile-decision-readouts');
         const trendVisual = hero?.querySelector('.ik-mobile-decision-trend-anchor');
         const v1072Chart = hero?.querySelector('.ik-mobile-decision-trend');
+        const mobileChartSource = v1072Chart?.getAttribute('data-overview-mobile-chart-source') || '';
         const v1072SeriesLegend = v1072Chart?.querySelector('.ik-mobile-series-legend');
         const decisionReadoutGrid = hero?.querySelector('.ik-mobile-decision-readouts');
         const productChart = hero?.querySelector('svg.ik-mobile-line-chart');
-        const productDecisionChart = productChart;
+        const currentRateSnapshot = hero?.querySelector('.ik-mobile-current-rate-snapshot');
+        const currentRateBars = Array.from(currentRateSnapshot?.querySelectorAll(':scope > span > i > u') || []);
+        const productDecisionVisual = mobileChartSource === 'history' ? productChart : currentRateSnapshot;
         const modelBackedChartPlot = sectionName !== 'mobileNormalHome' || Boolean(
-          productChart &&
-          productChart.querySelector('.ik-mobile-chart-line.is-download')?.getAttribute('points') &&
-          productChart.querySelector('.ik-mobile-chart-line.is-upload')?.getAttribute('points') &&
-          productChart.querySelector('.ik-mobile-chart-peak') &&
-          productChart.querySelector('.ik-mobile-chart-focus') &&
-          productChart.querySelector('.ik-mobile-chart-reference')
+          mobileChartSource === 'history'
+            ? productChart &&
+              productChart.querySelector('.ik-mobile-chart-line.is-download')?.getAttribute('points') &&
+              productChart.querySelector('.ik-mobile-chart-line.is-upload')?.getAttribute('points') &&
+              productChart.querySelector('.ik-mobile-chart-peak') &&
+              productChart.querySelector('.ik-mobile-chart-focus') &&
+              productChart.querySelector('.ik-mobile-chart-reference')
+            : mobileChartSource === 'current' && !productChart && currentRateBars.length === 2
         );
         const productChartDecision = chartRail?.getAttribute('aria-label') || '';
         const productChartAnomaly = productChartDecision.match(/高位(?:点)?\\s*(\\d+)/)?.[0].replace(/高位(?:点)?\\s*/, '高位点 ') || '';
@@ -1563,6 +1568,13 @@ async function main() {
         const chartRailRect = chartRail?.getBoundingClientRect();
         const trendVisualRect = trendVisual?.getBoundingClientRect();
         const lineChartRect = productChart?.getBoundingClientRect();
+        const currentRateSnapshotRect = currentRateSnapshot?.getBoundingClientRect();
+        const currentRateContentRects = Array.from(currentRateSnapshot?.children || []).map((node) => node.getBoundingClientRect());
+        const currentRateSnapshotClearOfReadouts = mobileChartSource !== 'current' || Boolean(
+          chartRailRect &&
+          currentRateContentRects.length === 3 &&
+          currentRateContentRects.every((rect) => rect.bottom <= chartRailRect.top - 2)
+        );
         const heroRect = hero?.getBoundingClientRect();
         const heroHeadline = hero?.querySelector('.ik-mobile-decision-head h1');
         const heroHeadlineRect = heroHeadline?.getBoundingClientRect();
@@ -1595,14 +1607,19 @@ async function main() {
         const uploadLine = productChart?.querySelector('.ik-mobile-decision-line.is-upload');
         const downloadLineStyle = downloadLine ? getComputedStyle(downloadLine) : null;
         const uploadLineStyle = uploadLine ? getComputedStyle(uploadLine) : null;
+        const currentRateBarStyles = currentRateBars.map((bar) => getComputedStyle(bar));
         const chartSeriesPaintProductized = sectionName !== 'mobileNormalHome' || Boolean(
-          downloadLineStyle &&
-          uploadLineStyle &&
-          downloadLineStyle.fill === 'none' &&
-          uploadLineStyle.fill === 'none' &&
-          downloadLineStyle.stroke !== uploadLineStyle.stroke &&
-          downloadLineStyle.stroke !== 'rgb(0, 0, 0)' &&
-          uploadLineStyle.stroke !== 'rgb(0, 0, 0)'
+          mobileChartSource === 'history'
+            ? downloadLineStyle &&
+              uploadLineStyle &&
+              downloadLineStyle.fill === 'none' &&
+              uploadLineStyle.fill === 'none' &&
+              downloadLineStyle.stroke !== uploadLineStyle.stroke &&
+              downloadLineStyle.stroke !== 'rgb(0, 0, 0)' &&
+              uploadLineStyle.stroke !== 'rgb(0, 0, 0)'
+            : mobileChartSource === 'current' &&
+              currentRateBarStyles.length === 2 &&
+              currentRateBarStyles[0].backgroundColor !== currentRateBarStyles[1].backgroundColor
         );
         const chartRailLabels = Array.from(chartRail?.querySelectorAll('em') || []);
         const visibleChartRailLabels = chartRailLabels.filter((node) => {
@@ -1615,22 +1632,34 @@ async function main() {
         const chartRailNotSideBubble = sectionName !== 'mobileNormalHome' || Boolean(chartRailRect && trendVisualRect && Math.abs(chartRailRect.left - trendVisualRect.left) <= 2 && chartRailRect.top >= trendVisualRect.bottom - 2);
         const chartReadoutLabelsVisible = sectionName !== 'mobileNormalHome' || (chartRailLabels.length === 4 && visibleChartRailLabels.length === 4);
         const hasReferenceChartContract = sectionName !== 'mobileNormalHome' || Boolean(
-          productChart &&
-          productChart.querySelector('.ik-mobile-decision-ref') &&
-          productChart.querySelector('.ik-mobile-chart-peak') &&
-          productChart.querySelector('.ik-mobile-decision-dot') &&
-          chartRail?.textContent?.includes('参考')
+          mobileChartSource === 'history'
+            ? productChart &&
+              productChart.querySelector('.ik-mobile-decision-ref') &&
+              productChart.querySelector('.ik-mobile-chart-peak') &&
+              productChart.querySelector('.ik-mobile-decision-dot') &&
+              chartRail?.textContent?.includes('参考')
+            : mobileChartSource === 'current' &&
+              !productChart &&
+              currentRateSnapshot?.textContent?.includes('无历史序列') &&
+              chartRail?.textContent?.includes('无序列')
         );
         const productChartProductized = sectionName !== 'mobileNormalHome' || Boolean(
-          productDecisionChart &&
+          productDecisionVisual &&
           chartRail &&
-          ['当前', '峰值', '参考', '采样'].every((label) => visibleChartRailLabelText.includes(label)) &&
-          /当前/.test(productChartDecision) &&
-          /峰值/.test(productChartDecision) &&
-          /参考/.test(productChartDecision) &&
-          /高位(?:点)?/.test(productChartDecision) &&
-          /采样/.test(productChartDecision) &&
-          /高位点\\s*\\d+/.test(productChartAnomaly)
+          (mobileChartSource === 'history'
+            ? ['当前', '峰值', '参考', '采样'].every((label) => visibleChartRailLabelText.includes(label)) &&
+              /当前/.test(productChartDecision) &&
+              /峰值/.test(productChartDecision) &&
+              /参考/.test(productChartDecision) &&
+              /采样/.test(productChartDecision) &&
+              /高位(?:点)?/.test(productChartDecision) &&
+              /高位点\\s*\\d+/.test(productChartAnomaly)
+            : mobileChartSource === 'current' &&
+              ['下载', '上传', '历史', '采样'].every((label) => visibleChartRailLabelText.includes(label)) &&
+              /下载/.test(productChartDecision) &&
+              /上传/.test(productChartDecision) &&
+              /无历史序列/.test(productChartDecision) &&
+              /采样/.test(productChartDecision))
         );
         const hasProductChartRail = sectionName !== 'mobileNormalHome' || Boolean(chartRail);
         const chartDecisionLayoutProductized = sectionName !== 'mobileNormalHome' || Boolean(
@@ -1642,8 +1671,9 @@ async function main() {
           chartReadoutCells.length === 4 &&
           chartReadoutCellHeights.every((height) => height >= 40) &&
           chartRailWithinHero &&
-          lineChartRect &&
-          lineChartRect.height >= 64 &&
+          ((mobileChartSource === 'history' && lineChartRect && lineChartRect.height >= 64) ||
+            (mobileChartSource === 'current' && currentRateSnapshotRect && currentRateSnapshotRect.height >= 64)) &&
+          currentRateSnapshotClearOfReadouts &&
           chartSeriesLegendText.includes('下载') &&
           chartSeriesLegendText.includes('上传')
         );
@@ -1750,7 +1780,10 @@ async function main() {
           metricGrid &&
           normalChartLabel &&
           normalize(hero.querySelector('.ik-mobile-decision-head h1')?.textContent || '').includes('网络可用') &&
-          normalize(normalChartLabel.textContent || '').startsWith('WAN 趋势 · ') &&
+          (
+            (mobileChartSource === 'history' && normalize(normalChartLabel.textContent || '').startsWith('WAN 趋势 · ')) ||
+            (mobileChartSource === 'current' && normalize(normalChartLabel.textContent || '').startsWith('WAN 当前速率 · '))
+          ) &&
           normalChartLabelStyle &&
           normalChartLabelStyle.display !== 'none' &&
           normalChartLabelRect &&
@@ -2368,6 +2401,7 @@ async function main() {
           modelBackedChartPlot,
           productChartDecision,
           productChartAnomaly,
+          mobileChartSource,
           chartRailFullWidth,
           chartRailNotSideBubble,
           chartReadoutLabelsVisible,
@@ -2384,7 +2418,9 @@ async function main() {
           chartRailRect: chartRailRect ? { left: chartRailRect.left, top: chartRailRect.top, right: chartRailRect.right, bottom: chartRailRect.bottom, width: chartRailRect.width, height: chartRailRect.height } : null,
           heroRect: heroRect ? { left: heroRect.left, top: heroRect.top, right: heroRect.right, bottom: heroRect.bottom, width: heroRect.width, height: heroRect.height } : null,
           chartRailClassName: chartRail?.className || '',
-          lineChartHeight: lineChartRect?.height || 0,
+          lineChartHeight: lineChartRect?.height || currentRateSnapshotRect?.height || 0,
+          currentRateSnapshotClearOfReadouts,
+          currentRateContentRects: currentRateContentRects.map((rect) => ({ top: rect.top, bottom: rect.bottom, height: rect.height })),
           chartSeriesLegendText,
           chartSeriesPaintProductized,
           chartSeriesPaint: {

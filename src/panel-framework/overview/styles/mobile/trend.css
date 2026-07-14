@@ -38,4 +38,51 @@
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-series-legend .is-upload i {
     background: #91a9bb;
   }
+  #overview .ik-mobile-current-rate-snapshot {
+    box-sizing: border-box;
+    display: grid;
+    grid-template-rows: 28px 28px 18px;
+    align-content: center;
+    height: 94px;
+    max-height: 94px;
+    padding: 5px 8px;
+    border-radius: 8px;
+    background: rgba(218, 234, 246, .58);
+  }
+  #overview .ik-mobile-current-rate-snapshot > span {
+    display: grid;
+    grid-template-columns: 42px minmax(0, 1fr);
+    align-items: center;
+    gap: 7px;
+    min-width: 0;
+  }
+  #overview .ik-mobile-current-rate-snapshot > span > em {
+    color: #4f6f8e;
+    font-size: 10px;
+    font-style: normal;
+    font-weight: 760;
+  }
+  #overview .ik-mobile-current-rate-snapshot > span > i {
+    display: block;
+    height: 5px;
+    border-radius: 2px;
+    background: rgba(163, 190, 214, .34);
+    overflow: hidden;
+  }
+  #overview .ik-mobile-current-rate-snapshot > span > i > u {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: #176fc1;
+  }
+  #overview .ik-mobile-current-rate-snapshot > span:nth-child(2) > i > u {
+    background: #73879c;
+  }
+  #overview .ik-mobile-current-rate-snapshot > small {
+    align-self: end;
+    color: #6d8195;
+    font-size: 9px;
+    font-weight: 650;
+    line-height: 14px;
+  }
 }

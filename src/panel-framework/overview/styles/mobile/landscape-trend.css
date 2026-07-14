@@ -20,4 +20,10 @@
     height: 84px;
     max-height: 84px;
   }
+  #overview .ik-mobile-current-rate-snapshot {
+    grid-template-rows: 20px 20px 14px;
+    height: 64px;
+    max-height: 64px;
+    padding: 4px 8px;
+  }
 }

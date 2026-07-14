@@ -135,6 +135,7 @@ export interface MobileTrendChartModel {
   referenceValueLabel: string;
   breachLabel: string;
   currentLabel: string;
+  uploadLabel: string;
   peakLabel: string;
   down: number[];
   up: number[];

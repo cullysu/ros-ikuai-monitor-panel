@@ -4,24 +4,30 @@ import { toneClass } from "./MobileOverviewUtils";
 function WanDecisionSpark({ model }: { model: MobileOverviewModel }) {
   const chart = model.hero.trend;
   const plot = chart.plot;
-  const highPoint = (chart.anomalyLabel || "0").replace(/^高位点\s*/, "");
-  const chartDecision = `当前 ${chart.currentLabel} · 峰值 ${chart.peakLabel} · 参考 ${chart.referenceValueLabel} · 高位点 ${highPoint} · 采样 ${chart.sampleText}`;
+  const hasHistory = chart.source === "history";
+  const currentDown = chart.down[chart.down.length - 1] || 0;
+  const currentUp = chart.up[chart.up.length - 1] || 0;
+  const currentMax = Math.max(1, currentDown, currentUp);
+  const snapshotWidth = (value: number) => `${Math.max(value > 0 ? 6 : 0, (value / currentMax) * 100).toFixed(1)}%`;
+  const chartDecision = hasHistory
+    ? `当前 ${chart.currentLabel} · 峰值 ${chart.peakLabel} · 参考 ${chart.referenceValueLabel} · ${chart.anomalyLabel} · 采样 ${chart.sampleText}`
+    : `下载 ${chart.currentLabel} · 上传 ${chart.uploadLabel} · ${chart.anomalyLabel} · 采样 ${chart.sampleText}`;
   return (
-    <div className="ik-mobile-decision-trend">
+    <div className={`ik-mobile-decision-trend ${hasHistory ? "is-history" : "is-current-snapshot"}`} data-overview-mobile-chart-source={chart.source}>
       <div className="ik-mobile-decision-trend-plot">
         <div className="ik-mobile-chart-head">
-          <span className="ik-mobile-chart-kicker">WAN 趋势 · {chart.windowText}</span>
+          <span className="ik-mobile-chart-kicker">{chart.source === "history" ? "WAN 趋势" : "WAN 当前速率"} · {chart.windowText}</span>
           <div className="ik-mobile-series-legend" aria-label="下载与上传图例">
             <span className="is-download"><i aria-hidden="true" />下载</span>
             <span className="is-upload"><i aria-hidden="true" />上传</span>
           </div>
         </div>
-        <div className="ik-mobile-decision-visual ik-mobile-traffic-visual ik-mobile-wan-trend">
+        {hasHistory ? <div className="ik-mobile-decision-visual ik-mobile-traffic-visual ik-mobile-wan-trend">
           <svg
             className="ik-mobile-line-chart"
             viewBox={`0 0 312 ${Math.max(plot.viewHeight, 76)}`}
             role="img"
-            aria-label={`${chart.windowText} WAN 采样趋势，当前 ${chart.currentLabel}，峰值 ${chart.peakLabel}`}
+            aria-label={`${chart.windowText} WAN 采样趋势，当前 ${chart.currentLabel}，峰值 ${chart.peakLabel}，${chart.anomalyLabel}`}
           >
             <path className="ik-mobile-chart-grid ik-mobile-decision-grid" d={plot.gridYs.map((y) => `M0 ${y} H312`).join(" ")} />
             <path className="ik-mobile-chart-reference ik-mobile-decision-ref" d={`M0 ${plot.referenceY} H312`} />
@@ -33,13 +39,17 @@ function WanDecisionSpark({ model }: { model: MobileOverviewModel }) {
           <span className="ik-mobile-chart-time-axis" aria-hidden="true">
             <i>较早采样</i><i>当前</i>
           </span>
-        </div>
+        </div> : <div className="ik-mobile-current-rate-snapshot" aria-label={`WAN 当前快照，下载 ${chart.currentLabel}，上传 ${chart.uploadLabel}，无历史序列`}>
+          <span><em>下载</em><i aria-hidden="true"><u style={{ width: snapshotWidth(currentDown) }} /></i></span>
+          <span><em>上传</em><i aria-hidden="true"><u style={{ width: snapshotWidth(currentUp) }} /></i></span>
+          <small>当前快照 · 无历史序列</small>
+        </div>}
       </div>
       <i className="ik-mobile-decision-trend-anchor" aria-hidden="true" />
       <div className="ik-mobile-decision-readouts" aria-label={chartDecision}>
-        <span><em>当前</em><b>{chart.currentLabel}</b></span>
-        <span><em>峰值</em><b>{chart.peakLabel}</b></span>
-        <span><em>参考</em><b>{chart.referenceValueLabel}</b></span>
+        <span><em>{hasHistory ? "当前" : "下载"}</em><b>{chart.currentLabel}</b></span>
+        <span><em>{hasHistory ? "峰值" : "上传"}</em><b>{hasHistory ? chart.peakLabel : chart.uploadLabel}</b></span>
+        <span><em>{hasHistory ? "参考" : "历史"}</em><b>{hasHistory ? chart.referenceValueLabel : "无序列"}</b></span>
         <span><em>采样</em><b>{chart.sampleText}</b></span>
       </div>
     </div>

@@ -61,6 +61,7 @@ const mobileSections = read('src/panel-framework/overview/components/MobileOverv
 const mobileTabs = read('src/panel-framework/overview/components/BottomTabs.tsx');
 const mobileStyles = read('src/panel-framework/overview/styles/mobile/mobile-product.css');
 const mobileModel = read('src/panel-framework/overview/mobileOverviewModel.ts');
+const mobileChartModel = read('src/panel-framework/overview/mobileOverviewChartModel.ts');
 const mobilePolicy = read('src/panel-framework/overview/mobileOverviewPolicy.ts');
 const landscapeStyles = read('src/panel-framework/overview/styles/mobile/landscape.css');
 const navigationStyles = read('src/panel-framework/overview/styles/mobile/navigation.css');
@@ -204,6 +205,9 @@ excludesAll(mobileSections, [
   'data-overview-mobile-detail-count',
 ], 'mobile sections retired probe cleanup');
 includesAll(mobileModel, ['网络可用', '外网不可用', '业务数据不可判', '采集不完整', '资源过载', '接口异常'], 'mobile factual verdict copy');
+includesAll(mobileDecision, ['chart.source === "history" ? "WAN 趋势" : "WAN 当前速率"', 'data-overview-mobile-chart-source={chart.source}', 'ik-mobile-current-rate-snapshot', '无历史序列'], 'mobile chart source disclosure');
+includesAll(mobileChartModel, ['source: "current"', 'down: [Math.max(0, rate.down)]', 'up: [Math.max(0, rate.up)]', '"无历史序列"'], 'mobile current snapshot truthfulness');
+excludesAll(mobileChartModel, ['function trend(', 'const pattern = {'], 'mobile synthetic trend prohibition');
 includesAll(mobileSections, ['export function DeviceBar', 'export function CoreFacts', 'export function SupportingList', 'ik-mobile-supporting-head'], 'mobile semantic sections');
 
 for (const tab of ['home', 'network', 'diagnose']) {

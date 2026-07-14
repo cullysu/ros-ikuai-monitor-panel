@@ -8075,16 +8075,6 @@ var PanelFramework = function(exports) {
   const CHART_BASELINE_Y = 94;
   const CHART_AXIS_Y = 112;
   const CHART_GRID_YS = [32, 58, 84];
-  function trend(seed, variant = "down") {
-    const base2 = Math.max(1, seed);
-    const pattern = {
-      down: [0.34, 0.42, 0.36, 0.55, 0.5, 0.7, 0.86, 0.78],
-      up: [0.18, 0.27, 0.22, 0.33, 0.4, 0.36, 0.48, 0.44],
-      hot: [0.52, 0.6, 0.72, 0.84, 0.78, 0.96, 0.9, 1],
-      quiet: [0.32, 0.31, 0.33, 0.32, 0.34, 0.33, 0.35, 0.34]
-    }[variant];
-    return pattern.map((ratio) => base2 * ratio);
-  }
   function chartPointString(values, maxValue, width = CHART_WIDTH, topY = CHART_TOP_Y, baselineY = CHART_BASELINE_Y) {
     const max = Math.max(1, maxValue, ...values);
     const step = values.length > 1 ? width / (values.length - 1) : width;
@@ -8101,8 +8091,8 @@ var PanelFramework = function(exports) {
   }
   function trendChartPlot(down, up, referenceRatio) {
     var _a;
-    const normalizedDown = down.length ? down : [1, 1, 1];
-    const normalizedUp = up.length ? up : [0.45, 0.45, 0.45];
+    const normalizedDown = down.length > 1 ? down : [down[0] || 0, down[0] || 0];
+    const normalizedUp = up.length > 1 ? up : [up[0] || 0, up[0] || 0];
     const max = Math.max(1, ...normalizedDown, ...normalizedUp);
     const downPoints = chartPointString(normalizedDown, max);
     const upPoints = chartPointString(normalizedUp, max);
@@ -8170,34 +8160,32 @@ var PanelFramework = function(exports) {
     }
     return { down: [], up: [], source: "current" };
   }
-  function networkTrendSeries(snapshot, state) {
+  function networkTrendSeries(snapshot) {
     const history = historyTraffic(snapshot);
     if (history.down.length >= 3 || history.up.length >= 3) return history;
     const rate = totals(snapshot);
-    if (state.scenario === "no-snapshot") {
-      return { down: trend(1, "quiet"), up: trend(0.45, "quiet"), source: "current" };
-    }
-    const hot = state.scenario === "resource-full" || state.scenario === "interfaces-down" || state.facts.wan.allOffline;
     return {
-      down: trend(rate.down || Math.max(1, toNumber(state.facts.connections.total)), hot ? "hot" : "down"),
-      up: trend(rate.up || Math.max(1, rate.down * 0.22), hot ? "up" : "quiet"),
+      down: [Math.max(0, rate.down)],
+      up: [Math.max(0, rate.up)],
       source: "current"
     };
   }
   function buildMobileTrendChart(snapshot, state) {
-    const series = networkTrendSeries(snapshot, state);
-    const down = series.down.length ? series.down : trend(1, "quiet");
-    const up = series.up.length ? series.up : trend(0.45, "quiet");
+    const series = networkTrendSeries(snapshot);
+    const down = series.down.length ? series.down : [0];
+    const up = series.up.length ? series.up : [0];
+    const hasHistory = series.source === "history";
     const peak = Math.max(...down);
     const current = down[down.length - 1] || 0;
+    const currentUpload = up[up.length - 1] || 0;
     const referenceRatio = state.facts.wan.allOffline ? 0.08 : 0.78;
     const referenceValue = peak * referenceRatio;
-    const highPointIndex = down.findIndex((value) => value >= referenceValue);
-    const windowText = series.source === "history" ? `近 ${Math.max(down.length, up.length)} 点` : `近 ${Math.max(down.length, up.length)} 次`;
+    const highPointIndex = hasHistory ? down.findIndex((value) => value >= referenceValue) : -1;
+    const windowText = hasHistory ? `近 ${Math.max(down.length, up.length)} 点` : "当前快照";
     const staleSample = state.scenario === "collection-down" || state.facts.collection.dataStale || state.facts.freshness.history;
-    const sampleText = series.source === "history" ? `${Math.max(down.length, up.length)}点历史` : staleSample ? "缓存推算" : "当前快照";
-    const sampleLabel = series.source === "history" ? "历史" : staleSample ? "缓存" : "快照";
-    const anomalyLabel = highPointIndex >= 0 ? `高位点 ${highPointIndex + 1}` : "高位点 0";
+    const sampleText = hasHistory ? `${Math.max(down.length, up.length)}点历史` : staleSample ? "缓存单点" : "单点采样";
+    const sampleLabel = hasHistory ? "历史" : staleSample ? "缓存" : "快照";
+    const anomalyLabel = hasHistory ? highPointIndex >= 0 ? `高位点 ${highPointIndex + 1}` : "高位点 0" : "无历史序列";
     const anomalyTone = "trust";
     const decisionLabel = `${windowText} · 当前 ${mobileRate(current)} · 峰值 ${mobileRate(peak)} · 参考 ${mobileRate(referenceValue)} · ${anomalyLabel} · 采样${sampleLabel}`;
     return {
@@ -8209,20 +8197,21 @@ var PanelFramework = function(exports) {
       decisionLabel,
       anomalyLabel,
       anomalyTone,
-      startLabel: series.source === "history" ? `${down.length} 点前` : "窗口起点",
+      startLabel: hasHistory ? `${down.length} 点前` : "本次采样",
       endLabel: "当前",
       referenceLabel: state.facts.wan.allOffline ? "离线参考" : "高位参考",
       referenceRatio,
       referenceValueLabel: mobileRate(referenceValue),
       breachLabel: highPointIndex >= 0 ? `第 ${highPointIndex + 1} 点` : "未到参考线",
       currentLabel: mobileRate(current),
+      uploadLabel: mobileRate(currentUpload),
       peakLabel: mobileRate(peak),
       down,
       up,
       readouts: [
         { label: "当前", value: mobileRate(current), note: "下载", tone: "trust" },
         { label: "峰值", value: mobileRate(peak), note: windowText, tone: "trust" },
-        { label: "窗口", value: series.source === "history" ? "12 点" : "当前", note: sampleText, tone: state.facts.collection.credibilityTone },
+        { label: "窗口", value: hasHistory ? `${down.length} 点` : "单点", note: sampleText, tone: state.facts.collection.credibilityTone },
         { label: "参考", value: mobileRate(referenceValue), note: "峰值参考", tone: "trust" },
         { label: "采样", value: sampleLabel, note: state.facts.collection.credibilityLabel, tone: state.facts.collection.credibilityTone },
         { label: "高位", value: highPointIndex >= 0 ? `${highPointIndex + 1}` : "0", note: anomalyLabel, tone: anomalyTone }
@@ -9131,13 +9120,18 @@ var PanelFramework = function(exports) {
   function WanDecisionSpark({ model }) {
     const chart = model.hero.trend;
     const plot = chart.plot;
-    const highPoint = (chart.anomalyLabel || "0").replace(/^高位点\s*/, "");
-    const chartDecision = `当前 ${chart.currentLabel} · 峰值 ${chart.peakLabel} · 参考 ${chart.referenceValueLabel} · 高位点 ${highPoint} · 采样 ${chart.sampleText}`;
-    return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ik-mobile-decision-trend", children: [
+    const hasHistory = chart.source === "history";
+    const currentDown = chart.down[chart.down.length - 1] || 0;
+    const currentUp = chart.up[chart.up.length - 1] || 0;
+    const currentMax = Math.max(1, currentDown, currentUp);
+    const snapshotWidth = (value) => `${Math.max(value > 0 ? 6 : 0, value / currentMax * 100).toFixed(1)}%`;
+    const chartDecision = hasHistory ? `当前 ${chart.currentLabel} · 峰值 ${chart.peakLabel} · 参考 ${chart.referenceValueLabel} · ${chart.anomalyLabel} · 采样 ${chart.sampleText}` : `下载 ${chart.currentLabel} · 上传 ${chart.uploadLabel} · ${chart.anomalyLabel} · 采样 ${chart.sampleText}`;
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `ik-mobile-decision-trend ${hasHistory ? "is-history" : "is-current-snapshot"}`, "data-overview-mobile-chart-source": chart.source, children: [
       /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ik-mobile-decision-trend-plot", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ik-mobile-chart-head", children: [
           /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "ik-mobile-chart-kicker", children: [
-            "WAN 趋势 · ",
+            chart.source === "history" ? "WAN 趋势" : "WAN 当前速率",
+            " · ",
             chart.windowText
           ] }),
           /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ik-mobile-series-legend", "aria-label": "下载与上传图例", children: [
@@ -9151,14 +9145,14 @@ var PanelFramework = function(exports) {
             ] })
           ] })
         ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ik-mobile-decision-visual ik-mobile-traffic-visual ik-mobile-wan-trend", children: [
+        hasHistory ? /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ik-mobile-decision-visual ik-mobile-traffic-visual ik-mobile-wan-trend", children: [
           /* @__PURE__ */ jsxRuntimeExports.jsxs(
             "svg",
             {
               className: "ik-mobile-line-chart",
               viewBox: `0 0 312 ${Math.max(plot.viewHeight, 76)}`,
               role: "img",
-              "aria-label": `${chart.windowText} WAN 采样趋势，当前 ${chart.currentLabel}，峰值 ${chart.peakLabel}`,
+              "aria-label": `${chart.windowText} WAN 采样趋势，当前 ${chart.currentLabel}，峰值 ${chart.peakLabel}，${chart.anomalyLabel}`,
               children: [
                 /* @__PURE__ */ jsxRuntimeExports.jsx("path", { className: "ik-mobile-chart-grid ik-mobile-decision-grid", d: plot.gridYs.map((y2) => `M0 ${y2} H312`).join(" ") }),
                 /* @__PURE__ */ jsxRuntimeExports.jsx("path", { className: "ik-mobile-chart-reference ik-mobile-decision-ref", d: `M0 ${plot.referenceY} H312` }),
@@ -9173,21 +9167,31 @@ var PanelFramework = function(exports) {
             /* @__PURE__ */ jsxRuntimeExports.jsx("i", { children: "较早采样" }),
             /* @__PURE__ */ jsxRuntimeExports.jsx("i", { children: "当前" })
           ] })
+        ] }) : /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ik-mobile-current-rate-snapshot", "aria-label": `WAN 当前快照，下载 ${chart.currentLabel}，上传 ${chart.uploadLabel}，无历史序列`, children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: "下载" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("i", { "aria-hidden": "true", children: /* @__PURE__ */ jsxRuntimeExports.jsx("u", { style: { width: snapshotWidth(currentDown) } }) })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: "上传" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("i", { "aria-hidden": "true", children: /* @__PURE__ */ jsxRuntimeExports.jsx("u", { style: { width: snapshotWidth(currentUp) } }) })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: "当前快照 · 无历史序列" })
         ] })
       ] }),
       /* @__PURE__ */ jsxRuntimeExports.jsx("i", { className: "ik-mobile-decision-trend-anchor", "aria-hidden": "true" }),
       /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ik-mobile-decision-readouts", "aria-label": chartDecision, children: [
         /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: "当前" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: hasHistory ? "当前" : "下载" }),
           /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: chart.currentLabel })
         ] }),
         /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: "峰值" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: chart.peakLabel })
+          /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: hasHistory ? "峰值" : "上传" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: hasHistory ? chart.peakLabel : chart.uploadLabel })
         ] }),
         /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: "参考" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: chart.referenceValueLabel })
+          /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: hasHistory ? "参考" : "历史" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: hasHistory ? chart.referenceValueLabel : "无序列" })
         ] }),
         /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: "采样" }),

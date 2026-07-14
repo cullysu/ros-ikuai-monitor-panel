@@ -9,17 +9,6 @@ const CHART_BASELINE_Y = 94;
 const CHART_AXIS_Y = 112;
 const CHART_GRID_YS: [number, number, number] = [32, 58, 84];
 
-function trend(seed: number, variant: "down" | "up" | "hot" | "quiet" = "down"): number[] {
-  const base = Math.max(1, seed);
-  const pattern = {
-    down: [0.34, 0.42, 0.36, 0.55, 0.50, 0.70, 0.86, 0.78],
-    up: [0.18, 0.27, 0.22, 0.33, 0.40, 0.36, 0.48, 0.44],
-    hot: [0.52, 0.60, 0.72, 0.84, 0.78, 0.96, 0.90, 1],
-    quiet: [0.32, 0.31, 0.33, 0.32, 0.34, 0.33, 0.35, 0.34],
-  }[variant];
-  return pattern.map((ratio) => base * ratio);
-}
-
 function chartPointString(
   values: number[],
   maxValue: number,
@@ -43,8 +32,8 @@ function chartLastPoint(points: string): MobileTrendChartPoint {
 }
 
 function trendChartPlot(down: number[], up: number[], referenceRatio: number): MobileTrendChartPlotModel {
-  const normalizedDown = down.length ? down : [1, 1, 1];
-  const normalizedUp = up.length ? up : [0.45, 0.45, 0.45];
+  const normalizedDown = down.length > 1 ? down : [down[0] || 0, down[0] || 0];
+  const normalizedUp = up.length > 1 ? up : [up[0] || 0, up[0] || 0];
   const max = Math.max(1, ...normalizedDown, ...normalizedUp);
   const downPoints = chartPointString(normalizedDown, max);
   const upPoints = chartPointString(normalizedUp, max);
@@ -115,41 +104,41 @@ function historyTraffic(snapshot: OverviewRawSnapshot): { down: number[]; up: nu
   return { down: [], up: [], source: "current" };
 }
 
-function networkTrendSeries(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): { down: number[]; up: number[]; source: "history" | "current" } {
+function networkTrendSeries(snapshot: OverviewRawSnapshot): { down: number[]; up: number[]; source: "history" | "current" } {
   const history = historyTraffic(snapshot);
   if (history.down.length >= 3 || history.up.length >= 3) return history;
   const rate = totals(snapshot);
-  if (state.scenario === "no-snapshot") {
-    return { down: trend(1, "quiet"), up: trend(0.45, "quiet"), source: "current" };
-  }
-  const hot = state.scenario === "resource-full" || state.scenario === "interfaces-down" || state.facts.wan.allOffline;
   return {
-    down: trend(rate.down || Math.max(1, toNumber(state.facts.connections.total)), hot ? "hot" : "down"),
-    up: trend(rate.up || Math.max(1, rate.down * 0.22), hot ? "up" : "quiet"),
+    down: [Math.max(0, rate.down)],
+    up: [Math.max(0, rate.up)],
     source: "current",
   };
 }
 
 export function buildMobileTrendChart(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): MobileTrendChartModel {
-  const series = networkTrendSeries(snapshot, state);
-  const down = series.down.length ? series.down : trend(1, "quiet");
-  const up = series.up.length ? series.up : trend(0.45, "quiet");
+  const series = networkTrendSeries(snapshot);
+  const down = series.down.length ? series.down : [0];
+  const up = series.up.length ? series.up : [0];
+  const hasHistory = series.source === "history";
   const peak = Math.max(...down);
   const current = down[down.length - 1] || 0;
+  const currentUpload = up[up.length - 1] || 0;
   const referenceRatio = state.facts.wan.allOffline ? 0.08 : 0.78;
   const referenceValue = peak * referenceRatio;
-  const highPointIndex = down.findIndex((value) => value >= referenceValue);
-  const windowText = series.source === "history"
+  const highPointIndex = hasHistory ? down.findIndex((value) => value >= referenceValue) : -1;
+  const windowText = hasHistory
     ? `近 ${Math.max(down.length, up.length)} 点`
-    : `近 ${Math.max(down.length, up.length)} 次`;
+    : "当前快照";
   const staleSample = state.scenario === "collection-down" || state.facts.collection.dataStale || state.facts.freshness.history;
-  const sampleText = series.source === "history" ? `${Math.max(down.length, up.length)}点历史` : staleSample ? "缓存推算" : "当前快照";
-  const sampleLabel = series.source === "history"
+  const sampleText = hasHistory ? `${Math.max(down.length, up.length)}点历史` : staleSample ? "缓存单点" : "单点采样";
+  const sampleLabel = hasHistory
     ? "历史"
     : staleSample
       ? "缓存"
       : "快照";
-  const anomalyLabel = highPointIndex >= 0 ? `高位点 ${highPointIndex + 1}` : "高位点 0";
+  const anomalyLabel = hasHistory
+    ? highPointIndex >= 0 ? `高位点 ${highPointIndex + 1}` : "高位点 0"
+    : "无历史序列";
   const anomalyTone: OverviewTone = "trust";
   const decisionLabel = `${windowText} · 当前 ${mobileRate(current)} · 峰值 ${mobileRate(peak)} · 参考 ${mobileRate(referenceValue)} · ${anomalyLabel} · 采样${sampleLabel}`;
   return {
@@ -161,20 +150,21 @@ export function buildMobileTrendChart(snapshot: OverviewRawSnapshot, state: Over
     decisionLabel,
     anomalyLabel,
     anomalyTone,
-    startLabel: series.source === "history" ? `${down.length} 点前` : "窗口起点",
+    startLabel: hasHistory ? `${down.length} 点前` : "本次采样",
     endLabel: "当前",
     referenceLabel: state.facts.wan.allOffline ? "离线参考" : "高位参考",
     referenceRatio,
     referenceValueLabel: mobileRate(referenceValue),
     breachLabel: highPointIndex >= 0 ? `第 ${highPointIndex + 1} 点` : "未到参考线",
     currentLabel: mobileRate(current),
+    uploadLabel: mobileRate(currentUpload),
     peakLabel: mobileRate(peak),
     down,
     up,
     readouts: [
       { label: "当前", value: mobileRate(current), note: "下载", tone: "trust" },
       { label: "峰值", value: mobileRate(peak), note: windowText, tone: "trust" },
-      { label: "窗口", value: series.source === "history" ? "12 点" : "当前", note: sampleText, tone: state.facts.collection.credibilityTone },
+      { label: "窗口", value: hasHistory ? `${down.length} 点` : "单点", note: sampleText, tone: state.facts.collection.credibilityTone },
       { label: "参考", value: mobileRate(referenceValue), note: "峰值参考", tone: "trust" },
       { label: "采样", value: sampleLabel, note: state.facts.collection.credibilityLabel, tone: state.facts.collection.credibilityTone },
       { label: "高位", value: highPointIndex >= 0 ? `${highPointIndex + 1}` : "0", note: anomalyLabel, tone: anomalyTone },
