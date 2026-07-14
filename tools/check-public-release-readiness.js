@@ -790,7 +790,7 @@ function main(argv = process.argv.slice(2)) {
   assertContains('src/panel-framework/overview/mobile-native/mobileNativeModel.ts', 'showRates: false');
   assertContains('src/panel-framework/overview/mobile-native/mobileNativeEvidence.ts', 'route.active === true && route.disabled !== true');
   assertContains('src/panel-framework/overview/mobile-native/mobileNativeEvidence.ts', 'trailingStreak');
-  assertNotContains('src/panel-framework/overview/mobile-native/mobileNativeHome.tsx', 'WAN 实时趋势');
+  assertNotContains('src/panel-framework/overview/mobile-native/MobileNativeHome.tsx', 'WAN 实时趋势');
   assertNotContains('src/panel-framework/overview/desktopOverviewDefaultScene.tsx', 'WAN 实时趋势');
   for (const retiredMobileComponent of [
     'CoreMetricRail.tsx',
