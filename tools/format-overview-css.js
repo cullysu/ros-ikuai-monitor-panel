@@ -22,8 +22,9 @@ const files = [
   "src/panel-framework/overview/styles/desktop/hierarchy-layout.css",
   "src/panel-framework/overview/styles/desktop/incidents.css",
   "src/panel-framework/overview/styles/desktop/wan-trend.css",
-  "src/panel-framework/overview/mobile-app/styles/router-mobile-app.css",
-  "src/panel-framework/overview/mobile-app/styles/router-mobile-detail.css",
+  "src/panel-framework/overview/mobile-native/styles/mobile-native-tokens.css",
+  "src/panel-framework/overview/mobile-native/styles/mobile-native-layout.css",
+  "src/panel-framework/overview/mobile-native/styles/mobile-native-states.css",
 ];
 
 function indent(depth) {
@@ -80,7 +81,7 @@ for (const relativePath of files) {
   const absolutePath = path.join(process.cwd(), relativePath);
   const source = fs.readFileSync(absolutePath, "utf8");
   const formatted = formatCss(source, relativePath);
-  if (source === formatted) continue;
+  if (normalize(source) === formatted) continue;
   if (write) {
     fs.writeFileSync(absolutePath, formatted, "utf8");
     console.log(`formatted ${relativePath}`);

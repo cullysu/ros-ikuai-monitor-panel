@@ -56,18 +56,21 @@ const desktopDefaultScene = read('src/panel-framework/overview/desktopOverviewDe
 const desktopAllOfflineScene = read('src/panel-framework/overview/desktopOverviewAllOfflineScene.tsx');
 const desktopHierarchyStyles = read('src/panel-framework/overview/styles/desktop/hierarchy-layout.css');
 const desktopWorkspaceStyles = read('src/panel-framework/overview/styles/desktop/workspace-layout.css');
-const mobile = read('src/panel-framework/overview/mobile-app/RouterMobileApp.tsx');
-const mobileScreens = read('src/panel-framework/overview/mobile-app/RouterMobileScreens.tsx');
-const mobileModel = read('src/panel-framework/overview/mobile-app/routerMobileModel.ts');
-const mobileStyles = read('src/panel-framework/overview/mobile-app/styles/router-mobile-app.css');
-const mobileDetailStyles = read('src/panel-framework/overview/mobile-app/styles/router-mobile-detail.css');
-const mobileStyleBundle = `${mobileStyles}\n${mobileDetailStyles}`;
+const phoneConsole = read('src/panel-framework/overview/mobile-native/MobileNativeConsole.tsx');
+const phoneTopology = read('src/panel-framework/overview/mobile-native/MobileNativeTopology.tsx');
+const phoneSheet = read('src/panel-framework/overview/mobile-native/MobileNativeSheet.tsx');
+const phoneEvidence = read('src/panel-framework/overview/mobile-native/MobileNativeDetail.tsx');
+const phoneModel = read('src/panel-framework/overview/mobile-native/mobileNativeModel.ts');
+const phoneStyles = read('src/panel-framework/overview/mobile-native/styles/mobile-native-tokens.css');
+const phoneLayoutStyles = read('src/panel-framework/overview/mobile-native/styles/mobile-native-layout.css');
+const phoneStateStyles = read('src/panel-framework/overview/mobile-native/styles/mobile-native-states.css');
+const phoneStyleBundle = `${phoneStyles}\n${phoneLayoutStyles}\n${phoneStateStyles}`;
 const predeploy = read('tools/local-predeploy-check.js');
-const mobileRuntime = read('tools/check-mobile-app-home-runtime.js');
+const phoneRuntime = read('tools/check-mobile-native-runtime.js');
 
 includesAll(overview, [
   '<StatusVerdict snapshot={snapshot} state={state} />',
-  '<RouterMobileApp key={state.scenario} snapshot={snapshot} state={state} />',
+  '<MobileNativeConsole key={state.scenario} snapshot={snapshot} state={state} />',
   '<DesktopWorkspace snapshot={snapshot} state={state} />',
   '{mobile ? (',
   'data-overview-business-display-boundary',
@@ -152,32 +155,28 @@ excludesAll(desktopModule, [
 ], 'desktop retired probe cleanup');
 includesAll(desktopHierarchyStyles, ['data-overview-desktop-scene="single"', 'data-overview-desktop-scene="fleet"', 'ro-compact-summary-disclosure'], 'desktop focused hierarchy styles');
 
-ordered(mobileScreens, [
-  '<Verdict model={model} />',
-  '<MetricLedger metrics={model.metrics} />',
-  '<TrafficPanel trend={model.trend} />',
-  '<TrustRail metrics={model.trust.metrics} />',
-], 'mobile network information order');
-includesAll(mobile, [
-  'className="rm-app"',
-  'className="rm-header"',
-  'detailOpen',
-  '只读监控',
-], 'isolated single-surface mobile app shell');
-excludesAll(mobile, ['rm-tabbar', 'RouterMobileTab', 'activeTab'], 'retired mobile tab shell');
-excludesAll(`${mobile}\n${mobileScreens}\n${mobileModel}\n${mobileStyleBundle}`, ['ik-mobile-', 'ik-ios-', 'ro-mobile-', 'ro-desktop-'], 'mobile namespace isolation');
-includesAll(mobileModel, ['WAN 出口在线', '全部 WAN 已离线', '业务状态不可判断', '当前数据不是实时值', '资源已进入高压区', '个接口停止运行'], 'mobile factual verdict copy');
-includesAll(mobileModel, ['source: "history"', 'source: "snapshot"', 'source: "unavailable"', '当前只有单次资源快照'], 'mobile source truthfulness');
-excludesAll(mobileModel, ['function trend(', 'const pattern = {'], 'mobile synthetic trend prohibition');
-includesAll(mobileScreens, ['data-router-mobile-traffic={trend.source}', 'data-router-mobile-trust', 'data-router-mobile-metrics'], 'mobile source and trust disclosure');
-includesAll(mobileScreens, ['data-router-mobile-decision-row', 'data-router-mobile-open-detail', 'data-router-mobile-screen="detail"'], 'mobile incident decision and progressive disclosure');
-includesAll(mobileStyleBundle, ['--rm-canvas', '.rm-header', '.rm-verdict', '.rm-metric-ledger', '.rm-trust-rail', '.rm-evidence-list', 'background: var(--rm-canvas)', 'background: var(--rm-surface)', 'backdrop-filter: blur(18px) saturate(115%)', 'min-height: 44px', 'max-height: 520px', 'touch-action: manipulation'], 'mobile flat ledger, focused chrome, density, touch, and responsive styles');
-excludesAll(mobileStyleBundle, ['.rm-tabbar', '--rm-material-shadow', 'radial-gradient(', 'box-shadow:'], 'retired mobile card stack and tab material');
+includesAll(phoneConsole, [
+  'data-mobile-native-console',
+  '<MobileNativeTopology',
+  '<MobileNativeSheet',
+  '<MobileNativeDetail',
+], 'isolated native mobile shell');
+excludesAll(phoneConsole, ['tabbar', 'BottomTabs', 'activeTab'], 'retired phone tab shell');
+excludesAll(`${phoneConsole}\n${phoneTopology}\n${phoneSheet}\n${phoneEvidence}\n${phoneModel}\n${phoneStyleBundle}`, ['ik-mobile-', 'ik-ios-', 'ro-mobile-', 'ro-desktop-', 'rm-app', 'phone-ops'], 'phone namespace isolation');
+includesAll(phoneModel, ['默认路由有活动记录', '条 WAN 未运行', '当前业务状态不可判断', '采集链路尚未恢复', '资源连续', '未运行'], 'phone factual verdict copy');
+includesAll(phoneModel, ['ratePrefix: cached ? "上次" : "当前"', 'showRates: false', '最后成功', 'resourceSamples'], 'phone source truthfulness');
+excludesAll(phoneModel, ['function syntheticTrend(', 'const pattern = {', '网络状态良好', '实时可信'], 'phone unsupported data and copy prohibition');
+includesAll(phoneTopology, ['data-mobile-native-topology', 'data-mobile-native-rates', 'model.showRates ?'], 'phone topology and rate semantics');
+includesAll(phoneSheet, ['data-mobile-native-sheet', 'model.facts.map', 'model.rows.map', 'data-mobile-native-open-detail'], 'phone adaptive sheet ownership');
+includesAll(phoneEvidence, ['data-mobile-native-detail', 'Escape', 'data-mobile-native-back', 'backRef.current?.focus()'], 'phone evidence navigation');
+includesAll(phoneStyleBundle, ['--mn-canvas', '.mn-topology', '.mn-sheet', '.mn-facts', '.mn-detail', 'env(safe-area-inset-top)', 'min-height: 44px', 'touch-action: manipulation'], 'phone native sheet, safe area, touch, and responsive styles');
+excludesAll(phoneStyleBundle, ['!important', 'radial-gradient(', '.rm-', '.ik-mobile-', '.ro-mobile-', '.phone-ops'], 'phone patch and retired namespace prohibition');
 
 includesAll(predeploy, [
   'compactLandscapeOverview',
   'overviewMobileLandscapeAppOk',
-  "mobileLandscapeTabs.querySelectorAll('button').length === 3",
+  "sectionRoot?.querySelector('[data-mobile-native-console]')",
+  "routerMobileSheet?.getAttribute('data-mobile-native-sheet')",
   'waitForAnyJson',
   'terminateBrowserTree',
   'matrixBlocksTopLevelPass',
@@ -187,14 +186,16 @@ includesAll(predeploy, [
   'report.pass = report.failures.length === 0 && !matrixBlocksTopLevelPass',
   'process.exitCode = report.exitCodeShouldFail ? 1 : 0',
 ], 'release gate integrity');
-includesAll(mobileRuntime, ['compact landscape app home', 'mobileNavigationNoSnapshot', 'mobileDetailDrilldown', 'mobileIncidentDrilldown'], 'mobile runtime coverage');
+includesAll(phoneRuntime, ['scenarios', 'viewports', 'expectedCells', 'report.matrix?.complete', 'screenshots.length'], 'phone runtime matrix coverage');
 
 for (const [file, text, limit] of [
   ['OverviewPanel.tsx', overview, 120],
   ['DesktopConsole.tsx', desktop, 120],
   ['DesktopDecisionRail.tsx', desktopDecision, 120],
-  ['RouterMobileApp.tsx', mobile, 100],
-  ['RouterMobileScreens.tsx', mobileScreens, 180],
+  ['MobileNativeConsole.tsx', phoneConsole, 80],
+  ['MobileNativeTopology.tsx', phoneTopology, 80],
+  ['MobileNativeSheet.tsx', phoneSheet, 90],
+  ['MobileNativeDetail.tsx', phoneEvidence, 100],
 ]) {
   if (lineCount(text) > limit) fail('component line budget', `${file} has ${lineCount(text)} lines (limit ${limit})`);
 }
@@ -204,5 +205,5 @@ if (failures.length) {
   for (const item of failures) console.error(`- ${item}`);
   process.exitCode = 1;
 } else {
-  console.log(`overview ikuai current static gate: PASS desktopContracts=${desktopContractCount} mobileStyleOwnership=isolated-router-app`);
+  console.log(`overview ikuai current static gate: PASS desktopContracts=${desktopContractCount} phoneStyleOwnership=isolated-mobile-native`);
 }

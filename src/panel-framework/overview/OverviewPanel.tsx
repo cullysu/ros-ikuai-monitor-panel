@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { DesktopWorkspace } from "./components/DesktopConsole";
 import { StatusVerdict } from "./components/StatusVerdict";
 import { type OverviewPanelProps } from "./desktopOverviewHelpers";
-import { RouterMobileApp } from "./mobile-app/RouterMobileApp";
+import { MobileNativeConsole } from "./mobile-native/MobileNativeConsole";
 import "./OverviewPanel.css";
 import "./styles/desktop/tokens.css";
 import "./styles/overview-desktop-runtime.css";
@@ -29,18 +29,23 @@ function useMobileOverview(): boolean {
 export function OverviewPanel({ snapshot, state }: OverviewPanelProps) {
   const mobile = useMobileOverview();
 
+  useEffect(() => {
+    document.body.classList.toggle("mobile-native-active", mobile);
+    return () => document.body.classList.remove("mobile-native-active");
+  }, [mobile]);
+
   return (
     <section
       id="overview"
-      className={`section router-overview-framework ${mobile ? "is-mobile-product" : "ro-desktop-console ro-desktop-hierarchy"}`}
+      className={`section router-overview-framework ${mobile ? "is-mobile-native" : "ro-desktop-console ro-desktop-hierarchy"}`}
       data-overview-page-credibility={state.facts.freshness.credibilityLabel}
       data-overview-page-credibility-tone={state.facts.freshness.credibilityTone}
       data-overview-business-display-boundary={state.scenario === "no-snapshot" ? "no-business-data" : "business-data"}
       data-overview-scene-key={state.scenario}
     >
       {mobile ? (
-        <div className="router-mobile-app-mount" data-router-mobile-mount>
-          <RouterMobileApp key={state.scenario} snapshot={snapshot} state={state} />
+        <div className="mobile-native-mount">
+          <MobileNativeConsole key={state.scenario} snapshot={snapshot} state={state} />
         </div>
       ) : (
         <>

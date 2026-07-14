@@ -34,6 +34,13 @@ const base = (scenario: OverviewScenarioKey): OverviewRawSnapshot => ({
     cpuLoad: 28,
     memoryUsage: 34,
     diskUsage: 22,
+    history: {
+      downlink: [2100, 2600, 2300, 3100, 2900, 3400],
+      uplink: [800, 920, 760, 1080, 1010, 1200],
+      cpu: [22, 25, 24, 27, 26, 28],
+      memory: [31, 32, 32, 33, 33, 34],
+      disk: [22, 22, 22, 22, 22, 22],
+    },
   },
   wan: [{ name: "pppoe-out10", parent: "ether1", running: true, upRate: 1200, downRate: 3400 }],
   pppoe: [{ name: "pppoe-out10", parent: "ether1", running: true, upRate: 1200, downRate: 3400 }],
@@ -53,6 +60,13 @@ export const OVERVIEW_SCENARIO_FIXTURES: Record<OverviewScenarioKey, OverviewRaw
       cpuLoad: 42,
       memoryUsage: 51,
       diskUsage: 31,
+      history: {
+        downlink: [12400, 14600, 13900, 16200, 17100, 18000],
+        uplink: [6100, 7300, 6800, 8100, 8500, 9000],
+        cpu: [35, 38, 36, 40, 41, 42],
+        memory: [47, 48, 49, 50, 50, 51],
+        disk: [31, 31, 31, 31, 31, 31],
+      },
     },
     wan: [1, 2, 3, 4].map((index) => ({
       name: `pppoe-out${index}0`,
@@ -157,6 +171,13 @@ export const OVERVIEW_SCENARIO_FIXTURES: Record<OverviewScenarioKey, OverviewRaw
       cpuLoad: 96,
       memoryUsage: 92,
       diskUsage: 97,
+      history: {
+        downlink: [4400, 5200, 6100, 7200, 6900, 7600],
+        uplink: [1300, 1600, 1900, 2100, 2000, 2300],
+        cpu: [88, 91, 94, 96, 96, 96],
+        memory: [86, 89, 90, 91, 92, 92],
+        disk: [91, 93, 95, 96, 97, 97],
+      },
     },
     interfaces: [
       { name: "ether1", type: "ether", running: true, bridge: "bridge-lan", txRate: 82000000, rxRate: 48000000 },

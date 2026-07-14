@@ -7127,7 +7127,7 @@ var PanelFramework = function(exports) {
     const level = seconds >= Math.max(900, poll * 15) ? "danger" : seconds >= Math.max(300, poll * 5) ? "warn" : "ok";
     return { label: level === "danger" ? "数据陈旧" : level === "warn" ? "数据偏旧" : "采样新鲜", level, stale: level !== "ok", history: level === "danger", missing: false, credibility, credibilityLabel: credibilityLabelOf(credibility), credibilityTone: credibilityToneOf(credibility), seconds, text: formatDurationCompact(seconds), source };
   }
-  function collectionState$1(snapshot, freshness, failures = failedEndpointSummary(snapshot)) {
+  function collectionState(snapshot, freshness, failures = failedEndpointSummary(snapshot)) {
     var _a, _b;
     const meta = snapshot.meta || {};
     const noSnapshot = isSnapshotUnavailable(snapshot);
@@ -7267,7 +7267,7 @@ var PanelFramework = function(exports) {
     const raw = snapshot || {};
     const freshness = freshnessState(raw, options.now ?? Date.now());
     const failures = failedEndpointSummary(raw);
-    const collection = collectionState$1(raw, freshness, failures);
+    const collection = collectionState(raw, freshness, failures);
     const facts = { device: deviceFacts(raw), freshness, collection, route: routeState(raw, freshness), resource: resourceState(raw), wan: wanState(raw), interfaces: interfaceState(raw), failures, connections: connectionState(raw) };
     const counts = countsOf(facts.wan, facts.interfaces, failures, facts.connections);
     const scenario = scenarioOf(raw, counts, facts.resource, collection, options);
@@ -7306,7 +7306,14 @@ var PanelFramework = function(exports) {
       uptime: "2d4h",
       cpuLoad: 28,
       memoryUsage: 34,
-      diskUsage: 22
+      diskUsage: 22,
+      history: {
+        downlink: [2100, 2600, 2300, 3100, 2900, 3400],
+        uplink: [800, 920, 760, 1080, 1010, 1200],
+        cpu: [22, 25, 24, 27, 26, 28],
+        memory: [31, 32, 32, 33, 33, 34],
+        disk: [22, 22, 22, 22, 22, 22]
+      }
     },
     wan: [{ name: "pppoe-out10", parent: "ether1", running: true, upRate: 1200, downRate: 3400 }],
     pppoe: [{ name: "pppoe-out10", parent: "ether1", running: true, upRate: 1200, downRate: 3400 }],
@@ -7365,7 +7372,7 @@ var PanelFramework = function(exports) {
       }
     }
   };
-  function clean$4(value, fallback = "-") {
+  function clean$3(value, fallback = "-") {
     const normalized = String(value ?? "").replace(/\s+/g, " ").trim();
     return normalized || fallback;
   }
@@ -7396,10 +7403,10 @@ var PanelFramework = function(exports) {
     return mobileTime(raw);
   }
   function stripRest$1(label) {
-    return clean$4(label.replace(/^REST\s*/i, ""), "可用");
+    return clean$3(label.replace(/^REST\s*/i, ""), "可用");
   }
   function stripSsh$1(label) {
-    return clean$4(label.replace(/^SSH\s*/i, ""), "可用");
+    return clean$3(label.replace(/^SSH\s*/i, ""), "可用");
   }
   function snapshotTrustText$1(state) {
     if (state.scenario === "no-snapshot") return "缺失";
@@ -7447,7 +7454,7 @@ var PanelFramework = function(exports) {
   }
   const ROUTEROS_ROUTE_EVIDENCE_CONTRACT = "business-summary-first/raw-route-fields-secondary/table-gateway-distance-active-disabled";
   const ROUTE_UNKNOWN$1 = "路由快照未取回，无法判断默认出口影响";
-  function clean$3(value, fallback = "-") {
+  function clean$2(value, fallback = "-") {
     const normalized = String(value ?? "").replace(/\s+/g, " ").trim();
     return normalized || fallback;
   }
@@ -7461,17 +7468,17 @@ var PanelFramework = function(exports) {
     return active ? "当前承载" : "备选未命中";
   }
   function routerOsRouteTableText(value) {
-    const table = clean$3(value, "main");
+    const table = clean$2(value, "main");
     return /^main$/i.test(table) ? "主业务域" : `策略域 ${table}`;
   }
   function routerOsRouteGatewayText(value) {
-    return clean$3(value, "网关未记录");
+    return clean$2(value, "网关未记录");
   }
   function routerOsRoutePriorityText(value) {
-    return clean$3(value, "未记录");
+    return clean$2(value, "未记录");
   }
   function routerOsRouteBusinessSummary(value, fallback = ROUTE_UNKNOWN$1) {
-    return clean$3(value, fallback).replace(/active\s*[:=]?\s*true/gi, "当前承载").replace(/active\s*[:=]?\s*false/gi, "备选未命中").replace(/disabled\s*[:=]?\s*false/gi, "允许参与选路").replace(/disabled\s*[:=]?\s*true/gi, "已停用").replace(/\brouting[-_\s]?table\b|\broutingTable\b/gi, "路由域").replace(/\bgatewayStatus\b/gi, "网关状态").replace(/\bdistance\b/gi, "优先级").replace(/\bgateway\b/gi, "网关").replace(/\bactive\b/gi, "承载状态").replace(/\bdisabled\b/gi, "停用状态").replace(/\btable\b/gi, "路由域").replace(/\bmain\b/gi, "主业务域");
+    return clean$2(value, fallback).replace(/active\s*[:=]?\s*true/gi, "当前承载").replace(/active\s*[:=]?\s*false/gi, "备选未命中").replace(/disabled\s*[:=]?\s*false/gi, "允许参与选路").replace(/disabled\s*[:=]?\s*true/gi, "已停用").replace(/\brouting[-_\s]?table\b|\broutingTable\b/gi, "路由域").replace(/\bgatewayStatus\b/gi, "网关状态").replace(/\bdistance\b/gi, "优先级").replace(/\bgateway\b/gi, "网关").replace(/\bactive\b/gi, "承载状态").replace(/\bdisabled\b/gi, "停用状态").replace(/\btable\b/gi, "路由域").replace(/\bmain\b/gi, "主业务域");
   }
   function routeTitle(table, gateway, distance, active, disabled) {
     return `默认出口 ${routerOsRouteGatewayText(gateway)}，选路优先级 ${routerOsRoutePriorityText(distance)}，${routerOsRouteStatusText(active, disabled)}；${routerOsRouteTableText(table)}`;
@@ -7563,7 +7570,7 @@ var PanelFramework = function(exports) {
     const rows = routeRows(snapshot);
     if (!rows.length) return missingModel(state);
     const businessRows = rows.slice(0, 6).map((route, index) => {
-      const rawTable = clean$3(route.table || route.routingTable, "main");
+      const rawTable = clean$2(route.table || route.routingTable, "main");
       const table = routerOsRouteTableText(rawTable);
       const gateway = routerOsRouteGatewayText(route.gateway || route.gatewayStatus);
       const priority = routerOsRoutePriorityText(route.distance);
@@ -7584,8 +7591,8 @@ var PanelFramework = function(exports) {
         title: routeTitle(rawTable, gateway, priority, route.active, route.disabled),
         rawFields: {
           table: rawTable,
-          gateway: clean$3(route.gateway || route.gatewayStatus, "-"),
-          distance: clean$3(route.distance, "-"),
+          gateway: clean$2(route.gateway || route.gatewayStatus, "-"),
+          distance: clean$2(route.distance, "-"),
           active: route.active ? "true" : "false",
           disabled: route.disabled ? "true" : "false"
         }
@@ -7604,9 +7611,9 @@ var PanelFramework = function(exports) {
     };
     const rawRows = rows.slice(0, 4).map((route, index) => {
       const rawFields = {
-        table: clean$3(route.table || route.routingTable, "main"),
-        gateway: clean$3(route.gateway || route.gatewayStatus, "未记录"),
-        distance: clean$3(route.distance, "未记录"),
+        table: clean$2(route.table || route.routingTable, "main"),
+        gateway: clean$2(route.gateway || route.gatewayStatus, "未记录"),
+        distance: clean$2(route.distance, "未记录"),
         active: route.active ? "true" : "false",
         disabled: route.disabled ? "true" : "false"
       };
@@ -7964,7 +7971,7 @@ var PanelFramework = function(exports) {
       { id: "cr-trust", cells: ["可信度", moduleTrust(state), "REST / SSH / 快照分开判"], tone: "warn" }
     ];
   }
-  function interfaceRows$1(snapshot, state) {
+  function interfaceRows(snapshot, state) {
     const rows = collectInterfaceRows(snapshot).filter((row) => row.running === false);
     if (!rows.length) return [{ id: "interface-ok", cells: ["接口转发面", "未发现 down", `REST / SSH 与转发面分离判断 / ${routeLabelText(state)}`], tone: state.scenario === "interfaces-down" ? "warn" : "ok" }];
     return rows.slice(0, 8).map((row, index) => {
@@ -8053,31 +8060,31 @@ var PanelFramework = function(exports) {
     ];
   }
   function routeFactRows(snapshot, state) {
-    const routeEvidence2 = buildRouterOsRouteEvidenceModel(snapshot, state);
+    const routeEvidence = buildRouterOsRouteEvidenceModel(snapshot, state);
     const summaryRow = {
       id: "route-business-summary",
       attrs: {
         "data-overview-default-route-row": "true",
-        "data-routeros-route-evidence-contract": routeEvidence2.contract,
+        "data-routeros-route-evidence-contract": routeEvidence.contract,
         "data-routeros-evidence-item": "business",
         "data-routeros-evidence-role": "business-summary-primary",
         "data-routeros-raw-field-mode": "hidden-secondary"
       },
       cells: [
-        routeEvidence2.summary.label,
-        routeEvidence2.summary.value,
+        routeEvidence.summary.label,
+        routeEvidence.summary.value,
         "业务结论",
-        routeEvidence2.summary.note
+        routeEvidence.summary.note
       ],
       title: "RouterOS 原始 route 字段已标准化为业务出口结论；原始字段仅作为二级证据",
-      tone: routeEvidence2.summary.tone
+      tone: routeEvidence.summary.tone
     };
-    return [summaryRow, ...routeEvidence2.businessRows.map((route) => ({
+    return [summaryRow, ...routeEvidence.businessRows.map((route) => ({
       id: route.id,
       attrs: {
         "data-overview-default-route-row": "true",
         "data-overview-route-copy": "business",
-        "data-routeros-route-evidence-contract": routeEvidence2.contract,
+        "data-routeros-route-evidence-contract": routeEvidence.contract,
         "data-routeros-evidence-item": route.layer,
         "data-routeros-evidence-role": "business-main",
         "data-routeros-raw-field-mode": "business-translated-no-raw-attrs",
@@ -8094,13 +8101,13 @@ var PanelFramework = function(exports) {
     }))];
   }
   function routeBusinessRows(snapshot, state) {
-    const routeEvidence2 = buildRouterOsRouteEvidenceModel(snapshot, state);
-    return routeEvidence2.businessRows.slice(0, 4).map((route) => ({
+    const routeEvidence = buildRouterOsRouteEvidenceModel(snapshot, state);
+    return routeEvidence.businessRows.slice(0, 4).map((route) => ({
       id: `route-business-${route.routeIndex}`,
       attrs: {
         "data-overview-default-route-row": "true",
         "data-overview-route-copy": "business-main",
-        "data-routeros-route-evidence-contract": routeEvidence2.contract,
+        "data-routeros-route-evidence-contract": routeEvidence.contract,
         "data-routeros-evidence-item": route.layer,
         "data-routeros-evidence-role": "business-main",
         "data-routeros-raw-field-mode": "business-translated-no-raw-attrs",
@@ -8117,14 +8124,14 @@ var PanelFramework = function(exports) {
     }));
   }
   function routeRawEvidenceRows(snapshot, state) {
-    const routeEvidence2 = buildRouterOsRouteEvidenceModel(snapshot, state);
-    return routeEvidence2.rawRows.map((item) => {
+    const routeEvidence = buildRouterOsRouteEvidenceModel(snapshot, state);
+    return routeEvidence.rawRows.map((item) => {
       var _a, _b, _c, _d, _e;
       return {
         id: item.id,
         attrs: {
           "data-overview-default-route-row": "true",
-          "data-routeros-route-evidence-contract": routeEvidence2.contract,
+          "data-routeros-route-evidence-contract": routeEvidence.contract,
           "data-routeros-evidence-item": item.layer,
           "data-routeros-evidence-role": "raw-secondary",
           "data-routeros-raw-field-mode": "secondary-collapsed-evidence",
@@ -8347,7 +8354,7 @@ var PanelFramework = function(exports) {
       { id: "ops-sample", cells: ["样本", "最近6点", "当前 / 均值 / 峰值"], tone: state.facts.freshness.credibilityTone }
     ];
   }
-  function clean$2(value, fallback = "-") {
+  function clean$1(value, fallback = "-") {
     const normalized = String(value ?? "").replace(/\s+/g, " ").trim();
     return normalized || fallback;
   }
@@ -8378,10 +8385,10 @@ var PanelFramework = function(exports) {
     return compactTime(raw);
   }
   function stripRest(label) {
-    return clean$2(label.replace(/^REST\s*/i, ""), "可用");
+    return clean$1(label.replace(/^REST\s*/i, ""), "可用");
   }
   function stripSsh(label) {
-    return clean$2(label.replace(/^SSH\s*/i, ""), "可用");
+    return clean$1(label.replace(/^SSH\s*/i, ""), "可用");
   }
   function routerOsNetworkPriority(state) {
     if (state.scenario === "fleet") return "normal";
@@ -8547,13 +8554,13 @@ var PanelFramework = function(exports) {
       evidence
     };
   }
-  function clean$1(value, fallback = "-") {
+  function clean(value, fallback = "-") {
     const normalized = String(value ?? "").replace(/\s+/g, " ").trim();
     return normalized || fallback;
   }
   function conclusionValue(snapshot, state, network) {
     if (network.priority === "wan-offline") return `${network.object.value} 全离线`;
-    if (network.priority === "resource-full") return `${network.conclusion.value} ${clean$1(state.facts.resource.summaryText, "资源超阈")}`;
+    if (network.priority === "resource-full") return `${network.conclusion.value} ${clean(state.facts.resource.summaryText, "资源超阈")}`;
     if (network.priority === "interface-down") return `${formatNumber(state.facts.interfaces.down)}/${formatNumber(state.facts.interfaces.total)} 接口 Down`;
     if (network.priority === "collection-degraded") return `${network.conclusion.value} ${routerOsLatestSuccess(snapshot, state)}`;
     if (network.priority === "snapshot-missing") return network.conclusion.title;
@@ -8577,7 +8584,7 @@ var PanelFramework = function(exports) {
     return "只读监测，不写配置";
   }
   function incidentObject(state, network) {
-    if (network.priority === "resource-full") return clean$1(state.facts.resource.summaryText, "资源超阈");
+    if (network.priority === "resource-full") return clean(state.facts.resource.summaryText, "资源超阈");
     if (network.priority === "interface-down") return `${formatNumber(state.facts.interfaces.down)} 接口 Down`;
     if (network.priority === "collection-degraded") return "REST 待确认 / SSH 不可用 / 快照缓存";
     if (network.priority === "snapshot-missing") return "业务快照缺失";
@@ -9200,7 +9207,7 @@ var PanelFramework = function(exports) {
     const trust = moduleTrust(state);
     return {
       main: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "接口转发面", subtitle: "Down 数 / 承载 / 默认出口", module: "interface-forwarding", tone: "danger", trust, headers: ["对象", "当前", "依据"], rows: interfaceRows$1(snapshot, state), minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(VisualStack, { snapshot, state }) }, "if-forward"),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "接口转发面", subtitle: "Down 数 / 承载 / 默认出口", module: "interface-forwarding", tone: "danger", trust, headers: ["对象", "当前", "依据"], rows: interfaceRows(snapshot, state), minRows: 0, visual: /* @__PURE__ */ jsxRuntimeExports.jsx(VisualStack, { snapshot, state }) }, "if-forward"),
         /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "默认出口影响", subtitle: "出口 / 承载 / 优先级", module: "route-raw-facts", tone: state.facts.route.level, trust, headers: ["出口", "承载出口", "优先级", "状态"], rows: compactRows(routeBusinessRows(snapshot, state), 4), minRows: 0 }, "if-route")
       ],
       side: [
@@ -9429,537 +9436,396 @@ var PanelFramework = function(exports) {
       /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: item.note })
     ] }, item.role)) });
   }
-  function MetricLedger({ metrics }) {
-    return /* @__PURE__ */ jsxRuntimeExports.jsx("section", { className: "rm-metric-ledger", "aria-label": "关键指标", "data-router-mobile-metrics": true, children: metrics.map((metric) => /* @__PURE__ */ jsxRuntimeExports.jsxs("article", { className: "rm-metric", "data-tone": metric.tone || "healthy", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: metric.label }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("strong", { children: [
-        metric.value,
-        metric.unit ? /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: metric.unit }) : null
-      ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("p", { children: metric.note })
-    ] }, `${metric.label}-${metric.value}`)) });
-  }
-  function TrafficPanel({ trend }) {
-    if (trend.source === "unavailable") return null;
-    return /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "rm-traffic", "data-router-mobile-traffic": trend.source, children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "WAN 吞吐" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { children: trend.window })
+  function MobileNativeDetail({ model, onBack }) {
+    const backRef = reactExports.useRef(null);
+    reactExports.useEffect(() => {
+      var _a;
+      (_a = backRef.current) == null ? void 0 : _a.focus();
+      const onKeyDown = (event) => {
+        if (event.key === "Escape") onBack();
+      };
+      window.addEventListener("keydown", onKeyDown);
+      return () => window.removeEventListener("keydown", onKeyDown);
+    }, [onBack]);
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "mn-detail", "aria-labelledby": "mn-detail-title", "data-mobile-native-detail": true, children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { className: "mn-detail-nav", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("button", { ref: backRef, type: "button", onClick: onBack, "aria-label": "返回网络概览", "data-mobile-native-back": true, children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { "aria-hidden": "true", children: "‹" }),
+          "网络"
         ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: trend.peakLabel })
+        /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: "证据" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { "aria-hidden": "true" })
       ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "rm-traffic-values", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("strong", { children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "下载" }),
-          trend.downLabel
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mn-detail-content", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("p", { children: model.kicker }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { id: "mn-detail-title", children: model.actionTitle }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "mn-detail-group", "aria-label": "当前判断", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "判断" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: model.title })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "记录时间" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: model.timestamp })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "模式" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: "只读，不修改 RouterOS" })
+          ] })
         ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("strong", { children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "上传" }),
-          trend.upLabel
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "mn-detail-group", "aria-label": "关键证据", children: [
+          model.facts.map((fact) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: fact.label }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: fact.value })
+          ] }, fact.label)),
+          model.rows.map((row) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: row.label }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: row.value })
+          ] }, row.label))
         ] })
+      ] })
+    ] });
+  }
+  function MobileNativeSheet({ model, onOpenDetail }) {
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "mn-sheet", "aria-labelledby": "mn-sheet-title", "data-mobile-native-sheet": model.incident ? "expanded" : "partial", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mn-grabber", "aria-hidden": "true" }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mn-sheet-heading", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: model.kicker }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("time", { children: model.timestamp })
       ] }),
-      trend.source === "history" ? /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("svg", { className: "rm-trend", viewBox: "0 0 320 96", preserveAspectRatio: "none", role: "img", "aria-label": `${trend.window}，下载 ${trend.downLabel}，上传 ${trend.upLabel}`, children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("line", { x1: "8", y1: "20", x2: "312", y2: "20" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("line", { x1: "8", y1: "48", x2: "312", y2: "48" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("line", { x1: "8", y1: "76", x2: "312", y2: "76" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("polyline", { className: "is-down", points: trend.downPoints }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("polyline", { className: "is-up", points: trend.upPoints })
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("footer", { children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "较早" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "当前" })
-        ] })
-      ] }) : /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "rm-rate-bars", "aria-label": "当前流速相对量级", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("i", { children: /* @__PURE__ */ jsxRuntimeExports.jsx("b", { style: { width: `${Math.max(4, trend.downShare * 100)}%` } }) }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("i", { children: /* @__PURE__ */ jsxRuntimeExports.jsx("b", { style: { width: `${Math.max(4, trend.upShare * 100)}%` } }) })
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "rm-source-note", children: "单次快照只显示当前量级，不生成趋势或峰值。" })
-      ] })
-    ] });
-  }
-  function TrustRail({ metrics }) {
-    return /* @__PURE__ */ jsxRuntimeExports.jsx("section", { className: "rm-trust-rail", "aria-label": "判断依据", "data-router-mobile-trust": true, children: metrics.map((metric) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { "data-tone": metric.tone || "healthy", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: metric.label }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("strong", { children: metric.value }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: metric.note })
-    ] }, `${metric.label}-${metric.value}`)) });
-  }
-  function Verdict({ model }) {
-    return /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "rm-verdict", "data-tone": model.tone, "data-router-mobile-verdict": true, children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { children: /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: model.verdict.kicker }) }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { children: model.verdict.title }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("p", { children: model.verdict.detail })
-    ] });
-  }
-  function IncidentBrief({ decision }) {
-    return /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "rm-incident-brief", "aria-label": "异常影响与排查", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { "data-router-mobile-decision-row": true, children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "影响" }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("strong", { children: decision.impact })
-      ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { "data-router-mobile-decision-row": true, children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "排查" }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("strong", { children: decision.nextStep })
-      ] })
-    ] });
-  }
-  function DetailEntry({ count, onOpen }) {
-    return /* @__PURE__ */ jsxRuntimeExports.jsxs("button", { className: "rm-detail-entry", type: "button", "data-router-mobile-open-detail": true, onClick: onOpen, children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "运行依据与端点记录" }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("b", { children: [
-        count,
-        " 项",
-        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { "aria-hidden": "true", children: "›" })
-      ] })
-    ] });
-  }
-  function EvidenceList({ title, rows }) {
-    return /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "rm-evidence", "data-router-mobile-evidence": true, children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { children: title }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { id: "mn-sheet-title", children: model.title }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("p", { children: model.summary }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mn-facts", "aria-label": "关键指标", children: model.facts.map((fact) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `mn-fact is-${fact.tone || "trust"}`, children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: fact.label }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: fact.value })
+      ] }, fact.label)) }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mn-rows", children: model.rows.map((row) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mn-row", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: row.label }),
         /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-          rows.length,
-          " 项"
+          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: row.value }),
+          row.note ? /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: row.note }) : null
         ] })
-      ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "rm-evidence-list", children: rows.map((row, index) => /* @__PURE__ */ jsxRuntimeExports.jsxs("article", { "data-tone": row.tone || "healthy", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("i", { "aria-hidden": "true" }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("strong", { children: row.label }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { children: row.note })
+      ] }, row.label)) }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("button", { className: "mn-detail-entry", type: "button", onClick: onOpenDetail, "data-mobile-native-open-detail": true, children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: model.actionTitle }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: model.actionNote })
         ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: row.value })
-      ] }, `${row.label}-${row.value}-${index}`)) })
+        /* @__PURE__ */ jsxRuntimeExports.jsx("i", { "aria-hidden": "true", children: "›" })
+      ] })
     ] });
   }
-  function RouterNetworkScreen({ model, onOpenDetail }) {
-    const showTraffic = model.scenario !== "all-offline" && model.scenario !== "no-snapshot";
-    return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "rm-screen rm-network-screen", "data-router-mobile-screen": "network", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx(Verdict, { model }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx(MetricLedger, { metrics: model.metrics }),
-      showTraffic ? /* @__PURE__ */ jsxRuntimeExports.jsx(TrafficPanel, { trend: model.trend }) : null,
-      model.incident ? /* @__PURE__ */ jsxRuntimeExports.jsx(IncidentBrief, { decision: model.incident }) : null,
-      /* @__PURE__ */ jsxRuntimeExports.jsx(TrustRail, { metrics: model.trust.metrics }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx(DetailEntry, { count: model.evidence.length + model.trust.endpointRecords.length, onOpen: onOpenDetail })
-    ] });
-  }
-  function RouterNetworkDetailScreen({ model, onBack }) {
-    return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "rm-screen rm-detail-screen", "data-router-mobile-screen": "detail", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { className: "rm-detail-header", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("button", { type: "button", "data-router-mobile-back": true, onClick: onBack, "aria-label": "返回网络概览", children: "‹" }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "设备详情" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { children: model.evidenceTitle })
-        ] })
+  function MobileNativeTopology({ model }) {
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "mn-topology", "aria-label": "当前网络路径", "data-mobile-native-topology": model.pathState, children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mn-path mn-path-wan", "aria-hidden": "true" }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mn-path mn-path-lan", "aria-hidden": "true" }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mn-node mn-node-internet", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "mn-internet-symbol", "aria-hidden": "true", children: "WAN" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: "互联网" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: model.internetLabel })
       ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx(MetricLedger, { metrics: model.metrics }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx(TrafficPanel, { trend: model.trend }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx(TrustRail, { metrics: model.trust.metrics }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx(EvidenceList, { title: model.evidenceTitle, rows: model.evidence }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx(EvidenceList, { title: "端点记录", rows: model.trust.endpointRecords })
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mn-route-label", children: model.routeLabel }),
+      model.showRates ? /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mn-rate-pair", "data-mobile-native-rates": model.ratePrefix === "上次" ? "cached" : "current", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("small", { children: [
+            model.ratePrefix,
+            "下载"
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: model.downRate })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("small", { children: [
+            model.ratePrefix,
+            "上传"
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: model.upRate })
+        ] })
+      ] }) : null,
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mn-node mn-node-router", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "mn-router-symbol", "aria-hidden": "true", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("i", {}),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("i", {})
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: model.device }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: model.deviceNote })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mn-node mn-node-clients", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "mn-client-symbols", "aria-hidden": "true", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("i", {}),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("i", {}),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("i", {})
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: model.clientLabel })
+      ] })
     ] });
-  }
-  function clean(value, fallback = "-") {
-    const normalized = String(value ?? "").replace(/\s+/g, " ").trim();
-    return normalized || fallback;
   }
   function wanRows(snapshot) {
-    if (Array.isArray(snapshot.wan) && snapshot.wan.length) return snapshot.wan;
-    return Array.isArray(snapshot.pppoe) ? snapshot.pppoe : [];
-  }
-  function interfaceRows(snapshot) {
-    return Array.isArray(snapshot.interfaces) ? snapshot.interfaces : [];
+    return Array.isArray(snapshot.wan) && snapshot.wan.length ? snapshot.wan : Array.isArray(snapshot.pppoe) ? snapshot.pppoe : [];
   }
   function rates(snapshot) {
     return wanRows(snapshot).reduce(
-      (total, row) => ({
-        down: total.down + toNumber(row.downRate),
-        up: total.up + toNumber(row.upRate)
-      }),
+      (total, row) => ({ down: total.down + Number(row.downRate || 0), up: total.up + Number(row.upRate || 0) }),
       { down: 0, up: 0 }
     );
   }
-  function rateParts(value) {
-    if (!Number.isFinite(value) || value <= 0) return { value: "0", unit: "bps" };
-    if (value >= 1e9) return { value: (value / 1e9).toFixed(value >= 1e10 ? 0 : 1), unit: "Gbps" };
-    if (value >= 1e6) return { value: (value / 1e6).toFixed(value >= 1e7 ? 0 : 1), unit: "Mbps" };
-    if (value >= 1e3) return { value: (value / 1e3).toFixed(value >= 1e4 ? 0 : 1), unit: "Kbps" };
-    return { value: String(Math.round(value)), unit: "bps" };
-  }
-  function rateLabel(value) {
-    const formatted = rateParts(value);
-    return `${formatted.value} ${formatted.unit}`;
-  }
-  function timeLabel(raw) {
-    const source = clean(raw, "");
-    if (!source) return "未取得快照";
-    const date = new Date(source);
-    if (Number.isNaN(date.getTime())) return source;
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    const hour = String(date.getHours()).padStart(2, "0");
-    const minute = String(date.getMinutes()).padStart(2, "0");
-    return `${month}-${day} ${hour}:${minute}`;
-  }
-  function latestTime(snapshot, state) {
-    const meta = snapshot.meta || {};
-    const raw = state.scenario === "no-snapshot" ? meta.staticUpdatedAt || meta.realtimeUpdatedAt : snapshot.updatedAt || meta.realtimeUpdatedAt || meta.staticUpdatedAt;
-    return timeLabel(raw);
-  }
-  function collectionState(snapshot, state) {
-    var _a, _b, _c, _d;
-    const rest = Boolean((_b = (_a = snapshot.meta) == null ? void 0 : _a.capabilities) == null ? void 0 : _b.restTrusted);
-    const ssh = Boolean((_d = (_c = snapshot.meta) == null ? void 0 : _c.capabilities) == null ? void 0 : _d.sshRead);
-    if (state.scenario === "no-snapshot") return { rest, ssh, snapshotLabel: "仅仪表状态", tone: "critical" };
-    if (state.scenario === "collection-down" || !rest && !ssh) return { rest, ssh, snapshotLabel: "缓存快照", tone: "degraded" };
-    return { rest, ssh, snapshotLabel: "当前快照", tone: "healthy" };
-  }
-  function deviceState(snapshot, state) {
-    if (state.scenario === "no-snapshot") return { status: "待确认", tone: "unknown" };
-    if (state.scenario === "collection-down") return { status: "采集降级", tone: "degraded" };
-    if (state.scenario === "all-offline") return { status: "外网中断", tone: "critical" };
-    if (state.scenario === "resource-full") return { status: "资源告警", tone: "critical" };
-    if (state.scenario === "interfaces-down") return { status: "接口异常", tone: "degraded" };
-    const collection = collectionState(snapshot, state);
-    return collection.snapshotLabel === "缓存快照" ? { status: "缓存快照", tone: "degraded" } : { status: "WAN 运行中", tone: "healthy" };
-  }
-  function toneOf(state) {
-    if (state.scenario === "all-offline" || state.scenario === "resource-full") return "critical";
-    if (state.scenario === "no-snapshot") return "unknown";
-    if (state.scenario === "collection-down" || state.scenario === "interfaces-down") return "degraded";
-    return "healthy";
-  }
-  function isRecord(value) {
-    return typeof value === "object" && value !== null;
-  }
-  function firstRate(row, keys) {
-    for (const key of keys) {
-      const value = toNumber(row[key]);
-      if (Number.isFinite(value) && value >= 0) return value;
-    }
-    return 0;
-  }
-  function historySeries(snapshot) {
-    const raw = snapshot;
-    const traffic = isRecord(raw.traffic) ? raw.traffic : {};
-    const realtime = isRecord(raw.realtime) ? raw.realtime : {};
-    const candidates = [raw.history, raw.samples, raw.rateHistory, raw.trafficHistory, raw.wanHistory, traffic.history, traffic.samples, realtime.history, realtime.samples];
-    for (const candidate of candidates) {
-      if (!Array.isArray(candidate) || candidate.length < 3 || !candidate.every(isRecord)) continue;
-      const rows = candidate.slice(-16);
-      const down = rows.map((row) => firstRate(row, ["downRate", "downloadRate", "rxRate", "down", "download", "rx"]));
-      const up = rows.map((row) => firstRate(row, ["upRate", "uploadRate", "txRate", "up", "upload", "tx"]));
-      if (down.some((value) => value > 0) || up.some((value) => value > 0)) return { down, up };
-    }
-    return null;
-  }
-  function plotPoints(values, maximum) {
-    const width = 304;
-    const height = 82;
-    const step = values.length > 1 ? width / (values.length - 1) : width;
-    return values.map((value, index) => {
-      const x2 = 8 + index * step;
-      const y2 = 10 + height - Math.max(0, value) / Math.max(1, maximum) * height;
-      return `${x2.toFixed(1)},${y2.toFixed(1)}`;
-    }).join(" ");
-  }
-  function trendModel(snapshot, state) {
-    if (state.scenario === "no-snapshot") {
-      return { source: "unavailable", window: "无有效采样", downLabel: "不展示", upLabel: "不展示", peakLabel: "不可判", downShare: 0, upShare: 0 };
-    }
-    const current = rates(snapshot);
-    const history = historySeries(snapshot);
-    const collection = collectionState(snapshot, state);
-    if (!history) {
-      const maximum2 = Math.max(1, current.down, current.up);
-      return {
-        source: "snapshot",
-        window: state.scenario === "collection-down" ? "上次成功快照" : collection.snapshotLabel,
-        downLabel: rateLabel(current.down),
-        upLabel: rateLabel(current.up),
-        peakLabel: "无历史峰值",
-        downShare: current.down / maximum2,
-        upShare: current.up / maximum2
-      };
-    }
-    const maximum = Math.max(1, ...history.down, ...history.up);
-    return {
-      source: "history",
-      window: collection.snapshotLabel === "缓存快照" ? `缓存记录 · 最近 ${Math.max(history.down.length, history.up.length)} 次` : `最近 ${Math.max(history.down.length, history.up.length)} 次采样`,
-      downLabel: rateLabel(history.down[history.down.length - 1] || 0),
-      upLabel: rateLabel(history.up[history.up.length - 1] || 0),
-      peakLabel: `峰值 ${rateLabel(maximum)}`,
-      downPoints: plotPoints(history.down, maximum),
-      upPoints: plotPoints(history.up, maximum),
-      downShare: (history.down[history.down.length - 1] || 0) / maximum,
-      upShare: (history.up[history.up.length - 1] || 0) / maximum
-    };
-  }
-  function routeEvidence(snapshot) {
+  function activeRoute(snapshot) {
     var _a, _b;
-    const routes = ((_a = snapshot.routes) == null ? void 0 : _a.defaultRoutes) || ((_b = snapshot.routes) == null ? void 0 : _b.items) || [];
-    const active = routes.filter((route) => route.active && !route.disabled);
-    const primary = active[0];
-    return {
-      label: "默认路由",
-      value: primary ? "已生效" : "未生效",
-      note: primary ? `${clean(primary.gateway, "网关未知")} · 距离 ${clean(primary.distance, "-")}` : "主路由表没有活动出口",
-      tone: primary ? "healthy" : "critical"
-    };
+    const rows = ((_a = snapshot.routes) == null ? void 0 : _a.defaultRoutes) || ((_b = snapshot.routes) == null ? void 0 : _b.items) || [];
+    return rows.find((route) => route.active && !route.disabled) || rows[0];
   }
-  function normalEvidence(snapshot, state) {
-    const wan = state.facts.wan;
-    const resource = state.facts.resource;
-    const downInterfaces = state.facts.interfaces.downNames;
-    return [
-      routeEvidence(snapshot),
-      {
-        label: "WAN 承载",
-        value: `${wan.online}/${wan.total || 0} 在线`,
-        note: wan.offline ? `${wan.offline} 条线路未运行` : "出口线路均处于运行状态",
-        tone: wan.offline ? "degraded" : "healthy"
-      },
-      {
-        label: "设备资源",
-        value: resource.available ? `CPU ${Math.round(resource.cpu)}%` : "未采集",
-        note: resource.available ? `内存 ${Math.round(resource.memory)}% · 磁盘 ${Math.round(resource.disk)}%` : "本次快照没有资源读数",
-        tone: resource.level === "danger" ? "critical" : resource.level === "warn" ? "degraded" : "healthy"
-      },
-      {
-        label: "接口运行",
-        value: downInterfaces.length ? `${downInterfaces.length} 个 Down` : "未发现 Down",
-        note: downInterfaces.length ? downInterfaces.slice(0, 3).join("、") : `${state.facts.interfaces.total} 个接口已纳入快照`,
-        tone: downInterfaces.length ? "degraded" : "healthy"
-      }
-    ];
+  function routeText(snapshot, state) {
+    var _a;
+    if (state.scenario === "no-snapshot") return "默认路由未知";
+    if (state.scenario === "all-offline") return "无活动默认路由";
+    const route = activeRoute(snapshot);
+    const gateway = String((route == null ? void 0 : route.gateway) || "").trim();
+    const carryingWan = ((_a = wanRows(snapshot).find((row) => row.running !== false)) == null ? void 0 : _a.name) || "main";
+    return gateway && gateway !== carryingWan ? `${carryingWan} · ${gateway}` : carryingWan;
   }
-  function failureEntries(snapshot) {
+  function latestRecord(snapshot) {
     const meta = snapshot.meta || {};
-    return [
-      ...meta.realtimeEndpointFailures || [],
-      ...meta.slowRestEndpointFailures || [],
-      ...meta.staticEndpointFailures || [],
-      ...meta.detailEndpointFailures || []
-    ];
+    const value = meta.realtimeUpdatedAt || meta.slowRestUpdatedAt || meta.staticUpdatedAt || snapshot.updatedAt;
+    const short = shortTimestamp(value);
+    return short === "-" ? "未记录" : short;
   }
-  function failureEvidence(snapshot) {
-    const entries = failureEntries(snapshot).slice(0, 5);
-    if (!entries.length) return [{ label: "失败端点", value: "无记录", note: "本次快照未附带端点失败明细", tone: "unknown" }];
-    return entries.map((entry) => ({
-      label: clean(entry.group, "采集端点"),
-      value: clean(entry.name, "未命名端点"),
-      note: clean(entry.message, "请求未成功"),
-      tone: "degraded"
-    }));
+  function freshnessText(snapshot, state) {
+    if (state.scenario === "no-snapshot" || state.scenario === "collection-down") return `上次成功 ${latestRecord(snapshot)}`;
+    if (state.facts.freshness.seconds != null) {
+      const seconds = Math.max(0, Math.round(state.facts.freshness.seconds));
+      if (seconds >= 86400) return `${Math.floor(seconds / 86400)} 天前`;
+      if (seconds >= 3600) return `${Math.floor(seconds / 3600)} 小时前`;
+      if (seconds >= 60) return `${Math.floor(seconds / 60)} 分钟前`;
+      return `${seconds} 秒前`;
+    }
+    return latestRecord(snapshot);
   }
-  function scenarioVerdict(snapshot, state) {
-    const routeFact = state.facts.route.level === "ok" ? "默认路由生效" : "默认路由尚未确认";
-    const observationFact = collectionState(snapshot, state).snapshotLabel === "缓存快照" ? "当前仅能参考缓存快照" : "当前快照可用于判断";
-    switch (state.scenario) {
-      case "fleet":
-        return { kicker: "多线路概况", title: `${state.facts.wan.online} 条 WAN 在线`, detail: `${routeFact}；${observationFact}。` };
-      case "all-offline":
-        return { kicker: "互联网出口", title: "全部 WAN 已离线", detail: "当前没有活动出口；局域网与管理面状态不能代表外网可用。" };
-      case "no-snapshot":
-        return { kicker: "数据边界", title: "业务状态不可判断", detail: "没有取得有效快照，流量、WAN 与资源数值已停止展示。" };
-      case "collection-down":
-        return { kicker: "采集降级", title: "当前数据不是实时值", detail: "管理采集通道失败；页面仅保留上次成功快照作为参考。" };
-      case "resource-full":
-        return { kicker: "设备压力", title: "资源已进入高压区", detail: `CPU ${Math.round(state.facts.resource.cpu)}%、内存 ${Math.round(state.facts.resource.memory)}%、磁盘 ${Math.round(state.facts.resource.disk)}%。` };
-      case "interfaces-down":
-        return {
-          kicker: "接口事件",
-          title: `${state.facts.interfaces.down} 个接口停止运行`,
-          detail: state.facts.route.level === "ok" && state.facts.wan.online > 0 ? "默认出口仍生效；请先核对受影响接口及其上联关系。" : "当前没有可确认在线的 WAN；需同时核对默认路由与受影响接口。"
-        };
-      default:
-        return { kicker: "网络概况", title: "WAN 出口在线", detail: `${state.facts.wan.online}/${state.facts.wan.total || 0} 条 WAN 在线；${routeFact}；${observationFact}。` };
-    }
+  function failureCount(state) {
+    return formatNumber(state.facts.failures.count);
   }
-  function incidentDecision(state) {
-    switch (state.scenario) {
-      case "all-offline":
-        return {
-          impact: "互联网访问不可用；局域网和管理面可能仍可用",
-          nextStep: "先检查默认路由，再核对各 WAN 的拨号或上联状态"
-        };
-      case "no-snapshot":
-        return {
-          impact: "流量、WAN、接口和资源状态均不可判断",
-          nextStep: "先恢复 REST 或只读 SSH，再判断实际网络状态"
-        };
-      case "collection-down":
-        return {
-          impact: "页面数据已过期；不直接代表业务网络中断",
-          nextStep: "先查看失败端点，再核对最近一次成功采集时间"
-        };
-      case "resource-full":
-        return {
-          impact: "转发性能可能下降；当前无法证明是否持续",
-          nextStep: "先检查连接压力，再确认 CPU 与内存是否持续高位"
-        };
-      case "interfaces-down":
-        return {
-          impact: state.facts.route.level === "ok" && state.facts.wan.online > 0 ? "默认出口仍生效；仅所列接口可能受影响" : "没有可确认在线的 WAN；外网承载可能受影响",
-          nextStep: "先核对 Down 接口是否承载 WAN、上联或关键终端"
-        };
-      default:
-        return void 0;
+  function resourceSamples(snapshot) {
+    var _a;
+    const history = ((_a = snapshot.overview) == null ? void 0 : _a.history) || {};
+    const cpu = Array.isArray(history.cpu) ? history.cpu.map(Number) : [];
+    const memory = Array.isArray(history.memory) ? history.memory.map(Number) : [];
+    const disk = Array.isArray(history.disk) ? history.disk.map(Number) : [];
+    const total = Math.max(cpu.length, memory.length, disk.length);
+    let exceeded = 0;
+    for (let index = 0; index < total; index += 1) {
+      if ((cpu[index] || 0) >= 85 || (memory[index] || 0) >= 85 || (disk[index] || 0) >= 90) exceeded += 1;
     }
+    return { exceeded, total };
   }
-  function scenarioMetrics(snapshot, state) {
-    if (state.scenario === "no-snapshot") {
-      return [
-        { label: "业务指标", value: "不展示", note: "无有效快照", tone: "unknown" },
-        { label: "有效快照", value: "0", note: "当前不可判", tone: "critical" },
-        { label: "采集通道", value: "0/2", note: "REST / SSH 失败", tone: "critical" },
-        { label: "最近记录", value: latestTime(snapshot, state), note: "仅供定位", tone: "unknown" }
-      ];
-    }
-    if (state.scenario === "resource-full") {
-      return [
-        { label: "CPU", value: String(Math.round(state.facts.resource.cpu)), unit: "%", note: "参考阈值 90%", tone: "critical" },
-        { label: "内存", value: String(Math.round(state.facts.resource.memory)), unit: "%", note: "参考阈值 90%", tone: "critical" },
-        { label: "磁盘", value: String(Math.round(state.facts.resource.disk)), unit: "%", note: "参考阈值 90%", tone: "critical" },
-        { label: "连接数", value: String(state.facts.connections.total), note: `${state.facts.connections.active} 条活动样本`, tone: "degraded" }
-      ];
-    }
-    if (state.scenario === "all-offline") {
-      const collection = collectionState(snapshot, state);
-      return [
-        { label: "WAN 在线", value: `0/${state.facts.wan.total}`, note: "全部离线", tone: "critical" },
-        { label: "默认路由", value: "0", note: "无活动出口", tone: "critical" },
-        { label: "下载", value: "0", unit: "bps", note: "外网不可用", tone: "critical" },
-        { label: "采集快照", value: latestTime(snapshot, state), note: collection.snapshotLabel, tone: collection.tone }
-      ];
-    }
-    const routeAvailable = state.facts.route.level === "ok";
-    const wanMetric = {
-      label: "WAN 在线",
-      value: `${state.facts.wan.online}/${state.facts.wan.total || 0}`,
-      note: state.facts.wan.offline ? `${state.facts.wan.offline} 条未运行` : "出口线路运行",
-      tone: state.facts.wan.offline ? "degraded" : "healthy"
-    };
-    const routeMetric = {
-      label: "默认路由",
-      value: routeAvailable ? "生效" : "未确认",
-      note: state.facts.route.label,
-      tone: routeAvailable ? "healthy" : "critical"
-    };
-    const cpuMetric = {
-      label: "CPU",
-      value: state.facts.resource.available ? String(Math.round(state.facts.resource.cpu)) : "未采集",
-      unit: state.facts.resource.available ? "%" : void 0,
-      note: state.facts.resource.available ? "设备负载" : "本次无读数",
-      tone: state.facts.resource.level === "danger" ? "critical" : state.facts.resource.level === "warn" ? "degraded" : "healthy"
-    };
-    const interfaceMetric = {
-      label: "接口 Down",
-      value: String(state.facts.interfaces.down),
-      note: state.facts.interfaces.down ? state.facts.interfaces.downNames.slice(0, 2).join("、") : `${state.facts.interfaces.total} 个接口运行`,
-      tone: state.facts.interfaces.down ? "degraded" : "healthy"
-    };
-    const metrics = state.scenario === "interfaces-down" ? [interfaceMetric, wanMetric, routeMetric, cpuMetric] : [wanMetric, routeMetric, cpuMetric, interfaceMetric];
-    if (state.scenario === "collection-down") metrics.forEach((metric) => {
-      metric.tone = metric.tone === "critical" ? "critical" : "degraded";
-    });
-    return metrics;
-  }
-  function scenarioEvidence(snapshot, state) {
-    if (state.scenario === "no-snapshot" || state.scenario === "collection-down") {
-      return { title: "采集失败证据", rows: failureEvidence(snapshot) };
-    }
-    if (state.scenario === "all-offline") {
-      const offline = wanRows(snapshot).filter((row) => !row.running).slice(0, 4).map((row) => ({
-        label: clean(row.name || row.interface, "WAN"),
-        value: "离线",
-        note: `${clean(row.parent, "上联未知")} · 无实时流量`,
-        tone: "critical"
-      }));
-      return { title: "出口故障证据", rows: [routeEvidence(snapshot), ...offline] };
-    }
-    if (state.scenario === "resource-full") {
-      const current = rates(snapshot);
-      const collection = collectionState(snapshot, state);
-      return {
-        title: "压力证据",
-        rows: [
-          { label: "连接压力", value: String(state.facts.connections.total), note: `${state.facts.connections.active} 条活动样本`, tone: "degraded" },
-          { label: "接口吞吐", value: rateLabel(current.down + current.up), note: `${interfaceRows(snapshot).length} 个接口纳入快照`, tone: "healthy" },
-          { label: "持续时间", value: "未取得", note: "当前只有单次资源快照", tone: "unknown" },
-          { label: "采集快照", value: collection.snapshotLabel, note: latestTime(snapshot, state), tone: collection.tone }
-        ]
-      };
-    }
-    if (state.scenario === "interfaces-down") {
-      const rows = interfaceRows(snapshot).filter((row) => row.running === false).slice(0, 4).map((row) => ({
-        label: clean(row.name || row.interface, "接口"),
-        value: "Down",
-        note: [row.bridge, row.parent, row.vlan ? `VLAN ${row.vlan}` : ""].map((item) => clean(item, "")).filter(Boolean).join(" · ") || "未记录上联关系",
-        tone: "degraded"
-      }));
-      return { title: "受影响接口", rows: [routeEvidence(snapshot), ...rows] };
-    }
-    return { title: "运行证据", rows: normalEvidence(snapshot, state) };
-  }
-  function trustModel(snapshot, state) {
-    const meta = snapshot.meta || {};
-    const failures = failureEntries(snapshot).length;
-    const collection = collectionState(snapshot, state);
-    return {
-      metrics: [
-        { label: "快照", value: latestTime(snapshot, state), note: collection.snapshotLabel, tone: collection.tone },
-        { label: "REST", value: collection.rest ? "可用" : "失败", note: timeLabel(meta.realtimeUpdatedAt), tone: collection.rest ? "healthy" : "critical" },
-        { label: "SSH", value: collection.ssh ? "只读" : "失败", note: timeLabel(meta.staticUpdatedAt), tone: collection.ssh ? "healthy" : "critical" },
-        { label: "端点记录", value: String(failures), note: failures ? "失败明细" : "本次未附", tone: failures ? "degraded" : "healthy" }
-      ],
-      endpointRecords: failureEvidence(snapshot)
-    };
-  }
-  function buildRouterMobileModel(snapshot, state) {
-    const evidence = scenarioEvidence(snapshot, state);
-    const device = deviceState(snapshot, state);
+  function commonModel(snapshot, state) {
+    const currentRates = rates(snapshot);
+    const terminalCount = Array.isArray(snapshot.terminals) ? snapshot.terminals.length : 0;
+    const cached = state.facts.freshness.history || state.facts.freshness.stale || state.facts.collection.dataStale;
+    const board = state.facts.device.boardName !== "-" ? state.facts.device.boardName : state.facts.device.version !== "-" ? state.facts.device.version : "RouterOS";
     return {
       scenario: state.scenario,
-      tone: toneOf(state),
-      device: {
-        name: clean(state.facts.device.identity, "RouterOS"),
-        secondary: [clean(state.facts.device.boardName, ""), clean(state.facts.device.version, "")].filter((value) => value && value !== "-").join(" · ") || clean(state.facts.device.target, "设备"),
-        status: device.status,
-        updated: latestTime(snapshot, state),
-        tone: device.tone
-      },
-      verdict: scenarioVerdict(snapshot, state),
-      incident: incidentDecision(state),
-      metrics: scenarioMetrics(snapshot, state),
-      trend: trendModel(snapshot, state),
-      evidenceTitle: evidence.title,
-      evidence: evidence.rows,
-      trust: trustModel(snapshot, state)
+      incident: !["single", "fleet"].includes(state.scenario),
+      pathState: cached ? "cached" : "active",
+      device: state.facts.device.identity || "RouterOS",
+      deviceNote: board,
+      internetLabel: "默认出口有活动记录",
+      routeLabel: routeText(snapshot, state),
+      clientLabel: `${formatNumber(terminalCount)} 台终端有记录`,
+      showRates: true,
+      downRate: formatRate(currentRates.down),
+      upRate: formatRate(currentRates.up),
+      ratePrefix: cached ? "上次" : "当前",
+      kicker: "当前路径",
+      title: "默认路由有活动记录",
+      summary: cached ? `${state.facts.wan.online}/${state.facts.wan.total} 条 WAN 运行，数字来自历史快照` : `${state.facts.wan.online}/${state.facts.wan.total} 条 WAN 运行，采集记录完整`,
+      timestamp: freshnessText(snapshot, state),
+      facts: [],
+      rows: [],
+      actionTitle: "查看网络证据",
+      actionNote: "接口、采集与最近记录"
     };
   }
-  function RouterMobileApp({ snapshot, state }) {
+  function buildMobileNativeModel(snapshot, state) {
+    const model = commonModel(snapshot, state);
+    const route = activeRoute(snapshot);
+    const gateway = String((route == null ? void 0 : route.gateway) || "未记录");
+    const resources = state.facts.resource;
+    switch (state.scenario) {
+      case "single":
+        return {
+          ...model,
+          facts: [
+            { label: "默认网关", value: gateway },
+            { label: "WAN", value: `${state.facts.wan.online} / ${state.facts.wan.total}` },
+            { label: "CPU", value: formatPercent(resources.cpu) }
+          ],
+          rows: [
+            { label: "采集通道", value: `${state.facts.collection.restLabel} · ${state.facts.collection.sshLabel}` },
+            { label: "快照依据", value: freshnessText(snapshot, state), note: "RouterOS 当前记录" }
+          ]
+        };
+      case "fleet":
+        return {
+          ...model,
+          kicker: "线路汇总",
+          title: `${state.facts.wan.online} / ${state.facts.wan.total} 条 WAN 运行`,
+          summary: "默认路由有活动记录，汇总快照完整",
+          clientLabel: `${formatNumber(state.counts.connections)} 条连接记录`,
+          facts: [
+            { label: "WAN", value: `${state.facts.wan.online} / ${state.facts.wan.total}` },
+            { label: "连接", value: formatNumber(state.counts.connections) },
+            { label: "CPU", value: formatPercent(resources.cpu) }
+          ],
+          rows: [
+            { label: "活动出口", value: model.routeLabel },
+            { label: "快照依据", value: freshnessText(snapshot, state), note: "RouterOS 汇总记录" }
+          ],
+          actionTitle: "查看线路分布",
+          actionNote: "默认路由、WAN 与连接范围"
+        };
+      case "all-offline":
+        return {
+          ...model,
+          incident: true,
+          pathState: "offline",
+          internetLabel: "业务出口不可用",
+          routeLabel: "无活动默认路由",
+          clientLabel: "局域网记录保留",
+          showRates: false,
+          kicker: "出口中断",
+          title: `全部 ${state.facts.wan.total} 条 WAN 未运行`,
+          summary: "没有活动默认路由，当前业务速率不展示",
+          facts: [
+            { label: "WAN", value: `0 / ${state.facts.wan.total}`, tone: "danger" },
+            { label: "活动路由", value: "0", tone: "danger" },
+            { label: "采集", value: state.facts.collection.credibility === "realtime" ? "当前采样" : state.facts.collection.credibilityLabel }
+          ],
+          rows: [
+            { label: "影响范围", value: "全部外网业务" },
+            { label: "证据边界", value: "转发面无活动出口" },
+            { label: "优先检查", value: "物理链路与 PPPoE" }
+          ],
+          actionTitle: "查看离线线路",
+          actionNote: "对象、依赖与最近变化"
+        };
+      case "no-snapshot":
+        return {
+          ...model,
+          incident: true,
+          pathState: "unknown",
+          internetLabel: "当前状态未知",
+          routeLabel: "默认路由未知",
+          clientLabel: "终端状态未知",
+          showRates: false,
+          kicker: "证据缺失",
+          title: "当前业务状态不可判断",
+          summary: "没有可用业务快照；速率、资源与终端数字已隐藏",
+          facts: [
+            { label: "REST", value: "待确认", tone: "warn" },
+            { label: "SSH", value: "不可用", tone: "danger" },
+            { label: "失败端点", value: failureCount(state), tone: "warn" }
+          ],
+          rows: [
+            { label: "不可判断", value: "业务、转发与资源" },
+            { label: "仍可参考", value: `最后成功 ${latestRecord(snapshot)}` },
+            { label: "优先检查", value: "REST / SSH 采集链路" }
+          ],
+          actionTitle: "打开采集诊断",
+          actionNote: "失败端点与恢复记录"
+        };
+      case "collection-down":
+        return {
+          ...model,
+          incident: true,
+          pathState: "cached",
+          internetLabel: "承载证据来自缓存",
+          routeLabel: `缓存 · ${gateway}`,
+          clientLabel: "终端记录来自缓存",
+          ratePrefix: "上次",
+          kicker: "采集降级",
+          title: "采集链路尚未恢复",
+          summary: "业务数字来自最后成功快照，新变化当前不可见",
+          facts: [
+            { label: "缓存时间", value: latestRecord(snapshot), tone: "warn" },
+            { label: "失败端点", value: failureCount(state), tone: "warn" },
+            { label: "路由记录", value: "已保留" }
+          ],
+          rows: [
+            { label: "管理面", value: snapshot.status === "error" ? "不可达" : "有历史记录" },
+            { label: "采集面", value: "REST / SSH 未恢复" },
+            { label: "优先检查", value: "先 REST，后 SSH" }
+          ],
+          actionTitle: "打开采集诊断",
+          actionNote: "通道、端点与重试记录"
+        };
+      case "resource-full": {
+        const samples = resourceSamples(snapshot);
+        const sampleText = samples.total ? `${samples.exceeded} / ${samples.total}` : "当前";
+        return {
+          ...model,
+          incident: true,
+          kicker: "资源压力",
+          title: samples.total ? `资源连续 ${sampleText} 个采样点超限` : "资源当前超过阈值",
+          summary: `磁盘 ${formatPercent(resources.disk)}，CPU 与内存同时处于高位`,
+          facts: [
+            { label: "CPU", value: formatPercent(resources.cpu), tone: "danger" },
+            { label: "内存", value: formatPercent(resources.memory), tone: "danger" },
+            { label: "磁盘", value: formatPercent(resources.disk), tone: "danger" }
+          ],
+          rows: [
+            { label: "持续证据", value: samples.total ? `${sampleText} 个采样点` : "单点记录" },
+            { label: "可能影响", value: "采集与转发稳定性" },
+            { label: "优先检查", value: "连接压力与高吞吐接口" }
+          ],
+          actionTitle: "查看资源诊断",
+          actionNote: "阈值、持续证据与连接压力"
+        };
+      }
+      case "interfaces-down": {
+        const names = state.facts.interfaces.downNames.slice(0, 2).join(" / ") || "接口";
+        return {
+          ...model,
+          incident: true,
+          kicker: "接口异常",
+          title: `${names} 未运行`,
+          summary: "默认路由仍有活动记录；受影响依赖需要核对",
+          facts: [
+            { label: "接口 Down", value: `${state.facts.interfaces.down} / ${state.facts.interfaces.total}`, tone: "danger" },
+            { label: "默认路由", value: (route == null ? void 0 : route.active) ? "承载中" : "待确认" },
+            { label: "WAN", value: `${state.facts.wan.online} / ${state.facts.wan.total}` }
+          ],
+          rows: [
+            { label: "影响对象", value: names },
+            { label: "关联依赖", value: "父接口、VLAN 与 PPPoE" },
+            { label: "路由后果", value: (route == null ? void 0 : route.active) ? "默认出口仍承载" : "默认出口待确认" }
+          ],
+          actionTitle: "查看接口关系",
+          actionNote: "父级、VLAN 与路由后果"
+        };
+      }
+    }
+  }
+  function MobileNativeConsole({ snapshot, state }) {
     const [detailOpen, setDetailOpen] = reactExports.useState(false);
-    const model = reactExports.useMemo(() => buildRouterMobileModel(snapshot, state), [snapshot, state]);
-    return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "rm-app", "data-router-mobile-app": true, "data-scenario": model.scenario, "data-tone": model.tone, children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { className: "rm-header", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "rm-device-copy", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("strong", { children: model.device.name }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: "只读监控" })
+    const model = buildMobileNativeModel(snapshot, state);
+    if (detailOpen) return /* @__PURE__ */ jsxRuntimeExports.jsx(MobileNativeDetail, { model, onBack: () => setDetailOpen(false) });
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+      "main",
+      {
+        className: `mn-shell is-${model.scenario} is-path-${model.pathState}`,
+        "data-mobile-native-console": true,
+        "data-mobile-native-scenario": model.scenario,
+        children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { className: "mn-chrome", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: model.device }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: model.deviceNote })
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "mn-readonly", children: "只读" })
           ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: model.device.secondary })
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "rm-device-state", "data-tone": model.device.tone, children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("strong", { children: model.device.status }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: model.device.updated })
-        ] })
-      ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("main", { className: "rm-content", children: detailOpen ? /* @__PURE__ */ jsxRuntimeExports.jsx(RouterNetworkDetailScreen, { model, onBack: () => setDetailOpen(false) }) : /* @__PURE__ */ jsxRuntimeExports.jsx(RouterNetworkScreen, { model, onOpenDetail: () => setDetailOpen(true) }) })
-    ] });
+          /* @__PURE__ */ jsxRuntimeExports.jsx(MobileNativeTopology, { model }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(MobileNativeSheet, { model, onOpenDetail: () => setDetailOpen(true) })
+        ]
+      }
+    );
   }
   const MOBILE_OVERVIEW_QUERY = "(max-width: 900px)";
   function useMobileOverview() {
@@ -9975,16 +9841,20 @@ var PanelFramework = function(exports) {
   }
   function OverviewPanel({ snapshot, state }) {
     const mobile = useMobileOverview();
+    reactExports.useEffect(() => {
+      document.body.classList.toggle("mobile-native-active", mobile);
+      return () => document.body.classList.remove("mobile-native-active");
+    }, [mobile]);
     return /* @__PURE__ */ jsxRuntimeExports.jsx(
       "section",
       {
         id: "overview",
-        className: `section router-overview-framework ${mobile ? "is-mobile-product" : "ro-desktop-console ro-desktop-hierarchy"}`,
+        className: `section router-overview-framework ${mobile ? "is-mobile-native" : "ro-desktop-console ro-desktop-hierarchy"}`,
         "data-overview-page-credibility": state.facts.freshness.credibilityLabel,
         "data-overview-page-credibility-tone": state.facts.freshness.credibilityTone,
         "data-overview-business-display-boundary": state.scenario === "no-snapshot" ? "no-business-data" : "business-data",
         "data-overview-scene-key": state.scenario,
-        children: mobile ? /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "router-mobile-app-mount", "data-router-mobile-mount": true, children: /* @__PURE__ */ jsxRuntimeExports.jsx(RouterMobileApp, { snapshot, state }, state.scenario) }) : /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+        children: mobile ? /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mobile-native-mount", children: /* @__PURE__ */ jsxRuntimeExports.jsx(MobileNativeConsole, { snapshot, state }, state.scenario) }) : /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx(StatusVerdict, { snapshot, state }),
           /* @__PURE__ */ jsxRuntimeExports.jsx(DesktopWorkspace, { snapshot, state })
         ] })

@@ -178,7 +178,14 @@ function resourceFullSnapshot() {
       uptime: '3d 4h',
       cpuLoad: 96,
       memoryUsage: 92,
-      diskUsage: 97
+      diskUsage: 97,
+      history: {
+        downlink: [4400, 5200, 6100, 7200, 6900, 7600],
+        uplink: [1300, 1600, 1900, 2100, 2000, 2300],
+        cpu: [88, 91, 94, 96, 96, 96],
+        memory: [86, 89, 90, 91, 92, 92],
+        disk: [91, 93, 95, 96, 97, 97]
+      }
     },
     wan: [{ name: 'pppoe-out10', parent: 'ether1', running: true, upRate: 1200, downRate: 3400 }],
     pppoe: [{ name: 'pppoe-out10', parent: 'ether1', running: true, upRate: 1200, downRate: 3400 }],
@@ -216,7 +223,14 @@ function balanceSnapshot() {
       uptime: '3d 4h',
       cpuLoad: 42,
       memoryUsage: 51,
-      diskUsage: 31
+      diskUsage: 31,
+      history: {
+        downlink: [4200, 5100, 4700, 5900, 5600, 6200],
+        uplink: [1500, 1800, 1650, 2050, 1900, 2100],
+        cpu: [36, 39, 38, 41, 40, 42],
+        memory: [47, 48, 49, 50, 50, 51],
+        disk: [31, 31, 31, 31, 31, 31]
+      }
     },
     wan: [
       { name: 'pppoe-out10', parent: 'ether1', running: true, upRate: 1200, downRate: 3400, routes: [{ active: true, disabled: false }] },
@@ -301,6 +315,13 @@ function fleetSnapshot() {
   const snapshot = balanceSnapshot();
   snapshot.meta.scaleScenario = 'fleet';
   snapshot.overview.identity = 'Fleet-Core';
+  snapshot.overview.history = {
+    downlink: [12400, 14600, 13900, 16200, 17100, 18000],
+    uplink: [6100, 7300, 6800, 8100, 8500, 9000],
+    cpu: [35, 38, 36, 40, 41, 42],
+    memory: [47, 48, 49, 50, 50, 51],
+    disk: [31, 31, 31, 31, 31, 31]
+  };
   snapshot.wan = [1, 2, 3, 4].map((index) => ({
     name: `pppoe-out${index}0`,
     parent: `ether${index}`,

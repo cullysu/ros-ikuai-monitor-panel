@@ -1,67 +1,66 @@
-# Mobile operations product contract
+# Mobile native operations contract
 
-## Problem
+## Product problem
 
-The rejected mobile interface behaved like a desktop modal reduced to phone width: large framed cards, weak data priority, separated network/collection tabs, low useful density, and incident pages dominated by explanation instead of operational evidence. Cosmetic CSS changes cannot fix that information architecture.
+The rejected phone implementations preserved a dashboard template: a verdict card, a metric grid, a trend chart, and an evidence list. Changing colors, radius, or copy could not turn that structure into a native mobile operations product.
 
-## Outcome
+The repeated task is a 5-10 second phone patrol. The operator must identify the active network path, whether its evidence is current, the highest-priority exception, and the next evidence target without changing tabs.
 
-At 390 × 844, a user can identify the service verdict, scenario-specific primary metrics, WAN traffic when it is valid, collection freshness, REST/SSH state, and the next inspection target in one continuous screen. Detail remains a full-screen drill-down with a predictable back control.
+## Selected direction: topology sheet
 
-## Research translated into decisions
+The phone home uses a network topology as its primary canvas and a native-style bottom sheet as its decision surface.
 
-- Apple layout guidance: safe areas, adaptable hierarchy, readable scaling, and stable top-level navigation—not blur on every surface. [Apple HIG: Layout](https://developer.apple.com/design/human-interface-guidelines/layout)
-- Apple tab bars represent stable top-level destinations. Two evidence categories that must be judged together are not separate destinations, so this product has no bottom tab bar. [Apple HIG: Tab bars](https://developer.apple.com/design/human-interface-guidelines/tab-bars)
-- MikroTik exposes broad router operations on mobile, but this product is intentionally read-only and reduces the task to patrol and evidence. [MikroTik mobile app](https://mikrotik.com/download?architecture=tile)
-- UniFi and Firewalla place current network activity near device/service state, then disclose flow/device evidence. The reusable principle is aggregate-first with direct drill-down, not their brand styling. [UniFi introduction](https://help.ui.com/hc/en-us/articles/360012192813-Introduction-to-UniFi), [Firewalla network flows](https://help.firewalla.com/hc/en-us/articles/24739086338323-Firewalla-Feature-Network-Flows)
+- Internet, active WAN/default route, RouterOS, and client scope have a spatial relationship.
+- Down/up values attach to the WAN path instead of becoming dashboard cards.
+- Normal and fleet states use a partial sheet.
+- Incident states expand the sheet, suppress secondary topology detail, and reorder evidence by incident type.
+- Landscape becomes topology-left and sheet-right. It is not a compressed desktop console.
+- Evidence opens as a navigation destination with a predictable back control, not as a desktop modal.
 
-## Directions considered
+## Directions rejected
 
-| Direction | Strength | Why it lost or won |
+- **Grouped native ledger:** familiar and compact, but too generic and weak at showing route consequence during an incident.
+- **Operations feed:** useful for history, but current state competes with events and loses first-screen priority.
+- **Dashboard refresh:** rejected outright because it preserves the previous information architecture under new styling.
+
+## Data semantics
+
+- A current rate appears only when a current snapshot supports it.
+- A retained rate is labeled `上次`; it is never presented as current.
+- `all-offline` and `no-snapshot` remove rate values from the phone home.
+- `no-snapshot` removes business, forwarding, resource, and terminal numbers that cannot be verified.
+- `collection-down` names the retained timestamp and separates management, collection, forwarding, and business evidence.
+- Current, cached, offline, and unknown paths use wording and structure in addition to tone.
+- Broad claims such as `网络良好`, `实时可信`, or `正在承载` are prohibited without directly visible evidence.
+
+## Scenario priority
+
+| Scenario | Sheet priority | Topology behavior |
 |---|---|---|
-| Telemetry first | Maximum chart visibility in normal operation | Loses because charts dominate when evidence is stale, missing, or irrelevant to an incident. |
-| Incident console | Strong abnormal-state recognition | Loses because normal patrol becomes an empty alert shell. |
-| Status ledger + adaptive incident console | Compact normal scan; scenario-specific metrics; evidence stays in context | **Chosen.** It gives the fastest correct judgment across both normal and abnormal states without tabs or a modal frame. |
+| `single` | route record, WAN count, snapshot age | full path and current/cached rates |
+| `fleet` | WAN scope, connections, active route | full aggregate path |
+| `all-offline` | WAN 0/N, active routes 0, impact, physical/PPPoE inspection | path shown as offline; rates removed |
+| `no-snapshot` | unverifiable scope, last success, failed channels | path unknown; business nodes de-emphasized; rates removed |
+| `collection-down` | retained timestamp, failed endpoints, channel recovery order | path explicitly cached |
+| `resource-full` | CPU, memory, disk, sustained sample count, likely impact | topology is secondary |
+| `interfaces-down` | affected interfaces, dependencies, route consequence | topology is secondary |
 
-## Information architecture
+## Visual and interaction rules
 
-1. Device identity, read-only mode, state, and snapshot timestamp.
-2. Factual service verdict.
-3. Four scenario-specific primary metrics.
-4. WAN traffic with source/window/current/peak semantics, only when valid.
-5. Compact impact and next-inspection rows for incidents.
-6. Always-visible trust rail: snapshot, REST, SSH, attached endpoint records.
-7. One 44 px detail row into a full-screen evidence view.
-
-## Scenario contract
-
-| Scenario | Primary evidence | Traffic rule |
-|---|---|---|
-| `single` | down/up, WAN online, CPU, route in context | Show current snapshot or measured history. |
-| `fleet` | aggregate throughput, WAN online, resource pressure | Show measured aggregate history/current snapshot. |
-| `all-offline` | WAN 0/N, default route, service scope, current collection evidence | Hide decorative traffic. Zero is shown only as an observed offline fact. |
-| `no-snapshot` | business data hidden, valid snapshot count, failed endpoint count, last record | Never show WAN/resource/business rates or placeholder curves. |
-| `collection-down` | stale down/up labeled as previous snapshot, WAN/route context | May show previous snapshot only with stale wording and timestamp. |
-| `resource-full` | CPU, memory, disk, connection pressure | Resource metrics precede traffic; duration remains unknown unless sampled. |
-| `interfaces-down` | down count, affected interfaces, route consequence, current rates | Show traffic only when the current snapshot remains usable. |
-
-## Visual contract
-
-- Full-bleed cold-neutral canvas; no closed white page frame.
-- One low-saturation blue product hue, a precise gray ramp, and low-chroma incident tones.
-- Flat grouped ledgers with 1 px dividers and a 7/10 px radius scale; no stacked material shadows.
-- Blur is reserved for top chrome where content actually passes behind it.
-- Top chrome and scroll content participate in one layout flow; safe-area growth may not overlap or cover the first content row.
-- Numbers lead, labels support, explanations stay short.
-- State remains identifiable by wording, dot, hierarchy, and tonal surface; color is not the only signal.
-- Minimum touch target is 44 × 44 px; reduced motion and safe areas are respected.
+- Full-bleed cold-neutral canvas; no closed page frame, card stack, bottom tab bar, or home-page line chart.
+- System typography, tabular data, 4/8 px spacing rhythm, and one restrained cold-blue product hue.
+- Blur is reserved for the real depth transition of the sheet and navigation chrome.
+- The sheet is the only large-radius surface. Grouped evidence uses compact 10 px radii and 1 px rules.
+- Touch targets are at least 44 px. Safe areas, reduced motion, focus, Escape/back, and text wrapping are blocking.
+- Mobile and desktop have separate render trees, selectors, runtime checks, and screenshots.
 
 ## Blocking acceptance
 
-- Mobile DOM contains no desktop overview tree and no bottom tab bar.
-- All four primary facts and the trust rail are visible in every scenario; unverifiable business values are absent in `no-snapshot`.
-- Incident states expose impact and next inspection without a four-row explanatory audit table.
-- Normal/resource/interface scenarios show a truthful traffic source; offline/no-snapshot do not show traffic.
-- Narrow and landscape screenshots contain no black/transparent canvas, horizontal overflow, clipped primary text, or content hidden by chrome.
-- When REST and SSH are both unavailable but a prior snapshot exists, the header and trust rail say `缓存快照`; they may not claim `运行中`, `实时`, or current collection.
-- Detail opens, back returns, and evidence/endpoint rows remain reachable with keyboard and touch.
+- Required phone matrix: seven scenarios at `390x844` and `844x390`; all 14 cells and screenshots must pass.
+- `matrix.complete=false` forces top-level failure.
+- Phone DOM contains no desktop overview tree, old mobile namespace, hidden duplicate content, metric grid, bottom tabs, or decorative chart.
+- Incident states use an expanded sheet with three scenario-specific decision rows; normal states use a partial sheet with two trust rows.
+- `all-offline` and `no-snapshot` contain no rate node. `collection-down` rate mode is `cached`.
+- Primary titles and row values cannot clip or cause horizontal overflow.
+- Detail opens through a 44 px target, receives focus, closes through back or Escape, and remains usable in portrait and landscape.
+- Public release remains blocked until the full 28-cell public matrix and exact-SHA Linux, Windows, and GHCR checks pass.

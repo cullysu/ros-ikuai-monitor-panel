@@ -87,8 +87,8 @@ jobs:
             --strict-responsive \
             --out _acceptance/ci-public-predeploy
 
-      - name: Mobile public home interaction contracts
-        run: npm run check:mobile-app-home
+      - name: Native mobile interaction matrix
+        run: npm run check:mobile-native
 
       - name: Desktop incident hierarchy contracts
         run: npm run check:desktop-incident-hierarchy
