@@ -351,19 +351,3 @@
     min-height: 840px !important;
   }
 }
-
-@media (min-width: 1024px) {
-  body:has(#overview.router-overview-framework) .sidebar::after {
-    content: "RouterOS 只读监控\\A 实时 / 快照 / 证据边界";
-    display: block;
-    margin: auto 10px 12px;
-    padding: 10px 10px;
-    white-space: pre-line;
-    color: #6c7d91;
-    font-size: 11px;
-    line-height: 1.45;
-    border: 1px solid #e3ebf4;
-    border-radius: 5px;
-    background: #f7fbff;
-  }
-}

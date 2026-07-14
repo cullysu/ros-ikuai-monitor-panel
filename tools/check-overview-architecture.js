@@ -1001,6 +1001,11 @@ assert(
   `Desktop status bus must stay canonical: statusBusRules=${desktopStatusBusRuleCount} legacyTopbarRules=${desktopLegacyTopbarRuleCount}`
 );
 assert(
+  !desktopConsoleRefinementStyles.includes(".sidebar::after") &&
+    !desktopRefinement.includes(".sidebar::after"),
+  "Desktop sidebar trust facts must stay semantic; CSS pseudo-content is forbidden"
+);
+assert(
   desktopModuleShellRuleCount === 1 && desktopModuleHeadRuleCount === 3,
   `Desktop module shell/head must stay canonical: shellRules=${desktopModuleShellRuleCount} headRules=${desktopModuleHeadRuleCount}`
 );

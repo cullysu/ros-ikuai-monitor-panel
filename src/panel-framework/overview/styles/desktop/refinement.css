@@ -942,20 +942,6 @@
 /*Codex v820 desktop density pass: iKuai-like console facts, not component chrome.*/
 
 @media (min-width: 761px) {
-  body:has(#overview.router-overview-framework) .sidebar::after {
-    content: "只读\A实时\A REST 可用\A SSH 缺依赖\A快照同步" !important;
-    display: block !important;
-    margin: auto 10px 10px !important;
-    padding: 7px 8px !important;
-    white-space: pre-line !important;
-    color: #64758a !important;
-    font-size: 10px !important;
-    line-height: 1.32 !important;
-    border: 0 !important;
-    border-top: 1px solid #dfe9f4 !important;
-    border-radius: 0 !important;
-    background: transparent !important;
-  }
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-col.is-main,
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-col.is-side {
     min-height: 0 !important;
