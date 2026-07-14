@@ -45,13 +45,10 @@ export function DesktopDecisionRail({ snapshot, state }: OverviewPanelProps) {
     <section
       className="ro-desktop-decision-rail"
       aria-label="桌面判断与处置"
-      data-overview-desktop-kpi-row="next-action-credibility"
-      data-overview-desktop-decision-rail="action-and-credibility"
     >
       {items.map((item) => (
         <div
           className={`ro-desktop-thin-kpi ik-overview-kpi-card is-${item.role}`}
-          data-overview-desktop-decision-role={item.role}
           data-tone={item.tone}
           key={item.role}
         >

@@ -8554,7 +8554,7 @@ var PanelFramework = function(exports) {
     if (network.priority === "interface-down") return `${formatNumber(state.facts.interfaces.down)}/${formatNumber(state.facts.interfaces.total)} 接口 Down`;
     if (network.priority === "collection-degraded") return `${network.conclusion.value} ${routerOsLatestSuccess(snapshot, state)}`;
     if (network.priority === "snapshot-missing") return network.conclusion.title;
-    return "网络可用";
+    return "WAN 出口在线";
   }
   function conclusionNote(snapshot, state, network) {
     const latest = routerOsLatestSuccess(snapshot, state);
@@ -8604,8 +8604,8 @@ var PanelFramework = function(exports) {
       }
     };
   }
-  function desktopPresentation(snapshot, state) {
-    return buildRouterOsPresentationViewModel(snapshot, state).desktop;
+  function desktopPresentation(snapshot, state, network) {
+    return buildRouterOsPresentationViewModel(snapshot, state, network).desktop;
   }
   function JudgementChart({ module, rows, kind = "trend" }) {
     const maxValue = Math.max(1, ...rows.map((row) => Math.max(row.currentValue, row.peakValue, row.thresholdValue)));
@@ -9318,13 +9318,10 @@ var PanelFramework = function(exports) {
       {
         className: "ro-desktop-decision-rail",
         "aria-label": "桌面判断与处置",
-        "data-overview-desktop-kpi-row": "next-action-credibility",
-        "data-overview-desktop-decision-rail": "action-and-credibility",
         children: items.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
           "div",
           {
             className: `ro-desktop-thin-kpi ik-overview-kpi-card is-${item.role}`,
-            "data-overview-desktop-decision-role": item.role,
             "data-tone": item.tone,
             children: [
               /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: item.label }),
@@ -9386,7 +9383,9 @@ var PanelFramework = function(exports) {
     };
   }
   function topbarItems(snapshot, state) {
-    const presentation = desktopPresentation(snapshot, state);
+    var _a;
+    const network = buildRouterOsNetworkViewModel(snapshot, state);
+    const presentation = desktopPresentation(snapshot, state, network);
     const collection = topbarCollectionValue(state);
     const snapshotCell = topbarSnapshotValue(snapshot, state);
     if (state.scenario === "no-snapshot") {
@@ -9407,15 +9406,23 @@ var PanelFramework = function(exports) {
       { label: "设备", value: state.facts.device.identity, note: `${state.facts.device.version} · ${state.facts.device.uptime}`, role: "device", tone: "trust" },
       { label: "对象", value: presentation.object.value, note: presentation.object.note, role: "object", tone: "trust" },
       { label: "影响", value: presentation.impact.value, note: presentation.impact.note, role: "impact", tone: state.verdict.level },
+      {
+        label: "默认出口",
+        value: network.evidence.route.summary.value,
+        note: ((_a = network.evidence.route.businessRows[0]) == null ? void 0 : _a.value) || network.route.note,
+        role: "route",
+        tone: network.evidence.route.summary.tone
+      },
       { label: "采集", value: collection.value, note: collection.note, role: "collection", tone: state.facts.collection.credibilityTone },
       { label: "快照", value: snapshotCell.value, note: snapshotCell.note, role: "snapshot", tone: snapshotCell.tone }
     ];
   }
   function StatusVerdict({ snapshot, state }) {
-    const allItems = topbarItems(snapshot, state).slice(0, 6);
+    const allItems = topbarItems(snapshot, state);
     const isNoSnapshot = state.scenario === "no-snapshot";
-    const items = isNoSnapshot ? allItems : allItems.filter((item) => ["conclusion", "impact", "collection", "snapshot"].includes(item.role));
-    return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "ro-status-bus", children: items.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ro-status-cell", "data-tone": item.tone, "data-overview-field": true, "data-overview-status-role": item.role, children: [
+    const isNormal = state.scenario === "single" || state.scenario === "fleet";
+    const items = isNoSnapshot ? allItems : allItems.filter((item) => ["conclusion", isNormal ? "route" : "impact", "collection", "snapshot"].includes(item.role));
+    return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: `ro-status-bus ${isNoSnapshot ? "is-channel-audit" : "is-summary"}`, children: items.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `ro-status-cell is-${item.role}`, "data-tone": item.tone, children: [
       /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: item.label }),
       /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: item.value }),
       /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: item.note })

@@ -10,12 +10,14 @@ import {
   routerosState,
   sshState,
 } from "./desktopOverviewHelpers";
+import { buildRouterOsNetworkViewModel } from "./routerosNetworkViewModel";
 
 export type TopbarRole =
   | "device"
   | "conclusion"
   | "object"
   | "impact"
+  | "route"
   | "collection"
   | "snapshot"
   | "routeros"
@@ -65,7 +67,8 @@ function topbarSnapshotValue(snapshot: OverviewRawSnapshot, state: OverviewDeriv
 }
 
 export function topbarItems(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): TopbarItem[] {
-  const presentation = desktopPresentation(snapshot, state);
+  const network = buildRouterOsNetworkViewModel(snapshot, state);
+  const presentation = desktopPresentation(snapshot, state, network);
   const collection = topbarCollectionValue(state);
   const snapshotCell = topbarSnapshotValue(snapshot, state);
   if (state.scenario === "no-snapshot") {
@@ -86,6 +89,13 @@ export function topbarItems(snapshot: OverviewRawSnapshot, state: OverviewDerive
     { label: "设备", value: state.facts.device.identity, note: `${state.facts.device.version} · ${state.facts.device.uptime}`, role: "device", tone: "trust" },
     { label: "对象", value: presentation.object.value, note: presentation.object.note, role: "object", tone: "trust" },
     { label: "影响", value: presentation.impact.value, note: presentation.impact.note, role: "impact", tone: state.verdict.level },
+    {
+      label: "默认出口",
+      value: network.evidence.route.summary.value,
+      note: network.evidence.route.businessRows[0]?.value || network.route.note,
+      role: "route",
+      tone: network.evidence.route.summary.tone,
+    },
     { label: "采集", value: collection.value, note: collection.note, role: "collection", tone: state.facts.collection.credibilityTone },
     { label: "快照", value: snapshotCell.value, note: snapshotCell.note, role: "snapshot", tone: snapshotCell.tone },
   ];

@@ -1379,7 +1379,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const overviewSummaryMain = overviewSummaryShell;
     const overviewSummaryFocus = '';
     const overviewDesktopTopShell = overviewSummaryShell;
-    const overviewDesktopPrimary = overviewDesktopTopShell?.querySelector('[data-overview-status-role="conclusion"] > b');
+    const overviewDesktopPrimary = overviewDesktopTopShell?.querySelector('.ro-status-cell.is-conclusion > b');
     const overviewDesktopTopText = normalize(overviewDesktopTopShell?.textContent || '');
     const overviewDesktopPrimaryText = normalize(overviewDesktopPrimary?.textContent || '');
     const overviewFocusModule = sectionRoot?.querySelector('[data-overview-density-module="resource-focus"], [data-overview-density-module="collection-focus"], [data-overview-density-module="freshness-focus"], [data-overview-density-module="wan-focus"], [data-overview-density-module="route-focus"], [data-overview-density-module="interface-forwarding"], [data-overview-density-module="no-snapshot-focus"]');
@@ -4821,18 +4821,23 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const overviewStatusBarOpsCells = Array.from(overviewStatusBar?.querySelectorAll('.ik-home-ops-item') || []);
     const overviewStatusBarCells = overviewStatusBarOpsCells.length
       ? overviewStatusBarOpsCells
-      : Array.from(overviewStatusBar?.querySelectorAll('[data-overview-field]') || []);
+      : Array.from(overviewStatusBar?.querySelectorAll('.ro-status-cell') || []);
     const overviewStatusBarVisibleCells = overviewStatusBarCells.filter(nodeVisibleInFirstScreen);
     const overviewCombinedCurrentText = [overviewVerdictText, firstScreenOverviewText, mobileTop120Text, topErrorNoticeText].join(' ');
     const overviewStatusBarLabels = overviewStatusBarCells
       .map((node) => normalize(node.querySelector('span')?.textContent || '').replace(/\\s+/g, ''))
       .filter(Boolean);
     const overviewStatusBarRoleOrder = overviewStatusBarCells
-      .map((node) => node.getAttribute('data-overview-status-role') || '')
+      .map((node) => {
+        const roleClass = Array.from(node.classList).find((name) => name.startsWith('is-')) || '';
+        return roleClass.slice(3);
+      })
       .filter(Boolean);
     const overviewStatusBarExpectedRoleOrder = noSnapshotEdge
       ? ['conclusion', 'device', 'routeros', 'rest', 'ssh', 'recent-success']
-      : ['conclusion', 'impact', 'collection', 'snapshot'];
+      : ['single', 'fleet'].includes(scaleScenario)
+        ? ['conclusion', 'route', 'collection', 'snapshot']
+        : ['conclusion', 'impact', 'collection', 'snapshot'];
     const overviewStatusBusRoleContractOk = Boolean(
       overviewStatusBar &&
       overviewStatusBarCells.length === overviewStatusBarExpectedRoleOrder.length &&
@@ -5264,7 +5269,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     );
     const overviewDesktopCriticalTextSamples = !isDesktopOverview ? [] : collectVisibleClippedTextSamples([
       overviewMainVerdict,
-      ...Array.from(overviewMainVerdict?.querySelectorAll('.ik-home-verdict-title, .ik-home-verdict-status-bus, .ik-home-verdict-status-cell, .ik-home-verdict-row, .ik-home-action-link, .ik-home-priority-item, [data-overview-field]') || []),
+      ...Array.from(overviewMainVerdict?.querySelectorAll('.ik-home-verdict-title, .ik-home-verdict-status-bus, .ik-home-verdict-status-cell, .ik-home-verdict-row, .ik-home-action-link, .ik-home-priority-item, .ro-status-cell, [data-overview-field]') || []),
       overviewIncidentLine,
       ...Array.from(overviewIncidentLine?.querySelectorAll('.ik-home-incident-main, .ik-home-incident-item, [data-overview-field]') || []),
       overviewAnomalyEvidence,

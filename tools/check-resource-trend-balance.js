@@ -889,7 +889,7 @@ async function main() {
         const desktopNavigationDeduplicated = Boolean(!duplicateWorkspaceNav && shellSidebar);
         const workspaceRect = workspace?.getBoundingClientRect();
         const topbar = sectionEl?.querySelector('.ro-status-bus');
-        const desktopDecisionRail = sectionEl?.querySelector('[data-overview-desktop-decision-rail="action-and-credibility"]');
+        const desktopDecisionRail = sectionEl?.querySelector('.ro-desktop-decision-rail');
         const desktopDecisionCells = Array.from(desktopDecisionRail?.querySelectorAll('.ro-desktop-thin-kpi') || []);
         const desktopDecisionLabels = desktopDecisionCells.map((cell) => normalize(cell.querySelector('span')?.textContent || ''));
         const desktopDecisionRailOk = Boolean(!desktopDecisionRail && workspace?.classList.contains('is-normal-scene'));
@@ -927,10 +927,16 @@ async function main() {
         );
         const topbarStyle = topbar ? getComputedStyle(topbar) : null;
         const topbarCells = Array.from(topbar?.querySelectorAll('.ro-status-cell') || []);
-        const topbarRoleOrder = topbarCells.map((cell) => cell.getAttribute('data-overview-status-role') || '');
+        const topbarRoleOrder = topbarCells.map((cell) => {
+          const roleClass = Array.from(cell.classList).find((name) => name.startsWith('is-')) || '';
+          return roleClass.slice(3);
+        });
+        const desktopScene = workspace?.getAttribute('data-overview-desktop-scene') || '';
         const expectedTopbarRoleOrder = sectionName === 'desktopNoSnapshot'
           ? ['conclusion', 'device', 'routeros', 'rest', 'ssh', 'recent-success']
-          : ['conclusion', 'impact', 'collection', 'snapshot'];
+          : ['single', 'fleet'].includes(desktopScene)
+            ? ['conclusion', 'route', 'collection', 'snapshot']
+            : ['conclusion', 'impact', 'collection', 'snapshot'];
         const topbarHierarchyOk = Boolean(
           topbar &&
           topbarRoleOrder.join('-') === expectedTopbarRoleOrder.join('-') &&
@@ -959,7 +965,7 @@ async function main() {
           topbar &&
           topbar.classList.contains('ro-status-bus') &&
           topbar.querySelectorAll('table, th').length === 0 &&
-          topbar.querySelector('[data-overview-status-role="conclusion"] > b') &&
+          topbar.querySelector('.ro-status-cell.is-conclusion > b') &&
           topbarStyle &&
           Number.parseFloat(topbarStyle.height || '0') <= 40 &&
           Number.parseFloat(topbarStyle.borderTopWidth || '0') === 0 &&

@@ -34,7 +34,7 @@ function conclusionValue(snapshot: OverviewRawSnapshot, state: OverviewDerivedSt
   if (network.priority === "interface-down") return `${formatNumber(state.facts.interfaces.down)}/${formatNumber(state.facts.interfaces.total)} 接口 Down`;
   if (network.priority === "collection-degraded") return `${network.conclusion.value} ${routerOsLatestSuccess(snapshot, state)}`;
   if (network.priority === "snapshot-missing") return network.conclusion.title;
-  return "网络可用";
+  return "WAN 出口在线";
 }
 
 function conclusionNote(snapshot: OverviewRawSnapshot, state: OverviewDerivedState, network: RouterOsNetworkViewModel): string {

@@ -798,9 +798,10 @@ assert(
   "Desktop selector ownership must use semantic desktop-only classes, not self-certifying root attributes"
 );
 assert(
-  desktopTopbar.includes("desktopPresentation") &&
-    desktopPresentation.includes("buildRouterOsPresentationViewModel"),
-  "Desktop topbar must consume the RouterOS presentation view model through its adapter"
+  desktopTopbar.includes("buildRouterOsNetworkViewModel(snapshot, state)") &&
+    desktopTopbar.includes("desktopPresentation(snapshot, state, network)") &&
+    desktopPresentation.includes("buildRouterOsPresentationViewModel(snapshot, state, network)"),
+  "Desktop topbar must build the RouterOS network model once and share it with its presentation adapter"
 );
 assert(
   desktopHelpers.includes('return "当前采样";') &&
@@ -818,9 +819,9 @@ assert(
   "routerosPresentationViewModel.ts must own the bounded desktop presentation policy"
 );
 assert(
-  routerOsPresentationViewModel.includes('return "网络可用";') &&
+  routerOsPresentationViewModel.includes('return "WAN 出口在线";') &&
     routerOsNetworkViewModel.includes('value: "转发可用"'),
-  "Desktop presentation must lead with a public network judgement while keeping forwarding availability as evidence"
+  "Desktop presentation must lead with a factual WAN judgement while keeping forwarding availability as evidence"
 );
 assert(
   !desktopDecisionRail.includes("style={") &&
@@ -846,8 +847,10 @@ assert(
 );
 assert(
   !/data-overview-desktop-v\d+|data-overview-(?:summary|status-bus|verdict-status-bus|status-bar|summary-main|desktop-top|status-cell-contract|status-no-table-header|status-value-rail|topbar-priority-contract|topbar-fixed-six)/.test(statusVerdict) &&
-  statusVerdict.includes('className="ro-status-bus"') &&
-    statusVerdict.includes('className="ro-status-cell"') &&
+  statusVerdict.includes('className={`ro-status-bus ${') &&
+    statusVerdict.includes('"is-channel-audit" : "is-summary"') &&
+    statusVerdict.includes('className={`ro-status-cell is-${item.role}`}') &&
+    !statusVerdict.includes("data-overview-status-role") &&
     !statusVerdict.includes("ro-topbar") &&
     !statusVerdict.includes("ik-home-flat") &&
     !statusVerdict.includes("ro-contract-hidden") &&
@@ -1040,7 +1043,7 @@ assert(
   `Desktop base styles must not ship inactive flat-dense root rules: ${desktopLegacyRootRuleCount}`
 );
 assert(
-  desktopStatusBusRuleCount === 10 && desktopLegacyTopbarRuleCount === 0,
+  desktopStatusBusRuleCount === 11 && desktopLegacyTopbarRuleCount === 0,
   `Desktop status bus must stay canonical: statusBusRules=${desktopStatusBusRuleCount} legacyTopbarRules=${desktopLegacyTopbarRuleCount}`
 );
 assert(
