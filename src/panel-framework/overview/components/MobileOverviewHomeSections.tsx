@@ -52,7 +52,7 @@ function rowIcon(row: AppRankingRow): string {
 }
 
 function supportingCopy(model: MobileOverviewModel): { title: string; summary: string } {
-  if (model.priority === "normal") return { title: "运行明细", summary: "默认路由 · 采集 · 快照" };
+  if (model.priority === "normal") return { title: "运行明细", summary: "路由 · 采集 · 设备余量" };
   if (model.priority === "wan-offline") return { title: "处理", summary: "出口 · 默认路由 · 最近成功" };
   if (model.priority === "snapshot-missing") return { title: "处理", summary: "数据边界 · 最近成功" };
   if (model.priority === "collection-degraded") return { title: "处理", summary: "采集通道 · 缓存快照" };
@@ -64,7 +64,7 @@ function supportingCopy(model: MobileOverviewModel): { title: string; summary: s
 }
 
 export function SupportingList({ model }: { model: MobileOverviewModel }) {
-  const rows = model.primaryList.rows.slice(0, model.priority === "normal" ? 3 : 4);
+  const rows = model.primaryList.rows.slice(0, 4);
   const copy = supportingCopy(model);
   return (
     <section className="ik-mobile-supporting-surface">

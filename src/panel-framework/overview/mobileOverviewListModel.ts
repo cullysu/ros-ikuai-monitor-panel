@@ -282,6 +282,7 @@ function normalOperationalRows(
     Number(state.facts.resource.disk),
   ].map((value) => Number.isFinite(value) ? Math.max(0, value) : 0);
   const resourcePeak = Math.max(...resourceValues);
+  const interfaceDown = Math.max(0, Number(state.facts.interfaces.down) || 0);
   const supplements: MobileMonitorListRow[] = [
     {
       id: "normal-route-evidence",
@@ -322,11 +323,11 @@ function normalOperationalRows(
     {
       id: "normal-resource-evidence",
       rank: "",
-      name: "资源余量",
+      name: "设备余量",
       kind: "系统",
-      meta: "处理器 / 内存 / 磁盘 · 当前快照",
-      value: resourceValues.map((value) => `${Math.round(value)}%`).join("/"),
-      status: "当前",
+      meta: `CPU ${Math.round(resourceValues[0])}% · 内存 ${Math.round(resourceValues[1])}% · 磁盘 ${Math.round(resourceValues[2])}%`,
+      value: resourcePeak >= 85 ? "紧张" : "充足",
+      status: `接口 ${Math.round(interfaceDown)} Down`,
       percent: 0,
       tone: resourcePeak >= 85 ? "warn" : "ok",
       ...operationalEvidence("resource", "normal-resource-evidence"),
@@ -362,7 +363,7 @@ export function buildMobilePrimaryList(
   return {
     kind: "terminal-ranking",
     title: "网络证据链",
-    meta: "默认路由 · 采集 · 快照 · 终端辅助",
+    meta: "默认路由 · WAN · 采集 · 设备余量",
     rows: normalRows,
   };
 }

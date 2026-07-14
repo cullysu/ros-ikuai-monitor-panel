@@ -1815,6 +1815,10 @@ async function main() {
           value: normalize(row.querySelector('strong b')?.textContent || ''),
           status: normalize(row.querySelector('strong small')?.textContent || '')
         }));
+        const listEvidenceRects = listEvidenceRows.map((row) => {
+          const rect = row.getBoundingClientRect();
+          return { top: rect.top, bottom: rect.bottom, width: rect.width, height: rect.height };
+        });
         const primaryListEvidenceStandardized = Boolean(
           listEvidenceRows.length > 0 &&
           listEvidence.every((item) => (
@@ -1824,6 +1828,20 @@ async function main() {
             item.status
           ))
         );
+        const bottomTabsRect = bottomTabs?.getBoundingClientRect();
+        const normalOperationalDensityChecks = {
+          rowCount: listEvidence.length === 4,
+          rowNames: listEvidence.map((item) => item.name).join('|') === '默认路由|WAN 汇总|采集证据|设备余量',
+          resourceMeta: /CPU \\d+% · 内存 \\d+% · 磁盘 \\d+%/.test(listEvidence[3]?.meta || ''),
+          interfaceStatus: /^接口 \\d+ Down$/.test(listEvidence[3]?.status || ''),
+          rowsFit: listEvidenceRects.every((rowRect) => (
+            rowRect.width > 0 &&
+            rowRect.height >= 42 &&
+            (!bottomTabsRect || rowRect.bottom <= bottomTabsRect.top)
+          )),
+        };
+        const normalOperationalDensityOk = sectionName !== 'mobileNormalHome' || isLandscapeMobile ||
+          Object.values(normalOperationalDensityChecks).every(Boolean);
         const listStyle = list ? getComputedStyle(list) : null;
         const routerTabs = root?.querySelector('nav[aria-label="路由器监控底部导航"]');
         const routerTabItems = Array.from(routerTabs?.querySelectorAll('button[aria-controls^="mobile-"]') || []);
@@ -2176,6 +2194,7 @@ async function main() {
           surfacePolicyModelBacked &&
           statusCoreBlocksModelBacked &&
           primaryListEvidenceStandardized &&
+          normalOperationalDensityOk &&
           resourceTrackNoiseLow &&
           resourceVisualModelBacked &&
           wanPortEvidenceDeferred &&
@@ -2190,7 +2209,7 @@ async function main() {
             ? abnormalDecisionRailProductized
             : true) &&
           (expectedConfig.mode === 'normal'
-            ? !terminalRankingCopyVisible && (evidenceCondensedForLandscape ? visibleTerminalRows.length === 0 : (visibleTerminalRows.length >= 1 && visibleTerminalRows.length <= 3))
+            ? !terminalRankingCopyVisible && (evidenceCondensedForLandscape ? visibleTerminalRows.length === 0 : (visibleTerminalRows.length >= 1 && visibleTerminalRows.length <= 4))
             : !terminalRankingCopyVisible && (evidenceCondensedForLandscape ? visibleTerminalRows.length === 0 : visibleTerminalRows.length >= 1)) &&
           !styleTextLeakedIntoOverview &&
           missing.length === 0 &&
@@ -2278,7 +2297,11 @@ async function main() {
           statusCoreBlocksModelBacked,
           statusCoreBlocks,
           primaryListEvidenceStandardized,
+          normalOperationalDensityOk,
+          normalOperationalDensityChecks,
           listEvidence,
+          listEvidenceRects,
+          bottomTabsTop: bottomTabsRect?.top || null,
           nativeTrustSpinePolished,
           metricGridProductized,
           noSnapshotMetricsDeferred,

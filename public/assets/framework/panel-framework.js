@@ -8448,6 +8448,7 @@ var PanelFramework = function(exports) {
       Number(state.facts.resource.disk)
     ].map((value) => Number.isFinite(value) ? Math.max(0, value) : 0);
     const resourcePeak = Math.max(...resourceValues);
+    const interfaceDown = Math.max(0, Number(state.facts.interfaces.down) || 0);
     const supplements = [
       {
         id: "normal-route-evidence",
@@ -8488,11 +8489,11 @@ var PanelFramework = function(exports) {
       {
         id: "normal-resource-evidence",
         rank: "",
-        name: "资源余量",
+        name: "设备余量",
         kind: "系统",
-        meta: "处理器 / 内存 / 磁盘 · 当前快照",
-        value: resourceValues.map((value) => `${Math.round(value)}%`).join("/"),
-        status: "当前",
+        meta: `CPU ${Math.round(resourceValues[0])}% · 内存 ${Math.round(resourceValues[1])}% · 磁盘 ${Math.round(resourceValues[2])}%`,
+        value: resourcePeak >= 85 ? "紧张" : "充足",
+        status: `接口 ${Math.round(interfaceDown)} Down`,
         percent: 0,
         tone: resourcePeak >= 85 ? "warn" : "ok",
         ...operationalEvidence("resource", "normal-resource-evidence")
@@ -8520,7 +8521,7 @@ var PanelFramework = function(exports) {
     return {
       kind: "terminal-ranking",
       title: "网络证据链",
-      meta: "默认路由 · 采集 · 快照 · 终端辅助",
+      meta: "默认路由 · WAN · 采集 · 设备余量",
       rows: normalRows
     };
   }
@@ -9376,7 +9377,7 @@ var PanelFramework = function(exports) {
     return row.rank ? String(row.rank) : "•";
   }
   function supportingCopy(model) {
-    if (model.priority === "normal") return { title: "运行明细", summary: "默认路由 · 采集 · 快照" };
+    if (model.priority === "normal") return { title: "运行明细", summary: "路由 · 采集 · 设备余量" };
     if (model.priority === "wan-offline") return { title: "处理", summary: "出口 · 默认路由 · 最近成功" };
     if (model.priority === "snapshot-missing") return { title: "处理", summary: "数据边界 · 最近成功" };
     if (model.priority === "collection-degraded") return { title: "处理", summary: "采集通道 · 缓存快照" };
@@ -9387,7 +9388,7 @@ var PanelFramework = function(exports) {
     return { title: "处理", summary: "受影响接口 · 默认路由" };
   }
   function SupportingList({ model }) {
-    const rows = model.primaryList.rows.slice(0, model.priority === "normal" ? 3 : 4);
+    const rows = model.primaryList.rows.slice(0, 4);
     const copy = supportingCopy(model);
     return /* @__PURE__ */ jsxRuntimeExports.jsx("section", { className: "ik-mobile-supporting-surface", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ik-mobile-supporting-list", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { className: `ik-mobile-supporting-head ${toneClass(model.impactScope.tone)}`, children: [
