@@ -729,16 +729,17 @@ assert(lines(routerMobileDetailStyles) <= 220, `router-mobile-detail.css exceeds
 assert(
   routerMobileApp.includes('className="rm-app"') &&
     routerMobileApp.includes('className="rm-header"') &&
-    routerMobileApp.includes('className="rm-tabbar"') &&
-    routerMobileApp.includes('"network" | "collection"'),
-  "RouterMobileApp must own an isolated app shell with only network and collection tabs"
+    !routerMobileApp.includes('className="rm-tabbar"') &&
+    !routerMobileApp.includes('RouterMobileTab'),
+  "RouterMobileApp must own an isolated single-surface app shell without bottom tabs"
 );
 assert(
   routerMobileScreens.includes('className="rm-verdict"') &&
-    routerMobileScreens.includes('className="rm-metric-grid"') &&
+    routerMobileScreens.includes('className="rm-metric-ledger"') &&
     routerMobileScreens.includes('className="rm-traffic"') &&
+    routerMobileScreens.includes('className="rm-trust-rail"') &&
     routerMobileScreens.includes('className="rm-evidence"'),
-  "Router mobile screens must expose verdict, metrics, truthful traffic, and evidence regions"
+  "Router mobile screens must expose verdict, metrics, truthful traffic, integrated trust, and evidence regions"
 );
 assert(
   desktopConsole.includes("ik-desktop-workspace") &&
@@ -924,10 +925,9 @@ assert(
   routerMobileModel.includes('source: "history"') &&
     routerMobileModel.includes('source: "snapshot"') &&
     routerMobileModel.includes('source: "unavailable"') &&
-    routerMobileScreens.includes('data-router-mobile-traffic="history"') &&
-    routerMobileScreens.includes('data-router-mobile-traffic="snapshot"') &&
-    routerMobileScreens.includes('data-router-mobile-traffic="unavailable"'),
-  "Router mobile traffic must distinguish history, single snapshot, and unavailable data"
+    routerMobileScreens.includes('trend.source === "unavailable"') &&
+    routerMobileScreens.includes('data-router-mobile-traffic={trend.source}'),
+  "Router mobile traffic must distinguish measured history, single snapshot, and hidden unavailable data"
 );
 assert(
   (desktopConsole.match(/data-overview-/g) || []).length <= 6,
@@ -1133,7 +1133,10 @@ if (exists(builtCssFile)) {
     `Built style.css contains ${builtLegacyIosSelectorCount} legacy ik-ios selector rules`
   );
   assert(builtLegacyMobileSelectorCount === 0, `Built style.css contains ${builtLegacyMobileSelectorCount} legacy ik-mobile selector rules`);
-  assert(builtCss.includes(".rm-app") && builtCss.includes(".rm-tabbar"), "Built style.css must contain the isolated router mobile app stylesheet");
+  assert(
+    builtCss.includes(".rm-app") && builtCss.includes(".rm-trust-rail") && !builtCss.includes(".rm-tabbar"),
+    "Built style.css must contain the isolated single-surface router mobile stylesheet without retired tab navigation"
+  );
 }
 
 if (failures.length > 0) {

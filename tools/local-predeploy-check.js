@@ -6845,8 +6845,8 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const strictNarrowOverflow = ${args.strictResponsive ? 'true' : 'false'} && isMobileOverview && overflowX > 24;
     const routerMobileRoot = sectionRoot?.querySelector('.rm-app');
     const routerMobileRect = routerMobileRoot?.getBoundingClientRect();
-    const routerMobileTabs = Array.from(routerMobileRoot?.querySelectorAll('.rm-tabbar button') || []);
     const routerMobileMetrics = Array.from(routerMobileRoot?.querySelectorAll('.rm-metric') || []);
+    const routerMobileTrustFacts = Array.from(routerMobileRoot?.querySelectorAll('.rm-trust-rail > div') || []);
     const routerMobileEvidence = Array.from(routerMobileRoot?.querySelectorAll('.rm-evidence-list article') || []);
     const routerMobileTraffic = routerMobileRoot?.querySelector('[data-router-mobile-traffic]');
     const routerMobileDecisionRows = Array.from(routerMobileRoot?.querySelectorAll('[data-router-mobile-decision-row]') || []);
@@ -6859,20 +6859,18 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       scenario: routerMobileRoot?.getAttribute('data-scenario') === ${JSON.stringify(scaleScenario)},
       desktopDomAbsent: !sectionRoot?.querySelector('.ro-desktop-grid, .ro-status-bus'),
       verdict: Boolean(routerMobileRoot?.querySelector('.rm-verdict h1')),
-      metricsMatchMode: routerMobileIncidentScenario ? routerMobileMetrics.length === 0 : routerMobileMetrics.length === 4,
+      primaryMetricsComplete: routerMobileMetrics.length === 4,
       evidenceDownshifted: routerMobileEvidence.length === 0 && Boolean(routerMobileDetailEntry),
       incidentDecisionComplete: routerMobileIncidentScenario
-        ? routerMobileDecisionRows.length === 4 && routerMobileText.includes('下一步')
+        ? routerMobileDecisionRows.length === 2 && routerMobileText.includes('影响') && routerMobileText.includes('排查')
         : routerMobileDecisionRows.length === 0,
-      trafficMatchesMode: routerMobileIncidentScenario
-        ? !routerMobileTraffic && !/bps|Kbps|Mbps|Gbps/.test(routerMobileText)
+      trafficMatchesMode: ['all-offline', 'no-snapshot'].includes(${JSON.stringify(scaleScenario)})
+        ? !routerMobileTraffic
         : ['history', 'snapshot'].includes(routerMobileTraffic?.getAttribute('data-router-mobile-traffic') || ''),
-      twoTabs: routerMobileTabs.length === 2,
-      touchTargets: routerMobileTabs.every((tab) => {
-        const rect = tab.getBoundingClientRect();
-        return rect.width >= 44 && rect.height >= 44;
-      }),
-      readonly: routerMobileText.includes('只读') && routerMobileText.includes('不会修改路由器配置'),
+      collectionTrustIntegrated: routerMobileTrustFacts.length === 4 && ['快照', 'REST', 'SSH', '端点记录'].every((label) => routerMobileText.includes(label)),
+      noBottomTabs: !routerMobileRoot?.querySelector('.rm-tabbar'),
+      touchTarget: Boolean(routerMobileDetailEntry && routerMobileDetailEntry.getBoundingClientRect().height >= 44),
+      readonly: routerMobileText.includes('只读监控'),
       viewport: Boolean(routerMobileRect && routerMobileRect.left <= 1 && routerMobileRect.top <= 1 && routerMobileRect.width >= window.innerWidth - 2 && routerMobileRect.height >= window.innerHeight - 2),
       summaryFitsViewport: Boolean(routerMobileContent && routerMobileContent.scrollHeight <= routerMobileContent.clientHeight + 1),
       noHorizontalOverflow: overflowX <= 1,
@@ -7141,7 +7139,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       compactLandscape: compactLandscapeOverview,
       contract: 'isolated-router-mobile-app',
       root: routerMobileRect ? { left: routerMobileRect.left, top: routerMobileRect.top, width: routerMobileRect.width, height: routerMobileRect.height } : null,
-      tabs: routerMobileTabs.length,
+      trustFacts: routerMobileTrustFacts.length,
       metrics: routerMobileMetrics.length,
       evidence: routerMobileEvidence.length,
       trafficSource: routerMobileTraffic?.getAttribute('data-router-mobile-traffic') || '',

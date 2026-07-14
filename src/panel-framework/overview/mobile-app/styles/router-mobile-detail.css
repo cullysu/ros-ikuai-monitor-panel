@@ -1,19 +1,18 @@
 .rm-detail-header {
-  min-height: 50px;
+  min-height: 46px;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 7px;
 }
 
 .rm-detail-header button {
   width: 44px;
   height: 44px;
   flex: 0 0 44px;
-  border: 1px solid var(--rm-line);
-  border-radius: 50%;
+  border: 0;
+  border-radius: var(--rm-radius-small);
   color: var(--rm-blue-deep);
-  background: var(--rm-surface);
-  box-shadow: 0 6px 18px rgba(42, 74, 89, 0.06);
+  background: transparent;
   font-size: 28px;
   line-height: 40px;
   touch-action: manipulation;
@@ -34,48 +33,51 @@
 .rm-detail-header h1 {
   overflow: hidden;
   margin: 0;
-  color: var(--rm-ink);
-  font-size: 19px;
+  font-size: 18px;
   font-weight: 740;
-  line-height: 24px;
+  line-height: 23px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
+.rm-evidence {
+  overflow: hidden;
+}
+
 .rm-evidence > header {
-  min-height: 44px;
-  padding: 0 12px;
+  min-height: 39px;
+  padding: 0 11px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 10px;
   border-bottom: 1px solid var(--rm-line);
+  background: #edf3f6;
 }
 
 .rm-evidence > header h2,
 .rm-evidence > header span {
   margin: 0;
-  font-size: 12px;
-  line-height: 18px;
+  font-size: 11px;
+  line-height: 17px;
 }
 
 .rm-evidence > header h2 {
-  color: var(--rm-ink);
   font-weight: 700;
 }
 
 .rm-evidence > header span {
   color: var(--rm-ink-muted);
-  font-weight: 600;
+  font-weight: 560;
 }
 
 .rm-evidence-list article {
-  min-height: 58px;
-  padding: 8px 12px;
+  min-height: 53px;
+  padding: 7px 10px;
   display: grid;
   grid-template-columns: 6px minmax(0, 1fr) auto;
   align-items: center;
-  gap: 9px;
+  gap: 8px;
   border-bottom: 1px solid var(--rm-line);
 }
 
@@ -94,11 +96,11 @@
   background: var(--rm-critical);
 }
 
-.rm-evidence-list article[data-tone="warning"] > i {
+.rm-evidence-list article[data-tone="degraded"] > i {
   background: var(--rm-warn);
 }
 
-.rm-evidence-list article[data-tone="muted"] > i {
+.rm-evidence-list article[data-tone="unknown"] > i {
   background: var(--rm-ink-muted);
 }
 
@@ -117,7 +119,6 @@
 
 .rm-evidence-list article strong {
   display: block;
-  color: var(--rm-ink);
   font-size: 12px;
   font-weight: 680;
   line-height: 17px;
@@ -131,9 +132,20 @@
 }
 
 .rm-evidence-list article b {
-  max-width: 120px;
+  max-width: 116px;
   color: var(--rm-ink-soft);
   font-size: 11px;
   font-weight: 680;
   line-height: 17px;
+}
+
+@media (orientation: landscape) and (max-height: 520px) {
+  .rm-detail-screen {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+  .rm-detail-header {
+    grid-column: 1 / -1;
+    min-height: 42px;
+  }
 }

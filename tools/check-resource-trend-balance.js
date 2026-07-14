@@ -675,8 +675,8 @@ async function main() {
           mobileCollectionHome: 'collection-down'
         };
         const expectedTitles = {
-          single: '网络出口可用',
-          fleet: '出口承载正常',
+          single: 'WAN 出口在线',
+          fleet: '条 WAN 在线',
           'all-offline': '全部 WAN 已离线',
           'no-snapshot': '业务状态不可判断',
           'resource-full': '资源已进入高压区',
@@ -685,13 +685,14 @@ async function main() {
         };
         const expectedScenario = expectedScenarios[sectionName] || '';
         const incidentScenario = ['all-offline', 'no-snapshot', 'collection-down', 'resource-full', 'interfaces-down'].includes(expectedScenario);
-        const tabs = Array.from(routerMobileApp.querySelectorAll('.rm-tabbar button'));
         const initialText = visibleText(routerMobileApp);
         const initialTraffic = routerMobileApp.querySelector('[data-router-mobile-traffic]');
         const initialMetrics = Array.from(routerMobileApp.querySelectorAll('.rm-metric'));
+        const trustFacts = Array.from(routerMobileApp.querySelectorAll('.rm-trust-rail > div'));
         const initialEvidenceRows = Array.from(routerMobileApp.querySelectorAll('.rm-evidence-list article'));
         const decisionRows = Array.from(routerMobileApp.querySelectorAll('[data-router-mobile-decision-row]'));
         const detailTrigger = routerMobileApp.querySelector('[data-router-mobile-open-detail]');
+        const detailTouchTarget = Boolean(detailTrigger && detailTrigger.getBoundingClientRect().height >= 44);
         const initialContent = routerMobileApp.querySelector('.rm-content');
         const summaryFitsViewport = Boolean(initialContent && initialContent.scrollHeight <= initialContent.clientHeight + 1);
         let detailDrilldownOk = false;
@@ -705,12 +706,6 @@ async function main() {
           routerMobileApp.querySelector('[data-router-mobile-back]')?.click();
           await new Promise((resolve) => setTimeout(resolve, 80));
         }
-        let collectionNavigationOk = true;
-        if (sectionName === 'mobileNavigation' || sectionName === 'mobileNavigationNoSnapshot') {
-          tabs[1]?.click();
-          await new Promise((resolve) => setTimeout(resolve, 80));
-          collectionNavigationOk = Boolean(routerMobileApp.querySelector('[data-router-mobile-screen="collection"]'));
-        }
         const currentText = visibleText(routerMobileApp);
         const appRect = routerMobileApp.getBoundingClientRect();
         const status = routerMobileApp.querySelector('.rm-device-state strong');
@@ -721,16 +716,16 @@ async function main() {
           scenarioMatches: routerMobileApp.getAttribute('data-scenario') === expectedScenario,
           desktopDomAbsent: !sectionEl?.querySelector('.ro-desktop-grid, .ro-status-bus'),
           verdictVisible: initialText.includes(expectedTitles[expectedScenario] || ''),
-          primaryMetricsMatchMode: incidentScenario ? initialMetrics.length === 0 : initialMetrics.length === 4,
-          trafficMatchesMode: incidentScenario
+          primaryMetricsComplete: initialMetrics.length === 4,
+          trafficMatchesMode: ['all-offline', 'no-snapshot'].includes(expectedScenario)
             ? !traffic
             : ['history', 'snapshot'].includes(traffic?.getAttribute('data-router-mobile-traffic') || ''),
           evidenceDownshifted: initialEvidenceRows.length === 0 && detailDrilldownOk,
-          incidentDecisionComplete: incidentScenario ? decisionRows.length === 4 && initialText.includes('下一步') : decisionRows.length === 0,
-          twoTopLevelTabs: tabs.length === 2 && tabs.map((tab) => normalize(tab.textContent).replace(/\s+/g, '')).join('|') === '网络|采集',
-          tabTouchTargets: tabs.every((tab) => tab.getBoundingClientRect().width >= 44 && tab.getBoundingClientRect().height >= 44),
-          collectionNavigationOk,
-          readonlyBoundaryVisible: currentText.includes('只读') && currentText.includes('不会修改路由器配置'),
+          incidentDecisionComplete: incidentScenario ? decisionRows.length === 2 && initialText.includes('影响') && initialText.includes('排查') : decisionRows.length === 0,
+          collectionTrustIntegrated: trustFacts.length === 4 && ['快照', 'REST', 'SSH', '端点记录'].every((label) => initialText.includes(label)),
+          noBottomTabs: !routerMobileApp.querySelector('.rm-tabbar'),
+          detailTouchTarget,
+          readonlyBoundaryVisible: currentText.includes('只读监控'),
           statusReadable: Boolean(statusStyle && Number.parseFloat(statusStyle.fontSize) >= 11),
           viewportBounded: appRect.width <= innerWidth + 1 && appRect.height <= innerHeight + 1,
           summaryFitsViewport,
@@ -747,7 +742,7 @@ async function main() {
           metricCount: initialMetrics.length,
           evidenceRowCount: initialEvidenceRows.length,
           trafficSource: traffic?.getAttribute('data-router-mobile-traffic') || '',
-          tabLabels: tabs.map((tab) => normalize(tab.textContent)),
+          trustFactCount: trustFacts.length,
           viewport: { width: innerWidth, height: innerHeight, scrollWidth: document.documentElement.scrollWidth },
           textExcerpt: currentText.slice(0, 700)
         };

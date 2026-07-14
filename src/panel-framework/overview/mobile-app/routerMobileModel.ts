@@ -37,9 +37,7 @@ export interface RouterMobileTrend {
 }
 
 export interface RouterMobileIncidentDecision {
-  object: string;
   impact: string;
-  credibility: string;
   nextStep: string;
 }
 
@@ -62,12 +60,9 @@ export interface RouterMobileModel {
   trend: RouterMobileTrend;
   evidenceTitle: string;
   evidence: RouterMobileEvidence[];
-  collection: {
-    title: string;
-    detail: string;
-    tone: RouterMobileTone;
+  trust: {
     metrics: RouterMobileMetric[];
-    failures: RouterMobileEvidence[];
+    endpointRecords: RouterMobileEvidence[];
   };
 }
 
@@ -266,9 +261,10 @@ function failureEvidence(snapshot: OverviewRawSnapshot): RouterMobileEvidence[] 
 }
 
 function scenarioVerdict(state: OverviewDerivedState): RouterMobileModel["verdict"] {
+  const routeFact = state.facts.route.level === "ok" ? "默认路由生效" : "默认路由尚未确认";
   switch (state.scenario) {
     case "fleet":
-      return { kicker: "多线路概况", title: "出口承载正常", detail: `${state.facts.wan.online} 条 WAN 在线，默认路由与采集快照均可用。` };
+      return { kicker: "多线路概况", title: `${state.facts.wan.online} 条 WAN 在线`, detail: `${routeFact}；采集快照可用于当前判断。` };
     case "all-offline":
       return { kicker: "互联网出口", title: "全部 WAN 已离线", detail: "当前没有活动出口；局域网与管理面状态不能代表外网可用。" };
     case "no-snapshot":
@@ -278,48 +274,45 @@ function scenarioVerdict(state: OverviewDerivedState): RouterMobileModel["verdic
     case "resource-full":
       return { kicker: "设备压力", title: "资源已进入高压区", detail: `CPU ${Math.round(state.facts.resource.cpu)}%、内存 ${Math.round(state.facts.resource.memory)}%、磁盘 ${Math.round(state.facts.resource.disk)}%。` };
     case "interfaces-down":
-      return { kicker: "接口事件", title: `${state.facts.interfaces.down} 个接口停止运行`, detail: "默认出口仍生效；请先核对受影响接口及其上联关系。" };
+      return {
+        kicker: "接口事件",
+        title: `${state.facts.interfaces.down} 个接口停止运行`,
+        detail: state.facts.route.level === "ok" && state.facts.wan.online > 0
+          ? "默认出口仍生效；请先核对受影响接口及其上联关系。"
+          : "当前没有可确认在线的 WAN；需同时核对默认路由与受影响接口。",
+      };
     default:
-      return { kicker: "网络概况", title: "网络出口可用", detail: "WAN 在线、默认路由生效，采集快照可用于当前判断。" };
+      return { kicker: "网络概况", title: "WAN 出口在线", detail: `${state.facts.wan.online}/${state.facts.wan.total || 0} 条 WAN 在线；${routeFact}；采集快照可用于当前判断。` };
   }
 }
 
-function incidentDecision(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): RouterMobileIncidentDecision | undefined {
-  const updated = latestTime(snapshot, state);
+function incidentDecision(state: OverviewDerivedState): RouterMobileIncidentDecision | undefined {
   switch (state.scenario) {
     case "all-offline":
       return {
-        object: `${state.facts.wan.total} 条 WAN 与默认路由`,
         impact: "互联网访问不可用；局域网和管理面可能仍可用",
-        credibility: `当前快照可用 · ${updated}`,
         nextStep: "先检查默认路由，再核对各 WAN 的拨号或上联状态",
       };
     case "no-snapshot":
       return {
-        object: "REST / SSH 采集链路",
         impact: "流量、WAN、接口和资源状态均不可判断",
-        credibility: "没有有效快照 · 仅能确认采集失败",
         nextStep: "先恢复 REST 或只读 SSH，再判断实际网络状态",
       };
     case "collection-down":
       return {
-        object: "实时采集通道",
         impact: "页面数据已过期；不直接代表业务网络中断",
-        credibility: `仅保留上次成功快照 · ${updated}`,
         nextStep: "先查看失败端点，再核对最近一次成功采集时间",
       };
     case "resource-full":
       return {
-        object: `CPU ${Math.round(state.facts.resource.cpu)}% · 内存 ${Math.round(state.facts.resource.memory)}% · 磁盘 ${Math.round(state.facts.resource.disk)}%`,
         impact: "转发性能可能下降；当前无法证明是否持续",
-        credibility: `单次资源快照 · ${updated}`,
         nextStep: "先检查连接压力，再确认 CPU 与内存是否持续高位",
       };
     case "interfaces-down":
       return {
-        object: `${state.facts.interfaces.down} 个 Down 接口`,
-        impact: state.facts.route.level === "ok" ? "默认出口仍生效；仅所列接口可能受影响" : "默认出口状态异常，外网承载可能受影响",
-        credibility: `当前接口快照可用 · ${updated}`,
+        impact: state.facts.route.level === "ok" && state.facts.wan.online > 0
+          ? "默认出口仍生效；仅所列接口可能受影响"
+          : "没有可确认在线的 WAN；外网承载可能受影响",
         nextStep: "先核对 Down 接口是否承载 WAN、上联或关键终端",
       };
     default:
@@ -328,15 +321,12 @@ function incidentDecision(snapshot: OverviewRawSnapshot, state: OverviewDerivedS
 }
 
 function scenarioMetrics(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): RouterMobileMetric[] {
-  const current = rates(snapshot);
-  const down = rateParts(current.down);
-  const up = rateParts(current.up);
   if (state.scenario === "no-snapshot") {
     return [
-      { label: "业务数据", value: "不展示", note: "无有效快照", tone: "unknown" },
-      { label: "REST", value: "不可用", note: "实时采集失败", tone: "critical" },
-      { label: "SSH", value: "不可用", note: "静态采集失败", tone: "critical" },
-      { label: "最后记录", value: latestTime(snapshot, state), note: "仅供定位", tone: "unknown" },
+      { label: "业务指标", value: "不展示", note: "无有效快照", tone: "unknown" },
+      { label: "有效快照", value: "0", note: "当前不可判", tone: "critical" },
+      { label: "采集通道", value: "0/2", note: "REST / SSH 失败", tone: "critical" },
+      { label: "最近记录", value: latestTime(snapshot, state), note: "仅供定位", tone: "unknown" },
     ];
   }
   if (state.scenario === "resource-full") {
@@ -355,12 +345,35 @@ function scenarioMetrics(snapshot: OverviewRawSnapshot, state: OverviewDerivedSt
       { label: "采集快照", value: latestTime(snapshot, state), note: state.facts.collection.credibilityLabel, tone: "healthy" },
     ];
   }
-  const metrics: RouterMobileMetric[] = [
-    { label: "下载", value: down.value, unit: down.unit, note: state.scenario === "collection-down" ? "上次快照" : "当前总速率" },
-    { label: "上传", value: up.value, unit: up.unit, note: state.scenario === "collection-down" ? "上次快照" : "当前总速率" },
-    { label: "WAN 在线", value: `${state.facts.wan.online}/${state.facts.wan.total || 0}`, note: state.facts.route.label, tone: state.facts.wan.offline ? "degraded" : "healthy" },
-    { label: state.scenario === "interfaces-down" ? "接口 Down" : "CPU", value: state.scenario === "interfaces-down" ? String(state.facts.interfaces.down) : String(Math.round(state.facts.resource.cpu)), unit: state.scenario === "interfaces-down" ? undefined : "%", note: state.scenario === "interfaces-down" ? state.facts.interfaces.downNames.slice(0, 2).join("、") : "设备负载", tone: state.scenario === "interfaces-down" ? "degraded" : "healthy" },
-  ];
+  const routeAvailable = state.facts.route.level === "ok";
+  const wanMetric: RouterMobileMetric = {
+    label: "WAN 在线",
+    value: `${state.facts.wan.online}/${state.facts.wan.total || 0}`,
+    note: state.facts.wan.offline ? `${state.facts.wan.offline} 条未运行` : "出口线路运行",
+    tone: state.facts.wan.offline ? "degraded" : "healthy",
+  };
+  const routeMetric: RouterMobileMetric = {
+    label: "默认路由",
+    value: routeAvailable ? "生效" : "未确认",
+    note: state.facts.route.label,
+    tone: routeAvailable ? "healthy" : "critical",
+  };
+  const cpuMetric: RouterMobileMetric = {
+    label: "CPU",
+    value: state.facts.resource.available ? String(Math.round(state.facts.resource.cpu)) : "未采集",
+    unit: state.facts.resource.available ? "%" : undefined,
+    note: state.facts.resource.available ? "设备负载" : "本次无读数",
+    tone: state.facts.resource.level === "danger" ? "critical" : state.facts.resource.level === "warn" ? "degraded" : "healthy",
+  };
+  const interfaceMetric: RouterMobileMetric = {
+    label: "接口 Down",
+    value: String(state.facts.interfaces.down),
+    note: state.facts.interfaces.down ? state.facts.interfaces.downNames.slice(0, 2).join("、") : `${state.facts.interfaces.total} 个接口运行`,
+    tone: state.facts.interfaces.down ? "degraded" : "healthy",
+  };
+  const metrics = state.scenario === "interfaces-down"
+    ? [interfaceMetric, wanMetric, routeMetric, cpuMetric]
+    : [wanMetric, routeMetric, cpuMetric, interfaceMetric];
   if (state.scenario === "collection-down") metrics.forEach((metric) => { metric.tone = metric.tone === "critical" ? "critical" : "degraded"; });
   return metrics;
 }
@@ -402,25 +415,18 @@ function scenarioEvidence(snapshot: OverviewRawSnapshot, state: OverviewDerivedS
   return { title: "运行证据", rows: normalEvidence(snapshot, state) };
 }
 
-function collectionModel(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): RouterMobileModel["collection"] {
+function trustModel(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): RouterMobileModel["trust"] {
   const meta = snapshot.meta || {};
   const failures = failureEntries(snapshot).length;
   const tone: RouterMobileTone = state.scenario === "no-snapshot" ? "critical" : state.scenario === "collection-down" ? "degraded" : "healthy";
   return {
-    title: state.scenario === "no-snapshot" ? "采集链路不可用" : state.scenario === "collection-down" ? "采集链路已降级" : "采集链路可用",
-    detail: state.scenario === "no-snapshot"
-      ? "REST 与 SSH 均未返回可用快照。"
-      : state.scenario === "collection-down"
-        ? "当前页面使用上次成功结果，不能代表实时业务状态。"
-        : "REST 与只读 SSH 提供了可用于判断的快照。",
-    tone,
     metrics: [
+      { label: "快照", value: latestTime(snapshot, state), note: state.facts.collection.credibilityLabel, tone },
       { label: "REST", value: meta.capabilities?.restTrusted ? "可用" : "失败", note: timeLabel(meta.realtimeUpdatedAt), tone: meta.capabilities?.restTrusted ? "healthy" : "critical" },
       { label: "SSH", value: meta.capabilities?.sshRead ? "只读" : "失败", note: timeLabel(meta.staticUpdatedAt), tone: meta.capabilities?.sshRead ? "healthy" : "critical" },
-      { label: "轮询周期", value: meta.pollSeconds ? `${meta.pollSeconds}s` : "未记录", note: "配置值", tone: meta.pollSeconds ? "healthy" : "unknown" },
-      { label: "失败端点", value: String(failures), note: failures ? "需要核对" : "本次无失败", tone: failures ? "degraded" : "healthy" },
+      { label: "端点记录", value: String(failures), note: failures ? "失败明细" : "本次未附", tone: failures ? "degraded" : "healthy" },
     ],
-    failures: failureEvidence(snapshot),
+    endpointRecords: failureEvidence(snapshot),
   };
 }
 
@@ -436,11 +442,11 @@ export function buildRouterMobileModel(snapshot: OverviewRawSnapshot, state: Ove
       updated: latestTime(snapshot, state),
     },
     verdict: scenarioVerdict(state),
-    incident: incidentDecision(snapshot, state),
+    incident: incidentDecision(state),
     metrics: scenarioMetrics(snapshot, state),
     trend: trendModel(snapshot, state),
     evidenceTitle: evidence.title,
     evidence: evidence.rows,
-    collection: collectionModel(snapshot, state),
+    trust: trustModel(snapshot, state),
   };
 }

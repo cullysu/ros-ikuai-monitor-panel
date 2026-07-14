@@ -1,603 +1,70 @@
-# RouterOS Read-only Triage Panel Design Notes
+# RouterOS read-only console design system
 
-本文件用于约束 `ros-ikuai-monitor-panel` 项目的界面设计方向，供后续页面改造、模块新增、样式收敛和 AI 代理执行时统一遵循。
+## Product character
 
-这不是通用品牌说明，而是本项目的落地设计规则。
+The product is an industrial, read-only network console: calm, exact, compact, and explicit about evidence boundaries. It combines iOS discipline—alignment, safe areas, coherent type/radius scales, purposeful material depth—with iKuai-like operational character—cold blue, gray hierarchy, thin rules, and high scan density. It does not imitate either product.
 
-## 1. 设计定位
+## Surface ownership
 
-本项目采用：
+- Desktop and mobile use separate render trees and separate style entry points.
+- Desktop is a comparison-oriented console with persistent navigation and dense ledgers.
+- Mobile is a one-hand patrol surface with one continuous home and a full-screen evidence drill-down.
+- No hidden duplicate DOM, cross-surface selectors, or responsive shrinking of desktop modules.
 
-- `IBM 70%`
-- `HashiCorp 30%`
+## Tokens
 
-合成目标不是做品牌复刻，而是形成一套更适合 RouterOS 只读运维监控场景的界面语言。
+### Mobile
 
-最终气质定义为：
+- Canvas: `#EDF3F6`
+- Surface: `#F9FBFC`
+- Primary tonal surface: `#E1EDF3`
+- Ink: `#142B36`; secondary: `#405B68`; muted: `#5B727D`
+- Product blue: `#397897`; deep blue: `#225F7E`
+- Divider: `#CBD9E0`; strong divider: `#AEC3CE`
+- Radius: `10px` grouped surface, `7px` compact control
+- Spacing rhythm: `4 / 8 / 12 / 16px`
 
-- 蓝白企业运维后台
-- 冷静、克制、信息密度高
-- 像网络设备控制台，不像营销网站
-- 像爱快 4.0 的操作体验，但更统一、更干净
+Desktop keeps its existing console token ownership. Mobile tokens must not be imported into desktop styles.
 
-## 2. 参考来源如何落地
+## Hierarchy and density
 
-### 2.1 借 IBM 的部分
+1. Service verdict, WAN/default route, evidence freshness, timestamp.
+2. Current throughput and scenario-specific operational metrics.
+3. Impact, next inspection, evidence, endpoints, logs.
 
-- 蓝白主色体系
-- 企业后台式卡片层级
-- 清晰的状态色语义
-- 稳定的表格与信息块结构
-- 明确的导航与页面分区
+Density means more useful decisions per viewport, not tiny body text. Use alignment, compact metric ledgers, inline facts, and 1 px separators before adding cards. Do not use giant verdict cards, nested cards, large explanatory paragraphs, or empty space as “minimalism”.
 
-### 2.2 借 HashiCorp 的部分
+## Material and shape
 
-- 更克制的装饰感
-- 更低噪声的卡片与阴影
-- 更偏基础设施控制台的专业气质
-- 更紧凑的信息密度
-- 更少“展示型”视觉动作
+- The page canvas is full bleed.
+- Grouped data surfaces are flat; they use a boundary and tonal difference, not a shadow stack.
+- Blur belongs only to real chrome/overlay depth changes.
+- Normal, degraded, unknown, and critical states use low-chroma tonal surfaces plus explicit wording. Avoid saturated traffic-light blocks.
+- Use one radius scale consistently. Pill shapes are reserved for short status labels only.
 
-### 2.3 不直接照搬的部分
+## Typography and data
 
-- 不引入紫色、深色主视觉、品牌化插画
-- 不做 SaaS 官网风
-- 不做大面积留白的极简产品页
-- 不做偏营销的夸张图标和动态效果
+- System UI fonts are deliberate here: they preserve Chinese legibility and native metric alignment.
+- Use tabular numerals for all operational values.
+- Mobile primary values are `21–23px`; labels are at least `10–11px`; body text is at least `12px`.
+- A number never concatenates a duplicated unit. Current, peak, chart, and time-window values must share a source.
 
-## 3. 产品视觉原则
+## Charts
 
-### 3.1 只读优先
+Every chart names the series, unit, time window, current value, peak/reference where available, and sampling source. A single snapshot uses compact magnitude bars, not a fabricated trend. Missing evidence removes the chart.
 
-这是一个纯监控面板。
+## Interaction and accessibility
 
-所有页面都应首先表达：
+- Touch targets are at least `44 × 44px`.
+- Back is predictable and labeled for assistive technology.
+- Focus is visible; color never carries state alone.
+- Safe areas, text scaling, keyboard access, and reduced motion are blocking requirements.
+- Automatic refresh must not move focus, collapse disclosure, or replace selected text.
 
-- 当前状态
-- 实时流量
-- 累计数据
-- 异常与告警
-- RouterOS 实际可读字段
+## Prohibited patterns
 
-不应出现会让用户误以为可以修改配置的视觉暗示。
-
-### 3.2 信息密度优先
-
-界面必须偏紧凑，不松散。
-
-默认取舍：
-
-- 宁可更密，也不要“看起来高级但一屏没内容”
-- 宁可减少装饰，也不要牺牲数据可见行数
-- 宁可通过分区降低复杂度，也不要用大留白掩盖信息组织问题
-
-### 3.3 运维心智优先
-
-页面应符合网络运维人员的阅读顺序：
-
-1. 先看总览与异常
-2. 再看实时上下行
-3. 再看累计流量与状态
-4. 最后看明细字段
-
-任何页面都不能把“最重要的实时指标”埋在次级信息后面。
-
-### 3.4 模块必须有真实意义
-
-每个模块都必须与真实 RouterOS 数据源对应。
-
-禁止：
-
-- 复制别的模块内容只改标题
-- 用重复页面凑功能项
-- 用无实际来源的伪指标填空
-
-如果某类数据拿不到：
-
-- 用真实可读字段重构该模块
-- 或明确显示“当前未采集 / 当前未读取到”
-
-## 4. 整体布局规范
-
-## 4.1 壳层结构
-
-项目统一采用三段式壳层：
-
-- 左侧图标主导航栏
-- 左侧当前分组菜单栏
-- 顶部系统状态栏 + 右侧内容区
-
-这套壳层应保持稳定，不随单页功能随意改动。
-
-## 4.2 首页原则
-
-首页只保留宽带与系统核心信息。
-
-首页允许出现：
-
-- 核心摘要卡
-- WAN / 宽带信息
-- 上下行趋势
-- 终端数量
-- 系统资源概览
-- 快捷跳转入口
-
-首页禁止出现：
-
-- 大体量终端列表
-- 大体量 ACL / DNS / 路由规则表
-- 全量日志表
-- 任何“为了凑内容”而堆叠的明细模块
-
-## 4.3 二级页原则
-
-详细数据全部进入对应监控中心，不在首页堆砌。
-
-每个二级页必须满足：
-
-- 有自己的摘要区
-- 有自己的主表或主列表
-- 有自己的细节区或趋势区
-- 页面内容与菜单名称完全对应
-
-## 5. 颜色规范
-
-以当前项目色板为基础，不得随意漂移。
-
-### 5.1 主色
-
-- Primary: `#4794EB`
-- Primary Deep: `#0C53BD`
-- Primary Soft: `#E4EFFC`
-- Primary Soft 2: `#F0F6FD`
-
-### 5.2 背景
-
-- Page: `#F6F8FB`
-- Sidebar: `#F8FBFF`
-- Card: `#FFFFFF`
-- Card Alt: `#FCFDFF`
-
-### 5.3 文本
-
-- Main Text: `#333333`
-- Soft Text: `#666666`
-- Dim Text: `#999999`
-
-### 5.4 状态色
-
-- 正常: `#24C271`
-- 预警: `#FF9800`
-- 异常: `#FF4D4F`
-
-### 5.5 用色要求
-
-- 蓝色只能作为主引导、激活、高亮、重点状态
-- 大面积背景继续保持浅灰白，不得改成深蓝底
-- 状态色只用于状态，不用于装饰
-- 不允许引入紫色作为新的系统主色
-
-## 6. 字体与数字规范
-
-### 6.1 中文字体
-
-优先使用：
-
-- `Microsoft YaHei`
-- `PingFang SC`
-- `Segoe UI`
-
-### 6.2 数字字体
-
-监控数字、速率、吞吐、计数优先使用：
-
-- `Bahnschrift`
-
-### 6.3 字号层级
-
-- 页面标题：`20-24px`
-- 卡片标题：`13-14px`
-- 字段标签：`10-12px`
-- 字段数值：`11-13px`
-- 核心指标：`22-28px`
-
-### 6.4 行高原则
-
-- 标签行高偏紧
-- 数值行高偏紧
-- 长文本说明才允许放松
-
-默认视觉倾向：
-
-- 行高宁紧勿松
-- 但不能紧到难以扫读
-
-## 7. 间距与密度规范
-
-### 7.1 核心密度原则
-
-本项目整体间距应落在“紧凑”档，不使用展示型大留白。
-
-### 7.2 圆角
-
-- 卡片主圆角：`8px`
-- 小标签 / 胶囊状态：`999px`
-
-不要把卡片圆角做得过大，不要出现明显消费级 UI 感。
-
-### 7.3 阴影
-
-阴影只能用于建立层级，不用于制造“漂浮感”。
-
-要求：
-
-- 阴影轻
-- 边框清晰
-- 卡片之间主要靠分组和边框，而不是厚重阴影
-
-### 7.4 紧凑化要求
-
-所有列表型界面默认遵循：
-
-- 列表项间距小
-- 卡片内部 padding 小
-- 标签与数值上下间距小
-- 文本行高紧凑
-- 一屏优先看到更多行数据
-
-如果发生冲突，优先保留数据可见数量。
-
-## 8. 组件规范
-
-## 8.1 摘要卡
-
-摘要卡只展示最重要的四类信息：
-
-- 数量
-- 状态
-- 实时速率
-- 累计数据或异常数
-
-摘要卡要求：
-
-- 数字醒目
-- 文案短
-- 辅助信息弱化
-- 不出现冗余描述段落
-
-## 8.2 信息卡
-
-信息卡用于展示一组只读字段。
-
-适合：
-
-- WAN 信息
-- 路由概览
-- DNS 服务状态
-- 当前管理员会话
-
-规则：
-
-- 标签轻，值重
-- 标签与值上下紧贴
-- 两列或多列布局优先
-- 不做大段说明文案
-
-## 8.3 列表卡 / 记录卡
-
-列表卡是本项目的关键组件之一，用于替代宽表在部分场景中的可视化压力。
-
-适合：
-
-- ACL 规则
-- 地址名单
-- 静态路由
-- DNS 规则
-- ARP / DHCP / 终端明细
-
-规则：
-
-- 头部只保留主字段
-- 其余字段用紧凑网格展开
-- 标签字号更小
-- 数值字号略大
-- 行距必须压紧
-
-## 8.4 表格
-
-表格适合字段稳定、横向比较强的页面。
-
-优先用于：
-
-- 活跃连接
-- 接口总表
-- 终端实时排行
-- 日志中心
-
-规则：
-
-- 表头必须短
-- 每列必须有明确实际意义
-- 重要列靠前
-- 实时上行 / 下行分开显示，不堆成一团
-- IPv4 与 IPv6 尽量分页或分模块展示，不混成一页
-
-## 8.5 图表
-
-图表只做辅助判断，不抢主信息。
-
-允许：
-
-- 上下行趋势线
-- CPU / 内存 / 磁盘趋势
-- 线路负载占比
-
-不允许：
-
-- 为了好看堆太多无意义图
-- 动画过强
-- 图表面积远大于其数据价值
-
-图表原则：
-
-- 折线优先
-- 配色克制
-- 网格线轻
-- 标题和图例短
-
-## 8.6 状态标签
-
-状态标签只表达状态，不承担导航或交互。
-
-状态文字应以中文为主，必要处保留标准英文术语时需明确且统一。
-
-不能出现：
-
-- 同一类状态中英混写混乱
-- 颜色与语义不一致
-
-## 9. 页面原型规范
-
-## 9.1 系统首页
-
-首页应像总控台，不像功能堆栈页。
-
-固定结构建议：
-
-- 顶部 4 个核心摘要
-- 左侧 WAN / 宽带基础信息
-- 中右侧趋势图
-- 下方轻量级系统概览
-- 快捷入口
-
-## 9.2 接口 / 线路页
-
-固定结构建议：
-
-- 顶部摘要
-- 主线路或接口主表
-- 当前线路状态卡
-- 趋势图
-- 详细接口表
-
-最重要字段顺序应优先考虑：
-
-- 状态
-- IP / 网关
-- 实时上行
-- 实时下行
-- 累计上行
-- 累计下行
-- 错误 / 丢包
-
-## 9.3 终端 / ARP / DHCP 页
-
-固定结构建议：
-
-- 顶部摘要
-- 在线终端主表
-- ARP 监控
-- DHCP 地址池
-- DHCP 租约与静态分配
-
-其中：
-
-- 实时上下行要靠前
-- MAC 地址应跟在流量字段后面，不要抢占更重要位置
-- DHCP 地址池适合上下结构，不要为了横向排版牺牲可读性
-
-## 9.4 DNS 页
-
-必须拆分：
-
-- `DNS IPv4`
-- `DNS IPv6`
-
-禁止再做“IPv4 和 IPv6 混在一起的大杂烩 DNS 页面”。
-
-IPv4 重点：
-
-- 上游 DNS
-- DoH
-- 缓存
-- 静态规则 / Forward 规则
-
-IPv6 重点：
-
-- ND / RA
-- DHCPv6 Client
-- Prefix
-- IPv6 DNS 广播与 Peer DNS
-
-## 9.5 安全 / ACL 页
-
-重点表达：
-
-- 规则规模
-- 规则命中情况
-- 名单条目
-- 异常访问线索
-
-界面应像控制台，不要像营销页。
-
-## 9.6 路由 / 分流页
-
-页面内容必须与菜单名严格对应。
-
-如果是静态路由页，就应围绕：
-
-- 默认路由
-- 路由概览
-- 静态路由表
-- 当前路由表
-
-不能出现“标题写静态路由，内容却是分流监控”的错位。
-
-## 9.7 日志页
-
-日志页优先稳定、可扫读。
-
-要求：
-
-- 分类明确
-- 标题短
-- 时间列稳定
-- 消息列尽量完整可读
-
-## 10. 交互规范
-
-### 10.1 交互总原则
-
-本项目交互应“稳”，不是“炫”。
-
-### 10.2 实时刷新
-
-数据可以实时刷新，但刷新机制不能干扰阅读操作。
-
-必须遵守：
-
-- 不因自动刷新破坏文本选中复制
-- 不因自动刷新导致展开信息看不全
-- 不因自动刷新造成页面明显跳动
-
-### 10.3 当前页刷新
-
-“刷新当前页数据”按钮必须有真实作用。
-
-如果存在：
-
-- 必须重新拉取当前页所需数据
-- 必须反馈刷新结果
-
-不能出现只有按钮、没有实际刷新行为的伪交互。
-
-### 10.4 滚动吸顶
-
-对于有摘要区的监控页：
-
-- 顶部重复摘要应在正常浏览时隐藏冗余版本
-- 用户下滑后，下方真正有意义的摘要栏吸顶
-- 吸顶后空白应消失
-
-这套逻辑应在同类页面复用，不做单页特例。
-
-## 11. 数据展示规则
-
-### 11.1 真实性优先
-
-所有页面必须基于真实 RouterOS 数据。
-
-拿不到的数据：
-
-- 用 `-`
-- 或用 `当前未读取到`
-- 或用 `当前未采集`
-
-禁止伪造。
-
-### 11.2 实时指标优先级
-
-页面字段排序默认优先级：
-
-1. 实时上行
-2. 实时下行
-3. 状态
-4. 累计上行
-5. 累计下行
-6. IP / 网关 / MAC
-7. 备注 / 补充字段
-
-### 11.3 中文统一
-
-所有可本地化状态文案应优先中文化。
-
-仅在以下情况保留英文：
-
-- 协议标准名
-- 系统固有术语
-- 会引起误解的专有字段
-
-但必须统一，不能一半中文一半英文随意混用。
-
-## 12. 响应式与可视性
-
-项目主要面向桌面端，但仍需保证：
-
-- 1366 宽度下主要模块不乱
-- 1440 / 1600 宽度下信息密度充分
-- 缩窄后优先上下排，不出现难以阅读的横向滚动条
-
-除日志、极宽表格等特殊场景外，尽量避免依赖左右拖动才能看全。
-
-能改成上下结构时，优先上下结构。
-
-## 13. 禁止项
-
-以下做法禁止出现在本项目中：
-
-- 深色主界面
-- 紫色主视觉
-- 过大圆角
-- 厚重阴影
-- 花哨插画
-- 无意义动效
-- 大面积空白撑版面
-- 重复模块只改标题不改内容
-- 菜单名与页面内容不一致
-- 无真实数据支撑的占位页面
-- 会误导用户可编辑的按钮、表单、开关
-- 把 IPv4 / IPv6、上行 / 下行、实时 / 累计混成难以区分的一块
-
-## 14. 后续新增页面的执行准则
-
-以后新增或重做页面时，默认执行顺序：
-
-1. 先确认该页对应的真实 RouterOS 数据源
-2. 先确定这页最重要的 3 到 5 个指标
-3. 再决定摘要区
-4. 再决定主表还是主卡列表
-5. 最后再补趋势图与辅助信息
-
-如果一个模块拿不到足够真实数据：
-
-- 优先缩小模块目标
-- 不要复制别的页面凑结构
-
-## 15. 对 AI / 代理的直接要求
-
-修改本项目 UI 时，默认遵守以下规则：
-
-- 优先复用现有色板与共享组件样式
-- 优先在共享样式层统一修正，不做单页打补丁
-- 优先提高信息密度和可读性，不追求“更像设计稿”
-- 任何模块必须先有真实数据依据，再谈布局
-- 页面标题、菜单、摘要、主内容必须同题同义
-- 做不到真实采集的字段，明确留空，不造数据
-
-## 16. 一句话风格摘要
-
-这是一个：
-
-`IBM 风骨架 + HashiCorp 风克制感 + 爱快 4.0 运维体验 + RouterOS 真实数据约束`
-
-的蓝白只读监控控制台。
+- Desktop modal or table squeezed into a phone.
+- Bottom navigation used to separate facts that belong to one judgment.
+- Closed white page frame, stacked soft cards, radial marketing gradients, toy-like tab glow.
+- Acceptance-only DOM markers, hidden duplicate content, screenshot offsets, patch scripts, or CSS override sediment.
+- Unsupported words such as “实时可信” or “网络良好” without directly visible evidence.
