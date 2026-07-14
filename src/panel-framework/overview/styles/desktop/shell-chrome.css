@@ -62,7 +62,6 @@
     border-radius: 99px !important;
   }
   #overview.router-overview-framework .ro-col.is-main > .ro-module:first-child {
-    border-left-width: 4px !important;
     background: linear-gradient(180deg, #fff 0%, #fbfdff 100%) !important;
   }
   #overview.router-overview-framework .ro-col.is-bottom [data-overview-density-module="evidence-boundary"],

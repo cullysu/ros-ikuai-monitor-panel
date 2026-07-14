@@ -66,17 +66,9 @@
     min-height: 0;
     overflow: hidden;
     border: 1px solid rgba(157, 177, 198, .26);
-    border-left: 0;
     border-radius: 3px;
     background: rgba(255, 255, 255, .96);
     box-shadow: none;
-  }
-  #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-module[data-tone="danger"] {
-    border-left: 2px solid rgba(164, 48, 45, .70);
-  }
-  #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-module[data-tone="warn"],
-  #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-module[data-tone="missing"] {
-    border-left: 2px solid rgba(128, 98, 59, .56);
   }
   #overview.router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-module-head {
     height: 25px;
