@@ -22,18 +22,7 @@ const files = [
   "src/panel-framework/overview/styles/desktop/hierarchy-layout.css",
   "src/panel-framework/overview/styles/desktop/incidents.css",
   "src/panel-framework/overview/styles/desktop/wan-trend.css",
-  "src/panel-framework/overview/styles/mobile/mobile-product.css",
-  "src/panel-framework/overview/styles/mobile/core.css",
-  "src/panel-framework/overview/styles/mobile/product-shell.css",
-  "src/panel-framework/overview/styles/mobile/frame.css",
-  "src/panel-framework/overview/styles/mobile/decision.css",
-  "src/panel-framework/overview/styles/mobile/trend.css",
-  "src/panel-framework/overview/styles/mobile/surface.css",
-  "src/panel-framework/overview/styles/mobile/incident.css",
-  "src/panel-framework/overview/styles/mobile/navigation.css",
-  "src/panel-framework/overview/styles/mobile/landscape.css",
-  "src/panel-framework/overview/styles/mobile/landscape-trend.css",
-  "src/panel-framework/overview/styles/mobile/landscape-resource.css",
+  "src/panel-framework/overview/mobile-app/styles/router-mobile-app.css",
 ];
 
 function indent(depth) {

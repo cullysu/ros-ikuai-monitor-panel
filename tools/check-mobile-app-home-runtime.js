@@ -158,6 +158,11 @@ async function main() {
       ['codex_tmp_mobileNormalHome.json', 'codex_tmp_mobileNormalHome.png']
     ],
     [
+      'fleet mobile app home',
+      ['tools/check-resource-trend-balance.js', '--url', url, '--section', 'mobileFleetHome', '--width', '390', '--height', '844', '--json', 'codex_tmp_mobileFleetHome.json', '--png', 'codex_tmp_mobileFleetHome.png', '--wait', '3600'],
+      ['codex_tmp_mobileFleetHome.json', 'codex_tmp_mobileFleetHome.png']
+    ],
+    [
       'wan offline p0 app home',
       ['tools/check-resource-trend-balance.js', '--url', url, '--section', 'mobileAppHome', '--width', '390', '--height', '844', '--json', 'codex_tmp_mobileAppHome.json', '--png', 'codex_tmp_mobileAppHome.png', '--wait', '3600'],
       ['codex_tmp_mobileAppHome.json', 'codex_tmp_mobileAppHome.png']
@@ -251,6 +256,18 @@ async function main() {
     }
   }
 
+  const requiredMobileSections = new Set([
+    'mobileNormalHome',
+    'mobileFleetHome',
+    'mobileAppHome',
+    'mobileNoSnapshotHome',
+    'mobileResourceHome',
+    'mobileInterfaceHome',
+    'mobileCollectionHome',
+    'mobileNavigation',
+    'mobileNavigationNoSnapshot'
+  ]);
+  const currentMobileChecks = mobileChecks.filter(([, args]) => requiredMobileSections.has(args[args.indexOf('--section') + 1]));
   const requestedSections = new Set(
     String(process.env.CODEX_MOBILE_SECTIONS || '')
       .split(',')
@@ -258,8 +275,8 @@ async function main() {
       .filter(Boolean)
   );
   const selectedChecks = requestedSections.size === 0
-    ? [...mobileChecks, ...landscapeChecks]
-    : mobileChecks.filter(([, args]) => {
+    ? [...currentMobileChecks, ...landscapeChecks]
+    : currentMobileChecks.filter(([, args]) => {
       const sectionIndex = args.indexOf('--section');
       return sectionIndex >= 0 && requestedSections.has(args[sectionIndex + 1]);
     });

@@ -72,9 +72,24 @@
   .router-overview-framework :where(.ro-module, .ro-resource-card) {
     background: var(--ik40-console-surface) !important;
   }
+  .router-overview-framework :where(.ro-module, .ro-resource-card) {
+    border-left-width: 3px !important;
+  }
   .router-overview-framework .ro-col,
   .router-overview-framework .ro-desktop-grid[data-overview-desktop-hierarchy="conclusion-metrics-evidence"] {
     gap: 8px !important;
+  }
+  /*Color discipline: normal/warn are blue + dark grey; orange is cache-only; red is incident-only.*/
+  .router-overview-framework :where(.ro-module)[data-tone="ok"], .router-overview-framework :where(.ro-module)[data-tone="trust"], .router-overview-framework :where(.ro-module)[data-tone="warn"] {
+    border-left-color: var(--ik40-console-blue) !important;
+  }
+  .router-overview-framework :where(.ro-module)[data-tone="danger"] {
+    border-left-color: var(--ik40-console-danger) !important;
+  }
+  .router-overview-framework .ro-module[data-overview-density-module*="cache"],
+  .router-overview-framework .ro-module[data-overview-density-module*="collection-cache"],
+  .router-overview-framework .ro-module[data-overview-density-module*="collection-channel"] {
+    border-left-color: var(--ik40-console-cache) !important;
   }
   .router-overview-framework .ro-module-head b, .router-overview-framework .ro-ledger-cell:first-child {
     color: var(--ik40-console-ink) !important;

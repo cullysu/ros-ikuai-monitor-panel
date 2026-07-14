@@ -70,6 +70,11 @@
     line-height: 1.05 !important;
     font-weight: 620 !important;
   }
+  #overview.router-overview-framework[data-overview-scene-key="resource-full"] .ro-col.is-main > .ro-module:first-child,
+  #overview.router-overview-framework[data-overview-scene-key="all-offline"] .ro-col.is-main > .ro-module:first-child,
+  #overview.router-overview-framework[data-overview-scene-key="interfaces-down"] .ro-col.is-main > .ro-module:first-child {
+    border-left: 1px solid #dfe8f2 !important;
+  }
   #overview.router-overview-framework[data-overview-scene-key="resource-full"] .ro-col.is-main > .ro-module:first-child .ro-module-head,
   #overview.router-overview-framework[data-overview-scene-key="all-offline"] .ro-col.is-main > .ro-module:first-child .ro-module-head,
   #overview.router-overview-framework[data-overview-scene-key="interfaces-down"] .ro-col.is-main > .ro-module:first-child .ro-module-head {
@@ -163,7 +168,16 @@
 @media (min-width: 1024px) {
   #overview.router-overview-framework[data-overview-scene-key="no-snapshot"] .ro-module[data-overview-density-module^="no-snapshot"] {
     border-color: #dce8f3 !important;
+    border-left-width: 2px !important;
     background: #fff !important;
+  }
+  #overview.router-overview-framework[data-overview-scene-key="no-snapshot"] .ro-module[data-overview-density-module="no-snapshot-summary"] {
+    border-left-color: #d84a4f !important;
+  }
+  #overview.router-overview-framework[data-overview-scene-key="no-snapshot"] .ro-module[data-overview-density-module="no-snapshot-channel-status"],
+  #overview.router-overview-framework[data-overview-scene-key="no-snapshot"] .ro-module[data-overview-density-module="no-snapshot-recent-success"],
+  #overview.router-overview-framework[data-overview-scene-key="no-snapshot"] .ro-module[data-overview-density-module="no-snapshot-module-visibility"] {
+    border-left-color: #b7a170 !important;
   }
   #overview.router-overview-framework[data-overview-scene-key="no-snapshot"] .ro-module[data-overview-density-module^="no-snapshot"] .ro-module-head {
     min-height: 30px !important;
@@ -279,6 +293,14 @@
     min-height: 0 !important;
     align-self: start !important;
   }
+  .router-overview-framework[data-overview-scene-key="no-snapshot"] .ro-module[data-overview-density-module="no-snapshot-summary"] {
+    border-left-color: #d93025 !important;
+  }
+  .router-overview-framework[data-overview-scene-key="no-snapshot"] .ro-module[data-overview-density-module="no-snapshot-module-visibility"],
+  .router-overview-framework[data-overview-scene-key="no-snapshot"] .ro-module[data-overview-density-module="no-snapshot-channel-status"],
+  .router-overview-framework[data-overview-scene-key="no-snapshot"] .ro-module[data-overview-density-module="no-snapshot-recent-success"] {
+    border-left-color: #d7a341 !important;
+  }
   .router-overview-framework[data-overview-scene-key="no-snapshot"] .ro-module[data-overview-density-module^="no-snapshot"] .ro-module-head {
     min-height: 28px !important;
     padding-block: 5px !important;
@@ -312,6 +334,7 @@
   }
   .router-overview-framework .ro-module {
     border-color: var(--ro-admin-line) !important;
+    border-left-width: 3px !important;
   }
   .router-overview-framework .ro-chart-summary {
     min-height: 22px !important;

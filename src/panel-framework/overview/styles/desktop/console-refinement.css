@@ -300,9 +300,11 @@
   #overview.router-overview-framework[data-overview-scene-key="no-snapshot"] .ro-col.is-main > .ro-module:first-child,
   #overview.router-overview-framework[data-overview-scene-key="collection-down"] .ro-col.is-main > .ro-module:first-child {
     border-top: 0 !important;
+    border-left: 3px solid var(--ik-red) !important;
     background: linear-gradient(90deg, rgba(216,59,49,.035), #fff 32%) !important;
   }
   #overview.router-overview-framework[data-overview-scene-key="collection-down"] .ro-col.is-main > .ro-module:first-child {
+    border-left-color: var(--ik-warn) !important;
     background: linear-gradient(90deg, rgba(207,123,34,.045), #fff 32%) !important;
   }
   #overview.router-overview-framework .ro-col.is-bottom {

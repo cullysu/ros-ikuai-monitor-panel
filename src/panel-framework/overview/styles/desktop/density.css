@@ -18,7 +18,16 @@
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module,
   .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module {
     border: 1px solid var(--v814-line-strong) !important;
+    border-left: 2px solid #d0deeb !important;
     background: #fff !important;
+  }
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-tone="danger"],
+  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-tone="danger"] {
+    border-left-color: #d8423a !important;
+  }
+  #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-tone="warn"],
+  .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module[data-tone="warn"] {
+    border-left-color: #d58a21 !important;
   }
   #overview.router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module-head,
   .router-overview-framework[data-overview-ikuai40-density="apple-flat-light-blue-console"] .ro-module-head {

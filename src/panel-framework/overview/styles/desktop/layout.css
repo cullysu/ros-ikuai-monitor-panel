@@ -38,7 +38,22 @@
   .router-overview-framework .ro-module[data-overview-density-module="interface-forwarding"],
   .router-overview-framework .ro-module[data-overview-density-module="collection-channel-ledger"],
   .router-overview-framework .ro-module[data-overview-density-module="no-snapshot-summary"] {
+    border-left: 5px solid var(--v4-console-blue) !important;
     background: linear-gradient(180deg, #fff 0%, #fbfdff 100%) !important;
+  }
+  .router-overview-framework[data-overview-scene-key="resource-full"] .ro-col.is-main > .ro-module:first-child,
+  .router-overview-framework[data-overview-scene-key="all-offline"] .ro-col.is-main > .ro-module:first-child,
+  .router-overview-framework[data-overview-scene-key="interfaces-down"] .ro-col.is-main > .ro-module:first-child,
+  .router-overview-framework .ro-module[data-tone="danger"] {
+    border-left-color: var(--v4-console-danger) !important;
+  }
+  .router-overview-framework .ro-module[data-tone="warn"] {
+    border-left-color: var(--v4-console-blue) !important;
+  }
+  .router-overview-framework .ro-module[data-overview-density-module*="cache"],
+  .router-overview-framework .ro-module[data-overview-density-module*="collection-cache"],
+  .router-overview-framework .ro-module[data-overview-density-module*="collection-channel"] {
+    border-left-color: var(--v4-console-cache) !important;
   }
   .router-overview-framework .ro-module-head {
     min-height: 33px !important;
@@ -154,7 +169,17 @@
     box-shadow: none !important;
   }
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-col.is-main > .ro-module:first-child {
+    border-left: 6px solid var(--ik-v6-blue) !important;
     min-height: 342px !important;
+  }
+  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"][data-overview-scene-key="resource-full"] .ro-col.is-main > .ro-module:first-child,
+  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"][data-overview-scene-key="all-offline"] .ro-col.is-main > .ro-module:first-child,
+  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"][data-overview-scene-key="interfaces-down"] .ro-col.is-main > .ro-module:first-child {
+    border-left-color: var(--ik-v6-danger) !important;
+  }
+  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-module[data-overview-density-module*="collection"],
+  .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-module[data-overview-density-module*="cache"] {
+    border-left-color: var(--ik-v6-cache) !important;
   }
   .router-overview-framework[data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"] .ro-module-head {
     min-height: 32px !important;

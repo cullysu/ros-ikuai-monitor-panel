@@ -1,15 +1,34 @@
-import { MobileOverviewHome } from "./components/MobileOverviewHome";
+import { useEffect, useState } from "react";
 import { DesktopWorkspace } from "./components/DesktopConsole";
 import { StatusVerdict } from "./components/StatusVerdict";
 import { OVERVIEW_LOW_NOISE_CONSOLE_TOKEN_CONTRACT } from "./mobileOverviewTokens";
 import { type OverviewPanelProps } from "./desktopOverviewHelpers";
+import { RouterMobileApp } from "./mobile-app/RouterMobileApp";
 import "./OverviewPanel.css";
 import "./styles/desktop/tokens.css";
 import "./styles/overview-desktop-runtime.css";
 import "./styles/desktop/incidents.css";
 import "./styles/desktop/status-bus.css";
 
+const MOBILE_OVERVIEW_QUERY = "(max-width: 900px)";
+
+function useMobileOverview(): boolean {
+  const [mobile, setMobile] = useState(() => typeof window !== "undefined" && window.matchMedia(MOBILE_OVERVIEW_QUERY).matches);
+
+  useEffect(() => {
+    const media = window.matchMedia(MOBILE_OVERVIEW_QUERY);
+    const sync = () => setMobile(media.matches);
+    sync();
+    media.addEventListener("change", sync);
+    return () => media.removeEventListener("change", sync);
+  }, []);
+
+  return mobile;
+}
+
 export function OverviewPanel({ snapshot, state }: OverviewPanelProps) {
+  const mobile = useMobileOverview();
+
   return (
     <section
       id="overview"
@@ -22,11 +41,16 @@ export function OverviewPanel({ snapshot, state }: OverviewPanelProps) {
       data-overview-ikuai40-density="apple-flat-light-blue-console"
       data-overview-desktop-hierarchy-contract="conclusion-key-metrics-evidence"
     >
-      <StatusVerdict snapshot={snapshot} state={state} />
-      <div className="ro-mobile-first-screen" data-overview-mobile-first-screen>
-        <MobileOverviewHome key={state.scenario} snapshot={snapshot} state={state} />
-      </div>
-      <DesktopWorkspace snapshot={snapshot} state={state} />
+      {mobile ? (
+        <div className="router-mobile-app-mount" data-router-mobile-mount>
+          <RouterMobileApp key={state.scenario} snapshot={snapshot} state={state} />
+        </div>
+      ) : (
+        <>
+          <StatusVerdict snapshot={snapshot} state={state} />
+          <DesktopWorkspace snapshot={snapshot} state={state} />
+        </>
+      )}
     </section>
   );
 }

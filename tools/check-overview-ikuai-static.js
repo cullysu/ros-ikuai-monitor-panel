@@ -56,30 +56,18 @@ const desktopDefaultScene = read('src/panel-framework/overview/desktopOverviewDe
 const desktopAllOfflineScene = read('src/panel-framework/overview/desktopOverviewAllOfflineScene.tsx');
 const desktopHierarchyStyles = read('src/panel-framework/overview/styles/desktop/hierarchy-layout.css');
 const desktopWorkspaceStyles = read('src/panel-framework/overview/styles/desktop/workspace-layout.css');
-const mobile = read('src/panel-framework/overview/components/MobileOverviewHome.tsx');
-const mobileDecision = read('src/panel-framework/overview/components/MobileOverviewDecision.tsx');
-const mobileSections = read('src/panel-framework/overview/components/MobileOverviewHomeSections.tsx');
-const mobileTabs = read('src/panel-framework/overview/components/BottomTabs.tsx');
-const mobileStyles = read('src/panel-framework/overview/styles/mobile/mobile-product.css');
-const mobileModel = read('src/panel-framework/overview/mobileOverviewModel.ts');
-const mobileChartModel = read('src/panel-framework/overview/mobileOverviewChartModel.ts');
-const mobilePolicy = read('src/panel-framework/overview/mobileOverviewPolicy.ts');
-const landscapeStyles = read('src/panel-framework/overview/styles/mobile/landscape.css');
-const navigationStyles = read('src/panel-framework/overview/styles/mobile/navigation.css');
-const incidentStyles = read('src/panel-framework/overview/styles/mobile/incident.css');
-const telemetryStyles = read('src/panel-framework/overview/styles/mobile/telemetry.css');
-const productShellStyles = read('src/panel-framework/overview/styles/mobile/product-shell.css');
-const mobileDecisionStyles = read('src/panel-framework/overview/styles/mobile/decision.css');
-const mobileFrameStyles = read('src/panel-framework/overview/styles/mobile/frame.css');
-const mobileCoreStyles = read('src/panel-framework/overview/styles/mobile/core.css');
-const mobileSurfaceStyles = read('src/panel-framework/overview/styles/mobile/surface.css');
+const mobile = read('src/panel-framework/overview/mobile-app/RouterMobileApp.tsx');
+const mobileScreens = read('src/panel-framework/overview/mobile-app/RouterMobileScreens.tsx');
+const mobileModel = read('src/panel-framework/overview/mobile-app/routerMobileModel.ts');
+const mobileStyles = read('src/panel-framework/overview/mobile-app/styles/router-mobile-app.css');
 const predeploy = read('tools/local-predeploy-check.js');
 const mobileRuntime = read('tools/check-mobile-app-home-runtime.js');
 
 includesAll(overview, [
   '<StatusVerdict snapshot={snapshot} state={state} />',
-  '<MobileOverviewHome key={state.scenario} snapshot={snapshot} state={state} />',
+  '<RouterMobileApp key={state.scenario} snapshot={snapshot} state={state} />',
   '<DesktopWorkspace snapshot={snapshot} state={state} />',
+  '{mobile ? (',
   'data-overview-business-display-boundary',
   'data-overview-scene-key',
 ], 'overview composition');
@@ -163,103 +151,27 @@ excludesAll(desktopModule, [
 ], 'desktop retired probe cleanup');
 includesAll(desktopHierarchyStyles, ['data-overview-desktop-scene="single"', 'data-overview-desktop-scene="fleet"', 'ro-compact-summary-disclosure'], 'desktop focused hierarchy styles');
 
-ordered(mobile, [
-  '<DeviceBar model={model} />',
-  '<PrimaryDecision model={model} onSelectTab={setActiveTab} />',
-  '<CoreFacts model={model} />',
-  '<SupportingList model={model} onSelectTab={setActiveTab} />',
-  '<BottomTabs activeId={activeTab} onSelect={setActiveTab} />',
-], 'mobile home information order');
+ordered(mobileScreens, [
+  '<section className="rm-verdict"',
+  '<MetricGrid metrics={model.metrics} />',
+  '<LiveTraffic trend={model.trend} />',
+  '<EvidenceList title={model.evidenceTitle} rows={model.evidence} />',
+], 'mobile network information order');
 includesAll(mobile, [
-  'ik-mobile-public-home',
-  'ik-mobile-decision-screen',
-  'activeTab === "home"',
-  '<MobileOverviewTabView',
-], 'mobile app shell');
-const mobileContractCount = new Set(mobile.match(/\bdata-overview-[\w-]+/g) || []).size;
-if (mobileContractCount > 28) fail('mobile home contract budget', `expected <=28 attributes, found ${mobileContractCount}`);
-const mobileDecisionContractCount = new Set(mobileDecision.match(/\bdata-overview-[\w-]+/g) || []).size;
-if (mobileDecisionContractCount > 42) fail('mobile decision contract budget', `expected <=42 attributes, found ${mobileDecisionContractCount}`);
-const mobileSectionsContractCount = new Set(mobileSections.match(/\bdata-overview-[\w-]+/g) || []).size;
-if (mobileSectionsContractCount > 38) fail('mobile sections contract budget', `expected <=38 attributes, found ${mobileSectionsContractCount}`);
-excludesAll(mobile, [
-  'data-overview-mobile-home-version',
-  'data-overview-mobile-no-kpi-card-grid',
-  'data-overview-mobile-no-red-orange',
-  'data-overview-mobile-no-table-visual',
-  'data-overview-mobile-no-red-orange-blocks',
-  'data-overview-mobile-layout-contract',
-  'data-overview-mobile-first-question',
-  'data-overview-mobile-no-snapshot-no-rate-placeholder',
-  'data-overview-mobile-app-question',
-  'data-overview-mobile-app-trust-boundary',
-  'data-overview-mobile-app-ranking-policy',
-  'data-overview-mobile-app-abnormal-ia',
-  'data-overview-mobile-app-terminal-ranking-state',
-], 'mobile home retired probe cleanup');
-excludesAll(mobileDecision, [
-  'data-overview-mobile-decision-card',
-  'data-overview-mobile-next-step',
-], 'mobile decision retired probe cleanup');
-excludesAll(mobileSections, [
-  'data-overview-mobile-evidence-policy',
-  'data-overview-mobile-supporting-list',
-  'data-overview-mobile-detail-count',
-], 'mobile sections retired probe cleanup');
-includesAll(mobileModel, ['网络可用', '外网不可用', '业务数据不可判', '采集不完整', '资源过载', '接口异常'], 'mobile factual verdict copy');
-includesAll(mobileDecision, ['chart.source === "history" ? "WAN 趋势" : "WAN 当前速率"', 'data-overview-mobile-chart-source={chart.source}', 'ik-mobile-current-rate-snapshot', '无历史序列'], 'mobile chart source disclosure');
-includesAll(mobileDecision, ['data-overview-mobile-information-order', 'verdict-telemetry-evidence', 'verdict-resource-evidence-telemetry'], 'mobile abnormal data-first ordering');
-includesAll(mobileChartModel, ['source: "current"', 'down: [Math.max(0, rate.down)]', 'up: [Math.max(0, rate.up)]', '"无历史序列"'], 'mobile current snapshot truthfulness');
-excludesAll(mobileChartModel, ['function trend(', 'const pattern = {'], 'mobile synthetic trend prohibition');
-includesAll(mobileSections, ['export function DeviceBar', 'export function CoreFacts', 'export function SupportingList', 'ik-mobile-supporting-head'], 'mobile semantic sections');
-
-for (const tab of ['home', 'network', 'diagnose']) {
-  if (!mobileTabs.includes(`id: "${tab}"`)) fail('mobile navigation semantics', `missing ${tab}`);
-}
-includesAll(mobileTabs, [
+  'className="rm-app"',
+  'className="rm-header"',
+  'className="rm-tabbar"',
+  'activeTab === "network"',
+  'activeTab === "collection"',
   'aria-current',
-  'aria-controls',
-  '路由器监控底部导航',
-  'fill="none"',
-  'stroke="currentColor"',
-  'strokeLinecap="round"',
-], 'mobile navigation accessibility');
-
-includesAll(mobileStyles, [
-  '@import "./core.css";',
-  '@import "./product-shell.css";',
-  '@import "./frame.css";',
-  '@import "./decision.css";',
-  '@import "./surface.css";',
-  '@import "./incident.css";',
-  '@import "./telemetry.css";',
-  '@import "./navigation.css";',
-  '@import "./landscape.css";',
-], 'mobile style composition');
-excludesAll(mobileStyles, [
-  'foundation',
-  'public-decision-home',
-  'repair',
-], 'mobile retired style layer cleanup');
-includesAll(landscapeStyles, ['min-width: 761px', 'max-width: 900px', 'max-height: 520px', '"hero side"'], 'landscape mobile layout');
-includesAll(navigationStyles, ['position: fixed', 'repeat(3, minmax(0, 1fr))', 'height: 58px', 'rgba(241, 247, 251, .82)', 'backdrop-filter: blur(20px)'], 'mobile native navigation positioning');
-includesAll(incidentStyles, ['ik-mobile-incident-summary', 'ik-mobile-incident-guidance', 'min-height: 95px', 'min-height: 45px'], 'mobile incident hierarchy');
-includesAll(telemetryStyles, ['ik-mobile-incident-telemetry', 'grid-template-columns: repeat(4, minmax(0, 1fr))', 'grid-template-rows: 64px', 'min-height: 64px'], 'mobile incident telemetry');
-includesAll(productShellStyles, ['ro-desktop-grid', 'ro-mobile-first-screen', '100dvh', 'position: fixed', 'min-height: 44px'], 'mobile/desktop shell isolation');
-includesAll(mobileFrameStyles, ['ik-mobile-decision-screen', 'ik-mobile-device-bar', 'linear-gradient(155deg, #e7f2f8', 'backdrop-filter: blur(18px)', 'border-radius: 0', 'background: transparent'], 'mobile frame styles');
-includesAll(mobileDecisionStyles, ['ik-mobile-decision-card', 'background-color: rgba(247, 252, 255, .74)', 'linear-gradient(145deg, rgba(255, 255, 255, .8)', 'backdrop-filter: blur(16px)', 'ik-mobile-decision-trend', 'ik-mobile-resource-incident-stack'], 'mobile decision styles');
-includesAll(mobileCoreStyles, ['ik-mobile-core-facts', 'grid-template-columns: repeat(4, minmax(0, 1fr))', 'grid-template-rows: 66px', 'border-radius: 0', 'background: transparent'], 'mobile core fact ownership');
-excludesAll(mobileSurfaceStyles, ['ik-mobile-core-facts'], 'mobile surface ownership');
-includesAll(mobileSurfaceStyles, ['ik-mobile-supporting-surface', 'ik-mobile-supporting-head', 'ik-mobile-supporting-detail-rows'], 'mobile surface styles');
-
-includesAll(mobilePolicy, [
-  'normal-operations-first',
-  'wan-offline-default-route-collection-success-first',
-  'trust-boundary-no-business-data',
-  'collection-boundary-first',
-  'resource-pressure-evidence-first',
-  'interface-carrier-impact-first',
-], 'mobile scenario view model');
+  '只读监控',
+], 'isolated mobile app shell');
+excludesAll(`${mobile}\n${mobileScreens}\n${mobileModel}\n${mobileStyles}`, ['ik-mobile-', 'ik-ios-', 'ro-mobile-', 'ro-desktop-'], 'mobile namespace isolation');
+includesAll(mobileModel, ['网络出口可用', '全部 WAN 已离线', '业务状态不可判断', '当前数据不是实时值', '资源已进入高压区', '个接口停止运行'], 'mobile factual verdict copy');
+includesAll(mobileModel, ['source: "history"', 'source: "snapshot"', 'source: "unavailable"', '当前只有单次资源快照'], 'mobile source truthfulness');
+excludesAll(mobileModel, ['function trend(', 'const pattern = {'], 'mobile synthetic trend prohibition');
+includesAll(mobileScreens, ['data-router-mobile-traffic="history"', 'data-router-mobile-traffic="snapshot"', 'data-router-mobile-traffic="unavailable"'], 'mobile chart source disclosure');
+includesAll(mobileStyles, ['--rm-canvas', '.rm-header', '.rm-verdict', '.rm-metric-grid', '.rm-evidence-list', '.rm-tabbar', 'background: rgba(239, 247, 251, .82)', 'min-height: 44px', 'max-width: 900px', 'max-height: 520px'], 'mobile material, density, touch, and responsive styles');
 
 includesAll(predeploy, [
   'compactLandscapeOverview',
@@ -280,7 +192,8 @@ for (const [file, text, limit] of [
   ['OverviewPanel.tsx', overview, 120],
   ['DesktopConsole.tsx', desktop, 120],
   ['DesktopDecisionRail.tsx', desktopDecision, 120],
-  ['MobileOverviewHome.tsx', mobile, 120],
+  ['RouterMobileApp.tsx', mobile, 100],
+  ['RouterMobileScreens.tsx', mobileScreens, 180],
 ]) {
   if (lineCount(text) > limit) fail('component line budget', `${file} has ${lineCount(text)} lines (limit ${limit})`);
 }
@@ -290,5 +203,5 @@ if (failures.length) {
   for (const item of failures) console.error(`- ${item}`);
   process.exitCode = 1;
 } else {
-  console.log(`overview ikuai current static gate: PASS desktopContracts=${desktopContractCount} mobileStyleOwnership=frame-decision-surface`);
+  console.log(`overview ikuai current static gate: PASS desktopContracts=${desktopContractCount} mobileStyleOwnership=isolated-router-app`);
 }
