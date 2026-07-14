@@ -22,6 +22,10 @@
     gap: 6px;
     padding: 10px;
   }
+  html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console]:not([data-overview-mobile-priority="normal"]):not([data-overview-mobile-priority="resource-full"]) .ik-mobile-decision-card:not(.is-trend) {
+    grid-template-rows: 69px 103px 44px;
+    gap: 4px;
+  }
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-core-facts {
     grid-area: side;
     grid-template-columns: repeat(2, minmax(0, 1fr));

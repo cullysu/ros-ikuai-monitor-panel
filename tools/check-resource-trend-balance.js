@@ -1235,7 +1235,39 @@ async function main() {
           };
         })();
       }
-      if (sectionName === 'mobileDetailDrilldown' || sectionName === 'mobileIncidentDrilldown') {
+      if (sectionName === 'mobileIncidentDrilldown') {
+        const root = sectionEl?.querySelector('[data-overview-mobile-console]');
+        const detailEntry = root?.querySelector('.ik-mobile-detail-entry[data-overview-mobile-detail-target]');
+        return (async () => {
+          await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+          const activeScreen = root?.querySelector('[data-overview-mobile-first-screen="app-home"]');
+          const startedAtHome = activeScreen?.getAttribute('data-overview-mobile-active-tab') === 'home';
+          const target = detailEntry?.getAttribute('data-overview-mobile-detail-target') || '';
+          if (detailEntry?.tagName === 'BUTTON') detailEntry.click();
+          await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+          const activeView = root?.querySelector('[data-overview-mobile-tab-view="' + target + '"]');
+          const activeTab = root?.querySelector('button[aria-controls="mobile-' + target + '-view"].is-active');
+          return {
+            pass: Boolean(
+              detailEntry &&
+              detailEntry.tagName === 'BUTTON' &&
+              startedAtHome &&
+              target === 'network' &&
+              activeScreen?.getAttribute('data-overview-mobile-active-tab') === target &&
+              activeTab?.getAttribute('aria-current') === 'page' &&
+              activeView?.querySelectorAll('.ik-mobile-tab-list article').length >= 1 &&
+              !root?.querySelector('.ik-mobile-primary-conclusion')
+            ),
+            section: sectionName,
+            url: location.href,
+            startedAtHome,
+            target,
+            activeTab: activeScreen?.getAttribute('data-overview-mobile-active-tab') || '',
+            viewport: { width: innerWidth, height: innerHeight }
+          };
+        })();
+      }
+      if (sectionName === 'mobileDetailDrilldown') {
         const root = sectionEl?.querySelector('[data-overview-mobile-console]');
         const detailHeader = root?.querySelector('.ik-mobile-supporting-head');
         const detailSurface = root?.querySelector('.ik-mobile-supporting-surface');
@@ -1255,7 +1287,6 @@ async function main() {
           surfaceStyle &&
           surfaceStyle.overflow !== 'hidden'
         );
-        const incidentMode = sectionName === 'mobileIncidentDrilldown';
         const rowEvidenceComplete = rowNodes.every((row) => (
           normalize(row.querySelector('span b')?.textContent || '') &&
           normalize(row.querySelector('span em')?.textContent || '') &&
@@ -1272,12 +1303,11 @@ async function main() {
             visibleCount === rowNodes.length &&
             !root.querySelector('.ik-mobile-detail-entry') &&
             rowsUnclipped &&
-            rowEvidenceComplete &&
-            (!incidentMode || normalize(rowNodes[0]?.querySelector('.ik-mobile-row-token')?.textContent || '') === '!')
+            rowEvidenceComplete
           ),
           section: sectionName,
           url: location.href,
-          incidentMode,
+          incidentMode: false,
           rowCount: rowNodes.length,
           visibleCount,
           rowsUnclipped,
@@ -1502,8 +1532,8 @@ async function main() {
         const surfaceAttrs = surface ? {
           list: Boolean(list),
           headers: surface.querySelectorAll('header').length,
-          detailControl: Boolean(surface.querySelector('.ik-mobile-detail-entry[aria-controls="mobile-supporting-detail-rows"]')),
-          directEvidence: Boolean(surface.querySelector('.ik-mobile-supporting-head + #mobile-supporting-detail-rows')),
+          detailControl: Boolean(surface.querySelector('.ik-mobile-detail-entry[data-overview-mobile-detail-target]')),
+          directEvidence: Boolean(surface.querySelector('header.ik-mobile-supporting-head + #mobile-supporting-detail-rows')),
           detailRows: surface.querySelectorAll('.ik-mobile-deferred-row').length,
         } : {};
         const heroAttrs = hero ? {
@@ -1788,7 +1818,7 @@ async function main() {
             )
           )
         );
-        const detailEntry = list?.querySelector('.ik-mobile-detail-entry[aria-controls="mobile-supporting-detail-rows"]');
+        const detailEntry = list?.querySelector('.ik-mobile-detail-entry[data-overview-mobile-detail-target]');
         const deferredRows = list?.querySelector('#mobile-supporting-detail-rows.ik-mobile-supporting-detail-rows');
         const detailEntryVisible = Boolean(detailEntry && (() => {
           const style = getComputedStyle(detailEntry);
@@ -1796,8 +1826,10 @@ async function main() {
           return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height >= 40;
         })());
         const evidenceDeferred = Boolean(
+          !isLandscapeMobile &&
           detailEntryVisible &&
-          deferredRows
+          deferredRows &&
+          visibleTerminalRows.length === 0
         );
         const evidenceCondensedForLandscape = Boolean(
           isLandscapeMobile &&
@@ -1836,7 +1868,7 @@ async function main() {
             statusPaddingLeft: Number.parseFloat(statusStyle?.paddingLeft || '0'),
           };
         });
-        const evidenceStatusMarkersReadable = isLandscapeMobile || Boolean(
+        const evidenceStatusMarkersReadable = evidenceDeferred || isLandscapeMobile || Boolean(
           evidenceReadability.length > 0 &&
           evidenceReadability.every((item) => (
             item.rowHeight >= 48 &&
@@ -1870,6 +1902,7 @@ async function main() {
         const supportingHead = list?.querySelector('.ik-mobile-supporting-head');
         const supportingHeadRect = supportingHead?.getBoundingClientRect();
         const supportingHeadText = normalize(supportingHead?.textContent || '');
+        const supportingHeadIsDetailEntry = supportingHead?.matches('.ik-mobile-detail-entry');
         const compactSupportingHeaderOk = Boolean(
           supportingHead &&
           supportingHeadRect &&
@@ -1877,7 +1910,9 @@ async function main() {
           supportingHead.querySelector('.ik-mobile-detail-copy > b') &&
           supportingHead.querySelector('.ik-mobile-detail-copy > small') &&
           supportingHeadText &&
-          supportingHeadRect.height <= (isLandscapeMobile ? 48 : 42)
+          (supportingHeadIsDetailEntry
+            ? supportingHeadRect.height >= 44 && supportingHeadRect.height <= 48
+            : supportingHeadRect.height <= (isLandscapeMobile ? 48 : 42))
         );
         const primaryListEvidenceStandardized = Boolean(
           listEvidenceRows.length > 0 &&
@@ -2184,6 +2219,12 @@ async function main() {
                 abnormalListRowRects.every((rect) => rect.width > 0 && rect.height >= 42)
           )
         );
+        const abnormalEvidencePolicyOk = expectedConfig.mode === 'normal' || isLandscapeMobile || Boolean(
+          evidenceDeferred &&
+          detailEntryVisible &&
+          ['network', 'diagnose'].includes(detailEntry?.getAttribute('data-overview-mobile-detail-target') || '') &&
+          visibleTerminalRows.length === 0
+        );
         const appRect = root?.getBoundingClientRect();
         const screenRect = screen?.getBoundingClientRect();
         const appViewportBounded = Boolean(
@@ -2208,11 +2249,12 @@ async function main() {
         const terminalRankingCopyVisible = ['设备排行', '高流量终端', '终端排行'].some((item) => firstScreenText.includes(item));
         const surfacePolicyModelBacked = Boolean(
           surfaceAttrs.list &&
-          surfaceAttrs.headers === 1 &&
-          surfaceAttrs.directEvidence &&
-          !surfaceAttrs.detailControl &&
           surfaceAttrs.detailRows > 0 &&
-          firstScreenOrderProductized
+          firstScreenOrderProductized &&
+          (expectedConfig.mode === 'normal'
+            ? surfaceAttrs.headers === 1 && surfaceAttrs.directEvidence && !surfaceAttrs.detailControl
+            : surfaceAttrs.headers === 0 && surfaceAttrs.detailControl && !surfaceAttrs.directEvidence &&
+              (isLandscapeMobile ? visibleTerminalRows.length >= 3 : evidenceDeferred))
         );
         const statusCoreBlocks = Array.from(surface?.querySelectorAll('[data-row-id]') || []).map((row) => ({
           id: row.getAttribute('data-row-id') || '',
@@ -2265,6 +2307,7 @@ async function main() {
           channelRailModelBacked,
           abnormalDecisionRailProductized,
           abnormalHeroLayoutStable,
+          abnormalEvidencePolicyOk,
           appViewportBounded,
           abnormalViewportOverflowFree,
           scenarioVerdictCopyOk: expectedConfig.mode === 'normal'
@@ -2274,7 +2317,9 @@ async function main() {
               : true,
           evidenceVisibilityOk: expectedConfig.mode === 'normal'
             ? !terminalRankingCopyVisible && (evidenceCondensedForLandscape ? visibleTerminalRows.length === 0 : (visibleTerminalRows.length >= 1 && visibleTerminalRows.length <= 4))
-            : !terminalRankingCopyVisible && (evidenceCondensedForLandscape ? visibleTerminalRows.length === 0 : visibleTerminalRows.length >= 1),
+            : !terminalRankingCopyVisible && (evidenceDeferred
+              ? visibleTerminalRows.length === 0
+              : evidenceCondensedForLandscape ? visibleTerminalRows.length === 0 : visibleTerminalRows.length >= 1),
           styleTextNotLeaked: !styleTextLeakedIntoOverview,
           requiredTextPresent: missing.length === 0,
           noHorizontalOverflow: !hasHorizontalOverflow,
@@ -2441,6 +2486,7 @@ async function main() {
           abnormalDecisionRailProductized,
           abnormalActionTouchTargetOk,
           abnormalHeroLayoutStable,
+          abnormalEvidencePolicyOk,
           abnormalViewportOverflowFree,
           abnormalComputedSizing: {
             heroMinHeight: heroStyle?.minHeight || '',

@@ -42,6 +42,9 @@
     border-left-color: rgba(78, 111, 143, .72);
   }
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-decision-head {
+    display: grid;
+    grid-template-rows: auto auto auto;
+    align-content: start;
     min-height: 0;
     height: auto;
     max-height: none;
@@ -60,6 +63,7 @@
     color: #786027;
   }
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-decision-head h1 {
+    margin: 0;
     color: #102b46;
     font-size: 28px;
     font-weight: 820;
@@ -67,6 +71,7 @@
     letter-spacing: -.04em;
   }
   html body #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-decision-head p {
+    margin: 0;
     color: #58718b;
     font-size: 13px;
     font-weight: 620;

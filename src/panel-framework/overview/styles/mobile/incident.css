@@ -93,3 +93,22 @@
     font-size: 12px;
   }
 }
+
+@media (max-width: 760px) {
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console]:not([data-overview-mobile-priority="normal"]) .ik-mobile-supporting-surface {
+    height: 44px;
+    max-height: 44px;
+    overflow: hidden;
+  }
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console]:not([data-overview-mobile-priority="normal"]) .ik-mobile-supporting-list {
+    grid-template-rows: 44px;
+  }
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-detail-entry {
+    min-height: 44px;
+    height: 44px;
+    cursor: pointer;
+  }
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console]:not([data-overview-mobile-priority="normal"]) .ik-mobile-supporting-detail-rows {
+    display: none;
+  }
+}

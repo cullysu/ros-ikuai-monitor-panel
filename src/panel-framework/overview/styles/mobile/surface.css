@@ -98,6 +98,14 @@
     color: #718196;
     font-size: 10px;
   }
+  #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-detail-chevron {
+    margin-left: 3px;
+    color: #47729a;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 1;
+  }
   #overview.router-overview-framework .ik-mobile-public-home[data-overview-mobile-console] .ik-mobile-deferred-row {
     display: grid;
     grid-template-columns: 26px minmax(0, 1fr) minmax(54px, auto);

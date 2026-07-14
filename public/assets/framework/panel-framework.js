@@ -9387,25 +9387,44 @@ var PanelFramework = function(exports) {
     }
     return { title: "处理", summary: "受影响接口 · 默认路由" };
   }
-  function SupportingList({ model }) {
+  function SupportingList({
+    model,
+    onSelectTab
+  }) {
+    var _a;
     const rows = model.primaryList.rows.slice(0, 4);
     const copy = supportingCopy(model);
+    const actionTarget = (_a = model.abnormalDecision.find((item) => item.label === "下一步")) == null ? void 0 : _a.targetTab;
+    const detailTarget = actionTarget === "network" ? "network" : "diagnose";
+    const headContent = /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "ik-mobile-detail-copy", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: copy.title }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: copy.summary })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("strong", { children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: rows.length }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: "项" }),
+        model.priority === "normal" ? null : /* @__PURE__ */ jsxRuntimeExports.jsx("i", { className: "ik-mobile-detail-chevron", "aria-hidden": "true", children: "›" })
+      ] })
+    ] });
     return /* @__PURE__ */ jsxRuntimeExports.jsx("section", { className: "ik-mobile-supporting-surface", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "ik-mobile-supporting-list", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs(
+      model.priority === "normal" ? /* @__PURE__ */ jsxRuntimeExports.jsx(
         "header",
         {
           className: `ik-mobile-supporting-head ${toneClass(model.impactScope.tone)}`,
           "aria-label": `${model.primaryList.title}，${model.impactScope.value}，${model.primaryList.meta}`,
-          children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "ik-mobile-detail-copy", children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: copy.title }),
-              /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: copy.summary })
-            ] }),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("strong", { children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: rows.length }),
-              /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: "项" })
-            ] })
-          ]
+          children: headContent
+        }
+      ) : /* @__PURE__ */ jsxRuntimeExports.jsx(
+        "button",
+        {
+          "aria-controls": `mobile-${detailTarget}-view`,
+          "aria-label": `查看${model.primaryList.title}，${rows.length}项`,
+          className: `ik-mobile-supporting-head ik-mobile-detail-entry ${toneClass(model.impactScope.tone)}`,
+          "data-overview-mobile-detail-target": detailTarget,
+          onClick: () => onSelectTab == null ? void 0 : onSelectTab(detailTarget),
+          type: "button",
+          children: headContent
         }
       ),
       /* @__PURE__ */ jsxRuntimeExports.jsx(
@@ -9599,7 +9618,7 @@ var PanelFramework = function(exports) {
               activeTab === "home" ? /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
                 /* @__PURE__ */ jsxRuntimeExports.jsx(PrimaryDecision, { model, onSelectTab: setActiveTab }),
                 model.coreMetrics.length ? /* @__PURE__ */ jsxRuntimeExports.jsx(CoreFacts, { model }) : null,
-                /* @__PURE__ */ jsxRuntimeExports.jsx(SupportingList, { model })
+                /* @__PURE__ */ jsxRuntimeExports.jsx(SupportingList, { model, onSelectTab: setActiveTab })
               ] }) : /* @__PURE__ */ jsxRuntimeExports.jsx(MobileOverviewTabView, { activeTab, model, snapshot: props.snapshot, state: props.state }),
               /* @__PURE__ */ jsxRuntimeExports.jsx(BottomTabs, { activeId: activeTab, onSelect: setActiveTab })
             ]

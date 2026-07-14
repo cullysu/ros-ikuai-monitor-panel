@@ -1,4 +1,5 @@
 import type { MobileOverviewModel } from "../mobileOverviewModel";
+import type { MobileBottomTabId } from "./BottomTabs";
 import type { AppRankingRow } from "./MobileOverviewTypes";
 import { toneClass } from "./MobileOverviewUtils";
 
@@ -63,22 +64,52 @@ function supportingCopy(model: MobileOverviewModel): { title: string; summary: s
   return { title: "处理", summary: "受影响接口 · 默认路由" };
 }
 
-export function SupportingList({ model }: { model: MobileOverviewModel }) {
+export function SupportingList({
+  model,
+  onSelectTab,
+}: {
+  model: MobileOverviewModel;
+  onSelectTab?: (tab: MobileBottomTabId) => void;
+}) {
   const rows = model.primaryList.rows.slice(0, 4);
   const copy = supportingCopy(model);
+  const actionTarget = model.abnormalDecision.find((item) => item.label === "下一步")?.targetTab;
+  const detailTarget: MobileBottomTabId = actionTarget === "network" ? "network" : "diagnose";
+  const headContent = (
+    <>
+      <span className="ik-mobile-detail-copy">
+        <b>{copy.title}</b>
+        <small>{copy.summary}</small>
+      </span>
+      <strong>
+        <b>{rows.length}</b>
+        <small>项</small>
+        {model.priority === "normal" ? null : <i className="ik-mobile-detail-chevron" aria-hidden="true">›</i>}
+      </strong>
+    </>
+  );
   return (
     <section className="ik-mobile-supporting-surface">
       <div className="ik-mobile-supporting-list">
-        <header
-          className={`ik-mobile-supporting-head ${toneClass(model.impactScope.tone)}`}
-          aria-label={`${model.primaryList.title}，${model.impactScope.value}，${model.primaryList.meta}`}
-        >
-          <span className="ik-mobile-detail-copy">
-            <b>{copy.title}</b>
-            <small>{copy.summary}</small>
-          </span>
-          <strong><b>{rows.length}</b><small>项</small></strong>
-        </header>
+        {model.priority === "normal" ? (
+          <header
+            className={`ik-mobile-supporting-head ${toneClass(model.impactScope.tone)}`}
+            aria-label={`${model.primaryList.title}，${model.impactScope.value}，${model.primaryList.meta}`}
+          >
+            {headContent}
+          </header>
+        ) : (
+          <button
+            aria-controls={`mobile-${detailTarget}-view`}
+            aria-label={`查看${model.primaryList.title}，${rows.length}项`}
+            className={`ik-mobile-supporting-head ik-mobile-detail-entry ${toneClass(model.impactScope.tone)}`}
+            data-overview-mobile-detail-target={detailTarget}
+            onClick={() => onSelectTab?.(detailTarget)}
+            type="button"
+          >
+            {headContent}
+          </button>
+        )}
         <div
           className="ik-mobile-supporting-detail-rows"
           id="mobile-supporting-detail-rows"

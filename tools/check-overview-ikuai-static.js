@@ -164,7 +164,7 @@ ordered(mobile, [
   '<DeviceBar model={model} />',
   '<PrimaryDecision model={model} onSelectTab={setActiveTab} />',
   '<CoreFacts model={model} />',
-  '<SupportingList model={model} />',
+  '<SupportingList model={model} onSelectTab={setActiveTab} />',
   '<BottomTabs activeId={activeTab} onSelect={setActiveTab} />',
 ], 'mobile home information order');
 includesAll(mobile, [
