@@ -704,6 +704,12 @@ for (const [file, limit] of desktopBaseStyleLayerLimits) {
   assert(exists(file) && lines(read(file)) <= limit, `${file} exceeds ${limit} lines`);
 }
 assert(
+  !desktopShellChromeStyles.includes("!important") &&
+    !desktopShellChromeStyles.includes(".ro-col.is-main > .ro-module:first-child") &&
+    !desktopShellChromeStyles.includes("data-overview-density-module"),
+  "Desktop shell chrome must own only shell and scrollbar styling, without evidence or module overrides"
+);
+assert(
   lines(desktopBaseStyles) <= 4700,
   `overview-desktop.css exceeds 4700 lines: ${lines(desktopBaseStyles)}`
 );

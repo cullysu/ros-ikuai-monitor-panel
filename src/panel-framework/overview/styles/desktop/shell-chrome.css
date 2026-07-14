@@ -46,26 +46,19 @@
   #overview.router-overview-framework .ro-module,
   #overview.router-overview-framework .ro-ledger-table,
   #overview.router-overview-framework .ro-judgement-chart {
-    scrollbar-width: thin !important;
-    scrollbar-color: rgba(130, 151, 173, .42) transparent !important;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(130, 151, 173, .42) transparent;
   }
   #overview.router-overview-framework .ro-module::-webkit-scrollbar,
   #overview.router-overview-framework .ro-ledger-table::-webkit-scrollbar,
   #overview.router-overview-framework .ro-judgement-chart::-webkit-scrollbar {
-    width: 4px !important;
-    height: 4px !important;
+    width: 4px;
+    height: 4px;
   }
   #overview.router-overview-framework .ro-module::-webkit-scrollbar-thumb,
   #overview.router-overview-framework .ro-ledger-table::-webkit-scrollbar-thumb,
   #overview.router-overview-framework .ro-judgement-chart::-webkit-scrollbar-thumb {
-    background: rgba(130, 151, 173, .36) !important;
-    border-radius: 99px !important;
-  }
-  #overview.router-overview-framework .ro-col.is-main > .ro-module:first-child {
-    background: linear-gradient(180deg, #fff 0%, #fbfdff 100%) !important;
-  }
-  #overview.router-overview-framework .ro-col.is-bottom [data-overview-density-module="evidence-boundary"],
-  #overview.router-overview-framework .ro-col.is-bottom [data-overview-density-module*="boundary"] {
-    opacity: .86 !important;
+    background: rgba(130, 151, 173, .36);
+    border-radius: 99px;
   }
 }
