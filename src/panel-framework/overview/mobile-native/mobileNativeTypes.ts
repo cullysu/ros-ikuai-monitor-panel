@@ -15,34 +15,35 @@ export interface MobileNativeFact {
   note?: string;
   tone?: OverviewTone;
 }
-
 export interface MobileNativeRow extends MobileNativeFact {}
-
 export interface MobileNativeSignalItem extends MobileNativeFact {
+  objectId?: string;
   percent?: number;
   threshold?: number;
 }
-
 export interface MobileNativeSignal {
   kind: MobileSignalKind;
   title: string;
   note: string;
   items: MobileNativeSignalItem[];
 }
-
 export interface MobileNativeInspection {
   key: MobileObjectKey;
+  objectId: string;
+  objectPosition: string;
   label: string;
   title: string;
   status: string;
   tone: OverviewTone;
   note: string;
+  sourcePath: string;
+  observedAt: string;
   relations: MobileNativeFact[];
   rows: MobileNativeRow[];
+  detailRows: MobileNativeRow[];
   disclosureTitle: string;
   actionTitle: string;
 }
-
 export interface MobileNativeFocus {
   key: MobileFocusKey;
   risk: MobileRiskKey | null;
@@ -55,9 +56,9 @@ export interface MobileNativeFocus {
   proofs: MobileNativeFact[];
   signal: MobileNativeSignal;
   inspection: MobileNativeInspection;
+  objectInspections: MobileNativeInspection[];
   detailSectionKeys: string[];
 }
-
 export interface MobileNativeDetailSection {
   key: string;
   title: string;
@@ -85,6 +86,7 @@ export interface MobileNativeModel {
   device: string;
   deviceNote: string;
   scopeNote: string;
+  scopeFacts: MobileNativeFact[];
   focuses: MobileNativeFocus[];
   initialFocus: MobileFocusKey;
   detailSections: MobileNativeDetailSection[];

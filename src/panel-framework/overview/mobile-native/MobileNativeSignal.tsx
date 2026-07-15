@@ -1,12 +1,21 @@
 import type { CSSProperties } from "react";
 import { MobileNativeIcon } from "./MobileNativeIcon";
+import { MobileNativeObjectSelector } from "./MobileNativeObjectSelector";
 import type { MobileNativeSignal as MobileNativeSignalModel } from "./mobileNativeTypes";
 
-export function MobileNativeSignal({ signal }: { signal: MobileNativeSignalModel }) {
+export function MobileNativeSignal({
+  signal,
+  selectedObjectId,
+  onSelectObject,
+}: {
+  signal: MobileNativeSignalModel;
+  selectedObjectId?: string;
+  onSelectObject?: (objectId: string) => void;
+}) {
   if (signal.kind === "rates") {
     return (
       <section className="mn-signal mn-signal-rates" aria-labelledby="mn-signal-title" data-mobile-native-rates="current" data-mobile-native-signal="rates">
-        <header><b id="mn-signal-title">{signal.title}</b><span>{signal.note}</span></header>
+        <header><h2 id="mn-signal-title">{signal.title}</h2><span>{signal.note}</span></header>
         <div className="mn-rate-pair">
           {signal.items.map((item, index) => (
             <div key={item.label}>
@@ -22,7 +31,7 @@ export function MobileNativeSignal({ signal }: { signal: MobileNativeSignalModel
   if (signal.kind === "resource") {
     return (
       <section className="mn-signal mn-signal-resource" aria-labelledby="mn-signal-title" data-mobile-native-resource-signal data-mobile-native-signal="resource">
-        <header><b id="mn-signal-title">{signal.title}</b><span>{signal.note}</span></header>
+        <header><h2 id="mn-signal-title">{signal.title}</h2><span>{signal.note}</span></header>
         <div className="mn-pressure-list">
           {signal.items.map((item) => {
             const fill = Math.max(0, Math.min(100, item.percent ?? 0));
@@ -42,20 +51,25 @@ export function MobileNativeSignal({ signal }: { signal: MobileNativeSignalModel
     );
   }
 
+  const selectableObjects = (signal.kind === "interfaces" || signal.kind === "wan") && signal.items.some((item) => item.objectId);
   return (
-    <section className={`mn-signal mn-signal-list is-${signal.kind}`} aria-labelledby="mn-signal-title" data-mobile-native-signal={signal.kind}>
+    <section className={`mn-signal mn-signal-list is-${signal.kind} ${selectableObjects ? "is-object-selector" : ""}`} aria-labelledby="mn-signal-title" data-mobile-native-signal={signal.kind}>
       <header>
         <span className="mn-section-symbol" aria-hidden="true"><MobileNativeIcon name={signal.kind} size={18} /></span>
-        <span><b id="mn-signal-title">{signal.title}</b><small>{signal.note}</small></span>
+        <span><h2 id="mn-signal-title">{signal.title}</h2><small>{signal.note}</small></span>
       </header>
-      <div className="mn-signal-rows">
-        {signal.items.map((item, index) => (
-          <div className={`mn-signal-row is-${item.tone || "trust"}`} key={item.key || `${item.label}-${index}`}>
-            <span>{item.label}</span>
-            <span><b>{item.value}</b>{item.note ? <small>{item.note}</small> : null}</span>
-          </div>
-        ))}
-      </div>
+      {selectableObjects ? (
+        <MobileNativeObjectSelector items={signal.items} selectedObjectId={selectedObjectId} onSelectObject={onSelectObject} />
+      ) : (
+        <div className="mn-signal-rows">
+          {signal.items.map((item, index) => (
+            <div className={`mn-signal-row is-${item.tone || "trust"}`} key={item.key || `${item.label}-${index}`}>
+              <span>{item.label}</span>
+              <span><b>{item.value}</b>{item.note ? <small>{item.note}</small> : null}</span>
+            </div>
+          ))}
+        </div>
+      )}
     </section>
   );
 }

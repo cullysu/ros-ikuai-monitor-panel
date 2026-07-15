@@ -17,18 +17,17 @@ import type {
   MobileRiskKey,
   ResourceSampleEvidence,
 } from "./mobileNativeTypes";
+import { compactMessage } from "./mobileNativeText";
 
 export function clean(value: unknown, fallback = "未记录"): string {
   const normalized = String(value ?? "").replace(/\s+/g, " ").trim();
   return normalized || fallback;
 }
-
 export function finiteObservation(value: unknown): number | null {
   if (value === null || value === undefined || value === "") return null;
   const numeric = Number(value);
   return Number.isFinite(numeric) ? numeric : null;
 }
-
 export function wanRows(snapshot: OverviewRawSnapshot): OverviewRawWanRow[] {
   return Array.isArray(snapshot.wan) && snapshot.wan.length ? snapshot.wan : Array.isArray(snapshot.pppoe) ? snapshot.pppoe : [];
 }
@@ -136,13 +135,16 @@ function endpointFailureRows(entries: OverviewEndpointFailureEntry[]): MobileNat
     key: `endpoint-${index}`,
     label: clean(entry.group, `失败端点 ${index + 1}`),
     value: clean(entry.name),
-    note: clean(entry.message || entry.at, "未提供附加说明"),
+    note: compactMessage(entry.message || entry.at, "未提供附加说明"),
     tone: "warn",
   }));
 }
 
 function channelNote(channel: MobileCollectionChannelEvidence): string {
-  if (channel.error) return channel.successAt ? `${channel.error} · 上次成功 ${shortTimestamp(channel.successAt)}` : `${channel.error} · 成功时间未记录`;
+  if (channel.error) {
+    const error = compactMessage(channel.error);
+    return channel.successAt ? `${error} · 上次成功 ${shortTimestamp(channel.successAt)}` : `${error} · 成功时间未记录`;
+  }
   return channel.successAt ? `成功 ${shortTimestamp(channel.successAt)}` : "成功时间未记录";
 }
 
@@ -157,7 +159,7 @@ function collectionDetail(snapshot: OverviewRawSnapshot): MobileNativeDetailSect
   ];
   return {
     key: "collection",
-    title: "采集链路原始证据",
+    title: "采集链路证据详情",
     note: failures.length ? `${failures.length} 个失败端点已保留` : "通道成功时间与错误独立记录",
     rows: [
       { key: "rest", label: "REST", value: channels.rest.label, note: channelNote(channels.rest), tone: channels.rest.status === "current" ? "trust" : "warn" },
@@ -198,7 +200,7 @@ function routeDetail(snapshot: OverviewRawSnapshot, mode: MobileEvidenceMode): M
   });
   return {
     key: "route",
-    title: "路由原始证据",
+    title: "路由记录详情",
     note: "只认 active=true 且未停用的默认路由",
     rows: rows.length ? rows : [{ key: "route-empty", label: "默认路由", value: "未取得", note: "不使用任意首行兜底", tone: "warn" }],
   };
@@ -221,7 +223,7 @@ function wanDetail(snapshot: OverviewRawSnapshot, mode: MobileEvidenceMode): Mob
   });
   return {
     key: "wan",
-    title: "WAN 对象原始证据",
+    title: "WAN 对象记录",
     note: mode === "current" ? "对象状态与完整当前观测" : "非当前证据不显示速率数字",
     rows: rows.length ? rows : [{ key: "wan-empty", label: "WAN", value: "未取得", note: "没有对象记录", tone: "warn" }],
   };
@@ -237,7 +239,7 @@ function interfaceDetail(snapshot: OverviewRawSnapshot, mode: MobileEvidenceMode
   }));
   return {
     key: "interfaces",
-    title: "接口依赖原始证据",
+    title: "接口依赖记录",
     note: "Down 对象、父级、VLAN 与 PPPoE",
     rows: rows.length ? rows : [{ key: "interface-empty", label: "接口", value: "未发现 Down 记录", note: "只依据可用快照" }],
   };
@@ -249,7 +251,7 @@ function resourceDetail(snapshot: OverviewRawSnapshot, state: OverviewDerivedSta
   const current = mode === "current";
   return {
     key: "resource",
-    title: mode === "historical" ? "资源阈值历史证据" : "资源阈值原始证据",
+    title: mode === "historical" ? "资源阈值历史记录" : "资源阈值证据详情",
     note: mode === "historical" ? "保留值不代表当前；CPU/内存 85%，磁盘 90%" : "CPU/内存 85%，磁盘 90%",
     rows: [
       { key: "cpu", label: current ? "CPU" : "历史 CPU", value: available ? formatPercent(state.facts.resource.cpu) : "不可判断", note: "阈值 85%", tone: current ? "danger" : "warn" },

@@ -9,7 +9,7 @@ The phone surface supports a five-to-ten-second, read-only network patrol. It mu
 3. What is the highest-priority risk right now?
 4. Which observations prove that judgment?
 5. What signal should be inspected now?
-6. Which object, dependency, or raw record should be opened next?
+6. Which object, dependency, or evidence record should be opened next?
 
 The interface is not a small desktop console, a generic health dashboard, a four-tab object browser, or a diagnostic specification sheet.
 
@@ -27,7 +27,7 @@ The selected direction is a restrained risk-led workspace:
 - `fleet` is scope metadata, never a risk that can cover an active incident.
 - Phone renders one focus and one next-inspection object. It has no generic object tabs.
 - Tablet renders a risk/evidence master and a persistent inspection detail. It is a separate responsive composition inside the mobile render tree, not a widened phone column.
-- Raw evidence opens as a full-screen navigation destination.
+- Evidence detail opens as a full-screen navigation destination with source path, sample time, object ID, and recorded fields.
 - Mobile and desktop keep separate render trees and style ownership.
 
 ## Non-repetition contract
@@ -58,6 +58,7 @@ Signal is one scenario-specific measurement or affected-object view selected by 
 - fleet distribution only when no higher risk exists.
 
 There is exactly one signal region. A `fleet` fixture with an interface incident must render the interface signal, not fleet scale.
+When several WAN or interface objects are affected, the signal is a horizontally scrollable object selector. Selection must update the inspection object one-to-one without changing router state.
 
 ### Object — what to inspect next
 
@@ -96,6 +97,7 @@ Concurrent risks remain in the model. The first risk selects both the signal and
 | normal | current rates when complete | explicit active route, otherwise WAN |
 
 `fleet` adds a compact scope line such as WAN and interface object coverage. It never changes the primary risk, signal, or focused object.
+Acceptance fixtures isolate their named risk where possible: `interfaces-down` keeps current WAN and active-route observations while marking forwarding interfaces down. Composite model cases separately prove that an all-WAN outage outranks resource or interface pressure.
 
 ## Evidence semantics
 
@@ -148,21 +150,21 @@ The phone uses one continuous page:
 
 1. sticky device chrome with static `只读监控` text;
 2. one evidence boundary line;
-3. one risk-focus masthead as the unique visual center;
-4. a compact proof ledger;
-5. one signal region;
-6. one focused inspection object with novel evidence;
-7. concurrent-risk links when present;
-8. one full-screen raw-evidence action.
+3. compact concurrent-risk links when several risks are present;
+4. one risk-focus masthead as the unique visual center;
+5. a three-fact proof strip that is not a comparison table;
+6. one signal or affected-object selector;
+7. one focused inspection object with novel evidence and an in-viewport detail entry on ordinary portrait phones;
+8. one full-screen evidence-detail action.
 
 There is no four-object tablist, three-column proof table, bottom navigation, topology, fake sheet, grabber, giant verdict card, or decorative chart.
 
 ## Tablet composition
 
-At `700px+`, the mobile surface becomes a true master-detail workspace:
+From `700px` through `1199px`, the mobile surface becomes a true master-detail workspace; this explicitly includes 1024px and 1180px iPad-class viewports:
 
 - the master column contains ordered risks/evidence focuses, stable evidence boundary, and fleet scope metadata;
-- the detail column contains the selected focus masthead, proof, signal, focused object, related-source index, and raw-evidence action;
+- the detail column contains the selected focus masthead, proof, signal, focused object, related-source index, and evidence-detail action;
 - the selected master item controls one always-mounted detail panel;
 - additional width exposes dependency and source evidence, not larger empty margins or duplicated metrics;
 - neither column is a hidden desktop surface or a squeezed desktop table.
@@ -176,9 +178,9 @@ The master and detail are independently scrollable only when viewport height req
 - No control declares an `aria-controls` target that is absent from the DOM.
 - The tablet detail region is always mounted and labelled by the selected master item.
 - In-place disclosure uses a down chevron; navigation uses a right chevron.
-- Opening raw evidence pushes a history state containing the focused object.
+- Opening evidence detail pushes a history state containing the focused object and home scroll position.
 - Browser Back closes detail and restores the trigger focus and scroll position.
-- Browser Forward reopens the same detail and focused object.
+- Browser Forward reopens the same detail and focused object at the detail title and scroll position zero.
 - Focus restoration happens in React layout effects after the home DOM commits; timer polling is prohibited.
 - Escape follows the same close path as Back.
 - Refresh does not steal focus, collapse disclosure, or replace a user-selected focus. A newly discovered higher risk may be announced politely but does not force selection.
@@ -197,12 +199,13 @@ The master and detail are independently scrollable only when viewport height req
 ## Blocking acceptance
 
 - Model tests assert risk-first signal selection, including `fleet + interfaces down` and `fleet + resource pressure` composites.
+- Browser expectations derive priority from fixture facts; they cannot map a scenario name directly to an expected focus.
 - Model tests assert the initial focused object matches the highest risk.
 - Model tests reject normalized proof/object label-value duplication.
 - “失败端点 0” is prohibited; zero recorded endpoint failures must read `未记录` or explicitly `已记录失败端点 0`.
 - Runtime tests cover browser Back and Forward, focus restoration without polling, tablet master-detail semantics, touch targets, text scaling, and all present control relationships.
 - Acceptance uses semantic and geometry outcomes. Character count, text length, module count, and DOM-node count are not density proxies.
-- Required mobile matrix remains seven scenarios × eight viewports = 56 complete cells and screenshots.
+- Required mobile matrix is seven scenarios × ten viewports = 70 complete cells and screenshots, including `1024×768` and `1180×820`.
 - Required public matrix remains seven scenarios × four release viewports = 28 complete cells.
 - `matrix.complete=false` forces top-level failure.
 - Public release additionally requires collector/security/accessibility checks and exact-remote-SHA Linux, Windows, and GHCR success.

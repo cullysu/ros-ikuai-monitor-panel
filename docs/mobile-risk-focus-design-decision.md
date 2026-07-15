@@ -27,7 +27,7 @@ Signal, proof, and objects follow a causal event rail. This is visually distinct
 
 ### C. Risk-led object cockpit — selected
 
-The highest risk selects one signal and one inspection object. Phone renders a single focused composition; tablet exposes a risk/evidence master and persistent object detail. This direction best satisfies fast patrol, object evidence, concurrent risk, tablet utilization, and truthful data boundaries.
+The highest risk selects one signal and one inspection object. When an incident contains several WAN or interface objects, a compact horizontal selector changes the inspection object without changing the risk. Phone renders a single focused composition; the 700–1199px tablet surface exposes a persistent risk/evidence master and object detail. This direction best satisfies fast patrol, object evidence, concurrent risk, tablet utilization, and truthful data boundaries.
 
 ## Named visual rationale
 
@@ -40,8 +40,11 @@ One low-chroma focus surface makes the highest-risk judgment unmistakable. Proof
 - Replace global `facts`, `signal`, `decisions`, and fixed object tabs with ordered focus views.
 - Add `interface` as a first-class inspection object.
 - Select signal and initial inspection from ordered risk, never directly from `scenario === "fleet"`.
+- Derive route verification, evidence mode, and browser gate priority from observations rather than scenario labels; keep scenario fixtures isolated and test composite precedence separately.
 - Render separate phone and tablet compositions from the same evidence model.
+- Keep iPad-class widths in the tablet composition and reserve the desktop console for 1200px and above.
 - Replace the boolean detail history implementation with a state-derived navigation view that supports Back and Forward.
+- Make evidence detail identify the selected object, source path, sample time, and recorded fields instead of claiming every transformed row is raw evidence.
 - Replace timer-polled focus restoration with a layout-effect transition.
 - Rewrite acceptance around semantics, geometry, and interaction rather than text or DOM volume.
 

@@ -24,11 +24,10 @@ import type {
 export type { MobileNativeModel } from "./mobileNativeTypes";
 
 function evidenceMode(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): MobileEvidenceMode {
-  if (isSnapshotUnavailable(snapshot) || state.scenario === "no-snapshot" || state.facts.freshness.credibility === "unavailable") return "unavailable";
+  if (isSnapshotUnavailable(snapshot) || state.facts.freshness.credibility === "unavailable") return "unavailable";
   if (!successfulBusinessAt(snapshot)) return "unavailable";
   const meta = snapshot.meta || {};
   if (
-    state.scenario === "collection-down" ||
     Boolean(meta.realtimeError || meta.slowRestError) ||
     state.facts.freshness.stale ||
     state.facts.freshness.history ||
@@ -75,7 +74,8 @@ function evidenceCopy(snapshot: OverviewRawSnapshot, state: OverviewDerivedState
 
 function routeVerification(mode: MobileEvidenceMode, state: OverviewDerivedState, route: OverviewRawRoute | null): MobileRouteVerification {
   if (mode === "unavailable") return "unknown";
-  if (state.scenario === "all-offline" && !route) return "offline";
+  const allWanOffline = state.counts.wanTotal > 0 && state.counts.wanOnline === 0;
+  if (mode === "current" && allWanOffline && !route) return "offline";
   if (!route) return "unknown";
   return mode === "current" ? "verified" : "historical";
 }
@@ -95,9 +95,8 @@ function orderedRisks(
     if (present && !risks.includes(risk)) risks.push(risk);
   };
 
-  add("resource", resource);
-  add("interfaces", state.scenario === "interfaces-down" && interfaces);
   add("wan-offline", wanOffline && mode === "current");
+  add("resource", resource);
   add("interfaces", interfaces);
   add("collection", collection);
   add("wan-offline", wanOffline && mode !== "current");
@@ -108,6 +107,32 @@ function scopeNote(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): 
   if (state.scenario !== "fleet" && snapshot.meta?.scaleScenario !== "fleet") return "";
   const runningInterfaces = Math.max(0, state.facts.interfaces.total - state.facts.interfaces.down);
   return `范围 ${state.facts.wan.online} / ${state.facts.wan.total} WAN · ${runningInterfaces} / ${state.facts.interfaces.total} 接口`;
+}
+
+function scopeFacts(state: OverviewDerivedState, risks: MobileRiskKey[], mode: MobileEvidenceMode) {
+  const runningInterfaces = Math.max(0, state.facts.interfaces.total - state.facts.interfaces.down);
+  const unavailable = mode === "unavailable";
+  const historical = mode === "historical";
+  return [
+    {
+      key: "scope-wan",
+      label: historical ? "WAN 记录" : "WAN 运行",
+      value: unavailable ? "不可判断" : `${state.facts.wan.online} / ${state.facts.wan.total}${historical ? " · 历史" : ""}`,
+      tone: unavailable ? "missing" as OverviewTone : historical ? "warn" as OverviewTone : state.facts.wan.total > 0 && state.facts.wan.online === 0 ? "danger" as OverviewTone : "trust" as OverviewTone,
+    },
+    {
+      key: "scope-interface",
+      label: historical ? "接口记录" : "接口运行",
+      value: unavailable ? "不可判断" : `${runningInterfaces} / ${state.facts.interfaces.total}${historical ? " · 历史" : ""}`,
+      tone: unavailable ? "missing" as OverviewTone : historical ? "warn" as OverviewTone : state.facts.interfaces.down > 0 ? "danger" as OverviewTone : "trust" as OverviewTone,
+    },
+    {
+      key: "scope-risk",
+      label: "风险焦点",
+      value: risks.length ? `${risks.length} 组` : "未发现",
+      tone: risks.length ? "danger" as OverviewTone : "trust" as OverviewTone,
+    },
+  ];
 }
 
 export function buildMobileNativeModel(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): MobileNativeModel {
@@ -132,6 +157,7 @@ export function buildMobileNativeModel(snapshot: OverviewRawSnapshot, state: Ove
     device: device.identity,
     deviceNote: device.note,
     scopeNote: scopeNote(snapshot, state),
+    scopeFacts: scopeFacts(state, risks, mode),
     focuses,
     initialFocus: focuses[0].key,
     detailSections: buildDetailSections(snapshot, state, mode, risks),

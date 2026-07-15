@@ -1,29 +1,28 @@
 import type { RefObject } from "react";
 import { MobileNativeIcon } from "./MobileNativeIcon";
-import type { MobileNativeFocus } from "./mobileNativeTypes";
+import type { MobileNativeInspection } from "./mobileNativeTypes";
 
 export function MobileNativeInspectionPanel({
-  focus,
+  inspection,
   expanded,
   onExpandedChange,
   onOpenDetail,
   detailButtonRef,
 }: {
-  focus: MobileNativeFocus;
+  inspection: MobileNativeInspection;
   expanded: boolean;
   onExpandedChange: (expanded: boolean) => void;
   onOpenDetail: () => void;
   detailButtonRef: RefObject<HTMLButtonElement>;
 }) {
-  const inspection = focus.inspection;
   return (
-    <section className={`mn-inspection is-${inspection.tone}`} aria-labelledby="mn-inspection-title" data-mobile-native-inspection={inspection.key}>
+    <section id="mn-inspection-panel" className={`mn-inspection is-${inspection.tone}`} aria-labelledby="mn-inspection-title" data-mobile-native-inspection={inspection.key} data-mobile-native-inspection-object={inspection.objectId}>
       <header className="mn-inspection-heading">
         <span className="mn-object-symbol" aria-hidden="true"><MobileNativeIcon name={inspection.key} size={20} /></span>
         <span>
-          <small>{inspection.label} · {inspection.status}</small>
-          <b id="mn-inspection-title">{inspection.title}</b>
-          <em>{inspection.note}</em>
+          <small>{inspection.label} · {inspection.objectPosition}</small>
+          <h2 id="mn-inspection-title">{inspection.title}</h2>
+          <em>{inspection.status} · {inspection.note}</em>
         </span>
         <button
           ref={detailButtonRef}
@@ -33,7 +32,7 @@ export function MobileNativeInspectionPanel({
           aria-label={inspection.actionTitle}
           data-mobile-native-open-detail
         >
-          <span>证据</span>
+          <span>详情</span>
           <MobileNativeIcon name="forward" size={18} />
         </button>
       </header>

@@ -1378,6 +1378,8 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     let nativeMobileInteractionProbe = null;
     let nativeMobileFocusKeyboardOk = true;
     let nativeMobileFocusKeyboardProbe = null;
+    let nativeMobileObjectSelectionOk = true;
+    let nativeMobileObjectSelectionProbe = null;
     let nativeDetailSectionCount = 0;
     let nativeDetailRawEvidenceCount = 0;
     let nativeDetailHasNovelEvidence = false;
@@ -1393,7 +1395,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       };
       const nativeRoot = sectionRoot?.querySelector('[data-mobile-native-console]');
       const nativePrimaryFocus = nativeRoot?.getAttribute('data-mobile-native-primary-focus') || '';
-      const nativeFocusOptions = Array.from(nativeRoot?.querySelectorAll('[role="option"]') || []);
+      const nativeFocusOptions = Array.from(nativeRoot?.querySelectorAll('.mn-focus-queue [role="option"]') || []);
       const selectedNativeFocus = nativeFocusOptions.find((option) => option.getAttribute('aria-selected') === 'true');
       if (nativeRoot && selectedNativeFocus && nativeFocusOptions.length > 1) {
         const initialFocusId = selectedNativeFocus.id;
@@ -1418,6 +1420,26 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
           restoredActiveId: document.activeElement?.id || '',
         };
       }
+      const nativeObjectOptions = Array.from(nativeRoot?.querySelectorAll('.mn-object-carousel [role="option"]') || []);
+      if (nativeRoot && nativeObjectOptions.length > 1) {
+        const initialObject = nativeObjectOptions.find((option) => option.getAttribute('aria-selected') === 'true');
+        const initialObjectIndex = nativeObjectOptions.indexOf(initialObject);
+        const expectedObject = nativeObjectOptions[(initialObjectIndex + 1) % nativeObjectOptions.length];
+        const initialInspectionObject = nativeRoot.querySelector('[data-mobile-native-inspection-object]')?.getAttribute('data-mobile-native-inspection-object') || '';
+        initialObject?.focus({ preventScroll: true });
+        initialObject?.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+        await waitForNativeState(() => nativeRoot.querySelector('.mn-object-carousel [aria-selected="true"]')?.id === expectedObject.id);
+        const selectedObject = nativeRoot.querySelector('.mn-object-carousel [aria-selected="true"]');
+        const changedInspectionObject = nativeRoot.querySelector('[data-mobile-native-inspection-object]')?.getAttribute('data-mobile-native-inspection-object') || '';
+        selectedObject?.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));
+        await waitForNativeState(() => nativeRoot.querySelector('.mn-object-carousel [aria-selected="true"]')?.id === initialObject?.id);
+        const restoredInspectionObject = nativeRoot.querySelector('[data-mobile-native-inspection-object]')?.getAttribute('data-mobile-native-inspection-object') || '';
+        nativeMobileObjectSelectionOk = Boolean(
+          initialObject && selectedObject === expectedObject && changedInspectionObject && changedInspectionObject !== initialInspectionObject &&
+          restoredInspectionObject === initialInspectionObject && document.activeElement === initialObject
+        );
+        nativeMobileObjectSelectionProbe = { initialInspectionObject, changedInspectionObject, restoredInspectionObject };
+      }
       const nativeEntry = nativeRoot?.querySelector('[data-mobile-native-open-detail]');
       if (nativeRoot && nativeEntry) {
         const nativeDisclosure = nativeRoot.querySelector('.mn-inspection-disclosure');
@@ -1428,14 +1450,19 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
           await waitForNativeState(() => Boolean(nativeDisclosure.open));
         }
         const disclosureReady = !nativeDisclosure || Boolean(nativeDisclosure.open);
+        nativeEntry.scrollIntoView({ block: 'center', behavior: 'auto' });
+        await new Promise((resolve) => setTimeout(resolve, 30));
         const scrollBeforeDetail = window.scrollY;
         nativeRoot.querySelector('[data-mobile-native-open-detail]')?.click();
         await waitForNativeState(() => Boolean(sectionRoot?.querySelector('[data-mobile-native-detail]')));
         const nativeDetail = sectionRoot?.querySelector('[data-mobile-native-detail]');
         const nativeBack = nativeDetail?.querySelector('[data-mobile-native-back]');
+        const nativeDetailTitle = nativeDetail?.querySelector('#mn-detail-title');
+        const nativeSelectedEvidence = nativeDetail?.querySelector('[data-mobile-native-selected-evidence]');
+        const nativeSelectedEvidenceText = normalize(nativeSelectedEvidence?.textContent || '');
         const nativeDetailSections = Array.from(nativeDetail?.querySelectorAll('[data-mobile-native-detail-section]') || []);
         const nativeDetailTitles = nativeDetailSections
-          .map((section) => normalize(section.querySelector('header b')?.textContent || ''))
+          .map((section) => normalize(section.querySelector('header h2')?.textContent || ''))
           .filter(Boolean);
         const nativeDetailKeys = new Set(nativeDetailSections
           .map((section) => section.getAttribute('data-mobile-native-detail-section') || '')
@@ -1450,12 +1477,18 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
                 ? ['interfaces', 'route', 'boundary']
                 : ['route', 'wan', 'collection', 'boundary'];
         nativeDetailSectionCount = nativeDetailSections.length;
-        nativeDetailRawEvidenceCount = nativeDetailTitles.filter((title) => /原始证据|历史证据/.test(title)).length;
-        nativeDetailHasNovelEvidence = nativeDetailRequiredKeys.every((key) => nativeDetailKeys.has(key));
+        nativeDetailRawEvidenceCount = nativeDetailTitles.filter((title) => /证据详情|记录详情|对象记录|依赖记录|历史记录/.test(title)).length;
+        nativeDetailHasNovelEvidence = Boolean(
+          nativeSelectedEvidence &&
+          /来源路径/.test(nativeSelectedEvidenceText) &&
+          /采样时间/.test(nativeSelectedEvidenceText) &&
+          /对象标识/.test(nativeSelectedEvidenceText) &&
+          nativeDetailRequiredKeys.every((key) => nativeDetailKeys.has(key))
+        );
         nativeDetailNoHomeReplay = Boolean(nativeDetail &&
           !nativeDetail.querySelector('[data-mobile-native-proof], [data-mobile-native-signal], [data-mobile-native-inspection]'));
-        await waitForNativeState(() => Boolean(nativeBack && document.activeElement === nativeBack));
-        const detailFocused = Boolean(nativeDetail && nativeBack && document.activeElement === nativeBack);
+        await waitForNativeState(() => Boolean(nativeDetailTitle && document.activeElement === nativeDetailTitle && window.scrollY === 0));
+        const detailFocused = Boolean(nativeDetail?.tagName === 'MAIN' && nativeDetailTitle && document.activeElement === nativeDetailTitle && window.scrollY === 0);
 
         window.history.back();
         await waitForNativeState(() => {
@@ -1471,11 +1504,12 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         window.history.forward();
         await waitForNativeState(() => Boolean(
           sectionRoot?.querySelector('[data-mobile-native-detail]') &&
-          sectionRoot?.querySelector('[data-mobile-native-back]') === document.activeElement
+          sectionRoot?.querySelector('#mn-detail-title') === document.activeElement &&
+          window.scrollY === 0
         ));
         const forwardDetail = sectionRoot?.querySelector('[data-mobile-native-detail]');
-        const forwardBack = forwardDetail?.querySelector('[data-mobile-native-back]');
-        const forwardReopened = Boolean(forwardDetail && forwardBack && document.activeElement === forwardBack);
+        const forwardTitle = forwardDetail?.querySelector('#mn-detail-title');
+        const forwardReopened = Boolean(forwardDetail?.tagName === 'MAIN' && forwardTitle && document.activeElement === forwardTitle && window.scrollY === 0);
 
         window.history.back();
         await waitForNativeState(() => {
@@ -1500,6 +1534,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
           detailFocused,
           backRestored,
           forwardReopened,
+          objectSelection: nativeMobileObjectSelectionProbe,
           finalBackRestored,
           detailSections: nativeDetailSectionCount,
           rawEvidenceSections: nativeDetailRawEvidenceCount,
@@ -1508,7 +1543,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
           detailScrollRestored,
         };
         nativeMobileInteractionOk = Boolean(
-          disclosureReady && disclosureRestored && detailFocused &&
+          disclosureReady && disclosureRestored && detailFocused && nativeMobileObjectSelectionOk &&
           nativeDetailHasNovelEvidence && nativeDetailNoHomeReplay &&
           backRestored && forwardReopened && finalBackRestored && detailScrollRestored
         );
@@ -2196,9 +2231,9 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const historyModeActive = trustMode?.getAttribute('data-overview-trust-mode') === 'history';
     const compactLandscapeOverview = sectionName === 'overview' &&
       window.innerWidth >= 761 &&
-      window.innerWidth <= 900 &&
+      window.innerWidth <= 1199 &&
       window.innerHeight <= 520;
-    const isMobileOverview = sectionName === 'overview' && window.innerWidth <= 900;
+    const isMobileOverview = sectionName === 'overview' && window.innerWidth <= 1199;
     const legacyMobileAcceptanceViewport = false;
     const mobileOverviewAppViewport = isMobileOverview;
     const mobileLandscapeAppRoot = compactLandscapeOverview
@@ -6856,15 +6891,26 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const routerMobileFocusPanel = routerMobileRoot?.querySelector('#mn-focus-panel');
     const routerMobileDetailEntry = routerMobileRoot?.querySelector('[data-mobile-native-open-detail]');
     const routerMobileDisclosure = routerMobileInspection?.querySelector('details');
-    const routerMobileFocusOptions = Array.from(routerMobileRoot?.querySelectorAll('[role="option"]') || []);
+    const routerMobileFocusOptions = Array.from(routerMobileRoot?.querySelectorAll('.mn-focus-queue [role="option"]') || []);
     const routerMobileSelectedFocusOptions = routerMobileFocusOptions.filter((option) => option.getAttribute('aria-selected') === 'true');
+    const routerMobileObjectOptions = Array.from(routerMobileRoot?.querySelectorAll('.mn-object-carousel [role="option"]') || []);
+    const routerMobileSelectedObjectOptions = routerMobileObjectOptions.filter((option) => option.getAttribute('aria-selected') === 'true');
     const routerMobileTabletWorkspace = routerMobileRoot?.querySelector('[data-mobile-native-tablet-workspace]');
     const routerMobileTabletContext = routerMobileRoot?.querySelector('[data-mobile-native-tablet-context]');
     const routerMobileTabletContextCards = Array.from(routerMobileTabletContext?.querySelectorAll('.mn-tablet-context-card') || []);
     const routerMobileTabletContextRows = Array.from(routerMobileTabletContext?.querySelectorAll('.mn-tablet-context-row') || []);
+    const routerMobileTabletContextKeys = new Set(routerMobileTabletContextCards.map((card) => card.getAttribute('data-mobile-native-context-key') || ''));
+    const routerMobileTabletScopeKeys = new Set(Array.from(routerMobileRoot?.querySelectorAll('[data-mobile-native-scope-key]') || []).map((row) => row.getAttribute('data-mobile-native-scope-key') || ''));
+    const routerMobileTabletScopeText = normalize(Array.from(routerMobileRoot?.querySelectorAll('[data-mobile-native-scope-key]') || []).map((row) => row.textContent || '').join(' '));
     const routerMobileTraffic = routerMobileRoot?.querySelector('[data-mobile-native-rates]');
     const routerMobileText = normalize(routerMobileRoot?.textContent || '');
     const routerMobileTitle = routerMobileMasthead?.querySelector('h1');
+    const routerMobileLiveStatus = routerMobileRoot?.querySelector('[role="status"][aria-live="polite"]');
+    const routerMobileSectionHeadings = [
+      routerMobileProof?.querySelector('h2'),
+      routerMobileScenarioSignal?.querySelector('h2'),
+      routerMobileInspection?.querySelector('h2'),
+    ];
     const routerMobileIdentity = normalize(routerMobileNavigation?.querySelector('b')?.textContent || '');
     const routerMobileNavigationRect = routerMobileNavigation?.getBoundingClientRect();
     const routerMobileEvidenceRect = routerMobileEvidence?.getBoundingClientRect();
@@ -6872,6 +6918,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const routerMobileProofRect = routerMobileProof?.getBoundingClientRect();
     const routerMobileSignalRect = routerMobileScenarioSignal?.getBoundingClientRect();
     const routerMobileInspectionRect = routerMobileInspection?.getBoundingClientRect();
+    const routerMobileDetailEntryRect = routerMobileDetailEntry?.getBoundingClientRect();
     const routerMobileFocusPanelRect = routerMobileFocusPanel?.getBoundingClientRect();
     const routerMobileTitleRect = routerMobileTitle?.getBoundingClientRect();
     const routerMobileTabletWorkspaceRect = routerMobileTabletWorkspace?.getBoundingClientRect();
@@ -6883,6 +6930,19 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       ? routerMobileSnapshot.wan
       : Array.isArray(routerMobileSnapshot.pppoe) ? routerMobileSnapshot.pppoe : [];
     const routerMobileObservedWan = routerMobileRawWan.filter((row) => row.running !== false && row.disabled !== true);
+    const routerMobileAllWanOffline = routerMobileRawWan.length > 0 && routerMobileObservedWan.length === 0;
+    const routerMobileDownInterfaces = (Array.isArray(routerMobileSnapshot.interfaces) ? routerMobileSnapshot.interfaces : [])
+      .filter((row) => row?.running === false);
+    const routerMobileOverview = routerMobileSnapshot.overview || {};
+    const routerMobileResourceDanger = Number(routerMobileOverview.cpuLoad) >= 85 ||
+      Number(routerMobileOverview.memoryUsage) >= 85 || Number(routerMobileOverview.diskUsage) >= 90;
+    const routerMobileFailureCount = [
+      'realtimeEndpointFailures',
+      'slowRestEndpointFailures',
+      'staticEndpointFailures',
+      'detailEndpointFailures',
+      'protocolEndpointFailures',
+    ].reduce((total, key) => total + (Array.isArray(routerMobileSnapshot.meta?.[key]) ? routerMobileSnapshot.meta[key].length : 0), 0);
     const routerMobileRatesComplete = routerMobileObservedWan.length > 0 && routerMobileObservedWan.every((row) =>
       row.downRate !== null && row.downRate !== undefined && row.downRate !== '' && Number.isFinite(Number(row.downRate)) &&
       row.upRate !== null && row.upRate !== undefined && row.upRate !== '' && Number.isFinite(Number(row.upRate)));
@@ -6904,26 +6964,30 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         : ['current', 'historical'].includes(routerMobileEvidenceMode);
     const routerMobileExpectedRoute = routerMobileEvidenceMode === 'unavailable'
       ? 'unknown'
-      : ${JSON.stringify(scaleScenario)} === 'all-offline'
+      : routerMobileEvidenceMode === 'current' && routerMobileAllWanOffline && !routerMobileHasExplicitRoute
         ? 'offline'
         : routerMobileHasExplicitRoute
           ? routerMobileEvidenceMode === 'current' ? 'verified' : 'historical'
           : 'unknown';
-    const routerMobileExpectedPrimaryFocus = ${JSON.stringify(scaleScenario)} === 'no-snapshot'
+    const routerMobileExpectedPrimaryFocus = routerMobileEvidenceMode === 'unavailable'
       ? 'evidence'
-      : ${JSON.stringify(scaleScenario)} === 'all-offline'
+      : routerMobileEvidenceMode === 'current' && routerMobileAllWanOffline
         ? 'wan-offline'
-        : ${JSON.stringify(scaleScenario)} === 'resource-full'
+        : routerMobileResourceDanger
           ? 'resource'
-          : ${JSON.stringify(scaleScenario)} === 'interfaces-down' || ${JSON.stringify(scaleScenario)} === 'fleet'
+          : routerMobileDownInterfaces.length > 0
             ? 'interfaces'
-            : ${JSON.stringify(scaleScenario)} === 'collection-down'
+            : routerMobileEvidenceMode === 'historical' || routerMobileFailureCount > 0
               ? 'collection'
-              : 'route';
+              : routerMobileSnapshot.meta?.scaleScenario === 'fleet'
+                ? 'fleet-scope'
+                : 'route';
     const routerMobileExpectedSignal = routerMobileExpectedPrimaryFocus === 'wan-offline'
       ? 'wan'
       : routerMobileExpectedPrimaryFocus === 'evidence'
         ? 'collection'
+        : routerMobileExpectedPrimaryFocus === 'fleet-scope'
+          ? 'fleet'
         : routerMobileExpectedPrimaryFocus === 'route'
           ? routerMobileRatesComplete && routerMobileEvidenceMode === 'current' ? 'rates' : 'availability'
           : routerMobileExpectedPrimaryFocus;
@@ -6933,8 +6997,32 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         ? 'collection'
         : routerMobileExpectedPrimaryFocus === 'interfaces'
           ? 'interface'
+          : routerMobileExpectedPrimaryFocus === 'fleet-scope'
+            ? 'route'
           : routerMobileExpectedPrimaryFocus;
     const routerMobileExpectedCurrentRates = routerMobileExpectedSignal === 'rates';
+    const routerMobileExpectedProofKeys = routerMobileExpectedPrimaryFocus === 'evidence'
+      ? ['snapshot', 'target', 'success']
+      : routerMobileExpectedPrimaryFocus === 'wan-offline'
+        ? ['wan', 'route', 'collection']
+        : routerMobileExpectedPrimaryFocus === 'resource'
+          ? ['resource-classes', 'resource-streak', 'resource-samples']
+          : routerMobileExpectedPrimaryFocus === 'interfaces'
+            ? ['interface-count', 'interface-route', 'interface-wan']
+            : routerMobileExpectedPrimaryFocus === 'collection'
+              ? ['collection-cycle', 'collection-success', 'collection-boundary']
+              : routerMobileExpectedPrimaryFocus === 'fleet-scope'
+                ? ['fleet-cycle', 'fleet-risk', 'fleet-mode']
+              : ['route-proof', 'normal-wan', 'normal-collection'];
+    const routerMobileExpectedContextKeys = routerMobileExpectedInspection === 'collection'
+      ? ['target', 'boundary']
+      : routerMobileExpectedInspection === 'resource'
+        ? ['collection', 'boundary']
+        : routerMobileExpectedInspection === 'interface'
+          ? ['route', 'boundary']
+          : routerMobileExpectedInspection === 'wan'
+            ? ['route', 'collection']
+            : ['collection', 'boundary'];
     const routerMobileVisibleTextNodes = Array.from(routerMobileRoot?.querySelectorAll('span, b, strong, small, p, h1, time, button, summary, dt, dd') || [])
       .filter((node) => {
         const rect = node.getBoundingClientRect();
@@ -6952,7 +7040,9 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       const targetId = node.getAttribute('aria-controls');
       return Boolean(targetId && routerMobileRoot.querySelector('#' + CSS.escape(targetId)));
     });
-    const routerMobileProofPairs = Array.from(routerMobileProof?.querySelectorAll('li') || []).map((row) =>
+    const routerMobileProofRows = Array.from(routerMobileProof?.querySelectorAll('li[data-mobile-native-proof-key]') || []);
+    const routerMobileProofKeys = new Set(routerMobileProofRows.map((row) => row.getAttribute('data-mobile-native-proof-key') || ''));
+    const routerMobileProofPairs = routerMobileProofRows.map((row) =>
       normalize((row.querySelector('small')?.textContent || '') + '|' + (row.querySelector('b')?.textContent || '')));
     const routerMobileInspectionPairs = [
       ...Array.from(routerMobileInspection?.querySelectorAll('.mn-inspection-relations > div') || []).map((row) =>
@@ -6966,7 +7056,8 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const routerMobileUnavailableBoundaryOk = routerMobileEvidenceMode !== 'unavailable' || Boolean(
       !routerMobileTraffic &&
       !routerMobileRateLikeText &&
-      !/\\b\\d+\\s*\\/\\s*\\d+\\s*(?:条\\s*)?WAN\\b/i.test(routerMobileText) &&
+      !/\\d+\\s*\\/\\s*\\d+/.test(routerMobileTabletScopeText) &&
+      !/\\b\\d+\\s*\\/\\s*\\d+\\s*(?:\\u6761\\s*)?WAN\\b/i.test(routerMobileText) &&
       !/活动默认路由已核实|当前活动记录/.test(routerMobileText)
     );
     const routerMobilePhoneFlowOk = routerMobileLayout !== 'phone' || Boolean(
@@ -6975,27 +7066,20 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       routerMobileEvidenceRect.top >= routerMobileNavigationRect.bottom - 2 &&
       routerMobileFocusPanelRect.top >= routerMobileEvidenceRect.bottom - 2
     );
-    const routerMobileTabletSingleFocus = Boolean(
-      routerMobileTabletWorkspace?.classList.contains('is-single-focus') &&
-      routerMobileFocusOptions.length === 0
-    );
     const routerMobileTabletFlowOk = routerMobileLayout !== 'tablet' || Boolean(
       routerMobileTabletWorkspaceRect && routerMobileTabletMasterRect && routerMobileTabletDetailRect && routerMobileTabletContextRect &&
-      (routerMobileTabletSingleFocus
-        ? routerMobileTabletDetailRect.top >= routerMobileTabletMasterRect.bottom - 2 &&
-          Math.abs(routerMobileTabletDetailRect.left - routerMobileTabletWorkspaceRect.left) <= 2 &&
-          routerMobileTabletDetailRect.width >= routerMobileTabletWorkspaceRect.width - 2
-        : routerMobileTabletDetailRect.left >= routerMobileTabletMasterRect.right - 2 &&
-          Math.abs(routerMobileTabletMasterRect.top - routerMobileTabletDetailRect.top) <= 2) &&
+      routerMobileTabletDetailRect.left >= routerMobileTabletMasterRect.right - 2 &&
+      Math.abs(routerMobileTabletMasterRect.top - routerMobileTabletDetailRect.top) <= 2 &&
       routerMobileTabletContextRect.top >= routerMobileFocusPanelRect.bottom - 2 &&
-      routerMobileTabletContextCards.length >= 2 &&
-      routerMobileTabletContextRows.length >= 4 &&
-      routerMobileTabletDetailRect.bottom >= Math.min(window.innerHeight - 8, routerMobileTabletWorkspaceRect.top + window.innerHeight * 0.68)
+      routerMobileExpectedContextKeys.every((key) => routerMobileTabletContextKeys.has(key)) &&
+      routerMobileTabletContextCards.every((card) => Boolean(card.querySelector('.mn-tablet-context-row'))) &&
+      ['scope-wan', 'scope-interface', 'scope-risk'].every((key) => routerMobileTabletScopeKeys.has(key))
     );
     const routerMobileTouchTargets = [
       routerMobileDetailEntry,
       routerMobileDisclosure?.querySelector('summary'),
       ...routerMobileFocusOptions,
+      ...routerMobileObjectOptions,
     ].filter(Boolean);
     const routerMobileChecks = {
       mounted: Boolean(routerMobileRoot),
@@ -7011,8 +7095,9 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
             : /证据不可用/.test(routerMobileText) && /不作当前业务判断/.test(routerMobileText)),
       routeTruth: routerMobileRoot?.getAttribute('data-mobile-route-verification') === routerMobileExpectedRoute,
       riskPriority: routerMobilePrimaryFocus === routerMobileExpectedPrimaryFocus,
+      incidentFlag: routerMobileIncident === !['route', 'fleet-scope'].includes(routerMobileExpectedPrimaryFocus),
       semanticLayers: Boolean(routerMobileMasthead && routerMobileProof && routerMobileScenarioSignal && routerMobileInspection),
-      noProofInspectionReplay: routerMobileProofPairs.length === 3 && routerMobileProofInspectionRepeat.length === 0,
+      noProofInspectionReplay: routerMobileExpectedProofKeys.every((key) => routerMobileProofKeys.has(key)) && routerMobileProofInspectionRepeat.length === 0,
       evidenceInteraction: nativeMobileInteractionOk,
       detailAddsEvidence: nativeDetailHasNovelEvidence && nativeDetailNoHomeReplay,
       trafficMatchesMode: routerMobileExpectedCurrentRates
@@ -7020,6 +7105,10 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         : !routerMobileTraffic && !routerMobileRateLikeText,
       scenarioSignal: routerMobileScenarioSignal?.getAttribute('data-mobile-native-signal') === routerMobileExpectedSignal,
       inspectionFollowsRisk: routerMobileInspection?.getAttribute('data-mobile-native-inspection') === routerMobileExpectedInspection,
+      objectSelectionFollowsRisk: ['interfaces', 'wan'].includes(routerMobileExpectedSignal)
+        ? routerMobileObjectOptions.length > 0 && routerMobileSelectedObjectOptions.length === 1 &&
+          routerMobileInspection?.getAttribute('data-mobile-native-inspection-object') === routerMobileSelectedObjectOptions[0]?.getAttribute('data-mobile-native-object-option')
+        : routerMobileObjectOptions.length === 0,
       unavailableBoundary: routerMobileUnavailableBoundaryOk,
       configuredIdentity: Boolean(
         routerMobileIdentity &&
@@ -7032,11 +7121,14 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       noFakeTabs: !routerMobileRoot?.querySelector('[role="tab"], [role="tablist"], [role="tabpanel"]'),
       accessibility: Boolean(
         nativeMobileFocusKeyboardOk &&
-        routerMobileAriaTargetsOk &&
-        routerMobileTitle?.id === 'mn-focus-title' &&
-        routerMobileFocusPanel?.getAttribute('aria-labelledby') === 'mn-focus-title' &&
-        routerMobileRoot?.querySelectorAll('h1').length === 1 &&
-        (routerMobileFocusOptions.length === 0 || routerMobileSelectedFocusOptions.length === 1)
+         routerMobileAriaTargetsOk &&
+         routerMobileTitle?.id === 'mn-focus-title' &&
+         routerMobileFocusPanel?.getAttribute('aria-labelledby') === 'mn-focus-title' &&
+         Boolean(routerMobileLiveStatus && normalize(routerMobileLiveStatus.textContent || '').includes(routerMobileTitle?.textContent || '')) &&
+         routerMobileSectionHeadings.every(Boolean) &&
+         routerMobileRoot?.querySelectorAll('h1').length === 1 &&
+         (routerMobileFocusOptions.length === 0 || routerMobileSelectedFocusOptions.length === 1) &&
+         (routerMobileObjectOptions.length === 0 || routerMobileSelectedObjectOptions.length === 1)
       ),
       touchTarget: routerMobileTouchTargets.length >= 2 && routerMobileTouchTargets.every((node) => node.getBoundingClientRect().height >= 44),
       readableType: routerMobileSmallTextNodes.length === 0,
@@ -7047,6 +7139,10 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         routerMobileRect.width >= routerMobileSectionRect.width - 2 &&
         routerMobileRect.height >= window.innerHeight - 2),
       visualCenter: Boolean(routerMobileMastheadRect && routerMobileMastheadRect.height >= 120 && routerMobileTitleRect && routerMobileTitleRect.top >= 0),
+      priorityObjectVisible: routerMobileLayout !== 'phone' || window.innerHeight < 650 || Boolean(
+        routerMobileInspectionRect && routerMobileDetailEntryRect &&
+        routerMobileInspectionRect.top < window.innerHeight && routerMobileDetailEntryRect.bottom <= window.innerHeight
+      ),
       proofSignalInspectionFlow: Boolean(
         routerMobileProofRect && routerMobileSignalRect && routerMobileInspectionRect &&
         routerMobileSignalRect.top >= routerMobileProofRect.top - 2 &&
@@ -7322,23 +7418,45 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       layout: routerMobileLayout,
       primaryFocus: routerMobilePrimaryFocus,
       expectedPrimaryFocus: routerMobileExpectedPrimaryFocus,
-      proofRows: routerMobileProofPairs.length,
-      focusOptions: routerMobileFocusOptions.length,
+      proofKeys: [...routerMobileProofKeys],
+      focusKeys: routerMobileFocusOptions.map((option) => option.getAttribute('data-mobile-native-focus-option') || ''),
+      objectKeys: routerMobileObjectOptions.map((option) => option.getAttribute('data-mobile-native-object-option') || ''),
       signal: routerMobileScenarioSignal?.getAttribute('data-mobile-native-signal') || '',
       inspection: routerMobileInspection?.getAttribute('data-mobile-native-inspection') || '',
-      tabletContextCards: routerMobileTabletContextCards.length,
-      tabletContextRows: routerMobileTabletContextRows.length,
+      tabletContextKeys: [...routerMobileTabletContextKeys],
+      tabletScopeKeys: [...routerMobileTabletScopeKeys],
       evidenceMode: routerMobileEvidenceMode,
       routeExpected: routerMobileExpectedRoute,
       currentRatesExpected: routerMobileExpectedCurrentRates,
-      detailSections: nativeDetailSectionCount,
-      rawEvidenceSections: nativeDetailRawEvidenceCount,
       focusKeyboard: nativeMobileFocusKeyboardProbe,
+      objectSelection: nativeMobileObjectSelectionProbe,
       detailInteraction: nativeMobileInteractionProbe,
       smallTextNodes: routerMobileSmallTextNodes,
       trafficSource: routerMobileTraffic?.getAttribute('data-mobile-native-rates') || '',
       checks: routerMobileChecks,
     } : null;
+    if (routerMobileRoot) return {
+      pass,
+      surface: 'mobile-native',
+      mobileOverviewAppHomeGateProbe,
+      profile: ${JSON.stringify(profile)},
+      viewport: ${JSON.stringify(viewport)},
+      scaleScenario: ${JSON.stringify(scaleScenario)},
+      requestedSection: sectionName,
+      activeSection: active ? active.id : '',
+      requestedFound: Boolean(requested),
+      title: normalize(document.querySelector('#pageTitle')?.textContent),
+      url: location.href,
+      overflowX: Math.round(overflowX),
+      scroll: {
+        width: root.scrollWidth,
+        height: root.scrollHeight,
+        viewportWidth: window.innerWidth,
+        viewportHeight: window.innerHeight,
+      },
+      hasBadLiteral,
+      scaleMetaOk,
+    };
     return {
       pass,
       mobileOverviewAppHomeGateProbe,
@@ -8983,6 +9101,32 @@ function markWanOffline(snapshot, { includeLan = false } = {}) {
   refreshOverviewWanRates(snapshot);
 }
 
+function markForwardingInterfacesDown(snapshot) {
+  const wanInterfaces = (snapshot.interfaces || []).filter((row) => row.role === 'WAN');
+  const affected = [
+    { name: 'ether9', type: 'ether', parent: 'switch1', bridge: 'bridge-lan', vlan: 20, pppoeOut: 'pppoe-wan1' },
+    { name: 'vlan30', type: 'vlan', parent: 'ether9', bridge: 'bridge-lan', vlan: 30, pppoeOut: 'pppoe-wan2' },
+    { name: 'sfp-lan', type: 'sfp', parent: 'switch1', bridge: 'bridge-core', vlan: 40, pppoeOut: 'pppoe-wan3' },
+  ].map((row) => ({
+    ...row,
+    interface: row.name,
+    running: false,
+    disabled: false,
+    role: 'LAN',
+    rxRate: 0,
+    txRate: 0,
+    rxBytes: 0,
+    txBytes: 0,
+    rxPacket: 0,
+    txPacket: 0,
+    rxDrop: 0,
+    txDrop: 0,
+    rxError: 0,
+    txError: 0,
+  }));
+  snapshot.interfaces = [...wanInterfaces, ...affected];
+}
+
 function applyNoSnapshotScenario(snapshot) {
   setSnapshotFresh(snapshot);
   snapshot.status = 'error';
@@ -9074,10 +9218,11 @@ function applyEdgeScenario(snapshot, scaleScenario) {
     ]);
   } else if (scaleScenario === 'interfaces-down') {
     snapshot.status = 'error';
-    snapshot.error = '接口全 Down，RouterOS 转发面不可用';
-    markWanOffline(snapshot, { includeLan: true });
-    setFixtureFinding(snapshot, 'critical', 'Interfaces down', 'All interfaces are down in the edge fixture.', [
-      { label: 'interfacesDown', value: String((snapshot.interfaces || []).length) },
+    snapshot.error = '3 个转发接口 Down；WAN 与活动默认路由仍有当前记录';
+    markForwardingInterfacesDown(snapshot);
+    setFixtureFinding(snapshot, 'critical', 'Interfaces down', 'Three forwarding interfaces are down while WAN and route observations remain current.', [
+      { label: 'interfacesDown', value: '3' },
+      { label: 'wanOnline', value: String((snapshot.wan || []).filter((row) => row.running !== false).length) },
     ]);
   }
   refreshFixtureCounts(snapshot, scaleScenario);

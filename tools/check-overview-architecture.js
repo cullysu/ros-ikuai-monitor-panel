@@ -157,6 +157,8 @@ const phoneOpsHomeFile =
   "src/panel-framework/overview/mobile-native/MobileNativeHome.tsx";
 const phoneOpsSignalFile =
   "src/panel-framework/overview/mobile-native/MobileNativeSignal.tsx";
+const phoneOpsObjectSelectorFile =
+  "src/panel-framework/overview/mobile-native/MobileNativeObjectSelector.tsx";
 const phoneOpsInspectionFile =
   "src/panel-framework/overview/mobile-native/MobileNativeInspection.tsx";
 const phoneOpsEvidenceFile =
@@ -165,6 +167,12 @@ const phoneOpsIconFile =
   "src/panel-framework/overview/mobile-native/MobileNativeIcon.tsx";
 const phoneOpsFocusFile =
   "src/panel-framework/overview/mobile-native/mobileNativeFocus.ts";
+const phoneOpsObjectsFile =
+  "src/panel-framework/overview/mobile-native/mobileNativeObjects.ts";
+const phoneOpsHistoryFile =
+  "src/panel-framework/overview/mobile-native/mobileNativeHistory.ts";
+const phoneOpsTextFile =
+  "src/panel-framework/overview/mobile-native/mobileNativeText.ts";
 const phoneOpsModelFile =
   "src/panel-framework/overview/mobile-native/mobileNativeModel.ts";
 const phoneOpsModelEvidenceFile =
@@ -177,6 +185,8 @@ const phoneOpsStylesFile =
   "src/panel-framework/overview/mobile-native/styles/mobile-native-layout.css";
 const phoneOpsEvidenceStylesFile =
   "src/panel-framework/overview/mobile-native/styles/mobile-native-states.css";
+const phoneOpsWorkspaceStylesFile =
+  "src/panel-framework/overview/mobile-native/styles/mobile-native-workspace.css";
 const mobileShellStylesFile = "src/panel-framework/mobile-shell.css";
 const frameworkStylesFile = "src/panel-framework/styles.css";
 const overviewStatesStylesFile =
@@ -238,17 +248,22 @@ const desktopVisuals = read(desktopVisualsFile);
 const phoneOpsConsole = read(phoneOpsConsoleFile);
 const phoneOpsHome = read(phoneOpsHomeFile);
 const phoneOpsSignal = read(phoneOpsSignalFile);
+const phoneOpsObjectSelector = read(phoneOpsObjectSelectorFile);
 const phoneOpsInspection = read(phoneOpsInspectionFile);
 const phoneOpsEvidence = read(phoneOpsEvidenceFile);
 const phoneOpsIcon = read(phoneOpsIconFile);
 const phoneOpsFocus = read(phoneOpsFocusFile);
+const phoneOpsObjects = read(phoneOpsObjectsFile);
+const phoneOpsHistory = read(phoneOpsHistoryFile);
+const phoneOpsText = read(phoneOpsTextFile);
 const phoneOpsModel = read(phoneOpsModelFile);
 const phoneOpsModelEvidence = read(phoneOpsModelEvidenceFile);
 const phoneOpsTypes = read(phoneOpsTypesFile);
 const phoneOpsTokens = read(phoneOpsTokensFile);
 const phoneOpsStyles = read(phoneOpsStylesFile);
 const phoneOpsEvidenceStyles = read(phoneOpsEvidenceStylesFile);
-const phoneOpsStyleBundle = `${phoneOpsTokens}\n${phoneOpsStyles}\n${phoneOpsEvidenceStyles}`;
+const phoneOpsWorkspaceStyles = read(phoneOpsWorkspaceStylesFile);
+const phoneOpsStyleBundle = `${phoneOpsTokens}\n${phoneOpsStyles}\n${phoneOpsWorkspaceStyles}\n${phoneOpsEvidenceStyles}`;
 const mobileShellStyles = read(mobileShellStylesFile);
 const frameworkStyles = read(frameworkStylesFile);
 const overviewStatesStyles = read(overviewStatesStylesFile);
@@ -809,16 +824,35 @@ assert(
 assert(lines(phoneOpsConsole) <= 180, `MobileNativeConsole.tsx exceeds 180 lines: ${lines(phoneOpsConsole)}`);
 assert(lines(phoneOpsHome) <= 320, `MobileNativeHome.tsx exceeds 320 lines: ${lines(phoneOpsHome)}`);
 assert(lines(phoneOpsSignal) <= 100, `MobileNativeSignal.tsx exceeds 100 lines: ${lines(phoneOpsSignal)}`);
+assert(lines(phoneOpsObjectSelector) <= 100, `MobileNativeObjectSelector.tsx exceeds 100 lines: ${lines(phoneOpsObjectSelector)}`);
 assert(lines(phoneOpsInspection) <= 100, `MobileNativeInspection.tsx exceeds 100 lines: ${lines(phoneOpsInspection)}`);
 assert(lines(phoneOpsEvidence) <= 100, `MobileNativeDetail.tsx exceeds 100 lines: ${lines(phoneOpsEvidence)}`);
 assert(lines(phoneOpsIcon) <= 100, `MobileNativeIcon.tsx exceeds 100 lines: ${lines(phoneOpsIcon)}`);
 assert(lines(phoneOpsFocus) <= 460, `mobileNativeFocus.ts exceeds 460 lines: ${lines(phoneOpsFocus)}`);
+assert(lines(phoneOpsObjects) <= 320, `mobileNativeObjects.ts exceeds 320 lines: ${lines(phoneOpsObjects)}`);
+assert(lines(phoneOpsHistory) <= 60, `mobileNativeHistory.ts exceeds 60 lines: ${lines(phoneOpsHistory)}`);
+assert(lines(phoneOpsText) <= 40, `mobileNativeText.ts exceeds 40 lines: ${lines(phoneOpsText)}`);
 assert(lines(phoneOpsModel) <= 520, `mobileNativeModel.ts exceeds 520 lines: ${lines(phoneOpsModel)}`);
 assert(lines(phoneOpsModelEvidence) <= 300, `mobileNativeEvidence.ts exceeds 300 lines: ${lines(phoneOpsModelEvidence)}`);
 assert(lines(phoneOpsTypes) <= 100, `mobileNativeTypes.ts exceeds 100 lines: ${lines(phoneOpsTypes)}`);
 assert(lines(phoneOpsTokens) <= 110, `mobile-native-tokens.css exceeds 110 lines: ${lines(phoneOpsTokens)}`);
 assert(lines(phoneOpsStyles) <= 1250, `mobile-native-layout.css exceeds 1250 lines: ${lines(phoneOpsStyles)}`);
 assert(lines(phoneOpsEvidenceStyles) <= 180, `mobile-native-states.css exceeds 180 lines: ${lines(phoneOpsEvidenceStyles)}`);
+assert(lines(phoneOpsWorkspaceStyles) <= 180, `mobile-native-workspace.css exceeds 180 lines: ${lines(phoneOpsWorkspaceStyles)}`);
+assert(
+  panel.includes('const MOBILE_OVERVIEW_QUERY = "(max-width: 1199px)"') &&
+    mobileShellStyles.includes("@media (max-width: 1199px)") &&
+    localPredeploy.includes("window.innerWidth <= 1199"),
+  "iPad-class widths through 1199px must stay in the isolated mobile/tablet render tree"
+);
+assert(
+  phoneOpsObjectSelector.includes('role="listbox"') &&
+    phoneOpsObjectSelector.includes('aria-controls="mn-inspection-panel"') &&
+    phoneOpsEvidence.includes("inspection.sourcePath") &&
+    phoneOpsEvidence.includes("inspection.observedAt") &&
+    !/原始证据/.test(`${phoneOpsHome}\n${phoneOpsSignal}\n${phoneOpsInspection}\n${phoneOpsEvidence}\n${phoneOpsFocus}\n${phoneOpsObjects}`),
+  "Mobile object selection and evidence detail must be programmatic, source-aware, and must not overclaim transformed rows as raw evidence"
+);
 assert(
   phoneOpsConsole.includes("data-mobile-native-console") &&
     phoneOpsConsole.includes("<MobileNativePhoneHome") &&
@@ -1183,10 +1217,11 @@ assert(
 assert(
   phoneOpsConsole.includes('import "./styles/mobile-native-tokens.css";') &&
     phoneOpsConsole.includes('import "./styles/mobile-native-layout.css";') &&
+    phoneOpsConsole.includes('import "./styles/mobile-native-workspace.css";') &&
     phoneOpsConsole.includes('import "./styles/mobile-native-states.css";') &&
     !phoneOpsConsole.includes("useInsertionEffect") &&
     !phoneOpsConsole.includes("style>") &&
-    !/\b(?:rm|ro|ik-mobile|ik-ios|phone-ops)-/.test(`${phoneOpsConsole}\n${phoneOpsHome}\n${phoneOpsSignal}\n${phoneOpsInspection}\n${phoneOpsEvidence}\n${phoneOpsIcon}\n${phoneOpsFocus}\n${phoneOpsModel}\n${phoneOpsModelEvidence}\n${phoneOpsStyleBundle}`),
+    !/\b(?:rm|ro|ik-mobile|ik-ios|phone-ops)-/.test(`${phoneOpsConsole}\n${phoneOpsHome}\n${phoneOpsSignal}\n${phoneOpsObjectSelector}\n${phoneOpsInspection}\n${phoneOpsEvidence}\n${phoneOpsIcon}\n${phoneOpsFocus}\n${phoneOpsObjects}\n${phoneOpsHistory}\n${phoneOpsText}\n${phoneOpsModel}\n${phoneOpsModelEvidence}\n${phoneOpsStyleBundle}`),
   "Native mobile product must use isolated build-time stylesheets and no retired namespace"
 );
 assert(

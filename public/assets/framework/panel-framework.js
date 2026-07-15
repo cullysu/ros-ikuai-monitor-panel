@@ -9818,13 +9818,19 @@ var PanelFramework = function(exports) {
     const Icon2 = ICONS[name] || Activity;
     return /* @__PURE__ */ jsxRuntimeExports.jsx(Icon2, { "aria-hidden": "true", className, size, strokeWidth: 1.8 });
   }
-  function MobileNativeDetail({ model, focus, onBack }) {
-    const backRef = reactExports.useRef(null);
+  function MobileNativeDetail({
+    model,
+    focus,
+    inspection,
+    onBack
+  }) {
+    const titleRef = reactExports.useRef(null);
     const sections = focus.detailSectionKeys.map((key) => model.detailSections.find((section) => section.key === key)).filter((section) => Boolean(section));
     reactExports.useLayoutEffect(() => {
       var _a;
-      (_a = backRef.current) == null ? void 0 : _a.focus({ preventScroll: true });
-    }, []);
+      window.scrollTo({ top: 0, behavior: "auto" });
+      (_a = titleRef.current) == null ? void 0 : _a.focus({ preventScroll: true });
+    }, [focus.key, inspection.objectId]);
     reactExports.useEffect(() => {
       const onKeyDown = (event) => {
         if (event.key === "Escape") onBack();
@@ -9832,25 +9838,44 @@ var PanelFramework = function(exports) {
       window.addEventListener("keydown", onKeyDown);
       return () => window.removeEventListener("keydown", onKeyDown);
     }, [onBack]);
-    return /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "mn-detail", "aria-labelledby": "mn-detail-title", "data-mobile-native-detail": true, "data-mobile-native-detail-focus": focus.key, children: [
+    const selectedRows = [
+      { key: "selected-source", label: "来源路径", value: inspection.sourcePath },
+      { key: "selected-observed", label: "采样时间", value: inspection.observedAt },
+      { key: "selected-object", label: "对象标识", value: inspection.objectId, note: inspection.objectPosition },
+      ...inspection.detailRows
+    ];
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs("main", { className: "mn-detail", "aria-labelledby": "mn-detail-title", "data-mobile-native-detail": true, "data-mobile-native-detail-focus": focus.key, "data-mobile-native-detail-object": inspection.objectId, children: [
       /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { className: "mn-detail-navigation", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("button", { ref: backRef, type: "button", onClick: onBack, "aria-label": "返回网络概览", "data-mobile-native-back": true, children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("button", { type: "button", onClick: onBack, "aria-label": "返回网络概览", "data-mobile-native-back": true, children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx(MobileNativeIcon, { name: "back", size: 21 }),
           "概览"
         ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: focus.inspection.label }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: inspection.label }),
         /* @__PURE__ */ jsxRuntimeExports.jsx("span", { "aria-hidden": "true" })
       ] }),
       /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mn-detail-content", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { className: `mn-detail-intro is-${focus.tone}`, children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "mn-detail-symbol", "aria-hidden": "true", children: /* @__PURE__ */ jsxRuntimeExports.jsx(MobileNativeIcon, { name: focus.inspection.key, size: 23 }) }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "mn-detail-symbol", "aria-hidden": "true", children: /* @__PURE__ */ jsxRuntimeExports.jsx(MobileNativeIcon, { name: inspection.key, size: 23 }) }),
           /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: model.device }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { id: "mn-detail-title", children: focus.inspection.actionTitle }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { children: "以下记录补充首页判断来源，只用于追溯，不会修改 RouterOS 配置。" })
+          /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { ref: titleRef, id: "mn-detail-title", tabIndex: -1, children: inspection.actionTitle }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { children: "这里补充首页未展示的对象路径、采样时间和字段记录；页面保持只读。" })
         ] }),
-        sections.map((section) => /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "mn-detail-section", "aria-label": section.title, "data-mobile-native-detail-section": section.key, children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "mn-detail-section is-selected-evidence", "aria-labelledby": "mn-detail-selected-title", "data-mobile-native-selected-evidence": true, children: [
           /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: section.title }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { id: "mn-detail-selected-title", children: "所选对象证据" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "对象、来源与采样边界" })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mn-detail-rows", children: selectedRows.map((row, index) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mn-detail-row", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: row.label }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: row.value }),
+              row.note ? /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: row.note }) : null
+            ] })
+          ] }, row.key || `${row.label}-${index}`)) })
+        ] }),
+        sections.map((section) => /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "mn-detail-section", "aria-labelledby": `mn-detail-section-${section.key}`, "data-mobile-native-detail-section": section.key, children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { id: `mn-detail-section-${section.key}`, children: section.title }),
             /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: section.note })
           ] }),
           /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mn-detail-rows", children: section.rows.map((row, index) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `mn-detail-row is-${row.tone || "trust"}`, children: [
@@ -9865,24 +9890,27 @@ var PanelFramework = function(exports) {
     ] });
   }
   function MobileNativeInspectionPanel({
-    focus,
+    inspection,
     expanded,
     onExpandedChange,
     onOpenDetail,
     detailButtonRef
   }) {
-    const inspection = focus.inspection;
-    return /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: `mn-inspection is-${inspection.tone}`, "aria-labelledby": "mn-inspection-title", "data-mobile-native-inspection": inspection.key, children: [
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { id: "mn-inspection-panel", className: `mn-inspection is-${inspection.tone}`, "aria-labelledby": "mn-inspection-title", "data-mobile-native-inspection": inspection.key, "data-mobile-native-inspection-object": inspection.objectId, children: [
       /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { className: "mn-inspection-heading", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "mn-object-symbol", "aria-hidden": "true", children: /* @__PURE__ */ jsxRuntimeExports.jsx(MobileNativeIcon, { name: inspection.key, size: 20 }) }),
         /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
           /* @__PURE__ */ jsxRuntimeExports.jsxs("small", { children: [
             inspection.label,
             " · ",
-            inspection.status
+            inspection.objectPosition
           ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { id: "mn-inspection-title", children: inspection.title }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: inspection.note })
+          /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { id: "mn-inspection-title", children: inspection.title }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("em", { children: [
+            inspection.status,
+            " · ",
+            inspection.note
+          ] })
         ] }),
         /* @__PURE__ */ jsxRuntimeExports.jsxs(
           "button",
@@ -9894,7 +9922,7 @@ var PanelFramework = function(exports) {
             "aria-label": inspection.actionTitle,
             "data-mobile-native-open-detail": true,
             children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "证据" }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "详情" }),
               /* @__PURE__ */ jsxRuntimeExports.jsx(MobileNativeIcon, { name: "forward", size: 18 })
             ]
           }
@@ -9922,11 +9950,60 @@ var PanelFramework = function(exports) {
       ] }) : null
     ] });
   }
-  function MobileNativeSignal({ signal }) {
+  function MobileNativeObjectSelector({
+    items,
+    selectedObjectId,
+    onSelectObject
+  }) {
+    const selectFromKeyboard = (event, index) => {
+      var _a;
+      if (!onSelectObject) return;
+      let nextIndex = null;
+      if (event.key === "ArrowRight" || event.key === "ArrowDown") nextIndex = (index + 1) % items.length;
+      if (event.key === "ArrowLeft" || event.key === "ArrowUp") nextIndex = (index - 1 + items.length) % items.length;
+      if (event.key === "Home") nextIndex = 0;
+      if (event.key === "End") nextIndex = items.length - 1;
+      if (nextIndex === null) return;
+      const next = items[nextIndex];
+      if (!next.objectId) return;
+      event.preventDefault();
+      onSelectObject(next.objectId);
+      (_a = document.getElementById(`mn-object-option-${nextIndex}`)) == null ? void 0 : _a.focus({ preventScroll: true });
+    };
+    return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mn-object-carousel", role: "listbox", "aria-labelledby": "mn-signal-title", "aria-orientation": "horizontal", children: items.map((item, index) => {
+      const active = item.objectId === selectedObjectId;
+      return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+        "button",
+        {
+          id: `mn-object-option-${index}`,
+          className: `is-${item.tone || "trust"} ${active ? "is-selected" : ""}`,
+          type: "button",
+          role: "option",
+          "aria-selected": active,
+          "aria-controls": "mn-inspection-panel",
+          tabIndex: active ? 0 : -1,
+          onClick: () => item.objectId && (onSelectObject == null ? void 0 : onSelectObject(item.objectId)),
+          onKeyDown: (event) => selectFromKeyboard(event, index),
+          "data-mobile-native-object-option": item.objectId,
+          children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: item.label }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: item.value }),
+            item.note ? /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: item.note }) : null
+          ]
+        },
+        item.objectId || `${item.label}-${index}`
+      );
+    }) });
+  }
+  function MobileNativeSignal({
+    signal,
+    selectedObjectId,
+    onSelectObject
+  }) {
     if (signal.kind === "rates") {
       return /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "mn-signal mn-signal-rates", "aria-labelledby": "mn-signal-title", "data-mobile-native-rates": "current", "data-mobile-native-signal": "rates", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { id: "mn-signal-title", children: signal.title }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { id: "mn-signal-title", children: signal.title }),
           /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: signal.note })
         ] }),
         /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mn-rate-pair", children: signal.items.map((item, index) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
@@ -9941,7 +10018,7 @@ var PanelFramework = function(exports) {
     if (signal.kind === "resource") {
       return /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "mn-signal mn-signal-resource", "aria-labelledby": "mn-signal-title", "data-mobile-native-resource-signal": true, "data-mobile-native-signal": "resource", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { id: "mn-signal-title", children: signal.title }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { id: "mn-signal-title", children: signal.title }),
           /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: signal.note })
         ] }),
         /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mn-pressure-list", children: signal.items.map((item) => {
@@ -9959,15 +10036,16 @@ var PanelFramework = function(exports) {
         }) })
       ] });
     }
-    return /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: `mn-signal mn-signal-list is-${signal.kind}`, "aria-labelledby": "mn-signal-title", "data-mobile-native-signal": signal.kind, children: [
+    const selectableObjects = (signal.kind === "interfaces" || signal.kind === "wan") && signal.items.some((item) => item.objectId);
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: `mn-signal mn-signal-list is-${signal.kind} ${selectableObjects ? "is-object-selector" : ""}`, "aria-labelledby": "mn-signal-title", "data-mobile-native-signal": signal.kind, children: [
       /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { children: [
         /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "mn-section-symbol", "aria-hidden": "true", children: /* @__PURE__ */ jsxRuntimeExports.jsx(MobileNativeIcon, { name: signal.kind, size: 18 }) }),
         /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { id: "mn-signal-title", children: signal.title }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { id: "mn-signal-title", children: signal.title }),
           /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: signal.note })
         ] })
       ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mn-signal-rows", children: signal.items.map((item, index) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `mn-signal-row is-${item.tone || "trust"}`, children: [
+      selectableObjects ? /* @__PURE__ */ jsxRuntimeExports.jsx(MobileNativeObjectSelector, { items: signal.items, selectedObjectId, onSelectObject }) : /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mn-signal-rows", children: signal.items.map((item, index) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `mn-signal-row is-${item.tone || "trust"}`, children: [
         /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: item.label }),
         /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: item.value }),
@@ -10010,8 +10088,11 @@ var PanelFramework = function(exports) {
   }
   function ProofLedger({ focus }) {
     return /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "mn-proof-ledger", "aria-labelledby": "mn-proof-title", "data-mobile-native-proof": true, children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("header", { children: /* @__PURE__ */ jsxRuntimeExports.jsx("b", { id: "mn-proof-title", children: "判断依据" }) }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("ul", { children: focus.proofs.map((proof, index) => /* @__PURE__ */ jsxRuntimeExports.jsxs("li", { className: `is-${proof.tone || "trust"}`, children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { id: "mn-proof-title", children: "判断依据" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "只列直接支撑结论的事实" })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("ul", { children: focus.proofs.map((proof, index) => /* @__PURE__ */ jsxRuntimeExports.jsxs("li", { className: `is-${proof.tone || "trust"}`, "data-mobile-native-proof-key": proof.key, children: [
         /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "mn-proof-symbol", "aria-hidden": "true", children: /* @__PURE__ */ jsxRuntimeExports.jsx(MobileNativeIcon, { name: "proof", size: 16 }) }),
         /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: proof.label }),
@@ -10043,13 +10124,13 @@ var PanelFramework = function(exports) {
     };
     return /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: `mn-focus-queue ${compact ? "is-compact" : ""}`, "aria-labelledby": "mn-focus-queue-title", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("b", { id: "mn-focus-queue-title", children: isRiskQueue ? "风险焦点" : "证据焦点" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { id: "mn-focus-queue-title", children: isRiskQueue ? "风险焦点" : "证据焦点" }),
         /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
           focuses.length,
           " 组"
         ] })
       ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { role: "listbox", "aria-label": "风险与证据焦点", children: focuses.map((focus, index) => {
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { role: "listbox", "aria-labelledby": "mn-focus-queue-title", children: focuses.map((focus, index) => {
         const active = focus.key === selected;
         return /* @__PURE__ */ jsxRuntimeExports.jsxs(
           "button",
@@ -10078,24 +10159,32 @@ var PanelFramework = function(exports) {
     ] });
   }
   function FocusPanel({
-    model,
     focus,
+    inspection,
+    selectedObjectId,
+    onSelectObject,
     expanded,
     onExpandedChange,
     onOpenDetail,
     detailButtonRef
   }) {
     return /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { id: "mn-focus-panel", className: "mn-focus-panel", "aria-labelledby": "mn-focus-title", "data-mobile-native-focus": focus.key, children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("p", { className: "mn-sr-only", role: "status", "aria-live": "polite", children: [
+        "当前焦点：",
+        focus.kicker,
+        "，",
+        focus.title
+      ] }),
       /* @__PURE__ */ jsxRuntimeExports.jsx(FocusMasthead, { focus }),
       /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mn-focus-evidence-grid", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mn-focus-measurements", children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx(ProofLedger, { focus }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(MobileNativeSignal, { signal: focus.signal })
+          /* @__PURE__ */ jsxRuntimeExports.jsx(MobileNativeSignal, { signal: focus.signal, selectedObjectId, onSelectObject })
         ] }),
         /* @__PURE__ */ jsxRuntimeExports.jsx(
           MobileNativeInspectionPanel,
           {
-            focus,
+            inspection,
             expanded,
             onExpandedChange,
             onOpenDetail,
@@ -10105,17 +10194,29 @@ var PanelFramework = function(exports) {
       ] })
     ] });
   }
+  function TabletScopeLedger({ model }) {
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "mn-tablet-scope", "aria-labelledby": "mn-tablet-scope-title", "data-mobile-native-tablet-scope": true, children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { id: "mn-tablet-scope-title", children: "观测范围" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "当前采样对象" })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("dl", { children: model.scopeFacts.map((fact, index) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `is-${fact.tone || "trust"}`, "data-mobile-native-scope-key": fact.key, children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("dt", { children: fact.label }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("dd", { children: fact.value })
+      ] }, fact.key || `${fact.label}-${index}`)) })
+    ] });
+  }
   function TabletContextEvidence({ model, focus }) {
     const sectionKeys = focus.inspection.key === "collection" ? ["target", "boundary"] : focus.inspection.key === "resource" ? ["collection", "boundary"] : focus.inspection.key === "interface" ? ["route", "boundary"] : focus.inspection.key === "wan" ? ["route", "collection"] : focus.key === "fleet-scope" ? ["wan", "collection"] : ["collection", "boundary"];
     const sections = sectionKeys.map((key) => model.detailSections.find((section) => section.key === key)).filter((section) => Boolean(section));
     return /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "mn-tablet-context", "aria-labelledby": "mn-tablet-context-title", "data-mobile-native-tablet-context": true, children: [
       /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("b", { id: "mn-tablet-context-title", children: "上下文证据" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { id: "mn-tablet-context-title", children: "上下文证据" }),
         /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "目标、来源与影响边界" })
       ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { children: sections.map((section) => /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "mn-tablet-context-card", "aria-label": section.title, children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { children: sections.map((section) => /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "mn-tablet-context-card", "aria-labelledby": `mn-context-${section.key}`, "data-mobile-native-context-key": section.key, children: [
         /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: section.title }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { id: `mn-context-${section.key}`, children: section.title }),
           /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: section.note })
         ] }),
         /* @__PURE__ */ jsxRuntimeExports.jsx("div", { children: section.rows.slice(0, 3).map((row, index) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `mn-tablet-context-row is-${row.tone || "trust"}`, children: [
@@ -10131,6 +10232,9 @@ var PanelFramework = function(exports) {
   function MobileNativePhoneHome({
     model,
     focus,
+    inspection,
+    selectedObjectId,
+    onSelectObject,
     selected,
     onSelect,
     expanded,
@@ -10145,8 +10249,10 @@ var PanelFramework = function(exports) {
       /* @__PURE__ */ jsxRuntimeExports.jsx(
         FocusPanel,
         {
-          model,
           focus,
+          inspection,
+          selectedObjectId,
+          onSelectObject,
           expanded,
           onExpandedChange,
           onOpenDetail,
@@ -10158,6 +10264,9 @@ var PanelFramework = function(exports) {
   function MobileNativeTabletHome({
     model,
     focus,
+    inspection,
+    selectedObjectId,
+    onSelectObject,
     selected,
     onSelect,
     expanded,
@@ -10165,14 +10274,14 @@ var PanelFramework = function(exports) {
     onOpenDetail,
     detailButtonRef
   }) {
-    const multipleFocuses = model.focuses.length > 1;
     return /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
       /* @__PURE__ */ jsxRuntimeExports.jsx(DeviceChrome, { model }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `mn-tablet-workspace ${multipleFocuses ? "is-multiple-focus" : "is-single-focus"}`, "data-mobile-native-tablet-workspace": true, children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mn-tablet-workspace", "data-mobile-native-tablet-workspace": true, children: [
         /* @__PURE__ */ jsxRuntimeExports.jsxs("aside", { className: "mn-focus-master", "aria-label": "风险与证据主列表", children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx(EvidenceBoundary, { model }),
           model.scopeNote ? /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "mn-scope-note", children: model.scopeNote }) : null,
-          multipleFocuses ? /* @__PURE__ */ jsxRuntimeExports.jsx(FocusQueue, { focuses: model.focuses, selected, onSelect }) : null,
+          /* @__PURE__ */ jsxRuntimeExports.jsx(TabletScopeLedger, { model }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(FocusQueue, { focuses: model.focuses, selected, onSelect }),
           /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mn-master-boundary", children: [
             /* @__PURE__ */ jsxRuntimeExports.jsx(MobileNativeIcon, { name: "readonly", size: 16 }),
             /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
@@ -10185,8 +10294,10 @@ var PanelFramework = function(exports) {
           /* @__PURE__ */ jsxRuntimeExports.jsx(
             FocusPanel,
             {
-              model,
               focus,
+              inspection,
+              selectedObjectId,
+              onSelectObject,
               expanded,
               onExpandedChange,
               onOpenDetail,
@@ -10197,6 +10308,21 @@ var PanelFramework = function(exports) {
         ] })
       ] })
     ] });
+  }
+  function detailViewFromHistory(state) {
+    if (!state || typeof state !== "object") return null;
+    const view = state.mobileNativeView;
+    return (view == null ? void 0 : view.view) === "detail" && view.focus ? {
+      focus: view.focus,
+      objectId: view.objectId,
+      homeScrollY: Number.isFinite(view.homeScrollY) ? Math.max(0, Number(view.homeScrollY)) : void 0
+    } : null;
+  }
+  function compactMessage(value, fallback = "未记录") {
+    const normalized = String(value ?? "").replace(/\s+/g, " ").trim() || fallback;
+    const parts = normalized.split(/[;；]/).map((part) => part.trim()).filter(Boolean);
+    if (parts.length < 2) return normalized;
+    return [...new Set(parts)].join("；");
   }
   function clean(value, fallback = "未记录") {
     const normalized = String(value ?? "").replace(/\s+/g, " ").trim();
@@ -10297,12 +10423,15 @@ var PanelFramework = function(exports) {
       key: `endpoint-${index}`,
       label: clean(entry.group, `失败端点 ${index + 1}`),
       value: clean(entry.name),
-      note: clean(entry.message || entry.at, "未提供附加说明"),
+      note: compactMessage(entry.message || entry.at, "未提供附加说明"),
       tone: "warn"
     }));
   }
   function channelNote(channel) {
-    if (channel.error) return channel.successAt ? `${channel.error} · 上次成功 ${shortTimestamp(channel.successAt)}` : `${channel.error} · 成功时间未记录`;
+    if (channel.error) {
+      const error = compactMessage(channel.error);
+      return channel.successAt ? `${error} · 上次成功 ${shortTimestamp(channel.successAt)}` : `${error} · 成功时间未记录`;
+    }
     return channel.successAt ? `成功 ${shortTimestamp(channel.successAt)}` : "成功时间未记录";
   }
   function collectionDetail(snapshot) {
@@ -10316,7 +10445,7 @@ var PanelFramework = function(exports) {
     ];
     return {
       key: "collection",
-      title: "采集链路原始证据",
+      title: "采集链路证据详情",
       note: failures.length ? `${failures.length} 个失败端点已保留` : "通道成功时间与错误独立记录",
       rows: [
         { key: "rest", label: "REST", value: channels.rest.label, note: channelNote(channels.rest), tone: channels.rest.status === "current" ? "trust" : "warn" },
@@ -10356,7 +10485,7 @@ var PanelFramework = function(exports) {
     });
     return {
       key: "route",
-      title: "路由原始证据",
+      title: "路由记录详情",
       note: "只认 active=true 且未停用的默认路由",
       rows: rows.length ? rows : [{ key: "route-empty", label: "默认路由", value: "未取得", note: "不使用任意首行兜底", tone: "warn" }]
     };
@@ -10376,7 +10505,7 @@ var PanelFramework = function(exports) {
     });
     return {
       key: "wan",
-      title: "WAN 对象原始证据",
+      title: "WAN 对象记录",
       note: mode === "current" ? "对象状态与完整当前观测" : "非当前证据不显示速率数字",
       rows: rows.length ? rows : [{ key: "wan-empty", label: "WAN", value: "未取得", note: "没有对象记录", tone: "warn" }]
     };
@@ -10391,7 +10520,7 @@ var PanelFramework = function(exports) {
     }));
     return {
       key: "interfaces",
-      title: "接口依赖原始证据",
+      title: "接口依赖记录",
       note: "Down 对象、父级、VLAN 与 PPPoE",
       rows: rows.length ? rows : [{ key: "interface-empty", label: "接口", value: "未发现 Down 记录", note: "只依据可用快照" }]
     };
@@ -10402,7 +10531,7 @@ var PanelFramework = function(exports) {
     const current = mode === "current";
     return {
       key: "resource",
-      title: mode === "historical" ? "资源阈值历史证据" : "资源阈值原始证据",
+      title: mode === "historical" ? "资源阈值历史记录" : "资源阈值证据详情",
       note: mode === "historical" ? "保留值不代表当前；CPU/内存 85%，磁盘 90%" : "CPU/内存 85%，磁盘 90%",
       rows: [
         { key: "cpu", label: current ? "CPU" : "历史 CPU", value: available ? formatPercent(state.facts.resource.cpu) : "不可判断", note: "阈值 85%", tone: current ? "danger" : "warn" },
@@ -10440,6 +10569,240 @@ var PanelFramework = function(exports) {
     }
     sections.push(boundaryDetail());
     return sections;
+  }
+  function evidenceObjectId(prefix, label, index) {
+    return `${prefix}:${index}:${label}`;
+  }
+  function downInterfaces(snapshot) {
+    return (snapshot.interfaces || []).filter((row) => row.running === false).slice(0, 10);
+  }
+  function offlineWans(snapshot) {
+    return wanRows(snapshot).filter((row) => row.running === false).slice(0, 10);
+  }
+  function inspectionChannelTone(status) {
+    if (status === "current") return "trust";
+    if (status === "unavailable") return "missing";
+    return status === "failed" ? "danger" : "warn";
+  }
+  function routeInspection(context) {
+    const { snapshot, mode, verification, route } = context;
+    const carrier = wanRows(snapshot).find((row) => row.running !== false && row.disabled !== true);
+    const routes = routeRows(snapshot);
+    const routeCount = routes.length;
+    const routeIndex = route ? routes.indexOf(route) : -1;
+    const available = mode !== "unavailable" && Boolean(route);
+    return {
+      key: "route",
+      objectId: available ? `route:${routeIndex}:${clean((route == null ? void 0 : route.table) || (route == null ? void 0 : route.routingTable), "main")}` : "route:unverified",
+      objectPosition: available ? "已筛选活动默认路由" : "没有可选择对象",
+      label: "默认路由",
+      title: available ? clean((route == null ? void 0 : route.gateway) || (route == null ? void 0 : route.gatewayStatus), "活动默认路由") : "默认路由证据源",
+      status: verification === "verified" ? "当前活动记录" : verification === "historical" ? "历史活动记录" : "未核实",
+      tone: verification === "verified" ? "trust" : "warn",
+      note: available ? "以下字段来自明确的默认路由记录" : "检查记录来源与筛选条件，不使用首行兜底",
+      sourcePath: routeIndex >= 0 ? `routes.defaultRoutes[${routeIndex}]` : "routes.defaultRoutes",
+      observedAt: shortTimestamp(snapshot.updatedAt),
+      relations: available ? [
+        { label: "路由表", value: clean((route == null ? void 0 : route.table) || (route == null ? void 0 : route.routingTable), "main") },
+        { label: "网关", value: clean((route == null ? void 0 : route.gateway) || (route == null ? void 0 : route.gatewayStatus)) },
+        { label: "distance", value: clean(route == null ? void 0 : route.distance) }
+      ] : [
+        { label: "记录来源", value: "routes.defaultRoutes" },
+        { label: "记录数量", value: `${routeCount} 条` },
+        { label: "核验条件", value: "active=true 且未停用" }
+      ],
+      rows: available ? [
+        { key: "route-flags", label: "原始标记", value: "active=true · disabled=false" },
+        { key: "route-carrier", label: "关联出口", value: clean((carrier == null ? void 0 : carrier.name) || (carrier == null ? void 0 : carrier.interface), "采集未覆盖") },
+        { key: "route-source", label: "证据来源", value: "默认路由记录" }
+      ] : [
+        { key: "route-boundary", label: "判断边界", value: "没有明确活动记录", note: "不推断默认出口" }
+      ],
+      detailRows: available ? [
+        { key: "route-raw-table", label: "table", value: clean((route == null ? void 0 : route.table) || (route == null ? void 0 : route.routingTable), "采集未覆盖") },
+        { key: "route-raw-gateway", label: "gateway", value: clean((route == null ? void 0 : route.gateway) || (route == null ? void 0 : route.gatewayStatus), "采集未覆盖") },
+        { key: "route-raw-distance", label: "distance", value: clean(route == null ? void 0 : route.distance, "采集未覆盖") },
+        { key: "route-raw-flags", label: "active / disabled", value: `${(route == null ? void 0 : route.active) === true} / ${(route == null ? void 0 : route.disabled) === true}` }
+      ] : [
+        { key: "route-source-empty", label: "筛选条件", value: "active=true 且 disabled!=true" },
+        { key: "route-count-empty", label: "候选记录", value: `${routeCount} 条` }
+      ],
+      disclosureTitle: "展开路由字段",
+      actionTitle: "查看默认路由证据详情"
+    };
+  }
+  function wanInspection(context, selected, index = 0, total = selected ? 1 : 0) {
+    const { snapshot, mode, verification } = context;
+    const fallback = wanRows(snapshot).find((row) => row.running === false) || wanRows(snapshot).find((row) => row.running !== false && row.disabled !== true);
+    const object = selected || fallback;
+    const label = clean((object == null ? void 0 : object.name) || (object == null ? void 0 : object.interface), `WAN ${index + 1}`);
+    const available = mode !== "unavailable" && Boolean(object);
+    const sourceCollection = Array.isArray(snapshot.wan) && snapshot.wan.length ? "wan" : "pppoe";
+    const sourceRows = sourceCollection === "wan" ? snapshot.wan || [] : snapshot.pppoe || [];
+    const sourceIndex = object ? sourceRows.indexOf(object) : -1;
+    const down = finiteObservation(object == null ? void 0 : object.downRate);
+    const up = finiteObservation(object == null ? void 0 : object.upRate);
+    return {
+      key: "wan",
+      objectId: available ? evidenceObjectId("wan", label, index) : "wan:unavailable",
+      objectPosition: total > 0 ? `对象 ${index + 1} / ${total}` : "没有可选择对象",
+      label: "WAN 对象",
+      title: available ? label : "WAN 对象证据源",
+      status: available ? (object == null ? void 0 : object.running) === false ? mode === "current" ? "未运行对象" : "历史离线记录" : "运行对象" : "无当前对象证据",
+      tone: available && (object == null ? void 0 : object.running) === false ? mode === "current" ? "danger" : "warn" : available ? "trust" : "warn",
+      note: available ? "对象关系用于下一步检查，不代表业务影响" : "保留对象不进入当前判断",
+      sourcePath: available && sourceIndex >= 0 ? `${sourceCollection}[${sourceIndex}]` : sourceCollection,
+      observedAt: shortTimestamp(snapshot.updatedAt),
+      relations: available ? [
+        { label: "父接口", value: clean(object == null ? void 0 : object.parent, "采集未覆盖") },
+        { label: "接入类型", value: clean((object == null ? void 0 : object.access) || (object == null ? void 0 : object.kind), "采集未覆盖") },
+        { label: "路由后果", value: verification === "offline" ? "没有活动默认路由" : verification === "verified" ? "活动路由仍有记录" : "无法核实" }
+      ] : [
+        { label: "记录来源", value: "wan / pppoe" },
+        { label: "可用性", value: "不用于当前判断" }
+      ],
+      rows: available ? [
+        { key: "wan-source", label: "对象来源", value: sourceCollection },
+        { key: "wan-disabled", label: "停用标记", value: (object == null ? void 0 : object.disabled) === true ? "disabled=true" : "disabled=false" },
+        { key: "wan-impact", label: "影响边界", value: "未直接证明业务中断" }
+      ] : [],
+      detailRows: available ? [
+        { key: "wan-raw-name", label: "name / interface", value: label },
+        { key: "wan-raw-running", label: "running / disabled", value: `${(object == null ? void 0 : object.running) === true} / ${(object == null ? void 0 : object.disabled) === true}` },
+        { key: "wan-raw-parent", label: "parent", value: clean(object == null ? void 0 : object.parent, "采集未覆盖") },
+        { key: "wan-raw-rate", label: "down-rate / up-rate", value: mode === "current" && down !== null && up !== null ? `${formatRate(down)} / ${formatRate(up)}` : "非完整当前观测" }
+      ] : [
+        { key: "wan-source-empty", label: "对象来源", value: sourceCollection },
+        { key: "wan-boundary-empty", label: "可用性", value: "无当前对象证据" }
+      ],
+      disclosureTitle: "展开 WAN 依赖",
+      actionTitle: "查看 WAN 证据详情"
+    };
+  }
+  function collectionInspection(context) {
+    var _a, _b;
+    const { snapshot, channels, state } = context;
+    const selectedName = channels.rest.status !== "current" ? "REST" : channels.ssh.status !== "current" ? "SSH" : "采集";
+    const selected = selectedName === "REST" ? channels.rest : selectedName === "SSH" ? channels.ssh : null;
+    const target = clean(((_a = snapshot.meta) == null ? void 0 : _a.routerHost) || ((_b = snapshot.meta) == null ? void 0 : _b.target), "未记录");
+    return {
+      key: "collection",
+      objectId: `collection:${selectedName.toLowerCase()}`,
+      objectPosition: selected ? `${selectedName} 通道` : "REST + SSH 通道",
+      label: "采集通道",
+      title: selectedName === "采集" ? "采集证据源" : `${selectedName} 采集通道`,
+      status: selected ? "检查错误与时间边界" : "通道记录可用",
+      tone: selected ? inspectionChannelTone(selected.status) : "trust",
+      note: "通道摘要已在信号区；此处只补充来源、时间与错误记录",
+      sourcePath: selectedName === "REST" ? "meta.realtime / meta.slowRest" : selectedName === "SSH" ? "meta.static" : "meta.realtime + meta.static",
+      observedAt: shortTimestamp(snapshot.updatedAt),
+      relations: [
+        { label: "配置目标", value: target },
+        { label: "最近尝试", value: shortTimestamp(snapshot.updatedAt) },
+        { label: "明确成功", value: (selected == null ? void 0 : selected.successAt) ? shortTimestamp(selected.successAt) : successfulBusinessLabel(snapshot) }
+      ],
+      rows: [
+        { key: "collection-source", label: "采集来源", value: selectedName === "REST" ? "realtime / slow REST" : selectedName === "SSH" ? "static SSH" : "REST + SSH" },
+        { key: "collection-error", label: "错误记录", value: (selected == null ? void 0 : selected.error) ? compactMessage(selected.error) : "未记录", note: selected ? channelAttemptAndSuccessNote(selected) : void 0, tone: (selected == null ? void 0 : selected.error) ? "warn" : "trust" },
+        { key: "collection-endpoints", label: "端点记录", value: state.facts.failures.count ? `${state.facts.failures.count} 个失败项` : "未记录", note: "未记录不等于没有故障" }
+      ],
+      detailRows: [
+        { key: "collection-raw-target", label: "routerHost / target", value: target },
+        { key: "collection-raw-status", label: "channel status", value: (selected == null ? void 0 : selected.status) || "current" },
+        { key: "collection-raw-success", label: "successAt", value: (selected == null ? void 0 : selected.successAt) ? shortTimestamp(selected.successAt) : successfulBusinessLabel(snapshot) },
+        { key: "collection-raw-error", label: "error", value: (selected == null ? void 0 : selected.error) ? compactMessage(selected.error) : "未记录" }
+      ],
+      disclosureTitle: "展开通道来源与错误",
+      actionTitle: "查看采集证据详情"
+    };
+  }
+  function resourceInspection(context) {
+    const { snapshot, mode } = context;
+    const samples = resourceSamples(snapshot);
+    return {
+      key: "resource",
+      objectId: "resource:system",
+      objectPosition: "系统资源对象",
+      label: "系统资源",
+      title: "系统资源",
+      status: mode === "current" ? "当前采样对象" : "历史采样对象",
+      tone: mode === "current" ? "danger" : "warn",
+      note: "当前值只在信号区出现；此处补充来源、策略与影响边界",
+      sourcePath: "resource + overview.history",
+      observedAt: shortTimestamp(snapshot.updatedAt),
+      relations: [
+        { label: "采样来源", value: "RouterOS resource" },
+        { label: "阈值策略", value: "CPU/内存 85% · 磁盘 90%" },
+        { label: "影响边界", value: "未证明业务中断" }
+      ],
+      rows: [
+        { key: "resource-series", label: "采样序列", value: "CPU / 内存 / 磁盘" },
+        { key: "resource-record", label: "记录位置", value: "overview.history" },
+        { key: "resource-consequence", label: "已证实后果", value: "资源策略被触发" }
+      ],
+      detailRows: [
+        { key: "resource-raw-series", label: "series", value: "CPU / memory / disk" },
+        { key: "resource-raw-threshold", label: "threshold", value: "85% / 85% / 90%" },
+        { key: "resource-raw-observed", label: "observed samples", value: `${samples.observed}` },
+        { key: "resource-raw-trailing", label: "trailing breached samples", value: `${samples.trailingStreak}` }
+      ],
+      disclosureTitle: "展开资源来源与策略",
+      actionTitle: "查看资源证据详情"
+    };
+  }
+  function interfaceInspection(context, selected, index = 0, total = selected ? 1 : 0) {
+    const { snapshot, mode, verification } = context;
+    const object = selected || downInterfaces(snapshot)[0];
+    const label = clean((object == null ? void 0 : object.name) || (object == null ? void 0 : object.interface), `接口 ${index + 1}`);
+    const sourceIndex = object ? (snapshot.interfaces || []).indexOf(object) : -1;
+    return {
+      key: "interface",
+      objectId: object ? evidenceObjectId("interface", label, index) : "interface:unavailable",
+      objectPosition: total > 0 ? `对象 ${index + 1} / ${total}` : "没有可选择对象",
+      label: "接口依赖",
+      title: object ? label : "Down 接口",
+      status: mode === "current" ? "依赖链待核对" : "历史依赖记录",
+      tone: mode === "current" ? "danger" : "warn",
+      note: "接口状态已在信号区；此处补充父级、VLAN、PPPoE 与路由关系",
+      sourcePath: sourceIndex >= 0 ? `interfaces[${sourceIndex}]` : "interfaces",
+      observedAt: shortTimestamp(snapshot.updatedAt),
+      relations: [
+        { label: "父接口", value: clean((object == null ? void 0 : object.parent) || (object == null ? void 0 : object.master), "采集未覆盖") },
+        { label: "VLAN", value: clean((object == null ? void 0 : object.vlan) || (object == null ? void 0 : object.vlanId), "采集未覆盖") },
+        { label: "PPPoE", value: clean((object == null ? void 0 : object.pppoeOut) || (object == null ? void 0 : object.pppoe), "采集未覆盖") }
+      ],
+      rows: [
+        { key: "interface-route", label: "默认路由关系", value: verification === "verified" ? "活动路由仍有记录" : verification === "offline" ? "没有活动默认路由" : "无法核实" },
+        { key: "interface-source", label: "对象来源", value: "interfaces" },
+        { key: "interface-impact", label: "业务影响", value: "未直接证明", note: "依赖与实际影响分别核对" }
+      ],
+      detailRows: [
+        { key: "interface-raw-name", label: "name / interface", value: label },
+        { key: "interface-raw-running", label: "running / disabled", value: `${(object == null ? void 0 : object.running) === true} / ${(object == null ? void 0 : object.disabled) === true}` },
+        { key: "interface-raw-parent", label: "parent / master", value: clean((object == null ? void 0 : object.parent) || (object == null ? void 0 : object.master), "采集未覆盖") },
+        { key: "interface-raw-link", label: "vlan / pppoe", value: `${clean((object == null ? void 0 : object.vlan) || (object == null ? void 0 : object.vlanId), "采集未覆盖")} / ${clean((object == null ? void 0 : object.pppoeOut) || (object == null ? void 0 : object.pppoe), "采集未覆盖")}` }
+      ],
+      disclosureTitle: "展开接口依赖",
+      actionTitle: "查看接口证据详情"
+    };
+  }
+  function buildFocusInspection(risk, context) {
+    if (risk === "evidence" || risk === "collection") return collectionInspection(context);
+    if (risk === "wan-offline") return wanInspection(context);
+    if (risk === "resource") return resourceInspection(context);
+    if (risk === "interfaces") return interfaceInspection(context);
+    return routeInspection(context);
+  }
+  function buildObjectInspections(risk, context) {
+    if (risk === "interfaces") {
+      const rows = downInterfaces(context.snapshot);
+      return rows.map((row, index) => interfaceInspection(context, row, index, rows.length));
+    }
+    if (risk === "wan-offline") {
+      const rows = offlineWans(context.snapshot);
+      return rows.map((row, index) => wanInspection(context, row, index, rows.length));
+    }
+    return [];
   }
   function fleetSignal(state, verification) {
     const runningInterfaces = Math.max(0, state.facts.interfaces.total - state.facts.interfaces.down);
@@ -10561,12 +10924,13 @@ var PanelFramework = function(exports) {
       };
     }
     if (risk === "interfaces") {
-      const rows = (snapshot.interfaces || []).filter((row) => row.running === false).slice(0, 3);
+      const rows = downInterfaces(snapshot);
       return {
         kind: "interfaces",
         title: mode === "current" ? "受影响接口" : "历史接口记录",
-        note: "名称与依赖证据分层显示",
+        note: rows.length > 1 ? `横向选择对象 · 共 ${rows.length} 个` : "选择对象后核对依赖",
         items: rows.map((row, index) => ({
+          objectId: evidenceObjectId("interface", clean(row.name || row.interface, `接口 ${index + 1}`), index),
           label: clean(row.name || row.interface, `接口 ${index + 1}`),
           value: mode === "current" ? "未运行" : "历史 Down 记录",
           note: row.disabled === true ? "已停用" : "运行标记为 false",
@@ -10588,12 +10952,13 @@ var PanelFramework = function(exports) {
       };
     }
     if (risk === "wan-offline") {
-      const rows = wanRows(snapshot).filter((row) => row.running === false).slice(0, 3);
+      const rows = offlineWans(snapshot);
       return {
         kind: "wan",
         title: mode === "current" ? "离线 WAN" : "历史 WAN 记录",
-        note: state.facts.wan.total > rows.length ? `优先显示 ${rows.length} 条，共 ${state.facts.wan.total} 条` : "按对象记录显示",
+        note: rows.length > 1 ? `横向选择对象 · 共 ${state.facts.wan.total} 条` : "选择对象后核对链路",
         items: rows.map((row, index) => ({
+          objectId: evidenceObjectId("wan", clean(row.name || row.interface, `WAN ${index + 1}`), index),
           label: clean(row.name || row.interface, `WAN ${index + 1}`),
           value: mode === "current" ? "未运行" : "历史离线记录",
           note: row.disabled === true ? "已停用" : "running=false",
@@ -10622,158 +10987,14 @@ var PanelFramework = function(exports) {
       ]
     };
   }
-  function routeInspection(context) {
-    var _a;
-    const { snapshot, mode, verification, route } = context;
-    const carrier = wanRows(snapshot).find((row) => row.running !== false && row.disabled !== true);
-    const routeCount = Array.isArray((_a = snapshot.routes) == null ? void 0 : _a.defaultRoutes) ? snapshot.routes.defaultRoutes.length : 0;
-    const available = mode !== "unavailable" && Boolean(route);
-    return {
-      key: "route",
-      label: "默认路由",
-      title: available ? clean((route == null ? void 0 : route.gateway) || (route == null ? void 0 : route.gatewayStatus), "活动默认路由") : "默认路由证据源",
-      status: verification === "verified" ? "当前活动记录" : verification === "historical" ? "历史活动记录" : "未核实",
-      tone: verification === "verified" ? "trust" : "warn",
-      note: available ? "以下字段来自明确的默认路由记录" : "检查记录来源与筛选条件，不使用首行兜底",
-      relations: available ? [
-        { label: "路由表", value: clean((route == null ? void 0 : route.table) || (route == null ? void 0 : route.routingTable), "main") },
-        { label: "网关", value: clean((route == null ? void 0 : route.gateway) || (route == null ? void 0 : route.gatewayStatus)) },
-        { label: "distance", value: clean(route == null ? void 0 : route.distance) }
-      ] : [
-        { label: "记录来源", value: "routes.defaultRoutes" },
-        { label: "记录数量", value: `${routeCount} 条` },
-        { label: "核验条件", value: "active=true 且未停用" }
-      ],
-      rows: available ? [
-        { key: "route-flags", label: "原始标记", value: "active=true · disabled=false" },
-        { key: "route-carrier", label: "关联出口", value: clean((carrier == null ? void 0 : carrier.name) || (carrier == null ? void 0 : carrier.interface), "未采集到关联") },
-        { key: "route-source", label: "证据来源", value: "默认路由记录" }
-      ] : [
-        { key: "route-boundary", label: "判断边界", value: "没有明确活动记录", note: "不推断默认出口" }
-      ],
-      disclosureTitle: "展开路由字段",
-      actionTitle: "打开默认路由原始证据"
-    };
-  }
-  function wanInspection(context) {
-    const { snapshot, mode, verification } = context;
-    const rows = wanRows(snapshot);
-    const selected = rows.find((row) => row.running === false) || rows.find((row) => row.running !== false && row.disabled !== true);
-    const available = mode !== "unavailable" && Boolean(selected);
-    return {
-      key: "wan",
-      label: "WAN 对象",
-      title: available ? clean((selected == null ? void 0 : selected.name) || (selected == null ? void 0 : selected.interface), "WAN 对象") : "WAN 对象证据源",
-      status: available ? (selected == null ? void 0 : selected.running) === false ? mode === "current" ? "未运行对象" : "历史离线记录" : "运行对象" : "无当前对象证据",
-      tone: available && (selected == null ? void 0 : selected.running) === false ? mode === "current" ? "danger" : "warn" : available ? "trust" : "warn",
-      note: available ? "对象关系用于下一步检查，不代表业务影响" : "保留对象不进入当前判断",
-      relations: available ? [
-        { label: "父接口", value: clean(selected == null ? void 0 : selected.parent, "未记录") },
-        { label: "接入类型", value: clean((selected == null ? void 0 : selected.access) || (selected == null ? void 0 : selected.kind), "未记录") },
-        { label: "路由后果", value: verification === "offline" ? "没有活动默认路由" : verification === "verified" ? "活动路由仍有记录" : "无法核实" }
-      ] : [
-        { label: "记录来源", value: "wan / pppoe" },
-        { label: "可用性", value: "不用于当前判断" }
-      ],
-      rows: available ? [
-        { key: "wan-source", label: "对象来源", value: Array.isArray(snapshot.wan) && snapshot.wan.length ? "wan" : "pppoe" },
-        { key: "wan-disabled", label: "停用标记", value: (selected == null ? void 0 : selected.disabled) === true ? "disabled=true" : "disabled=false" },
-        { key: "wan-impact", label: "影响边界", value: "未直接证明业务中断" }
-      ] : [],
-      disclosureTitle: "展开 WAN 依赖",
-      actionTitle: "打开 WAN 原始证据"
-    };
-  }
-  function collectionInspection(context) {
-    var _a, _b;
-    const { snapshot, channels, state } = context;
-    const selectedName = channels.rest.status !== "current" ? "REST" : channels.ssh.status !== "current" ? "SSH" : "采集";
-    const selected = selectedName === "REST" ? channels.rest : selectedName === "SSH" ? channels.ssh : null;
-    const target = clean(((_a = snapshot.meta) == null ? void 0 : _a.routerHost) || ((_b = snapshot.meta) == null ? void 0 : _b.target), "未记录");
-    return {
-      key: "collection",
-      label: "采集通道",
-      title: selectedName === "采集" ? "采集证据源" : `${selectedName} 采集通道`,
-      status: selected ? "检查错误与时间边界" : "通道记录可用",
-      tone: selected ? channelTone(selected) : "trust",
-      note: "通道摘要已在信号区；此处只补充来源、时间与错误记录",
-      relations: [
-        { label: "配置目标", value: target },
-        { label: "最近尝试", value: shortTimestamp(snapshot.updatedAt) },
-        { label: "明确成功", value: (selected == null ? void 0 : selected.successAt) ? shortTimestamp(selected.successAt) : successfulBusinessLabel(snapshot) }
-      ],
-      rows: [
-        { key: "collection-source", label: "采集来源", value: selectedName === "REST" ? "realtime / slow REST" : selectedName === "SSH" ? "static SSH" : "REST + SSH" },
-        { key: "collection-error", label: "错误记录", value: (selected == null ? void 0 : selected.error) ? clean(selected.error) : "未记录", note: selected ? channelAttemptAndSuccessNote(selected) : void 0, tone: (selected == null ? void 0 : selected.error) ? "warn" : "trust" },
-        { key: "collection-endpoints", label: "端点记录", value: state.facts.failures.count ? `${state.facts.failures.count} 个失败项` : "未记录", note: "未记录不等于没有故障" }
-      ],
-      disclosureTitle: "展开通道来源与错误",
-      actionTitle: "打开采集原始证据"
-    };
-  }
-  function resourceInspection(context) {
-    const { mode } = context;
-    return {
-      key: "resource",
-      label: "系统资源",
-      title: "系统资源",
-      status: mode === "current" ? "当前采样对象" : "历史采样对象",
-      tone: mode === "current" ? "danger" : "warn",
-      note: "当前值只在信号区出现；此处补充来源、策略与影响边界",
-      relations: [
-        { label: "采样来源", value: "RouterOS resource" },
-        { label: "阈值策略", value: "CPU/内存 85% · 磁盘 90%" },
-        { label: "影响边界", value: "未证明业务中断" }
-      ],
-      rows: [
-        { key: "resource-series", label: "采样序列", value: "CPU / 内存 / 磁盘" },
-        { key: "resource-record", label: "记录位置", value: "overview.history" },
-        { key: "resource-consequence", label: "已证实后果", value: "资源策略被触发" }
-      ],
-      disclosureTitle: "展开资源来源与策略",
-      actionTitle: "打开资源原始证据"
-    };
-  }
-  function interfaceInspection(context) {
-    const { snapshot, mode, verification } = context;
-    const selected = (snapshot.interfaces || []).find((row) => row.running === false);
-    return {
-      key: "interface",
-      label: "接口依赖",
-      title: clean((selected == null ? void 0 : selected.name) || (selected == null ? void 0 : selected.interface), "Down 接口"),
-      status: mode === "current" ? "依赖链待核对" : "历史依赖记录",
-      tone: mode === "current" ? "danger" : "warn",
-      note: "接口状态已在信号区；此处补充父级、VLAN、PPPoE 与路由关系",
-      relations: [
-        { label: "父接口", value: clean((selected == null ? void 0 : selected.parent) || (selected == null ? void 0 : selected.master)) },
-        { label: "VLAN", value: clean((selected == null ? void 0 : selected.vlan) || (selected == null ? void 0 : selected.vlanId)) },
-        { label: "PPPoE", value: clean((selected == null ? void 0 : selected.pppoeOut) || (selected == null ? void 0 : selected.pppoe)) }
-      ],
-      rows: [
-        { key: "interface-route", label: "默认路由关系", value: verification === "verified" ? "活动路由仍有记录" : verification === "offline" ? "没有活动默认路由" : "无法核实" },
-        { key: "interface-source", label: "对象来源", value: "interfaces" },
-        { key: "interface-impact", label: "业务影响", value: "未直接证明", note: "依赖与实际影响分别核对" }
-      ],
-      disclosureTitle: "展开接口依赖",
-      actionTitle: "打开接口原始证据"
-    };
-  }
-  function inspectionFor(risk, context) {
-    if (risk === "evidence" || risk === "collection") return collectionInspection(context);
-    if (risk === "wan-offline") return wanInspection(context);
-    if (risk === "resource") return resourceInspection(context);
-    if (risk === "interfaces") return interfaceInspection(context);
-    return routeInspection(context);
-  }
   function focusCopy(risk, context) {
     const { state, mode, verification, channels } = context;
     if (risk === "evidence") return { label: "证据", tone: "danger", kicker: "无法建立当前判断", title: "当前业务状态不可判断", summary: "当前没有可用业务快照；WAN、路由、资源和速率不进入当前结论。" };
     if (risk === "wan-offline") return { label: "出口", tone: mode === "current" ? "danger" : "warn", kicker: mode === "current" ? "出口中断" : "历史出口记录", title: mode === "current" ? `全部 ${state.facts.wan.total} 条 WAN 未运行` : `历史记录：${state.facts.wan.total} 条 WAN 曾全部离线`, summary: mode === "current" ? "没有活动默认路由；优先核对链路、认证和上游。" : "当前变化不可见；保留对象只用于恢复核对。" };
     if (risk === "resource") return { label: "资源", tone: mode === "current" ? "danger" : "warn", kicker: mode === "current" ? "持续压力" : "历史资源记录", title: mode === "current" ? "资源策略已触发" : "历史记录：资源曾超过阈值", summary: mode === "current" ? "先核对持续样本与连接压力；出口结论不会由资源值自动推断。" : "保留值不代表当前资源状态。" };
     if (risk === "interfaces") {
-      const names = state.facts.interfaces.downNames.slice(0, 2).join(" / ");
-      const objects = names ? state.facts.interfaces.down > 2 ? `${names} 等 ${state.facts.interfaces.down} 个接口` : names : `${state.facts.interfaces.down} 个接口`;
-      return { label: "接口", tone: mode === "current" ? "danger" : "warn", kicker: mode === "current" ? "转发对象异常" : "历史接口记录", title: `${mode === "historical" ? "历史记录：" : ""}${objects}未运行`, summary: verification === "verified" ? "活动默认路由仍有记录；接口依赖和业务影响需要分别核对。" : "活动默认路由无法按当前证据核实。" };
+      const count = state.facts.interfaces.down;
+      return { label: "接口", tone: mode === "current" ? "danger" : "warn", kicker: mode === "current" ? "转发对象异常" : "历史接口记录", title: `${mode === "historical" ? "历史记录：" : ""}${count} 个接口未运行`, summary: verification === "verified" ? "活动默认路由仍有记录；选择接口核对依赖和影响。" : "活动默认路由无法按当前证据核实。" };
     }
     if (risk === "collection") {
       const partial = channels.rest.status === "current" || channels.ssh.status === "current";
@@ -10792,6 +11013,7 @@ var PanelFramework = function(exports) {
   function focusFor(risk, context) {
     const copy = focusCopy(risk, context);
     const key = risk || (context.state.scenario === "fleet" ? "fleet-scope" : "route");
+    const objectInspections = buildObjectInspections(risk, context);
     return {
       key,
       risk,
@@ -10803,7 +11025,8 @@ var PanelFramework = function(exports) {
       scope: scopeFor(context),
       proofs: proofFor(risk, context),
       signal: signalFor(risk, context),
-      inspection: inspectionFor(risk, context),
+      inspection: objectInspections[0] || buildFocusInspection(risk, context),
+      objectInspections,
       detailSectionKeys: detailKeysFor(risk)
     };
   }
@@ -10812,10 +11035,10 @@ var PanelFramework = function(exports) {
     return context.risks.map((risk) => focusFor(risk, context));
   }
   function evidenceMode(snapshot, state) {
-    if (isSnapshotUnavailable(snapshot) || state.scenario === "no-snapshot" || state.facts.freshness.credibility === "unavailable") return "unavailable";
+    if (isSnapshotUnavailable(snapshot) || state.facts.freshness.credibility === "unavailable") return "unavailable";
     if (!successfulBusinessAt(snapshot)) return "unavailable";
     const meta = snapshot.meta || {};
-    if (state.scenario === "collection-down" || Boolean(meta.realtimeError || meta.slowRestError) || state.facts.freshness.stale || state.facts.freshness.history || state.facts.freshness.credibility === "cache") return "historical";
+    if (Boolean(meta.realtimeError || meta.slowRestError) || state.facts.freshness.stale || state.facts.freshness.history || state.facts.freshness.credibility === "cache") return "historical";
     return "current";
   }
   function ageLabel(seconds) {
@@ -10854,7 +11077,8 @@ var PanelFramework = function(exports) {
   }
   function routeVerification(mode, state, route) {
     if (mode === "unavailable") return "unknown";
-    if (state.scenario === "all-offline" && !route) return "offline";
+    const allWanOffline = state.counts.wanTotal > 0 && state.counts.wanOnline === 0;
+    if (mode === "current" && allWanOffline && !route) return "offline";
     if (!route) return "unknown";
     return mode === "current" ? "verified" : "historical";
   }
@@ -10868,9 +11092,8 @@ var PanelFramework = function(exports) {
     const add = (risk, present) => {
       if (present && !risks.includes(risk)) risks.push(risk);
     };
-    add("resource", resource);
-    add("interfaces", state.scenario === "interfaces-down" && interfaces);
     add("wan-offline", wanOffline && mode === "current");
+    add("resource", resource);
     add("interfaces", interfaces);
     add("collection", collection);
     add("wan-offline", wanOffline && mode !== "current");
@@ -10881,6 +11104,31 @@ var PanelFramework = function(exports) {
     if (state.scenario !== "fleet" && ((_a = snapshot.meta) == null ? void 0 : _a.scaleScenario) !== "fleet") return "";
     const runningInterfaces = Math.max(0, state.facts.interfaces.total - state.facts.interfaces.down);
     return `范围 ${state.facts.wan.online} / ${state.facts.wan.total} WAN · ${runningInterfaces} / ${state.facts.interfaces.total} 接口`;
+  }
+  function scopeFacts(state, risks, mode) {
+    const runningInterfaces = Math.max(0, state.facts.interfaces.total - state.facts.interfaces.down);
+    const unavailable = mode === "unavailable";
+    const historical = mode === "historical";
+    return [
+      {
+        key: "scope-wan",
+        label: historical ? "WAN 记录" : "WAN 运行",
+        value: unavailable ? "不可判断" : `${state.facts.wan.online} / ${state.facts.wan.total}${historical ? " · 历史" : ""}`,
+        tone: unavailable ? "missing" : historical ? "warn" : state.facts.wan.total > 0 && state.facts.wan.online === 0 ? "danger" : "trust"
+      },
+      {
+        key: "scope-interface",
+        label: historical ? "接口记录" : "接口运行",
+        value: unavailable ? "不可判断" : `${runningInterfaces} / ${state.facts.interfaces.total}${historical ? " · 历史" : ""}`,
+        tone: unavailable ? "missing" : historical ? "warn" : state.facts.interfaces.down > 0 ? "danger" : "trust"
+      },
+      {
+        key: "scope-risk",
+        label: "风险焦点",
+        value: risks.length ? `${risks.length} 组` : "未发现",
+        tone: risks.length ? "danger" : "trust"
+      }
+    ];
   }
   function buildMobileNativeModel(snapshot, state) {
     const mode = evidenceMode(snapshot, state);
@@ -10904,6 +11152,7 @@ var PanelFramework = function(exports) {
       device: device.identity,
       deviceNote: device.note,
       scopeNote: scopeNote(snapshot, state),
+      scopeFacts: scopeFacts(state, risks, mode),
       focuses,
       initialFocus: focuses[0].key,
       detailSections: buildDetailSections(snapshot, state, mode, risks)
@@ -10921,27 +11170,30 @@ var PanelFramework = function(exports) {
     }, []);
     return tablet;
   }
-  function detailFocusFromHistory(state) {
-    if (!state || typeof state !== "object") return null;
-    const view = state.mobileNativeView;
-    return (view == null ? void 0 : view.view) === "detail" && view.focus ? view.focus : null;
-  }
   function MobileNativeConsole({ snapshot, state }) {
+    var _a, _b;
     const model = reactExports.useMemo(() => buildMobileNativeModel(snapshot, state), [snapshot, state]);
-    const initialHistoryFocus = typeof window !== "undefined" ? detailFocusFromHistory(window.history.state) : null;
-    const validInitialFocus = initialHistoryFocus && model.focuses.some((focus2) => focus2.key === initialHistoryFocus) ? initialHistoryFocus : model.initialFocus;
+    const initialHistoryView = typeof window !== "undefined" ? detailViewFromHistory(window.history.state) : null;
+    const validInitialFocus = initialHistoryView && model.focuses.some((focus2) => focus2.key === initialHistoryView.focus) ? initialHistoryView.focus : model.initialFocus;
+    const initialFocusView = model.focuses.find((focus2) => focus2.key === validInitialFocus) || model.focuses[0];
+    const validInitialObjectId = (initialHistoryView == null ? void 0 : initialHistoryView.objectId) && initialFocusView.objectInspections.some((inspection2) => inspection2.objectId === initialHistoryView.objectId) ? initialHistoryView.objectId : (_a = initialFocusView.objectInspections[0]) == null ? void 0 : _a.objectId;
     const [selectedFocus, setSelectedFocus] = reactExports.useState(validInitialFocus);
     const [detailFocus, setDetailFocus] = reactExports.useState(validInitialFocus);
-    const [detailOpen, setDetailOpen] = reactExports.useState(Boolean(initialHistoryFocus));
+    const [selectedObjectByFocus, setSelectedObjectByFocus] = reactExports.useState(() => validInitialObjectId ? { [validInitialFocus]: validInitialObjectId } : {});
+    const [detailObjectId, setDetailObjectId] = reactExports.useState(validInitialObjectId);
+    const [detailOpen, setDetailOpen] = reactExports.useState(Boolean(initialHistoryView));
     const [expandedByFocus, setExpandedByFocus] = reactExports.useState({});
     const tablet = useTabletWorkspace();
     const detailButtonRef = reactExports.useRef(null);
     const detailOpenRef = reactExports.useRef(detailOpen);
-    const returnScrollRef = reactExports.useRef(0);
+    const returnScrollRef = reactExports.useRef((initialHistoryView == null ? void 0 : initialHistoryView.homeScrollY) || 0);
     const restoreFocusPendingRef = reactExports.useRef(false);
     const focusSignature = model.focuses.map((focus2) => focus2.key).join("|");
     const focus = model.focuses.find((item) => item.key === selectedFocus) || model.focuses[0];
     const detailFocusView = model.focuses.find((item) => item.key === detailFocus) || focus;
+    const selectedObjectId = selectedObjectByFocus[focus.key] || ((_b = focus.objectInspections[0]) == null ? void 0 : _b.objectId);
+    const inspection = focus.objectInspections.find((item) => item.objectId === selectedObjectId) || focus.inspection;
+    const detailInspection = detailFocusView.objectInspections.find((item) => item.objectId === detailObjectId) || detailFocusView.inspection;
     reactExports.useEffect(() => {
       const keys = new Set(model.focuses.map((item) => item.key));
       setSelectedFocus((current) => keys.has(current) ? current : model.initialFocus);
@@ -10949,7 +11201,18 @@ var PanelFramework = function(exports) {
       setExpandedByFocus((current) => Object.fromEntries(
         Object.entries(current).filter(([key]) => keys.has(key))
       ));
-    }, [focusSignature, model.focuses, model.initialFocus]);
+      setSelectedObjectByFocus((current) => Object.fromEntries(model.focuses.flatMap((focusItem) => {
+        var _a2;
+        const selected = current[focusItem.key];
+        const valid = selected && focusItem.objectInspections.some((inspectionItem) => inspectionItem.objectId === selected) ? selected : (_a2 = focusItem.objectInspections[0]) == null ? void 0 : _a2.objectId;
+        return valid ? [[focusItem.key, valid]] : [];
+      })));
+      setDetailObjectId((current) => {
+        var _a2;
+        const detail = model.focuses.find((item) => item.key === detailFocus) || model.focuses[0];
+        return current && detail.objectInspections.some((inspectionItem) => inspectionItem.objectId === current) ? current : (_a2 = detail.objectInspections[0]) == null ? void 0 : _a2.objectId;
+      });
+    }, [detailFocus, focusSignature, model.focuses, model.initialFocus]);
     reactExports.useEffect(() => {
       const previous = window.history.scrollRestoration;
       window.history.scrollRestoration = "manual";
@@ -10958,20 +11221,26 @@ var PanelFramework = function(exports) {
       };
     }, []);
     reactExports.useLayoutEffect(() => {
-      var _a;
+      var _a2;
       if (detailOpen || !restoreFocusPendingRef.current) return;
       restoreFocusPendingRef.current = false;
-      (_a = detailButtonRef.current) == null ? void 0 : _a.focus({ preventScroll: true });
+      (_a2 = detailButtonRef.current) == null ? void 0 : _a2.focus({ preventScroll: true });
       window.scrollTo({ top: returnScrollRef.current, behavior: "auto" });
     }, [detailOpen, selectedFocus]);
     reactExports.useEffect(() => {
       const onPopState = (event) => {
-        const historyFocus = detailFocusFromHistory(event.state);
-        if (historyFocus && model.focuses.some((item) => item.key === historyFocus)) {
+        var _a2;
+        const historyView = detailViewFromHistory(event.state);
+        if (historyView && model.focuses.some((item) => item.key === historyView.focus)) {
+          const historyFocus = model.focuses.find((item) => item.key === historyView.focus) || model.focuses[0];
+          const historyObjectId = historyView.objectId && historyFocus.objectInspections.some((item) => item.objectId === historyView.objectId) ? historyView.objectId : (_a2 = historyFocus.objectInspections[0]) == null ? void 0 : _a2.objectId;
           restoreFocusPendingRef.current = false;
           detailOpenRef.current = true;
-          setSelectedFocus(historyFocus);
-          setDetailFocus(historyFocus);
+          returnScrollRef.current = historyView.homeScrollY ?? returnScrollRef.current;
+          setSelectedFocus(historyView.focus);
+          setDetailFocus(historyView.focus);
+          setDetailObjectId(historyObjectId);
+          if (historyObjectId) setSelectedObjectByFocus((current) => ({ ...current, [historyView.focus]: historyObjectId }));
           setDetailOpen(true);
           return;
         }
@@ -10987,14 +11256,15 @@ var PanelFramework = function(exports) {
       restoreFocusPendingRef.current = false;
       detailOpenRef.current = true;
       setDetailFocus(focus.key);
+      setDetailObjectId(selectedObjectId);
       window.history.pushState({
         ...window.history.state || {},
-        mobileNativeView: { view: "detail", focus: focus.key }
+        mobileNativeView: { view: "detail", focus: focus.key, objectId: selectedObjectId, homeScrollY: returnScrollRef.current }
       }, "");
       setDetailOpen(true);
-    }, [focus.key]);
+    }, [focus.key, selectedObjectId]);
     const closeDetail = reactExports.useCallback(() => {
-      if (detailFocusFromHistory(window.history.state)) {
+      if (detailViewFromHistory(window.history.state)) {
         window.history.back();
         return;
       }
@@ -11002,10 +11272,16 @@ var PanelFramework = function(exports) {
       detailOpenRef.current = false;
       setDetailOpen(false);
     }, []);
-    if (detailOpen) return /* @__PURE__ */ jsxRuntimeExports.jsx(MobileNativeDetail, { model, focus: detailFocusView, onBack: closeDetail });
+    const selectObject = reactExports.useCallback((objectId) => {
+      setSelectedObjectByFocus((current) => ({ ...current, [focus.key]: objectId }));
+    }, [focus.key]);
+    if (detailOpen) return /* @__PURE__ */ jsxRuntimeExports.jsx(MobileNativeDetail, { model, focus: detailFocusView, inspection: detailInspection, onBack: closeDetail });
     const shared = {
       model,
       focus,
+      inspection,
+      selectedObjectId,
+      onSelectObject: selectObject,
       selected: selectedFocus,
       onSelect: setSelectedFocus,
       expanded: tablet ? expandedByFocus[focus.key] !== false : Boolean(expandedByFocus[focus.key]),
@@ -11028,7 +11304,7 @@ var PanelFramework = function(exports) {
       }
     );
   }
-  const MOBILE_OVERVIEW_QUERY = "(max-width: 900px)";
+  const MOBILE_OVERVIEW_QUERY = "(max-width: 1199px)";
   function useMobileOverview() {
     const [mobile, setMobile] = reactExports.useState(() => typeof window !== "undefined" && window.matchMedia(MOBILE_OVERVIEW_QUERY).matches);
     reactExports.useEffect(() => {

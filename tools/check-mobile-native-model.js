@@ -30,6 +30,7 @@ buildSync({
 const { buildMobileNativeModel, deriveOverviewState, OVERVIEW_SCENARIO_FIXTURES } = require(bundleFile);
 const clone = (value) => structuredClone(value);
 const modelFor = (snapshot) => buildMobileNativeModel(snapshot, deriveOverviewState(snapshot));
+const modelForHint = (snapshot, scenarioHint) => buildMobileNativeModel(snapshot, deriveOverviewState(snapshot, { scenarioHint }));
 const focusFor = (model, key) => model.focuses.find((focus) => focus.key === key);
 const surfaceText = (model) => JSON.stringify({
   device: model.device,
@@ -42,7 +43,8 @@ const pairKey = (row) => `${String(row.label || "").trim()}::${String(row.value 
 const assertNoProofObjectReplay = (model, label) => {
   for (const focus of model.focuses) {
     const proofPairs = new Set(focus.proofs.map(pairKey));
-    const objectPairs = [...focus.inspection.relations, ...focus.inspection.rows].map(pairKey);
+    const inspections = focus.objectInspections.length ? focus.objectInspections : [focus.inspection];
+    const objectPairs = inspections.flatMap((inspection) => [...inspection.relations, ...inspection.rows]).map(pairKey);
     assert.equal(objectPairs.some((pair) => proofPairs.has(pair)), false, `${label}/${focus.key}: object evidence must not replay proof label/value pairs`);
   }
 };
@@ -124,10 +126,23 @@ const collectionInspection = collectionDownModel.focuses[0].inspection;
 assert.equal(collectionInspection.key, "collection");
 assert.equal(collectionInspection.relations.some((item) => item.label === "最近尝试"), true);
 assert.equal(collectionInspection.relations.some((item) => item.label === "明确成功"), true);
+const collectionErrorText = collectionInspection.rows.find((item) => item.key === "collection-error")?.value || "";
+assert.equal((collectionErrorText.match(/无可用快照/g) || []).length <= 1, true, "repeated collection clauses must be compacted");
 
 const forwardingOnlyState = deriveOverviewState(clone(OVERVIEW_SCENARIO_FIXTURES["interfaces-down"]));
 assert.equal(forwardingOnlyState.facts.collection.rest.status, "current");
 assert.equal(forwardingOnlyState.facts.collection.ssh.status, "current");
+const forwardingOnlyModel = modelFor(clone(OVERVIEW_SCENARIO_FIXTURES["interfaces-down"]));
+assert.equal(forwardingOnlyModel.initialFocus, "interfaces");
+assert.equal(forwardingOnlyModel.routeVerification, "verified");
+
+const mislabeledInterface = modelForHint(clone(OVERVIEW_SCENARIO_FIXTURES.single), "interfaces-down");
+assert.equal(mislabeledInterface.initialFocus, "route", "a scenario hint must not invent an interface incident");
+assert.equal(mislabeledInterface.focuses[0].signal.kind, "rates");
+
+const mislabeledCollection = modelForHint(clone(OVERVIEW_SCENARIO_FIXTURES.single), "collection-down");
+assert.equal(mislabeledCollection.evidenceMode, "current", "a scenario hint must not downgrade current evidence");
+assert.equal(mislabeledCollection.initialFocus, "route");
 
 const unavailableWithRetainedObjects = clone(OVERVIEW_SCENARIO_FIXTURES.single);
 unavailableWithRetainedObjects.status = "error";
@@ -167,6 +182,8 @@ assert.equal(noSnapshotModel.device, "configured-router");
 assert.match(noSnapshotModel.deviceNote, new RegExp(noSnapshot.meta.routerHost));
 assert.equal(noSnapshotModel.focuses[0].inspection.key, "collection");
 assert.doesNotMatch(noSnapshotModel.deviceNote, /当前不可达|无可用快照/);
+assert.deepEqual(noSnapshotModel.scopeFacts.slice(0, 2).map((fact) => fact.value), ["不可判断", "不可判断"]);
+assert.doesNotMatch(JSON.stringify(noSnapshotModel.scopeFacts), /0 \/ 0/);
 
 const fleetModel = modelFor(clone(OVERVIEW_SCENARIO_FIXTURES.fleet));
 assert.equal(fleetModel.initialFocus, "fleet-scope");
@@ -183,6 +200,23 @@ assert.equal(fleetInterfacesModel.initialFocus, "interfaces", "fleet scope must 
 assert.equal(fleetInterfacesModel.focuses[0].signal.kind, "interfaces");
 assert.equal(fleetInterfacesModel.focuses[0].inspection.key, "interface");
 assert.match(fleetInterfacesModel.focuses[0].scope, /多对象范围/);
+assert.deepEqual(
+  fleetInterfacesModel.focuses[0].signal.items.map((item) => item.objectId),
+  fleetInterfacesModel.focuses[0].objectInspections.map((inspection) => inspection.objectId),
+  "interface selector IDs must map one-to-one to inspection objects",
+);
+assert.equal(fleetInterfacesModel.focuses[0].objectInspections[1].objectPosition, "对象 2 / 2");
+assert.equal(fleetInterfacesModel.focuses[0].objectInspections[1].sourcePath, "interfaces[2]");
+assert.equal(fleetInterfacesModel.focuses[0].objectInspections.every((inspection) => inspection.detailRows.length > 0), true);
+
+const offlineModel = modelFor(clone(OVERVIEW_SCENARIO_FIXTURES["all-offline"]));
+const offlineFocus = focusFor(offlineModel, "wan-offline");
+assert.deepEqual(
+  offlineFocus.signal.items.map((item) => item.objectId),
+  offlineFocus.objectInspections.map((inspection) => inspection.objectId),
+  "WAN selector IDs must map one-to-one to inspection objects",
+);
+assert.equal(offlineFocus.objectInspections.every((inspection) => inspection.sourcePath.startsWith("wan[") || inspection.sourcePath.startsWith("pppoe[")), true);
 
 const fleetResource = clone(OVERVIEW_SCENARIO_FIXTURES.fleet);
 fleetResource.overview.cpuLoad = 96;
@@ -230,9 +264,22 @@ assert.equal(compositeModel.initialFocus, "resource");
 assert.equal(focusFor(compositeModel, "resource").signal.kind, "resource");
 assert.equal(focusFor(compositeModel, "interfaces").inspection.key, "interface");
 
+const outletAndResource = clone(OVERVIEW_SCENARIO_FIXTURES["resource-full"]);
+for (const rows of [outletAndResource.wan, outletAndResource.pppoe]) {
+  for (const row of rows) row.running = false;
+}
+outletAndResource.routes.defaultRoutes = outletAndResource.routes.defaultRoutes.map((route) => ({ ...route, active: false }));
+const outletAndResourceModel = modelForHint(outletAndResource, "resource-full");
+assert.deepEqual(outletAndResourceModel.risks.slice(0, 2), ["wan-offline", "resource"]);
+assert.equal(outletAndResourceModel.initialFocus, "wan-offline", "all-WAN outage must outrank resource pressure regardless of scenario hint");
+assert.equal(outletAndResourceModel.routeVerification, "offline");
+assert.equal(outletAndResourceModel.focuses[0].signal.kind, "wan");
+
 for (const [scenario, fixture] of Object.entries(OVERVIEW_SCENARIO_FIXTURES)) {
   const model = modelFor(clone(fixture));
   assertNoProofObjectReplay(model, scenario);
+  assert.deepEqual(model.scopeFacts.map((fact) => fact.key), ["scope-wan", "scope-interface", "scope-risk"]);
+  assert.equal(model.focuses.every((focus) => !focus.inspection.actionTitle.includes("原始证据")), true, `${scenario}: detail action must not overclaim raw evidence`);
   const failureRows = model.focuses.flatMap((focus) => focus.signal.items).filter((item) => item.label === "失败端点");
   assert.equal(failureRows.some((item) => item.value === "0" || item.value === "0 个"), false, `${scenario}: zero failures must not read as no fault`);
 }
@@ -241,4 +288,4 @@ const detailKeys = new Set(resourceModel.detailSections.map((section) => section
 for (const key of ["target", "route", "wan", "collection", "resource", "boundary"]) assert.equal(detailKeys.has(key), true);
 assert.deepEqual(focusFor(resourceModel, "resource").detailSectionKeys, ["resource", "collection", "boundary"]);
 
-console.log("mobile risk-focus semantic contract: PASS cases=24");
+console.log("mobile risk-focus semantic contract: PASS");

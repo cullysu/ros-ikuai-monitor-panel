@@ -2,7 +2,7 @@ import type { KeyboardEvent, RefObject } from "react";
 import { MobileNativeIcon } from "./MobileNativeIcon";
 import { MobileNativeInspectionPanel } from "./MobileNativeInspection";
 import { MobileNativeSignal } from "./MobileNativeSignal";
-import type { MobileFocusKey, MobileNativeFocus, MobileNativeModel } from "./mobileNativeTypes";
+import type { MobileFocusKey, MobileNativeFocus, MobileNativeInspection, MobileNativeModel } from "./mobileNativeTypes";
 
 function DeviceChrome({ model }: { model: MobileNativeModel }) {
   return (
@@ -39,10 +39,10 @@ function FocusMasthead({ focus }: { focus: MobileNativeFocus }) {
 function ProofLedger({ focus }: { focus: MobileNativeFocus }) {
   return (
     <section className="mn-proof-ledger" aria-labelledby="mn-proof-title" data-mobile-native-proof>
-      <header><b id="mn-proof-title">判断依据</b></header>
+      <header><h2 id="mn-proof-title">判断依据</h2><span>只列直接支撑结论的事实</span></header>
       <ul>
         {focus.proofs.map((proof, index) => (
-          <li className={`is-${proof.tone || "trust"}`} key={proof.key || `${proof.label}-${index}`}>
+          <li className={`is-${proof.tone || "trust"}`} key={proof.key || `${proof.label}-${index}`} data-mobile-native-proof-key={proof.key}>
             <span className="mn-proof-symbol" aria-hidden="true"><MobileNativeIcon name="proof" size={16} /></span>
             <span><small>{proof.label}</small><b>{proof.value}</b>{proof.note ? <em>{proof.note}</em> : null}</span>
           </li>
@@ -79,8 +79,8 @@ function FocusQueue({
 
   return (
     <section className={`mn-focus-queue ${compact ? "is-compact" : ""}`} aria-labelledby="mn-focus-queue-title">
-      <header><b id="mn-focus-queue-title">{isRiskQueue ? "风险焦点" : "证据焦点"}</b><span>{focuses.length} 组</span></header>
-      <div role="listbox" aria-label="风险与证据焦点">
+      <header><h2 id="mn-focus-queue-title">{isRiskQueue ? "风险焦点" : "证据焦点"}</h2><span>{focuses.length} 组</span></header>
+      <div role="listbox" aria-labelledby="mn-focus-queue-title">
         {focuses.map((focus, index) => {
           const active = focus.key === selected;
           return (
@@ -108,15 +108,19 @@ function FocusQueue({
 }
 
 function FocusPanel({
-  model,
   focus,
+  inspection,
+  selectedObjectId,
+  onSelectObject,
   expanded,
   onExpandedChange,
   onOpenDetail,
   detailButtonRef,
 }: {
-  model: MobileNativeModel;
   focus: MobileNativeFocus;
+  inspection: MobileNativeInspection;
+  selectedObjectId?: string;
+  onSelectObject: (objectId: string) => void;
   expanded: boolean;
   onExpandedChange: (expanded: boolean) => void;
   onOpenDetail: () => void;
@@ -124,20 +128,36 @@ function FocusPanel({
 }) {
   return (
     <section id="mn-focus-panel" className="mn-focus-panel" aria-labelledby="mn-focus-title" data-mobile-native-focus={focus.key}>
+      <p className="mn-sr-only" role="status" aria-live="polite">当前焦点：{focus.kicker}，{focus.title}</p>
       <FocusMasthead focus={focus} />
       <div className="mn-focus-evidence-grid">
         <div className="mn-focus-measurements">
           <ProofLedger focus={focus} />
-          <MobileNativeSignal signal={focus.signal} />
+          <MobileNativeSignal signal={focus.signal} selectedObjectId={selectedObjectId} onSelectObject={onSelectObject} />
         </div>
         <MobileNativeInspectionPanel
-          focus={focus}
+          inspection={inspection}
           expanded={expanded}
           onExpandedChange={onExpandedChange}
           onOpenDetail={onOpenDetail}
           detailButtonRef={detailButtonRef}
         />
       </div>
+    </section>
+  );
+}
+
+function TabletScopeLedger({ model }: { model: MobileNativeModel }) {
+  return (
+    <section className="mn-tablet-scope" aria-labelledby="mn-tablet-scope-title" data-mobile-native-tablet-scope>
+      <header><h2 id="mn-tablet-scope-title">观测范围</h2><span>当前采样对象</span></header>
+      <dl>
+        {model.scopeFacts.map((fact, index) => (
+          <div className={`is-${fact.tone || "trust"}`} key={fact.key || `${fact.label}-${index}`} data-mobile-native-scope-key={fact.key}>
+            <dt>{fact.label}</dt><dd>{fact.value}</dd>
+          </div>
+        ))}
+      </dl>
     </section>
   );
 }
@@ -160,11 +180,11 @@ function TabletContextEvidence({ model, focus }: { model: MobileNativeModel; foc
 
   return (
     <section className="mn-tablet-context" aria-labelledby="mn-tablet-context-title" data-mobile-native-tablet-context>
-      <header><b id="mn-tablet-context-title">上下文证据</b><span>目标、来源与影响边界</span></header>
+      <header><h2 id="mn-tablet-context-title">上下文证据</h2><span>目标、来源与影响边界</span></header>
       <div>
         {sections.map((section) => (
-          <section className="mn-tablet-context-card" aria-label={section.title} key={section.key}>
-            <header><b>{section.title}</b><small>{section.note}</small></header>
+          <section className="mn-tablet-context-card" aria-labelledby={`mn-context-${section.key}`} key={section.key} data-mobile-native-context-key={section.key}>
+            <header><h3 id={`mn-context-${section.key}`}>{section.title}</h3><small>{section.note}</small></header>
             <div>
               {section.rows.slice(0, 3).map((row, index) => (
                 <div className={`mn-tablet-context-row is-${row.tone || "trust"}`} key={row.key || `${row.label}-${index}`}>
@@ -183,6 +203,9 @@ function TabletContextEvidence({ model, focus }: { model: MobileNativeModel; foc
 export function MobileNativePhoneHome({
   model,
   focus,
+  inspection,
+  selectedObjectId,
+  onSelectObject,
   selected,
   onSelect,
   expanded,
@@ -192,6 +215,9 @@ export function MobileNativePhoneHome({
 }: {
   model: MobileNativeModel;
   focus: MobileNativeFocus;
+  inspection: MobileNativeInspection;
+  selectedObjectId?: string;
+  onSelectObject: (objectId: string) => void;
   selected: MobileFocusKey;
   onSelect: (key: MobileFocusKey) => void;
   expanded: boolean;
@@ -205,8 +231,10 @@ export function MobileNativePhoneHome({
       <EvidenceBoundary model={model} />
       {model.focuses.length > 1 ? <FocusQueue focuses={model.focuses} selected={selected} onSelect={onSelect} compact /> : null}
       <FocusPanel
-        model={model}
         focus={focus}
+        inspection={inspection}
+        selectedObjectId={selectedObjectId}
+        onSelectObject={onSelectObject}
         expanded={expanded}
         onExpandedChange={onExpandedChange}
         onOpenDetail={onOpenDetail}
@@ -219,6 +247,9 @@ export function MobileNativePhoneHome({
 export function MobileNativeTabletHome({
   model,
   focus,
+  inspection,
+  selectedObjectId,
+  onSelectObject,
   selected,
   onSelect,
   expanded,
@@ -228,6 +259,9 @@ export function MobileNativeTabletHome({
 }: {
   model: MobileNativeModel;
   focus: MobileNativeFocus;
+  inspection: MobileNativeInspection;
+  selectedObjectId?: string;
+  onSelectObject: (objectId: string) => void;
   selected: MobileFocusKey;
   onSelect: (key: MobileFocusKey) => void;
   expanded: boolean;
@@ -235,15 +269,15 @@ export function MobileNativeTabletHome({
   onOpenDetail: () => void;
   detailButtonRef: RefObject<HTMLButtonElement>;
 }) {
-  const multipleFocuses = model.focuses.length > 1;
   return (
     <>
       <DeviceChrome model={model} />
-      <div className={`mn-tablet-workspace ${multipleFocuses ? "is-multiple-focus" : "is-single-focus"}`} data-mobile-native-tablet-workspace>
+      <div className="mn-tablet-workspace" data-mobile-native-tablet-workspace>
         <aside className="mn-focus-master" aria-label="风险与证据主列表">
           <EvidenceBoundary model={model} />
           {model.scopeNote ? <p className="mn-scope-note">{model.scopeNote}</p> : null}
-          {multipleFocuses ? <FocusQueue focuses={model.focuses} selected={selected} onSelect={onSelect} /> : null}
+          <TabletScopeLedger model={model} />
+          <FocusQueue focuses={model.focuses} selected={selected} onSelect={onSelect} />
           <div className="mn-master-boundary">
             <MobileNativeIcon name="readonly" size={16} />
             <span><b>只读边界</b><small>不会修改 RouterOS 配置</small></span>
@@ -251,8 +285,10 @@ export function MobileNativeTabletHome({
         </aside>
         <div className="mn-tablet-detail">
           <FocusPanel
-            model={model}
             focus={focus}
+            inspection={inspection}
+            selectedObjectId={selectedObjectId}
+            onSelectObject={onSelectObject}
             expanded={expanded}
             onExpandedChange={onExpandedChange}
             onOpenDetail={onOpenDetail}

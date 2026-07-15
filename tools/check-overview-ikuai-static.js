@@ -180,7 +180,7 @@ includesAll(phoneHome, ['data-mobile-native-evidence-mode', 'data-mobile-native-
 includesAll(phoneSignal, ['data-mobile-native-rates="current"', 'data-mobile-native-resource-signal', 'signal.kind === "rates"', 'signal.kind === "resource"'], 'phone scenario signal substitution');
 includesAll(`${phoneHome}\n${phoneInspection}`, ['data-mobile-native-inspection', 'ArrowRight', 'ArrowLeft', 'preventScroll', '<details', '<summary', 'data-mobile-native-open-detail'], 'phone risk focus and disclosure semantics');
 excludesAll(phoneHome, ['role="tablist"', 'role="tab"'], 'phone fake tab semantics');
-includesAll(phoneEvidence, ['data-mobile-native-detail', 'data-mobile-native-detail-section', 'Escape', 'data-mobile-native-back', 'backRef.current?.focus({ preventScroll: true })'], 'phone evidence navigation');
+includesAll(phoneEvidence, ['data-mobile-native-detail', 'data-mobile-native-detail-section', 'Escape', 'data-mobile-native-back', 'titleRef.current?.focus({ preventScroll: true })', 'window.scrollTo({ top: 0'], 'phone evidence navigation');
 includesAll(phoneStyleBundle, ['--mn-canvas', '.mn-focus-masthead', '.mn-proof-ledger', '.mn-inspection', '.mn-tablet-workspace', '.mn-detail', 'env(safe-area-inset-top)', 'env(safe-area-inset-left)', 'min-height: 44px', 'touch-action: manipulation'], 'phone risk-focus workspace safe area, touch, and responsive styles');
 excludesAll(phoneStyleBundle, ['!important', 'radial-gradient(', '.rm-', '.ik-mobile-', '.ro-mobile-', '.phone-ops'], 'phone patch and retired namespace prohibition');
 excludesAll(phoneStyleBundle, ['border-left: 3px', 'margin: 0 auto', '.mn-path-evidence'], 'rejected phone ledger and centered tablet cleanup');

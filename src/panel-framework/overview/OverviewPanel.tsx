@@ -10,7 +10,7 @@ import "./styles/desktop/incidents.css";
 import "./styles/desktop/status-bus.css";
 import "./styles/desktop/decision-rail.css";
 
-const MOBILE_OVERVIEW_QUERY = "(max-width: 900px)";
+const MOBILE_OVERVIEW_QUERY = "(max-width: 1199px)";
 
 function useMobileOverview(): boolean {
   const [mobile, setMobile] = useState(() => typeof window !== "undefined" && window.matchMedia(MOBILE_OVERVIEW_QUERY).matches);

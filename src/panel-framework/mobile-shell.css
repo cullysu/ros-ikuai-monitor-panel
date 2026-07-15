@@ -1,4 +1,4 @@
-@media (max-width: 900px) {
+@media (max-width: 1199px) {
   html:has(#overview.is-mobile-native),
   body:has(#overview.is-mobile-native) {
     width: 100%;
