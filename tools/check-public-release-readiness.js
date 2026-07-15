@@ -448,7 +448,7 @@ function assertLatestFullMatrixReport(rootDir = ROOT) {
   const checksPass = failedChecks.length === 0 && missingChecks.length === 0 && releaseEvidenceOk;
   const reportPassMatchesChecks = Boolean(latest.reportPass) === checksPass;
   if (!commitMatchesHead || !latest.matrix || !checksPass || !reportPassMatchesChecks || !latest.complete || latest.total !== FULL_MATRIX_CELLS.length || latest.passed !== FULL_MATRIX_CELLS.length || latest.failed !== 0 || missingCells.length || missingChecks.length) {
-    throw new Error(`Latest full matrix report is not 7x2 all green: ${JSON.stringify({
+    throw new Error(`Latest full matrix report is not 7x4 all green: ${JSON.stringify({
       reportPath: path.relative(rootDir, latest.reportPath),
       head,
       reportCommit,
@@ -919,7 +919,7 @@ function main(argv = process.argv.slice(2)) {
     console.log('[ok] static public release readiness markers are present');
   } else {
     const latestFullMatrixReport = assertLatestFullMatrixReport();
-    console.log(`[ok] latest full matrix report is 7x2 all green: ${path.relative(ROOT, latestFullMatrixReport.reportPath)}`);
+    console.log(`[ok] latest full matrix report is 7x4 all green: ${path.relative(ROOT, latestFullMatrixReport.reportPath)}`);
   }
 
   console.log('[ok] public release readiness markers are present');
