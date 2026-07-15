@@ -2,54 +2,54 @@
 
 @media (min-width: 761px) {
   .router-overview-framework.ro-desktop-hierarchy {
-    padding: 8px !important;
+    padding: 8px;
   }
   .router-overview-framework.ro-desktop-hierarchy .ro-desktop-grid.ik-home-layout > .ro-col {
-    gap: 8px !important;
+    gap: 8px;
   }
   .router-overview-framework.ro-desktop-hierarchy .ro-desktop-grid.ik-home-layout > .ro-col.is-bottom {
-    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-    gap: 8px !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
   }
   .router-overview-framework.ro-desktop-hierarchy .ro-module-head {
-    min-height: 28px !important;
-    padding: 5px 8px !important;
+    min-height: 28px;
+    padding: 5px 8px;
   }
   .router-overview-framework.ro-desktop-hierarchy .ro-module-head b {
-    font-size: 12.5px !important;
+    font-size: 12.5px;
   }
   .router-overview-framework.ro-desktop-hierarchy .ro-module-head span {
-    font-size: 10px !important;
-    line-height: 1.15 !important;
+    font-size: 10px;
+    line-height: 1.15;
   }
   .router-overview-framework.ro-desktop-hierarchy .ro-ledger-head {
-    min-height: 24px !important;
+    min-height: 24px;
   }
   .router-overview-framework.ro-desktop-hierarchy .ro-ledger-row {
-    min-height: 26px !important;
+    min-height: 26px;
   }
   .router-overview-framework.ro-desktop-hierarchy .ro-ledger-cell,
   .router-overview-framework.ro-desktop-hierarchy .ro-ledger-head-cell {
-    padding: 4px 7px !important;
-    font-size: 11.5px !important;
-    line-height: 1.18 !important;
+    padding: 4px 7px;
+    font-size: 11.5px;
+    line-height: 1.18;
   }
   .router-overview-framework.ro-desktop-hierarchy .ro-judgement-chart {
-    margin: 6px 8px !important;
-    padding: 6px 8px !important;
+    margin: 6px 8px;
+    padding: 6px 8px;
   }
   .router-overview-framework.ro-desktop-hierarchy .ro-chart-summary {
-    gap: 5px !important;
-    margin-bottom: 5px !important;
+    gap: 5px;
+    margin-bottom: 5px;
   }
   .router-overview-framework.ro-desktop-hierarchy .ro-chart-summary span {
-    min-height: 20px !important;
-    padding: 3px 5px !important;
-    font-size: 10px !important;
+    min-height: 20px;
+    padding: 3px 5px;
+    font-size: 10px;
   }
   .router-overview-framework.ro-desktop-hierarchy .ro-judgement-row {
-    min-height: 24px !important;
-    gap: 6px !important;
+    min-height: 24px;
+    gap: 6px;
   }
 }
 
@@ -57,14 +57,14 @@
 
 @media (min-width: 761px) {
   #overview.router-overview-framework .ro-chart-readout {
-    min-height: 24px !important;
-    height: 24px !important;
-    display: flex !important;
-    align-items: center !important;
-    gap: 6px !important;
-    overflow: visible !important;
-    white-space: normal !important;
-    text-overflow: clip !important;
+    min-height: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    overflow: visible;
+    white-space: normal;
+    text-overflow: clip;
   }
 }
 
@@ -72,72 +72,72 @@
 
 @media (min-width: 1024px) {
   #overview.router-overview-framework [data-overview-density-module="resource-interface-top5"] .ro-module-head {
-    min-height: 24px !important;
-    padding-block: 3px !important;
+    min-height: 24px;
+    padding-block: 3px;
   }
   #overview.router-overview-framework [data-overview-density-module="resource-interface-top5"] .ro-ledger-table,
   #overview.router-overview-framework .ik-overview-top5-list .ro-ledger-table {
-    overflow: hidden !important;
+    overflow: hidden;
   }
   #overview.router-overview-framework [data-overview-density-module="resource-interface-top5"] .ro-ledger-row:not(.ro-ledger-head),
   #overview.router-overview-framework .ik-overview-top5-list .ro-ledger-row:not(.ro-ledger-head) {
-    min-height: 30px !important;
-    height: 32px !important;
-    max-height: 34px !important;
-    align-items: center !important;
-    padding-top: 0 !important;
-    padding-bottom: 0 !important;
-    overflow: hidden !important;
+    min-height: 30px;
+    height: 32px;
+    max-height: 34px;
+    align-items: center;
+    padding-top: 0;
+    padding-bottom: 0;
+    overflow: hidden;
   }
   #overview.router-overview-framework [data-overview-density-module="resource-interface-top5"] .ro-ledger-cell,
   #overview.router-overview-framework .ik-overview-top5-list .ro-ledger-cell {
-    min-height: 0 !important;
-    height: 100% !important;
-    align-content: center !important;
-    padding-top: 0 !important;
-    padding-bottom: 0 !important;
-    overflow: hidden !important;
+    min-height: 0;
+    height: 100%;
+    align-content: center;
+    padding-top: 0;
+    padding-bottom: 0;
+    overflow: hidden;
   }
   #overview.router-overview-framework [data-overview-density-module="resource-interface-top5"] .ik-overview-cell-text,
   #overview.router-overview-framework .ik-overview-top5-list .ik-overview-cell-text {
-    display: block !important;
-    max-height: 18px !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    white-space: nowrap !important;
-    line-height: 18px !important;
+    display: block;
+    max-height: 18px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    line-height: 18px;
   }
 }
 
 @media (min-width: 761px) {
   #overview.router-overview-framework :where(.ro-module, .ro-ledger-table, .ro-module-body, .ro-judgement-chart, .ro-col) {
-    scrollbar-width: none !important;
-    -ms-overflow-style: none !important;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
   }
   #overview.router-overview-framework :where(.ro-module, .ro-ledger-table, .ro-module-body, .ro-judgement-chart, .ro-col)::-webkit-scrollbar {
-    width: 0 !important;
-    height: 0 !important;
+    width: 0;
+    height: 0;
   }
   #overview.router-overview-framework .ro-chart-summary {
-    gap: 7px !important;
-    margin: 4px 0 7px !important;
-    padding: 0 !important;
-    border: 0 !important;
-    background: transparent !important;
+    gap: 7px;
+    margin: 4px 0 7px;
+    padding: 0;
+    border: 0;
+    background: transparent;
   }
   #overview.router-overview-framework .ro-chart-summary span {
-    min-height: 22px !important;
-    padding: 3px 0 !important;
-    border: 0 !important;
-    border-bottom: 1px solid #e7eef6 !important;
-    border-radius: 0 !important;
-    background: transparent !important;
+    min-height: 22px;
+    padding: 3px 0;
+    border: 0;
+    border-bottom: 1px solid #e7eef6;
+    border-radius: 0;
+    background: transparent;
   }
   #overview.router-overview-framework[data-overview-scene-key="resource-full"] .ro-col.is-main > .ro-module:first-child,
   #overview.router-overview-framework[data-overview-scene-key="all-offline"] .ro-col.is-main > .ro-module:first-child,
   #overview.router-overview-framework[data-overview-scene-key="interfaces-down"] .ro-col.is-main > .ro-module:first-child {
-    border-top: 2px solid rgba(217, 48, 37, .72) !important;
-    background: linear-gradient(180deg, #fff 0%, #fffafa 46%, #fff 100%) !important;
+    border-top: 2px solid rgba(217, 48, 37, .72);
+    background: linear-gradient(180deg, #fff 0%, #fffafa 46%, #fff 100%);
   }
 }
 
@@ -158,194 +158,194 @@
   #overview.router-overview-framework .ro-col.stack,
   #overview.router-overview-framework .ro-module,
   #overview.router-overview-framework .ro-ledger-table {
-    scrollbar-width: none !important;
-    -ms-overflow-style: none !important;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
   }
   #overview.router-overview-framework .ro-col.stack::-webkit-scrollbar,
   #overview.router-overview-framework .ro-module::-webkit-scrollbar,
   #overview.router-overview-framework .ro-ledger-table::-webkit-scrollbar {
-    width: 0 !important;
-    height: 0 !important;
+    width: 0;
+    height: 0;
   }
   #overview.router-overview-framework .ro-module.ik-overview-flat-module {
-    min-height: 0 !important;
-    border: 1px solid #e2ebf4 !important;
-    border-radius: 5px !important;
-    background: #fff !important;
-    box-shadow: none !important;
-    overflow: visible !important;
+    min-height: 0;
+    border: 1px solid #e2ebf4;
+    border-radius: 5px;
+    background: #fff;
+    box-shadow: none;
+    overflow: visible;
   }
   #overview.router-overview-framework .ro-module.ik-overview-flat-module[data-overview-evidence-weight="secondary"] {
-    background: #fbfdff !important;
+    background: #fbfdff;
   }
   #overview.router-overview-framework .ro-module-head {
-    min-height: 27px !important;
-    padding: 4px 8px !important;
-    border-bottom: 1px solid #edf3f8 !important;
-    background: linear-gradient(180deg, #fbfdff, #f8fbfe) !important;
+    min-height: 27px;
+    padding: 4px 8px;
+    border-bottom: 1px solid #edf3f8;
+    background: linear-gradient(180deg, #fbfdff, #f8fbfe);
   }
   #overview.router-overview-framework .ro-module-head > div {
-    min-width: 0 !important;
-    display: grid !important;
-    gap: 1px !important;
+    min-width: 0;
+    display: grid;
+    gap: 1px;
   }
   #overview.router-overview-framework .ik-overview-flat-title {
-    color: #203044 !important;
-    font-size: 12px !important;
-    line-height: 14px !important;
-    font-weight: 760 !important;
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
+    color: #203044;
+    font-size: 12px;
+    line-height: 14px;
+    font-weight: 760;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   #overview.router-overview-framework .ro-module-head span {
-    color: #7e8ea2 !important;
-    font-size: 10px !important;
-    line-height: 11px !important;
-    font-weight: 520 !important;
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
+    color: #7e8ea2;
+    font-size: 10px;
+    line-height: 11px;
+    font-weight: 520;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   #overview.router-overview-framework .ro-module-head em[data-trust] {
-    height: 18px !important;
-    padding: 0 6px !important;
-    border-radius: 99px !important;
-    color: #62758b !important;
-    font-size: 10px !important;
-    line-height: 18px !important;
-    background: #f1f6fb !important;
+    height: 18px;
+    padding: 0 6px;
+    border-radius: 99px;
+    color: #62758b;
+    font-size: 10px;
+    line-height: 18px;
+    background: #f1f6fb;
   }
   #overview.router-overview-framework .ro-ledger-table {
-    max-height: none !important;
-    overflow: visible !important;
-    background: transparent !important;
+    max-height: none;
+    overflow: visible;
+    background: transparent;
   }
   #overview.router-overview-framework .ro-ledger-row {
-    min-height: 25px !important;
-    padding: 0 !important;
-    border-bottom: 1px solid #f0f4f8 !important;
-    background: transparent !important;
+    min-height: 25px;
+    padding: 0;
+    border-bottom: 1px solid #f0f4f8;
+    background: transparent;
   }
   #overview.router-overview-framework .ro-ledger-head.ro-ledger-row {
-    min-height: 22px !important;
-    background: #f8fbfe !important;
+    min-height: 22px;
+    background: #f8fbfe;
   }
   #overview.router-overview-framework .ro-ledger-head-cell,
   #overview.router-overview-framework .ro-ledger-cell {
-    min-width: 0 !important;
-    min-height: 0 !important;
-    padding: 4px 7px !important;
-    align-content: center !important;
-    overflow: visible !important;
+    min-width: 0;
+    min-height: 0;
+    padding: 4px 7px;
+    align-content: center;
+    overflow: visible;
   }
   #overview.router-overview-framework .ro-ledger-head-cell {
-    color: #8392a5 !important;
-    font-size: 10px !important;
-    line-height: 12px !important;
-    font-weight: 680 !important;
+    color: #8392a5;
+    font-size: 10px;
+    line-height: 12px;
+    font-weight: 680;
   }
   #overview.router-overview-framework .ik-overview-cell-text {
-    color: #29384b !important;
-    font-size: 11px !important;
-    line-height: 14px !important;
-    font-weight: 520 !important;
-    white-space: normal !important;
-    overflow: visible !important;
-    text-overflow: clip !important;
-    word-break: break-word !important;
+    color: #29384b;
+    font-size: 11px;
+    line-height: 14px;
+    font-weight: 520;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    word-break: break-word;
   }
   #overview.router-overview-framework .ro-ledger-row[data-tone="danger"] .ik-overview-cell-text:first-child,
   #overview.router-overview-framework .ro-ledger-row[data-tone="missing"] .ik-overview-cell-text:first-child {
-    color: var(--ik-red) !important;
-    font-weight: 760 !important;
+    color: var(--ik-red);
+    font-weight: 760;
   }
   #overview.router-overview-framework .ro-judgement-chart {
-    margin: 4px 7px 6px !important;
-    padding: 5px 7px !important;
-    border: 0 !important;
-    border-radius: 4px !important;
-    background: #fbfdff !important;
-    box-shadow: inset 0 0 0 1px #edf3f8 !important;
+    margin: 4px 7px 6px;
+    padding: 5px 7px;
+    border: 0;
+    border-radius: 4px;
+    background: #fbfdff;
+    box-shadow: inset 0 0 0 1px #edf3f8;
   }
   #overview.router-overview-framework .ro-judgement-row {
-    grid-template-columns: 68px minmax(145px, 1fr) minmax(130px, .78fr) !important;
-    min-height: 25px !important;
-    gap: 7px !important;
+    grid-template-columns: 68px minmax(145px, 1fr) minmax(130px, .78fr);
+    min-height: 25px;
+    gap: 7px;
   }
   #overview.router-overview-framework .ro-chart-track {
-    height: 3px !important;
-    border-radius: 99px !important;
-    background: #eaf2f9 !important;
+    height: 3px;
+    border-radius: 99px;
+    background: #eaf2f9;
   }
   #overview.router-overview-framework .ro-chart-current {
-    background: linear-gradient(90deg, #1473e6, #75b6ec) !important;
-    box-shadow: none !important;
+    background: linear-gradient(90deg, #1473e6, #75b6ec);
+    box-shadow: none;
   }
   #overview.router-overview-framework .ro-judgement-row[data-tone="danger"] .ro-chart-current {
-    background: linear-gradient(90deg, #1473e6 0%, #75b6ec 82%, #d83b31 100%) !important;
+    background: linear-gradient(90deg, #1473e6 0%, #75b6ec 82%, #d83b31 100%);
   }
   #overview.router-overview-framework .ro-judgement-row[data-tone="warn"] .ro-chart-current {
-    background: linear-gradient(90deg, #1473e6 0%, #75b6ec 82%, #cf7b22 100%) !important;
+    background: linear-gradient(90deg, #1473e6 0%, #75b6ec 82%, #cf7b22 100%);
   }
   #overview.router-overview-framework .ro-chart-label,
   #overview.router-overview-framework .ro-chart-readout {
-    color: #66788e !important;
-    font-size: 10px !important;
-    line-height: 12px !important;
+    color: #66788e;
+    font-size: 10px;
+    line-height: 12px;
   }
   #overview.router-overview-framework[data-overview-scene-key="all-offline"] .ro-col.is-main > .ro-module:first-child,
   #overview.router-overview-framework[data-overview-scene-key="interfaces-down"] .ro-col.is-main > .ro-module:first-child,
   #overview.router-overview-framework[data-overview-scene-key="resource-full"] .ro-col.is-main > .ro-module:first-child,
   #overview.router-overview-framework[data-overview-scene-key="no-snapshot"] .ro-col.is-main > .ro-module:first-child,
   #overview.router-overview-framework[data-overview-scene-key="collection-down"] .ro-col.is-main > .ro-module:first-child {
-    border-top: 0 !important;
-    background: linear-gradient(90deg, rgba(216,59,49,.035), #fff 32%) !important;
+    border-top: 0;
+    background: linear-gradient(90deg, rgba(216,59,49,.035), #fff 32%);
   }
   #overview.router-overview-framework[data-overview-scene-key="collection-down"] .ro-col.is-main > .ro-module:first-child {
-    background: linear-gradient(90deg, rgba(207,123,34,.045), #fff 32%) !important;
+    background: linear-gradient(90deg, rgba(207,123,34,.045), #fff 32%);
   }
   #overview.router-overview-framework .ro-col.is-bottom {
-    display: grid !important;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
-    gap: 7px !important;
-    overflow: hidden !important;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 7px;
+    overflow: hidden;
   }
   #overview.router-overview-framework .ro-col.is-bottom > .ro-module {
-    min-width: 0 !important;
+    min-width: 0;
   }
   #overview.router-overview-framework [data-overview-density-module*="boundary"],
   #overview.router-overview-framework [data-overview-density-module*="raw"],
   #overview.router-overview-framework [data-overview-density-module*="ops-ledger"] {
-    opacity: .92 !important;
+    opacity: .92;
   }
   /*Desktop RouterOS raw route fields: visible only as low-noise secondary evidence, never as main business copy.*/
   #overview.router-overview-framework [data-routeros-raw-evidence-contract]
     [data-routeros-evidence-role="raw-secondary"],
   #overview.router-overview-framework [data-routeros-raw-secondary-rail="bottom-collapsed-low-noise"] {
-    min-height: 24px !important;
-    color: #51677f !important;
-    background: rgba(247, 250, 253, .42) !important;
-    box-shadow: inset 0 -1px 0 rgba(226, 235, 244, .26) !important;
+    min-height: 24px;
+    color: #51677f;
+    background: rgba(247, 250, 253, .42);
+    box-shadow: inset 0 -1px 0 rgba(226, 235, 244, .26);
   }
   #overview.router-overview-framework [data-routeros-raw-evidence-contract]
     [data-routeros-evidence-role="raw-secondary"] .ro-ledger-cell,
   #overview.router-overview-framework [data-routeros-raw-secondary-rail="bottom-collapsed-low-noise"] .ro-ledger-cell {
-    color: #51677f !important;
-    font-size: 10.5px !important;
-    font-weight: 520 !important;
-    letter-spacing: -.03px !important;
-    background: transparent !important;
-    border-right: 0 !important;
-    box-shadow: none !important;
+    color: #51677f;
+    font-size: 10.5px;
+    font-weight: 520;
+    letter-spacing: -.03px;
+    background: transparent;
+    border-right: 0;
+    box-shadow: none;
   }
   #overview.router-overview-framework [data-routeros-raw-evidence-contract]
     [data-routeros-evidence-role="raw-secondary"] .ro-ledger-cell:first-child,
   #overview.router-overview-framework [data-routeros-raw-secondary-rail="bottom-collapsed-low-noise"] .ro-ledger-cell:first-child {
-    color: #6f8093 !important;
-    font-weight: 650 !important;
+    color: #6f8093;
+    font-weight: 650;
   }
   #overview.router-overview-framework[data-overview-scene-key="all-offline"] .ro-desktop-grid.ik-home-layout {
-    min-height: 840px !important;
+    min-height: 840px;
   }
 }

@@ -10,28 +10,28 @@
   }
   #overview.router-overview-framework.ro-desktop-console .ro-module,
   .router-overview-framework.ro-desktop-console .ro-module {
-    border-color: var(--ik-v1000-desktop-line) !important;
-    background: rgba(255, 255, 255, .94) !important;
+    border-color: var(--ik-v1000-desktop-line);
+    background: rgba(255, 255, 255, .94);
   }
   #overview.router-overview-framework.ro-desktop-console .ro-ledger-cell,
   .router-overview-framework.ro-desktop-console .ro-ledger-cell {
-    border-bottom-color: var(--ik-v1000-desktop-line-soft) !important;
+    border-bottom-color: var(--ik-v1000-desktop-line-soft);
   }
   #overview.router-overview-framework.ro-desktop-console .ro-ledger-row:not(.ro-ledger-head):hover .ro-ledger-cell,
   .router-overview-framework.ro-desktop-console .ro-ledger-row:not(.ro-ledger-head):hover .ro-ledger-cell {
-    background: rgba(245, 249, 253, .72) !important;
+    background: rgba(245, 249, 253, .72);
   }
   #overview.router-overview-framework.ro-desktop-console .ro-module[data-overview-evidence-weight="secondary"],
   .router-overview-framework.ro-desktop-console .ro-module[data-overview-evidence-weight="secondary"],
   #overview.router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="evidence-boundary"],
   .router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="evidence-boundary"] {
-    background: rgba(248, 251, 254, .86) !important;
+    background: rgba(248, 251, 254, .86);
   }
   #overview.router-overview-framework.ro-desktop-console .ro-module[data-overview-evidence-weight="secondary"] .ro-ledger-cell,
   .router-overview-framework.ro-desktop-console .ro-module[data-overview-evidence-weight="secondary"] .ro-ledger-cell,
   #overview.router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="evidence-boundary"] .ro-ledger-cell,
   .router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="evidence-boundary"] .ro-ledger-cell {
-    color: var(--ik-v1000-desktop-muted) !important;
+    color: var(--ik-v1000-desktop-muted);
   }
 }
 
@@ -40,15 +40,15 @@
 @media (min-width: 761px) {
   #overview.router-overview-framework.ro-desktop-console .ro-ledger-head > .ro-ledger-head-cell,
   .router-overview-framework.ro-desktop-console .ro-ledger-head > .ro-ledger-head-cell {
-    border-bottom-color: rgba(154, 176, 198, .14) !important;
-    background-color: rgba(248, 251, 254, .72) !important;
+    border-bottom-color: rgba(154, 176, 198, .14);
+    background-color: rgba(248, 251, 254, .72);
   }
   #overview.router-overview-framework.ro-desktop-console .ro-ledger-row:not(.ro-ledger-head) > .ro-ledger-cell,
   .router-overview-framework.ro-desktop-console .ro-ledger-row:not(.ro-ledger-head) > .ro-ledger-cell {
-    border-right-width: 0 !important;
-    border-right-color: transparent !important;
-    border-bottom-color: rgba(226, 235, 244, .28) !important;
-    background-color: transparent !important;
+    border-right-width: 0;
+    border-right-color: transparent;
+    border-bottom-color: rgba(226, 235, 244, .28);
+    background-color: transparent;
   }
   #overview.router-overview-framework.ro-desktop-console .ro-ledger-row[data-tone="danger"] > .ro-ledger-cell:not(:first-child),
   #overview.router-overview-framework.ro-desktop-console .ro-ledger-row[data-tone="warn"] > .ro-ledger-cell:not(:first-child),
@@ -56,13 +56,13 @@
   #overview.router-overview-framework.ro-desktop-console .ro-ledger-row[data-tone="danger"] > .ro-ledger-cell:not(:first-child) .ik-overview-cell-text,
   #overview.router-overview-framework.ro-desktop-console .ro-ledger-row[data-tone="warn"] > .ro-ledger-cell:not(:first-child) .ik-overview-cell-text,
   #overview.router-overview-framework.ro-desktop-console .ro-ledger-row[data-tone="missing"] > .ro-ledger-cell:not(:first-child) .ik-overview-cell-text {
-    color: #24374b !important;
+    color: #24374b;
   }
   #overview.router-overview-framework.ro-desktop-console .ro-ledger-row[data-tone="danger"],
   #overview.router-overview-framework.ro-desktop-console .ro-ledger-row[data-tone="warn"],
   #overview.router-overview-framework.ro-desktop-console .ro-ledger-row[data-tone="missing"] {
-    background: transparent !important;
-    box-shadow: none !important;
+    background: transparent;
+    box-shadow: none;
   }
   /*Incident object columns stay neutral; status values keep their semantic treatment.*/
   #overview.router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="wan-offline-bars"] .ro-ledger-row:not(.ro-ledger-head) > .ro-ledger-cell:first-child .ik-overview-cell-text,
@@ -77,6 +77,6 @@
   .router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="wan-offline-bars"] .ro-ledger-row:not(.ro-ledger-head) > .ro-ledger-cell:first-child .ik-overview-cell-text > b,
   .router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="wan-offline-continuity"] .ro-ledger-row:not(.ro-ledger-head) > .ro-ledger-cell:first-child .ik-overview-cell-text > b,
   .router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="interface-forwarding"] .ro-ledger-row:not(.ro-ledger-head) > .ro-ledger-cell:first-child .ik-overview-cell-text > b {
-    color: #24374b !important;
+    color: #24374b;
   }
 }

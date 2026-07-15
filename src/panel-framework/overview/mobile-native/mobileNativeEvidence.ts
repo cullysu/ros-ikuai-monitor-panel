@@ -168,6 +168,22 @@ function collectionDetail(snapshot: OverviewRawSnapshot): MobileNativeDetailSect
   };
 }
 
+function targetDetail(snapshot: OverviewRawSnapshot): MobileNativeDetailSection {
+  const target = clean(snapshot.meta?.routerHost || snapshot.meta?.target, "未记录");
+  const identity = clean(snapshot.meta?.configuredIdentity, "未命名目标");
+  return {
+    key: "target",
+    title: "采集目标与尝试边界",
+    note: "设备身份独立于业务快照",
+    rows: [
+      { key: "target-identity", label: "配置身份", value: identity },
+      { key: "target-address", label: "采集目标", value: target },
+      { key: "target-attempt", label: "最近尝试", value: shortTimestamp(snapshot.updatedAt), note: "尝试时间不等于成功时间" },
+      { key: "target-success", label: "明确业务成功", value: successfulBusinessLabel(snapshot) },
+    ],
+  };
+}
+
 function routeDetail(snapshot: OverviewRawSnapshot, mode: MobileEvidenceMode): MobileNativeDetailSection {
   const rows = routeRows(snapshot).slice(0, 8).map((route, index): MobileNativeRow => {
     const explicitActive = route.active === true && route.disabled !== true;
@@ -268,7 +284,7 @@ export function buildDetailSections(
   mode: MobileEvidenceMode,
   risks: MobileRiskKey[],
 ): MobileNativeDetailSection[] {
-  const sections: MobileNativeDetailSection[] = [];
+  const sections: MobileNativeDetailSection[] = [targetDetail(snapshot)];
   if (risks.includes("resource")) sections.push(resourceDetail(snapshot, state, mode));
   if (risks.includes("interfaces")) sections.push(interfaceDetail(snapshot, mode));
   if (risks.includes("collection") || risks.includes("evidence")) sections.push(collectionDetail(snapshot));

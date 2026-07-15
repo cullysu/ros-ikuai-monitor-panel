@@ -1,119 +1,143 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { OverviewPanelProps } from "../desktopOverviewHelpers";
 import { MobileNativeDetail } from "./MobileNativeDetail";
-import { MobileNativeObjectWorkspace } from "./MobileNativeObjectWorkspace";
-import { MobileNativePatrolBrief } from "./MobileNativePatrolBrief";
+import { MobileNativePhoneHome, MobileNativeTabletHome } from "./MobileNativeHome";
 import { buildMobileNativeModel } from "./mobileNativeModel";
+import type { MobileFocusKey } from "./mobileNativeTypes";
 import "./styles/mobile-native-tokens.css";
 import "./styles/mobile-native-layout.css";
 import "./styles/mobile-native-states.css";
 
+const TABLET_QUERY = "(min-width: 700px)";
+
+function useTabletWorkspace(): boolean {
+  const [tablet, setTablet] = useState(() => typeof window !== "undefined" && window.matchMedia(TABLET_QUERY).matches);
+  useEffect(() => {
+    const media = window.matchMedia(TABLET_QUERY);
+    const sync = () => setTablet(media.matches);
+    sync();
+    media.addEventListener("change", sync);
+    return () => media.removeEventListener("change", sync);
+  }, []);
+  return tablet;
+}
+
+function detailFocusFromHistory(state: unknown): MobileFocusKey | null {
+  if (!state || typeof state !== "object") return null;
+  const view = (state as { mobileNativeView?: { view?: string; focus?: string } }).mobileNativeView;
+  return view?.view === "detail" && view.focus ? view.focus as MobileFocusKey : null;
+}
+
 export function MobileNativeConsole({ snapshot, state }: OverviewPanelProps) {
-  const [detailOpen, setDetailOpen] = useState(false);
-  const model = buildMobileNativeModel(snapshot, state);
-  const [selectedObject, setSelectedObject] = useState(model.initialObject);
-  const [expandedObjects, setExpandedObjects] = useState<Partial<Record<typeof model.initialObject, boolean>>>({});
+  const model = useMemo(() => buildMobileNativeModel(snapshot, state), [snapshot, state]);
+  const initialHistoryFocus = typeof window !== "undefined" ? detailFocusFromHistory(window.history.state) : null;
+  const validInitialFocus = initialHistoryFocus && model.focuses.some((focus) => focus.key === initialHistoryFocus)
+    ? initialHistoryFocus
+    : model.initialFocus;
+  const [selectedFocus, setSelectedFocus] = useState<MobileFocusKey>(validInitialFocus);
+  const [detailFocus, setDetailFocus] = useState<MobileFocusKey>(validInitialFocus);
+  const [detailOpen, setDetailOpen] = useState(Boolean(initialHistoryFocus));
+  const [expandedByFocus, setExpandedByFocus] = useState<Partial<Record<MobileFocusKey, boolean>>>({});
+  const tablet = useTabletWorkspace();
   const detailButtonRef = useRef<HTMLButtonElement>(null);
-  const detailOpenRef = useRef(false);
+  const detailOpenRef = useRef(detailOpen);
   const returnScrollRef = useRef(0);
-  const restoreMountTimerRef = useRef(0);
-  const restoreRetryRef = useRef(0);
+  const restoreFocusPendingRef = useRef(false);
+  const focusSignature = model.focuses.map((focus) => focus.key).join("|");
+
+  const focus = model.focuses.find((item) => item.key === selectedFocus) || model.focuses[0];
+  const detailFocusView = model.focuses.find((item) => item.key === detailFocus) || focus;
 
   useEffect(() => {
-    setSelectedObject(model.initialObject);
-    setExpandedObjects({});
-  }, [model.initialObject, model.scenario]);
+    const keys = new Set(model.focuses.map((item) => item.key));
+    setSelectedFocus((current) => keys.has(current) ? current : model.initialFocus);
+    setDetailFocus((current) => keys.has(current) ? current : model.initialFocus);
+    setExpandedByFocus((current) => Object.fromEntries(
+      Object.entries(current).filter(([key]) => keys.has(key as MobileFocusKey)),
+    ) as Partial<Record<MobileFocusKey, boolean>>);
+  }, [focusSignature, model.focuses, model.initialFocus]);
 
-  const cancelFocusRestore = useCallback(() => {
-    window.clearTimeout(restoreMountTimerRef.current);
-    window.clearTimeout(restoreRetryRef.current);
-    restoreMountTimerRef.current = 0;
-    restoreRetryRef.current = 0;
+  useEffect(() => {
+    const previous = window.history.scrollRestoration;
+    window.history.scrollRestoration = "manual";
+    return () => {
+      window.history.scrollRestoration = previous;
+    };
   }, []);
 
-  const restoreDetailFocus = useCallback(() => {
-    cancelFocusRestore();
-    let attempts = 0;
-    const restoreWhenMounted = () => {
-      restoreMountTimerRef.current = 0;
-      const target = detailButtonRef.current;
-      if (!target?.isConnected) {
-        attempts += 1;
-        if (attempts < 20) restoreMountTimerRef.current = window.setTimeout(restoreWhenMounted, 16);
-        return;
-      }
-      target.focus({ preventScroll: true });
-      window.scrollTo({ top: returnScrollRef.current, behavior: "auto" });
-      restoreRetryRef.current = window.setTimeout(() => {
-        restoreRetryRef.current = 0;
-        const active = document.activeElement;
-        if ((!active || active === document.body || !active.isConnected) && target.isConnected) {
-          target.focus({ preventScroll: true });
-          window.scrollTo({ top: returnScrollRef.current, behavior: "auto" });
-        }
-      }, 80);
-    };
-    restoreMountTimerRef.current = window.setTimeout(restoreWhenMounted, 0);
-  }, [cancelFocusRestore]);
+  useLayoutEffect(() => {
+    if (detailOpen || !restoreFocusPendingRef.current) return;
+    restoreFocusPendingRef.current = false;
+    detailButtonRef.current?.focus({ preventScroll: true });
+    window.scrollTo({ top: returnScrollRef.current, behavior: "auto" });
+  }, [detailOpen, selectedFocus]);
 
   useEffect(() => {
-    const onPopState = () => {
-      if (!detailOpenRef.current) return;
+    const onPopState = (event: PopStateEvent) => {
+      const historyFocus = detailFocusFromHistory(event.state);
+      if (historyFocus && model.focuses.some((item) => item.key === historyFocus)) {
+        restoreFocusPendingRef.current = false;
+        detailOpenRef.current = true;
+        setSelectedFocus(historyFocus);
+        setDetailFocus(historyFocus);
+        setDetailOpen(true);
+        return;
+      }
+      if (detailOpenRef.current) restoreFocusPendingRef.current = true;
       detailOpenRef.current = false;
       setDetailOpen(false);
-      restoreDetailFocus();
     };
     window.addEventListener("popstate", onPopState);
-    return () => {
-      window.removeEventListener("popstate", onPopState);
-      cancelFocusRestore();
-    };
-  }, [cancelFocusRestore, restoreDetailFocus]);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, [focusSignature, model.focuses]);
 
-  const openDetail = () => {
-    cancelFocusRestore();
+  const openDetail = useCallback(() => {
     returnScrollRef.current = window.scrollY;
+    restoreFocusPendingRef.current = false;
     detailOpenRef.current = true;
-    window.history.pushState({ ...(window.history.state || {}), mobileNativeDetail: true }, "");
+    setDetailFocus(focus.key);
+    window.history.pushState({
+      ...(window.history.state || {}),
+      mobileNativeView: { view: "detail", focus: focus.key },
+    }, "");
     setDetailOpen(true);
-  };
+  }, [focus.key]);
 
-  const closeDetail = () => {
-    if (window.history.state?.mobileNativeDetail) window.history.back();
-    else {
-      detailOpenRef.current = false;
-      setDetailOpen(false);
-      restoreDetailFocus();
+  const closeDetail = useCallback(() => {
+    if (detailFocusFromHistory(window.history.state)) {
+      window.history.back();
+      return;
     }
-  };
+    restoreFocusPendingRef.current = true;
+    detailOpenRef.current = false;
+    setDetailOpen(false);
+  }, []);
 
-  if (detailOpen) return <MobileNativeDetail model={model} onBack={closeDetail} />;
+  if (detailOpen) return <MobileNativeDetail model={model} focus={detailFocusView} onBack={closeDetail} />;
+
+  const shared = {
+    model,
+    focus,
+    selected: selectedFocus,
+    onSelect: setSelectedFocus,
+    expanded: tablet ? expandedByFocus[focus.key] !== false : Boolean(expandedByFocus[focus.key]),
+    onExpandedChange: (expanded: boolean) => setExpandedByFocus((current) => ({ ...current, [focus.key]: expanded })),
+    onOpenDetail: openDetail,
+    detailButtonRef,
+  };
 
   return (
     <main
-      className={`mn-shell is-${model.scenario} is-evidence-${model.evidenceMode}`}
+      className={`mn-shell is-${model.scenario} is-evidence-${model.evidenceMode} is-focus-${focus.key}`}
       data-mobile-native-console
       data-mobile-native-scenario={model.scenario}
       data-mobile-native-evidence={model.evidenceMode}
       data-mobile-route-verification={model.routeVerification}
       data-mobile-native-incident={model.incident ? "true" : "false"}
+      data-mobile-native-layout={tablet ? "tablet" : "phone"}
+      data-mobile-native-primary-focus={model.initialFocus}
     >
-      <header className="mn-navigation">
-        <span><b>{model.device}</b><small>{model.deviceNote}</small></span>
-        <span className="mn-readonly-label">只读监控</span>
-      </header>
-      <div className="mn-mobile-workspace">
-        <MobileNativePatrolBrief model={model} />
-        <MobileNativeObjectWorkspace
-          model={model}
-          selected={selectedObject}
-          onSelect={setSelectedObject}
-          expanded={Boolean(expandedObjects[selectedObject])}
-          onExpandedChange={(expanded) => setExpandedObjects((current) => ({ ...current, [selectedObject]: expanded }))}
-          onOpenDetail={openDetail}
-          detailButtonRef={detailButtonRef}
-        />
-      </div>
+      {tablet ? <MobileNativeTabletHome {...shared} /> : <MobileNativePhoneHome {...shared} />}
     </main>
   );
 }

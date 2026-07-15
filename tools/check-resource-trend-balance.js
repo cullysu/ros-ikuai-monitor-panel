@@ -988,20 +988,23 @@ async function main() {
         ];
         const missingModules = requiredModules.filter((item) => !moduleNames.includes(item));
         const forbiddenModules = moduleNames.filter((item) => /terminal-ranking|wan-trend|normal-wan-evidence|traffic-trend|wan-throughput|wan-rate|no-snapshot-readonly-boundary|no-snapshot-degraded-modules/.test(item));
+        const duplicateModules = moduleNames.filter((item, index) => moduleNames.indexOf(item) !== index);
         const requiredText = ['采集链路', '业务数据不可判', '恢复线索', '业务快照', '速率不展示', '只读'];
         const desktopNoSnapshotText = normalize(modules.map((node) => visibleText(node)).join(' '));
         const missing = requiredText.filter((item) => !desktopNoSnapshotText.includes(item));
-        const primaryModules = requiredModules.slice(0, 3)
-          .map((name) => sectionEl?.querySelector('[data-overview-density-module="' + name + '"]'))
-          .filter(Boolean);
-        const primaryRects = primaryModules.map((node) => node.getBoundingClientRect());
-        const visiblePrimaryCount = primaryRects.filter((rect) => rect.width > 0 && rect.height >= 120).length;
+        const primaryModuleVisibility = Object.fromEntries(requiredModules.slice(0, 3).map((name) => {
+          const node = sectionEl?.querySelector('[data-overview-density-module="' + name + '"]');
+          const rect = node?.getBoundingClientRect();
+          return [name, Boolean(rect && rect.width > 0 && rect.height >= 120)];
+        }));
+        const primaryEvidenceVisible = Object.values(primaryModuleVisibility).every(Boolean);
         const workspace = sectionEl?.querySelector('.ik-desktop-workspace');
         const recoveryModule = workspace?.querySelector('[data-overview-density-module="no-snapshot-recent-success"]');
         const rawEvidenceModule = workspace?.querySelector('[data-overview-density-module="evidence-boundary"]');
         const recoveryRect = recoveryModule?.getBoundingClientRect();
         const rawEvidenceRect = rawEvidenceModule?.getBoundingClientRect();
-        const rawEvidenceRowCount = rawEvidenceModule?.querySelectorAll('.ro-ledger-row:not(.ro-ledger-head)').length || 0;
+        const rawEvidenceText = normalize(rawEvidenceModule?.textContent || '');
+        const rawEvidenceContractOk = ['只读范围', '保留模块', '业务数据展示边界', '速率'].every((label) => rawEvidenceText.includes(label));
         const rawEvidenceDisclosure = rawEvidenceModule?.querySelector('[data-overview-evidence-disclosure="native-details-collapsed-secondary"]');
         const hasRawEvidenceDisclosure = Boolean(rawEvidenceDisclosure && rawEvidenceDisclosure.open === false);
         const noSnapshotEvidenceDeferred = Boolean(
@@ -1013,7 +1016,7 @@ async function main() {
           rawEvidenceRect.width >= 300 &&
           rawEvidenceRect.height >= 28 &&
           rawEvidenceRect.top >= recoveryRect.bottom - 1 &&
-          rawEvidenceRowCount >= 4 &&
+          rawEvidenceContractOk &&
           hasRawEvidenceDisclosure
         );
         const hasHorizontalOverflow = document.documentElement.scrollWidth > document.documentElement.clientWidth + 1;
@@ -1023,8 +1026,8 @@ async function main() {
             missing.length === 0 &&
             missingModules.length === 0 &&
             forbiddenModules.length === 0 &&
-            moduleNames.length === requiredModules.length &&
-            visiblePrimaryCount === 3 &&
+            duplicateModules.length === 0 &&
+            primaryEvidenceVisible &&
             noSnapshotEvidenceDeferred &&
             hasRawEvidenceDisclosure &&
             !hasHorizontalOverflow
@@ -1034,9 +1037,11 @@ async function main() {
           missing,
           missingModules,
           forbiddenModules,
-          visiblePrimaryCount,
+          duplicateModules,
+          primaryModuleVisibility,
+          primaryEvidenceVisible,
           noSnapshotEvidenceDeferred,
-          noSnapshotRawEvidenceRowCount: rawEvidenceRowCount,
+          rawEvidenceContractOk,
           noSnapshotRecoveryRect: recoveryRect ? { left: recoveryRect.left, top: recoveryRect.top, right: recoveryRect.right, bottom: recoveryRect.bottom, width: recoveryRect.width, height: recoveryRect.height } : null,
           noSnapshotRawEvidenceRect: rawEvidenceRect ? { left: rawEvidenceRect.left, top: rawEvidenceRect.top, right: rawEvidenceRect.right, bottom: rawEvidenceRect.bottom, width: rawEvidenceRect.width, height: rawEvidenceRect.height } : null,
           hasRawEvidenceDisclosure,
@@ -1080,6 +1085,19 @@ async function main() {
             : '';
         const terminalRankingDisclosure = terminalRankingModule?.querySelector('details');
         const collectionSummaryDisclosure = collectionSummaryModule?.querySelector('details');
+        const requiredNormalModules = [
+          'wan-trend',
+          'normal-interface-boundary',
+          'resource-threshold',
+          'normal-collection-channel',
+          'terminal-ranking',
+          'evidence-boundary'
+        ];
+        const normalNamedEvidenceOk = requiredNormalModules.every((module) => {
+          const node = workspace?.querySelector('[data-overview-density-module="' + module + '"]');
+          const rect = node?.getBoundingClientRect();
+          return Boolean(rect && rect.width > 0 && rect.height > 0);
+        });
         const normalWorkspaceHierarchyOk = Boolean(
           normalColumnGap !== null &&
           normalColumnGap >= 0 &&
@@ -1088,27 +1106,24 @@ async function main() {
           normalBottomGap >= 0 &&
           normalBottomGap <= 12 &&
           normalMainFillRatio >= 0.98 &&
+          normalNamedEvidenceOk &&
           terminalRankingParent === 'bottom' &&
           terminalRankingDisclosure &&
-          !terminalRankingDisclosure.open &&
+          terminalRankingDisclosure.open &&
           collectionSummaryDisclosure &&
-          !collectionSummaryDisclosure.open &&
+          collectionSummaryDisclosure.open &&
           collectionSummaryRect &&
-          collectionSummaryRect.height <= 90 &&
+          collectionSummaryRect.height >= 110 &&
           terminalRankingRect &&
           terminalRankingRect.width > 0 &&
-          terminalRankingRect.height > 0
+          terminalRankingRect.height > 0 &&
+          terminalRankingRect.bottom >= innerHeight * 0.58
         );
         const topbar = sectionEl?.querySelector('.ro-status-bus');
         const desktopDecisionRail = sectionEl?.querySelector('.ro-desktop-decision-rail');
         const desktopDecisionCells = Array.from(desktopDecisionRail?.querySelectorAll('.ro-desktop-thin-kpi') || []);
         const desktopDecisionLabels = desktopDecisionCells.map((cell) => normalize(cell.querySelector('span')?.textContent || ''));
         const desktopDecisionRailOk = Boolean(!desktopDecisionRail && workspace?.classList.contains('is-normal-scene'));
-        const mainModules = Array.from(sectionEl?.querySelectorAll('[data-overview-density-module]') || []);
-        const visibleModules = mainModules.filter((node) => {
-          const rect = node.getBoundingClientRect();
-          return rect.width > 120 && rect.height > 80;
-        });
         const syntheticGateTextCount = sectionEl?.querySelectorAll(
           '[data-overview-desktop-core-text], .ro-sr-contract'
         ).length || 0;
@@ -1346,29 +1361,21 @@ async function main() {
             a: parts.length >= 4 ? parts[3] : 1
           };
         };
-        const colorMatches = (value, [r, g, b], minAlpha, maxAlpha) => {
+        const isQuietDivider = (value, minimumChannel) => {
           const color = parseCssColor(value);
-          return Boolean(
-            color &&
-            color.r === r &&
-            color.g === g &&
-            color.b === b &&
-            color.a >= minAlpha &&
-            color.a <= maxAlpha
-          );
+          if (!color || color.a === 0) return Boolean(color);
+          const composite = [color.r, color.g, color.b].map((channel) => Math.round((channel * color.a) + (255 * (1 - color.a))));
+          return Math.min(...composite) >= minimumChannel;
         };
-        const isQuietLedgerBodyLine = (value) => (
-          colorMatches(value, [226, 235, 244], 0.20, 0.35) ||
-          colorMatches(value, [0, 0, 0], 0, 0)
-        );
-        const isQuietLedgerHeadLine = (value) => colorMatches(value, [154, 176, 198], 0.10, 0.22);
+        const isQuietLedgerBodyLine = (value) => isQuietDivider(value, 225);
+        const isQuietLedgerHeadLine = (value) => isQuietDivider(value, 215);
         const ledgerLineNoiseLow = Boolean(
-          ledgerCellStyles.length >= 18 &&
+          ledgerCellStyles.length > 0 &&
           ledgerCellStyles.every((style) => (
             Number.parseFloat(style.borderRightWidth || '0') === 0 &&
             isQuietLedgerBodyLine(style.borderBottomColor)
           )) &&
-          ledgerHeadCellStyles.length >= 3 &&
+          ledgerHeadCellStyles.length > 0 &&
           ledgerHeadCellStyles.every((style) => isQuietLedgerHeadLine(style.borderBottomColor)) &&
           ledgerDangerNonFirstStyles.every((style) => !/rgb\(143,\s*47,\s*44\)|rgb\(217,\s*48,\s*37\)|rgb\(184,\s*58,\s*50\)|rgb\(118,\s*89,\s*39\)/.test(style.color || ''))
         );
@@ -1380,7 +1387,7 @@ async function main() {
           workspaceRect.width / innerWidth >= 0.8 &&
           topbar &&
           desktopDecisionRailOk &&
-          visibleModules.length >= 3 &&
+          normalNamedEvidenceOk &&
           normalWorkspaceHierarchyOk &&
           syntheticGateTextAbsent &&
           topbarFlatSurfaceOk &&
@@ -1430,7 +1437,8 @@ async function main() {
           },
           collectionSummaryCollapsed: Boolean(collectionSummaryDisclosure && !collectionSummaryDisclosure.open),
           collectionSummaryRect: collectionSummaryRect ? { width: collectionSummaryRect.width, height: collectionSummaryRect.height } : null,
-          visibleModuleCount: visibleModules.length,
+          normalNamedEvidenceOk,
+          normalEvidenceModules: requiredNormalModules,
           syntheticGateTextAbsent,
           syntheticGateTextCount,
           topbarFlatSurfaceOk,

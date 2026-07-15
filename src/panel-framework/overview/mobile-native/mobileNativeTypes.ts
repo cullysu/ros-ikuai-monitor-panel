@@ -2,29 +2,21 @@ import type { OverviewScenarioKey, OverviewTone } from "../index";
 
 export type MobileEvidenceMode = "current" | "historical" | "unavailable";
 export type MobileRouteVerification = "verified" | "historical" | "unknown" | "offline";
-export type MobileObjectKey = "wan" | "route" | "collection" | "resource";
+export type MobileObjectKey = "wan" | "route" | "collection" | "resource" | "interface";
 export type MobileRiskKey = "evidence" | "wan-offline" | "resource" | "interfaces" | "collection";
+export type MobileFocusKey = MobileRiskKey | "route" | "fleet-scope";
 export type MobileSignalKind = "rates" | "resource" | "interfaces" | "collection" | "wan" | "fleet" | "availability";
 export type MobileChannelStatus = "current" | "degraded" | "failed" | "unavailable";
 
 export interface MobileNativeFact {
+  key?: string;
   label: string;
   value: string;
   note?: string;
   tone?: OverviewTone;
 }
 
-export interface MobileNativeRow extends MobileNativeFact {
-  key?: string;
-}
-
-export interface MobileNativeDecision {
-  key: string;
-  label: string;
-  title: string;
-  note: string;
-  tone: OverviewTone;
-}
+export interface MobileNativeRow extends MobileNativeFact {}
 
 export interface MobileNativeSignalItem extends MobileNativeFact {
   percent?: number;
@@ -38,10 +30,9 @@ export interface MobileNativeSignal {
   items: MobileNativeSignalItem[];
 }
 
-export interface MobileNativeObjectView {
+export interface MobileNativeInspection {
   key: MobileObjectKey;
   label: string;
-  category: string;
   title: string;
   status: string;
   tone: OverviewTone;
@@ -49,6 +40,22 @@ export interface MobileNativeObjectView {
   relations: MobileNativeFact[];
   rows: MobileNativeRow[];
   disclosureTitle: string;
+  actionTitle: string;
+}
+
+export interface MobileNativeFocus {
+  key: MobileFocusKey;
+  risk: MobileRiskKey | null;
+  label: string;
+  tone: OverviewTone;
+  kicker: string;
+  title: string;
+  summary: string;
+  scope: string;
+  proofs: MobileNativeFact[];
+  signal: MobileNativeSignal;
+  inspection: MobileNativeInspection;
+  detailSectionKeys: string[];
 }
 
 export interface MobileNativeDetailSection {
@@ -77,17 +84,10 @@ export interface MobileNativeModel {
   routeVerification: MobileRouteVerification;
   device: string;
   deviceNote: string;
-  kicker: string;
-  title: string;
-  summary: string;
-  facts: MobileNativeFact[];
-  signal: MobileNativeSignal;
-  decisions: MobileNativeDecision[];
-  objects: MobileNativeObjectView[];
-  initialObject: MobileObjectKey;
+  scopeNote: string;
+  focuses: MobileNativeFocus[];
+  initialFocus: MobileFocusKey;
   detailSections: MobileNativeDetailSection[];
-  actionTitle: string;
-  actionNote: string;
 }
 
 export interface ResourceSampleEvidence {

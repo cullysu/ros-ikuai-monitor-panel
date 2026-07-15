@@ -97,7 +97,7 @@
   .router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="wan-trend"] .ro-wan-integrated-decision small {
     overflow: hidden;
     color: #8b9aac;
-    font-size: 7.4px;
+    font-size: 10px;
     font-weight: 560;
     line-height: 9px;
     text-overflow: clip;

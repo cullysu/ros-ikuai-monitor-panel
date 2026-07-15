@@ -30,25 +30,29 @@ buildSync({
 const { buildMobileNativeModel, deriveOverviewState, OVERVIEW_SCENARIO_FIXTURES } = require(bundleFile);
 const clone = (value) => structuredClone(value);
 const modelFor = (snapshot) => buildMobileNativeModel(snapshot, deriveOverviewState(snapshot));
+const focusFor = (model, key) => model.focuses.find((focus) => focus.key === key);
 const surfaceText = (model) => JSON.stringify({
   device: model.device,
   evidenceLabel: model.evidenceLabel,
   evidenceNote: model.evidenceNote,
   evidenceTime: model.evidenceTime,
-  title: model.title,
-  summary: model.summary,
-  facts: model.facts,
-  signal: model.signal,
-  decisions: model.decisions,
-  objects: model.objects,
+  focuses: model.focuses,
 });
+const pairKey = (row) => `${String(row.label || "").trim()}::${String(row.value || "").trim()}`;
+const assertNoProofObjectReplay = (model, label) => {
+  for (const focus of model.focuses) {
+    const proofPairs = new Set(focus.proofs.map(pairKey));
+    const objectPairs = [...focus.inspection.relations, ...focus.inspection.rows].map(pairKey);
+    assert.equal(objectPairs.some((pair) => proofPairs.has(pair)), false, `${label}/${focus.key}: object evidence must not replay proof label/value pairs`);
+  }
+};
 
 const inactiveRoute = clone(OVERVIEW_SCENARIO_FIXTURES.single);
 inactiveRoute.routes.defaultRoutes = [{ table: "main", gateway: "198.51.100.1", distance: 1, active: false, disabled: false }];
 const inactiveRouteModel = modelFor(inactiveRoute);
 assert.equal(inactiveRouteModel.routeVerification, "unknown", "an inactive first route must not be promoted to active");
-assert.doesNotMatch(inactiveRouteModel.title, /已核实/);
-assert.doesNotMatch(inactiveRouteModel.facts.find((fact) => fact.label === "默认路由")?.value || "", /活动|已核实/);
+assert.equal(inactiveRouteModel.initialFocus, "route");
+assert.doesNotMatch(focusFor(inactiveRouteModel, "route").title, /已核实/);
 
 const nonDefaultOnly = clone(OVERVIEW_SCENARIO_FIXTURES.single);
 nonDefaultOnly.routes = {
@@ -56,21 +60,21 @@ nonDefaultOnly.routes = {
   items: [{ dstAddress: "192.0.2.0/24", default: false, table: "main", gateway: "198.51.100.1", distance: 1, active: true, disabled: false }],
 };
 const nonDefaultOnlyModel = modelFor(nonDefaultOnly);
-assert.equal(nonDefaultOnlyModel.routeVerification, "unknown", "an active non-default route must never verify the default route");
+assert.equal(nonDefaultOnlyModel.routeVerification, "unknown");
 assert.doesNotMatch(surfaceText(nonDefaultOnlyModel), /198\.51\.100\.1/);
 
 const missingRate = clone(OVERVIEW_SCENARIO_FIXTURES.single);
 delete missingRate.wan[0].downRate;
 const missingRateModel = modelFor(missingRate);
-assert.equal(missingRateModel.signal.kind, "availability", "a missing observation must not render as measured zero");
+assert.equal(missingRateModel.focuses[0].signal.kind, "availability", "missing observations must not render as measured zero");
 assert.doesNotMatch(surfaceText(missingRateModel), /0 bps/);
 
 const measuredZero = clone(OVERVIEW_SCENARIO_FIXTURES.single);
 measuredZero.wan[0].downRate = 0;
 measuredZero.wan[0].upRate = 0;
 const measuredZeroModel = modelFor(measuredZero);
-assert.equal(measuredZeroModel.signal.kind, "rates", "numeric zero is a valid explicit current observation");
-assert.deepEqual(measuredZeroModel.signal.items.map((item) => item.value), ["0 bps", "0 bps"]);
+assert.equal(measuredZeroModel.focuses[0].signal.kind, "rates", "numeric zero is a valid explicit current observation");
+assert.deepEqual(measuredZeroModel.focuses[0].signal.items.map((item) => item.value), ["0 bps", "0 bps"]);
 
 const staleAfterFailedAttempt = clone(OVERVIEW_SCENARIO_FIXTURES.single);
 const old = "2026-01-01T00:00:00.000Z";
@@ -82,9 +86,10 @@ staleAfterFailedAttempt.meta.staticUpdatedAt = old;
 staleAfterFailedAttempt.meta.realtimeError = "current REST attempt failed";
 const staleModel = modelFor(staleAfterFailedAttempt);
 assert.equal(staleModel.evidenceMode, "historical");
-assert.equal(staleModel.signal.kind, "collection");
+assert.equal(staleModel.initialFocus, "collection");
+assert.equal(staleModel.focuses[0].signal.kind, "collection");
 assert.match(staleModel.evidenceTime, /^上次成功 /);
-assert.doesNotMatch(surfaceText(staleModel), /历史快照[^\n]*0 秒前|历史证据[^\n]*0 秒前/);
+assert.doesNotMatch(surfaceText(staleModel), /历史(?:快照|证据)[^\n]*0 秒前/);
 
 const failedWithoutSuccess = clone(OVERVIEW_SCENARIO_FIXTURES.single);
 failedWithoutSuccess.status = "error";
@@ -97,6 +102,7 @@ delete failedWithoutSuccess.meta.slowRestUpdatedAt;
 delete failedWithoutSuccess.meta.staticUpdatedAt;
 const failedWithoutSuccessModel = modelFor(failedWithoutSuccess);
 assert.equal(failedWithoutSuccessModel.evidenceMode, "unavailable");
+assert.equal(failedWithoutSuccessModel.initialFocus, "evidence");
 assert.equal(failedWithoutSuccessModel.evidenceTime, "成功时间未记录");
 assert.doesNotMatch(surfaceText(failedWithoutSuccessModel), /最近成功|0 秒前/);
 
@@ -106,21 +112,22 @@ partialRecovery.meta.staticUpdatedAt = new Date().toISOString();
 partialRecovery.meta.capabilities.sshRead = true;
 const partialRecoveryModel = modelFor(partialRecovery);
 const partialRecoveryState = deriveOverviewState(partialRecovery);
-const collectionObject = partialRecoveryModel.objects.find((object) => object.key === "collection");
+const partialSignalRows = Object.fromEntries(partialRecoveryModel.focuses[0].signal.items.map((item) => [item.label, item]));
 assert.equal(partialRecoveryState.facts.collection.rest.status, "failed");
 assert.equal(partialRecoveryState.facts.collection.ssh.status, "current");
-assert.match(collectionObject?.status || "", /REST 失败/);
-assert.match(collectionObject?.status || "", /SSH 可用/);
+assert.equal(partialSignalRows.REST.value, "失败");
+assert.equal(partialSignalRows.SSH.value, "可用");
 assert.doesNotMatch(surfaceText(partialRecoveryModel), /REST \/ SSH 未恢复|REST 失败 · SSH 失败/);
 
 const collectionDownModel = modelFor(clone(OVERVIEW_SCENARIO_FIXTURES["collection-down"]));
-const collectionSignalRows = Object.fromEntries(collectionDownModel.signal.items.map((item) => [item.label, item]));
-assert.match(collectionSignalRows.REST?.note || "", /上次成功/, "REST failure evidence must retain its own latest success time");
-assert.match(collectionSignalRows.SSH?.note || "", /上次成功/, "SSH failure evidence must retain its own latest success time");
+const collectionInspection = collectionDownModel.focuses[0].inspection;
+assert.equal(collectionInspection.key, "collection");
+assert.equal(collectionInspection.relations.some((item) => item.label === "最近尝试"), true);
+assert.equal(collectionInspection.relations.some((item) => item.label === "明确成功"), true);
 
 const forwardingOnlyState = deriveOverviewState(clone(OVERVIEW_SCENARIO_FIXTURES["interfaces-down"]));
-assert.equal(forwardingOnlyState.facts.collection.rest.status, "current", "forwarding failure must not fabricate a REST failure");
-assert.equal(forwardingOnlyState.facts.collection.ssh.status, "current", "forwarding failure must not fabricate an SSH failure");
+assert.equal(forwardingOnlyState.facts.collection.rest.status, "current");
+assert.equal(forwardingOnlyState.facts.collection.ssh.status, "current");
 
 const unavailableWithRetainedObjects = clone(OVERVIEW_SCENARIO_FIXTURES.single);
 unavailableWithRetainedObjects.status = "error";
@@ -131,67 +138,86 @@ delete unavailableWithRetainedObjects.meta.slowRestUpdatedAt;
 delete unavailableWithRetainedObjects.meta.staticUpdatedAt;
 unavailableWithRetainedObjects.routes.defaultRoutes = [{ table: "main", gateway: "198.51.100.9", distance: 1, active: true, disabled: false }];
 const retainedModel = modelFor(unavailableWithRetainedObjects);
-const retainedWan = retainedModel.objects.find((object) => object.key === "wan");
-const retainedRoute = retainedModel.objects.find((object) => object.key === "route");
 assert.equal(retainedModel.routeVerification, "unknown");
-assert.equal(retainedWan?.status, "无当前证据");
-assert.equal(retainedRoute?.status, "无当前证据");
-assert.doesNotMatch(JSON.stringify({ facts: retainedModel.facts, signal: retainedModel.signal, wan: retainedWan, route: retainedRoute }), /1 \/ 1|198\.51\.100\.9|distance 1|活动记录/);
+assert.equal(retainedModel.initialFocus, "evidence");
+assert.equal(retainedModel.focuses[0].inspection.key, "collection");
+assert.doesNotMatch(surfaceText(retainedModel), /1 \/ 1|198\.51\.100\.9|distance 1|活动记录/);
 
 const resourceModel = modelFor(clone(OVERVIEW_SCENARIO_FIXTURES["resource-full"]));
-assert.equal(resourceModel.signal.kind, "resource", "resource pressure must replace the rate region");
-assert.equal(resourceModel.risks.includes("resource"), true);
-assert.doesNotMatch(JSON.stringify({ facts: resourceModel.facts, signal: resourceModel.signal, decisions: resourceModel.decisions }), /bps|当前下载|当前上传/);
+const resourceFocus = focusFor(resourceModel, "resource");
+assert.equal(resourceModel.initialFocus, "resource");
+assert.equal(resourceFocus.signal.kind, "resource");
+assert.equal(resourceFocus.inspection.key, "resource");
+assert.doesNotMatch(JSON.stringify(resourceFocus), /bps|当前下载|当前上传/);
+assert.doesNotMatch(JSON.stringify(resourceFocus.inspection), /CPU 96%|内存 92%|磁盘 97%/);
 
 const interruptedResource = clone(OVERVIEW_SCENARIO_FIXTURES["resource-full"]);
 interruptedResource.overview.history.cpu = [90, 90, 20, 90, 90];
 interruptedResource.overview.history.memory = [20, 20, 20, 20, 20];
 interruptedResource.overview.history.disk = [20, 20, 20, 20, 20];
 const interruptedResourceModel = modelFor(interruptedResource);
-assert.match(interruptedResourceModel.signal.note, /尾部连续 2 个样本/);
-assert.match(interruptedResourceModel.signal.note, /共 5 个有效样本/);
+const streakProof = focusFor(interruptedResourceModel, "resource").proofs.find((proof) => proof.key === "resource-streak");
+assert.equal(streakProof.value, "2 个");
 
 const noSnapshot = clone(OVERVIEW_SCENARIO_FIXTURES["no-snapshot"]);
 noSnapshot.meta.configuredIdentity = "configured-router";
 noSnapshot.overview.identity = "无可用快照";
 const noSnapshotModel = modelFor(noSnapshot);
-assert.equal(noSnapshotModel.device, "configured-router", "configured identity must survive no-snapshot state");
-assert.match(noSnapshotModel.deviceNote, new RegExp(noSnapshot.meta.routerHost), "router target address must remain visible independently");
+assert.equal(noSnapshotModel.device, "configured-router");
+assert.match(noSnapshotModel.deviceNote, new RegExp(noSnapshot.meta.routerHost));
+assert.equal(noSnapshotModel.focuses[0].inspection.key, "collection");
 assert.doesNotMatch(noSnapshotModel.deviceNote, /当前不可达|无可用快照/);
 
 const fleetModel = modelFor(clone(OVERVIEW_SCENARIO_FIXTURES.fleet));
-assert.equal(fleetModel.signal.kind, "fleet", "fleet must expose a compact WAN/object distribution signal");
-assert.equal(fleetModel.signal.items.some((item) => item.label === "WAN 范围"), true);
-assert.equal(fleetModel.signal.items.some((item) => item.label === "默认路由"), true);
+assert.equal(fleetModel.initialFocus, "fleet-scope");
+assert.equal(fleetModel.focuses[0].signal.kind, "fleet", "fleet distribution is allowed only when no higher risk exists");
+
+const fleetInterfaces = clone(OVERVIEW_SCENARIO_FIXTURES.fleet);
+fleetInterfaces.interfaces = [
+  { name: "ether1", running: true },
+  { name: "ether2", running: false, parent: "switch1", vlan: 20, pppoeOut: "pppoe-out20" },
+  { name: "ether3", running: false, parent: "switch1", vlan: 30, pppoeOut: "pppoe-out30" },
+];
+const fleetInterfacesModel = modelFor(fleetInterfaces);
+assert.equal(fleetInterfacesModel.initialFocus, "interfaces", "fleet scope must not cover an interface incident");
+assert.equal(fleetInterfacesModel.focuses[0].signal.kind, "interfaces");
+assert.equal(fleetInterfacesModel.focuses[0].inspection.key, "interface");
+assert.match(fleetInterfacesModel.focuses[0].scope, /多对象范围/);
+
+const fleetResource = clone(OVERVIEW_SCENARIO_FIXTURES.fleet);
+fleetResource.overview.cpuLoad = 96;
+fleetResource.overview.memoryUsage = 92;
+fleetResource.overview.diskUsage = 97;
+fleetResource.overview.history.cpu = [90, 92, 94, 96];
+fleetResource.overview.history.memory = [88, 89, 91, 92];
+fleetResource.overview.history.disk = [92, 94, 96, 97];
+const fleetResourceModel = modelFor(fleetResource);
+assert.equal(fleetResourceModel.initialFocus, "resource");
+assert.equal(fleetResourceModel.focuses[0].signal.kind, "resource");
 
 const historicalInterfaces = clone(OVERVIEW_SCENARIO_FIXTURES["collection-down"]);
 historicalInterfaces.interfaces = [{ name: "ether2", running: false, parent: "switch1", vlan: 20 }];
 const historicalInterfacesModel = modelFor(historicalInterfaces);
-assert.equal(historicalInterfacesModel.signal.kind, "collection", "collection provenance must dominate a historical interface record");
-assert.equal(historicalInterfacesModel.risks.includes("interfaces"), true, "the concurrent interface record must remain visible");
+assert.equal(historicalInterfacesModel.initialFocus, "interfaces", "an observed object risk must lead the historical collection boundary");
+assert.equal(historicalInterfacesModel.focuses[0].signal.kind, "interfaces");
+assert.equal(Boolean(focusFor(historicalInterfacesModel, "collection")), true);
 assert.doesNotMatch(surfaceText(historicalInterfacesModel), /当前对象/);
-assert.match(historicalInterfacesModel.decisions.find((row) => row.key === "interfaces")?.title || "", /历史记录/);
 
 const historicalOffline = clone(OVERVIEW_SCENARIO_FIXTURES["all-offline"]);
 historicalOffline.status = "error";
 historicalOffline.meta.realtimeError = "current collection failed";
 const historicalOfflineModel = modelFor(historicalOffline);
-assert.equal(historicalOfflineModel.signal.kind, "collection", "historical provenance must dominate retained all-offline rows");
-assert.equal(historicalOfflineModel.risks.includes("wan-offline"), true);
-assert.match(historicalOfflineModel.decisions.find((row) => row.key === "wan-offline")?.title || "", /历史记录/);
-assert.doesNotMatch(surfaceText(historicalOfflineModel), /当前对象记录/);
+assert.equal(historicalOfflineModel.initialFocus, "collection");
+assert.equal(historicalOfflineModel.focuses[0].signal.kind, "collection");
+assert.equal(Boolean(focusFor(historicalOfflineModel, "wan-offline")), true);
 
 const historicalResource = clone(OVERVIEW_SCENARIO_FIXTURES["resource-full"]);
 historicalResource.status = "error";
 historicalResource.meta.realtimeError = "current collection failed";
 const historicalResourceModel = modelFor(historicalResource);
-const historicalResourceObject = historicalResourceModel.objects.find((object) => object.key === "resource");
-assert.equal(historicalResourceModel.signal.kind, "collection", "historical provenance must dominate retained resource pressure");
-assert.equal(historicalResourceModel.risks.includes("resource"), true);
-assert.match(historicalResourceModel.decisions.find((row) => row.key === "resource")?.title || "", /历史记录/);
-assert.equal(historicalResourceModel.decisions.find((row) => row.key === "resource")?.tone, "warn");
-assert.match(historicalResourceObject?.status || "", /不代表当前/);
-assert.doesNotMatch(surfaceText(historicalResourceModel), /资源达到阻断阈值|需要处理/);
+assert.equal(historicalResourceModel.initialFocus, "resource", "resource policy evidence must lead the collection boundary");
+assert.equal(Boolean(focusFor(historicalResourceModel, "collection")), true);
+assert.equal(focusFor(historicalResourceModel, "resource").tone, "warn");
 
 const composite = clone(OVERVIEW_SCENARIO_FIXTURES["resource-full"]);
 composite.interfaces = [
@@ -199,15 +225,20 @@ composite.interfaces = [
   { name: "ether2", running: false, parent: "switch1", vlan: 20 },
 ];
 const compositeModel = modelFor(composite);
-assert.equal(compositeModel.risks.includes("resource"), true);
-assert.equal(compositeModel.risks.includes("interfaces"), true, "a primary scenario must not erase concurrent interface risk");
-assert.equal(compositeModel.signal.kind, "resource");
-assert.equal(compositeModel.decisions.some((row) => row.key === "interfaces"), true);
+assert.deepEqual(compositeModel.risks.slice(0, 2), ["resource", "interfaces"]);
+assert.equal(compositeModel.initialFocus, "resource");
+assert.equal(focusFor(compositeModel, "resource").signal.kind, "resource");
+assert.equal(focusFor(compositeModel, "interfaces").inspection.key, "interface");
 
-const detailTitles = new Set(modelFor(clone(OVERVIEW_SCENARIO_FIXTURES.single)).detailSections.map((section) => section.title));
-assert.equal(detailTitles.has("路由原始证据"), true);
-assert.equal(detailTitles.has("WAN 对象原始证据"), true);
-assert.equal(detailTitles.has("采集链路原始证据"), true);
-assert.equal(detailTitles.has("只读边界"), true);
+for (const [scenario, fixture] of Object.entries(OVERVIEW_SCENARIO_FIXTURES)) {
+  const model = modelFor(clone(fixture));
+  assertNoProofObjectReplay(model, scenario);
+  const failureRows = model.focuses.flatMap((focus) => focus.signal.items).filter((item) => item.label === "失败端点");
+  assert.equal(failureRows.some((item) => item.value === "0" || item.value === "0 个"), false, `${scenario}: zero failures must not read as no fault`);
+}
 
-console.log("mobile native semantic contract: PASS cases=21");
+const detailKeys = new Set(resourceModel.detailSections.map((section) => section.key));
+for (const key of ["target", "route", "wan", "collection", "resource", "boundary"]) assert.equal(detailKeys.has(key), true);
+assert.deepEqual(focusFor(resourceModel, "resource").detailSectionKeys, ["resource", "collection", "boundary"]);
+
+console.log("mobile risk-focus semantic contract: PASS cases=24");

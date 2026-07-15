@@ -156,10 +156,12 @@ function readReleaseSurface(relPath) {
     read('src/panel-framework/overview/desktopOverviewResourceScene.tsx'),
     read('src/panel-framework/overview/desktopOverviewVisuals.tsx'),
     read('src/panel-framework/overview/mobile-native/MobileNativeConsole.tsx'),
-    read('src/panel-framework/overview/mobile-native/MobileNativePatrolBrief.tsx'),
+    read('src/panel-framework/overview/mobile-native/MobileNativeHome.tsx'),
     read('src/panel-framework/overview/mobile-native/MobileNativeSignal.tsx'),
-    read('src/panel-framework/overview/mobile-native/MobileNativeObjectWorkspace.tsx'),
+    read('src/panel-framework/overview/mobile-native/MobileNativeInspection.tsx'),
     read('src/panel-framework/overview/mobile-native/MobileNativeDetail.tsx'),
+    read('src/panel-framework/overview/mobile-native/MobileNativeIcon.tsx'),
+    read('src/panel-framework/overview/mobile-native/mobileNativeFocus.ts'),
     read('src/panel-framework/overview/mobile-native/mobileNativeModel.ts'),
     read('src/panel-framework/overview/mobile-native/mobileNativeEvidence.ts'),
     read('src/panel-framework/overview/mobile-native/mobileNativeTypes.ts'),
@@ -630,19 +632,23 @@ function main(argv = process.argv.slice(2)) {
   assertContains('public/index.html', 'CPU / 内存');
   assertMatches('public/index.html', /异常\s*TopN/);
   assertContains('public/assets/framework/panel-framework.js', 'data-mobile-native-console');
-  assertContains('public/assets/framework/panel-framework.js', 'data-mobile-native-brief');
-  assertContains('public/assets/framework/panel-framework.js', 'data-mobile-native-object-workspace');
+  assertContains('public/assets/framework/panel-framework.js', 'data-mobile-native-proof');
+  assertContains('public/assets/framework/panel-framework.js', 'data-mobile-native-signal');
+  assertContains('public/assets/framework/panel-framework.js', 'data-mobile-native-inspection');
+  assertContains('public/assets/framework/panel-framework.js', 'data-mobile-native-primary-focus');
   assertContains('public/assets/framework/panel-framework.js', 'data-mobile-native-open-detail');
   assertContains('public/assets/framework/panel-framework.js', 'data-mobile-native-evidence-mode');
   assertNotContains('public/assets/framework/panel-framework.js', 'rm-tabbar');
   assertNotContains('public/assets/framework/panel-framework.js', 'phone-ops-console');
-  assertNotContains('public/assets/framework/panel-framework.js', 'data-mobile-native-home');
+  assertNotContains('public/assets/framework/panel-framework.js', 'data-mobile-native-brief');
+  assertNotContains('public/assets/framework/panel-framework.js', 'data-mobile-native-object-workspace');
+  assertNotContains('public/assets/framework/panel-framework.js', 'role: "tablist"');
   assertNotContains('public/assets/framework/panel-framework.js', 'data-mobile-native-path-evidence');
   assertNotContains('public/assets/framework/panel-framework.js', 'data-mobile-native-topology');
   assertNotContains('public/assets/framework/panel-framework.js', 'data-mobile-native-sheet');
   assertContains('public/assets/framework/panel-framework.js', '当前业务状态不可判断');
-  assertContains('public/assets/framework/panel-framework.js', '路由、速率、资源与终端数字不作当前结论');
-  assertContains('public/assets/framework/panel-framework.js', '历史记录不能当作实时状态');
+  assertContains('public/assets/framework/panel-framework.js', '没有成功业务快照；WAN、路由、资源和速率不进入当前结论');
+  assertContains('public/assets/framework/panel-framework.js', '历史成功记录不能作为当前业务状态');
   assertContains('public/assets/framework/panel-framework.js', '只读监控');
   assertContains('public/assets/framework/panel-framework.js', '失败端点');
   assertContains('public/index.html', 'RouterOS 写入');
@@ -695,23 +701,23 @@ function main(argv = process.argv.slice(2)) {
   assertContains('tools/local-predeploy-check.js', 'overviewResourceFirstScreenPriorityOk');
   assertContains('tools/local-predeploy-check.js', 'overviewDefaultRouteRawFactsOk');
   assertContains('tools/local-predeploy-check.js', 'overviewNoSnapshotDowngradeReasonsOk');
-  assertContains('tools/local-predeploy-check.js', 'overviewNoSnapshotFiveBlocksOk');
+  assertContains('tools/local-predeploy-check.js', 'overviewNoSnapshotModuleContractOk');
   assertContains('tools/local-predeploy-check.js', 'overviewChineseUiNoEngineeringEnglishOk');
   assertContains('tools/local-predeploy-check.js', 'overviewFirstScreenCoverageOk');
-  assertContains('tools/local-predeploy-check.js', 'overviewDesktopDensityOk');
+  assertContains('tools/local-predeploy-check.js', 'overviewDesktopEvidenceCompositionOk');
   assertContains('tools/local-predeploy-check.js', 'overviewDesktopTopBandOk');
   assertContains('tools/local-predeploy-check.js', 'overviewDesktopFlatStatusBarOk');
-  assertContains('tools/local-predeploy-check.js', 'overviewDesktopTableDensityOk');
+  assertContains('tools/local-predeploy-check.js', 'overviewSceneSpecificTableContractOk');
   assertContains('tools/local-predeploy-check.js', "const overviewFlatDesktopContractOk = sectionName === 'overview' && isDesktopOverview && Boolean(");
   assertContains('tools/local-predeploy-check.js', "const overviewFlatMobileContractOk = sectionName === 'overview' && isMobileOverview && Boolean(");
   assertContains('tools/local-predeploy-check.js', 'overviewDesktopDetailFirstTwoRowsVisibleOk');
-  assertContains('tools/local-predeploy-check.js', 'overviewDesktopModuleSpreadOk');
+  assertContains('tools/local-predeploy-check.js', 'overviewDesktopColumnContinuityOk');
   assertContains('tools/local-predeploy-check.js', 'overviewBlankAreaOk');
   assertContains('tools/local-predeploy-check.js', 'overviewDesktopNo72vhBlankOk');
   assertContains('tools/local-predeploy-check.js', 'overviewMobileNo72vhBlankOk');
   assertContains('tools/local-predeploy-check.js', 'overviewDesktopWhitespaceBudgetOk');
   assertContains('tools/local-predeploy-check.js', 'overviewDesktopInfoBudgetOk');
-  assertContains('tools/local-predeploy-check.js', 'overviewDesktopInfoDensityOk');
+  assertContains('tools/local-predeploy-check.js', 'overviewDesktopEvidenceSurfaceOk');
   assertContains('tools/local-predeploy-check.js', 'const overviewReadonlyConsoleContractOk');
   assertContains('tools/local-predeploy-check.js', 'overviewDesktopFirstScreenDedupeOk');
   assertContains('tools/local-predeploy-check.js', 'overviewCrossViewportCopyDedupeOk');
@@ -727,7 +733,7 @@ function main(argv = process.argv.slice(2)) {
   assertContains('tools/local-predeploy-check.js', 'overviewWanListPriorityOk');
   assertContains('tools/local-predeploy-check.js', 'overviewWanEvidencePriorityOk');
   assertContains('tools/local-predeploy-check.js', 'mobileWanEvidenceRows.slice(0, 3).every(nodeVisibleInFirstScreen)');
-  assertContains('tools/local-predeploy-check.js', 'overviewResourceNumericDensityOk');
+  assertContains('tools/local-predeploy-check.js', 'overviewResourceEvidenceCompletenessOk');
   assertContains('tools/local-predeploy-check.js', 'overviewResourceDurationVisibilityOk');
   assertNotContains('tools/local-predeploy-check.js', 'overviewTrendCompactOk &&');
   assertNotContains('tools/local-predeploy-check.js', 'overviewRankCompactOk &&');
@@ -740,7 +746,7 @@ function main(argv = process.argv.slice(2)) {
   assertContains('tools/local-predeploy-check.js', 'overviewRestSshViewportParityOk');
   assertContains('tools/local-predeploy-check.js', 'overviewMobileEffectiveCoverageOk');
   assertContains('tools/local-predeploy-check.js', 'overviewMobileFirstScreenContractOk');
-  assertContains('tools/local-predeploy-check.js', 'titleVisible');
+  assertContains('tools/local-predeploy-check.js', 'visualCenter: Boolean(');
   assertContains('tools/local-predeploy-check.js', 'overviewMobileWanIncidentPriorityOk');
   assertContains('tools/local-predeploy-check.js', 'overviewRestSshSourceConsistencyOk');
   assertContains('tools/local-predeploy-check.js', 'overviewResourceFullIncidentOk');
@@ -786,17 +792,18 @@ function main(argv = process.argv.slice(2)) {
   assertContains('src/panel-framework/overview/desktopOverviewDefaultScene.tsx', '<WanTrend key="compact-network"');
   assertContains('src/panel-framework/overview/desktopOverviewDefaultScene.tsx', '<EvidenceChain key="compact-boundary"');
   assertContains('src/panel-framework/overview/desktopOverviewDefaultScene.tsx', '<TerminalRanking key="compact-terminals"');
-  assertContains('src/panel-framework/overview/mobile-native/MobileNativePatrolBrief.tsx', 'data-mobile-native-evidence-mode');
-  assertContains('src/panel-framework/overview/mobile-native/MobileNativeObjectWorkspace.tsx', 'data-mobile-native-object-workspace');
-  assertContains('src/panel-framework/overview/mobile-native/MobileNativeObjectWorkspace.tsx', 'role="tablist"');
+  assertContains('src/panel-framework/overview/mobile-native/MobileNativeHome.tsx', 'data-mobile-native-evidence-mode');
+  assertContains('src/panel-framework/overview/mobile-native/MobileNativeHome.tsx', 'role="listbox"');
+  assertContains('src/panel-framework/overview/mobile-native/MobileNativeHome.tsx', 'data-mobile-native-proof');
+  assertContains('src/panel-framework/overview/mobile-native/MobileNativeInspection.tsx', 'data-mobile-native-inspection');
   assertContains('src/panel-framework/overview/mobile-native/MobileNativeDetail.tsx', 'data-mobile-native-detail-section');
   assertContains('src/panel-framework/overview/desktopOverviewDefaultScene.tsx', 'WAN 采样趋势');
   assertContains('src/panel-framework/overview/mobile-native/mobileNativeTypes.ts', '"current" | "historical" | "unavailable"');
-  assertContains('src/panel-framework/overview/mobile-native/mobileNativeModel.ts', 'mode === "current" ? observedRates(snapshot) : null');
-  assertContains('src/panel-framework/overview/mobile-native/mobileNativeModel.ts', '不以零值替代');
+  assertContains('src/panel-framework/overview/mobile-native/mobileNativeFocus.ts', 'mode === "current" ? observedRates(snapshot) : null');
+  assertContains('src/panel-framework/overview/mobile-native/mobileNativeFocus.ts', '不以零值替代');
   assertContains('src/panel-framework/overview/mobile-native/mobileNativeEvidence.ts', 'route.active === true && route.disabled !== true');
   assertContains('src/panel-framework/overview/mobile-native/mobileNativeEvidence.ts', 'trailingStreak');
-  assertNotContains('src/panel-framework/overview/mobile-native/MobileNativePatrolBrief.tsx', 'WAN 实时趋势');
+  assertNotContains('src/panel-framework/overview/mobile-native/MobileNativeHome.tsx', 'WAN 实时趋势');
   assertNotContains('src/panel-framework/overview/desktopOverviewDefaultScene.tsx', 'WAN 实时趋势');
   for (const retiredMobileComponent of [
     'CoreMetricRail.tsx',
@@ -819,7 +826,8 @@ function main(argv = process.argv.slice(2)) {
     'src/panel-framework/overview/phone-ops/PhoneOpsConsole.tsx',
     'src/panel-framework/overview/phone-ops/phoneOpsModel.ts',
   ]) assertNotExists(retiredMobileFile);
-  assertNotExists('src/panel-framework/overview/mobile-native/MobileNativeHome.tsx');
+  assertNotExists('src/panel-framework/overview/mobile-native/MobileNativePatrolBrief.tsx');
+  assertNotExists('src/panel-framework/overview/mobile-native/MobileNativeObjectWorkspace.tsx');
   assertNotExists('src/panel-framework/overview/mobile-native/MobileNativePathEvidence.tsx');
   assertNotExists('src/panel-framework/overview/mobile-native/MobileNativeTopology.tsx');
   assertNotExists('src/panel-framework/overview/mobile-native/MobileNativeSheet.tsx');
@@ -828,10 +836,12 @@ function main(argv = process.argv.slice(2)) {
   assertNotExists('src/panel-framework/overview/components/MobileOverviewPublicDecisionStyles.ts');
   assertNotExists('src/panel-framework/overview/components/MobileOverviewPublicDecisionRepairStyles.ts');
   assertContains('src/panel-framework/overview/mobile-native/MobileNativeConsole.tsx', 'import "./styles/mobile-native-tokens.css";');
-  assertContains('src/panel-framework/overview/mobile-native/styles/mobile-native-layout.css', '.mn-brief');
-  assertContains('src/panel-framework/overview/mobile-native/styles/mobile-native-layout.css', '.mn-object-workspace');
+  assertContains('src/panel-framework/overview/mobile-native/styles/mobile-native-layout.css', '.mn-focus-masthead');
+  assertContains('src/panel-framework/overview/mobile-native/styles/mobile-native-layout.css', '.mn-proof-ledger');
+  assertContains('src/panel-framework/overview/mobile-native/styles/mobile-native-layout.css', '.mn-inspection');
   assertContains('src/panel-framework/overview/mobile-native/styles/mobile-native-layout.css', '.mn-detail-entry');
-  assertNotContains('src/panel-framework/overview/mobile-native/styles/mobile-native-layout.css', '.mn-home');
+  assertNotContains('src/panel-framework/overview/mobile-native/styles/mobile-native-layout.css', '.mn-brief');
+  assertNotContains('src/panel-framework/overview/mobile-native/styles/mobile-native-layout.css', '.mn-object-workspace');
   assertNotContains('src/panel-framework/overview/mobile-native/styles/mobile-native-layout.css', '.mn-path-evidence');
   assertNotContains('src/panel-framework/overview/mobile-native/styles/mobile-native-layout.css', '.mn-topology');
   assertNotContains('src/panel-framework/overview/mobile-native/styles/mobile-native-layout.css', '.mn-sheet');

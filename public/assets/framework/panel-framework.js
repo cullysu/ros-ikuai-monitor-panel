@@ -7276,7 +7276,7 @@ var PanelFramework = function(exports) {
     const detail = key === "no-snapshot" ? "设备当前不可达" : key === "resource-full" ? `处理器 ${formatPercent(facts.resource.cpu, 1)} / 内存 ${formatPercent(facts.resource.memory, 1)} / 磁盘 ${formatPercent(facts.resource.disk, 1)}` : key === "interfaces-down" ? compactListText(facts.interfaces.downNames, 4) || "涉及接口未列出" : key === "all-offline" ? `${formatNumber(facts.wan.offline)} 条离线线路` : key === "collection-down" ? "REST / SSH / 失败端点 / 缓存快照" : facts.collection.channelText;
     return { key, level, label: labelOf(key), topLabel: labelOf(key), detail, summary };
   }
-  function topbarState(snapshot, verdict2, facts) {
+  function topbarState(snapshot, verdict, facts) {
     const unavailable = facts.freshness.credibility === "unavailable";
     const routeros = unavailable ? { label: "设备通达", value: "不可达", note: text$1(snapshot.error, "当前采集失败"), tone: "danger" } : { label: "设备通达", value: "可达", note: "管理面已返回快照", tone: "ok" };
     const rest = { label: "REST", value: facts.collection.rest.label, note: facts.collection.rest.error || (facts.collection.rest.successAt ? `成功 ${shortTimestamp(facts.collection.rest.successAt)}` : "成功时间未记录"), tone: facts.collection.rest.status === "current" ? "trust" : facts.collection.rest.status === "unavailable" ? "missing" : "warn" };
@@ -7284,7 +7284,7 @@ var PanelFramework = function(exports) {
     const recentSuccess = unavailable ? { label: "最近成功", value: "未记录", note: "业务快照缺失", tone: "warn" } : { label: "最近成功", value: shortTimestamp(facts.freshness.source), note: facts.freshness.credibilityLabel, tone: facts.freshness.credibilityTone };
     return {
       device: { label: "设备", value: facts.device.identity, note: `${facts.device.version} · ${facts.device.uptime}`, tone: "trust" },
-      conclusion: { label: "结论", value: verdict2.topLabel, note: verdict2.summary, tone: verdict2.level },
+      conclusion: { label: "结论", value: verdict.topLabel, note: verdict.summary, tone: verdict.level },
       routeros,
       rest,
       ssh,
@@ -7299,9 +7299,9 @@ var PanelFramework = function(exports) {
     const facts = { device: deviceFacts(raw), freshness, collection, route: routeState(raw, freshness), resource: resourceState(raw), wan: wanState(raw), interfaces: interfaceState(raw), failures, connections: connectionState(raw) };
     const counts = countsOf(facts.wan, facts.interfaces, failures, facts.connections);
     const scenario = scenarioOf(raw, counts, facts.resource, collection, options);
-    const verdict2 = buildVerdict(scenario, facts);
-    const topbar = topbarState(raw, verdict2, facts);
-    return { scenario, scale: scenario === "fleet" ? "fleet" : "single", verdict: verdict2, counts, facts, topbar };
+    const verdict = buildVerdict(scenario, facts);
+    const topbar = topbarState(raw, verdict, facts);
+    return { scenario, scale: scenario === "fleet" ? "fleet" : "single", verdict, counts, facts, topbar };
   }
   const OVERVIEW_SCENARIO_KEYS = [
     "single",
@@ -9207,7 +9207,7 @@ var PanelFramework = function(exports) {
       ...trafficRouteRows(snapshot, state),
       ...trafficSamplingRows(snapshot, state)
     ], "desktop-wan-evidence-"), isFleet ? 5 : 4);
-    const terminalRanking = /* @__PURE__ */ jsxRuntimeExports.jsx(TerminalRanking, { title: "终端排行", subtitle: "按总流量排序", module: "terminal-ranking", tone: "trust", trust, headers: ["设备", "IP", "流量", "状态"], rows: compactRows(desktopTerminalRows(snapshot), isFleet ? 4 : 6), minRows: 0, collapsed: true }, "compact-terminals");
+    const terminalRanking = /* @__PURE__ */ jsxRuntimeExports.jsx(TerminalRanking, { title: "终端排行", subtitle: "按总流量排序", module: "terminal-ranking", tone: "trust", trust, headers: ["设备", "IP", "流量", "状态"], rows: compactRows(desktopTerminalRows(snapshot), isFleet ? 4 : 6), minRows: 0, collapsed: isFleet }, "compact-terminals");
     return {
       main: [
         /* @__PURE__ */ jsxRuntimeExports.jsx(WanTrend, { title: isFleet ? "WAN 采样趋势 / 设备 TopN" : "WAN 采样趋势", subtitle: isFleet ? "类型分布 / 异常 TopN" : "当前 / 峰值 / 默认出口 / 最近6点", module: "wan-trend", tone: state.facts.wan.allOffline ? "danger" : "trust", trust, headers: [], rows: [], minRows: 0, visual: networkVisual, visualOnly: true }, "compact-network"),
@@ -9217,7 +9217,7 @@ var PanelFramework = function(exports) {
       side: [
         /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "接口状态", subtitle: "转发面 / 承载", module: "normal-interface-boundary", tone: "trust", trust, headers: ["对象", "当前", "最近", "边界"], rows: interfaceRowsCompact, minRows: 0, collapsed: isFleet }, "compact-interface"),
         /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: "资源", subtitle: isFleet ? "接口排行 / 阈值" : "当前 / 阈值", module: "resource-threshold", tone: state.facts.resource.level, trust, headers: ["项", "阈值", "持续", "峰值"], rows: compactRows(resourceRows(state), 3), minRows: 0, collapsed: isFleet }, "compact-resource"),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: isFleet ? "采集可信度" : "采集 / 快照", subtitle: "REST / SSH / 成功", module: "normal-collection-channel", tone: state.facts.collection.level, trust, headers: ["对象", "当前", "依据"], rows: collectionRowsCompact, minRows: 0, collapsed: true }, "compact-collection")
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Module, { title: isFleet ? "采集可信度" : "采集 / 快照", subtitle: "REST / SSH / 成功", module: "normal-collection-channel", tone: state.facts.collection.level, trust, headers: ["对象", "当前", "依据"], rows: collectionRowsCompact, minRows: 0, collapsed: isFleet }, "compact-collection")
       ],
       bottom: [
         terminalRanking,
@@ -9450,33 +9450,405 @@ var PanelFramework = function(exports) {
       /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: item.note })
     ] }, item.role)) });
   }
-  function MobileNativeDetail({ model, onBack }) {
+  /**
+   * @license lucide-react v1.24.0 - ISC
+   *
+   * This source code is licensed under the ISC license.
+   * See the LICENSE file in the root directory of this source tree.
+   */
+  const mergeClasses = (...classes) => classes.filter((className, index, array) => {
+    return Boolean(className) && className.trim() !== "" && array.indexOf(className) === index;
+  }).join(" ").trim();
+  /**
+   * @license lucide-react v1.24.0 - ISC
+   *
+   * This source code is licensed under the ISC license.
+   * See the LICENSE file in the root directory of this source tree.
+   */
+  const toKebabCase = (string) => string.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
+  /**
+   * @license lucide-react v1.24.0 - ISC
+   *
+   * This source code is licensed under the ISC license.
+   * See the LICENSE file in the root directory of this source tree.
+   */
+  const toCamelCase = (string) => string.replace(
+    /^([A-Z])|[\s-_]+(\w)/g,
+    (match, p1, p2) => p2 ? p2.toUpperCase() : p1.toLowerCase()
+  );
+  /**
+   * @license lucide-react v1.24.0 - ISC
+   *
+   * This source code is licensed under the ISC license.
+   * See the LICENSE file in the root directory of this source tree.
+   */
+  const toPascalCase = (string) => {
+    const camelCase = toCamelCase(string);
+    return camelCase.charAt(0).toUpperCase() + camelCase.slice(1);
+  };
+  /**
+   * @license lucide-react v1.24.0 - ISC
+   *
+   * This source code is licensed under the ISC license.
+   * See the LICENSE file in the root directory of this source tree.
+   */
+  var defaultAttributes = {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: 24,
+    height: 24,
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: 2,
+    strokeLinecap: "round",
+    strokeLinejoin: "round"
+  };
+  /**
+   * @license lucide-react v1.24.0 - ISC
+   *
+   * This source code is licensed under the ISC license.
+   * See the LICENSE file in the root directory of this source tree.
+   */
+  const hasA11yProp = (props) => {
+    for (const prop in props) {
+      if (prop.startsWith("aria-") || prop === "role" || prop === "title") {
+        return true;
+      }
+    }
+    return false;
+  };
+  const LucideContext = reactExports.createContext({});
+  const useLucideContext = () => reactExports.useContext(LucideContext);
+  const Icon = reactExports.forwardRef(
+    ({ color, size, strokeWidth, absoluteStrokeWidth, className = "", children, iconNode, ...rest }, ref) => {
+      const {
+        size: contextSize = 24,
+        strokeWidth: contextStrokeWidth = 2,
+        absoluteStrokeWidth: contextAbsoluteStrokeWidth = false,
+        color: contextColor = "currentColor",
+        className: contextClass = ""
+      } = useLucideContext() ?? {};
+      const calculatedStrokeWidth = absoluteStrokeWidth ?? contextAbsoluteStrokeWidth ? Number(strokeWidth ?? contextStrokeWidth) * 24 / Number(size ?? contextSize) : strokeWidth ?? contextStrokeWidth;
+      return reactExports.createElement(
+        "svg",
+        {
+          ref,
+          ...defaultAttributes,
+          width: size ?? contextSize ?? defaultAttributes.width,
+          height: size ?? contextSize ?? defaultAttributes.height,
+          stroke: color ?? contextColor,
+          strokeWidth: calculatedStrokeWidth,
+          className: mergeClasses("lucide", contextClass, className),
+          ...!children && !hasA11yProp(rest) && { "aria-hidden": "true" },
+          ...rest
+        },
+        [
+          ...iconNode.map(([tag, attrs]) => reactExports.createElement(tag, attrs)),
+          ...Array.isArray(children) ? children : [children]
+        ]
+      );
+    }
+  );
+  /**
+   * @license lucide-react v1.24.0 - ISC
+   *
+   * This source code is licensed under the ISC license.
+   * See the LICENSE file in the root directory of this source tree.
+   */
+  const createLucideIcon = (iconName, iconNode) => {
+    const Component = reactExports.forwardRef(
+      ({ className, ...props }, ref) => reactExports.createElement(Icon, {
+        ref,
+        iconNode,
+        className: mergeClasses(
+          `lucide-${toKebabCase(toPascalCase(iconName))}`,
+          `lucide-${iconName}`,
+          className
+        ),
+        ...props
+      })
+    );
+    Component.displayName = toPascalCase(iconName);
+    return Component;
+  };
+  /**
+   * @license lucide-react v1.24.0 - ISC
+   *
+   * This source code is licensed under the ISC license.
+   * See the LICENSE file in the root directory of this source tree.
+   */
+  const __iconNode$g = [
+    [
+      "path",
+      {
+        d: "M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2",
+        key: "169zse"
+      }
+    ]
+  ];
+  const Activity = createLucideIcon("activity", __iconNode$g);
+  /**
+   * @license lucide-react v1.24.0 - ISC
+   *
+   * This source code is licensed under the ISC license.
+   * See the LICENSE file in the root directory of this source tree.
+   */
+  const __iconNode$f = [
+    ["path", { d: "M12 5v14", key: "s699le" }],
+    ["path", { d: "m19 12-7 7-7-7", key: "1idqje" }]
+  ];
+  const ArrowDown = createLucideIcon("arrow-down", __iconNode$f);
+  /**
+   * @license lucide-react v1.24.0 - ISC
+   *
+   * This source code is licensed under the ISC license.
+   * See the LICENSE file in the root directory of this source tree.
+   */
+  const __iconNode$e = [
+    ["path", { d: "m5 12 7-7 7 7", key: "hav0vg" }],
+    ["path", { d: "M12 19V5", key: "x0mq9r" }]
+  ];
+  const ArrowUp = createLucideIcon("arrow-up", __iconNode$e);
+  /**
+   * @license lucide-react v1.24.0 - ISC
+   *
+   * This source code is licensed under the ISC license.
+   * See the LICENSE file in the root directory of this source tree.
+   */
+  const __iconNode$d = [
+    [
+      "path",
+      { d: "M17 19a1 1 0 0 1-1-1v-2a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2a1 1 0 0 1-1 1z", key: "trhst0" }
+    ],
+    ["path", { d: "M17 21v-2", key: "ds4u3f" }],
+    ["path", { d: "M19 14V6.5a1 1 0 0 0-7 0v11a1 1 0 0 1-7 0V10", key: "1mo9zo" }],
+    ["path", { d: "M21 21v-2", key: "eo0ou" }],
+    ["path", { d: "M3 5V3", key: "1k5hjh" }],
+    [
+      "path",
+      { d: "M4 10a2 2 0 0 1-2-2V6a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2a2 2 0 0 1-2 2z", key: "1dd30t" }
+    ],
+    ["path", { d: "M7 5V3", key: "1t1388" }]
+  ];
+  const Cable = createLucideIcon("cable", __iconNode$d);
+  /**
+   * @license lucide-react v1.24.0 - ISC
+   *
+   * This source code is licensed under the ISC license.
+   * See the LICENSE file in the root directory of this source tree.
+   */
+  const __iconNode$c = [["path", { d: "m15 18-6-6 6-6", key: "1wnfg3" }]];
+  const ChevronLeft = createLucideIcon("chevron-left", __iconNode$c);
+  /**
+   * @license lucide-react v1.24.0 - ISC
+   *
+   * This source code is licensed under the ISC license.
+   * See the LICENSE file in the root directory of this source tree.
+   */
+  const __iconNode$b = [["path", { d: "m6 9 6 6 6-6", key: "qrunsl" }]];
+  const ChevronDown = createLucideIcon("chevron-down", __iconNode$b);
+  /**
+   * @license lucide-react v1.24.0 - ISC
+   *
+   * This source code is licensed under the ISC license.
+   * See the LICENSE file in the root directory of this source tree.
+   */
+  const __iconNode$a = [["path", { d: "m9 18 6-6-6-6", key: "mthhwq" }]];
+  const ChevronRight = createLucideIcon("chevron-right", __iconNode$a);
+  /**
+   * @license lucide-react v1.24.0 - ISC
+   *
+   * This source code is licensed under the ISC license.
+   * See the LICENSE file in the root directory of this source tree.
+   */
+  const __iconNode$9 = [
+    ["circle", { cx: "12", cy: "12", r: "10", key: "1mglay" }],
+    ["path", { d: "M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3", key: "1u773s" }],
+    ["path", { d: "M12 17h.01", key: "p32p05" }]
+  ];
+  const CircleQuestionMark = createLucideIcon("circle-question-mark", __iconNode$9);
+  /**
+   * @license lucide-react v1.24.0 - ISC
+   *
+   * This source code is licensed under the ISC license.
+   * See the LICENSE file in the root directory of this source tree.
+   */
+  const __iconNode$8 = [
+    ["path", { d: "M10.94 5.274A7 7 0 0 1 15.71 10h1.79a4.5 4.5 0 0 1 4.222 6.057", key: "1uxyv8" }],
+    ["path", { d: "M18.796 18.81A4.5 4.5 0 0 1 17.5 19H9A7 7 0 0 1 5.79 5.78", key: "99tcn7" }],
+    ["path", { d: "m2 2 20 20", key: "1ooewy" }]
+  ];
+  const CloudOff = createLucideIcon("cloud-off", __iconNode$8);
+  /**
+   * @license lucide-react v1.24.0 - ISC
+   *
+   * This source code is licensed under the ISC license.
+   * See the LICENSE file in the root directory of this source tree.
+   */
+  const __iconNode$7 = [
+    ["path", { d: "m12 14 4-4", key: "9kzdfg" }],
+    ["path", { d: "M3.34 19a10 10 0 1 1 17.32 0", key: "19p75a" }]
+  ];
+  const Gauge = createLucideIcon("gauge", __iconNode$7);
+  /**
+   * @license lucide-react v1.24.0 - ISC
+   *
+   * This source code is licensed under the ISC license.
+   * See the LICENSE file in the root directory of this source tree.
+   */
+  const __iconNode$6 = [
+    ["circle", { cx: "12", cy: "16", r: "1", key: "1au0dj" }],
+    ["rect", { x: "3", y: "10", width: "18", height: "12", rx: "2", key: "6s8ecr" }],
+    ["path", { d: "M7 10V7a5 5 0 0 1 10 0v3", key: "1pqi11" }]
+  ];
+  const LockKeyhole = createLucideIcon("lock-keyhole", __iconNode$6);
+  /**
+   * @license lucide-react v1.24.0 - ISC
+   *
+   * This source code is licensed under the ISC license.
+   * See the LICENSE file in the root directory of this source tree.
+   */
+  const __iconNode$5 = [
+    ["rect", { x: "16", y: "16", width: "6", height: "6", rx: "1", key: "4q2zg0" }],
+    ["rect", { x: "2", y: "16", width: "6", height: "6", rx: "1", key: "8cvhb9" }],
+    ["rect", { x: "9", y: "2", width: "6", height: "6", rx: "1", key: "1egb70" }],
+    ["path", { d: "M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3", key: "1jsf9p" }],
+    ["path", { d: "M12 12V8", key: "2874zd" }]
+  ];
+  const Network = createLucideIcon("network", __iconNode$5);
+  /**
+   * @license lucide-react v1.24.0 - ISC
+   *
+   * This source code is licensed under the ISC license.
+   * See the LICENSE file in the root directory of this source tree.
+   */
+  const __iconNode$4 = [
+    ["path", { d: "M4.9 16.1C1 12.2 1 5.8 4.9 1.9", key: "s0qx1y" }],
+    ["path", { d: "M7.8 4.7a6.14 6.14 0 0 0-.8 7.5", key: "1idnkw" }],
+    ["circle", { cx: "12", cy: "9", r: "2", key: "1092wv" }],
+    ["path", { d: "M16.2 4.8c2 2 2.26 5.11.8 7.47", key: "ojru2q" }],
+    ["path", { d: "M19.1 1.9a9.96 9.96 0 0 1 0 14.1", key: "rhi7fg" }],
+    ["path", { d: "M9.5 18h5", key: "mfy3pd" }],
+    ["path", { d: "m8 22 4-11 4 11", key: "25yftu" }]
+  ];
+  const RadioTower = createLucideIcon("radio-tower", __iconNode$4);
+  /**
+   * @license lucide-react v1.24.0 - ISC
+   *
+   * This source code is licensed under the ISC license.
+   * See the LICENSE file in the root directory of this source tree.
+   */
+  const __iconNode$3 = [
+    ["circle", { cx: "6", cy: "19", r: "3", key: "1kj8tv" }],
+    ["path", { d: "M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15", key: "1d8sl" }],
+    ["circle", { cx: "18", cy: "5", r: "3", key: "gq8acd" }]
+  ];
+  const Route = createLucideIcon("route", __iconNode$3);
+  /**
+   * @license lucide-react v1.24.0 - ISC
+   *
+   * This source code is licensed under the ISC license.
+   * See the LICENSE file in the root directory of this source tree.
+   */
+  const __iconNode$2 = [
+    ["rect", { width: "20", height: "8", x: "2", y: "14", rx: "2", key: "w68u3i" }],
+    ["path", { d: "M6.01 18H6", key: "19vcac" }],
+    ["path", { d: "M10.01 18H10", key: "uamcmx" }],
+    ["path", { d: "M15 10v4", key: "qjz1xs" }],
+    ["path", { d: "M17.84 7.17a4 4 0 0 0-5.66 0", key: "1rif40" }],
+    ["path", { d: "M20.66 4.34a8 8 0 0 0-11.31 0", key: "6a5xfq" }]
+  ];
+  const Router = createLucideIcon("router", __iconNode$2);
+  /**
+   * @license lucide-react v1.24.0 - ISC
+   *
+   * This source code is licensed under the ISC license.
+   * See the LICENSE file in the root directory of this source tree.
+   */
+  const __iconNode$1 = [
+    [
+      "path",
+      {
+        d: "M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z",
+        key: "oel41y"
+      }
+    ],
+    ["path", { d: "m9 12 2 2 4-4", key: "dzmm74" }]
+  ];
+  const ShieldCheck = createLucideIcon("shield-check", __iconNode$1);
+  /**
+   * @license lucide-react v1.24.0 - ISC
+   *
+   * This source code is licensed under the ISC license.
+   * See the LICENSE file in the root directory of this source tree.
+   */
+  const __iconNode = [
+    [
+      "path",
+      {
+        d: "m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3",
+        key: "wmoenq"
+      }
+    ],
+    ["path", { d: "M12 9v4", key: "juzpu7" }],
+    ["path", { d: "M12 17h.01", key: "p32p05" }]
+  ];
+  const TriangleAlert = createLucideIcon("triangle-alert", __iconNode);
+  const ICONS = {
+    evidence: CircleQuestionMark,
+    "wan-offline": CloudOff,
+    wan: Router,
+    resource: Gauge,
+    interfaces: Cable,
+    interface: Cable,
+    collection: RadioTower,
+    route: Route,
+    "fleet-scope": Network,
+    fleet: Network,
+    proof: ShieldCheck,
+    danger: TriangleAlert,
+    download: ArrowDown,
+    upload: ArrowUp,
+    expand: ChevronDown,
+    back: ChevronLeft,
+    forward: ChevronRight,
+    readonly: LockKeyhole
+  };
+  function MobileNativeIcon({ name, size = 18, className = "" }) {
+    const Icon2 = ICONS[name] || Activity;
+    return /* @__PURE__ */ jsxRuntimeExports.jsx(Icon2, { "aria-hidden": "true", className, size, strokeWidth: 1.8 });
+  }
+  function MobileNativeDetail({ model, focus, onBack }) {
     const backRef = reactExports.useRef(null);
-    reactExports.useEffect(() => {
+    const sections = focus.detailSectionKeys.map((key) => model.detailSections.find((section) => section.key === key)).filter((section) => Boolean(section));
+    reactExports.useLayoutEffect(() => {
       var _a;
       (_a = backRef.current) == null ? void 0 : _a.focus({ preventScroll: true });
+    }, []);
+    reactExports.useEffect(() => {
       const onKeyDown = (event) => {
         if (event.key === "Escape") onBack();
       };
       window.addEventListener("keydown", onKeyDown);
       return () => window.removeEventListener("keydown", onKeyDown);
     }, [onBack]);
-    return /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "mn-detail", "aria-labelledby": "mn-detail-title", "data-mobile-native-detail": true, children: [
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "mn-detail", "aria-labelledby": "mn-detail-title", "data-mobile-native-detail": true, "data-mobile-native-detail-focus": focus.key, children: [
       /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { className: "mn-detail-navigation", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsxs("button", { ref: backRef, type: "button", onClick: onBack, "aria-label": "返回网络概览", "data-mobile-native-back": true, children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { "aria-hidden": "true", children: "‹" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(MobileNativeIcon, { name: "back", size: 21 }),
           "概览"
         ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: "原始证据" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: focus.inspection.label }),
         /* @__PURE__ */ jsxRuntimeExports.jsx("span", { "aria-hidden": "true" })
       ] }),
       /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mn-detail-content", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { className: "mn-detail-intro", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { className: `mn-detail-intro is-${focus.tone}`, children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "mn-detail-symbol", "aria-hidden": "true", children: /* @__PURE__ */ jsxRuntimeExports.jsx(MobileNativeIcon, { name: focus.inspection.key, size: 23 }) }),
           /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: model.device }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { id: "mn-detail-title", children: model.actionTitle }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { children: "以下记录用于追溯判断来源，不会修改 RouterOS 配置。" })
+          /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { id: "mn-detail-title", children: focus.inspection.actionTitle }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { children: "以下记录补充首页判断来源，只用于追溯，不会修改 RouterOS 配置。" })
         ] }),
-        model.detailSections.map((section) => /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "mn-detail-section", "aria-label": section.title, "data-mobile-native-detail-section": true, children: [
+        sections.map((section) => /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "mn-detail-section", "aria-label": section.title, "data-mobile-native-detail-section": section.key, children: [
           /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { children: [
             /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: section.title }),
             /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: section.note })
@@ -9492,109 +9864,82 @@ var PanelFramework = function(exports) {
       ] })
     ] });
   }
-  function MobileNativeObjectWorkspace({
-    model,
-    selected,
-    onSelect,
+  function MobileNativeInspectionPanel({
+    focus,
     expanded,
     onExpandedChange,
     onOpenDetail,
     detailButtonRef
   }) {
-    const active = model.objects.find((item) => item.key === selected) || model.objects[0];
-    const moveTabFocus = (event, index) => {
-      var _a;
-      let nextIndex = null;
-      if (event.key === "ArrowRight") nextIndex = (index + 1) % model.objects.length;
-      if (event.key === "ArrowLeft") nextIndex = (index - 1 + model.objects.length) % model.objects.length;
-      if (event.key === "Home") nextIndex = 0;
-      if (event.key === "End") nextIndex = model.objects.length - 1;
-      if (nextIndex === null) return;
-      event.preventDefault();
-      const next = model.objects[nextIndex];
-      (_a = document.getElementById(`mn-tab-${next.key}`)) == null ? void 0 : _a.focus({ preventScroll: true });
-      onSelect(next.key);
-    };
-    return /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "mn-object-workspace", "aria-label": "网络对象工作区", "data-mobile-native-object-workspace": true, children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mn-object-tabs", role: "tablist", "aria-label": "网络对象", children: model.objects.map((item, index) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
-        "button",
-        {
-          id: `mn-tab-${item.key}`,
-          className: item.key === active.key ? "is-selected" : "",
-          type: "button",
-          role: "tab",
-          "aria-selected": item.key === active.key,
-          "aria-controls": `mn-panel-${item.key}`,
-          tabIndex: item.key === active.key ? 0 : -1,
-          onClick: () => onSelect(item.key),
-          onKeyDown: (event) => moveTabFocus(event, index),
-          children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: item.category }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: item.label })
-          ]
-        },
-        item.key
-      )) }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs(
-        "article",
-        {
-          id: `mn-panel-${active.key}`,
-          className: `mn-object-panel is-${active.tone}`,
-          role: "tabpanel",
-          "aria-labelledby": `mn-tab-${active.key}`,
-          "data-mobile-native-object": active.key,
-          children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { className: "mn-object-heading", children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-                /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: active.title }),
-                /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: active.note })
-              ] }),
-              /* @__PURE__ */ jsxRuntimeExports.jsx("strong", { children: active.status })
-            ] }),
-            active.relations.length ? /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mn-object-relations", "aria-label": `${active.label} 关系`, children: active.relations.map((relation, index) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `is-${relation.tone || "trust"}`, children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: relation.label }),
-              /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: relation.value })
-            ] }, `${relation.label}-${index}`)) }) : null,
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("details", { className: "mn-object-disclosure", open: expanded, children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsxs("summary", { "aria-expanded": expanded, onClick: (event) => {
-                event.preventDefault();
-                onExpandedChange(!expanded);
-              }, children: [
-                /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: active.disclosureTitle }),
-                /* @__PURE__ */ jsxRuntimeExports.jsx("i", { "aria-hidden": "true", children: "⌄" })
-              ] }),
-              /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mn-object-rows", children: active.rows.map((row, index) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `mn-object-row is-${row.tone || "trust"}`, children: [
-                /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: row.label }),
-                /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-                  /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: row.value }),
-                  row.note ? /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: row.note }) : null
-                ] })
-              ] }, row.key || `${row.label}-${index}`)) })
-            ] }),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("button", { ref: detailButtonRef, className: "mn-detail-entry", type: "button", onClick: onOpenDetail, "data-mobile-native-open-detail": true, children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-                /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: model.actionTitle }),
-                /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: model.actionNote })
-              ] }),
-              /* @__PURE__ */ jsxRuntimeExports.jsx("i", { "aria-hidden": "true", children: "›" })
-            ] })
-          ]
-        }
-      )
+    const inspection = focus.inspection;
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: `mn-inspection is-${inspection.tone}`, "aria-labelledby": "mn-inspection-title", "data-mobile-native-inspection": inspection.key, children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { className: "mn-inspection-heading", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "mn-object-symbol", "aria-hidden": "true", children: /* @__PURE__ */ jsxRuntimeExports.jsx(MobileNativeIcon, { name: inspection.key, size: 20 }) }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("small", { children: [
+            inspection.label,
+            " · ",
+            inspection.status
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { id: "mn-inspection-title", children: inspection.title }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: inspection.note })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs(
+          "button",
+          {
+            ref: detailButtonRef,
+            className: "mn-detail-entry",
+            type: "button",
+            onClick: onOpenDetail,
+            "aria-label": inspection.actionTitle,
+            "data-mobile-native-open-detail": true,
+            children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "证据" }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(MobileNativeIcon, { name: "forward", size: 18 })
+            ]
+          }
+        )
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("dl", { className: "mn-inspection-relations", "aria-label": `${inspection.label} 新增关系证据`, children: inspection.relations.map((relation, index) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `is-${relation.tone || "trust"}`, children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("dt", { children: relation.label }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("dd", { children: relation.value })
+      ] }, relation.key || `${relation.label}-${index}`)) }),
+      inspection.rows.length ? /* @__PURE__ */ jsxRuntimeExports.jsxs("details", { className: "mn-inspection-disclosure", open: expanded, children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("summary", { "aria-expanded": expanded, onClick: (event) => {
+          event.preventDefault();
+          onExpandedChange(!expanded);
+        }, children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: inspection.disclosureTitle }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(MobileNativeIcon, { name: "expand", size: 18 })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mn-inspection-rows", children: inspection.rows.map((row, index) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `mn-inspection-row is-${row.tone || "trust"}`, children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: row.label }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: row.value }),
+            row.note ? /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: row.note }) : null
+          ] })
+        ] }, row.key || `${row.label}-${index}`)) })
+      ] }) : null
     ] });
   }
   function MobileNativeSignal({ signal }) {
     if (signal.kind === "rates") {
-      return /* @__PURE__ */ jsxRuntimeExports.jsx("section", { className: "mn-signal mn-signal-rates", "aria-label": signal.title, "data-mobile-native-rates": "current", children: signal.items.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-          item.label,
-          " · 当前"
+      return /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "mn-signal mn-signal-rates", "aria-labelledby": "mn-signal-title", "data-mobile-native-rates": "current", "data-mobile-native-signal": "rates", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { id: "mn-signal-title", children: signal.title }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: signal.note })
         ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: item.value })
-      ] }, item.label)) });
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mn-rate-pair", children: signal.items.map((item, index) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "mn-rate-icon", children: /* @__PURE__ */ jsxRuntimeExports.jsx(MobileNativeIcon, { name: index === 0 ? "download" : "upload", size: 17 }) }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: item.label }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: item.value })
+          ] })
+        ] }, item.label)) })
+      ] });
     }
     if (signal.kind === "resource") {
-      return /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "mn-signal mn-signal-resource", "aria-labelledby": "mn-signal-title", "data-mobile-native-resource-signal": true, children: [
+      return /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "mn-signal mn-signal-resource", "aria-labelledby": "mn-signal-title", "data-mobile-native-resource-signal": true, "data-mobile-native-signal": "resource", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx("b", { id: "mn-signal-title", children: signal.title }),
           /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: signal.note })
@@ -9616,51 +9961,240 @@ var PanelFramework = function(exports) {
     }
     return /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: `mn-signal mn-signal-list is-${signal.kind}`, "aria-labelledby": "mn-signal-title", "data-mobile-native-signal": signal.kind, children: [
       /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("b", { id: "mn-signal-title", children: signal.title }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: signal.note })
+        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "mn-section-symbol", "aria-hidden": "true", children: /* @__PURE__ */ jsxRuntimeExports.jsx(MobileNativeIcon, { name: signal.kind, size: 18 }) }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { id: "mn-signal-title", children: signal.title }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: signal.note })
+        ] })
       ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { children: signal.items.map((item, index) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `mn-signal-row is-${item.tone || "trust"}`, children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mn-signal-rows", children: signal.items.map((item, index) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `mn-signal-row is-${item.tone || "trust"}`, children: [
         /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: item.label }),
         /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: item.value }),
           item.note ? /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: item.note }) : null
         ] })
-      ] }, `${item.label}-${index}`)) })
+      ] }, item.key || `${item.label}-${index}`)) })
     ] });
   }
-  function MobileNativePatrolBrief({ model }) {
-    return /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "mn-brief", "aria-labelledby": "mn-brief-title", "data-mobile-native-brief": true, children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `mn-evidence-boundary is-${model.evidenceTone}`, "data-mobile-native-evidence-mode": model.evidenceMode, children: [
+  function DeviceChrome({ model }) {
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { className: "mn-navigation", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: model.device }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: model.deviceNote })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "mn-readonly-label", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(MobileNativeIcon, { name: "readonly", size: 14 }),
+        "只读监控"
+      ] })
+    ] });
+  }
+  function EvidenceBoundary({ model }) {
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `mn-evidence-boundary is-${model.evidenceTone}`, "data-mobile-native-evidence-mode": model.evidenceMode, children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: model.evidenceLabel }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: model.evidenceNote })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("time", { children: model.evidenceTime })
+    ] });
+  }
+  function FocusMasthead({ focus }) {
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { className: `mn-focus-masthead is-${focus.tone}`, children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mn-focus-symbol", "aria-hidden": "true", children: /* @__PURE__ */ jsxRuntimeExports.jsx(MobileNativeIcon, { name: focus.key, size: 24 }) }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mn-focus-copy", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: focus.kicker }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { id: "mn-focus-title", children: focus.title }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("p", { children: focus.summary }),
+        focus.scope ? /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: focus.scope }) : null
+      ] })
+    ] });
+  }
+  function ProofLedger({ focus }) {
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "mn-proof-ledger", "aria-labelledby": "mn-proof-title", "data-mobile-native-proof": true, children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx("header", { children: /* @__PURE__ */ jsxRuntimeExports.jsx("b", { id: "mn-proof-title", children: "判断依据" }) }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("ul", { children: focus.proofs.map((proof, index) => /* @__PURE__ */ jsxRuntimeExports.jsxs("li", { className: `is-${proof.tone || "trust"}`, children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "mn-proof-symbol", "aria-hidden": "true", children: /* @__PURE__ */ jsxRuntimeExports.jsx(MobileNativeIcon, { name: "proof", size: 16 }) }),
         /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: model.evidenceLabel }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: model.evidenceNote })
+          /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: proof.label }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: proof.value }),
+          proof.note ? /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: proof.note }) : null
+        ] })
+      ] }, proof.key || `${proof.label}-${index}`)) })
+    ] });
+  }
+  function FocusQueue({
+    focuses,
+    selected,
+    onSelect,
+    compact = false
+  }) {
+    const isRiskQueue = focuses.some((focus) => focus.risk);
+    const move = (event, index) => {
+      var _a;
+      let nextIndex = null;
+      if (event.key === "ArrowDown" || event.key === "ArrowRight") nextIndex = (index + 1) % focuses.length;
+      if (event.key === "ArrowUp" || event.key === "ArrowLeft") nextIndex = (index - 1 + focuses.length) % focuses.length;
+      if (event.key === "Home") nextIndex = 0;
+      if (event.key === "End") nextIndex = focuses.length - 1;
+      if (nextIndex === null) return;
+      event.preventDefault();
+      const next = focuses[nextIndex];
+      onSelect(next.key);
+      (_a = document.getElementById(`mn-focus-option-${next.key}`)) == null ? void 0 : _a.focus({ preventScroll: true });
+    };
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: `mn-focus-queue ${compact ? "is-compact" : ""}`, "aria-labelledby": "mn-focus-queue-title", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("b", { id: "mn-focus-queue-title", children: isRiskQueue ? "风险焦点" : "证据焦点" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+          focuses.length,
+          " 组"
+        ] })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { role: "listbox", "aria-label": "风险与证据焦点", children: focuses.map((focus, index) => {
+        const active = focus.key === selected;
+        return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+          "button",
+          {
+            id: `mn-focus-option-${focus.key}`,
+            className: `is-${focus.tone} ${active ? "is-selected" : ""}`,
+            type: "button",
+            role: "option",
+            "aria-selected": active,
+            "aria-controls": "mn-focus-panel",
+            tabIndex: active ? 0 : -1,
+            onClick: () => onSelect(focus.key),
+            onKeyDown: (event) => move(event, index),
+            "data-mobile-native-focus-option": focus.key,
+            children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "mn-queue-symbol", "aria-hidden": "true", children: /* @__PURE__ */ jsxRuntimeExports.jsx(MobileNativeIcon, { name: focus.key, size: 18 }) }),
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: focus.label }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: focus.kicker })
+              ] })
+            ]
+          },
+          focus.key
+        );
+      }) })
+    ] });
+  }
+  function FocusPanel({
+    model,
+    focus,
+    expanded,
+    onExpandedChange,
+    onOpenDetail,
+    detailButtonRef
+  }) {
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { id: "mn-focus-panel", className: "mn-focus-panel", "aria-labelledby": "mn-focus-title", "data-mobile-native-focus": focus.key, children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx(FocusMasthead, { focus }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mn-focus-evidence-grid", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mn-focus-measurements", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(ProofLedger, { focus }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(MobileNativeSignal, { signal: focus.signal })
         ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("time", { children: model.evidenceTime })
+        /* @__PURE__ */ jsxRuntimeExports.jsx(
+          MobileNativeInspectionPanel,
+          {
+            focus,
+            expanded,
+            onExpandedChange,
+            onOpenDetail,
+            detailButtonRef
+          }
+        )
+      ] })
+    ] });
+  }
+  function TabletContextEvidence({ model, focus }) {
+    const sectionKeys = focus.inspection.key === "collection" ? ["target", "boundary"] : focus.inspection.key === "resource" ? ["collection", "boundary"] : focus.inspection.key === "interface" ? ["route", "boundary"] : focus.inspection.key === "wan" ? ["route", "collection"] : focus.key === "fleet-scope" ? ["wan", "collection"] : ["collection", "boundary"];
+    const sections = sectionKeys.map((key) => model.detailSections.find((section) => section.key === key)).filter((section) => Boolean(section));
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "mn-tablet-context", "aria-labelledby": "mn-tablet-context-title", "data-mobile-native-tablet-context": true, children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("b", { id: "mn-tablet-context-title", children: "上下文证据" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "目标、来源与影响边界" })
       ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mn-verdict", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: model.kicker }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { id: "mn-brief-title", children: model.title }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("p", { children: model.summary })
-      ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mn-proof-facts", "aria-label": "结论依据", children: model.facts.map((fact, index) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `mn-proof-fact is-${fact.tone || "trust"}`, children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: fact.label }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: fact.value }),
-        fact.note ? /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: fact.note }) : null
-      ] }, `${fact.label}-${index}`)) }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx(MobileNativeSignal, { signal: model.signal }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "mn-decision-section", "aria-labelledby": "mn-decision-title", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { children: sections.map((section) => /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "mn-tablet-context-card", "aria-label": section.title, children: [
         /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { id: "mn-decision-title", children: model.incident ? "优先处理" : "当前判断依据" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: model.incident ? `${model.risks.length} 个风险` : "没有阻断项" })
+          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: section.title }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: section.note })
         ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mn-decision-list", children: model.decisions.map((decision) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `mn-decision is-${decision.tone}`, children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "mn-decision-label", children: decision.label }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { children: section.rows.slice(0, 3).map((row, index) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `mn-tablet-context-row is-${row.tone || "trust"}`, children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: row.label }),
           /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: decision.title }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: decision.note })
-          ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("i", { "aria-hidden": "true" })
-        ] }, decision.key)) })
+            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: row.value }),
+            row.note ? /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: row.note }) : null
+          ] })
+        ] }, row.key || `${row.label}-${index}`)) })
+      ] }, section.key)) })
+    ] });
+  }
+  function MobileNativePhoneHome({
+    model,
+    focus,
+    selected,
+    onSelect,
+    expanded,
+    onExpandedChange,
+    onOpenDetail,
+    detailButtonRef
+  }) {
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx(DeviceChrome, { model }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(EvidenceBoundary, { model }),
+      model.focuses.length > 1 ? /* @__PURE__ */ jsxRuntimeExports.jsx(FocusQueue, { focuses: model.focuses, selected, onSelect, compact: true }) : null,
+      /* @__PURE__ */ jsxRuntimeExports.jsx(
+        FocusPanel,
+        {
+          model,
+          focus,
+          expanded,
+          onExpandedChange,
+          onOpenDetail,
+          detailButtonRef
+        }
+      )
+    ] });
+  }
+  function MobileNativeTabletHome({
+    model,
+    focus,
+    selected,
+    onSelect,
+    expanded,
+    onExpandedChange,
+    onOpenDetail,
+    detailButtonRef
+  }) {
+    const multipleFocuses = model.focuses.length > 1;
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx(DeviceChrome, { model }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `mn-tablet-workspace ${multipleFocuses ? "is-multiple-focus" : "is-single-focus"}`, "data-mobile-native-tablet-workspace": true, children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("aside", { className: "mn-focus-master", "aria-label": "风险与证据主列表", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(EvidenceBoundary, { model }),
+          model.scopeNote ? /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "mn-scope-note", children: model.scopeNote }) : null,
+          multipleFocuses ? /* @__PURE__ */ jsxRuntimeExports.jsx(FocusQueue, { focuses: model.focuses, selected, onSelect }) : null,
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mn-master-boundary", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx(MobileNativeIcon, { name: "readonly", size: 16 }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: "只读边界" }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: "不会修改 RouterOS 配置" })
+            ] })
+          ] })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mn-tablet-detail", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(
+            FocusPanel,
+            {
+              model,
+              focus,
+              expanded,
+              onExpandedChange,
+              onOpenDetail,
+              detailButtonRef
+            }
+          ),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(TabletContextEvidence, { model, focus })
+        ] })
       ] })
     ] });
   }
@@ -9792,6 +10326,22 @@ var PanelFramework = function(exports) {
       ]
     };
   }
+  function targetDetail(snapshot) {
+    var _a, _b, _c;
+    const target = clean(((_a = snapshot.meta) == null ? void 0 : _a.routerHost) || ((_b = snapshot.meta) == null ? void 0 : _b.target), "未记录");
+    const identity = clean((_c = snapshot.meta) == null ? void 0 : _c.configuredIdentity, "未命名目标");
+    return {
+      key: "target",
+      title: "采集目标与尝试边界",
+      note: "设备身份独立于业务快照",
+      rows: [
+        { key: "target-identity", label: "配置身份", value: identity },
+        { key: "target-address", label: "采集目标", value: target },
+        { key: "target-attempt", label: "最近尝试", value: shortTimestamp(snapshot.updatedAt), note: "尝试时间不等于成功时间" },
+        { key: "target-success", label: "明确业务成功", value: successfulBusinessLabel(snapshot) }
+      ]
+    };
+  }
   function routeDetail(snapshot, mode) {
     const rows = routeRows(snapshot).slice(0, 8).map((route, index) => {
       const explicitActive = route.active === true && route.disabled !== true;
@@ -9880,7 +10430,7 @@ var PanelFramework = function(exports) {
     };
   }
   function buildDetailSections(snapshot, state, mode, risks) {
-    const sections = [];
+    const sections = [targetDetail(snapshot)];
     if (risks.includes("resource")) sections.push(resourceDetail(snapshot, state, mode));
     if (risks.includes("interfaces")) sections.push(interfaceDetail(snapshot, mode));
     if (risks.includes("collection") || risks.includes("evidence")) sections.push(collectionDetail(snapshot));
@@ -9895,12 +10445,12 @@ var PanelFramework = function(exports) {
     const runningInterfaces = Math.max(0, state.facts.interfaces.total - state.facts.interfaces.down);
     return {
       kind: "fleet",
-      title: "规模分布",
-      note: "WAN 范围、默认路由与接口对象",
+      title: "对象范围",
+      note: "范围只描述已采集对象，不替代风险判断",
       items: [
-        { label: "WAN 范围", value: `${state.facts.wan.online} / ${state.facts.wan.total}`, note: "运行 / 总数", tone: state.facts.wan.online ? "trust" : "danger" },
-        { label: "默认路由", value: verification === "verified" ? "已核实" : "无法核实", note: verification === "verified" ? "active=true" : "无明确活动记录", tone: verification === "verified" ? "trust" : "warn" },
-        { label: "接口对象", value: `${runningInterfaces} / ${state.facts.interfaces.total}`, note: "运行 / 总数", tone: state.facts.interfaces.down ? "warn" : "trust" }
+        { label: "WAN", value: `${state.facts.wan.online} / ${state.facts.wan.total}`, note: "运行 / 总数", tone: state.facts.wan.online ? "trust" : "danger" },
+        { label: "接口", value: `${runningInterfaces} / ${state.facts.interfaces.total}`, note: "运行 / 总数", tone: state.facts.interfaces.down ? "warn" : "trust" },
+        { label: "默认路由", value: verification === "verified" ? "已核实" : "无法核实", note: verification === "verified" ? "明确活动记录" : "无明确活动记录", tone: verification === "verified" ? "trust" : "warn" }
       ]
     };
   }
@@ -9911,30 +10461,6 @@ var PanelFramework = function(exports) {
     const identity = clean(configuredIdentity || state.facts.device.identity || target, "RouterOS");
     const board = mode === "unavailable" ? "" : state.facts.device.boardName !== "-" ? state.facts.device.boardName : state.facts.device.version !== "-" ? `RouterOS ${state.facts.device.version}` : "RouterOS";
     return { identity, note: [board, target ? `目标 ${target}` : ""].filter(Boolean).join(" · ") };
-  }
-  function incidentRiskDecision(risk, state, mode, samples) {
-    if (risk === "wan-offline") return {
-      key: risk,
-      label: "出口",
-      title: mode === "historical" ? "历史记录：外网出口没有运行对象" : "外网出口没有运行对象",
-      note: mode === "historical" ? "当前变化不可见；保留记录仅用于恢复核对" : "先检查物理链路、认证与上游",
-      tone: mode === "historical" ? "warn" : "danger"
-    };
-    if (risk === "resource") return {
-      key: risk,
-      label: "资源",
-      title: mode === "historical" ? "历史记录：资源曾超过阈值" : "资源达到阻断阈值",
-      note: mode === "historical" ? "当前资源状态不可见；保留样本不触发当前告警" : samples.observed ? `尾部连续 ${samples.trailingStreak} / ${samples.observed} 个有效样本` : "连续样本未取得",
-      tone: mode === "historical" ? "warn" : "danger"
-    };
-    if (risk === "interfaces") return {
-      key: risk,
-      label: "接口",
-      title: `${mode === "historical" ? "历史记录：" : ""}${state.facts.interfaces.downNames.slice(0, 3).join(" / ") || `${state.facts.interfaces.down} 个接口`}`,
-      note: mode === "historical" ? "当前变化不可见；仅保留父接口、VLAN 与 PPPoE 依赖" : "核对父接口、VLAN 与 PPPoE 依赖",
-      tone: mode === "historical" ? "warn" : "danger"
-    };
-    return null;
   }
   function observedRates(snapshot) {
     const rows = wanRows(snapshot).filter((row) => row.running !== false && row.disabled !== true);
@@ -9949,6 +10475,341 @@ var PanelFramework = function(exports) {
       up += upObservation;
     }
     return { down, up };
+  }
+  function channelTone(channel) {
+    if (channel.status === "current") return "trust";
+    if (channel.status === "unavailable") return "missing";
+    return channel.status === "failed" ? "danger" : "warn";
+  }
+  function channelSignalNote(channel) {
+    if (channel.error) return "当前尝试记录了错误";
+    return channel.successAt ? "当前通道有成功记录" : "没有明确成功记录";
+  }
+  function routeProof(verification) {
+    if (verification === "verified") return { key: "route-proof", label: "默认路由", value: "已核实", note: "明确活动记录", tone: "trust" };
+    if (verification === "historical") return { key: "route-proof", label: "默认路由", value: "历史记录", note: "不代表当前", tone: "warn" };
+    if (verification === "offline") return { key: "route-proof", label: "活动路由", value: "0", note: "当前记录", tone: "danger" };
+    return { key: "route-proof", label: "默认路由", value: "无法核实", note: "无明确活动记录", tone: "warn" };
+  }
+  function scopeFor(context) {
+    var _a;
+    if (context.state.scenario !== "fleet" && ((_a = context.snapshot.meta) == null ? void 0 : _a.scaleScenario) !== "fleet") return "";
+    const runningInterfaces = Math.max(0, context.state.facts.interfaces.total - context.state.facts.interfaces.down);
+    return `多对象范围 · ${context.state.facts.wan.online}/${context.state.facts.wan.total} WAN · ${runningInterfaces}/${context.state.facts.interfaces.total} 接口`;
+  }
+  function proofFor(risk, context) {
+    var _a, _b;
+    const { snapshot, state, mode, verification, channels } = context;
+    const businessSuccess = successfulBusinessLabel(snapshot);
+    const hasBusinessSuccess = businessSuccess !== "成功时间未记录";
+    if (risk === "evidence") return [
+      { key: "snapshot", label: "当前快照", value: "不可用", note: "业务数字已隐藏", tone: "danger" },
+      { key: "target", label: "配置目标", value: ((_a = snapshot.meta) == null ? void 0 : _a.routerHost) || ((_b = snapshot.meta) == null ? void 0 : _b.target) ? "已识别" : "未记录", note: "身份独立于快照", tone: "trust" },
+      { key: "success", label: hasBusinessSuccess ? "最近成功采样" : "成功记录", value: hasBusinessSuccess ? businessSuccess : "未记录", note: hasBusinessSuccess ? "仅作历史参考" : "不回退尝试时间", tone: "warn" }
+    ];
+    if (risk === "wan-offline") return [
+      { key: "wan", label: "WAN", value: `0 / ${state.facts.wan.total}`, note: mode === "current" ? "当前对象" : "保留记录", tone: mode === "current" ? "danger" : "warn" },
+      { key: "route", label: "活动路由", value: verification === "offline" ? "0" : "无法核实", note: "不使用任意路由兜底", tone: mode === "current" ? "danger" : "warn" },
+      { key: "collection", label: "采集周期", value: mode === "current" ? "已完成" : "仅历史", note: "状态来源边界", tone: mode === "current" ? "trust" : "warn" }
+    ];
+    if (risk === "resource") {
+      const samples = resourceSamples(snapshot);
+      const breached = [
+        Number(state.facts.resource.cpu) >= 85,
+        Number(state.facts.resource.memory) >= 85,
+        Number(state.facts.resource.disk) >= 90
+      ].filter(Boolean).length;
+      return [
+        { key: "resource-classes", label: "超限项", value: `${breached} / 3`, note: "按资源策略判定", tone: mode === "current" ? "danger" : "warn" },
+        { key: "resource-streak", label: "尾部连续", value: samples.observed ? `${samples.trailingStreak} 个` : "未取得", note: "不等于超限总数", tone: mode === "current" ? "danger" : "warn" },
+        { key: "resource-samples", label: "有效样本", value: samples.observed ? `${samples.observed} 个` : "未取得", note: mode === "current" ? "当前采样序列" : "历史采样序列", tone: mode === "current" ? "trust" : "warn" }
+      ];
+    }
+    if (risk === "interfaces") return [
+      { key: "interface-count", label: "接口 Down", value: `${state.facts.interfaces.down} / ${state.facts.interfaces.total}`, note: mode === "current" ? "当前对象" : "历史记录", tone: mode === "current" ? "danger" : "warn" },
+      { ...routeProof(verification), key: "interface-route" },
+      { key: "interface-wan", label: "WAN 范围", value: `${state.facts.wan.online} / ${state.facts.wan.total}`, note: "运行记录", tone: state.facts.wan.online ? "trust" : "danger" }
+    ];
+    if (risk === "collection") return [
+      { key: "collection-cycle", label: "当前周期", value: "未形成业务快照", note: "通道分别核对", tone: "danger" },
+      { key: "collection-success", label: hasBusinessSuccess ? "最近成功采样" : "成功记录", value: hasBusinessSuccess ? businessSuccess : "未记录", note: hasBusinessSuccess ? "仅用于恢复对照" : "没有明确成功时间", tone: hasBusinessSuccess ? "trust" : "warn" },
+      { key: "collection-boundary", label: "判断边界", value: "不推断当前业务", note: "历史记录不等于当前状态", tone: "warn" }
+    ];
+    if (state.scenario === "fleet") return [
+      { key: "fleet-cycle", label: "采样周期", value: "已完成", note: "当前证据", tone: "trust" },
+      { key: "fleet-risk", label: "阻断风险", value: "未发现", note: "范围信息不替代风险", tone: "trust" },
+      { key: "fleet-mode", label: "对象模式", value: "多对象", note: "独立核验路由", tone: "trust" }
+    ];
+    return [
+      routeProof(verification),
+      { key: "normal-wan", label: "WAN", value: `${state.facts.wan.online} / ${state.facts.wan.total}`, note: "运行对象", tone: state.facts.wan.online ? "trust" : "warn" },
+      { key: "normal-collection", label: "采集", value: channels.rest.status === "current" && channels.ssh.status === "current" ? "2 / 2" : "需复核", note: "REST + SSH", tone: channels.rest.status === "current" && channels.ssh.status === "current" ? "trust" : "warn" }
+    ];
+  }
+  function signalFor(risk, context) {
+    const { snapshot, state, mode, verification, channels } = context;
+    if (risk === "resource") {
+      return {
+        kind: "resource",
+        title: mode === "current" ? "当前资源压力" : "历史资源记录",
+        note: mode === "current" ? "数值与策略阈值共用同一采样周期" : "保留值不代表当前",
+        items: [
+          { label: "CPU", value: formatPercent(state.facts.resource.cpu), percent: state.facts.resource.cpu, threshold: 85, tone: mode === "current" ? "danger" : "warn" },
+          { label: "内存", value: formatPercent(state.facts.resource.memory), percent: state.facts.resource.memory, threshold: 85, tone: mode === "current" ? "danger" : "warn" },
+          { label: "磁盘", value: formatPercent(state.facts.resource.disk), percent: state.facts.resource.disk, threshold: 90, tone: mode === "current" ? "danger" : "warn" }
+        ]
+      };
+    }
+    if (risk === "interfaces") {
+      const rows = (snapshot.interfaces || []).filter((row) => row.running === false).slice(0, 3);
+      return {
+        kind: "interfaces",
+        title: mode === "current" ? "受影响接口" : "历史接口记录",
+        note: "名称与依赖证据分层显示",
+        items: rows.map((row, index) => ({
+          label: clean(row.name || row.interface, `接口 ${index + 1}`),
+          value: mode === "current" ? "未运行" : "历史 Down 记录",
+          note: row.disabled === true ? "已停用" : "运行标记为 false",
+          tone: mode === "current" ? "danger" : "warn"
+        }))
+      };
+    }
+    if (risk === "collection" || risk === "evidence") {
+      const failureCount = state.facts.failures.count;
+      return {
+        kind: "collection",
+        title: "采集通道",
+        note: "REST 与 SSH 独立陈述",
+        items: [
+          { label: "REST", value: channels.rest.label, note: channelSignalNote(channels.rest), tone: channelTone(channels.rest) },
+          { label: "SSH", value: channels.ssh.label, note: channelSignalNote(channels.ssh), tone: channelTone(channels.ssh) },
+          { label: "失败端点", value: failureCount ? `已记录 ${failureCount}` : "未记录", note: "没有记录不等于没有故障", tone: failureCount ? "warn" : "missing" }
+        ]
+      };
+    }
+    if (risk === "wan-offline") {
+      const rows = wanRows(snapshot).filter((row) => row.running === false).slice(0, 3);
+      return {
+        kind: "wan",
+        title: mode === "current" ? "离线 WAN" : "历史 WAN 记录",
+        note: state.facts.wan.total > rows.length ? `优先显示 ${rows.length} 条，共 ${state.facts.wan.total} 条` : "按对象记录显示",
+        items: rows.map((row, index) => ({
+          label: clean(row.name || row.interface, `WAN ${index + 1}`),
+          value: mode === "current" ? "未运行" : "历史离线记录",
+          note: row.disabled === true ? "已停用" : "running=false",
+          tone: mode === "current" ? "danger" : "warn"
+        }))
+      };
+    }
+    if (state.scenario === "fleet") return fleetSignal(state, verification);
+    const rates = mode === "current" ? observedRates(snapshot) : null;
+    if (rates) return {
+      kind: "rates",
+      title: "当前吞吐",
+      note: "完整当前观测",
+      items: [
+        { label: "下载", value: formatRate(rates.down), tone: "trust" },
+        { label: "上传", value: formatRate(rates.up), tone: "trust" }
+      ]
+    };
+    return {
+      kind: "availability",
+      title: "速率观测",
+      note: "缺少完整下载或上传观测，不以零值替代",
+      items: [
+        { label: "下载", value: "未取得", tone: "missing" },
+        { label: "上传", value: "未取得", tone: "missing" }
+      ]
+    };
+  }
+  function routeInspection(context) {
+    var _a;
+    const { snapshot, mode, verification, route } = context;
+    const carrier = wanRows(snapshot).find((row) => row.running !== false && row.disabled !== true);
+    const routeCount = Array.isArray((_a = snapshot.routes) == null ? void 0 : _a.defaultRoutes) ? snapshot.routes.defaultRoutes.length : 0;
+    const available = mode !== "unavailable" && Boolean(route);
+    return {
+      key: "route",
+      label: "默认路由",
+      title: available ? clean((route == null ? void 0 : route.gateway) || (route == null ? void 0 : route.gatewayStatus), "活动默认路由") : "默认路由证据源",
+      status: verification === "verified" ? "当前活动记录" : verification === "historical" ? "历史活动记录" : "未核实",
+      tone: verification === "verified" ? "trust" : "warn",
+      note: available ? "以下字段来自明确的默认路由记录" : "检查记录来源与筛选条件，不使用首行兜底",
+      relations: available ? [
+        { label: "路由表", value: clean((route == null ? void 0 : route.table) || (route == null ? void 0 : route.routingTable), "main") },
+        { label: "网关", value: clean((route == null ? void 0 : route.gateway) || (route == null ? void 0 : route.gatewayStatus)) },
+        { label: "distance", value: clean(route == null ? void 0 : route.distance) }
+      ] : [
+        { label: "记录来源", value: "routes.defaultRoutes" },
+        { label: "记录数量", value: `${routeCount} 条` },
+        { label: "核验条件", value: "active=true 且未停用" }
+      ],
+      rows: available ? [
+        { key: "route-flags", label: "原始标记", value: "active=true · disabled=false" },
+        { key: "route-carrier", label: "关联出口", value: clean((carrier == null ? void 0 : carrier.name) || (carrier == null ? void 0 : carrier.interface), "未采集到关联") },
+        { key: "route-source", label: "证据来源", value: "默认路由记录" }
+      ] : [
+        { key: "route-boundary", label: "判断边界", value: "没有明确活动记录", note: "不推断默认出口" }
+      ],
+      disclosureTitle: "展开路由字段",
+      actionTitle: "打开默认路由原始证据"
+    };
+  }
+  function wanInspection(context) {
+    const { snapshot, mode, verification } = context;
+    const rows = wanRows(snapshot);
+    const selected = rows.find((row) => row.running === false) || rows.find((row) => row.running !== false && row.disabled !== true);
+    const available = mode !== "unavailable" && Boolean(selected);
+    return {
+      key: "wan",
+      label: "WAN 对象",
+      title: available ? clean((selected == null ? void 0 : selected.name) || (selected == null ? void 0 : selected.interface), "WAN 对象") : "WAN 对象证据源",
+      status: available ? (selected == null ? void 0 : selected.running) === false ? mode === "current" ? "未运行对象" : "历史离线记录" : "运行对象" : "无当前对象证据",
+      tone: available && (selected == null ? void 0 : selected.running) === false ? mode === "current" ? "danger" : "warn" : available ? "trust" : "warn",
+      note: available ? "对象关系用于下一步检查，不代表业务影响" : "保留对象不进入当前判断",
+      relations: available ? [
+        { label: "父接口", value: clean(selected == null ? void 0 : selected.parent, "未记录") },
+        { label: "接入类型", value: clean((selected == null ? void 0 : selected.access) || (selected == null ? void 0 : selected.kind), "未记录") },
+        { label: "路由后果", value: verification === "offline" ? "没有活动默认路由" : verification === "verified" ? "活动路由仍有记录" : "无法核实" }
+      ] : [
+        { label: "记录来源", value: "wan / pppoe" },
+        { label: "可用性", value: "不用于当前判断" }
+      ],
+      rows: available ? [
+        { key: "wan-source", label: "对象来源", value: Array.isArray(snapshot.wan) && snapshot.wan.length ? "wan" : "pppoe" },
+        { key: "wan-disabled", label: "停用标记", value: (selected == null ? void 0 : selected.disabled) === true ? "disabled=true" : "disabled=false" },
+        { key: "wan-impact", label: "影响边界", value: "未直接证明业务中断" }
+      ] : [],
+      disclosureTitle: "展开 WAN 依赖",
+      actionTitle: "打开 WAN 原始证据"
+    };
+  }
+  function collectionInspection(context) {
+    var _a, _b;
+    const { snapshot, channels, state } = context;
+    const selectedName = channels.rest.status !== "current" ? "REST" : channels.ssh.status !== "current" ? "SSH" : "采集";
+    const selected = selectedName === "REST" ? channels.rest : selectedName === "SSH" ? channels.ssh : null;
+    const target = clean(((_a = snapshot.meta) == null ? void 0 : _a.routerHost) || ((_b = snapshot.meta) == null ? void 0 : _b.target), "未记录");
+    return {
+      key: "collection",
+      label: "采集通道",
+      title: selectedName === "采集" ? "采集证据源" : `${selectedName} 采集通道`,
+      status: selected ? "检查错误与时间边界" : "通道记录可用",
+      tone: selected ? channelTone(selected) : "trust",
+      note: "通道摘要已在信号区；此处只补充来源、时间与错误记录",
+      relations: [
+        { label: "配置目标", value: target },
+        { label: "最近尝试", value: shortTimestamp(snapshot.updatedAt) },
+        { label: "明确成功", value: (selected == null ? void 0 : selected.successAt) ? shortTimestamp(selected.successAt) : successfulBusinessLabel(snapshot) }
+      ],
+      rows: [
+        { key: "collection-source", label: "采集来源", value: selectedName === "REST" ? "realtime / slow REST" : selectedName === "SSH" ? "static SSH" : "REST + SSH" },
+        { key: "collection-error", label: "错误记录", value: (selected == null ? void 0 : selected.error) ? clean(selected.error) : "未记录", note: selected ? channelAttemptAndSuccessNote(selected) : void 0, tone: (selected == null ? void 0 : selected.error) ? "warn" : "trust" },
+        { key: "collection-endpoints", label: "端点记录", value: state.facts.failures.count ? `${state.facts.failures.count} 个失败项` : "未记录", note: "未记录不等于没有故障" }
+      ],
+      disclosureTitle: "展开通道来源与错误",
+      actionTitle: "打开采集原始证据"
+    };
+  }
+  function resourceInspection(context) {
+    const { mode } = context;
+    return {
+      key: "resource",
+      label: "系统资源",
+      title: "系统资源",
+      status: mode === "current" ? "当前采样对象" : "历史采样对象",
+      tone: mode === "current" ? "danger" : "warn",
+      note: "当前值只在信号区出现；此处补充来源、策略与影响边界",
+      relations: [
+        { label: "采样来源", value: "RouterOS resource" },
+        { label: "阈值策略", value: "CPU/内存 85% · 磁盘 90%" },
+        { label: "影响边界", value: "未证明业务中断" }
+      ],
+      rows: [
+        { key: "resource-series", label: "采样序列", value: "CPU / 内存 / 磁盘" },
+        { key: "resource-record", label: "记录位置", value: "overview.history" },
+        { key: "resource-consequence", label: "已证实后果", value: "资源策略被触发" }
+      ],
+      disclosureTitle: "展开资源来源与策略",
+      actionTitle: "打开资源原始证据"
+    };
+  }
+  function interfaceInspection(context) {
+    const { snapshot, mode, verification } = context;
+    const selected = (snapshot.interfaces || []).find((row) => row.running === false);
+    return {
+      key: "interface",
+      label: "接口依赖",
+      title: clean((selected == null ? void 0 : selected.name) || (selected == null ? void 0 : selected.interface), "Down 接口"),
+      status: mode === "current" ? "依赖链待核对" : "历史依赖记录",
+      tone: mode === "current" ? "danger" : "warn",
+      note: "接口状态已在信号区；此处补充父级、VLAN、PPPoE 与路由关系",
+      relations: [
+        { label: "父接口", value: clean((selected == null ? void 0 : selected.parent) || (selected == null ? void 0 : selected.master)) },
+        { label: "VLAN", value: clean((selected == null ? void 0 : selected.vlan) || (selected == null ? void 0 : selected.vlanId)) },
+        { label: "PPPoE", value: clean((selected == null ? void 0 : selected.pppoeOut) || (selected == null ? void 0 : selected.pppoe)) }
+      ],
+      rows: [
+        { key: "interface-route", label: "默认路由关系", value: verification === "verified" ? "活动路由仍有记录" : verification === "offline" ? "没有活动默认路由" : "无法核实" },
+        { key: "interface-source", label: "对象来源", value: "interfaces" },
+        { key: "interface-impact", label: "业务影响", value: "未直接证明", note: "依赖与实际影响分别核对" }
+      ],
+      disclosureTitle: "展开接口依赖",
+      actionTitle: "打开接口原始证据"
+    };
+  }
+  function inspectionFor(risk, context) {
+    if (risk === "evidence" || risk === "collection") return collectionInspection(context);
+    if (risk === "wan-offline") return wanInspection(context);
+    if (risk === "resource") return resourceInspection(context);
+    if (risk === "interfaces") return interfaceInspection(context);
+    return routeInspection(context);
+  }
+  function focusCopy(risk, context) {
+    const { state, mode, verification, channels } = context;
+    if (risk === "evidence") return { label: "证据", tone: "danger", kicker: "无法建立当前判断", title: "当前业务状态不可判断", summary: "当前没有可用业务快照；WAN、路由、资源和速率不进入当前结论。" };
+    if (risk === "wan-offline") return { label: "出口", tone: mode === "current" ? "danger" : "warn", kicker: mode === "current" ? "出口中断" : "历史出口记录", title: mode === "current" ? `全部 ${state.facts.wan.total} 条 WAN 未运行` : `历史记录：${state.facts.wan.total} 条 WAN 曾全部离线`, summary: mode === "current" ? "没有活动默认路由；优先核对链路、认证和上游。" : "当前变化不可见；保留对象只用于恢复核对。" };
+    if (risk === "resource") return { label: "资源", tone: mode === "current" ? "danger" : "warn", kicker: mode === "current" ? "持续压力" : "历史资源记录", title: mode === "current" ? "资源策略已触发" : "历史记录：资源曾超过阈值", summary: mode === "current" ? "先核对持续样本与连接压力；出口结论不会由资源值自动推断。" : "保留值不代表当前资源状态。" };
+    if (risk === "interfaces") {
+      const names = state.facts.interfaces.downNames.slice(0, 2).join(" / ");
+      const objects = names ? state.facts.interfaces.down > 2 ? `${names} 等 ${state.facts.interfaces.down} 个接口` : names : `${state.facts.interfaces.down} 个接口`;
+      return { label: "接口", tone: mode === "current" ? "danger" : "warn", kicker: mode === "current" ? "转发对象异常" : "历史接口记录", title: `${mode === "historical" ? "历史记录：" : ""}${objects}未运行`, summary: verification === "verified" ? "活动默认路由仍有记录；接口依赖和业务影响需要分别核对。" : "活动默认路由无法按当前证据核实。" };
+    }
+    if (risk === "collection") {
+      const partial = channels.rest.status === "current" || channels.ssh.status === "current";
+      return { label: "采集", tone: "warn", kicker: "证据已降级", title: partial ? "采集通道部分可用" : "当前变化不可见", summary: "REST 与 SSH 分别陈述；历史成功记录不能作为当前业务状态。" };
+    }
+    if (state.scenario === "fleet") return { label: "范围", tone: "trust", kicker: "多对象巡检", title: verification === "verified" ? "对象范围已采集，默认路由已核实" : "对象范围已采集，默认路由未核实", summary: "规模仅描述观测范围；一旦出现事故，风险会取代范围成为焦点。" };
+    return { label: "路由", tone: verification === "verified" ? "trust" : "warn", kicker: "当前运行判断", title: verification === "verified" ? "网络可用，默认出口已核实" : "WAN 在运行，默认出口未核实", summary: verification === "verified" ? "活动路由、WAN 和采集周期均有当前证据。" : "没有明确 active=true 的默认路由记录。" };
+  }
+  function detailKeysFor(risk) {
+    if (risk === "evidence" || risk === "collection") return ["target", "collection", "boundary"];
+    if (risk === "wan-offline") return ["wan", "route", "collection", "boundary"];
+    if (risk === "resource") return ["resource", "collection", "boundary"];
+    if (risk === "interfaces") return ["interfaces", "route", "boundary"];
+    return ["route", "wan", "collection", "boundary"];
+  }
+  function focusFor(risk, context) {
+    const copy = focusCopy(risk, context);
+    const key = risk || (context.state.scenario === "fleet" ? "fleet-scope" : "route");
+    return {
+      key,
+      risk,
+      label: copy.label,
+      tone: copy.tone,
+      kicker: copy.kicker,
+      title: copy.title,
+      summary: copy.summary,
+      scope: scopeFor(context),
+      proofs: proofFor(risk, context),
+      signal: signalFor(risk, context),
+      inspection: inspectionFor(risk, context),
+      detailSectionKeys: detailKeysFor(risk)
+    };
+  }
+  function buildMobileFocuses(context) {
+    if (!context.risks.length) return [focusFor(null, context)];
+    return context.risks.map((risk) => focusFor(risk, context));
   }
   function evidenceMode(snapshot, state) {
     if (isSnapshotUnavailable(snapshot) || state.scenario === "no-snapshot" || state.facts.freshness.credibility === "unavailable") return "unavailable";
@@ -9987,7 +10848,7 @@ var PanelFramework = function(exports) {
     return {
       label: "证据不可用",
       note: "不作当前业务判断",
-      time: success === "成功时间未记录" ? success : `上次成功 ${success}`,
+      time: success === "成功时间未记录" ? success : `最近成功采样 ${success}`,
       tone: "danger"
     };
   }
@@ -9997,7 +10858,7 @@ var PanelFramework = function(exports) {
     if (!route) return "unknown";
     return mode === "current" ? "verified" : "historical";
   }
-  function orderedRisks(snapshot, state, mode, channels) {
+  function orderedRisks(state, mode, channels) {
     if (mode === "unavailable") return ["evidence"];
     const risks = [];
     const wanOffline = state.counts.wanTotal > 0 && state.counts.wanOnline === 0;
@@ -10007,310 +10868,29 @@ var PanelFramework = function(exports) {
     const add = (risk, present) => {
       if (present && !risks.includes(risk)) risks.push(risk);
     };
-    add("collection", collection && mode === "historical");
-    add("wan-offline", wanOffline && state.scenario === "all-offline");
     add("resource", resource);
+    add("interfaces", state.scenario === "interfaces-down" && interfaces);
+    add("wan-offline", wanOffline && mode === "current");
     add("interfaces", interfaces);
-    add("wan-offline", wanOffline);
-    add("collection", collection && mode !== "historical");
+    add("collection", collection);
+    add("wan-offline", wanOffline && mode !== "current");
     return risks;
   }
-  function routeFact(verification) {
-    if (verification === "verified") return { label: "默认路由", value: "已核实", note: "active=true", tone: "trust" };
-    if (verification === "historical") return { label: "默认路由", value: "历史记录", note: "不代表当前", tone: "warn" };
-    if (verification === "offline") return { label: "活动路由", value: "0", note: "当前记录", tone: "danger" };
-    return { label: "默认路由", value: "无法核实", note: "无明确活动记录", tone: "warn" };
-  }
-  function channelTone(channel) {
-    if (channel.status === "current") return "trust";
-    if (channel.status === "unavailable") return "missing";
-    return channel.status === "failed" ? "danger" : "warn";
-  }
-  function channelView(snapshot, channel) {
+  function scopeNote(snapshot, state) {
     var _a;
-    if (channel.status !== "current" || !channel.successAt) return { label: channel.label, tone: channelTone(channel) };
-    const parsed = Date.parse(channel.successAt);
-    const age = Number.isNaN(parsed) ? Infinity : Math.max(0, Date.now() - parsed) / 1e3;
-    const currentWindow = Math.max(300, Number(((_a = snapshot.meta) == null ? void 0 : _a.pollSeconds) || 60) * 5);
-    return age > currentWindow ? { label: "历史成功", tone: "warn" } : { label: channel.label, tone: "trust" };
-  }
-  function collectionFact(snapshot, label, channel) {
-    const view = channelView(snapshot, channel);
-    return { label, value: view.label, note: channel.successAt ? `上次成功 ${shortTimestamp(channel.successAt)}` : "成功时间未记录", tone: view.tone };
-  }
-  function primaryRisk(risks) {
-    return risks[0] || null;
-  }
-  function verdict(snapshot, state, mode, verification, risks, channels) {
-    const primary = primaryRisk(risks);
-    if (primary === "evidence") return { kicker: "证据边界", title: "当前业务状态不可判断", summary: "没有成功业务快照；路由、速率、资源与终端数字不作当前结论。" };
-    if (primary === "wan-offline") return { kicker: "出口中断", title: mode === "historical" ? `历史记录：${state.facts.wan.total} 条 WAN 全部离线` : `全部 ${state.facts.wan.total} 条 WAN 未运行`, summary: "没有明确活动默认路由；先核对物理链路与 PPPoE。" };
-    if (primary === "resource") return { kicker: "资源压力", title: mode === "historical" ? "历史记录：资源曾超过阈值" : "资源压力已超过阈值", summary: "首屏改为 CPU、内存、磁盘与连续样本；流量速率停止展示。" };
-    if (primary === "interfaces") return { kicker: "接口异常", title: `${state.facts.interfaces.down} 个接口未运行`, summary: verification === "verified" ? "默认路由仍有活动记录；接口依赖和实际业务影响需要分别核对。" : "活动默认路由无法按当前证据核实。" };
-    if (primary === "collection") {
-      const restView = channelView(snapshot, channels.rest);
-      const sshView = channelView(snapshot, channels.ssh);
-      const bothHistorical = restView.label === "历史成功" && sshView.label === "历史成功";
-      const partial = channels.rest.status === "current" || channels.ssh.status === "current";
-      return { kicker: "采集状态", title: bothHistorical ? "采样记录已过期" : partial ? "采集通道部分可用" : "当前变化不可见", summary: `REST ${restView.label} · SSH ${sshView.label}；历史记录不能当作实时状态。` };
-    }
-    if (verification === "verified") return { kicker: "运行结论", title: state.scenario === "fleet" ? "多线路在运行，默认出口已核实" : "网络可用，默认出口已核实", summary: "WAN 载体、活动默认路由与采集通道均有当前证据。" };
-    return { kicker: "运行结论", title: "WAN 在运行，默认出口未核实", summary: "存在运行中的 WAN，但没有明确 active=true 的默认路由记录。" };
-  }
-  function factsFor(snapshot, state, mode, verification, risks, channels) {
-    const primary = primaryRisk(risks);
-    if (primary === "evidence") return [
-      collectionFact(snapshot, "REST", channels.rest),
-      collectionFact(snapshot, "SSH", channels.ssh),
-      { label: "失败端点", value: formatNumber(state.facts.failures.count), note: "恢复线索", tone: state.facts.failures.count ? "warn" : "missing" }
-    ];
-    if (primary === "resource") return [
-      { label: "CPU", value: formatPercent(state.facts.resource.cpu), note: "阈值 85%", tone: "danger" },
-      { label: "内存", value: formatPercent(state.facts.resource.memory), note: "阈值 85%", tone: "danger" },
-      { label: "磁盘", value: formatPercent(state.facts.resource.disk), note: "阈值 90%", tone: "danger" }
-    ];
-    if (primary === "wan-offline") return [
-      { label: "WAN", value: `0 / ${state.facts.wan.total}`, note: mode === "current" ? "当前记录" : "历史记录", tone: "danger" },
-      routeFact(verification),
-      { label: "采集", value: `${channels.rest.label} + ${channels.ssh.label}`, note: mode === "current" ? "本周期" : "历史边界", tone: mode === "current" ? "trust" : "warn" }
-    ];
-    if (primary === "interfaces") return [
-      { label: "接口 Down", value: `${state.facts.interfaces.down} / ${state.facts.interfaces.total}`, note: mode === "current" ? "当前对象" : "历史记录", tone: mode === "current" ? "danger" : "warn" },
-      routeFact(verification),
-      { label: "WAN", value: `${state.facts.wan.online} / ${state.facts.wan.total}`, note: "运行记录", tone: state.facts.wan.online ? "trust" : "danger" }
-    ];
-    if (primary === "collection") return [
-      collectionFact(snapshot, "REST", channels.rest),
-      collectionFact(snapshot, "SSH", channels.ssh),
-      { label: "失败端点", value: formatNumber(state.facts.failures.count), note: "当前尝试", tone: state.facts.failures.count ? "warn" : "missing" }
-    ];
-    return [
-      routeFact(verification),
-      { label: "WAN", value: `${state.facts.wan.online} / ${state.facts.wan.total}`, note: state.scenario === "fleet" ? "线路范围" : "运行对象", tone: state.facts.wan.online ? "trust" : "warn" },
-      { label: "采集", value: channels.rest.status === "current" && channels.ssh.status === "current" ? "2 / 2" : `${channels.rest.label} + ${channels.ssh.label}`, note: "REST + SSH", tone: channels.rest.status === "current" && channels.ssh.status === "current" ? "trust" : "warn" }
-    ];
-  }
-  function signalFor(snapshot, state, mode, risks, channels, verification) {
-    const primary = primaryRisk(risks);
-    if (primary === "resource") {
-      const samples = resourceSamples(snapshot);
-      return {
-        kind: "resource",
-        title: "资源压力",
-        note: samples.observed ? `尾部连续 ${samples.trailingStreak} 个样本超限；共 ${samples.observed} 个有效样本` : "没有历史样本序列",
-        items: [
-          { label: "CPU", value: formatPercent(state.facts.resource.cpu), percent: state.facts.resource.cpu, threshold: 85, tone: "danger" },
-          { label: "内存", value: formatPercent(state.facts.resource.memory), percent: state.facts.resource.memory, threshold: 85, tone: "danger" },
-          { label: "磁盘", value: formatPercent(state.facts.resource.disk), percent: state.facts.resource.disk, threshold: 90, tone: "danger" }
-        ]
-      };
-    }
-    if (state.scenario === "fleet" && mode === "current" && primary !== "wan-offline") {
-      return fleetSignal(state, verification);
-    }
-    if (primary === "interfaces") {
-      const downRows = (snapshot.interfaces || []).filter((row) => row.running === false).slice(0, 3);
-      return {
-        kind: "interfaces",
-        title: "受影响接口",
-        note: "对象状态与依赖分开核对",
-        items: downRows.map((row, index) => ({
-          label: clean(row.name || row.interface, `接口 ${index + 1}`),
-          value: "未运行",
-          note: `父级 ${clean(row.parent || row.master)} · VLAN ${clean(row.vlan || row.vlanId)}`,
-          tone: "danger"
-        }))
-      };
-    }
-    if (primary === "collection" || primary === "evidence") {
-      const restView = channelView(snapshot, channels.rest);
-      const sshView = channelView(snapshot, channels.ssh);
-      return {
-        kind: "collection",
-        title: "采集通道",
-        note: "成功时间与当前错误独立记录",
-        items: [
-          { label: "REST", value: restView.label, note: channelAttemptAndSuccessNote(channels.rest), tone: restView.tone },
-          { label: "SSH", value: sshView.label, note: channelAttemptAndSuccessNote(channels.ssh), tone: sshView.tone },
-          { label: "失败端点", value: formatNumber(state.facts.failures.count), note: "当前采集尝试", tone: state.facts.failures.count ? "warn" : "missing" }
-        ]
-      };
-    }
-    if (primary === "wan-offline") {
-      const offline = wanRows(snapshot).filter((row) => row.running === false).slice(0, 3);
-      return {
-        kind: "wan",
-        title: "离线 WAN 对象",
-        note: state.facts.wan.total > offline.length ? `显示 ${offline.length} 条，共 ${state.facts.wan.total} 条` : "当前对象记录",
-        items: offline.map((row, index) => ({ label: clean(row.name || row.interface, `WAN ${index + 1}`), value: "未运行", note: clean(row.parent, "父接口未记录"), tone: "danger" }))
-      };
-    }
-    const rates = mode === "current" ? observedRates(snapshot) : null;
-    if (rates) return {
-      kind: "rates",
-      title: "当前速率",
-      note: "完整当前观测",
-      items: [
-        { label: "下载", value: formatRate(rates.down), tone: "trust" },
-        { label: "上传", value: formatRate(rates.up), tone: "trust" }
-      ]
-    };
-    return {
-      kind: "availability",
-      title: "速率观测",
-      note: "缺少完整的下载或上传观测，不以零值替代",
-      items: [
-        { label: "下载", value: "未取得", tone: "missing" },
-        { label: "上传", value: "未取得", tone: "missing" }
-      ]
-    };
-  }
-  function decisionsFor(snapshot, state, mode, risks, verification, route, channels) {
-    const samples = resourceSamples(snapshot);
-    const restView = channelView(snapshot, channels.rest);
-    const sshView = channelView(snapshot, channels.ssh);
-    const riskRows = risks.map((risk) => {
-      if (risk === "evidence") return { key: risk, label: "证据", title: "业务与转发状态不作判断", note: successfulBusinessAt(snapshot) ? `仅保留上次成功记录 ${successfulBusinessLabel(snapshot)}` : "没有明确成功时间", tone: "danger" };
-      const incident = incidentRiskDecision(risk, state, mode, samples);
-      if (incident) return incident;
-      return { key: risk, label: "采集", title: `REST ${restView.label} · SSH ${sshView.label}`, note: mode === "historical" ? "当前变化不可见" : "部分端点需要复核", tone: "warn" };
-    });
-    if (riskRows.length) return riskRows;
-    return [
-      {
-        key: "route-proof",
-        label: "出口",
-        title: verification === "verified" ? clean((route == null ? void 0 : route.gateway) || (route == null ? void 0 : route.gatewayStatus)) : "默认出口未核实",
-        note: verification === "verified" ? `路由表 ${clean((route == null ? void 0 : route.table) || (route == null ? void 0 : route.routingTable), "main")} · distance ${clean(route == null ? void 0 : route.distance)}` : "没有明确 active=true 记录",
-        tone: verification === "verified" ? "trust" : "warn"
-      },
-      {
-        key: "resource-proof",
-        label: "资源",
-        title: `CPU ${formatPercent(state.facts.resource.cpu)} · 内存 ${formatPercent(state.facts.resource.memory)}`,
-        note: "未达到阻断阈值",
-        tone: "trust"
-      }
-    ];
-  }
-  function objectRowsForWan(snapshot, mode) {
-    if (mode === "unavailable") return [{ key: "wan-boundary", label: "对象记录", value: "不用于当前判断", note: "请先恢复成功业务采样", tone: "warn" }];
-    return wanRows(snapshot).slice(0, 4).map((wan, index) => ({
-      key: `wan-${index}`,
-      label: clean(wan.name || wan.interface, `WAN ${index + 1}`),
-      value: mode === "historical" ? "历史记录" : wan.running === false ? "未运行" : wan.disabled === true ? "已停用" : "运行",
-      note: clean(wan.parent, "父接口未记录"),
-      tone: mode === "current" && wan.running === false ? "danger" : mode === "current" ? "trust" : "warn"
-    }));
-  }
-  function objectRowsForRoute(snapshot, mode) {
-    if (mode === "unavailable") return [{ key: "route-boundary", label: "路由记录", value: "不用于当前判断", note: "网关、距离与活动标记已从概览隐藏", tone: "warn" }];
-    return routeRows(snapshot).slice(0, 4).map((route, index) => ({
-      key: `route-${index}`,
-      label: `默认路由 ${index + 1}`,
-      value: route.active === true && route.disabled !== true ? mode === "current" ? "活动" : "历史活动记录" : "非活动",
-      note: `表 ${clean(route.table || route.routingTable, "main")} · distance ${clean(route.distance)}`,
-      tone: mode === "current" && route.active === true && route.disabled !== true ? "trust" : "warn"
-    }));
-  }
-  function objectViews(snapshot, state, mode, verification, route, channels, risks) {
-    const runningWan = wanRows(snapshot).find((wan) => wan.running !== false && wan.disabled !== true);
-    const wanUnavailable = mode === "unavailable";
-    const routeUnavailable = mode === "unavailable";
-    const samples = resourceSamples(snapshot);
-    const restView = channelView(snapshot, channels.rest);
-    const sshView = channelView(snapshot, channels.ssh);
-    return [
-      {
-        key: "wan",
-        label: "WAN",
-        category: "对象",
-        title: wanUnavailable ? "WAN 状态不可判断" : clean((runningWan == null ? void 0 : runningWan.name) || (runningWan == null ? void 0 : runningWan.interface), "WAN 对象"),
-        status: wanUnavailable ? "无当前证据" : mode === "historical" ? "历史对象记录" : `${state.facts.wan.online} / ${state.facts.wan.total} 在线`,
-        tone: wanUnavailable ? "warn" : state.facts.wan.online ? mode === "current" ? "trust" : "warn" : "danger",
-        note: wanUnavailable ? "保留对象不进入当前状态判断" : mode === "historical" ? "对象关系只代表上次成功采样" : "运行对象与默认出口分别核实",
-        relations: wanUnavailable ? [] : [
-          { label: "上游", value: clean(runningWan == null ? void 0 : runningWan.parent, "未记录") },
-          { label: "接口", value: clean((runningWan == null ? void 0 : runningWan.name) || (runningWan == null ? void 0 : runningWan.interface), "未记录") },
-          { label: "路由", value: verification === "verified" ? clean((route == null ? void 0 : route.table) || (route == null ? void 0 : route.routingTable), "main") : verification === "historical" ? "历史记录" : "未核实" }
-        ],
-        rows: objectRowsForWan(snapshot, mode),
-        disclosureTitle: "展开 WAN 对象"
-      },
-      {
-        key: "route",
-        label: "路由",
-        category: "对象",
-        title: routeUnavailable ? "默认路由不可判断" : verification === "verified" ? clean((route == null ? void 0 : route.gateway) || (route == null ? void 0 : route.gatewayStatus)) : verification === "historical" ? "历史活动路由" : verification === "offline" ? "无活动默认路由" : "默认路由未核实",
-        status: routeUnavailable ? "无当前证据" : verification === "verified" ? "活动 · 已核实" : verification === "historical" ? "历史记录" : verification === "offline" ? "离线" : "未知",
-        tone: verification === "verified" ? "trust" : verification === "offline" ? "danger" : "warn",
-        note: routeUnavailable ? "活动标记、网关与距离已从概览隐藏" : "只认 active=true 且未停用的记录",
-        relations: routeUnavailable || !route ? [] : [
-          { label: "路由表", value: clean(route.table || route.routingTable, "main") },
-          { label: "distance", value: clean(route.distance) },
-          { label: "载体", value: clean(route.gateway || route.gatewayStatus) }
-        ],
-        rows: objectRowsForRoute(snapshot, mode),
-        disclosureTitle: "展开默认路由记录"
-      },
-      {
-        key: "collection",
-        label: "采集",
-        category: "通道",
-        title: restView.label === "历史成功" && sshView.label === "历史成功" ? "采集记录已过期" : channels.rest.status === "current" && channels.ssh.status === "current" ? "采集通道可用" : channels.rest.status === "current" || channels.ssh.status === "current" ? "采集通道部分可用" : "采集通道需要恢复",
-        status: `REST ${restView.label} · SSH ${sshView.label}`,
-        tone: restView.tone === "trust" && sshView.tone === "trust" ? "trust" : "warn",
-        note: "能力配置不作为当前健康证明",
-        relations: [
-          { label: "REST", value: restView.label, tone: restView.tone },
-          { label: "SSH", value: sshView.label, tone: sshView.tone },
-          { label: "最近尝试", value: shortTimestamp(snapshot.updatedAt) }
-        ],
-        rows: [
-          { key: "rest-success", label: "REST 上次成功", value: channels.rest.successAt ? shortTimestamp(channels.rest.successAt) : "未记录", note: channels.rest.error || void 0, tone: restView.tone },
-          { key: "ssh-success", label: "SSH 上次成功", value: channels.ssh.successAt ? shortTimestamp(channels.ssh.successAt) : "未记录", note: channels.ssh.error || void 0, tone: sshView.tone },
-          { key: "endpoint-failures", label: "失败端点", value: formatNumber(state.facts.failures.count), note: "当前采集尝试" }
-        ],
-        disclosureTitle: "展开采集时间与错误"
-      },
-      {
-        key: "resource",
-        label: "资源",
-        category: "系统",
-        title: mode === "unavailable" ? "资源状态不可判断" : mode === "historical" ? risks.includes("resource") ? "历史记录：资源曾超过阈值" : "历史资源记录" : risks.includes("resource") ? "资源超过阈值" : "资源仍有余量",
-        status: mode === "unavailable" ? "无当前证据" : mode === "historical" ? "不代表当前" : risks.includes("resource") ? "需要处理" : "未超过阈值",
-        tone: mode === "unavailable" || mode === "historical" ? "warn" : risks.includes("resource") ? "danger" : "trust",
-        note: mode === "unavailable" ? "CPU、内存与磁盘数字不展示" : mode === "historical" ? "保留值仅用于恢复后对照" : samples.observed ? `尾部连续超限 ${samples.trailingStreak} 个样本` : "历史样本未取得",
-        relations: mode === "unavailable" ? [] : [
-          { label: mode === "historical" ? "历史 CPU" : "CPU", value: formatPercent(state.facts.resource.cpu) },
-          { label: mode === "historical" ? "历史内存" : "内存", value: formatPercent(state.facts.resource.memory) },
-          { label: mode === "historical" ? "历史磁盘" : "磁盘", value: formatPercent(state.facts.resource.disk) }
-        ],
-        rows: mode === "unavailable" ? [{ key: "resource-boundary", label: "资源记录", value: "不用于当前判断", tone: "warn" }] : [
-          { key: "threshold", label: "阈值", value: "CPU/内存 85% · 磁盘 90%" },
-          { key: "samples", label: "有效样本", value: samples.observed ? `${samples.observed} 个` : "未取得", note: samples.observed ? `${samples.exceeded} 个超限，尾部连续 ${samples.trailingStreak} 个` : void 0 }
-        ],
-        disclosureTitle: "展开资源阈值与样本"
-      }
-    ];
-  }
-  function initialObjectFor(risks) {
-    const primary = primaryRisk(risks);
-    if (primary === "evidence" || primary === "collection") return "collection";
-    if (primary === "resource") return "resource";
-    if (primary === "wan-offline") return "wan";
-    if (primary === "interfaces") return "route";
-    return "wan";
+    if (state.scenario !== "fleet" && ((_a = snapshot.meta) == null ? void 0 : _a.scaleScenario) !== "fleet") return "";
+    const runningInterfaces = Math.max(0, state.facts.interfaces.total - state.facts.interfaces.down);
+    return `范围 ${state.facts.wan.online} / ${state.facts.wan.total} WAN · ${runningInterfaces} / ${state.facts.interfaces.total} 接口`;
   }
   function buildMobileNativeModel(snapshot, state) {
     const mode = evidenceMode(snapshot, state);
     const channels = collectionChannels(snapshot);
     const route = activeRoute(snapshot);
     const verification = routeVerification(mode, state, route);
-    const risks = orderedRisks(snapshot, state, mode, channels);
+    const risks = orderedRisks(state, mode, channels);
     const evidence = evidenceCopy(snapshot, state, mode);
-    const copy = verdict(snapshot, state, mode, verification, risks, channels);
     const device = configuredDevice(snapshot, state, mode);
+    const focuses = buildMobileFocuses({ snapshot, state, mode, verification, route, risks, channels });
     return {
       scenario: state.scenario,
       incident: risks.length > 0,
@@ -10323,126 +10903,128 @@ var PanelFramework = function(exports) {
       routeVerification: verification,
       device: device.identity,
       deviceNote: device.note,
-      kicker: copy.kicker,
-      title: copy.title,
-      summary: copy.summary,
-      facts: factsFor(snapshot, state, mode, verification, risks, channels),
-      signal: signalFor(snapshot, state, mode, risks, channels, verification),
-      decisions: decisionsFor(snapshot, state, mode, risks, verification, route, channels),
-      objects: objectViews(snapshot, state, mode, verification, route, channels, risks),
-      initialObject: initialObjectFor(risks),
-      detailSections: buildDetailSections(snapshot, state, mode, risks),
-      actionTitle: "打开完整原始证据",
-      actionNote: "路由、WAN、采集、接口与只读边界"
+      scopeNote: scopeNote(snapshot, state),
+      focuses,
+      initialFocus: focuses[0].key,
+      detailSections: buildDetailSections(snapshot, state, mode, risks)
     };
   }
-  function MobileNativeConsole({ snapshot, state }) {
-    const [detailOpen, setDetailOpen] = reactExports.useState(false);
-    const model = buildMobileNativeModel(snapshot, state);
-    const [selectedObject, setSelectedObject] = reactExports.useState(model.initialObject);
-    const [expandedObjects, setExpandedObjects] = reactExports.useState({});
-    const detailButtonRef = reactExports.useRef(null);
-    const detailOpenRef = reactExports.useRef(false);
-    const returnScrollRef = reactExports.useRef(0);
-    const restoreMountTimerRef = reactExports.useRef(0);
-    const restoreRetryRef = reactExports.useRef(0);
+  const TABLET_QUERY = "(min-width: 700px)";
+  function useTabletWorkspace() {
+    const [tablet, setTablet] = reactExports.useState(() => typeof window !== "undefined" && window.matchMedia(TABLET_QUERY).matches);
     reactExports.useEffect(() => {
-      setSelectedObject(model.initialObject);
-      setExpandedObjects({});
-    }, [model.initialObject, model.scenario]);
-    const cancelFocusRestore = reactExports.useCallback(() => {
-      window.clearTimeout(restoreMountTimerRef.current);
-      window.clearTimeout(restoreRetryRef.current);
-      restoreMountTimerRef.current = 0;
-      restoreRetryRef.current = 0;
+      const media = window.matchMedia(TABLET_QUERY);
+      const sync = () => setTablet(media.matches);
+      sync();
+      media.addEventListener("change", sync);
+      return () => media.removeEventListener("change", sync);
     }, []);
-    const restoreDetailFocus = reactExports.useCallback(() => {
-      cancelFocusRestore();
-      let attempts = 0;
-      const restoreWhenMounted = () => {
-        restoreMountTimerRef.current = 0;
-        const target = detailButtonRef.current;
-        if (!(target == null ? void 0 : target.isConnected)) {
-          attempts += 1;
-          if (attempts < 20) restoreMountTimerRef.current = window.setTimeout(restoreWhenMounted, 16);
+    return tablet;
+  }
+  function detailFocusFromHistory(state) {
+    if (!state || typeof state !== "object") return null;
+    const view = state.mobileNativeView;
+    return (view == null ? void 0 : view.view) === "detail" && view.focus ? view.focus : null;
+  }
+  function MobileNativeConsole({ snapshot, state }) {
+    const model = reactExports.useMemo(() => buildMobileNativeModel(snapshot, state), [snapshot, state]);
+    const initialHistoryFocus = typeof window !== "undefined" ? detailFocusFromHistory(window.history.state) : null;
+    const validInitialFocus = initialHistoryFocus && model.focuses.some((focus2) => focus2.key === initialHistoryFocus) ? initialHistoryFocus : model.initialFocus;
+    const [selectedFocus, setSelectedFocus] = reactExports.useState(validInitialFocus);
+    const [detailFocus, setDetailFocus] = reactExports.useState(validInitialFocus);
+    const [detailOpen, setDetailOpen] = reactExports.useState(Boolean(initialHistoryFocus));
+    const [expandedByFocus, setExpandedByFocus] = reactExports.useState({});
+    const tablet = useTabletWorkspace();
+    const detailButtonRef = reactExports.useRef(null);
+    const detailOpenRef = reactExports.useRef(detailOpen);
+    const returnScrollRef = reactExports.useRef(0);
+    const restoreFocusPendingRef = reactExports.useRef(false);
+    const focusSignature = model.focuses.map((focus2) => focus2.key).join("|");
+    const focus = model.focuses.find((item) => item.key === selectedFocus) || model.focuses[0];
+    const detailFocusView = model.focuses.find((item) => item.key === detailFocus) || focus;
+    reactExports.useEffect(() => {
+      const keys = new Set(model.focuses.map((item) => item.key));
+      setSelectedFocus((current) => keys.has(current) ? current : model.initialFocus);
+      setDetailFocus((current) => keys.has(current) ? current : model.initialFocus);
+      setExpandedByFocus((current) => Object.fromEntries(
+        Object.entries(current).filter(([key]) => keys.has(key))
+      ));
+    }, [focusSignature, model.focuses, model.initialFocus]);
+    reactExports.useEffect(() => {
+      const previous = window.history.scrollRestoration;
+      window.history.scrollRestoration = "manual";
+      return () => {
+        window.history.scrollRestoration = previous;
+      };
+    }, []);
+    reactExports.useLayoutEffect(() => {
+      var _a;
+      if (detailOpen || !restoreFocusPendingRef.current) return;
+      restoreFocusPendingRef.current = false;
+      (_a = detailButtonRef.current) == null ? void 0 : _a.focus({ preventScroll: true });
+      window.scrollTo({ top: returnScrollRef.current, behavior: "auto" });
+    }, [detailOpen, selectedFocus]);
+    reactExports.useEffect(() => {
+      const onPopState = (event) => {
+        const historyFocus = detailFocusFromHistory(event.state);
+        if (historyFocus && model.focuses.some((item) => item.key === historyFocus)) {
+          restoreFocusPendingRef.current = false;
+          detailOpenRef.current = true;
+          setSelectedFocus(historyFocus);
+          setDetailFocus(historyFocus);
+          setDetailOpen(true);
           return;
         }
-        target.focus({ preventScroll: true });
-        window.scrollTo({ top: returnScrollRef.current, behavior: "auto" });
-        restoreRetryRef.current = window.setTimeout(() => {
-          restoreRetryRef.current = 0;
-          const active = document.activeElement;
-          if ((!active || active === document.body || !active.isConnected) && target.isConnected) {
-            target.focus({ preventScroll: true });
-            window.scrollTo({ top: returnScrollRef.current, behavior: "auto" });
-          }
-        }, 80);
-      };
-      restoreMountTimerRef.current = window.setTimeout(restoreWhenMounted, 0);
-    }, [cancelFocusRestore]);
-    reactExports.useEffect(() => {
-      const onPopState = () => {
-        if (!detailOpenRef.current) return;
+        if (detailOpenRef.current) restoreFocusPendingRef.current = true;
         detailOpenRef.current = false;
         setDetailOpen(false);
-        restoreDetailFocus();
       };
       window.addEventListener("popstate", onPopState);
-      return () => {
-        window.removeEventListener("popstate", onPopState);
-        cancelFocusRestore();
-      };
-    }, [cancelFocusRestore, restoreDetailFocus]);
-    const openDetail = () => {
-      cancelFocusRestore();
+      return () => window.removeEventListener("popstate", onPopState);
+    }, [focusSignature, model.focuses]);
+    const openDetail = reactExports.useCallback(() => {
       returnScrollRef.current = window.scrollY;
+      restoreFocusPendingRef.current = false;
       detailOpenRef.current = true;
-      window.history.pushState({ ...window.history.state || {}, mobileNativeDetail: true }, "");
+      setDetailFocus(focus.key);
+      window.history.pushState({
+        ...window.history.state || {},
+        mobileNativeView: { view: "detail", focus: focus.key }
+      }, "");
       setDetailOpen(true);
-    };
-    const closeDetail = () => {
-      var _a;
-      if ((_a = window.history.state) == null ? void 0 : _a.mobileNativeDetail) window.history.back();
-      else {
-        detailOpenRef.current = false;
-        setDetailOpen(false);
-        restoreDetailFocus();
+    }, [focus.key]);
+    const closeDetail = reactExports.useCallback(() => {
+      if (detailFocusFromHistory(window.history.state)) {
+        window.history.back();
+        return;
       }
+      restoreFocusPendingRef.current = true;
+      detailOpenRef.current = false;
+      setDetailOpen(false);
+    }, []);
+    if (detailOpen) return /* @__PURE__ */ jsxRuntimeExports.jsx(MobileNativeDetail, { model, focus: detailFocusView, onBack: closeDetail });
+    const shared = {
+      model,
+      focus,
+      selected: selectedFocus,
+      onSelect: setSelectedFocus,
+      expanded: tablet ? expandedByFocus[focus.key] !== false : Boolean(expandedByFocus[focus.key]),
+      onExpandedChange: (expanded) => setExpandedByFocus((current) => ({ ...current, [focus.key]: expanded })),
+      onOpenDetail: openDetail,
+      detailButtonRef
     };
-    if (detailOpen) return /* @__PURE__ */ jsxRuntimeExports.jsx(MobileNativeDetail, { model, onBack: closeDetail });
-    return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+    return /* @__PURE__ */ jsxRuntimeExports.jsx(
       "main",
       {
-        className: `mn-shell is-${model.scenario} is-evidence-${model.evidenceMode}`,
+        className: `mn-shell is-${model.scenario} is-evidence-${model.evidenceMode} is-focus-${focus.key}`,
         "data-mobile-native-console": true,
         "data-mobile-native-scenario": model.scenario,
         "data-mobile-native-evidence": model.evidenceMode,
         "data-mobile-route-verification": model.routeVerification,
         "data-mobile-native-incident": model.incident ? "true" : "false",
-        children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { className: "mn-navigation", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: model.device }),
-              /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: model.deviceNote })
-            ] }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "mn-readonly-label", children: "只读监控" })
-          ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mn-mobile-workspace", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx(MobileNativePatrolBrief, { model }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx(
-              MobileNativeObjectWorkspace,
-              {
-                model,
-                selected: selectedObject,
-                onSelect: setSelectedObject,
-                expanded: Boolean(expandedObjects[selectedObject]),
-                onExpandedChange: (expanded) => setExpandedObjects((current) => ({ ...current, [selectedObject]: expanded })),
-                onOpenDetail: openDetail,
-                detailButtonRef
-              }
-            )
-          ] })
-        ]
+        "data-mobile-native-layout": tablet ? "tablet" : "phone",
+        "data-mobile-native-primary-focus": model.initialFocus,
+        children: tablet ? /* @__PURE__ */ jsxRuntimeExports.jsx(MobileNativeTabletHome, { ...shared }) : /* @__PURE__ */ jsxRuntimeExports.jsx(MobileNativePhoneHome, { ...shared })
       }
     );
   }

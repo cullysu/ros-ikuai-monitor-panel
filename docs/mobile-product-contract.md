@@ -1,131 +1,208 @@
-# Mobile patrol brief and object workspace contract
+# Mobile risk-focus workspace contract
 
-## Product problem
+## Product task
 
-The phone surface supports a five-to-ten-second read-only patrol. It is not a small desktop dashboard and it is not a table of all available fields. The operator must be able to answer, in order:
+The phone surface supports a five-to-ten-second, read-only network patrol. It must let an operator answer, in order:
 
-1. Which configured router am I looking at?
-2. Can the displayed evidence support a present-state judgment?
-3. Is service usable, and what is the highest business-impacting risk?
-4. Which WAN/default-route/collection/resource facts prove that conclusion?
-5. Which network object or raw record should I inspect next?
+1. Which configured target is being observed?
+2. Can the evidence support a current-state judgment?
+3. What is the highest-priority risk right now?
+4. Which observations prove that judgment?
+5. What signal should be inspected now?
+6. Which object, dependency, or raw record should be opened next?
 
-Visual novelty is not a goal. Truthful evidence, scan speed, object clarity, touch predictability, and readable density are release-blocking outcomes.
+The interface is not a small desktop console, a generic health dashboard, a four-tab object browser, or a diagnostic specification sheet.
 
-## Selected direction: patrol brief plus object workspace
+## Selected direction: risk focus
 
-Three materially different directions were compared at `390x844` and `768x1024`:
+Three new directions were compared after the rejected patrol-brief release:
 
-- **Patrol brief:** strongest continuous reading order, but too close to a generic status ledger.
-- **Object workspace:** strongest WAN/route/collection relationship and native navigation semantics, but needs an incident-priority layer.
-- **Incident workspace:** strongest dense scanning and tablet split, but its coded queue feels less native on a phone.
+- **Incident inbox:** strong phone hierarchy, but weak use of tablet space.
+- **Evidence timeline:** distinctive causal reading, but the available snapshots do not always support honest temporal comparison.
+- **Risk-led object cockpit:** strongest match for risk priority, novel object evidence, and a real tablet master-detail workspace.
 
-The selected product combines the object workspace with the incident workspace's priority model:
+The selected direction is a restrained risk-led workspace:
 
-- A full-width patrol brief owns the first reading path: configured identity, evidence boundary, verdict, proof facts, and scenario-specific signal.
-- A compact object switcher exposes `WAN`, `路由`, `采集`, and `资源` after the primary judgment. It changes the evidence workspace; it is not decorative navigation.
-- On compact phones the object workspace follows the brief in document flow. On a `700px+` mobile/tablet viewport the brief and workspace become a balanced two-pane mobile split view.
-- Raw evidence opens as a separate navigation destination, adds information, restores focus on return, and preserves the selected object and disclosure state.
-- Mobile and desktop have separate render trees and styles. They share evidence vocabulary and source data only.
+- A single focus surface owns the current highest-risk judgment.
+- `fleet` is scope metadata, never a risk that can cover an active incident.
+- Phone renders one focus and one next-inspection object. It has no generic object tabs.
+- Tablet renders a risk/evidence master and a persistent inspection detail. It is a separate responsive composition inside the mobile render tree, not a widened phone column.
+- Raw evidence opens as a full-screen navigation destination.
+- Mobile and desktop keep separate render trees and style ownership.
 
-The surface has no outer card, topology illustration, fake sheet, grabber, bottom tab bar, hero metric card, noninteractive status pill, nested card stack, or hidden desktop DOM.
+## Non-repetition contract
 
-## Authoritative evidence semantics
+The home surface has three semantic layers. They are independently testable.
 
-### Observation provenance
+### Proof — why the verdict is allowed
+
+Proof contains two or three concise assertions that establish the verdict. Examples include:
+
+- an explicit `active=true` and not-disabled default route exists;
+- all `N` WAN observations are not running;
+- three resource classes crossed policy thresholds;
+- six trailing samples continuously exceeded a threshold;
+- no successful business snapshot exists.
+
+Proof does not list object relationships or repeat the full signal values.
+
+### Signal — what deserves attention now
+
+Signal is one scenario-specific measurement or affected-object view selected by the highest risk:
+
+- complete current down/up observations in a normal state;
+- CPU/memory/disk pressure bars during resource pressure;
+- named down interfaces during an interface incident;
+- independent REST/SSH states during collection degradation;
+- named offline WAN objects during an all-offline incident;
+- fleet distribution only when no higher risk exists.
+
+There is exactly one signal region. A `fleet` fixture with an interface incident must render the interface signal, not fleet scale.
+
+### Object — what to inspect next
+
+The focused object adds evidence that is absent from proof and signal. It must add at least two of:
+
+- identity or source path;
+- parent/child or route dependency;
+- verified consequence and an explicit boundary on what is not known;
+- sample window, threshold policy, or record count;
+- raw flags such as `active`, `disabled`, table, distance, VLAN, PPPoE, endpoint error, attempt time, and success time.
+
+The object layer cannot reproduce the same normalized label/value pairs used by proof. Resource focus cannot repeat CPU/memory/disk current values after the resource signal. Collection focus cannot repeat the REST/SSH summary after the channel signal.
+
+## Risk ordering and focus
+
+Risk order is derived from evidence and operational impact, not from the fixture scenario name:
+
+1. evidence unavailable;
+2. all WAN objects offline;
+3. current resource threshold breach;
+4. current interface failure;
+5. collection degradation or historical-only evidence;
+6. unverified default route;
+7. normal route/WAN observation.
+
+Concurrent risks remain in the model. The first risk selects both the signal and the initial inspection object:
+
+| Primary risk | Signal | Focused object |
+|---|---|---|
+| evidence unavailable | collection boundary | collection target/channel |
+| all WAN offline | named offline WANs | first affected WAN and route consequence |
+| resource pressure | resource pressure bars | resource source, policy, and sample window |
+| interfaces down | named down interfaces | first affected interface dependency chain |
+| collection degraded | independent channels | first failed/degraded channel |
+| route unverified | observation availability | route evidence source |
+| normal | current rates when complete | explicit active route, otherwise WAN |
+
+`fleet` adds a compact scope line such as WAN and interface object coverage. It never changes the primary risk, signal, or focused object.
+
+## Evidence semantics
+
+### Provenance
 
 - `current`: successful observations from the current collection cycle support the displayed facts.
-- `historical`: an earlier successful observation is retained. It may explain the last known state but cannot be phrased or styled as current.
-- `unavailable`: no successful business observation supports the fact. Current business, forwarding, route, resource, terminal, and rate claims are prohibited.
+- `historical`: an earlier successful observation is retained and is never styled or phrased as current.
+- `unavailable`: no successful business observation supports current business, forwarding, route, resource, terminal, or rate claims.
 
-`snapshot.updatedAt` is the time of the collector attempt/state write. It is never a proxy for successful observation time. A label containing `最近成功` or an age such as `12 秒前` must be derived from an explicit successful channel timestamp. If none exists, the UI says `成功时间未记录`.
+`snapshot.updatedAt` is an attempt/state-write time. It is never used as a successful observation time. When no explicit success timestamp exists, the UI says `成功时间未记录`.
 
-### Collection channels
-
-REST-derived and SSH-derived channels are assessed independently from their own timestamps and errors. A REST failure cannot force SSH to failed, and an SSH failure cannot force REST to failed. Capability flags describe configured ability, not proof of current health.
-
-The UI may show both:
-
-- latest attempt: when the collector last tried;
-- latest success: when a channel last returned usable evidence.
-
-Those labels must never be interchanged.
+REST-derived and SSH-derived channels are assessed independently. Capability flags are not health evidence.
 
 ### Route verification
 
-- `verified`: a default-route record explicitly has `active=true` and is not disabled, and the observation provenance is `current`.
-- `historical`: an earlier successful record contains an explicit active default route.
-- `offline`: current evidence establishes that all relevant WAN objects are offline and there is no active default route.
+- `verified`: an explicit default-route record has `active=true`, is not disabled, and provenance is current.
+- `historical`: an earlier successful observation contains that explicit record.
+- `offline`: current evidence establishes all relevant WAN objects are offline and no active default route exists.
 - `unknown`: no explicit active record exists or current evidence is unavailable.
 
-The implementation must never fall back to the first route row. In `unavailable`, retained WAN counts, gateways, distances, route flags, and rates are not current facts and therefore cannot appear in the patrol brief or collapsed object summary.
+There is no first-row route fallback.
 
 ### Rates and zero
 
-Rate numbers render only when both required observations exist and their provenance is `current`. Missing values remain unavailable; they are never converted to measured zero. Explicit numeric zero remains a valid observation.
+Rates render only when both observations are present, provenance is current, and the primary risk allows rates. Missing values remain unavailable; explicit numeric zero remains a valid observation.
 
-Rates are suppressed for `all-offline`, `no-snapshot`, `collection-down`, `resource-full`, and any composite incident containing resource pressure or unavailable evidence. Resource pressure replaces the rate region with CPU, memory, disk, threshold, and trailing-consecutive-sample evidence.
+Rates are suppressed for all-offline, no-snapshot, collection-down, resource-full, unavailable evidence, and any composite risk containing resource pressure.
 
-### Composite risk
+### Consecutive samples
 
-The legacy scenario key may select a fixture or primary presentation, but it cannot erase concurrent facts. The mobile model exposes an ordered risk set. For example, `interfaces down + resource full` must show both risks, prioritize the higher business impact, and suppress rates.
+“Continuous” means the trailing uninterrupted run of threshold-exceeding samples. Total exceeded samples are separate evidence and cannot be described as consecutive.
 
-“Continuous” means the trailing uninterrupted run of threshold-exceeding samples. Total exceeded samples may be shown separately but cannot be described as consecutive.
+## Scenario composition
 
-## First-screen hierarchy
+| Scenario | Focus title | Proof | Signal | Focus object adds |
+|---|---|---|---|---|
+| `single` | route verified or unverified | route flag, WAN availability, collection cycle | complete current rates or observation boundary | table, gateway, distance, carrier relation |
+| `fleet` | highest actual risk; otherwise route/WAN scope | same risk proof as any other state | risk signal; fleet distribution only with no risk | independent object scope and source availability |
+| `all-offline` | no running external exit | `0/N` WAN, zero active route, evidence provenance | named offline WANs | parent/PPPoE dependency and route consequence |
+| `no-snapshot` | current business state cannot be judged | no successful snapshot, configured target, success-time boundary | independent collection boundary | attempt time, endpoint error, source target |
+| `collection-down` | current change is not observable | historical provenance, failed current cycle, last explicit success | independent REST/SSH states | channel error, attempt/success timestamps, endpoint records |
+| `resource-full` | resource policy breached | classes breached, trailing streak, valid sample count | CPU/memory/disk bars | source path, threshold policy, sample window; no repeated current values |
+| `interfaces-down` | named forwarding objects are down | down count, route consequence, WAN scope | named interfaces | parent, VLAN, PPPoE, route relationship |
 
-1. configured device identity, target address, and static `只读监控` mode text;
-2. one evidence boundary line with provenance, successful observation time, and age;
-3. operational verdict and highest-priority risk;
-4. exactly three scenario-specific proof facts;
-5. one scenario-specific signal region;
-6. compact decision/risk rows, including concurrent P1 facts;
-7. the object workspace and one raw-evidence navigation action.
+Abnormal states change composition and visual tone; they do not merely swap copy inside the normal layout.
 
-Evidence wording appears once in the brief. A timestamp cannot be reduced to quiet corner text when evidence is historical or unavailable.
+## Phone composition
 
-## Scenario-specific signal
+The phone uses one continuous page:
 
-| State | Primary judgment | Required signal | Prohibited first-screen content |
-|---|---|---|---|
-| normal single | explicit active route or `无法核实` | complete current down/up rates; otherwise observation availability | decorative topology and historical rates |
-| fleet | WAN scope plus independently verified default route | compact WAN/object distribution | one-path diagram implying a single carrier |
-| all offline | all WAN objects are not running | WAN object states and active-route count | all rates |
-| no snapshot | present business state cannot be judged | independent REST/SSH attempt and success facts | business, forwarding, route, resource, terminal, and rate metrics |
-| collection down | current change is not observable | per-channel failure/recovery and historical-success time | all current-state claims and rates |
-| resource full | resource threshold breach | CPU/memory/disk bars, threshold, trailing streak | rate module and terminal ranking |
-| interfaces down | named forwarding objects are not running | affected interfaces and verified route consequence | unsupported business-impact claims |
+1. sticky device chrome with static `只读监控` text;
+2. one evidence boundary line;
+3. one risk-focus masthead as the unique visual center;
+4. a compact proof ledger;
+5. one signal region;
+6. one focused inspection object with novel evidence;
+7. concurrent-risk links when present;
+8. one full-screen raw-evidence action.
 
-Configured identity must survive every state. `无可用快照`, `不可达`, and error text are statuses, never device names.
+There is no four-object tablist, three-column proof table, bottom navigation, topology, fake sheet, grabber, giant verdict card, or decorative chart.
 
-## Object workspace and detail behavior
+## Tablet composition
 
-- `WAN`, `路由`, `采集`, and `资源` are real selectable views with programmatic selected state and 44px touch targets.
-- The object tablist supports Left/Right and Home/End keyboard navigation; focus follows selection without changing the page scroll position.
-- The selected view exposes object identity, status, relationship, and source availability. It must not repeat the three proof facts verbatim.
-- A downward disclosure indicator expands content in place. A right-pointing chevron navigates to a new destination. The two affordances are never interchangeable.
-- Raw detail adds route table/gateway/distance/flags, individual WAN source fields, per-channel timestamps/errors, interface parent/VLAN/PPPoE dependencies, resource threshold/sample records, and read-only boundaries.
-- Detail supports a visible back control, Escape, browser history, focus restoration, and scroll/selection preservation.
+At `700px+`, the mobile surface becomes a true master-detail workspace:
 
-## Visual and interaction rules
+- the master column contains ordered risks/evidence focuses, stable evidence boundary, and fleet scope metadata;
+- the detail column contains the selected focus masthead, proof, signal, focused object, related-source index, and raw-evidence action;
+- the selected master item controls one always-mounted detail panel;
+- additional width exposes dependency and source evidence, not larger empty margins or duplicated metrics;
+- neither column is a hidden desktop surface or a squeezed desktop table.
 
-- Full-width cool-neutral surfaces, restrained low-saturation blue, 1px rules, and no decorative side stripe.
-- System typography, tabular numeric alignment, and at least 12px operational text. Density comes from alignment, grouping, and scenario substitution—not tiny type.
-- Radius is reserved for actual controls or modal destinations and does not exceed 8px. There is no page-enclosing white rectangle.
-- Touch targets are at least 44px. Safe areas, 200% text enlargement, keyboard focus, forced colors, reduced motion, wrapping, and horizontal-overflow prevention are blocking.
-- iPhone portrait preserves one ordered brief. Short landscape uses a compact two-region flow without covering evidence. `700px+` mobile/tablet widths use a real two-pane workspace rather than centering a narrow phone card in empty space.
+The master and detail are independently scrollable only when viewport height requires it. Short landscape uses the same master-detail logic when width permits; narrower landscape uses the phone composition without horizontal scrolling.
 
-## Independent blocking acceptance
+## Interaction and accessibility
 
-- Negative semantic fixtures are authoritative and independent from implementation-produced labels:
-  - failed attempt with no successful timestamps cannot contain `最近成功` or `0 秒前`;
-  - REST failed and SSH recovered must not be summarized as both failed;
-  - unavailable evidence with retained WAN/route rows cannot expose current counts, gateway, distance, or activity;
-  - historical evidence plus a new failed attempt cannot report `历史快照，0 秒前`;
-  - resource pressure and any resource composite cannot mount a rate module or rate-like text;
-  - no-snapshot preserves configured target identity;
-  - interface failure plus resource pressure exposes both risks and suppresses rates.
-- Required mobile matrix: seven base scenarios at `320x568`, `360x800`, `375x667`, `390x844`, `430x932`, `768x1024`, `667x375`, and `844x390`; all 56 cells and screenshots must pass.
-- Runtime qualification is based on mounted components, data provenance, semantics, accessibility, and geometry—not exact viewport names or screenshot shortcuts.
-- `matrix.complete=false` forces top-level failure. A mounted mobile root cannot short-circuit deeper checks.
-- The complete public 28-cell desktop/mobile matrix, collector/security regressions, accessibility checks, and exact-SHA Linux, Windows, and GHCR CL must pass before publication.
+- All touch targets are at least `44 × 44px`.
+- Phone risk links and tablet master items expose programmatic current/selected state.
+- No control declares an `aria-controls` target that is absent from the DOM.
+- The tablet detail region is always mounted and labelled by the selected master item.
+- In-place disclosure uses a down chevron; navigation uses a right chevron.
+- Opening raw evidence pushes a history state containing the focused object.
+- Browser Back closes detail and restores the trigger focus and scroll position.
+- Browser Forward reopens the same detail and focused object.
+- Focus restoration happens in React layout effects after the home DOM commits; timer polling is prohibited.
+- Escape follows the same close path as Back.
+- Refresh does not steal focus, collapse disclosure, or replace a user-selected focus. A newly discovered higher risk may be announced politely but does not force selection.
+- Forced colors, reduced motion, safe areas, `200%` text enlargement, wrapping, and horizontal-overflow prevention are blocking.
+
+## Visual system
+
+- Restrained cold-neutral canvas and one low-saturation blue product hue.
+- Sticky chrome may use purposeful blur; content surfaces do not use decorative glass.
+- A solid low-chroma focus surface creates the primary visual center. Danger, historical, and unavailable states use distinct low-chroma tonal surfaces plus explicit wording and icons.
+- One consistent Lucide outline icon system supplies object recognition and familiar controls.
+- Operational text is at least `12px`; primary titles are `22–24px`; values use tabular numerals.
+- Radius is `8px` or less on grouped content; no nested card stack or broad shadows.
+- Dividers are used only at real group boundaries. Density comes from decisions per screen, not DOM count, character count, or tiny text.
+
+## Blocking acceptance
+
+- Model tests assert risk-first signal selection, including `fleet + interfaces down` and `fleet + resource pressure` composites.
+- Model tests assert the initial focused object matches the highest risk.
+- Model tests reject normalized proof/object label-value duplication.
+- “失败端点 0” is prohibited; zero recorded endpoint failures must read `未记录` or explicitly `已记录失败端点 0`.
+- Runtime tests cover browser Back and Forward, focus restoration without polling, tablet master-detail semantics, touch targets, text scaling, and all present control relationships.
+- Acceptance uses semantic and geometry outcomes. Character count, text length, module count, and DOM-node count are not density proxies.
+- Required mobile matrix remains seven scenarios × eight viewports = 56 complete cells and screenshots.
+- Required public matrix remains seven scenarios × four release viewports = 28 complete cells.
+- `matrix.complete=false` forces top-level failure.
+- Public release additionally requires collector/security/accessibility checks and exact-remote-SHA Linux, Windows, and GHCR success.

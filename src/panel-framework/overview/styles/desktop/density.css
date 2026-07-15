@@ -9,309 +9,309 @@
     --v814-text: #102033;
     --v814-muted: #6e7f94;
     --v814-soft: #f8fbfe;
-    background: #f3f7fb !important;
+    background: #f3f7fb;
   }
   #overview.router-overview-framework.ro-desktop-console .ro-col,
   .router-overview-framework.ro-desktop-console .ro-col {
-    gap: 4px !important;
+    gap: 4px;
   }
   #overview.router-overview-framework.ro-desktop-console .ro-module,
   .router-overview-framework.ro-desktop-console .ro-module {
-    border: 1px solid var(--v814-line-strong) !important;
-    background: #fff !important;
+    border: 1px solid var(--v814-line-strong);
+    background: #fff;
   }
   #overview.router-overview-framework.ro-desktop-console .ro-module-head,
   .router-overview-framework.ro-desktop-console .ro-module-head {
-    height: 27px !important;
-    min-height: 27px !important;
-    padding: 3px 6px !important;
-    border-bottom: 1px solid var(--v814-line) !important;
-    background: #fbfdff !important;
+    height: 27px;
+    min-height: 27px;
+    padding: 3px 6px;
+    border-bottom: 1px solid var(--v814-line);
+    background: #fbfdff;
   }
   #overview.router-overview-framework.ro-desktop-console .ro-module-head div,
   .router-overview-framework.ro-desktop-console .ro-module-head div {
-    display: flex !important;
-    min-width: 0 !important;
-    align-items: baseline !important;
-    gap: 5px !important;
+    display: flex;
+    min-width: 0;
+    align-items: baseline;
+    gap: 5px;
   }
   #overview.router-overview-framework.ro-desktop-console .ro-module-head b,
   .router-overview-framework.ro-desktop-console .ro-module-head b {
-    color: var(--v814-text) !important;
-    font-size: 11.3px !important;
-    font-weight: 800 !important;
-    white-space: nowrap !important;
+    color: var(--v814-text);
+    font-size: 11.3px;
+    font-weight: 800;
+    white-space: nowrap;
   }
   #overview.router-overview-framework.ro-desktop-console .ro-module-head span,
   .router-overview-framework.ro-desktop-console .ro-module-head span {
-    min-width: 0 !important;
-    color: var(--v814-muted) !important;
-    font-size: 8.2px !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    white-space: nowrap !important;
+    min-width: 0;
+    color: var(--v814-muted);
+    font-size: 10px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   #overview.router-overview-framework.ro-desktop-console .ro-module-head em,
   .router-overview-framework.ro-desktop-console .ro-module-head em {
-    color: #517193 !important;
-    font-size: 8.2px !important;
-    font-weight: 700 !important;
+    color: #517193;
+    font-size: 10px;
+    font-weight: 700;
   }
   #overview.router-overview-framework.ro-desktop-console .ro-chart-axis,
   .router-overview-framework.ro-desktop-console .ro-chart-axis {
-    display: none !important;
+    display: none;
   }
   #overview.router-overview-framework.ro-desktop-console .ro-judgement-chart,
   .router-overview-framework.ro-desktop-console .ro-judgement-chart {
-    padding: 4px 5px !important;
-    gap: 3px !important;
-    background: #fff !important;
+    padding: 4px 5px;
+    gap: 3px;
+    background: #fff;
   }
   #overview.router-overview-framework.ro-desktop-console .ro-module:not([data-overview-density-module="wan-trend"]) .ro-judgement-row,
   .router-overview-framework.ro-desktop-console .ro-module:not([data-overview-density-module="wan-trend"]) .ro-judgement-row {
-    grid-template-columns: 58px minmax(0, 1fr) 112px !important;
-    min-height: 23px !important;
-    height: 23px !important;
-    gap: 6px !important;
+    grid-template-columns: 58px minmax(0, 1fr) 112px;
+    min-height: 23px;
+    height: 23px;
+    gap: 6px;
   }
   #overview.router-overview-framework.ro-desktop-console .ro-chart-track,
   .router-overview-framework.ro-desktop-console .ro-chart-track {
-    height: 3px !important;
-    background: #edf4fa !important;
+    height: 3px;
+    background: #edf4fa;
   }
   #overview.router-overview-framework.ro-desktop-console .ro-chart-label,
   .router-overview-framework.ro-desktop-console .ro-chart-label {
-    font-size: 8.8px !important;
-    color: var(--v814-muted) !important;
+    font-size: 10px;
+    color: var(--v814-muted);
   }
   #overview.router-overview-framework.ro-desktop-console .ro-chart-readout,
   .router-overview-framework.ro-desktop-console .ro-chart-readout {
-    font-size: 8.2px !important;
-    color: #294761 !important;
+    font-size: 10px;
+    color: #294761;
   }
   #overview.router-overview-framework.ro-desktop-console .ro-ledger-table,
   .router-overview-framework.ro-desktop-console .ro-ledger-table {
-    border-top: 0 !important;
+    border-top: 0;
   }
   #overview.router-overview-framework.ro-desktop-console .ro-ledger-head-cell,
   .router-overview-framework.ro-desktop-console .ro-ledger-head-cell {
-    height: 20px !important;
-    padding: 2px 5px !important;
-    border-right: 0 !important;
-    border-bottom: 1px solid var(--v814-line) !important;
-    background: var(--v814-soft) !important;
-    color: #77889b !important;
-    font-size: 10px !important;
+    height: 20px;
+    padding: 2px 5px;
+    border-right: 0;
+    border-bottom: 1px solid var(--v814-line);
+    background: var(--v814-soft);
+    color: #77889b;
+    font-size: 10px;
   }
   #overview.router-overview-framework.ro-desktop-console .ro-ledger-cell,
   .router-overview-framework.ro-desktop-console .ro-ledger-cell {
-    height: 28px !important;
-    min-height: 28px !important;
-    padding: 2px 5px !important;
-    border-right: 0 !important;
-    border-bottom: 1px solid #edf3f8 !important;
-    color: #1a2b3f !important;
-    font-size: 8.8px !important;
+    height: 28px;
+    min-height: 28px;
+    padding: 2px 5px;
+    border-right: 0;
+    border-bottom: 1px solid #edf3f8;
+    color: #1a2b3f;
+    font-size: 10px;
   }
   #overview.router-overview-framework.ro-desktop-console .ro-ledger-cell:first-child,
   .router-overview-framework.ro-desktop-console .ro-ledger-cell:first-child {
-    font-weight: 760 !important;
+    font-weight: 760;
   }
   #overview.router-overview-framework.ro-desktop-console .ro-ledger-cell small,
   .router-overview-framework.ro-desktop-console .ro-ledger-cell small {
-    display: block !important;
-    color: #8292a5 !important;
-    font-size: 7.6px !important;
-    font-weight: 500 !important;
+    display: block;
+    color: #8292a5;
+    font-size: 10px;
+    font-weight: 500;
   }
   #overview.router-overview-framework.ro-desktop-console .ro-module[data-overview-evidence-weight="secondary"] .ro-ledger-cell,
   .router-overview-framework.ro-desktop-console .ro-module[data-overview-evidence-weight="secondary"] .ro-ledger-cell {
-    height: 25px !important;
-    min-height: 25px !important;
-    color: #627386 !important;
+    height: 25px;
+    min-height: 25px;
+    color: #627386;
   }
   #overview.router-overview-framework.ro-desktop-console .ro-channel-matrix-visual,
   .router-overview-framework.ro-desktop-console .ro-channel-matrix-visual {
-    display: grid !important;
-    grid-template-columns: minmax(0, 1.34fr) repeat(3, minmax(0, 1fr)) !important;
-    gap: 1px !important;
-    min-height: 54px !important;
-    padding: 4px 5px !important;
-    border-bottom: 1px solid var(--v814-line) !important;
-    background: #fff !important;
+    display: grid;
+    grid-template-columns: minmax(0, 1.34fr) repeat(3, minmax(0, 1fr));
+    gap: 1px;
+    min-height: 54px;
+    padding: 4px 5px;
+    border-bottom: 1px solid var(--v814-line);
+    background: #fff;
   }
   #overview.router-overview-framework.ro-desktop-console .ro-channel-matrix-visual span,
   .router-overview-framework.ro-desktop-console .ro-channel-matrix-visual span {
-    display: grid !important;
-    grid-template-columns: 7px minmax(0, 1fr) !important;
-    grid-template-rows: 12px 16px 12px !important;
-    align-items: center !important;
-    column-gap: 4px !important;
-    padding: 3px 5px !important;
-    background: #fbfdff !important;
+    display: grid;
+    grid-template-columns: 7px minmax(0, 1fr);
+    grid-template-rows: 12px 16px 12px;
+    align-items: center;
+    column-gap: 4px;
+    padding: 3px 5px;
+    background: #fbfdff;
   }
   #overview.router-overview-framework.ro-desktop-console .ro-channel-matrix-visual i,
   .router-overview-framework.ro-desktop-console .ro-channel-matrix-visual i {
-    width: 5px !important;
-    height: 5px !important;
-    border-radius: 50% !important;
-    background: #20a66a !important;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #20a66a;
   }
   #overview.router-overview-framework.ro-desktop-console .ro-channel-matrix-visual span[data-tone="warn"] i,
   .router-overview-framework.ro-desktop-console .ro-channel-matrix-visual span[data-tone="warn"] i,
   #overview.router-overview-framework.ro-desktop-console .ro-channel-matrix-visual span[data-tone="missing"] i,
   .router-overview-framework.ro-desktop-console .ro-channel-matrix-visual span[data-tone="missing"] i {
-    background: #d58a21 !important;
+    background: #d58a21;
   }
   #overview.router-overview-framework.ro-desktop-console .ro-channel-matrix-visual span[data-tone="danger"] i,
   .router-overview-framework.ro-desktop-console .ro-channel-matrix-visual span[data-tone="danger"] i {
-    background: #d8423a !important;
+    background: #d8423a;
   }
   #overview.router-overview-framework.ro-desktop-console .ro-channel-matrix-visual b,
   .router-overview-framework.ro-desktop-console .ro-channel-matrix-visual b {
-    color: var(--v814-muted) !important;
-    font-size: 8.3px !important;
+    color: var(--v814-muted);
+    font-size: 10px;
   }
   #overview.router-overview-framework.ro-desktop-console .ro-channel-matrix-visual strong,
   .router-overview-framework.ro-desktop-console .ro-channel-matrix-visual strong {
-    grid-column: 2 !important;
-    color: var(--v814-text) !important;
-    font-size: 10.5px !important;
-    white-space: nowrap !important;
+    grid-column: 2;
+    color: var(--v814-text);
+    font-size: 10.5px;
+    white-space: nowrap;
   }
   #overview.router-overview-framework.ro-desktop-console .ro-channel-matrix-visual em,
   .router-overview-framework.ro-desktop-console .ro-channel-matrix-visual em {
-    grid-column: 2 !important;
-    color: #8392a5 !important;
-    font-size: 7.5px !important;
-    font-style: normal !important;
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
+    grid-column: 2;
+    color: #8392a5;
+    font-size: 10px;
+    font-style: normal;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   #overview.router-overview-framework.ro-desktop-console .ro-visual-stack,
   .router-overview-framework.ro-desktop-console .ro-visual-stack {
-    display: grid !important;
-    gap: 3px !important;
-    padding: 4px 5px !important;
-    border-bottom: 1px solid var(--v814-line) !important;
-    background: #fff !important;
+    display: grid;
+    gap: 3px;
+    padding: 4px 5px;
+    border-bottom: 1px solid var(--v814-line);
+    background: #fff;
   }
   #overview.router-overview-framework.ro-desktop-console .ro-visual-stack .ro-channel-matrix-visual,
   #overview.router-overview-framework.ro-desktop-console .ro-visual-stack .ro-resource-ledger-visual,
   .router-overview-framework.ro-desktop-console .ro-visual-stack .ro-channel-matrix-visual,
   .router-overview-framework.ro-desktop-console .ro-visual-stack .ro-resource-ledger-visual {
-    padding: 0 !important;
-    border-bottom: 0 !important;
+    padding: 0;
+    border-bottom: 0;
   }
   #overview.router-overview-framework.ro-desktop-console .ro-incident-summary,
   .router-overview-framework.ro-desktop-console .ro-incident-summary {
-    display: grid !important;
-    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
-    gap: 1px !important;
-    min-height: 32px !important;
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 1px;
+    min-height: 32px;
   }
   #overview.router-overview-framework.ro-desktop-console .ro-incident-summary span,
   .router-overview-framework.ro-desktop-console .ro-incident-summary span {
-    display: grid !important;
-    align-content: center !important;
-    min-width: 0 !important;
-    padding: 3px 5px !important;
-    background: #fbfdff !important;
-    border-left: 1px solid var(--v814-line) !important;
+    display: grid;
+    align-content: center;
+    min-width: 0;
+    padding: 3px 5px;
+    background: #fbfdff;
+    border-left: 1px solid var(--v814-line);
   }
   #overview.router-overview-framework.ro-desktop-console .ro-incident-summary em,
   .router-overview-framework.ro-desktop-console .ro-incident-summary em {
-    color: var(--v814-muted) !important;
-    font-size: 7.6px !important;
-    font-style: normal !important;
+    color: var(--v814-muted);
+    font-size: 10px;
+    font-style: normal;
   }
   #overview.router-overview-framework.ro-desktop-console .ro-incident-summary b,
   .router-overview-framework.ro-desktop-console .ro-incident-summary b {
-    color: var(--v814-text) !important;
-    font-size: 9.4px !important;
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
+    color: var(--v814-text);
+    font-size: 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   #overview.router-overview-framework.ro-desktop-console .ro-resource-ledger-visual,
   .router-overview-framework.ro-desktop-console .ro-resource-ledger-visual {
-    display: grid !important;
-    gap: 4px !important;
-    min-height: 64px !important;
-    padding: 5px !important;
-    background: #fff !important;
-    border-bottom: 1px solid var(--v814-line) !important;
+    display: grid;
+    gap: 4px;
+    min-height: 64px;
+    padding: 5px;
+    background: #fff;
+    border-bottom: 1px solid var(--v814-line);
   }
   #overview.router-overview-framework.ro-desktop-console .ro-resource-ledger-visual span,
   .router-overview-framework.ro-desktop-console .ro-resource-ledger-visual span {
-    display: grid !important;
-    grid-template-columns: 52px 48px minmax(0, 1fr) 88px !important;
-    align-items: center !important;
-    gap: 7px !important;
-    min-height: 17px !important;
+    display: grid;
+    grid-template-columns: 52px 48px minmax(0, 1fr) 88px;
+    align-items: center;
+    gap: 7px;
+    min-height: 17px;
   }
   #overview.router-overview-framework.ro-desktop-console .ro-resource-ledger-visual b,
   .router-overview-framework.ro-desktop-console .ro-resource-ledger-visual b {
-    color: var(--v814-muted) !important;
-    font-size: 8.6px !important;
+    color: var(--v814-muted);
+    font-size: 10px;
   }
   #overview.router-overview-framework.ro-desktop-console .ro-resource-ledger-visual strong,
   .router-overview-framework.ro-desktop-console .ro-resource-ledger-visual strong {
-    color: var(--v814-text) !important;
-    font-size: 11px !important;
+    color: var(--v814-text);
+    font-size: 11px;
   }
   #overview.router-overview-framework.ro-desktop-console .ro-resource-ledger-visual span[data-tone="danger"] strong,
   .router-overview-framework.ro-desktop-console .ro-resource-ledger-visual span[data-tone="danger"] strong {
-    color: #c93932 !important;
+    color: #c93932;
   }
   #overview.router-overview-framework.ro-desktop-console .ro-resource-ledger-visual i,
   .router-overview-framework.ro-desktop-console .ro-resource-ledger-visual i {
-    display: block !important;
-    height: 3px !important;
-    overflow: hidden !important;
-    border-radius: 4px !important;
-    background: #e8f0f7 !important;
+    display: block;
+    height: 3px;
+    overflow: hidden;
+    border-radius: 4px;
+    background: #e8f0f7;
   }
   #overview.router-overview-framework.ro-desktop-console .ro-resource-ledger-visual i i,
   .router-overview-framework.ro-desktop-console .ro-resource-ledger-visual i i {
-    height: 100% !important;
-    background: var(--v814-blue) !important;
+    height: 100%;
+    background: var(--v814-blue);
   }
   #overview.router-overview-framework.ro-desktop-console .ro-resource-ledger-visual span[data-tone="danger"] i i,
   .router-overview-framework.ro-desktop-console .ro-resource-ledger-visual span[data-tone="danger"] i i {
-    background: #d8423a !important;
+    background: #d8423a;
   }
   #overview.router-overview-framework.ro-desktop-console .ro-resource-ledger-visual em,
   .router-overview-framework.ro-desktop-console .ro-resource-ledger-visual em {
-    color: var(--v814-muted) !important;
-    font-size: 10px !important;
-    font-style: normal !important;
-    text-align: right !important;
-    white-space: nowrap !important;
+    color: var(--v814-muted);
+    font-size: 10px;
+    font-style: normal;
+    text-align: right;
+    white-space: nowrap;
   }
   #overview.router-overview-framework.ro-desktop-console .ro-resource-cards,
   .router-overview-framework.ro-desktop-console .ro-resource-cards {
-    display: none !important;
+    display: none;
   }
   #overview.router-overview-framework.ro-desktop-console .ro-col.is-bottom,
   .router-overview-framework.ro-desktop-console .ro-col.is-bottom {
-    display: grid !important;
-    grid-template-columns: 1.05fr 1fr 1fr !important;
-    gap: 4px !important;
-    max-height: 156px !important;
-    overflow: hidden !important;
+    display: grid;
+    grid-template-columns: 1.05fr 1fr 1fr;
+    gap: 4px;
+    max-height: 156px;
+    overflow: hidden;
   }
   #overview.router-overview-framework.ro-desktop-console .ro-col.is-bottom .ro-module-head,
   .router-overview-framework.ro-desktop-console .ro-col.is-bottom .ro-module-head {
-    height: 24px !important;
-    min-height: 24px !important;
+    height: 24px;
+    min-height: 24px;
   }
   #overview.router-overview-framework.ro-desktop-console .ro-col.is-bottom .ro-ledger-cell,
   .router-overview-framework.ro-desktop-console .ro-col.is-bottom .ro-ledger-cell {
-    height: 24px !important;
-    min-height: 24px !important;
-    font-size: 8.2px !important;
+    height: 24px;
+    min-height: 24px;
+    font-size: 10px;
   }
 }
 
@@ -517,7 +517,7 @@
     display: none;
   }
   .ro-desktop-grid[data-overview-desktop-scene="resource-full"] [data-overview-density-module="resource-interface-top5"] .ro-ledger-row[data-overview-share] {
-    display: block !important;
+    display: block;
     min-width: 0;
     min-height: 30px;
     padding: 3px 4px;
