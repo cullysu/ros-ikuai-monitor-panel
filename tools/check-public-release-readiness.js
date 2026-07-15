@@ -647,7 +647,7 @@ function main(argv = process.argv.slice(2)) {
   assertNotContains('public/assets/framework/panel-framework.js', 'data-mobile-native-topology');
   assertNotContains('public/assets/framework/panel-framework.js', 'data-mobile-native-sheet');
   assertContains('public/assets/framework/panel-framework.js', '当前业务状态不可判断');
-  assertContains('public/assets/framework/panel-framework.js', '没有成功业务快照；WAN、路由、资源和速率不进入当前结论');
+  assertContains('public/assets/framework/panel-framework.js', '当前没有可用业务快照；WAN、路由、资源和速率不进入当前结论');
   assertContains('public/assets/framework/panel-framework.js', '历史成功记录不能作为当前业务状态');
   assertContains('public/assets/framework/panel-framework.js', '只读监控');
   assertContains('public/assets/framework/panel-framework.js', '失败端点');
