@@ -1,5 +1,4 @@
 import type { OverviewScenarioKey, OverviewTone } from "../index";
-
 export type MobileEvidenceMode = "current" | "historical" | "unavailable";
 export type MobileRouteVerification = "verified" | "historical" | "unknown" | "offline";
 export type MobileObjectKey = "wan" | "route" | "collection" | "resource" | "interface";
@@ -15,9 +14,10 @@ export interface MobileNativeFact {
   note?: string;
   tone?: OverviewTone;
 }
-export interface MobileNativeRow extends MobileNativeFact {}
+export interface MobileNativeRow extends MobileNativeFact { }
 export interface MobileNativeSignalItem extends MobileNativeFact {
   objectId?: string;
+  unit?: string;
   percent?: number;
   threshold?: number;
 }

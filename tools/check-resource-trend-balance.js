@@ -1170,12 +1170,21 @@ async function main() {
         );
         const topbarCellStyles = topbarCells.map((node) => getComputedStyle(node));
         const topbarCellRects = topbarCells.map((node) => node.getBoundingClientRect());
-        const topbarCellsNotFieldBoxes = topbarCellStyles.length >= expectedTopbarRoleOrder.length && topbarCellStyles.every((style) => (
+        const backgroundAlpha = (color) => {
+          const normalizedColor = String(color || '').trim();
+          if (!normalizedColor || normalizedColor === 'transparent') return 0;
+          if (!normalizedColor.startsWith('rgba(')) return 1;
+          const alpha = Number.parseFloat(normalizedColor.slice(normalizedColor.lastIndexOf(',') + 1));
+          return Number.isFinite(alpha) ? alpha : 1;
+        };
+        const topbarCellsNotFieldBoxes = topbarCellStyles.length >= expectedTopbarRoleOrder.length && topbarCellStyles.every((style, index) => (
           Number.parseFloat(style.borderTopWidth || '0') === 0 &&
           Number.parseFloat(style.borderBottomWidth || '0') === 0 &&
           Number.parseFloat(style.borderLeftWidth || '0') === 0 &&
           Number.parseFloat(style.borderRadius || '0') <= 1 &&
-          (style.backgroundColor === 'rgba(0, 0, 0, 0)' || style.backgroundColor === 'transparent')
+          backgroundAlpha(style.backgroundColor) <= (index === 0 ? 0.08 : 0.001) &&
+          (!style.boxShadow || style.boxShadow === 'none' || style.boxShadow.includes('inset')) &&
+          !String(style.boxShadow || '').replaceAll(' ', '').includes('20,115,230')
         ));
         const topbarFlatSurfaceOk = Boolean(
           topbar &&
@@ -1193,7 +1202,8 @@ async function main() {
           topbar.querySelectorAll('table, th').length === 0 &&
           topbar.querySelector('.ro-status-cell.is-conclusion > b') &&
           topbarStyle &&
-          Number.parseFloat(topbarStyle.height || '0') <= 40 &&
+          Number.parseFloat(topbarStyle.height || '0') >= 44 &&
+          Number.parseFloat(topbarStyle.height || '0') <= 56 &&
           Number.parseFloat(topbarStyle.borderTopWidth || '0') === 0 &&
           Number.parseFloat(topbarStyle.borderLeftWidth || '0') === 0 &&
           Number.parseFloat(topbarStyle.borderRightWidth || '0') === 0 &&
@@ -1205,13 +1215,14 @@ async function main() {
             cell.querySelector(':scope > b') &&
             cell.querySelector(':scope > em')
           ) &&
-          topbarCellStyles.every((style) => (
+          topbarCellStyles.every((style, index) => (
             Number.parseFloat(style.borderTopWidth || '0') === 0 &&
             Number.parseFloat(style.borderRightWidth || '0') === 0 &&
             Number.parseFloat(style.borderBottomWidth || '0') === 0 &&
             Number.parseFloat(style.borderLeftWidth || '0') === 0 &&
             Number.parseFloat(style.borderRadius || '0') <= 1 &&
-            (style.backgroundColor === 'rgba(0, 0, 0, 0)' || style.backgroundColor === 'transparent') &&
+            backgroundAlpha(style.backgroundColor) <= (index === 0 ? 0.08 : 0.001) &&
+            (!style.boxShadow || style.boxShadow === 'none' || style.boxShadow.includes('inset')) &&
             !String(style.boxShadow || '').replaceAll(' ', '').includes('20,115,230')
           ))
         );

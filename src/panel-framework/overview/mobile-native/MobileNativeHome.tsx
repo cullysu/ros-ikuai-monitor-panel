@@ -2,6 +2,7 @@ import type { KeyboardEvent, RefObject } from "react";
 import { MobileNativeIcon } from "./MobileNativeIcon";
 import { MobileNativeInspectionPanel } from "./MobileNativeInspection";
 import { MobileNativeSignal } from "./MobileNativeSignal";
+import { MobileNativeSourceLedger } from "./MobileNativeSourceLedger";
 import type { MobileFocusKey, MobileNativeFocus, MobileNativeInspection, MobileNativeModel } from "./mobileNativeTypes";
 
 function DeviceChrome({ model }: { model: MobileNativeModel }) {
@@ -29,7 +30,7 @@ function FocusMasthead({ focus }: { focus: MobileNativeFocus }) {
       <div className="mn-focus-copy">
         <span>{focus.kicker}</span>
         <h1 id="mn-focus-title">{focus.title}</h1>
-        <p>{focus.summary}</p>
+        {focus.summary ? <p>{focus.summary}</p> : null}
         {focus.scope ? <small>{focus.scope}</small> : null}
       </div>
     </header>
@@ -39,7 +40,7 @@ function FocusMasthead({ focus }: { focus: MobileNativeFocus }) {
 function ProofLedger({ focus }: { focus: MobileNativeFocus }) {
   return (
     <section className="mn-proof-ledger" aria-labelledby="mn-proof-title" data-mobile-native-proof>
-      <header><h2 id="mn-proof-title">判断依据</h2><span>只列直接支撑结论的事实</span></header>
+      <header><h2 id="mn-proof-title">判断依据</h2></header>
       <ul>
         {focus.proofs.map((proof, index) => (
           <li className={`is-${proof.tone || "trust"}`} key={proof.key || `${proof.label}-${index}`} data-mobile-native-proof-key={proof.key}>
@@ -126,22 +127,18 @@ function FocusPanel({
   onOpenDetail: () => void;
   detailButtonRef: RefObject<HTMLButtonElement>;
 }) {
+  const objectPriority = focus.objectInspections.length > 0;
+  const signalPanel = <MobileNativeSignal signal={focus.signal} selectedObjectId={selectedObjectId} onSelectObject={onSelectObject} />;
+  const inspectionPanel = <MobileNativeInspectionPanel inspection={inspection} expanded={expanded} onExpandedChange={onExpandedChange} onOpenDetail={onOpenDetail} detailButtonRef={detailButtonRef} />;
   return (
-    <section id="mn-focus-panel" className="mn-focus-panel" aria-labelledby="mn-focus-title" data-mobile-native-focus={focus.key}>
+    <section id="mn-focus-panel" className={`mn-focus-panel ${objectPriority ? "has-object-priority" : ""}`} aria-labelledby="mn-focus-title" data-mobile-native-focus={focus.key}>
       <p className="mn-sr-only" role="status" aria-live="polite">当前焦点：{focus.kicker}，{focus.title}</p>
       <FocusMasthead focus={focus} />
       <div className="mn-focus-evidence-grid">
-        <div className="mn-focus-measurements">
-          <ProofLedger focus={focus} />
-          <MobileNativeSignal signal={focus.signal} selectedObjectId={selectedObjectId} onSelectObject={onSelectObject} />
+        <ProofLedger focus={focus} />
+        <div className="mn-focus-workbench">
+          {objectPriority ? <>{inspectionPanel}{signalPanel}</> : <>{signalPanel}{inspectionPanel}</>}
         </div>
-        <MobileNativeInspectionPanel
-          inspection={inspection}
-          expanded={expanded}
-          onExpandedChange={onExpandedChange}
-          onOpenDetail={onOpenDetail}
-          detailButtonRef={detailButtonRef}
-        />
       </div>
     </section>
   );
@@ -150,7 +147,7 @@ function FocusPanel({
 function TabletScopeLedger({ model }: { model: MobileNativeModel }) {
   return (
     <section className="mn-tablet-scope" aria-labelledby="mn-tablet-scope-title" data-mobile-native-tablet-scope>
-      <header><h2 id="mn-tablet-scope-title">观测范围</h2><span>当前采样对象</span></header>
+      <header><h2 id="mn-tablet-scope-title">观测范围</h2><span>本次采样</span></header>
       <dl>
         {model.scopeFacts.map((fact, index) => (
           <div className={`is-${fact.tone || "trust"}`} key={fact.key || `${fact.label}-${index}`} data-mobile-native-scope-key={fact.key}>
@@ -180,7 +177,7 @@ function TabletContextEvidence({ model, focus }: { model: MobileNativeModel; foc
 
   return (
     <section className="mn-tablet-context" aria-labelledby="mn-tablet-context-title" data-mobile-native-tablet-context>
-      <header><h2 id="mn-tablet-context-title">上下文证据</h2><span>目标、来源与影响边界</span></header>
+      <header><h2 id="mn-tablet-context-title">关联记录</h2><span>{sections.length} 组</span></header>
       <div>
         {sections.map((section) => (
           <section className="mn-tablet-context-card" aria-labelledby={`mn-context-${section.key}`} key={section.key} data-mobile-native-context-key={section.key}>
@@ -240,6 +237,7 @@ export function MobileNativePhoneHome({
         onOpenDetail={onOpenDetail}
         detailButtonRef={detailButtonRef}
       />
+      <MobileNativeSourceLedger model={model} focus={focus} />
     </>
   );
 }
@@ -278,10 +276,7 @@ export function MobileNativeTabletHome({
           {model.scopeNote ? <p className="mn-scope-note">{model.scopeNote}</p> : null}
           <TabletScopeLedger model={model} />
           <FocusQueue focuses={model.focuses} selected={selected} onSelect={onSelect} />
-          <div className="mn-master-boundary">
-            <MobileNativeIcon name="readonly" size={16} />
-            <span><b>只读边界</b><small>不会修改 RouterOS 配置</small></span>
-          </div>
+          <TabletContextEvidence model={model} focus={focus} />
         </aside>
         <div className="mn-tablet-detail">
           <FocusPanel
@@ -294,7 +289,10 @@ export function MobileNativeTabletHome({
             onOpenDetail={onOpenDetail}
             detailButtonRef={detailButtonRef}
           />
-          <TabletContextEvidence model={model} focus={focus} />
+          <div className="mn-readonly-boundary">
+            <MobileNativeIcon name="readonly" size={16} />
+            <span><b>只读边界</b><small>不会修改 RouterOS 配置</small></span>
+          </div>
         </div>
       </div>
     </>

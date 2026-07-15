@@ -32,7 +32,7 @@ Static implementation evidence is strong, but final product completion is still 
 | P1-15 | Empty chart states should be graphical dashed-axis + latest success/recovery threshold. | Empty chart contract/readout/recovery threshold gates. | Static pass | Confirm no blank empty chart blocks remain. |
 | P1-16 | Mobile entry links low priority, not first-screen content. | Detail-tabs-after-first-screen and first-screen hidden CSS gates. | Static pass | Confirm first screen is dominated by conclusion + microchart. |
 | P1-17 | Key facts stay first-screen visible despite lower density. | Normal keyfacts/chart metadata/readout/sample-depth gates. | Static pass | Confirm current/peak/samples/trust/recent success are above fold. |
-| P1-18 | No large cards with only 1-2 lines. | Field/visual count classification and content-sized/no-stretch CSS gates. | Static pass | Confirm large boxes are not visually sparse at 1366x900. |
+| P1-18 | No large cards with only 1-2 lines. | Required evidence modules, visible geometry, and content-sized/no-stretch CSS gates. | Static pass | Confirm large boxes are not visually sparse at 1366x768. |
 
 ## Required render verification before final completion
 
@@ -51,7 +51,7 @@ Or through local CI's explicit lite browser switch:
 
 Full release matrix, only after the lite pass is clean:
 
-    powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\check-local-predeploy.ps1 -Profile public -Sections overview -Viewports desktop=1366x900,narrow=390x844 -ScaleScenarios single,fleet,all-offline,no-snapshot,collection-down,resource-full,interfaces-down
+    powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\check-local-predeploy.ps1 -Profile public -Sections overview -Viewports desktop=1366x768,narrow=390x844 -ScaleScenarios single,fleet,all-offline,no-snapshot,collection-down,resource-full,interfaces-down
 
 Minimum scenarios covered by the lite wrapper:
 

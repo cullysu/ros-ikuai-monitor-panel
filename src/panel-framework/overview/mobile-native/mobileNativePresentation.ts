@@ -7,7 +7,7 @@ export function fleetSignal(state: OverviewDerivedState, verification: MobileRou
   return {
     kind: "fleet",
     title: "对象范围",
-    note: "范围只描述已采集对象，不替代风险判断",
+    note: "本次采样对象",
     items: [
       { label: "WAN", value: `${state.facts.wan.online} / ${state.facts.wan.total}`, note: "运行 / 总数", tone: state.facts.wan.online ? "trust" : "danger" },
       { label: "接口", value: `${runningInterfaces} / ${state.facts.interfaces.total}`, note: "运行 / 总数", tone: state.facts.interfaces.down ? "warn" : "trust" },

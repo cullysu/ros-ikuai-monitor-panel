@@ -306,9 +306,9 @@ function parseResponsiveCheckName(name) {
 
 function collectGateDetailFailures(latest) {
   const gateFailures = {
-    desktopDensity: [],
+    desktopSemantic: [],
     noSnapshotSemantic: [],
-    mobileActionCopy: [],
+    mobileSemantic: [],
   };
   for (const check of Array.isArray(latest && latest.checks) ? latest.checks : []) {
     if (!check) {
@@ -319,13 +319,16 @@ function collectGateDetailFailures(latest) {
       continue;
     }
     const detail = check.detail && typeof check.detail === 'object' ? check.detail : {};
+    const pushFailure = (bucket, field, value) => {
+      gateFailures[bucket].push({
+        check: String(check.name || '').trim(),
+        field,
+        value,
+      });
+    };
     const pushMissing = (bucket, field) => {
       if (detail[field] !== true) {
-        gateFailures[bucket].push({
-          check: String(check.name || '').trim(),
-          field,
-          value: detail[field],
-        });
+        pushFailure(bucket, field, detail[field]);
       }
     };
     const recordCheckFailure = (bucket) => {
@@ -338,39 +341,55 @@ function collectGateDetailFailures(latest) {
       }
     };
     if (parsed.viewport === 'desktop' || parsed.viewport === 'desktop1440') {
-      recordCheckFailure('desktopDensity');
-      pushMissing('desktopDensity', 'overviewDesktopDensityOk');
-      pushMissing('desktopDensity', 'overviewDesktopTableDensityOk');
-      pushMissing('desktopDensity', 'overviewDesktopInfoDensityOk');
-      pushMissing('desktopDensity', 'overviewStatusBusFixedGrammarOk');
-      pushMissing('desktopDensity', 'overviewResourceFirstScreenPriorityOk');
-      pushMissing('desktopDensity', 'overviewCollectionContradictionOk');
-      pushMissing('desktopDensity', 'overviewCollectionTrustMarkersOk');
-      pushMissing('desktopDensity', 'overviewInterfacesForwardingFirstOk');
-      pushMissing('desktopDensity', 'overviewDefaultRouteRawFactsOk');
+      recordCheckFailure('desktopSemantic');
+      for (const field of [
+        'overviewDesktopReleaseLayoutOk',
+        'overviewDesktopEvidenceCompositionOk',
+        'overviewDesktopColumnContinuityOk',
+        'overviewDesktopTopBandOk',
+        'overviewDesktopEffectiveHeightOk',
+        'overviewDesktopFlatStatusBarOk',
+        'overviewStatusBusFixedGrammarOk',
+        'overviewResourceFirstScreenPriorityOk',
+        'overviewCollectionContradictionOk',
+        'overviewCollectionTrustMarkersOk',
+        'overviewInterfacesForwardingFirstOk',
+        'overviewDefaultRouteRawFactsOk',
+      ]) pushMissing('desktopSemantic', field);
+      if (parsed.scenario === 'single') {
+        pushMissing('desktopSemantic', 'overviewDesktopFocusedHierarchyOk');
+        pushMissing('desktopSemantic', 'overviewSingleEvidencePriorityOk');
+      }
+      if (parsed.scenario === 'fleet') pushMissing('desktopSemantic', 'overviewFleetSceneEvidenceOk');
     }
-    if (parsed.scenario === 'no-snapshot') {
+    if (parsed.scenario === 'no-snapshot' && (parsed.viewport === 'desktop' || parsed.viewport === 'desktop1440')) {
       recordCheckFailure('noSnapshotSemantic');
       pushMissing('noSnapshotSemantic', 'overviewNoSnapshotSemanticOk');
       pushMissing('noSnapshotSemantic', 'overviewNoSnapshotFreshnessForbiddenOk');
       pushMissing('noSnapshotSemantic', 'overviewNoSnapshotSamplingStateUniqueOk');
       pushMissing('noSnapshotSemantic', 'overviewNoSnapshotDesktopEvidenceTripletOk');
       pushMissing('noSnapshotSemantic', 'overviewNoSnapshotTrustedMetricsForbiddenOk');
-      if (detail.overviewNoSnapshotGridOk !== true && detail.overviewNoSnapshotFiveBlocksOk !== true) {
-        pushMissing('noSnapshotSemantic', 'overviewNoSnapshotGridOk');
-        pushMissing('noSnapshotSemantic', 'overviewNoSnapshotFiveBlocksOk');
-      }
+      pushMissing('noSnapshotSemantic', 'overviewNoSnapshotModuleContractOk');
+      pushMissing('noSnapshotSemantic', 'overviewNoSnapshotEvidenceContractOk');
+      pushMissing('noSnapshotSemantic', 'overviewNoSnapshotNoFillerCopyOk');
       pushMissing('noSnapshotSemantic', 'overviewNoSnapshotDowngradeReasonsOk');
       pushMissing('noSnapshotSemantic', 'overviewNoSnapshotRepetitionBudgetOk');
     }
-    if (parsed.viewport === 'narrow') {
-      recordCheckFailure('mobileActionCopy');
-      pushMissing('mobileActionCopy', 'overviewMobileActionLinksUniqueOk');
-      pushMissing('mobileActionCopy', 'overviewMobileCopyAssemblyOk');
-      pushMissing('mobileActionCopy', 'overviewMobilePrimaryConclusionUniqueOk');
-      pushMissing('mobileActionCopy', 'overviewMobileLedgerHeightOk');
-      pushMissing('mobileActionCopy', 'overviewPrimaryConclusionNoEllipsisOk');
-      pushMissing('mobileActionCopy', 'overviewSuggestionCopyUniqueOk');
+    if (parsed.viewport === 'wide' || parsed.viewport === 'narrow') {
+      recordCheckFailure('mobileSemantic');
+      const probe = detail.mobileOverviewAppHomeGateProbe && typeof detail.mobileOverviewAppHomeGateProbe === 'object'
+        ? detail.mobileOverviewAppHomeGateProbe
+        : {};
+      if (detail.surface !== 'mobile-native') pushFailure('mobileSemantic', 'surface', detail.surface);
+      if (probe.appHomePass !== true) pushFailure('mobileSemantic', 'appHomePass', probe.appHomePass);
+      for (const [field, value] of Object.entries(probe.checks || {})) {
+        if (value !== true) pushFailure('mobileSemantic', `checks.${field}`, value);
+      }
+      if (parsed.scenario === 'no-snapshot') {
+        if (probe.evidenceMode !== 'unavailable') pushFailure('noSnapshotSemantic', 'evidenceMode', probe.evidenceMode);
+        if (probe.checks?.unavailableBoundary !== true) pushFailure('noSnapshotSemantic', 'checks.unavailableBoundary', probe.checks?.unavailableBoundary);
+        if (probe.checks?.trafficMatchesMode !== true) pushFailure('noSnapshotSemantic', 'checks.trafficMatchesMode', probe.checks?.trafficMatchesMode);
+      }
     }
   }
   return gateFailures;
@@ -441,11 +460,12 @@ function assertLatestFullMatrixReport(rootDir = ROOT) {
   const failedChecks = latest.failedChecks;
   const gateFailures = collectGateDetailFailures(latest);
   const failedCheckBuckets = {
-    desktopDensity: gateFailures.desktopDensity.map((item) => item.check),
+    desktopSemantic: gateFailures.desktopSemantic.map((item) => item.check),
     noSnapshotSemantic: gateFailures.noSnapshotSemantic.map((item) => item.check),
-    mobileActionCopy: gateFailures.mobileActionCopy.map((item) => item.check),
+    mobileSemantic: gateFailures.mobileSemantic.map((item) => item.check),
   };
-  const checksPass = failedChecks.length === 0 && missingChecks.length === 0 && releaseEvidenceOk;
+  const gateFailureCount = Object.values(gateFailures).reduce((total, failures) => total + failures.length, 0);
+  const checksPass = failedChecks.length === 0 && missingChecks.length === 0 && gateFailureCount === 0 && releaseEvidenceOk;
   const reportPassMatchesChecks = Boolean(latest.reportPass) === checksPass;
   if (!commitMatchesHead || !latest.matrix || !checksPass || !reportPassMatchesChecks || !latest.complete || latest.total !== FULL_MATRIX_CELLS.length || latest.passed !== FULL_MATRIX_CELLS.length || latest.failed !== 0 || missingCells.length || missingChecks.length) {
     throw new Error(`Latest full matrix report is not 7x4 all green: ${JSON.stringify({
@@ -515,7 +535,7 @@ function main(argv = process.argv.slice(2)) {
   assertContains('.github/workflows/ci.yml', '--scale-scenarios single,fleet,all-offline,no-snapshot,collection-down,resource-full,interfaces-down');
   assertContains('.github/workflows/ci.yml', '--sections overview');
   assertNotContains('.github/workflows/ci.yml', '--sections overview-edge-cases');
-  assertContains('.github/workflows/ci.yml', '--viewports desktop=1366x900,desktop1440=1440x900,wide=844x390,narrow=390x844');
+  assertContains('.github/workflows/ci.yml', '--viewports desktop=1366x768,desktop1440=1440x900,wide=844x390,narrow=390x844');
 
   assertContains('compose.yml', '${ROS_PANEL_IMAGE:-routeros-triage-panel:local}');
   assertContains('.env.docker.example', 'ROS_PANEL_IMAGE=routeros-triage-panel:local');
@@ -676,7 +696,7 @@ function main(argv = process.argv.slice(2)) {
   assertContains('tools/local-predeploy-check.js', 'OVERVIEW_RELEASE_VIEWPORTS');
   assertContains('tools/local-predeploy-check.js', 'viewportCellKey');
   assertContains('tools/check-public-release-readiness.js', 'normalizeMatrixCell');
-  assertContains('tools/local-predeploy-check.js', '--viewports <list>          Comma list like desktop=1366x900,desktop1440=1440x900,wide=844x390,narrow=390x844.');
+  assertContains('tools/local-predeploy-check.js', '--viewports <list>          Comma list like desktop=1366x768,desktop1440=1440x900,wide=844x390,narrow=390x844.');
   assertContains('tools/local-predeploy-check.js', 'aggregateComplete: matrixAggregate.complete,');
   assertContains('tools/local-predeploy-check.js', 'screenshotDir: args.out');
   assertContains('tools/local-predeploy-check.js', 'scenarioMatrix:');
@@ -686,89 +706,41 @@ function main(argv = process.argv.slice(2)) {
   assertContains('tools/local-predeploy-check.js', 'inspection.screenshotOk = screenshotOk;');
   assertContains('tools/local-predeploy-check.js', 'inspection.pass = Boolean(inspection.pass && screenshotOk);');
   assertContains('tools/local-predeploy-check.js', "await withTimeout(browser.stop(), 8000, 'browser stop')");
-  assertContains('tools/local-predeploy-check.js', 'overviewDesktopSamplingStateUniqueOk');
-  assertContains('tools/local-predeploy-check.js', 'overviewDesktopTopConclusionUniqueOk');
-  assertContains('tools/local-predeploy-check.js', 'overviewMobileSamplingStateUniqueOk');
-  assertContains('tools/local-predeploy-check.js', 'overviewMobileActionLinksUniqueOk');
-  assertContains('tools/local-predeploy-check.js', 'overviewDesktopActionLinksUniqueOk');
-  assertContains('tools/local-predeploy-check.js', 'overviewMobilePrimaryConclusionUniqueOk');
-  assertContains('tools/local-predeploy-check.js', "const mobileAllowedActionLabels = new Set(['WAN明细', '采集状态', '资源阈值', '路由快照']);");
-  assertContains('tools/local-predeploy-check.js', 'overviewPrimaryConclusionNoEllipsisOk');
-  assertContains('tools/local-predeploy-check.js', 'overviewCollectionContradictionOk');
-  assertContains('tools/local-predeploy-check.js', 'overviewCollectionTrustMarkersOk');
-  assertContains('tools/local-predeploy-check.js', 'overviewInterfacesForwardingFirstOk');
-  assertContains('tools/local-predeploy-check.js', 'overviewStatusBusFixedGrammarOk');
-  assertContains('tools/local-predeploy-check.js', 'overviewResourceFirstScreenPriorityOk');
-  assertContains('tools/local-predeploy-check.js', 'overviewDefaultRouteRawFactsOk');
-  assertContains('tools/local-predeploy-check.js', 'overviewNoSnapshotDowngradeReasonsOk');
-  assertContains('tools/local-predeploy-check.js', 'overviewNoSnapshotModuleContractOk');
-  assertContains('tools/local-predeploy-check.js', 'overviewChineseUiNoEngineeringEnglishOk');
-  assertContains('tools/local-predeploy-check.js', 'overviewFirstScreenCoverageOk');
-  assertContains('tools/local-predeploy-check.js', 'overviewDesktopEvidenceCompositionOk');
-  assertContains('tools/local-predeploy-check.js', 'overviewDesktopTopBandOk');
-  assertContains('tools/local-predeploy-check.js', 'overviewDesktopFlatStatusBarOk');
-  assertContains('tools/local-predeploy-check.js', 'overviewSceneSpecificTableContractOk');
-  assertContains('tools/local-predeploy-check.js', "const overviewFlatDesktopContractOk = sectionName === 'overview' && isDesktopOverview && Boolean(");
-  assertContains('tools/local-predeploy-check.js', "const overviewFlatMobileContractOk = sectionName === 'overview' && isMobileOverview && Boolean(");
-  assertContains('tools/local-predeploy-check.js', 'overviewDesktopDetailFirstTwoRowsVisibleOk');
-  assertContains('tools/local-predeploy-check.js', 'overviewDesktopColumnContinuityOk');
-  assertContains('tools/local-predeploy-check.js', 'overviewBlankAreaOk');
-  assertContains('tools/local-predeploy-check.js', 'overviewDesktopNo72vhBlankOk');
-  assertContains('tools/local-predeploy-check.js', 'overviewMobileNo72vhBlankOk');
-  assertContains('tools/local-predeploy-check.js', 'overviewDesktopWhitespaceBudgetOk');
-  assertContains('tools/local-predeploy-check.js', 'overviewDesktopInfoBudgetOk');
-  assertContains('tools/local-predeploy-check.js', 'overviewDesktopEvidenceSurfaceOk');
-  assertContains('tools/local-predeploy-check.js', 'const overviewReadonlyConsoleContractOk');
-  assertContains('tools/local-predeploy-check.js', 'overviewDesktopFirstScreenDedupeOk');
-  assertContains('tools/local-predeploy-check.js', 'overviewCrossViewportCopyDedupeOk');
-  assertContains('tools/local-predeploy-check.js', 'overviewCardBudgetOk');
-  assertContains('tools/local-predeploy-check.js', 'overviewSemanticColorBudgetOk');
-  assertContains('tools/local-predeploy-check.js', 'overviewActionLinksLowChromeOk');
-  assertContains('tools/local-predeploy-check.js', 'overviewMobileCoreOk');
-  assertContains('tools/local-predeploy-check.js', 'overviewMobileFlatStatusTableOk');
-  assertContains('tools/local-predeploy-check.js', 'overviewMobileLedgerHeightOk');
-  assertContains('tools/local-predeploy-check.js', 'overviewMobileAlertCardCompactOk');
-  assertContains('tools/local-predeploy-check.js', 'overviewMobileDetailFirstTwoRowsVisibleOk');
-  assertContains('tools/local-predeploy-check.js', 'overviewProductVerdictOk');
-  assertContains('tools/local-predeploy-check.js', 'overviewWanListPriorityOk');
-  assertContains('tools/local-predeploy-check.js', 'overviewWanEvidencePriorityOk');
-  assertContains('tools/local-predeploy-check.js', 'mobileWanEvidenceRows.slice(0, 3).every(nodeVisibleInFirstScreen)');
-  assertContains('tools/local-predeploy-check.js', 'overviewResourceEvidenceCompletenessOk');
-  assertContains('tools/local-predeploy-check.js', 'overviewResourceDurationVisibilityOk');
-  assertNotContains('tools/local-predeploy-check.js', 'overviewTrendCompactOk &&');
-  assertNotContains('tools/local-predeploy-check.js', 'overviewRankCompactOk &&');
-  assertNotContains('tools/local-predeploy-check.js', 'overviewResourceTrendOk &&');
-  assertNotContains('tools/local-predeploy-check.js', 'overviewAxesOk &&');
-  assertNotContains('tools/local-predeploy-check.js', 'overviewMonitorSplitOk &&');
-  assertNotContains('tools/local-predeploy-check.js', 'overviewResourceAxisOk &&');
-  assertNotContains('tools/local-predeploy-check.js', 'overviewProtocolRankOk &&');
-  assertContains('tools/local-predeploy-check.js', 'overviewMobileCopyAssemblyOk');
-  assertContains('tools/local-predeploy-check.js', 'overviewRestSshViewportParityOk');
-  assertContains('tools/local-predeploy-check.js', 'overviewMobileEffectiveCoverageOk');
-  assertContains('tools/local-predeploy-check.js', 'overviewMobileFirstScreenContractOk');
-  assertContains('tools/local-predeploy-check.js', 'visualCenter: Boolean(');
-  assertContains('tools/local-predeploy-check.js', 'overviewMobileWanIncidentPriorityOk');
-  assertContains('tools/local-predeploy-check.js', 'overviewRestSshSourceConsistencyOk');
-  assertContains('tools/local-predeploy-check.js', 'overviewResourceFullIncidentOk');
-  assertContains('tools/local-predeploy-check.js', 'overviewNoSnapshotFreshnessForbiddenOk');
-  assertContains('tools/local-predeploy-check.js', 'overviewNoSnapshotSemanticOk');
-  assertContains('tools/local-predeploy-check.js', 'overviewNoSnapshotTrustedMetricsForbiddenOk');
-  assertContains('tools/local-predeploy-check.js', 'overviewNoSnapshotSamplingStateUniqueOk');
-  assertContains('tools/local-predeploy-check.js', 'overviewNoSnapshotDesktopEvidenceTripletOk');
-  assertContains('tools/local-predeploy-check.js', 'overviewNoSnapshotGridOk');
-  assertContains('tools/local-predeploy-check.js', 'overviewNoSnapshotSemanticProbe');
-  assertNotContains('tools/local-predeploy-check.js', 'overviewFlatMobileContractOk ||');
-  assertContains('tools/local-predeploy-check.js', 'overviewCollectionLayerSplitOk');
-  assertContains('tools/local-predeploy-check.js', 'overviewInterfacesChannelConsistencyOk');
-  assertContains('tools/local-predeploy-check.js', 'overviewInterfacesDownCollectionParityOk');
-  assertContains('tools/local-predeploy-check.js', 'overviewMobileEvidenceUniqueOk');
-  assertContains('tools/local-predeploy-check.js', 'overviewFirstScreenDedupeOk');
-  assertContains('tools/local-predeploy-check.js', 'overviewDesktopTopBandProbe');
-  assertContains('tools/local-predeploy-check.js', 'overviewMobileUniqueVerdictProbe');
-  assertContains('tools/local-predeploy-check.js', 'overviewFirstScreenDedupeProbe');
-  assertContains('tools/local-predeploy-check.js', 'overviewHistoryTitlePrefixOk');
-  assertContains('tools/local-predeploy-check.js', 'overviewDefaultRouteSemanticUndeterminedOk');
-  assertNotContains('tools/local-predeploy-check.js', 'overviewFirstScreenFieldCount >= minOverviewFirstScreenFields');
+  assertContains('tools/local-predeploy-check.js', "require('./acceptance/inspect-section-browser')");
+  assertContains('tools/local-predeploy-check.js', "require('./acceptance/inspect-overview-mobile')");
+  assertContains('tools/local-predeploy-check.js', "require('./acceptance/inspect-overview-desktop-layout')");
+  assertContains('tools/acceptance/inspect-section-browser.js', 'if (mobileNativeResult) return mobileNativeResult;');
+  assertContains('tools/acceptance/inspect-section-browser.js', 'const pass = legacyOrDesktopPass;');
+  assertContains('tools/acceptance/inspect-overview-mobile.js', 'Object.values(routerMobileChecks).every(Boolean)');
+  assertContains('tools/acceptance/inspect-overview-mobile.js', 'const pass = mobileOverviewAppHomePass;');
+  assertContains('tools/acceptance/inspect-overview-mobile.js', 'routerMobileSmallTextNodes.length === 0');
+  assertContains('tools/acceptance/inspect-overview-mobile.js', 'routerMobileAriaTargetsOk');
+  assertContains('tools/acceptance/inspect-overview-mobile.js', 'nativeDetailHasNovelEvidence && nativeDetailNoHomeReplay');
+  assertContains('tools/acceptance/inspect-overview-desktop-layout.js', 'sceneCoreGeometry');
+  assertContains('tools/acceptance/inspect-overview-desktop-layout.js', 'overviewDesktopColumnContinuityOk');
+  assertContains('tools/acceptance/inspect-overview-desktop-layout.js', 'overviewDesktopFocusedHierarchyOk');
+  assertContains('tools/acceptance/inspect-section-browser.js', 'overviewDesktopEvidenceCompositionOk');
+  assertContains('tools/acceptance/inspect-section-browser.js', 'overviewDesktopReleaseLayoutOk');
+  assertContains('tools/acceptance/inspect-section-browser.js', 'overviewNoSnapshotSemanticOk');
+  assertNotContains('tools/acceptance/inspect-section-browser.js', 'const pass = routerMobileRoot ? mobileOverviewAppHomePass : legacyOrDesktopPass');
+  for (const inspector of [
+    'tools/local-predeploy-check.js',
+    'tools/acceptance/inspect-section-browser.js',
+    'tools/acceptance/inspect-overview-mobile.js',
+    'tools/acceptance/inspect-overview-desktop-layout.js',
+  ]) {
+    for (const fakeDensityToken of [
+      'sampleRectCoverage',
+      'elementFromPoint',
+      'contentFillRatio',
+      'rightFillRatio',
+      'overviewVisualBalanceTypeCount',
+      'overviewDesktopTableAreaRatio',
+      'overviewDesktopChartMatrixAreaRatio',
+      'overviewDesktopKpiBalanceOk',
+      'overviewFirstScreenFieldCount >= minOverviewFirstScreenFields',
+    ]) assertNotContains(inspector, fakeDensityToken);
+  }
   assertContains('tools/local-predeploy-check.js', "const requiredScenarios = ['single', 'fleet', 'all-offline', 'no-snapshot', 'collection-down', 'resource-full', 'interfaces-down'];");
   assertContains('src/panel-framework/overview/OverviewPanel.css', '@import "./styles/overview-foundation.css";');
   assertContains('src/panel-framework/overview/OverviewPanel.css', '@import "./styles/overview-desktop.css";');
@@ -800,7 +772,8 @@ function main(argv = process.argv.slice(2)) {
   assertContains('src/panel-framework/overview/desktopOverviewDefaultScene.tsx', 'WAN 采样趋势');
   assertContains('src/panel-framework/overview/mobile-native/mobileNativeTypes.ts', '"current" | "historical" | "unavailable"');
   assertContains('src/panel-framework/overview/mobile-native/mobileNativeFocus.ts', 'mode === "current" ? observedRates(snapshot) : null');
-  assertContains('src/panel-framework/overview/mobile-native/mobileNativeFocus.ts', '不以零值替代');
+  assertContains('tools/check-mobile-native-model.js', 'missing observations must not render as measured zero');
+  assertContains('tools/check-mobile-native-model.js', 'numeric zero is a valid explicit current observation');
   assertContains('src/panel-framework/overview/mobile-native/mobileNativeEvidence.ts', 'route.active === true && route.disabled !== true');
   assertContains('src/panel-framework/overview/mobile-native/mobileNativeEvidence.ts', 'trailingStreak');
   assertNotContains('src/panel-framework/overview/mobile-native/MobileNativeHome.tsx', 'WAN 实时趋势');

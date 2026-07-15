@@ -48,6 +48,14 @@ const assertNoProofObjectReplay = (model, label) => {
     assert.equal(objectPairs.some((pair) => proofPairs.has(pair)), false, `${label}/${focus.key}: object evidence must not replay proof label/value pairs`);
   }
 };
+const inspectionSectionKey = {
+  route: "route",
+  wan: "wan",
+  collection: "collection",
+  resource: "resource",
+  interface: "interfaces",
+};
+const forbiddenDesignCopy = /只列直接支撑|横向选择对象|完整当前观测|首页未展示|当前值只在信号区|信号区出现|此处只补充|以下字段来自/;
 
 const inactiveRoute = clone(OVERVIEW_SCENARIO_FIXTURES.single);
 inactiveRoute.routes.defaultRoutes = [{ table: "main", gateway: "198.51.100.1", distance: 1, active: false, disabled: false }];
@@ -76,7 +84,7 @@ measuredZero.wan[0].downRate = 0;
 measuredZero.wan[0].upRate = 0;
 const measuredZeroModel = modelFor(measuredZero);
 assert.equal(measuredZeroModel.focuses[0].signal.kind, "rates", "numeric zero is a valid explicit current observation");
-assert.deepEqual(measuredZeroModel.focuses[0].signal.items.map((item) => item.value), ["0 bps", "0 bps"]);
+assert.deepEqual(measuredZeroModel.focuses[0].signal.items.map((item) => `${item.value} ${item.unit}`), ["0 bps", "0 bps"]);
 
 const staleAfterFailedAttempt = clone(OVERVIEW_SCENARIO_FIXTURES.single);
 const old = "2026-01-01T00:00:00.000Z";
@@ -124,8 +132,9 @@ assert.doesNotMatch(surfaceText(partialRecoveryModel), /REST \/ SSH 未恢复|RE
 const collectionDownModel = modelFor(clone(OVERVIEW_SCENARIO_FIXTURES["collection-down"]));
 const collectionInspection = collectionDownModel.focuses[0].inspection;
 assert.equal(collectionInspection.key, "collection");
-assert.equal(collectionInspection.relations.some((item) => item.label === "最近尝试"), true);
-assert.equal(collectionInspection.relations.some((item) => item.label === "明确成功"), true);
+assert.equal(collectionInspection.relations.some((item) => item.label === "当前通道"), true);
+assert.equal(collectionInspection.relations.some((item) => item.label === "采集来源"), true);
+assert.equal(collectionInspection.relations.some((item) => item.label === "最近尝试" || item.label === "明确成功"), false, "proof timestamps must not be replayed in the inspected object");
 const collectionErrorText = collectionInspection.rows.find((item) => item.key === "collection-error")?.value || "";
 assert.equal((collectionErrorText.match(/无可用快照/g) || []).length <= 1, true, "repeated collection clauses must be compacted");
 
@@ -278,14 +287,19 @@ assert.equal(outletAndResourceModel.focuses[0].signal.kind, "wan");
 for (const [scenario, fixture] of Object.entries(OVERVIEW_SCENARIO_FIXTURES)) {
   const model = modelFor(clone(fixture));
   assertNoProofObjectReplay(model, scenario);
+  assert.doesNotMatch(surfaceText(model), forbiddenDesignCopy, `${scenario}: product copy must state facts rather than explain the interface`);
   assert.deepEqual(model.scopeFacts.map((fact) => fact.key), ["scope-wan", "scope-interface", "scope-risk"]);
   assert.equal(model.focuses.every((focus) => !focus.inspection.actionTitle.includes("原始证据")), true, `${scenario}: detail action must not overclaim raw evidence`);
+  for (const focus of model.focuses) {
+    const selectedDomain = inspectionSectionKey[focus.inspection.key];
+    assert.equal(focus.detailSectionKeys.includes(selectedDomain), false, `${scenario}/${focus.key}: detail context must not replay the selected object's domain section`);
+  }
   const failureRows = model.focuses.flatMap((focus) => focus.signal.items).filter((item) => item.label === "失败端点");
   assert.equal(failureRows.some((item) => item.value === "0" || item.value === "0 个"), false, `${scenario}: zero failures must not read as no fault`);
 }
 
 const detailKeys = new Set(resourceModel.detailSections.map((section) => section.key));
 for (const key of ["target", "route", "wan", "collection", "resource", "boundary"]) assert.equal(detailKeys.has(key), true);
-assert.deepEqual(focusFor(resourceModel, "resource").detailSectionKeys, ["resource", "collection", "boundary"]);
+assert.deepEqual(focusFor(resourceModel, "resource").detailSectionKeys, ["collection", "boundary"]);
 
 console.log("mobile risk-focus semantic contract: PASS");

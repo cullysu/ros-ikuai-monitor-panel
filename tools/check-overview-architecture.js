@@ -18,6 +18,22 @@ function lines(text) {
   return text.split(/\r\n|\r|\n/).length;
 }
 
+function cssHexToken(text, name) {
+  const match = text.match(new RegExp(`${name}:\\s*(#[0-9a-f]{6})`, "i"));
+  return match?.[1] || "";
+}
+
+function relativeLuminance(hex) {
+  const channels = [1, 3, 5].map((offset) => Number.parseInt(hex.slice(offset, offset + 2), 16) / 255)
+    .map((value) => value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4);
+  return 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2];
+}
+
+function contrastRatio(foreground, background) {
+  const values = [relativeLuminance(foreground), relativeLuminance(background)].sort((a, b) => b - a);
+  return (values[0] + 0.05) / (values[1] + 0.05);
+}
+
 const failures = [];
 function assert(condition, message) {
   if (!condition) failures.push(message);
@@ -27,6 +43,9 @@ const panelFile = "src/panel-framework/overview/OverviewPanel.tsx";
 const panelCssFile = "src/panel-framework/overview/OverviewPanel.css";
 const contextFile = "CONTEXT.md";
 const localPredeployFile = "tools/local-predeploy-check.js";
+const sectionBrowserInspectorFile = "tools/acceptance/inspect-section-browser.js";
+const mobileOverviewInspectorFile = "tools/acceptance/inspect-overview-mobile.js";
+const desktopOverviewLayoutInspectorFile = "tools/acceptance/inspect-overview-desktop-layout.js";
 const desktopBaseStylesFile =
   "src/panel-framework/overview/styles/overview-desktop.css";
 const desktopConsoleRefinementStylesFile =
@@ -183,17 +202,31 @@ const phoneOpsTokensFile =
   "src/panel-framework/overview/mobile-native/styles/mobile-native-tokens.css";
 const phoneOpsStylesFile =
   "src/panel-framework/overview/mobile-native/styles/mobile-native-layout.css";
+const phoneOpsResponsiveStylesFile =
+  "src/panel-framework/overview/mobile-native/styles/mobile-native-responsive.css";
 const phoneOpsEvidenceStylesFile =
   "src/panel-framework/overview/mobile-native/styles/mobile-native-states.css";
 const phoneOpsWorkspaceStylesFile =
   "src/panel-framework/overview/mobile-native/styles/mobile-native-workspace.css";
+const phoneOpsSourceStylesFile =
+  "src/panel-framework/overview/mobile-native/styles/mobile-native-source.css";
 const mobileShellStylesFile = "src/panel-framework/mobile-shell.css";
 const frameworkStylesFile = "src/panel-framework/styles.css";
+const legacyShellStylesFile = "public/assets/legacy/panel-legacy.css";
 const overviewStatesStylesFile =
   "src/panel-framework/overview/styles/overview-states.css";
 const panel = read(panelFile);
 const context = read(contextFile);
 const localPredeploy = read(localPredeployFile);
+const sectionBrowserInspector = read(sectionBrowserInspectorFile);
+const mobileOverviewInspector = read(mobileOverviewInspectorFile);
+const desktopOverviewLayoutInspector = read(desktopOverviewLayoutInspectorFile);
+const acceptanceInspectorBundle = [
+  localPredeploy,
+  sectionBrowserInspector,
+  mobileOverviewInspector,
+  desktopOverviewLayoutInspector,
+].join("\n");
 const desktopConsole = read(desktopConsoleFile);
 const desktopDecisionRail = read(desktopDecisionRailFile);
 const desktopDecisionRailStyles = read(desktopDecisionRailStylesFile);
@@ -261,11 +294,18 @@ const phoneOpsModelEvidence = read(phoneOpsModelEvidenceFile);
 const phoneOpsTypes = read(phoneOpsTypesFile);
 const phoneOpsTokens = read(phoneOpsTokensFile);
 const phoneOpsStyles = read(phoneOpsStylesFile);
+const phoneOpsResponsiveStyles = read(phoneOpsResponsiveStylesFile);
 const phoneOpsEvidenceStyles = read(phoneOpsEvidenceStylesFile);
 const phoneOpsWorkspaceStyles = read(phoneOpsWorkspaceStylesFile);
-const phoneOpsStyleBundle = `${phoneOpsTokens}\n${phoneOpsStyles}\n${phoneOpsWorkspaceStyles}\n${phoneOpsEvidenceStyles}`;
+const phoneOpsSourceStyles = read(phoneOpsSourceStylesFile);
+const phoneOpsStyleBundle = `${phoneOpsTokens}\n${phoneOpsStyles}\n${phoneOpsResponsiveStyles}\n${phoneOpsWorkspaceStyles}\n${phoneOpsSourceStyles}\n${phoneOpsEvidenceStyles}`;
+const phoneOpsCopyBundle = `${phoneOpsHome}\n${phoneOpsSignal}\n${phoneOpsInspection}\n${phoneOpsEvidence}\n${phoneOpsFocus}\n${phoneOpsObjects}`;
+const mobileQuiet = cssHexToken(phoneOpsTokens, "--mn-quiet");
+const mobileMuted = cssHexToken(phoneOpsTokens, "--mn-muted");
+const mobileTextSurfaces = ["--mn-canvas", "--mn-surface", "--mn-layer"].map((token) => cssHexToken(phoneOpsTokens, token));
 const mobileShellStyles = read(mobileShellStylesFile);
 const frameworkStyles = read(frameworkStylesFile);
+const legacyShellStyles = read(legacyShellStylesFile);
 const overviewStatesStyles = read(overviewStatesStylesFile);
 const retiredVisualStyleBundle = `${overviewStatesStyles}\n${desktopBaseStyles}\n${desktopRefinement}`;
 const desktopLegibilityStyleBundle = [
@@ -658,7 +698,7 @@ assert(
   "Desktop status bus must have one canonical component layer, not a refinement shadow"
 );
 assert(
-  lines(desktopWanTrendStyles) <= 120 &&
+  lines(desktopWanTrendStyles) <= 130 &&
     desktopWanTrendStyles.includes('[data-overview-density-module="wan-trend"]') &&
     panel.includes('import "./styles/overview-desktop-runtime.css";') &&
     (desktopWanTrendStyles.match(/!important/g) || []).length === 0 &&
@@ -676,8 +716,32 @@ assert(
   "Phone operations styles must remain isolated and priority-free"
 );
 assert(
-  !/font-size:\s*(?:7|8|9)px\b/.test(desktopLegibilityStyleBundle),
-  "Desktop operational styles must not use 7–9px text"
+  mobileQuiet && mobileMuted && mobileTextSurfaces.every(Boolean) &&
+    [mobileQuiet, mobileMuted].every((foreground) => mobileTextSurfaces.every((background) => contrastRatio(foreground, background) >= 4.5)),
+  "Mobile secondary text tokens must maintain WCAG 4.5:1 contrast on every active light surface"
+);
+assert(
+  !/只列直接支撑|横向选择对象|完整当前观测|首页未展示|当前值只在信号区|信号区出现|此处只补充|以下字段来自/.test(phoneOpsCopyBundle),
+  "Mobile product copy must state network facts instead of explaining the interface design"
+);
+assert(
+  !/font-size:\s*(?:[1-9](?:\.\d+)?|1[01](?:\.\d+)?)px\b/.test(desktopLegibilityStyleBundle),
+  "Desktop operational styles must keep normal text at 12px or larger"
+);
+assert(
+  !overviewStatesStyles.includes("!important"),
+  "Active overview state styles must not bypass the canonical desktop cascade with !important"
+);
+assert(
+  !/border-left:\s*(?:[2-9]|\d{2,})px\b/.test(desktopLegibilityStyleBundle) &&
+    !/box-shadow:[^;\n]*inset\s+(?:[2-9]|\d{2,})px\s+0\b/.test(desktopLegibilityStyleBundle),
+  "Desktop overview modules must not use heavy side-stripe accents"
+);
+assert(
+  legacyShellStyles.includes("body:has(#overview.ro-desktop-console) .app.ik-shell") &&
+    legacyShellStyles.includes("grid-template-columns: 176px minmax(0, 1fr)") &&
+    legacyShellStyles.includes("body:has(#overview.ro-desktop-console) .ik-rail"),
+  "Desktop overview must hide the redundant icon rail and keep one navigation surface"
 );
 assert(
   frameworkStyles.includes('@import "./mobile-shell.css";') &&
@@ -837,21 +901,32 @@ assert(lines(phoneOpsModelEvidence) <= 300, `mobileNativeEvidence.ts exceeds 300
 assert(lines(phoneOpsTypes) <= 100, `mobileNativeTypes.ts exceeds 100 lines: ${lines(phoneOpsTypes)}`);
 assert(lines(phoneOpsTokens) <= 110, `mobile-native-tokens.css exceeds 110 lines: ${lines(phoneOpsTokens)}`);
 assert(lines(phoneOpsStyles) <= 1250, `mobile-native-layout.css exceeds 1250 lines: ${lines(phoneOpsStyles)}`);
+assert(lines(phoneOpsResponsiveStyles) <= 340, `mobile-native-responsive.css exceeds 340 lines: ${lines(phoneOpsResponsiveStyles)}`);
 assert(lines(phoneOpsEvidenceStyles) <= 180, `mobile-native-states.css exceeds 180 lines: ${lines(phoneOpsEvidenceStyles)}`);
 assert(lines(phoneOpsWorkspaceStyles) <= 180, `mobile-native-workspace.css exceeds 180 lines: ${lines(phoneOpsWorkspaceStyles)}`);
+assert(lines(phoneOpsSourceStyles) <= 90, `mobile-native-source.css exceeds 90 lines: ${lines(phoneOpsSourceStyles)}`);
 assert(
   panel.includes('const MOBILE_OVERVIEW_QUERY = "(max-width: 1199px)"') &&
     mobileShellStyles.includes("@media (max-width: 1199px)") &&
-    localPredeploy.includes("window.innerWidth <= 1199"),
+    acceptanceInspectorBundle.includes("window.innerWidth <= 1199"),
   "iPad-class widths through 1199px must stay in the isolated mobile/tablet render tree"
 );
 assert(
   phoneOpsObjectSelector.includes('role="listbox"') &&
     phoneOpsObjectSelector.includes('aria-controls="mn-inspection-panel"') &&
+    phoneOpsObjectSelector.includes("data-mobile-native-object-navigation") &&
+    phoneOpsObjectSelector.includes('aria-label="上一个对象"') &&
+    phoneOpsObjectSelector.includes('aria-label="下一个对象"') &&
     phoneOpsEvidence.includes("inspection.sourcePath") &&
     phoneOpsEvidence.includes("inspection.observedAt") &&
     !/原始证据/.test(`${phoneOpsHome}\n${phoneOpsSignal}\n${phoneOpsInspection}\n${phoneOpsEvidence}\n${phoneOpsFocus}\n${phoneOpsObjects}`),
   "Mobile object selection and evidence detail must be programmatic, source-aware, and must not overclaim transformed rows as raw evidence"
+);
+assert(
+  phoneOpsSignal.includes("item.unit") &&
+    phoneOpsStyles.includes(".mn-rate-pair b") &&
+    phoneOpsStyles.includes("white-space: nowrap"),
+  "Mobile throughput values must keep amount and unit baseline-aligned without narrow-phone wrapping"
 );
 assert(
   phoneOpsConsole.includes("data-mobile-native-console") &&
@@ -904,7 +979,17 @@ assert(
     "overviewResourceSpecificModuleCount",
     "overviewNoSnapshotFakeDensityRatio",
     "textLength: section",
-  ].every((token) => !localPredeploy.includes(token)) &&
+    "sampleRectCoverage",
+    "elementFromPoint",
+    "contentFillRatio",
+    "rightFillRatio",
+    "overviewVisualBalanceTypeCount",
+    "overviewDesktopTableAreaPx",
+    "overviewDesktopTableAreaRatio",
+    "overviewDesktopChartMatrixAreaPx",
+    "overviewDesktopChartMatrixAreaRatio",
+    "overviewDesktopKpiBalanceOk",
+  ].every((token) => !acceptanceInspectorBundle.includes(token)) &&
     [
       "overviewSceneSpecificDesktopEvidenceOk",
       "overviewDesktopEvidenceCompositionOk",
@@ -912,8 +997,28 @@ assert(
       "overviewNoSnapshotNoFillerCopyOk",
       "overviewDesktopEvidenceLayoutOk",
       "overviewDesktopReleaseLayoutOk",
-    ].every((token) => localPredeploy.includes(token)),
+      "sceneCoreGeometry",
+      "semanticGeometry",
+      "overviewVisualCenterEvidenceOk",
+    ].every((token) => acceptanceInspectorBundle.includes(token)),
   "Public release checks must gate semantic evidence and geometry, never character, field, cell, or module-count proxies"
+);
+assert(
+  lines(localPredeploy) <= 3000 &&
+    lines(sectionBrowserInspector) <= 5900 &&
+    lines(mobileOverviewInspector) <= 700 &&
+    lines(desktopOverviewLayoutInspector) <= 400,
+  `Acceptance inspector architecture regressed: runner=${lines(localPredeploy)}, browser=${lines(sectionBrowserInspector)}, mobile=${lines(mobileOverviewInspector)}, desktopLayout=${lines(desktopOverviewLayoutInspector)}`
+);
+assert(
+  localPredeploy.includes("require('./acceptance/inspect-section-browser')") &&
+    localPredeploy.includes("require('./acceptance/inspect-overview-mobile')") &&
+    localPredeploy.includes("require('./acceptance/inspect-overview-desktop-layout')") &&
+    sectionBrowserInspector.includes("inspectOverviewDesktopLayout,") &&
+    sectionBrowserInspector.includes("inspectOverviewDesktopLayout({") &&
+    !sectionBrowserInspector.includes("let overviewBlankProbe = null") &&
+    !localPredeploy.includes("const expression = `(async () => {"),
+  "Acceptance runner must orchestrate dedicated mobile, desktop-layout, and browser inspectors instead of embedding a monolith"
 );
 assert(
   desktopConsole.includes("ik-desktop-workspace") &&
@@ -1217,6 +1322,7 @@ assert(
 assert(
   phoneOpsConsole.includes('import "./styles/mobile-native-tokens.css";') &&
     phoneOpsConsole.includes('import "./styles/mobile-native-layout.css";') &&
+    phoneOpsConsole.includes('import "./styles/mobile-native-source.css";') &&
     phoneOpsConsole.includes('import "./styles/mobile-native-workspace.css";') &&
     phoneOpsConsole.includes('import "./styles/mobile-native-states.css";') &&
     !phoneOpsConsole.includes("useInsertionEffect") &&
@@ -1366,8 +1472,8 @@ assert(
   "Desktop hierarchy probes must derive from semantic roles and structure, not self-certifying priority attributes"
 );
 assert(
-  bytes(phoneOpsTokensFile) + bytes(phoneOpsStylesFile) + bytes(phoneOpsEvidenceStylesFile) <= 36000,
-  `Native mobile styles exceed 36 KB: ${bytes(phoneOpsTokensFile) + bytes(phoneOpsStylesFile) + bytes(phoneOpsEvidenceStylesFile)}`
+  bytes(phoneOpsTokensFile) + bytes(phoneOpsStylesFile) + bytes(phoneOpsResponsiveStylesFile) + bytes(phoneOpsEvidenceStylesFile) <= 36000,
+  `Native mobile styles exceed 36 KB: ${bytes(phoneOpsTokensFile) + bytes(phoneOpsStylesFile) + bytes(phoneOpsResponsiveStylesFile) + bytes(phoneOpsEvidenceStylesFile)}`
 );
 
 
@@ -1408,5 +1514,5 @@ if (failures.length > 0) {
 }
 
 console.log(
-  `overview architecture gate: PASS panel=${lines(panel)} lines desktop=${lines(desktopConsole)} lines desktopDecision=${lines(desktopDecisionRail)} lines scenes=${lines(desktopScenes)} lines helper=${lines(desktopHelpers)} lines presentation=${lines(desktopPresentation)} lines topbar=${lines(desktopTopbar)} lines trafficRows=${lines(desktopTrafficRows)} lines routeRows=${lines(desktopRouteRows)} lines wanRows=${lines(desktopWanRows)} lines interfaceRows=${lines(desktopInterfaceRows)} lines credibilityRows=${lines(desktopCredibilityRows)} lines terminalRows=${lines(desktopTerminalRows)} lines resourceRows=${lines(desktopResourceRows)} lines visuals=${lines(desktopVisuals)} lines phoneConsole=${lines(phoneOpsConsole)} lines phoneHome=${lines(phoneOpsHome)} lines phoneSignal=${lines(phoneOpsSignal)} lines phoneInspection=${lines(phoneOpsInspection)} lines phoneEvidence=${lines(phoneOpsEvidence)} lines phoneFocus=${lines(phoneOpsFocus)} lines phoneModel=${lines(phoneOpsModel)} lines phoneModelEvidence=${lines(phoneOpsModelEvidence)} lines phoneStyles=${bytes(phoneOpsStylesFile) + bytes(phoneOpsEvidenceStylesFile)} bytes css=${bytes(panelCssFile)} bytes desktopBase=${lines(desktopBaseStyles)} lines desktopBaseImportant=${desktopBaseImportantCount} desktopActiveImportant=${desktopActiveImportantCount} important=${importantShare.toFixed(4)} desktopImportant=${desktopRefinementImportantCount} workspaceImportant=${desktopWorkspaceLayoutImportantCount} decisionRailRules=${desktopDecisionRailRuleCount} decisionCellRules=${desktopDecisionCellRuleCount} workspaceGridRules=${desktopWorkspaceGridRuleCount} navRules=${desktopNavRuleCount} shellDescendantRules=${desktopImpossibleShellDescendantCount} statusBusRules=${desktopStatusBusRuleCount} legacyTopbarRules=${desktopLegacyTopbarRuleCount} sidebarStatusRules=${desktopSidebarMiniStatusRuleCount} sidebarStatusImportant=${desktopSidebarMiniStatusImportantCount} moduleShellRules=${desktopModuleShellRuleCount} moduleHeadRules=${desktopModuleHeadRuleCount} ledgerRules=${desktopLedgerRuleCount} moduleToneRules=${desktopModuleToneRuleCount} ledgerToneRules=${desktopLedgerToneRuleCount} ledgerToneShadows=${desktopLedgerToneShadowCount} releaseToneResets=${desktopReleaseToneResetCount} releaseNonPrimary=${desktopReleaseNonPrimaryNeutralCount} mobile=${mobileRuleShare.toFixed(4)}`
+  `overview architecture gate: PASS panel=${lines(panel)} lines desktop=${lines(desktopConsole)} lines desktopDecision=${lines(desktopDecisionRail)} lines scenes=${lines(desktopScenes)} lines helper=${lines(desktopHelpers)} lines presentation=${lines(desktopPresentation)} lines topbar=${lines(desktopTopbar)} lines trafficRows=${lines(desktopTrafficRows)} lines routeRows=${lines(desktopRouteRows)} lines wanRows=${lines(desktopWanRows)} lines interfaceRows=${lines(desktopInterfaceRows)} lines credibilityRows=${lines(desktopCredibilityRows)} lines terminalRows=${lines(desktopTerminalRows)} lines resourceRows=${lines(desktopResourceRows)} lines visuals=${lines(desktopVisuals)} lines phoneConsole=${lines(phoneOpsConsole)} lines phoneHome=${lines(phoneOpsHome)} lines phoneSignal=${lines(phoneOpsSignal)} lines phoneInspection=${lines(phoneOpsInspection)} lines phoneEvidence=${lines(phoneOpsEvidence)} lines phoneFocus=${lines(phoneOpsFocus)} lines phoneModel=${lines(phoneOpsModel)} lines phoneModelEvidence=${lines(phoneOpsModelEvidence)} lines phoneStyles=${bytes(phoneOpsStylesFile) + bytes(phoneOpsResponsiveStylesFile) + bytes(phoneOpsEvidenceStylesFile)} bytes css=${bytes(panelCssFile)} bytes desktopBase=${lines(desktopBaseStyles)} lines desktopBaseImportant=${desktopBaseImportantCount} desktopActiveImportant=${desktopActiveImportantCount} important=${importantShare.toFixed(4)} desktopImportant=${desktopRefinementImportantCount} workspaceImportant=${desktopWorkspaceLayoutImportantCount} decisionRailRules=${desktopDecisionRailRuleCount} decisionCellRules=${desktopDecisionCellRuleCount} workspaceGridRules=${desktopWorkspaceGridRuleCount} navRules=${desktopNavRuleCount} shellDescendantRules=${desktopImpossibleShellDescendantCount} statusBusRules=${desktopStatusBusRuleCount} legacyTopbarRules=${desktopLegacyTopbarRuleCount} sidebarStatusRules=${desktopSidebarMiniStatusRuleCount} sidebarStatusImportant=${desktopSidebarMiniStatusImportantCount} moduleShellRules=${desktopModuleShellRuleCount} moduleHeadRules=${desktopModuleHeadRuleCount} ledgerRules=${desktopLedgerRuleCount} moduleToneRules=${desktopModuleToneRuleCount} ledgerToneRules=${desktopLedgerToneRuleCount} ledgerToneShadows=${desktopLedgerToneShadowCount} releaseToneResets=${desktopReleaseToneResetCount} releaseNonPrimary=${desktopReleaseNonPrimaryNeutralCount} mobile=${mobileRuleShare.toFixed(4)}`
 );

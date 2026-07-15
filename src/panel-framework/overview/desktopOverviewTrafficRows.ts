@@ -48,7 +48,7 @@ export function desktopWanDecisionRail(snapshot: OverviewRawSnapshot, state: Ove
   const sampling = trafficSamplingRows(snapshot, state)[0];
   const peak = trafficPeakRows(snapshot, state)[0];
   return [
-    { id: "current", label: "当前", value: lead?.current || "-", note: lead?.unit || "bps", tone: state.facts.wan.allOffline ? "danger" : "trust" },
+    { id: "current", label: "当前", value: lead?.current || "-", note: "当前速率", tone: state.facts.wan.allOffline ? "danger" : "trust" },
     { id: "peak", label: "峰值", value: lead?.peak || "-", note: lead?.window || "最近窗口", tone: "trust" },
     { id: "top-outlet", label: "Top出口", value: ledgerCellText(top, 1), note: ledgerCellText(top, 2), tone: top?.tone || "trust" },
     { id: "default-route", label: "默认出口", value: ledgerCellText(route, 1), note: ledgerCellText(route, 2), tone: route?.tone || state.facts.route.level },

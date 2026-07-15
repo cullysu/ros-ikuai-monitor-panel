@@ -23,7 +23,7 @@
   #overview.router-overview-framework .ro-wan-offline-verdict :is(em, small) {
     overflow: hidden;
     color: #728398;
-    font-size: 10px;
+    font-size: 12px;
     font-style: normal;
     font-weight: 560;
     line-height: 11px;
@@ -64,7 +64,7 @@
   }
   #overview.router-overview-framework .ro-wan-offline-objects .ro-wan-offline-object {
     color: #24374b;
-    font-size: 10px;
+    font-size: 12px;
     line-height: 15px;
   }
   #overview.router-overview-framework .ro-wan-offline-object > b {
@@ -75,18 +75,18 @@
   #overview.router-overview-framework .ro-wan-offline-object > small {
     margin-left: 5px;
     color: #8090a2;
-    font-size: 10px;
+    font-size: 12px;
     font-weight: 520;
   }
   #overview.router-overview-framework .ro-wan-offline-objects span {
     color: #8a3935;
-    font-size: 10px;
+    font-size: 12px;
     font-weight: 700;
     line-height: 13px;
   }
   #overview.router-overview-framework .ro-wan-offline-objects em {
     color: #718398;
-    font-size: 10px;
+    font-size: 12px;
     font-style: normal;
     line-height: 12px;
   }
@@ -95,7 +95,7 @@
     margin: 0;
     padding: 4px 7px;
     color: #718398;
-    font-size: 10px;
+    font-size: 12px;
     line-height: 11px;
   }
   #overview.router-overview-framework .ro-desktop-grid[data-overview-desktop-scene="no-snapshot"] {

@@ -20,7 +20,7 @@ try {
   }
 
   if ($FullBrowser) {
-    powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\check-local-predeploy.ps1 -Profile public -Sections overview -Viewports desktop=1366x900,narrow=390x844 -ScaleScenarios single,fleet,all-offline,no-snapshot,collection-down,resource-full,interfaces-down
+    powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\check-local-predeploy.ps1 -Profile public -Sections overview -Viewports desktop=1366x768,narrow=390x844 -ScaleScenarios single,fleet,all-offline,no-snapshot,collection-down,resource-full,interfaces-down
   }
 
   if ($LiteBrowser) {

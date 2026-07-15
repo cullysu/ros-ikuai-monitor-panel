@@ -42,18 +42,39 @@
   }
   #overview.router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="wan-trend"] .ro-wan-integrated-visual .ro-judgement-row,
   .router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="wan-trend"] .ro-wan-integrated-visual .ro-judgement-row {
-    min-height: 24px;
-    height: auto;
-    grid-template-columns: 58px minmax(0, 1fr) 112px;
+    min-height: 32px;
+    height: 32px;
+    grid-template-columns: 64px minmax(0, 1fr) 232px;
     gap: 7px;
-    align-content: center;
+    align-items: center;
     border-bottom: 1px solid rgba(226, 235, 244, .24);
+  }
+  #overview.router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="wan-trend"] .ro-chart-axis,
+  .router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="wan-trend"] .ro-chart-axis {
+    display: grid;
+    grid-template-columns: 64px repeat(4, minmax(0, 1fr));
+    min-height: 16px;
+    color: #718398;
+  }
+  #overview.router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="wan-trend"] .ro-chart-readout,
+  .router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="wan-trend"] .ro-chart-readout {
+    grid-column: 3;
+    grid-row: 1;
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 7px;
+    width: auto;
+    min-height: 16px;
+    overflow: hidden;
+    white-space: nowrap;
   }
   #overview.router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="wan-trend"] .ro-wan-integrated-visual .ro-chart-summary,
   .router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="wan-trend"] .ro-wan-integrated-visual .ro-chart-summary {
     min-height: 20px;
     color: #24374b;
-    font-size: 10px;
+    font-size: 12px;
   }
   #overview.router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="wan-trend"] .ro-wan-integrated-decision,
   .router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="wan-trend"] .ro-wan-integrated-decision {
@@ -75,7 +96,7 @@
   .router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="wan-trend"] .ro-wan-integrated-decision em {
     overflow: hidden;
     color: #7c8fa3;
-    font-size: 10px;
+    font-size: 12px;
     font-style: normal;
     font-weight: 620;
     letter-spacing: .02em;
@@ -87,7 +108,7 @@
   .router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="wan-trend"] .ro-wan-integrated-decision b {
     overflow: hidden;
     color: #172a3d;
-    font-size: 10.4px;
+    font-size: 12px;
     font-weight: 780;
     line-height: 13px;
     text-overflow: clip;
@@ -97,7 +118,7 @@
   .router-overview-framework.ro-desktop-console .ro-module[data-overview-density-module="wan-trend"] .ro-wan-integrated-decision small {
     overflow: hidden;
     color: #8b9aac;
-    font-size: 10px;
+    font-size: 12px;
     font-weight: 560;
     line-height: 9px;
     text-overflow: clip;

@@ -38,6 +38,17 @@ function observedRates(snapshot: OverviewRawSnapshot): { down: number; up: numbe
   return { down, up };
 }
 
+function rateSignalItem(label: string, rate: number): MobileNativeSignal["items"][number] {
+  const formatted = formatRate(rate);
+  const splitAt = formatted.lastIndexOf(" ");
+  return {
+    label,
+    value: splitAt > 0 ? formatted.slice(0, splitAt) : formatted,
+    unit: splitAt > 0 ? formatted.slice(splitAt + 1) : "",
+    tone: "trust",
+  };
+}
+
 function channelTone(channel: MobileCollectionChannelEvidence): OverviewTone {
   if (channel.status === "current") return "trust";
   if (channel.status === "unavailable") return "missing";
@@ -118,7 +129,7 @@ function signalFor(risk: MobileRiskKey | null, context: MobileFocusContext): Mob
     return {
       kind: "resource",
       title: mode === "current" ? "当前资源压力" : "历史资源记录",
-      note: mode === "current" ? "数值与策略阈值共用同一采样周期" : "保留值不代表当前",
+      note: mode === "current" ? "CPU/内存 85% · 磁盘 90%" : "历史值 · 非当前状态",
       items: [
         { label: "CPU", value: formatPercent(state.facts.resource.cpu), percent: state.facts.resource.cpu, threshold: 85, tone: mode === "current" ? "danger" : "warn" },
         { label: "内存", value: formatPercent(state.facts.resource.memory), percent: state.facts.resource.memory, threshold: 85, tone: mode === "current" ? "danger" : "warn" },
@@ -131,7 +142,7 @@ function signalFor(risk: MobileRiskKey | null, context: MobileFocusContext): Mob
     return {
       kind: "interfaces",
       title: mode === "current" ? "受影响接口" : "历史接口记录",
-      note: rows.length > 1 ? `横向选择对象 · 共 ${rows.length} 个` : "选择对象后核对依赖",
+      note: `${rows.length} 个 Down 对象`,
       items: rows.map((row, index) => ({
         objectId: evidenceObjectId("interface", clean(row.name || row.interface, `接口 ${index + 1}`), index),
         label: clean(row.name || row.interface, `接口 ${index + 1}`),
@@ -146,7 +157,7 @@ function signalFor(risk: MobileRiskKey | null, context: MobileFocusContext): Mob
     return {
       kind: "collection",
       title: "采集通道",
-      note: "REST 与 SSH 独立陈述",
+      note: "REST / SSH · 独立状态",
       items: [
         { label: "REST", value: channels.rest.label, note: channelSignalNote(channels.rest), tone: channelTone(channels.rest) },
         { label: "SSH", value: channels.ssh.label, note: channelSignalNote(channels.ssh), tone: channelTone(channels.ssh) },
@@ -159,7 +170,7 @@ function signalFor(risk: MobileRiskKey | null, context: MobileFocusContext): Mob
     return {
       kind: "wan",
       title: mode === "current" ? "离线 WAN" : "历史 WAN 记录",
-      note: rows.length > 1 ? `横向选择对象 · 共 ${state.facts.wan.total} 条` : "选择对象后核对链路",
+      note: `${rows.length} 条离线链路`,
       items: rows.map((row, index) => ({
         objectId: evidenceObjectId("wan", clean(row.name || row.interface, `WAN ${index + 1}`), index),
         label: clean(row.name || row.interface, `WAN ${index + 1}`),
@@ -174,16 +185,16 @@ function signalFor(risk: MobileRiskKey | null, context: MobileFocusContext): Mob
   if (rates) return {
     kind: "rates",
     title: "当前吞吐",
-    note: "完整当前观测",
+    note: "下载 / 上传 · 同一采样周期",
     items: [
-      { label: "下载", value: formatRate(rates.down), tone: "trust" },
-      { label: "上传", value: formatRate(rates.up), tone: "trust" },
+      rateSignalItem("下载", rates.down),
+      rateSignalItem("上传", rates.up),
     ],
   };
   return {
     kind: "availability",
     title: "速率观测",
-    note: "缺少完整下载或上传观测，不以零值替代",
+    note: "当前双向观测不完整",
     items: [
       { label: "下载", value: "未取得", tone: "missing" },
       { label: "上传", value: "未取得", tone: "missing" },
@@ -205,15 +216,15 @@ function focusCopy(risk: MobileRiskKey | null, context: MobileFocusContext) {
     return { label: "采集", tone: "warn" as OverviewTone, kicker: "证据已降级", title: partial ? "采集通道部分可用" : "当前变化不可见", summary: "REST 与 SSH 分别陈述；历史成功记录不能作为当前业务状态。" };
   }
   if (state.scenario === "fleet") return { label: "范围", tone: "trust" as OverviewTone, kicker: "多对象巡检", title: verification === "verified" ? "对象范围已采集，默认路由已核实" : "对象范围已采集，默认路由未核实", summary: "规模仅描述观测范围；一旦出现事故，风险会取代范围成为焦点。" };
-  return { label: "路由", tone: verification === "verified" ? "trust" as OverviewTone : "warn" as OverviewTone, kicker: "当前运行判断", title: verification === "verified" ? "网络可用，默认出口已核实" : "WAN 在运行，默认出口未核实", summary: verification === "verified" ? "活动路由、WAN 和采集周期均有当前证据。" : "没有明确 active=true 的默认路由记录。" };
+  return { label: "路由", tone: verification === "verified" ? "trust" as OverviewTone : "warn" as OverviewTone, kicker: "当前运行判断", title: verification === "verified" ? "网络可用" : "默认出口待核实", summary: verification === "verified" ? "" : "WAN 有运行记录，但没有明确 active=true 的默认路由。" };
 }
 
 function detailKeysFor(risk: MobileRiskKey | null): string[] {
-  if (risk === "evidence" || risk === "collection") return ["target", "collection", "boundary"];
-  if (risk === "wan-offline") return ["wan", "route", "collection", "boundary"];
-  if (risk === "resource") return ["resource", "collection", "boundary"];
-  if (risk === "interfaces") return ["interfaces", "route", "boundary"];
-  return ["route", "wan", "collection", "boundary"];
+  if (risk === "evidence" || risk === "collection") return ["target", "boundary"];
+  if (risk === "wan-offline") return ["route", "collection", "boundary"];
+  if (risk === "resource") return ["collection", "boundary"];
+  if (risk === "interfaces") return ["route", "boundary"];
+  return ["wan", "boundary"];
 }
 
 function focusFor(risk: MobileRiskKey | null, context: MobileFocusContext): MobileNativeFocus {

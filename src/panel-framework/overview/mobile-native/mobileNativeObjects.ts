@@ -5,8 +5,6 @@ import {
   clean,
   finiteObservation,
   routeRows,
-  resourceSamples,
-  successfulBusinessLabel,
   wanRows,
 } from "./mobileNativeEvidence";
 import { compactMessage } from "./mobileNativeText";
@@ -33,6 +31,10 @@ function inspectionChannelTone(status: string): OverviewTone {
   return status === "failed" ? "danger" : "warn";
 }
 
+function booleanObservation(value: unknown): string {
+  return typeof value === "boolean" ? String(value) : "未记录";
+}
+
 function routeInspection(context: MobileFocusContext): MobileNativeInspection {
   const { snapshot, mode, verification, route } = context;
   const carrier = wanRows(snapshot).find((row) => row.running !== false && row.disabled !== true);
@@ -48,7 +50,7 @@ function routeInspection(context: MobileFocusContext): MobileNativeInspection {
     title: available ? clean(route?.gateway || route?.gatewayStatus, "活动默认路由") : "默认路由证据源",
     status: verification === "verified" ? "当前活动记录" : verification === "historical" ? "历史活动记录" : "未核实",
     tone: verification === "verified" ? "trust" : "warn",
-    note: available ? "以下字段来自明确的默认路由记录" : "检查记录来源与筛选条件，不使用首行兜底",
+    note: available ? "active=true · disabled=false" : `候选 ${routeCount} 条 · 未发现明确活动记录`,
     sourcePath: routeIndex >= 0 ? `routes.defaultRoutes[${routeIndex}]` : "routes.defaultRoutes",
     observedAt: shortTimestamp(snapshot.updatedAt),
     relations: available ? [
@@ -68,10 +70,8 @@ function routeInspection(context: MobileFocusContext): MobileNativeInspection {
       { key: "route-boundary", label: "判断边界", value: "没有明确活动记录", note: "不推断默认出口" },
     ],
     detailRows: available ? [
-      { key: "route-raw-table", label: "table", value: clean(route?.table || route?.routingTable, "采集未覆盖") },
-      { key: "route-raw-gateway", label: "gateway", value: clean(route?.gateway || route?.gatewayStatus, "采集未覆盖") },
-      { key: "route-raw-distance", label: "distance", value: clean(route?.distance, "采集未覆盖") },
-      { key: "route-raw-flags", label: "active / disabled", value: `${route?.active === true} / ${route?.disabled === true}` },
+      { key: "route-raw-destination", label: "dst-address", value: clean(route?.dstAddress, "0.0.0.0/0") },
+      { key: "route-raw-default", label: "default", value: route?.default === false ? "false" : "true" },
     ] : [
       { key: "route-source-empty", label: "筛选条件", value: "active=true 且 disabled!=true" },
       { key: "route-count-empty", label: "候选记录", value: `${routeCount} 条` },
@@ -100,7 +100,7 @@ function wanInspection(context: MobileFocusContext, selected?: WanEvidenceRow, i
     title: available ? label : "WAN 对象证据源",
     status: available ? object?.running === false ? mode === "current" ? "未运行对象" : "历史离线记录" : "运行对象" : "无当前对象证据",
     tone: available && object?.running === false ? mode === "current" ? "danger" : "warn" : available ? "trust" : "warn",
-    note: available ? "对象关系用于下一步检查，不代表业务影响" : "保留对象不进入当前判断",
+    note: available ? "父接口、接入类型与路由后果" : "保留记录 · 非当前判断",
     sourcePath: available && sourceIndex >= 0 ? `${sourceCollection}[${sourceIndex}]` : sourceCollection,
     observedAt: shortTimestamp(snapshot.updatedAt),
     relations: available ? [
@@ -117,10 +117,8 @@ function wanInspection(context: MobileFocusContext, selected?: WanEvidenceRow, i
       { key: "wan-impact", label: "影响边界", value: "未直接证明业务中断" },
     ] : [],
     detailRows: available ? [
-      { key: "wan-raw-name", label: "name / interface", value: label },
       { key: "wan-raw-running", label: "running / disabled", value: `${object?.running === true} / ${object?.disabled === true}` },
-      { key: "wan-raw-parent", label: "parent", value: clean(object?.parent, "采集未覆盖") },
-      { key: "wan-raw-rate", label: "down-rate / up-rate", value: mode === "current" && down !== null && up !== null ? `${formatRate(down)} / ${formatRate(up)}` : "非完整当前观测" },
+      { key: "wan-raw-rate", label: "down-rate / up-rate", value: mode === "current" && down !== null && up !== null ? `${formatRate(down)} / ${formatRate(up)}` : "双向速率字段不完整" },
     ] : [
       { key: "wan-source-empty", label: "对象来源", value: sourceCollection },
       { key: "wan-boundary-empty", label: "可用性", value: "无当前对象证据" },
@@ -143,25 +141,19 @@ function collectionInspection(context: MobileFocusContext): MobileNativeInspecti
     title: selectedName === "采集" ? "采集证据源" : `${selectedName} 采集通道`,
     status: selected ? "检查错误与时间边界" : "通道记录可用",
     tone: selected ? inspectionChannelTone(selected.status) : "trust",
-    note: "通道摘要已在信号区；此处只补充来源、时间与错误记录",
+    note: selected ? `${selectedName} · 当前尝试记录` : "REST + SSH · 当前通道记录",
     sourcePath: selectedName === "REST" ? "meta.realtime / meta.slowRest" : selectedName === "SSH" ? "meta.static" : "meta.realtime + meta.static",
     observedAt: shortTimestamp(snapshot.updatedAt),
     relations: [
-      { label: "配置目标", value: target },
-      { label: "最近尝试", value: shortTimestamp(snapshot.updatedAt) },
-      { label: "明确成功", value: selected?.successAt ? shortTimestamp(selected.successAt) : successfulBusinessLabel(snapshot) },
+      { label: "当前通道", value: selectedName },
+      { label: "采集来源", value: selectedName === "REST" ? "realtime / slow REST" : selectedName === "SSH" ? "static SSH" : "REST + SSH" },
+      { label: "端点记录", value: state.facts.failures.count ? `${state.facts.failures.count} 个失败项` : "未记录" },
     ],
     rows: [
-      { key: "collection-source", label: "采集来源", value: selectedName === "REST" ? "realtime / slow REST" : selectedName === "SSH" ? "static SSH" : "REST + SSH" },
       { key: "collection-error", label: "错误记录", value: selected?.error ? compactMessage(selected.error) : "未记录", note: selected ? channelAttemptAndSuccessNote(selected) : undefined, tone: selected?.error ? "warn" : "trust" },
-      { key: "collection-endpoints", label: "端点记录", value: state.facts.failures.count ? `${state.facts.failures.count} 个失败项` : "未记录", note: "未记录不等于没有故障" },
+      { key: "collection-target-boundary", label: "目标身份", value: target === "未记录" ? "未记录" : "已识别", note: "地址保留在详情记录" },
     ],
-    detailRows: [
-      { key: "collection-raw-target", label: "routerHost / target", value: target },
-      { key: "collection-raw-status", label: "channel status", value: selected?.status || "current" },
-      { key: "collection-raw-success", label: "successAt", value: selected?.successAt ? shortTimestamp(selected.successAt) : successfulBusinessLabel(snapshot) },
-      { key: "collection-raw-error", label: "error", value: selected?.error ? compactMessage(selected.error) : "未记录" },
-    ],
+    detailRows: [],
     disclosureTitle: "展开通道来源与错误",
     actionTitle: "查看采集证据详情",
   };
@@ -169,7 +161,6 @@ function collectionInspection(context: MobileFocusContext): MobileNativeInspecti
 
 function resourceInspection(context: MobileFocusContext): MobileNativeInspection {
   const { snapshot, mode } = context;
-  const samples = resourceSamples(snapshot);
   return {
     key: "resource",
     objectId: "resource:system",
@@ -178,7 +169,7 @@ function resourceInspection(context: MobileFocusContext): MobileNativeInspection
     title: "系统资源",
     status: mode === "current" ? "当前采样对象" : "历史采样对象",
     tone: mode === "current" ? "danger" : "warn",
-    note: "当前值只在信号区出现；此处补充来源、策略与影响边界",
+    note: "RouterOS resource · overview.history",
     sourcePath: "resource + overview.history",
     observedAt: shortTimestamp(snapshot.updatedAt),
     relations: [
@@ -191,12 +182,7 @@ function resourceInspection(context: MobileFocusContext): MobileNativeInspection
       { key: "resource-record", label: "记录位置", value: "overview.history" },
       { key: "resource-consequence", label: "已证实后果", value: "资源策略被触发" },
     ],
-    detailRows: [
-      { key: "resource-raw-series", label: "series", value: "CPU / memory / disk" },
-      { key: "resource-raw-threshold", label: "threshold", value: "85% / 85% / 90%" },
-      { key: "resource-raw-observed", label: "observed samples", value: `${samples.observed}` },
-      { key: "resource-raw-trailing", label: "trailing breached samples", value: `${samples.trailingStreak}` },
-    ],
+    detailRows: [],
     disclosureTitle: "展开资源来源与策略",
     actionTitle: "查看资源证据详情",
   };
@@ -215,7 +201,7 @@ function interfaceInspection(context: MobileFocusContext, selected?: InterfaceEv
     title: object ? label : "Down 接口",
     status: mode === "current" ? "依赖链待核对" : "历史依赖记录",
     tone: mode === "current" ? "danger" : "warn",
-    note: "接口状态已在信号区；此处补充父级、VLAN、PPPoE 与路由关系",
+    note: "父级、VLAN、PPPoE 与默认路由关系",
     sourcePath: sourceIndex >= 0 ? `interfaces[${sourceIndex}]` : "interfaces",
     observedAt: shortTimestamp(snapshot.updatedAt),
     relations: [
@@ -228,11 +214,13 @@ function interfaceInspection(context: MobileFocusContext, selected?: InterfaceEv
       { key: "interface-source", label: "对象来源", value: "interfaces" },
       { key: "interface-impact", label: "业务影响", value: "未直接证明", note: "依赖与实际影响分别核对" },
     ],
-    detailRows: [
-      { key: "interface-raw-name", label: "name / interface", value: label },
-      { key: "interface-raw-running", label: "running / disabled", value: `${object?.running === true} / ${object?.disabled === true}` },
-      { key: "interface-raw-parent", label: "parent / master", value: clean(object?.parent || object?.master, "采集未覆盖") },
-      { key: "interface-raw-link", label: "vlan / pppoe", value: `${clean(object?.vlan || object?.vlanId, "采集未覆盖")} / ${clean(object?.pppoeOut || object?.pppoe, "采集未覆盖")}` },
+    detailRows: object ? [
+      { key: "interface-raw-state", label: "running / disabled", value: `${booleanObservation(object.running)} / ${booleanObservation(object.disabled)}` },
+      { key: "interface-raw-kind", label: "type / role", value: `${clean(object.type, "未记录")} / ${clean(object.role, "未记录")}` },
+      { key: "interface-raw-bridge", label: "bridge", value: clean(object.bridge, "未记录") },
+    ] : [
+      { key: "interface-source-empty", label: "对象来源", value: "interfaces" },
+      { key: "interface-boundary-empty", label: "可用性", value: "无当前对象证据" },
     ],
     disclosureTitle: "展开接口依赖",
     actionTitle: "查看接口证据详情",

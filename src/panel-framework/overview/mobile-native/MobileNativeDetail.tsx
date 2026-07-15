@@ -52,10 +52,10 @@ export function MobileNativeDetail({
           <span className="mn-detail-symbol" aria-hidden="true"><MobileNativeIcon name={inspection.key} size={23} /></span>
           <span>{model.device}</span>
           <h1 ref={titleRef} id="mn-detail-title" tabIndex={-1}>{inspection.actionTitle}</h1>
-          <p>这里补充首页未展示的对象路径、采样时间和字段记录；页面保持只读。</p>
+          <p>{inspection.status} · {inspection.objectPosition} · 只读记录</p>
         </header>
         <section className="mn-detail-section is-selected-evidence" aria-labelledby="mn-detail-selected-title" data-mobile-native-selected-evidence>
-          <header><h2 id="mn-detail-selected-title">所选对象证据</h2><span>对象、来源与采样边界</span></header>
+          <header><h2 id="mn-detail-selected-title">所选对象证据</h2><span>{inspection.sourcePath} · {inspection.observedAt}</span></header>
           <div className="mn-detail-rows">
             {selectedRows.map((row, index) => (
               <div className="mn-detail-row" key={row.key || `${row.label}-${index}`}>

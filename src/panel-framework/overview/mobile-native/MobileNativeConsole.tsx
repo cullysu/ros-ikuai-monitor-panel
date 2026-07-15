@@ -7,10 +7,12 @@ import { buildMobileNativeModel } from "./mobileNativeModel";
 import type { MobileFocusKey } from "./mobileNativeTypes";
 import "./styles/mobile-native-tokens.css";
 import "./styles/mobile-native-layout.css";
+import "./styles/mobile-native-responsive.css";
+import "./styles/mobile-native-source.css";
 import "./styles/mobile-native-workspace.css";
 import "./styles/mobile-native-states.css";
 
-const TABLET_QUERY = "(min-width: 700px)";
+const TABLET_QUERY = "(min-width: 700px) and (min-height: 600px)";
 
 function useTabletWorkspace(): boolean {
   const [tablet, setTablet] = useState(() => typeof window !== "undefined" && window.matchMedia(TABLET_QUERY).matches);

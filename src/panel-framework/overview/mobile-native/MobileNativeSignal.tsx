@@ -20,7 +20,7 @@ export function MobileNativeSignal({
           {signal.items.map((item, index) => (
             <div key={item.label}>
               <span className="mn-rate-icon"><MobileNativeIcon name={index === 0 ? "download" : "upload"} size={17} /></span>
-              <span><small>{item.label}</small><b>{item.value}</b></span>
+              <span><small>{item.label}</small><b><span>{item.value}</span>{item.unit ? <em>{item.unit}</em> : null}</b></span>
             </div>
           ))}
         </div>

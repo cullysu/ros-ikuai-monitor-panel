@@ -87,7 +87,7 @@ jobs:
         run: |
           node tools/local-predeploy-check.js \
             --profile public \
-            --viewports desktop=1366x900,desktop1440=1440x900,wide=844x390,narrow=390x844 \
+            --viewports desktop=1366x768,desktop1440=1440x900,wide=844x390,narrow=390x844 \
             --sections overview \
             --scale-scenarios single,fleet,all-offline,no-snapshot,collection-down,resource-full,interfaces-down \
             --strict-responsive \

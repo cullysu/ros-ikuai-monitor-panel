@@ -44,7 +44,7 @@ fi
 if [[ "$full_browser" == "1" ]]; then
   node tools/local-predeploy-check.js \
     --profile public \
-    --viewports desktop=1366x900,narrow=390x844 \
+    --viewports desktop=1366x768,narrow=390x844 \
     --sections overview \
     --scale-scenarios single,fleet,all-offline,no-snapshot,collection-down,resource-full,interfaces-down \
     --strict-responsive \
@@ -54,7 +54,7 @@ fi
 if [[ "$lite_browser" == "1" ]]; then
   node tools/local-predeploy-check.js \
     --profile public \
-    --viewports desktop=1366x900,narrow=390x844 \
+    --viewports desktop=1366x768,narrow=390x844 \
     --sections overview \
     --scale-scenarios single,fleet,all-offline,no-snapshot,collection-down,resource-full,interfaces-down \
     --out _acceptance/ci-local-lite-browser

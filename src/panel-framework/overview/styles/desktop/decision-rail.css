@@ -5,9 +5,9 @@
     grid-area: rail;
     display: grid;
     grid-template-columns: minmax(0, 1.2fr) minmax(0, .8fr);
-    height: 66px;
-    min-height: 66px;
-    max-height: 66px;
+    height: 72px;
+    min-height: 72px;
+    max-height: 72px;
     gap: 8px;
     margin-bottom: 1px;
     border-bottom: 0;
@@ -22,8 +22,8 @@
     align-content: center;
     column-gap: 10px;
     row-gap: 1px;
-    height: 66px;
-    min-height: 66px;
+    height: 72px;
+    min-height: 72px;
     padding: 10px 13px;
     border: 1px solid #dfe8f1;
     border-radius: 4px;
@@ -31,22 +31,22 @@
     box-shadow: none;
   }
   #overview.router-overview-framework .ro-desktop-decision-rail .ro-desktop-thin-kpi.is-next-step {
-    border-left: 3px solid #7d8ea1;
+    border-color: #b8c6d3;
     background: #fbfdff;
   }
   #overview.router-overview-framework .ro-desktop-decision-rail .ro-desktop-thin-kpi.is-next-step[data-tone="danger"] {
-    border-left-color: var(--ik-red);
+    border-color: rgba(185, 59, 53, .46);
   }
   #overview.router-overview-framework .ro-desktop-decision-rail .ro-desktop-thin-kpi.is-next-step[data-tone="warn"],
   #overview.router-overview-framework .ro-desktop-decision-rail .ro-desktop-thin-kpi.is-next-step[data-tone="missing"] {
-    border-left-color: var(--ik-warn);
+    border-color: rgba(164, 111, 36, .46);
   }
   #overview.router-overview-framework .ro-desktop-decision-rail .ro-desktop-thin-kpi span {
     grid-column: 1;
     grid-row: 1 / 3;
     align-self: center;
     color: #728398;
-    font-size: 10px;
+    font-size: 12px;
     font-weight: 700;
     line-height: 1;
     min-width: 0;
@@ -59,7 +59,7 @@
     grid-row: 1;
     align-self: end;
     color: #162b40;
-    font-size: 15px;
+    font-size: 16px;
     line-height: 18px;
     font-weight: 780;
     min-width: 0;
@@ -72,7 +72,7 @@
     grid-row: 2;
     align-self: start;
     color: #697c91;
-    font-size: 10.5px;
+    font-size: 12px;
     line-height: 14px;
     min-width: 0;
     overflow: hidden;

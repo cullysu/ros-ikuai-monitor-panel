@@ -37,7 +37,7 @@ export function MobileNativeInspectionPanel({
         </button>
       </header>
 
-      <dl className="mn-inspection-relations" aria-label={`${inspection.label} 新增关系证据`}>
+      <dl className="mn-inspection-relations" aria-label={`${inspection.label} 关联状态`}>
         {inspection.relations.map((relation, index) => (
           <div className={`is-${relation.tone || "trust"}`} key={relation.key || `${relation.label}-${index}`}>
             <dt>{relation.label}</dt>

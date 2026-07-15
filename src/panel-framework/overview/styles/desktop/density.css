@@ -38,7 +38,7 @@
   #overview.router-overview-framework.ro-desktop-console .ro-module-head b,
   .router-overview-framework.ro-desktop-console .ro-module-head b {
     color: var(--v814-text);
-    font-size: 11.3px;
+    font-size: 12px;
     font-weight: 800;
     white-space: nowrap;
   }
@@ -46,7 +46,7 @@
   .router-overview-framework.ro-desktop-console .ro-module-head span {
     min-width: 0;
     color: var(--v814-muted);
-    font-size: 10px;
+    font-size: 12px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -54,7 +54,7 @@
   #overview.router-overview-framework.ro-desktop-console .ro-module-head em,
   .router-overview-framework.ro-desktop-console .ro-module-head em {
     color: #517193;
-    font-size: 10px;
+    font-size: 12px;
     font-weight: 700;
   }
   #overview.router-overview-framework.ro-desktop-console .ro-chart-axis,
@@ -69,10 +69,11 @@
   }
   #overview.router-overview-framework.ro-desktop-console .ro-module:not([data-overview-density-module="wan-trend"]) .ro-judgement-row,
   .router-overview-framework.ro-desktop-console .ro-module:not([data-overview-density-module="wan-trend"]) .ro-judgement-row {
-    grid-template-columns: 58px minmax(0, 1fr) 112px;
-    min-height: 23px;
-    height: 23px;
-    gap: 6px;
+    grid-template-columns: 64px minmax(0, 1fr) 232px;
+    min-height: 28px;
+    height: 28px;
+    gap: 7px;
+    align-items: center;
   }
   #overview.router-overview-framework.ro-desktop-console .ro-chart-track,
   .router-overview-framework.ro-desktop-console .ro-chart-track {
@@ -81,12 +82,27 @@
   }
   #overview.router-overview-framework.ro-desktop-console .ro-chart-label,
   .router-overview-framework.ro-desktop-console .ro-chart-label {
-    font-size: 10px;
+    font-size: 12px;
     color: var(--v814-muted);
+    white-space: nowrap;
   }
   #overview.router-overview-framework.ro-desktop-console .ro-chart-readout,
   .router-overview-framework.ro-desktop-console .ro-chart-readout {
-    font-size: 10px;
+    grid-column: 3;
+    grid-row: 1;
+    display: flex;
+    flex-wrap: nowrap;
+    min-height: 0;
+    height: auto;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 7px;
+    padding: 0;
+    border: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    box-shadow: none;
+    font-size: 12px;
     color: #294761;
   }
   #overview.router-overview-framework.ro-desktop-console .ro-ledger-table,
@@ -101,7 +117,7 @@
     border-bottom: 1px solid var(--v814-line);
     background: var(--v814-soft);
     color: #77889b;
-    font-size: 10px;
+    font-size: 12px;
   }
   #overview.router-overview-framework.ro-desktop-console .ro-ledger-cell,
   .router-overview-framework.ro-desktop-console .ro-ledger-cell {
@@ -111,7 +127,7 @@
     border-right: 0;
     border-bottom: 1px solid #edf3f8;
     color: #1a2b3f;
-    font-size: 10px;
+    font-size: 12px;
   }
   #overview.router-overview-framework.ro-desktop-console .ro-ledger-cell:first-child,
   .router-overview-framework.ro-desktop-console .ro-ledger-cell:first-child {
@@ -121,7 +137,7 @@
   .router-overview-framework.ro-desktop-console .ro-ledger-cell small {
     display: block;
     color: #8292a5;
-    font-size: 10px;
+    font-size: 12px;
     font-weight: 500;
   }
   #overview.router-overview-framework.ro-desktop-console .ro-module[data-overview-evidence-weight="secondary"] .ro-ledger-cell,
@@ -170,20 +186,20 @@
   #overview.router-overview-framework.ro-desktop-console .ro-channel-matrix-visual b,
   .router-overview-framework.ro-desktop-console .ro-channel-matrix-visual b {
     color: var(--v814-muted);
-    font-size: 10px;
+    font-size: 12px;
   }
   #overview.router-overview-framework.ro-desktop-console .ro-channel-matrix-visual strong,
   .router-overview-framework.ro-desktop-console .ro-channel-matrix-visual strong {
     grid-column: 2;
     color: var(--v814-text);
-    font-size: 10.5px;
+    font-size: 12px;
     white-space: nowrap;
   }
   #overview.router-overview-framework.ro-desktop-console .ro-channel-matrix-visual em,
   .router-overview-framework.ro-desktop-console .ro-channel-matrix-visual em {
     grid-column: 2;
     color: #8392a5;
-    font-size: 10px;
+    font-size: 12px;
     font-style: normal;
     white-space: nowrap;
     overflow: hidden;
@@ -223,13 +239,13 @@
   #overview.router-overview-framework.ro-desktop-console .ro-incident-summary em,
   .router-overview-framework.ro-desktop-console .ro-incident-summary em {
     color: var(--v814-muted);
-    font-size: 10px;
+    font-size: 12px;
     font-style: normal;
   }
   #overview.router-overview-framework.ro-desktop-console .ro-incident-summary b,
   .router-overview-framework.ro-desktop-console .ro-incident-summary b {
     color: var(--v814-text);
-    font-size: 10px;
+    font-size: 12px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -254,12 +270,12 @@
   #overview.router-overview-framework.ro-desktop-console .ro-resource-ledger-visual b,
   .router-overview-framework.ro-desktop-console .ro-resource-ledger-visual b {
     color: var(--v814-muted);
-    font-size: 10px;
+    font-size: 12px;
   }
   #overview.router-overview-framework.ro-desktop-console .ro-resource-ledger-visual strong,
   .router-overview-framework.ro-desktop-console .ro-resource-ledger-visual strong {
     color: var(--v814-text);
-    font-size: 11px;
+    font-size: 12px;
   }
   #overview.router-overview-framework.ro-desktop-console .ro-resource-ledger-visual span[data-tone="danger"] strong,
   .router-overview-framework.ro-desktop-console .ro-resource-ledger-visual span[data-tone="danger"] strong {
@@ -285,7 +301,7 @@
   #overview.router-overview-framework.ro-desktop-console .ro-resource-ledger-visual em,
   .router-overview-framework.ro-desktop-console .ro-resource-ledger-visual em {
     color: var(--v814-muted);
-    font-size: 10px;
+    font-size: 12px;
     font-style: normal;
     text-align: right;
     white-space: nowrap;
@@ -311,7 +327,7 @@
   .router-overview-framework.ro-desktop-console .ro-col.is-bottom .ro-ledger-cell {
     height: 24px;
     min-height: 24px;
-    font-size: 10px;
+    font-size: 12px;
   }
 }
 
@@ -531,7 +547,7 @@
     min-height: 0;
     border-bottom: 0;
     padding: 0;
-    font-size: 10px;
+    font-size: 12px;
     line-height: 1.12;
   }
   .ro-desktop-grid[data-overview-desktop-scene="resource-full"] [data-overview-density-module="resource-interface-top5"] .ro-ledger-row[data-overview-share] .ro-ledger-cell:first-child,
@@ -591,7 +607,7 @@
     border-color: #d9e3ee;
   }
   .ro-desktop-grid[data-overview-desktop-scene="resource-full"] [data-overview-density-module="resource-risk-priority"] .ro-resource-card em {
-    font-size: 10px;
+    font-size: 12px;
   }
   .ro-desktop-grid[data-overview-desktop-scene="resource-full"] [data-overview-density-module="resource-risk-priority"] .ro-resource-card i {
     height: 2px;
@@ -607,6 +623,6 @@
   }
   .ro-desktop-grid[data-overview-desktop-scene="resource-full"] [data-overview-density-module="resource-pressure-bars"] .ro-ledger-cell:nth-child(3) {
     color: var(--ro-faint);
-    font-size: 10px;
+    font-size: 12px;
   }
 }

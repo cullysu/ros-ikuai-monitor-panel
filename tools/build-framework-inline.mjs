@@ -46,7 +46,8 @@ await build(defineConfig({
       entry: resolve(projectRoot, "src/panel-framework/main.tsx"),
       name: "PanelFramework",
       formats: ["iife"],
-      fileName: () => "panel-framework.js"
+      fileName: () => "panel-framework.js",
+      cssFileName: "style"
     }
   }
 }));

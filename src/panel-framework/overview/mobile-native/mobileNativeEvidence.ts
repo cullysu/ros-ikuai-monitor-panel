@@ -224,7 +224,7 @@ function wanDetail(snapshot: OverviewRawSnapshot, mode: MobileEvidenceMode): Mob
   return {
     key: "wan",
     title: "WAN 对象记录",
-    note: mode === "current" ? "对象状态与完整当前观测" : "非当前证据不显示速率数字",
+    note: mode === "current" ? "对象状态与同周期双向速率" : "非当前证据不显示速率数字",
     rows: rows.length ? rows : [{ key: "wan-empty", label: "WAN", value: "未取得", note: "没有对象记录", tone: "warn" }],
   };
 }

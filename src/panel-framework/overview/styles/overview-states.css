@@ -1,27 +1,27 @@
 /* Product brand polish: de-emphasize tool-like ROS badge, keep monitor identity light. */
 .ik-rail-logo {
-  width: 28px !important;
-  height: 28px !important;
-  border: 1px solid #d8e6f3 !important;
-  border-radius: 9px !important;
-  background: #f8fbff !important;
-  color: #236fb8 !important;
-  box-shadow: none !important;
-  font-size: 14px !important;
-  font-weight: 800 !important;
-  letter-spacing: 0 !important;
+  width: 28px;
+  height: 28px;
+  border: 1px solid #d8e6f3;
+  border-radius: 9px;
+  background: #f8fbff;
+  color: #236fb8;
+  box-shadow: none;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0;
 }
 
 .ik-rail-logo span {
-  display: block !important;
-  line-height: 26px !important;
+  display: block;
+  line-height: 26px;
 }
 
 .ik-brand-user {
-  min-width: 42px !important;
-  border-color: #d8e6f3 !important;
-  background: #f8fbff !important;
-  color: #5f7288 !important;
+  min-width: 42px;
+  border-color: #d8e6f3;
+  background: #f8fbff;
+  color: #5f7288;
 }
 
 .router-overview-framework *,
@@ -33,7 +33,7 @@
 .ro-module-head span,\n.ro-ledger-table th,\n.ro-mobile-row span,\n.ro-mobile-device-line span {
   display: block;
   color: var(--ro-muted);
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 600;
   white-space: nowrap;
 }
@@ -112,7 +112,7 @@
   display: inline;
   margin-left: 6px;
   color: var(--ro-faint);
-  font-size: 10px;
+  font-size: 12px;
 }
 
 .ro-module-head em {
@@ -121,7 +121,7 @@
   border-radius: 0;
   color: var(--ro-muted);
   padding: 1px 4px;
-  font-size: 10px;
+  font-size: 12px;
   font-style: normal;
   font-weight: 700;
 }
@@ -165,7 +165,7 @@
   padding: 1px 0 3px;
   border-bottom: 1px solid #eef3f8;
   color: var(--ro-muted);
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 720;
   line-height: 1.05;
 }
@@ -192,7 +192,7 @@
   border: 1px dashed #c8d2df;
   background: #f8fafc;
   color: #6d7887;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 760;
 }
 
@@ -271,7 +271,7 @@
 
 .ro-resource-card span {
   color: var(--ro-muted);
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 700;
   line-height: 1;
 }
@@ -285,7 +285,7 @@
 
 .ro-resource-card em {
   color: var(--ro-faint);
-  font-size: 10px;
+  font-size: 12px;
   font-style: normal;
   font-weight: 650;
   line-height: 1.05;
@@ -342,7 +342,7 @@
 .ro-topology-root,
 .ro-topology-node {
   border: 1px solid #e0e7f0;
-  border-left: 2px solid #9fb8d6;
+  border-left: 1px solid #9fb8d6;
   background: #fff;
   padding: 3px 4px;
 }
@@ -358,7 +358,7 @@
   justify-content: space-between;
   gap: 4px;
   color: var(--ro-text);
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 850;
 }
 
@@ -380,7 +380,7 @@
   border: 1px solid #d9e1eb;
   background: #f8fbff;
   color: var(--ro-muted);
-  font-size: 10px;
+  font-size: 12px;
   line-height: 1.2;
   white-space: nowrap;
 }
@@ -418,7 +418,7 @@
   display: block;
   overflow: hidden;
   color: var(--ro-faint);
-  font-size: 10px;
+  font-size: 12px;
   font-style: normal;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -440,11 +440,11 @@
   align-items: stretch;
   min-height: 38px;
   border: 1px solid #e0e7f0;
-  border-left: 2px solid #9fb8d6;
+  border-left: 1px solid #9fb8d6;
   background: #fff;
   padding: 3px 4px;
   color: var(--ro-text);
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 800;
 }
 
@@ -469,20 +469,20 @@
 
 .ro-interface-route-chain-step em {
   color: var(--ro-faint);
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 750;
   letter-spacing: .01em;
 }
 
 .ro-interface-route-chain-step b {
   color: var(--ro-text);
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 900;
 }
 
 .ro-interface-route-chain-step i {
   color: var(--ro-muted);
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 700;
 }
 
@@ -513,7 +513,7 @@
   gap: 4px;
   padding: 0 1px;
   color: var(--ro-faint);
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 750;
   line-height: 1;
 }
@@ -532,7 +532,7 @@
 
 .ro-chart-label {
   color: var(--ro-text);
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 850;
 }
 
@@ -579,7 +579,7 @@
 }
 
 .ro-chart-threshold {
-  border-left: 2px dashed var(--ro-danger);
+  border-left: 1px dashed var(--ro-danger);
 }
 
 .ro-chart-readout {
@@ -588,7 +588,7 @@
   flex-wrap: wrap;
   gap: 3px;
   color: var(--ro-muted);
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 650;
   min-width: 0;
   overflow: hidden;
@@ -623,7 +623,7 @@
 .ro-resource-card {
   min-width: 0;
   border: 1px solid #d5dde8;
-  border-left: 3px solid #9ca9b8;
+  border-left: 1px solid #9ca9b8;
   background: #fff;
   padding: 4px 5px;
 }
@@ -637,7 +637,7 @@
 .ro-resource-card em {
   display: block;
   color: var(--ro-muted);
-  font-size: 10px;
+  font-size: 12px;
   font-style: normal;
   font-weight: 750;
 }
@@ -713,7 +713,7 @@
   gap: 2px;
   min-width: 0;
   color: var(--ro-muted);
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 800;
   text-align: center;
 }
@@ -738,7 +738,7 @@
 
 .ro-channel-path-node b {
   color: var(--ro-text);
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 950;
 }
 
@@ -754,7 +754,7 @@
 .ro-channel-triad-cell {
   min-width: 0;
   border: 1px solid #d5dde8;
-  border-left: 3px solid #9aa6b5;
+  border-left: 1px solid #9aa6b5;
   background: #fff;
   padding: 4px 5px;
 }
@@ -770,7 +770,7 @@
   display: block;
   overflow: hidden;
   color: var(--ro-muted);
-  font-size: 10px;
+  font-size: 12px;
   font-style: normal;
   font-weight: 750;
   line-height: 1.15;
@@ -813,7 +813,7 @@
   background: #f8fafc;
   padding: 2px 4px;
   color: var(--ro-muted);
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 760;
 }
 
@@ -860,7 +860,7 @@
 .ro-visibility-cell span {
   display: block;
   color: var(--ro-muted);
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 750;
 }
 
@@ -869,7 +869,7 @@
   display: block;
   margin-top: 2px;
   color: var(--ro-text);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 900;
 }
 
@@ -877,7 +877,7 @@
   display: block;
   margin-top: 1px;
   color: var(--ro-faint);
-  font-size: 10px;
+  font-size: 12px;
   font-style: normal;
   white-space: nowrap;
   overflow: hidden;
@@ -886,17 +886,17 @@
 
 .ro-chain-node[data-tone="danger"],
 .ro-visibility-cell[data-tone="danger"] {
-  border-left: 2px solid var(--ro-danger);
+  border-left: 1px solid var(--ro-danger);
 }
 
 .ro-chain-node[data-tone="warn"],
 .ro-visibility-cell[data-tone="warn"] {
-  border-left: 2px solid var(--ro-warn);
+  border-left: 1px solid var(--ro-warn);
 }
 
 .ro-chain-node[data-tone="missing"],
 .ro-visibility-cell[data-tone="missing"] {
-  border-left: 2px solid #9aa6b5;
+  border-left: 1px solid #9aa6b5;
   background: #f7f9fc;
 }
 
@@ -915,7 +915,7 @@
   border: 1px dashed #cbd5e1;
   background: #f5f7fa;
   color: #667184;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 750;
   line-height: 13px;
   padding: 0 5px;
@@ -955,7 +955,7 @@
   height: 22px;
   background: #f8fbfe;
   color: var(--ro-muted);
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 700;
 }
 
@@ -963,7 +963,7 @@
 .ro-ledger-cell {
   height: 26px;
   color: var(--ro-text);
-  font-size: 11px;
+  font-size: 12px;
   word-break: break-word;
 }
 
@@ -973,7 +973,7 @@
 }
 
 .ro-module[data-overview-three-col-table="true"] .ro-ledger-row {
-  grid-template-columns: minmax(88px, .9fr) minmax(96px, .9fr) minmax(0, 1.7fr) !important;
+  grid-template-columns: minmax(88px, .9fr) minmax(96px, .9fr) minmax(0, 1.7fr);
 }
 
 .ro-module[data-overview-three-col-table="true"] .ro-ledger-cell:nth-child(3) .ik-overview-cell-text {
@@ -1059,7 +1059,7 @@
   display: block;
   margin-top: 1px;
   color: var(--ro-faint);
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 500;
 }
 
@@ -1176,14 +1176,14 @@
 \n.router-overview-framework .ro-mobile-empty-axis,
 \n.router-overview-framework .ro-chart-empty,
 \n.router-overview-framework .ro-module-head em {
-  background-image: none !important;
-  box-shadow: none !important;
-  text-shadow: none !important;
+  background-image: none;
+  box-shadow: none;
+  text-shadow: none;
 }
 
 .router-overview-framework .ro-module-head span,\n.router-overview-framework .ro-ledger-table th,\n.router-overview-framework .ro-mobile-row span,\n.router-overview-framework .ro-mobile-device-line span {
   color: #7a8798;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 650;
   letter-spacing: 0;
 }
@@ -1226,7 +1226,7 @@
 
 .router-overview-framework .ro-module-head span {
   color: #8d98a8;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 520;
 }
 
@@ -1236,7 +1236,7 @@
   background: #f8fbff;
   color: #667386;
   padding: 1px 7px;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 650;
 }
 
@@ -1253,7 +1253,7 @@
 .router-overview-framework .ro-chart-empty {
   border: 1px solid #dfe7f1;
   border-radius: 7px;
-  background: #f8fbff !important;
+  background: #f8fbff;
   color: #667386;
 }
 
@@ -1271,7 +1271,7 @@
 
 .router-overview-framework .ro-resource-card span {
   color: #718096;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 650;
 }
 
@@ -1289,7 +1289,7 @@
 
 .router-overview-framework .ro-resource-card em {
   color: #8e99a8;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 520;
 }
 
@@ -1297,7 +1297,7 @@
   height: 2px;
   border: 0;
   border-radius: 999px;
-  background: #eef4fb !important;
+  background: #eef4fb;
   overflow: hidden;
 }
 
@@ -1328,8 +1328,8 @@
 /* task-4: light visual contract ? blue/white, thin lines, no skeuomorphic depth */
 .router-overview-framework,
 .router-overview-framework * {
-  box-shadow: none !important;
-  text-shadow: none !important;
+  box-shadow: none;
+  text-shadow: none;
 }
 
 .router-overview-framework {
@@ -1349,32 +1349,32 @@
 \n.router-overview-framework .ro-topology-root,
 \n.router-overview-framework .ro-topology-node,
 \n.router-overview-framework .ro-interface-route-chain-row {
-  border-color: var(--ro-border) !important;
-  background: #fff !important;
+  border-color: var(--ro-border);
+  background: #fff;
 }
 
 .router-overview-framework .ro-module-head,
 .router-overview-framework .ro-ledger-head-cell,
 .router-overview-framework .ro-chart-summary {
-  background: #f8fbfe !important;
-  border-bottom: 1px solid var(--ro-line) !important;
+  background: #f8fbfe;
+  border-bottom: 1px solid var(--ro-line);
 }
 
 .router-overview-framework .ro-chart-track {
-  border-color: #dfe8f3 !important;
-  background: #f8fbfe !important;
+  border-color: #dfe8f3;
+  background: #f8fbfe;
 }
 
 .router-overview-framework .ro-chart-current {
-  background: rgba(47, 127, 193, .58) !important;
+  background: rgba(47, 127, 193, .58);
 }
 
 .router-overview-framework .ro-chart-current[data-tone="danger"] {
-  background: rgba(217, 48, 37, .62) !important;
+  background: rgba(217, 48, 37, .62);
 }
 
 .router-overview-framework .ro-chart-current[data-tone="warn"] {
-  background: rgba(240, 140, 0, .56) !important;
+  background: rgba(240, 140, 0, .56);
 }
 
 /* worker-3: resource-full secondary pressure + interfaces-down first-screen priority */
@@ -1416,7 +1416,7 @@
 \n.router-overview-framework .ro-chain-node,
 \n.router-overview-framework .ro-visibility-cell {
   border-radius: 6px;
-  box-shadow: none !important;
+  box-shadow: none;
   background: #fff;
 }
 .router-overview-framework .ro-module,\n.router-overview-framework .ro-mobile-primary-card,\n.router-overview-framework .ro-mobile-core-block {
@@ -1464,28 +1464,28 @@
 
 .ik-rail,
 .sidebar[data-shell-sidebar="legacy"] {
-  border-color: var(--ikuai-shell-line) !important;
-  background: rgba(248, 251, 255, .94) !important;
-  box-shadow: 0 1px 2px rgba(33, 82, 130, .025) !important;
+  border-color: var(--ikuai-shell-line);
+  background: rgba(248, 251, 255, .94);
+  box-shadow: 0 1px 2px rgba(33, 82, 130, .025);
 }
 
 .ik-brand {
-  border-bottom: 1px solid #e9f1f8 !important;
-  background: linear-gradient(180deg, rgba(255, 255, 255, .72), rgba(246, 250, 255, .44)) !important;
+  border-bottom: 1px solid #e9f1f8;
+  background: linear-gradient(180deg, rgba(255, 255, 255, .72), rgba(246, 250, 255, .44));
 }
 
 .ik-brand-title {
-  color: #236fae !important;
-  font-weight: 760 !important;
-  letter-spacing: -.035em !important;
+  color: #236fae;
+  font-weight: 760;
+  letter-spacing: -.035em;
 }
 
 .ik-brand-chip,
 .ik-brand-user {
-  border-color: #dceaf6 !important;
-  background: #f7fbff !important;
-  color: #5f7893 !important;
-  box-shadow: none !important;
+  border-color: #dceaf6;
+  background: #f7fbff;
+  color: #5f7893;
+  box-shadow: none;
 }
 
 .sidebar[data-shell-sidebar="legacy"] {
@@ -1494,11 +1494,11 @@
 }
 
 .ik-menu-stack {
-  flex: 0 0 auto !important;
+  flex: 0 0 auto;
 }
 
 .ik-search-pill {
-  flex: 0 0 auto !important;
+  flex: 0 0 auto;
 }
 
 .ik-sidebar-mini-status {
@@ -1523,7 +1523,7 @@
 
 .ik-sidebar-mini-status span {
   color: #7b8da2;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 700;
 }
 
@@ -1531,7 +1531,7 @@
   min-width: 0;
   overflow: hidden;
   color: #2f5f8d;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 760;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1539,23 +1539,23 @@
 
 .ik-rail-button,
 .ik-menu-item {
-  border: 1px solid transparent !important;
-  background: transparent !important;
-  box-shadow: none !important;
-  color: #617184 !important;
+  border: 1px solid transparent;
+  background: transparent;
+  box-shadow: none;
+  color: #617184;
 }
 
 .ik-rail-button.is-active,
 .ik-menu-item.is-active {
-  border-color: #dbeaf7 !important;
-  background: #ffffff !important;
-  color: #236fae !important;
-  box-shadow: inset 2px 0 0 rgba(45, 127, 196, .55) !important;
+  border-color: #dbeaf7;
+  background: #ffffff;
+  color: #236fae;
+  box-shadow: inset 1px 0 0 rgba(45, 127, 196, .55);
 }
 
 .ik-menu-item em,
 .ik-rail-text {
-  color: #8796a8 !important;
+  color: #8796a8;
 }
 
 .router-overview-framework.ro-desktop-console {
@@ -1605,15 +1605,15 @@
 }
 
 .router-overview-framework.ro-desktop-console .ro-resource-card i {
-  height: 2px !important;
-  background: #eaf3fb !important;
+  height: 2px;
+  background: #eaf3fb;
 }
 
 .router-overview-framework.ro-desktop-console .ro-topology-tree,
 .router-overview-framework.ro-desktop-console .ro-visibility-matrix,
 .router-overview-framework.ro-desktop-console .ro-chain-timeline {
-  border-color: var(--ro-line) !important;
-  box-shadow: none !important;
+  border-color: var(--ro-line);
+  box-shadow: none;
 }
 
 /* iKuai 4.0 / Apple-flat visual polish: soften panels, alerts, bars, and mobile detail rows. */
@@ -1758,68 +1758,68 @@
 /* Worker 4 final polish: lighter brand rail, visible quick search, one clear emphasis per alert tone. */
 .ik-brand,
 .sidebar[data-shell-sidebar="legacy"] {
-  background: linear-gradient(180deg, rgba(255,255,255,.84), rgba(246,250,255,.72)) !important;
+  background: linear-gradient(180deg, rgba(255,255,255,.84), rgba(246,250,255,.72));
 }
 
 .ik-brand {
-  padding: 8px 10px 7px !important;
-  gap: 8px !important;
-  border-bottom: 1px solid #e7eef6 !important;
+  padding: 8px 10px 7px;
+  gap: 8px;
+  border-bottom: 1px solid #e7eef6;
 }
 
 .ik-brand-left {
-  gap: 6px !important;
+  gap: 6px;
 }
 
 .ik-brand-title {
-  color: #2a73b2 !important;
-  font-size: 18px !important;
-  line-height: 1 !important;
-  font-weight: 760 !important;
-  letter-spacing: -.04em !important;
+  color: #2a73b2;
+  font-size: 18px;
+  line-height: 1;
+  font-weight: 760;
+  letter-spacing: -.04em;
 }
 
 .ik-brand-chip,
 .ik-brand-user {
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  min-height: 22px !important;
-  padding: 0 7px !important;
-  border: 1px solid #d8e6f3 !important;
-  border-radius: 999px !important;
-  background: #f8fbff !important;
-  color: #6a7c90 !important;
-  box-shadow: none !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 22px;
+  padding: 0 7px;
+  border: 1px solid #d8e6f3;
+  border-radius: 999px;
+  background: #f8fbff;
+  color: #6a7c90;
+  box-shadow: none;
 }
 
 .ik-brand-chip {
-  font-size: 10px !important;
-  font-weight: 700 !important;
+  font-size: 12px;
+  font-weight: 700;
 }
 
 .ik-brand-user {
-  min-width: 40px !important;
-  color: #5f7288 !important;
-  font-size: 10px !important;
-  font-weight: 700 !important;
-  letter-spacing: 0 !important;
+  min-width: 40px;
+  color: #5f7288;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0;
 }
 
 .ik-search-pill {
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  gap: 10px !important;
-  margin-top: 8px !important;
-  padding: 9px 11px !important;
-  border: 1px solid #d9e5f1 !important;
-  border-radius: 12px !important;
-  background: rgba(255,255,255,.96) !important;
-  box-shadow: 0 1px 2px rgba(31, 88, 145, .03) !important;
-  color: #2d3f53 !important;
-  font-size: 12px !important;
-  font-weight: 700 !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 8px;
+  padding: 9px 11px;
+  border: 1px solid #d9e5f1;
+  border-radius: 12px;
+  background: rgba(255,255,255,.96);
+  box-shadow: 0 1px 2px rgba(31, 88, 145, .03);
+  color: #2d3f53;
+  font-size: 12px;
+  font-weight: 700;
 }
 
 .ik-search-pill::before {
@@ -1831,18 +1831,18 @@
   border-radius: 999px;
   background: #edf4fb;
   color: #4b7195;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 800;
 }
 
 .ik-search-pill strong {
-  padding: 2px 6px !important;
-  border: 1px solid #dce7f2 !important;
-  border-radius: 999px !important;
-  background: #f6faff !important;
-  color: #65778a !important;
-  font-size: 10px !important;
-  font-weight: 700 !important;
+  padding: 2px 6px;
+  border: 1px solid #dce7f2;
+  border-radius: 999px;
+  background: #f6faff;
+  color: #65778a;
+  font-size: 12px;
+  font-weight: 700;
 }
 
 .router-overview-framework.ro-desktop-console .ro-module,
@@ -1858,20 +1858,20 @@
 
 .router-overview-framework.ro-desktop-console .ro-module[data-tone="danger"],
 \n.router-overview-framework.ro-desktop-console .ro-module[data-tone="warn"] {
-  background: #fff !important;
+  background: #fff;
 }
 
 .router-overview-framework.ro-desktop-console .ro-module[data-tone="danger"] b {
-  color: #99514d !important;
+  color: #99514d;
 }
 
 .router-overview-framework.ro-desktop-console .ro-module[data-tone="warn"] b {
-  color: #916024 !important;
+  color: #916024;
 }
 
 .router-overview-framework.ro-desktop-console .ro-resource-card i {
-  height: 2px !important;
-  border-radius: 999px !important;
+  height: 2px;
+  border-radius: 999px;
 }
 
 /* Product-flat correction: iKuai 4.0 / Apple-like surfaces, readable charts, no old monitor-panel mass. */
@@ -1887,77 +1887,77 @@
   --ro-warn: #bd7b25;
   --ro-ok: #2870a8;
   color: #182538;
-  background: #f6faff !important;
+  background: #f6faff;
 }
 
 .router-overview-framework.ro-desktop-console .ro-module {
-  border-color: var(--ro-border) !important;
-  border-radius: 5px !important;
-  background: #fff !important;
-  box-shadow: none !important;
+  border-color: var(--ro-border);
+  border-radius: 5px;
+  background: #fff;
+  box-shadow: none;
 }
 
 .router-overview-framework.ro-desktop-console .ro-module-head {
-  min-height: 24px !important;
-  padding: 4px 7px !important;
-  background: #fff !important;
+  min-height: 24px;
+  padding: 4px 7px;
+  background: #fff;
 }
 
 .router-overview-framework.ro-desktop-console .ro-module-head b {
-  font-size: 12px !important;
-  font-weight: 760 !important;
-  letter-spacing: 0 !important;
+  font-size: 12px;
+  font-weight: 760;
+  letter-spacing: 0;
 }
 
 .router-overview-framework.ro-desktop-console .ro-module-head span {
-  color: #7e8ca0 !important;
-  font-weight: 560 !important;
+  color: #7e8ca0;
+  font-weight: 560;
 }
 
 .router-overview-framework.ro-desktop-console .ro-module-head em {
-  border: 0 !important;
-  background: transparent !important;
-  color: #7f8da0 !important;
-  padding-inline: 0 !important;
+  border: 0;
+  background: transparent;
+  color: #7f8da0;
+  padding-inline: 0;
 }
 
 .router-overview-framework.ro-desktop-console .ro-ledger-head-cell {
-  background: #f8fbfe !important;
-  color: #728196 !important;
-  font-weight: 660 !important;
+  background: #f8fbfe;
+  color: #728196;
+  font-weight: 660;
 }
 
 .router-overview-framework.ro-desktop-console .ro-ledger-cell {
-  border-bottom-color: #eef4fa !important;
+  border-bottom-color: #eef4fa;
 }
 
 .router-overview-framework.ro-desktop-console .ro-resource-card,
 .router-overview-framework.ro-desktop-console .ro-chain-node,
 .router-overview-framework.ro-desktop-console .ro-visibility-cell {
-  border-color: #e3edf6 !important;
-  border-radius: 4px !important;
-  background: #fff !important;
-  box-shadow: none !important;
+  border-color: #e3edf6;
+  border-radius: 4px;
+  background: #fff;
+  box-shadow: none;
 }
 
 .router-overview-framework.ro-desktop-console .ro-topology-root,
 .router-overview-framework.ro-desktop-console .ro-topology-node {
-  border-color: #e1ebf5 !important;
-  border-radius: 4px !important;
-  background: #fbfdff !important;
-  box-shadow: none !important;
+  border-color: #e1ebf5;
+  border-radius: 4px;
+  background: #fbfdff;
+  box-shadow: none;
 }
 
 .router-overview-framework.ro-desktop-console .ro-chart-track,
 .router-overview-framework.ro-desktop-console .ro-resource-card i {
-  height: 2px !important;
-  background: #edf5fc !important;
-  border: 0 !important;
+  height: 2px;
+  background: #edf5fc;
+  border: 0;
 }
 
 .router-overview-framework.ro-desktop-console .ro-chart-threshold {
-  border-left-width: 1px !important;
-  opacity: .68 !important;
+  border-left-width: 1px;
+  opacity: .68;
 }
 
 .ro-pressure-mini {
@@ -1976,7 +1976,7 @@
   min-height: 22px;
   border-bottom: 1px solid #eef4fa;
   color: var(--ro-muted);
-  font-size: 10px;
+  font-size: 12px;
 }
 
 .ro-pressure-mini-row:last-child {
@@ -2033,11 +2033,11 @@
 .ro-pressure-mini-row[data-tone="missing"] strong { background: #9aa8b8; }
 
 .router-overview-framework.ro-desktop-console [data-tone="danger"] b {
-  color: #8e3f3a !important;
+  color: #8e3f3a;
 }
 
 .router-overview-framework.ro-desktop-console [data-tone="warn"] b {
-  color: #84591f !important;
+  color: #84591f;
 }
 
 /* iKuai 4.0 + Apple-flat continuation: lighter charts, fewer nested boxes, product-led hierarchy. */
@@ -2053,20 +2053,20 @@
   padding: 6px;
 }
 .router-overview-framework .ro-module { border-color: var(--ro-border); border-left-width: 1px; border-radius: 6px; box-shadow: none; background: #fff; }
-.router-overview-framework .ro-module[data-tone="danger"] { border-left: 2px solid var(--ro-danger); }
-.router-overview-framework .ro-module[data-tone="warn"] { border-left: 2px solid var(--ro-warn); }
+.router-overview-framework .ro-module[data-tone="danger"] { border-left: 1px solid var(--ro-danger); }
+.router-overview-framework .ro-module[data-tone="warn"] { border-left: 1px solid var(--ro-warn); }
 .router-overview-framework .ro-module-head { min-height: 28px; padding: 5px 7px 4px; background: linear-gradient(180deg, #fff 0%, #fbfdff 100%); border-bottom-color: var(--ro-line); }
 .router-overview-framework .ro-module-head b { font-size: 12px; letter-spacing: 0; }
-.router-overview-framework .ro-module-head span { font-size: 10px; color: #7c8796; }
-.router-overview-framework .ro-ledger-table th { background: #f8fbff; color: #7a8798; font-size: 10px; font-weight: 700; }
-.router-overview-framework .ro-ledger-row { background: #fff !important; }
-.router-overview-framework .ro-ledger-row[data-tone="danger"] { box-shadow: inset 2px 0 0 rgba(214,64,54,.72); }
-.router-overview-framework .ro-ledger-row[data-tone="warn"] { box-shadow: inset 2px 0 0 rgba(217,130,22,.56); }
+.router-overview-framework .ro-module-head span { font-size: 12px; color: #7c8796; }
+.router-overview-framework .ro-ledger-table th { background: #f8fbff; color: #7a8798; font-size: 12px; font-weight: 700; }
+.router-overview-framework .ro-ledger-row { background: #fff; }
+.router-overview-framework .ro-ledger-row[data-tone="danger"] { box-shadow: inset 1px 0 0 rgba(214,64,54,.72); }
+.router-overview-framework .ro-ledger-row[data-tone="warn"] { box-shadow: inset 1px 0 0 rgba(217,130,22,.56); }
 .router-overview-framework .ro-ledger-row[data-tone="danger"] > *, .router-overview-framework .ro-ledger-row[data-tone="warn"] > * { color: #1f2935; }
 .router-overview-framework .ro-resource-trend-panel { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 6px; padding: 7px; background: #fbfdff; border-bottom: 1px solid var(--ro-line); }
-.router-overview-framework .ro-resource-trend-card { display: grid; grid-template-columns: 74px minmax(0,1fr); gap: 4px; align-items: center; min-height: 58px; padding: 5px 6px; background: #fff; border: 0; border-left: 2px solid #c9d6e4; }
+.router-overview-framework .ro-resource-trend-card { display: grid; grid-template-columns: 74px minmax(0,1fr); gap: 4px; align-items: center; min-height: 58px; padding: 5px 6px; background: #fff; border: 0; border-left: 1px solid #c9d6e4; }
 .router-overview-framework .ro-resource-trend-card[data-tone="danger"] { border-left-color: var(--ro-danger); }
-.router-overview-framework .ro-resource-trend-card span, .router-overview-framework .ro-resource-trend-card em { display: block; color: #6e7b8c; font-size: 10px; font-style: normal; white-space: nowrap; }
+.router-overview-framework .ro-resource-trend-card span, .router-overview-framework .ro-resource-trend-card em { display: block; color: #6e7b8c; font-size: 12px; font-style: normal; white-space: nowrap; }
 .router-overview-framework .ro-resource-trend-card b { display: block; color: #17202b; font-size: 18px; font-weight: 800; line-height: 1.05; }
 .router-overview-framework .ro-resource-trend-card svg { width: 100%; height: 46px; color: var(--ro-blue); }
 .router-overview-framework .ro-resource-trend-card polygon { fill: rgba(47,125,204,.08); stroke: none; }
@@ -2080,10 +2080,10 @@
 .router-overview-framework .ro-pressure-mini-row[data-tone="danger"] i strong { background: rgba(214,64,54,.56); }
 .router-overview-framework .ro-pressure-mini-row span, .router-overview-framework .ro-pressure-mini-row em { color: #68768a; }
 .router-overview-framework .ro-wan-port-visual, .router-overview-framework .ro-interface-priority-visual, .router-overview-framework .ro-chain-timeline, .router-overview-framework .ro-visibility-matrix { border: 0; background: #fbfdff; box-shadow: none; }
-.router-overview-framework .ro-interface-route-chain-row, .router-overview-framework .ro-chain-node, .router-overview-framework .ro-visibility-cell { border-color: #e1e9f2; border-radius: 5px; background: #fff !important; box-shadow: none; }
-.router-overview-framework .ro-chain-node[data-tone="danger"], .router-overview-framework .ro-visibility-cell[data-tone="danger"] { border-left: 2px solid rgba(214,64,54,.7); }
-.router-overview-framework .ro-chain-node[data-tone="warn"], .router-overview-framework .ro-visibility-cell[data-tone="warn"] { border-left: 2px solid rgba(217,130,22,.58); }
-.router-overview-framework .ro-app-rail-brand, .router-overview-framework [data-overview-sidebar-brand] { background: transparent !important; color: #236fb8 !important; box-shadow: none !important; }
+.router-overview-framework .ro-interface-route-chain-row, .router-overview-framework .ro-chain-node, .router-overview-framework .ro-visibility-cell { border-color: #e1e9f2; border-radius: 5px; background: #fff; box-shadow: none; }
+.router-overview-framework .ro-chain-node[data-tone="danger"], .router-overview-framework .ro-visibility-cell[data-tone="danger"] { border-left: 1px solid rgba(214,64,54,.7); }
+.router-overview-framework .ro-chain-node[data-tone="warn"], .router-overview-framework .ro-visibility-cell[data-tone="warn"] { border-left: 1px solid rgba(217,130,22,.58); }
+.router-overview-framework .ro-app-rail-brand, .router-overview-framework [data-overview-sidebar-brand] { background: transparent; color: #236fb8; box-shadow: none; }
 
 /* subagent-4 v220 desktop EOF final owner: this block intentionally comes
    after the mobile v220 app-home overrides to prevent desktop regressions. */
@@ -2092,7 +2092,7 @@
 .ro-desktop-tabs,
 .ik-desktop-content-tabs,
 [data-overview-desktop-content-icon-tabs="true"] {
-  display: none !important;
+  display: none;
 }
 
 /* Exploration 4: desktop iKuai 4.0 data-console polish.

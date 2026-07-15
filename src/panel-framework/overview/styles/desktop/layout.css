@@ -61,7 +61,7 @@
   .router-overview-framework .ro-module-head span,
   .router-overview-framework .ro-module-head em {
     color: var(--v4-console-muted);
-    font-size: 10.5px;
+    font-size: 12px;
     font-weight: 640;
   }
   .router-overview-framework .ro-ledger-row:not(.ro-ledger-head),
@@ -78,7 +78,7 @@
   .router-overview-framework .ro-ledger-cell,
   .router-overview-framework .ro-ledger-table td {
     color: var(--v4-console-ink);
-    font-size: 11.5px;
+    font-size: 12px;
     line-height: 1.26;
   }
   .router-overview-framework .ro-ledger-cell:first-child,
@@ -116,7 +116,7 @@
     stroke: var(--v4-console-danger);
   }
   .router-overview-framework .ro-chart-threshold {
-    border-left: 2px solid #4d5d70;
+    border-left: 1px solid #4d5d70;
   }
   .router-overview-framework .ro-col.is-main > .ro-module:first-child {
     min-height: 330px;
@@ -176,7 +176,7 @@
   }
   .router-overview-framework.ro-desktop-hierarchy .ro-ledger-cell,
   .router-overview-framework.ro-desktop-hierarchy .ro-ledger-table td {
-    font-size: 11.8px;
+    font-size: 12px;
     line-height: 1.28;
     color: var(--ik-v6-text);
   }
@@ -194,7 +194,7 @@
     background: #e8f0f8;
   }
   .router-overview-framework.ro-desktop-hierarchy .ro-chart-threshold {
-    border-left: 2px solid #4b5d72;
+    border-left: 1px solid #4b5d72;
   }
   .router-overview-framework.ro-desktop-hierarchy .ro-chart-current {
     background: var(--ik-v6-blue);

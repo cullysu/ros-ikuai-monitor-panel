@@ -481,6 +481,14 @@ body {
   background: #f5f8fc;
 }
 
+body:has(#overview.ro-desktop-console) .app.ik-shell {
+  grid-template-columns: 176px minmax(0, 1fr);
+}
+
+body:has(#overview.ro-desktop-console) .ik-rail {
+  display: none;
+}
+
 .ik-rail {
   width: 42px;
   min-width: 42px;

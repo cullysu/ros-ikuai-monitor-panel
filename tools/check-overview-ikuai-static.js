@@ -68,10 +68,20 @@ const phoneModelEvidence = read('src/panel-framework/overview/mobile-native/mobi
 const phoneTypes = read('src/panel-framework/overview/mobile-native/mobileNativeTypes.ts');
 const phoneStyles = read('src/panel-framework/overview/mobile-native/styles/mobile-native-tokens.css');
 const phoneLayoutStyles = read('src/panel-framework/overview/mobile-native/styles/mobile-native-layout.css');
+const phoneResponsiveStyles = read('src/panel-framework/overview/mobile-native/styles/mobile-native-responsive.css');
 const phoneStateStyles = read('src/panel-framework/overview/mobile-native/styles/mobile-native-states.css');
-const phoneStyleBundle = `${phoneStyles}\n${phoneLayoutStyles}\n${phoneStateStyles}`;
+const phoneStyleBundle = `${phoneStyles}\n${phoneLayoutStyles}\n${phoneResponsiveStyles}\n${phoneStateStyles}`;
 const mobileShellStyles = read('src/panel-framework/mobile-shell.css');
 const predeploy = read('tools/local-predeploy-check.js');
+const sectionBrowserInspector = read('tools/acceptance/inspect-section-browser.js');
+const mobileOverviewInspector = read('tools/acceptance/inspect-overview-mobile.js');
+const desktopOverviewLayoutInspector = read('tools/acceptance/inspect-overview-desktop-layout.js');
+const acceptanceInspectorBundle = [
+  predeploy,
+  sectionBrowserInspector,
+  mobileOverviewInspector,
+  desktopOverviewLayoutInspector,
+].join('\n');
 const phoneRuntime = read('tools/check-mobile-native-runtime.js');
 
 includesAll(overview, [
@@ -149,7 +159,7 @@ includesAll(desktopAllOfflineScene, ['Math.max(state.facts.wan.total, offlineRow
 excludesAll(desktopAllOfflineScene, ['subtitle="0/8', 'compactRows(wanContinuityRows(state), 8)'], 'desktop WAN fixture cleanup');
 includesAll(wanOfflineFocus, ['rows.slice(0, 4)', '其余 {hiddenCount} 条线路在详情中', '不展示 0 B/s'], 'desktop WAN incident focus');
 if ((desktopDefaultScene.match(/\bcollapsed=\{isFleet\}/g) || []).length < 2) fail('desktop normal hierarchy', 'expected fleet-only interface and resource summaries');
-includesAll(desktopWorkspaceStyles, ['.ro-desktop-grid.is-normal-scene', 'align-items: start', 'align-self: start', 'align-items: stretch', 'align-self: stretch', 'grid-template-rows: 25px auto', 'height: auto', '--ro-col-height: auto', '--ro-col-grid-auto-rows: auto', '--ro-col-module-height: auto'], 'desktop normal content-sized workspace');
+includesAll(desktopWorkspaceStyles, ['.ro-desktop-grid.is-normal-scene', 'grid-template-areas:', '"main side"', '"bottom bottom"', 'grid-template-rows: auto auto', 'align-items: start', 'align-self: start', 'align-items: stretch', 'align-self: stretch', 'flex: 0 0 auto', 'height: auto', '--ro-col-height: auto', '--ro-col-grid-auto-rows: auto', '--ro-col-module-height: auto'], 'desktop normal content-sized workspace');
 includesAll(desktopModule, ['collapsed ? "ro-secondary-evidence-disclosure ro-compact-summary-disclosure"', 'ro-compact-summary-disclosure', '查看详情'], 'desktop compact disclosure');
 const desktopModuleContractCount = (desktopModule.match(/\bdata-(?:overview|routeros)-[\w-]+/g) || []).length;
 if (desktopModuleContractCount > 20) fail('desktop module contract budget', `expected <=20 attributes, found ${desktopModuleContractCount}`);
@@ -172,7 +182,7 @@ includesAll(phoneConsole, [
 ], 'isolated native mobile shell');
 excludesAll(phoneConsole, ['tabbar', 'BottomTabs', 'activeTab'], 'retired phone tab shell');
 excludesAll(`${phoneConsole}\n${phoneHome}\n${phoneSignal}\n${phoneInspection}\n${phoneEvidence}\n${phoneIcon}\n${phoneFocus}\n${phoneModel}\n${phoneModelEvidence}\n${phoneStyleBundle}`, ['ik-mobile-', 'ik-ios-', 'ro-mobile-', 'ro-desktop-', 'rm-app', 'phone-ops'], 'phone namespace isolation');
-includesAll(phoneFocus, ['网络可用，默认出口已核实', '条 WAN 未运行', '当前业务状态不可判断', '当前变化不可见', '资源策略已触发', '个接口'], 'phone factual verdict copy');
+includesAll(phoneFocus, ['网络可用', '条 WAN 未运行', '当前业务状态不可判断', '当前变化不可见', '资源策略已触发', '个接口'], 'phone factual verdict copy');
 includesAll(`${phoneModel}\n${phoneModelEvidence}\n${phoneFocus}\n${phoneTypes}`, ['"current" | "historical" | "unavailable"', 'successfulBusinessAt(snapshot)', 'kind: "rates"', 'kind: "resource"', 'trailingStreak', 'MobileRiskKey'], 'phone source truthfulness');
 excludesAll(phoneModel, ['function syntheticTrend(', 'const pattern = {', '网络状态良好', '实时可信'], 'phone unsupported data and copy prohibition');
 excludesAll(`${phoneModel}\n${phoneModelEvidence}\n${phoneFocus}`, ['rows[0]', 'downRate || 0', 'upRate || 0'], 'phone fabricated evidence prohibition');
@@ -187,12 +197,15 @@ excludesAll(phoneStyleBundle, ['border-left: 3px', 'margin: 0 auto', '.mn-path-e
 includesAll(mobileShellStyles, [':has(#overview.is-mobile-native)', '.ik-rail', '.sidebar', '.topbar'], 'mobile shell ownership');
 excludesAll(phoneStyleBundle, ['.ik-rail', '.sidebar', '.topbar'], 'mobile component shell reach-out');
 
-includesAll(predeploy, [
+includesAll(acceptanceInspectorBundle, [
   'compactLandscapeOverview',
-  'mobileOverviewAppViewport = isMobileOverview',
+  "const mobileOverviewAppViewport = sectionName === 'overview' && window.innerWidth <= 1199",
   "sectionRoot?.querySelector('[data-mobile-native-console]')",
   "routerMobileEvidence?.getAttribute('data-mobile-native-evidence-mode')",
-  'const pass = routerMobileRoot ? mobileOverviewAppHomePass : legacyOrDesktopPass',
+  'if (mobileNativeResult) return mobileNativeResult',
+  'Object.values(routerMobileChecks).every(Boolean)',
+  'const pass = mobileOverviewAppHomePass',
+  'const pass = legacyOrDesktopPass',
   'routerMobileSmallTextNodes.length === 0',
   'waitForAnyJson',
   'terminateBrowserTree',
@@ -203,6 +216,23 @@ includesAll(predeploy, [
   'report.pass = report.failures.length === 0 && !matrixBlocksTopLevelPass',
   'process.exitCode = report.exitCodeShouldFail ? 1 : 0',
 ], 'release gate integrity');
+excludesAll(acceptanceInspectorBundle, [
+  'const pass = routerMobileRoot ? mobileOverviewAppHomePass : legacyOrDesktopPass',
+  'sampleRectCoverage',
+  'elementFromPoint',
+  'contentFillRatio',
+  'rightFillRatio',
+  'overviewVisualBalanceTypeCount',
+  'overviewDesktopTableAreaRatio',
+  'overviewDesktopChartMatrixAreaRatio',
+  'overviewDesktopKpiBalanceOk',
+], 'release gate semantic evidence integrity');
+includesAll(acceptanceInspectorBundle, [
+  'sceneCoreGeometry',
+  'semanticGeometry',
+  'overviewVisualCenterEvidenceOk',
+  'overviewSceneSpecificDesktopEvidenceOk',
+], 'release gate semantic geometry');
 includesAll(phoneRuntime, [
   'scenarios',
   'p320: \'320x568\'',
@@ -211,12 +241,14 @@ includesAll(phoneRuntime, [
   'p390: \'390x844\'',
   'p430: \'430x932\'',
   'tablet: \'768x1024\'',
+  'ipad1024: \'1024x768\'',
+  'ipad1180: \'1180x820\'',
   'l667: \'667x375\'',
   'l844: \'844x390\'',
   'expectedCells',
   'report.matrix?.complete',
   'screenshots.length',
-], 'phone 56-cell runtime matrix coverage');
+], 'phone 70-cell runtime matrix coverage');
 
 for (const [file, text, limit] of [
   ['OverviewPanel.tsx', overview, 120],

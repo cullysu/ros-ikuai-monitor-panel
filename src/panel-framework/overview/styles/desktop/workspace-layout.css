@@ -12,9 +12,9 @@
     align-content: start;
     align-items: start;
     gap: 8px;
-    height: calc(100vh - 82px);
+    height: auto;
     min-height: calc(100vh - 82px);
-    overflow: hidden;
+    overflow: visible;
   }
   #overview.router-overview-framework.ro-desktop-hierarchy .ro-desktop-grid.is-normal-scene {
     grid-template-areas:
@@ -42,7 +42,7 @@
   #overview.router-overview-framework.ro-desktop-hierarchy .ro-desktop-grid.is-normal-scene > .ro-col.is-main > .ro-module[data-overview-density-module="wan-trend"] {
     display: grid;
     flex: 0 0 auto;
-    grid-template-rows: 25px auto;
+    grid-template-rows: 32px auto;
     height: auto;
   }
   #overview.router-overview-framework.ro-desktop-hierarchy .ro-desktop-grid[data-overview-desktop-scene="single"] > .ro-col.is-bottom {
@@ -96,30 +96,30 @@
     min-height: 0;
     overflow: hidden;
     border: 1px solid rgba(157, 177, 198, .26);
-    border-radius: 3px;
+    border-radius: 4px;
     background: rgba(255, 255, 255, .96);
     box-shadow: none;
   }
   #overview.router-overview-framework.ro-desktop-hierarchy .ro-module-head {
-    height: 25px;
-    min-height: 25px;
-    padding: 2px 6px;
+    height: 32px;
+    min-height: 32px;
+    padding: 5px 8px;
     border-bottom: 1px solid rgba(157, 177, 198, .18);
     background: #fbfdff;
   }
   #overview.router-overview-framework.ro-desktop-hierarchy .ro-module-head b {
     color: #172a3d;
-    font-size: 11px;
+    font-size: 13px;
     font-weight: 790;
     line-height: 1;
   }
   #overview.router-overview-framework.ro-desktop-hierarchy .ro-module-head span,
   #overview.router-overview-framework.ro-desktop-hierarchy .ro-module-head em {
-    max-width: 160px;
+    max-width: 240px;
     overflow: hidden;
     color: #708295;
-    font-size: 10px;
-    line-height: 1;
+    font-size: 12px;
+    line-height: 1.2;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
@@ -128,33 +128,33 @@
     background: #fff;
   }
   #overview.router-overview-framework.ro-desktop-hierarchy .ro-ledger-head-cell {
-    height: 18px;
-    min-height: 16px;
-    padding: 1px 5px;
+    height: 24px;
+    min-height: 24px;
+    padding: 3px 7px;
     border: 0;
     border-bottom: 1px solid rgba(154, 176, 198, .14);
     background: rgba(248, 251, 254, .72);
     color: #8293a6;
-    font-size: 10px;
+    font-size: 12px;
     font-weight: 620;
     line-height: 1;
   }
   #overview.router-overview-framework.ro-desktop-hierarchy .ro-ledger-row:not(.ro-ledger-head) {
-    height: 28px;
-    min-height: 28px;
+    height: 34px;
+    min-height: 34px;
     border-bottom: 1px solid rgba(226, 235, 244, .28);
     background: transparent;
   }
   #overview.router-overview-framework.ro-desktop-hierarchy .ro-ledger-cell {
-    height: 25px;
-    min-height: 25px;
-    padding: 1px 5px;
+    height: 32px;
+    min-height: 32px;
+    padding: 4px 7px;
     border: 0;
     border-bottom: 1px solid rgba(226, 235, 244, .28);
     background: transparent;
     color: #24374b;
-    font-size: 10px;
-    line-height: 1.12;
+    font-size: 12px;
+    line-height: 1.25;
   }
   #overview.router-overview-framework.ro-desktop-hierarchy .ro-ledger-cell:first-child,
   #overview.router-overview-framework.ro-desktop-hierarchy .ro-ledger-cell:nth-child(2) {

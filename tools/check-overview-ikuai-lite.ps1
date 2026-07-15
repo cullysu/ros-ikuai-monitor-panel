@@ -1,6 +1,6 @@
 param(
   [string]$Profile = "public",
-  [string]$Viewports = "desktop=1366x900,narrow=390x844",
+  [string]$Viewports = "desktop=1366x768,narrow=390x844",
   [string]$ScaleScenarios = "single,fleet,all-offline,no-snapshot,collection-down,resource-full,interfaces-down",
   [string]$Out = "",
   [switch]$SkipBackend,
