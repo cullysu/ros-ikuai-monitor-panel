@@ -5,6 +5,7 @@ import {
   formatNumber,
   formatPercent,
   formatRate,
+  latestCollectionSuccessTime,
   shortTimestamp,
   stripChannelPrefix,
   toNumber,
@@ -126,15 +127,8 @@ export function collectInterfaceRows(snapshot: OverviewRawSnapshot): OverviewRaw
 }
 
 export function latestSuccess(snapshot: OverviewRawSnapshot, scenario: OverviewScenarioKey): string {
-  const meta = snapshot.meta || {};
-  const successSource =
-    meta.realtimeUpdatedAt ||
-    meta.slowRestUpdatedAt ||
-    meta.staticUpdatedAt ||
-    meta.connectionDetailUpdatedAt ||
-    meta.connectionProtocolUpdatedAt ||
-    (scenario === "no-snapshot" ? "" : snapshot.updatedAt) ||
-    "";
+  void scenario;
+  const successSource = latestCollectionSuccessTime(snapshot);
   const short = shortTimestamp(successSource);
   return short === "-" ? "未记录" : short;
 }
@@ -163,33 +157,29 @@ export function routerosState(snapshot: OverviewRawSnapshot, scenario: OverviewS
   if (scenario === "no-snapshot") {
     return { value: "断链", tone: "danger", note: "RouterOS 当前不可达" };
   }
-  if (snapshot.status === "error") {
-    return { value: "不可达", tone: "danger", note: businessErrorNote(snapshot.error, "当前采集失败") };
-  }
+  void snapshot;
   return { value: "可达", tone: "ok", note: "管理面已返回快照" };
 }
 
 export function restState(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): { value: string; tone: OverviewTone; note: string } {
   if (state.scenario === "no-snapshot") return { value: "待核", tone: "warn", note: "链路需核" };
-  if (state.scenario === "interfaces-down") return { value: "不可达", tone: "warn", note: "采集通道不可达" };
-  if (snapshot.meta?.realtimeError || snapshot.meta?.slowRestError || state.scenario === "collection-down") {
-    return { value: "待确认", tone: "warn", note: businessErrorNote(snapshot.meta?.realtimeError || snapshot.meta?.slowRestError, "当前使用缓存") };
-  }
-  return { value: stripChannelPrefix(state.facts.collection.restLabel, "REST") || "可用", tone: "ok", note: "当前快照可用" };
+  const channel = state.facts.collection.rest;
+  if (channel.status === "current") return { value: stripChannelPrefix(channel.label, "REST") || "可用", tone: "ok", note: channel.successAt ? `成功 ${shortTimestamp(channel.successAt)}` : "当前快照可用" };
+  if (channel.status === "unavailable") return { value: "未记录", tone: "missing", note: "成功时间未记录" };
+  return { value: channel.label, tone: "warn", note: businessErrorNote(channel.error, channel.successAt ? `上次成功 ${shortTimestamp(channel.successAt)}` : "成功时间未记录") };
 }
 
 export function sshState(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): { value: string; tone: OverviewTone; note: string } {
   if (state.scenario === "no-snapshot") return { value: "断链", tone: "danger", note: "通道断链" };
-  if (state.scenario === "interfaces-down") return { value: "不可达", tone: "warn", note: "采集通道不可达" };
-  if (snapshot.meta?.staticError || state.scenario === "collection-down" || /\u4e0d\u53ef\u7528|\u7f3a/.test(state.facts.collection.sshLabel)) {
-    return { value: "不可用", tone: "warn", note: businessErrorNote(snapshot.meta?.staticError, "SSH 缺依赖") };
-  }
-  return { value: stripChannelPrefix(state.facts.collection.sshLabel, "SSH") || "可用", tone: "ok", note: "静态读取可用" };
+  const channel = state.facts.collection.ssh;
+  if (channel.status === "current") return { value: stripChannelPrefix(channel.label, "SSH") || "可用", tone: "ok", note: channel.successAt ? `成功 ${shortTimestamp(channel.successAt)}` : "静态读取可用" };
+  if (channel.status === "unavailable") return { value: "未记录", tone: "missing", note: "成功时间未记录" };
+  return { value: channel.label, tone: "warn", note: businessErrorNote(channel.error, channel.successAt ? `上次成功 ${shortTimestamp(channel.successAt)}` : "成功时间未记录") };
 }
 
 export function moduleTrust(state: OverviewDerivedState): "当前采样" | "缓存快照" | "链路可参考" {
   if (state.scenario === "no-snapshot") return "链路可参考";
-  if (state.scenario === "collection-down" || state.scenario === "interfaces-down" || state.facts.freshness.history || state.facts.collection.dataStale) return "缓存快照";
+  if (state.facts.collection.channelDegraded || state.facts.freshness.history || state.facts.collection.dataStale) return "缓存快照";
   return "当前采样";
 }
 

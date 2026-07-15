@@ -115,7 +115,6 @@ function credibilityToneOf(credibility: OverviewDataCredibility): OverviewTone {
 
 function snapshotCredibilityOf(snapshot: OverviewRawSnapshot): OverviewDataCredibility {
   if (isSnapshotUnavailable(snapshot)) return "unavailable";
-  if (snapshot.status === "error") return "cache";
   const meta = snapshot.meta || {};
   if (meta.realtimeError || meta.slowRestError) return "cache";
   return "realtime";
@@ -147,7 +146,26 @@ function defaultRouteBusinessSummary(routes: OverviewRawRoute[]): string {
 
 export function latestCollectionSuccessTime(snapshot: OverviewRawSnapshot): string {
   const meta = snapshot.meta || {};
-  return meta.realtimeUpdatedAt || meta.slowRestUpdatedAt || meta.staticUpdatedAt || meta.connectionDetailUpdatedAt || meta.connectionProtocolUpdatedAt || "";
+  return latestTimestamp([
+    meta.realtimeUpdatedAt,
+    meta.slowRestUpdatedAt,
+    meta.staticUpdatedAt,
+    meta.connectionDetailUpdatedAt,
+    meta.connectionProtocolUpdatedAt,
+  ]);
+}
+
+export function latestBusinessSuccessTime(snapshot: OverviewRawSnapshot): string {
+  const meta = snapshot.meta || {};
+  return latestTimestamp([meta.realtimeUpdatedAt, meta.slowRestUpdatedAt]);
+}
+
+function latestTimestamp(values: Array<string | undefined>): string {
+  return values.reduce<string>((latest, value) => {
+    if (!value || Number.isNaN(Date.parse(value))) return latest;
+    if (!latest || Date.parse(value) > Date.parse(latest)) return value;
+    return latest;
+  }, "");
 }
 
 export function isSnapshotUnavailable(snapshot: OverviewRawSnapshot | null | undefined): boolean {
@@ -190,7 +208,7 @@ function freshnessState(snapshot: OverviewRawSnapshot, now: number): OverviewFre
     };
   }
   const credibility = snapshotCredibilityOf(snapshot);
-  const source = snapshot.updatedAt || snapshot.meta?.realtimeUpdatedAt || latestCollectionSuccessTime(snapshot);
+  const source = latestBusinessSuccessTime(snapshot);
   if (!source) return { label: "未采集", level: "warn", stale: true, history: false, missing: false, credibility, credibilityLabel: credibilityLabelOf(credibility), credibilityTone: credibilityToneOf(credibility), seconds: null, text: "未采集", source: "" };
   const parsed = Date.parse(source);
   if (Number.isNaN(parsed)) return { label: "未采集", level: "warn", stale: true, history: false, missing: false, credibility, credibilityLabel: credibilityLabelOf(credibility), credibilityTone: credibilityToneOf(credibility), seconds: null, text: "未采集", source: "" };
@@ -203,22 +221,31 @@ function freshnessState(snapshot: OverviewRawSnapshot, now: number): OverviewFre
 function collectionState(snapshot: OverviewRawSnapshot, freshness: OverviewFreshnessState, failures = failedEndpointSummary(snapshot)): OverviewCollectionState {
   const meta = snapshot.meta || {};
   const noSnapshot = isSnapshotUnavailable(snapshot);
-  const credibility: OverviewDataCredibility = noSnapshot ? "unavailable" : freshness.credibility === "cache" || snapshot.status === "error" || Boolean(meta.realtimeError || meta.slowRestError) ? "cache" : "realtime";
-  const channelErrors = [meta.realtimeError, meta.slowRestError, meta.staticError, meta.connectionDetailError, meta.connectionProtocolError].filter(Boolean);
-  let restLabel = meta.capabilities?.restTrusted === false ? "待确认" : "可用";
-  let sshLabel = meta.capabilities?.sshRead === false ? "缺依赖" : "可用";
-  if (noSnapshot) {
-    restLabel = "待确认";
-    sshLabel = "不可用";
-  } else if (channelErrors.length || snapshot.status === "error") {
-    if (!/待确认|不可用/.test(restLabel)) restLabel = "待确认";
-    if (!/不可用|缺依赖/.test(sshLabel)) sshLabel = "不可用";
-  }
+  const credibility: OverviewDataCredibility = noSnapshot ? "unavailable" : freshness.credibility === "cache" || Boolean(meta.realtimeError || meta.slowRestError) ? "cache" : "realtime";
+  const coreRestErrors = [meta.realtimeError, meta.slowRestError].filter(Boolean).map(String);
+  const auxiliaryRestErrors = [meta.connectionDetailError, meta.connectionProtocolError].filter(Boolean).map(String);
+  const restErrors = [...coreRestErrors, ...auxiliaryRestErrors];
+  const sshErrors = [meta.staticError].filter(Boolean).map(String);
+  const restSuccessAt = latestTimestamp([meta.realtimeUpdatedAt, meta.slowRestUpdatedAt, meta.connectionDetailUpdatedAt, meta.connectionProtocolUpdatedAt]);
+  const sshSuccessAt = latestTimestamp([meta.staticUpdatedAt]);
+  const channelStatus = (coreErrors: string[], auxiliaryErrors: string[], successAt: string) => {
+    if (coreErrors.length) return "failed" as const;
+    if (auxiliaryErrors.length) return "degraded" as const;
+    if (successAt) return "current" as const;
+    return "unavailable" as const;
+  };
+  const restStatus = channelStatus(coreRestErrors, auxiliaryRestErrors, restSuccessAt);
+  const sshStatus = channelStatus(sshErrors, [], sshSuccessAt);
+  const channelLabel = (status: typeof restStatus) => status === "current" ? "可用" : status === "degraded" ? "降级" : status === "failed" ? "失败" : "未记录";
+  const restLabel = channelLabel(restStatus);
+  const sshLabel = channelLabel(sshStatus);
+  const rest = { status: restStatus, label: restLabel, successAt: restSuccessAt, error: restErrors.join("；") };
+  const ssh = { status: sshStatus, label: sshLabel, successAt: sshSuccessAt, error: sshErrors.join("；") };
   const channelText = `REST ${restLabel} / SSH ${sshLabel}`;
-  const channelDegraded = Boolean(noSnapshot || snapshot.status === "error" || channelErrors.length || failures.count > 0);
+  const channelDegraded = Boolean(noSnapshot || restStatus !== "current" || sshStatus !== "current" || failures.count > 0);
   const dataStale = Boolean(freshness.stale || freshness.history);
-  const dataText = noSnapshot ? "无业务快照，业务数据不展示" : channelDegraded ? "缓存快照" : dataStale ? `业务快照年龄 ${freshness.text}` : `数据层最后成功采样 ${shortTimestamp(latestCollectionSuccessTime(snapshot) || snapshot.updatedAt)}`;
-  const level: OverviewTone = noSnapshot || snapshot.status === "error" ? "danger" : channelDegraded || dataStale ? "warn" : "ok";
+  const dataText = noSnapshot ? "无业务快照，业务数据不展示" : channelDegraded ? "缓存快照" : dataStale ? `业务快照年龄 ${freshness.text}` : latestBusinessSuccessTime(snapshot) ? `数据层最后成功采样 ${shortTimestamp(latestBusinessSuccessTime(snapshot))}` : "成功时间未记录";
+  const level: OverviewTone = noSnapshot ? "danger" : channelDegraded || dataStale ? "warn" : "ok";
   const credibilityLabel = credibilityLabelOf(credibility);
   const credibilityTone = credibilityToneOf(credibility);
   return {
@@ -229,6 +256,8 @@ function collectionState(snapshot: OverviewRawSnapshot, freshness: OverviewFresh
     credibilityTone,
     restLabel,
     sshLabel,
+    rest,
+    ssh,
     channelStateText: channelText,
     dataStateText: dataText,
     dataText,
@@ -244,9 +273,9 @@ function collectionState(snapshot: OverviewRawSnapshot, freshness: OverviewFresh
 function routeState(snapshot: OverviewRawSnapshot, freshness: OverviewFreshnessState): OverviewRouteState {
   const rawSummary = defaultRouteRawSummary(routeRows(snapshot));
   const businessSummary = defaultRouteBusinessSummary(routeRows(snapshot));
-  if (isSnapshotUnavailable(snapshot) || snapshot.status === "error") return { label: "不可判定", text: "缺少当前路由快照", level: "warn", rawSummary };
-  if (freshness.stale || freshness.history) return { label: "历史快照", text: "默认路由待判定", level: "warn", rawSummary };
-  const active = routeRows(snapshot).find((route) => route.active && !route.disabled) || routeRows(snapshot)[0];
+  if (isSnapshotUnavailable(snapshot)) return { label: "不可判定", text: "缺少当前路由快照", level: "warn", rawSummary };
+  const active = routeRows(snapshot).find((route) => route.active === true && route.disabled !== true);
+  if (freshness.stale || freshness.history) return { label: active ? "历史活动记录" : "历史快照", text: active ? "仅证明上次成功采集时的默认路由" : "默认路由待判定", level: "warn", rawSummary };
   if (!active) return { label: "待确认", text: "默认路由事实未采集", level: "warn", rawSummary };
   return { label: active.active && !active.disabled ? "活动默认路由" : "默认路由待确认", text: businessSummary || "默认路由事实未采集", level: active.active && !active.disabled ? "ok" : "warn", rawSummary };
 }
@@ -286,7 +315,11 @@ function connectionState(snapshot: OverviewRawSnapshot) {
 function deviceFacts(snapshot: OverviewRawSnapshot): OverviewDeviceFacts {
   const device = snapshot.overview || {};
   const meta = snapshot.meta || {};
-  return { identity: normalize(device.identity || "RouterOS"), version: normalize(device.version || "-"), boardName: normalize(device.boardName || "-"), architecture: normalize(device.architecture || "-"), uptime: normalize(device.uptime || "-"), systemTime: normalize(device.systemTime || "-"), routerHost: normalize(meta.routerHost || "-"), target: normalize(meta.target || "-") };
+  const rawIdentity = normalize(device.identity || "", "");
+  const identity = rawIdentity && !/无可用快照|不可达|采集失败|error/i.test(rawIdentity)
+    ? rawIdentity
+    : normalize(meta.target || meta.routerHost || "RouterOS");
+  return { identity, version: normalize(device.version || "-"), boardName: normalize(device.boardName || "-"), architecture: normalize(device.architecture || "-"), uptime: normalize(device.uptime || "-"), systemTime: normalize(device.systemTime || "-"), routerHost: normalize(meta.routerHost || "-"), target: normalize(meta.target || "-") };
 }
 
 function countsOf(wan: ReturnType<typeof wanState>, interfaces: ReturnType<typeof interfaceState>, failures: ReturnType<typeof failedEndpointSummary>, connections: ReturnType<typeof connectionState>): OverviewCounts {
@@ -325,9 +358,9 @@ function buildVerdict(key: OverviewScenarioKey, facts: OverviewFacts): OverviewV
 
 function topbarState(snapshot: OverviewRawSnapshot, verdict: OverviewVerdict, facts: OverviewFacts): OverviewTopbarState {
   const unavailable = facts.freshness.credibility === "unavailable";
-  const routeros = unavailable || snapshot.status === "error" ? { label: "设备通达", value: "不可达", note: text(snapshot.error, "当前采集失败"), tone: "danger" as OverviewTone } : { label: "设备通达", value: "可达", note: "管理面已返回快照", tone: "ok" as OverviewTone };
-  const rest = unavailable ? { label: "REST", value: "未记录", note: "无业务快照", tone: "missing" as OverviewTone } : facts.collection.credibility === "cache" ? { label: "REST", value: "缓存", note: facts.collection.channelText, tone: "warn" as OverviewTone } : { label: "REST", value: "实时", note: "实时快照可用", tone: "trust" as OverviewTone };
-  const ssh = unavailable ? { label: "SSH", value: "未记录", note: "无业务快照", tone: "missing" as OverviewTone } : facts.collection.credibility === "cache" ? { label: "SSH", value: "缓存", note: facts.collection.channelText, tone: "warn" as OverviewTone } : { label: "SSH", value: "实时", note: "静态读取可用", tone: "trust" as OverviewTone };
+  const routeros = unavailable ? { label: "设备通达", value: "不可达", note: text(snapshot.error, "当前采集失败"), tone: "danger" as OverviewTone } : { label: "设备通达", value: "可达", note: "管理面已返回快照", tone: "ok" as OverviewTone };
+  const rest = { label: "REST", value: facts.collection.rest.label, note: facts.collection.rest.error || (facts.collection.rest.successAt ? `成功 ${shortTimestamp(facts.collection.rest.successAt)}` : "成功时间未记录"), tone: facts.collection.rest.status === "current" ? "trust" as OverviewTone : facts.collection.rest.status === "unavailable" ? "missing" as OverviewTone : "warn" as OverviewTone };
+  const ssh = { label: "SSH", value: facts.collection.ssh.label, note: facts.collection.ssh.error || (facts.collection.ssh.successAt ? `成功 ${shortTimestamp(facts.collection.ssh.successAt)}` : "成功时间未记录"), tone: facts.collection.ssh.status === "current" ? "trust" as OverviewTone : facts.collection.ssh.status === "unavailable" ? "missing" as OverviewTone : "warn" as OverviewTone };
   const recentSuccess = unavailable ? { label: "最近成功", value: "未记录", note: "业务快照缺失", tone: "warn" as OverviewTone } : { label: "最近成功", value: shortTimestamp(facts.freshness.source), note: facts.freshness.credibilityLabel, tone: facts.freshness.credibilityTone };
   return {
     device: { label: "设备", value: facts.device.identity, note: `${facts.device.version} · ${facts.device.uptime}`, tone: "trust" },

@@ -9,6 +9,7 @@
 
 export type OverviewTone = "ok" | "trust" | "warn" | "danger" | "missing";
 export type OverviewDataCredibility = "realtime" | "cache" | "unavailable";
+export type OverviewCollectionChannelStatus = "current" | "degraded" | "failed" | "unavailable";
 
 export interface OverviewEndpointFailureEntry {
   group?: string;
@@ -30,6 +31,7 @@ export interface OverviewRawCapabilityFlags {
 export interface OverviewRawMeta {
   target?: string;
   routerHost?: string;
+  configuredIdentity?: string;
   statusUpdatedAt?: string;
   pollSeconds?: number;
   scaleScenario?: string;
@@ -68,6 +70,8 @@ export interface OverviewRawDevice {
 }
 
 export interface OverviewRawRoute {
+  dstAddress?: string;
+  default?: boolean;
   table?: string;
   routingTable?: string;
   gateway?: string;
@@ -183,6 +187,13 @@ export interface OverviewFailureState {
   entries: OverviewEndpointFailureEntry[];
 }
 
+export interface OverviewCollectionChannelState {
+  status: OverviewCollectionChannelStatus;
+  label: string;
+  successAt: string;
+  error: string;
+}
+
 export interface OverviewCollectionState {
   level: OverviewTone;
   label: string;
@@ -191,6 +202,8 @@ export interface OverviewCollectionState {
   credibilityTone: OverviewTone;
   restLabel: string;
   sshLabel: string;
+  rest: OverviewCollectionChannelState;
+  ssh: OverviewCollectionChannelState;
   channelStateText: string;
   dataStateText: string;
   dataText: string;

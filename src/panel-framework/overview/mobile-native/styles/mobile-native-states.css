@@ -1,46 +1,93 @@
-.mn-evidence-banner.is-warn,
-.mn-detail-evidence.is-warn {
-  border-left-color: var(--mn-warn);
+.mn-evidence-boundary.is-warn {
   background: var(--mn-warn-soft);
 }
 
-.mn-evidence-banner.is-warn time,
-.mn-detail-evidence.is-warn time,
-.mn-shell.is-evidence-stale .mn-home-heading > span {
-  color: var(--mn-warn);
-}
-
-.mn-evidence-banner.is-danger,
-.mn-detail-evidence.is-danger {
-  border-left-color: var(--mn-danger);
+.mn-evidence-boundary.is-danger {
   background: var(--mn-danger-soft);
 }
 
-.mn-evidence-banner.is-danger time,
-.mn-detail-evidence.is-danger time,
-.mn-shell.is-evidence-unavailable .mn-home-heading > span {
-  color: var(--mn-danger);
-}
-
-.mn-fact.is-danger b,
-.mn-path-row.is-danger b,
-.mn-detail-group .is-danger b {
-  color: var(--mn-danger);
-}
-
-.mn-fact.is-warn b,
-.mn-path-row.is-warn b,
-.mn-detail-group .is-warn b {
+.mn-evidence-boundary.is-warn b,
+.is-warn > b,
+.is-warn > strong,
+.mn-proof-fact.is-warn > b,
+.mn-signal-row.is-warn b,
+.mn-object-row.is-warn b,
+.mn-detail-row.is-warn b {
   color: var(--mn-warn);
 }
 
-.mn-shell.is-all-offline .mn-home-heading > span,
-.mn-shell.is-resource-full .mn-home-heading > span,
-.mn-shell.is-interfaces-down .mn-home-heading > span {
+.mn-evidence-boundary.is-danger b,
+.is-danger > b,
+.is-danger > strong,
+.mn-proof-fact.is-danger > b,
+.mn-signal-row.is-danger b,
+.mn-object-row.is-danger b,
+.mn-detail-row.is-danger b {
   color: var(--mn-danger);
 }
 
-.mn-shell.is-no-snapshot .mn-home-heading > span,
-.mn-shell.is-collection-down .mn-home-heading > span {
+.is-missing > b,
+.is-missing > strong,
+.mn-proof-fact.is-missing > b,
+.mn-signal-row.is-missing b,
+.mn-object-row.is-missing b,
+.mn-detail-row.is-missing b {
+  color: var(--mn-missing);
+}
+
+.mn-decision.is-danger > i {
+  background: var(--mn-danger);
+}
+
+.mn-decision.is-warn > i {
+  background: var(--mn-warn);
+}
+
+.mn-object-panel.is-danger .mn-object-heading strong {
+  color: var(--mn-danger);
+}
+
+.mn-object-panel.is-warn .mn-object-heading strong {
   color: var(--mn-warn);
+}
+
+.mn-shell button:focus-visible,
+.mn-shell summary:focus-visible,
+.mn-detail button:focus-visible {
+  outline: 2px solid var(--mn-focus);
+  outline-offset: -2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mn-object-disclosure summary i {
+    transition: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .mn-navigation,
+  .mn-evidence-boundary,
+  .mn-verdict,
+  .mn-proof-facts,
+  .mn-signal,
+  .mn-decision-list,
+  .mn-object-tabs,
+  .mn-object-panel,
+  .mn-detail-navigation,
+  .mn-detail-intro,
+  .mn-detail-section > header,
+  .mn-detail-rows {
+    background: Canvas;
+    color: CanvasText;
+  }
+  .mn-object-tabs button.is-selected,
+  .mn-pressure-track i,
+  .mn-decision > i {
+    background: Highlight;
+    color: HighlightText;
+  }
+  .mn-pressure-track,
+  .mn-pressure-track em {
+    border: 1px solid CanvasText;
+  }
 }

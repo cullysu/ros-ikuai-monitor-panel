@@ -78,6 +78,7 @@ export function interfaceForwardingChartRows(snapshot: OverviewRawSnapshot, stat
   const down = collectInterfaceRows(snapshot).filter((row) => row.running === false);
   const recent = latestSuccess(snapshot, state.scenario);
   const routeRisk = state.facts.route.level === "ok" ? 18 : 86;
+  const channelsCurrent = state.facts.collection.rest.status === "current" && state.facts.collection.ssh.status === "current";
   return [
     {
       id: "interface-down-count",
@@ -114,8 +115,8 @@ export function interfaceForwardingChartRows(snapshot: OverviewRawSnapshot, stat
     {
       id: "interface-collection-reachability",
       label: "采集可达",
-      current: "REST/SSH",
-      currentValue: state.scenario === "interfaces-down" ? 42 : 86,
+      current: channelsCurrent ? "REST/SSH 可用" : "采集需核",
+      currentValue: channelsCurrent ? 100 : 42,
       peak: "可达",
       peakValue: 100,
       mean: "采集面旁证",
@@ -124,7 +125,7 @@ export function interfaceForwardingChartRows(snapshot: OverviewRawSnapshot, stat
       thresholdValue: 80,
       window: recent,
       trust: moduleTrust(state),
-      tone: state.scenario === "interfaces-down" ? "warn" : "trust",
+      tone: channelsCurrent ? "trust" : "warn",
       unit: "status",
     },
   ];

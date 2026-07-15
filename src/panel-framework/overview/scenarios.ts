@@ -17,6 +17,7 @@ const base = (scenario: OverviewScenarioKey): OverviewRawSnapshot => ({
   updatedAt: now,
   meta: {
     scaleScenario: scenario,
+    configuredIdentity: scenario === "fleet" ? "Fleet-Core" : "RouterOS",
     target: "10.0.0.1",
     routerHost: "10.0.0.1",
     pollSeconds: 5,
@@ -114,6 +115,7 @@ export const OVERVIEW_SCENARIO_FIXTURES: Record<OverviewScenarioKey, OverviewRaw
     error: "设备当前不可达",
     meta: {
       scaleScenario: "no-snapshot",
+      configuredIdentity: "RouterOS",
       target: "10.0.0.1",
       routerHost: "10.0.0.1",
       pollSeconds: 5,

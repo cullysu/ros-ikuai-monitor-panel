@@ -1375,34 +1375,109 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const scaleDisclosureOk = scenario !== 'fleet' || !scaleRequiredSections.has(sectionName) || scaleDisclosureCount > 0 || isCurrent35Shell;
     const sectionRoot = requested || active;
     let nativeMobileInteractionOk = true;
+    let nativeMobileInteractionProbe = null;
+    let nativeMobileTabKeyboardOk = true;
+    let nativeMobileTabKeyboardProbe = null;
     let nativeDetailSectionCount = 0;
     let nativeDetailHasNovelEvidence = false;
     let nativeDetailNoHomeReplay = false;
     if (sectionName === 'overview') {
+      const waitForNativeState = async (predicate, timeoutMs = 800) => {
+        const startedAt = performance.now();
+        while (performance.now() - startedAt < timeoutMs) {
+          if (predicate()) return true;
+          await new Promise((resolve) => setTimeout(resolve, 20));
+        }
+        return Boolean(predicate());
+      };
       const nativeRoot = sectionRoot?.querySelector('[data-mobile-native-console]');
+      const nativeTabs = Array.from(nativeRoot?.querySelectorAll('[role="tab"]') || []);
+      const selectedNativeTab = nativeTabs.find((tab) => tab.getAttribute('aria-selected') === 'true');
+      if (nativeRoot && selectedNativeTab && nativeTabs.length > 1) {
+        const initialTabId = selectedNativeTab.id;
+        const initialIndex = nativeTabs.indexOf(selectedNativeTab);
+        const expectedNextId = nativeTabs[(initialIndex + 1) % nativeTabs.length].id;
+        selectedNativeTab.focus({ preventScroll: true });
+        selectedNativeTab.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+        await new Promise((resolve) => setTimeout(resolve, 40));
+        const nextSelectedTab = nativeRoot.querySelector('[role="tab"][aria-selected="true"]');
+        const movedForward = nextSelectedTab?.id === expectedNextId && document.activeElement === nextSelectedTab;
+        const forwardFocusId = document.activeElement?.id || '';
+        nextSelectedTab?.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));
+        await new Promise((resolve) => setTimeout(resolve, 40));
+        const restoredTab = nativeRoot.querySelector('[role="tab"][aria-selected="true"]');
+        nativeMobileTabKeyboardOk = Boolean(movedForward && restoredTab?.id === initialTabId && document.activeElement === restoredTab);
+        nativeMobileTabKeyboardProbe = {
+          initialTabId,
+          expectedNextId,
+          nextSelectedId: nextSelectedTab?.id || '',
+          forwardFocusId,
+          restoredTabId: restoredTab?.id || '',
+          restoredFocusId: document.activeElement?.id || '',
+        };
+      } else if (nativeRoot) {
+        nativeMobileTabKeyboardOk = false;
+      }
       const nativeEntry = nativeRoot?.querySelector('[data-mobile-native-open-detail]');
       if (nativeRoot && nativeEntry) {
-        nativeEntry.click();
-        await new Promise((resolve) => setTimeout(resolve, 40));
+        const nativeDisclosure = nativeRoot.querySelector('.mn-object-disclosure');
+        const nativeDisclosureSummary = nativeDisclosure?.querySelector('summary');
+        nativeDisclosureSummary?.click();
+        await waitForNativeState(() => Boolean(nativeDisclosure?.open));
+        const disclosureOpened = Boolean(nativeDisclosure?.open);
+        const scrollBeforeDetail = window.scrollY;
+        nativeRoot.querySelector('[data-mobile-native-open-detail]')?.click();
+        await waitForNativeState(() => Boolean(sectionRoot?.querySelector('[data-mobile-native-detail]')));
         const nativeDetail = sectionRoot?.querySelector('[data-mobile-native-detail]');
         const nativeBack = nativeDetail?.querySelector('[data-mobile-native-back]');
         const nativeDetailSections = Array.from(nativeDetail?.querySelectorAll('[data-mobile-native-detail-section]') || []);
         const nativeDetailText = normalize(nativeDetail?.textContent || '');
         nativeDetailSectionCount = nativeDetailSections.length;
         nativeDetailHasNovelEvidence = nativeDetailSectionCount >= 3 &&
-          /路由原始证据|接口依赖证据|资源阈值证据/.test(nativeDetailText) &&
-          /WAN 对象证据/.test(nativeDetailText) &&
-          /采集链路证据/.test(nativeDetailText);
+          /路由原始证据|接口依赖原始证据|资源阈值原始证据/.test(nativeDetailText) &&
+          /WAN 对象原始证据/.test(nativeDetailText) &&
+          /采集链路原始证据/.test(nativeDetailText);
         nativeDetailNoHomeReplay = Boolean(nativeDetail &&
-          !nativeDetail.querySelector('.mn-home-heading, .mn-facts, .mn-rates, [data-mobile-native-home]'));
+          !nativeDetail.querySelector('.mn-verdict, .mn-proof-facts, [data-mobile-native-brief], [data-mobile-native-rates]'));
+        await waitForNativeState(() => Boolean(nativeBack && document.activeElement === nativeBack));
         const detailFocused = Boolean(nativeDetail && nativeBack && document.activeElement === nativeBack);
         nativeBack?.click();
-        await new Promise((resolve) => setTimeout(resolve, 40));
+        await waitForNativeState(() => {
+          const root = sectionRoot?.querySelector('[data-mobile-native-console]');
+          const entry = root?.querySelector('[data-mobile-native-open-detail]');
+          const disclosure = root?.querySelector('.mn-object-disclosure');
+          return Boolean(root && entry && disclosure?.open && document.activeElement === entry &&
+            !sectionRoot?.querySelector('[data-mobile-native-detail]') && Math.abs(window.scrollY - scrollBeforeDetail) <= 1);
+        });
+        const restoredRoot = sectionRoot?.querySelector('[data-mobile-native-console]');
+        const restoredEntry = restoredRoot?.querySelector('[data-mobile-native-open-detail]');
+        const restoredDisclosure = restoredRoot?.querySelector('.mn-object-disclosure');
+        const disclosureRestored = Boolean(restoredDisclosure?.open);
+        const detailFocusRestored = Boolean(restoredEntry && document.activeElement === restoredEntry);
+        const detailScrollRestored = Math.abs(window.scrollY - scrollBeforeDetail) <= 1;
+        const activeAfterReturn = document.activeElement;
+        nativeMobileInteractionProbe = {
+          disclosureOpened,
+          disclosureRestored,
+          detailFocused,
+          detailFocusRestored,
+          activeAfterReturn: activeAfterReturn ? {
+            tag: activeAfterReturn.tagName,
+            id: activeAfterReturn.id || '',
+            className: typeof activeAfterReturn.className === 'string' ? activeAfterReturn.className : '',
+          } : null,
+          scrollBeforeDetail,
+          scrollAfterReturn: window.scrollY,
+          detailScrollRestored,
+        };
         nativeMobileInteractionOk = detailFocused &&
           nativeDetailHasNovelEvidence &&
           nativeDetailNoHomeReplay &&
-          Boolean(sectionRoot?.querySelector('[data-mobile-native-console]')) &&
-          !sectionRoot?.querySelector('[data-mobile-native-detail]');
+          Boolean(restoredRoot) &&
+          !sectionRoot?.querySelector('[data-mobile-native-detail]') &&
+          disclosureOpened && disclosureRestored && detailFocusRestored && detailScrollRestored;
+        restoredDisclosure?.querySelector('summary')?.click();
+        await waitForNativeState(() => !restoredDisclosure?.open);
       }
     }
     const detailSections = new Set(['interfaces', 'terminals', 'dhcp', 'trafficLoad']);
@@ -3840,7 +3915,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       state: /正常|异常|不可达|不可判定|离线|满载|可用|待确认|不展示|缓存|缺依赖|全离线/.test(overviewEffectiveFactScopeText),
       time: /最近成功|业务快照|采样|更新|下次轮询|下次尝试|0s|\\d{2}-\\d{2}\\s+\\d{2}:\\d{2}/.test(overviewEffectiveFactScopeText),
       evidence: /证据|依据|阈|峰|均值|table|gateway|distance|parent|bridge|vlan|pppoe-out|REST|SSH/.test(overviewEffectiveFactScopeText),
-      trust: /可信|缓存可参考|当前不可判定|业务状态不可信|不展示|只读|展示边界|展示范围/.test(overviewEffectiveFactScopeText),
+      trust: /可信|缓存可参考|当前不可判定|业务状态不可信|不展示|只读|展示边界|展示范围|当前采样|快照.*实时|采集.*可读/.test(overviewEffectiveFactScopeText),
     };
     const overviewEffectiveFactAxesOk = sectionName !== 'overview' || Object.values(overviewEffectiveFactAxes).every(Boolean);
     const overviewEffectiveFactMinimum = isMobileOverview ? 8 : (edgeScenarios.has(scaleScenario) ? 24 : 18);
@@ -4262,8 +4337,8 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       const slice = overviewProductVerdictSourceText.slice(index, index + width);
       return terms.some((term) => slice.includes(term));
     };
-    const overviewCollectionProductRestOk = overviewProductVerdictWindowHas('REST', ['待确认', '不可达', '不可用', '缺依赖']);
-    const overviewCollectionProductSshOk = overviewProductVerdictWindowHas('SSH', ['缺依赖', '不可达', '不可用']);
+    const overviewCollectionProductRestOk = overviewProductVerdictWindowHas('REST', ['待确认', '不可达', '不可用', '缺依赖', '失败', '降级']);
+    const overviewCollectionProductSshOk = overviewProductVerdictWindowHas('SSH', ['缺依赖', '不可达', '不可用', '失败', '降级']);
     const overviewCollectionProductVerdictProbe = {
       hasSummaryShell: Boolean(overviewSummaryShell),
       hasStatusSurface: Boolean(overviewVerdictStatusBus || overviewStatusBar || (isMobileOverview && overviewSummaryShell)),
@@ -4310,7 +4385,9 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
                   /全离线|全部离线|0\\/8/.test(overviewCurrentVerdictText) &&
                   /默认路由/.test(overviewCurrentVerdictText)
                 : scaleScenario === 'single'
-                  ? /历史快照|缓存快照|当前影响未知/.test(overviewCurrentVerdictText)
+                  ? /WAN\\s*(?:出口在线|1\\/1)/.test(overviewCurrentVerdictText) &&
+                    /默认(?:路由|出口).*(?:可用|命中|活动)/.test(overviewCurrentVerdictText) &&
+                    /快照.*实时/.test(overviewCurrentVerdictText)
                   : scaleScenario === 'fleet'
                     ? /WAN/.test(overviewCurrentVerdictText) && overviewDensityModules.length >= 3
                     : true)
@@ -4500,18 +4577,23 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
             ? (!activePriorityLabels.length || activePriorityLabels.includes('采集降级')) &&
               /采集降级|采集失败|SSH (?:缺依赖|不可达|(?:采集)?不可用)|REST 待确认|通道状态/.test(edgeScenarioText + ' ' + overviewVerdictText) &&
               /事件更新时间|采集状态更新时间|业务快照|采样新鲜|数据层|当前使用缓存|缓存快照/.test(edgeScenarioText + ' ' + overviewVerdictText)
-            : scaleScenario === 'resource-full'
-              ? (!activePriorityLabels.length || /资源满载|资源高负载/.test(activePriorityLabels.join(' '))) &&
-                hasResourceEdgePhrase &&
+              : scaleScenario === 'resource-full'
+                ? (!activePriorityLabels.length || /资源满载|资源高负载/.test(activePriorityLabels.join(' '))) &&
+                  hasResourceEdgePhrase &&
                 hasCpu96 &&
                 hasMemory92 &&
                 hasDisk97 &&
                 hasResourceDuration &&
                 resourceEdgeEvidenceText.includes('均值') &&
-                resourceEdgeEvidenceText.includes('阈值') &&
-                resourceEdgeEvidenceText.includes('峰') &&
-                overviewHighestRiskEvidenceMatchOk
-              : /WAN(?:线路)?.*(?:全离线|全部离线)|接口全 Down|全部接口离线|路由不可达|REST 不可达|SSH 不可达/.test(edgeScenarioText)
+                  resourceEdgeEvidenceText.includes('阈值') &&
+                  resourceEdgeEvidenceText.includes('峰') &&
+                  overviewHighestRiskEvidenceMatchOk
+                : scaleScenario === 'interfaces-down'
+                  ? /接口.*Down|转发接口.*Down/i.test(edgeScenarioText) &&
+                    /默认路由|默认出口/.test(edgeScenarioText) &&
+                    /REST 可用/.test(text) &&
+                    /SSH 可用/.test(text)
+                  : /WAN(?:线路)?.*(?:全离线|全部离线)|路由不可达|REST 不可达|SSH 不可达/.test(edgeScenarioText)
     );
     const mobileFirstScreenHasScenarioObject = /WAN|默认路由|资源|采集|历史快照|快照缺失|无可用快照|接口转发面|接口全 Down|转发面/.test(firstScreenOverviewText);
     const mobileFirstScreenScenarioCoverageOk = noSnapshotEdge
@@ -6010,9 +6092,9 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     );
     const overviewInterfacesChannelConsistencyOk = sectionName !== 'overview' || scaleScenario !== 'interfaces-down' || Boolean(
       restSshPairPattern.test(combinedOverviewText) &&
-      /REST 不可达/.test(combinedOverviewText) &&
-      /SSH 不可达/.test(combinedOverviewText) &&
-      !/REST 可用|SSH 可用/.test(firstScreenOverviewText + ' ' + mobileTop120Text + ' ' + overviewDesktopTopText + ' ' + overviewDesktopDetailText + ' ' + overviewStatusBarText)
+      /REST 可用/.test(combinedOverviewText) &&
+      /SSH 可用/.test(combinedOverviewText) &&
+      !/REST (?:不可达|不可用|失败)|SSH (?:不可达|不可用|失败)/.test(firstScreenOverviewText + ' ' + mobileTop120Text + ' ' + overviewDesktopTopText + ' ' + overviewDesktopDetailText + ' ' + overviewStatusBarText)
     );
     const restSshDesktopSourceText = [overviewDesktopTopText, overviewDesktopDetailText].join(' ');
     const restSshMobileSourceText = [firstScreenOverviewText, mobileTop120Text, mobileAlertText, mobileIncidentTitleText].join(' ');
@@ -6042,15 +6124,15 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       (scaleScenario === 'interfaces-down'
         ? (
           restSshPairPattern.test(restSshViewportSourceText + ' ' + combinedOverviewText) &&
-          /REST 不可达/.test(restSshViewportSourceText + ' ' + combinedOverviewText) &&
-          /SSH 不可达/.test(restSshViewportSourceText + ' ' + combinedOverviewText) &&
-          !/REST 可用|SSH 可用/.test(restSshContradictionText)
+          /REST 可用/.test(restSshViewportSourceText + ' ' + combinedOverviewText) &&
+          /SSH 可用/.test(restSshViewportSourceText + ' ' + combinedOverviewText) &&
+          !/REST (?:不可达|不可用|失败)|SSH (?:不可达|不可用|失败)/.test(restSshContradictionText)
         )
         : scaleScenario === 'collection-down'
           ? (
             restSshPairPattern.test(restSshViewportSourceText) &&
-            /REST 待确认/.test(restSshViewportSourceText) &&
-            /SSH (?:缺依赖|不可达|不可用)/.test(restSshViewportSourceText) &&
+            /REST (?:待确认|失败|降级)/.test(restSshViewportSourceText) &&
+            /SSH (?:失败|降级|缺依赖|不可达|不可用)/.test(restSshViewportSourceText) &&
             !/REST 可用|SSH 可用/.test(restSshViewportSourceText + ' ' + combinedOverviewText)
           )
           : (
@@ -6143,10 +6225,9 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       overviewWanListPriorityOk &&
       overviewMobileWanIncidentPriorityOk
     );
-    const overviewSingleHistoricalPriorityOk = sectionName !== 'overview' || scaleScenario !== 'single' || Boolean(
-      /历史快照|当前影响未知|影响未知：缓存快照|使用缓存快照|业务快照年龄/.test(combinedOverviewText) &&
-      !/^(?:SSH 依赖缺失|SSH 缺依赖)/.test(overviewHistoryTitleText) &&
-      !/当前状态：采集降级|采集降级\\s+REST 可用/.test(firstScreenOverviewText + ' ' + mobileTop120Text)
+    const overviewSingleEvidencePriorityOk = sectionName !== 'overview' || scaleScenario !== 'single' || Boolean(
+      /当前证据|当前采样|快照\\s*实时/.test(combinedOverviewText) &&
+      !/历史快照|当前影响未知|影响未知：缓存快照|使用缓存快照/.test(firstScreenOverviewText + ' ' + mobileTop120Text + ' ' + overviewDesktopTopText)
     );
     const loadAuditResourceGrid = sectionRoot?.querySelector('.ops-resource-grid');
     const loadAuditResourceCards = Array.from(loadAuditResourceGrid?.querySelectorAll('.ops-resource-card') || []);
@@ -6154,9 +6235,9 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const loadAuditResourceText = normalize(loadAuditResourceGrid?.textContent || '');
     const overviewInterfacesDownCollectionParityOk = sectionName !== 'overview' || scaleScenario !== 'interfaces-down' || Boolean(
       restSshPairPattern.test(combinedOverviewText) &&
-      /REST 不可达/.test(combinedOverviewText) &&
-      /SSH 不可达/.test(combinedOverviewText) &&
-      !/REST 可用|SSH 可用/.test(restSshContradictionText)
+      /REST 可用/.test(combinedOverviewText) &&
+      /SSH 可用/.test(combinedOverviewText) &&
+      !/REST (?:不可达|不可用|失败)|SSH (?:不可达|不可用|失败)/.test(restSshContradictionText)
     );
     const overviewRestSshViewportParityOk = sectionName !== 'overview' || Boolean(
       overviewInterfacesChannelConsistencyOk &&
@@ -6944,22 +7025,28 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const routerMobileRoot = sectionRoot?.querySelector('[data-mobile-native-console]');
     const routerMobileRect = routerMobileRoot?.getBoundingClientRect();
     const routerMobileSectionRect = sectionRoot?.getBoundingClientRect();
-    const routerMobileHome = routerMobileRoot?.querySelector('[data-mobile-native-home]');
-    const routerMobilePath = routerMobileRoot?.querySelector('[data-mobile-native-path-evidence]');
+    const routerMobileBrief = routerMobileRoot?.querySelector('[data-mobile-native-brief]');
+    const routerMobileObjects = routerMobileRoot?.querySelector('[data-mobile-native-object-workspace]');
     const routerMobileEvidence = routerMobileRoot?.querySelector('[data-mobile-native-evidence-mode]');
-    const routerMobileFacts = Array.from(routerMobileRoot?.querySelectorAll('.mn-fact') || []);
-    const routerMobileDecisionRows = Array.from(routerMobileRoot?.querySelectorAll('.mn-row') || []);
+    const routerMobileFacts = Array.from(routerMobileRoot?.querySelectorAll('.mn-proof-fact') || []);
+    const routerMobileDecisionRows = Array.from(routerMobileRoot?.querySelectorAll('.mn-decision') || []);
     const routerMobileTraffic = routerMobileRoot?.querySelector('[data-mobile-native-rates]');
+    const routerMobileResourceSignal = routerMobileRoot?.querySelector('[data-mobile-native-resource-signal]');
+    const routerMobileScenarioSignal = routerMobileRoot?.querySelector('[data-mobile-native-signal]');
     const routerMobileDetailEntry = routerMobileRoot?.querySelector('[data-mobile-native-open-detail]');
+    const routerMobileTabs = Array.from(routerMobileRoot?.querySelectorAll('[role="tablist"] [role="tab"]') || []);
+    const routerMobileSelectedTabs = routerMobileTabs.filter((tab) => tab.getAttribute('aria-selected') === 'true');
+    const routerMobileActivePanel = routerMobileRoot?.querySelector('[role="tabpanel"]');
+    const routerMobileDisclosure = routerMobileActivePanel?.querySelector('details');
     const routerMobileText = normalize(routerMobileRoot?.textContent || '');
-    const routerMobileTitle = routerMobileHome?.querySelector('h1');
-    const routerMobileChrome = routerMobileRoot?.querySelector('.mn-chrome');
-    const routerMobileHomeRect = routerMobileHome?.getBoundingClientRect();
-    const routerMobilePathRect = routerMobilePath?.getBoundingClientRect();
+    const routerMobileTitle = routerMobileBrief?.querySelector('h1');
+    const routerMobileNavigation = routerMobileRoot?.querySelector('.mn-navigation');
+    const routerMobileIdentity = normalize(routerMobileNavigation?.querySelector('b')?.textContent || '');
+    const routerMobileBriefRect = routerMobileBrief?.getBoundingClientRect();
+    const routerMobileObjectsRect = routerMobileObjects?.getBoundingClientRect();
     const routerMobileEvidenceRect = routerMobileEvidence?.getBoundingClientRect();
     const routerMobileTitleRect = routerMobileTitle?.getBoundingClientRect();
-    const routerMobileChromeRect = routerMobileChrome?.getBoundingClientRect();
-    const routerMobileIncidentScenario = ['all-offline', 'no-snapshot', 'collection-down', 'resource-full', 'interfaces-down'].includes(${JSON.stringify(scaleScenario)});
+    const routerMobileNavigationRect = routerMobileNavigation?.getBoundingClientRect();
     const routerMobileSnapshot = window.__PANEL_TEST_SNAPSHOT__ || {};
     const routerMobileRawWan = Array.isArray(routerMobileSnapshot.wan) && routerMobileSnapshot.wan.length
       ? routerMobileSnapshot.wan
@@ -6968,23 +7055,31 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const routerMobileRatesComplete = routerMobileObservedWan.length > 0 && routerMobileObservedWan.every((row) =>
       row.downRate !== null && row.downRate !== undefined && row.downRate !== '' && Number.isFinite(Number(row.downRate)) &&
       row.upRate !== null && row.upRate !== undefined && row.upRate !== '' && Number.isFinite(Number(row.upRate)));
-    const routerMobileRawRoutes = Array.isArray(routerMobileSnapshot.routes?.defaultRoutes) && routerMobileSnapshot.routes.defaultRoutes.length
-      ? routerMobileSnapshot.routes.defaultRoutes
-      : Array.isArray(routerMobileSnapshot.routes?.items) ? routerMobileSnapshot.routes.items : [];
+    const routerMobileDefaults = routerMobileSnapshot.routes?.defaultRoutes;
+    const routerMobileRawRoutes = Array.isArray(routerMobileDefaults)
+      ? routerMobileDefaults
+      : Array.isArray(routerMobileSnapshot.routes?.items)
+        ? routerMobileSnapshot.routes.items.filter((route) => route.default === true || route.dstAddress === '0.0.0.0/0' || route.dstAddress === '::/0')
+        : [];
     const routerMobileHasExplicitRoute = routerMobileRawRoutes.some((route) => route.active === true && route.disabled !== true);
-    const routerMobileExpectedRoute = ${JSON.stringify(scaleScenario)} === 'all-offline'
-      ? 'offline'
-      : routerMobileHasExplicitRoute ? 'verified' : 'unknown';
     const routerMobileEvidenceMode = routerMobileRoot?.getAttribute('data-mobile-native-evidence') || '';
+    const routerMobileIncident = routerMobileRoot?.getAttribute('data-mobile-native-incident') === 'true';
     const routerMobileScenarioEvidenceOk = ${JSON.stringify(scaleScenario)} === 'no-snapshot'
       ? routerMobileEvidenceMode === 'unavailable'
       : ${JSON.stringify(scaleScenario)} === 'collection-down'
-        ? routerMobileEvidenceMode === 'stale'
-        : ['current', 'stale'].includes(routerMobileEvidenceMode);
-    const routerMobileExpectedCurrentRates = routerMobileEvidenceMode === 'current' &&
-      !['all-offline', 'no-snapshot', 'collection-down'].includes(${JSON.stringify(scaleScenario)}) &&
+        ? routerMobileEvidenceMode === 'historical'
+        : ['current', 'historical'].includes(routerMobileEvidenceMode);
+    const routerMobileExpectedRoute = routerMobileEvidenceMode === 'unavailable'
+      ? 'unknown'
+      : ${JSON.stringify(scaleScenario)} === 'all-offline'
+        ? 'offline'
+        : routerMobileHasExplicitRoute
+          ? routerMobileEvidenceMode === 'current' ? 'verified' : 'historical'
+          : 'unknown';
+    const routerMobileExpectedCurrentRates = routerMobileEvidenceMode === 'current' && !routerMobileIncident &&
+      ${JSON.stringify(scaleScenario)} === 'single' &&
       routerMobileRatesComplete;
-    const routerMobileVisibleTextNodes = Array.from(routerMobileRoot?.querySelectorAll('span, b, small, p, h1, time, button, summary') || [])
+    const routerMobileVisibleTextNodes = Array.from(routerMobileRoot?.querySelectorAll('span, b, strong, small, p, h1, time, button, summary') || [])
       .filter((node) => {
         const rect = node.getBoundingClientRect();
         const style = getComputedStyle(node);
@@ -6994,54 +7089,103 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       .filter((node) => Number.parseFloat(getComputedStyle(node).fontSize || '0') < 12)
       .map((node) => ({ text: normalize(node.textContent || '').slice(0, 48), size: getComputedStyle(node).fontSize }));
     const routerMobileRateLikeText = /(?:^|\\s)\\d+(?:\\.\\d+)?\\s*(?:[KMG]?bps)(?:\\s|$)/i.test(routerMobileText);
-    const routerMobileStructureInFlow = Boolean(
-      routerMobileChromeRect && routerMobileEvidenceRect && routerMobileHomeRect && routerMobilePathRect &&
-      routerMobileHomeRect.top >= routerMobileChromeRect.bottom - 2 &&
-      routerMobileEvidenceRect.top >= routerMobileHomeRect.top - 1 &&
-      routerMobilePathRect.top >= routerMobileHomeRect.bottom + 4
+    const routerMobileSignalText = normalize(routerMobileScenarioSignal?.textContent || '');
+    const routerMobileConfiguredIdentity = normalize(routerMobileSnapshot.meta?.configuredIdentity || '');
+    const routerMobileTarget = normalize(routerMobileSnapshot.meta?.routerHost || routerMobileSnapshot.meta?.target || '');
+    const routerMobileSplitFlow = Boolean(
+      routerMobileBriefRect && routerMobileObjectsRect &&
+      routerMobileObjectsRect.left >= routerMobileBriefRect.right - 2 &&
+      Math.abs(routerMobileObjectsRect.top - routerMobileBriefRect.top) <= 2
     );
+    const routerMobileStackedFlow = Boolean(
+      routerMobileBriefRect && routerMobileObjectsRect &&
+      routerMobileObjectsRect.top >= routerMobileBriefRect.bottom - 2
+    );
+    const routerMobileStructureInFlow = Boolean(
+      routerMobileNavigationRect && routerMobileEvidenceRect && routerMobileBriefRect && routerMobileObjectsRect &&
+      routerMobileBriefRect.top >= routerMobileNavigationRect.bottom - 2 &&
+      routerMobileEvidenceRect.top >= routerMobileBriefRect.top - 1 &&
+      (routerMobileSplitFlow || routerMobileStackedFlow)
+    );
+    const routerMobileTabTargetsOk = routerMobileTabs.length === 4 && routerMobileTabs.every((tab) => tab.getBoundingClientRect().height >= 44);
+    const routerMobileUnavailableBoundaryOk = routerMobileEvidenceMode !== 'unavailable' || Boolean(
+      !routerMobileTraffic &&
+      !routerMobileRateLikeText &&
+      !/\\b\\d+\\s*\\/\\s*\\d+\\s*(?:条\\s*)?WAN\\b/i.test(routerMobileText) &&
+      !/活动默认路由已核实|活动记录/.test(routerMobileText)
+    );
+    const routerMobileScenarioSignalOk = routerMobileEvidenceMode !== 'current'
+      ? routerMobileScenarioSignal?.getAttribute('data-mobile-native-signal') === 'collection' &&
+        (${JSON.stringify(scaleScenario)} !== 'collection-down' || (routerMobileSignalText.match(/上次成功/g) || []).length >= 2)
+      : ${JSON.stringify(scaleScenario)} === 'resource-full'
+      ? Boolean(routerMobileResourceSignal && !routerMobileTraffic && !routerMobileRateLikeText)
+      : ${JSON.stringify(scaleScenario)} === 'fleet'
+        ? routerMobileScenarioSignal?.getAttribute('data-mobile-native-signal') === 'fleet' &&
+          /WAN 范围/.test(routerMobileSignalText) && /默认路由/.test(routerMobileSignalText) && /接口对象/.test(routerMobileSignalText)
+      : routerMobileIncident && ${JSON.stringify(scaleScenario)} === 'interfaces-down'
+        ? routerMobileScenarioSignal?.getAttribute('data-mobile-native-signal') === 'interfaces'
+        : ['no-snapshot', 'collection-down'].includes(${JSON.stringify(scaleScenario)})
+          ? routerMobileScenarioSignal?.getAttribute('data-mobile-native-signal') === 'collection'
+          : ${JSON.stringify(scaleScenario)} === 'all-offline'
+            ? routerMobileScenarioSignal?.getAttribute('data-mobile-native-signal') === 'wan'
+            : routerMobileIncident
+              ? Boolean(routerMobileResourceSignal || ['interfaces', 'wan', 'collection'].includes(routerMobileScenarioSignal?.getAttribute('data-mobile-native-signal') || ''))
+              : Boolean(routerMobileTraffic || routerMobileScenarioSignal?.getAttribute('data-mobile-native-signal') === 'availability');
     const routerMobileChecks = {
       mounted: Boolean(routerMobileRoot),
       scenario: routerMobileRoot?.getAttribute('data-mobile-native-scenario') === ${JSON.stringify(scaleScenario)},
       desktopDomAbsent: !sectionRoot?.querySelector('.ro-desktop-grid, .ro-status-bus'),
-      evidenceMode: ['current', 'stale', 'unavailable'].includes(routerMobileEvidenceMode) &&
+      evidenceMode: ['current', 'historical', 'unavailable'].includes(routerMobileEvidenceMode) &&
         routerMobileEvidence?.getAttribute('data-mobile-native-evidence-mode') === routerMobileEvidenceMode &&
         routerMobileScenarioEvidenceOk &&
         (routerMobileEvidenceMode === 'current'
-          ? /当前证据/.test(routerMobileText)
-          : routerMobileEvidenceMode === 'stale'
-            ? /历史快照/.test(routerMobileText) && /禁止当作实时状态/.test(routerMobileText)
-            : /证据不可用/.test(routerMobileText) && /没有可用于业务判断的快照/.test(routerMobileText)),
-      routeTruth: routerMobilePath?.getAttribute('data-mobile-route-verification') === routerMobileExpectedRoute,
-      homeFirst: Boolean(routerMobileHome && routerMobileEvidence && routerMobileTitle),
-      pathSecondary: Boolean(routerMobilePath && routerMobilePath.tagName === 'DETAILS' && !routerMobilePath.open),
+          ? /当前证据/.test(routerMobileText) && /业务采样完整/.test(routerMobileText)
+          : routerMobileEvidenceMode === 'historical'
+            ? /历史证据/.test(routerMobileText) && /当前变化不可见/.test(routerMobileText)
+            : /证据不可用/.test(routerMobileText) && /不作当前业务判断/.test(routerMobileText)),
+      routeTruth: routerMobileRoot?.getAttribute('data-mobile-route-verification') === routerMobileExpectedRoute,
+      briefFirst: Boolean(routerMobileBrief && routerMobileEvidence && routerMobileTitle),
+      objectWorkspace: Boolean(routerMobileObjects && routerMobileActivePanel && routerMobileDisclosure && !routerMobileDisclosure.open),
       structureInFlow: routerMobileStructureInFlow,
       primaryFactsComplete: routerMobileFacts.length === 3,
       evidenceDownshifted: Boolean(routerMobileDetailEntry) && !routerMobileRoot?.querySelector('[data-mobile-native-detail]'),
       evidenceInteraction: nativeMobileInteractionOk,
       detailAddsEvidence: nativeDetailSectionCount >= 3 && nativeDetailHasNovelEvidence && nativeDetailNoHomeReplay,
-      decisionRows: routerMobileIncidentScenario ? routerMobileDecisionRows.length === 3 : routerMobileDecisionRows.length === 2,
+      decisionRows: routerMobileIncident ? routerMobileDecisionRows.length >= 1 && routerMobileDecisionRows.length <= 3 : routerMobileDecisionRows.length === 2,
       trafficMatchesMode: routerMobileExpectedCurrentRates
         ? routerMobileTraffic?.getAttribute('data-mobile-native-rates') === 'current'
         : !routerMobileTraffic && !routerMobileRateLikeText,
+      scenarioSignal: routerMobileScenarioSignalOk,
+      unavailableBoundary: routerMobileUnavailableBoundaryOk,
+      configuredIdentity: Boolean(
+        routerMobileIdentity &&
+        !/无可用快照|不可达|采集失败/.test(routerMobileIdentity) &&
+        (!routerMobileConfiguredIdentity || routerMobileIdentity === routerMobileConfiguredIdentity) &&
+        (!routerMobileTarget || routerMobileNavigation?.textContent?.includes(routerMobileTarget))
+      ),
       noConceptTopologyOrChart: !routerMobileRoot?.querySelector('[data-mobile-native-topology], [data-mobile-native-sheet], .mn-grabber, [data-overview-chart-type], svg, canvas'),
-      noBottomTabs: !routerMobileRoot?.querySelector('nav, [role="tablist"], .rm-tabbar'),
+      noBottomNavigation: !routerMobileRoot?.querySelector('nav, .rm-tabbar'),
+      objectTabs: routerMobileTabTargetsOk && routerMobileSelectedTabs.length === 1,
       accessibility: Boolean(
+        nativeMobileTabKeyboardOk &&
         routerMobileTitle?.id &&
-        routerMobileHome?.getAttribute('aria-labelledby') === routerMobileTitle.id &&
-        routerMobilePath?.querySelector('summary') &&
+        routerMobileBrief?.getAttribute('aria-labelledby') === routerMobileTitle.id &&
+        routerMobileActivePanel?.getAttribute('aria-labelledby') &&
         routerMobileRoot?.querySelectorAll('h1').length === 1
       ),
-      touchTarget: Boolean(routerMobileDetailEntry && routerMobileDetailEntry.getBoundingClientRect().height >= 44),
+      touchTarget: Boolean(
+        routerMobileDetailEntry && routerMobileDetailEntry.getBoundingClientRect().height >= 44 &&
+        routerMobileDisclosure?.querySelector('summary')?.getBoundingClientRect().height >= 44
+      ),
       readableType: routerMobileSmallTextNodes.length === 0,
-      readonly: routerMobileText.includes('只读'),
+      readonly: routerMobileText.includes('只读监控'),
       viewport: Boolean(routerMobileRect && routerMobileSectionRect &&
         Math.abs(routerMobileRect.left - routerMobileSectionRect.left) <= 1 &&
         routerMobileRect.top <= 1 &&
         routerMobileRect.width >= routerMobileSectionRect.width - 2 &&
         routerMobileRect.height >= window.innerHeight - 2),
-      titleVisible: Boolean(routerMobileTitleRect && routerMobileHomeRect && routerMobileTitleRect.left >= routerMobileHomeRect.left && routerMobileTitleRect.right <= routerMobileHomeRect.right && routerMobileTitleRect.top >= 0),
-      freshnessProminent: Boolean(routerMobileEvidenceRect && routerMobileEvidenceRect.height >= 54 && routerMobileEvidenceRect.top <= (routerMobileTitleRect?.top || Infinity)),
+      titleVisible: Boolean(routerMobileTitleRect && routerMobileBriefRect && routerMobileTitleRect.left >= routerMobileBriefRect.left && routerMobileTitleRect.right <= routerMobileBriefRect.right && routerMobileTitleRect.top >= 0),
+      freshnessProminent: Boolean(routerMobileEvidenceRect && routerMobileEvidenceRect.height >= 38 && routerMobileEvidenceRect.top <= (routerMobileTitleRect?.top || Infinity)),
       noHorizontalOverflow: overflowX <= 1,
       noLegacyDom: !sectionRoot?.querySelector('[class*="ik-mobile-"], .ro-mobile-first-screen, [class*="phone-ops"], [class*="rm-"]'),
     };
@@ -7277,7 +7421,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       (overviewMobile390AcceptanceOk || overviewFirstScreenDedupeOk) &&
       overviewDesktopFirstScreenDedupeOk &&
       (overviewMobile390AcceptanceOk || overviewCrossViewportCopyDedupeOk) &&
-      overviewSingleHistoricalPriorityOk &&
+      overviewSingleEvidencePriorityOk &&
       overviewStaleDataImpactOk &&
       overviewBlankAreaOk &&
       overviewDesktopRightFillOk &&
@@ -7306,16 +7450,19 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     const mobileOverviewAppHomeGateProbe = mobileOverviewAppViewport ? {
       appHomePass: mobileOverviewAppHomePass,
       compactLandscape: compactLandscapeOverview,
-      contract: 'evidence-first-mobile-operations',
+      contract: 'patrol-brief-object-workspace',
       root: routerMobileRect ? { left: routerMobileRect.left, top: routerMobileRect.top, width: routerMobileRect.width, height: routerMobileRect.height } : null,
       facts: routerMobileFacts.length,
       decisionRows: routerMobileDecisionRows.length,
-      home: Boolean(routerMobileHome),
-      pathSecondary: Boolean(routerMobilePath),
+      brief: Boolean(routerMobileBrief),
+      objectWorkspace: Boolean(routerMobileObjects),
+      selectedObject: routerMobileActivePanel?.getAttribute('data-mobile-native-object') || '',
       evidenceMode: routerMobileEvidenceMode,
       routeExpected: routerMobileExpectedRoute,
       currentRatesExpected: routerMobileExpectedCurrentRates,
       detailSections: nativeDetailSectionCount,
+      tabKeyboard: nativeMobileTabKeyboardProbe,
+      detailInteraction: nativeMobileInteractionProbe,
       smallTextNodes: routerMobileSmallTextNodes,
       trafficSource: routerMobileTraffic?.getAttribute('data-mobile-native-rates') || '',
       checks: routerMobileChecks,
@@ -7951,7 +8098,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         actionRepeats: firstScreenActionRepeats,
         excerpt: firstScreenOverviewText.slice(0, 260),
       },
-      overviewSingleHistoricalPriorityOk,
+      overviewSingleEvidencePriorityOk,
       overviewResourceFullIncidentOk,
       overviewResourceNumericDensityOk,
       overviewResourceDurationVisibilityOk,
@@ -8550,6 +8697,7 @@ function buildSnapshot(profile, scaleScenario = 'multi') {
     meta: {
       target: '127.0.0.1',
       routerHost: '127.0.0.1',
+      configuredIdentity: 'smoke-router',
       pollSeconds: 1,
       realtimeUpdatedAt: now,
       realtimeError: null,
@@ -9254,21 +9402,18 @@ function applyScaleScenario(snapshot, scaleScenario) {
     pools: listScaleMeta(snapshot.dhcp.pools.length, snapshot.dhcp.pools.length),
     servers: listScaleMeta(snapshot.dhcp.servers.length, snapshot.dhcp.servers.length),
   };
-  if (scaleScenario === 'single') {
-    const stale = new Date(Date.now() - ((24 * 24 + 8) * 60 * 60 * 1000)).toISOString();
-    snapshot.updatedAt = stale;
-    snapshot.meta.realtimeUpdatedAt = stale;
-    snapshot.meta.slowRestUpdatedAt = stale;
-    snapshot.meta.staticUpdatedAt = stale;
-    snapshot.meta.connectionDetailUpdatedAt = stale;
-    snapshot.meta.connectionProtocolUpdatedAt = stale;
+  if (scaleScenario === 'single' || scaleScenario === 'fleet') {
+    setSnapshotFresh(snapshot);
+    setCollectionHealthy(snapshot);
     snapshot.meta.capabilities.restTrusted = true;
-    snapshot.meta.capabilities.sshRead = false;
-    snapshot.meta.capabilities.sshLabel = 'SSH 依赖缺失';
-    setFixtureFinding(snapshot, 'warning', 'Historical single WAN snapshot', '单 WAN 1/1 在线，但业务快照已陈旧，当前影响未知。', [
+    snapshot.meta.capabilities.sshRead = true;
+    snapshot.meta.capabilities.sshLabel = 'SSH 只读可用';
+  }
+  if (scaleScenario === 'single') {
+    setFixtureFinding(snapshot, 'info', 'Current single WAN snapshot', '单 WAN 1/1 在线，活动默认路由与采集时间均有当前证据。', [
       { label: 'WAN', value: '1/1 在线' },
-      { label: '业务快照年龄', value: '24d8h' },
-      { label: 'SSH', value: '依赖缺失' },
+      { label: '默认路由', value: 'active=true' },
+      { label: '采集', value: 'REST + SSH 当前' },
     ]);
   }
   snapshot.statusFindings.findings.unshift({

@@ -1,42 +1,26 @@
-#overview.router-overview-framework.is-mobile-native {
-  --mn-canvas: oklch(96.3% 0.008 225);
-  --mn-surface: oklch(99.2% 0.003 225);
-  --mn-ink: oklch(24% 0.032 230);
-  --mn-secondary: oklch(43% 0.03 225);
-  --mn-muted: oklch(52% 0.022 225);
-  --mn-rule: oklch(84% 0.018 225);
-  --mn-rule-strong: oklch(72% 0.03 225);
-  --mn-blue: oklch(52% 0.09 225);
-  --mn-blue-deep: oklch(39% 0.08 225);
-  --mn-blue-soft: oklch(93.5% 0.022 225);
-  --mn-danger: oklch(46% 0.07 25);
-  --mn-danger-soft: oklch(91% 0.025 25);
-  --mn-warn: oklch(48% 0.055 75);
-  --mn-warn-soft: oklch(92% 0.025 75);
-  width: 100%;
-  min-width: 0;
-  min-height: 100svh;
-  margin: 0;
-  padding: 0;
-  overflow: clip;
-  border: 0;
-  border-radius: 0;
-  background: var(--mn-canvas);
+.mn-shell,
+.mn-detail {
+  color-scheme: light;
+  --mn-ink: #102633;
+  --mn-muted: #58707c;
+  --mn-quiet: #788e99;
+  --mn-line: #c4d4db;
+  --mn-line-strong: #9eb7c2;
+  --mn-canvas: #edf4f7;
+  --mn-surface: #f9fbfc;
+  --mn-blue: #0b6683;
+  --mn-blue-soft: #dcecf2;
+  --mn-blue-pale: #edf6f9;
+  --mn-warn: #7a592f;
+  --mn-warn-soft: #f3eadc;
+  --mn-danger: #854747;
+  --mn-danger-soft: #f4e3e3;
+  --mn-missing: #687983;
+  --mn-focus: #006d91;
   color: var(--mn-ink);
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
-  font-size: 14px;
-  line-height: 1.35;
-  letter-spacing: 0;
-}
-
-#overview.is-mobile-native,
-#overview.is-mobile-native * {
-  box-sizing: border-box;
-  letter-spacing: 0;
-}
-
-#overview.is-mobile-native button,
-#overview.is-mobile-native h1,
-#overview.is-mobile-native p {
-  margin: 0;
+  background: var(--mn-canvas);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Segoe UI", sans-serif;
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }

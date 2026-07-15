@@ -2791,6 +2791,7 @@ class Collector:
             "meta": {
                 "target": PANEL_TARGET,
                 "routerHost": router_status["host"],
+                "configuredIdentity": router_status["host"],
                 "routerLogin": router_status,
                 "pollSeconds": POLL_SECONDS,
                 "staticPollSeconds": STATIC_POLL_SECONDS,
@@ -2947,6 +2948,7 @@ class Collector:
                 "meta": {
                     "target": PANEL_TARGET,
                     "routerHost": router_status["host"],
+                    "configuredIdentity": router_status["host"],
                     "routerLogin": router_status,
                     "pollSeconds": POLL_SECONDS,
                     "staticPollSeconds": STATIC_POLL_SECONDS,
@@ -2970,6 +2972,7 @@ class Collector:
                 "meta": {
                     "target": PANEL_TARGET,
                     "routerHost": router_status["host"],
+                    "configuredIdentity": router_status["host"],
                     "routerLogin": router_status,
                     "pollSeconds": POLL_SECONDS,
                     "staticPollSeconds": STATIC_POLL_SECONDS,
@@ -4953,6 +4956,7 @@ class Collector:
             "meta": {
                 "target": PANEL_TARGET,
                 "routerHost": public_router_config()["host"],
+                "configuredIdentity": rest.get("identity", {}).get("name") or public_router_config()["host"],
                 "routerLogin": public_router_config(),
                 "pollSeconds": POLL_SECONDS,
                 "realtimeUpdatedAt": self.realtime_updated_at,

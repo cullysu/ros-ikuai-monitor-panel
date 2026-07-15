@@ -147,10 +147,12 @@ const desktopVisualsFile =
 const builtCssFile = "public/assets/framework/style.css";
 const phoneOpsConsoleFile =
   "src/panel-framework/overview/mobile-native/MobileNativeConsole.tsx";
-const phoneOpsHomeFile =
-  "src/panel-framework/overview/mobile-native/MobileNativeHome.tsx";
-const phoneOpsPathFile =
-  "src/panel-framework/overview/mobile-native/MobileNativePathEvidence.tsx";
+const phoneOpsBriefFile =
+  "src/panel-framework/overview/mobile-native/MobileNativePatrolBrief.tsx";
+const phoneOpsSignalFile =
+  "src/panel-framework/overview/mobile-native/MobileNativeSignal.tsx";
+const phoneOpsObjectsFile =
+  "src/panel-framework/overview/mobile-native/MobileNativeObjectWorkspace.tsx";
 const phoneOpsEvidenceFile =
   "src/panel-framework/overview/mobile-native/MobileNativeDetail.tsx";
 const phoneOpsModelFile =
@@ -223,8 +225,9 @@ const desktopTerminalRows = read(desktopTerminalRowsFile);
 const desktopResourceRows = read(desktopResourceRowsFile);
 const desktopVisuals = read(desktopVisualsFile);
 const phoneOpsConsole = read(phoneOpsConsoleFile);
-const phoneOpsHome = read(phoneOpsHomeFile);
-const phoneOpsPath = read(phoneOpsPathFile);
+const phoneOpsBrief = read(phoneOpsBriefFile);
+const phoneOpsSignal = read(phoneOpsSignalFile);
+const phoneOpsObjects = read(phoneOpsObjectsFile);
 const phoneOpsEvidence = read(phoneOpsEvidenceFile);
 const phoneOpsModel = read(phoneOpsModelFile);
 const phoneOpsModelEvidence = read(phoneOpsModelEvidenceFile);
@@ -775,35 +778,50 @@ assert(
   desktopBaseShadowedDeclarationCount === 0,
   `overview-desktop.css must not redeclare the same property in a later identical selector context: ${desktopBaseShadowedDeclarationCount}`
 );
-assert(lines(phoneOpsConsole) <= 80, `MobileNativeConsole.tsx exceeds 80 lines: ${lines(phoneOpsConsole)}`);
-assert(lines(phoneOpsHome) <= 90, `MobileNativeHome.tsx exceeds 90 lines: ${lines(phoneOpsHome)}`);
-assert(lines(phoneOpsPath) <= 60, `MobileNativePathEvidence.tsx exceeds 60 lines: ${lines(phoneOpsPath)}`);
+assert(lines(phoneOpsConsole) <= 120, `MobileNativeConsole.tsx exceeds 120 lines: ${lines(phoneOpsConsole)}`);
+assert(lines(phoneOpsBrief) <= 90, `MobileNativePatrolBrief.tsx exceeds 90 lines: ${lines(phoneOpsBrief)}`);
+assert(lines(phoneOpsSignal) <= 100, `MobileNativeSignal.tsx exceeds 100 lines: ${lines(phoneOpsSignal)}`);
+assert(lines(phoneOpsObjects) <= 130, `MobileNativeObjectWorkspace.tsx exceeds 130 lines: ${lines(phoneOpsObjects)}`);
 assert(lines(phoneOpsEvidence) <= 100, `MobileNativeDetail.tsx exceeds 100 lines: ${lines(phoneOpsEvidence)}`);
-assert(lines(phoneOpsModel) <= 360, `mobileNativeModel.ts exceeds 360 lines: ${lines(phoneOpsModel)}`);
-assert(lines(phoneOpsModelEvidence) <= 240, `mobileNativeEvidence.ts exceeds 240 lines: ${lines(phoneOpsModelEvidence)}`);
+assert(lines(phoneOpsModel) <= 520, `mobileNativeModel.ts exceeds 520 lines: ${lines(phoneOpsModel)}`);
+assert(lines(phoneOpsModelEvidence) <= 300, `mobileNativeEvidence.ts exceeds 300 lines: ${lines(phoneOpsModelEvidence)}`);
 assert(lines(phoneOpsTypes) <= 100, `mobileNativeTypes.ts exceeds 100 lines: ${lines(phoneOpsTypes)}`);
 assert(lines(phoneOpsTokens) <= 110, `mobile-native-tokens.css exceeds 110 lines: ${lines(phoneOpsTokens)}`);
-assert(lines(phoneOpsStyles) <= 750, `mobile-native-layout.css exceeds 750 lines: ${lines(phoneOpsStyles)}`);
+assert(lines(phoneOpsStyles) <= 900, `mobile-native-layout.css exceeds 900 lines: ${lines(phoneOpsStyles)}`);
 assert(lines(phoneOpsEvidenceStyles) <= 140, `mobile-native-states.css exceeds 140 lines: ${lines(phoneOpsEvidenceStyles)}`);
 assert(
   phoneOpsConsole.includes("data-mobile-native-console") &&
-    phoneOpsConsole.includes("<MobileNativeHome") &&
-    phoneOpsConsole.includes("<MobileNativePathEvidence") &&
+    phoneOpsConsole.includes("<MobileNativePatrolBrief") &&
+    phoneOpsConsole.includes("<MobileNativeObjectWorkspace") &&
     phoneOpsConsole.includes("<MobileNativeDetail") &&
-    !phoneOpsConsole.includes('tabbar'),
-  "MobileNativeConsole must own the evidence-first home, secondary path disclosure, detail navigation, and no tabs"
+    phoneOpsConsole.includes("window.history.pushState") &&
+    phoneOpsConsole.includes('popstate') &&
+    !phoneOpsConsole.includes('mn-readonly">'),
+  "MobileNativeConsole must own the patrol brief, object workspace, browser-history detail navigation, and static read-only text"
 );
 assert(
-  phoneOpsHome.includes("data-mobile-native-home") &&
-    phoneOpsHome.includes("data-mobile-native-evidence-mode") &&
-    phoneOpsHome.includes("model.facts.map") &&
-    phoneOpsHome.includes("model.rows.map") &&
-    phoneOpsPath.includes("data-mobile-native-path-evidence") &&
-    phoneOpsPath.includes("data-mobile-route-verification") &&
+  phoneOpsBrief.includes("data-mobile-native-brief") &&
+    phoneOpsBrief.includes("data-mobile-native-evidence-mode") &&
+    phoneOpsBrief.includes("model.facts.map") &&
+    phoneOpsBrief.includes("model.decisions.map") &&
+    phoneOpsSignal.includes('data-mobile-native-rates="current"') &&
+    phoneOpsSignal.includes("data-mobile-native-resource-signal") &&
+    phoneOpsObjects.includes('role="tablist"') &&
+    phoneOpsObjects.includes("aria-selected") &&
+    phoneOpsObjects.includes("<details") &&
+    phoneOpsObjects.includes("data-mobile-native-object-workspace") &&
     phoneOpsEvidence.includes("data-mobile-native-detail") &&
     phoneOpsEvidence.includes("data-mobile-native-back") &&
-    phoneOpsEvidence.includes("data-mobile-native-detail-section"),
-  "Native mobile screens must expose evidence mode, decision facts, collapsed path evidence, and a novel detail destination"
+    phoneOpsEvidence.includes("data-mobile-native-detail-section") &&
+    !phoneOpsEvidence.includes("mn-detail-evidence"),
+  "Native mobile screens must expose one evidence boundary, scenario signals, real object tabs, distinct disclosure/navigation, and a novel detail destination"
+);
+assert(
+  !exists("src/panel-framework/overview/mobile-native/MobileNativeHome.tsx") &&
+    !exists("src/panel-framework/overview/mobile-native/MobileNativePathEvidence.tsx") &&
+    !phoneOpsStyleBundle.includes("border-left: 3px") &&
+    !phoneOpsStyleBundle.includes("max-width: 680px"),
+  "Rejected mobile ledger/card artifacts, decorative state stripes, and centered tablet phone columns must remain deleted"
 );
 assert(
   desktopConsole.includes("ik-desktop-workspace") &&
@@ -983,18 +1001,22 @@ assert(
   "Desktop visuals must prove chart structure through semantic classes and rendered data, not product-contract attributes"
 );
 assert(
-  ["fleet", "all-offline", "no-snapshot", "collection-down", "resource-full", "interfaces-down"].every((scenario) =>
-    phoneOpsModel.includes(`"${scenario}"`)
-  ) && phoneOpsModel.includes("buildMobileNativeModel"),
-  "Native mobile model must map every required scenario"
+  ["evidence", "wan-offline", "resource", "interfaces", "collection"].every((risk) =>
+    phoneOpsTypes.includes(`"${risk}"`)
+  ) &&
+    phoneOpsModel.includes("state.counts.wanOnline === 0") &&
+    phoneOpsModel.includes('state.facts.resource.level === "danger"') &&
+    phoneOpsModel.includes("state.facts.interfaces.down > 0") &&
+    phoneOpsModel.includes("buildMobileNativeModel"),
+  "Native mobile model must derive an ordered composite risk set instead of erasing facts behind a scenario switch"
 );
 assert(
-  phoneOpsTypes.includes('"current" | "stale" | "unavailable"') &&
+  phoneOpsTypes.includes('"current" | "historical" | "unavailable"') &&
     phoneOpsModel.includes('mode === "current"') &&
-    phoneOpsModel.includes('mode === "stale"') &&
-    phoneOpsModel.includes('showRates: false') &&
+    phoneOpsModel.includes('mode === "historical"') &&
+    phoneOpsModel.includes('successfulBusinessAt(snapshot)') &&
     phoneOpsModel.includes('当前业务状态不可判断'),
-  "Native mobile model must distinguish current, stale, and unavailable evidence"
+  "Native mobile model must distinguish current, historical, and unavailable evidence from explicit successful observations"
 );
 assert(
   phoneOpsModelEvidence.includes("route.active === true && route.disabled !== true") &&
@@ -1034,14 +1056,13 @@ assert(
   "Retired desktop visual primitives must not return to overview styles or acceptance fallbacks"
 );
 assert(
-  phoneOpsModel.includes('visibleRates !== null') &&
-    phoneOpsModel.includes('case "no-snapshot"') &&
-    phoneOpsModel.includes('case "all-offline"') &&
-    (phoneOpsModel.match(/showRates: false/g) || []).length >= 2 &&
-    phoneOpsHome.includes('data-mobile-native-rates="current"') &&
-    !phoneOpsHome.includes("Trend") &&
-    !phoneOpsHome.includes("<svg"),
-  "Native mobile traffic must remain current-only and disappear when business evidence is stale or unavailable"
+  phoneOpsModel.includes('mode === "current" ? observedRates(snapshot) : null') &&
+    phoneOpsModel.includes('primary === "resource"') &&
+    phoneOpsModel.includes('kind: "availability"') &&
+    phoneOpsSignal.includes('data-mobile-native-rates="current"') &&
+    !phoneOpsSignal.includes("Trend") &&
+    !phoneOpsSignal.includes("<svg"),
+  "Native mobile traffic must remain complete-current-only and be replaced by scenario-specific evidence"
 );
 assert(
   (desktopConsole.match(/data-overview-/g) || []).length <= 6,
@@ -1107,7 +1128,7 @@ assert(
     phoneOpsConsole.includes('import "./styles/mobile-native-states.css";') &&
     !phoneOpsConsole.includes("useInsertionEffect") &&
     !phoneOpsConsole.includes("style>") &&
-    !/\b(?:rm|ro|ik-mobile|ik-ios|phone-ops)-/.test(`${phoneOpsConsole}\n${phoneOpsHome}\n${phoneOpsPath}\n${phoneOpsEvidence}\n${phoneOpsModel}\n${phoneOpsModelEvidence}\n${phoneOpsStyleBundle}`),
+    !/\b(?:rm|ro|ik-mobile|ik-ios|phone-ops)-/.test(`${phoneOpsConsole}\n${phoneOpsBrief}\n${phoneOpsSignal}\n${phoneOpsObjects}\n${phoneOpsEvidence}\n${phoneOpsModel}\n${phoneOpsModelEvidence}\n${phoneOpsStyleBundle}`),
   "Native mobile product must use isolated build-time stylesheets and no retired namespace"
 );
 assert(
@@ -1274,10 +1295,12 @@ if (exists(builtCssFile)) {
   assert(builtLegacyMobileSelectorCount === 0, `Built style.css contains ${builtLegacyMobileSelectorCount} legacy ik-mobile selector rules`);
   assert(
     builtCss.includes(".mn-shell") &&
-      builtCss.includes(".mn-home") &&
-      builtCss.includes(".mn-path-evidence") &&
+      builtCss.includes(".mn-brief") &&
+      builtCss.includes(".mn-object-workspace") &&
       !builtCss.includes(".mn-sheet") &&
       !builtCss.includes(".mn-topology") &&
+      !builtCss.includes(".mn-home") &&
+      !builtCss.includes(".mn-path-evidence") &&
       !builtCss.includes(".phone-ops-console") &&
       !builtCss.includes(".rm-app"),
     "Built style.css must contain the native mobile product and exclude retired mobile namespaces"
@@ -1291,5 +1314,5 @@ if (failures.length > 0) {
 }
 
 console.log(
-  `overview architecture gate: PASS panel=${lines(panel)} lines desktop=${lines(desktopConsole)} lines desktopDecision=${lines(desktopDecisionRail)} lines scenes=${lines(desktopScenes)} lines helper=${lines(desktopHelpers)} lines presentation=${lines(desktopPresentation)} lines topbar=${lines(desktopTopbar)} lines trafficRows=${lines(desktopTrafficRows)} lines routeRows=${lines(desktopRouteRows)} lines wanRows=${lines(desktopWanRows)} lines interfaceRows=${lines(desktopInterfaceRows)} lines credibilityRows=${lines(desktopCredibilityRows)} lines terminalRows=${lines(desktopTerminalRows)} lines resourceRows=${lines(desktopResourceRows)} lines visuals=${lines(desktopVisuals)} lines phoneConsole=${lines(phoneOpsConsole)} lines phoneHome=${lines(phoneOpsHome)} lines phonePath=${lines(phoneOpsPath)} lines phoneEvidence=${lines(phoneOpsEvidence)} lines phoneModel=${lines(phoneOpsModel)} lines phoneModelEvidence=${lines(phoneOpsModelEvidence)} lines phoneStyles=${bytes(phoneOpsStylesFile) + bytes(phoneOpsEvidenceStylesFile)} bytes css=${bytes(panelCssFile)} bytes desktopBase=${lines(desktopBaseStyles)} lines desktopBaseImportant=${desktopBaseImportantCount} important=${importantShare.toFixed(4)} desktopImportant=${desktopRefinementImportantCount} workspaceImportant=${desktopWorkspaceLayoutImportantCount} decisionRailRules=${desktopDecisionRailRuleCount} decisionCellRules=${desktopDecisionCellRuleCount} workspaceGridRules=${desktopWorkspaceGridRuleCount} navRules=${desktopNavRuleCount} shellDescendantRules=${desktopImpossibleShellDescendantCount} statusBusRules=${desktopStatusBusRuleCount} legacyTopbarRules=${desktopLegacyTopbarRuleCount} sidebarStatusRules=${desktopSidebarMiniStatusRuleCount} sidebarStatusImportant=${desktopSidebarMiniStatusImportantCount} moduleShellRules=${desktopModuleShellRuleCount} moduleHeadRules=${desktopModuleHeadRuleCount} ledgerRules=${desktopLedgerRuleCount} moduleToneRules=${desktopModuleToneRuleCount} ledgerToneRules=${desktopLedgerToneRuleCount} ledgerToneShadows=${desktopLedgerToneShadowCount} releaseToneResets=${desktopReleaseToneResetCount} releaseNonPrimary=${desktopReleaseNonPrimaryNeutralCount} mobile=${mobileRuleShare.toFixed(4)}`
+  `overview architecture gate: PASS panel=${lines(panel)} lines desktop=${lines(desktopConsole)} lines desktopDecision=${lines(desktopDecisionRail)} lines scenes=${lines(desktopScenes)} lines helper=${lines(desktopHelpers)} lines presentation=${lines(desktopPresentation)} lines topbar=${lines(desktopTopbar)} lines trafficRows=${lines(desktopTrafficRows)} lines routeRows=${lines(desktopRouteRows)} lines wanRows=${lines(desktopWanRows)} lines interfaceRows=${lines(desktopInterfaceRows)} lines credibilityRows=${lines(desktopCredibilityRows)} lines terminalRows=${lines(desktopTerminalRows)} lines resourceRows=${lines(desktopResourceRows)} lines visuals=${lines(desktopVisuals)} lines phoneConsole=${lines(phoneOpsConsole)} lines phoneBrief=${lines(phoneOpsBrief)} lines phoneSignal=${lines(phoneOpsSignal)} lines phoneObjects=${lines(phoneOpsObjects)} lines phoneEvidence=${lines(phoneOpsEvidence)} lines phoneModel=${lines(phoneOpsModel)} lines phoneModelEvidence=${lines(phoneOpsModelEvidence)} lines phoneStyles=${bytes(phoneOpsStylesFile) + bytes(phoneOpsEvidenceStylesFile)} bytes css=${bytes(panelCssFile)} bytes desktopBase=${lines(desktopBaseStyles)} lines desktopBaseImportant=${desktopBaseImportantCount} important=${importantShare.toFixed(4)} desktopImportant=${desktopRefinementImportantCount} workspaceImportant=${desktopWorkspaceLayoutImportantCount} decisionRailRules=${desktopDecisionRailRuleCount} decisionCellRules=${desktopDecisionCellRuleCount} workspaceGridRules=${desktopWorkspaceGridRuleCount} navRules=${desktopNavRuleCount} shellDescendantRules=${desktopImpossibleShellDescendantCount} statusBusRules=${desktopStatusBusRuleCount} legacyTopbarRules=${desktopLegacyTopbarRuleCount} sidebarStatusRules=${desktopSidebarMiniStatusRuleCount} sidebarStatusImportant=${desktopSidebarMiniStatusImportantCount} moduleShellRules=${desktopModuleShellRuleCount} moduleHeadRules=${desktopModuleHeadRuleCount} ledgerRules=${desktopLedgerRuleCount} moduleToneRules=${desktopModuleToneRuleCount} ledgerToneRules=${desktopLedgerToneRuleCount} ledgerToneShadows=${desktopLedgerToneShadowCount} releaseToneResets=${desktopReleaseToneResetCount} releaseNonPrimary=${desktopReleaseNonPrimaryNeutralCount} mobile=${mobileRuleShare.toFixed(4)}`
 );

@@ -5,7 +5,7 @@ export function MobileNativeDetail({ model, onBack }: { model: MobileNativeModel
   const backRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
-    backRef.current?.focus();
+    backRef.current?.focus({ preventScroll: true });
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") onBack();
     };
@@ -15,26 +15,25 @@ export function MobileNativeDetail({ model, onBack }: { model: MobileNativeModel
 
   return (
     <section className="mn-detail" aria-labelledby="mn-detail-title" data-mobile-native-detail>
-      <header className="mn-detail-nav">
+      <header className="mn-detail-navigation">
         <button ref={backRef} type="button" onClick={onBack} aria-label="返回网络概览" data-mobile-native-back>
-          <span aria-hidden="true">‹</span>网络
+          <span aria-hidden="true">‹</span>概览
         </button>
-        <b>证据</b>
+        <b>原始证据</b>
         <span aria-hidden="true" />
       </header>
       <div className="mn-detail-content">
-        <div className={`mn-detail-evidence is-${model.evidenceTone}`} data-mobile-native-detail-evidence={model.evidenceMode}>
-          <span><b>{model.evidenceLabel}</b><small>{model.evidenceNote}</small></span>
-          <time>{model.timestamp}</time>
-        </div>
-        <p>低优先级原始记录</p>
-        <h1 id="mn-detail-title">{model.actionTitle}</h1>
+        <header className="mn-detail-intro">
+          <span>{model.device}</span>
+          <h1 id="mn-detail-title">{model.actionTitle}</h1>
+          <p>以下记录用于追溯判断来源，不会修改 RouterOS 配置。</p>
+        </header>
         {model.detailSections.map((section) => (
-          <section className="mn-detail-section" aria-label={section.title} data-mobile-native-detail-section key={section.title}>
+          <section className="mn-detail-section" aria-label={section.title} data-mobile-native-detail-section key={section.key}>
             <header><b>{section.title}</b><span>{section.note}</span></header>
-            <div className="mn-detail-group">
+            <div className="mn-detail-rows">
               {section.rows.map((row, index) => (
-                <div className={`is-${row.tone || "trust"}`} key={`${row.label}-${index}`}>
+                <div className={`mn-detail-row is-${row.tone || "trust"}`} key={row.key || `${row.label}-${index}`}>
                   <span>{row.label}</span>
                   <span><b>{row.value}</b>{row.note ? <small>{row.note}</small> : null}</span>
                 </div>

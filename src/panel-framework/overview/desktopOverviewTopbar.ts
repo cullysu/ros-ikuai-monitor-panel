@@ -37,24 +37,16 @@ function topbarCollectionValue(state: OverviewDerivedState): { value: string; no
   if (state.scenario === "no-snapshot") {
     return { value: "链路受限", note: "采集链路需核" };
   }
-  if (state.scenario === "interfaces-down") {
-    return { value: "采集不可达", note: "REST 不可达 / SSH 不可达" };
-  }
-  if (state.facts.collection.dataStale) {
-    return { value: "缓存可参考", note: "当前采集非实时" };
-  }
-  if (state.scenario === "collection-down") {
-    return { value: "降级", note: "REST 待确认 / SSH 不可用" };
-  }
-  const restUnavailable = /不可|失败|待确认|缺失/.test(state.facts.collection.restLabel);
-  const sshUnavailable = /不可|失败|待确认|缺失/.test(state.facts.collection.sshLabel);
-  if (restUnavailable || sshUnavailable) {
+  const rest = state.facts.collection.rest;
+  const ssh = state.facts.collection.ssh;
+  if (rest.status !== "current" || ssh.status !== "current") {
     return {
-      value: "部分可用",
-      note: `${restUnavailable ? "REST 待确认" : "REST 可用"} / ${sshUnavailable ? "SSH 不可用" : "SSH 可用"}`,
+      value: rest.status === "failed" && ssh.status === "failed" ? "采集失败" : "部分可用",
+      note: `REST ${rest.label} / SSH ${ssh.label}`,
     };
   }
-  return { value: "可读", note: "REST / SSH" };
+  if (state.facts.collection.dataStale) return { value: "缓存可参考", note: "当前采集非实时" };
+  return { value: "可读", note: "REST 可用 / SSH 可用" };
 }
 
 function topbarSnapshotValue(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): Pick<TopbarItem, "value" | "note" | "tone"> {

@@ -144,6 +144,7 @@ def assert_wan_model_combines_pppoe_and_dhcp_lines():
     assert access_by_name.get("ether-dhcp-wan") == "DHCP", snapshot["wan"]
     assert len(snapshot["wan"]) == 2, snapshot["wan"]
     assert snapshot["meta"]["wanCount"] == 2, snapshot["meta"]
+    assert snapshot["meta"]["configuredIdentity"] == "fixture-router", snapshot["meta"]
 
 
 def make_empty_ssh():

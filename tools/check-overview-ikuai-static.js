@@ -57,8 +57,9 @@ const desktopAllOfflineScene = read('src/panel-framework/overview/desktopOvervie
 const desktopHierarchyStyles = read('src/panel-framework/overview/styles/desktop/hierarchy-layout.css');
 const desktopWorkspaceStyles = read('src/panel-framework/overview/styles/desktop/workspace-layout.css');
 const phoneConsole = read('src/panel-framework/overview/mobile-native/MobileNativeConsole.tsx');
-const phoneHome = read('src/panel-framework/overview/mobile-native/MobileNativeHome.tsx');
-const phonePath = read('src/panel-framework/overview/mobile-native/MobileNativePathEvidence.tsx');
+const phoneBrief = read('src/panel-framework/overview/mobile-native/MobileNativePatrolBrief.tsx');
+const phoneSignal = read('src/panel-framework/overview/mobile-native/MobileNativeSignal.tsx');
+const phoneObjects = read('src/panel-framework/overview/mobile-native/MobileNativeObjectWorkspace.tsx');
 const phoneEvidence = read('src/panel-framework/overview/mobile-native/MobileNativeDetail.tsx');
 const phoneModel = read('src/panel-framework/overview/mobile-native/mobileNativeModel.ts');
 const phoneModelEvidence = read('src/panel-framework/overview/mobile-native/mobileNativeEvidence.ts');
@@ -160,21 +161,25 @@ includesAll(desktopHierarchyStyles, ['data-overview-desktop-scene="single"', 'da
 
 includesAll(phoneConsole, [
   'data-mobile-native-console',
-  '<MobileNativeHome',
-  '<MobileNativePathEvidence',
+  '<MobileNativePatrolBrief',
+  '<MobileNativeObjectWorkspace',
   '<MobileNativeDetail',
+  'window.history.pushState',
+  'popstate',
 ], 'isolated native mobile shell');
 excludesAll(phoneConsole, ['tabbar', 'BottomTabs', 'activeTab'], 'retired phone tab shell');
-excludesAll(`${phoneConsole}\n${phoneHome}\n${phonePath}\n${phoneEvidence}\n${phoneModel}\n${phoneModelEvidence}\n${phoneStyleBundle}`, ['ik-mobile-', 'ik-ios-', 'ro-mobile-', 'ro-desktop-', 'rm-app', 'phone-ops'], 'phone namespace isolation');
-includesAll(phoneModel, ['活动默认路由已记录', '条 WAN 未运行', '当前业务状态不可判断', '当前变化不可见', '资源当前超过阈值', '未运行'], 'phone factual verdict copy');
-includesAll(`${phoneModel}\n${phoneModelEvidence}\n${phoneTypes}`, ['"current" | "stale" | "unavailable"', 'visibleRates !== null', 'showRates: false', '最后成功', 'trailingStreak'], 'phone source truthfulness');
+excludesAll(`${phoneConsole}\n${phoneBrief}\n${phoneSignal}\n${phoneObjects}\n${phoneEvidence}\n${phoneModel}\n${phoneModelEvidence}\n${phoneStyleBundle}`, ['ik-mobile-', 'ik-ios-', 'ro-mobile-', 'ro-desktop-', 'rm-app', 'phone-ops'], 'phone namespace isolation');
+includesAll(phoneModel, ['网络可用，默认出口已核实', '条 WAN 未运行', '当前业务状态不可判断', '当前变化不可见', '资源压力已超过阈值', '个接口未运行'], 'phone factual verdict copy');
+includesAll(`${phoneModel}\n${phoneModelEvidence}\n${phoneTypes}`, ['"current" | "historical" | "unavailable"', 'successfulBusinessAt(snapshot)', 'kind: "rates"', 'kind: "resource"', 'trailingStreak', 'MobileRiskKey'], 'phone source truthfulness');
 excludesAll(phoneModel, ['function syntheticTrend(', 'const pattern = {', '网络状态良好', '实时可信'], 'phone unsupported data and copy prohibition');
 excludesAll(`${phoneModel}\n${phoneModelEvidence}`, ['rows[0]', 'downRate || 0', 'upRate || 0'], 'phone fabricated evidence prohibition');
-includesAll(phoneHome, ['data-mobile-native-home', 'data-mobile-native-evidence-mode', 'data-mobile-native-rates="current"', 'model.showRates ?', 'model.facts.map', 'model.rows.map', 'data-mobile-native-open-detail'], 'phone evidence-first home semantics');
-includesAll(phonePath, ['data-mobile-native-path-evidence', 'data-mobile-route-verification', '<details', '<summary'], 'phone collapsed path evidence');
-includesAll(phoneEvidence, ['data-mobile-native-detail', 'data-mobile-native-detail-section', 'Escape', 'data-mobile-native-back', 'backRef.current?.focus()'], 'phone evidence navigation');
-includesAll(phoneStyleBundle, ['--mn-canvas', '.mn-home', '.mn-path-evidence', '.mn-facts', '.mn-detail', 'env(safe-area-inset-top)', 'min-height: 44px', 'touch-action: manipulation'], 'phone evidence-first safe area, touch, and responsive styles');
+includesAll(phoneBrief, ['data-mobile-native-brief', 'data-mobile-native-evidence-mode', 'model.facts.map', 'model.decisions.map', '<MobileNativeSignal'], 'phone patrol brief semantics');
+includesAll(phoneSignal, ['data-mobile-native-rates="current"', 'data-mobile-native-resource-signal', 'signal.kind === "rates"', 'signal.kind === "resource"'], 'phone scenario signal substitution');
+includesAll(phoneObjects, ['data-mobile-native-object-workspace', 'role="tablist"', 'aria-selected', 'ArrowRight', 'ArrowLeft', 'preventScroll', '<details', '<summary', 'data-mobile-native-open-detail'], 'phone object workspace and disclosure semantics');
+includesAll(phoneEvidence, ['data-mobile-native-detail', 'data-mobile-native-detail-section', 'Escape', 'data-mobile-native-back', 'backRef.current?.focus({ preventScroll: true })'], 'phone evidence navigation');
+includesAll(phoneStyleBundle, ['--mn-canvas', '.mn-brief', '.mn-object-workspace', '.mn-proof-facts', '.mn-detail', 'env(safe-area-inset-top)', 'env(safe-area-inset-left)', 'min-height: 44px', 'touch-action: manipulation'], 'phone patrol workspace safe area, touch, and responsive styles');
 excludesAll(phoneStyleBundle, ['!important', 'radial-gradient(', '.rm-', '.ik-mobile-', '.ro-mobile-', '.phone-ops'], 'phone patch and retired namespace prohibition');
+excludesAll(phoneStyleBundle, ['border-left: 3px', 'max-width: 680px', '.mn-home', '.mn-path-evidence'], 'rejected phone ledger and centered tablet cleanup');
 includesAll(mobileShellStyles, [':has(#overview.is-mobile-native)', '.ik-rail', '.sidebar', '.topbar'], 'mobile shell ownership');
 excludesAll(phoneStyleBundle, ['.ik-rail', '.sidebar', '.topbar'], 'mobile component shell reach-out');
 
@@ -213,9 +218,10 @@ for (const [file, text, limit] of [
   ['OverviewPanel.tsx', overview, 120],
   ['DesktopConsole.tsx', desktop, 120],
   ['DesktopDecisionRail.tsx', desktopDecision, 120],
-  ['MobileNativeConsole.tsx', phoneConsole, 80],
-  ['MobileNativeHome.tsx', phoneHome, 90],
-  ['MobileNativePathEvidence.tsx', phonePath, 60],
+  ['MobileNativeConsole.tsx', phoneConsole, 120],
+  ['MobileNativePatrolBrief.tsx', phoneBrief, 90],
+  ['MobileNativeSignal.tsx', phoneSignal, 100],
+  ['MobileNativeObjectWorkspace.tsx', phoneObjects, 130],
   ['MobileNativeDetail.tsx', phoneEvidence, 100],
 ]) {
   if (lineCount(text) > limit) fail('component line budget', `${file} has ${lineCount(text)} lines (limit ${limit})`);
