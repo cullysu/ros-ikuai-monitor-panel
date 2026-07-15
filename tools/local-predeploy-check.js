@@ -1384,6 +1384,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     let nativeDetailRawEvidenceCount = 0;
     let nativeDetailHasNovelEvidence = false;
     let nativeDetailNoHomeReplay = false;
+    const nativeAcceptanceScrollY = window.scrollY;
     if (sectionName === 'overview') {
       const waitForNativeState = async (predicate, timeoutMs = 900) => {
         const startedAt = performance.now();
@@ -1394,6 +1395,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         return Boolean(predicate());
       };
       const nativeRoot = sectionRoot?.querySelector('[data-mobile-native-console]');
+      const nativeAcceptanceRootTop = nativeRoot?.getBoundingClientRect().top ?? 0;
       const nativePrimaryFocus = nativeRoot?.getAttribute('data-mobile-native-primary-focus') || '';
       const nativeFocusOptions = Array.from(nativeRoot?.querySelectorAll('.mn-focus-queue [role="option"]') || []);
       const selectedNativeFocus = nativeFocusOptions.find((option) => option.getAttribute('aria-selected') === 'true');
@@ -1522,11 +1524,21 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
         const restoredDisclosure = restoredRoot?.querySelector('.mn-inspection-disclosure');
         const finalBackRestored = Boolean(restoredEntry && document.activeElement === restoredEntry && !sectionRoot?.querySelector('[data-mobile-native-detail]'));
         const detailScrollRestored = Math.abs(window.scrollY - scrollBeforeDetail) <= 1;
+        const scrollAfterReturn = window.scrollY;
         if (restoredDisclosure && disclosureInitiallyOpen !== restoredDisclosure.open) {
           restoredDisclosure.querySelector('summary')?.click();
           await waitForNativeState(() => restoredDisclosure.open === disclosureInitiallyOpen);
         }
         const disclosureRestored = !restoredDisclosure || restoredDisclosure.open === disclosureInitiallyOpen;
+        if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
+        restoredRoot?.scrollIntoView({ block: 'start', inline: 'nearest', behavior: 'auto' });
+        window.scrollTo({ top: nativeAcceptanceScrollY, left: 0, behavior: 'auto' });
+        await waitForNativeState(() => Boolean(
+          Math.abs(window.scrollY - nativeAcceptanceScrollY) <= 1 &&
+          restoredRoot && Math.abs(restoredRoot.getBoundingClientRect().top - nativeAcceptanceRootTop) <= 1
+        ));
+        const acceptanceScrollRestored = Math.abs(window.scrollY - nativeAcceptanceScrollY) <= 1;
+        const acceptanceRootRestored = Boolean(restoredRoot && Math.abs(restoredRoot.getBoundingClientRect().top - nativeAcceptanceRootTop) <= 1);
         nativeMobileInteractionProbe = {
           disclosureInitiallyOpen,
           disclosureReady,
@@ -1539,13 +1551,15 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
           detailSections: nativeDetailSectionCount,
           rawEvidenceSections: nativeDetailRawEvidenceCount,
           scrollBeforeDetail,
-          scrollAfterReturn: window.scrollY,
+          scrollAfterReturn,
           detailScrollRestored,
+          acceptanceScrollRestored,
+          acceptanceRootRestored,
         };
         nativeMobileInteractionOk = Boolean(
           disclosureReady && disclosureRestored && detailFocused && nativeMobileObjectSelectionOk &&
           nativeDetailHasNovelEvidence && nativeDetailNoHomeReplay &&
-          backRestored && forwardReopened && finalBackRestored && detailScrollRestored
+          backRestored && forwardReopened && finalBackRestored && detailScrollRestored && acceptanceScrollRestored && acceptanceRootRestored
         );
       }
     }
