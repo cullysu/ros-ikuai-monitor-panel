@@ -12304,17 +12304,15 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     const visibleRows = filtered.slice((safePage - 1) * pageSize, safePage * pageSize);
     const selectedRow = allRows.find((row) => row.id === selectedId) || null;
     const Icon2 = routeIcon(route);
-    reactExports.useEffect(() => {
+    reactExports.useLayoutEffect(() => {
+      var _a2;
       if (selectedRow) {
-        window.requestAnimationFrame(() => {
-          var _a2;
-          return (_a2 = detailTitleRef.current) == null ? void 0 : _a2.focus({ preventScroll: true });
-        });
+        (_a2 = detailTitleRef.current) == null ? void 0 : _a2.focus({ preventScroll: true });
         return;
       }
       if (!lastTriggerRef.current) return;
       const trigger = rowRefs.current.get(lastTriggerRef.current);
-      window.requestAnimationFrame(() => trigger == null ? void 0 : trigger.focus({ preventScroll: true }));
+      trigger == null ? void 0 : trigger.focus({ preventScroll: true });
     }, [selectedRow]);
     if (route === "more") {
       return /* @__PURE__ */ jsxRuntimeExports.jsx(MobileMoreDirectory, { model, onNavigate });

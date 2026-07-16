@@ -9,7 +9,7 @@ import {
   Server,
   X,
 } from "lucide-react";
-import { useEffect, useMemo, useRef, useState, type RefObject } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type RefObject } from "react";
 import type { OverviewRawSnapshot } from "../overview";
 import { PANEL_ROUTES, type PanelRouteId } from "../routes/panelRoutes";
 import { SectionTimeSeriesChart } from "../sections/SectionTimeSeriesChart";
@@ -227,14 +227,14 @@ export function MobileDomainWorkspace({
   const selectedRow = allRows.find((row) => row.id === selectedId) || null;
   const Icon = routeIcon(route);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (selectedRow) {
-      window.requestAnimationFrame(() => detailTitleRef.current?.focus({ preventScroll: true }));
+      detailTitleRef.current?.focus({ preventScroll: true });
       return;
     }
     if (!lastTriggerRef.current) return;
     const trigger = rowRefs.current.get(lastTriggerRef.current);
-    window.requestAnimationFrame(() => trigger?.focus({ preventScroll: true }));
+    trigger?.focus({ preventScroll: true });
   }, [selectedRow]);
 
   if (route === "more") {
