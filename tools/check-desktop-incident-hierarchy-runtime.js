@@ -63,7 +63,7 @@ function runCase(item) {
         if (report.pass !== true || report.incidentWorkspaceCompactOk !== true) {
           throw new Error(`${item.name} hierarchy report did not pass: ${JSON.stringify(report)}`);
         }
-        console.log(`[desktop-incident-hierarchy] PASS ${item.name} bottomGap=${report.bottomGap}`);
+        console.log(`[desktop-incident-hierarchy] PASS ${item.name} risk=${report.risk} incidentRows=${report.incidentRowCount}`);
       } catch (error) {
         resultError = error;
       }

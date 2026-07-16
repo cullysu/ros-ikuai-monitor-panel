@@ -879,101 +879,93 @@ async function main() {
       }
       if (sectionName === 'desktopAllOfflineHierarchy' || sectionName === 'desktopResourceHierarchy') {
         const expectedScenario = sectionName === 'desktopAllOfflineHierarchy' ? 'all-offline' : 'resource-full';
-        const expectedCollapsedModules = sectionName === 'desktopAllOfflineHierarchy'
-          ? ['wan-offline-continuity', 'collection-status']
-          : ['normal-interface-boundary'];
-        const workspace = sectionEl?.querySelector('.ik-desktop-workspace');
-        const mainColumn = workspace?.querySelector(':scope > .ro-col.is-main');
-        const sideColumn = workspace?.querySelector(':scope > .ro-col.is-side');
-        const bottomColumn = workspace?.querySelector(':scope > .ro-col.is-bottom');
-        const sideModules = Array.from(sideColumn?.querySelectorAll(':scope > .ro-module') || []);
-        const sideRects = sideModules.map((node) => node.getBoundingClientRect()).sort((left, right) => left.top - right.top);
-        const sideGaps = sideRects.slice(1).map((rect, index) => rect.top - sideRects[index].bottom);
-        const mainRect = mainColumn?.getBoundingClientRect();
-        const sideRect = sideColumn?.getBoundingClientRect();
-        const bottomRect = bottomColumn?.getBoundingClientRect();
-        const bottomGap = mainRect && sideRect && bottomRect
-          ? bottomRect.top - Math.max(mainRect.bottom, sideRect.bottom)
-          : null;
-        const sideModuleMetrics = sideModules.map((node) => {
-          const disclosure = node.querySelector('details');
+        const expectedRisk = sectionName === 'desktopAllOfflineHierarchy' ? 'wan' : 'resource';
+        const expectedPriorityRows = sectionName === 'desktopAllOfflineHierarchy' ? 3 : 1;
+        const desktopRoot = sectionEl?.querySelector('[data-desktop-overview]');
+        const statusBus = desktopRoot?.querySelector('[data-desktop-status-bus]');
+        const statusItems = Array.from(statusBus?.querySelectorAll('[data-desktop-status-item]') || []);
+        const incident = desktopRoot?.querySelector('[data-desktop-incident]');
+        const incidentFacts = Array.from(incident?.querySelectorAll('[data-desktop-incident-fact]') || []);
+        const ledgers = Array.from(desktopRoot?.querySelectorAll('[data-desktop-ledger]') || []);
+        const ledgerNames = ledgers.map((node) => node.getAttribute('data-desktop-ledger') || '');
+        const ledgerRows = Array.from(desktopRoot?.querySelectorAll('[data-desktop-ledger-row]') || []);
+        const incidentRows = Array.from(desktopRoot?.querySelectorAll('[data-desktop-ledger="incident-objects"] [data-desktop-ledger-row]') || []);
+        const ledgerSources = Array.from(desktopRoot?.querySelectorAll('.do-ledger-source') || []);
+        const ledgerButtons = Array.from(desktopRoot?.querySelectorAll('[data-desktop-ledger-route]') || []);
+        const lowerGrid = desktopRoot?.querySelector('.do-lower-grid');
+        const lowerChildren = Array.from(lowerGrid?.children || []).filter((node) => {
+          const rect = node.getBoundingClientRect();
           const style = getComputedStyle(node);
-          return {
-            name: node.getAttribute('data-overview-density-module') || '',
-            clientHeight: node.clientHeight,
-            scrollHeight: node.scrollHeight,
-            height: style.height,
-            minHeight: style.minHeight,
-            maxHeight: style.maxHeight,
-            overflow: style.overflow,
-            gridRow: style.gridRow,
-            disclosureOpen: disclosure?.open ?? null,
-            disclosureClientHeight: disclosure?.clientHeight ?? null,
-            disclosureScrollHeight: disclosure?.scrollHeight ?? null
-          };
+          return rect.width > 0 && rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden';
         });
-        const collapsedShells = expectedCollapsedModules.map((name) => {
-          const module = sideColumn?.querySelector('[data-overview-density-module="' + name + '"]');
-          const disclosure = module?.querySelector('details');
-          const header = module?.querySelector(':scope > .ro-module-head');
-          const visualChildren = Array.from(module?.querySelectorAll(':scope > :not(.ro-module-head):not(details)') || []);
-          const moduleRect = module?.getBoundingClientRect();
-          const headerRect = header?.getBoundingClientRect();
-          const disclosureRect = disclosure?.getBoundingClientRect();
-          const visualHeight = visualChildren.reduce((sum, node) => sum + node.getBoundingClientRect().height, 0);
-          return {
-            name,
-            found: Boolean(module),
-            open: disclosure?.open ?? null,
-            height: moduleRect?.height || 0,
-            headerHeight: headerRect?.height || 0,
-            disclosureHeight: disclosureRect?.height || 0,
-            visualHeight,
-            slack: moduleRect && headerRect && disclosureRect
-              ? moduleRect.height - headerRect.height - disclosureRect.height - visualHeight
-              : null
-          };
-        });
-        const sideStyle = sideColumn ? getComputedStyle(sideColumn) : null;
-        const workspaceStyle = workspace ? getComputedStyle(workspace) : null;
+        const textNodes = Array.from(desktopRoot?.querySelectorAll('h1, h2, p, b, small, span, code, button, dt, dd') || [])
+          .filter((node) => normalize(node.textContent || '') && node.getBoundingClientRect().width > 0 && node.getBoundingClientRect().height > 0);
+        const smallText = textNodes
+          .filter((node) => Number.parseFloat(getComputedStyle(node).fontSize || '0') < 12)
+          .map((node) => ({ text: normalize(node.textContent || '').slice(0, 48), size: getComputedStyle(node).fontSize }));
+        const clippedText = textNodes
+          .filter((node) => {
+            const style = getComputedStyle(node);
+            return (style.overflowX === 'hidden' || style.overflowX === 'clip') && node.scrollWidth > node.clientWidth + 2;
+          })
+          .map((node) => ({ text: normalize(node.textContent || '').slice(0, 48), width: node.clientWidth, scrollWidth: node.scrollWidth }));
+        const statusRect = statusBus?.getBoundingClientRect();
+        const incidentRect = incident?.getBoundingClientRect();
+        const lowerRect = lowerGrid?.getBoundingClientRect();
+        const statusKeys = statusItems.map((node) => node.getAttribute('data-desktop-status-item') || '');
+        const factKeys = incidentFacts.map((node) => node.getAttribute('data-desktop-incident-fact') || '');
+        const sourceCoverage = ledgerRows.length > 0 && ledgerSources.length === ledgerRows.length && ledgerSources.every((node) => normalize(node.textContent || ''));
+        const routeCoverage = ledgerButtons.length > 0 && ledgerButtons.every((node) => Boolean(node.getAttribute('data-desktop-ledger-route')) && Boolean(node.getAttribute('aria-label')));
+        const lowerGridUse = Boolean(lowerGrid && lowerChildren.length === 2 && lowerChildren.every((node) => {
+          const child = node.getBoundingClientRect();
+          return lowerRect && child.width >= lowerRect.width * 0.35;
+        }));
+        const retiredDesktopTree = sectionEl?.querySelector('.ik-desktop-workspace, .ro-col, [data-overview-density-module]');
         const incidentWorkspaceCompactOk = Boolean(
-          workspace &&
-          workspace.getAttribute('data-overview-desktop-scene') === expectedScenario &&
-          sideColumn &&
-          mainColumn &&
-          bottomColumn &&
-          sideModules.length >= expectedCollapsedModules.length + 1 &&
-          sideGaps.every((gap) => gap >= 0 && gap <= 8) &&
-          bottomGap !== null && bottomGap >= 0 && bottomGap <= 12 &&
-          sideModuleMetrics.every((item) => item.scrollHeight <= item.clientHeight + 1) &&
-          collapsedShells.every((item) => item.found && item.open === false && item.height > 0 && item.height <= (item.visualHeight > 0 ? 140 : 72) && item.slack !== null && item.slack <= 4) &&
-          sideStyle?.alignContent === 'start' &&
-          workspaceStyle?.alignContent === 'start' &&
+          desktopRoot &&
+          desktopRoot.getAttribute('data-desktop-overview-scenario') === expectedScenario &&
+          desktopRoot.getAttribute('data-desktop-overview-risk') === expectedRisk &&
+          desktopRoot.getAttribute('data-desktop-evidence-mode') === 'current' &&
+          statusBus &&
+          statusItems.length === 3 &&
+          ['evidence', 'route', 'collection'].every((key) => statusKeys.includes(key)) &&
+          incident &&
+          incident.getAttribute('data-desktop-incident') === expectedRisk &&
+          incidentFacts.length === 3 &&
+          new Set(factKeys).size === 3 &&
+          incidentRows.length >= expectedPriorityRows &&
+          ledgers.length === 3 &&
+          ['incident-objects', 'plane-boundary', 'provenance'].every((name) => ledgerNames.includes(name)) &&
+          !desktopRoot.querySelector('[data-desktop-wan-evidence], canvas, [role="tab"], [role="tablist"]') &&
+          sourceCoverage &&
+          routeCoverage &&
+          ledgerRows.every((row) => row.getAttribute('role') === 'row') &&
+          smallText.length === 0 &&
+          clippedText.length === 0 &&
+          statusRect && statusRect.bottom < innerHeight &&
+          incidentRect && incidentRect.top < innerHeight - 80 &&
+          lowerGridUse &&
+          !retiredDesktopTree &&
           document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1
         );
         return {
           pass: incidentWorkspaceCompactOk,
           incidentWorkspaceCompactOk,
           section: sectionName,
-          scenario: workspace?.getAttribute('data-overview-desktop-scene') || '',
-          collapsedShells,
-          sideModuleMetrics,
-          sideModuleHeights: sideRects.map((rect) => rect.height),
-          sideGaps,
-          bottomGap,
-          sideStyle: sideStyle ? {
-            display: sideStyle.display,
-            alignContent: sideStyle.alignContent,
-            gridAutoRows: sideStyle.gridAutoRows,
-            height: sideStyle.height,
-            colHeight: sideStyle.getPropertyValue('--ro-col-height').trim(),
-            colGridAutoRows: sideStyle.getPropertyValue('--ro-col-grid-auto-rows').trim(),
-            colModuleHeight: sideStyle.getPropertyValue('--ro-col-module-height').trim()
-          } : null,
-          workspaceStyle: workspaceStyle ? {
-            alignContent: workspaceStyle.alignContent,
-            gridTemplateRows: workspaceStyle.gridTemplateRows
-          } : null,
+          scenario: desktopRoot?.getAttribute('data-desktop-overview-scenario') || '',
+          risk: desktopRoot?.getAttribute('data-desktop-overview-risk') || '',
+          evidenceMode: desktopRoot?.getAttribute('data-desktop-evidence-mode') || '',
+          statusKeys,
+          factKeys,
+          ledgerNames,
+          ledgerRowCount: ledgerRows.length,
+          incidentRowCount: incidentRows.length,
+          sourceCoverage,
+          routeCoverage,
+          lowerGridUse,
+          smallText,
+          clippedText,
+          retiredDesktopTree: Boolean(retiredDesktopTree),
           viewport: { width: innerWidth, height: innerHeight, scrollWidth: document.documentElement.scrollWidth }
         };
       }
