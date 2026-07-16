@@ -80,7 +80,16 @@ assert(source.evidenceModel.indexOf('state.facts.interfaces.down > 0) return "in
 includes(source.mobile, ["data-mobile-overview", "data-mobile-core-facts", "data-mobile-incident-center", "data-mobile-evidence-ledger", "availableBelowSummary"], "mobile patrol hierarchy");
 includes(source.mobileTraffic, ["preserveAspectRatio=\"xMidYMid meet\"", "<title", "<desc", "mp-chart-scale", "mp-chart-time"], "mobile WAN chart");
 includes(source.mobileResource, ["preserveAspectRatio=\"xMidYMid meet\"", "role=\"meter\"", "策略阈值", "样本明细"], "mobile resource signal");
-includes(source.mobileDomain, ["type=\"search\"", "mdw-filter-row", "mdw-pagination", "data-mobile-object-detail", "requestAnimationFrame"], "mobile domain workspace");
+includes(source.mobileDomain, [
+  "type=\"search\"",
+  "mdw-filter-row",
+  "mdw-pagination",
+  "data-mobile-object-detail",
+  "useLayoutEffect",
+  "detailTitleRef.current?.focus({ preventScroll: true })",
+  "trigger?.focus({ preventScroll: true })",
+], "mobile domain workspace");
+excludes(source.mobileDomain, ["requestAnimationFrame"], "mobile domain deterministic focus");
 includes(source.mobileDomainModel, ['window.addEventListener("popstate"', "window.history.pushState", "filterMatches", "rowsFromModel"], "mobile domain state model");
 includes(source.nav, ["概览", "网络", "终端", "日志"], "four stable mobile destinations");
 excludes(mobileTree, ["DesktopOverview", "grabber", "bottom-sheet", "topology", 'role="tab"', 'aria-controls='], "mobile rejected patterns");
