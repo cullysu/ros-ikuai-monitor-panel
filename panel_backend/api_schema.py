@@ -83,7 +83,7 @@ def parse_router_login_request(payload, saved_entry=None):
                 if submitted_fingerprint is not None
                 else saved_entry.get("sshHostKeyFingerprint") or ""
             ),
-            remember_profile=payload.get("rememberPassword", False) is True,
+            remember_profile=payload.get("rememberProfile", False) is True,
             using_saved_profile=True,
         )
 
@@ -98,6 +98,6 @@ def parse_router_login_request(payload, saved_entry=None):
         rest_verify_tls=payload.get("restVerifyTls", True) is True,
         insecure_rest_confirmed=payload.get("insecureRestConfirmed", False) is True,
         ssh_host_key_fingerprint=payload.get("sshHostKeyFingerprint") or "",
-        remember_profile=payload.get("rememberPassword", False) is True,
+        remember_profile=payload.get("rememberProfile", False) is True,
         using_saved_profile=False,
     )

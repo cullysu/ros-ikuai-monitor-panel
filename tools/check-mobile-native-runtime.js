@@ -5,6 +5,7 @@ const { spawn } = require('child_process');
 const root = process.cwd();
 const outDir = path.join(root, '_acceptance', 'mobile-native-runtime');
 const reportFile = path.join(outDir, 'report.json');
+const matrixTimeoutMs = 180000;
 const scenarios = ['single', 'fleet', 'all-offline', 'no-snapshot', 'collection-down', 'resource-full', 'interfaces-down'];
 const viewports = {
   p320: '320x568',
@@ -13,16 +14,46 @@ const viewports = {
   p390: '390x844',
   p430: '430x932',
   tablet: '768x1024',
-  ipad1024: '1024x768',
-  ipad1180: '1180x820',
   l667: '667x375',
   l844: '844x390',
 };
+function resolvePythonExecutable() {
+  const explicit = [process.env.CODEX_PYTHON_PATH, process.env.PYTHON].filter(Boolean);
+  for (const candidate of explicit) {
+    if (!path.isAbsolute(candidate) || fs.existsSync(candidate)) return candidate;
+  }
+  const localCandidates = process.platform === 'win32'
+    ? [
+        path.join(root, '.venv', 'Scripts', 'python.exe'),
+        path.join(
+          process.env.USERPROFILE || '',
+          '.cache',
+          'codex-runtimes',
+          'codex-primary-runtime',
+          'dependencies',
+          'python',
+          'python.exe',
+        ),
+      ]
+    : [
+        path.join(root, '.venv', 'bin', 'python'),
+      ];
+  return localCandidates.find((candidate) => fs.existsSync(candidate)) ||
+    (process.platform === 'win32' ? 'python' : 'python3');
+}
+
+const pythonExecutable = resolvePythonExecutable();
+const localPythonDeps = path.join(root, '_acceptance', 'python-deps');
+const pythonPath = [
+  fs.existsSync(localPythonDeps) ? localPythonDeps : '',
+  process.env.PYTHONPATH || '',
+].filter(Boolean).join(path.delimiter);
 const env = {
   ...process.env,
   CODEX_MEMORY_LIMIT_MB: '2048',
   NODE_OPTIONS: '--max-old-space-size=2048',
 };
+if (pythonPath) env.PYTHONPATH = pythonPath;
 
 function runMatrix() {
   return new Promise((resolve, reject) => {
@@ -30,6 +61,7 @@ function runMatrix() {
     const child = spawn(process.execPath, [
       '--max-old-space-size=2048',
       'tools/local-predeploy-check.js',
+      '--python', pythonExecutable,
       '--profile', 'public',
       '--viewports', Object.entries(viewports).map(([name, dimensions]) => `${name}=${dimensions}`).join(','),
       '--sections', 'overview',
@@ -37,8 +69,26 @@ function runMatrix() {
       '--strict-responsive',
       '--out', path.relative(root, outDir),
     ], { cwd: root, env, stdio: 'inherit' });
-    child.on('error', reject);
-    child.on('exit', (code) => code === 0 ? resolve() : reject(new Error(`mobile matrix exited ${code}`)));
+    let finished = false;
+    const timeout = setTimeout(() => {
+      if (finished) return;
+      finished = true;
+      child.kill();
+      reject(new Error(`mobile matrix exceeded ${matrixTimeoutMs}ms`));
+    }, matrixTimeoutMs);
+    child.on('error', (error) => {
+      if (finished) return;
+      finished = true;
+      clearTimeout(timeout);
+      reject(error);
+    });
+    child.on('exit', (code) => {
+      if (finished) return;
+      finished = true;
+      clearTimeout(timeout);
+      if (code === 0) resolve();
+      else reject(new Error(`mobile matrix exited ${code}`));
+    });
   });
 }
 

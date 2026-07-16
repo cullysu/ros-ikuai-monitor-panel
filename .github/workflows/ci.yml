@@ -31,8 +31,9 @@ jobs:
 
       - name: Python syntax and collector regressions
         run: |
-          python -m py_compile app.py panel_backend/api_schema.py panel_backend/collector_evidence.py panel_backend/collector_transport.py panel_backend/config_store.py panel_backend/router_transport.py panel_backend/session_security.py tools/check-backend-security.py tools/check-collector-regressions.py tools/convert-oci-to-routeros-docker-archive.py
+          python -m py_compile app.py panel_backend/api_schema.py panel_backend/collector_evidence.py panel_backend/collector_transport.py panel_backend/config_store.py panel_backend/router_transport.py panel_backend/session_security.py panel_backend/time_contract.py tools/check-backend-security.py tools/check-backend-release-blockers.py tools/check-collector-regressions.py tools/convert-oci-to-routeros-docker-archive.py
           python tools/check-backend-security.py
+          python tools/check-backend-release-blockers.py
           python tools/check-collector-regressions.py
 
       - name: Set up Node.js
@@ -47,15 +48,20 @@ jobs:
       - name: TypeScript contract check
         run: npm run check:types
 
+      - name: Build and verify committed frontend assets
+        run: |
+          npm run build
+          git diff --exit-code -- public/assets/framework/panel-framework.js public/assets/framework/style.css
+
       - name: Runtime schema and section evidence contracts
         run: |
           npm run check:runtime-schema
           npm run check:sections
 
-      - name: Overview architecture contracts
+      - name: Overview architecture and release-blocker contracts
         run: |
-          node tools/check-overview-architecture.js
-          node tools/check-overview-ikuai-static.js
+          npm run check:overview
+          node tools/check-release-blockers.js
 
       - name: LAN/default documentation checks
         run: |
@@ -89,8 +95,11 @@ jobs:
       - name: Connection and browser runtime contract
         run: npm run check:runtime-browser
 
-      - name: Desktop incident hierarchy contracts
-        run: npm run check:desktop-incident-hierarchy
+      - name: Desktop overview contracts
+        run: |
+          npm run check:desktop-v1030
+          npm run check:desktop-no-snapshot
+          npm run check:desktop-incident-hierarchy
 
       - name: Public full-route navigation matrix
         run: |
@@ -188,8 +197,8 @@ jobs:
           $index = Get-ChildItem -Recurse $bundleRoot -Filter index.html | Select-Object -First 1
           if (-not $index) { throw "Bundled public/index.html was not found." }
           $indexText = Get-Content -Raw -LiteralPath $index.FullName
-          if ($indexText -notmatch 'data-app-shell="ikuai"') { throw "Bundled frontend is missing the app shell marker." }
-          if ($indexText -notmatch '<div\s+class="app ik-shell"(?:\s|>)') { throw "Bundled frontend is missing the framework shell container." }
+          if ($indexText -notmatch '<main\s+id="app"(?:\s|>)') { throw "Bundled frontend is missing the React application root." }
+          if ($indexText -match 'data-app-shell="ikuai"' -or $indexText -match '<div\s+class="app ik-shell"(?:\s|>)') { throw "Bundled frontend still contains retired legacy shell markers." }
           if ($indexText -notmatch 'data-overview-framework-asset="style"') { throw "Bundled frontend is missing the framework style asset marker." }
           if ($indexText -notmatch 'data-overview-framework-asset="script"') { throw "Bundled frontend is missing the framework script asset marker." }
           $publicRoot = Split-Path -Parent $index.FullName

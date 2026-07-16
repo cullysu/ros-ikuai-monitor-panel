@@ -1,7 +1,10 @@
 import { ChevronLeft, ChevronRight, Clock3, LockKeyhole, Server } from "lucide-react";
 import type { OverviewRawSnapshot, OverviewTone } from "../overview";
+import { MobileDomainWorkspace } from "../mobile/MobileDomainWorkspace";
+import { useMobilePanelSurface } from "../mobile/useMobilePanelSurface";
 import { PANEL_ROUTES, PANEL_ROUTE_IDS, type PanelRouteId } from "../routes/panelRoutes";
 import { buildSectionModel, type SectionTable } from "./sectionModels";
+import { SectionTimeSeriesChart } from "./SectionTimeSeriesChart";
 
 const READONLY_DESTINATIONS: Array<{ label: string; route: PanelRouteId }> = [
   { label: "采集状态", route: "readonlyDiagnostics" },
@@ -63,6 +66,8 @@ function MorePage({ onNavigate }: { onNavigate: (route: PanelRouteId) => void })
 }
 
 export function OperationalSectionPage({ route, snapshot, onNavigate }: { route: PanelRouteId; snapshot: OverviewRawSnapshot; onNavigate: (route: PanelRouteId) => void }) {
+  const mobile = useMobilePanelSurface();
+  if (mobile) return <MobileDomainWorkspace route={route} snapshot={snapshot} onNavigate={onNavigate} />;
   if (route === "more") return <MorePage onNavigate={onNavigate} />;
   const model = buildSectionModel(route, snapshot);
   const timeLabel = model.evidenceMode === "current" ? "业务成功" : model.evidenceMode === "historical" ? "上次成功" : "成功时间";
@@ -86,6 +91,8 @@ export function OperationalSectionPage({ route, snapshot, onNavigate }: { route:
           </div>
         ))}
       </section>
+
+      {model.visualization ? <SectionTimeSeriesChart visualization={model.visualization} /> : null}
 
       {route === "readonlyDiagnostics" ? (
         <nav className="readonly-feature-nav" aria-label="只读状态入口">

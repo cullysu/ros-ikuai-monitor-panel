@@ -53,7 +53,7 @@ export const PANEL_ROUTES: Record<PanelRouteId, PanelRouteDefinition> = {
   more: { id: "more", title: "更多工具", shortTitle: "更多", description: "路由、DNS、安全、审计与连接工具", taskGroup: "more" },
 };
 
-export const PANEL_TASK_ROUTES: PanelTaskGroup[] = ["overview", "interfaces", "more"];
+export const PANEL_TASK_ROUTES = ["overview", "interfaces", "terminals", "logs"] as const;
 
 export function isPanelRouteId(value: unknown): value is PanelRouteId {
   return typeof value === "string" && (PANEL_ROUTE_IDS as readonly string[]).includes(value);

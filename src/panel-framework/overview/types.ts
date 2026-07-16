@@ -50,7 +50,7 @@ export interface OverviewRawMeta {
   realtimeEndpointFailures?: OverviewEndpointFailureEntry[];
   slowRestEndpointFailures?: OverviewEndpointFailureEntry[];
   detailEndpointFailures?: OverviewEndpointFailureEntry[];
-  clientEvidenceBoundary?: "stale" | "offline" | "recovering" | "error";
+  clientEvidenceBoundary?: "stale" | "recovering" | "error";
   [key: string]: unknown;
 }
 

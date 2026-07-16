@@ -28,10 +28,6 @@ function removeQuietly(file) {
   try { fs.rmSync(file, { force: true }); } catch {}
 }
 
-function delay(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
 function runCase(item) {
   return new Promise((resolve, reject) => {
     const jsonFile = artifactPath(item.name, 'json');
@@ -60,10 +56,15 @@ function runCase(item) {
           throw new Error(`${item.name} hierarchy check exited 0 without fresh runtime artifacts`);
         }
         const report = JSON.parse(fs.readFileSync(jsonFile, 'utf8'));
-        if (report.pass !== true || report.incidentWorkspaceCompactOk !== true) {
+        const probe = report.desktopOverviewLedgerProbe;
+        if (
+          report.pass !== true ||
+          probe?.checks?.incidentSubstitution !== true ||
+          probe?.checks?.firstViewport !== true
+        ) {
           throw new Error(`${item.name} hierarchy report did not pass: ${JSON.stringify(report)}`);
         }
-        console.log(`[desktop-incident-hierarchy] PASS ${item.name} risk=${report.risk} incidentRows=${report.incidentRowCount}`);
+        console.log(`[desktop-incident-hierarchy] PASS ${item.name} risk=${probe.risk} incidentRows=${probe.ledgerRows}`);
       } catch (error) {
         resultError = error;
       }
@@ -78,25 +79,8 @@ function runCase(item) {
   });
 }
 
-async function runWithRetries(item) {
-  let lastError;
-  for (let attempt = 1; attempt <= 4; attempt += 1) {
-    try {
-      if (attempt > 1) {
-        console.log(`[desktop-incident-hierarchy] retry ${item.name} (${attempt}/4)`);
-        await delay(1800 + attempt * 700);
-      }
-      await runCase(item);
-      return;
-    } catch (error) {
-      lastError = error;
-    }
-  }
-  throw lastError;
-}
-
 async function main() {
-  for (const item of cases) await runWithRetries(item);
+  for (const item of cases) await runCase(item);
 }
 
 main().catch((error) => {

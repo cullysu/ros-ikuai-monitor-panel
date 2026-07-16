@@ -249,7 +249,7 @@ def assert_api_schema_contract():
             "host": "router.lan",
             "username": "monitor",
             "password": "secret",
-            "rememberPassword": True,
+            "rememberProfile": True,
         }
     )
     assert fresh.host == "router.lan"

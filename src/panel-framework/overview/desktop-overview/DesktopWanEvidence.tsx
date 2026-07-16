@@ -25,12 +25,14 @@ function timeLabel(timestamp: number): string {
 }
 
 export function DesktopWanEvidence({ traffic, onOpen }: { traffic: OverviewTrafficInstrument; onOpen: () => void }) {
+  const hasTrend = traffic.points.length > 0;
+  const fallbackPoint: OverviewTrafficPoint = { timestamp: Date.now(), down: 0, up: 0 };
   const rawPeak = Math.max(1, ...traffic.points.flatMap((point) => [point.down, point.up]));
   const downPath = pathFor(traffic.points, "down", rawPeak);
   const upPath = pathFor(traffic.points, "up", rawPeak);
-  const first = traffic.points[0];
-  const middle = traffic.points[Math.floor((traffic.points.length - 1) / 2)];
-  const last = traffic.points[traffic.points.length - 1];
+  const first = traffic.points[0] ?? fallbackPoint;
+  const middle = traffic.points[Math.floor((traffic.points.length - 1) / 2)] ?? fallbackPoint;
+  const last = traffic.points[traffic.points.length - 1] ?? fallbackPoint;
   const plotHeight = HEIGHT - PLOT.top - PLOT.bottom;
   const latestX = WIDTH - PLOT.right;
   const latestDownY = PLOT.top + plotHeight - (last.down / rawPeak) * plotHeight;
@@ -50,7 +52,8 @@ export function DesktopWanEvidence({ traffic, onOpen }: { traffic: OverviewTraff
         <span><small>窗口峰值</small><b>{traffic.peak}</b></span>
         <span><small>采样</small><b>{traffic.sampleCount} 点</b></span>
       </div>
-      <svg
+      {hasTrend ? (
+        <svg
         className="do-wan-chart"
         viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
         role="img"
@@ -75,8 +78,16 @@ export function DesktopWanEvidence({ traffic, onOpen }: { traffic: OverviewTraff
         <text className="do-chart-time" x={PLOT.left} y={HEIGHT - 14} textAnchor="start">{timeLabel(first.timestamp)}</text>
         <text className="do-chart-time" x={WIDTH / 2} y={HEIGHT - 14} textAnchor="middle">{timeLabel(middle.timestamp)}</text>
         <text className="do-chart-time" x={WIDTH - PLOT.right} y={HEIGHT - 14} textAnchor="end">{timeLabel(last.timestamp)}</text>
-      </svg>
-      <div className="do-wan-legend" aria-hidden="true"><span className="is-down">下载</span><span className="is-up">上传</span><span>单位 bit/s</span></div>
+        </svg>
+      ) : (
+        <div className="do-wan-pending" role="status" data-traffic-accumulating>
+          <b>时间序列正在积累</b>
+          <span>当前上下行读数可用；至少形成一个带时间的同窗样本后才绘制趋势。</span>
+        </div>
+      )}
+      {hasTrend ? (
+        <div className="do-wan-legend" aria-hidden="true"><span className="is-down">下载</span><span className="is-up">上传</span><span>单位 bit/s</span></div>
+      ) : null}
     </section>
   );
 }

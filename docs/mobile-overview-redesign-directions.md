@@ -1,217 +1,146 @@
-# Mobile Overview Redesign Directions
+# Mobile patrol console: third redesign directions
 
-## Status
+## Why the previous direction is rejected
 
-- Review baseline: `ced6386`
-- Decision: **replace the rejected mobile Overview; do not patch its composition**
-- Release gate: closed
-- Surface ownership: independent mobile render tree through `899px`; desktop owns `900px+`
+The `212d535` surface improved evidence truth but treated a large verdict band, a three-column fact block, one generic workflow stack, and direct-route matrices as product completion. It remained repetitive, under-filled in incidents, and shallow outside Overview. This direction starts from high-frequency tasks and implemented interaction rather than preserving that composition.
 
-## Research basis
+## Research translated into decisions
 
-The redesign uses product behavior rather than copying screenshots.
+These are extracted principles, not copied screenshots.
 
-- Apple layout guidance: prioritize content in reading order, respect safe areas, adapt to context, and use progressive disclosure rather than shrinking everything.  
-  <https://developer.apple.com/design/human-interface-guidelines/layout>
-- Apple typography guidance: create hierarchy through size, weight, and color; retain legibility and Dynamic Type reflow.  
-  <https://developer.apple.com/design/human-interface-guidelines/typography>
-- Apple tab-bar guidance: reserve tabs for stable top-level destinations, keep them limited, labelled, and persistent.  
+### Apple platform guidance
+
+- Tab bars are stable top-level destinations, retain navigation state, use short labels, and remain available when content is empty. Therefore terminals and logs cannot remain hidden behind a generic Tools tab.
   <https://developer.apple.com/design/human-interface-guidelines/tab-bars>
-- Apple disclosure guidance: essential information stays visible; disclosure reveals genuinely additional detail.  
-  <https://developer.apple.com/design/human-interface-guidelines/disclosure-controls>
-- Apple chart guidance: use a chart only for a decision or trend, with explicit scale, labels, annotations, and an accessible alternative.  
-  <https://developer.apple.com/cn/design/human-interface-guidelines/charts>  
-  <https://developer.apple.com/cn/design/human-interface-guidelines/charting-data>
-- iKuai System Overview: monitoring value comes from compact operational status—version, binding/notice, CPU, temperature/load, memory, and up/down evidence—rather than decorative illustration.  
+- Lists are the primary scan-and-drill structure for textual operational objects. Succinct rows, clear disclosure, persistent hierarchy selection, and iPad split views are more native and efficient than stacked desktop cells.
+  <https://developer.apple.com/design/human-interface-guidelines/lists-and-tables>
+
+### RouterOS and iKuai operational language
+
+- WebFig monitoring centers on interface state, routing information, statistics, and logs. These remain named domains rather than generic facts.
+  <https://help.mikrotik.com/docs/spaces/ROS/pages/328131/WebFig>
+- RouterOS interface evidence includes running flags, RX/TX counters, packets, and queue drops. Mobile interface rows put state and counters before explanatory prose.
+  <https://help.mikrotik.com/docs/spaces/ROS/pages/139526175/Interface%2Bstats%2Band%2Bmonitor-traffic>
+- RouterOS logs are topic- and severity-oriented. Mobile logs require topic/severity filters and timestamped rows.
+  <https://help.mikrotik.com/docs/spaces/ROS/pages/328094/Log>
+- iKuai System Overview uses compact inspectable system, terminal, resource, and notice objects. Cold-blue character comes from precise grouping and comparison, not tinting every surface.
   <https://www.ikuai8.com/zhic/ymgn/lyym/xtgk.html>
-- UniFi Traffic Flows: operational scanning is object-based—source, destination, risk, policy, bytes, duration—with a focused property view after selection.  
+
+### Current network products
+
+- UniFi exposes direct dashboard troubleshooting entry points and searchable flow objects with source, destination, ports, and traffic evidence.
+  <https://help.ui.com/hc/en-us/articles/31628490448151-UniFi-WiFi-Agent-Easily-Diagnose-and-Fix-Common-WiFi-Issues>
   <https://help.ui.com/hc/en-us/articles/32201256219799-Traffic-Flows-and-Traffic-Logging-in-UniFi-Network>
+- Firewalla separates WAN quality, LAN/Wi-Fi performance, alarms, devices, and flows. Its summary drills into time-windowed charts and object detail instead of repeating a health slogan.
+  <https://help.firewalla.com/hc/en-us/articles/4413511352083-Network-Performance-and-Quality-Monitoring>
+  <https://help.firewalla.com/hc/en-us/articles/360006083334-Manage-Alarms>
 
-## Rejected-baseline findings
+## Three materially different directions
 
-1. Runtime app bar and Overview device/evidence header repeat identity and freshness.
-2. A large dark verdict block consumes attention without adding evidence.
-3. Proof, signal, selected object, and detail replay the same values.
-4. Horizontal object selection is slower than a vertical risk queue.
-5. Normal, resource, collection, and interface states retain nearly the same composition.
-6. The 768px split view becomes an under-filled sidebar plus empty work area.
-7. The existing `900–1180px` desktop surface clips labels, uses microscopic type, and leaves large unused regions.
+### A. Patrol Queue
 
-## Three independent directions
+**Structure:** compact status header → three facts → top-three incident queue → selected object. Normal replaces the queue with one WAN instrument.
 
-### A. Operations Ledger
+**Advantages:** fastest incident judgment; clearest phone hierarchy; lowest evidence and accessibility risk.
 
-One vertical operational ledger: app bar, evidence strip, compact verdict, three fact rows, Top 3 objects, and expandable evidence below the fold.
+**Risks:** can feel like an alarm inbox in normal operation; secondary domains must carry the product depth.
 
-**Strengths**
+### B. Object Console
 
-- Fastest scanning and simplest reflow from `320–899px`.
-- Lowest duplication risk.
-- Strongest accessibility and text-zoom resilience.
+**Structure:** compact status strip → domain summary → dense WAN/interface/terminal list → selected detail. Overview behaves like a mobile iKuai object console.
 
-**Weaknesses**
+**Advantages:** strongest iKuai density; quickest object comparison; naturally becomes list-detail on iPad.
 
-- Healthy state risks feeling like a static specification sheet.
-- Does not answer the user's explicit need for a useful, legible monitoring graphic.
+**Risks:** many objects can bury service verdict; one list cannot honestly represent every incident type.
 
-### B. Patrol Queue + Object Drilldown
+### C. Evidence Timeline
 
-Overview is a prioritized inspection queue. Selecting a row enters the owning object route; at wide mobile widths the selected evidence can appear beside the queue.
+**Structure:** current verdict → ordered collection/change events → affected object → raw evidence.
 
-**Strengths**
+**Advantages:** strongest explanation of what changed; natural for logs and recovery.
 
-- Best incident-to-object workflow.
-- Highest-risk object naturally controls the default route and detail.
-- Avoids summary-card plus carousel duplication.
+**Risks:** snapshots do not always prove causal order; slower current WAN/default-route judgment.
 
-**Weaknesses**
+## Decision matrix
 
-- A persistent two-pane layout at 768px can recreate the rejected empty-workspace problem when the selected evidence is short.
-- Healthy mode needs a useful non-incident pivot without manufacturing risk.
+Scores are out of five. Higher implementation score means lower risk.
 
-### C. Live Network Instrument
-
-Compact verdict and three facts are followed by one truthful WAN SVG chart; incident objects remain vertical.
-
-**Strengths**
-
-- Strongest normal-state monitoring value and product identity.
-- Makes chart purpose, sampling window, units, and current value explicit.
-- Removes the old decorative CSS-line graphics.
-
-**Weaknesses**
-
-- A chart in every scenario would compete with incident response.
-- Requires a strict sample contract; one value cannot be dressed up as a trend.
-
-## Decision score
-
-Scores are out of 5. Duplication and implementation-risk scores are reversed: higher is safer.
-
-| Criterion | Weight | A Ledger | B Queue | C Instrument |
+| Criterion | Weight | A Patrol Queue | B Object Console | C Evidence Timeline |
 |---|---:|---:|---:|---:|
-| Time to truthful judgment | 20 | 5 | 5 | 4 |
-| Incident-to-object efficiency | 18 | 4 | 5 | 4 |
-| Non-repeating information layers | 14 | 5 | 4 | 4 |
-| Normal-state monitoring value | 12 | 3 | 3 | 5 |
-| `320–899px` resilience | 12 | 5 | 4 | 4 |
-| Accessibility / text zoom | 10 | 5 | 4 | 4 |
-| Visual product identity | 8 | 3 | 4 | 5 |
-| Implementation truthfulness risk | 6 | 5 | 4 | 3 |
-| **Weighted total / 500** | **100** | **446** | **426** | **413** |
+| First correct judgment | 20 | 5 | 4 | 3 |
+| Incident recognition | 16 | 5 | 4 | 4 |
+| Normal monitoring value | 14 | 4 | 5 | 3 |
+| Object inspection efficiency | 14 | 4 | 5 | 3 |
+| Density without tiny text | 12 | 5 | 4 | 4 |
+| Tablet expansion | 10 | 4 | 5 | 4 |
+| Evidence truth risk | 8 | 5 | 4 | 3 |
+| Implementation ownership | 6 | 5 | 4 | 3 |
+| **Weighted / 500** | **100** | **466** | **442** | **342** |
 
-No single proposal fully solves both normal monitoring and incident response. The chosen direction is therefore a constrained synthesis, not a visual compromise.
+## Chosen direction: Patrol Console
 
-## Chosen direction: Adaptive Operations Instrument
+Use **A for Overview hierarchy**, **B for domain workspaces**, and **C only for Logs where ordered events are actual evidence**.
 
-Use the **Ledger** as the permanent structure, the **Queue** as the incident workflow, and exactly one **Instrument** only when current samples support it.
+This is not a cosmetic synthesis:
 
-### Ownership rule
+- Delete the 112px verdict hero and replace it with a short status row.
+- Delete three generic tabs and add four task destinations.
+- Replace fake `查看全部` with a real incident center.
+- Retire shared mobile `DataTable` presentation for interfaces, terminals, logs, and connections.
+- Normal and incident Overview compositions differ after the evidence header.
+- Tablet adds selected-object evidence rather than an empty second column.
 
-- The live runtime app bar owns device identity, refresh, connection access, and current client phase.
-- The Overview must not repeat that live identity/phase block.
-- Static fixture rendering may provide a fixture toolbar adapter, but the underlying Overview composition remains the same.
-- Overview owns the business evidence timestamp and business verdict because these are snapshot facts, not merely client-runtime state.
+## Phone wire hierarchy
 
-### 390×844 normal first viewport
+### Normal at 390×844
 
-1. Global app bar: identity, runtime age, Refresh, device connection.
-2. One-line business evidence strip: state + absolute sample time.
-3. Compact verdict band: title plus one verified consequence; no giant hero.
-4. Three distinct facts in one divided ledger group.
-5. One current WAN SVG trace, only with at least two timestamped samples.
-6. No empty incident section.
-7. Three stable task destinations only: 运行 / 网络 / 工具. Terminals, logs,
-   routes, and diagnostics remain real routes inside the task index rather than
-   consuming permanent tab-bar slots.
+```text
+┌ router identity     age    refresh  more ┐  50
+├ current evidence · absolute time         ┤  30
+├ ✓ default route verified                 ┤  66
+│  gateway and service consequence         │
+├ default route │ WAN │ collection         ┤  64
+├ WAN throughput · 25s              detail ┤
+│  31.25 ↓     8.75 ↑   truthful SVG       │ 150
+├ focus: pppoe-wan1 · table/gateway/state  ┤  74
+├ evidence sources                         ┤  46
+└ Overview  Network  Terminals  Logs       ┘  safe area
+```
 
-### 390×844 incident first viewport
+### Incident at 390×844
 
-1. Global app bar.
-2. Business evidence strip.
-3. Compact incident verdict.
-4. Three state-specific, non-repeated facts.
-5. Vertical Top 3 affected objects, each a real route target.
-6. Chart moves below the incident queue or is omitted when irrelevant/stale.
-7. The same three-destination task navigation; incidents deep-link to their
-   owning route without manufacturing another tab.
+```text
+┌ router identity     age    refresh  more ┐
+├ historical/unavailable evidence boundary ┤
+├ ! concise incident conclusion            ┤
+├ three independent incident facts         ┤
+├ top priority                             ┤
+│  object 1 · state · consequence          │
+│  object 2 · state · consequence          │
+│  object 3 · state · consequence          │
+├ all incidents / selected object evidence ┤
+└ Overview  Network  Terminals  Logs       ┘
+```
 
-### Information-layer contract
+There is no empty incident placeholder, repeated summary card, or chart when current samples cannot support it.
 
-| Layer | Question answered | Forbidden content |
-|---|---|---|
-| Verdict | What is the operator-facing conclusion? | metric grids, object lists, evidence-time repetition |
-| Three facts | Which three independent facts justify that conclusion? | selected object identity, repeated verdict wording |
-| Instrument | What changed over a real time window? | one-point pseudo-trends, stale/current ambiguity |
-| Queue | Which object should be inspected next, and why? | aggregate facts already shown above |
-| Detail route | What raw evidence, dependency, impact, and source support this object? | replay of the Overview verdict/facts |
+## Visual language
 
-### Chart truth contract
+- Canvas: cold neutral `#eef3f5`; near-white primary surface; blue-gray structural rules.
+- Product hue: low-saturation deep cyan-blue for selection, links, and current evidence.
+- Incident states use low-chroma accents attached to wording/icons, not full-width wine-red heroes.
+- Radius scale: `4 / 6 / 8px`. Navigation chrome may blur; content does not.
+- Values use tabular numerals. Body is at least `15px`, metadata `12px`, controls `44px`.
+- Dividers express rows and alignment. Cards are reserved for real groups; no nested card stack.
 
-- Responsive SVG with `viewBox`; no CSS-box pseudo-chart.
-- At least two current timestamped samples from one coherent window.
-- Download and upload are separately labelled.
-- Window, unit, sample count, latest values, and scale are visible or in the accessible summary.
-- No smoothing, prediction, decorative grid, or flat-zero fallback.
-- One current sample renders `流量证据累积中`; stale/unavailable evidence removes the chart from the primary hierarchy.
+## Prototype gate
 
-## Scenario hierarchy
+Design cannot pass from prose. It needs:
 
-| Scenario | Verdict | Three facts | Primary queue / instrument |
-|---|---|---|---|
-| Normal | 出口路径已核实 | verified route; WAN running; collection complete | current WAN instrument; no fake incident list |
-| Fleet / multi-object | highest real risk, not “fleet” | affected count; route state; observation scope | Top 3 affected objects; fleet is scope metadata |
-| All offline | 出口中断 | WAN 0/N; active default 0; collection boundary | Top 3 offline WAN objects |
-| No snapshot | 当前业务状态不可判断 | snapshot unavailable; target identity; last successful business evidence | collection/evidence objects only; no business rates |
-| Collection down | 当前变化不可见 or 采集部分可用 | REST; SSH; last successful business evidence | failed/degraded channels; historical business objects excluded |
-| Resource full | 资源策略已触发 | breached classes; trailing consecutive samples; valid sample count | one resource object whose detail adds thresholds/source; no percentage replay in queue |
-| Interfaces down | N 个接口未运行 | down scope; default route state; WAN scope | Top 3 interfaces by dependency/blast radius |
-
-## Responsive contract
-
-### 320–359px
-
-- Single column.
-- Facts become three full-width rows to retain 16px values.
-- Metadata remains at least 13px; controls remain at least 44×44px.
-
-### 360–599px
-
-- One divided three-fact group.
-- Vertical queue rows; at most two text lines per object reason.
-- Normal-state chart spans the ledger width.
-
-### 600–899px
-
-- Keep the independent mobile tree and task navigation.
-- Use a centered `720px` maximum ledger.
-- Normal state may pair facts and instrument only when neither becomes cramped.
-- Incident state may show queue and selected evidence side by side only when both columns remain meaningfully populated; otherwise use one continuous ledger. No permanent empty pane.
-
-### 900–1180px
-
-- Desktop work-surface ownership begins.
-- Use continuous container reflow, readable type, and balanced evidence columns.
-- Do not solve clipping by shrinking below the type contract or by re-entering the phone tree.
-
-## Accessibility and interaction contract
-
-- Body/value text at least 16px; metadata at least 13px.
-- Named landmarks and textual status labels; color is redundant.
-- 44×44px minimum interactive targets and visible keyboard focus.
-- Back/Forward restores route, selected object, focus, and Overview scroll.
-- No fake sheet handle, horizontal content carousel, hover-only evidence, or gesture-only action.
-- Polling updates do not move focus or scroll; only meaningful state transitions enter the polite live region.
-- At 200% zoom, the page grows vertically without horizontal clipping.
-
-## Blocking prototype acceptance
-
-Before implementation can be called design-complete:
-
-1. Visual captures at 320, 360, 390, 430, 768, 1024, and 1180 widths.
-2. Normal plus all six abnormal scenarios.
-3. 390 first viewport contains verdict, business evidence, Refresh, three facts, and Top 3 affected objects when they exist.
-4. No repeated identity/freshness bars in live runtime.
-5. No fact value appears unchanged in verdict, fact group, queue, and detail.
-6. Chart gate proves sample count, timestamps, units, scale, current values, and stale omission.
-7. Text zoom, keyboard, touch, reduced motion, ARIA relationships, Back, and Forward checks pass.
+1. Real runtime screenshots for seven scenarios at `320×568`, `390×844`, `430×932`, `844×390`, and `768×1024`.
+2. Scenario compositions that visibly change with priority.
+3. Browser E2E activation of every visible control.
+4. 200% text captures without horizontal clipping.
+5. Search/filter/sort/detail evidence for Network, Terminals, Logs, Connections.
+6. Actual Back/Forward and focus restoration.
+7. Human screenshot review of hierarchy, density, consistency, and remaining P0/P1 findings, separate from DOM probes.

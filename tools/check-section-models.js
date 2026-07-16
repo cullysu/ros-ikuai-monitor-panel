@@ -1,33 +1,50 @@
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
-const { buildSync } = require("esbuild");
+const ts = require("typescript");
 
 const root = process.cwd();
-const outDir = path.join(root, "_acceptance", "section-model-contract");
-const bundleFile = path.join(outDir, "section-model-contract.cjs");
 
-fs.rmSync(outDir, { recursive: true, force: true });
-fs.mkdirSync(outDir, { recursive: true });
-buildSync({
-  stdin: {
-    contents: [
-      'export { buildSectionModel } from "./src/panel-framework/sections/sectionModels";',
-      'export { OVERVIEW_SCENARIO_FIXTURES } from "./src/panel-framework/overview";',
-    ].join("\n"),
-    loader: "ts",
-    resolveDir: root,
-    sourcefile: "section-model-contract.ts",
-  },
-  bundle: true,
-  format: "cjs",
-  platform: "node",
-  target: "node20",
-  outfile: bundleFile,
-  logLevel: "silent",
-});
+function loadTypeScript(module, filename) {
+  const source = fs.readFileSync(filename, "utf8");
+  const compiled = ts.transpileModule(source, {
+    compilerOptions: {
+      module: ts.ModuleKind.CommonJS,
+      moduleResolution: ts.ModuleResolutionKind.NodeJs,
+      target: ts.ScriptTarget.ES2020,
+      jsx: ts.JsxEmit.ReactJSX,
+      esModuleInterop: true,
+    },
+    fileName: filename,
+  });
+  module._compile(compiled.outputText, filename);
+}
 
-const { buildSectionModel, OVERVIEW_SCENARIO_FIXTURES } = require(bundleFile);
+require.extensions[".ts"] = loadTypeScript;
+require.extensions[".tsx"] = loadTypeScript;
+
+const { buildSectionModel } = require(path.join(
+  root,
+  "src",
+  "panel-framework",
+  "sections",
+  "sectionModels.ts",
+));
+const { OVERVIEW_SCENARIO_FIXTURES } = require(path.join(
+  root,
+  "src",
+  "panel-framework",
+  "overview",
+  "index.ts",
+));
+const { rowsFromModel } = require(path.join(
+  root,
+  "src",
+  "panel-framework",
+  "mobile",
+  "mobileDomainWorkspaceModel.ts",
+));
+
 const clone = (value) => structuredClone(value);
 const metric = (model, label) => model.metrics.find((item) => item.label === label);
 const localShortTimestamp = (value) => {
@@ -61,6 +78,66 @@ assert.equal(metric(buildSectionModel("connections", missingConnections), "连�
 
 const routeModel = buildSectionModel("routes", clone(OVERVIEW_SCENARIO_FIXTURES.single));
 assert.equal(metric(routeModel, "默认路由").value, "1", "defaultRoutes collection is itself default-route evidence");
+
+const productionTerminalShape = clone(OVERVIEW_SCENARIO_FIXTURES.single);
+productionTerminalShape.terminals = [{
+  ip: "192.0.2.21",
+  mac: "02:00:00:00:00:21",
+  hostname: "workstation",
+  status: "reachable",
+  connections: 7,
+  downRate: 1200,
+  upRate: 300,
+}];
+const terminalModel = buildSectionModel("terminals", productionTerminalShape);
+assert.equal(metric(terminalModel, "在线标记").value, "1", "RouterOS reachable state is current terminal evidence");
+assert.equal(metric(terminalModel, "连接合计").value, "7", "production connections field must be aggregated");
+
+const productionConnectionShape = clone(OVERVIEW_SCENARIO_FIXTURES.single);
+productionConnectionShape.connections.active = [{
+  localIp: "192.0.2.21",
+  remoteIp: "198.51.100.8",
+  protocol: "TCP",
+  totalRate: 1500,
+}];
+const connectionModel = buildSectionModel("connections", productionConnectionShape);
+assert.equal(connectionModel.tables[0].rows[0].source, "192.0.2.21", "production localIp must be the connection source");
+assert.equal(connectionModel.tables[0].rows[0].target, "198.51.100.8 / TCP", "production remoteIp and protocol must identify the connection target");
+const connectionRows = rowsFromModel("connections", connectionModel);
+assert.equal(connectionRows[0].primary, "192.0.2.21");
+assert.equal(connectionRows[0].secondary, "198.51.100.8 / TCP");
+assert.equal(connectionRows[0].trailing, "1500");
+
+const securityShape = clone(OVERVIEW_SCENARIO_FIXTURES.single);
+securityShape.security = {
+  filters: [{
+    chain: "input",
+    action: "accept",
+    comment: "allow established",
+    packets: 12,
+    bytes: 1024,
+    disabled: false,
+  }],
+  alerts: [],
+  addressLists: [],
+};
+const securityRows = rowsFromModel("security", buildSectionModel("security", securityShape));
+assert.equal(securityRows[0].primary, "allow established", "rule comments must be the scannable object identity");
+assert.equal(securityRows[0].secondary, "input · accept", "chain and action must remain visible without opening detail");
+assert.equal(securityRows[0].trailing, "accept", "missing rule order must not become the primary label");
+
+const logShape = clone(OVERVIEW_SCENARIO_FIXTURES.single);
+logShape.logs = {
+  all: [{ time: "12:00:01", topics: "system,info", message: "link state changed" }],
+  system: [{ time: "12:00:01", topics: "system,info", message: "link state changed" }],
+  firewall: [],
+  dhcp: [],
+  dns: [],
+};
+const logRows = rowsFromModel("logs", buildSectionModel("logs", logShape));
+assert.equal(logRows[0].primary, "link state changed", "log message must be scannable before opening detail");
+assert.equal(logRows[0].secondary, "12:00:01");
+assert.equal(logRows[0].trailing, "system,info");
 
 const historical = buildSectionModel("lineStatus", clone(OVERVIEW_SCENARIO_FIXTURES["collection-down"]));
 assert.equal(historical.evidenceMode, "historical");

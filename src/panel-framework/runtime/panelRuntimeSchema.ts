@@ -1,4 +1,5 @@
 export type SnapshotEnvelopeKind = "operational" | "partial" | "error";
+import { isRfc3339Timestamp, parseRfc3339Timestamp } from "../timeContract";
 
 export type SnapshotValidationResult =
   | {
@@ -70,7 +71,7 @@ export interface SavedRouterLogin {
 export interface RouterLoginBootstrap {
   routerLogin: RouterLoginProfile;
   savedLogins: SavedRouterLogin[];
-  savePasswordAvailable: boolean;
+  profileStorageAvailable: boolean;
   csrfToken: string;
 }
 
@@ -95,6 +96,26 @@ const SNAPSHOT_RECORD_FIELDS = [
   "security",
   "logs",
 ] as const;
+const SNAPSHOT_NESTED_RECORD_ARRAY_FIELDS = {
+  meta: ["staticEndpointFailures", "realtimeEndpointFailures", "slowRestEndpointFailures", "detailEndpointFailures"],
+  routes: ["items", "defaultRoutes", "staticRoutes", "tables"],
+  connections: ["active", "topIps", "protocolTop"],
+  dhcp: ["leases", "clients", "pools", "servers"],
+  arp: ["items", "alerts"],
+  loadBalance: ["distribution", "defaultRoutes", "mangleRules", "routingRules"],
+  dns: ["forwardRules", "ipv6Nd", "ipv6DhcpClients"],
+  security: ["filters", "alerts", "addressLists"],
+  logs: ["all", "system", "firewall", "dhcp", "dns"],
+} as const;
+const SNAPSHOT_RATE_FIELDS = {
+  interfaces: ["txRate", "rxRate", "upRate", "downRate"],
+  pppoe: ["upRate", "downRate"],
+  wan: ["upRate", "downRate"],
+  terminals: ["upRate", "downRate"],
+} as const;
+const CONNECTION_RATE_FIELDS = ["upRate", "downRate", "totalRate", "sessionBytes"] as const;
+const MAX_SNAPSHOT_COLLECTION_ROWS = 20_000;
+const TIMESTAMP_FIELD = /^(?:updatedAt|generatedAt|sourceUpdatedAt|cachedAt|lastUsedAt|createdAt|.*UpdatedAt|.*LastErrorAt)$/;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value && typeof value === "object" && !Array.isArray(value));
@@ -108,8 +129,93 @@ function finiteNumber(value: unknown): number | null {
   return typeof value === "number" && Number.isFinite(value) ? value : null;
 }
 
+function hasObservedOverviewValue(value: unknown): boolean {
+  if (!isRecord(value)) return false;
+  const stringFields = ["identity", "version", "boardName", "architecture", "uptime", "systemTime"];
+  const numberFields = ["cpuLoad", "memoryUsage", "memoryUsedPercent", "diskUsage", "diskUsedPercent", "connectionTotal", "onlineTerminals"];
+  return stringFields.some((key) => stringValue(value[key]) !== "") ||
+    numberFields.some((key) => finiteNumber(value[key]) !== null);
+}
+
+function hasRows(value: unknown): boolean {
+  return Array.isArray(value) && value.length > 0;
+}
+
+function hasNestedRows(value: unknown, keys: readonly string[]): boolean {
+  if (!isRecord(value)) return false;
+  return keys.some((key) => hasRows(value[key]));
+}
+
+function hasOperationalEvidenceValue(snapshot: Record<string, unknown>): boolean {
+  if (hasObservedOverviewValue(snapshot.overview)) return true;
+  if (SNAPSHOT_ARRAY_FIELDS.some((field) => hasRows(snapshot[field]))) return true;
+  if (hasNestedRows(snapshot.routes, ["items", "defaultRoutes", "staticRoutes"])) return true;
+  const connections = isRecord(snapshot.connections) ? snapshot.connections : null;
+  const connectionTotal = connections ? finiteNumber(connections.total) : null;
+  return connectionTotal !== null && connectionTotal >= 0;
+}
+
 function validTimestamp(value: unknown): boolean {
-  return typeof value === "string" && value.trim().length > 0 && Number.isFinite(Date.parse(value));
+  return isRfc3339Timestamp(value);
+}
+
+function validateSnapshotTree(
+  value: unknown,
+  path: string,
+  issues: string[],
+  depth = 0,
+) {
+  if (depth > 8) return;
+  if (Array.isArray(value)) {
+    if (value.length > MAX_SNAPSHOT_COLLECTION_ROWS) {
+      issues.push(`${path || "snapshot"} 超过 ${MAX_SNAPSHOT_COLLECTION_ROWS} 项上限`);
+      return;
+    }
+    value.forEach((item, index) => validateSnapshotTree(item, `${path}[${index}]`, issues, depth + 1));
+    return;
+  }
+  if (!isRecord(value)) return;
+  Object.entries(value).forEach(([key, item]) => {
+    const nextPath = path ? `${path}.${key}` : key;
+    if (!(path === "" && key === "updatedAt") && TIMESTAMP_FIELD.test(key) && item !== null && !validTimestamp(item)) {
+      issues.push(`${nextPath} 必须是带时区的 RFC 3339 时间或 null`);
+    }
+    validateSnapshotTree(item, nextPath, issues, depth + 1);
+  });
+}
+
+function validatePercentage(source: Record<string, unknown>, key: string, path: string, issues: string[]) {
+  if (!(key in source) || source[key] === null) return;
+  const value = finiteNumber(source[key]);
+  if (value === null || value < 0 || value > 100) issues.push(`${path}.${key} 必须是 0–100 的有限数值`);
+}
+
+function validateRecordArrayFields(input: Record<string, unknown>, issues: string[]) {
+  for (const [parentKey, fields] of Object.entries(SNAPSHOT_NESTED_RECORD_ARRAY_FIELDS)) {
+    const parent = isRecord(input[parentKey]) ? input[parentKey] as Record<string, unknown> : null;
+    if (!parent) continue;
+    for (const field of fields) {
+      if (!(field in parent)) continue;
+      const value = parent[field];
+      if (!Array.isArray(value)) {
+        issues.push(`${parentKey}.${field} 必须是数组`);
+      } else if (!value.every(isRecord)) {
+        issues.push(`${parentKey}.${field} 每一项必须是对象`);
+      }
+    }
+  }
+}
+
+function validateNonnegativeRowNumbers(value: unknown, path: string, fields: readonly string[], issues: string[]) {
+  if (!Array.isArray(value)) return;
+  value.forEach((item, index) => {
+    if (!isRecord(item)) return;
+    fields.forEach((field) => {
+      if (!(field in item) || item[field] === null) return;
+      const observed = finiteNumber(item[field]);
+      if (observed === null || observed < 0) issues.push(`${path}[${index}].${field} 必须是非负有限数值或 null`);
+    });
+  });
 }
 
 function channelTest(value: unknown): RouterChannelTest {
@@ -145,7 +251,9 @@ function routerLoginProfile(value: unknown): RouterLoginProfile | null {
   const port = finiteNumber(value.sshPort);
   const restPort = finiteNumber(value.restPort);
   const restScheme = value.restScheme === "http" ? "http" : value.restScheme === "https" ? "https" : null;
+  const updatedAt = stringValue(value.updatedAt);
   if (port === null || port < 1 || port > 65535 || restPort === null || restPort < 1 || restPort > 65535 || !restScheme) return null;
+  if (value.updatedAt !== null && typeof value.updatedAt !== "undefined" && !validTimestamp(value.updatedAt)) return null;
   return {
     configured: value.configured,
     host: stringValue(value.host),
@@ -158,7 +266,7 @@ function routerLoginProfile(value: unknown): RouterLoginProfile | null {
     insecureRestConfirmed: value.insecureRestConfirmed === true,
     source: stringValue(value.source),
     savedId: stringValue(value.savedId),
-    updatedAt: stringValue(value.updatedAt),
+    updatedAt,
     passwordSet: value.passwordSet === true,
     lastTest: connectionTest(value.lastTest),
   };
@@ -173,6 +281,7 @@ function savedLogin(value: unknown): SavedRouterLogin | null {
   const restPort = finiteNumber(value.restPort);
   const restScheme = value.restScheme === "http" ? "http" : value.restScheme === "https" ? "https" : null;
   if (!id || !host || !user || port === null || port < 1 || port > 65535 || restPort === null || restPort < 1 || restPort > 65535 || !restScheme) return null;
+  if (!validTimestamp(value.updatedAt) || !validTimestamp(value.lastUsedAt)) return null;
   return {
     id,
     host,
@@ -212,15 +321,40 @@ export function validatePanelSnapshot(input: unknown): SnapshotValidationResult 
 
   for (const field of SNAPSHOT_ARRAY_FIELDS) {
     if (field in input && !Array.isArray(input[field])) issues.push(`${field} 必须是数组`);
+    if (Array.isArray(input[field]) && !(input[field] as unknown[]).every(isRecord)) issues.push(`${field} 每一项必须是对象`);
   }
   for (const field of SNAPSHOT_RECORD_FIELDS) {
     if (field in input && !isRecord(input[field])) issues.push(`${field} 必须是对象`);
   }
 
   const meta = isRecord(input.meta) ? input.meta : null;
-  if (meta && "pollSeconds" in meta && finiteNumber(meta.pollSeconds) === null) {
-    issues.push("meta.pollSeconds 必须是有限数值");
+  if (meta && "pollSeconds" in meta) {
+    const pollSeconds = finiteNumber(meta.pollSeconds);
+    if (pollSeconds === null || pollSeconds < 1 || pollSeconds > 300) issues.push("meta.pollSeconds 必须是 1–300 的有限数值");
   }
+
+  const overview = isRecord(input.overview) ? input.overview : null;
+  if (overview) {
+    validatePercentage(overview, "cpuLoad", "overview", issues);
+    validatePercentage(overview, "memoryUsage", "overview", issues);
+    validatePercentage(overview, "diskUsage", "overview", issues);
+  }
+  const connections = isRecord(input.connections) ? input.connections : null;
+  if (connections && "total" in connections) {
+    const total = finiteNumber(connections.total);
+    if (total === null || total < 0) issues.push("connections.total 必须是非负有限数值");
+  }
+  validateRecordArrayFields(input, issues);
+  for (const [field, rateFields] of Object.entries(SNAPSHOT_RATE_FIELDS)) {
+    validateNonnegativeRowNumbers(input[field], field, rateFields, issues);
+  }
+  const connectionRecord = isRecord(input.connections) ? input.connections : null;
+  if (connectionRecord) {
+    for (const field of ["active", "topIps", "protocolTop"]) {
+      validateNonnegativeRowNumbers(connectionRecord[field], `connections.${field}`, CONNECTION_RATE_FIELDS, issues);
+    }
+  }
+  validateSnapshotTree(input, "", issues);
 
   if (issues.length > 0) return { ok: false, kind: "malformed", issues };
 
@@ -229,9 +363,9 @@ export function validatePanelSnapshot(input: unknown): SnapshotValidationResult 
     return { ok: true, kind: "error", value: input };
   }
 
-  const hasCoreIdentity = isRecord(input.meta) || isRecord(input.overview);
+  const hasCoreEnvelope = isRecord(input.meta) && isRecord(input.overview);
   const presentCollections = SNAPSHOT_ARRAY_FIELDS.filter((field) => Array.isArray(input[field])).length;
-  const operational = status === "ok" && validTimestamp(input.updatedAt) && hasCoreIdentity && presentCollections >= 2;
+  const operational = status === "ok" && validTimestamp(input.updatedAt) && hasCoreEnvelope && presentCollections >= 2 && hasOperationalEvidenceValue(input);
   return { ok: true, kind: operational ? "operational" : "partial", value: input };
 }
 
@@ -244,7 +378,7 @@ export function parseRouterLoginBootstrap(input: unknown): RouterLoginBootstrap 
   return {
     routerLogin: profile,
     savedLogins: saved,
-    savePasswordAvailable: input.savePasswordAvailable === true,
+    profileStorageAvailable: input.profileStorageAvailable === true,
     csrfToken,
   };
 }
@@ -268,7 +402,7 @@ export function snapshotEvidenceTimestamp(snapshot: Record<string, unknown>): nu
   const candidates = [meta.realtimeUpdatedAt, meta.statusUpdatedAt, snapshot.updatedAt];
   for (const candidate of candidates) {
     if (!validTimestamp(candidate)) continue;
-    return Date.parse(String(candidate));
+    return parseRfc3339Timestamp(candidate);
   }
   return null;
 }
@@ -280,8 +414,5 @@ export function snapshotPollSeconds(snapshot: Record<string, unknown> | null): n
 }
 
 export function snapshotHasOperationalEvidence(snapshot: Record<string, unknown>): boolean {
-  return Boolean(
-    isRecord(snapshot.overview) ||
-      SNAPSHOT_ARRAY_FIELDS.some((field) => Array.isArray(snapshot[field]) && (snapshot[field] as unknown[]).length > 0)
-  );
+  return hasOperationalEvidenceValue(snapshot);
 }

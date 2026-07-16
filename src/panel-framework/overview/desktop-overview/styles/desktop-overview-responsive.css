@@ -1,4 +1,4 @@
-@media (min-width: 900px) and (max-width: 1039px) {
+@media (min-width: 1024px) and (max-width: 1039px) {
   .do-shell {
     padding: 12px 12px 22px;
   }
@@ -89,7 +89,7 @@
   }
 }
 
-@media (min-width: 900px) and (prefers-contrast: more) {
+@media (min-width: 1024px) and (prefers-contrast: more) {
   .do-shell {
     --do-line: #78909a;
     --do-line-soft: #aebfc6;
@@ -97,7 +97,7 @@
   }
 }
 
-@media (min-width: 900px) and (forced-colors: active) {
+@media (min-width: 1024px) and (forced-colors: active) {
   .do-verdict::before,
   .do-ledger-row::before,
   .do-ledger-state i {

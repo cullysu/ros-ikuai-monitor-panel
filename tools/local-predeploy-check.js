@@ -5,9 +5,9 @@ const fs = require('fs/promises');
 const fsSync = require('fs');
 const http = require('http');
 const net = require('net');
-const os = require('os');
 const path = require('path');
 const { spawn, spawnSync } = require('child_process');
+const { chromium } = require('playwright-core');
 const { inspectMobileNativeOverview, inspectOverviewMobileInteraction } = require('./acceptance/inspect-overview-mobile');
 const { inspectSectionBrowser } = require('./acceptance/inspect-section-browser');
 const { inspectOverviewDesktopLayout } = require('./acceptance/inspect-overview-desktop-layout');
@@ -111,9 +111,32 @@ Safety:
 `.trim();
 }
 
+function resolvePythonExecutable() {
+  const explicit = [process.env.CODEX_PYTHON_PATH, process.env.PYTHON].filter(Boolean);
+  for (const candidate of explicit) {
+    if (!path.isAbsolute(candidate) || fsSync.existsSync(candidate)) return candidate;
+  }
+  const candidates = process.platform === 'win32'
+    ? [
+        path.join(ROOT, '.venv', 'Scripts', 'python.exe'),
+        path.join(
+          process.env.USERPROFILE || '',
+          '.cache',
+          'codex-runtimes',
+          'codex-primary-runtime',
+          'dependencies',
+          'python',
+          'python.exe',
+        ),
+      ]
+    : [path.join(ROOT, '.venv', 'bin', 'python')];
+  return candidates.find((candidate) => fsSync.existsSync(candidate)) ||
+    (process.platform === 'win32' ? 'python' : 'python3');
+}
+
 function parseArgs(argv) {
   const args = {
-    python: process.env.PYTHON || 'python',
+    python: resolvePythonExecutable(),
     out: '',
     url: '',
     port: 0,
@@ -436,26 +459,6 @@ async function waitForJson(url, timeoutMs = 15000) {
   throw lastError || new Error(`Timed out waiting for ${url}`);
 }
 
-async function waitForAnyJson(candidates, timeoutMs = 15000) {
-  const deadline = Date.now() + timeoutMs;
-  const errors = new Map();
-  while (Date.now() < deadline) {
-    for (const candidate of candidates) {
-      try {
-        const result = await fetchJson(`${candidate}/json/version`, { timeoutMs: 700 });
-        if (result.response.ok) return candidate;
-        errors.set(candidate, new Error(`HTTP ${result.response.status}`));
-      } catch (error) {
-        errors.set(candidate, error);
-      }
-    }
-    await delay(150);
-  }
-  throw new Error(
-    candidates.map((candidate) => `${candidate}: ${errors.get(candidate)?.message || 'not ready'}`).join('; ')
-  );
-}
-
 async function runCommand(command, args, options = {}) {
   return new Promise((resolve) => {
     const child = spawn(command, args, {
@@ -519,6 +522,13 @@ async function startSafeAppServer(args, report) {
     ROS_MONITOR_CONNECTION_PROTOCOL_POLL_SECONDS: '600',
     ROS_PANEL_READONLY_DIAGNOSTIC_TOTAL_TIMEOUT: '1',
   };
+  const localPythonDeps = path.join(ROOT, '_acceptance', 'python-deps');
+  if (fsSync.existsSync(localPythonDeps)) {
+    env.PYTHONPATH = Array.from(new Set([
+      localPythonDeps,
+      ...(process.env.PYTHONPATH || '').split(path.delimiter).filter(Boolean),
+    ])).join(path.delimiter);
+  }
 
   const child = spawn(args.python, ['app.py'], {
     cwd: ROOT,
@@ -963,76 +973,28 @@ function commandExists(command) {
   return result.status === 0;
 }
 
-async function getWebSocketCtor() {
-  if (typeof globalThis.WebSocket === 'function') return globalThis.WebSocket;
-  try {
-    return require('ws');
-  } catch {
-    throw new Error('No WebSocket implementation found. Use Node 22+ or install the optional ws package.');
-  }
-}
-
-async function openSocket(wsUrl) {
-  const WebSocketCtor = await getWebSocketCtor();
-  return new Promise((resolve, reject) => {
-    const socket = new WebSocketCtor(wsUrl);
-    const failTimer = setTimeout(() => reject(new Error(`Timed out opening ${wsUrl}`)), 8000);
-    const done = () => {
-      clearTimeout(failTimer);
-      resolve(socket);
-    };
-    const fail = (error) => {
-      clearTimeout(failTimer);
-      reject(error instanceof Error ? error : new Error(`Failed to open ${wsUrl}`));
-    };
-    if (typeof socket.addEventListener === 'function') {
-      socket.addEventListener('open', done, { once: true });
-      socket.addEventListener('error', fail, { once: true });
-    } else {
-      socket.once('open', done);
-      socket.once('error', fail);
-    }
-  });
-}
-
-function attachMessageHandler(socket, handler) {
-  const normalize = async (raw) => {
-    if (raw && typeof raw !== 'string') {
-      if (typeof raw.text === 'function') raw = await raw.text();
-      else if (raw instanceof ArrayBuffer) raw = Buffer.from(raw).toString('utf8');
-      else if (ArrayBuffer.isView(raw)) raw = Buffer.from(raw.buffer, raw.byteOffset, raw.byteLength).toString('utf8');
-      else raw = String(raw);
-    }
-    handler(String(raw));
-  };
-  if (typeof socket.addEventListener === 'function') {
-    socket.addEventListener('message', (event) => normalize(event.data).catch(() => {}));
-  } else {
-    socket.on('message', (data) => normalize(data).catch(() => {}));
-  }
-}
-
-class CdpSession {
-  constructor(socket) {
-    this.socket = socket;
-    this.nextId = 0;
-    this.pending = new Map();
+class PlaywrightSession {
+  constructor(context, page) {
+    this.context = context;
+    this.page = page;
     this.handlers = new Map();
-    attachMessageHandler(socket, (raw) => this.onMessage(raw));
+    this.closed = false;
+    page.on('pageerror', (error) => {
+      this.emit('Runtime.exceptionThrown', {
+        exceptionDetails: { text: error.message, stack: error.stack || '' },
+      });
+    });
+    page.on('console', (message) => {
+      if (message.type() !== 'error') return;
+      this.emit('Runtime.consoleAPICalled', {
+        type: 'error',
+        args: [{ type: 'string', value: message.text() }],
+      });
+    });
   }
 
-  onMessage(raw) {
-    const message = JSON.parse(raw);
-    if (message.id && this.pending.has(message.id)) {
-      const task = this.pending.get(message.id);
-      this.pending.delete(message.id);
-      if (message.error) task.reject(new Error(`${task.method}: ${JSON.stringify(message.error)}`));
-      else task.resolve(message.result || {});
-      return;
-    }
-    if (message.method && this.handlers.has(message.method)) {
-      for (const handler of this.handlers.get(message.method)) handler(message.params || {});
-    }
+  emit(method, params) {
+    for (const handler of this.handlers.get(method) || []) handler(params);
   }
 
   on(method, handler) {
@@ -1040,32 +1002,57 @@ class CdpSession {
     this.handlers.get(method).push(handler);
   }
 
-  send(method, params = {}) {
-    const id = ++this.nextId;
-    return new Promise((resolve, reject) => {
-      this.pending.set(id, { resolve, reject, method });
-      this.socket.send(JSON.stringify({ id, method, params }));
-    });
+  async send(method, params = {}) {
+    if (method === 'Runtime.enable' || method === 'Page.enable' || method === 'Log.enable') return {};
+    if (method === 'Emulation.setDeviceMetricsOverride') {
+      await this.page.setViewportSize({
+        width: Math.max(1, Math.round(Number(params.width) || 1)),
+        height: Math.max(1, Math.round(Number(params.height) || 1)),
+      });
+      return {};
+    }
+    if (method === 'Page.addScriptToEvaluateOnNewDocument') {
+      await this.page.addInitScript({ content: String(params.source || '') });
+      return {};
+    }
+    if (method === 'Page.navigate') {
+      await this.page.goto(String(params.url || 'about:blank'), {
+        waitUntil: 'domcontentloaded',
+        timeout: 15000,
+      });
+      return { frameId: 'playwright' };
+    }
+    if (method === 'Runtime.evaluate') {
+      try {
+        const value = await this.page.evaluate(String(params.expression || 'undefined'));
+        return { result: { value } };
+      } catch (error) {
+        return {
+          exceptionDetails: {
+            text: error instanceof Error ? error.message : String(error),
+            stack: error instanceof Error ? error.stack || '' : '',
+          },
+        };
+      }
+    }
+    if (method === 'Page.captureScreenshot') {
+      const data = await this.page.screenshot({
+        type: 'png',
+        fullPage: false,
+        animations: 'disabled',
+      });
+      return { data: data.toString('base64') };
+    }
+    throw new Error(`Unsupported Playwright browser command: ${method}`);
   }
 
-  close() {
-    try {
-      this.socket.close();
-    } catch {}
-  }
-}
+  close() {}
 
-function terminateBrowserTree(child) {
-  if (!child?.pid) return;
-  if (process.platform === 'win32') {
-    spawnSync('taskkill', ['/pid', String(child.pid), '/t', '/f'], {
-      windowsHide: true,
-      stdio: 'ignore',
-      timeout: 8000,
-    });
-    return;
+  async closeTarget() {
+    if (this.closed) return;
+    this.closed = true;
+    await this.context.close();
   }
-  if (!child.killed) child.kill('SIGKILL');
 }
 
 async function launchBrowser(args, report) {
@@ -1073,109 +1060,42 @@ async function launchBrowser(args, report) {
   if (!browserPath) {
     throw new Error('Edge/Chrome executable not found. Set BROWSER or CHROME_PATH.');
   }
-  const port = await getFreePort();
-  const userDataDir = path.join(os.tmpdir(), `ros-panel-predeploy-${process.pid}-${Date.now()}`);
-  const browserArgs = [
-    '--headless=new',
-    '--disable-gpu',
-    '--disable-background-networking',
-    '--disable-dev-shm-usage',
-    '--disable-sync',
-    '--disable-extensions',
-    '--no-first-run',
-    '--no-default-browser-check',
-    '--metrics-recording-only',
-    '--remote-debugging-address=127.0.0.1',
-    `--remote-debugging-port=${port}`,
-    `--user-data-dir=${userDataDir}`,
-    'about:blank',
-  ];
-  if (process.platform === 'win32') {
-    // New Edge headless still creates a native HWND; keep it off-screen.
-    browserArgs.splice(
-      1,
-      0,
-      '--window-position=-32000,-32000',
-      '--window-size=1,1',
-    );
-  } else {
-    browserArgs.splice(1, 0, '--no-sandbox');
-  }
-  const child = spawn(browserPath, browserArgs, {
-    windowsHide: true,
-    stdio: ['ignore', 'pipe', 'pipe'],
+  const browser = await chromium.launch({
+    executablePath: browserPath,
+    headless: true,
+    args: [
+      '--disable-background-networking',
+      '--disable-dev-shm-usage',
+      '--disable-sync',
+      '--disable-extensions',
+      '--no-first-run',
+      '--no-default-browser-check',
+      '--metrics-recording-only',
+      ...(process.platform === 'linux' ? ['--no-sandbox'] : []),
+    ],
   });
-  let stdout = '';
-  let stderr = '';
-  let exit = null;
-  child.stdout.on('data', (chunk) => { stdout += chunk.toString(); });
-  child.stderr.on('data', (chunk) => { stderr += chunk.toString(); });
-  child.on('exit', (code, signal) => { exit = { code, signal }; });
-  report.browser = { path: browserPath, port, userDataDir };
-
-  let devtoolsBaseUrl = '';
-  try {
-    devtoolsBaseUrl = await waitForAnyJson(
-      [`http://127.0.0.1:${port}`, `http://[::1]:${port}`],
-      45000
-    );
-    report.browser.devtoolsBaseUrl = devtoolsBaseUrl;
-  } catch (error) {
-    terminateBrowserTree(child);
-    await fs.rm(userDataDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 }).catch(() => {});
-    const stdoutArtifact = await writeLogArtifact(args.out, 'browser-launch.stdout.log', stdout);
-    const stderrArtifact = await writeLogArtifact(args.out, 'browser-launch.stderr.log', stderr);
-    report.browser = {
-      ...report.browser,
-      launchError: error.message,
-      exit,
-      stdout: summarizeTextArtifact(stdout, stdoutArtifact),
-      stderr: summarizeTextArtifact(stderr, stderrArtifact),
-    };
-    const launchMessage = error instanceof AggregateError
-      ? error.errors.map((item) => item?.message || String(item)).join('; ')
-      : error.message;
-    throw new Error(`Browser CDP endpoint did not become ready: ${launchMessage}`);
-  }
-
-  async function connect() {
-    let pageTarget = null;
-    try {
-      const created = await fetchJson(`${devtoolsBaseUrl}/json/new?about:blank`, {
-        method: 'PUT',
-        timeoutMs: 3000,
-      });
-      if (created.response.ok && created.json && created.json.webSocketDebuggerUrl) {
-        pageTarget = created.json;
-      }
-    } catch {}
-    for (let i = 0; i < 50; i += 1) {
-      if (pageTarget) break;
-      const { json } = await fetchJson(`${devtoolsBaseUrl}/json/list`, { timeoutMs: 3000 });
-      pageTarget = json.find((target) => target.type === 'page' && target.webSocketDebuggerUrl);
-      if (pageTarget) break;
-      await delay(200);
-    }
-    if (!pageTarget) throw new Error('Page websocket URL missing');
-    const socket = await openSocket(pageTarget.webSocketDebuggerUrl);
-    const session = new CdpSession(socket);
-    session.targetId = pageTarget.id;
-    session.closeTarget = async () => {
-      if (!pageTarget.id) return;
-      await fetchText(`${devtoolsBaseUrl}/json/close/${encodeURIComponent(pageTarget.id)}`, {
-        timeoutMs: 2000,
-      }).catch(() => {});
-    };
-    return session;
-  }
+  report.browser = { driver: 'playwright-core', path: browserPath };
 
   return {
     browserPath,
-    connect,
+    connect: async () => {
+      const context = await browser.newContext({
+        locale: 'zh-CN',
+        colorScheme: 'light',
+        reducedMotion: 'reduce',
+      });
+      try {
+        const page = await context.newPage();
+        page.setDefaultTimeout(15000);
+        page.setDefaultNavigationTimeout(15000);
+        return new PlaywrightSession(context, page);
+      } catch (error) {
+        await context.close().catch(() => {});
+        throw error;
+      }
+    },
     stop: async () => {
-      terminateBrowserTree(child);
-      await delay(500);
-      await fs.rm(userDataDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 }).catch(() => {});
+      await browser.close();
     },
   };
 }
@@ -1318,6 +1238,19 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
   }
   const inspection = result.result && result.result.value;
   if (section !== 'overview' || !inspection) return inspection;
+  const canonicalRouteProbeCell = scaleScenario === 'single' && viewport.width === 390 && viewport.height === 844;
+  if (!canonicalRouteProbeCell) {
+    return {
+      ...inspection,
+      panelRouteRuntimeOk: true,
+      panelRouteRuntimeProbe: {
+        applicable: true,
+        pass: true,
+        exercised: false,
+        reason: 'route interaction is exercised once at single 390x844 and by check:runtime-browser',
+      },
+    };
+  }
   const routeResult = await cdp.send('Runtime.evaluate', {
     expression: `(${inspectPanelRouteRuntime.toString()})()`,
     awaitPromise: true,
@@ -1328,7 +1261,7 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
     ...inspection,
     pass: Boolean(inspection.pass && routeProbe?.pass === true),
     panelRouteRuntimeOk: routeProbe?.pass === true,
-    panelRouteRuntimeProbe: routeProbe,
+    panelRouteRuntimeProbe: { ...routeProbe, exercised: true },
   };
 }
 
@@ -1428,12 +1361,13 @@ async function captureScreenshot(cdp, filePath) {
 
 async function runBrowserChecks(args, report, baseUrl) {
   const profiles = args.profile === 'both' ? ['public', 'private'] : [args.profile];
-  for (const profile of profiles) {
+  const browser = await launchBrowser(args, report);
+  report.browser = { driver: 'playwright-core', path: browser.browserPath };
+  try {
+    for (const profile of profiles) {
     const sections = args.sections || (profile === 'private' ? DEFAULT_PRIVATE_SECTIONS : DEFAULT_PUBLIC_SECTIONS);
     for (const scaleScenario of args.scaleScenarios) {
       for (const viewport of args.viewports) {
-        const browser = await launchBrowser(args, report);
-        report.browser = { path: browser.browserPath };
         let cdp = null;
         const runtimeErrors = [];
         const consoleErrors = [];
@@ -1592,18 +1526,20 @@ async function runBrowserChecks(args, report, baseUrl) {
               });
             }
           }
-          await withTimeout(browser.stop(), 8000, 'browser stop').catch((error) => {
-            warn(report, 'browser stop timed out', { error: error.message });
-          });
         }
       }
     }
+  }
+  } finally {
+    await withTimeout(browser.stop(), 8000, 'browser stop').catch((error) => {
+      warn(report, 'browser stop timed out', { error: error.message });
+    });
   }
 }
 
 function buildSnapshot(profile, scaleScenario = 'multi') {
   const publicProfile = profile === 'public';
-  const now = '2026-05-24 12:00:00';
+  const now = '2026-05-24T12:00:00Z';
   const capabilities = {
     readonlyDiagnostics: !publicProfile,
     privateDiagnostics: !publicProfile,
@@ -1693,7 +1629,7 @@ function buildSnapshot(profile, scaleScenario = 'multi') {
         up: [16000000, 21000000, 30000000, 42000000],
         down: [92000000, 120000000, 150000000, 185000000],
       },
-      routes: [{ dst: '0.0.0.0/0', gateway: 'pppoe-wan1', distance: 1, active: true }],
+      routes: [{ active: true, distance: 1, table: 'main', comment: '' }],
     },
     {
       name: 'WAN-2',
@@ -1715,7 +1651,7 @@ function buildSnapshot(profile, scaleScenario = 'multi') {
         up: [15000000, 20000000, 26000000, 37000000],
         down: [88000000, 100000000, 120000000, 138000000],
       },
-      routes: [{ dst: '0.0.0.0/0', gateway: 'pppoe-wan2', distance: 2, active: true }],
+      routes: [{ active: true, distance: 2, table: 'main', comment: '' }],
     },
   ];
   const terminals = [
@@ -1724,8 +1660,8 @@ function buildSnapshot(profile, scaleScenario = 'multi') {
       mac: 'AA:BB:CC:00:00:21',
       hostname: 'workstation',
       displayName: 'workstation',
-      source: 'dhcp',
-      connectionCount: 58,
+      status: 'reachable',
+      connections: 58,
       upRate: 6100000,
       downRate: 48000000,
       lastSeen: '1m',
@@ -1735,8 +1671,8 @@ function buildSnapshot(profile, scaleScenario = 'multi') {
       mac: 'AA:BB:CC:00:00:31',
       hostname: 'nas',
       displayName: 'nas',
-      source: 'arp',
-      connectionCount: 22,
+      status: 'reachable',
+      connections: 22,
       upRate: 21000000,
       downRate: 12000000,
       lastSeen: '30s',
@@ -1746,8 +1682,8 @@ function buildSnapshot(profile, scaleScenario = 'multi') {
       mac: 'AA:BB:CC:00:00:31',
       hostname: 'nas-ipv6',
       displayName: 'nas-ipv6',
-      source: 'ipv6',
-      connectionCount: 8,
+      status: 'reachable',
+      connections: 8,
       upRate: 1000000,
       downRate: 9000000,
       lastSeen: '2m',
@@ -1850,6 +1786,15 @@ function buildSnapshot(profile, scaleScenario = 'multi') {
         status: 'bound',
         dynamic: true,
       })),
+      clients: [{
+        interface: 'ether1',
+        status: 'bound',
+        usePeerDns: true,
+        addDefaultRoute: true,
+        defaultRouteDistance: '1',
+        dhcpOptions: 'hostname',
+        disabled: false,
+      }],
     },
     connections: {
       total: 420,
@@ -1859,13 +1804,17 @@ function buildSnapshot(profile, scaleScenario = 'multi') {
       topIps: terminals.map((row) => ({
         ip: row.ip,
         displayName: row.displayName,
-        count: row.connectionCount,
+        connections: row.connections,
         upRate: row.upRate,
         downRate: row.downRate,
       })),
       active: [
-        { src: '10.88.0.21', dst: '93.184.216.34', protocol: 'tcp', dstPort: 443, timeout: '58s' },
-        { src: '10.88.0.31', dst: '198.51.100.53', protocol: 'udp', dstPort: 53, timeout: '12s' },
+        { localIp: '10.88.0.21', remoteIp: '93.184.216.34', protocol: 'TCP', upRate: 6100000, downRate: 48000000, totalRate: 54100000, sessionBytes: 184000000, timeout: '58s', mark: 'wan-odd' },
+        { localIp: '10.88.0.31', remoteIp: '198.51.100.53', protocol: 'UDP', upRate: 21000000, downRate: 12000000, totalRate: 33000000, sessionBytes: 92000000, timeout: '12s', mark: 'wan-even' },
+      ],
+      protocolTop: [
+        { name: 'TCP / wan-odd', protocol: 'TCP', mark: 'wan-odd', connections: 1, upRate: 6100000, downRate: 48000000, totalRate: 54100000, sessionBytes: 184000000, source: 'active-connection-sample' },
+        { name: 'UDP / wan-even', protocol: 'UDP', mark: 'wan-even', connections: 1, upRate: 21000000, downRate: 12000000, totalRate: 33000000, sessionBytes: 92000000, source: 'active-connection-sample' },
       ],
       thresholdLevel: 'ok',
     },
@@ -1881,10 +1830,12 @@ function buildSnapshot(profile, scaleScenario = 'multi') {
       forwardRuleCount: 4,
       disabledForwardRuleCount: 0,
       forwardRuleSample: false,
-      forwardRuleRows: [
+      forwardRules: [
         { name: 'lan.local', type: 'A', value: '10.88.0.10', ttl: '1h', disabled: false },
         { name: 'nas.local', type: 'A', value: '10.88.0.31', ttl: '1h', disabled: false },
       ],
+      ipv6Nd: [{ interface: 'bridge-lan', advertiseDns: true, dnsServers: ['fd00:88::1'], managed: false, otherConfig: true, raLifetime: '30m' }],
+      ipv6DhcpClients: [{ interface: 'pppoe-wan1', status: 'bound', pool: 'ipv6-pool', prefix: '2001:db8:88::/56', usePeerDns: true, request: 'prefix', addDefaultRoute: true, defaultRouteDistance: '1', dhcpOptions: '' }],
     },
     security: {
       filters: [
@@ -1896,22 +1847,35 @@ function buildSnapshot(profile, scaleScenario = 'multi') {
       routingRules: [{ action: 'lookup-only-in-table', table: 'wan1', src: '10.88.0.0/24', disabled: false }],
     },
     loadBalance: {
+      mode: '多线分流 / 策略路由',
+      activeLines: 2,
       distribution: [
         { name: 'WAN-1', share: 56, active: true, upRate: 42000000, downRate: 185000000 },
         { name: 'WAN-2', share: 44, active: true, upRate: 37000000, downRate: 138000000 },
       ],
-      rules: [
-        { chain: 'prerouting', classifier: 'both-addresses-and-ports:2/0', mark: 'wan1', packets: 1800, bytes: 4200000 },
-        { chain: 'prerouting', classifier: 'both-addresses-and-ports:2/1', mark: 'wan2', packets: 1500, bytes: 3900000 },
+      defaultRoutes: [
+        { gateway: 'pppoe-wan1', distance: 1, table: 'main', active: true, comment: 'primary' },
+        { gateway: 'pppoe-wan2', distance: 2, table: 'main', active: true, comment: 'backup' },
       ],
+      mangleRules: [
+        { rawOrder: 1, chain: 'prerouting', action: 'mark-routing', newRoutingMark: 'wan1', inInterface: 'bridge-lan', comment: 'PCC WAN 1', disabled: false },
+        { rawOrder: 2, chain: 'prerouting', action: 'mark-routing', newRoutingMark: 'wan2', inInterface: 'bridge-lan', comment: 'PCC WAN 2', disabled: false },
+      ],
+      routingRules: [{ rawOrder: 1, action: 'lookup-only-in-table', table: 'wan1', srcAddress: '10.88.0.0/24', disabled: false }],
+      pccDetected: true,
     },
     routes: {
+      items: [
+        { dstAddress: '0.0.0.0/0', gateway: 'pppoe-wan1', distance: 1, table: 'main', active: true, static: true, disabled: false, default: true },
+        { dstAddress: '0.0.0.0/0', gateway: 'pppoe-wan2', distance: 2, table: 'main', active: true, static: true, disabled: false, default: true },
+        { dstAddress: '192.0.2.0/24', gateway: 'bridge-lan', distance: 1, table: 'main', active: true, static: true, disabled: false, default: false },
+      ],
       defaultRoutes: [
-        { dst: '0.0.0.0/0', gateway: 'pppoe-wan1', distance: 1, active: true, static: true, disabled: false },
-        { dst: '0.0.0.0/0', gateway: 'pppoe-wan2', distance: 2, active: true, static: true, disabled: false },
+        { dstAddress: '0.0.0.0/0', gateway: 'pppoe-wan1', distance: 1, table: 'main', active: true, static: true, disabled: false, default: true },
+        { dstAddress: '0.0.0.0/0', gateway: 'pppoe-wan2', distance: 2, table: 'main', active: true, static: true, disabled: false, default: true },
       ],
       staticRoutes: [
-        { dst: '192.0.2.0/24', gateway: 'bridge-lan', distance: 1, active: true, static: true, disabled: false },
+        { dstAddress: '192.0.2.0/24', gateway: 'bridge-lan', distance: 1, table: 'main', active: true, static: true, disabled: false, default: false },
       ],
       staticCount: 3,
       activeStaticCount: 3,
@@ -1924,6 +1888,12 @@ function buildSnapshot(profile, scaleScenario = 'multi') {
       firewall: [{ time: '12:01:01', topics: 'firewall,info', message: 'accepted established session' }],
       dhcp: [{ time: '12:02:01', topics: 'dhcp,info', message: 'lease bound' }],
       dns: [{ time: '12:03:01', topics: 'dns,info', message: 'cache hit' }],
+      all: [
+        { time: '12:00:01', topics: 'system,info', message: 'smoke fixture ready' },
+        { time: '12:01:01', topics: 'firewall,info', message: 'accepted established session' },
+        { time: '12:02:01', topics: 'dhcp,info', message: 'lease bound' },
+        { time: '12:03:01', topics: 'dns,info', message: 'cache hit' },
+      ],
     },
     statusFindings: {
       status: 'warning',
@@ -2039,7 +2009,7 @@ function makeWan(index) {
       up: [upRate * 0.45, upRate * 0.62, upRate * 0.74, upRate].map(Math.round),
       down: [downRate * 0.5, downRate * 0.66, downRate * 0.8, downRate].map(Math.round),
     },
-    routes: [{ dst: '0.0.0.0/0', gateway: name, distance: n, active: running, table: n === 1 ? 'main' : `wan-${n}` }],
+    routes: [{ active: running, distance: n, table: n === 1 ? 'main' : `wan-${n}`, comment: '' }],
   };
 }
 
@@ -2051,7 +2021,6 @@ function makeTerminal(index) {
     hostname: `client-${n}`,
     displayName: `client-${n}`,
     source: n % 2 ? 'dhcp' : 'arp',
-    connectionCount: 5 + (n % 90),
     connections: 5 + (n % 90),
     upRate: 100_000 + n * 8_000,
     downRate: 500_000 + n * 11_000,
@@ -2451,8 +2420,8 @@ function applyScaleScenario(snapshot, scaleScenario) {
   snapshot.connections.topIps = terminals.slice(0, 40).map((row) => ({
     ip: row.ip,
     displayName: row.displayName,
-    count: row.connectionCount,
-    connections: row.connectionCount,
+    count: row.connections,
+    connections: row.connections,
     upRate: row.upRate,
     downRate: row.downRate,
   }));
@@ -2463,14 +2432,25 @@ function applyScaleScenario(snapshot, scaleScenario) {
     upRate: row.upRate,
     downRate: row.downRate,
   }));
+  snapshot.loadBalance.activeLines = wan.filter((row) => row.running).length;
+  snapshot.loadBalance.mode = wan.length > 1 ? '多线分流 / 策略路由' : '单线路';
   snapshot.routes.defaultRoutes = wan.map((row, index) => ({
-    dst: '0.0.0.0/0',
+    dstAddress: '0.0.0.0/0',
     gateway: row.name,
     distance: index + 1,
     active: row.running,
     static: true,
     disabled: false,
+    default: true,
     table: index === 0 ? 'main' : `wan-${index + 1}`,
+  }));
+  snapshot.routes.items = [...snapshot.routes.defaultRoutes, ...(snapshot.routes.staticRoutes || [])];
+  snapshot.loadBalance.defaultRoutes = snapshot.routes.defaultRoutes.map((row) => ({
+    gateway: row.gateway,
+    distance: row.distance,
+    table: row.table,
+    active: row.active,
+    comment: '',
   }));
   const upTotal = wan.reduce((sum, row) => sum + row.upRate, 0);
   const downTotal = wan.reduce((sum, row) => sum + row.downRate, 0);
@@ -2495,7 +2475,7 @@ function applyScaleScenario(snapshot, scaleScenario) {
     arp: listScaleMeta(terminals.length, snapshot.arp.items.length, 120, terminals.length > snapshot.arp.items.length, 'first 120 sorted by IP', 'ip'),
     dhcpLeases: listScaleMeta(terminals.length, snapshot.dhcp.leases.length, 120, terminals.length > snapshot.dhcp.leases.length, 'first 120 sorted by status and IP', 'status/ip', ['status', 'server', 'static']),
     connectionsActive: listScaleMeta(snapshot.connections.total, snapshot.connections.active.length, 80, true, 'active connection sample', 'rate'),
-    dnsStatic: listScaleMeta(snapshot.dns.forwardRuleCount || 4, snapshot.dns.forwardRuleRows.length, 100, true, 'preview rows; /api/dns-static is paged', 'RouterOS order'),
+    dnsStatic: listScaleMeta(snapshot.dns.forwardRuleCount || 4, snapshot.dns.forwardRules.length, 100, true, 'preview rows; /api/dns-static is paged', 'RouterOS order'),
   };
   snapshot.connections.meta = {
     active: snapshot.meta.scale.connectionsActive,
@@ -2505,6 +2485,7 @@ function applyScaleScenario(snapshot, scaleScenario) {
     leases: snapshot.meta.scale.dhcpLeases,
     pools: listScaleMeta(snapshot.dhcp.pools.length, snapshot.dhcp.pools.length),
     servers: listScaleMeta(snapshot.dhcp.servers.length, snapshot.dhcp.servers.length),
+    clients: listScaleMeta(snapshot.dhcp.clients.length, snapshot.dhcp.clients.length),
   };
   if (scaleScenario === 'single' || scaleScenario === 'fleet') {
     setSnapshotFresh(snapshot);

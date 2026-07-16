@@ -1,47 +1,31 @@
-import {
-  mountRouterOverviewPanel,
-  unmountRouterOverviewPanel,
-} from "./legacyBridge";
-
-export { mountRouterOverviewPanel, unmountRouterOverviewPanel };
+import { createRoot, type Root } from "react-dom/client";
+import { PanelFrameworkApp } from "./panel-framework-app";
+import "./styles.css";
 
 type TestSnapshotWindow = Window & {
   __PANEL_TEST_SNAPSHOT__?: unknown;
 };
 
-let autoMountStarted = false;
-let autoMountHandle: { unmount: () => void } | null = null;
+let root: Root | null = null;
 
 function resolveTestSnapshot(): unknown {
   const testWindow = window as TestSnapshotWindow;
-  if (typeof testWindow.__PANEL_TEST_SNAPSHOT__ !== "undefined") {
-    return testWindow.__PANEL_TEST_SNAPSHOT__;
-  }
-  return undefined;
+  return typeof testWindow.__PANEL_TEST_SNAPSHOT__ === "undefined"
+    ? undefined
+    : testWindow.__PANEL_TEST_SNAPSHOT__;
 }
 
-function mountAutoPanel(snapshot: unknown) {
-  if (autoMountHandle) return;
+function mountPanel() {
+  if (root) return;
   const app = document.getElementById("app");
-  if (!app) return;
-
-  autoMountHandle = mountRouterOverviewPanel(app, snapshot, {
-    preserveLegacyFallback: false,
-  });
-  window.dispatchEvent(new CustomEvent("router-overview-panel-framework-auto-mounted"));
+  if (!app) throw new Error("RouterOS panel root #app is missing");
+  root = createRoot(app);
+  root.render(<PanelFrameworkApp snapshot={resolveTestSnapshot()} />);
+  window.dispatchEvent(new CustomEvent("router-panel-mounted"));
 }
 
-function startAutoMount() {
-  if (autoMountStarted) return;
-  autoMountStarted = true;
-  mountAutoPanel(resolveTestSnapshot());
-}
-
-if (typeof window !== "undefined") {
-  const run = () => startAutoMount();
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", run, { once: true });
-  } else {
-    run();
-  }
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", mountPanel, { once: true });
+} else {
+  mountPanel();
 }

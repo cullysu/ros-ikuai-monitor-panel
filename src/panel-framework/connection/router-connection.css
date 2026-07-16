@@ -185,6 +185,45 @@
   accent-color: var(--router-connect-blue);
 }
 
+.router-advanced-settings { background: #f5f8f9; }
+.router-advanced-settings summary {
+  display: flex;
+  min-height: 52px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 7px 13px;
+  color: #45636f;
+  cursor: pointer;
+  list-style: none;
+}
+.router-advanced-settings summary::-webkit-details-marker { display: none; }
+.router-advanced-settings summary > span {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 10px;
+}
+.router-advanced-settings summary b,
+.router-advanced-settings summary small { display: block; min-width: 0; }
+.router-advanced-settings summary b { color: #183844; font-size: 14px; line-height: 1.35; }
+.router-advanced-settings summary small {
+  margin-top: 1px;
+  overflow: hidden;
+  color: var(--router-connect-muted);
+  font-size: 12px;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.router-advanced-settings summary > span > svg { flex: 0 0 auto; color: #537482; }
+.router-advanced-settings summary > svg { flex: 0 0 auto; transition: transform 160ms ease-out; }
+.router-advanced-settings[open] summary { border-bottom: 1px solid #c9d8de; background: #eaf1f4; }
+.router-advanced-settings[open] summary > svg { transform: rotate(180deg); }
+.router-advanced-settings summary:focus-visible { outline: 3px solid rgb(47 113 143 / 32%); outline-offset: -3px; }
+.router-advanced-fields { background: var(--router-connect-surface); }
+.router-advanced-fields .router-field:last-child { border-bottom: 0; }
+
 .router-saved-list { display: grid; }
 .router-saved-profile { display: grid; grid-template-columns: minmax(0, 1fr) 48px; border-bottom: 1px solid #d4e0e5; }
 .router-saved-profile:last-child { border-bottom: 0; }
@@ -339,7 +378,7 @@
 .router-mobile-connection-intro h1 { margin: 4px 0 0; font-size: 26px; line-height: 1.08; letter-spacing: -.03em; }
 .router-mobile-connection-intro p { margin: 5px 0 0; color: #526c77; font-size: 14px; }
 
-@media (max-width: 899px) {
+@media (max-width: 1023px) {
   html:has([data-router-connection-screen]),
   body:has([data-router-connection-screen]),
   html:has(.router-connection-status.is-mobile),

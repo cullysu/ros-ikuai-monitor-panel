@@ -1,21 +1,26 @@
 #!/usr/bin/env node
 'use strict';
 
+const crypto = require('crypto');
 const fs = require('fs');
 const fsp = require('fs/promises');
-const crypto = require('crypto');
 const http = require('http');
 const net = require('net');
 const path = require('path');
-const { spawn, spawnSync } = require('child_process');
+const { spawnSync } = require('child_process');
+const { chromium } = require('playwright-core');
 
 const root = path.resolve(__dirname, '..');
 const publicDir = path.join(root, 'public');
 const outDir = path.join(root, '_acceptance', 'panel-runtime-browser');
+const fingerprint = 'SHA256:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+const actionTimeout = 8000;
+const testTimeout = 120000;
+let diagnosticPage = null;
+const diagnosticPageErrors = [];
+let cleanupRuntime = async () => {};
 
-const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
-function currentGitHead() {
+function gitHead() {
   const result = spawnSync('git', ['rev-parse', 'HEAD'], {
     cwd: root,
     encoding: 'utf8',
@@ -23,24 +28,27 @@ function currentGitHead() {
   });
   const head = String(result.stdout || '').trim();
   if (result.status !== 0 || !/^[0-9a-f]{40,64}$/i.test(head)) {
-    throw new Error(`unable to resolve exact git HEAD: ${String(result.stderr || result.error || '').trim()}`);
+    throw new Error('unable to resolve exact git HEAD');
   }
   return head;
 }
 
-async function getFreePort() {
+function utc(offsetMs) {
+  return new Date(Date.now() + (offsetMs || 0)).toISOString();
+}
+
+async function freePort() {
   return new Promise((resolve, reject) => {
     const server = net.createServer();
     server.once('error', reject);
     server.listen(0, '127.0.0.1', () => {
       const address = server.address();
-      const port = typeof address === 'object' && address ? address.port : 0;
-      server.close(() => resolve(port));
+      server.close(() => resolve(address.port));
     });
   });
 }
 
-function json(response, status, payload) {
+function sendJson(response, status, payload) {
   const body = Buffer.from(JSON.stringify(payload), 'utf8');
   response.writeHead(status, {
     'Content-Type': 'application/json; charset=utf-8',
@@ -50,26 +58,35 @@ function json(response, status, payload) {
   response.end(body);
 }
 
-function routerProfile(configured) {
+function channelTest(restOk) {
+  return {
+    ssh: { ok: true, identity: 'lab-router', error: null, elapsedMs: 18 },
+    rest: {
+      ok: restOk,
+      status: restOk ? 200 : null,
+      error: restOk ? null : 'mock REST timeout',
+      elapsedMs: 80,
+    },
+    elapsedMs: 81,
+  };
+}
+
+function profile(configured) {
   return {
     configured,
     host: configured ? '192.0.2.1' : '',
     user: configured ? 'observer' : '',
     sshPort: 22,
-    sshHostKeyFingerprint: configured ? 'SHA256:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA' : '',
+    sshHostKeyFingerprint: configured ? fingerprint : '',
     restScheme: 'https',
     restPort: 443,
     restVerifyTls: true,
     insecureRestConfirmed: false,
     source: configured ? 'ui' : 'memory',
-    savedId: configured ? 'lab-router' : null,
-    updatedAt: configured ? new Date().toISOString() : null,
+    savedId: configured ? 'lab-router' : '',
+    updatedAt: configured ? utc() : null,
     passwordSet: configured,
-    lastTest: configured ? {
-      ssh: { ok: true, identity: 'lab-router', error: null, elapsedMs: 18 },
-      rest: { ok: false, status: null, error: 'mock REST timeout', elapsedMs: 80 },
-      elapsedMs: 81,
-    } : null,
+    lastTest: configured ? channelTest(false) : null,
   };
 }
 
@@ -79,40 +96,31 @@ function savedProfiles() {
     host: '192.0.2.1',
     user: 'observer',
     sshPort: 22,
-    sshHostKeyFingerprint: 'SHA256:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+    sshHostKeyFingerprint: fingerprint,
     restScheme: 'https',
     restPort: 443,
     restVerifyTls: true,
     insecureRestConfirmed: false,
     label: 'Lab Router',
-    source: 'saved',
-    createdAt: '2026-07-16T08:00:00.000Z',
     updatedAt: '2026-07-16T08:00:00.000Z',
     lastUsedAt: '2026-07-16T08:00:00.000Z',
-    passwordSaved: false,
     lastTest: null,
   }];
 }
 
-function connectionTest(restOk = false) {
-  return {
-    ssh: { ok: true, identity: 'lab-router', error: null, elapsedMs: 18 },
-    rest: { ok: restOk, status: restOk ? 200 : null, error: restOk ? null : 'mock REST timeout', elapsedMs: 80 },
-    elapsedMs: 81,
-  };
-}
-
-function operationalSnapshot(sequence, options = {}) {
-  const now = options.stale ? '2026-07-01T00:00:00.000Z' : new Date().toISOString();
+function snapshot(sequence, options) {
+  const settings = options || {};
+  const now = settings.stale ? utc(-24 * 60 * 60 * 1000) : utc();
   return {
     status: 'ok',
     updatedAt: now,
     error: null,
     meta: {
+      contractVersion: 1,
       target: '192.0.2.1',
       routerHost: '192.0.2.1',
       configuredIdentity: 'lab-router',
-      pollSeconds: options.pollSeconds || 2,
+      pollSeconds: settings.pollSeconds || 2,
       realtimeUpdatedAt: now,
       staticUpdatedAt: now,
       capabilities: { restTrusted: false, sshRead: true, routerosWrite: false },
@@ -125,169 +133,285 @@ function operationalSnapshot(sequence, options = {}) {
       memoryUsage: 41,
       diskUsage: 18,
       connectionTotal: 42,
-      onlineTerminals: 2,
+      onlineTerminals: 25,
     },
     interfaces: [
-      { name: 'pppoe-wan1', type: 'pppoe-out', role: 'WAN', running: true, disabled: false, rxRate: 24000000 + sequence, txRate: 8000000 },
-      { name: 'bridge-lan', type: 'bridge', role: 'LAN', running: true, disabled: false, rxRate: 8000000, txRate: 24000000 + sequence },
+      {
+        name: 'pppoe-wan1',
+        type: 'pppoe-out',
+        role: 'WAN',
+        running: true,
+        disabled: false,
+        rxRate: 24000000 + sequence,
+        txRate: 8000000,
+      },
+      {
+        name: 'bridge-lan',
+        type: 'bridge',
+        role: 'LAN',
+        running: true,
+        disabled: false,
+        rxRate: 8000000,
+        txRate: 24000000 + sequence,
+      },
     ],
-    wan: [{ name: 'pppoe-wan1', interface: 'pppoe-wan1', running: true, disabled: false, downRate: 24000000 + sequence, upRate: 8000000 }],
-    pppoe: [{ name: 'pppoe-wan1', interface: 'pppoe-wan1', running: true, disabled: false, downRate: 24000000 + sequence, upRate: 8000000 }],
-    terminals: [{ ip: '192.0.2.20', hostname: 'workstation', online: true }],
-    routes: { items: [], defaultRoutes: [{ dstAddress: '0.0.0.0/0', gateway: 'pppoe-wan1', active: true, disabled: false, distance: 1 }] },
+    wan: [{
+      name: 'pppoe-wan1',
+      interface: 'pppoe-wan1',
+      running: true,
+      disabled: false,
+      downRate: 24000000 + sequence,
+      upRate: 8000000,
+    }],
+    pppoe: [{
+      name: 'pppoe-wan1',
+      interface: 'pppoe-wan1',
+      running: true,
+      disabled: false,
+      downRate: 24000000 + sequence,
+      upRate: 8000000,
+    }],
+    terminals: Array.from({ length: 25 }, (_, index) => ({
+      ip: `192.0.2.${20 + index}`,
+      mac: `02:00:00:00:00:${String(index + 1).padStart(2, '0')}`,
+      hostname: index === 24 ? 'workstation-special' : `workstation-${String(index + 1).padStart(2, '0')}`,
+      status: 'online',
+      online: true,
+      connections: index + 1,
+      downRate: 1000000 + index * 1000,
+      upRate: 250000 + index * 500,
+    })),
+    routes: {
+      items: [],
+      defaultRoutes: [{
+        dstAddress: '0.0.0.0/0',
+        gateway: 'pppoe-wan1',
+        active: true,
+        disabled: false,
+        distance: 1,
+      }],
+    },
     connections: { total: 42, active: [], topIps: [] },
     dns: {},
   };
 }
 
-async function readRequestBody(request) {
+async function requestBody(request) {
   const chunks = [];
   for await (const chunk of request) chunks.push(chunk);
-  if (!chunks.length) return {};
-  return JSON.parse(Buffer.concat(chunks).toString('utf8'));
+  return chunks.length ? JSON.parse(Buffer.concat(chunks).toString('utf8')) : {};
 }
 
-async function startMockServer() {
+async function startMock() {
   const state = {
     configured: false,
     loginAttempts: 0,
     snapshotCalls: 0,
     logoutCalls: 0,
-    manualSnapshotSequence: 0,
+    sequence: 0,
     nextSnapshot: '',
+    scenario: '',
     pollSeconds: 2,
     lastLoginBody: null,
   };
-  const server = http.createServer(async (request, response) => {
-    const url = new URL(request.url || '/', 'http://127.0.0.1');
-    if (request.method === 'GET' && url.pathname === '/api/router-login') {
-      return json(response, 200, {
-        ok: true,
-        routerLogin: routerProfile(state.configured),
-        savedLogins: savedProfiles(),
-        savePasswordAvailable: true,
-        csrfToken: 'mock-csrf',
-      });
-    }
-    if (request.method === 'POST' && url.pathname === '/api/router-login') {
-      const body = await readRequestBody(request);
-      state.loginAttempts += 1;
-      state.lastLoginBody = body;
-      if (body.password === 'wrong') {
-        return json(response, 400, {
-          ok: false,
-          status: 400,
-          code: 'router_login_failed',
-          error: '模拟连接失败：REST 与 SSH 均未验证',
-          test: {
-            ssh: { ok: false, error: 'mock auth failed', elapsedMs: 15 },
-            rest: { ok: false, error: 'mock auth failed', elapsedMs: 15 },
-          },
-        });
-      }
-      const hostFingerprint = 'SHA256:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
-      if (body.password === 'correct-horse' && body.sshHostKeyFingerprint !== hostFingerprint) {
-        return json(response, 409, {
-          ok: false,
-          status: 409,
-          code: 'ssh_host_key_confirmation_required',
-          error: '首次连接必须确认 RouterOS SSH 主机密钥指纹。确认前不会发送 SSH 密码。',
-          test: {
-            ssh: {
-              ok: false,
-              error: 'SSH host key confirmation required',
-              elapsedMs: 8,
-              fingerprint: hostFingerprint,
-              algorithm: 'ssh-ed25519',
-              confirmationRequired: true,
-            },
-            rest: { ok: true, status: 200, error: null, elapsedMs: 14, scheme: 'https', port: 443, verifyTls: true },
-            elapsedMs: 15,
-          },
-        });
-      }
-      state.configured = true;
-      state.snapshotCalls = 0;
-      return json(response, 200, {
-        ok: true,
-        routerLogin: routerProfile(true),
-        savedLogins: savedProfiles(),
-        test: connectionTest(false),
-        warning: 'SSH 已验证；REST 未通过，依赖 REST 的数据可能缺失。',
-      });
-    }
-    if (request.method === 'POST' && url.pathname === '/api/router-logout') {
-      state.configured = false;
-      state.logoutCalls += 1;
-      return json(response, 200, {
-        ok: true,
-        routerLogin: routerProfile(false),
-        savedLogins: savedProfiles(),
-      });
-    }
-    if (request.method === 'POST' && url.pathname === '/api/router-login-forget') {
-      return json(response, 200, {
-        ok: true,
-        removed: true,
-        routerLogin: routerProfile(state.configured),
-        savedLogins: [],
-      });
-    }
-    if (request.method === 'GET' && url.pathname === '/api/snapshot') {
-      state.snapshotCalls += 1;
-      if (!state.configured) {
-        return json(response, 200, { status: 'needs_config', updatedAt: new Date().toISOString(), error: 'RouterOS is not configured', meta: { pollSeconds: 2 } });
-      }
-      if (state.snapshotCalls === 1) {
-        return json(response, 200, { status: 'starting', updatedAt: new Date().toISOString(), error: null, meta: { pollSeconds: 2 } });
-      }
-      const nextSnapshot = state.nextSnapshot;
-      state.nextSnapshot = '';
-      if (nextSnapshot === 'api-error') {
-        return json(response, 503, { ok: false, status: 503, code: 'collector_unavailable', error: '模拟采集接口暂时不可用' });
-      }
-      if (nextSnapshot === 'malformed') {
-        return json(response, 200, { ...operationalSnapshot(state.manualSnapshotSequence, { pollSeconds: state.pollSeconds }), interfaces: {} });
-      }
-      state.manualSnapshotSequence += 1;
-      return json(response, 200, operationalSnapshot(state.manualSnapshotSequence, {
-        stale: nextSnapshot === 'stale',
-        pollSeconds: state.pollSeconds,
-      }));
-    }
 
-    const relative = url.pathname === '/' ? 'index.html' : decodeURIComponent(url.pathname.replace(/^\/+/, ''));
-    const filePath = path.resolve(publicDir, relative);
-    if (filePath !== path.resolve(publicDir) && !filePath.startsWith(`${path.resolve(publicDir)}${path.sep}`)) {
-      response.writeHead(404); response.end(); return;
-    }
+  const server = http.createServer(async (request, response) => {
     try {
+      const url = new URL(request.url || '/', 'http://127.0.0.1');
+
+      if (request.method === 'GET' && url.pathname === '/api/router-login') {
+        sendJson(response, 200, {
+          ok: true,
+          routerLogin: profile(state.configured),
+          savedLogins: savedProfiles(),
+          profileStorageAvailable: true,
+          csrfToken: 'mock-csrf',
+        });
+        return;
+      }
+
+      if (request.method === 'POST' && url.pathname === '/api/router-login') {
+        const body = await requestBody(request);
+        state.loginAttempts += 1;
+        state.lastLoginBody = body;
+
+        if (body.password === 'wrong') {
+          sendJson(response, 400, {
+            ok: false,
+            code: 'router_login_failed',
+            error: 'mock authentication failure',
+            test: {
+              ssh: { ok: false, error: 'mock auth failed', elapsedMs: 15 },
+              rest: { ok: false, error: 'mock auth failed', elapsedMs: 15 },
+            },
+          });
+          return;
+        }
+
+        if (body.password === 'correct-horse' && body.sshHostKeyFingerprint !== fingerprint) {
+          sendJson(response, 409, {
+            ok: false,
+            code: 'ssh_host_key_confirmation_required',
+            error: 'SSH host key confirmation required',
+            test: {
+              ssh: {
+                ok: false,
+                error: 'SSH host key confirmation required',
+                elapsedMs: 8,
+                fingerprint,
+                algorithm: 'ssh-ed25519',
+                confirmationRequired: true,
+              },
+              rest: {
+                ok: true,
+                status: 200,
+                error: null,
+                elapsedMs: 14,
+                scheme: 'https',
+                port: 443,
+                verifyTls: true,
+              },
+              elapsedMs: 15,
+            },
+          });
+          return;
+        }
+
+        state.configured = true;
+        state.snapshotCalls = 0;
+        sendJson(response, 200, {
+          ok: true,
+          routerLogin: profile(true),
+          savedLogins: savedProfiles(),
+          test: channelTest(false),
+          warning: 'SSH verified; REST evidence is not yet current.',
+        });
+        return;
+      }
+
+      if (request.method === 'POST' && url.pathname === '/api/router-logout') {
+        state.configured = false;
+        state.logoutCalls += 1;
+        sendJson(response, 200, {
+          ok: true,
+          routerLogin: profile(false),
+          savedLogins: savedProfiles(),
+        });
+        return;
+      }
+
+      if (request.method === 'POST' && url.pathname === '/api/router-login-forget') {
+        sendJson(response, 200, {
+          ok: true,
+          removed: true,
+          routerLogin: profile(state.configured),
+          savedLogins: [],
+        });
+        return;
+      }
+
+      if (request.method === 'GET' && url.pathname === '/api/snapshot') {
+        state.snapshotCalls += 1;
+        if (!state.configured) {
+          sendJson(response, 200, {
+            status: 'needs_config',
+            updatedAt: utc(),
+            error: 'RouterOS is not configured',
+            meta: { pollSeconds: 2 },
+          });
+          return;
+        }
+        if (state.snapshotCalls === 1) {
+          sendJson(response, 200, {
+            status: 'starting',
+            updatedAt: utc(),
+            error: null,
+            meta: { pollSeconds: 2 },
+          });
+          return;
+        }
+
+        const next = state.nextSnapshot;
+        state.nextSnapshot = '';
+        if (next === 'api-error') {
+          sendJson(response, 503, {
+            ok: false,
+            code: 'collector_unavailable',
+            error: 'mock collector unavailable',
+          });
+          return;
+        }
+        if (next === 'malformed') {
+          sendJson(response, 200, Object.assign(
+            snapshot(state.sequence, { pollSeconds: state.pollSeconds }),
+            { interfaces: {} }
+          ));
+          return;
+        }
+
+        state.sequence += 1;
+        const payload = snapshot(state.sequence, {
+          stale: next === 'stale',
+          pollSeconds: state.pollSeconds,
+        });
+        if (state.scenario === 'interfaces-down') {
+          payload.interfaces.push(
+            { name: 'ether9', type: 'ether', role: 'LAN', parent: 'switch1', running: false, disabled: false },
+            { name: 'vlan30', type: 'vlan', role: 'LAN', parent: 'ether9', vlan: 30, running: false, disabled: false },
+            { name: 'sfp-lan', type: 'ether', role: 'LAN', parent: 'switch1', running: false, disabled: false },
+          );
+        }
+        sendJson(response, 200, payload);
+        return;
+      }
+
+      const relative = url.pathname === '/' ? 'index.html' : decodeURIComponent(url.pathname.replace(/^\/+/, ''));
+      const publicRoot = path.resolve(publicDir);
+      const filePath = path.resolve(publicDir, relative);
+      if (filePath !== publicRoot && !filePath.startsWith(publicRoot + path.sep)) {
+        response.writeHead(404);
+        response.end();
+        return;
+      }
+
       const body = await fsp.readFile(filePath);
-      const ext = path.extname(filePath).toLowerCase();
-      const mime = ext === '.html' ? 'text/html; charset=utf-8'
-        : ext === '.js' ? 'text/javascript; charset=utf-8'
-          : ext === '.css' ? 'text/css; charset=utf-8'
-            : ext === '.svg' ? 'image/svg+xml'
-              : 'application/octet-stream';
-      response.writeHead(200, { 'Content-Type': mime, 'Content-Length': body.length, 'Cache-Control': 'no-store' });
+      const extension = path.extname(filePath).toLowerCase();
+      const mime = extension === '.html' ? 'text/html; charset=utf-8'
+        : extension === '.js' ? 'text/javascript; charset=utf-8'
+          : extension === '.css' ? 'text/css; charset=utf-8'
+            : extension === '.svg' ? 'image/svg+xml'
+              : extension === '.png' ? 'image/png'
+                : extension === '.webmanifest' ? 'application/manifest+json'
+                  : 'application/octet-stream';
+      response.writeHead(200, {
+        'Content-Type': mime,
+        'Content-Length': body.length,
+        'Cache-Control': 'no-store',
+      });
       response.end(body);
-    } catch {
-      response.writeHead(404); response.end();
+    } catch (error) {
+      if (!response.headersSent) {
+        sendJson(response, 500, { error: String(error && error.message || error) });
+      } else {
+        response.end();
+      }
     }
   });
-  const port = await getFreePort();
+
+  const port = await freePort();
   await new Promise((resolve, reject) => {
     server.once('error', reject);
     server.listen(port, '127.0.0.1', resolve);
   });
+
   return {
     state,
-    url: `http://127.0.0.1:${port}/`,
+    url: 'http://127.0.0.1:' + port + '/',
     stop: () => new Promise((resolve) => server.close(resolve)),
   };
 }
 
-function findBrowser() {
+function browserExecutable() {
   const candidates = [
     process.env.BROWSER,
     process.env.CHROME_PATH,
@@ -299,330 +423,859 @@ function findBrowser() {
     '/usr/bin/google-chrome-stable',
     '/usr/bin/google-chrome',
     '/usr/bin/chromium',
+    '/usr/bin/chromium-browser',
     '/usr/bin/microsoft-edge',
   ].filter(Boolean);
-  return candidates.find((candidate) => path.isAbsolute(candidate) ? fs.existsSync(candidate) : spawnSync(process.platform === 'win32' ? 'where.exe' : 'which', [candidate], { stdio: 'ignore' }).status === 0) || '';
+
+  return candidates.find((candidate) => {
+    if (path.isAbsolute(candidate)) return fs.existsSync(candidate);
+    return spawnSync(process.platform === 'win32' ? 'where.exe' : 'which', [candidate], {
+      stdio: 'ignore',
+      windowsHide: true,
+    }).status === 0;
+  }) || '';
 }
 
-async function waitForDevtools(port) {
-  const deadline = Date.now() + 30000;
-  while (Date.now() < deadline) {
-    try {
-      const response = await fetch(`http://127.0.0.1:${port}/json/version`);
-      if (response.ok) return;
-    } catch {}
-    await delay(150);
+async function waitForCalls(state, baseline, label, timeout) {
+  const startedAt = Date.now();
+  while (state.snapshotCalls <= baseline) {
+    if (Date.now() - startedAt > (timeout || actionTimeout)) {
+      throw new Error('timed out waiting for ' + label + '; calls=' + state.snapshotCalls);
+    }
+    await new Promise((resolve) => setTimeout(resolve, 40));
   }
-  throw new Error('browser devtools endpoint did not start');
 }
 
-class CdpSession {
-  constructor(socket) {
-    this.socket = socket;
-    this.nextId = 0;
-    this.pending = new Map();
-    socket.addEventListener('message', async (event) => {
-      const raw = typeof event.data === 'string' ? event.data : await event.data.text();
-      const message = JSON.parse(raw);
-      if (!message.id || !this.pending.has(message.id)) return;
-      const pending = this.pending.get(message.id);
-      this.pending.delete(message.id);
-      if (message.error) pending.reject(new Error(`${pending.method}: ${JSON.stringify(message.error)}`));
-      else pending.resolve(message.result || {});
-    });
-  }
-  send(method, params = {}) {
-    const id = ++this.nextId;
-    return new Promise((resolve, reject) => {
-      this.pending.set(id, { resolve, reject, method });
-      this.socket.send(JSON.stringify({ id, method, params }));
-    });
-  }
-  close() { try { this.socket.close(); } catch {} }
+async function waitForPhase(page, phase, timeout) {
+  await page.waitForFunction(
+    (expected) => document.querySelector('[data-panel-runtime-phase]')?.getAttribute('data-panel-runtime-phase') === expected,
+    phase,
+    { timeout: timeout || actionTimeout }
+  );
 }
 
-async function launchBrowser() {
-  const executable = findBrowser();
-  if (!executable) throw new Error('Edge/Chrome executable not found');
-  const port = await getFreePort();
-  const profileDir = path.join(outDir, 'browser-profile');
-  await fsp.rm(profileDir, { recursive: true, force: true });
-  const args = [
-    '--headless=new', '--disable-gpu', '--disable-background-networking', '--disable-sync', '--disable-extensions',
-    '--no-first-run', '--no-default-browser-check', '--metrics-recording-only', '--remote-debugging-address=127.0.0.1',
-    `--remote-debugging-port=${port}`, `--user-data-dir=${profileDir}`, 'about:blank',
-  ];
-  if (process.platform === 'win32') args.splice(1, 0, '--window-position=-32000,-32000', '--window-size=1,1');
-  else args.splice(1, 0, '--no-sandbox');
-  const child = spawn(executable, args, { windowsHide: true, stdio: 'ignore' });
-  await waitForDevtools(port);
-  const created = await fetch(`http://127.0.0.1:${port}/json/new?about:blank`, { method: 'PUT' }).then((response) => response.json());
-  const socket = new WebSocket(created.webSocketDebuggerUrl);
-  await new Promise((resolve, reject) => {
-    const timer = setTimeout(() => reject(new Error('CDP websocket timed out')), 8000);
-    socket.addEventListener('open', () => { clearTimeout(timer); resolve(); }, { once: true });
-    socket.addEventListener('error', reject, { once: true });
-  });
-  return {
-    cdp: new CdpSession(socket),
-    executable,
-    stop: async () => {
-      if (process.platform === 'win32') {
-        spawnSync('taskkill', ['/pid', String(child.pid), '/t', '/f'], { windowsHide: true, stdio: 'ignore' });
-        const escapedProfile = profileDir.replace(/\\/g, '\\\\').replace(/'/g, "''");
-        const query = `(Name='msedge.exe' or Name='chrome.exe') and CommandLine like '%${escapedProfile}%'`;
-        const scan = spawnSync('wmic', ['process', 'where', query, 'get', 'ProcessId', '/value'], { windowsHide: true, encoding: 'utf8' });
-        const pids = Array.from(String(scan.stdout || '').matchAll(/ProcessId=(\d+)/g), (match) => match[1]);
-        for (const pid of pids) spawnSync('taskkill', ['/pid', pid, '/t', '/f'], { windowsHide: true, stdio: 'ignore' });
-      } else child.kill('SIGKILL');
-      await delay(300);
-      await fsp.rm(profileDir, { recursive: true, force: true });
-    },
-  };
-}
-
-async function evaluate(cdp, expression) {
-  const result = await cdp.send('Runtime.evaluate', { expression, awaitPromise: true, returnByValue: true });
-  if (result.exceptionDetails) throw new Error(`browser evaluate failed: ${JSON.stringify(result.exceptionDetails)}`);
-  return result.result ? result.result.value : undefined;
-}
-
-async function waitFor(cdp, expression, label, timeoutMs = 10000) {
-  const deadline = Date.now() + timeoutMs;
-  let last;
-  while (Date.now() < deadline) {
-    last = await evaluate(cdp, expression);
-    if (last) return last;
-    await delay(120);
-  }
-  throw new Error(`timed out waiting for ${label}: ${JSON.stringify(last)}`);
-}
-
-async function capture(cdp, fileName, state) {
-  const shot = await cdp.send('Page.captureScreenshot', { format: 'png', fromSurface: true, captureBeyondViewport: false });
-  const image = Buffer.from(shot.data, 'base64');
+async function screenshot(page, fileName, state) {
   const filePath = path.join(outDir, fileName);
-  const layout = await cdp.send('Page.getLayoutMetrics');
-  await fsp.writeFile(filePath, image);
+  const image = await page.screenshot({ path: filePath, animations: 'disabled' });
   return {
     file: fileName,
     path: path.relative(root, filePath).split(path.sep).join('/'),
     state,
-    mimeType: 'image/png',
     bytes: image.length,
     sha256: crypto.createHash('sha256').update(image).digest('hex'),
     image: {
       width: image.readUInt32BE(16),
       height: image.readUInt32BE(20),
     },
-    viewport: {
-      width: layout.cssVisualViewport?.clientWidth || null,
-      height: layout.cssVisualViewport?.clientHeight || null,
-    },
-    capturedAt: new Date().toISOString(),
+    viewport: page.viewportSize(),
+    capturedAt: utc(),
   };
 }
 
-const setFormValue = (selector, value) => `(() => {
-  const input = document.querySelector(${JSON.stringify(selector)});
-  if (!input) return false;
-  const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
-  setter.call(input, ${JSON.stringify(value)});
-  input.dispatchEvent(new Event('input', { bubbles: true }));
-  input.dispatchEvent(new Event('change', { bubbles: true }));
-  return true;
-})()`;
+function check(results, name, pass, detail) {
+  const item = { name, pass: Boolean(pass), detail: detail == null ? null : detail };
+  results.push(item);
+  if (!item.pass) throw new Error(name + ': ' + JSON.stringify(detail));
+}
 
-async function run() {
+async function main() {
   await fsp.rm(outDir, { recursive: true, force: true });
   await fsp.mkdir(outDir, { recursive: true });
-  const gitHead = currentGitHead();
-  const mock = await startMockServer();
-  const browser = await launchBrowser();
-  const { cdp } = browser;
+
+  const commit = gitHead();
+  const mock = await startMock();
+  const executablePath = browserExecutable();
+  let browser;
+  const contexts = new Set();
   const checks = [];
-  const screenshotMetadata = [];
-  const check = (name, pass, detail = null) => {
-    checks.push({ name, pass: Boolean(pass), detail });
-    if (!pass) throw new Error(`${name}: ${JSON.stringify(detail)}`);
+  const screenshots = [];
+  const pageErrors = diagnosticPageErrors;
+  let cleanupPromise = null;
+  const cleanup = () => {
+    if (!cleanupPromise) {
+      cleanupPromise = (async () => {
+        await Promise.allSettled([...contexts].map((context) => context.close()));
+        if (browser) await browser.close().catch(() => {});
+        await mock.stop().catch(() => {});
+      })();
+    }
+    return cleanupPromise;
   };
+  cleanupRuntime = cleanup;
+
   try {
-    await cdp.send('Runtime.enable');
-    await cdp.send('Page.enable');
-    await cdp.send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
-    await cdp.send('Page.navigate', { url: mock.url });
-    await waitFor(cdp, `Boolean(document.querySelector('[data-router-connection-screen="mobile"]'))`, 'mobile connection screen');
+    if (!executablePath) throw new Error('Edge/Chrome executable not found');
+    browser = await chromium.launch({
+      executablePath,
+      headless: true,
+      args: process.platform === 'linux' ? ['--no-sandbox'] : [],
+      timeout: 15000,
+    });
 
-    const mobile = await evaluate(cdp, `(() => {
-      const form = document.querySelector('[data-router-login-form]');
-      const button = Array.from(document.querySelectorAll('button')).find((node) => node.textContent.includes('连接并进入面板'));
+    const openContext = async (options) => {
+      const context = await browser.newContext(options);
+      contexts.add(context);
+      context.on('close', () => contexts.delete(context));
+      return context;
+    };
+
+    const mobileContext = await openContext({
+      viewport: { width: 390, height: 844 },
+      deviceScaleFactor: 2,
+      isMobile: true,
+      hasTouch: true,
+    });
+    const page = await mobileContext.newPage();
+    diagnosticPage = page;
+    page.setDefaultTimeout(actionTimeout);
+    page.setDefaultNavigationTimeout(15000);
+    page.on('pageerror', (error) => pageErrors.push(error.message));
+
+    await page.goto(mock.url, { waitUntil: 'domcontentloaded' });
+    const form = page.locator('[data-router-login-form]');
+    await form.waitFor();
+
+    const mobile = await page.evaluate(() => {
+      const screen = document.querySelector('[data-router-connection-screen="mobile"]');
+      const submit = document.querySelector('[data-router-login-form] button[type="submit"]');
       const password = document.querySelector('input[name="password"]');
-      const buttonRect = button?.getBoundingClientRect();
+      const advanced = document.querySelector('[data-router-advanced-settings]');
+      const sshPortInput = document.querySelector('input[name="sshPort"]');
+      const rect = submit?.getBoundingClientRect();
       return {
-        form: Boolean(form),
-        button: Boolean(buttonRect && buttonRect.height >= 44 && buttonRect.bottom <= innerHeight),
-        buttonBottom: buttonRect?.bottom || null,
-        inputFont: password ? parseFloat(getComputedStyle(password).fontSize) : 0,
+        screen: Boolean(screen),
+        submitHeight: rect?.height || 0,
+        submitBottom: rect?.bottom || 0,
+        inputFont: password ? Number.parseFloat(getComputedStyle(password).fontSize) : 0,
         overflow: document.documentElement.scrollWidth - innerWidth,
-        legacyNavVisible: Array.from(document.querySelectorAll('.ik-rail,.sidebar')).some((node) => getComputedStyle(node).display !== 'none'),
         fixture: typeof window.__PANEL_TEST_SNAPSHOT__ !== 'undefined',
+        legacyShell: Boolean(document.querySelector('.ik-rail,.sidebar,.top-bar')),
+        advancedPresent: Boolean(advanced),
+        advancedOpen: Boolean(advanced?.open),
+        advancedSummary: advanced?.querySelector('summary')?.textContent || '',
+        advancedInputVisible: Boolean(sshPortInput && sshPortInput.getClientRects().length),
       };
-    })()`);
-    check('mobile connection form is real and readable', mobile.form && mobile.button && mobile.inputFont >= 16, mobile);
-    check('mobile connection owns the surface without legacy navigation', !mobile.legacyNavVisible && mobile.overflow <= 1, mobile);
-    check('live runtime does not use a scenario fixture', mobile.fixture === false, mobile);
-    screenshotMetadata.push(await capture(cdp, 'mobile-connection.png', 'mobile-connection'));
+    });
+    mobile.advancedInputVisible = await page.locator('[data-router-advanced-settings] input[name="sshPort"]').isVisible();
+    check(
+      checks,
+      'mobile connection form is readable and owns the viewport',
+      mobile.screen &&
+        mobile.submitHeight >= 44 &&
+        mobile.submitBottom <= 844 &&
+        mobile.inputFont >= 16 &&
+        mobile.overflow <= 1 &&
+        !mobile.legacyShell &&
+        mobile.advancedPresent &&
+        !mobile.advancedOpen &&
+        !mobile.advancedInputVisible &&
+        /HTTPS\s+443.*SSH\s+22/.test(mobile.advancedSummary),
+      mobile
+    );
+    check(checks, 'production runtime has no scenario fixture', !mobile.fixture, mobile);
+    screenshots.push(await screenshot(page, 'mobile-connection.png', 'mobile-connection'));
 
-    await evaluate(cdp, setFormValue('input[name="host"]', '192.0.2.1'));
-    await evaluate(cdp, setFormValue('input[name="user"]', 'observer'));
-    await evaluate(cdp, setFormValue('input[name="password"]', 'wrong'));
-    await evaluate(cdp, `document.querySelector('[data-router-login-form]').requestSubmit()`);
-    await waitFor(cdp, `document.querySelector('[role="alert"]')?.textContent.includes('模拟连接失败')`, 'failed connection evidence');
-    check('failed connection remains on the form with a real API error', mock.state.loginAttempts === 1);
+    const advancedSettings = page.locator('[data-router-advanced-settings]');
+    await advancedSettings.locator('summary').click();
+    const advancedControls = {
+      sshPort: await advancedSettings.locator('input[name="sshPort"]').isVisible(),
+      restPort: await advancedSettings.locator('input[name="restPort"]').isVisible(),
+      protocol: await advancedSettings.getByRole('group', { name: 'REST 协议' }).isVisible(),
+    };
+    check(
+      checks,
+      'advanced connection settings are disclosed on demand',
+      advancedControls.sshPort && advancedControls.restPort && advancedControls.protocol,
+      advancedControls
+    );
+    await advancedSettings.locator('summary').click();
 
-    await evaluate(cdp, setFormValue('input[name="password"]', 'correct-horse'));
-    await evaluate(cdp, `document.querySelector('[data-router-login-form]').requestSubmit()`);
-    await waitFor(cdp, `Boolean(document.querySelector('.router-host-key-confirmation code')?.textContent.includes('SHA256:'))`, 'SSH host key confirmation');
-    const hostKeyBoundary = await evaluate(cdp, `(() => ({
-      text: document.querySelector('.router-host-key-confirmation')?.textContent || '',
-      checked: document.querySelector('.router-host-key-confirmation input')?.checked === true,
+    await page.locator('input[name="host"]').fill('192.0.2.1');
+    await page.locator('input[name="user"]').fill('observer');
+    await page.locator('input[name="password"]').fill('wrong');
+    await form.locator('button[type="submit"]').click();
+    await page.getByRole('alert').waitFor();
+    check(
+      checks,
+      'failed connection remains on the real form with API evidence',
+      mock.state.loginAttempts === 1 && await form.isVisible(),
+      mock.state
+    );
+
+    await page.locator('input[name="password"]').fill('correct-horse');
+    await form.locator('button[type="submit"]').click();
+    const hostKey = page.locator('.router-host-key-confirmation');
+    await hostKey.waitFor();
+    const hostKeyFacts = await hostKey.evaluate((node) => ({
+      text: node.textContent || '',
+      checked: node.querySelector('input')?.checked === true,
       protocol: document.querySelector('button[aria-pressed="true"]')?.textContent || '',
-    }))()`);
-    check('first SSH contact exposes an unconfirmed fingerprint before entering the panel', hostKeyBoundary.text.includes('ssh-ed25519') && !hostKeyBoundary.checked, hostKeyBoundary);
-    check('REST starts with verified HTTPS rather than an HTTP fallback', hostKeyBoundary.protocol.includes('HTTPS') && mock.state.lastLoginBody?.restScheme === 'https' && mock.state.lastLoginBody?.restVerifyTls === true, mock.state.lastLoginBody);
-    screenshotMetadata.push(await capture(cdp, 'mobile-ssh-host-key-confirmation.png', 'mobile-ssh-host-key-confirmation'));
-    await evaluate(cdp, `document.querySelector('.router-host-key-confirmation input').click()`);
-    await evaluate(cdp, `document.querySelector('[data-router-login-form]').requestSubmit()`);
-    await waitFor(cdp, `document.querySelector('[data-panel-runtime-phase]')?.getAttribute('data-panel-runtime-phase') === 'recovering'`, 'collector starting state');
-    check('confirmed SSH fingerprint is pinned in the second request', mock.state.lastLoginBody?.sshHostKeyFingerprint?.startsWith('SHA256:'), mock.state.lastLoginBody);
-    check('successful connection exposes collector recovery instead of fake current data', mock.state.loginAttempts === 3 && mock.state.snapshotCalls === 1, mock.state);
-    await waitFor(cdp, `document.querySelector('[data-panel-runtime-phase]')?.getAttribute('data-panel-runtime-phase') === 'current'`, 'current runtime snapshot', 9000);
-    const current = await evaluate(cdp, `(() => ({
+    }));
+    check(
+      checks,
+      'first SSH contact requires explicit host-key confirmation',
+      hostKeyFacts.text.includes('ssh-ed25519') &&
+        hostKeyFacts.text.includes('SHA256:') &&
+        !hostKeyFacts.checked,
+      hostKeyFacts
+    );
+    check(
+      checks,
+      'REST starts with verified HTTPS and never silently downgrades',
+      hostKeyFacts.protocol.includes('HTTPS') &&
+        mock.state.lastLoginBody?.restScheme === 'https' &&
+        mock.state.lastLoginBody?.restVerifyTls === true,
+      mock.state.lastLoginBody
+    );
+    screenshots.push(await screenshot(
+      page,
+      'mobile-ssh-host-key-confirmation.png',
+      'mobile-ssh-host-key-confirmation'
+    ));
+
+    await hostKey.locator('input[type="checkbox"]').check();
+    await form.locator('button[type="submit"]').click();
+    await page.locator('[data-panel-runtime-phase]').waitFor();
+    await waitForPhase(page, 'current', 12000);
+    check(
+      checks,
+      'confirmed SSH fingerprint is pinned in the second request',
+      mock.state.lastLoginBody?.sshHostKeyFingerprint === fingerprint,
+      mock.state.lastLoginBody
+    );
+
+    const current = await page.evaluate(() => ({
       phase: document.querySelector('[data-panel-runtime-phase]')?.getAttribute('data-panel-runtime-phase'),
-      warning: document.querySelector('.panel-runtime-notice')?.textContent || '',
       toolbar: Boolean(document.querySelector('[data-panel-runtime-toolbar="mobile"]')),
-      activeSection: document.querySelector('[data-panel-app]')?.getAttribute('data-active-section'),
-      taskCount: document.querySelectorAll('.panel-task-navigation button').length,
+      route: document.querySelector('[data-panel-app]')?.getAttribute('data-active-section'),
       overflow: document.documentElement.scrollWidth - innerWidth,
-    }))()`);
-    check('a recovered REST channel clears the stale login warning', current.warning === '' && current.toolbar, current);
-    check('validated snapshot renders the requested route', current.phase === 'current' && current.activeSection === 'overview', current);
-    check('mobile navigation exposes three stable tasks rather than five permanent tabs', current.taskCount === 3, current);
-    check('live mobile panel has no horizontal overflow', current.overflow <= 1, current);
-    screenshotMetadata.push(await capture(cdp, 'mobile-runtime-current.png', 'mobile-runtime-current'));
+      fixture: typeof window.__PANEL_TEST_SNAPSHOT__ !== 'undefined',
+    }));
+    check(
+      checks,
+      'validated snapshot renders the overview without overflow',
+      current.phase === 'current' &&
+        current.toolbar &&
+        current.route === 'overview' &&
+        current.overflow <= 1 &&
+        !current.fixture,
+      current
+    );
+    screenshots.push(await screenshot(page, 'mobile-runtime-current.png', 'mobile-runtime-current'));
 
     const beforePoll = mock.state.snapshotCalls;
-    const pollDeadline = Date.now() + 5000;
-    while (mock.state.snapshotCalls <= beforePoll && Date.now() < pollDeadline) await delay(80);
-    await waitFor(cdp, `document.querySelector('[data-panel-runtime-phase]')?.getAttribute('data-panel-runtime-phase') === 'current'`, 'automatic poll');
-    check('automatic polling refreshes the validated snapshot', mock.state.snapshotCalls > beforePoll, mock.state);
+    await waitForCalls(mock.state, beforePoll, 'automatic poll', 6000);
+    await waitForPhase(page, 'current');
+    check(
+      checks,
+      'automatic polling refreshes the validated snapshot',
+      mock.state.snapshotCalls > beforePoll,
+      mock.state
+    );
 
     mock.state.pollSeconds = 60;
-    const beforeSlowPoll = mock.state.snapshotCalls;
-    await evaluate(cdp, `document.querySelector('button[title="立即刷新"]').click()`);
-    while (mock.state.snapshotCalls <= beforeSlowPoll) await delay(50);
-    await waitFor(cdp, `document.querySelector('[data-panel-runtime-phase]')?.getAttribute('data-panel-runtime-phase') === 'current'`, 'slow-poll test baseline');
+    const refresh = page.locator('.panel-runtime-actions button').first();
+    const beforeBaseline = mock.state.snapshotCalls;
+    await refresh.click();
+    await waitForCalls(mock.state, beforeBaseline, 'manual baseline refresh');
+    await waitForPhase(page, 'current');
+
+    const taskNavigation = await page.locator('.panel-task-navigation button').evaluateAll((buttons) => (
+      buttons.map((button) => ({
+        route: button.getAttribute('data-section'),
+        label: (button.textContent || '').trim(),
+      }))
+    ));
+    check(
+      checks,
+      'mobile exposes four stable task destinations',
+      taskNavigation.length === 4 &&
+        ['overview', 'interfaces', 'terminals', 'logs'].every((route) => (
+          taskNavigation.some((item) => item.route === route)
+        )),
+      taskNavigation
+    );
+
+    await page.locator('[data-section="interfaces"]').click();
+    await page.locator('[data-mobile-domain-workspace="interfaces"]').waitFor();
+    const networkWorkspace = await page.evaluate(() => ({
+      search: Boolean(document.querySelector('.mdw-search input[type="search"]')),
+      filterButtons: document.querySelectorAll('.mdw-filter-row button').length,
+      sort: Boolean(document.querySelector('.mdw-filter-row select')),
+      rows: document.querySelectorAll('[data-mobile-row-id]').length,
+      overflow: document.documentElement.scrollWidth - innerWidth,
+    }));
+    check(
+      checks,
+      'network destination is a searchable filterable sortable object workspace',
+      networkWorkspace.search && networkWorkspace.filterButtons >= 2 &&
+        networkWorkspace.sort && networkWorkspace.rows >= 2 && networkWorkspace.overflow <= 1,
+      networkWorkspace
+    );
+
+    const search = page.locator('.mdw-search input[type="search"]');
+    await search.fill('pppoe-wan1');
+    await page.waitForFunction(() => document.querySelectorAll('[data-mobile-row-id]').length === 1);
+    check(
+      checks,
+      'visible network search changes the object result set',
+      await page.locator('[data-mobile-row-id]').first().innerText().then((text) => text.includes('pppoe-wan1'))
+    );
+    await page.getByRole('button', { name: '清除搜索' }).click();
+    await page.locator('.mdw-filter-row select').selectOption('asc');
+    check(
+      checks,
+      'visible sort control owns real state',
+      await page.locator('.mdw-filter-row select').inputValue() === 'asc'
+    );
+
+    const objectTrigger = page.locator('[data-mobile-row-id]').first();
+    const objectId = await objectTrigger.getAttribute('data-mobile-row-id');
+    await objectTrigger.click();
+    await page.locator('[data-mobile-object-detail]').waitFor();
+    const objectDetail = await page.evaluate(() => ({
+      object: document.querySelector('[data-mobile-object-detail]')?.getAttribute('data-mobile-object-detail'),
+      fields: document.querySelectorAll('.mdw-detail-fields > div').length,
+      query: new URLSearchParams(location.search).get('object'),
+    }));
+    check(
+      checks,
+      'object destination adds field-level evidence instead of replaying the summary',
+      objectDetail.object === objectId && objectDetail.query === objectId && objectDetail.fields >= 4,
+      objectDetail
+    );
+    screenshots.push(await screenshot(page, 'mobile-network-object.png', 'mobile-network-object'));
+
+    await page.goBack();
+    await page.waitForFunction(() => !document.querySelector('[data-mobile-object-detail]'));
+    const backFocus = await page.evaluate((id) => (
+      document.activeElement?.getAttribute('data-mobile-row-id') === id
+    ), objectId);
+    await page.goForward();
+    await page.locator('[data-mobile-object-detail]').waitFor();
+    check(
+      checks,
+      'browser Back closes and Forward restores the selected object',
+      backFocus && new URL(page.url()).searchParams.get('object') === objectId,
+      { backFocus, url: page.url(), objectId }
+    );
+    await page.getByRole('button', { name: '返回列表' }).click();
+    await page.waitForFunction(() => !document.querySelector('[data-mobile-object-detail]'));
+    check(
+      checks,
+      'object close restores focus without retry polling',
+      await page.evaluate((id) => document.activeElement?.getAttribute('data-mobile-row-id') === id, objectId),
+      { objectId }
+    );
+
+    await page.goBack();
+    await page.locator('[data-mobile-overview]').waitFor();
+    await page.goForward();
+    await page.locator('[data-mobile-domain-workspace="interfaces"]').waitFor();
+    await page.goBack();
+    await page.locator('[data-mobile-overview]').waitFor();
+    check(checks, 'browser Back and Forward both restore route destinations', true);
+
+    await page.locator('[data-section="terminals"]').click();
+    await page.locator('[data-mobile-domain-workspace="terminals"]').waitFor();
+    const terminalPageOne = await page.evaluate(() => ({
+      rows: document.querySelectorAll('[data-mobile-row-id]').length,
+      page: document.querySelector('.mdw-pagination span')?.textContent || '',
+    }));
+    check(
+      checks,
+      'terminal workspace paginates a real object collection',
+      terminalPageOne.rows === 20 && /1\s*\/\s*2/.test(terminalPageOne.page),
+      terminalPageOne
+    );
+    await page.locator('.mdw-pagination button').last().click();
+    await page.waitForFunction(() => document.querySelectorAll('[data-mobile-row-id]').length === 5);
+    const terminalPageTwo = await page.evaluate(() => ({
+      rows: document.querySelectorAll('[data-mobile-row-id]').length,
+      page: document.querySelector('.mdw-pagination span')?.textContent || '',
+    }));
+    check(
+      checks,
+      'terminal pagination reaches the remaining objects',
+      terminalPageTwo.rows === 5 && /2\s*\/\s*2/.test(terminalPageTwo.page),
+      terminalPageTwo
+    );
+    await page.locator('.mdw-search input[type="search"]').fill('workstation-special');
+    await page.waitForFunction(() => document.querySelectorAll('[data-mobile-row-id]').length === 1);
+    check(
+      checks,
+      'terminal search reaches an object outside the first page',
+      (await page.locator('[data-mobile-row-id]').first().innerText()).includes('workstation-special')
+    );
+
+    await page.locator('[data-section="logs"]').click();
+    await page.locator('[data-mobile-domain-workspace="logs"]').waitFor();
+    check(
+      checks,
+      'logs is a stable first-class destination with functional controls',
+      await page.locator('.mdw-search input[type="search"]').isVisible() &&
+        await page.locator('.mdw-filter-row').isVisible()
+    );
+    await page.locator('[data-section="overview"]').click();
+    await page.locator('[data-mobile-overview]').waitFor();
+
+    const textScale = await page.evaluate(async () => {
+      const root = document.documentElement;
+      const heading = document.querySelector('[data-mobile-verdict] h1');
+      const before = heading ? Number.parseFloat(getComputedStyle(heading).fontSize) : 0;
+      root.style.setProperty('-webkit-text-size-adjust', '200%');
+      root.style.setProperty('text-size-adjust', '200%');
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      window.scrollTo(0, 0);
+      const after = heading ? Number.parseFloat(getComputedStyle(heading).fontSize) : 0;
+      const targets = Array.from(document.querySelectorAll(
+        '[data-mobile-overview] button, [data-mobile-overview] summary, .panel-task-navigation button'
+      )).filter((node) => {
+        const style = getComputedStyle(node);
+        const rect = node.getBoundingClientRect();
+        return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0;
+      });
+      const navInsideViewport = Array.from(document.querySelectorAll('.panel-task-navigation button')).every((node) => {
+        const rect = node.getBoundingClientRect();
+        return rect.left >= -1 && rect.right <= innerWidth + 1;
+      });
+      const clippedText = Array.from(document.querySelectorAll(
+        '.mp-proof small, .mp-proof b, .mp-proof em, .mp-rate-pair b, .mp-load b, .mp-incident-copy b, .mp-incident-copy p, .mp-action-list b, .mp-action-list small'
+      )).filter((node) => node.scrollWidth > node.clientWidth + 1).map((node) => ({
+        text: (node.textContent || '').trim().slice(0, 60),
+        clientWidth: node.clientWidth,
+        scrollWidth: node.scrollWidth,
+      }));
+      return {
+        before,
+        after,
+        ratio: before ? after / before : 0,
+        overflow: document.documentElement.scrollWidth - innerWidth,
+        minimumTarget: Math.min(...targets.map((node) => node.getBoundingClientRect().height)),
+        navInsideViewport,
+        verdictVisible: Boolean(heading && heading.getBoundingClientRect().height > 0),
+        largeTextMode: document.querySelector('[data-mobile-overview]')?.getAttribute('data-mobile-large-text'),
+        clippedText,
+      };
+    });
+    check(
+      checks,
+      'browser 200% text adjustment reflows without horizontal loss',
+      textScale.ratio >= 1.8 && textScale.overflow <= 1 &&
+        textScale.minimumTarget >= 44 && textScale.navInsideViewport && textScale.verdictVisible &&
+        textScale.largeTextMode === 'true' && textScale.clippedText.length === 0,
+      textScale
+    );
+    screenshots.push(await screenshot(page, 'mobile-runtime-text-200.png', 'mobile-runtime-text-200'));
+    await page.evaluate(async () => {
+      document.documentElement.style.removeProperty('-webkit-text-size-adjust');
+      document.documentElement.style.removeProperty('text-size-adjust');
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    });
 
     const beforeMalformed = mock.state.snapshotCalls;
     mock.state.nextSnapshot = 'malformed';
-    await evaluate(cdp, `document.querySelector('button[title="立即刷新"]').click()`);
-    while (mock.state.snapshotCalls <= beforeMalformed) await delay(50);
-    const malformedState = await waitFor(cdp, `(() => {
-      const phase = document.querySelector('[data-panel-runtime-phase]')?.getAttribute('data-panel-runtime-phase');
-      if (!phase || phase === 'refreshing' || phase === 'loading') return null;
-      return { phase, text: document.querySelector('.panel-runtime-notice')?.textContent || '' };
-    })()`, 'malformed snapshot boundary');
-    check('malformed snapshot enters recovery with a schema error', malformedState.phase === 'recovering' && malformedState.text.includes('不符合契约'), malformedState);
-    check('malformed API data is rejected while the last snapshot remains visible', await evaluate(cdp, `Boolean(document.querySelector('[data-panel-app]'))`));
+    await refresh.click();
+    await waitForCalls(mock.state, beforeMalformed, 'malformed snapshot');
+    await waitForPhase(page, 'recovering');
+    const malformed = await page.evaluate(() => ({
+      app: Boolean(document.querySelector('[data-panel-app]')),
+      notice: document.querySelector('.panel-runtime-notice')?.textContent || '',
+    }));
+    check(
+      checks,
+      'malformed snapshot is rejected while last valid evidence remains visible',
+      malformed.app && malformed.notice.length > 0,
+      malformed
+    );
 
+    const beforeApiError = mock.state.snapshotCalls;
     mock.state.nextSnapshot = 'api-error';
-    await evaluate(cdp, `document.querySelector('button[title="立即刷新"]').click()`);
-    await waitFor(cdp, `document.querySelector('[data-panel-runtime-phase]')?.getAttribute('data-panel-runtime-phase') === 'recovering' && document.body.textContent.includes('模拟采集接口暂时不可用')`, 'snapshot API failure');
-    check('snapshot API failure never inserts a scenario fixture', await evaluate(cdp, `typeof window.__PANEL_TEST_SNAPSHOT__ === 'undefined' && Boolean(document.querySelector('[data-panel-app]'))`));
+    await refresh.click();
+    await waitForCalls(mock.state, beforeApiError, 'snapshot API error');
+    await waitForPhase(page, 'recovering');
+    check(
+      checks,
+      'snapshot API error never inserts a scenario fixture',
+      await page.evaluate(() => (
+        typeof window.__PANEL_TEST_SNAPSHOT__ === 'undefined' &&
+        Boolean(document.querySelector('[data-panel-app]'))
+      ))
+    );
 
+    const beforeStale = mock.state.snapshotCalls;
     mock.state.nextSnapshot = 'stale';
-    await evaluate(cdp, `document.querySelector('button[title="立即刷新"]').click()`);
-    await waitFor(cdp, `document.querySelector('[data-panel-runtime-phase]')?.getAttribute('data-panel-runtime-phase') === 'stale'`, 'historical snapshot state');
-    check('old evidence is labeled historical instead of current', await evaluate(cdp, `(() => {
-      const root = document.querySelector('[data-mobile-overview][data-mobile-evidence-mode="historical"]');
-      const text = root?.textContent || '';
-      return Boolean(root && !root.querySelector('[data-mobile-traffic]') && !/[0-9.]+\\s*(?:K|M|G)?bps/i.test(text));
-    })()`));
-    screenshotMetadata.push(await capture(cdp, 'mobile-runtime-stale.png', 'mobile-runtime-stale'));
+    await refresh.click();
+    await waitForCalls(mock.state, beforeStale, 'historical snapshot');
+    await waitForPhase(page, 'stale');
+    const stale = await page.evaluate(() => {
+      const root = document.querySelector(
+        '[data-mobile-overview][data-mobile-evidence-mode="historical"]'
+      );
+      return {
+        historical: Boolean(root),
+        traffic: Boolean(root?.querySelector('[data-mobile-traffic]')),
+      };
+    });
+    check(
+      checks,
+      'old evidence is labeled historical and current traffic is withheld',
+      stale.historical && !stale.traffic,
+      stale
+    );
+    screenshots.push(await screenshot(page, 'mobile-runtime-stale.png', 'mobile-runtime-stale'));
 
-    await cdp.send('Network.enable');
-    await cdp.send('Network.emulateNetworkConditions', { offline: true, latency: 0, downloadThroughput: 0, uploadThroughput: 0, connectionType: 'none' });
-    await waitFor(cdp, `document.querySelector('[data-panel-runtime-phase]')?.getAttribute('data-panel-runtime-phase') === 'offline'`, 'offline state');
-    check('browser offline state stops current claims', await evaluate(cdp, `document.body.textContent.includes('浏览器当前离线')`));
-    await cdp.send('Network.emulateNetworkConditions', { offline: false, latency: 0, downloadThroughput: -1, uploadThroughput: -1, connectionType: 'wifi' });
-    await waitFor(cdp, `document.querySelector('[data-panel-runtime-phase]')?.getAttribute('data-panel-runtime-phase') === 'current'`, 'online recovery', 7000);
-    check('online recovery replaces historical evidence with a current snapshot', true);
+    const beforeOffline = mock.state.snapshotCalls;
+    await page.evaluate(() => {
+      Object.defineProperty(window.navigator, 'onLine', {
+        configurable: true,
+        get: () => false,
+      });
+      window.dispatchEvent(new Event('offline'));
+    });
+    await waitForCalls(
+      mock.state,
+      beforeOffline,
+      'same-origin refresh while navigator reports offline'
+    );
+    await waitForPhase(page, 'current');
+    const offline = await page.evaluate(() => ({
+      onLine: navigator.onLine,
+      refreshDisabled: document.querySelector('.panel-runtime-actions button')?.disabled === true,
+      phase: document.querySelector('[data-panel-runtime-phase]')?.getAttribute('data-panel-runtime-phase'),
+    }));
+    check(
+      checks,
+      'navigator.onLine=false does not block a reachable same-origin snapshot',
+      offline.onLine === false &&
+        offline.refreshDisabled === false &&
+        offline.phase === 'current',
+      offline
+    );
+
+    const beforeOfflineManual = mock.state.snapshotCalls;
+    await refresh.click();
+    await waitForCalls(
+      mock.state,
+      beforeOfflineManual,
+      'manual refresh while navigator reports offline'
+    );
+    await waitForPhase(page, 'current');
+    check(
+      checks,
+      'manual refresh remains operational while navigator reports offline',
+      mock.state.snapshotCalls > beforeOfflineManual,
+      mock.state
+    );
+
+    await page.evaluate(() => {
+      Object.defineProperty(window.navigator, 'onLine', {
+        configurable: true,
+        get: () => true,
+      });
+      window.dispatchEvent(new Event('online'));
+    });
+    await waitForPhase(page, 'current');
 
     const beforeVisibility = mock.state.snapshotCalls;
-    await evaluate(cdp, `(() => {
-      const realNow = Date.now;
-      Date.now = () => realNow() + 61000;
+    await page.evaluate(() => {
+      const originalNow = Date.now;
+      Date.now = () => originalNow() + 61000;
       document.dispatchEvent(new Event('visibilitychange'));
-      setTimeout(() => { Date.now = realNow; }, 0);
-      return true;
-    })()`);
-    const visibilityDeadline = Date.now() + 5000;
-    while (mock.state.snapshotCalls <= beforeVisibility && Date.now() < visibilityDeadline) await delay(80);
-    await waitFor(cdp, `document.querySelector('[data-panel-runtime-phase]')?.getAttribute('data-panel-runtime-phase') === 'current'`, 'visibility recovery');
-    check('visibility restoration refreshes old runtime state', mock.state.snapshotCalls > beforeVisibility, mock.state);
+      queueMicrotask(() => { Date.now = originalNow; });
+    });
+    await waitForCalls(mock.state, beforeVisibility, 'visibility recovery', 6000);
+    await waitForPhase(page, 'current');
+    check(
+      checks,
+      'visibility restoration refreshes old runtime state',
+      mock.state.snapshotCalls > beforeVisibility,
+      mock.state
+    );
 
-    const beforeManual = mock.state.snapshotCalls;
-    await evaluate(cdp, `document.querySelector('button[title="立即刷新"]').click()`);
-    const manualDeadline = Date.now() + 5000;
-    while (mock.state.snapshotCalls <= beforeManual && Date.now() < manualDeadline) await delay(60);
-    await waitFor(cdp, `document.querySelector('[data-panel-runtime-phase]')?.getAttribute('data-panel-runtime-phase') === 'current'`, 'manual refresh');
-    check('manual refresh calls the snapshot API', mock.state.snapshotCalls > beforeManual, mock.state);
+    mock.state.scenario = 'interfaces-down';
+    const tabletContext = await openContext({
+      viewport: { width: 768, height: 1024 },
+      deviceScaleFactor: 2,
+      isMobile: true,
+      hasTouch: true,
+    });
+    const tabletPage = await tabletContext.newPage();
+    tabletPage.setDefaultTimeout(actionTimeout);
+    tabletPage.setDefaultNavigationTimeout(15000);
+    tabletPage.on('pageerror', (error) => pageErrors.push('tablet: ' + error.message));
+    await tabletPage.goto(mock.url, { waitUntil: 'domcontentloaded' });
+    await waitForPhase(tabletPage, 'current', 12000);
+    await tabletPage.locator('[data-mobile-overview-risk="interfaces"]').waitFor();
+    const overviewUrl = tabletPage.url();
+    const incidentRows = tabletPage.locator('[data-mobile-incident-object]');
+    await incidentRows.nth(1).click();
+    await tabletPage.waitForFunction(() => (
+      document.querySelectorAll('[data-mobile-incident-object]')[1]?.getAttribute('aria-pressed') === 'true'
+    ));
+    const tabletOverviewSelection = await tabletPage.evaluate(() => {
+      const selected = document.querySelector('[data-mobile-incident-object][aria-pressed="true"]');
+      const inspector = document.querySelector('[data-mobile-incident-inspector]');
+      return {
+        active: document.querySelector('[data-panel-app]')?.getAttribute('data-active-section'),
+        selectedId: selected?.getAttribute('data-mobile-incident-object'),
+        inspectorId: inspector?.getAttribute('data-mobile-incident-inspector'),
+        fields: inspector?.querySelectorAll('dl > div').length || 0,
+        source: inspector?.querySelector('.mp-inspector-source code')?.textContent || '',
+      };
+    });
+    check(
+      checks,
+      'tablet overview selects incident evidence beside the full object list without navigation',
+      tabletPage.url() === overviewUrl &&
+        tabletOverviewSelection.active === 'overview' &&
+        tabletOverviewSelection.selectedId === tabletOverviewSelection.inspectorId &&
+        tabletOverviewSelection.fields >= 3 &&
+        tabletOverviewSelection.source.includes('interfaces['),
+      tabletOverviewSelection
+    );
+    screenshots.push(await screenshot(tabletPage, 'tablet-overview-master-detail-768.png', 'tablet-overview-master-detail-768'));
+    mock.state.scenario = '';
+    const beforeTabletReset = mock.state.snapshotCalls;
+    await tabletPage.locator('.panel-runtime-actions button[aria-label="立即刷新"]').click();
+    await waitForCalls(mock.state, beforeTabletReset, 'tablet overview scenario reset');
+    await waitForPhase(tabletPage, 'current');
+    await tabletPage.locator('[data-mobile-overview-risk="none"]').waitFor();
 
-    await evaluate(cdp, `document.querySelector('button[title="设备连接"]').click()`);
-    await waitFor(cdp, `Boolean(document.querySelector('[data-router-connection-screen="mobile"]'))`, 'device switch screen');
-    check('device switch returns to the real connection flow', await evaluate(cdp, `Boolean(document.querySelector('button[aria-label="返回面板"]'))`));
-    await evaluate(cdp, `Array.from(document.querySelectorAll('button')).find((node) => node.textContent.includes('清除当前连接')).click()`);
-    await waitFor(cdp, `Boolean(document.querySelector('[data-router-connection-screen="mobile"]')) && !document.body.textContent.includes('清除当前连接')`, 'logout to unconfigured form');
-    check('logout clears the runtime snapshot and connection', mock.state.logoutCalls === 1 && mock.state.configured === false, mock.state);
+    await tabletPage.locator('[data-section="interfaces"]').click();
+    await tabletPage.locator('[data-mobile-domain-workspace="interfaces"]').waitFor();
 
-    await cdp.send('Emulation.setDeviceMetricsOverride', { width: 1366, height: 768, deviceScaleFactor: 1, mobile: false });
-    await cdp.send('Page.reload', { ignoreCache: true });
-    await waitFor(cdp, `Boolean(document.querySelector('[data-router-connection-screen="desktop"]'))`, 'desktop connection screen');
-    const desktop = await evaluate(cdp, `(() => {
+    const inspectTabletWorkspace = () => tabletPage.evaluate(() => {
+      const nav = document.querySelector('.panel-task-navigation');
+      const layout = document.querySelector('.mdw-layout');
+      const list = document.querySelector('.mdw-list-pane');
+      const inspector = document.querySelector('.mdw-inspector');
+      const navRect = nav?.getBoundingClientRect();
+      const layoutRect = layout?.getBoundingClientRect();
+      const listRect = list?.getBoundingClientRect();
+      const inspectorRect = inspector?.getBoundingClientRect();
+      return {
+        viewport: { width: innerWidth, height: innerHeight },
+        nav: navRect ? { left: navRect.left, right: navRect.right, width: navRect.width, height: navRect.height } : null,
+        layout: layoutRect ? { left: layoutRect.left, right: layoutRect.right, width: layoutRect.width } : null,
+        list: listRect ? { left: listRect.left, right: listRect.right, width: listRect.width } : null,
+        inspector: inspectorRect ? { left: inspectorRect.left, right: inspectorRect.right, width: inspectorRect.width } : null,
+        columns: layout ? getComputedStyle(layout).gridTemplateColumns : '',
+        overflow: document.documentElement.scrollWidth - innerWidth,
+      };
+    });
+
+    const tablet768 = await inspectTabletWorkspace();
+    check(
+      checks,
+      '768px tablet uses a persistent task rail with list and inspector',
+      Boolean(
+        tablet768.nav && tablet768.layout && tablet768.list && tablet768.inspector &&
+        tablet768.nav.width >= 70 && tablet768.nav.width <= 96 &&
+        tablet768.nav.right <= tablet768.layout.left + 1 &&
+        tablet768.list.right <= tablet768.inspector.left + 1 &&
+        tablet768.list.width >= 280 && tablet768.inspector.width >= 300 &&
+        tablet768.columns.split(' ').length >= 2 && tablet768.overflow <= 1
+      ),
+      tablet768
+    );
+    screenshots.push(await screenshot(tabletPage, 'tablet-network-768.png', 'tablet-network-768'));
+
+    await tabletPage.locator('[data-mobile-row-id]').first().click();
+    await tabletPage.locator('[data-mobile-object-detail]').waitFor();
+    const tabletSelection = await tabletPage.evaluate(() => ({
+      listVisible: getComputedStyle(document.querySelector('.mdw-list-pane')).display !== 'none',
+      detailVisible: Boolean(document.querySelector('[data-mobile-object-detail]')),
+      detailFields: document.querySelectorAll('.mdw-detail-fields > div').length,
+    }));
+    check(
+      checks,
+      'tablet selection preserves the object list and opens field evidence beside it',
+      tabletSelection.listVisible && tabletSelection.detailVisible && tabletSelection.detailFields >= 4,
+      tabletSelection
+    );
+
+    await tabletPage.setViewportSize({ width: 844, height: 1024 });
+    await tabletPage.waitForFunction(() => innerWidth === 844);
+    const tablet844 = await inspectTabletWorkspace();
+    check(
+      checks,
+      '844px tablet keeps the same rail-list-detail task architecture',
+      Boolean(
+        tablet844.nav && tablet844.layout && tablet844.list && tablet844.inspector &&
+        tablet844.nav.right <= tablet844.layout.left + 1 &&
+        tablet844.list.right <= tablet844.inspector.left + 1 &&
+        tablet844.list.width > tablet768.list.width &&
+        tablet844.inspector.width > tablet768.inspector.width &&
+        tablet844.overflow <= 1
+      ),
+      tablet844
+    );
+    screenshots.push(await screenshot(tabletPage, 'tablet-network-844.png', 'tablet-network-844'));
+
+    await tabletPage.setViewportSize({ width: 1023, height: 768 });
+    await tabletPage.locator('[data-mobile-domain-workspace="interfaces"]').waitFor();
+    const boundary1023 = await tabletPage.evaluate(() => ({
+      mobile: Boolean(document.querySelector('[data-mobile-domain-workspace="interfaces"]')),
+      rail: getComputedStyle(document.querySelector('.panel-task-navigation')).display,
+      overflow: document.documentElement.scrollWidth - innerWidth,
+    }));
+    await tabletPage.setViewportSize({ width: 1024, height: 768 });
+    await tabletPage.waitForFunction(() => (
+      !document.querySelector('[data-mobile-domain-workspace]') &&
+      Boolean(document.querySelector('[data-panel-route-content="interfaces"]'))
+    ));
+    const boundary1024 = await tabletPage.evaluate(() => ({
+      mobile: Boolean(document.querySelector('[data-mobile-domain-workspace]')),
+      desktop: Boolean(document.querySelector('[data-panel-route-content="interfaces"]')),
+      rail: getComputedStyle(document.querySelector('.panel-task-navigation')).display,
+      overflow: document.documentElement.scrollWidth - innerWidth,
+    }));
+    check(
+      checks,
+      '1023/1024 capability boundary switches once from tablet workspace to desktop section',
+      boundary1023.mobile && boundary1023.rail === 'grid' && boundary1023.overflow <= 1 &&
+        !boundary1024.mobile && boundary1024.desktop && boundary1024.rail === 'none' && boundary1024.overflow <= 1,
+      { boundary1023, boundary1024 }
+    );
+    screenshots.push(await screenshot(tabletPage, 'tablet-desktop-boundary-1024.png', 'tablet-desktop-boundary-1024'));
+    await tabletContext.close();
+
+    await page.locator('.panel-runtime-actions button').nth(1).click();
+    await page.locator('[data-router-connection-screen="mobile"]').waitFor();
+    check(
+      checks,
+      'device switch returns to the real connection flow',
+      await page.locator('[data-router-login-form]').isVisible()
+    );
+    await page.locator('.router-logout-button').last().click();
+    await page.locator('[data-router-connection-screen="mobile"]').waitFor();
+    check(
+      checks,
+      'logout clears runtime connection state',
+      mock.state.logoutCalls === 1 && mock.state.configured === false,
+      mock.state
+    );
+    await mobileContext.close();
+
+    const desktopContext = await openContext({
+      viewport: { width: 1366, height: 768 },
+      deviceScaleFactor: 1,
+    });
+    const desktopPage = await desktopContext.newPage();
+    desktopPage.setDefaultTimeout(actionTimeout);
+    await desktopPage.goto(mock.url, { waitUntil: 'domcontentloaded' });
+    await desktopPage.locator('[data-router-connection-screen="desktop"]').waitFor();
+    const desktop = await desktopPage.evaluate(() => {
       const screen = document.querySelector('[data-router-connection-screen="desktop"]');
-      const form = screen?.querySelector('[data-router-login-form]');
       const rect = screen?.getBoundingClientRect();
-      return { form: Boolean(form), width: rect?.width || 0, overflow: document.documentElement.scrollWidth - innerWidth };
-    })()`);
-    check('desktop connection has its own workspace', desktop.form && desktop.width > 900 && desktop.overflow <= 1, desktop);
-    screenshotMetadata.push(await capture(cdp, 'desktop-connection.png', 'desktop-connection'));
+      return {
+        form: Boolean(screen?.querySelector('[data-router-login-form]')),
+        width: rect?.width || 0,
+        overflow: document.documentElement.scrollWidth - innerWidth,
+      };
+    });
+    check(
+      checks,
+      'desktop connection owns a dedicated workspace',
+      desktop.form && desktop.width > 900 && desktop.overflow <= 1,
+      desktop
+    );
+    screenshots.push(await screenshot(desktopPage, 'desktop-connection.png', 'desktop-connection'));
+    await desktopContext.close();
+
+    check(checks, 'browser emitted no uncaught page errors', pageErrors.length === 0, pageErrors);
 
     const report = {
       pass: checks.every((item) => item.pass),
-      source: 'production-runtime',
+      source: 'playwright-production-runtime',
       fixture: false,
-      commit: gitHead,
-      gitHead,
-      git: { head: gitHead },
-      generatedAt: new Date().toISOString(),
+      commit,
+      gitHead: commit,
+      git: { head: commit },
+      generatedAt: utc(),
       checks,
       mock: mock.state,
-      browser: browser.executable,
-      screenshots: screenshotMetadata.map((item) => item.file),
-      screenshotMetadata,
+      browser: {
+        executablePath,
+        version: browser.version(),
+        driver: 'playwright-core',
+      },
+      screenshots: screenshots.map((item) => item.file),
+      screenshotMetadata: screenshots,
     };
-    await fsp.writeFile(path.join(outDir, 'report.json'), `${JSON.stringify(report, null, 2)}\n`, 'utf8');
-    console.log(`[panel-runtime-browser] PASS checks=${checks.length} snapshots=${mock.state.snapshotCalls}`);
+    await fsp.writeFile(
+      path.join(outDir, 'report.json'),
+      JSON.stringify(report, null, 2) + '\n',
+      'utf8'
+    );
+    console.log(
+      '[panel-runtime-browser] PASS checks=' +
+        checks.length +
+        ' snapshots=' +
+        mock.state.snapshotCalls
+    );
+  } catch (error) {
+    if (diagnosticPage && !diagnosticPage.isClosed()) {
+      const diagnostic = {
+        url: diagnosticPage.url(),
+        body: await diagnosticPage.locator('body').innerText().catch(() => ''),
+        html: await diagnosticPage.content().catch(() => ''),
+        pageErrors,
+      };
+      await diagnosticPage.screenshot({
+        path: path.join(outDir, 'failure.png'),
+        animations: 'disabled',
+      }).catch(() => {});
+      await fsp.writeFile(
+        path.join(outDir, 'failure-browser.json'),
+        JSON.stringify(diagnostic, null, 2) + '\n',
+        'utf8'
+      ).catch(() => {});
+    }
+    throw error;
   } finally {
-    cdp.close();
-    await browser.stop();
-    await mock.stop();
+    await cleanup();
+    if (cleanupRuntime === cleanup) cleanupRuntime = async () => {};
   }
 }
 
-run().catch(async (error) => {
+let timeoutHandle;
+const timeout = new Promise((_, reject) => {
+  timeoutHandle = setTimeout(() => {
+    const message = 'panel runtime browser contract exceeded ' + testTimeout + 'ms\n';
+    try {
+      fs.mkdirSync(outDir, { recursive: true });
+      fs.writeFileSync(path.join(outDir, 'failure.log'), message, 'utf8');
+    } catch {}
+    reject(new Error(message.trim()));
+    void cleanupRuntime();
+  }, testTimeout);
+});
+
+Promise.race([main(), timeout]).then(() => {
+  if (timeoutHandle) clearTimeout(timeoutHandle);
+}).catch(async (error) => {
+  if (timeoutHandle) clearTimeout(timeoutHandle);
   await fsp.mkdir(outDir, { recursive: true });
-  await fsp.writeFile(path.join(outDir, 'failure.log'), `${error.stack || error.message || String(error)}\n`, 'utf8');
-  console.error(error.stack || error.message || String(error));
-  process.exit(1);
+  let browserState = '';
+  if (diagnosticPage && !diagnosticPage.isClosed()) {
+    try {
+      await diagnosticPage.screenshot({
+        path: path.join(outDir, 'failure.png'),
+        animations: 'disabled',
+      });
+      const body = await diagnosticPage.locator('body').innerText().catch(() => '');
+      browserState = `\nurl=${diagnosticPage.url()}\nbody=${body.slice(0, 2000)}\npageErrors=${JSON.stringify(pageErrors)}`;
+    } catch (captureError) {
+      browserState = `\ndiagnosticCapture=${String(captureError && captureError.message || captureError)}`;
+    }
+  }
+  await fsp.writeFile(
+    path.join(outDir, 'failure.log'),
+    String(error && (error.stack || error.message) || error) + browserState + '\n',
+    'utf8'
+  );
+  console.error(error && (error.stack || error.message) || error);
+  process.exitCode = 1;
 });

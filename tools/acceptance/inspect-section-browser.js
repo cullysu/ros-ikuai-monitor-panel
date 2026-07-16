@@ -75,8 +75,12 @@ async function inspectSectionBrowser(
     };
   };
   const app = document.querySelector('#app');
-  const active = document.querySelector('#app .section');
-  const requested = document.querySelector('#' + CSS.escape(sectionName));
+  const active = document.querySelector('#app .section, #app [data-mobile-domain-workspace], #app [data-panel-route-content]');
+  const requested = document.querySelector(
+    '#' + CSS.escape(sectionName) +
+    ', [data-mobile-domain-workspace="' + CSS.escape(sectionName) + '"]' +
+    ', [data-panel-route-content="' + CSS.escape(sectionName) + '"]'
+  );
   const root = document.documentElement;
   const body = document.body;
   const overflowX = Math.max(root.scrollWidth, body.scrollWidth) - window.innerWidth;
@@ -92,10 +96,10 @@ async function inspectSectionBrowser(
   const scaleMeta = window.__PANEL_TEST_SNAPSHOT__?.meta?.scale || {};
   const scenario = scaleScenario;
   const scaleDisclosureCount = document.querySelectorAll('.scale-meta, .scale-pager, .scale-toolbar, [data-scale-meta]').length;
-  const isCurrent35Shell = Boolean(document.querySelector('.ik-rail'));
+  const isCurrentReactShell = Boolean(document.querySelector('[data-panel-app]'));
   const scaleMetaOk = Boolean(scaleMeta.wan && Number(scaleMeta.wan.actualCount || 0) >= 0 && Number(scaleMeta.wan.shownCount || 0) >= 0);
   const scaleRequiredSections = new Set(['overview', 'interfaces', 'terminals', 'dhcp', 'trafficLoad']);
-  const scaleDisclosureOk = scenario !== 'fleet' || !scaleRequiredSections.has(sectionName) || scaleDisclosureCount > 0 || isCurrent35Shell;
+  const scaleDisclosureOk = scenario !== 'fleet' || !scaleRequiredSections.has(sectionName) || scaleDisclosureCount > 0 || isCurrentReactShell;
   const sectionRoot = requested || active;
   const {
     nativeMobileInteractionOk,
@@ -109,8 +113,22 @@ async function inspectSectionBrowser(
     nativeDetailRawEvidenceCount,
     nativeDetailHasNovelEvidence,
     nativeDetailNoHomeReplay,
-  } = await runOverviewMobileInteraction({ sectionName, sectionRoot, normalize });
-  const refreshedActive = document.querySelector('#app .section'), refreshedRequested = document.querySelector('#' + CSS.escape(sectionName)), refreshedSectionRoot = refreshedRequested || refreshedActive;
+  } = await runOverviewMobileInteraction({
+    sectionName,
+    sectionRoot,
+    normalize,
+    scaleScenario,
+    profile,
+    viewport,
+    strictResponsive,
+  });
+  const refreshedActive = document.querySelector('#app .section, #app [data-mobile-domain-workspace], #app [data-panel-route-content]');
+  const refreshedRequested = document.querySelector(
+    '#' + CSS.escape(sectionName) +
+    ', [data-mobile-domain-workspace="' + CSS.escape(sectionName) + '"]' +
+    ', [data-panel-route-content="' + CSS.escape(sectionName) + '"]'
+  );
+  const refreshedSectionRoot = refreshedRequested || refreshedActive;
   const mobileNativeResult = inspectMobileNativeOverview({
     sectionName,
     scaleScenario,
@@ -154,6 +172,68 @@ async function inspectSectionBrowser(
     if (desktopOverviewResult?.surface === 'desktop-overview') return desktopOverviewResult;
   }
   const detailSections = new Set(['interfaces', 'terminals', 'dhcp', 'trafficLoad']);
+  const operationalRoute = sectionName !== 'overview';
+  const mobileDomainRoot = sectionRoot?.matches('[data-mobile-domain-workspace]') ? sectionRoot : null;
+  const desktopDomainRoot = sectionRoot?.matches('[data-panel-route-content]') ? sectionRoot : null;
+  const operationalTitle = sectionRoot?.querySelector('[data-panel-route-title]');
+  const operationalTables = Array.from(sectionRoot?.querySelectorAll('.panel-section-table') || []);
+  const operationalTablesValid = operationalTables.every((table) => Boolean(
+    table.querySelector('h2') &&
+    (table.querySelector('tbody tr') || table.querySelector('.panel-empty-state'))
+  ));
+  const operationalRouteContractOk = !operationalRoute || Boolean(
+    sectionRoot && operationalTitle && (
+      mobileDomainRoot
+        ? mobileDomainRoot.getAttribute('data-mobile-domain-workspace') === sectionName &&
+          /^(current|historical|unavailable)$/.test(mobileDomainRoot.getAttribute('data-mobile-evidence-mode') || '') &&
+          (sectionName === 'more'
+            ? mobileDomainRoot.querySelectorAll('.mdw-directory-list [data-section]').length === 10
+            : mobileDomainRoot.querySelectorAll('.mdw-metrics > div').length === 3 &&
+              Boolean(mobileDomainRoot.querySelector('.mdw-object-list, .mdw-empty')) &&
+              Boolean(mobileDomainRoot.querySelector('.mdw-inspector')))
+        : sectionName === 'more'
+          ? Boolean(sectionRoot.querySelector('.panel-more-list [data-section]'))
+          : desktopDomainRoot?.getAttribute('data-panel-route-content') === sectionName &&
+            /^(current|historical|unavailable)$/.test(desktopDomainRoot.getAttribute('data-panel-evidence-mode') || '') &&
+            desktopDomainRoot.querySelectorAll('.panel-section-metrics > div').length === 3 &&
+            operationalTables.length > 0 &&
+            operationalTablesValid &&
+            Boolean(desktopDomainRoot.querySelector('.panel-readonly-footer'))
+    )
+  );
+  const currentInterfaceHeaders = Array.from(sectionRoot?.querySelectorAll('.panel-section-table th') || [])
+    .map((node) => normalize(node.textContent));
+  const operationalInterfaceTableOk = sectionName !== 'interfaces' || Boolean(
+    mobileDomainRoot
+      ? mobileDomainRoot.querySelector('.mdw-object-list, .mdw-empty')
+      : desktopDomainRoot?.getAttribute('data-panel-evidence-mode') === 'unavailable'
+        ? desktopDomainRoot.querySelector('.panel-section-table .panel-empty-state')
+        : ['接口', '类型 / 角色', '状态', '上级', '接收 / 发送'].every((label) => currentInterfaceHeaders.includes(label))
+  );
+  const singleRouteEvidence = {
+    interfaces: ['pppoe-wan1'],
+    lineStatus: ['pppoe-wan1'],
+    balance: ['单线路'],
+    routes: ['0.0.0.0/0'],
+    terminals: ['client-1'],
+    dhcp: ['192.168.0.11'],
+    arp: ['AA:BB:CC:00:01:01'],
+    trafficLoad: ['CPU', '18%'],
+    loadAudit: ['CPU', '6 个'],
+    trafficAudit: ['TCP', /(?:3 个连接|TCP\s+3(?:\s|$))/],
+    connections: ['192.168.0.11', '203.0.113.20'],
+    dns4: ['lan.local'],
+    dns6: ['bridge-lan'],
+    security: ['allow established'],
+    logs: ['smoke fixture ready'],
+    serviceLogs: ['smoke fixture ready'],
+    readonlyDiagnostics: ['没有失败端点记录'],
+    more: [/(?:资源与负载|资源\s+CPU)/, /(?:IPv4 DNS|DNS v4)/, /(?:安全观察|安全\s+防火墙)/],
+  };
+  const requiredRouteEvidence = scaleScenario === 'single' ? singleRouteEvidence[sectionName] || [] : [];
+  const operationalDataFidelityOk = requiredRouteEvidence.every((needle) => (
+    typeof needle === 'string' ? text.includes(needle) : needle.test(text)
+  )) && (sectionName !== 'more' || !text.includes('路由记录'));
   const overviewSummaryShell = sectionRoot?.querySelector('.ro-status-bus');
   const overviewSummaryMain = overviewSummaryShell;
   const overviewSummaryFocus = '';
@@ -438,7 +518,12 @@ async function inspectSectionBrowser(
           Number.isFinite(normalized) && normalized >= 0 && normalized <= 100;
       })
     )
-  );    const detailFeedbackOk = !detailSections.has(sectionName) || isCurrent35Shell || Boolean(sectionRoot?.querySelector('[data-scale-filter-summary]') && sectionRoot?.querySelector('[data-scale-clear]'));
+  );
+  const detailFeedbackOk = !detailSections.has(sectionName) || (
+    isCurrentReactShell
+      ? operationalRouteContractOk
+      : Boolean(sectionRoot?.querySelector('[data-scale-filter-summary]') && sectionRoot?.querySelector('[data-scale-clear]'))
+  );
   const scaleWindowScrollers = Array.from(sectionRoot?.querySelectorAll('.scale-window .scale-table-wrap') || []);
   const scaleWindowHorizontalOverflow = scaleWindowScrollers
     .map((node) => {
@@ -458,19 +543,23 @@ async function inspectSectionBrowser(
   const broadbandTable = sectionRoot?.querySelector('[data-broadband-realtime-table]');
   const broadbandText = normalize(broadbandTable?.textContent || '');
   const broadbandHeaders = Array.from(broadbandTable?.querySelectorAll('th') || []).map((node) => normalize(node.textContent));
-  const interfaceBroadbandTableOk = sectionName !== 'interfaces' || isCurrent35Shell || Boolean(
-    broadbandTable &&
-    broadbandHeaders.includes('线路') &&
-    broadbandHeaders.includes('状态') &&
-    broadbandHeaders.includes('IP 地址') &&
-    broadbandHeaders.includes('实时上行速率') &&
-    broadbandHeaders.includes('实时下行速率') &&
-    broadbandHeaders.includes('累计上行流量') &&
-    broadbandHeaders.includes('累计下行流量') &&
-    broadbandHeaders.includes('活动路由') &&
-    broadbandHeaders.includes('父接口') &&
-    broadbandText.includes('宽带实时流量') &&
-    broadbandTable.querySelectorAll('tbody tr').length > 0
+  const interfaceBroadbandTableOk = sectionName !== 'interfaces' || (
+    isCurrentReactShell
+      ? operationalInterfaceTableOk
+      : Boolean(
+          broadbandTable &&
+          broadbandHeaders.includes('线路') &&
+          broadbandHeaders.includes('状态') &&
+          broadbandHeaders.includes('IP 地址') &&
+          broadbandHeaders.includes('实时上行速率') &&
+          broadbandHeaders.includes('实时下行速率') &&
+          broadbandHeaders.includes('累计上行流量') &&
+          broadbandHeaders.includes('累计下行流量') &&
+          broadbandHeaders.includes('活动路由') &&
+          broadbandHeaders.includes('父接口') &&
+          broadbandText.includes('宽带实时流量') &&
+          broadbandTable.querySelectorAll('tbody tr').length > 0
+        )
   );
   const humanScaleCopyOk = !scaleRequiredSections.has(sectionName) || !/\bbucket\b|\bhasMore\b|\bsampled\b|\bsort\b/i.test(text);
   const overviewEvidenceModules = Array.from(sectionRoot?.querySelectorAll('[data-overview-density-module]') || []);
@@ -1366,21 +1455,35 @@ async function inspectSectionBrowser(
         /SSH (可用|上次可用|缺依赖|依赖缺失|不可用|不可达|采集不可用|通道不可用)/.test(text))
   );
   const readonlyNav = sectionRoot?.querySelector('.readonly-feature-nav');
-  const readonlyDefaultLinks = Array.from(readonlyNav?.querySelectorAll(':scope > .readonly-feature-link') || []);
+  const mobileReadonlyMenu = sectionRoot?.querySelector('.mdw-more');
+  const readonlyDefaultLinks = Array.from(
+    readonlyNav?.querySelectorAll(':scope > .readonly-feature-link') ||
+    mobileReadonlyMenu?.querySelectorAll('button[data-section]') ||
+    []
+  );
   const readonlyDefaultLabels = readonlyDefaultLinks.map((node) => normalize(node.textContent));
   const readonlyAdvancedNav = readonlyNav?.querySelector('details.readonly-advanced-nav');
+  const mobileReadonlyRoutes = readonlyDefaultLinks.map((node) => node.getAttribute('data-section') || '');
+  const mobileTaskRoutes = Array.from(document.querySelectorAll('.panel-task-navigation [data-section]'))
+    .map((node) => node.getAttribute('data-section') || '');
   const readonlyPublicNavOk = sectionName !== 'readonlyDiagnostics' || Boolean(
-    readonlyNav &&
-    readonlyDefaultLinks.length === 5 &&
-    readonlyDefaultLabels.some((label) => label.includes('采集状态')) &&
-    readonlyDefaultLabels.some((label) => label.includes('DNS 状态')) &&
-    readonlyDefaultLabels.some((label) => label.includes('线路状态')) &&
-    readonlyDefaultLabels.some((label) => label.includes('终端状态')) &&
-    readonlyDefaultLabels.some((label) => label.includes('日志状态')) &&
-    !readonlyAdvancedNav &&
-    !/内部目录|关注排序|证据来源|归属规则|诊断/.test(normalize(readonlyNav.textContent))
+    mobileDomainRoot
+      ? mobileReadonlyMenu &&
+        ['trafficLoad', 'trafficAudit', 'dns4', 'dns6', 'security', 'readonlyDiagnostics']
+          .every((route) => mobileReadonlyRoutes.includes(route)) &&
+        ['overview', 'interfaces', 'terminals', 'logs'].every((route) => mobileTaskRoutes.includes(route)) &&
+        !/内部目录|关注排序|证据来源|归属规则/.test(normalize(mobileReadonlyMenu.textContent))
+      : readonlyNav &&
+        readonlyDefaultLinks.length === 5 &&
+        readonlyDefaultLabels.some((label) => label.includes('采集状态')) &&
+        readonlyDefaultLabels.some((label) => label.includes('DNS 状态')) &&
+        readonlyDefaultLabels.some((label) => label.includes('线路状态')) &&
+        readonlyDefaultLabels.some((label) => label.includes('终端状态')) &&
+        readonlyDefaultLabels.some((label) => label.includes('日志状态')) &&
+        !readonlyAdvancedNav &&
+        !/内部目录|关注排序|证据来源|归属规则|诊断/.test(normalize(readonlyNav.textContent))
   );
-  const scaleHeightOk = scenario !== 'fleet' || isCurrent35Shell || (
+  const scaleHeightOk = scenario !== 'fleet' || isCurrentReactShell || (
     sectionName === 'overview' ? scrollHeight <= 3000 :
     sectionName === 'trafficLoad' ? scrollHeight <= 10000 :
     !detailSections.has(sectionName) || scrollHeight <= 6200
@@ -4986,6 +5089,8 @@ async function inspectSectionBrowser(
     active &&
     (requested || active.id === sectionName) &&
     Boolean(sectionRoot) &&
+    operationalRouteContractOk &&
+    operationalDataFidelityOk &&
     !hasBadLiteral &&
     scaleMetaOk &&
     scaleDisclosureOk &&
@@ -5187,9 +5292,14 @@ async function inspectSectionBrowser(
     viewport,
     scaleScenario,
     requestedSection: sectionName,
-    activeSection: active ? active.id : '',
+    activeSection: active
+      ? active.id ||
+        active.getAttribute('data-mobile-domain-workspace') ||
+        active.getAttribute('data-panel-route-content') ||
+        ''
+      : '',
     requestedFound: Boolean(requested),
-    title: normalize(document.querySelector('#pageTitle')?.textContent),
+    title: normalize(sectionRoot?.querySelector('[data-panel-route-title], h1')?.textContent),
     url: location.href,
     overflowX: Math.round(overflowX),
     scroll: {
@@ -5899,6 +6009,12 @@ async function inspectSectionBrowser(
     resourceCardCount: resourceCards.length,
     resourceColumns,
     detailFeedbackOk,
+    operationalRouteContractOk,
+    operationalDataFidelityOk,
+    requiredRouteEvidence,
+    operationalTextExcerpt: operationalRoute ? text.slice(0, 2000) : '',
+    operationalInterfaceTableOk,
+    currentInterfaceHeaders,
     scaleWindowHorizontalOk,
     scaleWindowHorizontalOverflow,
     interfaceBroadbandTableOk,

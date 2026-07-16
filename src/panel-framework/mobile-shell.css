@@ -1,37 +1,39 @@
-@media (max-width: 899px) {
-  html:has(#overview.is-mobile-overview),
-  body:has(#overview.is-mobile-overview) {
-    width: 100%;
-    min-width: 0;
+html,
+body,
+#app,
+.router-overview-panel-root {
+  min-width: 0;
+  min-height: 100%;
+}
+
+html,
+body {
+  margin: 0;
+}
+
+body {
+  background: #eef3f5;
+}
+
+#app,
+.router-overview-panel-root {
+  width: 100%;
+}
+
+@media (max-width: 1023px) {
+  html,
+  body,
+  #app,
+  .router-overview-panel-root {
     min-height: 100%;
-    overflow: auto;
-    background: #eaf1f4;
+    overflow-x: hidden;
   }
-  .app.ik-shell:has(#overview.is-mobile-overview) {
-    display: block;
-    width: 100%;
-    min-width: 0;
+  #app,
+  .router-overview-panel-root {
     min-height: 100svh;
-    overflow: visible;
-    background: #eaf1f4;
   }
-  .app.ik-shell:has(#overview.is-mobile-overview) .ik-rail,
-  .app.ik-shell:has(#overview.is-mobile-overview) .sidebar,
-  .app.ik-shell:has(#overview.is-mobile-overview) .topbar {
-    display: none;
-  }
-  .app.ik-shell:has(#overview.is-mobile-overview) .frame,
-  .app.ik-shell:has(#overview.is-mobile-overview) .content {
-    display: block;
-    width: 100%;
-    min-width: 0;
-    min-height: 0;
-    margin: 0;
-    padding: 0;
-    overflow: visible;
-  }
-  #overview.is-mobile-overview,
-  #overview.is-mobile-overview > .mobile-overview-mount {
+  #overview.is-mobile-surface,
+  #overview.is-mobile-surface > .mobile-patrol-mount {
     width: 100%;
     min-width: 0;
     margin: 0;

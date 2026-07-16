@@ -332,13 +332,20 @@ function assertRuntimeBrowserReport(rootDir = ROOT) {
   const checks = Array.isArray(report.checks) ? report.checks : [];
   const allChecksPass = checks.length > 0 && checks.every((check) => check && check.pass === true);
   const requiredChecks = [
-    'live runtime does not use a scenario fixture',
-    'validated snapshot renders the requested route',
+    'production runtime has no scenario fixture',
+    'validated snapshot renders the overview without overflow',
     'automatic polling refreshes the validated snapshot',
-    'old evidence is labeled historical instead of current',
-    'browser offline state stops current claims',
-    'online recovery replaces historical evidence with a current snapshot',
-    'desktop connection has its own workspace',
+    'browser 200% text adjustment reflows without horizontal loss',
+    'malformed snapshot is rejected while last valid evidence remains visible',
+    'snapshot API error never inserts a scenario fixture',
+    'old evidence is labeled historical and current traffic is withheld',
+    'navigator.onLine=false does not block a reachable same-origin snapshot',
+    'manual refresh remains operational while navigator reports offline',
+    'tablet overview selects incident evidence beside the full object list without navigation',
+    '768px tablet uses a persistent task rail with list and inspector',
+    '1023/1024 capability boundary switches once from tablet workspace to desktop section',
+    'desktop connection owns a dedicated workspace',
+    'browser emitted no uncaught page errors',
   ];
   const checkNames = new Set(checks.map((check) => check?.name));
   const missingChecks = requiredChecks.filter((name) => !checkNames.has(name));
@@ -347,7 +354,13 @@ function assertRuntimeBrowserReport(rootDir = ROOT) {
     { state: 'mobile-connection', file: 'mobile-connection.png', viewport: { width: 390, height: 844 } },
     { state: 'mobile-ssh-host-key-confirmation', file: 'mobile-ssh-host-key-confirmation.png', viewport: { width: 390, height: 844 } },
     { state: 'mobile-runtime-current', file: 'mobile-runtime-current.png', viewport: { width: 390, height: 844 } },
+    { state: 'mobile-network-object', file: 'mobile-network-object.png', viewport: { width: 390, height: 844 } },
+    { state: 'mobile-runtime-text-200', file: 'mobile-runtime-text-200.png', viewport: { width: 390, height: 844 } },
     { state: 'mobile-runtime-stale', file: 'mobile-runtime-stale.png', viewport: { width: 390, height: 844 } },
+    { state: 'tablet-overview-master-detail-768', file: 'tablet-overview-master-detail-768.png', viewport: { width: 768, height: 1024 } },
+    { state: 'tablet-network-768', file: 'tablet-network-768.png', viewport: { width: 768, height: 1024 } },
+    { state: 'tablet-network-844', file: 'tablet-network-844.png', viewport: { width: 844, height: 1024 } },
+    { state: 'tablet-desktop-boundary-1024', file: 'tablet-desktop-boundary-1024.png', viewport: { width: 1024, height: 768 } },
     { state: 'desktop-connection', file: 'desktop-connection.png', viewport: { width: 1366, height: 768 } },
   ];
   const metadataStates = screenshotMetadata.map((item) => item?.state);
@@ -406,8 +419,8 @@ function assertRuntimeBrowserReport(rootDir = ROOT) {
   if (new Set(screenshotMetadata.map((item) => item?.sha256).filter(Boolean)).size !== requiredScreenshots.length) {
     screenshotErrors.push('runtime states must not reuse the same screenshot bytes');
   }
-  if (report.pass !== true || report.commit !== head || report.source !== 'production-runtime' || report.fixture !== false || !allChecksPass || missingChecks.length || screenshotErrors.length) {
-    throw new Error(`panel-runtime-browser report is not current production-runtime evidence: ${JSON.stringify({
+  if (report.pass !== true || report.commit !== head || report.source !== 'playwright-production-runtime' || report.fixture !== false || !allChecksPass || missingChecks.length || screenshotErrors.length) {
+    throw new Error(`panel-runtime-browser report is not current Playwright production-runtime evidence: ${JSON.stringify({
       head,
       pass: report.pass,
       commit: report.commit,
@@ -473,7 +486,7 @@ function collectGateDetailFailures(latest) {
         : {};
       if (check.pass !== true) pushFailure('mobileSemantic', 'check.pass', check.pass);
       if (detail.surface !== 'mobile-overview') pushFailure('mobileSemantic', 'surface', detail.surface);
-      if (probe.contract !== 'adaptive-operations-instrument') pushFailure('mobileSemantic', 'contract', probe.contract);
+      if (probe.contract !== 'mobile-patrol-console-v3') pushFailure('mobileSemantic', 'contract', probe.contract);
       if (probe.appHomePass !== true) pushFailure('mobileSemantic', 'appHomePass', probe.appHomePass);
       assertProbeChecks('mobileSemantic', probe);
       if (parsed.scenario === 'no-snapshot') {
@@ -649,9 +662,9 @@ function main(argv = process.argv.slice(2)) {
   assertContains('src/panel-framework/connection/RouterConnectionScreen.tsx', '连接并进入面板');
   assertContains('src/panel-framework/connection/RouterConnectionScreen.tsx', '确认并固定此指纹；以后发生变化时阻断连接');
   assertContains('src/panel-framework/connection/RouterConnectionScreen.tsx', 'REST 使用 HTTPS 并验证证书；不会自动降级到 HTTP。');
-  assertContains('src/panel-framework/connection/RouterConnectionScreen.tsx', 'name="rememberPassword"');
+  assertContains('src/panel-framework/connection/RouterConnectionScreen.tsx', 'name="rememberProfile"');
   assertContains('src/panel-framework/runtime/panelApi.ts', '/api/router-login');
-  assertContains('src/panel-framework/runtime/panelApi.ts', 'rememberPassword: input.rememberProfile');
+  assertContains('src/panel-framework/runtime/panelApi.ts', 'rememberProfile: input.rememberProfile');
   assertContains('src/panel-framework/runtime/panelRuntimeSchema.ts', 'export function validatePanelSnapshot');
   assertContains('src/panel-framework/runtime/usePanelRuntime.ts', 'window.setTimeout(() => void refresh');
   assertContains('src/panel-framework/runtime/usePanelRuntime.ts', 'window.addEventListener("offline"');
@@ -689,21 +702,24 @@ function main(argv = process.argv.slice(2)) {
   assertNotContains('public/assets/framework/panel-framework.js', 'mn-sheet');
   assertNotContains('public/assets/framework/panel-framework.js', 'role: "tablist"');
 
-  assertContains('src/panel-framework/overview/mobile-overview/MobileOverviewScreen.tsx', 'data-mobile-overview');
-  assertContains('src/panel-framework/overview/mobile-overview/MobileOverviewScreen.tsx', 'data-mobile-core-fact');
-  assertContains('src/panel-framework/overview/mobile-overview/MobileOverviewScreen.tsx', 'data-mobile-evidence-ledger');
-  assertContains('src/panel-framework/overview/mobile-overview/MobilePriorityQueue.tsx', 'data-mobile-priority-object');
-  assertContains('src/panel-framework/overview/mobile-overview/MobilePriorityQueue.tsx', 'data-mobile-priority-route');
-  assertContains('src/panel-framework/overview/mobile-overview/MobileWanInstrument.tsx', 'data-mobile-traffic-samples');
-  assertContains('src/panel-framework/overview/mobile-overview/MobileWanInstrument.tsx', '<title id="mo-chart-title">');
-  assertContains('src/panel-framework/overview/mobile-overview/MobileWanInstrument.tsx', '<desc id="mo-chart-desc">');
-  assertContains('src/panel-framework/overview/mobile-overview/MobileOverviewScreen.tsx', 'import "./styles/mobile-overview-tokens.css";');
-  assertContains('src/panel-framework/overview/mobile-overview/styles/mobile-overview.css', '.mo-verdict');
-  assertContains('src/panel-framework/overview/mobile-overview/styles/mobile-overview.css', '.mo-priority-list');
-  assertContains('src/panel-framework/overview/mobile-overview/styles/mobile-overview.css', '.mo-instrument-chart');
-  assertNotContains('src/panel-framework/overview/mobile-overview/styles/mobile-overview.css', '!important');
-  assertNotContains('src/panel-framework/overview/mobile-overview/styles/mobile-overview-responsive.css', '!important');
-  assertNotContains('src/panel-framework/overview/mobile-overview/styles/mobile-overview-tokens.css', '!important');
+  assertContains('src/panel-framework/mobile/MobilePatrolScreen.tsx', 'data-mobile-overview');
+  assertContains('src/panel-framework/mobile/MobilePatrolScreen.tsx', 'data-mobile-core-fact');
+  assertContains('src/panel-framework/mobile/MobilePatrolScreen.tsx', 'data-mobile-evidence-ledger');
+  assertContains('src/panel-framework/mobile/MobileIncidentWorkspace.tsx', 'data-mobile-incident-object');
+  assertContains('src/panel-framework/mobile/MobileIncidentWorkspace.tsx', 'data-mobile-incident-route');
+  assertContains('src/panel-framework/mobile/MobilePatrolScreen.tsx', 'availableBelowSummary');
+  assertContains('src/panel-framework/mobile/MobilePatrolTraffic.tsx', 'preserveAspectRatio="xMidYMid meet"');
+  assertContains('src/panel-framework/mobile/MobilePatrolTraffic.tsx', '<title id="mp-traffic-chart-title">');
+  assertContains('src/panel-framework/mobile/MobilePatrolTraffic.tsx', '<desc id="mp-traffic-chart-desc">');
+  assertContains('src/panel-framework/mobile/MobileDomainWorkspace.tsx', 'type="search"');
+  assertContains('src/panel-framework/mobile/MobileDomainWorkspace.tsx', 'data-mobile-object-detail');
+  assertContains('src/panel-framework/mobile/MobileDomainWorkspace.tsx', 'pageSize = 20');
+  assertContains('src/panel-framework/mobile/mobileDomainWorkspaceModel.ts', 'window.history.pushState');
+  assertContains('src/panel-framework/mobile/mobileDomainWorkspaceModel.ts', 'window.addEventListener("popstate"');
+  assertNotContains('src/panel-framework/mobile/MobileDomainWorkspace.tsx', 'aria-controls=');
+  assertNotContains('src/panel-framework/mobile/mobile-patrol.css', '!important');
+  assertNotContains('src/panel-framework/mobile/mobile-domain.css', '!important');
+  assertNotContains('src/panel-framework/sections/section-timeseries.css', '!important');
 
   assertContains('src/panel-framework/overview/desktop-overview/DesktopOverviewScreen.tsx', 'data-desktop-overview');
   assertContains('src/panel-framework/overview/desktop-overview/DesktopOverviewScreen.tsx', 'data-desktop-status-bus');
@@ -715,16 +731,16 @@ function main(argv = process.argv.slice(2)) {
 
   assertContains('src/panel-framework/overview/evidence-model/overviewEvidenceTypes.ts', '"current" | "historical" | "unavailable"');
   assertContains('src/panel-framework/overview/evidence-model/buildOverviewEvidenceModel.ts', 'route.active === true && route.disabled !== true');
-  assertContains('src/panel-framework/overview/evidence-model/buildOverviewEvidenceModel.ts', 'if (rowDown === null || rowUp === null) return null;');
+  assertContains('src/panel-framework/overview/evidence-model/buildOverviewInstruments.ts', 'if (rowDown === null || rowUp === null) return null;');
   assertContains('src/panel-framework/overview/evidence-model/buildOverviewEvidenceModel.ts', 'observed.length - 1');
-  assertContains('src/panel-framework/overview/evidence-model/buildOverviewEvidenceModel.ts', 'Math.abs(snapshotAt - last.timestamp)');
+  assertContains('src/panel-framework/overview/evidence-model/buildOverviewInstruments.ts', 'Math.abs(snapshotAt - last.timestamp)');
   assertNotContains('src/panel-framework/overview/evidence-model/buildOverviewEvidenceModel.ts', 'rows[0]');
   assertContains('tools/check-mobile-native-model.js', 'missing current rate must not produce a trend');
   assertContains('tools/check-mobile-native-model.js', 'explicit zero observations remain valid');
 
-  assertContains('tools/acceptance/inspect-overview-mobile.js', "contract: 'adaptive-operations-instrument'");
+  assertContains('tools/acceptance/inspect-overview-mobile.js', "contract: 'mobile-patrol-console-v3'");
   assertContains('tools/acceptance/inspect-overview-mobile.js', 'Object.values(checks).every(Boolean)');
-  assertContains('tools/acceptance/inspect-overview-mobile.js', 'stableTaskNavigation: taskButtons.length === 3');
+  assertContains('tools/acceptance/inspect-overview-mobile.js', 'stableTaskNavigation: taskButtons.length === 4');
   assertContains('tools/acceptance/inspect-overview-mobile.js', 'smallText.length === 0');
   assertContains('tools/acceptance/inspect-overview-desktop-layout.js', "contract: 'cold-blue-operations-ledger'");
   assertContains('tools/local-predeploy-check.js', 'panelRouteRuntimeOk: routeProbe?.pass === true');
@@ -768,7 +784,8 @@ function main(argv = process.argv.slice(2)) {
   assertNotExists('public/layout-whitespace-patch.js');
   assertNotExists('public/panel-professional-redesign.js');
   assertMaxBytes('public/assets/framework/style.css', 100000);
-  assertContains('public/index.html', 'data-app-shell="ikuai"');
+  assertContains('public/index.html', '<main id="app"');
+  assertContains('public/index.html', 'data-deploy-channel="public"');
   assertContains('public/index.html', 'data-overview-framework-asset="style"');
   assertContains('public/index.html', 'data-overview-framework-asset="script"');
   assertNotContains('public/index.html', 'layout-whitespace-patch.js');

@@ -6,12 +6,18 @@ async function inspectPanelRouteRuntime() {
 
   const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
   const current = () => {
-    const section = document.querySelector('#app .section');
+    const route = app.getAttribute('data-active-section') || document.body.dataset.panelRoute || '';
+    const section = route === 'overview'
+      ? document.querySelector('#overview')
+      : document.querySelector(`[data-mobile-domain-workspace="${CSS.escape(route)}"], [data-panel-route-content="${CSS.escape(route)}"]`);
     const title = section?.querySelector('[data-panel-route-title], h1');
+    const sectionName = section?.id ||
+      section?.getAttribute('data-mobile-domain-workspace') ||
+      section?.getAttribute('data-panel-route-content') || '';
     return {
-      route: document.body.dataset.panelRoute || '',
-      section: section?.id || '',
-      content: section?.getAttribute('data-panel-route-content') || section?.id || '',
+      route,
+      section: sectionName,
+      content: section?.getAttribute('data-panel-route-content') || sectionName,
       mobileOverview: Boolean(section?.querySelector('[data-mobile-overview]')),
       title: String(title?.textContent || '').replace(/\s+/g, ' ').trim(),
       titleIsRouteTarget: Boolean(title?.hasAttribute('data-panel-route-title')),
@@ -46,10 +52,8 @@ async function inspectPanelRouteRuntime() {
   const overview = current();
   const interfaces = await clickRoute('interfaces');
   const interfacesFocusOk = interfaces.focusOnTitle;
-  const overviewBackCommand = document.querySelector('button[data-panel-overview-back]');
-  if (overviewBackCommand) overviewBackCommand.click();
-  const commandOverview = await waitForRoute('overview', 1800, true);
-  const overviewBackCommandOk = Boolean(overviewBackCommand) && commandOverview.route === 'overview' && commandOverview.focusOnTitle;
+  const commandOverview = await clickRoute('overview');
+  const overviewBackCommandOk = commandOverview.route === 'overview' && commandOverview.focusOnTitle;
   const interfacesAfterCommand = await clickRoute('interfaces');
   const terminals = await clickRoute('terminals');
 

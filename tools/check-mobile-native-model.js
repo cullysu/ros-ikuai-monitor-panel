@@ -1,33 +1,38 @@
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
-const { buildSync } = require("esbuild");
+const ts = require("typescript");
 
 const root = process.cwd();
-const outDir = path.join(root, "_acceptance", "mobile-overview-model");
-const bundleFile = path.join(outDir, "model-contract.cjs");
 
-fs.rmSync(outDir, { recursive: true, force: true });
-fs.mkdirSync(outDir, { recursive: true });
-buildSync({
-  stdin: {
-    contents: [
-      'export { buildOverviewEvidenceModel } from "./src/panel-framework/overview/evidence-model/buildOverviewEvidenceModel";',
-      'export { deriveOverviewState, OVERVIEW_SCENARIO_FIXTURES } from "./src/panel-framework/overview";',
-    ].join("\n"),
-    loader: "ts",
-    resolveDir: root,
-    sourcefile: "mobile-overview-model-contract.ts",
-  },
-  bundle: true,
-  format: "cjs",
-  platform: "node",
-  target: "node20",
-  outfile: bundleFile,
-  logLevel: "silent",
-});
+function loadTypeScript(module, filename) {
+  const source = fs.readFileSync(filename, "utf8");
+  const compiled = ts.transpileModule(source, {
+    compilerOptions: {
+      module: ts.ModuleKind.CommonJS,
+      moduleResolution: ts.ModuleResolutionKind.NodeJs,
+      target: ts.ScriptTarget.ES2020,
+      jsx: ts.JsxEmit.ReactJSX,
+      esModuleInterop: true,
+    },
+    fileName: filename,
+  });
+  module._compile(compiled.outputText, filename);
+}
 
-const { buildOverviewEvidenceModel, deriveOverviewState, OVERVIEW_SCENARIO_FIXTURES } = require(bundleFile);
+require.extensions[".ts"] = loadTypeScript;
+require.extensions[".tsx"] = loadTypeScript;
+
+const { buildOverviewEvidenceModel } = require(
+  path.join(root, "src", "panel-framework", "overview", "evidence-model", "buildOverviewEvidenceModel.ts")
+);
+const { deriveOverviewState, OVERVIEW_SCENARIO_FIXTURES } = require(
+  path.join(root, "src", "panel-framework", "overview", "index.ts")
+);
+const { buildSectionModel } = require(
+  path.join(root, "src", "panel-framework", "sections", "sectionModels.ts")
+);
+
 const clone = (value) => structuredClone(value);
 const modelFor = (snapshot) => buildOverviewEvidenceModel(snapshot, deriveOverviewState(snapshot));
 const modelForHint = (snapshot, scenarioHint) => buildOverviewEvidenceModel(snapshot, deriveOverviewState(snapshot, { scenarioHint }));
@@ -117,15 +122,31 @@ assert.deepEqual(resourceModel.facts.map((row) => row.key), ["resource-breaches"
 assert.deepEqual(resourceModel.facts.map((row) => row.value), ["3 / 3", "6 个", "6 个"]);
 assert.equal(resourceModel.priorityObjects.length, 1);
 assert.equal(resourceModel.priorityObjects[0].route, "trafficLoad");
-assert.match(resourceModel.priorityObjects[0].state, /CPU 96% · 内存 92% · 磁盘 97%/);
+assert.equal(resourceModel.priorityObjects[0].state, "持续超限");
+assert.match(resourceModel.priorityObjects[0].reason, /连接压力.*接口吞吐.*原始采样/);
 assert.equal(resourceModel.traffic, null, "resource incidents must not be displaced by an unrelated WAN chart");
+assert.equal(resourceModel.resource.status, "ready");
+assert.deepEqual(resourceModel.resource.metrics.map((metric) => metric.label), ["CPU", "内存", "磁盘"]);
+assert.deepEqual(resourceModel.resource.metrics.map((metric) => metric.threshold), [85, 85, 90]);
+assert.equal(resourceModel.resource.points.length, 6, "resource trend requires six real timestamped samples");
+const resourceSection = buildSectionModel("trafficLoad", resource);
+assert.equal(resourceSection.visualization.kind, "time-series");
+assert.equal(resourceSection.visualization.series.length, 3);
+assert.equal(resourceSection.visualization.series.every((series) => series.points.length >= 2), true);
 
 const interruptedResource = clone(resource);
 interruptedResource.overview.history.cpu = [90, 90, 20, 90, 90];
 interruptedResource.overview.history.memory = [20, 20, 20, 20, 20];
 interruptedResource.overview.history.disk = [20, 20, 20, 20, 20];
 const interruptedModel = modelFor(interruptedResource);
-assert.match(interruptedModel.priorityObjects[0].reason, /尾部连续 2 个/);
+assert.equal(interruptedModel.facts.find((row) => row.key === "resource-trailing").value, "2 个");
+assert.equal(interruptedModel.priorityObjects[0].state, "持续超限");
+
+const resourceWithoutTimestamps = clone(resource);
+delete resourceWithoutTimestamps.overview.history.timestamps;
+const resourceWithoutTimestampsModel = modelFor(resourceWithoutTimestamps);
+assert.equal(resourceWithoutTimestampsModel.resource.status, "accumulating");
+assert.equal(resourceWithoutTimestampsModel.resource.points.length, 0, "resource values without timestamps are not drawn as a trend");
 
 const noSnapshot = clone(OVERVIEW_SCENARIO_FIXTURES["no-snapshot"]);
 noSnapshot.meta.configuredIdentity = "configured-router";
@@ -158,12 +179,14 @@ const fleetInterfacesModel = modelFor(fleetInterfaces);
 assert.equal(fleetInterfacesModel.risk, "interfaces", "real interface risk must outrank fleet scope");
 assert.equal(fleetInterfacesModel.priorityObjects.length, 3);
 assert.equal(fleetInterfacesModel.priorityTotal, 3);
-assert.equal(fleetInterfacesModel.traffic, null, "fleet scope must not restore a normal chart over an incident");
+assert.equal(fleetInterfacesModel.traffic.title, "接口异常期间的 WAN 吞吐");
+assert.match(fleetInterfacesModel.traffic.accessibleSummary, /不证明 Down 接口无影响/);
 
 const offlineModel = modelFor(clone(OVERVIEW_SCENARIO_FIXTURES["all-offline"]));
 assert.equal(offlineModel.risk, "wan");
 assert.equal(offlineModel.priorityTotal, 8);
 assert.equal(offlineModel.priorityObjects.length, 3);
+assert.equal(offlineModel.priorityObjectsAll.length, 8, "tablet owns the complete incident object list");
 assert.equal(offlineModel.priorityObjects.every((row) => row.route === "lineStatus"), true);
 assert.equal(offlineModel.traffic, null);
 
@@ -186,6 +209,9 @@ const noTimestamps = clone(OVERVIEW_SCENARIO_FIXTURES.single);
 delete noTimestamps.overview.history.timestamps;
 assert.equal(modelFor(noTimestamps).traffic.status, "accumulating", "current rates remain visible without fabricating a trend");
 assert.equal(modelFor(noTimestamps).traffic.sampleCount, 0);
+const noTimestampResource = buildSectionModel("trafficLoad", noTimestamps);
+assert.equal(noTimestampResource.visualization, undefined, "resource values without timestamps must not be drawn as a trend");
+assert.match(noTimestampResource.tables[0].rows[0].samples, /个$/);
 
 const oneSample = clone(OVERVIEW_SCENARIO_FIXTURES.single);
 oneSample.overview.history.timestamps = oneSample.overview.history.timestamps.slice(-1);
@@ -202,7 +228,9 @@ for (const [scenario, fixture] of Object.entries(OVERVIEW_SCENARIO_FIXTURES)) {
   const model = modelFor(clone(fixture));
   assert.equal(model.facts.length, 3, `${scenario}: exactly three core facts`);
   assert.equal(model.priorityObjects.length <= 3, true, `${scenario}: first queue is Top 3`);
-  assert.equal(model.priorityObjects.every((row) => row.route && row.sourcePath), true, `${scenario}: every object has real ownership and source`);
+  assert.equal(model.priorityObjects.every((row) => row.route && row.sourcePath), true, `${scenario}: every preview object has real ownership and source`);
+  assert.equal(model.priorityObjectsAll.every((row) => row.route && row.sourcePath), true, `${scenario}: every tablet object has real ownership and source`);
+  assert.equal(model.priorityObjectsAll.every((row) => row.attributes.length >= 3), true, `${scenario}: every tablet object exposes novel inspector evidence`);
   const factPairs = new Set(model.facts.map((row) => `${row.label}::${row.value}`));
   assert.equal(model.priorityObjects.some((row) => factPairs.has(`${row.category}::${row.state}`)), false, `${scenario}: queue must not replay a fact pair`);
   assert.equal(model.evidenceRows.find((row) => row.key === "failures").value === "0", false, `${scenario}: failure absence is not displayed as zero`);

@@ -7,18 +7,28 @@ const path = require('path');
 const ts = require('typescript');
 
 const root = path.resolve(__dirname, '..');
-const sourcePath = path.join(root, 'src', 'panel-framework', 'runtime', 'panelRuntimeSchema.ts');
-const source = fs.readFileSync(sourcePath, 'utf8');
-const compiled = ts.transpileModule(source, {
-  compilerOptions: {
-    module: ts.ModuleKind.CommonJS,
-    target: ts.ScriptTarget.ES2020,
-    strict: true,
-  },
-  fileName: sourcePath,
-});
+const schemaPath = path.join(root, 'src', 'panel-framework', 'runtime', 'panelRuntimeSchema.ts');
+const timePath = path.join(root, 'src', 'panel-framework', 'timeContract.ts');
+
+function compile(file) {
+  return ts.transpileModule(fs.readFileSync(file, 'utf8'), {
+    compilerOptions: {
+      module: ts.ModuleKind.CommonJS,
+      target: ts.ScriptTarget.ES2020,
+      strict: true,
+    },
+    fileName: file,
+  }).outputText;
+}
+
+const timeBox = { exports: {} };
+new Function('exports', 'module', 'require', compile(timePath))(timeBox.exports, timeBox, require);
 const moduleBox = { exports: {} };
-new Function('exports', 'module', 'require', compiled.outputText)(moduleBox.exports, moduleBox, require);
+new Function('exports', 'module', 'require', compile(schemaPath))(
+  moduleBox.exports,
+  moduleBox,
+  (specifier) => specifier === '../timeContract' ? timeBox.exports : require(specifier),
+);
 const schema = moduleBox.exports;
 
 const now = '2026-07-16T10:00:00.000Z';
@@ -43,12 +53,42 @@ assert.deepStrictEqual(schema.validatePanelSnapshot(null), {
 });
 assert.strictEqual(schema.validatePanelSnapshot({ ...operational, interfaces: {} }).ok, false);
 assert.strictEqual(schema.validatePanelSnapshot({ ...operational, updatedAt: 'not-a-date' }).ok, false);
+assert.strictEqual(schema.validatePanelSnapshot({ ...operational, updatedAt: '2026-07-16 10:00:00' }).ok, false, 'offset-free top-level time must be rejected');
+assert.strictEqual(schema.validatePanelSnapshot({ ...operational, updatedAt: '2026-02-30T10:00:00Z' }).ok, false, 'calendar-invalid RFC3339-looking time must be rejected');
+assert.strictEqual(schema.validatePanelSnapshot({ ...operational, meta: { ...operational.meta, realtimeUpdatedAt: '2026-07-16 10:00:00' } }).ok, false, 'offset-free nested time must be rejected');
+assert.strictEqual(schema.validatePanelSnapshot({ ...operational, overview: { ...operational.overview, cpuLoad: 101 } }).ok, false, 'resource percentages must stay in range');
+assert.strictEqual(schema.validatePanelSnapshot({ ...operational, interfaces: ['ether1'] }).ok, false, 'operational collections must contain objects');
+assert.strictEqual(schema.validatePanelSnapshot({ ...operational, routes: { items: [], defaultRoutes: ['not-a-route'] } }).ok, false, 'nested route collections must contain objects');
+assert.strictEqual(schema.validatePanelSnapshot({ ...operational, connections: { total: 1, active: [42] } }).ok, false, 'nested connection collections must contain objects');
+assert.strictEqual(schema.validatePanelSnapshot({ ...operational, wan: [{ name: 'wan1', running: true, upRate: -1, downRate: 0 }] }).ok, false, 'observed rates must be non-negative finite numbers');
+assert.strictEqual(schema.validatePanelSnapshot({ ...operational, terminals: Array.from({ length: 20001 }, () => ({})) }).ok, false, 'collection limits must be enforced');
 
 const validOperational = schema.validatePanelSnapshot(operational);
 assert.strictEqual(validOperational.ok, true);
 assert.strictEqual(validOperational.kind, 'operational');
 assert.strictEqual(validOperational.value.overview.cpuLoad, 0, 'observed zero must stay zero');
 assert.strictEqual(validOperational.value.wan[0].upRate, 0, 'observed zero rate must stay zero');
+
+const emptyOperational = schema.validatePanelSnapshot({
+  status: 'ok',
+  updatedAt: now,
+  meta: {},
+  overview: {},
+  interfaces: [],
+  wan: [],
+});
+assert.strictEqual(emptyOperational.ok, true);
+assert.strictEqual(emptyOperational.kind, 'partial', 'an empty envelope must not be promoted to operational evidence');
+assert.strictEqual(
+  schema.snapshotHasOperationalEvidence({ overview: {}, interfaces: [], wan: [] }),
+  false,
+  'empty records and collections are not operational evidence'
+);
+assert.strictEqual(
+  schema.snapshotHasOperationalEvidence({ overview: { cpuLoad: 0 } }),
+  true,
+  'an explicitly observed zero remains operational evidence'
+);
 
 const validPartial = schema.validatePanelSnapshot({
   status: 'starting',
@@ -103,7 +143,7 @@ const loginPayload = {
     lastUsedAt: now,
     lastTest: null,
   }],
-  savePasswordAvailable: true,
+  profileStorageAvailable: true,
   csrfToken: 'csrf-test',
 };
 
@@ -115,6 +155,10 @@ assert.strictEqual(bootstrap.savedLogins[0].restScheme, 'https');
 assert.strictEqual(bootstrap.savedLogins[0].sshHostKeyFingerprint.startsWith('SHA256:'), true);
 assert.strictEqual(schema.parseRouterLoginBootstrap({ ...loginPayload, csrfToken: '' }), null);
 assert.strictEqual(schema.parseRouterLoginBootstrap({ ...loginPayload, savedLogins: [{}] }), null);
+assert.strictEqual(schema.parseRouterLoginBootstrap({
+  ...loginPayload,
+  savedLogins: [{ ...loginPayload.savedLogins[0], updatedAt: '2026-07-16 10:00:00' }],
+}), null, 'saved profile timestamps must include timezone');
 
 const mutation = schema.parseRouterLoginMutation({
   ...loginPayload,

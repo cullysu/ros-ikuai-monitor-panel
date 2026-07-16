@@ -1,8 +1,10 @@
-var PanelFramework = (function(exports) {
-  "use strict";var __defProp = Object.defineProperty;
+var __defProp = Object.defineProperty;
 var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
 var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
-
+(function() {
+  "use strict";
+  var jsxRuntime = { exports: {} };
+  var reactJsxRuntime_production_min = {};
   var react = { exports: {} };
   var react_production_min = {};
   /**
@@ -277,7 +279,44 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     }
     return react.exports;
   }
-  var reactExports = requireReact();
+  /**
+   * @license React
+   * react-jsx-runtime.production.min.js
+   *
+   * Copyright (c) Facebook, Inc. and its affiliates.
+   *
+   * This source code is licensed under the MIT license found in the
+   * LICENSE file in the root directory of this source tree.
+   */
+  var hasRequiredReactJsxRuntime_production_min;
+  function requireReactJsxRuntime_production_min() {
+    if (hasRequiredReactJsxRuntime_production_min) return reactJsxRuntime_production_min;
+    hasRequiredReactJsxRuntime_production_min = 1;
+    var f = requireReact(), k = Symbol.for("react.element"), l = Symbol.for("react.fragment"), m = Object.prototype.hasOwnProperty, n = f.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED.ReactCurrentOwner, p = { key: true, ref: true, __self: true, __source: true };
+    function q(c, a, g) {
+      var b, d = {}, e = null, h = null;
+      void 0 !== g && (e = "" + g);
+      void 0 !== a.key && (e = "" + a.key);
+      void 0 !== a.ref && (h = a.ref);
+      for (b in a) m.call(a, b) && !p.hasOwnProperty(b) && (d[b] = a[b]);
+      if (c && c.defaultProps) for (b in a = c.defaultProps, a) void 0 === d[b] && (d[b] = a[b]);
+      return { $$typeof: k, type: c, key: e, ref: h, props: d, _owner: n.current };
+    }
+    reactJsxRuntime_production_min.Fragment = l;
+    reactJsxRuntime_production_min.jsx = q;
+    reactJsxRuntime_production_min.jsxs = q;
+    return reactJsxRuntime_production_min;
+  }
+  var hasRequiredJsxRuntime;
+  function requireJsxRuntime() {
+    if (hasRequiredJsxRuntime) return jsxRuntime.exports;
+    hasRequiredJsxRuntime = 1;
+    {
+      jsxRuntime.exports = requireReactJsxRuntime_production_min();
+    }
+    return jsxRuntime.exports;
+  }
+  var jsxRuntimeExports = requireJsxRuntime();
   var client = {};
   var reactDom = { exports: {} };
   var reactDom_production_min = {};
@@ -296,7 +335,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
   function requireScheduler_production_min() {
     if (hasRequiredScheduler_production_min) return scheduler_production_min;
     hasRequiredScheduler_production_min = 1;
-    (function(exports2) {
+    (function(exports) {
       function f(a, b) {
         var c = a.length;
         a.push(b);
@@ -329,12 +368,12 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       }
       if ("object" === typeof performance && "function" === typeof performance.now) {
         var l = performance;
-        exports2.unstable_now = function() {
+        exports.unstable_now = function() {
           return l.now();
         };
       } else {
         var p = Date, q = p.now();
-        exports2.unstable_now = function() {
+        exports.unstable_now = function() {
           return p.now() - q;
         };
       }
@@ -370,7 +409,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
               v.callback = null;
               y = v.priorityLevel;
               var e = d(v.expirationTime <= b);
-              b = exports2.unstable_now();
+              b = exports.unstable_now();
               "function" === typeof e ? v.callback = e : v === h(r) && k(r);
               G(b);
             } else k(r);
@@ -389,11 +428,11 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       }
       var N = false, O = null, L = -1, P = 5, Q = -1;
       function M() {
-        return exports2.unstable_now() - Q < P ? false : true;
+        return exports.unstable_now() - Q < P ? false : true;
       }
       function R() {
         if (null !== O) {
-          var a = exports2.unstable_now();
+          var a = exports.unstable_now();
           Q = a;
           var b = true;
           try {
@@ -422,31 +461,31 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       }
       function K(a, b) {
         L = D(function() {
-          a(exports2.unstable_now());
+          a(exports.unstable_now());
         }, b);
       }
-      exports2.unstable_IdlePriority = 5;
-      exports2.unstable_ImmediatePriority = 1;
-      exports2.unstable_LowPriority = 4;
-      exports2.unstable_NormalPriority = 3;
-      exports2.unstable_Profiling = null;
-      exports2.unstable_UserBlockingPriority = 2;
-      exports2.unstable_cancelCallback = function(a) {
+      exports.unstable_IdlePriority = 5;
+      exports.unstable_ImmediatePriority = 1;
+      exports.unstable_LowPriority = 4;
+      exports.unstable_NormalPriority = 3;
+      exports.unstable_Profiling = null;
+      exports.unstable_UserBlockingPriority = 2;
+      exports.unstable_cancelCallback = function(a) {
         a.callback = null;
       };
-      exports2.unstable_continueExecution = function() {
+      exports.unstable_continueExecution = function() {
         A || z || (A = true, I(J));
       };
-      exports2.unstable_forceFrameRate = function(a) {
+      exports.unstable_forceFrameRate = function(a) {
         0 > a || 125 < a ? console.error("forceFrameRate takes a positive int between 0 and 125, forcing frame rates higher than 125 fps is not supported") : P = 0 < a ? Math.floor(1e3 / a) : 5;
       };
-      exports2.unstable_getCurrentPriorityLevel = function() {
+      exports.unstable_getCurrentPriorityLevel = function() {
         return y;
       };
-      exports2.unstable_getFirstCallbackNode = function() {
+      exports.unstable_getFirstCallbackNode = function() {
         return h(r);
       };
-      exports2.unstable_next = function(a) {
+      exports.unstable_next = function(a) {
         switch (y) {
           case 1:
           case 2:
@@ -464,11 +503,11 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
           y = c;
         }
       };
-      exports2.unstable_pauseExecution = function() {
+      exports.unstable_pauseExecution = function() {
       };
-      exports2.unstable_requestPaint = function() {
+      exports.unstable_requestPaint = function() {
       };
-      exports2.unstable_runWithPriority = function(a, b) {
+      exports.unstable_runWithPriority = function(a, b) {
         switch (a) {
           case 1:
           case 2:
@@ -487,8 +526,8 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
           y = c;
         }
       };
-      exports2.unstable_scheduleCallback = function(a, b, c) {
-        var d = exports2.unstable_now();
+      exports.unstable_scheduleCallback = function(a, b, c) {
+        var d = exports.unstable_now();
         "object" === typeof c && null !== c ? (c = c.delay, c = "number" === typeof c && 0 < c ? d + c : d) : c = d;
         switch (a) {
           case 1:
@@ -511,8 +550,8 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
         c > d ? (a.sortIndex = c, f(t, a), null === h(r) && a === h(t) && (B ? (E(L), L = -1) : B = true, K(H, c - d))) : (a.sortIndex = e, f(r, a), A || z || (A = true, I(J)));
         return a;
       };
-      exports2.unstable_shouldYield = M;
-      exports2.unstable_wrapCallback = function(a) {
+      exports.unstable_shouldYield = M;
+      exports.unstable_wrapCallback = function(a) {
         var b = y;
         return function() {
           var c = y;
@@ -6980,46 +7019,33 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     return client;
   }
   var clientExports = requireClient();
-  var jsxRuntime = { exports: {} };
-  var reactJsxRuntime_production_min = {};
-  /**
-   * @license React
-   * react-jsx-runtime.production.min.js
-   *
-   * Copyright (c) Facebook, Inc. and its affiliates.
-   *
-   * This source code is licensed under the MIT license found in the
-   * LICENSE file in the root directory of this source tree.
-   */
-  var hasRequiredReactJsxRuntime_production_min;
-  function requireReactJsxRuntime_production_min() {
-    if (hasRequiredReactJsxRuntime_production_min) return reactJsxRuntime_production_min;
-    hasRequiredReactJsxRuntime_production_min = 1;
-    var f = requireReact(), k = Symbol.for("react.element"), l = Symbol.for("react.fragment"), m = Object.prototype.hasOwnProperty, n = f.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED.ReactCurrentOwner, p = { key: true, ref: true, __self: true, __source: true };
-    function q(c, a, g) {
-      var b, d = {}, e = null, h = null;
-      void 0 !== g && (e = "" + g);
-      void 0 !== a.key && (e = "" + a.key);
-      void 0 !== a.ref && (h = a.ref);
-      for (b in a) m.call(a, b) && !p.hasOwnProperty(b) && (d[b] = a[b]);
-      if (c && c.defaultProps) for (b in a = c.defaultProps, a) void 0 === d[b] && (d[b] = a[b]);
-      return { $$typeof: k, type: c, key: e, ref: h, props: d, _owner: n.current };
-    }
-    reactJsxRuntime_production_min.Fragment = l;
-    reactJsxRuntime_production_min.jsx = q;
-    reactJsxRuntime_production_min.jsxs = q;
-    return reactJsxRuntime_production_min;
+  var reactExports = requireReact();
+  const RFC3339_WITH_TIMEZONE = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.\d{1,9})?(?:Z|[+-](\d{2}):(\d{2}))$/;
+  function parseRfc3339Timestamp(value) {
+    if (typeof value !== "string") return null;
+    const timestamp = value.trim();
+    const match = RFC3339_WITH_TIMEZONE.exec(timestamp);
+    if (!match) return null;
+    const [, yearText, monthText, dayText, hourText, minuteText, secondText, offsetHourText, offsetMinuteText] = match;
+    const year = Number(yearText);
+    const month = Number(monthText);
+    const day = Number(dayText);
+    const hour = Number(hourText);
+    const minute = Number(minuteText);
+    const second = Number(secondText);
+    const offsetHour = Number(offsetHourText || 0);
+    const offsetMinute = Number(offsetMinuteText || 0);
+    if (hour > 23 || minute > 59 || second > 59 || offsetHour > 23 || offsetMinute > 59) return null;
+    const calendar = /* @__PURE__ */ new Date(0);
+    calendar.setUTCHours(0, 0, 0, 0);
+    calendar.setUTCFullYear(year, month - 1, day);
+    if (calendar.getUTCFullYear() !== year || calendar.getUTCMonth() !== month - 1 || calendar.getUTCDate() !== day) return null;
+    const parsed = Date.parse(timestamp);
+    return Number.isFinite(parsed) ? parsed : null;
   }
-  var hasRequiredJsxRuntime;
-  function requireJsxRuntime() {
-    if (hasRequiredJsxRuntime) return jsxRuntime.exports;
-    hasRequiredJsxRuntime = 1;
-    {
-      jsxRuntime.exports = requireReactJsxRuntime_production_min();
-    }
-    return jsxRuntime.exports;
+  function isRfc3339Timestamp(value) {
+    return parseRfc3339Timestamp(value) !== null;
   }
-  var jsxRuntimeExports = requireJsxRuntime();
   const DANGER_CPU = 85;
   const DANGER_MEMORY = 85;
   const DANGER_DISK = 90;
@@ -7053,8 +7079,8 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
   }
   function shortTimestamp(value) {
     if (!value) return "-";
-    const parsed = Date.parse(String(value));
-    if (Number.isNaN(parsed)) return "-";
+    const parsed = parseRfc3339Timestamp(value);
+    if (parsed === null) return "-";
     const date = new Date(parsed);
     const pad = (n) => String(n).padStart(2, "0");
     return `${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
@@ -7098,7 +7124,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     if (meta.realtimeError || meta.slowRestError) return "cache";
     return "realtime";
   }
-  function wanRows$2(snapshot) {
+  function wanRows$3(snapshot) {
     return Array.isArray(snapshot.wan) && snapshot.wan.length ? snapshot.wan : Array.isArray(snapshot.pppoe) ? snapshot.pppoe : [];
   }
   function routeRows(snapshot) {
@@ -7125,8 +7151,10 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
   }
   function latestTimestamp(values) {
     return values.reduce((latest, value) => {
-      if (!value || Number.isNaN(Date.parse(value))) return latest;
-      if (!latest || Date.parse(value) > Date.parse(latest)) return value;
+      const parsed = parseRfc3339Timestamp(value);
+      if (parsed === null) return latest;
+      const latestParsed = parseRfc3339Timestamp(latest);
+      if (latestParsed === null || parsed > latestParsed) return value || latest;
       return latest;
     }, "");
   }
@@ -7168,16 +7196,16 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     const credibility = snapshotCredibilityOf(snapshot);
     const source = latestBusinessSuccessTime(snapshot);
     if (!source) return { label: "未采集", level: "warn", stale: true, history: false, missing: false, credibility, credibilityLabel: credibilityLabelOf(credibility), credibilityTone: credibilityToneOf(credibility), seconds: null, text: "未采集", source: "" };
-    const parsed = Date.parse(source);
-    if (Number.isNaN(parsed)) return { label: "未采集", level: "warn", stale: true, history: false, missing: false, credibility, credibilityLabel: credibilityLabelOf(credibility), credibilityTone: credibilityToneOf(credibility), seconds: null, text: "未采集", source: "" };
+    const parsed = parseRfc3339Timestamp(source);
+    if (parsed === null) return { label: "未采集", level: "warn", stale: true, history: false, missing: false, credibility, credibilityLabel: credibilityLabelOf(credibility), credibilityTone: credibilityToneOf(credibility), seconds: null, text: "未采集", source: "" };
     const seconds = Math.max(0, Math.round((now2 - parsed) / 1e3));
     const poll = Math.max(1, toNumber((_a = snapshot.meta) == null ? void 0 : _a.pollSeconds, 60));
     const boundary = (_b = snapshot.meta) == null ? void 0 : _b.clientEvidenceBoundary;
     if (boundary) {
-      const label = boundary === "offline" ? "浏览器离线" : boundary === "stale" ? "历史证据" : boundary === "error" ? "刷新失败" : "恢复中";
+      const label = boundary === "stale" ? "历史证据" : boundary === "error" ? "刷新失败" : "恢复中";
       return {
         label,
-        level: boundary === "error" || boundary === "offline" ? "danger" : "warn",
+        level: boundary === "error" ? "danger" : "warn",
         stale: true,
         history: true,
         missing: false,
@@ -7262,7 +7290,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     return { level, available, cpu, memory, disk, summaryText: available ? `处理器 ${formatPercent(cpu)} / 内存 ${formatPercent(memory)} / 磁盘 ${formatPercent(disk)}` : "处理器 未记录 / 内存 未记录 / 磁盘 未记录" };
   }
   function wanState(snapshot) {
-    const rows2 = wanRows$2(snapshot);
+    const rows2 = wanRows$3(snapshot);
     const available = !isSnapshotUnavailable(snapshot);
     const online = rows2.filter((row) => row.running !== false).length;
     const total = rows2.length;
@@ -7563,7 +7591,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
    * This source code is licensed under the ISC license.
    * See the LICENSE file in the root directory of this source tree.
    */
-  const __iconNode$q = [
+  const __iconNode$C = [
     [
       "path",
       {
@@ -7572,47 +7600,60 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       }
     ]
   ];
-  const Activity = createLucideIcon("activity", __iconNode$q);
+  const Activity = createLucideIcon("activity", __iconNode$C);
   /**
    * @license lucide-react v1.24.0 - ISC
    *
    * This source code is licensed under the ISC license.
    * See the LICENSE file in the root directory of this source tree.
    */
-  const __iconNode$p = [
+  const __iconNode$B = [
     ["path", { d: "M12 5v14", key: "s699le" }],
     ["path", { d: "m19 12-7 7-7-7", key: "1idqje" }]
   ];
-  const ArrowDown = createLucideIcon("arrow-down", __iconNode$p);
+  const ArrowDown = createLucideIcon("arrow-down", __iconNode$B);
   /**
    * @license lucide-react v1.24.0 - ISC
    *
    * This source code is licensed under the ISC license.
    * See the LICENSE file in the root directory of this source tree.
    */
-  const __iconNode$o = [
+  const __iconNode$A = [
     ["path", { d: "m12 19-7-7 7-7", key: "1l729n" }],
     ["path", { d: "M19 12H5", key: "x3x0zl" }]
   ];
-  const ArrowLeft = createLucideIcon("arrow-left", __iconNode$o);
+  const ArrowLeft = createLucideIcon("arrow-left", __iconNode$A);
   /**
    * @license lucide-react v1.24.0 - ISC
    *
    * This source code is licensed under the ISC license.
    * See the LICENSE file in the root directory of this source tree.
    */
-  const __iconNode$n = [
+  const __iconNode$z = [
+    ["path", { d: "m21 16-4 4-4-4", key: "f6ql7i" }],
+    ["path", { d: "M17 20V4", key: "1ejh1v" }],
+    ["path", { d: "m3 8 4-4 4 4", key: "11wl7u" }],
+    ["path", { d: "M7 4v16", key: "1glfcx" }]
+  ];
+  const ArrowUpDown = createLucideIcon("arrow-up-down", __iconNode$z);
+  /**
+   * @license lucide-react v1.24.0 - ISC
+   *
+   * This source code is licensed under the ISC license.
+   * See the LICENSE file in the root directory of this source tree.
+   */
+  const __iconNode$y = [
     ["path", { d: "m5 12 7-7 7 7", key: "hav0vg" }],
     ["path", { d: "M12 19V5", key: "x0mq9r" }]
   ];
-  const ArrowUp = createLucideIcon("arrow-up", __iconNode$n);
+  const ArrowUp = createLucideIcon("arrow-up", __iconNode$y);
   /**
    * @license lucide-react v1.24.0 - ISC
    *
    * This source code is licensed under the ISC license.
    * See the LICENSE file in the root directory of this source tree.
    */
-  const __iconNode$m = [
+  const __iconNode$x = [
     [
       "path",
       { d: "M17 19a1 1 0 0 1-1-1v-2a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2a1 1 0 0 1-1 1z", key: "trhst0" }
@@ -7627,93 +7668,165 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     ],
     ["path", { d: "M7 5V3", key: "1t1388" }]
   ];
-  const Cable = createLucideIcon("cable", __iconNode$m);
+  const Cable = createLucideIcon("cable", __iconNode$x);
   /**
    * @license lucide-react v1.24.0 - ISC
    *
    * This source code is licensed under the ISC license.
    * See the LICENSE file in the root directory of this source tree.
    */
-  const __iconNode$l = [["path", { d: "M20 6 9 17l-5-5", key: "1gmf2c" }]];
-  const Check = createLucideIcon("check", __iconNode$l);
+  const __iconNode$w = [
+    ["path", { d: "M12 16v5", key: "zza2cw" }],
+    ["path", { d: "M16 14.639V21", key: "1s85h0" }],
+    ["path", { d: "M20 10.656V21", key: "q45596" }],
+    [
+      "path",
+      { d: "m22 3-8.646 8.646a.5.5 0 0 1-.708 0L9.354 8.354a.5.5 0 0 0-.707 0L2 15", key: "1fw8x9" }
+    ],
+    ["path", { d: "M4 18.463V21", key: "1otddq" }],
+    ["path", { d: "M8 14.656V21", key: "1t2idw" }]
+  ];
+  const ChartNoAxesCombined = createLucideIcon("chart-no-axes-combined", __iconNode$w);
   /**
    * @license lucide-react v1.24.0 - ISC
    *
    * This source code is licensed under the ISC license.
    * See the LICENSE file in the root directory of this source tree.
    */
-  const __iconNode$k = [["path", { d: "m15 18-6-6 6-6", key: "1wnfg3" }]];
-  const ChevronLeft = createLucideIcon("chevron-left", __iconNode$k);
+  const __iconNode$v = [["path", { d: "M20 6 9 17l-5-5", key: "1gmf2c" }]];
+  const Check = createLucideIcon("check", __iconNode$v);
   /**
    * @license lucide-react v1.24.0 - ISC
    *
    * This source code is licensed under the ISC license.
    * See the LICENSE file in the root directory of this source tree.
    */
-  const __iconNode$j = [["path", { d: "m6 9 6 6 6-6", key: "qrunsl" }]];
-  const ChevronDown = createLucideIcon("chevron-down", __iconNode$j);
+  const __iconNode$u = [["path", { d: "m15 18-6-6 6-6", key: "1wnfg3" }]];
+  const ChevronLeft = createLucideIcon("chevron-left", __iconNode$u);
   /**
    * @license lucide-react v1.24.0 - ISC
    *
    * This source code is licensed under the ISC license.
    * See the LICENSE file in the root directory of this source tree.
    */
-  const __iconNode$i = [["path", { d: "m9 18 6-6-6-6", key: "mthhwq" }]];
-  const ChevronRight = createLucideIcon("chevron-right", __iconNode$i);
+  const __iconNode$t = [["path", { d: "m6 9 6 6 6-6", key: "qrunsl" }]];
+  const ChevronDown = createLucideIcon("chevron-down", __iconNode$t);
   /**
    * @license lucide-react v1.24.0 - ISC
    *
    * This source code is licensed under the ISC license.
    * See the LICENSE file in the root directory of this source tree.
    */
-  const __iconNode$h = [
+  const __iconNode$s = [["path", { d: "m9 18 6-6-6-6", key: "mthhwq" }]];
+  const ChevronRight = createLucideIcon("chevron-right", __iconNode$s);
+  /**
+   * @license lucide-react v1.24.0 - ISC
+   *
+   * This source code is licensed under the ISC license.
+   * See the LICENSE file in the root directory of this source tree.
+   */
+  const __iconNode$r = [
     ["circle", { cx: "12", cy: "12", r: "10", key: "1mglay" }],
     ["line", { x1: "12", x2: "12", y1: "8", y2: "12", key: "1pkeuh" }],
     ["line", { x1: "12", x2: "12.01", y1: "16", y2: "16", key: "4dfq90" }]
   ];
-  const CircleAlert = createLucideIcon("circle-alert", __iconNode$h);
+  const CircleAlert = createLucideIcon("circle-alert", __iconNode$r);
   /**
    * @license lucide-react v1.24.0 - ISC
    *
    * This source code is licensed under the ISC license.
    * See the LICENSE file in the root directory of this source tree.
    */
-  const __iconNode$g = [
+  const __iconNode$q = [
     ["circle", { cx: "12", cy: "12", r: "10", key: "1mglay" }],
     ["path", { d: "M12 6v6h4", key: "135r8i" }]
   ];
-  const Clock3 = createLucideIcon("clock-3", __iconNode$g);
+  const Clock3 = createLucideIcon("clock-3", __iconNode$q);
   /**
    * @license lucide-react v1.24.0 - ISC
    *
    * This source code is licensed under the ISC license.
    * See the LICENSE file in the root directory of this source tree.
    */
-  const __iconNode$f = [
+  const __iconNode$p = [
     ["path", { d: "M10.94 5.274A7 7 0 0 1 15.71 10h1.79a4.5 4.5 0 0 1 4.222 6.057", key: "1uxyv8" }],
     ["path", { d: "M18.796 18.81A4.5 4.5 0 0 1 17.5 19H9A7 7 0 0 1 5.79 5.78", key: "99tcn7" }],
     ["path", { d: "m2 2 20 20", key: "1ooewy" }]
   ];
-  const CloudOff = createLucideIcon("cloud-off", __iconNode$f);
+  const CloudOff = createLucideIcon("cloud-off", __iconNode$p);
   /**
    * @license lucide-react v1.24.0 - ISC
    *
    * This source code is licensed under the ISC license.
    * See the LICENSE file in the root directory of this source tree.
    */
-  const __iconNode$e = [
+  const __iconNode$o = [
+    ["path", { d: "M12 20v2", key: "1lh1kg" }],
+    ["path", { d: "M12 2v2", key: "tus03m" }],
+    ["path", { d: "M17 20v2", key: "1rnc9c" }],
+    ["path", { d: "M17 2v2", key: "11trls" }],
+    ["path", { d: "M2 12h2", key: "1t8f8n" }],
+    ["path", { d: "M2 17h2", key: "7oei6x" }],
+    ["path", { d: "M2 7h2", key: "asdhe0" }],
+    ["path", { d: "M20 12h2", key: "1q8mjw" }],
+    ["path", { d: "M20 17h2", key: "1fpfkl" }],
+    ["path", { d: "M20 7h2", key: "1o8tra" }],
+    ["path", { d: "M7 20v2", key: "4gnj0m" }],
+    ["path", { d: "M7 2v2", key: "1i4yhu" }],
+    ["rect", { x: "4", y: "4", width: "16", height: "16", rx: "2", key: "1vbyd7" }],
+    ["rect", { x: "8", y: "8", width: "8", height: "8", rx: "1", key: "z9xiuo" }]
+  ];
+  const Cpu = createLucideIcon("cpu", __iconNode$o);
+  /**
+   * @license lucide-react v1.24.0 - ISC
+   *
+   * This source code is licensed under the ISC license.
+   * See the LICENSE file in the root directory of this source tree.
+   */
+  const __iconNode$n = [
     ["ellipse", { cx: "12", cy: "5", rx: "9", ry: "3", key: "msslwz" }],
     ["path", { d: "M3 5V19A9 3 0 0 0 21 19V5", key: "1wlel7" }],
     ["path", { d: "M3 12A9 3 0 0 0 21 12", key: "mv7ke4" }]
   ];
-  const Database = createLucideIcon("database", __iconNode$e);
+  const Database = createLucideIcon("database", __iconNode$n);
   /**
    * @license lucide-react v1.24.0 - ISC
    *
    * This source code is licensed under the ISC license.
    * See the LICENSE file in the root directory of this source tree.
    */
-  const __iconNode$d = [
+  const __iconNode$m = [
+    ["circle", { cx: "12", cy: "12", r: "1", key: "41hilf" }],
+    ["circle", { cx: "19", cy: "12", r: "1", key: "1wjl8i" }],
+    ["circle", { cx: "5", cy: "12", r: "1", key: "1pcz8c" }]
+  ];
+  const Ellipsis = createLucideIcon("ellipsis", __iconNode$m);
+  /**
+   * @license lucide-react v1.24.0 - ISC
+   *
+   * This source code is licensed under the ISC license.
+   * See the LICENSE file in the root directory of this source tree.
+   */
+  const __iconNode$l = [
+    [
+      "path",
+      {
+        d: "M16 22h2a2 2 0 0 0 2-2V8a2.4 2.4 0 0 0-.706-1.706l-3.588-3.588A2.4 2.4 0 0 0 14 2H6a2 2 0 0 0-2 2v2.85",
+        key: "ryk6xj"
+      }
+    ],
+    ["path", { d: "M14 2v5a1 1 0 0 0 1 1h5", key: "wfsgrz" }],
+    ["path", { d: "M8 14v2.2l1.6 1", key: "6m4bie" }],
+    ["circle", { cx: "8", cy: "16", r: "6", key: "10v15b" }]
+  ];
+  const FileClock = createLucideIcon("file-clock", __iconNode$l);
+  /**
+   * @license lucide-react v1.24.0 - ISC
+   *
+   * This source code is licensed under the ISC license.
+   * See the LICENSE file in the root directory of this source tree.
+   */
+  const __iconNode$k = [
     ["path", { d: "M12 10a2 2 0 0 0-2 2c0 1.02-.1 2.51-.26 4", key: "1nerag" }],
     ["path", { d: "M14 13.12c0 2.38 0 6.38-1 8.88", key: "o46ks0" }],
     ["path", { d: "M17.29 21.02c.12-.6.43-2.3.5-3.02", key: "ptglia" }],
@@ -7724,7 +7837,95 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     ["path", { d: "M8.65 22c.21-.66.45-1.32.57-2", key: "13wd9y" }],
     ["path", { d: "M9 6.8a6 6 0 0 1 9 5.2v2", key: "1fr1j5" }]
   ];
-  const FingerprintPattern = createLucideIcon("fingerprint-pattern", __iconNode$d);
+  const FingerprintPattern = createLucideIcon("fingerprint-pattern", __iconNode$k);
+  /**
+   * @license lucide-react v1.24.0 - ISC
+   *
+   * This source code is licensed under the ISC license.
+   * See the LICENSE file in the root directory of this source tree.
+   */
+  const __iconNode$j = [
+    ["path", { d: "m12 14 4-4", key: "9kzdfg" }],
+    ["path", { d: "M3.34 19a10 10 0 1 1 17.32 0", key: "19p75a" }]
+  ];
+  const Gauge = createLucideIcon("gauge", __iconNode$j);
+  /**
+   * @license lucide-react v1.24.0 - ISC
+   *
+   * This source code is licensed under the ISC license.
+   * See the LICENSE file in the root directory of this source tree.
+   */
+  const __iconNode$i = [
+    ["path", { d: "M10 16h.01", key: "1bzywj" }],
+    [
+      "path",
+      {
+        d: "M2.212 11.577a2 2 0 0 0-.212.896V18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-5.527a2 2 0 0 0-.212-.896L18.55 5.11A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z",
+        key: "18tbho"
+      }
+    ],
+    ["path", { d: "M21.946 12.013H2.054", key: "zqlbp7" }],
+    ["path", { d: "M6 16h.01", key: "1pmjb7" }]
+  ];
+  const HardDrive = createLucideIcon("hard-drive", __iconNode$i);
+  /**
+   * @license lucide-react v1.24.0 - ISC
+   *
+   * This source code is licensed under the ISC license.
+   * See the LICENSE file in the root directory of this source tree.
+   */
+  const __iconNode$h = [
+    ["path", { d: "M2 5h20", key: "1fs1ex" }],
+    ["path", { d: "M6 12h12", key: "8npq4p" }],
+    ["path", { d: "M9 19h6", key: "456am0" }]
+  ];
+  const ListFilter = createLucideIcon("list-filter", __iconNode$h);
+  /**
+   * @license lucide-react v1.24.0 - ISC
+   *
+   * This source code is licensed under the ISC license.
+   * See the LICENSE file in the root directory of this source tree.
+   */
+  const __iconNode$g = [["path", { d: "M21 12a9 9 0 1 1-6.219-8.56", key: "13zald" }]];
+  const LoaderCircle = createLucideIcon("loader-circle", __iconNode$g);
+  /**
+   * @license lucide-react v1.24.0 - ISC
+   *
+   * This source code is licensed under the ISC license.
+   * See the LICENSE file in the root directory of this source tree.
+   */
+  const __iconNode$f = [
+    ["circle", { cx: "12", cy: "16", r: "1", key: "1au0dj" }],
+    ["rect", { x: "3", y: "10", width: "18", height: "12", rx: "2", key: "6s8ecr" }],
+    ["path", { d: "M7 10V7a5 5 0 0 1 10 0v3", key: "1pqi11" }]
+  ];
+  const LockKeyhole = createLucideIcon("lock-keyhole", __iconNode$f);
+  /**
+   * @license lucide-react v1.24.0 - ISC
+   *
+   * This source code is licensed under the ISC license.
+   * See the LICENSE file in the root directory of this source tree.
+   */
+  const __iconNode$e = [
+    ["rect", { x: "16", y: "16", width: "6", height: "6", rx: "1", key: "4q2zg0" }],
+    ["rect", { x: "2", y: "16", width: "6", height: "6", rx: "1", key: "8cvhb9" }],
+    ["rect", { x: "9", y: "2", width: "6", height: "6", rx: "1", key: "1egb70" }],
+    ["path", { d: "M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3", key: "1jsf9p" }],
+    ["path", { d: "M12 12V8", key: "2874zd" }]
+  ];
+  const Network = createLucideIcon("network", __iconNode$e);
+  /**
+   * @license lucide-react v1.24.0 - ISC
+   *
+   * This source code is licensed under the ISC license.
+   * See the LICENSE file in the root directory of this source tree.
+   */
+  const __iconNode$d = [
+    ["rect", { width: "18", height: "18", x: "3", y: "3", rx: "2", key: "afitv7" }],
+    ["path", { d: "M3 9h18", key: "1pudct" }],
+    ["path", { d: "M9 21V9", key: "1oto5p" }]
+  ];
+  const PanelsTopLeft = createLucideIcon("panels-top-left", __iconNode$d);
   /**
    * @license lucide-react v1.24.0 - ISC
    *
@@ -7732,18 +7933,24 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
    * See the LICENSE file in the root directory of this source tree.
    */
   const __iconNode$c = [
-    ["path", { d: "m12 14 4-4", key: "9kzdfg" }],
-    ["path", { d: "M3.34 19a10 10 0 1 1 17.32 0", key: "19p75a" }]
+    ["path", { d: "M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8", key: "v9h5vc" }],
+    ["path", { d: "M21 3v5h-5", key: "1q7to0" }],
+    ["path", { d: "M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16", key: "3uifl3" }],
+    ["path", { d: "M8 16H3v5", key: "1cv678" }]
   ];
-  const Gauge = createLucideIcon("gauge", __iconNode$c);
+  const RefreshCw = createLucideIcon("refresh-cw", __iconNode$c);
   /**
    * @license lucide-react v1.24.0 - ISC
    *
    * This source code is licensed under the ISC license.
    * See the LICENSE file in the root directory of this source tree.
    */
-  const __iconNode$b = [["path", { d: "M21 12a9 9 0 1 1-6.219-8.56", key: "13zald" }]];
-  const LoaderCircle = createLucideIcon("loader-circle", __iconNode$b);
+  const __iconNode$b = [
+    ["circle", { cx: "6", cy: "19", r: "3", key: "1kj8tv" }],
+    ["path", { d: "M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15", key: "1d8sl" }],
+    ["circle", { cx: "18", cy: "5", r: "3", key: "gq8acd" }]
+  ];
+  const Route = createLucideIcon("route", __iconNode$b);
   /**
    * @license lucide-react v1.24.0 - ISC
    *
@@ -7751,55 +7958,6 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
    * See the LICENSE file in the root directory of this source tree.
    */
   const __iconNode$a = [
-    ["circle", { cx: "12", cy: "16", r: "1", key: "1au0dj" }],
-    ["rect", { x: "3", y: "10", width: "18", height: "12", rx: "2", key: "6s8ecr" }],
-    ["path", { d: "M7 10V7a5 5 0 0 1 10 0v3", key: "1pqi11" }]
-  ];
-  const LockKeyhole = createLucideIcon("lock-keyhole", __iconNode$a);
-  /**
-   * @license lucide-react v1.24.0 - ISC
-   *
-   * This source code is licensed under the ISC license.
-   * See the LICENSE file in the root directory of this source tree.
-   */
-  const __iconNode$9 = [
-    ["path", { d: "M4 5h16", key: "1tepv9" }],
-    ["path", { d: "M4 12h16", key: "1lakjw" }],
-    ["path", { d: "M4 19h16", key: "1djgab" }]
-  ];
-  const Menu = createLucideIcon("menu", __iconNode$9);
-  /**
-   * @license lucide-react v1.24.0 - ISC
-   *
-   * This source code is licensed under the ISC license.
-   * See the LICENSE file in the root directory of this source tree.
-   */
-  const __iconNode$8 = [
-    ["path", { d: "M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8", key: "v9h5vc" }],
-    ["path", { d: "M21 3v5h-5", key: "1q7to0" }],
-    ["path", { d: "M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16", key: "3uifl3" }],
-    ["path", { d: "M8 16H3v5", key: "1cv678" }]
-  ];
-  const RefreshCw = createLucideIcon("refresh-cw", __iconNode$8);
-  /**
-   * @license lucide-react v1.24.0 - ISC
-   *
-   * This source code is licensed under the ISC license.
-   * See the LICENSE file in the root directory of this source tree.
-   */
-  const __iconNode$7 = [
-    ["circle", { cx: "6", cy: "19", r: "3", key: "1kj8tv" }],
-    ["path", { d: "M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15", key: "1d8sl" }],
-    ["circle", { cx: "18", cy: "5", r: "3", key: "gq8acd" }]
-  ];
-  const Route = createLucideIcon("route", __iconNode$7);
-  /**
-   * @license lucide-react v1.24.0 - ISC
-   *
-   * This source code is licensed under the ISC license.
-   * See the LICENSE file in the root directory of this source tree.
-   */
-  const __iconNode$6 = [
     ["rect", { width: "20", height: "8", x: "2", y: "14", rx: "2", key: "w68u3i" }],
     ["path", { d: "M6.01 18H6", key: "19vcac" }],
     ["path", { d: "M10.01 18H10", key: "uamcmx" }],
@@ -7807,7 +7965,65 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     ["path", { d: "M17.84 7.17a4 4 0 0 0-5.66 0", key: "1rif40" }],
     ["path", { d: "M20.66 4.34a8 8 0 0 0-11.31 0", key: "6a5xfq" }]
   ];
-  const Router = createLucideIcon("router", __iconNode$6);
+  const Router = createLucideIcon("router", __iconNode$a);
+  /**
+   * @license lucide-react v1.24.0 - ISC
+   *
+   * This source code is licensed under the ISC license.
+   * See the LICENSE file in the root directory of this source tree.
+   */
+  const __iconNode$9 = [
+    ["path", { d: "M3 7V5a2 2 0 0 1 2-2h2", key: "aa7l1z" }],
+    ["path", { d: "M17 3h2a2 2 0 0 1 2 2v2", key: "4qcy5o" }],
+    ["path", { d: "M21 17v2a2 2 0 0 1-2 2h-2", key: "6vwrx8" }],
+    ["path", { d: "M7 21H5a2 2 0 0 1-2-2v-2", key: "ioqczr" }],
+    ["circle", { cx: "12", cy: "12", r: "3", key: "1v7zrd" }],
+    ["path", { d: "m16 16-1.9-1.9", key: "1dq9hf" }]
+  ];
+  const ScanSearch = createLucideIcon("scan-search", __iconNode$9);
+  /**
+   * @license lucide-react v1.24.0 - ISC
+   *
+   * This source code is licensed under the ISC license.
+   * See the LICENSE file in the root directory of this source tree.
+   */
+  const __iconNode$8 = [
+    ["path", { d: "M15 12h-5", key: "r7krc0" }],
+    ["path", { d: "M15 8h-5", key: "1khuty" }],
+    ["path", { d: "M19 17V5a2 2 0 0 0-2-2H4", key: "zz82l3" }],
+    [
+      "path",
+      {
+        d: "M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3",
+        key: "1ph1d7"
+      }
+    ]
+  ];
+  const ScrollText = createLucideIcon("scroll-text", __iconNode$8);
+  /**
+   * @license lucide-react v1.24.0 - ISC
+   *
+   * This source code is licensed under the ISC license.
+   * See the LICENSE file in the root directory of this source tree.
+   */
+  const __iconNode$7 = [
+    ["path", { d: "m21 21-4.34-4.34", key: "14j7rj" }],
+    ["circle", { cx: "11", cy: "11", r: "8", key: "4ej97u" }]
+  ];
+  const Search = createLucideIcon("search", __iconNode$7);
+  /**
+   * @license lucide-react v1.24.0 - ISC
+   *
+   * This source code is licensed under the ISC license.
+   * See the LICENSE file in the root directory of this source tree.
+   */
+  const __iconNode$6 = [
+    ["rect", { width: "20", height: "8", x: "2", y: "2", rx: "2", ry: "2", key: "ngkwjq" }],
+    ["rect", { width: "20", height: "8", x: "2", y: "14", rx: "2", ry: "2", key: "iecqi9" }],
+    ["line", { x1: "6", x2: "6.01", y1: "6", y2: "6", key: "16zg32" }],
+    ["line", { x1: "6", x2: "6.01", y1: "18", y2: "18", key: "nzw8ys" }]
+  ];
+  const Server = createLucideIcon("server", __iconNode$6);
   /**
    * @license lucide-react v1.24.0 - ISC
    *
@@ -7815,12 +8031,12 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
    * See the LICENSE file in the root directory of this source tree.
    */
   const __iconNode$5 = [
-    ["rect", { width: "20", height: "8", x: "2", y: "2", rx: "2", ry: "2", key: "ngkwjq" }],
-    ["rect", { width: "20", height: "8", x: "2", y: "14", rx: "2", ry: "2", key: "iecqi9" }],
-    ["line", { x1: "6", x2: "6.01", y1: "6", y2: "6", key: "16zg32" }],
-    ["line", { x1: "6", x2: "6.01", y1: "18", y2: "18", key: "nzw8ys" }]
+    ["path", { d: "M14 17H5", key: "gfn3mx" }],
+    ["path", { d: "M19 7h-9", key: "6i9tg" }],
+    ["circle", { cx: "17", cy: "17", r: "3", key: "18b49y" }],
+    ["circle", { cx: "7", cy: "7", r: "3", key: "dfmy0x" }]
   ];
-  const Server = createLucideIcon("server", __iconNode$5);
+  const Settings2 = createLucideIcon("settings-2", __iconNode$5);
   /**
    * @license lucide-react v1.24.0 - ISC
    *
@@ -7877,15 +8093,11 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
    * See the LICENSE file in the root directory of this source tree.
    */
   const __iconNode$1 = [
-    ["path", { d: "M12 20h.01", key: "zekei9" }],
-    ["path", { d: "M8.5 16.429a5 5 0 0 1 7 0", key: "1bycff" }],
-    ["path", { d: "M5 12.859a10 10 0 0 1 5.17-2.69", key: "1dl1wf" }],
-    ["path", { d: "M19 12.859a10 10 0 0 0-2.007-1.523", key: "4k23kn" }],
-    ["path", { d: "M2 8.82a15 15 0 0 1 4.177-2.643", key: "1grhjp" }],
-    ["path", { d: "M22 8.82a15 15 0 0 0-11.288-3.764", key: "z3jwby" }],
-    ["path", { d: "m2 2 20 20", key: "1ooewy" }]
+    ["path", { d: "M18 21a8 8 0 0 0-16 0", key: "3ypg7q" }],
+    ["circle", { cx: "10", cy: "8", r: "5", key: "o932ke" }],
+    ["path", { d: "M22 20c0-3.37-2-6.5-4-8a5 5 0 0 0-.45-8.3", key: "10s06x" }]
   ];
-  const WifiOff = createLucideIcon("wifi-off", __iconNode$1);
+  const UsersRound = createLucideIcon("users-round", __iconNode$1);
   /**
    * @license lucide-react v1.24.0 - ISC
    *
@@ -7897,201 +8109,144 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     ["path", { d: "m6 6 12 12", key: "d8bk6v" }]
   ];
   const X = createLucideIcon("x", __iconNode);
-  function DesktopLedger({
-    title,
-    subtitle,
-    rows: rows2,
-    onNavigate,
-    module,
-    emptyLabel = "当前没有可列出的对象"
-  }) {
-    return /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "do-ledger", "aria-labelledby": `do-ledger-${module}`, "data-desktop-ledger": module, children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { className: "do-module-heading", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { id: `do-ledger-${module}`, children: title }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { children: subtitle })
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-          rows2.length,
-          " 项"
-        ] })
-      ] }),
-      rows2.length ? /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "do-ledger-table", role: "table", "aria-label": title, children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "do-ledger-head", role: "row", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { role: "columnheader", children: "类型" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { role: "columnheader", children: "对象" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { role: "columnheader", children: "状态" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { role: "columnheader", children: "证据" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { role: "columnheader", children: "来源" })
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "do-ledger-body", role: "rowgroup", children: rows2.map((row) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `do-ledger-row is-${row.tone}`, role: "row", "data-desktop-ledger-row": row.id, children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "do-ledger-category", role: "cell", children: row.category }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "do-ledger-object", role: "cell", children: row.route ? /* @__PURE__ */ jsxRuntimeExports.jsxs("button", { type: "button", onClick: () => onNavigate(row.route), "aria-label": `查看${row.object}详情`, "data-desktop-ledger-route": row.route, children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: row.object }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronRight, { "aria-hidden": "true", size: 15 })
-          ] }) : /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: row.object }) }),
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "do-ledger-state", role: "cell", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("i", { "aria-hidden": "true" }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: row.state })
-          ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "do-ledger-evidence", role: "cell", children: row.evidence }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("code", { className: "do-ledger-source", role: "cell", children: row.source })
-        ] }, row.id)) })
-      ] }) : /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "do-ledger-empty", children: emptyLabel })
-    ] });
-  }
-  function DesktopIncidentDocket({
-    model,
-    onNavigate
-  }) {
-    const rows2 = model.priorityObjects.map((object) => ({
-      id: object.id,
-      category: object.category,
-      object: object.name,
-      state: object.state,
-      evidence: object.reason,
-      source: object.sourcePath,
-      tone: object.tone,
-      route: object.route
-    }));
-    return /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: `do-incident is-${model.verdictTone}`, "aria-labelledby": "do-incident-title", "data-desktop-incident": model.risk, children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { className: "do-incident-heading", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { "aria-hidden": "true", children: model.verdictTone === "danger" ? /* @__PURE__ */ jsxRuntimeExports.jsx(CircleAlert, { size: 22 }) : /* @__PURE__ */ jsxRuntimeExports.jsx(TriangleAlert, { size: 22 }) }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: model.risk === "resource" ? "压力采样" : "影响与来源" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { id: "do-incident-title", children: "处置证据" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { children: "先核对判断依据，再进入对应对象；此处不重复顶层结论。" })
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: model.priorityTotal ? `${model.priorityTotal} 项` : "需核对" })
-      ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "do-incident-facts", "aria-label": "事故判断依据", children: model.facts.map((fact2) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `is-${fact2.tone}`, "data-desktop-incident-fact": fact2.key, children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: fact2.label }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: fact2.value }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: fact2.note || "来源见下方账本" })
-      ] }, fact2.key)) }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx(
-        DesktopLedger,
-        {
-          title: "影响对象",
-          subtitle: "按判断优先级列出；每项保留详情入口和原始来源路径",
-          rows: rows2,
-          onNavigate,
-          module: "incident-objects",
-          emptyLabel: "当前没有可安全列出的对象；请按证据边界核对采集来源。"
-        }
-      )
-    ] });
-  }
-  const WIDTH$1 = 760;
-  const HEIGHT$1 = 260;
-  const PLOT = { left: 54, right: 18, top: 24, bottom: 42 };
-  function pathFor(points, key, peak) {
-    const width = WIDTH$1 - PLOT.left - PLOT.right;
-    const height = HEIGHT$1 - PLOT.top - PLOT.bottom;
-    return points.map((point, index) => {
-      const x = PLOT.left + (points.length === 1 ? width : index / (points.length - 1) * width);
-      const y = PLOT.top + height - point[key] / peak * height;
-      return `${index === 0 ? "M" : "L"}${x.toFixed(2)} ${y.toFixed(2)}`;
-    }).join(" ");
-  }
-  function timeLabel(timestamp) {
-    return new Intl.DateTimeFormat("zh-CN", {
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-      hour12: false
-    }).format(new Date(timestamp));
-  }
-  function DesktopWanEvidence({ traffic, onOpen }) {
-    const rawPeak = Math.max(1, ...traffic.points.flatMap((point) => [point.down, point.up]));
-    const downPath = pathFor(traffic.points, "down", rawPeak);
-    const upPath = pathFor(traffic.points, "up", rawPeak);
-    const first = traffic.points[0];
-    const middle = traffic.points[Math.floor((traffic.points.length - 1) / 2)];
-    const last = traffic.points[traffic.points.length - 1];
-    const plotHeight = HEIGHT$1 - PLOT.top - PLOT.bottom;
-    const latestX = WIDTH$1 - PLOT.right;
-    const latestDownY = PLOT.top + plotHeight - last.down / rawPeak * plotHeight;
-    const latestUpY = PLOT.top + plotHeight - last.up / rawPeak * plotHeight;
-    const titleId = "do-wan-chart-title";
-    const descId = "do-wan-chart-desc";
-    return /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "do-wan", "aria-labelledby": "do-wan-heading", "data-desktop-wan-evidence": true, "data-sample-count": traffic.sampleCount, children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { className: "do-module-heading", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { id: "do-wan-heading", children: traffic.title }),
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("p", { children: [
-            traffic.windowLabel,
-            " · 统一采样窗口"
-          ] })
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("button", { type: "button", onClick: onOpen, children: [
-          "流量审计",
-          /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronRight, { "aria-hidden": "true", size: 16 })
-        ] })
-      ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "do-wan-summary", "aria-label": "WAN 当前与峰值", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(ArrowDown, { "aria-hidden": "true", size: 15 }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: "当前下载" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: traffic.currentDown })
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(ArrowUp, { "aria-hidden": "true", size: 15 }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: "当前上传" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: traffic.currentUp })
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: "窗口峰值" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: traffic.peak })
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: "采样" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("b", { children: [
-            traffic.sampleCount,
-            " 点"
-          ] })
-        ] })
-      ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs(
-        "svg",
-        {
-          className: "do-wan-chart",
-          viewBox: `0 0 ${WIDTH$1} ${HEIGHT$1}`,
-          role: "img",
-          "aria-labelledby": `${titleId} ${descId}`,
-          preserveAspectRatio: "xMidYMid meet",
-          "data-unit": "bit/s",
-          children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("title", { id: titleId, children: "WAN 下载与上传吞吐时间序列" }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("desc", { id: descId, children: traffic.accessibleSummary }),
-            [0, 0.25, 0.5, 0.75, 1].map((ratio) => {
-              const y = PLOT.top + plotHeight - ratio * plotHeight;
-              return /* @__PURE__ */ jsxRuntimeExports.jsx("line", { className: "do-chart-grid", x1: PLOT.left, x2: WIDTH$1 - PLOT.right, y1: y, y2: y }, ratio);
-            }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("line", { className: "do-chart-axis", x1: PLOT.left, x2: PLOT.left, y1: PLOT.top, y2: HEIGHT$1 - PLOT.bottom }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("line", { className: "do-chart-axis", x1: PLOT.left, x2: WIDTH$1 - PLOT.right, y1: HEIGHT$1 - PLOT.bottom, y2: HEIGHT$1 - PLOT.bottom }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("text", { className: "do-chart-label", x: PLOT.left - 8, y: PLOT.top + 4, textAnchor: "end", children: traffic.peak }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("text", { className: "do-chart-label", x: PLOT.left - 8, y: HEIGHT$1 - PLOT.bottom + 4, textAnchor: "end", children: "0" }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("path", { className: "do-chart-line is-down", d: downPath }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("path", { className: "do-chart-line is-up", d: upPath }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("circle", { className: "do-chart-point is-down", cx: latestX, cy: latestDownY, r: "4" }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("circle", { className: "do-chart-point is-up", cx: latestX, cy: latestUpY, r: "4" }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("text", { className: "do-chart-time", x: PLOT.left, y: HEIGHT$1 - 14, textAnchor: "start", children: timeLabel(first.timestamp) }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("text", { className: "do-chart-time", x: WIDTH$1 / 2, y: HEIGHT$1 - 14, textAnchor: "middle", children: timeLabel(middle.timestamp) }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("text", { className: "do-chart-time", x: WIDTH$1 - PLOT.right, y: HEIGHT$1 - 14, textAnchor: "end", children: timeLabel(last.timestamp) })
-          ]
-        }
-      ),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "do-wan-legend", "aria-hidden": "true", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "is-down", children: "下载" }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "is-up", children: "上传" }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "单位 bit/s" })
-      ] })
-    ] });
-  }
   const CPU_THRESHOLD = 85;
   const MEMORY_THRESHOLD = 85;
   const DISK_THRESHOLD = 90;
+  function finite$2(value) {
+    if (value === null || value === void 0 || value === "") return null;
+    const number2 = Number(value);
+    return Number.isFinite(number2) ? number2 : null;
+  }
+  function wanRows$2(snapshot) {
+    if (Array.isArray(snapshot.wan) && snapshot.wan.length) return snapshot.wan;
+    return Array.isArray(snapshot.pppoe) ? snapshot.pppoe : [];
+  }
+  function timestampOf(value) {
+    const numeric = finite$2(value);
+    if (numeric !== null) return numeric < 1e12 ? numeric * 1e3 : numeric;
+    return parseRfc3339Timestamp(value);
+  }
+  function currentRates(snapshot) {
+    const rows2 = wanRows$2(snapshot).filter((row) => row.running !== false && row.disabled !== true);
+    if (!rows2.length) return null;
+    let down = 0;
+    let up = 0;
+    for (const row of rows2) {
+      const rowDown = finite$2(row.downRate);
+      const rowUp = finite$2(row.upRate);
+      if (rowDown === null || rowUp === null) return null;
+      down += rowDown;
+      up += rowUp;
+    }
+    return { down, up };
+  }
+  function closeObservation(left, right) {
+    return Math.abs(left - right) <= Math.max(1, Math.abs(right) * 0.01);
+  }
+  function currentTrafficInstrument(rates, title, points = []) {
+    const currentDown = formatRate(rates.down);
+    const currentUp = formatRate(rates.up);
+    const peak = Math.max(rates.down, rates.up);
+    const boundary = title === "接口异常期间的 WAN 吞吐" ? "；该读数不证明 Down 接口无影响" : "";
+    return {
+      status: "accumulating",
+      title,
+      windowLabel: "当前采样",
+      sampleCount: points.length,
+      points,
+      currentDown,
+      currentUp,
+      peak: formatRate(peak),
+      accessibleSummary: `当前完整 WAN 观测，下载 ${currentDown}，上传 ${currentUp}；尚无足够同窗样本形成趋势${boundary}。`
+    };
+  }
+  function buildTrafficInstrument(snapshot, mode, risk) {
+    var _a, _b;
+    if (mode !== "current" || risk !== "none" && risk !== "interfaces") return null;
+    const title = risk === "interfaces" ? "接口异常期间的 WAN 吞吐" : "WAN 双向吞吐";
+    const rates = currentRates(snapshot);
+    if (!rates) return null;
+    const history = ((_a = snapshot.overview) == null ? void 0 : _a.history) || {};
+    const timestamps = Array.isArray(history.timestamps) ? history.timestamps : [];
+    const down = Array.isArray(history.downlink) ? history.downlink : [];
+    const up = Array.isArray(history.uplink) ? history.uplink : [];
+    const length = Math.min(timestamps.length, down.length, up.length);
+    const points = [];
+    for (let offset = length; offset > 0; offset -= 1) {
+      const timestamp = timestampOf(timestamps[timestamps.length - offset]);
+      const pointDown = finite$2(down[down.length - offset]);
+      const pointUp = finite$2(up[up.length - offset]);
+      if (timestamp !== null && pointDown !== null && pointUp !== null) points.push({ timestamp, down: pointDown, up: pointUp });
+    }
+    if (!points.length) return currentTrafficInstrument(rates, title);
+    const last = points[points.length - 1];
+    if (!closeObservation(last.down, rates.down) || !closeObservation(last.up, rates.up)) return currentTrafficInstrument(rates, title);
+    const snapshotAt = timestampOf(snapshot.updatedAt);
+    const maxAge = Math.max(12e4, Number(((_b = snapshot.meta) == null ? void 0 : _b.pollSeconds) || 5) * 3e3);
+    if (snapshotAt !== null && Math.abs(snapshotAt - last.timestamp) > maxAge) return currentTrafficInstrument(rates, title);
+    const durationSeconds = Math.max(0, Math.round((last.timestamp - points[0].timestamp) / 1e3));
+    const windowLabel = durationSeconds >= 60 ? `最近 ${Math.max(1, Math.round(durationSeconds / 60))} 分钟` : `最近 ${Math.max(1, durationSeconds)} 秒`;
+    const peak = Math.max(...points.flatMap((point) => [point.down, point.up]), rates.down, rates.up);
+    const currentDown = formatRate(rates.down);
+    const currentUp = formatRate(rates.up);
+    return {
+      status: points.length >= 2 ? "ready" : "accumulating",
+      title,
+      windowLabel,
+      sampleCount: points.length,
+      points,
+      currentDown,
+      currentUp,
+      peak: formatRate(peak),
+      accessibleSummary: `${windowLabel}，${points.length} 个当前样本，最新下载 ${currentDown}，最新上传 ${currentUp}，窗口峰值 ${formatRate(peak)}${risk === "interfaces" ? "；该趋势不证明 Down 接口无影响" : ""}。`
+    };
+  }
+  function validPercentage(value) {
+    const number2 = finite$2(value);
+    return number2 !== null && number2 >= 0 && number2 <= 100 ? number2 : null;
+  }
+  function buildResourceInstrument(snapshot, state2, risk) {
+    var _a, _b;
+    if (risk !== "resource") return null;
+    const metrics = [
+      { key: "cpu", label: "CPU", value: state2.facts.resource.cpu, threshold: CPU_THRESHOLD },
+      { key: "memory", label: "内存", value: state2.facts.resource.memory, threshold: MEMORY_THRESHOLD },
+      { key: "disk", label: "磁盘", value: state2.facts.resource.disk, threshold: DISK_THRESHOLD }
+    ];
+    const history = ((_a = snapshot.overview) == null ? void 0 : _a.history) || {};
+    const timestamps = Array.isArray(history.timestamps) ? history.timestamps : [];
+    const cpu = Array.isArray(history.cpu) ? history.cpu : [];
+    const memory = Array.isArray(history.memory) ? history.memory : [];
+    const disk = Array.isArray(history.disk) ? history.disk : [];
+    const length = Math.min(timestamps.length, cpu.length, memory.length, disk.length);
+    let points = [];
+    for (let offset = length; offset > 0; offset -= 1) {
+      const timestamp = timestampOf(timestamps[timestamps.length - offset]);
+      const cpuValue = validPercentage(cpu[cpu.length - offset]);
+      const memoryValue = validPercentage(memory[memory.length - offset]);
+      const diskValue = validPercentage(disk[disk.length - offset]);
+      if (timestamp === null || cpuValue === null || memoryValue === null || diskValue === null || points.length > 0 && timestamp <= points[points.length - 1].timestamp) continue;
+      points.push({ timestamp, cpu: cpuValue, memory: memoryValue, disk: diskValue });
+    }
+    if (points.length) {
+      const latest = points[points.length - 1];
+      const snapshotAt = timestampOf(snapshot.updatedAt);
+      const maxAge = Math.max(12e4, Number(((_b = snapshot.meta) == null ? void 0 : _b.pollSeconds) || 5) * 3e3);
+      const matchesCurrent = Math.abs(latest.cpu - metrics[0].value) <= 1 && Math.abs(latest.memory - metrics[1].value) <= 1 && Math.abs(latest.disk - metrics[2].value) <= 1;
+      const isCurrent = snapshotAt === null || Math.abs(snapshotAt - latest.timestamp) <= maxAge;
+      if (!matchesCurrent || !isCurrent) points = [];
+    }
+    const durationSeconds = points.length >= 2 ? Math.max(0, Math.round((points[points.length - 1].timestamp - points[0].timestamp) / 1e3)) : 0;
+    const windowLabel = points.length >= 2 ? durationSeconds >= 60 ? `最近 ${Math.max(1, Math.round(durationSeconds / 60))} 分钟` : `最近 ${Math.max(1, durationSeconds)} 秒` : "当前采样";
+    return {
+      status: points.length >= 2 ? "ready" : "accumulating",
+      windowLabel,
+      sampleCount: points.length,
+      metrics,
+      points,
+      accessibleSummary: metrics.map((metric) => `${metric.label} ${Math.round(metric.value)}%，策略阈值 ${metric.threshold}%`).join("；")
+    };
+  }
   function clean$1(value, fallback = "未记录") {
     const normalized = String(value ?? "").replace(/\s+/g, " ").trim();
     return normalized || fallback;
@@ -8265,16 +8420,16 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     if (risk === "evidence") return { label: "判断边界", title: "当前业务状态不可判断", summary: "没有可用于当前判断的业务快照。", tone: "danger" };
     if (risk === "collection") {
       const partial = state2.facts.collection.rest.status === "current" || state2.facts.collection.ssh.status === "current";
-      return { label: "证据已降级", title: partial ? "采集通道部分可用" : "当前变化不可见", summary: "历史记录只用于恢复对照，不代表当前业务状态。", tone: "warn" };
+      return { label: "证据已降级", title: partial ? "采集通道部分可用" : "当前变化不可见", summary: "仅保留历史对照；不代表当前业务。", tone: "warn" };
     }
-    if (risk === "wan") return { label: "出口中断", title: `全部 ${state2.facts.wan.total} 条 WAN 未运行`, summary: "没有核实到活动默认路由；先检查链路、认证与上游。", tone: "danger" };
-    if (risk === "resource") return { label: "资源压力", title: "资源策略已触发", summary: "持续样本达到策略条件；未由资源值推断网络已经中断。", tone: "danger" };
-    if (risk === "interfaces") return { label: "转发对象异常", title: `${state2.facts.interfaces.down} 个接口未运行`, summary: route ? "活动默认路由仍有记录；优先核对受影响接口。" : "活动默认路由无法按当前证据核实。", tone: "danger" };
-    if (risk === "route") return { label: "出口证据不完整", title: "默认路由无法核实", summary: "WAN 有运行记录，但没有明确的活动默认路由。", tone: "warn" };
+    if (risk === "wan") return { label: "出口中断", title: `全部 ${state2.facts.wan.total} 条 WAN 未运行`, summary: "无活动默认路由；先查链路、认证与上游。", tone: "danger" };
+    if (risk === "resource") return { label: "资源压力", title: "资源策略已触发", summary: "资源超限已持续；不推断网络中断。", tone: "danger" };
+    if (risk === "interfaces") return { label: "转发对象异常", title: `${state2.facts.interfaces.down} 个接口未运行`, summary: route ? "默认路由仍有记录；先核对 Down 接口。" : "当前证据无法核实默认路由。", tone: "danger" };
+    if (risk === "route") return { label: "出口证据不完整", title: "默认路由无法核实", summary: "WAN 有记录；无明确活动默认路由。", tone: "warn" };
     return {
       label: state2.scale === "fleet" ? "多对象巡检" : "当前运行判断",
       title: "出口路径已核实",
-      summary: "活动默认路由与 WAN 运行记录一致；未执行外部业务连通性探测。",
+      summary: "默认路由与 WAN 一致；未探测外部业务。",
       tone: "trust"
     };
   }
@@ -8288,10 +8443,15 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       category: "采集通道",
       name,
       state: channel.label,
-      reason: channel.error ? "当前尝试记录了错误" : "没有明确成功记录",
+      reason: channel.error ? clean$1(channel.error) : "没有明确成功记录",
       tone: channel.status === "unavailable" ? "missing" : "danger",
       route: "readonlyDiagnostics",
-      sourcePath: source
+      sourcePath: source,
+      attributes: [
+        { label: "通道状态", value: channel.label },
+        { label: "最近成功", value: channel.successAt ? shortTimestamp(channel.successAt) : "未记录" },
+        { label: "错误记录", value: channel.error ? clean$1(channel.error) : "未记录" }
+      ]
     }));
     return rows2.length ? rows2 : [{
       id: "collection:boundary",
@@ -8301,19 +8461,25 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       reason: "客户端已停止当前状态声明",
       tone: "warn",
       route: "readonlyDiagnostics",
-      sourcePath: "meta.clientEvidenceBoundary"
+      sourcePath: "meta.clientEvidenceBoundary",
+      attributes: [
+        { label: "REST", value: state2.facts.collection.rest.label },
+        { label: "SSH", value: state2.facts.collection.ssh.label },
+        { label: "业务证据", value: "仅作历史参考" }
+      ]
     }];
   }
   function priorityObjectsFor(snapshot, state2, risk) {
+    var _a, _b;
     if (risk === "evidence" || risk === "collection") {
       const rows2 = collectionObjects(state2);
-      return { total: rows2.length, rows: rows2.slice(0, 3) };
+      return { total: rows2.length, rows: rows2 };
     }
     if (risk === "wan") {
       const rows2 = wanRows$1(snapshot).filter((row) => row.running === false);
       return {
         total: rows2.length,
-        rows: rows2.slice(0, 3).map((row, index) => ({
+        rows: rows2.map((row, index) => ({
           id: `wan:${index}:${clean$1(row.name || row.interface)}`,
           category: "WAN",
           name: clean$1(row.name || row.interface, `WAN ${index + 1}`),
@@ -8321,7 +8487,12 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
           reason: `${clean$1(row.parent, "父接口未记录")} · 无活动默认路由`,
           tone: "danger",
           route: "lineStatus",
-          sourcePath: `wan[${index}]`
+          sourcePath: `wan[${index}]`,
+          attributes: [
+            { label: "父接口", value: clean$1(row.parent) },
+            { label: "接入方式", value: clean$1(row.access) },
+            { label: "地址", value: clean$1(row.address) }
+          ]
         }))
       };
     }
@@ -8329,7 +8500,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       const rows2 = (snapshot.interfaces || []).filter((row) => row.running === false);
       return {
         total: rows2.length,
-        rows: rows2.slice(0, 3).map((row, index) => ({
+        rows: rows2.map((row, index) => ({
           id: `interface:${index}:${clean$1(row.name || row.interface)}`,
           category: "接口",
           name: clean$1(row.name || row.interface, `接口 ${index + 1}`),
@@ -8337,7 +8508,12 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
           reason: `${clean$1(row.parent || row.master, "父级未记录")} · 依赖关系待核对`,
           tone: "danger",
           route: "interfaces",
-          sourcePath: `interfaces[${(snapshot.interfaces || []).indexOf(row)}]`
+          sourcePath: `interfaces[${(snapshot.interfaces || []).indexOf(row)}]`,
+          attributes: [
+            { label: "父级", value: clean$1(row.parent || row.master) },
+            { label: "类型", value: clean$1(row.type || row.role) },
+            { label: "VLAN", value: clean$1(row.vlan || row.vlanId) }
+          ]
         }))
       };
     }
@@ -8349,11 +8525,16 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
           id: "resource:system",
           category: "系统资源",
           name: clean$1(state2.facts.device.identity, "RouterOS"),
-          state: `CPU ${Math.round(state2.facts.resource.cpu)}% · 内存 ${Math.round(state2.facts.resource.memory)}% · 磁盘 ${Math.round(state2.facts.resource.disk)}%`,
-          reason: samples.observed ? `阈值 ${CPU_THRESHOLD}/${MEMORY_THRESHOLD}/${DISK_THRESHOLD}% · 尾部连续 ${samples.trailing} 个` : "阈值策略已触发；连续样本未取得",
+          state: samples.trailing ? "持续超限" : "策略命中",
+          reason: samples.observed ? "检查连接压力、接口吞吐与原始采样" : "检查资源对象与采集完整性",
           tone: "danger",
           route: "trafficLoad",
-          sourcePath: "overview + overview.history"
+          sourcePath: "overview + overview.history",
+          attributes: [
+            { label: "连接总量", value: finite$1((_a = snapshot.connections) == null ? void 0 : _a.total) === null ? "未记录" : Number((_b = snapshot.connections) == null ? void 0 : _b.total).toLocaleString("zh-CN") },
+            { label: "尾部连续", value: samples.observed ? `${samples.trailing} 个` : "未取得" },
+            { label: "有效样本", value: samples.observed ? `${samples.observed} 个` : "未取得" }
+          ]
         }]
       };
     }
@@ -8367,7 +8548,12 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
         reason: "没有 active=true 且未停用的默认路由",
         tone: "warn",
         route: "routes",
-        sourcePath: "routes.defaultRoutes"
+        sourcePath: "routes.defaultRoutes",
+        attributes: [
+          { label: "默认路由记录", value: `${defaultRoutes(snapshot).length} 条` },
+          { label: "WAN 运行", value: `${state2.facts.wan.online} / ${state2.facts.wan.total}` },
+          { label: "活动标记", value: "未发现 active=true" }
+        ]
       }]
     };
     return { total: 0, rows: [] };
@@ -8387,87 +8573,6 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
         { label: "网关", value: clean$1(route.gateway) },
         { label: "distance", value: clean$1(route.distance) }
       ]
-    };
-  }
-  function timestampOf(value) {
-    const numeric = finite$1(value);
-    if (numeric !== null) return numeric < 1e12 ? numeric * 1e3 : numeric;
-    if (typeof value !== "string") return null;
-    const parsed = Date.parse(value);
-    return Number.isFinite(parsed) ? parsed : null;
-  }
-  function currentRates(snapshot) {
-    const rows2 = wanRows$1(snapshot).filter((row) => row.running !== false && row.disabled !== true);
-    if (!rows2.length) return null;
-    let down = 0;
-    let up = 0;
-    for (const row of rows2) {
-      const rowDown = finite$1(row.downRate);
-      const rowUp = finite$1(row.upRate);
-      if (rowDown === null || rowUp === null) return null;
-      down += rowDown;
-      up += rowUp;
-    }
-    return { down, up };
-  }
-  function closeObservation(left, right) {
-    return Math.abs(left - right) <= Math.max(1, Math.abs(right) * 0.01);
-  }
-  function currentTrafficInstrument(rates, points = []) {
-    const currentDown = formatRate(rates.down);
-    const currentUp = formatRate(rates.up);
-    const peak = Math.max(rates.down, rates.up);
-    return {
-      status: "accumulating",
-      title: "WAN 双向吞吐",
-      windowLabel: "当前采样",
-      sampleCount: points.length,
-      points,
-      currentDown,
-      currentUp,
-      peak: formatRate(peak),
-      accessibleSummary: `当前完整 WAN 观测，下载 ${currentDown}，上传 ${currentUp}；尚无足够同窗样本形成趋势。`
-    };
-  }
-  function trafficInstrument(snapshot, mode, risk) {
-    var _a, _b;
-    if (mode !== "current" || risk !== "none") return null;
-    const rates = currentRates(snapshot);
-    if (!rates) return null;
-    const history = ((_a = snapshot.overview) == null ? void 0 : _a.history) || {};
-    const timestamps = Array.isArray(history.timestamps) ? history.timestamps : [];
-    const down = Array.isArray(history.downlink) ? history.downlink : [];
-    const up = Array.isArray(history.uplink) ? history.uplink : [];
-    const length = Math.min(timestamps.length, down.length, up.length);
-    const points = [];
-    for (let offset = length; offset > 0; offset -= 1) {
-      const timestamp = timestampOf(timestamps[timestamps.length - offset]);
-      const pointDown = finite$1(down[down.length - offset]);
-      const pointUp = finite$1(up[up.length - offset]);
-      if (timestamp !== null && pointDown !== null && pointUp !== null) points.push({ timestamp, down: pointDown, up: pointUp });
-    }
-    if (!points.length) return currentTrafficInstrument(rates);
-    const last = points[points.length - 1];
-    if (!closeObservation(last.down, rates.down) || !closeObservation(last.up, rates.up)) return currentTrafficInstrument(rates);
-    const snapshotAt = timestampOf(snapshot.updatedAt);
-    const maxAge = Math.max(12e4, Number(((_b = snapshot.meta) == null ? void 0 : _b.pollSeconds) || 5) * 3e3);
-    if (snapshotAt !== null && Math.abs(snapshotAt - last.timestamp) > maxAge) return currentTrafficInstrument(rates);
-    const durationSeconds = Math.max(0, Math.round((last.timestamp - points[0].timestamp) / 1e3));
-    const windowLabel = durationSeconds >= 60 ? `最近 ${Math.max(1, Math.round(durationSeconds / 60))} 分钟` : `最近 ${Math.max(1, durationSeconds)} 秒`;
-    const peak = Math.max(...points.flatMap((point) => [point.down, point.up]), rates.down, rates.up);
-    const status = points.length >= 2 ? "ready" : "accumulating";
-    const currentDown = formatRate(rates.down);
-    const currentUp = formatRate(rates.up);
-    return {
-      status,
-      title: "WAN 双向吞吐",
-      windowLabel,
-      sampleCount: points.length,
-      points,
-      currentDown,
-      currentUp,
-      peak: formatRate(peak),
-      accessibleSummary: `${windowLabel}，${points.length} 个当前样本，最新下载 ${currentDown}，最新上传 ${currentUp}，窗口峰值 ${formatRate(peak)}。`
     };
   }
   function evidenceRows(snapshot, state2) {
@@ -8505,12 +8610,886 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       verdictTone: verdict.tone,
       facts: factsFor(snapshot, state2, mode, risk, route),
       priorityLabel: priority.total ? "优先处理" : "",
-      priorityObjects: priority.rows,
+      priorityObjects: priority.rows.slice(0, 3),
+      priorityObjectsAll: priority.rows,
       priorityTotal: priority.total,
       focusObject: focusObjectFor(mode, risk, route),
-      traffic: trafficInstrument(snapshot, mode, risk),
+      traffic: buildTrafficInstrument(snapshot, mode, risk),
+      resource: buildResourceInstrument(snapshot, state2, risk),
       evidenceRows: evidenceRows(snapshot, state2)
     };
+  }
+  function MobileFocusObject({ object, onOpen }) {
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "mp-focus", "data-mobile-focus-object": object.id, "aria-labelledby": "mp-focus-title", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "mp-section-kicker", children: "活动对象" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { id: "mp-focus-title", children: object.category })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Route, { "aria-hidden": "true", size: 19 })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mp-focus-identity", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: object.name }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: object.note })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("dl", { children: object.attributes.map((attribute) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("dt", { children: attribute.label }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("dd", { children: attribute.value })
+      ] }, attribute.label)) }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("button", { type: "button", "data-mobile-destination": object.route, onClick: onOpen, children: [
+        "检查路由证据",
+        /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronRight, { "aria-hidden": "true", size: 17 })
+      ] })
+    ] });
+  }
+  function patrolActions(risk) {
+    if (risk === "evidence" || risk === "collection") {
+      return [
+        { route: "readonlyDiagnostics", label: "验证采集边界", note: "REST、SSH 与业务快照", icon: "diagnostic" },
+        { route: "logs", label: "检查失败记录", note: "定位最近采集错误", icon: "logs" },
+        { route: "more", label: "打开工具目录", note: "服务、DNS 与审计入口", icon: "more" }
+      ];
+    }
+    if (risk === "wan") {
+      return [
+        { route: "lineStatus", label: "检查 WAN 对象", note: "运行、地址与父接口", icon: "network" },
+        { route: "routes", label: "核对默认路由", note: "活动标记、网关与距离", icon: "route" },
+        { route: "logs", label: "查看网络事件", note: "确认故障出现时间", icon: "logs" }
+      ];
+    }
+    if (risk === "interfaces") {
+      return [
+        { route: "interfaces", label: "检查接口对象", note: "运行状态与依赖关系", icon: "network" },
+        { route: "lineStatus", label: "核对 WAN 关联", note: "确认出口是否受影响", icon: "route" },
+        { route: "logs", label: "查看接口事件", note: "定位状态变化时间", icon: "logs" }
+      ];
+    }
+    if (risk === "resource") {
+      return [
+        { route: "trafficLoad", label: "进入资源负载", note: "当前压力与接口吞吐", icon: "resource" },
+        { route: "loadAudit", label: "检查采样审计", note: "阈值、连续性与原始样本", icon: "diagnostic" },
+        { route: "trafficAudit", label: "核对流量对象", note: "协议与高吞吐来源", icon: "network" }
+      ];
+    }
+    if (risk === "route") {
+      return [
+        { route: "routes", label: "检查路由表", note: "查找活动默认路由", icon: "route" },
+        { route: "lineStatus", label: "核对 WAN 状态", note: "确认可承载出口", icon: "network" },
+        { route: "readonlyDiagnostics", label: "验证只读证据", note: "区分不可达与未采集", icon: "diagnostic" }
+      ];
+    }
+    return [
+      { route: "lineStatus", label: "巡检 WAN 线路", note: "出口对象与当前吞吐", icon: "network" },
+      { route: "routes", label: "核对默认路由", note: "活动路径与网关", icon: "route" },
+      { route: "readonlyDiagnostics", label: "查看只读诊断", note: "采集链路与证据边界", icon: "diagnostic" }
+    ];
+  }
+  function PatrolActionGlyph({ icon }) {
+    if (icon === "diagnostic") return /* @__PURE__ */ jsxRuntimeExports.jsx(ScanSearch, { "aria-hidden": "true", size: 18 });
+    if (icon === "logs") return /* @__PURE__ */ jsxRuntimeExports.jsx(FileClock, { "aria-hidden": "true", size: 18 });
+    if (icon === "network") return /* @__PURE__ */ jsxRuntimeExports.jsx(Network, { "aria-hidden": "true", size: 18 });
+    if (icon === "route") return /* @__PURE__ */ jsxRuntimeExports.jsx(Route, { "aria-hidden": "true", size: 18 });
+    if (icon === "more") return /* @__PURE__ */ jsxRuntimeExports.jsx(PanelsTopLeft, { "aria-hidden": "true", size: 18 });
+    return /* @__PURE__ */ jsxRuntimeExports.jsx(Gauge, { "aria-hidden": "true", size: 18 });
+  }
+  function MobilePatrolActions({
+    risk,
+    onNavigate
+  }) {
+    const actions = patrolActions(risk);
+    const steady = risk === "none";
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "mp-actions", "data-mobile-patrol-actions": true, "aria-labelledby": "mp-actions-title", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "mp-section-kicker", children: steady ? "巡检入口" : "处置入口" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { id: "mp-actions-title", children: steady ? "继续核对关键对象" : "沿证据继续检查" })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: actions.length })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mp-action-list", children: actions.map((action) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
+        "button",
+        {
+          type: "button",
+          "data-mobile-patrol-action": action.route,
+          "data-mobile-destination": action.route,
+          onClick: () => onNavigate(action.route),
+          children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "mp-action-icon", children: /* @__PURE__ */ jsxRuntimeExports.jsx(PatrolActionGlyph, { icon: action.icon }) }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: action.label }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: action.note })
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronRight, { "aria-hidden": "true", size: 17 })
+          ]
+        },
+        action.route
+      )) })
+    ] });
+  }
+  function IncidentRow({
+    object,
+    onOpen,
+    selected
+  }) {
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+      "button",
+      {
+        className: `mp-incident-row is-${object.tone} ${selected ? "is-selected" : ""}`,
+        type: "button",
+        "aria-pressed": selected === void 0 ? void 0 : selected,
+        onClick: onOpen,
+        "aria-label": `${object.category} ${object.name}，${object.state}。${object.reason}`,
+        "data-mobile-incident-object": object.id,
+        "data-mobile-incident-route": object.route,
+        children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "mp-incident-mark", "aria-hidden": "true" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "mp-incident-copy", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: object.category }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: object.name })
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: object.state }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("p", { children: object.reason })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronRight, { "aria-hidden": "true", size: 18 })
+        ]
+      }
+    );
+  }
+  function IncidentInspector({ object, onOpen }) {
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "mp-inspector", "data-mobile-incident-inspector": object.id, "aria-labelledby": "mp-inspector-title", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "mp-section-kicker", children: "所选对象" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { id: "mp-inspector-title", children: object.name })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(ScanSearch, { "aria-hidden": "true", size: 19 })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("p", { children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: object.state }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: object.reason })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("dl", { children: object.attributes.map((attribute) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("dt", { children: attribute.label }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("dd", { children: attribute.value })
+      ] }, attribute.label)) }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mp-inspector-source", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "采样来源" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("code", { children: object.sourcePath })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("button", { type: "button", "data-mobile-destination": object.route, onClick: onOpen, children: [
+        "进入",
+        object.category,
+        "工作区",
+        /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronRight, { "aria-hidden": "true", size: 17 })
+      ] })
+    ] });
+  }
+  function polyline$1(points, key) {
+    if (points.length < 2) return "";
+    const peak = Math.max(1, ...points.flatMap((point) => [point.down, point.up]));
+    return points.map((point, index) => {
+      const x = 4 + index / (points.length - 1) * 312;
+      const y = 84 - point[key] / peak * 76;
+      return `${x.toFixed(1)},${Math.max(6, y).toFixed(1)}`;
+    }).join(" ");
+  }
+  function axisTime$1(timestamp) {
+    return new Intl.DateTimeFormat("zh-CN", {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: false
+    }).format(new Date(timestamp));
+  }
+  function MobilePatrolTraffic({ traffic, onOpen }) {
+    const chartReady = traffic.status === "ready" && traffic.points.length >= 2;
+    const windowText = chartReady ? `${traffic.windowLabel} · ${traffic.sampleCount} 点` : "当前读数 · 趋势待采样";
+    const down = polyline$1(traffic.points, "down");
+    const up = polyline$1(traffic.points, "up");
+    const startTime = chartReady ? axisTime$1(traffic.points[0].timestamp) : "";
+    const endTime = chartReady ? axisTime$1(traffic.points[traffic.points.length - 1].timestamp) : "";
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "mp-traffic", "data-mobile-traffic": traffic.status, "aria-labelledby": "mp-traffic-title", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "mp-section-kicker", children: "WAN 信号" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { id: "mp-traffic-title", children: traffic.title })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "mp-window", children: windowText })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `mp-traffic-body ${chartReady ? "is-ready" : "is-accumulating"}`, children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mp-rate-pair", "aria-label": traffic.accessibleSummary, children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx(ArrowDown, { "aria-hidden": "true", size: 16 }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: "下载" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: traffic.currentDown })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx(ArrowUp, { "aria-hidden": "true", size: 16 }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: "上传" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: traffic.currentUp })
+          ] })
+        ] }),
+        chartReady ? /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mp-chart", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "mp-chart-scale", "aria-hidden": "true", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: traffic.peak }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: "0" })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs(
+            "svg",
+            {
+              viewBox: "0 0 320 92",
+              preserveAspectRatio: "xMidYMid meet",
+              role: "img",
+              "aria-labelledby": "mp-traffic-chart-title mp-traffic-chart-desc",
+              children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx("title", { id: "mp-traffic-chart-title", children: "WAN 上传与下载趋势" }),
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("desc", { id: "mp-traffic-chart-desc", children: [
+                  traffic.accessibleSummary,
+                  "，纵轴从 0 到 ",
+                  traffic.peak,
+                  "，横轴从 ",
+                  startTime,
+                  " 到 ",
+                  endTime,
+                  "。"
+                ] }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx("path", { className: "mp-chart-grid", d: "M4 12H316 M4 48H316 M4 84H316" }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx("polyline", { className: "mp-chart-down", points: down }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx("polyline", { className: "mp-chart-up", points: up })
+              ]
+            }
+          ),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "mp-chart-time", "aria-hidden": "true", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: startTime }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: endTime })
+          ] })
+        ] }) : /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mp-chart-pending", "aria-label": traffic.accessibleSummary, children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(ChartNoAxesCombined, { "aria-hidden": "true", size: 18 }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: "趋势正在形成" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: "至少需要两个同窗完整样本" })
+          ] })
+        ] })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("footer", { children: [
+        chartReady ? /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("i", { className: "is-down", "aria-hidden": "true" }),
+            "下载"
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("i", { className: "is-up", "aria-hidden": "true" }),
+            "上传"
+          ] })
+        ] }) : /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+          "完整样本 ",
+          traffic.sampleCount,
+          " / 2"
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+          "峰值 ",
+          traffic.peak
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("button", { type: "button", "data-mobile-destination": "trafficLoad", onClick: onOpen, children: "流量明细" })
+      ] })
+    ] });
+  }
+  const ICONS = {
+    cpu: Cpu,
+    memory: Database,
+    disk: HardDrive
+  };
+  function polyline(points, key) {
+    if (points.length < 2) return "";
+    return points.map((point, index) => {
+      const x = 4 + index / (points.length - 1) * 312;
+      const y = 4 + (100 - point[key]) / 100 * 52;
+      return `${x.toFixed(1)},${y.toFixed(1)}`;
+    }).join(" ");
+  }
+  function axisTime(timestamp) {
+    return new Intl.DateTimeFormat("zh-CN", {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: false
+    }).format(new Date(timestamp));
+  }
+  function MobileResourcePressure({ resource }) {
+    const chartReady = resource.status === "ready" && resource.points.length >= 2;
+    const startTime = chartReady ? axisTime(resource.points[0].timestamp) : "";
+    const endTime = chartReady ? axisTime(resource.points[resource.points.length - 1].timestamp) : "";
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "mp-resource", "data-mobile-resource-signal": resource.status, "aria-labelledby": "mp-resource-title", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "mp-section-kicker", children: "资源信号" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { id: "mp-resource-title", children: "当前压力与策略阈值" })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "mp-window", children: chartReady ? `${resource.windowLabel} · ${resource.sampleCount} 点` : "当前采样" })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mp-resource-metrics", "aria-label": resource.accessibleSummary, children: resource.metrics.map((metric) => {
+        const Icon2 = ICONS[metric.key];
+        const value = Math.max(0, Math.min(100, metric.value));
+        return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx(Icon2, { "aria-hidden": "true", size: 17 }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: metric.label })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs(
+            "span",
+            {
+              className: "mp-resource-meter",
+              role: "meter",
+              "aria-label": `${metric.label} ${Math.round(metric.value)}%，策略阈值 ${metric.threshold}%`,
+              "aria-valuemin": 0,
+              "aria-valuemax": 100,
+              "aria-valuenow": Math.round(metric.value),
+              children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx("i", { style: { width: `${value}%` } }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx("em", { style: { left: `${metric.threshold}%` } })
+              ]
+            }
+          ),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("strong", { children: [
+            Math.round(metric.value),
+            "%"
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("small", { children: [
+            "阈值 ",
+            metric.threshold,
+            "%"
+          ] })
+        ] }, metric.key);
+      }) }),
+      chartReady ? /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mp-resource-chart", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "mp-resource-scale", "aria-hidden": "true", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: "100%" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: "50%" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: "0" })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs(
+            "svg",
+            {
+              viewBox: "0 0 320 60",
+              preserveAspectRatio: "xMidYMid meet",
+              role: "img",
+              "aria-labelledby": "mp-resource-chart-title mp-resource-chart-desc",
+              children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx("title", { id: "mp-resource-chart-title", children: "CPU、内存与磁盘压力趋势" }),
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("desc", { id: "mp-resource-chart-desc", children: [
+                  resource.accessibleSummary,
+                  "；纵轴为 0 到 100%，横轴从 ",
+                  startTime,
+                  " 到 ",
+                  endTime,
+                  "。"
+                ] }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx("path", { className: "mp-resource-grid", d: "M4 4H316 M4 30H316 M4 56H316" }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx("path", { className: "mp-resource-threshold", d: "M4 9.2H316 M4 11.8H316" }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx("polyline", { className: "is-cpu", points: polyline(resource.points, "cpu") }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx("polyline", { className: "is-memory", points: polyline(resource.points, "memory") }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx("polyline", { className: "is-disk", points: polyline(resource.points, "disk") })
+              ]
+            }
+          ),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "mp-resource-time", "aria-hidden": "true", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: startTime }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: endTime })
+          ] })
+        ] })
+      ] }) : /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "mp-resource-pending", children: "只有当前完整资源采样；至少两个带时间样本后才绘制趋势。" }),
+      chartReady ? /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mp-resource-samples", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: "样本明细" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+            resource.points.length,
+            " 条"
+          ] })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("table", { "aria-label": "资源压力时间序列样本", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("thead", { children: /* @__PURE__ */ jsxRuntimeExports.jsxs("tr", { children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("th", { children: "时间" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("th", { children: "CPU" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("th", { children: "内存" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("th", { children: "磁盘" })
+          ] }) }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("tbody", { children: resource.points.slice(-6).map((point) => /* @__PURE__ */ jsxRuntimeExports.jsxs("tr", { children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("td", { children: axisTime(point.timestamp) }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("td", { children: [
+              Math.round(point.cpu),
+              "%"
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("td", { children: [
+              Math.round(point.memory),
+              "%"
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("td", { children: [
+              Math.round(point.disk),
+              "%"
+            ] })
+          ] }, point.timestamp)) })
+        ] })
+      ] }) : null,
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("footer", { "aria-hidden": "true", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("i", { className: "is-cpu" }),
+          "CPU"
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("i", { className: "is-memory" }),
+          "内存"
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("i", { className: "is-disk" }),
+          "磁盘"
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("i", { className: "is-threshold" }),
+          "策略阈值"
+        ] })
+      ] })
+    ] });
+  }
+  function VerdictIcon$1({ tone }) {
+    if (tone === "danger") return /* @__PURE__ */ jsxRuntimeExports.jsx(CircleAlert, { "aria-hidden": "true", size: 22 });
+    if (tone === "warn" || tone === "missing") return /* @__PURE__ */ jsxRuntimeExports.jsx(TriangleAlert, { "aria-hidden": "true", size: 22 });
+    return /* @__PURE__ */ jsxRuntimeExports.jsx(ShieldCheck, { "aria-hidden": "true", size: 22 });
+  }
+  function observedCount(value) {
+    const number2 = Number(value);
+    return Number.isFinite(number2) ? number2 : null;
+  }
+  function MobilePatrolScreen({
+    snapshot,
+    state: state2,
+    onNavigate,
+    runtimeManaged = false
+  }) {
+    var _a;
+    const model = reactExports.useMemo(() => buildOverviewEvidenceModel(snapshot, state2), [snapshot, state2]);
+    const incident = model.priorityObjects.length > 0;
+    const ledgerRef = reactExports.useRef(null);
+    const textScaleSentinelRef = reactExports.useRef(null);
+    const [largeText, setLargeText] = reactExports.useState(false);
+    const [tablet, setTablet] = reactExports.useState(false);
+    const [selectedIncidentId, setSelectedIncidentId] = reactExports.useState("");
+    const terminals = Array.isArray(snapshot.terminals) ? snapshot.terminals.length : null;
+    const connections = observedCount((_a = snapshot.connections) == null ? void 0 : _a.total);
+    const runningInterfaces = state2.facts.interfaces.available ? Math.max(0, state2.facts.interfaces.total - state2.facts.interfaces.down) : null;
+    reactExports.useEffect(() => {
+      const syncLedger = () => {
+        const ledger = ledgerRef.current;
+        if (!ledger) return;
+        const availableBelowSummary = window.innerHeight - ledger.getBoundingClientRect().top - 76;
+        const estimatedLedgerBody = model.evidenceRows.length * 54;
+        const fitsUsefulEvidence = availableBelowSummary >= Math.min(180, estimatedLedgerBody);
+        const roomyIncident = incident && (window.innerHeight >= 720 || window.innerWidth >= 600 || model.priorityObjects.length <= 2);
+        ledger.open = model.evidenceMode === "unavailable" || roomyIncident || fitsUsefulEvidence;
+      };
+      syncLedger();
+      window.addEventListener("resize", syncLedger);
+      return () => window.removeEventListener("resize", syncLedger);
+    }, [incident, model.evidenceMode, model.evidenceRows.length, model.priorityObjects.length, tablet]);
+    reactExports.useEffect(() => {
+      var _a2;
+      const sentinel = textScaleSentinelRef.current;
+      if (!sentinel) return;
+      const sync = () => setLargeText(sentinel.getBoundingClientRect().height >= 24);
+      sync();
+      const observer = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(sync);
+      observer == null ? void 0 : observer.observe(sentinel);
+      window.addEventListener("resize", sync);
+      (_a2 = document.fonts) == null ? void 0 : _a2.ready.then(sync).catch(() => {
+      });
+      return () => {
+        observer == null ? void 0 : observer.disconnect();
+        window.removeEventListener("resize", sync);
+      };
+    }, []);
+    reactExports.useEffect(() => {
+      const media = window.matchMedia("(min-width: 600px) and (max-width: 1023px)");
+      const sync = () => setTablet(media.matches);
+      sync();
+      media.addEventListener("change", sync);
+      return () => media.removeEventListener("change", sync);
+    }, []);
+    const visiblePriorityObjects = tablet ? model.priorityObjectsAll : model.priorityObjects;
+    const remainingPriorityObjects = Math.max(0, model.priorityTotal - visiblePriorityObjects.length);
+    const selectedIncident = visiblePriorityObjects.find((object) => object.id === selectedIncidentId) || visiblePriorityObjects[0] || null;
+    const ledgerInPrimary = tablet && (model.risk === "evidence" || model.risk === "collection");
+    const showPatrolActions = tablet || model.risk === "evidence" || model.risk === "collection";
+    const evidenceLedger = /* @__PURE__ */ jsxRuntimeExports.jsxs("details", { className: "mp-ledger", "data-mobile-evidence-ledger": true, ref: ledgerRef, children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("summary", { children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Gauge, { "aria-hidden": "true", size: 17 }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: "证据边界" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: model.evidenceNote })
+          ] })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+          model.evidenceRows.length,
+          " 项",
+          /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronDown, { "aria-hidden": "true", size: 17 })
+        ] })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("dl", { children: model.evidenceRows.map((row) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `is-${row.tone}`, children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("dt", { children: row.label }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("dd", { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: row.value }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: row.note })
+        ] })
+      ] }, row.key)) })
+    ] });
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+      "main",
+      {
+        className: `mp-shell is-${model.verdictTone} is-${model.evidenceMode} ${incident ? "has-incident" : "is-steady"} ${largeText ? "is-large-text" : ""}`,
+        "data-mobile-overview": true,
+        "data-mobile-overview-scenario": model.scenario,
+        "data-mobile-overview-risk": model.risk,
+        "data-mobile-evidence-mode": model.evidenceMode,
+        "data-mobile-large-text": largeText ? "true" : "false",
+        children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "mp-text-scale-sentinel", "aria-hidden": "true", ref: textScaleSentinelRef, children: "M" }),
+          !runtimeManaged ? /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { className: "mp-device-context", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Router, { "aria-hidden": "true", size: 19 }),
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: model.device }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: model.deviceNote })
+              ] })
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(LockKeyhole, { "aria-hidden": "true", size: 15 }),
+              "只读"
+            ] })
+          ] }) : null,
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "mp-command", "aria-labelledby": "mp-command-title", "data-mobile-verdict": true, children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mp-evidence-line", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: `is-${model.evidenceTone}`, children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx(Clock3, { "aria-hidden": "true", size: 14 }),
+                model.evidenceLabel
+              ] }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("time", { children: model.evidenceTime })
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mp-command-main", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "mp-command-icon", children: /* @__PURE__ */ jsxRuntimeExports.jsx(VerdictIcon$1, { tone: model.verdictTone }) }),
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { id: "mp-command-title", tabIndex: -1, "data-panel-route-title": true, children: model.verdictTitle }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx("p", { children: model.verdictSummary })
+              ] })
+            ] })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mp-workspace", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("section", { className: "mp-proof", "aria-label": "判断依据", "data-mobile-core-facts": true, children: model.facts.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `is-${item.tone}`, "data-mobile-core-fact": item.key, children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: item.label }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: item.value }),
+              item.note ? /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: item.note }) : null
+            ] }, item.key)) }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mp-workspace-body", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mp-workspace-primary", children: [
+                model.resource ? /* @__PURE__ */ jsxRuntimeExports.jsx(MobileResourcePressure, { resource: model.resource }) : null,
+                incident ? /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "mp-incident", "data-mobile-incident-center": true, "aria-labelledby": "mp-incident-title", children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+                      /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "mp-section-kicker", children: "事故中心" }),
+                      /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { id: "mp-incident-title", children: "先检查这些对象" })
+                    ] }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx("b", { "data-mobile-incident-count": true, children: model.priorityTotal })
+                  ] }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mp-incident-list", children: visiblePriorityObjects.map((object) => /* @__PURE__ */ jsxRuntimeExports.jsx(
+                    IncidentRow,
+                    {
+                      object,
+                      selected: tablet ? (selectedIncident == null ? void 0 : selectedIncident.id) === object.id : void 0,
+                      onOpen: () => {
+                        if (tablet) {
+                          setSelectedIncidentId(object.id);
+                          return;
+                        }
+                        onNavigate(object.route);
+                      }
+                    },
+                    object.id
+                  )) }),
+                  remainingPriorityObjects > 0 && visiblePriorityObjects[0] ? /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                    "button",
+                    {
+                      className: "mp-incident-more",
+                      type: "button",
+                      onClick: () => onNavigate(visiblePriorityObjects[0].route),
+                      "data-mobile-destination": visiblePriorityObjects[0].route,
+                      children: [
+                        "进入",
+                        visiblePriorityObjects[0].category,
+                        "工作区查看其余 ",
+                        remainingPriorityObjects,
+                        " 个",
+                        /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronRight, { "aria-hidden": "true", size: 17 })
+                      ]
+                    }
+                  ) : null
+                ] }) : null,
+                model.traffic ? /* @__PURE__ */ jsxRuntimeExports.jsx(MobilePatrolTraffic, { traffic: model.traffic, onOpen: () => onNavigate("trafficLoad") }) : null,
+                tablet && model.focusObject ? /* @__PURE__ */ jsxRuntimeExports.jsx(MobileFocusObject, { object: model.focusObject, onOpen: () => onNavigate(model.focusObject.route) }) : null,
+                ledgerInPrimary ? evidenceLedger : null
+              ] }),
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mp-workspace-context", children: [
+                !incident ? /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "mp-load", "aria-labelledby": "mp-load-title", children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "mp-section-kicker", children: "当前负载" }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { id: "mp-load-title", children: "对象与连接" })
+                  ] }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsxs("button", { type: "button", "data-mobile-destination": "terminals", onClick: () => onNavigate("terminals"), children: [
+                      /* @__PURE__ */ jsxRuntimeExports.jsx(UsersRound, { "aria-hidden": "true", size: 18 }),
+                      /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+                        /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: "终端记录" }),
+                        /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: terminals === null ? "未取得" : terminals })
+                      ] }),
+                      /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronRight, { "aria-hidden": "true", size: 17 })
+                    ] }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsxs("button", { type: "button", "data-mobile-destination": "connections", onClick: () => onNavigate("connections"), children: [
+                      /* @__PURE__ */ jsxRuntimeExports.jsx(Activity, { "aria-hidden": "true", size: 18 }),
+                      /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+                        /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: "连接总数" }),
+                        /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: connections === null ? "未取得" : connections })
+                      ] }),
+                      /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronRight, { "aria-hidden": "true", size: 17 })
+                    ] }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsxs("button", { type: "button", "data-mobile-destination": "interfaces", onClick: () => onNavigate("interfaces"), children: [
+                      /* @__PURE__ */ jsxRuntimeExports.jsx(Cable, { "aria-hidden": "true", size: 18 }),
+                      /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+                        /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: "运行接口" }),
+                        /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: runningInterfaces === null ? "未取得" : `${runningInterfaces} / ${state2.facts.interfaces.total}` })
+                      ] }),
+                      /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronRight, { "aria-hidden": "true", size: 17 })
+                    ] })
+                  ] })
+                ] }) : null,
+                tablet && selectedIncident ? /* @__PURE__ */ jsxRuntimeExports.jsx(IncidentInspector, { object: selectedIncident, onOpen: () => onNavigate(selectedIncident.route) }) : null,
+                !ledgerInPrimary ? evidenceLedger : null,
+                showPatrolActions ? /* @__PURE__ */ jsxRuntimeExports.jsx(MobilePatrolActions, { risk: model.risk, onNavigate }) : null
+              ] })
+            ] })
+          ] })
+        ]
+      }
+    );
+  }
+  const MOBILE_PANEL_QUERY = "(max-width: 1023px)";
+  function useMobilePanelSurface() {
+    const [mobile, setMobile] = reactExports.useState(
+      () => typeof window !== "undefined" && window.matchMedia(MOBILE_PANEL_QUERY).matches
+    );
+    reactExports.useEffect(() => {
+      const media = window.matchMedia(MOBILE_PANEL_QUERY);
+      const sync = () => setMobile(media.matches);
+      sync();
+      media.addEventListener("change", sync);
+      return () => media.removeEventListener("change", sync);
+    }, []);
+    return mobile;
+  }
+  function DesktopLedger({
+    title,
+    subtitle,
+    rows: rows2,
+    onNavigate,
+    module,
+    emptyLabel = "当前没有可列出的对象"
+  }) {
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "do-ledger", "aria-labelledby": `do-ledger-${module}`, "data-desktop-ledger": module, children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { className: "do-module-heading", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { id: `do-ledger-${module}`, children: title }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { children: subtitle })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+          rows2.length,
+          " 项"
+        ] })
+      ] }),
+      rows2.length ? /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "do-ledger-table", role: "table", "aria-label": title, children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "do-ledger-head", role: "row", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { role: "columnheader", children: "类型" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { role: "columnheader", children: "对象" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { role: "columnheader", children: "状态" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { role: "columnheader", children: "证据" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { role: "columnheader", children: "来源" })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "do-ledger-body", role: "rowgroup", children: rows2.map((row) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `do-ledger-row is-${row.tone}`, role: "row", "data-desktop-ledger-row": row.id, children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "do-ledger-category", role: "cell", children: row.category }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "do-ledger-object", role: "cell", children: row.route ? /* @__PURE__ */ jsxRuntimeExports.jsxs("button", { type: "button", onClick: () => onNavigate(row.route), "aria-label": `查看${row.object}详情`, "data-desktop-ledger-route": row.route, children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: row.object }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronRight, { "aria-hidden": "true", size: 15 })
+          ] }) : /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: row.object }) }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "do-ledger-state", role: "cell", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("i", { "aria-hidden": "true" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: row.state })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "do-ledger-evidence", role: "cell", children: row.evidence }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("code", { className: "do-ledger-source", role: "cell", children: row.source })
+        ] }, row.id)) })
+      ] }) : /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "do-ledger-empty", children: emptyLabel })
+    ] });
+  }
+  function DesktopIncidentDocket({
+    model,
+    onNavigate
+  }) {
+    const rows2 = model.priorityObjects.map((object) => ({
+      id: object.id,
+      category: object.category,
+      object: object.name,
+      state: object.state,
+      evidence: object.reason,
+      source: object.sourcePath,
+      tone: object.tone,
+      route: object.route
+    }));
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: `do-incident is-${model.verdictTone}`, "aria-labelledby": "do-incident-title", "data-desktop-incident": model.risk, children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { className: "do-incident-heading", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { "aria-hidden": "true", children: model.verdictTone === "danger" ? /* @__PURE__ */ jsxRuntimeExports.jsx(CircleAlert, { size: 22 }) : /* @__PURE__ */ jsxRuntimeExports.jsx(TriangleAlert, { size: 22 }) }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: model.risk === "resource" ? "压力采样" : "影响与来源" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { id: "do-incident-title", children: "处置证据" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { children: "先核对判断依据，再进入对应对象；此处不重复顶层结论。" })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: model.priorityTotal ? `${model.priorityTotal} 项` : "需核对" })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "do-incident-facts", "aria-label": "事故判断依据", children: model.facts.map((fact2) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `is-${fact2.tone}`, "data-desktop-incident-fact": fact2.key, children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: fact2.label }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: fact2.value }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: fact2.note || "来源见下方账本" })
+      ] }, fact2.key)) }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(
+        DesktopLedger,
+        {
+          title: "影响对象",
+          subtitle: "按判断优先级列出；每项保留详情入口和原始来源路径",
+          rows: rows2,
+          onNavigate,
+          module: "incident-objects",
+          emptyLabel: "当前没有可安全列出的对象；请按证据边界核对采集来源。"
+        }
+      )
+    ] });
+  }
+  const WIDTH = 760;
+  const HEIGHT = 260;
+  const PLOT = { left: 54, right: 18, top: 24, bottom: 42 };
+  function pathFor(points, key, peak) {
+    const width = WIDTH - PLOT.left - PLOT.right;
+    const height = HEIGHT - PLOT.top - PLOT.bottom;
+    return points.map((point, index) => {
+      const x = PLOT.left + (points.length === 1 ? width : index / (points.length - 1) * width);
+      const y = PLOT.top + height - point[key] / peak * height;
+      return `${index === 0 ? "M" : "L"}${x.toFixed(2)} ${y.toFixed(2)}`;
+    }).join(" ");
+  }
+  function timeLabel$1(timestamp) {
+    return new Intl.DateTimeFormat("zh-CN", {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: false
+    }).format(new Date(timestamp));
+  }
+  function DesktopWanEvidence({ traffic, onOpen }) {
+    const hasTrend = traffic.points.length > 0;
+    const fallbackPoint = { timestamp: Date.now(), down: 0, up: 0 };
+    const rawPeak = Math.max(1, ...traffic.points.flatMap((point) => [point.down, point.up]));
+    const downPath = pathFor(traffic.points, "down", rawPeak);
+    const upPath = pathFor(traffic.points, "up", rawPeak);
+    const first = traffic.points[0] ?? fallbackPoint;
+    const middle = traffic.points[Math.floor((traffic.points.length - 1) / 2)] ?? fallbackPoint;
+    const last = traffic.points[traffic.points.length - 1] ?? fallbackPoint;
+    const plotHeight = HEIGHT - PLOT.top - PLOT.bottom;
+    const latestX = WIDTH - PLOT.right;
+    const latestDownY = PLOT.top + plotHeight - last.down / rawPeak * plotHeight;
+    const latestUpY = PLOT.top + plotHeight - last.up / rawPeak * plotHeight;
+    const titleId = "do-wan-chart-title";
+    const descId = "do-wan-chart-desc";
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "do-wan", "aria-labelledby": "do-wan-heading", "data-desktop-wan-evidence": true, "data-sample-count": traffic.sampleCount, children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { className: "do-module-heading", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { id: "do-wan-heading", children: traffic.title }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("p", { children: [
+            traffic.windowLabel,
+            " · 统一采样窗口"
+          ] })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("button", { type: "button", onClick: onOpen, children: [
+          "流量审计",
+          /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronRight, { "aria-hidden": "true", size: 16 })
+        ] })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "do-wan-summary", "aria-label": "WAN 当前与峰值", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(ArrowDown, { "aria-hidden": "true", size: 15 }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: "当前下载" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: traffic.currentDown })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(ArrowUp, { "aria-hidden": "true", size: 15 }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: "当前上传" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: traffic.currentUp })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: "窗口峰值" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: traffic.peak })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: "采样" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("b", { children: [
+            traffic.sampleCount,
+            " 点"
+          ] })
+        ] })
+      ] }),
+      hasTrend ? /* @__PURE__ */ jsxRuntimeExports.jsxs(
+        "svg",
+        {
+          className: "do-wan-chart",
+          viewBox: `0 0 ${WIDTH} ${HEIGHT}`,
+          role: "img",
+          "aria-labelledby": `${titleId} ${descId}`,
+          preserveAspectRatio: "xMidYMid meet",
+          "data-unit": "bit/s",
+          children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("title", { id: titleId, children: "WAN 下载与上传吞吐时间序列" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("desc", { id: descId, children: traffic.accessibleSummary }),
+            [0, 0.25, 0.5, 0.75, 1].map((ratio) => {
+              const y = PLOT.top + plotHeight - ratio * plotHeight;
+              return /* @__PURE__ */ jsxRuntimeExports.jsx("line", { className: "do-chart-grid", x1: PLOT.left, x2: WIDTH - PLOT.right, y1: y, y2: y }, ratio);
+            }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("line", { className: "do-chart-axis", x1: PLOT.left, x2: PLOT.left, y1: PLOT.top, y2: HEIGHT - PLOT.bottom }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("line", { className: "do-chart-axis", x1: PLOT.left, x2: WIDTH - PLOT.right, y1: HEIGHT - PLOT.bottom, y2: HEIGHT - PLOT.bottom }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("text", { className: "do-chart-label", x: PLOT.left - 8, y: PLOT.top + 4, textAnchor: "end", children: traffic.peak }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("text", { className: "do-chart-label", x: PLOT.left - 8, y: HEIGHT - PLOT.bottom + 4, textAnchor: "end", children: "0" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("path", { className: "do-chart-line is-down", d: downPath }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("path", { className: "do-chart-line is-up", d: upPath }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("circle", { className: "do-chart-point is-down", cx: latestX, cy: latestDownY, r: "4" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("circle", { className: "do-chart-point is-up", cx: latestX, cy: latestUpY, r: "4" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("text", { className: "do-chart-time", x: PLOT.left, y: HEIGHT - 14, textAnchor: "start", children: timeLabel$1(first.timestamp) }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("text", { className: "do-chart-time", x: WIDTH / 2, y: HEIGHT - 14, textAnchor: "middle", children: timeLabel$1(middle.timestamp) }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("text", { className: "do-chart-time", x: WIDTH - PLOT.right, y: HEIGHT - 14, textAnchor: "end", children: timeLabel$1(last.timestamp) })
+          ]
+        }
+      ) : /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "do-wan-pending", role: "status", "data-traffic-accumulating": true, children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: "时间序列正在积累" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "当前上下行读数可用；至少形成一个带时间的同窗样本后才绘制趋势。" })
+      ] }),
+      hasTrend ? /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "do-wan-legend", "aria-hidden": "true", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "is-down", children: "下载" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "is-up", children: "上传" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "单位 bit/s" })
+      ] }) : null
+    ] });
   }
   function clean(value, fallback = "未记录") {
     const normalized = String(value ?? "").replace(/\s+/g, " ").trim();
@@ -8735,7 +9714,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       activeRoute: route
     };
   }
-  function VerdictIcon$1({ model }) {
+  function VerdictIcon({ model }) {
     if (model.verdictTone === "danger") return /* @__PURE__ */ jsxRuntimeExports.jsx(CircleAlert, { "aria-hidden": "true", size: 24 });
     if (model.verdictTone === "warn" || model.verdictTone === "missing") return /* @__PURE__ */ jsxRuntimeExports.jsx(TriangleAlert, { "aria-hidden": "true", size: 24 });
     return /* @__PURE__ */ jsxRuntimeExports.jsx(ShieldCheck, { "aria-hidden": "true", size: 24 });
@@ -8786,7 +9765,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
           ] }) : null,
           /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "do-status-bus", "aria-labelledby": "do-verdict-title", "data-desktop-status-bus": true, children: [
             /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `do-verdict is-${model.verdictTone}`, children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "do-verdict-icon", children: /* @__PURE__ */ jsxRuntimeExports.jsx(VerdictIcon$1, { model }) }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "do-verdict-icon", children: /* @__PURE__ */ jsxRuntimeExports.jsx(VerdictIcon, { model }) }),
               /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
                 /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: model.verdictLabel }),
                 /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { id: "do-verdict-title", tabIndex: -1, "data-panel-route-title": true, children: model.verdictTitle }),
@@ -8882,325 +9861,24 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       }
     );
   }
-  function MobileFocusObject({ object, onOpen }) {
-    return /* @__PURE__ */ jsxRuntimeExports.jsxs(
-      "button",
-      {
-        className: `mo-focus-object is-${object.tone}`,
-        type: "button",
-        onClick: onOpen,
-        "aria-label": `${object.category} ${object.name}，${object.note}，查看路由证据`,
-        "data-mobile-focus-object": object.id,
-        "data-mobile-focus-route": object.route,
-        children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "mo-focus-heading", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "mo-focus-icon", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Route, { "aria-hidden": "true", size: 20 }) }),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: object.category }),
-              /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: object.name }),
-              /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: object.note })
-            ] }),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "mo-focus-open", children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "mo-focus-open-label", children: "证据" }),
-              /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronRight, { "aria-hidden": "true", size: 18 })
-            ] })
-          ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "mo-focus-attributes", "aria-hidden": "true", children: object.attributes.map((attribute) => /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: attribute.label }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: attribute.value })
-          ] }, attribute.label)) })
-        ]
-      }
-    );
-  }
-  function PriorityIcon({ category }) {
-    if (category === "WAN") return /* @__PURE__ */ jsxRuntimeExports.jsx(WifiOff, { "aria-hidden": "true", size: 19 });
-    if (category === "接口") return /* @__PURE__ */ jsxRuntimeExports.jsx(Cable, { "aria-hidden": "true", size: 19 });
-    if (category === "系统资源") return /* @__PURE__ */ jsxRuntimeExports.jsx(Gauge, { "aria-hidden": "true", size: 19 });
-    if (category === "默认路由") return /* @__PURE__ */ jsxRuntimeExports.jsx(Route, { "aria-hidden": "true", size: 19 });
-    return /* @__PURE__ */ jsxRuntimeExports.jsx(Database, { "aria-hidden": "true", size: 19 });
-  }
-  function MobilePriorityQueue({
-    label,
-    total,
-    objects,
-    onNavigate
+  function OverviewPanel({
+    snapshot,
+    state: state2,
+    onNavigate,
+    runtimeManaged = false
   }) {
-    if (!objects.length) return null;
-    return /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "mo-priority", "aria-labelledby": "mo-priority-title", "data-mobile-priority-count": total, children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { id: "mo-priority-title", children: label }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-          total,
-          " 项"
-        ] })
-      ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mo-priority-list", children: objects.map((object) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
-        "button",
-        {
-          className: `is-${object.tone}`,
-          type: "button",
-          onClick: () => onNavigate(object.route),
-          "aria-label": `${object.category} ${object.name}，${object.state}，${object.reason}`,
-          "data-mobile-priority-object": object.id,
-          "data-mobile-priority-route": object.route,
-          "data-mobile-priority-category": object.category,
-          children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "mo-priority-icon", children: /* @__PURE__ */ jsxRuntimeExports.jsx(PriorityIcon, { category: object.category }) }),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "mo-priority-identity", children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: object.category }),
-              /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: object.name })
-            ] }),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "mo-priority-state", children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: object.state }),
-              /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: object.reason })
-            ] }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronRight, { "aria-hidden": "true", size: 18 })
-          ]
-        },
-        object.id
-      )) }),
-      total > objects.length ? /* @__PURE__ */ jsxRuntimeExports.jsxs("button", { className: "mo-priority-more", type: "button", onClick: () => onNavigate(objects[0].route), children: [
-        "查看全部 ",
-        total,
-        " 项",
-        /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronRight, { "aria-hidden": "true", size: 17 })
-      ] }) : null
-    ] });
-  }
-  const WIDTH = 320;
-  const HEIGHT = 88;
-  const PADDING_X = 10;
-  const PADDING_Y = 8;
-  function plotPoints(values, max) {
-    const width = WIDTH - PADDING_X * 2;
-    const height = HEIGHT - PADDING_Y * 2;
-    const denominator = Math.max(1, values.length - 1);
-    return values.map((value, index) => {
-      const x = PADDING_X + index / denominator * width;
-      const y = PADDING_Y + height - value / Math.max(1, max) * height;
-      return `${x.toFixed(2)},${y.toFixed(2)}`;
-    }).join(" ");
-  }
-  function clockLabel(timestamp) {
-    return new Intl.DateTimeFormat("zh-CN", {
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-      hour12: false
-    }).format(new Date(timestamp));
-  }
-  function MobileWanInstrument({ traffic, onOpen }) {
-    if (traffic.status === "accumulating") {
-      return /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "mo-instrument is-accumulating", "aria-labelledby": "mo-instrument-title", "data-mobile-traffic": "accumulating", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx(Activity, { "aria-hidden": "true", size: 18 }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { id: "mo-instrument-title", children: traffic.title })
-          ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("small", { children: [
-            "趋势累积中 · ",
-            traffic.sampleCount,
-            " 个当前样本"
-          ] })
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mo-instrument-readings", "aria-label": `当前下载 ${traffic.currentDown}，当前上传 ${traffic.currentUp}`, children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx(ArrowDown, { "aria-hidden": "true", size: 17 }),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: "当前下载" }),
-              /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: traffic.currentDown })
-            ] })
-          ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx(ArrowUp, { "aria-hidden": "true", size: 17 }),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: "当前上传" }),
-              /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: traffic.currentUp })
-            ] })
-          ] })
-        ] })
-      ] });
-    }
-    const peak = Math.max(1, ...traffic.points.flatMap((point) => [point.down, point.up]));
-    const down = plotPoints(traffic.points.map((point) => point.down), peak);
-    const up = plotPoints(traffic.points.map((point) => point.up), peak);
-    const first = traffic.points[0];
-    const last = traffic.points[traffic.points.length - 1];
-    return /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "mo-instrument", "aria-labelledby": "mo-instrument-title", "data-mobile-traffic": "ready", "data-mobile-traffic-samples": traffic.sampleCount, children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Activity, { "aria-hidden": "true", size: 18 }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { id: "mo-instrument-title", children: traffic.title })
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("button", { type: "button", onClick: onOpen, "aria-label": "查看 WAN 流量详情", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: traffic.windowLabel }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronRight, { "aria-hidden": "true", size: 17 })
-        ] })
-      ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mo-instrument-legend", "aria-hidden": "true", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "is-down", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("i", {}),
-          "当前下载 ",
-          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: traffic.currentDown })
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "is-up", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("i", {}),
-          "当前上传 ",
-          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: traffic.currentUp })
-        ] })
-      ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("svg", { className: "mo-instrument-chart", viewBox: `0 0 ${WIDTH} ${HEIGHT}`, role: "img", "aria-labelledby": "mo-chart-title mo-chart-desc", preserveAspectRatio: "none", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("title", { id: "mo-chart-title", children: "WAN 下载与上传趋势" }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("desc", { id: "mo-chart-desc", children: traffic.accessibleSummary }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("line", { className: "mo-chart-reference", x1: PADDING_X, x2: WIDTH - PADDING_X, y1: PADDING_Y, y2: PADDING_Y }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("line", { className: "mo-chart-baseline", x1: PADDING_X, x2: WIDTH - PADDING_X, y1: HEIGHT - PADDING_Y, y2: HEIGHT - PADDING_Y }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("polyline", { className: "mo-chart-down", points: down }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("polyline", { className: "mo-chart-up", points: up })
-      ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mo-instrument-scale", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: clockLabel(first.timestamp) }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-          "峰值 ",
-          traffic.peak,
-          " · ",
-          traffic.sampleCount,
-          " 点"
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: clockLabel(last.timestamp) })
-      ] })
-    ] });
-  }
-  function VerdictIcon({ tone }) {
-    if (tone === "danger") return /* @__PURE__ */ jsxRuntimeExports.jsx(CircleAlert, { "aria-hidden": "true", size: 22 });
-    if (tone === "warn" || tone === "missing") return /* @__PURE__ */ jsxRuntimeExports.jsx(TriangleAlert, { "aria-hidden": "true", size: 22 });
-    return /* @__PURE__ */ jsxRuntimeExports.jsx(ShieldCheck, { "aria-hidden": "true", size: 22 });
-  }
-  function MobileOverviewScreen({ snapshot, state: state2, onNavigate, runtimeManaged = false }) {
-    const model = reactExports.useMemo(() => buildOverviewEvidenceModel(snapshot, state2), [snapshot, state2]);
-    const incident = model.priorityObjects.length > 0;
-    const evidenceLedgerRef = reactExports.useRef(null);
-    const evidenceDefaultOpen = reactExports.useRef(model.evidenceMode === "unavailable" || typeof window !== "undefined" && window.matchMedia("(min-width: 600px) and (max-width: 899px) and (min-height: 700px)").matches);
-    reactExports.useEffect(() => {
-      if (evidenceLedgerRef.current) evidenceLedgerRef.current.open = evidenceDefaultOpen.current;
-    }, []);
-    return /* @__PURE__ */ jsxRuntimeExports.jsxs(
-      "main",
-      {
-        className: `mo-shell is-${model.verdictTone} is-${model.evidenceMode} ${incident ? "has-priority" : "has-instrument"} ${model.focusObject ? "has-focus" : ""}`,
-        "data-mobile-overview": true,
-        "data-mobile-overview-scenario": model.scenario,
-        "data-mobile-overview-risk": model.risk,
-        "data-mobile-evidence-mode": model.evidenceMode,
-        children: [
-          !runtimeManaged ? /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { className: "mo-fixture-toolbar", "data-mobile-fixture-toolbar": true, children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx(Router, { "aria-hidden": "true", size: 20 }),
-              /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-                /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: model.device }),
-                /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: model.deviceNote })
-              ] })
-            ] }),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx(LockKeyhole, { "aria-hidden": "true", size: 16 }),
-              "只读"
-            ] })
-          ] }) : null,
-          !runtimeManaged ? /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `mo-evidence is-${model.evidenceTone}`, role: "status", "data-mobile-evidence-strip": true, children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: model.evidenceLabel }),
-              /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: model.evidenceNote })
-            ] }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("time", { children: model.evidenceTime })
-          ] }) : null,
-          /* @__PURE__ */ jsxRuntimeExports.jsx("section", { className: `mo-verdict is-${model.verdictTone}`, "aria-labelledby": "mo-verdict-title", "data-mobile-verdict": true, children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mo-verdict-inner", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "mo-verdict-icon", children: /* @__PURE__ */ jsxRuntimeExports.jsx(VerdictIcon, { tone: model.verdictTone }) }),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: model.verdictLabel }),
-              /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { id: "mo-verdict-title", tabIndex: -1, "data-panel-route-title": true, children: model.verdictTitle }),
-              /* @__PURE__ */ jsxRuntimeExports.jsx("p", { children: model.verdictSummary })
-            ] })
-          ] }) }),
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mo-content", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "mo-decision", "aria-labelledby": "mo-decision-title", children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { children: [
-                /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { id: "mo-decision-title", children: "判断依据" }),
-                /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: model.evidenceLabel })
-              ] }),
-              /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mo-facts", "aria-label": "三个核心判断事实", "data-mobile-core-facts": true, children: model.facts.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `is-${item.tone}`, "data-mobile-core-fact": item.key, children: [
-                /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: item.label }),
-                /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: item.value }),
-                item.note ? /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: item.note }) : null
-              ] }, item.key)) })
-            ] }),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mo-workflow", children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx(
-                MobilePriorityQueue,
-                {
-                  label: model.priorityLabel,
-                  total: model.priorityTotal,
-                  objects: model.priorityObjects,
-                  onNavigate
-                }
-              ),
-              model.traffic ? /* @__PURE__ */ jsxRuntimeExports.jsx(MobileWanInstrument, { traffic: model.traffic, onOpen: () => onNavigate("trafficLoad") }) : null,
-              model.focusObject ? /* @__PURE__ */ jsxRuntimeExports.jsx(MobileFocusObject, { object: model.focusObject, onOpen: () => onNavigate(model.focusObject.route) }) : null
-            ] }),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs(
-              "details",
-              {
-                className: "mo-evidence-ledger",
-                "data-mobile-evidence-ledger": true,
-                ref: evidenceLedgerRef,
-                children: [
-                  /* @__PURE__ */ jsxRuntimeExports.jsxs("summary", { children: [
-                    /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "来源与边界" }),
-                    /* @__PURE__ */ jsxRuntimeExports.jsxs("small", { children: [
-                      model.evidenceRows.length,
-                      " 项"
-                    ] }),
-                    /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronDown, { "aria-hidden": "true", size: 18 })
-                  ] }),
-                  /* @__PURE__ */ jsxRuntimeExports.jsx("dl", { children: model.evidenceRows.map((row) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `is-${row.tone}`, children: [
-                    /* @__PURE__ */ jsxRuntimeExports.jsx("dt", { children: row.label }),
-                    /* @__PURE__ */ jsxRuntimeExports.jsxs("dd", { children: [
-                      /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: row.value }),
-                      /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: row.note })
-                    ] })
-                  ] }, row.key)) })
-                ]
-              }
-            )
-          ] })
-        ]
-      }
-    );
-  }
-  const MOBILE_OVERVIEW_QUERY = "(max-width: 899px)";
-  function useMobileOverview() {
-    const [mobile, setMobile] = reactExports.useState(() => typeof window !== "undefined" && window.matchMedia(MOBILE_OVERVIEW_QUERY).matches);
-    reactExports.useEffect(() => {
-      const media = window.matchMedia(MOBILE_OVERVIEW_QUERY);
-      const sync = () => setMobile(media.matches);
-      sync();
-      media.addEventListener("change", sync);
-      return () => media.removeEventListener("change", sync);
-    }, []);
-    return mobile;
-  }
-  function OverviewPanel({ snapshot, state: state2, onNavigate, runtimeManaged = false }) {
-    const mobile = useMobileOverview();
+    const mobile = useMobilePanelSurface();
     return /* @__PURE__ */ jsxRuntimeExports.jsx(
       "section",
       {
         id: "overview",
-        className: `section router-overview-framework ${mobile ? "is-mobile-overview" : "ro-desktop-console ro-desktop-hierarchy"}`,
+        className: "section router-overview-framework " + (mobile ? "is-mobile-surface" : "ro-desktop-console ro-desktop-hierarchy"),
         "data-overview-page-credibility": state2.facts.freshness.credibilityLabel,
         "data-overview-page-credibility-tone": state2.facts.freshness.credibilityTone,
         "data-overview-business-display-boundary": state2.scenario === "no-snapshot" ? "no-business-data" : "business-data",
         "data-overview-scene-key": state2.scenario,
-        children: mobile ? /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mobile-overview-mount", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-          MobileOverviewScreen,
+        children: mobile ? /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mobile-patrol-mount", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+          MobilePatrolScreen,
           {
             snapshot,
             state: state2,
@@ -9220,7 +9898,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       }
     );
   }
-  const MOBILE_CONNECTION_QUERY = "(max-width: 899px)";
+  const MOBILE_CONNECTION_QUERY = "(max-width: 1023px)";
   function useMobileConnectionSurface() {
     const [mobile, setMobile] = reactExports.useState(() => typeof window !== "undefined" && window.matchMedia(MOBILE_CONNECTION_QUERY).matches);
     reactExports.useEffect(() => {
@@ -9453,70 +10131,6 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
             }
           )
         ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("label", { className: "router-field router-field-port", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "SSH 端口" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(
-            "input",
-            {
-              name: "sshPort",
-              type: "number",
-              min: 1,
-              max: 65535,
-              inputMode: "numeric",
-              value: sshPort,
-              onChange: (event) => {
-                setSshPort(Number(event.target.value));
-                clearSavedSelection();
-              },
-              disabled: runtime.connection.busy,
-              required: true
-            }
-          )
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "router-field router-field-segmented", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "REST 协议" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "router-segmented-control", role: "group", "aria-label": "REST 协议", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("button", { type: "button", "aria-pressed": restScheme === "https", onClick: () => changeRestScheme("https"), disabled: runtime.connection.busy, children: "HTTPS" }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("button", { type: "button", "aria-pressed": restScheme === "http", onClick: () => changeRestScheme("http"), disabled: runtime.connection.busy, children: "HTTP" })
-          ] })
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("label", { className: "router-field router-field-port", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "REST 端口" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(
-            "input",
-            {
-              name: "restPort",
-              type: "number",
-              min: 1,
-              max: 65535,
-              inputMode: "numeric",
-              value: restPort,
-              onChange: (event) => {
-                setRestPort(Number(event.target.value));
-                clearSavedSelection();
-              },
-              disabled: runtime.connection.busy,
-              required: true
-            }
-          )
-        ] }),
-        restScheme === "https" ? /* @__PURE__ */ jsxRuntimeExports.jsxs("label", { className: "router-field router-field-toggle", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "证书校验" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(
-            "input",
-            {
-              name: "restVerifyTls",
-              type: "checkbox",
-              checked: restVerifyTls,
-              onChange: (event) => {
-                setRestVerifyTls(event.target.checked);
-                setInsecureRestConfirmed(false);
-                clearSavedSelection();
-              },
-              disabled: runtime.connection.busy
-            }
-          )
-        ] }) : null,
         /* @__PURE__ */ jsxRuntimeExports.jsxs("label", { className: "router-field", children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "用户名" }),
           /* @__PURE__ */ jsxRuntimeExports.jsx(
@@ -9552,6 +10166,92 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
               required: true
             }
           )
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("details", { className: "router-advanced-settings", "data-router-advanced-settings": true, children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("summary", { children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Settings2, { "aria-hidden": "true", size: 18 }),
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: "高级连接设置" }),
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("small", { children: [
+                  restScheme.toUpperCase(),
+                  " ",
+                  restPort,
+                  " · SSH ",
+                  sshPort,
+                  " · ",
+                  insecureRest ? "风险模式" : "证书校验"
+                ] })
+              ] })
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronDown, { "aria-hidden": "true", size: 18 })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "router-advanced-fields", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("label", { className: "router-field router-field-port", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "SSH 端口" }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                "input",
+                {
+                  name: "sshPort",
+                  type: "number",
+                  min: 1,
+                  max: 65535,
+                  inputMode: "numeric",
+                  value: sshPort,
+                  onChange: (event) => {
+                    setSshPort(Number(event.target.value));
+                    clearSavedSelection();
+                  },
+                  disabled: runtime.connection.busy,
+                  required: true
+                }
+              )
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "router-field router-field-segmented", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "REST 协议" }),
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "router-segmented-control", role: "group", "aria-label": "REST 协议", children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx("button", { type: "button", "aria-pressed": restScheme === "https", onClick: () => changeRestScheme("https"), disabled: runtime.connection.busy, children: "HTTPS" }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx("button", { type: "button", "aria-pressed": restScheme === "http", onClick: () => changeRestScheme("http"), disabled: runtime.connection.busy, children: "HTTP" })
+              ] })
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("label", { className: "router-field router-field-port", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "REST 端口" }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                "input",
+                {
+                  name: "restPort",
+                  type: "number",
+                  min: 1,
+                  max: 65535,
+                  inputMode: "numeric",
+                  value: restPort,
+                  onChange: (event) => {
+                    setRestPort(Number(event.target.value));
+                    clearSavedSelection();
+                  },
+                  disabled: runtime.connection.busy,
+                  required: true
+                }
+              )
+            ] }),
+            restScheme === "https" ? /* @__PURE__ */ jsxRuntimeExports.jsxs("label", { className: "router-field router-field-toggle", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "证书校验" }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                "input",
+                {
+                  name: "restVerifyTls",
+                  type: "checkbox",
+                  checked: restVerifyTls,
+                  onChange: (event) => {
+                    setRestVerifyTls(event.target.checked);
+                    setInsecureRestConfirmed(false);
+                    clearSavedSelection();
+                  },
+                  disabled: runtime.connection.busy
+                }
+              )
+            ] }) : null
+          ] })
         ] })
       ] }),
       insecureRest ? /* @__PURE__ */ jsxRuntimeExports.jsxs("label", { className: "router-risk-confirmation", children: [
@@ -9590,7 +10290,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
         /* @__PURE__ */ jsxRuntimeExports.jsx(
           "input",
           {
-            name: "rememberPassword",
+            name: "rememberProfile",
             type: "checkbox",
             checked: rememberProfile,
             onChange: (event) => setRememberProfile(event.target.checked),
@@ -9745,7 +10445,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     readonlyDiagnostics: { id: "readonlyDiagnostics", title: "只读诊断", shortTitle: "诊断", description: "明确边界内的连通性证据", taskGroup: "more" },
     more: { id: "more", title: "更多工具", shortTitle: "更多", description: "路由、DNS、安全、审计与连接工具", taskGroup: "more" }
   };
-  const PANEL_TASK_ROUTES = ["overview", "interfaces", "more"];
+  const PANEL_TASK_ROUTES = ["overview", "interfaces", "terminals", "logs"];
   function isPanelRouteId(value) {
     return typeof value === "string" && PANEL_ROUTE_IDS.includes(value);
   }
@@ -9811,13 +10511,17 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     const navigate = reactExports.useCallback((next, options) => {
       if (next === route) return;
       const state2 = { ...window.history.state || {}, panelRoute: next };
-      if (options == null ? void 0 : options.replace) window.history.replaceState(state2, "", routeUrl(next));
-      else window.history.pushState(state2, "", routeUrl(next));
+      delete state2.mobileObject;
+      const target = new URL(routeUrl(next), window.location.origin);
+      target.searchParams.delete("object");
+      const targetUrl = target.pathname + target.search + target.hash;
+      if (options == null ? void 0 : options.replace) window.history.replaceState(state2, "", targetUrl);
+      else window.history.pushState(state2, "", targetUrl);
       window.dispatchEvent(new PopStateEvent("popstate", { state: state2 }));
     }, [route]);
     return { route, navigate, definition: PANEL_ROUTES[route] };
   }
-  const MOBILE_RUNTIME_QUERY = "(max-width: 899px)";
+  const MOBILE_RUNTIME_QUERY = "(max-width: 1023px)";
   function useMobileRuntimeSurface() {
     const [mobile, setMobile] = reactExports.useState(() => typeof window !== "undefined" && window.matchMedia(MOBILE_RUNTIME_QUERY).matches);
     reactExports.useEffect(() => {
@@ -9834,7 +10538,6 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     if (phase === "current") return `当前 · ${ageText}`;
     if (phase === "refreshing") return `刷新中 · ${ageText}`;
     if (phase === "stale") return `历史证据 · ${ageText}`;
-    if (phase === "offline") return "浏览器离线";
     if (phase === "recovering") return `恢复中 · ${ageText}`;
     if (phase === "error") return "快照不可用";
     return "正在载入";
@@ -9843,20 +10546,21 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     var _a;
     const phase = phaseLabel(runtime.snapshot.phase, runtime.evidenceAgeSeconds);
     const source = (_a = runtime.snapshot.data) == null ? void 0 : _a.updatedAt;
-    if (!source || Number.isNaN(Date.parse(source))) return phase;
+    const parsed = parseRfc3339Timestamp(source);
+    if (parsed === null) return phase;
     const stamp = new Intl.DateTimeFormat("zh-CN", {
       month: "2-digit",
       day: "2-digit",
       hour: "2-digit",
       minute: "2-digit",
       hour12: false
-    }).format(new Date(source));
+    }).format(new Date(parsed));
     return `${phase} · ${stamp}`;
   }
   function RuntimeActions({ runtime }) {
     const busy = runtime.snapshot.phase === "loading" || runtime.snapshot.phase === "refreshing";
     return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "panel-runtime-actions", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("button", { type: "button", title: "立即刷新", "aria-label": "立即刷新", onClick: () => void runtime.refresh("manual"), disabled: busy || !runtime.online, children: /* @__PURE__ */ jsxRuntimeExports.jsx(RefreshCw, { className: busy ? "is-spinning" : "", size: 19, "aria-hidden": "true" }) }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("button", { type: "button", title: "立即刷新", "aria-label": "立即刷新", onClick: () => void runtime.refresh("manual"), disabled: busy, children: /* @__PURE__ */ jsxRuntimeExports.jsx(RefreshCw, { className: busy ? "is-spinning" : "", size: 19, "aria-hidden": "true" }) }),
       /* @__PURE__ */ jsxRuntimeExports.jsx("button", { type: "button", title: "设备连接", "aria-label": "设备连接", onClick: runtime.showConnection, children: /* @__PURE__ */ jsxRuntimeExports.jsx(Router, { size: 19, "aria-hidden": "true" }) })
     ] });
   }
@@ -9892,26 +10596,26 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
   }
   function PanelRuntimeNotice({ runtime }) {
     const snapshotMessage = runtime.snapshot.phase === "current" || runtime.snapshot.phase === "refreshing" ? "" : runtime.snapshot.error;
-    const message = snapshotMessage || runtime.connection.warning;
+    const browserConnectivityHint = !runtime.online ? "浏览器报告互联网不可用；本地 RouterOS 快照请求仍会继续。" : "";
+    const message = snapshotMessage || runtime.connection.warning || browserConnectivityHint;
     const showsConnectionWarning = !snapshotMessage && Boolean(runtime.connection.warning);
+    const showsConnectivityHint = !snapshotMessage && !runtime.connection.warning && Boolean(browserConnectivityHint);
     if (!message) return null;
-    const offline = runtime.snapshot.phase === "offline";
     const critical = runtime.snapshot.phase === "error" && !runtime.snapshot.data;
     return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `panel-runtime-notice ${critical ? "is-critical" : ""}`, role: critical ? "alert" : "status", children: [
-      offline ? /* @__PURE__ */ jsxRuntimeExports.jsx(CloudOff, { size: 18, "aria-hidden": "true" }) : /* @__PURE__ */ jsxRuntimeExports.jsx(CircleAlert, { size: 18, "aria-hidden": "true" }),
+      showsConnectivityHint ? /* @__PURE__ */ jsxRuntimeExports.jsx(CloudOff, { size: 18, "aria-hidden": "true" }) : /* @__PURE__ */ jsxRuntimeExports.jsx(CircleAlert, { size: 18, "aria-hidden": "true" }),
       /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: message }),
       showsConnectionWarning ? /* @__PURE__ */ jsxRuntimeExports.jsx("button", { type: "button", title: "关闭连接提示", "aria-label": "关闭连接提示", onClick: runtime.dismissWarning, children: /* @__PURE__ */ jsxRuntimeExports.jsx(X, { size: 17, "aria-hidden": "true" }) }) : null
     ] });
   }
   function PanelRuntimeEmptyState({ runtime }) {
-    const offline = runtime.snapshot.phase === "offline";
     const recovering = runtime.snapshot.phase === "loading" || runtime.snapshot.phase === "recovering" || runtime.snapshot.phase === "idle";
     return /* @__PURE__ */ jsxRuntimeExports.jsxs("main", { className: "panel-runtime-empty", "data-panel-runtime-empty": runtime.snapshot.phase, children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { "aria-hidden": "true", children: offline ? /* @__PURE__ */ jsxRuntimeExports.jsx(CloudOff, { size: 26 }) : /* @__PURE__ */ jsxRuntimeExports.jsx(RefreshCw, { className: recovering ? "is-spinning" : "", size: 26 }) }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { children: offline ? "浏览器当前离线" : recovering ? "正在建立设备快照" : "无法读取设备快照" }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { "aria-hidden": "true", children: /* @__PURE__ */ jsxRuntimeExports.jsx(RefreshCw, { className: recovering ? "is-spinning" : "", size: 26 }) }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { children: recovering ? "正在建立设备快照" : "无法读取设备快照" }),
       /* @__PURE__ */ jsxRuntimeExports.jsx("p", { children: runtime.snapshot.error || (recovering ? "连接已经验证，正在等待首个可用采集结果。" : "没有可供判断的 RouterOS 证据。") }),
       /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("button", { type: "button", onClick: () => void runtime.refresh("manual"), disabled: !runtime.online, children: "重新获取" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("button", { type: "button", onClick: () => void runtime.refresh("manual"), children: "重新获取" }),
         /* @__PURE__ */ jsxRuntimeExports.jsx("button", { type: "button", onClick: runtime.showConnection, children: "检查设备连接" })
       ] })
     ] });
@@ -9929,6 +10633,26 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     "security",
     "logs"
   ];
+  const SNAPSHOT_NESTED_RECORD_ARRAY_FIELDS = {
+    meta: ["staticEndpointFailures", "realtimeEndpointFailures", "slowRestEndpointFailures", "detailEndpointFailures"],
+    routes: ["items", "defaultRoutes", "staticRoutes", "tables"],
+    connections: ["active", "topIps", "protocolTop"],
+    dhcp: ["leases", "clients", "pools", "servers"],
+    arp: ["items", "alerts"],
+    loadBalance: ["distribution", "defaultRoutes", "mangleRules", "routingRules"],
+    dns: ["forwardRules", "ipv6Nd", "ipv6DhcpClients"],
+    security: ["filters", "alerts", "addressLists"],
+    logs: ["all", "system", "firewall", "dhcp", "dns"]
+  };
+  const SNAPSHOT_RATE_FIELDS = {
+    interfaces: ["txRate", "rxRate", "upRate", "downRate"],
+    pppoe: ["upRate", "downRate"],
+    wan: ["upRate", "downRate"],
+    terminals: ["upRate", "downRate"]
+  };
+  const CONNECTION_RATE_FIELDS = ["upRate", "downRate", "totalRate", "sessionBytes"];
+  const MAX_SNAPSHOT_COLLECTION_ROWS = 2e4;
+  const TIMESTAMP_FIELD = /^(?:updatedAt|generatedAt|sourceUpdatedAt|cachedAt|lastUsedAt|createdAt|.*UpdatedAt|.*LastErrorAt)$/;
   function isRecord$2(value) {
     return Boolean(value && typeof value === "object" && !Array.isArray(value));
   }
@@ -9938,8 +10662,79 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
   function finiteNumber(value) {
     return typeof value === "number" && Number.isFinite(value) ? value : null;
   }
+  function hasObservedOverviewValue(value) {
+    if (!isRecord$2(value)) return false;
+    const stringFields = ["identity", "version", "boardName", "architecture", "uptime", "systemTime"];
+    const numberFields = ["cpuLoad", "memoryUsage", "memoryUsedPercent", "diskUsage", "diskUsedPercent", "connectionTotal", "onlineTerminals"];
+    return stringFields.some((key) => stringValue(value[key]) !== "") || numberFields.some((key) => finiteNumber(value[key]) !== null);
+  }
+  function hasRows(value) {
+    return Array.isArray(value) && value.length > 0;
+  }
+  function hasNestedRows(value, keys) {
+    if (!isRecord$2(value)) return false;
+    return keys.some((key) => hasRows(value[key]));
+  }
+  function hasOperationalEvidenceValue(snapshot) {
+    if (hasObservedOverviewValue(snapshot.overview)) return true;
+    if (SNAPSHOT_ARRAY_FIELDS.some((field) => hasRows(snapshot[field]))) return true;
+    if (hasNestedRows(snapshot.routes, ["items", "defaultRoutes", "staticRoutes"])) return true;
+    const connections = isRecord$2(snapshot.connections) ? snapshot.connections : null;
+    const connectionTotal = connections ? finiteNumber(connections.total) : null;
+    return connectionTotal !== null && connectionTotal >= 0;
+  }
   function validTimestamp(value) {
-    return typeof value === "string" && value.trim().length > 0 && Number.isFinite(Date.parse(value));
+    return isRfc3339Timestamp(value);
+  }
+  function validateSnapshotTree(value, path, issues, depth = 0) {
+    if (depth > 8) return;
+    if (Array.isArray(value)) {
+      if (value.length > MAX_SNAPSHOT_COLLECTION_ROWS) {
+        issues.push(`${path || "snapshot"} 超过 ${MAX_SNAPSHOT_COLLECTION_ROWS} 项上限`);
+        return;
+      }
+      value.forEach((item, index) => validateSnapshotTree(item, `${path}[${index}]`, issues, depth + 1));
+      return;
+    }
+    if (!isRecord$2(value)) return;
+    Object.entries(value).forEach(([key, item]) => {
+      const nextPath = path ? `${path}.${key}` : key;
+      if (!(path === "" && key === "updatedAt") && TIMESTAMP_FIELD.test(key) && item !== null && !validTimestamp(item)) {
+        issues.push(`${nextPath} 必须是带时区的 RFC 3339 时间或 null`);
+      }
+      validateSnapshotTree(item, nextPath, issues, depth + 1);
+    });
+  }
+  function validatePercentage(source, key, path, issues) {
+    if (!(key in source) || source[key] === null) return;
+    const value = finiteNumber(source[key]);
+    if (value === null || value < 0 || value > 100) issues.push(`${path}.${key} 必须是 0–100 的有限数值`);
+  }
+  function validateRecordArrayFields(input, issues) {
+    for (const [parentKey, fields] of Object.entries(SNAPSHOT_NESTED_RECORD_ARRAY_FIELDS)) {
+      const parent = isRecord$2(input[parentKey]) ? input[parentKey] : null;
+      if (!parent) continue;
+      for (const field of fields) {
+        if (!(field in parent)) continue;
+        const value = parent[field];
+        if (!Array.isArray(value)) {
+          issues.push(`${parentKey}.${field} 必须是数组`);
+        } else if (!value.every(isRecord$2)) {
+          issues.push(`${parentKey}.${field} 每一项必须是对象`);
+        }
+      }
+    }
+  }
+  function validateNonnegativeRowNumbers(value, path, fields, issues) {
+    if (!Array.isArray(value)) return;
+    value.forEach((item, index) => {
+      if (!isRecord$2(item)) return;
+      fields.forEach((field) => {
+        if (!(field in item) || item[field] === null) return;
+        const observed = finiteNumber(item[field]);
+        if (observed === null || observed < 0) issues.push(`${path}[${index}].${field} 必须是非负有限数值或 null`);
+      });
+    });
   }
   function channelTest(value) {
     const source = isRecord$2(value) ? value : {};
@@ -9972,7 +10767,9 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     const port = finiteNumber(value.sshPort);
     const restPort = finiteNumber(value.restPort);
     const restScheme = value.restScheme === "http" ? "http" : value.restScheme === "https" ? "https" : null;
+    const updatedAt = stringValue(value.updatedAt);
     if (port === null || port < 1 || port > 65535 || restPort === null || restPort < 1 || restPort > 65535 || !restScheme) return null;
+    if (value.updatedAt !== null && typeof value.updatedAt !== "undefined" && !validTimestamp(value.updatedAt)) return null;
     return {
       configured: value.configured,
       host: stringValue(value.host),
@@ -9985,7 +10782,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       insecureRestConfirmed: value.insecureRestConfirmed === true,
       source: stringValue(value.source),
       savedId: stringValue(value.savedId),
-      updatedAt: stringValue(value.updatedAt),
+      updatedAt,
       passwordSet: value.passwordSet === true,
       lastTest: connectionTest(value.lastTest)
     };
@@ -9999,6 +10796,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     const restPort = finiteNumber(value.restPort);
     const restScheme = value.restScheme === "http" ? "http" : value.restScheme === "https" ? "https" : null;
     if (!id || !host || !user || port === null || port < 1 || port > 65535 || restPort === null || restPort < 1 || restPort > 65535 || !restScheme) return null;
+    if (!validTimestamp(value.updatedAt) || !validTimestamp(value.lastUsedAt)) return null;
     return {
       id,
       host,
@@ -10034,22 +10832,46 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     }
     for (const field of SNAPSHOT_ARRAY_FIELDS) {
       if (field in input && !Array.isArray(input[field])) issues.push(`${field} 必须是数组`);
+      if (Array.isArray(input[field]) && !input[field].every(isRecord$2)) issues.push(`${field} 每一项必须是对象`);
     }
     for (const field of SNAPSHOT_RECORD_FIELDS) {
       if (field in input && !isRecord$2(input[field])) issues.push(`${field} 必须是对象`);
     }
     const meta = isRecord$2(input.meta) ? input.meta : null;
-    if (meta && "pollSeconds" in meta && finiteNumber(meta.pollSeconds) === null) {
-      issues.push("meta.pollSeconds 必须是有限数值");
+    if (meta && "pollSeconds" in meta) {
+      const pollSeconds = finiteNumber(meta.pollSeconds);
+      if (pollSeconds === null || pollSeconds < 1 || pollSeconds > 300) issues.push("meta.pollSeconds 必须是 1–300 的有限数值");
     }
+    const overview = isRecord$2(input.overview) ? input.overview : null;
+    if (overview) {
+      validatePercentage(overview, "cpuLoad", "overview", issues);
+      validatePercentage(overview, "memoryUsage", "overview", issues);
+      validatePercentage(overview, "diskUsage", "overview", issues);
+    }
+    const connections = isRecord$2(input.connections) ? input.connections : null;
+    if (connections && "total" in connections) {
+      const total = finiteNumber(connections.total);
+      if (total === null || total < 0) issues.push("connections.total 必须是非负有限数值");
+    }
+    validateRecordArrayFields(input, issues);
+    for (const [field, rateFields] of Object.entries(SNAPSHOT_RATE_FIELDS)) {
+      validateNonnegativeRowNumbers(input[field], field, rateFields, issues);
+    }
+    const connectionRecord = isRecord$2(input.connections) ? input.connections : null;
+    if (connectionRecord) {
+      for (const field of ["active", "topIps", "protocolTop"]) {
+        validateNonnegativeRowNumbers(connectionRecord[field], `connections.${field}`, CONNECTION_RATE_FIELDS, issues);
+      }
+    }
+    validateSnapshotTree(input, "", issues);
     if (issues.length > 0) return { ok: false, kind: "malformed", issues };
     const status = stringValue(input.status).toLowerCase();
     if (status === "error" || status === "needs_config") {
       return { ok: true, kind: "error", value: input };
     }
-    const hasCoreIdentity = isRecord$2(input.meta) || isRecord$2(input.overview);
+    const hasCoreEnvelope = isRecord$2(input.meta) && isRecord$2(input.overview);
     const presentCollections = SNAPSHOT_ARRAY_FIELDS.filter((field) => Array.isArray(input[field])).length;
-    const operational = status === "ok" && validTimestamp(input.updatedAt) && hasCoreIdentity && presentCollections >= 2;
+    const operational = status === "ok" && validTimestamp(input.updatedAt) && hasCoreEnvelope && presentCollections >= 2 && hasOperationalEvidenceValue(input);
     return { ok: true, kind: operational ? "operational" : "partial", value: input };
   }
   function parseRouterLoginBootstrap(input) {
@@ -10061,7 +10883,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     return {
       routerLogin: profile,
       savedLogins: saved,
-      savePasswordAvailable: input.savePasswordAvailable === true,
+      profileStorageAvailable: input.profileStorageAvailable === true,
       csrfToken
     };
   }
@@ -10083,7 +10905,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     const candidates = [meta.realtimeUpdatedAt, meta.statusUpdatedAt, snapshot.updatedAt];
     for (const candidate of candidates) {
       if (!validTimestamp(candidate)) continue;
-      return Date.parse(String(candidate));
+      return parseRfc3339Timestamp(candidate);
     }
     return null;
   }
@@ -10093,9 +10915,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     return Math.max(2, Math.min(60, raw === null ? 5 : raw));
   }
   function snapshotHasOperationalEvidence(snapshot) {
-    return Boolean(
-      isRecord$2(snapshot.overview) || SNAPSHOT_ARRAY_FIELDS.some((field) => Array.isArray(snapshot[field]) && snapshot[field].length > 0)
-    );
+    return hasOperationalEvidenceValue(snapshot);
   }
   class PanelApiError extends Error {
     constructor(message, status = 0, code = "request_failed", payload = null) {
@@ -10169,8 +10989,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
         insecureRestConfirmed: input.insecureRestConfirmed,
         ...input.sshHostKeyFingerprint ? { sshHostKeyFingerprint: input.sshHostKeyFingerprint } : {},
         ...input.savedId ? { savedId: input.savedId } : {},
-        // Back-end compatibility name. The server stores the profile, never the password.
-        rememberPassword: input.rememberProfile
+        rememberProfile: input.rememberProfile
       })
     });
     const parsed = parseRouterLoginMutation(payload);
@@ -10300,11 +11119,6 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     const refresh = reactExports.useCallback(async (reason = "manual") => {
       var _a;
       if (connectionRef.current.phase !== "ready" || viewRef.current !== "panel") return;
-      if (typeof navigator !== "undefined" && !navigator.onLine) {
-        setOnline(false);
-        setSnapshot((current) => ({ ...current, phase: "offline", error: "浏览器当前离线" }));
-        return;
-      }
       if (snapshotControllerRef.current && reason !== "manual") return;
       (_a = snapshotControllerRef.current) == null ? void 0 : _a.abort();
       const controller = new AbortController();
@@ -10369,10 +11183,12 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
         }
       } catch (error) {
         if (controller.signal.aborted) return;
+        const browserOfflineHint = typeof navigator !== "undefined" && !navigator.onLine;
+        if (browserOfflineHint) setOnline(false);
         setSnapshot((current) => ({
           ...current,
           phase: current.data ? "recovering" : "error",
-          error: errorMessage(error),
+          error: browserOfflineHint ? "本地快照请求失败；浏览器同时报告互联网不可用（仅作提示）：" + errorMessage(error) : errorMessage(error),
           lastAttemptAt: startedAt
         }));
       } finally {
@@ -10411,7 +11227,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     reactExports.useEffect(() => {
       const onOffline = () => {
         setOnline(false);
-        setSnapshot((current) => ({ ...current, phase: "offline", error: "浏览器当前离线" }));
+        if (connectionRef.current.phase === "ready" && viewRef.current === "panel") void refresh("recovery");
       };
       const onOnline = () => {
         setOnline(true);
@@ -10560,6 +11376,89 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       ]
     );
   }
+  function timeLabel(timestamp) {
+    return new Intl.DateTimeFormat("zh-CN", {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: false
+    }).format(new Date(timestamp));
+  }
+  function linePoints(series, start, end) {
+    const duration = Math.max(1, end - start);
+    return series.points.map((point) => {
+      const x = 6 + (point.timestamp - start) / duration * 308;
+      const y = 6 + (100 - point.value) / 100 * 76;
+      return `${x.toFixed(1)},${y.toFixed(1)}`;
+    }).join(" ");
+  }
+  function SectionTimeSeriesChart({ visualization }) {
+    const id = reactExports.useId().replace(/:/g, "");
+    const points = visualization.series.flatMap((series) => series.points);
+    if (points.length < 2) return null;
+    const start = Math.min(...points.map((point) => point.timestamp));
+    const end = Math.max(...points.map((point) => point.timestamp));
+    const startLabel = timeLabel(start);
+    const endLabel = timeLabel(end);
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs("figure", { className: "section-timeseries", "data-section-time-series": true, children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("figcaption", { children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: visualization.title }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("small", { children: [
+            visualization.windowLabel,
+            " · 时间与比例尺来自同一采样窗"
+          ] })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "0–100%" })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "section-timeseries-body", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "section-timeseries-scale", "aria-hidden": "true", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: "100%" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: "50%" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: "0" })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "section-timeseries-plot", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs(
+            "svg",
+            {
+              viewBox: "0 0 320 88",
+              preserveAspectRatio: "xMidYMid meet",
+              role: "img",
+              "aria-labelledby": `${id}-title ${id}-desc`,
+              children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx("title", { id: `${id}-title`, children: visualization.title }),
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("desc", { id: `${id}-desc`, children: [
+                  visualization.accessibleSummary,
+                  "，横轴从 ",
+                  startLabel,
+                  " 到 ",
+                  endLabel,
+                  "，纵轴从 0% 到 100%。"
+                ] }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx("path", { className: "section-series-grid", d: "M6 6H314 M6 44H314 M6 82H314" }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx("path", { className: "section-series-threshold is-85", d: "M6 17.4H314" }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx("path", { className: "section-series-threshold is-90", d: "M6 13.6H314" }),
+                visualization.series.map((series) => /* @__PURE__ */ jsxRuntimeExports.jsx("polyline", { className: `section-series-line is-${series.key}`, points: linePoints(series, start, end) }, series.key))
+              ]
+            }
+          ),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "section-timeseries-axis", "aria-hidden": "true", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: startLabel }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: endLabel })
+          ] })
+        ] })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("footer", { children: visualization.series.map((series) => /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("i", { className: `is-${series.key}`, "aria-hidden": "true" }),
+        series.label,
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("small", { children: [
+          "阈值 ",
+          series.threshold,
+          "%"
+        ] })
+      ] }, series.key)) })
+    ] });
+  }
   function record(value) {
     return value && typeof value === "object" && !Array.isArray(value) ? value : {};
   }
@@ -10603,7 +11502,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     var _a;
     const mode = evidenceMode(snapshot);
     const evidenceBoundary2 = (_a = snapshot.meta) == null ? void 0 : _a.clientEvidenceBoundary;
-    const boundaryLabel = evidenceBoundary2 === "offline" ? "浏览器离线 · 历史快照" : evidenceBoundary2 ? "历史快照" : "";
+    const boundaryLabel = evidenceBoundary2 ? "历史快照" : "";
     const successAt = latestBusinessSuccessTime(snapshot);
     return {
       title: PANEL_ROUTES[route].title,
@@ -10631,6 +11530,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     };
     return {
       ...model,
+      visualization: void 0,
       metrics: [
         { label: "当前证据", value: "不可用", note: "业务数字已隐藏", tone: "danger" },
         { label: "最近成功", value: model.updatedAt || "未记录", note: "不使用尝试时间兜底", tone: model.updatedAt && model.updatedAt !== "未记录" ? "warn" : "missing" },
@@ -10642,6 +11542,47 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
         note: "当前证据不可用；未显示业务对象",
         empty: "没有可用于当前判断的业务快照"
       }))
+    };
+  }
+  function historyTimestamp(value) {
+    const numeric = number(value);
+    if (numeric !== null) return numeric < 1e12 ? numeric * 1e3 : numeric;
+    return parseRfc3339Timestamp(value);
+  }
+  function resourceVisualization(history) {
+    const timestamps = Array.isArray(history.timestamps) ? history.timestamps : [];
+    if (timestamps.length < 2) return void 0;
+    const definitions = [
+      { key: "cpu", label: "CPU", threshold: 85 },
+      { key: "memory", label: "内存", threshold: 85 },
+      { key: "disk", label: "磁盘", threshold: 90 }
+    ];
+    const series = definitions.map((definition) => {
+      const values = Array.isArray(history[definition.key]) ? history[definition.key] : [];
+      const length = Math.min(timestamps.length, values.length);
+      const points = [];
+      for (let index = 0; index < length; index += 1) {
+        const timestamp = historyTimestamp(timestamps[index]);
+        const value = number(values[index]);
+        if (timestamp !== null && value !== null && value >= 0 && value <= 100) points.push({ timestamp, value });
+      }
+      return { ...definition, unit: "%", points };
+    }).filter((item) => item.points.length >= 2);
+    if (!series.length) return void 0;
+    const allPoints = series.flatMap((item) => item.points);
+    const start = Math.min(...allPoints.map((point) => point.timestamp));
+    const end = Math.max(...allPoints.map((point) => point.timestamp));
+    const durationSeconds = Math.max(0, Math.round((end - start) / 1e3));
+    const windowLabel = durationSeconds >= 60 ? `最近 ${Math.max(1, Math.round(durationSeconds / 60))} 分钟` : `最近 ${Math.max(1, durationSeconds)} 秒`;
+    const latest = series.map((item) => `${item.label} ${item.points[item.points.length - 1].value}%`).join("，");
+    return {
+      kind: "time-series",
+      title: "资源压力时间序列",
+      windowLabel,
+      min: 0,
+      max: 100,
+      series,
+      accessibleSummary: `${windowLabel}，${latest}；CPU 和内存阈值 85%，磁盘阈值 90%。`
     };
   }
   function interfaceModel(route, snapshot) {
@@ -10748,7 +11689,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
   }
   function terminalModel(route, snapshot) {
     const items = rows(snapshot.terminals);
-    const online = items.filter((item) => item.status === "online" || item.online === true).length;
+    const online = items.filter((item) => item.online === true || /^(?:online|active|reachable|bound)$/i.test(text(item.status, ""))).length;
     const connectionValues = items.map((item) => number(item.connections));
     const connectionsComplete = items.length > 0 && connectionValues.every((value) => value !== null);
     const connections = connectionsComplete ? connectionValues.reduce((sum, value) => sum + value, 0) : null;
@@ -10818,20 +11759,22 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     const disk = number(overview.diskUsage);
     return {
       ...base(route, snapshot),
+      visualization: resourceVisualization(history),
       metrics: [
         { label: "CPU", value: cpu === null ? "未取得" : `${cpu}%`, tone: cpu === null ? "missing" : cpu >= 85 ? "danger" : "trust" },
         { label: "内存", value: memory === null ? "未取得" : `${memory}%`, tone: memory === null ? "missing" : memory >= 85 ? "danger" : "trust" },
         { label: "磁盘", value: disk === null ? "未取得" : `${disk}%`, tone: disk === null ? "missing" : disk >= 90 ? "danger" : "trust" }
       ],
-      tables: [table(route === "loadAudit" ? "资源采样序列" : "资源证据", [{ key: "series", label: "序列" }, { key: "samples", label: "样本" }, { key: "latest", label: "最近值" }, { key: "window", label: "窗口" }], series, (item) => {
+      tables: [table(route === "loadAudit" ? "资源采样摘要" : "资源证据", [{ key: "series", label: "对象" }, { key: "samples", label: "有效样本" }, { key: "latest", label: "最近值" }, { key: "range", label: "样本范围" }], series, (item) => {
         const values = Array.isArray(item.values) ? item.values : [];
+        const observed = values.map((value) => number(value)).filter((value) => value !== null && value >= 0 && value <= 100);
         return {
           series: item.key === "cpu" ? "CPU" : item.key === "memory" ? "内存" : "磁盘",
-          samples: values.map((value) => text(value)).join(" · ") || "未取得",
-          latest: values.length ? `${text(values[values.length - 1])}%` : "未取得",
-          window: `${values.length} 个采样点`
+          samples: observed.length ? `${observed.length} 个` : "未取得",
+          latest: observed.length ? `${observed[observed.length - 1]}%` : "未取得",
+          range: observed.length ? `${Math.min(...observed)}% – ${Math.max(...observed)}%` : "未取得"
         };
-      }, "当前快照没有资源采样序列", "序列只陈述采样点，不冒充带时间轴的趋势图")]
+      }, "当前快照没有资源采样记录", "没有配套时间戳时只显示样本摘要，不绘制趋势")]
     };
   }
   function connectionModel(route, snapshot) {
@@ -10848,7 +11791,16 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
         { label: "当前明细", value: String(active.length), tone: active.length ? "trust" : "missing" },
         { label: "协议分组", value: String(protocols.length), tone: protocols.length ? "trust" : "missing" }
       ],
-      tables: [table(route === "connections" ? "活动连接" : "流量对象", [{ key: "source", label: "源" }, { key: "target", label: "目标 / 协议" }, { key: "connections", label: "连接" }, { key: "traffic", label: "流量" }], source, (item) => ({ source: text(item.source || item.srcAddress || item.ip || item.name), target: text(item.destination || item.dstAddress || item.protocol || item.label), connections: text(item.connections ?? item.count, "—"), traffic: text(item.totalRate ?? item.bytes ?? item.value, "未取得") }), route === "connections" ? "当前快照没有活动连接明细" : "当前快照没有流量审计对象")]
+      tables: [table(route === "connections" ? "活动连接" : "流量对象", [{ key: "source", label: "源" }, { key: "target", label: "目标 / 协议" }, { key: "connections", label: "连接" }, { key: "traffic", label: "流量" }], source, (item) => {
+        const remote = text(item.destination || item.remoteIp || item.dstAddress || item.dst, "");
+        const protocol = text(item.protocol || item.label, "");
+        return {
+          source: text(item.source || item.localIp || item.srcAddress || item.src || item.ip || item.name),
+          target: [remote, protocol].filter(Boolean).join(" / ") || "未记录",
+          connections: text(item.connections ?? item.count, "—"),
+          traffic: text(item.totalRate ?? item.bytes ?? item.value, "未取得")
+        };
+      }, route === "connections" ? "当前快照没有活动连接明细" : "当前快照没有流量审计对象")]
     };
   }
   function dnsModel(route, snapshot) {
@@ -10949,6 +11901,594 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
   function buildSectionModel(route, snapshot) {
     return applyEvidenceBoundary(buildCurrentSectionModel(route, snapshot));
   }
+  const NETWORK_ROUTES = [
+    { route: "interfaces", label: "接口" },
+    { route: "lineStatus", label: "WAN" },
+    { route: "routes", label: "路由" },
+    { route: "connections", label: "连接" }
+  ];
+  const TERMINAL_ROUTES = [
+    { route: "terminals", label: "终端" },
+    { route: "dhcp", label: "DHCP" },
+    { route: "arp", label: "ARP" }
+  ];
+  const LOG_ROUTES = [
+    { route: "logs", label: "运行日志" },
+    { route: "serviceLogs", label: "服务日志" }
+  ];
+  const MORE_ROUTE_GROUPS = [
+    { id: "network", label: "路径与性能" },
+    { id: "services", label: "审计与服务" }
+  ];
+  const MORE_ROUTES = [
+    { route: "balance", label: "WAN 分流", group: "network" },
+    { route: "routes", label: "路由表", group: "network" },
+    { route: "connections", label: "连接跟踪", group: "network" },
+    { route: "trafficLoad", label: "资源与负载", group: "network" },
+    { route: "loadAudit", label: "负载审计", group: "network" },
+    { route: "trafficAudit", label: "流量审计", group: "services" },
+    { route: "dns4", label: "IPv4 DNS", group: "services" },
+    { route: "dns6", label: "IPv6 与 DNS", group: "services" },
+    { route: "security", label: "安全观察", group: "services" },
+    { route: "readonlyDiagnostics", label: "只读诊断", group: "services" }
+  ];
+  const DOMAIN = {
+    interfaces: {
+      icon: Cable,
+      searchable: true,
+      filters: [
+        { id: "all", label: "全部" },
+        { id: "attention", label: "异常" },
+        { id: "running", label: "运行" }
+      ]
+    },
+    terminals: {
+      icon: UsersRound,
+      searchable: true,
+      filters: [
+        { id: "all", label: "全部" },
+        { id: "online", label: "在线" },
+        { id: "attention", label: "待确认" }
+      ]
+    },
+    logs: {
+      icon: ScrollText,
+      searchable: true,
+      filters: [
+        { id: "all", label: "全部" },
+        { id: "alerts", label: "告警" },
+        { id: "system", label: "系统" }
+      ]
+    },
+    serviceLogs: {
+      icon: ScrollText,
+      searchable: true,
+      filters: [
+        { id: "all", label: "全部" },
+        { id: "alerts", label: "告警" },
+        { id: "system", label: "系统" }
+      ]
+    },
+    connections: {
+      icon: Network,
+      searchable: true,
+      filters: [
+        { id: "all", label: "全部" },
+        { id: "tcp", label: "TCP" },
+        { id: "udp", label: "UDP" }
+      ]
+    },
+    dns4: {
+      icon: Network,
+      searchable: true,
+      filters: [
+        { id: "all", label: "全部" },
+        { id: "attention", label: "异常" },
+        { id: "running", label: "启用" }
+      ]
+    },
+    dns6: {
+      icon: Network,
+      searchable: true,
+      filters: [
+        { id: "all", label: "全部" },
+        { id: "attention", label: "异常" },
+        { id: "running", label: "启用" }
+      ]
+    }
+  };
+  const DEFAULT_DOMAIN = {
+    searchable: true,
+    filters: [{ id: "all", label: "全部" }]
+  };
+  const ATTENTION_PATTERN = /未运行|停用|异常|失败|错误|警告|离线|不可用|critical|error|warning|down|offline|failed/i;
+  const RUNNING_PATTERN = /运行|在线|active|running|bound|online/i;
+  function routeTabs(route) {
+    const group = PANEL_ROUTES[route].taskGroup;
+    if (group === "terminals") return TERMINAL_ROUTES;
+    if (group === "logs") return LOG_ROUTES;
+    return NETWORK_ROUTES;
+  }
+  function routeIcon(route) {
+    if (DOMAIN[route]) return DOMAIN[route].icon;
+    const group = PANEL_ROUTES[route].taskGroup;
+    if (group === "terminals") return UsersRound;
+    if (group === "logs") return ScrollText;
+    if (route === "trafficLoad" || route === "loadAudit") return Gauge;
+    if (route === "readonlyDiagnostics") return ShieldCheck;
+    return Router;
+  }
+  function toneIcon(tone) {
+    if (tone === "danger") return CircleAlert;
+    if (tone === "warn" || tone === "missing") return TriangleAlert;
+    return ShieldCheck;
+  }
+  function shortHash(value) {
+    let hash = 0;
+    for (let index = 0; index < value.length; index += 1) {
+      hash = (hash << 5) - hash + value.charCodeAt(index) | 0;
+    }
+    return Math.abs(hash).toString(36);
+  }
+  function rowsFromModel(route, model) {
+    const result = [];
+    model.tables.forEach((table2, tableIndex) => {
+      table2.rows.forEach((values, rowIndex) => {
+        const ordered = table2.columns.map((column) => values[column.key] || "—");
+        let primary = ordered[0] || `对象 ${rowIndex + 1}`;
+        let secondary = ordered[1] || table2.title;
+        const statusColumn = table2.columns.find((column) => column.key === "status" || column.key === "topics");
+        let trailing = statusColumn ? values[statusColumn.key] || "—" : ordered[ordered.length - 1] || "—";
+        if (route === "logs" || route === "serviceLogs") {
+          primary = values.message || primary;
+          secondary = values.time || secondary;
+          trailing = values.topics || trailing;
+        } else if (route === "connections") {
+          primary = values.source || primary;
+          secondary = values.target || secondary;
+          trailing = values.traffic || trailing;
+        } else if (route === "trafficAudit") {
+          const target = values.target && values.target !== "未记录" ? values.target : "";
+          primary = target || values.source || primary;
+          secondary = values.connections && values.connections !== "—" ? `${values.connections} 个连接` : values.source || secondary;
+          trailing = values.traffic || trailing;
+        } else if (route === "security" && table2.title === "防火墙规则") {
+          const chain = values.chain && values.chain !== "—" ? values.chain : "";
+          const action = values.action && values.action !== "—" ? values.action : "";
+          primary = values.comment && !/^(?:—|未记录)$/.test(values.comment) ? values.comment : [chain, action].filter(Boolean).join(" / ") || primary;
+          secondary = [chain, action].filter(Boolean).join(" · ") || secondary;
+          trailing = values.order && !/^(?:—|未记录)$/.test(values.order) ? `#${values.order}` : action || trailing;
+        } else if (route === "security" && table2.title === "安全告警") {
+          primary = values.message || primary;
+          secondary = [values.time, values.scope].filter((value) => value && value !== "—").join(" · ") || secondary;
+          trailing = values.scope || trailing;
+        } else if (route === "dhcp" && table2.title === "地址租约") {
+          primary = values.host || primary;
+          secondary = [values.address, values.mac].filter((value) => value && value !== "—").join(" · ") || secondary;
+          trailing = values.status || trailing;
+        } else if (route === "dhcp" && table2.title === "DHCP 客户端") {
+          primary = values.interface || primary;
+          secondary = values.route && values.route !== "—" ? `默认路由 ${values.route}` : secondary;
+          trailing = values.status || trailing;
+        } else if ((route === "trafficLoad" || route === "loadAudit") && values.series) {
+          primary = values.series;
+          secondary = values.samples || secondary;
+          trailing = values.latest || trailing;
+        }
+        const identity = `${route}:${tableIndex}:${rowIndex}:${primary}`;
+        result.push({
+          id: `${route}-${tableIndex}-${rowIndex}-${shortHash(identity)}`,
+          table: table2.title,
+          columns: table2.columns,
+          values,
+          primary,
+          secondary,
+          trailing,
+          searchText: Object.values(values).join(" ").toLocaleLowerCase()
+        });
+      });
+    });
+    return result;
+  }
+  function filterMatches(filter, row) {
+    const text2 = row.searchText;
+    if (filter === "all") return true;
+    if (filter === "attention" || filter === "alerts") return ATTENTION_PATTERN.test(text2);
+    if (filter === "running" || filter === "online") {
+      return RUNNING_PATTERN.test(text2) && !ATTENTION_PATTERN.test(text2);
+    }
+    if (filter === "system") return /system|系统/i.test(text2);
+    if (filter === "tcp") return /\btcp\b/i.test(text2);
+    if (filter === "udp") return /\budp\b/i.test(text2);
+    return true;
+  }
+  function selectedObjectFromUrl() {
+    return new URLSearchParams(window.location.search).get("object") || "";
+  }
+  function objectUrl(id) {
+    const url = new URL(window.location.href);
+    if (id) url.searchParams.set("object", id);
+    else url.searchParams.delete("object");
+    return `${url.pathname}${url.search}${url.hash}`;
+  }
+  function useObjectHistory(route) {
+    const [selectedId, setSelectedId] = reactExports.useState(() => typeof window === "undefined" ? "" : selectedObjectFromUrl());
+    reactExports.useEffect(() => {
+      const sync = () => setSelectedId(selectedObjectFromUrl());
+      sync();
+      window.addEventListener("popstate", sync);
+      return () => window.removeEventListener("popstate", sync);
+    }, [route]);
+    const open = (id) => {
+      const state2 = { ...window.history.state || {}, mobileObject: id };
+      window.history.pushState(state2, "", objectUrl(id));
+      window.dispatchEvent(new PopStateEvent("popstate", { state: state2 }));
+    };
+    const close = () => {
+      var _a;
+      if (((_a = window.history.state) == null ? void 0 : _a.mobileObject) === selectedId) {
+        window.history.back();
+        return;
+      }
+      const state2 = { ...window.history.state || {} };
+      delete state2.mobileObject;
+      window.history.replaceState(state2, "", objectUrl(null));
+      window.dispatchEvent(new PopStateEvent("popstate", { state: state2 }));
+    };
+    return { selectedId, open, close };
+  }
+  function EvidenceBadge({ model }) {
+    const Icon2 = toneIcon(model.statusTone);
+    const label = model.evidenceMode === "current" ? "当前证据" : model.evidenceMode === "historical" ? "历史证据" : "证据不可用";
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: `mdw-evidence is-${model.statusTone}`, children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx(Icon2, { "aria-hidden": "true", size: 15 }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: label }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: model.updatedAt || "时间未记录" })
+      ] })
+    ] });
+  }
+  function DomainMenu({ onNavigate }) {
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs("details", { className: "mdw-more", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx("summary", { "aria-label": "更多只读工具", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Ellipsis, { "aria-hidden": "true", size: 21 }) }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { children: MORE_ROUTES.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs("button", { type: "button", "data-section": item.route, onClick: () => onNavigate(item.route), children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: item.label }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronRight, { "aria-hidden": "true", size: 16 })
+      ] }, item.route)) })
+    ] });
+  }
+  function MetricStrip({ model }) {
+    return /* @__PURE__ */ jsxRuntimeExports.jsx("section", { className: "mdw-metrics", "aria-label": "关键指标", children: model.metrics.slice(0, 3).map((metric) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `is-${metric.tone || "trust"}`, children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: metric.label }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: metric.value }),
+      metric.note ? /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: metric.note }) : null
+    ] }, metric.label)) });
+  }
+  function MobileMoreDirectory({
+    model,
+    onNavigate
+  }) {
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+      "main",
+      {
+        className: "mdw-shell mdw-directory-shell",
+        "data-mobile-domain-workspace": "more",
+        "data-mobile-evidence-mode": model.evidenceMode,
+        children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { className: "mdw-header mdw-directory-header", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mdw-title-row", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "mdw-title-icon", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Ellipsis, { "aria-hidden": "true", size: 22 }) }),
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: "只读工具目录" }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { tabIndex: -1, "data-panel-route-title": true, children: "更多工具" })
+              ] })
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("p", { children: PANEL_ROUTES.more.description })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mdw-directory-list", "aria-label": "更多只读工具", children: MORE_ROUTE_GROUPS.map((group) => /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "mdw-directory-group", "aria-labelledby": `mdw-directory-${group.id}`, children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { id: `mdw-directory-${group.id}`, children: group.label }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { children: MORE_ROUTES.filter((item) => item.group === group.id).map((item) => {
+              const ItemIcon = routeIcon(item.route);
+              return /* @__PURE__ */ jsxRuntimeExports.jsxs("button", { type: "button", "data-section": item.route, onClick: () => onNavigate(item.route), children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "mdw-directory-icon", children: /* @__PURE__ */ jsxRuntimeExports.jsx(ItemIcon, { "aria-hidden": "true", size: 19 }) }),
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "mdw-directory-copy", children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: item.label }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: PANEL_ROUTES[item.route].description })
+                ] }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronRight, { "aria-hidden": "true", size: 17 })
+              ] }, item.route);
+            }) })
+          ] }, group.id)) })
+        ]
+      }
+    );
+  }
+  function DetailPane({
+    row,
+    model,
+    route,
+    onClose,
+    titleRef
+  }) {
+    const Icon2 = routeIcon(route);
+    if (!row) {
+      return /* @__PURE__ */ jsxRuntimeExports.jsxs("aside", { className: "mdw-inspector is-empty", "aria-label": "对象检查器", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mdw-inspector-symbol", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Icon2, { "aria-hidden": "true", size: 24 }) }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "对象检查器" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { children: "从列表选择一个对象" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("p", { children: "右侧会显示该对象的完整字段、来源分组和证据边界，不会重复聚合指标。" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("dl", { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("dt", { children: "证据模式" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("dd", { children: model.evidenceMode === "current" ? "当前" : model.evidenceMode === "historical" ? "历史" : "不可用" })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("dt", { children: "对象总数" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("dd", { children: model.tables.reduce((sum, table2) => sum + table2.rows.length, 0) })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("dt", { children: "最近成功" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("dd", { children: model.updatedAt || "未记录" })
+          ] })
+        ] })
+      ] });
+    }
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs("aside", { className: "mdw-inspector has-object", "data-mobile-object-detail": row.id, "aria-labelledby": "mdw-detail-title", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("button", { type: "button", onClick: onClose, children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(ArrowLeft, { "aria-hidden": "true", size: 18 }),
+          "返回列表"
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: row.table })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mdw-detail-heading", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: /* @__PURE__ */ jsxRuntimeExports.jsx(Icon2, { "aria-hidden": "true", size: 22 }) }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("small", { children: [
+            PANEL_ROUTES[route].shortTitle,
+            "对象"
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { id: "mdw-detail-title", tabIndex: -1, ref: titleRef, children: row.primary }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { children: row.secondary })
+        ] })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("dl", { className: "mdw-detail-fields", children: row.columns.map((column) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("dt", { children: column.label }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("dd", { children: row.values[column.key] || "—" })
+      ] }, column.key)) }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("footer", { children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Server, { "aria-hidden": "true", size: 16 }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: model.evidenceMode === "current" ? "当前只读快照" : model.evidenceMode === "historical" ? "历史只读快照" : "证据不可用" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: model.status })
+        ] })
+      ] })
+    ] });
+  }
+  function MobileDomainWorkspace({
+    route,
+    snapshot,
+    onNavigate
+  }) {
+    var _a;
+    const model = reactExports.useMemo(() => buildSectionModel(route, snapshot), [route, snapshot]);
+    const allRows = reactExports.useMemo(() => rowsFromModel(route, model), [route, model]);
+    const definition = DOMAIN[route] || DEFAULT_DOMAIN;
+    const tabs = routeTabs(route);
+    const { selectedId, open, close } = useObjectHistory(route);
+    const [query, setQuery] = reactExports.useState("");
+    const [filter, setFilter] = reactExports.useState("all");
+    const [sort, setSort] = reactExports.useState("source");
+    const [page, setPage] = reactExports.useState(1);
+    const detailTitleRef = reactExports.useRef(null);
+    const lastTriggerRef = reactExports.useRef("");
+    const rowRefs = reactExports.useRef(/* @__PURE__ */ new Map());
+    reactExports.useEffect(() => {
+      setQuery("");
+      setFilter("all");
+      setSort("source");
+      setPage(1);
+    }, [route]);
+    const filtered = reactExports.useMemo(() => {
+      const needle = query.trim().toLocaleLowerCase();
+      const rows2 = allRows.filter((row) => (!needle || row.searchText.includes(needle)) && filterMatches(filter, row));
+      if (sort === "source") return rows2;
+      return [...rows2].sort((left, right) => {
+        const result = left.primary.localeCompare(right.primary, "zh-CN", { numeric: true });
+        return sort === "asc" ? result : -result;
+      });
+    }, [allRows, filter, query, sort]);
+    const pageSize = 20;
+    const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
+    const safePage = Math.min(page, pageCount);
+    const visibleRows = filtered.slice((safePage - 1) * pageSize, safePage * pageSize);
+    const selectedRow = allRows.find((row) => row.id === selectedId) || null;
+    const Icon2 = routeIcon(route);
+    reactExports.useEffect(() => {
+      if (selectedRow) {
+        window.requestAnimationFrame(() => {
+          var _a2;
+          return (_a2 = detailTitleRef.current) == null ? void 0 : _a2.focus({ preventScroll: true });
+        });
+        return;
+      }
+      if (!lastTriggerRef.current) return;
+      const trigger = rowRefs.current.get(lastTriggerRef.current);
+      window.requestAnimationFrame(() => trigger == null ? void 0 : trigger.focus({ preventScroll: true }));
+    }, [selectedRow]);
+    if (route === "more") {
+      return /* @__PURE__ */ jsxRuntimeExports.jsx(MobileMoreDirectory, { model, onNavigate });
+    }
+    const openRow = (row) => {
+      lastTriggerRef.current = row.id;
+      open(row.id);
+    };
+    const closeDetail = () => {
+      if (selectedRow) lastTriggerRef.current = selectedRow.id;
+      close();
+    };
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+      "main",
+      {
+        className: `mdw-shell ${selectedRow ? "has-selection" : ""}`,
+        "data-mobile-domain-workspace": route,
+        "data-mobile-evidence-mode": model.evidenceMode,
+        children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { className: "mdw-header", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mdw-title-row", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "mdw-title-icon", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Icon2, { "aria-hidden": "true", size: 21 }) }),
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: PANEL_ROUTES[route].taskGroup === "logs" ? "事件时间线" : PANEL_ROUTES[route].taskGroup === "terminals" ? "终端工作区" : "网络工作区" }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { tabIndex: -1, "data-panel-route-title": true, children: model.title })
+              ] }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(DomainMenu, { onNavigate })
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mdw-status-row", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(EvidenceBadge, { model }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("p", { children: model.status })
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("nav", { className: "mdw-route-switcher", "aria-label": "当前工作区分类", children: tabs.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsx(
+              "button",
+              {
+                type: "button",
+                "aria-current": route === item.route ? "page" : void 0,
+                className: route === item.route ? "is-active" : "",
+                onClick: () => onNavigate(item.route),
+                children: item.label
+              },
+              item.route
+            )) })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mdw-layout", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "mdw-list-pane", "aria-label": model.title + "对象列表", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(MetricStrip, { model }),
+              model.visualization ? /* @__PURE__ */ jsxRuntimeExports.jsx(SectionTimeSeriesChart, { visualization: model.visualization }) : null,
+              definition.searchable ? /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mdw-controls", children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("label", { className: "mdw-search", children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(Search, { "aria-hidden": "true", size: 17 }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "sr-only", children: [
+                    "搜索",
+                    model.title
+                  ] }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(
+                    "input",
+                    {
+                      type: "search",
+                      value: query,
+                      onChange: (event) => {
+                        setQuery(event.target.value);
+                        setPage(1);
+                      },
+                      placeholder: `搜索${model.title}`
+                    }
+                  ),
+                  query ? /* @__PURE__ */ jsxRuntimeExports.jsx("button", { type: "button", "aria-label": "清除搜索", onClick: () => {
+                    setQuery("");
+                    setPage(1);
+                  }, children: /* @__PURE__ */ jsxRuntimeExports.jsx(X, { "aria-hidden": "true", size: 16 }) }) : null
+                ] }),
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mdw-filter-row", children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { "aria-label": "对象筛选", children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(ListFilter, { "aria-hidden": "true", size: 16 }),
+                    definition.filters.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsx(
+                      "button",
+                      {
+                        type: "button",
+                        "aria-pressed": filter === item.id,
+                        onClick: () => {
+                          setFilter(item.id);
+                          setPage(1);
+                        },
+                        children: item.label
+                      },
+                      item.id
+                    ))
+                  ] }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsxs("label", { children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(ArrowUpDown, { "aria-hidden": "true", size: 15 }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "sr-only", children: "排序" }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsxs("select", { value: sort, onChange: (event) => setSort(event.target.value), children: [
+                      /* @__PURE__ */ jsxRuntimeExports.jsx("option", { value: "source", children: "采集顺序" }),
+                      /* @__PURE__ */ jsxRuntimeExports.jsx("option", { value: "asc", children: "名称正序" }),
+                      /* @__PURE__ */ jsxRuntimeExports.jsx("option", { value: "desc", children: "名称倒序" })
+                    ] })
+                  ] })
+                ] })
+              ] }) : null,
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mdw-list-heading", children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: filtered.length }),
+                  " 个对象"
+                ] }),
+                query || filter !== "all" ? /* @__PURE__ */ jsxRuntimeExports.jsxs("small", { children: [
+                  "已从 ",
+                  allRows.length,
+                  " 个对象中筛选"
+                ] }) : /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: model.description })
+              ] }),
+              visibleRows.length ? /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mdw-object-list", children: visibleRows.map((row) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                "button",
+                {
+                  type: "button",
+                  className: selectedId === row.id ? "is-selected" : "",
+                  "data-mobile-row-id": row.id,
+                  "aria-current": selectedId === row.id ? "true" : void 0,
+                  onClick: () => openRow(row),
+                  ref: (node) => {
+                    if (node) rowRefs.current.set(row.id, node);
+                    else rowRefs.current.delete(row.id);
+                  },
+                  children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "mdw-row-icon", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Icon2, { "aria-hidden": "true", size: 18 }) }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "mdw-row-copy", children: [
+                      /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: row.primary }),
+                      /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: row.secondary })
+                    ] }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: ATTENTION_PATTERN.test(row.searchText) ? "mdw-row-state is-attention" : "mdw-row-state", children: row.trailing }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronRight, { "aria-hidden": "true", size: 17 })
+                  ]
+                },
+                row.id
+              )) }) : /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mdw-empty", children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx(Search, { "aria-hidden": "true", size: 21 }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { children: allRows.length ? "没有匹配对象" : ((_a = model.tables[0]) == null ? void 0 : _a.empty) || "没有可显示对象" }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx("p", { children: allRows.length ? "调整搜索词或筛选条件。" : model.status }),
+                allRows.length ? /* @__PURE__ */ jsxRuntimeExports.jsx("button", { type: "button", onClick: () => {
+                  setQuery("");
+                  setFilter("all");
+                }, children: "清除筛选" }) : null
+              ] }),
+              pageCount > 1 ? /* @__PURE__ */ jsxRuntimeExports.jsxs("nav", { className: "mdw-pagination", "aria-label": "对象分页", children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("button", { type: "button", disabled: safePage <= 1, onClick: () => setPage((value) => Math.max(1, value - 1)), children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronLeft, { "aria-hidden": "true", size: 17 }),
+                  "上一页"
+                ] }),
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+                  safePage,
+                  " / ",
+                  pageCount
+                ] }),
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("button", { type: "button", disabled: safePage >= pageCount, onClick: () => setPage((value) => Math.min(pageCount, value + 1)), children: [
+                  "下一页",
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronRight, { "aria-hidden": "true", size: 17 })
+                ] })
+              ] }) : null
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(
+              DetailPane,
+              {
+                row: selectedRow,
+                model,
+                route,
+                onClose: closeDetail,
+                titleRef: detailTitleRef
+              }
+            )
+          ] })
+        ]
+      }
+    );
+  }
   const READONLY_DESTINATIONS = [
     { label: "采集状态", route: "readonlyDiagnostics" },
     { label: "DNS 状态", route: "dns4" },
@@ -11008,6 +12548,8 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     ] });
   }
   function OperationalSectionPage({ route, snapshot, onNavigate }) {
+    const mobile = useMobilePanelSurface();
+    if (mobile) return /* @__PURE__ */ jsxRuntimeExports.jsx(MobileDomainWorkspace, { route, snapshot, onNavigate });
     if (route === "more") return /* @__PURE__ */ jsxRuntimeExports.jsx(MorePage, { onNavigate });
     const model = buildSectionModel(route, snapshot);
     const timeLabel2 = model.evidenceMode === "current" ? "业务成功" : model.evidenceMode === "historical" ? "上次成功" : "成功时间";
@@ -11036,6 +12578,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
           metric.note ? /* @__PURE__ */ jsxRuntimeExports.jsx("em", { children: metric.note }) : null
         ] })
       ] }, metric.label)) }),
+      model.visualization ? /* @__PURE__ */ jsxRuntimeExports.jsx(SectionTimeSeriesChart, { visualization: model.visualization }) : null,
       route === "readonlyDiagnostics" ? /* @__PURE__ */ jsxRuntimeExports.jsx("nav", { className: "readonly-feature-nav", "aria-label": "只读状态入口", children: READONLY_DESTINATIONS.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs("button", { className: "readonly-feature-link", type: "button", "data-section": item.route, onClick: () => onNavigate(item.route), children: [
         /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: item.label }),
         /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronRight, { "aria-hidden": "true", size: 17 })
@@ -11050,28 +12593,43 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       ] })
     ] });
   }
-  const ICONS = { overview: Gauge, interfaces: Cable, more: Menu };
-  const LABELS = { overview: "运行", interfaces: "网络", more: "工具" };
-  function PanelTaskNavigation({ route, onNavigate }) {
-    const taskGroup = PANEL_ROUTES[route].taskGroup;
-    const selected = taskGroup === "terminals" || taskGroup === "logs" ? "more" : taskGroup;
-    return /* @__PURE__ */ jsxRuntimeExports.jsx("nav", { className: "panel-task-navigation", "aria-label": "手机主要任务", children: PANEL_TASK_ROUTES.map((task) => {
-      const Icon2 = ICONS[task];
-      const active = task === selected;
+  const ITEMS = {
+    overview: { label: "概览", icon: Gauge },
+    interfaces: { label: "网络", icon: Cable },
+    terminals: { label: "终端", icon: UsersRound },
+    logs: { label: "日志", icon: ScrollText }
+  };
+  function selectedDestination(route) {
+    if (route === "overview") return "overview";
+    const group = PANEL_ROUTES[route].taskGroup;
+    if (group === "interfaces") return "interfaces";
+    if (group === "terminals") return "terminals";
+    if (group === "logs") return "logs";
+    return null;
+  }
+  function PanelTaskNavigation({
+    route,
+    onNavigate
+  }) {
+    const selected = selectedDestination(route);
+    return /* @__PURE__ */ jsxRuntimeExports.jsx("nav", { className: "panel-task-navigation", "aria-label": "手机主要任务", children: PANEL_TASK_ROUTES.map((destination) => {
+      const item = ITEMS[destination];
+      const Icon2 = item.icon;
+      const active = destination === selected;
       return /* @__PURE__ */ jsxRuntimeExports.jsxs(
         "button",
         {
           type: "button",
           className: active ? "is-active" : "",
           "aria-current": active ? "page" : void 0,
-          "data-section": task,
-          onClick: () => onNavigate(task),
+          "data-section": destination,
+          onClick: () => onNavigate(destination),
           children: [
             /* @__PURE__ */ jsxRuntimeExports.jsx(Icon2, { "aria-hidden": "true", size: 20, strokeWidth: 1.8 }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: LABELS[task] })
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: item.label })
           ]
         },
-        task
+        destination
       );
     }) });
   }
@@ -11116,7 +12674,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     if (runtime.view === "connection" || runtime.connection.phase !== "ready") {
       return /* @__PURE__ */ jsxRuntimeExports.jsx(RouterConnectionScreen, { runtime });
     }
-    const runtimeBoundary = runtime.snapshot.phase === "stale" || runtime.snapshot.phase === "offline" || runtime.snapshot.phase === "recovering" || runtime.snapshot.phase === "error" ? runtime.snapshot.phase : null;
+    const runtimeBoundary = runtime.snapshot.phase === "stale" || runtime.snapshot.phase === "recovering" || runtime.snapshot.phase === "error" ? runtime.snapshot.phase : null;
     const boundedSnapshot = runtime.snapshot.data && runtimeBoundary ? {
       ...runtime.snapshot.data,
       meta: {
@@ -11134,122 +12692,22 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     if (typeof snapshot !== "undefined") return /* @__PURE__ */ jsxRuntimeExports.jsx(StaticSnapshotApp, { snapshot, options });
     return /* @__PURE__ */ jsxRuntimeExports.jsx(LivePanelRuntime, { options });
   }
-  const mountedPanels = /* @__PURE__ */ new WeakMap();
-  function isHTMLElement(value) {
-    return Boolean(value && value instanceof HTMLElement);
-  }
-  function restoreLegacyChildren(container, state2) {
-    if (state2.unmounted) return;
-    state2.unmounted = true;
-    state2.root.unmount();
-    container.replaceChildren(...state2.preservedChildren);
-  }
-  function mountPanel(container, snapshot, options = {}) {
-    var _a;
-    const existing = mountedPanels.get(container);
-    if (existing) {
-      restoreLegacyChildren(container, existing);
-      mountedPanels.delete(container);
-    }
-    const preserveLegacyFallback = options.preserveLegacyFallback ?? true;
-    const preservedChildren = preserveLegacyFallback ? Array.from(container.childNodes) : [];
-    const host = document.createElement("div");
-    let root = null;
-    host.id = options.hostId ?? "router-overview-panel-root";
-    host.className = options.hostClassName ?? "router-overview-panel-root";
-    host.dataset.routerOverviewPanelHost = "framework";
-    container.replaceChildren(host);
-    try {
-      root = clientExports.createRoot(host);
-      root.render(reactExports.createElement(PanelFrameworkApp, { snapshot, options: options.deriveOptions }));
-      const state2 = {
-        root,
-        host,
-        preservedChildren,
-        preserveLegacyFallback,
-        unmounted: false
-      };
-      mountedPanels.set(container, state2);
-      return {
-        container,
-        host,
-        snapshot,
-        options: Object.freeze({ ...options, preserveLegacyFallback }),
-        unmount: () => unmountPanel(container)
-      };
-    } catch (error) {
-      root == null ? void 0 : root.unmount();
-      if (preserveLegacyFallback) {
-        container.replaceChildren(...preservedChildren);
-      } else {
-        container.replaceChildren();
-      }
-      (_a = options.onError) == null ? void 0 : _a.call(options, error);
-      throw error;
-    }
-  }
-  function unmountPanel(container) {
-    const state2 = mountedPanels.get(container);
-    if (!state2) return;
-    mountedPanels.delete(container);
-    if (state2.preserveLegacyFallback) {
-      restoreLegacyChildren(container, state2);
-      return;
-    }
-    if (!state2.unmounted) {
-      state2.unmounted = true;
-      state2.root.unmount();
-    }
-    container.replaceChildren();
-  }
-  function mountRouterOverviewPanel(container, snapshot, options = {}) {
-    if (!isHTMLElement(container)) {
-      throw new TypeError("mountRouterOverviewPanel(container, snapshot, options) requires an HTMLElement container");
-    }
-    return mountPanel(container, snapshot, options);
-  }
-  function unmountRouterOverviewPanel(container) {
-    if (!isHTMLElement(container)) return;
-    unmountPanel(container);
-  }
-  if (typeof window !== "undefined") {
-    window.mountRouterOverviewPanel = mountRouterOverviewPanel;
-    window.unmountRouterOverviewPanel = unmountRouterOverviewPanel;
-    window.dispatchEvent(new CustomEvent("router-overview-panel-framework-ready"));
-  }
-  let autoMountStarted = false;
-  let autoMountHandle = null;
+  let root = null;
   function resolveTestSnapshot() {
     const testWindow = window;
-    if (typeof testWindow.__PANEL_TEST_SNAPSHOT__ !== "undefined") {
-      return testWindow.__PANEL_TEST_SNAPSHOT__;
-    }
-    return void 0;
+    return typeof testWindow.__PANEL_TEST_SNAPSHOT__ === "undefined" ? void 0 : testWindow.__PANEL_TEST_SNAPSHOT__;
   }
-  function mountAutoPanel(snapshot) {
-    if (autoMountHandle) return;
+  function mountPanel() {
+    if (root) return;
     const app = document.getElementById("app");
-    if (!app) return;
-    autoMountHandle = mountRouterOverviewPanel(app, snapshot, {
-      preserveLegacyFallback: false
-    });
-    window.dispatchEvent(new CustomEvent("router-overview-panel-framework-auto-mounted"));
+    if (!app) throw new Error("RouterOS panel root #app is missing");
+    root = clientExports.createRoot(app);
+    root.render(/* @__PURE__ */ jsxRuntimeExports.jsx(PanelFrameworkApp, { snapshot: resolveTestSnapshot() }));
+    window.dispatchEvent(new CustomEvent("router-panel-mounted"));
   }
-  function startAutoMount() {
-    if (autoMountStarted) return;
-    autoMountStarted = true;
-    mountAutoPanel(resolveTestSnapshot());
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", mountPanel, { once: true });
+  } else {
+    mountPanel();
   }
-  if (typeof window !== "undefined") {
-    const run = () => startAutoMount();
-    if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", run, { once: true });
-    } else {
-      run();
-    }
-  }
-  exports.mountRouterOverviewPanel = mountRouterOverviewPanel;
-  exports.unmountRouterOverviewPanel = unmountRouterOverviewPanel;
-  Object.defineProperty(exports, Symbol.toStringTag, { value: "Module" });
-  return exports;
-})({});
+})();

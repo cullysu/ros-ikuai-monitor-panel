@@ -738,13 +738,15 @@ def assert_deploy_defaults_are_project_safe():
 
 def assert_frontend_charts_skip_missing_values():
     index_source = (ROOT / "public" / "index.html").read_text(encoding="utf-8")
-    evidence_source = (ROOT / "src" / "panel-framework" / "overview" / "evidence-model" / "buildOverviewEvidenceModel.ts").read_text(encoding="utf-8")
+    evidence_model_source = (ROOT / "src" / "panel-framework" / "overview" / "evidence-model" / "buildOverviewEvidenceModel.ts").read_text(encoding="utf-8")
+    instrument_source = (ROOT / "src" / "panel-framework" / "overview" / "evidence-model" / "buildOverviewInstruments.ts").read_text(encoding="utf-8")
+    evidence_source = evidence_model_source + "\n" + instrument_source
     chart_source = (ROOT / "src" / "panel-framework" / "overview" / "desktop-overview" / "DesktopWanEvidence.tsx").read_text(encoding="utf-8")
     assert 'data-overview-framework-asset="script"' in index_source
     assert 'if (value === null || value === undefined || value === "") return null;' in evidence_source
     assert "if (rowDown === null || rowUp === null) return null;" in evidence_source
     assert "if (timestamp !== null && pointDown !== null && pointUp !== null)" in evidence_source
-    assert "if (!closeObservation(last.down, rates.down) || !closeObservation(last.up, rates.up)) return currentTrafficInstrument(rates);" in evidence_source
+    assert "if (!closeObservation(last.down, rates.down) || !closeObservation(last.up, rates.up)) return currentTrafficInstrument(rates, title);" in evidence_source
     assert 'status: "accumulating"' in evidence_source
     assert "Number(value || 0)" not in evidence_source
     assert "Number(item || 0)" not in evidence_source
@@ -760,13 +762,16 @@ def assert_frontend_charts_skip_missing_values():
 
 def assert_frontend_wan_aggregate_default():
     index_source = (ROOT / "public" / "index.html").read_text(encoding="utf-8")
-    evidence_source = (ROOT / "src" / "panel-framework" / "overview" / "evidence-model" / "buildOverviewEvidenceModel.ts").read_text(encoding="utf-8")
+    evidence_model_source = (ROOT / "src" / "panel-framework" / "overview" / "evidence-model" / "buildOverviewEvidenceModel.ts").read_text(encoding="utf-8")
+    instrument_source = (ROOT / "src" / "panel-framework" / "overview" / "evidence-model" / "buildOverviewInstruments.ts").read_text(encoding="utf-8")
+    evidence_source = evidence_model_source + "\n" + instrument_source
     screen_source = (ROOT / "src" / "panel-framework" / "overview" / "desktop-overview" / "DesktopOverviewScreen.tsx").read_text(encoding="utf-8")
     assert "const rows = wanRows(snapshot).filter" in evidence_source
     assert "down += rowDown;" in evidence_source
     assert "up += rowUp;" in evidence_source
     assert "if (!rows.length) return null;" in evidence_source
-    assert "if (mode !== \"current\" || risk !== \"none\") return null;" in evidence_source
+    assert "if (mode !== \"current\" || (risk !== \"none\" && risk !== \"interfaces\")) return null;" in evidence_source
+    assert "不证明 Down 接口无影响" in evidence_source
     assert "const showTraffic = !incident && state.scale !== \"fleet\" && Boolean(model.traffic);" in screen_source
     assert '<DesktopWanEvidence traffic={model.traffic}' in screen_source
     assert "WAN 趋势证据未形成" in screen_source
@@ -779,10 +784,12 @@ def assert_router_login_profiles_never_persist_passwords():
     index_source = (ROOT / "public" / "index.html").read_text(encoding="utf-8")
     app_source = (ROOT / "app.py").read_text(encoding="utf-8")
     profile_store_source = (ROOT / "panel_backend" / "config_store.py").read_text(encoding="utf-8")
-    checkbox_marker = '<input id="routerLoginRememberPassword" name="rememberPassword" type="checkbox">'
-    if checkbox_marker in index_source:
-        assert '<input id="routerLoginRememberPassword" name="rememberPassword" type="checkbox" checked>' not in index_source
-        assert "routerLoginRememberPasswordEl ? routerLoginRememberPasswordEl.checked : false" in index_source
+    connection_source = (ROOT / "src" / "panel-framework" / "connection" / "RouterConnectionScreen.tsx").read_text(encoding="utf-8")
+    api_source = (ROOT / "src" / "panel-framework" / "runtime" / "panelApi.ts").read_text(encoding="utf-8")
+    assert 'name="rememberProfile"' in connection_source
+    assert 'name="rememberPassword"' not in connection_source
+    assert "rememberProfile: input.rememberProfile" in api_source
+    assert "rememberPassword: input.rememberProfile" not in api_source
     assert "restore_last_saved_router_login" not in app_source
     assert 'password = saved_entry.get("password")' not in app_source
     assert '"password": password,' not in app_source
@@ -838,7 +845,7 @@ def assert_router_login_profiles_never_persist_passwords():
 def assert_frontend_handles_partial_snapshots():
     index_source = (ROOT / "public" / "index.html").read_text(encoding="utf-8")
     framework_shell = (
-        'data-app-shell="ikuai"' in index_source
+        '<main id="app"' in index_source
         and 'data-overview-framework-asset="script"' in index_source
     )
     if framework_shell:
@@ -997,6 +1004,34 @@ def assert_connection_evidence_parser_contract():
     assert collector.normalize_dns_static_rows([[{"name": "one"}], {"name": "two"}], limit=1) == [{"name": "one"}]
 
 
+def assert_dhcp_client_rows_preserved():
+    rest = copy.deepcopy(app.EMPTY_REST_BUNDLE)
+    rest["dhcp_clients"] = [
+        {
+            "interface": "ether1",
+            "status": "bound",
+            "use-peer-dns": "true",
+            "add-default-route": "true",
+            "default-route-distance": "1",
+            "dhcp-options": "hostname",
+            "disabled": "false",
+        }
+    ]
+    payload = app.Collector.build_dhcp(None, rest)
+    assert payload["clients"] == [
+        {
+            "interface": "ether1",
+            "status": "bound",
+            "usePeerDns": True,
+            "addDefaultRoute": True,
+            "defaultRouteDistance": "1",
+            "dhcpOptions": "hostname",
+            "disabled": False,
+        }
+    ], payload
+    assert payload["meta"]["clients"]["actualCount"] == 1, payload["meta"]
+
+
 def main():
     assert_wan_model_combines_pppoe_and_dhcp_lines()
     assert_dns_static_count_meta()
@@ -1016,6 +1051,7 @@ def main():
     assert_health_findings_distinguishes_quality_display_values()
     assert_localhost_host_forward_guard_supports_routeros_container()
     assert_connection_evidence_parser_contract()
+    assert_dhcp_client_rows_preserved()
     print(
         json.dumps(
             {
@@ -1039,6 +1075,7 @@ def main():
                     "health findings distinguish cumulative totals, latest deltas, numeric loss rates, and unknown loss-rate displays",
                     "RouterOS Container localhost Host-forward guard allows client-local tunnels without allowing direct veth/LAN browser hosts",
                     "connection and DNS evidence normalization is isolated, deduplicated, and IPv4/IPv6 aware",
+                    "DHCP client rows survive collector normalization with route and DNS flags",
                 ],
             },
             ensure_ascii=False,

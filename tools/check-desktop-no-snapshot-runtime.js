@@ -71,10 +71,6 @@ function removeQuietly(item) {
   try { fs.rmSync(resolved, { recursive: true, force: true }); } catch {}
 }
 
-function delay(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
 function runOnce(url) {
   return new Promise((resolve, reject) => {
     const jsonArtifact = outputStem === defaultOutputStem ? defaultOutputFiles.json : `${outputStem}.json`;
@@ -133,22 +129,11 @@ async function main() {
   });
 
   const url = `http://127.0.0.1:${server.address().port}/`;
-  let lastError;
-  for (let attempt = 1; attempt <= 4; attempt += 1) {
-    try {
-      if (attempt > 1) {
-        console.log(`[desktop-no-snapshot] retry (${attempt}/4)`);
-        await delay(1800 + attempt * 700);
-      }
-      await runOnce(url);
-      server.close();
-      return;
-    } catch (error) {
-      lastError = error;
-    }
+  try {
+    await runOnce(url);
+  } finally {
+    await new Promise((resolve) => server.close(resolve));
   }
-  server.close();
-  throw lastError;
 }
 
 main().catch((error) => {

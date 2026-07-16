@@ -130,18 +130,19 @@ try {
   }
   else {
     $indexText = Get-Content -Raw -LiteralPath $indexPath
-    $frameworkShell = (
-      $indexText -match 'data-app-shell="ikuai"' -and
-      $indexText -match '<div\s+class="app ik-shell"(?:\s|>)' -and
+    $reactShell = (
+      $indexText -match '<main\s+id="app"(?:\s|>)' -and
+      $indexText -notmatch 'data-app-shell="ikuai"' -and
+      $indexText -notmatch '<div\s+class="app ik-shell"(?:\s|>)' -and
       $indexText -match 'data-overview-framework-asset="style"' -and
       $indexText -match 'data-overview-framework-asset="script"'
     )
     $frameworkAssetsPresent = (Test-Path -LiteralPath $frameworkStylePath) -and (Test-Path -LiteralPath $frameworkScriptPath)
-    if ($frameworkShell -and $frameworkAssetsPresent) {
-      Add-Check "PASS" "frontend framework assets" "Framework shell markers and framework asset files are present in public assets."
+    if ($reactShell -and $frameworkAssetsPresent) {
+      Add-Check "PASS" "frontend framework assets" "The React application root and framework asset files are present without legacy shell markers."
     }
     else {
-      Add-Check "FAIL" "frontend framework assets" "Framework shell markers or framework asset files are missing from public assets."
+      Add-Check "FAIL" "frontend framework assets" "The React application root or framework assets are missing, or retired legacy shell markers remain."
     }
   }
 

@@ -1,4 +1,4 @@
-@media (min-width: 900px) {
+@media (min-width: 1024px) {
   .do-shell,
   .do-shell * {
     box-sizing: border-box;
@@ -397,6 +397,25 @@
     max-height: 300px;
     padding: 4px 8px 0;
     background: linear-gradient(180deg, #fbfdfe, #f4f8f9);
+  }
+  .do-wan-pending {
+    display: grid;
+    gap: 6px;
+    place-content: center;
+    min-height: 194px;
+    padding: 24px;
+    color: var(--do-muted);
+    background: linear-gradient(180deg, #fbfdfe, #f4f8f9);
+    text-align: center;
+  }
+  .do-wan-pending b {
+    color: var(--do-ink);
+    font-size: 14px;
+  }
+  .do-wan-pending span {
+    max-width: 440px;
+    font-size: 12px;
+    line-height: 1.45;
   }
   .do-chart-grid {
     stroke: #d8e3e6;

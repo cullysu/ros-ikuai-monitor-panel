@@ -21,6 +21,7 @@ export interface OverviewPriorityObject {
   tone: OverviewTone;
   route: PanelRouteId;
   sourcePath: string;
+  attributes: Array<{ label: string; value: string }>;
 }
 
 export interface OverviewFocusObject {
@@ -52,6 +53,29 @@ export interface OverviewTrafficInstrument {
   accessibleSummary: string;
 }
 
+export interface OverviewResourcePoint {
+  timestamp: number;
+  cpu: number;
+  memory: number;
+  disk: number;
+}
+
+export interface OverviewResourceMetric {
+  key: "cpu" | "memory" | "disk";
+  label: string;
+  value: number;
+  threshold: number;
+}
+
+export interface OverviewResourceInstrument {
+  status: "ready" | "accumulating";
+  windowLabel: string;
+  sampleCount: number;
+  metrics: [OverviewResourceMetric, OverviewResourceMetric, OverviewResourceMetric];
+  points: OverviewResourcePoint[];
+  accessibleSummary: string;
+}
+
 export interface OverviewEvidenceRow {
   key: string;
   label: string;
@@ -77,8 +101,10 @@ export interface OverviewEvidenceModel {
   facts: [OverviewEvidenceFact, OverviewEvidenceFact, OverviewEvidenceFact];
   priorityLabel: string;
   priorityObjects: OverviewPriorityObject[];
+  priorityObjectsAll: OverviewPriorityObject[];
   priorityTotal: number;
   focusObject: OverviewFocusObject | null;
   traffic: OverviewTrafficInstrument | null;
+  resource: OverviewResourceInstrument | null;
   evidenceRows: OverviewEvidenceRow[];
 }

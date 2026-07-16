@@ -2,11 +2,13 @@ import { useEffect, useState, type FormEvent } from "react";
 import {
   ArrowLeft,
   Check,
+  ChevronDown,
   CircleAlert,
   Fingerprint,
   LoaderCircle,
   LockKeyhole,
   Router,
+  Settings2,
   ShieldCheck,
   Trash2,
 } from "lucide-react";
@@ -15,7 +17,7 @@ import type { PanelRuntimeController } from "../runtime/usePanelRuntime";
 import type { RouterChannelTest, SavedRouterLogin } from "../runtime/panelRuntimeSchema";
 import "./router-connection.css";
 
-const MOBILE_CONNECTION_QUERY = "(max-width: 899px)";
+const MOBILE_CONNECTION_QUERY = "(max-width: 1023px)";
 
 function useMobileConnectionSurface(): boolean {
   const [mobile, setMobile] = useState(() => typeof window !== "undefined" && window.matchMedia(MOBILE_CONNECTION_QUERY).matches);
@@ -243,53 +245,6 @@ function ConnectionForm({ runtime, compact = false }: { runtime: PanelRuntimeCon
             required
           />
         </label>
-        <label className="router-field router-field-port">
-          <span>SSH 端口</span>
-          <input
-            name="sshPort"
-            type="number"
-            min={1}
-            max={65535}
-            inputMode="numeric"
-            value={sshPort}
-            onChange={(event) => { setSshPort(Number(event.target.value)); clearSavedSelection(); }}
-            disabled={runtime.connection.busy}
-            required
-          />
-        </label>
-        <div className="router-field router-field-segmented">
-          <span>REST 协议</span>
-          <div className="router-segmented-control" role="group" aria-label="REST 协议">
-            <button type="button" aria-pressed={restScheme === "https"} onClick={() => changeRestScheme("https")} disabled={runtime.connection.busy}>HTTPS</button>
-            <button type="button" aria-pressed={restScheme === "http"} onClick={() => changeRestScheme("http")} disabled={runtime.connection.busy}>HTTP</button>
-          </div>
-        </div>
-        <label className="router-field router-field-port">
-          <span>REST 端口</span>
-          <input
-            name="restPort"
-            type="number"
-            min={1}
-            max={65535}
-            inputMode="numeric"
-            value={restPort}
-            onChange={(event) => { setRestPort(Number(event.target.value)); clearSavedSelection(); }}
-            disabled={runtime.connection.busy}
-            required
-          />
-        </label>
-        {restScheme === "https" ? (
-          <label className="router-field router-field-toggle">
-            <span>证书校验</span>
-            <input
-              name="restVerifyTls"
-              type="checkbox"
-              checked={restVerifyTls}
-              onChange={(event) => { setRestVerifyTls(event.target.checked); setInsecureRestConfirmed(false); clearSavedSelection(); }}
-              disabled={runtime.connection.busy}
-            />
-          </label>
-        ) : null}
         <label className="router-field">
           <span>用户名</span>
           <input
@@ -317,6 +272,67 @@ function ConnectionForm({ runtime, compact = false }: { runtime: PanelRuntimeCon
             required
           />
         </label>
+        <details className="router-advanced-settings" data-router-advanced-settings>
+          <summary>
+            <span>
+              <Settings2 aria-hidden="true" size={18} />
+              <span>
+                <b>高级连接设置</b>
+                <small>{restScheme.toUpperCase()} {restPort} · SSH {sshPort} · {insecureRest ? "风险模式" : "证书校验"}</small>
+              </span>
+            </span>
+            <ChevronDown aria-hidden="true" size={18} />
+          </summary>
+          <div className="router-advanced-fields">
+            <label className="router-field router-field-port">
+              <span>SSH 端口</span>
+              <input
+                name="sshPort"
+                type="number"
+                min={1}
+                max={65535}
+                inputMode="numeric"
+                value={sshPort}
+                onChange={(event) => { setSshPort(Number(event.target.value)); clearSavedSelection(); }}
+                disabled={runtime.connection.busy}
+                required
+              />
+            </label>
+            <div className="router-field router-field-segmented">
+              <span>REST 协议</span>
+              <div className="router-segmented-control" role="group" aria-label="REST 协议">
+                <button type="button" aria-pressed={restScheme === "https"} onClick={() => changeRestScheme("https")} disabled={runtime.connection.busy}>HTTPS</button>
+                <button type="button" aria-pressed={restScheme === "http"} onClick={() => changeRestScheme("http")} disabled={runtime.connection.busy}>HTTP</button>
+              </div>
+            </div>
+            <label className="router-field router-field-port">
+              <span>REST 端口</span>
+              <input
+                name="restPort"
+                type="number"
+                min={1}
+                max={65535}
+                inputMode="numeric"
+                value={restPort}
+                onChange={(event) => { setRestPort(Number(event.target.value)); clearSavedSelection(); }}
+                disabled={runtime.connection.busy}
+                required
+              />
+            </label>
+            {restScheme === "https" ? (
+              <label className="router-field router-field-toggle">
+                <span>证书校验</span>
+                <input
+                  name="restVerifyTls"
+                  type="checkbox"
+                  checked={restVerifyTls}
+                  onChange={(event) => { setRestVerifyTls(event.target.checked); setInsecureRestConfirmed(false); clearSavedSelection(); }}
+                  disabled={runtime.connection.busy}
+                />
+              </label>
+            ) : null}
+          </div>
+        </details>
       </section>
 
       {insecureRest ? (
@@ -352,7 +368,7 @@ function ConnectionForm({ runtime, compact = false }: { runtime: PanelRuntimeCon
 
       <label className="router-remember-row">
         <input
-          name="rememberPassword"
+          name="rememberProfile"
           type="checkbox"
           checked={rememberProfile}
           onChange={(event) => setRememberProfile(event.target.checked)}

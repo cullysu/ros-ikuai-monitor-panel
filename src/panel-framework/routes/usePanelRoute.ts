@@ -54,8 +54,12 @@ export function usePanelRoute() {
   const navigate = useCallback((next: PanelRouteId, options?: { replace?: boolean }) => {
     if (next === route) return;
     const state = { ...(window.history.state || {}), panelRoute: next };
-    if (options?.replace) window.history.replaceState(state, "", routeUrl(next));
-    else window.history.pushState(state, "", routeUrl(next));
+    delete state.mobileObject;
+    const target = new URL(routeUrl(next), window.location.origin);
+    target.searchParams.delete("object");
+    const targetUrl = target.pathname + target.search + target.hash;
+    if (options?.replace) window.history.replaceState(state, "", targetUrl);
+    else window.history.pushState(state, "", targetUrl);
     window.dispatchEvent(new PopStateEvent("popstate", { state }));
   }, [route]);
 

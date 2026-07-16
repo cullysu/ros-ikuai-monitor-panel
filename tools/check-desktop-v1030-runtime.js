@@ -66,25 +66,22 @@ function removeQuietly(item) {
   try { fs.rmSync(resolved, { recursive: true, force: true }); } catch {}
 }
 
-function delay(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-function runOnce(url) {
+function runOnce(url, section) {
   return new Promise((resolve, reject) => {
-    const jsonFile = resolveArtifact(`${outputStem}.json`);
-    const pngFile = resolveArtifact(`${outputStem}.png`);
+    const suffix = section === 'desktopV1030' ? '' : `-${section}`;
+    const jsonFile = resolveArtifact(`${outputStem}${suffix}.json`);
+    const pngFile = resolveArtifact(`${outputStem}${suffix}.png`);
     removeQuietly(jsonFile);
     removeQuietly(pngFile);
     const child = spawn(process.execPath, [
       '--max-old-space-size=2048',
       'tools/check-resource-trend-balance.js',
       '--url', url,
-      '--section', 'desktopV1030',
+      '--section', section,
       '--width', '1528',
       '--height', '980',
-      '--json', `${outputStem}.json`,
-      '--png', `${outputStem}.png`,
+      '--json', path.relative(root, jsonFile),
+      '--png', path.relative(root, pngFile),
       '--wait', '3600'
     ], {
       cwd: root,
@@ -104,7 +101,7 @@ function runOnce(url) {
         if (report.pass !== true) {
           throw new Error(`desktop v1030 report did not pass: ${JSON.stringify(report)}`);
         }
-        console.log(`[desktop-v1030] PASS evidenceDisclosure=${report.rawEvidenceDisclosureProductized === true}`);
+        console.log(`[desktop-v1030] PASS section=${section} samples=${report.desktopOverviewLedgerProbe?.chartEvidence?.samples || 0} accumulating=${report.accumulatingStateOk === true}`);
       } catch (error) {
         resultError = error;
       }
@@ -126,22 +123,12 @@ async function main() {
   });
 
   const url = `http://127.0.0.1:${server.address().port}/`;
-  let lastError;
-  for (let attempt = 1; attempt <= 4; attempt += 1) {
-    try {
-      if (attempt > 1) {
-        console.log(`[desktop-v1030] retry (${attempt}/4)`);
-        await delay(1800 + attempt * 700);
-      }
-      await runOnce(url);
-      server.close();
-      return;
-    } catch (error) {
-      lastError = error;
-    }
+  try {
+    await runOnce(url, 'desktopV1030');
+    await runOnce(url, 'desktopTrafficAccumulating');
+  } finally {
+    await new Promise((resolve) => server.close(resolve));
   }
-  server.close();
-  throw lastError;
 }
 
 main().catch((error) => {

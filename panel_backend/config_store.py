@@ -3,9 +3,9 @@ import hashlib
 import json
 import os
 import threading
-import time
 from pathlib import Path
 
+from .time_contract import is_rfc3339_timestamp, utc_now_rfc3339
 from .router_transport import (
     normalize_rest_port,
     normalize_rest_scheme,
@@ -23,7 +23,13 @@ ROUTER_PROFILE_STORE_WARNING = (
 
 
 def _now():
-    return time.strftime("%Y-%m-%d %H:%M:%S")
+    return utc_now_rfc3339()
+
+
+class RouterProfileStoreCorruptError(ValueError):
+    def __init__(self, path, message):
+        self.path = Path(path)
+        super().__init__(f"Router profile store is corrupt: {message}")
 
 
 class RouterProfileStore:
@@ -60,6 +66,10 @@ class RouterProfileStore:
             return None
         if not user:
             return None
+        for timestamp_key in ("createdAt", "updatedAt", "lastUsedAt"):
+            timestamp = raw.get(timestamp_key)
+            if timestamp is not None and not is_rfc3339_timestamp(timestamp):
+                return None
         now = _now()
         entry_id = str(raw.get("id") or self.entry_id(host, user, ssh_port)).strip()
         return {
@@ -78,23 +88,27 @@ class RouterProfileStore:
         }
 
     def load_unlocked(self):
-        try:
-            if not self.path.exists():
-                return []
-            payload = json.loads(self.path.read_text(encoding="utf-8-sig"))
-            source = payload.get("entries", []) if isinstance(payload, dict) else []
-            entries = []
-            seen = set()
-            for raw in source:
-                entry = self.normalize_entry(raw)
-                if not entry or entry["id"] in seen:
-                    continue
-                seen.add(entry["id"])
-                entries.append(entry)
-            entries.sort(key=lambda row: str(row.get("lastUsedAt") or row.get("updatedAt") or ""), reverse=True)
-            return entries[: self.history_limit]
-        except Exception:
+        if not self.path.exists():
             return []
+        try:
+            payload = json.loads(self.path.read_text(encoding="utf-8-sig"))
+        except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+            raise RouterProfileStoreCorruptError(self.path, str(exc)) from exc
+        if not isinstance(payload, dict) or not isinstance(payload.get("entries"), list):
+            raise RouterProfileStoreCorruptError(self.path, "root object or entries array is invalid")
+
+        entries = []
+        seen = set()
+        for index, raw in enumerate(payload["entries"]):
+            entry = self.normalize_entry(raw)
+            if not entry:
+                raise RouterProfileStoreCorruptError(self.path, f"entry {index} is invalid")
+            if entry["id"] in seen:
+                continue
+            seen.add(entry["id"])
+            entries.append(entry)
+        entries.sort(key=lambda row: str(row.get("lastUsedAt") or row.get("updatedAt") or ""), reverse=True)
+        return entries[: self.history_limit]
 
     def persist_unlocked(self, entries):
         self.path.parent.mkdir(parents=True, exist_ok=True)

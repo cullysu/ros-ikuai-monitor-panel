@@ -20,7 +20,7 @@ import {
 } from "./panelRuntimeSchema";
 
 export type PanelConnectionPhase = "checking" | "unconfigured" | "ready" | "error";
-export type PanelSnapshotPhase = "idle" | "loading" | "current" | "refreshing" | "stale" | "offline" | "error" | "recovering";
+export type PanelSnapshotPhase = "idle" | "loading" | "current" | "refreshing" | "stale" | "error" | "recovering";
 export type PanelRuntimeView = "panel" | "connection";
 
 export interface PanelConnectionState {
@@ -172,12 +172,6 @@ export function usePanelRuntime(): PanelRuntimeController {
 
   const refresh = useCallback(async (reason: "manual" | "poll" | "recovery" | "initial" = "manual") => {
     if (connectionRef.current.phase !== "ready" || viewRef.current !== "panel") return;
-    if (typeof navigator !== "undefined" && !navigator.onLine) {
-      setOnline(false);
-      setSnapshot((current) => ({ ...current, phase: "offline", error: "浏览器当前离线" }));
-      return;
-    }
-
     if (snapshotControllerRef.current && reason !== "manual") return;
     snapshotControllerRef.current?.abort();
     const controller = new AbortController();
@@ -249,10 +243,14 @@ export function usePanelRuntime(): PanelRuntimeController {
       }
     } catch (error) {
       if (controller.signal.aborted) return;
+      const browserOfflineHint = typeof navigator !== "undefined" && !navigator.onLine;
+      if (browserOfflineHint) setOnline(false);
       setSnapshot((current) => ({
         ...current,
         phase: current.data ? "recovering" : "error",
-        error: errorMessage(error),
+        error: browserOfflineHint
+          ? "本地快照请求失败；浏览器同时报告互联网不可用（仅作提示）：" + errorMessage(error)
+          : errorMessage(error),
         lastAttemptAt: startedAt,
       }));
     } finally {
@@ -292,7 +290,7 @@ export function usePanelRuntime(): PanelRuntimeController {
   useEffect(() => {
     const onOffline = () => {
       setOnline(false);
-      setSnapshot((current) => ({ ...current, phase: "offline", error: "浏览器当前离线" }));
+      if (connectionRef.current.phase === "ready" && viewRef.current === "panel") void refresh("recovery");
     };
     const onOnline = () => {
       setOnline(true);

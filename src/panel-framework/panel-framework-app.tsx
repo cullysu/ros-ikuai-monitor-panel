@@ -77,7 +77,7 @@ function LivePanelRuntime({ options }: { options?: DeriveOverviewOptions }) {
     return <RouterConnectionScreen runtime={runtime} />;
   }
 
-  const runtimeBoundary = runtime.snapshot.phase === "stale" || runtime.snapshot.phase === "offline" || runtime.snapshot.phase === "recovering" || runtime.snapshot.phase === "error"
+  const runtimeBoundary = runtime.snapshot.phase === "stale" || runtime.snapshot.phase === "recovering" || runtime.snapshot.phase === "error"
     ? runtime.snapshot.phase
     : null;
   const boundedSnapshot = runtime.snapshot.data && runtimeBoundary

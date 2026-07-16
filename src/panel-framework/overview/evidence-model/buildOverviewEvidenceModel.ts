@@ -1,5 +1,4 @@
 import {
-  formatRate,
   isSnapshotUnavailable,
   latestBusinessSuccessTime,
   shortTimestamp,
@@ -9,6 +8,13 @@ import {
   type OverviewRawWanRow,
   type OverviewTone,
 } from "../index";
+import {
+  buildResourceInstrument,
+  buildTrafficInstrument,
+  CPU_THRESHOLD,
+  DISK_THRESHOLD,
+  MEMORY_THRESHOLD,
+} from "./buildOverviewInstruments";
 import type {
   OverviewEvidenceMode,
   OverviewEvidenceRow,
@@ -17,13 +23,7 @@ import type {
   OverviewEvidenceRisk,
   OverviewFocusObject,
   OverviewPriorityObject,
-  OverviewTrafficInstrument,
-  OverviewTrafficPoint,
 } from "./overviewEvidenceTypes";
-
-const CPU_THRESHOLD = 85;
-const MEMORY_THRESHOLD = 85;
-const DISK_THRESHOLD = 90;
 
 function clean(value: unknown, fallback = "未记录"): string {
   const normalized = String(value ?? "").replace(/\s+/g, " ").trim();
@@ -230,16 +230,16 @@ function verdictFor(state: OverviewDerivedState, mode: OverviewEvidenceMode, ris
   if (risk === "evidence") return { label: "判断边界", title: "当前业务状态不可判断", summary: "没有可用于当前判断的业务快照。", tone: "danger" as OverviewTone };
   if (risk === "collection") {
     const partial = state.facts.collection.rest.status === "current" || state.facts.collection.ssh.status === "current";
-    return { label: "证据已降级", title: partial ? "采集通道部分可用" : "当前变化不可见", summary: "历史记录只用于恢复对照，不代表当前业务状态。", tone: "warn" as OverviewTone };
+    return { label: "证据已降级", title: partial ? "采集通道部分可用" : "当前变化不可见", summary: "仅保留历史对照；不代表当前业务。", tone: "warn" as OverviewTone };
   }
-  if (risk === "wan") return { label: "出口中断", title: `全部 ${state.facts.wan.total} 条 WAN 未运行`, summary: "没有核实到活动默认路由；先检查链路、认证与上游。", tone: "danger" as OverviewTone };
-  if (risk === "resource") return { label: "资源压力", title: "资源策略已触发", summary: "持续样本达到策略条件；未由资源值推断网络已经中断。", tone: "danger" as OverviewTone };
-  if (risk === "interfaces") return { label: "转发对象异常", title: `${state.facts.interfaces.down} 个接口未运行`, summary: route ? "活动默认路由仍有记录；优先核对受影响接口。" : "活动默认路由无法按当前证据核实。", tone: "danger" as OverviewTone };
-  if (risk === "route") return { label: "出口证据不完整", title: "默认路由无法核实", summary: "WAN 有运行记录，但没有明确的活动默认路由。", tone: "warn" as OverviewTone };
+  if (risk === "wan") return { label: "出口中断", title: `全部 ${state.facts.wan.total} 条 WAN 未运行`, summary: "无活动默认路由；先查链路、认证与上游。", tone: "danger" as OverviewTone };
+  if (risk === "resource") return { label: "资源压力", title: "资源策略已触发", summary: "资源超限已持续；不推断网络中断。", tone: "danger" as OverviewTone };
+  if (risk === "interfaces") return { label: "转发对象异常", title: `${state.facts.interfaces.down} 个接口未运行`, summary: route ? "默认路由仍有记录；先核对 Down 接口。" : "当前证据无法核实默认路由。", tone: "danger" as OverviewTone };
+  if (risk === "route") return { label: "出口证据不完整", title: "默认路由无法核实", summary: "WAN 有记录；无明确活动默认路由。", tone: "warn" as OverviewTone };
   return {
     label: state.scale === "fleet" ? "多对象巡检" : "当前运行判断",
     title: "出口路径已核实",
-    summary: "活动默认路由与 WAN 运行记录一致；未执行外部业务连通性探测。",
+    summary: "默认路由与 WAN 一致；未探测外部业务。",
     tone: "trust" as OverviewTone,
   };
 }
@@ -254,10 +254,15 @@ function collectionObjects(state: OverviewDerivedState): OverviewPriorityObject[
     category: "采集通道",
     name,
     state: channel.label,
-    reason: channel.error ? "当前尝试记录了错误" : "没有明确成功记录",
+    reason: channel.error ? clean(channel.error) : "没有明确成功记录",
     tone: channel.status === "unavailable" ? "missing" as OverviewTone : "danger" as OverviewTone,
     route: "readonlyDiagnostics" as const,
     sourcePath: source,
+    attributes: [
+      { label: "通道状态", value: channel.label },
+      { label: "最近成功", value: channel.successAt ? shortTimestamp(channel.successAt) : "未记录" },
+      { label: "错误记录", value: channel.error ? clean(channel.error) : "未记录" },
+    ],
   }));
   return rows.length ? rows : [{
     id: "collection:boundary",
@@ -268,6 +273,11 @@ function collectionObjects(state: OverviewDerivedState): OverviewPriorityObject[
     tone: "warn",
     route: "readonlyDiagnostics",
     sourcePath: "meta.clientEvidenceBoundary",
+    attributes: [
+      { label: "REST", value: state.facts.collection.rest.label },
+      { label: "SSH", value: state.facts.collection.ssh.label },
+      { label: "业务证据", value: "仅作历史参考" },
+    ],
   }];
 }
 
@@ -278,13 +288,13 @@ function priorityObjectsFor(
 ): { total: number; rows: OverviewPriorityObject[] } {
   if (risk === "evidence" || risk === "collection") {
     const rows = collectionObjects(state);
-    return { total: rows.length, rows: rows.slice(0, 3) };
+    return { total: rows.length, rows };
   }
   if (risk === "wan") {
     const rows = wanRows(snapshot).filter((row) => row.running === false);
     return {
       total: rows.length,
-      rows: rows.slice(0, 3).map((row, index) => ({
+      rows: rows.map((row, index) => ({
         id: `wan:${index}:${clean(row.name || row.interface)}`,
         category: "WAN",
         name: clean(row.name || row.interface, `WAN ${index + 1}`),
@@ -293,6 +303,11 @@ function priorityObjectsFor(
         tone: "danger",
         route: "lineStatus",
         sourcePath: `wan[${index}]`,
+        attributes: [
+          { label: "父接口", value: clean(row.parent) },
+          { label: "接入方式", value: clean(row.access) },
+          { label: "地址", value: clean(row.address) },
+        ],
       })),
     };
   }
@@ -300,7 +315,7 @@ function priorityObjectsFor(
     const rows = (snapshot.interfaces || []).filter((row) => row.running === false);
     return {
       total: rows.length,
-      rows: rows.slice(0, 3).map((row, index) => ({
+      rows: rows.map((row, index) => ({
         id: `interface:${index}:${clean(row.name || row.interface)}`,
         category: "接口",
         name: clean(row.name || row.interface, `接口 ${index + 1}`),
@@ -309,6 +324,11 @@ function priorityObjectsFor(
         tone: "danger",
         route: "interfaces",
         sourcePath: `interfaces[${(snapshot.interfaces || []).indexOf(row)}]`,
+        attributes: [
+          { label: "父级", value: clean(row.parent || row.master) },
+          { label: "类型", value: clean(row.type || row.role) },
+          { label: "VLAN", value: clean(row.vlan || row.vlanId) },
+        ],
       })),
     };
   }
@@ -320,11 +340,16 @@ function priorityObjectsFor(
         id: "resource:system",
         category: "系统资源",
         name: clean(state.facts.device.identity, "RouterOS"),
-        state: `CPU ${Math.round(state.facts.resource.cpu)}% · 内存 ${Math.round(state.facts.resource.memory)}% · 磁盘 ${Math.round(state.facts.resource.disk)}%`,
-        reason: samples.observed ? `阈值 ${CPU_THRESHOLD}/${MEMORY_THRESHOLD}/${DISK_THRESHOLD}% · 尾部连续 ${samples.trailing} 个` : "阈值策略已触发；连续样本未取得",
+        state: samples.trailing ? "持续超限" : "策略命中",
+        reason: samples.observed ? "检查连接压力、接口吞吐与原始采样" : "检查资源对象与采集完整性",
         tone: "danger",
         route: "trafficLoad",
         sourcePath: "overview + overview.history",
+        attributes: [
+          { label: "连接总量", value: finite(snapshot.connections?.total) === null ? "未记录" : Number(snapshot.connections?.total).toLocaleString("zh-CN") },
+          { label: "尾部连续", value: samples.observed ? `${samples.trailing} 个` : "未取得" },
+          { label: "有效样本", value: samples.observed ? `${samples.observed} 个` : "未取得" },
+        ],
       }],
     };
   }
@@ -339,6 +364,11 @@ function priorityObjectsFor(
       tone: "warn",
       route: "routes",
       sourcePath: "routes.defaultRoutes",
+      attributes: [
+        { label: "默认路由记录", value: `${defaultRoutes(snapshot).length} 条` },
+        { label: "WAN 运行", value: `${state.facts.wan.online} / ${state.facts.wan.total}` },
+        { label: "活动标记", value: "未发现 active=true" },
+      ],
     }],
   };
   return { total: 0, rows: [] };
@@ -366,93 +396,6 @@ function focusObjectFor(
   };
 }
 
-function timestampOf(value: unknown): number | null {
-  const numeric = finite(value);
-  if (numeric !== null) return numeric < 1e12 ? numeric * 1000 : numeric;
-  if (typeof value !== "string") return null;
-  const parsed = Date.parse(value);
-  return Number.isFinite(parsed) ? parsed : null;
-}
-
-function currentRates(snapshot: OverviewRawSnapshot): { down: number; up: number } | null {
-  const rows = wanRows(snapshot).filter((row) => row.running !== false && row.disabled !== true);
-  if (!rows.length) return null;
-  let down = 0;
-  let up = 0;
-  for (const row of rows) {
-    const rowDown = finite(row.downRate);
-    const rowUp = finite(row.upRate);
-    if (rowDown === null || rowUp === null) return null;
-    down += rowDown;
-    up += rowUp;
-  }
-  return { down, up };
-}
-
-function closeObservation(left: number, right: number): boolean {
-  return Math.abs(left - right) <= Math.max(1, Math.abs(right) * 0.01);
-}
-
-function currentTrafficInstrument(
-  rates: { down: number; up: number },
-  points: OverviewTrafficPoint[] = [],
-): OverviewTrafficInstrument {
-  const currentDown = formatRate(rates.down);
-  const currentUp = formatRate(rates.up);
-  const peak = Math.max(rates.down, rates.up);
-  return {
-    status: "accumulating",
-    title: "WAN 双向吞吐",
-    windowLabel: "当前采样",
-    sampleCount: points.length,
-    points,
-    currentDown,
-    currentUp,
-    peak: formatRate(peak),
-    accessibleSummary: `当前完整 WAN 观测，下载 ${currentDown}，上传 ${currentUp}；尚无足够同窗样本形成趋势。`,
-  };
-}
-
-function trafficInstrument(snapshot: OverviewRawSnapshot, mode: OverviewEvidenceMode, risk: OverviewEvidenceRisk): OverviewTrafficInstrument | null {
-  if (mode !== "current" || risk !== "none") return null;
-  const rates = currentRates(snapshot);
-  if (!rates) return null;
-  const history = snapshot.overview?.history || {};
-  const timestamps = Array.isArray(history.timestamps) ? history.timestamps : [];
-  const down = Array.isArray(history.downlink) ? history.downlink : [];
-  const up = Array.isArray(history.uplink) ? history.uplink : [];
-  const length = Math.min(timestamps.length, down.length, up.length);
-  const points: OverviewTrafficPoint[] = [];
-  for (let offset = length; offset > 0; offset -= 1) {
-    const timestamp = timestampOf(timestamps[timestamps.length - offset]);
-    const pointDown = finite(down[down.length - offset]);
-    const pointUp = finite(up[up.length - offset]);
-    if (timestamp !== null && pointDown !== null && pointUp !== null) points.push({ timestamp, down: pointDown, up: pointUp });
-  }
-  if (!points.length) return currentTrafficInstrument(rates);
-  const last = points[points.length - 1];
-  if (!closeObservation(last.down, rates.down) || !closeObservation(last.up, rates.up)) return currentTrafficInstrument(rates);
-  const snapshotAt = timestampOf(snapshot.updatedAt);
-  const maxAge = Math.max(120_000, Number(snapshot.meta?.pollSeconds || 5) * 3000);
-  if (snapshotAt !== null && Math.abs(snapshotAt - last.timestamp) > maxAge) return currentTrafficInstrument(rates);
-  const durationSeconds = Math.max(0, Math.round((last.timestamp - points[0].timestamp) / 1000));
-  const windowLabel = durationSeconds >= 60 ? `最近 ${Math.max(1, Math.round(durationSeconds / 60))} 分钟` : `最近 ${Math.max(1, durationSeconds)} 秒`;
-  const peak = Math.max(...points.flatMap((point) => [point.down, point.up]), rates.down, rates.up);
-  const status = points.length >= 2 ? "ready" as const : "accumulating" as const;
-  const currentDown = formatRate(rates.down);
-  const currentUp = formatRate(rates.up);
-  return {
-    status,
-    title: "WAN 双向吞吐",
-    windowLabel,
-    sampleCount: points.length,
-    points,
-    currentDown,
-    currentUp,
-    peak: formatRate(peak),
-    accessibleSummary: `${windowLabel}，${points.length} 个当前样本，最新下载 ${currentDown}，最新上传 ${currentUp}，窗口峰值 ${formatRate(peak)}。`,
-  };
-}
 
 function evidenceRows(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): OverviewEvidenceRow[] {
   const target = clean(snapshot.meta?.routerHost || snapshot.meta?.target);
@@ -489,10 +432,12 @@ export function buildOverviewEvidenceModel(snapshot: OverviewRawSnapshot, state:
     verdictTone: verdict.tone,
     facts: factsFor(snapshot, state, mode, risk, route),
     priorityLabel: priority.total ? "优先处理" : "",
-    priorityObjects: priority.rows,
+    priorityObjects: priority.rows.slice(0, 3),
+    priorityObjectsAll: priority.rows,
     priorityTotal: priority.total,
     focusObject: focusObjectFor(mode, risk, route),
-    traffic: trafficInstrument(snapshot, mode, risk),
+    traffic: buildTrafficInstrument(snapshot, mode, risk),
+    resource: buildResourceInstrument(snapshot, state, risk),
     evidenceRows: evidenceRows(snapshot, state),
   };
 }

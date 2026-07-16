@@ -30,7 +30,8 @@ from panel_backend.api_schema import (
 )
 from panel_backend.collector_transport import RouterCollectorTransport
 from panel_backend.collector_evidence import ConnectionEvidenceParser
-from panel_backend.config_store import RouterProfileStore
+from panel_backend.config_store import RouterProfileStore, RouterProfileStoreCorruptError
+from panel_backend.time_contract import unix_timestamp_rfc3339, utc_now_rfc3339
 from panel_backend.router_transport import (
     PinnedHostKeyPolicy,
     SshHostKeyConfirmationRequired,
@@ -1131,7 +1132,7 @@ def connection_detail_sleep_seconds(elapsed):
 
 
 def format_iso_now():
-    return time.strftime("%Y-%m-%d %H:%M:%S")
+    return utc_now_rfc3339()
 
 
 def parse_ping_latency_ms(output):
@@ -2705,7 +2706,7 @@ def file_mtime_summary(path):
         return {
             "path": str(Path(path)),
             "exists": True,
-            "mtime": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(stat.st_mtime)),
+            "mtime": unix_timestamp_rfc3339(stat.st_mtime),
             "size": stat.st_size,
         }
     except Exception as exc:
@@ -4260,11 +4261,25 @@ class Collector:
             }
             for item in rest["dhcp_servers"]
         ]
+        clients = [
+            {
+                "interface": item.get("interface", "-"),
+                "status": item.get("status", "-"),
+                "usePeerDns": to_bool(item.get("use-peer-dns")),
+                "addDefaultRoute": to_bool(item.get("add-default-route")),
+                "defaultRouteDistance": item.get("default-route-distance", "-"),
+                "dhcpOptions": item.get("dhcp-options", ""),
+                "disabled": to_bool(item.get("disabled")),
+            }
+            for item in rest.get("dhcp_clients", [])
+        ]
+        clients.sort(key=lambda row: (row["disabled"], row["status"] != "bound", row["interface"]))
         visible_leases = leases[:120]
         return {
             "pools": pools,
             "leases": visible_leases,
             "servers": servers,
+            "clients": clients,
             "meta": {
                 "leases": list_scale_meta(
                     len(leases),
@@ -4277,6 +4292,7 @@ class Collector:
                 ),
                 "pools": list_scale_meta(len(pools), len(pools), sampled=False),
                 "servers": list_scale_meta(len(servers), len(servers), sampled=False),
+                "clients": list_scale_meta(len(clients), len(clients), sampled=False),
             },
         }
 
@@ -5181,7 +5197,11 @@ class Collector:
         return payload
 
 
-sanitize_router_login_store_passwords()
+ROUTER_PROFILE_STORE_ERROR = ""
+try:
+    sanitize_router_login_store_passwords()
+except RouterProfileStoreCorruptError as exc:
+    ROUTER_PROFILE_STORE_ERROR = str(exc)
 collector = Collector()
 
 
@@ -5338,12 +5358,21 @@ class Handler(BaseHTTPRequestHandler):
             if not session:
                 return
         if parsed.path == "/api/router-login":
+            try:
+                saved_logins = public_saved_router_logins()
+            except RouterProfileStoreCorruptError as exc:
+                return self.send_json_error(
+                    "RouterOS 连接配置文件损坏；原文件已保留，请检查后重试。",
+                    status=500,
+                    code="router_profile_store_corrupt",
+                    detail=str(exc),
+                )
             return self.send_json(
                 {
                     "ok": True,
                     "routerLogin": public_router_config(),
-                    "savedLogins": public_saved_router_logins(),
-                    "savePasswordAvailable": True,
+                    "savedLogins": saved_logins,
+                    "profileStorageAvailable": True,
                     "csrfToken": session.get("csrf"),
                 }
             )

@@ -8,9 +8,9 @@ const files = [
   "src/panel-framework/overview/desktop-overview/styles/desktop-overview-tokens.css",
   "src/panel-framework/overview/desktop-overview/styles/desktop-overview.css",
   "src/panel-framework/overview/desktop-overview/styles/desktop-overview-responsive.css",
-  "src/panel-framework/overview/mobile-overview/styles/mobile-overview-tokens.css",
-  "src/panel-framework/overview/mobile-overview/styles/mobile-overview.css",
-  "src/panel-framework/overview/mobile-overview/styles/mobile-overview-responsive.css",
+  "src/panel-framework/mobile/mobile-patrol.css",
+  "src/panel-framework/mobile/mobile-domain.css",
+  "src/panel-framework/sections/section-timeseries.css",
 ];
 
 function indent(depth) {

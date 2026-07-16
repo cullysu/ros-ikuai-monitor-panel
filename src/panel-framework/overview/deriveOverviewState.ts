@@ -1,3 +1,4 @@
+import { parseRfc3339Timestamp } from "../timeContract";
 import type {
   DeriveOverviewOptions,
   OverviewCollectionState,
@@ -68,8 +69,8 @@ export function formatDurationCompact(seconds: unknown): string {
 
 export function shortTimestamp(value: unknown): string {
   if (!value) return "-";
-  const parsed = Date.parse(String(value));
-  if (Number.isNaN(parsed)) return "-";
+  const parsed = parseRfc3339Timestamp(value);
+  if (parsed === null) return "-";
   const date = new Date(parsed);
   const pad = (n: number) => String(n).padStart(2, "0");
   return `${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
@@ -162,8 +163,10 @@ export function latestBusinessSuccessTime(snapshot: OverviewRawSnapshot): string
 
 function latestTimestamp(values: Array<string | undefined>): string {
   return values.reduce<string>((latest, value) => {
-    if (!value || Number.isNaN(Date.parse(value))) return latest;
-    if (!latest || Date.parse(value) > Date.parse(latest)) return value;
+    const parsed = parseRfc3339Timestamp(value);
+    if (parsed === null) return latest;
+    const latestParsed = parseRfc3339Timestamp(latest);
+    if (latestParsed === null || parsed > latestParsed) return value || latest;
     return latest;
   }, "");
 }
@@ -210,16 +213,16 @@ function freshnessState(snapshot: OverviewRawSnapshot, now: number): OverviewFre
   const credibility = snapshotCredibilityOf(snapshot);
   const source = latestBusinessSuccessTime(snapshot);
   if (!source) return { label: "未采集", level: "warn", stale: true, history: false, missing: false, credibility, credibilityLabel: credibilityLabelOf(credibility), credibilityTone: credibilityToneOf(credibility), seconds: null, text: "未采集", source: "" };
-  const parsed = Date.parse(source);
-  if (Number.isNaN(parsed)) return { label: "未采集", level: "warn", stale: true, history: false, missing: false, credibility, credibilityLabel: credibilityLabelOf(credibility), credibilityTone: credibilityToneOf(credibility), seconds: null, text: "未采集", source: "" };
+  const parsed = parseRfc3339Timestamp(source);
+  if (parsed === null) return { label: "未采集", level: "warn", stale: true, history: false, missing: false, credibility, credibilityLabel: credibilityLabelOf(credibility), credibilityTone: credibilityToneOf(credibility), seconds: null, text: "未采集", source: "" };
   const seconds = Math.max(0, Math.round((now - parsed) / 1000));
   const poll = Math.max(1, toNumber(snapshot.meta?.pollSeconds, 60));
   const boundary = snapshot.meta?.clientEvidenceBoundary;
   if (boundary) {
-    const label = boundary === "offline" ? "浏览器离线" : boundary === "stale" ? "历史证据" : boundary === "error" ? "刷新失败" : "恢复中";
+    const label = boundary === "stale" ? "历史证据" : boundary === "error" ? "刷新失败" : "恢复中";
     return {
       label,
-      level: boundary === "error" || boundary === "offline" ? "danger" : "warn",
+      level: boundary === "error" ? "danger" : "warn",
       stale: true,
       history: true,
       missing: false,

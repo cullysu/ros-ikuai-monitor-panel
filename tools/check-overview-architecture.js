@@ -4,189 +4,151 @@ const path = require("node:path");
 const root = process.cwd();
 const failures = [];
 
-function absolute(relativePath) {
-  return path.join(root, relativePath);
-}
-
-function exists(relativePath) {
-  return fs.existsSync(absolute(relativePath));
-}
-
-function read(relativePath) {
-  if (!exists(relativePath)) {
-    failures.push(`Missing required file: ${relativePath}`);
+function full(file) { return path.join(root, file); }
+function exists(file) { return fs.existsSync(full(file)); }
+function read(file) {
+  if (!exists(file)) {
+    failures.push(`Missing required file: ${file}`);
     return "";
   }
-  return fs.readFileSync(absolute(relativePath), "utf8");
+  return fs.readFileSync(full(file), "utf8");
 }
-
-function assert(condition, message) {
-  if (!condition) failures.push(message);
-}
-
-function lineCount(source) {
-  return source ? source.split(/\r?\n/).length : 0;
-}
-
-function assertIncludes(source, needles, label) {
+function assert(condition, message) { if (!condition) failures.push(message); }
+function includes(source, needles, label) {
   for (const needle of needles) assert(source.includes(needle), `${label} must include ${needle}`);
 }
-
-function assertExcludes(source, needles, label) {
+function excludes(source, needles, label) {
   for (const needle of needles) assert(!source.includes(needle), `${label} must exclude ${needle}`);
 }
-
-function cssFontSizes(source) {
+function lineCount(source) { return source ? source.split(/\r?\n/).length : 0; }
+function fontSizes(source) {
   return [...source.matchAll(/font-size\s*:\s*([0-9.]+)px/gi)].map((match) => Number(match[1]));
 }
 
 const files = {
   panel: "src/panel-framework/overview/OverviewPanel.tsx",
-  panelCss: "src/panel-framework/overview/OverviewPanel.css",
-  types: "src/panel-framework/overview/types.ts",
+  mobileHook: "src/panel-framework/mobile/useMobilePanelSurface.ts",
+  mobile: "src/panel-framework/mobile/MobilePatrolScreen.tsx",
+  mobileIncident: "src/panel-framework/mobile/MobileIncidentWorkspace.tsx",
+  mobileFocus: "src/panel-framework/mobile/MobileFocusObject.tsx",
+  mobileTraffic: "src/panel-framework/mobile/MobilePatrolTraffic.tsx",
+  mobileResource: "src/panel-framework/mobile/MobileResourcePressure.tsx",
+  mobileDomain: "src/panel-framework/mobile/MobileDomainWorkspace.tsx",
+  mobileDomainModel: "src/panel-framework/mobile/mobileDomainWorkspaceModel.ts",
+  mobileCss: "src/panel-framework/mobile/mobile-patrol.css",
+  mobileDomainCss: "src/panel-framework/mobile/mobile-domain.css",
+  nav: "src/panel-framework/sections/PanelTaskNavigation.tsx",
+  navCss: "src/panel-framework/sections/section-console.css",
   evidenceModel: "src/panel-framework/overview/evidence-model/buildOverviewEvidenceModel.ts",
-  evidenceTypes: "src/panel-framework/overview/evidence-model/overviewEvidenceTypes.ts",
-  mobile: "src/panel-framework/overview/mobile-overview/MobileOverviewScreen.tsx",
-  mobileQueue: "src/panel-framework/overview/mobile-overview/MobilePriorityQueue.tsx",
-  mobileChart: "src/panel-framework/overview/mobile-overview/MobileWanInstrument.tsx",
-  mobileTokens: "src/panel-framework/overview/mobile-overview/styles/mobile-overview-tokens.css",
-  mobileCss: "src/panel-framework/overview/mobile-overview/styles/mobile-overview.css",
-  mobileResponsive: "src/panel-framework/overview/mobile-overview/styles/mobile-overview-responsive.css",
+  evidenceInstruments: "src/panel-framework/overview/evidence-model/buildOverviewInstruments.ts",
+  resourceModel: "src/panel-framework/sections/sectionModels.ts",
+  resourceChart: "src/panel-framework/sections/SectionTimeSeriesChart.tsx",
+  resourceChartCss: "src/panel-framework/sections/section-timeseries.css",
+  runtime: "src/panel-framework/runtime/usePanelRuntime.ts",
+  runtimeChrome: "src/panel-framework/runtime/PanelRuntimeChrome.tsx",
+  runtimeSchema: "src/panel-framework/runtime/panelRuntimeSchema.ts",
+  timeContract: "src/panel-framework/timeContract.ts",
+  main: "src/panel-framework/main.tsx",
+  index: "public/index.html",
   desktop: "src/panel-framework/overview/desktop-overview/DesktopOverviewScreen.tsx",
-  desktopModel: "src/panel-framework/overview/desktop-overview/desktopOverviewModel.ts",
-  desktopLedger: "src/panel-framework/overview/desktop-overview/DesktopLedger.tsx",
-  desktopIncident: "src/panel-framework/overview/desktop-overview/DesktopIncidentDocket.tsx",
-  desktopChart: "src/panel-framework/overview/desktop-overview/DesktopWanEvidence.tsx",
-  desktopTokens: "src/panel-framework/overview/desktop-overview/styles/desktop-overview-tokens.css",
   desktopCss: "src/panel-framework/overview/desktop-overview/styles/desktop-overview.css",
-  desktopResponsive: "src/panel-framework/overview/desktop-overview/styles/desktop-overview-responsive.css",
+  desktopTokens: "src/panel-framework/overview/desktop-overview/styles/desktop-overview-tokens.css",
   builtCss: "public/assets/framework/style.css",
   builtJs: "public/assets/framework/panel-framework.js",
 };
-
 const source = Object.fromEntries(Object.entries(files).map(([key, file]) => [key, read(file)]));
-const mobileBundle = [source.mobile, source.mobileQueue, source.mobileChart].join("\n");
-const mobileStyles = [source.mobileTokens, source.mobileCss, source.mobileResponsive].join("\n");
-const desktopBundle = [source.desktop, source.desktopModel, source.desktopLedger, source.desktopIncident, source.desktopChart].join("\n");
-const desktopStyles = [source.desktopTokens, source.desktopCss, source.desktopResponsive].join("\n");
-const activeStyles = [source.panelCss, mobileStyles, desktopStyles].join("\n");
+const mobileStyles = [source.mobileCss, source.mobileDomainCss, source.resourceChartCss, source.navCss].join("\n");
+const mobileTree = [source.mobile, source.mobileIncident, source.mobileFocus, source.mobileTraffic, source.mobileResource, source.mobileDomain, source.mobileDomainModel].join("\n");
+const evidenceTruth = [source.evidenceModel, source.evidenceInstruments].join("\n");
 
-assertIncludes(source.panel, [
-  'const MOBILE_OVERVIEW_QUERY = "(max-width: 899px)"',
-  "<MobileOverviewScreen",
-  "<DesktopOverviewScreen",
-  "mobile ?",
-], "OverviewPanel independent surface mount");
-assertExcludes(source.panel, ["DesktopWorkspace", "StatusVerdict", "data-mobile-native", "display: none"], "OverviewPanel");
-assert(source.types.includes("export interface OverviewPanelProps"), "Shared overview props must live with shared overview types");
+includes(source.panel, ["MobilePatrolScreen", "DesktopOverviewScreen", "useMobilePanelSurface", "mobile ?"], "independent overview mount");
+includes(source.mobileHook, ['"(max-width: 1023px)"'], "mobile/tablet capability boundary");
+excludes(source.panel, ["MobileOverviewScreen", "mobile-overview", "display: none"], "overview mount");
 
-assertIncludes(source.evidenceTypes, [
-  '"current" | "historical" | "unavailable"',
-  '"evidence" | "collection" | "wan" | "resource" | "interfaces" | "route" | "none"',
-  "OverviewPriorityObject",
-  "OverviewTrafficInstrument",
-], "shared evidence types");
-assertIncludes(source.evidenceModel, [
+includes(evidenceTruth, [
   "route.active === true && route.disabled !== true",
-  'if (mode !== "current" || risk !== "none") return null',
+  'if (mode !== "current" || (risk !== "none" && risk !== "interfaces")) return null',
+  '"接口异常期间的 WAN 吞吐"',
+  "不证明 Down 接口无影响",
   "if (rowDown === null || rowUp === null) return null",
-  "for (let index = observed.length - 1; index >= 0 && observed[index] === true; index -= 1)",
   'state.facts.interfaces.down > 0) return "interfaces"',
-], "shared evidence policy");
-assertExcludes(source.evidenceModel, ["rows[0]", "row.downRate || 0", "row.upRate || 0", "实时可信"], "shared evidence policy");
-assert(source.evidenceModel.indexOf('state.facts.interfaces.down > 0) return "interfaces"') < source.evidenceModel.indexOf('if (state.scale === "fleet")'), "Real interface risk must outrank Fleet scale presentation");
+  "for (let index = observed.length - 1; index >= 0 && observed[index] === true; index -= 1)",
+], "evidence truth policy");
+excludes(evidenceTruth, ["rows[0]", "row.downRate || 0", "row.upRate || 0", "实时可信"], "evidence truth policy");
+assert(source.evidenceModel.indexOf('state.facts.interfaces.down > 0) return "interfaces"') < source.evidenceModel.indexOf('if (state.scale === "fleet")'), "real risk must outrank fleet scope");
 
-assertIncludes(source.mobile, [
-  "data-mobile-overview",
-  "data-mobile-core-facts",
-  "MobilePriorityQueue",
-  "MobileWanInstrument",
-  "data-mobile-evidence-ledger",
-], "mobile overview");
-assertIncludes(source.mobileChart, ["<svg", "viewBox", "<title", "<desc", "data-mobile-traffic-samples"], "mobile WAN SVG");
-assertExcludes(mobileBundle, ["DesktopOverview", "do-shell", "role=\"tab\"", "data-mobile-native", "grabber", "topology"], "mobile render tree");
-assert(mobileStyles.includes("@media (max-width: 899px)"), "Mobile styles must be bounded to max-width 899px");
-assertExcludes(mobileStyles, [".do-", ".ro-", ".mn-", "!important", "radial-gradient("], "mobile styles");
+includes(source.mobile, ["data-mobile-overview", "data-mobile-core-facts", "data-mobile-incident-center", "data-mobile-evidence-ledger", "availableBelowSummary"], "mobile patrol hierarchy");
+includes(source.mobileTraffic, ["preserveAspectRatio=\"xMidYMid meet\"", "<title", "<desc", "mp-chart-scale", "mp-chart-time"], "mobile WAN chart");
+includes(source.mobileResource, ["preserveAspectRatio=\"xMidYMid meet\"", "role=\"meter\"", "策略阈值", "样本明细"], "mobile resource signal");
+includes(source.mobileDomain, ["type=\"search\"", "mdw-filter-row", "mdw-pagination", "data-mobile-object-detail", "requestAnimationFrame"], "mobile domain workspace");
+includes(source.mobileDomainModel, ['window.addEventListener("popstate"', "window.history.pushState", "filterMatches", "rowsFromModel"], "mobile domain state model");
+includes(source.nav, ["概览", "网络", "终端", "日志"], "four stable mobile destinations");
+excludes(mobileTree, ["DesktopOverview", "grabber", "bottom-sheet", "topology", 'role="tab"', 'aria-controls='], "mobile rejected patterns");
+excludes(mobileStyles, ["!important", "font-size: 11px", "font-size: 10px", "font-size: 9px"], "mobile style contract");
+const mobileFontSizes = fontSizes(mobileStyles);
+assert(mobileFontSizes.length > 0 && mobileFontSizes.every((size) => size >= 12), `mobile text must be at least 12px; found ${mobileFontSizes.filter((size) => size < 12).join(", ")}`);
 
-assertIncludes(source.desktop, [
-  "data-desktop-overview",
-  "data-desktop-status-bus",
-  "DesktopIncidentDocket",
-  "DesktopLedger",
-  "DesktopWanEvidence",
-  'const incident = model.risk !== "none"',
-  'state.scale !== "fleet"',
-], "desktop overview");
-assertIncludes(source.desktopModel, [
-  "buildOverviewEvidenceModel",
-  "row.active === true && row.disabled !== true",
-  "boundaryRows",
-  "operationalRows",
-  "objectRows",
-  "不以零值代替缺失",
-], "desktop view model");
-assertIncludes(source.desktopChart, [
-  "<svg",
-  "viewBox",
-  'role="img"',
-  "<title",
-  "<desc",
-  "data-sample-count",
-  'data-unit="bit/s"',
-  "traffic.currentDown",
-  "traffic.currentUp",
-  "traffic.peak",
-], "desktop WAN SVG");
-assertExcludes(source.desktopChart, ["threshold", "阈值", "<canvas", "style={{ width", "style={{ left"], "desktop WAN SVG");
-assertIncludes(source.desktopLedger, ["role=\"table\"", "role=\"row\"", "role=\"columnheader\"", "role=\"cell\""], "desktop ledger semantics");
-assertExcludes(desktopBundle, ["MobileOverview", "mo-shell", "DesktopWorkspace", "StatusVerdict", "DesktopDecisionRail", "desktopOverviewScenes"], "desktop render tree");
-assert(desktopStyles.includes("@media (min-width: 900px)"), "Desktop styles must be bounded to min-width 900px");
-assertExcludes(desktopStyles, [".mo-", ".ro-", ".mn-", "!important", "radial-gradient("], "desktop styles");
+includes(source.resourceModel, ["resourceVisualization", "historyTimestamp", "没有配套时间戳时只显示样本摘要，不绘制趋势", "visualization: undefined"], "resource time-series contract");
+excludes(source.resourceModel, ['values.map((value) => text(value)).join(" · ")'], "resource model");
+includes(source.resourceChart, ["preserveAspectRatio=\"xMidYMid meet\"", "0–100%", "section-series-threshold", "<title", "<desc"], "resource SVG chart");
 
-const retiredFiles = [
+includes(source.timeContract, ["RFC3339_WITH_TIMEZONE", "parseRfc3339Timestamp"], "frontend time contract");
+includes(source.runtimeSchema, ["validateSnapshotTree", "带时区的 RFC 3339", "MAX_SNAPSHOT_COLLECTION_ROWS", "validatePercentage"], "deep runtime schema");
+excludes(source.runtime, ['phase: browserOfflineHint ? "offline"', 'return; // navigator.onLine'], "LAN monitoring request policy");
+excludes(source.runtimeChrome, ['phase === "offline"'], "runtime phase model");
+
+includes(source.main, ["createRoot", "PanelFrameworkApp", "router-panel-mounted"], "single React shell");
+excludes(source.main, ["legacyBridge", "mountRouterOverviewPanel", "preserveLegacyFallback"], "single React shell");
+includes(source.index, ['<main id="app"'], "public shell");
+excludes(source.index, ["#dns", "panel-legacy", "Ctrl+K", "legacy"], "public shell");
+
+includes(source.desktop, ["data-desktop-overview", "DesktopIncidentDocket", "DesktopLedger", "DesktopWanEvidence"], "desktop console");
+includes(source.desktopCss + source.desktopTokens, ["@media (min-width: 1024px)"], "desktop boundary");
+
+const rejected = [
+  "src/panel-framework/legacyBridge.ts",
+  "src/panel-framework/overview/mobile-overview/MobileOverviewScreen.tsx",
+  "src/panel-framework/overview/mobile-overview/MobilePriorityQueue.tsx",
+  "src/panel-framework/overview/mobile-overview/MobileWanInstrument.tsx",
+  "src/panel-framework/overview/mobile-overview/styles/mobile-overview.css",
+  "public/assets/legacy/panel-legacy.js",
+  "public/assets/legacy/panel-legacy.css",
   "src/panel-framework/overview/mobile-native/MobileNativeConsole.tsx",
-  "src/panel-framework/overview/mobile-native/MobileNativeHome.tsx",
-  "src/panel-framework/overview/components/DesktopConsole.tsx",
-  "src/panel-framework/overview/components/DesktopDecisionRail.tsx",
-  "src/panel-framework/overview/components/StatusVerdict.tsx",
-  "src/panel-framework/overview/desktopOverviewScenes.tsx",
-  "src/panel-framework/overview/desktopOverviewVisuals.tsx",
-  "src/panel-framework/overview/styles/overview-desktop.css",
-  "src/panel-framework/overview/styles/overview-states.css",
-  "src/panel-framework/overview/styles/desktop/refinement.css",
+  "src/panel-framework/overview/mobile-native/MobileNativeSheet.tsx",
+  "src/panel-framework/overview/mobile-native/MobileNativeTopology.tsx",
 ];
-for (const file of retiredFiles) assert(!exists(file), `Rejected UI artifact must remain deleted: ${file}`);
-
-assertExcludes(activeStyles, ["!important", "\\n.router", "final pass", "EOF", "v814", "v825", "v1000"], "active overview styles");
-const fontSizes = cssFontSizes(activeStyles);
-assert(fontSizes.length > 0, "Active overview styles must declare readable typography");
-assert(fontSizes.every((size) => size >= 12), `Active overview styles must not use sub-12px text; found ${fontSizes.filter((size) => size < 12).join(", ")}`);
+for (const file of rejected) assert(!exists(file), `rejected UI artifact must remain deleted: ${file}`);
 
 const budgets = [
   [files.panel, source.panel, 100],
-  [files.mobile, source.mobile, 130],
-  [files.desktop, source.desktop, 210],
-  [files.desktopModel, source.desktopModel, 430],
-  [files.desktopChart, source.desktopChart, 150],
-  [files.evidenceModel, source.evidenceModel, 500],
+  [files.mobile, source.mobile, 240],
+  [files.mobileIncident, source.mobileIncident, 90],
+  [files.mobileFocus, source.mobileFocus, 40],
+  [files.mobileTraffic, source.mobileTraffic, 130],
+  [files.mobileResource, source.mobileResource, 140],
+  [files.mobileDomain, source.mobileDomain, 420],
+  [files.mobileDomainModel, source.mobileDomainModel, 320],
+  [files.evidenceModel, source.evidenceModel, 520],
+  [files.evidenceInstruments, source.evidenceInstruments, 220],
+  [files.resourceChart, source.resourceChart, 150],
 ];
-for (const [file, fileSource, max] of budgets) assert(lineCount(fileSource) <= max, `${file} exceeds maintainability budget ${max}: ${lineCount(fileSource)}`);
+for (const [file, body, max] of budgets) assert(lineCount(body) <= max, `${file} exceeds maintainability budget ${max}: ${lineCount(body)}`);
 
-if (source.builtCss) {
-  assertIncludes(source.builtCss, [".mo-shell", ".do-shell", ".do-wan-chart"], "built overview CSS");
-  assertExcludes(source.builtCss, [".mn-sheet", ".mn-topology", ".ro-desktop-console", "\\n.router", "!important"], "built overview CSS");
-}
 if (source.builtJs) {
-  assertIncludes(source.builtJs, ["data-mobile-overview", "data-desktop-overview", "data-desktop-wan-evidence"], "built overview JavaScript");
-  assertExcludes(source.builtJs, ["data-mobile-native", "DesktopWorkspace", "data-overview-chart=\"css\""], "built overview JavaScript");
+  includes(source.builtJs, ["data-mobile-overview", "data-mobile-domain-workspace", "data-desktop-overview", "data-section-time-series"], "built JavaScript");
+  excludes(source.builtJs, ["data-mobile-native", "mountRouterOverviewPanel", "MobileOverviewScreen", "preserveAspectRatio=\"none\""], "built JavaScript");
+}
+if (source.builtCss) {
+  includes(source.builtCss, [".mp-shell", ".mdw-shell", ".section-timeseries", ".do-shell"], "built CSS");
+  excludes(source.builtCss, [".mo-shell", ".mn-topology"], "built CSS");
+  const builtImportant = (source.builtCss.match(/!important/g) || []).length;
+  assert(builtImportant === 0, `built CSS must not contain !important overrides: ${builtImportant}`);
 }
 
 if (failures.length) {
   console.error("overview architecture gate: FAIL");
-  for (const failure of failures) console.error(`- ${failure}`);
+  failures.forEach((failure) => console.error(`- ${failure}`));
   process.exit(1);
 }
 
-console.log(
-  `overview architecture gate: PASS sharedModel=${lineCount(source.evidenceModel)} mobile=${lineCount(source.mobile)} desktop=${lineCount(source.desktop)} desktopModel=${lineCount(source.desktopModel)} activeCss=${Math.round(Buffer.byteLength(activeStyles) / 1024)}kB important=0 minText=${Math.min(...fontSizes)}px`,
-);
+console.log(`overview architecture gate: PASS mobile=${lineCount(source.mobile)} domain=${lineCount(source.mobileDomain)} evidence=${lineCount(source.evidenceModel)} minMobileText=${Math.min(...mobileFontSizes)}px`);

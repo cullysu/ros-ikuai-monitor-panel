@@ -7,6 +7,7 @@ import {
   type OverviewRawSnapshot,
   type OverviewTone,
 } from "../overview";
+import { parseRfc3339Timestamp } from "../timeContract";
 
 type UnknownRecord = Record<string, unknown>;
 
@@ -30,6 +31,24 @@ export interface SectionTable {
   empty: string;
 }
 
+export interface SectionTimeSeries {
+  key: "cpu" | "memory" | "disk";
+  label: string;
+  unit: "%";
+  threshold: number;
+  points: Array<{ timestamp: number; value: number }>;
+}
+
+export interface SectionTimeSeriesVisualization {
+  kind: "time-series";
+  title: string;
+  windowLabel: string;
+  min: 0;
+  max: 100;
+  series: SectionTimeSeries[];
+  accessibleSummary: string;
+}
+
 export interface SectionModel {
   title: string;
   description: string;
@@ -39,6 +58,7 @@ export interface SectionModel {
   statusTone: OverviewTone;
   metrics: SectionMetric[];
   tables: SectionTable[];
+  visualization?: SectionTimeSeriesVisualization;
 }
 
 function record(value: unknown): UnknownRecord {
@@ -96,7 +116,7 @@ function evidenceMode(snapshot: OverviewRawSnapshot): SectionModel["evidenceMode
 function base(route: PanelRouteId, snapshot: OverviewRawSnapshot): Pick<SectionModel, "title" | "description" | "updatedAt" | "evidenceMode" | "status" | "statusTone"> {
   const mode = evidenceMode(snapshot);
   const evidenceBoundary = snapshot.meta?.clientEvidenceBoundary;
-  const boundaryLabel = evidenceBoundary === "offline" ? "浏览器离线 · 历史快照" : evidenceBoundary ? "历史快照" : "";
+  const boundaryLabel = evidenceBoundary ? "历史快照" : "";
   const successAt = latestBusinessSuccessTime(snapshot);
   return {
     title: PANEL_ROUTES[route].title,
@@ -125,6 +145,7 @@ function applyEvidenceBoundary(model: SectionModel): SectionModel {
   };
   return {
     ...model,
+    visualization: undefined,
     metrics: [
       { label: "当前证据", value: "不可用", note: "业务数字已隐藏", tone: "danger" },
       { label: "最近成功", value: model.updatedAt || "未记录", note: "不使用尝试时间兜底", tone: model.updatedAt && model.updatedAt !== "未记录" ? "warn" : "missing" },
@@ -136,6 +157,51 @@ function applyEvidenceBoundary(model: SectionModel): SectionModel {
       note: "当前证据不可用；未显示业务对象",
       empty: "没有可用于当前判断的业务快照",
     })),
+  };
+}
+
+function historyTimestamp(value: unknown): number | null {
+  const numeric = number(value);
+  if (numeric !== null) return numeric < 1e12 ? numeric * 1000 : numeric;
+  return parseRfc3339Timestamp(value);
+}
+
+function resourceVisualization(history: UnknownRecord): SectionTimeSeriesVisualization | undefined {
+  const timestamps = Array.isArray(history.timestamps) ? history.timestamps : [];
+  if (timestamps.length < 2) return undefined;
+  const definitions: Array<{ key: SectionTimeSeries["key"]; label: string; threshold: number }> = [
+    { key: "cpu", label: "CPU", threshold: 85 },
+    { key: "memory", label: "内存", threshold: 85 },
+    { key: "disk", label: "磁盘", threshold: 90 },
+  ];
+  const series = definitions.map((definition) => {
+    const values = Array.isArray(history[definition.key]) ? history[definition.key] as unknown[] : [];
+    const length = Math.min(timestamps.length, values.length);
+    const points: SectionTimeSeries["points"] = [];
+    for (let index = 0; index < length; index += 1) {
+      const timestamp = historyTimestamp(timestamps[index]);
+      const value = number(values[index]);
+      if (timestamp !== null && value !== null && value >= 0 && value <= 100) points.push({ timestamp, value });
+    }
+    return { ...definition, unit: "%" as const, points };
+  }).filter((item) => item.points.length >= 2);
+  if (!series.length) return undefined;
+  const allPoints = series.flatMap((item) => item.points);
+  const start = Math.min(...allPoints.map((point) => point.timestamp));
+  const end = Math.max(...allPoints.map((point) => point.timestamp));
+  const durationSeconds = Math.max(0, Math.round((end - start) / 1000));
+  const windowLabel = durationSeconds >= 60
+    ? `最近 ${Math.max(1, Math.round(durationSeconds / 60))} 分钟`
+    : `最近 ${Math.max(1, durationSeconds)} 秒`;
+  const latest = series.map((item) => `${item.label} ${item.points[item.points.length - 1].value}%`).join("，");
+  return {
+    kind: "time-series",
+    title: "资源压力时间序列",
+    windowLabel,
+    min: 0,
+    max: 100,
+    series,
+    accessibleSummary: `${windowLabel}，${latest}；CPU 和内存阈值 85%，磁盘阈值 90%。`,
   };
 }
 
@@ -237,7 +303,7 @@ function balanceModel(route: PanelRouteId, snapshot: OverviewRawSnapshot): Secti
 
 function terminalModel(route: PanelRouteId, snapshot: OverviewRawSnapshot): SectionModel {
   const items = rows(snapshot.terminals);
-  const online = items.filter((item) => item.status === "online" || item.online === true).length;
+  const online = items.filter((item) => item.online === true || /^(?:online|active|reachable|bound)$/i.test(text(item.status, ""))).length;
   const connectionValues = items.map((item) => number(item.connections));
   const connectionsComplete = items.length > 0 && connectionValues.every((value) => value !== null);
   const connections = connectionsComplete ? connectionValues.reduce((sum, value) => sum + (value as number), 0) : null;
@@ -306,20 +372,22 @@ function resourceModel(route: PanelRouteId, snapshot: OverviewRawSnapshot): Sect
   const disk = number(overview.diskUsage);
   return {
     ...base(route, snapshot),
+    visualization: resourceVisualization(history),
     metrics: [
       { label: "CPU", value: cpu === null ? "未取得" : `${cpu}%`, tone: cpu === null ? "missing" : cpu >= 85 ? "danger" : "trust" },
       { label: "内存", value: memory === null ? "未取得" : `${memory}%`, tone: memory === null ? "missing" : memory >= 85 ? "danger" : "trust" },
       { label: "磁盘", value: disk === null ? "未取得" : `${disk}%`, tone: disk === null ? "missing" : disk >= 90 ? "danger" : "trust" },
     ],
-    tables: [table(route === "loadAudit" ? "资源采样序列" : "资源证据", [{ key: "series", label: "序列" }, { key: "samples", label: "样本" }, { key: "latest", label: "最近值" }, { key: "window", label: "窗口" }], series, (item) => {
+    tables: [table(route === "loadAudit" ? "资源采样摘要" : "资源证据", [{ key: "series", label: "对象" }, { key: "samples", label: "有效样本" }, { key: "latest", label: "最近值" }, { key: "range", label: "样本范围" }], series, (item) => {
       const values = Array.isArray(item.values) ? item.values : [];
+      const observed = values.map((value) => number(value)).filter((value): value is number => value !== null && value >= 0 && value <= 100);
       return {
         series: item.key === "cpu" ? "CPU" : item.key === "memory" ? "内存" : "磁盘",
-        samples: values.map((value) => text(value)).join(" · ") || "未取得",
-        latest: values.length ? `${text(values[values.length - 1])}%` : "未取得",
-        window: `${values.length} 个采样点`,
+        samples: observed.length ? `${observed.length} 个` : "未取得",
+        latest: observed.length ? `${observed[observed.length - 1]}%` : "未取得",
+        range: observed.length ? `${Math.min(...observed)}% – ${Math.max(...observed)}%` : "未取得",
       };
-    }, "当前快照没有资源采样序列", "序列只陈述采样点，不冒充带时间轴的趋势图")],
+    }, "当前快照没有资源采样记录", "没有配套时间戳时只显示样本摘要，不绘制趋势")],
   };
 }
 
@@ -337,7 +405,16 @@ function connectionModel(route: PanelRouteId, snapshot: OverviewRawSnapshot): Se
       { label: "当前明细", value: String(active.length), tone: active.length ? "trust" : "missing" },
       { label: "协议分组", value: String(protocols.length), tone: protocols.length ? "trust" : "missing" },
     ],
-    tables: [table(route === "connections" ? "活动连接" : "流量对象", [{ key: "source", label: "源" }, { key: "target", label: "目标 / 协议" }, { key: "connections", label: "连接" }, { key: "traffic", label: "流量" }], source, (item) => ({ source: text(item.source || item.srcAddress || item.ip || item.name), target: text(item.destination || item.dstAddress || item.protocol || item.label), connections: text(item.connections ?? item.count, "—"), traffic: text(item.totalRate ?? item.bytes ?? item.value, "未取得") }), route === "connections" ? "当前快照没有活动连接明细" : "当前快照没有流量审计对象")],
+    tables: [table(route === "connections" ? "活动连接" : "流量对象", [{ key: "source", label: "源" }, { key: "target", label: "目标 / 协议" }, { key: "connections", label: "连接" }, { key: "traffic", label: "流量" }], source, (item) => {
+      const remote = text(item.destination || item.remoteIp || item.dstAddress || item.dst, "");
+      const protocol = text(item.protocol || item.label, "");
+      return {
+        source: text(item.source || item.localIp || item.srcAddress || item.src || item.ip || item.name),
+        target: [remote, protocol].filter(Boolean).join(" / ") || "未记录",
+        connections: text(item.connections ?? item.count, "—"),
+        traffic: text(item.totalRate ?? item.bytes ?? item.value, "未取得"),
+      };
+    }, route === "connections" ? "当前快照没有活动连接明细" : "当前快照没有流量审计对象")],
   };
 }
 

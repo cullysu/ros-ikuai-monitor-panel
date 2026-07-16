@@ -106,8 +106,7 @@ export async function submitRouterConnection(
       insecureRestConfirmed: input.insecureRestConfirmed,
       ...(input.sshHostKeyFingerprint ? { sshHostKeyFingerprint: input.sshHostKeyFingerprint } : {}),
       ...(input.savedId ? { savedId: input.savedId } : {}),
-      // Back-end compatibility name. The server stores the profile, never the password.
-      rememberPassword: input.rememberProfile,
+      rememberProfile: input.rememberProfile,
     }),
   });
   const parsed = parseRouterLoginMutation(payload);
