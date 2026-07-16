@@ -30,6 +30,11 @@ buildSync({
 const { buildSectionModel, OVERVIEW_SCENARIO_FIXTURES } = require(bundleFile);
 const clone = (value) => structuredClone(value);
 const metric = (model, label) => model.metrics.find((item) => item.label === label);
+const localShortTimestamp = (value) => {
+  const date = new Date(value);
+  const pad = (part) => String(part).padStart(2, "0");
+  return `${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+};
 
 const missingRate = clone(OVERVIEW_SCENARIO_FIXTURES.single);
 delete missingRate.wan[0].downRate;
@@ -63,10 +68,20 @@ assert.ok(metric(historical, "历史下载"));
 assert.match(metric(historical, "历史下载").note, /不代表当前/);
 assert.ok(historical.tables.every((item) => /上次成功快照/.test(item.note)));
 
-const unavailable = buildSectionModel("trafficLoad", clone(OVERVIEW_SCENARIO_FIXTURES["no-snapshot"]));
+const unavailableFixture = clone(OVERVIEW_SCENARIO_FIXTURES["no-snapshot"]);
+const unavailable = buildSectionModel("trafficLoad", unavailableFixture);
 assert.equal(unavailable.evidenceMode, "unavailable");
 assert.equal(unavailable.metrics[0].value, "不可用");
-assert.match(unavailable.metrics[1].value, /^06-21 02:51$/, "the explicit last-success timestamp remains historical evidence");
+assert.equal(
+  unavailable.metrics[1].value,
+  localShortTimestamp(unavailableFixture.meta.realtimeUpdatedAt),
+  "the explicit last-success timestamp remains historical evidence in the viewer's local timezone",
+);
+assert.notEqual(
+  unavailable.metrics[1].value,
+  localShortTimestamp(unavailableFixture.updatedAt),
+  "the failed attempt time must not replace the last successful evidence time",
+);
 assert.equal(unavailable.metrics[2].value, "不可判断");
 assert.ok(unavailable.tables.every((item) => item.rows.length === 0));
 assert.doesNotMatch(JSON.stringify(unavailable), /0 bps|0%|当前下载|当前上传/);
