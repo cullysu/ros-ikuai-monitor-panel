@@ -2,6 +2,7 @@
 'use strict';
 
 const fs = require('fs');
+const crypto = require('crypto');
 const path = require('path');
 const { spawnSync } = require('child_process');
 
@@ -18,6 +19,40 @@ const FULL_MATRIX_SCENARIOS = [
 const FULL_MATRIX_VIEWPORT_KEYS = ['desktop', 'desktop1440', 'wide', 'narrow'];
 const FULL_MATRIX_CELLS = FULL_MATRIX_SCENARIOS.flatMap((scenario) =>
   FULL_MATRIX_VIEWPORT_KEYS.map((viewport) => `public::${scenario}::overview::${viewport}`));
+const OVERVIEW_VIEWPORTS = [
+  { name: 'desktop', width: 1366, height: 768 },
+  { name: 'desktop1440', width: 1440, height: 900 },
+  { name: 'wide', width: 844, height: 390 },
+  { name: 'narrow', width: 390, height: 844 },
+];
+const PUBLIC_ROUTES = [
+  'overview', 'interfaces', 'terminals', 'dhcp', 'dns4', 'dns6', 'routes', 'lineStatus',
+  'balance', 'trafficLoad', 'loadAudit', 'security', 'arp', 'trafficAudit', 'readonlyDiagnostics',
+  'logs', 'serviceLogs', 'connections', 'more',
+];
+const ROUTE_RESPONSIVE_VIEWPORTS = [
+  { name: 'desktop', width: 1600, height: 1000 },
+  { name: 'laptop', width: 1366, height: 900 },
+  { name: 'tablet', width: 1024, height: 900 },
+  { name: 'narrow', width: 390, height: 844 },
+];
+const ROUTE_STATE_VIEWPORTS = [
+  { name: 'desktop', width: 1366, height: 768 },
+  { name: 'narrow', width: 390, height: 844 },
+];
+
+function expectedMatrixCells(scenarios, routes, viewports) {
+  return scenarios.flatMap((scenario) => routes.flatMap((section) => viewports.map((viewport) => ({
+    profile: 'public',
+    scaleScenario: scenario,
+    section,
+    viewport,
+  }))));
+}
+
+const OVERVIEW_MATRIX_CELLS = expectedMatrixCells(FULL_MATRIX_SCENARIOS, ['overview'], OVERVIEW_VIEWPORTS);
+const ROUTE_RESPONSIVE_MATRIX_CELLS = expectedMatrixCells(['single'], PUBLIC_ROUTES, ROUTE_RESPONSIVE_VIEWPORTS);
+const ROUTE_STATE_MATRIX_CELLS = expectedMatrixCells(FULL_MATRIX_SCENARIOS, PUBLIC_ROUTES, ROUTE_STATE_VIEWPORTS);
 
 function parseArgs(argv = process.argv.slice(2)) {
   const args = {
@@ -51,10 +86,6 @@ Options:
 `.trim();
 }
 
-function normalizeMatrixCell(cell) {
-  return String(cell || '').replace(/::([A-Za-z0-9_-]+)=\d+x\d+$/u, '::$1');
-}
-
 function read(relPath) {
   return fs.readFileSync(path.join(ROOT, relPath), 'utf8');
 }
@@ -64,112 +95,8 @@ function readIfExists(relPath) {
   return fs.existsSync(fullPath) ? fs.readFileSync(fullPath, 'utf8') : '';
 }
 
-function decodeNumericHtmlEntities(text) {
-  return String(text || '').replace(/&#(x[0-9a-f]+|\d+);/giu, (_match, code) => {
-    const value = String(code).toLowerCase().startsWith('x')
-      ? Number.parseInt(String(code).slice(1), 16)
-      : Number.parseInt(String(code), 10);
-    return Number.isFinite(value) ? String.fromCodePoint(value) : _match;
-  });
-}
-
-function frameworkCompatibilitySurface() {
-  return [
-    'snapshotNeedsRouterLogin',
-    'snapshotHasRouterSshLoginError',
-    'routerLoginDraft',
-    'captureRouterLoginDraftFromForm',
-    'data-router-login-form',
-    '连接并进入面板',
-    'renderReadonlyStatusBus',
-    '面板健康',
-    'RouterOS 健康',
-    '数据年龄',
-    'CPU / 内存',
-    '快照证据',
-    '链路可参考 / 业务状态不可参考',
-    '快照缺失 · 状态更新时间',
-    '样本不足，趋势暂不可用',
-    'renderFreshnessStrip',
-    '事件更新时间',
-    '当前为只读模式：仅通过 RouterOS API/SSH 读取状态，不写入配置',
-    'RouterOS 写入',
-    '本地别名写入',
-    '外部访问',
-    '路由与分流状态',
-    '防火墙规则',
-    '资源状态',
-    '流量状态',
-    '终端状态',
-    '展开 RouterOS 原始字段',
-  ].join('\n');
-}
-
-function frameworkOverviewStylesSurface() {
-  const stylesDir = path.join(ROOT, 'src/panel-framework/overview/styles');
-  if (!fs.existsSync(stylesDir)) {
-    return '';
-  }
-  return fs.readdirSync(stylesDir)
-    .filter((entry) => entry.endsWith('.css'))
-    .sort()
-    .map((entry) => read(path.join('src/panel-framework/overview/styles', entry)))
-    .join('\n/* overview-style-layer */\n');
-}
-
-function frameworkOverviewComponentsSurface() {
-  const componentsDir = path.join(ROOT, 'src/panel-framework/overview/components');
-  if (!fs.existsSync(componentsDir)) {
-    return '';
-  }
-  return fs.readdirSync(componentsDir)
-    .filter((entry) => entry.endsWith('.tsx'))
-    .sort()
-    .map((entry) => read(path.join('src/panel-framework/overview/components', entry)))
-    .join('\n/* overview-component-layer */\n');
-}
-
 function readReleaseSurface(relPath) {
-  const text = read(relPath);
-  if (relPath !== 'public/index.html') return text;
-  const frameworkShell = text.includes('data-app-shell="ikuai"') &&
-    text.includes('data-overview-framework-asset="script"') &&
-    text.includes('/assets/framework/panel-framework.js');
-  if (!frameworkShell) return text;
-  const surfaceParts = [
-    text,
-    decodeNumericHtmlEntities(text),
-    read('public/assets/legacy/panel-legacy.js'),
-    readIfExists('public/assets/framework/panel-framework.js'),
-    readIfExists('public/assets/framework/style.css'),
-    read('src/panel-framework/overview/OverviewPanel.tsx'),
-    readIfExists('src/panel-framework/overview/OverviewPanel.css'),
-    frameworkOverviewStylesSurface(),
-    frameworkOverviewComponentsSurface(),
-    read('src/panel-framework/overview/deriveOverviewState.ts'),
-    read('src/panel-framework/overview/desktopOverviewScenes.tsx'),
-    read('src/panel-framework/overview/desktopOverviewDefaultScene.tsx'),
-    read('src/panel-framework/overview/desktopOverviewAllOfflineScene.tsx'),
-    read('src/panel-framework/overview/desktopOverviewCollectionScene.tsx'),
-    read('src/panel-framework/overview/desktopOverviewInterfaceScene.tsx'),
-    read('src/panel-framework/overview/desktopOverviewNoSnapshotScene.tsx'),
-    read('src/panel-framework/overview/desktopOverviewResourceScene.tsx'),
-    read('src/panel-framework/overview/desktopOverviewVisuals.tsx'),
-    read('src/panel-framework/overview/mobile-native/MobileNativeConsole.tsx'),
-    read('src/panel-framework/overview/mobile-native/MobileNativeHome.tsx'),
-    read('src/panel-framework/overview/mobile-native/MobileNativeSignal.tsx'),
-    read('src/panel-framework/overview/mobile-native/MobileNativeInspection.tsx'),
-    read('src/panel-framework/overview/mobile-native/MobileNativeDetail.tsx'),
-    read('src/panel-framework/overview/mobile-native/MobileNativeIcon.tsx'),
-    read('src/panel-framework/overview/mobile-native/mobileNativeFocus.ts'),
-    read('src/panel-framework/overview/mobile-native/mobileNativeModel.ts'),
-    read('src/panel-framework/overview/mobile-native/mobileNativeEvidence.ts'),
-    read('src/panel-framework/overview/mobile-native/mobileNativeTypes.ts'),
-    read('src/panel-framework/panel-framework-app.tsx'),
-    readIfExists('app.py'),
-    frameworkCompatibilitySurface(),
-  ];
-  return surfaceParts.join('\n/* release-surface-split */\n');
+  return read(relPath);
 }
 
 function assertContains(relPath, needle, label = needle) {
@@ -228,16 +155,7 @@ function currentHead(rootDir = ROOT) {
   return result.status === 0 ? String(result.stdout || '').trim() : '';
 }
 
-function commitMatchesReference(commit, reference) {
-  const left = String(commit || '').trim();
-  const right = String(reference || '').trim();
-  if (!left || !right) {
-    return false;
-  }
-  return left === right || left.startsWith(right) || right.startsWith(left);
-}
-
-function listReleaseMatrixReports(rootDir = ROOT) {
+function listAcceptanceReports(rootDir = ROOT) {
   const acceptanceDir = path.join(rootDir, '_acceptance');
   if (!fs.existsSync(acceptanceDir)) {
     return [];
@@ -255,48 +173,253 @@ function listReleaseMatrixReports(rootDir = ROOT) {
     if (!stat.isFile()) {
       continue;
     }
-    const summary = summarizeMatrixReport(reportPath);
-    if (!isFullMatrixShape(summary)) {
-      continue;
-    }
     reports.push({ reportPath, mtimeMs: stat.mtimeMs });
   }
   return reports.sort((a, b) => b.mtimeMs - a.mtimeMs || b.reportPath.localeCompare(a.reportPath));
 }
 
-function summarizeMatrixReport(reportPath) {
-  const report = readJson(reportPath);
-  const matrix = report && report.matrix && typeof report.matrix === 'object' ? report.matrix : null;
-  const checks = Array.isArray(report && report.checks) ? report.checks.filter(Boolean) : [];
-  const requiredCells = Array.isArray(matrix?.requiredCells) ? matrix.requiredCells.map(normalizeMatrixCell) : [];
-  const passedCells = Array.isArray(matrix?.passedCells) ? matrix.passedCells.map(normalizeMatrixCell) : [];
-  const requiredScenarios = Array.isArray(matrix?.requiredScenarios) ? matrix.requiredScenarios : [];
-  const passedScenarios = Array.isArray(matrix?.passedScenarios) ? matrix.passedScenarios : [];
-  const scenarios = Array.isArray(matrix?.scenarios) ? matrix.scenarios : [];
-  return {
-    reportPath,
-    mtimeMs: fs.statSync(reportPath).mtimeMs,
-    report,
-    matrix,
-    checks,
-    requiredCells,
-    passedCells,
-    requiredScenarios,
-    passedScenarios,
-    scenarios,
-    total: Number.isFinite(matrix?.total) ? matrix.total : null,
-    passed: Number.isFinite(matrix?.passed) ? matrix.passed : null,
-    failed: Number.isFinite(matrix?.failed) ? matrix.failed : null,
-    complete: Boolean(matrix?.complete),
-    reportPass: Boolean(report.pass),
-    failedChecks: checks.filter((check) => check && !check.pass).map((check) => check.name),
-    passedChecks: checks.filter((check) => check && check.pass).map((check) => check.name),
-  };
+function viewportKey(viewport) {
+  return `${viewport.name}=${viewport.width}x${viewport.height}`;
 }
 
-function summaryMatchesHead(summary, head) {
-  const reportCommit = String(summary && summary.matrix && summary.matrix.commit || '').trim();
-  return commitMatchesReference(reportCommit, head);
+function matrixCellId(cell) {
+  return `${cell?.profile || ''}::${cell?.scaleScenario || ''}::${cell?.section || ''}::${cell?.viewportKey || ''}`;
+}
+
+function browserCellId(cell) {
+  const viewport = cell?.viewport || {};
+  return `${cell?.profile || ''}::${cell?.scaleScenario || ''}::${cell?.requestedSection || ''}::${viewport.name || ''}=${viewport.width}x${viewport.height}`;
+}
+
+function expectedCellId(cell) {
+  return `${cell.profile}::${cell.scaleScenario}::${cell.section}::${viewportKey(cell.viewport)}`;
+}
+
+function listDifference(actual, expected) {
+  const actualSet = new Set(actual);
+  return expected.filter((item) => !actualSet.has(item));
+}
+
+function pngDimensions(filePath) {
+  const file = fs.openSync(filePath, 'r');
+  try {
+    const header = Buffer.alloc(24);
+    if (fs.readSync(file, header, 0, header.length, 0) !== header.length) return null;
+    const signature = [137, 80, 78, 71, 13, 10, 26, 10];
+    if (!signature.every((value, index) => header[index] === value)) return null;
+    if (header.readUInt32BE(8) !== 13 || header.toString('ascii', 12, 16) !== 'IHDR') return null;
+    return { width: header.readUInt32BE(16), height: header.readUInt32BE(20) };
+  } finally {
+    fs.closeSync(file);
+  }
+}
+
+function validateOverviewScreenshots(reportPath, browserChecks, expectedCells) {
+  const errors = [];
+  const expectedIds = expectedCells.map(expectedCellId);
+  const actualIds = browserChecks.map(browserCellId);
+  const missingCells = listDifference(actualIds, expectedIds);
+  const unexpectedCells = listDifference(expectedIds, actualIds);
+  if (browserChecks.length !== expectedIds.length || missingCells.length || unexpectedCells.length) {
+    errors.push(`browser cells do not exactly match overview matrix (missing=${missingCells.length}, unexpected=${unexpectedCells.length}, total=${browserChecks.length})`);
+    return errors;
+  }
+
+  const checksByCell = new Map(browserChecks.map((check) => [browserCellId(check), check]));
+  const reportDir = path.dirname(reportPath);
+  for (const expected of expectedCells) {
+    const id = expectedCellId(expected);
+    const check = checksByCell.get(id);
+    const fileName = `${expected.profile}-${expected.scaleScenario}-${expected.viewport.name}-${expected.section}.png`;
+    if (!check || check.pass !== true) {
+      errors.push(`${id} browser cell did not pass`);
+      continue;
+    }
+    if (check.screenshot !== fileName) {
+      errors.push(`${id} reports screenshot ${JSON.stringify(check.screenshot)} instead of ${fileName}`);
+      continue;
+    }
+    const filePath = path.resolve(reportDir, fileName);
+    const relative = path.relative(reportDir, filePath);
+    if (path.isAbsolute(relative) || relative === '..' || relative.startsWith(`..${path.sep}`)) {
+      errors.push(`${id} screenshot path escapes report directory`);
+      continue;
+    }
+    let stat;
+    try {
+      stat = fs.lstatSync(filePath);
+    } catch {
+      errors.push(`${id} screenshot is missing: ${fileName}`);
+      continue;
+    }
+    if (!stat.isFile() || stat.isSymbolicLink()) {
+      errors.push(`${id} screenshot is not a regular file: ${fileName}`);
+      continue;
+    }
+    const dimensions = pngDimensions(filePath);
+    if (!dimensions || dimensions.width !== expected.viewport.width || dimensions.height !== expected.viewport.height) {
+      errors.push(`${id} screenshot is not a ${expected.viewport.width}x${expected.viewport.height} PNG: ${fileName}`);
+    }
+  }
+  return errors;
+}
+
+function validateMatrixReport(reportPath, expectedCells, head, options = {}) {
+  const errors = [];
+  let report;
+  try {
+    report = readJson(reportPath);
+  } catch (error) {
+    return { errors: [`invalid JSON: ${error.message}`] };
+  }
+  const matrix = report?.matrix;
+  const cells = Array.isArray(matrix?.cells) ? matrix.cells : [];
+  const expectedIds = expectedCells.map(expectedCellId);
+  const actualIds = cells.map(matrixCellId);
+  const missingCells = listDifference(actualIds, expectedIds);
+  const unexpectedCells = listDifference(expectedIds, actualIds);
+  if (!matrix || matrix.commit !== head) errors.push(`matrix.commit must equal current HEAD ${head}`);
+  if (matrix?.requestedComplete !== true) errors.push('matrix.requestedComplete must be true');
+  if (!Array.isArray(report.failures) || report.failures.length !== 0) errors.push('report.failures must be an empty array');
+  if (matrix?.failed !== 0) errors.push('matrix.failed must be 0');
+  if (cells.length !== expectedIds.length || missingCells.length || unexpectedCells.length) {
+    errors.push(`matrix.cells does not exactly match the requested matrix (missing=${missingCells.length}, unexpected=${unexpectedCells.length}, total=${cells.length})`);
+  }
+  for (const cell of cells) {
+    if (cell.pass !== true) errors.push(`${matrixCellId(cell)} did not pass`);
+  }
+  if (options.requireReportPass && report.pass !== true) errors.push('report.pass must be true');
+  if (options.requireSemanticGates) {
+    const checks = Array.isArray(report.checks) ? report.checks.filter(Boolean) : [];
+    const checkNames = new Set(checks.map((check) => String(check.name || '').trim()).filter(Boolean));
+    const expectedCheckNames = FULL_MATRIX_SCENARIOS.flatMap((scenario) =>
+      FULL_MATRIX_VIEWPORT_KEYS.flatMap((viewport) => [
+        `browser boot public/${scenario}/${viewport}`,
+        `responsive public/${scenario}/${viewport}/overview`,
+      ]));
+    const missingChecks = listDifference([...checkNames], expectedCheckNames);
+    const failedChecks = checks.filter((check) => check.pass !== true).map((check) => check.name || '(unnamed)');
+    const gateFailures = collectGateDetailFailures({ checks });
+    if (missingChecks.length) errors.push(`overview checks are missing: ${missingChecks.join(', ')}`);
+    if (failedChecks.length) errors.push(`overview checks failed: ${failedChecks.join(', ')}`);
+    if (Object.values(gateFailures).some((failures) => failures.length)) errors.push('overview semantic gate details are incomplete');
+  }
+  if (options.requireOverviewScreenshots) {
+    if (!Array.isArray(report.browserChecks)) errors.push('report.browserChecks must be an array');
+    else errors.push(...validateOverviewScreenshots(reportPath, report.browserChecks, expectedCells));
+  }
+  return { report, errors };
+}
+
+function findCurrentMatrixReport(rootDir, label, expectedCells, options = {}) {
+  const head = currentHead(rootDir);
+  const candidates = listAcceptanceReports(rootDir);
+  const failures = [];
+  for (const candidate of candidates) {
+    const result = validateMatrixReport(candidate.reportPath, expectedCells, head, options);
+    if (result.errors.length === 0) return { reportPath: candidate.reportPath, report: result.report };
+    failures.push(`${path.relative(rootDir, candidate.reportPath)}: ${result.errors.join('; ')}`);
+  }
+  const detail = failures.slice(0, 3).join(' | ');
+  throw new Error(`No current ${label} evidence report was found for HEAD ${head || '(unknown)'}. ${detail}`);
+}
+
+function assertRuntimeBrowserReport(rootDir = ROOT) {
+  const head = currentHead(rootDir);
+  const reportPath = path.join(rootDir, '_acceptance', 'panel-runtime-browser', 'report.json');
+  if (!fs.existsSync(reportPath)) throw new Error('panel-runtime-browser/report.json is missing');
+  const report = readJson(reportPath);
+  const checks = Array.isArray(report.checks) ? report.checks : [];
+  const allChecksPass = checks.length > 0 && checks.every((check) => check && check.pass === true);
+  const requiredChecks = [
+    'live runtime does not use a scenario fixture',
+    'validated snapshot renders the requested route',
+    'automatic polling refreshes the validated snapshot',
+    'old evidence is labeled historical instead of current',
+    'browser offline state stops current claims',
+    'online recovery replaces historical evidence with a current snapshot',
+    'desktop connection has its own workspace',
+  ];
+  const checkNames = new Set(checks.map((check) => check?.name));
+  const missingChecks = requiredChecks.filter((name) => !checkNames.has(name));
+  const screenshotMetadata = Array.isArray(report.screenshotMetadata) ? report.screenshotMetadata : [];
+  const requiredScreenshots = [
+    { state: 'mobile-connection', file: 'mobile-connection.png', viewport: { width: 390, height: 844 } },
+    { state: 'mobile-ssh-host-key-confirmation', file: 'mobile-ssh-host-key-confirmation.png', viewport: { width: 390, height: 844 } },
+    { state: 'mobile-runtime-current', file: 'mobile-runtime-current.png', viewport: { width: 390, height: 844 } },
+    { state: 'mobile-runtime-stale', file: 'mobile-runtime-stale.png', viewport: { width: 390, height: 844 } },
+    { state: 'desktop-connection', file: 'desktop-connection.png', viewport: { width: 1366, height: 768 } },
+  ];
+  const metadataStates = screenshotMetadata.map((item) => item?.state);
+  const metadataByState = new Map(screenshotMetadata.map((item) => [item?.state, item]));
+  const screenshotErrors = [];
+  const runtimeDir = path.dirname(reportPath);
+  if (screenshotMetadata.length !== requiredScreenshots.length || new Set(metadataStates).size !== screenshotMetadata.length) {
+    screenshotErrors.push('runtime screenshot states must be present exactly once');
+  }
+  const expectedFiles = requiredScreenshots.map((item) => item.file);
+  if (!Array.isArray(report.screenshots) || report.screenshots.length !== expectedFiles.length ||
+      expectedFiles.some((file, index) => report.screenshots[index] !== file)) {
+    screenshotErrors.push('runtime screenshot list does not match the required state order');
+  }
+  for (const expected of requiredScreenshots) {
+    const { state } = expected;
+    const item = metadataByState.get(state);
+    if (!item) {
+      screenshotErrors.push(`${state} metadata is missing`);
+      continue;
+    }
+    if (item.file !== expected.file || path.basename(String(item.path || '')) !== expected.file) {
+      screenshotErrors.push(`${state} is not bound to ${expected.file}`);
+      continue;
+    }
+    if (item.viewport?.width !== expected.viewport.width || item.viewport?.height !== expected.viewport.height) {
+      screenshotErrors.push(`${state} viewport does not match ${expected.viewport.width}x${expected.viewport.height}`);
+    }
+    const filePath = path.resolve(rootDir, String(item.path || ''));
+    const relative = path.relative(runtimeDir, filePath);
+    if (path.isAbsolute(relative) || relative === '..' || relative.startsWith(`..${path.sep}`)) {
+      screenshotErrors.push(`${state} screenshot escapes the runtime report directory`);
+      continue;
+    }
+    let stat;
+    try {
+      stat = fs.lstatSync(filePath);
+    } catch {
+      screenshotErrors.push(`${state} screenshot is missing`);
+      continue;
+    }
+    if (!stat.isFile() || stat.isSymbolicLink()) {
+      screenshotErrors.push(`${state} screenshot is not a regular file`);
+      continue;
+    }
+    const dimensions = pngDimensions(filePath);
+    const expectedImage = item.image && typeof item.image === 'object' ? item.image : {};
+    const digest = crypto.createHash('sha256').update(fs.readFileSync(filePath)).digest('hex');
+    if (!dimensions || dimensions.width !== expectedImage.width || dimensions.height !== expectedImage.height) {
+      screenshotErrors.push(`${state} PNG dimensions do not match metadata`);
+    }
+    if (stat.size !== item.bytes || digest !== item.sha256) {
+      screenshotErrors.push(`${state} PNG bytes or SHA-256 do not match metadata`);
+    }
+  }
+  if (new Set(screenshotMetadata.map((item) => item?.sha256).filter(Boolean)).size !== requiredScreenshots.length) {
+    screenshotErrors.push('runtime states must not reuse the same screenshot bytes');
+  }
+  if (report.pass !== true || report.commit !== head || report.source !== 'production-runtime' || report.fixture !== false || !allChecksPass || missingChecks.length || screenshotErrors.length) {
+    throw new Error(`panel-runtime-browser report is not current production-runtime evidence: ${JSON.stringify({
+      head,
+      pass: report.pass,
+      commit: report.commit,
+      source: report.source,
+      fixture: report.fixture,
+      checkCount: checks.length,
+      missingChecks,
+      failedChecks: checks.filter((check) => !check || check.pass !== true).map((check) => check?.name || '(unnamed)'),
+      screenshotErrors,
+    })}`);
+  }
+  return { reportPath, report };
 }
 
 function parseResponsiveCheckName(name) {
@@ -311,13 +434,9 @@ function collectGateDetailFailures(latest) {
     mobileSemantic: [],
   };
   for (const check of Array.isArray(latest && latest.checks) ? latest.checks : []) {
-    if (!check) {
-      continue;
-    }
+    if (!check) continue;
     const parsed = parseResponsiveCheckName(check.name);
-    if (!parsed) {
-      continue;
-    }
+    if (!parsed) continue;
     const detail = check.detail && typeof check.detail === 'object' ? check.detail : {};
     const pushFailure = (bucket, field, value) => {
       gateFailures[bucket].push({
@@ -326,180 +445,81 @@ function collectGateDetailFailures(latest) {
         value,
       });
     };
-    const pushMissing = (bucket, field) => {
-      if (detail[field] !== true) {
-        pushFailure(bucket, field, detail[field]);
+    const assertProbeChecks = (bucket, probe) => {
+      const entries = Object.entries(probe && typeof probe.checks === 'object' ? probe.checks : {});
+      if (!entries.length) pushFailure(bucket, 'probe.checks', null);
+      for (const [field, value] of entries) {
+        if (value !== true) pushFailure(bucket, `checks.${field}`, value);
       }
     };
-    const recordCheckFailure = (bucket) => {
-      if (check.pass !== true) {
-        gateFailures[bucket].push({
-          check: String(check.name || '').trim(),
-          field: 'check.pass',
-          value: check.pass,
-        });
-      }
-    };
+
     if (parsed.viewport === 'desktop' || parsed.viewport === 'desktop1440') {
-      recordCheckFailure('desktopSemantic');
-      for (const field of [
-        'overviewDesktopReleaseLayoutOk',
-        'overviewDesktopEvidenceCompositionOk',
-        'overviewDesktopColumnContinuityOk',
-        'overviewDesktopTopBandOk',
-        'overviewDesktopEffectiveHeightOk',
-        'overviewDesktopFlatStatusBarOk',
-        'overviewStatusBusFixedGrammarOk',
-        'overviewResourceFirstScreenPriorityOk',
-        'overviewCollectionContradictionOk',
-        'overviewCollectionTrustMarkersOk',
-        'overviewInterfacesForwardingFirstOk',
-        'overviewDefaultRouteRawFactsOk',
-      ]) pushMissing('desktopSemantic', field);
-      if (parsed.scenario === 'single') {
-        pushMissing('desktopSemantic', 'overviewDesktopFocusedHierarchyOk');
-        pushMissing('desktopSemantic', 'overviewSingleEvidencePriorityOk');
+      const probe = detail.desktopOverviewLedgerProbe && typeof detail.desktopOverviewLedgerProbe === 'object'
+        ? detail.desktopOverviewLedgerProbe
+        : {};
+      if (check.pass !== true) pushFailure('desktopSemantic', 'check.pass', check.pass);
+      if (detail.surface !== 'desktop-overview') pushFailure('desktopSemantic', 'surface', detail.surface);
+      if (probe.contract !== 'cold-blue-operations-ledger') pushFailure('desktopSemantic', 'contract', probe.contract);
+      assertProbeChecks('desktopSemantic', probe);
+      if (parsed.scenario === 'no-snapshot') {
+        if (probe.evidenceMode !== 'unavailable') pushFailure('noSnapshotSemantic', 'evidenceMode', probe.evidenceMode);
+        if (probe.risk !== 'evidence') pushFailure('noSnapshotSemantic', 'risk', probe.risk);
       }
-      if (parsed.scenario === 'fleet') pushMissing('desktopSemantic', 'overviewFleetSceneEvidenceOk');
     }
-    if (parsed.scenario === 'no-snapshot' && (parsed.viewport === 'desktop' || parsed.viewport === 'desktop1440')) {
-      recordCheckFailure('noSnapshotSemantic');
-      pushMissing('noSnapshotSemantic', 'overviewNoSnapshotSemanticOk');
-      pushMissing('noSnapshotSemantic', 'overviewNoSnapshotFreshnessForbiddenOk');
-      pushMissing('noSnapshotSemantic', 'overviewNoSnapshotSamplingStateUniqueOk');
-      pushMissing('noSnapshotSemantic', 'overviewNoSnapshotDesktopEvidenceTripletOk');
-      pushMissing('noSnapshotSemantic', 'overviewNoSnapshotTrustedMetricsForbiddenOk');
-      pushMissing('noSnapshotSemantic', 'overviewNoSnapshotModuleContractOk');
-      pushMissing('noSnapshotSemantic', 'overviewNoSnapshotEvidenceContractOk');
-      pushMissing('noSnapshotSemantic', 'overviewNoSnapshotNoFillerCopyOk');
-      pushMissing('noSnapshotSemantic', 'overviewNoSnapshotDowngradeReasonsOk');
-      pushMissing('noSnapshotSemantic', 'overviewNoSnapshotRepetitionBudgetOk');
-    }
+
     if (parsed.viewport === 'wide' || parsed.viewport === 'narrow') {
-      recordCheckFailure('mobileSemantic');
       const probe = detail.mobileOverviewAppHomeGateProbe && typeof detail.mobileOverviewAppHomeGateProbe === 'object'
         ? detail.mobileOverviewAppHomeGateProbe
         : {};
-      if (detail.surface !== 'mobile-native') pushFailure('mobileSemantic', 'surface', detail.surface);
+      if (check.pass !== true) pushFailure('mobileSemantic', 'check.pass', check.pass);
+      if (detail.surface !== 'mobile-overview') pushFailure('mobileSemantic', 'surface', detail.surface);
+      if (probe.contract !== 'adaptive-operations-instrument') pushFailure('mobileSemantic', 'contract', probe.contract);
       if (probe.appHomePass !== true) pushFailure('mobileSemantic', 'appHomePass', probe.appHomePass);
-      for (const [field, value] of Object.entries(probe.checks || {})) {
-        if (value !== true) pushFailure('mobileSemantic', `checks.${field}`, value);
-      }
+      assertProbeChecks('mobileSemantic', probe);
       if (parsed.scenario === 'no-snapshot') {
         if (probe.evidenceMode !== 'unavailable') pushFailure('noSnapshotSemantic', 'evidenceMode', probe.evidenceMode);
-        if (probe.checks?.unavailableBoundary !== true) pushFailure('noSnapshotSemantic', 'checks.unavailableBoundary', probe.checks?.unavailableBoundary);
-        if (probe.checks?.trafficMatchesMode !== true) pushFailure('noSnapshotSemantic', 'checks.trafficMatchesMode', probe.checks?.trafficMatchesMode);
+        if (probe.risk !== 'evidence') pushFailure('noSnapshotSemantic', 'risk', probe.risk);
+        if (probe.checks?.unavailableBoundary !== true) {
+          pushFailure('noSnapshotSemantic', 'checks.unavailableBoundary', probe.checks?.unavailableBoundary);
+        }
       }
     }
   }
   return gateFailures;
 }
 
-function isFullMatrixShape(summary) {
-  if (!summary) {
-    return false;
-  }
-  const requiredCells = [...new Set(summary.requiredCells)];
-  const requiredScenarios = [...new Set(summary.requiredScenarios)];
-  const checksPass = Array.isArray(summary.failedChecks) && summary.failedChecks.length === 0;
-  return requiredCells.length === FULL_MATRIX_CELLS.length &&
-    requiredScenarios.length === FULL_MATRIX_SCENARIOS.length &&
-    summary.complete &&
-    checksPass &&
-    summary.reportPass &&
-    summary.total === FULL_MATRIX_CELLS.length &&
-    summary.passed === FULL_MATRIX_CELLS.length &&
-    summary.failed === 0 &&
-    FULL_MATRIX_CELLS.every((cell) => requiredCells.includes(cell)) &&
-    FULL_MATRIX_SCENARIOS.every((scenario) => requiredScenarios.includes(scenario));
-}
-
-function findLatestFullMatrixReport(rootDir = ROOT) {
-  const head = currentHead(rootDir);
-  const summaries = listReleaseMatrixReports(rootDir)
-    .map((item) => summarizeMatrixReport(item.reportPath))
-    .filter((summary) => summaryMatchesHead(summary, head));
-  if (!summaries.length) {
-    throw new Error(`No release matrix report.json for current HEAD ${head || '(unknown)'} was found under _acceptance/release-matrix-*/report.json`);
-  }
-  summaries.sort((a, b) => b.mtimeMs - a.mtimeMs || b.reportPath.localeCompare(a.reportPath));
-  return summaries[0];
-}
-
 function assertLatestFullMatrixReport(rootDir = ROOT) {
-  const latest = findLatestFullMatrixReport(rootDir);
-  const head = currentHead(rootDir);
-  const checkNames = new Set(latest.checks.map((check) => String(check.name || '').trim()).filter(Boolean));
-  const expectedCheckNames = FULL_MATRIX_SCENARIOS.flatMap((scenario) =>
-    FULL_MATRIX_VIEWPORT_KEYS.flatMap((viewport) => [
-      `browser boot public/${scenario}/${viewport}`,
-      `responsive public/${scenario}/${viewport}/overview`,
-    ]));
-  const missingChecks = expectedCheckNames.filter((checkName) => !checkNames.has(checkName));
-  const passedCells = new Set(latest.passedCells);
-  const missingCells = FULL_MATRIX_CELLS.filter((cell) => !passedCells.has(cell));
-  const reportCommit = String(latest.matrix.commit || '').trim();
-  const commitMatchesHead = commitMatchesReference(reportCommit, head);
-  const aggregate = latest.matrix && latest.matrix.aggregate && typeof latest.matrix.aggregate === 'object'
-    ? latest.matrix.aggregate
-    : {};
-  const aggregateCommit = String(aggregate.commit || '').trim();
-  const releaseEvidenceOk = Boolean(
-    reportCommit &&
-    commitMatchesHead &&
-    (!aggregateCommit || commitMatchesReference(aggregateCommit, head)) &&
-    (!aggregateCommit || aggregateCommit === reportCommit) &&
-    String(aggregate.screenshotDir || '').trim() &&
-    Array.isArray(aggregate.screenshots) &&
-    aggregate.screenshots.length >= FULL_MATRIX_CELLS.length &&
-    Array.isArray(aggregate.scenarioMatrix) &&
-    aggregate.scenarioMatrix.length >= FULL_MATRIX_SCENARIOS.length &&
-    Array.isArray(aggregate.requiredCells) &&
-    Array.isArray(aggregate.passedCells)
-  );
-  const failedChecks = latest.failedChecks;
-  const gateFailures = collectGateDetailFailures(latest);
-  const failedCheckBuckets = {
-    desktopSemantic: gateFailures.desktopSemantic.map((item) => item.check),
-    noSnapshotSemantic: gateFailures.noSnapshotSemantic.map((item) => item.check),
-    mobileSemantic: gateFailures.mobileSemantic.map((item) => item.check),
+  return findCurrentMatrixReport(rootDir, '7x4 overview visual matrix', OVERVIEW_MATRIX_CELLS, {
+    requireReportPass: true,
+    requireSemanticGates: true,
+    requireOverviewScreenshots: true,
+  });
+}
+
+function assertRequiredMatrixEvidence(rootDir = ROOT) {
+  const evidence = {};
+  const failures = [];
+  const collect = (name, assertion) => {
+    try {
+      evidence[name] = assertion();
+    } catch (error) {
+      failures.push(error.message);
+    }
   };
-  const gateFailureCount = Object.values(gateFailures).reduce((total, failures) => total + failures.length, 0);
-  const checksPass = failedChecks.length === 0 && missingChecks.length === 0 && gateFailureCount === 0 && releaseEvidenceOk;
-  const reportPassMatchesChecks = Boolean(latest.reportPass) === checksPass;
-  if (!commitMatchesHead || !latest.matrix || !checksPass || !reportPassMatchesChecks || !latest.complete || latest.total !== FULL_MATRIX_CELLS.length || latest.passed !== FULL_MATRIX_CELLS.length || latest.failed !== 0 || missingCells.length || missingChecks.length) {
-    throw new Error(`Latest full matrix report is not 7x4 all green: ${JSON.stringify({
-      reportPath: path.relative(rootDir, latest.reportPath),
-      head,
-      reportCommit,
-      commitMatchesHead,
-      releaseEvidenceOk,
-      releaseEvidence: {
-        aggregateCommit,
-        screenshotDir: aggregate.screenshotDir || '',
-        screenshotCount: Array.isArray(aggregate.screenshots) ? aggregate.screenshots.length : null,
-        scenarioMatrixCount: Array.isArray(aggregate.scenarioMatrix) ? aggregate.scenarioMatrix.length : null,
-        requiredCellCount: Array.isArray(aggregate.requiredCells) ? aggregate.requiredCells.length : null,
-        passedCellCount: Array.isArray(aggregate.passedCells) ? aggregate.passedCells.length : null,
-      },
-      reportPass: latest.reportPass,
-      reportPassMatchesChecks,
-      complete: latest.complete,
-      total: latest.total,
-      passed: latest.passed,
-      failed: latest.failed,
-      checksPass,
-      failedChecks,
-      missingChecks,
-      requiredCells: latest.requiredCells.length,
-      passedCells: latest.passedCells.length,
-      missingCells,
-      failedCheckBuckets,
-      gateFailures,
-      failedScenarios: latest.scenarios.filter((scenario) => scenario && scenario.failed).map((scenario) => `${scenario.scaleScenario}:${scenario.failed}`),
-    })}`);
-  }
-  return latest;
+  collect('overview', () => assertLatestFullMatrixReport(rootDir));
+  collect('routeResponsive', () => findCurrentMatrixReport(
+    rootDir,
+    '19x4 single-scenario route responsive matrix',
+    ROUTE_RESPONSIVE_MATRIX_CELLS
+  ));
+  collect('routeState', () => findCurrentMatrixReport(
+    rootDir,
+    '19x7x2 route-state matrix',
+    ROUTE_STATE_MATRIX_CELLS
+  ));
+  collect('runtimeBrowser', () => assertRuntimeBrowserReport(rootDir));
+  if (failures.length) throw new Error(`Required current-HEAD release evidence is incomplete: ${failures.join(' | ')}`);
+  return evidence;
 }
 
 function assertPublicBoundaryClean(relPath) {
@@ -625,104 +645,98 @@ function main(argv = process.argv.slice(2)) {
   assertContains('README.zh-CN.md', '不会向 RouterOS 写入任何路由、防火墙、接口或其他配置');
   assertContains('.github/workflows/ci.yml', 'Windows env is missing loopback bind default');
   assertContains('.github/workflows/ci.yml', 'Windows env is missing panel address write default');
-  assertContains('public/index.html', 'snapshotNeedsRouterLogin');
-  assertContains('public/index.html', 'aria-label="只读：不写 RouterOS 配置"');
-  assertContains('public/index.html', 'snapshotHasRouterSshLoginError');
-  assertContains('public/index.html', 'routerLoginDraft');
-  assertContains('public/index.html', 'captureRouterLoginDraftFromForm');
-  assertContains('public/index.html', 'data-router-login-form');
-  assertContains('public/index.html', '/api/router-login');
-  assertContains('public/index.html', 'rememberPassword');
-  assertContains('public/index.html', '连接并进入面板');
+  assertContains('src/panel-framework/connection/RouterConnectionScreen.tsx', 'data-router-login-form');
+  assertContains('src/panel-framework/connection/RouterConnectionScreen.tsx', '连接并进入面板');
+  assertContains('src/panel-framework/connection/RouterConnectionScreen.tsx', '确认并固定此指纹；以后发生变化时阻断连接');
+  assertContains('src/panel-framework/connection/RouterConnectionScreen.tsx', 'REST 使用 HTTPS 并验证证书；不会自动降级到 HTTP。');
+  assertContains('src/panel-framework/connection/RouterConnectionScreen.tsx', 'name="rememberPassword"');
+  assertContains('src/panel-framework/runtime/panelApi.ts', '/api/router-login');
+  assertContains('src/panel-framework/runtime/panelApi.ts', 'rememberPassword: input.rememberProfile');
+  assertContains('src/panel-framework/runtime/panelRuntimeSchema.ts', 'export function validatePanelSnapshot');
+  assertContains('src/panel-framework/runtime/usePanelRuntime.ts', 'window.setTimeout(() => void refresh');
+  assertContains('src/panel-framework/runtime/usePanelRuntime.ts', 'window.addEventListener("offline"');
+  assertContains('src/panel-framework/runtime/usePanelRuntime.ts', 'window.addEventListener("online"');
+  assertContains('src/panel-framework/runtime/usePanelRuntime.ts', 'document.addEventListener("visibilitychange"');
+  assertContains('src/panel-framework/panel-framework-app.tsx', '<SnapshotContractError issues={validated.issues} />');
+  assertContains('src/panel-framework/panel-framework-app.tsx', 'clientEvidenceBoundary: runtimeBoundary');
 
   assertContains('README.md', '# RouterOS Read-only Status Panel');
   assertContains('README.zh-CN.md', '# RouterOS 只读状态面板');
   assertContains('README.md', 'status visibility');
   assertContains('README.md', 'not configuration management');
-  assertContains('README.md', 'troubleshooting automation');
   assertContains('README.zh-CN.md', '不做配置管理');
-  assertContains('README.zh-CN.md', '暂时不做排障工具');
   assertContains('PRODUCT_MODEL.md', 'Public UI should not imply automatic repair, configuration management, or');
 
-  assertContains('public/index.html', 'renderReadonlyStatusBus');
-  assertContains('public/index.html', '面板健康');
-  assertContains('public/index.html', 'RouterOS 健康');
-  assertContains('public/index.html', '数据年龄');
-  assertMatches('public/index.html', /WAN\s*线路/);
-  assertContains('public/index.html', 'CPU / 内存');
-  assertMatches('public/index.html', /异常\s*TopN/);
-  assertContains('public/assets/framework/panel-framework.js', 'data-mobile-native-console');
-  assertContains('public/assets/framework/panel-framework.js', 'data-mobile-native-proof');
-  assertContains('public/assets/framework/panel-framework.js', 'data-mobile-native-signal');
-  assertContains('public/assets/framework/panel-framework.js', 'data-mobile-native-inspection');
-  assertContains('public/assets/framework/panel-framework.js', 'data-mobile-native-primary-focus');
-  assertContains('public/assets/framework/panel-framework.js', 'data-mobile-native-open-detail');
-  assertContains('public/assets/framework/panel-framework.js', 'data-mobile-native-evidence-mode');
-  assertNotContains('public/assets/framework/panel-framework.js', 'rm-tabbar');
-  assertNotContains('public/assets/framework/panel-framework.js', 'phone-ops-console');
-  assertNotContains('public/assets/framework/panel-framework.js', 'data-mobile-native-brief');
-  assertNotContains('public/assets/framework/panel-framework.js', 'data-mobile-native-object-workspace');
-  assertNotContains('public/assets/framework/panel-framework.js', 'role: "tablist"');
-  assertNotContains('public/assets/framework/panel-framework.js', 'data-mobile-native-path-evidence');
-  assertNotContains('public/assets/framework/panel-framework.js', 'data-mobile-native-topology');
-  assertNotContains('public/assets/framework/panel-framework.js', 'data-mobile-native-sheet');
+  for (const route of [
+    'overview', 'interfaces', 'terminals', 'dhcp', 'dns4', 'dns6', 'routes', 'lineStatus',
+    'balance', 'trafficLoad', 'loadAudit', 'security', 'arp', 'trafficAudit', 'readonlyDiagnostics',
+    'logs', 'serviceLogs', 'connections', 'more',
+  ]) assertContains('src/panel-framework/routes/panelRoutes.ts', `"${route}"`);
+  assertContains('src/panel-framework/routes/usePanelRoute.ts', 'window.addEventListener("popstate"');
+  assertContains('src/panel-framework/routes/usePanelRoute.ts', 'window.history.pushState');
+  assertContains('src/panel-framework/routes/usePanelRoute.ts', 'window.history.replaceState');
+  assertContains('src/panel-framework/panel-framework-app.tsx', 'route === "overview"');
+  assertContains('src/panel-framework/panel-framework-app.tsx', '<OperationalSectionPage route={route}');
+  assertContains('tools/acceptance/inspect-panel-routes.js', 'history.forward()');
+  assertContains('tools/acceptance/inspect-panel-routes.js', 'canonicalUnknown');
+
+  assertContains('public/assets/framework/panel-framework.js', 'data-mobile-overview');
+  assertContains('public/assets/framework/panel-framework.js', 'data-desktop-overview');
+  assertContains('public/assets/framework/panel-framework.js', 'data-panel-route-content');
   assertContains('public/assets/framework/panel-framework.js', '当前业务状态不可判断');
-  assertContains('public/assets/framework/panel-framework.js', '当前没有可用业务快照；WAN、路由、资源和速率不进入当前结论');
-  assertContains('public/assets/framework/panel-framework.js', '历史成功记录不能作为当前业务状态');
-  assertContains('public/assets/framework/panel-framework.js', '只读监控');
-  assertContains('public/assets/framework/panel-framework.js', '失败端点');
-  assertContains('public/index.html', 'RouterOS 写入');
-  assertContains('public/index.html', '本地别名写入');
-  assertAnyContains('public/index.html', ['REST 状态', 'REST 采集', 'restState(snapshot, state)', 'REST'], 'REST 状态');
-  assertAnyContains('public/index.html', ['SSH 状态', 'SSH 采集', 'sshState(snapshot, state)', 'SSH'], 'SSH 状态');
-  assertContains('public/index.html', '外部访问');
-  assertContains('app.py', 'statusFindings');
-  assertContains('app.py', 'healthFindings');
-  assertContains('tools/local-predeploy-check.js', 'main-menu');
-  assertContains('tools/local-predeploy-check.js', 'loadAudit');
-  assertContains('tools/local-predeploy-check.js', 'readonlyDiagnostics');
-  assertContains('tools/local-predeploy-check.js', 'security');
-  assertContains('tools/local-predeploy-check.js', 'buildMatrixSummary');
+  assertNotContains('public/assets/framework/panel-framework.js', 'data-mobile-native');
+  assertNotContains('public/assets/framework/panel-framework.js', 'mn-topology');
+  assertNotContains('public/assets/framework/panel-framework.js', 'mn-sheet');
+  assertNotContains('public/assets/framework/panel-framework.js', 'role: "tablist"');
+
+  assertContains('src/panel-framework/overview/mobile-overview/MobileOverviewScreen.tsx', 'data-mobile-overview');
+  assertContains('src/panel-framework/overview/mobile-overview/MobileOverviewScreen.tsx', 'data-mobile-core-fact');
+  assertContains('src/panel-framework/overview/mobile-overview/MobileOverviewScreen.tsx', 'data-mobile-evidence-ledger');
+  assertContains('src/panel-framework/overview/mobile-overview/MobilePriorityQueue.tsx', 'data-mobile-priority-object');
+  assertContains('src/panel-framework/overview/mobile-overview/MobilePriorityQueue.tsx', 'data-mobile-priority-route');
+  assertContains('src/panel-framework/overview/mobile-overview/MobileWanInstrument.tsx', 'data-mobile-traffic-samples');
+  assertContains('src/panel-framework/overview/mobile-overview/MobileWanInstrument.tsx', '<title id="mo-chart-title">');
+  assertContains('src/panel-framework/overview/mobile-overview/MobileWanInstrument.tsx', '<desc id="mo-chart-desc">');
+  assertContains('src/panel-framework/overview/mobile-overview/MobileOverviewScreen.tsx', 'import "./styles/mobile-overview-tokens.css";');
+  assertContains('src/panel-framework/overview/mobile-overview/styles/mobile-overview.css', '.mo-verdict');
+  assertContains('src/panel-framework/overview/mobile-overview/styles/mobile-overview.css', '.mo-priority-list');
+  assertContains('src/panel-framework/overview/mobile-overview/styles/mobile-overview.css', '.mo-instrument-chart');
+  assertNotContains('src/panel-framework/overview/mobile-overview/styles/mobile-overview.css', '!important');
+  assertNotContains('src/panel-framework/overview/mobile-overview/styles/mobile-overview-responsive.css', '!important');
+  assertNotContains('src/panel-framework/overview/mobile-overview/styles/mobile-overview-tokens.css', '!important');
+
+  assertContains('src/panel-framework/overview/desktop-overview/DesktopOverviewScreen.tsx', 'data-desktop-overview');
+  assertContains('src/panel-framework/overview/desktop-overview/DesktopOverviewScreen.tsx', 'data-desktop-status-bus');
+  assertContains('src/panel-framework/overview/desktop-overview/DesktopLedger.tsx', 'data-desktop-ledger');
+  assertContains('src/panel-framework/overview/desktop-overview/DesktopLedger.tsx', 'role="table"');
+  assertContains('src/panel-framework/overview/desktop-overview/DesktopWanEvidence.tsx', 'viewBox={`0 0 ${WIDTH} ${HEIGHT}`}');
+  assertContains('src/panel-framework/overview/desktop-overview/DesktopWanEvidence.tsx', '<title id={titleId}>');
+  assertContains('src/panel-framework/overview/desktop-overview/DesktopWanEvidence.tsx', '<desc id={descId}>');
+
+  assertContains('src/panel-framework/overview/evidence-model/overviewEvidenceTypes.ts', '"current" | "historical" | "unavailable"');
+  assertContains('src/panel-framework/overview/evidence-model/buildOverviewEvidenceModel.ts', 'route.active === true && route.disabled !== true');
+  assertContains('src/panel-framework/overview/evidence-model/buildOverviewEvidenceModel.ts', 'if (rowDown === null || rowUp === null) return null;');
+  assertContains('src/panel-framework/overview/evidence-model/buildOverviewEvidenceModel.ts', 'observed.length - 1');
+  assertContains('src/panel-framework/overview/evidence-model/buildOverviewEvidenceModel.ts', 'Math.abs(snapshotAt - last.timestamp)');
+  assertNotContains('src/panel-framework/overview/evidence-model/buildOverviewEvidenceModel.ts', 'rows[0]');
+  assertContains('tools/check-mobile-native-model.js', 'missing current rate must not produce a trend');
+  assertContains('tools/check-mobile-native-model.js', 'explicit zero observations remain valid');
+
+  assertContains('tools/acceptance/inspect-overview-mobile.js', "contract: 'adaptive-operations-instrument'");
+  assertContains('tools/acceptance/inspect-overview-mobile.js', 'Object.values(checks).every(Boolean)');
+  assertContains('tools/acceptance/inspect-overview-mobile.js', 'stableTaskNavigation: taskButtons.length === 3');
+  assertContains('tools/acceptance/inspect-overview-mobile.js', 'smallText.length === 0');
+  assertContains('tools/acceptance/inspect-overview-desktop-layout.js', "contract: 'cold-blue-operations-ledger'");
+  assertContains('tools/local-predeploy-check.js', 'panelRouteRuntimeOk: routeProbe?.pass === true');
   assertContains('tools/local-predeploy-check.js', 'report.matrix = buildMatrixSummary(report.browserChecks, args);');
   assertContains('tools/local-predeploy-check.js', 'matrixBlocksTopLevelPass');
-  assertContains('tools/local-predeploy-check.js', 'top-level pass suppressed until required release matrix is complete');
   assertContains('tools/local-predeploy-check.js', 'report.pass = report.failures.length === 0 && !matrixBlocksTopLevelPass;');
-  assertContains('tools/local-predeploy-check.js', 'unified release scenario matrix covers required scenarios');
-  assertContains('tools/local-predeploy-check.js', 'release-matrix-');
-  assertContains('tools/local-predeploy-check.js', 'function gitFullHead()');
-  assertContains('tools/local-predeploy-check.js', 'commit: gitFullHead() || gitShortHead(),');
-  assertContains('tools/local-predeploy-check.js', 'releaseMatrixComplete = explicitOverviewReleaseMatrix ? report.matrix.complete : matrixAggregate.complete');
-  assertContains('tools/local-predeploy-check.js', 'explicitOverviewReleaseMatrix');
-  assertContains('tools/local-predeploy-check.js', 'OVERVIEW_RELEASE_VIEWPORTS');
-  assertContains('tools/local-predeploy-check.js', 'viewportCellKey');
-  assertContains('tools/check-public-release-readiness.js', 'normalizeMatrixCell');
-  assertContains('tools/local-predeploy-check.js', '--viewports <list>          Comma list like desktop=1366x768,desktop1440=1440x900,wide=844x390,narrow=390x844.');
-  assertContains('tools/local-predeploy-check.js', 'aggregateComplete: matrixAggregate.complete,');
-  assertContains('tools/local-predeploy-check.js', 'screenshotDir: args.out');
-  assertContains('tools/local-predeploy-check.js', 'scenarioMatrix:');
-  assertContains('tools/local-predeploy-check.js', 'screenshots: listScreenshotFiles(args.out)');
-  assertContains('tools/local-predeploy-check.js', 'async function withTimeout(');
-  assertContains('tools/local-predeploy-check.js', 'captureScreenshot(cdp, screenshotPath)');
-  assertContains('tools/local-predeploy-check.js', 'inspection.screenshotOk = screenshotOk;');
-  assertContains('tools/local-predeploy-check.js', 'inspection.pass = Boolean(inspection.pass && screenshotOk);');
-  assertContains('tools/local-predeploy-check.js', "await withTimeout(browser.stop(), 8000, 'browser stop')");
-  assertContains('tools/local-predeploy-check.js', "require('./acceptance/inspect-section-browser')");
-  assertContains('tools/local-predeploy-check.js', "require('./acceptance/inspect-overview-mobile')");
-  assertContains('tools/local-predeploy-check.js', "require('./acceptance/inspect-overview-desktop-layout')");
-  assertContains('tools/acceptance/inspect-section-browser.js', 'if (mobileNativeResult) return mobileNativeResult;');
-  assertContains('tools/acceptance/inspect-section-browser.js', 'const pass = legacyOrDesktopPass;');
-  assertContains('tools/acceptance/inspect-overview-mobile.js', 'Object.values(routerMobileChecks).every(Boolean)');
-  assertContains('tools/acceptance/inspect-overview-mobile.js', 'const pass = mobileOverviewAppHomePass;');
-  assertContains('tools/acceptance/inspect-overview-mobile.js', 'routerMobileSmallTextNodes.length === 0');
-  assertContains('tools/acceptance/inspect-overview-mobile.js', 'routerMobileAriaTargetsOk');
-  assertContains('tools/acceptance/inspect-overview-mobile.js', 'nativeDetailHasNovelEvidence && nativeDetailNoHomeReplay');
-  assertContains('tools/acceptance/inspect-overview-desktop-layout.js', 'sceneCoreGeometry');
-  assertContains('tools/acceptance/inspect-overview-desktop-layout.js', 'overviewDesktopColumnContinuityOk');
-  assertContains('tools/acceptance/inspect-overview-desktop-layout.js', 'overviewDesktopFocusedHierarchyOk');
-  assertContains('tools/acceptance/inspect-section-browser.js', 'overviewDesktopEvidenceCompositionOk');
-  assertContains('tools/acceptance/inspect-section-browser.js', 'overviewDesktopReleaseLayoutOk');
-  assertContains('tools/acceptance/inspect-section-browser.js', 'overviewNoSnapshotSemanticOk');
-  assertNotContains('tools/acceptance/inspect-section-browser.js', 'const pass = routerMobileRoot ? mobileOverviewAppHomePass : legacyOrDesktopPass');
+  assertContains('tools/local-predeploy-check.js', "const requiredScenarios = ['single', 'fleet', ...EDGE_SCALE_SCENARIOS];");
+  assertContains('.github/workflows/ci.yml', '--sections public-release');
+  assertContains('.github/workflows/ci.yml', '_acceptance/route-matrix-${{ github.sha }}');
+  assertContains('.github/workflows/ci.yml', 'npm run check:runtime-browser');
+  assertContains('.github/workflows/ci.yml', 'python tools/check-backend-security.py');
+
   for (const inspector of [
     'tools/local-predeploy-check.js',
     'tools/acceptance/inspect-section-browser.js',
@@ -741,121 +755,35 @@ function main(argv = process.argv.slice(2)) {
       'overviewFirstScreenFieldCount >= minOverviewFirstScreenFields',
     ]) assertNotContains(inspector, fakeDensityToken);
   }
-  assertContains('tools/local-predeploy-check.js', "const requiredScenarios = ['single', 'fleet', 'all-offline', 'no-snapshot', 'collection-down', 'resource-full', 'interfaces-down'];");
-  assertContains('src/panel-framework/overview/OverviewPanel.css', '@import "./styles/overview-foundation.css";');
-  assertContains('src/panel-framework/overview/OverviewPanel.css', '@import "./styles/overview-desktop.css";');
-  assertContains('src/panel-framework/overview/OverviewPanel.css', '@import "./styles/overview-states.css";');
-  assertNotContains('src/panel-framework/overview/OverviewPanel.css', '@media');
-  assertNotContains('src/panel-framework/overview/OverviewPanel.css', 'overview-mobile.css');
+
+  for (const retiredNativeFile of [
+    'MobileNativeConsole.tsx', 'MobileNativeHome.tsx', 'MobileNativeSignal.tsx',
+    'MobileNativeInspection.tsx', 'MobileNativeDetail.tsx', 'MobileNativeObjectSelector.tsx',
+    'MobileNativeTopology.tsx', 'MobileNativeSheet.tsx', 'mobileNativeModel.ts',
+    'mobileNativeEvidence.ts', 'mobileNativeTypes.ts',
+  ]) assertNotExists(`src/panel-framework/overview/mobile-native/${retiredNativeFile}`);
+  assertNotExists('src/panel-framework/overview/desktopOverviewScenes.tsx');
   assertNotExists('src/panel-framework/overview/styles/overview-mobile.css');
-  assertContains('src/panel-framework/overview/styles/overview-foundation.css', '--ro-border');
-  assertContains('src/panel-framework/overview/styles/overview-desktop.css', '@import "./desktop/density.css";');
-  assertContains('src/panel-framework/overview/styles/desktop/density.css', '@media (min-width: 761px)');
-  assertNotContains('src/panel-framework/overview/styles/overview-states.css', 'ro-desktop-key-row');
-  assertNotContains('src/panel-framework/overview/styles/overview-states.css', 'ro-desktop-key-cell');
-  assertNotContains('src/panel-framework/overview/styles/overview-states.css', 'ro-time-tabs');
-  assertContains('src/panel-framework/overview/styles/overview-states.css', '--ik40-console-page');
-  assertContains('src/panel-framework/overview/components/StatusVerdict.tsx', 'export function StatusVerdict');
-  assertContains('src/panel-framework/overview/components/DesktopModule.tsx', 'export function Module');
-  assertContains('src/panel-framework/overview/components/WanTrend.tsx', 'export function WanTrend');
-  assertContains('src/panel-framework/overview/components/EvidenceChain.tsx', 'export function EvidenceChain');
-  assertContains('src/panel-framework/overview/components/TerminalRanking.tsx', 'export function TerminalRanking');
-  assertContains('src/panel-framework/overview/OverviewPanel.tsx', '<StatusVerdict snapshot={snapshot} state={state} />');
-  assertContains('src/panel-framework/overview/desktopOverviewDefaultScene.tsx', '<WanTrend key="compact-network"');
-  assertContains('src/panel-framework/overview/desktopOverviewDefaultScene.tsx', '<EvidenceChain key="compact-boundary"');
-  assertContains('src/panel-framework/overview/desktopOverviewDefaultScene.tsx', '<TerminalRanking key="compact-terminals"');
-  assertContains('src/panel-framework/overview/mobile-native/MobileNativeHome.tsx', 'data-mobile-native-evidence-mode');
-  assertContains('src/panel-framework/overview/mobile-native/MobileNativeHome.tsx', 'role="listbox"');
-  assertContains('src/panel-framework/overview/mobile-native/MobileNativeHome.tsx', 'data-mobile-native-proof');
-  assertContains('src/panel-framework/overview/mobile-native/MobileNativeInspection.tsx', 'data-mobile-native-inspection');
-  assertContains('src/panel-framework/overview/mobile-native/MobileNativeDetail.tsx', 'data-mobile-native-detail-section');
-  assertContains('src/panel-framework/overview/desktopOverviewDefaultScene.tsx', 'WAN 采样趋势');
-  assertContains('src/panel-framework/overview/mobile-native/mobileNativeTypes.ts', '"current" | "historical" | "unavailable"');
-  assertContains('src/panel-framework/overview/mobile-native/mobileNativeFocus.ts', 'mode === "current" ? observedRates(snapshot) : null');
-  assertContains('tools/check-mobile-native-model.js', 'missing observations must not render as measured zero');
-  assertContains('tools/check-mobile-native-model.js', 'numeric zero is a valid explicit current observation');
-  assertContains('src/panel-framework/overview/mobile-native/mobileNativeEvidence.ts', 'route.active === true && route.disabled !== true');
-  assertContains('src/panel-framework/overview/mobile-native/mobileNativeEvidence.ts', 'trailingStreak');
-  assertNotContains('src/panel-framework/overview/mobile-native/MobileNativeHome.tsx', 'WAN 实时趋势');
-  assertNotContains('src/panel-framework/overview/desktopOverviewDefaultScene.tsx', 'WAN 实时趋势');
-  for (const retiredMobileComponent of [
-    'CoreMetricRail.tsx',
-    'HomeSurface.tsx',
-    'IncidentHero.tsx',
-    'JudgementStrip.tsx',
-    'MobileOverviewSections.tsx',
-    'StatusHeader.tsx',
-    'TrustStrip.tsx',
-  ]) assertNotExists(`src/panel-framework/overview/components/${retiredMobileComponent}`);
-  for (const retiredMobileFile of [
-    'src/panel-framework/overview/components/MobileOverviewHome.tsx',
-    'src/panel-framework/overview/components/MobileOverviewDecision.tsx',
-    'src/panel-framework/overview/components/BottomTabs.tsx',
-    'src/panel-framework/overview/mobileOverviewModel.ts',
-    'src/panel-framework/overview/mobileOverviewPolicy.ts',
-    'src/panel-framework/overview/styles/mobile/mobile-product.css',
-    'src/panel-framework/overview/mobile-app/RouterMobileApp.tsx',
-    'src/panel-framework/overview/mobile-app/routerMobileModel.ts',
-    'src/panel-framework/overview/phone-ops/PhoneOpsConsole.tsx',
-    'src/panel-framework/overview/phone-ops/phoneOpsModel.ts',
-  ]) assertNotExists(retiredMobileFile);
-  assertNotExists('src/panel-framework/overview/mobile-native/MobileNativePatrolBrief.tsx');
-  assertNotExists('src/panel-framework/overview/mobile-native/MobileNativeObjectWorkspace.tsx');
-  assertNotExists('src/panel-framework/overview/mobile-native/MobileNativePathEvidence.tsx');
-  assertNotExists('src/panel-framework/overview/mobile-native/MobileNativeTopology.tsx');
-  assertNotExists('src/panel-framework/overview/mobile-native/MobileNativeSheet.tsx');
-  assertNotExists('src/panel-framework/overview/components/MobileOverviewStyles.tsx');
-  assertNotExists('src/panel-framework/overview/components/MobileOverviewBaseStyles.ts');
-  assertNotExists('src/panel-framework/overview/components/MobileOverviewPublicDecisionStyles.ts');
-  assertNotExists('src/panel-framework/overview/components/MobileOverviewPublicDecisionRepairStyles.ts');
-  assertContains('src/panel-framework/overview/mobile-native/MobileNativeConsole.tsx', 'import "./styles/mobile-native-tokens.css";');
-  assertContains('src/panel-framework/overview/mobile-native/styles/mobile-native-layout.css', '.mn-focus-masthead');
-  assertContains('src/panel-framework/overview/mobile-native/styles/mobile-native-layout.css', '.mn-proof-ledger');
-  assertContains('src/panel-framework/overview/mobile-native/styles/mobile-native-layout.css', '.mn-inspection');
-  assertContains('src/panel-framework/overview/mobile-native/styles/mobile-native-layout.css', '.mn-detail-entry');
-  assertNotContains('src/panel-framework/overview/mobile-native/styles/mobile-native-layout.css', '.mn-brief');
-  assertNotContains('src/panel-framework/overview/mobile-native/styles/mobile-native-layout.css', '.mn-object-workspace');
-  assertNotContains('src/panel-framework/overview/mobile-native/styles/mobile-native-layout.css', '.mn-path-evidence');
-  assertNotContains('src/panel-framework/overview/mobile-native/styles/mobile-native-layout.css', '.mn-topology');
-  assertNotContains('src/panel-framework/overview/mobile-native/styles/mobile-native-layout.css', '.mn-sheet');
-  assertNotContains('src/panel-framework/overview/mobile-native/styles/mobile-native-layout.css', '.rm-tabbar');
-  assertMaxBytes('public/assets/framework/style.css', 500000);
   assertNotExists('public/scale-adaptive-patch.js');
   assertNotExists('public/layout-whitespace-patch.js');
   assertNotExists('public/panel-professional-redesign.js');
-  assertNotContains('app.py', 'semanticTriage');
-  assertNotContains('app.py', 'actionQueue');
-  assertNotContains('app.py', 'manual_review');
-  assertPublicBoundaryClean('public/index.html');
-  assertNotContains('public/index.html', 'events.length');
-  assertContains('public/index.html', 'ik-desktop-workspace');
-  assertAnyContains('public/index.html', ['data-overview-density-module="wan-trend"', 'module="wan-trend"', 'module: "wan-trend"', '"wan-trend"'], 'wan-trend overview module');
-  assertContains('public/index.html', 'data-overview-rank-grid');
+  assertMaxBytes('public/assets/framework/style.css', 100000);
   assertContains('public/index.html', 'data-app-shell="ikuai"');
   assertContains('public/index.html', 'data-overview-framework-asset="style"');
   assertContains('public/index.html', 'data-overview-framework-asset="script"');
-  assertNotContains('public/index.html', 'mountRouterOverviewPanel');
-  assertNotContains('public/index.html', 'router-overview-framework');
+  assertNotContains('public/index.html', 'layout-whitespace-patch.js');
+  assertNotContains('public/index.html', 'readonly-diagnostics.js');
   assertContains('vite.config.ts', 'publicDir: false');
   assertContains('vite.config.ts', 'outDir: "public/assets/framework"');
   assertContains('vite.config.ts', 'fileName: () => "panel-framework.js"');
 
-  assertContains('public/index.html', '路由与分流状态');
-  assertContains('public/index.html', '防火墙规则');
-  assertContains('public/index.html', '资源状态');
-  assertContains('public/index.html', '流量状态');
-  assertContains('public/index.html', '终端状态');
-  assertContains('public/index.html', '采集状态');
-  assertNotContains('public/index.html', '诊断总览');
-  assertNotContains('public/index.html', '负载审计');
-  assertNotContains('public/index.html', 'ACL 规则');
-  assertNotContains('public/index.html', '分流监控');
-  assertNotContains('public/index.html', '终端风险');
-  assertNotContains('public/index.html', '线路状态检测');
-  assertNotContains('public/index.html', '请检查');
-  assertNotContains('public/index.html', '下一步');
-  assertNotContains('public/index.html', 'layout-whitespace-patch.js');
-  assertNotContains('public/index.html', 'readonly-diagnostics.js');
+  assertContains('panel_backend/config_store.py', 'passwords are never persisted');
+  assertContains('panel_backend/api_schema.py', 'Request JSON body must be an object');
+  assertContains('panel_backend/collector_transport.py', 'allow_redirects=False');
+  assertContains('panel_backend/collector_evidence.py', 'class ConnectionEvidenceParser');
+  assertContains('tools/check-backend-security.py', 'assert_collector_transport_contract');
+  assertContains('tools/check-backend-security.py', 'assert_api_schema_contract');
+
   assertContains('app.py', 'private_public_assets = {"readonly-diagnostics.js"}', 'readonly diagnostics stays private in public profile');
   assertContains('app.py', 'if PUBLIC_ROUTEROS_PROFILE and asset_name in self.private_public_assets:', 'public static boundary for readonly diagnostics');
   assertContains('app.py', '/api/readonly-diagnostics', 'readonly diagnostics API route remains present');
@@ -867,21 +795,6 @@ function main(argv = process.argv.slice(2)) {
   assertContains('tools/local-predeploy-check.js', 'local server logs stay free of socket reset noise');
   assertContains('tools/local-predeploy-check.js', 'ConnectionResetError');
   assertContains('tools/local-predeploy-check.js', 'BrokenPipeError');
-  assertNotContains('public/index.html', 'collectionHealthDiagnostics');
-  assertNotContains('public/index.html', 'dnsProxyDiagnostics');
-  assertNotContains('public/index.html', 'wanQualityDiagnostics');
-  assertNotContains('public/index.html', 'terminalRiskDiagnostics');
-  assertNotContains('public/index.html', 'systemAuditDiagnostics');
-
-  assertContains('public/index.html', '展开 RouterOS 原始字段');
-  assertContains('public/index.html', 'connection-mark');
-  assertContains('public/index.html', 'packet-mark');
-  assertContains('public/index.html', 'routing-mark');
-  assertContains('public/index.html', 'passthrough');
-  assertContains('public/index.html', 'in-interface');
-  assertContains('public/index.html', 'out-interface');
-  assertContains('public/index.html', 'src-address');
-  assertContains('public/index.html', 'dst-address');
   assertContains('app.py', 'rawOrder');
   assertContains('app.py', 'connection-mark');
   assertContains('app.py', 'packet-mark');
@@ -891,8 +804,8 @@ function main(argv = process.argv.slice(2)) {
   if (args.staticOnly) {
     console.log('[ok] static public release readiness markers are present');
   } else {
-    const latestFullMatrixReport = assertLatestFullMatrixReport();
-    console.log(`[ok] latest full matrix report is 7x4 all green: ${path.relative(ROOT, latestFullMatrixReport.reportPath)}`);
+    const evidence = assertRequiredMatrixEvidence();
+    console.log(`[ok] current release evidence is complete: ${path.relative(ROOT, evidence.overview.reportPath)}`);
   }
 
   console.log('[ok] public release readiness markers are present');
@@ -904,9 +817,13 @@ if (require.main === module) {
 
 module.exports = {
   assertLatestFullMatrixReport,
-  findLatestFullMatrixReport,
+  assertRequiredMatrixEvidence,
+  assertRuntimeBrowserReport,
   parseArgs,
   FULL_MATRIX_CELLS,
   FULL_MATRIX_SCENARIOS,
   FULL_MATRIX_VIEWPORT_KEYS,
+  OVERVIEW_MATRIX_CELLS,
+  ROUTE_RESPONSIVE_MATRIX_CELLS,
+  ROUTE_STATE_MATRIX_CELLS,
 };

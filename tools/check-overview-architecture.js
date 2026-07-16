@@ -1,1518 +1,192 @@
-const fs = require("fs");
-const path = require("path");
-const postcss = require("postcss");
+const fs = require("node:fs");
+const path = require("node:path");
 
-function read(rel) {
-  return fs.readFileSync(path.join(process.cwd(), rel), "utf8");
-}
-
-function exists(rel) {
-  return fs.existsSync(path.join(process.cwd(), rel));
-}
-
-function bytes(rel) {
-  return fs.statSync(path.join(process.cwd(), rel)).size;
-}
-
-function lines(text) {
-  return text.split(/\r\n|\r|\n/).length;
-}
-
-function cssHexToken(text, name) {
-  const match = text.match(new RegExp(`${name}:\\s*(#[0-9a-f]{6})`, "i"));
-  return match?.[1] || "";
-}
-
-function relativeLuminance(hex) {
-  const channels = [1, 3, 5].map((offset) => Number.parseInt(hex.slice(offset, offset + 2), 16) / 255)
-    .map((value) => value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4);
-  return 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2];
-}
-
-function contrastRatio(foreground, background) {
-  const values = [relativeLuminance(foreground), relativeLuminance(background)].sort((a, b) => b - a);
-  return (values[0] + 0.05) / (values[1] + 0.05);
-}
-
+const root = process.cwd();
 const failures = [];
+
+function absolute(relativePath) {
+  return path.join(root, relativePath);
+}
+
+function exists(relativePath) {
+  return fs.existsSync(absolute(relativePath));
+}
+
+function read(relativePath) {
+  if (!exists(relativePath)) {
+    failures.push(`Missing required file: ${relativePath}`);
+    return "";
+  }
+  return fs.readFileSync(absolute(relativePath), "utf8");
+}
+
 function assert(condition, message) {
   if (!condition) failures.push(message);
 }
 
-const panelFile = "src/panel-framework/overview/OverviewPanel.tsx";
-const panelCssFile = "src/panel-framework/overview/OverviewPanel.css";
-const contextFile = "CONTEXT.md";
-const localPredeployFile = "tools/local-predeploy-check.js";
-const sectionBrowserInspectorFile = "tools/acceptance/inspect-section-browser.js";
-const mobileOverviewInspectorFile = "tools/acceptance/inspect-overview-mobile.js";
-const desktopOverviewLayoutInspectorFile = "tools/acceptance/inspect-overview-desktop-layout.js";
-const desktopBaseStylesFile =
-  "src/panel-framework/overview/styles/overview-desktop.css";
-const desktopConsoleRefinementStylesFile =
-  "src/panel-framework/overview/styles/desktop/console-refinement.css";
-const desktopDensityStylesFile =
-  "src/panel-framework/overview/styles/desktop/density.css";
-const desktopShellChromeStylesFile =
-  "src/panel-framework/overview/styles/desktop/shell-chrome.css";
-const desktopStyleDirectory = "src/panel-framework/overview/styles/desktop";
-const desktopActiveStyleFiles = fs
-  .readdirSync(path.join(process.cwd(), desktopStyleDirectory))
-  .filter((file) => file.endsWith(".css"))
-  .sort()
-  .map((file) => `${desktopStyleDirectory}/${file}`);
-const desktopBaseStyleLayerFiles = [
-  desktopBaseStylesFile,
-  desktopDensityStylesFile,
-  "src/panel-framework/overview/styles/desktop/first-screen.css",
-  "src/panel-framework/overview/styles/desktop/hierarchy.css",
-  desktopShellChromeStylesFile,
-  "src/panel-framework/overview/styles/desktop/evidence.css",
-  "src/panel-framework/overview/styles/desktop/console-skeleton.css",
-  "src/panel-framework/overview/styles/desktop/layout.css",
-  desktopConsoleRefinementStylesFile,
-];
-const retiredDesktopWorkspaceOwnerFiles = [
-  "src/panel-framework/overview/styles/desktop/console-skeleton.css",
-  "src/panel-framework/overview/styles/desktop/layout.css",
-  desktopConsoleRefinementStylesFile,
-  desktopDensityStylesFile,
-  "src/panel-framework/overview/styles/desktop/hierarchy.css",
-  "src/panel-framework/overview/styles/desktop/hierarchy-layout.css",
-];
-const overviewRetiredTopbarStyleFiles = [
+function lineCount(source) {
+  return source ? source.split(/\r?\n/).length : 0;
+}
+
+function assertIncludes(source, needles, label) {
+  for (const needle of needles) assert(source.includes(needle), `${label} must include ${needle}`);
+}
+
+function assertExcludes(source, needles, label) {
+  for (const needle of needles) assert(!source.includes(needle), `${label} must exclude ${needle}`);
+}
+
+function cssFontSizes(source) {
+  return [...source.matchAll(/font-size\s*:\s*([0-9.]+)px/gi)].map((match) => Number(match[1]));
+}
+
+const files = {
+  panel: "src/panel-framework/overview/OverviewPanel.tsx",
+  panelCss: "src/panel-framework/overview/OverviewPanel.css",
+  types: "src/panel-framework/overview/types.ts",
+  evidenceModel: "src/panel-framework/overview/evidence-model/buildOverviewEvidenceModel.ts",
+  evidenceTypes: "src/panel-framework/overview/evidence-model/overviewEvidenceTypes.ts",
+  mobile: "src/panel-framework/overview/mobile-overview/MobileOverviewScreen.tsx",
+  mobileQueue: "src/panel-framework/overview/mobile-overview/MobilePriorityQueue.tsx",
+  mobileChart: "src/panel-framework/overview/mobile-overview/MobileWanInstrument.tsx",
+  mobileTokens: "src/panel-framework/overview/mobile-overview/styles/mobile-overview-tokens.css",
+  mobileCss: "src/panel-framework/overview/mobile-overview/styles/mobile-overview.css",
+  mobileResponsive: "src/panel-framework/overview/mobile-overview/styles/mobile-overview-responsive.css",
+  desktop: "src/panel-framework/overview/desktop-overview/DesktopOverviewScreen.tsx",
+  desktopModel: "src/panel-framework/overview/desktop-overview/desktopOverviewModel.ts",
+  desktopLedger: "src/panel-framework/overview/desktop-overview/DesktopLedger.tsx",
+  desktopIncident: "src/panel-framework/overview/desktop-overview/DesktopIncidentDocket.tsx",
+  desktopChart: "src/panel-framework/overview/desktop-overview/DesktopWanEvidence.tsx",
+  desktopTokens: "src/panel-framework/overview/desktop-overview/styles/desktop-overview-tokens.css",
+  desktopCss: "src/panel-framework/overview/desktop-overview/styles/desktop-overview.css",
+  desktopResponsive: "src/panel-framework/overview/desktop-overview/styles/desktop-overview-responsive.css",
+  builtCss: "public/assets/framework/style.css",
+  builtJs: "public/assets/framework/panel-framework.js",
+};
+
+const source = Object.fromEntries(Object.entries(files).map(([key, file]) => [key, read(file)]));
+const mobileBundle = [source.mobile, source.mobileQueue, source.mobileChart].join("\n");
+const mobileStyles = [source.mobileTokens, source.mobileCss, source.mobileResponsive].join("\n");
+const desktopBundle = [source.desktop, source.desktopModel, source.desktopLedger, source.desktopIncident, source.desktopChart].join("\n");
+const desktopStyles = [source.desktopTokens, source.desktopCss, source.desktopResponsive].join("\n");
+const activeStyles = [source.panelCss, mobileStyles, desktopStyles].join("\n");
+
+assertIncludes(source.panel, [
+  'const MOBILE_OVERVIEW_QUERY = "(max-width: 899px)"',
+  "<MobileOverviewScreen",
+  "<DesktopOverviewScreen",
+  "mobile ?",
+], "OverviewPanel independent surface mount");
+assertExcludes(source.panel, ["DesktopWorkspace", "StatusVerdict", "data-mobile-native", "display: none"], "OverviewPanel");
+assert(source.types.includes("export interface OverviewPanelProps"), "Shared overview props must live with shared overview types");
+
+assertIncludes(source.evidenceTypes, [
+  '"current" | "historical" | "unavailable"',
+  '"evidence" | "collection" | "wan" | "resource" | "interfaces" | "route" | "none"',
+  "OverviewPriorityObject",
+  "OverviewTrafficInstrument",
+], "shared evidence types");
+assertIncludes(source.evidenceModel, [
+  "route.active === true && route.disabled !== true",
+  'if (mode !== "current" || risk !== "none") return null',
+  "if (rowDown === null || rowUp === null) return null",
+  "for (let index = observed.length - 1; index >= 0 && observed[index] === true; index -= 1)",
+  'state.facts.interfaces.down > 0) return "interfaces"',
+], "shared evidence policy");
+assertExcludes(source.evidenceModel, ["rows[0]", "row.downRate || 0", "row.upRate || 0", "实时可信"], "shared evidence policy");
+assert(source.evidenceModel.indexOf('state.facts.interfaces.down > 0) return "interfaces"') < source.evidenceModel.indexOf('if (state.scale === "fleet")'), "Real interface risk must outrank Fleet scale presentation");
+
+assertIncludes(source.mobile, [
+  "data-mobile-overview",
+  "data-mobile-core-facts",
+  "MobilePriorityQueue",
+  "MobileWanInstrument",
+  "data-mobile-evidence-ledger",
+], "mobile overview");
+assertIncludes(source.mobileChart, ["<svg", "viewBox", "<title", "<desc", "data-mobile-traffic-samples"], "mobile WAN SVG");
+assertExcludes(mobileBundle, ["DesktopOverview", "do-shell", "role=\"tab\"", "data-mobile-native", "grabber", "topology"], "mobile render tree");
+assert(mobileStyles.includes("@media (max-width: 899px)"), "Mobile styles must be bounded to max-width 899px");
+assertExcludes(mobileStyles, [".do-", ".ro-", ".mn-", "!important", "radial-gradient("], "mobile styles");
+
+assertIncludes(source.desktop, [
+  "data-desktop-overview",
+  "data-desktop-status-bus",
+  "DesktopIncidentDocket",
+  "DesktopLedger",
+  "DesktopWanEvidence",
+  'const incident = model.risk !== "none"',
+  'state.scale !== "fleet"',
+], "desktop overview");
+assertIncludes(source.desktopModel, [
+  "buildOverviewEvidenceModel",
+  "row.active === true && row.disabled !== true",
+  "boundaryRows",
+  "operationalRows",
+  "objectRows",
+  "不以零值代替缺失",
+], "desktop view model");
+assertIncludes(source.desktopChart, [
+  "<svg",
+  "viewBox",
+  'role="img"',
+  "<title",
+  "<desc",
+  "data-sample-count",
+  'data-unit="bit/s"',
+  "traffic.currentDown",
+  "traffic.currentUp",
+  "traffic.peak",
+], "desktop WAN SVG");
+assertExcludes(source.desktopChart, ["threshold", "阈值", "<canvas", "style={{ width", "style={{ left"], "desktop WAN SVG");
+assertIncludes(source.desktopLedger, ["role=\"table\"", "role=\"row\"", "role=\"columnheader\"", "role=\"cell\""], "desktop ledger semantics");
+assertExcludes(desktopBundle, ["MobileOverview", "mo-shell", "DesktopWorkspace", "StatusVerdict", "DesktopDecisionRail", "desktopOverviewScenes"], "desktop render tree");
+assert(desktopStyles.includes("@media (min-width: 900px)"), "Desktop styles must be bounded to min-width 900px");
+assertExcludes(desktopStyles, [".mo-", ".ro-", ".mn-", "!important", "radial-gradient("], "desktop styles");
+
+const retiredFiles = [
+  "src/panel-framework/overview/mobile-native/MobileNativeConsole.tsx",
+  "src/panel-framework/overview/mobile-native/MobileNativeHome.tsx",
+  "src/panel-framework/overview/components/DesktopConsole.tsx",
+  "src/panel-framework/overview/components/DesktopDecisionRail.tsx",
+  "src/panel-framework/overview/components/StatusVerdict.tsx",
+  "src/panel-framework/overview/desktopOverviewScenes.tsx",
+  "src/panel-framework/overview/desktopOverviewVisuals.tsx",
+  "src/panel-framework/overview/styles/overview-desktop.css",
   "src/panel-framework/overview/styles/overview-states.css",
-  "src/panel-framework/overview/styles/desktop/density.css",
-  "src/panel-framework/overview/styles/desktop/first-screen.css",
-  "src/panel-framework/overview/styles/desktop/hierarchy.css",
-  "src/panel-framework/overview/styles/desktop/shell-chrome.css",
-  "src/panel-framework/overview/styles/desktop/evidence.css",
-  "src/panel-framework/overview/styles/desktop/console-skeleton.css",
-  "src/panel-framework/overview/styles/desktop/layout.css",
-  "src/panel-framework/overview/styles/desktop/hierarchy-layout.css",
-  "src/panel-framework/overview/styles/desktop/release.css",
-];
-const overviewRetiredDesktopKeyRowStyleFiles = [
-  "src/panel-framework/overview/styles/overview-states.css",
-  "src/panel-framework/overview/styles/desktop/console-refinement.css",
-  "src/panel-framework/overview/styles/desktop/console-skeleton.css",
-  "src/panel-framework/overview/styles/desktop/evidence.css",
-  "src/panel-framework/overview/styles/desktop/first-screen.css",
-  "src/panel-framework/overview/styles/desktop/hierarchy.css",
-  "src/panel-framework/overview/styles/desktop/layout.css",
   "src/panel-framework/overview/styles/desktop/refinement.css",
 ];
-const overviewRetiredTimeTabStyleFiles = [
-  "src/panel-framework/overview/styles/overview-states.css",
-  "src/panel-framework/overview/styles/desktop/console-skeleton.css",
-  "src/panel-framework/overview/styles/desktop/hierarchy.css",
-];
-const overviewRetiredSidebarMiniStatusStyleFiles = [
-  "src/panel-framework/overview/styles/desktop/first-screen.css",
-  "src/panel-framework/overview/styles/desktop/hierarchy.css",
-  "src/panel-framework/overview/styles/desktop/console-skeleton.css",
-  "src/panel-framework/overview/styles/desktop/layout.css",
-  "src/panel-framework/overview/styles/desktop/refinement.css",
-];
-const desktopRefinementFile =
-  "src/panel-framework/overview/styles/desktop/refinement.css";
-const desktopRuntimeStylesFile =
-  "src/panel-framework/overview/styles/overview-desktop-runtime.css";
-const desktopWorkspaceLayoutFile =
-  "src/panel-framework/overview/styles/desktop/workspace-layout.css";
-const desktopReleaseFile =
-  "src/panel-framework/overview/styles/desktop/release.css";
-const desktopIncidentStylesFile =
-  "src/panel-framework/overview/styles/desktop/incidents.css";
-const desktopStatusBusStylesFile =
-  "src/panel-framework/overview/styles/desktop/status-bus.css";
-const desktopWanTrendStylesFile =
-  "src/panel-framework/overview/styles/desktop/wan-trend.css";
-const desktopConsoleFile =
-  "src/panel-framework/overview/components/DesktopConsole.tsx";
-const desktopDecisionRailFile =
-  "src/panel-framework/overview/components/DesktopDecisionRail.tsx";
-const desktopDecisionRailStylesFile =
-  "src/panel-framework/overview/styles/desktop/decision-rail.css";
-const desktopModuleFile =
-  "src/panel-framework/overview/components/DesktopModule.tsx";
-const statusVerdictFile =
-  "src/panel-framework/overview/components/StatusVerdict.tsx";
-const desktopScenesFile =
-  "src/panel-framework/overview/desktopOverviewScenes.tsx";
-const desktopDefaultSceneFile =
-  "src/panel-framework/overview/desktopOverviewDefaultScene.tsx";
-const desktopResourceSceneFile =
-  "src/panel-framework/overview/desktopOverviewResourceScene.tsx";
-const desktopHelpersFile =
-  "src/panel-framework/overview/desktopOverviewHelpers.tsx";
-const desktopPresentationFile =
-  "src/panel-framework/overview/desktopOverviewPresentation.ts";
-const desktopTopbarFile =
-  "src/panel-framework/overview/desktopOverviewTopbar.ts";
-const routerOsNetworkViewModelFile =
-  "src/panel-framework/overview/routerosNetworkViewModel.ts";
-const routerOsPresentationViewModelFile =
-  "src/panel-framework/overview/routerosPresentationViewModel.ts";
-const desktopTrafficRowsFile =
-  "src/panel-framework/overview/desktopOverviewTrafficRows.ts";
-const desktopRouteRowsFile =
-  "src/panel-framework/overview/desktopOverviewRouteRows.ts";
-const desktopWanRowsFile =
-  "src/panel-framework/overview/desktopOverviewWanRows.tsx";
-const desktopInterfaceRowsFile =
-  "src/panel-framework/overview/desktopOverviewInterfaceRows.tsx";
-const desktopCredibilityRowsFile =
-  "src/panel-framework/overview/desktopOverviewCredibilityRows.tsx";
-const desktopTerminalRowsFile =
-  "src/panel-framework/overview/desktopOverviewTerminalRows.ts";
-const desktopResourceRowsFile =
-  "src/panel-framework/overview/desktopResourceRows.ts";
-const desktopVisualsFile =
-  "src/panel-framework/overview/desktopOverviewVisuals.tsx";
-const builtCssFile = "public/assets/framework/style.css";
-const phoneOpsConsoleFile =
-  "src/panel-framework/overview/mobile-native/MobileNativeConsole.tsx";
-const phoneOpsHomeFile =
-  "src/panel-framework/overview/mobile-native/MobileNativeHome.tsx";
-const phoneOpsSignalFile =
-  "src/panel-framework/overview/mobile-native/MobileNativeSignal.tsx";
-const phoneOpsObjectSelectorFile =
-  "src/panel-framework/overview/mobile-native/MobileNativeObjectSelector.tsx";
-const phoneOpsInspectionFile =
-  "src/panel-framework/overview/mobile-native/MobileNativeInspection.tsx";
-const phoneOpsEvidenceFile =
-  "src/panel-framework/overview/mobile-native/MobileNativeDetail.tsx";
-const phoneOpsIconFile =
-  "src/panel-framework/overview/mobile-native/MobileNativeIcon.tsx";
-const phoneOpsFocusFile =
-  "src/panel-framework/overview/mobile-native/mobileNativeFocus.ts";
-const phoneOpsObjectsFile =
-  "src/panel-framework/overview/mobile-native/mobileNativeObjects.ts";
-const phoneOpsHistoryFile =
-  "src/panel-framework/overview/mobile-native/mobileNativeHistory.ts";
-const phoneOpsTextFile =
-  "src/panel-framework/overview/mobile-native/mobileNativeText.ts";
-const phoneOpsModelFile =
-  "src/panel-framework/overview/mobile-native/mobileNativeModel.ts";
-const phoneOpsModelEvidenceFile =
-  "src/panel-framework/overview/mobile-native/mobileNativeEvidence.ts";
-const phoneOpsTypesFile =
-  "src/panel-framework/overview/mobile-native/mobileNativeTypes.ts";
-const phoneOpsTokensFile =
-  "src/panel-framework/overview/mobile-native/styles/mobile-native-tokens.css";
-const phoneOpsStylesFile =
-  "src/panel-framework/overview/mobile-native/styles/mobile-native-layout.css";
-const phoneOpsResponsiveStylesFile =
-  "src/panel-framework/overview/mobile-native/styles/mobile-native-responsive.css";
-const phoneOpsEvidenceStylesFile =
-  "src/panel-framework/overview/mobile-native/styles/mobile-native-states.css";
-const phoneOpsWorkspaceStylesFile =
-  "src/panel-framework/overview/mobile-native/styles/mobile-native-workspace.css";
-const phoneOpsSourceStylesFile =
-  "src/panel-framework/overview/mobile-native/styles/mobile-native-source.css";
-const mobileShellStylesFile = "src/panel-framework/mobile-shell.css";
-const frameworkStylesFile = "src/panel-framework/styles.css";
-const legacyShellStylesFile = "public/assets/legacy/panel-legacy.css";
-const overviewStatesStylesFile =
-  "src/panel-framework/overview/styles/overview-states.css";
-const panel = read(panelFile);
-const context = read(contextFile);
-const localPredeploy = read(localPredeployFile);
-const sectionBrowserInspector = read(sectionBrowserInspectorFile);
-const mobileOverviewInspector = read(mobileOverviewInspectorFile);
-const desktopOverviewLayoutInspector = read(desktopOverviewLayoutInspectorFile);
-const acceptanceInspectorBundle = [
-  localPredeploy,
-  sectionBrowserInspector,
-  mobileOverviewInspector,
-  desktopOverviewLayoutInspector,
-].join("\n");
-const desktopConsole = read(desktopConsoleFile);
-const desktopDecisionRail = read(desktopDecisionRailFile);
-const desktopDecisionRailStyles = read(desktopDecisionRailStylesFile);
-const desktopModule = read(desktopModuleFile);
-const statusVerdict = read(statusVerdictFile);
-const desktopScenes = read(desktopScenesFile);
-const desktopDefaultScene = read(desktopDefaultSceneFile);
-const desktopResourceScene = read(desktopResourceSceneFile);
-const panelCss = read(panelCssFile);
-const desktopBaseStyles = desktopBaseStyleLayerFiles.map(read).join("\n");
-const desktopActiveStyles = desktopActiveStyleFiles.map(read).join("\n");
-const desktopConsoleRefinementStyles = read(desktopConsoleRefinementStylesFile);
-const desktopDensityStyles = read(desktopDensityStylesFile);
-const desktopShellChromeStyles = read(desktopShellChromeStylesFile);
-const desktopEvidenceStyles = read("src/panel-framework/overview/styles/desktop/evidence.css");
-const desktopHierarchyLayout = read("src/panel-framework/overview/styles/desktop/hierarchy-layout.css");
-const desktopRefinement = read(desktopRefinementFile);
-const desktopRuntimeStyles = read(desktopRuntimeStylesFile);
-const desktopWorkspaceLayout = read(desktopWorkspaceLayoutFile);
-const desktopRelease = read(desktopReleaseFile);
-const desktopIncidentStyles = read(desktopIncidentStylesFile);
-const desktopStatusBusStyles = read(desktopStatusBusStylesFile);
-const desktopWanTrendStyles = read(desktopWanTrendStylesFile);
-const desktopSelectorOwnershipStyles = [
-  "src/panel-framework/overview/styles/overview-states.css",
-  "src/panel-framework/overview/styles/desktop/console-refinement.css",
-  "src/panel-framework/overview/styles/desktop/density.css",
-  "src/panel-framework/overview/styles/desktop/evidence.css",
-  "src/panel-framework/overview/styles/desktop/hierarchy.css",
-  "src/panel-framework/overview/styles/desktop/layout.css",
-  "src/panel-framework/overview/styles/desktop/refinement.css",
-  "src/panel-framework/overview/styles/desktop/release.css",
-  "src/panel-framework/overview/styles/desktop/status-bus.css",
-  "src/panel-framework/overview/styles/desktop/wan-trend.css",
-  "src/panel-framework/overview/styles/desktop/workspace-layout.css",
-]
-  .map(read)
-  .join("\n");
-const desktopHelpers = read(desktopHelpersFile);
-const desktopPresentation = read(desktopPresentationFile);
-const desktopTopbar = read(desktopTopbarFile);
-const routerOsNetworkViewModel = read(routerOsNetworkViewModelFile);
-const routerOsPresentationViewModel = read(routerOsPresentationViewModelFile);
-const desktopTrafficRows = read(desktopTrafficRowsFile);
-const desktopRouteRows = read(desktopRouteRowsFile);
-const desktopWanRows = read(desktopWanRowsFile);
-const desktopInterfaceRows = read(desktopInterfaceRowsFile);
-const desktopCredibilityRows = read(desktopCredibilityRowsFile);
-const desktopTerminalRows = read(desktopTerminalRowsFile);
-const desktopResourceRows = read(desktopResourceRowsFile);
-const desktopVisuals = read(desktopVisualsFile);
-const phoneOpsConsole = read(phoneOpsConsoleFile);
-const phoneOpsHome = read(phoneOpsHomeFile);
-const phoneOpsSignal = read(phoneOpsSignalFile);
-const phoneOpsObjectSelector = read(phoneOpsObjectSelectorFile);
-const phoneOpsInspection = read(phoneOpsInspectionFile);
-const phoneOpsEvidence = read(phoneOpsEvidenceFile);
-const phoneOpsIcon = read(phoneOpsIconFile);
-const phoneOpsFocus = read(phoneOpsFocusFile);
-const phoneOpsObjects = read(phoneOpsObjectsFile);
-const phoneOpsHistory = read(phoneOpsHistoryFile);
-const phoneOpsText = read(phoneOpsTextFile);
-const phoneOpsModel = read(phoneOpsModelFile);
-const phoneOpsModelEvidence = read(phoneOpsModelEvidenceFile);
-const phoneOpsTypes = read(phoneOpsTypesFile);
-const phoneOpsTokens = read(phoneOpsTokensFile);
-const phoneOpsStyles = read(phoneOpsStylesFile);
-const phoneOpsResponsiveStyles = read(phoneOpsResponsiveStylesFile);
-const phoneOpsEvidenceStyles = read(phoneOpsEvidenceStylesFile);
-const phoneOpsWorkspaceStyles = read(phoneOpsWorkspaceStylesFile);
-const phoneOpsSourceStyles = read(phoneOpsSourceStylesFile);
-const phoneOpsStyleBundle = `${phoneOpsTokens}\n${phoneOpsStyles}\n${phoneOpsResponsiveStyles}\n${phoneOpsWorkspaceStyles}\n${phoneOpsSourceStyles}\n${phoneOpsEvidenceStyles}`;
-const phoneOpsCopyBundle = `${phoneOpsHome}\n${phoneOpsSignal}\n${phoneOpsInspection}\n${phoneOpsEvidence}\n${phoneOpsFocus}\n${phoneOpsObjects}`;
-const mobileQuiet = cssHexToken(phoneOpsTokens, "--mn-quiet");
-const mobileMuted = cssHexToken(phoneOpsTokens, "--mn-muted");
-const mobileTextSurfaces = ["--mn-canvas", "--mn-surface", "--mn-layer"].map((token) => cssHexToken(phoneOpsTokens, token));
-const mobileShellStyles = read(mobileShellStylesFile);
-const frameworkStyles = read(frameworkStylesFile);
-const legacyShellStyles = read(legacyShellStylesFile);
-const overviewStatesStyles = read(overviewStatesStylesFile);
-const retiredVisualStyleBundle = `${overviewStatesStyles}\n${desktopBaseStyles}\n${desktopRefinement}`;
-const desktopLegibilityStyleBundle = [
-  overviewStatesStyles,
-  desktopBaseStyles,
-  desktopRefinement,
-  desktopRuntimeStyles,
-  desktopWorkspaceLayout,
-  desktopRelease,
-  desktopIncidentStyles,
-  desktopStatusBusStyles,
-  desktopWanTrendStyles,
-].join("\n");
-const cssRoot = postcss.parse(panelCss, { from: panelCssFile });
-const desktopBaseStylesRoot = postcss.parse(desktopBaseStyles, {
-  from: desktopBaseStylesFile,
-});
-const desktopActiveStylesRoot = postcss.parse(desktopActiveStyles, {
-  from: desktopStyleDirectory,
-});
-const desktopRefinementRoot = postcss.parse(desktopRefinement, {
-  from: desktopRefinementFile,
-});
-const desktopRuntimeStructureRoot = postcss.parse(
-  `${desktopRefinement}\n${desktopWorkspaceLayout}`,
-  { from: desktopRuntimeStylesFile }
-);
-const desktopReleaseRoot = postcss.parse(desktopRelease, {
-  from: desktopReleaseFile,
-});
-const desktopDecisionRailRoot = postcss.parse(desktopDecisionRailStyles, {
-  from: desktopDecisionRailStylesFile,
-});
-const desktopStatusBusRoot = postcss.parse(desktopStatusBusStyles, {
-  from: desktopStatusBusStylesFile,
-});
-const desktopShellChromeRoot = postcss.parse(desktopShellChromeStyles, {
-  from: desktopShellChromeStylesFile,
-});
-let declarationCount = 0;
-let importantCount = 0;
-let ruleCount = 0;
-let mobileRuleCount = 0;
-let legacyIosSelectorCount = 0;
-let legacyMobileSelectorCount = 0;
-let versionMarkerCount = 0;
-let desktopRefinementImportantCount = 0;
-let desktopWorkspaceLayoutImportantCount = 0;
-let desktopRefinementShadowedDeclarationCount = 0;
-let desktopBaseImportantCount = 0;
-let desktopActiveImportantCount = 0;
-const desktopSubTenPixelText = [];
+for (const file of retiredFiles) assert(!exists(file), `Rejected UI artifact must remain deleted: ${file}`);
 
-function countShadowedDeclarations(root) {
-  let count = 0;
-  const propertiesBySelector = new Map();
-  root.walkRules((rule) => {
-    const atRuleContext = [];
-    for (let parent = rule.parent; parent && parent.type !== "root"; parent = parent.parent) {
-      if (parent.type === "atrule") atRuleContext.unshift(`@${parent.name} ${parent.params}`);
-    }
-    const selectorContext = `${atRuleContext.join(" > ")}\n${rule.selector}`;
-    const earlierProperties = propertiesBySelector.get(selectorContext) || new Set();
-    const currentProperties = new Set();
-    rule.nodes.filter((node) => node.type === "decl").forEach((decl) => {
-      const propertyKey = `${decl.prop}\n${decl.important}`;
-      if (earlierProperties.has(propertyKey)) count += 1;
-      currentProperties.add(propertyKey);
-    });
-    currentProperties.forEach((propertyKey) => earlierProperties.add(propertyKey));
-    propertiesBySelector.set(selectorContext, earlierProperties);
-  });
-  return count;
+assertExcludes(activeStyles, ["!important", "\\n.router", "final pass", "EOF", "v814", "v825", "v1000"], "active overview styles");
+const fontSizes = cssFontSizes(activeStyles);
+assert(fontSizes.length > 0, "Active overview styles must declare readable typography");
+assert(fontSizes.every((size) => size >= 12), `Active overview styles must not use sub-12px text; found ${fontSizes.filter((size) => size < 12).join(", ")}`);
+
+const budgets = [
+  [files.panel, source.panel, 100],
+  [files.mobile, source.mobile, 130],
+  [files.desktop, source.desktop, 210],
+  [files.desktopModel, source.desktopModel, 430],
+  [files.desktopChart, source.desktopChart, 150],
+  [files.evidenceModel, source.evidenceModel, 500],
+];
+for (const [file, fileSource, max] of budgets) assert(lineCount(fileSource) <= max, `${file} exceeds maintainability budget ${max}: ${lineCount(fileSource)}`);
+
+if (source.builtCss) {
+  assertIncludes(source.builtCss, [".mo-shell", ".do-shell", ".do-wan-chart"], "built overview CSS");
+  assertExcludes(source.builtCss, [".mn-sheet", ".mn-topology", ".ro-desktop-console", "\\n.router", "!important"], "built overview CSS");
+}
+if (source.builtJs) {
+  assertIncludes(source.builtJs, ["data-mobile-overview", "data-desktop-overview", "data-desktop-wan-evidence"], "built overview JavaScript");
+  assertExcludes(source.builtJs, ["data-mobile-native", "DesktopWorkspace", "data-overview-chart=\"css\""], "built overview JavaScript");
 }
 
-desktopBaseStylesRoot.walkDecls((decl) => {
-  if (decl.important) desktopBaseImportantCount += 1;
-});
-desktopActiveStylesRoot.walkDecls((decl) => {
-  if (decl.important) desktopActiveImportantCount += 1;
-  if (decl.prop !== "font-size") return;
-  const match = decl.value.trim().match(/^([0-9.]+)px$/);
-  if (match && Number(match[1]) < 10) desktopSubTenPixelText.push(decl.value);
-});
-const desktopBaseShadowedDeclarationCount = countShadowedDeclarations(desktopBaseStylesRoot);
-const desktopImpossibleShellDescendantCount = (
-  desktopBaseStyles.match(/\.router-overview-framework \.(?:sidebar|topbar|frame|ik-rail)/g) || []
-).length;
-let desktopDecisionRailRuleCount = 0;
-let desktopDecisionCellRuleCount = 0;
-let desktopWorkspaceGridRuleCount = 0;
-let desktopRefinementWorkspaceGridRuleCount = 0;
-let retiredDesktopWorkspaceRootDeclarationCount = 0;
-let desktopNavRuleCount = 0;
-let desktopStatusBusRuleCount = 0;
-let desktopLegacyTopbarRuleCount = 0;
-let desktopLegacyRootRuleCount = 0;
-let desktopModuleShellRuleCount = 0;
-let desktopModuleHeadRuleCount = 0;
-let desktopLedgerRuleCount = 0;
-let desktopModuleToneRuleCount = 0;
-let desktopLedgerToneRuleCount = 0;
-let desktopLedgerToneShadowCount = 0;
-let desktopModuleChromeLeftBorderDeclarationCount = 0;
-let desktopReleaseToneResetCount = 0;
-let desktopReleaseNonPrimaryNeutralCount = 0;
-let desktopSidebarMiniStatusRuleCount = 0;
-let desktopSidebarMiniStatusImportantCount = 0;
-
-desktopShellChromeRoot.walkRules((rule) => {
-  if (!rule.selector.includes(".ik-sidebar-mini-status")) return;
-  desktopSidebarMiniStatusRuleCount += 1;
-  rule.walkDecls((decl) => {
-    if (decl.important) desktopSidebarMiniStatusImportantCount += 1;
-  });
-});
-const retiredSidebarMiniStatusSelectorCount = overviewRetiredSidebarMiniStatusStyleFiles
-  .map(read)
-  .reduce(
-    (count, styles) => count + (styles.match(/\.ik-sidebar-mini-status/g) || []).length,
-    0
-  );
-const overviewStateSidebarMiniStatusSelectorCount = (
-  read("src/panel-framework/overview/styles/overview-states.css").match(/\.ik-sidebar-mini-status/g) || []
-).length;
-
-for (const file of retiredDesktopWorkspaceOwnerFiles) {
-  const root = postcss.parse(read(file), { from: file });
-  root.walkRules((rule) => {
-    const ownsBaseWorkspace = rule.selector
-      .split(",")
-      .map((selector) => selector.trim())
-      .some(
-        (selector) =>
-          !selector.includes("[data-overview-desktop-scene") &&
-          !selector.includes("[data-overview-scene-key") &&
-          /\.ro-desktop-grid(?:\.ik-home-layout)?(?:\.ik-desktop-workspace)?$/.test(selector)
-      );
-    if (!ownsBaseWorkspace) return;
-    rule.walkDecls((decl) => {
-      if (
-        [
-          "display",
-          "grid-template-columns",
-          "grid-template-areas",
-          "grid-template-rows",
-          "gap",
-          "align-content",
-          "align-items",
-          "height",
-          "min-height",
-          "overflow",
-        ].includes(decl.prop)
-      ) {
-        retiredDesktopWorkspaceRootDeclarationCount += 1;
-      }
-    });
-  });
-}
-
-cssRoot.walkRules((rule) => {
-  ruleCount += 1;
-  if (rule.selector.includes(".ik-ios-")) legacyIosSelectorCount += 1;
-  if (rule.selector.includes(".ik-mobile-")) legacyMobileSelectorCount += 1;
-  let parent = rule.parent;
-  while (parent) {
-    if (
-      parent.type === "atrule" &&
-      parent.name === "media" &&
-      /max-width\s*:\s*(?:760|768|820|860|900)px/i.test(parent.params)
-    ) {
-      mobileRuleCount += 1;
-      break;
-    }
-    parent = parent.parent;
-  }
-});
-cssRoot.walkDecls((decl) => {
-  declarationCount += 1;
-  if (decl.important) importantCount += 1;
-});
-cssRoot.walkComments((comment) => {
-  if (/\bv\d{3,4}\b/i.test(comment.text)) versionMarkerCount += 1;
-});
-desktopRefinementRoot.walkDecls((decl) => {
-  if (decl.important) desktopRefinementImportantCount += 1;
-});
-postcss.parse(desktopWorkspaceLayout, { from: desktopWorkspaceLayoutFile }).walkDecls((decl) => {
-  if (decl.important) desktopWorkspaceLayoutImportantCount += 1;
-});
-const desktopRefinementPropertiesBySelector = new Map();
-desktopRefinementRoot.walkRules((rule) => {
-  const atRuleContext = [];
-  for (let parent = rule.parent; parent && parent.type !== "root"; parent = parent.parent) {
-    if (parent.type === "atrule") atRuleContext.unshift(`@${parent.name} ${parent.params}`);
-  }
-  const selectorContext = `${atRuleContext.join(" > ")}\n${rule.selector}`;
-  const earlierProperties = desktopRefinementPropertiesBySelector.get(selectorContext) || new Set();
-  const currentProperties = new Set();
-  rule.nodes
-    .filter((node) => node.type === "decl")
-    .forEach((decl) => {
-      const propertyKey = `${decl.prop}\n${decl.important}`;
-      if (earlierProperties.has(propertyKey)) desktopRefinementShadowedDeclarationCount += 1;
-      currentProperties.add(propertyKey);
-    });
-  currentProperties.forEach((propertyKey) => earlierProperties.add(propertyKey));
-  desktopRefinementPropertiesBySelector.set(selectorContext, earlierProperties);
-});
-desktopRefinementRoot.walkRules((rule) => {
-  if (
-    rule.selector
-      .split(",")
-      .some((selector) => selector.trim().endsWith(".ro-desktop-grid"))
-  ) {
-    desktopRefinementWorkspaceGridRuleCount += 1;
-  }
-});
-desktopRuntimeStructureRoot.walkRules((rule) => {
-  if (
-    rule.selector
-      .split(",")
-      .some((selector) => selector.trim().endsWith(".ro-desktop-grid"))
-  ) {
-    desktopWorkspaceGridRuleCount += 1;
-  }
-  if (rule.selector.includes(".ro-desktop-nav")) {
-    desktopNavRuleCount += 1;
-  }
-  if (rule.selector.includes("flat-dense-readonly-console")) {
-    desktopLegacyRootRuleCount += 1;
-  }
-  if (rule.selector.includes(".ro-topbar")) {
-    desktopLegacyTopbarRuleCount += 1;
-  }
-  const selectors = rule.selector.split(",").map((selector) => selector.trim());
-  if (
-    selectors.length > 0 &&
-    selectors.every(
-      (selector) => /\.ro-module$/.test(selector) && !selector.includes(">")
-    )
-  ) {
-    desktopModuleShellRuleCount += 1;
-  }
-  if (
-    selectors.length > 0 &&
-    selectors.every(
-      (selector) =>
-        /\.ro-module-head(?:\s+(?:b|span|em))?$/.test(selector) &&
-        !selector.includes(".ro-col") &&
-        !selector.includes(".ro-module[") &&
-        !selector.includes(":is(") &&
-        !selector.includes(">")
-    )
-  ) {
-    desktopModuleHeadRuleCount += 1;
-  }
-  if (
-    selectors.length > 0 &&
-    selectors.every((selector) => {
-      if (
-        selector.includes(".ro-col") ||
-        selector.includes(".ro-module") ||
-        selector.includes("[data-tone") ||
-        selector.includes(":hover")
-      ) {
-        return false;
-      }
-      return /\.(?:ro-ledger-table(?:\s+(?:th|td))?|ro-ledger-head-cell|ro-ledger-cell(?::first-child|:nth-child\([^)]*\))?(?:\s+small)?|ro-ledger-row(?::not\(\.ro-ledger-head\))?|ro-ledger-head\.ro-ledger-row)$/.test(selector);
-    })
-  ) {
-    desktopLedgerRuleCount += 1;
-  }
-  if (
-    selectors.length > 0 &&
-    selectors.every(
-      (selector) =>
-        selector.includes(".ro-module[data-tone=") &&
-        !selector.includes("[data-overview-evidence-weight") &&
-        !selector.includes("[data-overview-density-module") &&
-        !selector.includes(".ro-col")
-    )
-  ) {
-    desktopModuleToneRuleCount += 1;
-  }
-  if (
-    selectors.length > 0 &&
-    selectors.every(
-      (selector) =>
-        selector.includes(".ro-ledger-row[data-tone=") &&
-        !selector.includes(".ro-module") &&
-        !selector.includes(".ro-col")
-    )
-  ) {
-    desktopLedgerToneRuleCount += 1;
-    rule.walkDecls("box-shadow", () => {
-      desktopLedgerToneShadowCount += 1;
-    });
-  }
-});
-[desktopBaseStylesRoot, desktopRuntimeStructureRoot].forEach((root) => {
-  root.walkRules((rule) => {
-    const ownsModuleChrome = rule.selector.split(",").some((selector) => {
-      const trimmed = selector.trim();
-      const moduleIndex = trimmed.lastIndexOf(".ro-module");
-      return moduleIndex >= 0 && !/\s/.test(trimmed.slice(moduleIndex + ".ro-module".length));
-    });
-    if (!ownsModuleChrome) return;
-    rule.walkDecls((decl) => {
-      if (decl.prop.startsWith("border-left")) {
-        desktopModuleChromeLeftBorderDeclarationCount += 1;
-      }
-    });
-  });
-});
-desktopDecisionRailRoot.walkRules((rule) => {
-  if (rule.selector.trim().endsWith(".ro-desktop-decision-rail")) {
-    desktopDecisionRailRuleCount += 1;
-  }
-  if (rule.selector.includes(".ro-desktop-decision-rail .ro-desktop-thin-kpi")) {
-    desktopDecisionCellRuleCount += 1;
-  }
-});
-desktopStatusBusRoot.walkRules((rule) => {
-  if (rule.selector.includes(".ro-status-bus")) {
-    desktopStatusBusRuleCount += 1;
-  }
-});
-desktopReleaseRoot.walkRules((rule) => {
-  if (
-    ["danger", "warn", "missing"].every((tone) =>
-      rule.selector.includes(`.ro-ledger-row[data-tone="${tone}"]`)
-    ) &&
-    rule.nodes?.some(
-      (node) => node.type === "decl" && node.prop === "box-shadow" && node.value === "none"
-    )
-  ) {
-    desktopReleaseToneResetCount += 1;
-  }
-  if (
-    rule.selector.includes(":not(:first-child) .ik-overview-cell-text") &&
-    ["danger", "warn", "missing"].every((tone) =>
-      rule.selector.includes(`.ro-ledger-row[data-tone="${tone}"]`)
-    )
-  ) {
-    desktopReleaseNonPrimaryNeutralCount += 1;
-  }
-});
-
-const importantShare = importantCount / Math.max(1, declarationCount);
-const mobileRuleShare = mobileRuleCount / Math.max(1, ruleCount);
-const legacyFunctions = [
-  "MobileLedger",
-  "MobileHeroStatusCard",
-  "MobileTrafficRank",
-  "NoSnapshotDesktop",
-  "NormalDesktop",
-  "MobileDetail",
-  "MobileContinuation",
-  "MobileLeadHeads",
-];
-
-assert(lines(panel) <= 800, `OverviewPanel.tsx exceeds 800 lines: ${lines(panel)}`);
-assert(
-  lines(desktopConsole) <= 800,
-  `DesktopConsole.tsx exceeds 800 lines: ${lines(desktopConsole)}`
-);
-assert(
-  lines(desktopDecisionRail) <= 90,
-  `DesktopDecisionRail.tsx exceeds 90 lines: ${lines(desktopDecisionRail)}`
-);
-assert(
-  lines(desktopScenes) <= 350,
-  `desktopOverviewScenes.tsx exceeds 350 lines: ${lines(desktopScenes)}`
-);
-assert(
-  lines(desktopIncidentStyles) <= 150,
-  `desktop incident styles exceed 150 lines: ${lines(desktopIncidentStyles)}`
-);
-assert(
-  (desktopIncidentStyles.match(/!important/g) || []).length === 0,
-  "Desktop incident styles must not use override priorities"
-);
-assert(
-  lines(desktopStatusBusStyles) <= 130 &&
-    desktopStatusBusStyles.includes(".ro-status-bus") &&
-    panel.includes('import "./styles/desktop/status-bus.css";') &&
-    !desktopRefinement.includes(".ro-status-bus") &&
-    !desktopConsoleRefinementStyles.includes(".ro-topbar"),
-  "Desktop status bus must have one canonical component layer, not a refinement shadow"
-);
-assert(
-  lines(desktopWanTrendStyles) <= 130 &&
-    desktopWanTrendStyles.includes('[data-overview-density-module="wan-trend"]') &&
-    panel.includes('import "./styles/overview-desktop-runtime.css";') &&
-    (desktopWanTrendStyles.match(/!important/g) || []).length === 0 &&
-    desktopDensityStyles.includes('.ro-module:not([data-overview-density-module="wan-trend"]) .ro-judgement-row') &&
-    desktopRefinement.includes('.ro-module:not([data-overview-density-module="wan-trend"]) .ro-judgement-chart') &&
-    desktopRefinement.includes('.ro-module:not([data-overview-density-module="wan-trend"]) .ro-judgement-row') &&
-    !/ro-col\.is-main > \.ro-module(?::first-child)?\s*\{[^}]*max-height/.test(desktopEvidenceStyles) &&
-    !desktopHierarchyLayout.includes('data-overview-density-module="wan-trend"') &&
-    !desktopRefinement.includes('Desktop WAN readable product chart'),
-  "Desktop WAN trend styles must stay focused without override priorities"
-);
-assert(
-  (phoneOpsStyleBundle.match(/!important/g) || []).length === 0 &&
-    !/ik-v\d+|\.ik-mobile-|\.ro-|\.rm-/.test(phoneOpsStyleBundle),
-  "Phone operations styles must remain isolated and priority-free"
-);
-assert(
-  mobileQuiet && mobileMuted && mobileTextSurfaces.every(Boolean) &&
-    [mobileQuiet, mobileMuted].every((foreground) => mobileTextSurfaces.every((background) => contrastRatio(foreground, background) >= 4.5)),
-  "Mobile secondary text tokens must maintain WCAG 4.5:1 contrast on every active light surface"
-);
-assert(
-  !/只列直接支撑|横向选择对象|完整当前观测|首页未展示|当前值只在信号区|信号区出现|此处只补充|以下字段来自/.test(phoneOpsCopyBundle),
-  "Mobile product copy must state network facts instead of explaining the interface design"
-);
-assert(
-  !/font-size:\s*(?:[1-9](?:\.\d+)?|1[01](?:\.\d+)?)px\b/.test(desktopLegibilityStyleBundle),
-  "Desktop operational styles must keep normal text at 12px or larger"
-);
-assert(
-  !overviewStatesStyles.includes("!important"),
-  "Active overview state styles must not bypass the canonical desktop cascade with !important"
-);
-assert(
-  !/border-left:\s*(?:[2-9]|\d{2,})px\b/.test(desktopLegibilityStyleBundle) &&
-    !/box-shadow:[^;\n]*inset\s+(?:[2-9]|\d{2,})px\s+0\b/.test(desktopLegibilityStyleBundle),
-  "Desktop overview modules must not use heavy side-stripe accents"
-);
-assert(
-  legacyShellStyles.includes("body:has(#overview.ro-desktop-console) .app.ik-shell") &&
-    legacyShellStyles.includes("grid-template-columns: 176px minmax(0, 1fr)") &&
-    legacyShellStyles.includes("body:has(#overview.ro-desktop-console) .ik-rail"),
-  "Desktop overview must hide the redundant icon rail and keep one navigation surface"
-);
-assert(
-  frameworkStyles.includes('@import "./mobile-shell.css";') &&
-    mobileShellStyles.includes(":has(#overview.is-mobile-native)") &&
-    mobileShellStyles.includes(".ik-rail") &&
-    mobileShellStyles.includes(".sidebar") &&
-    mobileShellStyles.includes(".topbar") &&
-    !phoneOpsStyleBundle.includes(".ik-rail") &&
-    !phoneOpsStyleBundle.includes(".sidebar") &&
-    !phoneOpsStyleBundle.includes(".topbar") &&
-    !panel.includes("document.body.classList"),
-  "Mobile shell chrome must be owned by the framework shell, not by mobile component CSS or body mutation"
-);
-assert(
-  lines(desktopHelpers) <= 320,
-  `desktopOverviewHelpers.tsx exceeds 320 lines: ${lines(desktopHelpers)}`
-);
-assert(
-  lines(desktopTopbar) <= 130 &&
-    (desktopTopbar.match(/desktopPresentation\(/g) || []).length === 1 &&
-    statusVerdict.includes('from "../desktopOverviewTopbar"'),
-  "Desktop status-bus presentation must be isolated and build the view model once"
-);
-assert(
-  lines(desktopPresentation) <= 12 &&
-    desktopPresentation.includes("buildRouterOsPresentationViewModel") &&
-    !desktopHelpers.includes("buildRouterOsPresentationViewModel") &&
-    desktopDecisionRail.includes('from "../desktopOverviewPresentation"') &&
-    desktopVisuals.includes('from "./desktopOverviewPresentation"'),
-  "Desktop presentation access must stay in one adapter shared by verdict, rail, and visuals"
-);
-assert(
-  lines(desktopTrafficRows) <= 280,
-  `desktopOverviewTrafficRows.ts exceeds 280 lines: ${lines(desktopTrafficRows)}`
-);
-assert(
-  lines(desktopRouteRows) <= 150,
-  `desktopOverviewRouteRows.ts exceeds 150 lines: ${lines(desktopRouteRows)}`
-);
-assert(
-  lines(desktopWanRows) <= 80,
-  `desktopOverviewWanRows.tsx exceeds 80 lines: ${lines(desktopWanRows)}`
-);
-assert(
-  lines(desktopInterfaceRows) <= 250,
-  `desktopOverviewInterfaceRows.tsx exceeds 250 lines: ${lines(desktopInterfaceRows)}`
-);
-assert(
-  lines(desktopCredibilityRows) <= 320,
-  `desktopOverviewCredibilityRows.tsx exceeds 320 lines: ${lines(desktopCredibilityRows)}`
-);
-assert(
-  lines(desktopTerminalRows) <= 110,
-  `desktopOverviewTerminalRows.ts exceeds 110 lines: ${lines(desktopTerminalRows)}`
-);
-assert(
-  lines(desktopResourceRows) <= 250,
-  `desktopResourceRows.ts exceeds 250 lines: ${lines(desktopResourceRows)}`
-);
-assert(
-  lines(desktopVisuals) <= 400,
-  `desktopOverviewVisuals.tsx exceeds 400 lines: ${lines(desktopVisuals)}`
-);
-assert(bytes(panelCssFile) <= 1830000, `OverviewPanel.css exceeds 1.83 MB: ${bytes(panelCssFile)}`);
-assert(
-  lines(read(desktopBaseStylesFile)) <= 12 &&
-    [
-      "density.css",
-      "first-screen.css",
-      "hierarchy.css",
-      "shell-chrome.css",
-      "evidence.css",
-      "console-skeleton.css",
-      "layout.css",
-      "console-refinement.css",
-    ].every((file) => read(desktopBaseStylesFile).includes(`@import \"./desktop/${file}\";`)),
-  "Desktop CSS entry must compose named density, hierarchy, evidence, layout, and console layers"
-);
-assert(
-  !/\b(?:ik-v\d+|ik-app-home-v\d+)\b/.test(
-    read("src/panel-framework/overview/styles/desktop/hierarchy.css")
-  ),
-  "Desktop hierarchy styles must not retain versioned mobile containment patches"
-);
-assert(
-  !read("src/panel-framework/overview/styles/desktop/hierarchy.css").includes(
-    "flat-dense-readonly-console"
-  ),
-  "Desktop hierarchy source must not retain archived flat-dense root styles"
-);
-assert(
-  overviewRetiredTopbarStyleFiles.every(
-    (file) => !/\.ro-topbar(?:-cell)?\b|\.ik-home-flat-topbar\b/.test(read(file))
-  ),
-  "Overview style sources must not retain selectors for the retired topbar renderer"
-);
-assert(
-  overviewRetiredDesktopKeyRowStyleFiles.every(
-    (file) => !/\.ro-desktop-(?:key-row|key-cell|severe-evidence)\b/.test(read(file))
-  ),
-  "Overview style sources must not retain selectors for retired desktop key-row or key-cell renderers"
-);
-assert(
-  overviewRetiredTimeTabStyleFiles.every(
-    (file) => !/\.ro-time-tabs\b/.test(read(file))
-  ),
-  "Overview style sources must not retain selectors for the retired time-tab renderer"
-);
-const desktopBaseStyleLayerLimits = new Map([
-  ["src/panel-framework/overview/styles/desktop/density.css", 900],
-  ["src/panel-framework/overview/styles/desktop/first-screen.css", 550],
-  ["src/panel-framework/overview/styles/desktop/hierarchy.css", 800],
-  ["src/panel-framework/overview/styles/desktop/shell-chrome.css", 140],
-  ["src/panel-framework/overview/styles/desktop/evidence.css", 650],
-  ["src/panel-framework/overview/styles/desktop/console-skeleton.css", 650],
-  ["src/panel-framework/overview/styles/desktop/layout.css", 550],
-  ["src/panel-framework/overview/styles/desktop/console-refinement.css", 700],
-]);
-for (const [file, limit] of desktopBaseStyleLayerLimits) {
-  assert(exists(file) && lines(read(file)) <= limit, `${file} exceeds ${limit} lines`);
-}
-assert(
-  !desktopShellChromeStyles.includes("!important") &&
-    !desktopShellChromeStyles.includes(".ro-col.is-main > .ro-module:first-child") &&
-    !desktopShellChromeStyles.includes("data-overview-density-module"),
-  "Desktop shell chrome must own only shell and scrollbar styling, without evidence or module overrides"
-);
-assert(
-  lines(desktopBaseStyles) <= 4700,
-  `overview-desktop.css exceeds 4700 lines: ${lines(desktopBaseStyles)}`
-);
-assert(
-  desktopBaseImportantCount === 0 && desktopActiveImportantCount === 0,
-  `Desktop overview styles must not use !important: base=${desktopBaseImportantCount} active=${desktopActiveImportantCount}`
-);
-assert(
-  desktopSubTenPixelText.length === 0,
-  `Desktop operational text must remain at least 10px: ${desktopSubTenPixelText.join(", ")}`
-);
-assert(
-  desktopBaseShadowedDeclarationCount === 0,
-  `overview-desktop.css must not redeclare the same property in a later identical selector context: ${desktopBaseShadowedDeclarationCount}`
-);
-assert(lines(phoneOpsConsole) <= 180, `MobileNativeConsole.tsx exceeds 180 lines: ${lines(phoneOpsConsole)}`);
-assert(lines(phoneOpsHome) <= 320, `MobileNativeHome.tsx exceeds 320 lines: ${lines(phoneOpsHome)}`);
-assert(lines(phoneOpsSignal) <= 100, `MobileNativeSignal.tsx exceeds 100 lines: ${lines(phoneOpsSignal)}`);
-assert(lines(phoneOpsObjectSelector) <= 100, `MobileNativeObjectSelector.tsx exceeds 100 lines: ${lines(phoneOpsObjectSelector)}`);
-assert(lines(phoneOpsInspection) <= 100, `MobileNativeInspection.tsx exceeds 100 lines: ${lines(phoneOpsInspection)}`);
-assert(lines(phoneOpsEvidence) <= 100, `MobileNativeDetail.tsx exceeds 100 lines: ${lines(phoneOpsEvidence)}`);
-assert(lines(phoneOpsIcon) <= 100, `MobileNativeIcon.tsx exceeds 100 lines: ${lines(phoneOpsIcon)}`);
-assert(lines(phoneOpsFocus) <= 460, `mobileNativeFocus.ts exceeds 460 lines: ${lines(phoneOpsFocus)}`);
-assert(lines(phoneOpsObjects) <= 320, `mobileNativeObjects.ts exceeds 320 lines: ${lines(phoneOpsObjects)}`);
-assert(lines(phoneOpsHistory) <= 60, `mobileNativeHistory.ts exceeds 60 lines: ${lines(phoneOpsHistory)}`);
-assert(lines(phoneOpsText) <= 40, `mobileNativeText.ts exceeds 40 lines: ${lines(phoneOpsText)}`);
-assert(lines(phoneOpsModel) <= 520, `mobileNativeModel.ts exceeds 520 lines: ${lines(phoneOpsModel)}`);
-assert(lines(phoneOpsModelEvidence) <= 300, `mobileNativeEvidence.ts exceeds 300 lines: ${lines(phoneOpsModelEvidence)}`);
-assert(lines(phoneOpsTypes) <= 100, `mobileNativeTypes.ts exceeds 100 lines: ${lines(phoneOpsTypes)}`);
-assert(lines(phoneOpsTokens) <= 110, `mobile-native-tokens.css exceeds 110 lines: ${lines(phoneOpsTokens)}`);
-assert(lines(phoneOpsStyles) <= 1250, `mobile-native-layout.css exceeds 1250 lines: ${lines(phoneOpsStyles)}`);
-assert(lines(phoneOpsResponsiveStyles) <= 340, `mobile-native-responsive.css exceeds 340 lines: ${lines(phoneOpsResponsiveStyles)}`);
-assert(lines(phoneOpsEvidenceStyles) <= 180, `mobile-native-states.css exceeds 180 lines: ${lines(phoneOpsEvidenceStyles)}`);
-assert(lines(phoneOpsWorkspaceStyles) <= 180, `mobile-native-workspace.css exceeds 180 lines: ${lines(phoneOpsWorkspaceStyles)}`);
-assert(lines(phoneOpsSourceStyles) <= 90, `mobile-native-source.css exceeds 90 lines: ${lines(phoneOpsSourceStyles)}`);
-assert(
-  panel.includes('const MOBILE_OVERVIEW_QUERY = "(max-width: 1199px)"') &&
-    mobileShellStyles.includes("@media (max-width: 1199px)") &&
-    acceptanceInspectorBundle.includes("window.innerWidth <= 1199"),
-  "iPad-class widths through 1199px must stay in the isolated mobile/tablet render tree"
-);
-assert(
-  phoneOpsObjectSelector.includes('role="listbox"') &&
-    phoneOpsObjectSelector.includes('aria-controls="mn-inspection-panel"') &&
-    phoneOpsObjectSelector.includes("data-mobile-native-object-navigation") &&
-    phoneOpsObjectSelector.includes('aria-label="上一个对象"') &&
-    phoneOpsObjectSelector.includes('aria-label="下一个对象"') &&
-    phoneOpsEvidence.includes("inspection.sourcePath") &&
-    phoneOpsEvidence.includes("inspection.observedAt") &&
-    !/原始证据/.test(`${phoneOpsHome}\n${phoneOpsSignal}\n${phoneOpsInspection}\n${phoneOpsEvidence}\n${phoneOpsFocus}\n${phoneOpsObjects}`),
-  "Mobile object selection and evidence detail must be programmatic, source-aware, and must not overclaim transformed rows as raw evidence"
-);
-assert(
-  phoneOpsSignal.includes("item.unit") &&
-    phoneOpsStyles.includes(".mn-rate-pair b") &&
-    phoneOpsStyles.includes("white-space: nowrap"),
-  "Mobile throughput values must keep amount and unit baseline-aligned without narrow-phone wrapping"
-);
-assert(
-  phoneOpsConsole.includes("data-mobile-native-console") &&
-    phoneOpsConsole.includes("<MobileNativePhoneHome") &&
-    phoneOpsConsole.includes("<MobileNativeTabletHome") &&
-    phoneOpsConsole.includes("<MobileNativeDetail") &&
-    phoneOpsConsole.includes("window.history.pushState") &&
-    phoneOpsConsole.includes("window.history.back()") &&
-    phoneOpsConsole.includes('popstate') &&
-    !phoneOpsConsole.includes('mn-readonly">'),
-  "MobileNativeConsole must own distinct phone/tablet homes, bidirectional browser-history detail navigation, and static read-only text"
-);
-assert(
-  phoneOpsHome.includes("data-mobile-native-evidence-mode") &&
-    phoneOpsHome.includes("data-mobile-native-proof") &&
-    phoneOpsHome.includes("data-mobile-native-tablet-context") &&
-    phoneOpsHome.includes('role="listbox"') &&
-    phoneOpsHome.includes('role="option"') &&
-    phoneOpsHome.includes('aria-controls="mn-focus-panel"') &&
-    phoneOpsHome.includes("MobileNativePhoneHome") &&
-    phoneOpsHome.includes("MobileNativeTabletHome") &&
-    phoneOpsSignal.includes('data-mobile-native-rates="current"') &&
-    phoneOpsSignal.includes("data-mobile-native-resource-signal") &&
-    phoneOpsInspection.includes("<details") &&
-    phoneOpsInspection.includes("data-mobile-native-inspection") &&
-    phoneOpsEvidence.includes("data-mobile-native-detail") &&
-    phoneOpsEvidence.includes("data-mobile-native-back") &&
-    phoneOpsEvidence.includes("data-mobile-native-detail-section") &&
-    !phoneOpsHome.includes('role="tab"') &&
-    !phoneOpsHome.includes('role="tablist"') &&
-    !phoneOpsEvidence.includes("mn-detail-evidence"),
-  "Native mobile screens must separate proof, current signal, and novel inspection evidence without fake tabs"
-);
-assert(
-  !exists("src/panel-framework/overview/mobile-native/MobileNativePatrolBrief.tsx") &&
-    !exists("src/panel-framework/overview/mobile-native/MobileNativeObjectWorkspace.tsx") &&
-    !exists("src/panel-framework/overview/mobile-native/MobileNativePathEvidence.tsx") &&
-    !phoneOpsStyleBundle.includes("border-left: 3px") &&
-    !phoneOpsStyleBundle.includes("margin: 0 auto"),
-  "Rejected mobile ledger/card artifacts, decorative state stripes, and centered tablet phone columns must remain deleted"
-);
-assert(
-  [
-    "overviewVisibleFactCount",
-    "overviewFirstScreenFieldCount",
-    "overviewNoSnapshotVisibleCellCount",
-    "overviewNoSnapshotDesktopVisibleFieldCount",
-    "overviewNoSnapshotEffectiveVisibleFactCount",
-    "overviewResourceEffectiveVisibleFactCount",
-    "overviewResourceSpecificModuleCount",
-    "overviewNoSnapshotFakeDensityRatio",
-    "textLength: section",
-    "sampleRectCoverage",
-    "elementFromPoint",
-    "contentFillRatio",
-    "rightFillRatio",
-    "overviewVisualBalanceTypeCount",
-    "overviewDesktopTableAreaPx",
-    "overviewDesktopTableAreaRatio",
-    "overviewDesktopChartMatrixAreaPx",
-    "overviewDesktopChartMatrixAreaRatio",
-    "overviewDesktopKpiBalanceOk",
-  ].every((token) => !acceptanceInspectorBundle.includes(token)) &&
-    [
-      "overviewSceneSpecificDesktopEvidenceOk",
-      "overviewDesktopEvidenceCompositionOk",
-      "overviewNoSnapshotEvidenceContractOk",
-      "overviewNoSnapshotNoFillerCopyOk",
-      "overviewDesktopEvidenceLayoutOk",
-      "overviewDesktopReleaseLayoutOk",
-      "sceneCoreGeometry",
-      "semanticGeometry",
-      "overviewVisualCenterEvidenceOk",
-    ].every((token) => acceptanceInspectorBundle.includes(token)),
-  "Public release checks must gate semantic evidence and geometry, never character, field, cell, or module-count proxies"
-);
-assert(
-  lines(localPredeploy) <= 3000 &&
-    lines(sectionBrowserInspector) <= 5900 &&
-    lines(mobileOverviewInspector) <= 700 &&
-    lines(desktopOverviewLayoutInspector) <= 400,
-  `Acceptance inspector architecture regressed: runner=${lines(localPredeploy)}, browser=${lines(sectionBrowserInspector)}, mobile=${lines(mobileOverviewInspector)}, desktopLayout=${lines(desktopOverviewLayoutInspector)}`
-);
-assert(
-  localPredeploy.includes("require('./acceptance/inspect-section-browser')") &&
-    localPredeploy.includes("require('./acceptance/inspect-overview-mobile')") &&
-    localPredeploy.includes("require('./acceptance/inspect-overview-desktop-layout')") &&
-    sectionBrowserInspector.includes("inspectOverviewDesktopLayout,") &&
-    sectionBrowserInspector.includes("inspectOverviewDesktopLayout({") &&
-    !sectionBrowserInspector.includes("let overviewBlankProbe = null") &&
-    !localPredeploy.includes("const expression = `(async () => {"),
-  "Acceptance runner must orchestrate dedicated mobile, desktop-layout, and browser inspectors instead of embedding a monolith"
-);
-assert(
-  desktopConsole.includes("ik-desktop-workspace") &&
-    desktopConsole.includes("ik-desktop-evidence") &&
-    !/data-overview-desktop-(?:hierarchy|hierarchy-tier|detail|workspace)/.test(desktopConsole) &&
-    !desktopConsole.includes("data-overview-no-snapshot-detail"),
-  "Desktop workspace must expose semantic structure, not self-certifying hierarchy attributes"
-);
-assert(!panel.includes("ik-ios-"), "OverviewPanel.tsx reintroduced legacy ik-ios classes");
-assert(!panel.includes("ik-mobile-"), "OverviewPanel.tsx reintroduced legacy ik-mobile classes");
-assert(
-  panel.includes('from "./mobile-native/MobileNativeConsole"') &&
-    panel.includes("useMobileOverview") &&
-    panel.includes("mobile-native-mount") &&
-    panel.includes("{mobile ? (") &&
-    panel.includes("<DesktopWorkspace snapshot={snapshot} state={state} />"),
-  "OverviewPanel must conditionally mount the native phone product instead of hiding duplicate desktop DOM"
-);
-assert(
-  !/data-overview-desktop-v\d+/.test(panel),
-  "OverviewPanel.tsx must not expose versioned desktop acceptance attributes"
-);
-assert(
-  legacyIosSelectorCount === 0,
-  `OverviewPanel.css reintroduced ${legacyIosSelectorCount} legacy ik-ios selector rules`
-);
-assert(
-  legacyMobileSelectorCount === 0,
-  `OverviewPanel.css reintroduced ${legacyMobileSelectorCount} legacy ik-mobile selector rules`
-);
-assert(
-  legacyFunctions.every((name) => !panel.includes(`function ${name}`)),
-  "OverviewPanel.tsx reintroduced a legacy renderer function"
-);
-assert(
-  panel.includes('from "./components/DesktopConsole"'),
-  "OverviewPanel.tsx must compose the extracted desktop console boundary"
-);
-assert(
-  panel.includes('import "./styles/desktop/incidents.css";'),
-  "OverviewPanel.tsx must load the semantic desktop incident layer"
-);
-assert(
-  (panel.match(/\bdata-overview-[\w-]+/g) || []).length <= 12 &&
-    !/data-overview-(?:hard-standard|mobile-home-acceptance|no-snapshot-(?:density-contract|content-sized|content-packed|big-wan-rate-guard))/.test(panel),
-  "OverviewPanel.tsx must keep root attributes structural or state-derived, not self-certifying release claims"
-);
-assert(
-  panel.includes(
-    'mobile ? "is-mobile-native" : "ro-desktop-console ro-desktop-hierarchy"'
-  ) &&
-    !/data-overview-(?:ikuai40-density|desktop-hierarchy-contract)/.test(panel) &&
-    !/data-overview-(?:ikuai40-density|desktop-hierarchy-contract)/.test(
-      desktopSelectorOwnershipStyles
-    ),
-  "Desktop selector ownership must use semantic desktop-only classes, not self-certifying root attributes"
-);
-assert(
-  desktopTopbar.includes("buildRouterOsNetworkViewModel(snapshot, state)") &&
-    desktopTopbar.includes("desktopPresentation(snapshot, state, network)") &&
-    desktopPresentation.includes("buildRouterOsPresentationViewModel(snapshot, state, network)"),
-  "Desktop topbar must build the RouterOS network model once and share it with its presentation adapter"
-);
-assert(
-  desktopHelpers.includes('return "当前采样";') &&
-    !desktopHelpers.includes('return "实时";'),
-  "Desktop evidence modules must label healthy observations as current samples, not realtime guarantees"
-);
-assert(
-  lines(routerOsNetworkViewModel) <= 300 &&
-    !routerOsNetworkViewModel.includes("buildRouterOsPresentationViewModel"),
-  "routerosNetworkViewModel.ts must stay focused on network evidence, not presentation copy"
-);
-assert(
-  lines(routerOsPresentationViewModel) <= 110 &&
-    routerOsPresentationViewModel.includes("buildRouterOsPresentationViewModel"),
-  "routerosPresentationViewModel.ts must own the bounded desktop presentation policy"
-);
-assert(
-  routerOsPresentationViewModel.includes('return "WAN 出口在线";') &&
-    routerOsNetworkViewModel.includes('value: "转发可用"'),
-  "Desktop presentation must lead with a factual WAN judgement while keeping forwarding availability as evidence"
-);
-assert(
-  !desktopDecisionRail.includes("style={") &&
-    panel.includes('import "./styles/desktop/decision-rail.css";') &&
-    panel.indexOf('import "./styles/desktop/decision-rail.css";') >
-      panel.indexOf('import "./styles/desktop/status-bus.css";') &&
-    !desktopBaseStyles.includes('@import "./desktop/decision-rail.css";') &&
-    !desktopDecisionRailStyles.includes("!important"),
-  "DesktopDecisionRail must own a final component layer without inline styles or !important"
-);
-assert(
-  desktopConsole.includes('from "../desktopOverviewScenes"') &&
-    desktopConsole.includes("buildDesktopOverviewScene(snapshot, state)"),
-  "DesktopConsole.tsx must delegate scenario composition to the desktop scene module"
-);
-assert(
-  !/data-overview-desktop-v\d+|data-overview-desktop-redline-markers|data-overview-desktop-fixed-skeleton|data-overview-side-table-mode/.test(desktopConsole),
-  "DesktopConsole.tsx must not carry versioned or self-certifying acceptance markers"
-);
-assert(
-  !/data-overview-desktop-v\d+|data-routeros-v\d+/.test(desktopModule),
-  "DesktopModule.tsx must expose semantic evidence attributes only"
-);
-assert(
-  !/data-overview-desktop-v\d+|data-overview-(?:summary|status-bus|verdict-status-bus|status-bar|summary-main|desktop-top|status-cell-contract|status-no-table-header|status-value-rail|topbar-priority-contract|topbar-fixed-six)/.test(statusVerdict) &&
-  statusVerdict.includes('className={`ro-status-bus ${') &&
-    statusVerdict.includes('"is-channel-audit" : "is-summary"') &&
-    statusVerdict.includes('className={`ro-status-cell is-${item.role}`}') &&
-    !statusVerdict.includes("data-overview-status-role") &&
-    !statusVerdict.includes("ro-topbar") &&
-    !statusVerdict.includes("ik-home-flat") &&
-    !statusVerdict.includes("ro-contract-hidden") &&
-    (statusVerdict.match(/\bdata-overview-[\w-]+/g) || []).length <= 18,
-  "StatusVerdict.tsx must use semantic status-bus classes, not self-certifying layout claims"
-);
-assert(
-  ![desktopRouteRows, desktopWanRows, desktopInterfaceRows].some((source) =>
-    /data-overview-desktop-v\d+|data-routeros-v\d+/.test(source)
-  ),
-  "Desktop route, WAN, and interface row modules must expose semantic evidence attributes only"
-);
-assert(
-  !/data-overview-desktop-v\d+|data-routeros-v\d+/.test(desktopVisuals),
-  "desktopOverviewVisuals.tsx must expose semantic visual attributes only"
-);
-assert(
-  [
-    "data-overview-chart-grammar",
-    "data-overview-chart-semantic",
-    "data-overview-chart-judgement-contract",
-    "data-overview-plot-contract",
-    "data-overview-chart-raw-fields",
-    "data-overview-chart-summary",
-    "data-overview-chart-judgement-visible",
-    "data-overview-chart-judgement-strip",
-    "data-overview-chart-judgement-strip-visible",
-    "data-overview-mobile-first-chart-readout",
-    "data-overview-desktop-wan-integrated",
-    "data-overview-ikuai-wan-chart-integrated",
-    "data-overview-desktop-chart-product-contract",
-    "data-overview-wan-integrated-chart",
-    "data-overview-wan-chart-contract",
-    "data-overview-wan-single-surface",
-    "data-overview-wan-decision-rail",
-    "data-overview-wan-decision-source",
-    "data-overview-wan-decision",
-    "data-overview-desktop-wan-top-outlet",
-    "data-overview-chart-has-current",
-    "data-overview-chart-has-peak",
-    "data-overview-chart-has-mean",
-    "data-overview-chart-has-window",
-    "data-overview-chart-has-threshold",
-    "data-overview-chart-has-trust",
-    "data-overview-y-axis",
-    "data-overview-chart-focus",
-    "data-overview-collection-channel-bars",
-    "data-overview-collection-matrix",
-    "data-overview-desktop-incident-summary",
-    "data-overview-matrix-evidence",
-    "data-overview-no-snapshot-collection-timeline-parent-judgement",
-    "data-overview-no-snapshot-compact-flow",
-    "data-overview-no-snapshot-four-col-matrix",
-    "data-overview-no-snapshot-module-matrix-parent-judgement",
-    "data-overview-no-snapshot-success-timeline",
-    "data-overview-collection-incident-timeline-parent-judgement",
-    "data-overview-resource-danger-card-judgement",
-    "data-overview-resource-danger-order-bars",
-    "data-overview-resource-primary-pressure",
-    "data-overview-resource-spark-row-judgement",
-    "data-overview-traffic-judgement",
-    "data-overview-trend-readout",
-  ].every((attribute) => !desktopVisuals.includes(attribute)) &&
-    desktopVisuals.includes('className="ro-wan-integrated-visual"') &&
-    desktopVisuals.includes('className="ro-wan-integrated-decision"'),
-  "Desktop visuals must prove chart structure through semantic classes and rendered data, not product-contract attributes"
-);
-assert(
-  ["evidence", "wan-offline", "resource", "interfaces", "collection"].every((risk) =>
-    phoneOpsTypes.includes(`"${risk}"`)
-  ) &&
-    phoneOpsModel.includes("state.counts.wanOnline === 0") &&
-    phoneOpsModel.includes('state.facts.resource.level === "danger"') &&
-    phoneOpsModel.includes("state.facts.interfaces.down > 0") &&
-    phoneOpsModel.includes("buildMobileNativeModel"),
-  "Native mobile model must derive an ordered composite risk set instead of erasing facts behind a scenario switch"
-);
-assert(
-  phoneOpsTypes.includes('"current" | "historical" | "unavailable"') &&
-    phoneOpsModel.includes('mode === "current"') &&
-    phoneOpsModel.includes('mode === "historical"') &&
-    phoneOpsModel.includes("successfulBusinessAt(snapshot)") &&
-    phoneOpsFocus.includes("当前业务状态不可判断"),
-  "Native mobile model must distinguish current, historical, and unavailable evidence from explicit successful observations"
-);
-assert(
-  phoneOpsModelEvidence.includes("route.active === true && route.disabled !== true") &&
-    phoneOpsModelEvidence.includes("trailingStreak") &&
-    phoneOpsModelEvidence.includes("samples.length - 1") &&
-    !`${phoneOpsModel}\n${phoneOpsModelEvidence}`.includes("rows[0]") &&
-    !`${phoneOpsModel}\n${phoneOpsModelEvidence}`.includes("downRate || 0") &&
-    !`${phoneOpsModel}\n${phoneOpsModelEvidence}`.includes("upRate || 0"),
-  "Native mobile evidence must never invent an active route, coerce missing rates to zero, or label non-consecutive samples continuous"
-);
-assert(
-  phoneOpsStyleBundle.includes("env(safe-area-inset-top)") &&
-    phoneOpsStyleBundle.includes("env(safe-area-inset-bottom)") &&
-    phoneOpsStyleBundle.includes("env(safe-area-inset-left)") &&
-    phoneOpsStyleBundle.includes("env(safe-area-inset-right)"),
-  "Native mobile safe areas must be explicit"
-);
-assert(
-  lines(overviewStatesStyles) <= 2700 &&
-    !overviewStatesStyles.includes("ik-app-home-v") &&
-    !overviewStatesStyles.includes("ik-ios-router-home") &&
-    !overviewStatesStyles.includes("ik-v214-app") &&
-    !overviewStatesStyles.includes("Mobile overview v"),
-  "Retired mobile app CSS must not return to the shared overview state layer"
-);
-assert(
-  context.includes("**Mobile Operations Home**") &&
-    context.includes("**Mobile Evidence Detail**") &&
-    !context.includes("**Mobile Module View**") &&
-    !context.includes("mobile bottom navigation"),
-  "Overview domain language must describe the independent mobile home and subordinate evidence detail"
-);
-assert(
-  !/\.(?:ro-port-matrix|ro-topn|ro-spark(?:line|-grid|-threshold|-line)|ro-mini-trend-|ro-wan-integrated-summary)/.test(
-    `${retiredVisualStyleBundle}\n${localPredeploy}`
-  ),
-  "Retired desktop visual primitives must not return to overview styles or acceptance fallbacks"
-);
-assert(
-  phoneOpsFocus.includes('mode === "current" ? observedRates(snapshot) : null') &&
-    phoneOpsFocus.includes('risk === "resource"') &&
-    phoneOpsFocus.includes('kind: "availability"') &&
-    phoneOpsSignal.includes('data-mobile-native-rates="current"') &&
-    !phoneOpsSignal.includes("Trend") &&
-    !phoneOpsSignal.includes("<svg"),
-  "Native mobile traffic must remain complete-current-only and be replaced by scenario-specific evidence"
-);
-assert(
-  (desktopConsole.match(/data-overview-/g) || []).length <= 6,
-  "DesktopConsole.tsx must keep only structural overview attributes"
-);
-assert(
-  desktopConsole.includes('from "./DesktopDecisionRail"') &&
-    desktopConsole.includes("<DesktopDecisionRail"),
-  "DesktopConsole.tsx must compose the desktop object/impact/action/credibility rail"
-);
-assert(
-  [
-    "desktopOverviewAllOfflineScene",
-    "desktopOverviewCollectionScene",
-    "desktopOverviewDefaultScene",
-    "desktopOverviewInterfaceScene",
-    "desktopOverviewNoSnapshotScene",
-    "desktopOverviewResourceScene",
-  ].every((moduleName) => desktopScenes.includes(`from "./${moduleName}"`)) &&
-    ["no-snapshot", "resource-full", "collection-down", "interfaces-down", "all-offline"].every((scenario) =>
-      desktopScenes.includes(`case "${scenario}":`)
-    ) &&
-    desktopScenes.includes("return buildDefaultDesktopScene(snapshot, state);"),
-  "desktopOverviewScenes.tsx must dispatch every desktop scenario to an isolated scene module"
-);
-assert(
-  desktopDefaultScene.includes('from "./desktopOverviewVisuals"'),
-  "desktopOverviewDefaultScene.tsx must compose the extracted desktop visual layer"
-);
-assert(
-  desktopDefaultScene.includes('from "./desktopOverviewTrafficRows"') &&
-    desktopDefaultScene.includes('from "./desktopOverviewRouteRows"') &&
-    desktopDefaultScene.includes('from "./desktopOverviewInterfaceRows"') &&
-    desktopDefaultScene.includes('from "./desktopOverviewCredibilityRows"') &&
-    desktopDefaultScene.includes('from "./desktopOverviewTerminalRows"'),
-  "desktopOverviewDefaultScene.tsx must consume the row modules that own its evidence"
-);
-assert(
-  desktopDefaultScene.includes('from "./desktopResourceRows"'),
-  "desktopOverviewDefaultScene.tsx must consume the resource evidence row module"
-);
-assert(
-  desktopDefaultScene.includes('minRows={0} collapsed={isFleet} />') &&
-    desktopDefaultScene.includes("bottom: [") &&
-    desktopDefaultScene.includes("terminalRanking,") &&
-    /module="normal-collection-channel"[^>]*collapsed=\{isFleet\}/.test(desktopDefaultScene) &&
-    !desktopDefaultScene.includes("isFleet ? null : terminalRanking") &&
-    !desktopBaseStyles.includes('.ro-col.is-bottom [data-overview-density-module="terminal-ranking"]'),
-  "Normal desktop scenes must expand useful single-device evidence and reserve compact summaries for fleet mode"
-);
-assert(
-  /module="resource-interface-top5"[^>]*\bcollapsed\b/.test(desktopResourceScene) &&
-    /module="normal-ops-ledger"[^>]*\bcollapsed\b/.test(desktopResourceScene),
-  "Resource-full desktop scene must defer interface throughput and recent-event ledgers below the resource judgement"
-);
-assert(
-  desktopVisuals.includes('from "./desktopOverviewTrafficRows"'),
-  "desktopOverviewVisuals.tsx must consume the traffic row module directly"
-);
-assert(
-  phoneOpsConsole.includes('import "./styles/mobile-native-tokens.css";') &&
-    phoneOpsConsole.includes('import "./styles/mobile-native-layout.css";') &&
-    phoneOpsConsole.includes('import "./styles/mobile-native-source.css";') &&
-    phoneOpsConsole.includes('import "./styles/mobile-native-workspace.css";') &&
-    phoneOpsConsole.includes('import "./styles/mobile-native-states.css";') &&
-    !phoneOpsConsole.includes("useInsertionEffect") &&
-    !phoneOpsConsole.includes("style>") &&
-    !/\b(?:rm|ro|ik-mobile|ik-ios|phone-ops)-/.test(`${phoneOpsConsole}\n${phoneOpsHome}\n${phoneOpsSignal}\n${phoneOpsObjectSelector}\n${phoneOpsInspection}\n${phoneOpsEvidence}\n${phoneOpsIcon}\n${phoneOpsFocus}\n${phoneOpsObjects}\n${phoneOpsHistory}\n${phoneOpsText}\n${phoneOpsModel}\n${phoneOpsModelEvidence}\n${phoneOpsStyleBundle}`),
-  "Native mobile product must use isolated build-time stylesheets and no retired namespace"
-);
-assert(
-  importantShare <= 0.886,
-  `OverviewPanel.css important share regressed above 88.6%: ${importantShare.toFixed(4)}`
-);
-assert(
-  mobileRuleShare <= 0.11,
-  `OverviewPanel.css mobile rule share regressed above 11%: ${mobileRuleShare.toFixed(4)}`
-);
-assert(
-  desktopRefinementImportantCount <= 650,
-  `Desktop refinement !important count regressed above 650: ${desktopRefinementImportantCount}`
-);
-assert(
-  lines(desktopWorkspaceLayout) <= 220 &&
-    desktopRuntimeStyles.indexOf('@import "./desktop/refinement.css";') >= 0 &&
-    desktopRuntimeStyles.indexOf('@import "./desktop/workspace-layout.css";') >
-      desktopRuntimeStyles.indexOf('@import "./desktop/refinement.css";') &&
-    desktopRuntimeStyles.indexOf('@import "./desktop/wan-trend.css";') >
-      desktopRuntimeStyles.indexOf('@import "./desktop/workspace-layout.css";') &&
-    desktopRefinementWorkspaceGridRuleCount === 0,
-  `Desktop workspace layout must own the canonical grid after refinement: lines=${lines(desktopWorkspaceLayout)} refinementGridRules=${desktopRefinementWorkspaceGridRuleCount}`
-);
-assert(
-  desktopWorkspaceLayout.includes("align-items: stretch;") &&
-    desktopWorkspaceLayout.includes("align-self: stretch;") &&
-    !desktopWorkspaceLayout.includes(".ro-module:only-child"),
-  "Normal desktop primary modules must fill their grid column without single-child layout patches"
-);
-assert(
-  desktopWorkspaceLayoutImportantCount === 0,
-  `Desktop workspace layout must not use override priorities: ${desktopWorkspaceLayoutImportantCount}`
-);
-assert(
-  desktopRefinementShadowedDeclarationCount === 0,
-  `Desktop refinement must not redeclare the same property in a later identical selector context: ${desktopRefinementShadowedDeclarationCount}`
-);
-assert(
-  desktopDecisionRailRuleCount === 1 && desktopDecisionCellRuleCount <= 7 &&
-    !desktopConsoleRefinementStyles.includes(".ro-desktop-thin-kpi") &&
-    !desktopDensityStyles.includes(".ro-desktop-thin-kpi") &&
-    !desktopRefinement.includes(".ro-desktop-thin-kpi"),
-  `Desktop decision rail must stay consolidated: railRules=${desktopDecisionRailRuleCount} cellRules=${desktopDecisionCellRuleCount}`
-);
-assert(
-  desktopWorkspaceGridRuleCount === 1 && desktopNavRuleCount === 0,
-  `Desktop workspace grid must stay canonical and must not duplicate shell navigation: gridRules=${desktopWorkspaceGridRuleCount} navRules=${desktopNavRuleCount}`
-);
-assert(
-  desktopImpossibleShellDescendantCount === 0,
-  `Overview styles must not claim sibling shell nodes: ${desktopImpossibleShellDescendantCount}`
-);
-assert(
-  retiredDesktopWorkspaceRootDeclarationCount === 0,
-  `Retired desktop layers must not reclaim the base workspace grid: ${retiredDesktopWorkspaceRootDeclarationCount}`
-);
-assert(
-  !desktopBaseStyles.includes("min-height: 760px !important") &&
-    !desktopBaseStyles.includes("align-content: stretch !important"),
-  "Retired desktop hierarchy layers must not stretch the canonical workspace or manufacture empty grid space"
-);
-assert(
-  desktopLegacyRootRuleCount === 0,
-  `Desktop base styles must not ship inactive flat-dense root rules: ${desktopLegacyRootRuleCount}`
-);
-assert(
-  desktopStatusBusRuleCount === 11 && desktopLegacyTopbarRuleCount === 0,
-  `Desktop status bus must stay canonical: statusBusRules=${desktopStatusBusRuleCount} legacyTopbarRules=${desktopLegacyTopbarRuleCount}`
-);
-assert(
-  !desktopConsoleRefinementStyles.includes(".sidebar::after") &&
-    !desktopRefinement.includes(".sidebar::after"),
-  "Desktop sidebar trust facts must stay semantic; CSS pseudo-content is forbidden"
-);
-assert(
-  desktopSidebarMiniStatusRuleCount === 4 &&
-    desktopSidebarMiniStatusImportantCount === 0 &&
-    retiredSidebarMiniStatusSelectorCount === 0 &&
-    overviewStateSidebarMiniStatusSelectorCount === 4,
-  `Desktop sidebar mini status must have one priority-free owner: rules=${desktopSidebarMiniStatusRuleCount} important=${desktopSidebarMiniStatusImportantCount} retired=${retiredSidebarMiniStatusSelectorCount} foundation=${overviewStateSidebarMiniStatusSelectorCount}`
-);
-assert(
-  desktopModuleShellRuleCount === 1 && desktopModuleHeadRuleCount === 3,
-  `Desktop module shell/head must stay canonical: shellRules=${desktopModuleShellRuleCount} headRules=${desktopModuleHeadRuleCount}`
-);
-assert(
-  desktopLedgerRuleCount === 6 && !desktopRefinement.includes("nth-child(odd)"),
-  `Desktop ledger must stay canonical and zebra-free: ledgerRules=${desktopLedgerRuleCount}`
-);
-assert(
-  desktopModuleToneRuleCount === 0 &&
-    !desktopWorkspaceLayout.includes('.ro-module[data-tone=') &&
-    desktopModuleChromeLeftBorderDeclarationCount === 0 &&
-    desktopLedgerToneRuleCount === 3 &&
-    desktopLedgerToneShadowCount === 0,
-  `Desktop tone hierarchy must stay restrained: moduleToneRules=${desktopModuleToneRuleCount} moduleLeftBorders=${desktopModuleChromeLeftBorderDeclarationCount} ledgerToneRules=${desktopLedgerToneRuleCount} ledgerToneShadows=${desktopLedgerToneShadowCount}`
-);
-assert(
-  desktopReleaseToneResetCount === 1 && desktopReleaseNonPrimaryNeutralCount === 1,
-  `Desktop release tone reset must neutralize row chrome and non-primary text: resets=${desktopReleaseToneResetCount} nonPrimary=${desktopReleaseNonPrimaryNeutralCount}`
-);
-assert(
-  !desktopRelease.includes("@media (max-width") &&
-    !desktopRelease.includes("ik-v420") &&
-    !desktopRelease.includes("ik-v620") &&
-    !desktopRelease.includes("v1072"),
-  "Desktop release layer must not carry inactive mobile patch styles"
-);
-assert(
-  versionMarkerCount <= 159,
-  `OverviewPanel.css version marker count regressed above 159: ${versionMarkerCount}`
-);
-const retiredMobilePaths = [
-  "src/panel-framework/overview/components/MobileOverviewHome.tsx",
-  "src/panel-framework/overview/components/MobileOverviewDecision.tsx",
-  "src/panel-framework/overview/components/MobileOverviewHomeSections.tsx",
-  "src/panel-framework/overview/components/MobileOverviewTabView.tsx",
-  "src/panel-framework/overview/components/BottomTabs.tsx",
-  "src/panel-framework/overview/mobileOverviewModel.ts",
-  "src/panel-framework/overview/mobileOverviewPolicy.ts",
-  "src/panel-framework/overview/mobileOverviewTokens.ts",
-  "src/panel-framework/overview/styles/mobile/mobile-product.css",
-  "src/panel-framework/overview/mobile-app/RouterMobileApp.tsx",
-  "src/panel-framework/overview/mobile-app/routerMobileModel.ts",
-  "src/panel-framework/overview/phone-ops/PhoneOpsConsole.tsx",
-  "src/panel-framework/overview/phone-ops/phoneOpsModel.ts",
-];
-assert(
-  retiredMobilePaths.every((file) => !exists(file)),
-  "Retired mobile component, model, or patch-stack files must stay deleted"
-);
-assert(
-  !panel.includes("data-overview-low-noise-console-token-contract"),
-  "OverviewPanel must prove console tokens through computed styles, not a self-certifying DOM contract"
-);
-assert(
-  !`${statusVerdict}\n${desktopModule}`.includes("data-overview-desktop-tier") &&
-    !statusVerdict.includes("data-overview-status-priority") &&
-    !statusVerdict.includes("data-overview-desktop-primary") &&
-    !desktopTopbar.includes("topbarPriority"),
-  "Desktop hierarchy probes must derive from semantic roles and structure, not self-certifying priority attributes"
-);
-assert(
-  bytes(phoneOpsTokensFile) + bytes(phoneOpsStylesFile) + bytes(phoneOpsResponsiveStylesFile) + bytes(phoneOpsEvidenceStylesFile) <= 36000,
-  `Native mobile styles exceed 36 KB: ${bytes(phoneOpsTokensFile) + bytes(phoneOpsStylesFile) + bytes(phoneOpsResponsiveStylesFile) + bytes(phoneOpsEvidenceStylesFile)}`
-);
-
-
-if (exists(builtCssFile)) {
-  const builtCss = read(builtCssFile);
-  const builtCssRoot = postcss.parse(builtCss, { from: builtCssFile });
-  let builtLegacyIosSelectorCount = 0;
-  let builtLegacyMobileSelectorCount = 0;
-  builtCssRoot.walkRules((rule) => {
-    if (rule.selector.includes(".ik-ios-")) builtLegacyIosSelectorCount += 1;
-    if (rule.selector.includes(".ik-mobile-")) builtLegacyMobileSelectorCount += 1;
-  });
-  assert(bytes(builtCssFile) <= 500000, `Built style.css exceeds 500 KB: ${bytes(builtCssFile)}`);
-  assert(
-    builtLegacyIosSelectorCount === 0,
-    `Built style.css contains ${builtLegacyIosSelectorCount} legacy ik-ios selector rules`
-  );
-  assert(builtLegacyMobileSelectorCount === 0, `Built style.css contains ${builtLegacyMobileSelectorCount} legacy ik-mobile selector rules`);
-  assert(
-    builtCss.includes(".mn-shell") &&
-      builtCss.includes(".mn-focus-masthead") &&
-      builtCss.includes(".mn-proof-ledger") &&
-      builtCss.includes(".mn-inspection") &&
-      builtCss.includes(".mn-tablet-workspace") &&
-      !builtCss.includes(".mn-sheet") &&
-      !builtCss.includes(".mn-topology") &&
-      !builtCss.includes(".mn-path-evidence") &&
-      !builtCss.includes(".phone-ops-console") &&
-      !builtCss.includes(".rm-app"),
-    "Built style.css must contain the native mobile product and exclude retired mobile namespaces"
-  );
-}
-
-if (failures.length > 0) {
+if (failures.length) {
   console.error("overview architecture gate: FAIL");
   for (const failure of failures) console.error(`- ${failure}`);
   process.exit(1);
 }
 
 console.log(
-  `overview architecture gate: PASS panel=${lines(panel)} lines desktop=${lines(desktopConsole)} lines desktopDecision=${lines(desktopDecisionRail)} lines scenes=${lines(desktopScenes)} lines helper=${lines(desktopHelpers)} lines presentation=${lines(desktopPresentation)} lines topbar=${lines(desktopTopbar)} lines trafficRows=${lines(desktopTrafficRows)} lines routeRows=${lines(desktopRouteRows)} lines wanRows=${lines(desktopWanRows)} lines interfaceRows=${lines(desktopInterfaceRows)} lines credibilityRows=${lines(desktopCredibilityRows)} lines terminalRows=${lines(desktopTerminalRows)} lines resourceRows=${lines(desktopResourceRows)} lines visuals=${lines(desktopVisuals)} lines phoneConsole=${lines(phoneOpsConsole)} lines phoneHome=${lines(phoneOpsHome)} lines phoneSignal=${lines(phoneOpsSignal)} lines phoneInspection=${lines(phoneOpsInspection)} lines phoneEvidence=${lines(phoneOpsEvidence)} lines phoneFocus=${lines(phoneOpsFocus)} lines phoneModel=${lines(phoneOpsModel)} lines phoneModelEvidence=${lines(phoneOpsModelEvidence)} lines phoneStyles=${bytes(phoneOpsStylesFile) + bytes(phoneOpsResponsiveStylesFile) + bytes(phoneOpsEvidenceStylesFile)} bytes css=${bytes(panelCssFile)} bytes desktopBase=${lines(desktopBaseStyles)} lines desktopBaseImportant=${desktopBaseImportantCount} desktopActiveImportant=${desktopActiveImportantCount} important=${importantShare.toFixed(4)} desktopImportant=${desktopRefinementImportantCount} workspaceImportant=${desktopWorkspaceLayoutImportantCount} decisionRailRules=${desktopDecisionRailRuleCount} decisionCellRules=${desktopDecisionCellRuleCount} workspaceGridRules=${desktopWorkspaceGridRuleCount} navRules=${desktopNavRuleCount} shellDescendantRules=${desktopImpossibleShellDescendantCount} statusBusRules=${desktopStatusBusRuleCount} legacyTopbarRules=${desktopLegacyTopbarRuleCount} sidebarStatusRules=${desktopSidebarMiniStatusRuleCount} sidebarStatusImportant=${desktopSidebarMiniStatusImportantCount} moduleShellRules=${desktopModuleShellRuleCount} moduleHeadRules=${desktopModuleHeadRuleCount} ledgerRules=${desktopLedgerRuleCount} moduleToneRules=${desktopModuleToneRuleCount} ledgerToneRules=${desktopLedgerToneRuleCount} ledgerToneShadows=${desktopLedgerToneShadowCount} releaseToneResets=${desktopReleaseToneResetCount} releaseNonPrimary=${desktopReleaseNonPrimaryNeutralCount} mobile=${mobileRuleShare.toFixed(4)}`
+  `overview architecture gate: PASS sharedModel=${lineCount(source.evidenceModel)} mobile=${lineCount(source.mobile)} desktop=${lineCount(source.desktop)} desktopModel=${lineCount(source.desktopModel)} activeCss=${Math.round(Buffer.byteLength(activeStyles) / 1024)}kB important=0 minText=${Math.min(...fontSizes)}px`,
 );

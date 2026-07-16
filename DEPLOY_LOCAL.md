@@ -22,6 +22,8 @@ Create a dedicated least-privilege RouterOS user for the panel. Do not use
 
 At minimum, the app needs read access to the RouterOS API and SSH paths it
 collects from. Keep the account scoped to read-only policy wherever possible.
+Enable REST through RouterOS `www-ssl` and use a certificate trusted by the
+panel host when possible; plain `www` transmits Basic credentials without TLS.
 
 ## Windows PowerShell
 
@@ -32,6 +34,10 @@ python -m venv .venv
 $env:ROS_MONITOR_ROUTER_HOST="192.168.88.1"
 $env:ROS_MONITOR_ROUTER_USER="ros-panel-readonly"
 $env:ROS_MONITOR_ROUTER_PASSWORD="CHANGE_ME"
+$env:ROS_MONITOR_ROUTER_REST_SCHEME="https"
+$env:ROS_MONITOR_ROUTER_REST_PORT="443"
+$env:ROS_MONITOR_ROUTER_REST_VERIFY_TLS="1"
+$env:ROS_MONITOR_INSECURE_REST_CONFIRMED="0"
 $env:ROS_PANEL_BIND="127.0.0.1"
 $env:ROS_PANEL_PORT="28646"
 $env:ROS_PANEL_TARGET_IP="127.0.0.1"
@@ -59,6 +65,10 @@ python3 -m venv .venv
 export ROS_MONITOR_ROUTER_HOST="192.168.88.1"
 export ROS_MONITOR_ROUTER_USER="ros-panel-readonly"
 export ROS_MONITOR_ROUTER_PASSWORD="CHANGE_ME"
+export ROS_MONITOR_ROUTER_REST_SCHEME="https"
+export ROS_MONITOR_ROUTER_REST_PORT="443"
+export ROS_MONITOR_ROUTER_REST_VERIFY_TLS="1"
+export ROS_MONITOR_INSECURE_REST_CONFIRMED="0"
 export ROS_PANEL_BIND="127.0.0.1"
 export ROS_PANEL_PORT="28646"
 export ROS_PANEL_TARGET_IP="127.0.0.1"
@@ -76,6 +86,13 @@ http://127.0.0.1:28646/
 ```
 
 Other IP browser entrypoints are rejected by the public localhost-only guard.
+
+The RouterOS address field accepts only an IP address or hostname; choose REST
+HTTPS or HTTP separately. Verified HTTPS on port `443` is the default. Plain
+HTTP or disabled certificate verification requires an explicit risk
+acknowledgement. On first SSH contact, compare the displayed SHA-256 host-key
+fingerprint with a trusted RouterOS source before pinning it. Saved profiles do
+not persist passwords.
 
 For local trials, the in-panel address dialog may save loopback-only settings to
 `routeros-panel.env` if the working directory is writable. Restart the local

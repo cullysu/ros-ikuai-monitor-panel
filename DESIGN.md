@@ -15,13 +15,13 @@ The product is an industrial, read-only network console: calm, exact, compact, a
 
 ### Mobile
 
-- Canvas: `#EDF3F6`
+- Canvas: `#EAF1F4`
 - Surface: `#F9FBFC`
-- Primary tonal surface: `#E1EDF3`
-- Ink: `#142B36`; secondary: `#405B68`; muted: `#5B727D`
-- Product blue: `#397897`; deep blue: `#225F7E`
-- Divider: `#CBD9E0`; strong divider: `#AEC3CE`
-- Radius: `10px` grouped surface, `7px` compact control
+- Primary tonal surface: `#E7F0F3`
+- Ink: `#102B37`; secondary: `#3B5B68`; muted: `#536F7A`
+- Product blue: `#0B678C`; verdict blue: `#153F50`
+- Divider: `#D1DEE4`; strong divider: `#B4C8D1`
+- Radius: `8px` grouped surface, `7px` compact control
 - Spacing rhythm: `4 / 8 / 12 / 16px`
 
 Desktop keeps its existing console token ownership. Mobile tokens must not be imported into desktop styles.

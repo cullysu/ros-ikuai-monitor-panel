@@ -1,5 +1,4 @@
 import copy
-import hashlib
 import ipaddress
 import json
 import mimetypes
@@ -20,6 +19,33 @@ from pathlib import Path
 from urllib.parse import parse_qs, unquote, urlparse
 
 import requests
+
+from panel_backend.api_schema import (
+    MAX_REQUEST_BODY_BYTES,
+    READ_ONLY_API_PATHS,
+    SESSION_BOOTSTRAP_PATHS,
+    WRITE_API_PATHS,
+    decode_json_object,
+    parse_router_login_request,
+)
+from panel_backend.collector_transport import RouterCollectorTransport
+from panel_backend.collector_evidence import ConnectionEvidenceParser
+from panel_backend.config_store import RouterProfileStore
+from panel_backend.router_transport import (
+    PinnedHostKeyPolicy,
+    SshHostKeyConfirmationRequired,
+    SshHostKeyMismatch,
+    build_rest_url,
+    configure_rest_session,
+    normalize_rest_port,
+    normalize_rest_scheme,
+    normalize_router_host,
+    normalize_router_ssh_port,
+    normalize_router_transport,
+    normalize_ssh_fingerprint,
+    validate_rest_security,
+)
+from panel_backend.session_security import SessionStore, SlidingWindowRateLimiter
 
 try:
     import paramiko
@@ -92,6 +118,18 @@ def env_value(name, default=None):
             if matches:
                 value = matches[-1].decode(errors="replace")
     return default if value is None else value
+
+
+def env_bool(name, default=False):
+    raw = os.getenv(name)
+    if raw is None:
+        return default
+    text = str(raw).strip().lower()
+    if text in {"1", "true", "yes", "on", "enabled"}:
+        return True
+    if text in {"0", "false", "no", "off", "disabled"}:
+        return False
+    return default
 
 
 class ReusableThreadingHTTPServer(ThreadingHTTPServer):
@@ -195,8 +233,6 @@ PANEL_LOCALHOST_FORWARD_TOKEN = str(env_value("ROS_PANEL_LOCALHOST_FORWARD_TOKEN
 PANEL_SESSION_COOKIE = "ros_panel_session"
 PANEL_CSRF_COOKIE = "ros_panel_csrf"
 PANEL_SESSION_TTL_SECONDS = 8 * 60 * 60
-PANEL_SESSIONS = {}
-PANEL_SESSION_LOCK = threading.RLock()
 PANEL_ENV_ASSIGNMENT_RE = re.compile(r"^(\s*(?:export\s+)?)([A-Za-z_][A-Za-z0-9_]*)(\s*=\s*)(.*)$")
 
 
@@ -422,45 +458,21 @@ def parse_request_cookies(cookie_header):
 
 
 def prune_panel_sessions(now=None):
-    now = time.time() if now is None else now
-    expired = [
-        token
-        for token, session in PANEL_SESSIONS.items()
-        if now - float(session.get("lastSeen") or session.get("created") or 0) > PANEL_SESSION_TTL_SECONDS
-    ]
-    for token in expired:
-        PANEL_SESSIONS.pop(token, None)
+    del now
+    return PANEL_SESSION_STORE.size()
 
 
 def create_panel_session():
-    now = time.time()
-    token = secrets.token_urlsafe(32)
-    session = {
-        "id": token,
-        "csrf": secrets.token_urlsafe(32),
-        "created": now,
-        "lastSeen": now,
-    }
-    with PANEL_SESSION_LOCK:
-        prune_panel_sessions(now)
-        PANEL_SESSIONS[token] = session
-    return copy.deepcopy(session)
+    return PANEL_SESSION_STORE.create()
 
 
 def get_panel_session(token):
-    if not token:
-        return None
-    now = time.time()
-    with PANEL_SESSION_LOCK:
-        prune_panel_sessions(now)
-        session = PANEL_SESSIONS.get(str(token))
-        if not session:
-            return None
-        session["lastSeen"] = now
-        return copy.deepcopy(session)
+    return PANEL_SESSION_STORE.get(token)
 
 
-def build_panel_cookie(name, value, max_age=PANEL_SESSION_TTL_SECONDS, http_only=True):
+def build_panel_cookie(name, value, max_age=None, http_only=True):
+    if max_age is None:
+        max_age = PANEL_SESSION_TTL_SECONDS
     parts = [
         f"{name}={value}",
         "Path=/",
@@ -656,11 +668,29 @@ ROUTER_HOST = env_value("ROS_MONITOR_ROUTER_HOST", DEFAULT_ROUTER_HOST)
 ROUTER_USER = os.getenv("ROS_MONITOR_ROUTER_USER", "ros-panel-readonly")
 ROUTER_PASSWORD = os.getenv("ROS_MONITOR_ROUTER_PASSWORD", "CHANGE_ME")
 ROUTER_SSH_PORT = int(os.getenv("ROS_MONITOR_ROUTER_SSH_PORT", "22"))
+ROUTER_SSH_HOST_KEY_FINGERPRINT = normalize_ssh_fingerprint(
+    env_value("ROS_MONITOR_SSH_HOST_KEY_FINGERPRINT", "")
+)
+ROUTER_REST_SCHEME = normalize_rest_scheme(env_value("ROS_MONITOR_ROUTER_REST_SCHEME", "https"))
+ROUTER_REST_PORT = normalize_rest_port(
+    env_value("ROS_MONITOR_ROUTER_REST_PORT", ""),
+    ROUTER_REST_SCHEME,
+)
+ROUTER_REST_VERIFY_TLS = env_bool("ROS_MONITOR_ROUTER_REST_VERIFY_TLS", default=True)
+ROUTER_INSECURE_REST_CONFIRMED = env_bool("ROS_MONITOR_INSECURE_REST_CONFIRMED", default=False)
+validate_rest_security(ROUTER_REST_SCHEME, ROUTER_REST_VERIFY_TLS, ROUTER_INSECURE_REST_CONFIRMED)
 PANEL_PROFILE_RAW = env_value("ROS_PANEL_PROFILE", "routeros_only")
 PANEL_BIND = normalize_panel_host(env_value("ROS_PANEL_BIND", DEFAULT_PANEL_BIND), "bind")
 PANEL_PORT = normalize_panel_port(env_value("ROS_PANEL_PORT", str(DEFAULT_PANEL_PORT)))
 PANEL_TARGET = resolve_panel_access_host(env_value("ROS_PANEL_TARGET_IP", DEFAULT_PANEL_TARGET))
 PANEL_BIND, PANEL_TARGET = validate_panel_public_contract(PANEL_BIND, PANEL_TARGET, PANEL_PROFILE_RAW)
+PANEL_SESSION_TTL_SECONDS = max(300, int(env_value("ROS_PANEL_SESSION_TTL_SECONDS", str(8 * 60 * 60))))
+PANEL_SESSION_MAX = max(8, min(4096, int(env_value("ROS_PANEL_SESSION_MAX", "128"))))
+PANEL_SESSION_BOOTSTRAP_LIMIT = max(2, int(env_value("ROS_PANEL_SESSION_BOOTSTRAP_LIMIT", "30")))
+PANEL_LOGIN_ATTEMPT_LIMIT = max(2, int(env_value("ROS_PANEL_LOGIN_ATTEMPT_LIMIT", "8")))
+PANEL_RATE_LIMIT_WINDOW_SECONDS = max(10, int(env_value("ROS_PANEL_RATE_LIMIT_WINDOW_SECONDS", "60")))
+PANEL_SESSION_STORE = SessionStore(PANEL_SESSION_TTL_SECONDS, PANEL_SESSION_MAX)
+PANEL_REQUEST_RATE_LIMITER = SlidingWindowRateLimiter(max_keys=1024)
 POLL_SECONDS = max(1, int(os.getenv("ROS_MONITOR_POLL_SECONDS", "1")))
 HISTORY_LIMIT = int(os.getenv("ROS_MONITOR_HISTORY_LIMIT", "60"))
 RATE_ZERO_CONFIRM_SAMPLES = max(1, int(os.getenv("ROS_MONITOR_RATE_ZERO_CONFIRM_SAMPLES", "2")))
@@ -731,6 +761,7 @@ SSH_BANNER_PROBE_TIMEOUT = max(0.5, min(3.0, float(os.getenv("ROS_MONITOR_SSH_BA
 IP_ALIAS_FILE = Path(os.getenv("ROS_PANEL_IP_ALIAS_FILE", str(BASE_DIR / "data" / "ip_aliases.json"))).expanduser()
 ROUTER_LOGIN_STORE_FILE = Path(os.getenv("ROS_PANEL_ROUTER_LOGIN_STORE_FILE", str(BASE_DIR / "data" / "router_logins.json"))).expanduser()
 ROUTER_LOGIN_HISTORY_LIMIT = max(1, int(os.getenv("ROS_PANEL_ROUTER_LOGIN_HISTORY_LIMIT", "32")))
+ROUTER_PROFILE_STORE = RouterProfileStore(ROUTER_LOGIN_STORE_FILE, ROUTER_LOGIN_HISTORY_LIMIT)
 CUSTOM_NAME_MAX_LENGTH = int(os.getenv("ROS_PANEL_CUSTOM_NAME_MAX_LENGTH", "48"))
 READONLY_DIAGNOSTIC_CACHE_TTL = int(os.getenv("ROS_PANEL_READONLY_DIAGNOSTIC_CACHE_TTL", "45"))
 READONLY_DIAGNOSTIC_DNS_TIMEOUT = float(os.getenv("ROS_PANEL_READONLY_DIAGNOSTIC_DNS_TIMEOUT", "1.2"))
@@ -932,8 +963,6 @@ EMPTY_REST_BUNDLE = {
     "logs": [],
 }
 
-TRACKING_FIELD_PATTERN = re.compile(r"^\s*([A-Za-z0-9-]+):\s*(.*?)\s*$")
-TERSE_FIELD_PATTERN = re.compile(r"([A-Za-z0-9-]+)=(.*?)(?=\s+[A-Za-z0-9-]+=|$)")
 CGNAT_NETWORK = ipaddress.ip_network("100.64.0.0/10")
 
 
@@ -1090,18 +1119,6 @@ def interface_quality_group_key(item):
     return own_name or iface_type
 
 
-def env_bool(name, default=False):
-    raw = os.getenv(name)
-    if raw is None:
-        return default
-    text = str(raw).strip().lower()
-    if text in {"1", "true", "yes", "on", "enabled"}:
-        return True
-    if text in {"0", "false", "no", "off", "disabled"}:
-        return False
-    return default
-
-
 PANEL_OPEN_BROWSER = env_bool("ROS_PANEL_OPEN_BROWSER", default=is_frozen_app())
 
 
@@ -1217,36 +1234,16 @@ ROUTER_CONFIG = {
     "user": str(ROUTER_USER or "").strip(),
     "password": str(ROUTER_PASSWORD or ""),
     "sshPort": max(1, min(65535, to_int(ROUTER_SSH_PORT, 22))),
+    "sshHostKeyFingerprint": ROUTER_SSH_HOST_KEY_FINGERPRINT,
+    "restScheme": ROUTER_REST_SCHEME,
+    "restPort": ROUTER_REST_PORT,
+    "restVerifyTls": ROUTER_REST_VERIFY_TLS,
+    "insecureRestConfirmed": ROUTER_INSECURE_REST_CONFIRMED,
     "source": "env",
     "savedId": None,
     "updatedAt": None,
     "lastTest": None,
 }
-ROUTER_LOGIN_STORE_LOCK = threading.RLock()
-
-
-def normalize_router_host(value):
-    text = str(value or "").strip()
-    if not text:
-        raise ValueError("RouterOS address is required")
-    if "://" in text:
-        parsed = urlparse(text)
-        text = parsed.hostname or ""
-    text = text.strip().strip("[]")
-    if not text or "/" in text or "\\" in text or any(char.isspace() for char in text):
-        raise ValueError("RouterOS address must be an IP address or hostname")
-    if len(text) > 253:
-        raise ValueError("RouterOS address is too long")
-    return text
-
-
-def normalize_router_ssh_port(value):
-    port = to_int(value, 22)
-    if port < 1 or port > 65535:
-        raise ValueError("SSH port must be between 1 and 65535")
-    return port
-
-
 def router_config_is_ready(config):
     password = str(config.get("password") or "").strip()
     return bool(
@@ -1277,6 +1274,11 @@ def public_router_config(config=None):
         "host": source.get("host") or "",
         "user": source.get("user") or "",
         "sshPort": to_int(source.get("sshPort"), 22),
+        "sshHostKeyFingerprint": source.get("sshHostKeyFingerprint") or "",
+        "restScheme": normalize_rest_scheme(source.get("restScheme")),
+        "restPort": normalize_rest_port(source.get("restPort"), source.get("restScheme")),
+        "restVerifyTls": source.get("restVerifyTls") is True,
+        "insecureRestConfirmed": source.get("insecureRestConfirmed") is True,
         "source": source.get("source") or "memory",
         "savedId": source.get("savedId"),
         "updatedAt": source.get("updatedAt"),
@@ -1336,6 +1338,16 @@ def format_ssh_connect_error(config, exc, timeout=SSH_TIMEOUT):
     host = str((config or {}).get("host") or "").strip() or "<empty-host>"
     port = to_int((config or {}).get("sshPort"), 22)
     message = str(exc)
+    if isinstance(exc, SshHostKeyConfirmationRequired):
+        return (
+            f"RouterOS SSH host key must be confirmed before password authentication for {host}:{port}: "
+            f"{exc.algorithm} {exc.fingerprint}"
+        )
+    if isinstance(exc, SshHostKeyMismatch):
+        return (
+            f"RouterOS SSH host key changed for {host}:{port}; connection blocked before password authentication. "
+            f"Expected {exc.expected}, received {exc.actual}."
+        )
     banner_error = "Error reading SSH protocol banner" in message
     session_error = "No existing session" in message
     if banner_error or session_error:
@@ -1357,14 +1369,38 @@ def require_paramiko():
     return paramiko
 
 
+def open_pinned_ssh_client(config, timeout=SSH_TIMEOUT):
+    ssh = require_paramiko()
+    client = ssh.SSHClient()
+    client.set_missing_host_key_policy(PinnedHostKeyPolicy(config.get("sshHostKeyFingerprint")))
+    try:
+        client.connect(
+            config["host"],
+            port=config["sshPort"],
+            username=config["user"],
+            password=config["password"],
+            timeout=timeout,
+            banner_timeout=timeout,
+            auth_timeout=timeout,
+            allow_agent=False,
+            look_for_keys=False,
+        )
+    except Exception:
+        client.close()
+        raise
+    return client
+
+
 def ssh_capability_status():
     available = paramiko is not None
+    router = get_router_config()
+    rest_trusted = router.get("restScheme") == "https" and router.get("restVerifyTls") is True
     return {
         "available": available,
         "state": "available" if available else "dependency_missing",
         "label": "SSH 可用" if available else "SSH 依赖缺失",
         "transport": "ssh" if available else "rest-degraded",
-        "restTrusted": True,
+        "restTrusted": rest_trusted,
         "degradedModules": [] if available else [
             "连接明细",
             "会话采样",
@@ -1375,12 +1411,34 @@ def ssh_capability_status():
     }
 
 
-def set_router_config(host, user, password, ssh_port=22, source="ui", last_test=None, saved_id=None):
+def set_router_config(
+    host,
+    user,
+    password,
+    ssh_port=22,
+    *,
+    rest_scheme="https",
+    rest_port=None,
+    rest_verify_tls=True,
+    insecure_rest_confirmed=False,
+    ssh_host_key_fingerprint="",
+    source="ui",
+    last_test=None,
+    saved_id=None,
+):
+    transport = normalize_router_transport(
+        rest_scheme,
+        rest_port,
+        rest_verify_tls,
+        insecure_rest_confirmed,
+        ssh_host_key_fingerprint,
+    )
     normalized = {
         "host": normalize_router_host(host),
         "user": str(user or "").strip(),
         "password": str(password or ""),
         "sshPort": normalize_router_ssh_port(ssh_port),
+        **transport,
         "source": source,
         "savedId": saved_id,
         "updatedAt": format_iso_now(),
@@ -1409,166 +1467,50 @@ def clear_router_config():
     return public_router_config()
 
 
-def router_login_entry_id(host, user, ssh_port):
-    raw = f"{normalize_router_host(host).lower()}|{str(user or '').strip()}|{normalize_router_ssh_port(ssh_port)}"
-    return hashlib.sha256(raw.encode("utf-8")).hexdigest()[:16]
-
-
-def normalize_saved_router_entry(raw):
-    if not isinstance(raw, dict):
-        return None
-    try:
-        host = normalize_router_host(raw.get("host"))
-        user = str(raw.get("user") or "").strip()
-        ssh_port = normalize_router_ssh_port(raw.get("sshPort") or raw.get("port") or 22)
-    except Exception:
-        return None
-    if not user:
-        return None
-    entry_id = str(raw.get("id") or router_login_entry_id(host, user, ssh_port)).strip()
-    return {
-        "id": entry_id,
-        "host": host,
-        "user": user,
-        "password": "",
-        "sshPort": ssh_port,
-        "label": str(raw.get("label") or host).strip()[:80],
-        "source": str(raw.get("source") or "saved").strip() or "saved",
-        "createdAt": raw.get("createdAt") or raw.get("updatedAt") or format_iso_now(),
-        "updatedAt": raw.get("updatedAt") or format_iso_now(),
-        "lastUsedAt": raw.get("lastUsedAt") or raw.get("updatedAt") or format_iso_now(),
-        "lastTest": copy.deepcopy(raw.get("lastTest")),
-    }
-
-
-def load_router_login_store_unlocked():
-    try:
-        if not ROUTER_LOGIN_STORE_FILE.exists():
-            return []
-        payload = json.loads(ROUTER_LOGIN_STORE_FILE.read_text(encoding="utf-8-sig"))
-        source = payload.get("entries", []) if isinstance(payload, dict) else []
-        entries = []
-        seen = set()
-        for raw in source:
-            entry = normalize_saved_router_entry(raw)
-            if not entry or entry["id"] in seen:
-                continue
-            seen.add(entry["id"])
-            entries.append(entry)
-        entries.sort(key=lambda row: str(row.get("lastUsedAt") or row.get("updatedAt") or ""), reverse=True)
-        return entries[:ROUTER_LOGIN_HISTORY_LIMIT]
-    except Exception:
-        return []
-
-
-def persist_router_login_store_unlocked(entries):
-    ROUTER_LOGIN_STORE_FILE.parent.mkdir(parents=True, exist_ok=True)
-    normalized = []
-    seen = set()
-    for raw in entries:
-        entry = normalize_saved_router_entry(raw)
-        if not entry or entry["id"] in seen:
-            continue
-        seen.add(entry["id"])
-        normalized.append(entry)
-    normalized.sort(key=lambda row: str(row.get("lastUsedAt") or row.get("updatedAt") or ""), reverse=True)
-    payload = {
-        "version": 2,
-        "updatedAt": format_iso_now(),
-        "warning": "This local file stores RouterOS SSH login profiles only; passwords are never persisted.",
-        "entries": normalized[:ROUTER_LOGIN_HISTORY_LIMIT],
-    }
-    tmp_path = ROUTER_LOGIN_STORE_FILE.with_suffix(".json.tmp")
-    tmp_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
-    try:
-        os.chmod(tmp_path, 0o600)
-    except Exception:
-        pass
-    tmp_path.replace(ROUTER_LOGIN_STORE_FILE)
-    try:
-        os.chmod(ROUTER_LOGIN_STORE_FILE, 0o600)
-    except Exception:
-        pass
-
-
 def sanitize_router_login_store_passwords():
-    with ROUTER_LOGIN_STORE_LOCK:
-        if ROUTER_LOGIN_STORE_FILE.exists():
-            persist_router_login_store_unlocked(load_router_login_store_unlocked())
-
-
-def public_saved_router_entry(entry):
-    return {
-        "id": entry.get("id"),
-        "host": entry.get("host") or "",
-        "user": entry.get("user") or "",
-        "sshPort": to_int(entry.get("sshPort"), 22),
-        "label": entry.get("label") or entry.get("host") or "",
-        "source": entry.get("source") or "saved",
-        "createdAt": entry.get("createdAt"),
-        "updatedAt": entry.get("updatedAt"),
-        "lastUsedAt": entry.get("lastUsedAt"),
-        "passwordSaved": False,
-        "lastTest": copy.deepcopy(entry.get("lastTest")),
-    }
+    ROUTER_PROFILE_STORE.sanitize()
 
 
 def public_saved_router_logins():
-    with ROUTER_LOGIN_STORE_LOCK:
-        return [public_saved_router_entry(entry) for entry in load_router_login_store_unlocked()]
+    return ROUTER_PROFILE_STORE.public_entries()
 
 
 def find_saved_router_login(saved_id):
-    saved_id = str(saved_id or "").strip()
-    if not saved_id:
-        return None
-    with ROUTER_LOGIN_STORE_LOCK:
-        for entry in load_router_login_store_unlocked():
-            if entry.get("id") == saved_id:
-                return copy.deepcopy(entry)
-    return None
+    return ROUTER_PROFILE_STORE.find(saved_id)
 
 
-def remember_router_login(host, user, password, ssh_port=22, last_test=None, source="ui"):
-    now = format_iso_now()
-    entry = normalize_saved_router_entry(
-        {
-            "id": router_login_entry_id(host, user, ssh_port),
-            "host": host,
-            "user": user,
-            "password": "",
-            "sshPort": ssh_port,
-            "label": host,
-            "source": source,
-            "updatedAt": now,
-            "lastUsedAt": now,
-            "lastTest": copy.deepcopy(last_test),
-        }
+def remember_router_login(
+    host,
+    user,
+    password,
+    ssh_port=22,
+    *,
+    rest_scheme="https",
+    rest_port=None,
+    rest_verify_tls=True,
+    insecure_rest_confirmed=False,
+    ssh_host_key_fingerprint="",
+    last_test=None,
+    source="ui",
+):
+    del password
+    return ROUTER_PROFILE_STORE.remember(
+        host,
+        user,
+        ssh_port,
+        rest_scheme=rest_scheme,
+        rest_port=rest_port,
+        rest_verify_tls=rest_verify_tls,
+        insecure_rest_confirmed=insecure_rest_confirmed,
+        ssh_host_key_fingerprint=ssh_host_key_fingerprint,
+        last_test=last_test,
+        source=source,
     )
-    if not entry:
-        raise ValueError("Saved RouterOS login is invalid")
-    with ROUTER_LOGIN_STORE_LOCK:
-        stored_entries = load_router_login_store_unlocked()
-        existing = next((row for row in stored_entries if row.get("id") == entry["id"]), None)
-        if existing:
-            entry["createdAt"] = existing.get("createdAt") or entry["createdAt"]
-        entries = [row for row in stored_entries if row.get("id") != entry["id"]]
-        entries.insert(0, entry)
-        persist_router_login_store_unlocked(entries)
-    return copy.deepcopy(entry)
 
 
 def forget_router_login(saved_id):
     saved_id = str(saved_id or "").strip()
-    removed = False
-    with ROUTER_LOGIN_STORE_LOCK:
-        entries = []
-        for entry in load_router_login_store_unlocked():
-            if entry.get("id") == saved_id:
-                removed = True
-                continue
-            entries.append(entry)
-        persist_router_login_store_unlocked(entries)
+    removed = ROUTER_PROFILE_STORE.forget(saved_id)
     with ROUTER_CONFIG_LOCK:
         if ROUTER_CONFIG.get("savedId") == saved_id:
             ROUTER_CONFIG["savedId"] = None
@@ -1577,12 +1519,31 @@ def forget_router_login(saved_id):
 
 
 
-def test_router_credentials(host, user, password, ssh_port=22):
+def test_router_credentials(
+    host,
+    user,
+    password,
+    ssh_port=22,
+    *,
+    rest_scheme="https",
+    rest_port=None,
+    rest_verify_tls=True,
+    insecure_rest_confirmed=False,
+    ssh_host_key_fingerprint="",
+):
+    transport = normalize_router_transport(
+        rest_scheme,
+        rest_port,
+        rest_verify_tls,
+        insecure_rest_confirmed,
+        ssh_host_key_fingerprint,
+    )
     config = {
         "host": normalize_router_host(host),
         "user": str(user or "").strip(),
         "password": str(password or ""),
         "sshPort": normalize_router_ssh_port(ssh_port),
+        **transport,
     }
     if not config["user"]:
         raise ValueError("RouterOS username is required")
@@ -1591,27 +1552,32 @@ def test_router_credentials(host, user, password, ssh_port=22):
 
     started_at = time.time()
     test = {
-        "ssh": {"ok": False, "identity": None, "error": None, "elapsedMs": None},
-        "rest": {"ok": False, "status": None, "error": None, "elapsedMs": None},
+        "ssh": {
+            "ok": False,
+            "identity": None,
+            "error": None,
+            "elapsedMs": None,
+            "fingerprint": config["sshHostKeyFingerprint"] or None,
+            "expectedFingerprint": config["sshHostKeyFingerprint"] or None,
+            "algorithm": None,
+            "confirmationRequired": False,
+            "hostKeyChanged": False,
+        },
+        "rest": {
+            "ok": False,
+            "status": None,
+            "error": None,
+            "elapsedMs": None,
+            "scheme": config["restScheme"],
+            "port": config["restPort"],
+            "verifyTls": config["restVerifyTls"],
+        },
     }
 
     ssh_started = time.time()
     client = None
     try:
-        ssh = require_paramiko()
-        client = ssh.SSHClient()
-        client.set_missing_host_key_policy(ssh.AutoAddPolicy())
-        client.connect(
-            config["host"],
-            port=config["sshPort"],
-            username=config["user"],
-            password=config["password"],
-            timeout=SSH_TIMEOUT,
-            banner_timeout=SSH_TIMEOUT,
-            auth_timeout=SSH_TIMEOUT,
-            allow_agent=False,
-            look_for_keys=False,
-        )
+        client = open_pinned_ssh_client(config, timeout=SSH_TIMEOUT)
         stdin, stdout, stderr = client.exec_command(":put [/system/identity/get name]", timeout=SSH_TIMEOUT)
         stdout.channel.settimeout(SSH_TIMEOUT)
         stderr.channel.settimeout(SSH_TIMEOUT)
@@ -1621,6 +1587,25 @@ def test_router_credentials(host, user, password, ssh_port=22):
         if exit_status != 0 or error:
             raise RuntimeError(error or f"SSH command exited with status {exit_status}")
         test["ssh"].update({"ok": True, "identity": identity or "RouterOS"})
+    except SshHostKeyConfirmationRequired as exc:
+        test["ssh"].update(
+            {
+                "error": format_ssh_connect_error(config, exc, timeout=SSH_TIMEOUT),
+                "fingerprint": exc.fingerprint,
+                "algorithm": exc.algorithm,
+                "confirmationRequired": True,
+            }
+        )
+    except SshHostKeyMismatch as exc:
+        test["ssh"].update(
+            {
+                "error": format_ssh_connect_error(config, exc, timeout=SSH_TIMEOUT),
+                "fingerprint": exc.actual,
+                "expectedFingerprint": exc.expected,
+                "algorithm": exc.algorithm,
+                "hostKeyChanged": True,
+            }
+        )
     except Exception as exc:
         test["ssh"]["error"] = format_ssh_connect_error(config, exc, timeout=SSH_TIMEOUT)
     finally:
@@ -1633,10 +1618,16 @@ def test_router_credentials(host, user, password, ssh_port=22):
 
     rest_started = time.time()
     session = requests.Session()
-    session.auth = (config["user"], config["password"])
+    configure_rest_session(session, config)
     try:
-        response = session.get(f"http://{config['host']}/rest/system/resource", timeout=min(REST_TIMEOUT, 8))
+        response = session.get(
+            build_rest_url(config, "system/resource"),
+            timeout=min(REST_TIMEOUT, 8),
+            allow_redirects=False,
+        )
         test["rest"]["status"] = response.status_code
+        if 300 <= response.status_code < 400:
+            raise RuntimeError("RouterOS REST redirect was refused; configure the exact HTTPS endpoint")
         response.raise_for_status()
         test["rest"]["ok"] = True
     except Exception as exc:
@@ -1652,14 +1643,17 @@ def test_router_credentials(host, user, password, ssh_port=22):
 def router_login_warning(test):
     ssh_ok = (test or {}).get("ssh", {}).get("ok") is True
     rest_ok = (test or {}).get("rest", {}).get("ok") is True
+    rest = (test or {}).get("rest", {})
+    warnings = []
+    if rest.get("scheme") == "http":
+        warnings.append("REST 正在使用已明确确认的 HTTP 风险模式，RouterOS 凭据不会被加密。")
+    elif rest.get("verifyTls") is False:
+        warnings.append("REST 使用 HTTPS，但证书校验已被明确关闭，无法验证设备身份。")
     if rest_ok and not ssh_ok:
-        return (
-            "RouterOS REST verified, but SSH did not complete. "
-            "The panel will enter read-only REST mode; SSH-only widgets may be degraded."
-        )
-    if ssh_ok and not rest_ok:
-        return "SSH connected, but RouterOS REST did not respond. Some dashboard data may be missing."
-    return None
+        warnings.append("RouterOS REST 已验证，但 SSH 未完成；依赖 SSH 的明细会降级。")
+    elif ssh_ok and not rest_ok:
+        warnings.append("SSH 已连接，但 RouterOS REST 未响应；部分面板数据会缺失。")
+    return " ".join(warnings) or None
 
 
 def router_login_failure_message(test):
@@ -2783,6 +2777,19 @@ def nikki_probe():
 
 class Collector:
     def __init__(self):
+        self.router_transport = RouterCollectorTransport(
+            get_ready_router_config,
+            open_pinned_ssh_client,
+            format_ssh_connect_error,
+            to_int,
+            rest_timeout=REST_TIMEOUT,
+            ssh_timeout=SSH_TIMEOUT,
+        )
+        self.connection_evidence = ConnectionEvidenceParser(
+            to_int,
+            detail_sample_limit=CONNECTION_DETAIL_SAMPLE_LIMIT,
+            search_fields=CONNECTION_SEARCH_FIELDS,
+        )
         router_status = public_router_config()
         self.state = {
             "status": "starting" if router_status["configured"] else "needs_config",
@@ -3068,246 +3075,44 @@ class Collector:
         return {"ip": ip_key, "customName": custom_name, "snapshot": snapshot}
 
     def rest_get(self, session, config):
-        router = get_ready_router_config()
-        response = session.get(
-            f"http://{router['host']}/rest/{config['path']}",
-            params=config.get("params"),
-            timeout=config.get("timeout", REST_TIMEOUT),
-        )
-        if config.get("optional") and response.status_code == 404:
-            return [] if config.get("kind") != "object" else {}
-        response.raise_for_status()
-        payload = response.json()
-        if config.get("kind") == "object":
-            return payload[0] if isinstance(payload, list) and payload else payload or {}
-        return payload if isinstance(payload, list) else ([payload] if payload else [])
+        return self.router_transport.rest_get(session, config)
 
     def rest_post(self, session, path, payload=None, timeout=None):
-        router = get_ready_router_config()
-        response = session.post(
-            f"http://{router['host']}/rest/{path.strip('/')}",
-            json=payload or {},
-            timeout=timeout or REST_TIMEOUT,
-        )
-        response.raise_for_status()
-        if not response.content:
-            return {}
-        return response.json()
+        return self.router_transport.rest_post(session, path, payload, timeout)
 
     def rest_print(self, path, proplist=None, query=None, timeout=None):
-        router = get_ready_router_config()
-        session = requests.Session()
-        session.auth = (router["user"], router["password"])
-        try:
-            payload = {}
-            if proplist:
-                payload[".proplist"] = proplist
-            if query:
-                payload[".query"] = query
-            result = self.rest_post(session, f"{path.strip('/')}/print", payload, timeout=timeout)
-            return result if isinstance(result, list) else ([result] if result else [])
-        finally:
-            session.close()
+        return self.router_transport.rest_print(path, proplist, query, timeout)
 
     def ssh_exec(self, client, command, timeout=None):
-        timeout = max(1, to_int(timeout, SSH_TIMEOUT))
-        stdin, stdout, stderr = client.exec_command(command, timeout=timeout)
-        channel = stdout.channel
-        try:
-            channel.settimeout(timeout)
-            stderr.channel.settimeout(timeout)
-            output = stdout.read().decode("utf-8", errors="replace").strip()
-            error = stderr.read().decode("utf-8", errors="replace").strip()
-            exit_status = channel.recv_exit_status()
-        except socket.timeout as exc:
-            try:
-                channel.close()
-            except Exception:
-                pass
-            raise RuntimeError(f"SSH command timed out after {timeout}s: {command}") from exc
-        except Exception as exc:
-            try:
-                channel.close()
-            except Exception:
-                pass
-            raise RuntimeError(f"SSH command failed: {command}: {exc}") from exc
-        if exit_status != 0:
-            raise RuntimeError(error or f"SSH command exited with status {exit_status}: {command}")
-        if error:
-            raise RuntimeError(error)
-        return output
+        return self.router_transport.ssh_exec(client, command, timeout)
 
     def ssh_json(self, client, expression):
-        payload = self.ssh_exec(client, f":put [:serialize to=json value={expression}]")
-        return json.loads(payload) if payload else []
+        return self.router_transport.ssh_json(client, expression)
 
     def ssh_capture(self, client, command, capture_seconds, max_bytes=None, quiet_window=0.75, timeout=None):
-        timeout = max(1, to_int(timeout, SSH_TIMEOUT))
-        capture_seconds = max(1.0, float(capture_seconds or 0))
-        stdin, stdout, stderr = client.exec_command(command, timeout=timeout)
-        channel = stdout.channel
-        stdout_chunks = []
-        stderr_chunks = []
-        total_bytes = 0
-        started_at = time.time()
-        first_output_at = None
-        last_output_at = None
-        try:
-            channel.settimeout(1.0)
-            while time.time() - started_at < capture_seconds:
-                received = False
-                while channel.recv_ready():
-                    data = channel.recv(65535)
-                    if not data:
-                        break
-                    received = True
-                    now = time.time()
-                    if first_output_at is None:
-                        first_output_at = now
-                    last_output_at = now
-                    stdout_chunks.append(data)
-                    total_bytes += len(data)
-                    if max_bytes and total_bytes >= max_bytes:
-                        break
-                while channel.recv_stderr_ready():
-                    data = channel.recv_stderr(65535)
-                    if not data:
-                        break
-                    stderr_chunks.append(data)
-                if max_bytes and total_bytes >= max_bytes:
-                    break
-                if channel.exit_status_ready():
-                    break
-                if first_output_at and last_output_at and (time.time() - last_output_at) >= quiet_window:
-                    break
-                if not received:
-                    time.sleep(0.1)
-            error = b"".join(stderr_chunks).decode("utf-8", errors="replace").strip()
-            text = b"".join(stdout_chunks).decode("utf-8", errors="replace")
-            complete = channel.exit_status_ready()
-            if not text and complete:
-                exit_status = channel.recv_exit_status()
-                if exit_status != 0:
-                    raise RuntimeError(error or f"SSH command exited with status {exit_status}: {command}")
-            if not text and not complete:
-                raise RuntimeError(
-                    error or f"SSH stream capture produced no rows within {round(capture_seconds, 1)}s: {command}"
-                )
-            return {
-                "text": text,
-                "stderr": error,
-                "complete": complete,
-                "capturedBytes": total_bytes,
-                "firstOutputSeconds": round((first_output_at - started_at), 2) if first_output_at else None,
-            }
-        finally:
-            try:
-                channel.close()
-            except Exception:
-                pass
+        return self.router_transport.ssh_capture(
+            client,
+            command,
+            capture_seconds,
+            max_bytes=max_bytes,
+            quiet_window=quiet_window,
+            timeout=timeout,
+        )
 
     def fetch_rest_item(self, key, endpoint_config):
-        router = get_ready_router_config()
-        session = requests.Session()
-        session.auth = (router["user"], router["password"])
-        try:
-            return key, self.rest_get(session, endpoint_config), None
-        except Exception as exc:
-            return key, None, str(exc)
-        finally:
-            session.close()
+        return self.router_transport.fetch_rest_item(key, endpoint_config)
 
     def fetch_rest_bundle(self, endpoints, workers=1):
-        max_workers = max(1, min(to_int(workers, 1), len(endpoints) or 1))
-        if max_workers > 1 and len(endpoints) > 1:
-            payload = {}
-            failures = {}
-            with ThreadPoolExecutor(max_workers=max_workers) as executor:
-                futures = [
-                    executor.submit(self.fetch_rest_item, key, endpoint_config)
-                    for key, endpoint_config in endpoints.items()
-                ]
-                for future in futures:
-                    key, value, error = future.result()
-                    endpoint_config = endpoints[key]
-                    fallback = {} if endpoint_config.get("kind") == "object" else []
-                    if error:
-                        payload[key] = fallback
-                        failures[key] = error
-                    else:
-                        payload[key] = value
-            if failures:
-                payload["_failures"] = failures
-            required_keys = [key for key, endpoint_config in endpoints.items() if not endpoint_config.get("optional")]
-            if failures and required_keys and all(key in failures for key in required_keys):
-                joined = "; ".join(f"{key}: {message}" for key, message in failures.items())
-                raise RuntimeError(joined)
-            return payload
-
-        router = get_ready_router_config()
-        session = requests.Session()
-        session.auth = (router["user"], router["password"])
-        try:
-            payload = {}
-            failures = {}
-            for key, endpoint_config in endpoints.items():
-                fallback = {} if endpoint_config.get("kind") == "object" else []
-                try:
-                    payload[key] = self.rest_get(session, endpoint_config)
-                except Exception as exc:
-                    payload[key] = fallback
-                    failures[key] = str(exc)
-            if failures:
-                payload["_failures"] = failures
-            required_keys = [key for key, endpoint_config in endpoints.items() if not endpoint_config.get("optional")]
-            if failures and required_keys and all(key in failures for key in required_keys):
-                joined = "; ".join(f"{key}: {message}" for key, message in failures.items())
-                raise RuntimeError(joined)
-            return payload
-        finally:
-            session.close()
+        return self.router_transport.fetch_rest_bundle(endpoints, workers)
 
     def open_ssh_client(self, timeout=None):
-        router = get_ready_router_config()
-        timeout = max(1, to_int(timeout, SSH_TIMEOUT))
-        client = None
-        try:
-            ssh = require_paramiko()
-            client = ssh.SSHClient()
-            client.set_missing_host_key_policy(ssh.AutoAddPolicy())
-            client.connect(
-                router["host"],
-                port=router["sshPort"],
-                username=router["user"],
-                password=router["password"],
-                timeout=timeout,
-                banner_timeout=timeout,
-                auth_timeout=timeout,
-                allow_agent=False,
-                look_for_keys=False,
-            )
-        except Exception as exc:
-            try:
-                if client:
-                    client.close()
-            except Exception:
-                pass
-            raise RuntimeError(format_ssh_connect_error(router, exc, timeout=timeout)) from exc
-        return client
+        return self.router_transport.open_ssh_client(timeout)
 
     def fetch_connection_total_count(self):
         return self.fetch_connection_tracking_summary()["total"]
 
     def parse_connection_tracking_summary(self, fields, source="RouterOS connection tracking"):
-        fields = {str(key).lower(): value for key, value in (fields or {}).items()}
-        total = to_int(fields.get("total-entries"), -1)
-        if total < 0:
-            raise RuntimeError(f"{source} missing total-entries")
-        return {
-            "total": total,
-            "ipv4": to_int(fields.get("total-ip4-entries"), 0),
-            "ipv6": to_int(fields.get("total-ip6-entries"), 0),
-        }
+        return self.connection_evidence.parse_tracking_summary(fields, source)
 
     def fetch_connection_tracking_summary_rest(self):
         rows = self.rest_print(
@@ -3326,11 +3131,7 @@ class Collector:
                     "/ip/firewall/connection/tracking print without-paging",
                     timeout=CONNECTION_TRACKING_TIMEOUT,
                 )
-                fields = {}
-                for raw_line in output.splitlines():
-                    match = TRACKING_FIELD_PATTERN.match(raw_line)
-                    if match:
-                        fields[match.group(1).lower()] = match.group(2).strip()
+                fields = self.connection_evidence.parse_tracking_text(output)
                 return self.parse_connection_tracking_summary(fields, source="SSH connection tracking summary")
             finally:
                 client.close()
@@ -3356,95 +3157,19 @@ class Collector:
         }
 
     def parse_connection_terse_line(self, line):
-        row = {}
-        for match in TERSE_FIELD_PATTERN.finditer(line):
-            key = match.group(1)
-            value = match.group(2).strip()
-            if re.fullmatch(r"[\d.\s]+", value):
-                value = value.replace(" ", "")
-            row[key] = value
-        return row
+        return self.connection_evidence.parse_terse_line(line)
 
     def dedupe_connection_rows(self, source_rows):
-        rows = []
-        seen = set()
-        for raw_row in source_rows or []:
-            row = raw_row if isinstance(raw_row, dict) else {}
-            if not row:
-                continue
-            identity = (
-                row.get("src-address", ""),
-                row.get("dst-address", ""),
-                row.get("reply-src-address", ""),
-                row.get("reply-dst-address", ""),
-                row.get("protocol", ""),
-                row.get("timeout", ""),
-                row.get("connection-mark", ""),
-            )
-            if identity in seen:
-                continue
-            seen.add(identity)
-            rows.append(row)
-            if len(rows) >= CONNECTION_DETAIL_SAMPLE_LIMIT:
-                break
-        return rows
+        return self.connection_evidence.dedupe_rows(source_rows)
 
     def split_connection_endpoint(self, value):
-        text = str(value or "").strip()
-        if not text:
-            return "", ""
-        if text.startswith("["):
-            end = text.find("]")
-            if end > 0:
-                port = text[end + 2 :] if text[end + 1 : end + 2] == ":" else ""
-                return text[1:end], port
-        match = re.fullmatch(r"(\d{1,3}(?:\.\d{1,3}){3})(?::(\d+))?", text)
-        if match:
-            ip_text = match.group(1)
-            try:
-                ip_text = str(ipaddress.ip_address(ip_text))
-            except ValueError:
-                pass
-            return ip_text, match.group(2) or ""
-        try:
-            return str(ipaddress.ip_address(text)), ""
-        except ValueError:
-            return text, ""
+        return self.connection_evidence.split_endpoint(value)
 
     def connection_row_matches_ip(self, row, ip_text):
-        for field in ("src-address", "dst-address", "reply-src-address", "reply-dst-address"):
-            endpoint_ip, _port = self.split_connection_endpoint(row.get(field))
-            if endpoint_ip == ip_text:
-                return True
-        return False
+        return self.connection_evidence.row_matches_ip(row, ip_text)
 
     def normalize_connection_search_row(self, row):
-        src_ip, src_port = self.split_connection_endpoint(row.get("src-address"))
-        dst_ip, dst_port = self.split_connection_endpoint(row.get("dst-address"))
-        reply_src_ip, reply_src_port = self.split_connection_endpoint(row.get("reply-src-address"))
-        reply_dst_ip, reply_dst_port = self.split_connection_endpoint(row.get("reply-dst-address"))
-        return {
-            "srcAddress": row.get("src-address", ""),
-            "dstAddress": row.get("dst-address", ""),
-            "replySrcAddress": row.get("reply-src-address", ""),
-            "replyDstAddress": row.get("reply-dst-address", ""),
-            "srcIp": src_ip,
-            "srcPort": src_port,
-            "dstIp": dst_ip,
-            "dstPort": dst_port,
-            "replySrcIp": reply_src_ip,
-            "replySrcPort": reply_src_port,
-            "replyDstIp": reply_dst_ip,
-            "replyDstPort": reply_dst_port,
-            "protocol": row.get("protocol", ""),
-            "timeout": row.get("timeout", ""),
-            "mark": row.get("connection-mark", "-") or "-",
-            "origRate": to_int(row.get("orig-rate")),
-            "replRate": to_int(row.get("repl-rate")),
-            "origBytes": to_int(row.get("orig-bytes")),
-            "replBytes": to_int(row.get("repl-bytes")),
-            "raw": {key: row.get(key, "") for key in CONNECTION_SEARCH_FIELDS},
-        }
+        return self.connection_evidence.normalize_search_row(row)
 
     def fetch_connection_search(self, target_ip, source_ip=None, limit=80):
         target = str(ipaddress.ip_address(str(target_ip or "").strip()))
@@ -3580,28 +3305,23 @@ class Collector:
                 client.close()
 
     def normalize_dns_static_rows(self, rows, limit=None):
-        normalized_rows = []
-        for item in rows or []:
-            if isinstance(item, list):
-                normalized_rows.extend(item)
-            elif isinstance(item, dict):
-                normalized_rows.append(item)
-        if limit is None:
-            return normalized_rows
-        return normalized_rows[:limit]
+        return self.connection_evidence.normalize_dns_rows(rows, limit)
 
     def fetch_dns_static_full_rest(self):
         router = get_ready_router_config()
         session = requests.Session()
-        session.auth = (router["user"], router["password"])
+        configure_rest_session(session, router)
         try:
             response = session.get(
-                f"http://{router['host']}/rest/ip/dns/static",
+                build_rest_url(router, "ip/dns/static"),
                 params={
                     ".proplist": "name,regexp,address,cname,text,ttl,comment,disabled,type",
                 },
                 timeout=DNS_STATIC_FULL_REST_TIMEOUT,
+                allow_redirects=False,
             )
+            if 300 <= response.status_code < 400:
+                raise RuntimeError("RouterOS REST redirect was refused; configure the exact HTTPS endpoint")
             response.raise_for_status()
             payload = response.json()
             rows = payload if isinstance(payload, list) else ([payload] if payload else [])
@@ -5466,27 +5186,29 @@ collector = Collector()
 
 
 class Handler(BaseHTTPRequestHandler):
-    server_version = "RouterOSTriagePanel/1.0"
+    server_version = "RouterOSPanel"
+    sys_version = ""
     private_public_assets = {"readonly-diagnostics.js"}
-    read_only_api_paths = {
-        "/api/connection-search",
-        "/api/dns-static",
-        "/api/health",
-        "/api/health-findings",
-        "/api/panel-network",
-        "/api/readonly-diagnostics",
-        "/api/router-login",
-        "/api/snapshot",
-        "/api/status-findings",
-    }
-    write_api_paths = {
-        "/api/ip-alias",
-        "/api/panel-network",
-        "/api/router-login",
-        "/api/router-login-forget",
-        "/api/router-logout",
-    }
-    bootstrap_write_api_paths = {"/api/router-login"}
+    read_only_api_paths = READ_ONLY_API_PATHS
+    write_api_paths = WRITE_API_PATHS
+    session_bootstrap_paths = SESSION_BOOTSTRAP_PATHS
+
+    def version_string(self):
+        return self.server_version
+
+    def end_headers(self):
+        self.send_header(
+            "Content-Security-Policy",
+            "default-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; "
+            "object-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; "
+            "font-src 'self' data:; connect-src 'self'; manifest-src 'self'; worker-src 'none'",
+        )
+        self.send_header("X-Frame-Options", "DENY")
+        self.send_header("X-Content-Type-Options", "nosniff")
+        self.send_header("Referrer-Policy", "no-referrer")
+        self.send_header("Permissions-Policy", "camera=(), microphone=(), geolocation=(), payment=(), usb=()")
+        self.send_header("Cross-Origin-Resource-Policy", "same-origin")
+        super().end_headers()
 
     def handle(self):
         try:
@@ -5522,7 +5244,30 @@ class Handler(BaseHTTPRequestHandler):
     def current_panel_session(self):
         return get_panel_session(self.request_cookies().get(PANEL_SESSION_COOKIE))
 
+    def rate_limit_identity(self):
+        return str(self.client_address[0] if self.client_address else "local")
+
+    def enforce_rate_limit(self, scope, limit):
+        retry_after = PANEL_REQUEST_RATE_LIMITER.consume(
+            scope,
+            self.rate_limit_identity(),
+            limit=limit,
+            window_seconds=PANEL_RATE_LIMIT_WINDOW_SECONDS,
+        )
+        if retry_after <= 0:
+            return True
+        self.send_json_error(
+            "请求过于频繁，请稍后重试。",
+            status=429,
+            code="rate_limited",
+            response_headers={"Retry-After": str(retry_after)},
+            retryAfterSeconds=retry_after,
+        )
+        return False
+
     def issue_panel_session(self):
+        if not self.enforce_rate_limit("session-bootstrap", PANEL_SESSION_BOOTSTRAP_LIMIT):
+            return None
         session = create_panel_session()
         self.queue_cookie_header(build_panel_cookie(PANEL_SESSION_COOKIE, session["id"], http_only=True))
         self.queue_cookie_header(build_panel_cookie(PANEL_CSRF_COOKIE, session["csrf"], http_only=False))
@@ -5549,8 +5294,7 @@ class Handler(BaseHTTPRequestHandler):
         return False
 
     def require_write_authorization(self, parsed):
-        allow_bootstrap = parsed.path in self.bootstrap_write_api_paths
-        session = self.ensure_panel_session(create=allow_bootstrap)
+        session = self.ensure_panel_session(create=False)
         if not session:
             self.send_json_error("Local panel session is required", status=403, code="local_session_required")
             return False
@@ -5588,7 +5332,11 @@ class Handler(BaseHTTPRequestHandler):
         parsed = urlparse(self.path)
         if self.reject_non_localhost_request(parsed):
             return
-        session = self.ensure_panel_session(create=True)
+        session = None
+        if parsed.path in self.session_bootstrap_paths:
+            session = self.ensure_panel_session(create=True)
+            if not session:
+                return
         if parsed.path == "/api/router-login":
             return self.send_json(
                 {
@@ -5686,32 +5434,48 @@ class Handler(BaseHTTPRequestHandler):
         if not self.require_write_authorization(parsed):
             return
         if parsed.path == "/api/router-login":
+            if not self.enforce_rate_limit("router-login", PANEL_LOGIN_ATTEMPT_LIMIT):
+                return
             try:
                 payload = self.read_json_body()
                 saved_id = str(payload.get("savedId") or "").strip()
                 saved_entry = find_saved_router_login(saved_id) if saved_id else None
-                password = payload.get("password")
-                using_saved_profile = False
                 if saved_id and not saved_entry:
                     return self.send_json_error("Saved RouterOS login was not found", status=404, code="saved_login_not_found")
-                if saved_entry:
-                    host = saved_entry.get("host")
-                    user = saved_entry.get("user")
-                    ssh_port = saved_entry.get("sshPort") or 22
-                    using_saved_profile = True
-                else:
-                    host = payload.get("host") or payload.get("ip") or payload.get("address")
-                    user = payload.get("user") or payload.get("username")
-                    ssh_port = payload.get("sshPort") or payload.get("port") or 22
-                if saved_entry and not str(password or "").strip():
+                request = parse_router_login_request(payload, saved_entry)
+                if request.using_saved_profile and not str(request.password or "").strip():
                     return self.send_json_error(
                         "Saved RouterOS login profile requires entering the password",
                         status=400,
                         code="saved_login_password_required",
                     )
-                test = test_router_credentials(host, user, password, ssh_port)
+                test = test_router_credentials(
+                    request.host,
+                    request.user,
+                    request.password,
+                    request.ssh_port,
+                    rest_scheme=request.rest_scheme,
+                    rest_port=request.rest_port,
+                    rest_verify_tls=request.rest_verify_tls,
+                    insecure_rest_confirmed=request.insecure_rest_confirmed,
+                    ssh_host_key_fingerprint=request.ssh_host_key_fingerprint,
+                )
                 ssh_ok = test.get("ssh", {}).get("ok") is True
                 rest_ok = test.get("rest", {}).get("ok") is True
+                if test.get("ssh", {}).get("hostKeyChanged") is True:
+                    return self.send_json_error(
+                        "SSH 主机密钥与已固定指纹不一致；已在发送密码前阻断连接。",
+                        status=409,
+                        code="ssh_host_key_changed",
+                        test=test,
+                    )
+                if test.get("ssh", {}).get("confirmationRequired") is True:
+                    return self.send_json_error(
+                        "首次连接必须确认 RouterOS SSH 主机密钥指纹。确认前不会发送 SSH 密码。",
+                        status=409,
+                        code="ssh_host_key_confirmation_required",
+                        test=test,
+                    )
                 if not ssh_ok and not rest_ok:
                     return self.send_json_error(
                         router_login_failure_message(test),
@@ -5719,27 +5483,35 @@ class Handler(BaseHTTPRequestHandler):
                         code="router_login_failed",
                         test=test,
                     )
-                remember_raw = payload.get("rememberPassword", False)
-                remember_password = remember_raw is True
                 remembered_entry = None
-                if remember_password:
+                if request.remember_profile:
                     remembered_entry = remember_router_login(
-                        host,
-                        user,
-                        password,
-                        ssh_port,
+                        request.host,
+                        request.user,
+                        request.password,
+                        request.ssh_port,
+                        rest_scheme=request.rest_scheme,
+                        rest_port=request.rest_port,
+                        rest_verify_tls=request.rest_verify_tls,
+                        insecure_rest_confirmed=request.insecure_rest_confirmed,
+                        ssh_host_key_fingerprint=request.ssh_host_key_fingerprint,
                         last_test=test,
-                        source="saved" if using_saved_profile else "ui",
+                        source="saved" if request.using_saved_profile else "ui",
                     )
                     saved_id = remembered_entry.get("id")
                 router_login = set_router_config(
-                    host,
-                    user,
-                    password,
-                    ssh_port,
-                    source="saved" if using_saved_profile else "ui",
+                    request.host,
+                    request.user,
+                    request.password,
+                    request.ssh_port,
+                    rest_scheme=request.rest_scheme,
+                    rest_port=request.rest_port,
+                    rest_verify_tls=request.rest_verify_tls,
+                    insecure_rest_confirmed=request.insecure_rest_confirmed,
+                    ssh_host_key_fingerprint=request.ssh_host_key_fingerprint,
+                    source="saved" if request.using_saved_profile else "ui",
                     last_test=test,
-                    saved_id=(saved_id if using_saved_profile or remembered_entry else None),
+                    saved_id=(saved_id if request.using_saved_profile or remembered_entry else None),
                 )
                 collector.reset_collection_state(status="starting", error=None)
                 return self.send_json(
@@ -5832,20 +5604,15 @@ class Handler(BaseHTTPRequestHandler):
 
     def read_json_body(self):
         declared_length = to_int(self.headers.get("Content-Length"), 0)
-        if declared_length > 16384:
+        if declared_length > MAX_REQUEST_BODY_BYTES:
             raise ValueError("Request body exceeds 16 KB")
         content_length = max(declared_length, 0)
         if content_length <= 0:
             return {}
         body = self.rfile.read(content_length)
-        if not body:
-            return {}
-        try:
-            return json.loads(body.decode("utf-8"))
-        except Exception as exc:
-            raise ValueError("Request body is not valid JSON") from exc
+        return decode_json_object(body)
 
-    def send_json_error(self, message, status=400, code="error", **extra):
+    def send_json_error(self, message, status=400, code="error", response_headers=None, **extra):
         payload = {
             "ok": False,
             "error": str(message or "Request failed"),
@@ -5853,7 +5620,7 @@ class Handler(BaseHTTPRequestHandler):
             "status": int(status),
         }
         payload.update(extra)
-        return self.send_json(payload, status=status)
+        return self.send_json(payload, status=status, headers=response_headers)
 
     def is_expected_disconnect_error(self, exc):
         return isinstance(exc, (BrokenPipeError, ConnectionResetError, ConnectionAbortedError))
@@ -5870,13 +5637,15 @@ class Handler(BaseHTTPRequestHandler):
         self.log_service_error(exc, "internal API error")
         return self.send_json_error("Internal panel error", status=500, code="internal_error")
 
-    def send_json(self, payload, status=200):
+    def send_json(self, payload, status=200, headers=None):
         body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
         try:
             self.send_response(status)
             self.send_header("Content-Type", "application/json; charset=utf-8")
             self.send_header("Content-Length", str(len(body)))
             self.send_header("Cache-Control", "no-store")
+            for name, value in (headers or {}).items():
+                self.send_header(str(name), str(value))
             for cookie_header in self.consume_cookie_headers():
                 self.send_header("Set-Cookie", cookie_header)
             self.end_headers()

@@ -1,0 +1,26 @@
+@media (min-width: 900px) {
+  .do-shell {
+    --do-canvas: #eaf0f2;
+    --do-surface: #f9fbfc;
+    --do-surface-soft: #eef4f6;
+    --do-surface-strong: #e1ecef;
+    --do-line: #b7c8cf;
+    --do-line-soft: #d5e0e4;
+    --do-ink: #102a36;
+    --do-copy: #3f5965;
+    --do-muted: #5b727c;
+    --do-blue: #0d678b;
+    --do-blue-soft: #d8e9ef;
+    --do-trust: #2d6c60;
+    --do-warn: #84602f;
+    --do-danger: #8b3f49;
+    --do-missing: #6e8189;
+    --do-radius-sm: 3px;
+    --do-radius: 5px;
+    color: var(--do-ink);
+    background: var(--do-canvas);
+    font-family: "IBM Plex Sans", "Segoe UI Variable", "Segoe UI", "PingFang SC", sans-serif;
+    font-size: 14px;
+    line-height: 1.42;
+  }
+}

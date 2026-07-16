@@ -124,10 +124,11 @@ curl -fsSL https://raw.githubusercontent.com/cullysu/ros-ikuai-monitor-panel/mai
 
 Open `http://127.0.0.1:28646/` on the panel host.
 
-Then enter the RouterOS SSH host, SSH port, read-only user, and password in the
-panel login page. The panel tests SSH first, then checks RouterOS REST
-reachability. The installer does not require real RouterOS credentials in
-`.env.docker` for first run.
+Then enter the RouterOS address, REST transport, SSH port, read-only user, and
+password in the connection page. REST defaults to verified HTTPS on port `443`.
+The first SSH contact stops before password authentication so the displayed
+SHA-256 host-key fingerprint can be verified and pinned. The installer does not
+require real RouterOS credentials in `.env.docker` for first run.
 
 Custom directory:
 
@@ -194,6 +195,9 @@ python -m venv .venv
 $env:ROS_MONITOR_ROUTER_HOST="<routeros-host-or-dns>"
 $env:ROS_MONITOR_ROUTER_USER="ros-panel-readonly"
 $env:ROS_MONITOR_ROUTER_PASSWORD="CHANGE_ME"
+$env:ROS_MONITOR_ROUTER_REST_SCHEME="https"
+$env:ROS_MONITOR_ROUTER_REST_PORT="443"
+$env:ROS_MONITOR_ROUTER_REST_VERIFY_TLS="1"
 $env:ROS_PANEL_BIND="127.0.0.1"
 $env:ROS_PANEL_PORT="28646"
 $env:ROS_PANEL_TARGET_IP="127.0.0.1"
@@ -255,6 +259,9 @@ export ROS_PANEL_PROFILE="routeros_only"
 export ROS_MONITOR_ROUTER_HOST="<routeros-host-or-dns>"
 export ROS_MONITOR_ROUTER_USER="ros-panel-readonly"
 export ROS_MONITOR_ROUTER_PASSWORD="CHANGE_ME"
+export ROS_MONITOR_ROUTER_REST_SCHEME="https"
+export ROS_MONITOR_ROUTER_REST_PORT="443"
+export ROS_MONITOR_ROUTER_REST_VERIFY_TLS="1"
 
 ./deploy_linux.sh --instance routeros-panel --disable-ip-service
 ```
@@ -289,8 +296,11 @@ deployment notes are historical examples, not product defaults.
 - Do not use the RouterOS `admin` account.
 - The default public install listens on `127.0.0.1:28646` only.
 - Do not expose the panel directly to a LAN or the public internet.
-- Saved RouterOS logins are local secrets on the panel host or container data
-  volume. Treat that host as trusted.
+- Saved RouterOS profiles contain connection metadata and a pinned SSH
+  fingerprint, never the RouterOS password. Protect any deployment environment
+  or secret file that supplies a password.
+- RouterOS REST defaults to certificate-verified HTTPS and never silently
+  downgrades to HTTP. Unknown or changed SSH host keys are blocking.
 - Use `routeros_only` for public deployments.
 - In public profile, private OpenWrt/Nikki probes are disabled and
   IP-alias writes should remain off unless explicitly reviewed.
@@ -323,6 +333,10 @@ For manual runs, the main bootstrap variables are:
 - `ROS_MONITOR_ROUTER_HOST`
 - `ROS_MONITOR_ROUTER_USER`
 - `ROS_MONITOR_ROUTER_PASSWORD`
+- `ROS_MONITOR_ROUTER_REST_SCHEME` (secure default: `https`)
+- `ROS_MONITOR_ROUTER_REST_PORT` (secure default: `443`)
+- `ROS_MONITOR_ROUTER_REST_VERIFY_TLS` (secure default: `1`)
+- `ROS_MONITOR_SSH_HOST_KEY_FINGERPRINT` (blank until first-use confirmation)
 - `ROS_PANEL_BIND`
 - `ROS_PANEL_PORT`
 - `ROS_PANEL_TARGET_IP`
@@ -332,7 +346,10 @@ Use [env.example](./env.example) or [.env.docker.example](./.env.docker.example)
 as non-secret templates.
 
 For the public Docker installer, real RouterOS credentials can be configured
-from the panel UI after the container starts.
+from the panel UI after the container starts. The UI never silently falls back
+from HTTPS to HTTP. HTTP or disabled certificate verification requires an
+explicit risk acknowledgement. SSH displays and pins a SHA256 host-key
+fingerprint before sending the SSH password on first contact.
 
 ## Community And Support
 

@@ -11,6 +11,8 @@ export const OVERVIEW_SCENARIO_KEYS: OverviewScenarioKey[] = [
 ];
 
 const now = new Date().toISOString();
+const nowSeconds = Math.floor(Date.parse(now) / 1000);
+const rateTimestamps = () => Array.from({ length: 6 }, (_, index) => nowSeconds - (5 - index) * 5);
 
 const base = (scenario: OverviewScenarioKey): OverviewRawSnapshot => ({
   status: "ok",
@@ -36,6 +38,7 @@ const base = (scenario: OverviewScenarioKey): OverviewRawSnapshot => ({
     memoryUsage: 34,
     diskUsage: 22,
     history: {
+      timestamps: rateTimestamps(),
       downlink: [2100, 2600, 2300, 3100, 2900, 3400],
       uplink: [800, 920, 760, 1080, 1010, 1200],
       cpu: [22, 25, 24, 27, 26, 28],
@@ -62,6 +65,7 @@ export const OVERVIEW_SCENARIO_FIXTURES: Record<OverviewScenarioKey, OverviewRaw
       memoryUsage: 51,
       diskUsage: 31,
       history: {
+        timestamps: rateTimestamps(),
         downlink: [12400, 14600, 13900, 16200, 17100, 18000],
         uplink: [6100, 7300, 6800, 8100, 8500, 9000],
         cpu: [35, 38, 36, 40, 41, 42],
@@ -174,6 +178,7 @@ export const OVERVIEW_SCENARIO_FIXTURES: Record<OverviewScenarioKey, OverviewRaw
       memoryUsage: 92,
       diskUsage: 97,
       history: {
+        timestamps: rateTimestamps(),
         downlink: [4400, 5200, 6100, 7200, 6900, 7600],
         uplink: [1300, 1600, 1900, 2100, 2000, 2300],
         cpu: [88, 91, 94, 96, 96, 96],

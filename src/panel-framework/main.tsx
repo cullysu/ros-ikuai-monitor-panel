@@ -2,7 +2,6 @@ import {
   mountRouterOverviewPanel,
   unmountRouterOverviewPanel,
 } from "./legacyBridge";
-import { OVERVIEW_SCENARIO_FIXTURES } from "./overview";
 
 export { mountRouterOverviewPanel, unmountRouterOverviewPanel };
 
@@ -13,19 +12,12 @@ type TestSnapshotWindow = Window & {
 let autoMountStarted = false;
 let autoMountHandle: { unmount: () => void } | null = null;
 
-async function resolveSnapshot(): Promise<unknown> {
+function resolveTestSnapshot(): unknown {
   const testWindow = window as TestSnapshotWindow;
   if (typeof testWindow.__PANEL_TEST_SNAPSHOT__ !== "undefined") {
     return testWindow.__PANEL_TEST_SNAPSHOT__;
   }
-
-  try {
-    const response = await fetch("/api/snapshot", { headers: { Accept: "application/json" } });
-    if (!response.ok) throw new Error(`snapshot fetch failed: ${response.status}`);
-    return await response.json();
-  } catch {
-    return OVERVIEW_SCENARIO_FIXTURES["no-snapshot"];
-  }
+  return undefined;
 }
 
 function mountAutoPanel(snapshot: unknown) {
@@ -42,9 +34,7 @@ function mountAutoPanel(snapshot: unknown) {
 function startAutoMount() {
   if (autoMountStarted) return;
   autoMountStarted = true;
-  void resolveSnapshot().then((snapshot) => {
-    mountAutoPanel(snapshot);
-  });
+  mountAutoPanel(resolveTestSnapshot());
 }
 
 if (typeof window !== "undefined") {

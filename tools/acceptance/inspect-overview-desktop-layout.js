@@ -1,365 +1,224 @@
 'use strict';
 
 function inspectOverviewDesktopLayout({
-    sectionName,
-    isDesktopOverview,
-    sectionRoot,
-    overviewNoSnapshotGrid,
-    overviewDesktopDetail,
-    overviewVerdictStatusBus,
-    overviewSummaryShell,
-    scaleScenario,
-    overviewNormalFocusedHierarchyOk,
-    overviewStatusBar,
-    noSnapshotEdge,
-    overviewNoSnapshotModuleContractOk,
-    overviewNoSnapshotDesktopCoreFactsOk,
-    normalize,
-    overviewNoSnapshotRequiredModuleNames,
-    overviewNoSnapshotRowHeightMax,
-    overviewNoSnapshotRowHeightOk,
-    overviewResourceTop5Rows,
-    overviewResourceSpecificModulesOk,
-    overviewDesktopEvidenceCompositionOk,
-    overviewDesktopEvidenceSurfaceOk,
-    overviewResourceFirstScreenEvidenceOk,
+  sectionName,
+  scaleScenario,
+  profile,
+  viewport,
+  sectionRoot,
+  app,
+  active,
+  requested,
+  root,
+  overflowX,
+  hasBadLiteral,
+  scaleMetaOk,
+  normalize,
 }) {
-  let overviewBlankProbe = null;
-  let overviewBlankAreaOk = true;
-  let overviewNoSnapshotModuleFillProbe = null;
-  let overviewNoSnapshotModuleFillOk = true;
-  let overviewResourceModuleFillProbe = null;
-  let overviewResourceModuleFillOk = true;
-  let overviewDesktopRightFillProbe = null;
-  let overviewDesktopRightFillOk = true;
-  let overviewDesktopColumnContinuityProbe = null;
-  let overviewDesktopColumnContinuityOk = true;
-  let overviewDesktopTopBandProbe = null;
-  let overviewDesktopTopBandOk = true;
-  let overviewDesktopEffectiveHeightProbe = null;
-  let overviewDesktopEffectiveHeightOk = true;
-  let overviewDesktopFocusedHierarchyProbe = null;
-  let overviewDesktopFocusedHierarchyOk = false;
-  if (sectionName === 'overview' && isDesktopOverview && sectionRoot) {
-    const rect = sectionRoot.getBoundingClientRect();
-    const semanticGeometry = (node, key) => {
-      if (!node) return { key, present: false, visible: false };
-      const item = node.getBoundingClientRect();
+  if (sectionName !== 'overview' || window.innerWidth < 900) return {
+    overviewBlankProbe: null,
+    overviewBlankAreaOk: true,
+    overviewNoSnapshotModuleFillProbe: null,
+    overviewNoSnapshotModuleFillOk: true,
+    overviewResourceModuleFillProbe: null,
+    overviewResourceModuleFillOk: true,
+    overviewDesktopRightFillProbe: null,
+    overviewDesktopRightFillOk: true,
+    overviewDesktopColumnContinuityProbe: null,
+    overviewDesktopColumnContinuityOk: true,
+    overviewDesktopTopBandProbe: null,
+    overviewDesktopTopBandOk: true,
+    overviewDesktopEffectiveHeightProbe: null,
+    overviewDesktopEffectiveHeightOk: true,
+    overviewDesktopFocusedHierarchyProbe: null,
+    overviewDesktopFocusedHierarchyOk: true,
+  };
+  const desktopRoot = sectionRoot?.querySelector('[data-desktop-overview]');
+  if (!desktopRoot) return null;
+
+  const expected = {
+    single: { mode: 'current', risk: 'none', chart: true, incident: false },
+    fleet: { mode: 'current', risk: 'interfaces', chart: false, incident: true },
+    'all-offline': { mode: 'current', risk: 'wan', chart: false, incident: true },
+    'no-snapshot': { mode: 'unavailable', risk: 'evidence', chart: false, incident: true },
+    'collection-down': { mode: 'historical', risk: 'collection', chart: false, incident: true },
+    'resource-full': { mode: 'current', risk: 'resource', chart: false, incident: true },
+    'interfaces-down': { mode: 'current', risk: 'interfaces', chart: false, incident: true },
+  }[scaleScenario] || null;
+
+  const visible = (node) => {
+    if (!node) return false;
+    const rect = node.getBoundingClientRect();
+    const style = getComputedStyle(node);
+    return rect.width > 0 && rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden' && style.opacity !== '0';
+  };
+  const rect = (node) => {
+    if (!node) return null;
+    const box = node.getBoundingClientRect();
+    return {
+      top: Math.round(box.top),
+      right: Math.round(box.right),
+      bottom: Math.round(box.bottom),
+      left: Math.round(box.left),
+      width: Math.round(box.width),
+      height: Math.round(box.height),
+    };
+  };
+
+  const statusBus = desktopRoot.querySelector('[data-desktop-status-bus]');
+  const verdict = statusBus?.querySelector('.do-verdict');
+  const verdictTitle = verdict?.querySelector('h1');
+  const statusItems = Array.from(statusBus?.querySelectorAll('[data-desktop-status-item]') || []);
+  const incident = desktopRoot.querySelector('[data-desktop-incident]');
+  const incidentFacts = Array.from(desktopRoot.querySelectorAll('[data-desktop-incident-fact]'));
+  const ledgers = Array.from(desktopRoot.querySelectorAll('[data-desktop-ledger]'));
+  const ledgerRows = Array.from(desktopRoot.querySelectorAll('[data-desktop-ledger-row]'));
+  const ledgerSources = Array.from(desktopRoot.querySelectorAll('.do-ledger-source'));
+  const ledgerButtons = Array.from(desktopRoot.querySelectorAll('[data-desktop-ledger-route]'));
+  const chartSections = Array.from(desktopRoot.querySelectorAll('[data-desktop-wan-evidence]'));
+  const chart = chartSections[0]?.querySelector('.do-wan-chart');
+  const mainGrid = desktopRoot.querySelector('.do-main-grid');
+  const lowerGrid = desktopRoot.querySelector('.do-lower-grid');
+  const mainChildren = Array.from(mainGrid?.children || []).filter(visible);
+  const lowerChildren = Array.from(lowerGrid?.children || []).filter(visible);
+  const desktopText = normalize(desktopRoot.textContent || '');
+  const rootRect = rect(desktopRoot);
+  const sectionRect = rect(sectionRoot);
+  const statusRect = rect(statusBus);
+  const firstWorkRect = rect(incident || mainGrid);
+
+  const textNodes = Array.from(desktopRoot.querySelectorAll('h1, h2, p, b, small, span, code, button, dt, dd'))
+    .filter((node) => normalize(node.textContent || '') && visible(node));
+  const smallText = textNodes
+    .filter((node) => Number.parseFloat(getComputedStyle(node).fontSize || '0') < 12)
+    .map((node) => ({ text: normalize(node.textContent || '').slice(0, 48), size: getComputedStyle(node).fontSize }));
+  const clippedText = textNodes
+    .filter((node) => {
       const style = getComputedStyle(node);
-      const visible = item.width > 0 &&
-        item.height > 0 &&
-        item.bottom > 0 &&
-        item.top < window.innerHeight &&
-        style.display !== 'none' &&
-        style.visibility !== 'hidden' &&
-        style.opacity !== '0';
-      return {
-        key,
-        present: true,
-        visible,
-        top: Math.round(item.top),
-        bottom: Math.round(item.bottom),
-        width: Math.round(item.width),
-        height: Math.round(item.height),
-      };
-    };
-    const flatConsoleDetailNode = overviewNoSnapshotGrid || overviewDesktopDetail;
-    const flatConsoleEvidenceNode = overviewVerdictStatusBus || overviewNoSnapshotGrid || overviewSummaryShell?.querySelector('.ik-home-evidence-grid');
-    const focusedWanVisual = sectionRoot.querySelector('[data-overview-density-module="wan-trend"] .ro-wan-integrated-visual');
-    const focusedWanVisualRect = focusedWanVisual?.getBoundingClientRect();
-    const focusedBottomRail = sectionRoot.querySelector('.ro-col.is-bottom');
-    const focusedBottomRailRect = focusedBottomRail?.getBoundingClientRect();
-    const focusedTerminalInMain = sectionRoot.querySelector('.ro-col.is-main [data-overview-density-module="terminal-ranking"]');
-    const focusedTerminalInBottom = sectionRoot.querySelector('.ro-col.is-bottom [data-overview-density-module="terminal-ranking"]');
-    const focusedTerminalRect = focusedTerminalInBottom?.getBoundingClientRect();
-    const singleFocusedHierarchy = scaleScenario === 'single' && Boolean(
-      overviewNormalFocusedHierarchyOk &&
-      !focusedTerminalInMain &&
-      focusedTerminalInBottom &&
-      focusedTerminalInBottom.querySelector('details[open]') &&
-      focusedWanVisualRect &&
-      focusedWanVisualRect.width >= rect.width * 0.52 &&
-      focusedWanVisualRect.height >= 220 &&
-      focusedBottomRailRect &&
-      focusedBottomRailRect.width >= rect.width * 0.72 &&
-      focusedTerminalRect &&
-      focusedTerminalRect.bottom >= window.innerHeight * 0.58 &&
-      focusedBottomRailRect.top < window.innerHeight * 0.82
-    );
-    const fleetFocusedHierarchy = scaleScenario === 'fleet' && Boolean(
-      overviewNormalFocusedHierarchyOk &&
-      !focusedTerminalInMain &&
-      focusedTerminalInBottom &&
-      !focusedTerminalInBottom.querySelector('details[open]') &&
-      focusedWanVisualRect &&
-      focusedWanVisualRect.width >= rect.width * 0.52 &&
-      focusedWanVisualRect.height >= 220 &&
-      focusedBottomRailRect &&
-      focusedBottomRailRect.width >= rect.width * 0.72 &&
-      focusedBottomRailRect.top < window.innerHeight * 0.90
-    );
-    overviewDesktopFocusedHierarchyOk = singleFocusedHierarchy || fleetFocusedHierarchy;
-    overviewDesktopFocusedHierarchyProbe = {
-      terminalPlacement: focusedTerminalInMain ? 'main' : focusedTerminalInBottom ? 'bottom' : 'missing',
-      terminalExpanded: Boolean(focusedTerminalInBottom?.querySelector('details[open]')),
-      wanVisualHeight: Math.round(focusedWanVisualRect?.height || 0),
-      wanVisualWidth: Math.round(focusedWanVisualRect?.width || 0),
-      bottomRailTop: Math.round(focusedBottomRailRect?.top || 0),
-      bottomRailHeight: Math.round(focusedBottomRailRect?.height || 0),
-      terminalBottom: Math.round(focusedTerminalRect?.bottom || 0),
-    };
-    const flatConsoleVisible = Boolean(
-      overviewStatusBar &&
-      overviewStatusBar.getBoundingClientRect().top < window.innerHeight * 0.20 &&
-      overviewStatusBar.getBoundingClientRect().height > 0 &&
-      flatConsoleDetailNode &&
-      flatConsoleDetailNode.getBoundingClientRect().height > 0
-      && flatConsoleEvidenceNode && flatConsoleEvidenceNode.getBoundingClientRect().height > 0
-    );
-    const desktopContentRects = Array.from(sectionRoot.querySelectorAll([
-      '.ro-status-bus',
-      '.ik-desktop-evidence',
-      '[data-overview-density-module]',
-      '[data-overview-rank-grid]',
-      '.ik-overview-flat-module',
-      '.ik-home-density-card'
-    ].join(',')))
-      .filter((node) => {
-        const rect = node.getBoundingClientRect();
-        const style = getComputedStyle(node);
-        return rect.width > 0 &&
-          rect.height > 0 &&
-          rect.bottom > 0 &&
-          rect.top < window.innerHeight &&
-          style.display !== 'none' &&
-          style.visibility !== 'hidden' &&
-          style.opacity !== '0';
-      })
-      .map((node) => node.getBoundingClientRect());
-    const effectiveTop = desktopContentRects.length ? Math.max(0, Math.min(...desktopContentRects.map((item) => item.top))) : 0;
-    const effectiveBottom = desktopContentRects.length ? Math.max(...desktopContentRects.map((item) => item.bottom)) : 0;
-    const effectiveHeight = Math.max(0, effectiveBottom - effectiveTop);
-    const effectiveHeightRatio = noSnapshotEdge
-      ? 0.40
-      : ['collection-down', 'resource-full', 'resource-load', 'interfaces-down'].includes(scaleScenario)
-        ? 0.78
-        : 0.90;
-    const effectiveMinHeight = noSnapshotEdge
-      ? Math.min(360, Math.max(0, window.innerHeight * effectiveHeightRatio))
-      : window.innerHeight * effectiveHeightRatio;
-    const bottomBlank = Math.max(0, window.innerHeight - effectiveBottom);
-    overviewDesktopEffectiveHeightOk = noSnapshotEdge
-      ? Boolean(overviewNoSnapshotModuleContractOk && overviewNoSnapshotDesktopCoreFactsOk && effectiveHeight >= effectiveMinHeight)
-      : effectiveHeight >= effectiveMinHeight;
-    overviewDesktopEffectiveHeightProbe = {
-      top: Math.round(effectiveTop),
-      bottom: Math.round(effectiveBottom),
-      height: Math.round(effectiveHeight),
-      minHeight: Math.round(effectiveMinHeight),
-      bottomBlank: Math.round(bottomBlank),
-    };
-    overviewBlankProbe = {
-      flatConsoleVisible,
-      statusBus: semanticGeometry(overviewStatusBar, 'status-bus'),
-      evidenceWorkspace: semanticGeometry(overviewDesktopDetail, 'evidence-workspace'),
-    };
-    const analyzeDesktopStackContinuity = (stackNode) => {
-      if (!stackNode) {
-        return { maxGap: 999, bottomGap: 999, itemCount: 0 };
-      }
-      const stackRect = stackNode.getBoundingClientRect();
-      const visibleBottom = Math.min(window.innerHeight, Math.max(0, stackRect.bottom || window.innerHeight));
-      const visibleTop = Math.max(0, stackRect.top || 0);
-      const rects = Array.from(stackNode.children || [])
-        .filter((node) => {
-          const item = node.getBoundingClientRect();
-          const style = getComputedStyle(node);
-          return item.width > 0 &&
-            item.height > 0 &&
-            item.bottom > 0 &&
-            item.top < window.innerHeight &&
-            style.display !== 'none' &&
-            style.visibility !== 'hidden' &&
-            style.opacity !== '0';
-        })
-        .map((node) => {
-          const item = node.getBoundingClientRect();
-          return {
-            top: Math.max(visibleTop, item.top),
-            bottom: Math.min(visibleBottom, window.innerHeight, item.bottom),
-            height: Math.max(0, Math.min(visibleBottom, window.innerHeight, item.bottom) - Math.max(visibleTop, item.top)),
-            module: node.getAttribute('data-overview-density-module') || normalize(node.textContent || '').slice(0, 24),
-          };
-        })
-        .filter((item) => item.height > 0)
-        .sort((a, b) => a.top - b.top);
-      let maxGap = 0;
-      if (rects.length) {
-        maxGap = Math.max(maxGap, Math.max(0, rects[0].top - visibleTop));
-        for (let index = 1; index < rects.length; index += 1) {
-          maxGap = Math.max(maxGap, Math.max(0, rects[index].top - rects[index - 1].bottom));
-        }
-        maxGap = Math.max(maxGap, Math.max(0, Math.min(window.innerHeight, visibleBottom) - rects[rects.length - 1].bottom));
-      }
-      const bottomGap = rects.length ? Math.max(0, Math.min(window.innerHeight, visibleBottom) - rects[rects.length - 1].bottom) : 999;
-      return {
-        maxGap: Math.round(maxGap),
-        bottomGap: Math.round(bottomGap),
-        itemCount: rects.length,
-        modules: rects.map((item) => item.module).slice(0, 6),
-      };
-    };
-    const continuityRequired = ['all-offline', 'collection-down', 'resource-full', 'interfaces-down', 'no-snapshot'].includes(scaleScenario);
-    const leftStackNode = sectionRoot.querySelector('.ik-home-layout > .stack:not(.ik-home-side-stack)');
-    const rightStackNode = sectionRoot.querySelector('.ik-home-layout > .ik-home-side-stack');
-    const leftContinuity = analyzeDesktopStackContinuity(leftStackNode);
-    const rightContinuity = analyzeDesktopStackContinuity(rightStackNode);
-    overviewDesktopColumnContinuityProbe = {
-      threshold: 120,
-      required: continuityRequired,
-      left: leftContinuity,
-      right: rightContinuity,
-    };
-    overviewDesktopColumnContinuityOk = !continuityRequired || Boolean(
-      noSnapshotEdge && overviewNoSnapshotModuleContractOk && overviewNoSnapshotDesktopCoreFactsOk ||
-      leftContinuity.maxGap <= 120 &&
-      rightContinuity.maxGap <= 120
-    );
-    const moduleNode = (name) => sectionRoot.querySelector('[data-overview-density-module="' + name + '"]');
-    const moduleGeometry = (name) => semanticGeometry(moduleNode(name), name);
-    const noSnapshotModuleGeometry = overviewNoSnapshotRequiredModuleNames.map(moduleGeometry);
-    const noSnapshotRawGeometry = moduleGeometry('evidence-boundary');
-    overviewNoSnapshotModuleFillProbe = {
-      requiredModules: noSnapshotModuleGeometry,
-      rawEvidence: noSnapshotRawGeometry,
-      rowHeightMax: overviewNoSnapshotRowHeightMax,
-    };
-    overviewNoSnapshotModuleFillOk = sectionName !== 'overview' || !noSnapshotEdge || !isDesktopOverview || Boolean(
-      overviewNoSnapshotModuleContractOk &&
-      noSnapshotModuleGeometry.every((item) => item.visible) &&
-      noSnapshotRawGeometry.visible &&
-      overviewNoSnapshotDesktopCoreFactsOk &&
-      overviewNoSnapshotRowHeightOk
-    );
+      const clips = style.overflowX === 'hidden' || style.overflowX === 'clip';
+      return clips && node.scrollWidth > node.clientWidth + 2;
+    })
+    .map((node) => ({ text: normalize(node.textContent || '').slice(0, 48), width: node.clientWidth, scrollWidth: node.scrollWidth }));
+  const smallTargets = Array.from(desktopRoot.querySelectorAll('button'))
+    .filter(visible)
+    .filter((node) => node.getBoundingClientRect().height < 28)
+    .map((node) => ({ text: normalize(node.textContent || '').slice(0, 48), height: Math.round(node.getBoundingClientRect().height) }));
 
-    const resourceRiskGeometry = moduleGeometry('resource-risk-priority');
-    const resourcePressureGeometry = moduleGeometry('resource-pressure-bars');
-    const resourceTop5Geometry = moduleGeometry('resource-interface-top5');
-    overviewResourceModuleFillProbe = {
-      riskPriority: resourceRiskGeometry,
-      pressureBars: resourcePressureGeometry,
-      interfaceTop5: resourceTop5Geometry,
-      interfaceTop5Rows: overviewResourceTop5Rows.length,
-    };
-    overviewResourceModuleFillOk = sectionName !== 'overview' || scaleScenario !== 'resource-full' || !isDesktopOverview || Boolean(
-      resourceRiskGeometry.visible &&
-      resourcePressureGeometry.visible &&
-      resourceTop5Geometry.present &&
-      overviewResourceSpecificModulesOk &&
-      overviewResourceTop5Rows.length >= 5
-    );
+  const chartEvidence = {
+    viewBox: Boolean(chart?.getAttribute('viewBox')),
+    role: chart?.getAttribute('role') === 'img',
+    unit: chart?.getAttribute('data-unit') === 'bit/s',
+    title: Boolean(chart?.querySelector('title')),
+    description: Boolean(chart?.querySelector('desc')),
+    samples: Number(chartSections[0]?.getAttribute('data-sample-count') || 0),
+    currentDown: /当前下载/.test(desktopText),
+    currentUp: /当前上传/.test(desktopText),
+    peak: /窗口峰值/.test(desktopText),
+    sampling: /采样/.test(desktopText),
+  };
+  const chartTruth = !chart || Boolean(
+    chartEvidence.viewBox &&
+    chartEvidence.role &&
+    chartEvidence.unit &&
+    chartEvidence.title &&
+    chartEvidence.description &&
+    chartEvidence.samples >= 2 &&
+    chartEvidence.currentDown &&
+    chartEvidence.currentUp &&
+    chartEvidence.peak &&
+    chartEvidence.sampling
+  );
+  const chartContract = expected?.chart ? chartSections.length === 1 && chartTruth : chartSections.length === 0;
+  const incidentContract = expected?.incident
+    ? Boolean(incident && incidentFacts.length === 3 && !chart)
+    : !incident;
+  const evidenceBoundary = expected?.mode === 'unavailable'
+    ? !/[0-9.]+\s*(?:K|M|G)?bps/i.test(desktopText) && !/网络可用/.test(desktopText)
+    : expected?.mode === 'historical'
+      ? !/[0-9.]+\s*(?:K|M|G)?bps/i.test(desktopText) && /当前变化不可见/.test(desktopText)
+      : true;
 
-    const sceneCoreNames = noSnapshotEdge
-      ? overviewNoSnapshotRequiredModuleNames
-      : scaleScenario === 'resource-full'
-        ? ['resource-risk-priority', 'resource-pressure-bars']
-        : scaleScenario === 'all-offline'
-          ? ['wan-offline-bars', 'wan-route-ledger', 'wan-offline-continuity']
-          : scaleScenario === 'collection-down'
-            ? ['collection-channel-ledger', 'collection-recent-failures']
-            : scaleScenario === 'interfaces-down'
-              ? ['interface-forwarding', 'interface-collection-channel']
-              : ['wan-trend', 'normal-interface-boundary', 'resource-threshold', 'normal-collection-channel'];
-    const sceneCoreGeometry = sceneCoreNames.map(moduleGeometry);
-    const rightCoreNames = noSnapshotEdge
-      ? ['no-snapshot-recent-success']
-      : scaleScenario === 'resource-full'
-        ? ['resource-pressure-bars']
-        : scaleScenario === 'all-offline'
-          ? ['wan-offline-continuity']
-          : scaleScenario === 'collection-down'
-            ? ['collection-recent-failures']
-            : scaleScenario === 'interfaces-down'
-              ? ['interface-collection-channel']
-              : ['normal-interface-boundary', 'resource-threshold', 'normal-collection-channel'];
-    const rightCoreGeometry = rightCoreNames.map(moduleGeometry);
-    const rightWorkspaceGeometry = semanticGeometry(rightStackNode, 'right-workspace');
-    overviewDesktopRightFillProbe = {
-      scenario: scaleScenario,
-      workspace: rightWorkspaceGeometry,
-      requiredModules: rightCoreGeometry,
-      continuity: rightContinuity,
-    };
-    overviewDesktopRightFillOk = overviewNormalFocusedHierarchyOk
-      ? Boolean(
-        rightWorkspaceGeometry.visible &&
-        rightCoreGeometry.every((item) => item.visible) &&
-        rightContinuity.maxGap <= 120
-      )
-      : Boolean(
-        rightWorkspaceGeometry.visible &&
-        rightCoreGeometry.every((item) => item.visible) &&
-        (!continuityRequired || rightContinuity.maxGap <= 120) &&
-        (!noSnapshotEdge || (
-          overviewNoSnapshotModuleContractOk &&
-          overviewNoSnapshotRowHeightOk &&
-          overviewNoSnapshotDesktopCoreFactsOk
-        ))
-      );
+  const mainGridUse = !mainGrid || Boolean(
+    mainChildren.length === 2 &&
+    mainChildren.every((node) => node.getBoundingClientRect().width >= mainGrid.getBoundingClientRect().width * 0.28)
+  );
+  const lowerGridUse = Boolean(lowerGrid && lowerChildren.length >= 1 && lowerChildren.every((node) => {
+    const child = node.getBoundingClientRect();
+    const parent = lowerGrid.getBoundingClientRect();
+    return child.width >= parent.width * (lowerChildren.length === 1 ? 0.95 : 0.35);
+  }));
+  const firstViewport = Boolean(
+    statusRect && firstWorkRect &&
+    statusRect.top >= 0 &&
+    statusRect.bottom < window.innerHeight &&
+    firstWorkRect.top < window.innerHeight - 80
+  );
+  const sourceCoverage = ledgerRows.length > 0 && ledgerSources.length === ledgerRows.length && ledgerSources.every((node) => normalize(node.textContent || ''));
+  const routeCoverage = ledgerButtons.length > 0 && ledgerButtons.every((node) => Boolean(node.getAttribute('data-desktop-ledger-route')) && Boolean(node.getAttribute('aria-label')));
 
-    const decisionRail = sectionRoot.querySelector('.ro-desktop-decision-rail');
-    const statusBusGeometry = semanticGeometry(overviewStatusBar, 'status-bus');
-    const decisionRailGeometry = semanticGeometry(decisionRail, 'decision-rail');
-    const incidentDecisionRequired = ['all-offline', 'no-snapshot', 'collection-down', 'resource-full', 'interfaces-down'].includes(scaleScenario);
-    overviewDesktopTopBandProbe = {
-      statusBus: statusBusGeometry,
-      decisionRail: decisionRailGeometry,
-      decisionRequired: incidentDecisionRequired,
-    };
-    overviewDesktopTopBandOk = Boolean(
-      statusBusGeometry.visible &&
-      statusBusGeometry.top < window.innerHeight * 0.20 &&
-      (!incidentDecisionRequired || decisionRailGeometry.visible)
-    );
+  const checks = {
+    mounted: Boolean(desktopRoot),
+    scenario: desktopRoot.getAttribute('data-desktop-overview-scenario') === scaleScenario,
+    evidenceMode: Boolean(expected && desktopRoot.getAttribute('data-desktop-evidence-mode') === expected.mode),
+    risk: Boolean(expected && desktopRoot.getAttribute('data-desktop-overview-risk') === expected.risk),
+    isolatedTree: !sectionRoot?.querySelector('[data-mobile-overview], [data-mobile-native-console], .ro-status-bus, .ro-desktop-grid'),
+    statusBus: Boolean(statusBus && verdictTitle && statusItems.length === 3 && desktopRoot.querySelectorAll('h1').length === 1),
+    incidentSubstitution: incidentContract,
+    chartTruth: chartContract,
+    evidenceBoundary,
+    semanticLedgers: ledgers.length >= 2 && sourceCoverage && routeCoverage,
+    accessibleLedger: ledgerRows.every((row) => row.getAttribute('role') === 'row') && !desktopRoot.querySelector('[role="tab"], [role="tablist"], canvas'),
+    readableType: smallText.length === 0,
+    unclippedText: clippedText.length === 0,
+    pointerTargets: smallTargets.length === 0,
+    firstViewport,
+    workspaceUse: mainGridUse && lowerGridUse,
+    noHorizontalOverflow: overflowX <= 1,
+    viewport: Boolean(rootRect && sectionRect && Math.abs(rootRect.left - sectionRect.left) <= 1 && rootRect.width >= sectionRect.width - 2),
+    readonly: /只读/.test(desktopText),
+  };
+  const pass = Boolean(app && active && (requested || active.id === sectionName) && !hasBadLiteral && scaleMetaOk && Object.values(checks).every(Boolean));
+  const desktopOverviewLedgerProbe = {
+    contract: 'cold-blue-operations-ledger',
+    evidenceMode: desktopRoot.getAttribute('data-desktop-evidence-mode') || '',
+    risk: desktopRoot.getAttribute('data-desktop-overview-risk') || '',
+    statusItems: statusItems.length,
+    incidentFacts: incidentFacts.length,
+    ledgers: ledgers.map((node) => node.getAttribute('data-desktop-ledger') || ''),
+    ledgerRows: ledgerRows.length,
+    chartCount: chartSections.length,
+    chartEvidence,
+    firstViewport,
+    smallText,
+    clippedText,
+    smallTargets,
+    mainChildren: mainChildren.map(rect),
+    lowerChildren: lowerChildren.map(rect),
+    checks,
+  };
 
-    const overviewSceneGeometryContractOk = noSnapshotEdge
-      ? overviewNoSnapshotModuleFillOk
-      : scaleScenario === 'resource-full'
-        ? overviewResourceModuleFillOk && overviewResourceFirstScreenEvidenceOk
-        : Boolean(
-          sceneCoreGeometry.every((item) => item.visible) &&
-          overviewDesktopEvidenceCompositionOk &&
-          overviewDesktopEvidenceSurfaceOk
-        );
-    overviewBlankProbe.sceneCore = sceneCoreGeometry;
-    overviewBlankProbe.effectiveHeight = overviewDesktopEffectiveHeightProbe;
-    overviewBlankProbe.columnContinuity = overviewDesktopColumnContinuityProbe;
-    overviewBlankAreaOk = Boolean(
-      flatConsoleVisible &&
-      overviewSceneGeometryContractOk &&
-      overviewDesktopRightFillOk &&
-      overviewDesktopTopBandOk &&
-      overviewDesktopEffectiveHeightOk &&
-      overviewDesktopColumnContinuityOk
-    );
-  }
   return {
-    overviewBlankProbe,
-    overviewBlankAreaOk,
-    overviewNoSnapshotModuleFillProbe,
-    overviewNoSnapshotModuleFillOk,
-    overviewResourceModuleFillProbe,
-    overviewResourceModuleFillOk,
-    overviewDesktopRightFillProbe,
-    overviewDesktopRightFillOk,
-    overviewDesktopColumnContinuityProbe,
-    overviewDesktopColumnContinuityOk,
-    overviewDesktopTopBandProbe,
-    overviewDesktopTopBandOk,
-    overviewDesktopEffectiveHeightProbe,
-    overviewDesktopEffectiveHeightOk,
-    overviewDesktopFocusedHierarchyProbe,
-    overviewDesktopFocusedHierarchyOk,
+    pass,
+    surface: 'desktop-overview',
+    desktopOverviewLedgerProbe,
+    overviewFirstScreenCoverageOk: firstViewport,
+    profile,
+    viewport,
+    scaleScenario,
+    requestedSection: sectionName,
+    activeSection: active ? active.id : '',
+    requestedFound: Boolean(requested),
+    title: normalize(document.querySelector('#pageTitle')?.textContent),
+    url: location.href,
+    overflowX: Math.round(overflowX),
+    scroll: {
+      width: root.scrollWidth,
+      height: root.scrollHeight,
+      viewportWidth: window.innerWidth,
+      viewportHeight: window.innerHeight,
+    },
+    hasBadLiteral,
+    scaleMetaOk,
   };
 }
 

@@ -11,6 +11,7 @@ const { spawn, spawnSync } = require('child_process');
 const { inspectMobileNativeOverview, inspectOverviewMobileInteraction } = require('./acceptance/inspect-overview-mobile');
 const { inspectSectionBrowser } = require('./acceptance/inspect-section-browser');
 const { inspectOverviewDesktopLayout } = require('./acceptance/inspect-overview-desktop-layout');
+const { inspectPanelRouteRuntime } = require('./acceptance/inspect-panel-routes');
 
 const ROOT = path.resolve(__dirname, '..');
 const DEFAULT_VIEWPORTS = [
@@ -41,6 +42,7 @@ const MAIN_MENU_SECTIONS = [
 const DEFAULT_PUBLIC_SECTIONS = [
   ...MAIN_MENU_SECTIONS,
   'connections',
+  'more',
 ];
 const DEFAULT_PRIVATE_SECTIONS = [
   ...DEFAULT_PUBLIC_SECTIONS,
@@ -99,6 +101,7 @@ Options:
   --skip-backend              Run browser checks only.
   --keep-server               Leave the spawned app server running.
   --strict-responsive         Treat narrow horizontal overflow as a failure.
+  --screenshot-all-sections   Capture every requested route, not only overview or failures.
   --help                      Show this help.
 
 Safety:
@@ -121,6 +124,7 @@ function parseArgs(argv) {
     skipBackend: false,
     keepServer: false,
     strictResponsive: false,
+    screenshotAllSections: false,
     scaleScenarios: DEFAULT_SCALE_SCENARIOS,
     scaleScenariosExplicit: false,
     viewportsExplicit: false,
@@ -140,6 +144,7 @@ function parseArgs(argv) {
     else if (item === '--skip-backend') args.skipBackend = true;
     else if (item === '--keep-server') args.keepServer = true;
     else if (item === '--strict-responsive') args.strictResponsive = true;
+    else if (item === '--screenshot-all-sections') args.screenshotAllSections = true;
     else if (item === '--url' || item.startsWith('--url=')) args.url = readValue('--url');
     else if (item === '--port' || item.startsWith('--port=')) args.port = Number(readValue('--port'));
     else if (item === '--python' || item.startsWith('--python=')) args.python = readValue('--python');
@@ -1311,7 +1316,20 @@ async function inspectSection(cdp, profile, viewport, section, args, scaleScenar
       exception: result.exceptionDetails,
     };
   }
-  return result.result && result.result.value;
+  const inspection = result.result && result.result.value;
+  if (section !== 'overview' || !inspection) return inspection;
+  const routeResult = await cdp.send('Runtime.evaluate', {
+    expression: `(${inspectPanelRouteRuntime.toString()})()`,
+    awaitPromise: true,
+    returnByValue: true,
+  });
+  const routeProbe = routeResult.result && routeResult.result.value;
+  return {
+    ...inspection,
+    pass: Boolean(inspection.pass && routeProbe?.pass === true),
+    panelRouteRuntimeOk: routeProbe?.pass === true,
+    panelRouteRuntimeProbe: routeProbe,
+  };
 }
 
 async function withTimeout(promise, timeoutMs, label) {
@@ -1528,7 +1546,7 @@ async function runBrowserChecks(args, report, baseUrl) {
             }
             const preScreenshotPass = inspection.pass;
             let screenshotOk = true;
-            if (section === 'overview' || !preScreenshotPass) {
+            if (section === 'overview' || args.screenshotAllSections || !preScreenshotPass) {
               const fileName = `${profile}-${scaleScenario}-${viewport.name}-${section}.png`.replace(/[^A-Za-z0-9_.-]+/g, '-');
               const screenshotPath = path.join(args.out, fileName);
               await withTimeout(
@@ -2100,6 +2118,20 @@ function setFixtureFinding(snapshot, severity, title, summary, evidence = []) {
 
 function setSnapshotFresh(snapshot) {
   const now = new Date().toISOString();
+  const history = snapshot.overview && snapshot.overview.history;
+  if (history && Array.isArray(history.downlink) && Array.isArray(history.uplink)) {
+    const sampleCount = Math.min(history.downlink.length, history.uplink.length);
+    const nowSeconds = Math.floor(Date.parse(now) / 1000);
+    const wanRows = Array.isArray(snapshot.wan) ? snapshot.wan.filter((row) => row.running !== false && row.disabled !== true) : [];
+    const currentDown = wanRows.reduce((total, row) => total + Number(row.downRate || 0), 0);
+    const currentUp = wanRows.reduce((total, row) => total + Number(row.upRate || 0), 0);
+    const factors = [0.72, 0.81, 0.76, 0.9, 0.94, 1];
+    history.downlink = Array.from({ length: sampleCount }, (_, index) => Math.round(currentDown * factors[Math.max(0, factors.length - sampleCount + index)]));
+    history.uplink = Array.from({ length: sampleCount }, (_, index) => Math.round(currentUp * factors[Math.max(0, factors.length - sampleCount + index)]));
+    history.timestamps = Array.from({ length: sampleCount }, (_, index) => nowSeconds - (sampleCount - 1 - index) * 5);
+    snapshot.meta.rateHistoryUpdatedAt = now;
+    snapshot.meta.rateHistorySampleCount = sampleCount;
+  }
   snapshot.updatedAt = now;
   snapshot.meta.realtimeUpdatedAt = now;
   snapshot.meta.slowRestUpdatedAt = now;

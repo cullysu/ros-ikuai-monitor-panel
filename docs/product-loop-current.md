@@ -1,41 +1,32 @@
-# Mobile Router Panel Product Loop
+# Full RouterOS Console Product Loop
 
-## Operator job
+## Current decision
 
-A phone user opening the panel during a network incident must decide within three seconds whether the internet path is usable, whether the data is current enough to trust, what object is affected, and what to inspect next.
+Review baseline `ced6386` is **not releasable**. Since that baseline, a local uncommitted vertical slice has replaced decorative navigation with real routes and added a real connection/snapshot runtime. This is progress evidence, not a release claim: the rejected overview visual system, intermediate-width workspace, SVG charts, backend transport security, full CI, and exact-SHA CL remain open.
 
-## Non-negotiables
+## Active objective
 
-- Delete the rejected phone presentation rather than patch it.
-- Keep mobile presentation fully separate from desktop presentation.
-- Use a compact, flat, cold-blue operations console—not a scaled dialog, health app, floating-card dashboard, or decorative iOS imitation.
-- Normal first screen: one verdict, four metrics, truthful traffic, one detail entry.
-- Incident first screen: one verdict, object, impact, credibility, next step, one detail entry.
-- Keep evidence and diagnostics available only after drilldown.
-- Required matrix and all GitHub checks are blocking.
+Build the complete read-only product contract in `docs/full-console-product-contract.md`: real routing, connection flow, live snapshot lifecycle, task-oriented mobile navigation, real module content, SVG monitoring graphics, explicit security boundaries, and full-route acceptance.
 
-## Non-goals
+## Immediate non-goals
 
-- Reworking unrelated desktop modules in the mobile slice.
-- Adding marketing copy, decorative illustration, synthetic charts, or extra top-level tabs.
-- Installing a multi-agent runtime or allowing it to alter global Codex configuration.
-
-## Product contract
-
-See `.agents/skills/router-panel-product-loop/references/project-gates.md`.
+- Do not add empty route shells merely to turn the 72-cell report green.
+- Do not use production scenario fixtures as network-error fallbacks.
+- Do not claim public readiness from overview-only evidence.
+- Do not publish another commit until the new blocking gates pass.
 
 ## Gate status
 
 | Gate | Status | Evidence / reason |
 |---|---|---|
-| Product manager | pass | Operator job, non-negotiables, scenarios, and measurable first-screen contract recorded above. |
-| Product/CEO | pass | One primary decision surface; evidence and secondary modules are removed from summary. |
-| Product design | pass | Portrait and landscape screenshots use one cold-blue material system; normal and incident summaries fit without scrolling or desktop chrome. |
-| Engineering | pass | Separate mobile app/model/screens/style ownership; desktop DOM absence is runtime-tested. |
-| Focused QA | pass | `check:types`, `build`, `check:overview`, and all mobile runtime scenarios pass locally. |
-| Full QA | pass | `_acceptance/release-matrix-mobile-product-loop-final/report.json` passes all 28 required cells and captures every required screenshot. |
-| Release | pass | Remote commit `e5d8d3e` passed Linux validation, Windows packaging, and GHCR image publication. |
+| Product | pass | `docs/full-console-product-contract.md` maps routes, states, evidence semantics, security and blocking acceptance. |
+| Design | pending | Three independent mobile directions were compared in `docs/mobile-overview-redesign-directions.md`; the Adaptive Operations Instrument contract is selected, but implementation and visual evidence are not complete. |
+| Architecture | pending | Typed route/runtime ownership now exists, but rejected Overview/CSS and the backend monolith remain. |
+| Runtime | pending | Real connection, schema validation, polling and recovery pass focused browser checks; full-route live-state coverage remains incomplete. |
+| Security | fail | HTTP REST and automatic SSH host-key trust remain blocking. |
+| Full QA | fail | Route slice passes, but 1024/1180 Overview checks expose clipped text, microscopic density and large unused workspace; full matrix has not run. |
+| Release | fail | Public release gate is explicitly closed for `ced6386`. |
 
 ## Current return owner
 
-Engineering owns the next action: retire remaining self-certifying desktop selectors and reduce the legacy `!important` patch layer without changing the verified mobile product.
+Frontend implementation owns the next blocking action: delete the rejected mobile Overview composition and build the selected adaptive ledger/queue/instrument surface, while defining a real `900–1180px` workspace. Functional runtime work must remain green throughout.

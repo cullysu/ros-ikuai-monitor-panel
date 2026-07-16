@@ -577,5 +577,26 @@ body:has(#overview.ro-desktop-console) .ik-rail {
 }
 
 .ik-menu-item span {
+  font-size: 13px;
   font-weight: 720;
+}
+
+.ik-menu-item em {
+  font-size: 12px;
+  line-height: 1.3;
+}
+
+.ik-menu-item {
+  min-height: 44px;
+  padding: 6px 8px;
+}
+
+.ik-brand-chip,
+.ik-brand-user,
+.ik-search-pill {
+  font-size: 12px;
+}
+
+.ik-search-pill {
+  min-height: 36px;
 }

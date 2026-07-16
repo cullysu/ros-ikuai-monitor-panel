@@ -50,6 +50,7 @@ export interface OverviewRawMeta {
   realtimeEndpointFailures?: OverviewEndpointFailureEntry[];
   slowRestEndpointFailures?: OverviewEndpointFailureEntry[];
   detailEndpointFailures?: OverviewEndpointFailureEntry[];
+  clientEvidenceBoundary?: "stale" | "offline" | "recovering" | "error";
   [key: string]: unknown;
 }
 
@@ -302,4 +303,9 @@ export interface OverviewDerivedState {
 export interface DeriveOverviewOptions {
   now?: number;
   scenarioHint?: OverviewScenarioKey;
+}
+
+export interface OverviewPanelProps {
+  snapshot: OverviewRawSnapshot;
+  state: OverviewDerivedState;
 }

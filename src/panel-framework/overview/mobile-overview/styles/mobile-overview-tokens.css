@@ -1,0 +1,28 @@
+@media (max-width: 899px) {
+  .mo-shell {
+    --mo-canvas: #eaf1f4;
+    --mo-surface: #f9fbfc;
+    --mo-surface-tonal: #e7f0f3;
+    --mo-line: #b4c8d1;
+    --mo-line-soft: #d1dee4;
+    --mo-ink: #102b37;
+    --mo-copy: #3b5b68;
+    --mo-muted: #536f7a;
+    --mo-blue: #0b678c;
+    --mo-blue-soft: #dbeaf0;
+    --mo-trust: #276c62;
+    --mo-warn: #8a6331;
+    --mo-warn-soft: #f2eadb;
+    --mo-danger: #8b3f49;
+    --mo-danger-soft: #f3e3e6;
+    --mo-missing: #748892;
+    --mo-verdict-bg: #153f50;
+    --mo-verdict-accent: #9fd7dc;
+    --mo-radius: 8px;
+    color: var(--mo-ink);
+    background: var(--mo-canvas);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Segoe UI", sans-serif;
+    font-size: 16px;
+    line-height: 1.4;
+  }
+}

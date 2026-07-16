@@ -62,8 +62,9 @@ Open:
 http://127.0.0.1:28646/
 ```
 
-Then enter the RouterOS SSH host, SSH port, read-only user, and password in the
-panel login page. The installer creates `.env.docker` for listener/profile
+Then enter the RouterOS address, REST transport, SSH port, read-only user, and
+password in the panel connection page. RouterOS REST defaults to verified HTTPS
+on port `443`. The installer creates `.env.docker` for listener/profile
 settings, but it does not require real RouterOS credentials in that file for
 first run.
 
@@ -115,6 +116,12 @@ Make sure RouterOS SSH is reachable from the Docker host. If RouterOS restricts
 SSH by `allowed-address` or firewall input rules, allow the source address that
 RouterOS sees for the panel host or container.
 
+Enable RouterOS REST through the `www-ssl` service and use a certificate trusted
+by the panel host when possible. Restrict the service to the panel source
+address. RouterOS documents plain `www` REST as unsafe because Basic
+credentials can be observed in transit; this panel therefore defaults to
+verified HTTPS and never silently downgrades.
+
 ## Manual Compose Install
 
 Manual Compose remains useful for developers and operators who want direct file
@@ -141,6 +148,11 @@ panel UI:
 ROS_MONITOR_ROUTER_HOST=<routeros-host-or-dns>
 ROS_MONITOR_ROUTER_USER=ros-panel-readonly
 ROS_MONITOR_ROUTER_PASSWORD=CHANGE_ME
+ROS_MONITOR_ROUTER_REST_SCHEME=https
+ROS_MONITOR_ROUTER_REST_PORT=443
+ROS_MONITOR_ROUTER_REST_VERIFY_TLS=1
+ROS_MONITOR_INSECURE_REST_CONFIRMED=0
+ROS_MONITOR_SSH_HOST_KEY_FINGERPRINT=
 ```
 
 The default browser-facing target is localhost-only:
@@ -166,19 +178,28 @@ Compose service, if you intentionally need a different loopback port.
 In the RouterOS login screen, enter:
 
 - RouterOS host or DNS name
+- RouterOS REST scheme and port; verified `HTTPS` on `443` is the default
 - SSH port, usually `22` unless you changed it on RouterOS
 - the dedicated read-only username
 - the matching password
 
-The panel tests SSH first. If SSH succeeds, it also checks RouterOS REST
-reachability and shows a warning when REST is unavailable. SSH is enough for the
-first connection, but some dashboard data may be missing until REST is
-reachable.
+On first SSH contact the panel stops before password authentication and shows
+the RouterOS host-key algorithm and SHA-256 fingerprint. Verify it against a
+trusted RouterOS source, then explicitly confirm it. The profile pins that exact
+fingerprint; a later key change blocks the connection instead of being accepted
+silently.
 
-Use password saving only on a trusted panel host. Saved RouterOS logins live in
-the Docker volume `routeros-triage-data`, under the panel data directory, and
-should be treated as local secrets. Do not use password saving on shared or
-untrusted hosts.
+The panel tests SSH and RouterOS REST as separate evidence channels. It does not
+silently downgrade HTTPS to HTTP or reinterpret a URL pasted into the host
+field. Plain HTTP exposes RouterOS Basic credentials in transit, and disabling
+TLS certificate verification removes server-identity validation; either choice
+requires an explicit risk acknowledgement in the UI or
+`ROS_MONITOR_INSECURE_REST_CONFIRMED=1` in a reviewed local configuration.
+
+Saved RouterOS profiles contain connection metadata and the pinned SSH
+fingerprint only. Passwords are never written to the Docker volume; they must be
+entered for a new process session or supplied through a protected deployment
+secret/environment file.
 
 ## Verify
 
@@ -198,6 +219,9 @@ Expected read-only public shape:
 - `readonlyDiagnostics` is `false`
 - `ipAliasWrite` is disabled
 - RouterOS credentials are not returned by status endpoints
+- saved connection profiles never contain RouterOS passwords
+- unknown or changed SSH host keys are blocked until explicitly verified
+- RouterOS REST uses verified HTTPS by default
 - write-only operations such as `POST /api/ip-alias` are rejected
 
 ## Address Changes

@@ -738,144 +738,57 @@ def assert_deploy_defaults_are_project_safe():
 
 def assert_frontend_charts_skip_missing_values():
     index_source = (ROOT / "public" / "index.html").read_text(encoding="utf-8")
-    framework_shell = (
-        'data-app-shell="ikuai"' in index_source
-        and 'data-overview-framework-asset="script"' in index_source
-    )
-    if framework_shell:
-        overview_components_dir = ROOT / "src" / "panel-framework" / "overview" / "components"
-        overview_source = "\n".join(
-            [
-                (ROOT / "src" / "panel-framework" / "overview" / "OverviewPanel.tsx").read_text(encoding="utf-8"),
-                (ROOT / "src" / "panel-framework" / "overview" / "desktopOverviewVisuals.tsx").read_text(encoding="utf-8"),
-                *[
-                    component_path.read_text(encoding="utf-8")
-                    for component_path in sorted(overview_components_dir.glob("*.tsx"))
-                ],
-            ]
-        )
-        overview_css_parts = [
-            (ROOT / "src" / "panel-framework" / "overview" / "OverviewPanel.css").read_text(encoding="utf-8")
-        ]
-        overview_styles_dir = ROOT / "src" / "panel-framework" / "overview" / "styles"
-        if overview_styles_dir.exists():
-            overview_css_parts.extend(
-                css_path.read_text(encoding="utf-8")
-                for css_path in sorted(overview_styles_dir.glob("*.css"))
-            )
-        overview_css = "\n".join(overview_css_parts)
-        derive_source = (ROOT / "src" / "panel-framework" / "overview" / "deriveOverviewState.ts").read_text(encoding="utf-8")
-        for marker in (
-            'className="ro-chart-current"',
-            'className="ro-chart-peak"',
-            'className="ro-chart-mean"',
-            'className="ro-chart-threshold"',
-            'className="ro-chart-axis"',
-            "data-overview-rank-grid",
-        ):
-            assert marker in overview_source, f"{marker} not found in framework overview"
-        assert ".ro-chart-axis" in overview_css
-        assert "Number(value || 0)" not in overview_source
-        assert "Number(item || 0)" not in overview_source
-        assert "export function toNumber" in derive_source
-        assert "return Number.isFinite(n) ? n : fallback;" in derive_source
-        return
-    for function_name in ("lineChart", "rateAxisLineChart", "resourcePercentChart"):
-        marker = f"function {function_name}"
-        start = index_source.find(marker)
-        assert start >= 0, f"{function_name} not found"
-        body = index_source[start : index_source.find("\n    function ", start + len(marker))]
-        if not body:
-            body = index_source[start : start + 2400]
-        assert "Number(value || 0)" not in body, f"{function_name} still coerces missing values to 0"
-        assert "Number(item || 0)" not in body, f"{function_name} still coerces missing values to 0"
-    assert "function chartValue" in index_source
-    assert "function smoothRateNeedleZeros" in index_source
-    assert "smoothRateNeedleZeros(rawValues, options)" in index_source
-    assert "smoothRateNeedleZeros(rawValues, { ...options" in index_source
-    assert "function chartSegmentElements" in index_source
-    assert "function smoothSvgPath" in index_source
-    assert "<path fill=\"none\"" in index_source
-    assert "panel-professional-redesign" not in index_source
+    evidence_source = (ROOT / "src" / "panel-framework" / "overview" / "evidence-model" / "buildOverviewEvidenceModel.ts").read_text(encoding="utf-8")
+    chart_source = (ROOT / "src" / "panel-framework" / "overview" / "desktop-overview" / "DesktopWanEvidence.tsx").read_text(encoding="utf-8")
+    assert 'data-overview-framework-asset="script"' in index_source
+    assert 'if (value === null || value === undefined || value === "") return null;' in evidence_source
+    assert "if (rowDown === null || rowUp === null) return null;" in evidence_source
+    assert "if (timestamp !== null && pointDown !== null && pointUp !== null)" in evidence_source
+    assert "if (!closeObservation(last.down, rates.down) || !closeObservation(last.up, rates.up)) return currentTrafficInstrument(rates);" in evidence_source
+    assert 'status: "accumulating"' in evidence_source
+    assert "Number(value || 0)" not in evidence_source
+    assert "Number(item || 0)" not in evidence_source
+    assert "<svg" in chart_source
+    assert 'viewBox={`0 0 ${WIDTH} ${HEIGHT}`}' in chart_source
+    assert 'data-unit="bit/s"' in chart_source
+    assert "<title id={titleId}>" in chart_source
+    assert "<desc id={descId}>" in chart_source
+    assert "layout-whitespace-patch" not in index_source
     assert "scale-adaptive-patch" not in index_source
-    assert "Number(value || 0)" not in index_source[index_source.find("function smoothNumericSeries") : index_source.find("function chartSegmentElements")]
-    assert "if (value === null || value === undefined || value === '') return null;" in index_source
-    assert "return Number.isFinite(numeric) ? numeric : null;" in index_source
-    layout_patch_path = ROOT / "public" / "layout-whitespace-patch.js"
-    if layout_patch_path.exists():
-        layout_patch_source = layout_patch_path.read_text(encoding="utf-8")
-        ops_chart_start = layout_patch_source.find("function opsPercentMiniChart")
-        ops_chart_body = layout_patch_source[ops_chart_start : ops_chart_start + 2200]
-        assert "function opsChartNumber" in layout_patch_source
-        assert "function opsSmoothPercentValues" in layout_patch_source
-        assert "function opsSmoothPath" in layout_patch_source
-        assert "Number(value || 0)" not in ops_chart_body
-    else:
-        assert "layout-whitespace-patch" not in index_source
+    assert "panel-professional-redesign" not in index_source
 
 
 def assert_frontend_wan_aggregate_default():
     index_source = (ROOT / "public" / "index.html").read_text(encoding="utf-8")
-    framework_shell = (
-        'data-app-shell="ikuai"' in index_source
-        and 'data-overview-framework-asset="script"' in index_source
-    )
-    if framework_shell:
-        rows_source = (ROOT / "src" / "panel-framework" / "overview" / "desktopOverviewTrafficRows.ts").read_text(encoding="utf-8")
-        visuals_source = (ROOT / "src" / "panel-framework" / "overview" / "desktopOverviewVisuals.tsx").read_text(encoding="utf-8")
-        desktop_scene_source = (ROOT / "src" / "panel-framework" / "overview" / "desktopOverviewDefaultScene.tsx").read_text(encoding="utf-8")
-        assert "export function trafficTotals" in rows_source
-        assert "const rows = collectWanRows(snapshot);" in rows_source
-        assert "up: rows.reduce((total, row) => total + toNumber(row.upRate), 0)" in rows_source
-        assert "down: rows.reduce((total, row) => total + toNumber(row.downRate), 0)" in rows_source
-        assert 'trendDatum("traffic-down", "总下行", totals.down' in rows_source
-        assert 'trendDatum("traffic-up", "总上行", totals.up' in rows_source
-        assert "const trafficChartRowsData = trafficChartRows(snapshot, state);" in desktop_scene_source
-        assert "<DesktopWanIntegratedVisual snapshot={snapshot} state={state} rows={trafficChartRowsData} />" in desktop_scene_source
-        assert '<WanTrend key="compact-network"' in desktop_scene_source
-        assert 'className="ro-wan-integrated-decision"' in visuals_source
-        assert "desktopWanDecisionRail(snapshot, state, rows)" in visuals_source
-        assert "scale-adaptive-patch" not in index_source
-        assert "panel-professional-redesign" not in index_source
-        assert "layout-whitespace-patch" not in index_source
-        return
-
-    patch_path = ROOT / "public" / "scale-adaptive-patch.js"
-    assert patch_path.exists(), "legacy WAN aggregate patch is missing outside framework shell"
-    source = patch_path.read_text(encoding="utf-8")
-    assert "const AGGREGATE_WAN_KEY = '__all_wan__';" in source
-    assert "function wanAggregateLine(lines, overview = {})" in source
-    assert "isAggregateWan: true" in source
-    assert "const aggregateWan = wanAggregateLine(lines, overview);" in source
-    assert "const selectedWan = selectedWanLine(lines, aggregateWan);" in source
-    assert "renderWanLineOptions(lines, selectedWan, aggregateWan)" in source
-    assert '<option value="${AGGREGATE_WAN_KEY}"' in source
-    assert '<div class="ikuai-wan-chart">${wanChart}</div>' in source
-    assert 'data-monitor-split-charts="true"' in source
-    assert 'data-monitor-chart="up"' in source
-    assert 'data-monitor-chart="down"' in source
-    assert '<div class="ikuai-chart-box">${monitorUpChart}</div>' in source
-    assert '<div class="ikuai-chart-box">${monitorDownChart}</div>' in source
-    assert "rate(selectedWan?.upRate)" in source
-    assert "rate(selectedWan?.downRate)" in source
-    assert "const selectedWan = selectedWanLine(lines);" not in source
+    evidence_source = (ROOT / "src" / "panel-framework" / "overview" / "evidence-model" / "buildOverviewEvidenceModel.ts").read_text(encoding="utf-8")
+    screen_source = (ROOT / "src" / "panel-framework" / "overview" / "desktop-overview" / "DesktopOverviewScreen.tsx").read_text(encoding="utf-8")
+    assert "const rows = wanRows(snapshot).filter" in evidence_source
+    assert "down += rowDown;" in evidence_source
+    assert "up += rowUp;" in evidence_source
+    assert "if (!rows.length) return null;" in evidence_source
+    assert "if (mode !== \"current\" || risk !== \"none\") return null;" in evidence_source
+    assert "const showTraffic = !incident && state.scale !== \"fleet\" && Boolean(model.traffic);" in screen_source
+    assert '<DesktopWanEvidence traffic={model.traffic}' in screen_source
+    assert "WAN 趋势证据未形成" in screen_source
+    assert "scale-adaptive-patch" not in index_source
+    assert "panel-professional-redesign" not in index_source
+    assert "layout-whitespace-patch" not in index_source
 
 
-def assert_router_login_password_save_is_opt_in():
+def assert_router_login_profiles_never_persist_passwords():
     index_source = (ROOT / "public" / "index.html").read_text(encoding="utf-8")
     app_source = (ROOT / "app.py").read_text(encoding="utf-8")
+    profile_store_source = (ROOT / "panel_backend" / "config_store.py").read_text(encoding="utf-8")
     checkbox_marker = '<input id="routerLoginRememberPassword" name="rememberPassword" type="checkbox">'
     if checkbox_marker in index_source:
         assert '<input id="routerLoginRememberPassword" name="rememberPassword" type="checkbox" checked>' not in index_source
         assert "routerLoginRememberPasswordEl ? routerLoginRememberPasswordEl.checked : false" in index_source
-    assert 'payload.get("rememberPassword", False)' in app_source
-    assert "remember_password = remember_raw is True" in app_source
-    assert "True if remember_raw is None else to_bool(remember_raw)" not in app_source
-    assert 'payload.get("rememberPassword", True)' not in app_source
     assert "restore_last_saved_router_login" not in app_source
     assert 'password = saved_entry.get("password")' not in app_source
     assert '"password": password,' not in app_source
-    assert "passwords are never persisted" in app_source
+    assert "passwords are never persisted" in profile_store_source
+    assert '"password": ""' in profile_store_source
+    assert "RouterProfileStore" in app_source
 
     try:
         app.ROUTER_LOGIN_STORE_FILE.unlink()
@@ -891,16 +804,33 @@ def assert_router_login_password_save_is_opt_in():
     app.ROUTER_LOGIN_STORE_FILE.write_text(json.dumps(legacy_payload), encoding="utf-8")
     app.sanitize_router_login_store_passwords()
     migrated = json.loads(app.ROUTER_LOGIN_STORE_FILE.read_text(encoding="utf-8"))
-    assert migrated["version"] == 2
+    assert migrated["version"] == 3
     assert migrated["entries"] and migrated["entries"][0].get("password") == ""
 
-    saved = app.remember_router_login("127.0.0.1", "smoke", sample_password, 22)
+    saved = app.remember_router_login(
+        "127.0.0.1",
+        "smoke",
+        sample_password,
+        22,
+        rest_scheme="https",
+        rest_port=8443,
+        rest_verify_tls=True,
+        insecure_rest_confirmed=False,
+        ssh_host_key_fingerprint="SHA256:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+    )
     payload = json.loads(app.ROUTER_LOGIN_STORE_FILE.read_text(encoding="utf-8"))
-    assert payload["version"] == 2
+    assert payload["version"] == 3
     assert "clear text" not in payload.get("warning", "")
     assert payload["entries"] and payload["entries"][0].get("password") == ""
+    assert payload["entries"][0]["restScheme"] == "https"
+    assert payload["entries"][0]["restPort"] == 8443
+    assert payload["entries"][0]["restVerifyTls"] is True
+    assert payload["entries"][0]["insecureRestConfirmed"] is False
+    assert payload["entries"][0]["sshHostKeyFingerprint"].startswith("SHA256:")
     public_entries = app.public_saved_router_logins()
     assert public_entries and public_entries[0]["passwordSaved"] is False
+    assert public_entries[0]["restPort"] == 8443
+    assert public_entries[0]["sshHostKeyFingerprint"].startswith("SHA256:")
     assert app.find_saved_router_login(saved["id"])["password"] == ""
     app.ROUTER_LOGIN_STORE_FILE.unlink(missing_ok=True)
 
@@ -1038,6 +968,35 @@ def assert_localhost_host_forward_guard_supports_routeros_container():
         app.PANEL_LOCALHOST_FORWARD_TOKEN = original_token
 
 
+def assert_connection_evidence_parser_contract():
+    collector = app.Collector()
+    summary = collector.parse_connection_tracking_summary(
+        {"total-entries": "42", "total-ip4-entries": "40", "total-ip6-entries": "2"}
+    )
+    assert summary == {"total": 42, "ipv4": 40, "ipv6": 2}
+    try:
+        collector.parse_connection_tracking_summary({"total-ip4-entries": "2"})
+    except RuntimeError as exc:
+        assert "missing total-entries" in str(exc)
+    else:
+        raise AssertionError("connection evidence accepted a summary without total-entries")
+
+    terse = collector.parse_connection_terse_line(
+        "src-address=192.0.2.10:1234 dst-address=[2001:db8::5]:443 protocol=tcp orig-rate=12.5Kbps"
+    )
+    assert terse["src-address"] == "192.0.2.10:1234"
+    assert terse["dst-address"] == "[2001:db8::5]:443"
+    assert collector.split_connection_endpoint(terse["dst-address"]) == ("2001:db8::5", "443")
+    normalized = collector.normalize_connection_search_row(terse)
+    assert normalized["srcIp"] == "192.0.2.10"
+    assert normalized["dstIp"] == "2001:db8::5"
+    assert normalized["origRate"] == 12500
+
+    duplicate = dict(terse)
+    assert collector.dedupe_connection_rows([terse, duplicate]) == [terse]
+    assert collector.normalize_dns_static_rows([[{"name": "one"}], {"name": "two"}], limit=1) == [{"name": "one"}]
+
+
 def main():
     assert_wan_model_combines_pppoe_and_dhcp_lines()
     assert_dns_static_count_meta()
@@ -1051,11 +1010,12 @@ def main():
     assert_deploy_defaults_are_project_safe()
     assert_frontend_charts_skip_missing_values()
     assert_frontend_wan_aggregate_default()
-    assert_router_login_password_save_is_opt_in()
+    assert_router_login_profiles_never_persist_passwords()
     assert_frontend_handles_partial_snapshots()
     assert_collector_status_messages_are_specific()
     assert_health_findings_distinguishes_quality_display_values()
     assert_localhost_host_forward_guard_supports_routeros_container()
+    assert_connection_evidence_parser_contract()
     print(
         json.dumps(
             {
@@ -1072,12 +1032,13 @@ def main():
                     "arbitrary-scale non-PPPoE fixtures preserve scale metadata, protocol ranking, and WAN fallback semantics",
                     "deploy defaults avoid private IP/admin assumptions unless explicitly configured",
                     "frontend chart helpers skip missing values instead of drawing zeros",
-                    "frontend WAN selector defaults to an all-line aggregate traffic option",
-                    "RouterOS login password saving is opt-in for public deployments",
+                    "frontend WAN evidence aggregates complete current rows and suppresses invalid incident trends",
+                    "saved RouterOS profiles never persist passwords and retain secure transport metadata",
                     "frontend renderers tolerate partial snapshots and missing history collections",
                     "collector startup/config/error states expose specific status messages instead of unknown-error banners",
                     "health findings distinguish cumulative totals, latest deltas, numeric loss rates, and unknown loss-rate displays",
                     "RouterOS Container localhost Host-forward guard allows client-local tunnels without allowing direct veth/LAN browser hosts",
+                    "connection and DNS evidence normalization is isolated, deduplicated, and IPv4/IPv6 aware",
                 ],
             },
             ensure_ascii=False,

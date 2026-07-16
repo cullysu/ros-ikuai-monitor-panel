@@ -214,6 +214,23 @@ function freshnessState(snapshot: OverviewRawSnapshot, now: number): OverviewFre
   if (Number.isNaN(parsed)) return { label: "未采集", level: "warn", stale: true, history: false, missing: false, credibility, credibilityLabel: credibilityLabelOf(credibility), credibilityTone: credibilityToneOf(credibility), seconds: null, text: "未采集", source: "" };
   const seconds = Math.max(0, Math.round((now - parsed) / 1000));
   const poll = Math.max(1, toNumber(snapshot.meta?.pollSeconds, 60));
+  const boundary = snapshot.meta?.clientEvidenceBoundary;
+  if (boundary) {
+    const label = boundary === "offline" ? "浏览器离线" : boundary === "stale" ? "历史证据" : boundary === "error" ? "刷新失败" : "恢复中";
+    return {
+      label,
+      level: boundary === "error" || boundary === "offline" ? "danger" : "warn",
+      stale: true,
+      history: true,
+      missing: false,
+      credibility: "cache",
+      credibilityLabel: credibilityLabelOf("cache"),
+      credibilityTone: credibilityToneOf("cache"),
+      seconds,
+      text: formatDurationCompact(seconds),
+      source,
+    };
+  }
   const level: OverviewTone = seconds >= Math.max(900, poll * 15) ? "danger" : seconds >= Math.max(300, poll * 5) ? "warn" : "ok";
   return { label: level === "danger" ? "数据陈旧" : level === "warn" ? "数据偏旧" : "采样新鲜", level, stale: level !== "ok", history: level === "danger", missing: false, credibility, credibilityLabel: credibilityLabelOf(credibility), credibilityTone: credibilityToneOf(credibility), seconds, text: formatDurationCompact(seconds), source };
 }

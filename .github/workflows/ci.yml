@@ -31,7 +31,8 @@ jobs:
 
       - name: Python syntax and collector regressions
         run: |
-          python -m py_compile app.py tools/check-collector-regressions.py tools/convert-oci-to-routeros-docker-archive.py
+          python -m py_compile app.py panel_backend/api_schema.py panel_backend/collector_evidence.py panel_backend/collector_transport.py panel_backend/config_store.py panel_backend/router_transport.py panel_backend/session_security.py tools/check-backend-security.py tools/check-collector-regressions.py tools/convert-oci-to-routeros-docker-archive.py
+          python tools/check-backend-security.py
           python tools/check-collector-regressions.py
 
       - name: Set up Node.js
@@ -45,6 +46,11 @@ jobs:
 
       - name: TypeScript contract check
         run: npm run check:types
+
+      - name: Runtime schema and section evidence contracts
+        run: |
+          npm run check:runtime-schema
+          npm run check:sections
 
       - name: Overview architecture contracts
         run: |
@@ -80,8 +86,21 @@ jobs:
       - name: Native mobile interaction matrix
         run: npm run check:mobile-native
 
+      - name: Connection and browser runtime contract
+        run: npm run check:runtime-browser
+
       - name: Desktop incident hierarchy contracts
         run: npm run check:desktop-incident-hierarchy
+
+      - name: Public full-route navigation matrix
+        run: |
+          node tools/local-predeploy-check.js \
+            --profile public \
+            --viewports desktop=1600x1000,laptop=1366x900,tablet=1024x900,narrow=390x844 \
+            --sections public-release \
+            --scale-scenarios single \
+            --strict-responsive \
+            --out _acceptance/route-matrix-${{ github.sha }}
 
       - name: Public overview complete release matrix
         run: |
@@ -93,6 +112,16 @@ jobs:
             --strict-responsive \
             --out _acceptance/release-matrix-${{ github.sha }}
 
+      - name: Public 19-route state release matrix
+        run: |
+          node tools/local-predeploy-check.js \
+            --profile public \
+            --viewports desktop=1366x768,narrow=390x844 \
+            --sections public-release \
+            --scale-scenarios single,fleet,all-offline,no-snapshot,collection-down,resource-full,interfaces-down \
+            --strict-responsive \
+            --out _acceptance/route-state-matrix-${{ github.sha }}
+
       - name: Public release readiness
         run: node tools/check-public-release-readiness.js
 
@@ -103,6 +132,15 @@ jobs:
           name: ci-public-predeploy
           path: |
             _acceptance/release-matrix-${{ github.sha }}
+            _acceptance/route-matrix-${{ github.sha }}
+          if-no-files-found: ignore
+
+      - name: Upload public route-state matrix
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: ci-public-route-state-${{ github.sha }}
+          path: _acceptance/route-state-matrix-${{ github.sha }}
           if-no-files-found: ignore
 
       - name: Installer shell checks

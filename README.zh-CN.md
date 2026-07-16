@@ -182,7 +182,8 @@ http://127.0.0.1:28646/
 ```
 
 `.env.docker` 里的 RouterOS 凭据可以保持示例值，然后在网页登录页填写真实
-SSH 信息。
+设备信息。REST 默认使用 HTTPS、443 端口并验证证书；SSH 首次连接会显示
+SHA256 主机密钥指纹，确认前不会发送 SSH 密码。
 
 ## 本地 Python
 
@@ -192,6 +193,9 @@ python -m venv .venv
 $env:ROS_MONITOR_ROUTER_HOST="<routeros-host-or-dns>"
 $env:ROS_MONITOR_ROUTER_USER="ros-panel-readonly"
 $env:ROS_MONITOR_ROUTER_PASSWORD="CHANGE_ME"
+$env:ROS_MONITOR_ROUTER_REST_SCHEME="https"
+$env:ROS_MONITOR_ROUTER_REST_PORT="443"
+$env:ROS_MONITOR_ROUTER_REST_VERIFY_TLS="1"
 $env:ROS_PANEL_BIND="127.0.0.1"
 $env:ROS_PANEL_PORT="28646"
 $env:ROS_PANEL_TARGET_IP="127.0.0.1"
@@ -211,6 +215,9 @@ export ROS_PANEL_PROFILE="routeros_only"
 export ROS_MONITOR_ROUTER_HOST="<routeros-host-or-dns>"
 export ROS_MONITOR_ROUTER_USER="ros-panel-readonly"
 export ROS_MONITOR_ROUTER_PASSWORD="CHANGE_ME"
+export ROS_MONITOR_ROUTER_REST_SCHEME="https"
+export ROS_MONITOR_ROUTER_REST_PORT="443"
+export ROS_MONITOR_ROUTER_REST_VERIFY_TLS="1"
 
 ./deploy_linux.sh --instance routeros-panel --disable-ip-service
 ```
@@ -239,11 +246,14 @@ RouterOS 里使用 `remote-image=`。
 - 不要使用 `admin`。
 - 只授予采集所需的只读权限。
 - 确认 RouterOS SSH 对运行面板的主机可达。
+- 启用 RouterOS `www-ssl`，并为 HTTPS 配置可验证的证书。
+- 首次连接时从 RouterOS 侧核对 SSH SHA256 主机密钥指纹；指纹变化会被阻断。
+- 不要启用 HTTP，除非明确接受 Basic Auth 凭据可被同网段被动读取的风险。
 - 如果 RouterOS SSH 设置了 `allowed-address`，把面板主机地址加入允许范围。
 - 不要把真实密码提交到 Git、截图或 issue。
 
-如果选择保存密码，请理解：RouterOS 登录信息会作为本地秘密保存在面板主机
-或容器数据卷里。只在你信任的单机或受控环境中保存。
+“记住设备资料”只保存地址、用户名、端口、REST 传输设置和 SSH 固定指纹；
+密码只保留在当前面板进程内，不写入设备资料文件。
 
 ## 它会做什么
 

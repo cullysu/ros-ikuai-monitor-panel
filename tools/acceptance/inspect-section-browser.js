@@ -110,15 +110,16 @@ async function inspectSectionBrowser(
     nativeDetailHasNovelEvidence,
     nativeDetailNoHomeReplay,
   } = await runOverviewMobileInteraction({ sectionName, sectionRoot, normalize });
+  const refreshedActive = document.querySelector('#app .section'), refreshedRequested = document.querySelector('#' + CSS.escape(sectionName)), refreshedSectionRoot = refreshedRequested || refreshedActive;
   const mobileNativeResult = inspectMobileNativeOverview({
     sectionName,
     scaleScenario,
     profile,
     viewport,
-    sectionRoot,
+    sectionRoot: refreshedSectionRoot,
     app,
-    active,
-    requested,
+    active: refreshedActive,
+    requested: refreshedRequested,
     root,
     overflowX,
     hasBadLiteral,
@@ -134,6 +135,24 @@ async function inspectSectionBrowser(
     nativeDetailNoHomeReplay,
   });
   if (mobileNativeResult) return mobileNativeResult;
+  if (sectionName === 'overview' && window.innerWidth >= 900) {
+    const desktopOverviewResult = inspectOverviewDesktopLayout({
+      sectionName,
+      scaleScenario,
+      profile,
+      viewport,
+      sectionRoot: refreshedSectionRoot,
+      app,
+      active: refreshedActive,
+      requested: refreshedRequested,
+      root,
+      overflowX,
+      hasBadLiteral,
+      scaleMetaOk,
+      normalize,
+    });
+    if (desktopOverviewResult?.surface === 'desktop-overview') return desktopOverviewResult;
+  }
   const detailSections = new Set(['interfaces', 'terminals', 'dhcp', 'trafficLoad']);
   const overviewSummaryShell = sectionRoot?.querySelector('.ro-status-bus');
   const overviewSummaryMain = overviewSummaryShell;
@@ -841,9 +860,9 @@ async function inspectSectionBrowser(
   const historyModeActive = trustMode?.getAttribute('data-overview-trust-mode') === 'history';
   const compactLandscapeOverview = sectionName === 'overview' &&
     window.innerWidth >= 600 &&
-    window.innerWidth <= 1199 &&
+    window.innerWidth <= 899 &&
     window.innerHeight <= 520;
-  const isMobileOverview = sectionName === 'overview' && window.innerWidth <= 1199;
+  const isMobileOverview = sectionName === 'overview' && window.innerWidth <= 899;
   const legacyMobileAcceptanceViewport = false;
   const mobileOverviewAppViewport = isMobileOverview;
   const mobileLandscapeAppRoot = compactLandscapeOverview

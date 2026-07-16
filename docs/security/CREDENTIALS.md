@@ -11,18 +11,29 @@ as sensitive.
 - If RouterOS SSH or API has `allowed-address`, allow only the panel host or
   the source address RouterOS sees from the panel container.
 
-## Saving Passwords
+## Password And Profile Storage
 
-Password saving is opt-in. If enabled, saved RouterOS logins are stored on the
-panel host or in the container data volume as local secrets. This is meant for a
-trusted single host or controlled LAN environment.
+The panel never writes RouterOS passwords to its saved-profile store. A saved
+profile contains the RouterOS address, REST/SSH ports, TLS-verification choice,
+username, and the explicitly verified SSH SHA-256 host-key fingerprint. A new
+process session requires the password again unless the operator supplies it
+through a protected deployment secret or environment file.
 
-Do not enable password saving on:
+Treat any file or secret store that supplies `ROS_MONITOR_ROUTER_PASSWORD` as a
+credential store: keep it outside Git, restrict filesystem permissions, and do
+not use it on shared or untrusted hosts.
 
-- shared desktops
-- untrusted VMs
-- public demo hosts
-- machines where other users can read the panel data directory
+## Transport Identity
+
+- RouterOS REST defaults to HTTPS with certificate verification enabled.
+- Plain HTTP and disabled TLS verification each require an explicit risk
+  acknowledgement; there is no automatic downgrade.
+- The host field accepts an IP address or hostname, not a URL, so the selected
+  transport cannot be silently reinterpreted.
+- First SSH contact stops before password authentication and shows the host-key
+  algorithm and SHA-256 fingerprint. Verify it through a separate trusted
+  channel before pinning it.
+- A later SSH host-key mismatch blocks the connection.
 
 ## Sharing Logs And Issues
 

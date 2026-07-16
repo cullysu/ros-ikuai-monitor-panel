@@ -174,8 +174,10 @@ Adapt names and subnets to your router. Do not reuse an existing subnet.
 /interface/bridge/port/add bridge=bridge-containers interface=veth-routeros-triage
 ```
 
-If your RouterOS API service is restricted by address, the container source IP
-must be allowed to read RouterOS. Do not broaden API access to the whole LAN.
+Enable RouterOS REST through the `www-ssl` service and restrict its source
+addresses to the container subnet. If RouterOS SSH or REST is restricted by
+address, the container source IP must be allowed to read RouterOS. Do not
+broaden either service to the whole LAN.
 
 ## Environment Template
 
@@ -191,11 +193,24 @@ must be allowed to read RouterOS. Do not broaden API access to the whole LAN.
 /container/envs/add list=routeros-triage-env key=ROS_MONITOR_ROUTER_HOST value=172.18.0.1
 /container/envs/add list=routeros-triage-env key=ROS_MONITOR_ROUTER_USER value=ros-panel-readonly
 /container/envs/add list=routeros-triage-env key=ROS_MONITOR_ROUTER_PASSWORD value=CHANGE_ME
+/container/envs/add list=routeros-triage-env key=ROS_MONITOR_ROUTER_REST_SCHEME value=https
+/container/envs/add list=routeros-triage-env key=ROS_MONITOR_ROUTER_REST_PORT value=443
+/container/envs/add list=routeros-triage-env key=ROS_MONITOR_ROUTER_REST_VERIFY_TLS value=1
+/container/envs/add list=routeros-triage-env key=ROS_MONITOR_INSECURE_REST_CONFIRMED value=0
+/container/envs/add list=routeros-triage-env key=ROS_MONITOR_SSH_HOST_KEY_FINGERPRINT value=""
 ```
 
-The password and forward token above are placeholders. Use a long random token
-for `ROS_PANEL_LOCALHOST_FORWARD_TOKEN`, pass the same value to the local
-forwarder helper, and do not store a privileged RouterOS password here.
+The password and forward token above are placeholders. An empty SSH fingerprint
+forces the first connection to stop before password authentication and display
+the RouterOS key for explicit verification and pinning. Use a long random token for
+`ROS_PANEL_LOCALHOST_FORWARD_TOKEN`, pass the same value to the local forwarder
+helper, and do not store a privileged RouterOS password here.
+
+Verified REST HTTPS is the default. If the RouterOS certificate is not trusted
+inside the container, install a suitable trust chain when practical. Plain HTTP
+or disabled certificate verification must never be a silent fallback; either
+requires `ROS_MONITOR_INSECURE_REST_CONFIRMED=1` after the operator accepts the
+credential-exposure or server-identity risk.
 
 ## Persistent Data Mount
 

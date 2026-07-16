@@ -19,6 +19,12 @@ on `main` until versioned releases are established.
 
 - Use a dedicated least-privilege RouterOS user.
 - Do not use RouterOS `admin`.
+- Keep RouterOS REST on verified HTTPS. Plain HTTP or disabled certificate
+  verification is an explicit, acknowledged risk and is never selected as a
+  silent fallback.
+- Verify and pin the RouterOS SSH SHA-256 host-key fingerprint before the first
+  password-authenticated SSH connection. Treat a changed key as a blocking
+  security event.
 - Keep panel credentials out of Git, issue text, screenshots, and logs.
 - For Docker, keep credentials in local env files, the panel data volume, or a
   secrets manager; do not bake credentials into images.
@@ -34,9 +40,10 @@ on `main` until versioned releases are established.
 
 ## Credential Storage
 
-If you choose to remember RouterOS logins in the panel, treat the panel host or
-container volume as a local secrets store. Saved credentials are meant for a
-trusted single host, not for shared untrusted machines.
+Saved RouterOS profiles contain connection metadata and a pinned SSH
+fingerprint, never the RouterOS password. Environment files or deployment
+secrets that prefill `ROS_MONITOR_ROUTER_PASSWORD` remain credential stores and
+must be protected accordingly.
 
 More detail: [docs/security/CREDENTIALS.md](./docs/security/CREDENTIALS.md).
 
