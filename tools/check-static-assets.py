@@ -70,7 +70,11 @@ def assert_built_assets() -> None:
         body = path.read_bytes()
         assert hashlib.sha256(body).hexdigest() == record["sha256"]
         assert record["file"] in index
-        assert gzip.decompress(Path(f"{path}.gz").read_bytes()) == body
+        gzip_body = Path(f"{path}.gz").read_bytes()
+        assert gzip.decompress(gzip_body) == body
+        assert gzip_body[:3] == b"\x1f\x8b\x08"
+        assert gzip_body[4:8] == b"\x00\x00\x00\x00"
+        assert gzip_body[9] == 255, "gzip OS header must be platform-neutral"
         assert Path(f"{path}.br").stat().st_size > 0
         assert record["gzipBytes"] == Path(f"{path}.gz").stat().st_size
         assert record["brotliBytes"] == Path(f"{path}.br").stat().st_size

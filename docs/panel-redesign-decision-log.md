@@ -2284,3 +2284,20 @@ readiness 证明发布证据形状完整，不保证 `.github/workflows/ci.yml` 
 这次日志修订会产生新提交，因此刚完成的候选再次降为历史证据。公开披露连接器仍拒绝源码写入、Docker daemon 仍不可用，Phase A 仍未完成；不得借用 shell token、其他连接器或临时分支绕过。
 
 心得：秘密扫描为零不代表公开披露审查通过。用户名、绝对路径、过期状态和内部工作站结构不会盗走账号，却会降低隐私和审计可信度；发布 Loop 必须给这些“非密钥敏感信息”留出人工复核层。
+
+
+## 第 68 步：第一次公开发布后，Linux CL 捕获了跨平台 gzip 字节不确定性
+
+GitHub Git Data 连接器恢复可用后，没有使用普通 `git push`。本轮按 blob → tree → commit → `force=false` ref 的原子事务发布：89 个变更路径对应 87 个唯一 blob，远端 tree 与本地候选 tree 完全一致；API 创建的提交 `d1de8653…` 被视为新身份，本地工作树先绑定到该身份并重新运行构建、66 项运行时浏览器检查、56 格手机矩阵、28 格总览、76 格响应切片、266 格路由状态矩阵和 readiness，随后才移动 `main`。
+
+精确 SHA 的远端结果没有被“已经上传”掩盖：
+
+- Windows packaging：通过；
+- GHCR / Container image：通过；
+- Linux validation：失败，失败步骤为“Build and verify committed frontend assets”。
+
+Linux 重新构建后，两个 `.gz` sidecar 与仓库提交字节不同，而未压缩 JS/CSS、Brotli sidecar、类型检查和后端契约均已通过。根因是 `node:zlib.gzipSync` 会在 gzip 头第 9 字节写入宿主操作系统标识；Windows 本地生成物和 Linux 运行器因此拥有相同解压内容、相同长度，却不是相同 Git blob。此前本地确定性检查只在同一操作系统重建，无法发现这一跨平台差异。
+
+修复不放宽 CI 的 `git diff --exit-code`，而是在构建器中把 gzip OS 字节规范化为 RFC 允许的 `255`（unknown / platform-neutral）。静态资产门禁同步新增三项硬检查：gzip magic 正确、MTIME 四字节为零、OS 字节必须为 255。重新构建后两个 sidecar 发生预期变化；下一提交必须再次按新 SHA 完整发布并等待 Linux、Windows、GHCR 三端结果。`d1de8653…` 只保留为“Windows 与容器通过、Linux 失败”的历史发布证据，不能称为最终成功版本。
+
+这不是目标级受阻。CL 失败已经给出可复现根因和直接修复路径，因此目标继续保持 `active`。心得：所谓“确定性构建”必须跨操作系统成立；仅在同一台 Windows 机器连续构建两次无差异，只能证明本机重复性，不能证明 Linux/Windows 的产物身份一致。

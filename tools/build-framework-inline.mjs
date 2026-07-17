@@ -84,6 +84,9 @@ for (const definition of [
   const file = `${definition.prefix}.${sha256.slice(0, 12)}.${definition.extension}`;
   const outputPath = resolve(frameworkDir, file);
   const gzip = gzipSync(body, { level: 9 });
+  // zlib writes the host OS into byte 9 of the gzip header. Normalize it so
+  // committed sidecars are byte-identical on Windows and Linux builders.
+  gzip[9] = 255;
   const brotli = brotliCompressSync(body, {
     params: {
       [zlibConstants.BROTLI_PARAM_MODE]: zlibConstants.BROTLI_MODE_TEXT,
