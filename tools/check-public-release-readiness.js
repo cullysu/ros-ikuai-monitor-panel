@@ -5,6 +5,7 @@ const fs = require('fs');
 const crypto = require('crypto');
 const path = require('path');
 const { spawnSync } = require('child_process');
+const { RUNTIME_SCREENSHOT_CONTRACT } = require('./runtime-screenshot-contract');
 
 const ROOT = path.resolve(__dirname, '..');
 const FULL_MATRIX_SCENARIOS = [
@@ -102,6 +103,13 @@ function readReleaseSurface(relPath) {
 function assertContains(relPath, needle, label = needle) {
   const text = readReleaseSurface(relPath);
   if (!text.includes(needle)) {
+    throw new Error(`${relPath} is missing ${label}`);
+  }
+}
+
+function assertMatches(relPath, pattern, label = pattern.toString()) {
+  const text = readReleaseSurface(relPath);
+  if (!pattern.test(text)) {
     throw new Error(`${relPath} is missing ${label}`);
   }
 }
@@ -338,6 +346,14 @@ function assertRuntimeBrowserReport(rootDir = ROOT) {
     'manual evidence disclosure survives viewport changes',
     'stable business identity preserves the exact object across snapshot reorder',
     'connections keeps its domain workspace and primary destination',
+    'routes opens a domain-specific evidence inspector',
+    'connections opens a domain-specific evidence inspector',
+    'dns4 opens a domain-specific evidence inspector',
+    'dns6 opens a domain-specific evidence inspector',
+    'security opens a domain-specific evidence inspector',
+    'terminals opens a domain-specific evidence inspector',
+    'logs opens a domain-specific evidence inspector',
+    'trafficLoad opens a domain-specific evidence inspector',
     'dns4 keeps its domain workspace and primary destination',
     'dns6 keeps its domain workspace and primary destination',
     'security keeps its domain workspace and primary destination',
@@ -352,26 +368,14 @@ function assertRuntimeBrowserReport(rootDir = ROOT) {
     'manual refresh remains operational while navigator reports offline',
     'tablet overview selects incident evidence beside the full object list without navigation',
     '768px tablet uses a persistent task rail with list and inspector',
-    '1024–1180 keeps the compact task workspace and 1181 switches once to desktop',
+    '1024–1365 keeps the compact task workspace and 1366 switches once to desktop',
     'desktop connection owns a dedicated workspace',
     'browser emitted no uncaught page errors',
   ];
   const checkNames = new Set(checks.map((check) => check?.name));
   const missingChecks = requiredChecks.filter((name) => !checkNames.has(name));
   const screenshotMetadata = Array.isArray(report.screenshotMetadata) ? report.screenshotMetadata : [];
-  const requiredScreenshots = [
-    { state: 'mobile-connection', file: 'mobile-connection.png', viewport: { width: 390, height: 844 } },
-    { state: 'mobile-ssh-host-key-confirmation', file: 'mobile-ssh-host-key-confirmation.png', viewport: { width: 390, height: 844 } },
-    { state: 'mobile-runtime-current', file: 'mobile-runtime-current.png', viewport: { width: 390, height: 844 } },
-    { state: 'mobile-network-object', file: 'mobile-network-object.png', viewport: { width: 390, height: 844 } },
-    { state: 'mobile-runtime-text-200', file: 'mobile-runtime-text-200.png', viewport: { width: 390, height: 844 } },
-    { state: 'mobile-runtime-stale', file: 'mobile-runtime-stale.png', viewport: { width: 390, height: 844 } },
-    { state: 'tablet-overview-master-detail-768', file: 'tablet-overview-master-detail-768.png', viewport: { width: 768, height: 1024 } },
-    { state: 'tablet-network-768', file: 'tablet-network-768.png', viewport: { width: 768, height: 1024 } },
-    { state: 'tablet-network-844', file: 'tablet-network-844.png', viewport: { width: 844, height: 1024 } },
-    { state: 'tablet-desktop-boundary-1181', file: 'tablet-desktop-boundary-1181.png', viewport: { width: 1181, height: 820 } },
-    { state: 'desktop-connection', file: 'desktop-connection.png', viewport: { width: 1366, height: 768 } },
-  ];
+  const requiredScreenshots = RUNTIME_SCREENSHOT_CONTRACT;
   const metadataStates = screenshotMetadata.map((item) => item?.state);
   const metadataByState = new Map(screenshotMetadata.map((item) => [item?.state, item]));
   const screenshotErrors = [];
@@ -642,6 +646,7 @@ function main(argv = process.argv.slice(2)) {
   assertNotContains('Dockerfile', 'ROS_PANEL_LOCALHOST_FORWARD_TOKEN=', 'forward token baked into image defaults');
   assertContains('Dockerfile', 'ROS_PANEL_LOCAL_SETTINGS_WRITE_ENABLED=0');
   assertContains('Dockerfile', 'chown -R root:root /app');
+  assertContains('Dockerfile', 'COPY panel_backend ./panel_backend');
   assertContains('Dockerfile', 'chown panel:panel /app/data');
   assertContains('Dockerfile', 'chmod 0750 /app/data');
   assertContains('compose.yml', 'read_only: true');
@@ -727,12 +732,22 @@ function main(argv = process.argv.slice(2)) {
   assertContains('src/panel-framework/mobile/MobilePatrolTraffic.tsx', '<title id="mp-traffic-chart-title">');
   assertContains('src/panel-framework/mobile/MobilePatrolTraffic.tsx', '<desc id="mp-traffic-chart-desc">');
   assertContains('src/panel-framework/mobile/MobileDomainWorkspace.tsx', 'type="search"');
-  assertContains('src/panel-framework/mobile/MobileDomainWorkspace.tsx', 'data-mobile-object-detail');
+  assertContains('src/panel-framework/mobile/mobile-inspector/MobileDomainInspector.tsx', 'data-mobile-object-detail');
   assertContains('src/panel-framework/mobile/MobileDomainWorkspace.tsx', 'pageSize = 20');
   assertContains('src/panel-framework/mobile/mobileDomainWorkspaceModel.ts', 'window.history.pushState');
   assertContains('src/panel-framework/mobile/mobileDomainWorkspaceModel.ts', 'window.addEventListener("popstate"');
   assertContains('src/panel-framework/mobile/mobileDomainDefinitions.ts', 'domainDefinitionFor');
   assertContains('src/panel-framework/mobile/mobileDomainDefinitions.ts', 'sortWorkspaceRows');
+  assertContains('src/panel-framework/sections/DesktopDomainWorkspace.tsx', 'data-desktop-domain-workspace');
+  assertContains('src/panel-framework/sections/DesktopDomainWorkspace.tsx', 'type="search"');
+  assertContains('src/panel-framework/sections/DesktopDomainWorkspace.tsx', 'filterWorkspaceRows');
+  assertContains('src/panel-framework/sections/DesktopDomainWorkspace.tsx', 'sortWorkspaceRows');
+  assertContains('src/panel-framework/sections/DesktopDomainInspector.tsx', 'data-desktop-object-detail');
+  assertContains('src/panel-framework/sections/DesktopDomainInspector.tsx', 'InterfaceEvidence');
+  assertContains('src/panel-framework/sections/DesktopDomainInspector.tsx', 'LogEvidence');
+  assertNotContains('src/panel-framework/sections/OperationalSectionPage.tsx', 'DataTable', 'retired generic desktop data table');
+  assertContains('src/panel-framework/mobile/mobileDomainWorkspaceModel.ts', 'panelObject');
+  assertNotContains('src/panel-framework/mobile/mobileDomainWorkspaceModel.ts', 'mobileObject', 'surface-specific history state');
   assertContains('src/panel-framework/sections/panelObjectIdentity.ts', 'stablePanelObjectId');
   assertContains('src/panel-framework/sections/panelObjectIdentity.ts', 'panelObjectIdForValues');
   assertContains('.agents/skills/router-panel-product-loop/SKILL.md', 'emil-design-engineering.md');
@@ -751,7 +766,7 @@ function main(argv = process.argv.slice(2)) {
   assertContains('src/panel-framework/overview/desktop-overview/DesktopWanEvidence.tsx', '<desc id={descId}>');
 
   assertContains('src/panel-framework/overview/evidence-model/overviewEvidenceTypes.ts', '"current" | "historical" | "unavailable"');
-  assertContains('src/panel-framework/overview/evidence-model/buildOverviewEvidenceModel.ts', 'route.active === true && route.disabled !== true');
+  assertContains('src/panel-framework/overview/deriveOverviewState.ts', 'route.active === true && route.disabled !== true');
   assertContains('src/panel-framework/overview/evidence-model/buildOverviewInstruments.ts', 'if (rowDown === null || rowUp === null) return null;');
   assertContains('src/panel-framework/overview/evidence-model/buildOverviewEvidenceModel.ts', 'observed.length - 1');
   assertContains('src/panel-framework/overview/evidence-model/buildOverviewInstruments.ts', 'Math.abs(snapshotAt - last.timestamp)');
@@ -772,7 +787,9 @@ function main(argv = process.argv.slice(2)) {
   assertContains('.github/workflows/ci.yml', '--sections public-release');
   assertContains('.github/workflows/ci.yml', '_acceptance/route-matrix-${{ github.sha }}');
   assertContains('.github/workflows/ci.yml', 'npm run check:runtime-browser');
+  assertContains('tools/check-panel-runtime-browser.js', 'desktop object inspector preserves Back and Forward history');
   assertContains('.github/workflows/ci.yml', 'python tools/check-backend-security.py');
+  assertContains('.github/workflows/ci.yml', 'python tools/check-static-assets.py');
 
   for (const inspector of [
     'tools/local-predeploy-check.js',
@@ -809,6 +826,10 @@ function main(argv = process.argv.slice(2)) {
   assertContains('public/index.html', 'data-deploy-channel="public"');
   assertContains('public/index.html', 'data-overview-framework-asset="style"');
   assertContains('public/index.html', 'data-overview-framework-asset="script"');
+  assertMatches('public/index.html', /\/assets\/framework\/style\.[0-9a-f]{12}\.css/, 'content-addressed framework style URL');
+  assertMatches('public/index.html', /\/assets\/framework\/panel-framework\.[0-9a-f]{12}\.js/, 'content-addressed framework script URL');
+  assertNotContains('public/index.html', 'http-equiv="Cache-Control"', 'cache-control meta override');
+  assertContains('public/assets/framework/manifest.json', '"version": 1');
   assertNotContains('public/index.html', 'layout-whitespace-patch.js');
   assertNotContains('public/index.html', 'readonly-diagnostics.js');
   assertContains('vite.config.ts', 'publicDir: false');
@@ -819,25 +840,43 @@ function main(argv = process.argv.slice(2)) {
   assertContains('panel_backend/api_schema.py', 'Request JSON body must be an object');
   assertContains('panel_backend/collector_transport.py', 'allow_redirects=False');
   assertContains('panel_backend/collector_evidence.py', 'class ConnectionEvidenceParser');
+  assertContains('panel_backend/collector_service.py', 'class CollectorServiceMixin');
+  assertContains('panel_backend/collector_service.py', 'def update_state(self, fresh_counter_sample=False):');
+  assertContains('panel_backend/snapshot_builder.py', 'class SnapshotBuilderMixin');
+  assertContains('panel_backend/snapshot_builder.py', 'def build_snapshot(self, rest, ssh, fresh_counter_sample=False):');
+  assertContains('app.py', 'class Collector(SnapshotBuilderMixin, CollectorServiceMixin)');
+  assertNotContains('app.py', 'def build_maps(self, rest):', 'embedded snapshot builder');
+  assertNotContains('app.py', 'def update_state(self, fresh_counter_sample=False):', 'embedded collector service');
+  assertContains('panel_backend/static_assets.py', 'public, max-age=31536000, immutable');
+  assertContains('panel_backend/static_assets.py', 'vary_accept_encoding');
+  assertContains('panel_backend/http_dispatcher.py', 'class PanelRequestHandler(BaseHTTPRequestHandler)');
+  assertContains('app.py', 'Handler = create_panel_handler(sys.modules[__name__])');
+  assertNotContains('app.py', 'class Handler(BaseHTTPRequestHandler)', 'embedded HTTP dispatcher');
+  assertContains('panel_backend/http_dispatcher.py', 'resolve_static_asset(');
+  assertContains('panel_backend/http_dispatcher.py', 'self.headers.get("If-None-Match")');
+  assertContains('panel_backend/http_dispatcher.py', '"Cache-Control", asset.cache_control');
+  assertContains('tools/build-framework-inline.mjs', 'brotliCompressSync');
+  assertContains('tools/build-framework-inline.mjs', 'manifest.json');
+  assertContains('tools/check-static-assets.py', 'assert_built_assets');
   assertContains('tools/check-backend-security.py', 'assert_collector_transport_contract');
   assertContains('tools/check-backend-security.py', 'assert_api_schema_contract');
 
-  assertContains('app.py', 'private_public_assets = {"readonly-diagnostics.js"}', 'readonly diagnostics stays private in public profile');
-  assertContains('app.py', 'if PUBLIC_ROUTEROS_PROFILE and asset_name in self.private_public_assets:', 'public static boundary for readonly diagnostics');
-  assertContains('app.py', '/api/readonly-diagnostics', 'readonly diagnostics API route remains present');
-  assertContains('app.py', 'readonly diagnostics are private in the public RouterOS profile', 'readonly diagnostics API still returns 403 in public profile');
-  assertContains('app.py', 'code="private_diagnostics_disabled"', 'readonly diagnostics 403 code remains explicit');
+  assertContains('panel_backend/http_dispatcher.py', 'private_public_assets = {"readonly-diagnostics.js"}', 'readonly diagnostics stays private in public profile');
+  assertContains('panel_backend/http_dispatcher.py', 'if self.runtime.PUBLIC_ROUTEROS_PROFILE and asset_name in self.private_public_assets:', 'public static boundary for readonly diagnostics');
+  assertContains('panel_backend/http_dispatcher.py', '/api/readonly-diagnostics', 'readonly diagnostics API route remains present');
+  assertContains('panel_backend/http_dispatcher.py', 'readonly diagnostics are private in the public RouterOS profile', 'readonly diagnostics API still returns 403 in public profile');
+  assertContains('panel_backend/http_dispatcher.py', 'code="private_diagnostics_disabled"', 'readonly diagnostics 403 code remains explicit');
   assertContains('tools/local-predeploy-check.js', "const privatePublicAsset = publicRouterosProfile && asset === 'readonly-diagnostics.js';", 'predeploy checker must keep readonly diagnostics asset private');
   assertContains('tools/local-predeploy-check.js', 'privatePublicAsset ? result.response.status === 403 : result.response.ok && result.text.length > 1000', 'public asset check must preserve the 403 gate');
   assertContains('tools/local-predeploy-check.js', "diag.response.status === 403 && diag.json.code === 'private_diagnostics_disabled'", 'public readonly diagnostics API check must preserve the 403 code');
   assertContains('tools/local-predeploy-check.js', 'local server logs stay free of socket reset noise');
   assertContains('tools/local-predeploy-check.js', 'ConnectionResetError');
   assertContains('tools/local-predeploy-check.js', 'BrokenPipeError');
-  assertContains('app.py', 'rawOrder');
-  assertContains('app.py', 'connection-mark');
-  assertContains('app.py', 'packet-mark');
-  assertContains('app.py', 'routing-mark');
-  assertContains('app.py', 'passthrough');
+  assertContains('panel_backend/snapshot_builder.py', 'rawOrder');
+  assertContains('panel_backend/snapshot_builder.py', 'connection-mark');
+  assertContains('panel_backend/snapshot_builder.py', 'packet-mark');
+  assertContains('panel_backend/snapshot_builder.py', 'routing-mark');
+  assertContains('panel_backend/snapshot_builder.py', 'passthrough');
 
   if (args.staticOnly) {
     console.log('[ok] static public release readiness markers are present');

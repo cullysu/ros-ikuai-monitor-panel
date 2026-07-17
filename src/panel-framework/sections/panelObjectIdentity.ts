@@ -15,6 +15,92 @@ function shortHash(value: string): string {
   return (hash >>> 0).toString(36);
 }
 
+type RawRowValues = Record<string, unknown>;
+
+function rawIdentityString(...values: unknown[]): string {
+  for (const value of values) {
+    if (typeof value === "string" && value.trim()) return value.trim();
+    if (typeof value === "number" && Number.isFinite(value)) return String(value);
+    if (typeof value === "boolean") return value ? "true" : "false";
+  }
+  return "";
+}
+
+function canonicalRawIdentity(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(canonicalRawIdentity);
+  if (value && typeof value === "object") {
+    const source = value as RawRowValues;
+    return Object.fromEntries(Object.keys(source).sort().map((key) => [key, canonicalRawIdentity(source[key])]));
+  }
+  if (typeof value === "number") return Number.isFinite(value) ? value : null;
+  if (typeof value === "string" || typeof value === "boolean" || value === null) return value;
+  return null;
+}
+
+export function panelObjectIdentityPartsForRaw(
+  route: PanelRouteId,
+  table: string,
+  row: RawRowValues,
+): string[] {
+  const immutableId = rawIdentityString(row.id, row[".id"]);
+  if (immutableId) return [immutableId];
+
+  let parts: string[];
+  if (route === "interfaces") {
+    parts = [rawIdentityString(row.name, row.interface), rawIdentityString(row.type), rawIdentityString(row.parent, row.master, row.bridge)];
+  } else if (route === "lineStatus") {
+    parts = [rawIdentityString(row.name, row.interface), rawIdentityString(row.parent), rawIdentityString(row.access, row.kind)];
+  } else if (route === "terminals") {
+    parts = [rawIdentityString(row.mac, row.macAddress), rawIdentityString(row.ip, row.address), rawIdentityString(row.hostname, row.displayName, row.name)];
+  } else if (route === "dhcp" && table === "地址租约") {
+    parts = [rawIdentityString(row.macAddress, row.mac, row.address), rawIdentityString(row.server)];
+  } else if (route === "dhcp") {
+    parts = [rawIdentityString(row.interface), rawIdentityString(row.server)];
+  } else if (route === "arp") {
+    parts = [rawIdentityString(row.mac, row.macAddress, row.ip, row.address), rawIdentityString(row.interface), rawIdentityString(row.type, row.level)];
+  } else if (route === "routes") {
+    parts = [
+      rawIdentityString(row.dstAddress, row.destination, row.default === true ? "0.0.0.0/0" : ""),
+      rawIdentityString(row.gateway, row.gatewayStatus),
+      rawIdentityString(row.table, row.routingTable, "main"),
+      rawIdentityString(row.distance),
+      rawIdentityString(row.protocol, row.origin),
+      rawIdentityString(row.scope),
+      rawIdentityString(row.prefSrc, row.preferredSource),
+      rawIdentityString(row.routingMark),
+      rawIdentityString(row.interface),
+      rawIdentityString(row.comment),
+    ];
+  } else if (route === "balance" && table === "默认路由") {
+    parts = [rawIdentityString(row.dstAddress, row.destination, "0.0.0.0/0"), rawIdentityString(row.gateway), rawIdentityString(row.table, row.routingTable, "main"), rawIdentityString(row.distance), rawIdentityString(row.protocol, row.origin)];
+  } else if (route === "balance") {
+    parts = [rawIdentityString(row.chain), rawIdentityString(row.action), rawIdentityString(row.newRoutingMark, row.table, row.routingMark), rawIdentityString(row.inInterface, row.outInterface, row.interface), rawIdentityString(row.comment), rawIdentityString(row.rawOrder, row.order)];
+  } else if (route === "trafficLoad" || route === "loadAudit") {
+    parts = [rawIdentityString(row.key, row.series)];
+  } else if (route === "connections" || route === "trafficAudit") {
+    parts = [
+      rawIdentityString(row.source, row.localIp, row.srcAddress, row.src, row.ip, row.name),
+      rawIdentityString(row.destination, row.remoteIp, row.dstAddress, row.dst),
+      rawIdentityString(row.protocol, row.label),
+      rawIdentityString(row.sourcePort, row.srcPort),
+      rawIdentityString(row.destinationPort, row.dstPort),
+    ];
+  } else if (route === "logs" || route === "serviceLogs") {
+    parts = [rawIdentityString(row.time, row.timestamp), rawIdentityString(row.group), rawIdentityString(row.topics), rawIdentityString(row.message)];
+  } else if (route === "dns4" || route === "dns6") {
+    parts = [rawIdentityString(row.name, row.interface), rawIdentityString(row.type, row.prefix), rawIdentityString(row.value, row.address, row.dnsServers), rawIdentityString(row.route, row.addDefaultRoute)];
+  } else if (route === "security" && table === "安全告警") {
+    parts = [rawIdentityString(row.time, row.lastConfirmed), rawIdentityString(row.affected, row.topics), rawIdentityString(row.abnormal, row.message)];
+  } else if (route === "security") {
+    parts = [rawIdentityString(row.rawOrder, row.order), rawIdentityString(row.chain), rawIdentityString(row.action), rawIdentityString(row.comment), rawIdentityString(row.srcAddress), rawIdentityString(row.dstAddress), rawIdentityString(row.protocol)];
+  } else if (route === "readonlyDiagnostics") {
+    parts = [rawIdentityString(row.group), rawIdentityString(row.name), rawIdentityString(row.at), rawIdentityString(row.message)];
+  } else {
+    parts = [table, JSON.stringify(canonicalRawIdentity(row))];
+  }
+  return parts.some(Boolean) ? parts : [table, JSON.stringify(canonicalRawIdentity(row))];
+}
+
 export function stablePanelObjectId(
   route: PanelRouteId,
   kind: string,
@@ -85,7 +171,9 @@ export function panelObjectIdForValues(
   route: PanelRouteId,
   table: string,
   values: RowValues,
+  identityParts?: readonly unknown[],
 ): string {
   const identity = panelObjectIdentity(route, table, values);
-  return stablePanelObjectId(route, identity.kind, identity.parts);
+  const parts = identityParts?.some((part) => normalizePart(part)) ? identityParts : identity.parts;
+  return stablePanelObjectId(route, identity.kind, parts);
 }

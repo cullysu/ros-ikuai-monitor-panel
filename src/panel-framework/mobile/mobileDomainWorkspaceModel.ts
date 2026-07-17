@@ -10,23 +10,13 @@ import {
   UsersRound,
   type LucideIcon,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { OverviewTone } from "../overview";
 import { PANEL_ROUTES, type PanelRouteId, type PanelWorkspaceGroup } from "../routes/panelRoutes";
-import type { SectionColumn, SectionModel } from "../sections/sectionModels";
-import { panelObjectIdForValues } from "../sections/panelObjectIdentity";
+export { rowsFromModel, type WorkspaceRow } from "./mobileWorkspaceRows";
 
 
-export interface WorkspaceRow {
-  id: string;
-  table: string;
-  columns: SectionColumn[];
-  values: Record<string, string>;
-  primary: string;
-  secondary: string;
-  trailing: string;
-  searchText: string;
-}
+
 
 
 const WORKSPACE_DEFINITIONS: Partial<Record<PanelWorkspaceGroup, {
@@ -104,7 +94,6 @@ export const MORE_ROUTES = MORE_ROUTE_CATALOG.filter(
 );
 
 
-export const ATTENTION_PATTERN = /未运行|停用|异常|失败|错误|警告|离线|不可用|critical|error|warning|down|offline|failed/i;
 
 export function routeTabs(route: PanelRouteId): Array<{ route: PanelRouteId; label: string }> {
   return WORKSPACE_DEFINITIONS[PANEL_ROUTES[route].workspaceGroup]?.routes || [];
@@ -131,77 +120,7 @@ export function toneIcon(tone: OverviewTone) {
   return ShieldCheck;
 }
 
-export function rowsFromModel(route: PanelRouteId, model: SectionModel): WorkspaceRow[] {
-  const result: WorkspaceRow[] = [];
-  const identityCounts = new Map<string, number>();
-  model.tables.forEach((table) => {
-    table.rows.forEach((values) => {
-      const ordered = table.columns.map((column) => values[column.key] || "—");
-      let primary = ordered[0] || "未命名对象";
-      let secondary = ordered[1] || table.title;
-      const statusColumn = table.columns.find((column) => column.key === "status" || column.key === "topics");
-      let trailing = statusColumn ? values[statusColumn.key] || "—" : ordered[ordered.length - 1] || "—";
 
-      if (route === "logs" || route === "serviceLogs") {
-        primary = values.message || primary;
-        secondary = values.time || secondary;
-        trailing = values.topics || trailing;
-      } else if (route === "connections") {
-        primary = values.source || primary;
-        secondary = values.target || secondary;
-        trailing = values.traffic || trailing;
-      } else if (route === "trafficAudit") {
-        const target = values.target && values.target !== "未记录" ? values.target : "";
-        primary = target || values.source || primary;
-        secondary = values.connections && values.connections !== "—"
-          ? `${values.connections} 个连接`
-          : values.source || secondary;
-        trailing = values.traffic || trailing;
-      } else if (route === "security" && table.title === "防火墙规则") {
-        const chain = values.chain && values.chain !== "—" ? values.chain : "";
-        const action = values.action && values.action !== "—" ? values.action : "";
-        primary = values.comment && !/^(?:—|未记录)$/.test(values.comment)
-          ? values.comment
-          : [chain, action].filter(Boolean).join(" / ") || primary;
-        secondary = [chain, action].filter(Boolean).join(" · ") || secondary;
-        trailing = values.order && !/^(?:—|未记录)$/.test(values.order)
-          ? `#${values.order}`
-          : action || trailing;
-      } else if (route === "security" && table.title === "安全告警") {
-        primary = values.message || primary;
-        secondary = [values.time, values.scope].filter((value) => value && value !== "—").join(" · ") || secondary;
-        trailing = values.scope || trailing;
-      } else if (route === "dhcp" && table.title === "地址租约") {
-        primary = values.host || primary;
-        secondary = [values.address, values.mac].filter((value) => value && value !== "—").join(" · ") || secondary;
-        trailing = values.status || trailing;
-      } else if (route === "dhcp" && table.title === "DHCP 客户端") {
-        primary = values.interface || primary;
-        secondary = values.route && values.route !== "—" ? `默认路由 ${values.route}` : secondary;
-        trailing = values.status || trailing;
-      } else if ((route === "trafficLoad" || route === "loadAudit") && values.series) {
-        primary = values.series;
-        secondary = values.samples || secondary;
-        trailing = values.latest || trailing;
-      }
-
-      const baseId = panelObjectIdForValues(route, table.title, values);
-      const occurrence = identityCounts.get(baseId) || 0;
-      identityCounts.set(baseId, occurrence + 1);
-      result.push({
-        id: occurrence ? `${baseId}-duplicate-${occurrence + 1}` : baseId,
-        table: table.title,
-        columns: table.columns,
-        values,
-        primary,
-        secondary,
-        trailing,
-        searchText: Object.values(values).join(" ").toLocaleLowerCase(),
-      });
-    });
-  });
-  return result;
-}
 
 
 function selectedObjectFromUrl(): string {
@@ -227,22 +146,27 @@ export function useObjectHistory(route: PanelRouteId) {
     return () => window.removeEventListener("popstate", sync);
   }, [route]);
 
-  const open = (id: string) => {
-    const state = { ...(window.history.state || {}), mobileObject: id };
+  const open = useCallback((id: string) => {
+    const state = { ...(window.history.state || {}), panelObject: id };
     window.history.pushState(state, "", objectUrl(id));
     window.dispatchEvent(new PopStateEvent("popstate", { state }));
-  };
+  }, []);
 
-  const close = () => {
-    if (window.history.state?.mobileObject === selectedId) {
+  const replace = useCallback((id: string | null) => {
+    const state = { ...(window.history.state || {}) };
+    if (id) state.panelObject = id;
+    else delete state.panelObject;
+    window.history.replaceState(state, "", objectUrl(id));
+    window.dispatchEvent(new PopStateEvent("popstate", { state }));
+  }, []);
+
+  const close = useCallback(() => {
+    if (window.history.state?.panelObject === selectedId) {
       window.history.back();
       return;
     }
-    const state = { ...(window.history.state || {}) };
-    delete state.mobileObject;
-    window.history.replaceState(state, "", objectUrl(null));
-    window.dispatchEvent(new PopStateEvent("popstate", { state }));
-  };
+    replace(null);
+  }, [replace, selectedId]);
 
-  return { selectedId, open, close };
+  return { selectedId, open, replace, close };
 }

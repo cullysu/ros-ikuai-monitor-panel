@@ -181,6 +181,27 @@ async function inspectSectionBrowser(
     table.querySelector('h2') &&
     (table.querySelector('tbody tr') || table.querySelector('.panel-empty-state'))
   ));
+  const desktopDomainWorkspace = desktopDomainRoot?.querySelector(
+    '[data-desktop-domain-workspace="' + CSS.escape(sectionName) + '"]'
+  );
+  const desktopWorkspaceHeaders = Array.from(desktopDomainWorkspace?.querySelectorAll('.ddw-table-pane th') || [])
+    .map((node) => normalize(node.textContent));
+  const desktopWorkspaceRows = desktopDomainWorkspace?.querySelectorAll('.ddw-table-pane tbody tr').length || 0;
+  const desktopWorkspaceEmpty = desktopDomainWorkspace?.querySelector('.ddw-empty');
+  const desktopWorkspaceInspector = desktopDomainWorkspace?.querySelector('.ddw-inspector');
+  const desktopDomainWorkspaceOk = Boolean(
+    desktopDomainWorkspace &&
+    desktopDomainWorkspace.querySelector('.ddw-search input[type="search"]') &&
+    desktopDomainWorkspace.querySelector('.ddw-filters button') &&
+    desktopDomainWorkspace.querySelector('.ddw-sort select') &&
+    ['对象', '来源', '状态', '关键证据'].every((label) => desktopWorkspaceHeaders.includes(label)) &&
+    (desktopWorkspaceRows > 0 || desktopWorkspaceEmpty) &&
+    desktopWorkspaceInspector &&
+    (desktopWorkspaceRows === 0 || (
+      desktopWorkspaceInspector.hasAttribute('data-desktop-object-detail') &&
+      desktopWorkspaceInspector.querySelector('.ddi-block')
+    ))
+  );
   const operationalRouteContractOk = !operationalRoute || Boolean(
     sectionRoot && operationalTitle && (
       mobileDomainRoot
@@ -196,8 +217,7 @@ async function inspectSectionBrowser(
           : desktopDomainRoot?.getAttribute('data-panel-route-content') === sectionName &&
             /^(current|historical|unavailable)$/.test(desktopDomainRoot.getAttribute('data-panel-evidence-mode') || '') &&
             desktopDomainRoot.querySelectorAll('.panel-section-metrics > div').length === 3 &&
-            operationalTables.length > 0 &&
-            operationalTablesValid &&
+            (desktopDomainWorkspaceOk || (operationalTables.length > 0 && operationalTablesValid)) &&
             Boolean(desktopDomainRoot.querySelector('.panel-readonly-footer'))
     )
   );
@@ -207,8 +227,12 @@ async function inspectSectionBrowser(
     mobileDomainRoot
       ? mobileDomainRoot.querySelector('.mdw-object-list, .mdw-empty')
       : desktopDomainRoot?.getAttribute('data-panel-evidence-mode') === 'unavailable'
-        ? desktopDomainRoot.querySelector('.panel-section-table .panel-empty-state')
-        : ['接口', '类型 / 角色', '状态', '上级', '接收 / 发送'].every((label) => currentInterfaceHeaders.includes(label))
+        ? desktopDomainRoot.querySelector('.panel-section-table .panel-empty-state, .ddw-empty')
+        : desktopDomainWorkspace
+          ? desktopWorkspaceRows > 0 &&
+            desktopWorkspaceInspector?.getAttribute('data-domain-inspector-kind') === 'interface' &&
+            desktopWorkspaceInspector.querySelectorAll('.ddi-block').length >= 4
+          : ['接口', '类型 / 角色', '状态', '上级', '接收 / 发送'].every((label) => currentInterfaceHeaders.includes(label))
   );
   const singleRouteEvidence = {
     interfaces: ['pppoe-wan1'],
@@ -6010,6 +6034,10 @@ async function inspectSectionBrowser(
     resourceColumns,
     detailFeedbackOk,
     operationalRouteContractOk,
+    desktopDomainWorkspaceOk,
+    desktopWorkspaceHeaders,
+    desktopWorkspaceRows,
+    desktopWorkspaceInspectorKind: desktopWorkspaceInspector?.getAttribute('data-domain-inspector-kind') || '',
     operationalDataFidelityOk,
     requiredRouteEvidence,
     operationalTextExcerpt: operationalRoute ? text.slice(0, 2000) : '',

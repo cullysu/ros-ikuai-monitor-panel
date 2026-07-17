@@ -79,14 +79,38 @@ function snapshotTrustText(state: OverviewDerivedState): string {
 }
 
 export function buildRouterOsTrustModel(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): RouterOsTrustModel {
-  const totalWan = Math.max(state.facts.wan.total || wanRows(snapshot).length, state.facts.wan.allOffline ? 8 : 0);
+  const totalWan = state.facts.wan.total;
   const noSnapshot = state.scenario === "no-snapshot";
+  const forwardingUnknown = noSnapshot ||
+    !state.facts.wan.available ||
+    state.facts.wan.unknown > 0 ||
+    !state.facts.interfaces.available ||
+    state.facts.interfaces.unknown > 0;
+  const routeUnknown = !state.facts.route.verified;
   const forwarding: RouterOsTrustPlane = {
     id: "forwarding",
     label: "转发面",
-    value: noSnapshot ? "不可判" : state.facts.wan.allOffline ? "不可用" : state.facts.interfaces.down > 0 ? "待确认" : "可用",
-    note: noSnapshot ? "无业务快照" : state.facts.wan.allOffline ? `WAN 0/${formatNumber(totalWan)}` : `WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(totalWan || 1)}`,
-    tone: noSnapshot ? "missing" : state.facts.wan.allOffline ? "danger" : state.facts.interfaces.down > 0 ? "warn" : "ok",
+    value: forwardingUnknown
+      ? "不可判"
+      : state.facts.wan.allOffline
+        ? "不可用"
+        : state.facts.interfaces.down > 0 || routeUnknown
+          ? "待确认"
+          : "可用",
+    note: forwardingUnknown
+      ? state.facts.collection.businessEvidenceText
+      : state.facts.wan.allOffline
+        ? `WAN 0/${formatNumber(totalWan)}`
+        : routeUnknown
+          ? "默认路由未核实"
+          : `WAN ${formatNumber(state.facts.wan.online)}/${formatNumber(totalWan)}`,
+    tone: forwardingUnknown
+      ? "missing"
+      : state.facts.wan.allOffline
+        ? "danger"
+        : state.facts.interfaces.down > 0 || routeUnknown
+          ? "warn"
+          : "ok",
   };
   const collection: RouterOsTrustPlane = {
     id: "collection",
@@ -105,9 +129,15 @@ export function buildRouterOsTrustModel(snapshot: OverviewRawSnapshot, state: Ov
   const business: RouterOsTrustPlane = {
     id: "business",
     label: "业务面",
-    value: state.scenario === "no-snapshot" ? "不展示" : state.facts.wan.allOffline ? "中断" : "可判",
-    note: state.scenario === "no-snapshot" ? "无快照" : state.facts.wan.allOffline ? "出口全断" : "指标可用",
-    tone: state.scenario === "no-snapshot" ? "missing" : state.facts.wan.allOffline ? "danger" : "trust",
+    value: noSnapshot || forwardingUnknown ? "不可判" : state.facts.wan.allOffline ? "出口中断" : "未独立测量",
+    note: noSnapshot
+      ? "无快照"
+      : forwardingUnknown
+        ? "转发对象证据不完整"
+        : state.facts.wan.allOffline
+          ? "只证明出口对象未运行"
+          : "不由管理面与转发面推断终端业务",
+    tone: state.facts.wan.allOffline && !forwardingUnknown ? "danger" : "missing",
   };
   return {
     forwarding,

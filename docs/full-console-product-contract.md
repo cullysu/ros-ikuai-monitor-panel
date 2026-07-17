@@ -29,7 +29,7 @@ The previous overview-only matrices are retained as regression evidence for the 
 
 ## Route contract
 
-The legacy 18 identifiers remain valid deep links. They are grouped into task-oriented navigation rather than presented as eighteen equal top-level destinations.
+All 19 formal route identifiers remain valid deep links. They are grouped into task-oriented navigation rather than presented as nineteen equal top-level destinations.
 
 | Route | Product destination | Primary snapshot/API evidence | Mobile task group |
 |---|---|---|---|
@@ -56,12 +56,12 @@ Unknown routes resolve to `overview` and replace the invalid URL; they never dis
 
 ## Navigation behavior
 
-- The canonical URL is the hash route, for example `#interfaces`.
-- `?section=` is accepted only as a compatibility input and normalized to the canonical hash.
+- The canonical deep link keeps route state in both `?section=interfaces` and `#interfaces`; the hash wins when the two disagree.
+- Route changes update both representations together so reload, copied links, and older `?section=` links resolve to the same destination.
 - Clicking navigation pushes browser history.
 - Back/Forward restores route and focus.
 - Reloading a deep link renders that route directly.
-- Desktop rail/sidebar and mobile task navigation are views of the same route state.
+- Desktop back/object commands and compact task navigation consume the same route and object-history state, while keeping separate presentation trees.
 - Active navigation state is derived from the router; legacy scripts may not self-assign active state.
 
 ## Connection and runtime state
@@ -76,21 +76,21 @@ Unknown routes resolve to `overview` and replace the invalid URL; they never dis
 
 `idle -> loading -> current -> refreshing`
 
-Transitions may also enter `stale`, `offline`, `error`, or `recovering`. A last known snapshot may remain visible only with an explicit historical/stale boundary.
+Transitions may also enter `stale`, `error`, or `recovering`. A last known snapshot may remain visible only with an explicit historical/stale boundary. `navigator.onLine` is never a formal snapshot state.
 
 ### Refresh rules
 
 - Poll interval comes from validated snapshot metadata, clamped to a safe range.
 - Manual refresh is always available on operational routes.
 - Visibility restoration refreshes immediately when the last successful request is old enough.
-- Browser `online` triggers recovery; `offline` stops current claims.
+- Browser `online` and `offline` events are hints that trigger status messaging or recovery attempts; they never block a real LAN snapshot request or independently decide RouterOS reachability.
 - Concurrent refreshes are deduplicated or superseded with `AbortController`.
 
 ## Mobile information architecture
 
-Primary tasks: `概览 / 接口 / 终端 / 日志 / 更多`.
+Four stable compact destinations are `概览 / 网络 / 终端 / 日志`; lower-frequency routes live in the real `更多` directory rather than a fifth persistent tab.
 
-The independent mobile render tree owns viewports through `899px`. From `900px` upward the desktop work surface must reflow continuously; 1024/1180px widths may not be forced into a phone composition merely to reuse mobile screenshots.
+The independent compact render tree owns viewports through `1365px`. From `600px` upward it must use a persistent task rail, comparable object list, and evidence inspector rather than a stretched phone composition. The desktop work surface starts at the required `1366px` desktop viewport; 1180/1181px and 1279/1280px must remain in the same compact architecture instead of switching products one pixel apart.
 
 The 390×844 overview first viewport must include:
 
@@ -101,6 +101,12 @@ The 390×844 overview first viewport must include:
 5. up to three highest-priority affected objects.
 
 An affected-object list is vertical. Selecting an object navigates to its detail; the selected object is not repeated once as a summary card and again in a horizontal carousel.
+
+## Desktop domain workspaces
+
+At `1366px` and above, operational routes use a desktop-only object workspace rather than the compact render tree or a generic read-only table. Every formal domain route provides real search, typed filters, typed sorting, pagination state, comparable object rows, and an evidence inspector. Normal interface pages automatically preview the verified default-route carrier; incidents preview the highest-risk object. Explicit object selection is represented in the URL and Back/Forward history.
+
+Interface, route, terminal, log, security, and DNS inspectors expose domain-specific relationships. Connection and resource inspectors expose their bounded evidence; a low-frequency object may use a clearly labelled generic fallback only while its domain model is incomplete. The desktop return command is visible and functional.
 
 ## Data validation
 
@@ -124,10 +130,10 @@ Fixtures are available only through the explicit test injection surface.
 
 ## Blocking acceptance
 
-1. All 18 routes at required phone, tablet/landscape, and desktop viewports.
+1. All 19 routes at required phone, tablet/landscape, and desktop viewports.
 2. Direct deep link, click navigation, Back, Forward, reload, and unknown-route normalization.
 3. First connection, failed connection, partial channel success, recovery, device switch, and logout.
-4. Initial load, manual refresh, polling, hidden/visible recovery, offline, stale, malformed response, and API failure.
+4. Initial load, manual refresh, polling, hidden/visible recovery, browser connectivity hints, stale evidence, malformed response, and API failure; LAN requests continue regardless of `navigator.onLine`.
 5. Required overview scenarios remain covered.
 6. Keyboard, touch target, focus, screen-reader relation, contrast, text zoom/reflow, and reduced-motion checks.
 7. Security headers, session cap/rate limit, HTTPS-risk acknowledgement, and SSH fingerprint behavior.

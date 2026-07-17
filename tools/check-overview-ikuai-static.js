@@ -22,7 +22,13 @@ const model = read('src/panel-framework/overview/evidence-model/buildOverviewEvi
 const mobile = read('src/panel-framework/mobile/MobilePatrolScreen.tsx');
 const ledger = read('src/panel-framework/mobile/MobileEvidenceLedger.tsx');
 const traffic = read('src/panel-framework/mobile/MobilePatrolTraffic.tsx');
-const domain = read('src/panel-framework/mobile/MobileDomainWorkspace.tsx');
+const domain = [
+  read('src/panel-framework/mobile/MobileDomainWorkspace.tsx'),
+  read('src/panel-framework/mobile/mobile-inspector/MobileDomainInspector.tsx'),
+  read('src/panel-framework/mobile/mobile-inspector/NetworkInspectors.tsx'),
+  read('src/panel-framework/mobile/mobile-inspector/TerminalLogInspectors.tsx'),
+  read('src/panel-framework/mobile/mobile-inspector/SecurityDnsInspectors.tsx'),
+].join('\n');
 const domainModel = read('src/panel-framework/mobile/mobileDomainWorkspaceModel.ts');
 const domainDefinitions = read('src/panel-framework/mobile/mobileDomainDefinitions.ts');
 const mobileCss = read('src/panel-framework/mobile/mobile-patrol.css') + '\n' + read('src/panel-framework/mobile/mobile-domain.css');
@@ -33,6 +39,9 @@ const runtime = read('src/panel-framework/runtime/usePanelRuntime.ts');
 const schema = read('src/panel-framework/runtime/panelRuntimeSchema.ts');
 const publicShell = read('public/index.html');
 const desktop = read('src/panel-framework/overview/desktop-overview/DesktopOverviewScreen.tsx');
+const desktopDomain = read('src/panel-framework/sections/DesktopDomainWorkspace.tsx');
+const desktopInspector = read('src/panel-framework/sections/DesktopDomainInspector.tsx');
+const operationalPage = read('src/panel-framework/sections/OperationalSectionPage.tsx');
 const built = read('public/assets/framework/panel-framework.js');
 
 includesAll(overview, ['<MobilePatrolScreen', '<DesktopOverviewScreen', 'data-overview-business-display-boundary'], 'surface composition');
@@ -61,11 +70,13 @@ includesAll(domain, [
 ], 'domain operations');
 includesAll(domainModel, ['window.history.pushState', 'window.addEventListener("popstate"', 'rowsFromModel', 'workspaceLabel'], 'domain state and history');
 includesAll(domainDefinitions, ['domainDefinitionFor', 'sortWorkspaceRows'], 'domain-specific operations');
+includesAll(domain, ['InterfaceInspector', 'RouteInspector', 'TerminalInspector', 'LogInspector', 'SecurityInspector', 'DnsInspector'], 'domain-specific inspectors');
+excludesAll(domain, ['<dl', 'mdw-detail-fields', 'DetailPane'], 'retired generic detail');
 includesAll(navigation, ['概览', '网络', '终端', '日志'], 'stable mobile navigation');
-includesAll(mobileCss, ['#eef2f4', '.mp-command', '.mp-incident-list', '.mdw-layout', '@media (min-width: 600px) and (max-width: 1180px)'], 'neutral responsive visual system');
+includesAll(mobileCss, ['#eef2f4', '.mp-command', '.mp-incident-list', '.mdw-layout', '@media (min-width: 600px) and (max-width: 1365px)'], 'neutral responsive visual system');
 excludesAll(mobile + '\n' + traffic + '\n' + domain + '\n' + domainModel + '\n' + mobileCss, [
   'grabber', 'bottom-sheet', 'topology', 'preserveAspectRatio="none"',
-  '.mo-verdict', '112px', '!important', 'font-size: 11px', 'font-size: 10px',
+  '.mo-verdict', 'min-height: 112px', '!important', 'font-size: 11px', 'font-size: 10px',
 ], 'rejected mobile patterns');
 
 includesAll(sections, ['resourceVisualization', 'historyTimestamp', '样本摘要，不绘制趋势', 'visualization: undefined'], 'resource evidence model');
@@ -76,9 +87,14 @@ includesAll(runtime, ['void refresh("recovery")', '浏览器同时报告互联�
 excludesAll(runtime, ['phase: browserOfflineHint ? "offline"', 'if (!navigator.onLine) return'], 'navigator hint boundary');
 includesAll(schema, ['带时区的 RFC 3339', 'validateSnapshotTree', 'MAX_SNAPSHOT_COLLECTION_ROWS', 'validatePercentage'], 'runtime data contract');
 
-includesAll(publicShell, ['<main id="app"', 'panel-framework.js', 'style.css'], 'single public shell');
+includesAll(publicShell, ['<main id="app"', 'data-overview-framework-asset="script"', 'data-overview-framework-asset="style"'], 'single public shell');
+if (!/\/assets\/framework\/panel-framework\.[0-9a-f]{12}\.js/.test(publicShell)) failures.push('single public shell: missing content-addressed framework script');
+if (!/\/assets\/framework\/style\.[0-9a-f]{12}\.css/.test(publicShell)) failures.push('single public shell: missing content-addressed framework style');
 excludesAll(publicShell, ['#dns', 'panel-legacy', 'Ctrl+K', '搜索'], 'dead public interactions');
 includesAll(desktop, ['data-desktop-overview', 'DesktopIncidentDocket', 'DesktopLedger', 'DesktopWanEvidence'], 'desktop console retained');
+includesAll(desktopDomain, ['data-desktop-domain-workspace', 'type="search"', 'filterWorkspaceRows', 'sortWorkspaceRows', 'DesktopDomainInspector'], 'desktop object operations');
+includesAll(desktopInspector, ['data-desktop-object-detail', 'InterfaceEvidence', 'RouteEvidence', 'LogEvidence', '相邻事件'], 'desktop domain evidence');
+excludesAll(operationalPage, ['DataTable', 'panel-section-tables'], 'retired desktop table shell');
 
 if (built) {
   includesAll(built, ['data-mobile-overview', 'data-mobile-domain-workspace', 'data-section-time-series', 'data-desktop-overview'], 'production bundle');

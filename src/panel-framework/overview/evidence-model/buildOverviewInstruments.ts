@@ -137,6 +137,7 @@ export function buildResourceInstrument(
     { key: "memory", label: "内存", value: state.facts.resource.memory, threshold: MEMORY_THRESHOLD },
     { key: "disk", label: "磁盘", value: state.facts.resource.disk, threshold: DISK_THRESHOLD },
   ];
+  const currentComplete = metrics.every((metric) => metric.value !== null);
   const history = snapshot.overview?.history || {};
   const timestamps = Array.isArray(history.timestamps) ? history.timestamps : [];
   const cpu = Array.isArray(history.cpu) ? history.cpu : [];
@@ -159,15 +160,19 @@ export function buildResourceInstrument(
     points.push({ timestamp, cpu: cpuValue, memory: memoryValue, disk: diskValue });
   }
   if (points.length) {
-    const latest = points[points.length - 1];
-    const snapshotAt = timestampOf(snapshot.updatedAt);
-    const maxAge = Math.max(120_000, Number(snapshot.meta?.pollSeconds || 5) * 3000);
-    const matchesCurrent =
-      Math.abs(latest.cpu - metrics[0].value) <= 1 &&
-      Math.abs(latest.memory - metrics[1].value) <= 1 &&
-      Math.abs(latest.disk - metrics[2].value) <= 1;
-    const isCurrent = snapshotAt === null || Math.abs(snapshotAt - latest.timestamp) <= maxAge;
-    if (!matchesCurrent || !isCurrent) points = [];
+    if (!currentComplete) {
+      points = [];
+    } else {
+      const latest = points[points.length - 1];
+      const snapshotAt = timestampOf(snapshot.updatedAt);
+      const maxAge = Math.max(120_000, Number(snapshot.meta?.pollSeconds || 5) * 3000);
+      const matchesCurrent =
+        Math.abs(latest.cpu - (metrics[0].value as number)) <= 1 &&
+        Math.abs(latest.memory - (metrics[1].value as number)) <= 1 &&
+        Math.abs(latest.disk - (metrics[2].value as number)) <= 1;
+      const isCurrent = snapshotAt === null || Math.abs(snapshotAt - latest.timestamp) <= maxAge;
+      if (!matchesCurrent || !isCurrent) points = [];
+    }
   }
   const durationSeconds = points.length >= 2
     ? Math.max(0, Math.round((points[points.length - 1].timestamp - points[0].timestamp) / 1000))
@@ -184,7 +189,9 @@ export function buildResourceInstrument(
     metrics,
     points,
     accessibleSummary: metrics
-      .map((metric) => `${metric.label} ${Math.round(metric.value)}%，策略阈值 ${metric.threshold}%`)
+      .map((metric) => metric.value === null
+        ? `${metric.label} 未记录，策略阈值 ${metric.threshold}%`
+        : `${metric.label} ${Math.round(metric.value)}%，策略阈值 ${metric.threshold}%`)
       .join("；"),
   };
 }

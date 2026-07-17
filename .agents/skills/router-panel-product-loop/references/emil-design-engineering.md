@@ -2,7 +2,7 @@
 
 This reference adapts the official `emilkowalski/skills` design-engineering guidance to this repository. It is deliberately narrower than the upstream skill: this product is a high-frequency, read-only operations console, so evidence clarity and response speed outrank decorative motion.
 
-Source: <https://github.com/emilkowalski/skills/tree/main/skills/emil-design-eng> (MIT). Upstream remains authoritative for the general design-engineering philosophy; this file records the project-specific decisions that belong in the panel loop.
+Pinned source: <https://github.com/emilkowalski/skills/tree/6bf24434f7730ad169077756cf9c7cd7bd675fc6/skills/emil-design-eng> (MIT; upstream skill blob `4911235325272b124f1f298b9040e7f539a03b34`, license blob `57b46f1fd11dc62351ea548104a88aa3f659c11b`). Upstream remains authoritative for the general design-engineering philosophy; this file records the project-specific decisions that belong in the panel loop.
 
 ## Decision order
 

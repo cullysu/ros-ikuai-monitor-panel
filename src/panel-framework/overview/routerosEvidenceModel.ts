@@ -4,6 +4,7 @@ import {
   type OverviewRawSnapshot,
   type OverviewTone,
 } from "./types";
+import { defaultRouteRows } from "./deriveOverviewState";
 import { buildRouterOsTrustModel, type RouterOsTrustPlane, type RouterOsTrustPlaneId } from "./routerosTrustModel";
 
 export const ROUTEROS_ROUTE_EVIDENCE_CONTRACT = "business-summary-first/raw-route-fields-secondary/table-gateway-distance-active-disabled";
@@ -63,11 +64,6 @@ const ROUTE_UNKNOWN = "路由快照未取回，无法判断默认出口影响";
 function clean(value: unknown, fallback = "-"): string {
   const normalized = String(value ?? "").replace(/\s+/g, " ").trim();
   return normalized || fallback;
-}
-
-function routeRows(snapshot: OverviewRawSnapshot): OverviewRawRoute[] {
-  const rows = snapshot.routes?.defaultRoutes || snapshot.routes?.items || [];
-  return Array.isArray(rows) ? rows : [];
 }
 
 export function routerOsRouteStatusText(active?: boolean, disabled?: boolean): "当前承载" | "已停用" | "备选未命中" {
@@ -197,7 +193,7 @@ function trustPlaneToEvidencePlane(plane: RouterOsTrustPlane): RouterOsEvidenceP
 }
 
 export function buildRouterOsRouteEvidenceModel(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): RouterOsRouteEvidenceModel {
-  const rows = routeRows(snapshot);
+  const rows = defaultRouteRows(snapshot);
   if (!rows.length) return missingModel(state);
 
   const businessRows = rows.slice(0, 6).map((route, index) => {

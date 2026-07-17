@@ -8,7 +8,7 @@ import {
   type OverviewRawWanRow,
   type OverviewTone,
 } from "../index";
-import { stablePanelObjectId } from "../../sections/panelObjectIdentity";
+import { panelObjectIdentityPartsForRaw, stablePanelObjectId } from "../../sections/panelObjectIdentity";
 import {
   buildResourceInstrument,
   buildTrafficInstrument,
@@ -42,18 +42,6 @@ function wanRows(snapshot: OverviewRawSnapshot): OverviewRawWanRow[] {
   return Array.isArray(snapshot.pppoe) ? snapshot.pppoe : [];
 }
 
-function defaultRoutes(snapshot: OverviewRawSnapshot): OverviewRawRoute[] {
-  if (Array.isArray(snapshot.routes?.defaultRoutes)) return snapshot.routes.defaultRoutes;
-  if (!Array.isArray(snapshot.routes?.items)) return [];
-  return snapshot.routes.items.filter((route) =>
-    route.default === true || route.dstAddress === "0.0.0.0/0" || route.dstAddress === "::/0",
-  );
-}
-
-function activeDefaultRoute(snapshot: OverviewRawSnapshot): OverviewRawRoute | null {
-  return defaultRoutes(snapshot).find((route) => route.active === true && route.disabled !== true) || null;
-}
-
 function evidenceMode(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): OverviewEvidenceMode {
   if (isSnapshotUnavailable(snapshot) || state.facts.freshness.credibility === "unavailable") return "unavailable";
   if (!latestBusinessSuccessTime(snapshot)) return "unavailable";
@@ -63,6 +51,10 @@ function evidenceMode(snapshot: OverviewRawSnapshot, state: OverviewDerivedState
     meta.realtimeError ||
     meta.slowRestError ||
     meta.staticError ||
+    meta.connectionDetailError ||
+    meta.connectionProtocolError ||
+    state.facts.collection.channelDegraded ||
+    state.facts.failures.count > 0 ||
     state.facts.freshness.stale ||
     state.facts.freshness.history ||
     state.facts.freshness.credibility === "cache"
@@ -103,7 +95,7 @@ function deviceIdentity(snapshot: OverviewRawSnapshot, state: OverviewDerivedSta
 function routeStatus(mode: OverviewEvidenceMode, state: OverviewDerivedState, route: OverviewRawRoute | null) {
   if (mode !== "current") return "unknown" as const;
   if (route) return "verified" as const;
-  if (state.facts.wan.total > 0 && state.facts.wan.online === 0) return "offline" as const;
+  if (state.facts.wan.allOffline) return "offline" as const;
   return "unknown" as const;
 }
 
@@ -138,7 +130,7 @@ function resourceSampleStats(snapshot: OverviewRawSnapshot) {
 function riskOf(mode: OverviewEvidenceMode, state: OverviewDerivedState, route: OverviewRawRoute | null): OverviewEvidenceRisk {
   if (mode === "unavailable") return "evidence";
   if (mode === "historical") return "collection";
-  if (state.facts.wan.total > 0 && state.facts.wan.online === 0) return "wan";
+  if (state.facts.wan.allOffline) return "wan";
   if (state.facts.resource.level === "danger") return "resource";
   if (state.facts.interfaces.down > 0) return "interfaces";
   if (!route) return "route";
@@ -170,10 +162,10 @@ function factsFor(
   if (risk === "collection") return [
     fact(
       "collection-channels",
-      "可用通道",
+      "上次通道记录",
       `${(rest.status === "current" ? 1 : 0) + (ssh.status === "current" ? 1 : 0)} / 2`,
       rest.status === "current" || ssh.status === "current" ? "warn" : "danger",
-      "REST + SSH",
+      "仅作历史对照",
     ),
     fact("last-success", "最近成功", success ? shortTimestamp(success) : "未记录", success ? "warn" : "missing", "不代表当前状态"),
     fact(
@@ -191,13 +183,13 @@ function factsFor(
   ];
   if (risk === "resource") {
     const samples = resourceSampleStats(snapshot);
-    const breached = [
-      state.facts.resource.cpu >= CPU_THRESHOLD,
-      state.facts.resource.memory >= MEMORY_THRESHOLD,
-      state.facts.resource.disk >= DISK_THRESHOLD,
-    ].filter(Boolean).length;
+    const observedResources: Array<{ value: number; threshold: number }> = [];
+    if (state.facts.resource.cpu !== null) observedResources.push({ value: state.facts.resource.cpu, threshold: CPU_THRESHOLD });
+    if (state.facts.resource.memory !== null) observedResources.push({ value: state.facts.resource.memory, threshold: MEMORY_THRESHOLD });
+    if (state.facts.resource.disk !== null) observedResources.push({ value: state.facts.resource.disk, threshold: DISK_THRESHOLD });
+    const breached = observedResources.filter((metric) => metric.value >= metric.threshold).length;
     return [
-      fact("resource-breaches", "超阈值", `${breached} / 3`, breached ? "danger" : "trust", "按资源策略判定"),
+      fact("resource-breaches", "超阈值", `${breached} / ${observedResources.length}`, breached ? "danger" : "trust", `已观测 ${observedResources.length}/3`),
       fact("resource-trailing", "尾部连续", samples.observed ? `${samples.trailing} 个` : "未取得", samples.trailing ? "danger" : "missing", "不是超限总数"),
       fact("resource-samples", "有效样本", samples.observed ? `${samples.observed} 个` : "未取得", samples.observed ? "trust" : "missing", "当前采样序列"),
     ];
@@ -213,7 +205,7 @@ function factsFor(
     fact("collection", "采集通道", `${(rest.status === "current" ? 1 : 0) + (ssh.status === "current" ? 1 : 0)} / 2`, "trust", "REST + SSH"),
   ];
   if (state.scale === "fleet") {
-    const runningInterfaces = Math.max(0, state.facts.interfaces.total - state.facts.interfaces.down);
+    const runningInterfaces = state.facts.interfaces.online;
     return [
       fact("route", "默认路由", "已核实", "trust", "明确活动记录"),
       fact("wan", "WAN 运行", `${state.facts.wan.online} / ${state.facts.wan.total}`, "trust", "多对象范围"),
@@ -230,8 +222,7 @@ function factsFor(
 function verdictFor(state: OverviewDerivedState, mode: OverviewEvidenceMode, risk: OverviewEvidenceRisk, route: OverviewRawRoute | null) {
   if (risk === "evidence") return { label: "判断边界", title: "当前业务状态不可判断", summary: "没有可用于当前判断的业务快照。", tone: "danger" as OverviewTone };
   if (risk === "collection") {
-    const partial = state.facts.collection.rest.status === "current" || state.facts.collection.ssh.status === "current";
-    return { label: "证据已降级", title: partial ? "采集通道部分可用" : "当前变化不可见", summary: "仅保留历史对照；不代表当前业务。", tone: "warn" as OverviewTone };
+    return { label: "证据已降级", title: "当前采集状态不可确认", summary: "仅保留上次成功记录；不代表当前业务。", tone: "warn" as OverviewTone };
   }
   if (risk === "wan") return { label: "出口中断", title: `全部 ${state.facts.wan.total} 条 WAN 未运行`, summary: "无活动默认路由；先查链路、认证与上游。", tone: "danger" as OverviewTone };
   if (risk === "resource") return { label: "资源压力", title: "资源策略已触发", summary: "资源超限已持续；不推断网络中断。", tone: "danger" as OverviewTone };
@@ -296,14 +287,14 @@ function priorityObjectsFor(
     return {
       total: rows.length,
       rows: rows.map((row, index) => ({
-        id: stablePanelObjectId("lineStatus", "wan", [clean(row.name || row.interface, `WAN ${index + 1}`)]),
+        id: stablePanelObjectId("lineStatus", "wan", panelObjectIdentityPartsForRaw("lineStatus", "WAN 对象", row)),
         category: "WAN",
         name: clean(row.name || row.interface, `WAN ${index + 1}`),
         state: "未运行",
         reason: `${clean(row.parent, "父接口未记录")} · 无活动默认路由`,
         tone: "danger",
         route: "lineStatus",
-        targetObjectId: stablePanelObjectId("lineStatus", "wan", [clean(row.name || row.interface, `WAN ${index + 1}`)]),
+        targetObjectId: stablePanelObjectId("lineStatus", "wan", panelObjectIdentityPartsForRaw("lineStatus", "WAN 对象", row)),
         sourcePath: `wan[${index}]`,
         attributes: [
           { label: "父接口", value: clean(row.parent) },
@@ -318,14 +309,14 @@ function priorityObjectsFor(
     return {
       total: rows.length,
       rows: rows.map((row, index) => ({
-        id: stablePanelObjectId("interfaces", "interface", [clean(row.name || row.interface, `接口 ${index + 1}`)]),
+        id: stablePanelObjectId("interfaces", "interface", panelObjectIdentityPartsForRaw("interfaces", "接口对象", row)),
         category: "接口",
         name: clean(row.name || row.interface, `接口 ${index + 1}`),
         state: row.disabled === true ? "已停用" : "未运行",
         reason: `${clean(row.parent || row.master, "父级未记录")} · 依赖关系待核对`,
         tone: "danger",
         route: "interfaces",
-        targetObjectId: stablePanelObjectId("interfaces", "interface", [clean(row.name || row.interface, `接口 ${index + 1}`)]),
+        targetObjectId: stablePanelObjectId("interfaces", "interface", panelObjectIdentityPartsForRaw("interfaces", "接口对象", row)),
         sourcePath: `interfaces[${(snapshot.interfaces || []).indexOf(row)}]`,
         attributes: [
           { label: "父级", value: clean(row.parent || row.master) },
@@ -337,11 +328,12 @@ function priorityObjectsFor(
   }
   if (risk === "resource") {
     const samples = resourceSampleStats(snapshot);
-    const leadingResource = [
-      { label: "CPU", value: state.facts.resource.cpu, threshold: CPU_THRESHOLD },
-      { label: "内存", value: state.facts.resource.memory, threshold: MEMORY_THRESHOLD },
-      { label: "磁盘", value: state.facts.resource.disk, threshold: DISK_THRESHOLD },
-    ].sort((left, right) => (right.value / right.threshold) - (left.value / left.threshold))[0];
+    const observedResources: Array<{ key: "cpu" | "memory" | "disk"; label: string; value: number; threshold: number }> = [];
+    if (state.facts.resource.cpu !== null) observedResources.push({ key: "cpu", label: "CPU", value: state.facts.resource.cpu, threshold: CPU_THRESHOLD });
+    if (state.facts.resource.memory !== null) observedResources.push({ key: "memory", label: "内存", value: state.facts.resource.memory, threshold: MEMORY_THRESHOLD });
+    if (state.facts.resource.disk !== null) observedResources.push({ key: "disk", label: "磁盘", value: state.facts.resource.disk, threshold: DISK_THRESHOLD });
+    const leadingResource = observedResources.sort((left, right) => (right.value / right.threshold) - (left.value / left.threshold))[0];
+    if (!leadingResource) return { total: 0, rows: [] };
     return {
       total: 1,
       rows: [{
@@ -349,28 +341,22 @@ function priorityObjectsFor(
         category: "系统资源",
         name: clean(state.facts.device.identity, "RouterOS"),
         state: samples.trailing ? "持续超限" : "策略命中",
-        reason: samples.observed ? "检查连接压力、接口吞吐与原始采样" : "检查资源对象与采集完整性",
+        reason: state.facts.resource.complete
+          ? samples.observed ? "检查连接压力、接口吞吐与原始采样" : "检查资源对象与采集完整性"
+          : `已观测 ${state.facts.resource.observed}/3；缺失项不按零处理`,
         tone: "danger",
         route: "trafficLoad",
-        targetObjectId: stablePanelObjectId("trafficLoad", "resource", [leadingResource.label]),
+        targetObjectId: stablePanelObjectId("trafficLoad", "resource", panelObjectIdentityPartsForRaw("trafficLoad", "资源证据", { key: leadingResource.key })),
         sourcePath: "overview + overview.history",
         attributes: [
           { label: "连接总量", value: finite(snapshot.connections?.total) === null ? "未记录" : Number(snapshot.connections?.total).toLocaleString("zh-CN") },
-          { label: "尾部连续", value: samples.observed ? `${samples.trailing} 个` : "未取得" },
+          { label: "资源观测", value: `${state.facts.resource.observed} / 3` },
           { label: "有效样本", value: samples.observed ? `${samples.observed} 个` : "未取得" },
         ],
       }],
     };
   }
   if (risk === "route") {
-    const candidate = defaultRoutes(snapshot)[0];
-    const targetObjectId = candidate
-      ? stablePanelObjectId("routes", "route", [
-          clean(candidate.dstAddress, candidate.default === true ? "0.0.0.0/0" : "未记录"),
-          clean(candidate.gateway || candidate.gatewayStatus),
-          clean(candidate.table || candidate.routingTable, "main"),
-        ])
-      : undefined;
     return {
       total: 1,
       rows: [{
@@ -381,10 +367,9 @@ function priorityObjectsFor(
         reason: "没有 active=true 且未停用的默认路由",
         tone: "warn",
         route: "routes",
-        ...(targetObjectId ? { targetObjectId } : {}),
         sourcePath: "routes.defaultRoutes",
         attributes: [
-          { label: "默认路由记录", value: `${defaultRoutes(snapshot).length} 条` },
+          { label: "默认路由记录", value: `${state.facts.route.candidates} 条` },
           { label: "WAN 运行", value: `${state.facts.wan.online} / ${state.facts.wan.total}` },
           { label: "活动标记", value: "未发现 active=true" },
         ],
@@ -407,11 +392,7 @@ function focusObjectFor(
     note: `${clean(route.dstAddress, "0.0.0.0/0")} · 明确 active=true 且未停用`,
     tone: "trust",
     route: "routes",
-    targetObjectId: stablePanelObjectId("routes", "route", [
-      clean(route.dstAddress, route.default === true ? "0.0.0.0/0" : "未记录"),
-      clean(route.gateway || route.gatewayStatus),
-      clean(route.table || route.routingTable, "main"),
-    ]),
+    targetObjectId: stablePanelObjectId("routes", "route", panelObjectIdentityPartsForRaw("routes", "路由记录", route)),
     sourcePath: "routes.defaultRoutes",
     attributes: [
       { label: "路由表", value: clean(route.table || route.routingTable, "main") },
@@ -435,7 +416,7 @@ function evidenceRows(snapshot: OverviewRawSnapshot, state: OverviewDerivedState
 
 export function buildOverviewEvidenceModel(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): OverviewEvidenceModel {
   const mode = evidenceMode(snapshot, state);
-  const route = activeDefaultRoute(snapshot);
+  const route = state.facts.route.verified ? state.facts.route.selected : null;
   const risk = riskOf(mode, state, route);
   const evidence = evidenceBoundary(snapshot, state, mode);
   const identity = deviceIdentity(snapshot, state, mode);

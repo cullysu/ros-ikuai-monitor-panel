@@ -169,7 +169,7 @@
   font-size: 12px;
 }
 
-@media (max-width: 1180px) {
+@media (max-width: 1365px) {
   .mdw-list-pane > .section-timeseries {
     margin: 0;
     border: 0;

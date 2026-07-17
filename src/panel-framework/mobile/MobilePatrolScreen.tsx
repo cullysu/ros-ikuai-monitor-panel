@@ -38,7 +38,7 @@ export function MobilePatrolScreen({
   const terminals = Array.isArray(snapshot.terminals) ? snapshot.terminals.length : null;
   const connections = toFiniteNumber(snapshot.connections?.total);
   const runningInterfaces = state.facts.interfaces.available
-    ? Math.max(0, state.facts.interfaces.total - state.facts.interfaces.down)
+    ? state.facts.interfaces.online
     : null;
 
 
@@ -58,7 +58,7 @@ export function MobilePatrolScreen({
   }, []);
 
   useEffect(() => {
-    const media = window.matchMedia("(min-width: 600px) and (max-width: 1180px)");
+    const media = window.matchMedia("(min-width: 600px) and (max-width: 1365px)");
     const sync = () => setTablet(media.matches);
     sync();
     media.addEventListener("change", sync);

@@ -1,5 +1,7 @@
 # Mobile product loop review
 
+> Historical design-direction artifact. It does not describe the current candidate or close current visual, release, or exact-SHA gates. See `docs/product-loop-current.md` for live state.
+
 ## Decision
 
 The rejected mobile shell was removed rather than restyled. The replacement is an independent single-surface operations console with integrated collection evidence and a full-screen detail route. It is ready for GitHub/CL verification, but it is not declared publicly releasable until the exact uploaded SHA completes Linux, Windows, and GHCR checks.

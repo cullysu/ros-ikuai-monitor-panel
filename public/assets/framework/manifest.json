@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "assets": {
+    "script": {
+      "file": "panel-framework.7211bee6358a.js",
+      "sha256": "7211bee6358a0c353ca766ebf3f3b3ae063d0d1155c2f5211fc3cbf47da0ec8f",
+      "bytes": 668855,
+      "gzipBytes": 139166,
+      "brotliBytes": 120701
+    },
+    "style": {
+      "file": "style.57f2d81f74fb.css",
+      "sha256": "57f2d81f74fb7dd38afa70357f8436c26504e440a953a17950c08aa47743823b",
+      "bytes": 99493,
+      "gzipBytes": 16842,
+      "brotliBytes": 15470
+    }
+  }
+}

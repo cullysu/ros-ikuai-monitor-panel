@@ -12,6 +12,7 @@
     "check:runtime-browser": "node --max-old-space-size=2048 tools/check-panel-runtime-browser.js",
     "check:sections": "node --max-old-space-size=2048 tools/check-section-models.js",
     "check:backend-security": "python tools/check-backend-security.py",
+    "check:static-assets": "python tools/check-static-assets.py",
     "check:mobile-native-model": "node --max-old-space-size=2048 tools/check-mobile-native-model.js && node --max-old-space-size=2048 tools/check-mobile-workspace-contract.js",
     "check:mobile-native": "node --max-old-space-size=2048 tools/check-mobile-native-model.js && node --max-old-space-size=2048 tools/check-mobile-workspace-contract.js && node --max-old-space-size=2048 tools/check-mobile-native-runtime.js",
     "check:desktop-no-snapshot": "node --max-old-space-size=2048 tools/check-desktop-no-snapshot-runtime.js",

@@ -65,7 +65,7 @@ export interface OverviewResourcePoint {
 export interface OverviewResourceMetric {
   key: "cpu" | "memory" | "disk";
   label: string;
-  value: number;
+  value: number | null;
   threshold: number;
 }
 
@@ -73,7 +73,7 @@ export interface OverviewResourceInstrument {
   status: "ready" | "accumulating";
   windowLabel: string;
   sampleCount: number;
-  metrics: [OverviewResourceMetric, OverviewResourceMetric, OverviewResourceMetric];
+  metrics: OverviewResourceMetric[];
   points: OverviewResourcePoint[];
   accessibleSummary: string;
 }

@@ -376,7 +376,7 @@
 .router-mobile-connection-intro h1 { margin: 4px 0 0; font-size: 26px; line-height: 1.08; letter-spacing: -.03em; }
 .router-mobile-connection-intro p { margin: 5px 0 0; color: #526c77; font-size: 14px; }
 
-@media (max-width: 1180px) {
+@media (max-width: 1365px) {
   html:has([data-router-connection-screen]),
   body:has([data-router-connection-screen]),
   html:has(.router-connection-status.is-mobile),

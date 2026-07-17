@@ -32,6 +32,17 @@ new Function('exports', 'module', 'require', compile(schemaPath))(
 const schema = moduleBox.exports;
 
 const now = '2026-07-16T10:00:00.000Z';
+const localTime = timeBox.exports.formatRfc3339Local('2026-07-16T08:18:23Z');
+assert.match(localTime, /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} [+-]\d{2}:\d{2}$/);
+const [localDate, localClock, localOffset] = localTime.split(' ');
+assert.strictEqual(
+  Date.parse(`${localDate}T${localClock}${localOffset}`),
+  Date.parse('2026-07-16T08:18:23Z'),
+  'local formatter must preserve the exact instant'
+);
+assert.strictEqual(timeBox.exports.formatRfc3339Local('2026-07-16 08:18:23'), null, 'offset-free time must not be formatted');
+assert.strictEqual(timeBox.exports.formatRfc3339Local('2026-02-30T08:18:23Z'), null, 'invalid calendar time must not be formatted');
+
 const operational = {
   status: 'ok',
   updatedAt: now,

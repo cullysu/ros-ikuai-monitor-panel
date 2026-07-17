@@ -11,7 +11,7 @@
   min-width: 0;
 }
 
-@media (max-width: 1180px) {
+@media (max-width: 1365px) {
   .router-overview-framework {
     min-height: 100dvh;
     background: #edf3f5;

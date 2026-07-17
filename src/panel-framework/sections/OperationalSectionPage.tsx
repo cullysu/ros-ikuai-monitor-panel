@@ -3,7 +3,8 @@ import type { OverviewRawSnapshot, OverviewTone } from "../overview";
 import { MobileDomainWorkspace } from "../mobile/MobileDomainWorkspace";
 import { useMobilePanelSurface } from "../mobile/useMobilePanelSurface";
 import { PANEL_ROUTES, type PanelRouteId } from "../routes/panelRoutes";
-import { buildSectionModel, type SectionTable } from "./sectionModels";
+import { buildSectionModel } from "./sectionModels";
+import { DesktopDomainWorkspace } from "./DesktopDomainWorkspace";
 import { SectionTimeSeriesChart } from "./SectionTimeSeriesChart";
 
 const READONLY_DESTINATIONS: Array<{ label: string; route: PanelRouteId }> = [
@@ -20,29 +21,6 @@ function ToneMark({ tone = "trust" }: { tone?: OverviewTone }) {
 
 function OverviewBackCommand({ onNavigate }: { onNavigate: (route: PanelRouteId) => void }) {
   return <button className="panel-overview-back" type="button" data-panel-overview-back onClick={() => onNavigate("overview")}><ChevronLeft aria-hidden="true" size={18} />返回运行概览</button>;
-}
-
-function cellValue(value: string | undefined): string {
-  return value === undefined || value === "" ? "—" : value;
-}
-
-function DataTable({ table }: { table: SectionTable }) {
-  return (
-    <section className="panel-section-table" aria-labelledby={`panel-table-${table.title}`}>
-      <header>
-        <div><h2 id={`panel-table-${table.title}`}>{table.title}</h2>{table.note ? <p>{table.note}</p> : null}</div>
-        <span>{table.rows.length} 条</span>
-      </header>
-      {table.rows.length ? (
-        <div className="panel-table-scroll" role="region" aria-label={table.title} tabIndex={0}>
-          <table>
-            <thead><tr>{table.columns.map((column) => <th scope="col" key={column.key}>{column.label}</th>)}</tr></thead>
-            <tbody>{table.rows.map((row, index) => <tr key={`${table.title}-${index}`}>{table.columns.map((column) => <td data-label={column.label} key={column.key}>{cellValue(row[column.key])}</td>)}</tr>)}</tbody>
-          </table>
-        </div>
-      ) : <p className="panel-empty-state">{table.empty}</p>}
-    </section>
-  );
 }
 
 function MorePage({ onNavigate }: { onNavigate: (route: PanelRouteId) => void }) {
@@ -106,9 +84,7 @@ export function OperationalSectionPage({ route, snapshot, onNavigate }: { route:
         </nav>
       ) : null}
 
-      <div className="panel-section-tables">
-        {model.tables.map((item) => <DataTable table={item} key={item.title} />)}
-      </div>
+      <DesktopDomainWorkspace route={route} model={model} />
 
       <footer className="panel-readonly-footer"><Server aria-hidden="true" size={16} /><span><b>只读快照</b><small>本页不会修改 RouterOS 配置</small></span></footer>
     </section>

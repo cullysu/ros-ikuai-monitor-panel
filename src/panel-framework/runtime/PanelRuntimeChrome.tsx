@@ -4,7 +4,7 @@ import { parseRfc3339Timestamp } from "../timeContract";
 import type { PanelRuntimeController, PanelSnapshotPhase } from "./usePanelRuntime";
 import "./panel-runtime.css";
 
-const MOBILE_RUNTIME_QUERY = "(max-width: 1180px)";
+const MOBILE_RUNTIME_QUERY = "(max-width: 1365px)";
 
 function useMobileRuntimeSurface(): boolean {
   const [mobile, setMobile] = useState(() => typeof window !== "undefined" && window.matchMedia(MOBILE_RUNTIME_QUERY).matches);

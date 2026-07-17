@@ -1,4 +1,4 @@
-@media (min-width: 1181px) {
+@media (min-width: 1366px) {
   .do-shell,
   .do-shell * {
     box-sizing: border-box;
@@ -120,6 +120,10 @@
     font-weight: 740;
     letter-spacing: -0.02em;
     line-height: 1.2;
+  }
+  .do-verdict h1:focus {
+    outline: 2px solid transparent;
+    outline-offset: 2px;
   }
   .do-verdict p {
     max-width: 62ch;

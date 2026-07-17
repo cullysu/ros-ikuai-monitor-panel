@@ -9,6 +9,7 @@ const net = require('net');
 const path = require('path');
 const { spawnSync } = require('child_process');
 const { chromium } = require('playwright-core');
+const { RUNTIME_SCREENSHOT_CONTRACT } = require('./runtime-screenshot-contract');
 
 const root = path.resolve(__dirname, '..');
 const publicDir = path.join(root, 'public');
@@ -134,6 +135,11 @@ function snapshot(sequence, options) {
       diskUsage: 18,
       connectionTotal: 42,
       onlineTerminals: 25,
+      history: {
+        cpu: [19, 21, 23],
+        memory: [39, 40, 41],
+        disk: [18, 18, 18],
+      },
     },
     interfaces: [
       {
@@ -144,6 +150,21 @@ function snapshot(sequence, options) {
         disabled: false,
         rxRate: 24000000 + sequence,
         txRate: 8000000,
+        rxBytes: 981234567,
+        txBytes: 341234567,
+        rxPackets: 812340,
+        txPackets: 401230,
+        rxDrop: 2,
+        txDrop: 1,
+        rxError: 0,
+        txError: 0,
+        lossRate: 0.02,
+        errorRate: 0,
+        qualityUpdatedAt: now,
+        qualitySampleCount: 12,
+        qualitySampleReady: true,
+        ips: ['198.51.100.2/32'],
+        mac: '02:00:00:00:10:01',
       },
       {
         name: 'bridge-lan',
@@ -151,8 +172,8 @@ function snapshot(sequence, options) {
         role: 'LAN',
         running: true,
         disabled: false,
-        rxRate: 8000000,
-        txRate: 24000000 + sequence,
+        rxRate: 2000000,
+        txRate: 4000000,
       },
     ],
     wan: [{
@@ -181,6 +202,27 @@ function snapshot(sequence, options) {
       downRate: 1000000 + index * 1000,
       upRate: 250000 + index * 500,
     })),
+    dhcp: {
+      leases: [{
+        address: '192.0.2.20',
+        macAddress: '02:00:00:00:00:01',
+        hostName: 'workstation-01',
+        server: 'lan-dhcp',
+        status: 'bound',
+      }],
+      clients: [],
+      pools: [],
+    },
+    arp: {
+      items: [{
+        ip: '192.0.2.20',
+        mac: '02:00:00:00:00:01',
+        interface: 'bridge-lan',
+        status: 'reachable',
+        dynamic: true,
+      }],
+      alerts: [],
+    },
     routes: {
       items: [],
       defaultRoutes: [{
@@ -191,8 +233,87 @@ function snapshot(sequence, options) {
         distance: 1,
       }],
     },
-    connections: { total: 42, active: [], topIps: [] },
-    dns: {},
+    connections: {
+      total: 42,
+      active: [{
+        id: 'conn-1',
+        source: '192.0.2.20',
+        destination: '198.51.100.44',
+        protocol: 'tcp',
+        sourcePort: 53142,
+        destinationPort: 443,
+        totalRate: 640000,
+        sessionBytes: 2400000,
+        connections: 1,
+      }],
+      topIps: [],
+      protocolTop: [],
+    },
+    dns: {
+      running: true,
+      servers: ['1.1.1.1', '2606:4700:4700::1111'],
+      dohServer: 'https://dns.example/dns-query',
+      verifyDohCert: true,
+      forwardRules: [{
+        name: 'router.local',
+        type: 'A',
+        value: '192.0.2.1',
+        ttl: '1h',
+        comment: 'LAN resolver',
+        disabled: false,
+      }],
+      ipv6Nd: [{
+        interface: 'bridge-lan',
+        status: 'running',
+        advertiseDns: true,
+        dnsServers: ['2001:db8::53'],
+        addDefaultRoute: false,
+      }],
+      ipv6DhcpClients: [{
+        interface: 'pppoe-wan1',
+        status: 'bound',
+        usePeerDns: true,
+        addDefaultRoute: true,
+      }],
+    },
+    security: {
+      filters: [{
+        id: '*4',
+        rawOrder: 4,
+        chain: 'forward',
+        action: 'drop',
+        packets: 12,
+        bytes: 2048,
+        disabled: false,
+        inInterface: 'pppoe-wan1',
+        dstAddress: '192.0.2.0/24',
+        comment: 'block unsolicited WAN',
+      }],
+      alerts: [],
+      addressLists: [],
+    },
+    logs: {
+      all: [{
+        time: now,
+        topics: 'system,warning',
+        severity: 'warning',
+        message: 'pppoe-wan1 link renegotiated',
+      }, {
+        time: '2026-07-17T10:02:12Z',
+        topics: 'ppp,info',
+        severity: 'info',
+        message: 'pppoe-wan1 authenticated',
+      }, {
+        time: '2026-07-17T10:01:12Z',
+        topics: 'interface,info',
+        severity: 'info',
+        message: 'pppoe-wan1 carrier detected',
+      }],
+      system: [],
+      firewall: [],
+      dhcp: [],
+      dns: [],
+    },
   };
 }
 
@@ -730,6 +851,23 @@ async function main() {
 
     await page.locator('[data-section="interfaces"]').click();
     await page.locator('[data-mobile-domain-workspace="interfaces"]').waitFor();
+    const compactNetworkList = await page.evaluate(() => {
+      const firstRow = document.querySelector('[data-mobile-row-id]')?.getBoundingClientRect();
+      return {
+        toolsExpanded: document.querySelector('.mdw-tools-toggle')?.getAttribute('aria-expanded'),
+        controls: Boolean(document.querySelector('[data-domain-controls]')),
+        firstRowTop: firstRow?.top || 0,
+        rows: document.querySelectorAll('[data-mobile-row-id]').length,
+      };
+    });
+    check(
+      checks,
+      'network list exposes an object before on-demand controls',
+      compactNetworkList.toolsExpanded === 'false' && !compactNetworkList.controls &&
+        compactNetworkList.rows >= 2 && compactNetworkList.firstRowTop > 0 && compactNetworkList.firstRowTop <= 230,
+      compactNetworkList
+    );
+    await page.locator('.mdw-tools-toggle').click();
     const networkWorkspace = await page.evaluate(() => {
       const shell = document.querySelector('[data-mobile-domain-workspace]');
       const styles = getComputedStyle(shell);
@@ -750,7 +888,7 @@ async function main() {
         return (values[0] + 0.05) / (values[1] + 0.05);
       };
       const foregrounds = ['--mdw-muted', '--mdw-faint'].map((name) => styles.getPropertyValue(name));
-      const backgrounds = ['--mdw-surface', '--mdw-surface-soft'].map((name) => styles.getPropertyValue(name));
+      const backgrounds = ['--mdw-surface', '--mdw-surface-tonal'].map((name) => styles.getPropertyValue(name));
       const contrastValues = foregrounds.flatMap((foreground) => backgrounds.map((background) => contrast(foreground, background)));
       const targets = Array.from(shell.querySelectorAll('button, summary, input, select'))
         .filter((node) => {
@@ -787,26 +925,40 @@ async function main() {
       await page.locator('[data-mobile-row-id]').first().innerText().then((text) => text.includes('pppoe-wan1'))
     );
     await page.getByRole('button', { name: '清除搜索' }).click();
-    await page.locator('.mdw-filter-row select').selectOption('name-asc');
+    const interfaceSort = page.locator('.mdw-filter-row select');
+    const visibleInterfaceNames = () => page.locator('[data-mobile-row-id] .mdw-row-copy b').allTextContents();
+    await interfaceSort.selectOption('name-asc');
+    const nameOrder = await visibleInterfaceNames();
+    await interfaceSort.selectOption('traffic-desc');
+    const trafficOrder = await visibleInterfaceNames();
     check(
       checks,
-      'visible sort control owns real state',
-      await page.locator('.mdw-filter-row select').inputValue() === 'name-asc'
+      'visible sort changes the actual object row order',
+      nameOrder[0] === 'bridge-lan' &&
+        nameOrder[1] === 'pppoe-wan1' &&
+        trafficOrder[0] === 'pppoe-wan1' &&
+        trafficOrder[1] === 'bridge-lan',
+      { nameOrder, trafficOrder }
     );
+    await interfaceSort.selectOption('name-asc');
 
-    const objectTrigger = page.locator('[data-mobile-row-id]').first();
+    const objectTrigger = page.locator('[data-mobile-row-id]').filter({ hasText: 'pppoe-wan1' }).first();
     const objectId = await objectTrigger.getAttribute('data-mobile-row-id');
     await objectTrigger.click();
     await page.locator('[data-mobile-object-detail]').waitFor();
     const objectDetail = await page.evaluate(() => ({
       object: document.querySelector('[data-mobile-object-detail]')?.getAttribute('data-mobile-object-detail'),
-      fields: document.querySelectorAll('.mdw-detail-fields > div').length,
+      kind: document.querySelector('[data-mobile-object-detail]')?.getAttribute('data-domain-inspector-kind'),
+      sections: document.querySelectorAll('[data-mobile-object-detail] .mdi-section').length,
+      evidenceBoundary: Boolean(document.querySelector('[data-mobile-object-detail] .mdi-evidence')),
+      relationship: document.querySelector('[data-mobile-object-detail]')?.textContent?.includes('依赖与路由'),
       query: new URLSearchParams(location.search).get('object'),
     }));
     check(
       checks,
       'object destination adds field-level evidence instead of replaying the summary',
-      objectDetail.object === objectId && objectDetail.query === objectId && objectDetail.fields >= 4,
+      objectDetail.object === objectId && objectDetail.query === objectId && objectDetail.kind === 'interface' &&
+        objectDetail.sections >= 4 && objectDetail.evidenceBoundary && objectDetail.relationship,
       objectDetail
     );
     screenshots.push(await screenshot(page, 'mobile-network-object.png', 'mobile-network-object'));
@@ -837,12 +989,12 @@ async function main() {
     check(
       checks,
       'stable business identity preserves the exact object across snapshot reorder',
-      reorderedObject.detail === objectId && reorderedObject.query === objectId && reorderedObject.title === 'bridge-lan',
+      reorderedObject.detail === objectId && reorderedObject.query === objectId && reorderedObject.title === 'pppoe-wan1',
       { objectId, reorderedObject }
     );
     mock.state.reverseInterfaces = false;
 
-    await page.getByRole('button', { name: '返回列表' }).click();
+    await page.getByRole('button', { name: '返回接口' }).click();
     await page.waitForFunction(() => !document.querySelector('[data-mobile-object-detail]'));
     check(
       checks,
@@ -858,6 +1010,34 @@ async function main() {
     await page.goBack();
     await page.locator('[data-mobile-overview]').waitFor();
     check(checks, 'browser Back and Forward both restore route destinations', true);
+
+    await page.setViewportSize({ width: 768, height: 1024 });
+    await page.waitForFunction(() => innerWidth === 768 && innerHeight === 1024);
+    await page.locator('[data-section="interfaces"]').click();
+    await page.locator('[data-mobile-domain-workspace="interfaces"]').waitFor();
+    const tabletObject = page.locator('[data-mobile-row-id]').first();
+    await tabletObject.click();
+    await page.locator('[data-mobile-object-detail]').waitFor();
+    await page.locator('.mdw-tools-toggle').click();
+    await page.locator('[data-domain-controls="interfaces"]').getByRole('button', { name: '异常', exact: true }).click();
+    await page.waitForFunction(() => (
+      !document.querySelector('[data-mobile-object-detail]') &&
+      !new URLSearchParams(location.search).has('object')
+    ));
+    const filteredSelection = await page.evaluate(() => ({
+      detail: Boolean(document.querySelector('[data-mobile-object-detail]')),
+      query: new URLSearchParams(location.search).get('object'),
+      visibleRows: document.querySelectorAll('[data-mobile-row-id]').length,
+    }));
+    check(
+      checks,
+      'filtering out a selected object clears detail and URL atomically',
+      !filteredSelection.detail && filteredSelection.query === null && filteredSelection.visibleRows === 0,
+      filteredSelection
+    );
+    await page.locator('[data-domain-controls="interfaces"]').getByRole('button', { name: '全部', exact: true }).click();
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.waitForFunction(() => innerWidth === 390 && innerHeight === 844);
 
     await page.locator('[data-section="terminals"]').click();
     await page.locator('[data-mobile-domain-workspace="terminals"]').waitFor();
@@ -883,6 +1063,7 @@ async function main() {
       terminalPageTwo.rows === 5 && /2\s*\/\s*2/.test(terminalPageTwo.page),
       terminalPageTwo
     );
+    await page.locator('.mdw-tools-toggle').click();
     await page.locator('.mdw-search input[type="search"]').fill('workstation-special');
     await page.waitForFunction(() => document.querySelectorAll('[data-mobile-row-id]').length === 1);
     check(
@@ -893,6 +1074,7 @@ async function main() {
 
     await page.locator('[data-section="logs"]').click();
     await page.locator('[data-mobile-domain-workspace="logs"]').waitFor();
+    await page.locator('.mdw-tools-toggle').click();
     check(
       checks,
       'logs is a stable first-class destination with functional controls',
@@ -901,13 +1083,14 @@ async function main() {
     );
 
     const domainRouteContracts = [
-      { route: 'connections', primary: 'interfaces', workspace: '网络工作区', placeholder: '源、目标、端口或协议' },
-      { route: 'dns4', primary: 'interfaces', workspace: 'DNS 工作区', placeholder: '名称、类型或目标' },
-      { route: 'dns6', primary: 'interfaces', workspace: 'DNS 工作区', placeholder: '接口、前缀或 DNS' },
-      { route: 'security', primary: 'interfaces', workspace: '安全工作区', placeholder: '告警、链、动作或说明' },
-      { route: 'terminals', primary: 'terminals', workspace: '终端工作区', placeholder: '终端名、IP 或 MAC' },
-      { route: 'logs', primary: 'logs', workspace: '事件时间线', placeholder: '内容、主题或时间' },
-      { route: 'trafficLoad', primary: 'overview', workspace: '资源工作区', placeholder: '' },
+      { route: 'routes', primary: 'interfaces', workspace: '网络工作区', placeholder: '目的、网关或路由表', kind: 'route', sections: 4, evidence: ['活动判据', '路径', '关联接口'] },
+      { route: 'connections', primary: 'interfaces', workspace: '网络工作区', placeholder: '源、目标、端口或协议', kind: 'connection', sections: 2, evidence: ['连接端点', '当前记录'] },
+      { route: 'dns4', primary: 'interfaces', workspace: 'DNS 工作区', placeholder: '名称、类型或目标', kind: 'dns', sections: 2, evidence: ['静态规则', 'DNS 配置边界'] },
+      { route: 'dns6', primary: 'interfaces', workspace: 'DNS 工作区', placeholder: '接口、前缀或 DNS', kind: 'dns', sections: 3, evidence: ['IPv6 ND', 'IPv6 发布与路由'], rowText: 'bridge-lan' },
+      { route: 'security', primary: 'interfaces', workspace: '安全工作区', placeholder: '告警、链、动作或说明', kind: 'security', sections: 3, evidence: ['规则判据', '匹配条件', '计数器'] },
+      { route: 'terminals', primary: 'terminals', workspace: '终端工作区', placeholder: '终端名、IP 或 MAC', kind: 'terminal', sections: 4, evidence: ['身份依据', 'DHCP / ARP 证据'] },
+      { route: 'logs', primary: 'logs', workspace: '事件时间线', placeholder: '内容、主题或时间', kind: 'log', sections: 3, evidence: ['事件记录', '时间与级别', '相邻事件'] },
+      { route: 'trafficLoad', primary: 'overview', workspace: '资源工作区', placeholder: '', kind: 'resource', sections: 1, evidence: ['样本摘要'] },
     ];
     for (const contract of domainRouteContracts) {
       const target = new URL(mock.url);
@@ -916,6 +1099,8 @@ async function main() {
       await page.goto(target.toString(), { waitUntil: 'domcontentloaded' });
       await waitForPhase(page, 'current');
       await page.locator(`[data-mobile-domain-workspace="${contract.route}"]`).waitFor();
+      const routeTools = page.locator('.mdw-tools-toggle');
+      if (await routeTools.count()) await routeTools.click();
       const routeState = await page.evaluate(() => ({
         primary: document.querySelector('.panel-task-navigation button.is-active')?.getAttribute('data-section') || '',
         workspace: document.querySelector('.mdw-title-row small')?.textContent?.trim() || '',
@@ -931,6 +1116,46 @@ async function main() {
           routeState.overflow <= 1,
         { contract, routeState }
       );
+
+      const inspectorRows = page.locator('[data-mobile-row-id]');
+      const inspectorTrigger = contract.rowText
+        ? inspectorRows.filter({ hasText: contract.rowText }).first()
+        : inspectorRows.first();
+      const inspectorObjectId = await inspectorTrigger.getAttribute('data-mobile-row-id');
+      await inspectorTrigger.click();
+      await page.locator('[data-mobile-object-detail]').waitFor();
+      const inspectorState = await page.evaluate(() => {
+        const detail = document.querySelector('[data-mobile-object-detail]');
+        return {
+          object: detail?.getAttribute('data-mobile-object-detail') || '',
+          query: new URLSearchParams(location.search).get('object') || '',
+          kind: detail?.getAttribute('data-domain-inspector-kind') || '',
+          sections: detail?.querySelectorAll('.mdi-section').length || 0,
+          evidenceBoundary: Boolean(detail?.querySelector('.mdi-evidence')),
+          text: detail?.textContent || '',
+          genericFallback: Boolean(detail?.textContent?.includes('低频对象尚未建立专用关系模型')),
+        };
+      });
+      check(
+        checks,
+        `${contract.route} opens a domain-specific evidence inspector`,
+        Boolean(inspectorObjectId) &&
+          inspectorState.object === inspectorObjectId &&
+          inspectorState.query === inspectorObjectId &&
+          inspectorState.kind === contract.kind &&
+          inspectorState.sections >= contract.sections &&
+          inspectorState.evidenceBoundary &&
+          contract.evidence.every((label) => inspectorState.text.includes(label)) &&
+          !inspectorState.genericFallback,
+        { contract, inspectorObjectId, inspectorState }
+      );
+      if (['routes', 'dns6', 'security', 'terminals', 'logs'].includes(contract.route)) {
+        screenshots.push(await screenshot(
+          page,
+          `mobile-inspector-${contract.route}.png`,
+          `mobile-inspector-${contract.route}`
+        ));
+      }
     }
 
     await page.locator('[data-section="overview"]').click();
@@ -1177,6 +1402,7 @@ async function main() {
         layout: layoutRect ? { left: layoutRect.left, right: layoutRect.right, width: layoutRect.width } : null,
         list: listRect ? { left: listRect.left, right: listRect.right, width: listRect.width } : null,
         inspector: inspectorRect ? { left: inspectorRect.left, right: inspectorRect.right, width: inspectorRect.width } : null,
+        previewObject: inspector?.querySelector('.mdi-object-heading h2')?.textContent?.trim() || '',
         columns: layout ? getComputedStyle(layout).gridTemplateColumns : '',
         overflow: document.documentElement.scrollWidth - innerWidth,
       };
@@ -1192,6 +1418,7 @@ async function main() {
         tablet768.nav.right <= tablet768.layout.left + 1 &&
         tablet768.list.right <= tablet768.inspector.left + 1 &&
         tablet768.list.width >= 280 && tablet768.inspector.width >= 300 &&
+        tablet768.previewObject === 'pppoe-wan1' &&
         tablet768.columns.split(' ').length >= 2 && tablet768.overflow <= 1
       ),
       tablet768
@@ -1203,12 +1430,14 @@ async function main() {
     const tabletSelection = await tabletPage.evaluate(() => ({
       listVisible: getComputedStyle(document.querySelector('.mdw-list-pane')).display !== 'none',
       detailVisible: Boolean(document.querySelector('[data-mobile-object-detail]')),
-      detailFields: document.querySelectorAll('.mdw-detail-fields > div').length,
+      detailKind: document.querySelector('[data-mobile-object-detail]')?.getAttribute('data-domain-inspector-kind') || '',
+      detailSections: document.querySelectorAll('[data-mobile-object-detail] .mdi-section').length,
     }));
     check(
       checks,
       'tablet selection preserves the object list and opens field evidence beside it',
-      tabletSelection.listVisible && tabletSelection.detailVisible && tabletSelection.detailFields >= 4,
+      tabletSelection.listVisible && tabletSelection.detailVisible &&
+        tabletSelection.detailKind === 'interface' && tabletSelection.detailSections >= 4,
       tabletSelection
     );
 
@@ -1243,26 +1472,96 @@ async function main() {
     const boundary1024 = await inspectCompactBoundary(1024, 768);
     const boundary1112 = await inspectCompactBoundary(1112, 834);
     const boundary1180 = await inspectCompactBoundary(1180, 820);
-    await tabletPage.setViewportSize({ width: 1181, height: 820 });
+    const boundary1181 = await inspectCompactBoundary(1181, 820);
+    const boundary1280 = await inspectCompactBoundary(1280, 820);
+    const boundary1365 = await inspectCompactBoundary(1365, 820);
+    screenshots.push(await screenshot(tabletPage, 'compact-boundary-1365.png', 'compact-boundary-1365'));
+    await tabletPage.setViewportSize({ width: 1366, height: 820 });
     await tabletPage.waitForFunction(() => (
       !document.querySelector('[data-mobile-domain-workspace]') &&
       Boolean(document.querySelector('[data-panel-route-content="interfaces"]'))
     ));
-    const boundary1181 = await tabletPage.evaluate(() => ({
+    const desktopUnpin = tabletPage.locator('.ddi-boundary button');
+    if (await desktopUnpin.count()) await desktopUnpin.click();
+    await tabletPage.locator('[data-desktop-object-detail] .ddi-heading h2').filter({ hasText: 'pppoe-wan1' }).waitFor();
+    const boundary1366 = await tabletPage.evaluate(() => ({
       mobile: Boolean(document.querySelector('[data-mobile-domain-workspace]')),
       desktop: Boolean(document.querySelector('[data-panel-route-content="interfaces"]')),
+      workspace: Boolean(document.querySelector('[data-desktop-domain-workspace="interfaces"]')),
+      search: Boolean(document.querySelector('.ddw-search input[type="search"]')),
+      filterButtons: document.querySelectorAll('.ddw-filters button').length,
+      sort: Boolean(document.querySelector('.ddw-sort select')),
+      detailKind: document.querySelector('[data-desktop-object-detail]')?.getAttribute('data-domain-inspector-kind') || '',
+      detailTitle: document.querySelector('[data-desktop-object-detail] .ddi-heading h2')?.textContent?.trim() || '',
+      pagination: document.querySelector('.ddw-table-pane > footer span')?.textContent?.trim() || '',
+      backVisible: getComputedStyle(document.querySelector('.panel-overview-back')).display !== 'none',
       rail: getComputedStyle(document.querySelector('.panel-task-navigation')).display,
       overflow: document.documentElement.scrollWidth - innerWidth,
     }));
-    const compactBoundaries = [boundary1024, boundary1112, boundary1180];
+    const compactBoundaries = [boundary1024, boundary1112, boundary1180, boundary1181, boundary1280, boundary1365];
     check(
       checks,
-      '1024–1180 keeps the compact task workspace and 1181 switches once to desktop',
+      '1024–1365 keeps the compact task workspace and 1366 switches once to desktop',
       compactBoundaries.every((item) => item.mobile && item.rail === 'grid' && item.overflow <= 1) &&
-        !boundary1181.mobile && boundary1181.desktop && boundary1181.rail === 'none' && boundary1181.overflow <= 1,
-      { boundary1024, boundary1112, boundary1180, boundary1181 }
+        !boundary1366.mobile && boundary1366.desktop && boundary1366.workspace &&
+        boundary1366.search && boundary1366.filterButtons >= 2 && boundary1366.sort &&
+        boundary1366.detailKind === 'interface' && boundary1366.detailTitle === 'pppoe-wan1' &&
+        boundary1366.pagination.includes('1 / 1') && boundary1366.backVisible &&
+        boundary1366.rail === 'none' && boundary1366.overflow <= 1,
+      { boundary1024, boundary1112, boundary1180, boundary1181, boundary1280, boundary1365, boundary1366 }
     );
-    screenshots.push(await screenshot(tabletPage, 'tablet-desktop-boundary-1181.png', 'tablet-desktop-boundary-1181'));
+    const desktopBridgeTrigger = tabletPage.locator('[data-desktop-row-id]').filter({ hasText: 'bridge-lan' }).locator('button').first();
+    await desktopBridgeTrigger.click();
+    await tabletPage.locator('[data-desktop-object-detail] .ddi-heading h2').filter({ hasText: 'bridge-lan' }).waitFor();
+    const desktopPinnedUrl = tabletPage.url();
+    await tabletPage.goBack();
+    await tabletPage.locator('[data-desktop-object-detail] .ddi-heading h2').filter({ hasText: 'pppoe-wan1' }).waitFor();
+    await tabletPage.goForward();
+    await tabletPage.locator('[data-desktop-object-detail] .ddi-heading h2').filter({ hasText: 'bridge-lan' }).waitFor();
+    const desktopForwardUrl = tabletPage.url();
+    check(
+      checks,
+      'desktop object inspector preserves Back and Forward history without reusing the mobile render tree',
+      desktopPinnedUrl === desktopForwardUrl &&
+        new URL(desktopForwardUrl).searchParams.has('object') &&
+        !await tabletPage.locator('[data-mobile-domain-workspace]').count(),
+      { desktopPinnedUrl, desktopForwardUrl }
+    );
+    await tabletPage.goBack();
+    await tabletPage.locator('[data-desktop-object-detail] .ddi-heading h2').filter({ hasText: 'pppoe-wan1' }).waitFor();
+    screenshots.push(await screenshot(tabletPage, 'tablet-desktop-boundary-1366.png', 'tablet-desktop-boundary-1366'));
+    for (const contract of domainRouteContracts) {
+      const target = new URL(mock.url);
+      target.searchParams.set('section', contract.route);
+      target.hash = contract.route;
+      await tabletPage.goto(target.toString(), { waitUntil: 'domcontentloaded' });
+      await waitForPhase(tabletPage, 'current');
+      await tabletPage.locator(`[data-desktop-domain-workspace="${contract.route}"]`).waitFor();
+      await tabletPage.locator('[data-desktop-object-detail]').waitFor();
+      const desktopDomain = await tabletPage.evaluate(() => ({
+        route: document.querySelector('[data-desktop-domain-workspace]')?.getAttribute('data-desktop-domain-workspace') || '',
+        kind: document.querySelector('[data-desktop-object-detail]')?.getAttribute('data-domain-inspector-kind') || '',
+        blocks: document.querySelectorAll('[data-desktop-object-detail] .ddi-block').length,
+        search: Boolean(document.querySelector('.ddw-search input[type="search"]')),
+        filters: document.querySelectorAll('.ddw-filters button').length,
+        sort: Boolean(document.querySelector('.ddw-sort select')),
+        pagination: document.querySelector('.ddw-table-pane > footer span')?.textContent || '',
+        mobileTree: Boolean(document.querySelector('[data-mobile-domain-workspace]')),
+      }));
+      check(
+        checks,
+        `desktop ${contract.route} opens a domain inspector with real object operations`,
+        desktopDomain.route === contract.route &&
+          desktopDomain.kind === contract.kind &&
+          desktopDomain.blocks >= 1 &&
+          desktopDomain.search &&
+          desktopDomain.filters >= 1 &&
+          desktopDomain.sort &&
+          /\d+\s*\/\s*\d+/.test(desktopDomain.pagination) &&
+          !desktopDomain.mobileTree,
+        desktopDomain
+      );
+    }
     await tabletContext.close();
 
     await page.locator('.panel-runtime-actions button').nth(1).click();
@@ -1310,6 +1609,18 @@ async function main() {
 
     check(checks, 'browser emitted no uncaught page errors', pageErrors.length === 0, pageErrors);
 
+    const screenshotByState = new Map(screenshots.map((item) => [item.state, item]));
+    if (screenshots.length !== RUNTIME_SCREENSHOT_CONTRACT.length || screenshotByState.size !== screenshots.length) {
+      throw new Error('runtime screenshot states must match the shared contract exactly once');
+    }
+    const orderedScreenshots = RUNTIME_SCREENSHOT_CONTRACT.map((expected) => {
+      const item = screenshotByState.get(expected.state);
+      if (!item || item.file !== expected.file || item.viewport?.width !== expected.viewport.width || item.viewport?.height !== expected.viewport.height) {
+        throw new Error('runtime screenshot does not match shared contract: ' + expected.state);
+      }
+      return item;
+    });
+
     const report = {
       pass: checks.every((item) => item.pass),
       source: 'playwright-production-runtime',
@@ -1325,8 +1636,8 @@ async function main() {
         version: browser.version(),
         driver: 'playwright-core',
       },
-      screenshots: screenshots.map((item) => item.file),
-      screenshotMetadata: screenshots,
+      screenshots: orderedScreenshots.map((item) => item.file),
+      screenshotMetadata: orderedScreenshots,
     };
     await fsp.writeFile(
       path.join(outDir, 'report.json'),

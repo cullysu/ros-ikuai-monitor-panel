@@ -38,7 +38,7 @@ function blockHas(source, selector, declaration) {
   assert.ok(block, selector + " must include " + declaration);
 }
 
-assert.match(surface, /max-width:\s*1180px/);
+assert.match(surface, /max-width:\s*1365px/);
 assert.doesNotMatch(
   [domainCss, patrolCss, connectionCss, navigationCss, surface].join("\n"),
   /1023px/,

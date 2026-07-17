@@ -17,7 +17,7 @@ import type { PanelRuntimeController } from "../runtime/usePanelRuntime";
 import type { RouterChannelTest, SavedRouterLogin } from "../runtime/panelRuntimeSchema";
 import "./router-connection.css";
 
-const MOBILE_CONNECTION_QUERY = "(max-width: 1180px)";
+const MOBILE_CONNECTION_QUERY = "(max-width: 1365px)";
 
 function useMobileConnectionSurface(): boolean {
   const [mobile, setMobile] = useState(() => typeof window !== "undefined" && window.matchMedia(MOBILE_CONNECTION_QUERY).matches);

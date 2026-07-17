@@ -35,12 +35,19 @@ const files = {
   mobileTraffic: "src/panel-framework/mobile/MobilePatrolTraffic.tsx",
   mobileResource: "src/panel-framework/mobile/MobileResourcePressure.tsx",
   mobileDomain: "src/panel-framework/mobile/MobileDomainWorkspace.tsx",
+  mobileInspector: "src/panel-framework/mobile/mobile-inspector/MobileDomainInspector.tsx",
+  networkInspectors: "src/panel-framework/mobile/mobile-inspector/NetworkInspectors.tsx",
+  terminalLogInspectors: "src/panel-framework/mobile/mobile-inspector/TerminalLogInspectors.tsx",
+  securityDnsInspectors: "src/panel-framework/mobile/mobile-inspector/SecurityDnsInspectors.tsx",
+  sectionRowEvidence: "src/panel-framework/sections/sectionRowEvidence.ts",
+  sectionRowEvidenceTypes: "src/panel-framework/sections/sectionRowEvidenceTypes.ts",
   mobileDomainModel: "src/panel-framework/mobile/mobileDomainWorkspaceModel.ts",
   mobileDomainDefinitions: "src/panel-framework/mobile/mobileDomainDefinitions.ts",
   mobileCss: "src/panel-framework/mobile/mobile-patrol.css",
   mobileDomainCss: "src/panel-framework/mobile/mobile-domain.css",
   nav: "src/panel-framework/sections/PanelTaskNavigation.tsx",
   navCss: "src/panel-framework/sections/section-console.css",
+  derive: "src/panel-framework/overview/deriveOverviewState.ts",
   evidenceModel: "src/panel-framework/overview/evidence-model/buildOverviewEvidenceModel.ts",
   evidenceInstruments: "src/panel-framework/overview/evidence-model/buildOverviewInstruments.ts",
   resourceModel: "src/panel-framework/sections/sectionModels.ts",
@@ -56,16 +63,20 @@ const files = {
   desktop: "src/panel-framework/overview/desktop-overview/DesktopOverviewScreen.tsx",
   desktopCss: "src/panel-framework/overview/desktop-overview/styles/desktop-overview.css",
   desktopTokens: "src/panel-framework/overview/desktop-overview/styles/desktop-overview-tokens.css",
+  operationalPage: "src/panel-framework/sections/OperationalSectionPage.tsx",
+  desktopDomain: "src/panel-framework/sections/DesktopDomainWorkspace.tsx",
+  desktopInspector: "src/panel-framework/sections/DesktopDomainInspector.tsx",
+  desktopDomainCss: "src/panel-framework/sections/desktop-domain.css",
   builtCss: "public/assets/framework/style.css",
   builtJs: "public/assets/framework/panel-framework.js",
 };
 const source = Object.fromEntries(Object.entries(files).map(([key, file]) => [key, read(file)]));
 const mobileStyles = [source.mobileCss, source.mobileDomainCss, source.resourceChartCss, source.navCss].join("\n");
-const mobileTree = [source.mobile, source.mobileLedger, source.mobileIncident, source.mobileFocus, source.mobileTraffic, source.mobileResource, source.mobileDomain, source.mobileDomainModel, source.mobileDomainDefinitions].join("\n");
-const evidenceTruth = [source.evidenceModel, source.evidenceInstruments].join("\n");
+const mobileTree = [source.mobile, source.mobileLedger, source.mobileIncident, source.mobileFocus, source.mobileTraffic, source.mobileResource, source.mobileDomain, source.mobileInspector, source.networkInspectors, source.terminalLogInspectors, source.securityDnsInspectors, source.mobileDomainModel, source.mobileDomainDefinitions].join("\n");
+const evidenceTruth = [source.derive, source.evidenceModel, source.evidenceInstruments].join("\n");
 
 includes(source.panel, ["MobilePatrolScreen", "DesktopOverviewScreen", "useMobilePanelSurface", "mobile ?"], "independent overview mount");
-includes(source.mobileHook, ['"(max-width: 1180px)"'], "mobile/tablet capability boundary");
+includes(source.mobileHook, ['"(max-width: 1365px)"'], "mobile/tablet capability boundary");
 excludes(source.panel, ["MobileOverviewScreen", "mobile-overview", "display: none"], "overview mount");
 
 includes(evidenceTruth, [
@@ -84,16 +95,24 @@ includes(source.mobile, ["data-mobile-overview", "data-mobile-core-facts", "data
 includes(source.mobileLedger, ["data-mobile-evidence-ledger", "userOverrideRef", "open={open}", "available"], "mobile evidence disclosure");
 excludes(source.mobileLedger, ["ledger.open ="], "mobile evidence disclosure");
 includes(source.mobileTraffic, ["preserveAspectRatio=\"xMidYMid meet\"", "<title", "<desc", "mp-chart-scale", "mp-chart-time"], "mobile WAN chart");
-includes(source.mobileResource, ["preserveAspectRatio=\"xMidYMid meet\"", "role=\"meter\"", "策略阈值", "样本明细"], "mobile resource signal");
+includes(source.mobileResource, ["preserveAspectRatio=\"xMidYMid meet\"", 'role={observed ? "meter"', "aria-valuenow={rounded ?? undefined}", "策略阈值", "样本明细"], "mobile resource signal");
 includes(source.mobileDomain, [
   "type=\"search\"",
   "mdw-filter-row",
   "mdw-pagination",
-  "data-mobile-object-detail",
+  "MobileDomainInspector",
+  "mdw-tools-toggle",
   "useLayoutEffect",
   "detailTitleRef.current?.focus({ preventScroll: true })",
-  "trigger?.focus({ preventScroll: true })",
+  "rowRefs.current.get(lastTriggerRef.current)?.focus({ preventScroll: true })",
 ], "mobile domain workspace");
+includes(source.mobileInspector, ["data-mobile-object-detail", "data-domain-inspector-kind", "DomainInspectorBody", "EvidenceBoundary"], "mobile domain inspector");
+includes(source.networkInspectors, ["InterfaceInspector", "RouteInspector", "依赖与路由", "链路质量", "关联接口"], "network domain inspectors");
+includes(source.terminalLogInspectors, ["TerminalInspector", "LogInspector", "DHCP / ARP 证据", "时间与级别", "相邻事件"], "terminal and log inspectors");
+includes(source.securityDnsInspectors, ["SecurityInspector", "DnsInspector", "匹配条件", "DNS 配置边界"], "security and DNS inspectors");
+includes(source.sectionRowEvidenceTypes, ['"interface"', '"route"', '"terminal"', '"log"', '"security"', '"dns"', "defaultRouteRelation", "relatedInterface", "neighbors"], "typed row evidence");
+includes(source.sectionRowEvidence, ["buildRouteEvidence", "interfaceRelation", "LogNeighborEvidence", "candidate.item !== row"], "domain relation evidence builders");
+excludes(source.mobileDomain + source.mobileInspector, ["<dl", "mdw-detail-fields", "DetailPane"], "domain inspector architecture");
 excludes(source.mobileDomain, ["requestAnimationFrame"], "mobile domain deterministic focus");
 includes(source.mobileDomainModel, ['window.addEventListener("popstate"', "window.history.pushState", "rowsFromModel", "workspaceLabel"], "mobile domain state model");
 includes(source.mobileDomainDefinitions, ["domainDefinitionFor", "sortWorkspaceRows"], "domain-specific controls");
@@ -108,7 +127,7 @@ includes(source.resourceModel, ["resourceVisualization", "historyTimestamp", "�
 excludes(source.resourceModel, ['values.map((value) => text(value)).join(" · ")'], "resource model");
 includes(source.resourceChart, ["preserveAspectRatio=\"xMidYMid meet\"", "0–100%", "section-series-threshold", "<title", "<desc"], "resource SVG chart");
 
-includes(source.timeContract, ["RFC3339_WITH_TIMEZONE", "parseRfc3339Timestamp"], "frontend time contract");
+includes(source.timeContract, ["RFC3339_WITH_TIMEZONE", "parseRfc3339Timestamp", "formatRfc3339Local"], "frontend time contract");
 includes(source.runtimeSchema, ["validateSnapshotTree", "带时区的 RFC 3339", "MAX_SNAPSHOT_COLLECTION_ROWS", "validatePercentage"], "deep runtime schema");
 excludes(source.runtime, ['phase: browserOfflineHint ? "offline"', 'return; // navigator.onLine'], "LAN monitoring request policy");
 excludes(source.runtimeChrome, ['phase === "offline"'], "runtime phase model");
@@ -119,7 +138,17 @@ includes(source.index, ['<main id="app"'], "public shell");
 excludes(source.index, ["#dns", "panel-legacy", "Ctrl+K", "legacy"], "public shell");
 
 includes(source.desktop, ["data-desktop-overview", "DesktopIncidentDocket", "DesktopLedger", "DesktopWanEvidence"], "desktop console");
-includes(source.desktopCss + source.desktopTokens, ["@media (min-width: 1181px)"], "desktop boundary");
+includes(source.desktopCss + source.desktopTokens, ["@media (min-width: 1366px)"], "desktop boundary");
+includes(source.operationalPage, ["DesktopDomainWorkspace", "model={model}"], "desktop operational mount");
+excludes(source.operationalPage, ["DataTable", "panel-section-tables"], "retired generic desktop table");
+includes(source.desktopDomain, ["data-desktop-domain-workspace", "type=\"search\"", "filterWorkspaceRows", "sortWorkspaceRows", "第 {activePage} / {pageCount} 页", "DesktopDomainInspector"], "desktop domain workspace");
+includes(source.desktopInspector, ["data-desktop-object-detail", "InterfaceEvidence", "RouteEvidence", "TerminalEvidence", "LogEvidence", "SecurityEvidence", "DnsEvidence"], "desktop domain inspector");
+includes(source.desktopDomainCss, [".ddw-toolbar", ".ddw-table-pane", ".ddw-inspector", ".ddi-facts"], "desktop domain visual system");
+excludes(source.desktopDomainCss, ["!important", "font-size: 10px", "font-size: 9px"], "desktop domain readable style");
+const desktopDomainFontSizes = fontSizes(source.desktopDomainCss);
+assert(desktopDomainFontSizes.length > 0 && Math.min(...desktopDomainFontSizes) >= 11, "desktop domain text must stay at least 11px");
+includes(source.mobileDomainModel, ["panelObject"], "shared object history state");
+excludes(source.mobileDomainModel, ["mobileObject"], "surface-neutral object history state");
 
 const rejected = [
   "src/panel-framework/legacyBridge.ts",
@@ -144,9 +173,18 @@ const budgets = [
   [files.mobileTraffic, source.mobileTraffic, 130],
   [files.mobileResource, source.mobileResource, 140],
   [files.mobileDomain, source.mobileDomain, 420],
+  [files.mobileInspector, source.mobileInspector, 240],
+  [files.networkInspectors, source.networkInspectors, 260],
+  [files.terminalLogInspectors, source.terminalLogInspectors, 220],
+  [files.securityDnsInspectors, source.securityDnsInspectors, 260],
+  [files.sectionRowEvidence, source.sectionRowEvidence, 440],
+  [files.sectionRowEvidenceTypes, source.sectionRowEvidenceTypes, 220],
   [files.mobileDomainModel, source.mobileDomainModel, 320],
   [files.mobileDomainDefinitions, source.mobileDomainDefinitions, 420],
   [files.objectIdentity, source.objectIdentity, 220],
+  [files.desktopDomain, source.desktopDomain, 240],
+  [files.desktopInspector, source.desktopInspector, 280],
+  [files.desktopDomainCss, source.desktopDomainCss, 540],
   [files.evidenceModel, source.evidenceModel, 520],
   [files.evidenceInstruments, source.evidenceInstruments, 220],
   [files.resourceChart, source.resourceChart, 150],
@@ -154,11 +192,11 @@ const budgets = [
 for (const [file, body, max] of budgets) assert(lineCount(body) <= max, `${file} exceeds maintainability budget ${max}: ${lineCount(body)}`);
 
 if (source.builtJs) {
-  includes(source.builtJs, ["data-mobile-overview", "data-mobile-domain-workspace", "data-desktop-overview", "data-section-time-series"], "built JavaScript");
+  includes(source.builtJs, ["data-mobile-overview", "data-mobile-domain-workspace", "data-desktop-overview", "data-desktop-domain-workspace", "data-desktop-object-detail", "data-section-time-series"], "built JavaScript");
   excludes(source.builtJs, ["data-mobile-native", "mountRouterOverviewPanel", "MobileOverviewScreen", "preserveAspectRatio=\"none\""], "built JavaScript");
 }
 if (source.builtCss) {
-  includes(source.builtCss, [".mp-shell", ".mdw-shell", ".section-timeseries", ".do-shell"], "built CSS");
+  includes(source.builtCss, [".mp-shell", ".mdw-shell", ".desktop-domain-workspace", ".section-timeseries", ".do-shell"], "built CSS");
   excludes(source.builtCss, [".mo-shell", ".mn-topology"], "built CSS");
   const builtImportant = (source.builtCss.match(/!important/g) || []).length;
   assert(builtImportant === 0, `built CSS must not contain !important overrides: ${builtImportant}`);

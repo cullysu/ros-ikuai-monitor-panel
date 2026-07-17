@@ -30,6 +30,7 @@ function axisTime(timestamp: number): string {
 
 export function MobileResourcePressure({ resource }: { resource: OverviewResourceInstrument }) {
   const chartReady = resource.status === "ready" && resource.points.length >= 2;
+  const currentComplete = resource.metrics.every((metric) => metric.value !== null);
   const startTime = chartReady ? axisTime(resource.points[0].timestamp) : "";
   const endTime = chartReady ? axisTime(resource.points[resource.points.length - 1].timestamp) : "";
 
@@ -43,22 +44,26 @@ export function MobileResourcePressure({ resource }: { resource: OverviewResourc
       <div className="mp-resource-metrics" aria-label={resource.accessibleSummary}>
         {resource.metrics.map((metric) => {
           const Icon = ICONS[metric.key];
-          const value = Math.max(0, Math.min(100, metric.value));
+          const observed = metric.value !== null;
+          const rounded = observed ? Math.round(metric.value as number) : null;
+          const value = observed ? Math.max(0, Math.min(100, metric.value as number)) : 0;
           return (
-            <div key={metric.key}>
+            <div className={observed ? "" : "is-missing"} key={metric.key}>
               <span><Icon aria-hidden="true" size={17} /><b>{metric.label}</b></span>
               <span
                 className="mp-resource-meter"
-                role="meter"
-                aria-label={`${metric.label} ${Math.round(metric.value)}%，策略阈值 ${metric.threshold}%`}
-                aria-valuemin={0}
-                aria-valuemax={100}
-                aria-valuenow={Math.round(metric.value)}
+                role={observed ? "meter" : undefined}
+                aria-label={observed
+                  ? `${metric.label} ${rounded}%，策略阈值 ${metric.threshold}%`
+                  : `${metric.label} 未记录，策略阈值 ${metric.threshold}%`}
+                aria-valuemin={observed ? 0 : undefined}
+                aria-valuemax={observed ? 100 : undefined}
+                aria-valuenow={rounded ?? undefined}
               >
                 <i style={{ width: `${value}%` }} />
                 <em style={{ left: `${metric.threshold}%` }} />
               </span>
-              <strong>{Math.round(metric.value)}%</strong>
+              <strong>{rounded === null ? "未记录" : `${rounded}%`}</strong>
               <small>阈值 {metric.threshold}%</small>
             </div>
           );
@@ -87,7 +92,7 @@ export function MobileResourcePressure({ resource }: { resource: OverviewResourc
           </div>
         </div>
       ) : (
-        <p className="mp-resource-pending">只有当前完整资源采样；至少两个带时间样本后才绘制趋势。</p>
+        <p className="mp-resource-pending">{currentComplete ? "只有当前完整资源采样；至少两个带时间样本后才绘制趋势。" : "当前仅取得部分资源采样；缺失项不按零处理，完整时间序列到达前不绘图。"}</p>
       )}
 
       {chartReady ? (

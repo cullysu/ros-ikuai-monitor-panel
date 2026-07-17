@@ -7,7 +7,7 @@ description: "Run a gated product-company loop for the RouterOS/iKuai monitoring
 
 Operate as one small product company with explicit handoffs. Do not imitate a multi-agent runtime and do not install a framework. Execute the roles inline, record the result of every gate, and return failed work to the role that owns it.
 
-Read `references/project-gates.md` before changing the overview product. For any visible or interactive UI change, also read `references/emil-design-engineering.md`; it adapts Emil Kowalski's design-engineering rules to a high-frequency read-only operations console. Read `references/sources.md` only when the origin or rationale of the loop matters.
+Read `references/project-gates.md` before changing the overview product. For any visible or interactive UI change, also read `references/emil-design-engineering.md`; it adapts Emil Kowalski's design-engineering rules to a high-frequency read-only operations console. Before release work, read `references/release-transaction.md` and maintain its durable state with `scripts/release_checkpoint.py`. Read `references/sources.md` only when the origin or rationale of the loop matters.
 
 ## Invariants
 
@@ -19,6 +19,9 @@ Read `references/project-gates.md` before changing the overview product. For any
 - Never set top-level pass when a required scenario, viewport, screenshot, or CI check is missing.
 - Do not upload until local gates pass. After any GitHub upload, wait for Linux validation, Windows packaging, and GHCR/container checks.
 - Do not use normal `git push` in this repository; follow its atomic connector workflow.
+- Bind evidence to both the candidate commit and its Git tree. A later commit is not the same release candidate even when runtime files appear unchanged.
+- Treat public-repository publication as external disclosure. Complete the read-only disclosure and capability preflight before uploading the first blob; never use source uploads as a capability probe.
+- Long-running matrices and publication transactions must have durable checkpoints and a cancellation-safe resume path. Use `scripts/merge_matrix_reports.py` for strict reconstruction from scenario-sized matrix reports; a monolithic in-memory loop is not a release procedure.
 
 ## Loop State
 
@@ -30,8 +33,12 @@ For non-trivial work, maintain `docs/product-loop-current.md` with:
 4. current gate table (`pending`, `pass`, or `fail`);
 5. evidence paths and failed-check reasons;
 6. next owner and next action.
+7. inspected local commit/tree and verified remote parent;
+8. evidence freshness, including which candidate generated each report;
+9. public-disclosure and publication-capability status.
 
 Never mark a gate passed from prose alone. Attach code, test, report, or screenshot evidence.
+If this file disagrees with `.product-loop/state.json`, a current report, the worktree, or the remote ref, mark the affected gate stale immediately instead of choosing the more convenient record.
 
 ## Stage 1 — Product Manager
 
@@ -108,6 +115,7 @@ Verify behavior and visual evidence independently.
 3. Inspect screenshots for hierarchy, clipping, compositor artifacts, density, duplicate facts, and state differentiation.
 4. Compare report totals with the required matrix; incomplete means fail.
 5. Record each failure as product, design, engineering, test, or environment ownership.
+6. Keep human visual review separate from DOM, screenshot-dimension, and matrix checks. A technically complete matrix cannot award its own aesthetic or product sign-off.
 
 Return a failed item to its owner:
 
@@ -119,14 +127,17 @@ Return a failed item to its owner:
 
 ## Stage 7 — Release Engineering
 
-1. Confirm the worktree contains only intended files.
-2. Rebuild and rerun required local gates.
-3. Confirm the current commit has a complete release-matrix report.
-4. Recheck the remote parent immediately before the atomic GitHub ref update.
-5. Upload through the repository's connector workflow without force.
-6. Wait for Linux validation, Windows packaging, and GHCR/container checks.
-7. If any check fails, diagnose it and return to the owning stage. Never call the release complete while CL is pending or red.
+1. Run the read-only preflight from `references/release-transaction.md`: repository visibility, intended diff, secret/credential exclusion, connector capability, and external-disclosure policy.
+2. If publication is policy- or authorization-gated, stop remote writes without retrying through another tool. Continue local product work and keep the release gate pending or failed.
+3. Confirm a clean, isolated candidate tree contains only intended files; unrelated dirty files may not ride along.
+4. Initialize `scripts/release_checkpoint.py`, then record the local commit, Git tree, verified remote parent, intended path manifest, report paths, and report timestamps before the expensive full matrices.
+5. Rebuild and rerun every exact-candidate gate. A report named for another SHA is historical evidence only.
+6. If the publication API synthesizes a new commit SHA, do not call the old local SHA the uploaded SHA. Establish and verify the remote commit/tree identity as specified in the release transaction.
+7. Recheck the remote parent immediately before one non-force atomic ref update. Never use a test blob or temporary branch as an authorization probe.
+8. Fetch or compare the resulting remote ref and tree, then wait for Linux validation, Windows packaging, and GHCR/container checks for that exact remote SHA.
+9. A missing local Docker daemon remains `pending`; only the exact-SHA GHCR job can close the container gate in that case.
+10. If any check fails, diagnose it and return to the owning stage. Never call the release complete while CL is pending, missing, cancelled, or red.
 
 ## Completion Rule
 
-Complete the loop only when every required gate is `pass`, evidence paths exist, the release matrix is complete, and all three GitHub checks are green. Otherwise report the current failing gate and continue from that stage.
+Complete the loop only when every required gate is `pass`, evidence paths exist and match the final candidate identity, the release matrix is complete, public-disclosure preflight passed, and all three exact-SHA GitHub checks are green. Otherwise report the current failing gate and continue from that stage.

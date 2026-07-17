@@ -31,7 +31,7 @@ jobs:
 
       - name: Python syntax and collector regressions
         run: |
-          python -m py_compile app.py panel_backend/api_schema.py panel_backend/collector_evidence.py panel_backend/collector_transport.py panel_backend/config_store.py panel_backend/router_transport.py panel_backend/session_security.py panel_backend/time_contract.py tools/check-backend-security.py tools/check-backend-release-blockers.py tools/check-collector-regressions.py tools/convert-oci-to-routeros-docker-archive.py
+          python -m py_compile app.py panel_backend/api_schema.py panel_backend/collector_evidence.py panel_backend/collector_service.py panel_backend/collector_transport.py panel_backend/config_store.py panel_backend/http_dispatcher.py panel_backend/router_transport.py panel_backend/session_security.py panel_backend/snapshot_builder.py panel_backend/static_assets.py panel_backend/time_contract.py tools/check-backend-security.py tools/check-backend-release-blockers.py tools/check-collector-regressions.py tools/check-static-assets.py tools/convert-oci-to-routeros-docker-archive.py
           python tools/check-backend-security.py
           python tools/check-backend-release-blockers.py
           python tools/check-collector-regressions.py
@@ -51,7 +51,8 @@ jobs:
       - name: Build and verify committed frontend assets
         run: |
           npm run build
-          git diff --exit-code -- public/assets/framework/panel-framework.js public/assets/framework/style.css
+          python tools/check-static-assets.py
+          git diff --exit-code -- public/index.html public/assets/framework
 
       - name: Runtime schema and section evidence contracts
         run: |
@@ -204,6 +205,11 @@ jobs:
           $publicRoot = Split-Path -Parent $index.FullName
           if (-not (Test-Path -LiteralPath (Join-Path $publicRoot "assets\framework\style.css"))) { throw "Bundled framework style asset was not found." }
           if (-not (Test-Path -LiteralPath (Join-Path $publicRoot "assets\framework\panel-framework.js"))) { throw "Bundled framework script asset was not found." }
+          $styleAsset = [regex]::Match($indexText, '/assets/framework/(style\.[0-9a-f]{12}\.css)').Groups[1].Value
+          $scriptAsset = [regex]::Match($indexText, '/assets/framework/(panel-framework\.[0-9a-f]{12}\.js)').Groups[1].Value
+          if (-not $styleAsset -or -not (Test-Path -LiteralPath (Join-Path $publicRoot "assets\framework\$styleAsset"))) { throw "Bundled content-addressed framework style was not found." }
+          if (-not $scriptAsset -or -not (Test-Path -LiteralPath (Join-Path $publicRoot "assets\framework\$scriptAsset"))) { throw "Bundled content-addressed framework script was not found." }
+          if (-not (Test-Path -LiteralPath (Join-Path $publicRoot "assets\framework\manifest.json"))) { throw "Bundled framework asset manifest was not found." }
           $envFile = ".\dist\routeros-triage-panel\routeros-panel.env"
           Select-String -Path $envFile -Pattern "ROS_PANEL_BIND=127.0.0.1" -Quiet | ForEach-Object {
             if (-not $_) { throw "Windows env is missing loopback bind default." }

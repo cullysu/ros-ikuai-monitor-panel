@@ -1,5 +1,6 @@
 import base64
 import ast
+import gzip
 import hashlib
 import json
 import os
@@ -345,12 +346,28 @@ def assert_app_security_contract():
     assert config["sshHostKeyFingerprint"] == ""
 
     source = (ROOT / "app.py").read_text(encoding="utf-8")
+    dispatcher_source = (ROOT / "panel_backend" / "http_dispatcher.py").read_text(encoding="utf-8")
+    collector_service_source = (ROOT / "panel_backend" / "collector_service.py").read_text(encoding="utf-8")
+    snapshot_builder_source = (ROOT / "panel_backend" / "snapshot_builder.py").read_text(encoding="utf-8")
     assert "AutoAddPolicy" not in source
     assert "f\"http://{router['host']}/rest/" not in source
     assert "f\"http://{config['host']}/rest/" not in source
-    assert "frame-ancestors 'none'" in source
-    assert '"X-Content-Type-Options", "nosniff"' in source
-    assert '"Referrer-Policy", "no-referrer"' in source
+    assert "frame-ancestors 'none'" in dispatcher_source
+    assert '"X-Content-Type-Options", "nosniff"' in dispatcher_source
+    assert '"Referrer-Policy", "no-referrer"' in dispatcher_source
+    assert "class Handler(BaseHTTPRequestHandler)" not in source
+    assert "Handler = create_panel_handler(sys.modules[__name__])" in source
+    assert "class PanelRequestHandler(BaseHTTPRequestHandler)" in dispatcher_source
+    assert "self.self.runtime" not in dispatcher_source
+    assert "class Collector(SnapshotBuilderMixin, CollectorServiceMixin)" in source
+    assert "def build_maps(self, rest):" not in source
+    assert "def update_state(self, fresh_counter_sample=False):" not in source
+    assert "class SnapshotBuilderMixin" in snapshot_builder_source
+    assert "def build_snapshot(self, rest, ssh, fresh_counter_sample=False):" in snapshot_builder_source
+    assert "class CollectorServiceMixin" in collector_service_source
+    assert "def update_state(self, fresh_counter_sample=False):" in collector_service_source
+    assert "def start(self):" in collector_service_source
+    assert len(source.splitlines()) <= 3900, "app.py must not absorb HTTP, snapshot builder, or collector service responsibilities again"
     assert "Python/" not in app.Handler.version_string(app.Handler)
 
     profile_source = (ROOT / "panel_backend" / "config_store.py").read_text(encoding="utf-8")
@@ -390,7 +407,13 @@ def assert_live_http_boundary():
     with tempfile.TemporaryDirectory() as temp_dir:
         public_dir = pathlib.Path(temp_dir)
         (public_dir / "index.html").write_text("<!doctype html><title>fixture</title>", encoding="utf-8")
-        (public_dir / "asset.js").write_text("console.log('fixture')", encoding="utf-8")
+        plain_body = b"console.log('fixture')"
+        (public_dir / "asset.js").write_bytes(plain_body)
+        hashed_body = b"console.log('content-addressed fixture')\n"
+        hashed_name = f"panel-framework.{hashlib.sha256(hashed_body).hexdigest()[:12]}.js"
+        hashed_path = public_dir / hashed_name
+        hashed_path.write_bytes(hashed_body)
+        pathlib.Path(f"{hashed_path}.gz").write_bytes(gzip.compress(hashed_body, compresslevel=9))
         app.PUBLIC_DIR = public_dir
         app.PANEL_SESSION_STORE.clear()
         app.PANEL_REQUEST_RATE_LIMITER.clear()
@@ -408,14 +431,47 @@ def assert_live_http_boundary():
             assert public.headers.get("X-Content-Type-Options") == "nosniff"
             assert public.headers.get("Referrer-Policy") == "no-referrer"
             assert public.headers.get("X-Frame-Options") == "DENY"
+            assert public.headers.get("Cache-Control") == "no-cache"
+
+            index = app.requests.get(f"{base}/", timeout=3)
+            assert index.status_code == 200
+            assert index.headers.get("Cache-Control") == "no-cache"
+
+            compressed = app.requests.get(
+                f"{base}/{hashed_name}",
+                headers={"Accept-Encoding": "gzip"},
+                timeout=3,
+            )
+            assert compressed.status_code == 200
+            assert compressed.content == hashed_body
+            assert compressed.headers.get("Content-Encoding") == "gzip"
+            assert compressed.headers.get("Vary") == "Accept-Encoding"
+            assert compressed.headers.get("Cache-Control") == "public, max-age=31536000, immutable"
+            etag = compressed.headers.get("ETag")
+            assert etag and etag.startswith('"sha256-')
+            conditional = app.requests.get(
+                f"{base}/{hashed_name}",
+                headers={"Accept-Encoding": "gzip", "If-None-Match": etag},
+                timeout=3,
+            )
+            assert conditional.status_code == 304
+            assert conditional.content == b""
 
             first_client = app.requests.Session()
             first = first_client.get(f"{base}/api/router-login", timeout=3)
             assert first.status_code == 200, first.text
+            assert first.headers.get("Cache-Control") == "no-store"
             assert app.PANEL_SESSION_STORE.size() == 1
             repeat = first_client.get(f"{base}/api/router-login", timeout=3)
             assert repeat.status_code == 200
             assert app.PANEL_SESSION_STORE.size() == 1
+
+            panel_network = first_client.get(f"{base}/api/panel-network", timeout=3)
+            assert panel_network.status_code == 200, panel_network.text
+            assert panel_network.json().get("panelNetwork", {}).get("currentUrl")
+            health = first_client.get(f"{base}/api/health", timeout=3)
+            assert health.status_code == 200, health.text
+            assert health.json().get("panelNetwork", {}).get("currentUrl")
 
             invalid_shape = first_client.post(
                 f"{base}/api/router-login",

@@ -35,13 +35,22 @@ const { toFiniteNumber } = require(
 const { buildSectionModel } = require(
   path.join(root, "src", "panel-framework", "sections", "sectionModels.ts")
 );
+const { buildDesktopOverviewModel } = require(
+  path.join(root, "src", "panel-framework", "overview", "desktop-overview", "desktopOverviewModel.ts")
+);
+const { buildRouterOsRouteEvidenceModel } = require(
+  path.join(root, "src", "panel-framework", "overview", "routerosEvidenceModel.ts")
+);
+const { buildRouterOsTrustModel } = require(
+  path.join(root, "src", "panel-framework", "overview", "routerosTrustModel.ts")
+);
 const { PANEL_ROUTES, routeUrl } = require(
   path.join(root, "src", "panel-framework", "routes", "panelRoutes.ts")
 );
 const { rowsFromModel } = require(
   path.join(root, "src", "panel-framework", "mobile", "mobileDomainWorkspaceModel.ts")
 );
-const { domainDefinitionFor, sortWorkspaceRows } = require(
+const { domainDefinitionFor, filterWorkspaceRows, sortWorkspaceRows } = require(
   path.join(root, "src", "panel-framework", "mobile", "mobileDomainDefinitions.ts")
 );
 
@@ -49,6 +58,27 @@ const clone = (value) => structuredClone(value);
 const modelFor = (snapshot) => buildOverviewEvidenceModel(snapshot, deriveOverviewState(snapshot));
 const modelForHint = (snapshot, scenarioHint) => buildOverviewEvidenceModel(snapshot, deriveOverviewState(snapshot, { scenarioHint }));
 const textOf = (model) => JSON.stringify(model);
+const workspaceMeta = (overrides = {}) => ({
+  state: "neutral",
+  attention: false,
+  running: null,
+  active: null,
+  disabled: null,
+  severity: "unknown",
+  protocol: "",
+  trafficBps: null,
+  connections: null,
+  timestamp: null,
+  address: "",
+  targetAddress: "",
+  distance: null,
+  utilization: null,
+  sampleCount: null,
+  ruleOrder: null,
+  tags: [],
+  identityParts: [],
+  ...overrides,
+});
 
 for (const missing of [null, undefined, "", "   ", true, false]) {
   assert.equal(toFiniteNumber(missing), null, `${JSON.stringify(missing)} must remain unavailable`);
@@ -85,6 +115,105 @@ assert.match(
   routeUrl("interfaces", { pathname: "/panel", search: "?mode=public" }, { objectId: "interface-ether9" }),
   /[?&]object=interface-ether9(?:&|#)/,
 );
+
+const missingWan = clone(OVERVIEW_SCENARIO_FIXTURES.single);
+delete missingWan.wan;
+delete missingWan.pppoe;
+const missingWanState = deriveOverviewState(missingWan);
+assert.equal(missingWanState.facts.wan.available, false, "missing WAN arrays are not an observed empty collection");
+assert.equal(missingWanState.facts.wan.online, 0);
+assert.equal(missingWanState.facts.wan.offline, 0);
+assert.equal(missingWanState.facts.wan.unknown, 0);
+assert.equal(missingWanState.facts.wan.label, "WAN 未采集");
+assert.doesNotMatch(JSON.stringify(missingWanState.facts.wan), /WAN 可用|0\/0/);
+assert.equal(modelFor(missingWan).evidenceMode, "historical", "missing WAN evidence must stop a current/complete claim");
+const missingWanTrust = buildRouterOsTrustModel(missingWan, missingWanState);
+assert.equal(missingWanTrust.forwarding.value, "不可判");
+assert.equal(missingWanTrust.business.value, "不可判");
+
+const unknownWan = clone(OVERVIEW_SCENARIO_FIXTURES.single);
+delete unknownWan.wan[0].running;
+const unknownWanState = deriveOverviewState(unknownWan);
+assert.equal(unknownWanState.facts.wan.online, 0, "running=undefined is not online");
+assert.equal(unknownWanState.facts.wan.offline, 0, "running=undefined is not offline");
+assert.equal(unknownWanState.facts.wan.unknown, 1);
+assert.equal(unknownWanState.facts.wan.label, "WAN 状态未完整");
+assert.equal(modelFor(unknownWan).evidenceMode, "historical");
+assert.doesNotMatch(textOf(modelFor(unknownWan)), /业务采样完整/);
+
+const missingInterfaces = clone(OVERVIEW_SCENARIO_FIXTURES.single);
+delete missingInterfaces.interfaces;
+const missingInterfacesState = deriveOverviewState(missingInterfaces);
+assert.equal(missingInterfacesState.facts.interfaces.available, false);
+assert.equal(missingInterfacesState.facts.interfaces.online, 0);
+assert.equal(missingInterfacesState.facts.interfaces.down, 0);
+assert.equal(missingInterfacesState.facts.interfaces.unknown, 0);
+assert.equal(missingInterfacesState.facts.interfaces.label, "接口未采集");
+assert.doesNotMatch(missingInterfacesState.facts.interfaces.text, /接口在线/);
+
+const unknownInterface = clone(OVERVIEW_SCENARIO_FIXTURES.single);
+delete unknownInterface.interfaces[0].running;
+const unknownInterfaceState = deriveOverviewState(unknownInterface);
+assert.equal(unknownInterfaceState.facts.interfaces.online, 0, "unknown interface state is not running");
+assert.equal(unknownInterfaceState.facts.interfaces.down, 0);
+assert.equal(unknownInterfaceState.facts.interfaces.unknown, 1);
+assert.equal(unknownInterfaceState.facts.interfaces.label, "接口状态未完整");
+assert.doesNotMatch(unknownInterfaceState.facts.interfaces.text, /接口在线/);
+
+const partialResource = clone(OVERVIEW_SCENARIO_FIXTURES.single);
+partialResource.overview.cpuLoad = 99;
+delete partialResource.overview.memoryUsage;
+delete partialResource.overview.diskUsage;
+const partialResourceState = deriveOverviewState(partialResource);
+assert.equal(partialResourceState.facts.resource.available, true, "one observed resource is still evidence");
+assert.equal(partialResourceState.facts.resource.complete, false);
+assert.equal(partialResourceState.facts.resource.observed, 1);
+assert.equal(partialResourceState.facts.resource.cpu, 99);
+assert.equal(partialResourceState.facts.resource.memory, null);
+assert.equal(partialResourceState.facts.resource.disk, null);
+assert.equal(partialResourceState.facts.resource.level, "danger", "observed CPU 99% must not be hidden by missing disk");
+assert.equal(partialResourceState.scenario, "resource-full");
+const partialResourceModel = modelFor(partialResource);
+assert.equal(partialResourceModel.risk, "resource");
+assert.equal(partialResourceModel.facts.find((row) => row.key === "resource-breaches").value, "1 / 1");
+assert.deepEqual(partialResourceModel.resource.metrics.map((metric) => metric.value), [99, null, null]);
+
+const auxiliaryFailure = clone(OVERVIEW_SCENARIO_FIXTURES.single);
+auxiliaryFailure.meta.connectionDetailError = "connection detail failed";
+const auxiliaryFailureModel = modelFor(auxiliaryFailure);
+assert.equal(auxiliaryFailureModel.evidenceMode, "historical", "auxiliary REST degradation must stop a current claim");
+assert.equal(auxiliaryFailureModel.risk, "collection");
+assert.doesNotMatch(auxiliaryFailureModel.evidenceNote, /业务采样完整/);
+
+const endpointFailure = clone(OVERVIEW_SCENARIO_FIXTURES.single);
+endpointFailure.meta.detailEndpointFailures = [{ group: "connections", name: "detail", message: "timeout" }];
+const endpointFailureModel = modelFor(endpointFailure);
+assert.equal(endpointFailureModel.evidenceMode, "historical", "recorded endpoint failures must stop a complete claim");
+assert.equal(endpointFailureModel.risk, "collection");
+assert.equal(endpointFailureModel.evidenceRows.find((row) => row.key === "failures").value, "已记录 1");
+
+const conflictingRoutes = clone(OVERVIEW_SCENARIO_FIXTURES.single);
+conflictingRoutes.routes = {
+  defaultRoutes: [
+    { dstAddress: "0.0.0.0/0", gateway: "198.51.100.1", distance: 1, active: false, disabled: false },
+    { dstAddress: "0.0.0.0/0", gateway: "198.51.100.2", distance: 10, active: true, disabled: false },
+    { dstAddress: "192.0.2.0/24", gateway: "198.51.100.3", distance: 0, active: true, disabled: false },
+  ],
+};
+const conflictingRouteState = deriveOverviewState(conflictingRoutes);
+const conflictingRouteModel = modelFor(conflictingRoutes);
+assert.equal(conflictingRouteState.facts.route.label, "活动默认路由");
+assert.match(conflictingRouteState.facts.route.text, /198\.51\.100\.2/);
+assert.match(conflictingRouteState.facts.route.rawSummary, /198\.51\.100\.2/);
+assert.doesNotMatch(conflictingRouteState.facts.route.text, /198\.51\.100\.[13]/);
+assert.equal(conflictingRouteModel.focusObject.name, "198.51.100.2");
+assert.equal(conflictingRouteModel.risk, "none");
+const conflictingDesktopModel = buildDesktopOverviewModel(conflictingRoutes, conflictingRouteState);
+assert.equal(conflictingDesktopModel.activeRoute.gateway, "198.51.100.2");
+assert.match(conflictingDesktopModel.statusItems.find((item) => item.key === "route").value, /198\.51\.100\.2/);
+const conflictingRouterOsModel = buildRouterOsRouteEvidenceModel(conflictingRoutes, conflictingRouteState);
+assert.equal(conflictingRouterOsModel.businessRows[0].value, "198.51.100.2");
+assert.doesNotMatch(conflictingRouterOsModel.summary.note, /198\.51\.100\.[13]/);
 
 const inactiveRoute = clone(OVERVIEW_SCENARIO_FIXTURES.single);
 inactiveRoute.routes.defaultRoutes = [{ table: "main", gateway: "198.51.100.1", distance: 1, active: false, disabled: false }];
@@ -127,6 +256,9 @@ assert.equal(staleModel.evidenceMode, "historical");
 assert.equal(staleModel.risk, "collection");
 assert.equal(staleModel.traffic, null);
 assert.match(staleModel.evidenceTime, /^上次成功 /);
+assert.equal(staleModel.verdictTitle, "当前采集状态不可确认");
+assert.equal(staleModel.facts[0].label, "上次通道记录");
+assert.equal(staleModel.facts[0].note, "仅作历史对照");
 
 const failedWithoutSuccess = clone(OVERVIEW_SCENARIO_FIXTURES.single);
 failedWithoutSuccess.status = "error";
@@ -150,6 +282,8 @@ const partialModel = modelFor(partialRecovery);
 assert.equal(partialModel.risk, "collection");
 assert.deepEqual(partialModel.facts.map((row) => row.key), ["collection-channels", "last-success", "failed-endpoints"]);
 assert.equal(partialModel.facts[0].value, "1 / 2");
+assert.equal(partialModel.verdictTitle, "当前采集状态不可确认");
+assert.equal(partialModel.facts[0].label, "上次通道记录");
 
 const interfacesModel = modelFor(clone(OVERVIEW_SCENARIO_FIXTURES["interfaces-down"]));
 assert.equal(interfacesModel.risk, "interfaces");
@@ -161,7 +295,7 @@ const interfaceSection = buildSectionModel("interfaces", clone(OVERVIEW_SCENARIO
 const interfaceRows = rowsFromModel("interfaces", interfaceSection);
 const reorderedInterfaceSection = {
   ...interfaceSection,
-  tables: interfaceSection.tables.map((item) => ({ ...item, rows: [...item.rows].reverse() })),
+  tables: interfaceSection.tables.map((item) => ({ ...item, rows: [...item.rows].reverse(), rowMeta: [...item.rowMeta].reverse() })),
 };
 const reorderedInterfaceRows = rowsFromModel("interfaces", reorderedInterfaceSection);
 assert.deepEqual(
@@ -182,8 +316,8 @@ assert.deepEqual(
   ["traffic-desc", "connections-desc", "address-asc", "name-asc"],
 );
 const terminalRows = [
-  { id: "slow", table: "终端对象", columns: [], values: { traffic: "1.00 Mbps / 100 Kbps", connections: "50", address: "192.168.1.20 / aa" }, primary: "slow", secondary: "", trailing: "", searchText: "" },
-  { id: "fast", table: "终端对象", columns: [], values: { traffic: "20.00 Mbps / 1 Mbps", connections: "10", address: "192.168.1.10 / bb" }, primary: "fast", secondary: "", trailing: "", searchText: "" },
+  { id: "slow", table: "终端对象", columns: [], values: { traffic: "100 Gbps", connections: "999", address: "203.0.113.1 / aa" }, primary: "slow", secondary: "", trailing: "", searchText: "", meta: workspaceMeta({ trafficBps: 1_000_000, connections: 50, address: "192.168.1.20", identityParts: ["slow"] }), duplicateCount: 1 },
+  { id: "fast", table: "终端对象", columns: [], values: { traffic: "1 bps", connections: "1", address: "203.0.113.2 / bb" }, primary: "fast", secondary: "", trailing: "", searchText: "", meta: workspaceMeta({ trafficBps: 20_000_000, connections: 10, address: "192.168.1.10", identityParts: ["fast"] }), duplicateCount: 1 },
 ];
 assert.equal(sortWorkspaceRows(terminalRows, terminalDefinition, "traffic-desc")[0].id, "fast");
 assert.equal(sortWorkspaceRows(terminalRows, terminalDefinition, "connections-desc")[0].id, "slow");
@@ -193,10 +327,67 @@ const logDefinition = domainDefinitionFor("logs");
 assert.equal(logDefinition.defaultSort, "time-desc");
 assert.equal(logDefinition.filters.some((item) => item.id === "severity-error"), true);
 const logRows = [
-  { id: "old", table: "最近日志", columns: [], values: { time: "2026-07-16T08:00:00Z", topics: "system", message: "old" }, primary: "old", secondary: "", trailing: "", searchText: "system old" },
-  { id: "new", table: "最近日志", columns: [], values: { time: "2026-07-16T09:00:00Z", topics: "warning", message: "new" }, primary: "new", secondary: "", trailing: "", searchText: "warning new" },
+  { id: "old", table: "最近日志", columns: [], values: { time: "2099-01-01T00:00:00Z", topics: "system", message: "error counter reset" }, primary: "old", secondary: "", trailing: "", searchText: "system error counter reset", meta: workspaceMeta({ timestamp: Date.parse("2026-07-16T08:00:00Z"), severity: "info", tags: ["topic-system"], identityParts: ["old"] }), duplicateCount: 1 },
+  { id: "new", table: "最近日志", columns: [], values: { time: "2000-01-01T00:00:00Z", topics: "warning", message: "new" }, primary: "new", secondary: "", trailing: "", searchText: "warning new", meta: workspaceMeta({ timestamp: Date.parse("2026-07-16T09:00:00Z"), severity: "warning", attention: true, tags: ["topic-warning"], identityParts: ["new"] }), duplicateCount: 1 },
 ];
 assert.equal(sortWorkspaceRows(logRows, logDefinition, "time-desc")[0].id, "new");
+const infoErrorTextRows = filterWorkspaceRows(logRows, logDefinition, "severity-error");
+assert.equal(infoErrorTextRows.some((row) => row.id === "old"), false, "display text must not manufacture log severity");
+
+const ecmpSection = {
+  title: "路由表",
+  description: "",
+  updatedAt: "",
+  evidenceMode: "current",
+  status: "",
+  statusTone: "trust",
+  metrics: [],
+  tables: [{
+    title: "路由记录",
+    columns: [{ key: "destination", label: "目的" }, { key: "gateway", label: "网关" }, { key: "table", label: "表" }, { key: "distance", label: "距离" }],
+    rows: [
+      { destination: "0.0.0.0/0", gateway: "198.51.100.1", table: "main", distance: "1" },
+      { destination: "0.0.0.0/0", gateway: "198.51.100.1", table: "main", distance: "2" },
+    ],
+    rowMeta: [
+      workspaceMeta({ active: true, distance: 1, identityParts: ["0.0.0.0/0", "198.51.100.1", "main", "1", "static"] }),
+      workspaceMeta({ active: true, distance: 2, identityParts: ["0.0.0.0/0", "198.51.100.1", "main", "2", "static"] }),
+    ],
+    empty: "",
+  }],
+};
+const ecmpRows = rowsFromModel("routes", ecmpSection);
+const reorderedEcmpSection = {
+  ...ecmpSection,
+  tables: ecmpSection.tables.map((item) => ({ ...item, rows: [...item.rows].reverse(), rowMeta: [...item.rowMeta].reverse() })),
+};
+const reorderedEcmpRows = rowsFromModel("routes", reorderedEcmpSection);
+assert.equal(new Set(ecmpRows.map((row) => row.id)).size, 2, "ECMP route identities must not collide");
+assert.deepEqual(
+  new Map(ecmpRows.map((row) => [row.values.distance, row.id])),
+  new Map(reorderedEcmpRows.map((row) => [row.values.distance, row.id])),
+  "ECMP identities must survive source reordering",
+);
+
+const duplicateLogSection = {
+  ...ecmpSection,
+  tables: [{
+    title: "最近日志",
+    columns: [{ key: "time", label: "时间" }, { key: "topics", label: "主题" }, { key: "message", label: "内容" }],
+    rows: [
+      { time: "2026-07-16T09:00:00Z", topics: "system", message: "same" },
+      { time: "2026-07-16T09:00:00Z", topics: "system", message: "same" },
+    ],
+    rowMeta: [
+      workspaceMeta({ timestamp: Date.parse("2026-07-16T09:00:00Z"), identityParts: ["2026-07-16T09:00:00Z", "system", "same"] }),
+      workspaceMeta({ timestamp: Date.parse("2026-07-16T09:00:00Z"), identityParts: ["2026-07-16T09:00:00Z", "system", "same"] }),
+    ],
+    empty: "",
+  }],
+};
+const duplicateLogRows = rowsFromModel("logs", duplicateLogSection);
+assert.equal(duplicateLogRows.length, 1, "exact duplicate immutable logs collapse deterministically");
+assert.equal(duplicateLogRows[0].duplicateCount, 2);
 
 const mislabeledInterfaces = modelForHint(clone(OVERVIEW_SCENARIO_FIXTURES.single), "interfaces-down");
 assert.equal(mislabeledInterfaces.risk, "none", "scenario hints must not invent object risk");

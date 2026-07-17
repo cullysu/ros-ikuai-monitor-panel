@@ -26,23 +26,35 @@
 
 `single`, `fleet`, `all-offline`, `no-snapshot`, `collection-down`, `resource-full`, `interfaces-down`.
 
-## Required viewports
+## Required evidence surfaces
 
-- `390x844` phone portrait
-- `844x390` phone landscape
-- `1024x768`, `1112x834`, and `1180x820` compact tablet/workspace boundaries
-- `1366x900` desktop
-- `1440x900` desktop
+- Mobile native contract: 7 scenarios across 320x568, 360x800, 375x667, 390x844, 430x932, 768x1024, 667x375, and 844x390.
+- Public overview release matrix: 7 scenarios across 1366x768, 1440x900, 844x390, and 390x844 (28 cells).
+- Route responsive matrix: 19 routes across 1600x1000, 1366x900, 1024x900, and 390x844 (76 cells).
+- Route state matrix: 19 routes across 7 scenarios and 1366x768 plus 390x844 (266 cells).
+- Runtime interaction evidence includes 200% text reflow, touch targets, contrast, Back/Forward, refresh/reorder identity, reduced motion where motion exists, and the 1024/1112/1180 to 1181 capability boundary.
+- Human visual review inspects the actual screenshots for hierarchy, density, state differentiation, empty-space use, and iOS/iKuai product character. Automated matrix completion cannot pass this gate by itself.
+
+## Evidence freshness
+
+- Every release report records the candidate commit and Git tree it exercised.
+- Reports from another SHA are historical. They may explain a regression but cannot close the current release gate.
+- A tracked change after candidate freeze invalidates exact-SHA release readiness. Commit logs remain non-self-referential; final SHA and CL belong in external release evidence.
+- Conflicting loop state, report metadata, worktree state, and remote refs force the affected gate to `pending` until reconciled.
 
 ## Blocking verification
 
-- type check
-- production build
+- type check and production build
 - overview architecture/static checks
-- focused mobile runtime checks
+- focused mobile runtime and workspace checks
 - focused desktop checks when desktop code or shared truth changes
 - complete 28-cell public overview matrix with screenshots
-- release-readiness check tied to the current commit
-- GitHub Linux validation, Windows packaging, and GHCR/container checks
+- complete 76-cell responsive route matrix
+- complete 266-cell route/state matrix
+- runtime browser interaction contract and screenshot manifest
+- release-readiness check tied to the current candidate
+- backend security, collector, LAN-default, static-asset, and container configuration checks
+- read-only public-disclosure and publication-capability preflight
+- GitHub Linux validation, Windows packaging, and GHCR/container checks for the exact remote SHA
 
-`matrix.complete=false`, a missing screenshot, a failed visual contract, or a pending/failed GitHub check always blocks release.
+`matrix.complete=false`, a missing screenshot, stale candidate identity, failed human visual review, a blocked public-disclosure preflight, or a pending/failed GitHub check always blocks release.

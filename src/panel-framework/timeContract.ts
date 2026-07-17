@@ -28,6 +28,18 @@ export function parseRfc3339Timestamp(value: unknown): number | null {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
+export function formatRfc3339Local(value: unknown): string | null {
+  const timestamp = parseRfc3339Timestamp(value);
+  if (timestamp === null) return null;
+  const date = new Date(timestamp);
+  const pad = (part: number) => String(part).padStart(2, "0");
+  const offsetMinutes = -date.getTimezoneOffset();
+  const offsetSign = offsetMinutes >= 0 ? "+" : "-";
+  const offsetHours = Math.floor(Math.abs(offsetMinutes) / 60);
+  const offsetRemainder = Math.abs(offsetMinutes) % 60;
+  return date.getFullYear() + "-" + pad(date.getMonth() + 1) + "-" + pad(date.getDate()) + " " + pad(date.getHours()) + ":" + pad(date.getMinutes()) + ":" + pad(date.getSeconds()) + " " + offsetSign + pad(offsetHours) + ":" + pad(offsetRemainder);
+}
+
 export function isRfc3339Timestamp(value: unknown): value is string {
   return parseRfc3339Timestamp(value) !== null;
 }

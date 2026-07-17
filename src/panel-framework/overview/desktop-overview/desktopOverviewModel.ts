@@ -58,15 +58,6 @@ function interfaceRows(snapshot: OverviewRawSnapshot): OverviewRawInterfaceRow[]
   return Array.isArray(snapshot.interfaces) ? snapshot.interfaces : [];
 }
 
-function activeRoute(snapshot: OverviewRawSnapshot): OverviewRawRoute | null {
-  const explicit = Array.isArray(snapshot.routes?.defaultRoutes)
-    ? snapshot.routes.defaultRoutes
-    : Array.isArray(snapshot.routes?.items)
-      ? snapshot.routes.items.filter((row) => row.default === true || row.dstAddress === "0.0.0.0/0" || row.dstAddress === "::/0")
-      : [];
-  return explicit.find((row) => row.active === true && row.disabled !== true) || null;
-}
-
 function routeStatus(
   evidence: OverviewEvidenceModel,
   state: OverviewDerivedState,
@@ -82,9 +73,9 @@ function routeStatus(
   if (!route) return {
     key: "route",
     label: "默认路由",
-    value: state.facts.wan.total > 0 && state.facts.wan.online === 0 ? "无活动记录" : "无法核实",
+    value: state.facts.wan.allOffline ? "无活动记录" : "无法核实",
     note: "未发现 active=true 且未停用的默认路由",
-    tone: state.facts.wan.online === 0 ? "danger" : "warn",
+    tone: state.facts.wan.allOffline ? "danger" : "warn",
   };
   const table = clean(route.routingTable || route.table, "main");
   const gateway = clean(route.gateway, "网关未记录");
@@ -171,7 +162,7 @@ function boundaryRows(evidence: OverviewEvidenceModel, state: OverviewDerivedSta
 }
 
 function operationalRows(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): DesktopLedgerRow[] {
-  const runningInterfaces = Math.max(0, state.facts.interfaces.total - state.facts.interfaces.down);
+  const runningInterfaces = state.facts.interfaces.online;
   const resourceTone = state.facts.resource.level;
   const connectionTotal = finite(snapshot.connections?.total);
   return [
@@ -199,8 +190,12 @@ function operationalRows(snapshot: OverviewRawSnapshot, state: OverviewDerivedSt
       id: "decision:resource",
       category: "设备资源",
       object: "CPU / 内存 / 磁盘",
-      state: state.facts.resource.available ? `${Math.round(state.facts.resource.cpu)}% / ${Math.round(state.facts.resource.memory)}% / ${Math.round(state.facts.resource.disk)}%` : "未记录",
-      evidence: state.facts.resource.available ? "阈值 85% / 85% / 90%" : "资源采样不可用",
+      state: state.facts.resource.summaryText,
+      evidence: !state.facts.resource.available
+        ? "资源采样不可用"
+        : state.facts.resource.complete
+          ? "阈值 85% / 85% / 90%"
+          : `已观测 ${state.facts.resource.observed}/3；缺失项不按零处理`,
       source: "overview.cpuLoad + memoryUsage + diskUsage",
       tone: resourceTone,
       route: "trafficLoad",
@@ -260,7 +255,7 @@ function objectRows(snapshot: OverviewRawSnapshot): DesktopLedgerRow[] {
 
 export function buildDesktopOverviewModel(snapshot: OverviewRawSnapshot, state: OverviewDerivedState): DesktopOverviewModel {
   const evidence = buildOverviewEvidenceModel(snapshot, state);
-  const route = activeRoute(snapshot);
+  const route = state.facts.route.verified ? state.facts.route.selected : null;
   const statusItems: [DesktopStatusItem, DesktopStatusItem, DesktopStatusItem] = [
     {
       key: "evidence",

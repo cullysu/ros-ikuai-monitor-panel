@@ -9,15 +9,18 @@ import type {
   OverviewEndpointFailureEntry,
   OverviewFacts,
   OverviewFreshnessState,
+  OverviewInterfaceState,
   OverviewRawMeta,
   OverviewRawRoute,
   OverviewRawSnapshot,
+  OverviewRawWanRow,
   OverviewResourceState,
   OverviewRouteState,
   OverviewScenarioKey,
   OverviewTopbarState,
   OverviewTone,
   OverviewVerdict,
+  OverviewWanState,
 } from "./types";
 
 const DANGER_CPU = 85;
@@ -127,31 +130,94 @@ function credibilityToneOf(credibility: OverviewDataCredibility): OverviewTone {
 function snapshotCredibilityOf(snapshot: OverviewRawSnapshot): OverviewDataCredibility {
   if (isSnapshotUnavailable(snapshot)) return "unavailable";
   const meta = snapshot.meta || {};
-  if (meta.realtimeError || meta.slowRestError) return "cache";
+  const hasEndpointFailures = [
+    meta.staticEndpointFailures,
+    meta.realtimeEndpointFailures,
+    meta.slowRestEndpointFailures,
+    meta.detailEndpointFailures,
+  ].some((entries) => Array.isArray(entries) && entries.length > 0);
+  if (
+    meta.clientEvidenceBoundary ||
+    meta.realtimeError ||
+    meta.slowRestError ||
+    meta.staticError ||
+    meta.connectionDetailError ||
+    meta.connectionProtocolError ||
+    hasEndpointFailures
+  ) return "cache";
   return "realtime";
 }
 
-function wanRows(snapshot: OverviewRawSnapshot) {
-  return Array.isArray(snapshot.wan) && snapshot.wan.length ? snapshot.wan : Array.isArray(snapshot.pppoe) ? snapshot.pppoe : [];
+function hasWanCollection(snapshot: OverviewRawSnapshot): boolean {
+  return Array.isArray(snapshot.wan) || Array.isArray(snapshot.pppoe);
+}
+
+function wanRows(snapshot: OverviewRawSnapshot): OverviewRawWanRow[] {
+  if (Array.isArray(snapshot.wan) && snapshot.wan.length) return snapshot.wan;
+  return Array.isArray(snapshot.pppoe) ? snapshot.pppoe : Array.isArray(snapshot.wan) ? snapshot.wan : [];
+}
+
+function isDefaultRouteCandidate(route: OverviewRawRoute, impliedByCollection: boolean): boolean {
+  if (route.default === false) return false;
+  if (route.default === true) return true;
+  const destination = String(route.dstAddress ?? "").trim();
+  if (destination === "0.0.0.0/0" || destination === "::/0") return true;
+  return impliedByCollection && !destination;
+}
+
+function routeRank(route: OverviewRawRoute): number {
+  if (route.active === true && route.disabled !== true) return 0;
+  if (route.disabled === true) return 2;
+  return 1;
+}
+
+function routeStableKey(route: OverviewRawRoute): string {
+  return [
+    route.table || route.routingTable || "main",
+    route.gateway || route.gatewayStatus || "",
+    route.dstAddress || "",
+  ].map((value) => String(value)).join("\u0000");
+}
+
+export function defaultRouteRows(snapshot: OverviewRawSnapshot): OverviewRawRoute[] {
+  const explicit = snapshot.routes?.defaultRoutes;
+  const rows = Array.isArray(explicit)
+    ? explicit.filter((route) => isDefaultRouteCandidate(route, true))
+    : Array.isArray(snapshot.routes?.items)
+      ? snapshot.routes.items.filter((route) => isDefaultRouteCandidate(route, false))
+      : [];
+  return rows.slice().sort((left, right) => {
+    const rank = routeRank(left) - routeRank(right);
+    if (rank) return rank;
+    const leftDistance = toFiniteNumber(left.distance);
+    const rightDistance = toFiniteNumber(right.distance);
+    if (leftDistance !== null || rightDistance !== null) {
+      if (leftDistance === null) return 1;
+      if (rightDistance === null) return -1;
+      if (leftDistance !== rightDistance) return leftDistance - rightDistance;
+    }
+    return routeStableKey(left).localeCompare(routeStableKey(right));
+  });
 }
 
 export function routeRows(snapshot: OverviewRawSnapshot): OverviewRawRoute[] {
-  const rows = snapshot.routes?.defaultRoutes || snapshot.routes?.items || [];
-  return Array.isArray(rows) ? rows : [];
+  return defaultRouteRows(snapshot);
 }
 
-export function defaultRouteRawSummary(routes: OverviewRawRoute[]): string {
-  const primary = routes.slice().sort((a, b) => toNumber(a.distance) - toNumber(b.distance))[0];
-  if (!primary) return "";
-  return `路由表 ${primary.table || primary.routingTable || "main"} / 网关 ${primary.gateway || primary.gatewayStatus || "-"} / 优先级 ${primary.distance ?? "-"} / ${primary.active ? "活动路由" : "非活动路由"} / ${primary.disabled ? "已禁用" : "未禁用"}`;
+export function selectDefaultRoute(snapshot: OverviewRawSnapshot): OverviewRawRoute | null {
+  return defaultRouteRows(snapshot)[0] || null;
 }
 
-function defaultRouteBusinessSummary(routes: OverviewRawRoute[]): string {
-  const primary = routes.slice().sort((a, b) => toNumber(a.distance) - toNumber(b.distance))[0];
-  if (!primary) return "";
-  const gateway = normalize(primary.gateway || primary.gatewayStatus, "-");
-  const distance = primary.distance ?? "-";
-  const state = primary.disabled ? "已禁用" : primary.active ? "已启用" : "待确认";
+function defaultRouteRawSummary(route: OverviewRawRoute | null): string {
+  if (!route) return "";
+  return `路由表 ${route.table || route.routingTable || "main"} / 网关 ${route.gateway || route.gatewayStatus || "-"} / 优先级 ${route.distance ?? "-"} / ${route.active ? "活动路由" : "非活动路由"} / ${route.disabled ? "已禁用" : "未禁用"}`;
+}
+
+function defaultRouteBusinessSummary(route: OverviewRawRoute | null): string {
+  if (!route) return "";
+  const gateway = normalize(route.gateway || route.gatewayStatus, "-");
+  const distance = route.distance ?? "-";
+  const state = route.disabled ? "已禁用" : route.active ? "已启用" : "待确认";
   return `主默认路由：${gateway}，优先级${distance}，${state}`;
 }
 
@@ -248,10 +314,29 @@ function freshnessState(snapshot: OverviewRawSnapshot, now: number): OverviewFre
   return { label: level === "danger" ? "数据陈旧" : level === "warn" ? "数据偏旧" : "采样新鲜", level, stale: level !== "ok", history: level === "danger", missing: false, credibility, credibilityLabel: credibilityLabelOf(credibility), credibilityTone: credibilityToneOf(credibility), seconds, text: formatDurationCompact(seconds), source };
 }
 
+function businessEvidenceState(snapshot: OverviewRawSnapshot) {
+  const wanObserved = hasWanCollection(snapshot);
+  const interfacesObserved = Array.isArray(snapshot.interfaces);
+  const wanUnknown = wanObserved
+    ? wanRows(snapshot).filter((row) => row.running !== true && row.running !== false).length
+    : 0;
+  const interfacesUnknown = interfacesObserved
+    ? snapshot.interfaces!.filter((row) => row?.running !== true && row?.running !== false).length
+    : 0;
+  const reasons: string[] = [];
+  if (!wanObserved) reasons.push("WAN 对象未采集");
+  if (wanUnknown) reasons.push(`${wanUnknown} 个 WAN 状态未知`);
+  if (!interfacesObserved) reasons.push("接口对象未采集");
+  if (interfacesUnknown) reasons.push(`${interfacesUnknown} 个接口状态未知`);
+  return {
+    incomplete: reasons.length > 0,
+    text: reasons.length ? reasons.join(" / ") : "业务对象证据完整",
+  };
+}
+
 function collectionState(snapshot: OverviewRawSnapshot, freshness: OverviewFreshnessState, failures = failedEndpointSummary(snapshot)): OverviewCollectionState {
   const meta = snapshot.meta || {};
   const noSnapshot = isSnapshotUnavailable(snapshot);
-  const credibility: OverviewDataCredibility = noSnapshot ? "unavailable" : freshness.credibility === "cache" || Boolean(meta.realtimeError || meta.slowRestError) ? "cache" : "realtime";
   const coreRestErrors = [meta.realtimeError, meta.slowRestError].filter(Boolean).map(String);
   const auxiliaryRestErrors = [meta.connectionDetailError, meta.connectionProtocolError].filter(Boolean).map(String);
   const restErrors = [...coreRestErrors, ...auxiliaryRestErrors];
@@ -272,15 +357,41 @@ function collectionState(snapshot: OverviewRawSnapshot, freshness: OverviewFresh
   const rest = { status: restStatus, label: restLabel, successAt: restSuccessAt, error: restErrors.join("；") };
   const ssh = { status: sshStatus, label: sshLabel, successAt: sshSuccessAt, error: sshErrors.join("；") };
   const channelText = `REST ${restLabel} / SSH ${sshLabel}`;
-  const channelDegraded = Boolean(noSnapshot || restStatus !== "current" || sshStatus !== "current" || failures.count > 0);
+  const businessEvidence = businessEvidenceState(snapshot);
+  const transportDegraded = restStatus !== "current" || sshStatus !== "current";
+  const channelDegraded = Boolean(noSnapshot || transportDegraded || failures.count > 0 || businessEvidence.incomplete);
   const dataStale = Boolean(freshness.stale || freshness.history);
-  const dataText = noSnapshot ? "无业务快照，业务数据不展示" : channelDegraded ? "缓存快照" : dataStale ? `业务快照年龄 ${freshness.text}` : latestBusinessSuccessTime(snapshot) ? `数据层最后成功采样 ${shortTimestamp(latestBusinessSuccessTime(snapshot))}` : "成功时间未记录";
+  const credibility: OverviewDataCredibility = noSnapshot
+    ? "unavailable"
+    : channelDegraded || dataStale || freshness.credibility === "cache"
+      ? "cache"
+      : "realtime";
+  const dataText = noSnapshot
+    ? "无业务快照，业务数据不展示"
+    : businessEvidence.incomplete
+      ? businessEvidence.text
+      : transportDegraded || failures.count > 0
+        ? "采集证据不完整"
+        : dataStale
+          ? `业务快照年龄 ${freshness.text}`
+          : latestBusinessSuccessTime(snapshot)
+            ? `数据层最后成功采样 ${shortTimestamp(latestBusinessSuccessTime(snapshot))}`
+            : "成功时间未记录";
   const level: OverviewTone = noSnapshot ? "danger" : channelDegraded || dataStale ? "warn" : "ok";
   const credibilityLabel = credibilityLabelOf(credibility);
   const credibilityTone = credibilityToneOf(credibility);
+  const label = noSnapshot
+    ? "快照缺失"
+    : businessEvidence.incomplete
+      ? "证据不完整"
+      : channelDegraded
+        ? "通道需复核"
+        : dataStale
+          ? "数据陈旧"
+          : "采集可用";
   return {
     level,
-    label: noSnapshot ? "快照缺失" : channelDegraded ? "通道需复核" : dataStale ? "数据陈旧" : "采集可用",
+    label,
     credibility,
     credibilityLabel,
     credibilityTone,
@@ -294,6 +405,8 @@ function collectionState(snapshot: OverviewRawSnapshot, freshness: OverviewFresh
     channelText,
     channelDegraded,
     dataStale,
+    businessEvidenceIncomplete: businessEvidence.incomplete,
+    businessEvidenceText: businessEvidence.text,
     text: noSnapshot ? "快照缺失 · 无业务快照，业务数据不展示" : channelDegraded ? `${channelText} · ${dataText}` : dataText,
     summaryText: noSnapshot ? "快照缺失 · 无业务快照，业务数据不展示" : channelDegraded ? `${channelText} · ${dataText}` : dataText,
     failedEndpointText: failures.text,
@@ -301,44 +414,100 @@ function collectionState(snapshot: OverviewRawSnapshot, freshness: OverviewFresh
 }
 
 function routeState(snapshot: OverviewRawSnapshot, freshness: OverviewFreshnessState): OverviewRouteState {
-  const rawSummary = defaultRouteRawSummary(routeRows(snapshot));
-  const businessSummary = defaultRouteBusinessSummary(routeRows(snapshot));
-  if (isSnapshotUnavailable(snapshot)) return { label: "不可判定", text: "缺少当前路由快照", level: "warn", rawSummary };
-  const active = routeRows(snapshot).find((route) => route.active === true && route.disabled !== true);
-  if (freshness.stale || freshness.history) return { label: active ? "历史活动记录" : "历史快照", text: active ? "仅证明上次成功采集时的默认路由" : "默认路由待判定", level: "warn", rawSummary };
-  if (!active) return { label: "待确认", text: "默认路由事实未采集", level: "warn", rawSummary };
-  return { label: active.active && !active.disabled ? "活动默认路由" : "默认路由待确认", text: businessSummary || "默认路由事实未采集", level: active.active && !active.disabled ? "ok" : "warn", rawSummary };
+  const candidates = defaultRouteRows(snapshot);
+  const selected = candidates[0] || null;
+  const rawSummary = defaultRouteRawSummary(selected);
+  const businessSummary = defaultRouteBusinessSummary(selected);
+  const active = Boolean(selected?.active === true && selected.disabled !== true);
+  const base = { rawSummary, selected, verified: false, candidates: candidates.length };
+  if (isSnapshotUnavailable(snapshot)) return { ...base, label: "不可判定", text: "缺少当前路由快照", level: "warn" };
+  if (freshness.stale || freshness.history) return {
+    ...base,
+    label: active ? "历史活动记录" : "历史快照",
+    text: active ? "仅证明上次成功采集时的默认路由" : "默认路由待判定",
+    level: "warn",
+  };
+  if (!selected) return { ...base, label: "待确认", text: "默认路由事实未采集", level: "warn" };
+  if (!active) return { ...base, label: "默认路由待确认", text: businessSummary || "默认路由事实未采集", level: "warn" };
+  return { ...base, verified: true, label: "活动默认路由", text: businessSummary, level: "ok" };
 }
 
 function resourceState(snapshot: OverviewRawSnapshot): OverviewResourceState {
   const device = snapshot.overview || {};
-  const cpuObserved = toFiniteNumber(device.cpuLoad);
-  const memoryObserved = toFiniteNumber(device.memoryUsage);
-  const diskObserved = toFiniteNumber(device.diskUsage);
-  const available = !isSnapshotUnavailable(snapshot) && cpuObserved !== null && memoryObserved !== null && diskObserved !== null;
-  const cpu = cpuObserved ?? 0;
-  const memory = memoryObserved ?? 0;
-  const disk = diskObserved ?? 0;
-  const level: OverviewTone = !available ? "missing" : cpu >= DANGER_CPU || memory >= DANGER_MEMORY || disk >= DANGER_DISK ? "danger" : cpu >= 70 || memory >= 70 || disk >= 80 ? "warn" : "ok";
-  return { level, available, cpu, memory, disk, summaryText: available ? `处理器 ${formatPercent(cpu)} / 内存 ${formatPercent(memory)} / 磁盘 ${formatPercent(disk)}` : "处理器 未记录 / 内存 未记录 / 磁盘 未记录" };
+  const unavailable = isSnapshotUnavailable(snapshot);
+  const cpu = unavailable ? null : toFiniteNumber(device.cpuLoad);
+  const memory = unavailable ? null : toFiniteNumber(device.memoryUsage);
+  const disk = unavailable ? null : toFiniteNumber(device.diskUsage);
+  const metrics = [
+    { label: "处理器", value: cpu, warn: 70, danger: DANGER_CPU },
+    { label: "内存", value: memory, warn: 70, danger: DANGER_MEMORY },
+    { label: "磁盘", value: disk, warn: 80, danger: DANGER_DISK },
+  ];
+  const observed = metrics.filter((metric) => metric.value !== null).length;
+  const available = observed > 0;
+  const complete = observed === metrics.length;
+  const danger = metrics.some((metric) => metric.value !== null && metric.value >= metric.danger);
+  const warn = metrics.some((metric) => metric.value !== null && metric.value >= metric.warn);
+  const level: OverviewTone = !available ? "missing" : danger ? "danger" : warn || !complete ? "warn" : "ok";
+  const summaryText = metrics
+    .map((metric) => `${metric.label} ${metric.value === null ? "未记录" : formatPercent(metric.value)}`)
+    .join(" / ");
+  return { level, available, complete, observed, cpu, memory, disk, summaryText };
 }
 
-function wanState(snapshot: OverviewRawSnapshot) {
-  const rows = wanRows(snapshot);
-  const available = !isSnapshotUnavailable(snapshot);
-  const online = rows.filter((row) => row.running !== false).length;
+function wanState(snapshot: OverviewRawSnapshot): OverviewWanState {
+  const available = !isSnapshotUnavailable(snapshot) && hasWanCollection(snapshot);
+  const rows = available ? wanRows(snapshot) : [];
   const total = rows.length;
-  const offline = Math.max(0, total - online);
-  const allOffline = total > 0 && online === 0;
-  return { available, total, online, offline, allOffline, label: !available ? "未记录" : allOffline ? "WAN 全离线" : offline > 0 ? "WAN 部分离线" : "WAN 可用", text: !available ? "未记录" : `${formatNumber(online)}/${formatNumber(total)} · ${formatNumber(offline)} 离线` };
+  const online = rows.filter((row) => row.running === true).length;
+  const offline = rows.filter((row) => row.running === false).length;
+  const unknown = Math.max(0, total - online - offline);
+  const allOffline = total > 0 && offline === total && unknown === 0;
+  const label = !available
+    ? "WAN 未采集"
+    : total === 0
+      ? "未发现 WAN 对象"
+      : allOffline
+        ? "WAN 全离线"
+        : unknown > 0
+          ? "WAN 状态未完整"
+          : offline > 0
+            ? "WAN 部分离线"
+            : "WAN 可用";
+  const text = !available
+    ? "WAN 对象未采集"
+    : total === 0
+      ? "已采集 · 0 个 WAN 对象"
+      : `${formatNumber(online)}/${formatNumber(total)} 运行 · ${formatNumber(offline)} 离线${unknown ? ` · ${formatNumber(unknown)} 未知` : ""}`;
+  return { available, total, online, offline, unknown, allOffline, label, text };
 }
 
-function interfaceState(snapshot: OverviewRawSnapshot) {
-  const rows = Array.isArray(snapshot.interfaces) ? snapshot.interfaces : [];
-  const available = !isSnapshotUnavailable(snapshot);
+function interfaceState(snapshot: OverviewRawSnapshot): OverviewInterfaceState {
+  const available = !isSnapshotUnavailable(snapshot) && Array.isArray(snapshot.interfaces);
+  const rows = available ? snapshot.interfaces! : [];
+  const onlineRows = rows.filter((row) => row?.running === true);
   const downRows = rows.filter((row) => row?.running === false);
+  const online = onlineRows.length;
+  const down = downRows.length;
+  const unknown = Math.max(0, rows.length - online - down);
   const downNames = downRows.map((row) => row.name || row.interface || "").filter(Boolean);
-  return { available, total: available ? rows.length : 0, down: available ? downRows.length : 0, downNames, text: !available ? "未记录" : downRows.length ? `${formatNumber(downRows.length)} down · ${compactListText(downNames, 3) || "未列出"}` : "接口在线" };
+  const label = !available
+    ? "接口未采集"
+    : rows.length === 0
+      ? "未发现接口对象"
+      : unknown > 0
+        ? "接口状态未完整"
+        : down > 0
+          ? "接口部分未运行"
+          : "接口在线";
+  const text = !available
+    ? "接口对象未采集"
+    : rows.length === 0
+      ? "已采集 · 0 个接口对象"
+      : down > 0 || unknown > 0
+        ? `${formatNumber(online)}/${formatNumber(rows.length)} 运行 · ${formatNumber(down)} down${unknown ? ` · ${formatNumber(unknown)} 未知` : ""}${down ? ` · ${compactListText(downNames, 3) || "未列出"}` : ""}`
+        : `${formatNumber(online)}/${formatNumber(rows.length)} 运行`;
+  return { available, total: available ? rows.length : 0, online, down, unknown, downNames, label, text };
 }
 
 function connectionState(snapshot: OverviewRawSnapshot) {
@@ -356,19 +525,32 @@ function deviceFacts(snapshot: OverviewRawSnapshot): OverviewDeviceFacts {
 }
 
 function countsOf(wan: ReturnType<typeof wanState>, interfaces: ReturnType<typeof interfaceState>, failures: ReturnType<typeof failedEndpointSummary>, connections: ReturnType<typeof connectionState>): OverviewCounts {
-  return { wanTotal: wan.total, wanOnline: wan.online, wanOffline: wan.offline, interfacesTotal: interfaces.total, interfacesDown: interfaces.down, failures: failures.count, connections: connections.total };
+  return {
+    wanTotal: wan.total,
+    wanOnline: wan.online,
+    wanOffline: wan.offline,
+    wanUnknown: wan.unknown,
+    interfacesTotal: interfaces.total,
+    interfacesOnline: interfaces.online,
+    interfacesDown: interfaces.down,
+    interfacesUnknown: interfaces.unknown,
+    failures: failures.count,
+    connections: connections.total,
+  };
 }
+
 
 function scenarioOf(snapshot: OverviewRawSnapshot, counts: OverviewCounts, resource: OverviewResourceState, collection: OverviewCollectionState, options: DeriveOverviewOptions): OverviewScenarioKey {
   if (options.scenarioHint) return options.scenarioHint;
   if (isSnapshotUnavailable(snapshot)) return "no-snapshot";
-  if (counts.wanTotal > 0 && counts.wanOnline === 0) return "all-offline";
+  if (counts.wanTotal > 0 && counts.wanOnline === 0 && counts.wanUnknown === 0) return "all-offline";
   if (counts.interfacesDown > 0) return "interfaces-down";
   if (resource.level === "danger") return "resource-full";
   if (collection.channelDegraded) return "collection-down";
   if (counts.wanTotal >= 4 || counts.interfacesTotal >= 8 || counts.connections >= 5000) return "fleet";
   return "single";
 }
+
 
 function labelOf(key: OverviewScenarioKey): string {
   switch (key) {
@@ -384,10 +566,31 @@ function labelOf(key: OverviewScenarioKey): string {
 
 function buildVerdict(key: OverviewScenarioKey, facts: OverviewFacts): OverviewVerdict {
   const level: OverviewTone = key === "no-snapshot" || key === "interfaces-down" || key === "resource-full" || key === "all-offline" ? "danger" : key === "collection-down" ? "warn" : facts.freshness.stale ? "warn" : "ok";
-  const summary = key === "no-snapshot" ? `无业务快照，业务数据不展示 / 失败端点 ${facts.collection.failedEndpointText}` : key === "resource-full" ? facts.resource.summaryText : key === "interfaces-down" ? `${formatNumber(facts.interfaces.down)} 个接口 down / 转发面优先` : key === "all-offline" ? `${facts.wan.label} / ${facts.route.label}` : key === "collection-down" ? `${facts.collection.channelText} / 缓存快照` : `${formatNumber(facts.wan.total)} 条 WAN / ${facts.resource.summaryText}`;
-  const detail = key === "no-snapshot" ? "设备当前不可达" : key === "resource-full" ? `处理器 ${formatPercent(facts.resource.cpu, 1)} / 内存 ${formatPercent(facts.resource.memory, 1)} / 磁盘 ${formatPercent(facts.resource.disk, 1)}` : key === "interfaces-down" ? compactListText(facts.interfaces.downNames, 4) || "涉及接口未列出" : key === "all-offline" ? `${formatNumber(facts.wan.offline)} 条离线线路` : key === "collection-down" ? "REST / SSH / 失败端点 / 缓存快照" : facts.collection.channelText;
+  const summary = key === "no-snapshot"
+    ? `无业务快照，业务数据不展示 / 失败端点 ${facts.collection.failedEndpointText}`
+    : key === "resource-full"
+      ? facts.resource.summaryText
+      : key === "interfaces-down"
+        ? `${formatNumber(facts.interfaces.down)} 个接口 down / 转发面优先`
+        : key === "all-offline"
+          ? `${facts.wan.label} / ${facts.route.label}`
+          : key === "collection-down"
+            ? `${facts.collection.channelText} / ${facts.collection.dataText}`
+            : `${facts.wan.label} / ${facts.resource.summaryText}`;
+  const detail = key === "no-snapshot"
+    ? "设备当前不可达"
+    : key === "resource-full"
+      ? facts.resource.summaryText
+      : key === "interfaces-down"
+        ? compactListText(facts.interfaces.downNames, 4) || "涉及接口未列出"
+        : key === "all-offline"
+          ? `${formatNumber(facts.wan.offline)} 条离线线路`
+          : key === "collection-down"
+            ? "REST / SSH / 对象状态 / 失败端点"
+            : facts.collection.channelText;
   return { key, level, label: labelOf(key), topLabel: labelOf(key), detail, summary };
 }
+
 
 function topbarState(snapshot: OverviewRawSnapshot, verdict: OverviewVerdict, facts: OverviewFacts): OverviewTopbarState {
   const unavailable = facts.freshness.credibility === "unavailable";

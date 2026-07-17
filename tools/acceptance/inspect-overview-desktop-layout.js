@@ -15,7 +15,7 @@ function inspectOverviewDesktopLayout({
   scaleMetaOk,
   normalize,
 }) {
-  if (sectionName !== 'overview' || window.innerWidth < 1181) return {
+  if (sectionName !== 'overview' || window.innerWidth < 1366) return {
     overviewBlankProbe: null,
     overviewBlankAreaOk: true,
     overviewNoSnapshotModuleFillProbe: null,

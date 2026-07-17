@@ -1,21 +1,18 @@
 import {
-  ArrowLeft,
   ArrowUpDown,
   ChevronLeft,
   ChevronRight,
   Ellipsis,
   ListFilter,
   Search,
-  Server,
   X,
 } from "lucide-react";
-import { useEffect, useLayoutEffect, useMemo, useRef, useState, type RefObject } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { OverviewRawSnapshot } from "../overview";
 import { PANEL_ROUTES, type PanelNavigate, type PanelRouteId } from "../routes/panelRoutes";
 import { SectionTimeSeriesChart } from "../sections/SectionTimeSeriesChart";
 import { buildSectionModel, type SectionModel } from "../sections/sectionModels";
 import {
-  ATTENTION_PATTERN,
   MORE_ROUTE_GROUPS,
   MORE_ROUTES,
   routeIcon,
@@ -31,6 +28,7 @@ import {
   filterWorkspaceRows,
   sortWorkspaceRows,
 } from "./mobileDomainDefinitions";
+import { MobileDomainInspector } from "./mobile-inspector/MobileDomainInspector";
 import "./mobile-domain.css";
 
 function EvidenceBadge({ model }: { model: SectionModel }) {
@@ -65,7 +63,7 @@ function DomainMenu({ onNavigate }: { onNavigate: PanelNavigate }) {
 
 function MetricStrip({ model }: { model: SectionModel }) {
   return (
-    <section className="mdw-metrics" aria-label="关键指标">
+    <section className="mdw-metrics" aria-label="领域摘要">
       {model.metrics.slice(0, 3).map((metric) => (
         <div className={`is-${metric.tone || "trust"}`} key={metric.label}>
           <small>{metric.label}</small>
@@ -127,59 +125,6 @@ function MobileMoreDirectory({
   );
 }
 
-function DetailPane({
-  row,
-  model,
-  route,
-  onClose,
-  titleRef,
-}: {
-  row: WorkspaceRow | null;
-  model: SectionModel;
-  route: PanelRouteId;
-  onClose?: () => void;
-  titleRef: RefObject<HTMLHeadingElement>;
-}) {
-  const Icon = routeIcon(route);
-  if (!row) {
-    return (
-      <aside className="mdw-inspector is-empty" aria-label="对象检查器">
-        <div className="mdw-inspector-symbol"><Icon aria-hidden="true" size={24} /></div>
-        <span>对象检查器</span>
-        <h2>未选择对象</h2>
-        <p>{model.status}</p>
-        <dl>
-          <div><dt>证据模式</dt><dd>{model.evidenceMode === "current" ? "当前" : model.evidenceMode === "historical" ? "历史" : "不可用"}</dd></div>
-          <div><dt>对象总数</dt><dd>{model.tables.reduce((sum, table) => sum + table.rows.length, 0)}</dd></div>
-          <div><dt>最近成功</dt><dd>{model.updatedAt || "未记录"}</dd></div>
-        </dl>
-      </aside>
-    );
-  }
-
-  return (
-    <aside className="mdw-inspector has-object" data-mobile-object-detail={row.id} aria-labelledby="mdw-detail-title">
-      <header>
-        {onClose ? <button type="button" onClick={onClose}><ArrowLeft aria-hidden="true" size={18} />返回列表</button> : <span>所选对象</span>}
-        <span>{row.table}</span>
-      </header>
-      <div className="mdw-detail-heading">
-        <span><Icon aria-hidden="true" size={22} /></span>
-        <div><small>{PANEL_ROUTES[route].shortTitle}对象</small><h2 id="mdw-detail-title" tabIndex={-1} ref={titleRef}>{row.primary}</h2><p>{row.secondary}</p></div>
-      </div>
-      <dl className="mdw-detail-fields">
-        {row.columns.map((column) => (
-          <div key={column.key}>
-            <dt>{column.label}</dt>
-            <dd>{row.values[column.key] || "—"}</dd>
-          </div>
-        ))}
-      </dl>
-      <footer><Server aria-hidden="true" size={16} /><span><b>{model.evidenceMode === "current" ? "当前只读快照" : model.evidenceMode === "historical" ? "历史只读快照" : "证据不可用"}</b><small>{model.status}</small></span></footer>
-    </aside>
-  );
-}
-
 export function MobileDomainWorkspace({
   route,
   snapshot,
@@ -193,12 +138,13 @@ export function MobileDomainWorkspace({
   const allRows = useMemo(() => rowsFromModel(route, model), [route, model]);
   const definition = domainDefinitionFor(route);
   const tabs = routeTabs(route);
-  const { selectedId, open, close } = useObjectHistory(route);
+  const { selectedId, open, replace, close } = useObjectHistory(route);
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState(definition.filters[0]?.id || "all");
   const [sort, setSort] = useState(definition.defaultSort);
   const [page, setPage] = useState(1);
   const [tablet, setTablet] = useState(false);
+  const [toolsOpen, setToolsOpen] = useState(false);
   const detailTitleRef = useRef<HTMLHeadingElement>(null);
   const lastTriggerRef = useRef("");
   const rowRefs = useRef(new Map<string, HTMLButtonElement>());
@@ -208,10 +154,11 @@ export function MobileDomainWorkspace({
     setFilter(definition.filters[0]?.id || "all");
     setSort(definition.defaultSort);
     setPage(1);
+    setToolsOpen(false);
   }, [definition, route]);
 
   useEffect(() => {
-    const media = window.matchMedia("(min-width: 600px) and (max-width: 1180px)");
+    const media = window.matchMedia("(min-width: 600px) and (max-width: 1365px)");
     const sync = () => setTablet(media.matches);
     sync();
     media.addEventListener("change", sync);
@@ -228,10 +175,35 @@ export function MobileDomainWorkspace({
   const pageSize = 20;
   const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
   const safePage = Math.min(page, pageCount);
-  const visibleRows = filtered.slice((safePage - 1) * pageSize, safePage * pageSize);
-  const selectedRow = allRows.find((row) => row.id === selectedId) || (tablet ? visibleRows[0] : null) || null;
+  const selectedIndex = selectedId ? filtered.findIndex((row) => row.id === selectedId) : -1;
+  const selectedPage = selectedIndex >= 0 ? Math.floor(selectedIndex / pageSize) + 1 : null;
+  const activePage = selectedPage || safePage;
+  const visibleRows = filtered.slice((activePage - 1) * pageSize, activePage * pageSize);
+  const selectedRow = selectedId ? visibleRows.find((row) => row.id === selectedId) || null : null;
+  const previewRow = tablet && !selectedRow
+    ? visibleRows.find((row) => row.meta.attention)
+      || visibleRows.find((row) => (
+        row.evidence.kind === "interface"
+        && row.evidence.defaultRouteRelation === "direct"
+        && row.meta.running === true
+      ))
+      || visibleRows.find((row) => row.meta.active === true && row.meta.tags.includes("default"))
+      || visibleRows[0]
+      || null
+    : null;
+  const inspectorRow = selectedRow || previewRow;
   const Icon = routeIcon(route);
   const hasControls = definition.searchable || definition.filters.length > 1 || definition.sorts.length > 1;
+  const controlsActive = Boolean(query || filter !== definition.filters[0]?.id || sort !== definition.defaultSort);
+
+  useEffect(() => {
+    if (!selectedId) return;
+    if (selectedIndex < 0) {
+      replace(null);
+      return;
+    }
+    if (selectedPage !== null && page !== selectedPage) setPage(selectedPage);
+  }, [page, replace, selectedId, selectedIndex, selectedPage]);
 
   useLayoutEffect(() => {
     if (selectedId && selectedRow) {
@@ -239,8 +211,7 @@ export function MobileDomainWorkspace({
       return;
     }
     if (!lastTriggerRef.current) return;
-    const trigger = rowRefs.current.get(lastTriggerRef.current);
-    trigger?.focus({ preventScroll: true });
+    rowRefs.current.get(lastTriggerRef.current)?.focus({ preventScroll: true });
   }, [selectedId, selectedRow]);
 
   if (route === "more") {
@@ -257,6 +228,13 @@ export function MobileDomainWorkspace({
     close();
   };
 
+  const resetControls = () => {
+    setQuery("");
+    setFilter(definition.filters[0]?.id || "all");
+    setSort(definition.defaultSort);
+    setPage(1);
+  };
+
   return (
     <main
       className={`mdw-shell ${selectedRow ? "has-selection" : ""}`}
@@ -265,7 +243,7 @@ export function MobileDomainWorkspace({
     >
       <header className="mdw-header">
         <div className="mdw-title-row">
-          <span className="mdw-title-icon"><Icon aria-hidden="true" size={21} /></span>
+          <span className="mdw-title-icon"><Icon aria-hidden="true" size={20} /></span>
           <div><small>{workspaceLabel(route)}</small><h1 tabIndex={-1} data-panel-route-title>{model.title}</h1></div>
           <DomainMenu onNavigate={onNavigate} />
         </div>
@@ -289,11 +267,23 @@ export function MobileDomainWorkspace({
 
       <div className="mdw-layout">
         <section className="mdw-list-pane" aria-label={model.title + "对象列表"}>
-          <MetricStrip model={model} />
-          {model.visualization ? <SectionTimeSeriesChart visualization={model.visualization} /> : null}
+          <div className="mdw-list-heading">
+            <span><b>{filtered.length}</b> 个{definition.objectLabel}</span>
+            <small>{controlsActive ? `从 ${allRows.length} 个对象中筛选` : model.description}</small>
+            {hasControls ? (
+              <button
+                className={controlsActive ? "mdw-tools-toggle is-active" : "mdw-tools-toggle"}
+                type="button"
+                aria-expanded={toolsOpen}
+                onClick={() => setToolsOpen((value) => !value)}
+              >
+                <ListFilter aria-hidden="true" size={16} />筛选
+              </button>
+            ) : null}
+          </div>
 
-          {hasControls ? (
-            <div className="mdw-controls" data-domain-controls={route}>
+          {hasControls && toolsOpen ? (
+            <div className="mdw-controls" id="mdw-domain-controls" data-domain-controls={route}>
               {definition.searchable ? (
                 <label className="mdw-search">
                   <Search aria-hidden="true" size={17} />
@@ -312,7 +302,6 @@ export function MobileDomainWorkspace({
               <div className="mdw-filter-row">
                 {definition.filters.length > 1 ? (
                   <div aria-label={`${definition.objectLabel}筛选`}>
-                    <ListFilter aria-hidden="true" size={16} />
                     {definition.filters.map((item) => (
                       <button
                         type="button"
@@ -335,60 +324,66 @@ export function MobileDomainWorkspace({
                   </label>
                 ) : null}
               </div>
+              {controlsActive ? <button className="mdw-reset-controls" type="button" onClick={resetControls}>清除筛选</button> : null}
             </div>
           ) : null}
 
-          <div className="mdw-list-heading">
-            <span><b>{filtered.length}</b> 个{definition.objectLabel}</span>
-            {query || filter !== definition.filters[0]?.id ? <small>已从 {allRows.length} 个对象中筛选</small> : <small>{model.description}</small>}
-          </div>
-
           {visibleRows.length ? (
             <div className="mdw-object-list">
-              {visibleRows.map((row) => (
-                <button
-                  type="button"
-                  className={selectedRow?.id === row.id ? "is-selected" : ""}
-                  data-mobile-row-id={row.id}
-                  aria-current={selectedRow?.id === row.id ? "true" : undefined}
-                  onClick={() => openRow(row)}
-                  ref={(node) => {
-                    if (node) rowRefs.current.set(row.id, node);
-                    else rowRefs.current.delete(row.id);
-                  }}
-                  key={row.id}
-                >
-                  <span className="mdw-row-icon"><Icon aria-hidden="true" size={18} /></span>
-                  <span className="mdw-row-copy"><b>{row.primary}</b><small>{row.secondary}</small></span>
-                  <span className={ATTENTION_PATTERN.test(row.searchText) ? "mdw-row-state is-attention" : "mdw-row-state"}>{row.trailing}</span>
-                  <ChevronRight aria-hidden="true" size={17} />
-                </button>
-              ))}
+              {visibleRows.map((row) => {
+                const selected = selectedRow?.id === row.id;
+                const previewed = !selected && previewRow?.id === row.id;
+                return (
+                  <button
+                    type="button"
+                    className={selected ? "is-selected" : previewed ? "is-preview" : ""}
+                    data-mobile-row-id={row.id}
+                    aria-current={selected ? "true" : undefined}
+                    onClick={() => openRow(row)}
+                    ref={(node) => {
+                      if (node) rowRefs.current.set(row.id, node);
+                      else rowRefs.current.delete(row.id);
+                    }}
+                    key={row.id}
+                  >
+                    <span className={`mdw-row-mark is-${row.meta.state}`} aria-hidden="true" />
+                    <span className="mdw-row-copy"><b>{row.primary}</b><small>{row.secondary}</small></span>
+                    <span className={row.meta.attention ? "mdw-row-state is-attention" : "mdw-row-state"}>{row.trailing}</span>
+                    <ChevronRight aria-hidden="true" size={17} />
+                  </button>
+                );
+              })}
             </div>
           ) : (
             <div className="mdw-empty">
               <Search aria-hidden="true" size={21} />
               <h2>{allRows.length ? "没有匹配对象" : model.tables[0]?.empty || "没有可显示对象"}</h2>
               <p>{allRows.length ? "调整搜索词或筛选条件。" : model.status}</p>
-              {allRows.length ? <button type="button" onClick={() => { setQuery(""); setFilter(definition.filters[0]?.id || "all"); setSort(definition.defaultSort); }}>清除筛选</button> : null}
+              {allRows.length ? <button type="button" onClick={resetControls}>清除筛选</button> : null}
             </div>
           )}
 
           {pageCount > 1 ? (
             <nav className="mdw-pagination" aria-label="对象分页">
-              <button type="button" disabled={safePage <= 1} onClick={() => setPage((value) => Math.max(1, value - 1))}><ChevronLeft aria-hidden="true" size={17} />上一页</button>
-              <span>{safePage} / {pageCount}</span>
-              <button type="button" disabled={safePage >= pageCount} onClick={() => setPage((value) => Math.min(pageCount, value + 1))}>下一页<ChevronRight aria-hidden="true" size={17} /></button>
+              <button type="button" disabled={activePage <= 1} onClick={() => { if (selectedId) replace(null); setPage(Math.max(1, activePage - 1)); }}><ChevronLeft aria-hidden="true" size={17} />上一页</button>
+              <span>{activePage} / {pageCount}</span>
+              <button type="button" disabled={activePage >= pageCount} onClick={() => { if (selectedId) replace(null); setPage(Math.min(pageCount, activePage + 1)); }}>下一页<ChevronRight aria-hidden="true" size={17} /></button>
             </nav>
           ) : null}
+
+          <section className="mdw-domain-context" aria-label="领域摘要证据">
+            <MetricStrip model={model} />
+            {model.visualization ? <SectionTimeSeriesChart visualization={model.visualization} /> : null}
+          </section>
         </section>
 
-        <DetailPane
-          row={selectedRow}
+        <MobileDomainInspector
+          row={inspectorRow}
           model={model}
           route={route}
           onClose={tablet ? undefined : closeDetail}
           titleRef={detailTitleRef}
+          preview={Boolean(previewRow && !selectedRow)}
         />
       </div>
     </main>

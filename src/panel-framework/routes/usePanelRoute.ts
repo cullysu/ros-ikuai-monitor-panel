@@ -59,8 +59,8 @@ export function usePanelRoute() {
     if (next === route && currentObjectId === objectId) return;
 
     const state = { ...(window.history.state || {}), panelRoute: next };
-    if (objectId) state.mobileObject = objectId;
-    else delete state.mobileObject;
+    if (objectId) state.panelObject = objectId;
+    else delete state.panelObject;
 
     const targetUrl = routeUrl(next, window.location, { objectId });
     if (options.replace) window.history.replaceState(state, "", targetUrl);

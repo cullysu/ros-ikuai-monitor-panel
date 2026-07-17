@@ -852,9 +852,12 @@ def assert_frontend_handles_partial_snapshots():
         derive_source = (ROOT / "src" / "panel-framework" / "overview" / "deriveOverviewState.ts").read_text(encoding="utf-8")
         assert "const meta = snapshot.meta || {};" in derive_source
         assert "const device = snapshot.overview || {};" in derive_source
-        assert "snapshot.routes?.defaultRoutes || snapshot.routes?.items || []" in derive_source
-        assert "Array.isArray(snapshot.wan) && snapshot.wan.length" in derive_source
-        assert "Array.isArray(snapshot.interfaces) ? snapshot.interfaces : []" in derive_source
+        assert "const explicit = snapshot.routes?.defaultRoutes;" in derive_source
+        assert "Array.isArray(snapshot.routes?.items)" in derive_source
+        assert "const wanObserved = hasWanCollection(snapshot);" in derive_source
+        assert "const interfacesObserved = Array.isArray(snapshot.interfaces);" in derive_source
+        assert 'if (!wanObserved) reasons.push("WAN 对象未采集");' in derive_source
+        assert 'if (!interfacesObserved) reasons.push("接口对象未采集");' in derive_source
         return
     assert "const o = snapshot.overview || {};" in index_source
     assert "const history = o.history || {};" in index_source

@@ -1,4 +1,4 @@
-@media (max-width: 1180px) {
+@media (max-width: 1365px) {
   .mp-shell {
     --mp-ink: #14242e;
     --mp-text: #2e414d;
@@ -879,7 +879,7 @@
   }
 }
 
-@media (min-width: 600px) and (max-width: 1180px) {
+@media (min-width: 600px) and (max-width: 1365px) {
   .mp-command {
     padding-top: 10px;
     padding-bottom: 10px;
@@ -912,7 +912,7 @@
   }
 }
 
-@media (max-width: 1180px) {
+@media (max-width: 1365px) {
   .mp-workspace-body,
   .mp-workspace-primary,
   .mp-workspace-context {
@@ -1010,7 +1010,7 @@
   }
 }
 
-@media (max-width: 1180px) {
+@media (max-width: 1365px) {
   .mp-resource-chart {
     display: grid;
     grid-template-columns: 38px minmax(0, 1fr);
@@ -1189,7 +1189,7 @@
   }
 }
 
-@media (max-width: 1180px) {
+@media (max-width: 1365px) {
   .mp-shell.is-large-text .mp-resource > header,
   .mp-shell.is-large-text .mp-focus > header {
     align-items: flex-start;
@@ -1231,7 +1231,7 @@
   }
 }
 
-@media (min-width: 600px) and (max-width: 1180px) {
+@media (min-width: 600px) and (max-width: 1365px) {
   .mp-command,
   .mp-workspace {
     max-width: 1120px;
@@ -1288,13 +1288,13 @@
   }
 }
 
-@media (max-width: 1180px) {
+@media (max-width: 1365px) {
   .mp-resource-samples {
     display: none;
   }
 }
 
-@media (min-width: 600px) and (max-width: 1180px) {
+@media (min-width: 600px) and (max-width: 1365px) {
   .mp-resource-samples {
     display: block;
     border-top: 1px solid var(--mp-line);
@@ -1345,7 +1345,7 @@
   }
 }
 
-@media (max-width: 1180px) {
+@media (max-width: 1365px) {
   .mp-incident-row.is-selected {
     background: #eef5f7;
     box-shadow: inset 3px 0 0 var(--mp-blue);
@@ -1481,7 +1481,7 @@
   }
 }
 
-@media (max-width: 1180px) {
+@media (max-width: 1365px) {
   .mp-actions {
     border-bottom: 1px solid var(--mp-line);
     background: #f8fafb;
@@ -1594,7 +1594,7 @@
   }
 }
 
-@media (max-width: 1180px) and (prefers-reduced-motion: no-preference) {
+@media (max-width: 1365px) and (prefers-reduced-motion: no-preference) {
   .mp-incident-more > svg {
     transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1);
   }
@@ -1617,7 +1617,7 @@
   }
 }
 
-@media (max-width: 1180px) and (prefers-reduced-motion: reduce) {
+@media (max-width: 1365px) and (prefers-reduced-motion: reduce) {
   .mp-shell *,
   .mp-shell *::before,
   .mp-shell *::after {

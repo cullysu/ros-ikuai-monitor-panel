@@ -86,7 +86,7 @@
 .panel-runtime-empty button { min-height: 44px; padding: 0 14px; border: 1px solid #98b6c2; border-radius: 7px; color: #214e5e; background: #f9fbfc; font: inherit; font-weight: 700; cursor: pointer; }
 .panel-runtime-empty button:first-child { border-color: #0b6488; color: #fff; background: #0d6a8e; }
 
-@media (max-width: 1180px) {
+@media (max-width: 1365px) {
   .panel-runtime-live { min-height: 100svh; }
   .panel-runtime-bar-mobile {
     position: sticky;

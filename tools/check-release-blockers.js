@@ -67,7 +67,7 @@ check(
   ciWorkflowSource.includes('python tools/check-backend-release-blockers.py') &&
     ciWorkflowSource.includes('node tools/check-release-blockers.js') &&
     ciWorkflowSource.includes('npm run build') &&
-    ciWorkflowSource.includes('git diff --exit-code -- public/assets/framework/panel-framework.js public/assets/framework/style.css') &&
+    ciWorkflowSource.includes('git diff --exit-code -- public/index.html public/assets/framework') &&
     ciWorkflowSource.includes('npm run check:desktop-v1030') &&
     ciWorkflowSource.includes('npm run check:desktop-no-snapshot') &&
     ciWorkflowSource.includes('npm run check:desktop-incident-hierarchy'),

@@ -151,8 +151,11 @@ export interface OverviewCounts {
   wanTotal: number;
   wanOnline: number;
   wanOffline: number;
+  wanUnknown: number;
   interfacesTotal: number;
+  interfacesOnline: number;
   interfacesDown: number;
+  interfacesUnknown: number;
   failures: number;
   connections: number;
 }
@@ -211,6 +214,8 @@ export interface OverviewCollectionState {
   channelText: string;
   channelDegraded: boolean;
   dataStale: boolean;
+  businessEvidenceIncomplete: boolean;
+  businessEvidenceText: string;
   text: string;
   summaryText: string;
   failedEndpointText: string;
@@ -221,14 +226,19 @@ export interface OverviewRouteState {
   text: string;
   level: OverviewTone;
   rawSummary: string;
+  selected: OverviewRawRoute | null;
+  verified: boolean;
+  candidates: number;
 }
 
 export interface OverviewResourceState {
   level: OverviewTone;
   available: boolean;
-  cpu: number;
-  memory: number;
-  disk: number;
+  complete: boolean;
+  observed: number;
+  cpu: number | null;
+  memory: number | null;
+  disk: number | null;
   summaryText: string;
 }
 
@@ -237,6 +247,7 @@ export interface OverviewWanState {
   total: number;
   online: number;
   offline: number;
+  unknown: number;
   allOffline: boolean;
   label: string;
   text: string;
@@ -245,8 +256,11 @@ export interface OverviewWanState {
 export interface OverviewInterfaceState {
   available: boolean;
   total: number;
+  online: number;
   down: number;
+  unknown: number;
   downNames: string[];
+  label: string;
   text: string;
 }
 
