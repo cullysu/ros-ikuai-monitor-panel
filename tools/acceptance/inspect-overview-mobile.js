@@ -119,8 +119,7 @@ function inspectMobileNativeOverview({
   nativeMobileInteractionOk,
   nativeMobileInteractionProbe,
 }) {
-  const mobileViewport = window.innerWidth <= 1023;
-  if (sectionName !== 'overview' || !mobileViewport) return null;
+  if (sectionName !== 'overview') return null;
   const mobileRoot = sectionRoot?.querySelector('[data-mobile-overview]');
   if (!mobileRoot) return null;
 
@@ -216,12 +215,17 @@ function inspectMobileNativeOverview({
   const patrolActionsOk = shouldShowPatrolActions
     ? Boolean(patrolActions && patrolActionButtons.length === 3 && patrolActionRoutes.every(Boolean))
     : !patrolActions && patrolActionButtons.length === 0;
-  const tabletWorkspaceOk = window.innerWidth < 600 || window.innerHeight < 700 || Boolean(
-    workspacePrimary &&
-    workspaceContext &&
-    patrolActions &&
-    Math.abs(workspacePrimary.getBoundingClientRect().height - workspaceContext.getBoundingClientRect().height) <= 2
-  );
+  const tabletWorkspaceOk = window.innerWidth < 600 || window.innerHeight < 700 || (() => {
+    if (!workspacePrimary || !workspaceContext || !patrolActions) return false;
+    const primaryBounds = workspacePrimary.getBoundingClientRect();
+    const contextBounds = workspaceContext.getBoundingClientRect();
+    return (
+      primaryBounds.width >= 240 &&
+      contextBounds.width >= 220 &&
+      Math.abs(primaryBounds.top - contextBounds.top) <= 2 &&
+      primaryBounds.right <= contextBounds.left + 2
+    );
+  })();
 
   const chartStatus = traffic?.getAttribute('data-mobile-traffic') || '';
   const chartSvg = chart?.querySelector('svg');

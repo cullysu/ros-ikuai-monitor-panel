@@ -8,6 +8,7 @@ import {
   type OverviewRawWanRow,
   type OverviewTone,
 } from "../index";
+import { stablePanelObjectId } from "../../sections/panelObjectIdentity";
 import {
   buildResourceInstrument,
   buildTrafficInstrument,
@@ -295,13 +296,14 @@ function priorityObjectsFor(
     return {
       total: rows.length,
       rows: rows.map((row, index) => ({
-        id: `wan:${index}:${clean(row.name || row.interface)}`,
+        id: stablePanelObjectId("lineStatus", "wan", [clean(row.name || row.interface, `WAN ${index + 1}`)]),
         category: "WAN",
         name: clean(row.name || row.interface, `WAN ${index + 1}`),
         state: "未运行",
         reason: `${clean(row.parent, "父接口未记录")} · 无活动默认路由`,
         tone: "danger",
         route: "lineStatus",
+        targetObjectId: stablePanelObjectId("lineStatus", "wan", [clean(row.name || row.interface, `WAN ${index + 1}`)]),
         sourcePath: `wan[${index}]`,
         attributes: [
           { label: "父接口", value: clean(row.parent) },
@@ -316,13 +318,14 @@ function priorityObjectsFor(
     return {
       total: rows.length,
       rows: rows.map((row, index) => ({
-        id: `interface:${index}:${clean(row.name || row.interface)}`,
+        id: stablePanelObjectId("interfaces", "interface", [clean(row.name || row.interface, `接口 ${index + 1}`)]),
         category: "接口",
         name: clean(row.name || row.interface, `接口 ${index + 1}`),
         state: row.disabled === true ? "已停用" : "未运行",
         reason: `${clean(row.parent || row.master, "父级未记录")} · 依赖关系待核对`,
         tone: "danger",
         route: "interfaces",
+        targetObjectId: stablePanelObjectId("interfaces", "interface", [clean(row.name || row.interface, `接口 ${index + 1}`)]),
         sourcePath: `interfaces[${(snapshot.interfaces || []).indexOf(row)}]`,
         attributes: [
           { label: "父级", value: clean(row.parent || row.master) },
@@ -334,6 +337,11 @@ function priorityObjectsFor(
   }
   if (risk === "resource") {
     const samples = resourceSampleStats(snapshot);
+    const leadingResource = [
+      { label: "CPU", value: state.facts.resource.cpu, threshold: CPU_THRESHOLD },
+      { label: "内存", value: state.facts.resource.memory, threshold: MEMORY_THRESHOLD },
+      { label: "磁盘", value: state.facts.resource.disk, threshold: DISK_THRESHOLD },
+    ].sort((left, right) => (right.value / right.threshold) - (left.value / left.threshold))[0];
     return {
       total: 1,
       rows: [{
@@ -344,6 +352,7 @@ function priorityObjectsFor(
         reason: samples.observed ? "检查连接压力、接口吞吐与原始采样" : "检查资源对象与采集完整性",
         tone: "danger",
         route: "trafficLoad",
+        targetObjectId: stablePanelObjectId("trafficLoad", "resource", [leadingResource.label]),
         sourcePath: "overview + overview.history",
         attributes: [
           { label: "连接总量", value: finite(snapshot.connections?.total) === null ? "未记录" : Number(snapshot.connections?.total).toLocaleString("zh-CN") },
@@ -353,24 +362,35 @@ function priorityObjectsFor(
       }],
     };
   }
-  if (risk === "route") return {
-    total: 1,
-    rows: [{
-      id: "route:unverified",
-      category: "默认路由",
-      name: "活动出口",
-      state: "未核实",
-      reason: "没有 active=true 且未停用的默认路由",
-      tone: "warn",
-      route: "routes",
-      sourcePath: "routes.defaultRoutes",
-      attributes: [
-        { label: "默认路由记录", value: `${defaultRoutes(snapshot).length} 条` },
-        { label: "WAN 运行", value: `${state.facts.wan.online} / ${state.facts.wan.total}` },
-        { label: "活动标记", value: "未发现 active=true" },
-      ],
-    }],
-  };
+  if (risk === "route") {
+    const candidate = defaultRoutes(snapshot)[0];
+    const targetObjectId = candidate
+      ? stablePanelObjectId("routes", "route", [
+          clean(candidate.dstAddress, candidate.default === true ? "0.0.0.0/0" : "未记录"),
+          clean(candidate.gateway || candidate.gatewayStatus),
+          clean(candidate.table || candidate.routingTable, "main"),
+        ])
+      : undefined;
+    return {
+      total: 1,
+      rows: [{
+        id: "route:unverified",
+        category: "默认路由",
+        name: "活动出口",
+        state: "未核实",
+        reason: "没有 active=true 且未停用的默认路由",
+        tone: "warn",
+        route: "routes",
+        ...(targetObjectId ? { targetObjectId } : {}),
+        sourcePath: "routes.defaultRoutes",
+        attributes: [
+          { label: "默认路由记录", value: `${defaultRoutes(snapshot).length} 条` },
+          { label: "WAN 运行", value: `${state.facts.wan.online} / ${state.facts.wan.total}` },
+          { label: "活动标记", value: "未发现 active=true" },
+        ],
+      }],
+    };
+  }
   return { total: 0, rows: [] };
 }
 
@@ -387,6 +407,11 @@ function focusObjectFor(
     note: `${clean(route.dstAddress, "0.0.0.0/0")} · 明确 active=true 且未停用`,
     tone: "trust",
     route: "routes",
+    targetObjectId: stablePanelObjectId("routes", "route", [
+      clean(route.dstAddress, route.default === true ? "0.0.0.0/0" : "未记录"),
+      clean(route.gateway || route.gatewayStatus),
+      clean(route.table || route.routingTable, "main"),
+    ]),
     sourcePath: "routes.defaultRoutes",
     attributes: [
       { label: "路由表", value: clean(route.table || route.routingTable, "main") },

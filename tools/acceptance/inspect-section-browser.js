@@ -319,7 +319,7 @@ async function inspectSectionBrowser(
     (overviewSummaryShell && overviewSummaryMain) ||
     (sectionRoot?.querySelector('.ro-status-bus') && sectionRoot?.querySelector('.ik-desktop-evidence'))
   );
-  const isDesktopOverview = sectionName === 'overview' && window.innerWidth >= 1024;
+  const isDesktopOverview = sectionName === 'overview' && Boolean(sectionRoot?.querySelector('[data-desktop-overview]'));
   const isCurrent35Home = sectionName === 'overview' && Boolean(
     overviewSummaryShell && overviewSummaryMain ||
     sectionRoot?.querySelector('.ik-home-layout, [data-overview-verdict-panel]') ||
@@ -951,7 +951,7 @@ async function inspectSectionBrowser(
     window.innerWidth >= 600 &&
     window.innerWidth <= 899 &&
     window.innerHeight <= 520;
-  const isMobileOverview = sectionName === 'overview' && window.innerWidth <= 899;
+  const isMobileOverview = sectionName === 'overview' && Boolean(sectionRoot?.querySelector('[data-mobile-overview]'));
   const legacyMobileAcceptanceViewport = false;
   const mobileOverviewAppViewport = isMobileOverview;
   const mobileLandscapeAppRoot = compactLandscapeOverview

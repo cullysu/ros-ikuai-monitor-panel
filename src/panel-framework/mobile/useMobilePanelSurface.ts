@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-export const MOBILE_PANEL_QUERY = "(max-width: 1023px)";
+export const MOBILE_PANEL_QUERY = "(max-width: 1180px)";
 
 export function useMobilePanelSurface(): boolean {
   const [mobile, setMobile] = useState(

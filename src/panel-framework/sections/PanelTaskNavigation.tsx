@@ -8,13 +8,8 @@ const ITEMS: Record<(typeof PANEL_TASK_ROUTES)[number], { label: string; icon: t
   logs: { label: "日志", icon: ScrollText },
 };
 
-function selectedDestination(route: PanelRouteId): (typeof PANEL_TASK_ROUTES)[number] | null {
-  if (route === "overview") return "overview";
-  const group = PANEL_ROUTES[route].taskGroup;
-  if (group === "interfaces") return "interfaces";
-  if (group === "terminals") return "terminals";
-  if (group === "logs") return "logs";
-  return null;
+function selectedDestination(route: PanelRouteId): (typeof PANEL_TASK_ROUTES)[number] {
+  return PANEL_ROUTES[route].primaryDestination;
 }
 
 export function PanelTaskNavigation({

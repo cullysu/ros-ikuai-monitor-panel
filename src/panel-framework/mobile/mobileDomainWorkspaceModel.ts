@@ -12,11 +12,10 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { OverviewTone } from "../overview";
-import { PANEL_ROUTES, type PanelRouteId } from "../routes/panelRoutes";
+import { PANEL_ROUTES, type PanelRouteId, type PanelWorkspaceGroup } from "../routes/panelRoutes";
 import type { SectionColumn, SectionModel } from "../sections/sectionModels";
+import { panelObjectIdForValues } from "../sections/panelObjectIdentity";
 
-export type FilterId = "all" | "attention" | "running" | "online" | "alerts" | "system" | "tcp" | "udp";
-export type SortId = "source" | "asc" | "desc";
 
 export interface WorkspaceRow {
   id: string;
@@ -29,34 +28,56 @@ export interface WorkspaceRow {
   searchText: string;
 }
 
-interface FilterOption {
-  id: FilterId;
+
+const WORKSPACE_DEFINITIONS: Partial<Record<PanelWorkspaceGroup, {
   label: string;
-}
-
-export interface DomainDefinition {
-  icon: LucideIcon;
-  filters: FilterOption[];
-  searchable: boolean;
-}
-
-const NETWORK_ROUTES: Array<{ route: PanelRouteId; label: string }> = [
-  { route: "interfaces", label: "接口" },
-  { route: "lineStatus", label: "WAN" },
-  { route: "routes", label: "路由" },
-  { route: "connections", label: "连接" },
-];
-
-const TERMINAL_ROUTES: Array<{ route: PanelRouteId; label: string }> = [
-  { route: "terminals", label: "终端" },
-  { route: "dhcp", label: "DHCP" },
-  { route: "arp", label: "ARP" },
-];
-
-const LOG_ROUTES: Array<{ route: PanelRouteId; label: string }> = [
-  { route: "logs", label: "运行日志" },
-  { route: "serviceLogs", label: "服务日志" },
-];
+  routes: Array<{ route: PanelRouteId; label: string }>;
+}>> = {
+  network: {
+    label: "网络工作区",
+    routes: [
+      { route: "interfaces", label: "接口" },
+      { route: "lineStatus", label: "WAN" },
+      { route: "balance", label: "分流" },
+      { route: "routes", label: "路由" },
+      { route: "connections", label: "连接" },
+    ],
+  },
+  terminals: {
+    label: "终端工作区",
+    routes: [
+      { route: "terminals", label: "终端" },
+      { route: "dhcp", label: "DHCP" },
+      { route: "arp", label: "ARP" },
+    ],
+  },
+  logs: {
+    label: "事件时间线",
+    routes: [
+      { route: "logs", label: "运行日志" },
+      { route: "serviceLogs", label: "服务日志" },
+    ],
+  },
+  resources: {
+    label: "资源工作区",
+    routes: [
+      { route: "trafficLoad", label: "当前负载" },
+      { route: "loadAudit", label: "采样审计" },
+    ],
+  },
+  dns: {
+    label: "DNS 工作区",
+    routes: [
+      { route: "dns4", label: "IPv4" },
+      { route: "dns6", label: "IPv6" },
+    ],
+  },
+  audit: { label: "流量审计", routes: [] },
+  security: { label: "安全工作区", routes: [] },
+  diagnostics: { label: "诊断工作区", routes: [] },
+  directory: { label: "只读工具目录", routes: [] },
+  overview: { label: "运行概览", routes: [] },
+};
 
 export const MORE_ROUTE_GROUPS = [
   { id: "network", label: "路径与性能" },
@@ -65,7 +86,7 @@ export const MORE_ROUTE_GROUPS = [
 
 type MoreRouteGroup = (typeof MORE_ROUTE_GROUPS)[number]["id"];
 
-export const MORE_ROUTES: Array<{ route: PanelRouteId; label: string; group: MoreRouteGroup }> = [
+const MORE_ROUTE_CATALOG: Array<{ route: PanelRouteId; label: string; group: MoreRouteGroup }> = [
   { route: "balance", label: "WAN 分流", group: "network" },
   { route: "routes", label: "路由表", group: "network" },
   { route: "connections", label: "连接跟踪", group: "network" },
@@ -78,95 +99,29 @@ export const MORE_ROUTES: Array<{ route: PanelRouteId; label: string; group: Mor
   { route: "readonlyDiagnostics", label: "只读诊断", group: "services" },
 ];
 
-export const DOMAIN: Partial<Record<PanelRouteId, DomainDefinition>> = {
-  interfaces: {
-    icon: Cable,
-    searchable: true,
-    filters: [
-      { id: "all", label: "全部" },
-      { id: "attention", label: "异常" },
-      { id: "running", label: "运行" },
-    ],
-  },
-  terminals: {
-    icon: UsersRound,
-    searchable: true,
-    filters: [
-      { id: "all", label: "全部" },
-      { id: "online", label: "在线" },
-      { id: "attention", label: "待确认" },
-    ],
-  },
-  logs: {
-    icon: ScrollText,
-    searchable: true,
-    filters: [
-      { id: "all", label: "全部" },
-      { id: "alerts", label: "告警" },
-      { id: "system", label: "系统" },
-    ],
-  },
-  serviceLogs: {
-    icon: ScrollText,
-    searchable: true,
-    filters: [
-      { id: "all", label: "全部" },
-      { id: "alerts", label: "告警" },
-      { id: "system", label: "系统" },
-    ],
-  },
-  connections: {
-    icon: Network,
-    searchable: true,
-    filters: [
-      { id: "all", label: "全部" },
-      { id: "tcp", label: "TCP" },
-      { id: "udp", label: "UDP" },
-    ],
-  },
-  dns4: {
-    icon: Network,
-    searchable: true,
-    filters: [
-      { id: "all", label: "全部" },
-      { id: "attention", label: "异常" },
-      { id: "running", label: "启用" },
-    ],
-  },
-  dns6: {
-    icon: Network,
-    searchable: true,
-    filters: [
-      { id: "all", label: "全部" },
-      { id: "attention", label: "异常" },
-      { id: "running", label: "启用" },
-    ],
-  },
-};
+export const MORE_ROUTES = MORE_ROUTE_CATALOG.filter(
+  (item) => PANEL_ROUTES[item.route].placement === "more",
+);
 
-export const DEFAULT_DOMAIN: DomainDefinition = {
-  icon: Router,
-  searchable: true,
-  filters: [{ id: "all", label: "全部" }],
-};
 
 export const ATTENTION_PATTERN = /未运行|停用|异常|失败|错误|警告|离线|不可用|critical|error|warning|down|offline|failed/i;
-const RUNNING_PATTERN = /运行|在线|active|running|bound|online/i;
 
 export function routeTabs(route: PanelRouteId): Array<{ route: PanelRouteId; label: string }> {
-  const group = PANEL_ROUTES[route].taskGroup;
-  if (group === "terminals") return TERMINAL_ROUTES;
-  if (group === "logs") return LOG_ROUTES;
-  return NETWORK_ROUTES;
+  return WORKSPACE_DEFINITIONS[PANEL_ROUTES[route].workspaceGroup]?.routes || [];
+}
+
+export function workspaceLabel(route: PanelRouteId): string {
+  return WORKSPACE_DEFINITIONS[PANEL_ROUTES[route].workspaceGroup]?.label || "只读工作区";
 }
 
 export function routeIcon(route: PanelRouteId): LucideIcon {
-  if (DOMAIN[route]) return DOMAIN[route]!.icon;
-  const group = PANEL_ROUTES[route].taskGroup;
+  const group = PANEL_ROUTES[route].workspaceGroup;
   if (group === "terminals") return UsersRound;
   if (group === "logs") return ScrollText;
-  if (route === "trafficLoad" || route === "loadAudit") return Gauge;
-  if (route === "readonlyDiagnostics") return ShieldCheck;
+  if (group === "resources") return Gauge;
+  if (group === "dns" || route === "connections" || route === "trafficAudit") return Network;
+  if (group === "security" || group === "diagnostics") return ShieldCheck;
+  if (route === "interfaces" || route === "lineStatus") return Cable;
   return Router;
 }
 
@@ -176,20 +131,13 @@ export function toneIcon(tone: OverviewTone) {
   return ShieldCheck;
 }
 
-function shortHash(value: string): string {
-  let hash = 0;
-  for (let index = 0; index < value.length; index += 1) {
-    hash = ((hash << 5) - hash + value.charCodeAt(index)) | 0;
-  }
-  return Math.abs(hash).toString(36);
-}
-
 export function rowsFromModel(route: PanelRouteId, model: SectionModel): WorkspaceRow[] {
   const result: WorkspaceRow[] = [];
-  model.tables.forEach((table, tableIndex) => {
-    table.rows.forEach((values, rowIndex) => {
+  const identityCounts = new Map<string, number>();
+  model.tables.forEach((table) => {
+    table.rows.forEach((values) => {
       const ordered = table.columns.map((column) => values[column.key] || "—");
-      let primary = ordered[0] || `对象 ${rowIndex + 1}`;
+      let primary = ordered[0] || "未命名对象";
       let secondary = ordered[1] || table.title;
       const statusColumn = table.columns.find((column) => column.key === "status" || column.key === "topics");
       let trailing = statusColumn ? values[statusColumn.key] || "—" : ordered[ordered.length - 1] || "—";
@@ -237,9 +185,11 @@ export function rowsFromModel(route: PanelRouteId, model: SectionModel): Workspa
         trailing = values.latest || trailing;
       }
 
-      const identity = `${route}:${tableIndex}:${rowIndex}:${primary}`;
+      const baseId = panelObjectIdForValues(route, table.title, values);
+      const occurrence = identityCounts.get(baseId) || 0;
+      identityCounts.set(baseId, occurrence + 1);
       result.push({
-        id: `${route}-${tableIndex}-${rowIndex}-${shortHash(identity)}`,
+        id: occurrence ? `${baseId}-duplicate-${occurrence + 1}` : baseId,
         table: table.title,
         columns: table.columns,
         values,
@@ -253,18 +203,6 @@ export function rowsFromModel(route: PanelRouteId, model: SectionModel): Workspa
   return result;
 }
 
-export function filterMatches(filter: FilterId, row: WorkspaceRow): boolean {
-  const text = row.searchText;
-  if (filter === "all") return true;
-  if (filter === "attention" || filter === "alerts") return ATTENTION_PATTERN.test(text);
-  if (filter === "running" || filter === "online") {
-    return RUNNING_PATTERN.test(text) && !ATTENTION_PATTERN.test(text);
-  }
-  if (filter === "system") return /system|系统/i.test(text);
-  if (filter === "tcp") return /\btcp\b/i.test(text);
-  if (filter === "udp") return /\budp\b/i.test(text);
-  return true;
-}
 
 function selectedObjectFromUrl(): string {
   return new URLSearchParams(window.location.search).get("object") || "";

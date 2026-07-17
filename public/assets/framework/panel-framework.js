@@ -7049,9 +7049,17 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
   const DANGER_CPU = 85;
   const DANGER_MEMORY = 85;
   const DANGER_DISK = 90;
+  const FINITE_NUMBER_TEXT = /^[+-]?(?:(?:\d+(?:\.\d*)?)|(?:\.\d+))(?:e[+-]?\d+)?$/i;
+  function toFiniteNumber(value) {
+    if (typeof value === "number") return Number.isFinite(value) ? value : null;
+    if (typeof value !== "string") return null;
+    const text2 = value.trim();
+    if (!text2 || !FINITE_NUMBER_TEXT.test(text2)) return null;
+    const number2 = Number(text2);
+    return Number.isFinite(number2) ? number2 : null;
+  }
   function toNumber(value, fallback = 0) {
-    const n = Number(value);
-    return Number.isFinite(n) ? n : fallback;
+    return toFiniteNumber(value) ?? fallback;
   }
   function formatNumber(value) {
     const n = toNumber(value, NaN);
@@ -7095,7 +7103,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     const text2 = String(value ?? "").replace(/\s+/g, " ").trim();
     return text2 || fallback;
   }
-  function text$1(value, fallback = "-") {
+  function text$2(value, fallback = "-") {
     return normalize(value, fallback);
   }
   function credibilityLabelOf(credibility) {
@@ -7282,10 +7290,13 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
   }
   function resourceState(snapshot) {
     const device = snapshot.overview || {};
-    const available = !isSnapshotUnavailable(snapshot);
-    const cpu = available ? toNumber(device.cpuLoad, 0) : 0;
-    const memory = available ? toNumber(device.memoryUsage, 0) : 0;
-    const disk = available ? toNumber(device.diskUsage, 0) : 0;
+    const cpuObserved = toFiniteNumber(device.cpuLoad);
+    const memoryObserved = toFiniteNumber(device.memoryUsage);
+    const diskObserved = toFiniteNumber(device.diskUsage);
+    const available = !isSnapshotUnavailable(snapshot) && cpuObserved !== null && memoryObserved !== null && diskObserved !== null;
+    const cpu = cpuObserved ?? 0;
+    const memory = memoryObserved ?? 0;
+    const disk = diskObserved ?? 0;
     const level = !available ? "missing" : cpu >= DANGER_CPU || memory >= DANGER_MEMORY || disk >= DANGER_DISK ? "danger" : cpu >= 70 || memory >= 70 || disk >= 80 ? "warn" : "ok";
     return { level, available, cpu, memory, disk, summaryText: available ? `处理器 ${formatPercent(cpu)} / 内存 ${formatPercent(memory)} / 磁盘 ${formatPercent(disk)}` : "处理器 未记录 / 内存 未记录 / 磁盘 未记录" };
   }
@@ -7355,7 +7366,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
   }
   function topbarState(snapshot, verdict, facts) {
     const unavailable = facts.freshness.credibility === "unavailable";
-    const routeros = unavailable ? { label: "设备通达", value: "不可达", note: text$1(snapshot.error, "当前采集失败"), tone: "danger" } : { label: "设备通达", value: "可达", note: "管理面已返回快照", tone: "ok" };
+    const routeros = unavailable ? { label: "设备通达", value: "不可达", note: text$2(snapshot.error, "当前采集失败"), tone: "danger" } : { label: "设备通达", value: "可达", note: "管理面已返回快照", tone: "ok" };
     const rest = { label: "REST", value: facts.collection.rest.label, note: facts.collection.rest.error || (facts.collection.rest.successAt ? `成功 ${shortTimestamp(facts.collection.rest.successAt)}` : "成功时间未记录"), tone: facts.collection.rest.status === "current" ? "trust" : facts.collection.rest.status === "unavailable" ? "missing" : "warn" };
     const ssh = { label: "SSH", value: facts.collection.ssh.label, note: facts.collection.ssh.error || (facts.collection.ssh.successAt ? `成功 ${shortTimestamp(facts.collection.ssh.successAt)}` : "成功时间未记录"), tone: facts.collection.ssh.status === "current" ? "trust" : facts.collection.ssh.status === "unavailable" ? "missing" : "warn" };
     const recentSuccess = unavailable ? { label: "最近成功", value: "未记录", note: "业务快照缺失", tone: "warn" } : { label: "最近成功", value: shortTimestamp(facts.freshness.source), note: facts.freshness.credibilityLabel, tone: facts.freshness.credibilityTone };
@@ -8109,6 +8120,74 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     ["path", { d: "m6 6 12 12", key: "d8bk6v" }]
   ];
   const X = createLucideIcon("x", __iconNode);
+  function normalizePart(value) {
+    return String(value ?? "").replace(/\s+/g, " ").trim().toLocaleLowerCase();
+  }
+  function shortHash(value) {
+    let hash = 2166136261;
+    for (let index = 0; index < value.length; index += 1) {
+      hash ^= value.charCodeAt(index);
+      hash = Math.imul(hash, 16777619);
+    }
+    return (hash >>> 0).toString(36);
+  }
+  function stablePanelObjectId(route, kind, parts) {
+    var _a;
+    const normalized = parts.map(normalizePart);
+    const identity = [route, kind, ...normalized].join("");
+    const slug = ((_a = normalized.find(Boolean)) == null ? void 0 : _a.replace(/[^a-z0-9._:-]+/g, "-").replace(/^-|-$/g, "").slice(0, 24)) || "object";
+    return `${route}-${kind}-${slug}-${shortHash(identity)}`;
+  }
+  function panelObjectIdentity(route, table2, values) {
+    if (route === "interfaces") return { kind: "interface", parts: [values.name] };
+    if (route === "lineStatus") return { kind: "wan", parts: [values.name] };
+    if (route === "terminals") {
+      return { kind: "terminal", parts: [values._mac || values.address, values.name] };
+    }
+    if (route === "dhcp") {
+      if (table2 === "地址租约") return { kind: "lease", parts: [values._leaseId || values.mac || values.address, values.server] };
+      return { kind: "dhcp-client", parts: [values.interface] };
+    }
+    if (route === "arp") {
+      return { kind: table2 === "身份告警" ? "arp-alert" : "arp", parts: [values.mac || values.address, values.interface, values.kind] };
+    }
+    if (route === "routes") {
+      return { kind: "route", parts: [values.destination, values.gateway, values.table] };
+    }
+    if (route === "balance") {
+      return table2 === "默认路由" ? { kind: "route", parts: [values.gateway, values.table, values.distance] } : { kind: "policy", parts: [values.chain, values.mark, values.interface, values.comment] };
+    }
+    if (route === "trafficLoad" || route === "loadAudit") {
+      return { kind: "resource", parts: [values.series] };
+    }
+    if (route === "connections") {
+      return {
+        kind: "connection",
+        parts: [values._id || values.source, values.target, values._protocol, values._sourcePort, values._targetPort]
+      };
+    }
+    if (route === "trafficAudit") {
+      return { kind: "flow", parts: [values._id || values.source, values.target, values._protocol] };
+    }
+    if (route === "logs" || route === "serviceLogs") {
+      return { kind: "log", parts: [values.time, values.topics, values.message] };
+    }
+    if (route === "dns4" || route === "dns6") {
+      return { kind: "dns", parts: [values.name || values.interface, values.type || values.prefix, values.value || values.route] };
+    }
+    if (route === "security") {
+      return table2 === "安全告警" ? { kind: "security-alert", parts: [values.time, values.scope, values.message] } : { kind: "firewall-rule", parts: [values.order, values.chain, values.action, values.comment] };
+    }
+    if (route === "readonlyDiagnostics") {
+      return { kind: "diagnostic", parts: [values.group, values.name, values.message] };
+    }
+    const fallback = Object.keys(values).sort().map((key) => `${key}=${values[key]}`);
+    return { kind: "object", parts: [table2, ...fallback] };
+  }
+  function panelObjectIdForValues(route, table2, values) {
+    const identity = panelObjectIdentity(route, table2, values);
+    return stablePanelObjectId(route, identity.kind, identity.parts);
+  }
   const CPU_THRESHOLD = 85;
   const MEMORY_THRESHOLD = 85;
   const DISK_THRESHOLD = 90;
@@ -8121,7 +8200,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     if (Array.isArray(snapshot.wan) && snapshot.wan.length) return snapshot.wan;
     return Array.isArray(snapshot.pppoe) ? snapshot.pppoe : [];
   }
-  function timestampOf(value) {
+  function timestampOf$1(value) {
     const numeric = finite$2(value);
     if (numeric !== null) return numeric < 1e12 ? numeric * 1e3 : numeric;
     return parseRfc3339Timestamp(value);
@@ -8173,7 +8252,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     const length = Math.min(timestamps.length, down.length, up.length);
     const points = [];
     for (let offset = length; offset > 0; offset -= 1) {
-      const timestamp = timestampOf(timestamps[timestamps.length - offset]);
+      const timestamp = timestampOf$1(timestamps[timestamps.length - offset]);
       const pointDown = finite$2(down[down.length - offset]);
       const pointUp = finite$2(up[up.length - offset]);
       if (timestamp !== null && pointDown !== null && pointUp !== null) points.push({ timestamp, down: pointDown, up: pointUp });
@@ -8181,7 +8260,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     if (!points.length) return currentTrafficInstrument(rates, title);
     const last = points[points.length - 1];
     if (!closeObservation(last.down, rates.down) || !closeObservation(last.up, rates.up)) return currentTrafficInstrument(rates, title);
-    const snapshotAt = timestampOf(snapshot.updatedAt);
+    const snapshotAt = timestampOf$1(snapshot.updatedAt);
     const maxAge = Math.max(12e4, Number(((_b = snapshot.meta) == null ? void 0 : _b.pollSeconds) || 5) * 3e3);
     if (snapshotAt !== null && Math.abs(snapshotAt - last.timestamp) > maxAge) return currentTrafficInstrument(rates, title);
     const durationSeconds = Math.max(0, Math.round((last.timestamp - points[0].timestamp) / 1e3));
@@ -8221,7 +8300,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     const length = Math.min(timestamps.length, cpu.length, memory.length, disk.length);
     let points = [];
     for (let offset = length; offset > 0; offset -= 1) {
-      const timestamp = timestampOf(timestamps[timestamps.length - offset]);
+      const timestamp = timestampOf$1(timestamps[timestamps.length - offset]);
       const cpuValue = validPercentage(cpu[cpu.length - offset]);
       const memoryValue = validPercentage(memory[memory.length - offset]);
       const diskValue = validPercentage(disk[disk.length - offset]);
@@ -8230,7 +8309,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     }
     if (points.length) {
       const latest = points[points.length - 1];
-      const snapshotAt = timestampOf(snapshot.updatedAt);
+      const snapshotAt = timestampOf$1(snapshot.updatedAt);
       const maxAge = Math.max(12e4, Number(((_b = snapshot.meta) == null ? void 0 : _b.pollSeconds) || 5) * 3e3);
       const matchesCurrent = Math.abs(latest.cpu - metrics[0].value) <= 1 && Math.abs(latest.memory - metrics[1].value) <= 1 && Math.abs(latest.disk - metrics[2].value) <= 1;
       const isCurrent = snapshotAt === null || Math.abs(snapshotAt - latest.timestamp) <= maxAge;
@@ -8480,13 +8559,14 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       return {
         total: rows2.length,
         rows: rows2.map((row, index) => ({
-          id: `wan:${index}:${clean$1(row.name || row.interface)}`,
+          id: stablePanelObjectId("lineStatus", "wan", [clean$1(row.name || row.interface, `WAN ${index + 1}`)]),
           category: "WAN",
           name: clean$1(row.name || row.interface, `WAN ${index + 1}`),
           state: "未运行",
           reason: `${clean$1(row.parent, "父接口未记录")} · 无活动默认路由`,
           tone: "danger",
           route: "lineStatus",
+          targetObjectId: stablePanelObjectId("lineStatus", "wan", [clean$1(row.name || row.interface, `WAN ${index + 1}`)]),
           sourcePath: `wan[${index}]`,
           attributes: [
             { label: "父接口", value: clean$1(row.parent) },
@@ -8501,13 +8581,14 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       return {
         total: rows2.length,
         rows: rows2.map((row, index) => ({
-          id: `interface:${index}:${clean$1(row.name || row.interface)}`,
+          id: stablePanelObjectId("interfaces", "interface", [clean$1(row.name || row.interface, `接口 ${index + 1}`)]),
           category: "接口",
           name: clean$1(row.name || row.interface, `接口 ${index + 1}`),
           state: row.disabled === true ? "已停用" : "未运行",
           reason: `${clean$1(row.parent || row.master, "父级未记录")} · 依赖关系待核对`,
           tone: "danger",
           route: "interfaces",
+          targetObjectId: stablePanelObjectId("interfaces", "interface", [clean$1(row.name || row.interface, `接口 ${index + 1}`)]),
           sourcePath: `interfaces[${(snapshot.interfaces || []).indexOf(row)}]`,
           attributes: [
             { label: "父级", value: clean$1(row.parent || row.master) },
@@ -8519,6 +8600,11 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     }
     if (risk === "resource") {
       const samples = resourceSampleStats(snapshot);
+      const leadingResource = [
+        { label: "CPU", value: state2.facts.resource.cpu, threshold: CPU_THRESHOLD },
+        { label: "内存", value: state2.facts.resource.memory, threshold: MEMORY_THRESHOLD },
+        { label: "磁盘", value: state2.facts.resource.disk, threshold: DISK_THRESHOLD }
+      ].sort((left, right) => right.value / right.threshold - left.value / left.threshold)[0];
       return {
         total: 1,
         rows: [{
@@ -8529,6 +8615,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
           reason: samples.observed ? "检查连接压力、接口吞吐与原始采样" : "检查资源对象与采集完整性",
           tone: "danger",
           route: "trafficLoad",
+          targetObjectId: stablePanelObjectId("trafficLoad", "resource", [leadingResource.label]),
           sourcePath: "overview + overview.history",
           attributes: [
             { label: "连接总量", value: finite$1((_a = snapshot.connections) == null ? void 0 : _a.total) === null ? "未记录" : Number((_b = snapshot.connections) == null ? void 0 : _b.total).toLocaleString("zh-CN") },
@@ -8538,24 +8625,33 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
         }]
       };
     }
-    if (risk === "route") return {
-      total: 1,
-      rows: [{
-        id: "route:unverified",
-        category: "默认路由",
-        name: "活动出口",
-        state: "未核实",
-        reason: "没有 active=true 且未停用的默认路由",
-        tone: "warn",
-        route: "routes",
-        sourcePath: "routes.defaultRoutes",
-        attributes: [
-          { label: "默认路由记录", value: `${defaultRoutes(snapshot).length} 条` },
-          { label: "WAN 运行", value: `${state2.facts.wan.online} / ${state2.facts.wan.total}` },
-          { label: "活动标记", value: "未发现 active=true" }
-        ]
-      }]
-    };
+    if (risk === "route") {
+      const candidate = defaultRoutes(snapshot)[0];
+      const targetObjectId = candidate ? stablePanelObjectId("routes", "route", [
+        clean$1(candidate.dstAddress, candidate.default === true ? "0.0.0.0/0" : "未记录"),
+        clean$1(candidate.gateway || candidate.gatewayStatus),
+        clean$1(candidate.table || candidate.routingTable, "main")
+      ]) : void 0;
+      return {
+        total: 1,
+        rows: [{
+          id: "route:unverified",
+          category: "默认路由",
+          name: "活动出口",
+          state: "未核实",
+          reason: "没有 active=true 且未停用的默认路由",
+          tone: "warn",
+          route: "routes",
+          ...targetObjectId ? { targetObjectId } : {},
+          sourcePath: "routes.defaultRoutes",
+          attributes: [
+            { label: "默认路由记录", value: `${defaultRoutes(snapshot).length} 条` },
+            { label: "WAN 运行", value: `${state2.facts.wan.online} / ${state2.facts.wan.total}` },
+            { label: "活动标记", value: "未发现 active=true" }
+          ]
+        }]
+      };
+    }
     return { total: 0, rows: [] };
   }
   function focusObjectFor(mode, risk, route) {
@@ -8567,6 +8663,11 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       note: `${clean$1(route.dstAddress, "0.0.0.0/0")} · 明确 active=true 且未停用`,
       tone: "trust",
       route: "routes",
+      targetObjectId: stablePanelObjectId("routes", "route", [
+        clean$1(route.dstAddress, route.default === true ? "0.0.0.0/0" : "未记录"),
+        clean$1(route.gateway || route.gatewayStatus),
+        clean$1(route.table || route.routingTable, "main")
+      ]),
       sourcePath: "routes.defaultRoutes",
       attributes: [
         { label: "路由表", value: clean$1(route.table || route.routingTable, "main") },
@@ -8618,6 +8719,72 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       resource: buildResourceInstrument(snapshot, state2, risk),
       evidenceRows: evidenceRows(snapshot, state2)
     };
+  }
+  function MobileEvidenceLedger({
+    evidenceMode: evidenceMode2,
+    evidenceNote,
+    rows: rows2,
+    incident,
+    priorityCount,
+    tablet
+  }) {
+    const ledgerRef = reactExports.useRef(null);
+    const userOverrideRef = reactExports.useRef(null);
+    const [open, setOpen] = reactExports.useState(false);
+    reactExports.useEffect(() => {
+      const sync = () => {
+        if (userOverrideRef.current !== null) return;
+        const ledger = ledgerRef.current;
+        if (!ledger) return;
+        const available = window.innerHeight - ledger.getBoundingClientRect().top - 76;
+        const estimatedBody = rows2.length * 54;
+        const fitsEvidence = available >= Math.min(180, estimatedBody);
+        const roomyIncident = incident && (window.innerHeight >= 720 || window.innerWidth >= 600 || priorityCount <= 2);
+        setOpen(evidenceMode2 === "unavailable" || roomyIncident || fitsEvidence);
+      };
+      sync();
+      window.addEventListener("resize", sync);
+      return () => window.removeEventListener("resize", sync);
+    }, [evidenceMode2, incident, priorityCount, rows2.length, tablet]);
+    return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+      "details",
+      {
+        className: "mp-ledger",
+        "data-mobile-evidence-ledger": true,
+        "data-user-override": userOverrideRef.current === null ? "auto" : "manual",
+        open,
+        ref: ledgerRef,
+        onToggle: (event) => {
+          const nextOpen = event.currentTarget.open;
+          if (nextOpen === open) return;
+          userOverrideRef.current = nextOpen;
+          setOpen(nextOpen);
+        },
+        children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("summary", { children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Gauge, { "aria-hidden": "true", size: 17 }),
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: "证据边界" }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: evidenceNote })
+              ] })
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+              rows2.length,
+              " 项",
+              /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronDown, { "aria-hidden": "true", size: 17 })
+            ] })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("dl", { children: rows2.map((row) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `is-${row.tone}`, children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("dt", { children: row.label }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("dd", { children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: row.value }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: row.note })
+            ] })
+          ] }, row.key)) })
+        ]
+      }
+    );
   }
   function MobileFocusObject({ object, onOpen }) {
     return /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "mp-focus", "data-mobile-focus-object": object.id, "aria-labelledby": "mp-focus-title", children: [
@@ -9057,10 +9224,6 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     if (tone === "warn" || tone === "missing") return /* @__PURE__ */ jsxRuntimeExports.jsx(TriangleAlert, { "aria-hidden": "true", size: 22 });
     return /* @__PURE__ */ jsxRuntimeExports.jsx(ShieldCheck, { "aria-hidden": "true", size: 22 });
   }
-  function observedCount(value) {
-    const number2 = Number(value);
-    return Number.isFinite(number2) ? number2 : null;
-  }
   function MobilePatrolScreen({
     snapshot,
     state: state2,
@@ -9070,28 +9233,14 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     var _a;
     const model = reactExports.useMemo(() => buildOverviewEvidenceModel(snapshot, state2), [snapshot, state2]);
     const incident = model.priorityObjects.length > 0;
-    const ledgerRef = reactExports.useRef(null);
     const textScaleSentinelRef = reactExports.useRef(null);
     const [largeText, setLargeText] = reactExports.useState(false);
     const [tablet, setTablet] = reactExports.useState(false);
     const [selectedIncidentId, setSelectedIncidentId] = reactExports.useState("");
+    const [showAllIncidents, setShowAllIncidents] = reactExports.useState(false);
     const terminals = Array.isArray(snapshot.terminals) ? snapshot.terminals.length : null;
-    const connections = observedCount((_a = snapshot.connections) == null ? void 0 : _a.total);
+    const connections = toFiniteNumber((_a = snapshot.connections) == null ? void 0 : _a.total);
     const runningInterfaces = state2.facts.interfaces.available ? Math.max(0, state2.facts.interfaces.total - state2.facts.interfaces.down) : null;
-    reactExports.useEffect(() => {
-      const syncLedger = () => {
-        const ledger = ledgerRef.current;
-        if (!ledger) return;
-        const availableBelowSummary = window.innerHeight - ledger.getBoundingClientRect().top - 76;
-        const estimatedLedgerBody = model.evidenceRows.length * 54;
-        const fitsUsefulEvidence = availableBelowSummary >= Math.min(180, estimatedLedgerBody);
-        const roomyIncident = incident && (window.innerHeight >= 720 || window.innerWidth >= 600 || model.priorityObjects.length <= 2);
-        ledger.open = model.evidenceMode === "unavailable" || roomyIncident || fitsUsefulEvidence;
-      };
-      syncLedger();
-      window.addEventListener("resize", syncLedger);
-      return () => window.removeEventListener("resize", syncLedger);
-    }, [incident, model.evidenceMode, model.evidenceRows.length, model.priorityObjects.length, tablet]);
     reactExports.useEffect(() => {
       var _a2;
       const sentinel = textScaleSentinelRef.current;
@@ -9109,40 +9258,28 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       };
     }, []);
     reactExports.useEffect(() => {
-      const media = window.matchMedia("(min-width: 600px) and (max-width: 1023px)");
+      const media = window.matchMedia("(min-width: 600px) and (max-width: 1180px)");
       const sync = () => setTablet(media.matches);
       sync();
       media.addEventListener("change", sync);
       return () => media.removeEventListener("change", sync);
     }, []);
-    const visiblePriorityObjects = tablet ? model.priorityObjectsAll : model.priorityObjects;
+    const visiblePriorityObjects = tablet || showAllIncidents ? model.priorityObjectsAll : model.priorityObjects;
     const remainingPriorityObjects = Math.max(0, model.priorityTotal - visiblePriorityObjects.length);
     const selectedIncident = visiblePriorityObjects.find((object) => object.id === selectedIncidentId) || visiblePriorityObjects[0] || null;
-    const ledgerInPrimary = tablet && (model.risk === "evidence" || model.risk === "collection");
+    const ledgerInPrimary = tablet;
     const showPatrolActions = tablet || model.risk === "evidence" || model.risk === "collection";
-    const evidenceLedger = /* @__PURE__ */ jsxRuntimeExports.jsxs("details", { className: "mp-ledger", "data-mobile-evidence-ledger": true, ref: ledgerRef, children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("summary", { children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Gauge, { "aria-hidden": "true", size: 17 }),
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: "证据边界" }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: model.evidenceNote })
-          ] })
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-          model.evidenceRows.length,
-          " 项",
-          /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronDown, { "aria-hidden": "true", size: 17 })
-        ] })
-      ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("dl", { children: model.evidenceRows.map((row) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `is-${row.tone}`, children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("dt", { children: row.label }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("dd", { children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: row.value }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: row.note })
-        ] })
-      ] }, row.key)) })
-    ] });
+    const evidenceLedger = /* @__PURE__ */ jsxRuntimeExports.jsx(
+      MobileEvidenceLedger,
+      {
+        evidenceMode: model.evidenceMode,
+        evidenceNote: model.evidenceNote,
+        rows: model.evidenceRows,
+        incident,
+        priorityCount: model.priorityObjects.length,
+        tablet
+      }
+    );
     return /* @__PURE__ */ jsxRuntimeExports.jsxs(
       "main",
       {
@@ -9210,31 +9347,28 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
                           setSelectedIncidentId(object.id);
                           return;
                         }
-                        onNavigate(object.route);
+                        onNavigate(object.route, { objectId: object.targetObjectId || null });
                       }
                     },
                     object.id
                   )) }),
-                  remainingPriorityObjects > 0 && visiblePriorityObjects[0] ? /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                  !tablet && model.priorityObjectsAll.length > model.priorityObjects.length ? /* @__PURE__ */ jsxRuntimeExports.jsxs(
                     "button",
                     {
-                      className: "mp-incident-more",
+                      className: `mp-incident-more ${showAllIncidents ? "is-expanded" : ""}`,
                       type: "button",
-                      onClick: () => onNavigate(visiblePriorityObjects[0].route),
-                      "data-mobile-destination": visiblePriorityObjects[0].route,
+                      "aria-expanded": showAllIncidents,
+                      onClick: () => setShowAllIncidents((value) => !value),
+                      "data-mobile-incident-expand": true,
                       children: [
-                        "进入",
-                        visiblePriorityObjects[0].category,
-                        "工作区查看其余 ",
-                        remainingPriorityObjects,
-                        " 个",
-                        /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronRight, { "aria-hidden": "true", size: 17 })
+                        showAllIncidents ? "收起到最高优先级" : `展开其余 ${remainingPriorityObjects} 个事故对象`,
+                        /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronDown, { "aria-hidden": "true", size: 17 })
                       ]
                     }
                   ) : null
                 ] }) : null,
                 model.traffic ? /* @__PURE__ */ jsxRuntimeExports.jsx(MobilePatrolTraffic, { traffic: model.traffic, onOpen: () => onNavigate("trafficLoad") }) : null,
-                tablet && model.focusObject ? /* @__PURE__ */ jsxRuntimeExports.jsx(MobileFocusObject, { object: model.focusObject, onOpen: () => onNavigate(model.focusObject.route) }) : null,
+                tablet && model.focusObject ? /* @__PURE__ */ jsxRuntimeExports.jsx(MobileFocusObject, { object: model.focusObject, onOpen: () => onNavigate(model.focusObject.route, { objectId: model.focusObject.targetObjectId || null }) }) : null,
                 ledgerInPrimary ? evidenceLedger : null
               ] }),
               /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mp-workspace-context", children: [
@@ -9270,7 +9404,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
                     ] })
                   ] })
                 ] }) : null,
-                tablet && selectedIncident ? /* @__PURE__ */ jsxRuntimeExports.jsx(IncidentInspector, { object: selectedIncident, onOpen: () => onNavigate(selectedIncident.route) }) : null,
+                tablet && selectedIncident ? /* @__PURE__ */ jsxRuntimeExports.jsx(IncidentInspector, { object: selectedIncident, onOpen: () => onNavigate(selectedIncident.route, { objectId: selectedIncident.targetObjectId || null }) }) : null,
                 !ledgerInPrimary ? evidenceLedger : null,
                 showPatrolActions ? /* @__PURE__ */ jsxRuntimeExports.jsx(MobilePatrolActions, { risk: model.risk, onNavigate }) : null
               ] })
@@ -9280,7 +9414,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       }
     );
   }
-  const MOBILE_PANEL_QUERY = "(max-width: 1023px)";
+  const MOBILE_PANEL_QUERY = "(max-width: 1180px)";
   function useMobilePanelSurface() {
     const [mobile, setMobile] = reactExports.useState(
       () => typeof window !== "undefined" && window.matchMedia(MOBILE_PANEL_QUERY).matches
@@ -9898,7 +10032,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       }
     );
   }
-  const MOBILE_CONNECTION_QUERY = "(max-width: 1023px)";
+  const MOBILE_CONNECTION_QUERY = "(max-width: 1180px)";
   function useMobileConnectionSurface() {
     const [mobile, setMobile] = reactExports.useState(() => typeof window !== "undefined" && window.matchMedia(MOBILE_CONNECTION_QUERY).matches);
     reactExports.useEffect(() => {
@@ -10424,28 +10558,28 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     "readonlyDiagnostics",
     "more"
   ];
-  const PANEL_ROUTES = {
-    overview: { id: "overview", title: "运行概览", shortTitle: "概览", description: "服务、证据、默认出口与当前异常", taskGroup: "overview" },
-    interfaces: { id: "interfaces", title: "接口", shortTitle: "接口", description: "物理、VLAN、桥接与隧道接口状态", taskGroup: "interfaces" },
-    lineStatus: { id: "lineStatus", title: "WAN 线路", shortTitle: "线路", description: "出口对象、接入关系与当前吞吐", taskGroup: "interfaces" },
-    balance: { id: "balance", title: "WAN 分流", shortTitle: "分流", description: "默认路由、策略标记与线路分布", taskGroup: "interfaces" },
-    routes: { id: "routes", title: "路由表", shortTitle: "路由", description: "默认、静态和动态路由证据", taskGroup: "more" },
-    terminals: { id: "terminals", title: "在线终端", shortTitle: "终端", description: "终端身份、地址、流量与连接数", taskGroup: "terminals" },
-    dhcp: { id: "dhcp", title: "DHCP", shortTitle: "DHCP", description: "地址租约、客户端与地址池", taskGroup: "terminals" },
-    arp: { id: "arp", title: "ARP", shortTitle: "ARP", description: "地址身份与冲突证据", taskGroup: "terminals" },
-    trafficLoad: { id: "trafficLoad", title: "资源与负载", shortTitle: "资源", description: "CPU、内存、磁盘与接口压力", taskGroup: "overview" },
-    loadAudit: { id: "loadAudit", title: "负载审计", shortTitle: "负载审计", description: "资源采样序列、阈值与持续性", taskGroup: "more" },
-    trafficAudit: { id: "trafficAudit", title: "流量审计", shortTitle: "流量审计", description: "协议分布与高流量对象", taskGroup: "more" },
-    connections: { id: "connections", title: "连接跟踪", shortTitle: "连接", description: "活动连接、协议与对象检索", taskGroup: "more" },
-    dns4: { id: "dns4", title: "IPv4 DNS", shortTitle: "DNS v4", description: "DNS 服务、上游与静态规则", taskGroup: "more" },
-    dns6: { id: "dns6", title: "IPv6 与 DNS", shortTitle: "DNS v6", description: "邻居发现、DHCPv6 与 DNS 发布", taskGroup: "more" },
-    security: { id: "security", title: "安全观察", shortTitle: "安全", description: "防火墙、地址集与只读告警", taskGroup: "more" },
-    logs: { id: "logs", title: "运行日志", shortTitle: "日志", description: "最近系统、网络和服务事件", taskGroup: "logs" },
-    serviceLogs: { id: "serviceLogs", title: "服务日志", shortTitle: "服务日志", description: "按系统、防火墙、DHCP 与 DNS 分类", taskGroup: "logs" },
-    readonlyDiagnostics: { id: "readonlyDiagnostics", title: "只读诊断", shortTitle: "诊断", description: "明确边界内的连通性证据", taskGroup: "more" },
-    more: { id: "more", title: "更多工具", shortTitle: "更多", description: "路由、DNS、安全、审计与连接工具", taskGroup: "more" }
-  };
   const PANEL_TASK_ROUTES = ["overview", "interfaces", "terminals", "logs"];
+  const PANEL_ROUTES = {
+    overview: { id: "overview", title: "运行概览", shortTitle: "概览", description: "服务、证据、默认出口与当前异常", primaryDestination: "overview", workspaceGroup: "overview", placement: "primary" },
+    interfaces: { id: "interfaces", title: "接口", shortTitle: "接口", description: "物理、VLAN、桥接与隧道接口状态", primaryDestination: "interfaces", workspaceGroup: "network", placement: "primary" },
+    lineStatus: { id: "lineStatus", title: "WAN 线路", shortTitle: "线路", description: "出口对象、接入关系与当前吞吐", primaryDestination: "interfaces", workspaceGroup: "network", placement: "workspace" },
+    balance: { id: "balance", title: "WAN 分流", shortTitle: "分流", description: "默认路由、策略标记与线路分布", primaryDestination: "interfaces", workspaceGroup: "network", placement: "more" },
+    routes: { id: "routes", title: "路由表", shortTitle: "路由", description: "默认、静态和动态路由证据", primaryDestination: "interfaces", workspaceGroup: "network", placement: "more" },
+    terminals: { id: "terminals", title: "在线终端", shortTitle: "终端", description: "终端身份、地址、流量与连接数", primaryDestination: "terminals", workspaceGroup: "terminals", placement: "primary" },
+    dhcp: { id: "dhcp", title: "DHCP", shortTitle: "DHCP", description: "地址租约、客户端与地址池", primaryDestination: "terminals", workspaceGroup: "terminals", placement: "workspace" },
+    arp: { id: "arp", title: "ARP", shortTitle: "ARP", description: "地址身份与冲突证据", primaryDestination: "terminals", workspaceGroup: "terminals", placement: "workspace" },
+    trafficLoad: { id: "trafficLoad", title: "资源与负载", shortTitle: "资源", description: "CPU、内存、磁盘与接口压力", primaryDestination: "overview", workspaceGroup: "resources", placement: "more" },
+    loadAudit: { id: "loadAudit", title: "负载审计", shortTitle: "负载审计", description: "资源采样序列、阈值与持续性", primaryDestination: "overview", workspaceGroup: "resources", placement: "more" },
+    trafficAudit: { id: "trafficAudit", title: "流量审计", shortTitle: "流量审计", description: "协议分布与高流量对象", primaryDestination: "interfaces", workspaceGroup: "audit", placement: "more" },
+    connections: { id: "connections", title: "连接跟踪", shortTitle: "连接", description: "活动连接、协议与对象检索", primaryDestination: "interfaces", workspaceGroup: "network", placement: "more" },
+    dns4: { id: "dns4", title: "IPv4 DNS", shortTitle: "DNS v4", description: "DNS 服务、上游与静态规则", primaryDestination: "interfaces", workspaceGroup: "dns", placement: "more" },
+    dns6: { id: "dns6", title: "IPv6 与 DNS", shortTitle: "DNS v6", description: "邻居发现、DHCPv6 与 DNS 发布", primaryDestination: "interfaces", workspaceGroup: "dns", placement: "more" },
+    security: { id: "security", title: "安全观察", shortTitle: "安全", description: "防火墙、地址集与只读告警", primaryDestination: "interfaces", workspaceGroup: "security", placement: "more" },
+    logs: { id: "logs", title: "运行日志", shortTitle: "日志", description: "最近系统、网络和服务事件", primaryDestination: "logs", workspaceGroup: "logs", placement: "primary" },
+    serviceLogs: { id: "serviceLogs", title: "服务日志", shortTitle: "服务日志", description: "按系统、防火墙、DHCP 与 DNS 分类", primaryDestination: "logs", workspaceGroup: "logs", placement: "workspace" },
+    readonlyDiagnostics: { id: "readonlyDiagnostics", title: "只读诊断", shortTitle: "诊断", description: "明确边界内的连通性证据", primaryDestination: "overview", workspaceGroup: "diagnostics", placement: "more" },
+    more: { id: "more", title: "更多工具", shortTitle: "更多", description: "路由、DNS、安全、审计与连接工具", primaryDestination: "overview", workspaceGroup: "directory", placement: "directory" }
+  };
   function isPanelRouteId(value) {
     return typeof value === "string" && PANEL_ROUTE_IDS.includes(value);
   }
@@ -10455,20 +10589,18 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     const queryRoute = new URLSearchParams(location.search).get("section");
     return isPanelRouteId(queryRoute) ? queryRoute : "overview";
   }
-  function routeUrl(route, location = window.location) {
+  function routeUrl(route, location = window.location, options = {}) {
     const query = new URLSearchParams(location.search);
     query.set("section", route);
+    if (options.objectId !== void 0) {
+      if (options.objectId) query.set("object", options.objectId);
+      else query.delete("object");
+    }
     return `${location.pathname}?${query.toString()}#${route}`;
   }
   function syncDocumentRoute(route) {
     const definition = PANEL_ROUTES[route];
     document.body.dataset.panelRoute = route;
-    document.querySelectorAll("[data-section]").forEach((node) => {
-      const active = node.dataset.section === route;
-      node.classList.toggle("is-active", active);
-      if (active) node.setAttribute("aria-current", "page");
-      else node.removeAttribute("aria-current");
-    });
     const pageTitle = document.getElementById("pageTitle");
     if (pageTitle) pageTitle.textContent = definition.title;
     const pageSubtitle = document.getElementById("pageSubtitle");
@@ -10508,20 +10640,22 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       });
       return () => window.cancelAnimationFrame(frame);
     }, [route]);
-    const navigate = reactExports.useCallback((next, options) => {
-      if (next === route) return;
+    const navigate = reactExports.useCallback((next, options = {}) => {
+      if (next === route && options.objectId === void 0) return;
+      const objectId = options.objectId || null;
+      const currentObjectId = new URLSearchParams(window.location.search).get("object");
+      if (next === route && currentObjectId === objectId) return;
       const state2 = { ...window.history.state || {}, panelRoute: next };
-      delete state2.mobileObject;
-      const target = new URL(routeUrl(next), window.location.origin);
-      target.searchParams.delete("object");
-      const targetUrl = target.pathname + target.search + target.hash;
-      if (options == null ? void 0 : options.replace) window.history.replaceState(state2, "", targetUrl);
+      if (objectId) state2.mobileObject = objectId;
+      else delete state2.mobileObject;
+      const targetUrl = routeUrl(next, window.location, { objectId });
+      if (options.replace) window.history.replaceState(state2, "", targetUrl);
       else window.history.pushState(state2, "", targetUrl);
       window.dispatchEvent(new PopStateEvent("popstate", { state: state2 }));
     }, [route]);
     return { route, navigate, definition: PANEL_ROUTES[route] };
   }
-  const MOBILE_RUNTIME_QUERY = "(max-width: 1023px)";
+  const MOBILE_RUNTIME_QUERY = "(max-width: 1180px)";
   function useMobileRuntimeSurface() {
     const [mobile, setMobile] = reactExports.useState(() => typeof window !== "undefined" && window.matchMedia(MOBILE_RUNTIME_QUERY).matches);
     reactExports.useEffect(() => {
@@ -11465,15 +11599,16 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
   function rows(value) {
     return Array.isArray(value) ? value.filter((item) => Boolean(item && typeof item === "object" && !Array.isArray(item))) : [];
   }
-  function text(value, fallback = "未记录") {
+  function text$1(value, fallback = "未记录") {
     if (typeof value === "string" && value.trim()) return value.trim();
     if (typeof value === "number" && Number.isFinite(value)) return String(value);
     if (typeof value === "boolean") return value ? "是" : "否";
     return fallback;
   }
   function number(value) {
-    if (value === null || value === void 0 || value === "") return null;
-    const result = typeof value === "number" ? value : Number(value);
+    if (typeof value === "number") return Number.isFinite(value) ? value : null;
+    if (typeof value !== "string" || !value.trim()) return null;
+    const result = Number(value);
     return Number.isFinite(result) ? result : null;
   }
   function count(value) {
@@ -11483,7 +11618,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     if (disabled === true) return "已停用";
     if (value === true || String(value).toLowerCase() === "running" || String(value).toLowerCase() === "bound") return "运行";
     if (value === false) return "未运行";
-    return text(value);
+    return text$1(value);
   }
   function rate(value) {
     const observed = number(value);
@@ -11509,7 +11644,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       description: PANEL_ROUTES[route].description,
       updatedAt: successAt ? shortTimestamp(successAt) : "未记录",
       evidenceMode: mode,
-      status: boundaryLabel || (mode === "unavailable" ? text(snapshot.error, "当前证据不可用") : mode === "historical" ? "历史快照 · 当前变化不可见" : "当前只读证据"),
+      status: boundaryLabel || (mode === "unavailable" ? text$1(snapshot.error, "当前证据不可用") : mode === "historical" ? "历史快照 · 当前变化不可见" : "当前只读证据"),
       statusTone: mode === "unavailable" ? "danger" : mode === "historical" ? "warn" : "trust"
     };
   }
@@ -11603,10 +11738,10 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
         { key: "parent", label: "上级" },
         { key: "traffic", label: "接收 / 发送" }
       ], items, (item, index) => ({
-        name: text(item.name || item.interface, `接口 ${index + 1}`),
-        kind: `${text(item.type, "未知类型")} / ${text(item.role, "未标角色")}`,
+        name: text$1(item.name || item.interface, `接口 ${index + 1}`),
+        kind: `${text$1(item.type, "未知类型")} / ${text$1(item.role, "未标角色")}`,
         status: state(item.running, item.disabled),
-        parent: text(item.parent || item.master || item.bridge),
+        parent: text$1(item.parent || item.master || item.bridge),
         traffic: `${rate(item.rxRate ?? item.downRate)} / ${rate(item.txRate ?? item.upRate)}`
       }), "当前快照没有接口对象")]
     };
@@ -11632,10 +11767,10 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
         { key: "access", label: "接入" },
         { key: "traffic", label: "下载 / 上传" }
       ], items, (item, index) => ({
-        name: text(item.name || item.interface, `WAN ${index + 1}`),
+        name: text$1(item.name || item.interface, `WAN ${index + 1}`),
         status: state(item.running, item.disabled),
-        parent: text(item.parent),
-        access: text(item.access || item.kind),
+        parent: text$1(item.parent),
+        access: text$1(item.access || item.kind),
         traffic: `${rate(item.downRate)} / ${rate(item.upRate)}`
       }), "当前快照没有 WAN 对象")]
     };
@@ -11661,10 +11796,10 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
         { key: "distance", label: "距离" },
         { key: "status", label: "状态" }
       ], items, (item) => ({
-        destination: text(item.dstAddress, item.default === true ? "0.0.0.0/0" : "未记录"),
-        gateway: text(item.gateway || item.gatewayStatus),
-        table: text(item.table || item.routingTable, "main"),
-        distance: text(item.distance),
+        destination: text$1(item.dstAddress, item.default === true ? "0.0.0.0/0" : "未记录"),
+        gateway: text$1(item.gateway || item.gatewayStatus),
+        table: text$1(item.table || item.routingTable, "main"),
+        distance: text$1(item.distance),
         status: item.disabled === true ? "已停用" : item.active === true ? "活动" : "非活动"
       }), "当前快照没有路由记录")]
     };
@@ -11677,19 +11812,19 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     return {
       ...base(route, snapshot),
       metrics: [
-        { label: "工作模式", value: text(balance.mode), tone: "trust" },
+        { label: "工作模式", value: text$1(balance.mode), tone: "trust" },
         { label: "活动线路", value: activeLines === null ? "未记录" : String(activeLines), tone: activeLines === null ? "missing" : activeLines > 0 ? "trust" : "warn" },
         { label: "PCC", value: balance.pccDetected === true ? "已识别" : "未识别", tone: balance.pccDetected === true ? "trust" : "missing" }
       ],
       tables: [
-        table("默认路由", [{ key: "gateway", label: "网关" }, { key: "table", label: "路由表" }, { key: "distance", label: "距离" }, { key: "status", label: "状态" }], defaults, (item) => ({ gateway: text(item.gateway), table: text(item.table), distance: text(item.distance), status: item.active === true ? "活动" : "非活动" }), "未取得默认路由"),
-        table("策略规则", [{ key: "chain", label: "链 / 动作" }, { key: "mark", label: "标记 / 表" }, { key: "interface", label: "接口" }, { key: "comment", label: "说明" }], rules, (item) => ({ chain: `${text(item.chain, "rule")} / ${text(item.action)}`, mark: text(item.newRoutingMark || item.table || item.routingMark), interface: text(item.inInterface || item.outInterface || item.interface), comment: text(item.comment, "—") }), "未取得策略规则")
+        table("默认路由", [{ key: "gateway", label: "网关" }, { key: "table", label: "路由表" }, { key: "distance", label: "距离" }, { key: "status", label: "状态" }], defaults, (item) => ({ gateway: text$1(item.gateway), table: text$1(item.table), distance: text$1(item.distance), status: item.active === true ? "活动" : "非活动" }), "未取得默认路由"),
+        table("策略规则", [{ key: "chain", label: "链 / 动作" }, { key: "mark", label: "标记 / 表" }, { key: "interface", label: "接口" }, { key: "comment", label: "说明" }], rules, (item) => ({ chain: `${text$1(item.chain, "rule")} / ${text$1(item.action)}`, mark: text$1(item.newRoutingMark || item.table || item.routingMark), interface: text$1(item.inInterface || item.outInterface || item.interface), comment: text$1(item.comment, "—") }), "未取得策略规则")
       ]
     };
   }
   function terminalModel(route, snapshot) {
     const items = rows(snapshot.terminals);
-    const online = items.filter((item) => item.online === true || /^(?:online|active|reachable|bound)$/i.test(text(item.status, ""))).length;
+    const online = items.filter((item) => item.online === true || /^(?:online|active|reachable|bound)$/i.test(text$1(item.status, ""))).length;
     const connectionValues = items.map((item) => number(item.connections));
     const connectionsComplete = items.length > 0 && connectionValues.every((value) => value !== null);
     const connections = connectionsComplete ? connectionValues.reduce((sum, value) => sum + value, 0) : null;
@@ -11707,11 +11842,12 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
         { key: "connections", label: "连接" },
         { key: "traffic", label: "下载 / 上传" }
       ], items, (item, index) => ({
-        name: text(item.displayName || item.hostname || item.name, `终端 ${index + 1}`),
-        address: `${text(item.ip)} / ${text(item.mac)}`,
-        status: text(item.status, item.online === true ? "在线" : "未确认"),
-        connections: text(item.connections, "未取得"),
-        traffic: `${rate(item.downRate)} / ${rate(item.upRate)}`
+        name: text$1(item.displayName || item.hostname || item.name, `终端 ${index + 1}`),
+        address: `${text$1(item.ip)} / ${text$1(item.mac)}`,
+        status: text$1(item.status, item.online === true ? "在线" : "未确认"),
+        connections: text$1(item.connections, "未取得"),
+        traffic: `${rate(item.downRate)} / ${rate(item.upRate)}`,
+        _mac: text$1(item.mac, "")
       }), "当前快照没有终端记录")]
     };
   }
@@ -11728,8 +11864,8 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
         { label: "地址池", value: String(pools.length), tone: pools.length ? "trust" : "missing" }
       ],
       tables: [
-        table("地址租约", [{ key: "host", label: "主机" }, { key: "address", label: "IP" }, { key: "mac", label: "MAC" }, { key: "server", label: "服务器" }, { key: "status", label: "状态" }], leases, (item) => ({ host: text(item.hostName || item.hostname), address: text(item.address), mac: text(item.macAddress || item.mac), server: text(item.server), status: text(item.status) }), "当前快照没有 DHCP 租约"),
-        table("DHCP 客户端", [{ key: "interface", label: "接口" }, { key: "status", label: "状态" }, { key: "route", label: "默认路由" }, { key: "dns", label: "使用上游 DNS" }], clients, (item) => ({ interface: text(item.interface), status: text(item.status), route: text(item.addDefaultRoute), dns: text(item.usePeerDns) }), "当前快照没有 DHCP 客户端")
+        table("地址租约", [{ key: "host", label: "主机" }, { key: "address", label: "IP" }, { key: "mac", label: "MAC" }, { key: "server", label: "服务器" }, { key: "status", label: "状态" }], leases, (item) => ({ host: text$1(item.hostName || item.hostname), address: text$1(item.address), mac: text$1(item.macAddress || item.mac), server: text$1(item.server), status: text$1(item.status), _leaseId: text$1(item.id || item[".id"], "") }), "当前快照没有 DHCP 租约"),
+        table("DHCP 客户端", [{ key: "interface", label: "接口" }, { key: "status", label: "状态" }, { key: "route", label: "默认路由" }, { key: "dns", label: "使用上游 DNS" }], clients, (item) => ({ interface: text$1(item.interface), status: text$1(item.status), route: text$1(item.addDefaultRoute), dns: text$1(item.usePeerDns) }), "当前快照没有 DHCP 客户端")
       ]
     };
   }
@@ -11745,8 +11881,8 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
         { label: "动态记录", value: String(items.filter((item) => item.dynamic === true).length), tone: "trust" }
       ],
       tables: [
-        table("身份告警", [{ key: "address", label: "地址" }, { key: "kind", label: "类型" }, { key: "detail", label: "证据" }], alerts, (item) => ({ address: text(item.ip || item.address), kind: text(item.type || item.level, "冲突"), detail: text(item.message || item.detail) }), "没有记录到 ARP 身份告警"),
-        table("ARP 对象", [{ key: "address", label: "IP" }, { key: "mac", label: "MAC" }, { key: "status", label: "状态" }, { key: "interface", label: "接口" }], items, (item) => ({ address: text(item.ip || item.address), mac: text(item.mac || item.macAddress), status: text(item.status, item.dynamic === true ? "动态" : "未确认"), interface: text(item.interface) }), "当前快照没有 ARP 记录")
+        table("身份告警", [{ key: "address", label: "地址" }, { key: "kind", label: "类型" }, { key: "detail", label: "证据" }], alerts, (item) => ({ address: text$1(item.ip || item.address), kind: text$1(item.type || item.level, "冲突"), detail: text$1(item.message || item.detail) }), "没有记录到 ARP 身份告警"),
+        table("ARP 对象", [{ key: "address", label: "IP" }, { key: "mac", label: "MAC" }, { key: "status", label: "状态" }, { key: "interface", label: "接口" }], items, (item) => ({ address: text$1(item.ip || item.address), mac: text$1(item.mac || item.macAddress), status: text$1(item.status, item.dynamic === true ? "动态" : "未确认"), interface: text$1(item.interface) }), "当前快照没有 ARP 记录")
       ]
     };
   }
@@ -11792,13 +11928,17 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
         { label: "协议分组", value: String(protocols.length), tone: protocols.length ? "trust" : "missing" }
       ],
       tables: [table(route === "connections" ? "活动连接" : "流量对象", [{ key: "source", label: "源" }, { key: "target", label: "目标 / 协议" }, { key: "connections", label: "连接" }, { key: "traffic", label: "流量" }], source, (item) => {
-        const remote = text(item.destination || item.remoteIp || item.dstAddress || item.dst, "");
-        const protocol = text(item.protocol || item.label, "");
+        const remote = text$1(item.destination || item.remoteIp || item.dstAddress || item.dst, "");
+        const protocol = text$1(item.protocol || item.label, "");
         return {
-          source: text(item.source || item.localIp || item.srcAddress || item.src || item.ip || item.name),
+          source: text$1(item.source || item.localIp || item.srcAddress || item.src || item.ip || item.name),
           target: [remote, protocol].filter(Boolean).join(" / ") || "未记录",
-          connections: text(item.connections ?? item.count, "—"),
-          traffic: text(item.totalRate ?? item.bytes ?? item.value, "未取得")
+          connections: text$1(item.connections ?? item.count, "—"),
+          traffic: text$1(item.totalRate ?? item.bytes ?? item.value, "未取得"),
+          _id: text$1(item.id || item[".id"], ""),
+          _protocol: protocol,
+          _sourcePort: text$1(item.sourcePort || item.srcPort, ""),
+          _targetPort: text$1(item.destinationPort || item.dstPort, "")
         };
       }, route === "connections" ? "当前快照没有活动连接明细" : "当前快照没有流量审计对象")]
     };
@@ -11817,7 +11957,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       ] : [
         { label: "远程请求", value: dns.running === true ? "允许" : dns.running === false ? "未允许" : "未记录", tone: dns.running === true ? "trust" : dns.running === false ? "warn" : "missing" },
         { label: "上游服务器", value: String(servers.length), tone: servers.length ? "trust" : "warn" },
-        { label: "静态规则", value: text(dns.forwardRuleCount, String(source.length)), tone: source.length ? "trust" : "missing" }
+        { label: "静态规则", value: text$1(dns.forwardRuleCount, String(source.length)), tone: source.length ? "trust" : "missing" }
       ],
       tables: [table(ipv6 ? "IPv6 网络对象" : "DNS 静态规则", ipv6 ? [
         { key: "interface", label: "接口" },
@@ -11830,8 +11970,8 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
         { key: "value", label: "目标" },
         { key: "status", label: "状态" }
       ], source, (item) => {
-        if (ipv6) return { interface: text(item.interface), status: text(item.status, item.advertiseDns === true ? "发布 DNS" : "未确认"), prefix: text(item.prefix || item.dnsServers), route: text(item.addDefaultRoute) };
-        return { name: text(item.name), type: text(item.type), value: text(item.value || item.address), status: item.disabled === true ? "已停用" : "启用" };
+        if (ipv6) return { interface: text$1(item.interface), status: text$1(item.status, item.advertiseDns === true ? "发布 DNS" : "未确认"), prefix: text$1(item.prefix || item.dnsServers), route: text$1(item.addDefaultRoute) };
+        return { name: text$1(item.name), type: text$1(item.type), value: text$1(item.value || item.address), status: item.disabled === true ? "已停用" : "启用" };
       }, ipv6 ? "当前快照没有 IPv6 ND/DHCP 对象" : "当前快照没有 DNS 静态规则")]
     };
   }
@@ -11848,8 +11988,8 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
         { label: "告警记录", value: String(alerts.length), tone: alerts.length ? "danger" : "trust" }
       ],
       tables: [
-        table("安全告警", [{ key: "time", label: "时间" }, { key: "scope", label: "范围" }, { key: "message", label: "事件" }], alerts, (item) => ({ time: text(item.time || item.lastConfirmed), scope: text(item.affected || item.topics), message: text(item.abnormal || item.message) }), "当前快照没有安全告警"),
-        table("防火墙规则", [{ key: "order", label: "顺序" }, { key: "chain", label: "链" }, { key: "action", label: "动作" }, { key: "comment", label: "说明" }], filters, (item) => ({ order: text(item.rawOrder), chain: text(item.chain), action: text(item.action), comment: text(item.comment, "—") }), "当前快照没有防火墙规则")
+        table("安全告警", [{ key: "time", label: "时间" }, { key: "scope", label: "范围" }, { key: "message", label: "事件" }], alerts, (item) => ({ time: text$1(item.time || item.lastConfirmed), scope: text$1(item.affected || item.topics), message: text$1(item.abnormal || item.message) }), "当前快照没有安全告警"),
+        table("防火墙规则", [{ key: "order", label: "顺序" }, { key: "chain", label: "链" }, { key: "action", label: "动作" }, { key: "comment", label: "说明" }], filters, (item) => ({ order: text$1(item.rawOrder), chain: text$1(item.chain), action: text$1(item.action), comment: text$1(item.comment, "—") }), "当前快照没有防火墙规则")
       ]
     };
   }
@@ -11862,9 +12002,9 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       metrics: [
         { label: "全部记录", value: String(all.length), tone: all.length ? "trust" : "missing" },
         { label: "防火墙", value: String(count(logs.firewall)), tone: count(logs.firewall) ? "warn" : "trust" },
-        { label: "错误/警告", value: String(all.filter((item) => /error|warning|critical/i.test(text(item.topics, ""))).length), tone: "warn" }
+        { label: "错误/警告", value: String(all.filter((item) => /error|warning|critical/i.test(text$1(item.topics, ""))).length), tone: "warn" }
       ],
-      tables: [table(route === "serviceLogs" ? "分类日志" : "最近日志", [{ key: "time", label: "时间" }, { key: "topics", label: "主题" }, { key: "message", label: "内容" }], grouped, (item) => ({ time: text(item.time), topics: route === "serviceLogs" ? `${text(item.group)} · ${text(item.topics)}` : text(item.topics), message: text(item.message) }), "当前快照没有日志记录")]
+      tables: [table(route === "serviceLogs" ? "分类日志" : "最近日志", [{ key: "time", label: "时间" }, { key: "topics", label: "主题" }, { key: "message", label: "内容" }], grouped, (item) => ({ time: text$1(item.time), topics: route === "serviceLogs" ? `${text$1(item.group)} · ${text$1(item.topics)}` : text$1(item.topics), message: text$1(item.message) }), "当前快照没有日志记录")]
     };
   }
   function diagnosticsModel(route, snapshot) {
@@ -11879,7 +12019,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
         { label: "SSH 采集", value: meta.staticError ? "有错误" : "无错误记录", tone: meta.staticError ? "danger" : "trust" },
         { label: "失败端点", value: failures.length ? String(failures.length) : "未记录", tone: failures.length ? "warn" : "missing" }
       ],
-      tables: [table("采集与诊断边界", [{ key: "group", label: "通道" }, { key: "name", label: "对象" }, { key: "message", label: "记录" }], failures, (item) => ({ group: text(item.group), name: text(item.name), message: text(item.message, "失败端点记录") }), "没有失败端点记录；这不等于外部诊断已经执行", "公开 RouterOS-only 配置默认不执行外部只读探测")]
+      tables: [table("采集与诊断边界", [{ key: "group", label: "通道" }, { key: "name", label: "对象" }, { key: "message", label: "记录" }], failures, (item) => ({ group: text$1(item.group), name: text$1(item.name), message: text$1(item.message, "失败端点记录") }), "没有失败端点记录；这不等于外部诊断已经执行", "公开 RouterOS-only 配置默认不执行外部只读探测")]
     };
   }
   function buildCurrentSectionModel(route, snapshot) {
@@ -11901,26 +12041,57 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
   function buildSectionModel(route, snapshot) {
     return applyEvidenceBoundary(buildCurrentSectionModel(route, snapshot));
   }
-  const NETWORK_ROUTES = [
-    { route: "interfaces", label: "接口" },
-    { route: "lineStatus", label: "WAN" },
-    { route: "routes", label: "路由" },
-    { route: "connections", label: "连接" }
-  ];
-  const TERMINAL_ROUTES = [
-    { route: "terminals", label: "终端" },
-    { route: "dhcp", label: "DHCP" },
-    { route: "arp", label: "ARP" }
-  ];
-  const LOG_ROUTES = [
-    { route: "logs", label: "运行日志" },
-    { route: "serviceLogs", label: "服务日志" }
-  ];
+  const WORKSPACE_DEFINITIONS = {
+    network: {
+      label: "网络工作区",
+      routes: [
+        { route: "interfaces", label: "接口" },
+        { route: "lineStatus", label: "WAN" },
+        { route: "balance", label: "分流" },
+        { route: "routes", label: "路由" },
+        { route: "connections", label: "连接" }
+      ]
+    },
+    terminals: {
+      label: "终端工作区",
+      routes: [
+        { route: "terminals", label: "终端" },
+        { route: "dhcp", label: "DHCP" },
+        { route: "arp", label: "ARP" }
+      ]
+    },
+    logs: {
+      label: "事件时间线",
+      routes: [
+        { route: "logs", label: "运行日志" },
+        { route: "serviceLogs", label: "服务日志" }
+      ]
+    },
+    resources: {
+      label: "资源工作区",
+      routes: [
+        { route: "trafficLoad", label: "当前负载" },
+        { route: "loadAudit", label: "采样审计" }
+      ]
+    },
+    dns: {
+      label: "DNS 工作区",
+      routes: [
+        { route: "dns4", label: "IPv4" },
+        { route: "dns6", label: "IPv6" }
+      ]
+    },
+    audit: { label: "流量审计", routes: [] },
+    security: { label: "安全工作区", routes: [] },
+    diagnostics: { label: "诊断工作区", routes: [] },
+    directory: { label: "只读工具目录", routes: [] },
+    overview: { label: "运行概览", routes: [] }
+  };
   const MORE_ROUTE_GROUPS = [
     { id: "network", label: "路径与性能" },
     { id: "services", label: "审计与服务" }
   ];
-  const MORE_ROUTES = [
+  const MORE_ROUTE_CATALOG = [
     { route: "balance", label: "WAN 分流", group: "network" },
     { route: "routes", label: "路由表", group: "network" },
     { route: "connections", label: "连接跟踪", group: "network" },
@@ -11932,90 +12103,26 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     { route: "security", label: "安全观察", group: "services" },
     { route: "readonlyDiagnostics", label: "只读诊断", group: "services" }
   ];
-  const DOMAIN = {
-    interfaces: {
-      icon: Cable,
-      searchable: true,
-      filters: [
-        { id: "all", label: "全部" },
-        { id: "attention", label: "异常" },
-        { id: "running", label: "运行" }
-      ]
-    },
-    terminals: {
-      icon: UsersRound,
-      searchable: true,
-      filters: [
-        { id: "all", label: "全部" },
-        { id: "online", label: "在线" },
-        { id: "attention", label: "待确认" }
-      ]
-    },
-    logs: {
-      icon: ScrollText,
-      searchable: true,
-      filters: [
-        { id: "all", label: "全部" },
-        { id: "alerts", label: "告警" },
-        { id: "system", label: "系统" }
-      ]
-    },
-    serviceLogs: {
-      icon: ScrollText,
-      searchable: true,
-      filters: [
-        { id: "all", label: "全部" },
-        { id: "alerts", label: "告警" },
-        { id: "system", label: "系统" }
-      ]
-    },
-    connections: {
-      icon: Network,
-      searchable: true,
-      filters: [
-        { id: "all", label: "全部" },
-        { id: "tcp", label: "TCP" },
-        { id: "udp", label: "UDP" }
-      ]
-    },
-    dns4: {
-      icon: Network,
-      searchable: true,
-      filters: [
-        { id: "all", label: "全部" },
-        { id: "attention", label: "异常" },
-        { id: "running", label: "启用" }
-      ]
-    },
-    dns6: {
-      icon: Network,
-      searchable: true,
-      filters: [
-        { id: "all", label: "全部" },
-        { id: "attention", label: "异常" },
-        { id: "running", label: "启用" }
-      ]
-    }
-  };
-  const DEFAULT_DOMAIN = {
-    searchable: true,
-    filters: [{ id: "all", label: "全部" }]
-  };
+  const MORE_ROUTES = MORE_ROUTE_CATALOG.filter(
+    (item) => PANEL_ROUTES[item.route].placement === "more"
+  );
   const ATTENTION_PATTERN = /未运行|停用|异常|失败|错误|警告|离线|不可用|critical|error|warning|down|offline|failed/i;
-  const RUNNING_PATTERN = /运行|在线|active|running|bound|online/i;
   function routeTabs(route) {
-    const group = PANEL_ROUTES[route].taskGroup;
-    if (group === "terminals") return TERMINAL_ROUTES;
-    if (group === "logs") return LOG_ROUTES;
-    return NETWORK_ROUTES;
+    var _a;
+    return ((_a = WORKSPACE_DEFINITIONS[PANEL_ROUTES[route].workspaceGroup]) == null ? void 0 : _a.routes) || [];
+  }
+  function workspaceLabel(route) {
+    var _a;
+    return ((_a = WORKSPACE_DEFINITIONS[PANEL_ROUTES[route].workspaceGroup]) == null ? void 0 : _a.label) || "只读工作区";
   }
   function routeIcon(route) {
-    if (DOMAIN[route]) return DOMAIN[route].icon;
-    const group = PANEL_ROUTES[route].taskGroup;
+    const group = PANEL_ROUTES[route].workspaceGroup;
     if (group === "terminals") return UsersRound;
     if (group === "logs") return ScrollText;
-    if (route === "trafficLoad" || route === "loadAudit") return Gauge;
-    if (route === "readonlyDiagnostics") return ShieldCheck;
+    if (group === "resources") return Gauge;
+    if (group === "dns" || route === "connections" || route === "trafficAudit") return Network;
+    if (group === "security" || group === "diagnostics") return ShieldCheck;
+    if (route === "interfaces" || route === "lineStatus") return Cable;
     return Router;
   }
   function toneIcon(tone) {
@@ -12023,19 +12130,13 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     if (tone === "warn" || tone === "missing") return TriangleAlert;
     return ShieldCheck;
   }
-  function shortHash(value) {
-    let hash = 0;
-    for (let index = 0; index < value.length; index += 1) {
-      hash = (hash << 5) - hash + value.charCodeAt(index) | 0;
-    }
-    return Math.abs(hash).toString(36);
-  }
   function rowsFromModel(route, model) {
     const result = [];
-    model.tables.forEach((table2, tableIndex) => {
-      table2.rows.forEach((values, rowIndex) => {
+    const identityCounts = /* @__PURE__ */ new Map();
+    model.tables.forEach((table2) => {
+      table2.rows.forEach((values) => {
         const ordered = table2.columns.map((column) => values[column.key] || "—");
-        let primary = ordered[0] || `对象 ${rowIndex + 1}`;
+        let primary = ordered[0] || "未命名对象";
         let secondary = ordered[1] || table2.title;
         const statusColumn = table2.columns.find((column) => column.key === "status" || column.key === "topics");
         let trailing = statusColumn ? values[statusColumn.key] || "—" : ordered[ordered.length - 1] || "—";
@@ -12075,9 +12176,11 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
           secondary = values.samples || secondary;
           trailing = values.latest || trailing;
         }
-        const identity = `${route}:${tableIndex}:${rowIndex}:${primary}`;
+        const baseId = panelObjectIdForValues(route, table2.title, values);
+        const occurrence = identityCounts.get(baseId) || 0;
+        identityCounts.set(baseId, occurrence + 1);
         result.push({
-          id: `${route}-${tableIndex}-${rowIndex}-${shortHash(identity)}`,
+          id: occurrence ? `${baseId}-duplicate-${occurrence + 1}` : baseId,
           table: table2.title,
           columns: table2.columns,
           values,
@@ -12089,18 +12192,6 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       });
     });
     return result;
-  }
-  function filterMatches(filter, row) {
-    const text2 = row.searchText;
-    if (filter === "all") return true;
-    if (filter === "attention" || filter === "alerts") return ATTENTION_PATTERN.test(text2);
-    if (filter === "running" || filter === "online") {
-      return RUNNING_PATTERN.test(text2) && !ATTENTION_PATTERN.test(text2);
-    }
-    if (filter === "system") return /system|系统/i.test(text2);
-    if (filter === "tcp") return /\btcp\b/i.test(text2);
-    if (filter === "udp") return /\budp\b/i.test(text2);
-    return true;
   }
   function selectedObjectFromUrl() {
     return new URLSearchParams(window.location.search).get("object") || "";
@@ -12136,6 +12227,220 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       window.dispatchEvent(new PopStateEvent("popstate", { state: state2 }));
     };
     return { selectedId, open, close };
+  }
+  const ATTENTION = /未运行|停用|异常|失败|错误|警告|离线|不可用|critical|error|warning|down|offline|failed/i;
+  const RUNNING = /运行|在线|active|running|bound|online|活动|启用/i;
+  function text(row) {
+    return [row.table, row.primary, row.secondary, row.trailing, row.searchText].join(" ").toLocaleLowerCase();
+  }
+  function compareText(left, right) {
+    return left.localeCompare(right, "zh-CN", { numeric: true, sensitivity: "base" });
+  }
+  function numberOf(value) {
+    const match = String(value || "").replace(/,/g, "").match(/-?\d+(?:\.\d+)?/);
+    return match ? Number(match[0]) : Number.NEGATIVE_INFINITY;
+  }
+  function rateOf(value) {
+    const input = String(value || "");
+    const pattern = /(-?\d+(?:\.\d+)?)\s*(gbps|mbps|kbps|bps)/gi;
+    let total = 0;
+    let observed = false;
+    for (const match of input.matchAll(pattern)) {
+      const unit = match[2].toLowerCase();
+      const multiplier = unit === "gbps" ? 1e9 : unit === "mbps" ? 1e6 : unit === "kbps" ? 1e3 : 1;
+      total += Number(match[1]) * multiplier;
+      observed = true;
+    }
+    if (observed) return total;
+    return numberOf(input);
+  }
+  function timestampOf(value) {
+    const parsed = Date.parse(String(value || ""));
+    return Number.isFinite(parsed) ? parsed : Number.NEGATIVE_INFINITY;
+  }
+  function ipValue(value) {
+    const address = String(value || "").split(/[ /]/)[0];
+    const parts = address.split(".").map(Number);
+    return parts.length === 4 && parts.every((part) => Number.isInteger(part) && part >= 0 && part <= 255) ? parts : [Number.MAX_SAFE_INTEGER];
+  }
+  function compareIp(left, right) {
+    const a = ipValue(left.values.address || left.values.source);
+    const b = ipValue(right.values.address || right.values.source);
+    for (let index = 0; index < Math.max(a.length, b.length); index += 1) {
+      const difference = (a[index] ?? 0) - (b[index] ?? 0);
+      if (difference) return difference;
+    }
+    return compareText(left.primary, right.primary);
+  }
+  function filter(id, label, matches) {
+    return { id, label, matches };
+  }
+  function sort(id, label, compare) {
+    return { id, label, compare };
+  }
+  const ALL = filter("all", "全部", () => true);
+  const ATTENTION_FILTER = filter("attention", "异常", (row) => ATTENTION.test(text(row)));
+  const RUNNING_FILTER = filter("running", "运行", (row) => RUNNING.test(text(row)) && !ATTENTION.test(text(row)));
+  const NAME_ASC = sort("name-asc", "名称正序", (left, right) => compareText(left.primary, right.primary));
+  const ATTENTION_FIRST = sort("attention-first", "异常优先", (left, right) => Number(ATTENTION.test(text(right))) - Number(ATTENTION.test(text(left))) || compareText(left.primary, right.primary));
+  const TRAFFIC_DESC = sort("traffic-desc", "流量从高到低", (left, right) => rateOf(right.values.traffic) - rateOf(left.values.traffic) || compareText(left.primary, right.primary));
+  const STATUS_FIRST = sort("status-first", "状态优先", (left, right) => Number(ATTENTION.test(text(right))) - Number(ATTENTION.test(text(left))) || compareText(left.trailing, right.trailing));
+  const DEFAULT_DOMAIN = {
+    searchable: true,
+    searchPlaceholder: "搜索当前对象",
+    objectLabel: "对象",
+    defaultSort: "name-asc",
+    filters: [ALL],
+    sorts: [NAME_ASC]
+  };
+  const DOMAIN = {
+    interfaces: {
+      searchable: true,
+      searchPlaceholder: "接口名、类型或上级",
+      objectLabel: "接口",
+      defaultSort: "attention-first",
+      filters: [ALL, ATTENTION_FILTER, RUNNING_FILTER, filter("disabled", "停用", (row) => /停用/.test(text(row)))],
+      sorts: [ATTENTION_FIRST, TRAFFIC_DESC, NAME_ASC]
+    },
+    lineStatus: {
+      searchable: true,
+      searchPlaceholder: "线路、父接口或接入方式",
+      objectLabel: "WAN 线路",
+      defaultSort: "attention-first",
+      filters: [ALL, ATTENTION_FILTER, RUNNING_FILTER],
+      sorts: [ATTENTION_FIRST, TRAFFIC_DESC, NAME_ASC]
+    },
+    balance: {
+      searchable: true,
+      searchPlaceholder: "网关、路由表或策略标记",
+      objectLabel: "分流对象",
+      defaultSort: "status-first",
+      filters: [ALL, filter("active", "活动", (row) => /活动/.test(text(row)) && !/非活动/.test(text(row))), filter("policy", "策略", (row) => row.table === "策略规则")],
+      sorts: [STATUS_FIRST, sort("distance-asc", "距离从低到高", (left, right) => numberOf(left.values.distance) - numberOf(right.values.distance) || compareText(left.primary, right.primary)), NAME_ASC]
+    },
+    routes: {
+      searchable: true,
+      searchPlaceholder: "目的、网关或路由表",
+      objectLabel: "路由",
+      defaultSort: "active-first",
+      filters: [ALL, filter("active", "活动", (row) => /活动/.test(row.values.status || "") && !/非活动/.test(row.values.status || "")), filter("inactive", "非活动", (row) => /非活动|停用/.test(row.values.status || "")), filter("default", "默认", (row) => /^(?:0\.0\.0\.0\/0|::\/0)$/.test(row.values.destination || ""))],
+      sorts: [sort("active-first", "活动优先", (left, right) => Number(/活动/.test(right.values.status || "") && !/非活动/.test(right.values.status || "")) - Number(/活动/.test(left.values.status || "") && !/非活动/.test(left.values.status || "")) || numberOf(left.values.distance) - numberOf(right.values.distance)), sort("distance-asc", "距离从低到高", (left, right) => numberOf(left.values.distance) - numberOf(right.values.distance)), NAME_ASC]
+    },
+    connections: {
+      searchable: true,
+      searchPlaceholder: "源、目标、端口或协议",
+      objectLabel: "连接",
+      defaultSort: "traffic-desc",
+      filters: [ALL, filter("tcp", "TCP", (row) => /\btcp\b/i.test(text(row))), filter("udp", "UDP", (row) => /\budp\b/i.test(text(row)))],
+      sorts: [TRAFFIC_DESC, sort("source-asc", "源地址", compareIp), sort("target-asc", "目标地址", (left, right) => compareText(left.values.target || "", right.values.target || ""))]
+    },
+    terminals: {
+      searchable: true,
+      searchPlaceholder: "终端名、IP 或 MAC",
+      objectLabel: "终端",
+      defaultSort: "traffic-desc",
+      filters: [ALL, filter("online", "在线", (row) => /在线|active|bound/i.test(text(row)) && !ATTENTION.test(text(row))), ATTENTION_FILTER],
+      sorts: [TRAFFIC_DESC, sort("connections-desc", "连接数从高到低", (left, right) => numberOf(right.values.connections) - numberOf(left.values.connections) || compareText(left.primary, right.primary)), sort("address-asc", "地址顺序", compareIp), NAME_ASC]
+    },
+    dhcp: {
+      searchable: true,
+      searchPlaceholder: "主机、IP、MAC 或接口",
+      objectLabel: "DHCP 对象",
+      defaultSort: "address-asc",
+      filters: [ALL, filter("bound", "已绑定", (row) => /bound|运行|在线/i.test(text(row))), ATTENTION_FILTER],
+      sorts: [sort("address-asc", "地址顺序", compareIp), STATUS_FIRST, NAME_ASC]
+    },
+    arp: {
+      searchable: true,
+      searchPlaceholder: "IP、MAC 或接口",
+      objectLabel: "ARP 对象",
+      defaultSort: "attention-first",
+      filters: [ALL, filter("alerts", "身份告警", (row) => row.table === "身份告警"), filter("dynamic", "动态", (row) => /动态/.test(text(row))), filter("static", "静态", (row) => !/动态/.test(text(row)) && row.table === "ARP 对象")],
+      sorts: [ATTENTION_FIRST, sort("address-asc", "地址顺序", compareIp), NAME_ASC]
+    },
+    trafficLoad: {
+      searchable: false,
+      searchPlaceholder: "",
+      objectLabel: "资源指标",
+      defaultSort: "utilization-desc",
+      filters: [ALL],
+      sorts: [sort("utilization-desc", "占用从高到低", (left, right) => numberOf(right.values.latest) - numberOf(left.values.latest))]
+    },
+    loadAudit: {
+      searchable: false,
+      searchPlaceholder: "",
+      objectLabel: "采样序列",
+      defaultSort: "samples-desc",
+      filters: [ALL],
+      sorts: [sort("samples-desc", "样本数从高到低", (left, right) => numberOf(right.values.samples) - numberOf(left.values.samples))]
+    },
+    trafficAudit: {
+      searchable: true,
+      searchPlaceholder: "地址、协议或流量对象",
+      objectLabel: "流量对象",
+      defaultSort: "traffic-desc",
+      filters: [ALL, filter("tcp", "TCP", (row) => /\btcp\b/i.test(text(row))), filter("udp", "UDP", (row) => /\budp\b/i.test(text(row)))],
+      sorts: [TRAFFIC_DESC, sort("connections-desc", "连接数从高到低", (left, right) => numberOf(right.values.connections) - numberOf(left.values.connections)), NAME_ASC]
+    },
+    dns4: {
+      searchable: true,
+      searchPlaceholder: "名称、类型或目标",
+      objectLabel: "DNS 规则",
+      defaultSort: "status-first",
+      filters: [ALL, filter("enabled", "启用", (row) => /启用/.test(row.values.status || "") && !/停用/.test(row.values.status || "")), filter("disabled", "停用", (row) => /停用/.test(row.values.status || ""))],
+      sorts: [STATUS_FIRST, NAME_ASC]
+    },
+    dns6: {
+      searchable: true,
+      searchPlaceholder: "接口、前缀或 DNS",
+      objectLabel: "IPv6 对象",
+      defaultSort: "status-first",
+      filters: [ALL, ATTENTION_FILTER, filter("advertising", "发布 DNS", (row) => /发布 dns/i.test(text(row)))],
+      sorts: [STATUS_FIRST, NAME_ASC]
+    },
+    security: {
+      searchable: true,
+      searchPlaceholder: "告警、链、动作或说明",
+      objectLabel: "安全对象",
+      defaultSort: "risk-first",
+      filters: [ALL, filter("alerts", "告警", (row) => row.table === "安全告警"), filter("drop", "丢弃", (row) => /drop|reject|丢弃|拒绝/i.test(text(row))), filter("allow", "允许", (row) => /accept|allow|允许/i.test(text(row)))],
+      sorts: [sort("risk-first", "告警优先", (left, right) => Number(right.table === "安全告警") - Number(left.table === "安全告警") || numberOf(left.values.order) - numberOf(right.values.order)), sort("rule-order", "规则顺序", (left, right) => numberOf(left.values.order) - numberOf(right.values.order)), NAME_ASC]
+    },
+    logs: {
+      searchable: true,
+      searchPlaceholder: "内容、主题或时间",
+      objectLabel: "日志",
+      defaultSort: "time-desc",
+      filters: [ALL, filter("severity-error", "错误", (row) => /critical|error|fatal/i.test(text(row))), filter("severity-warning", "警告", (row) => /warning|warn/i.test(text(row))), filter("topic-system", "系统", (row) => /system|系统/i.test(text(row))), filter("topic-firewall", "防火墙", (row) => /firewall|防火墙/i.test(text(row)))],
+      sorts: [sort("time-desc", "时间从新到旧", (left, right) => timestampOf(right.values.time) - timestampOf(left.values.time) || compareText(right.values.time || "", left.values.time || "")), sort("time-asc", "时间从旧到新", (left, right) => timestampOf(left.values.time) - timestampOf(right.values.time) || compareText(left.values.time || "", right.values.time || "")), NAME_ASC]
+    },
+    serviceLogs: {
+      searchable: true,
+      searchPlaceholder: "内容、服务或时间",
+      objectLabel: "服务日志",
+      defaultSort: "time-desc",
+      filters: [ALL, filter("topic-system", "系统", (row) => /system|系统/i.test(text(row))), filter("topic-firewall", "防火墙", (row) => /firewall|防火墙/i.test(text(row))), filter("topic-dhcp", "DHCP", (row) => /dhcp/i.test(text(row))), filter("topic-dns", "DNS", (row) => /dns/i.test(text(row)))],
+      sorts: [sort("time-desc", "时间从新到旧", (left, right) => timestampOf(right.values.time) - timestampOf(left.values.time) || compareText(right.values.time || "", left.values.time || "")), sort("time-asc", "时间从旧到新", (left, right) => timestampOf(left.values.time) - timestampOf(right.values.time) || compareText(left.values.time || "", right.values.time || ""))]
+    },
+    readonlyDiagnostics: {
+      searchable: true,
+      searchPlaceholder: "通道、端点或错误",
+      objectLabel: "诊断记录",
+      defaultSort: "attention-first",
+      filters: [ALL, ATTENTION_FILTER],
+      sorts: [ATTENTION_FIRST, NAME_ASC]
+    }
+  };
+  function domainDefinitionFor(route) {
+    return DOMAIN[route] || DEFAULT_DOMAIN;
+  }
+  function filterWorkspaceRows(rows2, definition, filterId) {
+    const option = definition.filters.find((item) => item.id === filterId) || definition.filters[0] || ALL;
+    return rows2.filter(option.matches);
+  }
+  function sortWorkspaceRows(rows2, definition, sortId) {
+    const option = definition.sorts.find((item) => item.id === sortId) || definition.sorts[0] || NAME_ASC;
+    return [...rows2].sort((left, right) => option.compare(left, right) || compareText(left.id, right.id));
   }
   function EvidenceBadge({ model }) {
     const Icon2 = toneIcon(model.statusTone);
@@ -12215,8 +12520,8 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       return /* @__PURE__ */ jsxRuntimeExports.jsxs("aside", { className: "mdw-inspector is-empty", "aria-label": "对象检查器", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mdw-inspector-symbol", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Icon2, { "aria-hidden": "true", size: 24 }) }),
         /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "对象检查器" }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { children: "从列表选择一个对象" }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("p", { children: "右侧会显示该对象的完整字段、来源分组和证据边界，不会重复聚合指标。" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { children: "未选择对象" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("p", { children: model.status }),
         /* @__PURE__ */ jsxRuntimeExports.jsxs("dl", { children: [
           /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
             /* @__PURE__ */ jsxRuntimeExports.jsx("dt", { children: "证据模式" }),
@@ -12235,10 +12540,10 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     }
     return /* @__PURE__ */ jsxRuntimeExports.jsxs("aside", { className: "mdw-inspector has-object", "data-mobile-object-detail": row.id, "aria-labelledby": "mdw-detail-title", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("button", { type: "button", onClick: onClose, children: [
+        onClose ? /* @__PURE__ */ jsxRuntimeExports.jsxs("button", { type: "button", onClick: onClose, children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx(ArrowLeft, { "aria-hidden": "true", size: 18 }),
           "返回列表"
-        ] }),
+        ] }) : /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "所选对象" }),
         /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: row.table })
       ] }),
       /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mdw-detail-heading", children: [
@@ -12270,50 +12575,57 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     snapshot,
     onNavigate
   }) {
-    var _a;
+    var _a, _b, _c;
     const model = reactExports.useMemo(() => buildSectionModel(route, snapshot), [route, snapshot]);
     const allRows = reactExports.useMemo(() => rowsFromModel(route, model), [route, model]);
-    const definition = DOMAIN[route] || DEFAULT_DOMAIN;
+    const definition = domainDefinitionFor(route);
     const tabs = routeTabs(route);
     const { selectedId, open, close } = useObjectHistory(route);
     const [query, setQuery] = reactExports.useState("");
-    const [filter, setFilter] = reactExports.useState("all");
-    const [sort, setSort] = reactExports.useState("source");
+    const [filter2, setFilter] = reactExports.useState(((_a = definition.filters[0]) == null ? void 0 : _a.id) || "all");
+    const [sort2, setSort] = reactExports.useState(definition.defaultSort);
     const [page, setPage] = reactExports.useState(1);
+    const [tablet, setTablet] = reactExports.useState(false);
     const detailTitleRef = reactExports.useRef(null);
     const lastTriggerRef = reactExports.useRef("");
     const rowRefs = reactExports.useRef(/* @__PURE__ */ new Map());
     reactExports.useEffect(() => {
+      var _a2;
       setQuery("");
-      setFilter("all");
-      setSort("source");
+      setFilter(((_a2 = definition.filters[0]) == null ? void 0 : _a2.id) || "all");
+      setSort(definition.defaultSort);
       setPage(1);
-    }, [route]);
+    }, [definition, route]);
+    reactExports.useEffect(() => {
+      const media = window.matchMedia("(min-width: 600px) and (max-width: 1180px)");
+      const sync = () => setTablet(media.matches);
+      sync();
+      media.addEventListener("change", sync);
+      return () => media.removeEventListener("change", sync);
+    }, []);
     const filtered = reactExports.useMemo(() => {
       const needle = query.trim().toLocaleLowerCase();
-      const rows2 = allRows.filter((row) => (!needle || row.searchText.includes(needle)) && filterMatches(filter, row));
-      if (sort === "source") return rows2;
-      return [...rows2].sort((left, right) => {
-        const result = left.primary.localeCompare(right.primary, "zh-CN", { numeric: true });
-        return sort === "asc" ? result : -result;
-      });
-    }, [allRows, filter, query, sort]);
+      const searched = allRows.filter((row) => !needle || row.searchText.includes(needle));
+      const matched = filterWorkspaceRows(searched, definition, filter2);
+      return sortWorkspaceRows(matched, definition, sort2);
+    }, [allRows, definition, filter2, query, sort2]);
     const pageSize = 20;
     const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
     const safePage = Math.min(page, pageCount);
     const visibleRows = filtered.slice((safePage - 1) * pageSize, safePage * pageSize);
-    const selectedRow = allRows.find((row) => row.id === selectedId) || null;
+    const selectedRow = allRows.find((row) => row.id === selectedId) || (tablet ? visibleRows[0] : null) || null;
     const Icon2 = routeIcon(route);
+    const hasControls = definition.searchable || definition.filters.length > 1 || definition.sorts.length > 1;
     reactExports.useLayoutEffect(() => {
       var _a2;
-      if (selectedRow) {
+      if (selectedId && selectedRow) {
         (_a2 = detailTitleRef.current) == null ? void 0 : _a2.focus({ preventScroll: true });
         return;
       }
       if (!lastTriggerRef.current) return;
       const trigger = rowRefs.current.get(lastTriggerRef.current);
       trigger == null ? void 0 : trigger.focus({ preventScroll: true });
-    }, [selectedRow]);
+    }, [selectedId, selectedRow]);
     if (route === "more") {
       return /* @__PURE__ */ jsxRuntimeExports.jsx(MobileMoreDirectory, { model, onNavigate });
     }
@@ -12336,7 +12648,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
             /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mdw-title-row", children: [
               /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "mdw-title-icon", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Icon2, { "aria-hidden": "true", size: 21 }) }),
               /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-                /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: PANEL_ROUTES[route].taskGroup === "logs" ? "事件时间线" : PANEL_ROUTES[route].taskGroup === "terminals" ? "终端工作区" : "网络工作区" }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx("small", { children: workspaceLabel(route) }),
                 /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { tabIndex: -1, "data-panel-route-title": true, children: model.title })
               ] }),
               /* @__PURE__ */ jsxRuntimeExports.jsx(DomainMenu, { onNavigate })
@@ -12345,7 +12657,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
               /* @__PURE__ */ jsxRuntimeExports.jsx(EvidenceBadge, { model }),
               /* @__PURE__ */ jsxRuntimeExports.jsx("p", { children: model.status })
             ] }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("nav", { className: "mdw-route-switcher", "aria-label": "当前工作区分类", children: tabs.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsx(
+            tabs.length > 1 ? /* @__PURE__ */ jsxRuntimeExports.jsx("nav", { className: "mdw-route-switcher", "aria-label": "当前工作区分类", children: tabs.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsx(
               "button",
               {
                 type: "button",
@@ -12355,18 +12667,18 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
                 children: item.label
               },
               item.route
-            )) })
+            )) }) : null
           ] }),
           /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mdw-layout", children: [
             /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "mdw-list-pane", "aria-label": model.title + "对象列表", children: [
               /* @__PURE__ */ jsxRuntimeExports.jsx(MetricStrip, { model }),
               model.visualization ? /* @__PURE__ */ jsxRuntimeExports.jsx(SectionTimeSeriesChart, { visualization: model.visualization }) : null,
-              definition.searchable ? /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mdw-controls", children: [
-                /* @__PURE__ */ jsxRuntimeExports.jsxs("label", { className: "mdw-search", children: [
+              hasControls ? /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mdw-controls", "data-domain-controls": route, children: [
+                definition.searchable ? /* @__PURE__ */ jsxRuntimeExports.jsxs("label", { className: "mdw-search", children: [
                   /* @__PURE__ */ jsxRuntimeExports.jsx(Search, { "aria-hidden": "true", size: 17 }),
                   /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "sr-only", children: [
                     "搜索",
-                    model.title
+                    definition.objectLabel
                   ] }),
                   /* @__PURE__ */ jsxRuntimeExports.jsx(
                     "input",
@@ -12377,22 +12689,22 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
                         setQuery(event.target.value);
                         setPage(1);
                       },
-                      placeholder: `搜索${model.title}`
+                      placeholder: definition.searchPlaceholder
                     }
                   ),
                   query ? /* @__PURE__ */ jsxRuntimeExports.jsx("button", { type: "button", "aria-label": "清除搜索", onClick: () => {
                     setQuery("");
                     setPage(1);
                   }, children: /* @__PURE__ */ jsxRuntimeExports.jsx(X, { "aria-hidden": "true", size: 16 }) }) : null
-                ] }),
+                ] }) : null,
                 /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mdw-filter-row", children: [
-                  /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { "aria-label": "对象筛选", children: [
+                  definition.filters.length > 1 ? /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { "aria-label": `${definition.objectLabel}筛选`, children: [
                     /* @__PURE__ */ jsxRuntimeExports.jsx(ListFilter, { "aria-hidden": "true", size: 16 }),
                     definition.filters.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsx(
                       "button",
                       {
                         type: "button",
-                        "aria-pressed": filter === item.id,
+                        "aria-pressed": filter2 === item.id,
                         onClick: () => {
                           setFilter(item.id);
                           setPage(1);
@@ -12401,24 +12713,24 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
                       },
                       item.id
                     ))
-                  ] }),
-                  /* @__PURE__ */ jsxRuntimeExports.jsxs("label", { children: [
+                  ] }) : null,
+                  definition.sorts.length > 1 ? /* @__PURE__ */ jsxRuntimeExports.jsxs("label", { children: [
                     /* @__PURE__ */ jsxRuntimeExports.jsx(ArrowUpDown, { "aria-hidden": "true", size: 15 }),
                     /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "sr-only", children: "排序" }),
-                    /* @__PURE__ */ jsxRuntimeExports.jsxs("select", { value: sort, onChange: (event) => setSort(event.target.value), children: [
-                      /* @__PURE__ */ jsxRuntimeExports.jsx("option", { value: "source", children: "采集顺序" }),
-                      /* @__PURE__ */ jsxRuntimeExports.jsx("option", { value: "asc", children: "名称正序" }),
-                      /* @__PURE__ */ jsxRuntimeExports.jsx("option", { value: "desc", children: "名称倒序" })
-                    ] })
-                  ] })
+                    /* @__PURE__ */ jsxRuntimeExports.jsx("select", { value: sort2, onChange: (event) => {
+                      setSort(event.target.value);
+                      setPage(1);
+                    }, children: definition.sorts.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsx("option", { value: item.id, children: item.label }, item.id)) })
+                  ] }) : null
                 ] })
               ] }) : null,
               /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mdw-list-heading", children: [
                 /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
                   /* @__PURE__ */ jsxRuntimeExports.jsx("b", { children: filtered.length }),
-                  " 个对象"
+                  " 个",
+                  definition.objectLabel
                 ] }),
-                query || filter !== "all" ? /* @__PURE__ */ jsxRuntimeExports.jsxs("small", { children: [
+                query || filter2 !== ((_b = definition.filters[0]) == null ? void 0 : _b.id) ? /* @__PURE__ */ jsxRuntimeExports.jsxs("small", { children: [
                   "已从 ",
                   allRows.length,
                   " 个对象中筛选"
@@ -12428,9 +12740,9 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
                 "button",
                 {
                   type: "button",
-                  className: selectedId === row.id ? "is-selected" : "",
+                  className: (selectedRow == null ? void 0 : selectedRow.id) === row.id ? "is-selected" : "",
                   "data-mobile-row-id": row.id,
-                  "aria-current": selectedId === row.id ? "true" : void 0,
+                  "aria-current": (selectedRow == null ? void 0 : selectedRow.id) === row.id ? "true" : void 0,
                   onClick: () => openRow(row),
                   ref: (node) => {
                     if (node) rowRefs.current.set(row.id, node);
@@ -12449,11 +12761,13 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
                 row.id
               )) }) : /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mdw-empty", children: [
                 /* @__PURE__ */ jsxRuntimeExports.jsx(Search, { "aria-hidden": "true", size: 21 }),
-                /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { children: allRows.length ? "没有匹配对象" : ((_a = model.tables[0]) == null ? void 0 : _a.empty) || "没有可显示对象" }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { children: allRows.length ? "没有匹配对象" : ((_c = model.tables[0]) == null ? void 0 : _c.empty) || "没有可显示对象" }),
                 /* @__PURE__ */ jsxRuntimeExports.jsx("p", { children: allRows.length ? "调整搜索词或筛选条件。" : model.status }),
                 allRows.length ? /* @__PURE__ */ jsxRuntimeExports.jsx("button", { type: "button", onClick: () => {
+                  var _a2;
                   setQuery("");
-                  setFilter("all");
+                  setFilter(((_a2 = definition.filters[0]) == null ? void 0 : _a2.id) || "all");
+                  setSort(definition.defaultSort);
                 }, children: "清除筛选" }) : null
               ] }),
               pageCount > 1 ? /* @__PURE__ */ jsxRuntimeExports.jsxs("nav", { className: "mdw-pagination", "aria-label": "对象分页", children: [
@@ -12478,7 +12792,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
                 row: selectedRow,
                 model,
                 route,
-                onClose: closeDetail,
+                onClose: tablet ? void 0 : closeDetail,
                 titleRef: detailTitleRef
               }
             )
@@ -12525,7 +12839,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     ] });
   }
   function MorePage({ onNavigate }) {
-    const routes = PANEL_ROUTE_IDS.filter((route) => !["overview", "interfaces", "more"].includes(route));
+    const routes = Object.values(PANEL_ROUTES).filter((definition) => definition.placement === "more").map((definition) => definition.id);
     return /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { id: "more", className: "section panel-operational-section", "data-panel-route": "more", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { className: "panel-section-heading", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
@@ -12598,12 +12912,7 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
     logs: { label: "日志", icon: ScrollText }
   };
   function selectedDestination(route) {
-    if (route === "overview") return "overview";
-    const group = PANEL_ROUTES[route].taskGroup;
-    if (group === "interfaces") return "interfaces";
-    if (group === "terminals") return "terminals";
-    if (group === "logs") return "logs";
-    return null;
+    return PANEL_ROUTES[route].primaryDestination;
   }
   function PanelTaskNavigation({
     route,

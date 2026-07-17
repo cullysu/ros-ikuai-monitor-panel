@@ -7,7 +7,7 @@ description: "Run a gated product-company loop for the RouterOS/iKuai monitoring
 
 Operate as one small product company with explicit handoffs. Do not imitate a multi-agent runtime and do not install a framework. Execute the roles inline, record the result of every gate, and return failed work to the role that owns it.
 
-Read `references/project-gates.md` before changing the overview product. Read `references/sources.md` only when the origin or rationale of the loop matters.
+Read `references/project-gates.md` before changing the overview product. For any visible or interactive UI change, also read `references/emil-design-engineering.md`; it adapts Emil Kowalski's design-engineering rules to a high-frequency read-only operations console. Read `references/sources.md` only when the origin or rationale of the loop matters.
 
 ## Invariants
 
@@ -68,8 +68,9 @@ Review the system, not a single pleasant screenshot.
 4. Simulate normal, all-offline, no-snapshot, collection-down, resource-full, interfaces-down, long text, and landscape.
 5. Make abnormal layouts change priority, not just color or title.
 6. Use a 390px screenshot as a product artifact and an 844x390 screenshot as a distinct layout, not a scaled desktop dialog.
+7. Run the restrained-interaction review from `references/emil-design-engineering.md`: decide whether motion is warranted before choosing a curve, keep frequent patrol actions instant, and verify press/focus/interrupt/reduced-motion behavior.
 
-Gate passes only after real screenshots show a three-second scan order, compact density, obvious state, and no desktop chrome or DOM in the mobile product.
+Gate passes only after real screenshots show a three-second scan order, compact density, obvious state, and no desktop chrome or DOM in the mobile product. An interaction also fails this gate when it adds latency, fake affordance, non-interruptible motion, or motion without a stated purpose.
 
 ## Stage 4 — Engineering Manager
 

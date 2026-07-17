@@ -1,8 +1,9 @@
-import { Activity, Cable, ChevronDown, ChevronRight, CircleAlert, Clock3, Gauge, LockKeyhole, Router, ShieldCheck, TriangleAlert, UsersRound } from "lucide-react";
+import { Activity, Cable, ChevronDown, ChevronRight, CircleAlert, Clock3, LockKeyhole, Router, ShieldCheck, TriangleAlert, UsersRound } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { PanelRouteId } from "../routes/panelRoutes";
-import type { OverviewPanelProps, OverviewTone } from "../overview";
+import type { PanelNavigate } from "../routes/panelRoutes";
+import { toFiniteNumber, type OverviewPanelProps, type OverviewTone } from "../overview";
 import { buildOverviewEvidenceModel } from "../overview/evidence-model/buildOverviewEvidenceModel";
+import { MobileEvidenceLedger } from "./MobileEvidenceLedger";
 import { MobileFocusObject } from "./MobileFocusObject";
 import { MobilePatrolActions } from "./MobilePatrolActions";
 import { IncidentInspector, IncidentRow } from "./MobileIncidentWorkspace";
@@ -16,14 +17,8 @@ function VerdictIcon({ tone }: { tone: OverviewTone }) {
   return <ShieldCheck aria-hidden="true" size={22} />;
 }
 
-
-function observedCount(value: unknown): number | null {
-  const number = Number(value);
-  return Number.isFinite(number) ? number : null;
-}
-
 export interface MobilePatrolScreenProps extends OverviewPanelProps {
-  onNavigate: (route: PanelRouteId) => void;
+  onNavigate: PanelNavigate;
   runtimeManaged?: boolean;
 }
 
@@ -35,35 +30,17 @@ export function MobilePatrolScreen({
 }: MobilePatrolScreenProps) {
   const model = useMemo(() => buildOverviewEvidenceModel(snapshot, state), [snapshot, state]);
   const incident = model.priorityObjects.length > 0;
-  const ledgerRef = useRef<HTMLDetailsElement>(null);
   const textScaleSentinelRef = useRef<HTMLSpanElement>(null);
   const [largeText, setLargeText] = useState(false);
   const [tablet, setTablet] = useState(false);
   const [selectedIncidentId, setSelectedIncidentId] = useState("");
+  const [showAllIncidents, setShowAllIncidents] = useState(false);
   const terminals = Array.isArray(snapshot.terminals) ? snapshot.terminals.length : null;
-  const connections = observedCount(snapshot.connections?.total);
+  const connections = toFiniteNumber(snapshot.connections?.total);
   const runningInterfaces = state.facts.interfaces.available
     ? Math.max(0, state.facts.interfaces.total - state.facts.interfaces.down)
     : null;
 
-  useEffect(() => {
-    const syncLedger = () => {
-      const ledger = ledgerRef.current;
-      if (!ledger) return;
-      const availableBelowSummary = window.innerHeight - ledger.getBoundingClientRect().top - 76;
-      const estimatedLedgerBody = model.evidenceRows.length * 54;
-      const fitsUsefulEvidence = availableBelowSummary >= Math.min(180, estimatedLedgerBody);
-      const roomyIncident = incident && (
-        window.innerHeight >= 720 ||
-        window.innerWidth >= 600 ||
-        model.priorityObjects.length <= 2
-      );
-      ledger.open = model.evidenceMode === "unavailable" || roomyIncident || fitsUsefulEvidence;
-    };
-    syncLedger();
-    window.addEventListener("resize", syncLedger);
-    return () => window.removeEventListener("resize", syncLedger);
-  }, [incident, model.evidenceMode, model.evidenceRows.length, model.priorityObjects.length, tablet]);
 
   useEffect(() => {
     const sentinel = textScaleSentinelRef.current;
@@ -81,35 +58,29 @@ export function MobilePatrolScreen({
   }, []);
 
   useEffect(() => {
-    const media = window.matchMedia("(min-width: 600px) and (max-width: 1023px)");
+    const media = window.matchMedia("(min-width: 600px) and (max-width: 1180px)");
     const sync = () => setTablet(media.matches);
     sync();
     media.addEventListener("change", sync);
     return () => media.removeEventListener("change", sync);
   }, []);
 
-  const visiblePriorityObjects = tablet ? model.priorityObjectsAll : model.priorityObjects;
+  const visiblePriorityObjects = tablet || showAllIncidents ? model.priorityObjectsAll : model.priorityObjects;
   const remainingPriorityObjects = Math.max(0, model.priorityTotal - visiblePriorityObjects.length);
   const selectedIncident = visiblePriorityObjects.find((object) => object.id === selectedIncidentId) ||
     visiblePriorityObjects[0] ||
     null;
-  const ledgerInPrimary = tablet && (model.risk === "evidence" || model.risk === "collection");
+  const ledgerInPrimary = tablet;
   const showPatrolActions = tablet || model.risk === "evidence" || model.risk === "collection";
   const evidenceLedger = (
-    <details className="mp-ledger" data-mobile-evidence-ledger ref={ledgerRef}>
-      <summary>
-        <span><Gauge aria-hidden="true" size={17} /><span><b>证据边界</b><small>{model.evidenceNote}</small></span></span>
-        <span>{model.evidenceRows.length} 项<ChevronDown aria-hidden="true" size={17} /></span>
-      </summary>
-      <dl>
-        {model.evidenceRows.map((row) => (
-          <div className={`is-${row.tone}`} key={row.key}>
-            <dt>{row.label}</dt>
-            <dd><b>{row.value}</b><small>{row.note}</small></dd>
-          </div>
-        ))}
-      </dl>
-    </details>
+    <MobileEvidenceLedger
+      evidenceMode={model.evidenceMode}
+      evidenceNote={model.evidenceNote}
+      rows={model.evidenceRows}
+      incident={incident}
+      priorityCount={model.priorityObjects.length}
+      tablet={tablet}
+    />
   );
 
   return (
@@ -173,21 +144,22 @@ export function MobilePatrolScreen({
                           setSelectedIncidentId(object.id);
                           return;
                         }
-                        onNavigate(object.route);
+                        onNavigate(object.route, { objectId: object.targetObjectId || null });
                       }}
                       key={object.id}
                     />
                   ))}
                 </div>
-                {remainingPriorityObjects > 0 && visiblePriorityObjects[0] ? (
+                {!tablet && model.priorityObjectsAll.length > model.priorityObjects.length ? (
                   <button
-                    className="mp-incident-more"
+                    className={`mp-incident-more ${showAllIncidents ? "is-expanded" : ""}`}
                     type="button"
-                    onClick={() => onNavigate(visiblePriorityObjects[0].route)}
-                    data-mobile-destination={visiblePriorityObjects[0].route}
+                    aria-expanded={showAllIncidents}
+                    onClick={() => setShowAllIncidents((value) => !value)}
+                    data-mobile-incident-expand
                   >
-                    进入{visiblePriorityObjects[0].category}工作区查看其余 {remainingPriorityObjects} 个
-                    <ChevronRight aria-hidden="true" size={17} />
+                    {showAllIncidents ? "收起到最高优先级" : `展开其余 ${remainingPriorityObjects} 个事故对象`}
+                    <ChevronDown aria-hidden="true" size={17} />
                   </button>
                 ) : null}
               </section>
@@ -196,7 +168,7 @@ export function MobilePatrolScreen({
               <MobilePatrolTraffic traffic={model.traffic} onOpen={() => onNavigate("trafficLoad")} />
             ) : null}
             {tablet && model.focusObject ? (
-              <MobileFocusObject object={model.focusObject} onOpen={() => onNavigate(model.focusObject!.route)} />
+              <MobileFocusObject object={model.focusObject} onOpen={() => onNavigate(model.focusObject!.route, { objectId: model.focusObject!.targetObjectId || null })} />
             ) : null}
             {ledgerInPrimary ? evidenceLedger : null}
           </div>
@@ -225,7 +197,7 @@ export function MobilePatrolScreen({
               </section>
             ) : null}
             {tablet && selectedIncident ? (
-              <IncidentInspector object={selectedIncident} onOpen={() => onNavigate(selectedIncident.route)} />
+              <IncidentInspector object={selectedIncident} onOpen={() => onNavigate(selectedIncident.route, { objectId: selectedIncident.targetObjectId || null })} />
             ) : null}
             {!ledgerInPrimary ? evidenceLedger : null}
             {showPatrolActions ? <MobilePatrolActions risk={model.risk} onNavigate={onNavigate} /> : null}

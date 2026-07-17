@@ -1,15 +1,16 @@
 import { useCallback, useEffect, useState } from "react";
-import { PANEL_ROUTES, routeFromLocation, routeUrl, type PanelRouteId } from "./panelRoutes";
+import {
+  PANEL_ROUTES,
+  routeFromLocation,
+  routeUrl,
+  type PanelNavigateOptions,
+  type PanelRouteId,
+} from "./panelRoutes";
 
 function syncDocumentRoute(route: PanelRouteId) {
   const definition = PANEL_ROUTES[route];
   document.body.dataset.panelRoute = route;
-  document.querySelectorAll<HTMLElement>("[data-section]").forEach((node) => {
-    const active = node.dataset.section === route;
-    node.classList.toggle("is-active", active);
-    if (active) node.setAttribute("aria-current", "page");
-    else node.removeAttribute("aria-current");
-  });
+
   const pageTitle = document.getElementById("pageTitle");
   if (pageTitle) pageTitle.textContent = definition.title;
   const pageSubtitle = document.getElementById("pageSubtitle");
@@ -51,14 +52,18 @@ export function usePanelRoute() {
     return () => window.cancelAnimationFrame(frame);
   }, [route]);
 
-  const navigate = useCallback((next: PanelRouteId, options?: { replace?: boolean }) => {
-    if (next === route) return;
+  const navigate = useCallback((next: PanelRouteId, options: PanelNavigateOptions = {}) => {
+    if (next === route && options.objectId === undefined) return;
+    const objectId = options.objectId || null;
+    const currentObjectId = new URLSearchParams(window.location.search).get("object");
+    if (next === route && currentObjectId === objectId) return;
+
     const state = { ...(window.history.state || {}), panelRoute: next };
-    delete state.mobileObject;
-    const target = new URL(routeUrl(next), window.location.origin);
-    target.searchParams.delete("object");
-    const targetUrl = target.pathname + target.search + target.hash;
-    if (options?.replace) window.history.replaceState(state, "", targetUrl);
+    if (objectId) state.mobileObject = objectId;
+    else delete state.mobileObject;
+
+    const targetUrl = routeUrl(next, window.location, { objectId });
+    if (options.replace) window.history.replaceState(state, "", targetUrl);
     else window.history.pushState(state, "", targetUrl);
     window.dispatchEvent(new PopStateEvent("popstate", { state }));
   }, [route]);

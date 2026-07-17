@@ -20,9 +20,11 @@ function excludesAll(text, tokens, label) {
 const overview = read('src/panel-framework/overview/OverviewPanel.tsx');
 const model = read('src/panel-framework/overview/evidence-model/buildOverviewEvidenceModel.ts');
 const mobile = read('src/panel-framework/mobile/MobilePatrolScreen.tsx');
+const ledger = read('src/panel-framework/mobile/MobileEvidenceLedger.tsx');
 const traffic = read('src/panel-framework/mobile/MobilePatrolTraffic.tsx');
 const domain = read('src/panel-framework/mobile/MobileDomainWorkspace.tsx');
 const domainModel = read('src/panel-framework/mobile/mobileDomainWorkspaceModel.ts');
+const domainDefinitions = read('src/panel-framework/mobile/mobileDomainDefinitions.ts');
 const mobileCss = read('src/panel-framework/mobile/mobile-patrol.css') + '\n' + read('src/panel-framework/mobile/mobile-domain.css');
 const navigation = read('src/panel-framework/sections/PanelTaskNavigation.tsx');
 const sections = read('src/panel-framework/sections/sectionModels.ts');
@@ -44,9 +46,11 @@ includesAll(model, [
 excludesAll(model, ['rows[0]', 'downRate || 0', 'upRate || 0', '网络状态良好', '实时可信'], 'certainty boundaries');
 
 includesAll(mobile, [
-  'data-mobile-core-facts', 'data-mobile-incident-center', 'data-mobile-evidence-ledger',
-  'availableBelowSummary', 'fitsUsefulEvidence', 'roomyIncident',
+  'data-mobile-core-facts', 'data-mobile-incident-center', 'MobileEvidenceLedger',
 ], 'mobile patrol IA');
+includesAll(ledger, [
+  'data-mobile-evidence-ledger', 'userOverrideRef', 'fitsEvidence', 'roomyIncident',
+], 'mobile evidence disclosure');
 includesAll(traffic, [
   '当前读数 · 趋势待采样', 'preserveAspectRatio="xMidYMid meet"',
   '纵轴从 0 到', '横轴从', '<title', '<desc',
@@ -55,9 +59,10 @@ includesAll(domain, [
   'type="search"', 'aria-pressed={filter === item.id}', '<select value={sort}',
   'mdw-pagination', 'data-mobile-object-detail',
 ], 'domain operations');
-includesAll(domainModel, ['window.history.pushState', 'window.addEventListener("popstate"', 'filterMatches', 'rowsFromModel'], 'domain state and history');
+includesAll(domainModel, ['window.history.pushState', 'window.addEventListener("popstate"', 'rowsFromModel', 'workspaceLabel'], 'domain state and history');
+includesAll(domainDefinitions, ['domainDefinitionFor', 'sortWorkspaceRows'], 'domain-specific operations');
 includesAll(navigation, ['概览', '网络', '终端', '日志'], 'stable mobile navigation');
-includesAll(mobileCss, ['#f1f3f4', '.mp-command', '.mp-incident-list', '.mdw-layout', '@media (min-width: 600px) and (max-width: 1023px)'], 'neutral responsive visual system');
+includesAll(mobileCss, ['#eef2f4', '.mp-command', '.mp-incident-list', '.mdw-layout', '@media (min-width: 600px) and (max-width: 1180px)'], 'neutral responsive visual system');
 excludesAll(mobile + '\n' + traffic + '\n' + domain + '\n' + domainModel + '\n' + mobileCss, [
   'grabber', 'bottom-sheet', 'topology', 'preserveAspectRatio="none"',
   '.mo-verdict', '112px', '!important', 'font-size: 11px', 'font-size: 10px',

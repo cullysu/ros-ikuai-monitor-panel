@@ -77,8 +77,9 @@ function text(value: unknown, fallback = "未记录"): string {
 }
 
 function number(value: unknown): number | null {
-  if (value === null || value === undefined || value === "") return null;
-  const result = typeof value === "number" ? value : Number(value);
+  if (typeof value === "number") return Number.isFinite(value) ? value : null;
+  if (typeof value !== "string" || !value.trim()) return null;
+  const result = Number(value);
   return Number.isFinite(result) ? result : null;
 }
 
@@ -322,6 +323,7 @@ function terminalModel(route: PanelRouteId, snapshot: OverviewRawSnapshot): Sect
       status: text(item.status, item.online === true ? "在线" : "未确认"),
       connections: text(item.connections, "未取得"),
       traffic: `${rate(item.downRate)} / ${rate(item.upRate)}`,
+      _mac: text(item.mac, ""),
     }), "当前快照没有终端记录")],
   };
 }
@@ -339,7 +341,7 @@ function dhcpModel(route: PanelRouteId, snapshot: OverviewRawSnapshot): SectionM
       { label: "地址池", value: String(pools.length), tone: pools.length ? "trust" : "missing" },
     ],
     tables: [
-      table("地址租约", [{ key: "host", label: "主机" }, { key: "address", label: "IP" }, { key: "mac", label: "MAC" }, { key: "server", label: "服务器" }, { key: "status", label: "状态" }], leases, (item) => ({ host: text(item.hostName || item.hostname), address: text(item.address), mac: text(item.macAddress || item.mac), server: text(item.server), status: text(item.status) }), "当前快照没有 DHCP 租约"),
+      table("地址租约", [{ key: "host", label: "主机" }, { key: "address", label: "IP" }, { key: "mac", label: "MAC" }, { key: "server", label: "服务器" }, { key: "status", label: "状态" }], leases, (item) => ({ host: text(item.hostName || item.hostname), address: text(item.address), mac: text(item.macAddress || item.mac), server: text(item.server), status: text(item.status), _leaseId: text(item.id || item[".id"], "") }), "当前快照没有 DHCP 租约"),
       table("DHCP 客户端", [{ key: "interface", label: "接口" }, { key: "status", label: "状态" }, { key: "route", label: "默认路由" }, { key: "dns", label: "使用上游 DNS" }], clients, (item) => ({ interface: text(item.interface), status: text(item.status), route: text(item.addDefaultRoute), dns: text(item.usePeerDns) }), "当前快照没有 DHCP 客户端"),
     ],
   };
@@ -413,6 +415,10 @@ function connectionModel(route: PanelRouteId, snapshot: OverviewRawSnapshot): Se
         target: [remote, protocol].filter(Boolean).join(" / ") || "未记录",
         connections: text(item.connections ?? item.count, "—"),
         traffic: text(item.totalRate ?? item.bytes ?? item.value, "未取得"),
+        _id: text(item.id || item[".id"], ""),
+        _protocol: protocol,
+        _sourcePort: text(item.sourcePort || item.srcPort, ""),
+        _targetPort: text(item.destinationPort || item.dstPort, ""),
       };
     }, route === "connections" ? "当前快照没有活动连接明细" : "当前快照没有流量审计对象")],
   };

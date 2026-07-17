@@ -29,14 +29,62 @@ const { buildOverviewEvidenceModel } = require(
 const { deriveOverviewState, OVERVIEW_SCENARIO_FIXTURES } = require(
   path.join(root, "src", "panel-framework", "overview", "index.ts")
 );
+const { toFiniteNumber } = require(
+  path.join(root, "src", "panel-framework", "overview", "deriveOverviewState.ts")
+);
 const { buildSectionModel } = require(
   path.join(root, "src", "panel-framework", "sections", "sectionModels.ts")
+);
+const { PANEL_ROUTES, routeUrl } = require(
+  path.join(root, "src", "panel-framework", "routes", "panelRoutes.ts")
+);
+const { rowsFromModel } = require(
+  path.join(root, "src", "panel-framework", "mobile", "mobileDomainWorkspaceModel.ts")
+);
+const { domainDefinitionFor, sortWorkspaceRows } = require(
+  path.join(root, "src", "panel-framework", "mobile", "mobileDomainDefinitions.ts")
 );
 
 const clone = (value) => structuredClone(value);
 const modelFor = (snapshot) => buildOverviewEvidenceModel(snapshot, deriveOverviewState(snapshot));
 const modelForHint = (snapshot, scenarioHint) => buildOverviewEvidenceModel(snapshot, deriveOverviewState(snapshot, { scenarioHint }));
 const textOf = (model) => JSON.stringify(model);
+
+for (const missing of [null, undefined, "", "   ", true, false]) {
+  assert.equal(toFiniteNumber(missing), null, `${JSON.stringify(missing)} must remain unavailable`);
+}
+assert.equal(toFiniteNumber(0), 0);
+assert.equal(toFiniteNumber("0"), 0);
+assert.equal(toFiniteNumber("1.25e3"), 1250);
+
+assert.deepEqual(
+  {
+    primaryDestination: PANEL_ROUTES.security.primaryDestination,
+    workspaceGroup: PANEL_ROUTES.security.workspaceGroup,
+    placement: PANEL_ROUTES.security.placement,
+  },
+  { primaryDestination: "interfaces", workspaceGroup: "security", placement: "more" },
+);
+assert.deepEqual(
+  {
+    primaryDestination: PANEL_ROUTES.dns4.primaryDestination,
+    workspaceGroup: PANEL_ROUTES.dns4.workspaceGroup,
+    placement: PANEL_ROUTES.dns4.placement,
+  },
+  { primaryDestination: "interfaces", workspaceGroup: "dns", placement: "more" },
+);
+assert.deepEqual(
+  {
+    primaryDestination: PANEL_ROUTES.connections.primaryDestination,
+    workspaceGroup: PANEL_ROUTES.connections.workspaceGroup,
+    placement: PANEL_ROUTES.connections.placement,
+  },
+  { primaryDestination: "interfaces", workspaceGroup: "network", placement: "more" },
+);
+assert.match(
+  routeUrl("interfaces", { pathname: "/panel", search: "?mode=public" }, { objectId: "interface-ether9" }),
+  /[?&]object=interface-ether9(?:&|#)/,
+);
 
 const inactiveRoute = clone(OVERVIEW_SCENARIO_FIXTURES.single);
 inactiveRoute.routes.defaultRoutes = [{ table: "main", gateway: "198.51.100.1", distance: 1, active: false, disabled: false }];
@@ -108,6 +156,47 @@ assert.equal(interfacesModel.risk, "interfaces");
 assert.equal(interfacesModel.priorityTotal, 2);
 assert.equal(interfacesModel.priorityObjects[0].route, "interfaces");
 assert.equal(interfacesModel.facts.find((row) => row.key === "route").value, "已核实");
+
+const interfaceSection = buildSectionModel("interfaces", clone(OVERVIEW_SCENARIO_FIXTURES["interfaces-down"]));
+const interfaceRows = rowsFromModel("interfaces", interfaceSection);
+const reorderedInterfaceSection = {
+  ...interfaceSection,
+  tables: interfaceSection.tables.map((item) => ({ ...item, rows: [...item.rows].reverse() })),
+};
+const reorderedInterfaceRows = rowsFromModel("interfaces", reorderedInterfaceSection);
+assert.deepEqual(
+  new Map(interfaceRows.map((row) => [row.primary, row.id])),
+  new Map(reorderedInterfaceRows.map((row) => [row.primary, row.id])),
+  "object IDs must survive refresh reordering",
+);
+assert.equal(
+  interfaceRows.some((row) => row.id === interfacesModel.priorityObjects[0].targetObjectId),
+  true,
+  "incident deep link must select the exact interface object",
+);
+
+const terminalDefinition = domainDefinitionFor("terminals");
+assert.equal(terminalDefinition.defaultSort, "traffic-desc");
+assert.deepEqual(
+  terminalDefinition.sorts.map((item) => item.id),
+  ["traffic-desc", "connections-desc", "address-asc", "name-asc"],
+);
+const terminalRows = [
+  { id: "slow", table: "终端对象", columns: [], values: { traffic: "1.00 Mbps / 100 Kbps", connections: "50", address: "192.168.1.20 / aa" }, primary: "slow", secondary: "", trailing: "", searchText: "" },
+  { id: "fast", table: "终端对象", columns: [], values: { traffic: "20.00 Mbps / 1 Mbps", connections: "10", address: "192.168.1.10 / bb" }, primary: "fast", secondary: "", trailing: "", searchText: "" },
+];
+assert.equal(sortWorkspaceRows(terminalRows, terminalDefinition, "traffic-desc")[0].id, "fast");
+assert.equal(sortWorkspaceRows(terminalRows, terminalDefinition, "connections-desc")[0].id, "slow");
+assert.equal(sortWorkspaceRows(terminalRows, terminalDefinition, "address-asc")[0].id, "fast");
+
+const logDefinition = domainDefinitionFor("logs");
+assert.equal(logDefinition.defaultSort, "time-desc");
+assert.equal(logDefinition.filters.some((item) => item.id === "severity-error"), true);
+const logRows = [
+  { id: "old", table: "最近日志", columns: [], values: { time: "2026-07-16T08:00:00Z", topics: "system", message: "old" }, primary: "old", secondary: "", trailing: "", searchText: "system old" },
+  { id: "new", table: "最近日志", columns: [], values: { time: "2026-07-16T09:00:00Z", topics: "warning", message: "new" }, primary: "new", secondary: "", trailing: "", searchText: "warning new" },
+];
+assert.equal(sortWorkspaceRows(logRows, logDefinition, "time-desc")[0].id, "new");
 
 const mislabeledInterfaces = modelForHint(clone(OVERVIEW_SCENARIO_FIXTURES.single), "interfaces-down");
 assert.equal(mislabeledInterfaces.risk, "none", "scenario hints must not invent object risk");

@@ -20,6 +20,7 @@ export interface OverviewPriorityObject {
   reason: string;
   tone: OverviewTone;
   route: PanelRouteId;
+  targetObjectId?: string;
   sourcePath: string;
   attributes: Array<{ label: string; value: string }>;
 }
@@ -31,6 +32,7 @@ export interface OverviewFocusObject {
   note: string;
   tone: OverviewTone;
   route: PanelRouteId;
+  targetObjectId?: string;
   sourcePath: string;
   attributes: Array<{ label: string; value: string }>;
 }

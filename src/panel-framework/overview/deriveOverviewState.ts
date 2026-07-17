@@ -24,9 +24,19 @@ const DANGER_CPU = 85;
 const DANGER_MEMORY = 85;
 const DANGER_DISK = 90;
 
+const FINITE_NUMBER_TEXT = /^[+-]?(?:(?:\d+(?:\.\d*)?)|(?:\.\d+))(?:e[+-]?\d+)?$/i;
+
+export function toFiniteNumber(value: unknown): number | null {
+  if (typeof value === "number") return Number.isFinite(value) ? value : null;
+  if (typeof value !== "string") return null;
+  const text = value.trim();
+  if (!text || !FINITE_NUMBER_TEXT.test(text)) return null;
+  const number = Number(text);
+  return Number.isFinite(number) ? number : null;
+}
+
 export function toNumber(value: unknown, fallback = 0): number {
-  const n = Number(value);
-  return Number.isFinite(n) ? n : fallback;
+  return toFiniteNumber(value) ?? fallback;
 }
 
 export function formatNumber(value: unknown): string {
@@ -302,10 +312,13 @@ function routeState(snapshot: OverviewRawSnapshot, freshness: OverviewFreshnessS
 
 function resourceState(snapshot: OverviewRawSnapshot): OverviewResourceState {
   const device = snapshot.overview || {};
-  const available = !isSnapshotUnavailable(snapshot);
-  const cpu = available ? toNumber(device.cpuLoad, 0) : 0;
-  const memory = available ? toNumber(device.memoryUsage, 0) : 0;
-  const disk = available ? toNumber(device.diskUsage, 0) : 0;
+  const cpuObserved = toFiniteNumber(device.cpuLoad);
+  const memoryObserved = toFiniteNumber(device.memoryUsage);
+  const diskObserved = toFiniteNumber(device.diskUsage);
+  const available = !isSnapshotUnavailable(snapshot) && cpuObserved !== null && memoryObserved !== null && diskObserved !== null;
+  const cpu = cpuObserved ?? 0;
+  const memory = memoryObserved ?? 0;
+  const disk = diskObserved ?? 0;
   const level: OverviewTone = !available ? "missing" : cpu >= DANGER_CPU || memory >= DANGER_MEMORY || disk >= DANGER_DISK ? "danger" : cpu >= 70 || memory >= 70 || disk >= 80 ? "warn" : "ok";
   return { level, available, cpu, memory, disk, summaryText: available ? `处理器 ${formatPercent(cpu)} / 内存 ${formatPercent(memory)} / 磁盘 ${formatPercent(disk)}` : "处理器 未记录 / 内存 未记录 / 磁盘 未记录" };
 }

@@ -1,4 +1,4 @@
-@media (min-width: 1024px) and (max-width: 1039px) {
+@media (min-width: 1181px) and (max-width: 1199px) {
   .do-shell {
     padding: 12px 12px 22px;
   }
@@ -65,15 +65,6 @@
   }
 }
 
-@media (min-width: 1040px) and (max-width: 1199px) {
-  .do-main-grid {
-    grid-template-columns: minmax(0, 7fr) minmax(310px, 5fr);
-  }
-  .do-lower-grid {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
-
 @media (min-width: 1366px) {
   .do-shell {
     padding: 16px 18px 28px;
@@ -89,7 +80,7 @@
   }
 }
 
-@media (min-width: 1024px) and (prefers-contrast: more) {
+@media (min-width: 1181px) and (prefers-contrast: more) {
   .do-shell {
     --do-line: #78909a;
     --do-line-soft: #aebfc6;
@@ -97,7 +88,7 @@
   }
 }
 
-@media (min-width: 1024px) and (forced-colors: active) {
+@media (min-width: 1181px) and (forced-colors: active) {
   .do-verdict::before,
   .do-ledger-row::before,
   .do-ledger-state i {

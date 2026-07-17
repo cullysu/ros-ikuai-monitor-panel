@@ -2,7 +2,7 @@ import { ChevronLeft, ChevronRight, Clock3, LockKeyhole, Server } from "lucide-r
 import type { OverviewRawSnapshot, OverviewTone } from "../overview";
 import { MobileDomainWorkspace } from "../mobile/MobileDomainWorkspace";
 import { useMobilePanelSurface } from "../mobile/useMobilePanelSurface";
-import { PANEL_ROUTES, PANEL_ROUTE_IDS, type PanelRouteId } from "../routes/panelRoutes";
+import { PANEL_ROUTES, type PanelRouteId } from "../routes/panelRoutes";
 import { buildSectionModel, type SectionTable } from "./sectionModels";
 import { SectionTimeSeriesChart } from "./SectionTimeSeriesChart";
 
@@ -46,7 +46,9 @@ function DataTable({ table }: { table: SectionTable }) {
 }
 
 function MorePage({ onNavigate }: { onNavigate: (route: PanelRouteId) => void }) {
-  const routes = PANEL_ROUTE_IDS.filter((route) => !["overview", "interfaces", "more"].includes(route));
+  const routes = Object.values(PANEL_ROUTES)
+    .filter((definition) => definition.placement === "more")
+    .map((definition) => definition.id);
   return (
     <section id="more" className="section panel-operational-section" data-panel-route="more">
       <header className="panel-section-heading">

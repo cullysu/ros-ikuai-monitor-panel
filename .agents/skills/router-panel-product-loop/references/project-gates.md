@@ -7,10 +7,11 @@
 - Normal mode may show current traffic and a truthful history only when real samples exist.
 - Incident mode shows exactly: object, impact, credibility, next step. Metrics, traffic charts, and evidence move to detail.
 - Evidence remains reachable through a low-chrome detail row.
-- Top-level navigation contains only Network and Collection until another module proves a first-order mobile job.
+- Top-level navigation has four stable operator destinations: Overview, Network, Terminals, and Logs. Secondary tools keep one of those destinations selected while their independent workspace group and More placement are represented separately.
 - Touch controls are at least 44px; primary tab targets are at least 48px.
 - The canvas is always opaque. Translucent material is limited to app chrome and grouped information surfaces, with an opaque fallback color; no floating tab capsule or transparent compositor dependency.
 - The visual system uses restrained cold blue, neutral ink, subtle state washes, one consistent radius family, compact 4/8/16 spacing, hairline borders, and no playful glow.
+- Frequent patrol interactions stay instant. Any occasional motion follows `emil-design-engineering.md`, remains interruptible, and has a reduced-motion fallback.
 
 ## Truth contract
 
@@ -29,6 +30,7 @@
 
 - `390x844` phone portrait
 - `844x390` phone landscape
+- `1024x768`, `1112x834`, and `1180x820` compact tablet/workspace boundaries
 - `1366x900` desktop
 - `1440x900` desktop
 

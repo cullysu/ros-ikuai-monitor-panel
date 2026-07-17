@@ -335,6 +335,15 @@ function assertRuntimeBrowserReport(rootDir = ROOT) {
     'production runtime has no scenario fixture',
     'validated snapshot renders the overview without overflow',
     'automatic polling refreshes the validated snapshot',
+    'manual evidence disclosure survives viewport changes',
+    'stable business identity preserves the exact object across snapshot reorder',
+    'connections keeps its domain workspace and primary destination',
+    'dns4 keeps its domain workspace and primary destination',
+    'dns6 keeps its domain workspace and primary destination',
+    'security keeps its domain workspace and primary destination',
+    'terminals keeps its domain workspace and primary destination',
+    'logs keeps its domain workspace and primary destination',
+    'trafficLoad keeps its domain workspace and primary destination',
     'browser 200% text adjustment reflows without horizontal loss',
     'malformed snapshot is rejected while last valid evidence remains visible',
     'snapshot API error never inserts a scenario fixture',
@@ -343,7 +352,7 @@ function assertRuntimeBrowserReport(rootDir = ROOT) {
     'manual refresh remains operational while navigator reports offline',
     'tablet overview selects incident evidence beside the full object list without navigation',
     '768px tablet uses a persistent task rail with list and inspector',
-    '1023/1024 capability boundary switches once from tablet workspace to desktop section',
+    '1024–1180 keeps the compact task workspace and 1181 switches once to desktop',
     'desktop connection owns a dedicated workspace',
     'browser emitted no uncaught page errors',
   ];
@@ -360,7 +369,7 @@ function assertRuntimeBrowserReport(rootDir = ROOT) {
     { state: 'tablet-overview-master-detail-768', file: 'tablet-overview-master-detail-768.png', viewport: { width: 768, height: 1024 } },
     { state: 'tablet-network-768', file: 'tablet-network-768.png', viewport: { width: 768, height: 1024 } },
     { state: 'tablet-network-844', file: 'tablet-network-844.png', viewport: { width: 844, height: 1024 } },
-    { state: 'tablet-desktop-boundary-1024', file: 'tablet-desktop-boundary-1024.png', viewport: { width: 1024, height: 768 } },
+    { state: 'tablet-desktop-boundary-1181', file: 'tablet-desktop-boundary-1181.png', viewport: { width: 1181, height: 820 } },
     { state: 'desktop-connection', file: 'desktop-connection.png', viewport: { width: 1366, height: 768 } },
   ];
   const metadataStates = screenshotMetadata.map((item) => item?.state);
@@ -685,9 +694,13 @@ function main(argv = process.argv.slice(2)) {
     'balance', 'trafficLoad', 'loadAudit', 'security', 'arp', 'trafficAudit', 'readonlyDiagnostics',
     'logs', 'serviceLogs', 'connections', 'more',
   ]) assertContains('src/panel-framework/routes/panelRoutes.ts', `"${route}"`);
+  assertContains('src/panel-framework/routes/panelRoutes.ts', 'primaryDestination');
+  assertContains('src/panel-framework/routes/panelRoutes.ts', 'workspaceGroup');
+  assertContains('src/panel-framework/routes/panelRoutes.ts', 'placement');
   assertContains('src/panel-framework/routes/usePanelRoute.ts', 'window.addEventListener("popstate"');
   assertContains('src/panel-framework/routes/usePanelRoute.ts', 'window.history.pushState');
   assertContains('src/panel-framework/routes/usePanelRoute.ts', 'window.history.replaceState');
+  assertNotContains('src/panel-framework/routes/usePanelRoute.ts', 'querySelectorAll<HTMLElement>("[data-section]")', 'legacy DOM route ownership');
   assertContains('src/panel-framework/panel-framework-app.tsx', 'route === "overview"');
   assertContains('src/panel-framework/panel-framework-app.tsx', '<OperationalSectionPage route={route}');
   assertContains('tools/acceptance/inspect-panel-routes.js', 'history.forward()');
@@ -704,10 +717,12 @@ function main(argv = process.argv.slice(2)) {
 
   assertContains('src/panel-framework/mobile/MobilePatrolScreen.tsx', 'data-mobile-overview');
   assertContains('src/panel-framework/mobile/MobilePatrolScreen.tsx', 'data-mobile-core-fact');
-  assertContains('src/panel-framework/mobile/MobilePatrolScreen.tsx', 'data-mobile-evidence-ledger');
+  assertContains('src/panel-framework/mobile/MobilePatrolScreen.tsx', 'MobileEvidenceLedger');
+  assertContains('src/panel-framework/mobile/MobileEvidenceLedger.tsx', 'data-mobile-evidence-ledger');
   assertContains('src/panel-framework/mobile/MobileIncidentWorkspace.tsx', 'data-mobile-incident-object');
   assertContains('src/panel-framework/mobile/MobileIncidentWorkspace.tsx', 'data-mobile-incident-route');
-  assertContains('src/panel-framework/mobile/MobilePatrolScreen.tsx', 'availableBelowSummary');
+  assertContains('src/panel-framework/mobile/MobileEvidenceLedger.tsx', 'userOverrideRef');
+  assertContains('src/panel-framework/mobile/MobileEvidenceLedger.tsx', 'fitsEvidence');
   assertContains('src/panel-framework/mobile/MobilePatrolTraffic.tsx', 'preserveAspectRatio="xMidYMid meet"');
   assertContains('src/panel-framework/mobile/MobilePatrolTraffic.tsx', '<title id="mp-traffic-chart-title">');
   assertContains('src/panel-framework/mobile/MobilePatrolTraffic.tsx', '<desc id="mp-traffic-chart-desc">');
@@ -716,6 +731,12 @@ function main(argv = process.argv.slice(2)) {
   assertContains('src/panel-framework/mobile/MobileDomainWorkspace.tsx', 'pageSize = 20');
   assertContains('src/panel-framework/mobile/mobileDomainWorkspaceModel.ts', 'window.history.pushState');
   assertContains('src/panel-framework/mobile/mobileDomainWorkspaceModel.ts', 'window.addEventListener("popstate"');
+  assertContains('src/panel-framework/mobile/mobileDomainDefinitions.ts', 'domainDefinitionFor');
+  assertContains('src/panel-framework/mobile/mobileDomainDefinitions.ts', 'sortWorkspaceRows');
+  assertContains('src/panel-framework/sections/panelObjectIdentity.ts', 'stablePanelObjectId');
+  assertContains('src/panel-framework/sections/panelObjectIdentity.ts', 'panelObjectIdForValues');
+  assertContains('.agents/skills/router-panel-product-loop/SKILL.md', 'emil-design-engineering.md');
+  assertContains('.agents/skills/router-panel-product-loop/references/emil-design-engineering.md', 'emilkowalski/skills');
   assertNotContains('src/panel-framework/mobile/MobileDomainWorkspace.tsx', 'aria-controls=');
   assertNotContains('src/panel-framework/mobile/mobile-patrol.css', '!important');
   assertNotContains('src/panel-framework/mobile/mobile-domain.css', '!important');

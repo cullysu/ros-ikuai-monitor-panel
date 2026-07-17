@@ -211,6 +211,7 @@ async function startMock() {
     sequence: 0,
     nextSnapshot: '',
     scenario: '',
+    reverseInterfaces: false,
     pollSeconds: 2,
     lastLoginBody: null,
   };
@@ -361,6 +362,7 @@ async function startMock() {
             { name: 'sfp-lan', type: 'ether', role: 'LAN', parent: 'switch1', running: false, disabled: false },
           );
         }
+        if (state.reverseInterfaces) payload.interfaces.reverse();
         sendJson(response, 200, payload);
         return;
       }
@@ -663,6 +665,36 @@ async function main() {
     );
     screenshots.push(await screenshot(page, 'mobile-runtime-current.png', 'mobile-runtime-current'));
 
+    const evidenceLedger = page.locator('[data-mobile-evidence-ledger]');
+    const evidenceSummary = evidenceLedger.locator('summary');
+    const initialLedger = await evidenceLedger.evaluate((node) => ({
+      open: node.open,
+      override: node.getAttribute('data-user-override'),
+    }));
+    await evidenceSummary.click();
+    await page.waitForFunction((expected) => {
+      const ledger = document.querySelector('[data-mobile-evidence-ledger]');
+      return ledger?.getAttribute('data-user-override') === 'manual' && ledger.open !== expected;
+    }, initialLedger.open);
+    const manualLedgerOpen = await evidenceLedger.evaluate((node) => node.open);
+    await page.setViewportSize({ width: 390, height: 700 });
+    await page.waitForFunction(() => innerHeight === 700);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.waitForFunction(() => innerHeight === 844);
+    const resizedLedger = await evidenceLedger.evaluate((node) => ({
+      open: node.open,
+      override: node.getAttribute('data-user-override'),
+    }));
+    check(
+      checks,
+      'manual evidence disclosure survives viewport changes',
+      initialLedger.override === 'auto' &&
+        resizedLedger.override === 'manual' &&
+        resizedLedger.open === manualLedgerOpen,
+      { initialLedger, manualLedgerOpen, resizedLedger }
+    );
+    if (!resizedLedger.open) await evidenceSummary.click();
+
     const beforePoll = mock.state.snapshotCalls;
     await waitForCalls(mock.state, beforePoll, 'automatic poll', 6000);
     await waitForPhase(page, 'current');
@@ -698,18 +730,51 @@ async function main() {
 
     await page.locator('[data-section="interfaces"]').click();
     await page.locator('[data-mobile-domain-workspace="interfaces"]').waitFor();
-    const networkWorkspace = await page.evaluate(() => ({
-      search: Boolean(document.querySelector('.mdw-search input[type="search"]')),
-      filterButtons: document.querySelectorAll('.mdw-filter-row button').length,
-      sort: Boolean(document.querySelector('.mdw-filter-row select')),
-      rows: document.querySelectorAll('[data-mobile-row-id]').length,
-      overflow: document.documentElement.scrollWidth - innerWidth,
-    }));
+    const networkWorkspace = await page.evaluate(() => {
+      const shell = document.querySelector('[data-mobile-domain-workspace]');
+      const styles = getComputedStyle(shell);
+      const parseColor = (value) => {
+        const color = value.trim();
+        if (color.startsWith('#')) {
+          const hex = color.slice(1);
+          return [0, 2, 4].map((index) => Number.parseInt(hex.slice(index, index + 2), 16));
+        }
+        return (color.match(/[\d.]+/g) || []).slice(0, 3).map(Number);
+      };
+      const luminance = (value) => parseColor(value)
+        .map((channel) => channel / 255)
+        .map((channel) => channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4)
+        .reduce((sum, channel, index) => sum + channel * [0.2126, 0.7152, 0.0722][index], 0);
+      const contrast = (left, right) => {
+        const values = [luminance(left), luminance(right)].sort((a, b) => b - a);
+        return (values[0] + 0.05) / (values[1] + 0.05);
+      };
+      const foregrounds = ['--mdw-muted', '--mdw-faint'].map((name) => styles.getPropertyValue(name));
+      const backgrounds = ['--mdw-surface', '--mdw-surface-soft'].map((name) => styles.getPropertyValue(name));
+      const contrastValues = foregrounds.flatMap((foreground) => backgrounds.map((background) => contrast(foreground, background)));
+      const targets = Array.from(shell.querySelectorAll('button, summary, input, select'))
+        .filter((node) => {
+          const rect = node.getBoundingClientRect();
+          const style = getComputedStyle(node);
+          return rect.width > 0 && rect.height > 0 && style.visibility !== 'hidden' && style.display !== 'none';
+        })
+        .map((node) => node.getBoundingClientRect().height);
+      return {
+        search: Boolean(document.querySelector('.mdw-search input[type="search"]')),
+        filterButtons: document.querySelectorAll('.mdw-filter-row button').length,
+        sort: Boolean(document.querySelector('.mdw-filter-row select')),
+        rows: document.querySelectorAll('[data-mobile-row-id]').length,
+        overflow: document.documentElement.scrollWidth - innerWidth,
+        minimumTarget: Math.min(...targets),
+        minimumContrast: Math.min(...contrastValues),
+      };
+    });
     check(
       checks,
       'network destination is a searchable filterable sortable object workspace',
       networkWorkspace.search && networkWorkspace.filterButtons >= 2 &&
-        networkWorkspace.sort && networkWorkspace.rows >= 2 && networkWorkspace.overflow <= 1,
+        networkWorkspace.sort && networkWorkspace.rows >= 2 && networkWorkspace.overflow <= 1 &&
+        networkWorkspace.minimumTarget >= 44 && networkWorkspace.minimumContrast >= 4.5,
       networkWorkspace
     );
 
@@ -722,11 +787,11 @@ async function main() {
       await page.locator('[data-mobile-row-id]').first().innerText().then((text) => text.includes('pppoe-wan1'))
     );
     await page.getByRole('button', { name: '清除搜索' }).click();
-    await page.locator('.mdw-filter-row select').selectOption('asc');
+    await page.locator('.mdw-filter-row select').selectOption('name-asc');
     check(
       checks,
       'visible sort control owns real state',
-      await page.locator('.mdw-filter-row select').inputValue() === 'asc'
+      await page.locator('.mdw-filter-row select').inputValue() === 'name-asc'
     );
 
     const objectTrigger = page.locator('[data-mobile-row-id]').first();
@@ -759,6 +824,24 @@ async function main() {
       backFocus && new URL(page.url()).searchParams.get('object') === objectId,
       { backFocus, url: page.url(), objectId }
     );
+    mock.state.reverseInterfaces = true;
+    const beforeReorder = mock.state.snapshotCalls;
+    await refresh.click();
+    await waitForCalls(mock.state, beforeReorder, 'interface reorder refresh');
+    await waitForPhase(page, 'current');
+    const reorderedObject = await page.evaluate(() => ({
+      detail: document.querySelector('[data-mobile-object-detail]')?.getAttribute('data-mobile-object-detail') || '',
+      query: new URLSearchParams(location.search).get('object') || '',
+      title: document.querySelector('[data-mobile-object-detail] h2')?.textContent?.trim() || '',
+    }));
+    check(
+      checks,
+      'stable business identity preserves the exact object across snapshot reorder',
+      reorderedObject.detail === objectId && reorderedObject.query === objectId && reorderedObject.title === 'bridge-lan',
+      { objectId, reorderedObject }
+    );
+    mock.state.reverseInterfaces = false;
+
     await page.getByRole('button', { name: '返回列表' }).click();
     await page.waitForFunction(() => !document.querySelector('[data-mobile-object-detail]'));
     check(
@@ -816,6 +899,40 @@ async function main() {
       await page.locator('.mdw-search input[type="search"]').isVisible() &&
         await page.locator('.mdw-filter-row').isVisible()
     );
+
+    const domainRouteContracts = [
+      { route: 'connections', primary: 'interfaces', workspace: '网络工作区', placeholder: '源、目标、端口或协议' },
+      { route: 'dns4', primary: 'interfaces', workspace: 'DNS 工作区', placeholder: '名称、类型或目标' },
+      { route: 'dns6', primary: 'interfaces', workspace: 'DNS 工作区', placeholder: '接口、前缀或 DNS' },
+      { route: 'security', primary: 'interfaces', workspace: '安全工作区', placeholder: '告警、链、动作或说明' },
+      { route: 'terminals', primary: 'terminals', workspace: '终端工作区', placeholder: '终端名、IP 或 MAC' },
+      { route: 'logs', primary: 'logs', workspace: '事件时间线', placeholder: '内容、主题或时间' },
+      { route: 'trafficLoad', primary: 'overview', workspace: '资源工作区', placeholder: '' },
+    ];
+    for (const contract of domainRouteContracts) {
+      const target = new URL(mock.url);
+      target.searchParams.set('section', contract.route);
+      target.hash = contract.route;
+      await page.goto(target.toString(), { waitUntil: 'domcontentloaded' });
+      await waitForPhase(page, 'current');
+      await page.locator(`[data-mobile-domain-workspace="${contract.route}"]`).waitFor();
+      const routeState = await page.evaluate(() => ({
+        primary: document.querySelector('.panel-task-navigation button.is-active')?.getAttribute('data-section') || '',
+        workspace: document.querySelector('.mdw-title-row small')?.textContent?.trim() || '',
+        placeholder: document.querySelector('.mdw-search input')?.getAttribute('placeholder') || '',
+        overflow: document.documentElement.scrollWidth - innerWidth,
+      }));
+      check(
+        checks,
+        `${contract.route} keeps its domain workspace and primary destination`,
+        routeState.primary === contract.primary &&
+          routeState.workspace === contract.workspace &&
+          routeState.placeholder === contract.placeholder &&
+          routeState.overflow <= 1,
+        { contract, routeState }
+      );
+    }
+
     await page.locator('[data-section="overview"]').click();
     await page.locator('[data-mobile-overview]').waitFor();
 
@@ -1113,32 +1230,39 @@ async function main() {
     );
     screenshots.push(await screenshot(tabletPage, 'tablet-network-844.png', 'tablet-network-844'));
 
-    await tabletPage.setViewportSize({ width: 1023, height: 768 });
-    await tabletPage.locator('[data-mobile-domain-workspace="interfaces"]').waitFor();
-    const boundary1023 = await tabletPage.evaluate(() => ({
-      mobile: Boolean(document.querySelector('[data-mobile-domain-workspace="interfaces"]')),
-      rail: getComputedStyle(document.querySelector('.panel-task-navigation')).display,
-      overflow: document.documentElement.scrollWidth - innerWidth,
-    }));
-    await tabletPage.setViewportSize({ width: 1024, height: 768 });
+    async function inspectCompactBoundary(width, height) {
+      await tabletPage.setViewportSize({ width, height });
+      await tabletPage.locator('[data-mobile-domain-workspace="interfaces"]').waitFor();
+      return tabletPage.evaluate(() => ({
+        mobile: Boolean(document.querySelector('[data-mobile-domain-workspace="interfaces"]')),
+        rail: getComputedStyle(document.querySelector('.panel-task-navigation')).display,
+        overflow: document.documentElement.scrollWidth - innerWidth,
+      }));
+    }
+
+    const boundary1024 = await inspectCompactBoundary(1024, 768);
+    const boundary1112 = await inspectCompactBoundary(1112, 834);
+    const boundary1180 = await inspectCompactBoundary(1180, 820);
+    await tabletPage.setViewportSize({ width: 1181, height: 820 });
     await tabletPage.waitForFunction(() => (
       !document.querySelector('[data-mobile-domain-workspace]') &&
       Boolean(document.querySelector('[data-panel-route-content="interfaces"]'))
     ));
-    const boundary1024 = await tabletPage.evaluate(() => ({
+    const boundary1181 = await tabletPage.evaluate(() => ({
       mobile: Boolean(document.querySelector('[data-mobile-domain-workspace]')),
       desktop: Boolean(document.querySelector('[data-panel-route-content="interfaces"]')),
       rail: getComputedStyle(document.querySelector('.panel-task-navigation')).display,
       overflow: document.documentElement.scrollWidth - innerWidth,
     }));
+    const compactBoundaries = [boundary1024, boundary1112, boundary1180];
     check(
       checks,
-      '1023/1024 capability boundary switches once from tablet workspace to desktop section',
-      boundary1023.mobile && boundary1023.rail === 'grid' && boundary1023.overflow <= 1 &&
-        !boundary1024.mobile && boundary1024.desktop && boundary1024.rail === 'none' && boundary1024.overflow <= 1,
-      { boundary1023, boundary1024 }
+      '1024–1180 keeps the compact task workspace and 1181 switches once to desktop',
+      compactBoundaries.every((item) => item.mobile && item.rail === 'grid' && item.overflow <= 1) &&
+        !boundary1181.mobile && boundary1181.desktop && boundary1181.rail === 'none' && boundary1181.overflow <= 1,
+      { boundary1024, boundary1112, boundary1180, boundary1181 }
     );
-    screenshots.push(await screenshot(tabletPage, 'tablet-desktop-boundary-1024.png', 'tablet-desktop-boundary-1024'));
+    screenshots.push(await screenshot(tabletPage, 'tablet-desktop-boundary-1181.png', 'tablet-desktop-boundary-1181'));
     await tabletContext.close();
 
     await page.locator('.panel-runtime-actions button').nth(1).click();

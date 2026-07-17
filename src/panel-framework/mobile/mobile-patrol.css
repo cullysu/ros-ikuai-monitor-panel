@@ -1,9 +1,9 @@
-@media (max-width: 1023px) {
+@media (max-width: 1180px) {
   .mp-shell {
     --mp-ink: #14242e;
     --mp-text: #2e414d;
-    --mp-muted: #667782;
-    --mp-faint: #87959d;
+    --mp-muted: #52636d;
+    --mp-faint: #5f7079;
     --mp-line: rgba(38, 72, 90, 0.14);
     --mp-line-strong: rgba(38, 72, 90, 0.22);
     --mp-surface: rgba(251, 253, 254, 0.97);
@@ -19,14 +19,13 @@
     --mp-trust: #2f677d;
     --mp-trust-soft: #e1edf2;
     --mp-missing: #6c7479;
-    --mp-radius: 16px;
+    --mp-radius: 8px;
     box-sizing: border-box;
     width: 100%;
     min-height: 100dvh;
     padding: 0 0 calc(82px + env(safe-area-inset-bottom));
     color: var(--mp-text);
-    background: radial-gradient(circle at 85% 0, rgba(90, 126, 142, 0.11), transparent 190px),
-      #f1f3f4;
+    background: #eef2f4;
     font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC",
       "Microsoft YaHei UI", sans-serif;
     -webkit-font-smoothing: antialiased;
@@ -150,7 +149,7 @@
     height: 36px;
     place-items: center;
     border: 1px solid var(--mp-line-strong);
-    border-radius: 11px;
+    border-radius: 8px;
     color: var(--mp-blue-dark);
     background: rgba(255, 255, 255, 0.66);
     box-shadow: 0 1px 2px rgba(28, 54, 68, 0.08);
@@ -198,7 +197,7 @@
     margin: 0 auto;
     overflow: hidden;
     border: 1px solid var(--mp-line);
-    border-radius: 12px;
+    border-radius: 8px;
     background: var(--mp-surface);
   }
   .mp-proof {
@@ -215,24 +214,14 @@
   .mp-proof > div + div {
     border-left: 1px solid var(--mp-line);
   }
-  .mp-proof > div::before {
-    position: absolute;
-    top: 0;
-    right: 10px;
-    left: 10px;
-    height: 2px;
-    border-radius: 0 0 2px 2px;
-    background: var(--mp-trust);
-    content: "";
+  .mp-proof > div.is-danger b {
+    color: var(--mp-danger);
   }
-  .mp-proof > div.is-danger::before {
-    background: var(--mp-danger);
+  .mp-proof > div.is-warn b {
+    color: var(--mp-warn);
   }
-  .mp-proof > div.is-warn::before {
-    background: var(--mp-warn);
-  }
-  .mp-proof > div.is-missing::before {
-    background: var(--mp-missing);
+  .mp-proof > div.is-missing b {
+    color: var(--mp-missing);
   }
   .mp-proof small,
   .mp-proof b,
@@ -291,7 +280,7 @@
     height: 28px;
     padding: 0 7px;
     place-items: center;
-    border-radius: 9px;
+    border-radius: 8px;
     color: var(--mp-danger);
     background: var(--mp-danger-soft);
     font-size: 14px;
@@ -890,7 +879,7 @@
   }
 }
 
-@media (min-width: 600px) and (max-width: 1023px) {
+@media (min-width: 600px) and (max-width: 1180px) {
   .mp-command {
     padding-top: 10px;
     padding-bottom: 10px;
@@ -923,7 +912,7 @@
   }
 }
 
-@media (max-width: 1023px) {
+@media (max-width: 1180px) {
   .mp-workspace-body,
   .mp-workspace-primary,
   .mp-workspace-context {
@@ -1021,7 +1010,7 @@
   }
 }
 
-@media (max-width: 1023px) {
+@media (max-width: 1180px) {
   .mp-resource-chart {
     display: grid;
     grid-template-columns: 38px minmax(0, 1fr);
@@ -1200,7 +1189,7 @@
   }
 }
 
-@media (max-width: 1023px) {
+@media (max-width: 1180px) {
   .mp-shell.is-large-text .mp-resource > header,
   .mp-shell.is-large-text .mp-focus > header {
     align-items: flex-start;
@@ -1242,10 +1231,10 @@
   }
 }
 
-@media (min-width: 600px) and (max-width: 1023px) {
+@media (min-width: 600px) and (max-width: 1180px) {
   .mp-command,
   .mp-workspace {
-    max-width: 900px;
+    max-width: 1120px;
   }
   .mp-workspace-body {
     display: grid;
@@ -1299,13 +1288,13 @@
   }
 }
 
-@media (max-width: 1023px) {
+@media (max-width: 1180px) {
   .mp-resource-samples {
     display: none;
   }
 }
 
-@media (min-width: 600px) and (max-width: 1023px) {
+@media (min-width: 600px) and (max-width: 1180px) {
   .mp-resource-samples {
     display: block;
     border-top: 1px solid var(--mp-line);
@@ -1356,7 +1345,7 @@
   }
 }
 
-@media (max-width: 1023px) {
+@media (max-width: 1180px) {
   .mp-incident-row.is-selected {
     background: #eef5f7;
     box-shadow: inset 3px 0 0 var(--mp-blue);
@@ -1492,7 +1481,7 @@
   }
 }
 
-@media (max-width: 1023px) {
+@media (max-width: 1180px) {
   .mp-actions {
     border-bottom: 1px solid var(--mp-line);
     background: #f8fafb;
@@ -1518,7 +1507,7 @@
     height: 28px;
     padding: 0 7px;
     place-items: center;
-    border-radius: 9px;
+    border-radius: 8px;
     color: var(--mp-blue-dark);
     background: var(--mp-blue-soft);
     font-size: 14px;
@@ -1584,7 +1573,7 @@
     height: 34px;
     place-items: center;
     border: 1px solid rgba(47, 113, 143, 0.14);
-    border-radius: 10px;
+    border-radius: 8px;
     color: var(--mp-blue-dark);
     background: #edf4f7;
   }
@@ -1605,35 +1594,36 @@
   }
 }
 
-@media (min-width: 600px) and (max-width: 1023px) and (min-height: 700px) {
-  .mp-workspace-body {
-    min-height: clamp(620px, calc(100dvh - 210px), 800px);
-    align-items: stretch;
+@media (max-width: 1180px) and (prefers-reduced-motion: no-preference) {
+  .mp-incident-more > svg {
+    transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1);
   }
-  .mp-workspace-primary,
-  .mp-workspace-context {
-    display: flex;
-    flex-direction: column;
+  .mp-incident-more.is-expanded > svg {
+    transform: rotate(180deg);
   }
-  .mp-workspace-primary {
-    background: var(--mp-surface);
+  .mp-incident-row,
+  .mp-action-list > button,
+  .mp-load button,
+  .mp-focus > button,
+  .mp-inspector > button {
+    transition: transform 120ms cubic-bezier(0.23, 1, 0.32, 1);
   }
-  .mp-workspace-context {
-    background: #f8fafb;
+  .mp-incident-row:active,
+  .mp-action-list > button:active,
+  .mp-load button:active,
+  .mp-focus > button:active,
+  .mp-inspector > button:active {
+    transform: scale(0.99);
   }
-  .mp-workspace-primary > .mp-ledger,
-  .mp-workspace-context > .mp-actions:last-child {
-    display: flex;
-    flex: 1 1 auto;
-    flex-direction: column;
-  }
-  .mp-workspace-primary > .mp-ledger[open] > dl,
-  .mp-workspace-context > .mp-actions:last-child > .mp-action-list {
-    display: grid;
-    flex: 1 1 auto;
-    grid-auto-rows: minmax(62px, 1fr);
-  }
-  .mp-workspace-primary > .mp-ledger[open] > dl > div {
-    align-content: center;
+}
+
+@media (max-width: 1180px) and (prefers-reduced-motion: reduce) {
+  .mp-shell *,
+  .mp-shell *::before,
+  .mp-shell *::after {
+    scroll-behavior: auto;
+    transition-duration: 0.01ms;
+    animation-duration: 0.01ms;
+    animation-iteration-count: 1;
   }
 }
