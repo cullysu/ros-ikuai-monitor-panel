@@ -23872,3 +23872,13 @@ ocused-green-engineering
 - 验证：`check-overview-tablet-continuity`、`check-tablet-incident-task-order`、`check-mobile-visual-surface-contract`、`check-inspector-value-typography` 全部通过；`npm run check:overview` 全部通过，包含 6/6 平板事故与视觉合同检查；当前候选尚未提交，fresh exact-SHA release evidence 尚未重建。
 - 边界：Product/Design/Visual 独立签收、route maturity、clean candidate、RouterOS soak 与 public release 仍关闭；Loop active、blocked=false。
 - Next: 提交本轮源代码、门禁、决策镜像与生成资产，取得新候选 SHA 后重建 exact-SHA build/runtime/overview/route evidence，再请求独立 Product/Design/Visual 签收。
+
+## 第 779 步：clean candidate build and production runtime focused-green；release remains closed
+
+- status: candidate-focused-green
+- latestStepOutcome: `779:clean-candidate-4f1a7a0-build-and-runtime-focused-green-release-closed-loop-active`
+- Trigger and facts: candidate `4f1a7a073e133d86c1b78812971d1beffbd80b32` is committed and clean. Production build transformed 1899 modules; TypeScript, full Overview contracts, and production browser runtime passed.
+- Decision: bind all next matrix reports and independent reviews to this candidate and its Git tree. Do not reuse reports from b9f4e92 or any older SHA, and do not treat engineering runtime green as Product/Design/Visual signoff.
+- Verification: build passed; `check:types` passed; `check:overview` passed; `check:runtime-browser` passed with 256 checks, 98 screenshots and 123 snapshot API calls; CSS raw 119609 bytes and panel JS raw 482273 bytes; worktree clean at the candidate SHA.
+- Boundary: Product/Design/Visual independent signoff, route maturity, full public matrix, RouterOS soak, accessibility acceptance, publication capability and exact-SHA CL remain open. No GitHub upload or public release.
+- Next: regenerate the exact-SHA 28-cell overview matrix, route-responsive evidence and all route-state scenario shards for this candidate, then request independent Product/Design/Visual signoff.

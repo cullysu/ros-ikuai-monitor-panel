@@ -1,7 +1,7 @@
 # Historical and superseded decision index
 
 - status: `historical-index`
-- validForCommit: current worktree with focused-green engineering remediation through Step778; historical entries remain immutable
+- validForCommit: current clean candidate 4f1a7a073e133d86c1b78812971d1beffbd80b32 with build/runtime focused-green through Step779; historical entries remain immutable
 - supersededBy: `null`
 - authority: `docs/decision-system/current-state.md`
 - coveredStepMin: `0`

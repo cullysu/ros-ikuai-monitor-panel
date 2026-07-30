@@ -1,21 +1,21 @@
 - status: `current`
-- currentConclusionForStep: `778`
-- latestRecordedStep: `778`
-- latestStepOutcome: `778:tablet-interface-incident-path-and-visual-contract-focused-green-release-closed-loop-active`
-- currentBoundaryForStep: `778`
-- validForCommit: current worktree with focused-green engineering remediation through Step778; not a release candidate
+- currentConclusionForStep: `779`
+- latestRecordedStep: `779`
+- latestStepOutcome: `779:clean-candidate-4f1a7a0-build-and-runtime-focused-green-release-closed-loop-active`
+- currentBoundaryForStep: `779`
+- validForCommit: current clean candidate 4f1a7a073e133d86c1b78812971d1beffbd80b32 with build/runtime focused-green through Step779; not a release candidate
 - supersededBy: `null`
 - updatedAt: `2026-07-31T00:00:00+08:00`
 - authority: This is the only human-readable current-state source. Historical journals, contracts, reports, and machine state may provide evidence but may not override this page.
 
-## Current decision record: Step 778
+## Current decision record: Step 779
 
 - status: `focused-green-engineering`
-- boundary: Step778 closes the focused tablet incident path, visual token, typography-scope and task-order contract slices; the product branch remains the unified tablet incident owner for interface-review.
+- boundary: Step779 binds the clean candidate build and production runtime evidence to 4f1a7a0; the tablet incident path and visual contracts remain focused-green.
 - Product/Design/Visual: `failed` / unsigned. R07 mobile visual maturity, R09 tablet space efficiency, R10 desktop density/task efficiency and R14 cross-surface product grammar remain open.
 - route maturity: `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`; no route is promoted to a complete module.
-- release: candidate identity remains dirty before the next clean candidate; no GitHub upload, exact-SHA CL, RouterOS soak or public release exists. Loop is active and `blocked=false`.
-- Next: submit the focused-green source and gate changes, then regenerate exact-SHA build, runtime, overview and route evidence before independent signoff.
+- release: candidate identity is clean at 4f1a7a0; no GitHub upload, exact-SHA CL, RouterOS soak or public release exists. Loop is active and `blocked=false`.
+- Next: regenerate the exact-SHA overview matrix, route-responsive evidence and route-state scenario shards, then request independent Product/Design/Visual signoff.
 
 ## Current conclusion
 

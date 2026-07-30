@@ -1,20 +1,20 @@
 - status: `current-handoff`
-- validForCommit: current worktree with focused-green engineering remediation through Step778; not a release candidate
-- currentHandoffForStep: `778`
+- validForCommit: current clean candidate 4f1a7a073e133d86c1b78812971d1beffbd80b32 with build/runtime focused-green through Step779; not a release candidate
+- currentHandoffForStep: `779`
 - supersededBy: `docs/decision-system/current-state.md`
 - updated: 2026-07-31
-- latestRecordedStep: `778`
-- latestStepOutcome: `778:tablet-interface-incident-path-and-visual-contract-focused-green-release-closed-loop-active`
+- latestRecordedStep: `779`
+- latestStepOutcome: `779:clean-candidate-4f1a7a0-build-and-runtime-focused-green-release-closed-loop-active`
 - currentConclusion: **FAIL overall**. This handoff routes evidence only; it cannot sign Product/Design/Visual.
 - process: docs/decision-system/current-state.md is the sole authority; docs/panel-redesign-decision-log.md is the detailed chronology.
 
-## Current handoff: Step778 tablet incident path and visual contract focused-green; release remains closed
+## Current handoff: Step779 clean candidate build/runtime focused-green; release remains closed
 
-- Result: The interface-risk tablet branch, surface token, machine-fact typography scope and task-order contract are aligned and focused-green; independent acceptance remains open.
-- Decision: keep the task-order checker bound to the actual tablet incident owner without weakening task-before-evidence order.
-- Boundary: focused contracts are green; product code and generated assets remain dirty until the new candidate commit; route maturity, clean candidate, soak and exact-SHA CL remain open.
+- Result: The clean candidate is build- and runtime-green; the interface-risk tablet branch and visual/task-order contracts remain aligned, while independent acceptance remains open.
+- Decision: bind all next evidence to the clean candidate SHA without weakening task-before-evidence order.
+- Boundary: focused contracts and clean candidate runtime are green; route maturity, full matrix, soak and exact-SHA CL remain open.
 - Loop state: active, blocked=false. Release blockage and task blockage are separate states.
-- Next: submit the focused-green source and gate changes, then regenerate exact-SHA build, runtime, overview and route evidence.
+- Next: regenerate the exact-SHA overview matrix, route-responsive evidence and route-state scenario shards, then request independent Product/Design/Visual signoff.
 
 ## Gate boundary
 
