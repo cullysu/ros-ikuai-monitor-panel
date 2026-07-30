@@ -5,9 +5,13 @@ const fs = require('fs');
 const crypto = require('crypto');
 const path = require('path');
 const { spawnSync } = require('child_process');
-const { RUNTIME_SCREENSHOT_CONTRACT } = require('./runtime-screenshot-contract');
+const { RUNTIME_CHECK_CONTRACT, RUNTIME_SCREENSHOT_CONTRACT } = require('./runtime-screenshot-contract');
+const { assertFrameworkAssetIdentity } = require('./framework-asset-identity');
+const { assertFrameworkAssetBudget } = require('./framework-asset-budget');
+const { gitWorktreeIdentity } = require('./worktree-runtime-identity');
 
 const ROOT = path.resolve(__dirname, '..');
+const READINESS_CHILD_TIMEOUT_MS = 120000;
 const FULL_MATRIX_SCENARIOS = [
   'single',
   'fleet',
@@ -42,6 +46,58 @@ const ROUTE_STATE_VIEWPORTS = [
   { name: 'narrow', width: 390, height: 844 },
 ];
 
+const RUNTIME_REQUIRED_CHECKS = Object.freeze([
+  'production runtime has no scenario fixture',
+  'validated snapshot renders the overview without overflow',
+  'Overview More opens the real directory and survives Back and Forward',
+  'automatic polling refreshes the validated snapshot',
+  'manual evidence disclosure survives viewport changes',
+  'browser Back closes and Forward restores the selected object',
+  'browser Back and Forward both restore route destinations',
+  'Back returns to overview and Forward restores the exact incident investigation context',
+  'stable business identity preserves the exact object across snapshot reorder',
+  'connections keeps its domain workspace and primary destination',
+  'routes opens a domain-specific evidence inspector',
+  'connections opens a domain-specific evidence inspector',
+  'dns4 opens a domain-specific evidence inspector',
+  'dns6 opens a domain-specific evidence inspector',
+  'security opens a domain-specific evidence inspector',
+  'terminals opens a domain-specific evidence inspector',
+  'logs opens a domain-specific evidence inspector',
+  'trafficLoad opens a domain-specific evidence inspector',
+  'dns4 keeps its domain workspace and primary destination',
+  'dns6 keeps its domain workspace and primary destination',
+  'security keeps its domain workspace and primary destination',
+  'terminals keeps its domain workspace and primary destination',
+  'logs keeps its domain workspace and primary destination',
+  'trafficLoad keeps its domain workspace and primary destination',
+  'all four primary routes survive measured synthetic 200 percent text stress without claiming OS scaling',
+  'malformed snapshot is rejected while last valid evidence remains visible',
+  'snapshot API error never inserts a scenario fixture',
+  'old evidence is labeled historical and current traffic is withheld',
+  'navigator.onLine=false does not block a reachable same-origin snapshot',
+  'manual refresh remains operational while navigator reports offline',
+  'tablet overview selects incident evidence beside the full object list without navigation',
+  ...Object.values(RUNTIME_CHECK_CONTRACT),
+  'capability boundaries keep a single task grammar and do not create a 1365/1366 product cliff',
+  'selected object and Back/Forward stay continuous across the 1199/1200 surface transition',
+  'desktop connection owns a dedicated workspace',
+  'browser emitted no uncaught page errors',
+]);
+
+function runtimeScreenshotEvidenceMatches(actual, expected) {
+  if (expected === undefined) return true;
+  if (Array.isArray(expected)) {
+    return Array.isArray(actual) && actual.length === expected.length &&
+      expected.every((value, index) => runtimeScreenshotEvidenceMatches(actual[index], value));
+  }
+  if (expected && typeof expected === 'object') {
+    return Boolean(actual && typeof actual === 'object' && !Array.isArray(actual)) &&
+      Object.entries(expected).every(([key, value]) => runtimeScreenshotEvidenceMatches(actual[key], value));
+  }
+  return Object.is(actual, expected);
+}
+
 function expectedMatrixCells(scenarios, routes, viewports) {
   return scenarios.flatMap((scenario) => routes.flatMap((section) => viewports.map((viewport) => ({
     profile: 'public',
@@ -58,6 +114,7 @@ const ROUTE_STATE_MATRIX_CELLS = expectedMatrixCells(FULL_MATRIX_SCENARIOS, PUBL
 function parseArgs(argv = process.argv.slice(2)) {
   const args = {
     staticOnly: false,
+    allowDirtyEngineering: false,
     help: false,
   };
   for (const item of argv) {
@@ -65,6 +122,10 @@ function parseArgs(argv = process.argv.slice(2)) {
       args.staticOnly = true;
     } else if (item === '--require-matrix' || item === '--full-matrix') {
       args.staticOnly = false;
+      args.allowDirtyEngineering = false;
+    } else if (item === '--engineering-worktree' || item === '--allow-dirty-engineering') {
+      args.staticOnly = false;
+      args.allowDirtyEngineering = true;
     } else if (item === '--help' || item === '-h') {
       args.help = true;
     } else {
@@ -77,13 +138,15 @@ function parseArgs(argv = process.argv.slice(2)) {
 function usage() {
   return `
 Usage:
-  node tools/check-public-release-readiness.js [--static-only|--require-matrix]
+  node tools/check-public-release-readiness.js [--static-only|--require-matrix|--engineering-worktree]
 
 Options:
   --static-only     Check static release markers only; skip local browser matrix evidence.
   --skip-matrix     Alias for --static-only.
   --require-matrix   Force the full release-matrix evidence check, even in CI.
   --full-matrix     Alias for --require-matrix.
+  --engineering-worktree  Validate current dirty-worktree engineering evidence without granting release eligibility.
+  --allow-dirty-engineering  Alias for --engineering-worktree.
 `.trim();
 }
 
@@ -135,14 +198,6 @@ function assertNotExists(relPath) {
   }
 }
 
-function assertMaxBytes(relPath, maxBytes) {
-  const filePath = path.join(ROOT, relPath);
-  const size = fs.statSync(filePath).size;
-  if (size > maxBytes) {
-    throw new Error(`${relPath} exceeds ${maxBytes} bytes (found ${size})`);
-  }
-}
-
 function assertMatches(relPath, pattern, label = pattern) {
   const text = readReleaseSurface(relPath);
   if (!pattern.test(text)) {
@@ -154,13 +209,95 @@ function readJson(filePath) {
   return JSON.parse(fs.readFileSync(filePath, 'utf8'));
 }
 
-function currentHead(rootDir = ROOT) {
-  const result = spawnSync('git', ['rev-parse', 'HEAD'], {
-    cwd: rootDir,
+function isExplicitNotApplicableCheck(check) {
+  return Boolean(
+    check &&
+    typeof check === 'object' &&
+    check.applicable === false &&
+    check.status === 'not_applicable' &&
+    check.pass === null &&
+    typeof check.reason === 'string' &&
+    check.reason.trim()
+  );
+}
+
+function reportNestedPassFalsePaths(value, currentPath = '') {
+  if (Array.isArray(value)) {
+    return value.flatMap((item, index) => reportNestedPassFalsePaths(item, currentPath + '/' + index));
+  }
+  if (!value || typeof value !== 'object') return [];
+  const paths = [];
+  for (const [key, child] of Object.entries(value)) {
+    const childPath = currentPath + '/' + key;
+    if (key === 'pass' && child === false) paths.push(childPath);
+    paths.push(...reportNestedPassFalsePaths(child, childPath));
+  }
+  return paths;
+}
+
+function runReadinessChild(phase, command, args, options = {}) {
+  const { cwd = ROOT, ...childOptions } = options;
+  const startedAt = Date.now();
+  const result = spawnSync(command, args, {
+    ...childOptions,
+    cwd,
     encoding: 'utf8',
-    stdio: ['ignore', 'pipe', 'ignore'],
+    stdio: ['ignore', 'pipe', 'pipe'],
+    timeout: READINESS_CHILD_TIMEOUT_MS,
+    killSignal: 'SIGTERM',
+    windowsHide: true,
   });
+  const elapsedMs = Date.now() - startedAt;
+  return {
+    ...result,
+    phase,
+    elapsedMs,
+    timedOut: result.error?.code === 'ETIMEDOUT',
+  };
+}
+
+function readinessChildDiagnostic(result) {
+  return `[phase=${result.phase} elapsedMs=${result.elapsedMs} timeoutMs=${READINESS_CHILD_TIMEOUT_MS} status=${result.status ?? 'null'} signal=${result.signal ?? 'none'} timedOut=${result.timedOut}]`;
+}
+
+function currentHead(rootDir = ROOT) {
+  const result = runReadinessChild('git:rev-parse-head', 'git', ['rev-parse', 'HEAD'], { cwd: rootDir });
+  if (result.error) throw new Error(`git identity lookup failed ${readinessChildDiagnostic(result)}\n${result.error.message}`);
   return result.status === 0 ? String(result.stdout || '').trim() : '';
+}
+
+function assertNodeContract(relPath, args = []) {
+  const result = runReadinessChild(`node:${relPath}`, process.execPath, [path.join(ROOT, relPath), ...args], {
+    env: {
+      ...process.env,
+      CODEX_MEMORY_LIMIT_MB: '2048',
+      NODE_OPTIONS: '--max-old-space-size=2048',
+    },
+  });
+  if (result.error || result.status !== 0) {
+    throw new Error(
+      `${relPath} contract failed ${readinessChildDiagnostic(result)}\n${String(result.stdout || '')}${String(result.stderr || '')}${result.error ? `\n${result.error.message}` : ''}`
+    );
+  }
+  try {
+    return JSON.parse(String(result.stdout || ""));
+  } catch {
+    return null;
+  }
+}
+
+function assertDecisionLedgerFreshness(rootDir = ROOT) {
+  const python = process.platform === 'win32' ? 'py' : 'python3';
+  const args = process.platform === 'win32'
+    ? ['-3', path.join(rootDir, 'tools', 'check-decision-ledger-sync.py')]
+    : [path.join(rootDir, 'tools', 'check-decision-ledger-sync.py')];
+  const result = runReadinessChild('python:decision-ledger-sync', python, args, { cwd: rootDir });
+  if (result.error || result.status !== 0) {
+    throw new Error(
+      `Decision repository freshness failed ${readinessChildDiagnostic(result)}\n${String(result.stdout || '')}${String(result.stderr || '')}${result.error ? `\n${result.error.message}` : ''}`
+    );
+  }
+  return JSON.parse(result.stdout);
 }
 
 function listAcceptanceReports(rootDir = ROOT) {
@@ -287,9 +424,32 @@ function validateMatrixReport(reportPath, expectedCells, head, options = {}) {
   const missingCells = listDifference(actualIds, expectedIds);
   const unexpectedCells = listDifference(expectedIds, actualIds);
   if (!matrix || matrix.commit !== head) errors.push(`matrix.commit must equal current HEAD ${head}`);
+  if (options.requiredWorktreeIdentity) {
+    const identity = options.requiredWorktreeIdentity;
+    for (const field of ['commit', 'worktreeFingerprint', 'artifactKey', 'worktreeClean', 'releaseEvidenceEligible']) {
+      if (matrix?.[field] !== identity[field]) {
+        errors.push(`matrix.${field} must equal current runtime worktree identity ${JSON.stringify(identity[field])}`);
+      }
+    }
+  }
   if (matrix?.requestedComplete !== true) errors.push('matrix.requestedComplete must be true');
   if (!Array.isArray(report.failures) || report.failures.length !== 0) errors.push('report.failures must be an empty array');
   if (matrix?.failed !== 0) errors.push('matrix.failed must be 0');
+  const nestedFalsePasses = reportNestedPassFalsePaths(report)
+    .filter((item) => options.requireReportPass || item !== '/pass');
+  if (nestedFalsePasses.length) {
+    errors.push('report contains nested pass=false evidence: ' + nestedFalsePasses.slice(0, 8).join(', '));
+  }
+  if (!Array.isArray(report.checks)) {
+    errors.push('report.checks must be an array');
+  } else {
+    const failedChecks = report.checks.filter(
+      (check) => !isExplicitNotApplicableCheck(check) && (!check || check.pass !== true),
+    );
+    if (failedChecks.length) {
+      errors.push('report checks contain failures: ' + failedChecks.map((check) => check?.name || '(unnamed)').slice(0, 8).join(', '));
+    }
+  }
   if (cells.length !== expectedIds.length || missingCells.length || unexpectedCells.length) {
     errors.push(`matrix.cells does not exactly match the requested matrix (missing=${missingCells.length}, unexpected=${unexpectedCells.length}, total=${cells.length})`);
   }
@@ -319,9 +479,80 @@ function validateMatrixReport(reportPath, expectedCells, head, options = {}) {
   return { report, errors };
 }
 
+const MAX_MATRIX_REPORT_CANDIDATES = 6;
+
+const MATRIX_REPORT_ALIAS_NAMES = {
+  overview: new Set([
+    'panel-runtime-browser',
+    'release-matrix-current',
+    'release-matrix-working-tree',
+    'release-matrix-worktree',
+    'release-overview-current',
+    'release-overview-working-tree',
+    'release-overview-worktree',
+    'route-matrix-current',
+    'route-matrix-working-tree',
+    'route-matrix-worktree',
+  ]),
+  responsive: new Set([
+    'release-routes-responsive-current',
+    'release-routes-responsive-working-tree',
+    'release-routes-responsive-worktree',
+    'route-responsive-current',
+    'route-responsive-working-tree',
+    'route-responsive-worktree',
+  ]),
+  state: new Set([
+    'release-routes-state-current',
+    'release-routes-state-working-tree',
+    'release-routes-state-worktree',
+    'route-state-current',
+    'route-state-working-tree',
+    'route-state-worktree',
+  ]),
+};
+
+function matrixReportKind(label) {
+  const normalized = String(label || '').toLowerCase();
+  if (normalized.includes('route responsive')) return 'responsive';
+  if (normalized.includes('route-state')) return 'state';
+  return 'overview';
+}
+
+function reportNameMatchesKind(name, kind) {
+  if (kind === 'responsive') return name.includes('responsive');
+  if (kind === 'state') return name.includes('route-state') || name.includes('routes-state');
+  return name.includes('overview') || name.includes('matrix') || name === 'panel-runtime-browser';
+}
+
+function scoreCurrentMatrixReportCandidate(candidate, kind, head, requiredWorktreeIdentity) {
+  const name = path.basename(path.dirname(candidate.reportPath)).toLowerCase();
+  const aliases = MATRIX_REPORT_ALIAS_NAMES[kind] || new Set();
+  if (!reportNameMatchesKind(name, kind)) return null;
+
+  const artifactKey = String(requiredWorktreeIdentity?.artifactKey || '').toLowerCase();
+  if (artifactKey && name.includes(artifactKey)) return 0;
+
+  if (aliases.has(name)) return 1;
+
+  const commitPrefix = String(head || '').toLowerCase().slice(0, 12);
+  if (commitPrefix && name.includes(commitPrefix)) return 2;
+
+  if (/(?:^|-)(current|working-tree|worktree)(?:-|$)/.test(name)) return 3;
+  return null;
+}
+
 function findCurrentMatrixReport(rootDir, label, expectedCells, options = {}) {
   const head = currentHead(rootDir);
-  const candidates = listAcceptanceReports(rootDir);
+  const kind = matrixReportKind(label);
+  const candidates = listAcceptanceReports(rootDir)
+    .map((candidate) => ({
+      ...candidate,
+      priority: scoreCurrentMatrixReportCandidate(candidate, kind, head, options.requiredWorktreeIdentity),
+    }))
+    .filter((candidate) => candidate.priority !== null)
+    .sort((left, right) => left.priority - right.priority || right.mtimeMs - left.mtimeMs)
+    .slice(0, MAX_MATRIX_REPORT_CANDIDATES);
   const failures = [];
   for (const candidate of candidates) {
     const result = validateMatrixReport(candidate.reportPath, expectedCells, head, options);
@@ -329,51 +560,28 @@ function findCurrentMatrixReport(rootDir, label, expectedCells, options = {}) {
     failures.push(`${path.relative(rootDir, candidate.reportPath)}: ${result.errors.join('; ')}`);
   }
   const detail = failures.slice(0, 3).join(' | ');
-  throw new Error(`No current ${label} evidence report was found for HEAD ${head || '(unknown)'}. ${detail}`);
+  throw new Error(`No current ${label} evidence report was found for HEAD ${head || '(unknown)'}; report discovery was bounded to ${candidates.length}/${MAX_MATRIX_REPORT_CANDIDATES} candidates. ${detail}`);
 }
 
-function assertRuntimeBrowserReport(rootDir = ROOT) {
-  const head = currentHead(rootDir);
+function assertRuntimeEvidenceIdentity(report, currentIdentity) {
+  const fields = ['commit', 'worktreeFingerprint', 'artifactKey', 'worktreeClean', 'releaseEvidenceEligible'];
+  const mismatches = fields.filter((field) => report?.[field] !== currentIdentity?.[field]);
+  if (mismatches.length) {
+    throw new Error(`runtime browser report does not match current runtime worktree identity: ${mismatches.map((field) => `${field}=${JSON.stringify(report?.[field])}`).join(', ')}`);
+  }
+  return report;
+}
+
+function assertRuntimeBrowserReport(rootDir = ROOT, currentIdentity = gitWorktreeIdentity(rootDir)) {
+  const head = currentIdentity.commit || currentHead(rootDir);
   const reportPath = path.join(rootDir, '_acceptance', 'panel-runtime-browser', 'report.json');
   if (!fs.existsSync(reportPath)) throw new Error('panel-runtime-browser/report.json is missing');
   const report = readJson(reportPath);
+  assertRuntimeEvidenceIdentity(report, currentIdentity);
   const checks = Array.isArray(report.checks) ? report.checks : [];
   const allChecksPass = checks.length > 0 && checks.every((check) => check && check.pass === true);
-  const requiredChecks = [
-    'production runtime has no scenario fixture',
-    'validated snapshot renders the overview without overflow',
-    'automatic polling refreshes the validated snapshot',
-    'manual evidence disclosure survives viewport changes',
-    'stable business identity preserves the exact object across snapshot reorder',
-    'connections keeps its domain workspace and primary destination',
-    'routes opens a domain-specific evidence inspector',
-    'connections opens a domain-specific evidence inspector',
-    'dns4 opens a domain-specific evidence inspector',
-    'dns6 opens a domain-specific evidence inspector',
-    'security opens a domain-specific evidence inspector',
-    'terminals opens a domain-specific evidence inspector',
-    'logs opens a domain-specific evidence inspector',
-    'trafficLoad opens a domain-specific evidence inspector',
-    'dns4 keeps its domain workspace and primary destination',
-    'dns6 keeps its domain workspace and primary destination',
-    'security keeps its domain workspace and primary destination',
-    'terminals keeps its domain workspace and primary destination',
-    'logs keeps its domain workspace and primary destination',
-    'trafficLoad keeps its domain workspace and primary destination',
-    'browser 200% text adjustment reflows without horizontal loss',
-    'malformed snapshot is rejected while last valid evidence remains visible',
-    'snapshot API error never inserts a scenario fixture',
-    'old evidence is labeled historical and current traffic is withheld',
-    'navigator.onLine=false does not block a reachable same-origin snapshot',
-    'manual refresh remains operational while navigator reports offline',
-    'tablet overview selects incident evidence beside the full object list without navigation',
-    '768px tablet uses a persistent task rail with list and inspector',
-    '1024–1365 keeps the compact task workspace and 1366 switches once to desktop',
-    'desktop connection owns a dedicated workspace',
-    'browser emitted no uncaught page errors',
-  ];
   const checkNames = new Set(checks.map((check) => check?.name));
-  const missingChecks = requiredChecks.filter((name) => !checkNames.has(name));
+  const missingChecks = RUNTIME_REQUIRED_CHECKS.filter((name) => !checkNames.has(name));
   const screenshotMetadata = Array.isArray(report.screenshotMetadata) ? report.screenshotMetadata : [];
   const requiredScreenshots = RUNTIME_SCREENSHOT_CONTRACT;
   const metadataStates = screenshotMetadata.map((item) => item?.state);
@@ -401,6 +609,9 @@ function assertRuntimeBrowserReport(rootDir = ROOT) {
     }
     if (item.viewport?.width !== expected.viewport.width || item.viewport?.height !== expected.viewport.height) {
       screenshotErrors.push(`${state} viewport does not match ${expected.viewport.width}x${expected.viewport.height}`);
+    }
+    if (!runtimeScreenshotEvidenceMatches(item.evidence, expected.evidence)) {
+      screenshotErrors.push(`${state} evidence metadata does not match the runtime screenshot contract`);
     }
     const filePath = path.resolve(rootDir, String(item.path || ''));
     const relative = path.relative(runtimeDir, filePath);
@@ -485,7 +696,7 @@ function collectGateDetailFailures(latest) {
         : {};
       if (check.pass !== true) pushFailure('desktopSemantic', 'check.pass', check.pass);
       if (detail.surface !== 'desktop-overview') pushFailure('desktopSemantic', 'surface', detail.surface);
-      if (probe.contract !== 'cold-blue-operations-ledger') pushFailure('desktopSemantic', 'contract', probe.contract);
+      if (probe.contract !== 'overview-task-v1') pushFailure('desktopSemantic', 'contract', probe.contract);
       assertProbeChecks('desktopSemantic', probe);
       if (parsed.scenario === 'no-snapshot') {
         if (probe.evidenceMode !== 'unavailable') pushFailure('noSnapshotSemantic', 'evidenceMode', probe.evidenceMode);
@@ -502,6 +713,9 @@ function collectGateDetailFailures(latest) {
       if (probe.contract !== 'mobile-patrol-console-v3') pushFailure('mobileSemantic', 'contract', probe.contract);
       if (probe.appHomePass !== true) pushFailure('mobileSemantic', 'appHomePass', probe.appHomePass);
       assertProbeChecks('mobileSemantic', probe);
+      if (probe.checks?.adaptiveLedger !== true) {
+        pushFailure('mobileSemantic', 'checks.adaptiveLedger', probe.checks?.adaptiveLedger);
+      }
       if (parsed.scenario === 'no-snapshot') {
         if (probe.evidenceMode !== 'unavailable') pushFailure('noSnapshotSemantic', 'evidenceMode', probe.evidenceMode);
         if (probe.risk !== 'evidence') pushFailure('noSnapshotSemantic', 'risk', probe.risk);
@@ -514,17 +728,59 @@ function collectGateDetailFailures(latest) {
   return gateFailures;
 }
 
-function assertLatestFullMatrixReport(rootDir = ROOT) {
+function assertLatestFullMatrixReport(rootDir = ROOT, requiredWorktreeIdentity = null) {
   return findCurrentMatrixReport(rootDir, '7x4 overview visual matrix', OVERVIEW_MATRIX_CELLS, {
     requireReportPass: true,
     requireSemanticGates: true,
     requireOverviewScreenshots: true,
+    requiredWorktreeIdentity,
   });
 }
 
-function assertRequiredMatrixEvidence(rootDir = ROOT) {
+function assertMatrixEvidenceIdentity(evidence, currentIdentity) {
+  const names = ['overview', 'routeResponsive', 'routeState'];
+  const rows = names.map((name) => ({ name, matrix: evidence?.[name]?.report?.matrix }));
+  const missing = rows.filter((row) => !row.matrix).map((row) => row.name);
+  if (missing.length) throw new Error(`Matrix identity is missing for: ${missing.join(', ')}`);
+  const fields = ['commit', 'worktreeFingerprint', 'artifactKey', 'worktreeClean', 'releaseEvidenceEligible'];
+  const mismatches = [];
+  for (const row of rows) {
+    for (const field of fields) {
+      if (row.matrix[field] !== currentIdentity[field]) {
+        mismatches.push(`${row.name}.${field}=${JSON.stringify(row.matrix[field])}`);
+      }
+    }
+  }
+  if (mismatches.length) {
+    throw new Error(`Matrix reports do not share the current runtime worktree identity: ${mismatches.join(', ')}`);
+  }
+  return {
+    ...currentIdentity,
+    releaseEvidenceEligible: currentIdentity.releaseEvidenceEligible === true && rows.every((row) => row.matrix.releaseEvidenceEligible === true),
+  };
+}
+
+function matrixEvidenceStatusMessage(identity, overviewReportPath = '') {
+  const location = overviewReportPath ? `: ${overviewReportPath}` : '';
+  return identity.releaseEvidenceEligible
+    ? `[ok] current clean-SHA release matrix evidence is complete${location}`
+    : `[ok] current worktree engineering matrix evidence is complete; release ineligible${location}`;
+}
+
+function assertEvidenceModeEligibility(identity, { allowDirtyEngineering = false } = {}) {
+  if (identity.releaseEvidenceEligible !== true && !allowDirtyEngineering) {
+    throw new Error('Public release readiness requires clean worktree/commit evidence; use --engineering-worktree only for explicitly release-ineligible local verification');
+  }
+  return identity;
+}
+
+function assertRequiredMatrixEvidence(rootDir = ROOT, options = {}) {
   const evidence = {};
   const failures = [];
+  const currentIdentity = gitWorktreeIdentity(rootDir);
+  if (currentIdentity.identityError) {
+    throw new Error(`Current runtime worktree identity is unavailable: ${currentIdentity.identityError}`);
+  }
   const collect = (name, assertion) => {
     try {
       evidence[name] = assertion();
@@ -532,19 +788,23 @@ function assertRequiredMatrixEvidence(rootDir = ROOT) {
       failures.push(error.message);
     }
   };
-  collect('overview', () => assertLatestFullMatrixReport(rootDir));
+  collect('overview', () => assertLatestFullMatrixReport(rootDir, currentIdentity));
   collect('routeResponsive', () => findCurrentMatrixReport(
     rootDir,
     '19x4 single-scenario route responsive matrix',
-    ROUTE_RESPONSIVE_MATRIX_CELLS
+    ROUTE_RESPONSIVE_MATRIX_CELLS,
+    { requiredWorktreeIdentity: currentIdentity }
   ));
   collect('routeState', () => findCurrentMatrixReport(
     rootDir,
     '19x7x2 route-state matrix',
-    ROUTE_STATE_MATRIX_CELLS
+    ROUTE_STATE_MATRIX_CELLS,
+    { requiredWorktreeIdentity: currentIdentity }
   ));
-  collect('runtimeBrowser', () => assertRuntimeBrowserReport(rootDir));
+  collect('runtimeBrowser', () => assertRuntimeBrowserReport(rootDir, currentIdentity));
   if (failures.length) throw new Error(`Required current-HEAD release evidence is incomplete: ${failures.join(' | ')}`);
+  evidence.matrixIdentity = assertMatrixEvidenceIdentity(evidence, currentIdentity);
+  assertEvidenceModeEligibility(evidence.matrixIdentity, options);
   return evidence;
 }
 
@@ -571,6 +831,18 @@ function main(argv = process.argv.slice(2)) {
     console.log(usage());
     return;
   }
+  assertDecisionLedgerFreshness();
+  assertFrameworkAssetIdentity(ROOT);
+  assertFrameworkAssetBudget(ROOT);
+  assertNodeContract('tools/check-public-release-readiness-lifecycle.js');
+  assertNodeContract('tools/test-framework-asset-budget.js');
+  const routeMaturityReport = assertNodeContract('tools/check-route-maturity-contract.js', ['--contract-only']);
+  assertNodeContract('tools/check-interfaces-route-maturity-expected-red.js');
+  assertNodeContract('tools/check-route-maturity-report.js');
+  assertNodeContract('tools/test-local-predeploy-matrix-contract.js');
+  assertNodeContract('tools/check-report-truth.js');
+  assertNodeContract('tools/check-public-readiness-report-truth.js');
+  assertNodeContract('tools/test-public-release-semantic-gates.js');
 
   const ghcrImage = 'ghcr.io/cullysu/ros-ikuai-monitor-panel:main';
 
@@ -721,13 +993,22 @@ function main(argv = process.argv.slice(2)) {
   assertNotContains('public/assets/framework/panel-framework.js', 'role: "tablist"');
 
   assertContains('src/panel-framework/mobile/MobilePatrolScreen.tsx', 'data-mobile-overview');
-  assertContains('src/panel-framework/mobile/MobilePatrolScreen.tsx', 'data-mobile-core-fact');
+  assertContains('src/panel-framework/mobile/MobilePatrolScreen.tsx', 'MobileProofStrip');
+  assertContains('src/panel-framework/mobile/MobileProofStrip.tsx', 'data-mobile-core-facts');
+  assertContains('src/panel-framework/mobile/MobileProofStrip.tsx', 'data-mobile-core-fact');
+  assertContains('src/panel-framework/mobile/MobileProofStrip.tsx', 'data-overview-task-focus="facts"');
   assertContains('src/panel-framework/mobile/MobilePatrolScreen.tsx', 'MobileEvidenceLedger');
   assertContains('src/panel-framework/mobile/MobileEvidenceLedger.tsx', 'data-mobile-evidence-ledger');
   assertContains('src/panel-framework/mobile/MobileIncidentWorkspace.tsx', 'data-mobile-incident-object');
   assertContains('src/panel-framework/mobile/MobileIncidentWorkspace.tsx', 'data-mobile-incident-route');
   assertContains('src/panel-framework/mobile/MobileEvidenceLedger.tsx', 'userOverrideRef');
-  assertContains('src/panel-framework/mobile/MobileEvidenceLedger.tsx', 'fitsEvidence');
+  assertContains('src/panel-framework/mobile/MobileEvidenceLedger.tsx', 'availableHeight');
+  assertContains('src/panel-framework/mobile/MobileEvidenceLedger.tsx', 'requiredHeight');
+  assertContains('src/panel-framework/mobile/MobileEvidenceLedger.tsx', 'ResizeObserver');
+  assertNotContains('src/panel-framework/mobile/MobileEvidenceLedger.tsx', 'fitsEvidence', 'retired fixed evidence-fit heuristic');
+  assertNotContains('src/panel-framework/mobile/MobileEvidenceLedger.tsx', 'roomyIncident', 'retired scenario-height heuristic');
+  assertNotContains('src/panel-framework/mobile/MobileEvidenceLedger.tsx', 'estimatedBody', 'retired row-height estimate');
+  assertContains('tools/acceptance/inspect-overview-mobile.js', 'adaptiveLedger: adaptiveLedgerOk');
   assertContains('src/panel-framework/mobile/MobilePatrolTraffic.tsx', 'preserveAspectRatio="xMidYMid meet"');
   assertContains('src/panel-framework/mobile/MobilePatrolTraffic.tsx', '<title id="mp-traffic-chart-title">');
   assertContains('src/panel-framework/mobile/MobilePatrolTraffic.tsx', '<desc id="mp-traffic-chart-desc">');
@@ -768,7 +1049,8 @@ function main(argv = process.argv.slice(2)) {
   assertContains('src/panel-framework/overview/evidence-model/overviewEvidenceTypes.ts', '"current" | "historical" | "unavailable"');
   assertContains('src/panel-framework/overview/deriveOverviewState.ts', 'route.active === true && route.disabled !== true');
   assertContains('src/panel-framework/overview/evidence-model/buildOverviewInstruments.ts', 'if (rowDown === null || rowUp === null) return null;');
-  assertContains('src/panel-framework/overview/evidence-model/buildOverviewEvidenceModel.ts', 'observed.length - 1');
+  assertContains('src/panel-framework/overview/evidence-model/resourceHistorySamples.ts', 'for (let index = points.length - 1;', 'shared trailing resource continuity owner');
+  assertContains('src/panel-framework/overview/evidence-model/buildOverviewEvidenceModel.ts', 'resourceEvidenceWindow(snapshot)', 'Overview shared resource evidence consumer');
   assertContains('src/panel-framework/overview/evidence-model/buildOverviewInstruments.ts', 'Math.abs(snapshotAt - last.timestamp)');
   assertNotContains('src/panel-framework/overview/evidence-model/buildOverviewEvidenceModel.ts', 'rows[0]');
   assertContains('tools/check-mobile-native-model.js', 'missing current rate must not produce a trend');
@@ -778,16 +1060,15 @@ function main(argv = process.argv.slice(2)) {
   assertContains('tools/acceptance/inspect-overview-mobile.js', 'Object.values(checks).every(Boolean)');
   assertContains('tools/acceptance/inspect-overview-mobile.js', 'stableTaskNavigation: taskButtons.length === 4');
   assertContains('tools/acceptance/inspect-overview-mobile.js', 'smallText.length === 0');
-  assertContains('tools/acceptance/inspect-overview-desktop-layout.js', "contract: 'cold-blue-operations-ledger'");
-  assertContains('tools/local-predeploy-check.js', 'panelRouteRuntimeOk: routeProbe?.pass === true');
-  assertContains('tools/local-predeploy-check.js', 'report.matrix = buildMatrixSummary(report.browserChecks, args);');
-  assertContains('tools/local-predeploy-check.js', 'matrixBlocksTopLevelPass');
-  assertContains('tools/local-predeploy-check.js', 'report.pass = report.failures.length === 0 && !matrixBlocksTopLevelPass;');
-  assertContains('tools/local-predeploy-check.js', "const requiredScenarios = ['single', 'fleet', ...EDGE_SCALE_SCENARIOS];");
+  assertContains('src/panel-framework/overview/desktop-overview/DesktopOverviewScreen.tsx', 'data-overview-task-contract="overview-task-v1"');
+  assertContains('tools/acceptance/inspect-overview-desktop-layout.js', "getAttribute('data-overview-task-contract')");
+  assertContains('tools/acceptance/inspect-overview-desktop-layout.js', "taskContract === 'overview-task-v1'");
+  assertNotContains('tools/acceptance/inspect-overview-desktop-layout.js', 'cold-blue-operations-ledger', 'superseded desktop visual-label contract');
+  assertContains('.github/workflows/ci.yml', 'node tools/test-local-predeploy-matrix-contract.js');
+  assertContains('.github/workflows/ci.yml', 'node tools/test-public-release-semantic-gates.js');
   assertContains('.github/workflows/ci.yml', '--sections public-release');
   assertContains('.github/workflows/ci.yml', '_acceptance/route-matrix-${{ github.sha }}');
   assertContains('.github/workflows/ci.yml', 'npm run check:runtime-browser');
-  assertContains('tools/check-panel-runtime-browser.js', 'desktop object inspector preserves Back and Forward history');
   assertContains('.github/workflows/ci.yml', 'python tools/check-backend-security.py');
   assertContains('.github/workflows/ci.yml', 'python tools/check-static-assets.py');
 
@@ -821,15 +1102,16 @@ function main(argv = process.argv.slice(2)) {
   assertNotExists('public/scale-adaptive-patch.js');
   assertNotExists('public/layout-whitespace-patch.js');
   assertNotExists('public/panel-professional-redesign.js');
-  assertMaxBytes('public/assets/framework/style.css', 100000);
-  assertContains('public/index.html', '<main id="app"');
+  assertContains('public/index.html', '<div id="app"', 'neutral app mount');
+  assertNotContains('public/index.html', '<main id="app"', 'nested app main mount');
   assertContains('public/index.html', 'data-deploy-channel="public"');
   assertContains('public/index.html', 'data-overview-framework-asset="style"');
   assertContains('public/index.html', 'data-overview-framework-asset="script"');
   assertMatches('public/index.html', /\/assets\/framework\/style\.[0-9a-f]{12}\.css/, 'content-addressed framework style URL');
   assertMatches('public/index.html', /\/assets\/framework\/panel-framework\.[0-9a-f]{12}\.js/, 'content-addressed framework script URL');
   assertNotContains('public/index.html', 'http-equiv="Cache-Control"', 'cache-control meta override');
-  assertContains('public/assets/framework/manifest.json', '"version": 1');
+  assertContains('public/assets/framework/manifest.json', '"version": 2');
+  assertContains('public/assets/framework/manifest.json', '"inputs"');
   assertNotContains('public/index.html', 'layout-whitespace-patch.js');
   assertNotContains('public/index.html', 'readonly-diagnostics.js');
   assertContains('vite.config.ts', 'publicDir: false');
@@ -867,6 +1149,7 @@ function main(argv = process.argv.slice(2)) {
   assertContains('panel_backend/http_dispatcher.py', 'readonly diagnostics are private in the public RouterOS profile', 'readonly diagnostics API still returns 403 in public profile');
   assertContains('panel_backend/http_dispatcher.py', 'code="private_diagnostics_disabled"', 'readonly diagnostics 403 code remains explicit');
   assertContains('tools/local-predeploy-check.js', "const privatePublicAsset = publicRouterosProfile && asset === 'readonly-diagnostics.js';", 'predeploy checker must keep readonly diagnostics asset private');
+  assertContains('tools/local-predeploy-check.js', 'function finalizeReportTruth', 'predeploy reports must derive truth from all applicable checks');
   assertContains('tools/local-predeploy-check.js', 'privatePublicAsset ? result.response.status === 403 : result.response.ok && result.text.length > 1000', 'public asset check must preserve the 403 gate');
   assertContains('tools/local-predeploy-check.js', "diag.response.status === 403 && diag.json.code === 'private_diagnostics_disabled'", 'public readonly diagnostics API check must preserve the 403 code');
   assertContains('tools/local-predeploy-check.js', 'local server logs stay free of socket reset noise');
@@ -879,13 +1162,22 @@ function main(argv = process.argv.slice(2)) {
   assertContains('panel_backend/snapshot_builder.py', 'passthrough');
 
   if (args.staticOnly) {
-    console.log('[ok] static public release readiness markers are present');
+    console.log('[ok] static public release engineering contracts are present');
   } else {
-    const evidence = assertRequiredMatrixEvidence();
-    console.log(`[ok] current release evidence is complete: ${path.relative(ROOT, evidence.overview.reportPath)}`);
+    const evidence = assertRequiredMatrixEvidence(ROOT, {
+      allowDirtyEngineering: args.allowDirtyEngineering,
+    });
+    console.log(matrixEvidenceStatusMessage(
+      evidence.matrixIdentity,
+      path.relative(ROOT, evidence.overview.reportPath)
+    ));
   }
 
-  console.log('[ok] public release readiness markers are present');
+  if (routeMaturityReport?.releasePass !== true) {
+    throw new Error(`route maturity release gate remains closed\n${JSON.stringify(routeMaturityReport, null, 2)}`);
+  }
+
+  console.log('[ok] public release engineering contract checks passed');
 }
 
 if (require.main === module) {
@@ -893,10 +1185,18 @@ if (require.main === module) {
 }
 
 module.exports = {
+  RUNTIME_REQUIRED_CHECKS,
+  assertDecisionLedgerFreshness,
   assertLatestFullMatrixReport,
+  assertEvidenceModeEligibility,
+  assertMatrixEvidenceIdentity,
   assertRequiredMatrixEvidence,
   assertRuntimeBrowserReport,
+  assertRuntimeEvidenceIdentity,
+  collectGateDetailFailures,
+  matrixEvidenceStatusMessage,
   parseArgs,
+  runtimeScreenshotEvidenceMatches,
   FULL_MATRIX_CELLS,
   FULL_MATRIX_SCENARIOS,
   FULL_MATRIX_VIEWPORT_KEYS,

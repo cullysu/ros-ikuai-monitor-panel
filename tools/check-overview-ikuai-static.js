@@ -20,8 +20,12 @@ function excludesAll(text, tokens, label) {
 const overview = read('src/panel-framework/overview/OverviewPanel.tsx');
 const model = read('src/panel-framework/overview/evidence-model/buildOverviewEvidenceModel.ts');
 const mobile = read('src/panel-framework/mobile/MobilePatrolScreen.tsx');
+const mobileIncidentCenter = read('src/panel-framework/mobile/MobilePatrolIncidentCenter.tsx');
+const mobileProof = read('src/panel-framework/mobile/MobileProofStrip.tsx');
 const ledger = read('src/panel-framework/mobile/MobileEvidenceLedger.tsx');
 const traffic = read('src/panel-framework/mobile/MobilePatrolTraffic.tsx');
+const mobileWanChartContract = read('tools/check-mobile-wan-chart-visibility.js');
+const mobileResourceHistory = read('src/panel-framework/mobile/MobileResourceHistory.tsx');
 const domain = [
   read('src/panel-framework/mobile/MobileDomainWorkspace.tsx'),
   read('src/panel-framework/mobile/mobile-inspector/MobileDomainInspector.tsx'),
@@ -31,10 +35,14 @@ const domain = [
 ].join('\n');
 const domainModel = read('src/panel-framework/mobile/mobileDomainWorkspaceModel.ts');
 const domainDefinitions = read('src/panel-framework/mobile/mobileDomainDefinitions.ts');
-const mobileCss = read('src/panel-framework/mobile/mobile-patrol.css') + '\n' + read('src/panel-framework/mobile/mobile-domain.css');
+const mobileCss = read('src/panel-framework/mobile/mobile-patrol-foundation.css') + '\n' + read('src/panel-framework/mobile/mobile-patrol.css') + '\n' + read('src/panel-framework/mobile/mobile-domain-foundation.css') + '\n' + read('src/panel-framework/mobile/mobile-domain.css');
 const navigation = read('src/panel-framework/sections/PanelTaskNavigation.tsx');
 const sections = read('src/panel-framework/sections/sectionModels.ts');
+const resourceHistory = read('src/panel-framework/overview/evidence-model/resourceHistorySamples.ts');
+const resourceTimeSeries = read('src/panel-framework/sections/resourceTimeSeries.ts');
 const seriesChart = read('src/panel-framework/sections/SectionTimeSeriesChart.tsx');
+const timeSeriesGeometry = read('src/panel-framework/sections/timeSeriesGeometry.ts');
+const seriesCss = read('src/panel-framework/sections/section-timeseries.css');
 const runtime = read('src/panel-framework/runtime/usePanelRuntime.ts');
 const schema = read('src/panel-framework/runtime/panelRuntimeSchema.ts');
 const publicShell = read('public/index.html');
@@ -54,16 +62,20 @@ includesAll(model, [
 ], 'evidence-first language');
 excludesAll(model, ['rows[0]', 'downRate || 0', 'upRate || 0', '网络状态良好', '实时可信'], 'certainty boundaries');
 
-includesAll(mobile, [
-  'data-mobile-core-facts', 'data-mobile-incident-center', 'MobileEvidenceLedger',
+includesAll(mobile + mobileIncidentCenter, [
+  'MobileProofStrip', 'data-mobile-incident-center', 'MobileEvidenceLedger',
 ], 'mobile patrol IA');
+includesAll(mobileProof, ['data-mobile-core-facts', 'data-mobile-core-fact', 'data-overview-task-focus="facts"'], 'mobile proof IA');
 includesAll(ledger, [
-  'data-mobile-evidence-ledger', 'userOverrideRef', 'fitsEvidence', 'roomyIncident',
+  'data-mobile-evidence-ledger', 'data-mobile-evidence-row', 'userOverrideRef',
+  'availableHeight', 'requiredHeight', 'ResizeObserver',
 ], 'mobile evidence disclosure');
+excludesAll(ledger, ['fitsEvidence', 'roomyIncident', 'estimatedBody'], 'retired heuristic disclosure');
 includesAll(traffic, [
   '当前读数 · 趋势待采样', 'preserveAspectRatio="xMidYMid meet"',
   '纵轴从 0 到', '横轴从', '<title', '<desc',
 ], 'mobile chart truth');
+includesAll(mobileWanChartContract, ['mobile-wan-chart-visibility-v1', 'normal390ChartSurface', 'normal390ChartPlot'], 'mobile WAN chart visibility contract');
 includesAll(domain, [
   'type="search"', 'aria-pressed={filter === item.id}', '<select value={sort}',
   'mdw-pagination', 'data-mobile-object-detail',
@@ -73,21 +85,29 @@ includesAll(domainDefinitions, ['domainDefinitionFor', 'sortWorkspaceRows'], 'do
 includesAll(domain, ['InterfaceInspector', 'RouteInspector', 'TerminalInspector', 'LogInspector', 'SecurityInspector', 'DnsInspector'], 'domain-specific inspectors');
 excludesAll(domain, ['<dl', 'mdw-detail-fields', 'DetailPane'], 'retired generic detail');
 includesAll(navigation, ['概览', '网络', '终端', '日志'], 'stable mobile navigation');
-includesAll(mobileCss, ['#eef2f4', '.mp-command', '.mp-incident-list', '.mdw-layout', '@media (min-width: 600px) and (max-width: 1365px)'], 'neutral responsive visual system');
+includesAll(mobileCss, ['--mp-surface-base', '.mp-command', '.mp-incident-list', '.mdw-layout', '@media (min-width: 768px) and (max-width: 1199px)'], 'neutral responsive visual system');
 excludesAll(mobile + '\n' + traffic + '\n' + domain + '\n' + domainModel + '\n' + mobileCss, [
   'grabber', 'bottom-sheet', 'topology', 'preserveAspectRatio="none"',
-  '.mo-verdict', 'min-height: 112px', '!important', 'font-size: 11px', 'font-size: 10px',
+  '.mo-verdict', '!important', 'font-size: 11px', 'font-size: 10px',
 ], 'rejected mobile patterns');
 
-includesAll(sections, ['resourceVisualization', 'historyTimestamp', '样本摘要，不绘制趋势', 'visualization: undefined'], 'resource evidence model');
-includesAll(seriesChart, ['data-section-time-series', '0–100%', 'section-series-threshold', 'preserveAspectRatio="xMidYMid meet"', '<title', '<desc'], 'resource chart');
+includesAll(sections, ['resourceEvidenceWindow(snapshot)', 'const resourceMetrics', 'points.map', 'resourceTimeSeries({ metrics: resourceMetrics })', 'visualization: undefined'], 'resource evidence model');
+excludesAll(sections, ['function resourceVisualization'], 'resource evidence shared ownership');
+includesAll(resourceHistory, ['hasOwnProperty.call(history, "resourceSamples")', 'sample.evidenceMode !== "current"', 'timestamp <= points[points.length - 1].timestamp', 'Math.abs(latestValue - current) > 1', 'Math.abs(currentAt - latest.timestamp) > maxAge'], 'atomic resource history');
+includesAll(resourceTimeSeries, ['resourcePercentDomain', '[metric.threshold, ...metric.points.map', '...domain'], 'shared resource time-series');
+includesAll(mobileResourceHistory, ['SectionTimeSeriesChart', 'embedded', 'nativeEvent.isTrusted', 'requestAnimationFrame', 'scrollIntoView({ block: "center", behavior: "auto" })'], 'mobile resource history');
+excludesAll(mobileResourceHistory, ['data-resource-latest-sample', '最新可信样本', 'mp-resource-samples', '逐点样本'], 'mobile resource history latest-reading replay');
+includesAll(seriesChart, ['data-section-time-series', 'data-section-threshold', 'data-section-series', 'preserveAspectRatio="xMidYMid meet"', 'const { min, max } = visualization', '局部刻度 ', '<title', '<desc'], 'resource chart');
+includesAll(timeSeriesGeometry, ['timeSeriesPointX', 'percentagePointY', 'min = 0, max = 100', 'resourcePercentDomain', 'timestamp', 'start', 'end'], 'shared time geometry');
+includesAll(seriesCss, ['.section-series-line.is-memory', 'stroke-dasharray: 9 4', '.section-series-line.is-disk', 'stroke-dasharray: 2 4'], 'resource chart non-color identity');
 excludesAll(sections, ['values.map((value) => text(value)).join(" · ")'], 'fake resource series');
 
 includesAll(runtime, ['void refresh("recovery")', '浏览器同时报告互联网不可用（仅作提示）'], 'LAN request recovery');
 excludesAll(runtime, ['phase: browserOfflineHint ? "offline"', 'if (!navigator.onLine) return'], 'navigator hint boundary');
 includesAll(schema, ['带时区的 RFC 3339', 'validateSnapshotTree', 'MAX_SNAPSHOT_COLLECTION_ROWS', 'validatePercentage'], 'runtime data contract');
 
-includesAll(publicShell, ['<main id="app"', 'data-overview-framework-asset="script"', 'data-overview-framework-asset="style"'], 'single public shell');
+includesAll(publicShell, ['<div id="app"', 'data-overview-framework-asset="script"', 'data-overview-framework-asset="style"'], 'single public shell');
+excludesAll(publicShell, ['<main id="app"'], 'neutral public shell mount');
 if (!/\/assets\/framework\/panel-framework\.[0-9a-f]{12}\.js/.test(publicShell)) failures.push('single public shell: missing content-addressed framework script');
 if (!/\/assets\/framework\/style\.[0-9a-f]{12}\.css/.test(publicShell)) failures.push('single public shell: missing content-addressed framework style');
 excludesAll(publicShell, ['#dns', 'panel-legacy', 'Ctrl+K', '搜索'], 'dead public interactions');

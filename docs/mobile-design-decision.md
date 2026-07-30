@@ -1,5 +1,9 @@
 # Mobile design direction decision
 
+- status: `superseded`
+- validForCommit: `pre-a414f7ae design selection`
+- supersededBy: `docs/decision-system/product-pdr.md`
+
 ## Why the previous direction was rejected
 
 The evidence ledger was truthful in several narrow cases but visually flattened identity, verdict, proof, and raw records into the same row grammar. Its enclosing card, side status strip, repeated evidence wording, tiny utility text, and centered tablet column reproduced the feel of a scaled administration panel. Green screenshot gates certified geometry, not product quality.

@@ -1,48 +1,69 @@
-import { CircleAlert, TriangleAlert } from "lucide-react";
-import type { PanelRouteId } from "../../routes/panelRoutes";
+import { ChevronRight } from "lucide-react";
+import type { ReactElement } from "react";
+import type { PanelNavigate } from "../../routes/panelRoutes";
+import { overviewRiskTaskNavigation } from "../evidence-model/buildOverviewRiskQueue";
 import type { OverviewEvidenceModel } from "../evidence-model/overviewEvidenceTypes";
-import { DesktopLedger } from "./DesktopLedger";
-import type { DesktopLedgerRow } from "./desktopOverviewModel";
+import { DesktopResourceEvidence } from "./DesktopResourceEvidence";
+import { DesktopIncidentWorkspace, DesktopScenarioFocus } from "./DesktopOverviewTask";
 
 export function DesktopIncidentDocket({
   model,
   onNavigate,
+  investigationActions,
 }: {
   model: OverviewEvidenceModel;
-  onNavigate: (route: PanelRouteId) => void;
+  onNavigate: PanelNavigate;
+  investigationActions: ReactElement;
 }) {
-  const rows: DesktopLedgerRow[] = model.priorityObjects.map((object) => ({
-    id: object.id,
-    category: object.category,
-    object: object.name,
-    state: object.state,
-    evidence: object.reason,
-    source: object.sourcePath,
-    tone: object.tone,
-    route: object.route,
-  }));
-  return (
-    <section className={`do-incident is-${model.verdictTone}`} aria-labelledby="do-incident-title" data-desktop-incident={model.risk}>
-      <header className="do-incident-heading">
-        <span aria-hidden="true">{model.verdictTone === "danger" ? <CircleAlert size={22} /> : <TriangleAlert size={22} />}</span>
-        <div><small>{model.risk === "resource" ? "压力采样" : "影响与来源"}</small><h2 id="do-incident-title">处置证据</h2><p>先核对判断依据，再进入对应对象；此处不重复顶层结论。</p></div>
-        <b>{model.priorityTotal ? `${model.priorityTotal} 项` : "需核对"}</b>
-      </header>
-      <div className="do-incident-facts" aria-label="事故判断依据">
-        {model.facts.map((fact) => (
-          <div className={`is-${fact.tone}`} data-desktop-incident-fact={fact.key} key={fact.key}>
-            <small>{fact.label}</small><b>{fact.value}</b><span>{fact.note || "来源见下方账本"}</span>
-          </div>
+  const primarySummary = model.scenarioFocus ? (
+    <DesktopScenarioFocus focus={model.scenarioFocus} onNavigate={onNavigate} />
+  ) : model.risk === "resource" && model.resource ? (
+    <DesktopResourceEvidence resource={model.resource} />
+  ) : (
+    null
+  );
+  const secondaryRisks = model.riskQueue.length > 1 ? (
+    <section className="do-task-focus" data-desktop-incident-priority="secondary-queue">
+      <header><h2>并发异常 · 需要核对</h2><b>{model.riskQueue.length - 1} 面</b></header>
+      <div className="do-task-focus-grid">
+        {model.riskQueue.slice(1).map((task) => (
+          <button
+            type="button"
+            className={`is-${task.tone}`}
+            onClick={() => onNavigate(task.route, overviewRiskTaskNavigation(task, model.evidenceAt))}
+            key={task.risk}
+          >
+            <span><small>{task.label}</small><b>{task.value}</b><em>{task.note}</em></span>
+            <ChevronRight aria-hidden="true" size={17} />
+          </button>
         ))}
       </div>
-      <DesktopLedger
-        title="影响对象"
-        subtitle="按判断优先级列出；每项保留详情入口和原始来源路径"
-        rows={rows}
-        onNavigate={onNavigate}
-        module="incident-objects"
-        emptyLabel="当前没有可安全列出的对象；请按证据边界核对采集来源。"
-      />
+    </section>
+  ) : null;
+  const usesIncidentPriorityOrder = Boolean(secondaryRisks && !model.scenarioFocus && model.risk !== "resource");
+  const actionsBeforeObject = model.risk === "collection";
+
+  return (
+    <section
+      className={`do-incident is-${model.verdictTone}`}
+      aria-label="事故任务"
+      data-desktop-incident-order={usesIncidentPriorityOrder ? "facts-primary-object-secondary-queue" : undefined}
+    >
+      {primarySummary}
+      {actionsBeforeObject ? investigationActions : null}
+      {usesIncidentPriorityOrder ? (
+        <>
+          <DesktopIncidentWorkspace model={model} onNavigate={onNavigate} />
+          {secondaryRisks}
+        </>
+      ) : (
+        <>
+          {actionsBeforeObject ? null : secondaryRisks}
+          <DesktopIncidentWorkspace model={model} onNavigate={onNavigate} />
+          {actionsBeforeObject ? secondaryRisks : null}
+        </>
+      )}
+      {!actionsBeforeObject ? investigationActions : null}
     </section>
   );
 }

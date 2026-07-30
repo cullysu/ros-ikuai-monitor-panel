@@ -111,6 +111,19 @@ function sampleTimestamps(now, count = 6, intervalMs = 5000) {
   );
 }
 
+function atomicTrafficSamples(timestamps, downlink, uplink) {
+  if (timestamps.length !== downlink.length || downlink.length !== uplink.length) {
+    throw new Error('traffic fixture arrays must have equal lengths');
+  }
+  return timestamps.map((timestamp, index) => ({
+    timestamp,
+    downlink: downlink[index],
+    uplink: uplink[index],
+    source: 'desktop-focused:wan-aggregate',
+    evidenceMode: 'current',
+  }));
+}
+
 function resourceFullSnapshot() {
   const now = new Date().toISOString();
   return {
@@ -159,6 +172,9 @@ function resourceFullSnapshot() {
 
 function balanceSnapshot() {
   const now = new Date().toISOString();
+  const timestamps = sampleTimestamps(now);
+  const downlink = [4200, 5100, 4700, 5900, 5600, 6200];
+  const uplink = [1500, 1800, 1650, 2050, 1900, 2100];
   return {
     status: 'ok',
     updatedAt: now,
@@ -181,9 +197,10 @@ function balanceSnapshot() {
       memoryUsage: 51,
       diskUsage: 31,
       history: {
-        timestamps: sampleTimestamps(now),
-        downlink: [4200, 5100, 4700, 5900, 5600, 6200],
-        uplink: [1500, 1800, 1650, 2050, 1900, 2100],
+        timestamps,
+        downlink,
+        uplink,
+        trafficSamples: atomicTrafficSamples(timestamps, downlink, uplink),
         cpu: [36, 39, 38, 41, 40, 42],
         memory: [47, 48, 49, 50, 50, 51],
         disk: [31, 31, 31, 31, 31, 31]
@@ -214,7 +231,8 @@ function balanceSnapshot() {
 
 function accumulatingTrafficSnapshot() {
   const snapshot = balanceSnapshot();
-  delete snapshot.overview.history.timestamps;
+  snapshot.meta.scaleScenario = 'traffic-accumulating';
+  snapshot.overview.history.trafficSamples = snapshot.overview.history.trafficSamples.slice(-1);
   return snapshot;
 }
 

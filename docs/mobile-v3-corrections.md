@@ -1,5 +1,9 @@
 # 手机面板 v3 纠正记录
 
+- status: `superseded`
+- validForCommit: `pre-a414f7ae working tree`
+- supersededBy: `docs/decision-system/current-state.md`
+
 更新时间：2026-07-16
 
 这份记录撤回此前过度结论，并把工程事实、产品完成度和视觉验收分开记账。它记录可复核的决策、证据和下一步，不把测试通过替代为产品通过。

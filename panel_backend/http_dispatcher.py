@@ -121,23 +121,23 @@ class PanelRequestHandler(BaseHTTPRequestHandler):
         for header_name in ("X-CSRF-Token", "X-Ros-Panel-CSRF"):
             if self.runtime.csrf_token_matches(session, self.headers.get(header_name)):
                 return True
-        origin = self.runtime.first_header_value(self.headers.get("Origin"))
-        if origin:
-            return self.runtime.panel_origin_is_allowed(self.headers, origin)
-        referer = self.runtime.first_header_value(self.headers.get("Referer"))
-        if referer:
-            return self.runtime.panel_origin_is_allowed(self.headers, referer)
+        origins = self.headers.get_all("Origin") or []
+        if origins:
+            return len(origins) == 1 and self.runtime.panel_origin_is_allowed(self.headers, origins[0])
+        referers = self.headers.get_all("Referer") or []
+        if referers:
+            return len(referers) == 1 and self.runtime.panel_referer_is_allowed(self.headers, referers[0])
         return False
 
     def require_write_authorization(self, parsed):
         session = self.ensure_panel_session(create=False)
         if not session:
             self.send_json_error("Local panel session is required", status=403, code="local_session_required")
-            return False
+            return None
         if not self.write_request_guard_is_valid(session):
             self.send_json_error("CSRF, Origin, or Referer validation failed", status=403, code="csrf_validation_failed")
-            return False
-        return True
+            return None
+        return session
 
     def reject_non_localhost_request(self, parsed):
         if self.runtime.panel_client_address_is_allowed(self.client_address, self.headers) and self.runtime.panel_host_header_is_allowed(self.headers):
@@ -276,7 +276,8 @@ class PanelRequestHandler(BaseHTTPRequestHandler):
             return
         if parsed.path not in self.write_api_paths:
             return self.send_json_error("API route not found", status=404, code="not_found")
-        if not self.require_write_authorization(parsed):
+        authorized_session = self.require_write_authorization(parsed)
+        if not authorized_session:
             return
         if parsed.path == "/api/router-login":
             if not self.enforce_rate_limit("router-login", self.runtime.PANEL_LOGIN_ATTEMPT_LIMIT):
@@ -294,6 +295,28 @@ class PanelRequestHandler(BaseHTTPRequestHandler):
                         status=400,
                         code="saved_login_password_required",
                     )
+                requested_fingerprint = self.runtime.normalize_ssh_fingerprint(
+                    request.ssh_host_key_fingerprint
+                )
+                saved_fingerprint = self.runtime.normalize_ssh_fingerprint(
+                    (saved_entry or {}).get("sshHostKeyFingerprint") or ""
+                )
+                if requested_fingerprint and not saved_fingerprint:
+                    try:
+                        self.runtime.verify_panel_ssh_trust_challenge(
+                            authorized_session.get("id"),
+                            request.ssh_host_key_trust_token,
+                            request.host,
+                            request.ssh_port,
+                            requested_fingerprint,
+                            rest_scheme=request.rest_scheme,
+                        )
+                    except self.runtime.SshTrustChallengeError as exc:
+                        return self.send_json_error(
+                            str(exc),
+                            status=409,
+                            code=exc.code,
+                        )
                 test = self.runtime.test_router_credentials(
                     request.host,
                     request.user,
@@ -305,16 +328,40 @@ class PanelRequestHandler(BaseHTTPRequestHandler):
                     insecure_rest_confirmed=request.insecure_rest_confirmed,
                     ssh_host_key_fingerprint=request.ssh_host_key_fingerprint,
                 )
-                ssh_ok = test.get("ssh", {}).get("ok") is True
-                rest_ok = test.get("rest", {}).get("ok") is True
-                if test.get("ssh", {}).get("hostKeyChanged") is True:
+                ssh_test = test.get("ssh", {})
+                rest_test = test.get("rest", {})
+                ssh_ok = ssh_test.get("ok") is True
+                rest_ok = rest_test.get("ok") is True
+                verified_rest_identity = self.runtime.rest_channel_has_verified_identity(rest_test)
+                continue_with_verified_rest_only = request.continue_with_verified_rest_only
+                if continue_with_verified_rest_only and not verified_rest_identity:
+                    return self.send_json_error(
+                        "仅当 HTTPS 证书校验通过且 REST 请求成功时，才能在本次请求中跳过未完成的 SSH 通道。",
+                        status=409,
+                        code="verified_rest_only_unavailable",
+                        test=test,
+                    )
+                if ssh_test.get("hostKeyChanged") is True and not continue_with_verified_rest_only:
                     return self.send_json_error(
                         "SSH 主机密钥与已固定指纹不一致；已在发送密码前阻断连接。",
                         status=409,
                         code="ssh_host_key_changed",
                         test=test,
                     )
-                if test.get("ssh", {}).get("confirmationRequired") is True:
+                if ssh_test.get("confirmationRequired") is True and not continue_with_verified_rest_only:
+                    challenge = self.runtime.issue_panel_ssh_trust_challenge(
+                        authorized_session.get("id"),
+                        request.host,
+                        request.ssh_port,
+                        ssh_test.get("fingerprint"),
+                        rest_scheme=request.rest_scheme,
+                    )
+                    ssh_test.update(
+                        {
+                            "trustToken": challenge["token"],
+                            "trustExpiresAt": challenge["expiresAt"],
+                        }
+                    )
                     return self.send_json_error(
                         "首次连接必须确认 RouterOS SSH 主机密钥指纹。确认前不会发送 SSH 密码。",
                         status=409,

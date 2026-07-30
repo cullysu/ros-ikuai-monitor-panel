@@ -15,7 +15,7 @@ function inspectOverviewDesktopLayout({
   scaleMetaOk,
   normalize,
 }) {
-  if (sectionName !== 'overview' || window.innerWidth < 1366) return {
+  if (sectionName !== 'overview' || window.innerWidth < 1200) return {
     overviewBlankProbe: null,
     overviewBlankAreaOk: true,
     overviewNoSnapshotModuleFillProbe: null,
@@ -37,13 +37,14 @@ function inspectOverviewDesktopLayout({
   if (!desktopRoot) return null;
 
   const expected = {
-    single: { mode: 'current', risk: 'none', chart: true, incident: false },
-    fleet: { mode: 'current', risk: 'interfaces', chart: false, incident: true },
-    'all-offline': { mode: 'current', risk: 'wan', chart: false, incident: true },
-    'no-snapshot': { mode: 'unavailable', risk: 'evidence', chart: false, incident: true },
-    'collection-down': { mode: 'historical', risk: 'collection', chart: false, incident: true },
-    'resource-full': { mode: 'current', risk: 'resource', chart: false, incident: true },
-    'interfaces-down': { mode: 'current', risk: 'interfaces', chart: false, incident: true },
+    single: { mode: 'current', risk: 'none', wan: 'trend', incident: false, comparison: false },
+    'traffic-accumulating': { mode: 'current', risk: 'none', wan: 'accumulating', incident: false, surfaceScenario: 'single', comparison: false },
+    fleet: { mode: 'current', risk: 'interfaces', wan: 'absent', incident: true },
+    'all-offline': { mode: 'current', risk: 'wan', wan: 'absent', incident: true },
+    'no-snapshot': { mode: 'unavailable', risk: 'evidence', wan: 'absent', incident: true },
+    'collection-down': { mode: 'historical', risk: 'collection', wan: 'absent', incident: true },
+    'resource-full': { mode: 'current', risk: 'resource', wan: 'absent', incident: true },
+    'interfaces-down': { mode: 'current', risk: 'interfaces', wan: 'absent', incident: true },
   }[scaleScenario] || null;
 
   const visible = (node) => {
@@ -69,29 +70,107 @@ function inspectOverviewDesktopLayout({
   const verdict = statusBus?.querySelector('.do-verdict');
   const verdictTitle = verdict?.querySelector('h1');
   const statusItems = Array.from(statusBus?.querySelectorAll('[data-desktop-status-item]') || []);
-  const incident = desktopRoot.querySelector('[data-desktop-incident]');
-  const incidentFacts = Array.from(desktopRoot.querySelectorAll('[data-desktop-incident-fact]'));
+  const incident = desktopRoot.querySelector('.do-incident');
+  const incidentFacts = Array.from(desktopRoot.querySelectorAll('.do-incident-facts > div'));
   const ledgers = Array.from(desktopRoot.querySelectorAll('[data-desktop-ledger]'));
   const ledgerRows = Array.from(desktopRoot.querySelectorAll('[data-desktop-ledger-row]'));
   const ledgerSources = Array.from(desktopRoot.querySelectorAll('.do-ledger-source'));
   const ledgerButtons = Array.from(desktopRoot.querySelectorAll('[data-desktop-ledger-route]'));
   const chartSections = Array.from(desktopRoot.querySelectorAll('[data-desktop-wan-evidence]'));
   const chart = chartSections[0]?.querySelector('.do-wan-chart');
+  const accumulating = chartSections[0]?.querySelector('[data-traffic-accumulating]');
+  const resourceSignal = desktopRoot.querySelector('[data-desktop-resource-evidence]');
+  const resourceMetrics = Array.from(resourceSignal?.querySelectorAll('[data-desktop-resource-metric]') || []);
+  const resourceMetricEvidence = resourceMetrics.map((node) => {
+    const currentRaw = node.getAttribute('data-current');
+    const latestRaw = node.getAttribute('data-history-latest');
+    const historyAt = node.getAttribute('data-history-at') || '';
+    const samples = Number(node.getAttribute('data-history-samples') || 0);
+    const current = currentRaw === null || !currentRaw.trim() ? null : Number(currentRaw);
+    const latest = latestRaw === null || !latestRaw.trim() ? null : Number(latestRaw);
+    return {
+      key: node.getAttribute('data-desktop-resource-metric') || '',
+      current,
+      latest,
+      samples,
+      historyAt,
+      valid: Number.isFinite(current) && samples >= 2 && Number.isFinite(latest) && Math.abs(current - latest) <= 1 && !Number.isNaN(Date.parse(historyAt)),
+    };
+  });
+  const resourceSeries = Array.from(resourceSignal?.querySelectorAll('[data-section-series]') || []);
+  const resourceChart = resourceSignal?.querySelector('[data-section-time-series] svg');
+  const resourceTimes = Array.from(resourceSignal?.querySelectorAll('.section-timeseries-axis b') || []);
+  const resourceChartRect = rect(resourceChart);
+  const resourceViewBox = resourceChart?.viewBox?.baseVal;
+  const resourcePreserveAspectRatio = resourceChart?.getAttribute('preserveAspectRatio') || '';
+  const resourceViewBoxRatio = resourceViewBox?.width > 0 && resourceViewBox?.height > 0
+    ? resourceViewBox.width / resourceViewBox.height
+    : 0;
+  const resourceRenderedRatio = resourceChartRect?.width > 0 && resourceChartRect?.height > 0
+    ? resourceChartRect.width / resourceChartRect.height
+    : 0;
+  const resourceAspectRatioDelta = resourceViewBoxRatio > 0 && resourceRenderedRatio > 0
+    ? Math.abs(resourceViewBoxRatio / resourceRenderedRatio - 1)
+    : Number.POSITIVE_INFINITY;
+  const resourceChartGeometryOk = Boolean(
+    resourceChart &&
+    resourcePreserveAspectRatio &&
+    !/none/i.test(resourcePreserveAspectRatio) &&
+    resourceAspectRatioDelta <= 0.03
+  );
+  const taskContract = desktopRoot.getAttribute('data-overview-task-contract') || '';
+  const taskLandmarks = Array.from(desktopRoot.querySelectorAll('[data-overview-task-landmark]')).filter(visible);
+  const taskLandmarkNames = [...new Set(taskLandmarks.map((node) => node.getAttribute('data-overview-task-landmark') || '').filter(Boolean))];
+  const taskFocus = desktopRoot.querySelector('[data-overview-task-focus]');
+  const taskFocusObject = desktopRoot.querySelector('[data-overview-task-focus-object]');
+  const taskRiskObjects = Array.from(desktopRoot.querySelectorAll('[data-overview-task-risk-object]')).filter(visible);
+  const taskRiskObjectIds = taskRiskObjects.map((node) => node.getAttribute('data-overview-task-risk-object') || '').filter(Boolean);
+  const taskInspector = desktopRoot.querySelector('[data-overview-task-inspector]');
+  const taskInspectorId = taskInspector?.getAttribute('data-overview-task-inspector') || '';
+  const taskActions = Array.from(desktopRoot.querySelectorAll('.do-task-actions button[id]')).filter(visible);
+  const taskActionRoutes = taskActions.map((node) => node.id).filter(Boolean);
   const mainGrid = desktopRoot.querySelector('.do-main-grid');
   const lowerGrid = desktopRoot.querySelector('.do-lower-grid');
+  const normalWorkspace = desktopRoot.querySelector('[data-desktop-normal-workspace]');
+  const normalTopBand = desktopRoot.querySelector('[data-desktop-normal-top-band]');
+  const normalDecisionBand = desktopRoot.querySelector('[data-desktop-normal-decision-band]');
   const mainChildren = Array.from(mainGrid?.children || []).filter(visible);
   const lowerChildren = Array.from(lowerGrid?.children || []).filter(visible);
+  const mainStacks = Array.from(mainGrid?.querySelectorAll('[data-desktop-main-stack]') || []).filter(visible);
+  const stackEvidence = mainStacks.map((stack) => {
+    const children = Array.from(stack.children || []).filter(visible);
+    const boxes = children.map(rect).filter(Boolean);
+    const gaps = boxes.slice(1).map((box, index) => box.top - boxes[index].bottom);
+    return {
+      name: stack.getAttribute('data-desktop-main-stack') || '',
+      rect: rect(stack),
+      children: boxes,
+      gaps,
+    };
+  });
   const desktopText = normalize(desktopRoot.textContent || '');
   const rootRect = rect(desktopRoot);
   const sectionRect = rect(sectionRoot);
   const statusRect = rect(statusBus);
-  const firstWorkRect = rect(incident || mainGrid);
+  const firstWorkRect = rect(incident || normalTopBand || mainGrid);
 
   const textNodes = Array.from(desktopRoot.querySelectorAll('h1, h2, p, b, small, span, code, button, dt, dd'))
     .filter((node) => normalize(node.textContent || '') && visible(node));
   const smallText = textNodes
     .filter((node) => Number.parseFloat(getComputedStyle(node).fontSize || '0') < 12)
-    .map((node) => ({ text: normalize(node.textContent || '').slice(0, 48), size: getComputedStyle(node).fontSize }));
+    .map((node) => ({
+      text: normalize(node.textContent || '').slice(0, 48),
+      size: getComputedStyle(node).fontSize,
+      tag: node.tagName.toLowerCase(),
+      className: typeof node.className === 'string' ? node.className : '',
+      parentTag: node.parentElement?.tagName?.toLowerCase() || '',
+      parentClassName: typeof node.parentElement?.className === 'string' ? node.parentElement.className : '',
+      ancestors: Array.from({ length: 5 }, (_, index) => {
+        let current = node;
+        for (let step = 0; step <= index && current; step += 1) current = current.parentElement;
+        return current ? `${current.tagName.toLowerCase()}.${typeof current.className === 'string' ? current.className : ''}` : '';
+      }).filter(Boolean),
+    }));
   const clippedText = textNodes
     .filter((node) => {
       const style = getComputedStyle(node);
@@ -104,10 +183,13 @@ function inspectOverviewDesktopLayout({
     .filter((node) => node.getBoundingClientRect().height < 28)
     .map((node) => ({ text: normalize(node.textContent || '').slice(0, 48), height: Math.round(node.getBoundingClientRect().height) }));
 
+  const chartUnit = chart?.getAttribute('data-unit') || '';
+  const chartPeak = normalize(desktopRoot.querySelector('[data-chart-peak-label]')?.textContent || '');
+  const chartLegend = normalize(desktopRoot.querySelector('.do-wan-legend span:last-child')?.textContent || '');
   const chartEvidence = {
     viewBox: Boolean(chart?.getAttribute('viewBox')),
     role: chart?.getAttribute('role') === 'img',
-    unit: chart?.getAttribute('data-unit') === 'bit/s',
+    unit: /^(?:bps|Kbps|Mbps|Gbps)$/.test(chartUnit) && chartPeak.endsWith(chartUnit) && chartLegend.endsWith(chartUnit),
     title: Boolean(chart?.querySelector('title')),
     description: Boolean(chart?.querySelector('desc')),
     samples: Number(chartSections[0]?.getAttribute('data-sample-count') || 0),
@@ -128,14 +210,82 @@ function inspectOverviewDesktopLayout({
     chartEvidence.peak &&
     chartEvidence.sampling
   );
-  const chartContract = expected?.chart ? chartSections.length === 1 && chartTruth : chartSections.length === 0;
+  const accumulatingRect = rect(accumulating);
+  const wanRect = rect(chartSections[0]);
+  const wanText = normalize(chartSections[0]?.textContent || '');
+  const wanContract = expected?.wan === 'trend'
+    ? chartSections.length === 1 && Boolean(chart) && chartTruth
+    : expected?.wan === 'accumulating'
+      ? Boolean(
+          chartSections.length === 1 &&
+          !chart &&
+          accumulating &&
+          chartEvidence.samples === 1 &&
+          /当前下载/.test(wanText) &&
+          /当前上传/.test(wanText) &&
+          /待积累|正在积累/.test(wanText) &&
+          accumulatingRect && accumulatingRect.height <= 96 &&
+          wanRect && wanRect.height <= 250
+        )
+      : chartSections.length === 0;
+  const resourceSignalRect = rect(resourceSignal);
+  const resourceEvidenceContract = expected?.risk !== 'resource' || Boolean(
+    resourceSignal &&
+    resourceMetrics.length === 3 &&
+    resourceSeries.length === 3 &&
+    resourceMetricEvidence.every((metric) => metric.valid) &&
+    resourceMetrics.every((node) => {
+      const threshold = node.getAttribute('data-threshold');
+      return threshold !== null && threshold.trim() !== '' && Number.isFinite(Number(threshold));
+    }) &&
+    resourceChart?.getAttribute('role') === 'img' &&
+    resourceChart.hasAttribute('viewBox') &&
+    Boolean(resourceChart.querySelector('title')) &&
+    Boolean(resourceChart.querySelector('desc')) &&
+    resourceChartGeometryOk &&
+    Number(resourceSignal.getAttribute('data-sample-count') || 0) >= 2 &&
+    resourceTimes.length === 2 &&
+    /阈值/.test(normalize(resourceSignal.textContent || '')) &&
+    resourceSignalRect && resourceSignalRect.top >= 0 && resourceSignalRect.bottom <= window.innerHeight
+  );
+  const taskNeedsScenarioFocus = ['evidence', 'collection', 'wan'].includes(expected?.risk || '');
+  const selectedInspectorContract = taskInspectorId
+    ? taskLandmarkNames.includes('selected-inspector') && taskRiskObjectIds.includes(taskInspectorId)
+    : !taskLandmarkNames.includes('selected-inspector');
+  const comparisonLandmarkContract = expected?.comparison === false || taskLandmarkNames.includes('comparison');
+  const taskLandmarkContract = Boolean(
+    taskContract === 'overview-task-v1' &&
+    taskLandmarkNames.includes('verdict') &&
+    taskLandmarkNames.includes('freshness') &&
+    taskLandmarkNames.includes('evidence-boundary') &&
+    taskLandmarkNames.includes('investigation') &&
+    taskActions.length >= 3 &&
+    new Set(taskActionRoutes).size === taskActionRoutes.length &&
+    (expected?.incident
+      ? taskLandmarkNames.includes('risk-objects') &&
+        taskRiskObjectIds.length >= 1 &&
+        selectedInspectorContract &&
+        (!taskNeedsScenarioFocus || (taskLandmarkNames.includes('scenario-focus') && Boolean(taskFocus)))
+      : taskLandmarkNames.includes('signal') &&
+        taskLandmarkNames.includes('focus') &&
+        comparisonLandmarkContract &&
+        Boolean(taskFocusObject))
+  );
+  const incidentEvidenceContract = expected?.risk === 'resource'
+    ? resourceEvidenceContract
+    : taskNeedsScenarioFocus
+      ? taskLandmarkNames.includes('scenario-focus') && Boolean(taskFocus)
+      : statusItems.length === 3 && incidentFacts.length === 0;
   const incidentContract = expected?.incident
-    ? Boolean(incident && incidentFacts.length === 3 && !chart)
+    ? Boolean(
+        incident && !normalWorkspace && !chart && statusItems.length === 3 && incidentFacts.length === 0 &&
+        taskLandmarkContract && incidentEvidenceContract
+      )
     : !incident;
   const evidenceBoundary = expected?.mode === 'unavailable'
     ? !/[0-9.]+\s*(?:K|M|G)?bps/i.test(desktopText) && !/网络可用/.test(desktopText)
     : expected?.mode === 'historical'
-      ? !/[0-9.]+\s*(?:K|M|G)?bps/i.test(desktopText) && /当前变化不可见/.test(desktopText)
+      ? !/[0-9.]+\s*(?:K|M|G)?bps/i.test(desktopText) && /(?:当前变化不可见|不代表当前业务)/.test(desktopText)
       : true;
 
   const mainGridUse = !mainGrid || Boolean(
@@ -147,6 +297,16 @@ function inspectOverviewDesktopLayout({
     const parent = lowerGrid.getBoundingClientRect();
     return child.width >= parent.width * (lowerChildren.length === 1 ? 0.95 : 0.35);
   }));
+  const stackContinuity = Boolean(
+    mainStacks.length === 2 &&
+    stackEvidence.every((stack) => stack.children.length >= 2 && stack.gaps.every((gap) => gap >= 0 && gap <= 14))
+  );
+  const normalWorkspaceUse = Boolean(
+    normalWorkspace && normalTopBand && normalDecisionBand &&
+    normalTopBand.children.length >= 2 &&
+    normalWorkspace.querySelector('[data-overview-task-landmark="investigation"]') &&
+    normalWorkspace.querySelector('[data-desktop-ledger="provenance"]')
+  );
   const firstViewport = Boolean(
     statusRect && firstWorkRect &&
     statusRect.top >= 0 &&
@@ -158,13 +318,18 @@ function inspectOverviewDesktopLayout({
 
   const checks = {
     mounted: Boolean(desktopRoot),
-    scenario: desktopRoot.getAttribute('data-desktop-overview-scenario') === scaleScenario,
+    scenario: desktopRoot.getAttribute('data-desktop-overview-scenario') === (expected?.surfaceScenario || scaleScenario),
     evidenceMode: Boolean(expected && desktopRoot.getAttribute('data-desktop-evidence-mode') === expected.mode),
     risk: Boolean(expected && desktopRoot.getAttribute('data-desktop-overview-risk') === expected.risk),
     isolatedTree: !sectionRoot?.querySelector('[data-mobile-overview], [data-mobile-native-console], .ro-status-bus, .ro-desktop-grid'),
-    statusBus: Boolean(statusBus && verdictTitle && statusItems.length === 3 && desktopRoot.querySelectorAll('h1').length === 1),
+    statusBus: Boolean(
+      statusBus && verdictTitle && desktopRoot.querySelectorAll('h1').length === 1 &&
+      statusItems.length === 3
+    ),
+    taskContract: taskLandmarkContract,
     incidentSubstitution: incidentContract,
-    chartTruth: chartContract,
+    chartTruth: wanContract,
+    resourceEvidence: resourceEvidenceContract,
     evidenceBoundary,
     semanticLedgers: ledgers.length >= 2 && sourceCoverage && routeCoverage,
     accessibleLedger: ledgerRows.every((row) => row.getAttribute('role') === 'row') && !desktopRoot.querySelector('[role="tab"], [role="tablist"], canvas'),
@@ -172,14 +337,14 @@ function inspectOverviewDesktopLayout({
     unclippedText: clippedText.length === 0,
     pointerTargets: smallTargets.length === 0,
     firstViewport,
-    workspaceUse: mainGridUse && lowerGridUse,
+    workspaceUse: mainGridUse && (expected?.incident ? lowerGridUse : normalWorkspaceUse || (!lowerGrid && stackContinuity)),
     noHorizontalOverflow: overflowX <= 1,
     viewport: Boolean(rootRect && sectionRect && Math.abs(rootRect.left - sectionRect.left) <= 1 && rootRect.width >= sectionRect.width - 2),
     readonly: /只读/.test(desktopText),
   };
   const pass = Boolean(app && active && (requested || active.id === sectionName) && !hasBadLiteral && scaleMetaOk && Object.values(checks).every(Boolean));
   const desktopOverviewLedgerProbe = {
-    contract: 'cold-blue-operations-ledger',
+    contract: taskContract,
     evidenceMode: desktopRoot.getAttribute('data-desktop-evidence-mode') || '',
     risk: desktopRoot.getAttribute('data-desktop-overview-risk') || '',
     statusItems: statusItems.length,
@@ -187,13 +352,46 @@ function inspectOverviewDesktopLayout({
     ledgers: ledgers.map((node) => node.getAttribute('data-desktop-ledger') || ''),
     ledgerRows: ledgerRows.length,
     chartCount: chartSections.length,
+    wanMode: expected?.wan || '',
     chartEvidence,
+    accumulatingEvidence: {
+      present: Boolean(accumulating),
+      rect: accumulatingRect,
+      sectionRect: wanRect,
+      currentDown: /当前下载/.test(wanText),
+      currentUp: /当前上传/.test(wanText),
+      pending: /待积累|正在积累/.test(wanText),
+    },
+    resourceEvidence: {
+      present: Boolean(resourceSignal),
+      metrics: resourceMetrics.length,
+      series: resourceSeries.length,
+      samples: Number(resourceSignal?.getAttribute('data-sample-count') || 0),
+      times: resourceTimes.length,
+      rect: resourceSignalRect,
+      chartRect: resourceChartRect,
+      preserveAspectRatio: resourcePreserveAspectRatio,
+      viewBoxRatio: Number(resourceViewBoxRatio.toFixed(3)),
+      renderedRatio: Number(resourceRenderedRatio.toFixed(3)),
+      aspectRatioDelta: Number.isFinite(resourceAspectRatioDelta) ? Number(resourceAspectRatioDelta.toFixed(3)) : null,
+      chartGeometryOk: resourceChartGeometryOk,
+      metricEvidence: resourceMetricEvidence,
+    },
+    task: {
+      landmarks: taskLandmarkNames,
+      focus: taskFocus?.getAttribute('data-overview-task-focus') || '',
+      focusObject: taskFocusObject?.getAttribute('data-overview-task-focus-object') || '',
+      riskObjects: taskRiskObjectIds,
+      inspector: taskInspectorId,
+      actions: taskActionRoutes,
+    },
     firstViewport,
     smallText,
     clippedText,
     smallTargets,
     mainChildren: mainChildren.map(rect),
     lowerChildren: lowerChildren.map(rect),
+    mainStacks: stackEvidence,
     checks,
   };
 

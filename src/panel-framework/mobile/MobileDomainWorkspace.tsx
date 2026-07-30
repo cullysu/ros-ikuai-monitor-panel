@@ -9,43 +9,34 @@ import {
 } from "lucide-react";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { OverviewRawSnapshot } from "../overview";
-import { PANEL_ROUTES, type PanelNavigate, type PanelRouteId } from "../routes/panelRoutes";
+import { PANEL_ROUTES, PANEL_ROUTE_MATURITY_LABELS, type PanelNavigate, type PanelRouteId } from "../routes/panelRoutes";
 import { SectionTimeSeriesChart } from "../sections/SectionTimeSeriesChart";
 import { buildSectionModel, type SectionModel } from "../sections/sectionModels";
 import {
   MORE_ROUTE_GROUPS,
   MORE_ROUTES,
+  rowMatchesRisk,
   routeIcon,
   routeTabs,
   rowsFromModel,
-  toneIcon,
   useObjectHistory,
   workspaceLabel,
   type WorkspaceRow,
 } from "./mobileDomainWorkspaceModel";
-import {
-  domainDefinitionFor,
-  filterWorkspaceRows,
-  sortWorkspaceRows,
-} from "./mobileDomainDefinitions";
+import { domainDefinitionFor, filterWorkspaceRows, sortWorkspaceRows } from "./mobileDomainDefinitions";
+import { MobileWorkspaceObjectList } from "./MobileCollectionLedger";
+import { MobileInterfaceRouteEvidence } from "./MobileInterfaceRouteEvidence";
+import { MobileInterfaceFocusContext, singleDirectInterfaceId } from "./MobileInterfaceFocusContext";
+import { MobileInterfaceEvidenceBoundary } from "./MobileInterfaceEvidenceBoundary";
+import { MobileTabletInterfaceRelations } from "./MobileTabletInterfaceRelations";
 import { MobileDomainInspector } from "./mobile-inspector/MobileDomainInspector";
+import { MetricStrip, WorkspaceStatus } from "./MobileWorkspaceSummary";
+import { selectSemanticWorkspacePreview } from "./mobileWorkspacePreview";
+import { COMPACT_TASK_QUERY, DOMAIN_TABLET_WORKBENCH_QUERY, useMediaCapability } from "./useMobilePanelSurface";
+import { useMobileLargeTextMode } from "./useMobileLargeTextMode";
+import "./mobile-domain-foundation.css";
 import "./mobile-domain.css";
-
-function EvidenceBadge({ model }: { model: SectionModel }) {
-  const Icon = toneIcon(model.statusTone);
-  const label = model.evidenceMode === "current"
-    ? "当前证据"
-    : model.evidenceMode === "historical"
-      ? "历史证据"
-      : "证据不可用";
-  return (
-    <span className={`mdw-evidence is-${model.statusTone}`}>
-      <Icon aria-hidden="true" size={15} />
-      <span><b>{label}</b><small>{model.updatedAt || "时间未记录"}</small></span>
-    </span>
-  );
-}
-
+import "./mobile-domain-large-text.css";
 function DomainMenu({ onNavigate }: { onNavigate: PanelNavigate }) {
   return (
     <details className="mdw-more">
@@ -58,20 +49,6 @@ function DomainMenu({ onNavigate }: { onNavigate: PanelNavigate }) {
         ))}
       </div>
     </details>
-  );
-}
-
-function MetricStrip({ model }: { model: SectionModel }) {
-  return (
-    <section className="mdw-metrics" aria-label="领域摘要">
-      {model.metrics.slice(0, 3).map((metric) => (
-        <div className={`is-${metric.tone || "trust"}`} key={metric.label}>
-          <small>{metric.label}</small>
-          <b>{metric.value}</b>
-          {metric.note ? <em>{metric.note}</em> : null}
-        </div>
-      ))}
-    </section>
   );
 }
 
@@ -112,6 +89,7 @@ function MobileMoreDirectory({
                     <span className="mdw-directory-copy">
                       <b>{item.label}</b>
                       <small>{PANEL_ROUTES[item.route].description}</small>
+                      <em>{PANEL_ROUTE_MATURITY_LABELS[PANEL_ROUTES[item.route].maturity]}</em>
                     </span>
                     <ChevronRight aria-hidden="true" size={17} />
                   </button>
@@ -138,35 +116,32 @@ export function MobileDomainWorkspace({
   const allRows = useMemo(() => rowsFromModel(route, model), [route, model]);
   const definition = domainDefinitionFor(route);
   const tabs = routeTabs(route);
-  const { selectedId, open, replace, close } = useObjectHistory(route);
-  const [query, setQuery] = useState("");
+  const { selectedId, risk, returnRoute, evidenceAt, query: navigationQuery, open, replace, close } = useObjectHistory(route);
+  const currentEvidenceAt = evidenceAt || (model.evidenceMode === "current" ? snapshot.updatedAt || null : null);
+  const matchingRows = risk ? allRows.filter((row) => rowMatchesRisk(risk, row)) : [];
+  const matchingRiskObjects = matchingRows.length;
+  const [query, setQuery] = useState(navigationQuery || "");
   const [filter, setFilter] = useState(definition.filters[0]?.id || "all");
   const [sort, setSort] = useState(definition.defaultSort);
   const [page, setPage] = useState(1);
-  const [tablet, setTablet] = useState(false);
+  const compactTask = useMediaCapability(COMPACT_TASK_QUERY);
+  const tabletWorkbench = useMediaCapability(DOMAIN_TABLET_WORKBENCH_QUERY);
   const [toolsOpen, setToolsOpen] = useState(false);
+  const { largeText, sentinelRef: textScaleSentinelRef } = useMobileLargeTextMode();
   const detailTitleRef = useRef<HTMLHeadingElement>(null);
   const lastTriggerRef = useRef("");
   const rowRefs = useRef(new Map<string, HTMLButtonElement>());
 
   useEffect(() => {
-    setQuery("");
+    setQuery(navigationQuery || "");
     setFilter(definition.filters[0]?.id || "all");
     setSort(definition.defaultSort);
     setPage(1);
     setToolsOpen(false);
-  }, [definition, route]);
-
-  useEffect(() => {
-    const media = window.matchMedia("(min-width: 600px) and (max-width: 1365px)");
-    const sync = () => setTablet(media.matches);
-    sync();
-    media.addEventListener("change", sync);
-    return () => media.removeEventListener("change", sync);
-  }, []);
+  }, [definition, navigationQuery, route]);
 
   const filtered = useMemo(() => {
-    const needle = query.trim().toLocaleLowerCase();
+    const needle = query.trim().toLowerCase();
     const searched = allRows.filter((row) => !needle || row.searchText.includes(needle));
     const matched = filterWorkspaceRows(searched, definition, filter);
     return sortWorkspaceRows(matched, definition, sort);
@@ -179,19 +154,39 @@ export function MobileDomainWorkspace({
   const selectedPage = selectedIndex >= 0 ? Math.floor(selectedIndex / pageSize) + 1 : null;
   const activePage = selectedPage || safePage;
   const visibleRows = filtered.slice((activePage - 1) * pageSize, activePage * pageSize);
+  const interfaceFocusObjectId = useMemo(
+    () => route === "interfaces" && model.evidenceMode === "current" && !tabletWorkbench
+      ? singleDirectInterfaceId(visibleRows)
+      : null,
+    [model.evidenceMode, route, tabletWorkbench, visibleRows],
+  );
   const selectedRow = selectedId ? visibleRows.find((row) => row.id === selectedId) || null : null;
-  const previewRow = tablet && !selectedRow
-    ? visibleRows.find((row) => row.meta.attention)
-      || visibleRows.find((row) => (
-        row.evidence.kind === "interface"
-        && row.evidence.defaultRouteRelation === "direct"
-        && row.meta.running === true
-      ))
-      || visibleRows.find((row) => row.meta.active === true && row.meta.tags.includes("default"))
-      || visibleRows[0]
-      || null
-    : null;
-  const inspectorRow = selectedRow || previewRow;
+  const semanticPreview = useMemo(
+    () => risk && !selectedId
+      ? selectSemanticWorkspacePreview(matchingRows)
+      : risk ? null : selectSemanticWorkspacePreview(visibleRows),
+    [matchingRows, risk, selectedId, visibleRows],
+  );
+  const preview = tabletWorkbench && !selectedRow ? semanticPreview : null;
+  const inspectorRow = selectedRow || preview?.row || null;
+  const showInspector = Boolean(inspectorRow);
+  const showCollectionLedger = tabletWorkbench && !largeText && route === "interfaces" && (risk === "interfaces" || risk === "interface-review") && !selectedRow && !semanticPreview;
+  const showTabletCollectionSummary = tabletWorkbench
+    && !largeText
+    && !model.visualization
+    && route !== "logs"
+    && route !== "serviceLogs";
+  const layoutMode = tabletWorkbench
+    ? showInspector
+      ? "workbench"
+      : showCollectionLedger
+        ? "ledger"
+        : "tablet-list"
+    : compactTask
+      ? selectedRow ? "compact-detail" : "compact-list"
+      : selectedRow
+        ? "phone-detail"
+        : "phone-list";
   const Icon = routeIcon(route);
   const hasControls = definition.searchable || definition.filters.length > 1 || definition.sorts.length > 1;
   const controlsActive = Boolean(query || filter !== definition.filters[0]?.id || sort !== definition.defaultSort);
@@ -223,6 +218,8 @@ export function MobileDomainWorkspace({
     open(row.id);
   };
 
+  const registerRow = (id: string) => (node: HTMLButtonElement | null) => void (node ? rowRefs.current.set(id, node) : rowRefs.current.delete(id));
+
   const closeDetail = () => {
     if (selectedRow) lastTriggerRef.current = selectedRow.id;
     close();
@@ -237,17 +234,34 @@ export function MobileDomainWorkspace({
 
   return (
     <main
-      className={`mdw-shell ${selectedRow ? "has-selection" : ""}`}
+      className={`mdw-shell ${route === "trafficLoad" ? "is-resource" : ""} ${selectedRow ? "has-selection" : ""} ${compactTask ? "is-compact-task" : ""} ${tabletWorkbench ? "is-tablet-workbench" : ""} ${largeText ? "is-large-text" : ""}`}
       data-mobile-domain-workspace={route}
       data-mobile-evidence-mode={model.evidenceMode}
+      data-mobile-domain-layout={layoutMode}
+      data-mobile-large-text={largeText ? "true" : "false"}
+      data-mobile-log-detail={selectedRow?.evidence.kind === "log" ? "v1" : undefined}
+      data-mobile-detail-surface={selectedRow?.evidence.kind === "log" ? "log" : undefined}
+      data-tablet-risk-focus="v1"
+      data-tablet-task-space={tabletWorkbench && risk ? "master-detail" : undefined}
+      data-tablet-task-focus={preview && risk ? "selected-risk-object" : undefined}
+      data-tablet-risk-object-id={preview && risk ? preview.row.id : undefined}
     >
+      <span className="panel-text-scale-sentinel" aria-hidden="true" ref={textScaleSentinelRef}>M</span>
       <header className="mdw-header">
         <div className="mdw-title-row">
           <span className="mdw-title-icon"><Icon aria-hidden="true" size={20} /></span>
           <div><small>{workspaceLabel(route)}</small><h1 tabIndex={-1} data-panel-route-title>{model.title}</h1></div>
           <DomainMenu onNavigate={onNavigate} />
         </div>
-        <div className="mdw-status-row"><EvidenceBadge model={model} /><p>{model.status}</p></div>
+        <WorkspaceStatus
+          model={model}
+          risk={risk}
+          selected={Boolean(selectedRow)}
+          evidenceAt={evidenceAt}
+          matchingRiskObjects={matchingRiskObjects}
+          stackContext={!compactTask && !tabletWorkbench}
+          compact={!tabletWorkbench}
+        />
         {tabs.length > 1 ? (
           <nav className="mdw-route-switcher" aria-label="当前工作区分类">
             {tabs.map((item) => (
@@ -266,7 +280,7 @@ export function MobileDomainWorkspace({
       </header>
 
       <div className="mdw-layout">
-        <section className="mdw-list-pane" aria-label={model.title + "对象列表"}>
+        <section className="mdw-list-pane" aria-label={model.title + "对象列表"} data-resource-layer={route === "trafficLoad" ? "signal" : undefined} data-resource-layer-question={route === "trafficLoad" ? "current-threshold" : undefined} data-resource-evidence-role={route === "trafficLoad" ? "current-threshold" : undefined}>
           <div className="mdw-list-heading">
             <span><b>{filtered.length}</b> 个{definition.objectLabel}</span>
             <small>{controlsActive ? `从 ${allRows.length} 个对象中筛选` : model.description}</small>
@@ -324,36 +338,37 @@ export function MobileDomainWorkspace({
                   </label>
                 ) : null}
               </div>
+              {route === "logs" ? <MetricStrip model={model} /> : null}
               {controlsActive ? <button className="mdw-reset-controls" type="button" onClick={resetControls}>清除筛选</button> : null}
             </div>
           ) : null}
-
+          {route === "interfaces" && model.evidenceMode !== "current" ? <MobileInterfaceEvidenceBoundary model={model} evidenceAt={currentEvidenceAt} onNavigate={onNavigate} /> : null}
+          {!tabletWorkbench && !largeText && route === "interfaces" && model.evidenceMode === "current" ? (
+            <>
+              <MobileInterfaceFocusContext
+                rows={risk ? matchingRows : visibleRows}
+                onNavigate={onNavigate}
+                evidenceAt={currentEvidenceAt}
+                onOpen={(row) => onNavigate("interfaces", { objectId: row.id, returnRoute: "interfaces", evidenceAt: currentEvidenceAt })}
+              />
+              <MobileInterfaceRouteEvidence
+                rows={visibleRows}
+                onNavigate={onNavigate}
+                evidenceAt={currentEvidenceAt}
+                excludeObjectId={interfaceFocusObjectId}
+                showRouteAction={false}
+              />
+            </>
+          ) : null}
           {visibleRows.length ? (
-            <div className="mdw-object-list">
-              {visibleRows.map((row) => {
-                const selected = selectedRow?.id === row.id;
-                const previewed = !selected && previewRow?.id === row.id;
-                return (
-                  <button
-                    type="button"
-                    className={selected ? "is-selected" : previewed ? "is-preview" : ""}
-                    data-mobile-row-id={row.id}
-                    aria-current={selected ? "true" : undefined}
-                    onClick={() => openRow(row)}
-                    ref={(node) => {
-                      if (node) rowRefs.current.set(row.id, node);
-                      else rowRefs.current.delete(row.id);
-                    }}
-                    key={row.id}
-                  >
-                    <span className={`mdw-row-mark is-${row.meta.state}`} aria-hidden="true" />
-                    <span className="mdw-row-copy"><b>{row.primary}</b><small>{row.secondary}</small></span>
-                    <span className={row.meta.attention ? "mdw-row-state is-attention" : "mdw-row-state"}>{row.trailing}</span>
-                    <ChevronRight aria-hidden="true" size={17} />
-                  </button>
-                );
-              })}
-            </div>
+            <MobileWorkspaceObjectList
+              rows={visibleRows}
+              selectedId={selectedRow?.id}
+              previewId={preview?.row.id}
+              collection={showCollectionLedger ? { model } : undefined}
+              onOpen={openRow}
+              rowRef={registerRow}
+            />
           ) : (
             <div className="mdw-empty">
               <Search aria-hidden="true" size={21} />
@@ -362,7 +377,6 @@ export function MobileDomainWorkspace({
               {allRows.length ? <button type="button" onClick={resetControls}>清除筛选</button> : null}
             </div>
           )}
-
           {pageCount > 1 ? (
             <nav className="mdw-pagination" aria-label="对象分页">
               <button type="button" disabled={activePage <= 1} onClick={() => { if (selectedId) replace(null); setPage(Math.max(1, activePage - 1)); }}><ChevronLeft aria-hidden="true" size={17} />上一页</button>
@@ -371,20 +385,34 @@ export function MobileDomainWorkspace({
             </nav>
           ) : null}
 
-          <section className="mdw-domain-context" aria-label="领域摘要证据">
-            <MetricStrip model={model} />
-            {model.visualization ? <SectionTimeSeriesChart visualization={model.visualization} /> : null}
-          </section>
-        </section>
+           {(!showInspector && !showCollectionLedger) || model.visualization || showTabletCollectionSummary ? (
+             <section className={`mdw-domain-context${showTabletCollectionSummary ? " is-tablet-collection-summary" : ""}`} aria-label={showTabletCollectionSummary ? "领域集合摘要" : "领域摘要证据"} data-tablet-collection-summary={showTabletCollectionSummary ? "true" : undefined} data-resource-layer={route === "trafficLoad" && model.visualization ? "history" : undefined} data-resource-layer-question={route === "trafficLoad" && model.visualization ? "sustained-pressure" : undefined} data-resource-evidence-role={route === "trafficLoad" && model.visualization ? "time-series" : undefined}>
+              {(!showInspector || showTabletCollectionSummary) && route !== "logs" ? <MetricStrip model={model} /> : null}
+              {model.visualization ? <SectionTimeSeriesChart visualization={model.visualization} /> : null}
+             </section>
+           ) : null}
+          {tabletWorkbench && !largeText && route === "interfaces" && model.evidenceMode === "current" && !showCollectionLedger ? (
+            <MobileTabletInterfaceRelations rows={filtered} onNavigate={onNavigate} evidenceAt={evidenceAt} />
+          ) : null}
+         </section>
 
-        <MobileDomainInspector
-          row={inspectorRow}
-          model={model}
-          route={route}
-          onClose={tablet ? undefined : closeDetail}
-          titleRef={detailTitleRef}
-          preview={Boolean(previewRow && !selectedRow)}
-        />
+        {showInspector ? (
+          <MobileDomainInspector
+            row={inspectorRow}
+            model={model}
+            route={route}
+            returnRoute={returnRoute}
+            originEvidenceAt={currentEvidenceAt || snapshot.updatedAt || model.observedAt || null}
+            originRisk={risk}
+            onClose={!tabletWorkbench && selectedRow ? closeDetail : undefined}
+            titleRef={detailTitleRef}
+            preview={Boolean(preview && !selectedRow)}
+            previewLabel={preview?.label}
+            relatedRows={inspectorRow ? visibleRows.filter((row) => row.id !== inspectorRow?.id) : []}
+            onOpenRelated={openRow}
+            onNavigate={onNavigate}
+          />
+        ) : null}
       </div>
     </main>
   );

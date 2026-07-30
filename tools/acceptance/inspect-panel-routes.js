@@ -14,6 +14,13 @@ async function inspectPanelRouteRuntime() {
     const sectionName = section?.id ||
       section?.getAttribute('data-mobile-domain-workspace') ||
       section?.getAttribute('data-panel-route-content') || '';
+    const appMount = document.getElementById('app');
+    const mainLandmarks = Array.from(document.querySelectorAll('main'));
+    const visibleMainLandmarks = mainLandmarks.filter((node) => {
+      const rect = node.getBoundingClientRect();
+      const style = getComputedStyle(node);
+      return rect.width > 0 && rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden';
+    });
     return {
       route,
       section: sectionName,
@@ -23,9 +30,19 @@ async function inspectPanelRouteRuntime() {
       titleIsRouteTarget: Boolean(title?.hasAttribute('data-panel-route-title')),
       titleFocusable: title?.getAttribute('tabindex') === '-1',
       focusOnTitle: Boolean(title && document.activeElement === title),
+      appMountTag: appMount?.tagName || '',
+      mainLandmarkCount: mainLandmarks.length,
+      visibleMainLandmarkCount: visibleMainLandmarks.length,
+      nestedMainLandmarkCount: document.querySelectorAll('main main').length,
       url: location.href,
     };
   };
+  const landmarkOwnershipOk = (snapshot) => (
+    snapshot.appMountTag === 'DIV' &&
+    snapshot.mainLandmarkCount === 1 &&
+    snapshot.visibleMainLandmarkCount === 1 &&
+    snapshot.nestedMainLandmarkCount === 0
+  );
   const waitForRoute = async (route, timeoutMs = 1800, requireTitleFocus = false) => {
     const started = performance.now();
     while (performance.now() - started < timeoutMs) {
@@ -73,7 +90,12 @@ async function inspectPanelRouteRuntime() {
 
   const distinctSections = new Set([overview.section, interfacesAfterCommand.section, terminals.section]).size === 3;
   const distinctTitles = new Set([overview.title, interfacesAfterCommand.title, terminals.title]).size === 3;
-  const canonicalUnknown = unknownNormalized.route === 'overview' && unknownNormalized.section === 'overview' && /[?#](?:section=overview.*#overview|overview)$/.test(location.href);
+  const canonicalUrl = new URL(location.href);
+  const canonicalUnknown = unknownNormalized.route === 'overview' &&
+    unknownNormalized.section === 'overview' &&
+    canonicalUrl.searchParams.getAll('section').length === 1 &&
+    canonicalUrl.searchParams.get('section') === 'overview' &&
+    canonicalUrl.hash === '';
   const backForwardOk = backInterfaces.route === 'interfaces' && backOverview.route === 'overview' && forwardInterfaces.route === 'interfaces' && forwardTerminals.route === 'terminals';
   const overviewFocusOk = (
     overview.titleIsRouteTarget &&
@@ -91,7 +113,9 @@ async function inspectPanelRouteRuntime() {
     overviewFocusOk &&
     overviewBackCommandOk &&
     backForwardOk &&
-    canonicalUnknown
+    canonicalUnknown &&
+    [overview, interfaces, terminals, commandOverview, interfacesAfterCommand, backInterfaces, backOverview, forwardInterfaces, forwardTerminals, unknownNormalized]
+      .every(landmarkOwnershipOk)
   );
 
   return {
@@ -113,6 +137,8 @@ async function inspectPanelRouteRuntime() {
     backForwardOk,
     unknownNormalized,
     canonicalUnknown,
+    landmarkOwnershipOk: [overview, interfaces, terminals, commandOverview, interfacesAfterCommand, backInterfaces, backOverview, forwardInterfaces, forwardTerminals, unknownNormalized]
+      .every(landmarkOwnershipOk),
   };
 }
 

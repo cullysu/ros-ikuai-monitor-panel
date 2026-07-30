@@ -1,3 +1,5 @@
+import type { InterfaceOperationalImpact, InterfaceOperationalReason } from "./interfaceOperationalAssessment";
+
 interface BaseRowEvidence {
   sourceTable: string;
 }
@@ -37,6 +39,8 @@ export interface InterfaceRowEvidence extends BaseRowEvidence {
   qualitySampleReady: boolean | null;
   defaultRouteRelation: "direct" | "unverified";
   defaultRoutes: InterfaceDefaultRouteEvidence[];
+  operationalImpact: InterfaceOperationalImpact;
+  operationalReason: InterfaceOperationalReason;
 }
 
 export interface RouteInterfaceEvidence {
@@ -151,8 +155,14 @@ export interface DnsRowEvidence extends BaseRowEvidence {
 export interface ResourceRowEvidence extends BaseRowEvidence {
   kind: "resource";
   series: string | null;
-  values: number[];
+  values: number[]; samples: Array<{ timestamp: string; value: number; }>;
   sampleCount: number;
+  latest: number | null;
+  threshold: number | null;
+  delta: number | null;
+  trailing: number;
+  durationSeconds: number | null;
+  evidenceAt: string | null;
 }
 
 export interface ConnectionRowEvidence extends BaseRowEvidence {
@@ -165,6 +175,20 @@ export interface ConnectionRowEvidence extends BaseRowEvidence {
   sessionBytes: number | null;
   sourcePort: string | null;
   targetPort: string | null;
+}
+
+export interface DiagnosticRowEvidence extends BaseRowEvidence {
+  kind: "diagnostic";
+  channel: "realtime-rest" | "slow-rest" | "static-rest" | "detail-rest" | "unknown";
+  group: string;
+  transport: "REST";
+  objectName: string;
+  endpoint: string | null;
+  message: string;
+  recordedAt: string | null;
+  channelError: string | null;
+  sameChannelFailureCount: number;
+  totalFailureCount: number;
 }
 
 export interface GenericRowEvidence extends BaseRowEvidence {
@@ -181,6 +205,7 @@ export type SectionRowEvidence =
   | DnsRowEvidence
   | ResourceRowEvidence
   | ConnectionRowEvidence
+  | DiagnosticRowEvidence
   | GenericRowEvidence;
 
 export interface SectionEvidenceContext {

@@ -2,9 +2,13 @@
 
 ## Status
 
-- Review baseline: `ced6386`
-- Release gate: **closed**
-- Current loop stage: Discover
+- status: `current-contract / acceptance-failed`
+- validForCommit: `a414f7aef2a4545c78a9a42e34e9cb6d6cf3aca3` plus local remediation
+- supersededBy: `null`
+- Latest independent review: Product `48/100`, Design `65/100`, 2026-07-18
+- Engineering release: `a414f7ae` historically passed exact-SHA Linux, Windows, and GHCR
+- Product release gate: **FAIL — independent product/design/user acceptance is not closed**
+- Current loop stage: Remediate
 - Baseline failure evidence: `_acceptance/review-ced6386-all-sections/report.json`
 
 The previous overview-only matrices are retained as regression evidence for the overview surface. They are not evidence that the full product is releasable.
@@ -56,8 +60,8 @@ Unknown routes resolve to `overview` and replace the invalid URL; they never dis
 
 ## Navigation behavior
 
-- The canonical deep link keeps route state in both `?section=interfaces` and `#interfaces`; the hash wins when the two disagree.
-- Route changes update both representations together so reload, copied links, and older `?section=` links resolve to the same destination.
+- The canonical deep link keeps route state in `?section=interfaces` only; a legacy `#interfaces` may be read once for compatibility and is then removed with `replaceState`. Query state wins if both are present.
+- Route changes emit only the canonical query representation; reload, copied links, and old hash-only links normalize to the same destination.
 - Clicking navigation pushes browser history.
 - Back/Forward restores route and focus.
 - Reloading a deep link renders that route directly.
@@ -90,7 +94,7 @@ Transitions may also enter `stale`, `error`, or `recovering`. A last known snaps
 
 Four stable compact destinations are `概览 / 网络 / 终端 / 日志`; lower-frequency routes live in the real `更多` directory rather than a fifth persistent tab.
 
-The independent compact render tree owns viewports through `1365px`. From `600px` upward it must use a persistent task rail, comparable object list, and evidence inspector rather than a stretched phone composition. The desktop work surface starts at the required `1366px` desktop viewport; 1180/1181px and 1279/1280px must remain in the same compact architecture instead of switching products one pixel apart.
+The independent compact render tree owns viewports through `1199px`. From `600px` upward it may introduce task navigation and object/detail capability only when both usable width and height can hold them; short landscape keeps the continuous patrol grammar. The dense desktop work surface starts at `1200px`. The 1199/1200 boundary may change pane arrangement, but must preserve task vocabulary, selected object, evidence priority and URL state; 1365/1366 must therefore remain semantically continuous.
 
 The 390×844 overview first viewport must include:
 
@@ -104,11 +108,13 @@ An affected-object list is vertical. Selecting an object navigates to its detail
 
 ## Desktop domain workspaces
 
-At `1366px` and above, operational routes use a desktop-only object workspace rather than the compact render tree or a generic read-only table. Every formal domain route provides real search, typed filters, typed sorting, pagination state, comparable object rows, and an evidence inspector. Normal interface pages automatically preview the verified default-route carrier; incidents preview the highest-risk object. Explicit object selection is represented in the URL and Back/Forward history.
+At `1200px` and above, as defined by `docs/decision-system/responsive-capabilities.md`, operational routes use a desktop-only object workspace rather than the compact render tree or a generic read-only table. `1366px` and `1440px` are required desktop acceptance viewports, not additional product thresholds. Every formal domain route provides real search, typed filters, typed sorting, pagination state, comparable object rows, and an evidence inspector. Normal interface pages automatically preview the verified default-route carrier; incidents preview the highest-risk object. Explicit object selection is represented in the URL and Back/Forward history.
 
 Interface, route, terminal, log, security, and DNS inspectors expose domain-specific relationships. Connection and resource inspectors expose their bounded evidence; a low-frequency object may use a clearly labelled generic fallback only while its domain model is incomplete. The desktop return command is visible and functional.
 
 ## Data validation
+
+安全边界的窄表述是：这是一个**公开分发、默认仅本机访问、只读边界已验证**的产品；这不等于任意公网部署都安全。HTTPS 风险确认、SSH 指纹 trust、host/port/scheme/fingerprint/expiry 绑定和损坏配置错误都必须以实际检查为准。
 
 Unknown JSON is validated before entering route models. Validation must distinguish:
 
@@ -123,6 +129,7 @@ Fixtures are available only through the explicit test injection surface.
 
 - Prefer RouterOS HTTPS REST. HTTP requires explicit, persisted risk acknowledgement and is visibly marked insecure.
 - SSH uses a known-host policy. Unknown fingerprints require an explicit first-trust action; changed fingerprints block connection.
+- SSH trust failure never sends SSH credentials or replaces a stored pin. When and only when HTTPS REST succeeds with certificate verification enabled, the operator may explicitly continue REST-only for that request; this keeps SSH visibly blocked and is not persisted or interpreted as network health.
 - Responses include CSP, `frame-ancestors`, `X-Content-Type-Options`, and Referrer Policy.
 - Server version does not expose the Python runtime.
 - Session creation is route-scoped and bounded; login attempts are rate-limited.

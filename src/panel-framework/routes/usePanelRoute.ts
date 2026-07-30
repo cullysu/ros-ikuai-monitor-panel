@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
+  isPanelEvidenceTimestamp,
   PANEL_ROUTES,
   routeFromLocation,
   routeUrl,
@@ -29,6 +30,7 @@ function normalizeCurrentUrl(route: PanelRouteId) {
 
 export function usePanelRoute() {
   const [route, setRoute] = useState<PanelRouteId>(() => typeof window === "undefined" ? "overview" : routeFromLocation(window.location));
+  const overviewReturnFocusRef = useRef<string | null>(null);
 
   useEffect(() => {
     const sync = () => {
@@ -38,31 +40,62 @@ export function usePanelRoute() {
       setRoute(next);
     };
     sync();
-    window.addEventListener("hashchange", sync);
     window.addEventListener("popstate", sync);
-    return () => {
-      window.removeEventListener("hashchange", sync);
-      window.removeEventListener("popstate", sync);
-    };
+    return () => window.removeEventListener("popstate", sync);
   }, []);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     syncDocumentRoute(route);
-    const frame = window.requestAnimationFrame(() => document.querySelector<HTMLElement>("[data-panel-route-title]")?.focus({ preventScroll: true }));
-    return () => window.cancelAnimationFrame(frame);
+    const focusRouteTarget = () => {
+      const focusId = route === "overview"
+        ? (typeof window.history.state?.panelFocus === "string" ? window.history.state.panelFocus : overviewReturnFocusRef.current) || ""
+        : "";
+      if (focusId) {
+        const control = document.getElementById(focusId);
+        if (control) {
+          control.focus({ preventScroll: true });
+          return true;
+        }
+        return false;
+      }
+      const title = document.querySelector<HTMLElement>("[data-panel-route-title]");
+      if (!title) return false;
+      title.focus({ preventScroll: true });
+      return true;
+    };
+    if (focusRouteTarget()) return;
+    const observer = new MutationObserver(() => {
+      if (focusRouteTarget()) observer.disconnect();
+    });
+    observer.observe(document.getElementById("app") || document.body, { childList: true, subtree: true });
+    return () => observer.disconnect();
   }, [route]);
 
   const navigate = useCallback((next: PanelRouteId, options: PanelNavigateOptions = {}) => {
-    if (next === route && options.objectId === undefined) return;
     const objectId = options.objectId || null;
-    const currentObjectId = new URLSearchParams(window.location.search).get("object");
-    if (next === route && currentObjectId === objectId) return;
+    const risk = options.risk || null;
+    const focusId = options.focusId?.trim() || null;
+    const contextual = Boolean(
+      objectId || risk || (options.returnRoute && isPanelEvidenceTimestamp(options.evidenceAt)),
+    );
+    const targetUrl = routeUrl(next, window.location, {
+      objectId,
+      query: contextual ? options.query || null : null,
+      risk,
+      returnRoute: contextual ? options.returnRoute || null : null,
+      evidenceAt: contextual ? options.evidenceAt || null : null,
+    });
+    const currentUrl = `${window.location.pathname}${window.location.search}`;
+    if (next === route && currentUrl === targetUrl) return;
+    if (!options.replace && route === "overview") overviewReturnFocusRef.current = focusId;
+    const state = {
+      ...(window.history.state || {}),
+      panelRoute: next,
+      panelContextEntry: contextual,
+      panelObject: objectId,
+      panelFocus: null,
+    };
 
-    const state = { ...(window.history.state || {}), panelRoute: next };
-    if (objectId) state.panelObject = objectId;
-    else delete state.panelObject;
-
-    const targetUrl = routeUrl(next, window.location, { objectId });
     if (options.replace) window.history.replaceState(state, "", targetUrl);
     else window.history.pushState(state, "", targetUrl);
     window.dispatchEvent(new PopStateEvent("popstate", { state }));
@@ -70,4 +103,3 @@ export function usePanelRoute() {
 
   return { route, navigate, definition: PANEL_ROUTES[route] };
 }
-

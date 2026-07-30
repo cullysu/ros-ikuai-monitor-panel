@@ -1,6 +1,8 @@
 import type { SectionModel } from "../../sections/sectionModels";
 import type { LogRowEvidence, TerminalRowEvidence } from "../../sections/sectionRowEvidence";
+import { ChevronRight } from "lucide-react";
 import { formatRfc3339Local } from "../../timeContract";
+import type { PanelNavigate } from "../../routes/panelRoutes";
 import type { WorkspaceRow } from "../mobileDomainWorkspaceModel";
 import {
   InspectorDisclosure,
@@ -12,27 +14,49 @@ import {
   displayBytes,
   displayList,
   displayRate,
+  displayState,
   displayValue,
 } from "./InspectorPrimitives";
 
 export function TerminalInspector({
   row,
   model,
+  onNavigate,
+  evidenceAt,
 }: {
   row: WorkspaceRow;
   model: SectionModel;
+  onNavigate: PanelNavigate;
+  evidenceAt?: string | null;
 }) {
   const evidence = row.evidence as TerminalRowEvidence;
   const historical = model.evidenceMode === "historical";
+  const displayedHostname = displayValue(evidence.hostname);
   const hasAccessEvidence = [evidence.dhcpStatus, evidence.dhcpServer, evidence.arpStatus]
     .some((value) => Boolean(value));
+  const navigationEvidenceAt = evidenceAt || model.observedAt;
+  const hasConnectionEvidence = [evidence.connections, evidence.downRate, evidence.upRate, evidence.sessionBytes]
+    .some((value) => value !== null);
+  const openRelatedObject = () => {
+    if (evidence.interfaceName) {
+      onNavigate("interfaces", {
+        returnRoute: "terminals",
+        evidenceAt: navigationEvidenceAt,
+      });
+      return;
+    }
+    onNavigate("connections", {
+      returnRoute: "terminals",
+      evidenceAt: navigationEvidenceAt,
+    });
+  };
   return (
     <>
       <InspectorSection title="身份依据" note="来源分开记录；没有来源不等于终端离线">
         <InspectorFacts facts={[
-          { label: "主机名", value: displayValue(evidence.hostname) },
-          { label: "IP", value: displayValue(evidence.ip) },
-          { label: "MAC", value: displayValue(evidence.mac) },
+          ...(displayedHostname === row.primary ? [] : [{ label: "主机名", value: displayedHostname }]),
+          { label: "IP", value: displayValue(evidence.ip), valueKind: "machine" },
+          { label: "MAC", value: displayValue(evidence.mac), valueKind: "machine" },
           { label: "身份来源", value: displayList(evidence.identitySources) },
         ]} />
       </InspectorSection>
@@ -48,12 +72,29 @@ export function TerminalInspector({
       </InspectorSection>
       <InspectorSection title="接入关系">
         <InspectorFacts facts={[
-          { label: "观测状态", value: displayValue(evidence.status, "未确认"), tone: evidence.status ? "neutral" : "warn" },
+          { label: "观测状态", value: displayState(evidence.status), tone: evidence.status ? "neutral" : "warn" },
           { label: "接入接口", value: displayValue(evidence.interfaceName) },
-          { label: "最后观察", value: displayValue(evidence.lastSeen) },
+          { label: "最后观察", value: displayValue(evidence.lastSeen), valueKind: "machine" },
           { label: "在线布尔值", value: evidence.online === true ? "已观测在线" : evidence.online === false ? "已观测离线" : "未提供" },
         ]} />
       </InspectorSection>
+      {evidence.interfaceName || hasConnectionEvidence ? (
+        <section
+          className="mdi-terminal-object-action"
+          data-mobile-terminal-object-action="v1"
+          data-mobile-terminal-evidence-at={navigationEvidenceAt || undefined}
+          aria-label="下一步检查"
+        >
+          <div>
+            <span>下一步检查</span>
+            <p>{evidence.interfaceName ? "核对终端接入接口的运行状态" : "核对终端关联的连接记录"}</p>
+          </div>
+          <button type="button" onClick={openRelatedObject}>
+            <span>{evidence.interfaceName ? "打开接口" : "打开连接"}</span>
+            <ChevronRight aria-hidden="true" size={17} />
+          </button>
+        </section>
+      ) : null}
       <InspectorSection title="DHCP / ARP 证据">
         {hasAccessEvidence ? (
           <InspectorFacts facts={[
@@ -66,18 +107,10 @@ export function TerminalInspector({
       <InspectorDisclosure
         title="原始对象身份"
         note="用于深链恢复和重复对象比对"
-        facts={[{ label: "对象 ID", value: row.id }]}
+        facts={[{ label: "对象 ID", value: row.id, valueKind: "machine" }]}
       />
     </>
   );
-}
-
-function severityLabel(severity: LogRowEvidence["severity"]): string {
-  if (severity === "critical") return "严重";
-  if (severity === "error") return "错误";
-  if (severity === "warning") return "警告";
-  if (severity === "info") return "信息";
-  return "未确认";
 }
 
 export function LogInspector({
@@ -85,21 +118,16 @@ export function LogInspector({
 }: {
   row: WorkspaceRow;
   model: SectionModel;
+  preview?: boolean;
 }) {
   const evidence = row.evidence as LogRowEvidence;
   const absolute = formatRfc3339Local(evidence.time);
-  const risky = evidence.severity === "critical" || evidence.severity === "error";
   return (
     <>
-      <InspectorSection title="事件记录" tone={risky ? "danger" : evidence.severity === "warning" ? "warn" : "neutral"}>
-        <InspectorMessage tone={risky ? "danger" : evidence.severity === "warning" ? "warn" : "neutral"}>
-          {displayValue(evidence.message, "没有事件正文")}
-        </InspectorMessage>
-      </InspectorSection>
-      <InspectorSection title="时间与级别" note={absolute ? "时间包含明确时区并按查看者本地时间显示" : "原始时间缺少时区，未作为绝对时间排序"}>
+      <InspectorSection title="事件证据" note={absolute ? "时间包含明确时区并按查看者本地时间显示" : "原始时间缺少时区，未作为绝对时间排序"}>
         <InspectorFacts facts={[
-          { label: absolute ? "绝对时间" : "原始时间", value: absolute || displayValue(evidence.time) },
-          { label: "事件级别", value: severityLabel(evidence.severity), tone: risky ? "danger" : evidence.severity === "warning" ? "warn" : "neutral" },
+          { label: "事件正文", value: displayValue(evidence.message, "没有事件正文") },
+          { label: absolute ? "绝对时间" : "原始时间", value: absolute || displayValue(evidence.time), valueKind: "machine" },
           { label: "主题", value: displayValue(evidence.topics) },
           { label: "来源组", value: displayValue(evidence.source) },
         ]} />
@@ -109,12 +137,6 @@ export function LogInspector({
           <InspectorRelations rows={evidence.neighbors.map((neighbor) => ({
             primary: displayValue(neighbor.message, "没有事件正文"),
             secondary: `${neighbor.relation === "newer" ? "较新" : "较旧"} · ${formatRfc3339Local(neighbor.time) || displayValue(neighbor.time)}`,
-            status: displayValue(neighbor.topics, "主题未记录"),
-            tone: neighbor.severity === "critical" || neighbor.severity === "error"
-              ? "danger"
-              : neighbor.severity === "warning"
-                ? "warn"
-                : "neutral",
           }))} />
         ) : <InspectorMessage>当前快照没有可定位的相邻日志记录。</InspectorMessage>}
       </InspectorSection>
@@ -122,8 +144,8 @@ export function LogInspector({
         title="记录身份"
         note="相同事件会确定性折叠"
         facts={[
-          { label: "重复记录", value: row.duplicateCount > 1 ? `${row.duplicateCount} 条相同记录` : "1 条" },
-          { label: "对象 ID", value: row.id },
+          { label: "重复记录", value: row.duplicateCount > 1 ? `${row.duplicateCount} 条相同记录` : "1 条", valueKind: "numeric" },
+          { label: "对象 ID", value: row.id, valueKind: "machine" },
         ]}
       />
     </>

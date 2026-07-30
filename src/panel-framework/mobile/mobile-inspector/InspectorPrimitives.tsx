@@ -1,4 +1,4 @@
-import { ChevronDown, CircleAlert, Clock3, ShieldCheck, TriangleAlert } from "lucide-react";
+import { ChevronDown, CircleAlert, Clock3, ShieldCheck } from "lucide-react";
 import type { ReactNode } from "react";
 import { formatRate } from "../../overview";
 import type { SectionModel } from "../../sections/sectionModels";
@@ -9,6 +9,7 @@ export interface InspectorFact {
   value: string;
   note?: string;
   tone?: "neutral" | "trust" | "warn" | "danger";
+  valueKind?: "text" | "machine" | "numeric";
 }
 
 export function displayValue(value: string | number | null | undefined, fallback = "未取得"): string {
@@ -65,7 +66,7 @@ export function EvidenceBoundary({ model }: { model: SectionModel }) {
   const Icon = model.evidenceMode === "current"
     ? ShieldCheck
     : model.evidenceMode === "historical"
-      ? TriangleAlert
+      ? CircleAlert
       : CircleAlert;
   const absolute = formatRfc3339Local(model.observedAt);
   return (
@@ -81,16 +82,21 @@ export function InspectorSection({
   title,
   note,
   tone = "neutral",
+  ariaLabel,
   children,
 }: {
   title: string;
   note?: string;
   tone?: "neutral" | "warn" | "danger";
+  ariaLabel?: string;
   children: ReactNode;
 }) {
   return (
-    <section className={`mdi-section is-${tone}`}>
-      <header><h3>{title}</h3>{note ? <p>{note}</p> : null}</header>
+    <section className={`mdi-section is-${tone}`} aria-label={ariaLabel}>
+      <header>
+        {tone !== "neutral" ? <CircleAlert className="mdi-section-tone-icon" aria-hidden="true" size={16} /> : null}
+        <div><h3>{title}</h3>{note ? <p>{note}</p> : null}</div>
+      </header>
       {children}
     </section>
   );
@@ -100,7 +106,7 @@ export function InspectorFacts({ facts }: { facts: InspectorFact[] }) {
   return (
     <div className="mdi-facts">
       {facts.map((fact) => (
-        <div className={`is-${fact.tone || "neutral"}`} key={fact.label}>
+        <div className={`is-${fact.tone || "neutral"} is-value-${fact.valueKind || "text"}`} key={fact.label}>
           <small>{fact.label}</small>
           <b>{fact.value}</b>
           {fact.note ? <em>{fact.note}</em> : null}
@@ -120,7 +126,7 @@ export function InspectorReadings({
   return (
     <div className="mdi-readings">
       {[left, right].map((item) => (
-        <div className={`is-${item.tone || "neutral"}`} key={item.label}>
+        <div className={`is-${item.tone || "neutral"} is-value-${item.valueKind || "numeric"}`} key={item.label}>
           <small>{item.label}</small>
           <b>{item.value}</b>
           {item.note ? <em>{item.note}</em> : null}
@@ -133,13 +139,19 @@ export function InspectorReadings({
 export function InspectorRelations({
   rows,
 }: {
-  rows: Array<{ primary: string; secondary: string; status?: string; tone?: "neutral" | "warn" | "danger" }>;
+  rows: Array<{
+    primary: string;
+    secondary: string;
+    status?: string;
+    tone?: "neutral" | "warn" | "danger";
+    primaryKind?: "text" | "machine" | "numeric";
+  }>;
 }) {
   return (
-    <div className="mdi-relations">
+    <div className="mdi-relations" role="list">
       {rows.map((row, index) => (
-        <div className={`is-${row.tone || "neutral"}`} key={`${row.primary}-${row.secondary}-${index}`}>
-          <span><b>{row.primary}</b><small>{row.secondary}</small></span>
+        <div className={`is-${row.tone || "neutral"}`} role="listitem" key={`${row.primary}-${row.secondary}-${index}`}>
+          <span><b className={`is-value-${row.primaryKind || "text"}`}>{row.primary}</b><small>{row.secondary}</small></span>
           {row.status ? <em>{row.status}</em> : null}
         </div>
       ))}

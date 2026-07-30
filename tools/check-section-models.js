@@ -35,7 +35,7 @@ const { OVERVIEW_SCENARIO_FIXTURES } = require(path.join(
   "src",
   "panel-framework",
   "overview",
-  "index.ts",
+  "scenarios.ts",
 ));
 const { rowsFromModel } = require(path.join(
   root,
@@ -44,6 +44,39 @@ const { rowsFromModel } = require(path.join(
   "mobile",
   "mobileDomainWorkspaceModel.ts",
 ));
+const { stablePanelObjectId } = require(path.join(
+  root,
+  "src",
+  "panel-framework",
+  "sections",
+  "panelObjectIdentity.ts",
+));
+const { selectSemanticWorkspacePreview } = require(path.join(
+  root,
+  "src",
+  "panel-framework",
+  "mobile",
+  "mobileWorkspacePreview.ts",
+));
+const { diagnosticFailureLabel } = require(path.join(
+  root,
+  "src",
+  "panel-framework",
+  "sections",
+  "diagnosticFailureModel.ts",
+));
+
+assert.equal(
+  diagnosticFailureLabel(true),
+  "采集失败",
+  "current diagnostic evidence must remain explicit about a current collection failure",
+);
+assert.equal(
+  diagnosticFailureLabel(false),
+  "失败记录",
+  "historical or unavailable diagnostic objects must remain self-contained away from the page boundary",
+);
+assert.equal(`${diagnosticFailureLabel(false)}证据`, "失败记录证据");
 
 const clone = (value) => structuredClone(value);
 const metric = (model, label) => model.metrics.find((item) => item.label === label);
@@ -52,6 +85,18 @@ const localShortTimestamp = (value) => {
   const pad = (part) => String(part).padStart(2, "0");
   return `${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
 };
+
+const localeStableSource = fs.readFileSync(
+  path.join(root, "src/panel-framework/sections/panelObjectIdentity.ts"),
+  "utf8",
+);
+assert.doesNotMatch(localeStableSource, /toLocaleLowerCase/, "deep-link IDs must not depend on the viewer locale");
+assert.notEqual("ISTANBUL".toLocaleLowerCase("tr"), "istanbul", "Turkish casing must exercise a distinct locale path");
+assert.equal(
+  stablePanelObjectId("interfaces", "interface", ["ISTANBUL"]),
+  stablePanelObjectId("interfaces", "interface", ["istanbul"]),
+  "stable deep-link IDs must use locale-independent normalization",
+);
 
 const missingRate = clone(OVERVIEW_SCENARIO_FIXTURES.single);
 delete missingRate.wan[0].downRate;
@@ -69,6 +114,31 @@ zeroRate.pppoe[0].upRate = 0;
 const zeroRateModel = buildSectionModel("lineStatus", zeroRate);
 assert.equal(metric(zeroRateModel, "当前下载").value, "0 bps", "explicit zero must remain a measured zero");
 assert.equal(metric(zeroRateModel, "当前上传").value, "0 bps", "explicit zero must remain a measured zero");
+
+const resourceHistory = clone(OVERVIEW_SCENARIO_FIXTURES.single);
+resourceHistory.updatedAt = "2026-07-16T10:00:00Z";
+resourceHistory.overview.cpuLoad = 20;
+resourceHistory.overview.memoryUsage = 40;
+resourceHistory.overview.diskUsage = 60;
+resourceHistory.overview.history = {
+  timestamps: ["2026-07-16T09:59:50Z", "2026-07-16T10:00:00Z"],
+  cpu: [10, 20],
+  memory: [30, 40],
+  disk: [50, 60],
+};
+assert.equal(buildSectionModel("loadAudit", resourceHistory).visualization?.series[0].points.length, 2);
+const singleResourcePoint = clone(resourceHistory);
+singleResourcePoint.overview.history.timestamps = ["2026-07-16T10:00:00Z"];
+singleResourcePoint.overview.history.cpu = [20];
+singleResourcePoint.overview.history.memory = [40];
+singleResourcePoint.overview.history.disk = [60];
+assert.equal(
+  buildSectionModel("loadAudit", singleResourcePoint).visualization,
+  undefined,
+  "a single timestamped resource sample must remain a summary, not a trend",
+);
+resourceHistory.overview.history.timestamps = [1721123990, 1721124000];
+assert.equal(buildSectionModel("loadAudit", resourceHistory).visualization, undefined, "numeric epoch resource history must not be guessed by the frontend");
 
 const missingConnections = clone(OVERVIEW_SCENARIO_FIXTURES.single);
 delete missingConnections.connections.total;
@@ -336,8 +406,46 @@ assert.equal(dns6Evidence[1].addDefaultRoute, true);
 const historical = buildSectionModel("lineStatus", clone(OVERVIEW_SCENARIO_FIXTURES["collection-down"]));
 assert.equal(historical.evidenceMode, "historical");
 assert.ok(metric(historical, "历史下载"));
-assert.match(metric(historical, "历史下载").note, /不代表当前/);
-assert.ok(historical.tables.every((item) => /上次成功快照/.test(item.note)));
+assert.equal(historical.status, "历史证据 · 不代表当前", "the first status statement must establish the historical boundary");
+assert.equal(historical.metrics.every((item) => item.tone === "warn"), true, "historical metrics must not retain current-incident danger tone");
+assert.equal(historical.metrics.some((item) => /历史记录，不代表当前/.test(item.note || "")), false, "the boundary belongs in the primary status, not repeated in every metric");
+assert.ok(historical.tables.every((item) => /历史记录.*不代表当前/.test(item.note)));
+
+const diagnosticSnapshot = clone(OVERVIEW_SCENARIO_FIXTURES["collection-down"]);
+const diagnosticModel = buildSectionModel("readonlyDiagnostics", diagnosticSnapshot);
+const diagnosticTable = diagnosticModel.tables[0];
+assert.equal(diagnosticTable.rows.length, 4, "all realtime, slow, static and detail endpoint failures must remain visible");
+assert.equal(diagnosticTable.rowEvidence.every((item) => item.kind === "diagnostic"), true);
+assert.deepEqual(
+  diagnosticTable.rowEvidence.map((item) => item.channel),
+  ["realtime-rest", "slow-rest", "static-rest", "detail-rest"],
+);
+assert.equal(diagnosticTable.rowEvidence.every((item) => item.totalFailureCount === 4), true);
+assert.equal(diagnosticTable.rowEvidence.every((item) => item.transport === "REST"), true);
+assert.equal(diagnosticModel.metrics.some((item) => /SSH 采集/.test(item.label)), false, "static REST failures must not masquerade as SSH collection");
+assert.equal(diagnosticModel.metrics.some((item) => item.label === "慢速 REST"), true);
+assert.equal(diagnosticModel.status, "历史诊断记录 · 不代表当前");
+assert.equal(diagnosticModel.metrics.every((item) => item.tone === "warn"), true, "historical endpoint records must render as historical evidence, not current incidents");
+assert.equal(diagnosticModel.metrics.every((item) => /记录/.test(item.value)), true, "the compact channel ledger must identify each value as a record count");
+assert.equal(diagnosticModel.metrics.every((item) => item.note !== "时间未取得"), true, "a channel ledger must reuse its endpoint record time when the channel timestamp is absent");
+assert.equal(diagnosticModel.metrics.some((item) => item.value === "通道失败"), false, "historical summaries must not make an unqualified current failure claim");
+
+const legacyDiagnosticSnapshot = clone(OVERVIEW_SCENARIO_FIXTURES.single);
+const legacyAt = "2026-07-19T02:30:00Z";
+Object.assign(legacyDiagnosticSnapshot.meta, {
+  realtimeUpdatedAt: legacyAt,
+  slowRestUpdatedAt: legacyAt,
+  staticUpdatedAt: legacyAt,
+  connectionDetailUpdatedAt: legacyAt,
+  realtimeEndpointFailures: { interfaces: "legacy realtime failure" },
+  slowRestEndpointFailures: { routes: "legacy slow failure" },
+  staticEndpointFailures: { logs: "legacy static failure" },
+  detailEndpointFailures: { ipv6_neighbors: "legacy detail failure" },
+});
+const legacyDiagnosticModel = buildSectionModel("readonlyDiagnostics", legacyDiagnosticSnapshot);
+assert.equal(legacyDiagnosticModel.evidenceMode, "historical", "legacy dictionary failures must still degrade current evidence");
+assert.equal(legacyDiagnosticModel.tables[0].rows.length, 4, "legacy dictionary failures must not be swallowed");
+assert.equal(legacyDiagnosticModel.tables[0].rowEvidence.every((item) => item.kind === "diagnostic"), true);
 
 const unavailableFixture = clone(OVERVIEW_SCENARIO_FIXTURES["no-snapshot"]);
 const unavailable = buildSectionModel("trafficLoad", unavailableFixture);
@@ -371,8 +479,24 @@ const explicitZeroModel = {
 const explicitZeroRow = rowsFromModel("connections", explicitZeroModel)[0];
 assert.equal(explicitZeroRow.primary, "0", "workspace rows must preserve an explicit zero string");
 assert.equal(explicitZeroRow.trailing, "0", "workspace comparison state must preserve an explicit zero string");
+assert.equal(
+  selectSemanticWorkspacePreview([explicitZeroRow]),
+  null,
+  "a generic first row must not become an automatic inspector recommendation",
+);
 const desktopWorkspaceSource = fs.readFileSync(path.join(root, "src/panel-framework/sections/DesktopDomainWorkspace.tsx"), "utf8");
 assert.match(desktopWorkspaceSource, /\{row\.primary\}/, "desktop object cells must render the normalized workspace value directly");
 assert.doesNotMatch(desktopWorkspaceSource, /row\.primary\s*\|\|/, "desktop object cells must not convert zero to an em dash");
+assert.match(desktopWorkspaceSource, /selectSemanticWorkspacePreview/, "desktop preview must consume the shared semantic policy");
+assert.doesNotMatch(desktopWorkspaceSource, /function preferredRow/, "desktop must not maintain a second preview policy");
+assert.doesNotMatch(desktopWorkspaceSource, /rows\[0\]/, "desktop automatic preview must not use positional fallback");
+const desktopInspectorSource = fs.readFileSync(path.join(root, "src/panel-framework/sections/DesktopDomainInspector.tsx"), "utf8");
+const desktopLogBlock = desktopInspectorSource.slice(
+  desktopInspectorSource.indexOf("function LogEvidence"),
+  desktopInspectorSource.indexOf("function SecurityEvidence"),
+);
+assert.match(desktopInspectorSource, /diagnosticEvidence \? diagnosticEvidence\.objectName : row\.primary/, "diagnostic detail must prioritize the endpoint object while log preview identifies the selected event");
+assert.match(desktopInspectorSource, /diagnosticEvidence \? valueOf\(diagnosticEvidence\.endpoint\) : isLog \? `\$\{row\.trailing\} · \$\{row\.secondary\}`/, "diagnostic detail must retain the endpoint path while log detail retains topic and time");
+assert.equal((desktopLogBlock.match(/evidence\.message/g) || []).length, 0, "log preview body must keep the event message out so its evidence remains novel");
 
 console.log("section model evidence contract: PASS missing-zero-historical-unavailable");

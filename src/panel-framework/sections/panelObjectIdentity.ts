@@ -3,7 +3,8 @@ import type { PanelRouteId } from "../routes/panelRoutes";
 type RowValues = Record<string, string>;
 
 function normalizePart(value: unknown): string {
-  return String(value ?? "").replace(/\s+/g, " ").trim().toLocaleLowerCase();
+  // Deep-link identity must be stable across the viewer's locale (including Turkish).
+  return String(value ?? "").replace(/\s+/g, " ").trim().toLowerCase();
 }
 
 function shortHash(value: string): string {

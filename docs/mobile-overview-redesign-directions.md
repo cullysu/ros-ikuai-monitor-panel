@@ -1,5 +1,9 @@
 # Mobile patrol console: third redesign directions
 
+- status: `superseded`
+- validForCommit: `pre-a414f7ae design exploration`
+- supersededBy: `docs/decision-system/product-pdr.md`
+
 ## Why the previous direction is rejected
 
 The `212d535` surface improved evidence truth but treated a large verdict band, a three-column fact block, one generic workflow stack, and direct-route matrices as product completion. It remained repetitive, under-filled in incidents, and shallow outside Overview. This direction starts from high-frequency tasks and implemented interaction rather than preserving that composition.

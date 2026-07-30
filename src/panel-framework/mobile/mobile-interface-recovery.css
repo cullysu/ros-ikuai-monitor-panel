@@ -1,0 +1,83 @@
+.mdw-interface-recovery {
+  border-top: 1px solid var(--mdw-line-strong);
+  border-bottom: 1px solid var(--mdw-line);
+  background: var(--mdw-surface-tonal);
+}
+.mdw-interface-recovery-heading {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 12px;
+  border-bottom: 1px solid var(--mdw-line);
+}
+.mdw-interface-recovery-heading > span {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  gap: 7px;
+  color: var(--mdw-blue);
+}
+.mdw-interface-recovery-heading b {
+  color: var(--mdw-ink);
+  font-size: 13px;
+  font-weight: 710;
+}
+.mdw-interface-recovery-heading small {
+  flex: 0 0 auto;
+  color: var(--mdw-muted);
+  font-size: 12px;
+  font-weight: 650;
+}
+.mdw-interface-recovery[data-mobile-interface-recovery-state="unavailable"] .mdw-interface-recovery-heading,
+.mdw-interface-recovery[data-mobile-interface-recovery-state="unavailable"] .mdw-interface-recovery-heading > span {
+  color: var(--mdw-danger);
+}
+.mdw-interface-recovery-copy {
+  padding: 9px 12px 8px;
+}
+.mdw-interface-recovery-copy b {
+  display: block;
+  color: var(--mdw-ink);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+.mdw-interface-recovery-copy p {
+  margin: 3px 0 0;
+  color: var(--mdw-muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+.mdw-interface-recovery-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border-top: 1px solid var(--mdw-line);
+}
+.mdw-interface-recovery-actions button {
+  display: flex;
+  min-width: 0;
+  min-height: 44px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 12px;
+  border: 0;
+  color: var(--mdw-blue);
+  background: transparent;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+}
+.mdw-interface-recovery-actions button + button {
+  border-left: 1px solid var(--mdw-line);
+}
+.mdw-interface-recovery-actions button:active {
+  background: var(--mdw-blue-soft);
+}
+.mdw-interface-recovery-actions button:focus-visible {
+  outline: 3px solid rgba(11, 103, 140, 0.28);
+  outline-offset: -3px;
+}

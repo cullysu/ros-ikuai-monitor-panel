@@ -1,5 +1,9 @@
 # Mobile risk-focus design decision
 
+- status: `superseded`
+- validForCommit: `pre-a414f7ae design exploration`
+- supersededBy: `docs/decision-system/product-pdr.md`
+
 Date: 2026-07-15
 
 ## Why the previous direction failed

@@ -2,11 +2,14 @@
 
 ## Status
 
-- Release gate: **closed**
-- Baseline: `212d535d6803fb3e71e8799b0365e5bade755599`
-- Last external review baseline: `38/100`
-- Current loop stage: **Verify / product review**
-- Working-tree evidence: local 56/28/76/266 matrices, 36-check production runtime, security, build and readiness pass; no new exact commit or remote CL exists yet
+- status: `current-contract / acceptance-failed`
+- validForCommit: `a414f7aef2a4545c78a9a42e34e9cb6d6cf3aca3` plus local remediation
+- supersededBy: `null`
+- Engineering release: `a414f7ae` historically passed exact-SHA Linux, Windows, and GHCR
+- Latest independent review: Product `48/100`, Design `65/100` (step 137)
+- Product/design/visual gate: **FAIL / FAIL / PENDING independent review**
+- Current loop stage: **Remediate**
+- Matrix evidence: step-135 dirty engineering matrices passed 28/76/266 under one fingerprint, but step-137 contract changes make that runtime identity stale; no product conclusion or release candidate may inherit it
 - Surface: a read-only RouterOS/iKuai operational console, not a health dashboard or shrunken desktop table
 
 Previous green matrices are regression evidence only. They missed local refresh failure, timezone ambiguity, dead visible controls, an invalid DNS route, and missing mobile workflows.
@@ -162,6 +165,8 @@ Low-frequency routes may share primitives but cannot use “hide the table heade
 - Reduced motion, forced colors, safe areas, and 200% text are blocking.
 
 ## Schema and trust boundary
+
+安全边界的窄表述是：这是一个**公开分发、默认仅本机访问、只读边界已验证**的产品；这不等于任意公网部署都安全。HTTPS 风险确认、SSH 指纹 trust、host/port/scheme/fingerprint/expiry 绑定和损坏配置错误都必须以实际检查为准。
 
 - A versioned backend snapshot schema is authoritative.
 - Frontend types and validators are generated from or mechanically checked against it.

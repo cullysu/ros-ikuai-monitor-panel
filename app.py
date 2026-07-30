@@ -23,6 +23,12 @@ from panel_backend.collector_transport import RouterCollectorTransport
 from panel_backend.collector_service import CollectorServiceMixin, bind_collector_runtime
 from panel_backend.collector_evidence import ConnectionEvidenceParser
 from panel_backend.config_store import RouterProfileStore, RouterProfileStoreCorruptError
+from panel_backend.public_diagnostics import sanitize_saved_connection_test
+from panel_backend.request_source import (
+    parse_origin_authority,
+    parse_referer_authority,
+    source_authority_is_allowed,
+)
 from panel_backend.time_contract import unix_timestamp_rfc3339, utc_now_rfc3339
 from panel_backend.router_transport import (
     PinnedHostKeyPolicy,
@@ -36,10 +42,17 @@ from panel_backend.router_transport import (
     normalize_router_ssh_port,
     normalize_router_transport,
     normalize_ssh_fingerprint,
+    rest_channel_has_verified_identity,
     validate_rest_security,
 )
 from panel_backend.session_security import SessionStore, SlidingWindowRateLimiter
+from panel_backend.trust_binding import (
+    SshTrustChallengeError,
+    issue_ssh_trust_challenge,
+    verify_ssh_trust_challenge,
+)
 from panel_backend.http_dispatcher import create_panel_handler
+from panel_backend.rate_evidence import complete_rate_total, observed_rate
 from panel_backend.snapshot_builder import SnapshotBuilderMixin, bind_snapshot_runtime
 
 try:
@@ -415,32 +428,33 @@ def parse_panel_request_host(headers, fallback_port=None):
 
 
 def parse_panel_origin(value):
-    raw = str(value or "").strip()
-    if not raw:
+    return parse_origin_authority(value, normalize_panel_host, normalize_panel_port)
+
+
+def parse_panel_referer(value):
+    return parse_referer_authority(value, normalize_panel_host, normalize_panel_port)
+
+
+def parse_panel_request_source(headers):
+    request_host = parse_panel_request_host(headers, fallback_port=PANEL_PORT)
+    if not request_host:
         return None
-    try:
-        parsed = urlparse(raw)
-        if parsed.scheme not in {"http", "https"}:
-            return None
-        host = normalize_panel_host(parsed.hostname or "", "origin host")
-        port = parsed.port or (443 if parsed.scheme == "https" else 80)
-    except (TypeError, ValueError):
+    scheme = first_header_value((headers or {}).get("X-Forwarded-Proto")).lower() if PANEL_TRUST_PROXY_HEADERS else ""
+    if scheme and scheme not in {"http", "https"}:
         return None
-    return host, normalize_panel_port(port)
+    return (scheme or "http"), *request_host
+
+
+def panel_source_authority_is_allowed(headers, source):
+    return source_authority_is_allowed(source, parse_panel_request_source(headers), is_loopback_panel_host)
 
 
 def panel_origin_is_allowed(headers, value):
-    origin = parse_panel_origin(value)
-    request_host = parse_panel_request_host(headers, fallback_port=PANEL_PORT)
-    if not origin or not request_host:
-        return False
-    origin_host, origin_port = origin
-    request_host_name, request_port = request_host
-    return (
-        is_loopback_panel_host(origin_host)
-        and is_loopback_panel_host(request_host_name)
-        and origin_port == request_port
-    )
+    return panel_source_authority_is_allowed(headers, parse_panel_origin(value))
+
+
+def panel_referer_is_allowed(headers, value):
+    return panel_source_authority_is_allowed(headers, parse_panel_referer(value))
 
 
 def parse_request_cookies(cookie_header):
@@ -463,6 +477,30 @@ def create_panel_session():
 
 def get_panel_session(token):
     return PANEL_SESSION_STORE.get(token)
+
+
+def issue_panel_ssh_trust_challenge(session_id, host, ssh_port, fingerprint, *, rest_scheme="https"):
+    return issue_ssh_trust_challenge(
+        PANEL_SSH_TRUST_CHALLENGE_SECRET,
+        session_id,
+        host,
+        ssh_port,
+        fingerprint,
+        rest_scheme=rest_scheme,
+        ttl_seconds=PANEL_SSH_TRUST_CHALLENGE_TTL_SECONDS,
+    )
+
+
+def verify_panel_ssh_trust_challenge(session_id, token, host, ssh_port, fingerprint, *, rest_scheme="https"):
+    return verify_ssh_trust_challenge(
+        PANEL_SSH_TRUST_CHALLENGE_SECRET,
+        token,
+        session_id,
+        host,
+        ssh_port,
+        fingerprint,
+        rest_scheme=rest_scheme,
+    )
 
 
 def build_panel_cookie(name, value, max_age=None, http_only=True):
@@ -686,6 +724,11 @@ PANEL_LOGIN_ATTEMPT_LIMIT = max(2, int(env_value("ROS_PANEL_LOGIN_ATTEMPT_LIMIT"
 PANEL_RATE_LIMIT_WINDOW_SECONDS = max(10, int(env_value("ROS_PANEL_RATE_LIMIT_WINDOW_SECONDS", "60")))
 PANEL_SESSION_STORE = SessionStore(PANEL_SESSION_TTL_SECONDS, PANEL_SESSION_MAX)
 PANEL_REQUEST_RATE_LIMITER = SlidingWindowRateLimiter(max_keys=1024)
+PANEL_SSH_TRUST_CHALLENGE_TTL_SECONDS = max(
+    30,
+    min(600, int(env_value("ROS_PANEL_SSH_TRUST_CHALLENGE_TTL_SECONDS", "180"))),
+)
+PANEL_SSH_TRUST_CHALLENGE_SECRET = secrets.token_bytes(32)
 POLL_SECONDS = max(1, int(os.getenv("ROS_MONITOR_POLL_SECONDS", "1")))
 HISTORY_LIMIT = int(os.getenv("ROS_MONITOR_HISTORY_LIMIT", "60"))
 RATE_ZERO_CONFIRM_SAMPLES = max(1, int(os.getenv("ROS_MONITOR_RATE_ZERO_CONFIRM_SAMPLES", "2")))
@@ -830,7 +873,7 @@ REALTIME_REST_ENDPOINTS = {
         fields="version,board-name,architecture-name,cpu,cpu-count,cpu-frequency,cpu-load,total-memory,free-memory,total-hdd-space,free-hdd-space,uptime",
         timeout=8,
     ),
-    "clock": endpoint("system/clock", kind="object", fields="date,time", timeout=4),
+    "clock": endpoint("system/clock", kind="object", fields="date,time,time-zone-name,gmt-offset,dst-active", timeout=4),
     "ntp": endpoint("system/ntp/client", kind="object", fields="status"),
     "dns": endpoint(
         "ip/dns",
@@ -1278,7 +1321,7 @@ def public_router_config(config=None):
         "savedId": source.get("savedId"),
         "updatedAt": source.get("updatedAt"),
         "passwordSet": bool(password.strip()) and password not in ROUTER_PASSWORD_PLACEHOLDERS,
-        "lastTest": copy.deepcopy(source.get("lastTest")),
+        "lastTest": sanitize_saved_connection_test(source.get("lastTest")),
     }
 
 
@@ -1437,7 +1480,7 @@ def set_router_config(
         "source": source,
         "savedId": saved_id,
         "updatedAt": format_iso_now(),
-        "lastTest": copy.deepcopy(last_test),
+        "lastTest": sanitize_saved_connection_test(last_test),
     }
     if not normalized["user"]:
         raise ValueError("RouterOS username is required")
@@ -1632,11 +1675,12 @@ def test_router_credentials(
         test["elapsedMs"] = round((time.time() - started_at) * 1000)
         session.close()
 
-    return test
+    return sanitize_saved_connection_test(test)
 
 
 def router_login_warning(test):
-    ssh_ok = (test or {}).get("ssh", {}).get("ok") is True
+    ssh = (test or {}).get("ssh", {})
+    ssh_ok = ssh.get("ok") is True
     rest_ok = (test or {}).get("rest", {}).get("ok") is True
     rest = (test or {}).get("rest", {})
     warnings = []
@@ -1645,7 +1689,12 @@ def router_login_warning(test):
     elif rest.get("verifyTls") is False:
         warnings.append("REST 使用 HTTPS，但证书校验已被明确关闭，无法验证设备身份。")
     if rest_ok and not ssh_ok:
-        warnings.append("RouterOS REST 已验证，但 SSH 未完成；依赖 SSH 的明细会降级。")
+        if ssh.get("hostKeyChanged") is True:
+            warnings.append("SSH 主机密钥与已固定指纹冲突；SSH 已阻断，旧指纹未更改，当前仅使用已验证 HTTPS REST。")
+        elif ssh.get("confirmationRequired") is True:
+            warnings.append("SSH 主机密钥尚未固定；SSH 未使用，当前仅使用已验证 HTTPS REST。")
+        else:
+            warnings.append("REST 管理通道本次请求成功，但 SSH 未完成；依赖 SSH 的明细会降级。")
     elif ssh_ok and not rest_ok:
         warnings.append("SSH 已连接，但 RouterOS REST 未响应；部分面板数据会缺失。")
     return " ".join(warnings) or None
@@ -2392,16 +2441,25 @@ def infer_wan_interface_names(rest, addresses_by_interface):
 
 def build_distribution_from_lines(lines):
     rows = list(lines or [])
-    total_rate = sum(max(0, to_int(row.get("upRate"))) + max(0, to_int(row.get("downRate"))) for row in rows)
-    distribution = []
+    observed_totals = []
+    complete = bool(rows)
     for row in rows:
         up_rate = row.get("upRate")
         down_rate = row.get("downRate")
-        numeric_total = to_int(up_rate) + to_int(down_rate)
+        if not observed_rate(up_rate) or not observed_rate(down_rate):
+            complete = False
+            break
+        observed_totals.append(up_rate + down_rate)
+    total_rate = sum(observed_totals) if complete else None
+    distribution = []
+    for index, row in enumerate(rows):
+        up_rate = row.get("upRate")
+        down_rate = row.get("downRate")
+        numeric_total = observed_totals[index] if complete else None
         distribution.append(
             {
                 "name": row.get("name", "-"),
-                "share": round(((numeric_total / total_rate) * 100), 2) if total_rate else 0,
+                "share": round(((numeric_total / total_rate) * 100), 2) if total_rate else (0 if complete else None),
                 "upRate": up_rate,
                 "downRate": down_rate,
                 "status": row.get("status", "-"),
@@ -2860,11 +2918,10 @@ class Collector(SnapshotBuilderMixin, CollectorServiceMixin):
             "cpu": deque(maxlen=HISTORY_LIMIT),
             "memory": deque(maxlen=HISTORY_LIMIT),
             "disk": deque(maxlen=HISTORY_LIMIT),
-            "uplink": deque(maxlen=HISTORY_LIMIT),
-            "downlink": deque(maxlen=HISTORY_LIMIT),
             "timestamps": deque(maxlen=HISTORY_LIMIT),
+            "resourceSamples": deque(maxlen=HISTORY_LIMIT),
+            "trafficSamples": deque(maxlen=HISTORY_LIMIT),
         }
-        self.line_history = {}
         self.ip_aliases = self.load_ip_aliases()
         self.readonly_diagnostics_cache = {"fetched_at": 0.0, "payload": None}
         self.connection_protocol_last_scan_at = 0.0
@@ -2931,11 +2988,10 @@ class Collector(SnapshotBuilderMixin, CollectorServiceMixin):
                 "cpu": deque(maxlen=HISTORY_LIMIT),
                 "memory": deque(maxlen=HISTORY_LIMIT),
                 "disk": deque(maxlen=HISTORY_LIMIT),
-                "uplink": deque(maxlen=HISTORY_LIMIT),
-                "downlink": deque(maxlen=HISTORY_LIMIT),
                 "timestamps": deque(maxlen=HISTORY_LIMIT),
+                "resourceSamples": deque(maxlen=HISTORY_LIMIT),
+            "trafficSamples": deque(maxlen=HISTORY_LIMIT),
             }
-            self.line_history = {}
             self.readonly_diagnostics_cache = {"fetched_at": 0.0, "payload": None}
             self.connection_protocol_last_scan_at = 0.0
             self.wan_latency = {
@@ -3469,8 +3525,11 @@ class Collector(SnapshotBuilderMixin, CollectorServiceMixin):
             if reset:
                 zero_candidates.setdefault(interface_name, {})[direction] = 0
                 return None
+            if not has_baseline:
+                zero_candidates.setdefault(interface_name, {})[direction] = 0
+                return None
             previous_rate = previous_direction_rate(interface_name, direction)
-            if has_baseline and raw_rate == 0 and previous_rate > 0:
+            if raw_rate == 0 and previous_rate > 0:
                 direction_counts = zero_candidates.setdefault(interface_name, {})
                 direction_counts[direction] = to_int(direction_counts.get(direction), 0) + 1
                 if direction_counts[direction] < RATE_ZERO_CONFIRM_SAMPLES:
@@ -3491,8 +3550,8 @@ class Collector(SnapshotBuilderMixin, CollectorServiceMixin):
             reset = has_baseline and (rx < prev_rx or tx < prev_tx)
             counter_reset = counter_reset or reset
             sample_ready = sample_ready or (has_baseline and not reset)
-            raw_rx_bps = max(rx - prev_rx, 0) / interval if has_baseline and not reset else 0
-            raw_tx_bps = max(tx - prev_tx, 0) / interval if has_baseline and not reset else 0
+            raw_rx_bps = max(rx - prev_rx, 0) / interval if has_baseline and not reset else None
+            raw_tx_bps = max(tx - prev_tx, 0) / interval if has_baseline and not reset else None
             rates[name] = {
                 "rxBps": confirm_zero_rate(name, "rx", raw_rx_bps, has_baseline, reset),
                 "txBps": confirm_zero_rate(name, "tx", raw_tx_bps, has_baseline, reset),

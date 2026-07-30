@@ -1,5 +1,5 @@
 import { ChevronRight } from "lucide-react";
-import type { PanelRouteId } from "../../routes/panelRoutes";
+import type { PanelNavigate, PanelRouteId } from "../../routes/panelRoutes";
 import type { DesktopLedgerRow } from "./desktopOverviewModel";
 
 export function DesktopLedger({
@@ -9,16 +9,20 @@ export function DesktopLedger({
   onNavigate,
   module,
   emptyLabel = "当前没有可列出的对象",
+  taskLandmark,
+  evidenceAt = null,
 }: {
   title: string;
   subtitle: string;
   rows: DesktopLedgerRow[];
-  onNavigate: (route: PanelRouteId) => void;
+  onNavigate: PanelNavigate;
   module: string;
   emptyLabel?: string;
+  taskLandmark?: string;
+  evidenceAt?: string | null;
 }) {
   return (
-    <section className="do-ledger" aria-labelledby={`do-ledger-${module}`} data-desktop-ledger={module}>
+    <section className="do-ledger" aria-labelledby={`do-ledger-${module}`} data-desktop-ledger={module} data-overview-task-landmark={taskLandmark}>
       <header className="do-module-heading">
         <div><h2 id={`do-ledger-${module}`}>{title}</h2><p>{subtitle}</p></div>
         <span>{rows.length} 项</span>
@@ -34,11 +38,26 @@ export function DesktopLedger({
           </div>
           <div className="do-ledger-body" role="rowgroup">
             {rows.map((row) => (
-              <div className={`do-ledger-row is-${row.tone}`} role="row" data-desktop-ledger-row={row.id} key={row.id}>
+              <div
+                className={`do-ledger-row is-${row.tone}`}
+                role="row"
+                data-desktop-ledger-row={row.id}
+                data-overview-object-detail={row.targetObjectId}
+                key={row.id}
+              >
                 <span className="do-ledger-category" role="cell">{row.category}</span>
                 <span className="do-ledger-object" role="cell">
                   {row.route ? (
-                    <button type="button" onClick={() => onNavigate(row.route as PanelRouteId)} aria-label={`查看${row.object}详情`} data-desktop-ledger-route={row.route}>
+                    <button
+                      type="button"
+                      onClick={() => onNavigate(row.route as PanelRouteId, row.targetObjectId ? {
+                        objectId: row.targetObjectId,
+                        returnRoute: "overview",
+                        evidenceAt,
+                      } : undefined)}
+                      aria-label={`查看${row.object}详情`}
+                      data-desktop-ledger-route={row.route}
+                    >
                       <b>{row.object}</b><ChevronRight aria-hidden="true" size={15} />
                     </button>
                   ) : <b>{row.object}</b>}

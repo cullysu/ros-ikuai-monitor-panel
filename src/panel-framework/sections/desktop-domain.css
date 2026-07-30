@@ -1,5 +1,5 @@
 .desktop-domain-workspace {
-  margin-top: 14px;
+  margin-top: 8px;
   overflow: hidden;
   border: 1px solid #b8cad2;
   border-radius: 8px;
@@ -112,13 +112,15 @@
 
 .ddw-body {
   display: grid;
-  grid-template-columns: minmax(570px, 1.45fr) minmax(390px, 1fr);
-  align-items: stretch;
+  grid-template-columns: minmax(520px, 1.06fr) minmax(430px, 0.94fr);
+  align-items: start;
   min-width: 0;
 }
 
 .ddw-table-pane {
   display: flex;
+  align-self: start;
+  height: fit-content;
   min-width: 0;
   flex-direction: column;
   border-right: 1px solid #b8cad2;
@@ -141,7 +143,6 @@
 .ddw-table-pane > header b {
   color: #153a49;
   font-size: 15px;
-  font-variant-numeric: tabular-nums;
 }
 
 .ddw-table-scroll {
@@ -151,7 +152,7 @@
 
 .ddw-table-scroll table {
   width: 100%;
-  min-width: 650px;
+  min-width: 560px;
   border-collapse: collapse;
   table-layout: fixed;
   font-size: 12px;
@@ -236,6 +237,7 @@
   text-align: center;
 }
 
+
 .ddw-table-pane > footer {
   display: flex;
   align-items: center;
@@ -271,6 +273,7 @@
 }
 
 .ddw-inspector {
+  align-self: start;
   min-width: 0;
   padding: 0 12px 12px;
   background: #f2f7f8;
@@ -443,7 +446,6 @@
   color: #163542;
   font-size: 12px;
   font-weight: 650;
-  font-variant-numeric: tabular-nums;
 }
 
 .ddi-timeline {

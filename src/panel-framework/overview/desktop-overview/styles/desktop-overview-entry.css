@@ -1,0 +1,104 @@
+@import "./desktop-overview-tokens.css";
+@import "./desktop-overview.css";
+@import "./desktop-overview-responsive.css";
+@import "./desktop-overview-recovered.css";
+@media (min-width: 1200px) {
+  /* Final entry owner: recovered desktop rules must not reopen the normal evidence boundary. */
+  .do-normal-workspace > .do-ledger[data-desktop-ledger=provenance] .do-module-heading {
+    min-height: 26px;
+    padding: 2px 11px 1px;
+    align-items: center;
+  }
+  .do-normal-workspace > .do-ledger[data-desktop-ledger=provenance] .do-module-heading h2 {
+    font-size: 12px;
+  }
+  .do-normal-workspace > .do-ledger[data-desktop-ledger=provenance] .do-module-heading p {
+    margin-top: 1px;
+    font-size: 12px;
+  }
+  .do-normal-workspace > .do-ledger[data-desktop-ledger=provenance] .do-module-heading > span {
+    font-size: 12px;
+  }
+  .do-normal-workspace > .do-ledger[data-desktop-ledger=provenance] .do-ledger-head {
+    display: none;
+  }
+  .do-normal-workspace > .do-ledger[data-desktop-ledger=provenance] .do-ledger-body {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  .do-normal-workspace > .do-ledger[data-desktop-ledger=provenance] .do-ledger-row {
+    display: grid;
+    grid-template-columns: max-content max-content minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    grid-template-areas:
+      "object state evidence"
+      "source source source";
+    column-gap: 8px;
+    row-gap: 2px;
+    min-height: 0;
+    padding: 2px 10px 3px;
+    border-bottom: 0;
+    border-left: 1px solid var(--do-line-soft);
+    align-content: start;
+  }
+  .do-normal-workspace > .do-ledger[data-desktop-ledger=provenance] .do-ledger-row:first-child {
+    border-left: 0;
+  }
+  .do-normal-workspace > .do-ledger[data-desktop-ledger=provenance] .do-ledger-category {
+    display: none;
+  }
+  .do-normal-workspace > .do-ledger[data-desktop-ledger=provenance] .do-ledger-object {
+    grid-area: object;
+  }
+  .do-normal-workspace > .do-ledger[data-desktop-ledger=provenance] .do-ledger-state {
+    grid-area: state;
+  }
+  .do-normal-workspace > .do-ledger[data-desktop-ledger=provenance] .do-ledger-object button {
+    min-height: 28px;
+    font-size: 12px;
+  }
+  .do-normal-workspace > .do-ledger[data-desktop-ledger=provenance] .do-ledger-evidence {
+    grid-area: evidence;
+    min-width: 0;
+    overflow: hidden;
+    font-size: 12px;
+    line-height: 1.2;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .do-normal-workspace > .do-ledger[data-desktop-ledger=provenance] .do-ledger-source {
+    grid-area: source;
+    min-width: 0;
+    overflow: hidden;
+    color: var(--do-copy);
+    font-size: 12px;
+    line-height: 1.05;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .do-normal-workspace > .do-normal-decision-band .do-module-heading {
+    min-height: 38px;
+    padding-top: 5px;
+    padding-bottom: 4px;
+  }
+  .do-normal-workspace > .do-normal-decision-band .do-ledger-row {
+    min-height: 40px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+  }
+}
+@media (min-width: 1200px) {
+  /* R10 focus-economy owner: recover first-screen evidence without reducing readable type or deleting proof. */
+  .do-status-bus .do-verdict {
+    padding: 5px 12px 4px 14px;
+  }
+  .do-status-bus .do-status-items > div {
+    padding: 6px 10px;
+  }
+}
+@media (min-width: 1200px) {
+  /* Keep the compact normal task path continuous while preserving every evidence row. */
+  .do-normal-workspace[data-desktop-normal-density="compact"] {
+    gap: 4px;
+  }
+}

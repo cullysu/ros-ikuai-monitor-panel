@@ -1,10 +1,134 @@
 import copy
 import ipaddress
+import math
+import re
 import time
 from collections import defaultdict, deque
+from datetime import datetime, timedelta, timezone
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
+
+from .endpoint_failures import normalize_endpoint_failures
 
 
 _runtime = None
+
+
+def _finite_resource_number(value):
+    if value is None or isinstance(value, bool):
+        return None
+    text = str(value).strip()
+    if not text:
+        return None
+    try:
+        number = float(text)
+    except (TypeError, ValueError):
+        return None
+    return number if math.isfinite(number) else None
+
+
+def _resource_observation(resource):
+    cpu = _finite_resource_number(resource.get("cpu-load"))
+    total_memory = _finite_resource_number(resource.get("total-memory"))
+    free_memory = _finite_resource_number(resource.get("free-memory"))
+    total_disk = _finite_resource_number(resource.get("total-hdd-space"))
+    free_disk = _finite_resource_number(resource.get("free-hdd-space"))
+
+    cpu = cpu if cpu is not None and 0 <= cpu <= 100 else None
+    memory_valid = (
+        total_memory is not None and total_memory > 0 and
+        free_memory is not None and 0 <= free_memory <= total_memory
+    )
+    disk_valid = (
+        total_disk is not None and total_disk > 0 and
+        free_disk is not None and 0 <= free_disk <= total_disk
+    )
+    memory_used = total_memory - free_memory if memory_valid else None
+    disk_used = total_disk - free_disk if disk_valid else None
+    return {
+        "cpu": cpu,
+        "memory": round((memory_used / total_memory) * 100, 2) if memory_valid else None,
+        "disk": round((disk_used / total_disk) * 100, 2) if disk_valid else None,
+        "memoryUsedBytes": int(memory_used) if memory_used is not None else None,
+        "memoryTotalBytes": int(total_memory) if memory_valid else None,
+        "diskUsedBytes": int(disk_used) if disk_used is not None else None,
+        "diskTotalBytes": int(total_disk) if disk_valid else None,
+    }
+
+
+_ROUTEROS_MONTHS = {
+    "jan": 1,
+    "feb": 2,
+    "mar": 3,
+    "apr": 4,
+    "may": 5,
+    "jun": 6,
+    "jul": 7,
+    "aug": 8,
+    "sep": 9,
+    "oct": 10,
+    "nov": 11,
+    "dec": 12,
+}
+
+
+def _router_clock_local_datetime(clock):
+    clock = clock if isinstance(clock, dict) else {}
+    date_text = str(clock.get("date") or "").strip()
+    time_text = str(clock.get("time") or "").strip()
+    if not date_text or not time_text:
+        return None
+    try:
+        iso_match = re.fullmatch(r"(\d{4})-(\d{2})-(\d{2})", date_text)
+        routeros_match = re.fullmatch(r"([A-Za-z]{3})/(\d{1,2})/(\d{4})", date_text)
+        if iso_match:
+            year, month, day = (int(value) for value in iso_match.groups())
+        elif routeros_match:
+            month = _ROUTEROS_MONTHS[routeros_match.group(1).lower()]
+            day = int(routeros_match.group(2))
+            year = int(routeros_match.group(3))
+        else:
+            return None
+        parsed_time = datetime.strptime(time_text, "%H:%M:%S").time()
+        return datetime(year, month, day, parsed_time.hour, parsed_time.minute, parsed_time.second)
+    except (KeyError, TypeError, ValueError):
+        return None
+
+
+def _router_clock_offset(clock):
+    clock = clock if isinstance(clock, dict) else {}
+    raw_offset = str(clock.get("gmt-offset") or "").strip()
+    if raw_offset:
+        match = re.fullmatch(r"([+-]?)(\d{2}):(\d{2})", raw_offset)
+        if not match:
+            return None
+        sign, hours_text, minutes_text = match.groups()
+        hours = int(hours_text)
+        minutes = int(minutes_text)
+        if hours > 23 or minutes > 59:
+            return None
+        delta = timedelta(hours=hours, minutes=minutes)
+        return -delta if sign == "-" else delta
+
+    zone_name = str(clock.get("time-zone-name") or "").strip()
+    if not zone_name or zone_name.lower() == "manual":
+        return None
+    try:
+        return ZoneInfo(zone_name)
+    except ZoneInfoNotFoundError:
+        return None
+
+
+def _router_clock_timestamp(clock):
+    """Return a qualified device-clock timestamp, or None when its zone is unknown."""
+    local_datetime = _router_clock_local_datetime(clock)
+    zone = _router_clock_offset(clock)
+    if local_datetime is None or zone is None:
+        return None
+    try:
+        qualified = local_datetime.replace(tzinfo=timezone(zone) if isinstance(zone, timedelta) else zone)
+        return qualified.isoformat(timespec="seconds").replace("+00:00", "Z")
+    except (OverflowError, TypeError, ValueError):
+        return None
 
 
 def bind_snapshot_runtime(runtime):
@@ -40,10 +164,8 @@ class SnapshotBuilderMixin:
         resource = rest["resource"]
         latency = wan_latency or {}
         latency_ms = _runtime.to_int(latency.get("latencyMs"), 0)
-        total_memory = _runtime.to_int(resource.get("total-memory"))
-        used_memory = max(total_memory - _runtime.to_int(resource.get("free-memory")), 0)
-        total_disk = _runtime.to_int(resource.get("total-hdd-space"))
-        used_disk = max(total_disk - _runtime.to_int(resource.get("free-hdd-space")), 0)
+        observation = _resource_observation(resource)
+        observed_pressures = [value for value in (observation["cpu"], observation["memory"]) if value is not None]
         admins = []
         if _runtime.EXPOSE_ADMIN_SESSIONS:
             seen = set()
@@ -69,16 +191,16 @@ class SnapshotBuilderMixin:
             "cpuCount": _runtime.to_int(resource.get("cpu-count")),
             "cpuFrequency": _runtime.to_int(resource.get("cpu-frequency")),
             "uptime": resource.get("uptime", "-"),
-            "systemTime": f'{rest["clock"].get("date", "")} {rest["clock"].get("time", "")}'.strip(),
+            "systemTime": _router_clock_timestamp(rest.get("clock", {})),
             "ntpStatus": rest["ntp"].get("status", "unknown"),
             "admins": admins,
-            "cpuLoad": _runtime.to_int(resource.get("cpu-load")),
-            "memoryUsedBytes": used_memory,
-            "memoryTotalBytes": total_memory,
-            "memoryUsage": round((used_memory / total_memory) * 100, 2) if total_memory else 0,
-            "diskUsedBytes": used_disk,
-            "diskTotalBytes": total_disk,
-            "diskUsage": round((used_disk / total_disk) * 100, 2) if total_disk else 0,
+            "cpuLoad": observation["cpu"],
+            "memoryUsedBytes": observation["memoryUsedBytes"],
+            "memoryTotalBytes": observation["memoryTotalBytes"],
+            "memoryUsage": observation["memory"],
+            "diskUsedBytes": observation["diskUsedBytes"],
+            "diskTotalBytes": observation["diskTotalBytes"],
+            "diskUsage": observation["disk"],
             "uplinkBps": wan_totals["up"],
             "downlinkBps": wan_totals["down"],
             "wanLatencyMs": latency_ms or None,
@@ -89,7 +211,7 @@ class SnapshotBuilderMixin:
             "wanLatencyError": latency.get("error"),
             "onlineTerminals": terminal_count,
             "connectionTotal": ssh["counts"]["all"],
-            "systemLoadLevel": _runtime.rate_level(max(_runtime.to_int(resource.get("cpu-load")) / 100, used_memory / total_memory if total_memory else 0)),
+            "systemLoadLevel": _runtime.rate_level(max(observed_pressures) / 100) if observed_pressures else "unknown",
             "history": {key: list(values) for key, values in self.history.items()},
         }
 
@@ -152,33 +274,25 @@ class SnapshotBuilderMixin:
                     "txDrop": _runtime.to_int(item.get("tx-drop")),
                     "rxError": _runtime.to_int(item.get("rx-error")),
                     "txError": _runtime.to_int(item.get("tx-error")),
-                    "rxRate": rates.get(name, {}).get("rxBps", 0),
-                    "txRate": rates.get(name, {}).get("txBps", 0),
+                    "rxRate": rates.get(name, {}).get("rxBps"),
+                    "txRate": rates.get(name, {}).get("txBps"),
                     **quality_row,
                 }
             )
         items.sort(key=lambda row: (row["role"] != "WAN", row.get("isDerivedInterface", False), row["name"]))
         return items
 
-    def build_pppoe(self, rest, rates, addresses_by_interface, update_rate_history=False, rate_history_break=False):
+    def build_pppoe(self, rest, rates, addresses_by_interface):
         defaults = [row for row in rest["routes"] if row.get("dst-address") == "0.0.0.0/0"]
         route_by_gateway = defaultdict(list)
         for route in defaults:
             route_by_gateway[route.get("gateway")].append(route)
         rows = []
-        total_rate = 0
         for item in rest["pppoe"]:
             name = item.get("name")
-            metric = rates.get(name, {"rxBps": 0, "txBps": 0})
+            metric = rates.get(name, {"rxBps": None, "txBps": None})
             rx_bps = metric.get("rxBps")
             tx_bps = metric.get("txBps")
-            rx_bps_numeric = _runtime.to_int(rx_bps)
-            tx_bps_numeric = _runtime.to_int(tx_bps)
-            total_rate += rx_bps_numeric + tx_bps_numeric
-            history = self.line_history.setdefault(name, {"up": deque(maxlen=_runtime.HISTORY_LIMIT), "down": deque(maxlen=_runtime.HISTORY_LIMIT)})
-            if update_rate_history:
-                history["up"].append(None if rate_history_break else metric.get("txBps"))
-                history["down"].append(None if rate_history_break else metric.get("rxBps"))
             rows.append(
                 {
                     "name": name,
@@ -190,7 +304,6 @@ class SnapshotBuilderMixin:
                     "downRate": rx_bps,
                     "rxBytes": _runtime.to_int(next((iface.get("rx-byte") for iface in rest["interfaces"] if iface.get("name") == name), 0)),
                     "txBytes": _runtime.to_int(next((iface.get("tx-byte") for iface in rest["interfaces"] if iface.get("name") == name), 0)),
-                    "history": {"up": list(history["up"]), "down": list(history["down"])},
                     "routes": [
                         {
                             "active": _runtime.to_bool(route.get("active")),
@@ -202,19 +315,10 @@ class SnapshotBuilderMixin:
                     ],
                 }
             )
-        distribution = [
-            {
-                "name": row["name"],
-                "share": round(((_runtime.to_int(row.get("upRate")) + _runtime.to_int(row.get("downRate"))) / total_rate) * 100, 2) if total_rate else 0,
-                "upRate": row["upRate"],
-                "downRate": row["downRate"],
-                "status": row["status"],
-            }
-            for row in rows
-        ]
+        distribution = _runtime.build_distribution_from_lines(rows)
         return rows, distribution
 
-    def build_wan_lines(self, rest, pppoe_rows, interfaces, update_rate_history=False, rate_history_break=False):
+    def build_wan_lines(self, rest, pppoe_rows, interfaces):
         active_defaults = [
             row for row in rest.get("routes", [])
             if row.get("dst-address") in {"0.0.0.0/0", "::/0"} and _runtime.to_bool(row.get("active")) and not _runtime.to_bool(row.get("disabled"))
@@ -284,10 +388,6 @@ class SnapshotBuilderMixin:
 
         for iface in non_pppoe_wan_interfaces:
             name = iface.get("name", "-")
-            history = self.line_history.setdefault(name, {"up": deque(maxlen=_runtime.HISTORY_LIMIT), "down": deque(maxlen=_runtime.HISTORY_LIMIT)})
-            if update_rate_history:
-                history["up"].append(None if rate_history_break else _runtime.to_int(iface.get("txRate")))
-                history["down"].append(None if rate_history_break else _runtime.to_int(iface.get("rxRate")))
             dhcp_client = dhcp_clients_by_interface.get(name, {})
             running = bool(iface.get("running")) and not bool(iface.get("disabled"))
             route_rows = route_rows_for_interface(name)
@@ -309,11 +409,10 @@ class SnapshotBuilderMixin:
                     "running": running,
                     "parent": iface.get("parentInterface") or iface.get("type", "-"),
                     "addresses": list(iface.get("ips") or []),
-                    "upRate": _runtime.to_int(iface.get("txRate")),
-                    "downRate": _runtime.to_int(iface.get("rxRate")),
+                    "upRate": iface.get("txRate"),
+                    "downRate": iface.get("rxRate"),
                     "rxBytes": _runtime.to_int(iface.get("rxBytes")),
                     "txBytes": _runtime.to_int(iface.get("txBytes")),
-                    "history": {"up": list(history["up"]), "down": list(history["down"])},
                     "routes": route_rows,
                     "kind": "interface",
                     "lineId": name,
@@ -975,16 +1074,12 @@ class SnapshotBuilderMixin:
             rest,
             rates,
             addresses_by_interface,
-            update_rate_history=update_rate_history,
-            rate_history_break=rate_history_break,
         )
         interfaces = self.build_interfaces(rest, rates, addresses_by_interface, quality)
         wan_lines = self.build_wan_lines(
             rest,
             pppoe,
             interfaces,
-            update_rate_history=update_rate_history,
-            rate_history_break=rate_history_break,
         )
         wan_latency = self.get_wan_latency()
         pppoe = self.attach_wan_latency(pppoe, wan_latency)
@@ -993,8 +1088,8 @@ class SnapshotBuilderMixin:
             distribution = _runtime.build_distribution_from_lines(wan_lines)
         wan_source = [row for row in wan_lines if row.get("running")] or list(wan_lines)
         wan_totals = {
-            "up": sum(_runtime.to_int(row.get("upRate")) for row in wan_source),
-            "down": sum(_runtime.to_int(row.get("downRate")) for row in wan_source),
+            "up": _runtime.complete_rate_total(wan_source, "upRate"),
+            "down": _runtime.complete_rate_total(wan_source, "downRate"),
         }
         terminals = self.build_terminals_and_connections(rest, ssh, local_networks, router_ips)
         dhcp = self.build_dhcp(rest)
@@ -1062,27 +1157,75 @@ class SnapshotBuilderMixin:
             ),
         }
         resource = rest["resource"]
-        total_memory = _runtime.to_int(resource.get("total-memory"))
-        used_memory = max(total_memory - _runtime.to_int(resource.get("free-memory")), 0)
-        total_disk = _runtime.to_int(resource.get("total-hdd-space"))
-        used_disk = max(total_disk - _runtime.to_int(resource.get("free-hdd-space")), 0)
-        self.history["cpu"].append(_runtime.to_int(resource.get("cpu-load")))
-        self.history["memory"].append(round((used_memory / total_memory) * 100, 2) if total_memory else 0)
-        self.history["disk"].append(round((used_disk / total_disk) * 100, 2) if total_disk else 0)
-        self.history["timestamps"].append(int(time.time()))
+        observation = _resource_observation(resource)
+        snapshot_timestamp = _runtime.format_iso_now()
+        if all(observation[key] is not None for key in ("cpu", "memory", "disk")):
+            self.history["cpu"].append(observation["cpu"])
+            self.history["memory"].append(observation["memory"])
+            self.history["disk"].append(observation["disk"])
+            self.history["timestamps"].append(snapshot_timestamp)
+            self.history["resourceSamples"].append(
+                {
+                    "timestamp": snapshot_timestamp,
+                    "cpu": observation["cpu"],
+                    "memory": observation["memory"],
+                    "disk": observation["disk"],
+                    "source": "routeros-resource",
+                    "evidenceMode": "current",
+                }
+            )
         if update_rate_history:
-            rate_up = None if rate_history_break else wan_totals["up"]
-            rate_down = None if rate_history_break else wan_totals["down"]
-            self.history["uplink"].append(rate_up)
-            self.history["downlink"].append(rate_down)
+            self.history["trafficSamples"].append(
+                {
+                    "timestamp": snapshot_timestamp,
+                    "uplink": None if rate_history_break else wan_totals["up"],
+                    "downlink": None if rate_history_break else wan_totals["down"],
+                    "source": "counter-delta",
+                    "evidenceMode": "unavailable" if rate_history_break else "current",
+                }
+            )
         with self.lock:
             rate_history_updated_at = self.last_counter_sample_at
             rate_history_sample_count = self.rate_history_sample_count
             quality_updated_at = self.last_quality_sample_at
             quality_sample_count = self.interface_quality_sample_count
+        endpoint_failures = {
+            "realtimeEndpointFailures": normalize_endpoint_failures(
+                self.realtime_failures,
+                channel="realtime-rest",
+                group="实时 REST",
+                endpoints=_runtime.REALTIME_REST_ENDPOINTS,
+                observed_at=self.realtime_updated_at,
+                fallback_at=snapshot_timestamp,
+            ),
+            "slowRestEndpointFailures": normalize_endpoint_failures(
+                self.slow_failures,
+                channel="slow-rest",
+                group="慢速 REST",
+                endpoints=_runtime.SLOW_REST_ENDPOINTS,
+                observed_at=self.slow_updated_at,
+                fallback_at=snapshot_timestamp,
+            ),
+            "staticEndpointFailures": normalize_endpoint_failures(
+                self.static_failures,
+                channel="static-rest",
+                group="静态 REST",
+                endpoints=_runtime.STATIC_REST_ENDPOINTS,
+                observed_at=self.static_updated_at,
+                fallback_at=snapshot_timestamp,
+            ),
+            "detailEndpointFailures": normalize_endpoint_failures(
+                self.detail_failures,
+                channel="detail-rest",
+                group="连接明细 REST",
+                endpoints=_runtime.DETAIL_REST_ENDPOINTS,
+                observed_at=ssh.get("detailUpdatedAt"),
+                fallback_at=snapshot_timestamp,
+            ),
+        }
         snapshot = {
             "status": "ok",
-            "updatedAt": _runtime.format_iso_now(),
+            "updatedAt": snapshot_timestamp,
             "error": None,
             "meta": {
                 "target": _runtime.PANEL_TARGET,
@@ -1109,10 +1252,7 @@ class SnapshotBuilderMixin:
                 "staticError": self.static_error,
                 "staticLastErrorAt": self.static_last_error_at,
                 "staticDurationSeconds": self.static_duration_seconds,
-                "staticEndpointFailures": copy.deepcopy(self.static_failures),
-                "realtimeEndpointFailures": copy.deepcopy(self.realtime_failures),
-                "slowRestEndpointFailures": copy.deepcopy(self.slow_failures),
-                "detailEndpointFailures": copy.deepcopy(self.detail_failures),
+                **endpoint_failures,
                 "connectionProtocolUpdatedAt": ssh.get("protocolUpdatedAt"),
                 "connectionDetailUpdatedAt": ssh.get("detailUpdatedAt"),
                 "connectionProtocolError": ssh.get("protocolError"),

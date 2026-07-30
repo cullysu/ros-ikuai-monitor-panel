@@ -1,6 +1,8 @@
+import type { PanelNavigate } from "../../routes/panelRoutes";
 import type { SectionModel } from "../../sections/sectionModels";
 import type { InterfaceRowEvidence, RouteRowEvidence } from "../../sections/sectionRowEvidence";
 import type { WorkspaceRow } from "../mobileDomainWorkspaceModel";
+import { InterfaceNextStep } from "./InterfaceNextStep";
 import {
   InspectorDisclosure,
   InspectorFacts,
@@ -23,6 +25,7 @@ function InterfaceRelationship({ evidence }: { evidence: InterfaceRowEvidence })
     : "未取得直接关联";
   const relationRows = evidence.defaultRoutes.map((route) => ({
     primary: `${route.destination} → ${route.gateway}`,
+    primaryKind: "machine" as const,
     secondary: `${route.table} · distance ${displayValue(route.distance)}`,
     status: route.disabled === true ? "已停用" : route.active === true ? "活动" : route.active === false ? "非活动" : "未确认",
     tone: route.disabled === true || route.active === false ? "warn" as const : "neutral" as const,
@@ -32,11 +35,11 @@ function InterfaceRelationship({ evidence }: { evidence: InterfaceRowEvidence })
     <InspectorSection
       title="依赖与路由"
       note={evidence.defaultRouteRelation === "direct" ? "只列出有明确对象关联的默认路由记录" : "没有把名称或角色推断成默认出口"}
-      tone={evidence.running === false ? "danger" : "neutral"}
+      tone={evidence.operationalImpact === "risk" ? "danger" : evidence.operationalImpact === "unverified" ? "warn" : "neutral"}
     >
       <InspectorFacts facts={[
-        { label: "父级对象", value: displayValue(evidence.parent, "未取得") },
-        { label: "默认路由", value: routeSummary, tone: evidence.defaultRouteRelation === "direct" ? "trust" : "warn" },
+        { label: "父级对象", value: displayValue(evidence.parent, "未取得"), valueKind: "machine" },
+        { label: "默认路由", value: routeSummary, tone: evidence.defaultRouteRelation === "direct" ? "trust" : "warn", valueKind: "machine" },
       ]} />
       {relationRows.length ? <InspectorRelations rows={relationRows} /> : null}
     </InspectorSection>
@@ -46,12 +49,18 @@ function InterfaceRelationship({ evidence }: { evidence: InterfaceRowEvidence })
 export function InterfaceInspector({
   row,
   model,
+  preview = false,
+  onNavigate,
 }: {
   row: WorkspaceRow;
   model: SectionModel;
+  preview?: boolean;
+  onNavigate: PanelNavigate;
 }) {
   const evidence = row.evidence as InterfaceRowEvidence;
-  const down = evidence.running === false || evidence.disabled === true;
+  const notRunning = evidence.running === false;
+  const confirmedRisk = evidence.operationalImpact === "risk";
+  const impactUnverified = notRunning && evidence.operationalImpact === "unverified";
   const hasCounters = [
     evidence.rxBytes,
     evidence.txBytes,
@@ -80,27 +89,63 @@ export function InterfaceInspector({
     </InspectorSection>
   );
   const relationship = <InterfaceRelationship evidence={evidence} />;
+  const nextStep = !preview && model.evidenceMode === "current" && model.observedAt
+    ? <InterfaceNextStep objectId={row.id} evidenceAt={model.observedAt} onNavigate={onNavigate} />
+    : null;
+  const previewState = (
+    <InspectorSection
+      title={confirmedRisk ? "已核实影响" : impactUnverified ? "状态与影响" : "接口状态"}
+      tone={confirmedRisk ? "danger" : impactUnverified ? "warn" : "neutral"}
+    >
+      <InspectorFacts facts={[
+        {
+          label: "运行标志",
+          value: observedLabel(evidence.running, "运行", "未运行"),
+          tone: confirmedRisk ? "danger" : evidence.running === false || evidence.running === null ? "warn" : "trust",
+        },
+        {
+          label: "管理状态",
+          value: observedLabel(evidence.disabled, "已停用", "已启用"),
+          tone: evidence.disabled === true || evidence.disabled === null ? "warn" : "neutral",
+        },
+        { label: "角色 / 类型", value: [evidence.role, evidence.interfaceType].filter(Boolean).join(" · ") || "未取得" },
+        { label: "地址", value: displayList(evidence.addresses), valueKind: "machine" },
+      ]} />
+    </InspectorSection>
+  );
+
+  if (preview) {
+    return <>{previewState}{relationship}{readings}</>;
+  }
 
   return (
     <>
-      <InspectorSection title={down ? "影响判据" : "接口状态"} tone={down ? "danger" : "neutral"}>
+      <InspectorSection
+        title={confirmedRisk ? "已核实影响" : impactUnverified ? "状态与影响" : evidence.disabled === true ? "管理停用" : "接口状态"}
+        tone={confirmedRisk ? "danger" : impactUnverified ? "warn" : "neutral"}
+      >
         <InspectorFacts facts={[
           {
             label: "运行标志",
             value: observedLabel(evidence.running, "运行", "未运行"),
-            tone: evidence.running === false ? "danger" : evidence.running === null ? "warn" : "trust",
+            tone: confirmedRisk ? "danger" : evidence.running === false || evidence.running === null ? "warn" : "trust",
           },
           {
             label: "管理状态",
             value: observedLabel(evidence.disabled, "已停用", "已启用"),
-            tone: evidence.disabled === true ? "danger" : evidence.disabled === null ? "warn" : "neutral",
+            tone: evidence.disabled === true || evidence.disabled === null ? "warn" : "neutral",
+          },
+          {
+            label: "影响判断",
+            value: confirmedRisk ? "配置依赖受影响" : impactUnverified ? "影响未判定" : evidence.disabled === true ? "不作为故障" : "未发现风险依据",
+            tone: confirmedRisk ? "danger" : impactUnverified ? "warn" : "neutral",
           },
           { label: "角色 / 类型", value: [evidence.role, evidence.interfaceType].filter(Boolean).join(" · ") || "未取得" },
-          { label: "地址", value: displayList(evidence.addresses) },
+          { label: "地址", value: displayList(evidence.addresses), valueKind: "machine" },
         ]} />
       </InspectorSection>
-      {down ? relationship : readings}
-      {down ? readings : relationship}
+      {notRunning ? relationship : readings}
+      {notRunning ? readings : relationship}
       <InspectorSection
         title="链路质量"
         note={evidence.qualitySampleReady === true ? "基于已记录的质量采样" : "质量样本尚不足或未取得"}
@@ -113,7 +158,7 @@ export function InterfaceInspector({
             { label: "丢失率", value: displayPercent(evidence.lossRate) },
             { label: "错误率", value: displayPercent(evidence.errorRate) },
             { label: "有效样本", value: evidence.qualitySampleCount === null ? "未取得" : `${evidence.qualitySampleCount} 个` },
-            { label: "样本时刻", value: displayValue(evidence.qualityUpdatedAt) },
+            { label: "样本时刻", value: displayValue(evidence.qualityUpdatedAt), valueKind: "machine" },
           ]} />
         ) : <InspectorMessage>本次快照没有可计算的丢包、错误或质量样本。</InspectorMessage>}
       </InspectorSection>
@@ -121,12 +166,13 @@ export function InterfaceInspector({
         title="原始对象身份"
         note="用于深链恢复和对象比对"
         facts={[
-          { label: "MAC", value: displayValue(evidence.mac) },
-          { label: "VLAN", value: displayValue(evidence.vlanId) },
-          { label: "网络", value: displayList(evidence.networks) },
-          { label: "对象 ID", value: row.id },
+          { label: "MAC", value: displayValue(evidence.mac), valueKind: "machine" },
+          { label: "VLAN", value: displayValue(evidence.vlanId), valueKind: "machine" },
+          { label: "网络", value: displayList(evidence.networks), valueKind: "machine" },
+          { label: "对象 ID", value: row.id, valueKind: "machine" },
         ]}
       />
+      {nextStep}
     </>
   );
 }
@@ -153,10 +199,10 @@ export function RouteInspector({
       </InspectorSection>
       <InspectorSection title="路径">
         <InspectorFacts facts={[
-          { label: "目的", value: displayValue(evidence.destination) },
-          { label: "网关 / 出接口", value: displayValue(evidence.gateway) },
-          { label: "路由表", value: displayValue(evidence.table, "main") },
-          { label: "距离", value: displayValue(evidence.distance) },
+          { label: "目的", value: displayValue(evidence.destination), valueKind: "machine" },
+          { label: "网关 / 出接口", value: displayValue(evidence.gateway), valueKind: "machine" },
+          { label: "路由表", value: displayValue(evidence.table, "main"), valueKind: "machine" },
+          { label: "距离", value: displayValue(evidence.distance), valueKind: "numeric" },
         ]} />
       </InspectorSection>
       <InspectorSection
@@ -167,7 +213,7 @@ export function RouteInspector({
         {related ? (
           <>
             <InspectorFacts facts={[
-              { label: "接口", value: related.name, tone: "trust" },
+              { label: "接口", value: related.name, tone: "trust", valueKind: "machine" },
               { label: "状态", value: related.disabled === true ? "已停用" : observedLabel(related.running, "运行", "未运行"), tone: related.running === false || related.disabled === true ? "danger" : "trust" },
               { label: "角色 / 类型", value: [related.role, related.interfaceType].filter(Boolean).join(" · ") || "未取得" },
               { label: "关联方式", value: "精确对象匹配" },
@@ -186,7 +232,7 @@ export function RouteInspector({
           { label: "来源", value: displayValue(evidence.protocol, "未确认") },
           { label: "地址族", value: displayValue(evidence.family) },
           { label: "说明", value: displayValue(evidence.comment, "未记录") },
-          { label: "对象 ID", value: row.id },
+          { label: "对象 ID", value: row.id, valueKind: "machine" },
         ]} />
       </InspectorSection>
     </>

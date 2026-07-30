@@ -8,16 +8,32 @@ import {
   type OverviewTone,
 } from "../overview";
 import { parseRfc3339Timestamp } from "../timeContract";
+import {
+  compareResourceRisk,
+  RESOURCE_METRIC_DEFINITIONS,
+  resourceEvidenceWindow,
+} from "../overview/evidence-model/resourceHistorySamples";
 import { panelObjectIdentityPartsForRaw } from "./panelObjectIdentity";
 import { buildSectionRowEvidence, type SectionEvidenceContext, type SectionRowEvidence } from "./sectionRowEvidence";
-
-type UnknownRecord = Record<string, unknown>;
+import {
+  assessRawInterfaceOperationalState,
+  type InterfaceOperationalImpact,
+  type InterfaceOperationalReason,
+} from "./interfaceOperationalAssessment";
+import { objectRows as rows, record, type UnknownRecord } from "./rawValue";
+import {
+  diagnosticChannelSummaries,
+  diagnosticFailureRows,
+  hasDiagnosticFailures,
+} from "./diagnosticFailureModel";
+import { resourceTimeSeries } from "./resourceTimeSeries";
 
 export interface SectionMetric {
   label: string;
   value: string;
   note?: string;
   tone?: OverviewTone;
+  action?: PanelRouteId;
 }
 
 export interface SectionColumn {
@@ -59,6 +75,8 @@ export interface SectionRowMeta {
   ruleOrder: number | null;
   tags: string[];
   identityParts: string[];
+  operationalImpact: InterfaceOperationalImpact;
+  operationalReason: InterfaceOperationalReason | null;
 }
 
 export interface SectionTable {
@@ -83,8 +101,8 @@ export interface SectionTimeSeriesVisualization {
   kind: "time-series";
   title: string;
   windowLabel: string;
-  min: 0;
-  max: 100;
+  min: number;
+  max: number;
   series: SectionTimeSeries[];
   accessibleSummary: string;
 }
@@ -100,14 +118,6 @@ export interface SectionModel {
   metrics: SectionMetric[];
   tables: SectionTable[];
   visualization?: SectionTimeSeriesVisualization;
-}
-
-function record(value: unknown): UnknownRecord {
-  return value && typeof value === "object" && !Array.isArray(value) ? value as UnknownRecord : {};
-}
-
-function rows(value: unknown): UnknownRecord[] {
-  return Array.isArray(value) ? value.filter((item): item is UnknownRecord => Boolean(item && typeof item === "object" && !Array.isArray(item))) : [];
 }
 
 function text(value: unknown, fallback = "未记录"): string {
@@ -160,6 +170,8 @@ export function emptySectionRowMeta(overrides: Partial<SectionRowMeta> = {}): Se
     ruleOrder: null,
     tags: [],
     identityParts: [],
+    operationalImpact: "none",
+    operationalReason: null,
     ...overrides,
   };
 }
@@ -176,7 +188,7 @@ function rawString(...values: unknown[]): string {
 function rawBoolean(value: unknown): boolean | null {
   if (typeof value === "boolean") return value;
   if (typeof value !== "string") return null;
-  const normalized = value.trim().toLocaleLowerCase();
+  const normalized = value.trim().toLowerCase();
   if (["true", "yes", "running", "active", "bound", "online", "enabled", "up"].includes(normalized)) return true;
   if (["false", "no", "stopped", "inactive", "unbound", "offline", "disabled", "down"].includes(normalized)) return false;
   return null;
@@ -197,7 +209,7 @@ function observedTotal(...values: unknown[]): number | null {
 
 function rawSeverity(row: UnknownRecord, route: PanelRouteId): SectionRowSeverity {
   const evidence = [row.severity, row.level, row.topics]
-    .map((value) => rawString(value).toLocaleLowerCase())
+    .map((value) => rawString(value).toLowerCase())
     .filter(Boolean)
     .join(" ");
   if (/(?:^|[\s,;:/_-])(critical|fatal|emergency|alert)(?:$|[\s,;:/_-])/.test(evidence)) return "critical";
@@ -208,7 +220,7 @@ function rawSeverity(row: UnknownRecord, route: PanelRouteId): SectionRowSeverit
 }
 
 function statusState(value: unknown): SectionRowState {
-  const normalized = rawString(value).toLocaleLowerCase();
+  const normalized = rawString(value).toLowerCase();
   if (!normalized) return "unknown";
   if (["running", "up", "enabled", "reachable"].includes(normalized)) return "running";
   if (["online"].includes(normalized)) return "online";
@@ -222,13 +234,13 @@ function statusState(value: unknown): SectionRowState {
   return "unknown";
 }
 
-function metadataFor(route: PanelRouteId, title: string, row: UnknownRecord): SectionRowMeta {
+function metadataFor(route: PanelRouteId, title: string, row: UnknownRecord, evidence: SectionRowEvidence): SectionRowMeta {
   const disabled = rawBoolean(row.disabled);
   const active = rawBoolean(row.active);
   const online = rawBoolean(row.online);
   let running = rawBoolean(row.running);
   const severity = rawSeverity(row, route);
-  const protocol = rawString(row.protocol, row.label).toLocaleLowerCase();
+  const protocol = rawString(row.protocol, row.label).toLowerCase();
   const directTraffic = firstNumber(row.totalRate, row.rate, row.bytes, row.value);
   const trafficBps = directTraffic ?? observedTotal(row.downRate, row.upRate, row.rxRate, row.txRate);
   const connections = firstNumber(row.connections, row.count);
@@ -244,9 +256,9 @@ function metadataFor(route: PanelRouteId, title: string, row: UnknownRecord): Se
   const sampleCount = observedSeries.length ? observedSeries.length : firstNumber(row.sampleCount, row.samples);
   const ruleOrder = firstNumber(row.rawOrder, row.order);
   const tags = new Set<string>();
-  const status = rawString(row.status, row.state).toLocaleLowerCase();
-  const topicText = [row.group, row.topics].map((value) => rawString(value).toLocaleLowerCase()).filter(Boolean).join(" ");
-  const action = rawString(row.action).toLocaleLowerCase();
+  const status = rawString(row.status, row.state).toLowerCase();
+  const topicText = [row.group, row.topics].map((value) => rawString(value).toLowerCase()).filter(Boolean).join(" ");
+  const action = rawString(row.action).toLowerCase();
   const destination = rawString(row.dstAddress, row.destination);
   const isDefaultRoute = row.default === true || destination === "0.0.0.0/0" || destination === "::/0";
 
@@ -272,10 +284,14 @@ function metadataFor(route: PanelRouteId, title: string, row: UnknownRecord): Se
   if (route === "dhcp" && status === "bound") running = true;
 
   let rowState: SectionRowState;
+  const interfaceEvidence = (route === "interfaces" || route === "lineStatus") && evidence.kind === "interface"
+    ? evidence
+    : null;
+
   if (disabled === true) {
     rowState = "disabled";
   } else if ((route === "trafficLoad" || route === "loadAudit") && utilization !== null) {
-    const threshold = rawString(row.key, row.series).toLocaleLowerCase() === "disk" ? 90 : 85;
+    const threshold = rawString(row.key, row.series).toLowerCase() === "disk" ? 90 : 85;
     rowState = utilization >= threshold ? "error" : "neutral";
   } else if (severity === "critical" || severity === "error") {
     rowState = "error";
@@ -288,7 +304,11 @@ function metadataFor(route: PanelRouteId, title: string, row: UnknownRecord): Se
   } else if (route === "routes" || (route === "balance" && title === "默认路由")) {
     rowState = active === true ? "active" : active === false ? "inactive" : "unknown";
   } else if (route === "interfaces" || route === "lineStatus") {
-    rowState = running === true ? "running" : running === false ? "stopped" : "unknown";
+    rowState = running === true
+      ? "running"
+      : running === false
+        ? interfaceEvidence?.operationalImpact === "risk" ? "error" : "warning"
+        : "unknown";
   } else if (route === "terminals") {
     rowState = online === true ? "online" : online === false ? "stopped" : statusState(status);
   } else if (route === "dhcp" && status === "bound") {
@@ -298,13 +318,15 @@ function metadataFor(route: PanelRouteId, title: string, row: UnknownRecord): Se
     if (rowState === "unknown") rowState = "neutral";
   }
 
-  const attention = disabled === true
-    || rowState === "stopped"
-    || rowState === "warning"
-    || rowState === "error"
-    || title === "身份告警"
-    || title === "安全告警"
-    || title === "采集与诊断边界";
+  const attention = interfaceEvidence
+    ? interfaceEvidence.operationalImpact === "risk"
+    : disabled === true
+      || rowState === "stopped"
+      || rowState === "warning"
+      || rowState === "error"
+      || title === "身份告警"
+      || title === "安全告警"
+      || title === "采集与诊断边界";
 
   return emptySectionRowMeta({
     state: rowState,
@@ -325,16 +347,19 @@ function metadataFor(route: PanelRouteId, title: string, row: UnknownRecord): Se
     ruleOrder,
     tags: [...tags].sort(),
     identityParts: panelObjectIdentityPartsForRaw(route, title, row),
+    operationalImpact: interfaceEvidence?.operationalImpact || (attention ? "risk" : "none"),
+    operationalReason: interfaceEvidence?.operationalReason || null,
   });
 }
 
 function table(route: PanelRouteId, title: string, columns: SectionColumn[], sourceRows: UnknownRecord[], map: (row: UnknownRecord, index: number) => Record<string, string>, empty: string, note?: string, evidenceContext: SectionEvidenceContext = {}): SectionTable {
+  const rowEvidence = sourceRows.map((row) => buildSectionRowEvidence(route, title, row, evidenceContext));
   return {
     title,
     columns,
     rows: sourceRows.map(map),
-    rowMeta: sourceRows.map((row) => metadataFor(route, title, row)),
-    rowEvidence: sourceRows.map((row) => buildSectionRowEvidence(route, title, row, evidenceContext)),
+    rowMeta: sourceRows.map((row, index) => metadataFor(route, title, row, rowEvidence[index])),
+    rowEvidence,
     empty,
     note,
   };
@@ -343,12 +368,6 @@ function table(route: PanelRouteId, title: string, columns: SectionColumn[], sou
 function evidenceMode(snapshot: OverviewRawSnapshot): SectionModel["evidenceMode"] {
   if (isSnapshotUnavailable(snapshot) || !latestBusinessSuccessTime(snapshot)) return "unavailable";
   const meta = snapshot.meta;
-  const hasEndpointFailures = [
-    meta?.staticEndpointFailures,
-    meta?.realtimeEndpointFailures,
-    meta?.slowRestEndpointFailures,
-    meta?.detailEndpointFailures,
-  ].some((items) => Array.isArray(items) && items.length > 0);
   if (
     meta?.clientEvidenceBoundary ||
     meta?.realtimeError ||
@@ -356,15 +375,13 @@ function evidenceMode(snapshot: OverviewRawSnapshot): SectionModel["evidenceMode
     meta?.staticError ||
     meta?.connectionDetailError ||
     meta?.connectionProtocolError ||
-    hasEndpointFailures
+    hasDiagnosticFailures(meta)
   ) return "historical";
   return "current";
 }
 
-function base(route: PanelRouteId, snapshot: OverviewRawSnapshot): Pick<SectionModel, "title" | "description" | "updatedAt" | "observedAt" | "evidenceMode" | "status" | "statusTone"> {
+function base(route: PanelRouteId, snapshot: OverviewRawSnapshot, historicalStatus = "历史证据 · 不代表当前"): Pick<SectionModel, "title" | "description" | "updatedAt" | "observedAt" | "evidenceMode" | "status" | "statusTone"> {
   const mode = evidenceMode(snapshot);
-  const evidenceBoundary = snapshot.meta?.clientEvidenceBoundary;
-  const boundaryLabel = evidenceBoundary ? "历史快照" : "";
   const successAt = latestBusinessSuccessTime(snapshot);
   return {
     title: PANEL_ROUTES[route].title,
@@ -372,7 +389,7 @@ function base(route: PanelRouteId, snapshot: OverviewRawSnapshot): Pick<SectionM
     updatedAt: successAt ? shortTimestamp(successAt) : "未记录",
     observedAt: successAt || null,
     evidenceMode: mode,
-    status: boundaryLabel || (mode === "unavailable" ? text(snapshot.error, "当前证据不可用") : mode === "historical" ? "历史快照 · 当前变化不可见" : "当前只读证据"),
+    status: mode === "unavailable" ? text(snapshot.error, "当前证据不可用") : mode === "historical" ? historicalStatus : "当前只读证据",
     statusTone: mode === "unavailable" ? "danger" : mode === "historical" ? "warn" : "trust",
   };
 }
@@ -384,12 +401,11 @@ function applyEvidenceBoundary(model: SectionModel): SectionModel {
     metrics: model.metrics.map((metric) => ({
       ...metric,
       label: metric.label.replace(/^当前/, "历史"),
-      note: [metric.note, "历史记录，不代表当前"].filter(Boolean).join(" · "),
-      tone: metric.tone === "danger" ? "danger" : "warn",
+      tone: "warn",
     })),
     tables: model.tables.map((item) => ({
       ...item,
-      note: [item.note, "以下对象来自上次成功快照，不代表当前状态"].filter(Boolean).join(" · "),
+      note: [item.note, "以下对象为历史记录，不代表当前"].filter(Boolean).join(" · "),
     })),
   };
   return {
@@ -411,61 +427,28 @@ function applyEvidenceBoundary(model: SectionModel): SectionModel {
   };
 }
 
-function historyTimestamp(value: unknown): number | null {
-  const numeric = number(value);
-  if (numeric !== null) return numeric < 1e12 ? numeric * 1000 : numeric;
-  return parseRfc3339Timestamp(value);
-}
-
-function resourceVisualization(history: UnknownRecord): SectionTimeSeriesVisualization | undefined {
-  const timestamps = Array.isArray(history.timestamps) ? history.timestamps : [];
-  if (timestamps.length < 2) return undefined;
-  const definitions: Array<{ key: SectionTimeSeries["key"]; label: string; threshold: number }> = [
-    { key: "cpu", label: "CPU", threshold: 85 },
-    { key: "memory", label: "内存", threshold: 85 },
-    { key: "disk", label: "磁盘", threshold: 90 },
-  ];
-  const series = definitions.map((definition) => {
-    const values = Array.isArray(history[definition.key]) ? history[definition.key] as unknown[] : [];
-    const length = Math.min(timestamps.length, values.length);
-    const points: SectionTimeSeries["points"] = [];
-    for (let index = 0; index < length; index += 1) {
-      const timestamp = historyTimestamp(timestamps[index]);
-      const value = number(values[index]);
-      if (timestamp !== null && value !== null && value >= 0 && value <= 100) points.push({ timestamp, value });
-    }
-    return { ...definition, unit: "%" as const, points };
-  }).filter((item) => item.points.length >= 2);
-  if (!series.length) return undefined;
-  const allPoints = series.flatMap((item) => item.points);
-  const start = Math.min(...allPoints.map((point) => point.timestamp));
-  const end = Math.max(...allPoints.map((point) => point.timestamp));
-  const durationSeconds = Math.max(0, Math.round((end - start) / 1000));
-  const windowLabel = durationSeconds >= 60
-    ? `最近 ${Math.max(1, Math.round(durationSeconds / 60))} 分钟`
-    : `最近 ${Math.max(1, durationSeconds)} 秒`;
-  const latest = series.map((item) => `${item.label} ${item.points[item.points.length - 1].value}%`).join("，");
-  return {
-    kind: "time-series",
-    title: "资源压力时间序列",
-    windowLabel,
-    min: 0,
-    max: 100,
-    series,
-    accessibleSummary: `${windowLabel}，${latest}；CPU 和内存阈值 85%，磁盘阈值 90%。`,
-  };
-}
-
 function interfaceModel(route: PanelRouteId, snapshot: OverviewRawSnapshot): SectionModel {
   const available = Array.isArray(snapshot.interfaces);
   const items = rows(snapshot.interfaces);
   const down = items.filter((item) => item.running === false).length;
   const disabled = items.filter((item) => item.disabled === true).length;
+  const assessments = items.map((item) => assessRawInterfaceOperationalState(item, snapshot.routes));
+  const confirmedRisk = assessments.filter((item) => item.impact === "risk").length;
+  const impactUnverified = assessments.filter((item) => item.observation === "not-running" && item.impact === "unverified").length;
   return {
     ...base(route, snapshot),
     metrics: [
       { label: "接口总数", value: available ? String(items.length) : "未取得", tone: !available ? "missing" : items.length ? "trust" : "warn" },
-      { label: "未运行", value: available ? String(down) : "未取得", tone: !available ? "missing" : down ? "danger" : "trust" },
+      {
+        label: "未运行",
+        value: available ? String(down) : "未取得",
+        tone: !available ? "missing" : confirmedRisk ? "danger" : down ? "warn" : "trust",
+        note: confirmedRisk
+          ? `${confirmedRisk} 项有已启用默认路由依赖`
+          : impactUnverified
+            ? `${impactUnverified} 项影响未判定`
+            : undefined,
+      },
       { label: "已停用", value: available ? String(disabled) : "未取得", tone: !available ? "missing" : disabled ? "warn" : "trust" },
     ],
     tables: [table(route, "接口对象", [
@@ -621,25 +604,42 @@ function arpModel(route: PanelRouteId, snapshot: OverviewRawSnapshot): SectionMo
 }
 
 function resourceModel(route: PanelRouteId, snapshot: OverviewRawSnapshot): SectionModel {
-  const overview = record(snapshot.overview);
-  const history = record(overview.history);
-  const series = ["cpu", "memory", "disk"].map((key) => ({ key, values: Array.isArray(history[key]) ? history[key] as unknown[] : [] }));
-  const cpu = number(overview.cpuLoad);
-  const memory = number(overview.memoryUsage);
-  const disk = number(overview.diskUsage);
+  const resourceWindow = resourceEvidenceWindow(snapshot);
+  const resourceMetrics = RESOURCE_METRIC_DEFINITIONS.map(({ key, label }) => {
+    const metric = resourceWindow.metrics[key];
+    return {
+      key,
+      label,
+      value: metric.current,
+      ...metric,
+    };
+  });
+  const series = resourceMetrics.map(({ key, label, points, evidence }) => ({
+    values: points.map((point) => point.value),
+    key,
+    label,
+    sampleSequence: points.map((point) => ({ timestamp: new Date(point.timestamp).toISOString(), value: point.value })),
+    timestamps: points.map((point) => new Date(point.timestamp).toISOString()),
+    ...evidence,
+  }));
+  const priority = resourceMetrics
+    .filter((metric) => metric.value !== null && metric.value >= metric.threshold)
+    .sort((left, right) => compareResourceRisk(left.evidence, right.evidence))[0];
   return {
     ...base(route, snapshot),
-    visualization: resourceVisualization(history),
-    metrics: [
-      { label: "CPU", value: cpu === null ? "未取得" : `${cpu}%`, tone: cpu === null ? "missing" : cpu >= 85 ? "danger" : "trust" },
-      { label: "内存", value: memory === null ? "未取得" : `${memory}%`, tone: memory === null ? "missing" : memory >= 85 ? "danger" : "trust" },
-      { label: "磁盘", value: disk === null ? "未取得" : `${disk}%`, tone: disk === null ? "missing" : disk >= 90 ? "danger" : "trust" },
-    ],
-    tables: [table(route, route === "loadAudit" ? "资源采样摘要" : "资源证据", [{ key: "series", label: "对象" }, { key: "samples", label: "有效样本" }, { key: "latest", label: "最近值" }, { key: "range", label: "样本范围" }], series, (item) => {
+    visualization: resourceTimeSeries({ metrics: resourceMetrics }),
+    metrics: resourceMetrics.map((metric) => ({
+      label: metric.label,
+      value: metric.value === null ? "未取得" : `${metric.value}%`,
+      note: metric.evidence.trailing ? `连续 ${metric.evidence.trailing} / ${metric.evidence.observed} 阈值 ${metric.threshold}%` : undefined,
+      tone: metric.value === null ? "missing" : metric.value >= metric.threshold ? "danger" : "trust",
+      action: metric === priority ? "loadAudit" : undefined,
+    })),
+    tables: [table(route, route === "loadAudit" ? "采样审计" : "资源证据", [{ key: "series", label: "对象" }, { key: "samples", label: "有效样本" }, { key: "latest", label: "最近值" }, { key: "range", label: "样本范围" }], series, (item) => {
       const values = Array.isArray(item.values) ? item.values : [];
       const observed = values.map((value) => number(value)).filter((value): value is number => value !== null && value >= 0 && value <= 100);
       return {
-        series: item.key === "cpu" ? "CPU" : item.key === "memory" ? "内存" : "磁盘",
+        series: text(item.label),
         samples: observed.length ? `${observed.length} 个` : "未取得",
         latest: observed.length ? `${observed[observed.length - 1]}%` : "未取得",
         range: observed.length ? `${Math.min(...observed)}% – ${Math.max(...observed)}%` : "未取得",
@@ -725,10 +725,36 @@ function securityModel(route: PanelRouteId, snapshot: OverviewRawSnapshot): Sect
   };
 }
 
+function serviceLogCategoryLabel(value: unknown): string {
+  const category = text(value, "未知来源").toLowerCase();
+  if (category === "system") return "系统";
+  if (category === "firewall") return "防火墙";
+  if (category === "dhcp") return "DHCP";
+  if (category === "dns") return "DNS";
+  return "来源未确认";
+}
+
+function serviceLogModel(snapshot: OverviewRawSnapshot): SectionModel {
+  const logs = record(snapshot.logs);
+  const grouped: UnknownRecord[] = ["system", "firewall", "dhcp", "dns"].flatMap((group) => rows(logs[group]).map((item) => ({ ...item, group })));
+  const observedCategories = new Set(grouped.map((item) => serviceLogCategoryLabel(item.group)).filter((item) => item !== "来源未确认"));
+  const warningCount = grouped.filter((item) => /error|warning|critical/i.test(text(item.topics, ""))).length;
+  return {
+    ...base("serviceLogs", snapshot, "历史服务证据 · 不代表当前"),
+    metrics: [
+      { label: "服务来源", value: grouped.length ? `${observedCategories.size} 类` : "未取得", tone: grouped.length ? "trust" : "missing", note: "仅统计有来源集合的记录" },
+      { label: "分类记录", value: String(grouped.length), tone: grouped.length ? "trust" : "missing" },
+      { label: "错误/警告", value: String(warningCount), tone: warningCount ? "warn" : "trust", note: "不等于服务当前健康" },
+    ],
+    tables: [table("serviceLogs", "服务分类日志", [{ key: "category", label: "服务" }, { key: "time", label: "时间" }, { key: "topics", label: "主题" }, { key: "message", label: "内容" }], grouped, (item) => ({ category: serviceLogCategoryLabel(item.group), time: text(item.time), topics: text(item.topics), message: text(item.message) }), "没有可用于当前判断的服务日志", "按来源集合分开；分类缺失或没有记录不推断服务正常", { logs })],
+  };
+}
+
 function logModel(route: PanelRouteId, snapshot: OverviewRawSnapshot): SectionModel {
+  if (route === "serviceLogs") return serviceLogModel(snapshot);
   const logs = record(snapshot.logs);
   const all = rows(logs.all);
-  const grouped = route === "serviceLogs" ? ["system", "firewall", "dhcp", "dns"].flatMap((group) => rows(logs[group]).map((item) => ({ ...item, group }))) : all;
+  const grouped = all;
   return {
     ...base(route, snapshot),
     metrics: [
@@ -736,23 +762,38 @@ function logModel(route: PanelRouteId, snapshot: OverviewRawSnapshot): SectionMo
       { label: "防火墙", value: String(count(logs.firewall)), tone: count(logs.firewall) ? "warn" : "trust" },
       { label: "错误/警告", value: String(all.filter((item) => /error|warning|critical/i.test(text(item.topics, ""))).length), tone: "warn" },
     ],
-    tables: [table(route, route === "serviceLogs" ? "分类日志" : "最近日志", [{ key: "time", label: "时间" }, { key: "topics", label: "主题" }, { key: "message", label: "内容" }], grouped, (item) => ({ time: text(item.time), topics: route === "serviceLogs" ? `${text(item.group)} · ${text(item.topics)}` : text(item.topics), message: text(item.message) }), "当前快照没有日志记录", undefined, { logs })],
+    tables: [table(route, "最近日志", [{ key: "time", label: "时间" }, { key: "topics", label: "主题" }, { key: "message", label: "内容" }], grouped, (item) => ({ time: text(item.time), topics: text(item.topics), message: text(item.message) }), "当前快照没有日志记录", undefined, { logs })],
   };
 }
 
 function diagnosticsModel(route: PanelRouteId, snapshot: OverviewRawSnapshot): SectionModel {
-  const meta = record(snapshot.meta);
-  const failures = [...rows(meta.realtimeEndpointFailures), ...rows(meta.staticEndpointFailures), ...rows(meta.detailEndpointFailures)];
+  const failures = diagnosticFailureRows(snapshot.meta);
+  const channels = diagnosticChannelSummaries(snapshot.meta);
   return {
-    ...base(route, snapshot),
-    status: "按需诊断受公开配置边界约束",
-    statusTone: "warn",
-    metrics: [
-      { label: "REST 采集", value: meta.realtimeError ? "有错误" : "无错误记录", tone: meta.realtimeError ? "danger" : "trust" },
-      { label: "SSH 采集", value: meta.staticError ? "有错误" : "无错误记录", tone: meta.staticError ? "danger" : "trust" },
-      { label: "失败端点", value: failures.length ? String(failures.length) : "未记录", tone: failures.length ? "warn" : "missing" },
-    ],
-    tables: [table(route, "采集与诊断边界", [{ key: "group", label: "通道" }, { key: "name", label: "对象" }, { key: "message", label: "记录" }], failures, (item) => ({ group: text(item.group), name: text(item.name), message: text(item.message, "失败端点记录") }), "没有失败端点记录；这不等于外部诊断已经执行", "公开 RouterOS-only 配置默认不执行外部只读探测")],
+    ...base(route, snapshot, "历史诊断记录 · 不代表当前"),
+    metrics: channels.map((channel) => ({
+      label: channel.label,
+      value: channel.failureCount
+        ? `${channel.failureCount} 条记录`
+        : channel.error
+          ? "错误记录"
+          : "无失败记录",
+      note: channel.observedAt ? shortTimestamp(channel.observedAt) : "时间未取得",
+      tone: channel.error ? "danger" : channel.failureCount ? "warn" : "missing",
+    })),
+    tables: [table(
+      route,
+      "采集通道失败证据",
+      [{ key: "group", label: "通道" }, { key: "name", label: "端点" }, { key: "message", label: "记录" }],
+      failures,
+      (item) => ({
+        group: text(item.group),
+        name: [text(item.name), text(item.endpoint, "")].filter(Boolean).join(" · "),
+        message: text(item.message, "端点读取失败"),
+      }),
+      "未记录端点失败",
+      "仅证明采集端点失败；不证明转发面或外部业务中断。",
+    )],
   };
 }
 
@@ -764,8 +805,10 @@ function buildCurrentSectionModel(route: PanelRouteId, snapshot: OverviewRawSnap
   if (route === "terminals") return terminalModel(route, snapshot);
   if (route === "dhcp") return dhcpModel(route, snapshot);
   if (route === "arp") return arpModel(route, snapshot);
-  if (route === "trafficLoad" || route === "loadAudit") return resourceModel(route, snapshot);
-  if (route === "trafficAudit" || route === "connections") return connectionModel(route, snapshot);
+  if (route === "trafficLoad") return resourceModel(route, snapshot);
+  if (route === "loadAudit") return resourceModel(route, snapshot);
+  if (route === "trafficAudit") return connectionModel(route, snapshot);
+  if (route === "connections") return connectionModel(route, snapshot);
   if (route === "dns4" || route === "dns6") return dnsModel(route, snapshot);
   if (route === "security") return securityModel(route, snapshot);
   if (route === "logs" || route === "serviceLogs") return logModel(route, snapshot);

@@ -11,9 +11,21 @@ export type OverviewTone = "ok" | "trust" | "warn" | "danger" | "missing";
 export type OverviewDataCredibility = "realtime" | "cache" | "unavailable";
 export type OverviewCollectionChannelStatus = "current" | "degraded" | "failed" | "unavailable";
 
+export const OVERVIEW_SCENARIO_KEYS: OverviewScenarioKey[] = [
+  "single",
+  "fleet",
+  "all-offline",
+  "no-snapshot",
+  "collection-down",
+  "resource-full",
+  "interfaces-down",
+];
+
 export interface OverviewEndpointFailureEntry {
+  channel?: "realtime-rest" | "slow-rest" | "static-rest" | "detail-rest";
   group?: string;
   name?: string;
+  endpoint?: string;
   message?: string;
   at?: string;
   [key: string]: unknown;
@@ -60,14 +72,40 @@ export interface OverviewRawDevice {
   boardName?: string;
   architecture?: string;
   uptime?: string;
-  systemTime?: string;
-  cpuLoad?: number;
-  memoryUsage?: number;
-  diskUsage?: number;
+  systemTime?: string | null;
+  cpuLoad?: number | null;
+  memoryUsage?: number | null;
+  diskUsage?: number | null;
   connectionTotal?: number;
   onlineTerminals?: number;
-  history?: Record<string, unknown>;
+  uplinkBps?: number | null;
+  downlinkBps?: number | null;
+  history?: OverviewRawHistory;
   [key: string]: unknown;
+}
+
+export interface OverviewTrafficHistorySample {
+  timestamp: string;
+  uplink: number | null;
+  downlink: number | null;
+  source: string;
+  evidenceMode: "current" | "historical" | "unavailable";
+  [key: string]: unknown;
+}
+
+export interface OverviewResourceHistorySample {
+  timestamp?: string;
+  cpu?: number | null;
+  memory?: number | null;
+  disk?: number | null;
+  source?: string;
+  evidenceMode?: "current" | "historical" | "unavailable";
+  [key: string]: unknown;
+}
+
+export interface OverviewRawHistory extends Record<string, unknown> {
+  resourceSamples?: OverviewResourceHistorySample[];
+  trafficSamples?: OverviewTrafficHistorySample[];
 }
 
 export interface OverviewRawRoute {
@@ -97,8 +135,8 @@ export interface OverviewRawWanRow {
   parent?: string;
   running?: boolean;
   disabled?: boolean;
-  upRate?: number;
-  downRate?: number;
+  upRate?: number | null;
+  downRate?: number | null;
   routes?: OverviewRawRoute[];
   [key: string]: unknown;
 }
@@ -117,10 +155,10 @@ export interface OverviewRawInterfaceRow {
   vlanId?: string | number;
   pppoeOut?: string;
   pppoe?: string;
-  txRate?: number;
-  rxRate?: number;
-  upRate?: number;
-  downRate?: number;
+  txRate?: number | null;
+  rxRate?: number | null;
+  upRate?: number | null;
+  downRate?: number | null;
   [key: string]: unknown;
 }
 
@@ -229,6 +267,7 @@ export interface OverviewRouteState {
   selected: OverviewRawRoute | null;
   verified: boolean;
   candidates: number;
+  activeCandidates: number;
 }
 
 export interface OverviewResourceState {
@@ -259,7 +298,12 @@ export interface OverviewInterfaceState {
   online: number;
   down: number;
   unknown: number;
+  confirmedRisk: number;
+  impactUnverified: number;
+  disabled: number;
   downNames: string[];
+  riskNames: string[];
+  reviewNames: string[];
   label: string;
   text: string;
 }

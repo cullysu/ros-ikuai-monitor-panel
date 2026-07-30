@@ -100,6 +100,18 @@ export function rowsFromModel(route: PanelRouteId, model: SectionModel): Workspa
         trailing = values.latest || trailing;
       }
 
+      if (route === "trafficLoad" && evidence.kind === "resource") {
+        secondary = evidence.delta === null
+          ? "阈值差未取得"
+          : `高出 ${evidence.delta} 个百分点 · 连续 ${evidence.trailing} / ${evidence.sampleCount}`;
+      }
+
+      if ((route === "interfaces" || route === "lineStatus") && evidence.kind === "interface") {
+        if (evidence.operationalImpact === "risk") trailing = "未运行 · 配置依赖";
+        else if (evidence.running === false && evidence.operationalImpact === "unverified") trailing = "未运行 · 影响未判定";
+        else if (evidence.operationalReason === "administratively-disabled") trailing = "已停用";
+      }
+
       const baseId = panelObjectIdForValues(route, table.title, values, meta.identityParts);
       const signature = JSON.stringify(canonicalValue({ table: table.title, values, meta, evidence }));
       candidates.push({
@@ -119,7 +131,7 @@ export function rowsFromModel(route: PanelRouteId, model: SectionModel): Workspa
           secondary,
           trailing,
           ...table.columns.map((column) => values[column.key] || ""),
-        ].join(" ").toLocaleLowerCase(),
+        ].join(" ").toLowerCase(),
       });
     });
   });

@@ -1,5 +1,9 @@
 # Overview framework migration bridge
 
+- status: `superseded`
+- validForCommit: `legacy migration period`
+- supersededBy: `docs/decision-system/architecture-adr.md`
+
 This note documents the bridge that lets the new framework mount coexist with
 the current legacy overview entry.
 

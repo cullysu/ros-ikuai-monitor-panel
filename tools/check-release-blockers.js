@@ -22,9 +22,14 @@ const indexSource = source('public/index.html');
 const chartSource = source('src/panel-framework/mobile/MobilePatrolTraffic.tsx');
 const sectionChartSource = source('src/panel-framework/sections/SectionTimeSeriesChart.tsx');
 const sectionModelSource = source('src/panel-framework/sections/sectionModels.ts');
+const resourceHistorySource = source('src/panel-framework/overview/evidence-model/resourceHistorySamples.ts');
+const resourceTimeSeriesSource = source('src/panel-framework/sections/resourceTimeSeries.ts');
 const connectionSource = source('src/panel-framework/connection/RouterConnectionScreen.tsx');
 const apiSchemaSource = source('panel_backend/api_schema.py');
 const browserGateSource = source('tools/check-panel-runtime-browser.js');
+const browserLifecycleSource = source('tools/check-runtime-browser-lifecycle.js');
+const mobileIncidentVisualWeightSource = source('tools/check-mobile-incident-visual-weight.js');
+const tabletRiskFocusSource = source('tools/check-tablet-risk-focus.js');
 const desktopBrowserGateSource = source('tools/check-resource-trend-balance.js');
 const desktopRuntimeWrapperSource = [
   source('tools/check-desktop-v1030-runtime.js'),
@@ -34,6 +39,10 @@ const desktopRuntimeWrapperSource = [
 const ciWorkflowSource = source('.github/workflows/ci.yml');
 const packagingPreflightSource = source('tools/check-packaging-preflight.ps1');
 const localPredeploySource = source('tools/local-predeploy-check.js');
+const localCiPsSource = source('tools/ci-local.ps1');
+const localCiShSource = source('tools/ci-local.sh');
+const quarantineSource = source('tools/check-acceptance-report-quarantine.js');
+const artifactIdentitySource = source('tools/check-acceptance-artifact-identity.js');
 const packageJson = JSON.parse(source('package.json'));
 
 check(
@@ -89,9 +98,11 @@ check(
 );
 check(
   'resource visualization requires timestamped samples',
-  /const timestamps = Array\.isArray\(history\.timestamps\)/.test(sectionModelSource) &&
-    /if \(timestamps\.length < 2\) return undefined;/.test(sectionModelSource),
-  'resource values without at least two timestamps must not be joined into a trend'
+  resourceHistorySource.includes('const timestamp = parseRfc3339Timestamp(observedAt);') &&
+    resourceHistorySource.includes('export function resourceHistoryPoints') &&
+    resourceTimeSeriesSource.includes('metric.points.length >= 2') &&
+    /visualization:\s*resourceTimeSeries\(\{\s*metrics:\s*resourceMetrics\s*\}\)/.test(sectionModelSource),
+  'resource points must be timestamp-parsed by the evidence owner and the current time-series owner must require at least two aligned points'
 );
 check(
   'password-free profile naming has no rememberPassword compatibility alias',
@@ -118,7 +129,8 @@ check(
 check(
   'runtime browser gate uses Playwright with a bounded lifecycle',
   browserGateSource.includes("require('playwright-core')") &&
-    /const testTimeout\s*=\s*120000;/.test(browserGateSource) &&
+    /const testTimeout\s*=\s*Number\.isFinite\(configuredTestTimeout\)[\s\S]*?:\s*240000;/.test(browserGateSource) &&
+    /Math\.min\(Math\.max\(configuredTestTimeout,\s*30000\),\s*240000\)/.test(browserGateSource) &&
     browserGateSource.includes('Promise.race([main(), timeout])') &&
     browserGateSource.includes('cleanupRuntime') &&
     browserGateSource.includes('context.close') &&
@@ -126,6 +138,25 @@ check(
     !browserGateSource.includes('new WebSocket') &&
     !browserGateSource.includes('remote-debugging-port'),
   'runtime validation must use one bounded Playwright lifecycle with explicit cleanup'
+);
+check(
+  'runtime browser lifecycle contract is independently gated',
+  browserLifecycleSource.includes("runtime-browser-lifecycle-v1") &&
+    browserLifecycleSource.includes('process\\.exit') &&
+    packageJson.scripts['check:runtime-browser-lifecycle'] === 'node --max-old-space-size=2048 tools/check-runtime-browser-lifecycle.js',
+  'the runtime gate must verify process completion separately from report contents'
+);
+check(
+  'mobile incident visual weight contract is independently gated',
+  mobileIncidentVisualWeightSource.includes("mobile-incident-visual-weight-v1") &&
+    packageJson.scripts['check:mobile-incident-visual-weight'] === 'node --max-old-space-size=2048 tools/check-mobile-incident-visual-weight.js',
+  'the mobile incident scan hierarchy must remain an explicit regression contract'
+);
+check(
+  'tablet risk focus contract is independently gated',
+  tabletRiskFocusSource.includes("tablet-risk-focus-v1") &&
+    packageJson.scripts['check:tablet-risk-focus'] === 'node --max-old-space-size=2048 tools/check-tablet-risk-focus.js',
+  'the tablet risk-object focus must remain an explicit regression contract'
 );
 check(
   'focused desktop browser gates use one bounded Playwright lifecycle',
@@ -154,6 +185,37 @@ check(
   fs.existsSync(path.join(root, 'public', 'manifest.webmanifest')) &&
     fs.existsSync(path.join(root, 'public', 'apple-touch-icon.png')),
   'manifest and Apple touch icon are required'
+);
+check(
+  'historical false-green acceptance reports are quarantined before release evidence',
+  fs.existsSync(path.join(root, 'tools', 'acceptance', 'report-quarantine-policy.json')) &&
+    quarantineSource.includes("acceptance-report-quarantine-v1") &&
+    quarantineSource.includes('allowAsCurrentReleaseInput') &&
+    packageJson.scripts['check:report-truth'].includes('check-acceptance-report-quarantine.js') &&
+    ciWorkflowSource.includes('node tools/check-acceptance-report-quarantine.js'),
+  'historical root-pass/child-fail reports must be explicitly classified and never consumed as current release evidence'
+);
+check(
+  'ambiguous acceptance artifact identities are forbidden as current release evidence',
+  artifactIdentitySource.includes('acceptance-artifact-identity-v1') &&
+    artifactIdentitySource.includes('allowAsCurrentReleaseInput') &&
+    packageJson.scripts['check:report-truth'].includes('check-acceptance-artifact-identity.js') &&
+    ciWorkflowSource.includes('node tools/check-acceptance-artifact-identity.js') &&
+    localCiPsSource.includes('check-acceptance-artifact-identity.js') &&
+    localCiShSource.includes('check-acceptance-artifact-identity.js'),
+  'reports with current/worktree/working-tree directory labels require explicit historical/worktree identity and must never become current release input'
+);
+check(
+  'current-state authority and current release boundary are wired into every release validation path; current product release remains fail-closed',
+  packageJson.scripts['check:decision-system'].includes('tools/check-current-state-authority.js') &&
+    packageJson.scripts['check:decision-system'].includes('tools/check-current-release-boundary.js') &&
+    ciWorkflowSource.includes('npm run check:decision-system') &&
+    localCiPsSource.includes('check-current-state-authority.js') &&
+    localCiShSource.includes('check-current-state-authority.js') &&
+    localCiPsSource.includes('check-current-release-boundary.js') &&
+    localCiShSource.includes('check-current-release-boundary.js') &&
+    source('tools/check-decision-truth-integration.js').includes('current release boundary'),
+  'current-state authority and current release boundary must be executed by package/CI and remain fail-closed'
 );
 
 const schemaPath = path.join(root, 'src', 'panel-framework', 'runtime', 'panelRuntimeSchema.ts');

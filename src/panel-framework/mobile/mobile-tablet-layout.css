@@ -1,0 +1,263 @@
+@media (min-width: 768px) and (max-width: 1199px) {
+  .mp-patrol-canvas {
+    max-width: 1120px;
+  }
+  .mp-workspace-body {
+    display: block;
+  }
+  .mp-workspace-primary {
+    border-right: 0;
+  }
+  .mp-tablet-master-detail {
+    display: grid;
+    grid-template-columns: 280px minmax(400px, 1fr);
+    align-items: start;
+  }
+  .mp-tablet-signal,
+  .mp-tablet-master-detail,
+  .mp-tablet-support,
+  .mp-route-dossier,
+  .mp-tablet-relation {
+    min-width: 0;
+  }
+  .mp-tablet-support > .mp-ledger,
+  .mp-tablet-support > .mp-actions {
+    width: 100%;
+  }
+  .mp-workspace-body.is-tablet-incident .mp-action-list {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .mp-workspace-body.is-tablet-incident .mp-incident-row {
+    grid-template-columns: 10px minmax(0, 1fr) auto;
+    gap: 10px;
+  }
+  .mp-scenario-focus.is-planes .mp-scenario-focus-item:not(:first-child),
+  .mp-scenario-focus.is-outage .mp-scenario-focus-item:not(:first-child),
+  .mp-workspace-body.is-tablet-incident .mp-action-list > button + button,
+  .mp-tablet-right-column > .mp-steady-decisions .mp-load button + button,
+  .mp-tablet-right-column > .mp-steady-decisions .mp-decision-ledger-row + .mp-decision-ledger-row,
+  .mp-tablet-steady-support .mp-action-list > button + button {
+    border-top: 0;
+    border-left: 1px solid var(--mp-line);
+  }
+  .mp-shell.is-large-text .mp-workspace-body.is-tablet-incident .mp-action-list {
+    grid-template-columns: 1fr;
+  }
+  .mp-workspace-primary > :last-child,
+  .mp-workspace-context > :last-child {
+    border-bottom: 0;
+  }
+  .mp-shell.is-large-text .mp-workspace-body.is-tablet-incident .mp-action-list > button + button {
+    border-top: 1px solid var(--mp-line);
+    border-left: 0;
+  }
+  .mp-workspace-context .mp-ledger dl > div {
+    grid-template-columns: 1fr;
+    gap: 3px;
+  }
+  .mp-workspace-context .mp-ledger summary {
+    align-items: flex-start;
+  }
+  .mp-resource-metrics > div {
+    grid-template-columns: 56px minmax(48px, 1fr) 42px 58px;
+    gap: 6px;
+  }
+  .mp-incident-copy p {
+    overflow: visible;
+    text-overflow: clip;
+    white-space: normal;
+  }
+  .mp-tablet-steady {
+    display: grid;
+    min-width: 0;
+    align-items: start;
+  }
+  .mp-tablet-left-column,
+  .mp-tablet-right-column {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .mp-tablet-route-column {
+    display: grid;
+    min-width: 0;
+    align-content: start;
+  }
+  .mp-tablet-object-workspace {
+    grid-column: 1/-1;
+    min-width: 0;
+    width: 100%;
+  }
+  .mp-tablet-right-column > .mp-steady-decisions {
+    border-top: 1px solid var(--mp-line);
+  }
+  .mp-tablet-right-column > .mp-steady-decisions .mp-load > div,
+  .mp-tablet-right-column > .mp-steady-decisions .mp-decision-ledger-rows {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .mp-tablet-relation > header {
+    min-height: 44px;
+    padding: 6px 12px;
+  }
+  .mp-tablet-relation > .mp-proof > div {
+    padding: 7px 10px 8px;
+  }
+  .mp-tablet-relation > .mp-proof b {
+    margin-top: 2px;
+    font-size: 14px;
+  }
+  .mp-tablet-relation > .mp-proof em {
+    margin-top: 1px;
+  }
+  .mp-steady-decisions .mp-load > header,
+  .mp-steady-decisions .mp-decision-ledger > header {
+    min-height: 48px;
+    padding: 8px 10px;
+  }
+  .mp-steady-decisions button,
+  .mp-steady-decisions .mp-decision-ledger-row {
+    min-height: 58px;
+    padding: 6px 10px;
+  }
+  .mp-steady-decisions button span > small:first-child {
+    display: none;
+  }
+  .mp-steady-decisions button span > small:last-child {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .mp-tablet-right-column > .mp-traffic .mp-traffic-body {
+    grid-template-columns: 1fr;
+  }
+  .mp-tablet-right-column > .mp-traffic .mp-chart {
+    min-height: 120px;
+  }
+  .mp-tablet-right-column > .mp-traffic .mp-chart svg {
+    aspect-ratio: 320 / 100;
+  }
+  .mp-tablet-steady-support .mp-action-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  }
+  .mp-shell.is-large-text :is(
+    .mp-route-dossier dl,
+    .mp-tablet-steady-support .mp-action-list
+  ) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .mp-shell.is-large-text .mp-tablet-right-column > .mp-steady-decisions .mp-load > div,
+  .mp-shell.is-large-text .mp-tablet-right-column > .mp-steady-decisions .mp-decision-ledger-rows {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .mp-shell.is-large-text :is(
+    .mp-tablet-right-column > .mp-steady-decisions .mp-load button + button,
+    .mp-tablet-right-column > .mp-steady-decisions .mp-decision-ledger-row + .mp-decision-ledger-row,
+    .mp-route-dossier dl > div + div,
+    .mp-tablet-steady-support .mp-action-list > button + button
+  ) {
+    border-top: 1px solid var(--mp-line);
+    border-left: 0;
+  }
+  .mp-shell.is-large-text .mp-route-dossier dl > div {
+    border-left: 0;
+  }
+  @container (min-width: 620px) {
+    .mp-shell:not(.is-large-text) .mp-tablet-steady {
+      grid-template-columns: 45% 55%;
+    }
+    .mp-shell:not(.is-large-text) .mp-tablet-steady > .mp-tablet-object-workspace {
+      grid-area: 1 / 1 / 2 / -1;
+    }
+    .mp-shell:not(.is-large-text) .mp-tablet-steady > .mp-tablet-left-column {
+      grid-area: 2 / 1;
+    }
+    .mp-shell:not(.is-large-text) .mp-tablet-steady > .mp-tablet-right-column {
+      grid-area: 2 / 2;
+      border-left: 1px solid var(--mp-line);
+    }
+    .mp-shell:not(.is-large-text) .mp-tablet-steady > .mp-tablet-steady-support {
+      grid-area: 3 / 1 / auto / -1;
+    }
+    .mp-shell:not(.is-large-text) .mp-tablet-steady .mp-tablet-left-column .mp-route-dossier .mp-focus-copy em {
+      overflow: visible;
+      text-overflow: clip;
+      white-space: normal;
+    }
+    .mp-shell:not(.is-large-text) .mp-tablet-steady-support {
+      grid-column: 1/-1;
+    }
+    .mp-shell:not(.is-large-text) .mp-tablet-right-column > .mp-steady-decisions .mp-load > div,
+    .mp-shell:not(.is-large-text) .mp-tablet-right-column > .mp-steady-decisions .mp-decision-ledger-rows {
+      grid-template-columns: 1fr;
+    }
+    .mp-shell:not(.is-large-text) .mp-tablet-right-column > .mp-steady-decisions .mp-load button + button,
+    .mp-shell:not(.is-large-text) .mp-tablet-right-column > .mp-steady-decisions .mp-decision-ledger-row + .mp-decision-ledger-row {
+      border-top: 1px solid var(--mp-line);
+      border-left: 0;
+    }
+    .mp-shell.is-large-text .mp-tablet-steady > .mp-tablet-left-column,
+    .mp-shell.is-large-text .mp-tablet-steady > .mp-tablet-right-column,
+    .mp-shell.is-large-text .mp-tablet-steady > .mp-tablet-object-workspace,
+    .mp-shell.is-large-text .mp-tablet-steady > .mp-tablet-steady-support {
+      grid-area: auto / 1 / auto / -1;
+    }
+    .mp-shell.is-large-text .mp-tablet-steady > .mp-tablet-right-column {
+      border-left: 0;
+    }
+  }
+  @container (min-width: 620px) and (max-width: 899px) {
+    .mp-shell:not(.is-large-text) .mp-tablet-steady-support {
+      display: contents;
+    }
+    .mp-shell:not(.is-large-text) .mp-tablet-steady-support > .mp-tablet-relation,
+    .mp-shell:not(.is-large-text) .mp-tablet-steady-support > .mp-ledger {
+      grid-column: 1/-1;
+    }
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1199px) and (min-height: 700px) {
+  @container (max-width: 699px) {
+    .mp-tablet-master-detail {
+      grid-template-columns: 1fr;
+    }
+  }
+}
+
+/*Normal tablet keeps both task columns useful without adding filler space.*/
+
+@media (min-width: 600px) and (max-width: 1199px) {
+  @container (min-width: 620px) {
+    .mp-shell:not(.is-large-text) .mp-tablet-vertical-task > header {
+      min-height: 0;
+      align-items: flex-start;
+      padding: 7px 10px 5px;
+    }
+    .mp-shell:not(.is-large-text) .mp-tablet-vertical-task .mp-tablet-task-summary {
+      margin: 3px 0 0;
+      line-height: 1.25;
+    }
+    .mp-shell:not(.is-large-text) .mp-tablet-vertical-task .mp-action-list > button {
+      min-height: 48px;
+      padding-top: 5px;
+      padding-bottom: 5px;
+    }
+    .mp-shell:not(.is-large-text) .mp-tablet-steady .mp-focus > header {
+      min-height: 48px;
+      padding: 7px 10px 6px;
+    }
+    .mp-shell:not(.is-large-text) .mp-tablet-steady .mp-focus > button {
+      min-height: 64px;
+      padding: 7px 10px 7px 8px;
+    }
+    .mp-shell:not(.is-large-text) .mp-tablet-steady .mp-focus-identity {
+      padding: 7px 10px;
+    }
+    .mp-shell:not(.is-large-text) .mp-tablet-steady .mp-focus dl > div {
+      padding: 6px 8px;
+    }
+  }
+}

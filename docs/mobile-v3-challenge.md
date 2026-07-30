@@ -1,5 +1,9 @@
 # Mobile v3 challenge record
 
+- status: `historical-review`
+- validForCommit: `historical review`
+- supersededBy: `docs/decision-system/current-state.md`
+
 ## Executive lens
 
 **Decision:** keep the release closed. A read-only monitor loses its reason to exist if WAN failure prevents local refresh or if timestamps can drift by eight hours.

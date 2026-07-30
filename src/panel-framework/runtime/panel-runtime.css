@@ -1,21 +1,12 @@
-.panel-runtime-live { min-height: 100%; background: #edf3f5; }
+.panel-runtime-live { min-height: 100%; background: #edf3f5; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Segoe UI", "Microsoft YaHei UI", sans-serif; }
 
 .panel-runtime-bar {
   box-sizing: border-box;
   color: #153541;
   background: #f8fbfc;
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Segoe UI", sans-serif;
 }
 
-.panel-runtime-bar-desktop {
-  display: grid;
-  grid-template-columns: minmax(180px, 1fr) auto auto;
-  align-items: center;
-  gap: 18px;
-  min-height: 58px;
-  padding: 7px 18px;
-  border-bottom: 1px solid #bdced5;
-}
+.panel-runtime-bar-desktop { display: grid; grid-template-columns: minmax(180px, 1fr) auto auto; align-items: center; gap: 18px; min-height: 58px; padding: 7px 18px; border-bottom: 1px solid #bdced5; }
 
 .panel-runtime-device span,
 .panel-runtime-device b,
@@ -23,6 +14,23 @@
 .panel-runtime-device > span,
 .panel-runtime-device small { color: #5c7580; font-size: 12px; }
 .panel-runtime-device b { overflow: hidden; color: #12313e; font-size: 15px; text-overflow: ellipsis; white-space: nowrap; }
+.panel-runtime-mode {
+  display: inline-flex;
+  box-sizing: border-box;
+  min-height: 32px;
+  align-items: center;
+  gap: 5px;
+  padding: 0 9px;
+  border: 1px solid #a8c3cd;
+  border-radius: 7px;
+  color: #2d6174;
+  background: #eef5f7;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+}
+.panel-runtime-mode svg { flex: 0 0 auto; }
 .panel-runtime-phase { display: inline-flex; align-items: center; gap: 7px; color: #476773; font-size: 13px; }
 .panel-runtime-phase i { width: 7px; height: 7px; border-radius: 50%; background: #33795d; }
 .panel-runtime-phase.is-stale i,
@@ -51,6 +59,8 @@
 .panel-runtime-empty button:focus-visible { outline: 2px solid #0a7098; outline-offset: 2px; }
 .panel-runtime-actions button:disabled { cursor: not-allowed; opacity: .45; }
 
+@media (min-width: 1200px) { .panel-runtime-bar-desktop { grid-template-columns: minmax(180px, 1fr) auto auto minmax(136px, max-content); } .panel-runtime-bar-desktop .panel-runtime-phase { grid-column: 3; grid-row: 1; justify-self: end; } .panel-runtime-bar-desktop .panel-runtime-actions { grid-column: 4; grid-row: 1; justify-self: end; min-width: max-content; } }
+
 .panel-runtime-notice {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
@@ -77,7 +87,6 @@
   color: #14323f;
   background: #edf3f5;
   text-align: center;
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Segoe UI", sans-serif;
 }
 .panel-runtime-empty > div:first-child { display: grid; width: 52px; height: 52px; border: 1px solid #a9c3cd; border-radius: 50%; place-items: center; color: #23647e; background: #f8fbfc; }
 .panel-runtime-empty h1 { margin: 17px 0 0; font-size: 25px; letter-spacing: -.025em; }
@@ -86,14 +95,14 @@
 .panel-runtime-empty button { min-height: 44px; padding: 0 14px; border: 1px solid #98b6c2; border-radius: 7px; color: #214e5e; background: #f9fbfc; font: inherit; font-weight: 700; cursor: pointer; }
 .panel-runtime-empty button:first-child { border-color: #0b6488; color: #fff; background: #0d6a8e; }
 
-@media (max-width: 1365px) {
+@media (max-width: 1199px) {
   .panel-runtime-live { min-height: 100svh; }
   .panel-runtime-bar-mobile {
     position: sticky;
     z-index: 25;
     top: 0;
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr) auto auto;
     align-items: center;
     min-height: calc(52px + env(safe-area-inset-top));
     padding: env(safe-area-inset-top) 8px 0 13px;
@@ -105,7 +114,7 @@
   .panel-runtime-bar-mobile .panel-runtime-device { min-width: 0; }
   .panel-runtime-bar-mobile .panel-runtime-device b { font-size: 15px; }
   .panel-runtime-bar-mobile .panel-runtime-device span { font-size: 12px; }
-  .panel-runtime-actions button { width: 42px; height: 42px; }
+  .panel-runtime-actions button { width: 44px; height: 44px; }
   .panel-runtime-notice { position: relative; z-index: 20; padding-right: 10px; padding-left: 12px; font-size: 13px; }
   .panel-runtime-empty { min-height: calc(100svh - 52px); padding: 24px 18px calc(24px + env(safe-area-inset-bottom)); }
   .panel-runtime-empty p { font-size: 15px; }

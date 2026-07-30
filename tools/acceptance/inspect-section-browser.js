@@ -100,7 +100,11 @@ async function inspectSectionBrowser(
   const scaleMetaOk = Boolean(scaleMeta.wan && Number(scaleMeta.wan.actualCount || 0) >= 0 && Number(scaleMeta.wan.shownCount || 0) >= 0);
   const scaleRequiredSections = new Set(['overview', 'interfaces', 'terminals', 'dhcp', 'trafficLoad']);
   const scaleDisclosureOk = scenario !== 'fleet' || !scaleRequiredSections.has(sectionName) || scaleDisclosureCount > 0 || isCurrentReactShell;
-  const sectionRoot = requested || active;
+  // Route interaction can settle a responsive React tree after the first query
+  // (resource-full is the reproducible case). Keep the initial root for the
+  // interaction helper, then replace it with the current root before running
+  // the contract probes so stale hidden/mobile DOM cannot mask the desktop tree.
+  let sectionRoot = requested || active;
   const {
     nativeMobileInteractionOk,
     nativeMobileInteractionProbe,
@@ -129,6 +133,7 @@ async function inspectSectionBrowser(
     ', [data-panel-route-content="' + CSS.escape(sectionName) + '"]'
   );
   const refreshedSectionRoot = refreshedRequested || refreshedActive;
+  sectionRoot = refreshedSectionRoot || sectionRoot;
   const mobileNativeResult = inspectMobileNativeOverview({
     sectionName,
     scaleScenario,
@@ -181,6 +186,61 @@ async function inspectSectionBrowser(
     table.querySelector('h2') &&
     (table.querySelector('tbody tr') || table.querySelector('.panel-empty-state'))
   ));
+  const operationalTimeSeries = sectionRoot?.querySelector('[data-section-time-series]');
+  const operationalTimeSeriesSvg = operationalTimeSeries?.querySelector('svg');
+  const operationalTimeSeriesRect = operationalTimeSeriesSvg?.getBoundingClientRect();
+  const operationalTimeSeriesViewBox = operationalTimeSeriesSvg?.viewBox?.baseVal;
+  const operationalTimeSeriesPreserve = operationalTimeSeriesSvg?.getAttribute('preserveAspectRatio') || '';
+  const operationalTimeSeriesViewRatio = operationalTimeSeriesViewBox?.width > 0 && operationalTimeSeriesViewBox?.height > 0
+    ? operationalTimeSeriesViewBox.width / operationalTimeSeriesViewBox.height
+    : 0;
+  const operationalTimeSeriesRenderedRatio = operationalTimeSeriesRect?.width > 0 && operationalTimeSeriesRect?.height > 0
+    ? operationalTimeSeriesRect.width / operationalTimeSeriesRect.height
+    : 0;
+  const operationalTimeSeriesRatioDelta = operationalTimeSeriesViewRatio > 0 && operationalTimeSeriesRenderedRatio > 0
+    ? Math.abs(operationalTimeSeriesViewRatio / operationalTimeSeriesRenderedRatio - 1)
+    : Number.POSITIVE_INFINITY;
+  const operationalTimeSeriesScale = Array.from(operationalTimeSeries?.querySelectorAll('.section-timeseries-scale b') || [])
+    .map((node) => normalize(node.textContent));
+  const operationalTimeSeriesTimes = Array.from(operationalTimeSeries?.querySelectorAll('.section-timeseries-axis b') || [])
+    .map((node) => normalize(node.textContent));
+  const operationalTimeSeriesLines = Array.from(operationalTimeSeriesSvg?.querySelectorAll('.section-series-line') || []);
+  const operationalTimeSeriesHeightOk = !operationalTimeSeriesRect || (
+    window.innerWidth >= 1200
+      ? operationalTimeSeriesRect.height >= 120 && operationalTimeSeriesRect.height <= 200
+      : operationalTimeSeriesRect.height >= 52 && operationalTimeSeriesRect.height <= 120
+  );
+  const operationalResourceTimeSeries = scaleScenario === 'resource-full' && ['trafficLoad', 'loadAudit'].includes(sectionName);
+  const operationalScaleContractOk = operationalResourceTimeSeries
+    ? ['100%', '90%', '80%'].every((label) => operationalTimeSeriesScale.includes(label))
+    : ['100%', '50%'].every((label) => operationalTimeSeriesScale.includes(label)) &&
+      operationalTimeSeriesScale.some((label) => /^0%?$/.test(label));
+  const operationalTimeSeriesContractOk = !operationalTimeSeries || Boolean(
+    operationalTimeSeriesSvg?.getAttribute('role') === 'img' &&
+    operationalTimeSeriesSvg.querySelector('title') &&
+    operationalTimeSeriesSvg.querySelector('desc') &&
+    operationalTimeSeriesPreserve &&
+    !/none/i.test(operationalTimeSeriesPreserve) &&
+    operationalTimeSeriesRatioDelta <= 0.03 &&
+    operationalTimeSeriesHeightOk &&
+    operationalTimeSeriesLines.length >= 1 &&
+    operationalTimeSeriesLines.every((node) => normalize(node.getAttribute('points')).split(' ').filter(Boolean).length >= 2) &&
+    operationalScaleContractOk &&
+    operationalTimeSeriesTimes.length === 2
+  );
+  const mobileDomainLayout = mobileDomainRoot?.getAttribute('data-mobile-domain-layout') || '';
+  const mobileDomainInspector = mobileDomainRoot?.querySelector('.mdw-inspector');
+  const mobileDomainPreview = mobileDomainRoot?.querySelector('[data-mobile-object-preview]');
+  const mobileDomainDetail = mobileDomainRoot?.querySelector('[data-mobile-object-detail]');
+  const mobileDomainMetricSurfaces = mobileDomainRoot?.querySelectorAll('.mdw-metrics').length || 0;
+  const mobileDomainLayoutContractOk = /^(phone-list|compact-list|tablet-list)$/.test(mobileDomainLayout)
+    ? !mobileDomainInspector
+    : /^(phone-detail|compact-detail)$/.test(mobileDomainLayout)
+      ? Boolean(mobileDomainDetail) && !mobileDomainPreview
+      : mobileDomainLayout === 'workbench' && Boolean(mobileDomainInspector);
+  const mobileDomainMetricsContractOk = mobileDomainLayout === 'workbench'
+    ? mobileDomainMetricSurfaces > 0
+    : true;
   const desktopDomainWorkspace = desktopDomainRoot?.querySelector(
     '[data-desktop-domain-workspace="' + CSS.escape(sectionName) + '"]'
   );
@@ -189,6 +249,11 @@ async function inspectSectionBrowser(
   const desktopWorkspaceRows = desktopDomainWorkspace?.querySelectorAll('.ddw-table-pane tbody tr').length || 0;
   const desktopWorkspaceEmpty = desktopDomainWorkspace?.querySelector('.ddw-empty');
   const desktopWorkspaceInspector = desktopDomainWorkspace?.querySelector('.ddw-inspector');
+  const desktopWorkspaceUnselected = Boolean(
+    desktopWorkspaceInspector?.classList.contains('is-empty') &&
+    /未选择对象/.test(normalize(desktopWorkspaceInspector.querySelector('h2')?.textContent || '')) &&
+    /从列表打开证据/.test(normalize(desktopWorkspaceInspector.querySelector('p')?.textContent || ''))
+  );
   const desktopDomainWorkspaceOk = Boolean(
     desktopDomainWorkspace &&
     desktopDomainWorkspace.querySelector('.ddw-search input[type="search"]') &&
@@ -197,26 +262,26 @@ async function inspectSectionBrowser(
     ['对象', '来源', '状态', '关键证据'].every((label) => desktopWorkspaceHeaders.includes(label)) &&
     (desktopWorkspaceRows > 0 || desktopWorkspaceEmpty) &&
     desktopWorkspaceInspector &&
-    (desktopWorkspaceRows === 0 || (
+    (desktopWorkspaceRows === 0 || desktopWorkspaceUnselected || (
       desktopWorkspaceInspector.hasAttribute('data-desktop-object-detail') &&
       desktopWorkspaceInspector.querySelector('.ddi-block')
     ))
   );
   const operationalRouteContractOk = !operationalRoute || Boolean(
-    sectionRoot && operationalTitle && (
+    sectionRoot && operationalTitle && operationalTimeSeriesContractOk && (
       mobileDomainRoot
         ? mobileDomainRoot.getAttribute('data-mobile-domain-workspace') === sectionName &&
           /^(current|historical|unavailable)$/.test(mobileDomainRoot.getAttribute('data-mobile-evidence-mode') || '') &&
           (sectionName === 'more'
             ? mobileDomainRoot.querySelectorAll('.mdw-directory-list [data-section]').length === 10
-            : mobileDomainRoot.querySelectorAll('.mdw-metrics > div').length === 3 &&
+            : mobileDomainMetricsContractOk &&
               Boolean(mobileDomainRoot.querySelector('.mdw-object-list, .mdw-empty')) &&
-              Boolean(mobileDomainRoot.querySelector('.mdw-inspector')))
+              mobileDomainLayoutContractOk)
         : sectionName === 'more'
           ? Boolean(sectionRoot.querySelector('.panel-more-list [data-section]'))
           : desktopDomainRoot?.getAttribute('data-panel-route-content') === sectionName &&
             /^(current|historical|unavailable)$/.test(desktopDomainRoot.getAttribute('data-panel-evidence-mode') || '') &&
-            desktopDomainRoot.querySelectorAll('.panel-section-metrics > div').length === 3 &&
+            desktopDomainRoot.querySelectorAll('.panel-section-metrics > div').length >= 3 &&
             (desktopDomainWorkspaceOk || (operationalTables.length > 0 && operationalTablesValid)) &&
             Boolean(desktopDomainRoot.querySelector('.panel-readonly-footer'))
     )
@@ -251,7 +316,7 @@ async function inspectSectionBrowser(
     security: ['allow established'],
     logs: ['smoke fixture ready'],
     serviceLogs: ['smoke fixture ready'],
-    readonlyDiagnostics: ['没有失败端点记录'],
+    readonlyDiagnostics: ['\u65e0\u5931\u8d25\u8bb0\u5f55'],
     more: [/(?:资源与负载|资源\s+CPU)/, /(?:IPv4 DNS|DNS v4)/, /(?:安全观察|安全\s+防火墙)/],
   };
   const requiredRouteEvidence = scaleScenario === 'single' ? singleRouteEvidence[sectionName] || [] : [];
@@ -6034,7 +6099,29 @@ async function inspectSectionBrowser(
     resourceColumns,
     detailFeedbackOk,
     operationalRouteContractOk,
+    operationalTimeSeriesContractOk,
+    operationalTimeSeriesProbe: operationalTimeSeries ? {
+      preserveAspectRatio: operationalTimeSeriesPreserve,
+      rect: operationalTimeSeriesRect ? {
+        width: Math.round(operationalTimeSeriesRect.width),
+        height: Math.round(operationalTimeSeriesRect.height),
+      } : null,
+      viewBox: operationalTimeSeriesViewBox ? {
+        width: Number(operationalTimeSeriesViewBox.width.toFixed(1)),
+        height: Number(operationalTimeSeriesViewBox.height.toFixed(1)),
+      } : null,
+      viewBoxRatio: Number(operationalTimeSeriesViewRatio.toFixed(3)),
+      renderedRatio: Number(operationalTimeSeriesRenderedRatio.toFixed(3)),
+      ratioDelta: Number.isFinite(operationalTimeSeriesRatioDelta) ? Number(operationalTimeSeriesRatioDelta.toFixed(3)) : null,
+      heightOk: operationalTimeSeriesHeightOk,
+      scale: operationalTimeSeriesScale,
+      times: operationalTimeSeriesTimes,
+      lines: operationalTimeSeriesLines.length,
+    } : null,
+    mobileDomainLayout,
+    mobileDomainLayoutContractOk,
     desktopDomainWorkspaceOk,
+    desktopWorkspaceUnselected,
     desktopWorkspaceHeaders,
     desktopWorkspaceRows,
     desktopWorkspaceInspectorKind: desktopWorkspaceInspector?.getAttribute('data-domain-inspector-kind') || '',

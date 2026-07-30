@@ -5,7 +5,7 @@ const { spawn } = require('child_process');
 const root = process.cwd();
 const outDir = path.join(root, '_acceptance', 'mobile-native-runtime');
 const reportFile = path.join(outDir, 'report.json');
-const matrixTimeoutMs = 180000;
+const matrixTimeoutMs = Number(process.env.MOBILE_NATIVE_MATRIX_TIMEOUT_MS || 240000);
 const scenarios = ['single', 'fleet', 'all-offline', 'no-snapshot', 'collection-down', 'resource-full', 'interfaces-down'];
 const viewports = {
   p320: '320x568',
@@ -67,6 +67,7 @@ function runMatrix() {
       '--sections', 'overview',
       '--scale-scenarios', scenarios.join(','),
       '--strict-responsive',
+      '--bounded-matrix',
       '--out', path.relative(root, outDir),
     ], { cwd: root, env, stdio: 'inherit' });
     let finished = false;
@@ -100,16 +101,36 @@ function verifyReport() {
   const passedCells = new Set(report.matrix?.passedCells || []);
   const missing = expectedCells.filter((cell) => !passedCells.has(cell));
   const screenshots = fs.readdirSync(outDir).filter((name) => name.endsWith('.png'));
-  if (report.pass !== true || report.matrix?.complete !== true || missing.length || screenshots.length < expectedCells.length) {
+  const boundedGate = (report.checks || []).find((check) => (
+    check.name === 'unified release scenario matrix covers required scenarios'
+  ));
+  const boundedGateOk = boundedGate?.applicable === false &&
+    boundedGate?.pass === null &&
+    boundedGate?.detail?.boundedMatrix === true &&
+    boundedGate?.detail?.requestedScopeComplete === true;
+  if (
+    report.pass !== false ||
+    report.engineeringPass !== true ||
+    report.boundedPass !== true ||
+    report.matrix?.requestedComplete !== true ||
+    report.matrix?.failed !== 0 ||
+    report.matrix?.complete !== false ||
+    !boundedGateOk ||
+    missing.length ||
+    screenshots.length < expectedCells.length
+  ) {
     throw new Error(JSON.stringify({
       pass: report.pass,
+      requestedComplete: report.matrix?.requestedComplete,
+      failed: report.matrix?.failed,
       complete: report.matrix?.complete,
+      boundedGate: boundedGate || null,
       missing,
       screenshots: screenshots.length,
       failures: (report.failures || []).map((failure) => failure.name || failure.message || String(failure)),
     }, null, 2));
   }
-  console.log(`[mobile-native] PASS cells=${expectedCells.length} screenshots=${screenshots.length}`);
+  console.log(`[mobile-native] PASS bounded=true cells=${expectedCells.length} screenshots=${screenshots.length}`);
 }
 
 async function main() {

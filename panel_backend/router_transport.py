@@ -143,6 +143,16 @@ def validate_rest_security(scheme, verify_tls=True, insecure_confirmed=False):
     }
 
 
+def rest_channel_has_verified_identity(rest_test):
+    """Return true only when this request reached RouterOS over verified HTTPS."""
+    return bool(
+        isinstance(rest_test, dict)
+        and rest_test.get("ok") is True
+        and rest_test.get("scheme") == "https"
+        and rest_test.get("verifyTls") is True
+    )
+
+
 def normalize_router_transport(
     rest_scheme="https",
     rest_port=None,

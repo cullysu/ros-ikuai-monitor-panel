@@ -10,6 +10,7 @@ import {
   type RouterConnectionInput,
 } from "./panelApi";
 import {
+  parseRouterConnectionTest,
   snapshotEvidenceTimestamp,
   snapshotHasOperationalEvidence,
   snapshotPollSeconds,
@@ -18,6 +19,7 @@ import {
   type SavedRouterLogin,
   type SnapshotEnvelopeKind,
 } from "./panelRuntimeSchema";
+import { parseRfc3339Timestamp } from "../timeContract";
 
 export type PanelConnectionPhase = "checking" | "unconfigured" | "ready" | "error";
 export type PanelSnapshotPhase = "idle" | "loading" | "current" | "refreshing" | "stale" | "error" | "recovering";
@@ -33,10 +35,15 @@ export interface PanelConnectionState {
   warning: string;
   lastTest: RouterConnectionTest | null;
   pendingSshHostKey: {
+    kind: "confirmation-required" | "changed";
     host: string;
     sshPort: number;
     fingerprint: string;
+    expectedFingerprint?: string;
     algorithm: string;
+    trustToken?: string;
+    trustExpiresAt?: string;
+    verifiedRestOnlyAvailable: boolean;
   } | null;
 }
 
@@ -83,13 +90,32 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function pendingSshHostKey(error: unknown, input: RouterConnectionInput): PanelConnectionState["pendingSshHostKey"] {
-  if (!(error instanceof PanelApiError) || error.code !== "ssh_host_key_confirmation_required" || !isRecord(error.payload)) return null;
+  if (!(error instanceof PanelApiError) || !isRecord(error.payload)) return null;
+  const confirmationRequired = error.code === "ssh_host_key_confirmation_required";
+  const hostKeyChanged = error.code === "ssh_host_key_changed";
+  if (!confirmationRequired && !hostKeyChanged) return null;
   const test = isRecord(error.payload.test) ? error.payload.test : {};
   const ssh = isRecord(test.ssh) ? test.ssh : {};
+  const rest = isRecord(test.rest) ? test.rest : {};
   const fingerprint = typeof ssh.fingerprint === "string" ? ssh.fingerprint.trim() : "";
+  const expectedFingerprint = typeof ssh.expectedFingerprint === "string" ? ssh.expectedFingerprint.trim() : "";
   const algorithm = typeof ssh.algorithm === "string" ? ssh.algorithm.trim() : "";
+  const trustToken = typeof ssh.trustToken === "string" ? ssh.trustToken.trim() : "";
+  const trustExpiresAt = typeof ssh.trustExpiresAt === "string" ? ssh.trustExpiresAt.trim() : "";
   if (!fingerprint) return null;
-  return { host: input.host, sshPort: input.sshPort, fingerprint, algorithm: algorithm || "SSH" };
+  if (confirmationRequired && (!trustToken || parseRfc3339Timestamp(trustExpiresAt) === null)) return null;
+  if (hostKeyChanged && !expectedFingerprint) return null;
+  return {
+    kind: confirmationRequired ? "confirmation-required" : "changed",
+    host: input.host,
+    sshPort: input.sshPort,
+    fingerprint,
+    ...(expectedFingerprint ? { expectedFingerprint } : {}),
+    algorithm: algorithm || "SSH",
+    ...(trustToken ? { trustToken } : {}),
+    ...(trustExpiresAt ? { trustExpiresAt } : {}),
+    verifiedRestOnlyAvailable: rest.ok === true && rest.scheme === "https" && rest.verifyTls === true,
+  };
 }
 
 const initialSnapshot: PanelSnapshotState = {
@@ -341,8 +367,8 @@ export function usePanelRuntime(): PanelRuntimeController {
       return true;
     } catch (error) {
       const pending = pendingSshHostKey(error, input);
-      const payload = error instanceof PanelApiError && isRecord(error.payload) && isRecord(error.payload.test)
-        ? error.payload.test as unknown as RouterConnectionTest
+      const payload = error instanceof PanelApiError && isRecord(error.payload)
+        ? parseRouterConnectionTest(error.payload.test)
         : null;
       setConnection((state) => ({
         ...state,

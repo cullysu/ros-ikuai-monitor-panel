@@ -13,6 +13,8 @@ export interface RouterConnectionInput {
   password: string;
   sshPort: number;
   sshHostKeyFingerprint?: string;
+  sshHostKeyTrustToken?: string;
+  continueWithVerifiedRestOnly?: boolean;
   restScheme: "https" | "http";
   restPort: number;
   restVerifyTls: boolean;
@@ -105,6 +107,8 @@ export async function submitRouterConnection(
       restVerifyTls: input.restVerifyTls,
       insecureRestConfirmed: input.insecureRestConfirmed,
       ...(input.sshHostKeyFingerprint ? { sshHostKeyFingerprint: input.sshHostKeyFingerprint } : {}),
+      ...(input.sshHostKeyTrustToken ? { sshHostKeyTrustToken: input.sshHostKeyTrustToken } : {}),
+      ...(input.continueWithVerifiedRestOnly ? { continueWithVerifiedRestOnly: true } : {}),
       ...(input.savedId ? { savedId: input.savedId } : {}),
       rememberProfile: input.rememberProfile,
     }),

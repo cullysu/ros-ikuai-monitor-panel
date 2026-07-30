@@ -1,0 +1,51 @@
+/* Scoped boundary for .mdw-tablet-interface-relations; visual primitives stay shared. */
+
+/* The same object-level follow-up is used by the selected interface inspector;
+   keeping it beside the interface relation task avoids growing the base domain
+   stylesheet with another one-off surface. */
+.mdi-next-step {
+  border-top: 1px solid var(--mdw-line);
+  background: var(--mdw-surface-tonal);
+}
+.mdi-next-step > header {
+  padding: 10px;
+}
+.mdi-next-step-kicker {
+  display: block;
+  color: var(--mdw-blue);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+.mdi-next-step h3 {
+  margin: 3px 0 0;
+  color: var(--mdw-ink);
+  font-size: 14px;
+  font-weight: 710;
+  line-height: 1.3;
+}
+.mdi-next-step p {
+  margin: 3px 0 0;
+  color: var(--mdw-muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+.mdi-next-step > button {
+  display: flex;
+  min-height: 44px;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 10px;
+  border: 0;
+  border-top: 1px solid var(--mdw-line);
+  color: var(--mdw-blue);
+  background: var(--mdw-surface);
+  font-size: 13px;
+  font-weight: 700;
+  text-align: left;
+}
+.mdi-next-step > button > svg {
+  flex: 0 0 auto;
+}

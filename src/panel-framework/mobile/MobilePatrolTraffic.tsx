@@ -1,4 +1,4 @@
-import { ArrowDown, ArrowUp, ChartNoAxesCombined } from "lucide-react";
+import { Activity } from "lucide-react";
 import type { OverviewTrafficInstrument, OverviewTrafficPoint } from "../overview/evidence-model/overviewEvidenceTypes";
 
 function polyline(points: OverviewTrafficPoint[], key: "down" | "up"): string {
@@ -6,8 +6,8 @@ function polyline(points: OverviewTrafficPoint[], key: "down" | "up"): string {
   const peak = Math.max(1, ...points.flatMap((point) => [point.down, point.up]));
   return points.map((point, index) => {
     const x = 4 + (index / (points.length - 1)) * 312;
-    const y = 84 - (point[key] / peak) * 76;
-    return `${x.toFixed(1)},${Math.max(6, y).toFixed(1)}`;
+    const y = 96 - (point[key] / peak) * 88;
+    return `${x.toFixed(1)},${Math.max(8, y).toFixed(1)}`;
   }).join(" ");
 }
 
@@ -31,8 +31,8 @@ export function MobilePatrolTraffic({ traffic, onOpen }: { traffic: OverviewTraf
   const endTime = chartReady ? axisTime(traffic.points[traffic.points.length - 1].timestamp) : "";
 
   return (
-    <section className="mp-traffic" data-mobile-traffic={traffic.status} aria-labelledby="mp-traffic-title">
-      <header>
+    <section className="mp-traffic" data-mobile-visual-layer="signal" data-mobile-traffic-signal data-mobile-traffic-window={windowText} data-overview-task-landmark="signal" aria-labelledby="mp-traffic-title">
+      <header data-mobile-traffic-window={windowText}>
         <div>
           <span className="mp-section-kicker">WAN 信号</span>
           <h2 id="mp-traffic-title">{traffic.title}</h2>
@@ -41,22 +41,18 @@ export function MobilePatrolTraffic({ traffic, onOpen }: { traffic: OverviewTraf
       </header>
 
       <div className={`mp-traffic-body ${chartReady ? "is-ready" : "is-accumulating"}`}>
-        <div className="mp-rate-pair" aria-label={traffic.accessibleSummary}>
-          <span><ArrowDown aria-hidden="true" size={16} /><small>下载</small><b>{traffic.currentDown}</b></span>
-          <span><ArrowUp aria-hidden="true" size={16} /><small>上传</small><b>{traffic.currentUp}</b></span>
-        </div>
         {chartReady ? (
           <div className="mp-chart">
             <span className="mp-chart-scale" aria-hidden="true"><b>{traffic.peak}</b><b>0</b></span>
             <svg
-              viewBox="0 0 320 92"
+              viewBox="0 0 320 104"
               preserveAspectRatio="xMidYMid meet"
               role="img"
               aria-labelledby="mp-traffic-chart-title mp-traffic-chart-desc"
             >
               <title id="mp-traffic-chart-title">WAN 上传与下载趋势</title>
               <desc id="mp-traffic-chart-desc">{traffic.accessibleSummary}，纵轴从 0 到 {traffic.peak}，横轴从 {startTime} 到 {endTime}。</desc>
-              <path className="mp-chart-grid" d="M4 12H316 M4 48H316 M4 84H316" />
+              <path className="mp-chart-grid" d="M4 8H316 M4 52H316 M4 96H316" />
               <polyline className="mp-chart-down" points={down} />
               <polyline className="mp-chart-up" points={up} />
             </svg>
@@ -64,7 +60,7 @@ export function MobilePatrolTraffic({ traffic, onOpen }: { traffic: OverviewTraf
           </div>
         ) : (
           <div className="mp-chart-pending" aria-label={traffic.accessibleSummary}>
-            <ChartNoAxesCombined aria-hidden="true" size={18} />
+            <Activity aria-hidden="true" size={18} />
             <span><b>趋势正在形成</b><small>至少需要两个同窗完整样本</small></span>
           </div>
         )}
@@ -77,7 +73,7 @@ export function MobilePatrolTraffic({ traffic, onOpen }: { traffic: OverviewTraf
             <span><i className="is-up" aria-hidden="true" />上传</span>
           </>
         ) : <span>完整样本 {traffic.sampleCount} / 2</span>}
-        <span>峰值 {traffic.peak}</span>
+        <span data-mobile-traffic-peak>窗口峰值 {traffic.peak}</span>
         <button type="button" data-mobile-destination="trafficLoad" onClick={onOpen}>流量明细</button>
       </footer>
     </section>

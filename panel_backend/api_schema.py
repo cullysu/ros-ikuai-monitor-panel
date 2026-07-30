@@ -43,6 +43,8 @@ class RouterLoginRequest:
     rest_verify_tls: bool
     insecure_rest_confirmed: bool
     ssh_host_key_fingerprint: object
+    ssh_host_key_trust_token: str
+    continue_with_verified_rest_only: bool
     remember_profile: bool
     using_saved_profile: bool
 
@@ -67,7 +69,12 @@ def parse_router_login_request(payload, saved_entry=None):
     password = payload.get("password")
     using_saved_profile = isinstance(saved_entry, dict)
     if using_saved_profile:
-        submitted_fingerprint = payload.get("sshHostKeyFingerprint")
+        submitted_fingerprint = str(payload.get("sshHostKeyFingerprint") or "").strip()
+        stored_fingerprint = str(saved_entry.get("sshHostKeyFingerprint") or "").strip()
+        if stored_fingerprint and submitted_fingerprint and submitted_fingerprint != stored_fingerprint:
+            raise ValueError(
+                "Saved SSH host-key fingerprint cannot be replaced during login; forget the device profile before trusting a new key"
+            )
         return RouterLoginRequest(
             saved_id=saved_id,
             password=password,
@@ -77,12 +84,10 @@ def parse_router_login_request(payload, saved_entry=None):
             rest_scheme=saved_entry.get("restScheme") or "https",
             rest_port=saved_entry.get("restPort"),
             rest_verify_tls=saved_entry.get("restVerifyTls") is True,
-            insecure_rest_confirmed=saved_entry.get("insecureRestConfirmed") is True,
-            ssh_host_key_fingerprint=(
-                submitted_fingerprint
-                if submitted_fingerprint is not None
-                else saved_entry.get("sshHostKeyFingerprint") or ""
-            ),
+            insecure_rest_confirmed=payload.get("insecureRestConfirmed", False) is True,
+            ssh_host_key_fingerprint=stored_fingerprint or submitted_fingerprint,
+            ssh_host_key_trust_token=str(payload.get("sshHostKeyTrustToken") or "").strip(),
+            continue_with_verified_rest_only=payload.get("continueWithVerifiedRestOnly", False) is True,
             remember_profile=payload.get("rememberProfile", False) is True,
             using_saved_profile=True,
         )
@@ -98,6 +103,8 @@ def parse_router_login_request(payload, saved_entry=None):
         rest_verify_tls=payload.get("restVerifyTls", True) is True,
         insecure_rest_confirmed=payload.get("insecureRestConfirmed", False) is True,
         ssh_host_key_fingerprint=payload.get("sshHostKeyFingerprint") or "",
+        ssh_host_key_trust_token=str(payload.get("sshHostKeyTrustToken") or "").strip(),
+        continue_with_verified_rest_only=payload.get("continueWithVerifiedRestOnly", False) is True,
         remember_profile=payload.get("rememberProfile", False) is True,
         using_saved_profile=False,
     )

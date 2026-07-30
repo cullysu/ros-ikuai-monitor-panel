@@ -1,0 +1,1669 @@
+/* Semantically derived overrides from the last known-good production stylesheet. */
+@media (max-width:1199px) {
+    .mp-shell {
+        --mp-ink: #14242e;
+        --mp-text: #2e414d;
+        --mp-muted: #52636d;
+        --mp-faint: #5f7079;
+        --mp-line: rgba(38,72,90,.1);
+        --mp-line-strong: rgba(38,72,90,.17);
+        --mp-surface-base: #f6f8f9;
+        --mp-surface-raised: rgba(255,255,255,.96);
+        --mp-surface-quiet: #eef4f6;
+        --mp-accent-wash: #e9f2f5;
+        --mp-surface: var(--mp-surface-raised);
+        --mp-surface-soft: var(--mp-surface-quiet);
+        --mp-blue-dark: #245b75;
+        --mp-blue-soft: var(--mp-accent-wash);
+        --mp-cyan: #6fa3b9;
+        --mp-danger-soft: #f1e4e2;
+        --mp-warn: #84652d;
+        --mp-warn-soft: #f2ebdb;
+        --mp-trust: #2f677d;
+        --mp-missing: #6c7479;
+        --mono: ui-monospace,"SFMono-Regular",Consolas,monospace;
+        color: var(--mp-text);
+        background: var(--mp-surface-base)
+    }
+    .mp-shell button {
+        -webkit-tap-highlight-color: transparent
+    }
+    .mp-shell summary {
+        -webkit-tap-highlight-color: transparent
+    }
+    .mp-device-context {
+        border-bottom: 1px solid var(--mp-line)
+    }
+    .mp-device-context>span:first-child {
+        color: var(--mp-blue-dark)
+    }
+    .mp-device-context b {
+        color: var(--mp-ink)
+    }
+    .mp-device-context small {
+        color: var(--mp-muted)
+    }
+    .mp-device-context>span:last-child {
+        color: var(--mp-muted)
+    }
+    .mp-patrol-canvas {
+        border: 1px solid var(--mp-line);
+        background: var(--mp-surface)
+    }
+    .mp-workspace {
+        border-top: 1px solid var(--mp-line)
+    }
+    .mp-evidence-line {
+        color: var(--mp-muted)
+    }
+    .mp-evidence-line>span.is-danger {
+        color: var(--mp-danger)
+    }
+    .mp-proof>div.is-danger b {
+        color: var(--mp-danger)
+    }
+    .mp-scenario-focus-item.is-danger b {
+        color: var(--mp-danger)
+    }
+    .mp-resource-metrics>div>span:first-child svg {
+        color: var(--mp-danger)
+    }
+    .mp-evidence-line>span.is-warn {
+        color: var(--mp-warn)
+    }
+    .mp-evidence-line>span.is-missing {
+        color: var(--mp-warn)
+    }
+    .mp-proof>div.is-warn b {
+        color: var(--mp-warn)
+    }
+    .mp-scenario-focus-item.is-warn b {
+        color: var(--mp-warn)
+    }
+    .mp-evidence-line>span.is-trust {
+        color: var(--mp-trust)
+    }
+    .mp-command-icon {
+        color: var(--mp-blue-dark);
+        background: transparent
+    }
+    .mp-shell.is-danger .mp-command-icon {
+        color: var(--mp-danger);
+        background: transparent
+    }
+    .mp-shell.is-warn .mp-command-icon {
+        color: var(--mp-warn);
+        background: transparent
+    }
+    .mp-shell.is-missing .mp-command-icon {
+        color: var(--mp-warn);
+        background: transparent
+    }
+    .mp-section-kicker {
+        color: var(--mp-muted)
+    }
+    .mp-command h1 {
+        color: var(--mp-ink)
+    }
+    .mp-command h1:focus {
+        outline: 2px solid transparent
+    }
+    .mp-command p {
+        color: var(--mp-muted)
+    }
+    .mp-proof {
+        background: var(--mp-surface-quiet)
+    }
+    .mp-proof>div+div {
+        border-left: 1px solid var(--mp-line)
+    }
+    .mp-load button+button {
+        border-top: 1px solid var(--mp-line)
+    }
+    .mp-proof>div.is-missing b {
+        color: var(--mp-missing)
+    }
+    .mp-proof small {
+        color: var(--mp-muted)
+    }
+    .mp-proof b {
+        color: var(--mp-ink)
+    }
+    .mp-proof em {
+        color: var(--mp-faint)
+    }
+    .mp-scenario-focus {
+        border-bottom: 1px solid var(--mp-line);
+        background: transparent
+    }
+    .mp-scenario-focus-icon {
+        border: 1px solid var(--mp-line-strong);
+        color: var(--mp-blue-dark);
+        background: var(--mp-blue-soft)
+    }
+    .mp-focus-icon {
+        border: 1px solid var(--mp-line-strong);
+        color: var(--mp-blue-dark);
+        background: var(--mp-blue-soft)
+    }
+    .mp-scenario-focus.is-coverage .mp-scenario-focus-icon {
+        color: var(--mp-danger);
+        background: var(--mp-danger-soft)
+    }
+    .mp-scenario-focus.is-outage .mp-scenario-focus-icon {
+        color: var(--mp-danger);
+        background: var(--mp-danger-soft)
+    }
+    .mp-scenario-focus h2 {
+        color: var(--mp-ink)
+    }
+    .mp-scenario-focus p {
+        color: var(--mp-muted)
+    }
+    .mp-scenario-focus-grid {
+        border-top: 1px solid var(--mp-line)
+    }
+    .mp-scenario-focus-grid>.mp-scenario-focus-item:nth-child(n+3) {
+        border-top: 1px solid var(--mp-line)
+    }
+    .mp-incident-list {
+        border-top: 1px solid var(--mp-line)
+    }
+    .mp-incident-row+.mp-incident-row {
+        border-top: 1px solid var(--mp-line)
+    }
+    .mp-ledger dl>div+div {
+        border-top: 1px solid var(--mp-line)
+    }
+    .mp-inspector dl>div+div {
+        border-top: 1px solid var(--mp-line)
+    }
+    .mp-action-list {
+        border-top: 1px solid var(--mp-line)
+    }
+    .mp-action-list>button+button {
+        border-top: 1px solid var(--mp-line)
+    }
+    .mp-scenario-focus.is-coverage .mp-scenario-focus-item+.mp-scenario-focus-item {
+        border-top: 1px solid var(--mp-line)
+    }
+    .mp-shell.is-large-text .mp-proof>div+div {
+        border-top: 1px solid var(--mp-line)
+    }
+    .mp-shell.is-large-text .mp-load button+button {
+        border-top: 1px solid var(--mp-line)
+    }
+    .mp-scenario-focus-item.is-action:active {
+        background: var(--mp-surface-soft)
+    }
+    .mp-incident-row:active {
+        background: var(--mp-surface-soft)
+    }
+    .mp-load button:active {
+        background: var(--mp-surface-soft)
+    }
+    .mp-action-list>button:active {
+        background: var(--mp-surface-soft)
+    }
+    .mp-focus>button:active {
+        background: var(--mp-surface-soft)
+    }
+    .mp-scenario-focus-item.is-action:focus-visible {
+        outline: 3px solid rgba(47,113,143,.32)
+    }
+    .mp-incident-row:focus-visible {
+        outline: 3px solid rgba(47,113,143,.32)
+    }
+    .mp-load button:focus-visible {
+        outline: 3px solid rgba(47,113,143,.32)
+    }
+    .mp-traffic button:focus-visible {
+        outline: 3px solid rgba(47,113,143,.32)
+    }
+    .mp-incident-more:focus-visible {
+        outline: 3px solid rgba(47,113,143,.32)
+    }
+    .mp-ledger summary:focus-visible {
+        outline: 3px solid rgba(47,113,143,.32)
+    }
+    .mp-focus button:focus-visible {
+        outline: 3px solid rgba(47,113,143,.32)
+    }
+    .mp-resource-meter:focus-visible {
+        outline: 3px solid rgba(47,113,143,.32)
+    }
+    .mp-inspector button:focus-visible {
+        outline: 3px solid rgba(47,113,143,.32)
+    }
+    .mp-action-list>button:focus-visible {
+        outline: 3px solid rgba(47,113,143,.32)
+    }
+    .mp-scenario-focus-mark {
+        background: var(--mp-trust)
+    }
+    .mp-scenario-focus-item.is-danger .mp-scenario-focus-mark {
+        background: var(--mp-danger)
+    }
+    .mp-scenario-focus-item.is-warn .mp-scenario-focus-mark {
+        background: var(--mp-warn)
+    }
+    .mp-scenario-focus-item.is-missing .mp-scenario-focus-mark {
+        background: var(--mp-missing)
+    }
+    .mp-scenario-focus-grid small {
+        color: var(--mp-muted)
+    }
+    .mp-scenario-focus-grid b {
+        color: var(--mp-ink)
+    }
+    .mp-scenario-focus-grid em {
+        color: var(--mp-faint)
+    }
+    .mp-incident-copy small {
+        color: var(--mp-muted)
+    }
+    .mp-incident-copy b {
+        color: var(--mp-ink)
+    }
+    .mp-incident-copy p {
+        color: var(--mp-muted)
+    }
+    .mp-chart-pending b {
+        color: var(--mp-text)
+    }
+    .mp-chart-pending small {
+        color: var(--mp-muted)
+    }
+    .mp-load button small {
+        color: var(--mp-muted)
+    }
+    .mp-load button b {
+        color: var(--mp-ink);
+        font-family: var(--mono)
+    }
+    .mp-action-list b {
+        color: var(--mp-ink)
+    }
+    .mp-action-list small {
+        color: var(--mp-muted)
+    }
+    .mp-scenario-focus-item.is-missing b {
+        color: var(--mp-missing)
+    }
+    .mp-scenario-focus-item.is-action>svg {
+        color: var(--mp-faint)
+    }
+    .mp-load button>svg:last-child {
+        color: var(--mp-faint)
+    }
+    .mp-action-list>button>svg {
+        color: var(--mp-faint)
+    }
+    .mp-incident {
+        border-bottom: 1px solid var(--mp-line)
+    }
+    .mp-traffic {
+        border-bottom: 1px solid var(--mp-line)
+    }
+    .mp-load {
+        border-bottom: 1px solid var(--mp-line)
+    }
+    .mp-resource {
+        border-bottom: 1px solid var(--mp-line)
+    }
+    .mp-focus {
+        border-bottom: 1px solid var(--mp-line)
+    }
+    .mp-route-dossier {
+        border-bottom: 1px solid var(--mp-line);
+        background: var(--mp-surface-raised)
+    }
+    .mp-incident h2 {
+        color: var(--mp-ink)
+    }
+    .mp-traffic h2 {
+        color: var(--mp-ink)
+    }
+    .mp-load h2 {
+        color: var(--mp-ink)
+    }
+    .mp-resource h2 {
+        color: var(--mp-ink)
+    }
+    .mp-resource-history h2 {
+        color: var(--mp-ink)
+    }
+    .mp-actions h2 {
+        color: var(--mp-ink)
+    }
+    .mp-incident-mark {
+        background: var(--mp-danger)
+    }
+    .mp-incident-row.is-warn .mp-incident-mark {
+        background: var(--mp-warn)
+    }
+    .mp-incident-row.is-missing .mp-incident-mark {
+        background: var(--mp-warn)
+    }
+    .mp-scenario-focus.is-planes .mp-scenario-focus-icon {
+        color: var(--mp-warn);
+        background: var(--mp-warn-soft)
+    }
+    .mp-incident-row.is-warn .mp-incident-copy em {
+        color: var(--mp-warn)
+    }
+    .mp-incident-row.is-missing .mp-incident-copy em {
+        color: var(--mp-warn)
+    }
+    .mp-incident-more {
+        border-top: 1px solid var(--mp-line);
+        color: var(--mp-blue-dark)
+    }
+    .mp-window {
+        color: var(--mp-muted)
+    }
+    .mp-traffic-body.is-accumulating .mp-chart-pending {
+        border-top: 1px solid var(--mp-line)
+    }
+    .mp-focus-signal {
+        border-top: 1px solid var(--mp-line)
+    }
+    .mp-focus-signal-metric svg {
+        color: var(--mp-blue)
+    }
+    .mp-focus-signal-metric:last-child svg {
+        color: var(--mp-cyan)
+    }
+    .mp-focus-signal-metric small {
+        color: var(--mp-muted)
+    }
+    .mp-inspector dt {
+        color: var(--mp-muted)
+    }
+    .mp-focus-signal-metric b {
+        color: var(--mp-ink);
+        font-family: var(--mono)
+    }
+    .mp-chart {
+        border-top: 1px solid var(--mp-line)
+    }
+    .mp-chart-scale {
+        color: var(--mp-faint);
+        font-family: var(--mono)
+    }
+    .mp-chart-time {
+        color: var(--mp-faint);
+        font-family: var(--mono)
+    }
+    .mp-chart-down {
+        stroke: var(--mp-blue)
+    }
+    .mp-chart-up {
+        stroke: var(--mp-cyan)
+    }
+    .mp-chart-pending {
+        border-top: 1px solid var(--mp-line);
+        color: var(--mp-blue)
+    }
+    .mp-traffic footer {
+        border-top: 1px solid var(--mp-line);
+        color: var(--mp-muted)
+    }
+    .mp-traffic footer i {
+        background: var(--mp-blue)
+    }
+    .mp-traffic footer i.is-up {
+        background: var(--mp-cyan)
+    }
+    .mp-traffic footer button {
+        color: var(--mp-blue-dark)
+    }
+    .mp-load>div {
+        border-top: 1px solid var(--mp-line)
+    }
+    .mp-load button {
+        color: var(--mp-text)
+    }
+    .mp-decision-ledger {
+        border-bottom: 1px solid var(--mp-line)
+    }
+    .mp-decision-ledger>header {
+        border-bottom: 1px solid var(--mp-line)
+    }
+    .mp-decision-ledger h2 {
+        color: var(--mp-ink)
+    }
+    .mp-decision-ledger>header p {
+        color: var(--mp-muted)
+    }
+    .mp-decision-ledger-count {
+        color: var(--mp-muted)
+    }
+    .mp-decision-ledger-row {
+        border-left: 3px solid transparent;
+        border-bottom: 1px solid var(--mp-line);
+        color: var(--mp-text);
+        background: transparent
+    }
+    .mp-decision-ledger-row.is-danger {
+        border-left-color: var(--mp-danger)
+    }
+    .mp-decision-ledger-row.is-warn {
+        border-left-color: var(--mp-warn)
+    }
+    .mp-decision-ledger-row.is-missing {
+        border-left-color: var(--mp-warn)
+    }
+    .mp-decision-ledger-row.is-trust {
+        border-left-color: transparent;
+        background: transparent
+    }
+    .mp-decision-ledger-row.is-ok {
+        border-left-color: transparent;
+        background: transparent
+    }
+    .mp-decision-ledger-row:focus-visible {
+        outline: 2px solid var(--mp-blue)
+    }
+    .mp-decision-ledger-index {
+        color: var(--mp-faint);
+        font-family: var(--mono)
+    }
+    .mp-decision-ledger-copy small {
+        color: var(--mp-muted)
+    }
+    .mp-decision-ledger-copy b {
+        color: var(--mp-ink);
+        font-family: var(--mono)
+    }
+    .mp-decision-ledger-copy>span {
+        color: var(--mp-muted)
+    }
+    .mp-decision-ledger-row>svg {
+        color: var(--mp-faint)
+    }
+    .mp-ledger summary {
+        color: var(--mp-text)
+    }
+    .mp-ledger summary>span:first-child>svg {
+        color: var(--mp-text)
+    }
+    .mp-ledger summary b {
+        color: var(--mp-ink)
+    }
+    .mp-ledger summary small {
+        color: var(--mp-muted)
+    }
+    .mp-ledger dd b {
+        color: var(--mp-ink)
+    }
+    .mp-ledger dd small {
+        color: var(--mp-muted)
+    }
+    .mp-route-dossier dd b {
+        color: var(--mp-ink);
+        font-family: var(--mono)
+    }
+    .mp-inspector>p b {
+        color: var(--mp-danger)
+    }
+    .mp-inspector>p span {
+        color: var(--mp-muted)
+    }
+    .mp-ledger summary>span:last-child {
+        color: var(--mp-muted)
+    }
+    .mp-ledger dl {
+        border-top: 1px solid var(--mp-line)
+    }
+    .mp-route-dossier dl {
+        border-top: 1px solid var(--mp-line)
+    }
+    .mp-inspector dl {
+        border-top: 1px solid var(--mp-line)
+    }
+    .mp-ledger dt {
+        color: var(--mp-muted)
+    }
+    .mp-route-dossier dt {
+        color: var(--mp-muted)
+    }
+    .mp-shell.is-large-text .mp-scenario-focus-item {
+        border-top: 1px solid var(--mp-line)
+    }
+    .mp-shell.is-large-text .mp-scenario-focus.is-coverage .mp-scenario-focus-item {
+        border-top: 1px solid var(--mp-line)
+    }
+    .mp-shell.is-large-text .mp-chart {
+        border-top: 1px solid var(--mp-line)
+    }
+    .mp-shell.is-large-text .mp-chart-pending {
+        border-top: 1px solid var(--mp-line)
+    }
+}
+@media (max-width:359px) {
+    .mp-scenario-focus-item {
+        border-top: 1px solid var(--mp-line)
+    }
+    .mp-scenario-focus.is-coverage .mp-scenario-focus-item {
+        border-top: 1px solid var(--mp-line)
+    }
+    .mp-scenario-focus.is-outage .mp-scenario-focus-item:nth-child(n+3) {
+        border-top: 1px solid var(--mp-line)
+    }
+    .mp-scenario-focus.is-planes .mp-scenario-focus-item:nth-child(n+3) {
+        border-top: 1px solid var(--mp-line)
+    }
+    .mp-chart {
+        border-top: 1px solid var(--mp-line)
+    }
+    .mp-chart-pending {
+        border-top: 1px solid var(--mp-line)
+    }
+    .mp-proof>div+div {
+        border-top: 1px solid var(--mp-line)
+    }
+    .mp-load button+button {
+        border-top: 1px solid var(--mp-line)
+    }
+}
+@media (max-width:1199px) {
+    @container (min-width:520px) {
+        .mp-shell:not(.is-large-text) .mp-scenario-focus.is-coverage .mp-scenario-focus-item+.mp-scenario-focus-item {
+            border-left: 1px solid var(--mp-line)
+        }
+    }
+    .mp-resource-metrics {
+        border-top: 1px solid var(--mp-line)
+    }
+    .mp-resource-metrics>div>span:first-child {
+        color: var(--mp-muted)
+    }
+    .mp-resource-metrics b {
+        color: var(--mp-text)
+    }
+    .mp-resource-metrics strong {
+        color: var(--mp-danger);
+        font-family: var(--mono)
+    }
+    .mp-resource-metrics small {
+        color: var(--mp-muted)
+    }
+    .mp-resource-meter i {
+        background: var(--mp-danger)
+    }
+    .mp-resource-history .section-timeseries.is-embedded .section-timeseries-body {
+        border-top: 1px solid var(--mp-line)
+    }
+    .mp-resource-pending {
+        border-top: 1px solid var(--mp-line);
+        color: var(--mp-muted)
+    }
+    .mp-focus>button {
+        background: var(--mp-surface-raised)
+    }
+    .mp-focus-copy b {
+        color: var(--mp-ink)
+    }
+    .mp-focus-copy em {
+        color: var(--mp-muted)
+    }
+    .mp-focus-meta small {
+        color: var(--mp-blue-dark)
+    }
+    .mp-focus-meta time {
+        color: var(--mp-faint);
+        font-family: var(--mono)
+    }
+    .mp-focus-copy code {
+        color: var(--mp-text);
+        font-family: var(--mono)
+    }
+    .mp-focus>button>svg {
+        color: var(--mp-faint)
+    }
+    .mp-route-dossier dl>div:nth-child(n+3) {
+        border-top: 1px solid var(--mp-line)
+    }
+}
+@media (min-width:768px)and (max-width:1199px)and (min-height:700px) {
+    .mp-status-bus.has-proof .mp-command {
+        border-right: 1px solid var(--mp-line)
+    }
+    @container (min-width:700px) {
+        .mp-shell:not(.is-large-text) .mp-workspace-primary {
+            border-right: 1px solid var(--mp-line)
+        }
+    }
+    @container (min-width:700px) {
+        .mp-shell:not(.is-large-text) .mp-tablet-master-detail>.mp-inspector {
+            border-left: 1px solid var(--mp-line)
+        }
+    }
+}
+@media (max-width:1199px) {
+    .mp-inspector {
+        border-bottom: 1px solid var(--mp-line)
+    }
+    .mp-inspector h2 {
+        color: var(--mp-ink)
+    }
+    .mp-inspector>header>svg {
+        color: var(--mp-blue-dark)
+    }
+    .mp-inspector>p {
+        border-top: 1px solid var(--mp-line)
+    }
+    .mp-inspector dd {
+        color: var(--mp-ink);
+        font-family: var(--mono)
+    }
+    .mp-inspector-source {
+        border-top: 1px solid var(--mp-line);
+        color: var(--mp-muted)
+    }
+    .mp-inspector-source code {
+        color: var(--mp-text);
+        font-family: var(--mono)
+    }
+    .mp-inspector button {
+        border-top: 1px solid var(--mp-line);
+        color: var(--mp-blue-dark)
+    }
+    .mp-actions {
+        border-bottom: 1px solid var(--mp-line)
+    }
+    .mp-tablet-task-summary {
+        color: var(--mp-muted)
+    }
+    .mp-tablet-task-index {
+        color: var(--mp-faint);
+        font-family: var(--mono)
+    }
+    .mp-tablet-task-selection {
+        border-top: 1px solid var(--mp-line);
+        color: var(--mp-muted)
+    }
+    .mp-action-list>button {
+        color: var(--mp-text)
+    }
+}
+@media (min-width:1200px) {
+    .do-shell {
+        --do-canvas: #eaf0f2;
+        --do-surface: #f9fbfc;
+        --do-surface-soft: #eef4f6;
+        --do-surface-strong: #e1ecef;
+        --do-line: #b7c8cf;
+        --do-line-soft: #d5e0e4;
+        --do-ink: #102a36;
+        --do-copy: #3f5965;
+        --do-muted: #5b727c;
+        --do-trust: #2d6c60;
+        --do-warn: #84602f;
+        --do-missing: #6e8189;
+        color: var(--do-ink);
+        background: var(--do-canvas)
+    }
+    .do-shell button:focus-visible {
+        outline: 2px solid var(--do-blue)
+    }
+    .do-fixture-bar {
+        border: 1px solid var(--do-line);
+        background: var(--do-surface)
+    }
+    .do-fixture-bar small {
+        color: var(--do-muted)
+    }
+    .do-fixture-bar>span:last-child {
+        color: var(--do-blue)
+    }
+    .do-status-bus {
+        border: 1px solid var(--do-line);
+        background: var(--do-surface)
+    }
+    .do-verdict {
+        background: var(--do-surface)
+    }
+    .do-status-bus.has-proof .do-verdict {
+        border-right: 1px solid var(--do-line)
+    }
+    .do-verdict-icon {
+        border: 1px solid color-mix(in srgb,var(--do-trust) 34%,var(--do-line));
+        color: var(--do-trust);
+        background: var(--do-surface)
+    }
+    .do-verdict.is-trust .do-verdict-icon {
+        border-color: color-mix(in srgb,var(--do-blue) 34%,var(--do-line));
+        color: var(--do-blue)
+    }
+    .do-verdict.is-warn .do-verdict-icon {
+        border-color: color-mix(in srgb,var(--do-warn) 40%,var(--do-line));
+        color: var(--do-warn)
+    }
+    .do-verdict.is-missing .do-verdict-icon {
+        border-color: color-mix(in srgb,var(--do-warn) 40%,var(--do-line));
+        color: var(--do-warn)
+    }
+    .do-verdict.is-danger .do-verdict-icon {
+        border-color: color-mix(in srgb,var(--do-danger) 40%,var(--do-line));
+        color: var(--do-danger)
+    }
+    .do-verdict small {
+        color: var(--do-muted)
+    }
+    .do-verdict p {
+        color: var(--do-copy)
+    }
+    .do-status-items dt {
+        color: var(--do-muted)
+    }
+    .do-module-heading p {
+        color: var(--do-muted)
+    }
+    .do-wan-empty h2 {
+        color: var(--do-ink)
+    }
+    .do-resource-heading small {
+        color: var(--do-muted)
+    }
+    .do-resource-heading h3 {
+        color: var(--do-ink)
+    }
+    .do-task-focus h2 {
+        color: var(--do-ink)
+    }
+    .do-focus-object h2 {
+        color: var(--do-ink)
+    }
+    .do-task-workspace-heading h2 {
+        color: var(--do-ink)
+    }
+    .do-task-workspace-heading p {
+        color: var(--do-muted)
+    }
+    .do-task-actions h2 {
+        color: var(--do-ink)
+    }
+    .do-verdict h1:focus {
+        outline: 2px solid transparent
+    }
+    .do-status-items>div {
+        border-left: 1px solid var(--do-line-soft)
+    }
+    .do-incident-facts small {
+        color: var(--do-muted)
+    }
+    .do-status-items dd b {
+        color: var(--do-ink)
+    }
+    .do-status-items dd small {
+        color: var(--do-muted)
+    }
+    .do-incident-facts b {
+        color: var(--do-ink)
+    }
+    .do-incident-facts span {
+        color: var(--do-muted)
+    }
+    .do-task-actions button span:nth-child(2) small {
+        color: var(--do-muted)
+    }
+    .do-status-items>.is-warn dd b {
+        color: var(--do-warn)
+    }
+    .do-status-items>.is-missing dd b {
+        color: var(--do-warn)
+    }
+    .do-module-heading {
+        border-bottom: 1px solid var(--do-line);
+        background: var(--do-surface-soft)
+    }
+    .do-module-heading>span {
+        color: var(--do-blue)
+    }
+    .do-module-heading>button {
+        border: 1px solid var(--do-line);
+        color: var(--do-blue);
+        background: var(--do-surface)
+    }
+    .do-ledger {
+        border: 1px solid var(--do-line);
+        background: var(--do-surface)
+    }
+    .do-wan {
+        border: 1px solid var(--do-line);
+        background: var(--do-surface)
+    }
+    .do-wan-empty {
+        border: 1px solid var(--do-line);
+        background: var(--do-surface);
+        color: var(--do-copy)
+    }
+    .do-incident {
+        border: 1px solid var(--do-line);
+        background: var(--do-surface)
+    }
+    .do-task-focus {
+        border: 1px solid var(--do-line);
+        background: var(--do-surface)
+    }
+    .do-focus-object {
+        border: 1px solid var(--do-line);
+        background: var(--do-surface)
+    }
+    .do-task-workspace {
+        border: 1px solid var(--do-line);
+        background: var(--do-surface)
+    }
+    .do-task-actions {
+        border: 1px solid var(--do-line);
+        background: var(--do-surface)
+    }
+    .do-ledger-head {
+        border-bottom: 1px solid var(--do-line-soft);
+        color: var(--do-muted)
+    }
+    .do-ledger-row {
+        border-bottom: 1px solid var(--do-line-soft);
+        color: var(--do-copy)
+    }
+    .do-ledger-category {
+        color: var(--do-muted)
+    }
+    .do-ledger-object button {
+        color: var(--do-blue);
+        background: transparent
+    }
+    .do-ledger-state {
+        color: var(--do-ink)
+    }
+    .do-ledger-state i {
+        background: var(--do-trust)
+    }
+    .do-ledger-row.is-missing .do-ledger-state i {
+        background: var(--do-missing)
+    }
+    .do-ledger-source {
+        color: var(--do-muted)
+    }
+    .do-ledger-empty {
+        color: var(--do-muted)
+    }
+    .do-wan-summary {
+        border-bottom: 1px solid var(--do-line-soft)
+    }
+    .do-wan-summary>span {
+        border-left: 1px solid var(--do-line-soft)
+    }
+    .do-wan-summary svg {
+        color: var(--do-blue)
+    }
+    .do-wan-summary small {
+        color: var(--do-ink)
+    }
+    .do-wan-summary b {
+        color: var(--do-ink)
+    }
+    .do-resource-metrics small {
+        color: var(--do-ink)
+    }
+    .do-focus-object dt {
+        color: var(--do-ink)
+    }
+    .do-task-inspector dt {
+        color: var(--do-ink)
+    }
+    .do-wan-chart {
+        background: var(--do-surface-soft)
+    }
+    .do-wan-pending {
+        color: var(--do-muted);
+        background: var(--do-surface-soft)
+    }
+    .do-wan-pending b {
+        color: var(--do-ink)
+    }
+    .do-chart-line.is-down {
+        stroke: var(--do-blue)
+    }
+    .do-chart-point {
+        fill: var(--do-surface)
+    }
+    .do-chart-point.is-down {
+        stroke: var(--do-blue)
+    }
+    .do-chart-label {
+        fill: var(--do-muted)
+    }
+    .do-chart-time {
+        fill: var(--do-muted)
+    }
+    .do-wan-legend {
+        border-top: 1px solid var(--do-line-soft);
+        color: var(--do-muted)
+    }
+    .do-wan-empty>svg {
+        color: var(--do-blue)
+    }
+    .do-wan-empty button {
+        border: 1px solid var(--do-line);
+        color: var(--do-blue);
+        background: var(--do-surface-soft)
+    }
+    .do-incident-facts {
+        border-bottom: 1px solid var(--do-line)
+    }
+    .do-incident-facts>div {
+        border-left: 1px solid var(--do-line-soft)
+    }
+    .do-incident-facts .is-warn b {
+        color: var(--do-warn)
+    }
+    .do-incident-facts .is-missing b {
+        color: var(--do-warn)
+    }
+    .do-resource {
+        border-bottom: 1px solid var(--do-line);
+        background: var(--do-surface)
+    }
+    .do-resource-heading {
+        border-bottom: 1px solid var(--do-line-soft)
+    }
+    .do-resource-heading>span {
+        color: var(--do-muted)
+    }
+    .do-resource-metrics {
+        border-bottom: 1px solid var(--do-line-soft)
+    }
+    .do-resource-metrics>div {
+        border-left: 1px solid var(--do-line-soft)
+    }
+    .do-status-items>.is-danger dd b {
+        color: var(--do-danger)
+    }
+    .do-incident-facts .is-danger b {
+        color: var(--do-danger)
+    }
+    .do-resource-metrics strong {
+        color: var(--do-danger)
+    }
+    .do-resource-pending {
+        color: var(--do-muted)
+    }
+    .do-incident>.do-task-focus {
+        border-bottom: 1px solid var(--do-line)
+    }
+    .do-incident>.do-task-workspace {
+        border-bottom: 1px solid var(--do-line)
+    }
+    .do-task-focus>header {
+        border-bottom: 1px solid var(--do-line-soft);
+        background: var(--do-surface-soft)
+    }
+    .do-focus-object>header {
+        border-bottom: 1px solid var(--do-line-soft);
+        background: var(--do-surface-soft)
+    }
+    .do-task-workspace-heading {
+        border-bottom: 1px solid var(--do-line-soft);
+        background: var(--do-surface-soft)
+    }
+    .do-task-actions>header {
+        border-bottom: 1px solid var(--do-line-soft);
+        background: var(--do-surface-soft)
+    }
+    .do-task-inspector>header {
+        border-bottom: 1px solid var(--do-line-soft);
+        background: var(--do-surface-soft)
+    }
+    .do-task-focus header small {
+        color: var(--do-muted)
+    }
+    .do-focus-object header small {
+        color: var(--do-muted)
+    }
+    .do-task-workspace-heading small {
+        color: var(--do-muted)
+    }
+    .do-task-actions header small {
+        color: var(--do-muted)
+    }
+    .do-task-inspector header small {
+        color: var(--do-muted)
+    }
+    .do-task-focus header>b {
+        color: var(--do-blue)
+    }
+    .do-task-workspace-heading>b {
+        color: var(--do-blue)
+    }
+    .do-task-focus-grid>button {
+        border-left: 1px solid var(--do-line-soft);
+        background: transparent
+    }
+    .do-task-focus-grid small {
+        color: var(--do-muted)
+    }
+    .do-task-focus-grid b {
+        color: var(--do-ink)
+    }
+    .do-task-focus-grid em {
+        color: var(--do-muted)
+    }
+    .do-focus-object-name {
+        border-bottom: 1px solid var(--do-line-soft)
+    }
+    .do-focus-object-name small {
+        color: var(--do-muted)
+    }
+    .do-focus-object dl>div {
+        border-left: 1px solid var(--do-line-soft);
+        border-bottom: 1px solid var(--do-line-soft)
+    }
+    .do-task-inspector dl>div {
+        border-left: 1px solid var(--do-line-soft);
+        border-bottom: 1px solid var(--do-line-soft)
+    }
+    .do-focus-object>button {
+        color: var(--do-blue);
+        background: transparent
+    }
+    .do-task-inspector>button {
+        color: var(--do-blue);
+        background: transparent
+    }
+    .do-task-object-list {
+        border-right: 1px solid var(--do-line)
+    }
+    .do-task-object {
+        border-bottom: 1px solid var(--do-line-soft);
+        background: transparent
+    }
+    .do-task-object.is-selected {
+        background: var(--do-surface-strong)
+    }
+    .do-task-object small {
+        color: var(--do-muted)
+    }
+    .do-task-object b {
+        color: var(--do-ink)
+    }
+    .do-task-object em {
+        color: var(--do-danger)
+    }
+    .do-task-object p {
+        color: var(--do-muted)
+    }
+    .do-task-inspector>p {
+        border-bottom: 1px solid var(--do-line-soft)
+    }
+    .do-task-inspector>p span {
+        color: var(--do-muted)
+    }
+    .do-task-source {
+        border-bottom: 1px solid var(--do-line-soft);
+        color: var(--do-muted)
+    }
+    .do-task-source code {
+        color: var(--do-copy)
+    }
+    .do-task-empty {
+        color: var(--do-muted)
+    }
+    .do-task-actions>div>button {
+        border-left: 1px solid var(--do-line-soft);
+        background: transparent
+    }
+    .do-task-action-icon {
+        border: 1px solid var(--do-line);
+        color: var(--do-blue);
+        background: var(--do-surface-soft)
+    }
+    .do-task-focus header p {
+        color: var(--do-muted)
+    }
+    .do-ledger-row.is-warn .do-ledger-state i {
+        background: var(--do-warn)
+    }
+    .do-ledger-row.is-danger .do-ledger-state i {
+        background: var(--do-danger)
+    }
+}
+@media (min-width:1200px)and (prefers-contrast:more) {
+    .do-shell {
+        --do-line: #78909a;
+        --do-line-soft: #aebfc6;
+        --do-muted: #425b66
+    }
+}
+@media (max-width:1199px) {
+    .mdw-shell {
+        --mdw-canvas: #eaf1f4;
+        --mdw-ink: #102b37;
+        --mdw-text: #304f5c;
+        --mdw-line: #d1dee4;
+        --mdw-line-strong: #b4c8d1;
+        --mdw-blue: #0b678c;
+        --mdw-blue-soft: #dceaf0;
+        --mdw-danger: #873f42;
+        --mdw-danger-soft: #f0e3e3;
+        --mdw-warn: #7a5f2b;
+        --mdw-warn-soft: #f1eadb;
+        --mono: ui-monospace,"SFMono-Regular",Consolas,monospace;
+        color: var(--mdw-text);
+        background: var(--mdw-canvas)
+    }
+    .mdw-shell button {
+        -webkit-tap-highlight-color: transparent
+    }
+    .mdw-shell input {
+        -webkit-tap-highlight-color: transparent
+    }
+    .mdw-shell select {
+        -webkit-tap-highlight-color: transparent
+    }
+    .mdw-shell summary {
+        -webkit-tap-highlight-color: transparent
+    }
+    .mdw-header {
+        background: var(--mdw-canvas)
+    }
+    .mdw-title-icon {
+        color: var(--mdw-blue)
+    }
+    .mdw-directory-icon {
+        color: var(--mdw-blue)
+    }
+    .mdw-title-row small {
+        color: var(--mdw-muted)
+    }
+    .mdw-title-row h1 {
+        color: var(--mdw-ink)
+    }
+    .mdw-more summary {
+        color: var(--mdw-blue)
+    }
+    .mdw-more summary:active {
+        background: var(--mdw-blue-soft)
+    }
+    .mdw-more>div {
+        border: 1px solid var(--mdw-line-strong);
+        background: var(--mdw-surface)
+    }
+    .mdw-more>div button {
+        color: var(--mdw-text);
+        background: transparent
+    }
+    .mdi-related-object-list>div>button {
+        color: var(--mdw-text);
+        background: transparent
+    }
+    .mdw-more>div button+button {
+        border-top: 1px solid var(--mdw-line)
+    }
+    .mdw-object-list>button+button {
+        border-top: 1px solid var(--mdw-line)
+    }
+    .mdw-directory-group button+button {
+        border-top: 1px solid var(--mdw-line)
+    }
+    .mdw-more>div button:active {
+        background: var(--mdw-surface-tonal)
+    }
+    .mdw-status-row {
+        border-top: 1px solid var(--mdw-line)
+    }
+    .mdw-evidence {
+        color: var(--mdw-blue)
+    }
+    .mdw-evidence.is-danger {
+        color: var(--mdw-danger)
+    }
+    .mdw-row-state.is-attention {
+        color: var(--mdw-danger)
+    }
+    .mdw-metrics>div.is-danger b {
+        color: var(--mdw-danger)
+    }
+    .mdi-facts .is-danger b {
+        color: var(--mdw-danger)
+    }
+    .mdw-evidence.is-warn {
+        color: var(--mdw-warn)
+    }
+    .mdw-evidence.is-missing {
+        color: var(--mdw-warn)
+    }
+    .mdw-metrics>div.is-warn b {
+        color: var(--mdw-warn)
+    }
+    .mdw-metrics>div.is-missing b {
+        color: var(--mdw-warn)
+    }
+    .mdi-facts .is-warn b {
+        color: var(--mdw-warn)
+    }
+    .mdi-relations .is-warn em {
+        color: var(--mdw-warn)
+    }
+    .mdi-relations .is-danger em {
+        color: var(--mdw-warn)
+    }
+    .mdw-evidence small {
+        color: var(--mdw-muted)
+    }
+    .mdw-status-row p {
+        color: var(--mdw-muted)
+    }
+    .mdw-route-switcher {
+        border-top: 1px solid var(--mdw-line)
+    }
+    .mdw-route-switcher button {
+        color: var(--mdw-muted);
+        background: transparent
+    }
+    .mdw-route-switcher button.is-active {
+        color: var(--mdw-blue)
+    }
+    .mdw-layout {
+        border-top: 1px solid var(--mdw-line-strong);
+        border-bottom: 1px solid var(--mdw-line);
+        background: var(--mdw-surface)
+    }
+    .mdw-list-pane {
+        background: var(--mdw-surface)
+    }
+    .mdw-list-heading {
+        border-bottom: 1px solid var(--mdw-line)
+    }
+    .mdw-list-heading>span {
+        color: var(--mdw-muted)
+    }
+    .mdw-inspector>header>span {
+        color: var(--mdw-muted)
+    }
+    .mdi-readings small {
+        color: var(--mdw-muted)
+    }
+    .mdw-list-heading>span b {
+        color: var(--mdw-ink)
+    }
+    .mdw-list-heading>small {
+        color: var(--mdw-faint)
+    }
+    .mdw-tools-toggle {
+        color: var(--mdw-blue);
+        background: transparent
+    }
+    .mdw-tools-toggle:active {
+        background: var(--mdw-blue-soft)
+    }
+    .mdw-tools-toggle.is-active {
+        background: var(--mdw-blue-soft)
+    }
+    .mdw-controls {
+        border-bottom: 1px solid var(--mdw-line);
+        background: var(--mdw-surface-tonal)
+    }
+    .mdw-search {
+        border: 1px solid var(--mdw-line-strong);
+        color: var(--mdw-muted);
+        background: var(--mdw-surface)
+    }
+    .mdw-search input {
+        color: var(--mdw-ink);
+        background: transparent
+    }
+    .mdw-search input::placeholder {
+        color: var(--mdw-faint)
+    }
+    .mdw-object-list>button>svg {
+        color: var(--mdw-faint)
+    }
+    .mdw-directory-group button>svg {
+        color: var(--mdw-faint)
+    }
+    .mdw-search button {
+        color: var(--mdw-muted);
+        background: transparent
+    }
+    .mdw-filter-row button {
+        color: var(--mdw-muted);
+        background: transparent
+    }
+    .mdw-filter-row>label {
+        border: 1px solid var(--mdw-line);
+        color: var(--mdw-muted);
+        background: var(--mdw-surface)
+    }
+    .mdw-filter-row select {
+        color: var(--mdw-text);
+        background: transparent
+    }
+    .mdw-reset-controls {
+        color: var(--mdw-blue)
+    }
+    .mdw-object-list>button {
+        background: transparent
+    }
+    .mdw-row-mark {
+        background: var(--mdw-line-strong)
+    }
+    .mdw-row-mark.is-running {
+        background: var(--mdw-blue)
+    }
+    .mdw-row-mark.is-active {
+        background: var(--mdw-blue)
+    }
+    .mdw-row-mark.is-online {
+        background: var(--mdw-blue)
+    }
+    .mdw-row-mark.is-bound {
+        background: var(--mdw-blue)
+    }
+    .mdw-row-mark.is-warning {
+        background: var(--mdw-warn)
+    }
+    .mdw-row-mark.is-inactive {
+        background: var(--mdw-warn)
+    }
+    .mdw-row-mark.is-unknown {
+        background: var(--mdw-warn)
+    }
+    .mdw-row-mark.is-stopped {
+        background: var(--mdw-danger)
+    }
+    .mdw-row-mark.is-disabled {
+        background: var(--mdw-danger)
+    }
+    .mdw-row-mark.is-error {
+        background: var(--mdw-danger)
+    }
+    .mdw-row-copy b {
+        color: var(--mdw-ink)
+    }
+    .mdw-row-copy small {
+        color: var(--mdw-muted)
+    }
+    .mdw-metrics small {
+        color: var(--mdw-muted)
+    }
+    .mdw-metrics b {
+        color: var(--mdw-ink);
+        font-family: var(--mono)
+    }
+    .mdw-metrics em {
+        color: var(--mdw-faint)
+    }
+    .mdi-evidence small {
+        color: var(--mdw-muted)
+    }
+    .mdi-facts small {
+        color: var(--mdw-muted)
+    }
+    .mdi-facts b {
+        color: var(--mdw-ink)
+    }
+    .mdi-facts em {
+        color: var(--mdw-faint)
+    }
+    .mdi-relations b {
+        color: var(--mdw-ink)
+    }
+    .mdi-relations small {
+        color: var(--mdw-muted)
+    }
+    .mdi-disclosure summary b {
+        color: var(--mdw-ink)
+    }
+    .mdi-disclosure summary small {
+        color: var(--mdw-muted)
+    }
+    .mdw-directory-copy b {
+        color: var(--mdw-ink)
+    }
+    .mdw-directory-copy small {
+        color: var(--mdw-muted)
+    }
+    .mdw-row-state {
+        color: var(--mdw-muted)
+    }
+    .mdw-empty {
+        color: var(--mdw-muted)
+    }
+    .mdw-empty>svg {
+        color: var(--mdw-blue)
+    }
+    .mdw-empty h2 {
+        color: var(--mdw-ink)
+    }
+    .mdw-empty button {
+        color: var(--mdw-blue);
+        background: transparent
+    }
+    .mdw-pagination {
+        border-top: 1px solid var(--mdw-line)
+    }
+    .mdw-pagination button {
+        color: var(--mdw-blue);
+        background: transparent
+    }
+    .mdw-pagination button:disabled {
+        color: var(--mdw-faint)
+    }
+    .mdw-pagination span {
+        color: var(--mdw-muted)
+    }
+    .mdw-domain-context {
+        border-top: 5px solid var(--mdw-canvas)
+    }
+    .mdw-metrics {
+        border-bottom: 1px solid var(--mdw-line);
+        background: var(--mdw-surface-tonal)
+    }
+    .mdw-metrics>div+div {
+        border-left: 1px solid var(--mdw-line)
+    }
+    .mdi-readings>div+div {
+        border-left: 1px solid var(--mdw-line)
+    }
+    .mdw-inspector {
+        background: var(--mdw-surface)
+    }
+    .mdw-inspector>header {
+        border-bottom: 1px solid var(--mdw-line);
+        background: var(--mdw-surface)
+    }
+    .mdw-inspector>header button {
+        color: var(--mdw-blue);
+        background: transparent
+    }
+    .mdi-evidence {
+        border-bottom: 1px solid var(--mdw-line);
+        color: var(--mdw-blue);
+        background: var(--mdw-surface-tonal)
+    }
+    .mdi-evidence time {
+        color: var(--mdw-text);
+        font-family: var(--mono)
+    }
+    .mdi-evidence em {
+        color: var(--mdw-text);
+        font-family: var(--mono)
+    }
+    .mdi-object-heading {
+        border-bottom: 1px solid var(--mdw-line-strong);
+        background: var(--mdw-surface)
+    }
+    .mdi-object-heading small {
+        color: var(--mdw-muted)
+    }
+    .mdi-object-heading h2 {
+        color: var(--mdw-ink)
+    }
+    .mdi-object-heading p {
+        color: var(--mdw-muted)
+    }
+    .mdi-object-heading>b {
+        color: var(--mdw-blue);
+        background: var(--mdw-blue-soft)
+    }
+    .mdi-domain-body {
+        background: var(--mdw-surface)
+    }
+    .mdi-domain-body>*+* {
+        border-top: 1px solid var(--mdw-line)
+    }
+    .mdi-section>header h3 {
+        color: var(--mdw-ink)
+    }
+    .mdi-section>header p {
+        color: var(--mdw-muted)
+    }
+    .mdi-evidence.is-historical {
+        color: var(--mdw-warn);
+        background: var(--mdw-warn-soft)
+    }
+    .mdi-section.is-warn {
+        color: var(--mdw-warn);
+        background: var(--mdw-warn-soft)
+    }
+    .mdi-evidence.is-unavailable {
+        color: var(--mdw-danger);
+        background: var(--mdw-danger-soft)
+    }
+    .mdi-object-heading>b.is-attention {
+        color: var(--mdw-danger);
+        background: var(--mdw-danger-soft)
+    }
+    .mdi-section.is-danger {
+        color: var(--mdw-danger);
+        background: var(--mdw-danger-soft)
+    }
+    .mdi-facts b.is-value-machine {
+        font-family: var(--mono)
+    }
+    .mdi-relations b.is-value-machine {
+        font-family: var(--mono)
+    }
+    .mdi-facts .is-trust b {
+        color: var(--mdw-blue)
+    }
+    .mdi-readings {
+        border-top: 1px solid var(--mdw-line);
+        border-bottom: 1px solid var(--mdw-line);
+        background: var(--mdw-surface-tonal)
+    }
+    .mdi-readings b {
+        color: var(--mdw-ink);
+        font-family: var(--mono)
+    }
+    .mdi-readings em {
+        color: var(--mdw-muted)
+    }
+    .mdi-relations>div {
+        border-top: 1px solid var(--mdw-line)
+    }
+    .mdi-relations em {
+        color: var(--mdw-blue)
+    }
+    .mdi-message {
+        color: var(--mdw-ink);
+        background: var(--mdw-surface-tonal)
+    }
+    .mdi-message.is-warn {
+        background: var(--mdw-warn-soft)
+    }
+    .mdi-message.is-danger {
+        background: var(--mdw-danger-soft)
+    }
+    .mdi-disclosure summary {
+        color: var(--mdw-text)
+    }
+    .mdi-disclosure summary>svg {
+        color: var(--mdw-blue)
+    }
+    .mdi-disclosure[open] summary {
+        border-bottom: 1px solid var(--mdw-line)
+    }
+    .mdi-no-object h2 {
+        color: var(--mdw-ink)
+    }
+    .mdi-no-object p {
+        color: var(--mdw-muted)
+    }
+    .mdw-directory-header>p {
+        color: var(--mdw-muted)
+    }
+    .mdw-directory-group {
+        border-top: 1px solid var(--mdw-line-strong);
+        border-bottom: 1px solid var(--mdw-line);
+        background: var(--mdw-surface)
+    }
+    .mdw-directory-group h2 {
+        border-bottom: 1px solid var(--mdw-line);
+        color: var(--mdw-blue);
+        background: var(--mdw-surface-tonal)
+    }
+    .mdw-directory-group button {
+        color: var(--mdw-text);
+        background: transparent
+    }
+    .mdw-directory-group button:active {
+        background: var(--mdw-surface-tonal)
+    }
+    .mdw-directory-copy em {
+        color: var(--mdw-faint)
+    }
+    .mdw-more summary:focus-visible {
+        outline: 3px solid rgba(11,103,140,.28)
+    }
+    .mdi-disclosure summary:focus-visible {
+        outline: 3px solid rgba(11,103,140,.28)
+    }
+    .mdw-route-switcher button:focus-visible {
+        outline: 3px solid rgba(11,103,140,.28)
+    }
+    .mdw-tools-toggle:focus-visible {
+        outline: 3px solid rgba(11,103,140,.28)
+    }
+    .mdw-search:focus-within {
+        outline: 3px solid rgba(11,103,140,.28)
+    }
+    .mdw-filter-row button:focus-visible {
+        outline: 3px solid rgba(11,103,140,.28)
+    }
+    .mdw-filter-row select:focus-visible {
+        outline: 3px solid rgba(11,103,140,.28)
+    }
+    .mdw-reset-controls:focus-visible {
+        outline: 3px solid rgba(11,103,140,.28)
+    }
+    .mdw-object-list button:focus-visible {
+        outline: 3px solid rgba(11,103,140,.28)
+    }
+    .mdw-directory-list button:focus-visible {
+        outline: 3px solid rgba(11,103,140,.28)
+    }
+    .mdw-pagination button:focus-visible {
+        outline: 3px solid rgba(11,103,140,.28)
+    }
+    .mdw-inspector button:focus-visible {
+        outline: 3px solid rgba(11,103,140,.28)
+    }
+    .mdw-empty button:focus-visible {
+        outline: 3px solid rgba(11,103,140,.28)
+    }
+}
+@media (max-width:599px) {
+    .mdw-shell.has-selection {
+        background: var(--mdw-surface)
+    }
+}
+@media (min-width:768px)and (max-width:1199px) {
+    .is-wb .mdw-list-pane {
+        border-right: 1px solid var(--mdw-line-strong)
+    }
+}
+

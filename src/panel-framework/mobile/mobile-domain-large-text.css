@@ -1,0 +1,118 @@
+@media (max-width: 1199px) {
+  .mdw-shell.is-large-text .mdw-title-row {
+    min-height: 62px;
+    align-items: start;
+    padding-top: 6px;
+    padding-bottom: 6px;
+  }
+
+  .mdw-shell.is-large-text .mdw-status-row {
+    display: grid;
+    min-height: 0;
+    gap: 6px;
+    padding: 8px 0;
+  }
+
+  .mdw-shell.is-large-text :is(
+    .mdw-status-row p,
+    .mdw-list-heading > small,
+    .mdw-row-copy b,
+    .mdw-row-copy small,
+    .mdw-row-state,
+    .mdw-metrics small,
+    .mdw-metrics b,
+    .mdw-metrics em,
+    .mdi-evidence small
+  ) {
+    max-width: none;
+    overflow: visible;
+    overflow-wrap: anywhere;
+    text-align: left;
+    text-overflow: clip;
+    white-space: normal;
+  }
+
+  .mdw-shell.is-large-text .mdw-list-heading {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 5px 10px;
+    padding-top: 7px;
+    padding-bottom: 7px;
+  }
+
+  .mdw-shell.is-large-text .mdw-list-heading > small {
+    grid-column: 1/-1;
+    grid-row: 2;
+  }
+
+  .mdw-shell.is-large-text .mdw-tools-toggle {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .mdw-shell.is-large-text .mdw-object-list > button {
+    min-height: 88px;
+    grid-template-columns: 10px minmax(0, 1fr) 20px;
+    grid-template-rows: auto auto;
+    align-items: start;
+    gap: 5px 9px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+
+  .mdw-shell.is-large-text .mdw-row-mark {
+    grid-row: 1/span 2;
+    width: 8px;
+    height: 8px;
+    min-height: 0;
+    align-self: start;
+    justify-self: center;
+    margin-top: 9px;
+  }
+
+  .mdw-shell.is-large-text .mdw-row-copy {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .mdw-shell.is-large-text .mdw-row-state {
+    grid-column: 2;
+    grid-row: 2;
+  }
+
+  .mdw-shell.is-large-text .mdw-object-list > button > svg {
+    grid-column: 3;
+    grid-row: 1/span 2;
+    margin-top: 4px;
+  }
+
+  .mdw-shell.is-large-text .mdw-metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .mdw-shell.is-large-text .mdw-metrics > div + div {
+    border-top: 1px solid var(--mdw-line);
+    border-left: 0;
+  }
+
+  .mdw-shell.is-large-text .mdi-evidence {
+    grid-template-columns: 18px minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .mdw-shell.is-large-text .mdi-evidence time,
+  .mdw-shell.is-large-text .mdi-evidence em {
+    grid-column: 2;
+    text-align: left;
+  }
+
+  .mdw-shell.is-large-text .mdi-object-heading {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  .mdw-shell.is-large-text .mdi-object-heading > b {
+    max-width: none;
+    justify-self: start;
+    text-align: left;
+  }
+}

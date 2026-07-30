@@ -1,4 +1,6 @@
 import type { PanelRouteId } from "../routes/panelRoutes";
+import { compareResourceRisk } from "../overview/evidence-model/resourceHistorySamples";
+import type { ResourceRowEvidence } from "../sections/sectionRowEvidenceTypes";
 import type { WorkspaceRow } from "./mobileDomainWorkspaceModel";
 
 export interface DomainFilterOption {
@@ -201,9 +203,12 @@ const DOMAIN: Partial<Record<PanelRouteId, DomainDefinition>> = {
     searchable: false,
     searchPlaceholder: "",
     objectLabel: "资源指标",
-    defaultSort: "utilization-desc",
+    defaultSort: "risk-desc",
     filters: [ALL],
-    sorts: [sort("utilization-desc", "占用从高到低", (left, right) => compareNumber(left.meta.utilization, right.meta.utilization, "desc") || compareText(left.primary, right.primary))],
+    sorts: [sort("risk-desc", "风险优先", (left, right) => compareResourceRisk(
+      left.evidence as ResourceRowEvidence,
+      right.evidence as ResourceRowEvidence,
+    ))],
   },
   loadAudit: {
     searchable: false,

@@ -31,10 +31,14 @@ jobs:
 
       - name: Python syntax and collector regressions
         run: |
-          python -m py_compile app.py panel_backend/api_schema.py panel_backend/collector_evidence.py panel_backend/collector_service.py panel_backend/collector_transport.py panel_backend/config_store.py panel_backend/http_dispatcher.py panel_backend/router_transport.py panel_backend/session_security.py panel_backend/snapshot_builder.py panel_backend/static_assets.py panel_backend/time_contract.py tools/check-backend-security.py tools/check-backend-release-blockers.py tools/check-collector-regressions.py tools/check-static-assets.py tools/convert-oci-to-routeros-docker-archive.py
+          python -m py_compile app.py panel_backend/api_schema.py panel_backend/collector_evidence.py panel_backend/collector_service.py panel_backend/collector_transport.py panel_backend/config_store.py panel_backend/http_dispatcher.py panel_backend/rate_evidence.py panel_backend/router_transport.py panel_backend/session_security.py panel_backend/snapshot_builder.py panel_backend/static_assets.py panel_backend/time_contract.py tools/check-backend-security.py tools/check-backend-release-blockers.py tools/check-collector-regressions.py tools/check-decision-ledger-sync.py tools/test-decision-ledger-sync.py tools/check-static-assets.py tools/convert-oci-to-routeros-docker-archive.py .agents/skills/router-panel-product-loop/scripts/merge_matrix_reports.py .agents/skills/router-panel-product-loop/scripts/release_checkpoint.py .agents/skills/router-panel-product-loop/tests/test_merge_matrix_reports.py .agents/skills/router-panel-product-loop/tests/test_release_checkpoint.py
           python tools/check-backend-security.py
           python tools/check-backend-release-blockers.py
           python tools/check-collector-regressions.py
+          python tools/test-decision-ledger-sync.py -v
+          python tools/check-decision-ledger-sync.py
+          python .agents/skills/router-panel-product-loop/tests/test_merge_matrix_reports.py -v
+          python .agents/skills/router-panel-product-loop/tests/test_release_checkpoint.py -v
 
       - name: Set up Node.js
         uses: actions/setup-node@v6
@@ -44,6 +48,9 @@ jobs:
 
       - name: Install frontend dependencies
         run: npm ci
+
+      - name: Current decision truth authority
+        run: npm run check:decision-system
 
       - name: TypeScript contract check
         run: npm run check:types
@@ -58,11 +65,19 @@ jobs:
         run: |
           npm run check:runtime-schema
           npm run check:sections
+          npm run check:route-maturity
 
       - name: Overview architecture and release-blocker contracts
         run: |
           npm run check:overview
+          node tools/check-report-truth.js
+          node tools/check-acceptance-report-quarantine.js
+          node tools/check-report-completeness-quarantine.js
+          node tools/check-acceptance-artifact-identity.js
           node tools/check-release-blockers.js
+          node tools/test-framework-asset-budget.js
+          node tools/test-local-predeploy-matrix-contract.js
+          node tools/test-public-release-semantic-gates.js
 
       - name: LAN/default documentation checks
         run: |

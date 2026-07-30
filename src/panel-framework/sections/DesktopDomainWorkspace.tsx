@@ -7,25 +7,17 @@ import {
 } from "../mobile/mobileDomainDefinitions";
 import {
   rowsFromModel,
+  riskObjectCount,
   useObjectHistory,
   type WorkspaceRow,
 } from "../mobile/mobileDomainWorkspaceModel";
+import { selectSemanticWorkspacePreview } from "../mobile/mobileWorkspacePreview";
 import type { PanelRouteId } from "../routes/panelRoutes";
 import { DesktopDomainInspector } from "./DesktopDomainInspector";
+import { interfaceRouteRelationCopy } from "./interfaceRouteRelation";
 import type { SectionModel } from "./sectionModels";
+import type { InterfaceRowEvidence } from "./sectionRowEvidenceTypes";
 import "./desktop-domain.css";
-
-function preferredRow(rows: WorkspaceRow[]): WorkspaceRow | null {
-  return rows.find((row) => row.meta.attention)
-    || rows.find((row) => (
-      row.evidence.kind === "interface"
-      && row.evidence.defaultRouteRelation === "direct"
-      && row.meta.running === true
-    ))
-    || rows.find((row) => row.meta.active === true && row.meta.tags.includes("default"))
-    || rows[0]
-    || null;
-}
 
 function comparisonValue(row: WorkspaceRow): string {
   if (row.evidence.kind === "interface") {
@@ -43,10 +35,45 @@ function comparisonValue(row: WorkspaceRow): string {
   return row.secondary;
 }
 
+function DesktopInterfaceRelations({ rows }: { rows: WorkspaceRow[] }) {
+  const interfaceRows = rows.filter((row) => row.evidence.kind === "interface");
+  if (!interfaceRows.length) return null;
+
+  return (
+    <section
+      className="ddi-block ddw-interface-relations"
+      data-desktop-interface-relations="true"
+      aria-labelledby="ddw-interface-relations-title"
+    >
+      <header>
+        <div>
+          <b id="ddw-interface-relations-title">接口 → 默认路由</b>
+          <small>在当前可见接口集合中比较关系证据</small>
+        </div>
+        <span>当前快照</span>
+      </header>
+      <div className="ddi-facts ddw-interface-relations-list">
+        {interfaceRows.slice(0, 8).map((row) => {
+          const relation = interfaceRouteRelationCopy(row.evidence as InterfaceRowEvidence);
+          return (
+            <div className="ddw-interface-relation" data-desktop-interface-relation-row={row.id} key={row.id}>
+              <b>{row.primary}</b>
+              <span>{relation.label}</span>
+              <small>{relation.detail}</small>
+            </div>
+          );
+        })}
+      </div>
+      <p>只显示接口与默认路由的集合关系，不替代右侧对象详情。</p>
+    </section>
+  );
+}
+
 export function DesktopDomainWorkspace({ route, model }: { route: PanelRouteId; model: SectionModel }) {
   const definition = domainDefinitionFor(route);
   const allRows = useMemo(() => rowsFromModel(route, model), [model, route]);
-  const { selectedId, open, replace, close } = useObjectHistory(route);
+  const { selectedId, risk, evidenceAt, open, replace, close } = useObjectHistory(route);
+  const matchingRiskObjects = risk ? riskObjectCount(risk, allRows) : 0;
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState(definition.filters[0]?.id || "all");
   const [sort, setSort] = useState(definition.defaultSort);
@@ -63,7 +90,7 @@ export function DesktopDomainWorkspace({ route, model }: { route: PanelRouteId; 
   }, [definition, route]);
 
   const filtered = useMemo(() => {
-    const needle = query.trim().toLocaleLowerCase();
+    const needle = query.trim().toLowerCase();
     const searched = allRows.filter((row) => !needle || row.searchText.includes(needle));
     return sortWorkspaceRows(filterWorkspaceRows(searched, definition, filter), definition, sort);
   }, [allRows, definition, filter, query, sort]);
@@ -75,7 +102,8 @@ export function DesktopDomainWorkspace({ route, model }: { route: PanelRouteId; 
   const activePage = selectedPage || Math.min(page, pageCount);
   const visibleRows = filtered.slice((activePage - 1) * pageSize, activePage * pageSize);
   const selectedRow = selectedId ? visibleRows.find((row) => row.id === selectedId) || null : null;
-  const inspectorRow = selectedRow || preferredRow(visibleRows);
+  const semanticPreview = risk && !selectedId ? null : selectSemanticWorkspacePreview(visibleRows);
+  const inspectorRow = selectedRow || semanticPreview?.row || null;
 
   useEffect(() => {
     if (!selectedId) return;
@@ -145,13 +173,24 @@ export function DesktopDomainWorkspace({ route, model }: { route: PanelRouteId; 
             </table>
             {!visibleRows.length ? <p className="ddw-empty">没有符合当前条件的对象。</p> : null}
           </div>
+          {route === "interfaces" && model.evidenceMode === "current" ? <DesktopInterfaceRelations rows={visibleRows} /> : null}
           <footer>
             <button type="button" disabled={activePage <= 1} onClick={() => setPage(Math.max(1, activePage - 1))}><ChevronLeft aria-hidden="true" size={16} />上一页</button>
             <span>第 {activePage} / {pageCount} 页</span>
             <button type="button" disabled={activePage >= pageCount} onClick={() => setPage(Math.min(pageCount, activePage + 1))}>下一页<ChevronRight aria-hidden="true" size={16} /></button>
           </footer>
         </section>
-        <DesktopDomainInspector row={inspectorRow} model={model} pinned={Boolean(selectedRow)} onUnpin={unpin} titleRef={titleRef} />
+        <DesktopDomainInspector
+          row={inspectorRow}
+          model={model}
+          pinned={Boolean(selectedRow)}
+          originRisk={risk}
+          originEvidenceAt={evidenceAt}
+          matchingCount={matchingRiskObjects}
+          onUnpin={unpin}
+          onReturn={close}
+          titleRef={titleRef}
+        />
       </div>
     </section>
   );

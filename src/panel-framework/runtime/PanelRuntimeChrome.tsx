@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
-import { CircleAlert, CloudOff, RefreshCw, Router, X } from "lucide-react";
+import { CircleAlert, Ellipsis, LockKeyhole, RefreshCw, Router, X } from "lucide-react";
+import type { PanelNavigate, PanelRouteId } from "../routes/panelRoutes";
 import { parseRfc3339Timestamp } from "../timeContract";
 import type { PanelRuntimeController, PanelSnapshotPhase } from "./usePanelRuntime";
 import "./panel-runtime.css";
 
-const MOBILE_RUNTIME_QUERY = "(max-width: 1365px)";
+const MOBILE_RUNTIME_QUERY = "(max-width: 1199px)";
 
 function useMobileRuntimeSurface(): boolean {
   const [mobile, setMobile] = useState(() => typeof window !== "undefined" && window.matchMedia(MOBILE_RUNTIME_QUERY).matches);
@@ -20,10 +21,10 @@ function useMobileRuntimeSurface(): boolean {
 
 function phaseLabel(phase: PanelSnapshotPhase, age: number | null): string {
   const ageText = age === null ? "时间未记录" : age < 60 ? `${age} 秒前` : `${Math.floor(age / 60)} 分钟前`;
-  if (phase === "current") return `当前 · ${ageText}`;
-  if (phase === "refreshing") return `刷新中 · ${ageText}`;
-  if (phase === "stale") return `历史证据 · ${ageText}`;
-  if (phase === "recovering") return `恢复中 · ${ageText}`;
+  if (phase === "current") return `当前快照 · ${ageText}`;
+  if (phase === "refreshing") return `快照刷新中 · ${ageText}`;
+  if (phase === "stale") return `历史快照 · ${ageText}`;
+  if (phase === "recovering") return `快照恢复中 · ${ageText}`;
   if (phase === "error") return "快照不可用";
   return "正在载入";
 }
@@ -43,7 +44,7 @@ function mobileEvidenceLabel(runtime: PanelRuntimeController): string {
   return `${phase} · ${stamp}`;
 }
 
-function RuntimeActions({ runtime }: { runtime: PanelRuntimeController }) {
+function RuntimeActions({ runtime, onMore }: { runtime: PanelRuntimeController; onMore?: () => void }) {
   const busy = runtime.snapshot.phase === "loading" || runtime.snapshot.phase === "refreshing";
   return (
     <div className="panel-runtime-actions">
@@ -53,33 +54,50 @@ function RuntimeActions({ runtime }: { runtime: PanelRuntimeController }) {
       <button type="button" title="设备连接" aria-label="设备连接" onClick={runtime.showConnection}>
         <Router size={19} aria-hidden="true" />
       </button>
+      {onMore ? (
+        <button type="button" title="更多只读工具" aria-label="更多只读工具" data-panel-runtime-more onClick={onMore}>
+          <Ellipsis size={20} aria-hidden="true" />
+        </button>
+      ) : null}
     </div>
   );
 }
 
-function MobileRuntimeBar({ runtime }: { runtime: PanelRuntimeController }) {
+function MobileRuntimeBar({ runtime, onMore }: { runtime: PanelRuntimeController; onMore?: () => void }) {
   return (
     <header className="panel-runtime-bar panel-runtime-bar-mobile" data-panel-runtime-toolbar="mobile">
       <div className="panel-runtime-device"><b>{runtime.connection.profile?.host || "RouterOS"}</b><span>{mobileEvidenceLabel(runtime)}</span></div>
-      <RuntimeActions runtime={runtime} />
+      <span className="panel-runtime-mode" aria-label="只读监控模式"><LockKeyhole size={14} aria-hidden="true" />只读</span>
+      <RuntimeActions runtime={runtime} onMore={onMore} />
     </header>
   );
 }
 
-function DesktopRuntimeBar({ runtime }: { runtime: PanelRuntimeController }) {
+function DesktopRuntimeBar({ runtime, onMore }: { runtime: PanelRuntimeController; onMore?: () => void }) {
   const identity = runtime.snapshot.data?.overview?.identity || runtime.connection.profile?.host || "RouterOS";
   return (
     <header className="panel-runtime-bar panel-runtime-bar-desktop" data-panel-runtime-toolbar="desktop">
-      <div className="panel-runtime-device"><span>当前设备</span><b>{identity}</b><small>{runtime.connection.profile?.host || "地址未记录"}</small></div>
+      <div className="panel-runtime-device"><span>当前设备</span><b>{runtime.connection.profile?.host || "RouterOS"}</b><small>{identity}</small></div>
+      <span className="panel-runtime-mode" aria-label="只读监控模式"><LockKeyhole size={14} aria-hidden="true" />只读</span>
       <div className={`panel-runtime-phase is-${runtime.snapshot.phase}`}><i aria-hidden="true" /><span>{phaseLabel(runtime.snapshot.phase, runtime.evidenceAgeSeconds)}</span></div>
-      <RuntimeActions runtime={runtime} />
+      <RuntimeActions runtime={runtime} onMore={onMore} />
     </header>
   );
 }
 
-export function PanelRuntimeChrome({ runtime }: { runtime: PanelRuntimeController }) {
+export function PanelRuntimeChrome({
+  runtime,
+  route,
+  onNavigate,
+}: {
+  runtime: PanelRuntimeController;
+  route: PanelRouteId;
+  onNavigate: PanelNavigate;
+}) {
   const mobile = useMobileRuntimeSurface();
-  return mobile ? <MobileRuntimeBar runtime={runtime} /> : <DesktopRuntimeBar runtime={runtime} />;
+  return mobile
+    ? <MobileRuntimeBar runtime={runtime} onMore={route === "overview" ? () => onNavigate("more") : undefined} />
+    : <DesktopRuntimeBar runtime={runtime} onMore={route === "overview" ? () => onNavigate("more") : undefined} />;
 }
 
 export function PanelRuntimeNotice({ runtime }: { runtime: PanelRuntimeController }) {
@@ -89,12 +107,12 @@ export function PanelRuntimeNotice({ runtime }: { runtime: PanelRuntimeControlle
     : "";
   const message = snapshotMessage || runtime.connection.warning || browserConnectivityHint;
   const showsConnectionWarning = !snapshotMessage && Boolean(runtime.connection.warning);
-  const showsConnectivityHint = !snapshotMessage && !runtime.connection.warning && Boolean(browserConnectivityHint);
+
   if (!message) return null;
   const critical = runtime.snapshot.phase === "error" && !runtime.snapshot.data;
   return (
     <div className={`panel-runtime-notice ${critical ? "is-critical" : ""}`} role={critical ? "alert" : "status"}>
-      {showsConnectivityHint ? <CloudOff size={18} aria-hidden="true" /> : <CircleAlert size={18} aria-hidden="true" />}
+      <CircleAlert size={18} aria-hidden="true" />
       <span>{message}</span>
       {showsConnectionWarning ? (
         <button type="button" title="关闭连接提示" aria-label="关闭连接提示" onClick={runtime.dismissWarning}><X size={17} aria-hidden="true" /></button>

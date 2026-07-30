@@ -12,6 +12,8 @@ const { inspectMobileNativeOverview, inspectOverviewMobileInteraction } = requir
 const { inspectSectionBrowser } = require('./acceptance/inspect-section-browser');
 const { inspectOverviewDesktopLayout } = require('./acceptance/inspect-overview-desktop-layout');
 const { inspectPanelRouteRuntime } = require('./acceptance/inspect-panel-routes');
+const { assertFrameworkAssetIdentity } = require('./framework-asset-identity');
+const { gitWorktreeIdentity, matrixArtifactKey } = require('./worktree-runtime-identity');
 
 const ROOT = path.resolve(__dirname, '..');
 const DEFAULT_VIEWPORTS = [
@@ -49,6 +51,7 @@ const DEFAULT_PRIVATE_SECTIONS = [
 ];
 const DEFAULT_SCALE_SCENARIOS = ['multi'];
 const EDGE_SCALE_SCENARIOS = ['all-offline', 'no-snapshot', 'collection-down', 'resource-full', 'interfaces-down'];
+const DIAGNOSTIC_SCALE_SCENARIOS = ['traffic-accumulating'];
 const OVERVIEW_RELEASE_SCALE_SCENARIOS = ['single', 'fleet', ...EDGE_SCALE_SCENARIOS];
 const OVERVIEW_RELEASE_VIEWPORTS = [
   { name: 'desktop', width: 1366, height: 768 },
@@ -56,18 +59,29 @@ const OVERVIEW_RELEASE_VIEWPORTS = [
   { name: 'wide', width: 844, height: 390 },
   { name: 'narrow', width: 390, height: 844 },
 ];
-const SCALE_SCENARIOS = new Set(['single', 'multi', 'fleet', ...EDGE_SCALE_SCENARIOS]);
+const SCALE_SCENARIOS = new Set(['single', 'multi', 'fleet', ...EDGE_SCALE_SCENARIOS, ...DIAGNOSTIC_SCALE_SCENARIOS]);
 
-function isOverviewReleaseMatrix(args = {}) {
-  const requiredScenarios = ['single', 'fleet', ...EDGE_SCALE_SCENARIOS];
+function requestsRequiredOverviewMatrix(args = {}) {
   const scenarioSet = new Set(args.scaleScenarios || []);
-  const viewportSet = new Set((args.viewports || []).map((viewport) => viewportCellKey(viewport)));
   return Array.isArray(args.sections) &&
     args.sections.length === 1 &&
     args.sections[0] === 'overview' &&
     args.profile === 'public' &&
-    requiredScenarios.every((scenario) => scenarioSet.has(scenario)) &&
+    OVERVIEW_RELEASE_SCALE_SCENARIOS.every((scenario) => scenarioSet.has(scenario));
+}
+
+function isOverviewReleaseMatrix(args = {}) {
+  const viewportSet = new Set((args.viewports || []).map((viewport) => viewportCellKey(viewport)));
+  return requestsRequiredOverviewMatrix(args) &&
     OVERVIEW_RELEASE_VIEWPORTS.every((viewport) => viewportSet.has(viewportCellKey(viewport)));
+}
+
+function isMergeableScenarioSubset(args = {}) {
+  const requested = [...new Set(args.scaleScenarios || [])];
+  return Boolean(args.scaleScenariosExplicit) &&
+    requested.length > 0 &&
+    requested.length < OVERVIEW_RELEASE_SCALE_SCENARIOS.length &&
+    requested.every((scenario) => OVERVIEW_RELEASE_SCALE_SCENARIOS.includes(scenario));
 }
 
 function viewportCellKey(viewport = {}) {
@@ -96,12 +110,13 @@ Options:
                               Browser fixture profile. Default: both.
   --viewports <list>          Comma list like desktop=1366x768,desktop1440=1440x900,wide=844x390,narrow=390x844.
   --sections <list>           Comma list of sections to visit, or main-menu/public-release.
-  --scale-scenarios <list>    Comma list: single,multi,fleet,all-offline,no-snapshot,collection-down,resource-full,interfaces-down. Default: multi; overview-only runs default to release overview matrix.
+  --scale-scenarios <list>    Comma list: single,multi,fleet,all-offline,no-snapshot,collection-down,resource-full,interfaces-down,traffic-accumulating. Default: multi; overview-only runs default to release overview matrix.
   --skip-browser              Run backend/static/API checks only.
   --skip-backend              Run browser checks only.
   --keep-server               Leave the spawned app server running.
   --strict-responsive         Treat narrow horizontal overflow as a failure.
   --screenshot-all-sections   Capture every requested route, not only overview or failures.
+  --bounded-matrix            Treat explicit sections/scenarios/viewports as a capability shard, not a release-matrix claim.
   --help                      Show this help.
 
 Safety:
@@ -148,9 +163,11 @@ function parseArgs(argv) {
     keepServer: false,
     strictResponsive: false,
     screenshotAllSections: false,
+    boundedMatrix: false,
     scaleScenarios: DEFAULT_SCALE_SCENARIOS,
     scaleScenariosExplicit: false,
     viewportsExplicit: false,
+    sectionsExplicit: false,
     help: false,
   };
   for (let i = 2; i < argv.length; i += 1) {
@@ -168,6 +185,7 @@ function parseArgs(argv) {
     else if (item === '--keep-server') args.keepServer = true;
     else if (item === '--strict-responsive') args.strictResponsive = true;
     else if (item === '--screenshot-all-sections') args.screenshotAllSections = true;
+    else if (item === '--bounded-matrix') args.boundedMatrix = true;
     else if (item === '--url' || item.startsWith('--url=')) args.url = readValue('--url');
     else if (item === '--port' || item.startsWith('--port=')) args.port = Number(readValue('--port'));
     else if (item === '--python' || item.startsWith('--python=')) args.python = readValue('--python');
@@ -177,7 +195,10 @@ function parseArgs(argv) {
       args.viewports = parseViewports(readValue('--viewports'));
       args.viewportsExplicit = true;
     }
-    else if (item === '--sections' || item.startsWith('--sections=')) args.sections = parseSections(readValue('--sections'));
+    else if (item === '--sections' || item.startsWith('--sections=')) {
+      args.sections = parseSections(readValue('--sections'));
+      args.sectionsExplicit = true;
+    }
     else if (item === '--scale-scenarios' || item.startsWith('--scale-scenarios=')) {
       args.scaleScenarios = readValue('--scale-scenarios').split(',').map((part) => part.trim()).filter(Boolean);
       args.scaleScenariosExplicit = true;
@@ -196,7 +217,10 @@ function parseArgs(argv) {
     throw new Error('--profile must be public, private, or both');
   }
   if (!args.scaleScenarios.length || args.scaleScenarios.some((item) => !SCALE_SCENARIOS.has(item))) {
-    throw new Error('--scale-scenarios must use one or more of: single,multi,fleet,all-offline,no-snapshot,collection-down,resource-full,interfaces-down');
+    throw new Error('--scale-scenarios must use one or more of: single,multi,fleet,all-offline,no-snapshot,collection-down,resource-full,interfaces-down,traffic-accumulating');
+  }
+  if (args.boundedMatrix && (!args.sectionsExplicit || !args.scaleScenariosExplicit || !args.viewportsExplicit)) {
+    throw new Error('--bounded-matrix requires explicit --sections, --scale-scenarios, and --viewports');
   }
   if (!args.out) {
     args.out = path.join(ROOT, '_acceptance', `local-predeploy-${timestamp()}`);
@@ -339,6 +363,10 @@ function summarizeMatrixRun(report, args, matrix) {
     startedAt: report.startedAt,
     finishedAt: report.finishedAt,
     commit: matrix.commit || '',
+    worktreeClean: matrix.worktreeClean === true,
+    worktreeFingerprint: matrix.worktreeFingerprint || '',
+    artifactKey: matrix.artifactKey || '',
+    releaseEvidenceEligible: matrix.releaseEvidenceEligible === true,
     session: matrix.session || '',
     outputDir: args.out,
     screenshotDir: args.out,
@@ -364,7 +392,12 @@ function summarizeMatrixRun(report, args, matrix) {
 }
 
 function mergeMatrixAggregate(existing, matrix, runSummary, sessionKey) {
-  const base = existing && existing.commit === matrix.commit ? existing : null;
+  const base = existing &&
+    existing.commit === matrix.commit &&
+    existing.worktreeClean === matrix.worktreeClean &&
+    existing.worktreeFingerprint === matrix.worktreeFingerprint
+    ? existing
+    : null;
   const coveredScenarios = new Set(base?.coveredScenarios || []);
   const passedScenarios = new Set(base?.passedScenarios || []);
   const coveredCells = new Set(base?.coveredCells || []);
@@ -393,6 +426,10 @@ function mergeMatrixAggregate(existing, matrix, runSummary, sessionKey) {
   const requiredCellList = [...requiredCells].sort();
   return {
     commit: matrix.commit,
+    worktreeClean: matrix.worktreeClean === true,
+    worktreeFingerprint: matrix.worktreeFingerprint || '',
+    artifactKey: matrix.artifactKey || '',
+    releaseEvidenceEligible: matrix.releaseEvidenceEligible === true,
     session: sessionKey,
     sessions: [...sessions].sort(),
     requiredScenarios: [...matrix.requiredScenarios],
@@ -656,6 +693,153 @@ function record(report, name, pass, detail = {}) {
   return check;
 }
 
+function isExplicitNotApplicableCheck(check) {
+  return Boolean(
+    check &&
+    typeof check === 'object' &&
+    check.applicable === false &&
+    check.status === 'not_applicable' &&
+    check.pass === null &&
+    typeof check.reason === 'string' &&
+    check.reason.trim()
+  );
+}
+
+function reportCheckTruthFailures(checks) {
+  if (!Array.isArray(checks)) return [];
+  return checks.filter((check) => !isExplicitNotApplicableCheck(check) && (!check || check.pass !== true));
+}
+
+function reportNestedPassFalsePaths(value, currentPath = '') {
+  if (Array.isArray(value)) {
+    return value.flatMap((item, index) => reportNestedPassFalsePaths(item, `${currentPath}/${index}`));
+  }
+  if (!value || typeof value !== 'object') return [];
+  const paths = [];
+  for (const [key, child] of Object.entries(value)) {
+    const childPath = `${currentPath}/${key}`;
+    if (key === 'pass' && child === false) paths.push(childPath);
+    paths.push(...reportNestedPassFalsePaths(child, childPath));
+  }
+  return paths;
+}
+
+function finalizeReportTruth(report, matrixBlocksTopLevelPass = false) {
+  const failures = Array.isArray(report.failures) ? report.failures : [];
+  report.failures = failures;
+  const nestedPassFalsePaths = reportNestedPassFalsePaths(report);
+  if (nestedPassFalsePaths.length > 0) {
+    report.failures.push({
+      name: 'nested report evidence truth',
+      pass: false,
+      detail: { paths: nestedPassFalsePaths.slice(0, 32), count: nestedPassFalsePaths.length },
+    });
+  }
+  const seen = new Set(failures);
+  for (const check of reportCheckTruthFailures(report.checks)) {
+    if (!seen.has(check)) {
+      report.failures.push(check);
+      seen.add(check);
+    }
+  }
+  const engineeringPass = report.failures.length === 0;
+  const matrixPresent = report.matrix && typeof report.matrix === 'object';
+  const matrixIncomplete = Boolean(matrixPresent && report.matrix.complete !== true);
+  report.engineeringPass = engineeringPass;
+  report.boundedPass = engineeringPass && Boolean(!matrixPresent || report.matrix.requestedComplete === true);
+  report.releasePass = engineeringPass && !matrixBlocksTopLevelPass && !matrixIncomplete;
+  report.pass = report.releasePass;
+  report.exitCodeShouldFail = Boolean(report.failures.length || matrixBlocksTopLevelPass);
+  return report;
+}
+
+function recordNotApplicable(report, name, reason, detail = {}) {
+  const check = {
+    name,
+    applicable: false,
+    status: 'not_applicable',
+    pass: null,
+    reason,
+    detail,
+  };
+  report.checks.push(check);
+  console.log(`[N/A] ${name}: ${reason}`);
+  return check;
+}
+
+function scenarioMatrixGate(args, matrix) {
+  const requestedScopeComplete = matrix.requestedComplete === true && matrix.failed === 0;
+  const fullRequiredMatrixRequested = requestsRequiredOverviewMatrix(args);
+  const mergeableSubset = isMergeableScenarioSubset(args);
+  const boundedMatrix = args.boundedMatrix === true;
+
+  if (boundedMatrix && !requestedScopeComplete) {
+    return {
+      applicable: true,
+      pass: false,
+      reason: 'The bounded capability matrix did not complete every requested cell.',
+      requestedScopeComplete,
+      fullRequiredMatrixRequested,
+      mergeableSubset,
+      boundedMatrix,
+    };
+  }
+  if (boundedMatrix) {
+    return {
+      applicable: false,
+      pass: null,
+      reason: 'This bounded capability matrix covers its explicit requested scope; release completeness is evaluated separately.',
+      requestedScopeComplete,
+      fullRequiredMatrixRequested,
+      mergeableSubset,
+      boundedMatrix,
+    };
+  }
+
+  if (fullRequiredMatrixRequested) {
+    return {
+      applicable: true,
+      pass: Boolean(requestedScopeComplete && matrix.complete),
+      reason: 'The command requests the complete required public overview matrix.',
+      requestedScopeComplete,
+      fullRequiredMatrixRequested,
+      mergeableSubset,
+      boundedMatrix,
+    };
+  }
+  if (mergeableSubset && requestedScopeComplete) {
+    return {
+      applicable: false,
+      pass: null,
+      reason: 'This bounded scenario shard covers its requested scope; cross-scenario release completeness is evaluated only after merge.',
+      requestedScopeComplete,
+      fullRequiredMatrixRequested,
+      mergeableSubset,
+      boundedMatrix,
+    };
+  }
+  if (!requestedScopeComplete) {
+    return {
+      applicable: true,
+      pass: false,
+      reason: 'The command did not complete every requested matrix cell.',
+      requestedScopeComplete,
+      fullRequiredMatrixRequested,
+      mergeableSubset,
+      boundedMatrix,
+    };
+  }
+  return {
+    applicable: false,
+    pass: null,
+    reason: 'This command does not claim a complete required matrix.',
+    requestedScopeComplete,
+    fullRequiredMatrixRequested,
+    mergeableSubset,
+    boundedMatrix,
+  };
+}
+
 function serverLogNoiseProbe(report) {
   const stderr = String(report.serverLogs?.stderr?.tail || report.serverLogs?.stderr?.text || '');
   const stdout = String(report.serverLogs?.stdout?.tail || report.serverLogs?.stdout?.text || '');
@@ -703,7 +887,8 @@ function gitFullHead() {
 }
 
 function buildMatrixSummary(browserChecks = [], args = {}) {
-  const requiredScenarios = ['single', 'fleet', 'all-offline', 'no-snapshot', 'collection-down', 'resource-full', 'interfaces-down'];
+  const worktree = gitWorktreeIdentity(ROOT);
+  const requiredScenarios = OVERVIEW_RELEASE_SCALE_SCENARIOS;
   const scenarioOrder = new Map([
     ['single', 0],
     ['multi', 1],
@@ -715,7 +900,7 @@ function buildMatrixSummary(browserChecks = [], args = {}) {
     ['interfaces-down', 7],
   ]);
   const groups = new Map();
-  const overviewReleaseMatrix = isOverviewReleaseMatrix(args);
+  const requiredOverviewMatrixRequested = requestsRequiredOverviewMatrix(args);
   const cells = browserChecks.map((check) => ({
     profile: check.profile || '',
     scaleScenario: check.scaleScenario || 'multi',
@@ -724,13 +909,16 @@ function buildMatrixSummary(browserChecks = [], args = {}) {
     section: check.requestedSection || '',
     pass: Boolean(check.pass),
   }));
-  const profiles = [...new Set(cells.map((cell) => cell.profile).filter(Boolean))];
+  const profiles = args.profile === 'both'
+    ? ['public', 'private']
+    : [args.profile].filter(Boolean);
   const viewports = [...new Set(cells.map((cell) => cell.viewport).filter(Boolean))];
-  const sections = [...new Set(cells.map((cell) => cell.section).filter(Boolean))];
+  const sections = args.sections || [...new Set(cells.map((cell) => cell.section).filter(Boolean))];
   const cellId = (profile, scenario, section, viewport) => `${profile}::${scenario}::${section}::${viewport}`;
-  const requiredViewportIds = overviewReleaseMatrix
+  const requestedViewportIds = (args.viewports || []).map((viewport) => viewportCellKey(viewport)).filter(Boolean);
+  const requiredViewportIds = requiredOverviewMatrixRequested
     ? OVERVIEW_RELEASE_VIEWPORTS.map((viewport) => viewportCellKey(viewport))
-    : [...new Set(cells.map((cell) => cell.viewportKey || cell.viewport).filter(Boolean))];
+    : requestedViewportIds;
   const coveredCells = [...new Set(cells.map((cell) => cellId(
     cell.profile,
     cell.scaleScenario,
@@ -745,6 +933,20 @@ function buildMatrixSummary(browserChecks = [], args = {}) {
       cell.section,
       cell.viewportKey || cell.viewport,
     )))].sort();
+  const expectedCells = (scenarios, viewportIds) => {
+    const result = [];
+    for (const profile of profiles) {
+      for (const viewport of viewportIds) {
+        for (const section of sections) {
+          for (const scenario of scenarios) {
+            result.push(cellId(profile, scenario, section, viewport));
+          }
+        }
+      }
+    }
+    return [...new Set(result)].sort();
+  };
+  const requestedRequiredCells = expectedCells(args.scaleScenarios || [], requestedViewportIds);
   const requiredCells = [];
   for (const profile of profiles) {
     for (const viewport of requiredViewportIds) {
@@ -779,6 +981,7 @@ function buildMatrixSummary(browserChecks = [], args = {}) {
     if (cell.viewport && !group.viewports.includes(cell.viewport)) group.viewports.push(cell.viewport);
     if (cell.section && !group.sections.includes(cell.section)) group.sections.push(cell.section);
   }
+  const requestedMissingCells = requestedRequiredCells.filter((cell) => !passedCells.includes(cell));
   const scenarios = Array.from(groups.values()).sort((a, b) => {
     const orderA = scenarioOrder.has(a.scaleScenario) ? scenarioOrder.get(a.scaleScenario) : Number.MAX_SAFE_INTEGER;
     const orderB = scenarioOrder.has(b.scaleScenario) ? scenarioOrder.get(b.scaleScenario) : Number.MAX_SAFE_INTEGER;
@@ -787,18 +990,26 @@ function buildMatrixSummary(browserChecks = [], args = {}) {
     return a.scaleScenario.localeCompare(b.scaleScenario);
   });
   return {
-    commit: gitFullHead() || gitShortHead(),
+    commit: worktree.commit,
+    worktreeClean: worktree.worktreeClean,
+    worktreeFingerprint: worktree.worktreeFingerprint,
+    artifactKey: worktree.artifactKey,
+    releaseEvidenceEligible: worktree.releaseEvidenceEligible,
+    worktreeIdentityError: worktree.identityError,
+    worktreeUntrackedFiles: worktree.untrackedFiles,
     requestedScenarios: args.scaleScenarios || [],
     requiredScenarios,
     coveredScenarios: [...new Set(cells.map((cell) => cell.scaleScenario))].sort(),
     passedScenarios,
     sections: [...sections].sort(),
-    requestedComplete: (args.scaleScenarios || []).every((scenario) => passedScenarios.includes(scenario)),
+    requestedRequiredCells,
+    requestedMissingCells,
+    requestedComplete: requestedRequiredCells.length > 0 && requestedMissingCells.length === 0 && cells.every((cell) => cell.pass),
     coveredCells,
     passedCells,
     requiredCells: [...new Set(requiredCells)].sort(),
     complete: requiredCells.length > 0
-      ? [...new Set(requiredCells)].every((cell) => passedCells.includes(cell))
+      ? [...new Set(requiredCells)].every((cell) => passedCells.includes(cell)) && cells.every((cell) => cell.pass)
       : requiredScenarios.every((scenario) => passedScenarios.includes(scenario)),
     total: cells.length,
     passed: cells.filter((cell) => cell.pass).length,
@@ -1036,12 +1247,21 @@ class PlaywrightSession {
       }
     }
     if (method === 'Page.captureScreenshot') {
+      const viewport = this.page.viewportSize();
+      if (!viewport) throw new Error('Playwright viewport is unavailable for bounded screenshot capture');
       const data = await this.page.screenshot({
         type: 'png',
         fullPage: false,
         animations: 'disabled',
+        caret: 'hide',
+        scale: 'css',
+        clip: { x: 0, y: 0, width: viewport.width, height: viewport.height },
       });
-      return { data: data.toString('base64') };
+      return {
+        data: data.toString('base64'),
+        captureMode: 'playwright-explicit-viewport-clip',
+        viewport,
+      };
     }
     throw new Error(`Unsupported Playwright browser command: ${method}`);
   }
@@ -1066,6 +1286,7 @@ async function launchBrowser(args, report) {
     args: [
       '--disable-background-networking',
       '--disable-dev-shm-usage',
+      '--disable-gpu',
       '--disable-sync',
       '--disable-extensions',
       '--no-first-run',
@@ -1186,13 +1407,26 @@ async function setSection(cdp, section) {
         return rect.width > 0 && rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden' && style.opacity !== '0';
       }) || null;
       const link = visible || candidates[0] || null;
-      if (link) link.click();
-      else location.hash = '#' + section;
+      let directNavigation = false;
+      if (link) {
+        link.click();
+      } else {
+        const target = new URL(location.href);
+        target.searchParams.set('section', section);
+        target.searchParams.delete('object');
+        target.searchParams.delete('from');
+        target.searchParams.delete('evidenceAt');
+        target.hash = '';
+        history.pushState({}, '', target);
+        dispatchEvent(new PopStateEvent('popstate', { state: history.state }));
+        directNavigation = true;
+      }
       return {
         linkFound: candidates.length > 0,
         linkVisible: Boolean(visible),
         linkCount: candidates.length,
         linkText: normalize((visible || link) ? (visible || link).textContent : ''),
+        directNavigation,
       };
     })()`,
     awaitPromise: true,
@@ -1204,6 +1438,7 @@ async function setSection(cdp, section) {
     linkVisible: false,
     linkCount: 0,
     linkText: '',
+    directNavigation: false,
   };
 }
 
@@ -1281,15 +1516,101 @@ async function withTimeout(promise, timeoutMs, label) {
   }
 }
 
-async function inspectScreenshotBlackPixels(cdp, screenshotData) {
+function analyzeScreenshotAnchorPixels({
+  pixels,
+  width,
+  height,
+  anchors,
+  darkThreshold = 210,
+  edgeThreshold = 28,
+  minForegroundRatio = 0.006,
+  minEdgeRatio = 0.006,
+}) {
+  const imageWidth = Math.max(0, Math.floor(Number(width) || 0));
+  const imageHeight = Math.max(0, Math.floor(Number(height) || 0));
+  const pixelData = pixels || [];
+  const rows = (Array.isArray(anchors) ? anchors : []).map((anchor) => {
+    const rect = anchor?.rect || {};
+    const left = Math.max(0, Math.min(imageWidth, Math.floor(Number(rect.x) || 0)));
+    const top = Math.max(0, Math.min(imageHeight, Math.floor(Number(rect.y) || 0)));
+    const right = Math.max(left, Math.min(imageWidth, Math.ceil(left + (Number(rect.width) || 0))));
+    const bottom = Math.max(top, Math.min(imageHeight, Math.ceil(top + (Number(rect.height) || 0))));
+    const clippedWidth = right - left;
+    const clippedHeight = bottom - top;
+    const area = clippedWidth * clippedHeight;
+    if (anchor?.present !== true || imageWidth <= 0 || imageHeight <= 0 || area < 64) {
+      return {
+        ...anchor,
+        rect: { x: left, y: top, width: clippedWidth, height: clippedHeight },
+        sampleCount: 0,
+        foregroundRatio: 0,
+        edgeRatio: 0,
+        pass: false,
+        reason: anchor?.present === true ? 'anchor rectangle is not measurable' : 'anchor is missing from the rendered DOM',
+      };
+    }
+
+    const step = Math.max(1, Math.ceil(Math.sqrt(area / 60000)));
+    let sampleCount = 0;
+    let foregroundSamples = 0;
+    let edgeComparisons = 0;
+    let edgeSamples = 0;
+    const channelDifference = (first, second) => Math.max(
+      Math.abs(pixelData[first] - pixelData[second]),
+      Math.abs(pixelData[first + 1] - pixelData[second + 1]),
+      Math.abs(pixelData[first + 2] - pixelData[second + 2]),
+    );
+    for (let y = top; y < bottom; y += step) {
+      for (let x = left; x < right; x += step) {
+        const offset = (y * imageWidth + x) * 4;
+        if (offset + 2 >= pixelData.length) continue;
+        sampleCount += 1;
+        if (Math.max(pixelData[offset], pixelData[offset + 1], pixelData[offset + 2]) < darkThreshold) {
+          foregroundSamples += 1;
+        }
+        if (x + step < right) {
+          edgeComparisons += 1;
+          if (channelDifference(offset, (y * imageWidth + x + step) * 4) > edgeThreshold) edgeSamples += 1;
+        }
+        if (y + step < bottom) {
+          edgeComparisons += 1;
+          if (channelDifference(offset, ((y + step) * imageWidth + x) * 4) > edgeThreshold) edgeSamples += 1;
+        }
+      }
+    }
+    const foregroundRatio = sampleCount ? foregroundSamples / sampleCount : 0;
+    const edgeRatio = edgeComparisons ? edgeSamples / edgeComparisons : 0;
+    const requiredForegroundRatio = Number(anchor.minForegroundRatio) || minForegroundRatio;
+    const requiredEdgeRatio = Number(anchor.minEdgeRatio) || minEdgeRatio;
+    const pass = sampleCount >= 64 && foregroundRatio >= requiredForegroundRatio && edgeRatio >= requiredEdgeRatio;
+    return {
+      ...anchor,
+      rect: { x: left, y: top, width: clippedWidth, height: clippedHeight },
+      sampleCount,
+      foregroundRatio,
+      edgeRatio,
+      minForegroundRatio: requiredForegroundRatio,
+      minEdgeRatio: requiredEdgeRatio,
+      pass,
+      reason: pass ? null : 'anchor pixels lack the foreground and edge structure of rendered controls',
+    };
+  });
+  return {
+    required: rows.length > 0,
+    pass: rows.length === 0 || rows.every((row) => row.pass === true),
+    anchors: rows,
+  };
+}
+
+async function inspectScreenshotPixels(cdp, screenshotData, { section = null } = {}) {
+  const analyzerSource = analyzeScreenshotAnchorPixels.toString();
   const result = await cdp.send('Runtime.evaluate', {
     expression: `(() => new Promise((resolve, reject) => {
       const image = new Image();
       image.onload = () => {
-        const scale = Math.min(1, 220 / image.width, 440 / image.height);
-        const width = Math.max(1, Math.round(image.width * scale));
-        const height = Math.max(1, Math.round(image.height * scale));
         const canvas = document.createElement('canvas');
+        const width = image.width;
+        const height = image.height;
         canvas.width = width;
         canvas.height = height;
         const context = canvas.getContext('2d', { willReadFrequently: true });
@@ -1299,7 +1620,70 @@ async function inspectScreenshotBlackPixels(cdp, screenshotData) {
         for (let index = 0; index < pixels.length; index += 4) {
           if (pixels[index] < 8 && pixels[index + 1] < 8 && pixels[index + 2] < 8) blackPixels += 1;
         }
-        resolve({ blackPixels, pixelCount: width * height, ratio: blackPixels / (width * height) });
+        const requireOverviewAnchors = ${JSON.stringify(section === 'overview')};
+        const requireDesktopOverviewAnchors = requireOverviewAnchors && window.innerWidth >= 1200;
+        const requireMobileOverviewAnchors = requireOverviewAnchors && window.innerWidth < 900;
+        const specs = requireDesktopOverviewAnchors ? [
+          {
+            name: 'desktop-toolbar',
+            selector: '[data-panel-runtime-toolbar="desktop"], [data-desktop-fixture-toolbar]',
+          },
+          { name: 'task-navigation', selector: '.panel-task-navigation' },
+          { name: 'status-bus', selector: '[data-desktop-status-bus]' },
+        ] : requireMobileOverviewAnchors ? [
+          {
+            name: 'mobile-runtime-bar',
+            selector: '[data-panel-runtime-toolbar="mobile"], .panel-runtime-bar-mobile, .mp-device-context',
+          },
+          {
+            name: 'mobile-device-identity',
+            selector: '.mp-device-context > span:first-child > span > b, [data-panel-runtime-toolbar="mobile"] .panel-runtime-device b',
+          },
+          {
+            name: 'mobile-runtime-actions',
+            selector: '.mp-device-context > span:last-child, [data-panel-runtime-toolbar="mobile"] .panel-runtime-actions',
+          },
+        ] : [];
+        const scaleX = width / Math.max(1, window.innerWidth);
+        const scaleY = height / Math.max(1, window.innerHeight);
+        const anchors = specs.map((spec) => {
+          const node = document.querySelector(spec.selector);
+          const style = node ? getComputedStyle(node) : null;
+          const rect = node ? node.getBoundingClientRect() : null;
+          const present = Boolean(
+            node &&
+            rect &&
+            rect.width >= 8 &&
+            rect.height >= 8 &&
+            rect.bottom > 0 &&
+            rect.right > 0 &&
+            rect.top < window.innerHeight &&
+            rect.left < window.innerWidth &&
+            style &&
+            style.display !== 'none' &&
+            style.visibility !== 'hidden' &&
+            Number(style.opacity || 1) > 0.05
+          );
+          return {
+            ...spec,
+            present,
+            rect: rect ? {
+              x: rect.left * scaleX,
+              y: rect.top * scaleY,
+              width: rect.width * scaleX,
+              height: rect.height * scaleY,
+            } : null,
+          };
+        });
+        const anchorCheck = (${analyzerSource})({ pixels, width, height, anchors });
+        resolve({
+          width,
+          height,
+          blackPixels,
+          pixelCount: width * height,
+          ratio: blackPixels / (width * height),
+          anchorCheck,
+        });
       };
       image.onerror = () => reject(new Error('captured PNG could not be decoded'));
       image.src = 'data:image/png;base64,' + ${JSON.stringify(screenshotData)};
@@ -1308,55 +1692,219 @@ async function inspectScreenshotBlackPixels(cdp, screenshotData) {
     returnByValue: true,
   });
   if (result.exceptionDetails) throw new Error('captured PNG pixel inspection failed');
-  return result.result?.value || { blackPixels: 0, pixelCount: 0, ratio: 0 };
+  return result.result?.value || {
+    blackPixels: 0,
+    pixelCount: 0,
+    ratio: 0,
+    anchorCheck: { required: false, pass: true, anchors: [] },
+  };
 }
 
-async function captureScreenshot(cdp, filePath) {
-  await cdp.send('Runtime.evaluate', {
-    expression: `(() => {
+async function resetScreenshotScroll(cdp) {
+  const result = await cdp.send('Runtime.evaluate', {
+    expression: `(async () => {
+      const root = document.documentElement;
+      const body = document.body;
+      const scrollingElement = document.scrollingElement;
+      const describe = (node) => {
+        if (!(node instanceof Element)) return '';
+        if (node.id) return '#' + node.id;
+        const dataRoute = node.getAttribute('data-panel-route-content');
+        if (dataRoute) return '[data-panel-route-content="' + dataRoute + '"]';
+        const dataWorkspace = node.getAttribute('data-mobile-domain-workspace');
+        if (dataWorkspace) return '[data-mobile-domain-workspace="' + dataWorkspace + '"]';
+        return node.tagName.toLowerCase() + (node.classList.length ? '.' + Array.from(node.classList).slice(0, 2).join('.') : '');
+      };
+      const snapshot = () => {
+        const mobileRuntimeBar = document.querySelector(
+          '[data-panel-runtime-toolbar="mobile"], .panel-runtime-bar-mobile, .mp-device-context'
+        );
+        const mobileRuntimeBarRect = mobileRuntimeBar?.getBoundingClientRect();
+        const mobileRuntimeBarStyle = mobileRuntimeBar ? getComputedStyle(mobileRuntimeBar) : null;
+        const mobileRuntimeBarVisibleHeight = mobileRuntimeBarRect
+          ? Math.max(0, Math.min(window.innerHeight, mobileRuntimeBarRect.bottom) - Math.max(0, mobileRuntimeBarRect.top))
+          : 0;
+        const mobileRuntimeBarProbe = mobileRuntimeBarRect ? {
+          top: Math.round(mobileRuntimeBarRect.top),
+          bottom: Math.round(mobileRuntimeBarRect.bottom),
+          height: Math.round(mobileRuntimeBarRect.height),
+          visibleHeight: Math.round(mobileRuntimeBarVisibleHeight),
+          position: mobileRuntimeBarStyle?.position || '',
+          transform: mobileRuntimeBarStyle?.transform || '',
+        } : null;
+        const horizontalElements = Array.from(document.querySelectorAll('*'))
+          .filter((node) => Math.abs(Number(node.scrollLeft) || 0) > 1)
+          .slice(0, 12)
+          .map((node) => ({ selector: describe(node), scrollLeft: Math.round(node.scrollLeft) }));
+        const verticalElements = Array.from(document.querySelectorAll('*'))
+          .filter((node) => node !== root && node !== body && node !== scrollingElement)
+          .filter((node) => Math.abs(Number(node.scrollTop) || 0) > 1)
+          .slice(0, 12)
+          .map((node) => ({ selector: describe(node), scrollTop: Math.round(node.scrollTop) }));
+        const values = [
+          window.scrollX,
+          root.scrollLeft,
+          body.scrollLeft,
+          scrollingElement?.scrollLeft || 0,
+          window.visualViewport?.offsetLeft || 0,
+          ...horizontalElements.map((row) => row.scrollLeft),
+        ].map((value) => Math.abs(Number(value) || 0));
+        const verticalValues = [
+          window.scrollY,
+          root.scrollTop,
+          body.scrollTop,
+          scrollingElement?.scrollTop || 0,
+          window.visualViewport?.offsetTop || 0,
+          ...verticalElements.map((row) => row.scrollTop),
+        ].map((value) => Math.abs(Number(value) || 0));
+        return {
+          viewportWidth: Math.round(window.innerWidth),
+          viewportHeight: Math.round(window.innerHeight),
+          windowX: Math.round(window.scrollX),
+          windowY: Math.round(window.scrollY),
+          rootLeft: Math.round(root.scrollLeft),
+          rootTop: Math.round(root.scrollTop),
+          bodyLeft: Math.round(body.scrollLeft),
+          bodyTop: Math.round(body.scrollTop),
+          scrollingElementLeft: Math.round(scrollingElement?.scrollLeft || 0),
+          scrollingElementTop: Math.round(scrollingElement?.scrollTop || 0),
+          visualOffsetLeft: Math.round(window.visualViewport?.offsetLeft || 0),
+          visualOffsetTop: Math.round(window.visualViewport?.offsetTop || 0),
+          horizontalMax: Math.round(Math.max(0, ...values)),
+          verticalMax: Math.round(Math.max(0, ...verticalValues)),
+          mobileRuntimeBarOriginOk: !mobileRuntimeBarProbe || (
+            mobileRuntimeBarProbe.top >= -1 &&
+            mobileRuntimeBarProbe.visibleHeight >= mobileRuntimeBarProbe.height - 1
+          ),
+          mobileRuntimeBarProbe,
+          horizontalElements,
+          verticalElements,
+        };
+      };
+      const before = snapshot();
       window.scrollTo(0, 0);
-      document.documentElement.scrollTop = 0;
-      document.body.scrollTop = 0;
+      root.scrollLeft = 0;
+      root.scrollTop = 0;
+      body.scrollLeft = 0;
+      body.scrollTop = 0;
+      if (scrollingElement) {
+        scrollingElement.scrollLeft = 0;
+        scrollingElement.scrollTop = 0;
+      }
+      for (const node of document.querySelectorAll('*')) {
+        if (Math.abs(Number(node.scrollLeft) || 0) > 1) node.scrollLeft = 0;
+      }
       const mobileScreen = document.querySelector('#overview .ik-mobile-decision-screen');
       if (mobileScreen) mobileScreen.scrollTop = 0;
-      return true;
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      const after = snapshot();
+      return {
+        before,
+        after,
+        horizontalBeforeOk: before.horizontalMax <= 1,
+        horizontalAfterOk: after.horizontalMax <= 1,
+        captureOriginOk:
+          after.windowY === 0 &&
+          after.rootTop === 0 &&
+          after.bodyTop === 0 &&
+          after.scrollingElementTop === 0 &&
+          after.visualOffsetTop === 0 &&
+          after.verticalMax <= 1 &&
+          after.mobileRuntimeBarOriginOk,
+      };
     })()`,
+    awaitPromise: true,
     returnByValue: true,
   });
+  if (result.exceptionDetails) throw new Error('screenshot scroll reset failed');
+  return result.result?.value || null;
+}
+
+async function captureScreenshot(cdp, filePath, options = {}) {
+  const scrollState = await resetScreenshotScroll(cdp);
   await new Promise((resolve) => setTimeout(resolve, 120));
   let shot = null;
   let lastError = null;
   let visualCheck = null;
+  let stableAttempt = 0;
   for (let attempt = 1; attempt <= 3; attempt += 1) {
     try {
-      shot = await withTimeout(
+      const firstShot = await withTimeout(
         cdp.send('Page.captureScreenshot', {
           format: 'png',
           fromSurface: true,
           captureBeyondViewport: false,
         }),
         7500,
-        `capture screenshot attempt ${attempt}`,
+        `capture screenshot first sample attempt ${attempt}`,
       );
+      await new Promise((resolve) => setTimeout(resolve, 80));
+      const secondShot = await withTimeout(
+        cdp.send('Page.captureScreenshot', {
+          format: 'png',
+          fromSurface: true,
+          captureBeyondViewport: false,
+        }),
+        7500,
+        `capture screenshot second sample attempt ${attempt}`,
+      );
+      if (firstShot.data !== secondShot.data) {
+        throw new Error(`viewport screenshot did not stabilize on attempt ${attempt}`);
+      }
+      shot = secondShot;
       visualCheck = await withTimeout(
-        inspectScreenshotBlackPixels(cdp, shot.data),
+        inspectScreenshotPixels(cdp, shot.data, options),
         5000,
         `inspect screenshot pixels attempt ${attempt}`,
       );
+      visualCheck.captureMode = shot.captureMode || 'unknown';
+      const expectedWidth = Number(scrollState?.after?.viewportWidth || 0);
+      const expectedHeight = Number(scrollState?.after?.viewportHeight || 0);
+      if (
+        expectedWidth < 1 ||
+        expectedHeight < 1 ||
+        visualCheck.width !== expectedWidth ||
+        visualCheck.height !== expectedHeight
+      ) {
+        throw new Error(
+          `viewport screenshot dimensions ${visualCheck.width}x${visualCheck.height} do not match ` +
+          `the CSS viewport ${expectedWidth}x${expectedHeight}`,
+        );
+      }
       if (visualCheck.ratio > 0.02) {
         throw new Error(`captured screenshot contains ${(visualCheck.ratio * 100).toFixed(2)}% unexpected black pixels`);
       }
+      if (visualCheck.anchorCheck?.required && visualCheck.anchorCheck.pass !== true) {
+        const failures = visualCheck.anchorCheck.anchors
+          .filter((anchor) => anchor.pass !== true)
+          .map((anchor) => [
+            anchor.name,
+            `present=${anchor.present === true}`,
+            `foreground=${Number(anchor.foregroundRatio || 0).toFixed(4)}`,
+            `edges=${Number(anchor.edgeRatio || 0).toFixed(4)}`,
+            `rect=${Math.round(anchor.rect?.width || 0)}x${Math.round(anchor.rect?.height || 0)}`,
+          ].join(' '))
+          .join(', ');
+        throw new Error(`captured screenshot is missing required visual anchors: ${failures || 'unknown'}`);
+      }
+      stableAttempt = attempt;
       break;
     } catch (error) {
       lastError = error;
       shot = null;
-      if (attempt < 3) await new Promise((resolve) => setTimeout(resolve, 160));
+      if (attempt < 3) {
+        await resetScreenshotScroll(cdp);
+        await new Promise((resolve) => setTimeout(resolve, 160));
+      }
     }
   }
   if (!shot) throw lastError || new Error('screenshot capture failed');
   await fs.mkdir(path.dirname(filePath), { recursive: true });
   await fs.writeFile(filePath, Buffer.from(shot.data, 'base64'));
-  return visualCheck;
+  return {
+    visualCheck: { ...visualCheck, stableAttempt, consecutiveCaptures: 2 },
+    scrollState,
+  };
 }
 
 async function runBrowserChecks(args, report, baseUrl) {
@@ -1484,13 +2032,20 @@ async function runBrowserChecks(args, report, baseUrl) {
               const fileName = `${profile}-${scaleScenario}-${viewport.name}-${section}.png`.replace(/[^A-Za-z0-9_.-]+/g, '-');
               const screenshotPath = path.join(args.out, fileName);
               await withTimeout(
-                captureScreenshot(cdp, screenshotPath),
+                captureScreenshot(cdp, screenshotPath, { section }),
                 20000,
                 `screenshot ${profile}/${scaleScenario}/${viewport.name}/${section}`,
               )
-                .then((screenshotVisualCheck) => {
+                .then((screenshotResult) => {
                   inspection.screenshot = fileName;
-                  inspection.screenshotVisualCheck = screenshotVisualCheck;
+                  inspection.screenshotVisualCheck = screenshotResult.visualCheck;
+                  inspection.screenshotScrollState = screenshotResult.scrollState;
+                  inspection.screenshotScrollOk = Boolean(
+                    screenshotResult.scrollState?.horizontalBeforeOk &&
+                    screenshotResult.scrollState?.horizontalAfterOk &&
+                    screenshotResult.scrollState?.captureOriginOk
+                  );
+                  screenshotOk = Boolean(screenshotOk && inspection.screenshotScrollOk);
                 })
                 .catch((error) => {
                   screenshotOk = false;
@@ -1540,6 +2095,10 @@ async function runBrowserChecks(args, report, baseUrl) {
 function buildSnapshot(profile, scaleScenario = 'multi') {
   const publicProfile = profile === 'public';
   const now = '2026-05-24T12:00:00Z';
+  const nowMilliseconds = Date.parse(now);
+  const historyTimestamps = Array.from({ length: 6 }, (_, index) =>
+    new Date(nowMilliseconds - (5 - index) * 5_000).toISOString()
+  );
   const capabilities = {
     readonlyDiagnostics: !publicProfile,
     privateDiagnostics: !publicProfile,
@@ -1747,7 +2306,15 @@ function buildSnapshot(profile, scaleScenario = 'multi') {
         disk: [20, 20, 21, 21, 21, 21],
         uplink: [32000000, 48000000, 51000000, 62000000, 70000000, 79000000],
         downlink: [180000000, 210000000, 225000000, 280000000, 300000000, 323000000],
-        timestamps: [1, 2, 3, 4, 5, 6],
+        timestamps: historyTimestamps,
+        resourceSamples: historyTimestamps.map((timestamp, index) => ({
+          timestamp,
+          cpu: [12, 16, 18, 17, 15, 18][index],
+          memory: [38, 39, 40, 41, 42, 42][index],
+          disk: [20, 20, 21, 21, 21, 21][index],
+          source: 'scenario-fixture',
+          evidenceMode: 'current',
+        })),
       },
     },
     interfaces,
@@ -2088,18 +2655,33 @@ function setFixtureFinding(snapshot, severity, title, summary, evidence = []) {
 function setSnapshotFresh(snapshot) {
   const now = new Date().toISOString();
   const history = snapshot.overview && snapshot.overview.history;
-  if (history && Array.isArray(history.downlink) && Array.isArray(history.uplink)) {
-    const sampleCount = Math.min(history.downlink.length, history.uplink.length);
-    const nowSeconds = Math.floor(Date.parse(now) / 1000);
+  const trafficSamples = Array.isArray(history?.trafficSamples) ? history.trafficSamples : [];
+  const resourceSamples = Array.isArray(history?.resourceSamples) ? history.resourceSamples : [];
+  if (history && resourceSamples.length) {
+    const nowMilliseconds = Date.parse(now);
+    history.resourceSamples = resourceSamples.map((sample, index) => ({
+      ...sample,
+      timestamp: new Date(nowMilliseconds - (resourceSamples.length - 1 - index) * 5_000).toISOString(),
+      source: sample.source || 'scenario-fixture',
+      evidenceMode: sample.evidenceMode || 'current',
+    }));
+  }
+  if (history && trafficSamples.length) {
+    const nowMilliseconds = Date.parse(now);
     const wanRows = Array.isArray(snapshot.wan) ? snapshot.wan.filter((row) => row.running !== false && row.disabled !== true) : [];
     const currentDown = wanRows.reduce((total, row) => total + Number(row.downRate || 0), 0);
     const currentUp = wanRows.reduce((total, row) => total + Number(row.upRate || 0), 0);
     const factors = [0.72, 0.81, 0.76, 0.9, 0.94, 1];
-    history.downlink = Array.from({ length: sampleCount }, (_, index) => Math.round(currentDown * factors[Math.max(0, factors.length - sampleCount + index)]));
-    history.uplink = Array.from({ length: sampleCount }, (_, index) => Math.round(currentUp * factors[Math.max(0, factors.length - sampleCount + index)]));
-    history.timestamps = Array.from({ length: sampleCount }, (_, index) => nowSeconds - (sampleCount - 1 - index) * 5);
+    history.trafficSamples = trafficSamples.map((sample, index) => ({
+      ...sample,
+      timestamp: new Date(nowMilliseconds - (trafficSamples.length - 1 - index) * 5_000).toISOString(),
+      uplink: Math.round(currentUp * factors[Math.max(0, factors.length - trafficSamples.length + index)]),
+      downlink: Math.round(currentDown * factors[Math.max(0, factors.length - trafficSamples.length + index)]),
+      source: sample.source || 'scenario-fixture',
+      evidenceMode: sample.evidenceMode || 'current',
+    }));
     snapshot.meta.rateHistoryUpdatedAt = now;
-    snapshot.meta.rateHistorySampleCount = sampleCount;
+    snapshot.meta.rateHistorySampleCount = trafficSamples.length;
   }
   snapshot.updatedAt = now;
   snapshot.meta.realtimeUpdatedAt = now;
@@ -2129,6 +2711,35 @@ function refreshOverviewWanRates(snapshot) {
   snapshot.overview.downlinkBps = downTotal;
   snapshot.overview.wanUpRate = upTotal;
   snapshot.overview.wanDownRate = downTotal;
+}
+
+function refreshFixtureTrafficHistory(snapshot, evidenceMode = 'current') {
+  const history = snapshot.overview?.history;
+  const updatedAt = Date.parse(snapshot.updatedAt);
+  const uplink = Number(snapshot.overview?.uplinkBps);
+  const downlink = Number(snapshot.overview?.downlinkBps);
+  if (!history || !Number.isFinite(updatedAt) || !Number.isFinite(uplink) || !Number.isFinite(downlink)) {
+    throw new Error('fixture traffic history requires timestamped finite WAN aggregates');
+  }
+  const factors = [0.55, 0.64, 0.72, 0.83, 0.92, 1];
+  const trafficSamples = factors.map((factor, index) => ({
+    timestamp: new Date(updatedAt - (factors.length - 1 - index) * 5_000).toISOString(),
+    uplink: Math.round(uplink * factor),
+    downlink: Math.round(downlink * factor),
+    source: 'scenario-fixture',
+    evidenceMode,
+  }));
+  history.trafficSamples = trafficSamples;
+  snapshot.meta.rateHistorySampleCount = trafficSamples.length;
+}
+
+function retainLatestFixtureTrafficSample(snapshot) {
+  const history = snapshot.overview?.history;
+  const samples = Array.isArray(history?.trafficSamples) ? history.trafficSamples : [];
+  const latest = samples[samples.length - 1];
+  if (!history || !latest) throw new Error('traffic-accumulating fixture requires one current atomic sample');
+  history.trafficSamples = [latest];
+  snapshot.meta.rateHistorySampleCount = 1;
 }
 
 function refreshFixtureCounts(snapshot, scaleScenario) {
@@ -2209,6 +2820,20 @@ function markForwardingInterfacesDown(snapshot) {
     txError: 0,
   }));
   snapshot.interfaces = [...wanInterfaces, ...affected];
+  const dependencyRoutes = affected.map((row, index) => ({
+    dstAddress: '0.0.0.0/0',
+    gateway: row.name,
+    distance: 20 + index,
+    table: 'main',
+    active: false,
+    static: true,
+    disabled: false,
+    default: true,
+    comment: 'acceptance configured fallback dependency',
+  }));
+  snapshot.routes = snapshot.routes || {};
+  snapshot.routes.items = [...(snapshot.routes.items || []), ...dependencyRoutes];
+  snapshot.routes.defaultRoutes = [...(snapshot.routes.defaultRoutes || []), ...dependencyRoutes];
 }
 
 function applyNoSnapshotScenario(snapshot) {
@@ -2244,6 +2869,13 @@ function applyNoSnapshotScenario(snapshot) {
   snapshot.overview.diskUsage = null;
   snapshot.overview.diskUsedPercent = null;
   snapshot.overview.systemLoadLevel = 'warning';
+  snapshot.overview.history = {
+    trafficSamples: [],
+    resourceSamples: [],
+    cpu: [],
+    memory: [],
+    disk: [],
+  };
   refreshOverviewWanRates(snapshot);
   setFixtureFinding(snapshot, 'critical', 'No snapshot', '无可用快照，RouterOS 当前不可达，无业务快照，业务数据不展示。', [
     { label: '采集', value: '断链' },
@@ -2292,6 +2924,12 @@ function applyEdgeScenario(snapshot, scaleScenario) {
     snapshot.overview.history.cpu = [91, 93, 94, 95, 96, 96];
     snapshot.overview.history.memory = [87, 88, 90, 91, 92, 92];
     snapshot.overview.history.disk = [92, 93, 94, 95, 96, 97];
+    snapshot.overview.history.resourceSamples = (snapshot.overview.history.resourceSamples || []).map((sample, index) => ({
+      ...sample,
+      cpu: snapshot.overview.history.cpu[index],
+      memory: snapshot.overview.history.memory[index],
+      disk: snapshot.overview.history.disk[index],
+    }));
     snapshot.connections.total = 98000;
     snapshot.connections.thresholdLevel = 'danger';
     setFixtureFinding(snapshot, 'critical', 'Resource full', 'CPU、内存、磁盘与连接压力过高。', [
@@ -2302,10 +2940,10 @@ function applyEdgeScenario(snapshot, scaleScenario) {
     ]);
   } else if (scaleScenario === 'interfaces-down') {
     snapshot.status = 'error';
-    snapshot.error = '3 个转发接口 Down；WAN 与活动默认路由仍有当前记录';
+    snapshot.error = '3 个已启用默认路由依赖接口未运行；活动主默认路由仍有当前记录';
     markForwardingInterfacesDown(snapshot);
-    setFixtureFinding(snapshot, 'critical', 'Interfaces down', 'Three forwarding interfaces are down while WAN and route observations remain current.', [
-      { label: 'interfacesDown', value: '3' },
+    setFixtureFinding(snapshot, 'critical', 'Interfaces down', 'Three enabled default-route dependencies are not running while the active primary route remains current.', [
+      { label: 'configuredDependenciesDown', value: '3' },
       { label: 'wanOnline', value: String((snapshot.wan || []).filter((row) => row.running !== false).length) },
     ]);
   }
@@ -2320,7 +2958,7 @@ function applyScaleScenario(snapshot, scaleScenario) {
     'resource-full': { wan: 4, terminals: 24 },
     'interfaces-down': { wan: 4, terminals: 24 },
   };
-  const counts = edgeCounts[scaleScenario] || (scaleScenario === 'single'
+  const counts = edgeCounts[scaleScenario] || (scaleScenario === 'single' || scaleScenario === 'traffic-accumulating'
     ? { wan: 1, terminals: 8 }
     : scaleScenario === 'fleet'
       ? { wan: 64, terminals: 180 }
@@ -2390,7 +3028,7 @@ function applyScaleScenario(snapshot, scaleScenario) {
     dynamic: true,
     lastSeen: row.lastSeen,
   }));
-  snapshot.connections.total = scaleScenario === 'fleet' ? 125000 : scaleScenario === 'single' ? 180 : 2400;
+  snapshot.connections.total = scaleScenario === 'fleet' ? 125000 : (scaleScenario === 'single' || scaleScenario === 'traffic-accumulating') ? 180 : 2400;
   snapshot.connections.active = terminals.slice(0, 80).map((row, index) => ({
     src: row.ip,
     localIp: row.ip,
@@ -2487,15 +3125,17 @@ function applyScaleScenario(snapshot, scaleScenario) {
     servers: listScaleMeta(snapshot.dhcp.servers.length, snapshot.dhcp.servers.length),
     clients: listScaleMeta(snapshot.dhcp.clients.length, snapshot.dhcp.clients.length),
   };
-  if (scaleScenario === 'single' || scaleScenario === 'fleet') {
+  if (scaleScenario === 'single' || scaleScenario === 'fleet' || scaleScenario === 'traffic-accumulating') {
     setSnapshotFresh(snapshot);
     setCollectionHealthy(snapshot);
     snapshot.meta.capabilities.restTrusted = true;
     snapshot.meta.capabilities.sshRead = true;
     snapshot.meta.capabilities.sshLabel = 'SSH 只读可用';
   }
-  if (scaleScenario === 'single') {
-    setFixtureFinding(snapshot, 'info', 'Current single WAN snapshot', '单 WAN 1/1 在线，活动默认路由与采集时间均有当前证据。', [
+  if (scaleScenario === 'single' || scaleScenario === 'traffic-accumulating') {
+    setFixtureFinding(snapshot, 'info', 'Current single WAN snapshot', scaleScenario === 'traffic-accumulating'
+      ? '单 WAN 当前读数可用，但只有一个原子流量样本，趋势仍在积累。'
+      : '单 WAN 1/1 在线，活动默认路由与采集时间均有当前证据。', [
       { label: 'WAN', value: '1/1 在线' },
       { label: '默认路由', value: 'active=true' },
       { label: '采集', value: 'REST + SSH 当前' },
@@ -2515,6 +3155,10 @@ function applyScaleScenario(snapshot, scaleScenario) {
   snapshot.statusFindings.topFinding = snapshot.statusFindings.findings[0] || null;
   snapshot.healthFindings = snapshot.statusFindings;
   applyEdgeScenario(snapshot, scaleScenario);
+  if (scaleScenario !== 'no-snapshot') {
+    refreshFixtureTrafficHistory(snapshot, scaleScenario === 'collection-down' ? 'historical' : 'current');
+    if (scaleScenario === 'traffic-accumulating') retainLatestFixtureTrafficSample(snapshot);
+  }
 }
 
 async function main() {
@@ -2523,6 +3167,7 @@ async function main() {
     console.log(usage());
     return;
   }
+  const frameworkAssetIdentity = args.url ? null : assertFrameworkAssetIdentity(ROOT);
   await fs.mkdir(args.out, { recursive: true });
   const report = {
     startedAt: new Date().toISOString(),
@@ -2534,6 +3179,7 @@ async function main() {
     browserChecks: [],
     serverExit: null,
     browser: null,
+    frameworkAssetIdentity,
   };
 
   let server = null;
@@ -2570,10 +3216,9 @@ async function main() {
     report.finishedAt = new Date().toISOString();
     report.matrix = buildMatrixSummary(report.browserChecks, args);
     const matrixSession = matrixSessionKey();
-    const matrixStateFile = matrixStatePath(report.matrix.commit);
+    const matrixStateFile = matrixStatePath(report.matrix.artifactKey || report.matrix.commit);
     const matrixStartBatch = report.matrix.requestedScenarios.some((scenario) => ['single', 'fleet'].includes(scenario));
-    const matrixFinishBatch = report.matrix.requestedScenarios.some((scenario) => EDGE_SCALE_SCENARIOS.includes(scenario));
-    const explicitOverviewReleaseMatrix = isOverviewReleaseMatrix(args);
+    const fullRequiredMatrixRequested = requestsRequiredOverviewMatrix(args);
     const currentMatrixRun = summarizeMatrixRun(report, args, {
       ...report.matrix,
       startedAt: report.startedAt,
@@ -2586,11 +3231,18 @@ async function main() {
       currentMatrixRun,
       matrixSession
     );
-    const releaseMatrixComplete = explicitOverviewReleaseMatrix ? report.matrix.complete : matrixAggregate.complete;
+    const releaseMatrixComplete = Boolean(
+      report.matrix.releaseEvidenceEligible &&
+      (fullRequiredMatrixRequested ? report.matrix.complete : matrixAggregate.complete)
+    );
     await writeJson(matrixStateFile, matrixAggregate);
     report.matrix.aggregate = {
       path: matrixStateFile,
       commit: matrixAggregate.commit,
+      worktreeClean: matrixAggregate.worktreeClean,
+      worktreeFingerprint: matrixAggregate.worktreeFingerprint,
+      artifactKey: matrixAggregate.artifactKey,
+      releaseEvidenceEligible: matrixAggregate.releaseEvidenceEligible,
       session: matrixSession,
       outputDir: args.out,
       screenshotDir: args.out,
@@ -2605,45 +3257,66 @@ async function main() {
       scenarioMatrix: matrixAggregate.runs.flatMap((run) => run.scenarioMatrix || []),
       runs: matrixAggregate.runs.length,
     };
-    if (explicitOverviewReleaseMatrix || matrixFinishBatch || report.matrix.complete) {
-      record(report, 'unified release scenario matrix covers required scenarios', releaseMatrixComplete, {
-        commit: matrixAggregate.commit,
-        session: matrixAggregate.session,
-        statePath: matrixStateFile,
-        explicitOverviewReleaseMatrix,
-        requestedScenarios: report.matrix.requestedScenarios,
-        requiredScenarios: matrixAggregate.requiredScenarios,
-        currentCoveredScenarios: report.matrix.coveredScenarios,
-        currentPassedScenarios: report.matrix.passedScenarios,
-        aggregateCoveredScenarios: matrixAggregate.coveredScenarios,
-        aggregatePassedScenarios: matrixAggregate.passedScenarios,
-        currentRequiredCells: report.matrix.requiredCells,
-        currentPassedCells: report.matrix.passedCells,
-        aggregateRequiredCells: matrixAggregate.requiredCells,
-        aggregatePassedCells: matrixAggregate.passedCells,
-        aggregateMissingCells: (matrixAggregate.requiredCells || []).filter((cell) => !(matrixAggregate.passedCells || []).includes(cell)),
-        currentRequestedComplete: report.matrix.requestedComplete,
-        currentRequiredComplete: report.matrix.complete,
-        aggregateComplete: matrixAggregate.complete,
-        releaseMatrixComplete,
-      });
+    const matrixGate = scenarioMatrixGate(args, report.matrix);
+    const matrixGateDetail = {
+      commit: matrixAggregate.commit,
+      worktreeClean: matrixAggregate.worktreeClean,
+      worktreeFingerprint: matrixAggregate.worktreeFingerprint,
+      artifactKey: matrixAggregate.artifactKey,
+      releaseEvidenceEligible: matrixAggregate.releaseEvidenceEligible,
+      session: matrixAggregate.session,
+      statePath: matrixStateFile,
+      fullRequiredMatrixRequested: matrixGate.fullRequiredMatrixRequested,
+      mergeableSubset: matrixGate.mergeableSubset,
+      boundedMatrix: matrixGate.boundedMatrix,
+      requestedScenarios: report.matrix.requestedScenarios,
+      requiredScenarios: matrixAggregate.requiredScenarios,
+      currentCoveredScenarios: report.matrix.coveredScenarios,
+      currentPassedScenarios: report.matrix.passedScenarios,
+      aggregateCoveredScenarios: matrixAggregate.coveredScenarios,
+      aggregatePassedScenarios: matrixAggregate.passedScenarios,
+      requestedRequiredCells: report.matrix.requestedRequiredCells,
+      requestedMissingCells: report.matrix.requestedMissingCells,
+      currentRequiredCells: report.matrix.requiredCells,
+      currentPassedCells: report.matrix.passedCells,
+      aggregateRequiredCells: matrixAggregate.requiredCells,
+      aggregatePassedCells: matrixAggregate.passedCells,
+      aggregateMissingCells: (matrixAggregate.requiredCells || []).filter((cell) => !(matrixAggregate.passedCells || []).includes(cell)),
+      requestedScopeComplete: matrixGate.requestedScopeComplete,
+      currentRequiredComplete: report.matrix.complete,
+      aggregateComplete: matrixAggregate.complete,
+      releaseMatrixComplete,
+    };
+    if (matrixGate.applicable) {
+      record(
+        report,
+        report.matrix.releaseEvidenceEligible
+          ? 'unified release scenario matrix covers required scenarios'
+          : 'complete worktree scenario matrix covers requested scenarios',
+        matrixGate.pass,
+        matrixGateDetail,
+      );
+    } else if (matrixGate.mergeableSubset || matrixGate.boundedMatrix) {
+      recordNotApplicable(
+        report,
+        'unified release scenario matrix covers required scenarios',
+        matrixGate.reason,
+        matrixGateDetail,
+      );
     }
-    const matrixBlocksTopLevelPass = report.matrix.requiredCells.length > 0 && !releaseMatrixComplete;
+    const matrixBlocksTopLevelPass = matrixGate.applicable && matrixGate.pass === false;
     if (matrixBlocksTopLevelPass) {
       warn(report, 'top-level pass suppressed until required release matrix is complete', {
-        explicitOverviewReleaseMatrix,
+        fullRequiredMatrixRequested,
+        requestedScopeComplete: matrixGate.requestedScopeComplete,
         aggregateComplete: matrixAggregate.complete,
         currentRequiredComplete: report.matrix.complete,
-        requiredCells: matrixAggregate.requiredCells,
-        passedCells: matrixAggregate.passedCells,
-        missingCells: report.matrix.aggregate.missingCells,
+        requiredCells: report.matrix.requiredCells,
+        passedCells: report.matrix.passedCells,
+        missingCells: report.matrix.requestedMissingCells,
       });
     }
-    report.pass = report.failures.length === 0 && !matrixBlocksTopLevelPass;
-    report.exitCodeShouldFail = Boolean(
-      report.failures.length ||
-      ((explicitOverviewReleaseMatrix || matrixFinishBatch || report.matrix.complete) && !report.pass)
-    );
+    finalizeReportTruth(report, matrixBlocksTopLevelPass);
     const safeReport = await prepareReportForJson(report, args.out);
     await writeJson(path.join(args.out, 'report.json'), safeReport);
   }
@@ -2653,7 +3326,23 @@ async function main() {
   process.exitCode = report.exitCodeShouldFail ? 1 : 0;
 }
 
-main().catch((error) => {
-  console.error(error && error.stack ? error.stack : String(error));
-  process.exit(1);
-});
+if (require.main === module) {
+  main().catch((error) => {
+    console.error(error && error.stack ? error.stack : String(error));
+    process.exit(1);
+  });
+}
+
+module.exports = {
+  OVERVIEW_RELEASE_SCALE_SCENARIOS,
+  analyzeScreenshotAnchorPixels,
+  buildSnapshot,
+  finalizeReportTruth,
+  buildMatrixSummary,
+  isMergeableScenarioSubset,
+  matrixArtifactKey,
+  recordNotApplicable,
+  requestsRequiredOverviewMatrix,
+  scenarioMatrixGate,
+  reportNestedPassFalsePaths,
+};

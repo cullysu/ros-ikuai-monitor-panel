@@ -8,6 +8,7 @@ import {
 } from "./overview";
 import { OverviewPanel } from "./overview/OverviewPanel";
 import { RouterConnectionScreen } from "./connection/RouterConnectionScreen";
+import type { PanelNavigate, PanelRouteId } from "./routes/panelRoutes";
 import { usePanelRoute } from "./routes/usePanelRoute";
 import { PanelRuntimeChrome, PanelRuntimeEmptyState, PanelRuntimeNotice } from "./runtime/PanelRuntimeChrome";
 import { validatePanelSnapshot } from "./runtime/panelRuntimeSchema";
@@ -31,8 +32,19 @@ function scenarioHintFromSnapshot(snapshot: OverviewRawSnapshot, options?: Deriv
   return isScenarioKey(hint) ? hint : undefined;
 }
 
-function SnapshotSurface({ snapshot, options, runtimeManaged = false }: { snapshot: OverviewRawSnapshot; options?: DeriveOverviewOptions; runtimeManaged?: boolean }) {
-  const { route, navigate } = usePanelRoute();
+function SnapshotSurface({
+  snapshot,
+  options,
+  runtimeManaged = false,
+  route,
+  navigate,
+}: {
+  snapshot: OverviewRawSnapshot;
+  options?: DeriveOverviewOptions;
+  runtimeManaged?: boolean;
+  route: PanelRouteId;
+  navigate: PanelNavigate;
+}) {
   const scenarioHint = scenarioHintFromSnapshot(snapshot, options);
   const state = useMemo(
     () =>
@@ -66,13 +78,15 @@ function SnapshotContractError({ issues }: { issues: string[] }) {
 }
 
 function StaticSnapshotApp({ snapshot, options }: { snapshot: unknown; options?: DeriveOverviewOptions }) {
+  const { route, navigate } = usePanelRoute();
   const validated = validatePanelSnapshot(snapshot);
   if (!validated.ok) return <SnapshotContractError issues={validated.issues} />;
-  return <SnapshotSurface snapshot={validated.value as OverviewRawSnapshot} options={options} />;
+  return <SnapshotSurface snapshot={validated.value as OverviewRawSnapshot} options={options} route={route} navigate={navigate} />;
 }
 
 function LivePanelRuntime({ options }: { options?: DeriveOverviewOptions }) {
   const runtime = usePanelRuntime();
+  const { route, navigate } = usePanelRoute();
   if (runtime.view === "connection" || runtime.connection.phase !== "ready") {
     return <RouterConnectionScreen runtime={runtime} />;
   }
@@ -92,10 +106,10 @@ function LivePanelRuntime({ options }: { options?: DeriveOverviewOptions }) {
 
   return (
     <div className="panel-runtime-live" data-panel-runtime-phase={runtime.snapshot.phase}>
-      <PanelRuntimeChrome runtime={runtime} />
+      <PanelRuntimeChrome runtime={runtime} route={route} onNavigate={navigate} />
       <PanelRuntimeNotice runtime={runtime} />
       {boundedSnapshot ? (
-        <SnapshotSurface snapshot={boundedSnapshot} options={options} runtimeManaged />
+        <SnapshotSurface snapshot={boundedSnapshot} options={options} runtimeManaged route={route} navigate={navigate} />
       ) : (
         <PanelRuntimeEmptyState runtime={runtime} />
       )}

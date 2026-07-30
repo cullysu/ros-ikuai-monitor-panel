@@ -1,5 +1,9 @@
 ﻿# Overview iKuai 4.0 Completion Audit
 
+- status: `superseded`
+- validForCommit: `historical iKuai 4.0 audit`
+- supersededBy: `docs/decision-system/current-state.md`
+
 - Task: `edict-overview-ikuai40-visual-20260628`
 - Current HEAD during audit: recorded by the latest release-matrix report; do not rely on archived commit labels.
 - Static verifier: `node tools/check-overview-ikuai-static.js` -> `PASS (190 markers, 2 inline scripts)`

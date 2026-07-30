@@ -6,102 +6,36 @@ import {
   Router,
   ScrollText,
   ShieldCheck,
-  TriangleAlert,
   UsersRound,
   type LucideIcon,
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import type { OverviewTone } from "../overview";
-import { PANEL_ROUTES, type PanelRouteId, type PanelWorkspaceGroup } from "../routes/panelRoutes";
+import {
+  PANEL_ROUTES,
+  navigationContextFromLocation,
+  routeUrl,
+  type PanelNavigationContext,
+  type PanelRiskContext,
+  type PanelRouteId,
+} from "../routes/panelRoutes";
+import {
+  PANEL_MORE_ROUTE_GROUPS,
+  PANEL_MORE_ROUTES,
+  panelWorkspaceLabel,
+  panelWorkspaceTabs,
+} from "../routes/panelWorkspaceCatalog";
+import type { WorkspaceRow } from "./mobileWorkspaceRows";
 export { rowsFromModel, type WorkspaceRow } from "./mobileWorkspaceRows";
 
 
 
 
 
-const WORKSPACE_DEFINITIONS: Partial<Record<PanelWorkspaceGroup, {
-  label: string;
-  routes: Array<{ route: PanelRouteId; label: string }>;
-}>> = {
-  network: {
-    label: "网络工作区",
-    routes: [
-      { route: "interfaces", label: "接口" },
-      { route: "lineStatus", label: "WAN" },
-      { route: "balance", label: "分流" },
-      { route: "routes", label: "路由" },
-      { route: "connections", label: "连接" },
-    ],
-  },
-  terminals: {
-    label: "终端工作区",
-    routes: [
-      { route: "terminals", label: "终端" },
-      { route: "dhcp", label: "DHCP" },
-      { route: "arp", label: "ARP" },
-    ],
-  },
-  logs: {
-    label: "事件时间线",
-    routes: [
-      { route: "logs", label: "运行日志" },
-      { route: "serviceLogs", label: "服务日志" },
-    ],
-  },
-  resources: {
-    label: "资源工作区",
-    routes: [
-      { route: "trafficLoad", label: "当前负载" },
-      { route: "loadAudit", label: "采样审计" },
-    ],
-  },
-  dns: {
-    label: "DNS 工作区",
-    routes: [
-      { route: "dns4", label: "IPv4" },
-      { route: "dns6", label: "IPv6" },
-    ],
-  },
-  audit: { label: "流量审计", routes: [] },
-  security: { label: "安全工作区", routes: [] },
-  diagnostics: { label: "诊断工作区", routes: [] },
-  directory: { label: "只读工具目录", routes: [] },
-  overview: { label: "运行概览", routes: [] },
-};
-
-export const MORE_ROUTE_GROUPS = [
-  { id: "network", label: "路径与性能" },
-  { id: "services", label: "审计与服务" },
-] as const;
-
-type MoreRouteGroup = (typeof MORE_ROUTE_GROUPS)[number]["id"];
-
-const MORE_ROUTE_CATALOG: Array<{ route: PanelRouteId; label: string; group: MoreRouteGroup }> = [
-  { route: "balance", label: "WAN 分流", group: "network" },
-  { route: "routes", label: "路由表", group: "network" },
-  { route: "connections", label: "连接跟踪", group: "network" },
-  { route: "trafficLoad", label: "资源与负载", group: "network" },
-  { route: "loadAudit", label: "负载审计", group: "network" },
-  { route: "trafficAudit", label: "流量审计", group: "services" },
-  { route: "dns4", label: "IPv4 DNS", group: "services" },
-  { route: "dns6", label: "IPv6 与 DNS", group: "services" },
-  { route: "security", label: "安全观察", group: "services" },
-  { route: "readonlyDiagnostics", label: "只读诊断", group: "services" },
-];
-
-export const MORE_ROUTES = MORE_ROUTE_CATALOG.filter(
-  (item) => PANEL_ROUTES[item.route].placement === "more",
-);
-
-
-
-export function routeTabs(route: PanelRouteId): Array<{ route: PanelRouteId; label: string }> {
-  return WORKSPACE_DEFINITIONS[PANEL_ROUTES[route].workspaceGroup]?.routes || [];
-}
-
-export function workspaceLabel(route: PanelRouteId): string {
-  return WORKSPACE_DEFINITIONS[PANEL_ROUTES[route].workspaceGroup]?.label || "只读工作区";
-}
+export const MORE_ROUTE_GROUPS = PANEL_MORE_ROUTE_GROUPS;
+export const MORE_ROUTES = PANEL_MORE_ROUTES;
+export const routeTabs = panelWorkspaceTabs;
+export const workspaceLabel = panelWorkspaceLabel;
 
 export function routeIcon(route: PanelRouteId): LucideIcon {
   const group = PANEL_ROUTES[route].workspaceGroup;
@@ -116,57 +50,87 @@ export function routeIcon(route: PanelRouteId): LucideIcon {
 
 export function toneIcon(tone: OverviewTone) {
   if (tone === "danger") return CircleAlert;
-  if (tone === "warn" || tone === "missing") return TriangleAlert;
+  if (tone === "warn" || tone === "missing") return CircleAlert;
   return ShieldCheck;
 }
 
-
-
-
-function selectedObjectFromUrl(): string {
-  return new URLSearchParams(window.location.search).get("object") || "";
+export function rowMatchesRisk(risk: PanelRiskContext, row: WorkspaceRow): boolean {
+  return risk === "resource"
+    ? row.evidence.kind === "resource"
+    : risk === "route"
+      ? row.evidence.kind === "route"
+      : row.evidence.kind === "interface" && row.evidence.operationalImpact === (risk === "interfaces" ? "risk" : "unverified");
 }
 
-function objectUrl(id: string | null): string {
-  const url = new URL(window.location.href);
-  if (id) url.searchParams.set("object", id);
-  else url.searchParams.delete("object");
-  return `${url.pathname}${url.search}${url.hash}`;
+export function riskObjectCount(risk: PanelRiskContext, rows: WorkspaceRow[]): number {
+  return rows.filter((row) => rowMatchesRisk(risk, row)).length;
+}
+
+function objectContextFromUrl(): PanelNavigationContext {
+  return navigationContextFromLocation(window.location);
+}
+
+function objectUrl(route: PanelRouteId, id: string | null): string {
+  return routeUrl(route, window.location, { objectId: id });
 }
 
 export function useObjectHistory(route: PanelRouteId) {
-  const [selectedId, setSelectedId] = useState(() => (
-    typeof window === "undefined" ? "" : selectedObjectFromUrl()
+  const [context, setContext] = useState<PanelNavigationContext>(() => (
+    typeof window === "undefined"
+      ? { objectId: null, query: null, risk: null, returnRoute: null, evidenceAt: null }
+      : objectContextFromUrl()
   ));
+  // A cross-domain action carries the source object's identity as evidence context;
+  // only an ID owned by this collection may become its selected row.
+  const selectedId = context.objectId && context.objectId.startsWith(`${route}-`)
+    ? context.objectId
+    : "";
 
   useEffect(() => {
-    const sync = () => setSelectedId(selectedObjectFromUrl());
+    const sync = () => setContext(objectContextFromUrl());
     sync();
     window.addEventListener("popstate", sync);
     return () => window.removeEventListener("popstate", sync);
   }, [route]);
 
   const open = useCallback((id: string) => {
-    const state = { ...(window.history.state || {}), panelObject: id };
-    window.history.pushState(state, "", objectUrl(id));
+    const targetUrl = objectUrl(route, id);
+    const state = { ...(window.history.state || {}), panelContextEntry: true, panelObject: id };
+    window.history.pushState(state, "", targetUrl);
     window.dispatchEvent(new PopStateEvent("popstate", { state }));
-  }, []);
+  }, [route]);
 
   const replace = useCallback((id: string | null) => {
-    const state = { ...(window.history.state || {}) };
-    if (id) state.panelObject = id;
-    else delete state.panelObject;
-    window.history.replaceState(state, "", objectUrl(id));
+    const targetUrl = objectUrl(route, id);
+    const state = { ...(window.history.state || {}), panelContextEntry: Boolean(id || context.risk), panelObject: id };
+    window.history.replaceState(state, "", targetUrl);
     window.dispatchEvent(new PopStateEvent("popstate", { state }));
-  }, []);
+  }, [route]);
 
   const close = useCallback(() => {
-    if (window.history.state?.panelObject === selectedId) {
+    const currentState = window.history.state || {};
+    if (currentState.panelContextEntry === true) {
       window.history.back();
       return;
     }
+    if (context.returnRoute && context.returnRoute !== route) {
+      const state = { ...currentState, panelRoute: context.returnRoute, panelContextEntry: false, panelObject: null };
+      const targetUrl = routeUrl(context.returnRoute, window.location, { objectId: null, query: null, risk: null, returnRoute: null, evidenceAt: null });
+      window.history.replaceState(state, "", targetUrl);
+      window.dispatchEvent(new PopStateEvent("popstate", { state }));
+      return;
+    }
     replace(null);
-  }, [replace, selectedId]);
+  }, [context.returnRoute, replace, route]);
 
-  return { selectedId, open, replace, close };
+  return {
+    selectedId,
+    risk: context.risk,
+    returnRoute: context.returnRoute,
+    evidenceAt: context.evidenceAt,
+    query: context.query,
+    open,
+    replace,
+    close,
+  };
 }
