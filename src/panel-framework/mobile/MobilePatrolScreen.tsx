@@ -198,9 +198,9 @@ export function MobilePatrolScreen({
               {evidenceLedger}
             </div>
           </div>
-        ) : tablet && incident && model.risk !== "interface-review" ? (
+        ) : tablet && incident ? (
           <div className="mp-workspace-body is-tablet-incident" data-tablet-overview-layout="split" data-tablet-overview-task-flow="incident" data-tablet-space-surface="incident" data-tablet-space-primary="impact-list" data-tablet-space-relation="selected-evidence" data-tablet-space-follow-up="evidence-and-actions" data-tablet-space-boundary="evidence-ledger">
-            <div className="mp-tablet-master-detail">{incidentCenter}{selectedInspector}</div>
+            <div className="mp-tablet-master-detail" style={selectedInspector ? undefined : { gridTemplateColumns: "minmax(400px, 1fr)" }}>{incidentCenter}{selectedInspector}</div>
             {concurrentRiskQueue}
             {scenarioFocus}
             {tabletSignal}

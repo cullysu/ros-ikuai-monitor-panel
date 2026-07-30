@@ -1,12 +1,12 @@
 # Release Journal
 - status: `current-journal`
-- validForCommit: current clean candidate only; regenerate and bind all release evidence to the exact candidate SHA before sign-off
+- validForCommit: current worktree with focused-green engineering remediation through Step778; not a release candidate
 - supersededBy: `null`
-- currentStep: `772`
-- currentOutcome: `772:independent-visual-evidence-identity-correction-release-closed-loop-active`
+- currentStep: `778`
+- currentOutcome: `778:tablet-interface-incident-path-and-visual-contract-focused-green-release-closed-loop-active`
 - authority: `docs/decision-system/current-state.md`
 
-- Step772: the stale route-maturity candidate reference was removed; route-responsive evidence must be regenerated for the new exact candidate before Product/Design/Visual signoff.
+- Step778: the unified tablet incident path and its visual/task-order contracts are focused-green; align the next candidate evidence and independent signoff.
 - Product/Design/Visual remain failed or unsigned; route maturity remains 0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable.
 - Worktree remains dirty; GitHub upload, public release and exact-SHA CL remain closed.
 

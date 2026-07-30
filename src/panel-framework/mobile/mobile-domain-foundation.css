@@ -7,6 +7,7 @@
     --mdw-text: #304f5c;
     --mdw-muted: #405f6c;
     --mdw-faint: #496571;
+    --mono: ui-monospace, "SFMono-Regular", Consolas, monospace;
     --mdw-line: #d1dee4;
     --mdw-line-strong: #b4c8d1;
     --mdw-blue: #0b678c;

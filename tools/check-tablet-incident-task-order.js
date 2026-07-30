@@ -4,7 +4,7 @@ const path = require('node:path');
 const root = path.resolve(__dirname, '..');
 const source = fs.readFileSync(path.join(root, 'src/panel-framework/mobile/MobilePatrolScreen.tsx'), 'utf8');
 const failures = [];
-const branchStart = source.indexOf('tablet && incident && model.risk !== ');
+const branchStart = source.indexOf('tablet && incident');
 const branchEnd = branchStart >= 0 ? source.indexOf(') : (', branchStart) : -1;
 const branch = branchStart >= 0 && branchEnd > branchStart ? source.slice(branchStart, branchEnd) : '';
 const evidenceIndex = branch.indexOf('{evidenceLedger}');

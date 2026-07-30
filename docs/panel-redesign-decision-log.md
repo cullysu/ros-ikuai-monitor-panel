@@ -23808,3 +23808,67 @@ ocused-green-engineering
 - 拒绝项：不把工程矩阵通过替代视觉判断，不沿用旧 SHA 截图，不因为工具链受阻而标记 Loop blocked。
 - 心得：独立签收首先要能证明看的是同一个候选；画面本身成立而证据身份过期，签收仍然必须保持 HOLD。
 - Next: 提交本步文档修正，按新 SHA 重建 build/runtime/overview/route evidence，再请求独立 Product/Design/Visual 签收。
+
+
+## 第 773 步：Fleet 平板接口风险主从工作区 expected-red；发布继续关闭
+
+- status: expected-red-open
+- latestStepOutcome: `773:fleet-tablet-interface-risk-workspace-expected-red-release-closed-loop-active`
+- 触发与事实：新候选 b9f4e92 的真实 public/fleet/tablet=1024x900 路由矩阵稳定失败。接口风险为 interface-review 时，MobilePatrolScreen 条件主动绕过 tablet incident workspace，落入普通两栏壳；runtime 观察到 primaryWidth=0、contextWidth=0、tabletWorkspace=false，唯一失败格是 fleet 概览平板。
+- 决策：不放宽验收；让接口待确认风险沿用真实平板事故工作区，并在平板默认选中最高优先级对象，使接口名称、状态、来源和下一步证据在同一任务路径中可达。手机端不自动选中，正常态与其他断点不改。
+- expected-red：fleet tablet overview 的 appHomePass=false，失败原因是 interface-review 被排除出 tablet incident 分支；该红灯来自真实布局所有权缺口，不是测试脚本误报。
+- 边界：本步只记录修复前事实；尚未修改产品代码，Product/Design/Visual 仍未签收，route maturity 与 public release 继续关闭，Loop active、blocked=false。
+- Next: 只修 MobilePatrolScreen 的接口风险平板分支与默认对象选择，随后运行 focused red-to-green、types、Overview、build 和 fresh runtime。
+
+
+## 第 774 步：移动 surface token 契约 expected-red；发布继续关闭
+
+- status: expected-red-open
+- latestStepOutcome: `774:mobile-surface-accent-wash-token-expected-red-release-closed-loop-active`
+- 触发与事实：Step773 的 fleet 平板接口风险修复通过 focused 浏览器格，但完整 Overview 静态门禁随后在 mobile-visual-surface-v1 停止；移动 surface owner 已声明 base、raised、quiet，却缺少 accent-wash token。
+- 决策：在 mobile-patrol-foundation.css 的 token owner 中补充低饱和淡蓝 accent-wash，只作为可用层级 token；正常决策行继续使用 neutral surface，不用新 token 掩盖异常优先级，也不把静态 token 通过当作视觉签收。
+- expected-red：check:overview 的移动视觉表面契约仅有 4/5 通过，缺失 --mp-accent-wash；这是可复现的设计系统缺口，不是浏览器环境阻塞。
+- 边界：本步只记录 token 红灯；Product/Design/Visual 仍未签收，route maturity、clean candidate、RouterOS soak 与 public release 继续关闭，Loop active、blocked=false。
+- Next: 补齐 token，重新跑 surface contract、Overview、types、build 与 fresh runtime。
+
+
+## 第 775 步：移动 Inspector 机器事实字体作用域 focused-green；发布继续关闭
+
+- status: focused-green-engineering
+- latestStepOutcome: `775:mobile-inspector-machine-fact-typography-focused-green-release-closed-loop-active`
+- 触发与事实：check-inspector-value-typography 暴露 mobile domain owner 缺少 --mono 声明，导致 machineFactsRemainScoped=false；语义 facts 与 relations 仍要求 body font，numeric readings 保持 tabular。
+- 决策：在 mobile-domain-foundation.css 的域 token owner 中补充 mono，machine facts 与 readings 继续只由 is-value-machine/is-value-numeric 选择器使用，不扩大等宽字体到语义正文。
+- 验证：check-inspector-value-typography 6/6；check:overview 继续推进到后续 tablet continuity 门禁；无 UI 数据伪造、无写接口变化。
+- 边界：本步只关闭字体作用域工程切片，不代表 Product/Design/Visual 签收；route maturity、clean candidate、RouterOS soak 与 public release 继续关闭，Loop active、blocked=false。
+- Next: 继续修复当前运行/门禁链中的真实 red，不把局部 focused-green 冒充发布资格。
+
+## 第 776 步：平板连续性合同更新为接口风险同一主从任务；发布继续关闭
+
+- status: expected-red-open
+- latestStepOutcome: `776:tablet-continuity-contract-interface-review-aligned-expected-red-release-closed-loop-active`
+- 触发与事实：Step773 修复让 interface-review 进入真实 tablet incident workspace，fleet 平板 focused runtime 已通过；但 overview-tablet-continuity-v1 仍用旧正则强制排除 interface-review，导致完整 Overview 在最后一个静态契约停止。
+- 决策：更新门禁以表达当前产品事实：所有 tablet incident 风险，包括 interface-review，都由同一 tablet task-flow owner 管理；不放宽布局、截图或独立签收条件。
+- expected-red：check:overview 唯一失败为 task-flow marker 仍要求 model.risk !== interface-review；这是门禁漂移，不是产品回归。
+- 边界：本步只记录门禁纠偏；Product/Design/Visual 仍未签收，当前工作树与生成资产尚未形成新 clean candidate，public release 继续关闭，Loop active、blocked=false。
+- Next: 修正 overview-tablet-continuity contract，重新跑 Overview、types、build、runtime 与当前候选矩阵。
+
+
+## 第 777 步：平板事故任务顺序合同更新；发布继续关闭
+
+- status: expected-red-open
+- latestStepOutcome: `777:tablet-incident-task-order-interface-review-aligned-expected-red-release-closed-loop-active`
+- 触发与事实：Overview 连续性合同已对齐 interface-review 后，完整 Overview 继续通过；新的 tablet-incident-task-order-v1 仍搜索已删除的 interface-review 排除分支，因此无法证明 incident follow-up task 在 evidence ledger 之前。
+- 决策：把任务顺序检查器绑定到当前统一的 tablet incident 分支，不复制 DOM、不放宽顺序条件；接口待确认风险和其他事故风险共享同一任务到证据阅读节奏。
+- expected-red：当前 checker branchFound=false、taskIndex=-1、evidenceIndex=-1；这是门禁漂移。
+- 边界：本步只修合同，不改产品事实；独立 Product/Design/Visual、route maturity、clean candidate 与 public release 继续关闭，Loop active、blocked=false。
+- Next: 更新 tablet-incident-task-order contract，重跑 Overview、types、build、runtime 与当前矩阵。
+
+## 第 778 步：平板接口事故路径与视觉合同 focused-green；发布仍保持关闭
+
+- status: focused-green-engineering
+- latestStepOutcome: `778:tablet-interface-incident-path-and-visual-contract-focused-green-release-closed-loop-active`
+- 触发与事实：Step773 的接口风险平板路径已进入统一 incident workspace；Step774 的 accent-wash token、Step775 的 machine-fact typography scope、Step776 的 tablet continuity contract、Step777 的 incident task-order contract 均已修复并通过聚焦检查。
+- 决策：继续保留独立手机/桌面渲染树和证据优先边界；平板接口风险只在显式 incident workspace 处理，未给手机端引入自动对象选择，也未把 token/static 通过冒充视觉签收。
+- 验证：`check-overview-tablet-continuity`、`check-tablet-incident-task-order`、`check-mobile-visual-surface-contract`、`check-inspector-value-typography` 全部通过；`npm run check:overview` 全部通过，包含 6/6 平板事故与视觉合同检查；当前候选尚未提交，fresh exact-SHA release evidence 尚未重建。
+- 边界：Product/Design/Visual 独立签收、route maturity、clean candidate、RouterOS soak 与 public release 仍关闭；Loop active、blocked=false。
+- Next: 提交本轮源代码、门禁、决策镜像与生成资产，取得新候选 SHA 后重建 exact-SHA build/runtime/overview/route evidence，再请求独立 Product/Design/Visual 签收。

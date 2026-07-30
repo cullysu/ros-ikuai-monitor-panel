@@ -1,12 +1,12 @@
 - status: `reference`
-- validForCommit: current clean candidate only; regenerate and bind all release evidence to the exact candidate SHA before sign-off
+- validForCommit: current worktree with focused-green engineering remediation through Step778; not a release candidate
 - supersededBy: `null`
 - authority: `docs/decision-system/current-state.md`
-- currentStep: `772`
-- currentOutcome: `772:independent-visual-evidence-identity-correction-release-closed-loop-active`
-- currentBoundary: `772`
-- latestRecordedStep: `772`
-- latestStepOutcome: `772:independent-visual-evidence-identity-correction-release-closed-loop-active`
+- currentStep: `778`
+- currentOutcome: `778:tablet-interface-incident-path-and-visual-contract-focused-green-release-closed-loop-active`
+- currentBoundary: `778`
+- latestRecordedStep: `778`
+- latestStepOutcome: `778:tablet-interface-incident-path-and-visual-contract-focused-green-release-closed-loop-active`
 
 ## Current pointer
 
@@ -14,7 +14,7 @@ The current authority is current-state.md. This page is discovery only and does 
 
 - Current conclusion: FAIL overall; independent Product/Design/Visual review returned without signoff; route maturity remains 0 complete / 18 bounded-readonly / 0 unavailable; release stays closed.
 - Current engineering boundary: focused contracts may be green, but they cannot replace independent acceptance.
-- Latest result: Step772 removed the stale route-maturity candidate reference; overview and route evidence must be regenerated on the new exact SHA and remain engineering evidence until independent sign-off.
+- Latest result: Step778 aligned the unified tablet incident path and its visual/task-order contracts; fresh exact-SHA evidence remains the next boundary.
 - Full process: ../panel-redesign-decision-log.md.
 - History map: historical-index.md.
 - Product handoff: ../product-loop-current.md.

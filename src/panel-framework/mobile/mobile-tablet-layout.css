@@ -13,11 +13,7 @@
     grid-template-columns: 280px minmax(400px, 1fr);
     align-items: start;
   }
-  .mp-tablet-signal,
-  .mp-tablet-master-detail,
-  .mp-tablet-support,
-  .mp-route-dossier,
-  .mp-tablet-relation {
+  .mp-tablet-signal, .mp-tablet-master-detail, .mp-tablet-support, .mp-route-dossier, .mp-tablet-relation {
     min-width: 0;
   }
   .mp-tablet-support > .mp-ledger,
@@ -226,8 +222,6 @@
     }
   }
 }
-
-/*Normal tablet keeps both task columns useful without adding filler space.*/
 
 @media (min-width: 600px) and (max-width: 1199px) {
   @container (min-width: 620px) {

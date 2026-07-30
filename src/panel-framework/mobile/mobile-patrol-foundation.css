@@ -10,6 +10,7 @@
     --mp-surface-base: #f6f8f9;
     --mp-surface-raised: rgba(255, 255, 255, 0.96);
     --mp-surface-quiet: #eef4f6;
+    --mp-accent-wash: rgba(47, 113, 143, 0.06);
     --mp-surface-soft: #f3f7f9;
     --mp-blue: var(--nc-blue);
     --mp-blue-dark: #245b75;

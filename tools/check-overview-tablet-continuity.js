@@ -22,7 +22,7 @@ expect(
 );
 expect(
   "task-flow marker is limited to the tablet incident branch",
-  /tablet && incident && model\.risk !== \"interface-review\"[\s\S]{0,500}data-tablet-overview-layout/.test(screen),
+  /tablet && incident[\s\S]{0,500}data-tablet-overview-layout/.test(screen),
 );
 expect(
   "tablet split owns both panes when the workspace can hold them",

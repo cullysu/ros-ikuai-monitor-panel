@@ -1,10 +1,10 @@
 # 决策系统导航
-- validForCommit: current clean candidate only; regenerate and bind all release evidence to the exact candidate SHA before sign-off
+- validForCommit: current worktree with focused-green engineering remediation through Step778; not a release candidate
 - supersededBy: null
 - status: `current-index`
-- currentBoundaryForStep: `772`
-- latestRecordedStep: `772`
-- latestStepOutcome: `772:independent-visual-evidence-identity-correction-release-closed-loop-active`
+- currentBoundaryForStep: `778`
+- latestRecordedStep: `778`
+- latestStepOutcome: `778:tablet-interface-incident-path-and-visual-contract-focused-green-release-closed-loop-active`
 - authority: `docs/decision-system/current-state.md`
 
 当前结论由 current-state.md 唯一拥有；本页只负责导航，不重复历史流水账。

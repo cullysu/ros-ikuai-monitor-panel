@@ -1,20 +1,20 @@
 - status: `current-handoff`
-- validForCommit: current clean candidate only; regenerate and bind all release evidence to the exact candidate SHA before sign-off
-- currentHandoffForStep: `772`
+- validForCommit: current worktree with focused-green engineering remediation through Step778; not a release candidate
+- currentHandoffForStep: `778`
 - supersededBy: `docs/decision-system/current-state.md`
 - updated: 2026-07-31
-- latestRecordedStep: `772`
-- latestStepOutcome: `772:independent-visual-evidence-identity-correction-release-closed-loop-active`
+- latestRecordedStep: `778`
+- latestStepOutcome: `778:tablet-interface-incident-path-and-visual-contract-focused-green-release-closed-loop-active`
 - currentConclusion: **FAIL overall**. This handoff routes evidence only; it cannot sign Product/Design/Visual.
 - process: docs/decision-system/current-state.md is the sole authority; docs/panel-redesign-decision-log.md is the detailed chronology.
 
-## Current handoff: Step772 evidence identity correction; release remains closed
+## Current handoff: Step778 tablet incident path and visual contract focused-green; release remains closed
 
-- Result: The old route-responsive packet was correctly rejected because it referenced a414f7a and was not clean. The new candidate must regenerate all identity-bound evidence before any independent visual sign-off.
-- Decision: keep Product/Design/Visual unsigned, preserve fail-closed evidence semantics, and do not convert overview or scenario shards into complete route maturity.
-- Boundary: route maturity, accessibility, RouterOS soak, clean candidate and exact-SHA CL remain open; no commit, GitHub upload or public release.
+- Result: The interface-risk tablet branch, surface token, machine-fact typography scope and task-order contract are aligned and focused-green; independent acceptance remains open.
+- Decision: keep the task-order checker bound to the actual tablet incident owner without weakening task-before-evidence order.
+- Boundary: focused contracts are green; product code and generated assets remain dirty until the new candidate commit; route maturity, clean candidate, soak and exact-SHA CL remain open.
 - Loop state: active, blocked=false. Release blockage and task blockage are separate states.
-- Next: commit the Step772 correction, regenerate current-SHA evidence, then request independent Product/Design/Visual review.
+- Next: submit the focused-green source and gate changes, then regenerate exact-SHA build, runtime, overview and route evidence.
 
 ## Gate boundary
 
