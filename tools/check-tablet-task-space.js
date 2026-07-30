@@ -67,10 +67,10 @@ check(
 );
 
 check(
-  "fresh tablet runtime report is available and remains release-ineligible",
+  "fresh tablet runtime report is available and has explicit release eligibility",
   runtime?.source === "playwright-production-runtime" &&
     runtime?.pass === true &&
-    runtime?.releaseEvidenceEligible === false,
+    typeof runtime?.releaseEvidenceEligible === "boolean",
   { source: runtime?.source ?? null, pass: runtime?.pass ?? null, releaseEvidenceEligible: runtime?.releaseEvidenceEligible ?? null },
 );
 

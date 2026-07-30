@@ -1,12 +1,12 @@
 # Release Journal
 - status: `current-journal`
-- validForCommit: `current worktree with uncommitted remediation through Step770 evidence and matrix closure; not a release candidate`
+- validForCommit: `current worktree with uncommitted remediation through Step771 evidence and matrix closure; not a release candidate`
 - supersededBy: `null`
-- currentStep: `770`
-- currentOutcome: `770:mobile-evidence-budget-and-matrix-closure-focused-green-release-closed-loop-active`
+- currentStep: `771`
+- currentOutcome: `771:tablet-release-eligibility-contract-focused-green-release-closed-loop-active`
 - authority: `docs/decision-system/current-state.md`
 
-- Step770: 320px/200% evidence defects and fixed CSS budget were closed; current worktree matrices are complete by cell, but Product/Design/Visual remain unsigned and release remains closed.
+- Step771: the stale tablet release-eligibility assertion was corrected; the real browser runtime is green, but current-identity matrices and Product/Design/Visual signoff remain required and release remains closed.
 - Product/Design/Visual remain failed or unsigned; route maturity remains 0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable.
 - Worktree remains dirty; GitHub upload, public release and exact-SHA CL remain closed.
 

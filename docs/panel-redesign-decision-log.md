@@ -23783,3 +23783,15 @@ focused green 只证明本轮真实 CSS owner 修复成立；发布门禁仍保�
 - 拒绝项：不通过复制旧报告、修改报告 pass 字段、放宽 CSS 预算、用 DOM/截图数量代替视觉签收，或把 bounded 矩阵写成 release-ready。
 - 心得：发布门禁的下一步不是停下来，而是读取第一条真实阻断并完成它；这次阻断分别来自布局可用性、生产资产预算和当前候选证据身份，必须逐项闭环后再进入独立签收。
 - Next: 先把本任务相关源码、构建器、决策仓库与当前生成资产形成干净候选 SHA，同时保留并隔离无关的 openai.yaml 改动；随后在该精确候选上重新生成身份绑定证据并安排独立 Product/Design/Visual 复核。
+
+## 第 771 步：平板 release eligibility 断言纠正、真实运行时回归恢复全绿
+
+- status: `focused-green-engineering`
+- latestStepOutcome: `771:tablet-release-eligibility-contract-focused-green-release-closed-loop-active`；发布仍关闭
+- 触发与事实：当前干净候选的真实浏览器运行时报告正确记录 `releaseEvidenceEligible=true`，但 `tools/check-tablet-task-space.js` 仍把 `false` 写死为通过条件，导致 `npm run check:runtime-browser` 在其余 9 个契约均通过后错误退出 1。
+- 决策：将该检查改为要求运行时来源为 production Playwright、报告通过且 `releaseEvidenceEligible` 为明确布尔值；不再把工作树状态硬编码成“必须不可发布”，由发布 readiness gate 根据完整矩阵、clean candidate 与独立签收决定。
+- 验证：修改后 `npm run check:runtime-browser` 退出 0；panel runtime 256 checks / 98 screenshots / 122 snapshotApiCalls，通过移动事故节奏、动作可见性、决策层级、信号层级、响应式边界、平板信息效率/垂直任务/证据工作区/任务空间全部契约。
+- 边界：本步只修门禁语义，不宣称 Product/Design/Visual 独立签收，不宣称完整公开发布资格；必须以新提交 SHA 重新生成全部身份绑定证据，继续保持 GitHub 上传与公开发布关闭。Loop active、blocked=false。
+- 拒绝项：不修改报告 pass 字段、不把旧报告当当前证据、不降低真实浏览器检查、不绕过清洁工作树和 exact-SHA 绑定。
+- 心得：发布门禁必须区分“报告是否通过”和“当前工件是否有资格作为发布证据”；把后者写死在单个 focused check 里，会让工程状态越健康反而越容易误报失败。
+- Next: 提交本步门禁修正并以新 SHA 重新生成身份绑定 build/runtime/matrix 证据。

@@ -1,21 +1,21 @@
 - status: `current`
-- currentConclusionForStep: `770`
-- latestRecordedStep: `770`
-- latestStepOutcome: `770:mobile-evidence-budget-and-matrix-closure-focused-green-release-closed-loop-active`
-- currentBoundaryForStep: `770`
-- validForCommit: `current worktree with uncommitted remediation through Step770 evidence and matrix closure; not a release candidate`
+- currentConclusionForStep: `771`
+- latestRecordedStep: `771`
+- latestStepOutcome: `771:tablet-release-eligibility-contract-focused-green-release-closed-loop-active`
+- currentBoundaryForStep: `771`
+- validForCommit: `current worktree with uncommitted remediation through Step771 evidence and matrix closure; not a release candidate`
 - supersededBy: `null`
 - updatedAt: `2026-07-31T00:00:00+08:00`
 - authority: This is the only human-readable current-state source. Historical journals, contracts, reports, and machine state may provide evidence but may not override this page.
 
-## Current decision record: Step 770
+## Current decision record: Step 771
 
 - status: `focused-green-engineering`
-- boundary: Step770 closed the reproducible 320px clipping, 200% resource-chart usability and fixed CSS budget slices; 28/28 overview, 76/76 route-responsive and 266/266 route-state cells are current worktree evidence, not independent visual acceptance.
+- boundary: Step771 corrected the stale tablet release-eligibility assertion; prior 320px/200% fixes and 28/28 overview, 76/76 route-responsive and 266/266 route-state cells remain current engineering evidence, not independent visual acceptance.
 - Product/Design/Visual: `failed` / unsigned. R07 mobile visual maturity, R09 tablet space efficiency, R10 desktop density/task efficiency and R14 cross-surface product grammar remain open.
 - route maturity: `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`; no route is promoted to a complete module.
-- release: worktree dirty; no commit, GitHub upload, exact-SHA CL, RouterOS soak or public release exists. Loop is active and `blocked=false`.
-- Next: form a clean candidate SHA from the scoped product changes while preserving the unrelated openai.yaml modification, then regenerate identity-bound evidence and obtain independent Product/Design/Visual review.
+- release: candidate identity is being refreshed after the Step771 gate correction; no GitHub upload, exact-SHA CL, RouterOS soak or public release exists. Loop is active and `blocked=false`.
+- Next: commit the Step771 gate correction, then regenerate identity-bound evidence and obtain independent Product/Design/Visual review.
 
 ## Current conclusion
 

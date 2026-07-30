@@ -1,11 +1,11 @@
 # Historical and superseded decision index
 
 - status: `historical-index`
-- validForCommit: `current worktree with uncommitted remediation through Step770 evidence and matrix closure focused-green; not a release candidate`
+- validForCommit: `current worktree with uncommitted remediation through Step771 evidence and matrix closure focused-green; not a release candidate`
 - supersededBy: `null`
 - authority: `docs/decision-system/current-state.md`
 - coveredStepMin: `0`
-- coveredStepMax: `769`
+- coveredStepMax: `770`
 
 Current truth lives only in `current-state.md`; this page is a historical navigation map, not a current conclusion.
 The active responsive direction is the single table in `responsive-capabilities.md`; responsive-capabilities.md is the active current authority, and older responsive proposals are superseded and cannot override it.

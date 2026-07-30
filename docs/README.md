@@ -10,11 +10,11 @@
 - 逐步决策过程：`panel-redesign-decision-log.md`
 - 当前决策索引：`decision-system/README.md`
 - 决策镜像：`D:\想法\面板`
-- 当前记录步号：**Step770**（320px/200%证据缺陷与固定 CSS 预算已闭环；独立产品、视觉、route maturity、发布验收仍未通过；GitHub 继续关闭）
+- 当前记录步号：**Step771**（320px/200%证据缺陷与固定 CSS 预算已闭环；独立产品、视觉、route maturity、发布验收仍未通过；GitHub 继续关闭）
 
 每个材料性切片按以下格式记录：**观察事实 → 写前决定 → 被否决方案 → 红契约 → 实现结果 → 验证证据 → 剩余边界 → 下一步**。这份记录提供可审计的决策摘要和依据，不把模型的私有逐字思考当作文档。
 
-本轮 Step770 的证据与矩阵 focused-green 结果、边界和下一步已写入决策日志，并会同步到 `D:\想法\面板`；当前仍是 FAIL/closed，不是产品签收。
+本轮 Step771 的门禁纠正、证据边界和下一步已写入决策日志，并会同步到 `D:\想法\面板`；当前仍是 FAIL/closed，不是产品签收。
 
 Start with the root [README](../README.md), then choose the path that matches
 your task.
