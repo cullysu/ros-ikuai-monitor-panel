@@ -1,12 +1,12 @@
 # Release Journal
 - status: `current-journal`
-- validForCommit: `current worktree with uncommitted remediation through Step771 evidence and matrix closure; not a release candidate`
+- validForCommit: current clean candidate only; regenerate and bind all release evidence to the exact candidate SHA before sign-off
 - supersededBy: `null`
-- currentStep: `771`
-- currentOutcome: `771:tablet-release-eligibility-contract-focused-green-release-closed-loop-active`
+- currentStep: `772`
+- currentOutcome: `772:independent-visual-evidence-identity-correction-release-closed-loop-active`
 - authority: `docs/decision-system/current-state.md`
 
-- Step771: the stale tablet release-eligibility assertion was corrected; the real browser runtime is green, but current-identity matrices and Product/Design/Visual signoff remain required and release remains closed.
+- Step772: the stale route-maturity candidate reference was removed; route-responsive evidence must be regenerated for the new exact candidate before Product/Design/Visual signoff.
 - Product/Design/Visual remain failed or unsigned; route maturity remains 0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable.
 - Worktree remains dirty; GitHub upload, public release and exact-SHA CL remain closed.
 

@@ -1,12 +1,12 @@
 - status: `reference`
-- validForCommit: `current worktree with uncommitted remediation through Step771 evidence and matrix closure; not a release candidate`
+- validForCommit: current clean candidate only; regenerate and bind all release evidence to the exact candidate SHA before sign-off
 - supersededBy: `null`
 - authority: `docs/decision-system/current-state.md`
-- currentStep: `771`
-- currentOutcome: `771:tablet-release-eligibility-contract-focused-green-release-closed-loop-active`
-- currentBoundary: `771`
-- latestRecordedStep: `771`
-- latestStepOutcome: `771:tablet-release-eligibility-contract-focused-green-release-closed-loop-active`
+- currentStep: `772`
+- currentOutcome: `772:independent-visual-evidence-identity-correction-release-closed-loop-active`
+- currentBoundary: `772`
+- latestRecordedStep: `772`
+- latestStepOutcome: `772:independent-visual-evidence-identity-correction-release-closed-loop-active`
 
 ## Current pointer
 
@@ -14,7 +14,7 @@ The current authority is current-state.md. This page is discovery only and does 
 
 - Current conclusion: FAIL overall; independent Product/Design/Visual review returned without signoff; route maturity remains 0 complete / 18 bounded-readonly / 0 unavailable; release stays closed.
 - Current engineering boundary: focused contracts may be green, but they cannot replace independent acceptance.
-- Latest result: Step771 corrected the stale tablet release-eligibility assertion; 28/28 overview, 76/76 route-responsive and 266/266 route-state cells remain engineering evidence, not independent signoff.
+- Latest result: Step772 removed the stale route-maturity candidate reference; overview and route evidence must be regenerated on the new exact SHA and remain engineering evidence until independent sign-off.
 - Full process: ../panel-redesign-decision-log.md.
 - History map: historical-index.md.
 - Product handoff: ../product-loop-current.md.

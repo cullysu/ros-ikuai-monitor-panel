@@ -1,20 +1,20 @@
 - status: `current-handoff`
-- validForCommit: `current worktree with uncommitted remediation through Step771 evidence and matrix closure; not a release candidate`
-- currentHandoffForStep: `771`
+- validForCommit: current clean candidate only; regenerate and bind all release evidence to the exact candidate SHA before sign-off
+- currentHandoffForStep: `772`
 - supersededBy: `docs/decision-system/current-state.md`
-- updated: 2026-07-30
-- latestRecordedStep: `771`
-- latestStepOutcome: `771:tablet-release-eligibility-contract-focused-green-release-closed-loop-active`
+- updated: 2026-07-31
+- latestRecordedStep: `772`
+- latestStepOutcome: `772:independent-visual-evidence-identity-correction-release-closed-loop-active`
 - currentConclusion: **FAIL overall**. This handoff routes evidence only; it cannot sign Product/Design/Visual.
 - process: docs/decision-system/current-state.md is the sole authority; docs/panel-redesign-decision-log.md is the detailed chronology.
 
-## Current handoff: Step771 evidence and matrix closure focused-green; release remains closed
+## Current handoff: Step772 evidence identity correction; release remains closed
 
-- Result: The 320px clipping and 200% resource chart usability defects are closed; fixed CSS budget is 119516 bytes, and 28/28 overview, 76/76 route-responsive and 266/266 route-state cells pass by current worktree identity. These remain engineering evidence, not Product/Design/Visual acceptance.
-- Decision: keep Product/Design/Visual failed or unsigned; preserve 44px interaction targets and fail-closed evidence semantics; release stays closed.
-- Boundary: worktree remains dirty; route maturity, accessibility, RouterOS soak, clean candidate and exact-SHA CL remain open; no commit, GitHub upload or public release.
+- Result: The old route-responsive packet was correctly rejected because it referenced a414f7a and was not clean. The new candidate must regenerate all identity-bound evidence before any independent visual sign-off.
+- Decision: keep Product/Design/Visual unsigned, preserve fail-closed evidence semantics, and do not convert overview or scenario shards into complete route maturity.
+- Boundary: route maturity, accessibility, RouterOS soak, clean candidate and exact-SHA CL remain open; no commit, GitHub upload or public release.
 - Loop state: active, blocked=false. Release blockage and task blockage are separate states.
-- Next: form a clean candidate SHA from scoped product changes while preserving the unrelated openai.yaml modification, regenerate identity-bound evidence, then obtain independent Product/Design/Visual review.
+- Next: commit the Step772 correction, regenerate current-SHA evidence, then request independent Product/Design/Visual review.
 
 ## Gate boundary
 

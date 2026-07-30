@@ -1,21 +1,21 @@
 - status: `current`
-- currentConclusionForStep: `771`
-- latestRecordedStep: `771`
-- latestStepOutcome: `771:tablet-release-eligibility-contract-focused-green-release-closed-loop-active`
-- currentBoundaryForStep: `771`
-- validForCommit: `current worktree with uncommitted remediation through Step771 evidence and matrix closure; not a release candidate`
+- currentConclusionForStep: `772`
+- latestRecordedStep: `772`
+- latestStepOutcome: `772:independent-visual-evidence-identity-correction-release-closed-loop-active`
+- currentBoundaryForStep: `772`
+- validForCommit: current clean candidate only; regenerate and bind all release evidence to the exact candidate SHA before sign-off
 - supersededBy: `null`
 - updatedAt: `2026-07-31T00:00:00+08:00`
 - authority: This is the only human-readable current-state source. Historical journals, contracts, reports, and machine state may provide evidence but may not override this page.
 
-## Current decision record: Step 771
+## Current decision record: Step 772
 
 - status: `focused-green-engineering`
-- boundary: Step771 corrected the stale tablet release-eligibility assertion; prior 320px/200% fixes and 28/28 overview, 76/76 route-responsive and 266/266 route-state cells remain current engineering evidence, not independent visual acceptance.
+- boundary: Step772 removed the stale route-maturity candidate reference; route-responsive evidence must be regenerated on the new clean candidate before independent visual sign-off.
 - Product/Design/Visual: `failed` / unsigned. R07 mobile visual maturity, R09 tablet space efficiency, R10 desktop density/task efficiency and R14 cross-surface product grammar remain open.
 - route maturity: `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`; no route is promoted to a complete module.
-- release: candidate identity is being refreshed after the Step771 gate correction; no GitHub upload, exact-SHA CL, RouterOS soak or public release exists. Loop is active and `blocked=false`.
-- Next: commit the Step771 gate correction, then regenerate identity-bound evidence and obtain independent Product/Design/Visual review.
+- release: candidate identity is being refreshed after the Step772 evidence correction; no GitHub upload, exact-SHA CL, RouterOS soak or public release exists. Loop is active and `blocked=false`.
+- Next: commit the Step772 document correction, regenerate identity-bound build/runtime/overview/route evidence, then obtain independent Product/Design/Visual review.
 
 ## Current conclusion
 

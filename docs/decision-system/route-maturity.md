@@ -1,7 +1,7 @@
 # Public route maturity matrix
 
 - status: `current`
-- validForCommit: `a414f7aef2a4545c78a9a42e34e9cb6d6cf3aca3` plus local remediation
+- validForCommit: current clean candidate only; regenerate and bind all release evidence to the exact candidate SHA before sign-off
 - supersededBy: `null`
 - sourceOfTruth: `src/panel-framework/routes/panelRoutes.ts` plus `src/panel-framework/routes/panelRouteMaturity.ts`
 - strictGate: `tools/check-route-maturity-contract.js` (default mode is release-strict; `--contract-only` is structural inspection only)

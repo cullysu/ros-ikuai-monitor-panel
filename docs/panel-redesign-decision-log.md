@@ -23775,7 +23775,8 @@ focused green 只证明本轮真实 CSS owner 修复成立；发布门禁仍保�
 
 ## 第 770 步：320px 与 200% 真实缺陷闭环、固定 CSS 预算恢复、当前候选矩阵补齐
 - latestStepOutcome: `770:mobile-evidence-budget-and-matrix-closure-focused-green-release-closed-loop-active`；发布仍关闭
-- status: ocused-green-engineering
+- status: 
+ocused-green-engineering
 - 触发与事实：独立复核指出 320px 接口工作区文字裁切、200% 资源历史图表不可用；当前候选还曾因 CSS 主样式 120907 bytes 超过固定 120000 bytes 预算而被门禁拦截。
 - 决策：修复窄屏布局的可换行与 44px 触控边界，令 200% 资源图表先滚动到可用视口再判定；构建器加入仅作用于独立 0px 的安全归一化并保护 CSS math，删除两个无引用 token，随后将重复系统字体与 tabular 数字声明归并到已有全局 token；固定预算不放宽。
 - 验证：npm run build 通过，主 style 119516 bytes / gzip 18828 / Brotli 15842，script 482243 bytes；npm run check:runtime-browser 通过 256 checks / 98 screenshots，当前候选 fingerprint dac8d3de2ab421bd5329760857327e6f21b95e3ac356954bb3566fd953cba48e；公开概览矩阵 28/28；路由响应式矩阵 76/76；路由状态矩阵 266/266。
@@ -23795,3 +23796,15 @@ focused green 只证明本轮真实 CSS owner 修复成立；发布门禁仍保�
 - 拒绝项：不修改报告 pass 字段、不把旧报告当当前证据、不降低真实浏览器检查、不绕过清洁工作树和 exact-SHA 绑定。
 - 心得：发布门禁必须区分“报告是否通过”和“当前工件是否有资格作为发布证据”；把后者写死在单个 focused check 里，会让工程状态越健康反而越容易误报失败。
 - Next: 提交本步门禁修正并以新 SHA 重新生成身份绑定 build/runtime/matrix 证据。
+
+
+## 第 772 步：独立视觉证据身份纠偏、旧候选引用清除；发布继续关闭
+
+- status: focused-green-engineering
+- latestStepOutcome: `772:independent-visual-evidence-identity-correction-release-closed-loop-active`
+- 触发与事实：独立 Design/Visual 复核确认当前概览截图视觉抽查基本成立，但 route-responsive-current 仍绑定旧候选 a414f7a，报告标记 worktreeClean=false、releaseEvidenceEligible=false，因此不能用于当前候选的独立签收。决策系统的 route-maturity.md 也残留旧 validForCommit 引用。
+- 决策：删除过期候选绑定，改为仅接受当前 clean candidate 的精确 SHA；不把单场景 route 分片或 overview 28/28 冒充完整路由产品签收，下一步在新候选上重新生成路由响应式证据并再次请求独立视觉复核。
+- 验证边界：本步只修正决策文档身份契约；Product/Design/Visual 仍未签收，route maturity 仍为 0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable，public release 与 GitHub 上传继续关闭。
+- 拒绝项：不把工程矩阵通过替代视觉判断，不沿用旧 SHA 截图，不因为工具链受阻而标记 Loop blocked。
+- 心得：独立签收首先要能证明看的是同一个候选；画面本身成立而证据身份过期，签收仍然必须保持 HOLD。
+- Next: 提交本步文档修正，按新 SHA 重建 build/runtime/overview/route evidence，再请求独立 Product/Design/Visual 签收。
