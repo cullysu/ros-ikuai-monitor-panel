@@ -1,12 +1,12 @@
 - status: `reference`
-- validForCommit: current clean candidate c54b8eb30386086c042758c31fb9fa9db7bec2c5 with build/runtime focused-green through Step783; not a release candidate
+- validForCommit: current clean candidate c54b8eb30386086c042758c31fb9fa9db7bec2c5 with build/runtime focused-green through Step784; not a release candidate
 - supersededBy: `null`
 - authority: `docs/decision-system/current-state.md`
-- currentStep: `783`
-- currentOutcome: `783:resource-workspace-metrics-and-load-audit-contract-focused-green-release-closed-loop-active`
+- currentStep: `784`
+- currentOutcome: `784:clean-candidate-71ee8fc-exact-sha-evidence-write-ahead-release-closed-loop-active`
 - currentBoundary: `779`
-- latestRecordedStep: `783`
-- latestStepOutcome: `783:resource-workspace-metrics-and-load-audit-contract-focused-green-release-closed-loop-active`
+- latestRecordedStep: `784`
+- latestStepOutcome: `784:clean-candidate-71ee8fc-exact-sha-evidence-write-ahead-release-closed-loop-active`
 
 ## Current pointer
 
@@ -14,7 +14,7 @@ The current authority is current-state.md. This page is discovery only and does 
 
 - Current conclusion: FAIL overall; independent Product/Design/Visual review returned without signoff; route maturity remains 0 complete / 18 bounded-readonly / 0 unavailable; release stays closed.
 - Current engineering boundary: focused contracts may be green, but they cannot replace independent acceptance.
-- Latest result: Step783 closes the resource MetricStrip and current loadAudit contract slice; route-state evidence remains open.
+- Latest result: Step784 binds candidate 71ee8fc for a fresh exact-SHA evidence run; route-state evidence remains open.
 - Full process: ../panel-redesign-decision-log.md.
 - History map: historical-index.md.
 - Product handoff: ../product-loop-current.md.

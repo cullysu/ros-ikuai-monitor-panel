@@ -1,20 +1,20 @@
 - status: `current-handoff`
-- validForCommit: current clean candidate c54b8eb30386086c042758c31fb9fa9db7bec2c5 with build/runtime focused-green through Step783; not a release candidate
-- currentHandoffForStep: `783`
+- validForCommit: current clean candidate c54b8eb30386086c042758c31fb9fa9db7bec2c5 with build/runtime focused-green through Step784; not a release candidate
+- currentHandoffForStep: `784`
 - supersededBy: `docs/decision-system/current-state.md`
 - updated: 2026-07-31
-- latestRecordedStep: `783`
-- latestStepOutcome: `783:resource-workspace-metrics-and-load-audit-contract-focused-green-release-closed-loop-active`
+- latestRecordedStep: `784`
+- latestStepOutcome: `784:clean-candidate-71ee8fc-exact-sha-evidence-write-ahead-release-closed-loop-active`
 - currentConclusion: **FAIL overall**. This handoff routes evidence only; it cannot sign Product/Design/Visual.
 - process: docs/decision-system/current-state.md is the sole authority; docs/panel-redesign-decision-log.md is the detailed chronology.
 
-## Current handoff: Step783 resource-workspace metrics and loadAudit contract focused-green; release remains closed
+## Current handoff: Step784 clean candidate exact-SHA evidence write-ahead; release remains closed
 
 - Result: Candidate c54b8eb is build- and runtime-green, but resource-full trafficLoad/loadAudit at tablet 1024x900 fail the route contract; this step only adds diagnostic intent, and independent acceptance remains open.
 - Decision: bind all next evidence to the clean candidate SHA without weakening task-before-evidence order.
 - Boundary: focused contracts and clean candidate runtime are green, while the resource-full route shard is red; route maturity, full matrix, soak and exact-SHA CL remain open.
 - Loop state: active, blocked=false. Release blockage and task blockage are separate states.
-- Next: commit the focused-green source, gate, generated assets and decision sync, regenerate exact-SHA matrices, then request independent Product/Design/Visual signoff.
+- Next: commit the candidate-binding record, regenerate exact-SHA build/runtime/overview and full route matrices, then request independent Product/Design/Visual signoff.
 
 ## Gate boundary
 

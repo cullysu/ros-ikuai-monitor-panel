@@ -23918,3 +23918,12 @@ ocused-green-engineering
 - 验证：`check:types` 通过；生产 `npm run build` 通过并转换 1899 modules；两个 `resource-full/tablet=1024x900` 单格均 PASS；`npm run check:runtime-browser` 通过 256 checks / 98 screenshots / 123 snapshotApiCalls；`npm run check:overview` 通过，包含 load-audit maturity 与 tablet contracts。
 - 决策与边界：关闭本次资源路由工程切片，不把它升级为 Product/Design/Visual 签收。当前工作区仍未形成新 clean candidate；完整 28/76/266、readiness、RouterOS soak、Accessibility 独立验收和精确 SHA CL 仍未关闭；没有 GitHub upload 或 public release，Loop active、blocked=false。
 - Next: 提交本轮源码、验收诊断、生成资产与决策同步，取得新精确 SHA 后重建 overview/route 全部证据。
+
+## 第 784 步：新 clean candidate 绑定 exact-SHA 发布证据；发布继续关闭
+
+- status: `write-ahead`
+- latestStepOutcome: `784:clean-candidate-71ee8fc-exact-sha-evidence-write-ahead-release-closed-loop-active`
+- 触发与事实：Step783 的资源工程修复已提交为候选 `71ee8fc3744df3a53d26ccfe1ca23ac60540aef5`，当前工作树干净；此前所有运行时报告均绑定旧候选或 dirty worktree，不能直接升级为当前候选证据。
+- 决策：从该精确 SHA 重新执行 build、types、Overview、production browser、28 格 overview、19 路由响应式与全部状态分片；任何报告必须标记 exact commit、clean 状态和完整性，不接受旧报告拼接或子分片冒充发布通过。
+- 边界：独立 Product/Design/Visual 签收、route maturity、RouterOS soak、Accessibility、readiness、Linux/Windows/GHCR CL 与 public release 仍关闭；Loop active、blocked=false；没有 GitHub upload。
+- Next: 绑定候选 SHA 执行 clean build/runtime/overview 与完整 overview/route 状态证据。
