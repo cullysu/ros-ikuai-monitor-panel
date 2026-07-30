@@ -1,14 +1,14 @@
 # Release Journal
 - status: `current-journal`
-- validForCommit: current clean candidate 4f1a7a073e133d86c1b78812971d1beffbd80b32 with build/runtime focused-green through Step779; not a release candidate
+- validForCommit: current clean candidate c54b8eb30386086c042758c31fb9fa9db7bec2c5 with build/runtime focused-green through Step783; not a release candidate
 - supersededBy: `null`
-- currentStep: `779`
-- currentOutcome: `779:clean-candidate-4f1a7a0-build-and-runtime-focused-green-release-closed-loop-active`
+- currentStep: `783`
+- currentOutcome: `783:resource-workspace-metrics-and-load-audit-contract-focused-green-release-closed-loop-active`
 - authority: `docs/decision-system/current-state.md`
 
-- Step779: the unified tablet incident path and its visual/task-order contracts are focused-green; align the next candidate evidence and independent signoff.
+- Step783: resource workbench metrics and loadAudit selector drift are identified; implementation and rerun are required before release evidence.
 - Product/Design/Visual remain failed or unsigned; route maturity remains 0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable.
-- Worktree remains dirty; GitHub upload, public release and exact-SHA CL remain closed.
+- Worktree contains the current decision sync until the next candidate commit; resource-full route evidence is red; GitHub upload, public release and exact-SHA CL remain closed.
 
 ## Release rule
 

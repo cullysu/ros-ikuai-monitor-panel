@@ -23882,3 +23882,39 @@ ocused-green-engineering
 - Verification: build passed; `check:types` passed; `check:overview` passed; `check:runtime-browser` passed with 256 checks, 98 screenshots and 123 snapshot API calls; CSS raw 119609 bytes and panel JS raw 482273 bytes; worktree clean at the candidate SHA.
 - Boundary: Product/Design/Visual independent signoff, route maturity, full public matrix, RouterOS soak, accessibility acceptance, publication capability and exact-SHA CL remain open. No GitHub upload or public release.
 - Next: regenerate the exact-SHA 28-cell overview matrix, route-responsive evidence and all route-state scenario shards for this candidate, then request independent Product/Design/Visual signoff.
+
+## 第 780 步：resource-full 路由分片暴露真实平板合同红灯；发布继续关闭
+
+- status: `expected-red-open`
+- latestStepOutcome: `780:resource-full-route-shard-expected-red-current-candidate-c54b8eb-release-closed-loop-active`
+- 触发与事实：当前精确候选已由文档提交更新为 `c54b8eb30386086c042758c31fb9fa9db7bec2c5`；重新执行 `public-release` 的 `resource-full` 路由分片时，桌面、笔记本和窄屏继续运行，平板 `1024x900` 的 `trafficLoad` 与 `loadAudit` 两格失败。失败包含 `operationalRouteContractOk=false`、`structurePass=false`；`loadAudit` 另有 `overviewResourceTrendOk=false`。这不是把分片失败降级为 warning 的理由，仍需读取真实 DOM/证据并修复产品或门禁漂移。
+- 决策：先锁定当前候选身份，再调查平板资源场景的路由工作区、时间序列和详情反馈；禁止放宽 `operationalRouteContract`、禁止用 Overview 通过覆盖路由失败、禁止把单场景截图或工程绿灯冒充独立 Product/Design/Visual 签收。
+- 边界：资源分片失败，`interfaces-down` 尚未完成；完整 route maturity、独立 Product/Design/Visual 签收、RouterOS soak、accessibility、readiness 和精确 SHA CL 均未关闭。Loop active、blocked=false；没有 GitHub upload 或 public release。
+- Next: 用最小复现报告读取 `trafficLoad`/`loadAudit` 平板失败字段和对应 DOM，判断真实产品缺口与错误断言后再写 Step781 实施记录。
+
+## 第 781 步：resource-full 平板路由失败需要诊断字段；发布继续关闭
+
+- status: `write-ahead`
+- latestStepOutcome: `781:resource-full-tablet-route-diagnostic-write-ahead-release-closed-loop-active`
+- 触发与事实：Step780 的单格复现确认 `trafficLoad` 在平板 `1024x900` 仍展示资源时间序列和对象工作区，但 `operationalRouteContractOk=false`、`detailFeedbackOk=false`、`structurePass=false`；现有报告没有返回指标面、对象列表、证据模式和 inspector 的逐项布尔值，不能凭字段缺失猜测修复方向。
+- 决策：只增加最小诊断字段，暴露现有合同各子条件及真实移动域 DOM 属性/计数；不放宽合同、不改产品视觉、不把诊断通过写成发布通过。诊断完成后删除临时字段或把它收敛为长期可审计的失败解释。
+- 边界：本步尚未修改产品或验收语义；resource-full 的 `trafficLoad`/`loadAudit` 平板红灯、`interfaces-down` 未完成、独立 Product/Design/Visual 签收、route maturity、RouterOS soak、readiness 和精确 SHA CL 仍未关闭。Loop active、blocked=false；没有 GitHub upload 或 public release。
+- Next: 增加最小诊断输出并重跑两格单元，依据真实子条件决定产品修复或门禁漂移。
+
+## 第 782 步：资源工作区指标面缺失与旧趋势选择器漂移；先修根因
+
+- status: `write-ahead`
+- latestStepOutcome: `782:resource-workspace-metrics-and-load-audit-selector-write-ahead-release-closed-loop-active`
+- 触发与事实：Step781 诊断确认两个平板红格共用真实产品缺口：`trafficLoad`/`loadAudit` 都是 `workbench`、有 inspector 和对象列表，但 `mobileMetricSurfaces=0`，因此移动工作区合同按设计失败。`loadAudit` 另有一个独立验收漂移：门禁仍只查已不再渲染的 `.ops-resource-grid`/`.ops-resource-card`，而当前路由已经提供带时间、比例尺、当前/峰值/均值/阈值/数据点的响应式 SVG 与文本证据。
+- 决策：资源工作区在 inspector 存在时仍渲染唯一的三项 MetricStrip，作为列表/对象详情之间的信号层；loadAudit 趋势合同改查当前资源工作区 time-series evidence role、三项指标面和已有 SVG/文本证据。保留实际内容和严格比例尺条件，不把旧选择器失败降级为通过。
+- 边界：本步尚未修改产品或门禁；不改其他路由、不复制资源事实、不放宽独立签收。Product/Design/Visual、完整 route matrix、RouterOS soak、readiness、精确 SHA CL 和 public release 仍关闭；Loop active、blocked=false。
+- Next: 实施 MetricStrip 与当前 loadAudit DOM 合同，重跑类型、Overview、两个资源平板单格和相关运行时检查。
+
+## 第 783 步：资源工作区指标面与当前趋势合同 focused-green；发布继续关闭
+
+- status: `focused-green-engineering`
+- latestStepOutcome: `783:resource-workspace-metrics-and-load-audit-contract-focused-green-release-closed-loop-active`
+- 触发与事实：Step782 的最小修复已实现：资源 workbench 在 inspector 打开时保留三项 MetricStrip；loadAudit 合同改查当前 time-series evidence role、三项指标面和现有带比例尺 SVG/文本证据；报告保留逐项 route contract probe 供失败解释。
+- 验证：`check:types` 通过；生产 `npm run build` 通过并转换 1899 modules；两个 `resource-full/tablet=1024x900` 单格均 PASS；`npm run check:runtime-browser` 通过 256 checks / 98 screenshots / 123 snapshotApiCalls；`npm run check:overview` 通过，包含 load-audit maturity 与 tablet contracts。
+- 决策与边界：关闭本次资源路由工程切片，不把它升级为 Product/Design/Visual 签收。当前工作区仍未形成新 clean candidate；完整 28/76/266、readiness、RouterOS soak、Accessibility 独立验收和精确 SHA CL 仍未关闭；没有 GitHub upload 或 public release，Loop active、blocked=false。
+- Next: 提交本轮源码、验收诊断、生成资产与决策同步，取得新精确 SHA 后重建 overview/route 全部证据。

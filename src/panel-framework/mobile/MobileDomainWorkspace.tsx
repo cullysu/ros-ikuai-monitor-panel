@@ -387,7 +387,7 @@ export function MobileDomainWorkspace({
 
            {(!showInspector && !showCollectionLedger) || model.visualization || showTabletCollectionSummary ? (
              <section className={`mdw-domain-context${showTabletCollectionSummary ? " is-tablet-collection-summary" : ""}`} aria-label={showTabletCollectionSummary ? "领域集合摘要" : "领域摘要证据"} data-tablet-collection-summary={showTabletCollectionSummary ? "true" : undefined} data-resource-layer={route === "trafficLoad" && model.visualization ? "history" : undefined} data-resource-layer-question={route === "trafficLoad" && model.visualization ? "sustained-pressure" : undefined} data-resource-evidence-role={route === "trafficLoad" && model.visualization ? "time-series" : undefined}>
-              {(!showInspector || showTabletCollectionSummary) && route !== "logs" ? <MetricStrip model={model} /> : null}
+              {(!showInspector || showTabletCollectionSummary || route === "trafficLoad" || route === "loadAudit") && route !== "logs" ? <MetricStrip model={model} /> : null}
               {model.visualization ? <SectionTimeSeriesChart visualization={model.visualization} /> : null}
              </section>
            ) : null}

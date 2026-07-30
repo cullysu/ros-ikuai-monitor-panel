@@ -1,9 +1,9 @@
 - status: `current`
-- currentConclusionForStep: `779`
-- latestRecordedStep: `779`
-- latestStepOutcome: `779:clean-candidate-4f1a7a0-build-and-runtime-focused-green-release-closed-loop-active`
-- currentBoundaryForStep: `779`
-- validForCommit: current clean candidate 4f1a7a073e133d86c1b78812971d1beffbd80b32 with build/runtime focused-green through Step779; not a release candidate
+- currentConclusionForStep: `783`
+- latestRecordedStep: `783`
+- latestStepOutcome: `783:resource-workspace-metrics-and-load-audit-contract-focused-green-release-closed-loop-active`
+- currentBoundaryForStep: `783`
+- validForCommit: current clean candidate c54b8eb30386086c042758c31fb9fa9db7bec2c5 with build/runtime focused-green through Step783; not a release candidate
 - supersededBy: `null`
 - updatedAt: `2026-07-31T00:00:00+08:00`
 - authority: This is the only human-readable current-state source. Historical journals, contracts, reports, and machine state may provide evidence but may not override this page.
@@ -11,15 +11,15 @@
 ## Current decision record: Step 779
 
 - status: `focused-green-engineering`
-- boundary: Step779 binds the clean candidate build and production runtime evidence to 4f1a7a0; the tablet incident path and visual contracts remain focused-green.
+- boundary: Step783 closes the resource route engineering slice: MetricStrip remains visible with inspector mode and loadAudit checks current time-series evidence.
 - Product/Design/Visual: `failed` / unsigned. R07 mobile visual maturity, R09 tablet space efficiency, R10 desktop density/task efficiency and R14 cross-surface product grammar remain open.
 - route maturity: `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`; no route is promoted to a complete module.
-- release: candidate identity is clean at 4f1a7a0; no GitHub upload, exact-SHA CL, RouterOS soak or public release exists. Loop is active and `blocked=false`.
-- Next: regenerate the exact-SHA overview matrix, route-responsive evidence and route-state scenario shards, then request independent Product/Design/Visual signoff.
+- release: candidate c54b8eb remains red in resource-full trafficLoad/loadAudit tablet cells; no GitHub upload, exact-SHA CL, RouterOS soak or public release exists. Loop is active and `blocked=false`.
+- Next: commit the focused-green source, diagnostic gate, generated assets and decision sync, then regenerate exact-SHA overview and route evidence.
 
 ## Current conclusion
 
-**FAIL overall.** Engineering contracts and bounded reviews are evidence only; Product/Design/Visual acceptance, route maturity, accessibility, RouterOS soak, clean-candidate hygiene and exact-SHA CL remain open. GitHub/public release stays closed.
+**FAIL overall.** The resource-full route shard is red at tablet 1024x900; engineering contracts and bounded reviews are evidence only. Product/Design/Visual acceptance, route maturity, accessibility, RouterOS soak, clean-candidate hygiene and exact-SHA CL remain open. GitHub/public release stays closed.
 
 ## Current release gates
 

@@ -4867,9 +4867,9 @@ async function inspectSectionBrowser(
     /当前证据|当前采样|快照\s*实时/.test(combinedOverviewText) &&
     !/历史快照|当前影响未知|影响未知：缓存快照|使用缓存快照/.test(firstScreenOverviewText + ' ' + mobileTop120Text + ' ' + overviewDesktopTopText)
   );
-  const loadAuditResourceGrid = sectionRoot?.querySelector('.ops-resource-grid');
-  const loadAuditResourceCards = Array.from(loadAuditResourceGrid?.querySelectorAll('.ops-resource-card') || []);
-  const loadAuditThresholdLines = sectionRoot?.querySelectorAll('.ops-threshold-line').length;
+  const loadAuditResourceGrid = sectionRoot?.querySelector('.ops-resource-grid, .mdw-domain-context[data-resource-evidence-role="time-series"]');
+  const loadAuditResourceCards = Array.from(loadAuditResourceGrid?.querySelectorAll('.ops-resource-card, .mdw-metrics > div') || []);
+  const loadAuditThresholdLines = loadAuditResourceGrid?.querySelectorAll('.ops-threshold-line, .mdw-metrics > div').length || 0;
   const loadAuditResourceText = normalize(loadAuditResourceGrid?.textContent || '');
   const overviewInterfacesDownCollectionParityOk = sectionName !== 'overview' || scaleScenario !== 'interfaces-down' || Boolean(
     restSshPairPattern.test(combinedOverviewText) &&
@@ -5976,7 +5976,7 @@ async function inspectSectionBrowser(
     loadAuditResourceProbe: {
       cardCount: loadAuditResourceCards.length,
       thresholdLines: loadAuditThresholdLines,
-      hasThresholdHeader: loadAuditResourceText.includes('阈/持续/均/峰'),
+      hasThresholdHeader: /阈值/.test(loadAuditResourceText) && /当前.*峰值.*均值/.test(loadAuditResourceText),
       text: loadAuditResourceText.slice(0, 260),
     },
     overviewResourceFullIncidentProbe: {
@@ -6099,6 +6099,22 @@ async function inspectSectionBrowser(
     resourceColumns,
     detailFeedbackOk,
     operationalRouteContractOk,
+    operationalRouteContractProbe: operationalRoute ? {
+      sectionRootMatchesMobileDomain: Boolean(mobileDomainRoot),
+      sectionRootMatchesDesktopDomain: Boolean(desktopDomainRoot),
+      requestedSection: sectionName,
+      mobileWorkspace: mobileDomainRoot?.getAttribute('data-mobile-domain-workspace') || '',
+      mobileEvidenceMode: mobileDomainRoot?.getAttribute('data-mobile-evidence-mode') || '',
+      mobileLayout: mobileDomainLayout,
+      mobileLayoutContract: mobileDomainLayoutContractOk,
+      mobileInspector: Boolean(mobileDomainInspector),
+      mobileMetricSurfaces: mobileDomainMetricSurfaces,
+      mobileMetricsContract: mobileDomainMetricsContractOk,
+      mobileObjectList: mobileDomainRoot?.querySelectorAll('.mdw-object-list').length || 0,
+      mobileEmpty: mobileDomainRoot?.querySelectorAll('.mdw-empty').length || 0,
+      mobileTitle: Boolean(operationalTitle),
+      timeSeries: operationalTimeSeriesContractOk,
+    } : null,
     operationalTimeSeriesContractOk,
     operationalTimeSeriesProbe: operationalTimeSeries ? {
       preserveAspectRatio: operationalTimeSeriesPreserve,
