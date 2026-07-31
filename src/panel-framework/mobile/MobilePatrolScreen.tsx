@@ -219,8 +219,8 @@ export function MobilePatrolScreen({
               {resourceSignal}
               {resourceHistory}
               {trafficSignal}
-              {concurrentRiskQueue}
               {phonePrimaryAction}
+              {concurrentRiskQueue}
               {compactIncidentActions}
               {normalPhoneNextStep}
               {normalPhoneSteadyDecisions}
