@@ -23927,3 +23927,12 @@ ocused-green-engineering
 - 决策：从该精确 SHA 重新执行 build、types、Overview、production browser、28 格 overview、19 路由响应式与全部状态分片；任何报告必须标记 exact commit、clean 状态和完整性，不接受旧报告拼接或子分片冒充发布通过。
 - 边界：独立 Product/Design/Visual 签收、route maturity、RouterOS soak、Accessibility、readiness、Linux/Windows/GHCR CL 与 public release 仍关闭；Loop active、blocked=false；没有 GitHub upload。
 - Next: 绑定候选 SHA 执行 clean build/runtime/overview 与完整 overview/route 状态证据。
+
+## 第 785 步：平板布局门禁仍强制旧 dirty 语义；改为 exact-SHA clean 语义
+
+- status: `write-ahead`
+- latestStepOutcome: `785:tablet-layout-runtime-eligibility-drift-write-ahead-release-closed-loop-active`
+- 触发与事实：ef030e0 的 production runtime 已通过 256 checks / 98 screenshots / 123 snapshotApiCalls，报告标记 `worktreeClean=true`、`releaseEvidenceEligible=true` 且 commit 为当前 SHA；`check-tablet-layout-capability.js` 仍把 `worktreeClean=false` 和 `releaseEvidenceEligible=false` 写死为通过条件，因此 `npm run check:overview` 在其他检查通过后错误退出。
+- 决策：把该 gate 改成强制 production runtime、pass、当前 HEAD 精确 commit、clean worktree、64 位 fingerprint 和 releaseEvidenceEligible=true；不降低任何布局条件，不把静态通过冒充视觉签收。
+- 边界：本步尚未修改 gate；Product/Design/Visual、完整 matrix、RouterOS soak、Accessibility、readiness、精确 SHA CL 和 public release 仍关闭；Loop active、blocked=false。
+- Next: 实施 exact-SHA clean runtime gate，重跑 Overview 与相关平板检查。

@@ -1,12 +1,12 @@
 # Release Journal
 - status: `current-journal`
-- validForCommit: current clean candidate c54b8eb30386086c042758c31fb9fa9db7bec2c5 with build/runtime focused-green through Step784; not a release candidate
+- validForCommit: current clean candidate c54b8eb30386086c042758c31fb9fa9db7bec2c5 with build/runtime focused-green through Step785; not a release candidate
 - supersededBy: `null`
-- currentStep: `784`
-- currentOutcome: `784:clean-candidate-71ee8fc-exact-sha-evidence-write-ahead-release-closed-loop-active`
+- currentStep: `785`
+- currentOutcome: `785:tablet-layout-runtime-eligibility-drift-write-ahead-release-closed-loop-active`
 - authority: `docs/decision-system/current-state.md`
 
-- Step784: resource workbench metrics and loadAudit selector drift are identified; implementation and rerun are required before release evidence.
+- Step785: resource workbench metrics and loadAudit selector drift are identified; implementation and rerun are required before release evidence.
 - Product/Design/Visual remain failed or unsigned; route maturity remains 0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable.
 - Worktree contains the current decision sync until the next candidate commit; resource-full route evidence is red; GitHub upload, public release and exact-SHA CL remain closed.
 

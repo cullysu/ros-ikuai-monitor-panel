@@ -2,6 +2,7 @@
 
 const fs = require("node:fs");
 const path = require("node:path");
+const { gitWorktreeIdentity } = require("./worktree-runtime-identity");
 
 const root = path.resolve(__dirname, "..");
 const read = (relativePath) => fs.readFileSync(path.join(root, relativePath), "utf8");
@@ -14,6 +15,7 @@ const workspace = read("src/panel-framework/mobile/MobileDomainWorkspace.tsx");
 const css = read("src/panel-framework/mobile/mobile-domain.css");
 const capabilityTable = read("docs/decision-system/responsive-capabilities.md");
 const runtime = readJson("_acceptance/panel-runtime-browser/report.json");
+const runtimeIdentity = gitWorktreeIdentity(root);
 const screenshots = new Set(Array.isArray(runtime.screenshots) ? runtime.screenshots : []);
 const inspectorBlock = css.match(/\.mdw-shell\.is-tablet-workbench \.mdw-inspector\s*\{([\s\S]*?)\n\s*\}/)?.[1] || "";
 
@@ -45,7 +47,7 @@ check(
 check("list pane owns natural height", /\.mdw-shell\.is-tablet-workbench \.mdw-list-pane\s*\{[\s\S]*?align-self:\s*start;[\s\S]*?height:\s*fit-content;/.test(css));
 check("inspector pane owns natural height", /\.mdw-shell\.is-tablet-workbench \.mdw-inspector\s*\{[\s\S]*?align-self:\s*start;[\s\S]*?height:\s*fit-content;/.test(css), inspectorBlock);
 check("inspector pane bounds long evidence", /\.mdw-shell\.is-tablet-workbench \.mdw-inspector\s*\{[\s\S]*?max-height:\s*calc\(/.test(css), inspectorBlock);
-check("runtime artifact is current dirty-worktree evidence", runtime.source === "playwright-production-runtime" && runtime.pass === true && runtime.worktreeClean === false && typeof runtime.worktreeFingerprint === "string" && runtime.worktreeFingerprint.length === 64 && runtime.releaseEvidenceEligible === false);
+check("runtime artifact is current clean exact-SHA evidence", runtime.source === "playwright-production-runtime" && runtime.pass === true && runtime.commit === runtimeIdentity.commit && runtime.worktreeClean === true && runtimeIdentity.worktreeClean === true && runtime.worktreeFingerprint === runtimeIdentity.worktreeFingerprint && runtime.releaseEvidenceEligible === true, { commit: runtime.commit || null, currentCommit: runtimeIdentity.commit, reportWorktreeClean: runtime.worktreeClean ?? null, currentWorktreeClean: runtimeIdentity.worktreeClean, fingerprintMatches: runtime.worktreeFingerprint === runtimeIdentity.worktreeFingerprint, releaseEvidenceEligible: runtime.releaseEvidenceEligible ?? null });
 check("tablet screenshot set is present", [
   "tablet-network-768.png",
   "tablet-network-844.png",
