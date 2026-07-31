@@ -1,9 +1,7 @@
 import type { InterfaceOperationalImpact, InterfaceOperationalReason } from "./interfaceOperationalAssessment";
-
 interface BaseRowEvidence {
   sourceTable: string;
 }
-
 export interface InterfaceDefaultRouteEvidence {
   destination: string;
   gateway: string;
@@ -12,7 +10,6 @@ export interface InterfaceDefaultRouteEvidence {
   active: boolean | null;
   disabled: boolean | null;
 }
-
 export interface InterfaceRowEvidence extends BaseRowEvidence {
   kind: "interface";
   role: string | null;
@@ -42,7 +39,6 @@ export interface InterfaceRowEvidence extends BaseRowEvidence {
   operationalImpact: InterfaceOperationalImpact;
   operationalReason: InterfaceOperationalReason;
 }
-
 export interface RouteInterfaceEvidence {
   name: string;
   role: string | null;
@@ -52,7 +48,6 @@ export interface RouteInterfaceEvidence {
   rxRate: number | null;
   txRate: number | null;
 }
-
 export interface RouteRowEvidence extends BaseRowEvidence {
   kind: "route";
   destination: string | null;
