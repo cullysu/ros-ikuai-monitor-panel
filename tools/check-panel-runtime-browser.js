@@ -2503,9 +2503,17 @@ async function main() {
     const accessibilityRoutes = [
       { route: 'overview', selector: '[data-mobile-overview]' },
       { route: 'interfaces', selector: '[data-mobile-domain-workspace="interfaces"]' },
+      { route: 'lineStatus', selector: '[data-mobile-domain-workspace="lineStatus"]' },
       { route: 'terminals', selector: '[data-mobile-domain-workspace="terminals"]' },
       { route: 'logs', selector: '[data-mobile-domain-workspace="logs"]' },
     ];
+    const accessibilityRouteNavigationOwners = {
+      overview: 'overview',
+      interfaces: 'interfaces',
+      lineStatus: 'interfaces',
+      terminals: 'terminals',
+      logs: 'logs',
+    };
 
     const applySyntheticTextStress = async (rootSelector, beforeFontSize, percent = 200) => {
       await accessibilityPage.evaluate(({ selector, value }) => {
@@ -2774,13 +2782,13 @@ async function main() {
     }
     check(
       checks,
-      'all four primary routes survive measured synthetic 200 percent text stress without claiming OS scaling',
+      'all covered routes survive measured synthetic 200 percent text stress without claiming OS scaling',
       syntheticTextStressResults.every((result) => (
         result.syntheticTextStress === '200' && result.ratio >= 1.8 &&
         result.overflow <= 1 && result.minimumTarget >= 44 &&
         result.title && result.titleFocused && result.navInsideViewport && result.navCount === 4 &&
         result.activeSection === result.route && result.activeNavigation.length === 1 &&
-        result.activeNavigation[0] === result.route && result.unnamedControls.length === 0 &&
+        result.activeNavigation[0] === accessibilityRouteNavigationOwners[result.route] && result.unnamedControls.length === 0 &&
         result.positiveTabIndexes.length === 0 && result.orphanControls.length === 0 &&
         result.clippedText.length === 0 && result.coveredControls.length === 0
       )),
@@ -3092,11 +3100,11 @@ async function main() {
     }
     check(
       checks,
-      'all four primary routes reflow at 320 CSS px without hidden or unnamed commands',
+      'all covered routes reflow at 320 CSS px without hidden or unnamed commands',
       reflow320Results.every((result) => (
         result.overflow <= 1 && result.minimumTarget >= 44 && result.title && result.titleFocused &&
         result.navInsideViewport && result.navCount === 4 && result.activeSection === result.route &&
-        result.activeNavigation.length === 1 && result.activeNavigation[0] === result.route &&
+        result.activeNavigation.length === 1 && result.activeNavigation[0] === accessibilityRouteNavigationOwners[result.route] &&
         result.unnamedControls.length === 0 && result.positiveTabIndexes.length === 0 &&
         result.orphanControls.length === 0 && result.clippedControls.length === 0 &&
         result.coveredControls.length === 0
@@ -3262,9 +3270,9 @@ async function main() {
       let focusedRoute = false;
       for (let index = 0; index < 100; index += 1) {
         await accessibilityPage.keyboard.press('Tab');
-        focusedRoute = await accessibilityPage.evaluate((expectedRoute) => (
-          document.activeElement?.getAttribute('data-section') === expectedRoute
-        ), route);
+        focusedRoute = await accessibilityPage.evaluate((expectedNavigationOwner) => (
+          document.activeElement?.getAttribute('data-section') === expectedNavigationOwner
+        ), accessibilityRouteNavigationOwners[route] || route);
         if (focusedRoute) break;
       }
       const result = await accessibilityPage.evaluate((expectedRoute) => {
@@ -3418,11 +3426,13 @@ async function main() {
     }
     check(
       checks,
-      'forced colors preserve four-route task identity, focus, geometry and computed accessibility tree',
+      'forced colors preserve covered-route task identity, focus, geometry and computed accessibility tree',
       forcedColorResults.every((result) => (
         result.forcedColorsActive && result.overflow <= 1 && result.minimumTarget >= 44 &&
-        result.navCount === 4 && result.currentRoutes.length === 1 && result.currentRoutes[0] === result.route &&
-        result.keyboardReachedCurrentRoute && result.focusedRoute === result.route &&
+        result.navCount === 4 && result.currentRoutes.length === 1 &&
+        result.currentRoutes[0] === accessibilityRouteNavigationOwners[result.route] &&
+        result.keyboardReachedCurrentRoute &&
+        result.focusedRoute === accessibilityRouteNavigationOwners[result.route] &&
         result.focusRing.style !== 'none' && result.focusRing.width >= 2 &&
         result.activeIndicator.content !== 'none' &&
         (result.activeIndicator.width >= 2 || result.activeIndicator.height >= 2) &&

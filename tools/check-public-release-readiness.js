@@ -71,7 +71,7 @@ const RUNTIME_REQUIRED_CHECKS = Object.freeze([
   'terminals keeps its domain workspace and primary destination',
   'logs keeps its domain workspace and primary destination',
   'trafficLoad keeps its domain workspace and primary destination',
-  'all four primary routes survive measured synthetic 200 percent text stress without claiming OS scaling',
+  'all covered routes survive measured synthetic 200 percent text stress without claiming OS scaling',
   'malformed snapshot is rejected while last valid evidence remains visible',
   'snapshot API error never inserts a scenario fixture',
   'old evidence is labeled historical and current traffic is withheld',

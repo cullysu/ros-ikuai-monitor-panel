@@ -1,9 +1,12 @@
 # Product Decision Record — Operations console acceptance
 
 - status: `current-draft`
-- validForCommit: `a414f7aef2a4545c78a9a42e34e9cb6d6cf3aca3` plus local remediation
+- validForCommit: current local remediation; current release truth is delegated to `docs/decision-system/current-state.md` (Step798)
+- currentPointer: Step798 `public-matrix-and-independent-review-boundary-verified-release-open`
+- currentBoundary: FAIL overall; Product/Design/Visual, Accessibility, route maturity, RouterOS soak, clean candidate and external CL remain open; public release closed
 - supersededBy: `null`
 - decisionOwner: independent product acceptance remains external to the implementation loop
+- authorityNote: step sections below are historical or focused evidence; a scoped PASS never overrides the Step798 current-state authority or grants public release.
 
 ## Operator decision
 
@@ -1061,7 +1064,7 @@ All P1s from the latest whole audit are either independently fixed or formally w
 
 ### Step227 desktop and surface-continuity review
 
-The mobile Product and Design gates are independently accepted with schedulable P2 debt. Whole-product acceptance remains open. Review current desktop normal and incident tasks, 1366/1440 density, chart truth, object comparison and the 1199/1200 plus 1365/1366 surface transitions before any global pass.
+[Historical Step227 scoped review] The mobile Product and Design gates were independently accepted with schedulable P2 debt for that slice. Whole-product acceptance remained open; this result does not represent current Step798 public acceptance.
 
 - latestStepOutcome: `227:mobile-independent-pass-desktop-whole-product-visual-audit-next`
 
@@ -1097,7 +1100,7 @@ The 900px workspace capability is accepted. At 1199 and 1200 the operator now fo
 
 ### Step233 whole-current acceptance boundary
 
-Current-worktree Product and Design/Visual are accepted with no P0/P1. Remaining desktop header, composite-risk height and resource-chart rhythm findings are one schedulable cross-route template family, not evidence falsity or task failure. The rejected visual P1s contradicted current pixel and DOM geometry and therefore cannot reopen the just-proven responsive contract. Product/design work freezes until Security and Accessibility independently identify the next blocking slice.
+[Historical Step233 scoped review] Product and Design/Visual were accepted for that focused current-worktree slice with no P0/P1. This does not represent Step798 public acceptance; the current authority remains FAIL overall and release closed. The later current-state record, not this historical sentence, controls the release boundary.
 
 - latestStepOutcome: `233:whole-current-product-design-pass-security-accessibility-independent-audits-next`
 

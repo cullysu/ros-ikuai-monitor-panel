@@ -10,7 +10,7 @@
 - 逐步决策过程：`panel-redesign-decision-log.md`
 - 当前决策索引：`decision-system/README.md`
 - 决策镜像：`D:\想法\面板`
-- 当前记录步号：**Step779**（320px/200%证据缺陷与固定 CSS 预算已闭环；独立产品、视觉、route maturity、发布验收仍未通过；GitHub 继续关闭）
+- 当前记录步号：**Step798**（当前工程证据已刷新；Product、Design、Visual、Accessibility、route maturity、RouterOS soak、外部 CL 与公开发布仍未通过；GitHub 继续关闭）
 
 每个材料性切片按以下格式记录：**观察事实 → 写前决定 → 被否决方案 → 红契约 → 实现结果 → 验证证据 → 剩余边界 → 下一步**。这份记录提供可审计的决策摘要和依据，不把模型的私有逐字思考当作文档。
 
