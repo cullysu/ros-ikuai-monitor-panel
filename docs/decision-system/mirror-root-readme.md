@@ -1,11 +1,11 @@
 # RouterOS / iKuai 面板决策仓库
 
-这是当前面板工作的本地决策仓库镜像。Step797 记录了 visual-system-v2 工程切片运行时通过；独立 Product/Design/Visual 公共签收、route maturity、Accessibility、RouterOS soak 和可信外部发布签收仍未完成。
+这是当前面板工作的本地决策仓库镜像。Step798 记录了完整公开矩阵和评审包边界重新验证；独立 Product/Design/Visual 公共签收、route maturity、Accessibility、RouterOS soak 和可信外部发布签收仍未完成。
 
 - status: `current-mirror-entry`
-- currentStep: `797`
-- currentOutcome: `797:visual-system-v2-runtime-green-public-signoff-open`
-- currentBoundary: `797`
+- currentStep: `798`
+- currentOutcome: `798:public-matrix-and-independent-review-boundary-verified-release-open`
+- currentBoundary: `798`
 - authority: `decision-system/current-state.md`
 
 ## 入口

@@ -1,15 +1,16 @@
 # Release Journal
 - status: `current-journal`
-- validForCommit: current clean governance candidate has regenerated exact-SHA evidence; final reports must match the current clean HEAD
+- validForCommit: current worktree contains refreshed engineering evidence and an unsigned acceptance packet; governance is dirty and this is not a release candidate
 - supersededBy: null
-- currentStep: `796`
-- currentOutcome: `796:independent-scoped-signoff-pass-route-maturity-and-release-open`
+- currentStep: `798`
+- currentOutcome: `798:public-matrix-and-independent-review-boundary-verified-release-open`
 - authority: docs/decision-system/current-state.md
 - fullHistory: panel-redesign-decision-log.md
 
-- Step793: scoped independent Design and Visual review closed with PASS; Product remains open because bounded generic evidence fallback and route maturity are not complete.
-- Current evidence: Overview 28/28, route-responsive 76/76 single bounded shard, route-state 266/266 and browser runtime 256/98. The 76-cell shard is not a complete seven-scenario release matrix.
-- Current release remains closed: RouterOS soak, trusted route-owner acceptance, Accessibility acceptance, external exact-SHA Linux/Windows/GHCR CL and GitHub publication are not signed.
+- Historical Step793: scoped independent Design and Visual review closed with PASS; Product remained open because bounded generic evidence fallback and route maturity were not complete.
+- Historical Step796: scoped Product/Architecture/Visual review was recorded while the public boundary remained fail-closed; it does not constitute current public acceptance.
+- Current Step798 evidence: Overview 28/28, route-responsive 76/76 requested cells with bounded-shard release status, route-state 266/266, and browser runtime 256 checks / 98 screenshots / 122 snapshot API calls. These are current engineering evidence only.
+- Current Step798 boundary: Product, Design, Visual, Accessibility, route-owner, RouterOS soak, clean-candidate and external exact-SHA Linux/Windows/GHCR CL acceptance remain open. Current product release and GitHub/public release remain closed.
 
 ## Release rule
 

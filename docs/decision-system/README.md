@@ -2,9 +2,9 @@
 - validForCommit: current clean governance candidate has exact-SHA runtime and declared-scope matrix evidence; not a release candidate
 - supersededBy: null
 - status: `current-index`
-- currentBoundaryForStep: `797`
-- latestRecordedStep: `797`
-- latestStepOutcome: `797:visual-system-v2-runtime-green-public-signoff-open`
+- currentBoundaryForStep: `798`
+- latestRecordedStep: `798`
+- latestStepOutcome: `798:public-matrix-and-independent-review-boundary-verified-release-open`
 - authority: `docs/decision-system/current-state.md`
 
 当前结论由 current-state.md 唯一拥有；本页只负责导航，不重复历史流水账。

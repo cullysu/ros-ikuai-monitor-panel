@@ -24078,3 +24078,15 @@ ocused-green-engineering
 - validForCommit：current worktree evidence only; release candidate not established
 - supersededBy：null
 - latestStepOutcome: `797:visual-system-v2-runtime-green-public-signoff-open`
+
+## 第 798 步：完整公开矩阵与独立评审包重新绑定，发布边界仍保持关闭
+
+- status：public-matrix-and-independent-review-boundary-verified
+- latestStepOutcome: `798:public-matrix-and-independent-review-boundary-verified-release-open`
+- 触发/问题：用户要求继续完成独立签收、视觉评审和所有发布相关工作，不得因为一个门禁尚未关闭就把任务标记为受阻。
+- 观察事实：Step797 的决策入口和历史归档地图曾落后一拍，已修复并通过完整 decision-system；随后当前 HEAD 81bccae8839ab037d108c0527ad1d1de0be486e6 生成 fresh dirty-worktree evidence。runtime 为 256 checks / 98 screenshots / 122 snapshot API calls；Overview 为 7 场景 × 4 视口 28/28；route-responsive 为 19 路由 × 4 视口 76/76 requested cells；route-state 为 19 路由 × 7 场景 × 2 视口 266/266。D:/想法/面板 镜像 14/14 byte-identical。Product/Design/Visual packet 已绑定当前 dirty identity，12 张截图摘要全部匹配，但仍是 prepared-not-signed。独立复核代理确认工程/runtime 截面通过，但由于本地 PNG helper 返回 helper_unknown_error，不能声称完成逐张像素级人工视觉签收。
+- 决策：关闭决策指针失配、当前矩阵缺失和评审包摘要失配这些可由本地完成的问题；保持 Product、Design、Visual、Accessibility、route maturity、route-owner、RouterOS soak、Linux/Windows/GHCR exact-SHA CL 与 GitHub/public release 为开放或关闭状态，不把自动矩阵或代理复核扩大成公众发布通过。
+- 理由与拒绝项：拒绝用旧 SHA、旧截图、dirty evidence 或 28/28 + 76/76 + 266/266 伪造 clean release candidate；拒绝自签独立评审、伪造 Ed25519 key、RouterOS 真实设备 soak 或三端 CL；拒绝把 18 个 bounded-readonly URL 写成完整运维模块。
+- 验证：npm run check:decision-system 通过；check-decision-ledger-sync --sync --mirror D:/想法/面板 通过 14/14；npm run check:runtime-browser 256/98/122 通过；当前 public Overview 28/28、route-responsive 76/76、route-state 266/266 通过；check-product-design-visual-packet.js 通过但 releaseEligible=false；readiness 在明确的 --engineering-worktree 模式下越过当前矩阵，真实停在 route maturity 0/18/0/1。
+- 边界/心得：本轮证明“继续做”与“宣布发布”必须同时成立：本地可验证证据继续补齐，外部不可伪造的签收仍保持红灯。Loop active，blocked=false；下一步只有一个：提交并同步 Step798 的治理与未签名评审包后，在新的 clean candidate 上重跑 exact-SHA runtime/28/76/266，再等待真实独立签收与外部 CL。
+- nextAction：提交并同步 Step798 的治理与未签名评审包后，在新的 clean candidate 上重跑 exact-SHA runtime/28/76/266；随后等待真实 Product/Design/Visual、Accessibility、route-owner、RouterOS soak 与三端 CL 证据
