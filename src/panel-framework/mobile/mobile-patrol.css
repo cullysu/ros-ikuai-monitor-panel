@@ -97,6 +97,11 @@
 }
 
 @media (max-width: 599px) {
+  .mp-incident-copy p {
+    overflow: visible;
+    text-overflow: clip;
+    white-space: normal;
+  }
   .mp-actions > header {
     min-height: 48px;
     padding: 6px 12px;
@@ -953,6 +958,11 @@
    retain two-line actions without sacrificing the 44px touch target.*/
 
 @media (max-width: 599px) {
+  .mp-incident-copy p {
+    overflow: visible;
+    text-overflow: clip;
+    white-space: normal;
+  }
   .mp-actions > header {
     min-height: 48px;
     padding: 6px 12px;

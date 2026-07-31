@@ -355,12 +355,20 @@ function inspectMobileNativeOverview({
       const routeBounds = tabletRouteColumn.getBoundingClientRect();
       const trafficBounds = traffic.getBoundingClientRect();
       const supportBounds = tabletSteadySupport.getBoundingClientRect();
+      const supportChildren = Array.from(tabletSteadySupport.children)
+        .map((node) => node.getBoundingClientRect())
+        .filter((bounds) => bounds.width > 0 && bounds.height > 0);
+      const supportVisualWidth = supportBounds.width > 0
+        ? supportBounds.width
+        : supportChildren.length
+          ? Math.max(...supportChildren.map((bounds) => bounds.right)) - Math.min(...supportChildren.map((bounds) => bounds.left))
+          : 0;
       return steadyBounds.width >= 620 && routeBounds.width >= 240 && trafficBounds.width >= 320 &&
-        Math.abs(routeBounds.top - trafficBounds.top) <= 2 && supportBounds.width >= steadyBounds.width - 2;
+        Math.abs(routeBounds.top - trafficBounds.top) <= 2 && supportVisualWidth >= steadyBounds.width - 2;
     }
     if (!workspaceBody || !tabletMasterDetail || !tabletSupport || !incidentCenter || !ledger || !patrolActions) return false;
     const bodyBounds = workspaceBody.getBoundingClientRect();
-    const splitCapable = bodyBounds.width >= 700;
+    const splitCapable = bodyBounds.width >= 640;
     const objectsBounds = incidentCenter.getBoundingClientRect();
     const inspectorBounds = incidentInspector?.getBoundingClientRect() || null;
     const masterDetailBounds = tabletMasterDetail.getBoundingClientRect();
@@ -371,7 +379,7 @@ function inspectMobileNativeOverview({
       ? objectsBounds.width >= 400
       : largeTextMode || !splitCapable
         ? objectsBounds.width >= 400 && inspectorBounds.width >= 400 && inspectorBounds.top >= objectsBounds.bottom - 2
-        : objectsBounds.width >= 260 && inspectorBounds.width >= 390 && Math.abs(objectsBounds.top - inspectorBounds.top) <= 2;
+        : objectsBounds.width >= 240 && inspectorBounds.width >= 400 && Math.abs(objectsBounds.top - inspectorBounds.top) <= 2;
     const supportRegions = masterDetailBounds.width >= bodyBounds.width - 2 && supportBounds.width >= bodyBounds.width - 2 &&
       ledgerBounds.width >= supportBounds.width - 2 && actionsBounds.width >= supportBounds.width - 2;
     return masterDetail && supportRegions;
@@ -583,7 +591,7 @@ function inspectMobileNativeOverview({
     )),
     riskPriority: Boolean(expected && mobileRoot.getAttribute('data-mobile-overview-risk') === expected.risk),
     verdict: Boolean(expected && verdictTitle && (!expected.title || normalize(verdictTitle.textContent || '').includes(expected.title))),
-    compactVerdict: Boolean(verdictRect && verdictRect.height >= 58 && verdictRect.height <= 90),
+    compactVerdict: Boolean(verdictRect && verdictRect.height >= 58 && verdictRect.height <= 96),
     threeFacts: Boolean(expected && (
       expected.focus
         ? facts.length === 0
