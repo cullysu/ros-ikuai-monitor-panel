@@ -48,11 +48,12 @@ export function MobileResourcePressure({ resource }: { resource: OverviewResourc
       className="mp-resource"
       data-mobile-resource-signal={resource.status}
       data-resource-layer="signal"
+      data-mobile-visual-layer="signal"
       data-resource-layer-question="current-threshold"
       aria-labelledby="mp-resource-title"
     >
       <header>
-        <div><span className="mp-section-kicker">相关信号</span><h2 id="mp-resource-title">资源比较</h2></div>
+        <div><span className="mp-section-kicker">当前阈值</span><h2 id="mp-resource-title">资源压力</h2></div>
         <span className="mp-window">当前采样</span>
       </header>
       <ResourceMetrics resource={resource} />

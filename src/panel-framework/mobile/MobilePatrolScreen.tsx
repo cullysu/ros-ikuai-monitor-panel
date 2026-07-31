@@ -1,5 +1,5 @@
 import { Clock3, LockKeyhole, Router } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo, useState } from "react"; import { mobilePatrolStateStyle } from "./mobilePatrolState";
 import type { PanelNavigate, PanelRouteId } from "../routes/panelRoutes";
 import { type OverviewPanelProps } from "../overview";
 import { buildOverviewEvidenceModel } from "../overview/evidence-model/buildOverviewEvidenceModel";
@@ -137,7 +137,7 @@ export function MobilePatrolScreen({
   ) : null;
   return (
     <main
-      className={`mp-shell is-${model.verdictTone} is-${model.evidenceMode} ${incident ? "has-incident" : "is-steady"} ${compactIncident ? "is-compact-incident" : ""} ${proofFollowsIncident ? "is-narrow-incident-object-first" : ""} ${largeText ? "is-large-text" : ""}`}
+      style={mobilePatrolStateStyle(model.risk)} className={`mp-shell is-${model.verdictTone} is-${model.evidenceMode} ${incident ? "has-incident" : "is-steady"} ${compactIncident ? "is-compact-incident" : ""} ${proofFollowsIncident ? "is-narrow-incident-object-first" : ""} ${largeText ? "is-large-text" : ""}`}
       data-mobile-overview data-visual-grammar="network-console-v1"
       data-mobile-overview-scenario={model.scenario}
       data-mobile-overview-risk={model.risk}
@@ -213,13 +213,15 @@ export function MobilePatrolScreen({
           <div className="mp-workspace-body">
             <div className="mp-workspace-primary">
               {normalPhoneFocusObject}
-              {incidentCenter}{phonePrimaryAction}{compactIncidentActions}
+              {incidentCenter}
               {proofFollowsIncident ? proofStrip : normalPhoneProofStrip}
-              {concurrentRiskQueue}
               {scenarioFocus}
               {resourceSignal}
               {resourceHistory}
               {trafficSignal}
+              {concurrentRiskQueue}
+              {phonePrimaryAction}
+              {compactIncidentActions}
               {normalPhoneNextStep}
               {normalPhoneSteadyDecisions}
               {comparisonList}

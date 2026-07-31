@@ -335,25 +335,35 @@ function priorityObjectsFor(
         ? `连续 ${evidence.trailing} / ${evidence.observed} 个样本 · ${evidence.durationSeconds} 秒`
         : evidence.trailing === 1 ? `连续 1 / ${evidence.observed} 个样本 · 持续时间不可证明` : `最新样本未超阈 · 共 ${evidence.observed} 个`
       : "连续性未取得";
+    const series = resourceEvidenceWindow(snapshot).metrics[leadingResource.key].points;
+    const firstSample = series[0]?.timestamp;
+    const lastSample = series[series.length - 1]?.timestamp;
+    const sampleRange = firstSample !== undefined && lastSample !== undefined
+      ? `${shortTimestamp(new Date(firstSample).toISOString())} → ${shortTimestamp(new Date(lastSample).toISOString())}`
+      : "时间范围未取得";
+    const sampleInterval = series.length > 1 && firstSample !== undefined && lastSample !== undefined
+      ? `${Math.max(1, Math.round((lastSample - firstSample) / ((series.length - 1) * 1000)))} 秒 / 点`
+      : "间隔未取得";
     return {
       total: 1,
       rows: [{
         id: `resource:${leadingResource.key}`,
         category: "系统资源",
         name: leadingResource.label,
-        state: `${Math.round(leadingResource.value)}% · 阈值 ${leadingResource.threshold}%`,
-        reason: `高出 ${Math.round(leadingResource.value - leadingResource.threshold)} 个百分点 · ${continuity}`,
+        state: `${Math.round(leadingResource.value)}% · +${Math.round(leadingResource.value - leadingResource.threshold)}pp`,
+        reason: `策略阈值 ${leadingResource.threshold}% · ${sampleRange} · ${sampleInterval}`,
         tone: "danger",
         route: "trafficLoad",
         targetObjectId: stablePanelObjectId("trafficLoad", "resource", panelObjectIdentityPartsForRaw("trafficLoad", "资源证据", { key: leadingResource.key })),
         sourcePath: "overview + overview.history",
         attributes: [
-          { label: "阈值差", value: `+${Math.round(leadingResource.value - leadingResource.threshold)} 个百分点` },
+          { label: "阈值差", value: `${Math.round(leadingResource.value - leadingResource.threshold)} 个百分点` },
           { label: "连续证据", value: continuity },
           { label: "证据时间", value: evidence.evidenceAt || "未取得" },
-          { label: "样本范围", value: evidence.observed ? `${evidence.observed} 个有效样本` : "未取得" },
+          { label: "样本范围", value: sampleRange },
+          { label: "采样间隔", value: sampleInterval },
           { label: "采样来源", value: "当前快照 + 原子历史样本" },
-        ],
+        ]
       }],
     };
   }

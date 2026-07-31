@@ -1436,163 +1436,17 @@
   }
 }
 
-/*Step789: state-specific mobile visual system.*/
+/*Step789: restrained state boundaries remain data-bound.*/
 
 @media (max-width: 1199px) {
-  .mp-shell {
-    --mp-state-accent: var(--mp-blue-dark);
-    --mp-state-wash: rgba(220, 235, 242, 0.62);
-    --mp-state-line: rgba(47, 113, 143, 0.34);
-  }
-  .mp-shell[data-mobile-risk-kind="wan"],
-  .mp-shell[data-mobile-risk-kind="interfaces"] {
-    --mp-state-accent: #884b4d;
-    --mp-state-wash: rgba(241, 228, 226, 0.82);
-    --mp-state-line: rgba(136, 75, 77, 0.44);
-  }
-  .mp-shell[data-mobile-risk-kind="resource"] {
-    --mp-state-accent: #875c36;
-    --mp-state-wash: rgba(243, 234, 218, 0.86);
-    --mp-state-line: rgba(135, 92, 54, 0.42);
-  }
-  .mp-shell[data-mobile-risk-kind="collection"],
-  .mp-shell[data-mobile-risk-kind="route"],
-  .mp-shell[data-mobile-risk-kind="interface-review"] {
-    --mp-state-accent: #80652f;
-    --mp-state-wash: rgba(243, 235, 216, 0.84);
-    --mp-state-line: rgba(128, 101, 47, 0.42);
-  }
-  .mp-shell[data-mobile-risk-kind="evidence"] {
-    --mp-state-accent: #7e4646;
-    --mp-state-wash: rgba(241, 228, 226, 0.9);
-    --mp-state-line: rgba(126, 70, 70, 0.46);
-  }
   .mp-status-bus {
-    border-left: 3px solid var(--mp-state-accent);
-    background: linear-gradient(90deg, var(--mp-state-wash), rgba(255, 255, 255, 0) 76%);
-  }
-  .mp-command {
-    padding: 8px 14px 9px;
-  }
-  .mp-command-main {
-    grid-template-columns: 32px minmax(0, 1fr);
-    gap: 8px;
-  }
-  .mp-command-icon {
-    width: 32px;
-    height: 32px;
-    border-color: var(--mp-state-line);
-    color: var(--mp-state-accent);
-    background: rgba(255, 255, 255, 0.38);
-    box-shadow: none;
-  }
-  .mp-shell .mp-command h1 {
-    font-size: 21px;
-    letter-spacing: -0.01em;
-  }
-  .mp-shell .mp-command p {
-    color: var(--mp-text);
-  }
-  .mp-shell .mp-evidence-line > span {
-    color: var(--mp-state-accent);
-  }
-  .mp-shell .mp-proof {
-    border-top: 1px solid var(--mp-state-line);
-    background: var(--mp-state-wash);
-  }
-  .mp-shell .mp-proof > div {
-    padding: 9px 10px 10px;
-  }
-  .mp-shell .mp-proof > div + div {
-    border-left: 1px solid var(--mp-state-line);
-  }
-  .mp-shell .mp-proof b {
-    font-size: 15px;
-  }
-  .mp-shell .mp-proof em {
-    margin-top: 2px;
-    line-height: 1.25;
+    box-shadow: inset 0 2px var(--mp-state-accent);
   }
   .mp-shell.has-incident .mp-incident[data-mobile-incident-task-role="primary-risk"] {
-    border-left: 0;
     border-top: 3px solid var(--mp-state-accent);
-    background: var(--mp-state-wash);
-  }
-  .mp-shell.has-incident .mp-incident[data-mobile-incident-task-role="primary-risk"] > header {
-    min-height: 62px;
-    background: transparent;
-  }
-  .mp-shell.has-incident .mp-incident[data-mobile-incident-task-role="primary-risk"] > header > b,
-  .mp-shell.has-incident .mp-incident[data-mobile-incident-task-role="primary-risk"] .mp-incident-copy em {
-    color: var(--mp-state-accent);
-    background: transparent;
-  }
-  .mp-shell.has-incident .mp-incident-row {
-    min-height: 64px;
-    background: rgba(255, 255, 255, 0.28);
-  }
-  .mp-shell.has-incident .mp-incident-row + .mp-incident-row {
-    border-top-color: var(--mp-state-line);
-  }
-  .mp-shell.has-incident .mp-incident-mark {
-    background: var(--mp-state-accent);
-  }
-  .mp-shell.has-incident .mp-incident-copy b {
-    font-size: 15px;
-  }
-  .mp-shell:not(.has-incident) .mp-focus > button {
-    min-height: 60px;
-    padding-top: 6px;
-    padding-bottom: 6px;
-  }
-  .mp-shell:not(.has-incident) .mp-focus {
-    background: rgba(255, 255, 255, 0.32);
-  }
-  .mp-shell .mp-focus-meta small {
-    color: var(--mp-state-accent);
-  }
-  .mp-shell .mp-focus-signal {
-    border-top-color: var(--mp-state-line);
-  }
-  .mp-shell .mp-focus-signal-metric svg,
-  .mp-shell .mp-rate-pair svg {
-    color: var(--mp-state-accent);
-  }
-  .mp-shell .mp-focus-signal-metric:last-child svg,
-  .mp-shell .mp-rate-pair > span:last-child svg {
-    color: var(--mp-blue);
-  }
-  .mp-shell .mp-traffic > header,
-  .mp-shell .mp-load > header {
-    min-height: 48px;
-    padding-top: 6px;
-    padding-bottom: 6px;
-  }
-  .mp-shell .mp-traffic h2,
-  .mp-shell .mp-load h2 {
-    font-size: 16px;
   }
   .mp-shell .mp-decision-ledger-row {
     min-height: 54px;
-    padding-top: 6px;
-    padding-bottom: 6px;
-  }
-  .mp-shell[data-mobile-risk-kind="wan"] .mp-workspace,
-  .mp-shell[data-mobile-risk-kind="interfaces"] .mp-workspace,
-  .mp-shell[data-mobile-risk-kind="evidence"] .mp-workspace {
-    border-color: var(--mp-state-line);
-  }
-  .mp-shell[data-mobile-risk-kind="resource"] .mp-resource,
-  .mp-shell[data-mobile-risk-kind="resource"] .mp-resource-history {
-    border-left: 3px solid var(--mp-state-accent);
-    background: var(--mp-state-wash);
-  }
-  .mp-shell[data-mobile-risk-kind="resource"] .mp-resource-metrics {
-    background: rgba(255, 255, 255, 0.26);
-  }
-  .mp-shell[data-mobile-risk-kind="collection"] .mp-ledger,
-  .mp-shell[data-mobile-risk-kind="evidence"] .mp-ledger {
-    border-left: 3px solid var(--mp-state-accent);
-    background: var(--mp-state-wash);
+    padding-block: 6px;
   }
 }
