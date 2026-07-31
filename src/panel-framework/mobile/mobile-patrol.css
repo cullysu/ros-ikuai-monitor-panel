@@ -1097,12 +1097,6 @@
 }
 
 @media (max-width: 399px) {
-  .mp-phone-next-step-copy b {
-    overflow: visible;
-    overflow-wrap: anywhere;
-    text-overflow: clip;
-    white-space: normal;
-  }
   .mp-shell .mp-action-list > button {
     align-items: start;
     min-height: 62px;
@@ -1110,7 +1104,8 @@
     padding-bottom: 8px;
   }
   .mp-shell .mp-action-list b,
-  .mp-shell .mp-action-list small {
+  .mp-shell .mp-action-list small,
+  .mp-phone-next-step-copy b {
     overflow: visible;
     overflow-wrap: anywhere;
     text-overflow: clip;
