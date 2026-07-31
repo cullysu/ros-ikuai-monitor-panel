@@ -1,11 +1,11 @@
 # RouterOS / iKuai 面板决策仓库
 
-这是当前面板工作的本地决策仓库镜像。Step796 记录了 scoped Product/Architecture/Visual 签收；route maturity 和可信外部发布签收仍未完成。
+这是当前面板工作的本地决策仓库镜像。Step797 记录了 visual-system-v2 工程切片运行时通过；独立 Product/Design/Visual 公共签收、route maturity、Accessibility、RouterOS soak 和可信外部发布签收仍未完成。
 
 - status: `current-mirror-entry`
-- currentStep: `796`
-- currentOutcome: `796:independent-scoped-signoff-pass-route-maturity-and-release-open`
-- currentBoundary: `796`
+- currentStep: `797`
+- currentOutcome: `797:visual-system-v2-runtime-green-public-signoff-open`
+- currentBoundary: `797`
 - authority: `decision-system/current-state.md`
 
 ## 入口
