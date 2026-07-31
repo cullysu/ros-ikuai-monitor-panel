@@ -1452,29 +1452,6 @@
   .mp-status-bus {
     box-shadow: inset 0 2px var(--mp-state-accent);
   }
-  .mp-shell .mp-command {
-    background: var(--nc-surface-primary);
-    box-shadow: inset 3px 0 var(--mp-state-accent);
-  }
-  .mp-shell .mp-proof {
-    background: var(--nc-surface-raised);
-  }
-  .mp-shell.has-incident .mp-incident[data-mobile-incident-task-role="primary-risk"] {
-    border-top: 3px solid var(--mp-state-accent);
-    background: var(--nc-surface-raised);
-  }
-  .mp-shell.has-incident .mp-incident[data-mobile-incident-task-role="primary-risk"] > header {
-    background: var(--nc-surface-quiet);
-  }
-  .mp-shell.has-incident .mp-actions[data-mobile-incident-task-role="follow-up"] {
-    background: var(--nc-surface-primary);
-  }
-  .mp-shell.is-steady .mp-focus {
-    background: var(--nc-surface-raised);
-  }
-  .mp-shell.is-steady .mp-traffic {
-    background: var(--nc-surface-primary);
-  }
   .mp-shell .mp-decision-ledger-row {
     min-height: 54px;
     padding-block: 6px;
