@@ -3137,7 +3137,7 @@ function applyScaleScenario(snapshot, scaleScenario) {
       ? '单 WAN 当前读数可用，但只有一个原子流量样本，趋势仍在积累。'
       : '单 WAN 1/1 在线，活动默认路由与采集时间均有当前证据。', [
       { label: 'WAN', value: '1/1 在线' },
-      { label: '默认路由', value: 'active=true' },
+      { label: '默认路由', value: '当前承载' },
       { label: '采集', value: 'REST + SSH 当前' },
     ]);
   }

@@ -141,6 +141,8 @@ export function MobilePatrolScreen({
       data-mobile-overview data-visual-grammar="network-console-v1"
       data-mobile-overview-scenario={model.scenario}
       data-mobile-overview-risk={model.risk}
+      data-mobile-risk-kind={model.risk}
+      data-mobile-state-mode={model.evidenceMode}
        data-mobile-evidence-mode={model.evidenceMode} data-mobile-compact-incident={compactIncident ? "true" : "false"} data-mobile-incident-primary-action-visibility={incident && !tablet ? "navigation-bounded-v1" : undefined} data-mobile-incident-proof-order={proofFollowsIncident ? "incident-before-proof" : "proof-default"} data-mobile-visual-rhythm={incident ? "incident-ledger-v1" : "steady-ledger-v1"}
       data-mobile-large-text={largeText ? "true" : "false"}
       data-mobile-incident-task-space={incident ? "v2" : "none"}

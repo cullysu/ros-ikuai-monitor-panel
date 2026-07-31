@@ -39,7 +39,7 @@ export function buildTabletComparisonObjects(
     category: "默认路由",
     object: gateway,
     state: "已核实",
-    evidence: "活动记录 · active=true 且未停用",
+    evidence: "活动记录 · 当前承载，未停用",
     source: "routes.defaultRoutes",
     tone: "trust",
     route: "routes",

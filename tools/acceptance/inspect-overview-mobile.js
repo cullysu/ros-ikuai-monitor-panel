@@ -309,7 +309,7 @@ function inspectMobileNativeOverview({
         focusDossier.querySelector('time[datetime]')?.getAttribute('datetime') &&
         /当前出口/.test(normalize(focusDossier.textContent || '')) &&
         /活动默认路由/.test(normalize(focusDossier.textContent || '')) &&
-        /active=true/.test(normalize(focusDossier.textContent || ''))
+        /当前承载/.test(normalize(focusDossier.textContent || ''))
       )
       : Boolean(
       nextDecision &&
@@ -320,7 +320,7 @@ function inspectMobileNativeOverview({
       nextDecisionButton.getAttribute('data-mobile-evidence-at') &&
       /当前核对对象/.test(nextDecisionText) &&
       /活动默认路由/.test(nextDecisionText) &&
-      /active=true/.test(nextDecisionText) &&
+      /当前承载/.test(nextDecisionText) &&
       nextDecisionClippedText.length === 0 &&
       nextDecisionRect &&
       decisionRect &&
