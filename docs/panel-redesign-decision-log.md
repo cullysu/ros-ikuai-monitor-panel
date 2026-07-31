@@ -24029,3 +24029,14 @@ ocused-green-engineering
 - 被否决：不把 28/76/266 矩阵通过写成公众发布通过；不把旧 SHA 截图替代当前 SHA；不把独立视觉签收冒充 owner acceptance、soak 或 CL。
 - 边界与心得：本轮“受阻”是发布门槛仍未满足，不是任务停止。独立设计/视觉签收可以关闭，但公众发布仍须由 Product 完整性、真实路由 owner、RouterOS soak 和精确外部 CL 共同打开。
 - next_action：推进 19 个路由的真实 owner acceptance，逐项把 bounded-readonly / unavailable 转为有证据的 complete，完成后重跑 readiness 与外部 CL 门禁。
+
+## 第794步 — 决策仓库治理修复与当前 exact-SHA 证据再生成
+
+- 触发/问题：Step793 之后发现当前简表仍有两处治理契约缺口：release-journal 的角色标记/完整历史链接缺失，product-loop-current 的 current-handoff 元数据、权威路径和 fail-closed 表述不完整；同时旧文档写着 governance update 未提交，不能继续作为当前事实。
+- 观察事实：check:decision-system 首次运行在 compaction 与 product-loop-handoff 两个文档契约处失败；补齐最小元数据后两个契约均通过。决策系统仍明确 Product/Design/Visual release gate fail-closed，route maturity 仍为 0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable。
+- 决策：只修当前决策入口的元数据、链接和边界表述；不修改产品实现、不把 scoped Design/Visual PASS 扩大成 Product PASS、不把本地矩阵当作远端 CL 或 RouterOS soak。提交治理修复后，重新生成当前 clean HEAD 绑定的 28/76/266 矩阵和浏览器运行时报告。
+- 理由与拒绝项：拒绝批量重写历史步骤、删除旧报告或把 expected-red/quarantined 工件伪装成当前证据。当前指针必须能被机器门禁和 D 盘镜像共同核对，release 仍必须拒绝打开。
+- 验证：文档门禁、报告真值门禁、D:\想法\面板 14 对镜像同步均通过；本步骤提交后必须再次确认 exact-SHA overview 28/28、route-responsive 76/76 bounded shard、route-state 266/266、runtime 256/98，并重新运行 readiness。
+- 边界/心得：这次受阻不是产品代码失败，而是当前决策入口的契约不完整；修复后 Loop 保持 active、blocked=false。工程证据完整不等于公众产品签收，真正剩余的是 19 路由 owner acceptance、Accessibility 独立签收、RouterOS soak、Linux/Windows/GHCR exact-SHA CL。
+- nextAction：推进19个路由的真实owner acceptance，逐项把bounded-readonly或unavailable转换为有证据的complete，完成后重跑readiness与外部CL门禁
+- latestStepOutcome: `794:decision-repository-governance-repair-and-current-exact-sha-evidence-regenerated-product-route-maturity-open`

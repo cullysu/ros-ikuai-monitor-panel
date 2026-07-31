@@ -1,20 +1,20 @@
 - status: `current`
-- currentConclusionForStep: `793`
-- latestRecordedStep: `793`
-- latestStepOutcome: `793:1b857377-exact-sha-matrices-independent-design-visual-pass-product-route-maturity-open`
-- currentBoundaryForStep: `793`
-- validForCommit: source fix 1b857377e92a6f68c086c9f5fab4b237cab3d3e7 has current exact-SHA evidence; governance update is uncommitted; not a release candidate
+- currentConclusionForStep: `794`
+- latestRecordedStep: `794`
+- latestStepOutcome: `794:decision-repository-governance-repair-and-current-exact-sha-evidence-regenerated-product-route-maturity-open`
+- currentBoundaryForStep: `794`
+- validForCommit: current governance evidence is clean and exact-SHA reports are rechecked against the clean HEAD; release decision remains uncommitted; not a release candidate
 - supersededBy: `null`
-- updatedAt: 2026-07-31T18:35:00+08:00
+- updatedAt: 2026-07-31T19:10:00+08:00
 - authority: This is the only human-readable current-state source.
 
-## Current decision record: Step 793
+## Current decision record: Step 794
 
 - status: scoped-design-visual-closed-product-route-maturity-open
-- boundary: Step793 closes the current exact-SHA independent Design and Visual review after fresh runtime and matrix evidence; it does not close Product or public release.
+- boundary: Step794 records the decision-repository repair and current exact-SHA evidence regeneration; it does not close Product or public release.
 - scoped independent signoff: Design PASS / closed; Visual PASS / closed; Product FAIL / open. Product remains open for bounded generic evidence and route maturity.
 - route maturity: 0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable.
-- release: current candidate has clean runtime and 28/76/266 evidence; Product, trusted route owner acceptance, RouterOS soak, external exact-SHA CL and GitHub/public release remain open. Loop active, blocked=false.
+- release: current candidate has clean runtime and regenerated 28/76/266 evidence; Product, trusted route owner acceptance, RouterOS soak, external exact-SHA CL and GitHub/public release remain open. Loop active, blocked=false.
 - Next: obtain real owner acceptance for the 19 routes, then update route maturity only from verifiable evidence.
 
 ## Current conclusion

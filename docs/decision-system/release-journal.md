@@ -1,9 +1,9 @@
 # Release Journal
 - status: `current-journal`
-- validForCommit: source fix 1b857377e92a6f68c086c9f5fab4b237cab3d3e7 has current exact-SHA evidence; final reports must match the current clean HEAD
+- validForCommit: current clean governance candidate has regenerated exact-SHA evidence; final reports must match the current clean HEAD
 - supersededBy: null
-- currentStep: `793`
-- currentOutcome: `793:1b857377-exact-sha-matrices-independent-design-visual-pass-product-route-maturity-open`
+- currentStep: `794`
+- currentOutcome: `794:decision-repository-governance-repair-and-current-exact-sha-evidence-regenerated-product-route-maturity-open`
 - authority: docs/decision-system/current-state.md
 - fullHistory: panel-redesign-decision-log.md
 
@@ -14,3 +14,4 @@
 ## Release rule
 
 Only a clean, independently accepted candidate with complete current-identity matrices, real RouterOS soak evidence, and exact-SHA Linux/Windows/GHCR CL may open the release boundary. Engineering green and scoped Design/Visual PASS are not Product or public-release approval.
+- Step794: repaired current decision-entry metadata, synchronized the D-drive mirror, and preserved the fail-closed Product/public boundary; exact-SHA evidence is regenerated after the governance commit.
