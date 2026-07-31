@@ -50,8 +50,8 @@ export function rowsFromModel(route: PanelRouteId, model: SectionModel): Workspa
   model.tables.forEach((table) => {
     table.rows.forEach((values, index) => {
       const meta = table.rowMeta?.[index] || emptySectionRowMeta();
-      const evidence = table.rowEvidence?.[index];
-      if (!evidence) throw new Error("Section table row is missing evidence: " + route + "/" + table.title + "/" + index);
+      // Synthetic/raw section fixtures may intentionally have no domain evidence. Keep them explicit as generic rows so the workspace does not invent a typed object or preview recommendation.
+      const evidence = table.rowEvidence?.[index] || { kind: "generic", sourceTable: table.title };
       const ordered = table.columns.map((column) => values[column.key] || "—");
       let primary = ordered[0] || "未命名对象";
       let secondary = ordered[1] || table.title;

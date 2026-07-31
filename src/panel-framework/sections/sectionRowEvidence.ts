@@ -11,6 +11,7 @@ import type {
   TerminalRowEvidence,
   EvidenceSeverity,
   SecurityRowEvidence,
+  GenericRowEvidence,
   DnsRowEvidence,
   ResourceRowEvidence,
   ConnectionRowEvidence,
@@ -35,6 +36,7 @@ export type {
   LogNeighborEvidence,
   LogRowEvidence,
   SecurityRowEvidence,
+  GenericRowEvidence,
   DnsRowEvidence,
   ResourceRowEvidence,
   ConnectionRowEvidence,
@@ -255,6 +257,10 @@ function terminalEvidence(title: string, row: UnknownRecord, context: SectionEvi
   };
 }
 
+function genericEvidence(title: string): GenericRowEvidence {
+  return { kind: "generic", sourceTable: title };
+}
+
 function securityEvidence(title: string, row: UnknownRecord): SecurityRowEvidence {
   const time = stringValue(row.time, row.lastConfirmed, row.firstSeen);
   return {
@@ -389,6 +395,7 @@ export function buildSectionRowEvidence(
   if (route === "arp" && title === "ARP 对象") return terminalEvidence(title, row, context);
   if (route === "serviceLogs") return serviceLogEvidence(title, row, context);
   if (route === "logs") return logEvidence(title, row, context);
+  if (route === "arp" && title === "身份告警") return genericEvidence(title);
   if (route === "security") return securityEvidence(title, row);
   if (route === "dns4" || route === "dns6") return dnsEvidence(route, title, row, context);
   if (route === "trafficLoad" || route === "loadAudit") return resourceEvidence(title, row);

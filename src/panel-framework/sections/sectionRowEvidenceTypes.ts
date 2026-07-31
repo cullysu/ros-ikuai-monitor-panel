@@ -110,6 +110,10 @@ export interface LogRowEvidence extends BaseRowEvidence {
   neighbors: LogNeighborEvidence[];
 }
 
+export interface GenericRowEvidence extends BaseRowEvidence {
+  kind: "generic";
+}
+
 export interface SecurityRowEvidence extends BaseRowEvidence {
   kind: "security";
   objectType: "alert" | "rule";
@@ -201,6 +205,7 @@ export type SectionRowEvidence =
   | RouteRowEvidence
   | TerminalRowEvidence | DhcpClientRowEvidence
   | LogRowEvidence
+  | GenericRowEvidence
   | SecurityRowEvidence
   | DnsRowEvidence
   | ResourceRowEvidence

@@ -68,6 +68,8 @@ function DomainInspectorBody({
   if (row.evidence.kind === "resource") return <ResourceInspector row={row} relatedRows={relatedRows} onNavigate={onNavigate} currentRoute={currentRoute} returnRoute={returnRoute} evidenceAt={originEvidenceAt} />;
   if (row.evidence.kind === "connection") return <ConnectionInspector row={row} model={model} onNavigate={onNavigate} evidenceAt={originEvidenceAt || model.observedAt} />;
   if (row.evidence.kind === "diagnostic") return <DiagnosticInspector row={row} current={model.evidenceMode === "current"} />;
+  // Generic/raw rows intentionally have no typed object contract. Do not invent an inspector or preview.
+  if (row.evidence.kind === "generic") return null;
   return assertNeverEvidence(row.evidence);
 }
 function logSeverityLabel(severity: LogRowEvidence["severity"]): string {
