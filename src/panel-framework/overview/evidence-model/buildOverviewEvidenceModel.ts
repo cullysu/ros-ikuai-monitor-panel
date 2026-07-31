@@ -350,7 +350,7 @@ function priorityObjectsFor(
         id: `resource:${leadingResource.key}`,
         category: "系统资源",
         name: leadingResource.label,
-        state: `${Math.round(leadingResource.value)}% · 阈值 ${Math.round(leadingResource.threshold)}% · +${Math.round(leadingResource.value - leadingResource.threshold)}pp`,
+        state: `${Math.round(leadingResource.value)}% · 阈值 ${Math.round(leadingResource.threshold)}%${evidence.observed ? ` · +${Math.round(leadingResource.value - leadingResource.threshold)}pp` : ""}`,
         reason: `高出 ${Math.round(leadingResource.value - leadingResource.threshold)} 个百分点 · ${continuity} · ${sampleRange} · ${sampleInterval}`,
         tone: "danger",
         route: "trafficLoad",
