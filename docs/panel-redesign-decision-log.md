@@ -24064,3 +24064,17 @@ ocused-green-engineering
 - 验证：独立记录保存于 _acceptance/independent-route-evidence-signoff-4f0a5029dc633c1078c28035770a7ff402589259.md；route maturity contract 仍报告 0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable；发布边界保持 FAIL/closed，Loop active，blocked=false。
 - 边界/心得：签收有范围，发布也有范围。关闭一个真实 P1 是进展，但不允许用它遮盖仍未完成的外部证据链；后续必须在文档提交后的新 clean HEAD 重跑 exact-SHA packet，再继续完成真实 owner、Accessibility、RouterOS 和 CL 证据。
 - nextAction：提交 Step796 与 D 盘镜像后，在新的 clean HEAD 上重跑 runtime、28/76/266 和 readiness；再把新 SHA 交给独立复核，随后推进 route-owner、Accessibility、RouterOS soak 与 Linux/Windows/GHCR CL。
+
+## 第797步：视觉系统 v2 工程切片完成，独立公开签收继续开放
+
+- status：visual-system-v2-runtime-green-public-signoff-open
+- 触发/问题：上一轮 focused runtime contract 已经能证明结构与证据语义，但不能把工程绿灯写成公众视觉签收；当前继续修复视觉表面层、手机事故层级、桌面 WAN 图表刻度保护，并同步决策真值。
+- 观察事实：共享 tokens 已统一 canvas、primary/raised/quiet/focus surface 与克制状态色；手机将 command、proof、primary risk、follow-up 分成不同表面；桌面 WAN 图表在首帧按峰值标签预留左侧空间，并继续使用运行时 BBox 校准。当前 dirty worktree 的 types、build、Overview contracts 与 runtime browser 通过：256 checks / 98 screenshots / 122 snapshot API calls，响应式 1365/1366 连续性与平板 task-space 合同也通过。
+- 决策：只关闭本次视觉系统工程切片，不关闭独立 Product/Design/Visual 公开签收，不关闭路由成熟度、Accessibility、RouterOS soak、外部 CL 或 GitHub 发布。任务保持 active、blocked=false；发布门槛开放不等于任务停止。
+- 理由与拒绝项：拒绝把 dirty-worktree 截图当作 exact-SHA 发布包；拒绝自签视觉通过；拒绝用 19 个 URL、自动化矩阵或本地运行时替代真实 route-owner、辅助技术、真实 RouterOS 与 Linux/Windows/GHCR 精确 SHA CL 证据。
+- 验证：focused runtime 通过，但文档/source/generated assets 仍需提交后重新绑定 SHA；route maturity 仍为 0 complete / 18 bounded-readonly / 0 unavailable。
+- 边界/心得：本步证明了视觉语法的工程落地，不证明用户价值或公众发布资格。下一轮必须以最终 clean candidate 重新跑完整矩阵，并让独立评审关闭 Product、Design、Visual 的公开边界；如果外部证据未出现，必须保持 release fail，但继续推进可完成的工作。
+- nextAction：提交并同步 Step797 后，在新的 clean candidate 上重跑 exact-SHA runtime/28/76/266，完成独立 Product/Design/Visual、Accessibility、route-owner、RouterOS soak 与三端 CL 证据。
+- validForCommit：current worktree evidence only; release candidate not established
+- supersededBy：null
+- latestStepOutcome: `797:visual-system-v2-runtime-green-public-signoff-open`

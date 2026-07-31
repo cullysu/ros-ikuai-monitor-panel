@@ -6,6 +6,12 @@ const WIDTH = 760;
 const HEIGHT = 136;
 const BASE_PLOT = { left: 54, right: 18, top: 14, bottom: 28 };
 
+function estimateSvgTextWidth(value: string): number {
+  return Array.from(value).reduce((width, character) => (
+    width + (character.charCodeAt(0) > 255 ? 10 : 7)
+  ), 0);
+}
+
 function pathFor(
   points: OverviewTrafficPoint[],
   key: "down" | "up",
@@ -32,8 +38,13 @@ function timeLabel(timestamp: number): string {
 
 export function DesktopWanEvidence({ traffic, onOpen }: { traffic: OverviewTrafficInstrument; onOpen: () => void }) {
   const peakLabelRef = useRef<SVGTextElement>(null);
-  const [plotLeft, setPlotLeft] = useState(BASE_PLOT.left);
   const hasTrend = traffic.status === "ready" && traffic.points.length >= 2;
+  const estimatedPeakLabelWidth = estimateSvgTextWidth(traffic.peak);
+  const initialPlotLeft = Math.min(
+    Math.floor(WIDTH * 0.28),
+    Math.max(BASE_PLOT.left, Math.ceil(estimatedPeakLabelWidth + 16)),
+  );
+  const [plotLeft, setPlotLeft] = useState(initialPlotLeft);
   const fallbackPoint: OverviewTrafficPoint = { timestamp: Date.now(), down: 0, up: 0 };
   const rawPeak = Math.max(1, ...traffic.points.flatMap((point) => [point.down, point.up]));
   const plot = { ...BASE_PLOT, left: plotLeft };
@@ -54,7 +65,7 @@ export function DesktopWanEvidence({ traffic, onOpen }: { traffic: OverviewTraff
     if (!measured) return;
     const next = Math.min(Math.floor(WIDTH * 0.28), Math.max(BASE_PLOT.left, Math.ceil(measured + 16)));
     setPlotLeft(next);
-  }, [traffic.peak]);
+  }, [traffic.peak, initialPlotLeft]);
 
   return (
     <section

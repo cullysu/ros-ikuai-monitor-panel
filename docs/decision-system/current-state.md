@@ -1,54 +1,58 @@
 - status: `current`
-- currentConclusionForStep: `796`
-- latestRecordedStep: `796`
-- latestStepOutcome: `796:independent-scoped-signoff-pass-route-maturity-and-release-open`
-- currentBoundaryForStep: `796`
-- validForCommit: current governance evidence is clean and exact-SHA reports are rechecked against the clean HEAD; release decision remains uncommitted; not a release candidate
+- currentConclusionForStep: `797`
+- latestRecordedStep: `797`
+- latestStepOutcome: `797:visual-system-v2-runtime-green-public-signoff-open`
+- currentBoundaryForStep: `797`
+- validForCommit: current worktree contains uncommitted visual-system-v2 edits; Step796 exact-SHA evidence is historical and must be rebound after the final commit; not a release candidate
 - supersededBy: `null`
-- updatedAt: 2026-07-31T20:40:00+08:00
+- updatedAt: 2026-07-31T23:30:00+08:00
 - authority: This is the only human-readable current-state source.
 
-## Current decision record: Step 796
+## Current decision record: Step 797
 
-- status: scoped-independent-signoff-pass-route-maturity-open
-- boundary: Step796 records the scoped independent signoff; it does not close route maturity or public release.
-- scoped independent signoff: Product PASS for typed-evidence completeness, Design PASS and Visual PASS are closed for the declared evidence scope; public Product gate remains FAIL because route maturity and external acceptance are incomplete.
+- status: visual-system-v2-runtime-green-public-signoff-open
+- boundary: Step797 records focused engineering and runtime evidence for the shared visual grammar; it does not close independent public Product, Design or Visual acceptance.
+- observed facts: shared surface roles now define canvas, primary/raised/quiet/focus surfaces and restrained state accents; mobile incident hierarchy separates command, proof, primary risk and follow-up planes; desktop WAN evidence reserves plot space for dynamic peak labels. The fresh dirty-worktree run passed types, build, Overview contracts and runtime browser checks (256 checks / 98 screenshots / 122 snapshot API calls), including responsive 1365/1366 continuity and tablet task-space contracts.
+- decision: keep the task active and continue the independent acceptance path. Do not convert green implementation contracts into public visual signoff, and do not reuse Step796 exact-SHA evidence after the source and generated assets changed.
 - route maturity: 0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable.
-- release: current candidate has scoped independent signoff and clean 28/76/266 evidence; final documentation-commit exact-SHA packet must be regenerated, while route-owner acceptance, Accessibility, RouterOS soak, external exact-SHA CL and GitHub/public release remain open. Loop active, blocked=false.
-- Next: rebind exact-SHA evidence on the clean documentation HEAD, then obtain verifiable owner acceptance for the 19 routes and update route maturity only from external evidence.
+- release: GitHub/public release remains closed. The next release candidate must be committed cleanly, regenerate exact-SHA runtime and 28/76/266 evidence, then receive independent Product/Design/Visual, Accessibility, route-owner, RouterOS soak and Linux/Windows/GHCR exact-SHA CL evidence.
+- loop: active, blocked=false. An open release gate is not a stopped task.
 
 ## Current conclusion
 
-**FAIL overall.** Scoped independent Design and Visual reviews are closed with PASS, but Product completeness, route maturity and external release evidence are incomplete; GitHub/public release stays closed.
+**FAIL overall.** The focused visual-system engineering slice is green, but independent public visual acceptance is still open; route maturity, Accessibility, RouterOS soak and external exact-SHA CL evidence are also incomplete. No publication is authorized.
 
-## Scoped independent signoff
+## Independent acceptance boundary
 
 | Review | Status | Boundary |
 |---|---|---|
-| Product | failed / open | Typed route evidence now fails closed; scoped independent Product signoff is closed, but route maturity and trusted acceptance are not complete. |
-| Design | closed / pass | Fresh exact-SHA review passed; not trusted route-owner acceptance. |
-| Visual QA | closed / pass | Fresh exact-SHA review passed with P0=0, P1=0, P2=0; not external CL evidence. |
+| Product | pending / open | Evidence semantics and route maturity remain bounded-readonly; no public completeness claim. |
+| Design | pending / open | Focused implementation contracts are green; no independent public design signoff recorded for Step797. |
+| Visual QA | pending / open | Runtime visual contracts are green; no independent public visual signoff recorded for Step797. |
+| Architecture | focused pass | Shared visual roles and separate mobile/desktop render ownership are verified; this is not release approval. |
 
 ## Current release gates
 
 | Gate | Status | Meaning |
 |---|---|---|
-| Product | failed | Scoped typed-evidence signoff passed; public Product completeness and route maturity remain open. |
-| Design | failed | Scoped review closed; release boundary remains fail-closed until trusted acceptance. |
-| Visual QA | failed | Scoped review closed; release boundary remains fail-closed until trusted acceptance. |
-| Architecture | pass | Focused code contracts are green; this does not grant release. |
+| Product | pending | Route maturity and trusted owner acceptance remain open. |
+| Design | pending | Step797 requires fresh independent review on the final clean candidate. |
+| Visual QA | pending | Step797 runtime contracts do not replace human visual acceptance. |
+| Architecture | pass | Focused code/runtime contracts are green; this does not grant release. |
 | Security | pass | Verified default-local, read-only boundary only. |
 | Accessibility | pending | Automation is not independent assistive-technology acceptance. |
-| State Matrix | pass | Current exact-SHA 28/76/266 evidence is complete for declared scopes. |
+| State Matrix | pending | Dirty-worktree runtime is not an exact-SHA release packet; regenerate after commit. |
 | Route maturity | pending | No route is complete; 18 bounded-readonly and 1 unavailable. |
 | RouterOS soak | pending | No current long-running real-device evidence. |
-| Release hygiene | pending | Post-governance exact-SHA packet and external CL remain. |
+| Release hygiene | pending | Final clean candidate, external CL and publication chain remain.
 
 ## Open review boundaries
 
-- Step793 independent Design and Visual review is closed for the declared current-SHA evidence scope.
-- Typed fallback is closed; Product release remains open because route maturity and route-level trusted acceptance remain.
+- Step797 closes only the focused engineering slice for shared visual surfaces and responsive runtime behavior.
+- Product, Design and Visual public acceptance must be rebound to the final clean candidate; no self-signoff is recorded.
 - No remote GitHub, Linux, Windows, GHCR, RouterOS or published-environment evidence is claimed.
+
+## Document authority
 
 ## Document authority
 

@@ -1,11 +1,11 @@
 @media (min-width: 1200px) {
   .do-shell {
-    --do-canvas: #eaf0f2;
-    --do-surface: #f9fbfc;
-    --do-surface-soft: #eef4f6;
-    --do-surface-strong: #e1ecef;
+    --do-canvas: var(--nc-canvas);
+    --do-surface: var(--nc-surface-raised);
+    --do-surface-soft: var(--nc-surface-quiet);
+    --do-surface-strong: var(--nc-surface-primary);
     --do-line: #b7c8cf;
-    --do-line-soft: #d5e0e4;
+    --do-line-soft: var(--nc-line-soft);
     --do-ink: #102a36;
     --do-copy: #3f5965;
     --do-muted: #5b727c;
