@@ -1,11 +1,11 @@
 # RouterOS / iKuai 面板决策仓库
 
-这是当前面板工作的本地决策仓库镜像。Step794 记录了决策入口修复和当前 exact-SHA 证据再生成；Product、route maturity 和可信外部发布签收仍未完成。
+这是当前面板工作的本地决策仓库镜像。Step796 记录了 scoped Product/Architecture/Visual 签收；route maturity 和可信外部发布签收仍未完成。
 
 - status: `current-mirror-entry`
-- currentStep: `794`
-- currentOutcome: `794:decision-repository-governance-repair-and-current-exact-sha-evidence-regenerated-product-route-maturity-open`
-- currentBoundary: `794`
+- currentStep: `796`
+- currentOutcome: `796:independent-scoped-signoff-pass-route-maturity-and-release-open`
+- currentBoundary: `796`
 - authority: `decision-system/current-state.md`
 
 ## 入口

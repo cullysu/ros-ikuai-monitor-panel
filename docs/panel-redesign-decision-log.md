@@ -24040,3 +24040,27 @@ ocused-green-engineering
 - 边界/心得：这次受阻不是产品代码失败，而是当前决策入口的契约不完整；修复后 Loop 保持 active、blocked=false。工程证据完整不等于公众产品签收，真正剩余的是 19 路由 owner acceptance、Accessibility 独立签收、RouterOS soak、Linux/Windows/GHCR exact-SHA CL。
 - nextAction：推进19个路由的真实owner acceptance，逐项把bounded-readonly或unavailable转换为有证据的complete，完成后重跑readiness与外部CL门禁
 - latestStepOutcome: `794:decision-repository-governance-repair-and-current-exact-sha-evidence-regenerated-product-route-maturity-open`
+
+## 第795步：移除通用证据兜底并收紧发布边界
+
+- status: candidate-product-boundary-repaired-independent-signoff-in-progress
+- latestStepOutcome: `795:typed-route-evidence-fallback-removed-product-boundary-narrowed-release-still-closed`
+- trigger/problem: the previous independent Product review found that section rows could still fall into a generic record detail. That could turn "data exists" into an unsupported claim that a complete operations module exists. The work must continue through independent signoff instead of being labeled as a blocked task.
+- observed facts: GenericRowEvidence and BoundedRecordInspector generic branches were removed; balance rules use explicit balance-rule evidence; DHCP clients use explicit dhcp-client evidence; the overview route-record row uses explicit route evidence; missing row evidence now fails; the more directory is explicitly unavailable instead of being routed through routeModel. MobileNativeDetail has dedicated read-only inspectors for the new types and production paths no longer use default evidence fallback.
+- decision: keep evidence-first and fail-closed behavior. Typed route evidence may enter a dedicated inspector, but it must not automatically claim a complete operations module. Do not use arbitrary first rows, zero defaults, generic inspectors, or missing-value fallbacks. Independent Product/Design/Visual review must bind new candidates and new screenshots.
+- rejected: do not claim route maturity from 19 URLs or character count; do not treat local matrices as trusted route-owner acceptance, RouterOS soak, independent accessibility acceptance, or Linux/Windows/GHCR exact-SHA CL; do not fabricate Ed25519 external signatures.
+- verification: code candidate 4f0a5029dc633c1078c28035770a7ff402589259 passed check:types, check:overview, check:runtime-browser, check:report-truth, security, read-only, static asset and asset identity gates; Overview 28/28, route responsive 76/76 (single bounded shard), and route state 266/266 passed. check-route-maturity-contract --contract-only still truthfully reports 0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable, so release eligibility remains closed.
+- boundary/lesson: this step closes the generic evidence fallback product-completeness gap only; it cannot close route maturity. Green engineering matrices prove only that the declared scope runs. They do not prove complete public product behavior, sustained real-device collection, or an external release-chain signature. Loop remains active and blocked=false; an unmet release gate is not a stopped task.
+- nextAction: after committing this step and syncing D:\想法\面板, regenerate exact-SHA runtime and 28/76/266 evidence on the new clean HEAD, complete fresh independent Product/Design/Visual review, then continue real route-owner, accessibility, RouterOS soak and Linux/Windows/GHCR CL evidence.
+
+## 第796步 — 独立 Product / Architecture / Visual 范围签收关闭，公众发布继续关闭
+
+- status: scoped-independent-signoff-pass-route-maturity-open
+- latestStepOutcome: `796:independent-scoped-signoff-pass-route-maturity-and-release-open`
+- 触发/问题：本轮独立复核已经完成，不能继续把已关闭的视觉与通用 evidence P1 留在“未签收”状态；同时不能把局部签收越权写成公众发布通过。
+- 观察事实：独立审查绑定代码候选 4f0a5029dc633c1078c28035770a7ff402589259，确认 Product（typed evidence fallback 范围）、Architecture 和 Visual（运行时语义范围）PASS。GenericRowEvidence、BoundedRecordInspector、空 row evidence 和未知 route/title fallback 均已关闭；runtime 256 checks / 98 screenshots，Overview 28/28，route state 266/266，route responsive 76/76 requested cells 通过，但该 responsive shard 仍 complete=false、releasePass=false。
+- 决策：关闭本轮 scoped Product/Architecture/Visual signoff，并保留公众 Product gate FAIL。把 route maturity、真实 route-owner acceptance、独立无障碍验收、RouterOS soak、外部 Linux/Windows/GHCR exact-SHA CL 和外部签名作为独立发布门，不用本地审查代替。
+- 理由与拒绝项：拒绝把视觉 PASS、局部 Product PASS 或自动矩阵改写成公众产品 PASS；拒绝将“19 个 URL”当作 19 个完整运维模块；拒绝伪造外部签名、真实设备 soak 或三端 CL。独立审查还记录了本地 PNG helper 未加载，因此本记录只声明语义视觉合同与 exact-SHA 截图身份范围，不宣称逐张像素级人工检查。
+- 验证：独立记录保存于 _acceptance/independent-route-evidence-signoff-4f0a5029dc633c1078c28035770a7ff402589259.md；route maturity contract 仍报告 0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable；发布边界保持 FAIL/closed，Loop active，blocked=false。
+- 边界/心得：签收有范围，发布也有范围。关闭一个真实 P1 是进展，但不允许用它遮盖仍未完成的外部证据链；后续必须在文档提交后的新 clean HEAD 重跑 exact-SHA packet，再继续完成真实 owner、Accessibility、RouterOS 和 CL 证据。
+- nextAction：提交 Step796 与 D 盘镜像后，在新的 clean HEAD 上重跑 runtime、28/76/266 和 readiness；再把新 SHA 交给独立复核，随后推进 route-owner、Accessibility、RouterOS soak 与 Linux/Windows/GHCR CL。
