@@ -7,6 +7,8 @@ const {
   buildSnapshot,
   buildMatrixSummary,
   matrixArtifactKey,
+  refreshOverviewWanRates,
+  setSnapshotFresh,
   scenarioMatrixGate,
 } = require('./local-predeploy-check');
 
@@ -192,6 +194,22 @@ function testBrowserFixturesUseAtomicTimezoneQualifiedTraffic() {
   }
 }
 
+function testMissingWanRatesRemainUnavailable() {
+  const snapshot = buildSnapshot('public', 'single');
+  const activeWan = snapshot.wan.find((row) => row.running !== false && row.disabled !== true);
+  assert.ok(activeWan, 'single fixture must contain an active WAN row');
+  activeWan.upRate = undefined;
+  activeWan.downRate = null;
+  refreshOverviewWanRates(snapshot);
+  assert.equal(snapshot.overview.uplinkBps, null, 'missing upload observation must remain unavailable');
+  assert.equal(snapshot.overview.downlinkBps, null, 'missing download observation must remain unavailable');
+  setSnapshotFresh(snapshot);
+  const samples = snapshot.overview.history.trafficSamples;
+  assert.ok(samples.length >= 2, 'fixture should retain the atomic sample sequence');
+  assert.ok(samples.every((sample) => sample.uplink === null && sample.downlink === null), 'missing WAN rates must not become zero-valued samples');
+  assert.ok(samples.every((sample) => sample.evidenceMode === 'unavailable'), 'missing WAN rates must carry unavailable evidence');
+}
+
 function testTrafficAccumulatingIsDiagnosticAndAtomic() {
   const snapshot = buildSnapshot('public', 'traffic-accumulating');
   const samples = snapshot.overview?.history?.trafficSamples || [];
@@ -289,6 +307,7 @@ testBoundedCapabilityMatrixFailureStillBlocks();
 testReleaseScenarioDenominatorHasOneOwner();
 testBrowserFixturesUseAtomicTimezoneQualifiedTraffic();
 testTrafficAccumulatingIsDiagnosticAndAtomic();
+testMissingWanRatesRemainUnavailable();
 testScreenshotAnchorAnalyzerRejectsMissingLayers();
 testDirtyWorktreeArtifactsCannotUseCommitReleaseKey();
 console.log('local-predeploy matrix contract: 11/11 passed');

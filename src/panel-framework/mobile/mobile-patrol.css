@@ -18,14 +18,28 @@
     border-top: 1px solid var(--mp-line);
     border-left: 0;
   }
+  .mp-proof {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
   .mp-proof > div {
     display: grid;
-    grid-template-columns: minmax(82px, 0.8fr) minmax(0, 1.2fr);
+    grid-template-columns: minmax(0, 1fr) auto;
     align-items: baseline;
-    gap: 4px 10px;
+    gap: 2px 8px;
+    padding: 8px 9px 9px;
+  }
+  .mp-proof > div + div {
+    border-top: 0;
+    border-left: 1px solid var(--mp-line);
+  }
+  .mp-proof > div:nth-child(3) {
+    grid-column: 1 / -1;
+    border-top: 1px solid var(--mp-line);
+    border-left: 0;
   }
   .mp-proof em {
-    grid-column: 2;
+    grid-column: 1 / -1;
+    margin-top: 1px;
   }
   .mp-traffic-body,
   .mp-load > div {

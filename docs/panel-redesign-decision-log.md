@@ -24132,3 +24132,17 @@ ocused-green-engineering
 - validForCommit：current worktree evidence only; release candidate not established
 - supersededBy：null
 
+
+## 第 802 步： continue independent acceptance; close locally verifiable evidence and 320px visual slice
+
+- status: candidate-local-evidence-and-visual-p2-fixed-external-signoff-open
+- latestStepOutcome: `802:missing-rate-evidence-and-320px-visual-p2-fixed-review-open`
+- trigger/problem: The task must continue instead of being marked blocked. Missing rates could be coerced to zero, the 320px proof strip was vertically stacked, and formal visual/release acceptance was still open.
+- observed facts: The worktree is based on 220bb1cd6d7e5045e2c2e3dd656e4f26ec7e937d with uncommitted fixes. The matrix contract is 11/11, atomic traffic history passes, and rebuilt production runtime is 257 checks / 101 screenshots / 130 snapshot API calls with zero failures. Product review passes only the engineering/P1 scope and fails formal acceptance because route maturity is 0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable. Design/Visual review closes scoped visual P1 and reports scoped visual quality PASS, while formal signoff remains pending.
+- decision: Close the missing-rate pseudo-zero risk, unavailable traffic regression and 320px proof slice. Rebind runtime, matrices and packet on a new clean candidate. Keep formal Product/Design/Visual signatures, Accessibility, route-owner acceptance, RouterOS soak, Linux/Windows/GHCR exact-SHA CL and GitHub/public release fail-closed.
+- rejected: Do not turn agent review into trusted external signature; do not call dirty runtime, matrix green or screenshot count public acceptance; do not add meaningless filler to the 1440px empty area; do not promote bounded-readonly routes to complete.
+- verification: test-local-predeploy-matrix-contract.js 11/11; check:atomic-traffic-history PASS; check:overview product checks PASS with only the dirty exact-clean evidence gate red; check:runtime-browser 257/101/130. The image helper returned helper_unknown_error, so no pixel-level manual sign-off is claimed.
+- boundary: This is not a blocked task. It is an open release boundary. Visual P1 is closed in scoped review; formal Visual signoff is not closed.
+- nextAction: Commit the source/test change, refresh clean exact-SHA runtime, 28/76/266 matrices and packet, then continue external acceptance and three-platform CL.
+- validForCommit: current worktree evidence only; release candidate not established
+- supersededBy: null

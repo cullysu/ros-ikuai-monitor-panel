@@ -2669,16 +2669,23 @@ function setSnapshotFresh(snapshot) {
   if (history && trafficSamples.length) {
     const nowMilliseconds = Date.parse(now);
     const wanRows = Array.isArray(snapshot.wan) ? snapshot.wan.filter((row) => row.running !== false && row.disabled !== true) : [];
-    const currentDown = wanRows.reduce((total, row) => total + Number(row.downRate || 0), 0);
-    const currentUp = wanRows.reduce((total, row) => total + Number(row.upRate || 0), 0);
+    const observedWanTotal = (field) => {
+      if (!wanRows.length) return null;
+      const values = wanRows.map((row) => typeof row?.[field] === 'number' ? row[field] : null);
+      return values.every((value) => Number.isFinite(value) && value >= 0)
+        ? values.reduce((total, value) => total + value, 0)
+        : null;
+    };
+    const currentDown = observedWanTotal('downRate');
+    const currentUp = observedWanTotal('upRate');
     const factors = [0.72, 0.81, 0.76, 0.9, 0.94, 1];
     history.trafficSamples = trafficSamples.map((sample, index) => ({
       ...sample,
       timestamp: new Date(nowMilliseconds - (trafficSamples.length - 1 - index) * 5_000).toISOString(),
-      uplink: Math.round(currentUp * factors[Math.max(0, factors.length - trafficSamples.length + index)]),
-      downlink: Math.round(currentDown * factors[Math.max(0, factors.length - trafficSamples.length + index)]),
+      uplink: currentUp === null ? null : Math.round(currentUp * factors[Math.max(0, factors.length - trafficSamples.length + index)]),
+      downlink: currentDown === null ? null : Math.round(currentDown * factors[Math.max(0, factors.length - trafficSamples.length + index)]),
       source: sample.source || 'scenario-fixture',
-      evidenceMode: sample.evidenceMode || 'current',
+      evidenceMode: currentUp === null || currentDown === null ? 'unavailable' : (sample.evidenceMode || 'current'),
     }));
     snapshot.meta.rateHistoryUpdatedAt = now;
     snapshot.meta.rateHistorySampleCount = trafficSamples.length;
@@ -2705,8 +2712,15 @@ function setCollectionHealthy(snapshot) {
 
 function refreshOverviewWanRates(snapshot) {
   const wan = Array.isArray(snapshot.wan) ? snapshot.wan : [];
-  const upTotal = wan.reduce((sum, row) => sum + Number(row.upRate || 0), 0);
-  const downTotal = wan.reduce((sum, row) => sum + Number(row.downRate || 0), 0);
+  const observedTotal = (field) => {
+    if (!wan.length) return null;
+    const values = wan.map((row) => typeof row?.[field] === 'number' ? row[field] : null);
+    return values.every((value) => Number.isFinite(value) && value >= 0)
+      ? values.reduce((sum, value) => sum + value, 0)
+      : null;
+  };
+  const upTotal = observedTotal('upRate');
+  const downTotal = observedTotal('downRate');
   snapshot.overview.uplinkBps = upTotal;
   snapshot.overview.downlinkBps = downTotal;
   snapshot.overview.wanUpRate = upTotal;
@@ -3090,12 +3104,7 @@ function applyScaleScenario(snapshot, scaleScenario) {
     active: row.active,
     comment: '',
   }));
-  const upTotal = wan.reduce((sum, row) => sum + row.upRate, 0);
-  const downTotal = wan.reduce((sum, row) => sum + row.downRate, 0);
-  snapshot.overview.uplinkBps = upTotal;
-  snapshot.overview.downlinkBps = downTotal;
-  snapshot.overview.wanUpRate = upTotal;
-  snapshot.overview.wanDownRate = downTotal;
+  refreshOverviewWanRates(snapshot);
   snapshot.overview.onlineTerminals = terminals.length;
   snapshot.overview.terminalCount = terminals.length;
   snapshot.overview.interfaceCount = snapshot.interfaces.length;
@@ -3343,6 +3352,8 @@ module.exports = {
   matrixArtifactKey,
   recordNotApplicable,
   requestsRequiredOverviewMatrix,
+  refreshOverviewWanRates,
+  setSnapshotFresh,
   scenarioMatrixGate,
   reportNestedPassFalsePaths,
 };

@@ -2,9 +2,9 @@
 - validForCommit: current clean governance candidate has exact-SHA runtime and declared-scope matrix evidence; not a release candidate
 - supersededBy: null
 - status: `current-index`
-- currentBoundaryForStep: `801`
-- latestRecordedStep: `801`
-- latestStepOutcome: `801:independent-review-current-visual-pass-public-release-open`
+- currentBoundaryForStep: `802`
+- latestRecordedStep: `802`
+- latestStepOutcome: `802:missing-rate-evidence-and-320px-visual-p2-fixed-review-open`
 - authority: `docs/decision-system/current-state.md`
 
 当前结论由 current-state.md 唯一拥有；本页只负责导航，不重复历史流水账。
@@ -15,3 +15,6 @@
 - 当前发布边界：release-journal.md
 - 完整历史：../panel-redesign-decision-log.md
 - 历史索引：historical-index.md
+
+
+Task remains active and blocked=false; an open release gate is not a reason to stop work.
