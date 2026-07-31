@@ -23948,13 +23948,12 @@ ocused-green-engineering
 - 边界/心得：产品、设计、视觉独立签收，完整状态矩阵、路由成熟度、RouterOS soak、Accessibility、readiness、精确 SHA Linux/Windows/GHCR CL 与 GitHub/public release 仍未关闭。Loop active、blocked=false；当前 failure 是 release gate drift，不是任务阻塞。
 - Next: 重跑 `check:overview` 与该平板合同，修复本步引入的任何真实回归后再记录结果。
 
-## 第 787 步：普通平板决策流门禁仍写死 release-ineligible；继续修正同源断言
+## 第 787 步：普通平板决策流门禁 exact-SHA clean focused-green；发布继续关闭
 
-- status: `implementation-pending-verification`
-- latestStepOutcome: `787:tablet-normal-decision-flow-runtime-gate-implementation-pending-verification-release-closed-loop-active`
-- 触发与事实：候选 `eb78d46bef9fcbc805e77d7ed0f6bf14eab64c60` 的运行时报告保持 `pass=true`、`worktreeClean=true`、`releaseEvidenceEligible=true`；Step786 修正后 `npm run check:overview` 只剩 `tablet-normal-decision-flow-v1` 这一处陈旧断言，仍要求 `releaseEvidenceEligible=false`。
-- 决策：将普通平板决策流门禁绑定共享当前 HEAD、clean worktree、fingerprint 和 `releaseEvidenceEligible=true`；保留一列决策流、分隔线、768px 纵向布局和原始截图检查。
-- 理由与拒绝项：这是与 Step786 相同的过渡期 gate drift，不是新产品红灯；删除运行时条件、改变布局条件、跳过 Overview 或把其它合同结果代替本门禁均拒绝。
-- 验证：尚未修改本门禁或重跑 Overview，因此不能标记 focused-green。
-- 边界/心得：产品、设计、视觉独立签收，完整矩阵、路由成熟度、RouterOS soak、Accessibility、readiness、精确 SHA Linux/Windows/GHCR CL 与 GitHub/public release 仍未关闭。Loop active、blocked=false。
-- Next: 实施普通平板决策流的 exact-SHA clean runtime 断言，重跑 Overview 并处理下一个真实失败项。
+- status: `focused-green-engineering`
+- latestStepOutcome: `787:tablet-normal-decision-flow-runtime-gate-focused-green-release-closed-loop-active`
+- 触发与事实：`b8564aaeafa33c36540b44f2f1183b58ab26de18` 的 production runtime 通过 256 checks / 98 screenshots / 122 snapshotApiCalls，报告绑定当前 commit、clean worktree、fingerprint 和 releaseEvidenceEligible=true；Overview 的 tablet-normal-decision-flow-v1 已从陈旧的 release-ineligible 断言恢复为当前证据契约。
+- 决策：保留一列决策流、垂直分隔线、768px 纵向几何和截图检查，只改运行时身份断言。
+- 验证：生产 build（1899 modules）、production runtime 和 npm run check:overview 全部通过；连续性与决策流两个门禁均 focused-green。
+- 边界/心得：这是工程 gate drift 修复，不是 Product/Design/Visual 签收。完整矩阵、route maturity、RouterOS soak、Accessibility、readiness、精确 SHA CL 与 GitHub/public release 仍关闭；Loop active、blocked=false。
+- Next: 为 `b8564aaeafa33c36540b44f2f1183b58ab26de18` 生成完整 overview/route 状态矩阵并进入独立签收。

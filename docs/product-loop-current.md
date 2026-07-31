@@ -1,20 +1,20 @@
 - status: `current-handoff`
-- validForCommit: candidate eb78d46bef9fcbc805e77d7ed0f6bf14eab64c60 has clean build/runtime evidence; Overview awaits Step787 verification and is not a release candidate
+- validForCommit: candidate b8564aaeafa33c36540b44f2f1183b58ab26de18 has build/runtime/Overview focused-green evidence; not a release candidate
 - currentHandoffForStep: `787`
 - supersededBy: `docs/decision-system/current-state.md`
 - updated: 2026-07-31
 - latestRecordedStep: `787`
-- latestStepOutcome: `787:tablet-normal-decision-flow-runtime-gate-implementation-pending-verification-release-closed-loop-active`
+- latestStepOutcome: `787:tablet-normal-decision-flow-runtime-gate-focused-green-release-closed-loop-active`
 - currentConclusion: **FAIL overall**. This handoff routes evidence only; it cannot sign Product/Design/Visual.
 - process: docs/decision-system/current-state.md is the sole authority; docs/panel-redesign-decision-log.md is the detailed chronology.
 
-## Current handoff: Step787 tablet-normal-decision-flow gate implementation; release remains closed
+## Current handoff: Step787 tablet decision-flow gate focused-green; release remains closed
 
-- Result: Candidate eb78d46 has clean runtime evidence; the next obsolete release-ineligible assertion is isolated and awaits correction.
-- Decision: align tablet-normal-decision-flow with shared exact-SHA clean runtime identity while preserving all decision-flow geometry.
-- Boundary: this is a gate correction only; independent acceptance, full matrix, route maturity, soak, accessibility, readiness and exact-SHA CL remain open.
+- Result: Candidate b8564aa has clean build/runtime/Overview evidence; both stale tablet runtime gates are focused-green.
+- Decision: require complete current-identity matrices and independent acceptance before release.
+- Boundary: engineering is focused-green only; independent acceptance, full matrix, route maturity, soak, accessibility, readiness and exact-SHA CL remain open.
 - Loop state: active, blocked=false. Release blockage and task blockage are separate states.
-- Next: implement the gate correction, rerun Overview/tablet checks, then regenerate complete current-identity evidence.
+- Next: regenerate complete overview/route evidence, then obtain independent Product/Design/Visual signoff.
 
 ## Gate boundary
 

@@ -1,25 +1,25 @@
-- status: `current`
+- status: `focused-green-engineering`
 - currentConclusionForStep: `787`
 - latestRecordedStep: `787`
-- latestStepOutcome: `787:tablet-normal-decision-flow-runtime-gate-implementation-pending-verification-release-closed-loop-active`
+- latestStepOutcome: `787:tablet-normal-decision-flow-runtime-gate-focused-green-release-closed-loop-active`
 - currentBoundaryForStep: `787`
-- validForCommit: candidate eb78d46bef9fcbc805e77d7ed0f6bf14eab64c60 has clean build/runtime evidence; Overview awaits Step787 verification and is not a release candidate
+- validForCommit: candidate b8564aaeafa33c36540b44f2f1183b58ab26de18 has build/runtime/Overview focused-green evidence; not a release candidate
 - supersededBy: `null`
-- updatedAt: `2026-07-31T08:36:39+08:00`
+- updatedAt: `2026-07-31T08:46:04+08:00`
 - authority: This is the only human-readable current-state source. Historical journals, contracts, reports, and machine state may provide evidence but may not override this page.
 
 ## Current decision record: Step 787
 
 - status: `focused-green-engineering`
-- boundary: Step787 corrects the next stale tablet decision-flow runtime eligibility assertion; verification is still open.
+- boundary: Step787 closes the second stale tablet runtime-gate drift; current engineering evidence is clean exact-SHA.
 - Product/Design/Visual: `failed` / unsigned. R07 mobile visual maturity, R09 tablet space efficiency, R10 desktop density/task efficiency and R14 cross-surface product grammar remain open.
 - route maturity: `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`; no route is promoted to a complete module.
-- release: candidate eb78d46 has clean build/runtime evidence, but Overview verification after the next gate correction is pending; no GitHub upload, exact-SHA CL, RouterOS soak or public release exists. Loop is active and blocked=false.
-- Next: implement the exact-SHA clean assertion in tablet-normal-decision-flow, rerun Overview, then regenerate complete current-identity matrices.
+- release: candidate b8564aa is engineering-focused-green; independent acceptance, full matrices, readiness, exact-SHA CL and public release remain open. Loop active, blocked=false.
+- Next: regenerate complete overview/route state matrices, then obtain independent Product/Design/Visual signoff.
 
 ## Current conclusion
 
-**FAIL overall.** The current candidate is awaiting verification of another stale tablet runtime-gate correction. Independent Product/Design/Visual acceptance, route maturity, accessibility, soak, release hygiene and exact-SHA CL remain open. GitHub/public release stays closed.
+**FAIL overall.** Engineering is focused-green, but product acceptance and release evidence are incomplete; GitHub/public release stays closed.
 
 ## Current release gates
 
