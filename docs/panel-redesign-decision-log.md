@@ -24006,7 +24006,7 @@ ocused-green-engineering
 ## 第 792 步：收回验收别名真值冲突；当前产品与视觉证据保持可审计
 
 - status: current-artifact-truth-repaired-independent-review-in-progress
-- latestStepOutcome: 792:acceptance-alias-truth-repaired-focused-contracts-green-release-closed
+- latestStepOutcome: `792:acceptance-alias-truth-repaired-focused-contracts-green-release-closed`
 - 触发与事实：用户最新复核指出报告可能出现顶层 pass=true 与子检查失败并存，以及决策仓库可能有多个 current 真值。复核当前 HEAD 79baa157ac511dd139d24f19501c2f90bd996e6e 后，精确 SHA 的 Overview、route responsive 和 route state 报告没有嵌套 pass=false；tools/local-predeploy-check.js 已由 finalizeReportTruth 将失败子检查、嵌套失败和不完整 required matrix 收敛到顶层失败。真正复现的门禁问题是 18 个旧的 current/worktree 别名目录仍声明 releaseEvidenceEligible=true，触发 check-acceptance-artifact-identity.js 的 ambiguous-artifact-claims-current。
 - 决策与取舍：只在 _acceptance 内移动这些历史/别名目录到不含 current、worktree 或 working-tree 身份词的归档目录，不删除报告；保留带 exact SHA 的报告作为唯一当前候选，并继续让历史子失败报告由 quarantine policy 明确拒绝。没有放宽顶层真值、没有把 bounded shard 的 pass=false 改绿、没有把 Product/Design/Visual 独立复核冒充外部可信签名。
 - 同步确认的现有修复：trafficSamples 是原子 timestamp/uplink/downlink/source/evidenceMode 记录；生产时间输出与前端解析均要求 RFC3339 时区；旧 hash 只作迁移输入且 canonical URL 只写 query；sidecar resolver 做根目录 containment；对象 ID 使用 locale-independent normalization；移动日志详情提供时间、主题、来源、邻接、身份新证据；移动动作携带 object/evidenceAt/returnRoute；1365/1366 共用桌面任务语法；平板容量与 768/844 master-detail 有真实 runtime 合同；route maturity 仍诚实为 0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable。
@@ -24014,3 +24014,18 @@ ocused-green-engineering
 - 未解决发布边界：本步骤没有真实 route owner acceptance、RouterOS 长时 soak、外部 Linux/Windows/GHCR exact-SHA CL 或外部可信签名；GitHub/public release 继续关闭。自动 hooks 仍未完成实际会话验收，手工 Harness checkpoint 继续作为运行状态证据。
 - 心得：current 这个目录名不是证据。验收工件必须把历史、工作树、当前候选、精确 SHA 分成互不含糊的身份层；否则即使报告本身已 fail-closed，目录发现器仍会把旧文件带回发布候选，制造第二种假绿。
 - Next: 等待本轮全新独立 Product/Design/Visual 复核完成；若其 P0/P1 为零，更新唯一 current-state 与 D 盘镜像，提交文档后重新生成文档提交对应 exact-SHA 证据，再检查 route maturity/readiness，之后仍只等待真实 route owner、RouterOS soak 与三端 CL。
+
+## 第 793 步：完成当前精确 SHA 的独立视觉签收；把产品边界与发布边界分开
+
+- 状态：current-scoped-design-visual-closed-product-release-open
+- latestRecordedStep: `793`
+- latestStepOutcome: `793:1b857377-exact-sha-matrices-independent-design-visual-pass-product-route-maturity-open`
+- 触发：用户要求未完成的独立签收、视觉评审和发布资格不能停留在“受阻”标记，必须继续补齐证据并按真实门槛关闭。
+- 事实：源码修复提交为 1b857377e92a6f68c086c9f5fab4b237cab3d3e7；MobileDomainInspector 已删除旧 GenericInspector，改为 BoundedRecordInspector，详情增加路由字段、状态、对象 ID、来源表、成功时间、关系边界和重复记录数。
+- 事实：check:types、build、check:overview、check:runtime-browser、check:report-truth 通过；运行时绑定该 SHA，256 checks、98 screenshots、releaseEvidenceEligible=true、worktreeClean=true，无嵌套 pass=false。
+- 事实：当前精确矩阵为 Overview 28/28、路由响应式 76/76（19 路由 × 4 视口的 single bounded shard，顶层不完整是预期）、路由状态 266/266（19 路由 × 7 场景 × 2 视口）。
+- 事实：最终只读独立复核确认 Design PASS、Visual PASS、Product FAIL，P0=0、P1=2、P2=0；P1 是 generic evidence bounded fallback 的产品完整性边界，以及 18 个 bounded-readonly / 1 个 unavailable 路由尚未完成独立成熟度。
+- 决策：关闭本轮有范围的 exact-SHA 独立 Design review 和 Visual review；Product、route maturity、RouterOS soak、远程 exact-SHA Linux/Windows/GHCR CL 和 GitHub 发布继续 fail-closed。
+- 被否决：不把 28/76/266 矩阵通过写成公众发布通过；不把旧 SHA 截图替代当前 SHA；不把独立视觉签收冒充 owner acceptance、soak 或 CL。
+- 边界与心得：本轮“受阻”是发布门槛仍未满足，不是任务停止。独立设计/视觉签收可以关闭，但公众发布仍须由 Product 完整性、真实路由 owner、RouterOS soak 和精确外部 CL 共同打开。
+- next_action：推进 19 个路由的真实 owner acceptance，逐项把 bounded-readonly / unavailable 转为有证据的 complete，完成后重跑 readiness 与外部 CL 门禁。

@@ -1,11 +1,11 @@
 # RouterOS / iKuai 面板决策仓库
 
-这是当前面板工作的本地决策仓库镜像。Step791 已完成 exact-SHA 工程矩阵与独立 Product/Design/Visual 复核；route maturity 和可信外部发布签收仍未完成。
+这是当前面板工作的本地决策仓库镜像。Step793 已关闭有范围的 exact-SHA 独立 Design/Visual 复核；Product、route maturity 和可信外部发布签收仍未完成。
 
 - status: `current-mirror-entry`
-- currentStep: `791`
-- currentOutcome: `791:fea12e1-exact-sha-independent-route-product-design-visual-pass-p0p1-zero-p2-nonblocking`
-- currentBoundary: `791`
+- currentStep: `793`
+- currentOutcome: `793:1b857377-exact-sha-matrices-independent-design-visual-pass-product-route-maturity-open`
+- currentBoundary: `793`
 - authority: `decision-system/current-state.md`
 
 ## 入口

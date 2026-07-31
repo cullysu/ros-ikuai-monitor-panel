@@ -1,25 +1,20 @@
 - status: `reference`
-- validForCommit: candidate fea12e1ff82aa82e098cb3497d68a671a52c8f88 has build/runtime/Overview focused-green evidence; not a release candidate
+- validForCommit: source fix 1b857377e92a6f68c086c9f5fab4b237cab3d3e7 has current exact-SHA evidence; final reports must always match the current clean HEAD
 - supersededBy: `null`
 - authority: `docs/decision-system/current-state.md`
-- currentStep: `791`
-- currentOutcome: `791:fea12e1-exact-sha-independent-route-product-design-visual-pass-p0p1-zero-p2-nonblocking`
-- currentBoundary: `791`
-- latestRecordedStep: `791`
-- latestStepOutcome: `791:fea12e1-exact-sha-independent-route-product-design-visual-pass-p0p1-zero-p2-nonblocking`
+- currentStep: `793`
+- currentOutcome: `793:1b857377-exact-sha-matrices-independent-design-visual-pass-product-route-maturity-open`
+- currentBoundary: `793`
+- latestRecordedStep: `793`
+- latestStepOutcome: `793:1b857377-exact-sha-matrices-independent-design-visual-pass-product-route-maturity-open`
 
 ## Current pointer
 
 The current authority is current-state.md. This page is discovery only and does not own product truth.
 
-- Current conclusion: FAIL overall; engineering is focused-green, route maturity and trusted external release gates remain unsigned.
-- Current engineering boundary: stale tablet runtime gates are focused-green on the current clean SHA; full exact-SHA matrices passed; trusted external acceptance remains open.
-- Latest result: Step791 records the exact-SHA full matrix and independent Product/Design/Visual route signoff; next is final post-document-commit exact-SHA evidence refresh.
-- Full process: ../panel-redesign-decision-log.md.
-- History map: historical-index.md.
-- Product handoff: ../product-loop-current.md.
+- Current conclusion: FAIL overall; scoped Design/Visual independent review is closed, Product and trusted external release gates remain unsigned.
+- Current engineering boundary: current runtime and exact declared-scope matrices are green; the 76-cell route report remains a single-scenario bounded shard.
+- Latest result: Step793 closes scoped independent Design/Visual review after current exact-SHA evidence; Product remains open for bounded generic evidence and route maturity.
+- Full process: panel-redesign-decision-log.md.
+- Product handoff: product-loop-current.md.
 - Release boundary: release-journal.md.
-
-## Record contract
-
-Material steps are recorded in the historical journal with trigger/problem, facts, decision, rejected alternatives, verification, boundary/lesson and one next action. This index is not a second chronology or current conclusion.
