@@ -24090,3 +24090,30 @@ ocused-green-engineering
 - 验证：npm run check:decision-system 通过；check-decision-ledger-sync --sync --mirror D:/想法/面板 通过 14/14；npm run check:runtime-browser 256/98/122 通过；当前 public Overview 28/28、route-responsive 76/76、route-state 266/266 通过；check-product-design-visual-packet.js 通过但 releaseEligible=false；readiness 在明确的 --engineering-worktree 模式下越过当前矩阵，真实停在 route maturity 0/18/0/1。
 - 边界/心得：本轮证明“继续做”与“宣布发布”必须同时成立：本地可验证证据继续补齐，外部不可伪造的签收仍保持红灯。Loop active，blocked=false；下一步只有一个：提交并同步 Step798 的治理与未签名评审包后，在新的 clean candidate 上重跑 exact-SHA runtime/28/76/266，再等待真实独立签收与外部 CL。
 - nextAction：提交并同步 Step798 的治理与未签名评审包后，在新的 clean candidate 上重跑 exact-SHA runtime/28/76/266；随后等待真实 Product/Design/Visual、Accessibility、route-owner、RouterOS soak 与三端 CL 证据
+
+## 第 799 步：精确矩阵完成；未签名评审包重新绑定；发布继续关闭
+
+- status: exact-sha-matrices-and-unsigned-packet-refreshed-release-closed
+- latestStepOutcome: `799:exact-sha-28-76-266-and-packet-identity-verified-independent-signoff-open`
+- trigger/problem: The task must continue through independent acceptance and release gates rather than being labeled blocked. Local evidence may be closed only at its real scope; implementation checks must not impersonate independent signatures.
+- observed facts: Candidate 93c740a523b0bd9187d72ee6aa51317a49564936 produced clean exact-SHA engineering evidence: Overview 28/28, route-responsive bounded shard 76/76, route-state 266/266; runtime-browser passed 256 checks, 101 screenshots and 125 snapshot API calls. After the governance packet was refreshed, the worktree is intentionally dirty, the runtime identity remains the same commit with worktreeClean=false and releaseEvidenceEligible=false, and the packet contract passes with 12/12 screenshot digests. The packet remains prepared-not-signed; Product, Design and Visual are pending; selfSignoff=false; releaseEligible=false.
+- observed facts: Public readiness finds the matrix evidence but stops at route maturity: 0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable. This is an unmet product and external evidence gate, not a stopped task.
+- decision: Close only the local exact-matrix, packet-identity/digest and lineStatus automated-accessibility evidence slices. Keep Product, Design, Visual, Accessibility, route-owner, RouterOS soak, Linux/Windows/GHCR exact-SHA CL and GitHub/public release fail-closed.
+- rejected: No self-signing; no promotion of 28/76/266 automation to public acceptance; no claim that 18 bounded-readonly URLs are complete operations modules; no fabricated RouterOS soak, external CL, trusted Ed25519 signature or GitHub publication.
+- verification: Overview complete=true passed=28 failed=0; route-responsive 76/76; route-state complete=true total=266 passed=266 failed=0; dirty runtime 256/101/125 passes; packet contract passes with all 12 digests; route maturity honestly returns contractPass=true, acceptanceComplete=false, pass=false.
+- boundary/lesson: Continue by closing every locally verifiable slice without turning non-forgeable external acceptance into green. Engineering evidence complete does not mean public product complete. Loop remains active, blocked=false.
+- nextAction: Advance real owner acceptance for the 18 bounded-readonly routes, independent accessibility/visual review, RouterOS soak and Linux/Windows/GHCR exact-SHA CL; after each real evidence item, synchronize the decision repository and rerun readiness.
+
+## 第 800 步：异常态键盘与无障碍运行门禁补齐，独立签收仍保持开放
+
+- status：focused-green-engineering-release-closed
+- latestStepOutcome: `800:abnormal-keyboard-runtime-green-independent-signoff-open`
+- 触发/问题：用户要求继续完成未关闭的独立签收与视觉验收，不能因为外部签名尚未到达就停止本地可推进工作；Design 评审还指出异常场景缺少键盘证据。
+- 观察事实：在生产浏览器门禁中新增 all-offline、no-snapshot、collection-down、resource-full、interfaces-down 五种 Overview 异常态的 Tab 焦点可见性、控件命名、aria-controls 目标完整性、主操作可达性与横向溢出检查；同时把桌面任务导航的 aria-label 从“手机主要任务”纠正为跨端一致的“主要任务”。首次运行暴露了门禁仍硬编码旧标签和错误主操作选择器，已分别修正并重新运行。
+- 决策：关闭本地可验证的异常态键盘覆盖切片；继续保持 Product、Design、Visual、独立 Accessibility、route maturity、RouterOS soak、Linux/Windows/GHCR exact-SHA CL 和 GitHub/public release fail-closed。
+- 理由与拒绝项：拒绝把自动 Tab 检查写成独立辅助技术签收；拒绝把五种异常态存在按钮写成业务完整性；拒绝因为测试第一次失败就标记任务 blocked，先修正测试与实现契约再复跑。
+- 验证：node --check tools/check-panel-runtime-browser.js 通过；npm run check:runtime-browser 通过，报告为 257 checks / 101 screenshots / 130 snapshot API calls；报告中的异常键盘检查通过，既有 mobile/desktop/tablet 回归也通过。
+- 边界/心得：这一步证明异常态仍可被键盘巡检并保持可达，不证明独立辅助技术签收，也不改变 18 个 bounded-readonly 路由和外部发布门槛。当前任务保持 active、blocked=false。
+- nextAction：以当前工作树身份刷新 unsigned product/design/visual packet 与 D 盘镜像，提交本轮代码/测试/治理变化后重跑 exact-SHA 28/76/266、完整静态与 release readiness；继续推进真实 route owner、独立签名、RouterOS soak 与三端 CL。
+- validForCommit: current worktree evidence only; release candidate not established
+- supersededBy：null

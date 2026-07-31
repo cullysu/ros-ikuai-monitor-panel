@@ -3160,7 +3160,7 @@ async function main() {
           node.role === 'button' && node.name === name
         ))),
         routeHeadingExposed: nodes.some((node) => node.role === 'heading' && node.name === normalizedTitle),
-        primaryNavigationExposed: nodes.some((node) => node.role === 'navigation' && node.name === '手机主要任务'),
+        primaryNavigationExposed: nodes.some((node) => node.role === 'navigation' && (node.name === '主要任务' || node.name === '手机主要任务')),
         currentRoutePropertyExposed: nodes.some((node) => (
           node.role === 'button' && node.name === navNames.find((name) => name === currentRoute) &&
           (node.properties.current === 'page' || node.properties.selected === true)
@@ -3803,6 +3803,85 @@ async function main() {
         backRowFocus,
       }
     );
+    const abnormalKeyboardScenarios = ['all-offline', 'no-snapshot', 'collection-down', 'resource-full', 'interfaces-down'];
+    const abnormalKeyboardResults = [];
+    for (const scenario of abnormalKeyboardScenarios) {
+      mock.state.scenario = scenario;
+      const abnormalKeyboardTarget = new URL(mock.url);
+      abnormalKeyboardTarget.searchParams.set('section', 'overview');
+      await accessibilityPage.goto(abnormalKeyboardTarget.toString(), { waitUntil: 'domcontentloaded' });
+      await waitForPhase(accessibilityPage, 'current', 12000);
+      await accessibilityPage.locator('[data-mobile-overview]').waitFor();
+      await accessibilityPage.evaluate(() => {
+        if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
+        document.body.tabIndex = -1;
+        document.body.focus({ preventScroll: true });
+      });
+      let focusedControl = null;
+      for (let index = 0; index < 80; index += 1) {
+        await accessibilityPage.keyboard.press('Tab');
+        const candidate = await accessibilityPage.evaluate(() => {
+          const node = document.activeElement;
+          if (!(node instanceof HTMLElement)) return null;
+          const rect = node.getBoundingClientRect();
+          const style = getComputedStyle(node);
+          const name = (node.getAttribute('aria-label') || node.textContent || '').replace(/\s+/g, ' ').trim();
+          return {
+            tag: node.tagName,
+            name,
+            visible: style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0,
+            focusStyle: style.outlineStyle,
+            focusWidth: Number.parseFloat(style.outlineWidth || '0'),
+          };
+        });
+        if (candidate?.visible && candidate.name) {
+          focusedControl = candidate;
+          break;
+        }
+      }
+      const result = await accessibilityPage.evaluate(() => {
+        const isVisible = (node) => {
+          const style = getComputedStyle(node);
+          const rect = node.getBoundingClientRect();
+          return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0;
+        };
+        const controls = Array.from(document.querySelectorAll(
+          'button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), summary, [tabindex]:not([tabindex="-1"])'
+        )).filter(isVisible);
+        const controlName = (node) => {
+          const labelledBy = (node.getAttribute('aria-labelledby') || '')
+            .split(/\s+/)
+            .filter(Boolean)
+            .map((id) => document.getElementById(id)?.textContent || '')
+            .join(' ');
+          const labels = 'labels' in node && node.labels
+            ? Array.from(node.labels).map((label) => label.textContent || '').join(' ')
+            : '';
+          return (node.getAttribute('aria-label') || labelledBy || labels || node.textContent || '').replace(/\s+/g, ' ').trim();
+        };
+        return {
+          unnamedControls: controls.filter((node) => !controlName(node)).length,
+          orphanControls: controls.filter((node) => {
+            const targetId = node.getAttribute('aria-controls');
+            return Boolean(targetId && !document.getElementById(targetId));
+          }).length,
+          actionCount: document.querySelectorAll('[data-overview-task-landmark="investigation-primary"]').length,
+          evidenceMode: document.querySelector('[data-mobile-overview]')?.getAttribute('data-mobile-evidence-mode') || '',
+          overflow: document.documentElement.scrollWidth - innerWidth,
+        };
+      });
+      abnormalKeyboardResults.push({ scenario, focusedControl, ...result });
+    }
+    check(
+      checks,
+      'abnormal overview scenarios keep keyboard focus visible and actionable without orphan controls',
+      abnormalKeyboardResults.every((result) => (
+        result.focusedControl?.visible && result.focusedControl.focusStyle !== 'none' && result.focusedControl.focusWidth >= 2 &&
+        result.unnamedControls === 0 && result.orphanControls === 0 && result.actionCount > 0 && result.overflow <= 1
+      )),
+      abnormalKeyboardResults
+    );
+    mock.state.scenario = '';
     await accessibilityCdp.send('Accessibility.disable');
     await accessibilityPage.close();
 

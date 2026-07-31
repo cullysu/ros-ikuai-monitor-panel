@@ -2,8 +2,8 @@
   "packetVersion": 1,
   "status": "prepared-not-signed",
   "purpose": "independent product design visual review input only",
-  "validForCommit": "through Step798",
-  "currentDecisionStep": 798,
+  "validForCommit": "through Step800",
+  "currentDecisionStep": 800,
   "currentRelease": "closed",
   "claims": {
     "product": "pending-independent-review",
@@ -88,62 +88,62 @@
   "note": "Automation and implementation-owner inspection may prepare evidence but cannot set these signatures to pass.",
   "evidenceRoot": "_acceptance/panel-runtime-browser",
   "evidenceReport": "_acceptance/panel-runtime-browser/report.json",
-  "preparedAt": "2026-07-31T16:19:08.737Z",
+  "preparedAt": "2026-07-31T18:52:14.839321Z",
   "candidateIdentity": {
-    "commit": "81bccae8839ab037d108c0527ad1d1de0be486e6",
-    "worktreeFingerprint": "ffcd031e291d3a98cdc19b747f15da7fb0fb17beac3235b5682392ce42a9ea23",
-    "artifactKey": "worktree-81bccae8839a-ffcd031e291d",
+    "commit": "93c740a523b0bd9187d72ee6aa51317a49564936",
+    "worktreeFingerprint": "9cbaefa8f5c87c08292fc76891f8e7dcd2cd48fefe555da77b02c5a8c5ddd485",
+    "artifactKey": "worktree-93c740a523b0-9cbaefa8f5c8",
     "worktreeClean": false,
     "releaseEvidenceEligible": false
   },
   "evidenceFiles": [
     {
       "path": "mobile-runtime-current.png",
-      "sha256": "3d232071b4979595c8253ba276354ea1b1562c9b5a974ed7a5b8bfab55f64bc7"
+      "sha256": "b03b23fd01b91dbd2b243c9e6c0712ab971a72e29c9e5c51afa1c8a1d2ce5f57"
     },
     {
       "path": "mobile-composite-risk-390.png",
-      "sha256": "7f14e813a3bfef9b3a60448f2b4e87ef63f52cf79b0b5bcf0619cbb884120eec"
+      "sha256": "91b427bd1e7e165040f3d3a37d92a2f130b7236b1fd482e8e580344e4eeb8796"
     },
     {
       "path": "mobile-composite-risk-375.png",
-      "sha256": "281130e6038f846fc3811a071b114347cb4bc62e3fd7d8085a8f86a45805be68"
+      "sha256": "cfbc0cff2748964a4c5b92d902280f0d871973b0a61bc1fc9ac4de4d6348f756"
     },
     {
       "path": "mobile-log-explicit-detail-390.png",
-      "sha256": "a1fa8ea4a7b26a65ecbd96acd3bc36c3140de18081f63a62deef1ac98880bf64"
+      "sha256": "cae037b21f704058a27b18099fa00cf4b0a026e872ca3fb98775b5722c0b7153"
     },
     {
       "path": "tablet-overview-normal-768.png",
-      "sha256": "f4a0e85b4c5deb1cdc0bc9481c622ad17096302d4c8dfd175eeee9b508902a32"
+      "sha256": "e3ed9e53ae3dbcdabd8144cc58c25996595e3ff8a516fc0dc0eacd7754c9a63d"
     },
     {
       "path": "tablet-overview-master-detail-844.png",
-      "sha256": "df5a4721fdd301213bb2130d412a36681c9ddf3bffb22a1e9070e281feb557da"
+      "sha256": "60a258832aed096ee2d492b8021ab9ff8f435ddcddd955d05680d9cecba6dcd6"
     },
     {
       "path": "tablet-interface-review-844.png",
-      "sha256": "18eaf7c54b947bd19cb7eb371c0a9f9f1377e5015b2c44f19a3f7548a4cc3b87"
+      "sha256": "af558237fe0c590e5a5175e2927b1ee7f104149d48751b99864278c971056d1a"
     },
     {
       "path": "tablet-resource-investigation-context-768.png",
-      "sha256": "09b00c4e1f486bcf5c9af15c3b1099c07373896f0f4e40e55a707b5bb3d5fcb2"
+      "sha256": "35cb8b0e181af196a647c937bf2c6ceb9148486cfa274b7828cf3753aa2830fc"
     },
     {
       "path": "overview-normal-task-1366.png",
-      "sha256": "3d99344d74bb474df110d6c5ec016756e1498218b18a0bd89366311ebe46a009"
+      "sha256": "b6469907e7c5f61ad61608aa93e9a76573c1c035b2ff2db36b6cf6ec001e32b2"
     },
     {
       "path": "overview-normal-task-1440.png",
-      "sha256": "e247f0edadb6b25b92be14f3fcbe41f2826153643975d330289bcc92a3615adf"
+      "sha256": "44106460b3b85891b554e5a91c3fb4d5969c62d5c28a56963589002ba726f0bc"
     },
     {
       "path": "desktop-resource-timeseries-1366.png",
-      "sha256": "4a3b13adb360b712b3681f3860b20cef65a5d19a59bf0ac62ee88ec422a3749b"
+      "sha256": "c2bd8f90ef4421286b5e1bbbffc9075fb46c913289657cfcacfb62be4c9f1e0d"
     },
     {
       "path": "desktop-overview-wan-axis-1366.png",
-      "sha256": "203b80bf7caa121eabddd1d161417dfa97dadb1c71c1a549b313829516764e8c"
+      "sha256": "032631e4592a9e65e3ce82213b082318955fcaf85489df48bca4679319ad5d76"
     }
   ]
 }
