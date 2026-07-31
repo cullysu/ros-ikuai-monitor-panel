@@ -1,18 +1,18 @@
 - status: `current`
-- currentConclusionForStep: `802`
-- latestRecordedStep: `802`
-- latestStepOutcome: `802:missing-rate-evidence-and-320px-visual-p2-fixed-review-open`
-- currentBoundaryForStep: `802`
+- currentConclusionForStep: `804`
+- latestRecordedStep: `804`
+- latestStepOutcome: `804:css-budget-root-fix-and-exact-sha-rebind-open`
+- currentBoundaryForStep: `804`
 - validForCommit: uncommitted governance evidence contains exact-SHA matrices, dirty runtime evidence and an unsigned packet; not a release candidate
 - supersededBy: `null`
-- updatedAt: 2026-08-01T03:00:00+08:00
+- updatedAt: 2026-08-01T06:35:00+08:00
 - authority: This is the only human-readable current-state source.
 
-## Current decision record: Step 802
+## Current decision record: Step 804
 
-- status: candidate-local-evidence-and-visual-p2-fixed-external-signoff-open
-- boundary: Step802 closes the current visual P1, desktop 1440 density fix and scoped independent review; it does not close formal public acceptance.
-- observed facts: Candidate 220bb1cd6d7e5045e2c2e3dd656e4f26ec7e937d has Overview 28/28, route-responsive 76/76, route-state 266/266 and dirty runtime 257 checks / 101 screenshots / 130 snapshot API calls; the new runtime includes five abnormal overview keyboard scenarios. The current packet is prepared-not-signed and the worktree evidence is intentionally release-ineligible.
+- status: css-budget-root-fix-and-exact-sha-rebind-open
+- boundary: Step804 refreshes the clean exact-SHA engineering candidate and current governance packet; it does not close formal public acceptance.
+- observed facts: Candidate cdfbee9cfe1bfbb43703d31980041317900e6309 has Overview 28/28, route-responsive 76/76, route-state 266/266 and dirty runtime 257 checks / 101 screenshots / 130 snapshot API calls; the new runtime includes five abnormal overview keyboard scenarios. The current packet is prepared-not-signed; the CSS budget root fix is now bound to the current candidate; governance edits make the current evidence worktree-dirty and intentionally release-ineligible.
 - packet: packet contract passes with 12/12 current screenshot digests, but remains prepared-not-signed; Product scope and current visual scope are reviewed, but formal external acceptance is pending; selfSignoff=false; releaseEligible=false.
 - decision: Keep public release FAIL/closed until route maturity, trusted independent signatures, RouterOS soak and external exact-SHA CL exist.
 
@@ -62,6 +62,6 @@
 Every material step records trigger/problem, facts, decision, rejected alternatives, verification, boundary and exactly one next action.
 
 
-## Step802 local closure
+## Step804 local closure
 
 The task remains active and blocked=false. Missing WAN rates no longer become zero-valued evidence in the predeploy fixture; the regression is covered by the 11/11 matrix contract. The 320px proof strip is now two columns plus a full-width third fact. The rebuilt runtime passed 257 checks, 101 screenshots and 130 snapshot API calls. Scoped Visual P1 is closed; formal Product/Design/Visual acceptance, route maturity, Accessibility, RouterOS soak and external CL remain pending.

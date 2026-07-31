@@ -2,9 +2,9 @@
 - validForCommit: current clean governance candidate has exact-SHA runtime and declared-scope matrix evidence; not a release candidate
 - supersededBy: null
 - status: `current-index`
-- currentBoundaryForStep: `802`
-- latestRecordedStep: `802`
-- latestStepOutcome: `802:missing-rate-evidence-and-320px-visual-p2-fixed-review-open`
+- currentBoundaryForStep: `804`
+- latestRecordedStep: `804`
+- latestStepOutcome: `804:css-budget-root-fix-and-exact-sha-rebind-open`
 - authority: `docs/decision-system/current-state.md`
 
 当前结论由 current-state.md 唯一拥有；本页只负责导航，不重复历史流水账。

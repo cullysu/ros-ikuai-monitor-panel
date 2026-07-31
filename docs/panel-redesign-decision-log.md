@@ -24146,3 +24146,31 @@ ocused-green-engineering
 - nextAction: Commit the source/test change, refresh clean exact-SHA runtime, 28/76/266 matrices and packet, then continue external acceptance and three-platform CL.
 - validForCommit: current worktree evidence only; release candidate not established
 - supersededBy: null
+
+## 第 803 步：clean exact-SHA 工程矩阵刷新，正式签收继续开放
+
+- status：clean-engineering-candidate-refreshed-formal-signoff-open
+- latestStepOutcome: `803:clean-exact-sha-matrix-refresh-formal-signoff-open`
+- 触发/问题：用户要求继续推进未关闭的独立签收、视觉评审与发布资格，不能把门禁红灯当作任务 blocked；上一轮代码修复已提交，但新的正式候选必须重新绑定完整工程证据。
+- 观察事实：代码候选 4527d815a3454dc666fe322708380293e2c7141 在提交后工作树 clean；clean exact-SHA 运行时为 257 checks / 101 screenshots / 130 snapshot API calls，Overview 为 28/28，route-responsive 为 76/76 bounded cells，route-state 为 266/266。
+- 决策：保留 exact-SHA 候选与三组矩阵作为工程证据；同步 Step803 决策仓库和未签名 Product/Design/Visual packet 后，必须再刷新当前 dirty governance identity 的 runtime 与矩阵，不能直接复用 clean report。
+- 理由与拒绝项：拒绝自签 Product/Design/Visual，拒绝把 bounded-readonly 路由写成完成模块，拒绝伪造 Accessibility、RouterOS soak、Linux/Windows/GHCR exact-SHA CL；正式发布继续 FAIL/closed。
+- 验证：clean candidate 的 Overview 28/28、route-responsive 76/76、route-state 266/266 已真实运行；packet 仍 prepared-not-signed、selfSignoff=false、releaseEligible=false。
+- 边界/心得：这不是任务阻塞，而是发布边界继续显露真实缺口。工程矩阵绿灯只证明覆盖和当前代码身份，不证明公众产品签收。
+- nextAction：刷新治理 dirty identity 下 runtime、28/76/266 与 packet digest，运行 readiness、全量静态/安全/无障碍检查；继续取得真实 route-owner、独立 Accessibility、RouterOS soak 与三端 CL 证据。
+- validForCommit：code candidate exact-SHA evidence plus current governance state; release candidate not established
+- supersededBy：null
+
+## 第 804 步：CSS 预算根因修复，重新绑定 exact-SHA 发布证据
+
+- status：css-budget-root-fix-exact-sha-rebind-formal-signoff-open
+- latestStepOutcome: `804:css-budget-root-fix-and-exact-sha-rebind-open`
+- 触发/问题：第803步 readiness 暴露 framework style raw bytes 为 120240，超过 120000；不能放宽预算，也不能把旧矩阵继续当作新候选证据。
+- 观察事实：删除移动巡检359px规则中的重复声明和样式注释后，提交 cdfbee9cfe1bfbb43703d31980041317900e6309 的 style raw bytes 降到 119984，gzip 18979、Brotli 15941、desktopStyle 33923，framework asset budget 通过。
+- 决策：接受预算根因修复，废弃 e4527d8 的矩阵身份，重新绑定 cdfbee9 的 runtime、Overview、route-responsive、route-state 与 packet；继续保持正式签收和公开发布关闭。
+- 理由与拒绝项：不修改预算阈值，不删除移动端证据，不把 CSS 预算通过写成视觉签收，不伪造 Product/Design/Visual、Accessibility、route-owner、RouterOS soak 或三端 CL。
+- 验证：npm run build、TypeScript、framework asset budget 已通过；新候选的 exact-SHA 运行时与三组矩阵须在治理同步后重新运行。
+- 边界/心得：发布门不是停机开关；每个红灯都必须变成可定位的修复或保留为真实未签收项。
+- nextAction：同步第804步后刷新 dirty identity 的 runtime、28/76/266、packet digests 和 readiness，继续完成独立 Product/Design/Visual/Accessibility、route-owner、RouterOS soak 与 Linux/Windows/GHCR exact-SHA CL。
+- validForCommit：current code candidate plus governance-dirty evidence; release candidate not established
+- supersededBy：null

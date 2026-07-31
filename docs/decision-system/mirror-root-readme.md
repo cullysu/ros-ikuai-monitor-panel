@@ -1,11 +1,11 @@
 # RouterOS / iKuai 面板决策仓库
 
-这是当前面板工作的本地决策仓库镜像。Step802 记录了完整公开矩阵和评审包边界重新验证；独立 Product/Design/Visual 公共签收、route maturity、Accessibility、RouterOS soak 和可信外部发布签收仍未完成。
+这是当前面板工作的本地决策仓库镜像。Step804 记录了完整公开矩阵和评审包边界重新验证；独立 Product/Design/Visual 公共签收、route maturity、Accessibility、RouterOS soak 和可信外部发布签收仍未完成。
 
 - status: `current-mirror-entry`
-- currentStep: `802`
-- currentOutcome: `802:missing-rate-evidence-and-320px-visual-p2-fixed-review-open`
-- currentBoundary: `802`
+- currentStep: `804`
+- currentOutcome: `804:css-budget-root-fix-and-exact-sha-rebind-open`
+- currentBoundary: `804`
 - authority: `decision-system/current-state.md`
 
 ## 入口
@@ -42,4 +42,4 @@
 
 每个材料性切片开始前先写仓库日志和对应 decision-system 文件，再同步到 D 盘镜像。同步门禁必须满足语义步骤一致、Markdown 映射逐字节一致、没有额外 Markdown；根 README 还必须通过新鲜度检查。
 
-Step802: local evidence improved, formal signoff and public release remain closed.
+Step804: local evidence improved, formal signoff and public release remain closed.
