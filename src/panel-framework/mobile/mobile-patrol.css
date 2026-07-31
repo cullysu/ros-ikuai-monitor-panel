@@ -8,16 +8,6 @@
     padding-right: 12px;
     padding-left: 12px;
   }
-  .mp-workspace {
-    width: calc(100% - 16px);
-  }
-  .mp-proof {
-    grid-template-columns: 1fr;
-  }
-  .mp-proof > div + div {
-    border-top: 1px solid var(--mp-line);
-    border-left: 0;
-  }
   .mp-proof {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -27,10 +17,6 @@
     align-items: baseline;
     gap: 2px 8px;
     padding: 8px 9px 9px;
-  }
-  .mp-proof > div + div {
-    border-top: 0;
-    border-left: 1px solid var(--mp-line);
   }
   .mp-proof > div:nth-child(3) {
     grid-column: 1 / -1;
@@ -54,7 +40,6 @@
   }
   .mp-load button {
     min-height: 58px;
-    grid-template-columns: 22px minmax(0, 1fr) 16px;
   }
   .mp-load button + button {
     border-top: 1px solid var(--mp-line);
