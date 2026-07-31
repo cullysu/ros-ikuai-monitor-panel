@@ -31,7 +31,14 @@ function resolveToken(value) {
 
 function alpha(value) {
   const match = value && value.match(/rgba?\([^)]*,\s*([0-9.]+)\s*\)$/);
-  return match ? Number(match[1]) : null;
+  if (match) return Number(match[1]);
+  const hex = value && value.match(/^#([0-9a-f]{4}|[0-9a-f]{8})$/i);
+  if (!hex) return null;
+  const digits = hex[1];
+  const alphaByte = digits.length === 4
+    ? Number.parseInt(digits[3] + digits[3], 16)
+    : Number.parseInt(digits.slice(6, 8), 16);
+  return Math.round((alphaByte / 255) * 100) / 100;
 }
 
 const line = resolveToken(tokenValue("--mp-line"));
