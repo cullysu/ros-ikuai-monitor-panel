@@ -26,11 +26,11 @@ expect(
 );
 expect(
   "tablet split owns both panes when the workspace can hold them",
-  /@media \(min-width: 768px\) and \(max-width: 1199px\)[\s\S]*?\.mp-tablet-master-detail\s*\{[\s\S]*?grid-template-columns:\s*280px\s+minmax\(400px,\s*1fr\);/.test(css),
+  /@media \(min-width: 768px\) and \(max-width: 1199px\)[\s\S]*?\.mp-tablet-master-detail\s*\{[\s\S]*?grid-template-columns:\s*minmax\(240px,\s*0.38fr\)\s+minmax\(400px,\s*0.62fr\);/.test(css),
 );
 expect(
   "narrow tablet workspaces stack instead of splitting below the minimum inspector width",
-  /@container \(max-width: 699px\)[\s\S]*?\.mp-tablet-master-detail\s*\{[\s\S]*?grid-template-columns:\s*1fr;/.test(css),
+  /@container \(max-width: 639px\)[\s\S]*?\.mp-tablet-master-detail\s*\{[\s\S]*?grid-template-columns:\s*1fr;/.test(css),
 );
 expect(
   "old container-width product switch is removed",

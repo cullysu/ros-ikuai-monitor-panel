@@ -10,7 +10,7 @@
   }
   .mp-tablet-master-detail {
     display: grid;
-    grid-template-columns: 280px minmax(400px, 1fr);
+    grid-template-columns: minmax(240px, 0.38fr) minmax(400px, 0.62fr);
     align-items: start;
   }
   .mp-tablet-signal, .mp-tablet-master-detail, .mp-tablet-support, .mp-route-dossier, .mp-tablet-relation {
@@ -216,7 +216,7 @@
 }
 
 @media (min-width: 768px) and (max-width: 1199px) and (min-height: 700px) {
-  @container (max-width: 699px) {
+  @container (max-width: 639px) {
     .mp-tablet-master-detail {
       grid-template-columns: 1fr;
     }

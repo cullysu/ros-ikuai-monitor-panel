@@ -4116,7 +4116,7 @@ async function main() {
         mode: split ? 'split' : stacked ? 'stacked' : 'unknown',
         splitBelowMinimum: Boolean(
           split && masterRect && inspectorRect &&
-          (masterRect.width < 280 || inspectorRect.width < 400)
+          (masterRect.width < 240 || inspectorRect.width < 400)
         ),
         overflow: document.documentElement.scrollWidth - innerWidth,
       };
@@ -4124,10 +4124,11 @@ async function main() {
     const tabletOverviewGeometry = await inspectTabletOverviewGeometry();
     check(
       checks,
-      '768px overview stacks master and inspector when the real workspace cannot hold 280px plus 400px',
+      '768px overview splits master and inspector in the available tablet workspace',
       tabletOverviewGeometry.viewport[0] === 768 &&
-        tabletOverviewGeometry.masterDetailRect?.width < 700 &&
-        tabletOverviewGeometry.mode === 'stacked' &&
+        tabletOverviewGeometry.masterDetailRect?.width >= 640 &&
+        tabletOverviewGeometry.masterRect?.width >= 240 &&
+        tabletOverviewGeometry.mode === 'split' &&
         tabletOverviewGeometry.splitBelowMinimum === false &&
         tabletOverviewGeometry.selectedRiskId === tabletOverviewGeometry.inspectorId &&
         includesEvery(tabletOverviewGeometry.attributeLabels, ['管理状态', '默认路由依赖', '角色 / 类型']) &&
@@ -4321,7 +4322,7 @@ async function main() {
       checks,
       '767px and 768px preserve overview risk and evidence while master-detail capability changes',
       sameOverviewTask(compactBoundaryStates[0]) &&
-        tabletOverviewGeometry.mode === 'stacked' &&
+        tabletOverviewGeometry.mode === 'split' &&
         compactBoundaryStates[0].mode === 'unknown',
       { compact: compactBoundaryStates[0], tablet: tabletOverviewGeometry }
     );
@@ -5397,27 +5398,27 @@ async function main() {
       rateUnitEvidence,
     );
 
-    const collection699 = await inspectOverviewTaskBoundary(taskDesktopPage, 'collection-down', 797, 1024);
-    const collection700 = await inspectOverviewTaskBoundary(taskDesktopPage, 'collection-down', 798, 1024);
+    const collection639 = await inspectOverviewTaskBoundary(taskDesktopPage, 'collection-down', 768, 1024, { workspaceWidth: 639 });
+    const collection640 = await inspectOverviewTaskBoundary(taskDesktopPage, 'collection-down', 768, 1024, { workspaceWidth: 640 });
     check(
       checks,
-      'incident master/detail changes at actual 699/700px workspace capacity',
+      'incident master/detail changes at actual 639/640px workspace capacity',
       Boolean(
-        collection699.workspaceContentWidth === 699 && collection700.workspaceContentWidth === 700 &&
-        collection699.incidentObjectRect && collection699.inspectorRect &&
-        collection700.incidentObjectRect && collection700.inspectorRect &&
-        collection699.inspectorRect.top >= collection699.incidentObjectRect.bottom - 1 &&
-        Math.abs(collection700.incidentObjectRect.top - collection700.inspectorRect.top) <= 1 &&
-        collection700.incidentObjectRect.width >= 280 && collection700.inspectorRect.width >= 400 &&
-        [collection699, collection700].every((item) => (
+        collection639.workspaceContentWidth === 639 && collection640.workspaceContentWidth === 640 &&
+        collection639.incidentObjectRect && collection639.inspectorRect &&
+        collection640.incidentObjectRect && collection640.inspectorRect &&
+        collection639.inspectorRect.top >= collection639.incidentObjectRect.bottom - 1 &&
+        Math.abs(collection640.incidentObjectRect.top - collection640.inspectorRect.top) <= 1 &&
+        collection640.incidentObjectRect.width >= 240 && collection640.inspectorRect.width >= 400 &&
+        [collection639, collection640].every((item) => (
           item.overviewRootCount === 1 && item.focusObjectCount === 0 && item.scenarioFocusCount === 1 &&
           item.riskObjectSurfaceCount === 1 && item.selectedInspectorCount === 1 &&
           item.investigationSurfaceCount === 1 && item.investigationActionSurfaceCount === 1 &&
           item.coreLandmarkCounts.evidenceBoundary === 1
         )) &&
-        collection699.overflow <= 1 && collection700.overflow <= 1
+        collection639.overflow <= 1 && collection640.overflow <= 1
       ),
-      { collection699, collection700 },
+      { collection639, collection640 },
     );
     const collection899 = await inspectOverviewTaskBoundary(taskDesktopPage, 'collection-down', 899);
     const collection900 = await inspectOverviewTaskBoundary(taskDesktopPage, 'collection-down', 900);

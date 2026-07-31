@@ -47,12 +47,12 @@ check(
 );
 check(
   "768px capacity has an honest stacked fallback",
-  /@container \(max-width: 699px\)[\s\S]*?\.mp-tablet-master-detail\s*\{[\s\S]*?grid-template-columns:\s*1fr;/.test(css),
-  "below the 700px content capacity the master/detail task must stack",
+  /@container \(max-width: 639px\)[\s\S]*?\.mp-tablet-master-detail\s*\{[\s\S]*?grid-template-columns:\s*1fr;/.test(css),
+  "below the 640px content capacity the master/detail task must stack",
 );
 check(
-  "700px capacity preserves the bounded split",
-  /\.mp-tablet-master-detail\s*\{[\s\S]*?grid-template-columns:\s*280px\s+minmax\(400px,\s*1fr\);/.test(css),
+  "640px capacity preserves the bounded split",
+  /\.mp-tablet-master-detail\s*\{[\s\S]*?grid-template-columns:\s*minmax\(240px,\s*0.38fr\)\s+minmax\(400px,\s*0.62fr\);/.test(css),
   "the split requires a readable object pane and a readable inspector pane",
 );
 check(
