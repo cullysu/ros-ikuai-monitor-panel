@@ -15,7 +15,8 @@ import type {
   ResourceRowEvidence,
   ConnectionRowEvidence,
   DiagnosticRowEvidence,
-  GenericRowEvidence,
+  DhcpClientRowEvidence,
+  BalanceRuleRowEvidence,
   SectionRowEvidence,
   SectionEvidenceContext,
 } from "./sectionRowEvidenceTypes";
@@ -38,7 +39,8 @@ export type {
   ResourceRowEvidence,
   ConnectionRowEvidence,
   DiagnosticRowEvidence,
-  GenericRowEvidence,
+  DhcpClientRowEvidence,
+  BalanceRuleRowEvidence,
   SectionRowEvidence,
   SectionEvidenceContext,
 } from "./sectionRowEvidenceTypes";
@@ -357,10 +359,21 @@ function connectionEvidence(title: string, row: UnknownRecord): ConnectionRowEvi
   };
 }
 
-export function emptySectionRowEvidence(sourceTable = ""): GenericRowEvidence {
-  return { kind: "generic", sourceTable, status: null };
+function dhcpClientEvidence(title: string, row: UnknownRecord): DhcpClientRowEvidence {
+  return { kind: "dhcp-client", sourceTable: title, interfaceName: stringValue(row.interface), status: stringValue(row.status, row.state), addDefaultRoute: booleanValue(row.addDefaultRoute), usePeerDns: booleanValue(row.usePeerDns) };
 }
 
+function balanceRuleEvidence(title: string, row: UnknownRecord): BalanceRuleRowEvidence {
+  return {
+    kind: "balance-rule",
+    sourceTable: title,
+    chain: stringValue(row.chain),
+    mark: stringValue(row.newRoutingMark, row.table, row.routingMark),
+    interfaceName: stringValue(row.inInterface, row.outInterface, row.interface),
+    comment: stringValue(row.comment),
+    status: stringValue(row.status, row.state),
+  };
+}
 export function buildSectionRowEvidence(
   route: PanelRouteId,
   title: string,
@@ -368,9 +381,11 @@ export function buildSectionRowEvidence(
   context: SectionEvidenceContext = {},
 ): SectionRowEvidence {
   if (route === "interfaces" || route === "lineStatus") return interfaceEvidence(title, row, context);
-  if (route === "routes" || (route === "balance" && title === "默认路由")) return buildRouteEvidence(title, row, context);
+  if (route === "routes" || (route === "balance" && title === "默认路由") || (route === "overview" && title === "路由记录")) return buildRouteEvidence(title, row, context);
+  if (route === "balance" && title === "策略规则") return balanceRuleEvidence(title, row);
   if (route === "terminals") return terminalEvidence(title, row, context);
   if (route === "dhcp" && title === "地址租约") return terminalEvidence(title, row, context);
+  if (route === "dhcp" && title === "DHCP 客户端") return dhcpClientEvidence(title, row);
   if (route === "arp" && title === "ARP 对象") return terminalEvidence(title, row, context);
   if (route === "serviceLogs") return serviceLogEvidence(title, row, context);
   if (route === "logs") return logEvidence(title, row, context);
@@ -379,5 +394,5 @@ export function buildSectionRowEvidence(
   if (route === "trafficLoad" || route === "loadAudit") return resourceEvidence(title, row);
   if (route === "connections" || route === "trafficAudit") return connectionEvidence(title, row);
   if (route === "readonlyDiagnostics") return buildDiagnosticRowEvidence(title, row);
-  return { kind: "generic", sourceTable: title, status: stringValue(row.status, row.state) };
+  throw new Error("Unsupported section evidence route/title: " + route + "/" + title);
 }

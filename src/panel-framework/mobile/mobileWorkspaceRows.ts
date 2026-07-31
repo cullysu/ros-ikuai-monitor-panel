@@ -1,7 +1,7 @@
 import type { PanelRouteId } from "../routes/panelRoutes";
 import { emptySectionRowMeta, type SectionColumn, type SectionModel, type SectionRowMeta } from "../sections/sectionModels";
 import { panelObjectIdForValues } from "../sections/panelObjectIdentity";
-import { emptySectionRowEvidence, type SectionRowEvidence } from "../sections/sectionRowEvidence";
+import { type SectionRowEvidence } from "../sections/sectionRowEvidence";
 
 export interface WorkspaceRow {
   id: string;
@@ -50,7 +50,8 @@ export function rowsFromModel(route: PanelRouteId, model: SectionModel): Workspa
   model.tables.forEach((table) => {
     table.rows.forEach((values, index) => {
       const meta = table.rowMeta?.[index] || emptySectionRowMeta();
-      const evidence = table.rowEvidence?.[index] || emptySectionRowEvidence(table.title);
+      const evidence = table.rowEvidence?.[index];
+      if (!evidence) throw new Error("Section table row is missing evidence: " + route + "/" + table.title + "/" + index);
       const ordered = table.columns.map((column) => values[column.key] || "—");
       let primary = ordered[0] || "未命名对象";
       let secondary = ordered[1] || table.title;

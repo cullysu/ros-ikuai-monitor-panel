@@ -797,7 +797,20 @@ function diagnosticsModel(route: PanelRouteId, snapshot: OverviewRawSnapshot): S
   };
 }
 
+function moreModel(route: PanelRouteId, snapshot: OverviewRawSnapshot): SectionModel {
+  return {
+    ...base(route, snapshot, "工具目录 · 不承载业务快照"),
+    evidenceMode: "unavailable",
+    updatedAt: "未记录",
+    observedAt: null,
+    status: "工具目录 · 不提供业务快照",
+    statusTone: "missing",
+    metrics: [],
+    tables: [],
+  };
+}
 function buildCurrentSectionModel(route: PanelRouteId, snapshot: OverviewRawSnapshot): SectionModel {
+  if (route === "more") return moreModel(route, snapshot);
   if (route === "interfaces") return interfaceModel(route, snapshot);
   if (route === "lineStatus") return wanModel(route, snapshot);
   if (route === "balance") return balanceModel(route, snapshot);

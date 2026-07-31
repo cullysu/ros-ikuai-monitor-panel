@@ -2015,7 +2015,7 @@ async function main() {
 
     const domainRouteContracts = [
       { route: 'routes', primary: 'interfaces', workspace: '网络工作区', placeholder: '目的、网关或路由表', kind: 'route', sections: 4, evidence: ['活动判据', '路径', '关联接口'], autoPreview: true },
-      { route: 'balance', primary: 'interfaces', workspace: '网络工作区', placeholder: '网关、路由表或策略标记', kind: 'generic', desktopKind: 'route', sections: 2, evidence: ['匹配与动作', '路由标记', '对象 ID'], rowText: 'mark-routing', autoPreview: true },
+      { route: 'balance', primary: 'interfaces', workspace: '网络工作区', placeholder: '网关、路由表或策略标记', kind: 'balance-rule', desktopKind: 'route', sections: 2, evidence: ['匹配与动作', '路由标记', '对象 ID'], rowText: 'mark-routing', autoPreview: true },
       { route: 'connections', primary: 'interfaces', workspace: '网络工作区', placeholder: '源、目标、端口或协议', kind: 'connection', sections: 2, evidence: ['连接端点', '当前记录'] },
       { route: 'trafficAudit', primary: 'interfaces', workspace: '流量审计', placeholder: '地址、协议或流量对象', kind: 'connection', sections: 3, evidence: ['流量对象', '审计读数', '审计范围'], rowText: '198.51.100.44' },
       { route: 'dns4', primary: 'interfaces', workspace: 'DNS 工作区', placeholder: '名称、类型或目标', kind: 'dns', sections: 2, evidence: ['静态规则', 'DNS 配置边界'] },

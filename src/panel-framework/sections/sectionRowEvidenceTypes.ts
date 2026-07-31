@@ -88,7 +88,7 @@ export interface TerminalRowEvidence extends BaseRowEvidence {
   identitySources: string[];
 }
 
-export type EvidenceSeverity = "critical" | "error" | "warning" | "info" | "unknown";
+export interface DhcpClientRowEvidence extends BaseRowEvidence { kind: "dhcp-client"; interfaceName: string | null; status: string | null; addDefaultRoute: boolean | null; usePeerDns: boolean | null; } export type EvidenceSeverity = "critical" | "error" | "warning" | "info" | "unknown";
 
 export interface LogNeighborEvidence {
   relation: "newer" | "older";
@@ -191,22 +191,22 @@ export interface DiagnosticRowEvidence extends BaseRowEvidence {
   totalFailureCount: number;
 }
 
-export interface GenericRowEvidence extends BaseRowEvidence {
-  kind: "generic";
-  status: string | null;
+export interface BalanceRuleRowEvidence extends BaseRowEvidence {
+  kind: "balance-rule"; chain: string | null;
+  mark: string | null; interfaceName: string | null;
+  comment: string | null; status: string | null;
 }
-
 export type SectionRowEvidence =
   | InterfaceRowEvidence
   | RouteRowEvidence
-  | TerminalRowEvidence
+  | TerminalRowEvidence | DhcpClientRowEvidence
   | LogRowEvidence
   | SecurityRowEvidence
   | DnsRowEvidence
   | ResourceRowEvidence
   | ConnectionRowEvidence
   | DiagnosticRowEvidence
-  | GenericRowEvidence;
+  | BalanceRuleRowEvidence;
 
 export interface SectionEvidenceContext {
   routes?: unknown;

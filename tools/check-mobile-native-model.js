@@ -56,7 +56,7 @@ const { routerOsLatestSuccess, routerOsNetworkPriority } = require(
 const { PANEL_ROUTES, navigationContextFromLocation, routeFromLocation, routeUrl } = require(
   path.join(root, "src", "panel-framework", "routes", "panelRoutes.ts")
 );
-const { rowsFromModel } = require(
+const { rowsFromModel: rowsFromSectionModel } = require(
   path.join(root, "src", "panel-framework", "mobile", "mobileDomainWorkspaceModel.ts")
 );
 const { domainDefinitionFor, filterWorkspaceRows, sortWorkspaceRows } = require(
@@ -66,6 +66,17 @@ const { timeSeriesPointX } = require(
   path.join(root, "src", "panel-framework", "sections", "timeSeriesGeometry.ts")
 );
 
+const { buildSectionRowEvidence } = require(
+  path.join(root, "src", "panel-framework", "sections", "sectionRowEvidence.ts")
+);
+
+function rowsFromModel(route, model) {
+  const tables = model.tables.map((table) => {
+    if (table.rowEvidence && table.rowEvidence.length >= table.rows.length) return table;
+    return { ...table, rowEvidence: table.rows.map((row) => buildSectionRowEvidence(route, table.title, row)) };
+  });
+  return rowsFromSectionModel(route, { ...model, tables });
+}
 const mobilePatrolSource = fs.readFileSync(
   path.join(root, "src", "panel-framework", "mobile", "MobilePatrolScreen.tsx"),
   "utf8",
