@@ -1,21 +1,21 @@
 - status: `current`
-- currentConclusionForStep: `790`
-- latestRecordedStep: `790`
-- latestStepOutcome: `790:cf15033-exact-sha-independent-product-design-visual-pass-p0p1-zero-p2-nonblocking`
-- currentBoundaryForStep: `790`
-- validForCommit: candidate cf15033d1b41d5baed2e70ae6d08afe2d2abd48e has build/runtime/Overview focused-green evidence; governance update is uncommitted; not a release candidate
+- currentConclusionForStep: `791`
+- latestRecordedStep: `791`
+- latestStepOutcome: `791:fea12e1-exact-sha-independent-route-product-design-visual-pass-p0p1-zero-p2-nonblocking`
+- currentBoundaryForStep: `791`
+- validForCommit: candidate fea12e1ff82aa82e098cb3497d68a671a52c8f88 has exact-SHA engineering and independent Product/Design/Visual evidence; governance update is uncommitted; not a release candidate
 - supersededBy: `null`
 - updatedAt: `2026-07-31T15:40:00+08:00`
 - authority: This is the only human-readable current-state source. Historical journals, contracts, reports, and machine state may provide evidence but may not override this page.
 
-## Current decision record: Step 790
+## Current decision record: Step 791
 
 - status: `release-evidence-green-route-maturity-open`
-- boundary: Step790 closes the exact-SHA independent Product/Design/Visual review for the current candidate; route maturity and external release evidence remain open.
+- boundary: Step791 closes the exact-SHA independent Product/Design/Visual review for the current candidate; route maturity and external release evidence remain open.
 - Product/Design/Visual: `pass` for the exact-SHA independent review; route-level trusted acceptance, Accessibility and external release evidence remain open.
 - route maturity: `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`; no route is promoted to a complete module.
-- release: candidate cf15033 has exact-SHA runtime/matrix evidence and independent Product/Design/Visual PASS; route maturity, trusted external acceptance, RouterOS soak, exact-SHA CL and public release remain open. Loop active, blocked=false.
-- Next: refresh final exact-SHA evidence after the decision-document commit, then re-run readiness.
+- release: candidate fea12e1 has exact-SHA runtime/matrix evidence and independent Product/Design/Visual PASS; route maturity, trusted external acceptance, RouterOS soak, exact-SHA CL and public release remain open. Loop active, blocked=false.
+- Next: commit this Step791 decision state, then regenerate final exact-SHA evidence and re-run readiness.
 
 ## Current conclusion
 
@@ -40,7 +40,7 @@
 
 - R07, R09, R10 and R14 have exact-SHA Product/Design/Visual review results; route-level trusted acceptance remains unsigned.
 - Historical false-green reports and old review claims remain quarantined unless freshly reproduced.
-- Historical A/B review results are bounded evidence; the current exact-SHA independent signoff is recorded in the Step790 artifact.
+- Historical A/B review results are bounded evidence; the current exact-SHA independent signoff is recorded in the Step791 artifact.
 
 ## Current evidence map
 

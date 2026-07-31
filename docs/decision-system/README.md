@@ -1,10 +1,10 @@
 # 决策系统导航
-- validForCommit: candidate cf15033d1b41d5baed2e70ae6d08afe2d2abd48e has build/runtime/Overview focused-green evidence; not a release candidate
+- validForCommit: candidate fea12e1ff82aa82e098cb3497d68a671a52c8f88 has build/runtime/Overview focused-green evidence; not a release candidate
 - supersededBy: null
 - status: `current-index`
-- currentBoundaryForStep: `790`
-- latestRecordedStep: `790`
-- latestStepOutcome: `790:cf15033-exact-sha-independent-product-design-visual-pass-p0p1-zero-p2-nonblocking`
+- currentBoundaryForStep: `791`
+- latestRecordedStep: `791`
+- latestStepOutcome: `791:fea12e1-exact-sha-independent-route-product-design-visual-pass-p0p1-zero-p2-nonblocking`
 - authority: `docs/decision-system/current-state.md`
 
 当前结论由 current-state.md 唯一拥有；本页只负责导航，不重复历史流水账。

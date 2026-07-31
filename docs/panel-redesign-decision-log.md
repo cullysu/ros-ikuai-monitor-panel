@@ -23989,3 +23989,15 @@ ocused-green-engineering
 - 未解决发布边界：无可信外部密钥签名、无当前真实 RouterOS soak、无外部 Linux/Windows/GHCR 精确 SHA CL；因此不上传 GitHub、不发布公众版本。
 - 心得：独立视觉签收可以关闭产品/设计/视觉这一条门，但不能越权关闭路由成熟度、安全发布链或外部验收。把不同门混成一个“全绿”结论，正是此前验收失真的根源。
 - Next: 更新唯一当前状态与 D:\想法\面板镜像；随后在文档提交后的新 exact SHA 上重新生成最终 release evidence，并再次检查 readiness。
+
+
+## 第 791 步：exact-SHA 全路由独立签收通过；route maturity 与可信发布边界继续关闭
+
+- status: independent-route-product-design-visual-signoff-pass-release-closed
+- latestStepOutcome: `791:fea12e1-exact-sha-independent-route-product-design-visual-pass-p0p1-zero-p2-nonblocking`
+- 事实：clean candidate fea12e1ff82aa82e098cb3497d68a671a52c8f88 重新通过 build、runtime、Overview 28/28、route responsive requested 76/76、route state 266/266、安全、RFC3339、只读、静态资产、资产身份与 budget 门禁。第二轮独立审查只查看该 SHA 的新报告和代表截图。
+- 独立签收：Product PASS、Design PASS、Visual PASS；P0=0、P1=0、P2=2，均不阻断本轮视觉签收。报告：_acceptance/independent-route-visual-signoff-fea12e1ff82aa82e098cb3497d68a671a52c8f88.md。
+- 决策：关闭本轮产品/设计/视觉独立签收记录，但不把矩阵或本地审查扩大成公众发布资格；18 个 operational route 仍为 bounded-readonly，more 仍 unavailable。
+- readiness：当前 SHA 矩阵已识别，但 check-public-release-readiness --require-matrix 仍在 route maturity fail-closed；没有可信外部 Ed25519 签名、RouterOS soak 或 Linux/Windows/GHCR exact-SHA CL，因此不上传 GitHub。
+- 边界：本轮受阻不是 Loop blocked，而是发布资格门禁拒绝越权绿灯；Loop active、blocked=false。
+- Next: 提交本步骤决策文档后重新绑定并验证最终 exact-SHA release evidence；随后等待真实 route owner acceptance、RouterOS soak 与外部 CL。

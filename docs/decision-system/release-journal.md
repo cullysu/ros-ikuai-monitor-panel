@@ -1,12 +1,12 @@
 # Release Journal
 - status: `current-journal`
-- validForCommit: candidate cf15033d1b41d5baed2e70ae6d08afe2d2abd48e has build/runtime/Overview focused-green evidence; not a release candidate
+- validForCommit: candidate fea12e1ff82aa82e098cb3497d68a671a52c8f88 has build/runtime/Overview focused-green evidence; not a release candidate
 - supersededBy: `null`
-- currentStep: `790`
-- currentOutcome: `790:cf15033-exact-sha-independent-product-design-visual-pass-p0p1-zero-p2-nonblocking`
+- currentStep: `791`
+- currentOutcome: `791:fea12e1-exact-sha-independent-route-product-design-visual-pass-p0p1-zero-p2-nonblocking`
 - authority: `docs/decision-system/current-state.md`
 
-- Step790: exact-SHA Product/Design/Visual review passed with P0/P1 zero and two non-blocking P2; route maturity and trusted external acceptance remain required.
+- Step791: exact-SHA Product/Design/Visual review passed with P0/P1 zero and two non-blocking P2; route maturity and trusted external acceptance remain required.
 - Product/Design/Visual remain failed or unsigned; route maturity remains 0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable.
 - Current candidate has clean engineering and exact-SHA Product/Design/Visual evidence; route maturity, RouterOS soak, readiness, exact-SHA CL, GitHub upload and public release remain closed.
 
