@@ -1,11 +1,11 @@
 # RouterOS / iKuai 面板决策仓库
 
-这是当前面板工作的本地决策仓库镜像。Step786 已实施平板运行时门禁修正，验证与独立签收仍未完成。
+这是当前面板工作的本地决策仓库镜像。Step790 已完成 exact-SHA 工程矩阵与独立 Product/Design/Visual 复核；route maturity 和可信外部发布签收仍未完成。
 
 - status: `current-mirror-entry`
-- currentStep: `786`
-- currentOutcome: `786:tablet-normal-column-continuity-runtime-gate-implementation-pending-verification-release-closed-loop-active`
-- currentBoundary: `786`
+- currentStep: `790`
+- currentOutcome: `790:cf15033-exact-sha-independent-product-design-visual-pass-p0p1-zero-p2-nonblocking`
+- currentBoundary: `790`
 - authority: `decision-system/current-state.md`
 
 ## 入口

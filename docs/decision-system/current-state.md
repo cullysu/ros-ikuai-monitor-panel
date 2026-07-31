@@ -1,46 +1,46 @@
-- status: `focused-green-engineering`
-- currentConclusionForStep: `787`
-- latestRecordedStep: `787`
-- latestStepOutcome: `787:tablet-normal-decision-flow-runtime-gate-focused-green-release-closed-loop-active`
-- currentBoundaryForStep: `787`
-- validForCommit: candidate b8564aaeafa33c36540b44f2f1183b58ab26de18 has build/runtime/Overview focused-green evidence; not a release candidate
+- status: `current`
+- currentConclusionForStep: `790`
+- latestRecordedStep: `790`
+- latestStepOutcome: `790:cf15033-exact-sha-independent-product-design-visual-pass-p0p1-zero-p2-nonblocking`
+- currentBoundaryForStep: `790`
+- validForCommit: candidate cf15033d1b41d5baed2e70ae6d08afe2d2abd48e has build/runtime/Overview focused-green evidence; governance update is uncommitted; not a release candidate
 - supersededBy: `null`
-- updatedAt: `2026-07-31T08:46:04+08:00`
+- updatedAt: `2026-07-31T15:40:00+08:00`
 - authority: This is the only human-readable current-state source. Historical journals, contracts, reports, and machine state may provide evidence but may not override this page.
 
-## Current decision record: Step 787
+## Current decision record: Step 790
 
-- status: `focused-green-engineering`
-- boundary: Step787 closes the second stale tablet runtime-gate drift; current engineering evidence is clean exact-SHA.
-- Product/Design/Visual: `failed` / unsigned. R07 mobile visual maturity, R09 tablet space efficiency, R10 desktop density/task efficiency and R14 cross-surface product grammar remain open.
+- status: `release-evidence-green-route-maturity-open`
+- boundary: Step790 closes the exact-SHA independent Product/Design/Visual review for the current candidate; route maturity and external release evidence remain open.
+- Product/Design/Visual: `pass` for the exact-SHA independent review; route-level trusted acceptance, Accessibility and external release evidence remain open.
 - route maturity: `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`; no route is promoted to a complete module.
-- release: candidate b8564aa is engineering-focused-green; independent acceptance, full matrices, readiness, exact-SHA CL and public release remain open. Loop active, blocked=false.
-- Next: regenerate complete overview/route state matrices, then obtain independent Product/Design/Visual signoff.
+- release: candidate cf15033 has exact-SHA runtime/matrix evidence and independent Product/Design/Visual PASS; route maturity, trusted external acceptance, RouterOS soak, exact-SHA CL and public release remain open. Loop active, blocked=false.
+- Next: refresh final exact-SHA evidence after the decision-document commit, then re-run readiness.
 
 ## Current conclusion
 
-**FAIL overall.** Engineering is focused-green, but product acceptance and release evidence are incomplete; GitHub/public release stays closed.
+**FAIL overall.** Engineering and exact-SHA Product/Design/Visual review are green, but route maturity, trusted external acceptance and release evidence are incomplete; GitHub/public release stays closed.
 
 ## Current release gates
 
 | Gate | Status | Meaning |
 |---|---|---|
-| Product | `failed` | No independent product acceptance. |
-| Design | `failed` | No independent design acceptance. |
-| Visual QA | `failed` | Image inspection/sign-off is unavailable; internal review is not a signature. |
+| Product | `failed` | Exact-SHA independent product review passed, but trusted external acceptance remains separate. |
+| Design | `failed` | Exact-SHA independent design review passed, but trusted external acceptance remains separate. |
+| Visual QA | `failed` | Exact-SHA independent visual review passed with P0=0, P1=0 and two non-blocking P2 findings; trusted acceptance remains separate. |
 | Architecture | `pass` | Focused code contracts are green; this does not grant release. |
 | Security | `pass` | Only the verified default-local, read-only boundary is covered. |
 | Accessibility | `pending` | Automation is not independent assistive-technology acceptance. |
-| State Matrix | `pending` | Reports require current identity, completeness and child-truth verification. |
+| State Matrix | `pending` | Current exact-SHA matrices passed, but final release state remains fail-closed until post-document-commit identity is regenerated. |
 | Route maturity | `pending` | No route is complete; 18 are bounded-readonly and 1 unavailable. |
 | RouterOS soak | `pending` | No current long-running real-device evidence. |
-| Release hygiene | `pending` | Dirty worktree, clean candidate and exact-SHA CL remain unresolved. |
+| Release hygiene | `pending` | Current code candidate is clean; post-document-commit exact-SHA evidence and external CL remain pending. |
 
 ## Open review boundaries
 
-- R07, R09, R10 and R14 remain open and must not be self-signed.
+- R07, R09, R10 and R14 have exact-SHA Product/Design/Visual review results; route-level trusted acceptance remains unsigned.
 - Historical false-green reports and old review claims remain quarantined unless freshly reproduced.
-- A/B review results are bounded evidence, not Product/Design/Visual signatures.
+- Historical A/B review results are bounded evidence; the current exact-SHA independent signoff is recorded in the Step790 artifact.
 
 ## Current evidence map
 

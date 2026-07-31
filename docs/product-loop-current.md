@@ -1,26 +1,26 @@
 - status: `current-handoff`
-- validForCommit: candidate b8564aaeafa33c36540b44f2f1183b58ab26de18 has build/runtime/Overview focused-green evidence; not a release candidate
-- currentHandoffForStep: `787`
+- validForCommit: candidate cf15033d1b41d5baed2e70ae6d08afe2d2abd48e has build/runtime/Overview focused-green evidence; not a release candidate
+- currentHandoffForStep: `790`
 - supersededBy: `docs/decision-system/current-state.md`
 - updated: 2026-07-31
-- latestRecordedStep: `787`
-- latestStepOutcome: `787:tablet-normal-decision-flow-runtime-gate-focused-green-release-closed-loop-active`
-- currentConclusion: **FAIL overall**. This handoff routes evidence only; it cannot sign Product/Design/Visual.
+- latestRecordedStep: `790`
+- latestStepOutcome: `790:cf15033-exact-sha-independent-product-design-visual-pass-p0p1-zero-p2-nonblocking`
+- currentConclusion: **FAIL overall**. This handoff routes evidence only; trusted external route acceptance remains separate from the exact-SHA independent review.
 - process: docs/decision-system/current-state.md is the sole authority; docs/panel-redesign-decision-log.md is the detailed chronology.
 
-## Current handoff: Step787 tablet decision-flow gate focused-green; release remains closed
+## Current handoff: Step790 exact-SHA Product/Design/Visual review passed; release remains closed
 
-- Result: Candidate b8564aa has clean build/runtime/Overview evidence; both stale tablet runtime gates are focused-green.
-- Decision: require complete current-identity matrices and independent acceptance before release.
-- Boundary: engineering is focused-green only; independent acceptance, full matrix, route maturity, soak, accessibility, readiness and exact-SHA CL remain open.
+- Result: Candidate cf15033 has clean build/runtime/Overview evidence, complete exact-SHA matrices and an independent Product/Design/Visual PASS with P0/P1 zero.
+- Decision: require route maturity, trusted external acceptance, RouterOS soak and exact-SHA external CL before release.
+- Boundary: engineering and exact-SHA Product/Design/Visual review are green; route maturity, trusted external acceptance, RouterOS soak, accessibility, readiness and exact-SHA CL remain open.
 - Loop state: active, blocked=false. Release blockage and task blockage are separate states.
-- Next: regenerate complete overview/route evidence, then obtain independent Product/Design/Visual signoff.
+- Next: refresh final exact-SHA evidence after the decision-document commit, then re-run readiness.
 
 ## Gate boundary
 
 | Gate | Status | Meaning |
 |---|---|---|
-| Product/Design/Visual | failed | No independent product, design or visual sign-off. |
+| Product/Design/Visual | failed | Exact-SHA independent Product/Design/Visual review passed; trusted external route acceptance remains pending. |
 | Route maturity | pending | 0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable. |
 | Accessibility | pending | Automation is not independent assistive-technology acceptance. |
 | Current product release | `fail` | Clean candidate and release evidence are incomplete. |

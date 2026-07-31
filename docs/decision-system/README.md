@@ -1,10 +1,10 @@
 # 决策系统导航
-- validForCommit: candidate b8564aaeafa33c36540b44f2f1183b58ab26de18 has build/runtime/Overview focused-green evidence; not a release candidate
+- validForCommit: candidate cf15033d1b41d5baed2e70ae6d08afe2d2abd48e has build/runtime/Overview focused-green evidence; not a release candidate
 - supersededBy: null
 - status: `current-index`
-- currentBoundaryForStep: `787`
-- latestRecordedStep: `787`
-- latestStepOutcome: `787:tablet-normal-decision-flow-runtime-gate-focused-green-release-closed-loop-active`
+- currentBoundaryForStep: `790`
+- latestRecordedStep: `790`
+- latestStepOutcome: `790:cf15033-exact-sha-independent-product-design-visual-pass-p0p1-zero-p2-nonblocking`
 - authority: `docs/decision-system/current-state.md`
 
 当前结论由 current-state.md 唯一拥有；本页只负责导航，不重复历史流水账。

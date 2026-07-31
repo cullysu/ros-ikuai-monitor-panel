@@ -23957,3 +23957,35 @@ ocused-green-engineering
 - 验证：生产 build（1899 modules）、production runtime 和 npm run check:overview 全部通过；连续性与决策流两个门禁均 focused-green。
 - 边界/心得：这是工程 gate drift 修复，不是 Product/Design/Visual 签收。完整矩阵、route maturity、RouterOS soak、Accessibility、readiness、精确 SHA CL 与 GitHub/public release 仍关闭；Loop active、blocked=false。
 - Next: 为 `b8564aaeafa33c36540b44f2f1183b58ab26de18` 生成完整 overview/route 状态矩阵并进入独立签收。
+
+
+## 第 788 步：窄屏动作文字预算修复与新 clean candidate
+
+- status: candidate-focused-green
+- latestStepOutcome: `788:narrow-action-copy-budget-fix-cf15033-release-evidence-rebuild-next`
+- 触发与事实：为关闭 390px/375px 独立视觉复核发现的窄屏动作文字 P2，上一版增加了窄屏换行规则，但固定 CSS 预算超过上限 7 bytes。随后一次误编辑留下了残余 CSS 片段；该片段已按最小范围恢复为合法规则，并删除了对 `overflow-wrap:anywhere` 已无意义的 `text-overflow: clip`，没有放宽预算。
+- 决策与理由：保留 44px 以上触控目标、窄屏两行动作文案和 375/390 的可读性；用规则减法解决预算，不通过提高预算、缩小字号或删除异常证据来换绿。
+- 验证：`git diff --check` 通过；CSS formatter 通过；`npm run build` 通过（1900 modules）；framework asset budget 通过；新候选为 `cf15033d1b41d5baed2e70ae6d08afe2d2abd48e`，工作树干净。
+- 边界与心得：这是工程候选修复，不是发布资格。预算是产品资产边界的一部分，窄屏视觉修复必须同时接受可维护性和包体约束。
+- Next: 绑定该 exact SHA 重跑真实浏览器、移动矩阵、28/76/266 矩阵和 readiness。
+
+## 第 789 步：exact-SHA 运行时与完整公开矩阵收口；route maturity 仍诚实阻断
+
+- status: release-evidence-green-route-maturity-open
+- latestStepOutcome: `789:cf15033-exact-sha-runtime-and-matrix-green-route-maturity-red-release-closed`
+- 观察事实：新候选真实浏览器通过 `256 checks / 98 screenshots / 122 snapshotApiCalls`；移动 native bounded matrix 为 `56/56`。Overview 公开矩阵 `28/28` 通过；route responsive shard 的 single 场景 `76/76` requested cells 通过；route state 矩阵 `266/266` 通过。安全边界、RFC3339 时区、只读模式、静态资产与资产身份均通过。
+- 决策与取舍：将新报告全部绑定 `cf15033d1b41d5baed2e70ae6d08afe2d2abd48e`，提升新的 canonical route aliases，旧 aliases 仅移动到 acceptance quarantine；不把 shard 的 top-level incomplete 误写成完整发布通过，也不让矩阵数量覆盖 route maturity。
+- readiness 结果：当前公开矩阵身份和完整性通过，固定资产预算也通过；readiness 在 route maturity 处 fail-closed，真实状态仍为 `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`，18 个运营路由的 independent acceptance 仍 pending。
+- 边界与心得：工程发布证据闭环不等于产品模块成熟。矩阵证明当前候选在声明范围内可运行，不能证明每个 URL 已有完整对象详情、无障碍独立签收或外部可信签名。
+- Next: 记录并绑定 exact-SHA 的独立 Product/Design/Visual 复核，同时保持 route maturity、RouterOS soak、外部 CL 和 GitHub 发布关闭。
+
+## 第 790 步：exact-SHA 独立 Product / Design / Visual 签收通过；外部发布门仍关闭
+
+- status: independent-visual-signoff-pass-release-closed
+- latestStepOutcome: `790:cf15033-exact-sha-independent-product-design-visual-pass-p0p1-zero-p2-nonblocking`
+- 独立复核对象：仅查看 `cf15033d1b41d5baed2e70ae6d08afe2d2abd48e` 生成的新截图，未沿用旧 SHA 结论。覆盖 390/375 接口异常、历史快照、资源满载及资源详情、768 master-detail、200% 大文本和 forced-colors。
+- 结果：Product PASS、Design PASS、Visual PASS；P0=0、P1=0、P2=2。两个 P2 为 375px 顶部时间换行，以及部分详情分组纵向节奏略松，均不阻断视觉签收。
+- 决策：关闭本轮独立视觉签收，不把它扩写成外部 Ed25519 trusted acceptance。签收记录保存在 `_acceptance/independent-visual-signoff-cf15033d1b41d5baed2e70ae6d08afe2d2abd48e.md`；route maturity 继续保持 fail-closed。
+- 未解决发布边界：无可信外部密钥签名、无当前真实 RouterOS soak、无外部 Linux/Windows/GHCR 精确 SHA CL；因此不上传 GitHub、不发布公众版本。
+- 心得：独立视觉签收可以关闭产品/设计/视觉这一条门，但不能越权关闭路由成熟度、安全发布链或外部验收。把不同门混成一个“全绿”结论，正是此前验收失真的根源。
+- Next: 更新唯一当前状态与 D:\想法\面板镜像；随后在文档提交后的新 exact SHA 上重新生成最终 release evidence，并再次检查 readiness。
