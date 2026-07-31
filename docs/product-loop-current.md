@@ -1,16 +1,16 @@
 - status: `current-handoff`
 - validForCommit: exact-SHA matrix evidence, dirty runtime evidence and prepared-not-signed packet are present; not a release candidate
-- currentHandoffForStep: `800`
+- currentHandoffForStep: `801`
 - supersededBy: `docs/decision-system/current-state.md`
 - updated: 2026-08-01
-- latestRecordedStep: `800`
-- latestStepOutcome: `800:abnormal-keyboard-runtime-green-independent-signoff-open`
+- latestRecordedStep: `801`
+- latestStepOutcome: `801:independent-review-current-visual-pass-public-release-open`
 - currentConclusion: **FAIL overall**. Local engineering evidence is green in declared scopes; independent Product/Design/Visual acceptance, route maturity and release evidence remain open.
 - process: docs/decision-system/current-state.md is the sole authority; docs/panel-redesign-decision-log.md is detailed chronology.
 
-## Current handoff: Step800 exact-SHA evidence complete; independent acceptance remains open
+## Current handoff: Step801 current independent review complete; formal acceptance remains open
 
-- Result: Overview 28/28, route-responsive 76/76 bounded cells, route-state 266/266, and runtime-browser 257 checks / 101 screenshots / 130 snapshot API calls passed on candidate 93c740a523b0bd9187d72ee6aa51317a49564936.
+- Result: Overview 28/28, route-responsive 76/76 bounded cells, route-state 266/266, and runtime-browser 257 checks / 101 screenshots / 130 snapshot API calls passed on candidate 1f2845dbdac13b20fb8664a075351c7bbd1b6648.
 - Decision: Continue the task instead of marking it blocked; keep Product, Design and Visual acceptance open until trusted independent review is recorded against a final clean candidate.
 - Boundary: The packet and regenerated runtime are governance-dirty; route maturity is 0 complete / 18 bounded-readonly / 0 unavailable; no external CL or RouterOS soak is claimed.
 - Loop state: active, blocked=false. Open release gates are work items, not a reason to stop.

@@ -23248,7 +23248,8 @@ The report finalizer derives the root result from the complete evidence tree. Th
 This closes only the P0 truth-audit governance slice. It does not make the product releaseable. A current pointer is part of the safety boundary: stale next actions can make a correct gate look blocked or make an old green look current.
 
 Next: select one fresh R09/R10/R14 Product/Design/Visual expected-red, reproduce it with fresh runtime evidence, and keep GitHub/public release closed.
-\n
+
+
 
 ## 第 736 步：独立 Product/Design/Visual 评审 packet 准备，发布继续关闭
 - latestStepOutcome: `736:independent-product-design-visual-packet-prepared-release-closed`
@@ -23272,7 +23273,8 @@ Next: select one fresh R09/R10/R14 Product/Design/Visual expected-red, reproduce
 ### Boundary, lesson and next action
 
 这一步只完成独立评审输入准备，不代表任何产品或视觉通过。自动化能证明结构和证据存在，不能证明用户三秒扫描、审美和任务效率。下一步：取得独立评审，或针对 packet 中有明确复现的 R07/R09/R10/R14 项做 bounded remediation；继续禁止 GitHub 上传。
-\n
+
+
 ## 第 737 步：手机焦点对象改为冷静边缘账本表面，独立产品/设计/视觉评审继续开放
 
 - latestStepOutcome: `737:mobile-focus-calm-edge-surface-focused-green-product-visual-review-remains-open-release-closed`
@@ -24117,3 +24119,16 @@ ocused-green-engineering
 - nextAction：以当前工作树身份刷新 unsigned product/design/visual packet 与 D 盘镜像，提交本轮代码/测试/治理变化后重跑 exact-SHA 28/76/266、完整静态与 release readiness；继续推进真实 route owner、独立签名、RouterOS soak 与三端 CL。
 - validForCommit: current worktree evidence only; release candidate not established
 - supersededBy：null
+## 第801步：当前独立复核完成，正式发布门继续关闭
+
+- status：independent-review-current-visual-pass-public-release-open
+- latestStepOutcome: `801:independent-review-current-visual-pass-public-release-open`
+- 观察事实：候选 `1f2845dbdac13b20fb8664a075351c7bbd1b6648` 的 runtime 257/101/130、Overview 28/28、route-responsive 76/76 bounded shard、route-state 266/266 通过；Product 复核通过当前体验范围但正式产品签收仍因 18 条 bounded-readonly 路由失败；Design/Visual 复核确认本轮视觉 P1 和 1440 台账密度问题已关闭，但未产生可信外部签名。
+- 决策：关闭本轮真实可验证的视觉 P1、桌面 1440 密度和独立复核范围；保持 Product、Design、Visual QA、Accessibility、route maturity、RouterOS soak、Linux/Windows/GHCR exact-SHA CL 与 GitHub 发布 fail-closed。
+- 理由与拒绝项：不把代理 PASS 扩大成正式签收，不伪造 Ed25519、真实设备 soak、外部 CL 或完整模块声明。
+- 验证：当前独立复核绑定候选 SHA；类型、静态、runtime、桌面密度与矩阵门禁在声明范围通过；route maturity 仍为 0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable。
+- 边界/心得：视觉问题已按真实范围关闭，正式发布仍需不可伪造的外部证据；Loop active、blocked=false。
+- nextAction：同步 Step801 后重新绑定新候选 exact-SHA 证据，继续推进 route-owner、Accessibility、RouterOS soak 和三端 CL。
+- validForCommit：current worktree evidence only; release candidate not established
+- supersededBy：null
+
