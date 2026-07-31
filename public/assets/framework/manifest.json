@@ -3,7 +3,7 @@
   "inputs": {
     "algorithm": "sha256",
     "schema": "framework-inputs-v1",
-    "digest": "a055fe6314da9ea58ce2ea5741a3634c8d6acfdf9ce4fb530d29a5afb9f4d5ee",
+    "digest": "dff087a411111b44f08d668e8de3b320739577ca04118f90f319f76e6c45ded4",
     "files": 146
   },
   "assets": {
@@ -15,11 +15,11 @@
       "brotliBytes": 114894
     },
     "style": {
-      "file": "style.d91f769f7cac.css",
-      "sha256": "d91f769f7cac78a1320bee70ef26dbbafb03780fc9b2e5e8049bd763e8db9e4e",
-      "bytes": 120007,
-      "gzipBytes": 18924,
-      "brotliBytes": 15897
+      "file": "style.53b8acf747f0.css",
+      "sha256": "53b8acf747f0202cffdf5c9abb21ab6b119480c578e5b729a2d83613f5dffc41",
+      "bytes": 119988,
+      "gzipBytes": 18925,
+      "brotliBytes": 15896
     },
     "desktopStyle": {
       "file": "desktop-overview.81029bec137c.css",

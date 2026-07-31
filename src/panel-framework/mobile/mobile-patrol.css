@@ -1108,7 +1108,6 @@
   .mp-phone-next-step-copy b {
     overflow: visible;
     overflow-wrap: anywhere;
-    text-overflow: clip;
     white-space: normal;
   }
 }
