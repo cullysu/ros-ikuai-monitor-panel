@@ -6983,7 +6983,7 @@ async function main() {
       step196ContractFailures,
       '390px resource incident leads with the breached object before a distinct comparison signal',
       focusedResourceOwnership.objectBeforeSignal &&
-        focusedResourceOwnership.resourceSignalTitle.includes('资源比较') &&
+        focusedResourceOwnership.resourceSignalTitle.includes('资源压力') &&
         !focusedResourceOwnership.resourceHistoryOpen,
       focusedResourceOwnership
     );
