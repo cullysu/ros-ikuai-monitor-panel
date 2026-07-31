@@ -33,15 +33,33 @@ import {
   displayRate,
   displayValue,
 } from "./InspectorPrimitives";
-function GenericInspector({ row }: { row: WorkspaceRow }) {
+function BoundedRecordInspector({ row, model }: { row: WorkspaceRow; model: SectionModel }) {
   const facts = row.columns.slice(0, 6).map((column) => ({
     label: column.label,
     value: displayValue(row.values[column.key]),
   }));
   return (
-    <InspectorSection title="记录证据" note="该低频对象尚未建立专用关系模型">
-      <InspectorFacts facts={[...facts, { label: "对象 ID", value: row.id, valueKind: "machine" }]} />
-    </InspectorSection>
+    <>
+      <InspectorSection title={`${model.title} · 记录详情`} note="按当前路由字段读取；未从缺失关系推断业务结论">
+        <InspectorFacts facts={[
+          ...facts,
+          { label: "记录状态", value: displayValue(row.meta.state), tone: row.meta.attention ? "warn" : "neutral" },
+          { label: "对象 ID", value: row.id, valueKind: "machine" },
+        ]} />
+      </InspectorSection>
+      <InspectorSection title="证据边界" note={model.evidenceMode === "current" ? "当前只读快照字段" : "该记录不代表当前业务状态"}>
+        <InspectorFacts facts={[
+          { label: "来源表", value: row.table },
+          { label: "成功时间", value: displayValue(model.observedAt), valueKind: "machine" },
+          { label: "对象关系", value: "未提供可验证关联", tone: "warn" },
+        ]} />
+      </InspectorSection>
+      <InspectorDisclosure
+        title="记录身份"
+        note="用于返回、深链和重复对象比对"
+        facts={[{ label: "对象 ID", value: row.id, valueKind: "machine" }, { label: "重复记录", value: row.duplicateCount > 1 ? `${row.duplicateCount} 条相同记录` : "1 条", valueKind: "numeric" }]}
+      />
+    </>
   );
 }
 function DomainInspectorBody({
@@ -73,7 +91,7 @@ function DomainInspectorBody({
   if (row.evidence.kind === "resource") return <ResourceInspector row={row} relatedRows={relatedRows} onNavigate={onNavigate} currentRoute={currentRoute} returnRoute={returnRoute} evidenceAt={originEvidenceAt} />;
   if (row.evidence.kind === "connection") return <ConnectionInspector row={row} model={model} onNavigate={onNavigate} evidenceAt={originEvidenceAt || model.observedAt} />;
   if (row.evidence.kind === "diagnostic") return <DiagnosticInspector row={row} current={model.evidenceMode === "current"} />;
-  return <GenericInspector row={row} />;
+  return <BoundedRecordInspector row={row} model={model} />;
 }
 function logSeverityLabel(severity: LogRowEvidence["severity"]): string {
   if (severity === "critical") return "严重";

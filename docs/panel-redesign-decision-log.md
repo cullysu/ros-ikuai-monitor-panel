@@ -24001,3 +24001,16 @@ ocused-green-engineering
 - readiness：当前 SHA 矩阵已识别，但 check-public-release-readiness --require-matrix 仍在 route maturity fail-closed；没有可信外部 Ed25519 签名、RouterOS soak 或 Linux/Windows/GHCR exact-SHA CL，因此不上传 GitHub。
 - 边界：本轮受阻不是 Loop blocked，而是发布资格门禁拒绝越权绿灯；Loop active、blocked=false。
 - Next: 提交本步骤决策文档后重新绑定并验证最终 exact-SHA release evidence；随后等待真实 route owner acceptance、RouterOS soak 与外部 CL。
+
+
+## 第 792 步：收回验收别名真值冲突；当前产品与视觉证据保持可审计
+
+- status: current-artifact-truth-repaired-independent-review-in-progress
+- latestStepOutcome: 792:acceptance-alias-truth-repaired-focused-contracts-green-release-closed
+- 触发与事实：用户最新复核指出报告可能出现顶层 pass=true 与子检查失败并存，以及决策仓库可能有多个 current 真值。复核当前 HEAD 79baa157ac511dd139d24f19501c2f90bd996e6e 后，精确 SHA 的 Overview、route responsive 和 route state 报告没有嵌套 pass=false；tools/local-predeploy-check.js 已由 finalizeReportTruth 将失败子检查、嵌套失败和不完整 required matrix 收敛到顶层失败。真正复现的门禁问题是 18 个旧的 current/worktree 别名目录仍声明 releaseEvidenceEligible=true，触发 check-acceptance-artifact-identity.js 的 ambiguous-artifact-claims-current。
+- 决策与取舍：只在 _acceptance 内移动这些历史/别名目录到不含 current、worktree 或 working-tree 身份词的归档目录，不删除报告；保留带 exact SHA 的报告作为唯一当前候选，并继续让历史子失败报告由 quarantine policy 明确拒绝。没有放宽顶层真值、没有把 bounded shard 的 pass=false 改绿、没有把 Product/Design/Visual 独立复核冒充外部可信签名。
+- 同步确认的现有修复：trafficSamples 是原子 timestamp/uplink/downlink/source/evidenceMode 记录；生产时间输出与前端解析均要求 RFC3339 时区；旧 hash 只作迁移输入且 canonical URL 只写 query；sidecar resolver 做根目录 containment；对象 ID 使用 locale-independent normalization；移动日志详情提供时间、主题、来源、邻接、身份新证据；移动动作携带 object/evidenceAt/returnRoute；1365/1366 共用桌面任务语法；平板容量与 768/844 master-detail 有真实 runtime 合同；route maturity 仍诚实为 0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable。
+- 验证：npm run check:report-truth 通过，包含顶层/嵌套失败回归、81 个历史矛盾报告均被 quarantine、工件身份无 ambiguous current claim；npm run check:overview 通过；重新运行的生产浏览器为 256 checks / 98 screenshots / 122 snapshotApiCalls，responsive-1365-1366-boundary-v1、移动详情去重、动作上下文、WAN 图表轴、平板空间和视觉节奏门禁通过。当前决策仓库仍以 docs/decision-system/current-state.md 为唯一人类可读真值，Product/Design/Visual 只有独立审查证据，不越权成为公众发布绿灯。
+- 未解决发布边界：本步骤没有真实 route owner acceptance、RouterOS 长时 soak、外部 Linux/Windows/GHCR exact-SHA CL 或外部可信签名；GitHub/public release 继续关闭。自动 hooks 仍未完成实际会话验收，手工 Harness checkpoint 继续作为运行状态证据。
+- 心得：current 这个目录名不是证据。验收工件必须把历史、工作树、当前候选、精确 SHA 分成互不含糊的身份层；否则即使报告本身已 fail-closed，目录发现器仍会把旧文件带回发布候选，制造第二种假绿。
+- Next: 等待本轮全新独立 Product/Design/Visual 复核完成；若其 P0/P1 为零，更新唯一 current-state 与 D 盘镜像，提交文档后重新生成文档提交对应 exact-SHA 证据，再检查 route maturity/readiness，之后仍只等待真实 route owner、RouterOS soak 与三端 CL。
