@@ -3,6 +3,7 @@
 
 const fs = require('node:fs');
 const path = require('node:path');
+const { gitWorktreeIdentity } = require('./worktree-runtime-identity');
 
 const ROOT = path.resolve(__dirname, '..');
 const read = (relativePath) => fs.readFileSync(path.join(ROOT, relativePath), 'utf8');
@@ -26,6 +27,7 @@ function findKey(value, key) {
 const css = read('src/panel-framework/mobile/mobile-tablet-layout.css');
 const reportPath = '_acceptance/panel-runtime-browser/report.json';
 const report = exists(reportPath) ? JSON.parse(read(reportPath)) : null;
+const runtimeIdentity = gitWorktreeIdentity(ROOT);
 const normal768 = findKey(report, 'normal768');
 const decisionRect = normal768?.decisionRect;
 const decisionRows = normal768?.decisionRowRects ?? [];
@@ -59,13 +61,22 @@ check(
 );
 
 check(
-  'fresh runtime report exists and remains release-ineligible',
+  'fresh runtime is current clean exact-SHA evidence',
   report?.source === 'playwright-production-runtime' &&
     report?.pass === true &&
-    report?.releaseEvidenceEligible === false,
+    report?.commit === runtimeIdentity.commit &&
+    report?.worktreeClean === true &&
+    runtimeIdentity.worktreeClean === true &&
+    report?.worktreeFingerprint === runtimeIdentity.worktreeFingerprint &&
+    report?.releaseEvidenceEligible === true,
   {
     source: report?.source ?? null,
     pass: report?.pass ?? null,
+    commit: report?.commit ?? null,
+    currentCommit: runtimeIdentity.commit,
+    reportWorktreeClean: report?.worktreeClean ?? null,
+    currentWorktreeClean: runtimeIdentity.worktreeClean,
+    fingerprintMatches: report?.worktreeFingerprint === runtimeIdentity.worktreeFingerprint,
     releaseEvidenceEligible: report?.releaseEvidenceEligible ?? null,
   },
 );

@@ -1,14 +1,14 @@
 # Release Journal
 - status: `current-journal`
-- validForCommit: candidate 4dc3e97b2a2c599d1c7a81f269a6fee91e806bd8 has clean build/runtime evidence; Overview awaits Step786 verification and is not a release candidate
+- validForCommit: candidate eb78d46bef9fcbc805e77d7ed0f6bf14eab64c60 has clean build/runtime evidence; Overview awaits Step787 verification and is not a release candidate
 - supersededBy: `null`
-- currentStep: `786`
-- currentOutcome: `786:tablet-normal-column-continuity-runtime-gate-implementation-pending-verification-release-closed-loop-active`
+- currentStep: `787`
+- currentOutcome: `787:tablet-normal-decision-flow-runtime-gate-implementation-pending-verification-release-closed-loop-active`
 - authority: `docs/decision-system/current-state.md`
 
-- Step786: the exact-SHA runtime gate correction is implemented; Overview rerun is required before current release evidence can proceed.
+- Step787: the next tablet decision-flow gate still uses obsolete release-ineligible semantics; implementation and rerun are required.
 - Product/Design/Visual remain failed or unsigned; route maturity remains 0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable.
-- Worktree is being kept closed to release while the corrected tablet gate is verified; Product/Design/Visual, full matrices, RouterOS soak, readiness, exact-SHA CL, GitHub upload and public release remain closed.
+- Worktree remains closed to release while the next tablet gate is verified; Product/Design/Visual, full matrices, RouterOS soak, readiness, exact-SHA CL, GitHub upload and public release remain closed.
 
 ## Release rule
 

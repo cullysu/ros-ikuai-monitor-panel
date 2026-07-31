@@ -1,10 +1,10 @@
 # 决策系统导航
-- validForCommit: candidate 4dc3e97b2a2c599d1c7a81f269a6fee91e806bd8 has clean build/runtime evidence; Overview awaits Step786 verification and is not a release candidate
+- validForCommit: candidate eb78d46bef9fcbc805e77d7ed0f6bf14eab64c60 has clean build/runtime evidence; Overview awaits Step787 verification and is not a release candidate
 - supersededBy: null
 - status: `current-index`
-- currentBoundaryForStep: `786`
-- latestRecordedStep: `786`
-- latestStepOutcome: `786:tablet-normal-column-continuity-runtime-gate-implementation-pending-verification-release-closed-loop-active`
+- currentBoundaryForStep: `787`
+- latestRecordedStep: `787`
+- latestStepOutcome: `787:tablet-normal-decision-flow-runtime-gate-implementation-pending-verification-release-closed-loop-active`
 - authority: `docs/decision-system/current-state.md`
 
 当前结论由 current-state.md 唯一拥有；本页只负责导航，不重复历史流水账。

@@ -23947,3 +23947,14 @@ ocused-green-engineering
 - 验证：门禁源码已完成修改；尚未重跑 `check:overview`，因此本步不能标记 focused-green。
 - 边界/心得：产品、设计、视觉独立签收，完整状态矩阵、路由成熟度、RouterOS soak、Accessibility、readiness、精确 SHA Linux/Windows/GHCR CL 与 GitHub/public release 仍未关闭。Loop active、blocked=false；当前 failure 是 release gate drift，不是任务阻塞。
 - Next: 重跑 `check:overview` 与该平板合同，修复本步引入的任何真实回归后再记录结果。
+
+## 第 787 步：普通平板决策流门禁仍写死 release-ineligible；继续修正同源断言
+
+- status: `implementation-pending-verification`
+- latestStepOutcome: `787:tablet-normal-decision-flow-runtime-gate-implementation-pending-verification-release-closed-loop-active`
+- 触发与事实：候选 `eb78d46bef9fcbc805e77d7ed0f6bf14eab64c60` 的运行时报告保持 `pass=true`、`worktreeClean=true`、`releaseEvidenceEligible=true`；Step786 修正后 `npm run check:overview` 只剩 `tablet-normal-decision-flow-v1` 这一处陈旧断言，仍要求 `releaseEvidenceEligible=false`。
+- 决策：将普通平板决策流门禁绑定共享当前 HEAD、clean worktree、fingerprint 和 `releaseEvidenceEligible=true`；保留一列决策流、分隔线、768px 纵向布局和原始截图检查。
+- 理由与拒绝项：这是与 Step786 相同的过渡期 gate drift，不是新产品红灯；删除运行时条件、改变布局条件、跳过 Overview 或把其它合同结果代替本门禁均拒绝。
+- 验证：尚未修改本门禁或重跑 Overview，因此不能标记 focused-green。
+- 边界/心得：产品、设计、视觉独立签收，完整矩阵、路由成熟度、RouterOS soak、Accessibility、readiness、精确 SHA Linux/Windows/GHCR CL 与 GitHub/public release 仍未关闭。Loop active、blocked=false。
+- Next: 实施普通平板决策流的 exact-SHA clean runtime 断言，重跑 Overview 并处理下一个真实失败项。
