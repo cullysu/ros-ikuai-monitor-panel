@@ -3,6 +3,7 @@
 
 const fs = require('node:fs');
 const path = require('node:path');
+const { gitWorktreeIdentity } = require('./worktree-runtime-identity');
 
 const ROOT = path.resolve(__dirname, '..');
 const read = (relativePath) => fs.readFileSync(path.join(ROOT, relativePath), 'utf8');
@@ -27,6 +28,7 @@ const css = `${read('src/panel-framework/mobile/mobile-patrol.css')}\n${read('sr
 const screen = read('src/panel-framework/mobile/MobilePatrolScreen.tsx');
 const reportPath = '_acceptance/panel-runtime-browser/report.json';
 const report = exists(reportPath) ? JSON.parse(read(reportPath)) : null;
+const runtimeIdentity = gitWorktreeIdentity(ROOT);
 const normal768 = findKey(report, 'normal768');
 const signalRect = normal768?.signalRect;
 const decisionRect = normal768?.decisionRect;
@@ -57,9 +59,24 @@ check(
   { signalRect, decisionRect },
 );
 check(
-  'fresh runtime is production-shaped evidence and remains release-ineligible',
-  report?.source === 'playwright-production-runtime' && report?.pass === true && report?.releaseEvidenceEligible === false,
-  { source: report?.source ?? null, pass: report?.pass ?? null, releaseEvidenceEligible: report?.releaseEvidenceEligible ?? null },
+  'fresh runtime is current clean exact-SHA evidence',
+  report?.source === 'playwright-production-runtime' &&
+    report?.pass === true &&
+    report?.commit === runtimeIdentity.commit &&
+    report?.worktreeClean === true &&
+    runtimeIdentity.worktreeClean === true &&
+    report?.worktreeFingerprint === runtimeIdentity.worktreeFingerprint &&
+    report?.releaseEvidenceEligible === true,
+  {
+    source: report?.source ?? null,
+    pass: report?.pass ?? null,
+    commit: report?.commit ?? null,
+    currentCommit: runtimeIdentity.commit,
+    reportWorktreeClean: report?.worktreeClean ?? null,
+    currentWorktreeClean: runtimeIdentity.worktreeClean,
+    fingerprintMatches: report?.worktreeFingerprint === runtimeIdentity.worktreeFingerprint,
+    releaseEvidenceEligible: report?.releaseEvidenceEligible ?? null,
+  },
 );
 
 const failures = checks.filter((entry) => !entry.pass).map((entry) => entry.name);

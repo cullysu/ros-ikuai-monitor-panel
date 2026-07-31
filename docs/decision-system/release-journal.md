@@ -1,14 +1,14 @@
 # Release Journal
 - status: `current-journal`
-- validForCommit: current clean candidate c54b8eb30386086c042758c31fb9fa9db7bec2c5 with build/runtime focused-green through Step785; not a release candidate
+- validForCommit: candidate 4dc3e97b2a2c599d1c7a81f269a6fee91e806bd8 has clean build/runtime evidence; Overview awaits Step786 verification and is not a release candidate
 - supersededBy: `null`
-- currentStep: `785`
-- currentOutcome: `785:tablet-layout-runtime-eligibility-drift-write-ahead-release-closed-loop-active`
+- currentStep: `786`
+- currentOutcome: `786:tablet-normal-column-continuity-runtime-gate-implementation-pending-verification-release-closed-loop-active`
 - authority: `docs/decision-system/current-state.md`
 
-- Step785: resource workbench metrics and loadAudit selector drift are identified; implementation and rerun are required before release evidence.
+- Step786: the exact-SHA runtime gate correction is implemented; Overview rerun is required before current release evidence can proceed.
 - Product/Design/Visual remain failed or unsigned; route maturity remains 0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable.
-- Worktree contains the current decision sync until the next candidate commit; resource-full route evidence is red; GitHub upload, public release and exact-SHA CL remain closed.
+- Worktree is being kept closed to release while the corrected tablet gate is verified; Product/Design/Visual, full matrices, RouterOS soak, readiness, exact-SHA CL, GitHub upload and public release remain closed.
 
 ## Release rule
 

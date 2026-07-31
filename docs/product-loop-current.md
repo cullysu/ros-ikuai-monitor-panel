@@ -1,20 +1,20 @@
 - status: `current-handoff`
-- validForCommit: current clean candidate c54b8eb30386086c042758c31fb9fa9db7bec2c5 with build/runtime focused-green through Step785; not a release candidate
-- currentHandoffForStep: `785`
+- validForCommit: candidate 4dc3e97b2a2c599d1c7a81f269a6fee91e806bd8 has clean build/runtime evidence; Overview awaits Step786 verification and is not a release candidate
+- currentHandoffForStep: `786`
 - supersededBy: `docs/decision-system/current-state.md`
 - updated: 2026-07-31
-- latestRecordedStep: `785`
-- latestStepOutcome: `785:tablet-layout-runtime-eligibility-drift-write-ahead-release-closed-loop-active`
+- latestRecordedStep: `786`
+- latestStepOutcome: `786:tablet-normal-column-continuity-runtime-gate-implementation-pending-verification-release-closed-loop-active`
 - currentConclusion: **FAIL overall**. This handoff routes evidence only; it cannot sign Product/Design/Visual.
 - process: docs/decision-system/current-state.md is the sole authority; docs/panel-redesign-decision-log.md is the detailed chronology.
 
-## Current handoff: Step785 tablet layout runtime eligibility gate write-ahead; release remains closed
+## Current handoff: Step786 tablet-normal-column-continuity gate implementation; release remains closed
 
-- Result: Candidate c54b8eb is build- and runtime-green, but resource-full trafficLoad/loadAudit at tablet 1024x900 fail the route contract; this step only adds diagnostic intent, and independent acceptance remains open.
-- Decision: bind all next evidence to the clean candidate SHA without weakening task-before-evidence order.
-- Boundary: focused contracts and clean candidate runtime are green, while the resource-full route shard is red; route maturity, full matrix, soak and exact-SHA CL remain open.
+- Result: Candidate 4dc3e97 has clean production runtime evidence; the obsolete release-ineligible assertion has been corrected, but Overview verification is pending.
+- Decision: use shared exact-SHA clean runtime identity and preserve all tablet layout/column-continuity checks.
+- Boundary: this is a gate correction only; independent acceptance, full matrix, route maturity, soak, accessibility, readiness and exact-SHA CL remain open.
 - Loop state: active, blocked=false. Release blockage and task blockage are separate states.
-- Next: correct the tablet layout gate to exact-SHA clean semantics, rerun Overview/tablet checks, then regenerate full matrices.
+- Next: rerun Overview/tablet checks, then regenerate complete current-identity evidence.
 
 ## Gate boundary
 

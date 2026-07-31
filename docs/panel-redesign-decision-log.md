@@ -23936,3 +23936,14 @@ ocused-green-engineering
 - 决策：把该 gate 改成强制 production runtime、pass、当前 HEAD 精确 commit、clean worktree、64 位 fingerprint 和 releaseEvidenceEligible=true；不降低任何布局条件，不把静态通过冒充视觉签收。
 - 边界：本步尚未修改 gate；Product/Design/Visual、完整 matrix、RouterOS soak、Accessibility、readiness、精确 SHA CL 和 public release 仍关闭；Loop active、blocked=false。
 - Next: 实施 exact-SHA clean runtime gate，重跑 Overview 与相关平板检查。
+
+## 第 786 步：修正平板连续性门禁的陈旧 release-ineligible 断言；等待精确 SHA 回归验证
+
+- status: `implementation-pending-verification`
+- latestStepOutcome: `786:tablet-normal-column-continuity-runtime-gate-implementation-pending-verification-release-closed-loop-active`
+- 触发与事实：候选 `4dc3e97b2a2c599d1c7a81f269a6fee91e806bd8` 的 production browser report 已通过 `256 checks / 98 screenshots`，标记 `source=playwright-production-runtime`、`pass=true`、`worktreeClean=true`、`releaseEvidenceEligible=true`；`npm run check:overview` 的唯一失败来自 `tablet-normal-column-continuity-v1` 仍要求 `releaseEvidenceEligible=false`。
+- 决策：将该门禁改为共享当前 HEAD、clean worktree、worktree fingerprint、`releaseEvidenceEligible=true` 的 exact-SHA 证据，并保留 768px 信号与 decision ledger 同列、连续位置和 CSS ownership 的全部布局条件。
+- 理由与拒绝项：继续要求 dirty/ineligible 会把真实 clean evidence 判红；删除运行时检查、放宽布局位置、复用旧候选报告或跳过 Overview 都会制造假绿，均不采用。
+- 验证：门禁源码已完成修改；尚未重跑 `check:overview`，因此本步不能标记 focused-green。
+- 边界/心得：产品、设计、视觉独立签收，完整状态矩阵、路由成熟度、RouterOS soak、Accessibility、readiness、精确 SHA Linux/Windows/GHCR CL 与 GitHub/public release 仍未关闭。Loop active、blocked=false；当前 failure 是 release gate drift，不是任务阻塞。
+- Next: 重跑 `check:overview` 与该平板合同，修复本步引入的任何真实回归后再记录结果。

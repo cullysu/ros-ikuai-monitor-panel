@@ -1,10 +1,10 @@
 # 决策系统导航
-- validForCommit: current clean candidate c54b8eb30386086c042758c31fb9fa9db7bec2c5 with build/runtime focused-green through Step785; not a release candidate
+- validForCommit: candidate 4dc3e97b2a2c599d1c7a81f269a6fee91e806bd8 has clean build/runtime evidence; Overview awaits Step786 verification and is not a release candidate
 - supersededBy: null
 - status: `current-index`
-- currentBoundaryForStep: `785`
-- latestRecordedStep: `785`
-- latestStepOutcome: `785:tablet-layout-runtime-eligibility-drift-write-ahead-release-closed-loop-active`
+- currentBoundaryForStep: `786`
+- latestRecordedStep: `786`
+- latestStepOutcome: `786:tablet-normal-column-continuity-runtime-gate-implementation-pending-verification-release-closed-loop-active`
 - authority: `docs/decision-system/current-state.md`
 
 当前结论由 current-state.md 唯一拥有；本页只负责导航，不重复历史流水账。

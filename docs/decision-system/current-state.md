@@ -1,25 +1,25 @@
 - status: `current`
-- currentConclusionForStep: `785`
-- latestRecordedStep: `785`
-- latestStepOutcome: `785:tablet-layout-runtime-eligibility-drift-write-ahead-release-closed-loop-active`
-- currentBoundaryForStep: `785`
-- validForCommit: current clean candidate c54b8eb30386086c042758c31fb9fa9db7bec2c5 with build/runtime focused-green through Step785; not a release candidate
+- currentConclusionForStep: `786`
+- latestRecordedStep: `786`
+- latestStepOutcome: `786:tablet-normal-column-continuity-runtime-gate-implementation-pending-verification-release-closed-loop-active`
+- currentBoundaryForStep: `786`
+- validForCommit: candidate 4dc3e97b2a2c599d1c7a81f269a6fee91e806bd8 has clean build/runtime evidence; Overview awaits Step786 verification and is not a release candidate
 - supersededBy: `null`
-- updatedAt: `2026-07-31T00:00:00+08:00`
+- updatedAt: `2026-07-31T08:27:15+08:00`
 - authority: This is the only human-readable current-state source. Historical journals, contracts, reports, and machine state may provide evidence but may not override this page.
 
-## Current decision record: Step 779
+## Current decision record: Step 786
 
 - status: `focused-green-engineering`
-- boundary: Step785 records a gate-only drift: the tablet layout checker still expects the obsolete dirty-worktree semantics while current production evidence is exact-SHA clean.
+- boundary: Step786 corrects a stale tablet-normal-column-continuity runtime eligibility assertion; verification is still open.
 - Product/Design/Visual: `failed` / unsigned. R07 mobile visual maturity, R09 tablet space efficiency, R10 desktop density/task efficiency and R14 cross-surface product grammar remain open.
 - route maturity: `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`; no route is promoted to a complete module.
-- release: candidate c54b8eb remains red in resource-full trafficLoad/loadAudit tablet cells; no GitHub upload, exact-SHA CL, RouterOS soak or public release exists. Loop is active and `blocked=false`.
-- Next: implement the exact-SHA clean runtime gate and rerun Overview/tablet checks.
+- release: candidate 4dc3e97 has clean build/runtime evidence, but Overview verification after the gate change is pending; no GitHub upload, exact-SHA CL, RouterOS soak or public release exists. Loop is active and blocked=false.
+- Next: rerun Overview and the tablet continuity contract, then regenerate complete current-identity matrices.
 
 ## Current conclusion
 
-**FAIL overall.** The resource-full route shard is red at tablet 1024x900; engineering contracts and bounded reviews are evidence only. Product/Design/Visual acceptance, route maturity, accessibility, RouterOS soak, clean-candidate hygiene and exact-SHA CL remain open. GitHub/public release stays closed.
+**FAIL overall.** The current candidate is awaiting verification of a stale tablet runtime-gate correction. Independent Product/Design/Visual acceptance, route maturity, accessibility, soak, release hygiene and exact-SHA CL remain open. GitHub/public release stays closed.
 
 ## Current release gates
 
