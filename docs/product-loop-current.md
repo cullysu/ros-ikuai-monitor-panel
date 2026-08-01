@@ -1,18 +1,18 @@
 - status: `current-handoff`
-- validForCommit: uncommitted formal acceptance/release approval; 100148c exact clean engineering evidence is present; not a release candidate
-- currentHandoffForStep: `831`
+- validForCommit: uncommitted formal acceptance/release approval; 603a27f exact clean engineering evidence is present; not a release candidate
+- currentHandoffForStep: `832`
 - supersededBy: docs/decision-system/current-state.md
 - fullHistory: docs/panel-redesign-decision-log.md
 - updated: 2026-08-01
-- latestRecordedStep: `831`
-- latestStepOutcome: `831:100148c-exact-matrix-green-scoped-review-pass-route-maturity-open`
+- latestRecordedStep: `832`
+- latestStepOutcome: `832:603a27f-exact-full-route-responsive-visual-scoped-pass-route-maturity-open`
 - currentConclusion: **FAIL overall**. Local engineering, matrix and scoped visual evidence is green; formal Product/Design/Visual independent acceptance, independent Accessibility, route maturity and release evidence remain open.
 
-## Current handoff: Step831 exact local evidence green; readiness remains at route maturity
+## Current handoff: Step832 exact local evidence green; readiness remains at route maturity
 
-- Result: 100148c exact runtime 257/140/170, packet 12/12, Overview 28/28, route-responsive 76/76 bounded, route-state 266/266 and full public 532/532 pass; style raw 119994 and local release hygiene pass.
+- Result: 603a27f exact runtime 257/140/169, packet 12/12, Overview 28/28, route-responsive 532/532 complete, route-state 266/266 and full public 532/532 pass; style raw 119994 and local release hygiene pass.
 - Decision: Continue the task instead of marking it blocked. Close the local exact-SHA matrix, packet, asset-budget and scoped visual-material slices; do not convert scoped review into trusted external signoff.
-- Boundary: 100148c is a clean engineering candidate before this governance update; readiness correctly stops at route maturity 0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable; formal signoff remains pending.
+- Boundary: 603a27f is a clean engineering candidate before this governance update; readiness correctly stops at route maturity 0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable; formal signoff remains pending.
 - Next: commit this decision-repository update, regenerate the exact evidence for the resulting SHA, then obtain real independent route-owner/Accessibility acceptance, RouterOS soak and exact-SHA Linux/Windows/GHCR CL before any GitHub API publication.
 
 ## Gate boundary
@@ -27,6 +27,6 @@
 | Current product release | `fail` |
 | GitHub / public release | closed | No upload or publication approval. |
 
-## Step831 continuation
+## Step832 continuation
 
 Do not mark this task blocked. Rebuild exact clean evidence for the governance commit, then continue the remaining non-forgeable gates.

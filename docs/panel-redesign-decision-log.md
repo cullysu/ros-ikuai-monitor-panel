@@ -24546,3 +24546,18 @@ ocused-green-engineering
 - nextAction：先同步并提交 Step831 决策仓库与 D 盘镜像，随后在新治理 SHA 上再重绑最终 runtime/矩阵/packet，并运行全部本地 release/security/accessibility 合同；外部 exact-SHA CL 全部真实通过前禁止 GitHub API 发布。
 - validForCommit：`100148c03736abb303f3482d8764d4fe8b590a28` exact clean engineering/scoped evidence；本步骤文档提交后必须重新绑定
 - supersededBy：null
+
+## 第 832 步：603a27f 完整 route-responsive 矩阵补齐，先前 P1 已关闭，route maturity 仍开放
+
+- status：`603a27f-exact-full-route-responsive-visual-scoped-pass-route-maturity-open`
+- latestStepOutcome: `832:603a27f-exact-full-route-responsive-visual-scoped-pass-route-maturity-open`
+- 触发/问题：独立复核对 `603a27f` 指出唯一 P1：route-responsive 报告虽然 `76/76`，但只覆盖 `single`，`matrix.complete=false`。这不能写成完整发布矩阵，必须补齐 7 场景 × 19 路由 × 4 视口。
+- 观察事实：在精确 SHA `603a27fe3f76b2944aa16d7bc91f8b5342371b8f` 上补跑 `_acceptance/release-routes-responsive-603a27f.../report.json`，现在 `pass=true`、`matrix.complete=true`、`532/532`、失败 0；独立复核随后确认该 P1 已关闭，未新增 P0/P1。Overview `28/28`、route-state `266/266`、完整 public `532/532` 仍通过，runtime 为 `257 checks / 140 screenshots / 169 snapshot API calls`。
+- 视觉与独立复核：390/375 正常与异常、平板 768/844、桌面 1366/1440 的视觉范围继续 scoped PASS，P0/P1=0；375px 后续判断、375px 异常证据边界、1366px 低优先级表格在首屏下方仍是 P2。复核未修改文件、未生成正式签名。
+- 决策：关闭 route-responsive 完整性 P1，并关闭 `603a27f` 当前 SHA 的本地矩阵/视觉复核切片；不把 scoped PASS 当作 Ed25519 正式 Product/Design/Visual 签收，不把 route maturity、独立 Accessibility、route-owner、RouterOS soak 或 Linux/Windows/GHCR CL 写成通过。
+- readiness：当前精确矩阵消费成功后，`check-public-release-readiness.js --require-matrix` 仍真实停在 `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`；这次开放门禁是 route maturity 与外部签收，不再是矩阵缺口。
+- 理由与拒绝项：原 `76/76` 只证明 bounded single-scenario shard，独立复核指出其 required scenario 缺口是有效 P1；补齐完整矩阵比修改文案更重要。保留旧报告，不覆盖历史失败证据。
+- 边界/心得：发布证据必须同时满足 requested cells、`matrix.complete=true` 和完整 required scenarios；“每个请求格通过”不能替代“分母正确”。任务继续 active、`blocked=false`。
+- nextAction：同步并提交 Step832 决策仓库与 D 盘镜像，随后在新治理 SHA 上重跑 build/runtime/Overview/route-responsive/route-state/public/packet/readiness，并继续处理真实外部独立签收、RouterOS soak 与 exact-SHA CL；全部真实通过前禁止 GitHub API 发布。
+- validForCommit：`603a27fe3f76b2944aa16d7bc91f8b5342371b8f` exact clean engineering/scoped evidence；本步骤文档提交后必须重新绑定
+- supersededBy：null
