@@ -1,20 +1,20 @@
 - status: `reference`
-- validForCommit: Step825 governance-dirty connection screenshot repair is present; exact-SHA matrices and packet must be rebound; not a release candidate
+- validForCommit: Step826 governance-dirty final evidence record is present; f66a956 exact evidence must be rebound after this source change; not a release candidate
 - supersededBy: `null`
 - authority: `docs/decision-system/current-state.md`
-- currentStep: `825`
-- currentOutcome: `825:desktop-connection-isolated-launch-flaky-in-context-capture-selected`
-- currentBoundary: `825`
-- latestRecordedStep: `825`
-- latestStepOutcome: `825:desktop-connection-isolated-launch-flaky-in-context-capture-selected`
+- currentStep: `826`
+- currentOutcome: `826:f66a956-exact-release-evidence-green-readiness-route-maturity-open`
+- currentBoundary: `826`
+- latestRecordedStep: `826`
+- latestStepOutcome: `826:f66a956-exact-release-evidence-green-readiness-route-maturity-open`
 
 ## Current pointer
 
 The authority is current-state.md; this page is discovery only.
 
 - Current conclusion: FAIL overall; local engineering evidence is complete in declared scopes, while independent public acceptance and trusted external release gates remain open.
-- Current engineering boundary: the 13ea074 runtime cleanup repair exposed a second-browser connection screenshot timeout; the existing page semantics pass, and the screenshot path is being made deterministic before rebinding exact evidence.
-- Latest result: Step825 records the in-context desktop connection capture selection; the unsigned visual packet remains generated ignored evidence under `_acceptance/panel-runtime-browser/` and must be rebound; readiness remains fail-closed.
+- Current engineering boundary: f66a956 build/runtime/packet/matrices and local release hygiene pass in exact clean identity; this Step826 documentation refresh requires a new clean candidate.
+- Latest result: Step826 records exact evidence green and readiness stopping at route maturity; the unsigned visual packet remains generated ignored evidence under `_acceptance/panel-runtime-browser/` and must be rebound after this source change.
 - Full process: panel-redesign-decision-log.md.
 - Product handoff: product-loop-current.md.
 - Release boundary: release-journal.md.

@@ -24469,3 +24469,19 @@ ocused-green-engineering
 - nextAction：先提交本步治理记录与连接截图路径修复，重新生成新 clean candidate 的 runtime、packet、28/76/266/532 矩阵和 readiness；继续独立签收、RouterOS soak 与 exact-SHA CL。
 - validForCommit：13ea074 clean candidate 仍因本步未提交的 runtime harness 修复需要重绑；发布候选未建立
 - supersededBy：null
+
+## 第 826 步：f66a956 精确候选矩阵与本地发布卫生全部通过，真实 readiness 停在路由成熟度
+
+- status：`f66a956-exact-release-evidence-green-readiness-route-maturity-open`
+- latestStepOutcome: `826:f66a956-exact-release-evidence-green-readiness-route-maturity-open`
+- 触发/问题：Step825 的连接页截图路径修复已经提交到 `f66a956259dccab26f058f2e2978f5049ac92aa4`，需要重新绑定完整工程证据并确认是否还有本地可关闭的发布问题。
+- 观察事实：f66a956 build PASS；runtime-browser `257 checks / 140 screenshots / 169 snapshot API calls`；packet `12/12` digest/identity PASS，`prepared-not-signed`、`selfSignoff=false`、`releaseEligible=false`；Overview `28/28`、route-responsive `76/76` bounded、route-state `266/266`、full public `532/532` 均 PASS。artifact identity、report truth、decision-system、types、backend/security、static assets、asset identity、runtime schema、readonly、release blockers、runtime/readiness lifecycle 和 overview 全量静态视觉合约均 PASS。
+- readiness：`check-public-release-readiness.js --require-matrix` 已接受 f66a956 的精确矩阵，真实失败边界为 route maturity：`0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`；18 路由仍是 `automated-only` Accessibility、`independentAcceptance=pending`，没有任何 complete 路由。
+- 独立复核：当前 scoped Product/Design/Visual PASS，P0/P1=0；这只关闭声明范围内的截图/工程材料复核，不是可信 Ed25519 签收。独立辅助技术、route-owner、RouterOS soak、Linux/Windows/GHCR exact-SHA CL 仍无真实证据。
+- 决策：关闭 f66a956 可由本地完成的 runtime、矩阵、packet、视觉材料、决策仓库、D 镜像和静态发布卫生切片；保留 route maturity、正式独立签收、真实 RouterOS、三端 CL 和 GitHub API 发布 fail-closed。任务继续 active、`blocked=false`。
+- 理由与拒绝项：不把 readiness 的 route maturity 失败改成测试受阻，不把 18 个 bounded-readonly URL 改写为 complete，不生成外部签名，不因本地矩阵全绿提前上传 GitHub。
+- 验证：所有上述命令均使用当前 clean exact SHA；route maturity structural contract 与 service-log contract PASS，但 strict readiness 仍正确 FAIL。矩阵报告和 packet 绑定 f66a956，后续任何源码/决策文档变更都必须重新生成。
+- 边界/心得：工程发布证据完整，不等于产品/路由运营能力完整。当前剩余红灯已经从测试不稳定收敛为真实的独立接受、路由深度、真实设备和远端 CL 边界；不能再用“继续多跑一次矩阵”假装这些主体已经存在。
+- nextAction：继续逐路由补齐真实筛选/对象详情/错误恢复并取得 route-owner 与 Accessibility 独立证据；准备 RouterOS soak 和 exact-SHA Linux/Windows/GHCR CL。任何 GitHub API 发布前必须重新绑定 clean candidate，并确认 CL 全通过。
+- validForCommit：f66a956 精确 clean candidate evidence；本步文档变更后需重绑新的 clean candidate
+- supersededBy：null

@@ -1,10 +1,10 @@
 # 决策系统导航
-- validForCommit: Step825 governance-dirty connection screenshot repair is present; exact-SHA matrices and packet must be regenerated; not a release candidate
+- validForCommit: Step826 governance-dirty final evidence record is present; exact-SHA matrices and packet must be regenerated; not a release candidate
 - supersededBy: null
 - status: `current-index`
-- currentBoundaryForStep: `825`
-- latestRecordedStep: `825`
-- latestStepOutcome: `825:desktop-connection-isolated-launch-flaky-in-context-capture-selected`
+- currentBoundaryForStep: `826`
+- latestRecordedStep: `826`
+- latestStepOutcome: `826:f66a956-exact-release-evidence-green-readiness-route-maturity-open`
 - authority: `docs/decision-system/current-state.md`
 
 当前结论由 current-state.md 唯一拥有；本页只负责导航，不重复历史流水账。

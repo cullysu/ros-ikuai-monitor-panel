@@ -1,10 +1,10 @@
 # Release Journal
 - status: `current-journal`
-- validForCommit: Step825 connection screenshot repair is dirty; prior exact-SHA matrices are historical and unsigned packet must be rebound; not a release candidate
+- validForCommit: Step826 final evidence record is dirty; f66a956 exact-SHA matrices are historical until rebound; not a release candidate
 - supersededBy: null
-- currentStep: `825`
-- currentOutcome: 825:desktop-connection-isolated-launch-flaky-in-context-capture-selected
-- latestStepOutcome: `825:desktop-connection-isolated-launch-flaky-in-context-capture-selected`
+- currentStep: `826`
+- currentOutcome: 826:f66a956-exact-release-evidence-green-readiness-route-maturity-open
+- latestStepOutcome: `826:f66a956-exact-release-evidence-green-readiness-route-maturity-open`
 - authority: docs/decision-system/current-state.md
 - fullHistory: panel-redesign-decision-log.md
 
@@ -20,7 +20,7 @@
 - Direct readiness passes engineering matrix evidence and stops at route maturity: 0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable. No RouterOS soak, trusted Ed25519, exact-SHA Linux/Windows/GHCR CL or GitHub upload is claimed.
 
 - Step821: the exact e22b244 evidence set passed its declared matrices and readiness stopped at route maturity; ambiguous `*-current` artifact names were replaced with exact-SHA directories, and the unsigned visual packet was moved to generated ignored evidence to avoid tracked-packet self-reference. The source/tool refresh invalidated the old evidence.
-- Step825: the desktop connection page keeps its semantic checks, while its one screenshot moves from unstable second-browser isolation to the verified in-context page. Exact-SHA matrix rebinding, formal independent acceptance, RouterOS soak and exact-SHA CL remain open.
+- Step826: f66a956 exact runtime, packet, Overview 28/28, route-responsive 76/76, route-state 266/266, public 532/532 and local hygiene pass; readiness accepts the matrix and stops at route maturity 0/18/0/1. Formal independent acceptance, RouterOS soak and exact-SHA CL remain open.
 
 ## Release rule
 

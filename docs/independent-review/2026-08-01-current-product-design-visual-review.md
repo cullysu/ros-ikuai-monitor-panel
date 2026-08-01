@@ -124,3 +124,9 @@
 - The clean 13ea074 runtime still timed out only while launching the extra isolated browser for `desktop-connection.png`; the connection page's dedicated semantic workspace, form width, overflow and landmark checks had already passed.
 - The chosen repair captures that already-verified `desktopPage` in context for this one screenshot, retaining viewport, timeout, animation and digest contracts. It does not weaken product assertions or remove the screenshot.
 - This is runtime-harness evidence, not a trusted independent signature. Exact-SHA matrices must be regenerated after the repair; route maturity, independent Accessibility, RouterOS soak and exact-SHA CL remain open.
+
+## Fresh Step826 exact-evidence disposition
+
+- f66a956 exact evidence is green: runtime `257/140/169`, packet `12/12`, Overview `28/28`, route-responsive `76/76` bounded, route-state `266/266`, full public `532/532`, and local static/security/accessibility/visual contracts pass.
+- Readiness accepts the exact matrix and fails only at the real route maturity boundary: `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`. This does not close independent Accessibility, route-owner, RouterOS soak or exact-SHA CL.
+- The scoped Product/Design/Visual result remains PASS with P0/P1=0, but is not a trusted external signature. This record update invalidates f66a956 identity evidence until the next clean rebind.
