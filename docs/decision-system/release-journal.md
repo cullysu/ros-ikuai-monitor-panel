@@ -1,10 +1,10 @@
 # Release Journal
 - status: `current-journal`
-- validForCommit: exact-SHA matrices, dirty runtime evidence and unsigned acceptance packet are present; governance is dirty and this is not a release candidate
+- validForCommit: d44 exact-SHA matrices, dirty runtime evidence and unsigned acceptance packet are present; Step822 governance is dirty and this is not a release candidate
 - supersededBy: null
-- currentStep: `821`
-- currentOutcome: 821:current-clean-evidence-identity-repair-generated-packet-formal-signoff-open
-- latestStepOutcome: `821:current-clean-evidence-identity-repair-generated-packet-formal-signoff-open`
+- currentStep: `822`
+- currentOutcome: 822:d44-exact-matrix-green-scoped-visual-pass-route-maturity-open
+- latestStepOutcome: `822:d44-exact-matrix-green-scoped-visual-pass-route-maturity-open`
 - authority: docs/decision-system/current-state.md
 - fullHistory: panel-redesign-decision-log.md
 
@@ -19,7 +19,8 @@
 - Runtime fingerprint 33950af70105c717b4981200e1d84d874847f52d3ce303dfb7d7be5263291353; artifact worktree-80f5113849dc-33950af70105; packet and all 12 current screenshot digests are rebound.
 - Direct readiness passes engineering matrix evidence and stops at route maturity: 0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable. No RouterOS soak, trusted Ed25519, exact-SHA Linux/Windows/GHCR CL or GitHub upload is claimed.
 
-- Step821: the exact e22b244 evidence set passed its declared matrices and readiness stopped at route maturity; ambiguous `*-current` artifact names were replaced with exact-SHA directories, and the unsigned visual packet was moved to generated ignored evidence to avoid tracked-packet self-reference. The source/tool refresh invalidates the old evidence until a new clean candidate is built.
+- Step821: the exact e22b244 evidence set passed its declared matrices and readiness stopped at route maturity; ambiguous `*-current` artifact names were replaced with exact-SHA directories, and the unsigned visual packet was moved to generated ignored evidence to avoid tracked-packet self-reference. The source/tool refresh invalidated the old evidence.
+- Step822: d44 exact evidence passed runtime and the 28/76/266/532 matrices; current phone/tablet/desktop visual material has no new scoped screenshot P0/P1. Packet integrity is 12/12 but deliberately unsigned. Readiness identifies d44 and stops at route maturity 0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable; formal independent acceptance, RouterOS soak and exact-SHA CL remain open.
 
 ## Release rule
 

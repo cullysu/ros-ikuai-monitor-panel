@@ -98,3 +98,10 @@
 - The formatter change removed one redundant blank line from mobile-patrol.css; the rebuilt asset identity, fresh runtime and current matrices were regenerated rather than reusing the previous fingerprint.
 - Current evidence: runtime 257/101/131, public 532/532, Overview 28/28, route-state 266/266, route-responsive bounded 76/76; fingerprint bd0290679d98e13c9101a1aabec7dcafb6f39c5dff574348dd8f57d6e999f526.
 - Scoped Product/Design/Visual disposition remains within scope only. The packet is prepared-not-signed, selfSignoff=false, and releaseEligible=false; formal route-owner, Accessibility, RouterOS soak and exact-SHA CL remain open.
+
+## Fresh Step822 d44 exact-SHA scoped revalidation
+
+- Candidate: `d44b42d955b97976193740478245d2a04df81633`; the exact clean runtime and matrices were regenerated before this governance refresh.
+- Engineering evidence: runtime `257 checks / 140 screenshots / 169 snapshot API calls`; Overview `28/28`; route-responsive bounded `76/76`; route-state `266/266`; full public `532/532`; packet integrity `12/12`.
+- Scoped Product/Design/Visual disposition: PASS for the declared phone normal/incident, 844 tablet master/detail, 1366 desktop task workspace and chart evidence. No new screenshot P0/P1 was found in this revalidation. The packet remains `prepared-not-signed`, `selfSignoff=false`, `releaseEligible=false`.
+- Formal boundary: this transcript is not an Ed25519 signature and does not close independent Accessibility, route-owner acceptance, route maturity, RouterOS soak or Linux/Windows/GHCR exact-SHA CL. Readiness remains `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`; no GitHub upload occurred.

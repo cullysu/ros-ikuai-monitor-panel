@@ -24410,3 +24410,19 @@ ocused-green-engineering
 - nextAction：提交本轮工具/治理修复后，重跑 build、runtime、28/76/266/532 精确矩阵，生成新候选的 unsigned visual packet，运行所有发布卫生与 readiness 检查；继续准备真实独立签名、RouterOS soak 和精确 SHA CL，CL 未全通过前禁止 GitHub API 发布。
 - validForCommit：本步骤生成的旧 e22b244 证据仅用于记录；新候选必须重新生成
 - supersededBy：null
+
+## 第 822 步：d44 精确候选矩阵重跑，关闭本地视觉证据切片，继续推进正式签收
+
+- status：`d44-exact-matrix-green-scoped-visual-pass-route-maturity-open`
+- latestStepOutcome: `822:d44-exact-matrix-green-scoped-visual-pass-route-maturity-open`
+- 触发/问题：用户要求未完成的独立签收、视觉评审和发布资格继续推进，不能把开放门禁当作任务受阻。Step821 的治理工具修复已经提交到 d44，旧候选报告不能继续冒充当前证据。
+- 观察事实：当前候选 `d44b42d955b97976193740478245d2a04df81633` 的 build 通过；runtime-browser 为 `257 checks / 140 screenshots / 169 snapshot API calls`；Overview `28/28`；route-responsive bounded `76/76`；route-state `266/266`；完整 public matrix `532/532`。unsigned visual packet 校验 `12/12` 通过，包状态仍是 `prepared-not-signed`、`selfSignoff=false`、`releaseEligible=false`。
+- 视觉切片：重新检查当前手机正常态、手机接口异常态、844 平板主从工作区、1366 桌面工作区及图表证据；当前声明范围内没有新增可复现的截图 P0/P1。该结果只关闭当前候选的 scoped Product/Design/Visual review 材料，不是可信外部签名。
+- readiness：`check-public-release-readiness --require-matrix` 已识别 d44 的精确矩阵，随后真实停在 route maturity：`0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`。18 个路由仍只有 `automated-only` Accessibility，`independentAcceptance=pending`；`more` 仍是工具目录。
+- 决策：关闭 d44 的本地 exact-SHA 工程矩阵、视觉材料完整性、D 盘镜像和 scoped visual review 切片；不把自动化矩阵、实现者复核或代理 scoped PASS 改写成 Product/Design/Visual、辅助技术、route-owner 或 Ed25519 正式签收。
+- 理由与拒绝项：不伪造独立签名、RouterOS soak、Linux/Windows/GHCR exact-SHA CL；不把 18 个 bounded-readonly URL 宣称为 complete 运维模块；不在 readiness 尚未通过、CL 未验证前上传 GitHub；不因 gate open 把任务标记为 blocked。
+- 验证：d44 的 `check:decision-system`、packet checker、artifact identity、runtime lifecycle、types、RFC3339、readonly、backend security、static assets、asset identity 和 runtime schema 均通过；D 盘镜像同步后 14/14 byte-identical。readiness 的失败原因保留为真实 route maturity，而不是测试短路。
+- 边界/心得：发布资格不是靠继续增加截图数量获得，而是要把每个路由的真实筛选/对象详情/错误恢复、独立辅助技术验收、外部 Ed25519 签名、RouterOS soak 和精确 SHA 三端 CL 补齐。当前本地能关闭的切片已经关闭，不能由本地实现者代替外部主体签名。
+- nextAction：将本步骤及 d44 事实同步到当前状态、Loop handoff 和 D 盘镜像；提交治理记录后重新生成最终 clean candidate 的 runtime、28/76/266/532 矩阵和 packet，再继续逐路由成熟度、独立 Accessibility、RouterOS soak 与 exact-SHA CL；CL 未全绿前禁止 GitHub API 发布。
+- validForCommit：d44 exact-SHA engineering/scoped evidence；正式发布未授权
+- supersededBy：null
