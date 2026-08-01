@@ -1,10 +1,10 @@
 # Release Journal
 - status: `current-journal`
-- validForCommit: Step832 603a27f exact clean engineering evidence is present; formal external gates remain open; not a public release approval
+- validForCommit: Step833 792b83c exact clean engineering evidence is present; formal external gates remain open; not a public release approval
 - supersededBy: null
-- currentStep: `832`
-- currentOutcome: 832:603a27f-exact-full-route-responsive-visual-scoped-pass-route-maturity-open
-- latestStepOutcome: 832:603a27f-exact-full-route-responsive-visual-scoped-pass-route-maturity-open
+- currentStep: `833`
+- currentOutcome: 833:792b83c-exact-full-matrix-scoped-rebind-pass-route-maturity-open
+- latestStepOutcome: 833:792b83c-exact-full-matrix-scoped-rebind-pass-route-maturity-open
 - authority: docs/decision-system/current-state.md
 - fullHistory: panel-redesign-decision-log.md
 
@@ -23,6 +23,7 @@
 - Step828: 32ed025 exact runtime, packet, Overview 28/28, route-responsive 76/76, route-state 266/266, public 532/532 and local hygiene pass; scoped independent visual/product review is P0=0/P1=0; readiness remains at route maturity 0/18/0/1. Formal independent acceptance, RouterOS soak and exact-SHA CL remain open.
 
 - Step831: 100148c exact clean runtime `257/140/170`, Overview `28/28`, route-responsive `76/76` bounded, route-state `266/266`, full public `532/532`, packet `12/12` and local release hygiene pass. The extra 390–430px CSS patch was removed after the first candidate hit the style budget; final raw style is `119994`. Readiness correctly stops at route maturity `0/18/0/1`. Independent read-only review is scoped PASS with P0/P1=0 and three P2 boundaries; formal Product/Design/Visual, independent Accessibility, route-owner acceptance, RouterOS soak and exact-SHA CL remain open.
+- Step832: 603a27f exact clean runtime `257/140/169`, Overview `28/28`, route-responsive full `532/532`, route-state `266/266`, full public `532/532`, packet `12/12` and local release hygiene pass. The route-responsive single-scenario 76/76 shard remained available for readiness discovery, while the complete multi-scenario report closed the prior P1. Readiness correctly stops at route maturity `0/18/0/1`. Independent read-only review is scoped PASS with P0/P1=0; formal Product/Design/Visual, independent Accessibility, route-owner acceptance, RouterOS soak and exact-SHA CL remain open.
 
 ## Release rule
 

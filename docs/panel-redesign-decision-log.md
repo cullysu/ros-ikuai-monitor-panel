@@ -24561,3 +24561,18 @@ ocused-green-engineering
 - nextAction：同步并提交 Step832 决策仓库与 D 盘镜像，随后在新治理 SHA 上重跑 build/runtime/Overview/route-responsive/route-state/public/packet/readiness，并继续处理真实外部独立签收、RouterOS soak 与 exact-SHA CL；全部真实通过前禁止 GitHub API 发布。
 - validForCommit：`603a27fe3f76b2944aa16d7bc91f8b5342371b8f` exact clean engineering/scoped evidence；本步骤文档提交后必须重新绑定
 - supersededBy：null
+
+## 第 833 步：792b83c 最终精确证据重绑通过，视觉与矩阵 scoped 关闭，正式发布门禁仍开放
+
+- status：`792b83c-exact-full-matrix-scoped-rebind-pass-route-maturity-open`
+- latestStepOutcome: `833:792b83c-exact-full-matrix-scoped-rebind-pass-route-maturity-open`
+- 触发/问题：Step832 的治理文档提交产生新 clean SHA `792b83c0bcccf686d7629ecec5088a17d7e25d3c`，旧 SHA 证据再次失效；必须在新 SHA 上重跑全部发布矩阵和 packet，不能继承上一轮“绿”。
+- 观察事实：`npm run build` 通过，framework `style.css` raw `119994`；fresh runtime `257 checks / 140 screenshots / 169 snapshot API calls`，failed=0。Overview `28/28`；完整 route-responsive `532/532`、`matrix.complete=true`；route-state `266/266`；完整 public `532/532`；单场景 route-responsive 76/76 也已单独保留用于 readiness 的 bounded 入口。
+- 视觉与独立复核：独立只读 rebind 针对 `792b83c` 返回 scoped PASS，截图范围无新增 P0/P1，完整 route-responsive 7 场景均通过；未修改文件、未生成正式签名。已知 P2 仍为 375px 后续运行判断需滚动、375px 异常证据边界在首屏下沿、1366px 低优先级边界表格在首屏下方。
+- packet 与 readiness：packet `12/12` digest/identity 通过，绑定 `792b83c`，`prepared-not-signed`、`selfSignoff=false`、`releaseEligible=false`。readiness 已通过当前 Overview、单场景 route-responsive、route-state 等矩阵身份检查，随后真实停在 route maturity：`0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`。
+- 决策：关闭 `792b83c` 可由本地完成的 build、runtime、完整矩阵、packet、资产预算、report truth、安全、只读和 scoped visual slices；继续保持正式 Product/Design/Visual、独立 Accessibility、route-owner maturity、RouterOS soak、Linux/Windows/GHCR exact-SHA CL 与 GitHub/public release fail-closed。任务 active、`blocked=false`。
+- 理由与拒绝项：完整 route-responsive 不能替代 route maturity；scoped review 不能替代 Ed25519 签收；自动 Accessibility 不能替代辅助技术独立验收；没有真实 RouterOS soak 和三端 CL 就不能上传 GitHub。非零 readiness 是真实开放门禁，不是任务受阻。
+- 边界/心得：这轮证明的是“发布矩阵与视觉范围已经闭合”，不是“公开发布资格已经成立”。剩余工作必须由真实外部主体、真实设备和真实 CI 产生，不能用本地脚本自签。
+- nextAction：同步并提交 Step833 决策仓库与 D 盘镜像；提交后再重绑最终 SHA 的 runtime/四层矩阵/packet/readiness，并继续推进真实外部签收、RouterOS soak 与 exact-SHA CL；全部发布门禁真实通过前禁止 GitHub API 发布。
+- validForCommit：`792b83c0bcccf686d7629ecec5088a17d7e25d3c` exact clean engineering/scoped evidence；本步骤文档提交后必须重新绑定
+- supersededBy：null
