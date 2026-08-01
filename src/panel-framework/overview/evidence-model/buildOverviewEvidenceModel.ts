@@ -401,7 +401,7 @@ function focusObjectFor(
     id: "route:active-default",
     category: "活动默认路由",
     name: clean(route.gateway, "网关未记录"),
-    note: `${clean(route.dstAddress, "0.0.0.0/0")} · 当前承载，未停用`,
+    note: `${clean(route.dstAddress, "0.0.0.0/0")} · 当前承载`,
     tone: "trust",
     route: "routes",
     targetObjectId: stablePanelObjectId("routes", "route", panelObjectIdentityPartsForRaw("routes", "路由记录", route)),

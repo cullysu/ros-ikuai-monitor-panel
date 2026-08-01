@@ -4,6 +4,7 @@ import type {
   OverviewEvidenceRisk,
   OverviewOperationalDecision,
 } from "./overviewEvidenceTypes";
+import { formatPercent } from "../deriveOverviewState";
 
 function finite(value: unknown): number | null {
   if (value === null || value === undefined || value === "") return null;
@@ -40,11 +41,21 @@ export function buildOverviewOperationalDecisions(
     category: "设备资源",
     object: "CPU / 内存 / 磁盘",
     state: state.facts.resource.summaryText,
+    compactState: [
+      state.facts.resource.cpu,
+      state.facts.resource.memory,
+      state.facts.resource.disk,
+    ].map((value) => value === null ? "未记录" : formatPercent(value)).join(" / "),
     evidence: !state.facts.resource.available
       ? "资源采样不可用"
       : state.facts.resource.complete
         ? "阈值 85% / 85% / 90%"
         : `已观测 ${state.facts.resource.observed}/3；缺失项不按零处理`,
+    compactEvidence: !state.facts.resource.available
+      ? "采样不可用"
+      : state.facts.resource.complete
+        ? "阈值 85/85/90%"
+        : `已观测 ${state.facts.resource.observed}/3 · 缺失不按零`,
     source: "overview.cpuLoad + memoryUsage + diskUsage",
     tone: state.facts.resource.level,
     route: "trafficLoad",

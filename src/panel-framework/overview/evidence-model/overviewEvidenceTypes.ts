@@ -81,7 +81,11 @@ export interface OverviewOperationalDecision {
   category: string;
   object: string;
   state: string;
+  /** A phone-width label that keeps the same evidence without forcing a second line. */
+  compactState?: string;
   evidence: string;
+  /** A phone-width evidence label; the full evidence remains available to desktop/detail views. */
+  compactEvidence?: string;
   source: string;
   tone: OverviewTone;
   route: PanelRouteId;

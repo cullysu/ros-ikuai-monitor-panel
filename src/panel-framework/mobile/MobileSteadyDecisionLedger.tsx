@@ -30,7 +30,7 @@ export function MobileSteadyDecisionLedger({ rows, onOpen }: {
               <span className="mp-decision-ledger-copy">
                 <small>{row.category}</small>
                 <b>{row.object}</b>
-                <span>{[row.state, row.evidence].filter(Boolean).join(" · ")}</span>
+                <span>{[row.compactState || row.state, row.compactEvidence || row.evidence].filter(Boolean).join(" · ")}</span>
               </span>
               <ChevronRight aria-hidden="true" size={17} />
             </button>

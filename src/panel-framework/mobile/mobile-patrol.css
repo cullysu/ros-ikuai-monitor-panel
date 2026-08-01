@@ -1226,7 +1226,7 @@
     padding-bottom: 0;
   }
   .mp-shell:not(.is-large-text) .mp-decision-ledger > header {
-    min-height: 40px;
+    min-height: 39px;
     padding-top: 4px;
     padding-bottom: 3px;
   }
@@ -1260,6 +1260,46 @@
   .mp-shell:not(.is-large-text) .mp-focus-signal {
     gap: 6px;
     padding-top: 2px;
+  }
+}
+
+/*390–430px phones have enough width for a deliberate compact patrol rhythm,
+   but not enough height to make the secondary judgement ledger useful when
+   every resource label repeats its full desktop wording. Keep the signal
+   before the ledger and preserve the 44px action / 58px decision touch floors;
+   only remove non-evidence padding and let the phone-specific compact labels
+   carry the same three resource values.*/
+
+@media (min-width: 390px) and (max-width: 430px) {
+  .mp-shell:not(.is-large-text) .mp-decision-ledger > header {
+    min-height: 40px;
+    padding-top: 4px;
+    padding-bottom: 3px;
+  }
+  .mp-shell:not(.is-large-text) .mp-focus > button {
+    min-height: 56px;
+    gap: 5px;
+    padding-block: 4px;
+  }
+  .mp-shell:not(.is-large-text) .mp-focus-copy b,
+  .mp-shell:not(.is-large-text) .mp-focus-copy em {
+    margin-top: 1px;
+    line-height: 1.2;
+  }
+  .mp-shell:not(.is-large-text) .mp-focus-signal {
+    gap: 6px;
+    padding-top: 2px;
+  }
+  .mp-shell:not(.is-large-text) .mp-traffic > header {
+    min-height: 44px;
+    padding-top: 5px;
+    padding-bottom: 3px;
+  }
+  .mp-shell:not(.is-large-text) .mp-traffic-body {
+    padding-bottom: 2px;
+  }
+  .mp-shell:not(.is-large-text) .mp-chart {
+    min-height: 88px;
   }
 }
 
