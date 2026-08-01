@@ -1,10 +1,10 @@
 # 决策系统导航
-- validForCommit: Step823 governance-dirty evidence has 6f37df2 exact-SHA runtime and declared-scope matrix evidence; packet must be rebound; not a release candidate
+- validForCommit: Step824 governance-dirty runtime cleanup repair is present; exact-SHA matrices and packet must be regenerated; not a release candidate
 - supersededBy: null
 - status: `current-index`
-- currentBoundaryForStep: `823`
-- latestRecordedStep: `823`
-- latestStepOutcome: `823:6f37df2-final-public-matrix-green-decision-index-repaired-formal-gates-open`
+- currentBoundaryForStep: `824`
+- latestRecordedStep: `824`
+- latestStepOutcome: `824:runtime-screenshot-cleanup-deadlock-fixed-candidate-rebind-open`
 - authority: `docs/decision-system/current-state.md`
 
 当前结论由 current-state.md 唯一拥有；本页只负责导航，不重复历史流水账。

@@ -1,10 +1,10 @@
 # Release Journal
 - status: `current-journal`
-- validForCommit: 6f37df2 exact-SHA matrices, dirty governance evidence and unsigned acceptance packet are present; Step823 governance is dirty and this is not a release candidate
+- validForCommit: Step824 runtime-cleanup repair is dirty; 6f37df2 exact-SHA matrices are historical and unsigned packet must be rebound; not a release candidate
 - supersededBy: null
-- currentStep: `823`
-- currentOutcome: 823:6f37df2-final-public-matrix-green-decision-index-repaired-formal-gates-open
-- latestStepOutcome: `823:6f37df2-final-public-matrix-green-decision-index-repaired-formal-gates-open`
+- currentStep: `824`
+- currentOutcome: 824:runtime-screenshot-cleanup-deadlock-fixed-candidate-rebind-open
+- latestStepOutcome: `824:runtime-screenshot-cleanup-deadlock-fixed-candidate-rebind-open`
 - authority: docs/decision-system/current-state.md
 - fullHistory: panel-redesign-decision-log.md
 
@@ -20,7 +20,7 @@
 - Direct readiness passes engineering matrix evidence and stops at route maturity: 0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable. No RouterOS soak, trusted Ed25519, exact-SHA Linux/Windows/GHCR CL or GitHub upload is claimed.
 
 - Step821: the exact e22b244 evidence set passed its declared matrices and readiness stopped at route maturity; ambiguous `*-current` artifact names were replaced with exact-SHA directories, and the unsigned visual packet was moved to generated ignored evidence to avoid tracked-packet self-reference. The source/tool refresh invalidated the old evidence.
-- Step823: 6f37df2 final evidence passed runtime and the 28/76/266/532 matrices; the archive index was repaired and decision-system passes. The packet must be rebound after this governance change. Current phone/tablet/desktop visual material has no new scoped screenshot P0/P1. Readiness remains at route maturity 0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable; formal independent acceptance, RouterOS soak and exact-SHA CL remain open.
+- Step824: the asynchronous Windows isolated-screenshot cleanup repair passes runtime 257/140/169 and the chained visual/layout/accessibility contracts. The 6f37df2 matrices are historical until the new clean SHA is regenerated; packet rebinding, formal independent acceptance, RouterOS soak and exact-SHA CL remain open.
 
 ## Release rule
 

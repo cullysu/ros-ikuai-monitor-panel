@@ -1,18 +1,18 @@
 - status: `current-handoff`
-- validForCommit: Step823 governance-dirty 6f37df2 exact-SHA matrix evidence, dirty runtime evidence and prepared-not-signed packet are present; not a release candidate
-- currentHandoffForStep: `823`
+- validForCommit: Step824 governance-dirty runtime-cleanup repair is present; exact-SHA matrices and prepared-not-signed packet must be regenerated; not a release candidate
+- currentHandoffForStep: `824`
 - supersededBy: docs/decision-system/current-state.md
 - fullHistory: docs/panel-redesign-decision-log.md
 - updated: 2026-08-01
-- latestRecordedStep: `823`
-- latestStepOutcome: `823:6f37df2-final-public-matrix-green-decision-index-repaired-formal-gates-open`
+- latestRecordedStep: `824`
+- latestStepOutcome: `824:runtime-screenshot-cleanup-deadlock-fixed-candidate-rebind-open`
 - currentConclusion: **FAIL overall**. Local engineering, matrix and scoped visual evidence is green; formal Product/Design/Visual independent acceptance, independent Accessibility, route maturity and release evidence remain open.
 
-## Current handoff: Step823 6f37df2 final matrix and archive-index repair; readiness still narrowed to route maturity
+## Current handoff: Step824 runtime screenshot cleanup repair; exact-SHA evidence rebind required
 
-- Result: Candidate 6f37df2 bound runtime 257 checks / 140 screenshots / 169 snapshot API calls, full public route matrix 532/532, Overview 28/28, route-state 266/266 and route-responsive 76/76 bounded; after archive-index repair decision-system passes, while the packet must be rebound after this source change.
+- Result: The dirty worktree runtime cleanup repair passes 257 checks / 140 screenshots / 169 snapshot API calls and all chained contracts; the prior 6f37df2 full matrix is historical until regenerated for the new SHA.
 - Decision: Continue the task instead of marking it blocked. Close the local exact-SHA matrix, packet and scoped visual-material slices; do not convert scoped review into trusted external signoff.
-- Boundary: this Step823 governance refresh is dirty until a new exact clean candidate is built; route maturity remains 0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable.
+- Boundary: this Step824 code/governance refresh is dirty until a new exact clean candidate is built; route maturity remains 0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable.
 - Next: obtain real independent route-owner/Accessibility acceptance, RouterOS soak and exact-SHA Linux/Windows/GHCR CL; then create a clean candidate and rerun readiness before any GitHub API publication.
 
 ## Gate boundary
@@ -27,6 +27,6 @@
 | Current product release | `fail` |
 | GitHub / public release | closed | No upload or publication approval. |
 
-## Step823 continuation
+## Step824 continuation
 
 Do not mark this task blocked. Rebuild exact clean evidence for the repaired tooling, then continue the remaining non-forgeable gates.

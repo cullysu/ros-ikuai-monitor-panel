@@ -24441,3 +24441,18 @@ ocused-green-engineering
 - nextAction：提交 Step823 和历史索引修复，生成新的 clean candidate；在新 SHA 上重跑 build/runtime/28/76/266/532、packet、artifact identity、report truth、decision-system 和 readiness，然后继续获取真实独立 Accessibility、route-owner、RouterOS 与 CL 证据。
 - validForCommit：pre-Step823 clean candidate `6f37df26e3c66611ddc09f9c5fca84fd02f1096d` plus governance repair；final release candidate not established
 - supersededBy：null
+
+## 第 824 步：修复 Windows 隔离截图清理死锁，重新打开候选绑定并保持发布门禁关闭
+
+- status：`runtime-screenshot-cleanup-deadlock-fixed-candidate-rebind-open`
+- latestStepOutcome: `824:runtime-screenshot-cleanup-deadlock-fixed-candidate-rebind-open`
+- 触发/问题：新候选重跑 `npm run check:runtime-browser` 两次都停在 `isolated-screenshot:desktop-connection.png` 的 240 秒总超时。问题不是页面语义失败，而是 Windows `taskkill.exe /T /F` 由 `spawnSync` 同步执行，Edge 进程退出时阻塞 Node 事件循环，导致隔离截图自己的超时和诊断无法返回。
+- 观察事实：失败阶段已经完成 139/140 截图和 169 次 snapshot 调用；没有页面断言失败，且残留浏览器/Node 进程没有形成可安全批量清理的单一任务树。把 cleanup 当作“测试外壳”而不是受约束资源同样会掩盖根因。
+- 决策：将 `tools/check-panel-runtime-browser.js` 的 Windows 隔离截图 kill-tree 从同步 `spawnSync` 改为异步、脱离父进程的 `spawn('taskkill.exe', ...)`，让截图超时、错误报告和上下文清理保持可调度；不放宽产品断言、不删除截图、不把超时改写为通过。
+- 验证：代码语法检查通过；修复后 `npm run check:runtime-browser` 通过，主运行时 `257 checks / 140 screenshots / 169 snapshot API calls`，且所有 incident、decision-ledger、responsive、tablet 信息效率/垂直空间/next-evidence/task-space 合约通过。当前修复尚未提交，旧 85a6d27 evidence 不能继续冒充新候选。
+- 独立复核边界：本修复只关闭运行时门禁的环境/资源清理缺陷；scoped Product/Design/Visual PASS 仍保持声明范围，正式独立签收、独立 Accessibility、route maturity、RouterOS soak、exact-SHA CL 与 GitHub 发布仍未关闭。
+- 理由与拒绝项：不通过提高全局超时、忽略 desktop-connection 截图、删除 isolated capture 或把失败降级为 warning；不批量结束用户 Edge 进程；不把本地 runtime PASS 改成外部 CL/签收。
+- 边界/心得：长测试失败时，先区分页面契约失败、测试进程死锁和环境资源耗尽；同步进程调用会让 fail-closed 变成“看起来挂死”。修复清理机制后必须在新 commit 上重绑全部运行时和矩阵证据。
+- nextAction：提交此运行时清理修复及本步治理记录，生成新 clean candidate；重跑 build/runtime/28/76/266/532、packet、artifact identity、report truth、decision-system 和 readiness，并继续真实独立签收与 exact-SHA CL。
+- validForCommit：当前修复在 85a6d27 工作树上未提交；发布候选未建立
+- supersededBy：null

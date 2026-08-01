@@ -1,24 +1,24 @@
 - status: `current`
-- currentConclusionForStep: `823`
-- latestRecordedStep: `823`
-- latestStepOutcome: `823:6f37df2-final-public-matrix-green-decision-index-repaired-formal-gates-open`
-- currentBoundaryForStep: `823`
-- validForCommit: uncommitted Step823 governance refresh; exact-SHA evidence must be regenerated after this source change; not a release candidate
+- currentConclusionForStep: `824`
+- latestRecordedStep: `824`
+- latestStepOutcome: `824:runtime-screenshot-cleanup-deadlock-fixed-candidate-rebind-open`
+- currentBoundaryForStep: `824`
+- validForCommit: uncommitted Step824 runtime-cleanup repair and governance refresh; exact-SHA evidence must be regenerated after this source change; not a release candidate
 - supersededBy: `null`
 - updatedAt: 2026-08-01T19:59:24+08:00
 - authority: This is the only human-readable current-state source.
 
-## Current decision record: Step 823
+## Current decision record: Step 824
 
-- status: 6f37df2-final-public-matrix-green-decision-index-repaired-formal-gates-open
-- boundary: Step823 records the 6f37df2 final public matrix and the historical-index repair; this document change intentionally invalidates 6f37df2 identity evidence until a new clean candidate is built.
-- observed facts: 6f37df2 has build pass, runtime 257 checks / 140 screenshots / 169 snapshot API calls, Overview 28/28, route-responsive 76/76 bounded, route-state 266/266 and full public 532/532. After the archive-map repair, decision-system passes. The packet correctly fails closed because its candidate identity must be rebound after this source change. Readiness remains at route maturity 0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable.
+- status: runtime-screenshot-cleanup-deadlock-fixed-candidate-rebind-open
+- boundary: Step824 records the Windows isolated-screenshot cleanup repair; this document and code change intentionally invalidates 85a6d27 identity evidence until a new clean candidate is built.
+- observed facts: before this repair, runtime-browser timed out twice at isolated desktop-connection capture after 139/140 screenshots and 169 snapshot calls because synchronous taskkill blocked the event loop. After replacing it with asynchronous taskkill, runtime-browser passes 257 checks / 140 screenshots / 169 snapshot API calls and all chained layout/accessibility contracts. The previous 6f37df2 matrices remain historical until new exact-SHA evidence is generated.
 - local visual closure: Current phone normal/incident, tablet master/detail, desktop task workspace and chart evidence were rechecked; no new screenshot P0/P1 was found within the declared scoped review. This is not a trusted external signature.
-- decision: Close the 6f37df2 declared-scope matrix and archive-index slices; keep formal Product/Design/Visual acceptance, independent Accessibility, route maturity, RouterOS soak, external CL and GitHub/public release fail-closed.
+- decision: Close the runtime-cleanup defect and preserve the test's fail-closed semantics; keep formal Product/Design/Visual acceptance, independent Accessibility, route maturity, RouterOS soak, external CL and GitHub/public release fail-closed.
 
 ## Current conclusion
 
-**FAIL overall.** 6f37df2 local engineering and declared-scope matrix evidence is green, but this Step823 governance refresh makes the current worktree dirty until exact evidence is regenerated. Product route maturity and all non-forgeable external/independent gates remain incomplete. No publication is authorized.
+**FAIL overall.** The runtime cleanup repair is green on the dirty worktree, but this Step824 code/governance refresh makes the current worktree ineligible until exact evidence is regenerated on a new clean SHA. Product route maturity and all non-forgeable external/independent gates remain incomplete. No publication is authorized.
 
 ## Independent acceptance boundary
 
@@ -37,7 +37,7 @@
 | Design | pending | Fresh independent review/signature is required. |
 | Visual QA | pending | Automated/runtime evidence does not replace visual acceptance. |
 | Accessibility | pending | Synthetic checks are not independent assistive-technology acceptance. |
-| State Matrix | pass-scoped | 28/76/266/532 pass for 6f37df2 in declared scopes; current governance worktree is not clean. |
+| State Matrix | pending-rebind | Runtime 257/140/169 is green after the cleanup repair; 28/76/266/532 must be regenerated for the new SHA. |
 | Route maturity | pending | 0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable. |
 | RouterOS soak | pending | No current long-running real-device evidence. |
 | Release hygiene | pending | Clean candidate, external CL and publication chain remain incomplete. |
@@ -62,6 +62,6 @@
 Every material step records trigger/problem, facts, decision, rejected alternatives, verification, boundary and exactly one next action.
 
 
-## Step823 6f37df2 final matrix and archive-index repair
+## Step824 runtime screenshot cleanup repair
 
-The task remains active and blocked=false. 6f37df2 exact runtime and 28/76/266/532 matrices pass in their declared scopes; the archive-map repair makes decision-system green; readiness correctly stops at route maturity. The generated ignored visual packet is deliberately unsigned and must be rebound after the governance commit. Scoped Product/Design/Visual evidence is closed for the current screenshot scope; trusted formal signatures, independent assistive-technology acceptance, route maturity, RouterOS soak and external CL remain pending. This source update invalidates 6f37df2 identity evidence until the final clean candidate is regenerated.
+The task remains active and blocked=false. The asynchronous Windows isolated-screenshot cleanup repair passes the runtime browser and chained visual/layout/accessibility contracts, but it changes the candidate. The old 6f37df2 matrices and packet are historical until the new clean SHA is regenerated. Scoped Product/Design/Visual evidence remains closed only for its declared screenshot scope; trusted formal signatures, independent assistive-technology acceptance, route maturity, RouterOS soak and external CL remain pending.

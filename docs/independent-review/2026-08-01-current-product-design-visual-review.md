@@ -112,3 +112,9 @@
 - Archive-index correction: `coveredStepMax` was repaired from 821 to 822, and `npm run check:decision-system` then passed. This correction intentionally invalidates the old packet identity until a new clean candidate is committed and rebound.
 - Scoped Product/Design/Visual disposition remains PASS for the declared phone, tablet and desktop evidence, with P0/P1=0 and the existing non-blocking P2 notes. This transcript is not a trusted Ed25519 signature.
 - Formal boundary remains open: independent Accessibility, route-owner maturity, RouterOS soak, clean candidate and Linux/Windows/GHCR exact-SHA CL are not proven. No GitHub upload occurred.
+
+## Fresh Step824 runtime-cleanup revalidation
+
+- The runtime browser initially hit the same Windows cleanup deadlock twice at the isolated desktop connection screenshot. The fix changes only the test harness cleanup from synchronous to asynchronous `taskkill`; it does not weaken screenshot or product assertions.
+- After the fix, runtime `257 checks / 140 screenshots / 169 snapshot API calls` and the chained incident, responsive, tablet task and accessibility contracts pass. The code change is not yet committed, so prior exact-SHA matrices remain historical.
+- Scoped Product/Design/Visual review remains within its declared evidence scope; this runtime-harness result is not a trusted independent signature. Route maturity, independent Accessibility, RouterOS soak and exact-SHA CL remain open.

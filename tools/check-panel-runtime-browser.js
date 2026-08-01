@@ -904,7 +904,14 @@ async function isolatedScreenshot(url, fileName, state, viewport, selector, brow
   child.stderr.on('data', (chunk) => { stderr += chunk.toString(); });
   const killTree = () => {
     if (process.platform === 'win32') {
-      spawnSync('taskkill.exe', ['/PID', String(child.pid), '/T', '/F'], { windowsHide: true, stdio: 'ignore' });
+      // taskkill can block the parent for minutes while Edge is unwinding. Never
+      // run it synchronously: the runtime contract must be able to report the
+      // isolated-capture failure and clean up the remaining contexts.
+      const killer = spawn('taskkill.exe', ['/PID', String(child.pid), '/T', '/F'], {
+        windowsHide: true,
+        stdio: 'ignore',
+      });
+      killer.unref();
     } else {
       child.kill('SIGKILL');
     }

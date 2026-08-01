@@ -5,7 +5,7 @@
 - supersededBy: `null`
 - authority: `docs/decision-system/current-state.md`
 - coveredStepMin: `0`
-- coveredStepMax: `823`
+- coveredStepMax: `824`
 
 Current truth lives only in `current-state.md`; this page is a historical navigation map, not a current conclusion.
 The active responsive direction is the single table in `responsive-capabilities.md`; responsive-capabilities.md is the active current authority, and older responsive proposals are superseded and cannot override it.
@@ -20,7 +20,7 @@ The complete chronology remains in `../panel-redesign-decision-log.md`; archived
 | 401 - 609 | domain workspaces and evidence ownership | object identity, route tasks, data truth and tablet relations | current-state.md |
 | 610 - 730 | release-boundary engineering slices | runtime, visual rhythm, matrices, decision truth and independent review | current-state.md |
 | 731 - 810 | cross-surface grammar, desktop first-scan density, route-maturity audit, decision-repository authority, independent review, mobile incident visual dominance, pointer repair and governance repair | current-state.md |
-| 811 - 823 | current-candidate visual/runtime evidence, accessibility coverage, exact-SHA matrix rebinding, artifact identity repair, unsigned visual packet generation, scoped visual closure and final matrix/archive repair | current-state.md |
+| 811 - 824 | current-candidate visual/runtime evidence, accessibility coverage, exact-SHA matrix rebinding, artifact identity repair, unsigned visual packet generation, scoped visual closure, final matrix/archive repair and runtime cleanup reliability | current-state.md |
 
 ## Reading rule
 
