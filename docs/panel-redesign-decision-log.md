@@ -24485,3 +24485,18 @@ ocused-green-engineering
 - nextAction：继续逐路由补齐真实筛选/对象详情/错误恢复并取得 route-owner 与 Accessibility 独立证据；准备 RouterOS soak 和 exact-SHA Linux/Windows/GHCR CL。任何 GitHub API 发布前必须重新绑定 clean candidate，并确认 CL 全通过。
 - validForCommit：f66a956 精确 clean candidate evidence；本步文档变更后需重绑新的 clean candidate
 - supersededBy：null
+
+## 第 827 步：77b86ea 精确候选重绑完成，运行时清理缺口关闭，路由成熟度与正式签收继续开放
+
+- status：`77b86ea-exact-release-evidence-green-route-maturity-formal-signoff-open`
+- latestStepOutcome: `827:77b86ea-exact-release-evidence-green-route-maturity-formal-signoff-open`
+- 触发/问题：Step826 的决策文档变更使 f66a956 证据身份失效；同时新候选首次重跑暴露 Windows 隔离截图 worker 在 screenshot 已写入后可能卡在 Edge close，不能把一次运行时超时误判成产品失败，也不能沿用旧 SHA 报告。
+- 观察事实：当前 clean candidate 为 `77b86ea7d0871e4a61a3cec0739799210ecd193f`。`npm run build` 通过；`npm run check:runtime-browser` 通过 `257 checks / 140 screenshots / 169 snapshot API calls`；修复后的 `tools/capture-runtime-screenshot.js` 对 context/browser cleanup 设置有界等待并主动结束隔离 worker，未放宽页面断言。当前 packet 为 `prepared-not-signed`，12/12 digest/identity 通过，`selfSignoff=false`、`releaseEligible=false`。
+- 精确矩阵：Overview `28/28`；route-responsive `76/76` bounded；route-state `266/266`；完整公开矩阵 `532/532`，覆盖 7 个场景、4 个视口、19 个路由。报告目录均绑定完整 77b86ea SHA，artifact identity、report truth、静态/安全/只读/类型/overview/runtime/readiness lifecycle 相关本地检查继续通过。
+- readiness：`check-public-release-readiness.js --require-matrix` 应接受本候选精确矩阵后真实停在 route maturity：`0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`；18 路由仍是 `automated-only` Accessibility、`independentAcceptance=pending`，`more` 仍 unavailable。该红灯是产品路由成熟度与外部签收边界，不是任务受阻。
+- 决策：关闭 77b86ea 的运行时清理缺口、精确矩阵、unsigned visual packet、工程发布卫生和 D 盘决策镜像切片；保持正式 Product/Design/Visual、独立辅助技术、route-owner、RouterOS soak、Linux/Windows/GHCR exact-SHA CL 与 GitHub API 发布 fail-closed。任务保持 active、`blocked=false`。
+- 理由与拒绝项：不把 scoped visual PASS 改写为可信 Ed25519 签名，不把 18 个 bounded-readonly URL 改写为 complete 模块，不伪造独立验收/真实 RouterOS/三端 CL，不因矩阵全绿提前上传 GitHub。新的截图 worker 修复只解决环境清理的可复现性，未降低业务检查强度。
+- 边界/心得：发布证据必须绑定“提交 SHA + 工作树 fingerprint + 运行时报告 + 矩阵 + packet”，每次文档或工具变更都要重绑；测试进程的清理超时应修根因并保留 fail-closed，不能靠提高全局 timeout 或吞掉截图失败。工程证据完整仍不等于路由运营能力、正式独立签收和远端 CL 完整。
+- nextAction：继续逐路由实现真实筛选/排序/分页/对象详情/错误恢复并建立 route-owner 与独立 Accessibility 验收入口；同步真实 RouterOS soak 证据，在所有外部记录真实绑定 77b86ea 或新 clean SHA 后重跑 readiness，再按 exact-SHA Linux/Windows/GHCR CL 决定是否进入 GitHub API 发布。
+- validForCommit：77b86ea 精确 clean engineering/scoped evidence；正式发布未满足
+- supersededBy：null

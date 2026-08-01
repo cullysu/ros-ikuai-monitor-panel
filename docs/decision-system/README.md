@@ -1,10 +1,10 @@
 # 决策系统导航
-- validForCommit: Step826 governance-dirty final evidence record is present; exact-SHA matrices and packet must be regenerated; not a release candidate
+- validForCommit: Step827 77b86ea exact clean engineering evidence is present; formal external gates remain open; not a public release approval
 - supersededBy: null
 - status: `current-index`
-- currentBoundaryForStep: `826`
-- latestRecordedStep: `826`
-- latestStepOutcome: `826:f66a956-exact-release-evidence-green-readiness-route-maturity-open`
+- currentBoundaryForStep: `827`
+- latestRecordedStep: `827`
+- latestStepOutcome: `827:77b86ea-exact-release-evidence-green-route-maturity-formal-signoff-open`
 - authority: `docs/decision-system/current-state.md`
 
 当前结论由 current-state.md 唯一拥有；本页只负责导航，不重复历史流水账。

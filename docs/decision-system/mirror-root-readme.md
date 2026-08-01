@@ -1,11 +1,11 @@
 # RouterOS / iKuai 面板决策仓库
 
-这是当前面板工作的本地决策仓库镜像。Step826 记录了 f66a956 精确工程证据全绿但 readiness 停在 route maturity；本步文档变更后需要重新绑定 clean candidate，独立 Product/Design/Visual 公共签收、Accessibility、RouterOS soak 和可信外部发布签收仍未完成。
+这是当前面板工作的本地决策仓库镜像。Step827 记录了 77b86ea 精确工程证据全绿但 readiness 停在 route maturity；独立 Product/Design/Visual 公共签收、Accessibility、RouterOS soak 和可信外部发布签收仍未完成。
 
 - status: `current-mirror-entry`
-- currentStep: `826`
-- currentOutcome: `826:f66a956-exact-release-evidence-green-readiness-route-maturity-open`
-- currentBoundary: `826`
+- currentStep: `827`
+- currentOutcome: `827:77b86ea-exact-release-evidence-green-route-maturity-formal-signoff-open`
+- currentBoundary: `827`
 - authority: `decision-system/current-state.md`
 
 ## 入口
@@ -42,4 +42,4 @@
 
 每个材料性切片开始前先写仓库日志和对应 decision-system 文件，再同步到 D 盘镜像。同步门禁必须满足语义步骤一致、Markdown 映射逐字节一致、没有额外 Markdown；根 README 还必须通过新鲜度检查。
 
-Step826: f66a956 exact engineering evidence is green and readiness stops at route maturity; formal signoff and public release remain closed. This summary is not a signature.
+Step827: 77b86ea exact engineering evidence is green and readiness stops at route maturity; formal signoff and public release remain closed. This summary is not a signature.
