@@ -20,6 +20,7 @@ const timeout = Number.isFinite(configuredTimeout)
 (async () => {
   let browser = null;
   let context = null;
+  let exitCode = 0;
   try {
     browser = await chromium.launch({
       executablePath: config.browser,
@@ -40,11 +41,24 @@ const timeout = Number.isFinite(configuredTimeout)
       image: { width: image.readUInt32BE(16), height: image.readUInt32BE(20) },
       viewport: page.viewportSize(),
     }));
+  } catch (error) {
+    console.error(error.stack || String(error));
+    exitCode = 1;
   } finally {
-    if (context) await context.close().catch(() => {});
-    if (browser) await browser.close().catch(() => {});
+    // Edge can leave a Playwright close promise pending after a screenshot has
+    // already been written. This helper is intentionally isolated, so cleanup
+    // must be bounded; otherwise the parent runtime gate waits for its global
+    // timeout and reports a false screenshot failure.
+    const closeWithin = async (resource, timeoutMs) => {
+      if (!resource) return;
+      await Promise.race([
+        Promise.resolve().then(() => resource.close()).catch(() => {}),
+        new Promise((resolve) => setTimeout(resolve, timeoutMs)),
+      ]);
+    };
+    await closeWithin(context, 1500);
+    await closeWithin(browser, 1500);
+    // Do not let lingering browser handles keep this isolated worker alive.
+    process.exit(exitCode);
   }
-})().catch((error) => {
-  console.error(error.stack || String(error));
-  process.exitCode = 1;
-});
+})();
