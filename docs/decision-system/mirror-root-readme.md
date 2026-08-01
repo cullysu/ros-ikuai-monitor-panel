@@ -1,11 +1,11 @@
 # RouterOS / iKuai 面板决策仓库
 
-这是当前面板工作的本地决策仓库镜像。Step822 记录了 d44 精确 SHA 矩阵重跑和 scoped visual evidence 关闭；独立 Product/Design/Visual 公共签收、route maturity、Accessibility、RouterOS soak 和可信外部发布签收仍未完成。
+这是当前面板工作的本地决策仓库镜像。Step823 记录了 6f37df2 最终公开矩阵通过和归档索引修复；packet 需要在新的 clean candidate 上重绑，独立 Product/Design/Visual 公共签收、route maturity、Accessibility、RouterOS soak 和可信外部发布签收仍未完成。
 
 - status: `current-mirror-entry`
-- currentStep: `822`
-- currentOutcome: `822:d44-exact-matrix-green-scoped-visual-pass-route-maturity-open`
-- currentBoundary: `822`
+- currentStep: `823`
+- currentOutcome: `823:6f37df2-final-public-matrix-green-decision-index-repaired-formal-gates-open`
+- currentBoundary: `823`
 - authority: `decision-system/current-state.md`
 
 ## 入口
@@ -42,4 +42,4 @@
 
 每个材料性切片开始前先写仓库日志和对应 decision-system 文件，再同步到 D 盘镜像。同步门禁必须满足语义步骤一致、Markdown 映射逐字节一致、没有额外 Markdown；根 README 还必须通过新鲜度检查。
 
-Step822: d44 exact-SHA runtime and 28/76/266/532 matrix evidence is green in declared scopes; scoped visual review has no new screenshot P0/P1, while formal signoff and public release remain closed. This summary is not a signature.
+Step823: 6f37df2 exact-SHA runtime and 28/76/266/532 matrix evidence is green in declared scopes; archive-index repair makes decision-system pass, while packet rebinding, formal signoff and public release remain closed. This summary is not a signature.

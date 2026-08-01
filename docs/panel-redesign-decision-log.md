@@ -24426,3 +24426,18 @@ ocused-green-engineering
 - nextAction：将本步骤及 d44 事实同步到当前状态、Loop handoff 和 D 盘镜像；提交治理记录后重新生成最终 clean candidate 的 runtime、28/76/266/532 矩阵和 packet，再继续逐路由成熟度、独立 Accessibility、RouterOS soak 与 exact-SHA CL；CL 未全绿前禁止 GitHub API 发布。
 - validForCommit：d44 exact-SHA engineering/scoped evidence；正式发布未授权
 - supersededBy：null
+
+## 第 823 步：6f37df2 最终公开矩阵与归档索引修复通过，继续保持正式门禁 fail-closed
+
+- status：`6f37df2-final-public-matrix-green-decision-index-repaired-formal-gates-open`
+- latestStepOutcome: `823:6f37df2-final-public-matrix-green-decision-index-repaired-formal-gates-open`
+- 触发/问题：Step822 之后，最终公开 route/scenario/viewport 矩阵已经在当前候选 `6f37df26e3c66611ddc09f9c5fca84fd02f1096d` 跑完；同时发现 historical index 的 `coveredStepMax` 仍停在 821，使 decision-system 归档门禁失败。修复索引后，当前工作树再次变脏，旧 packet 不能冒充新候选。
+- 观察事实：可定位的 6f37df2 证据为 build PASS、runtime `257 checks / 140 screenshots / 169 snapshot API calls`、Overview `28/28`、route-responsive bounded `76/76`、route-state `266/266`、full public `532/532`；修复 historical index 后 `npm run check:decision-system` PASS。packet 在文档修复后正确 fail-closed，仅因 artifactKey、worktreeClean 和 releaseEvidenceEligible 需要绑定新的 clean commit，并未伪造通过。
+- 独立复核：当前存在 scoped Product/Design/Visual PASS，P0/P1=0；该结果只关闭声明范围内的本地视觉材料复核，不等于可信外部 Ed25519 签收。P2 的正常态 390px 首屏继续滚动、1440px 尾部低信息留白和部分平板辅助空间仍记录为非阻断优化项。
+- 决策：关闭 6f37df2 声明范围内的矩阵和归档索引修复；保留 packet 重新绑定、clean candidate、independent Accessibility、18 个 route-owner/route maturity、RouterOS soak、Linux/Windows/GHCR exact-SHA CL 与 GitHub API 发布门禁。任务保持 active 且 `blocked=false`，不能因为正式签收仍未出现而停止本地推进。
+- 理由与拒绝项：不把 bounded-readonly 改写为 complete，不把 scoped agent PASS 改写为正式 Product/Design/Visual，不生成伪造 Ed25519，不用矩阵通过掩盖路由深度、真实设备 soak 或远端 CL。
+- 验证：final public matrix `532/532`；historical index 修复后 `check:decision-system` PASS；packet 检查器按候选身份变化正确 fail-closed。修复文档后必须提交新的 clean candidate，再重新生成 runtime、全矩阵、packet 与 readiness。
+- 边界/心得：门禁红灯不是任务 blocked；可关闭的本地问题应继续关闭，无法由本地代理可信完成的外部签收必须明确保持 pending。一次证据绑定变化会使旧截图、矩阵和 packet 失效，宁可重跑也不能沿用旧 identity。
+- nextAction：提交 Step823 和历史索引修复，生成新的 clean candidate；在新 SHA 上重跑 build/runtime/28/76/266/532、packet、artifact identity、report truth、decision-system 和 readiness，然后继续获取真实独立 Accessibility、route-owner、RouterOS 与 CL 证据。
+- validForCommit：pre-Step823 clean candidate `6f37df26e3c66611ddc09f9c5fca84fd02f1096d` plus governance repair；final release candidate not established
+- supersededBy：null

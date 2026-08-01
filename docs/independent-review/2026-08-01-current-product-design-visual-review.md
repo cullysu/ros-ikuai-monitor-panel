@@ -105,3 +105,10 @@
 - Engineering evidence: runtime `257 checks / 140 screenshots / 169 snapshot API calls`; Overview `28/28`; route-responsive bounded `76/76`; route-state `266/266`; full public `532/532`; packet integrity `12/12`.
 - Scoped Product/Design/Visual disposition: PASS for the declared phone normal/incident, 844 tablet master/detail, 1366 desktop task workspace and chart evidence. No new screenshot P0/P1 was found in this revalidation. The packet remains `prepared-not-signed`, `selfSignoff=false`, `releaseEligible=false`.
 - Formal boundary: this transcript is not an Ed25519 signature and does not close independent Accessibility, route-owner acceptance, route maturity, RouterOS soak or Linux/Windows/GHCR exact-SHA CL. Readiness remains `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`; no GitHub upload occurred.
+
+## Fresh Step823 6f37df2 final-matrix scoped revalidation
+
+- Candidate evidence before the governance commit: `6f37df26e3c66611ddc09f9c5fca84fd02f1096d`; runtime `257 checks / 140 screenshots / 169 snapshot API calls`; Overview `28/28`; route-responsive `76/76` bounded; route-state `266/266`; full public `532/532`.
+- Archive-index correction: `coveredStepMax` was repaired from 821 to 822, and `npm run check:decision-system` then passed. This correction intentionally invalidates the old packet identity until a new clean candidate is committed and rebound.
+- Scoped Product/Design/Visual disposition remains PASS for the declared phone, tablet and desktop evidence, with P0/P1=0 and the existing non-blocking P2 notes. This transcript is not a trusted Ed25519 signature.
+- Formal boundary remains open: independent Accessibility, route-owner maturity, RouterOS soak, clean candidate and Linux/Windows/GHCR exact-SHA CL are not proven. No GitHub upload occurred.

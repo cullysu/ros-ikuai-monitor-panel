@@ -1,18 +1,18 @@
 - status: `current-handoff`
-- validForCommit: Step822 governance-dirty d44 exact-SHA matrix evidence, dirty runtime evidence and prepared-not-signed packet are present; not a release candidate
-- currentHandoffForStep: `822`
+- validForCommit: Step823 governance-dirty 6f37df2 exact-SHA matrix evidence, dirty runtime evidence and prepared-not-signed packet are present; not a release candidate
+- currentHandoffForStep: `823`
 - supersededBy: docs/decision-system/current-state.md
 - fullHistory: docs/panel-redesign-decision-log.md
 - updated: 2026-08-01
-- latestRecordedStep: `822`
-- latestStepOutcome: `822:d44-exact-matrix-green-scoped-visual-pass-route-maturity-open`
+- latestRecordedStep: `823`
+- latestStepOutcome: `823:6f37df2-final-public-matrix-green-decision-index-repaired-formal-gates-open`
 - currentConclusion: **FAIL overall**. Local engineering, matrix and scoped visual evidence is green; formal Product/Design/Visual independent acceptance, independent Accessibility, route maturity and release evidence remain open.
 
-## Current handoff: Step822 d44 exact matrices and scoped visual evidence refreshed; readiness still narrowed to route maturity
+## Current handoff: Step823 6f37df2 final matrix and archive-index repair; readiness still narrowed to route maturity
 
-- Result: Candidate d44 bound runtime 257 checks / 140 screenshots / 169 snapshot API calls, full public route matrix 532/532, Overview 28/28, route-state 266/266 and route-responsive 76/76 bounded; the packet checker passes 12/12 and readiness stops at route maturity.
+- Result: Candidate 6f37df2 bound runtime 257 checks / 140 screenshots / 169 snapshot API calls, full public route matrix 532/532, Overview 28/28, route-state 266/266 and route-responsive 76/76 bounded; after archive-index repair decision-system passes, while the packet must be rebound after this source change.
 - Decision: Continue the task instead of marking it blocked. Close the local exact-SHA matrix, packet and scoped visual-material slices; do not convert scoped review into trusted external signoff.
-- Boundary: this Step822 governance refresh is dirty until a new exact clean candidate is built; route maturity remains 0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable.
+- Boundary: this Step823 governance refresh is dirty until a new exact clean candidate is built; route maturity remains 0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable.
 - Next: obtain real independent route-owner/Accessibility acceptance, RouterOS soak and exact-SHA Linux/Windows/GHCR CL; then create a clean candidate and rerun readiness before any GitHub API publication.
 
 ## Gate boundary
@@ -27,6 +27,6 @@
 | Current product release | `fail` |
 | GitHub / public release | closed | No upload or publication approval. |
 
-## Step822 continuation
+## Step823 continuation
 
 Do not mark this task blocked. Rebuild exact clean evidence for the repaired tooling, then continue the remaining non-forgeable gates.

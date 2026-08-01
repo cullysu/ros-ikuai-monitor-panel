@@ -1,10 +1,10 @@
 # Release Journal
 - status: `current-journal`
-- validForCommit: d44 exact-SHA matrices, dirty runtime evidence and unsigned acceptance packet are present; Step822 governance is dirty and this is not a release candidate
+- validForCommit: 6f37df2 exact-SHA matrices, dirty governance evidence and unsigned acceptance packet are present; Step823 governance is dirty and this is not a release candidate
 - supersededBy: null
-- currentStep: `822`
-- currentOutcome: 822:d44-exact-matrix-green-scoped-visual-pass-route-maturity-open
-- latestStepOutcome: `822:d44-exact-matrix-green-scoped-visual-pass-route-maturity-open`
+- currentStep: `823`
+- currentOutcome: 823:6f37df2-final-public-matrix-green-decision-index-repaired-formal-gates-open
+- latestStepOutcome: `823:6f37df2-final-public-matrix-green-decision-index-repaired-formal-gates-open`
 - authority: docs/decision-system/current-state.md
 - fullHistory: panel-redesign-decision-log.md
 
@@ -20,7 +20,7 @@
 - Direct readiness passes engineering matrix evidence and stops at route maturity: 0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable. No RouterOS soak, trusted Ed25519, exact-SHA Linux/Windows/GHCR CL or GitHub upload is claimed.
 
 - Step821: the exact e22b244 evidence set passed its declared matrices and readiness stopped at route maturity; ambiguous `*-current` artifact names were replaced with exact-SHA directories, and the unsigned visual packet was moved to generated ignored evidence to avoid tracked-packet self-reference. The source/tool refresh invalidated the old evidence.
-- Step822: d44 exact evidence passed runtime and the 28/76/266/532 matrices; current phone/tablet/desktop visual material has no new scoped screenshot P0/P1. Packet integrity is 12/12 but deliberately unsigned. Readiness identifies d44 and stops at route maturity 0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable; formal independent acceptance, RouterOS soak and exact-SHA CL remain open.
+- Step823: 6f37df2 final evidence passed runtime and the 28/76/266/532 matrices; the archive index was repaired and decision-system passes. The packet must be rebound after this governance change. Current phone/tablet/desktop visual material has no new scoped screenshot P0/P1. Readiness remains at route maturity 0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable; formal independent acceptance, RouterOS soak and exact-SHA CL remain open.
 
 ## Release rule
 

@@ -1,10 +1,10 @@
 # 决策系统导航
-- validForCommit: Step822 governance-dirty evidence has d44 exact-SHA runtime and declared-scope matrix evidence; not a release candidate
+- validForCommit: Step823 governance-dirty evidence has 6f37df2 exact-SHA runtime and declared-scope matrix evidence; packet must be rebound; not a release candidate
 - supersededBy: null
 - status: `current-index`
-- currentBoundaryForStep: `822`
-- latestRecordedStep: `822`
-- latestStepOutcome: `822:d44-exact-matrix-green-scoped-visual-pass-route-maturity-open`
+- currentBoundaryForStep: `823`
+- latestRecordedStep: `823`
+- latestStepOutcome: `823:6f37df2-final-public-matrix-green-decision-index-repaired-formal-gates-open`
 - authority: `docs/decision-system/current-state.md`
 
 当前结论由 current-state.md 唯一拥有；本页只负责导航，不重复历史流水账。
