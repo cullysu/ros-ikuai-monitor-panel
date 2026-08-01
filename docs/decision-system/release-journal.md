@@ -1,10 +1,10 @@
 # Release Journal
 - status: `current-journal`
-- validForCommit: Step830 86319b6 exact clean engineering evidence is present; formal external gates remain open; not a public release approval
+- validForCommit: Step831 100148c exact clean engineering evidence is present; formal external gates remain open; not a public release approval
 - supersededBy: null
-- currentStep: `830`
-- currentOutcome: 830:86319b6-exact-matrix-green-asset-budget-closed-route-maturity-open
-- latestStepOutcome: `830:86319b6-exact-matrix-green-asset-budget-closed-route-maturity-open`
+- currentStep: `831`
+- currentOutcome: 831:100148c-exact-matrix-green-scoped-review-pass-route-maturity-open
+- latestStepOutcome: 831:100148c-exact-matrix-green-scoped-review-pass-route-maturity-open
 - authority: docs/decision-system/current-state.md
 - fullHistory: panel-redesign-decision-log.md
 
@@ -22,7 +22,7 @@
 - Step821: the exact e22b244 evidence set passed its declared matrices and readiness stopped at route maturity; ambiguous `*-current` artifact names were replaced with exact-SHA directories, and the unsigned visual packet was moved to generated ignored evidence to avoid tracked-packet self-reference. The source/tool refresh invalidated the old evidence.
 - Step828: 32ed025 exact runtime, packet, Overview 28/28, route-responsive 76/76, route-state 266/266, public 532/532 and local hygiene pass; scoped independent visual/product review is P0=0/P1=0; readiness remains at route maturity 0/18/0/1. Formal independent acceptance, RouterOS soak and exact-SHA CL remain open.
 
-- Step830: 86319b6 exact clean runtime `257/140/169`, Overview `28/28`, route-responsive `76/76` bounded, route-state `266/266`, full public `532/532`, packet `12/12` and local release hygiene pass. The extra 390–430px CSS patch was removed after the first candidate hit the style budget; final raw style is `119994`. Readiness correctly stops at route maturity `0/18/0/1`. Independent read-only review is scoped PASS with P0/P1=0 and three P2 boundaries; formal Product/Design/Visual, independent Accessibility, route-owner acceptance, RouterOS soak and exact-SHA CL remain open.
+- Step831: 100148c exact clean runtime `257/140/170`, Overview `28/28`, route-responsive `76/76` bounded, route-state `266/266`, full public `532/532`, packet `12/12` and local release hygiene pass. The extra 390–430px CSS patch was removed after the first candidate hit the style budget; final raw style is `119994`. Readiness correctly stops at route maturity `0/18/0/1`. Independent read-only review is scoped PASS with P0/P1=0 and three P2 boundaries; formal Product/Design/Visual, independent Accessibility, route-owner acceptance, RouterOS soak and exact-SHA CL remain open.
 
 ## Release rule
 

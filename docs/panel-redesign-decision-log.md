@@ -24531,3 +24531,18 @@ ocused-green-engineering
 - nextAction：先同步并提交本步骤的决策仓库与 D 盘镜像，随后在文档变更产生的新 clean SHA 上重新运行 build/runtime/28/76/266/532、packet、artifact identity、report truth、decision-system 和 readiness；等待真实独立复核与不可伪造的 Accessibility/route-owner/RouterOS/CL 证据，CL 未全通过前禁止 GitHub API 发布。
 - validForCommit：`86319b61442337d726fb7544b0d449968889fcc2` exact clean engineering/scoped evidence；本步骤文档提交后必须重新绑定
 - supersededBy：null
+
+## 第 831 步：100148c 精确发布矩阵重绑通过，独立 scoped 复核通过但正式 route maturity 仍开放
+
+- status：`100148c-exact-matrix-green-scoped-review-pass-route-maturity-open`
+- latestStepOutcome: `831:100148c-exact-matrix-green-scoped-review-pass-route-maturity-open`
+- 触发/问题：Step830 治理文档提交产生新 clean SHA `100148c03736abb303f3482d8764d4fe8b590a28`；旧 SHA 证据不能继续作为当前候选，必须在新 SHA 上重新生成全部发布材料。用户要求不因开放门禁把任务标成受阻，必须继续完成可执行的独立复核、视觉复核和发布前工程证据。
+- 观察事实：新 SHA `100148c03736abb303f3482d8764d4fe8b590a28` 的 `npm run build` 通过，framework `style.css` raw 为 `119994`；fresh runtime 为 `257 checks / 140 screenshots / 170 snapshot API calls`，failed=0。Overview `28/28`，route-responsive bounded `76/76`，route-state `266/266`，完整 public `532/532`，全部按精确 SHA 目录重跑并通过。
+- 视觉与独立复核：独立只读复核针对 `86319b6` 的实现范围返回 scoped PASS、P0/P1=0；文档治理仅改变身份与决策记录，没有改变产品代码。已知 P2 为 375px 正常态后续判断需滚动、375px 异常态证据边界在首屏下沿、1366px 桌面低优先级边界表格在首屏下方；未生成正式签名。
+- packet 与 readiness：packet 已重生并通过 `12/12` digest/identity，绑定 `100148c`，状态 `prepared-not-signed`、`selfSignoff=false`、`releaseEligible=false`。`check-public-release-readiness.js --require-matrix` 已接受新 SHA Overview 矩阵，然后真实停在 route maturity：`0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`；18 个路由仍为 `automated-only` Accessibility 与 `independentAcceptance=pending`，`more` 仍 unavailable。
+- 决策：关闭 `100148c` 可由本地完成的 build、runtime、四层矩阵、packet、资产预算与 scoped visual slices；不把正式签收、Accessibility 辅助技术验收、route-owner maturity、RouterOS soak、Linux/Windows/GHCR exact-SHA CL 或 GitHub 发布伪造为通过。任务继续 active、`blocked=false`。
+- 理由与拒绝项：文档提交会改变精确身份，因此本轮重跑不是重复测试而是必要的 candidate rebinding；route-responsive 的 `pass=false` 是有意的 bounded shard 语义，不改写为 complete；readiness 在 route maturity 的非零退出是预期红灯，不绕过。
+- 边界/心得：可完成的工程发布证据已闭合到 `100148c`，但产品公开资格还需要真实外部主体签收和真实设备证据。以后每次治理文档或代码变更都必须重新绑定 runtime、矩阵、packet 与 readiness，不能继承上一 SHA 的“绿”。
+- nextAction：先同步并提交 Step831 决策仓库与 D 盘镜像，随后在新治理 SHA 上再重绑最终 runtime/矩阵/packet，并运行全部本地 release/security/accessibility 合同；外部 exact-SHA CL 全部真实通过前禁止 GitHub API 发布。
+- validForCommit：`100148c03736abb303f3482d8764d4fe8b590a28` exact clean engineering/scoped evidence；本步骤文档提交后必须重新绑定
+- supersededBy：null

@@ -1,24 +1,24 @@
 - status: `current`
-- currentConclusionForStep: `830`
-- latestRecordedStep: `830`
-- latestStepOutcome: `830:86319b6-exact-matrix-green-asset-budget-closed-route-maturity-open`
-- currentBoundaryForStep: `830`
-- validForCommit: uncommitted formal acceptance/release approval; 86319b6 exact clean engineering evidence and current scoped visual materials are present; not a release candidate
+- currentConclusionForStep: `831`
+- latestRecordedStep: `831`
+- latestStepOutcome: `831:100148c-exact-matrix-green-scoped-review-pass-route-maturity-open`
+- currentBoundaryForStep: `831`
+- validForCommit: uncommitted formal acceptance/release approval; 100148c exact clean engineering evidence and current scoped visual materials are present; not a release candidate
 - supersededBy: `null`
 - updatedAt: 2026-08-01T19:59:24+08:00
 - authority: This is the only human-readable current-state source.
 
-## Current decision record: Step 830
+## Current decision record: Step 831
 
-- status: 86319b6-exact-matrix-green-asset-budget-closed-route-maturity-open
-- boundary: Step830 records the 86319b6 exact clean engineering evidence and current visual materials; formal external gates remain fail-closed.
-- observed facts: 86319b6 build/runtime/packet/matrices and local release hygiene all pass; style raw is 119994; readiness accepts its exact matrix and stops at route maturity `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`.
+- status: 100148c-exact-matrix-green-scoped-review-pass-route-maturity-open
+- boundary: Step831 records the 100148c exact clean engineering evidence and current visual materials; formal external gates remain fail-closed.
+- observed facts: 100148c build/runtime/packet/matrices and local release hygiene all pass; style raw is 119994; readiness accepts its exact matrix and stops at route maturity `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`.
 - local visual closure: Current phone normal/incident, tablet master/detail and desktop evidence were rechecked; the fresh independent read-only review returned scoped PASS with P0/P1=0 and three declared P2 boundaries. This is not a trusted external signature and does not close formal Product/Design/Visual acceptance.
-- decision: Close all 86319b6 local evidence, asset-budget and hygiene slices; keep formal Product/Design/Visual acceptance, independent Accessibility, route maturity, RouterOS soak, external CL and GitHub/public release fail-closed.
+- decision: Close all 100148c local evidence, asset-budget and hygiene slices; keep formal Product/Design/Visual acceptance, independent Accessibility, route maturity, RouterOS soak, external CL and GitHub/public release fail-closed.
 
 ## Current conclusion
 
-**FAIL overall.** 86319b6 local exact evidence and visual materials are green in the declared scope, but product route maturity and all non-forgeable external/independent gates remain incomplete. No publication is authorized.
+**FAIL overall.** 100148c local exact evidence and visual materials are green in the declared scope, but product route maturity and all non-forgeable external/independent gates remain incomplete. No publication is authorized.
 
 ## Independent acceptance boundary
 
@@ -37,7 +37,7 @@
 | Design | pending | Fresh independent review/signature is required. |
 | Visual QA | pending | Automated/runtime evidence does not replace visual acceptance. |
 | Accessibility | pending | Synthetic checks are not independent assistive-technology acceptance. |
-| State Matrix | pass-scoped | 86319b6 runtime 257/140/169 and 28/76/266/532 pass; packet and matrices are bound to the clean candidate before this governance update. |
+| State Matrix | pass-scoped | 100148c runtime 257/140/170 and 28/76/266/532 pass; packet and matrices are bound to the clean candidate before this governance update. |
 | Route maturity | pending | 0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable. |
 | RouterOS soak | pending | No current long-running real-device evidence. |
 | Release hygiene | pending | Clean candidate, external CL and publication chain remain incomplete. |
@@ -55,13 +55,13 @@
 - R07 mobile visual maturity, R09 tablet task efficiency, R10 desktop density and R14 cross-surface grammar have current scoped evidence and the fresh independent scoped review found P0/P1=0; formal independent acceptance remains pending.
 - Release journal: docs/decision-system/release-journal.md.
 - D drive is a byte-identical mirror at D:\想法\面板.
-- Current packet under `_acceptance/panel-runtime-browser/` is prepared-not-signed and never self-signs; it is bound to 86319b6 before this governance update and must be regenerated after the new SHA.
+- Current packet under `_acceptance/panel-runtime-browser/` is prepared-not-signed and never self-signs; it is bound to 100148c before this governance update and must be regenerated after the new SHA.
 
 ## Record contract
 
 Every material step records trigger/problem, facts, decision, rejected alternatives, verification, boundary and exactly one next action.
 
 
-## Step830 final exact evidence and readiness boundary
+## Step831 final exact evidence and readiness boundary
 
-The task remains active and blocked=false. 86319b6 exact runtime, packet, matrices, asset budget and local hygiene are green in the declared scope. Readiness correctly stops at route maturity; fresh independent scoped visual review is P0/P1=0 but formal signatures, independent assistive-technology acceptance, route-owner maturity, RouterOS soak and external CL remain pending.
+The task remains active and blocked=false. 100148c exact runtime, packet, matrices, asset budget and local hygiene are green in the declared scope. Readiness correctly stops at route maturity; fresh independent scoped visual review is P0/P1=0 but formal signatures, independent assistive-technology acceptance, route-owner maturity, RouterOS soak and external CL remain pending.
