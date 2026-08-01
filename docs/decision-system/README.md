@@ -1,10 +1,10 @@
 # 决策系统导航
-- validForCommit: Step834 243760b exact clean engineering evidence is present; formal external gates remain open; not a public release approval
+- validForCommit: Step835 382a145 exact clean engineering evidence is present; formal external gates remain open; not a public release approval
 - supersededBy: null
 - status: `current-index`
-- currentBoundaryForStep: `834`
-- latestRecordedStep: `834`
-- latestStepOutcome: `834:243760b-independent-scoped-review-pass-formal-signoff-open`
+- currentBoundaryForStep: `835`
+- latestRecordedStep: `835`
+- latestStepOutcome: `835:382a145-independent-scoped-rebind-pass-formal-signoff-open`
 - authority: `docs/decision-system/current-state.md`
 
 当前结论由 current-state.md 唯一拥有；本页只负责导航，不重复历史流水账。

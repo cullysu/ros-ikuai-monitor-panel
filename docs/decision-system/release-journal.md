@@ -1,10 +1,10 @@
 # Release Journal
 - status: `current-journal`
-- validForCommit: Step834 243760b exact clean engineering evidence is present; formal external gates remain open; not a public release approval
+- validForCommit: Step835 382a145 exact clean engineering evidence is present; formal external gates remain open; not a public release approval
 - supersededBy: null
-- currentStep: `834`
-- currentOutcome: 834:243760b-independent-scoped-review-pass-formal-signoff-open
-- latestStepOutcome: 834:243760b-independent-scoped-review-pass-formal-signoff-open
+- currentStep: `835`
+- currentOutcome: 835:382a145-independent-scoped-rebind-pass-formal-signoff-open
+- latestStepOutcome: 835:382a145-independent-scoped-rebind-pass-formal-signoff-open
 - authority: docs/decision-system/current-state.md
 - fullHistory: panel-redesign-decision-log.md
 
@@ -24,7 +24,7 @@
 
 - Step831: 100148c exact clean runtime `257/140/170`, Overview `28/28`, route-responsive `76/76` bounded, route-state `266/266`, full public `532/532`, packet `12/12` and local release hygiene pass. The extra 390–430px CSS patch was removed after the first candidate hit the style budget; final raw style is `119994`. Readiness correctly stops at route maturity `0/18/0/1`. Independent read-only review is scoped PASS with P0/P1=0 and three P2 boundaries; formal Product/Design/Visual, independent Accessibility, route-owner acceptance, RouterOS soak and exact-SHA CL remain open.
 - Step832: 603a27f exact clean runtime `257/140/169`, Overview `28/28`, route-responsive full `532/532`, route-state `266/266`, full public `532/532`, packet `12/12` and local release hygiene pass. The route-responsive single-scenario 76/76 shard remained available for readiness discovery, while the complete multi-scenario report closed the prior P1. Readiness correctly stops at route maturity `0/18/0/1`. Independent read-only review is scoped PASS with P0/P1=0; formal Product/Design/Visual, independent Accessibility, route-owner acceptance, RouterOS soak and exact-SHA CL remain open.
-- Step834: 243760b exact clean runtime `257/140/169`, Overview `28/28`, route-state `266/266`, full route-responsive `532/532`, full public `532/532`, packet `12/12` and local release hygiene pass. A fresh independent read-only review returned scoped PASS with P0/P1=0 and three P2 boundaries. Readiness correctly stops at route maturity `0/18/0/1`; formal Product/Design/Visual, independent Accessibility, route-owner acceptance, RouterOS soak and exact-SHA CL remain open.
+- Step835: 382a145 exact clean runtime `257/140/170`, Overview `28/28`, route-state `266/266`, full route-responsive `532/532`, full public `532/532`, packet `12/12` and local release hygiene pass. A fresh independent read-only review returned scoped PASS with P0/P1=0 and three P2 boundaries. Readiness correctly stops at route maturity `0/18/0/1`; formal Product/Design/Visual, independent Accessibility, route-owner acceptance, RouterOS soak and exact-SHA CL remain open.
 
 ## Release rule
 

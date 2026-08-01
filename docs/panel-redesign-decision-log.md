@@ -24591,3 +24591,20 @@ ocused-green-engineering
 - nextAction：同步 Step834 决策仓库到 `D:\想法\面板` 并提交治理文档；提交后重新生成最终 SHA 的 runtime、四层矩阵、packet、report-truth、decision-system 与 readiness 证据，然后继续等待/获取真实正式签收、RouterOS soak 和三端 exact-SHA CL；在全部发布门禁真实通过前禁止 GitHub API 发布。
 - validForCommit：`243760b4963abce920b1722d982865a7f78da1f4` exact clean engineering/scoped evidence；本步骤文档提交后必须重新绑定
 - supersededBy：null
+
+## 第 835 步：382a145 最终候选精确重绑，独立 scoped 复核通过，正式签收与发布门禁继续开放
+
+- status：`382a145-independent-scoped-rebind-pass-formal-signoff-open`
+- latestStepOutcome: `835:382a145-independent-scoped-rebind-pass-formal-signoff-open`
+- 触发/问题：Step834 的治理提交产生了新的候选身份；用户明确要求不能因为某个开放门禁就停止，必须继续完成独立复核、视觉材料和发布前可执行核验。本步把所有本地证据重新绑定到当前 clean SHA，避免沿用旧候选的“绿灯”。
+- 观察事实：当前候选为 `382a14530ff0f8a7c120fa76f9483b77fbd11bbf`，工作树 clean，fingerprint 为 `616d35a74f976454a73515cbdfb7de0594fc3fdf620ccd0b30b7ffae7b2b5f48`。`npm run build`、`check:types`、fresh `check:runtime-browser` 通过；runtime 为 `257 checks / 140 screenshots / 170 snapshot API calls`，failed=0。
+- 精确矩阵：Overview `28/28` complete；route-state `266/266` complete；完整 route-responsive `532/532` complete；完整 public `532/532` complete；bounded single-route shard 请求范围内 `76/76`，其顶层 `complete=false` 是有意保留的 bounded 语义，不能替代完整 532-cell 报告。
+- 独立复核：独立只读 reviewer 针对精确 `382a145` 完成 scoped review，结论 `PASS`，P0=`0`、P1=`0`。已知 P2 为 375px 正常态后续运行判断需滚动、375px 异常证据边界靠近首屏下沿、1366px 低优先级尾部表格在首屏下方；reviewer 未修改文件且未生成正式签名。该 scoped PASS 关闭声明范围内的视觉/产品复核，不冒充正式 Product/Design/Visual 或独立 Accessibility 签收。
+- 发布材料：visual packet `12/12` digest/identity 通过并绑定 `382a145`，状态仍为 `prepared-not-signed`、`selfSignoff=false`、`releaseEligible=false`。report-truth、RFC3339 runtime schema、只读、安全、静态资产、资产身份、发布阻断器、生命周期、decision-system 和 D 盘同步合同均通过。
+- readiness 边界：`check-public-release-readiness.js --require-matrix` 已接受当前 clean-SHA 矩阵，随后真实停在 `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`。18 个操作路由仍需要真实 route-owner/独立 Accessibility/acceptance；正式 Product/Design/Visual Ed25519、真实 RouterOS soak、Linux/Windows/GHCR exact-SHA CL 也没有可验证证据。该结果是 fail-closed 的发布边界，不是任务受阻。
+- 决策：关闭本地可执行范围内的最终候选重绑、矩阵、runtime、packet 和 scoped visual review；任务保持 active、`blocked=false`。继续推进逐路由成熟度、真实外部签收、真实 RouterOS soak 与 exact-SHA CL；所有相关门禁真实通过前不上传 GitHub、不宣称公众发布。
+- 理由与拒绝项：不把 agent scoped PASS 改写为可信 Ed25519 签名；不把 18 个 bounded-readonly URL 改写为 complete 模块；不把 synthetic runtime 改写为真实设备 soak；不因本地矩阵全绿绕过 readiness 或 GitHub 发布协议。后续任何代码或治理文档变更都必须再次重绑精确 SHA。
+- 边界/心得：本轮已经证明“当前候选的本地发布证据与声明范围视觉复核完整”，但还没有证明“公众发布资格成立”。把这两层分开，才能避免把测试全绿误写成产品完成；阻断器应成为下一步清单，而不是提前结束任务的理由。
+- nextAction：同步 Step835 到 `D:\想法\面板` 并提交治理文档；提交后重新绑定新 clean SHA 的 build/runtime/28/76/266/532/packet/readiness，继续补齐 route-owner、Accessibility、RouterOS soak 和 Linux/Windows/GHCR exact-SHA CL。任何 CL 未全部真实通过前禁止 GitHub API 发布。
+- validForCommit：`382a14530ff0f8a7c120fa76f9483b77fbd11bbf` exact clean engineering/scoped evidence；本步骤文档提交后必须重新绑定
+- supersededBy：null
