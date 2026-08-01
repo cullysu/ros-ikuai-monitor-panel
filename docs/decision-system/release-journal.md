@@ -1,10 +1,10 @@
 # Release Journal
 - status: `current-journal`
-- validForCommit: Step824 runtime-cleanup repair is dirty; 6f37df2 exact-SHA matrices are historical and unsigned packet must be rebound; not a release candidate
+- validForCommit: Step825 connection screenshot repair is dirty; prior exact-SHA matrices are historical and unsigned packet must be rebound; not a release candidate
 - supersededBy: null
-- currentStep: `824`
-- currentOutcome: 824:runtime-screenshot-cleanup-deadlock-fixed-candidate-rebind-open
-- latestStepOutcome: `824:runtime-screenshot-cleanup-deadlock-fixed-candidate-rebind-open`
+- currentStep: `825`
+- currentOutcome: 825:desktop-connection-isolated-launch-flaky-in-context-capture-selected
+- latestStepOutcome: `825:desktop-connection-isolated-launch-flaky-in-context-capture-selected`
 - authority: docs/decision-system/current-state.md
 - fullHistory: panel-redesign-decision-log.md
 
@@ -20,7 +20,7 @@
 - Direct readiness passes engineering matrix evidence and stops at route maturity: 0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable. No RouterOS soak, trusted Ed25519, exact-SHA Linux/Windows/GHCR CL or GitHub upload is claimed.
 
 - Step821: the exact e22b244 evidence set passed its declared matrices and readiness stopped at route maturity; ambiguous `*-current` artifact names were replaced with exact-SHA directories, and the unsigned visual packet was moved to generated ignored evidence to avoid tracked-packet self-reference. The source/tool refresh invalidated the old evidence.
-- Step824: the asynchronous Windows isolated-screenshot cleanup repair passes runtime 257/140/169 and the chained visual/layout/accessibility contracts. The 6f37df2 matrices are historical until the new clean SHA is regenerated; packet rebinding, formal independent acceptance, RouterOS soak and exact-SHA CL remain open.
+- Step825: the desktop connection page keeps its semantic checks, while its one screenshot moves from unstable second-browser isolation to the verified in-context page. Exact-SHA matrix rebinding, formal independent acceptance, RouterOS soak and exact-SHA CL remain open.
 
 ## Release rule
 

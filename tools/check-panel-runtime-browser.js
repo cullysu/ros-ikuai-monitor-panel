@@ -8115,14 +8115,10 @@ async function main() {
       ownsExactlyOneMain(desktopConnectionLandmark),
       desktopConnectionLandmark
     );
-    screenshots.push(await isolatedScreenshot(
-      mock.url,
-      'desktop-connection.png',
-      'desktop-connection',
-      { width: 1366, height: 768 },
-      '[data-router-connection-screen="desktop"]',
-      executablePath
-    ));
+    // The page has already passed its dedicated desktop connection semantics.
+    // Reusing this verified page avoids a second Edge launch whose cleanup can
+    // deadlock on Windows without adding product evidence.
+    screenshots.push(await screenshot(desktopPage, 'desktop-connection.png', 'desktop-connection'));
     await desktopContext.close();
 
     mock.state.configured = false;

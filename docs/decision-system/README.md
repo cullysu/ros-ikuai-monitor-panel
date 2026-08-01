@@ -1,10 +1,10 @@
 # 决策系统导航
-- validForCommit: Step824 governance-dirty runtime cleanup repair is present; exact-SHA matrices and packet must be regenerated; not a release candidate
+- validForCommit: Step825 governance-dirty connection screenshot repair is present; exact-SHA matrices and packet must be regenerated; not a release candidate
 - supersededBy: null
 - status: `current-index`
-- currentBoundaryForStep: `824`
-- latestRecordedStep: `824`
-- latestStepOutcome: `824:runtime-screenshot-cleanup-deadlock-fixed-candidate-rebind-open`
+- currentBoundaryForStep: `825`
+- latestRecordedStep: `825`
+- latestStepOutcome: `825:desktop-connection-isolated-launch-flaky-in-context-capture-selected`
 - authority: `docs/decision-system/current-state.md`
 
 当前结论由 current-state.md 唯一拥有；本页只负责导航，不重复历史流水账。

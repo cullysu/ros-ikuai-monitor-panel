@@ -118,3 +118,9 @@
 - The runtime browser initially hit the same Windows cleanup deadlock twice at the isolated desktop connection screenshot. The fix changes only the test harness cleanup from synchronous to asynchronous `taskkill`; it does not weaken screenshot or product assertions.
 - After the fix, runtime `257 checks / 140 screenshots / 169 snapshot API calls` and the chained incident, responsive, tablet task and accessibility contracts pass. The code change is not yet committed, so prior exact-SHA matrices remain historical.
 - Scoped Product/Design/Visual review remains within its declared evidence scope; this runtime-harness result is not a trusted independent signature. Route maturity, independent Accessibility, RouterOS soak and exact-SHA CL remain open.
+
+## Fresh Step825 connection capture revalidation
+
+- The clean 13ea074 runtime still timed out only while launching the extra isolated browser for `desktop-connection.png`; the connection page's dedicated semantic workspace, form width, overflow and landmark checks had already passed.
+- The chosen repair captures that already-verified `desktopPage` in context for this one screenshot, retaining viewport, timeout, animation and digest contracts. It does not weaken product assertions or remove the screenshot.
+- This is runtime-harness evidence, not a trusted independent signature. Exact-SHA matrices must be regenerated after the repair; route maturity, independent Accessibility, RouterOS soak and exact-SHA CL remain open.

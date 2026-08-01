@@ -24456,3 +24456,16 @@ ocused-green-engineering
 - nextAction：提交此运行时清理修复及本步治理记录，生成新 clean candidate；重跑 build/runtime/28/76/266/532、packet、artifact identity、report truth、decision-system 和 readiness，并继续真实独立签收与 exact-SHA CL。
 - validForCommit：当前修复在 85a6d27 工作树上未提交；发布候选未建立
 - supersededBy：null
+
+## 第 825 步：移除连接页单点隔离启动不稳定，保留同一页面语义截图并继续重绑候选
+
+- status：`desktop-connection-isolated-launch-flaky-in-context-capture-selected`
+- latestStepOutcome: `825:desktop-connection-isolated-launch-flaky-in-context-capture-selected`
+- 触发/问题：Step824 的异步 kill-tree 修复让截图失败可返回，但在新 clean commit `13ea074` 上，runtime-browser 仍在同一 `isolated-screenshot:desktop-connection.png` 阶段 240 秒超时；失败阶段完成 139/140 screenshots 和 169 snapshot calls，页面语义断言没有失败。
+- 观察事实：故障只落在连接登录页的额外隔离浏览器启动/截图路径；同一 `desktopPage` 已经通过专用 desktop connection landmark、表单宽度和 overflow 断言。继续反复启动第二个 Edge 进程不能增加产品证据，反而让 Windows 运行时清理噪声成为门禁主风险。
+- 决策：连接页截图改为使用已经通过语义断言的 `desktopPage` 在当前上下文直接截图；保留完整 viewport、`animations: disabled`、截图超时、PNG digest 和页面语义断言。仅移除这个单点的第二浏览器启动，不删除截图、不跳过连接页、不改变产品行为。
+- 理由与拒绝项：不提高全局超时、不屏蔽 desktop-connection、不把超时降级为 warning；也不批量终止用户 Edge 进程。截图工具要证明页面，不应让“为了隔离而再次启动浏览器”成为比被测页面更脆弱的对象。
+- 边界/心得：独立进程对跨状态污染有价值，但当被测页已经由同一运行时上下文和专用 landmark 证明，额外浏览器启动只增加环境不确定性。应按风险分层使用隔离截图，而不是机械地对每个连接状态重复启动。
+- nextAction：先提交本步治理记录与连接截图路径修复，重新生成新 clean candidate 的 runtime、packet、28/76/266/532 矩阵和 readiness；继续独立签收、RouterOS soak 与 exact-SHA CL。
+- validForCommit：13ea074 clean candidate 仍因本步未提交的 runtime harness 修复需要重绑；发布候选未建立
+- supersededBy：null

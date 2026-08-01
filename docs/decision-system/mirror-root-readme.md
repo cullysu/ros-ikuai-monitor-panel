@@ -1,11 +1,11 @@
 # RouterOS / iKuai 面板决策仓库
 
-这是当前面板工作的本地决策仓库镜像。Step824 记录了 Windows 隔离截图清理死锁修复；旧矩阵需要在新的 clean candidate 上重跑，独立 Product/Design/Visual 公共签收、route maturity、Accessibility、RouterOS soak 和可信外部发布签收仍未完成。
+这是当前面板工作的本地决策仓库镜像。Step825 记录了桌面连接页截图改为已验证上下文内采集；旧矩阵需要在新的 clean candidate 上重跑，独立 Product/Design/Visual 公共签收、route maturity、Accessibility、RouterOS soak 和可信外部发布签收仍未完成。
 
 - status: `current-mirror-entry`
-- currentStep: `824`
-- currentOutcome: `824:runtime-screenshot-cleanup-deadlock-fixed-candidate-rebind-open`
-- currentBoundary: `824`
+- currentStep: `825`
+- currentOutcome: `825:desktop-connection-isolated-launch-flaky-in-context-capture-selected`
+- currentBoundary: `825`
 - authority: `decision-system/current-state.md`
 
 ## 入口
@@ -42,4 +42,4 @@
 
 每个材料性切片开始前先写仓库日志和对应 decision-system 文件，再同步到 D 盘镜像。同步门禁必须满足语义步骤一致、Markdown 映射逐字节一致、没有额外 Markdown；根 README 还必须通过新鲜度检查。
 
-Step824: asynchronous Windows isolated-screenshot cleanup passes runtime 257/140/169 and chained contracts; exact-SHA matrix rebinding, formal signoff and public release remain closed. This summary is not a signature.
+Step825: desktop connection semantic checks remain intact while the screenshot uses the verified in-context page; exact-SHA matrix rebinding, formal signoff and public release remain closed. This summary is not a signature.
