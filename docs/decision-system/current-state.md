@@ -1,21 +1,21 @@
 - status: `current`
-- currentConclusionForStep: `813`
-- latestRecordedStep: `813`
-- latestStepOutcome: `813:current-fingerprint-formatted-css-rebound-matrices-green-formal-signoff-open`
-- currentBoundaryForStep: `813`
+- currentConclusionForStep: `820`
+- latestRecordedStep: `820`
+- latestStepOutcome: `820:current-identity-full-matrix-and-independent-review-scoped-pass-formal-signoff-open`
+- currentBoundaryForStep: `820`
 - validForCommit: uncommitted governance evidence contains exact-SHA matrices, dirty runtime evidence and an unsigned packet; not a release candidate
 - supersededBy: `null`
-- updatedAt: 2026-08-01T12:05:00+08:00
+- updatedAt: 2026-08-01T19:59:24+08:00
 - authority: This is the only human-readable current-state source.
 
-## Current decision record: Step 813
+## Current decision record: Step 820
 
-- status: current-fingerprint-css-budget-green-matrices-refreshed-formal-signoff-open
-- boundary: Step813 binds current HEAD 7ded037c617fbe92b6cdc672b0e9bb28f72c1713, fresh runtime and current governance-dirty packet; it does not close formal public acceptance.
-- observed facts: Current candidate 7ded037c617fbe92b6cdc672b0e9bb28f72c1713 has full public 532/532, Overview 28/28, route-state 266/266, route-responsive 76/76 bounded cells and runtime 257 checks / 101 screenshots / 130 snapshot API calls. Runtime artifact is worktree-7ded037c617f-bef448fb0633, packet is prepared-not-signed, worktreeClean=false and releaseEvidenceEligible=false.
-- local visual closure: the short-phone rule preserves the WAN chart, axis, time window, 12px text and touch floors while moving the first decision row from 600px to 579px at 375x667; scoped runtime and matrix checks remain green.
-- packet: refreshed packet binds current runtime identity and 12 current screenshot digests; scoped Product/Visual review remains PASS, but formal external acceptance remains pending; selfSignoff=false; releaseEligible=false.
-- decision: Keep public release FAIL/closed until route maturity, trusted independent signatures, independent Accessibility, RouterOS soak and external exact-SHA CL exist; continue local work instead of marking the task blocked.
+- status: current-identity-full-matrix-and-independent-review-scoped-pass-formal-signoff-open
+- boundary: Step820 binds current HEAD 80f5113849dc7af3f865a73005a2f71ea1614a43 with runtime fingerprint 33950af70105c717b4981200e1d84d874847f52d3ce303dfb7d7be5263291353 and artifact worktree-80f5113849dc-33950af70105; formal public acceptance remains closed.
+- observed facts: Current runtime is 257 checks / 140 screenshots / 169 snapshot API calls; full public route matrix 532/532; Overview 28/28; route-state 266/266; route-responsive 76/76 bounded. Packet check passes with 12/12 digests; worktreeClean=false and releaseEvidenceEligible=false.
+- local visual closure: Scoped Product/Design/Visual review remains PASS within its declared evidence scope. This is not a trusted external signature.
+- packet: prepared-not-signed, selfSignoff=false, releaseEligible=false; current candidate identity and all 12 screenshot digests match the runtime report.
+- decision: Close local engineering, matrix, automated full-route Accessibility and scoped visual evidence slices; keep formal Product/Design/Visual acceptance, independent Accessibility, route maturity, RouterOS soak, external CL and GitHub/public release fail-closed.
 
 ## Current conclusion
 
@@ -63,6 +63,6 @@
 Every material step records trigger/problem, facts, decision, rejected alternatives, verification, boundary and exactly one next action.
 
 
-## Step813 local closure
+## Step820 current-identity and independent scoped review update
 
-The task remains active and blocked=false. Current candidate scoped review is being rebound to the new SHA after the short-phone visual polish; the local runtime and matrices are green, while formal Product/Design/Visual acceptance, route maturity, Accessibility, RouterOS soak and external CL remain pending.
+The task remains active and blocked=false. Current identity has fresh Overview 28/28, full public route/scenario/viewport 532/532, route-state 266/266, route-responsive 76/76 bounded and runtime-browser 257 checks / 140 screenshots / 169 snapshot API calls. Independent agents supplied scoped Product/Design/Visual PASS and engineering audit, but no trusted signature. Formal signatures, independent assistive-technology acceptance, route maturity, RouterOS soak and external CL remain pending.

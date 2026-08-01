@@ -1,10 +1,10 @@
 # 决策系统导航
-- validForCommit: current clean governance candidate has exact-SHA runtime and declared-scope matrix evidence; not a release candidate
+- validForCommit: current governance-dirty evidence has exact-SHA runtime and declared-scope matrix evidence; not a release candidate
 - supersededBy: null
 - status: `current-index`
-- currentBoundaryForStep: `813`
-- latestRecordedStep: `813`
-- latestStepOutcome: `813:current-fingerprint-formatted-css-rebound-matrices-green-formal-signoff-open`
+- currentBoundaryForStep: `820`
+- latestRecordedStep: `820`
+- latestStepOutcome: `820:current-identity-full-matrix-and-independent-review-scoped-pass-formal-signoff-open`
 - authority: `docs/decision-system/current-state.md`
 
 当前结论由 current-state.md 唯一拥有；本页只负责导航，不重复历史流水账。

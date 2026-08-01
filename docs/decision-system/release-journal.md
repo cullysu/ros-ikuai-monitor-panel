@@ -2,9 +2,9 @@
 - status: `current-journal`
 - validForCommit: exact-SHA matrices, dirty runtime evidence and unsigned acceptance packet are present; governance is dirty and this is not a release candidate
 - supersededBy: null
-- currentStep: `813`
-- currentOutcome: 813:current-fingerprint-formatted-css-rebound-matrices-green-formal-signoff-open
-- latestStepOutcome: `813:current-fingerprint-formatted-css-rebound-matrices-green-formal-signoff-open`
+- currentStep: `820`
+- currentOutcome: 820:current-identity-full-matrix-and-independent-review-scoped-pass-formal-signoff-open
+- latestStepOutcome: `820:current-identity-full-matrix-and-independent-review-scoped-pass-formal-signoff-open`
 - authority: docs/decision-system/current-state.md
 - fullHistory: panel-redesign-decision-log.md
 
@@ -12,6 +12,12 @@
 - Historical Step796: scoped Product/Architecture/Visual review was recorded while the public boundary remained fail-closed.
 - Historical Step810 evidence (superseded): Overview 28/28, route-responsive 76/76 bounded cells, route-state 266/266, and browser runtime 257 checks / 101 screenshots / 132 snapshot API calls. The unsigned packet binds current commit da5e0c3a221cfeec4f180041ddfb912ff3d5b6ca and all 12 refreshed screenshot digests.
 - Historical Step810 boundary (superseded): scoped Product/Visual review is closed with P0/P1=0; formal Product/Design/Visual, Accessibility, route-owner, RouterOS soak, clean-candidate and external exact-SHA Linux/Windows/GHCR CL acceptance remain open. Current product release and GitHub/public release remain closed.
+
+- Step820 current-identity full matrix and independent scoped review
+
+- Current candidate 80f5113849dc7af3f865a73005a2f71ea1614a43; runtime 257/140/169; full public route matrix 532/532; Overview 28/28; route-state 266/266; route-responsive 76/76 bounded.
+- Runtime fingerprint 33950af70105c717b4981200e1d84d874847f52d3ce303dfb7d7be5263291353; artifact worktree-80f5113849dc-33950af70105; packet and all 12 current screenshot digests are rebound.
+- Direct readiness passes engineering matrix evidence and stops at route maturity: 0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable. No RouterOS soak, trusted Ed25519, exact-SHA Linux/Windows/GHCR CL or GitHub upload is claimed.
 
 ## Release rule
 

@@ -913,7 +913,6 @@
   }
 }
 
-
 /*The base incident list is declared later in the tablet/desktop cascade.
    Keep the phone rhythm compact after that shared rule so 375–599px phones
    retain two-line actions without sacrificing the 44px touch target.*/

@@ -1,14 +1,14 @@
 # 2026-08-01 Current Candidate Product / Design / Visual Review
 
 - status: independent-review-transcript
-- reviewedBaseCommit: 7ded037c617fbe92b6cdc672b0e9bb28f72c1713
+- reviewedBaseCommit: 80f5113849dc7af3f865a73005a2f71ea1614a43
 - conclusion: scoped Product PASS / scoped Visual PASS / formal external sign-off pending
 - boundary: independent-agent review record; not an external Ed25519 signature and not release approval.
 
 ## Product
 
 - Current HEAD scoped Product review: PASS; no new Product P0/P1/P2 was found in the changed generic evidence boundary.
-- Runtime: 257 checks, 101 screenshots and 130 snapshot API calls, pass=true, bound to artifact worktree-7ded037c617f-bef448fb0633.
+- Runtime: 257 checks, 140 screenshots and 169 snapshot API calls, pass=true, bound to the current governance-dirty artifact worktree-80f5113849dc-33950af70105.
 - Current matrices: Overview 28/28, route-state 266/266, route-responsive bounded shard 76/76; no scenario or information-architecture regression was found in the reviewed scope.
 - Formal Product sign-off remains pending: 18 operational routes are bounded-readonly, 0 are complete and 1 is unavailable; route-owner acceptance is absent.
 
@@ -20,6 +20,21 @@
 - Confirmed: first-screen hierarchy, abnormal-object priority, tablet master/detail, 1366 desktop Focus-to-WAN-to-decision ledger, touch/keyboard visibility and reduced-motion ownership.
 - No new Visual P2 was found after the 375px short-phone rhythm fix; 1440px overview bottom whitespace remains a non-blocking product-density note, not a new visual defect.
 - Formal Visual QA sign-off remains pending because this record cannot replace a trusted independent signature and the packet remains prepared-not-signed.
+
+## Step820 independent scoped replay and current full-matrix rebinding
+
+- Current candidate: `80f5113849dc7af3f865a73005a2f71ea1614a43`; runtime fingerprint `33950af70105c717b4981200e1d84d874847f52d3ce303dfb7d7be5263291353`; artifact `worktree-80f5113849dc-33950af70105`; worktreeClean=false; releaseEvidenceEligible=false.
+- Independent Product/Design/Visual agent review: scoped PASS for the current four primary screenshots and supporting desktop/tablet evidence; no new screenshot-level P0/P1. Remaining P1 boundary is formal external signoff, route-owner maturity and release evidence, not a newly observed visual regression. Non-blocking P2 remains cold-blue surface uniformity and tablet inspector tail density.
+- Independent engineering/Accessibility/route-maturity agent review: local types, RFC3339, readonly, section model, static assets, runtime-browser and report-truth contracts pass; all 18 bounded-readonly routes are automated-only, not independently signed.
+- Current evidence: runtime `257 checks / 140 screenshots / 169 snapshot API calls`; full public route/scenario/viewport matrix `532/532`; Overview `28/28`; route-state `266/266`; route-responsive bounded `76/76`; packet `12/12` digest check passes.
+- Boundary: these independent agents provide a review transcript and scoped evidence only. They do not create trusted Ed25519 signatures or close Product/Design/Visual, independent Accessibility, route-owner, RouterOS soak, clean-candidate or exact-SHA Linux/Windows/GHCR CL gates. Public release remains FAIL/closed.
+
+## Step819 automated Accessibility coverage replay
+
+- Current candidate: `80f5113849dc7af3f865a73005a2f71ea1614a43`; runtime fingerprint `33950af70105c717b4981200e1d84d874847f52d3ce303dfb7d7be5263291353`; artifact `worktree-80f5113849dc-33950af70105`; worktreeClean=false; releaseEvidenceEligible=false.
+- Real production browser scope expanded from 5 to all 18 `bounded-readonly` routes. Each route now runs the same real-runtime checks for 200% text stress, 320px reflow, forced colors, keyboard/focus, ARIA naming, touch targets, clipping and fixed-navigation occlusion.
+- Result: runtime `257 checks / 140 screenshots / 169 snapshot API calls`, `pass=true`; no new P0/P1 was introduced by the expanded route scope.
+- Boundary: this closes the local automated Accessibility coverage slice only. It does not close independent assistive-technology acceptance, route-owner acceptance, formal Product/Design/Visual signatures, RouterOS soak, clean candidate or exact-SHA Linux/Windows/GHCR CL.
 
 ## Release boundary
 
@@ -57,3 +72,29 @@
 - Fresh evidence: runtime 257/101/131 pass; public matrix 532/532; Overview 28/28; route-state 266/266; route-responsive 76/76 bounded; packet 12/12 digests match.
 - Scoped review disposition remains PASS with no newly observed P0/P1/P2 in the changed CSS-only slice; this is an evidence rebind and not a new trusted external signature.
 - Formal boundary remains open: packet prepared-not-signed, selfSignoff=false, releaseEligible=false, route maturity 0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable; RouterOS soak and exact-SHA Linux/Windows/GHCR CL are absent.
+## Fresh Step814 evidence rebind
+
+- Clean candidate: 80f5113849dc7af3f865a73005a2f71ea1614a43; clean runtime generatedAt 2026-08-01T07:39:05.237Z; 257 checks / 101 screenshots / 132 snapshot API calls.
+- Clean matrix evidence: full public 532/532; Overview 28/28; route-state 266/266; route-responsive bounded 76/76.
+- This records a code-candidate evidence refresh only. It is not a new trusted external signature; scoped Product/Design/Visual PASS remains bounded to the declared review scope.
+- Formal boundary remains open: independent signatures, route-owner maturity, RouterOS soak and exact-SHA Linux/Windows/GHCR CL are not claimed.
+
+
+## Fresh Step814 current-worktree evidence rebind
+
+- Current runtime evidence: commit 80f5113849dc7af3f865a73005a2f71ea1614a43, fingerprint 14ed40b8a111fe7230dca3e67c38093ee728c45482da7468571204c01dd996b1, artifactKey worktree-80f5113849dc-14ed40b8a111, generated 2026-08-01T08:01:34.228Z; 257 checks / 101 screenshots / 132 snapshot API calls, failed=0.
+- Current-worktree matrix refresh: Overview 28/28, route-state bounded 266/266, route-responsive bounded 76/76, and the full public release matrix 532/532. These reports are current engineering evidence and remain ineligible for release while governance documents leave the worktree dirty.
+- Packet refreshed against the current runtime; 12/12 evidence digests match. Scoped Product/Design/Visual review remains PASS within its declared scope; this rebind is not a new trusted external signature.
+- Formal boundary remains open: independent signatures, route-owner maturity, RouterOS soak and exact-SHA Linux/Windows/GHCR CL are not claimed. No GitHub upload occurred.
+
+## Step816 current revalidation
+
+- The current Product/Design/Visual packet is rebound to decision Step816 and still carries prepared-not-signed, selfSignoff=false, and releaseEligible=false.
+- npm run check:decision-system and node tools/check-product-design-visual-packet.js pass. This closes the local review-material and identity-contract slice only; it does not manufacture trusted signatures.
+- The current release boundary remains FAIL: route maturity, independent Accessibility, RouterOS soak, clean candidate and exact-SHA Linux/Windows/GHCR CL are still open. No GitHub publication occurred.
+
+## Step818 current CSS/runtime revalidation
+
+- The formatter change removed one redundant blank line from mobile-patrol.css; the rebuilt asset identity, fresh runtime and current matrices were regenerated rather than reusing the previous fingerprint.
+- Current evidence: runtime 257/101/131, public 532/532, Overview 28/28, route-state 266/266, route-responsive bounded 76/76; fingerprint bd0290679d98e13c9101a1aabec7dcafb6f39c5dff574348dd8f57d6e999f526.
+- Scoped Product/Design/Visual disposition remains within scope only. The packet is prepared-not-signed, selfSignoff=false, and releaseEligible=false; formal route-owner, Accessibility, RouterOS soak and exact-SHA CL remain open.

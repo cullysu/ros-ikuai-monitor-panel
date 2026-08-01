@@ -35,7 +35,26 @@ const currentAutomatedEvidence = [
   "tools/check-panel-runtime-browser.js",
 ] as const;
 
-const automatedAccessibilityRoutes = ["interfaces", "lineStatus", "terminals", "logs"] as const satisfies readonly PanelRouteId[];
+const automatedAccessibilityRoutes = [
+  "overview",
+  "interfaces",
+  "lineStatus",
+  "balance",
+  "routes",
+  "terminals",
+  "dhcp",
+  "arp",
+  "trafficLoad",
+  "loadAudit",
+  "trafficAudit",
+  "connections",
+  "dns4",
+  "dns6",
+  "security",
+  "logs",
+  "serviceLogs",
+  "readonlyDiagnostics",
+] as const satisfies readonly PanelRouteId[];
 
 const sectionEvidence = (
   route: PanelRouteId,
