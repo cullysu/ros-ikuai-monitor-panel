@@ -24500,3 +24500,17 @@ ocused-green-engineering
 - nextAction：继续逐路由实现真实筛选/排序/分页/对象详情/错误恢复并建立 route-owner 与独立 Accessibility 验收入口；同步真实 RouterOS soak 证据，在所有外部记录真实绑定 77b86ea 或新 clean SHA 后重跑 readiness，再按 exact-SHA Linux/Windows/GHCR CL 决定是否进入 GitHub API 发布。
 - validForCommit：77b86ea 精确 clean engineering/scoped evidence；正式发布未满足
 - supersededBy：null
+
+## 第 828 步：32ed025 精确候选独立视觉复核 scoped PASS，正式签收与发布门禁继续 fail-closed
+
+- status：`32ed025-exact-scoped-visual-review-pass-formal-gates-open`
+- latestStepOutcome: `828:32ed025-exact-scoped-visual-review-pass-formal-gates-open`
+- 触发/问题：用户要求未完成的独立签收、视觉评审和发布资格继续推进。本轮需要把独立 agent 对最终 clean candidate 的复核绑定到同一 SHA，不能继续引用 77b86ea 或脏工作树记录。
+- 观察事实：独立复核针对 `32ed0254ba5929d43261a08b2a7e84e749af74a3` 的手机正常/异常、844 平板主从、1366 桌面和 runtime report，给出声明范围 PASS，P0=0、P1=0；runtime `257 checks / 140 screenshots / 169 snapshot API calls`，工作树 clean。复核确认接口异常优先于健康 WAN、手机主操作不被固定导航遮挡、平板主从关系、桌面首屏状态/风险/趋势/判断和 current/history/unavailable 边界均成立。
+- 视觉边界：P2 仍为手机正常态运行判断需要滚动、桌面尾部少量低密度空间；不构成当前 scoped 视觉 P0/P1 阻断。该 agent transcript 不是可信 Ed25519 签名，不能关闭正式 Product/Design/Visual。
+- 决策：关闭 32ed025 声明范围内的 scoped visual/product review 材料；继续保持独立辅助技术、18 个 route-owner/route maturity、RouterOS soak、formal Ed25519、Linux/Windows/GHCR exact-SHA CL 与 GitHub API 发布 fail-closed。任务 active、`blocked=false`。
+- 理由与拒绝项：不把 agent PASS 改写成正式独立签收，不把 mock/synthetic runtime 改写成 RouterOS soak，不把 `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable` 改成产品完成，不声称 CL 或 GitHub 已通过。
+- 边界/心得：独立复核的价值是发现当前候选是否有新的可复现 P0/P1，而不是替外部主体签名；一旦复核记录写入 tracked decision surface，候选 fingerprint 会改变，必须重新生成 exact-SHA runtime、packet 和四层矩阵，不能沿用复核前报告。
+- nextAction：提交 Step828 复核记录后，重跑 32ed025 新候选身份下的 build/runtime/28/76/266/532、packet、report truth、decision-system 和 readiness；CL 全部真实通过前禁止 GitHub API 发布，并继续准备 route-owner/Accessibility/RouterOS 证据。
+- validForCommit：32ed025 scoped visual/product evidence；正式发布未满足
+- supersededBy：null

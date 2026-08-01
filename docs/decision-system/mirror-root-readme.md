@@ -1,11 +1,11 @@
 # RouterOS / iKuai 面板决策仓库
 
-这是当前面板工作的本地决策仓库镜像。Step827 记录了 77b86ea 精确工程证据全绿但 readiness 停在 route maturity；独立 Product/Design/Visual 公共签收、Accessibility、RouterOS soak 和可信外部发布签收仍未完成。
+这是当前面板工作的本地决策仓库镜像。Step828 记录了 32ed025 精确工程证据与 scoped visual/product 复核全绿但 readiness 停在 route maturity；独立 Product/Design/Visual 公共签收、Accessibility、RouterOS soak 和可信外部发布签收仍未完成。
 
 - status: `current-mirror-entry`
-- currentStep: `827`
-- currentOutcome: `827:77b86ea-exact-release-evidence-green-route-maturity-formal-signoff-open`
-- currentBoundary: `827`
+- currentStep: `828`
+- currentOutcome: `828:32ed025-exact-scoped-visual-review-pass-formal-gates-open`
+- currentBoundary: `828`
 - authority: `decision-system/current-state.md`
 
 ## 入口
@@ -42,4 +42,4 @@
 
 每个材料性切片开始前先写仓库日志和对应 decision-system 文件，再同步到 D 盘镜像。同步门禁必须满足语义步骤一致、Markdown 映射逐字节一致、没有额外 Markdown；根 README 还必须通过新鲜度检查。
 
-Step827: 77b86ea exact engineering evidence is green and readiness stops at route maturity; formal signoff and public release remain closed. This summary is not a signature.
+Step828: 32ed025 exact engineering evidence and scoped visual/product review are green; readiness stops at route maturity and formal signoff/public release remain closed. This summary is not a signature.

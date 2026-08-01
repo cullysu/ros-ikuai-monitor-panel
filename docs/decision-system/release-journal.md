@@ -2,9 +2,9 @@
 - status: `current-journal`
 - validForCommit: Step827 77b86ea exact clean engineering evidence is present; formal external gates remain open; not a public release approval
 - supersededBy: null
-- currentStep: `827`
-- currentOutcome: 827:77b86ea-exact-release-evidence-green-route-maturity-formal-signoff-open
-- latestStepOutcome: `827:77b86ea-exact-release-evidence-green-route-maturity-formal-signoff-open`
+- currentStep: `828`
+- currentOutcome: 828:32ed025-exact-scoped-visual-review-pass-formal-gates-open
+- latestStepOutcome: `828:32ed025-exact-scoped-visual-review-pass-formal-gates-open`
 - authority: docs/decision-system/current-state.md
 - fullHistory: panel-redesign-decision-log.md
 
@@ -20,7 +20,7 @@
 - Direct readiness passes engineering matrix evidence and stops at route maturity: 0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable. No RouterOS soak, trusted Ed25519, exact-SHA Linux/Windows/GHCR CL or GitHub upload is claimed.
 
 - Step821: the exact e22b244 evidence set passed its declared matrices and readiness stopped at route maturity; ambiguous `*-current` artifact names were replaced with exact-SHA directories, and the unsigned visual packet was moved to generated ignored evidence to avoid tracked-packet self-reference. The source/tool refresh invalidated the old evidence.
-- Step827: 77b86ea exact runtime, packet, Overview 28/28, route-responsive 76/76, route-state 266/266, public 532/532 and local hygiene pass; readiness accepts the matrix and stops at route maturity 0/18/0/1. Formal independent acceptance, RouterOS soak and exact-SHA CL remain open.
+- Step828: 32ed025 exact runtime, packet, Overview 28/28, route-responsive 76/76, route-state 266/266, public 532/532 and local hygiene pass; scoped independent visual/product review is P0=0/P1=0; readiness remains at route maturity 0/18/0/1. Formal independent acceptance, RouterOS soak and exact-SHA CL remain open.
 
 ## Release rule
 

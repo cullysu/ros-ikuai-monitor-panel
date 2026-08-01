@@ -1,18 +1,18 @@
 - status: `current-handoff`
 - validForCommit: uncommitted formal acceptance/release approval; 77b86ea exact clean engineering evidence is present; not a release candidate
-- currentHandoffForStep: `827`
+- currentHandoffForStep: `828`
 - supersededBy: docs/decision-system/current-state.md
 - fullHistory: docs/panel-redesign-decision-log.md
 - updated: 2026-08-01
-- latestRecordedStep: `827`
-- latestStepOutcome: `827:77b86ea-exact-release-evidence-green-route-maturity-formal-signoff-open`
+- latestRecordedStep: `828`
+- latestStepOutcome: `828:32ed025-exact-scoped-visual-review-pass-formal-gates-open`
 - currentConclusion: **FAIL overall**. Local engineering, matrix and scoped visual evidence is green; formal Product/Design/Visual independent acceptance, independent Accessibility, route maturity and release evidence remain open.
 
-## Current handoff: Step827 exact local evidence green; readiness remains at route maturity
+## Current handoff: Step828 exact local evidence and scoped visual review green; readiness remains at route maturity
 
-- Result: 77b86ea exact runtime 257/140/169, packet 12/12, Overview 28/28, route-responsive 76/76 bounded, route-state 266/266 and full public 532/532 pass; local release hygiene and static/visual contracts pass.
+- Result: 32ed025 exact runtime 257/140/169, packet 12/12, Overview 28/28, route-responsive 76/76 bounded, route-state 266/266 and full public 532/532 pass; local release hygiene and static/visual contracts pass; scoped independent visual/product replay is P0=0/P1=0.
 - Decision: Continue the task instead of marking it blocked. Close the local exact-SHA matrix, packet and scoped visual-material slices; do not convert scoped review into trusted external signoff.
-- Boundary: 77b86ea is a clean engineering candidate, but readiness correctly stops at route maturity 0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable.
+- Boundary: 32ed025 is a clean engineering candidate, but readiness correctly stops at route maturity 0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable; formal signoff remains pending.
 - Next: obtain real independent route-owner/Accessibility acceptance, RouterOS soak and exact-SHA Linux/Windows/GHCR CL; rerun readiness after any new candidate before GitHub API publication.
 
 ## Gate boundary
@@ -27,6 +27,6 @@
 | Current product release | `fail` |
 | GitHub / public release | closed | No upload or publication approval. |
 
-## Step827 continuation
+## Step828 continuation
 
 Do not mark this task blocked. Rebuild exact clean evidence for the repaired tooling, then continue the remaining non-forgeable gates.

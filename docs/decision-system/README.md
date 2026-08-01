@@ -2,9 +2,9 @@
 - validForCommit: Step827 77b86ea exact clean engineering evidence is present; formal external gates remain open; not a public release approval
 - supersededBy: null
 - status: `current-index`
-- currentBoundaryForStep: `827`
-- latestRecordedStep: `827`
-- latestStepOutcome: `827:77b86ea-exact-release-evidence-green-route-maturity-formal-signoff-open`
+- currentBoundaryForStep: `828`
+- latestRecordedStep: `828`
+- latestStepOutcome: `828:32ed025-exact-scoped-visual-review-pass-formal-gates-open`
 - authority: `docs/decision-system/current-state.md`
 
 当前结论由 current-state.md 唯一拥有；本页只负责导航，不重复历史流水账。

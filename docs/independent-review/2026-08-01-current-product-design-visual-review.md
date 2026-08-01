@@ -1,14 +1,14 @@
 # 2026-08-01 Current Candidate Product / Design / Visual Review
 
 - status: independent-review-transcript
-- reviewedBaseCommit: 77b86ea7d0871e4a61a3cec0739799210ecd193f
+- reviewedBaseCommit: 32ed0254ba5929d43261a08b2a7e84e749af74a3
 - conclusion: scoped Product PASS / scoped Visual PASS / formal external sign-off pending
 - boundary: independent-agent review record; not an external Ed25519 signature and not release approval.
 
 ## Product
 
 - Current HEAD scoped Product review: PASS; no new Product P0/P1/P2 was found in the changed generic evidence boundary.
-- Runtime: 257 checks, 140 screenshots and 169 snapshot API calls, pass=true, bound to the clean candidate 77b86ea7d0871e4a61a3cec0739799210ecd193f.
+- Runtime: 257 checks, 140 screenshots and 169 snapshot API calls, pass=true, bound to the clean candidate 32ed0254ba5929d43261a08b2a7e84e749af74a3.
 - Current matrices: Overview 28/28, route-state 266/266, route-responsive bounded shard 76/76; no scenario or information-architecture regression was found in the reviewed scope.
 - Formal Product sign-off remains pending: 18 operational routes are bounded-readonly, 0 are complete and 1 is unavailable; route-owner acceptance is absent.
 
@@ -23,7 +23,14 @@
 
 ## Step820 independent scoped replay and current full-matrix rebinding
 
-- Current candidate: `77b86ea7d0871e4a61a3cec0739799210ecd193f`; runtime fingerprint `8a22c1abfcc56494bd0237889f49d579875e838038c9e22070752b58658dcc43`; artifact `77b86ea7d0871e4a61a3cec0739799210ecd193f`; worktreeClean=true; releaseEvidenceEligible=true.
+- Current candidate: `32ed0254ba5929d43261a08b2a7e84e749af74a3`; runtime fingerprint `23d0f6fa9899c726c345f1f6f80a9a49d0c65ccd101aab1a4cc0310fd4b60315`; artifact `32ed0254ba5929d43261a08b2a7e84e749af74a3`; worktreeClean=true; releaseEvidenceEligible=true.
+
+## Fresh Step828 independent visual/product replay
+
+- Scoped result: PASS for the exact 32ed0254ba5929d43261a08b2a7e84e749af74a3 candidate; P0=0, P1=0. P2 remains normal phone decision rail scroll and minor desktop tail whitespace.
+- Reviewed evidence: `mobile-runtime-current.png`, `mobile-composite-risk-390.png`, `tablet-overview-master-detail-844.png`, `overview-normal-task-1366.png`, and current runtime report/packet; runtime 257/140/169 with 0 failed checks.
+- Confirmed: interface risk outranks healthy WAN, phone primary action clears fixed navigation, tablet list/detail relation remains visible, desktop first screen carries status/risk/trend/next judgment, and current/history/unavailable evidence is not conflated.
+- Boundary: this is a scoped independent transcript, not formal Product/Design/Visual Ed25519 signoff; Accessibility assistive-tech acceptance, route maturity, RouterOS soak, exact-SHA Linux/Windows/GHCR CL and GitHub release remain open.
 - Independent Product/Design/Visual agent review: scoped PASS for the current four primary screenshots and supporting desktop/tablet evidence; no new screenshot-level P0/P1. Remaining P1 boundary is formal external signoff, route-owner maturity and release evidence, not a newly observed visual regression. Non-blocking P2 remains cold-blue surface uniformity and tablet inspector tail density.
 - Independent engineering/Accessibility/route-maturity agent review: local types, RFC3339, readonly, section model, static assets, runtime-browser and report-truth contracts pass; all 18 bounded-readonly routes are automated-only, not independently signed.
 - Current evidence: runtime `257 checks / 140 screenshots / 169 snapshot API calls`; full public route/scenario/viewport matrix `532/532`; Overview `28/28`; route-state `266/266`; route-responsive bounded `76/76`; packet `12/12` digest check passes.
