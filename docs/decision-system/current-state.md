@@ -1,24 +1,25 @@
 - status: `current`
-- currentConclusionForStep: `810`
-- latestRecordedStep: `810`
-- latestStepOutcome: `810:current-sha-a11y-desktop-readability-fixed-runtime-matrix-green-formal-signoff-open`
-- currentBoundaryForStep: `810`
+- currentConclusionForStep: `813`
+- latestRecordedStep: `813`
+- latestStepOutcome: `813:current-fingerprint-formatted-css-rebound-matrices-green-formal-signoff-open`
+- currentBoundaryForStep: `813`
 - validForCommit: uncommitted governance evidence contains exact-SHA matrices, dirty runtime evidence and an unsigned packet; not a release candidate
 - supersededBy: `null`
-- updatedAt: 2026-08-01T07:10:17+08:00
+- updatedAt: 2026-08-01T12:05:00+08:00
 - authority: This is the only human-readable current-state source.
 
-## Current decision record: Step 810
+## Current decision record: Step 813
 
-- status: current-sha-independent-product-visual-scoped-pass-formal-signoff-open
-- boundary: Step810 binds current HEAD da5e0c3a221cfeec4f180041ddfb912ff3d5b6ca, current runtime and current governance-dirty packet; it does not close formal public acceptance.
-- observed facts: Current candidate da5e0c3a221cfeec4f180041ddfb912ff3d5b6ca has Overview 28/28, route-responsive 76/76 bounded cells, route-state 266/266 and runtime 257 checks / 101 screenshots / 132 snapshot API calls. Runtime artifact is worktree-da5e0c3a221c-75edbcfd4841, packet is prepared-not-signed, worktreeClean=false and releaseEvidenceEligible=false.
-- packet: packet contract passes with 12/12 current screenshot digests; scoped Product and Visual reviews pass with P0/P1=0, but formal external acceptance remains pending; selfSignoff=false; releaseEligible=false.
-- decision: Keep public release FAIL/closed until route maturity, trusted independent signatures, independent Accessibility, RouterOS soak and external exact-SHA CL exist.
+- status: current-fingerprint-css-budget-green-matrices-refreshed-formal-signoff-open
+- boundary: Step813 binds current HEAD 7ded037c617fbe92b6cdc672b0e9bb28f72c1713, fresh runtime and current governance-dirty packet; it does not close formal public acceptance.
+- observed facts: Current candidate 7ded037c617fbe92b6cdc672b0e9bb28f72c1713 has full public 532/532, Overview 28/28, route-state 266/266, route-responsive 76/76 bounded cells and runtime 257 checks / 101 screenshots / 130 snapshot API calls. Runtime artifact is worktree-7ded037c617f-bef448fb0633, packet is prepared-not-signed, worktreeClean=false and releaseEvidenceEligible=false.
+- local visual closure: the short-phone rule preserves the WAN chart, axis, time window, 12px text and touch floors while moving the first decision row from 600px to 579px at 375x667; scoped runtime and matrix checks remain green.
+- packet: refreshed packet binds current runtime identity and 12 current screenshot digests; scoped Product/Visual review remains PASS, but formal external acceptance remains pending; selfSignoff=false; releaseEligible=false.
+- decision: Keep public release FAIL/closed until route maturity, trusted independent signatures, independent Accessibility, RouterOS soak and external exact-SHA CL exist; continue local work instead of marking the task blocked.
 
 ## Current conclusion
 
-**FAIL overall.** Local engineering and declared-scope matrix evidence is complete, but product route maturity and all non-forgeable external/independent gates remain incomplete. No publication is authorized.
+**FAIL overall.** Local engineering and declared-scope matrix evidence is green for the current SHA, but product route maturity and all non-forgeable external/independent gates remain incomplete. No publication is authorized.
 
 ## Independent acceptance boundary
 
@@ -62,6 +63,6 @@
 Every material step records trigger/problem, facts, decision, rejected alternatives, verification, boundary and exactly one next action.
 
 
-## Step810 local closure
+## Step813 local closure
 
-The task remains active and blocked=false. Current candidate scoped Product and Visual reviews are closed at their declared scope with P0/P1=0; the non-blocking P2 polish findings remain recorded. The rebuilt runtime passed 257 checks, 101 screenshots and 130 snapshot API calls. Formal Product/Design/Visual acceptance, route maturity, Accessibility, RouterOS soak and external CL remain pending.
+The task remains active and blocked=false. Current candidate scoped review is being rebound to the new SHA after the short-phone visual polish; the local runtime and matrices are green, while formal Product/Design/Visual acceptance, route maturity, Accessibility, RouterOS soak and external CL remain pending.

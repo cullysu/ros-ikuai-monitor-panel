@@ -1,20 +1,19 @@
 - status: `current-handoff`
 - validForCommit: exact-SHA matrix evidence, dirty runtime evidence and prepared-not-signed packet are present; not a release candidate
-- currentHandoffForStep: `810`
+- currentHandoffForStep: `813`
 - supersededBy: `docs/decision-system/current-state.md`
 - updated: 2026-08-01
-- latestRecordedStep: `810`
-- latestStepOutcome: `810:current-sha-a11y-desktop-readability-fixed-runtime-matrix-green-formal-signoff-open`
+- latestRecordedStep: `813`
+- latestStepOutcome: `813:current-fingerprint-formatted-css-rebound-matrices-green-formal-signoff-open`
 - currentConclusion: **FAIL overall**. Local engineering evidence is green in declared scopes; independent Product/Design/Visual acceptance, route maturity and release evidence remain open.
 - process: docs/decision-system/current-state.md is the sole authority; docs/panel-redesign-decision-log.md is detailed chronology.
 
-## Current handoff: Step810 current SHA scoped Product/Visual review complete; formal acceptance remains open
+## Current handoff: Step813 CSS budget closure and current matrices refreshed; formal acceptance remains open
 
-- Result: Overview 28/28, route-responsive 76/76 bounded cells, route-state 266/266, and runtime-browser 257 checks / 101 screenshots / 132 snapshot API calls passed on candidate da5e0c3a221cfeec4f180041ddfb912ff3d5b6ca.
-- Decision: Continue the task instead of marking it blocked; keep Product, Design and Visual acceptance open until trusted independent review is recorded against a final clean candidate.
-- Boundary: The packet and regenerated runtime are governance-dirty; route maturity is 0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable; no external CL or RouterOS soak is claimed.
-- Loop state: active, blocked=false. Open release gates are work items, not a reason to stop.
-- Next: Advance route-owner evidence, independent Accessibility/visual acceptance, RouterOS soak and exact-SHA external CL, then rerun readiness without inventing signatures.
+- Result: Candidate 7ded037c617fbe92b6cdc672b0e9bb28f72c1713 has full public 532/532, Overview 28/28, route-state 266/266, route-responsive 76/76 bounded cells, and runtime-browser 257 checks / 101 screenshots / 130 snapshot API calls.
+- Decision: Continue the task instead of marking it blocked; the the short-phone CSS cleanup preserved the 375x667 first decision row at 579px and reduced the generated style asset to 119994 bytes without reducing chart, text or touch contracts.
+- Boundary: Current runtime and matrix artifacts are governance-dirty with worktreeClean=false and releaseEvidenceEligible=false; route maturity remains 0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable.
+- Next: rebind the scoped review record and unsigned packet to the 9ef684908a26 fingerprint, then run report-truth/readiness and release regressions, then continue route-owner evidence, RouterOS soak and exact-SHA external CL without inventing signatures.
 
 ## Gate boundary
 
@@ -29,6 +28,6 @@
 | GitHub / public release | closed | No upload or publication approval.
 
 
-## Step810 continuation
+## Step813 continuation
 
-Do not mark this task blocked. The current source/build commit and current matrices are refreshed; continue external acceptance without treating the open release gate as task blockage.
+Do not mark this task blocked. The current source/build commit and current matrices are refreshed; continue independent acceptance and external release evidence without treating the open release gate as task blockage.

@@ -2,13 +2,13 @@
   "packetVersion": 1,
   "status": "prepared-not-signed",
   "purpose": "independent product design visual review input only",
-  "validForCommit": "through Step810",
-  "currentDecisionStep": 810,
+  "validForCommit": "through Step813",
+  "currentDecisionStep": 813,
   "currentRelease": "closed",
   "claims": {
-    "product": "pending-independent-review",
-    "design": "pending-independent-review",
-    "visualQA": "pending-independent-signoff",
+    "product": "scoped-pass-formal-signoff-pending",
+    "design": "scoped-pass-formal-signoff-pending",
+    "visualQA": "scoped-pass-formal-signoff-pending",
     "selfSignoff": false,
     "releaseEligible": false
   },
@@ -88,62 +88,62 @@
   "note": "Automation and implementation-owner inspection may prepare evidence but cannot set these signatures to pass.",
   "evidenceRoot": "_acceptance/panel-runtime-browser",
   "evidenceReport": "_acceptance/panel-runtime-browser/report.json",
-  "preparedAt": "2026-08-01T02:48:51.958Z",
+  "preparedAt": "2026-08-01T06:50:54.244Z",
   "candidateIdentity": {
-    "commit": "da5e0c3a221cfeec4f180041ddfb912ff3d5b6ca",
-    "worktreeFingerprint": "75edbcfd48415a04e41bb4f0df1f55d1228090c93f528ff5c3d51b9317d36dd9",
-    "artifactKey": "worktree-da5e0c3a221c-75edbcfd4841",
+    "commit": "7ded037c617fbe92b6cdc672b0e9bb28f72c1713",
+    "worktreeFingerprint": "bef448fb063386776b4a5200dceaa251d86b04b951457bed6cc6bcc3d64089ef",
+    "artifactKey": "worktree-7ded037c617f-bef448fb0633",
     "worktreeClean": false,
     "releaseEvidenceEligible": false
   },
   "evidenceFiles": [
     {
       "path": "mobile-runtime-current.png",
-      "sha256": "2f3898eddd40858624998548a40c7d950f9209fa25736091a044941548073ce6"
+      "sha256": "6985e17affa158d026deb91b590058ce805710f37b0bf085f6e607f3c67b4dd5"
     },
     {
       "path": "mobile-composite-risk-390.png",
-      "sha256": "8223f862919d89b2b58751bcff7692db98398bf3b5ed277ac3524f88ff2d7a9d"
+      "sha256": "7798a2782465b0238ab063d20396ed819d906aacea09526f0fc892cded8e4a0f"
     },
     {
       "path": "mobile-composite-risk-375.png",
-      "sha256": "c8c858a71a4a90965173779106f97affa22062294752f78db43639c704b57d1e"
+      "sha256": "26b4657ad36e09ca7bac1b1e057ab2d423e41c6a41a69957b275f75eb27a3405"
     },
     {
       "path": "mobile-log-explicit-detail-390.png",
-      "sha256": "11ed5e9871f3e85615e8186117ce0a9be2646bd41b7cd53fedf54dfe75867d83"
+      "sha256": "c5917909b90a6104ba010ff2de7e77af917fc3bf4785efa9f08ca45c5507cfa2"
     },
     {
       "path": "tablet-overview-normal-768.png",
-      "sha256": "1416fea68b2315dd9ae88b14caac8420da0ea1894c00faaa60bd5d58e0893b73"
+      "sha256": "ff96fab36f5ca7c9f3cae454e38065830cdc6556ecae9759395f808c09deea9c"
     },
     {
       "path": "tablet-overview-master-detail-844.png",
-      "sha256": "50d1cce6b4c43e7bb4c7f021e13544dffdf2d20d17e866061f201231a06a0df8"
+      "sha256": "0f678d9875add101bb54977d8e373a0649a412d065686d51b2dc74d84ded11b3"
     },
     {
       "path": "tablet-interface-review-844.png",
-      "sha256": "e3cbd542e0fe10c3839e831243e3b47418ecc2880201c808f45cdbb4aac8decb"
+      "sha256": "0b302871fe3a1dd6431c60aa5a4465b9cad9b3ab982b6de61cd72fbaf9ecd243"
     },
     {
       "path": "tablet-resource-investigation-context-768.png",
-      "sha256": "1d2251b4ee68c08699d9ff55390f4c4a872f5e5e546c653984acec16dcbdc43e"
+      "sha256": "469234e6eba4bb6887f2908d17f4eed6621c4c195a9cb88236a1a3f32c9f71fa"
     },
     {
       "path": "overview-normal-task-1366.png",
-      "sha256": "505ef024ef335965c3e910aac28f49c67da0f91c7c45d48eafc8b2a90ca6aceb"
+      "sha256": "c06637a94683d97922a80d041e3433df918fa90f7cba9ee113a019283fa346fc"
     },
     {
       "path": "overview-normal-task-1440.png",
-      "sha256": "93da189bd4b4ee561cb87966d6b702ccd31dc0b7d93f1efe7866f6b53eecd4bd"
+      "sha256": "3a6d4ed6ed37f95cce14bbe29ee095f3ec70dedb4fff4817424235388bda8307"
     },
     {
       "path": "desktop-resource-timeseries-1366.png",
-      "sha256": "eae44198a51eff234ffb3cd94722834384e04965969142ec7f3eda4fb48345cb"
+      "sha256": "b8bccd752d26913c9b3a08cfd84a272b2e215e6c7c9efb5c5c3b2ef1bb486dd6"
     },
     {
       "path": "desktop-overview-wan-axis-1366.png",
-      "sha256": "c60dfc906df62bffbdd88d771d43bde8fcae403f160cf8caa98a754b0208ab66"
+      "sha256": "2f28dfffaff19019c15149d2a7cf512ebb3a89af41776975b136298c67e640be"
     }
   ]
 }

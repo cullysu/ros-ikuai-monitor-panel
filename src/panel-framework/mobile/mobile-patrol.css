@@ -85,30 +85,6 @@
   .mp-chart {
     min-height: 104px;
   }
-  .mp-actions > header {
-    min-height: 48px;
-    padding: 6px 12px;
-  }
-  .mp-action-list > button {
-    min-height: 46px;
-    padding: 5px 10px;
-  }
-}
-
-@media (max-width: 599px) {
-  .mp-incident-copy p {
-    overflow: visible;
-    text-overflow: clip;
-    white-space: normal;
-  }
-  .mp-actions > header {
-    min-height: 48px;
-    padding: 6px 12px;
-  }
-  .mp-action-list > button {
-    min-height: 46px;
-    padding: 5px 10px;
-  }
 }
 
 /*Secondary risks are supporting context, not a second primary verdict. Keep
@@ -133,10 +109,6 @@
   }
   .mp-workspace {
     max-width: 1024px;
-  }
-  .mp-proof > div {
-    padding-right: 16px;
-    padding-left: 16px;
   }
 }
 
@@ -941,16 +913,6 @@
   }
 }
 
-@media (max-width: 389px) {
-  .mp-actions > header {
-    min-height: 48px;
-    padding: 6px 12px;
-  }
-  .mp-action-list > button {
-    min-height: 46px;
-    padding: 5px 10px;
-  }
-}
 
 /*The base incident list is declared later in the tablet/desktop cascade.
    Keep the phone rhythm compact after that shared rule so 375–599px phones
@@ -1255,9 +1217,6 @@
    tablet split. Keep the task rail single-track so the operator can follow
    one route without a second column competing for the short vertical budget.*/
 
-/*Short phones keep the WAN chart and its time window, but reclaim non-action
-   chrome so the first operational decision starts inside the initial scan.*/
-
 @media (max-width: 389px) and (max-height: 700px) {
   .mp-shell:not(.is-large-text) .mp-traffic > header {
     min-height: 44px;
@@ -1286,13 +1245,10 @@
   }
 }
 
-/*The taller mobile plot needs a compact object lead on the shortest phones. Keep identity and current rates readable while reclaiming only non-action padding.*/
-
 @media (max-width: 389px) {
   .mp-shell:not(.is-large-text) .mp-focus > button {
     gap: 6px;
-    padding-top: 1px;
-    padding-bottom: 1px;
+    padding-block: 1px;
   }
   .mp-shell:not(.is-large-text) .mp-focus-copy b {
     margin-top: 1px;

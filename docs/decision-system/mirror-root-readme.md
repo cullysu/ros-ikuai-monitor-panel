@@ -1,11 +1,11 @@
 # RouterOS / iKuai 面板决策仓库
 
-这是当前面板工作的本地决策仓库镜像。Step810 记录了当前 SHA 的 scoped Product / Visual 独立复核和正式发布边界重新验证；独立 Product/Design/Visual 公共签收、route maturity、Accessibility、RouterOS soak 和可信外部发布签收仍未完成。
+这是当前面板工作的本地决策仓库镜像。Step813 记录了当前 SHA 的 scoped Product / Visual 独立复核和正式发布边界重新验证；独立 Product/Design/Visual 公共签收、route maturity、Accessibility、RouterOS soak 和可信外部发布签收仍未完成。
 
 - status: `current-mirror-entry`
-- currentStep: `810`
-- currentOutcome: `810:current-sha-a11y-desktop-readability-fixed-runtime-matrix-green-formal-signoff-open`
-- currentBoundary: `810`
+- currentStep: `813`
+- currentOutcome: `813:current-fingerprint-formatted-css-rebound-matrices-green-formal-signoff-open`
+- currentBoundary: `813`
 - authority: `decision-system/current-state.md`
 
 ## 入口
@@ -42,4 +42,4 @@
 
 每个材料性切片开始前先写仓库日志和对应 decision-system 文件，再同步到 D 盘镜像。同步门禁必须满足语义步骤一致、Markdown 映射逐字节一致、没有额外 Markdown；根 README 还必须通过新鲜度检查。
 
-Step810: current SHA scoped Product/Visual review is closed at its declared scope; formal signoff and public release remain closed.
+Step813: current SHA scoped Product/Visual review is closed at its declared scope; formal signoff and public release remain closed.
