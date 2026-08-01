@@ -24576,3 +24576,18 @@ ocused-green-engineering
 - nextAction：同步并提交 Step833 决策仓库与 D 盘镜像；提交后再重绑最终 SHA 的 runtime/四层矩阵/packet/readiness，并继续推进真实外部签收、RouterOS soak 与 exact-SHA CL；全部发布门禁真实通过前禁止 GitHub API 发布。
 - validForCommit：`792b83c0bcccf686d7629ecec5088a17d7e25d3c` exact clean engineering/scoped evidence；本步骤文档提交后必须重新绑定
 - supersededBy：null
+
+## 第 834 步：243760b 独立 scoped 复核通过，正式签收与发布门禁继续保持关闭
+
+- status：`243760b-independent-scoped-review-pass-formal-signoff-open`
+- latestStepOutcome: `834:243760b-independent-scoped-review-pass-formal-signoff-open`
+- 触发/问题：Step833 的治理提交产生新的 clean SHA `243760b4963abce920b1722d982865a7f78da1f4`；旧候选证据不能直接继承，且用户要求完成独立签收与全部发布相关核验，而不是再次因开放门禁提前标记受阻。
+- 观察事实：新 SHA 的 build 与 fresh runtime 通过；runtime 为 `257 checks / 140 screenshots / 169 snapshot API calls`；Overview `28/28`、route-state `266/266`、完整 route-responsive `532/532`、完整 public `532/532`、单场景 route-responsive `76/76` 均已重绑到当前 clean identity；visual packet `12/12` 通过且保持 `prepared-not-signed`、`selfSignoff=false`、`releaseEligible=false`。
+- 独立复核：独立只读 reviewer 针对 `243760b` 完成 scoped review，结论 `PASS`，P0=`0`、P1=`0`。手机、平板、桌面截图没有新增首屏、异常优先级、证据可信度或空间布局阻断；仅记录三个 P2 边界：375px 正常态完整运行判断需滚动、375px 异常态证据边界接近首屏下沿、`local-predeploy-check.js` 仍为约 3359 行单体门禁脚本。reviewer 明确未修改文件、未生成签名，scoped PASS 不能冒充正式 Product/Design/Visual 或 Accessibility 签收。
+- 发布核验：report-truth、runtime schema/RFC3339、只读边界、安全、静态资产、资产身份、发布阻断器、生命周期、decision-system 与 D 盘同步合同通过；readiness 已通过当前 clean-SHA 矩阵身份检查，随后真实停止在 route maturity：`0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`。
+- 决策：关闭 `243760b` 在本地可执行范围内的工程、视觉 scoped 与矩阵工作；把独立 scoped PASS 写入当前决策仓库；继续推进正式独立签收、独立 Accessibility、route-owner maturity、RouterOS soak 和 Linux/Windows/GHCR exact-SHA CL，任何一项没有真实证据都不得关闭发布边界、上传 GitHub 或宣称公众发布。
+- 理由与拒绝项：自动化矩阵不能替代真实产品签收；scoped reviewer 不能生成可信 Ed25519；route maturity 不能因 URL 覆盖而升级；本地无法代替真实 RouterOS 长时运行或外部三端 CL。开放门禁是继续工作的清单，不是任务受阻。
+- 边界/心得：本步把“独立复核已完成”和“正式签收仍未完成”分开记录，避免再次把工程绿灯误写成产品发布资格。所有新文档提交都会使 exact-SHA 证据失效，必须先同步治理记录，再对最终 SHA 重绑全部证据。
+- nextAction：同步 Step834 决策仓库到 `D:\想法\面板` 并提交治理文档；提交后重新生成最终 SHA 的 runtime、四层矩阵、packet、report-truth、decision-system 与 readiness 证据，然后继续等待/获取真实正式签收、RouterOS soak 和三端 exact-SHA CL；在全部发布门禁真实通过前禁止 GitHub API 发布。
+- validForCommit：`243760b4963abce920b1722d982865a7f78da1f4` exact clean engineering/scoped evidence；本步骤文档提交后必须重新绑定
+- supersededBy：null
