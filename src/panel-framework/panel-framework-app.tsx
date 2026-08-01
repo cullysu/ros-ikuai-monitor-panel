@@ -104,8 +104,23 @@ function LivePanelRuntime({ options }: { options?: DeriveOverviewOptions }) {
       }
     : runtime.snapshot.data;
 
+  const runtimeAnnouncement = runtime.snapshot.phase === "current"
+    ? "监控快照已更新，当前证据可用"
+    : runtime.snapshot.phase === "refreshing"
+      ? "正在更新监控快照"
+      : runtime.snapshot.phase === "stale"
+        ? "监控快照已过期，当前业务数字不可视为实时"
+        : runtime.snapshot.phase === "recovering"
+          ? "正在恢复监控快照证据"
+          : runtime.snapshot.phase === "error"
+            ? "监控快照读取失败"
+            : "正在读取监控快照";
+
   return (
     <div className="panel-runtime-live" data-panel-runtime-phase={runtime.snapshot.phase}>
+      <div className="panel-runtime-announcement" role="status" aria-live="polite" aria-atomic="true" style={{ position: "absolute", clip: "rect(0 0 0 0)" }}>
+        {runtimeAnnouncement}
+      </div>
       <PanelRuntimeChrome runtime={runtime} route={route} onNavigate={navigate} />
       <PanelRuntimeNotice runtime={runtime} />
       {boundedSnapshot ? (

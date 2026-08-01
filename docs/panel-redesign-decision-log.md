@@ -24174,3 +24174,79 @@ ocused-green-engineering
 - nextAction：同步第804步后刷新 dirty identity 的 runtime、28/76/266、packet digests 和 readiness，继续完成独立 Product/Design/Visual/Accessibility、route-owner、RouterOS soak 与 Linux/Windows/GHCR exact-SHA CL。
 - validForCommit：current code candidate plus governance-dirty evidence; release candidate not established
 - supersededBy：null
+
+
+## 第 805 步：当前治理身份、矩阵与评审包重新绑定，发布门继续开放
+
+- status：current-dirty-identity-evidence-refreshed-formal-signoff-open
+- latestStepOutcome: `805:current-identity-matrix-packet-rebound-formal-signoff-open`
+- 触发/问题：第804步的归档边界已修复并形成提交 9217896；评审包更新后工作树进入治理 dirty 状态，旧的 clean 矩阵和旧截图摘要不能继续冒充当前签收证据。用户要求继续完成独立签收和发布资格，不能把门禁红灯标记成任务受阻。
+- 观察事实：当前 HEAD 为 92178965571226f2a69d996a53e0be3efa835651；runtime-browser 为 257 checks / 101 screenshots / 131 snapshot API calls，pass=true，worktreeClean=false，releaseEvidenceEligible=false；Overview 矩阵 28/28，route-responsive 76/76 bounded cells，route-state 266/266，三者均绑定 worktree-921789655712-bdae1957c2b1；评审包 check PASS，12 个截图摘要一致，但 claims 仍 prepared-not-signed、Product/Design/Visual pending、releaseEligible=false。静态资源、类型、报告真值、RFC3339 时间、安全、只读、原子流量和 CSS 预算检查均通过；readiness 仍因 18 bounded-readonly、0 complete、1 unavailable 路由成熟度而 FAIL。
+- 决策：关闭旧候选身份漂移和矩阵过期问题，保留当前 exact commit 与治理 dirty 证据；继续请求当前 SHA 的独立 Product/Design/Visual/Accessibility/route-owner/RouterOS soak/三端 CL 签收。任何本地 review、矩阵或 packet PASS 都不升级为正式外部签收。
+- 边界/心得：这不是任务阻塞，而是发布资格的 fail-closed 边界。已能本地关闭的工程与视觉证据继续关闭；无法由本地代理伪造的外部 Ed25519、路由 owner 完成度、RouterOS soak 和 Linux/Windows/GHCR exact-SHA CL 继续保持未签收。
+- nextAction：记录当前 SHA 的独立复核结果；若 scoped Product/Visual P1/P2 可关闭则仅关闭 scoped review，随后运行最终 readiness 与全套静态/安全/无障碍回归；在真实外部签名、route maturity、RouterOS soak 和三端 CL 证据齐全前，不推送 GitHub、不宣称发布。
+- validForCommit：current governance-dirty evidence only; release candidate not established
+- supersededBy：null
+
+## 第 806 步：通用证据边界修复，当前 SHA 视觉与产品复核通过但正式签收继续开放
+
+- status：current-sha-generic-evidence-boundary-fixed-scoped-review-pass-formal-signoff-open
+- latestStepOutcome: `806:current-sha-generic-evidence-boundary-fixed-scoped-product-visual-pass-formal-signoff-open`
+- 触发/问题：上一轮在 section 模型中补充 GenericRowEvidence 后，手机检查器仍缺少穷尽分支；同时用户要求继续完成独立视觉评审和全部发布相关工作，不能把正式门禁未关闭误记成任务受阻。
+- 观察事实：提交 `62c28a3` 修复四个源文件并通过 `npm run check:types`、`npm run check:sections`；随后构建资产提交为 `a7f96674ddecd3d12193ecf35d2f979f452054cc`。当前生产 runtime 为 257 checks / 101 screenshots / 130 snapshot API calls，pass=true，worktreeClean=false，releaseEvidenceEligible=false；Overview 28/28、route-responsive 76/76 bounded cells、route-state 266/266 均通过。
+- 独立复核：当前 SHA 的 scoped Product PASS，未发现新增 Product P1/P2；当前 SHA 的 scoped Visual PASS，未发现新增 Visual P1，1440 底部留白与窄屏普通态台账位置仅保留为非阻断 P2。两者均明确未签署外部 Ed25519，正式签收仍 pending。
+- 决策：关闭 GenericRowEvidence 类型回归、ARP 身份告警原始行的证据边界、当前 SHA 的 scoped Product/Visual P1 复核；继续保持正式 Product/Design/Visual、独立 Accessibility、route-owner、RouterOS soak、clean candidate、Linux/Windows/GHCR exact-SHA CL 与 GitHub/public release fail-closed。
+- 理由与拒绝项：不把 generic 原始行伪造成对象详情；不把 scoped agent PASS 写成正式独立签名；不把 dirty current evidence 写成 clean release candidate；不伪造 route maturity、RouterOS soak、外部 Ed25519 或三端 CL。
+- 验证：`npm run build` PASS（1901 modules）；`npm run check:runtime-browser` PASS（257/101/130）；Overview 28/28；route-responsive 76/76；route-state 266/266；readiness 已越过当前工程矩阵，真实停止在 0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable route maturity。
+- 边界/心得：这不是任务阻塞，而是不可伪造的正式发布边界。所有本地可推进工作继续完成；外部签收和真实设备/三端证据没有出现前，发布资格必须保持关闭。
+- nextAction：同步 Step806 到 D:\想法\面板，运行 decision-system、packet、静态/安全/无障碍回归；继续取得真实 route-owner、Accessibility、RouterOS soak、Linux/Windows/GHCR exact-SHA CL 与正式外部签收。
+- validForCommit：current governance-dirty evidence only; release candidate not established
+- supersededBy：null
+
+
+## 第 807 步：当前 SHA 独立 Product / Visual scoped signoff 关闭，正式发布门继续 fail-closed
+
+- status：current-sha-independent-product-visual-scoped-pass-formal-signoff-open
+- latestStepOutcome: `807:current-sha-independent-product-visual-scoped-pass-formal-signoff-open`
+- 触发/问题：用户要求继续完成独立签收、视觉评审和发布资格；上一轮工程矩阵已通过，但治理记录仍落后一个格式预算提交，scoped review 需要重新绑定当前 SHA。
+- 观察事实：当前 HEAD 为 `da5e0c3a221cfeec4f180041ddfb912ff3d5b6ca`；runtime-browser 为 257 checks / 101 screenshots / 130 snapshot API calls，failed=0；Overview 28/28、route-state 266/266、route-responsive bounded shard 76/76。runtime artifact 为 `worktree-da5e0c3a221c-c7e319071b42`，当前治理工作树仍 dirty，releaseEvidenceEligible=false。
+- 独立复核：Product scoped PASS；Visual scoped PASS；两者均为当前候选的独立代理审查，P0/P1 均为 0，375px 普通态台账下移和 1440px 低信息留白保留为非阻断 P2。审查实际核对当前截图和源码，但没有冒充外部 Ed25519 签名。
+- 决策：关闭当前 SHA 可验证的 scoped Product / Visual review 和本轮视觉 P1；继续保持正式 Product / Design / Visual external signoff、独立 Accessibility、route-owner acceptance、RouterOS soak、clean candidate、Linux/Windows/GHCR exact-SHA CL 与 GitHub/public release fail-closed。
+- 拒绝项：不把代理 PASS 改写为 trusted signature；不把 28/76/266 自动化改写为公众产品签收；不把 18 个 bounded-readonly 路由改写为 complete；不伪造 RouterOS、CL 或 GitHub 上传证据。
+- 验证：check-product-design-visual-packet PASS；check-decision-system PASS；public readiness 真实停在 route maturity：0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable。
+- 边界/心得：这不是任务 blocked，而是正式发布边界仍未满足。能由本地真实证据关闭的 scoped review 已关闭；不可伪造的外部签收和真实设备/三端证据仍必须由对应独立主体提供。
+- nextAction：在当前候选上完成独立 Accessibility、route-owner/route maturity、RouterOS soak 和 exact-SHA Linux/Windows/GHCR CL；所有证据齐全后再生成 clean candidate、重新跑 readiness，并且仍不得使用普通 git push。
+- validForCommit：current governance-dirty evidence only; release candidate not established
+- supersededBy：null
+
+## 第 808 步：当前 SHA overview 矩阵、运行时与发布输入重新验证，route maturity 仍开放
+
+- status：current-sha-overview-matrix-runtime-packet-readiness-refreshed-route-maturity-open
+- latestStepOutcome: `808:current-sha-overview-matrix-runtime-packet-readiness-refreshed-route-maturity-open`
+- 触发/问题：用户要求继续完成未关闭的独立签收、视觉评审和发布资格，不能把未完成的外部门禁误记为任务受阻；当前治理文档也必须与真实运行证据同步。
+- 观察事实：当前 HEAD 为 da5e0c3a221cfeec4f180041ddfb912ff3d5b6ca。check:runtime-browser 通过，257 checks / 101 screenshots / 131 snapshot API calls，failed=0；Overview 7×4 为 28/28；full route scenario matrix 为 532/532；route-state 为 266/266；route-responsive 为 76/76 bounded。Overview、runtime 和 packet 均绑定当前工作树身份 worktree-da5e0c3a221c-c7e319071b42。
+- 评审事实：独立 Product/Design scoped review PASS，独立 Visual QA scoped review PASS，均为 P0/P1=0；仍保留 375px 普通态台账下移、1440px 低信息尾部留白和平板辅助区偏松等非阻断 P2。两份复核均明确没有生成或冒充外部 Ed25519 签名。
+- 发布事实：packet 12/12 截图摘要一致，但为 prepared-not-signed、selfSignoff=false、releaseEligible=false；当前治理工作树 dirty。readiness 已越过工程矩阵，真实停在 route maturity：0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable；独立 Accessibility、route-owner、RouterOS soak 和 exact-SHA Linux/Windows/GHCR CL 仍无真实证据。
+- 决策：关闭当前 SHA 可验证的工程矩阵刷新和 scoped Product/Visual P1 复核；不关闭正式 Product/Design/Visual、Accessibility、route maturity、RouterOS soak、clean candidate 或三端 CL。继续修复或补齐所有能在本地推进的发布输入，任何不可伪造的外部签收保持 fail-closed。
+- 理由与拒绝项：不把 scoped agent PASS 写成正式签名；不把 28/76/266/532 自动化改写为公众发布；不把 bounded-readonly 路由改写为 complete；不伪造 RouterOS、远端 CL、GitHub 上传或外部评审身份。
+- 验证：decision-system、types、sections、static-assets、asset-identity、report-truth、runtime-schema、readonly、安全、atomic-traffic-history、mobile-native、runtime-browser、packet、overview、route-state、route-responsive 均已通过；readiness 仅因 route maturity 和外部发布证据退出 1，属于正确 fail-closed。
+- 边界/心得：这不是任务 blocked，而是开放的发布边界。Loop 当前应从 Verify 回到最早负责的 Product/Design/Architecture/Release 输入，继续完成真实缺口，不因外部签名尚未出现而停止本地修复。
+- nextAction：取得独立 Accessibility、route-owner acceptance、RouterOS soak 和 exact-SHA Linux/Windows/GHCR CL；若仍缺真实主体则继续完成本地可验证的 route maturity 与视觉 P2，随后生成 clean candidate 并重新跑 readiness，绝不伪造签收。
+- validForCommit：current governance-dirty evidence only; release candidate not established
+- supersededBy：null
+
+
+## 第 810 步：可访问性与桌面可读性修复后重新完成独立运行验收，正式签收继续开放
+
+- status：current-sha-a11y-desktop-readability-fixed-runtime-matrix-green-formal-signoff-open
+- latestStepOutcome: `810:current-sha-a11y-desktop-readability-fixed-runtime-matrix-green-formal-signoff-open`
+- 触发/问题：用户要求继续完成独立签收、视觉评审和发布资格，不得把未完成门禁标记为任务受阻。上一轮 Accessibility 复核指出 reduced-motion 下连接页 spinner 仍持续动画、轮询/新鲜度变化缺少 live region；route-state 又发现 fleet 1366px 桌面任务区 small 元素因继承 UA smaller 计算为 11.111px。
+- 本轮修复：连接页 reduced-motion 改为 `animation: none`；运行时增加 `role=status`、`aria-live=polite`、`aria-atomic=true` 的快照阶段播报；桌面任务对象/检查器/行动条的 small 文本显式提升为 13px，消除 11.111px 可读性失败。没有放宽门禁，没有把失败改成通过。
+- 观察事实：`npm run check:types`、`npm run build`（1901 modules）、overview CSS formatting、static-assets 均通过；fresh `npm run check:runtime-browser` 为 257 checks / 101 screenshots / 132 snapshot API calls，pass=true；Overview 7 场景 × 4 视口为 28/28；fleet 1366px 独立 smoke 通过；bounded public route-state 为 7 场景 × 2 视口 × 19 路由 = 266/266；当前构建工件绑定 `da5e0c3a221cfeec4f180041ddfb912ff3d5b6ca` 与 dirty worktree fingerprint `75edbcfd48415a04e41bb4f0df1f55d1228090c93f528ff5c3d51b9317d36dd9`。
+- 边界事实：`check:overview` 唯一未通过项是“runtime artifact is current clean exact-SHA evidence”，原因是本轮源代码/治理/构建资产仍未提交，属于 clean-candidate 门禁而非产品代码回归；packet 已刷新为当前截图摘要 12/12、prepared-not-signed、selfSignoff=false、releaseEligible=false。
+- 独立签收边界：Accessibility 的自动化范围已重新运行并通过，但正式 assistive-technology/外部签收仍未生成；Product/Design/Visual 仍不能由本地运行矩阵自签；route maturity 仍为 0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable；RouterOS soak、clean candidate、Linux/Windows/GHCR exact-SHA CL、GitHub 上传均未声称完成。
+- 决策：关闭本轮可本地验证的 a11y 代码 P2、fleet 桌面可读性阻断和当前运行矩阵回归；继续保持正式独立签收与公开发布 fail-closed。先同步决策仓库，再形成只包含本任务改动的 clean candidate；clean candidate 之后必须重新运行 runtime、Overview、route-state、packet 和 readiness，禁止沿用 dirty 工件。
+- 理由与拒绝项：不把 `pass=true` 的 scoped runtime 变成公众产品签收；不把 bounded-readonly 路由写成 complete；不伪造 Ed25519、RouterOS、三端 CL 或 GitHub 推送；不因浏览器 stop timeout 警告而虚构失败，也不把它隐瞒为稳定性通过。
+- nextAction：同步 Step810 到本地与 `D:\想法\面板` 决策仓库，运行完整 decision-system 与 packet 检查，然后提交 clean candidate 并在新 SHA 上重跑全部发布输入。
+- validForCommit：current governance-dirty evidence only; release candidate not established
+- supersededBy：null

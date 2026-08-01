@@ -437,5 +437,5 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .is-spinning { animation-duration: 1.8s; }
+  .is-spinning { animation: none; }
 }
