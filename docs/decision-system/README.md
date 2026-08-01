@@ -1,10 +1,10 @@
 # 决策系统导航
-- validForCommit: Step827 77b86ea exact clean engineering evidence is present; formal external gates remain open; not a public release approval
+- validForCommit: Step830 86319b6 exact clean engineering evidence is present; formal external gates remain open; not a public release approval
 - supersededBy: null
 - status: `current-index`
-- currentBoundaryForStep: `828`
-- latestRecordedStep: `828`
-- latestStepOutcome: `828:32ed025-exact-scoped-visual-review-pass-formal-gates-open`
+- currentBoundaryForStep: `830`
+- latestRecordedStep: `830`
+- latestStepOutcome: `830:86319b6-exact-matrix-green-asset-budget-closed-route-maturity-open`
 - authority: `docs/decision-system/current-state.md`
 
 当前结论由 current-state.md 唯一拥有；本页只负责导航，不重复历史流水账。

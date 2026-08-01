@@ -24514,3 +24514,20 @@ ocused-green-engineering
 - nextAction：提交 Step828 复核记录后，重跑 32ed025 新候选身份下的 build/runtime/28/76/266/532、packet、report truth、decision-system 和 readiness；CL 全部真实通过前禁止 GitHub API 发布，并继续准备 route-owner/Accessibility/RouterOS 证据。
 - validForCommit：32ed025 scoped visual/product evidence；正式发布未满足
 - supersededBy：null
+
+## 第 830 步：86319b6 精确矩阵与视觉材料重绑通过，资产预算与 readiness 红灯收敛到真实路由成熟度
+
+- status：`86319b6-exact-matrix-green-asset-budget-closed-route-maturity-open`
+- latestStepOutcome: `830:86319b6-exact-matrix-green-asset-budget-closed-route-maturity-open`
+- 触发/问题：用户要求继续完成独立签收、视觉评审和发布资格，不得把开放门禁写成任务受阻。Step828 的证据在手机决策条 compact label 与首屏节奏调整后失效；第一次候选重绑还被 readiness 的 style raw asset budget 真实拒绝（`120656 > 120000`）。
+- 本轮实现：保留手机运行判断的同源紧凑证据（资源值、阈值和缺失语义仍由数据模型提供），移除未能把 375/390 第三行带入固定导航上方、却继续增加样式体积的 390–430px 专用 CSS 补丁；没有降低字号、删除事实、放宽门禁或改变移动/桌面渲染边界。
+- 观察事实：最终 clean candidate 为 `86319b61442337d726fb7544b0d449968889fcc2`；`npm run build` 通过，framework `style.css` raw 为 `119994`，asset identity/static assets 通过。fresh `npm run check:runtime-browser` 为 `257 checks / 140 screenshots / 169 snapshot API calls`，failed=0；Overview `28/28`、route-responsive bounded `76/76`、route-state `266/266`、完整 public `532/532` 全部通过。
+- 视觉证据：当前 390px 正常态、390px 接口异常态、844px 平板主从工作区和桌面关键证据已重新查看；当前声明范围内没有新增可复现的本地 P0/P1。375px 正常态仍需滚动查看后续运行判断，这是已知 P2。独立只读复核已返回 `scoped PASS`，P0/P1=0，P2 为 375px 正常态后续判断需滚动、375px 异常态证据边界在首屏下沿、1366px 桌面低优先级边界表格在首屏下方；该复核未生成签名，不能替代正式 Product/Design/Visual、Accessibility 或真实设备签收。
+- 发布卫生：packet 已按当前候选与 Step830 重新生成，12/12 PNG digest/identity 通过；状态仍为 `prepared-not-signed`、`selfSignoff=false`、`releaseEligible=false`。report truth、RFC3339、readonly、backend security、release blockers、runtime/readiness lifecycle、decision-system 相关本地合同均通过。
+- readiness：`check-public-release-readiness.js --require-matrix` 已找到当前 clean-SHA Overview 报告并通过矩阵身份检查，随后真实停在 route maturity：`0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`；18 个路由仍是 `automated-only` Accessibility、`independentAcceptance=pending`，`more` 仍 unavailable。
+- 决策：关闭本轮可由本地完成的手机信息密度/资产预算、精确 runtime、四层矩阵、packet 和发布卫生切片；继续保持正式 Product/Design/Visual、独立 Accessibility、route-owner maturity、RouterOS soak、Linux/Windows/GHCR exact-SHA CL 与 GitHub/public release fail-closed。任务 active、`blocked=false`。
+- 理由与拒绝项：不把 scoped/agent review 改写成 Ed25519 正式签收，不把 synthetic matrix 改写成 RouterOS soak，不把 18 个 bounded-readonly URL 改写成 complete 模块，不因为矩阵全绿就上传 GitHub。资产预算红灯已经修根因并重跑，不通过调高预算掩盖体积。
+- 边界/心得：手机信息效率的修复必须同时满足证据语义、触控下限和发布资产预算；如果一个 responsive patch 既没有改变关键可用性结果，又扩大 CSS 体积，就应删除补丁而不是继续堆叠。工程发布证据完整仍不等于外部主体签收或公开发布资格。
+- nextAction：先同步并提交本步骤的决策仓库与 D 盘镜像，随后在文档变更产生的新 clean SHA 上重新运行 build/runtime/28/76/266/532、packet、artifact identity、report truth、decision-system 和 readiness；等待真实独立复核与不可伪造的 Accessibility/route-owner/RouterOS/CL 证据，CL 未全通过前禁止 GitHub API 发布。
+- validForCommit：`86319b61442337d726fb7544b0d449968889fcc2` exact clean engineering/scoped evidence；本步骤文档提交后必须重新绑定
+- supersededBy：null
