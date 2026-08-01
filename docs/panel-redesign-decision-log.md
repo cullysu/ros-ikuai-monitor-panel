@@ -24080,8 +24080,6 @@ ocused-green-engineering
 - validForCommit：current worktree evidence only; release candidate not established
 - supersededBy：null
 
-- latestStepOutcome: `797:visual-system-v2-runtime-green-public-signoff-open`
-
 ## 第 798 步：完整公开矩阵与独立评审包重新绑定，发布边界仍保持关闭
 
 - status：public-matrix-and-independent-review-boundary-verified
@@ -24607,4 +24605,19 @@ ocused-green-engineering
 - 边界/心得：本轮已经证明“当前候选的本地发布证据与声明范围视觉复核完整”，但还没有证明“公众发布资格成立”。把这两层分开，才能避免把测试全绿误写成产品完成；阻断器应成为下一步清单，而不是提前结束任务的理由。
 - nextAction：同步 Step835 到 `D:\想法\面板` 并提交治理文档；提交后重新绑定新 clean SHA 的 build/runtime/28/76/266/532/packet/readiness，继续补齐 route-owner、Accessibility、RouterOS soak 和 Linux/Windows/GHCR exact-SHA CL。任何 CL 未全部真实通过前禁止 GitHub API 发布。
 - validForCommit：`382a14530ff0f8a7c120fa76f9483b77fbd11bbf` exact clean engineering/scoped evidence；本步骤文档提交后必须重新绑定
+- supersededBy：null
+
+## 第 836 步：a315eb7 路由证据审计发现并修复缺失集合、ARP 空详情与日志备用集合缺口
+
+- status：`active-route-evidence-fix-formal-signoff-open`
+- latestStepOutcome: `836:a315eb7-route-evidence-audit-p1-fixes-formal-signoff-open`
+- 触发/问题：用户要求不要把开放签收门禁标记为任务受阻，继续关闭真实产品缺口。独立 route maturity 代码审计发现三个本地 P1：缺失集合被显示成 0/无记录、ARP 身份告警点击后进入空 generic 详情、支持的 `staticRoutes` 和分类日志在主集合缺失时被静默丢弃。此前自动矩阵无法发现这些“字段存在性”语义问题。
+- 观察事实：审计针对 clean 基线 `a315eb757429c1af431852c44a3bfbd82c779dc7`，P0=0、P1=3、P2=3；没有修改文件或生成签名。`sectionModels.ts` 原先用 `rows()` 把字段缺失与明确空数组合并；ARP 告警 evidence 为 `generic`；`logs.all` 与 `routes.items/defaultRoutes` 是单一路径读取。
+- 本轮修复：新增集合存在性语义，缺失集合显示“未取得”而明确空数组显示 0；路由模型回退到受支持的 `staticRoutes`；日志模型在 `all` 缺失时归一化 system/firewall/dhcp/dns 分类；ARP 告警改为带地址、MAC、类型、正文、级别和接口事实的专用 evidence，并接入移动端 inspector；筛选按钮补齐 `aria-controls` 与 group 语义。同步更新 section model 回归测试和架构/ready gate，使正确的 ARIA 关系不再被旧的反模式门禁误杀。
+- 验证：本地 `check-section-models.js`、TypeScript、release blockers、overview architecture、mobile workspace contract、route maturity `--contract-only` 均通过；新增回归覆盖缺失/空数组、`staticRoutes`、分类日志和 ARP alert evidence。由于本轮代码与决策文档尚未提交，旧 `a315eb7` runtime/矩阵/packet 不能作为当前候选证据，必须在新 clean SHA 上重绑。
+- 决策：关闭上述三个可由本地修复的 route evidence P1；不把 scoped reviewer PASS 改写成正式 Product/Design/Visual Ed25519 签收，不把 18 个 bounded-readonly 路由改写成 complete，不伪造独立 Accessibility、RouterOS soak 或三端 CL。任务继续 active、`blocked=false`，发布保持 fail-closed。
+- 理由与拒绝项：不能用“当前矩阵已绿”覆盖未建模的缺失字段；不能让可点击对象打开空详情；不能把合法备用集合当成不存在。也不能为了通过老门禁删除 ARIA 关系，应该更新门禁到正确语义。
+- 边界/心得：独立签收需要真实外部主体和受信 Ed25519，代码不能自签；本地 route audit 能关闭真实产品缺口，但不能替代 route-owner/Accessibility/RouterOS/CI 的主体证据。每次代码或决策文档变更都会改变 candidate identity，后续必须重新生成 build、runtime、完整矩阵、packet、readiness，并把新的 exact SHA 作为唯一证据。
+- nextAction：同步 Step836 到 `D:\想法\面板`，提交代码与决策治理更新，随后在新 clean SHA 上重跑 build/runtime/28/532/266/532、packet、report truth、decision-system 和 readiness；继续获取真实 Product/Design/Visual、Accessibility、route-owner、RouterOS soak 与 Linux/Windows/GHCR exact-SHA CL，全部真实通过前不上传 GitHub。
+- validForCommit：`a315eb757429c1af431852c44a3bfbd82c779dc7` 为修复前 clean 基线；本步骤代码与文档变更均需生成新的 clean candidate
 - supersededBy：null

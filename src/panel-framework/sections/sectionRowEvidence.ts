@@ -11,6 +11,7 @@ import type {
   TerminalRowEvidence,
   EvidenceSeverity,
   SecurityRowEvidence,
+  ArpAlertRowEvidence,
   GenericRowEvidence,
   DnsRowEvidence,
   ResourceRowEvidence,
@@ -36,6 +37,7 @@ export type {
   LogNeighborEvidence,
   LogRowEvidence,
   SecurityRowEvidence,
+  ArpAlertRowEvidence,
   GenericRowEvidence,
   DnsRowEvidence,
   ResourceRowEvidence,
@@ -261,6 +263,19 @@ function genericEvidence(title: string): GenericRowEvidence {
   return { kind: "generic", sourceTable: title };
 }
 
+function arpAlertEvidence(title: string, row: UnknownRecord): ArpAlertRowEvidence {
+  return {
+    kind: "arp-alert",
+    sourceTable: title,
+    address: stringValue(row.ip, row.address),
+    mac: stringValue(row.mac, row.macAddress),
+    alertType: stringValue(row.type, row.level, row.kind),
+    detail: stringValue(row.message, row.detail, row.abnormal),
+    severity: severityFrom(row.severity, row.level, row.type, row.message),
+    interfaceName: stringValue(row.interface, row.iface),
+  };
+}
+
 function securityEvidence(title: string, row: UnknownRecord): SecurityRowEvidence {
   const time = stringValue(row.time, row.lastConfirmed, row.firstSeen);
   return {
@@ -395,7 +410,7 @@ export function buildSectionRowEvidence(
   if (route === "arp" && title === "ARP 对象") return terminalEvidence(title, row, context);
   if (route === "serviceLogs") return serviceLogEvidence(title, row, context);
   if (route === "logs") return logEvidence(title, row, context);
-  if (route === "arp" && title === "身份告警") return genericEvidence(title);
+  if (route === "arp" && title === "身份告警") return arpAlertEvidence(title, row);
   if (route === "security") return securityEvidence(title, row);
   if (route === "dns4" || route === "dns6") return dnsEvidence(route, title, row, context);
   if (route === "trafficLoad" || route === "loadAudit") return resourceEvidence(title, row);

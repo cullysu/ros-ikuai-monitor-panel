@@ -1,24 +1,24 @@
 - status: `current`
-- currentConclusionForStep: `835`
-- latestRecordedStep: `835`
-- latestStepOutcome: `835:382a145-independent-scoped-rebind-pass-formal-signoff-open`
-- currentBoundaryForStep: `835`
-- validForCommit: uncommitted formal acceptance/release approval; 382a145 exact clean engineering evidence and current scoped visual materials are present; not a release candidate
+- currentConclusionForStep: `836`
+- latestRecordedStep: `836`
+- latestStepOutcome: `836:a315eb7-route-evidence-audit-p1-fixes-formal-signoff-open`
+- currentBoundaryForStep: `836`
+- validForCommit: uncommitted route-evidence remediation; pre-fix a315eb7 evidence is stale; not a release candidate
 - supersededBy: `null`
 - updatedAt: 2026-08-01T19:59:24+08:00
 - authority: This is the only human-readable current-state source.
 
-## Current decision record: Step 835
+## Current decision record: Step 836
 
-- status: 382a145-independent-scoped-rebind-pass-formal-signoff-open
-- boundary: Step835 records the 382a145 exact clean engineering evidence and a fresh independent scoped review; formal external gates remain fail-closed.
-- observed facts: 382a145 build/runtime/packet/matrices and local release hygiene all pass; style raw is 120820; runtime is 257 checks / 140 screenshots / 170 snapshot API calls; Overview 28/28, route-state 266/266, full route-responsive 532/532 and full public 532/532 pass; readiness stops at route maturity `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`.
-- local visual closure: The independent read-only rebind found P0=0 and P1=0 across phone, tablet and desktop evidence. Declared P2 boundaries are 375px normal-state secondary judgment below the fold, 375px incident evidence boundary near the viewport edge, and the monolithic predeploy gate script. This is not a trusted external signature and does not close formal Product/Design/Visual acceptance.
-- decision: Close all 382a145 local evidence and record the independent scoped PASS; keep formal Product/Design/Visual acceptance, independent Accessibility, route maturity, RouterOS soak, external CL and GitHub/public release fail-closed.
+- status: active-route-evidence-fix-formal-signoff-open
+- boundary: Step836 closes three locally reproducible route evidence P1s in the working tree; exact release evidence is stale until a new clean SHA is created.
+- observed facts: independent route audit found missing collections rendered as zero, ARP alert rows opening a generic empty inspector, and supported staticRoutes/category logs being dropped. The patch adds explicit collection presence, fallback normalization, typed ARP alert evidence/inspector, and filter disclosure semantics.
+- local verification: section-model regression, TypeScript, release blockers, overview architecture, mobile workspace contract and route maturity contract-only checks pass. No trusted external signature was generated.
+- decision: keep formal Product/Design/Visual, independent Accessibility, route-owner maturity, RouterOS soak, external CL and GitHub/public release fail-closed. Task remains active and blocked=false.
 
 ## Current conclusion
 
-**FAIL overall.** 382a145 local exact evidence and scoped visual materials are green in the declared scope, but product route maturity and all non-forgeable external/independent gates remain incomplete. No publication is authorized.
+**FAIL overall.** Local route-evidence P1 remediation is focused-green, but all exact-SHA release materials must be regenerated after the code and governance changes. Formal independent acceptance, route maturity, RouterOS soak and external CL remain incomplete. No publication is authorized.
 
 ## Independent acceptance boundary
 

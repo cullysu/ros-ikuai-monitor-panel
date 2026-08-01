@@ -105,9 +105,8 @@ export interface LogRowEvidence extends BaseRowEvidence {
   neighbors: LogNeighborEvidence[];
 }
 
-export interface GenericRowEvidence extends BaseRowEvidence {
-  kind: "generic";
-}
+export interface GenericRowEvidence extends BaseRowEvidence { kind: "generic"; }
+export interface ArpAlertRowEvidence extends BaseRowEvidence { kind: "arp-alert"; address: string | null; mac: string | null; alertType: string | null; detail: string | null; severity: EvidenceSeverity; interfaceName: string | null; }
 
 export interface SecurityRowEvidence extends BaseRowEvidence {
   kind: "security";
@@ -201,6 +200,7 @@ export type SectionRowEvidence =
   | TerminalRowEvidence | DhcpClientRowEvidence
   | LogRowEvidence
   | GenericRowEvidence
+  | ArpAlertRowEvidence
   | SecurityRowEvidence
   | DnsRowEvidence
   | ResourceRowEvidence

@@ -146,6 +146,40 @@ assert.equal(metric(buildSectionModel("connections", missingConnections), "连�
 missingConnections.connections.total = 0;
 assert.equal(metric(buildSectionModel("connections", missingConnections), "连接总数").value, "0");
 
+const missingOperationalCollections = clone(OVERVIEW_SCENARIO_FIXTURES.single);
+delete missingOperationalCollections.terminals;
+missingOperationalCollections.routes = {};
+missingOperationalCollections.dhcp = {};
+missingOperationalCollections.arp = {};
+missingOperationalCollections.connections = {};
+missingOperationalCollections.dns = {};
+missingOperationalCollections.security = {};
+missingOperationalCollections.logs = {};
+assert.equal(metric(buildSectionModel("routes", missingOperationalCollections), "路由记录").value, "未取得");
+assert.equal(metric(buildSectionModel("terminals", missingOperationalCollections), "终端记录").value, "未取得");
+assert.equal(metric(buildSectionModel("dhcp", missingOperationalCollections), "租约").value, "未取得");
+assert.equal(metric(buildSectionModel("arp", missingOperationalCollections), "身份告警").value, "未取得");
+assert.equal(metric(buildSectionModel("connections", missingOperationalCollections), "当前明细").value, "未取得");
+assert.equal(metric(buildSectionModel("dns4", missingOperationalCollections), "静态规则").value, "未取得");
+assert.equal(metric(buildSectionModel("security", missingOperationalCollections), "告警记录").value, "未取得");
+assert.equal(metric(buildSectionModel("logs", missingOperationalCollections), "全部记录").value, "未取得");
+
+const staticRouteFallback = clone(OVERVIEW_SCENARIO_FIXTURES.single);
+delete staticRouteFallback.routes.items;
+delete staticRouteFallback.routes.defaultRoutes;
+staticRouteFallback.routes.staticRoutes = [{ dstAddress: "0.0.0.0/0", gateway: "192.0.2.1", active: true, default: true }];
+assert.equal(buildSectionModel("routes", staticRouteFallback).tables[0].rows[0].destination, "0.0.0.0/0");
+
+const categorizedLogsFallback = clone(OVERVIEW_SCENARIO_FIXTURES.single);
+categorizedLogsFallback.logs = {
+  system: [{ time: "2026-07-17T10:03:12Z", topics: "system,info", message: "categorized event" }],
+  firewall: [],
+  dhcp: [],
+  dns: [],
+};
+const categorizedLogRows = rowsFromModel("logs", buildSectionModel("logs", categorizedLogsFallback));
+assert.equal(categorizedLogRows[0].primary, "categorized event", "categorized logs must remain visible when logs.all is absent");
+
 const routeModel = buildSectionModel("routes", clone(OVERVIEW_SCENARIO_FIXTURES.single));
 assert.equal(metric(routeModel, "默认路由").value, "1", "defaultRoutes collection is itself default-route evidence");
 
@@ -335,7 +369,9 @@ assert.deepEqual(arpObjectEvidence.identitySources, ["ARP", "DHCP"]);
 domainDetailShape.arp.alerts = [{ ip: "192.0.2.21", type: "conflict", message: "duplicate identity" }];
 const arpAlertEvidence = buildSectionModel("arp", domainDetailShape).tables
   .find((item) => item.title === "身份告警").rowEvidence[0];
-assert.equal(arpAlertEvidence.kind, "generic", "ARP alerts must not masquerade as terminal objects");
+assert.equal(arpAlertEvidence.kind, "arp-alert", "ARP alerts must expose a dedicated evidence contract");
+assert.equal(arpAlertEvidence.address, "192.0.2.21");
+assert.equal(arpAlertEvidence.detail, "duplicate identity");
 
 domainDetailShape.logs = {
   all: [

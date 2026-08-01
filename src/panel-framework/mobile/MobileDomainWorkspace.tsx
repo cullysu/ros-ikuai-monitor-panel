@@ -34,8 +34,7 @@ import { MetricStrip, WorkspaceStatus } from "./MobileWorkspaceSummary";
 import { selectSemanticWorkspacePreview } from "./mobileWorkspacePreview";
 import { COMPACT_TASK_QUERY, DOMAIN_TABLET_WORKBENCH_QUERY, useMediaCapability } from "./useMobilePanelSurface";
 import { useMobileLargeTextMode } from "./useMobileLargeTextMode";
-import "./mobile-domain-foundation.css";
-import "./mobile-domain.css";
+import "./mobile-domain-foundation.css"; import "./mobile-domain.css";
 import "./mobile-domain-large-text.css";
 function DomainMenu({ onNavigate }: { onNavigate: PanelNavigate }) {
   return (
@@ -289,6 +288,7 @@ export function MobileDomainWorkspace({
                 className={controlsActive ? "mdw-tools-toggle is-active" : "mdw-tools-toggle"}
                 type="button"
                 aria-expanded={toolsOpen}
+                aria-controls="mdw-domain-controls"
                 onClick={() => setToolsOpen((value) => !value)}
               >
                 <ListFilter aria-hidden="true" size={16} />筛选
@@ -297,7 +297,7 @@ export function MobileDomainWorkspace({
           </div>
 
           {hasControls && toolsOpen ? (
-            <div className="mdw-controls" id="mdw-domain-controls" data-domain-controls={route}>
+            <div className="mdw-controls" id="mdw-domain-controls" role="group" aria-label={`${definition.objectLabel}筛选与排序`} data-domain-controls={route}>
               {definition.searchable ? (
                 <label className="mdw-search">
                   <Search aria-hidden="true" size={17} />

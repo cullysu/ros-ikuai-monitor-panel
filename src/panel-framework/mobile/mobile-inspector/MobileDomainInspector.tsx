@@ -22,6 +22,7 @@ import { ResourceInspector } from "./ResourceInspector";
 import { useInspectorAutoDisclosure } from "./useInspectorAutoDisclosure";
 import { DiagnosticInspector } from "./DiagnosticInspector";
 import { ConnectionInspector } from "./ConnectionInspector";
+import { ArpAlertInspector } from "./ArpAlertInspector";
 import { RelatedObjectRail } from "./MobileRelatedObjectRail";
 import {
   EvidenceBoundary,
@@ -67,6 +68,7 @@ function DomainInspectorBody({
   if (row.evidence.kind === "dns") return <DnsInspector row={row} model={model} />;
   if (row.evidence.kind === "resource") return <ResourceInspector row={row} relatedRows={relatedRows} onNavigate={onNavigate} currentRoute={currentRoute} returnRoute={returnRoute} evidenceAt={originEvidenceAt} />;
   if (row.evidence.kind === "connection") return <ConnectionInspector row={row} model={model} onNavigate={onNavigate} evidenceAt={originEvidenceAt || model.observedAt} />;
+  if (row.evidence.kind === "arp-alert") return <ArpAlertInspector row={row} />;
   if (row.evidence.kind === "diagnostic") return <DiagnosticInspector row={row} current={model.evidenceMode === "current"} />;
   // Generic/raw rows intentionally have no typed object contract. Do not invent an inspector or preview.
   if (row.evidence.kind === "generic") return null;

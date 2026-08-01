@@ -124,6 +124,7 @@ export interface OverviewRawRoute {
 export interface OverviewRawRoutes {
   items?: OverviewRawRoute[];
   defaultRoutes?: OverviewRawRoute[];
+  staticRoutes?: OverviewRawRoute[];
   [key: string]: unknown;
 }
 

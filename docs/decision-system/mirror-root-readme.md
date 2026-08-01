@@ -1,11 +1,11 @@
 # RouterOS / iKuai 面板决策仓库
 
-这是当前面板工作的本地决策仓库镜像。Step835 记录了 382a145 精确工程证据、完整 route-responsive 覆盖、资产预算关闭与新一轮独立 scoped 复核 P0/P1=0，但 readiness 仍停在 route maturity；独立 Product/Design/Visual 正式签收、Accessibility、RouterOS soak 和可信外部发布签收仍未完成。
+这是当前面板工作的本地决策仓库镜像。Step836 记录了路由证据语义修复：缺失集合不再伪装成零值，ARP 告警拥有可审计详情，受支持的备用路由和分类日志不再被丢弃。修复前精确工程证据已过期，readiness 仍停在 route maturity；独立 Product/Design/Visual 正式签收、Accessibility、RouterOS soak 和可信外部发布签收仍未完成。
 
 - status: `current-mirror-entry`
-- currentStep: `835`
-- currentOutcome: `835:382a145-independent-scoped-rebind-pass-formal-signoff-open`
-- currentBoundary: `835`
+- currentStep: `836`
+- currentOutcome: `836:a315eb7-route-evidence-audit-p1-fixes-formal-signoff-open`
+- currentBoundary: `836`
 - authority: `decision-system/current-state.md`
 
 ## 入口
@@ -42,4 +42,4 @@
 
 每个材料性切片开始前先写仓库日志和对应 decision-system 文件，再同步到 D 盘镜像。同步门禁必须满足语义步骤一致、Markdown 映射逐字节一致、没有额外 Markdown；根 README 还必须通过新鲜度检查。
 
-Step835: 382a145 exact engineering evidence and fresh independent scoped review are green; readiness stops at route maturity and formal signoff/public release remain closed. This summary is not a signature.
+Step836: route-evidence remediation focused checks are green; exact runtime and matrix evidence must be regenerated after the remediation commit. Readiness, formal signoff and public release remain closed. This summary is not a signature.

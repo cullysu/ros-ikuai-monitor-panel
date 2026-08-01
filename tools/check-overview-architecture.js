@@ -303,7 +303,8 @@ includes(source.mobileDomainCss, [
 ], "tablet resource header compacts chrome without shrinking touch targets or large text");
 includes(source.objectIdentity, ["stablePanelObjectId", "panelObjectIdForValues"], "stable mobile object identity");
 includes(source.nav, ["概览", "网络", "终端", "日志"], "four stable mobile destinations");
-excludes(mobileTree, ["DesktopOverview", "grabber", "bottom-sheet", "topology", 'role="tab"', 'aria-controls='], "mobile rejected patterns");
+excludes(mobileTree, ["DesktopOverview", "grabber", "bottom-sheet", "topology", 'role="tab"'], "mobile rejected patterns");
+includes(source.mobileDomain, ['aria-controls="mdw-domain-controls"', 'role="group"'], "mobile filter disclosure relationship");
 excludes(mobileStyles, ["!important", "font-size: 11px", "font-size: 10px", "font-size: 9px"], "mobile style contract");
 const mobileFontSizes = fontSizes(mobileStyles);
 assert(mobileFontSizes.length > 0 && mobileFontSizes.every((size) => size >= 12), `mobile text must be at least 12px; found ${mobileFontSizes.filter((size) => size < 12).join(", ")}`);

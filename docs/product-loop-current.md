@@ -1,19 +1,19 @@
 - status: `current-handoff`
-- validForCommit: uncommitted formal acceptance/release approval; 382a145 exact clean engineering evidence is present; not a release candidate
-- currentHandoffForStep: `835`
+- validForCommit: uncommitted route-evidence remediation and formal acceptance/release approval; pre-fix exact evidence is stale; not a release candidate
+- currentHandoffForStep: `836`
 - supersededBy: docs/decision-system/current-state.md
 - fullHistory: docs/panel-redesign-decision-log.md
-- updated: 2026-08-01
-- latestRecordedStep: `835`
-- latestStepOutcome: `835:382a145-independent-scoped-rebind-pass-formal-signoff-open`
+- updated: 2026-08-02
+- latestRecordedStep: `836`
+- latestStepOutcome: `836:a315eb7-route-evidence-audit-p1-fixes-formal-signoff-open`
 - currentConclusion: **FAIL overall**. Local engineering, matrix and scoped visual evidence is green; formal Product/Design/Visual independent acceptance, independent Accessibility, route maturity and release evidence remain open.
 
-## Current handoff: Step835 exact local evidence and scoped independent review green; readiness remains at route maturity
+## Current handoff: Step836 route-evidence remediation focused-green; exact evidence must be regenerated
 
-- Result: 382a145 exact runtime 257/140/170, packet 12/12, Overview 28/28, route-responsive 532/532 complete, route-state 266/266 and full public 532/532 pass; style raw 120820 and local release hygiene pass.
-- Decision: Continue the task instead of marking it blocked. Close the local exact-SHA matrix, packet, asset-budget and scoped visual-material slices; do not convert scoped review into trusted external signoff.
-- Boundary: 382a145 is a clean engineering candidate before this governance update; readiness correctly stops at route maturity 0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable; formal signoff remains pending.
-- Next: commit this decision-repository update, regenerate the exact evidence for the resulting SHA, then obtain real independent route-owner/Accessibility acceptance, RouterOS soak and exact-SHA Linux/Windows/GHCR CL before any GitHub API publication.
+- Result: The route-evidence patch is in the working tree. Focused section-model, TypeScript, release-blocker, architecture, mobile-workspace and route-maturity contract checks pass; pre-fix exact runtime and matrices are stale.
+- Decision: Continue the task instead of marking it blocked. Commit the code and governance update, then rebuild all exact-SHA evidence; do not convert scoped review into trusted external signoff.
+- Boundary: The prior clean candidate is superseded by the uncommitted remediation. Readiness remains fail-closed at route maturity and formal signoff; no current release candidate exists until the new clean SHA is rebound.
+- Next: sync Step836 to `D:\想法\面板`, commit the remediation, regenerate build/runtime/full matrices/packet/readiness, then obtain real independent route-owner/Accessibility acceptance, RouterOS soak and exact-SHA Linux/Windows/GHCR CL before any GitHub API publication.
 
 ## Gate boundary
 
@@ -27,6 +27,6 @@
 | Current product release | `fail` |
 | GitHub / public release | closed | No upload or publication approval. |
 
-## Step835 continuation
+## Step836 continuation
 
-Do not mark this task blocked. Rebuild exact clean evidence for the governance commit, then continue the remaining non-forgeable gates.
+Do not mark this task blocked. Rebuild exact clean evidence for the remediation commit, then continue the remaining non-forgeable gates.
