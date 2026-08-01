@@ -1,11 +1,11 @@
 # RouterOS / iKuai 面板决策仓库
 
-这是当前面板工作的本地决策仓库镜像。Step820 记录了当前身份完整矩阵和独立 agent scoped Product / Visual 复核；独立 Product/Design/Visual 公共签收、route maturity、Accessibility、RouterOS soak 和可信外部发布签收仍未完成。
+这是当前面板工作的本地决策仓库镜像。Step821 记录了精确 SHA 证据身份修复和生成式 unsigned visual packet；独立 Product/Design/Visual 公共签收、route maturity、Accessibility、RouterOS soak 和可信外部发布签收仍未完成。
 
 - status: `current-mirror-entry`
-- currentStep: `820`
-- currentOutcome: `820:current-identity-full-matrix-and-independent-review-scoped-pass-formal-signoff-open`
-- currentBoundary: `820`
+- currentStep: `821`
+- currentOutcome: `821:current-clean-evidence-identity-repair-generated-packet-formal-signoff-open`
+- currentBoundary: `821`
 - authority: `decision-system/current-state.md`
 
 ## 入口
@@ -42,4 +42,4 @@
 
 每个材料性切片开始前先写仓库日志和对应 decision-system 文件，再同步到 D 盘镜像。同步门禁必须满足语义步骤一致、Markdown 映射逐字节一致、没有额外 Markdown；根 README 还必须通过新鲜度检查。
 
-Step819: current-worktree CSS/runtime/matrix evidence is refreshed; scoped visual review remains closed at its declared scope, while formal signoff and public release remain closed.
+Step821: exact-SHA evidence directory identity and generated unsigned visual packet boundaries are repaired; scoped visual review remains closed at its declared scope, while formal signoff and public release remain closed.

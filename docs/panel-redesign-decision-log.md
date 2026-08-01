@@ -24396,3 +24396,17 @@ ocused-green-engineering
 - nextAction：继续逐项补齐 18 个 route-owner/独立辅助技术验收与 RouterOS soak 证据；随后形成 clean candidate，在同一精确 SHA 上重跑 runtime、全矩阵、packet、readiness 与 Linux/Windows/GHCR CL，CL 全部通过前禁止 GitHub API 发布。
 - validForCommit：current governance-dirty engineering evidence only; release candidate not established
 - supersededBy：null
+
+## 第 821 步：修复精确 SHA 证据目录歧义与视觉包自引用，继续推进独立签收
+
+- status：current-clean-evidence-identity-repair-generated-packet-formal-signoff-open
+- latestStepOutcome: `821:current-clean-evidence-identity-repair-generated-packet-formal-signoff-open`
+- 触发/问题：本轮核验发现 `check-acceptance-artifact-identity` 将四个带 `*-current` 名称的精确 e22b244 报告误视为有当前语义的歧义工件；同时已提交的视觉包仍绑定旧脏工作树 80f511… 与旧 PNG 摘要。继续把它们当作当前证据会造成假绿。用户要求继续完成签收和发布准备，不能把这个证据失配写成任务受阻。
+- 观察事实：e22b244 的 clean runtime 为 257 checks / 140 screenshots / 169 snapshot API calls；Overview 28/28、route-responsive 76/76 bounded、route-state 266/266、完整 public 532/532 均通过；readiness 已真实通过矩阵身份检查并停在 route maturity `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`。`check:report-truth` 的真值/隔离子检查通过，独立 Product/Design/Visual 仍只有 scoped PASS，没有可信 Ed25519 签名。
+- 决策：将 current release 证据目录改为包含完整候选 SHA 的名称，让 readiness 优先匹配确切身份；删除会形成“提交自身 SHA”的 tracked product-design-visual packet，新增 `tools/generate-product-design-visual-packet.js`，在 `_acceptance/panel-runtime-browser/` 从当前 runtime report 生成 `prepared-not-signed` 包并逐个重算 12 个 PNG SHA256。包仍明确 `selfSignoff=false`、`releaseEligible=false`，不会替代外部签收。
+- 理由与拒绝项：不通过改写 `pass`、复制旧报告、把 scoped review 当独立签名或把签名写进代码来绕过外部主体；不删除历史报告，只修复当前工件身份边界。tracked packet 无法同时包含它自己的 commit SHA，因此把它当候选源文件是结构性自引用错误。
+- 验证：四个 e22b244 目录重命名后 `check-acceptance-artifact-identity.js` PASS；`check-public-release-readiness.js --require-matrix` 成功找到 `_acceptance/release-overview-e22b244975b4c9ed2b5f849fa2ff6c2b43b09715/report.json`，随后按契约停在 route maturity；types、RFC3339、readonly、backend security、static assets、asset identity、overview、runtime-browser lifecycle、decision-system 相关检查均通过。当前工具/文档变更会让旧 e22b244 报告失效，不能继续冒充新候选。
+- 边界/心得：修复报告命名与证据包身份是发布资格的一部分，不是清理工作；它保证后续 CL 不会消费含糊或自引用的证据。任务保持 active、`blocked=false`；正式 Product/Design/Visual、独立 Accessibility、route owner、RouterOS soak、clean candidate、Linux/Windows/GHCR exact-SHA CL 和 GitHub 上传仍未关闭。
+- nextAction：提交本轮工具/治理修复后，重跑 build、runtime、28/76/266/532 精确矩阵，生成新候选的 unsigned visual packet，运行所有发布卫生与 readiness 检查；继续准备真实独立签名、RouterOS soak 和精确 SHA CL，CL 未全通过前禁止 GitHub API 发布。
+- validForCommit：本步骤生成的旧 e22b244 证据仅用于记录；新候选必须重新生成
+- supersededBy：null

@@ -7,7 +7,10 @@ const crypto = require("node:crypto");
 const { gitWorktreeIdentity } = require("./worktree-runtime-identity");
 
 const root = path.resolve(__dirname, "..");
-const packetPath = path.join(root, "docs", "decision-system", "external-acceptance", "product-design-visual-packet.json");
+// The review packet is generated evidence, not candidate source. Keeping it under
+// _acceptance avoids the impossible self-reference where a tracked packet embeds
+// the commit SHA that changes when the packet itself is committed.
+const packetPath = path.join(root, "_acceptance", "panel-runtime-browser", "product-design-visual-packet.json");
 const packet = JSON.parse(fs.readFileSync(packetPath, "utf8"));
 const identity = gitWorktreeIdentity(root);
 const failures = [];

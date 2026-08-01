@@ -1,25 +1,25 @@
 - status: `current`
-- currentConclusionForStep: `820`
-- latestRecordedStep: `820`
-- latestStepOutcome: `820:current-identity-full-matrix-and-independent-review-scoped-pass-formal-signoff-open`
-- currentBoundaryForStep: `820`
-- validForCommit: uncommitted governance evidence contains exact-SHA matrices, dirty runtime evidence and an unsigned packet; not a release candidate
+- currentConclusionForStep: `821`
+- latestRecordedStep: `821`
+- latestStepOutcome: `821:current-clean-evidence-identity-repair-generated-packet-formal-signoff-open`
+- currentBoundaryForStep: `821`
+- validForCommit: uncommitted governance/tool refresh in progress; exact-SHA evidence must be regenerated after this source change; not a release candidate
 - supersededBy: `null`
 - updatedAt: 2026-08-01T19:59:24+08:00
 - authority: This is the only human-readable current-state source.
 
-## Current decision record: Step 820
+## Current decision record: Step 821
 
-- status: current-identity-full-matrix-and-independent-review-scoped-pass-formal-signoff-open
-- boundary: Step820 binds current HEAD 80f5113849dc7af3f865a73005a2f71ea1614a43 with runtime fingerprint 33950af70105c717b4981200e1d84d874847f52d3ce303dfb7d7be5263291353 and artifact worktree-80f5113849dc-33950af70105; formal public acceptance remains closed.
-- observed facts: Current runtime is 257 checks / 140 screenshots / 169 snapshot API calls; full public route matrix 532/532; Overview 28/28; route-state 266/266; route-responsive 76/76 bounded. Packet check passes with 12/12 digests; worktreeClean=false and releaseEvidenceEligible=false.
+- status: current-clean-evidence-identity-repair-generated-packet-formal-signoff-open
+- boundary: Step821 records the clean e22b244 evidence set and repairs the evidence identity boundary; the source change intentionally invalidates that evidence until a new clean candidate is built.
+- observed facts: The exact clean candidate had runtime 257 checks / 140 screenshots / 169 snapshot API calls, Overview 28/28, route-responsive 76/76 bounded, route-state 266/266 and full public 532/532. Readiness accepted the matrix and stopped at route maturity 0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable.
 - local visual closure: Scoped Product/Design/Visual review remains PASS within its declared evidence scope. This is not a trusted external signature.
-- packet: prepared-not-signed, selfSignoff=false, releaseEligible=false; current candidate identity and all 12 screenshot digests match the runtime report.
-- decision: Close local engineering, matrix, automated full-route Accessibility and scoped visual evidence slices; keep formal Product/Design/Visual acceptance, independent Accessibility, route maturity, RouterOS soak, external CL and GitHub/public release fail-closed.
+- packet: the unsigned visual packet is now generated under `_acceptance/panel-runtime-browser/` from the exact runtime report; it is ignored evidence, not candidate source, so it cannot create a self-referential commit SHA.
+- decision: Close the artifact-name ambiguity and packet self-reference defects; keep formal Product/Design/Visual acceptance, independent Accessibility, route maturity, RouterOS soak, external CL and GitHub/public release fail-closed.
 
 ## Current conclusion
 
-**FAIL overall.** Local engineering and declared-scope matrix evidence is green for the current SHA, but product route maturity and all non-forgeable external/independent gates remain incomplete. No publication is authorized.
+**FAIL overall.** Local engineering and declared-scope matrix evidence was green for e22b244, but this governance/tool refresh makes the current worktree dirty until exact evidence is regenerated. Product route maturity and all non-forgeable external/independent gates remain incomplete. No publication is authorized.
 
 ## Independent acceptance boundary
 
@@ -56,13 +56,13 @@
 - R07 mobile visual maturity, R09 tablet task efficiency, R10 desktop density and R14 cross-surface grammar remain pending independent acceptance.
 - Release journal: docs/decision-system/release-journal.md.
 - D drive is a byte-identical mirror at D:\想法\面板.
-- Current packet is prepared-not-signed and never self-signs.
+- Current packet is generated under `_acceptance/panel-runtime-browser/`, prepared-not-signed and never self-signs.
 
 ## Record contract
 
 Every material step records trigger/problem, facts, decision, rejected alternatives, verification, boundary and exactly one next action.
 
 
-## Step820 current-identity and independent scoped review update
+## Step821 current clean evidence identity repair and generated packet update
 
-The task remains active and blocked=false. Current identity has fresh Overview 28/28, full public route/scenario/viewport 532/532, route-state 266/266, route-responsive 76/76 bounded and runtime-browser 257 checks / 140 screenshots / 169 snapshot API calls. Independent agents supplied scoped Product/Design/Visual PASS and engineering audit, but no trusted signature. Formal signatures, independent assistive-technology acceptance, route maturity, RouterOS soak and external CL remain pending.
+The task remains active and blocked=false. The prior exact clean e22b244 evidence set passed its declared matrices and runtime checks, and readiness correctly stopped at route maturity. Current source now uses exact-SHA artifact directories and a generated ignored visual packet, avoiding ambiguous `*-current` evidence names and the impossible tracked-packet self-reference. Exact runtime/matrix reports must be regenerated after the resulting commit. Independent agents supplied scoped Product/Design/Visual PASS, but no trusted signature; formal signatures, independent assistive-technology acceptance, route maturity, RouterOS soak and external CL remain pending.

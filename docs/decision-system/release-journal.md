@@ -2,9 +2,9 @@
 - status: `current-journal`
 - validForCommit: exact-SHA matrices, dirty runtime evidence and unsigned acceptance packet are present; governance is dirty and this is not a release candidate
 - supersededBy: null
-- currentStep: `820`
-- currentOutcome: 820:current-identity-full-matrix-and-independent-review-scoped-pass-formal-signoff-open
-- latestStepOutcome: `820:current-identity-full-matrix-and-independent-review-scoped-pass-formal-signoff-open`
+- currentStep: `821`
+- currentOutcome: 821:current-clean-evidence-identity-repair-generated-packet-formal-signoff-open
+- latestStepOutcome: `821:current-clean-evidence-identity-repair-generated-packet-formal-signoff-open`
 - authority: docs/decision-system/current-state.md
 - fullHistory: panel-redesign-decision-log.md
 
@@ -18,6 +18,8 @@
 - Current candidate 80f5113849dc7af3f865a73005a2f71ea1614a43; runtime 257/140/169; full public route matrix 532/532; Overview 28/28; route-state 266/266; route-responsive 76/76 bounded.
 - Runtime fingerprint 33950af70105c717b4981200e1d84d874847f52d3ce303dfb7d7be5263291353; artifact worktree-80f5113849dc-33950af70105; packet and all 12 current screenshot digests are rebound.
 - Direct readiness passes engineering matrix evidence and stops at route maturity: 0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable. No RouterOS soak, trusted Ed25519, exact-SHA Linux/Windows/GHCR CL or GitHub upload is claimed.
+
+- Step821: the exact e22b244 evidence set passed its declared matrices and readiness stopped at route maturity; ambiguous `*-current` artifact names were replaced with exact-SHA directories, and the unsigned visual packet was moved to generated ignored evidence to avoid tracked-packet self-reference. The source/tool refresh invalidates the old evidence until a new clean candidate is built.
 
 ## Release rule
 
