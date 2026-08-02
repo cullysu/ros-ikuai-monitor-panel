@@ -288,7 +288,7 @@ export function MobileDomainWorkspace({
                 className={controlsActive ? "mdw-tools-toggle is-active" : "mdw-tools-toggle"}
                 type="button"
                 aria-expanded={toolsOpen}
-                aria-controls="mdw-domain-controls"
+                aria-controls={toolsOpen ? "mdw-domain-controls" : undefined}
                 onClick={() => setToolsOpen((value) => !value)}
               >
                 <ListFilter aria-hidden="true" size={16} />筛选

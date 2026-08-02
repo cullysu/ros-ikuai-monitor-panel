@@ -1033,7 +1033,11 @@ function main(argv = process.argv.slice(2)) {
   assertContains('src/panel-framework/sections/panelObjectIdentity.ts', 'panelObjectIdForValues');
   assertContains('.agents/skills/router-panel-product-loop/SKILL.md', 'emil-design-engineering.md');
   assertContains('.agents/skills/router-panel-product-loop/references/emil-design-engineering.md', 'emilkowalski/skills');
-  assertContains('src/panel-framework/mobile/MobileDomainWorkspace.tsx', 'aria-controls="mdw-domain-controls"');
+  assertAnyContains(
+    'src/panel-framework/mobile/MobileDomainWorkspace.tsx',
+    ['aria-controls="mdw-domain-controls"', 'aria-controls={toolsOpen ? "mdw-domain-controls" : undefined}'],
+    'mobile filter disclosure must expose a valid expanded-state aria-controls target',
+  );
   assertContains('src/panel-framework/mobile/MobileDomainWorkspace.tsx', 'role="group"');
   assertNotContains('src/panel-framework/mobile/mobile-patrol.css', '!important');
   assertNotContains('src/panel-framework/mobile/mobile-domain.css', '!important');

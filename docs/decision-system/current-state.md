@@ -1,24 +1,24 @@
 - status: `current`
-- currentConclusionForStep: `836`
-- latestRecordedStep: `836`
-- latestStepOutcome: `836:a315eb7-route-evidence-audit-p1-fixes-formal-signoff-open`
-- currentBoundaryForStep: `836`
-- validForCommit: uncommitted route-evidence remediation; pre-fix a315eb7 evidence is stale; not a release candidate
+- currentConclusionForStep: `837`
+- latestRecordedStep: `837`
+- latestStepOutcome: `837:40fe6e2-runtime-accessibility-regression-fixed-runtime-green-formal-signoff-open`
+- currentBoundaryForStep: `837`
+- validForCommit: uncommitted folded-control accessibility regression fix and governance update; exact runtime evidence must be regenerated after the next clean SHA; not a release candidate
 - supersededBy: `null`
-- updatedAt: 2026-08-01T19:59:24+08:00
+- updatedAt: 2026-08-02T08:10:00+08:00
 - authority: This is the only human-readable current-state source.
 
-## Current decision record: Step 836
+## Current decision record: Step 837
 
-- status: active-route-evidence-fix-formal-signoff-open
-- boundary: Step836 closes three locally reproducible route evidence P1s in the working tree; exact release evidence is stale until a new clean SHA is created.
-- observed facts: independent route audit found missing collections rendered as zero, ARP alert rows opening a generic empty inspector, and supported staticRoutes/category logs being dropped. The patch adds explicit collection presence, fallback normalization, typed ARP alert evidence/inspector, and filter disclosure semantics.
-- local verification: section-model regression, TypeScript, release blockers, overview architecture, mobile workspace contract and route maturity contract-only checks pass. No trusted external signature was generated.
-- decision: keep formal Product/Design/Visual, independent Accessibility, route-owner maturity, RouterOS soak, external CL and GitHub/public release fail-closed. Task remains active and blocked=false.
+- status: active-runtime-regression-fix-formal-signoff-open
+- boundary: Step837 closes a locally reproducible folded-control ARIA regression; exact release evidence is stale until the next clean SHA is created.
+- observed facts: the first post-Step836 runtime correctly failed because a collapsed filter button referenced a DOM target that was not rendered; always rendering a hidden target then violated the existing on-demand control contract. The fix makes `aria-controls` conditional on the expanded state while keeping the expanded target and group semantics valid.
+- local verification: build and the full production runtime suite pass after the fix: 257 checks, 140 screenshots and 169 snapshot API calls; mobile incident, action, hierarchy, signal, responsive-boundary, tablet-information, vertical-task, next-evidence and tablet-task contracts pass. No trusted external signature was generated.
+- decision: close this local runtime regression, keep formal Product/Design/Visual, independent Accessibility, route-owner maturity, RouterOS soak, external CL and GitHub/public release fail-closed. Task remains active and blocked=false.
 
 ## Current conclusion
 
-**FAIL overall.** Local route-evidence P1 remediation is focused-green, but all exact-SHA release materials must be regenerated after the code and governance changes. Formal independent acceptance, route maturity, RouterOS soak and external CL remain incomplete. No publication is authorized.
+**FAIL overall.** Local runtime remediation is focused-green, but all exact-SHA release materials must be regenerated after the code and governance changes. Formal independent acceptance, route maturity, RouterOS soak and external CL remain incomplete. No publication is authorized.
 
 ## Independent acceptance boundary
 
@@ -37,7 +37,7 @@
 | Design | pending | Fresh independent review/signature is required. |
 | Visual QA | pending | Automated/runtime evidence does not replace visual acceptance. |
 | Accessibility | pending | Synthetic checks are not independent assistive-technology acceptance. |
-| State Matrix | pass-scoped | 382a145 runtime 257/140/170 and 28/532/266/532 pass; packet and matrices are bound to the clean candidate before this governance update. |
+| State Matrix | pending | The prior exact matrix is stale after Step837; the next clean SHA must regenerate runtime, 28/532/266/532 matrices and packet. |
 | Route maturity | pending | 0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable. |
 | RouterOS soak | pending | No current long-running real-device evidence. |
 | Release hygiene | pending | Clean candidate, external CL and publication chain remain incomplete. |

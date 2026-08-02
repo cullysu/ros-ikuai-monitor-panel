@@ -1,14 +1,15 @@
 # Release Journal
 - status: `current-journal`
-- validForCommit: Step836 route-evidence remediation is uncommitted; pre-fix exact evidence is stale; formal external gates remain open; not a public release approval
+- validForCommit: Step837 folded-control accessibility regression fix is uncommitted; pre-fix exact evidence is stale; formal external gates remain open; not a public release approval
 - supersededBy: null
-- currentStep: `836`
-- currentOutcome: 836:a315eb7-route-evidence-audit-p1-fixes-formal-signoff-open
-- latestStepOutcome: 836:a315eb7-route-evidence-audit-p1-fixes-formal-signoff-open
+- currentStep: `837`
+- currentOutcome: 837:40fe6e2-runtime-accessibility-regression-fixed-runtime-green-formal-signoff-open
+- latestStepOutcome: 837:40fe6e2-runtime-accessibility-regression-fixed-runtime-green-formal-signoff-open
 - authority: docs/decision-system/current-state.md
 - fullHistory: panel-redesign-decision-log.md
 
 - Step836: route-evidence remediation focused checks pass; exact runtime/matrix/packet evidence is stale until a new clean SHA is committed. Formal Product/Design/Visual, independent Accessibility, route-owner maturity, RouterOS soak and exact-SHA CL remain open.
+- Step837: folded-control accessibility regression is fixed and full production runtime is green; exact runtime/matrix/packet evidence is stale until the governance commit is rebound. Formal Product/Design/Visual, independent Accessibility, route-owner maturity, RouterOS soak and exact-SHA CL remain open.
 
 - Historical Step793: scoped independent Design and Visual review closed with PASS; Product remained open.
 - Historical Step796: scoped Product/Architecture/Visual review was recorded while the public boundary remained fail-closed.

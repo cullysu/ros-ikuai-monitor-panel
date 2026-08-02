@@ -24621,3 +24621,18 @@ ocused-green-engineering
 - nextAction：同步 Step836 到 `D:\想法\面板`，提交代码与决策治理更新，随后在新 clean SHA 上重跑 build/runtime/28/532/266/532、packet、report truth、decision-system 和 readiness；继续获取真实 Product/Design/Visual、Accessibility、route-owner、RouterOS soak 与 Linux/Windows/GHCR exact-SHA CL，全部真实通过前不上传 GitHub。
 - validForCommit：`a315eb757429c1af431852c44a3bfbd82c779dc7` 为修复前 clean 基线；本步骤代码与文档变更均需生成新的 clean candidate
 - supersededBy：null
+
+## 第 837 步：重新绑定前发现并修复筛选控件的折叠态孤立 ARIA 目标
+
+- status: `active-runtime-regression-fix-formal-signoff-open`
+- latestStepOutcome: `837:40fe6e2-runtime-accessibility-regression-fixed-runtime-green-formal-signoff-open`
+- 触发/问题：Step836 提交后的新候选在重新运行生产浏览器验收时暴露一个真实回归：筛选按钮带有始终存在的 `aria-controls`，但折叠态按产品契约不渲染筛选区，导致 200% 文本压力验收报告孤立 ARIA 目标；改成始终渲染隐藏区又破坏了“按需显示控件”的运行时契约。不能为了让单个静态门禁变绿而牺牲交互语义。
+- 观察事实：`npm run build` 通过；首次新候选 runtime 在 `all covered routes survive measured synthetic 200 percent text stress` 处准确失败，随后对 `MobileDomainWorkspace` 的折叠/展开 DOM 关系进行复核。修复为折叠态不声明 `aria-controls`、展开态才声明并渲染同一 `mdw-domain-controls` 目标；这保持了 on-demand DOM、`aria-expanded` 和有效控制关系的一致性。
+- 本轮修复：`aria-controls={toolsOpen ? "mdw-domain-controls" : undefined}`，恢复按需渲染筛选组；保留筛选组 `role="group"`、可见时稳定 id，并同步让架构/发布静态门禁识别这种合法的展开态表达。没有放宽 200% 文本验收，也没有改写运行时报告结论。
+- 验证：修复后的 `npm run build` 通过；`npm run check:runtime-browser` 通过，runtime `257 checks / 140 screenshots / 169 snapshot API calls`；移动事故节奏、行动可见性、决策账本层级、手机信号层级、1365/1366 连续性、平板信息效率/垂直任务/下一证据工作区/任务空间全部通过。旧 382a145 与 40fe6e2 之前的运行证据均不能直接代表当前候选，后续必须以最终治理提交后的 exact SHA 重绑。
+- 决策：关闭本轮本地可复现的折叠态 ARIA 回归；继续保持 Product/Design/Visual 正式签收、独立 Accessibility、18 路由 maturity、RouterOS soak、Linux/Windows/GHCR exact-SHA CL 和 GitHub 发布 fail-closed。任务继续 active、`blocked=false`，不把本地 runtime PASS 误写成独立签收。
+- 理由与拒绝项：拒绝始终保留不存在的 `aria-controls` 目标；拒绝让隐藏 DOM 冒充可见控件；拒绝删掉辅助语义门禁；拒绝因一次 runtime 红灯就标记任务受阻。真正的发布判断必须基于治理提交后的完整精确证据。
+- 边界/心得：可访问性关系必须同时满足 DOM 存在性、交互状态和产品按需渲染契约；一个静态属性“看起来更完整”并不一定是正确产品行为。浏览器验收暴露了代码审计不能独立发现的交互回归，因此必须把 runtime 作为视觉与可用性闭环的一部分。
+- nextAction：将 Step837 治理记录、筛选回归和新生成资产提交为下一 clean SHA；随后重跑 exact build/runtime/28/532/266/532、packet、report truth、decision-system 和 readiness，再继续获取真实独立签收、RouterOS soak 与三端 exact-SHA CL，全部真实通过前不上传 GitHub。
+- validForCommit: `40fe6e27f970024f73541aca39432d18a6f1ddac` 为 Step836 clean SHA；Step837 代码、生成资产与治理文档需形成新的 clean candidate
+- supersededBy: null

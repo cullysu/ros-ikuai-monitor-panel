@@ -304,7 +304,11 @@ includes(source.mobileDomainCss, [
 includes(source.objectIdentity, ["stablePanelObjectId", "panelObjectIdForValues"], "stable mobile object identity");
 includes(source.nav, ["概览", "网络", "终端", "日志"], "four stable mobile destinations");
 excludes(mobileTree, ["DesktopOverview", "grabber", "bottom-sheet", "topology", 'role="tab"'], "mobile rejected patterns");
-includes(source.mobileDomain, ['aria-controls="mdw-domain-controls"', 'role="group"'], "mobile filter disclosure relationship");
+assert(
+  (source.mobileDomain.includes('aria-controls="mdw-domain-controls"') || source.mobileDomain.includes('aria-controls={toolsOpen ? "mdw-domain-controls" : undefined}')) &&
+    source.mobileDomain.includes('role="group"'),
+  "mobile filter disclosure relationship must expose a valid expanded-state target and group semantics"
+);
 excludes(mobileStyles, ["!important", "font-size: 11px", "font-size: 10px", "font-size: 9px"], "mobile style contract");
 const mobileFontSizes = fontSizes(mobileStyles);
 assert(mobileFontSizes.length > 0 && mobileFontSizes.every((size) => size >= 12), `mobile text must be at least 12px; found ${mobileFontSizes.filter((size) => size < 12).join(", ")}`);
