@@ -1,10 +1,10 @@
 # Release Journal
 - status: `current-journal`
-- validForCommit: Step839 mobile order and governance update is being committed; 2bc0ff7 exact evidence must be rebound on the next clean SHA; formal external gates remain open; not a public release approval
+- validForCommit: Step841 source/build/governance update is being committed; dirty-worktree runtime is diagnostic only and all exact evidence must be rebound after the next clean SHA; formal external gates remain open; not a public release approval
 - supersededBy: null
-- currentStep: `839`
-- currentOutcome: 839:active-mobile-first-viewport-decision-before-action-formal-signoff-open
-- latestStepOutcome: 839:active-mobile-first-viewport-decision-before-action-formal-signoff-open
+- currentStep: `841`
+- currentOutcome: 841:wide-resource-action-label-fixed-dirty-runtime-green-final-candidate-rebind-open
+- latestStepOutcome: 841:wide-resource-action-label-fixed-dirty-runtime-green-final-candidate-rebind-open
 - authority: docs/decision-system/current-state.md
 - fullHistory: panel-redesign-decision-log.md
 
@@ -12,6 +12,8 @@
 - Step837: folded-control accessibility regression was fixed and full production runtime was green; superseded by Step838 governance rebinding.
 - Step838: evidence-boundary wording P1 is fixed; b543cbb scoped engineering/visual evidence is green; the governance commit invalidates that exact evidence until the next clean SHA is rebound. Formal Product/Design/Visual, independent Accessibility, route-owner maturity, RouterOS soak and exact-SHA CL remain open.
 - Step839: normal-phone running judgment now precedes the next-step action to keep the 375px first viewport decision-first. The 2bc0ff7 exact evidence is stale until a new clean SHA is rebound; formal Product/Design/Visual, independent Accessibility, route-owner maturity, RouterOS soak and exact-SHA CL remain open.
+- Step840: a0af1584 exact build/runtime and 28/532/266/532 matrices pass; fresh Hooke scoped Product/Design/Visual review is P0/P1 clean and confirms the fixed-navigation masking P2 is closed. The packet remains prepared-not-signed; readiness correctly stops at route maturity 0/18/0/1, and formal Accessibility, route-owner acceptance, RouterOS soak and exact-SHA CL remain open. This journal update requires a new exact-SHA rebind.
+- Step841: the 844×390 resource-full visual review exposed a real P1: the `核对资源` action was constrained to a 20px incident-row column and rendered vertically. The mobile foundation now gives the incident row a content-sized (`max-content`) third track while ordinary arrow-only rows remain compact. The final budget-tightened build is 120.79 kB CSS / 488.35 kB JS; hashed asset, br-gzip, ETag and directory-containment checks pass. A pre-tightening dirty runtime browser run passed 257 checks / 140 screenshots plus chained mobile/tablet contracts, but it is stale after the final CSS reduction and is not release evidence. Commit, D-sync, exact matrix rebind and a fresh scoped visual review remain the sole next boundary. Formal signoff, route maturity, RouterOS soak and exact-SHA CL remain open.
 
 - Historical Step793: scoped independent Design and Visual review closed with PASS; Product remained open.
 - Historical Step796: scoped Product/Architecture/Visual review was recorded while the public boundary remained fail-closed.

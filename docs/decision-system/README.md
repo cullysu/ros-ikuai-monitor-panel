@@ -1,10 +1,10 @@
 # 决策系统导航
-- validForCommit: Step839 mobile order and governance update is being committed; 2bc0ff7 exact evidence must be rebound on the next clean SHA; formal external gates remain open; not a public release approval
+- validForCommit: Step841 source/build/governance update is being committed; dirty-worktree runtime is diagnostic only and all exact evidence must be rebound after the next clean SHA; formal external gates remain open; not a public release approval
 - supersededBy: null
 - status: `current-index`
-- currentBoundaryForStep: `839`
-- latestRecordedStep: `839`
-- latestStepOutcome: `839:active-mobile-first-viewport-decision-before-action-formal-signoff-open`
+- currentBoundaryForStep: `841`
+- latestRecordedStep: `841`
+- latestStepOutcome: `841:wide-resource-action-label-fixed-dirty-runtime-green-final-candidate-rebind-open`
 - authority: `docs/decision-system/current-state.md`
 
 当前结论由 current-state.md 唯一拥有；本页只负责导航，不重复历史流水账。
@@ -17,4 +17,4 @@
 - 历史索引：historical-index.md
 
 
-Task remains active and blocked=false; an open release gate is not a reason to stop work. Step839 moves the normal-phone decision ledger before the next-step action and keeps formal signoff fail-closed.
+Task remains active and blocked=false; an open release gate is not a reason to stop work. Step841 fixes a real wide resource-action layout defect and keeps exact-SHA evidence, trusted signoff, route maturity and publication fail-closed.

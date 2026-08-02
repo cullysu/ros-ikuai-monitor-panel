@@ -1,24 +1,24 @@
 - status: `current`
-- currentConclusionForStep: `839`
-- latestRecordedStep: `839`
-- latestStepOutcome: `839:active-mobile-first-viewport-decision-before-action-formal-signoff-open`
-- currentBoundaryForStep: `839`
-- validForCommit: uncommitted Step839 mobile order and governance update; 2bc0ff7 exact evidence is valid only before this product change and must be rebound on the next clean SHA; not a release candidate
+- currentConclusionForStep: `841`
+- latestRecordedStep: `841`
+- latestStepOutcome: `841:wide-resource-action-label-fixed-dirty-runtime-green-final-candidate-rebind-open`
+- currentBoundaryForStep: `841`
+- validForCommit: Step841 source, build artifacts and governance updates are uncommitted; the dirty-worktree runtime is diagnostic only and must be rebound after the next clean SHA; not a release candidate
 - supersededBy: `null`
-- updatedAt: 2026-08-02T10:10:00+08:00
+- updatedAt: 2026-08-02T13:20:00+08:00
 - authority: This is the only human-readable current-state source.
 
-## Current decision record: Step 839
+## Current decision record: Step 841
 
-- status: active-mobile-first-viewport-decision-before-action-formal-signoff-open
-- boundary: Step839 changes only the normal-phone semantic order; the pre-change 2bc0ff7 evidence is stale until a new clean SHA is rebuilt and rechecked.
-- observed facts: the independent scoped review found the 375×667 normal phone lower `运行判断` tail under the fixed navigation. `MobilePatrolScreen` rendered `normalPhoneNextStep` before `normalPhoneSteadyDecisions`, so a 44px action row consumed first-viewport budget before the decision evidence. The data model, touch floors and incident/tablet/desktop trees are unchanged.
-- local/independent scoped verification: the Step838 Hooke review remains scoped Product/Design/Visual PASS with P0=0/P1=0; Step839 has not yet received a fresh review. No trusted external signature was generated.
-- decision: render normal-phone `运行判断` before `下一步`; keep the next-step action present and touch-sized after the evidence decision. Update the contract test to encode this product ordering and to read the CSS owner that actually defines the 44px floor. Task remains active and blocked=false.
+- status: wide-resource-action-label-fixed-dirty-runtime-green-final-candidate-rebind-open
+- boundary: Step841 fixes one real P1 visual defect in the mobile render tree; it does not promote any route, create a trusted signature, or open publication. The current browser report was generated with a dirty worktree and is diagnostic only until a clean SHA is committed and all exact-SHA artifacts are regenerated.
+- observed facts: the 844×390 resource-full screenshot showed the right-side `核对资源` action squeezed into one character per line because the incident row reserved a 20px action column. The mobile foundation now lets the incident row's third track size to content (`max-content`), so the existing `.mp-window` action occupies its label width; ordinary rows retain their arrow-only width and desktop rendering is unchanged. `CI=1 npm run build` passed (1902 modules, 120.79 kB CSS, 488.35 kB JS), and the static asset budget/hashed URL/br-gzip/ETag/directory containment checks pass. The earlier dirty-worktree runtime browser passed 257 checks / 140 screenshots plus chained mobile/tablet contracts, but the later budget-tightening CSS change makes that report stale; it remains diagnostic and is not release evidence.
+- local/independent scoped verification: the prior fresh Hooke scoped Product/Design/Visual review was P0/P1 clean before this P1 fix; a new exact-SHA scoped review is still required after commit. No trusted external signature was generated. The retained P2 observations remain 375px progressive disclosure, controlled cross-surface repetition, slight 1440px tail whitespace, and real independent Accessibility/route-owner review still pending.
+- decision: keep the task active with blocked=false. Commit the source/build/governance candidate, sync the D mirror, then regenerate exact-SHA runtime, 28-cell overview, route-state, route-responsive, full public matrix and packet. Re-review the corrected 844×390 resource screenshot before any formal signoff claim; do not promote bounded-readonly routes and do not publish.
 
 ## Current conclusion
 
-**FAIL overall.** The normal-phone first-viewport ordering fix is implemented but its old 2bc0ff7 evidence is stale until the new clean candidate is rebuilt. Formal independent acceptance, route maturity, RouterOS soak and external CL remain incomplete. No publication is authorized.
+**FAIL overall.** The current P1 fix is implemented and dirty-worktree runtime green, but exact-SHA evidence is stale until the candidate is committed and rebound. Formal trusted acceptance, independent Accessibility, route maturity, RouterOS soak and external CL remain incomplete. No publication is authorized.
 
 ## Independent acceptance boundary
 
@@ -37,7 +37,7 @@
 | Design | pending | Fresh independent review/signature is required. |
 | Visual QA | pending | Automated/runtime evidence does not replace visual acceptance. |
 | Accessibility | pending | Synthetic checks are not independent assistive-technology acceptance. |
-| State Matrix | pending | The 2bc0ff7 exact matrix is stale after Step839 product changes; the next clean SHA must regenerate runtime, 28/532/266/532 matrices and packet. |
+| State Matrix | pending-final-rebind | Step841 changed the mobile action layout and build outputs; dirty runtime is diagnostic only, so exact-SHA runtime, matrices and packet must be regenerated after commit. |
 | Route maturity | pending | 0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable. |
 | RouterOS soak | pending | No current long-running real-device evidence. |
 | Release hygiene | pending | Clean candidate, external CL and publication chain remain incomplete. |
@@ -52,10 +52,10 @@
 
 ## Open review boundaries
 
-- R07 mobile visual maturity, R09 tablet task efficiency, R10 desktop density and R14 cross-surface grammar have Step838 scoped evidence and the fresh independent scoped review found P0/P1=0; Step839 requires a fresh exact-SHA scoped re-review after the first-viewport order change, and formal independent acceptance remains pending.
+- R07 mobile visual maturity, R09 tablet task efficiency, R10 desktop density and R14 cross-surface grammar have prior a0af1584 scoped evidence and the fresh independent review found P0/P1=0; Step841 fixed a new wide resource-action P1 and requires a fresh exact-SHA review. Formal independent acceptance remains pending.
 - Release journal: docs/decision-system/release-journal.md.
 - D drive is a byte-identical mirror at D:\想法\面板.
-- Current packet under `_acceptance/panel-runtime-browser/` is prepared-not-signed and never self-signs; the 2bc0ff7 packet is stale after Step839 and must be regenerated for the next candidate.
+- Current packet under `_acceptance/panel-runtime-browser/` is prepared-not-signed and never self-signs; its dirty Step841 runtime report is diagnostic and must be regenerated for the next clean candidate.
 
 ## Record contract
 

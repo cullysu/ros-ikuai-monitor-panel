@@ -24666,3 +24666,23 @@ ocused-green-engineering
 - nextAction：先应用 normal phone 顺序修复并运行聚焦静态/类型检查；随后提交新的 clean SHA，重绑全部精确工程证据并重新获取独立 scoped 视觉复核；正式签收、Accessibility、route-owner maturity、RouterOS soak 和 Linux/Windows/GHCR exact-SHA CL 全部真实通过前禁止 GitHub API 发布。
 - validForCommit：`2bc0ff75f5f290c1636a16b707aba0e8be2156b3` 为本步修复前 clean 基线；本步代码与治理更新必须生成新的 clean candidate
 - supersededBy：null
+## 第 840 步：a0af1584 精确矩阵与新鲜独立 scoped 复核通过，正式发布门禁继续开放
+
+- latestStepOutcome: `840:exact-sha-matrix-and-scoped-visual-review-pass-formal-gates-open`
+
+- 触发/问题：Step839 的正常手机顺序修复需要在新鲜精确候选上重绑证据，并完成独立视觉/产品复核；不能把上一次的截图、矩阵或 scoped PASS 继续当作当前发布签收。
+- 事实：当前候选 `a0af1584de4442587f9cca6dadbadb12d3ed2c43` 工作树干净；`npm run build` 在一次 Windows Node 收尾断言后以 `CI=1` 有界重试成功退出 0。Overview 矩阵 `28/28`、route-state `266/266`、single route shard `76/76`、完整公开路由矩阵 `532/532` 全部通过；runtime `257 checks / 140 screenshots` 绑定同一 SHA；packet 身份通过但保持 `prepared-not-signed / selfSignoff=false / releaseEligible=false`。
+- 独立复核：Hooke 对同一 SHA 做只读新鲜复核，scoped Product/Design/Visual 为 PASS，P0=0、P1=0；确认 Step839 已关闭固定底部导航遮挡 P2（390px 三条运行判断完整在导航上方，375px 可见条目未被遮挡）。保留 P2：375px 正常态其余判断需滚动、平板/桌面少量职责可解释复读、1440px 轻微尾部留白。该复核不是可信 Ed25519 签名。
+- readiness：`check-public-release-readiness.js --require-matrix` 已接受当前精确矩阵，然后真实停止于 route maturity：`0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`。这证明矩阵不是当前红灯；18 个路由的独立 Accessibility/route-owner acceptance、RouterOS soak、Linux/Windows/GHCR exact-SHA CL 仍未完成。
+- 决策：关闭本步声明范围内的构建、矩阵、视觉 scoped review 和决策证据同步；不把 scoped PASS 改写为正式签收，不把 bounded-readonly 改成 complete，不伪造签名，不上传 GitHub。因本步更新决策文档会改变精确身份，提交后必须再次重绑全部 exact-SHA 证据。
+- 当前边界：任务保持 active 且 `blocked=false`。唯一下一步：提交并重绑 Step840 后的新 clean SHA，然后继续真实独立 Accessibility、route-owner、RouterOS soak 与三端 CL；所有条件真实通过后才允许 GitHub API 原子发布。
+## 第 841 步：修复横屏资源动作文案挤压，脏工作树运行时通过但最终候选仍需重绑
+
+- latestStepOutcome: `841:wide-resource-action-label-fixed-dirty-runtime-green-final-candidate-rebind-open`
+
+- 触发/问题：独立 Design/Visual 复核在 `844×390` resource-full 截图发现右侧 `核对资源` 被 incident row 的 20px 动作列压成逐字竖排。这不是审美偏好，而是横屏异常态的 P1 可读性缺陷。
+- 修复：`src/panel-framework/mobile/mobile-patrol-foundation.css` 将 incident row 的第三列从固定 `20px` 改为 `max-content`；资源动作因此按文案自然占宽，普通箭头行仍按箭头自然占宽，触控行高、桌面渲染树和数据契约不变。为守住 120KB 预算，未增加专用覆盖层。
+- 验证：最终 `CI=1 npm run build` 通过，1902 modules、CSS 120.79 kB、JS 488.35 kB；hashed asset、br-gzip、ETag、目录边界和静态预算合同通过。预算收敛前的脏工作树 `npm run check:runtime-browser` 曾通过 `257 checks / 140 screenshots / 169 snapshotApiCalls`，但该报告不覆盖最后一轮 CSS 收敛，明确只能作为历史诊断证据，不能作为发布证据。
+- 视觉边界：修复前的 Hooke scoped Product/Design/Visual 复核为 P0/P1=0，但本步改变了视觉源代码，必须在新 clean SHA 上重新截取 `844×390` resource-full 并获取新鲜 scoped 复核。正式 Product/Design/Visual 签收、独立 Accessibility、route-owner acceptance、RouterOS soak 和 Linux/Windows/GHCR exact-SHA CL 均未完成。
+- 决策：任务继续保持 active 且 `blocked=false`；提交 source/build/governance 候选并同步 `D:\想法\面板`，然后重跑 exact-SHA runtime、28 cell overview、266 route-state、76 route-responsive、532 full public matrix、packet 和 readiness。所有真实发布门禁关闭前禁止 GitHub API 上传。
+- 当前边界：脏工作树运行时通过不等于 exact candidate 通过；Step841 文档和构建输出会共同决定下一 clean SHA。唯一下一步是完成提交与 D 盘同步，再以最终 SHA 重新验收。

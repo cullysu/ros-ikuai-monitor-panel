@@ -454,7 +454,7 @@
     display: grid;
     width: 100%;
     min-height: 72px;
-    grid-template-columns: 24px minmax(0, 1fr) 20px;
+    grid-template-columns: 24px minmax(0,1fr) max-content;
     align-items: center;
     gap: 11px;
     padding: 9px 12px 9px 0;
@@ -566,7 +566,6 @@
   .mp-window {
     color: var(--mp-muted);
     font-size: 12px;
-    font-variant-numeric: var(--t);
   }
   .mp-traffic-body {
     display: grid;
