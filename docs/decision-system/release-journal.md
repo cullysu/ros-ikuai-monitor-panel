@@ -1,10 +1,10 @@
 # Release Journal
 - status: `current-journal`
-- validForCommit: e0893bcd3a14246660e7dc6b4d6d8dc149bdfb5a exact local evidence is current; public candidate publication remains uncommitted; formal external gates remain open; not a public release approval
+- validForCommit: 5e9061aedd69f6f084eb117fd8093bb0c6ef7924 exact local evidence before Step848 governance update; public candidate publication remains uncommitted; formal external gates remain open; not a public release approval
 - supersededBy: null
-- currentStep: `845`
-- currentOutcome: 845:e089-exact-matrix-and-independent-scoped-reviews-pass-formal-gates-open
-- latestStepOutcome: 845:e089-exact-matrix-and-independent-scoped-reviews-pass-formal-gates-open
+- currentStep: `848`
+- currentOutcome: 848:5e9061a-current-sha-scoped-reviews-and-route-owner-boundary-open
+- latestStepOutcome: 848:5e9061a-current-sha-scoped-reviews-and-route-owner-boundary-open
 - authority: docs/decision-system/current-state.md
 - fullHistory: panel-redesign-decision-log.md
 
@@ -17,6 +17,7 @@
 - Step842: final clean candidate `4ac0e6f4` passes runtime `257/140/169`, Overview `28/28`, route-state `266/266`, full public `532/532`, static assets and packet identity. Fresh Hooke Product/Design/Visual scoped review is PASS P0/P1=0; fresh Noether Accessibility/Interaction scoped review is conditional pass P0/P1=0; fresh Nash Product/Operations review is Conditional Pass P0=0 and confirms the wide resource action P1 closed. Readiness correctly stops at route maturity `0/18/0/1`; packet remains prepared-not-signed. This Step842 governance update invalidates the exact identity and requires a new clean SHA rebind before any formal gate or publication claim. RouterOS soak, trusted route-owner acceptance and Linux/Windows/GHCR exact-SHA CL remain open.
 - Step844: clean candidate `ec19b0da0815dd85bdb8035f2664d3dcea4f4532` rebinds build, runtime `257/140/169`, Overview `28/28`, route-state `266/266`, full public `532/532`, focused overview contracts, static assets, asset identity, backend/security, collector/RFC3339 and packet identity. Browser page/context cleanup removes the previous stop-timeout warning. Readiness accepts the complete matrix and correctly stops at route maturity `0/18/0/1`. The packet is `prepared-not-signed`, `selfSignoff=false`, `releaseEligible=false`; prior scoped P0/P1 review remains bounded to its old SHA, so fresh current-SHA independent review is required. Formal trusted acceptance, route-owner acceptance, RouterOS soak and exact-SHA Linux/Windows/GHCR CL remain open. No GitHub upload is authorized.
 - Step845: clean candidate `e0893bcd3a14246660e7dc6b4d6d8dc149bdfb5a` rebinds build, runtime `257/140/169`, Overview `28/28`, route-state `266/266`, route-responsive `76/76` bounded, full public `532/532`, focused overview contracts, static assets, asset identity, backend/security, collector/RFC3339 and packet identity. Current-SHA Hooke Product/Design/Visual scoped review and Noether Accessibility/Interaction scoped review are P0/P1=0; Nash Route Owner/Operations correctly refuses formal signoff because 18 routes remain bounded-readonly and the `more` directory is unavailable. Readiness accepts the complete matrix and correctly stops at route maturity `0/18/0/1`. The packet is `prepared-not-signed`, `selfSignoff=false`, `releaseEligible=false`; formal trusted acceptance, route-owner acceptance, RouterOS soak and exact-SHA Linux/Windows/GHCR CL remain open. No GitHub upload is authorized.
+- Step848: clean candidate `5e9061aedd69f6f084eb117fd8093bb0c6ef7924` rebinds build, runtime `257/140/169`, Overview `28/28`, route-state `266/266`, full route-responsive `532/532`, packet identity and the required single-scenario route shard `76/76`. Hooke Product/Design/Visual and Noether Accessibility/Interaction scoped reviews are P0/P1=0; Nash Route Owner/Operations keeps formal acceptance open because 18 routes remain bounded-readonly, object-depth gaps remain, and RouterOS soak/exact-SHA CL/trusted signature evidence is absent. Readiness accepts the matrix and correctly stops at route maturity `0/18/0/1`. `emil-design-eng` is installed and fused into the product loop as a restraint/reduced-motion interaction gate. No GitHub upload is authorized; Step848 governance changes require a fresh exact-SHA rebind.
 
 - Historical Step793: scoped independent Design and Visual review closed with PASS; Product remained open.
 - Historical Step796: scoped Product/Architecture/Visual review was recorded while the public boundary remained fail-closed.

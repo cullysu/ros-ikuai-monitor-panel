@@ -24761,3 +24761,19 @@ ocused-green-engineering
 - nextAction：提交并同步 Step847 决策仓库后，在新的 clean SHA 重建 build、runtime、28/532/266/532 矩阵、packet、report-truth 和 readiness；随后继续逐路由 route-owner/AT 验收、准备真实 RouterOS soak，并在获授权的同一 SHA 上等待 Linux/Windows/GHCR CL 全通过，之前禁止 GitHub API 发布。
 - validForCommit：`9bc5ccc9457ca0858ec9da43e07c2564ed3540c4` exact clean engineering/scoped evidence；本步骤治理提交后必须重新绑定
 - supersededBy：null
+
+## 第 848 步：5e9061a 当前 SHA 独立 scoped 复核完成，正式签收与发布门禁继续开放
+
+- status：`5e9061a-current-sha-scoped-reviews-and-route-owner-boundary-open`
+- latestStepOutcome: `848:5e9061a-current-sha-scoped-reviews-and-route-owner-boundary-open`
+- 触发/问题：用户明确要求不能因为未完成独立签收就停止或标记受阻；必须继续完成当前候选的视觉、交互和路由复核，并把可由本地完成的门禁与真实外部主体才能提供的证据分开。Step847 治理提交产生了候选 `5e9061aedd69f6f084eb117fd8093bb0c6ef7924`，本步只读复核均绑定该精确 SHA。
+- 观察事实：工作树 clean；build 通过；生产 runtime 为 `257 checks / 140 screenshots / 169 snapshot API calls`；Overview `28/28`；完整 route-responsive `532/532`；route-state `266/266`；bounded single-scenario route shard `76/76` 个工程单元；visual packet `12/12` digest/identity 通过且仍为 `prepared-not-signed`、`selfSignoff=false`、`releaseEligible=false`。
+- 独立复核：Hooke 的 Product/Design/Visual scoped review 为 `PASS`，P0=`0`、P1=`0`；记录 P2 为 375px 正常态完整判断需要滚动、窄平板次级说明可能省略、冷蓝运维控制台仍比原生 Glass 更强。Noether 的 Accessibility/Interaction scoped review 为 `PASS`，P0=`0`、P1=`0`；真实 VoiceOver、TalkBack、Narrator、真机触控/旋转/安全区仍未取得。Nash 的 Route Owner/Operations review 为 formal `FAIL`：18 个 operational route 仍是 `bounded-readonly`，真实 RouterOS soak、当前 SHA 外部 CL 与受信签名不存在；同时指出 DHCP 地址池、安全地址集、WAN 分布和流量审计聚合仍有对象深度缺口。
+- readiness：`check-public-release-readiness.js --require-matrix` 已接受当前 SHA 的完整 Overview/route matrix 身份，随后真实停在 route maturity：`0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`。这不是任务受阻，而是仍未满足的发布门禁清单。
+- Loop 优化：已安装 `emil-design-eng`（来源 `emilkowalski/skills`），并将其设计工程约束融合进 product-company loop：不为指标/告警/时间戳制造动效，不用发光/脉冲伪造紧急性，交互反馈保持可中断、低时延、支持 reduced-motion；当前控制台以静态证据优先。
+- 决策：关闭本步当前 SHA 声明范围内的 scoped Product/Design/Visual 与 Accessibility/Interaction 复核；不把 scoped PASS 改写为正式 Product/Design/Visual/Accessibility trusted signature，不把 18 个 bounded route 改写为 complete，不伪造 RouterOS soak 或三端 CL。继续做本地可修复的 route evidence 深度与视觉 P2 收敛，并准备真实 route-owner/AT/RouterOS/CL 输入；新治理提交后必须重新绑定全部 exact-SHA 证据。
+- 理由与拒绝项：自动矩阵只能证明工程行为；独立 agent 只读结论不能生成受信 Ed25519；没有真实设备不能虚构长时 soak；没有远端 exact-SHA CL 不能声称发布通过。开放门禁要求继续工作，不能被记录为 blocked。
+- 边界/心得：本步再次验证“scoped visual/accessibility pass”“route-owner formal fail”“release eligibility false”三者必须同时保留。视觉 P2 不应靠缩小字号、隐藏证据或重复内容消失；路由 maturity 必须以对象可检查性、失败恢复和真实主体签收为准，而不是 URL 数量。
+- nextAction：提交并同步 Step848 决策仓库，随后在新 clean SHA 上重跑 build/runtime/Overview/route-responsive/route-state/public/packet/report-truth/readiness，并继续补齐 route-specific 对象证据、真实辅助技术/RouterOS soak 与获授权后的 Linux/Windows/GHCR exact-SHA CL；全部真实通过前禁止 GitHub API 发布。
+- validForCommit：`5e9061aedd69f6f084eb117fd8093bb0c6ef7924` exact clean engineering/scoped evidence；本步骤治理文档提交后必须重新绑定
+- supersededBy：null

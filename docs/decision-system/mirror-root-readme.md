@@ -1,11 +1,11 @@
 # RouterOS / iKuai 面板决策仓库
 
-这是当前面板工作的本地决策仓库镜像。Step847 已将当前 clean SHA `9bc5ccc9457ca0858ec9da43e07c2564ed3540c4` 的 build、runtime、28/532/266/532 矩阵、route-responsive 76/76 bounded shard、focused contracts、资产、安全、RFC3339、collector 和 packet identity 重新绑定；当前 SHA 的 scoped Product/Design/Visual/Accessibility 复审 P0/P1=0，但正式签收、route maturity、RouterOS soak 和可信外部发布签收仍未完成。
+这是当前面板工作的本地决策仓库镜像。Step848 已记录当前 clean SHA `5e9061aedd69f6f084eb117fd8093bb0c6ef7924` 的 build、runtime、28/532/266/532 矩阵、route-responsive 76/76 bounded shard、focused contracts、资产、安全、RFC3339、collector 和 packet identity；当前 SHA 的 scoped Product/Design/Visual/Accessibility 复审 P0/P1=0，但正式签收、route maturity、RouterOS soak 和可信外部发布签收仍未完成。emil-design-eng 已融合进 product-company-loop，强调静态证据和 reduced-motion。
 
 - status: `current-mirror-entry`
-- currentStep: `847`
-- currentOutcome: `847:9bc5ccc-current-sha-matrices-and-scoped-independent-reviews-formal-gates-open`
-- currentBoundary: `847`
+- currentStep: `848`
+- currentOutcome: `848:5e9061a-current-sha-scoped-reviews-and-route-owner-boundary-open`
+- currentBoundary: `848`
 - authority: `decision-system/current-state.md`
 
 ## 入口
@@ -42,4 +42,4 @@
 
 每个材料性切片开始前先写仓库日志和对应 decision-system 文件，再同步到 D 盘镜像。同步门禁必须满足语义步骤一致、Markdown 映射逐字节一致、没有额外 Markdown；根 README 还必须通过新鲜度检查。
 
-Step847: 9bc5ccc exact local evidence is green in the declared engineering scope; Hooke Product/Design/Visual and Noether Accessibility/Interaction scoped reviews are P0/P1=0, while Nash Route Owner/Operations correctly keeps formal acceptance open. Readiness correctly stops at `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`. The packet remains `prepared-not-signed`, no trusted signature or GitHub upload exists, and route-owner, RouterOS soak, CL and public release remain closed. This summary is not a signature.
+Step848: 5e9061a exact local evidence is green in the declared engineering scope; Hooke Product/Design/Visual and Noether Accessibility/Interaction scoped reviews are P0/P1=0, while Nash Route Owner/Operations correctly keeps formal acceptance open because route maturity is `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`, object-depth gaps remain, and RouterOS soak/CL/trusted signature evidence is absent. The packet remains `prepared-not-signed`, no GitHub upload exists, and the product-company loop now includes emil-design-eng restraint/reduced-motion guidance. This summary is not a signature.
