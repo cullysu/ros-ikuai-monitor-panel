@@ -24651,3 +24651,17 @@ ocused-green-engineering
 - nextAction：将 Step838 决策记录同步至 `D:\想法\面板` 并提交治理文档；提交产生的新 clean SHA 必须重新 build/runtime/Overview/route-responsive/route-state/public/packet/readiness，再继续获取真实独立 Accessibility、route-owner、RouterOS soak 与 Linux/Windows/GHCR exact-SHA CL；全部真实通过前禁止 GitHub API 发布。
 - validForCommit：`b543cbb9538a07a34f22a5897862febd52215578` exact engineering/scoped evidence；本步骤治理提交后必须重新绑定
 - supersededBy: null
+
+## 第 839 步：normal phone 首屏先呈现运行判断，再呈现下一步入口
+
+- status：`active-mobile-first-viewport-decision-before-action-formal-signoff-open`
+- latestStepOutcome: `839:active-mobile-first-viewport-decision-before-action-formal-signoff-open`
+- 触发/问题：Step838 的独立 scoped review 保留了一个真实 P2：375×667 正常态的固定底部导航压住“运行判断”列表下沿。当前 normal phone 顺序是“下一步”先于“运行判断”，导致一个操作入口占据首屏预算，而更基础的判断证据被推到导航下方；这不是任务阻塞，必须继续修复。
+- 观察事实：`MobilePatrolScreen` 在 normal phone 分支同时渲染 `normalPhoneNextStep` 与 `normalPhoneSteadyDecisions`；`MobileSteadyDecisionLedger` 的行仍保持可读文字和触控高度，固定导航属于共享壳层。把判断放在动作之前可以回收一个 44px 操作条的首屏位置，不需要缩小正文、隐藏证据或伪造数据。
+- 决策：仅调整 normal phone 的语义顺序为“运行判断 → 下一步”；incident、tablet、desktop 和数据模型不变。运行判断是证据后的决策层，应该先于导航到下一路由的动作入口；下一步仍然保留在同一页面并可操作。
+- 拒绝项：不把固定导航改成遮挡内容的透明装饰；不通过 9–11px 字号、减少 44px 触控尺寸、隐藏判断行或折叠真实证据来制造首屏通过；不把 P2 改写成 P0/P1，也不把 scoped review 改写成正式签收。
+- 验证：本步代码尚未提交；代码变更后必须以新的 clean SHA 重跑 build、types、fresh runtime、Overview 28/28、完整 route-responsive 532/532、route-state 266/266、public 532/532、packet、report-truth、decision-system 和 readiness，并重新进行独立 scoped Product/Design/Visual review。旧 `2bc0ff7` 证据不能继承。
+- 边界/心得：移动首屏不是把更多模块硬塞进去，而是让“判断—行动”的节奏正确。先展示用户需要相信的判断，再给下一步入口，既提高首屏信息效率，也保留 iOS 式可预测操作；底部导航遮挡问题必须用信息顺序解决，不能用更小的字解决。
+- nextAction：先应用 normal phone 顺序修复并运行聚焦静态/类型检查；随后提交新的 clean SHA，重绑全部精确工程证据并重新获取独立 scoped 视觉复核；正式签收、Accessibility、route-owner maturity、RouterOS soak 和 Linux/Windows/GHCR exact-SHA CL 全部真实通过前禁止 GitHub API 发布。
+- validForCommit：`2bc0ff75f5f290c1636a16b707aba0e8be2156b3` 为本步修复前 clean 基线；本步代码与治理更新必须生成新的 clean candidate
+- supersededBy：null

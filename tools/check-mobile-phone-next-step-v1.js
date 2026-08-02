@@ -18,7 +18,9 @@ const screen = read("src/panel-framework/mobile/MobilePatrolScreen.tsx");
 const actions = read("src/panel-framework/overview/evidence-model/buildOverviewInvestigationActions.ts");
 const componentPath = "src/panel-framework/mobile/MobilePhoneNextStep.tsx";
 const component = fs.existsSync(path.join(root, componentPath)) ? read(componentPath) : "";
-const css = read("src/panel-framework/mobile/mobile-patrol.css");
+const css = read("src/panel-framework/mobile/mobile-patrol-foundation.css")
+  + "\n"
+  + read("src/panel-framework/mobile/mobile-patrol.css");
 const runtimePath = path.join(root, "_acceptance/panel-runtime-browser/report.json");
 const runtime = fs.existsSync(runtimePath)
   ? JSON.parse(fs.readFileSync(runtimePath, "utf8"))
@@ -52,10 +54,12 @@ check(
     const workspacePrimary = workspacePrimaryStart >= 0 ? screen.slice(workspacePrimaryStart) : "";
     return screen.includes("MobilePhoneNextStep")
       && workspacePrimary.includes("normalPhoneNextStep")
+      && workspacePrimary.includes("normalPhoneSteadyDecisions")
       && workspacePrimary.indexOf("{trafficSignal}") < workspacePrimary.indexOf("{normalPhoneNextStep}")
-      && workspacePrimary.indexOf("{normalPhoneNextStep}") < workspacePrimary.indexOf("{normalPhoneSteadyDecisions}");
+      && workspacePrimary.indexOf("{trafficSignal}") < workspacePrimary.indexOf("{normalPhoneSteadyDecisions}")
+      && workspacePrimary.indexOf("{normalPhoneSteadyDecisions}") < workspacePrimary.indexOf("{normalPhoneNextStep}");
   })(),
-  "normal phone order must be signal, one next task, then secondary decision ledger",
+  "normal phone order must be signal, secondary decision ledger, then one next task",
 );
 check(
   "steady collection action binds snapshot context",
@@ -65,8 +69,11 @@ check(
 );
 check(
   "phone next step remains touch-sized without filler",
-  /mp-phone-next-step[\s\S]*min-height:\s*44px/.test(css)
-    && !/mp-phone-next-step[\s\S]*(min-height:\s*(?:1\d{2,}|auto)|height:\s*\d{3,}px|placeholder|filler)/i.test(css),
+  (() => {
+    const block = css.match(/\.mp-phone-next-step\s*\{[\s\S]*?\}/)?.[0] || "";
+    return /min-height:\s*44px/.test(block)
+      && !/min-height:\s*(?:1\d{2,}|auto)|height:\s*\d{3,}px|placeholder|filler/i.test(block);
+  })(),
   "use a compact touch target; do not create a blank-height spacer",
 );
 check(

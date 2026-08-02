@@ -20,7 +20,9 @@ function includes(source, needles, label) {
 function excludes(source, needles, label) {
   for (const needle of needles) assert(!source.includes(needle), `${label} must exclude ${needle}`);
 }
-function lineCount(source) { return source ? source.split(/\r?\n/).length : 0; }
+// A terminal newline is file formatting, not an additional source line. Count
+// logical lines so a harmless formatter-added newline cannot trip a budget.
+function lineCount(source) { return source ? source.trimEnd().split(/\r?\n/).length : 0; }
 function fontSizes(source) {
   return [...source.matchAll(/font-size\s*:\s*([0-9.]+)px/gi)].map((match) => Number(match[1]));
 }

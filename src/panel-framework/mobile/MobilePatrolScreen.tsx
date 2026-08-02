@@ -222,8 +222,8 @@ export function MobilePatrolScreen({
               {phonePrimaryAction}
               {concurrentRiskQueue}
               {compactIncidentActions}
-              {normalPhoneNextStep}
               {normalPhoneSteadyDecisions}
+              {normalPhoneNextStep}
               {comparisonList}
             </div>
             <div className="mp-workspace-context">
