@@ -24707,3 +24707,14 @@ ocused-green-engineering
 - 决策：继续保持任务 active、`blocked=false`；先关闭真实 route-owner acceptance 并准备 RouterOS soak，再等待真实外部主体签收和精确 SHA Linux/Windows/GHCR CL。任何 GitHub 上传前都必须重新检查远端 parent、通过 Git 数据 API 原子发布，并对同一 SHA 等待三端 CL；任一 CL 失败先修复，不宣称发布。
 - 验证：D 盘决策镜像同步保持 14/14 byte-identical；工作树 clean；未发生 GitHub 上传。
 - nextAction：继续逐路由完成真实筛选/排序/分页/对象详情与失败恢复的 route-owner acceptance，形成可审阅的 RouterOS soak 输入，然后再按精确 e6 后续候选执行外部 CL 预检。
+
+## 第 844 步：ec19 浏览器清理修复与精确本地证据重绑，正式签收继续开放
+
+- latestStepOutcome: `844:ec19-exact-rebind-browser-cleanup-and-local-gates-pass-formal-gates-open`
+- 触发/问题：上一轮 browser acceptance 在页面/上下文回收阶段出现 stop-timeout 警告；即使产品代码未再变化，也不能把旧 SHA 的运行报告或旧 scoped review 当作当前候选的正式签收。用户要求继续完成独立签收，不得因门禁未关闭而标记任务受阻。
+- 观察事实：当前 clean SHA 为 `ec19b0da0815dd85bdb8035f2664d3dcea4f4532`。构建、types、runtime-browser `257 checks / 140 screenshots / 169 snapshotApiCalls`、Overview `28/28`、route-state `266/266`、完整公开路由 `532/532`、route-responsive `76/76` bounded shard、check:overview、backend/security、collector、RFC3339、静态资产、asset identity、packet identity 均通过；page 先于 context 关闭、残余 context 在 browser stop 前关闭，fresh runtime 与 Overview 运行无 stop-timeout warning。
+- readiness：`check-public-release-readiness.js --require-matrix` 接受完整当前矩阵后，按设计真实停止在 route maturity：`0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`。这不是本轮受阻，而是尚未满足的 route-owner、真实设备 soak、正式独立签收和外部 CL 门禁。
+- 独立复核边界：已有 scoped Product/Design/Visual 与 Accessibility 结论只能证明各自旧 SHA/声明范围内没有 P0/P1；ec19 需要新鲜 current-SHA 复审。packet 仍为 `prepared-not-signed`、`selfSignoff=false`、`releaseEligible=false`，没有生成或伪造 trusted Ed25519 签名。
+- 决策：任务继续保持 active 且 `blocked=false`。先同步并提交本步决策记录，再在最终 clean SHA 上重新绑定报告并委派 current-SHA Product/Design/Visual/Accessibility/route-owner 复审；随后准备 RouterOS soak 与精确 SHA Linux/Windows/GHCR CL。任何正式门禁未真实通过前禁止 GitHub API 上传，任一 CL 失败则回到修复循环。
+- 验证：ec19 本地报告与 packet identity 一致；D 盘镜像需在本步文档完成后重新执行同步门禁；未发生 GitHub 上传或发布。
+- nextAction：完成 D 盘决策镜像同步与 decision-system 检查，提交本步治理记录；随后以提交后的最终 SHA 重绑所有报告并获取 current-SHA 独立签收。

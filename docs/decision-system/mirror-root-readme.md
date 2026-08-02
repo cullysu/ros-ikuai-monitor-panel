@@ -1,11 +1,11 @@
 # RouterOS / iKuai 面板决策仓库
 
-这是当前面板工作的本地决策仓库镜像。Step843 已将完整本地工程证据重新绑定到 clean SHA `e6c3d14eef919cb3cdf99970d4df8bbf8cdfb87c`：runtime、28/532/266/532 矩阵、focused contracts、资产、安全、RFC3339、collector 和 packet identity 均通过。readiness 仍停在 route maturity；独立 Product/Design/Visual 正式签收、Accessibility、RouterOS soak 和可信外部发布签收仍未完成。
+这是当前面板工作的本地决策仓库镜像。Step844 已将完整本地工程证据重新绑定到 clean SHA `ec19b0da0815dd85bdb8035f2664d3dcea4f4532`：build、runtime、28/532/266/532 矩阵、focused contracts、资产、安全、RFC3339、collector 和 packet identity 均通过；浏览器 page/context 清理后无 stop-timeout warning。readiness 仍停在 route maturity；当前 SHA 的独立 Product/Design/Visual/Accessibility 复审、正式签收、RouterOS soak 和可信外部发布签收仍未完成。
 
 - status: `current-mirror-entry`
-- currentStep: `843`
-- currentOutcome: `843:e6-exact-rebind-and-local-gates-pass-formal-gates-open`
-- currentBoundary: `843`
+- currentStep: `844`
+- currentOutcome: `844:ec19-exact-rebind-browser-cleanup-and-local-gates-pass-formal-gates-open`
+- currentBoundary: `844`
 - authority: `decision-system/current-state.md`
 
 ## 入口
@@ -42,4 +42,4 @@
 
 每个材料性切片开始前先写仓库日志和对应 decision-system 文件，再同步到 D 盘镜像。同步门禁必须满足语义步骤一致、Markdown 映射逐字节一致、没有额外 Markdown；根 README 还必须通过新鲜度检查。
 
-Step843: e6 exact local evidence is green in the declared engineering scope; readiness correctly stops at `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`. The packet remains `prepared-not-signed`, no trusted signature or GitHub upload exists, and formal route-owner, RouterOS soak, CL and public release remain closed. This summary is not a signature.
+Step844: ec19 exact local evidence is green in the declared engineering scope; readiness correctly stops at `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`. Browser cleanup no longer reports the prior stop-timeout warning. The packet remains `prepared-not-signed`, no trusted signature or GitHub upload exists, and current-SHA independent review, formal route-owner, RouterOS soak, CL and public release remain closed. This summary is not a signature.

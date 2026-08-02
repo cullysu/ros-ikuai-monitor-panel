@@ -1,10 +1,10 @@
 # Release Journal
 - status: `current-journal`
-- validForCommit: e6c3d14 exact local evidence is current; public candidate publication remains uncommitted; formal external gates remain open; not a public release approval
+- validForCommit: ec19b0da0815dd85bdb8035f2664d3dcea4f4532 exact local evidence is current; public candidate publication remains uncommitted; formal external gates remain open; not a public release approval
 - supersededBy: null
-- currentStep: `843`
-- currentOutcome: 843:e6-exact-rebind-and-local-gates-pass-formal-gates-open
-- latestStepOutcome: 843:e6-exact-rebind-and-local-gates-pass-formal-gates-open
+- currentStep: `844`
+- currentOutcome: 844:ec19-exact-rebind-browser-cleanup-and-local-gates-pass-formal-gates-open
+- latestStepOutcome: 844:ec19-exact-rebind-browser-cleanup-and-local-gates-pass-formal-gates-open
 - authority: docs/decision-system/current-state.md
 - fullHistory: panel-redesign-decision-log.md
 
@@ -15,7 +15,7 @@
 - Step840: a0af1584 exact build/runtime and 28/532/266/532 matrices pass; fresh Hooke scoped Product/Design/Visual review is P0/P1 clean and confirms the fixed-navigation masking P2 is closed. The packet remains prepared-not-signed; readiness correctly stops at route maturity 0/18/0/1, and formal Accessibility, route-owner acceptance, RouterOS soak and exact-SHA CL remain open. This journal update requires a new exact-SHA rebind.
 - Step841: the 844×390 resource-full visual review exposed a real P1: the `核对资源` action was constrained to a 20px incident-row column and rendered vertically. The mobile foundation now gives the incident row a content-sized (`max-content`) third track while ordinary arrow-only rows remain compact. The final budget-tightened build is 120.79 kB CSS / 488.35 kB JS; hashed asset, br-gzip, ETag and directory-containment checks pass. A pre-tightening dirty runtime browser run passed 257 checks / 140 screenshots plus chained mobile/tablet contracts, but it is stale after the final CSS reduction and is not release evidence. Commit, D-sync, exact matrix rebind and a fresh scoped visual review remain the sole next boundary. Formal signoff, route maturity, RouterOS soak and exact-SHA CL remain open.
 - Step842: final clean candidate `4ac0e6f4` passes runtime `257/140/169`, Overview `28/28`, route-state `266/266`, full public `532/532`, static assets and packet identity. Fresh Hooke Product/Design/Visual scoped review is PASS P0/P1=0; fresh Noether Accessibility/Interaction scoped review is conditional pass P0/P1=0; fresh Nash Product/Operations review is Conditional Pass P0=0 and confirms the wide resource action P1 closed. Readiness correctly stops at route maturity `0/18/0/1`; packet remains prepared-not-signed. This Step842 governance update invalidates the exact identity and requires a new clean SHA rebind before any formal gate or publication claim. RouterOS soak, trusted route-owner acceptance and Linux/Windows/GHCR exact-SHA CL remain open.
-- Step843: clean candidate `e6c3d14eef919cb3cdf99970d4df8bbf8cdfb87c` rebinds runtime `257/140/169`, Overview `28/28`, route-state `266/266`, full public `532/532`, focused overview contracts, static assets, asset identity, backend/security, collector/RFC3339 and packet identity. Readiness accepts the complete current matrix and correctly stops at route maturity `0/18/0/1`. The packet is `prepared-not-signed`, `selfSignoff=false`, `releaseEligible=false`; scoped P0/P1 review remains clean in its declared scope, but formal trusted acceptance, route-owner acceptance, RouterOS soak and exact-SHA Linux/Windows/GHCR CL remain open. No GitHub upload is authorized.
+- Step844: clean candidate `ec19b0da0815dd85bdb8035f2664d3dcea4f4532` rebinds build, runtime `257/140/169`, Overview `28/28`, route-state `266/266`, full public `532/532`, focused overview contracts, static assets, asset identity, backend/security, collector/RFC3339 and packet identity. Browser page/context cleanup removes the previous stop-timeout warning. Readiness accepts the complete matrix and correctly stops at route maturity `0/18/0/1`. The packet is `prepared-not-signed`, `selfSignoff=false`, `releaseEligible=false`; prior scoped P0/P1 review remains bounded to its old SHA, so fresh current-SHA independent review is required. Formal trusted acceptance, route-owner acceptance, RouterOS soak and exact-SHA Linux/Windows/GHCR CL remain open. No GitHub upload is authorized.
 
 - Historical Step793: scoped independent Design and Visual review closed with PASS; Product remained open.
 - Historical Step796: scoped Product/Architecture/Visual review was recorded while the public boundary remained fail-closed.
