@@ -66,6 +66,10 @@ export function rowsFromModel(route: PanelRouteId, model: SectionModel): Workspa
         primary = values.source || primary;
         secondary = values.target || secondary;
         trailing = values.traffic || trailing;
+      } else if (route === "trafficAudit" && table.title === "协议分布") {
+        primary = values.protocol || values.source || primary;
+        secondary = values.connections ? `${values.connections} 个连接` : values.source || secondary;
+        trailing = values.traffic || trailing;
       } else if (route === "trafficAudit") {
         const target = values.target && values.target !== "未记录" ? values.target : "";
         primary = target || values.source || primary;
