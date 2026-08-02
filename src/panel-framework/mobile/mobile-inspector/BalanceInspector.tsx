@@ -10,6 +10,25 @@ import {
 import { RouteInspector } from "./NetworkInspectors";
 
 export function BalanceInspector({ row, model }: { row: WorkspaceRow; model: SectionModel }) {
+  if (row.evidence.kind === "balance-distribution") {
+    return (
+      <>
+        <InspectorSection title="线路分布" note="仅展示当前快照中的线路占比与读数，不推断调度策略效果。">
+          <InspectorFacts facts={[
+            { label: "线路", value: displayValue(row.evidence.name), valueKind: "machine" },
+            { label: "流量占比", value: row.evidence.share === null ? "未取得" : `${row.evidence.share}%`, valueKind: "numeric" },
+            { label: "状态", value: row.evidence.active === true ? "运行" : row.evidence.active === false ? "未运行" : "未确认", tone: row.evidence.active === true ? "trust" : "warn" },
+            { label: "下载 / 上传", value: `${displayValue(row.evidence.downRate)} / ${displayValue(row.evidence.upRate)}`, valueKind: "numeric" },
+            { label: "对象 ID", value: row.id, valueKind: "machine" },
+          ]} />
+        </InspectorSection>
+        <InspectorDisclosure title="证据边界" note="分布是采样窗口中的线路对象汇总，不等于链路质量或策略命中率" facts={[
+          { label: "来源表", value: row.table, valueKind: "machine" },
+          { label: "快照时间", value: model.observedAt || model.updatedAt, valueKind: "machine" },
+        ]} />
+      </>
+    );
+  }
   if (row.evidence.kind === "route") {
     return (
       <>

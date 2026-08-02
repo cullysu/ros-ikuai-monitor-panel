@@ -1,10 +1,10 @@
 # Release Journal
 - status: `current-journal`
-- validForCommit: 5e9061aedd69f6f084eb117fd8093bb0c6ef7924 exact local evidence before Step848 governance update; public candidate publication remains uncommitted; formal external gates remain open; not a public release approval
+- validForCommit: 963f538c5c0c1f534d454092d91416342621c9aa clean parent before Step849 route-object depth slice; public candidate publication remains uncommitted; formal external gates remain open; not a public release approval
 - supersededBy: null
-- currentStep: `848`
-- currentOutcome: 848:5e9061a-current-sha-scoped-reviews-and-route-owner-boundary-open
-- latestStepOutcome: 848:5e9061a-current-sha-scoped-reviews-and-route-owner-boundary-open
+- currentStep: 849
+- currentOutcome: 849:route-object-depth-slice-implemented-formal-gates-open
+- latestStepOutcome: 849:route-object-depth-slice-implemented-formal-gates-open
 - authority: docs/decision-system/current-state.md
 - fullHistory: panel-redesign-decision-log.md
 
@@ -52,3 +52,4 @@ Only a clean, independently accepted candidate with complete current-identity ma
 
 - Historical Step811: candidate 7ded037c617fbe92b6cdc672b0e9bb28f72c1713; full public 532/532, Overview 28/28, route-state 266/266, route-responsive 76/76 and runtime 257/101/130 pass. Short-phone first decision row moved from 600px to 579px at 375x667 while chart/time/touch contracts remain intact.
 - Step811 boundary: packet is being rebound and remains prepared-not-signed; worktreeClean=false, releaseEvidenceEligible=false, route maturity 0/18/0/1, formal independent signoff, RouterOS soak and exact-SHA Linux/Windows/GHCR CL remain open.
+- Step849: local route-object depth slice implemented for DHCP pools, security address sets, WAN distribution and split traffic-audit objects. Focused contracts pass, but the code/document commit invalidates previous exact-SHA reports; rebind is required before any release claim. Formal acceptance, RouterOS soak, exact-SHA Linux/Windows/GHCR CL and publication remain closed.

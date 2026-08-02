@@ -14,7 +14,7 @@ import type { WorkspaceRow } from "../mobileDomainWorkspaceModel";
 import { DnsInspector, SecurityInspector } from "./SecurityDnsInspectors";
 import { InterfaceInspector, RouteInspector } from "./NetworkInspectors";
 import { BalanceInspector } from "./BalanceInspector";
-import { DhcpClientInspector } from "./DhcpClientInspector";
+import { DhcpClientInspector, DhcpPoolInspector } from "./DhcpClientInspector";
 import { TrafficAuditInspector } from "./TrafficAuditInspector";
 import { LogInspector, TerminalInspector } from "./TerminalLogInspectors";
 import { ServiceLogInspector } from "./ServiceLogInspector";
@@ -58,6 +58,8 @@ function DomainInspectorBody({
   if (currentRoute === "balance") return <BalanceInspector row={row} model={model} />;
   if (row.evidence.kind === "balance-rule") return <BalanceInspector row={row} model={model} />;
   if (row.evidence.kind === "dhcp-client") return <DhcpClientInspector row={row} model={model} />;
+  if (row.evidence.kind === "dhcp-pool") return <DhcpPoolInspector row={row} model={model} />;
+  if (row.evidence.kind === "balance-distribution") return <BalanceInspector row={row} model={model} />;
   if (currentRoute === "trafficAudit") return <TrafficAuditInspector row={row} model={model} />;
   if (row.evidence.kind === "interface") return <InterfaceInspector row={row} model={model} preview={preview} onNavigate={onNavigate} />;
   if (row.evidence.kind === "route") return <RouteInspector row={row} model={model} />;

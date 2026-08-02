@@ -183,6 +183,14 @@ function rate(value: unknown): string {
   return observed === null ? "未取得" : formatRate(observed);
 }
 
+function aggregateRate(item: UnknownRecord): number | null {
+  const total = number(item.totalRate) ?? number(item.bytes) ?? number(item.value);
+  if (total !== null) return total;
+  const down = number(item.downRate);
+  const up = number(item.upRate);
+  return down !== null && up !== null ? down + up : null;
+}
+
 export function emptySectionRowMeta(overrides: Partial<SectionRowMeta> = {}): SectionRowMeta {
   return {
     state: "neutral",
@@ -561,6 +569,7 @@ function routeModel(route: PanelRouteId, snapshot: OverviewRawSnapshot): Section
 
 function balanceModel(route: PanelRouteId, snapshot: OverviewRawSnapshot): SectionModel {
   const balance = record(snapshot.loadBalance);
+  const distributionCollection = collectionAt(balance, "distribution");
   const defaults = rows(balance.defaultRoutes);
   const rules = [...rows(balance.mangleRules), ...rows(balance.routingRules)];
   const activeLines = number(balance.activeLines);
@@ -572,6 +581,12 @@ function balanceModel(route: PanelRouteId, snapshot: OverviewRawSnapshot): Secti
       { label: "PCC", value: balance.pccDetected === true ? "已识别" : balance.pccDetected === false ? "未识别" : "未记录", tone: balance.pccDetected === true ? "trust" : "missing" },
     ],
     tables: [
+      table(route, "线路分布", [{ key: "name", label: "线路" }, { key: "share", label: "占比" }, { key: "status", label: "状态" }, { key: "traffic", label: "下载 / 上传" }], distributionCollection.rows, (item, index) => ({
+        name: text(item.name || item.interface || item.lineId, `线路 ${index + 1}`),
+        share: number(item.share) === null ? "未取得" : `${number(item.share)}%`,
+        status: item.active === true ? "运行" : item.active === false ? "未运行" : "未确认",
+        traffic: `${rate(item.downRate)} / ${rate(item.upRate)}`,
+      }), collectionEmpty(distributionCollection, "未取得线路分布")),
       table(route, "默认路由", [{ key: "gateway", label: "网关" }, { key: "table", label: "路由表" }, { key: "distance", label: "距离" }, { key: "status", label: "状态" }], defaults, (item) => ({ gateway: text(item.gateway), table: text(item.table), distance: text(item.distance), status: item.active === true ? "活动" : item.active === false ? "非活动" : "未确认" }), "未取得默认路由", undefined, { interfaces: snapshot.interfaces, wan: snapshot.wan }),
       table(route, "策略规则", [{ key: "chain", label: "链 / 动作" }, { key: "mark", label: "标记 / 表" }, { key: "interface", label: "接口" }, { key: "comment", label: "说明" }], rules, (item) => ({ chain: `${text(item.chain, "rule")} / ${text(item.action)}`, mark: text(item.newRoutingMark || item.table || item.routingMark), interface: text(item.inInterface || item.outInterface || item.interface), comment: text(item.comment, "—") }), "未取得策略规则"),
     ],
@@ -626,6 +641,17 @@ function dhcpModel(route: PanelRouteId, snapshot: OverviewRawSnapshot): SectionM
     tables: [
       table(route, "地址租约", [{ key: "host", label: "主机" }, { key: "address", label: "IP" }, { key: "mac", label: "MAC" }, { key: "server", label: "服务器" }, { key: "status", label: "状态" }], leases, (item) => ({ host: text(item.hostName || item.hostname), address: text(item.address), mac: text(item.macAddress || item.mac), server: text(item.server), status: text(item.status), _leaseId: text(item.id || item[".id"], "") }), collectionEmpty(leaseCollection, "当前快照没有 DHCP 租约"), undefined, { dhcp, arp: snapshot.arp }),
       table(route, "DHCP 客户端", [{ key: "interface", label: "接口" }, { key: "status", label: "状态" }, { key: "route", label: "默认路由" }, { key: "dns", label: "使用上游 DNS" }], clients, (item) => ({ interface: text(item.interface), status: text(item.status), route: text(item.addDefaultRoute), dns: text(item.usePeerDns) }), collectionEmpty(clientCollection, "当前快照没有 DHCP 客户端")),
+      table(route, "地址池", [{ key: "name", label: "地址池" }, { key: "ranges", label: "范围" }, { key: "used", label: "已用" }, { key: "total", label: "容量" }, { key: "status", label: "状态" }], pools, (item) => {
+        const used = number(item.used);
+        const total = number(item.total);
+        return {
+          name: text(item.name || item.pool),
+          ranges: text(item.ranges || item.range),
+          used: used === null ? "未取得" : String(used),
+          total: total === null ? "未取得" : String(total),
+          status: used !== null && total !== null && total > 0 && used >= total ? "已满" : "可用",
+        };
+      }, collectionEmpty(poolCollection, "当前快照没有 DHCP 地址池")),
     ],
   };
 }
@@ -705,7 +731,7 @@ function connectionModel(route: PanelRouteId, snapshot: OverviewRawSnapshot): Se
   const active = activeCollection.rows;
   const protocols = protocolCollection.rows;
   const topIps = topIpCollection.rows;
-  const source = route === "connections" ? active : route === "trafficAudit" ? [...protocols, ...topIps] : active;
+  const source = active;
   const sourceObserved = route === "connections"
     ? activeCollection.present
     : protocolCollection.present || topIpCollection.present;
@@ -717,20 +743,34 @@ function connectionModel(route: PanelRouteId, snapshot: OverviewRawSnapshot): Se
       { label: "当前明细", value: activeCollection.present ? String(active.length) : "未取得", tone: activeCollection.present ? "trust" : "missing" },
       { label: "协议分组", value: protocolCollection.present ? String(protocols.length) : "未取得", tone: protocolCollection.present ? "trust" : "missing" },
     ],
-    tables: [table(route, route === "connections" ? "活动连接" : "流量对象", [{ key: "source", label: "源" }, { key: "target", label: "目标 / 协议" }, { key: "connections", label: "连接" }, { key: "traffic", label: "流量" }], source, (item) => {
-      const remote = text(item.destination || item.remoteIp || item.dstAddress || item.dst, "");
-      const protocol = text(item.protocol || item.label, "");
-      return {
-        source: text(item.source || item.localIp || item.srcAddress || item.src || item.ip || item.name),
-        target: [remote, protocol].filter(Boolean).join(" / ") || "未记录",
-        connections: text(item.connections ?? item.count, "—"),
-        traffic: text(item.totalRate ?? item.bytes ?? item.value, "未取得"),
-        _id: text(item.id || item[".id"], ""),
-        _protocol: protocol,
-        _sourcePort: text(item.sourcePort || item.srcPort, ""),
-        _targetPort: text(item.destinationPort || item.dstPort, ""),
-      };
-    }, collectionEmpty({ present: sourceObserved, rows: source }, route === "connections" ? "当前快照没有活动连接明细" : "当前快照没有流量审计对象"))],
+    tables: route === "connections"
+      ? [table(route, "活动连接", [{ key: "source", label: "源" }, { key: "target", label: "目标 / 协议" }, { key: "connections", label: "连接" }, { key: "traffic", label: "流量" }], source, mapConnectionRow, collectionEmpty({ present: sourceObserved, rows: source }, "当前快照没有活动连接明细"))]
+      : [
+        table(route, "协议分布", [{ key: "protocol", label: "协议" }, { key: "connections", label: "连接" }, { key: "traffic", label: "流量" }, { key: "source", label: "采集来源" }], protocols, (item) => ({
+          protocol: text(item.protocol || item.label || item.name),
+          connections: text(item.connections ?? item.count, "未取得"),
+          traffic: rate(item.totalRate ?? item.bytes ?? item.value),
+          source: text(item.source, "未记录"),
+        }), collectionEmpty(protocolCollection, "当前快照没有协议分布")),
+        table(route, "终端流量对象", [{ key: "source", label: "终端" }, { key: "target", label: "目标" }, { key: "connections", label: "连接" }, { key: "traffic", label: "流量" }], topIps, mapConnectionRow, collectionEmpty(topIpCollection, "当前快照没有终端流量对象")),
+      ],
+  };
+}
+
+function mapConnectionRow(item: UnknownRecord): Record<string, string> {
+  const remote = text(item.destination || item.remoteIp || item.dstAddress || item.dst, "");
+  const protocol = text(item.protocol || item.label, "");
+  return {
+    source: text(item.source || item.localIp || item.srcAddress || item.src || item.ip || item.name),
+    target: [remote, protocol].filter(Boolean).join(" / ") || "未记录",
+    connections: text(item.connections ?? item.count, "—"),
+    traffic: item.totalRate !== undefined || item.bytes !== undefined || item.value !== undefined
+      ? text(item.totalRate ?? item.bytes ?? item.value, "未取得")
+      : rate(aggregateRate(item)),
+    _id: text(item.id || item[".id"], ""),
+    _protocol: protocol,
+    _sourcePort: text(item.sourcePort || item.srcPort, ""),
+    _targetPort: text(item.destinationPort || item.dstPort, ""),
   };
 }
 
@@ -784,6 +824,7 @@ function securityModel(route: PanelRouteId, snapshot: OverviewRawSnapshot): Sect
     tables: [
       table(route, "安全告警", [{ key: "time", label: "时间" }, { key: "scope", label: "范围" }, { key: "message", label: "事件" }], alerts, (item) => ({ time: text(item.time || item.lastConfirmed), scope: text(item.affected || item.topics), message: text(item.abnormal || item.message) }), collectionEmpty(alertCollection, "当前快照没有安全告警")),
       table(route, "防火墙规则", [{ key: "order", label: "顺序" }, { key: "chain", label: "链" }, { key: "action", label: "动作" }, { key: "comment", label: "说明" }], filters, (item) => ({ order: text(item.rawOrder), chain: text(item.chain), action: text(item.action), comment: text(item.comment, "—") }), collectionEmpty(filterCollection, "当前快照没有防火墙规则")),
+      table(route, "地址集", [{ key: "list", label: "列表" }, { key: "address", label: "地址" }, { key: "timeout", label: "超时" }, { key: "comment", label: "说明" }], addressLists, (item) => ({ list: text(item.list || item.name), address: text(item.address || item.ip), timeout: text(item.timeout, "永久"), comment: text(item.comment, "—") }), collectionEmpty(addressListCollection, "当前快照没有安全地址集")),
     ],
   };
 }

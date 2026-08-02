@@ -3,16 +3,16 @@
   "inputs": {
     "algorithm": "sha256",
     "schema": "framework-inputs-v1",
-    "digest": "509b607bd7c0bdcbe176347a69702587c8bd4c560dd4211e0afc758488e58629",
+    "digest": "695f1d72eb2d53811efc95b3b55cf03188fd0ebd7359c62b9373359a6a54b4b0",
     "files": 148
   },
   "assets": {
     "script": {
-      "file": "panel-framework.9747bd378495.js",
-      "sha256": "9747bd3784953690b127ee547aa39b6e4448253640130ca2f4f647893da98c64",
-      "bytes": 488346,
-      "gzipBytes": 140098,
-      "brotliBytes": 116032
+      "file": "panel-framework.fd1097c89661.js",
+      "sha256": "fd1097c896614e34ba3ff9d9b85996ebdcac4546756d681e4301ad6e0d8166dd",
+      "bytes": 493907,
+      "gzipBytes": 141396,
+      "brotliBytes": 117091
     },
     "style": {
       "file": "style.184cf4346348.css",

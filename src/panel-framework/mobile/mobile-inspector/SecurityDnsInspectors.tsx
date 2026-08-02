@@ -52,6 +52,25 @@ export function SecurityInspector({
     );
   }
 
+  if (evidence.objectType === "address-list") {
+    return (
+      <>
+        <InspectorSection title="安全地址集" note="地址集是防火墙对象来源；本页不推断规则是否已经命中。">
+          <InspectorFacts facts={[
+            { label: "列表", value: displayValue(evidence.sourceAddress || evidence.affected), valueKind: "machine" },
+            { label: "地址", value: displayValue(evidence.destinationAddress || evidence.message), valueKind: "machine" },
+            { label: "说明", value: displayValue(evidence.comment, "未记录") },
+            { label: "对象 ID", value: row.id, valueKind: "machine" },
+          ]} />
+        </InspectorSection>
+        <InspectorDisclosure title="对象边界" note="地址集成员与规则命中是两类证据，不能混为安全事件。" facts={[
+          { label: "记录表", value: row.table, valueKind: "machine" },
+          { label: "快照时间", value: row.meta?.timestamp ? new Date(row.meta.timestamp).toISOString() : "未记录", valueKind: "machine" },
+        ]} />
+      </>
+    );
+  }
+
   const hasCounter = evidence.packets !== null || evidence.bytes !== null;
   return (
     <>

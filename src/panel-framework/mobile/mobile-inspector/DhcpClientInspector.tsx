@@ -28,3 +28,27 @@ export function DhcpClientInspector({ row, model }: { row: WorkspaceRow; model: 
     </>
   );
 }
+
+export function DhcpPoolInspector({ row, model }: { row: WorkspaceRow; model: SectionModel }) {
+  const evidence = row.evidence;
+  if (evidence.kind !== 'dhcp-pool') {
+    throw new Error('DHCP pool inspector received non-pool evidence');
+  }
+  const utilization = evidence.used !== null && evidence.total !== null && evidence.total > 0
+    ? `${Math.round((evidence.used / evidence.total) * 100)}%`
+    : '未取得';
+  return (
+    <>
+      <InspectorSection title='地址池对象' note='展示地址范围和已观测容量，不把缺失容量当作空闲。'>
+        <InspectorFacts facts={[
+          { label: '名称', value: displayValue(evidence.name), valueKind: 'machine' },
+          { label: '地址范围', value: displayValue(evidence.ranges), valueKind: 'machine' },
+          { label: '已用 / 容量', value: `${displayValue(evidence.used)} / ${displayValue(evidence.total)}`, valueKind: 'numeric' },
+          { label: '使用率', value: utilization, valueKind: 'numeric' },
+          { label: '对象 ID', value: row.id, valueKind: 'machine' },
+        ]} />
+      </InspectorSection>
+      <EvidenceBoundary model={model} />
+    </>
+  );
+}

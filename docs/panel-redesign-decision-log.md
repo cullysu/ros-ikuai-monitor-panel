@@ -24777,3 +24777,17 @@ ocused-green-engineering
 - nextAction：提交并同步 Step848 决策仓库，随后在新 clean SHA 上重跑 build/runtime/Overview/route-responsive/route-state/public/packet/report-truth/readiness，并继续补齐 route-specific 对象证据、真实辅助技术/RouterOS soak 与获授权后的 Linux/Windows/GHCR exact-SHA CL；全部真实通过前禁止 GitHub API 发布。
 - validForCommit：`5e9061aedd69f6f084eb117fd8093bb0c6ef7924` exact clean engineering/scoped evidence；本步骤治理文档提交后必须重新绑定
 - supersededBy：null
+
+## 第 849 步：路由对象深度切片完成，继续保持正式签收与发布门禁开放
+
+- status：route-object-depth-slice-implemented-formal-gates-open
+- latestStepOutcome: `849:route-object-depth-slice-implemented-formal-gates-open`
+- 触发/问题：当前 SHA 的独立 Route Owner 复核指出 DHCP 地址池、安全地址集、WAN 线路分布和 trafficAudit 的协议/终端聚合仍停留在浅层或混合表。不能因为矩阵通过，就把这些对象深度缺口标成已签收。
+- 观察事实：在 963f538c5c0c1f534d454092d91416342621c9aa 之后的工作树切片中，DHCP 增加地址池对象表与容量证据，security 增加地址集对象表，balance 增加线路分布对象表，trafficAudit 拆分协议分布与终端流量对象；新增对象均绑定稳定身份和独立移动 inspector，缺失读数保持未取得，不用零值填充。check:types、check-section-models、check-traffic-audit-maturity 和 Overview 静态门禁在脏工作树上通过；tablet-layout 的唯一红点是其严格要求 clean exact-SHA runtime，这是候选尚未提交的预期结果。
+- 决策：把这四类对象深度切片纳入下一 clean candidate，不降级为“只是加几行字段”，也不修改成熟度计数门禁来制造绿色。保持 blocked=false；正式 Product/Design/Visual/Accessibility 签收、route-owner acceptance、真实 RouterOS soak、exact-SHA Linux/Windows/GHCR CL 和 GitHub 发布继续 fail-closed。
+- 理由与拒绝项：对象列表和对象详情必须能回答不同问题；把协议与终端拼成一个流量表会掩盖证据类别，只有计数没有 pool/address-set/distribution 对象也不能称为成熟模块。自动检查只能证明实现切片，不得自签 external-acceptance，也不得把脏树 runtime 当 clean release evidence。
+- 验证：check:types、check-section-models、check-route-maturity-contract --contract-only、check-traffic-audit-maturity PASS；真实计数仍为 0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable；Overview 的前置静态检查与视觉/信息层级合同通过，唯一失败为脏工作树导致的 clean exact-SHA tablet evidence 条件。
+- 边界/心得：这一步关闭的是本地可修复的对象深度缺口切片，不是独立签收，不是 route maturity promotion，更不是公众发布。下一次提交会改变候选 SHA，所有旧报告、截图和 packet 都必须按完整 40 位 SHA 重新生成，不能移动报告目录后冒充新证据。
+- nextAction：提交对象深度切片并同步决策仓库，然后在新的 clean SHA 上重新运行 build、runtime、28/532/266/76 矩阵、packet、readiness 和发布前静态/安全/采集门禁。
+- validForCommit：963f538c5c0c1f534d454092d91416342621c9aa 为本切片的 clean parent；对象深度改动尚未形成新的 clean evidence。
+- supersededBy：null
