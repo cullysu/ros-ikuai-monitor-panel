@@ -24729,3 +24729,19 @@ ocused-green-engineering
 - 决策：关闭本步声明范围内的 exact engineering matrix、当前 SHA scoped Product/Design/Visual/Accessibility review 和 browser cleanup reliability；不把 scoped PASS 改写为正式签收，不把 Nash 的 formal FAIL 隐藏，不将 18 个 bounded route 晋级为 complete，不上传 GitHub。
 - 当前边界/心得：工程证据完整只说明当前候选可审计，不等于产品模块已成熟，也不等于公众发布资格。route-owner、真实设备 soak、正式受信签名与三端 CL 必须逐项完成；开放门禁不是阻塞条件，任务继续保持 active 且 `blocked=false`。
 - nextAction：继续逐路由完成可审计的真实 route-owner acceptance 与 RouterOS soak 输入，再为最终 clean SHA 获取精确 Linux/Windows/GHCR CL；所有门禁真实关闭前禁止 GitHub API 发布。
+
+## 第 846 步：修正精确报告发现，继续关闭正式签收门禁
+
+- status：`active-exact-report-discovery-fixed-formal-signoff-open`
+- latestStepOutcome: `846:edb87321-exact-report-discovery-fixed-readiness-stops-at-route-maturity`
+- 触发/问题：上一轮 readiness 把历史报告目录排在当前工件前面，导致“当前 28 格矩阵缺失”的假象；此前把开放门禁标记为受阻也是状态判断错误。必须先修复证据发现，再继续独立签收和发布资格工作。
+- 观察事实：当前 clean candidate `edb87321e873463d5b4cf893842bf4a1a0f0c521` 的 `check:report-truth` 通过；当前 Overview 报告已按完整 SHA 目录被 readiness 选中；`check-public-release-readiness.js --require-matrix` 已接受当前精确矩阵，随后真实停在 `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`。生产浏览器 runtime、Overview 28/28、完整公开矩阵 532/532、route-state 266/266、bounded responsive 76/76 和 packet identity 均保持当前 SHA 绑定。
+- 本轮修复：将当前验收目录改为完整 artifact SHA，更新忽略的 machine-state 证据路径；将 browser cleanup release blocker 的静态契约从旧的 8 秒更新为实际 30 秒；清除 context harness 的误报 blocker，保持任务 active、blocked=false。
+- 独立复核边界：Hooke 的 Product/Design/Visual scoped PASS 与 Noether 的 Accessibility/Interaction scoped PASS 均为 P0/P1=0，但 packet 仍是 `prepared-not-signed`、`selfSignoff=false`；Nash 的 Route Owner/Operations formal acceptance 仍 FAIL。默认示例 RouterOS `192.168.88.1` 的 22/443 有界 TCP 探测超时，未取得真实设备凭据、主机指纹或 RouterOS soak，不把网络不可达伪装成通过。
+- 决策：不再把未完成签收叫做“任务受阻”；不让历史目录污染当前发布证据；不把 scoped reviewer PASS 改写成 trusted Ed25519 签名；不把 18 个 bounded-readonly 路由晋级 complete；不上传 GitHub。继续准备真实 route-owner/Accessibility/视觉签收、真实 RouterOS soak 和精确 SHA Linux/Windows/GHCR CL。
+- 理由与拒绝项：矩阵被正确发现不等于产品发布资格成立；没有真实外部 reviewer key、签名记录、RouterOS 设备证据和远端 CL 时，任何绿色结论都只能是局部证据。拒绝通过修改门禁、伪造 key 或复用旧 SHA 来关闭正式门槛。
+- 边界/心得：验收工件目录本身是证据索引的一部分，必须使用完整候选身份；“open gate”与“blocked task”是两个不同状态。前者要求继续工作，后者只适用于同一外部条件连续三轮无法推进且没有可用安全工作，本轮不满足后者。
+- 验证：`check:report-truth` 通过；readiness 能准确选择 `_acceptance/release-matrix-edb87321e873463d5b4cf893842bf4a1a0f0c521/report.json` 并在 route maturity 处 fail-closed；无 GitHub 上传、无 trusted signature、无 CL 通过声明。
+- nextAction：先提交本步治理记录并同步 `D:\想法\面板`，随后以新 clean SHA 重建 runtime/28/532/266/532/packet 证据；在真实独立签收、RouterOS soak 与三端 exact-SHA CL 全部通过前继续保持发布关闭。
+- validForCommit：`edb87321e873463d5b4cf893842bf4a1a0f0c521` 为本步当前工程证据；本步治理提交后必须重新绑定全部精确证据。
+- supersededBy：null

@@ -1,10 +1,10 @@
 # 决策系统导航
-- validForCommit: e0893bcd3a14246660e7dc6b4d6d8dc149bdfb5a exact local evidence is current; public candidate publication remains uncommitted; formal external gates remain open; not a public release approval
+- validForCommit: edb87321e873463d5b4cf893842bf4a1a0f0c521 exact local evidence is current before this governance update; the next governance SHA requires a fresh evidence rebind; formal external gates remain open; not a public release approval
 - supersededBy: null
 - status: `current-index`
-- currentBoundaryForStep: `845`
-- latestRecordedStep: `845`
-- latestStepOutcome: `845:e089-exact-matrix-and-independent-scoped-reviews-pass-formal-gates-open`
+- currentBoundaryForStep: `846`
+- latestRecordedStep: `846`
+- latestStepOutcome: `846:edb87321-exact-report-discovery-fixed-readiness-stops-at-route-maturity`
 - authority: `docs/decision-system/current-state.md`
 
 当前结论由 current-state.md 唯一拥有；本页只负责导航，不重复历史流水账。
@@ -17,4 +17,4 @@
 - 历史索引：historical-index.md
 
 
-Task remains active and blocked=false; an open release gate is not a reason to stop work. Step845 records the e089 exact matrix and current-SHA scoped reviews while keeping trusted signoff, route maturity and publication fail-closed.
+Task remains active and blocked=false; an open release gate is not a reason to stop work. Step846 records that full-SHA report discovery is fixed and readiness reaches the real route-maturity gate while keeping trusted signoff, RouterOS soak, CL and publication fail-closed.

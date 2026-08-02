@@ -1,19 +1,19 @@
 - status: `current-handoff`
-- validForCommit: e0893bcd3a14246660e7dc6b4d6d8dc149bdfb5a exact local evidence is current; public candidate publication remains uncommitted; formal acceptance/release approval remains open; not a release candidate
-- currentHandoffForStep: `845`
+- validForCommit: edb87321e873463d5b4cf893842bf4a1a0f0c521 exact local evidence is current before this governance update; the governance commit requires a fresh evidence rebind; formal acceptance/release approval remains open; not a release candidate
+- currentHandoffForStep: `846`
 - supersededBy: docs/decision-system/current-state.md
 - fullHistory: docs/panel-redesign-decision-log.md
 - updated: 2026-08-02
-- latestRecordedStep: `845`
-- latestStepOutcome: `845:e089-exact-matrix-and-independent-scoped-reviews-pass-formal-gates-open`
+- latestRecordedStep: `846`
+- latestStepOutcome: `846:edb87321-exact-report-discovery-fixed-readiness-stops-at-route-maturity`
 - currentConclusion: **FAIL overall**. Final SHA engineering evidence and fresh scoped Product/Design/Visual/Accessibility reviews are green in declared scope; formal trusted acceptance, route maturity, RouterOS soak and release evidence remain open.
 
-## Current handoff: Step845 exact matrix and scoped independent reviews pass; formal gates remain open
+## Current handoff: Step846 exact report discovery fixed; formal gates remain open
 
-- Result: clean e089 passes build, runtime 257/140/169, Overview 28/28, route-state 266/266, full public 532/532, route-responsive bounded 76/76, packet identity and focused local contracts; browser cleanup produces no stop-timeout warning. Readiness stops at route maturity 0/18/0/1.
+- Result: clean edb passes report-truth and exact matrix identity; readiness selects the full-SHA Overview report, then stops at route maturity 0/18/0/1. Runtime 257/140/169, Overview 28/28, route-state 266/266, full public 532/532, route-responsive bounded 76/76 and packet identity remain bound to edb.
 - Decision: Continue the task instead of marking it blocked. Keep the packet prepared-not-signed and do not convert scoped review into trusted external signoff.
 - Boundary: scoped current-SHA Product/Design/Visual and Accessibility reviews are P0/P1 clean, but formal trusted signoff, route-owner acceptance, RouterOS soak and Linux/Windows/GHCR exact-SHA CL remain open; no public release candidate is authorized.
-- Next: close real route-owner acceptance for the 18 bounded routes, prepare RouterOS soak and exact-SHA Linux/Windows/GHCR CL; publish only after every exact gate is genuinely green.
+- Next: commit and rebind this governance update, then close real route-owner acceptance for the 18 bounded routes, prepare RouterOS soak and exact-SHA Linux/Windows/GHCR CL; publish only after every exact gate is genuinely green.
 
 ## Gate boundary
 

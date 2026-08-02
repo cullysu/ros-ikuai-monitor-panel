@@ -1,20 +1,20 @@
 - status: `current`
-- currentConclusionForStep: `845`
-- latestRecordedStep: `845`
-- latestStepOutcome: `845:e089-exact-matrix-and-independent-scoped-reviews-pass-formal-gates-open`
-- currentBoundaryForStep: `845`
-- validForCommit: e0893bcd3a14246660e7dc6b4d6d8dc149bdfb5a exact local evidence is current; public candidate publication remains uncommitted and is not a release candidate
+- currentConclusionForStep: `846`
+- latestRecordedStep: `846`
+- latestStepOutcome: `846:edb87321-exact-report-discovery-fixed-readiness-stops-at-route-maturity`
+- currentBoundaryForStep: `846`
+- validForCommit: edb87321e873463d5b4cf893842bf4a1a0f0c521 exact local evidence is current before this governance update; the next governance SHA must rebind all evidence
 - supersededBy: `null`
 - updatedAt: 2026-08-02T15:10:00+08:00
 - authority: This is the only human-readable current-state source.
 
-## Current decision record: Step 845
+## Current decision record: Step 846
 
-- status: e089-exact-matrix-and-independent-scoped-reviews-pass-formal-gates-open
-- boundary: Step845 records clean SHA `e0893bcd3a14246660e7dc6b4d6d8dc149bdfb5a` after the governance rebind; it does not promote any route, create a trusted signature, or open publication.
-- observed facts: e089 passes build, runtime `257 checks / 140 screenshots / 169 snapshotApiCalls`, Overview `28/28`, route-state `266/266`, full public route matrix `532/532`, route-responsive bounded shard `76/76`, `check:overview`, types, backend/security, collector, RFC3339, static assets, asset identity and packet identity. Readiness accepts the complete matrix and stops at route maturity `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`; browser cleanup has no stop-timeout warning.
-- local/independent scoped verification: current-SHA Hooke Product/Design/Visual review is scoped PASS with P0/P1=0; current-SHA Noether Accessibility/Interaction review is scoped PASS with P0/P1=0; current-SHA Nash Route Owner/Operations review correctly FAILS formal acceptance because route maturity, trusted route-owner acceptance, RouterOS soak and CL remain open. The e089 packet is `prepared-not-signed`, `selfSignoff=false`, `releaseEligible=false`. No trusted external signatures were generated.
-- decision: keep the task active with blocked=false. Continue route-owner acceptance, real RouterOS soak and exact-SHA Linux/Windows/GHCR CL. Do not turn scoped PASS into formal acceptance, do not promote bounded-readonly routes, and do not publish.
+- status: edb87321-exact-report-discovery-fixed-readiness-stops-at-route-maturity
+- boundary: Step846 records current engineering evidence `edb87321e873463d5b4cf893842bf4a1a0f0c521` before this governance update; it does not promote any route, create a trusted signature, or open publication.
+- observed facts: report-truth passes; readiness selects the full-SHA Overview matrix and stops at route maturity `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`; runtime, Overview 28/28, route-state 266/266, full public 532/532, bounded responsive 76/76, packet identity and focused local contracts are bound to edb. The browser cleanup release blocker now matches the 30-second implementation timeout.
+- local/independent scoped verification: Hooke Product/Design/Visual and Noether Accessibility/Interaction remain scoped PASS with P0/P1=0; Nash Route Owner/Operations remains formal FAIL because route maturity, trusted route-owner acceptance, RouterOS soak and CL remain open. The packet is `prepared-not-signed`, `selfSignoff=false`, `releaseEligible=false`; no trusted signature exists.
+- decision: keep the task active with blocked=false. Continue the real route-owner/Accessibility/visual signoff process, RouterOS soak and exact-SHA Linux/Windows/GHCR CL. Do not turn scoped PASS into formal acceptance, do not promote bounded-readonly routes, and do not publish.
 
 ## Current conclusion
 
@@ -52,10 +52,10 @@
 
 ## Open review boundaries
 
-- R07 mobile visual maturity, R09 tablet task efficiency, R10 desktop density and R14 cross-surface grammar have e089 exact runtime evidence; current-SHA scoped reviews found P0/P1=0 in their declared scope. Remaining bounded observations are 375px progressive disclosure, controlled cross-surface repetition, slight 1440px tail whitespace and fleet/resource visual refinement; formal independent acceptance remains pending.
+- R07 mobile visual maturity, R09 tablet task efficiency, R10 desktop density and R14 cross-surface grammar have edb exact runtime evidence; current-SHA scoped reviews found P0/P1=0 in their declared scope. Remaining bounded observations are 375px progressive disclosure, controlled cross-surface repetition, slight 1440px tail whitespace and fleet/resource visual refinement; formal independent acceptance remains pending.
 - Release journal: docs/decision-system/release-journal.md.
 - D drive is a byte-identical mirror at D:\想法\面板.
-- Current packet under `_acceptance/panel-runtime-browser/` is exact to e089 and remains `prepared-not-signed` with `selfSignoff=false`; it never self-signs.
+- Current packet under `_acceptance/panel-runtime-browser/` is exact to edb before this governance update and remains `prepared-not-signed` with `selfSignoff=false`; it never self-signs.
 
 ## Record contract
 
