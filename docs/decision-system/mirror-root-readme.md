@@ -1,10 +1,10 @@
 # RouterOS / iKuai 面板决策仓库
 
-这是当前面板工作的本地决策仓库镜像。Step849 在 clean parent `963f538c5c0c1f534d454092d91416342621c9aa` 上继续补齐 DHCP 地址池、安全地址集、WAN 线路分布和 trafficAudit 协议/终端对象深度；实现切片的 types、section model、traffic-audit maturity 和 Overview 静态合同通过，但提交后的 exact-SHA runtime/matrix/packet 必须重新生成。正式签收、route maturity、RouterOS soak 和可信外部发布签收仍未完成。emil-design-eng 已融合进 product-company-loop，强调静态证据和 reduced-motion。
+这是当前面板工作的本地决策仓库镜像。Step856 记录 clean candidate `9f2305c2a500f909016ccd7189dedf1ef710ee17` 的 exact-SHA build/runtime/matrix 与独立 scoped Product/Design/Visual/Accessibility PASS；本地 scoped 视觉与交互审查已在声明范围内关闭，但正式签收、route maturity、RouterOS soak、exact-SHA Linux/Windows/GHCR CL 和可信外部发布签收仍未完成。治理提交后必须重新生成最终 exact-SHA 证据。emil-design-eng 已融合进 product-company-loop，强调静态证据和 reduced-motion。
 
 - status: `current-mirror-entry`
 - currentStep: `849`
-- currentOutcome: `849:route-object-depth-slice-implemented-formal-gates-open`
+- currentOutcome: `856:exact-sha-matrices-independent-scoped-reviews-formal-gates-open`
 - currentBoundary: `849`
 - authority: `decision-system/current-state.md`
 
@@ -42,4 +42,4 @@
 
 每个材料性切片开始前先写仓库日志和对应 decision-system 文件，再同步到 D 盘镜像。同步门禁必须满足语义步骤一致、Markdown 映射逐字节一致、没有额外 Markdown；根 README 还必须通过新鲜度检查。
 
-Step849: the local route-object depth slice adds DHCP pool, security address-set, WAN distribution and split traffic-audit objects with typed evidence and stable inspectors. Focused contracts pass, the strict route maturity gate remains `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`, the next commit requires a fresh exact-SHA rebind, and no GitHub upload or signature exists. This summary is not a signature.
+Step856: the clean candidate `9f2305c2a500f909016ccd7189dedf1ef710ee17` has exact engineering matrices and scoped Product/Design/Visual/Accessibility PASS with P0/P1=`0`. Strict route maturity remains `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`; no trusted external signature, RouterOS soak or exact-SHA Linux/Windows/GHCR CL exists. The previous blocked marker was incorrect; this summary records an active, fail-closed task and is not a signature.

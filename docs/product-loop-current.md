@@ -1,11 +1,11 @@
 - status: `current-handoff`
-- validForCommit: 963f538c5c0c1f534d454092d91416342621c9aa clean parent before Step849 route-object depth slice; the next commit requires a fresh evidence rebind; formal acceptance/release approval remains open; not a release candidate
-- currentHandoffForStep: `849`
+- validForCommit: 9f2305c2a500f909016ccd7189dedf1ef710ee17 exact clean candidate evidence; this governance commit requires a final exact-SHA rebind; formal acceptance/release approval remains open; not a release candidate
+- currentHandoffForStep: `856`
 - supersededBy: docs/decision-system/current-state.md
 - fullHistory: docs/panel-redesign-decision-log.md
 - updated: 2026-08-02
-- latestRecordedStep: `849`
-- latestStepOutcome: `849:route-object-depth-slice-implemented-formal-gates-open`
+- latestRecordedStep: `856`
+- latestStepOutcome: `856:exact-sha-matrices-independent-scoped-reviews-formal-gates-open`
 - currentConclusion: **FAIL overall**. Exact-SHA engineering evidence and fresh scoped Product/Design/Visual/Accessibility reviews are green in declared scope; Route Owner/Operations formally fails the maturity boundary; formal trusted acceptance, route maturity, RouterOS soak and release evidence remain open.
 
 ## Loop refinement applied
@@ -13,12 +13,12 @@
 - `emil-design-eng` was installed from `emilkowalski/skills` and fused into the product-company loop through `C:\Users\cully\.codex\skills\product-company-loop\references\emil-design-eng-gate.md`.
 - The operational rule is restraint: motion cannot invent freshness or urgency, and static evidence remains preferred for metrics, alerts, timestamps, and charts.
 
-## Current handoff: Step849 route object-depth slice; formal gates remain open
+## Current handoff: Step856 exact-SHA matrices and scoped reviews; formal gates remain open
 
-- Result: DHCP pool, security address-set, WAN distribution and split traffic-audit objects now have typed evidence, stable identity and independent mobile inspectors. Focused contracts and types pass in the dirty tree; the next commit invalidates all prior exact-SHA reports.
-- Decision: Continue the task instead of marking it blocked. Keep the packet prepared-not-signed and do not convert scoped review into trusted external signoff.
-- Boundary: scoped current-SHA Product/Design/Visual and Accessibility reviews are P0/P1 clean, but formal trusted signoff, route-owner acceptance, RouterOS soak and Linux/Windows/GHCR exact-SHA CL remain open; no public release candidate is authorized.
-- Next: submit and sync Step849, rebind all exact-SHA evidence after the commit, then continue route-owner/AT/RouterOS/CL acceptance; publish only after every exact gate is genuinely green.
+- Result: clean candidate `9f2305c2a500f909016ccd7189dedf1ef710ee17` passes build/runtime `257/140/169`, Overview `28/28`, route-responsive `532/532`, route-state `266/266` and bounded route shard `76/76`; product/design/visual and accessibility/interaction scoped reviews are P0/P1 clean.
+- Decision: close the local scoped visual/design/product/accessibility boundary, but keep the packet `prepared-not-signed` and do not convert scoped review into trusted external signoff. The prior blocked marker was incorrect; this task remains active and `blocked=false`.
+- Boundary: strict readiness remains `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`; formal trusted acceptance, route-owner acceptance, real RouterOS soak, exact-SHA Linux/Windows/GHCR CL and GitHub publication remain open/closed as appropriate.
+- Next: commit and mirror Step856, then rebind all exact-SHA evidence to the final governance SHA and continue the non-forgeable route-owner, RouterOS and three-platform CL gates.
 
 ## Gate boundary
 

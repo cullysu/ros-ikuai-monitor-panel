@@ -24791,3 +24791,18 @@ ocused-green-engineering
 - nextAction：提交对象深度切片并同步决策仓库，然后在新的 clean SHA 上重新运行 build、runtime、28/532/266/76 矩阵、packet、readiness 和发布前静态/安全/采集门禁。
 - validForCommit：963f538c5c0c1f534d454092d91416342621c9aa 为本切片的 clean parent；对象深度改动尚未形成新的 clean evidence。
 - supersededBy：null
+
+## 第 856 步：exact-SHA 矩阵与独立 scoped 复核通过，正式签收与发布门禁继续开放
+
+- status：`exact-sha-matrices-independent-scoped-reviews-formal-gates-open`
+- latestStepOutcome: `856:exact-sha-matrices-independent-scoped-reviews-formal-gates-open`
+- 触发/纠正：本轮明确纠正此前“未完成独立签收所以任务受阻”的错误状态。开放的外部签收不等于本地任务 blocked；只要仍有本地可执行的证据、文档、视觉复核、路由成熟度或发布准备工作，就必须继续推进。
+- 观察事实：clean candidate `9f2305c2a500f909016ccd7189dedf1ef710ee17` 的 build 与 exact-SHA runtime 通过（`257 checks / 140 screenshots / 169 snapshot API calls`）；Overview `28/28`；完整 route-responsive `532/532`；bounded single-scenario route shard `76/76`；route-state `266/266`。`check-public-release-readiness.js --require-matrix` 接受当前精确矩阵后，真实停在严格 route maturity：`0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`。
+- 独立 scoped 复核：Hooke Product/Design/Visual PASS，P0/P1=`0`；Noether Accessibility/Interaction PASS，P0/P1=`0`。本地视觉、设计、产品与交互审查在声明范围内关闭；375px 渐进披露、平板次级标签截断、原生 polish 偏弱、真实辅助技术/真机证据仍属于边界记录，不伪装成 formal signoff。Nash Route Owner/Operations formal FAIL：无可信 external Ed25519 key/signature、无真实 RouterOS soak、无 exact-SHA Linux/Windows/GHCR CL，且 18 个 operational route 仍未达到 complete。
+- 发布材料：product-design-visual packet 绑定当前 SHA，状态仍为 `prepared-not-signed`、`selfSignoff=false`、`releaseEligible=false`；没有发生 GitHub 上传。
+- 决策：关闭本地 scoped visual/design/product/accessibility review；保持正式签收、route maturity、RouterOS soak、三端 CL 和公开发布 fail-closed。不得创建、自签或修改 trusted acceptance；不得因矩阵通过就晋级路由；不得在 CL 未全部通过前上传 GitHub。
+- Loop/心得：emil-design-eng 的静态证据优先、无虚假新鲜度动效、可中断交互与 reduced-motion 约束继续生效。最重要的流程修正是把“open gate”与“blocked task”分开：前者是继续工作的清单，后者才是同一外部条件重复三轮且没有安全推进路径时的终态。本轮明确属于前者。
+- 验证：当前 SHA 的本地工程矩阵、运行时、静态、安全、可访问性和视觉 scoped evidence 已有真实报告；正式发布 readiness 有意失败于 route maturity，而不是被测试脚本假绿。
+- nextAction：提交并同步 Step856 治理记录，随后以新的最终 clean SHA 重新构建和绑定 runtime、28/532/266/76 矩阵、packet、readiness 与发布前门禁；继续等待/取得真实 route-owner、RouterOS soak 与 Linux/Windows/GHCR exact-SHA CL，全部通过前禁止 GitHub 发布。
+- validForCommit：`9f2305c2a500f909016ccd7189dedf1ef710ee17` 为本步 exact-SHA 工程与 scoped review 证据；本步治理提交后必须重新绑定最终候选。
+- supersededBy：null

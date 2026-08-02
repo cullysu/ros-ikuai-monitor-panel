@@ -1,10 +1,10 @@
 # 决策系统导航
-- validForCommit: 963f538c5c0c1f534d454092d91416342621c9aa clean parent before Step849 route-object depth slice; the next SHA requires a fresh evidence rebind; formal external gates remain open; not a public release approval
+- validForCommit: 9f2305c2a500f909016ccd7189dedf1ef710ee17 exact clean candidate evidence; this governance update requires a final exact-SHA rebind; formal external gates remain open; not a public release approval
 - supersededBy: null
 - status: `current-index`
-- currentBoundaryForStep: `849`
-- latestRecordedStep: `849`
-- latestStepOutcome: `849:route-object-depth-slice-implemented-formal-gates-open`
+- currentBoundaryForStep: `856`
+- latestRecordedStep: `856`
+- latestStepOutcome: `856:exact-sha-matrices-independent-scoped-reviews-formal-gates-open`
 - authority: `docs/decision-system/current-state.md`
 
 当前结论由 current-state.md 唯一拥有；本页只负责导航，不重复历史流水账。
@@ -17,4 +17,4 @@
 - 历史索引：historical-index.md
 
 
-Task remains active and blocked=false; an open release gate is not a reason to stop work. Step849 records the local route-object depth slice while readiness remains fail-closed; the next clean SHA must regenerate exact evidence, and trusted signoff, RouterOS soak, CL and publication remain closed.
+Task remains active and blocked=false; the prior blocked marker was incorrect. Step856 records exact-SHA engineering matrices and independent scoped Product/Design/Visual/Accessibility PASS, while readiness remains fail-closed at route maturity. The governance commit requires a final exact-SHA rebind; trusted signoff, RouterOS soak, CL and publication remain open and closed to release respectively.

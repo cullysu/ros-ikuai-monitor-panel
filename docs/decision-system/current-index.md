@@ -1,20 +1,20 @@
 - status: `reference`
-- validForCommit: 963f538c5c0c1f534d454092d91416342621c9aa clean parent before Step849 route-object depth slice; public candidate publication remains uncommitted and is not a public release approval
+- validForCommit: 9f2305c2a500f909016ccd7189dedf1ef710ee17 exact clean candidate evidence; this governance update requires a final exact-SHA rebind; formal external gates remain open; not a public release approval
 - supersededBy: `null`
 - authority: `docs/decision-system/current-state.md`
-- currentStep: `849`
-- currentOutcome: `849:route-object-depth-slice-implemented-formal-gates-open`
-- currentBoundary: `849`
-- latestRecordedStep: `849`
-- latestStepOutcome: `849:route-object-depth-slice-implemented-formal-gates-open`
+- currentStep: `856`
+- currentOutcome: `856:exact-sha-matrices-independent-scoped-reviews-formal-gates-open`
+- currentBoundary: `856`
+- latestRecordedStep: `856`
+- latestStepOutcome: `856:exact-sha-matrices-independent-scoped-reviews-formal-gates-open`
 
 ## Current pointer
 
 The authority is current-state.md; this page is discovery only.
 
 - Current conclusion: FAIL overall; local engineering evidence is complete in declared scopes, while independent public acceptance and trusted external release gates remain open. The task remains active, not blocked.
-- Current engineering boundary: Step839's decision-first phone order and Step841's wide resource-action fix remain in place. Step849 adds typed DHCP pool, security address-set, WAN distribution and split traffic-audit object surfaces; focused static contracts pass, while clean exact-SHA rebind is pending.
-- Latest result: 963f538c5c0c1f534d454092d91416342621c9aa is the clean parent; the route-object depth slice is not a release candidate until committed and revalidated.
+- Current engineering boundary: Step839's decision-first phone order, Step841's wide resource-action fix and Step849's typed route-object evidence remain in place. Step856 binds the clean candidate's exact engineering matrices and scoped reviews; a final rebind is required after this governance commit.
+- Latest result: `9f2305c2a500f909016ccd7189dedf1ef710ee17` is the current clean candidate evidence; strict route maturity, formal signoff, RouterOS soak and exact-SHA CL remain open.
 - Full process: panel-redesign-decision-log.md.
 - Product handoff: product-loop-current.md.
 - Release boundary: release-journal.md.

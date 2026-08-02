@@ -1,12 +1,14 @@
 # Release Journal
 - status: `current-journal`
-- validForCommit: 963f538c5c0c1f534d454092d91416342621c9aa clean parent before Step849 route-object depth slice; public candidate publication remains uncommitted; formal external gates remain open; not a public release approval
+- validForCommit: 9f2305c2a500f909016ccd7189dedf1ef710ee17 exact clean candidate evidence; this governance update requires a final exact-SHA rebind; formal external gates remain open; not a public release approval
 - supersededBy: null
-- currentStep: 849
-- currentOutcome: 849:route-object-depth-slice-implemented-formal-gates-open
-- latestStepOutcome: 849:route-object-depth-slice-implemented-formal-gates-open
+- currentStep: 856
+- currentOutcome: 856:exact-sha-matrices-independent-scoped-reviews-formal-gates-open
+- latestStepOutcome: 856:exact-sha-matrices-independent-scoped-reviews-formal-gates-open
 - authority: docs/decision-system/current-state.md
 - fullHistory: panel-redesign-decision-log.md
+
+- Step856: clean candidate `9f2305c2a500f909016ccd7189dedf1ef710ee17` passes build/runtime `257/140/169`, Overview `28/28`, route-responsive `532/532`, route-state `266/266` and bounded route shard `76/76`. Hooke Product/Design/Visual and Noether Accessibility/Interaction scoped reviews are PASS with P0/P1=`0`; local visual/design/product/accessibility review is closed within the declared scope. Nash Route Owner/Operations remains formal FAIL because strict maturity is `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`, no real RouterOS soak exists, no trusted external acceptance key/signature exists, and no exact-SHA Linux/Windows/GHCR CL exists. The packet remains `prepared-not-signed`, `selfSignoff=false`, `releaseEligible=false`. The prior blocked marker was incorrect; the task remains active and blocked=false. Governance commit requires a final exact-SHA rebind; no GitHub upload is authorized.
 
 - Step836: route-evidence remediation focused checks pass; exact runtime/matrix/packet evidence is stale until a new clean SHA is committed. Formal Product/Design/Visual, independent Accessibility, route-owner maturity, RouterOS soak and exact-SHA CL remain open.
 - Step837: folded-control accessibility regression was fixed and full production runtime was green; superseded by Step838 governance rebinding.
