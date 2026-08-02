@@ -123,7 +123,7 @@ check(
     (localPredeploySource.match(/await launchBrowser\(args, report\)/g) || []).length === 1 &&
     /async function runBrowserChecks[\s\S]*?const browser = await launchBrowser\(args, report\);[\s\S]*?try\s*\{[\s\S]*?for \(const profile/.test(localPredeploySource) &&
     localPredeploySource.includes('await context.close().catch(() => {})') &&
-    localPredeploySource.includes("await withTimeout(browser.stop(), 8000, 'browser stop')"),
+    localPredeploySource.includes("await withTimeout(browser.stop(), 30000, 'browser stop')"),
   'the matrix must use the real Python runtime and reuse one Playwright browser with per-cell context cleanup'
 );
 check(
