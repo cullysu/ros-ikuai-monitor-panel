@@ -24659,7 +24659,7 @@ ocused-green-engineering
 - 触发/问题：Step838 的独立 scoped review 保留了一个真实 P2：375×667 正常态的固定底部导航压住“运行判断”列表下沿。当前 normal phone 顺序是“下一步”先于“运行判断”，导致一个操作入口占据首屏预算，而更基础的判断证据被推到导航下方；这不是任务阻塞，必须继续修复。
 - 观察事实：`MobilePatrolScreen` 在 normal phone 分支同时渲染 `normalPhoneNextStep` 与 `normalPhoneSteadyDecisions`；`MobileSteadyDecisionLedger` 的行仍保持可读文字和触控高度，固定导航属于共享壳层。把判断放在动作之前可以回收一个 44px 操作条的首屏位置，不需要缩小正文、隐藏证据或伪造数据。
 - 决策：仅调整 normal phone 的语义顺序为“运行判断 → 下一步”；incident、tablet、desktop 和数据模型不变。运行判断是证据后的决策层，应该先于导航到下一路由的动作入口；下一步仍然保留在同一页面并可操作。
-- 门禁反馈与纠正：首次 fresh runtime 运行到 normal patrol 合同时，旧门禁仍要求手机 `下一步` 必须出现在首屏，和本步 decision-first 选择冲突；这不是产品回归，而是合同没有随产品决策更新。已将运行门禁改为验证手机 `decisionRect → firstInvestigationActionRect` 顺序与 44px 触控高度，同时保留平板/桌面首屏行动要求；next-step CSS 检查也改为读取实际定义 44px 高度的 foundation owner。
+- 门禁反馈与纠正：首次 fresh runtime 运行到 normal patrol 合同时，旧门禁仍要求手机 `下一步` 必须出现在首屏，和本步 decision-first 选择冲突；这不是产品回归，而是合同没有随产品决策更新。已将运行门禁改为验证手机 `decisionRect → firstInvestigationActionRect` 顺序与 44px 触控高度，同时保留平板/桌面的 primary/secondary 顺序合同；next-step CSS 检查也改为读取实际定义 44px 高度的 foundation owner。
 - 拒绝项：不把固定导航改成遮挡内容的透明装饰；不通过 9–11px 字号、减少 44px 触控尺寸、隐藏判断行或折叠真实证据来制造首屏通过；不把 P2 改写成 P0/P1，也不把 scoped review 改写成正式签收。
 - 验证：本步代码尚未提交；代码变更后必须以新的 clean SHA 重跑 build、types、fresh runtime、Overview 28/28、完整 route-responsive 532/532、route-state 266/266、public 532/532、packet、report-truth、decision-system 和 readiness，并重新进行独立 scoped Product/Design/Visual review。旧 `2bc0ff7` 证据不能继承。
 - 边界/心得：移动首屏不是把更多模块硬塞进去，而是让“判断—行动”的节奏正确。先展示用户需要相信的判断，再给下一步入口，既提高首屏信息效率，也保留 iOS 式可预测操作；底部导航遮挡问题必须用信息顺序解决，不能用更小的字解决。

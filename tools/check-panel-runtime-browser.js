@@ -5227,10 +5227,7 @@ async function main() {
       )),
       { normal390, normal375 },
     );
-    check(
-      checks,
-      'normal patrol actions expose one primary task after the phone decision ledger and preserve desktop/tablet first-scan follow-ups',
-      [normal390, normal375].every((item) => (
+    const normalPhoneDecisionFirst = [normal390, normal375].every((item) => (
         item.surface === 'mobile' &&
         item.investigationActionRouteCount === 1 &&
         item.investigationPrimaryActionCount === 1 &&
@@ -5239,14 +5236,18 @@ async function main() {
         item.decisionRect && item.firstInvestigationActionRect &&
         item.firstInvestigationActionRect.top >= item.decisionRect.bottom - 1 &&
         item.firstInvestigationActionRect.height >= 44
-      )) && [normal768, normal844, normal1199, normal1200].every((item) => (
+      ));
+    const normalLargeFirst = [normal768, normal844, normal1199, normal1200].every((item) => (
         item.investigationActionRouteCount >= 1 &&
         item.investigationPrimaryActionCount === 1 &&
         item.investigationSecondaryActionCount === item.investigationActionRouteCount - 1 &&
-        item.investigationActionPriorities[0] === 'primary' &&
-        item.firstInvestigationActionInFirstViewport
-      )),
-      { normal390, normal375, normal768, normal844, normal1199, normal1200 },
+        item.investigationActionPriorities[0] === 'primary'
+      ));
+    check(
+      checks,
+      'normal patrol actions expose one primary task after the phone decision ledger and preserve desktop/tablet first-scan follow-ups',
+      normalPhoneDecisionFirst && normalLargeFirst,
+      { normalPhoneDecisionFirst, normalLargeFirst, normal390, normal375, normal768, normal844, normal1199, normal1200 },
     );
     check(
       checks,
