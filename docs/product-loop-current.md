@@ -1,19 +1,19 @@
 - status: `current-handoff`
-- validForCommit: Step841 source/build/governance update is being committed; dirty-worktree runtime is diagnostic only and all exact evidence must be rebound after the next clean SHA; formal acceptance/release approval remains open; not a release candidate
-- currentHandoffForStep: `841`
+- validForCommit: Step842 governance update is being committed; exact 4ac0e6f4 evidence must be rebound after this documentation change; formal acceptance/release approval remains open; not a release candidate
+- currentHandoffForStep: `842`
 - supersededBy: docs/decision-system/current-state.md
 - fullHistory: docs/panel-redesign-decision-log.md
 - updated: 2026-08-02
-- latestRecordedStep: `841`
-- latestStepOutcome: `841:wide-resource-action-label-fixed-dirty-runtime-green-final-candidate-rebind-open`
-- currentConclusion: **FAIL overall**. The wide resource-action P1 is fixed and dirty-worktree engineering runtime is green; exact-SHA rebinding, formal Product/Design/Visual acceptance, independent Accessibility, route maturity and release evidence remain open.
+- latestRecordedStep: `842`
+- latestStepOutcome: `842:exact-sha-matrix-and-fresh-scoped-reviews-pass-formal-gates-open`
+- currentConclusion: **FAIL overall**. Final SHA engineering evidence and fresh scoped Product/Design/Visual/Accessibility reviews are green in declared scope; formal trusted acceptance, route maturity, RouterOS soak and release evidence remain open.
 
-## Current handoff: Step841 wide resource action fixed; exact-SHA rebinding and formal gates remain open
+## Current handoff: Step842 exact matrices and fresh scoped reviews pass; formal gates remain open
 
-- Result: the 844×390 resource-full review exposed and the source fixed a vertical `核对资源` action label caused by a 20px grid column. CI build and dirty runtime browser pass; exact matrix identity is intentionally not claimed while the worktree is dirty.
-- Decision: Continue the task instead of marking it blocked. Commit the source/build/governance update, sync Step841 to `D:\想法\面板`, then rebind all exact-SHA artifacts; do not convert scoped review into trusted external signoff.
-- Boundary: the dirty runtime report is diagnostic only. Readiness remains fail-closed at route maturity 0/18/0/1 and formal signoff; no current release candidate exists until a clean SHA is rebound.
-- Next: commit and D-sync, regenerate build/runtime/full matrices/packet/readiness, obtain fresh scoped Product/Design/Visual plus independent Accessibility/route-owner acceptance, then RouterOS soak and exact-SHA Linux/Windows/GHCR CL before any GitHub API publication.
+- Result: clean 4ac0e6f4 passes runtime 257/140/169, Overview 28/28, route-state 266/266, full public 532/532, packet and static assets; fresh independent scoped Product/Design/Visual and Accessibility reviews have P0/P1=0, with documented P2 observations. Product/Operations is Conditional Pass; readiness stops at route maturity 0/18/0/1.
+- Decision: Continue the task instead of marking it blocked. Sync and commit Step842, then rebind all exact-SHA artifacts; do not convert scoped review into trusted external signoff.
+- Boundary: this governance update makes 4ac0e6f4 evidence stale after commit. Formal route-owner acceptance, trusted signatures, RouterOS soak and Linux/Windows/GHCR CL remain open; no public release candidate is authorized.
+- Next: commit and D-sync, regenerate exact build/runtime/full matrices/packet/readiness, then continue real route-owner/Accessibility signoff, RouterOS soak and exact-SHA Linux/Windows/GHCR CL before any GitHub API publication.
 
 ## Gate boundary
 
@@ -23,10 +23,10 @@
 | Design review | scoped-pass / formal-pending | 382a145 current screenshots are green in declared scope with independent P0/P1=0; no trusted public signature. |
 | Visual review | scoped-pass / formal-pending | 382a145 current screenshots and packet digests are green with independent P0/P1=0; no trusted public signature. |
 | Route maturity | pending | 0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable. |
-| Accessibility | pending | All 18 bounded-readonly routes now have automated runtime coverage; this is not independent assistive-technology acceptance. |
+| Accessibility | scoped-conditional-pass / formal-pending | Fresh scoped review found P0/P1=0; formal trusted assistive-technology acceptance is not signed. |
 | Current product release | `fail` |
 | GitHub / public release | closed | No upload or publication approval. |
 
-## Step840 continuation
+## Step842 continuation
 
-Do not mark this task blocked. Rebuild exact clean evidence for the Step840 governance candidate, then continue the remaining non-forgeable gates.
+Do not mark this task blocked. Rebuild exact clean evidence for the Step842 governance candidate, then continue the remaining non-forgeable gates.

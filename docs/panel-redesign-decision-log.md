@@ -24686,3 +24686,13 @@ ocused-green-engineering
 - 视觉边界：修复前的 Hooke scoped Product/Design/Visual 复核为 P0/P1=0，但本步改变了视觉源代码，必须在新 clean SHA 上重新截取 `844×390` resource-full 并获取新鲜 scoped 复核。正式 Product/Design/Visual 签收、独立 Accessibility、route-owner acceptance、RouterOS soak 和 Linux/Windows/GHCR exact-SHA CL 均未完成。
 - 决策：任务继续保持 active 且 `blocked=false`；提交 source/build/governance 候选并同步 `D:\想法\面板`，然后重跑 exact-SHA runtime、28 cell overview、266 route-state、76 route-responsive、532 full public matrix、packet 和 readiness。所有真实发布门禁关闭前禁止 GitHub API 上传。
 - 当前边界：脏工作树运行时通过不等于 exact candidate 通过；Step841 文档和构建输出会共同决定下一 clean SHA。唯一下一步是完成提交与 D 盘同步，再以最终 SHA 重新验收。
+## 第 842 步：最终 SHA 工程矩阵与新鲜 scoped 复核通过，正式门禁继续开放
+
+- latestStepOutcome: `842:exact-sha-matrix-and-fresh-scoped-reviews-pass-formal-gates-open`
+
+- 触发/问题：Step841 的最终 CSS 收敛已经提交为 `4ac0e6f49ca80be8add1c2638dba6b774a598819`；必须在该 clean SHA 上重新完成全部工程矩阵和独立复核，不能沿用脏工作树或旧 SHA 证据。
+- 精确工程证据：runtime browser `257 checks / 140 screenshots / 169 snapshotApiCalls`；Overview `28/28`；route-state `266/266`；完整公开路由 `532/532`；单场景 route-responsive shard `76/76` engineering cells（该 shard 有意不是七场景 release matrix）；静态资产、packet identity 和 D 盘决策同步均通过。所有报告 artifactKey 与 clean SHA 一致。
+- 独立 scoped 复核：Hooke Product/Design/Visual `PASS`，P0/P1=0，确认横屏 `核对资源` P1 关闭；Noether Accessibility/Interaction `conditional pass`，P0/P1=0，200% 文本、强制颜色、键盘/ARIA、Back/Forward、44px 触控通过，375px 首屏渐进展示为 P2；Nash Product/Operations `Conditional Pass`，P0=0，确认最终 SHA P1 修复成立。三者均未生成或伪造 trusted Ed25519 签名。
+- readiness：`check-public-release-readiness.js --require-matrix` 接受完整当前矩阵后，真实停止于 route maturity：`0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`。这不是矩阵失败；18 个 route-owner acceptance、trusted signoff、RouterOS soak、Linux/Windows/GHCR exact-SHA CL 仍未完成。
+- 决策：关闭本步声明范围内的 clean build/runtime、全矩阵、静态资产、packet 和 scoped review；不把 scoped PASS 改写为正式签收，不把 bounded-readonly 改成 complete，不上传 GitHub。提交本步治理记录会使 `4ac0e6f4` 精确证据失效，必须在新的 clean SHA 上再次 rebind。
+- 当前边界：任务保持 active 且 `blocked=false`。唯一下一步是同步并提交 Step842 文档，然后重新生成最终 SHA 证据，再继续不可伪造的正式 route-owner/Accessibility 签收、RouterOS soak 与三端 CL。

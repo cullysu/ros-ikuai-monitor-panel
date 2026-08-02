@@ -1,24 +1,24 @@
 - status: `current`
-- currentConclusionForStep: `841`
-- latestRecordedStep: `841`
-- latestStepOutcome: `841:wide-resource-action-label-fixed-dirty-runtime-green-final-candidate-rebind-open`
-- currentBoundaryForStep: `841`
-- validForCommit: Step841 source, build artifacts and governance updates are uncommitted; the dirty-worktree runtime is diagnostic only and must be rebound after the next clean SHA; not a release candidate
+- currentConclusionForStep: `842`
+- latestRecordedStep: `842`
+- latestStepOutcome: `842:exact-sha-matrix-and-fresh-scoped-reviews-pass-formal-gates-open`
+- currentBoundaryForStep: `842`
+- validForCommit: Step842 governance update is being committed; exact 4ac0e6f4 evidence is valid before this documentation change and must be rebound after the next clean SHA; not a release candidate
 - supersededBy: `null`
-- updatedAt: 2026-08-02T13:20:00+08:00
+- updatedAt: 2026-08-02T14:30:00+08:00
 - authority: This is the only human-readable current-state source.
 
-## Current decision record: Step 841
+## Current decision record: Step 842
 
-- status: wide-resource-action-label-fixed-dirty-runtime-green-final-candidate-rebind-open
-- boundary: Step841 fixes one real P1 visual defect in the mobile render tree; it does not promote any route, create a trusted signature, or open publication. The current browser report was generated with a dirty worktree and is diagnostic only until a clean SHA is committed and all exact-SHA artifacts are regenerated.
-- observed facts: the 844×390 resource-full screenshot showed the right-side `核对资源` action squeezed into one character per line because the incident row reserved a 20px action column. The mobile foundation now lets the incident row's third track size to content (`max-content`), so the existing `.mp-window` action occupies its label width; ordinary rows retain their arrow-only width and desktop rendering is unchanged. `CI=1 npm run build` passed (1902 modules, 120.79 kB CSS, 488.35 kB JS), and the static asset budget/hashed URL/br-gzip/ETag/directory containment checks pass. The earlier dirty-worktree runtime browser passed 257 checks / 140 screenshots plus chained mobile/tablet contracts, but the later budget-tightening CSS change makes that report stale; it remains diagnostic and is not release evidence.
-- local/independent scoped verification: the prior fresh Hooke scoped Product/Design/Visual review was P0/P1 clean before this P1 fix; a new exact-SHA scoped review is still required after commit. No trusted external signature was generated. The retained P2 observations remain 375px progressive disclosure, controlled cross-surface repetition, slight 1440px tail whitespace, and real independent Accessibility/route-owner review still pending.
-- decision: keep the task active with blocked=false. Commit the source/build/governance candidate, sync the D mirror, then regenerate exact-SHA runtime, 28-cell overview, route-state, route-responsive, full public matrix and packet. Re-review the corrected 844×390 resource screenshot before any formal signoff claim; do not promote bounded-readonly routes and do not publish.
+- status: exact-sha-matrix-and-fresh-scoped-reviews-pass-formal-gates-open
+- boundary: Step842 records final-candidate engineering evidence and fresh scoped reviews; it does not promote any route, create a trusted signature, or open publication. The documentation change itself will invalidate the 4ac0e6f4 artifact identity until the next clean SHA is rebound.
+- observed facts: clean candidate `4ac0e6f49ca80be8add1c2638dba6b774a598819` passes runtime `257 checks / 140 screenshots / 169 snapshotApiCalls`, Overview `28/28`, route-state `266/266`, full public route matrix `532/532`, static asset budget and packet identity. The single-scenario route-responsive shard covers `76/76` engineering cells but is intentionally not a seven-scenario release matrix. Readiness accepts the complete matrix and stops at route maturity `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`.
+- local/independent scoped verification: Hooke fresh Product/Design/Visual review is scoped PASS with P0/P1=0 and confirms the `核对资源` horizontal-action P1 closed. Noether fresh Accessibility/Interaction review is conditional pass with P0/P1=0; 200% text, forced colors, keyboard/ARIA, Back/Forward and 44px targets pass, with 375px first-viewport progressive disclosure retained as P2. Nash fresh Product/Operations review is Conditional Pass with P0=0 and confirms the P1 fix on the final SHA; formal trusted signatures were not generated.
+- decision: keep the task active with blocked=false. Record and sync this Step842 governance result, then commit it and rebind exact-SHA build/runtime/matrices/packet/readiness again. Do not turn scoped PASS into formal acceptance, do not promote bounded-readonly routes, and do not publish. Continue real route-owner acceptance, RouterOS soak and exact-SHA Linux/Windows/GHCR CL.
 
 ## Current conclusion
 
-**FAIL overall.** The current P1 fix is implemented and dirty-worktree runtime green, but exact-SHA evidence is stale until the candidate is committed and rebound. Formal trusted acceptance, independent Accessibility, route maturity, RouterOS soak and external CL remain incomplete. No publication is authorized.
+**FAIL overall.** Final SHA engineering evidence and scoped Product/Design/Visual/Accessibility reviews are green in their declared scope, but formal trusted acceptance, route maturity, RouterOS soak and exact-SHA external CL remain incomplete. No publication is authorized.
 
 ## Independent acceptance boundary
 
@@ -36,8 +36,8 @@
 | Product | pending | Route maturity and trusted owner acceptance remain open. |
 | Design | pending | Fresh independent review/signature is required. |
 | Visual QA | pending | Automated/runtime evidence does not replace visual acceptance. |
-| Accessibility | pending | Synthetic checks are not independent assistive-technology acceptance. |
-| State Matrix | pending-final-rebind | Step841 changed the mobile action layout and build outputs; dirty runtime is diagnostic only, so exact-SHA runtime, matrices and packet must be regenerated after commit. |
+| Accessibility | scoped-conditional-pass / formal-pending | Fresh independent scoped interaction review found P0/P1=0; formal assistive-technology/trusted acceptance is not signed. |
+| State Matrix | pass-before-governance-rebind | 4ac0e6f4 exact runtime, 28/532/266/532 matrices and packet pass; this Step842 documentation change requires a fresh exact-SHA rebind. |
 | Route maturity | pending | 0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable. |
 | RouterOS soak | pending | No current long-running real-device evidence. |
 | Release hygiene | pending | Clean candidate, external CL and publication chain remain incomplete. |
@@ -52,10 +52,10 @@
 
 ## Open review boundaries
 
-- R07 mobile visual maturity, R09 tablet task efficiency, R10 desktop density and R14 cross-surface grammar have prior a0af1584 scoped evidence and the fresh independent review found P0/P1=0; Step841 fixed a new wide resource-action P1 and requires a fresh exact-SHA review. Formal independent acceptance remains pending.
+- R07 mobile visual maturity, R09 tablet task efficiency, R10 desktop density and R14 cross-surface grammar have 4ac0e6f4 exact evidence; fresh independent scoped Product/Design/Visual and Accessibility reviews found P0/P1=0. Remaining P2 observations are 375px progressive disclosure, controlled cross-surface repetition, slight 1440px tail whitespace and fleet/resource visual refinement; formal independent acceptance remains pending.
 - Release journal: docs/decision-system/release-journal.md.
 - D drive is a byte-identical mirror at D:\想法\面板.
-- Current packet under `_acceptance/panel-runtime-browser/` is prepared-not-signed and never self-signs; its dirty Step841 runtime report is diagnostic and must be regenerated for the next clean candidate.
+- Current packet under `_acceptance/panel-runtime-browser/` is exact to 4ac0e6f4 but remains `prepared-not-signed` and never self-signs; this Step842 documentation update requires regeneration for the next clean candidate.
 
 ## Record contract
 
