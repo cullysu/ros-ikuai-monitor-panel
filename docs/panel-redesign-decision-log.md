@@ -24696,3 +24696,14 @@ ocused-green-engineering
 - readiness：`check-public-release-readiness.js --require-matrix` 接受完整当前矩阵后，真实停止于 route maturity：`0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`。这不是矩阵失败；18 个 route-owner acceptance、trusted signoff、RouterOS soak、Linux/Windows/GHCR exact-SHA CL 仍未完成。
 - 决策：关闭本步声明范围内的 clean build/runtime、全矩阵、静态资产、packet 和 scoped review；不把 scoped PASS 改写为正式签收，不把 bounded-readonly 改成 complete，不上传 GitHub。提交本步治理记录会使 `4ac0e6f4` 精确证据失效，必须在新的 clean SHA 上再次 rebind。
 - 当前边界：任务保持 active 且 `blocked=false`。唯一下一步是同步并提交 Step842 文档，然后重新生成最终 SHA 证据，再继续不可伪造的正式 route-owner/Accessibility 签收、RouterOS soak 与三端 CL。
+
+## 第 843 步：e6 精确候选重绑完成，本地发布证据通过，正式签收继续开放
+
+- latestStepOutcome: `843:e6-exact-rebind-and-local-gates-pass-formal-gates-open`
+- 触发/问题：Step842 文档提交改变了候选身份；不能继续使用 `4ac0e6f4` 的旧报告，必须在新 clean SHA 上重新绑定全部工程证据，并解释为什么 readiness 仍然没有通过。
+- 观察事实：当前 clean SHA 为 `e6c3d14eef919cb3cdf99970d4df8bbf8cdfb87c`。生产 build、runtime-browser `257 checks / 140 screenshots / 169 snapshotApiCalls`、Overview `28/28`、route-state `266/266`、完整公开路由矩阵 `532/532`、Overview 全量视觉/结构合同、types、backend/security、collector、RFC3339、static assets、asset identity、service-log 与 route-maturity structural contract 均通过。product-design-visual packet 已精确绑定 e6，`prepared-not-signed`、`selfSignoff=false`、`releaseEligible=false`。
+- readiness：`check-public-release-readiness.js --require-matrix` 已接受 e6 的完整矩阵，然后按设计真实停止在 route maturity：`0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`。这不是“本轮受阻”，而是尚未完成的产品成熟度与外部主体门禁。
+- 视觉/独立复核边界：现有独立 scoped Product/Design/Visual 与 Accessibility 结论在声明范围内 P0/P1=0；它们不生成可信 Ed25519 签名。不能把 scoped PASS 写成正式签收，也不能把 synthetic runtime 当成 RouterOS soak。
+- 决策：继续保持任务 active、`blocked=false`；先关闭真实 route-owner acceptance 并准备 RouterOS soak，再等待真实外部主体签收和精确 SHA Linux/Windows/GHCR CL。任何 GitHub 上传前都必须重新检查远端 parent、通过 Git 数据 API 原子发布，并对同一 SHA 等待三端 CL；任一 CL 失败先修复，不宣称发布。
+- 验证：D 盘决策镜像同步保持 14/14 byte-identical；工作树 clean；未发生 GitHub 上传。
+- nextAction：继续逐路由完成真实筛选/排序/分页/对象详情与失败恢复的 route-owner acceptance，形成可审阅的 RouterOS soak 输入，然后再按精确 e6 后续候选执行外部 CL 预检。

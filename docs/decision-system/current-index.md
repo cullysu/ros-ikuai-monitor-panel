@@ -1,20 +1,20 @@
 - status: `reference`
-- validForCommit: Step842 governance update is being committed; exact 4ac0e6f4 evidence must be rebound after this documentation change; not a public release approval
+- validForCommit: e6c3d14 exact local evidence is current; public candidate publication remains uncommitted and is not a public release approval
 - supersededBy: `null`
 - authority: `docs/decision-system/current-state.md`
-- currentStep: `842`
-- currentOutcome: `842:exact-sha-matrix-and-fresh-scoped-reviews-pass-formal-gates-open`
-- currentBoundary: `842`
-- latestRecordedStep: `842`
-- latestStepOutcome: `842:exact-sha-matrix-and-fresh-scoped-reviews-pass-formal-gates-open`
+- currentStep: `843`
+- currentOutcome: `843:e6-exact-rebind-and-local-gates-pass-formal-gates-open`
+- currentBoundary: `843`
+- latestRecordedStep: `843`
+- latestStepOutcome: `843:e6-exact-rebind-and-local-gates-pass-formal-gates-open`
 
 ## Current pointer
 
 The authority is current-state.md; this page is discovery only.
 
 - Current conclusion: FAIL overall; local engineering evidence is complete in declared scopes, while independent public acceptance and trusted external release gates remain open.
-- Current engineering boundary: Step839's decision-first phone order remains in place; Step841's wide resource-action P1 is closed on 4ac0e6f4. Exact runtime, 28/532/266/532 matrices and fresh scoped reviews are green in declared scope; formal route maturity and external signoff remain open.
-- Latest result: 4ac0e6f4 is a clean exact candidate before this Step842 documentation rebind; next clean SHA must regenerate exact artifacts.
+- Current engineering boundary: Step839's decision-first phone order and Step841's wide resource-action fix remain in place. e6c3d14 exact runtime, 28/532/266/532 matrices, packet identity and focused local contracts are green in declared scope; formal route maturity and external signoff remain open.
+- Latest result: e6c3d14 is a clean exact local candidate; readiness correctly stops at route maturity and no publication is authorized.
 - Full process: panel-redesign-decision-log.md.
 - Product handoff: product-loop-current.md.
 - Release boundary: release-journal.md.

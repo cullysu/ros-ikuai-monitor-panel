@@ -1,11 +1,11 @@
 # RouterOS / iKuai 面板决策仓库
 
-这是当前面板工作的本地决策仓库镜像。Step838 记录了证据边界文案 P1 的修复：当前页面明确写出“当前采集证据完整；外部业务未探测”，不把快照采集冒充业务可用性。b543cbb 的工程与 scoped review 证据已通过，但本次治理变更后必须在新的 clean SHA 上重绑；readiness 仍停在 route maturity，独立 Product/Design/Visual 正式签收、Accessibility、RouterOS soak 和可信外部发布签收仍未完成。
+这是当前面板工作的本地决策仓库镜像。Step843 已将完整本地工程证据重新绑定到 clean SHA `e6c3d14eef919cb3cdf99970d4df8bbf8cdfb87c`：runtime、28/532/266/532 矩阵、focused contracts、资产、安全、RFC3339、collector 和 packet identity 均通过。readiness 仍停在 route maturity；独立 Product/Design/Visual 正式签收、Accessibility、RouterOS soak 和可信外部发布签收仍未完成。
 
 - status: `current-mirror-entry`
-- currentStep: `838`
-- currentOutcome: `838:b543cbb-exact-evidence-scoped-visual-pass-formal-signoff-open`
-- currentBoundary: `838`
+- currentStep: `843`
+- currentOutcome: `843:e6-exact-rebind-and-local-gates-pass-formal-gates-open`
+- currentBoundary: `843`
 - authority: `decision-system/current-state.md`
 
 ## 入口
@@ -42,4 +42,4 @@
 
 每个材料性切片开始前先写仓库日志和对应 decision-system 文件，再同步到 D 盘镜像。同步门禁必须满足语义步骤一致、Markdown 映射逐字节一致、没有额外 Markdown；根 README 还必须通过新鲜度检查。
 
-Step838: evidence-boundary wording remediation and b543cbb scoped engineering/visual evidence are green; the governance change requires exact evidence rebinding on the next clean SHA. Readiness, formal signoff and public release remain closed. This summary is not a signature.
+Step843: e6 exact local evidence is green in the declared engineering scope; readiness correctly stops at `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`. The packet remains `prepared-not-signed`, no trusted signature or GitHub upload exists, and formal route-owner, RouterOS soak, CL and public release remain closed. This summary is not a signature.
