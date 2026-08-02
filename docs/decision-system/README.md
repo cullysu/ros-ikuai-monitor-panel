@@ -1,10 +1,10 @@
 # 决策系统导航
-- validForCommit: ec19b0da0815dd85bdb8035f2664d3dcea4f4532 exact local evidence is current; public candidate publication remains uncommitted; formal external gates remain open; not a public release approval
+- validForCommit: e0893bcd3a14246660e7dc6b4d6d8dc149bdfb5a exact local evidence is current; public candidate publication remains uncommitted; formal external gates remain open; not a public release approval
 - supersededBy: null
 - status: `current-index`
-- currentBoundaryForStep: `844`
-- latestRecordedStep: `844`
-- latestStepOutcome: `844:ec19-exact-rebind-browser-cleanup-and-local-gates-pass-formal-gates-open`
+- currentBoundaryForStep: `845`
+- latestRecordedStep: `845`
+- latestStepOutcome: `845:e089-exact-matrix-and-independent-scoped-reviews-pass-formal-gates-open`
 - authority: `docs/decision-system/current-state.md`
 
 当前结论由 current-state.md 唯一拥有；本页只负责导航，不重复历史流水账。
@@ -17,4 +17,4 @@
 - 历史索引：historical-index.md
 
 
-Task remains active and blocked=false; an open release gate is not a reason to stop work. Step844 records ec19 exact local matrices and the browser cleanup fix while keeping trusted signoff, route maturity and publication fail-closed.
+Task remains active and blocked=false; an open release gate is not a reason to stop work. Step845 records the e089 exact matrix and current-SHA scoped reviews while keeping trusted signoff, route maturity and publication fail-closed.

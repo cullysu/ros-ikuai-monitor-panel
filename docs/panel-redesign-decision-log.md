@@ -24718,3 +24718,14 @@ ocused-green-engineering
 - 决策：任务继续保持 active 且 `blocked=false`。先同步并提交本步决策记录，再在最终 clean SHA 上重新绑定报告并委派 current-SHA Product/Design/Visual/Accessibility/route-owner 复审；随后准备 RouterOS soak 与精确 SHA Linux/Windows/GHCR CL。任何正式门禁未真实通过前禁止 GitHub API 上传，任一 CL 失败则回到修复循环。
 - 验证：ec19 本地报告与 packet identity 一致；D 盘镜像需在本步文档完成后重新执行同步门禁；未发生 GitHub 上传或发布。
 - nextAction：完成 D 盘决策镜像同步与 decision-system 检查，提交本步治理记录；随后以提交后的最终 SHA 重绑所有报告并获取 current-SHA 独立签收。
+
+## 第 845 步：e089 精确矩阵与当前 SHA 独立 scoped 复审通过，正式门禁继续开放
+
+- latestStepOutcome: `845:e089-exact-matrix-and-independent-scoped-reviews-pass-formal-gates-open`
+- 触发/问题：Step844 治理记录提交为 `e0893bcd3a14246660e7dc6b4d6d8dc149bdfb5a` 后，所有旧报告都不能继承；必须在当前 clean SHA 上重跑完整矩阵、packet、readiness，并让独立复审重新核对当前候选。
+- 观察事实：e089 build、runtime-browser `257 checks / 140 screenshots / 169 snapshotApiCalls`、Overview `28/28`、route-state `266/266`、完整公开路由 `532/532`、route-responsive bounded shard `76/76`、check:overview、types、backend/security、collector、RFC3339、static assets、asset identity、packet identity 均通过；browser page/context cleanup 后无 stop-timeout warning。
+- 独立签收事实：Hooke 的 Product/Design/Visual scoped review 为 PASS，P0/P1=0；Noether 的 Accessibility/Interaction scoped review 为 PASS，P0/P1=0；Nash 的 Route Owner/Operations review 明确 FAIL formal acceptance，原因是 `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`、18 个 route-owner acceptance pending、真实 RouterOS soak 缺失、Linux/Windows/GHCR exact-SHA CL 缺失。三者均未修改代码、未伪造签名。
+- readiness：`check-public-release-readiness.js --require-matrix` 已接受 e089 的完整当前矩阵，然后真实停止于 route maturity，而不是假绿或泛化为“受阻”。packet 仍为 `prepared-not-signed`、`selfSignoff=false`、`releaseEligible=false`。
+- 决策：关闭本步声明范围内的 exact engineering matrix、当前 SHA scoped Product/Design/Visual/Accessibility review 和 browser cleanup reliability；不把 scoped PASS 改写为正式签收，不把 Nash 的 formal FAIL 隐藏，不将 18 个 bounded route 晋级为 complete，不上传 GitHub。
+- 当前边界/心得：工程证据完整只说明当前候选可审计，不等于产品模块已成熟，也不等于公众发布资格。route-owner、真实设备 soak、正式受信签名与三端 CL 必须逐项完成；开放门禁不是阻塞条件，任务继续保持 active 且 `blocked=false`。
+- nextAction：继续逐路由完成可审计的真实 route-owner acceptance 与 RouterOS soak 输入，再为最终 clean SHA 获取精确 Linux/Windows/GHCR CL；所有门禁真实关闭前禁止 GitHub API 发布。
