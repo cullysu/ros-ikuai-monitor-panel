@@ -1271,6 +1271,7 @@ class PlaywrightSession {
   async closeTarget() {
     if (this.closed) return;
     this.closed = true;
+    await this.page.close({ runBeforeUnload: false }).catch(() => {});
     await this.context.close();
   }
 }
@@ -1316,6 +1317,9 @@ async function launchBrowser(args, report) {
       }
     },
     stop: async () => {
+      for (const context of browser.contexts()) {
+        await context.close().catch(() => {});
+      }
       await browser.close();
     },
   };
@@ -2086,7 +2090,7 @@ async function runBrowserChecks(args, report, baseUrl) {
     }
   }
   } finally {
-    await withTimeout(browser.stop(), 8000, 'browser stop').catch((error) => {
+    await withTimeout(browser.stop(), 30000, 'browser stop').catch((error) => {
       warn(report, 'browser stop timed out', { error: error.message });
     });
   }
