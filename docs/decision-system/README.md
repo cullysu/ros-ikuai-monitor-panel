@@ -1,10 +1,10 @@
 # 决策系统导航
-- validForCommit: Step837 folded-control accessibility regression fix is uncommitted; pre-fix exact evidence is stale; formal external gates remain open; not a public release approval
+- validForCommit: Step838 governance update is being committed; b543cbb exact evidence must be rebound on the next clean SHA; formal external gates remain open; not a public release approval
 - supersededBy: null
 - status: `current-index`
-- currentBoundaryForStep: `837`
-- latestRecordedStep: `837`
-- latestStepOutcome: `837:40fe6e2-runtime-accessibility-regression-fixed-runtime-green-formal-signoff-open`
+- currentBoundaryForStep: `838`
+- latestRecordedStep: `838`
+- latestStepOutcome: `838:b543cbb-exact-evidence-scoped-visual-pass-formal-signoff-open`
 - authority: `docs/decision-system/current-state.md`
 
 当前结论由 current-state.md 唯一拥有；本页只负责导航，不重复历史流水账。
@@ -17,4 +17,4 @@
 - 历史索引：historical-index.md
 
 
-Task remains active and blocked=false; an open release gate is not a reason to stop work.
+Task remains active and blocked=false; an open release gate is not a reason to stop work. Step838 closes the local wording P1 and keeps formal signoff fail-closed.

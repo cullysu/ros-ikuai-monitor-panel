@@ -1,15 +1,16 @@
 # Release Journal
 - status: `current-journal`
-- validForCommit: Step837 folded-control accessibility regression fix is uncommitted; pre-fix exact evidence is stale; formal external gates remain open; not a public release approval
+- validForCommit: Step838 governance update is being committed; b543cbb exact evidence must be rebound on the next clean SHA; formal external gates remain open; not a public release approval
 - supersededBy: null
-- currentStep: `837`
-- currentOutcome: 837:40fe6e2-runtime-accessibility-regression-fixed-runtime-green-formal-signoff-open
-- latestStepOutcome: 837:40fe6e2-runtime-accessibility-regression-fixed-runtime-green-formal-signoff-open
+- currentStep: `838`
+- currentOutcome: 838:b543cbb-exact-evidence-scoped-visual-pass-formal-signoff-open
+- latestStepOutcome: 838:b543cbb-exact-evidence-scoped-visual-pass-formal-signoff-open
 - authority: docs/decision-system/current-state.md
 - fullHistory: panel-redesign-decision-log.md
 
 - Step836: route-evidence remediation focused checks pass; exact runtime/matrix/packet evidence is stale until a new clean SHA is committed. Formal Product/Design/Visual, independent Accessibility, route-owner maturity, RouterOS soak and exact-SHA CL remain open.
-- Step837: folded-control accessibility regression is fixed and full production runtime is green; exact runtime/matrix/packet evidence is stale until the governance commit is rebound. Formal Product/Design/Visual, independent Accessibility, route-owner maturity, RouterOS soak and exact-SHA CL remain open.
+- Step837: folded-control accessibility regression was fixed and full production runtime was green; superseded by Step838 governance rebinding.
+- Step838: evidence-boundary wording P1 is fixed; b543cbb scoped engineering/visual evidence is green; the governance commit invalidates that exact evidence until the next clean SHA is rebound. Formal Product/Design/Visual, independent Accessibility, route-owner maturity, RouterOS soak and exact-SHA CL remain open.
 
 - Historical Step793: scoped independent Design and Visual review closed with PASS; Product remained open.
 - Historical Step796: scoped Product/Architecture/Visual review was recorded while the public boundary remained fail-closed.

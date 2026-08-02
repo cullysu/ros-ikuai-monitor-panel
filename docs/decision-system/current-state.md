@@ -1,24 +1,24 @@
 - status: `current`
-- currentConclusionForStep: `837`
-- latestRecordedStep: `837`
-- latestStepOutcome: `837:40fe6e2-runtime-accessibility-regression-fixed-runtime-green-formal-signoff-open`
-- currentBoundaryForStep: `837`
-- validForCommit: uncommitted folded-control accessibility regression fix and governance update; exact runtime evidence must be regenerated after the next clean SHA; not a release candidate
+- currentConclusionForStep: `838`
+- latestRecordedStep: `838`
+- latestStepOutcome: `838:b543cbb-exact-evidence-scoped-visual-pass-formal-signoff-open`
+- currentBoundaryForStep: `838`
+- validForCommit: uncommitted Step838 governance update; b543cbb exact evidence is valid only before this governance change and must be rebound on the next clean SHA; not a release candidate
 - supersededBy: `null`
 - updatedAt: 2026-08-02T08:10:00+08:00
 - authority: This is the only human-readable current-state source.
 
-## Current decision record: Step 837
+## Current decision record: Step 838
 
-- status: active-runtime-regression-fix-formal-signoff-open
-- boundary: Step837 closes a locally reproducible folded-control ARIA regression; exact release evidence is stale until the next clean SHA is created.
-- observed facts: the first post-Step836 runtime correctly failed because a collapsed filter button referenced a DOM target that was not rendered; always rendering a hidden target then violated the existing on-demand control contract. The fix makes `aria-controls` conditional on the expanded state while keeping the expanded target and group semantics valid.
-- local verification: build and the full production runtime suite pass after the fix: 257 checks, 140 screenshots and 169 snapshot API calls; mobile incident, action, hierarchy, signal, responsive-boundary, tablet-information, vertical-task, next-evidence and tablet-task contracts pass. No trusted external signature was generated.
-- decision: close this local runtime regression, keep formal Product/Design/Visual, independent Accessibility, route-owner maturity, RouterOS soak, external CL and GitHub/public release fail-closed. Task remains active and blocked=false.
+- status: b543cbb-exact-evidence-scoped-visual-pass-formal-signoff-open
+- boundary: Step838 closes the evidence-boundary wording P1 and records exact engineering/scoped visual evidence; the governance update itself makes b543cbb evidence stale until the next clean SHA is created.
+- observed facts: the current evidence note now says `当前采集证据完整；外部业务未探测`, and the mobile model regression test locks that boundary. Before this governance change, b543cbb had build/types/runtime 257 checks, 140 screenshots, 170 snapshot API calls, Overview 28/28, full route-responsive 532/532, route-state 266/266, full public 532/532 and the readiness shard 76/76. Readiness correctly stopped at 0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable.
+- local/independent scoped verification: Hooke scoped Product/Design/Visual review returned PASS with P0=0/P1=0; two P2 observations remain (fixed navigation masks the lower tail of the initial mobile normal screenshot; limited controlled repetition on tablet/desktop). No trusted external signature was generated.
+- decision: close this locally reproducible evidence-boundary P1 and the b543cbb scoped evidence slice, then rebind all final evidence on the clean governance SHA. Keep formal Product/Design/Visual, independent Accessibility, route-owner maturity, RouterOS soak, external CL and GitHub/public release fail-closed. Task remains active and blocked=false.
 
 ## Current conclusion
 
-**FAIL overall.** Local runtime remediation is focused-green, but all exact-SHA release materials must be regenerated after the code and governance changes. Formal independent acceptance, route maturity, RouterOS soak and external CL remain incomplete. No publication is authorized.
+**FAIL overall.** The evidence-boundary wording fix and b543cbb engineering/scoped review are green, but this governance update invalidates the old exact-SHA release materials. Formal independent acceptance, route maturity, RouterOS soak and external CL remain incomplete. No publication is authorized.
 
 ## Independent acceptance boundary
 
@@ -37,7 +37,7 @@
 | Design | pending | Fresh independent review/signature is required. |
 | Visual QA | pending | Automated/runtime evidence does not replace visual acceptance. |
 | Accessibility | pending | Synthetic checks are not independent assistive-technology acceptance. |
-| State Matrix | pending | The prior exact matrix is stale after Step837; the next clean SHA must regenerate runtime, 28/532/266/532 matrices and packet. |
+| State Matrix | pending | The b543cbb exact matrix is stale after Step838 governance changes; the next clean SHA must regenerate runtime, 28/532/266/532 matrices and packet. |
 | Route maturity | pending | 0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable. |
 | RouterOS soak | pending | No current long-running real-device evidence. |
 | Release hygiene | pending | Clean candidate, external CL and publication chain remain incomplete. |

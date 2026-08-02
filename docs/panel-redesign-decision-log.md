@@ -24636,3 +24636,18 @@ ocused-green-engineering
 - nextAction：将 Step837 治理记录、筛选回归和新生成资产提交为下一 clean SHA；随后重跑 exact build/runtime/28/532/266/532、packet、report truth、decision-system 和 readiness，再继续获取真实独立签收、RouterOS soak 与三端 exact-SHA CL，全部真实通过前不上传 GitHub。
 - validForCommit: `40fe6e27f970024f73541aca39432d18a6f1ddac` 为 Step836 clean SHA；Step837 代码、生成资产与治理文档需形成新的 clean candidate
 - supersededBy: null
+
+## 第 838 步：b543cbb 精确证据重绑并关闭证据边界文案 P1，正式签收继续开放
+
+- status：`b543cbb-exact-evidence-scoped-visual-pass-formal-signoff-open`
+- latestStepOutcome: `838:b543cbb-exact-evidence-scoped-visual-pass-formal-signoff-open`
+- 触发/问题：本轮为响应用户“不要因开放门禁停住”的要求继续推进。独立复核对旧候选指出一个真实 P1：`业务采样完整` 容易被理解为外部业务已被验证，但页面同时声明外部业务未探测；这不是单纯措辞偏好，而是证据边界不一致。
+- 本轮修复：`buildOverviewEvidenceModel.ts` 将当前证据说明改为“当前采集证据完整；外部业务未探测”，并在 `check-mobile-native-model.js` 增加当前态回归断言。它明确只证明采集快照，不把管理面/路由记录冒充业务可用性。
+- 观察事实：当前精确候选 `b543cbb9538a07a34f22a5897862febd52215578` 的 build 与类型检查通过；生产 runtime `257 checks / 140 screenshots / 170 snapshot API calls` 通过；Overview `28/28`、完整 route-responsive `532/532`、route-state `266/266`、完整 public `532/532`、readiness 所需单场景 route-responsive `76/76` 均按当前 SHA 重绑并通过。readiness 已正确消费矩阵后停在 `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`。
+- 独立视觉/产品复核：Hooke 针对 `b543cbb` 返回 scoped Product/Design/Visual PASS，P0=0、P1=0；确认接口依赖 `ether9` 优先于资源风险、手机无明显溢出、平板对象比较/双栏工作区和桌面任务顺序成立。保留两个 P2：手机正常态固定导航在初始截图下沿压住后续运行判断，以及平板/桌面存在少量受控复读。该 scoped review 不是 formal trusted signature。
+- 决策：关闭本轮可由本地修复的证据边界文案 P1、当前 SHA 的工程证据和 scoped visual/product review；继续保持正式 Product/Design/Visual、独立 Accessibility、route-owner maturity、RouterOS soak、Linux/Windows/GHCR exact-SHA CL 与 GitHub/public release fail-closed。任务 active、`blocked=false`。
+- 理由与拒绝项：不把“当前采集证据完整”改写成外部业务已验证；不把 agent scoped PASS 改写成 Ed25519 签名；不把 18 个 bounded-readonly 路由改写成 complete；不把 readiness 在 route maturity 的红灯称为任务受阻；不上传 GitHub。
+- 边界/心得：证据型产品的文案必须能回答“这条数字到底证明了什么”。当视觉评审发现语义边界冲突时，先修模型文案并加回归测试，再重建资产、runtime 和矩阵；工程绿灯、视觉 scoped PASS、正式主体签收和真实设备/CI 证据必须分开记录。
+- nextAction：将 Step838 决策记录同步至 `D:\想法\面板` 并提交治理文档；提交产生的新 clean SHA 必须重新 build/runtime/Overview/route-responsive/route-state/public/packet/readiness，再继续获取真实独立 Accessibility、route-owner、RouterOS soak 与 Linux/Windows/GHCR exact-SHA CL；全部真实通过前禁止 GitHub API 发布。
+- validForCommit：`b543cbb9538a07a34f22a5897862febd52215578` exact engineering/scoped evidence；本步骤治理提交后必须重新绑定
+- supersededBy: null
