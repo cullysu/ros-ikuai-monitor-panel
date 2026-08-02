@@ -5229,19 +5229,22 @@ async function main() {
     );
     check(
       checks,
-      'normal patrol actions expose exactly one primary task and visible secondary follow-ups across phone, tablet and desktop',
+      'normal patrol actions expose one primary task after the phone decision ledger and preserve desktop/tablet first-scan follow-ups',
       [normal390, normal375].every((item) => (
         item.surface === 'mobile' &&
         item.investigationActionRouteCount === 1 &&
         item.investigationPrimaryActionCount === 1 &&
         item.investigationSecondaryActionCount === 0 &&
         item.firstInvestigationActionId === 'lineStatus' &&
-        item.firstInvestigationActionInFirstViewport
+        item.decisionRect && item.firstInvestigationActionRect &&
+        item.firstInvestigationActionRect.top >= item.decisionRect.bottom - 1 &&
+        item.firstInvestigationActionRect.height >= 44
       )) && [normal768, normal844, normal1199, normal1200].every((item) => (
         item.investigationActionRouteCount >= 1 &&
         item.investigationPrimaryActionCount === 1 &&
         item.investigationSecondaryActionCount === item.investigationActionRouteCount - 1 &&
-        item.investigationActionPriorities[0] === 'primary'
+        item.investigationActionPriorities[0] === 'primary' &&
+        item.firstInvestigationActionInFirstViewport
       )),
       { normal390, normal375, normal768, normal844, normal1199, normal1200 },
     );

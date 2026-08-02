@@ -77,16 +77,20 @@ check(
   "use a compact touch target; do not create a blank-height spacer",
 );
 check(
-  "fresh normal 390 runtime shows one next step in the first viewport",
+  "fresh normal 390 runtime places the next step after the decision ledger",
   Boolean(normal390
     && normal390.investigationPrimaryActionCount === 1
     && normal390.firstInvestigationActionId === "lineStatus"
-    && normal390.firstInvestigationActionInFirstViewport === true),
+    && normal390.decisionRect
+    && normal390.firstInvestigationActionRect
+    && normal390.firstInvestigationActionRect.top >= normal390.decisionRect.bottom - 1
+    && normal390.firstInvestigationActionRect.height >= 44),
   normal390
     ? JSON.stringify({
         primaryCount: normal390.investigationPrimaryActionCount,
         firstId: normal390.firstInvestigationActionId,
-        inViewport: normal390.firstInvestigationActionInFirstViewport,
+        decisionBottom: normal390.decisionRect?.bottom,
+        actionTop: normal390.firstInvestigationActionRect?.top,
       })
     : "missing normal390 runtime detail",
 );
