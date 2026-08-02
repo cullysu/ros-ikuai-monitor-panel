@@ -92,6 +92,9 @@ const clone = (value) => structuredClone(value);
 const modelFor = (snapshot) => buildOverviewEvidenceModel(snapshot, deriveOverviewState(snapshot));
 const modelForHint = (snapshot, scenarioHint) => buildOverviewEvidenceModel(snapshot, deriveOverviewState(snapshot, { scenarioHint }));
 const textOf = (model) => JSON.stringify(model);
+const currentFixtureModel = modelFor(OVERVIEW_SCENARIO_FIXTURES.single);
+assert.equal(currentFixtureModel.evidenceMode, "current");
+assert.equal(currentFixtureModel.evidenceNote, "当前采集证据完整；外部业务未探测");
 const workspaceMeta = (overrides = {}) => ({
   state: "neutral",
   attention: false,

@@ -74,7 +74,7 @@ function evidenceBoundary(snapshot: OverviewRawSnapshot, state: OverviewDerivedS
   if (mode === "current") return {
     label: "当前证据",
     time: successLabel,
-    note: "业务采样完整",
+    note: "当前采集证据完整；外部业务未探测",
     tone: "trust" as OverviewTone,
   };
   if (mode === "historical") return {
