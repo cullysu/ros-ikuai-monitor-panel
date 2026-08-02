@@ -1,11 +1,11 @@
 # RouterOS / iKuai 面板决策仓库
 
-这是当前面板工作的本地决策仓库镜像。Step845 已将完整本地工程证据重新绑定到 clean SHA `e0893bcd3a14246660e7dc6b4d6d8dc149bdfb5a`：build、runtime、28/532/266/532 矩阵、route-responsive 76/76 bounded shard、focused contracts、资产、安全、RFC3339、collector 和 packet identity 均通过；浏览器 page/context 清理后无 stop-timeout warning。当前 SHA 的 scoped Product/Design/Visual/Accessibility 复审 P0/P1=0，但正式签收、route maturity、RouterOS soak 和可信外部发布签收仍未完成。
+这是当前面板工作的本地决策仓库镜像。Step847 已将当前 clean SHA `9bc5ccc9457ca0858ec9da43e07c2564ed3540c4` 的 build、runtime、28/532/266/532 矩阵、route-responsive 76/76 bounded shard、focused contracts、资产、安全、RFC3339、collector 和 packet identity 重新绑定；当前 SHA 的 scoped Product/Design/Visual/Accessibility 复审 P0/P1=0，但正式签收、route maturity、RouterOS soak 和可信外部发布签收仍未完成。
 
 - status: `current-mirror-entry`
-- currentStep: `845`
-- currentOutcome: `845:e089-exact-matrix-and-independent-scoped-reviews-pass-formal-gates-open`
-- currentBoundary: `845`
+- currentStep: `847`
+- currentOutcome: `847:9bc5ccc-current-sha-matrices-and-scoped-independent-reviews-formal-gates-open`
+- currentBoundary: `847`
 - authority: `decision-system/current-state.md`
 
 ## 入口
@@ -42,4 +42,4 @@
 
 每个材料性切片开始前先写仓库日志和对应 decision-system 文件，再同步到 D 盘镜像。同步门禁必须满足语义步骤一致、Markdown 映射逐字节一致、没有额外 Markdown；根 README 还必须通过新鲜度检查。
 
-Step845: e089 exact local evidence is green in the declared engineering scope; Hooke Product/Design/Visual and Noether Accessibility/Interaction scoped reviews are P0/P1=0, while Nash Route Owner/Operations correctly keeps formal acceptance open. Readiness correctly stops at `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`. Browser cleanup no longer reports the prior stop-timeout warning. The packet remains `prepared-not-signed`, no trusted signature or GitHub upload exists, and route-owner, RouterOS soak, CL and public release remain closed. This summary is not a signature.
+Step847: 9bc5ccc exact local evidence is green in the declared engineering scope; Hooke Product/Design/Visual and Noether Accessibility/Interaction scoped reviews are P0/P1=0, while Nash Route Owner/Operations correctly keeps formal acceptance open. Readiness correctly stops at `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`. The packet remains `prepared-not-signed`, no trusted signature or GitHub upload exists, and route-owner, RouterOS soak, CL and public release remain closed. This summary is not a signature.

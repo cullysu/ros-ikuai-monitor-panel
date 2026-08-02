@@ -24666,6 +24666,7 @@ ocused-green-engineering
 - nextAction：先应用 normal phone 顺序修复并运行聚焦静态/类型检查；随后提交新的 clean SHA，重绑全部精确工程证据并重新获取独立 scoped 视觉复核；正式签收、Accessibility、route-owner maturity、RouterOS soak 和 Linux/Windows/GHCR exact-SHA CL 全部真实通过前禁止 GitHub API 发布。
 - validForCommit：`2bc0ff75f5f290c1636a16b707aba0e8be2156b3` 为本步修复前 clean 基线；本步代码与治理更新必须生成新的 clean candidate
 - supersededBy：null
+
 ## 第 840 步：a0af1584 精确矩阵与新鲜独立 scoped 复核通过，正式发布门禁继续开放
 
 - latestStepOutcome: `840:exact-sha-matrix-and-scoped-visual-review-pass-formal-gates-open`
@@ -24744,4 +24745,19 @@ ocused-green-engineering
 - 验证：`check:report-truth` 通过；readiness 能准确选择 `_acceptance/release-matrix-edb87321e873463d5b4cf893842bf4a1a0f0c521/report.json` 并在 route maturity 处 fail-closed；无 GitHub 上传、无 trusted signature、无 CL 通过声明。
 - nextAction：先提交本步治理记录并同步 `D:\想法\面板`，随后以新 clean SHA 重建 runtime/28/532/266/532/packet 证据；在真实独立签收、RouterOS soak 与三端 exact-SHA CL 全部通过前继续保持发布关闭。
 - validForCommit：`edb87321e873463d5b4cf893842bf4a1a0f0c521` 为本步当前工程证据；本步治理提交后必须重新绑定全部精确证据。
+- supersededBy：null
+
+## 第 847 步：9bc5ccc 当前 SHA 矩阵与独立 scoped 复核完成，正式签收与发布门禁继续开放
+
+- status：`9bc5ccc-current-sha-matrices-and-scoped-independent-reviews-formal-gates-open`
+- latestStepOutcome: `847:9bc5ccc-current-sha-matrices-and-scoped-independent-reviews-formal-gates-open`
+- 触发/问题：用户明确要求不能再把“独立签收未完成”标记为任务受阻；必须继续完成当前 SHA 的视觉、交互、路由和发布证据，并把已完成的 scoped review 与尚未完成的 formal acceptance 分开记录。Step846 治理提交后产生了新的候选身份，旧报告不能继承。
+- 观察事实：当前 clean candidate `9bc5ccc9457ca0858ec9da43e07c2564ed3540c4` 的 build 与 fresh runtime 通过；Overview `28/28`；完整 route-responsive `532/532`；route-state `266/266`；单场景 route shard `76/76` 个工程单元，顶层 `complete=false` 是有意保留的 bounded shard 语义；所有报告与 packet 均 exact-SHA 绑定。`check-route-maturity-contract.js --contract-only` 的结构契约通过，但严格 readiness 仍为 `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`。
+- 独立复核：Hooke 对当前 SHA 的 Product/Design/Visual scoped review 为 PASS，P0/P1=`0`，记录 P2 为 375px 渐进披露、平板次级标签截断、1440px 尾部留白和 iOS polish 偏弱；Noether Accessibility/Interaction scoped review 为 PASS，P0/P1=`0`，ARIA、键盘、Back/Forward、44px 触控、200% 文本和强制颜色均有运行时证据，但真实 VoiceOver/TalkBack 尚未取得；Nash Route Owner/Operations 确认四层工程矩阵通过，但 formal acceptance 为 FAIL，原因是 18 个路由未完成成熟度、真实 RouterOS soak 缺失、Linux/Windows/GHCR exact-SHA CL 缺失。三者均只读、未修改文件、未生成签名。
+- 发布材料：product-design-visual packet `12/12` identity/digest 通过，状态仍为 `prepared-not-signed`、`selfSignoff=false`、`releaseEligible=false`；没有可信外部 Ed25519 key，不能用本地 agent 结论自签。没有发生 GitHub 上传。
+- 决策：继续保持任务 active、`blocked=false`，关闭本轮可由本地完成的 exact-SHA 矩阵重绑、当前 SHA scoped visual/product/accessibility review 与报告身份校验；继续逐路由完成真实成熟度与 route-owner acceptance，取得真实辅助技术/RouterOS soak/三端 CL。未满足全部发布条件前不得晋级路由、不得宣称公众发布、不得上传 GitHub。
+- 理由与拒绝项：工程矩阵绿灯不能替代 route maturity；scoped PASS 不能替代 formal trusted signature；合成运行时不能冒充真实 RouterOS 长时运行；没有真实外部签收与 exact-SHA CL 就不能关闭发布。Hooke 的旧 alias 发现错误已由完整 SHA 目录修正，当前 evidence 必须使用完整 artifact key，不接受 `release-matrix-current` 这样的非现存别名。
+- 边界/心得：本轮真正完成的是“当前候选可审计、声明范围内视觉/交互无 P0/P1”，不是“公众产品签收完成”。开放门禁是继续工作的清单，不是 blocked 状态；如果签名主体、真实设备或远端 CL 尚未存在，必须保持 fail-closed，同时继续推进本地仍可执行的 route-specific 证据，而不是停住。
+- nextAction：提交并同步 Step847 决策仓库后，在新的 clean SHA 重建 build、runtime、28/532/266/532 矩阵、packet、report-truth 和 readiness；随后继续逐路由 route-owner/AT 验收、准备真实 RouterOS soak，并在获授权的同一 SHA 上等待 Linux/Windows/GHCR CL 全通过，之前禁止 GitHub API 发布。
+- validForCommit：`9bc5ccc9457ca0858ec9da43e07c2564ed3540c4` exact clean engineering/scoped evidence；本步骤治理提交后必须重新绑定
 - supersededBy：null
