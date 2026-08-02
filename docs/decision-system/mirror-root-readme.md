@@ -3,9 +3,9 @@
 这是当前面板工作的本地决策仓库镜像。Step856 记录 clean candidate `9f2305c2a500f909016ccd7189dedf1ef710ee17` 的 exact-SHA build/runtime/matrix 与独立 scoped Product/Design/Visual/Accessibility PASS；本地 scoped 视觉与交互审查已在声明范围内关闭，但正式签收、route maturity、RouterOS soak、exact-SHA Linux/Windows/GHCR CL 和可信外部发布签收仍未完成。治理提交后必须重新生成最终 exact-SHA 证据。emil-design-eng 已融合进 product-company-loop，强调静态证据和 reduced-motion。
 
 - status: `current-mirror-entry`
-- currentStep: `849`
+- currentStep: `856`
 - currentOutcome: `856:exact-sha-matrices-independent-scoped-reviews-formal-gates-open`
-- currentBoundary: `849`
+- currentBoundary: `856`
 - authority: `decision-system/current-state.md`
 
 ## 入口
