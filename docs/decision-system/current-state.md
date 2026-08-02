@@ -3,7 +3,7 @@
 - latestRecordedStep: `856`
 - latestStepOutcome: `856:exact-sha-matrices-independent-scoped-reviews-formal-gates-open`
 - currentBoundaryForStep: `856`
-- validForCommit: 9f2305c2a500f909016ccd7189dedf1ef710ee17 exact clean candidate evidence; this governance update requires a fresh final exact-SHA rebind after commit
+- validForCommit: 19149949ab3b35d0fe17cba763580e8532d8d69f exact-SHA engineering/scoped evidence; release approval remains uncommitted and this is not a public release candidate
 - supersededBy: `null`
 - updatedAt: 2026-08-02T18:40:00+08:00
 - authority: This is the only human-readable current-state source.
@@ -39,7 +39,7 @@
 | Design | pending | Fresh independent review/signature is required. |
 | Visual QA | pending | Automated/runtime evidence does not replace visual acceptance. |
 | Accessibility | scoped-conditional-pass / formal-pending | Fresh independent scoped interaction review found P0/P1=0; formal assistive-technology/trusted acceptance is not signed. |
-| State Matrix | pass / rebind-after-governance | Exact-SHA engineering matrices pass for `9f2305c2`; the governance commit requires one final exact-SHA evidence rebind. |
+| State Matrix | pending rebind | Exact-SHA engineering matrices pass for `19149949ab3b35d0fe17cba763580e8532d8d69f`; this governance correction requires one final exact-SHA evidence rebind. |
 | Route maturity | pending | 0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable. |
 | RouterOS soak | pending | No current long-running real-device evidence. |
 | Release hygiene | pending | Clean candidate, external CL and publication chain remain incomplete. |
