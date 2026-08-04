@@ -1,11 +1,11 @@
-RouterOS / iKuai panel decision repository mirror. Step863 fixes the narrow-phone fixed-navigation capture boundary while preserving the fail-closed readiness boundary; formal acceptance, route maturity, RouterOS soak, exact-SHA CL and trusted publication signature remain open.
+RouterOS / iKuai panel decision repository mirror. Step868 aligns the Overview acceptance probe with the split phone action contract and rebinds the exact-SHA matrix evidence; formal acceptance, route maturity, RouterOS soak, exact-SHA CL and trusted publication signature remain open.
 
-这是当前面板工作的本地决策仓库镜像。Step863 修复窄屏固定导航与证据边界的截图采集上下文；exact-SHA 证据只由机器状态绑定，交互 scoped review P0/P1 clean、产品 conditional、视觉需新 SHA 复验，正式签收、route maturity、RouterOS soak、exact-SHA Linux/Windows/GHCR CL 和可信外部发布签收仍未完成。emil-design-eng 已融合进 product-company-loop，强调静态证据和 reduced-motion。
+这是当前面板工作的本地决策仓库镜像。Step868 修复 Overview 验收器对手机主任务/次级上下文动作的漏计，并完成当前 clean SHA 的 exact-SHA 矩阵重绑；exact-SHA 证据只由机器状态绑定，交互 scoped review P0/P1 clean、产品 conditional、正式签收、route maturity、RouterOS soak、exact-SHA Linux/Windows/GHCR CL 和可信外部发布签收仍未完成。emil-design-eng 已融合进 product-company-loop，强调静态证据和 reduced-motion。
 
 - status: `current-mirror-entry`
-- currentStep: `863`
-- currentOutcome: `863:narrow-phone-fixed-nav-visual-context-fixed-formal-gates-open`
-- currentBoundary: `863`
+- currentStep: `868`
+- currentOutcome: `868:overview-matrix-action-aggregation-fixed-formal-gates-open`
+- currentBoundary: `868`
 - authority: `decision-system/current-state.md`
 
 ## 入口
@@ -46,3 +46,4 @@ Historical Step858: report quarantine is bounded to current-source references an
 Step859: local scoped visual QA is P0/P1-clean for the declared screenshots and runtime contracts; formal acceptance and final exact-SHA rebind remain open, release remains closed and task remains active.
 Step860: exact-SHA local visual and matrix evidence is green in scope; readiness reaches the real route-maturity gate; formal acceptance, soak, CL and publication remain closed, release remains closed and task remains active.
 Step862: independent product/design/visual review findings are recorded; matrix aggregate families are isolated, runtime fixture identity is aligned with public matrix captures, and composite screenshot capture is stabilized. Formal gates remain closed and task remains active.
+Step868: the Overview probe now aggregates primary and marked secondary phone investigation actions without weakening thresholds; current exact-SHA Overview, route-responsive and route-state evidence is rebound. Readiness remains fail-closed at route maturity and task remains active.
