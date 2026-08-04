@@ -1403,8 +1403,8 @@
 
 @media (max-width: 599px) {
   .mp-shell.has-incident .mp-actions[data-mobile-incident-task-role="follow-up"] > header {
-    min-height: 20px;
-    padding-block: 1px;
+    min-height: 40px;
+    padding-block: 2px;
   }
   .mp-shell.has-incident .mp-actions[data-mobile-incident-task-role="follow-up"] > header .mp-section-kicker {
     display: none;

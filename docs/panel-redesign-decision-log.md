@@ -24912,3 +24912,17 @@ ocused-green-engineering
 - nextAction：同步 Step863 到 `D:\想法\面板` 并提交 source/tool/governance changes；在新 clean SHA 重跑 build/types/runtime、28/28 overview、route-responsive、route-state、mobile-native、packet、quarantine、truth 和 readiness，再请求当前 SHA 的独立视觉/产品/交互复核并继续正式 route-owner、RouterOS soak 与三端 CL。
 - validForCommit：Step863 修改前的当前 clean-worktree evidence only；本步提交后所有 exact-SHA 报告必须重新生成。
 - supersededBy：null
+
+## 第 864 步：修复事故跟进区契约冲突，继续当前候选重绑
+
+- status：`incident-support-boundary-contract-fixed-formal-gates-open`
+- latestStepOutcome: `864:incident-support-boundary-contract-fixed-formal-gates-open`
+- 触发/问题：最新 exact-SHA 浏览器报告绑定到 `2c28ebb56c03d1e494c9f30cd5dc7fa1ce245bd9` 后，`npm run check:overview` 真实发现一个本地 P1 契约回归：事故跟进标题的最终 override 仍为 `20px`，与“至少 `40px` 的紧凑标题”合同不一致；390px 的证据下界比固定导航提前 `57px`，超过合同允许的 `56px`。
+- 观察事实：失败不是外部签收缺失造成的，而是本地 CSS 规则层叠与运行时几何不同步。行动按钮仍保持 `44/48/56px` 触控下限，375px 的边界合同已通过；只需要恢复跟进标题的非交互空间到 `40px`，不会降低操作目标，也不会把辅助证据隐藏到不可达。
+- 决策/实现：将 `src/panel-framework/mobile/mobile-patrol.css` 的事故跟进标题 override 从 `20px` 修正为 `40px`，保留紧凑上下内边距与隐藏重复 kicker；先跑 source contract、build、asset identity/static containment，再在新 clean SHA 上重跑 runtime、Overview 和完整矩阵。不得用旧报告覆盖新候选。
+- 验证（提交前）：CSS 静态边界检查的标题合同已恢复；build、148 文件输入摘要、hashed/br-gzip/ETag/目录边界检查通过。当前工作树因本步 source/build 变更而不是候选 clean SHA，exact-SHA runtime/matrix 必须在本步提交后重新生成。
+- 视觉/交互裁决：关闭本地可修复的 incident-support P1 后，重新请求当前 SHA 的 scoped Visual/Product/Interaction review；不得把该 scoped review 写成 trusted signature。正式 Product/Design/Visual、Accessibility/AT、Route Owner、route maturity、RouterOS soak、Linux/Windows/GHCR exact-SHA CL 和 GitHub 发布继续 fail-closed。
+- 边界/心得：发布循环应把“检查发现本地回归”视为下一项可执行修复，而不是 blocked。静态规则、运行时几何和截图上下文必须互相验证；固定导航可见、标题紧凑、触控目标不缩水是三个独立事实，不能用其中一个假设另外两个成立。
+- nextAction：提交并同步 Step864；在新 clean SHA 重跑 build/types/runtime、Overview `28/28`、route-responsive、route-state、mobile-native、packet、quarantine、truth 和 readiness，然后完成当前 SHA 的独立 scoped 复核并继续 formal acceptance、RouterOS soak 与三端 CL。
+- validForCommit：Step864 source/build/governance changes；前一候选 `2c28ebb...` 的 exact-SHA 报告在本步提交后全部过期。
+- supersededBy：null
