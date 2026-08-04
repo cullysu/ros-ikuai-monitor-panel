@@ -1,13 +1,15 @@
 # Release Journal
 - status: `current-journal`
-- validForCommit: 9f2305c2a500f909016ccd7189dedf1ef710ee17 exact clean candidate evidence; this governance update requires a final exact-SHA rebind; formal external gates remain open; not a public release approval
+- validForCommit: 3ea1924150f5d16f9a261136f3a04811c7f28075 exact clean candidate evidence; this governance record requires a final exact-SHA rebind; formal external gates remain open; not a public release approval
 - supersededBy: null
-- currentStep: 856
-- currentOutcome: 856:exact-sha-matrices-independent-scoped-reviews-formal-gates-open
-- latestStepOutcome: 856:exact-sha-matrices-independent-scoped-reviews-formal-gates-open
+- currentStep: 858
+- currentOutcome: 858:report-quarantine-current-references-bounded-false-green-gate-fail-closed-formal-gates-open
+- latestStepOutcome: 858:report-quarantine-current-references-bounded-false-green-gate-fail-closed-formal-gates-open
 - authority: docs/decision-system/current-state.md
 - fullHistory: panel-redesign-decision-log.md
 
+- Step858: Report quarantine is bounded to current-source references: 605 total, 5 current inspected, 600 historical skipped, decision-system pass. Route maturity remains 0/18/0/1; prior exact-SHA evidence is stale. Formal acceptance, RouterOS soak, exact-SHA Linux/Windows/GHCR CL and GitHub remain open. Task active and blocked=false; no self-signature or upload.
+- Step857: clean candidate 3ea1924150f5d16f9a261136f3a04811c7f28075 rebinds build/runtime 257/140/169, Overview 28/28, route-responsive 532/532, route-state 266/266, bounded route shard 76/76 and mobile native 56/56; packet identity and decision-repository checks pass. Current scoped Product/Design/Visual review is P0/P1=0, while formal acceptance, Accessibility/AT, Route Owner, RouterOS soak and Linux/Windows/GHCR exact-SHA CL remain open. Readiness stops at 0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable; no GitHub upload is authorized. The following governance commit requires a final exact-SHA rebind.
 - Step856: clean candidate `9f2305c2a500f909016ccd7189dedf1ef710ee17` passes build/runtime `257/140/169`, Overview `28/28`, route-responsive `532/532`, route-state `266/266` and bounded route shard `76/76`. Hooke Product/Design/Visual and Noether Accessibility/Interaction scoped reviews are PASS with P0/P1=`0`; local visual/design/product/accessibility review is closed within the declared scope. Nash Route Owner/Operations remains formal FAIL because strict maturity is `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`, no real RouterOS soak exists, no trusted external acceptance key/signature exists, and no exact-SHA Linux/Windows/GHCR CL exists. The packet remains `prepared-not-signed`, `selfSignoff=false`, `releaseEligible=false`. The prior blocked marker was incorrect; the task remains active and blocked=false. Governance commit requires a final exact-SHA rebind; no GitHub upload is authorized.
 
 - Step836: route-evidence remediation focused checks pass; exact runtime/matrix/packet evidence is stale until a new clean SHA is committed. Formal Product/Design/Visual, independent Accessibility, route-owner maturity, RouterOS soak and exact-SHA CL remain open.

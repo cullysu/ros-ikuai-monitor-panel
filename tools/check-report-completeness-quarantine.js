@@ -116,6 +116,24 @@ function sourceReferences(relative, sources = CURRENT_SOURCES) {
     .map((sourcePath) => relativeSlash(sourcePath));
 }
 
+function currentReportReferences(sources = CURRENT_SOURCES) {
+  const references = new Set();
+  const punctuation = String.fromCharCode(96, 34, 39) + '()[]{}.,;';
+  for (const sourcePath of sources) {
+    if (!fs.existsSync(sourcePath)) continue;
+    const source = fs.readFileSync(sourcePath, 'utf8');
+    for (const token of source.split(/\s+/)) {
+      let candidate = token.replaceAll('\\', '/');
+      while (candidate && punctuation.includes(candidate[0])) candidate = candidate.slice(1);
+      while (candidate && punctuation.includes(candidate[candidate.length - 1])) candidate = candidate.slice(0, -1);
+      if (candidate.startsWith('_acceptance/') && candidate.endsWith('/report.json')) {
+        references.add(candidate);
+      }
+    }
+  }
+  return references;
+}
+
 function inspectReport(report, relative, rules) {
   const reasons = contradictionReasons(report);
   if (reasons.length === 0) return null;
@@ -148,9 +166,11 @@ function main() {
 
   const rules = Array.isArray(manifest?.rules) ? manifest.rules : [];
   const files = reportFiles();
+  const currentReferences = currentReportReferences();
+  const currentFiles = files.filter((filePath) => currentReferences.has(relativeSlash(filePath)));
   const contradictions = [];
   const invalidReports = [];
-  for (const filePath of files) {
+  for (const filePath of currentFiles) {
     const relative = relativeSlash(filePath);
     let report;
     try {
@@ -191,7 +211,10 @@ function main() {
     pass: failures.length === 0,
     contract: 'report-completeness-quarantine-v1',
     manifest: relativeSlash(MANIFEST_PATH),
-    scannedReports: files.length,
+    totalReports: files.length,
+    scannedReports: currentFiles.length,
+    skippedHistoricalReports: files.length - currentFiles.length,
+    currentReferences: [...currentReferences].sort(),
     scanWarnings,
     contradictionCount: contradictions.length,
     quarantinedCount: contradictions.filter((item) => item.quarantined).length,

@@ -24806,3 +24806,34 @@ ocused-green-engineering
 - nextAction：提交并同步 Step856 治理记录，随后以新的最终 clean SHA 重新构建和绑定 runtime、28/532/266/76 矩阵、packet、readiness 与发布前门禁；继续等待/取得真实 route-owner、RouterOS soak 与 Linux/Windows/GHCR exact-SHA CL，全部通过前禁止 GitHub 发布。
 - validForCommit：`9f2305c2a500f909016ccd7189dedf1ef710ee17` 为本步 exact-SHA 工程与 scoped review 证据；本步治理提交后必须重新绑定最终候选。
 - supersededBy：null
+
+## 第 857 步：3ea 精确证据重绑与决策仓库新鲜度修复，正式签收继续开放
+
+- status：`3ea-exact-evidence-rebound-decision-repository-freshness-fixed-formal-gates-open`
+- latestStepOutcome: `857:3ea-exact-evidence-rebound-decision-repository-freshness-fixed-formal-gates-open`
+- 触发/问题：Step856 的治理提交之后，根 README 的 currentStep/currentBoundary 和历史归档覆盖范围仍落后于当前 Step856；如果不修复，决策仓库会再次出现入口指针与唯一 current-state 不一致。用户明确要求继续推进，不能把开放门禁标成受阻，也不能把工程绿灯写成正式产品签收。
+- 观察事实：治理修复后的 clean candidate `3ea1924150f5d16f9a261136f3a04811c7f28075` 已重新绑定 build、生产 runtime `257 checks / 140 screenshots / 169 snapshotApiCalls`、Overview `28/28`、完整 route-responsive `532/532`、route-state `266/266`、bounded single-scenario route shard `76/76`、mobile native `56/56`；packet identity 与 digest 检查通过，工作树 clean。D 盘镜像同步门禁为 `14/14` byte-identical，decision-system 全套检查通过。
+- 独立复核边界：Avicenna 对当前精确 SHA 的 Product/Design/Visual scoped review 为 PASS，P0/P1=`0`，P2 为时区可见性、1366 次级文字密度和工具区克制性；这不是 trusted formal signoff。Accessibility/Interaction、Route Owner/Operations 的正式签收仍未关闭；route maturity 仍为 `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`，没有真实 RouterOS soak、可信 external signature 或 Linux/Windows/GHCR exact-SHA CL。
+- readiness：`check-public-release-readiness.js --require-matrix` 已接受 `3ea` 的完整 Overview 矩阵，然后有意 fail-closed 停在 route maturity。packet 保持 `prepared-not-signed`、`selfSignoff=false`、`releaseEligible=false`；没有 GitHub 上传。
+- 决策：修复决策仓库入口与归档新鲜度；关闭本轮可由本地完成的 exact-SHA 工程证据重绑和当前 scoped visual/product review 记录，但保持 Product/Design/Visual formal、Accessibility/AT、Route Owner、RouterOS soak 与三端 CL 为 pending/failed 边界。开放门禁不是 blocked，任务保持 active、`blocked=false`。本条治理记录提交后必须再按新 SHA 重绑证据，禁止复用 `3ea` 目录冒充新候选。
+- 理由与拒绝项：矩阵数量和 packet identity 只能证明工件可审计，不能替代真实用户、真实 RouterOS 或可信独立签名；不自签、不伪造 CL、不晋级 bounded route、不上传 GitHub。
+- 验证：`npm run build`、runtime、`npm run check:overview`、mobile native、静态/安全/采集/报告真相门禁通过；完整矩阵与 packet 均绑定 `3ea`；readiness 在 route maturity 真实失败；决策镜像 14/14 一致。
+- 边界/心得：决策仓库的入口指针、current-state、release journal、历史索引和 D 盘镜像必须一起变化；当前唯一结论是 FAIL overall / local scoped review bounded-pass，不能用旧日志中的发布成功叙述覆盖它。文档提交会改变 SHA，因此“证据重绑”必须在文档提交之后重新执行一次。
+- nextAction：提交并同步 Step857，然后在新 clean SHA 上重跑 build、runtime、28/532/266/76/mobile 矩阵与 packet；随后继续获取真实 Accessibility/Route Owner 签收、RouterOS soak 和 Linux/Windows/GHCR exact-SHA CL。
+- validForCommit：`3ea1924150f5d16f9a261136f3a04811c7f28075` 为本步文档变更前的 exact-SHA 工程证据；本步提交后必须重新绑定。
+- supersededBy：null
+
+## 第 858 步：报告隔离门禁收敛，假绿灯 fail-closed，正式签收继续开放
+
+- status: report-quarantine-current-references-bounded-false-green-gate-fail-closed-formal-gates-open
+- latestStepOutcome: `858:report-quarantine-current-references-bounded-false-green-gate-fail-closed-formal-gates-open`
+- trigger/problem: A review questioned whether decision state and report gate could contradict one another. Independent signoff and release CL being unfinished is not a reason to stop; the local truth gate must be corrected first.
+- observed facts: Current-state is the sole authority and remains FAIL overall. Current route-state is internally truthful; local-predeploy-check.js propagates nested false and incomplete matrices. Atomic traffic history, canonical route, locale-stable identity, sidecar containment and decision-system checks pass. Route maturity remains 0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable.
+- decision: Bound quarantine to five reports referenced by current sources. Keep all 605 reports in inventory, skip 600 historical reports, and fully inspect five current references. Historical reports remain forbidden as current release inputs and are not deleted.
+- rationale: Unbounded historical parsing timed out without improving current truth. Deleting history harms auditability. Suppressing contradictions or promoting partial pass=true recreates the false-green defect.
+- verification: Quarantine syntax, fixture, scan and full check:decision-system pass with totalReports=605, scannedReports=5, skippedHistoricalReports=600, contradictionCount=0. Previous 3ea exact-SHA evidence is stale after this governance change.
+- independent boundary: Previous scoped review is old-SHA bounded, not a trusted signature. Formal acceptance, Router Owner/Operations, RouterOS soak and exact-SHA CL remain open. Packet is prepared-not-signed, selfSignoff=false, releaseEligible=false; GitHub untouched.
+- lesson: An open release gate is remaining work, not a blocked task. Report truth must be bounded and fail-closed without making history a second current truth.
+- nextAction: Commit Step858, rebuild final clean-SHA evidence and packet/readiness, then continue independent acceptance, RouterOS soak and exact-SHA CL.
+- validForCommit: uncommitted Step858 governance and gate correction; prior 3ea evidence is stale.
+- supersededBy: null
