@@ -24869,3 +24869,17 @@ ocused-green-engineering
 - nextAction：提交并同步 Step860；在新 SHA 上重建 build、runtime、28/532/266/76/mobile/packet/readiness 全部 exact-SHA 证据，然后继续寻找真实独立签收、Route Owner、RouterOS soak 和三端 CL。
 - validForCommit：`a5062801df84edb8b1a65c12a31606f708230c9d` 为本步文档变更前的 clean exact-SHA evidence；治理提交后必须重新绑定。
 - supersededBy：null
+
+## 第 861 步：修复 current authority 自我过期，禁止治理提交制造第二套当前真相
+
+- status: `current-authority-no-self-invalidating-sha-and-formal-gates-open`
+- latestStepOutcome: `861:current-authority-no-self-invalidating-sha-and-formal-gates-open`
+- 触发/问题：复核发现 Step860 提交后，`current-state.md` 仍写着治理提交前的 `a506...` 和“uncommitted”，而机器状态已经绑定后续 clean SHA。虽然同步门禁通过，这仍会让人类当前真相落后于工作树，重现最初的 P0 决策冲突。
+- 观察事实：当前决策仓库的历史记录能准确保存候选 SHA，但 current-state、current-index、handoff 和根镜像若硬编码每次提交前的 SHA，就会在提交后天然失效；`check-current-release-boundary.js` 也把“uncommitted”误当作唯一的 fail-closed 表达。当前产品/设计/视觉仍是 scoped pass、formal pending，route maturity 仍为 `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`。
+- 决策：current authority 改为描述“当前 clean-worktree evidence only”，不再写死会被下一次文档提交改变的 SHA；精确 SHA、报告路径、worktree fingerprint 只由 `.product-loop/state.json` 和当前报告隔离门禁绑定。历史 journal 保留每个不可变候选的 SHA；current-state 只保存不随治理提交自我过期的结论和边界。同步 `check-current-release-boundary.js`，允许 current clean-worktree fail-closed 语义，但继续拒绝任何 public release/pass 说法。
+- 理由与拒绝项：删除 SHA 并不是降低证据标准；恰好相反，避免把历史候选冒充当前候选，并要求机器门禁对当前 HEAD 做精确绑定。拒绝继续用“每次文档都声明 uncommitted”的循环写法，拒绝把历史 journal 当第二个当前真相，拒绝把 scoped visual QA 改成 trusted signature。
+- 验证：current-state/current-index/handoff/root mirror/历史索引和 journal 指针统一到 Step861；D 盘同步必须保持语义与字节一致；`check-current-release-boundary.js` 将验证当前 clean-worktree boundary；之后在本步治理提交产生的新 SHA 上重新生成所有 exact-SHA 报告，证明机器绑定仍然有效。
+- 边界/心得：决策记录要记录“为什么”和“结论”，精确候选身份要由机器证据记录；把两者强行写在同一个会被下一次提交改变的字段里，会制造假冲突。当前 authority 的稳定性本身也是产品发布基础设施的一部分。
+- nextAction：同步并提交 Step861，重新绑定新 SHA 的 build/runtime/Overview/route-state/route-responsive/mobile/packet/readiness，再继续真实独立签收、route maturity、RouterOS soak 和三端 exact-SHA CL。
+- validForCommit：current clean-worktree evidence only; exact-SHA release evidence is machine-bound and must be regenerated after any tracked change; formal release remains closed.
+- supersededBy：null

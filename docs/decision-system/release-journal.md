@@ -1,12 +1,14 @@
 # Release Journal
 - status: `current-journal`
-- validForCommit: uncommitted Step860 governance record; the next clean candidate must rebind all exact-SHA evidence; formal external gates remain open; not a public release approval
+- validForCommit: current clean-worktree evidence only; exact-SHA reports are bound in machine state and must be regenerated after any tracked change; formal external gates remain open; not a public release approval
 - supersededBy: null
-- currentStep: 860
-- currentOutcome: 860:final-exact-sha-visual-review-and-readiness-boundary-formal-gates-open
-- latestStepOutcome: 860:final-exact-sha-visual-review-and-readiness-boundary-formal-gates-open
+- currentStep: 861
+- currentOutcome: 861:current-authority-no-self-invalidating-sha-and-formal-gates-open
+- latestStepOutcome: 861:current-authority-no-self-invalidating-sha-and-formal-gates-open
 - authority: docs/decision-system/current-state.md
 - fullHistory: panel-redesign-decision-log.md
+
+- Step861: The current authority is now non-self-invalidating: current documents describe the clean-worktree evidence boundary, exact-SHA report identity is held in machine state and historical entries, and any tracked change requires a fresh exact-SHA rebind. Formal Product/Design/Visual, Accessibility, Route Owner, RouterOS soak and Linux/Windows/GHCR exact-SHA CL remain open; task active and blocked=false; GitHub untouched.
 
 - Step860: Candidate `a5062801df84edb8b1a65c12a31606f708230c9d` passes build, runtime `257/140/169`, Overview `28/28`, route-state `266/266`, full route-responsive `532/532`, single-route responsive `76/76`, mobile-native `56/56`, the complete overview contract suite and the product-design visual packet identity check. Fresh local mobile and desktop captures were inspected; the declared local visual scope is P0/P1=`0`. Report quarantine scans five current references with zero contradictions, and readiness accepts the exact-SHA matrix before stopping at route maturity `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`. Formal Product/Design/Visual, Accessibility, Route Owner, RouterOS soak and Linux/Windows/GHCR exact-SHA CL remain open; packet is prepared-not-signed, selfSignoff=false, releaseEligible=false; task active and blocked=false; GitHub untouched. This governance write requires a fresh exact-SHA rebind.
 

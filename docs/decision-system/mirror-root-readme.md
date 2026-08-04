@@ -1,11 +1,11 @@
-RouterOS / iKuai panel decision repository mirror. Step860 records the fresh exact-SHA visual review and fail-closed readiness boundary; formal acceptance, route maturity, RouterOS soak, exact-SHA CL and trusted publication signature remain open.
+RouterOS / iKuai panel decision repository mirror. Step861 repairs current-authority freshness while preserving the fail-closed readiness boundary; formal acceptance, route maturity, RouterOS soak, exact-SHA CL and trusted publication signature remain open.
 
-这是当前面板工作的本地决策仓库镜像。Step860 记录 clean candidate 的 exact-SHA build/runtime/matrix 与 fresh local scoped visual QA；本地 scoped 视觉与交互审查已在声明范围内关闭，但正式签收、route maturity、RouterOS soak、exact-SHA Linux/Windows/GHCR CL 和可信外部发布签收仍未完成。Step860 治理提交后必须重新生成最终 exact-SHA 证据。emil-design-eng 已融合进 product-company-loop，强调静态证据和 reduced-motion。
+这是当前面板工作的本地决策仓库镜像。Step861 修复 current authority 在治理提交后自我过期的问题；exact-SHA 证据只由机器状态绑定，本地 scoped 视觉与交互审查已在声明范围内关闭，但正式签收、route maturity、RouterOS soak、exact-SHA Linux/Windows/GHCR CL 和可信外部发布签收仍未完成。emil-design-eng 已融合进 product-company-loop，强调静态证据和 reduced-motion。
 
 - status: `current-mirror-entry`
-- currentStep: `860`
-- currentOutcome: `860:final-exact-sha-visual-review-and-readiness-boundary-formal-gates-open`
-- currentBoundary: `860`
+- currentStep: `861`
+- currentOutcome: `861:current-authority-no-self-invalidating-sha-and-formal-gates-open`
+- currentBoundary: `861`
 - authority: `decision-system/current-state.md`
 
 ## 入口
@@ -45,3 +45,4 @@ RouterOS / iKuai panel decision repository mirror. Step860 records the fresh exa
 Historical Step858: report quarantine is bounded to current-source references and remains fail-closed; release remains closed and task remains active.
 Step859: local scoped visual QA is P0/P1-clean for the declared screenshots and runtime contracts; formal acceptance and final exact-SHA rebind remain open, release remains closed and task remains active.
 Step860: exact-SHA local visual and matrix evidence is green in scope; readiness reaches the real route-maturity gate; formal acceptance, soak, CL and publication remain closed, release remains closed and task remains active.
+Step861: current-state no longer hard-codes a pre-commit SHA or claims a governance write is permanently uncommitted; exact-SHA reports remain machine-bound, formal gates remain closed, and task remains active.

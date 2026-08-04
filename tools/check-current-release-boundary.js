@@ -58,7 +58,7 @@ expect(/Product release gate:\s*\*\*FAIL/.test(fullContract), 'full product cont
 expect(/status:\s*`current-contract\s*\/\s*acceptance-failed`/.test(mobileContract), 'mobile product contract must remain acceptance-failed');
 expect(/Product\/design\/visual gate:\s*\*\*FAIL/.test(mobileContract), 'mobile product contract must keep Product/Design/Visual FAIL boundary');
 
-expect(/validForCommit:.*uncommitted/i.test(top(currentState, 12)), 'current-state must not advertise a clean release candidate');
+expect(/validForCommit:.*(?:current clean-worktree|uncommitted|clean candidate)/i.test(top(currentState, 12)), 'current-state must expose a non-release evidence boundary');
 expect(/not a release candidate/i.test(top(handoff, 12)), 'product-loop must not advertise a release candidate');
 expect(/historical.*engineering distribution|历史工程发行事实/i.test(journalTop), 'historical engineering distribution must remain labelled historical');
 
