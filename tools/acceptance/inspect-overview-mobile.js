@@ -199,7 +199,7 @@ function inspectMobileNativeOverview({
   const ledgerRows = Array.from(ledger?.querySelectorAll('dl > div') || []);
   const ledgerKeys = ledgerRows.map((node) => node.getAttribute('data-mobile-evidence-row') || '');
   const patrolActions = mobileRoot.querySelector('.mp-actions');
-  const patrolActionButtons = Array.from(patrolActions?.querySelectorAll('button[id]') || []);
+  const patrolActionButtons = Array.from(mobileRoot.querySelectorAll('.mp-actions button[id], [data-mobile-incident-follow-up-context] button[id]'));
   const workspacePrimary = mobileRoot.querySelector('.mp-workspace-primary');
   const workspaceContext = mobileRoot.querySelector('.mp-workspace-context');
   const workspaceBody = mobileRoot.querySelector('.mp-workspace-body');

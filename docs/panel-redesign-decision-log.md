@@ -24966,3 +24966,16 @@ ocused-green-engineering
 - nextAction：同步并提交 Step867；在新 clean SHA 重跑 runtime/matrix/packet/quarantine/truth/readiness，确认次级动作真实高度和所有矩阵，再完成 scoped review 并继续 formal acceptance、RouterOS soak 与三端 CL。
 - validForCommit：Step867 mobile CSS/build/governance changes；之前 `aea1768...` 的 exact-SHA 报告在本步提交后全部过期。
 - supersededBy：null
+
+## 第 868 步：修复完整矩阵对拆分事故动作的语义漏检
+
+- status：`overview-matrix-action-aggregation-fixed-formal-gates-open`
+- latestStepOutcome: `868:overview-matrix-action-aggregation-fixed-formal-gates-open`
+- 触发/问题：Step867 提交后的 exact-SHA Overview 28 格重跑实际发现 14 格失败，全部集中在手机事故场景的 `patrolActions=false`。产品动作结构已经按责任拆成主任务 `.mp-actions` 与邻接的 `[data-mobile-incident-follow-up-context]` 次级动作，但 `tools/acceptance/inspect-overview-mobile.js` 仍只查询第一个 `.mp-actions`，把 3 个真实动作误计成 1 个。这是验收器与新语义边界不一致，不是把失败门禁改绿。
+- 决策/实现：验收器现在从移动根节点聚合主任务和明确标记的次级上下文动作，再按原有 `3` 个动作与路由完整性要求判定；没有降低阈值、没有放宽可见性、没有删除手机横屏/竖屏格子。这样门禁证明的是用户实际能看到的完整调查入口，而不是旧 DOM 结构。
+- 验证：`node --check tools/acceptance/inspect-overview-mobile.js` 通过；失败报告已保留在 `_acceptance/release-matrix-e75b4cddb15a6e44037cec4a3d96343aca1245ee/report.json` 作为修复前证据。修复后必须在新 clean SHA 上重新跑完整 28 格、76 格 route-responsive、532 格 route-state/public-release、runtime、packet、quarantine、truth 和 readiness，不能复用失败前报告。
+- 边界/心得：独立签收不是“测试器永远绿”，而是测试器要与产品语义同步且能抓到真实回归。组件拆分后，DOM 查询应围绕数据责任标记聚合；一旦报告把所有失败准确收敛到单一契约，就先修根因再重跑，不因外部签名尚未具备而停下，也不把外部签名缺失冒充本地通过。
+- 发布边界：本地矩阵尚未重新通过；Product/Design/Visual trusted acceptance、Accessibility/AT、Route Owner、route maturity、RouterOS soak、Linux/Windows/GHCR exact-SHA CL 和 GitHub 发布继续 fail-closed，任务 active、blocked=false。
+- nextAction：提交 Step868 后重绑 exact-SHA runtime 与完整矩阵；随后检查 packet/quarantine/truth/readiness，生成当前 SHA 截图包并完成 scoped visual/product/interaction re-review，再继续真实路由成熟度、RouterOS soak 与三端 CL。
+- validForCommit：Step868 acceptance probe/governance change；之前 `e75b4c...` 的 exact-SHA 矩阵因本步工具变更全部失效。
+- supersededBy：null
