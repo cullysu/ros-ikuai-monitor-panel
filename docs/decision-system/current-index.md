@@ -1,12 +1,12 @@
 - status: `reference`
-- validForCommit: 3ea1924150f5d16f9a261136f3a04811c7f28075 exact clean candidate evidence; this governance update requires a final exact-SHA rebind; formal external gates remain open; not a public release approval
+- validForCommit: uncommitted Step859 governance record; the next clean candidate must rebind all exact-SHA evidence; formal external gates remain open; not a public release approval
 - supersededBy: `null`
 - authority: `docs/decision-system/current-state.md`
-- currentStep: `858`
-- currentOutcome: `858:report-quarantine-current-references-bounded-false-green-gate-fail-closed-formal-gates-open`
-- currentBoundary: `858`
-- latestRecordedStep: `858`
-- latestStepOutcome: `858:report-quarantine-current-references-bounded-false-green-gate-fail-closed-formal-gates-open`
+- currentStep: `859`
+- currentOutcome: `859:final-clean-surface-review-and-current-evidence-rebind-formal-gates-open`
+- currentBoundary: `859`
+- latestRecordedStep: `859`
+- latestStepOutcome: `859:final-clean-surface-review-and-current-evidence-rebind-formal-gates-open`
 
 ## Current pointer
 

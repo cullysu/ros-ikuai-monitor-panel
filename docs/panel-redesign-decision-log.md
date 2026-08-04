@@ -24837,3 +24837,19 @@ ocused-green-engineering
 - nextAction: Commit Step858, rebuild final clean-SHA evidence and packet/readiness, then continue independent acceptance, RouterOS soak and exact-SHA CL.
 - validForCommit: uncommitted Step858 governance and gate correction; prior 3ea evidence is stale.
 - supersededBy: null
+
+## 第 859 步：当前候选局部视觉复核关闭，正式发布门禁继续开放
+
+- status：`final-clean-surface-review-and-current-evidence-rebind-formal-gates-open`
+- latestStepOutcome: `859:final-clean-surface-review-and-current-evidence-rebind-formal-gates-open`
+- 触发/问题：用户明确纠正“独立签收未完成就标记受阻”的错误。未取得外部主体签名不等于本地任务受阻；本步继续完成可由当前工作区真实完成的视觉、交互、证据语义和发布材料复核，并把不可自签的边界写清。
+- 观察事实：`61243028ca93cf5a1357c50a76a9d7d6e619ee34` clean candidate 的 build 通过；生产 runtime 为 `257 checks / 140 screenshots / 169 snapshot API calls`；Overview `28/28`；mobile-native `56/56`；desktop v1030、no-snapshot、incident hierarchy focused checks 通过。新鲜手机截图覆盖 normal、fleet、no-snapshot、resource-full、interfaces-down，分别检查首要结论、证据新鲜度、风险对象、动作入口、底部导航遮挡和信息边界；当前截图未复现已修复的伪活动路由、缺失速率转零、假 sheet/topology 或 7–9px 文字问题。
+- 视觉与交互裁决：当前候选在声明范围内的本地视觉 QA 为 P0/P1=`0`；手机和桌面使用独立渲染树，但共享风险优先级、证据语义、只读边界和动作上下文。对 `emil-design-eng` 的约束继续生效：指标/告警/时间戳不靠动效制造新鲜度，触控反馈要即时可中断，reduced-motion 不能失效。该结果是实现者/自动化结合的 scoped review，不是可信外部 Product/Design/Visual 签名。
+- 语义与发布事实：后端 `format_iso_now()` 使用带时区 RFC 3339；前端 `parseRfc3339Timestamp()` 拒绝无时区值；`navigator.onLine` 只作为 LAN 监控提示，不阻断同源 `/api/snapshot` 请求。report quarantine 对当前来源有界扫描，历史报告只作库存证据。route maturity 仍为 `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`；RouterOS soak、真实辅助技术/真机验收、trusted acceptance、Linux/Windows/GHCR exact-SHA CL 不存在。
+- 决策：关闭本步声明范围内的 local visual QA 和证据语义复核；继续保持 formal Product/Design/Visual、Accessibility/AT、Route Owner、route maturity、RouterOS soak、三端 CL 和 GitHub 发布 fail-closed。不得写入或伪造 external-acceptance，不得把 scoped PASS 改成 trusted signature，不得把矩阵通过改写成公众产品通过。
+- 理由与拒绝项：独立签名、真实 RouterOS 长时采集和远端 CL 都是当前环境无法替代的外部证据；可以继续推进本地代码、矩阵、报告和材料，但不能用自签或历史工件填空。开放门禁是继续工作清单，不是 blocked 终态。
+- 验证：本步截图与 focused runtime/visual contracts 通过；决策仓库在提交前必须同步到 `D:\想法\面板`。本步文档提交会改变 candidate SHA，之前 `61243028...` 报告不得作为最终发布证据，必须在新 clean SHA 重新生成。
+- 边界/心得：视觉评审的“关闭”必须区分 scoped local QA 与 trusted external acceptance；前者可以在当前工作区完成，后者只能由真实独立主体签署。保持这两个词不混用，既不会过早发布，也不会错误地把继续工作标为受阻。
+- nextAction：提交并同步 Step859 决策仓库；随后更新机器证据到新 SHA，重建 build、runtime、Overview 28/28、route-responsive 532/532、route-state 266/266、mobile 56/56、packet 和 readiness，再继续正式签收、RouterOS soak 与三端 exact-SHA CL。
+- validForCommit：`61243028ca93cf5a1357c50a76a9d7d6e619ee34` 为文档变更前的 clean engineering/scoped evidence；本步治理提交后必须重新绑定最终候选。
+- supersededBy：null
