@@ -2,9 +2,9 @@
 - validForCommit: current clean-worktree evidence only; exact-SHA reports are bound in machine state and must be regenerated after any tracked change; formal external gates remain open; not a public release approval
 - supersededBy: null
 - status: `current-index`
-- currentBoundaryForStep: `864`
-- latestRecordedStep: `864`
-- latestStepOutcome: `864:incident-support-boundary-contract-fixed-formal-gates-open`
+- currentBoundaryForStep: `865`
+- latestRecordedStep: `865`
+- latestStepOutcome: `865:phone-incident-action-context-split-formal-gates-open`
 - authority: `docs/decision-system/current-state.md`
 
 当前结论由 current-state.md 唯一拥有；本页只负责导航，不重复历史流水账。
@@ -17,4 +17,4 @@
 - 历史索引：historical-index.md
 
 
-Task remains active and blocked=false; Step864 repairs the incident-support header/boundary contract after the local Overview gate caught a real CSS/runtime mismatch. Trusted signoff, RouterOS soak, CL and publication remain open.
+Task remains active and blocked=false; Step865 separates the phone incident primary action from secondary context after the local rhythm gate caught an over-tall combined action section. Trusted signoff, RouterOS soak, CL and publication remain open.

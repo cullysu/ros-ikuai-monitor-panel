@@ -24926,3 +24926,17 @@ ocused-green-engineering
 - nextAction：提交并同步 Step864；在新 clean SHA 重跑 build/types/runtime、Overview `28/28`、route-responsive、route-state、mobile-native、packet、quarantine、truth 和 readiness，然后完成当前 SHA 的独立 scoped 复核并继续 formal acceptance、RouterOS soak 与三端 CL。
 - validForCommit：Step864 source/build/governance changes；前一候选 `2c28ebb...` 的 exact-SHA 报告在本步提交后全部过期。
 - supersededBy：null
+
+## 第 865 步：拆分手机事故主动作与上下文动作，关闭动作节奏 P1
+
+- status：`phone-incident-action-context-split-formal-gates-open`
+- latestStepOutcome: `865:phone-incident-action-context-split-formal-gates-open`
+- 触发/问题：Step864 把事故跟进标题恢复到 `40px` 后，整段 `mp-actions` 仍把 56px 主动作和次级动作一起计入同一视觉区，运行时高度为 `143px`，超过手机动作节奏合同的 `136px` 上限。不能通过降低触控目标或放宽门禁来假装通过。
+- 观察事实：手机事故页真正的任务顺序是“先处理主风险，再给主动作，再给次级上下文动作”。旧组件把三者放在同一 section，导致标题、主动作、次级动作共用一个高度责任。主动作必须保持 `56px`，次级动作必须保持 `44px` 以上；问题在责任边界，不在数据缺失。
+- 决策/实现：`MobilePatrolActions` 在非紧凑手机事故态拆成两个语义层：`data-mobile-incident-task-role="follow-up"` 只拥有带 `40px` 标题的主动作；次级动作进入无重复标题的上下文列表。`MobilePatrolScreen` 仅对 375/390 等非紧凑手机事故启用该拆分，平板、正常态和紧凑横屏继续使用原有动作结构。这样不重复动作、不缩小触控目标，且让运行时几何测量真正对应主任务层。
+- 验证：脏工作树 runtime `260 checks / 140 screenshots / 169 snapshotApiCalls` 通过；375/390 的主 follow-up section 为 `98px`、主动作 `56px`、横向溢出 `0`；390px 下界到固定导航的 slack 为 `28px`；截图显示主动作与次级上下文连续可达，导航不覆盖证据。types、build、asset identity/static containment 与固定资产预算通过。该验证仍是脏工作树，必须在提交后的 clean SHA 重跑。
+- 视觉/交互裁决：关闭本地动作节奏 P1；当前 scoped Visual/Product/Interaction review 仍需以新 exact-SHA 工件重新确认，不得转写成 trusted signature。正式 Product/Design/Visual、Accessibility/AT、Route Owner、route maturity、RouterOS soak、Linux/Windows/GHCR exact-SHA CL 和 GitHub 发布继续 fail-closed。
+- 边界/心得：当两个门禁看起来冲突时，先修复组件责任边界，再决定是否调整门禁；不能用更小字号、更小触控区或更宽阈值换绿。移动端的“视觉层高度”必须与用户真正执行的任务层对齐，主任务和上下文可以相邻，但不能伪装成同一个层。
+- nextAction：同步并提交 Step865；在新 clean SHA 重跑 build/types/runtime、Overview `28/28`、route-responsive、route-state、mobile-native、packet、quarantine、truth 和 readiness，完成当前 SHA 的 scoped re-review，并继续 formal acceptance、RouterOS soak 与三端 CL。
+- validForCommit：Step865 mobile component/CSS/build/governance changes；之前 `bea5b7b...` 的 exact-SHA 报告在本步提交后全部过期。
+- supersededBy：null

@@ -89,7 +89,7 @@ export function MobilePatrolScreen({
     onOpen={() => openEvidenceObject(selectedIncident.route, selectedIncident.targetObjectId || null)}
   /> : null;
   const patrolActions = showPatrolActions ? (
-    <MobilePatrolActions actions={model.investigationActions} steady={model.risk === "none"} onNavigate={onNavigate} />
+    <MobilePatrolActions actions={model.investigationActions} steady={model.risk === "none"} onNavigate={onNavigate} phoneIncident={incident && !compactIncident && !tablet} />
   ) : null;
   const tabletVerticalTask = tablet && showPatrolActions ? (
     <MobileTabletVerticalTask

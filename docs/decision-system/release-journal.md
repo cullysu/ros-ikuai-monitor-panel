@@ -2,9 +2,9 @@
 - status: `current-journal`
 - validForCommit: current clean-worktree evidence only; exact-SHA reports are bound in machine state and must be regenerated after any tracked change; formal external gates remain open; not a public release approval
 - supersededBy: null
-- currentStep: 864
-- currentOutcome: 864:incident-support-boundary-contract-fixed-formal-gates-open
-- latestStepOutcome: 864:incident-support-boundary-contract-fixed-formal-gates-open
+- currentStep: 865
+- currentOutcome: 865:phone-incident-action-context-split-formal-gates-open
+- latestStepOutcome: 865:phone-incident-action-context-split-formal-gates-open
 - authority: docs/decision-system/current-state.md
 - fullHistory: panel-redesign-decision-log.md
 
@@ -13,6 +13,8 @@
 - Step863: The 375px fixed-navigation visual P1 is fixed locally. Narrow runtime metadata is kept to one ellipsized line, incident non-interactive chrome is compacted without reducing 44/48/56px action targets, and composite captures now assert `scrollY=0` with a visible fixed navigation before the screenshot. Dirty-worktree runtime passes `260/140/169`, and fresh 375/390 screenshots show the evidence boundary above the navigation. This source/tool/governance change requires a new clean exact-SHA rebind and fresh Visual review; Product remains conditional, formal Product/Design/Visual, Accessibility, Route Owner, RouterOS soak and Linux/Windows/GHCR CL remain open; task active and blocked=false; GitHub untouched.
 
 - Step864: The current Overview gate caught a real local regression rather than an external-signoff blocker: the incident follow-up header override was `20px` against the `40px` contract, leaving `57px` of 390px slack above fixed navigation. The source rule is restored to `40px` without reducing 44/48/56px action targets; build and asset identity/static containment pass. The resulting tracked change requires a new clean exact-SHA runtime/matrix/packet rebind and current-SHA scoped review. Formal Product/Design/Visual, Accessibility, Route Owner, RouterOS soak and Linux/Windows/GHCR CL remain open; task active and blocked=false; GitHub untouched.
+
+- Step865: The phone rhythm gate exposed that a 40px incident header, 56px primary action and secondary context row were still measured as one 143px section. The mobile component now gives the follow-up owner only the 40px header plus the 56px primary action and places secondary actions in an adjacent context list; touch floors and task order remain intact. Dirty-worktree runtime passes `260/140/169`, the primary section is 98px, and 390px navigation slack is 28px. This source/build/governance change requires a new clean exact-SHA rebind and scoped review; formal gates remain open, task active and blocked=false; GitHub untouched.
 
 - Step861: The current authority is now non-self-invalidating: current documents describe the clean-worktree evidence boundary, exact-SHA report identity is held in machine state and historical entries, and any tracked change requires a fresh exact-SHA rebind. Formal Product/Design/Visual, Accessibility, Route Owner, RouterOS soak and Linux/Windows/GHCR exact-SHA CL remain open; task active and blocked=false; GitHub untouched.
 
