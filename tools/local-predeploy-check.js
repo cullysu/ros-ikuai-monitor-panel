@@ -336,9 +336,17 @@ function matrixSessionKey() {
   return 'local';
 }
 
-function matrixStatePath(commit) {
+function matrixStatePath(commit, outputDir) {
   const safeCommit = String(commit || 'unknown').replace(/[^A-Za-z0-9._-]+/g, '-');
-  return path.join(ROOT, '_acceptance', `release-matrix-${safeCommit}.json`);
+  const outputName = path.basename(path.resolve(ROOT, String(outputDir || '')));
+  const family = outputName.startsWith('release-matrix-')
+    ? 'release-matrix'
+    : outputName.startsWith('route-state-matrix-')
+      ? 'route-state-matrix'
+      : outputName.startsWith('route-matrix-')
+        ? 'route-matrix'
+        : `${outputName.replace(/-[A-Fa-f0-9]{7,40}$/, '') || 'matrix'}-matrix`;
+  return path.join(ROOT, '_acceptance', `${family}-${safeCommit}.json`);
 }
 
 function listScreenshotFiles(outDir) {
@@ -3229,7 +3237,10 @@ async function main() {
     report.finishedAt = new Date().toISOString();
     report.matrix = buildMatrixSummary(report.browserChecks, args);
     const matrixSession = matrixSessionKey();
-    const matrixStateFile = matrixStatePath(report.matrix.artifactKey || report.matrix.commit);
+    const matrixStateFile = matrixStatePath(
+      report.matrix.artifactKey || report.matrix.commit,
+      args.out,
+    );
     const matrixStartBatch = report.matrix.requestedScenarios.some((scenario) => ['single', 'fleet'].includes(scenario));
     const fullRequiredMatrixRequested = requestsRequiredOverviewMatrix(args);
     const currentMatrixRun = summarizeMatrixRun(report, args, {
@@ -3354,6 +3365,7 @@ module.exports = {
   buildMatrixSummary,
   isMergeableScenarioSubset,
   matrixArtifactKey,
+  matrixStatePath,
   recordNotApplicable,
   requestsRequiredOverviewMatrix,
   refreshOverviewWanRates,

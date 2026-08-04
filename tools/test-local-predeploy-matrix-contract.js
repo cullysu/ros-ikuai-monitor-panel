@@ -7,6 +7,7 @@ const {
   buildSnapshot,
   buildMatrixSummary,
   matrixArtifactKey,
+  matrixStatePath,
   refreshOverviewWanRates,
   setSnapshotFresh,
   scenarioMatrixGate,
@@ -298,6 +299,14 @@ function testDirtyWorktreeArtifactsCannotUseCommitReleaseKey() {
   assert.notEqual(dirtyA, commit);
 }
 
+function testMatrixAggregateFamiliesDoNotOverwriteEachOther() {
+  const commit = '0123456789abcdef0123456789abcdef01234567';
+  assert.match(matrixStatePath(commit, '_acceptance/release-matrix-01234567'), /release-matrix-0123456789abcdef0123456789abcdef01234567\.json$/);
+  assert.match(matrixStatePath(commit, '_acceptance/route-matrix-01234567'), /route-matrix-0123456789abcdef0123456789abcdef01234567\.json$/);
+  assert.match(matrixStatePath(commit, '_acceptance/route-state-matrix-01234567'), /route-state-matrix-0123456789abcdef0123456789abcdef01234567\.json$/);
+  assert.match(matrixStatePath(commit, '_acceptance/mobile-native-runtime'), /mobile-native-runtime-matrix-0123456789abcdef0123456789abcdef01234567\.json$/);
+}
+
 testMergeableShardIsExplicitlyNotApplicable();
 testRealShardFailureRemainsApplicableAndFalse();
 testClaimedRequiredMatrixMissingViewportFails();
@@ -310,4 +319,5 @@ testTrafficAccumulatingIsDiagnosticAndAtomic();
 testMissingWanRatesRemainUnavailable();
 testScreenshotAnchorAnalyzerRejectsMissingLayers();
 testDirtyWorktreeArtifactsCannotUseCommitReleaseKey();
-console.log('local-predeploy matrix contract: 11/11 passed');
+testMatrixAggregateFamiliesDoNotOverwriteEachOther();
+console.log('local-predeploy matrix contract: 12/12 passed');

@@ -24883,3 +24883,17 @@ ocused-green-engineering
 - nextAction：同步并提交 Step861，重新绑定新 SHA 的 build/runtime/Overview/route-state/route-responsive/mobile/packet/readiness，再继续真实独立签收、route maturity、RouterOS soak 和三端 exact-SHA CL。
 - validForCommit：current clean-worktree evidence only; exact-SHA release evidence is machine-bound and must be regenerated after any tracked change; formal release remains closed.
 - supersededBy：null
+
+## 第 862 步：独立签收暴露证据族冲突，修复聚合覆盖和截图上下文
+
+- status：`independent-review-findings-fixed-evidence-families-and-formal-gates-open`
+- latestStepOutcome: `862:independent-review-findings-fixed-evidence-families-and-formal-gates-open`
+- 触发/问题：三名独立只读复核者分别审查产品、设计和视觉边界。复核发现两个不能继续容忍的证据问题：Overview、route-state、route-responsive、mobile-native 等不同矩阵族共用根级聚合文件，后运行的有界矩阵会覆盖先运行的完整矩阵；运行时 mock 身份与公开矩阵身份不一致，且 composite screenshot 的滚动/绘制时序会让固定导航和底部边界产生歧义。此前把“独立签收尚未完成”写成 Loop blocked 也是错误，必须继续推进能在本地完成的修复。
+- 观察事实：`tools/local-predeploy-check.js` 现在按输出目录族命名聚合状态，`tools/test-local-predeploy-matrix-contract.js` 新增不覆盖回归断言；`tools/check-panel-runtime-browser.js` 将运行时 fixture 对齐 `smoke-router`、`127.0.0.1`、`7.15-smoke`，并在 composite capture 前重置滚动、等待字体和双帧绘制。修复后的脏工作树 runtime 重新通过 `257 checks / 140 screenshots / 169 snapshotApiCalls`；矩阵聚合契约为 `12/12`。独立 review 的声明范围结果为：Design scoped PASS、P0/P1=`0`；Product 为 mobile patrol slice conditional；Visual 在旧证据上下文被修复后要求 exact-SHA 重新复核。正式 Product/Design/Visual、Accessibility/AT、Route Owner、真实 RouterOS soak、route maturity 和 Linux/Windows/GHCR exact-SHA CL 仍未关闭。
+- 决策：修复证据族隔离、运行时身份一致性和截图采集时序；将它们作为下一 clean candidate 的发布基础设施改动。关闭本轮可由本地完成的 scoped review findings，但绝不把 scoped PASS 写成 trusted signature，也不把运行时/矩阵数量写成产品发布通过。保持 active、`blocked=false`；GitHub 不上传。
+- 理由与拒绝项：报告文件名必须表达证据族，任何后续有界检查都不能破坏完整矩阵的当前真相；视觉截图必须能证明同一 fixture、同一入口和同一固定导航边界。拒绝以旧 SHA 的报告覆盖新候选，拒绝使用自签填充独立签收，拒绝因外部门禁未完成而停止本地可执行工作。
+- 验证：`node tools/test-local-predeploy-matrix-contract.js` 通过 `12/12`；脏工作树 `npm run check:runtime-browser` 通过 `257/140/169`，并已人工检查更新后的手机 runtime 与 composite risk 截图。当前修改提交后，以上结果必须在新的完整 40 位 SHA 上重新生成；在重绑前不得宣称 exact-SHA release evidence。
+- 边界/心得：独立签收是需要相应主体完成的发布门禁，不是 Loop 的 blocked 条件；证据聚合命名和截图上下文是可由本地修复的工程事实，必须先修复再请求复核。任何 tracked change 都会使旧 SHA 失效，D 盘决策镜像、机器状态和最终报告必须以新 clean SHA 重新绑定。
+- nextAction：同步本步决策仓库并提交 Step862；随后在新 clean SHA 重跑 build/types、runtime、Overview `28/28`、route-responsive、route-state、mobile-native、packet、quarantine、truth 和 readiness，验证不同矩阵聚合文件不再互相覆盖，再继续正式独立签收、RouterOS soak 与三端 exact-SHA CL。
+- validForCommit：`59d9d10a24cf125bd92e5e3f1bbbd4f3e01dd067` 为 Step862 修改前的 clean parent；本步提交后必须重新绑定全部 exact-SHA 证据。
+- supersededBy：null

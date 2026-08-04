@@ -2,9 +2,9 @@
 - validForCommit: current clean-worktree evidence only; exact-SHA reports are bound in machine state and must be regenerated after any tracked change; formal external gates remain open; not a public release approval
 - supersededBy: null
 - status: `current-index`
-- currentBoundaryForStep: `861`
-- latestRecordedStep: `861`
-- latestStepOutcome: `861:current-authority-no-self-invalidating-sha-and-formal-gates-open`
+- currentBoundaryForStep: `862`
+- latestRecordedStep: `862`
+- latestStepOutcome: `862:independent-review-findings-fixed-evidence-families-and-formal-gates-open`
 - authority: `docs/decision-system/current-state.md`
 
 当前结论由 current-state.md 唯一拥有；本页只负责导航，不重复历史流水账。
@@ -17,4 +17,4 @@
 - 历史索引：historical-index.md
 
 
-Task remains active and blocked=false; Step861 makes the current authority durable across commits while preserving the fail-closed route-maturity boundary. Trusted signoff, RouterOS soak, CL and publication remain open.
+Task remains active and blocked=false; Step862 fixes matrix aggregate collision and visual evidence context while preserving the fail-closed route-maturity boundary. Trusted signoff, RouterOS soak, CL and publication remain open.

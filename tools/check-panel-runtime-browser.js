@@ -104,7 +104,7 @@ function sendJson(response, status, payload) {
 
 function channelTest(restOk) {
   return {
-    ssh: { ok: true, identity: 'lab-router', error: null, elapsedMs: 18 },
+    ssh: { ok: true, identity: 'smoke-router', error: null, elapsedMs: 18 },
     rest: {
       ok: restOk,
       status: restOk ? 200 : null,
@@ -118,7 +118,7 @@ function channelTest(restOk) {
 function profile(configured) {
   return {
     configured,
-    host: configured ? '192.0.2.1' : '',
+    host: configured ? 'smoke-router' : '',
     user: configured ? 'observer' : '',
     sshPort: 22,
     sshHostKeyFingerprint: configured ? fingerprint : '',
@@ -127,7 +127,7 @@ function profile(configured) {
     restVerifyTls: true,
     insecureRestConfirmed: false,
     source: configured ? 'ui' : 'memory',
-    savedId: configured ? 'lab-router' : '',
+    savedId: configured ? 'smoke-router' : '',
     updatedAt: configured ? utc() : null,
     passwordSet: configured,
     lastTest: configured ? channelTest(false) : null,
@@ -136,8 +136,8 @@ function profile(configured) {
 
 function savedProfiles() {
   return [{
-    id: 'lab-router',
-    host: '192.0.2.1',
+    id: 'smoke-router',
+    host: 'smoke-router',
     user: 'observer',
     sshPort: 22,
     sshHostKeyFingerprint: fingerprint,
@@ -161,17 +161,17 @@ function snapshot(sequence, options) {
     error: null,
     meta: {
       contractVersion: 1,
-      target: '192.0.2.1',
-      routerHost: '192.0.2.1',
-      configuredIdentity: 'lab-router',
+      target: '127.0.0.1',
+      routerHost: '127.0.0.1',
+      configuredIdentity: 'smoke-router',
       pollSeconds: settings.pollSeconds || 2,
       realtimeUpdatedAt: now,
       staticUpdatedAt: now,
       capabilities: { restTrusted: false, sshRead: true, routerosWrite: false },
     },
     overview: {
-      identity: 'lab-router',
-      version: '7.15 mock',
+      identity: 'smoke-router',
+      version: '7.15-smoke',
       uptime: '2d 04:11:00',
       cpuLoad: 23,
       memoryUsage: 41,
@@ -5382,7 +5382,7 @@ async function main() {
       checks,
       '1199/1200 runtime chrome preserves device evidence and the same Overview actions',
       [normal1199, normal1200].every((item) => (
-        item.runtimeDevice.includes('192.0.2.1') && item.runtimePhase.includes('当前') &&
+         item.runtimeDevice.includes('smoke-router') && item.runtimePhase.includes('当前') &&
         includesEvery(item.runtimeActions, requiredRuntimeActions)
       )) && normal1199.runtimeActions.join('|') === normal1200.runtimeActions.join('|'),
       { normal1199, normal1200 },
@@ -7457,6 +7457,14 @@ async function main() {
         }
       }
       const result = await inspectCompositeRiskSurface(adaptivePage);
+      await adaptivePage.evaluate(() => {
+        window.scrollTo(0, 0);
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
+      });
+      await adaptivePage.evaluate(() => document.fonts?.ready);
+      await adaptivePage.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+      await adaptivePage.waitForTimeout(20);
       if (surface === 'desktop') {
         const section = new URL(adaptivePage.url()).searchParams.get('section');
         screenshots.push(await isolatedScreenshot(

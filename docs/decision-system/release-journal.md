@@ -2,11 +2,13 @@
 - status: `current-journal`
 - validForCommit: current clean-worktree evidence only; exact-SHA reports are bound in machine state and must be regenerated after any tracked change; formal external gates remain open; not a public release approval
 - supersededBy: null
-- currentStep: 861
-- currentOutcome: 861:current-authority-no-self-invalidating-sha-and-formal-gates-open
-- latestStepOutcome: 861:current-authority-no-self-invalidating-sha-and-formal-gates-open
+- currentStep: 862
+- currentOutcome: 862:independent-review-findings-fixed-evidence-families-and-formal-gates-open
+- latestStepOutcome: 862:independent-review-findings-fixed-evidence-families-and-formal-gates-open
 - authority: docs/decision-system/current-state.md
 - fullHistory: panel-redesign-decision-log.md
+
+- Step862: Three independent read-only reviews ran on the current candidate: design scoped PASS with P0/P1=`0`, Product conditional for the mobile patrol slice, and Visual conditional/no-go until evidence context and fixed-navigation screenshot boundaries are rechecked. The root cause was fixed: matrix aggregate families no longer overwrite one another, runtime fixture identity is aligned with the public matrix family, and composite screenshot capture resets scroll and waits for paint. This tracked governance change requires a fresh exact-SHA rebind; formal Product/Design/Visual, Accessibility, Route Owner, RouterOS soak and Linux/Windows/GHCR exact-SHA CL remain open; task active and blocked=false; GitHub untouched.
 
 - Step861: The current authority is now non-self-invalidating: current documents describe the clean-worktree evidence boundary, exact-SHA report identity is held in machine state and historical entries, and any tracked change requires a fresh exact-SHA rebind. Formal Product/Design/Visual, Accessibility, Route Owner, RouterOS soak and Linux/Windows/GHCR exact-SHA CL remain open; task active and blocked=false; GitHub untouched.
 
