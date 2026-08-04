@@ -1,11 +1,11 @@
 - status: `current-handoff`
 - validForCommit: current clean-worktree evidence only; exact-SHA reports are bound in machine state and must be regenerated after any tracked change; formal acceptance/release approval remains open; not a release candidate
-- currentHandoffForStep: `866`
+- currentHandoffForStep: `867`
 - supersededBy: docs/decision-system/current-state.md
 - fullHistory: docs/panel-redesign-decision-log.md
 - updated: 2026-08-05
-- latestRecordedStep: `866`
-- latestStepOutcome: `866:runtime-secondary-action-evidence-bound-formal-gates-open`
+- latestRecordedStep: `867`
+- latestStepOutcome: `867:runtime-secondary-action-height-adaptation-fixed-formal-gates-open`
 - currentConclusion: **FAIL overall**. Exact-SHA engineering evidence and fresh scoped Product/Design/Visual/Accessibility reviews are green in declared scope; Route Owner/Operations formally fails the maturity boundary; formal trusted acceptance, route maturity, RouterOS soak and release evidence remain open.
 
 ## Loop refinement applied
@@ -13,12 +13,12 @@
 - `emil-design-eng` was installed from `emilkowalski/skills` and fused into the product-company loop through `C:\Users\cully\.codex\skills\product-company-loop\references\emil-design-eng-gate.md`.
 - The operational rule is restraint: motion cannot invent freshness or urgency, and static evidence remains preferred for metrics, alerts, timestamps, and charts.
 
-## Current handoff: Step866 runtime secondary-action evidence bound; formal gates remain open
+## Current handoff: Step867 runtime secondary-action height fixed; formal gates remain open
 
-- Result: The runtime probe now measures secondary actions in the separate phone context list, closing the empty-array evidence gap while preserving the Step865 action ownership split and touch floors. The new tool/governance change needs fresh exact-SHA runtime/matrix evidence and scoped Visual/Product/Interaction re-review.
-- Decision: keep product release FAIL-closed, close only the local evidence-coverage repair, and require fresh exact-SHA evidence after the tool/governance change. The task is active and `blocked=false` while independent acceptance, route maturity, RouterOS soak and exact-SHA CL remain executable.
+- Result: The new context selector now preserves real 45/45px secondary rows after runtime exposed the 53/49px cascade regression; the primary section remains 98px and 390px navigation slack is 36px. Dirty runtime/build/static checks pass; the new CSS/build/governance change needs fresh exact-SHA evidence and scoped Visual/Product/Interaction re-review.
+- Decision: keep product release FAIL-closed, close only the local secondary-action height repair, and require fresh exact-SHA evidence after the CSS/build/governance change. The task is active and `blocked=false` while independent acceptance, route maturity, RouterOS soak and exact-SHA CL remain executable.
 - Boundary: route maturity is 0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable. Formal product/design/visual/accessibility acceptance, Route Owner, RouterOS soak, exact-SHA CL and public release remain fail-closed.
-- Next: sync and commit Step866, rebind machine evidence once on the resulting SHA, request current-SHA Visual/Product/Interaction re-review, then continue route maturity, RouterOS soak and exact-SHA CL.
+- Next: sync and commit Step867, rebind machine evidence once on the resulting SHA, request current-SHA Visual/Product/Interaction re-review, then continue route maturity, RouterOS soak and exact-SHA CL.
 ## Historical handoff: Step857 (superseded by Step858)
 
 - Result: clean candidate `3ea1924150f5d16f9a261136f3a04811c7f28075` passes build/runtime `257/140/169`, Overview `28/28`, route-responsive `532/532`, route-state `266/266` and bounded route shard `76/76`; product/design/visual and accessibility/interaction scoped reviews are P0/P1 clean.

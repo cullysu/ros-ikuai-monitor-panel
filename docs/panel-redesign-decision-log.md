@@ -24953,3 +24953,16 @@ ocused-green-engineering
 - nextAction：同步并提交 Step866；在新 clean SHA 重跑 runtime/matrix/packet/quarantine/truth/readiness，确认次级动作高度被真实记录，再完成当前 SHA scoped review 并继续 formal acceptance、RouterOS soak 与三端 CL。
 - validForCommit：Step866 runtime probe/governance changes；之前 `a55108a...` 的 exact-SHA 报告在本步提交后全部过期。
 - supersededBy：null
+
+## 第 867 步：恢复次级动作真实触控高度，完成上下文列表的窄屏适配
+
+- status：`runtime-secondary-action-height-adaptation-fixed-formal-gates-open`
+- latestStepOutcome: `867:runtime-secondary-action-height-adaptation-fixed-formal-gates-open`
+- 触发/问题：Step866 的探针接入次级上下文后真实暴露出 375/390px 次级动作高度为 `53px`，随后修正为 `49px`；原因是 `max-width:399px` 的宽泛动作规则覆盖了上下文列表，导致 `44px` 触控合同没有真正绑定到新 DOM 责任边界。
+- 决策/实现：把手机跟进动作的紧凑选择器扩展到 `[data-mobile-incident-follow-up-context]`，并用 `padding-block:4px` 覆盖窄屏上下文的宽泛 padding；不降低 `44px` 最小触控目标，不隐藏次级动作，不放宽 `<=48px` 运行时门禁。
+- 验证：build、固定 CSS/JS/压缩资产预算、asset identity、static containment 通过；dirty runtime `260/140/169` 通过，375/390 次级动作实际高度均为 `45px`，主 follow-up section `98px`，390px 下界到固定导航 slack 为 `36px`，横向溢出为 `0`。新 source/build 变更尚未提交，exact-SHA 报告必须在提交后重新生成。
+- 边界/心得：把测试探针扩大到新语义节点后，原本被旧 DOM 规则掩盖的 CSS 回归才会显现；这正是独立签收应有的价值。组件拆分、选择器责任和运行时测量必须三者同时更新，不能只改其中一层。
+- 发布边界：关闭本地次级动作高度 P1；trusted Product/Design/Visual、Accessibility/AT、Route Owner、route maturity、RouterOS soak、Linux/Windows/GHCR exact-SHA CL 和 GitHub/public release 继续 fail-closed，任务 active、blocked=false。
+- nextAction：同步并提交 Step867；在新 clean SHA 重跑 runtime/matrix/packet/quarantine/truth/readiness，确认次级动作真实高度和所有矩阵，再完成 scoped review 并继续 formal acceptance、RouterOS soak 与三端 CL。
+- validForCommit：Step867 mobile CSS/build/governance changes；之前 `aea1768...` 的 exact-SHA 报告在本步提交后全部过期。
+- supersededBy：null

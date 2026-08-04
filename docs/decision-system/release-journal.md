@@ -2,9 +2,9 @@
 - status: `current-journal`
 - validForCommit: current clean-worktree evidence only; exact-SHA reports are bound in machine state and must be regenerated after any tracked change; formal external gates remain open; not a public release approval
 - supersededBy: null
-- currentStep: 866
-- currentOutcome: 866:runtime-secondary-action-evidence-bound-formal-gates-open
-- latestStepOutcome: 866:runtime-secondary-action-evidence-bound-formal-gates-open
+- currentStep: 867
+- currentOutcome: 867:runtime-secondary-action-height-adaptation-fixed-formal-gates-open
+- latestStepOutcome: 867:runtime-secondary-action-height-adaptation-fixed-formal-gates-open
 - authority: docs/decision-system/current-state.md
 - fullHistory: panel-redesign-decision-log.md
 
@@ -17,6 +17,8 @@
 - Step865: The phone rhythm gate exposed that a 40px incident header, 56px primary action and secondary context row were still measured as one 143px section. The mobile component now gives the follow-up owner only the 40px header plus the 56px primary action and places secondary actions in an adjacent context list; touch floors and task order remain intact. Dirty-worktree runtime passes `260/140/169`, the primary section is 98px, and 390px navigation slack is 28px. This source/build/governance change requires a new clean exact-SHA rebind and scoped review; formal gates remain open, task active and blocked=false; GitHub untouched.
 
 - Step866: After the action split, the runtime probe was extended to query the separate secondary context list; this prevents an empty-array `every(...)` from falsely passing touch-size evidence. The probe syntax and diff checks pass; the tool/governance change requires a new clean exact-SHA runtime/matrix/packet rebind. Formal gates remain open, task active and blocked=false; GitHub untouched.
+
+- Step867: Runtime then exposed the secondary context's actual 53/49px rows under the narrow-phone cascade. The compact selector now covers the new context and binds its vertical padding, producing real 45/45px rows within the 44–48px contract; dirty runtime `260/140/169`, build, asset budget and identity pass. The CSS/build/governance change requires a new clean exact-SHA rebind; formal gates remain open, task active and blocked=false; GitHub untouched.
 
 - Step861: The current authority is now non-self-invalidating: current documents describe the clean-worktree evidence boundary, exact-SHA report identity is held in machine state and historical entries, and any tracked change requires a fresh exact-SHA rebind. Formal Product/Design/Visual, Accessibility, Route Owner, RouterOS soak and Linux/Windows/GHCR exact-SHA CL remain open; task active and blocked=false; GitHub untouched.
 

@@ -1037,15 +1037,14 @@
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-  .mp-shell:not(.is-large-text) .mp-actions[data-mobile-incident-task-role="follow-up"] .mp-compact-action-list > button {
+  .mp-shell:not(.is-large-text) :is(.mp-actions[data-mobile-incident-task-role="follow-up"], [data-mobile-incident-follow-up-context]) .mp-compact-action-list > button {
     min-height: 44px;
-    padding-top: 4px;
-    padding-bottom: 4px;
+    padding-block: 4px;
   }
   .mp-shell:not(.is-large-text) .mp-actions[data-mobile-incident-task-role="follow-up"] .mp-compact-action-list > button[data-mobile-action-priority="primary"] {
     min-height: 56px;
   }
-  .mp-shell:not(.is-large-text) .mp-actions[data-mobile-incident-task-role="follow-up"] .mp-compact-action-list > button[data-mobile-action-priority="secondary"] {
+  .mp-shell:not(.is-large-text) :is(.mp-actions[data-mobile-incident-task-role="follow-up"], [data-mobile-incident-follow-up-context]) .mp-compact-action-list > button[data-mobile-action-priority="secondary"] {
     min-height: 44px;
   }
 }

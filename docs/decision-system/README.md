@@ -2,9 +2,9 @@
 - validForCommit: current clean-worktree evidence only; exact-SHA reports are bound in machine state and must be regenerated after any tracked change; formal external gates remain open; not a public release approval
 - supersededBy: null
 - status: `current-index`
-- currentBoundaryForStep: `866`
-- latestRecordedStep: `866`
-- latestStepOutcome: `866:runtime-secondary-action-evidence-bound-formal-gates-open`
+- currentBoundaryForStep: `867`
+- latestRecordedStep: `867`
+- latestStepOutcome: `867:runtime-secondary-action-height-adaptation-fixed-formal-gates-open`
 - authority: `docs/decision-system/current-state.md`
 
 当前结论由 current-state.md 唯一拥有；本页只负责导航，不重复历史流水账。
@@ -17,4 +17,4 @@
 - 历史索引：historical-index.md
 
 
-Task remains active and blocked=false; Step866 closes a runtime evidence gap by measuring the separate phone secondary-action context instead of allowing an empty-array pass. Trusted signoff, RouterOS soak, CL and publication remain open.
+Task remains active and blocked=false; Step867 binds the compact action height rule to the separate phone secondary-action context after runtime exposed the real 53/49px rows. Trusted signoff, RouterOS soak, CL and publication remain open.
