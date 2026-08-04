@@ -1,8 +1,8 @@
 - status: `current`
-- currentConclusionForStep: `865`
-- latestRecordedStep: `865`
-- latestStepOutcome: `865:phone-incident-action-context-split-formal-gates-open`
-- currentBoundaryForStep: `865`
+- currentConclusionForStep: `866`
+- latestRecordedStep: `866`
+- latestStepOutcome: `866:runtime-secondary-action-evidence-bound-formal-gates-open`
+- currentBoundaryForStep: `866`
 - validForCommit: current clean-worktree evidence only; exact-SHA reports are bound in machine state and must be regenerated after any tracked change; formal gates remain open; not a public release approval
 - supersededBy: `null`
 - updatedAt: 2026-08-05T12:10:00+08:00
@@ -12,13 +12,13 @@
 
 **FAIL overall / local scoped visual P1 closed / formal release gates OPEN.** The current implementation has fresh local engineering evidence in its declared scope, but this is not public-release approval. Product/Design/Visual trusted acceptance, route maturity, RouterOS soak and exact-SHA external CL remain open. GitHub is untouched.
 
-## Current decision record: Step 865
+## Current decision record: Step 866
 
-- observed: after restoring the `40px` incident follow-up header, the whole action section still measured `143px` because it also owned the 56px primary task and the secondary context row; this exceeded the 136px phone rhythm bound even though every touch target was correct.
-- decision: split the mobile incident action owner instead of lowering touch floors or weakening the gate. The follow-up section owns the 40px header and 56px primary action; a neighboring context list owns the secondary actions without repeating the heading. Non-phone and compact/tablet surfaces retain their existing structure.
-- visual disposition: dirty-worktree runtime now measures the primary follow-up section at `98px`, keeps 56px primary action and 44px+ secondary actions, and leaves 390px navigation slack at `28px`; the new clean SHA must rebind all evidence and reopen scoped Visual/Product/Interaction review. The previous fixed-navigation repair remains intact.
+- observed: after splitting phone incident actions, the runtime probe still queried only `.mp-actions`, so the secondary action height list became empty and `every(...)` could pass vacuously.
+- decision: bind the probe to both the primary action owner and the new secondary context list. Keep the same touch thresholds and require real secondary nodes to be measured; do not weaken any gate.
+- visual disposition: the component/runtime split remains the product fix; this step repairs only the evidence collector. A new clean SHA must rebind runtime/matrices and reopen scoped Visual/Product/Interaction review. The previous fixed-navigation repair remains intact.
 - runtime truth: backend timestamps are emitted through the RFC 3339 contract; client parsing rejects timestamps without a timezone. `navigator.onLine` is only a connectivity hint and does not prevent same-origin LAN snapshot requests. No source-level fake `#dns`, fake “查看全部”, or inert search control remains in the React surface.
-- report truth: current matrix families must not share a root aggregate path. The Step865 tracked source/build/governance change invalidates the previous exact-SHA reports; report quarantine, truth and readiness must be rerun after commit; historical reports are inventory evidence only and cannot become current release input.
+- report truth: current matrix families must not share a root aggregate path. The Step866 tracked runtime-probe/governance change invalidates the previous exact-SHA reports; report quarantine, truth and readiness must be rerun after commit; historical reports are inventory evidence only and cannot become current release input.
 - route maturity: `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`. URL coverage and typed read-only route contracts pass, but complete-module promotion requires route-specific evidence plus trusted independent acceptance and cannot be self-issued.
 - release boundary: packet remains `prepared-not-signed`, `selfSignoff=false`, `releaseEligible=false`; RouterOS soak, trusted independent signatures and Linux/Windows/GHCR exact-SHA CL are absent; no GitHub upload has occurred.
 
@@ -56,4 +56,4 @@
 
 ## One next action
 
-- nextAction: sync and commit Step865, regenerate all exact-SHA runtime/matrix/packet evidence, rerun quarantine/readiness, obtain current-SHA scoped re-reviews and then continue formal acceptance, RouterOS soak and exact-SHA CL.
+- nextAction: sync and commit Step866, regenerate all exact-SHA runtime/matrix/packet evidence, rerun quarantine/readiness, obtain current-SHA scoped re-reviews and then continue formal acceptance, RouterOS soak and exact-SHA CL.

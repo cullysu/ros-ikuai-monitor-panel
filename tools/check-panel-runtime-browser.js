@@ -1023,7 +1023,7 @@ async function inspectCompositeRiskSurface(page) {
       ? document.querySelector('.mp-actions button[data-mobile-action-priority="primary"]')
       : null;
     const rhythmSecondaryActions = mobile
-      ? [...document.querySelectorAll('.mp-actions button[data-mobile-action-priority="secondary"]')]
+      ? [...document.querySelectorAll('.mp-actions button[data-mobile-action-priority="secondary"], [data-mobile-incident-follow-up-context] button[data-mobile-action-priority="secondary"]')]
       : [];
     const mobileNavigation = mobile ? document.querySelector('.panel-task-navigation') : null;
     const primaryAction = mobile

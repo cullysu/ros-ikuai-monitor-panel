@@ -24940,3 +24940,16 @@ ocused-green-engineering
 - nextAction：同步并提交 Step865；在新 clean SHA 重跑 build/types/runtime、Overview `28/28`、route-responsive、route-state、mobile-native、packet、quarantine、truth 和 readiness，完成当前 SHA 的 scoped re-review，并继续 formal acceptance、RouterOS soak 与三端 CL。
 - validForCommit：Step865 mobile component/CSS/build/governance changes；之前 `bea5b7b...` 的 exact-SHA 报告在本步提交后全部过期。
 - supersededBy：null
+
+## 第 866 步：修复运行时次级动作漏检，禁止空数组假绿
+
+- status：`runtime-secondary-action-evidence-bound-formal-gates-open`
+- latestStepOutcome: `866:runtime-secondary-action-evidence-bound-formal-gates-open`
+- 触发/问题：Step865 把手机事故的次级动作移到独立上下文列表后，运行时探针仍只查询 `.mp-actions`，导致 `secondaryActionMinHeights` 变成空数组；现有 `every(...)` 检查因此可能空集合通过，无法证明次级动作真的存在且保持触控尺寸。
+- 决策/实现：更新 `tools/check-panel-runtime-browser.js`，把 `[data-mobile-incident-follow-up-context]` 纳入次级动作查询范围，同时保留正常态/平板原有 `.mp-actions` 查询。门禁只扩展证据覆盖，不降低阈值、不放宽 pass 条件。
+- 边界/心得：组件拆分后，测试探针必须跟着语义边界走；如果只改 DOM 不改探针，空集合 `every` 会制造假绿。每一项触控、可见性和排序合同都必须证明“有对象且对象通过”，不能只证明“没有失败对象”。
+- 验证：源码 `node --check tools/check-panel-runtime-browser.js` 与 `git diff --check` 通过；该工具变更尚未提交，必须在新 clean SHA 上重跑 `260/140/169` runtime、所有矩阵和 readiness。
+- 发布边界：本地探针真值修复不等于独立签名；Product/Design/Visual trusted acceptance、Accessibility/AT、Route Owner、route maturity、RouterOS soak、Linux/Windows/GHCR exact-SHA CL 和 GitHub 发布继续 fail-closed，任务 active、blocked=false。
+- nextAction：同步并提交 Step866；在新 clean SHA 重跑 runtime/matrix/packet/quarantine/truth/readiness，确认次级动作高度被真实记录，再完成当前 SHA scoped review 并继续 formal acceptance、RouterOS soak 与三端 CL。
+- validForCommit：Step866 runtime probe/governance changes；之前 `a55108a...` 的 exact-SHA 报告在本步提交后全部过期。
+- supersededBy：null
