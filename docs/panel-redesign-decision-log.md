@@ -24853,3 +24853,19 @@ ocused-green-engineering
 - nextAction：提交并同步 Step859 决策仓库；随后更新机器证据到新 SHA，重建 build、runtime、Overview 28/28、route-responsive 532/532、route-state 266/266、mobile 56/56、packet 和 readiness，再继续正式签收、RouterOS soak 与三端 exact-SHA CL。
 - validForCommit：`61243028ca93cf5a1357c50a76a9d7d6e619ee34` 为文档变更前的 clean engineering/scoped evidence；本步治理提交后必须重新绑定最终候选。
 - supersededBy：null
+
+## 第 860 步：最终候选视觉签收范围关闭，发布就绪真实停在路由成熟度
+
+- status: `final-exact-sha-visual-review-and-readiness-boundary-formal-gates-open`
+- latestStepOutcome: `860:final-exact-sha-visual-review-and-readiness-boundary-formal-gates-open`
+- 触发/问题：上一轮治理提交后必须重新绑定所有 exact-SHA 证据；同时用户要求未完成的视觉签收、发布门禁和决策记录继续推进，不能再把缺失外部签名错误标成 Loop blocked。
+- 观察事实：候选 `a5062801df84edb8b1a65c12a31606f708230c9d` 的 build 通过；生产 runtime 为 `257 checks / 140 screenshots / 169 snapshot API calls`；Overview `28/28`；route-state `266/266`；完整 route-responsive `532/532`；单场景 19 路由 × 4 视口 `76/76`；mobile-native `56/56`；`check:overview` 完整本地视觉/结构合同通过。最新截图覆盖 390px 正常、fleet、无快照、资源满载、接口 Down，以及桌面正常态；逐张复核了首要结论、证据时间、风险对象、动作入口、图表轴与图例、状态替换、导航遮挡和可读字号。
+- 视觉与交互裁决：声明范围内 local visual QA 继续为 P0/P1=`0`。正常态、全离线/无快照、采集失败、资源压力、接口依赖异常均改变了信息权重；手机与桌面保持独立渲染树，但共享证据边界、风险排序、只读操作边界和任务上下文。图表具备单位、时间窗、当前/峰值语义和下载/上传区分；本地 emil-design-eng 约束继续通过，未使用动效伪造新鲜度。
+- 发布与报告事实：report quarantine 当前引用 5 份报告，`contradictionCount=0`、`quarantinedCount=0`；发布就绪脚本已经接受当前 clean-SHA matrix，随后在真实 route maturity `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable` 处 fail-closed，而不是在矩阵发现层误报缺失。packet 为 `prepared-not-signed`，`selfSignoff=false`，`releaseEligible=false`；D 盘镜像必须在本步提交前同步。
+- 决策：关闭本步声明范围内的 local visual QA、响应式矩阵、报告真值和可复现工程验收；保持 trusted Product/Design/Visual、Accessibility/AT、Route Owner、complete route maturity、RouterOS soak、Linux/Windows/GHCR exact-SHA CL 和 GitHub 发布关闭。不可通过本地评审生成 external-acceptance，也不可把 19 个 bounded-readonly URL 写成完整模块。
+- 理由与拒绝项：当前能真实完成的工程与视觉工作已经完成并有 exact-SHA 证据；剩余签名、真实设备长时运行和远端 CL 需要相应主体/环境，不能伪造。它们是继续推进的工作清单，不是停止 Loop 的理由；下一轮先提交本步治理记录，再重新绑定最终候选证据。
+- 验证：`check-product-design-visual-packet.js` 通过且明确 `selfSignoff=false`；`check-report-completeness-quarantine.js` 通过；`npm run check:decision-system` 通过；readiness 已越过 current-SHA matrix 并只在 route maturity 退出。当前工作树无 tracked dirty change；没有 GitHub upload。
+- 边界/心得：独立视觉“签收”必须拆成可由本地完成的 scoped review 与只能由真实独立主体完成的 trusted signature。前者现在关闭，后者保持 pending；把两者合并会制造假绿灯，把后者缺失写成 blocked 则会错误停止仍可执行的代码、矩阵和发布准备工作。
+- nextAction：提交并同步 Step860；在新 SHA 上重建 build、runtime、28/532/266/76/mobile/packet/readiness 全部 exact-SHA 证据，然后继续寻找真实独立签收、Route Owner、RouterOS soak 和三端 CL。
+- validForCommit：`a5062801df84edb8b1a65c12a31606f708230c9d` 为本步文档变更前的 clean exact-SHA evidence；治理提交后必须重新绑定。
+- supersededBy：null

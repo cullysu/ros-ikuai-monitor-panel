@@ -1,10 +1,10 @@
 # 决策系统导航
-- validForCommit: uncommitted Step859 governance record; the next clean candidate must rebind all exact-SHA evidence; formal external gates remain open; not a public release approval
+- validForCommit: uncommitted Step860 governance record; the next clean candidate must rebind all exact-SHA evidence; formal external gates remain open; not a public release approval
 - supersededBy: null
 - status: `current-index`
-- currentBoundaryForStep: `859`
-- latestRecordedStep: `859`
-- latestStepOutcome: `859:final-clean-surface-review-and-current-evidence-rebind-formal-gates-open`
+- currentBoundaryForStep: `860`
+- latestRecordedStep: `860`
+- latestStepOutcome: `860:final-exact-sha-visual-review-and-readiness-boundary-formal-gates-open`
 - authority: `docs/decision-system/current-state.md`
 
 当前结论由 current-state.md 唯一拥有；本页只负责导航，不重复历史流水账。
@@ -17,4 +17,4 @@
 - 历史索引：historical-index.md
 
 
-Task remains active and blocked=false; Step859 records the fresh local visual review and fail-closed current-evidence boundary. Final exact-SHA rebind, trusted signoff, RouterOS soak, CL and publication remain open.
+Task remains active and blocked=false; Step860 records fresh exact-SHA local visual review, complete matrices and the fail-closed route-maturity boundary. Final exact-SHA rebind, trusted signoff, RouterOS soak, CL and publication remain open.

@@ -1,12 +1,14 @@
 # Release Journal
 - status: `current-journal`
-- validForCommit: uncommitted Step859 governance record; the next clean candidate must rebind all exact-SHA evidence; formal external gates remain open; not a public release approval
+- validForCommit: uncommitted Step860 governance record; the next clean candidate must rebind all exact-SHA evidence; formal external gates remain open; not a public release approval
 - supersededBy: null
-- currentStep: 859
-- currentOutcome: 859:final-clean-surface-review-and-current-evidence-rebind-formal-gates-open
-- latestStepOutcome: 859:final-clean-surface-review-and-current-evidence-rebind-formal-gates-open
+- currentStep: 860
+- currentOutcome: 860:final-exact-sha-visual-review-and-readiness-boundary-formal-gates-open
+- latestStepOutcome: 860:final-exact-sha-visual-review-and-readiness-boundary-formal-gates-open
 - authority: docs/decision-system/current-state.md
 - fullHistory: panel-redesign-decision-log.md
+
+- Step860: Candidate `a5062801df84edb8b1a65c12a31606f708230c9d` passes build, runtime `257/140/169`, Overview `28/28`, route-state `266/266`, full route-responsive `532/532`, single-route responsive `76/76`, mobile-native `56/56`, the complete overview contract suite and the product-design visual packet identity check. Fresh local mobile and desktop captures were inspected; the declared local visual scope is P0/P1=`0`. Report quarantine scans five current references with zero contradictions, and readiness accepts the exact-SHA matrix before stopping at route maturity `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`. Formal Product/Design/Visual, Accessibility, Route Owner, RouterOS soak and Linux/Windows/GHCR exact-SHA CL remain open; packet is prepared-not-signed, selfSignoff=false, releaseEligible=false; task active and blocked=false; GitHub untouched. This governance write requires a fresh exact-SHA rebind.
 
 - Step859: The fresh `61243028ca93cf5a1357c50a76a9d7d6e619ee34` candidate passes build, runtime `257/140/169`, Overview `28/28`, mobile-native `56/56`, and focused desktop checks. Local screenshots cover normal, fleet, no-snapshot, resource-full and interfaces-down at 390px plus desktop evidence; the declared local visual scope is P0/P1-clean. RFC3339 timestamp output/parsing and LAN-safe `navigator.onLine` hint behavior are confirmed by source and focused contracts. Route maturity remains `0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable`; RouterOS soak, external acceptance and exact-SHA Linux/Windows/GHCR CL remain open. This governance write invalidates the candidate identity, so all exact-SHA reports must be regenerated after commit. Task remains active and blocked=false; GitHub untouched.
 

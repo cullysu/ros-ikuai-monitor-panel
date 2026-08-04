@@ -1,11 +1,11 @@
-RouterOS / iKuai panel decision repository mirror. Step859 records the fresh scoped local visual review and fail-closed current-evidence boundary; formal acceptance, route maturity, RouterOS soak, exact-SHA CL and trusted publication signature remain open.
+RouterOS / iKuai panel decision repository mirror. Step860 records the fresh exact-SHA visual review and fail-closed readiness boundary; formal acceptance, route maturity, RouterOS soak, exact-SHA CL and trusted publication signature remain open.
 
-这是当前面板工作的本地决策仓库镜像。Step859 记录最后一个 clean candidate 的 exact-SHA build/runtime/matrix 与 fresh local scoped visual QA；本地 scoped 视觉与交互审查已在声明范围内关闭，但正式签收、route maturity、RouterOS soak、exact-SHA Linux/Windows/GHCR CL 和可信外部发布签收仍未完成。Step859 治理提交后必须重新生成最终 exact-SHA 证据。emil-design-eng 已融合进 product-company-loop，强调静态证据和 reduced-motion。
+这是当前面板工作的本地决策仓库镜像。Step860 记录 clean candidate 的 exact-SHA build/runtime/matrix 与 fresh local scoped visual QA；本地 scoped 视觉与交互审查已在声明范围内关闭，但正式签收、route maturity、RouterOS soak、exact-SHA Linux/Windows/GHCR CL 和可信外部发布签收仍未完成。Step860 治理提交后必须重新生成最终 exact-SHA 证据。emil-design-eng 已融合进 product-company-loop，强调静态证据和 reduced-motion。
 
 - status: `current-mirror-entry`
-- currentStep: `859`
-- currentOutcome: `859:final-clean-surface-review-and-current-evidence-rebind-formal-gates-open`
-- currentBoundary: `859`
+- currentStep: `860`
+- currentOutcome: `860:final-exact-sha-visual-review-and-readiness-boundary-formal-gates-open`
+- currentBoundary: `860`
 - authority: `decision-system/current-state.md`
 
 ## 入口
@@ -44,3 +44,4 @@ RouterOS / iKuai panel decision repository mirror. Step859 records the fresh sco
 
 Historical Step858: report quarantine is bounded to current-source references and remains fail-closed; release remains closed and task remains active.
 Step859: local scoped visual QA is P0/P1-clean for the declared screenshots and runtime contracts; formal acceptance and final exact-SHA rebind remain open, release remains closed and task remains active.
+Step860: exact-SHA local visual and matrix evidence is green in scope; readiness reaches the real route-maturity gate; formal acceptance, soak, CL and publication remain closed, release remains closed and task remains active.
