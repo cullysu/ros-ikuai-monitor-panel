@@ -1,11 +1,11 @@
-RouterOS / iKuai panel decision repository mirror. Step862 fixes matrix evidence-family collision and screenshot-context alignment while preserving the fail-closed readiness boundary; formal acceptance, route maturity, RouterOS soak, exact-SHA CL and trusted publication signature remain open.
+RouterOS / iKuai panel decision repository mirror. Step863 fixes the narrow-phone fixed-navigation capture boundary while preserving the fail-closed readiness boundary; formal acceptance, route maturity, RouterOS soak, exact-SHA CL and trusted publication signature remain open.
 
-这是当前面板工作的本地决策仓库镜像。Step862 修复矩阵聚合文件互相覆盖，并统一运行时与公开矩阵的截图身份上下文；exact-SHA 证据只由机器状态绑定，独立设计切片 scoped PASS、产品 conditional、视觉需新证据复验，正式签收、route maturity、RouterOS soak、exact-SHA Linux/Windows/GHCR CL 和可信外部发布签收仍未完成。emil-design-eng 已融合进 product-company-loop，强调静态证据和 reduced-motion。
+这是当前面板工作的本地决策仓库镜像。Step863 修复窄屏固定导航与证据边界的截图采集上下文；exact-SHA 证据只由机器状态绑定，交互 scoped review P0/P1 clean、产品 conditional、视觉需新 SHA 复验，正式签收、route maturity、RouterOS soak、exact-SHA Linux/Windows/GHCR CL 和可信外部发布签收仍未完成。emil-design-eng 已融合进 product-company-loop，强调静态证据和 reduced-motion。
 
 - status: `current-mirror-entry`
-- currentStep: `862`
-- currentOutcome: `862:independent-review-findings-fixed-evidence-families-and-formal-gates-open`
-- currentBoundary: `862`
+- currentStep: `863`
+- currentOutcome: `863:narrow-phone-fixed-nav-visual-context-fixed-formal-gates-open`
+- currentBoundary: `863`
 - authority: `decision-system/current-state.md`
 
 ## 入口

@@ -12,7 +12,7 @@
 .panel-runtime-device b,
 .panel-runtime-device small { display: block; }
 .panel-runtime-device > span,
-.panel-runtime-device small { color: #5c7580; font-size: 12px; }
+.panel-runtime-device small { overflow: hidden; color: #5c7580; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
 .panel-runtime-device b { overflow: hidden; color: #12313e; font-size: 15px; text-overflow: ellipsis; white-space: nowrap; }
 .panel-runtime-mode {
   display: inline-flex;
@@ -112,8 +112,6 @@
     backdrop-filter: blur(18px) saturate(130%);
   }
   .panel-runtime-bar-mobile .panel-runtime-device { min-width: 0; }
-  .panel-runtime-bar-mobile .panel-runtime-device b { font-size: 15px; }
-  .panel-runtime-bar-mobile .panel-runtime-device span { font-size: 12px; }
   .panel-runtime-actions button { width: 44px; height: 44px; }
   .panel-runtime-notice { position: relative; z-index: 20; padding-right: 10px; padding-left: 12px; font-size: 13px; }
   .panel-runtime-empty { min-height: calc(100svh - 52px); padding: 24px 18px calc(24px + env(safe-area-inset-bottom)); }

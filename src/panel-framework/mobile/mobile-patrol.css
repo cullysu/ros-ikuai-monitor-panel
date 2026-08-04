@@ -1161,24 +1161,10 @@
   }
 }
 
-/*The primary incident gets a phone-only visual lead in the active incident state.
-   Keep the 56px base declaration for the compact rhythm contract; this later
-   state owner adds 16px without touching action targets or the evidence order.*/
-
-@media (max-width: 1199px) {
-  .mp-shell.has-incident .mp-incident[data-mobile-incident-task-role="primary-risk"] > header {
-    min-height: 72px;
-  }
-}
-
 /*Incident support rhythm is intentionally scoped to the active shell state.
    The primary task remains taller; supporting actions keep the 44px touch floor.*/
 
-@media (max-width: 1199px) {
-  .mp-shell.has-incident .mp-actions > header {
-    min-height: 40px;
-    padding-block: 4px;
-  }
+@media (min-width: 600px) and (max-width: 1199px) {
   .mp-shell.has-incident .mp-action-list > button {
     min-height: 44px;
   }
@@ -1292,6 +1278,12 @@
   }
   .mp-shell.is-steady .mp-status-bus.has-proof .mp-proof em {
     margin-top: 1px;
+  }
+}
+
+@media (max-width: 389px) {
+  .mp-shell:not(.is-large-text) .mp-incident-row {
+    min-height: 64px;
   }
 }
 

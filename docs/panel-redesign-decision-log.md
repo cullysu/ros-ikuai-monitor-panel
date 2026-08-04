@@ -24897,3 +24897,18 @@ ocused-green-engineering
 - nextAction：同步本步决策仓库并提交 Step862；随后在新 clean SHA 重跑 build/types、runtime、Overview `28/28`、route-responsive、route-state、mobile-native、packet、quarantine、truth 和 readiness，验证不同矩阵聚合文件不再互相覆盖，再继续正式独立签收、RouterOS soak 与三端 exact-SHA CL。
 - validForCommit：`59d9d10a24cf125bd92e5e3f1bbbd4f3e01dd067` 为 Step862 修改前的 clean parent；本步提交后必须重新绑定全部 exact-SHA 证据。
 - supersededBy：null
+
+## 第 863 步：窄屏固定导航视觉 P1 已修复，继续重绑当前签收
+
+- status：`narrow-phone-fixed-nav-visual-pass-formal-gates-open`
+- latestStepOutcome: `863:narrow-phone-fixed-nav-visual-context-fixed-formal-gates-open`
+- 触发/问题：Step862 的新 exact-SHA 视觉复核仍发现 375px 异常截图中证据边界贴近固定导航，且旧截图上下文曾出现 390px 导航不可见的矛盾。用户要求未完成签收不能停在“受阻”，因此先修复可由本地完成的视觉与采集根因，再请求新 SHA 的独立复核。
+- 观察事实：运行时顶部栏在 375px 只保留单行省略的快照上下文；375px 普通事故态只压缩非交互标题/分隔空间，不降低 44/48/56px 操作目标；截图采集在最终双帧绘制后再次确认 `scrollY=0`、固定导航可见且 `position=fixed`。这使 375px 的证据边界完整落在导航上方，390px 保持原有密度与证据顺序。
+- 实现：更新 `src/panel-framework/runtime/panel-runtime.css` 的窄屏运行时栏；更新 `src/panel-framework/mobile/mobile-patrol.css` 的窄屏事故节奏；更新 `tools/check-panel-runtime-browser.js`，把截图稳定上下文变成运行时断言，而不是只凭人工看图猜测。
+- 验证：当前脏工作树已通过 build、`npm run check:runtime-browser`（`260 checks / 140 screenshots / 169 snapshotApiCalls`），其中 375/390 composite capture 均为 `scrollY=0`、fixed navigation visible；已人工检查 `mobile-composite-risk-375.png` 与 `mobile-composite-risk-390.png`，375px 导航可见且证据边界不再被覆盖。当前修改尚未提交，旧 exact-SHA 报告不可冒充本步候选证据。
+- 视觉/交互裁决：本地可验证的 narrow-phone visual P1 已关闭；交互/无障碍 scoped review 仍为 P0/P1=`0`；新 SHA 的 Visual 独立复核必须重新执行。Product 仍只对 mobile patrol slice conditional，不能把 scoped review 写成 trusted signature。
+- 决策：关闭本轮可本地完成的固定导航截图上下文和 375px 视觉 P1；保持 Product/Design/Visual trusted acceptance、Accessibility/AT、Route Owner、complete route maturity、真实 RouterOS soak、Linux/Windows/GHCR exact-SHA CL 与 GitHub/public release fail-closed。任务保持 active、`blocked=false`，不上传 GitHub。
+- 边界/心得：固定导航的“可见”与“内容不被覆盖”是两个独立契约；只断言 DOM 有导航会漏掉截图上下文，只看一张截图又会把滚动时序误判成产品状态。窄屏应压缩非交互 chrome，不能牺牲触控目标或把证据隐藏；每次 tracked change 后仍必须提交并重新绑定全部 exact-SHA 证据。
+- nextAction：同步 Step863 到 `D:\想法\面板` 并提交 source/tool/governance changes；在新 clean SHA 重跑 build/types/runtime、28/28 overview、route-responsive、route-state、mobile-native、packet、quarantine、truth 和 readiness，再请求当前 SHA 的独立视觉/产品/交互复核并继续正式 route-owner、RouterOS soak 与三端 CL。
+- validForCommit：Step863 修改前的当前 clean-worktree evidence only；本步提交后所有 exact-SHA 报告必须重新生成。
+- supersededBy：null

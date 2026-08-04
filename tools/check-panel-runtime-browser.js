@@ -7465,6 +7465,34 @@ async function main() {
       await adaptivePage.evaluate(() => document.fonts?.ready);
       await adaptivePage.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
       await adaptivePage.waitForTimeout(20);
+      if (surface === 'mobile') {
+        const captureContext = await adaptivePage.evaluate(() => {
+          const navigation = document.querySelector('.panel-task-navigation');
+          const navigationRect = navigation?.getBoundingClientRect();
+          const style = navigation ? getComputedStyle(navigation) : null;
+          return {
+            scrollY: Math.round(window.scrollY),
+            viewport: { width: innerWidth, height: innerHeight },
+            navigationRect: navigationRect ? {
+              top: Math.round(navigationRect.top),
+              bottom: Math.round(navigationRect.bottom),
+              width: Math.round(navigationRect.width),
+              height: Math.round(navigationRect.height),
+            } : null,
+            navigationVisible: Boolean(
+              navigationRect && navigationRect.width > 0 && navigationRect.height > 0 &&
+              navigationRect.top >= -1 && navigationRect.bottom <= innerHeight + 1
+            ),
+            navigationPosition: style?.position || '',
+          };
+        });
+        check(
+          checks,
+          `${width}px composite screenshot captures the settled phone viewport and fixed navigation`,
+          captureContext.scrollY === 0 && captureContext.navigationVisible && captureContext.navigationPosition === 'fixed',
+          captureContext
+        );
+      }
       if (surface === 'desktop') {
         const section = new URL(adaptivePage.url()).searchParams.get('section');
         screenshots.push(await isolatedScreenshot(
