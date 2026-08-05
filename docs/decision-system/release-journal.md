@@ -2,9 +2,9 @@
 - status: `current-journal`
 - validForCommit: current clean-worktree evidence only; exact-SHA reports are bound in machine state and must be regenerated after any tracked change; formal external gates remain open; not a public release approval
 - supersededBy: null
-- currentStep: `880`
-- currentOutcome: `880:rebind-after-decision-commit`
-- latestStepOutcome: `880:rebind-after-decision-commit`
+- currentStep: `881`
+- currentOutcome: `881:current-evidence-rebind-after-step880-doc-sync`
+- latestStepOutcome: `881:current-evidence-rebind-after-step880-doc-sync`
 - authority: docs/decision-system/current-state.md
 - fullHistory: panel-redesign-decision-log.md
 
@@ -89,3 +89,6 @@ Only a clean, independently accepted candidate with complete current-identity ma
 - Step878: the report quarantine scanner previously tokenized historical machine-state gate evidence as current references. It now reads only the current evidence ledger for current-report discovery while preserving historical records for audit. This tracked tool/governance change invalidates prior exact-SHA evidence; the task remains active and blocked=false.
 
 - Step880: The Step879 decision-source repair was synchronized to D:\想法\面板 and committed as parent 4e04813. All prior exact-SHA reports are now historical; regenerate the final clean-SHA runtime, tablet, route and truth families before independent Product/Design/Visual/Accessibility acceptance. Formal route maturity, Router Owner, RouterOS soak, exact-SHA CL and publication remain open; task active and blocked=false; GitHub untouched.
+
+
+- Step881: 在 Step880 决策修复后的 clean candidate 上完成 runtime、Overview 28/28、full route-responsive 532/532、bounded route 76/76、route-state 266/266、tablet visual shard 8/8、packet、report-truth 与 quarantine 重新绑定；严格 readiness 已接受当前矩阵后仍诚实停在 route maturity 0/18/0/1。此次 current-state / index / handoff 同步是 tracked change，提交后所有上述报告必须重新绑定到新 HEAD；Product/Design/Visual/Accessibility 正式签收、Route Owner、RouterOS soak、Linux/Windows/GHCR exact-SHA CL 与 GitHub 发布仍关闭，task active、blocked=false。

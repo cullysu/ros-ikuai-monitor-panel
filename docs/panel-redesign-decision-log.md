@@ -25133,3 +25133,16 @@ ocused-green-engineering
 ### 下一步
 
 提交本步骤后，更新机器状态到新的 clean SHA，重新生成全部当前 evidence，再进行独立签收。
+
+## 第 881 步：当前证据回绑后的决策库同步与下一次 clean-SHA 边界
+
+- status：`current-evidence-rebind-after-step880-doc-sync`
+- latestStepOutcome: `881:current-evidence-rebind-after-step880-doc-sync`
+- 触发/问题：Step880 提交后已完成新候选的 runtime、Overview 28/28、full route-responsive 532/532、bounded route 76/76、route-state 266/266、tablet visual shard 8/8、packet、truth 和 quarantine 证据；但 current-state、index、handoff 仍残留旧候选或 Step879 叙述，导致决策库与机器状态不一致。
+- 决策/实现：将 current-state、current-index、README、product-loop-current 与 release-journal 统一到 Step881；当前 exact-SHA 报告身份继续由 .product-loop/state.json 与报告自身绑定，tracked 文档不再把旧 SHA 当作当前发布输入。同步到 D:\想法\面板 后提交本步骤；提交会使本轮报告转为历史，必须在新 HEAD 再生全部证据。
+- 验证：本步前 check:types、check:overview、check:asset-identity、runtime-browser、Overview 28/28、full route-responsive 532/532、route-state 266/266、bounded route 76/76、tablet 8/8、packet、report-truth、quarantine 均有当前候选证据；strict readiness 已接受矩阵并在 route maturity 0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable 停止。
+- 产品/视觉边界：当前 scoped review 不能替代 trusted Product/Design/Visual/Accessibility；手机、平板和桌面仍需独立正式签收，Route Owner、真实 RouterOS soak 和三端 exact-SHA CL 未完成。
+- 心得：决策仓库的“当前”指针必须和机器证据同向；矩阵数量只能证明覆盖，不能把 18 个 bounded-readonly 路由改名成成熟模块，也不能把 absence of signature 误报成执行阻塞。
+- nextAction：提交并同步 Step881；在新 clean HEAD 重新生成 runtime、Overview、full/bounded route、route-state、tablet、packet、truth、quarantine 和 readiness，然后继续独立正式签收、Route Owner、RouterOS soak 与 exact-SHA CL。
+- validForCommit：本步 tracked 文档尚未提交；当前候选 dea342348b02702a6fd03b80bba4ef4232caa528 报告在本步提交后仅作历史。
+- supersededBy：null

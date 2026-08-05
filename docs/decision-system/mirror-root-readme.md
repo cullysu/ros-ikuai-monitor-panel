@@ -1,11 +1,11 @@
-RouterOS / iKuai panel decision repository mirror. Step880 records the post-decision-commit exact-SHA rebind boundary; formal acceptance, route maturity, RouterOS soak, exact-SHA CL and trusted publication signature remain open.
+RouterOS / iKuai panel decision repository mirror. Step881 records the current-evidence rebind boundary after the Step880 decision sync; formal acceptance, route maturity, RouterOS soak, exact-SHA CL and trusted publication signature remain open.
 
 这是当前面板工作的本地决策仓库镜像。Step877 保留 Step876 已通过运行时合同回放确认的正常手机首要动作顺序，并修正 packet 无参数生成时默认沿用历史 Step821 的证据绑定问题；exact-SHA 证据只由机器状态绑定，独立产品/设计/视觉正式签收、辅助技术验收、route maturity、RouterOS soak、exact-SHA Linux/Windows/GHCR CL 和可信外部发布签收仍未完成。emil-design-eng 已融合进 product-company-loop，强调静态证据、目的驱动动效和 reduced-motion。
 
 - status: `current-mirror-entry`
-- currentStep: `880`
-- currentOutcome: `880:rebind-after-decision-commit`
-- currentBoundary: `880`
+- currentStep: `881`
+- currentOutcome: `881:current-evidence-rebind-after-step880-doc-sync`
+- currentBoundary: `881`
 - authority: `decision-system/current-state.md`
 
 ## 入口

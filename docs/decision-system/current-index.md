@@ -2,18 +2,18 @@
 - validForCommit: current clean-worktree evidence only; exact-SHA reports are bound in machine state and must be regenerated after any tracked change; formal external gates remain open; not a public release approval
 - supersededBy: `null`
 - authority: `docs/decision-system/current-state.md`
-- currentStep: `880`
-- currentOutcome: `880:rebind-after-decision-commit`
-- currentBoundary: `880`
-- latestRecordedStep: `880`
-- latestStepOutcome: `880:rebind-after-decision-commit`
+- currentStep: `881`
+- currentOutcome: `881:current-evidence-rebind-after-step880-doc-sync`
+- currentBoundary: `881`
+- latestRecordedStep: `881`
+- latestStepOutcome: `881:current-evidence-rebind-after-step880-doc-sync`
 
 ## Current pointer
 
 The authority is current-state.md; this page is discovery only.
 
 - Current conclusion: FAIL overall; local engineering evidence is complete in declared scopes, while independent public acceptance and trusted external release gates remain open. The task remains active, not blocked.
-- Current engineering boundary: Step879 binds current report families to the amended clean SHA and keeps historical machine-state evidence audit-only. Formal acceptance and release gates remain open.
+- Current engineering boundary: Step881 records the current evidence rebind boundary after the Step880 document sync; exact report identities remain in machine state and historical evidence is audit-only. Formal acceptance and release gates remain open.
 - Latest result: current runtime and matrix reports are exact-SHA bound with no nested contradictions; route maturity remains 0 complete / 18 bounded-readonly / 0 fallback / 1 unavailable.
 - Full process: panel-redesign-decision-log.md.
 - Product handoff: product-loop-current.md.

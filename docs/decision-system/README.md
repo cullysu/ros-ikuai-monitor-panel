@@ -2,9 +2,9 @@
 - validForCommit: current clean-worktree evidence only; exact-SHA reports are bound in machine state and must be regenerated after any tracked change; formal external gates remain open; not a public release approval
 - supersededBy: null
 - status: `current-index`
-- currentBoundaryForStep: `880`
-- latestRecordedStep: `880`
-- latestStepOutcome: `880:rebind-after-decision-commit`
+- currentBoundaryForStep: `881`
+- latestRecordedStep: `881`
+- latestStepOutcome: `881:current-evidence-rebind-after-step880-doc-sync`
 - authority: `docs/decision-system/current-state.md`
 
 当前结论由 current-state.md 唯一拥有；本页只负责导航，不重复历史流水账。
@@ -17,4 +17,4 @@
 - 历史索引：historical-index.md
 
 
-Task remains active and blocked=false; Step879 records the amended exact-SHA evidence rebound and keeps formal product, design, visual, accessibility, route-owner, RouterOS soak, CL and publication gates open.
+Task remains active and blocked=false; Step881 records the current evidence rebind boundary after the Step880 document sync and keeps formal product, design, visual, accessibility, route-owner, RouterOS soak, CL and publication gates open.
