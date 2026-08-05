@@ -25074,3 +25074,15 @@ ocused-green-engineering
 - nextAction：提交并同步 Step877 后，使用无参数 packet 生成验证默认步号为877，再以新 clean SHA 重跑 build/types/runtime、Overview、route 矩阵、packet、quarantine、truth 和 readiness；随后继续当前 SHA 独立复核、Route Owner、RouterOS soak 与三端 CL。
 - validForCommit：本步 source/tool/governance changes 尚未提交；当前 `513a591fe8e17649bb9e6fcd0969e1dddf6dd68a` 的 exact-SHA 报告在本步提交后仅作历史诊断。
 - supersededBy：null
+
+## 第 878 步：隔离当前证据与历史机器状态证据
+
+- status: quarantine-ignores-historical-machine-evidence
+- latestStepOutcome: `878:quarantine-ignores-historical-machine-evidence`
+- Trigger: Step877 fixed packet default authority, but report quarantine still tokenized all machine-state gate evidence, causing historical SHA report paths to appear in current references.
+- Decision: current quarantine discovery reads only the machine state's current evidence ledger; historical gate evidence remains audit-only. The root README is updated to Step878.
+- Verification: quarantine fixture, current quarantine, root freshness and syntax pass; current references contain only the five current SHA report families and contradictionCount=0.
+- Boundary: this does not change UI or visual signoff. Product/Design/Visual trusted acceptance, Accessibility/AT, Route Owner, route maturity, RouterOS soak, exact-SHA CL and GitHub publication remain open; task active and blocked=false.
+- nextAction: commit and sync Step878, regenerate clean-SHA runtime/matrices/packet/quarantine/truth/readiness, then continue independent review and external gates.
+- validForCommit: Step878 tool/docs changes are not committed; existing 0a5621b evidence becomes historical after commit.
+- supersededBy: null

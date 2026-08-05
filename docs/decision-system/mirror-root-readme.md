@@ -1,11 +1,11 @@
-RouterOS / iKuai panel decision repository mirror. Step876 records the normal-phone primary next-step ordering correction after runtime-contract replay; this documentation and source change requires a fresh exact-SHA rebind; formal acceptance, route maturity, RouterOS soak, exact-SHA CL and trusted publication signature remain open.
+RouterOS / iKuai panel decision repository mirror. Step878 records the report-quarantine current-evidence boundary correction; formal acceptance, route maturity, RouterOS soak, exact-SHA CL and trusted publication signature remain open.
 
-这是当前面板工作的本地决策仓库镜像。Step876 通过运行时合同回放把正常手机首要动作准确放在 WAN 当前信号之后、次级判断之前，并将源代码/几何顺序契约扩展到 10/10；exact-SHA 证据只由机器状态绑定，独立产品/设计/视觉正式签收、辅助技术验收、route maturity、RouterOS soak、exact-SHA Linux/Windows/GHCR CL 和可信外部发布签收仍未完成。emil-design-eng 已融合进 product-company-loop，强调静态证据、目的驱动动效和 reduced-motion。
+这是当前面板工作的本地决策仓库镜像。Step877 保留 Step876 已通过运行时合同回放确认的正常手机首要动作顺序，并修正 packet 无参数生成时默认沿用历史 Step821 的证据绑定问题；exact-SHA 证据只由机器状态绑定，独立产品/设计/视觉正式签收、辅助技术验收、route maturity、RouterOS soak、exact-SHA Linux/Windows/GHCR CL 和可信外部发布签收仍未完成。emil-design-eng 已融合进 product-company-loop，强调静态证据、目的驱动动效和 reduced-motion。
 
 - status: `current-mirror-entry`
-- currentStep: `876`
-- currentOutcome: `876:phone-steady-next-step-order-aligned-with-signal`
-- currentBoundary: `876`
+- currentStep: `878`
+- currentOutcome: `878:quarantine-ignores-historical-machine-evidence`
+- currentBoundary: `878`
 - authority: `decision-system/current-state.md`
 
 ## 入口
@@ -49,3 +49,6 @@ Step862: independent product/design/visual review findings are recorded; matrix 
 Step868: the Overview probe now aggregates primary and marked secondary phone investigation actions without weakening thresholds; current exact-SHA Overview, route-responsive and route-state evidence is rebound. Readiness remains fail-closed at route maturity and task remains active.
 Step869: the runtime browser connectivity field is now named browserOnlineHint and explicitly cannot represent RouterOS/LAN reachability; same-origin snapshot requests continue while the hint is false. The source/governance change requires a fresh exact-SHA rebind, and the task remains active and blocked=false.
 Step874: the final local candidate has Overview 28/28, full route-responsive 532/532, bounded route-responsive 76/76, route-state 266/266, runtime 260/140/169 and scoped independent UI review P0/P1=0. Readiness still stops at route maturity; this documentation change requires a fresh exact-SHA rebind, and the task remains active and blocked=false.
+Step877: the visual packet generator now reads the authoritative current-state decision step by default instead of historical Step821; current release remains FAIL-closed, and formal acceptance, route maturity, RouterOS soak, exact-SHA CL and publication remain open.
+
+Step878: the quarantine scanner now uses only the machine state's current evidence ledger for current report discovery; historical gate records remain audit-only and the release stays FAIL-closed.

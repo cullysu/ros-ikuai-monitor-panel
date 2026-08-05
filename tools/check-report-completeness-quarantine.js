@@ -109,10 +109,25 @@ function matchingRules(relative, rules) {
   ));
 }
 
+function currentSourceText(sourcePath) {
+  if (path.basename(sourcePath) !== 'state.json') {
+    return fs.readFileSync(sourcePath, 'utf8');
+  }
+  try {
+    const state = readJson(sourcePath);
+    // Machine state retains historical gate evidence for auditability. Only
+    // the current evidence ledger feeds the current-report quarantine scan.
+    return Array.isArray(state.evidence) ? state.evidence.join(String.fromCharCode(10)) : '';
+  } catch (error) {
+    scanWarnings.push({ source: relativeSlash(sourcePath), detail: error.message });
+    return '';
+  }
+}
+
 function sourceReferences(relative, sources = CURRENT_SOURCES) {
   return sources
     .filter((sourcePath) => fs.existsSync(sourcePath))
-    .filter((sourcePath) => fs.readFileSync(sourcePath, 'utf8').includes(relative))
+    .filter((sourcePath) => currentSourceText(sourcePath).includes(relative))
     .map((sourcePath) => relativeSlash(sourcePath));
 }
 
@@ -121,7 +136,7 @@ function currentReportReferences(sources = CURRENT_SOURCES) {
   const punctuation = String.fromCharCode(96, 34, 39) + '()[]{}.,;';
   for (const sourcePath of sources) {
     if (!fs.existsSync(sourcePath)) continue;
-    const source = fs.readFileSync(sourcePath, 'utf8');
+    const source = currentSourceText(sourcePath);
     for (const token of source.split(/\s+/)) {
       let candidate = token.replaceAll('\\', '/');
       while (candidate && punctuation.includes(candidate[0])) candidate = candidate.slice(1);
