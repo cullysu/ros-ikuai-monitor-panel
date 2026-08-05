@@ -13,7 +13,7 @@
 .panel-runtime-device small { display: block; }
 .panel-runtime-device > span,
 .panel-runtime-device small { overflow: hidden; color: #5c7580; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
-.panel-runtime-device b { overflow: hidden; color: #12313e; font-size: 15px; text-overflow: ellipsis; white-space: nowrap; }
+.panel-runtime-device b { overflow: hidden; color: #12313e; font-size: 14px; text-overflow: ellipsis; white-space: nowrap; }
 .panel-runtime-mode {
   display: inline-flex;
   box-sizing: border-box;
@@ -96,7 +96,6 @@
 .panel-runtime-empty button:first-child { border-color: #0b6488; color: #fff; background: #0d6a8e; }
 
 @media (max-width: 359px) {
-  .panel-runtime-device > b { font-size: 14px; white-space: nowrap; }
   .panel-runtime-device > span { white-space: normal; }
 }
 
